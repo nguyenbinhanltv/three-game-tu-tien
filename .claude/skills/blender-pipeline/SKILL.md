@@ -5,8 +5,10 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 
 # Pipeline Blender → glTF
 
-> Hiện trạng (2026-11-15, M2-1/5/6/7): có `tools/asset-pipeline` (`optimize.ts`, `validate.ts`, lệnh `pnpm assets:build` / `assets:validate`, xem `assets/README.md`). `tools/blender/run.mjs` xuất GLB thô vào `assets/build/raw/<id>.glb` (sect thành `arch_sect`, kèm bản `sect.glb` cho đường nạp cũ của client). LOD nằm cùng file (node `<tên>_lod<k>`, `extras.lod`). Ngân sách nằm trong `assets/budgets.json`. Chưa có: client đọc manifest (M2-8), `import_tripo.py`/`rig_human_base.py` (M2-2/M2-3), `export.py`, `export_level.py`. Máy đang dùng Blender 5.3.
-> Tọa độ trong script là tọa độ game quanh tâm sân tông môn; vị trí công trình phải khớp `COLLIDERS` trong `packages/shared/src/level.ts`.
+> Hiện trạng (2026-11-15, sau M2-1/5/6/7/8):
+> - **Có**: `tools/blender/run.mjs` (danh sách job → GLB thô `assets/build/raw/<id>.glb`, bỏ qua job khi GLB thô mới hơn script), `build_sect.py` (kiến trúc tông môn → `arch_sect`), `build_fixture_rig.py` (GLB có xương cho test), `find-blender.mjs` (dò Blender qua `BLENDER`, PATH, thư mục cài mặc định). `tools/asset-pipeline`: `optimize.ts`, `validate.ts`, `ktx.ts`, `config.ts`, test vitest. Client nạp theo manifest qua `AssetCache` (`apps/client/src/game/assets.ts`). Chi tiết lệnh và bố cục: `assets/README.md`.
+> - **Chưa có**: `import_tripo.py` (M2-2), `rig_human_base.py`/`export_anim_lib.py` (M2-3), client chọn LOD theo khoảng cách (M2-9; hiện chỉ hiện LOD0), `export.py` theo collection `EXPORT_`, `export_level.py`, ảnh xem trước tự động `assets/build/previews/`. Máy dev chưa cài KTX-Software (`toktx`) nên nhánh KTX2 mới kiểm bằng toktx giả trong test.
+> - Máy đang dùng Blender 5.3. Tọa độ trong script là tọa độ game quanh tâm sân tông môn; vị trí công trình phải khớp `COLLIDERS` trong `packages/shared/src/level.ts`.
 
 ## Chạy Blender
 
@@ -24,35 +26,52 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 
 ## Các bước pipeline
 
-1. **Sinh hoặc mở** `.blend` nguồn trong `assets/source/`.
-2. **Xuất**: `tools/blender/export.py` xuất từng collection có tiền tố `EXPORT_` thành một GLB vào `assets/build/raw/`. Custom properties trên object/Empty ghi ra `extras` của glTF.
-3. **Tối ưu**: `tools/asset-pipeline/optimize.ts` dùng `@gltf-transform/core` + `functions`: dedup, prune, weld, `meshopt` nén, texture sang KTX2 (ETC1S cho màu, UASTC cho normal), sinh LOD bằng `simplify` (tỉ lệ 1, 0.4, 0.15).
-4. **Kiểm tra ngân sách**: `tools/asset-pipeline/validate.ts`, báo lỗi và dừng nếu vượt.
-5. **Đóng gói**: đổi tên theo hash nội dung, cập nhật `assets/build/manifest.json`.
+1. **Sinh GLB thô**: thêm job `{ id, script }` vào `jobs` trong `tools/blender/run.mjs`; script bpy nhận đường dẫn output sau `--` và xuất GLB vào `assets/build/raw/<id>.glb`. Custom properties trên object/Empty ra `extras` của glTF (three.js đọc thành `userData`). Asset từ Tripo sẽ vào raw qua `import_tripo.py` khi có M2-2.
+2. **Tối ưu** (`tools/asset-pipeline/src/optimize.ts`, `@gltf-transform`): dedup, prune (giữ xương, socket, extras), weld, resample animation; texture sang KTX2 bằng `toktx` (ETC1S cho màu/ORM, UASTC cho normal, hạ cạnh theo ngân sách lớp); LOD bằng `simplify` theo `assets/budgets.json`; reorder, quantize (**chỉ mesh không có xương**), nén `EXT_meshopt_compression`.
+3. **Đóng gói**: tên `<id>.<hash10>.glb` vào `apps/client/public/assets/`, cập nhật `apps/client/public/assets/manifest.json` (file, byte, tam giác từng LOD, texture, xương, clip, kích thước raw/build), xóa bản hash cũ của asset đó.
+4. **Kiểm tra** (`tools/asset-pipeline/src/validate.ts`): exit 1 khi có lỗi (id sai quy ước, hash lệch, vượt ngân sách tam giác/texture/xương, thiếu LOD, mesh có xương bị quantize, LOD mất skin, thiếu dòng `assets/LICENSES.md`, `meta.json` sai schema, chiều cao raw/build lệch quá 1%). Danh sách đầy đủ trong `assets/README.md`.
+5. **Xem bằng mắt**: `pnpm dev` rồi mở `?viewer=asset&file=/assets/<id>.<hash>.glb` (người chuẩn 1,7m, số tam giác, draw call, clip), rồi gọi subagent `asset-validator`.
 
-Lệnh tổng: `pnpm assets:build` (hoặc `pnpm assets:build --only <tên>`).
+Lệnh:
+
+```bash
+pnpm assets:build                 # run.mjs (Blender) → optimize → public/assets + manifest
+pnpm assets:build --only <id>     # một asset; --force bỏ cache; --no-ktx không nén texture
+pnpm assets:optimize              # chỉ bước tối ưu từ assets/build/raw/
+pnpm assets:validate [--only <id>]
+pnpm --filter @dtl/asset-pipeline test
+```
+
+- **Không có Blender**: bước 1 bị bỏ qua có cảnh báo, bước tối ưu vẫn chạy với GLB thô đang có.
+- **Không có `toktx`** (KTX-Software 4.x; dò `TOKTX`, PATH, rồi thư mục cài mặc định `Program Files/KTX-Software/bin`): texture giữ PNG/JPEG và có cảnh báo, `validate` vẫn kiểm cạnh texture. Muốn KTX2 thật thì cài KTX-Software rồi chạy lại với `--force`.
+- Commit cả GLB có hash lẫn `manifest.json` (nguồn lớn nằm ngoài repo). `assets/build/` không commit.
+
+## Client nạp asset
+
+- Dùng `assets` (singleton `AssetCache` trong `apps/client/src/game/assets.ts`): `await assets.attach(renderer)` một lần cho mỗi renderer (KTX2 dò định dạng GPU), rồi `const h = await assets.acquire('<id>', { pos })`, thêm `h.scene` vào cảnh, và `h.release()` đúng một lần khi bỏ. Handle cuối release thì geometry/material/texture của bản gốc được dispose.
+- Không `new GLTFLoader()` riêng trong game. Material tự gán đè lên bản sao là của người gọi, người gọi tự dispose.
+- Transcoder Basis lấy từ `node_modules/three` qua URL Vite (`?url`), phục vụ cùng origin; không dùng CDN ngoài. Trang xem asset dùng chung `createGltfLoader`/`createKtx2Loader` và thêm Draco.
+- `apps/client/public/assets/sect.glb` là bản chép của GLB thô `arch_sect`, chỉ còn làm đầu vào cho test pipeline; client không nạp nó.
 
 ## Quy ước
 
-- Tên collection/object: `snake_case` không dấu, tiền tố loại: `chr_`, `mon_`, `prop_`, `arch_`, `fx_`, `lvl_`.
+- Asset id = tiền tố loại + `snake_case` không dấu: `chr_`, `mon_`, `boss_`, `prop_`, `arch_`, `fx_`, `anim_` (khớp `prefixes` trong `assets/budgets.json`). Lớp ngân sách suy từ tiền tố, khác thì ghi `budgetClass` trong `meta.json`. Collection level (khi có) dùng `lvl_`.
+- Tên node/mesh/material không dấu, không khoảng trắng (validate cảnh báo).
 - Đơn vị: 1 unit = 1 mét, trục Y lên khi xuất (bật `export_yup`), gốc tọa độ ở chân vật.
 - Áp dụng scale/rotation trước khi xuất (`bpy.ops.object.transform_apply`).
-- Nhân vật hình người dùng **bộ xương chung** `rig_human_base` (tối đa 60 xương) để mọi animation dùng chung.
+- Nhân vật hình người dùng **bộ xương chung** `rig_human_base` (tối đa 60 xương) để mọi animation dùng chung (bộ xương này có ở M2-3; trước đó validate chỉ cảnh báo).
+- Mỗi asset cần `assets/source/<loại>/<id>/meta.json` (theo `assets/meta.schema.json`) và một dòng trong `assets/LICENSES.md`.
 
-| Loại | Tam giác LOD0 | Texture | Bắt buộc |
-| --- | --- | --- | --- |
-| Nhân vật người chơi | 15–25 nghìn | atlas 1024² | bộ xương chung |
-| Quái thường / NPC | 3–8 nghìn | 512² | xuất thêm VAT nếu đi theo đàn |
-| Boss | 30–50 nghìn | 2048² | |
-| Prop | 200–5 nghìn | atlas/trim sheet chung | LOD1, LOD2 |
-| Kiến trúc | theo kit modular | trim sheet | lắp từ mảnh |
+**Ngân sách**: nguồn duy nhất là `assets/budgets.json` (theo `docs/art-bible.md` mục 6, v3). Tóm tắt lúc viết: người chơi 15–25 nghìn tam giác LOD0, texture 1024; NPC 10–15 nghìn; quái 5–10 nghìn; boss 20–50 nghìn, texture 2048; prop 500–5 nghìn có 2 mức LOD; kiến trúc tới 300 nghìn, chưa sinh LOD. Số trong file JSON thắng nếu khác bảng này.
 
-## Blender làm level editor
+## Blender làm level editor (chưa làm)
+
+Phần dưới là thiết kế, chưa có script nào; vị trí quái/NPC hiện viết tay trong `packages/content/data/levels/<bản đồ>.json`. Khi làm, script xuất phải ra đúng định dạng file đó.
 
 - Đặt Empty trong collection `lvl_<tên_bản_đồ>` với custom property:
   - `spawn = "monster:<id>"`, `count`, `radius`, `respawn_s`
   - `npc = "<id>"`
   - `portal = "<room_id>"`
   - `zone = "safe" | "no_fly"` (dùng hộp bao của Empty)
-- `tools/blender/export_level.py` xuất ra `packages/content/levels/<tên>.json`; server đọc file này, không đọc GLB.
+- `tools/blender/export_level.py` xuất ra `packages/content/data/levels/<tên>.json`; server đọc file này, không đọc GLB.
 - Id quái, NPC phải tồn tại trong `packages/content`; script xuất báo lỗi nếu không tìm thấy.

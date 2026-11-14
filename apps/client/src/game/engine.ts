@@ -1,5 +1,4 @@
 import * as THREE from 'three/webgpu';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Client, type Room } from 'colyseus.js';
 import {
   biomeAt,
@@ -47,8 +46,10 @@ import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
+import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { buildPortalDisc, buildSect } from './sect';
+import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
@@ -184,6 +185,7 @@ export class Game {
   private portalDisc: THREE.Mesh | null = null;
   private exitDisc: THREE.Mesh | null = null;
   private sectMesh: THREE.Mesh | null = null;
+  private sectAsset: { handle: AssetHandle; mat: THREE.Material } | null = null;
   /** Material kiến trúc tông môn: riêng với MODEL_MAT để làm mờ vật che mà không ảnh hưởng nhân vật. */
   private sectMat = withOccluderFade(new THREE.MeshLambertNodeMaterial({ vertexColors: true }));
   shake = new CameraShake();
@@ -252,6 +254,7 @@ export class Game {
   private inputSentAt: number[] = [];
   private ping = 0;
   private listeners: (() => void)[] = [];
+  private music = new MusicController();
 
   constructor(room: Room, init: InitMsg) {
     this.room = room;
@@ -454,16 +457,21 @@ export class Game {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
-  /** Nạp kiến trúc tông môn dựng bằng Blender; lỗi thì giữ bản dựng bằng code. */
+  /** Nạp kiến trúc tông môn dựng bằng Blender (asset `arch_sect` qua AssetCache); lỗi thì giữ bản dựng bằng code. */
   private async loadSectModel(shadows: boolean): Promise<void> {
     try {
-      const base = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
-      const gltf = await new GLTFLoader().loadAsync(base + 'assets/sect.glb');
-      if (this.disposed) return;
+      await assets.attach(this.renderer);
+      const handle = await assets.acquire('arch_sect', { pos: { x: SECT.x, z: SECT.z } });
+      if (this.disposed) {
+        handle.release();
+        return;
+      }
       const mat = this.sectMat.clone();
       mat.side = THREE.DoubleSide;
-      gltf.scene.position.set(SECT.x, SECT.y, SECT.z);
-      gltf.scene.traverse((o) => {
+      this.sectAsset = { handle, mat };
+      const root = handle.scene;
+      root.position.set(SECT.x, SECT.y, SECT.z);
+      root.traverse((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
         m.material = mat;
@@ -471,14 +479,14 @@ export class Game {
         m.receiveShadow = shadows;
         m.frustumCulled = false;
       });
-      this.scene.add(gltf.scene);
+      this.scene.add(root);
       if (this.sectMesh) {
         const old = this.sectMesh.geometry;
         this.sectMesh.geometry = buildSect(false);
         old.dispose();
       }
     } catch (e) {
-      console.warn('[asset] không tải được sect.glb, dùng kiến trúc dựng bằng code:', e);
+      console.warn('[asset] không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
     }
   }
 
@@ -994,6 +1002,8 @@ export class Game {
     const byMe = m.src === this.sid;
     // Bị quái đánh khi chưa chọn mục tiêu: tự chọn kẻ tấn công để phản đòn nhanh.
     if (mine && !m.heal && !this.targetId && m.src && this.view.monsters.has(m.src)) this.setTarget(m.src, 'mon');
+    const foe = !m.heal && (mine || byMe) ? this.ents.monsters.get((mine ? m.src : m.dst) ?? '') : undefined;
+    if (foe) this.music.engage(!!foe.model.def.boss);
     if (!mine && !byMe) {
       // Sát thương của người khác: chỉ hiện khi ở gần.
       if (_v.distanceTo(this.renderPos) > 45) return;
@@ -1208,6 +1218,7 @@ export class Game {
     if (now - this.hudAt > 100) {
       this.hudAt = now;
       this.syncHud(me);
+      this.music.tick(now, { active: this.started, room: get().room, x: rp.x, z: rp.z, flags: me?.fl ?? 0, monsters: this.ents.monsters.values() });
     }
     if (!this.started && me && this.terrain.ready && this.frames > 4) {
       this.started = true;
@@ -1430,9 +1441,15 @@ export class Game {
     set({ mouseLook: false });
     this.renderer?.setAnimationLoop(null);
     for (const off of this.listeners) off();
+    this.music.dispose();
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();
+    this.sectMesh?.geometry.dispose();
+    this.sectAsset?.handle.release();
+    this.sectAsset?.mat.dispose();
+    this.sectAsset = null;
+    this.sectMat.dispose();
     this.dmg?.clear();
     this.stage.replaceChildren();
     this.renderer?.dispose();
