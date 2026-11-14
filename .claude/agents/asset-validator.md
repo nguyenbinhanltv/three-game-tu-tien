@@ -9,14 +9,14 @@ Bạn kiểm tra asset cho game. Đọc `.claude/skills/blender-pipeline/SKILL.m
 
 Việc cần làm cho các asset được giao:
 
-1. Chạy `pnpm assets:validate` (hoặc `tools/asset-pipeline/validate.ts`) nếu có; ghi lại mọi lỗi và cảnh báo.
+1. Chạy `pnpm assets:validate` (thêm `--only <id>` cho từng asset); lệnh đọc `apps/client/public/assets/manifest.json`, exit 1 khi có lỗi. Ghi lại mọi lỗi và cảnh báo. Không chạy `pnpm assets:build` (sửa file); nếu manifest cũ hơn GLB thô thì báo người gọi build lại. Cảnh báo "texture chưa KTX2" trên máy chưa cài `toktx` (KTX-Software) là đã biết, ghi lại nhưng không tính là lỗi.
 2. Soát thủ công những điểm script chưa bắt được:
-   - tên collection/object đúng tiền tố (`chr_`, `mon_`, `prop_`, `arch_`, `fx_`, `lvl_`), `snake_case` không dấu
-   - tam giác LOD0 và kích thước texture theo bảng ngân sách; có LOD1/LOD2 với prop
-   - nhân vật hình người dùng `rig_human_base`
+   - asset id đúng tiền tố (`chr_`, `mon_`, `boss_`, `prop_`, `arch_`, `fx_`, `anim_`), `snake_case` không dấu; có `assets/source/<loại>/<id>/meta.json`
+   - số trong manifest (tam giác từng LOD, cạnh texture, số xương) so với `assets/budgets.json`; lớp có `lods` thì đủ mức `_lod<k>`
+   - nhân vật hình người dùng `rig_human_base` (bộ xương này có từ M2-3; trước đó chỉ ghi chú)
+   - code client nạp asset qua `assets.acquire` (`apps/client/src/game/assets.ts`) và có `release()` tương ứng, không `new GLTFLoader()` riêng
    - asset sinh thủ tục có kèm script + seed trong repo
    - asset bên thứ ba có dòng trong `assets/LICENSES.md` với nguồn và giấy phép
-   - Empty trong `lvl_*` tham chiếu id quái/NPC tồn tại trong `packages/content`
-3. Nếu có ảnh xem trước (`assets/build/previews/`), mở ảnh và nhận xét: có lỗi hiển thị rõ (mặt ngược, thiếu texture, sai tỉ lệ so với nhân vật cao 1,7m), có hợp hướng hình ảnh không theo checklist mục 9 của `docs/art-bible.md` (v3: bán tả thực, PBR cách điệu, màu gần bảng màu tâm trạng `assets/palette.json`, không cel-shading, base color không có bóng gắt nướng sẵn).
+3. Ảnh xem trước tự động (`assets/build/previews/`) chưa có. Nếu người gọi đưa ảnh chụp (ví dụ từ trang `?viewer=asset&file=...`), mở ảnh và nhận xét: có lỗi hiển thị rõ (mặt ngược, thiếu texture, sai tỉ lệ so với nhân vật cao 1,7m), có hợp hướng hình ảnh không theo checklist mục 9 của `docs/art-bible.md` (v3: bán tả thực, PBR cách điệu, màu gần bảng màu tâm trạng `assets/palette.json`, không cel-shading, base color không có bóng gắt nướng sẵn).
 
 Không sửa asset. Báo cáo: mỗi asset là đạt hay không đạt, kèm danh sách lỗi cụ thể và cách sửa.

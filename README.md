@@ -61,7 +61,7 @@ Mở http://localhost:5173, nhập một đạo hiệu (2–14 ký tự) rồi b
 | `pnpm bots --count 100 --duration 120` | Bot headless để test tải |
 | `pnpm ledger:check` | Đối soát sổ cái với số dư tiền và vật phẩm |
 | `pnpm --filter @dtl/bot-client security` | Kiểm tra hồi quy các lỗ hổng đã vá (cần server dev đang chạy) |
-| `pnpm assets:build` | Chạy Blender (không giao diện) sinh `apps/client/public/assets/sect.glb` |
+| `pnpm assets:build` | Blender (không giao diện) sinh GLB thô rồi tối ưu ra `apps/client/public/assets/<id>.<hash>.glb` + `manifest.json` (xem `assets/README.md`) |
 | `pnpm invite add ban@gmail.com` | Thêm email vào danh sách mời (cũng có `remove`, `list`) |
 
 Xem tải server khi đang chạy: http://localhost:2567/health
