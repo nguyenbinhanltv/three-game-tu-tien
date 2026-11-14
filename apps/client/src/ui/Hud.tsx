@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { C, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, WORLD_SIZE } from '@dtl/shared';
 import { itemName, monsterName, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { Game } from '../game/engine';
+import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
 import { set, togglePanel, useUI } from './store';
@@ -184,6 +185,7 @@ function SkillBar() {
   const auto = useUI((s) => s.autoAttack);
   const wantFly = useUI((s) => s.wantFly);
   const mp = useUI((s) => s.mp);
+  const queued = useUI((s) => s.queuedSkill);
   const now = useNow(100);
   if (!char) return null;
   return (
@@ -198,7 +200,7 @@ function SkillBar() {
           return (
             <button
               key={sk.id}
-              className={'skill' + (locked ? ' locked' : '') + (noMp && !locked ? ' nomp' : '') + (i === 0 && auto ? ' auto' : '')}
+              className={'skill' + (locked ? ' locked' : '') + (noMp && !locked ? ' nomp' : '') + (i === 0 && auto ? ' auto' : '') + (i === queued ? ' queued' : '')}
               title={`${t(`skill.${sk.id}.name`)}\n${locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : t(`skill.${sk.id}.desc`)}${sk.mp ? `\n${t('ui.mp')}: ${sk.mp}` : ''}`}
               onClick={() => Game.current?.useSkill(i)}
             >
@@ -382,6 +384,7 @@ export function Hud() {
       <Panels />
       {npc && <NpcDialog npcId={npc} />}
       <DeathOverlay />
+      <DebugPanel />
       <Corner />
     </div>
   );

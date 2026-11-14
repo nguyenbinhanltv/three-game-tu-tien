@@ -5,7 +5,7 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 
 # Pipeline Blender → glTF
 
-> Hiện trạng MVP: chỉ có `tools/blender/build_sect.py` (sinh lưới bằng `from_pydata`, màu đỉnh `FLOAT_COLOR` tuyến tính, xuất GLB) và `tools/blender/run.mjs` (`pnpm assets:build`). GLB xuất thẳng vào `apps/client/public/assets/`, client nạp bằng GLTFLoader và thay material bằng `MODEL_MAT`. Chưa có bước gltf-transform/KTX2, `export.py`, `export_level.py` hay `assets/source/`. Máy đang dùng Blender 5.3.
+> Hiện trạng (2026-11-15, M2-1/5/6/7): có `tools/asset-pipeline` (`optimize.ts`, `validate.ts`, lệnh `pnpm assets:build` / `assets:validate`, xem `assets/README.md`). `tools/blender/run.mjs` xuất GLB thô vào `assets/build/raw/<id>.glb` (sect thành `arch_sect`, kèm bản `sect.glb` cho đường nạp cũ của client). LOD nằm cùng file (node `<tên>_lod<k>`, `extras.lod`). Ngân sách nằm trong `assets/budgets.json`. Chưa có: client đọc manifest (M2-8), `import_tripo.py`/`rig_human_base.py` (M2-2/M2-3), `export.py`, `export_level.py`. Máy đang dùng Blender 5.3.
 > Tọa độ trong script là tọa độ game quanh tâm sân tông môn; vị trí công trình phải khớp `COLLIDERS` trong `packages/shared/src/level.ts`.
 
 ## Chạy Blender

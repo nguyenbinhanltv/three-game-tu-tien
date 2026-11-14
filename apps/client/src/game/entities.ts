@@ -3,7 +3,7 @@ import { DUNGEON_EXIT, groundAt, MS_ATTACK, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLY
 import { MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
 import type { QuestView } from '@dtl/shared';
 import { buildNode, disposeLabel, Humanoid, makeLabel, MonsterModel } from './models';
-import { HIT_STOP_CRIT, HIT_STOP_LIGHT } from './hitreact';
+import { hitStopFor } from './hitreact';
 
 export interface PState {
   name: string;
@@ -466,14 +466,14 @@ export class EntityManager {
    * Phản ứng trúng đòn khi nhận S.DMG (chỉ hiển thị). `delay` để khớp lúc đạn bay tới.
    * Người ra đòn là mình thì mình cũng khựng.
    */
-  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number): void {
+  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false): void {
     const vd = this.players.get(dst) ?? this.monsters.get(dst);
     if (!vd) return;
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
     // Chỉ khựng khi đòn liên quan tới mình, để boss bị nhiều người đánh không đứng hình liên tục.
     const noStop = src !== this.mySid && dst !== this.mySid;
-    vd.model.hitReact({ crit, delay, noStop, dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
-    if (src && src === this.mySid && vs) vs.model.hit.hitStop(crit ? HIT_STOP_CRIT : HIT_STOP_LIGHT, delay);
+    vd.model.hitReact({ crit, heavy, delay, noStop, dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
+    if (src && src === this.mySid && vs) vs.model.hit.hitStop(hitStopFor(crit, heavy), delay);
   }
 
   /** Vị trí ngực của một thực thể (để bắn hiệu ứng tới). */

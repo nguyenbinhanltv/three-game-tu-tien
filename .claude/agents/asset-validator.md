@@ -17,6 +17,6 @@ Việc cần làm cho các asset được giao:
    - asset sinh thủ tục có kèm script + seed trong repo
    - asset bên thứ ba có dòng trong `assets/LICENSES.md` với nguồn và giấy phép
    - Empty trong `lvl_*` tham chiếu id quái/NPC tồn tại trong `packages/content`
-3. Nếu có ảnh xem trước (`assets/build/previews/`), mở ảnh và nhận xét: có lỗi hiển thị rõ (mặt ngược, thiếu texture, sai tỉ lệ so với nhân vật cao 1,7m), có hợp bảng màu cổ phong không.
+3. Nếu có ảnh xem trước (`assets/build/previews/`), mở ảnh và nhận xét: có lỗi hiển thị rõ (mặt ngược, thiếu texture, sai tỉ lệ so với nhân vật cao 1,7m), có hợp hướng hình ảnh không theo checklist mục 9 của `docs/art-bible.md` (v3: bán tả thực, PBR cách điệu, màu gần bảng màu tâm trạng `assets/palette.json`, không cel-shading, base color không có bóng gắt nướng sẵn).
 
 Không sửa asset. Báo cáo: mỗi asset là đạt hay không đạt, kèm danh sách lỗi cụ thể và cách sửa.
