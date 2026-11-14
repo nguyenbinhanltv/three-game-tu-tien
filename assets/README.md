@@ -55,7 +55,7 @@ Sau đó chạy subagent `asset-validator` để soát bằng mắt những gì 
 ## Thêm một asset
 
 1. Tạo `assets/source/<loại>/<id>/meta.json` (theo schema) và đặt file lớn vào `../dtl-asset-source/<loại>/<id>/`.
-2. Đưa GLB thô vào `assets/build/raw/<id>.glb` (job Blender trong `tools/blender/run.mjs`, hoặc `import_tripo.py` khi có M2-2).
+2. Đưa GLB thô vào `assets/build/raw/<id>.glb` (job Blender trong `tools/blender/run.mjs`, hoặc `import_tripo.py` khi có M2-2). Job có trường `source` (ví dụ `prop_phi_kiem`: lưới Tripo v02 tô màu bằng `recolor_phi_kiem.py`) đọc file trong `DTL_ASSET_SOURCE`; máy không có thư mục nguồn thì job bị bỏ qua kèm cảnh báo, GLB build đã commit vẫn dùng được.
 3. Thêm dòng vào `assets/LICENSES.md`.
 4. `pnpm assets:build --only <id>` rồi `pnpm assets:validate --only <id>`; xem trong trang `?viewer=asset`.
 5. Commit `meta.json`, dòng LICENSES, GLB có hash và `manifest.json`.

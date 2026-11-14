@@ -48,6 +48,7 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `arch_sect` | Tự sinh bằng script `tools/blender/build_sect.py` (Blender headless) | dự án | 2026-11-12 | Kiến trúc Lạc Kiếm Tông; không có texture, chỉ màu đỉnh |
 | `prop_lo_dan` | Tripo API (image→3D v3.1) + Codex (concept) | dự án | 2026-11-15 | task `bf2c9afd-c009-472c-abb5-21b01acdc63d` |
 | `prop_linh_thao` | Tripo API (image→3D v3.1) + Codex (concept) | dự án | 2026-11-15 | task `eec1fb46-1922-479c-95c4-939052c05a4b` |
+| `prop_phi_kiem` | Tripo API (multiview→3D v3.1, chỉ lấy hình) + Codex (concept); màu tô bằng script `tools/blender/recolor_phi_kiem.py` | dự án | 2026-11-15 | task `70d2072c-c993-4c70-a8d2-82931408bcc1` |
 
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 
