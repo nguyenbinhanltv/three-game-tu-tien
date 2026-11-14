@@ -729,12 +729,11 @@ export class Game {
       return;
     }
     // M1-11: bấm trong 0,4 giây cuối thời gian chờ thì giữ lại, gửi khi hết chờ (xem `SkillQueue`).
-    if (this.skillQueue.press(i, Date.now(), this.skillReadyAt(i)) === 'queued') {
-      set({ queuedSkill: i });
-      return;
-    }
-    set({ queuedSkill: -1 });
-    this.fireSkill(i);
+    // Còn chờ lâu hơn cửa sổ thì vẫn gửi ngay như cũ và chiêu đang chờ (nếu có) giữ nguyên,
+    // nên UI luôn lấy theo ô thật trong hàng đợi.
+    const res = this.skillQueue.press(i, Date.now(), this.skillReadyAt(i));
+    set({ queuedSkill: this.skillQueue.slot });
+    if (res === 'send') this.fireSkill(i);
   }
 
   /** Thời điểm (đồng hồ client, ms) ô chiêu `i` dùng lại được: sau cả GCD lẫn hồi chiêu riêng. */
