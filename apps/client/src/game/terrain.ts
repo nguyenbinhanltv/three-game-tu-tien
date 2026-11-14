@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { createWorldMaterial } from '../render/materials/world';
 import {
   COLLIDERS,
   fbm,
@@ -281,9 +282,9 @@ interface TileRec {
 
 export class Terrain {
   group = new THREE.Group();
-  material = new THREE.MeshLambertMaterial({ vertexColors: true });
+  material = createWorldMaterial({ vertexColors: true });
   /** Cây, bụi: làm mờ khi đứng chắn giữa camera và nhân vật. */
-  vegMaterial = withSightFade(new THREE.MeshLambertNodeMaterial({ vertexColors: true }));
+  vegMaterial = withSightFade(createWorldMaterial({ vertexColors: true }));
   private tiles = new Map<number, TileRec>();
   private coarse: THREE.Mesh;
   private coarseIndex: THREE.BufferAttribute;
