@@ -83,6 +83,8 @@ export class ViewerScene {
 
     this.controls = new OrbitControls(this.camera, r.domElement);
     this.controls.enableDamping = true;
+    // Giữ camera trên mặt sân; nhìn từ dưới lên chỉ thấy mặt sau của sàn.
+    this.controls.maxPolarAngle = Math.PI / 2 - 0.02;
     this.frameBounds(new THREE.Box3().setFromObject(this.human));
 
     // Decoder/transcoder lấy từ node_modules qua URL do Vite sinh, không chép vào public/.
