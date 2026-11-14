@@ -31,6 +31,8 @@
 // chỉ dùng phi thương mại và phải ghi nguồn: điền `credit` cho từng bài, mục "Nguồn nhạc" trong
 // Cài đặt đọc trường này. Id bài nhạc theo máy trạng thái trong music.ts (MUSIC_TRACKS).
 
+import { bellPartials } from './lootBell';
+
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
 type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend';
 /** Âm chỉ có bản file (thiếu file thì im lặng hoặc mượn âm tổng hợp gần nhất theo SYNTH_ALIAS). */
@@ -552,6 +554,23 @@ export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }): void 
   if (now - (lastPlayed.get(name) ?? 0) < 45) return;
   lastPlayed.set(name, now);
   emit(name, volume, at, true);
+}
+
+/** Phát chuông đồ rơi (âm tổng hợp, bus giao diện). Tắt tiếng (`?mute=1`) thì im. */
+export function lootChime(tier: 0 | 1 | 2, volume = 1): void {
+  if (muted || volume <= 0.02) return;
+  const c = ensure();
+  if (!c || c.state !== 'running') return;
+  // Nhiều món rơi cùng lúc: không chồng chuông dày hơn 70 ms một tiếng.
+  const now = performance.now();
+  if (now - (lastPlayed.get('loot_bell') ?? 0) < 70) return;
+  lastPlayed.set('loot_bell', now);
+  const o = c.createGain();
+  o.gain.value = SYNTH_GAIN * volume;
+  o.connect(voiceOut(c, 'ui'));
+  for (const p of bellPartials(tier)) tone(o, p.freq, p.freq * 0.998, p.dur, 'sine', p.gain, p.delay);
+  if (tier === 2) duck(0.25, 0.8, 0.8);
+  stats.synth++;
 }
 
 const SYNTH_NAMES = new Set<string>(['sword', 'slash', 'rain', 'thunder', 'hit', 'hurt', 'heal', 'shield', 'levelup', 'loot', 'quest', 'death', 'fly', 'gather', 'ascend']);

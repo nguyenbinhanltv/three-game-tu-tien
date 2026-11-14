@@ -45,10 +45,12 @@ import {
   type SysMsg,
   type TransferMsg,
 } from '@dtl/shared';
-import { hasString, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
+import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
-import { type Sfx, setListener, sfx, unlockAudio } from './audio';
-import { EntityManager, type MState, type PState, type WorldView } from './entities';
+import { lootChime, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { LootFly } from './lootFly';
+import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
+import { EntityManager, type MonVis, type MState, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
@@ -195,6 +197,14 @@ export class Game {
   ents!: EntityManager;
   vfx!: Vfx;
   dmg!: DamageNumbers;
+  lootFly!: LootFly;
+  private lootLayer: HTMLDivElement | null = null;
+  /** Lần rơi gần nhất theo nguồn (để các món cùng một con quái tỏa ra lệch nhau). */
+  private lootSlots = new Map<string, { at: number; n: number }>();
+  /** Đồ rơi bậc cao nhất đang nằm trên đất (cho chỉ báo ngoài màn hình). */
+  private rareLoot: { key: string; item: string; pos: THREE.Vector3; until: number }[] = [];
+  /** Lần cuối vẽ vệt mực đòn nặng theo nạn nhân (giới hạn tần suất). */
+  private inkHitAt = new Map<string, number>();
   offscreen!: OffscreenIndicators;
   minimap!: HTMLCanvasElement;
   private stage: HTMLElement;
@@ -319,9 +329,14 @@ export class Game {
     this.bindRoom(room);
     this.ents?.dispose();
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents.onMonsterDeath = (m) => this.monsterInk(m);
     this.snapToServer = true;
     this.dmg?.clear();
     this.offscreen?.clear();
+    this.lootFly?.clear();
+    this.rareLoot.length = 0;
+    this.lootSlots.clear();
+    this.inkHitAt.clear();
   }
   private snapToServer = true;
 
@@ -459,6 +474,11 @@ export class Game {
     this.stage.appendChild(offLayer);
     this.offscreen = new OffscreenIndicators(offLayer);
     this.offscreen.enabled = get().offscreen;
+    // Icon đồ rơi bay vào nút túi: lớp cố định trên cả HUD (stage nằm dưới HUD).
+    this.lootLayer = document.createElement('div');
+    this.lootLayer.className = 'loot-layer';
+    document.body.appendChild(this.lootLayer);
+    this.lootFly = new LootFly(this.lootLayer);
 
     this.env = new Environment(this.scene, q.shadows);
     mark('env');
@@ -487,6 +507,7 @@ export class Game {
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents.onMonsterDeath = (m) => this.monsterInk(m);
     this.minimap = renderMinimap(320);
     mark('minimap');
     this.startedAt = t0;
@@ -902,12 +923,100 @@ export class Game {
     const type = m.t ?? 'info';
     pushLog(text, type);
     if (type === 'good' || type === 'bad' || type === 'info') pushToast(text, type);
-    if (type === 'loot') sfx('loot', 0.7);
+    // Đồ rơi từ quái/điểm hái (M4-6): vật có hình thì chuông ngân lúc chạm đất thay cho tiếng xu.
+    const shown = type === 'loot' && !!m.src && this.showLoot(m.src, m.i);
+    if (type === 'loot' && (!shown || !m.i)) sfx('loot', 0.7);
     else if (type === 'bad') sfx('ui_error', 0.8);
     if (m.k === 'sys.fly_no_mp') {
       this.wantFly = false;
       set({ wantFly: false });
     }
+  }
+
+  private pruneRareLoot(): void {
+    const now = performance.now();
+    for (let i = this.rareLoot.length - 1; i >= 0; i--) if (this.rareLoot[i].until < now) this.rareLoot.splice(i, 1);
+  }
+
+  /** Vệt mực mờ dưới chân nạn nhân đòn nặng (M4-14), tối đa một vệt mỗi 0,4 giây mỗi nạn nhân. */
+  private heavyInk(dst: string, src: string | undefined): void {
+    const v = this.vfx;
+    const e = this.ents;
+    if (!v || !e) return;
+    const now = performance.now();
+    if (now - (this.inkHitAt.get(dst) ?? -1e9) < 400) return;
+    const d = e.monsters.get(dst) ?? e.players.get(dst);
+    if (!d) return;
+    this.inkHitAt.set(dst, now);
+    if (this.inkHitAt.size > 64) for (const [k, at] of this.inkHitAt) if (now - at > 400) this.inkHitAt.delete(k);
+    const s = src ? (e.players.get(src) ?? e.monsters.get(src)) : undefined;
+    // Không rõ người đánh: hướng vệt theo camera nhìn tới.
+    const fx = s ? s.x : this.camera.position.x;
+    const fz = s ? s.z : this.camera.position.z;
+    v.inkStreak(d.x, d.z, fx, fz, e.monsters.has(dst) ? 0.75 : 0.6);
+  }
+
+  /** Quái đang thấy vừa gục (M4-14): mực văng ra rồi loang thành vết trên đất, tan dần sau vài giây. */
+  private monsterInk(m: MonVis): void {
+    const v = this.vfx;
+    if (!v || Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > 70) return;
+    const h = m.model.height;
+    const size = Math.min(2.4, Math.max(0.8, h / 1.6));
+    _v2.set(m.x, m.y + h * 0.5, m.z);
+    v.burst(_v2, 0xdce6df, 0.9 * size, 0.3);
+    v.inkBurst(_v2, size);
+    v.inkSplat(m.x, m.z, Math.min(4.5, Math.max(1.1, h * 0.8)));
+  }
+
+  /**
+   * Vẽ một món đồ rơi (M4-6) nảy ra từ quái/điểm hái `src`. `item` không có = vàng. Chỉ là lớp hình:
+   * món đồ đã vào túi ở server. Trả false nếu không có vị trí để vẽ (nguồn đã mất khỏi trạng thái room).
+   */
+  private showLoot(src: string, item: string | undefined): boolean {
+    const v = this.vfx;
+    const e = this.ents;
+    if (!v || !e) return false;
+    const from = new THREE.Vector3();
+    if (!e.chestOf(src, from)) {
+      const n = this.view.nodes.get(src) ?? this.view.monsters.get(src);
+      if (!n) return false;
+      from.set(n.x, n.y + 0.8, n.z);
+    }
+    if (from.distanceTo(this.renderPos) > 80) return false;
+    if (!item) {
+      v.goldDrop(from);
+      return true;
+    }
+    const def = ITEM.get(item);
+    if (!def) return false;
+    const now = performance.now();
+    const prev = this.lootSlots.get(src);
+    const slot = prev && now - prev.at < 600 ? prev.n + 1 : 0;
+    this.lootSlots.set(src, { at: now, n: slot });
+    if (this.lootSlots.size > 32) for (const [k, s] of this.lootSlots) if (now - s.at > 600) this.lootSlots.delete(k);
+    const tier = lootTier(def.rarity);
+    const fallback = def.iconFallback ?? '❔';
+    const land = v.lootDrop(
+      from,
+      tier,
+      slot,
+      () => lootChime(tier, 0.9),
+      (at) => {
+        _v.copy(at).project(this.camera);
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        // Sau lưng camera hoặc ngoài màn hình: bắt đầu từ mép gần nhất.
+        const sx = _v.z > 1 ? w / 2 : Math.min(w - 20, Math.max(20, (_v.x * 0.5 + 0.5) * w));
+        const sy = _v.z > 1 ? h - 40 : Math.min(h - 20, Math.max(20, (-_v.y * 0.5 + 0.5) * h));
+        this.lootFly.spawn(def.icon, fallback, sx, sy, tier);
+      },
+    );
+    if (tier === 2) {
+      this.pruneRareLoot();
+      const hold = LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[2].hold + Math.min(slot, 5) * 0.12;
+      this.rareLoot.push({ key: src + ':' + item + ':' + now, item, pos: land, until: now + hold * 1000 });
+    }
+    return true;
   }
 
   private onFx(m: FxMsg): void {
@@ -1105,6 +1214,7 @@ export class Game {
       if (mine && m.hv) this.shake.kick(SHAKE.heavy);
     }
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
+    if (m.hv && !m.heal && m.n > 0) this.heavyInk(m.dst, m.src);
     if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
     let cls = 'other';
     if (m.heal) cls = 'heal';
@@ -1311,6 +1421,7 @@ export class Game {
     this.tickCombat(now, me);
     this.post!.render();
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
+    this.lootFly.update(dt);
     if (me && this.started) this.offscreen.update(this.camera, window.innerWidth, window.innerHeight, rp);
 
     this.fpsAcc += dt;
@@ -1579,6 +1690,12 @@ export class Game {
       }
       out.push({ key: qid + ':' + key, kind: goal.kind === 'node' ? 'gather' : 'quest', label, icon: goal.kind === 'node' ? goal.item : undefined, pos, span: goal.kind === 'mon' && 'id' in spot ? spanOf(spot.id) : 0.8 });
     } while (false);
+    // Đồ rơi quý (M4-6) đang nằm trên đất ngoài khung nhìn: chỉ trong lúc cột sáng còn đứng.
+    this.pruneRareLoot();
+    for (const l of this.rareLoot) {
+      const p = l.pos;
+      out.push({ key: l.key, kind: 'loot', label: itemName(l.item), icon: ITEM.get(l.item)?.icon, pos: (o) => (o.copy(p), true), span: 0.4 });
+    }
     return out;
   }
 
@@ -1684,6 +1801,8 @@ export class Game {
     this.sectAsset = null;
     this.sectMat.dispose();
     this.dmg?.clear();
+    this.lootFly?.clear();
+    this.lootLayer?.remove();
     this.offscreen?.dispose();
     this.stage.replaceChildren();
     this.renderer?.dispose();
