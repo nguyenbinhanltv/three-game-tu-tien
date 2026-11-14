@@ -2,7 +2,9 @@ import * as THREE from 'three/webgpu';
 import { DUNGEON_EXIT, groundAt, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
 import { MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
 import type { QuestView } from '@dtl/shared';
-import { buildNode, disposeLabel, Humanoid, makeLabel, MonsterModel } from './models';
+import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
+import type { AnimState, CharacterView, MonsterView } from './character/view';
+import { MonsterSkins } from './character/monsterSkins';
 import { hitStopFor } from './hitreact';
 import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
 import { HpTrail } from './hpTrail';
@@ -109,7 +111,7 @@ class BarState {
 }
 
 export class PlayerVis {
-  model: Humanoid;
+  model: CharacterView;
   label: THREE.Sprite;
   bar = new BarState(1.3, BAR_ALLY);
   x = 0;
@@ -150,7 +152,9 @@ export class PlayerVis {
 }
 
 export class MonVis {
-  model: MonsterModel;
+  model: MonsterView;
+  /** Đang dùng model khối tạm trong lúc asset model mới còn nạp. */
+  skinPending: boolean;
   label: THREE.Sprite | null = null;
   bar: BarState;
   /** Độ cao tâm thanh trên đầu so với chân (m, đã tính scale). */
@@ -165,15 +169,28 @@ export class MonVis {
   constructor(
     public id: string,
     public s: MState,
+    skins: MonsterSkins,
   ) {
     const def = MONSTER.get(s.t)!;
-    this.model = new MonsterModel(def);
+    this.model = skins.create(def);
+    this.skinPending = skins.pending(def);
     this.bar = new BarState(def.boss ? 3 : 1.5, def.boss ? BAR_BOSS : BAR_ENEMY);
     this.barY = this.model.height + 0.35 * def.scale;
     this.x = s.x;
     this.y = s.y;
     this.z = s.z;
     this.yaw = s.yaw;
+  }
+  /** Asset model mới nạp xong: thay model khối tạm bằng model mới (giữ nhãn, vị trí). */
+  swapModel(next: MonsterView, myLevel: number): void {
+    const parent = this.model.root.parent;
+    if (this.label) this.model.root.remove(this.label);
+    this.model.root.removeFromParent();
+    this.model.dispose();
+    this.model = next;
+    this.barY = next.height + 0.35 * next.def.scale;
+    parent?.add(next.root);
+    this.refreshLabel(myLevel);
   }
   refreshLabel(myLevel: number) {
     if (this.label) {
@@ -192,6 +209,7 @@ export class MonVis {
   }
   dispose() {
     if (this.label) disposeLabel(this.label);
+    this.model.dispose();
   }
 }
 
@@ -225,6 +243,8 @@ function makeMarker(ch: string, color: string): THREE.Texture {
 export type PickResult = { kind: 'mon' | 'npc' | 'node' | 'player'; id: string } | null;
 
 const _v = new THREE.Vector3();
+/** AnimState dùng lại cho quái (không cấp phát mỗi khung). */
+const _monAnim: AnimState = { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, combat: false };
 
 export class EntityManager {
   group = new THREE.Group();
@@ -238,6 +258,8 @@ export class EntityManager {
   private markerDone = makeMarker('?', '#ffd84a');
   private markerWait = makeMarker('?', '#9aa3ad');
   private time = 0;
+  /** Dựng model quái (model có xương hoặc khối); giữ asset mẫu suốt đời EntityManager. */
+  private skins = new MonsterSkins();
   hasNpcs: boolean;
 
   constructor(
@@ -246,6 +268,7 @@ export class EntityManager {
     levelId: string,
   ) {
     scene.add(this.group);
+    this.skins.preload();
     this.hasNpcs = levelId === 'van_lam';
     if (this.hasNpcs) {
       for (const n of NPCS) {
@@ -381,7 +404,7 @@ export class EntityManager {
       const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
       if (!v) {
         if (d2 > 240 * 240 || !MONSTER.has(s.t)) return;
-        v = new MonVis(id, s);
+        v = new MonVis(id, s, this.skins);
         this.monsters.set(id, v);
         this.group.add(v.model.root);
       } else if (d2 > 280 * 280) {
@@ -391,6 +414,12 @@ export class EntityManager {
         return;
       }
       v.s = s;
+      if (v.skinPending && !this.skins.pending(v.model.def)) {
+        v.skinPending = false;
+        const next = this.skins.create(v.model.def);
+        if (next.constructor !== v.model.constructor) v.swapModel(next, myLevel);
+        else next.dispose();
+      }
       if (v.lv !== s.lv) v.refreshLabel(myLevel);
       const ox = v.x;
       const oz = v.z;
@@ -412,7 +441,11 @@ export class EntityManager {
       const dead = s.st === MS_DEAD;
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
-      v.model.update(dt, v.speed, dead);
+      _monAnim.speed = v.speed;
+      _monAnim.dead = dead;
+      _monAnim.combat = s.st === MS_CHASE || s.st === MS_ATTACK;
+      v.model.setViewDistance?.(Math.sqrt(d2));
+      v.model.update(dt, _monAnim);
       v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3);
       const vv = v as MonVis & { deadFor?: number };
       vv.deadFor = dead ? (vv.deadFor ?? 0) + dt : 0;
@@ -598,6 +631,7 @@ export class EntityManager {
   dispose(): void {
     for (const v of this.players.values()) v.dispose();
     for (const v of this.monsters.values()) v.dispose();
+    this.skins.dispose();
     for (const n of this.npcs) {
       disposeLabel(n.label);
       n.marker.material.dispose();
