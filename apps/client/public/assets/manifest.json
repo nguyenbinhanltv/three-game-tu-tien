@@ -67,6 +67,87 @@
         }
       }
     },
+    "chr_kiem_tu_nam": {
+      "id": "chr_kiem_tu_nam",
+      "class": "player",
+      "source": "assets/build/raw/chr_kiem_tu_nam.glb",
+      "file": "chr_kiem_tu_nam.fb22c04775.glb",
+      "bytes": 1868600,
+      "rawBytes": 2213704,
+      "triangles": 19001,
+      "rawTriangles": 19001,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 54,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "chr_kiem_tu_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "chr_kiem_tu_nam_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "chr_kiem_tu_nam_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19001
+        },
+        {
+          "level": 1,
+          "triangles": 7595,
+          "target": 7600
+        },
+        {
+          "level": 2,
+          "triangles": 2849,
+          "target": 2850
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.5025,
+          "height": 1.75,
+          "depth": 0.4409,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.5025,
+          "height": 1.75,
+          "depth": 0.4409,
+          "minY": 0
+        }
+      }
+    },
     "mon_soi_xam": {
       "id": "mon_soi_xam",
       "class": "monster",

@@ -93,6 +93,12 @@ function tripoJobs() {
       console.warn(`[blender] CẢNH BÁO: ${m.data.id}: thiếu GLB nguồn ${glb}, bỏ qua.`);
       continue;
     }
+    const clips = (m.data.import.clips ?? []).map((c) => path.join(src, c.source));
+    const missingClip = clips.find((c) => !fs.existsSync(c));
+    if (missingClip) {
+      console.warn(`[blender] CẢNH BÁO: ${m.data.id}: thiếu GLB clip ${missingClip}, bỏ qua.`);
+      continue;
+    }
     const post = m.data.import.post ? path.join(root, m.data.import.post) : null;
     if (post && !fs.existsSync(post)) {
       console.error(`[blender] LỖI ${m.data.id}: import.post trỏ tới ${m.data.import.post} nhưng file không tồn tại`);
@@ -102,7 +108,7 @@ function tripoJobs() {
       id: m.data.id,
       script: path.relative(root, importScript),
       args: [glb, out(m.data.id), '--meta', m.file, '--budgets', budgetsFile],
-      deps: [importScript, m.file, budgetsFile, glb, ...(post ? [post] : [])],
+      deps: [importScript, m.file, budgetsFile, glb, ...clips, ...(post ? [post] : [])],
     });
   }
   return jobs;

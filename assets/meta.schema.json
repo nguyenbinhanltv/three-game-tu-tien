@@ -66,6 +66,36 @@
           "description": "auto (mặc định): có cặp xương đùi trái/phải thì xoay cho bên trái nhân vật về +X, mặt nhìn +Z; thigh: bắt buộc có; none: không tự xoay."
         },
         "yaw": { "type": "number", "description": "Xoay thêm quanh +Y (độ, ngược chiều kim đồng hồ nhìn từ trên) sau bước orient, để mặt trước nhìn về +Z." },
+        "clips": {
+          "type": "array",
+          "description": "Clip lấy từ các GLB khác cùng bộ xương (Tripo xuất mỗi clip một file), do script post (ví dụ tools/blender/anim_biped_extra.py) ghép vào. source tương đối DTL_ASSET_SOURCE; start/end (giây) để cắt đoạn.",
+          "items": {
+            "type": "object",
+            "required": ["source", "name"],
+            "additionalProperties": false,
+            "properties": {
+              "source": { "type": "string" },
+              "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+              "start": { "type": "number", "minimum": 0 },
+              "end": { "type": "number", "exclusiveMinimum": 0 },
+              "recenter": { "type": "boolean", "description": "Đưa hông về vị trí ngang của idle (clip có sẵn độ lệch gốc)." },
+              "loop": { "type": "boolean", "description": "Dồn đều chênh lệch cuối-đầu để clip lặp khít." }
+            }
+          }
+        },
+        "rigid": {
+          "type": "array",
+          "description": "Phụ kiện gán cứng vào một xương (script post anim_biped_extra.py), ví dụ kiếm đeo sau lưng bị Tripo skin như cơ thể.",
+          "items": {
+            "type": "object",
+            "required": ["kind", "bone"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": { "enum": ["back_sword"] },
+              "bone": { "type": "string", "description": "Hậu tố tên xương, ví dụ spine2." }
+            }
+          }
+        },
         "post": {
           "type": "string",
           "pattern": "^tools/blender/[a-z0-9_]+\\.py$",
