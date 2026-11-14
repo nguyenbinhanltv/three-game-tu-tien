@@ -23,6 +23,7 @@ export interface ItemDef {
   /** 0 phàm, 1 lương, 2 thượng, 3 cực phẩm. */
   rarity: number;
   icon: string;
+  iconFallback?: string;
   reqLevel?: number;
   stats?: StatBlock;
   use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number };
@@ -124,6 +125,7 @@ export interface SkillDef {
   id: string;
   kind: SkillKind;
   icon: string;
+  iconFallback?: string;
   /** Cảnh giới (level) mở khóa. */
   unlock: number;
   range: number;
