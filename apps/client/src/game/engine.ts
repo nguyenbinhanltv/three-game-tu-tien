@@ -544,6 +544,11 @@ export class Game {
       }
       if (this.dragMoved <= 4 && e.button === 0) this.onClick(e.clientX, e.clientY);
     });
+    // Mất capture mà không có pointerup (trình duyệt hủy, đổi cửa sổ): dừng kéo ngay, không chờ pointermove.
+    // Sự kiện này đến sau pointerup thường, lúc đó dragging đã là false nên không ảnh hưởng cú bấm.
+    this.on(c, 'lostpointercapture', () => {
+      this.dragging = false;
+    });
     this.on(document as unknown as HTMLElement, 'mousemove', (e: MouseEvent) => {
       if (!this.locked) return;
       this.mouseLook(e.movementX, e.movementY);
@@ -622,6 +627,8 @@ export class Game {
     if (code === 'Space' || code.startsWith('Arrow')) e.preventDefault();
     if (e.repeat) return;
     // Nhấn một hướng thì bỏ hướng ngược lại (phòng phím kia đã mất sự kiện thả).
+    // Đánh đổi có chủ ý: giữ W, chạm S rồi thả thì nhân vật dừng, phải nhấn lại W. Không khôi phục W
+    // khi thả S, vì nếu W chính là phím đã mất keyup thì khôi phục sẽ làm kẹt lại.
     const opp = OPPOSITE_KEY[code];
     if (opp) this.keys.delete(opp);
     this.keys.add(code);
