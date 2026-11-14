@@ -35,6 +35,11 @@ export class TitleBackdrop {
   private last = 0;
   private frames = 0;
   private disposed = false;
+  /**
+   * Trạng thái tạm dừng ghi nhận cả khi `start()` còn chờ `renderer.init()`: đăng nhập nhanh
+   * (`?auto=`) có thể chuyển sang phase loading trước khi init xong, lúc đó không được chạy vòng vẽ.
+   */
+  private paused = false;
   private onResize = () => this.resize();
 
   /** `onReady` gọi một lần khi địa hình quanh sơn môn đã dựng xong và đã vẽ vài khung. */
@@ -72,18 +77,20 @@ export class TitleBackdrop {
     this.post = new PostPipeline(r, this.scene, this.camera, { bloom: !this.low, msaa: 0, fxaa: !this.low });
     this.resize();
     window.addEventListener('resize', this.onResize);
-    this.last = performance.now();
-    this.resume();
+    if (!this.paused) this.resume();
     void this.loadSectModel();
   }
 
   /** Ngừng vẽ (giữ khung cuối trên canvas), ví dụ khi Game đang dựng thế giới. */
   pause(): void {
+    this.paused = true;
     this.renderer?.setAnimationLoop(null);
   }
 
+  /** Chạy lại vòng vẽ; gọi trước khi `start()` xong thì chỉ ghi nhận, `start()` sẽ tự chạy. */
   resume(): void {
-    if (!this.renderer || this.disposed) return;
+    this.paused = false;
+    if (!this.renderer || !this.post || this.disposed) return;
     this.last = performance.now();
     this.renderer.setAnimationLoop(() => this.frame());
   }
