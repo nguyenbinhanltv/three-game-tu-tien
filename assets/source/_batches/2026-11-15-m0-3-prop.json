@@ -1,0 +1,60 @@
+{
+  "batch": "2026-11-15-m0-3-prop",
+  "approvedBy": "người dùng (nguyên văn \"Cho phép\", chuyển qua orchestrator three-game-tu-tien-1)",
+  "approvedAt": "2026-11-15T01:31+07:00",
+  "cap": 200,
+  "rules": "dry-run trước; chạy nếu tổng báo giá <= 200 và giữ lại >= 100; mỗi prop 1 lần, không redo khi chưa hỏi",
+  "quote": 150,
+  "balanceBefore": 1000,
+  "balanceAfter": 850,
+  "jobs": [
+    {
+      "asset": "prop_lo_dan",
+      "version": 1,
+      "taskId": "bf2c9afd-c009-472c-abb5-21b01acdc63d",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok"
+    },
+    {
+      "asset": "prop_linh_thao",
+      "version": 1,
+      "taskId": "eec1fb46-1922-479c-95c4-939052c05a4b",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok"
+    },
+    {
+      "asset": "prop_phi_kiem",
+      "version": 1,
+      "taskId": "e74aa433-0cd6-4b6e-bb5e-e2e41f314e00",
+      "quote": 50,
+      "credits": 50,
+      "result": "rejected"
+    }
+  ],
+  "usage": [
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "e74aa433-0cd6-4b6e-bb5e-e2e41f314e00",
+      "created_at": "2026-11-14T18:39:52.419882Z",
+      "credits_consumed": 50
+    },
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "eec1fb46-1922-479c-95c4-939052c05a4b",
+      "created_at": "2026-11-14T18:36:56.235999Z",
+      "credits_consumed": 50
+    },
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "bf2c9afd-c009-472c-abb5-21b01acdc63d",
+      "created_at": "2026-11-14T18:31:43.996968Z",
+      "credits_consumed": 50
+    }
+  ],
+  "notes": "Báo giá khớp thực tế: 150/150 credit, mỗi việc 50, không lỗi tác vụ. Tripo trả số tam giác cao hơn face_limit (lò đan 5960/4000, linh thảo 2897/1500, phi kiếm 3221/2500) và texture 4096² dù texture_quality=detailed; mọi model bị chuẩn hóa cao 1 m, gốc ở tâm. Phi kiếm v01 bị loại (lưỡi gãy khúc). Thời gian mỗi việc khoảng 3-5 phút."
+}

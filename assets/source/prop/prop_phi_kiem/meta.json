@@ -1,0 +1,83 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_phi_kiem",
+  "type": "prop",
+  "budgetClass": "weapon",
+  "itemId": null,
+  "status": "concept_approved",
+  "budget": {
+    "faceLimit": 2500,
+    "texture": 512
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: single game prop, a straight double-edged Chinese sword (jian) about 1 meter long,\npolished steel blade with a satin finish and a clearly visible central ridge, blade thick enough to read as a solid shape,\na small flat bronze (#AE8B49) jian hand guard shaped like a stylized cloud, grip wrapped in deep navy (#22364E) cord, round bronze pommel,\na short cinnabar red (#9D392E) silk tassel hanging from the pommel, gathered into one compact solid shape,\nthree-quarter view, the blade pointing to the upper right at 45 degrees, the whole sword complete in frame,\nsolid construction, no loose small parts.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: steel, bronze, silk cord,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): cool steel grey for the blade, bronze (#AE8B49), deep navy (#22364E), cinnabar red (#9D392E).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no engraved characters, no seal script, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke,\nno sword energy trail, no magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like reflections,\nno crossguard, no European sword shapes, no scabbard, no hand holding it, no stand,\nno background scenery, no second object, no cropped parts.\nVariant A: restrained slender straight blade, small shallow cloud guard, simple round pommel and short compact red tassel. Square 1024x1024. Entire tip to tassel inside 10 percent margins. Soft satin sheen, not a mirror. No purple tint, no snow. Single object only.",
+      "chosen": true
+    },
+    {
+      "file": "concept/concept_34_v02.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: single game prop, a straight double-edged Chinese sword (jian) about 1 meter long,\npolished steel blade with a satin finish and a clearly visible central ridge, blade thick enough to read as a solid shape,\na small flat bronze (#AE8B49) jian hand guard shaped like a stylized cloud, grip wrapped in deep navy (#22364E) cord, round bronze pommel,\na short cinnabar red (#9D392E) silk tassel hanging from the pommel, gathered into one compact solid shape,\nthree-quarter view, the blade pointing to the upper right at 45 degrees, the whole sword complete in frame,\nsolid construction, no loose small parts.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: steel, bronze, silk cord,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): cool steel grey for the blade, bronze (#AE8B49), deep navy (#22364E), cinnabar red (#9D392E).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no engraved characters, no seal script, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke,\nno sword energy trail, no magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like reflections,\nno crossguard, no European sword shapes, no scabbard, no hand holding it, no stand,\nno background scenery, no second object, no cropped parts.\nVariant B: slightly broader blade and stronger central ridge, slightly fuller low relief cloud guard, flattened round pommel, compact red tassel. Square 1024x1024. Entire tip to tassel inside 10 percent margins. Soft satin sheen, not a mirror. No purple tint, no snow. Single object only.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_front_v01.png",
+      "view": "front",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME straight jian sword around its long axis into strict orthographic FRONT broad blade face, camera perpendicular to blade. Same tip to pommel length, tip pointing upper right at 45 degrees, same endpoint positions in image. Same satin steel ridge, small bronze cloud guard, navy cord grip, round bronze pommel, compact red tassel. No added ornament, no wider guard, no curved blade. Square image, same margins.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: steel, bronze, silk cord,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): cool steel grey for the blade, bronze (#AE8B49), deep navy (#22364E), cinnabar red (#9D392E).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no engraved characters, no seal script, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke,\nno sword energy trail, no magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like reflections,\nno crossguard, no European sword shapes, no scabbard, no hand holding it, no stand,\nno background scenery, no second object, no cropped parts.\nNo snow, no purple tint. One sword.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_left_v01.png",
+      "view": "left",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME straight jian sword around its long axis into strict SIDE EDGE VIEW at exactly 90 degrees, blade seen edge-on as narrow straight solid strip, cloud guard edge-on. Same tip to pommel length, tip pointing upper right at 45 degrees, same endpoint positions in image. Same satin steel ridge, small bronze cloud guard, navy cord grip, round bronze pommel, compact red tassel. No added ornament, no wider guard, no curved blade. Square image, same margins.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: steel, bronze, silk cord,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): cool steel grey for the blade, bronze (#AE8B49), deep navy (#22364E), cinnabar red (#9D392E).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no engraved characters, no seal script, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke,\nno sword energy trail, no magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like reflections,\nno crossguard, no European sword shapes, no scabbard, no hand holding it, no stand,\nno background scenery, no second object, no cropped parts.\nNo snow, no purple tint. One sword.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_back_v01.png",
+      "view": "back",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME straight jian sword around its long axis into strict BACK broad blade face at exactly 180 degrees. Same tip to pommel length, tip pointing upper right at 45 degrees, same endpoint positions in image. Same satin steel ridge, small bronze cloud guard, navy cord grip, round bronze pommel, compact red tassel. No added ornament, no wider guard, no curved blade. Square image, same margins.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: steel, bronze, silk cord,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): cool steel grey for the blade, bronze (#AE8B49), deep navy (#22364E), cinnabar red (#9D392E).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no engraved characters, no seal script, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke,\nno sword energy trail, no magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like reflections,\nno crossguard, no European sword shapes, no scabbard, no hand holding it, no stand,\nno background scenery, no second object, no cropped parts.\nNo snow, no purple tint. One sword.",
+      "chosen": false
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "cli",
+      "version": 1,
+      "taskId": "e74aa433-0cd6-4b6e-bb5e-e2e41f314e00",
+      "parentTaskId": null,
+      "model": "v3.1-20260211",
+      "params": {
+        "face_limit": 2500,
+        "smart_low_poly": true,
+        "texture_quality": "detailed",
+        "pbr": true
+      },
+      "seed": null,
+      "quote": 50,
+      "credits": 50,
+      "batch": "2026-11-15-m0-3-prop",
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "rejected",
+      "note": "Loại: lưỡi kiếm gãy khúc ở ~55% và ~70% chiều dài, mất sống lưng (có sẵn trong GLB gốc Tripo; asset-validator xác nhận). GLB gốc 3221 tam giác (face_limit 2500), texture 4096², kiếm nghiêng ~45° như concept 3/4. Không đưa vào build. Đề xuất v02: multiview từ concept front/left/back hoặc concept kiếm thẳng trục; cần người dùng duyệt (50 credit)."
+    }
+  ],
+  "license": {
+    "source": "Tripo (API trả phí) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}
