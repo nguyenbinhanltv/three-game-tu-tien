@@ -2,6 +2,8 @@
   position: fixed;
   inset: 0;
   display: flex;
+  /* #root đặt pointer-events: none cho HUD game; viewer cần nhận chuột. */
+  pointer-events: auto;
   font: 13px/1.45 system-ui, sans-serif;
   color: #e7e3d8;
   background: #1b2128;
