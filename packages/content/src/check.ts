@@ -39,6 +39,28 @@ for (const it of ITEMS) {
 for (const m of MONSTERS) {
   needStr(`mon.${m.id}`);
   for (const d of m.drops) needItem(d.item, `monster ${m.id}`);
+  const combo = m.ai?.combo;
+  if (combo) {
+    if (!(combo.chance > 0 && combo.chance <= 1)) err(`monster ${m.id}: combo.chance phải trong (0, 1]`);
+    if (!(combo.delay >= 0.25 && combo.delay < m.attackCd)) err(`monster ${m.id}: combo.delay phải từ 0,25 tới dưới attackCd`);
+    if (!(combo.mul > 0 && combo.mul <= 3)) err(`monster ${m.id}: combo.mul phải trong (0, 3]`);
+  }
+  const cs = m.ai?.caster;
+  if (cs) {
+    if (m.boss) err(`monster ${m.id}: boss chưa hỗ trợ caster`);
+    if (!['circle', 'rect', 'cone'].includes(cs.shape)) err(`monster ${m.id}: caster.shape không hợp lệ`);
+    if (!['lightning', 'frost', 'fire', 'spirit'].includes(cs.kind)) err(`monster ${m.id}: caster.kind không hợp lệ`);
+    // Né bằng di chuyển phải làm được: vùng hiện ít nhất 0,9 giây, tổng thời gian báo trước ít nhất 1,5 giây.
+    if (!(cs.delay >= 0.9)) err(`monster ${m.id}: caster.delay phải >= 0,9 giây`);
+    if (!(cs.cast >= 0.3 && cs.cast + cs.delay >= 1.5)) err(`monster ${m.id}: caster.cast + delay phải >= 1,5 giây`);
+    if (!(cs.cd >= 2)) err(`monster ${m.id}: caster.cd phải >= 2 giây`);
+    if (!(cs.mul > 0 && cs.mul <= 3)) err(`monster ${m.id}: caster.mul phải trong (0, 3]`);
+    if (!(cs.range > 3 && cs.range <= m.aggro + 4)) err(`monster ${m.id}: caster.range phải trong (3, aggro + 4]`);
+    if (!(cs.r > 0 && cs.r <= 20)) err(`monster ${m.id}: caster.r phải trong (0, 20]`);
+    if ((cs.shape === 'rect' || cs.shape === 'cone') && cs.r < cs.range) err(`monster ${m.id}: caster.r phải >= range với hình rect/cone`);
+    if (cs.shape === 'rect' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 6)) err(`monster ${m.id}: rect cần w trong (0, 6]`);
+    if (cs.shape === 'cone' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 75)) err(`monster ${m.id}: cone cần w (nửa góc, độ) trong (0, 75]`);
+  }
 }
 for (const s of SKILLS) {
   needStr(`skill.${s.id}.name`);

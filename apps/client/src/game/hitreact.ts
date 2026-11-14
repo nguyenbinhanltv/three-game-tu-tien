@@ -9,8 +9,15 @@ import * as THREE from 'three/webgpu';
  */
 
 export const HIT_STOP_LIGHT = 0.07;
+export const HIT_STOP_HEAVY = 0.1;
 export const HIT_STOP_CRIT = 0.12;
 export const HIT_STOP_MAX = 0.15;
+
+/** Độ dài khựng theo cấp đòn: thường < nặng < chí mạng < chí mạng + nặng. */
+export function hitStopFor(crit: boolean, heavy: boolean): number {
+  if (crit) return heavy ? HIT_STOP_MAX : HIT_STOP_CRIT;
+  return heavy ? HIT_STOP_HEAVY : HIT_STOP_LIGHT;
+}
 
 const FLASH_MAT = new THREE.MeshBasicMaterial({ color: 0xfff6e8 });
 const FLASH_MAT_CRIT = new THREE.MeshBasicMaterial({ color: 0xffd36a });
@@ -22,6 +29,8 @@ const KNOCK_LIFE = 0.6;
 
 export interface HitOpts {
   crit?: boolean;
+  /** Đòn nặng (cờ `hv` từ server): khựng lâu hơn, giật lùi và rung mạnh hơn. */
+  heavy?: boolean;
   /** Hướng giật lùi trong hệ thế giới (không cần chuẩn hóa). Bỏ trống = không giật lùi. */
   dirX?: number;
   dirZ?: number;
@@ -68,7 +77,7 @@ export class HitReact {
 
   /** Bị trúng đòn: khựng + chớp + giật lùi + rung. */
   react(o: HitOpts): void {
-    const stop = o.crit ? HIT_STOP_CRIT : HIT_STOP_LIGHT;
+    const stop = hitStopFor(!!o.crit, !!o.heavy);
     if (o.delay && o.delay > 0) {
       if (this.pendHitT < 0) {
         this.pendHitT = o.delay;
@@ -109,12 +118,12 @@ export class HitReact {
     if (!o.noStop) this.stopT = Math.min(HIT_STOP_MAX, Math.max(this.stopT, stop));
     this.flashT = Math.max(this.flashT, Math.max(0.06, stop));
     this.shakeT = stop + 0.1;
-    this.shakeAmp = o.crit ? 0.09 : 0.05;
+    this.shakeAmp = (o.crit ? 0.09 : 0.05) + (o.heavy ? 0.03 : 0);
     const len = Math.hypot(o.dirX ?? 0, o.dirZ ?? 0);
     if (len > 1e-4) {
       this.dirX = (o.dirX ?? 0) / len;
       this.dirZ = (o.dirZ ?? 0) / len;
-      this.knockAmp = (o.crit ? 0.42 : 0.22) * Math.max(0.15, Math.min(1, o.mass ?? 1));
+      this.knockAmp = (o.crit ? 0.42 : 0.22) * (o.heavy ? 1.4 : 1) * Math.max(0.15, Math.min(1, o.mass ?? 1));
       this.knockT = 0;
     }
   }

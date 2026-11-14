@@ -23,6 +23,7 @@ import {
   type MoveCtx,
   type MoveInput,
   type MoveState,
+  MS_ATTACK,
   MS_DEAD,
   PF_CASTING,
   PF_DEAD,
@@ -48,6 +49,7 @@ import { Environment } from './env';
 import { MODEL_MAT } from './models';
 import { buildPortalDisc, buildSect } from './sect';
 import { renderMinimap, Terrain } from './terrain';
+import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
 
 export interface LoginOptions {
@@ -314,7 +316,11 @@ export class Game {
     room.onMessage(S.FX, (m: FxMsg) => this.onFx(m));
     room.onMessage(S.DMG, (m: DmgMsg) => this.onDmg(m));
     room.onMessage(S.HAZARD, (m: HazardMsg) => {
-      this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind);
+      // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
+      if (m.sh && this.vfx) {
+        if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m);
+      }
+      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind);
       const vol = this.volumeAt(m.x, m.z);
       setTimeout(() => sfx(m.kind === 'lightning' ? 'thunder' : 'slash', vol, m), m.delay * 1000);
     });
@@ -891,6 +897,13 @@ export class Game {
         v.charge(posSrc, m.d ?? 1, 0xfff0a8, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
         if (src === this.sid) set({ castEnd: Date.now() + (m.d ?? 1) * 1000, castTotal: (m.d ?? 1) * 1000 });
         break;
+      case 'mcast':
+        // Quái đánh xa đọc chú: chỉ hiện quả cầu tụ lực; vùng báo trước tới sau qua S.HAZARD.
+        v.charge(posSrc, m.d ?? 1, 0xff9a6a, () => {
+          const st = this.view.monsters.get(src)?.st;
+          return st === MS_ATTACK;
+        });
+        break;
       case 'castend':
         if (src === this.sid) set({ castEnd: 0 });
         break;
@@ -948,7 +961,7 @@ export class Game {
       if (_v.distanceTo(this.renderPos) > 45) return;
     }
     // Hit feel chỉ là lớp hình. Chiêu của người chơi là đạn bay ~0,2 s nên trễ cho khớp lúc chạm.
-    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0);
+    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
     let cls = 'other';
     if (m.heal) cls = 'heal';
     else if (mine) cls = 'hurt';
