@@ -1227,3 +1227,20 @@ kbd {
     display: none;
   }
 }
+
+/* Shared inventory/ability atlas; retain overlays and parent rarity styling. */
+.content-icon {
+  display: inline-block;
+  width: 1.6em;
+  height: 1.6em;
+  flex-shrink: 0;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  line-height: 1.6;
+  text-align: center;
+}
+.skill-icon .content-icon { width: 52px; height: 52px; }
+.slot-icon .content-icon { width: 42px; height: 42px; }
+.slot.small .content-icon { width: 30px; height: 30px; }
+.skill-item-icon .content-icon { width: 30px; height: 30px; }

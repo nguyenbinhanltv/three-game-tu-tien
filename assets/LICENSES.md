@@ -58,3 +58,40 @@ Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi đ�
 | `amb_cave` | OpenGameArt: wind whoosh loop — SketchMan3; OpenGameArt: 20 Sword Sound Effects (Attacks and Clashes) — StarNinjas | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/wind-whoosh-loop — `oga/wind-whoosh-loop/`: wind_20woosh_20loop.ogg; https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — `oga/20-sword-sound-effects-attacks-and-clashes/sword_clash_-_starninjas_0/`: sword_clash.9.ogg |
 
 <!-- audio:end -->
+
+
+### Icon UI M4-7
+
+Sinh b?i c?ng c? t?o ?nh t?ch h?p Codex cho d? ?n ??p Thi?n L?; kh?ng d?ng t?i s?n ho?c khung icon c?a guizang. PNG g?c: `<DTL_ASSET_SOURCE>/icons/<id>.png`; prompt h? icon t?i `docs/prompts/codex.md` m?c 9 v? ch? th? t?i `tools/icons/subjects.json`. B?n runtime: `apps/client/public/assets/ui/icons.*.webp`; manifest l?u SHA-256 v? dung l??ng t?ng PNG ngu?n.
+
+| Asset | Ngu?n | Gi?y ph?p | Ng?y | Chi ti?t |
+| --- | --- | --- | --- | --- |
+| `skl_phi_kiem` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/skl_phi_kiem.png`, atlas 128px/? |
+| `skl_kiem_khi_tram` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/skl_kiem_khi_tram.png`, atlas 128px/? |
+| `skl_linh_khi_ho_the` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/skl_linh_khi_ho_the.png`, atlas 128px/? |
+| `skl_thien_kiem_vu` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/skl_thien_kiem_vu.png`, atlas 128px/? |
+| `skl_hoi_nguyen_thuat` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/skl_hoi_nguyen_thuat.png`, atlas 128px/? |
+| `skl_loi_dinh_nhat_kiem` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/skl_loi_dinh_nhat_kiem.png`, atlas 128px/? |
+| `itm_linh_thao` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_linh_thao.png`, atlas 128px/? |
+| `itm_huyet_linh_chi` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_huyet_linh_chi.png`, atlas 128px/? |
+| `itm_nanh_soi` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_nanh_soi.png`, atlas 128px/? |
+| `itm_yeu_dan` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_yeu_dan.png`, atlas 128px/? |
+| `itm_thiet_tinh` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_thiet_tinh.png`, atlas 128px/? |
+| `itm_han_giao_dan` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_han_giao_dan.png`, atlas 128px/? |
+| `itm_kiem_phach` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_kiem_phach.png`, atlas 128px/? |
+| `itm_truc_co_dan` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_truc_co_dan.png`, atlas 128px/? |
+| `itm_hoi_xuan_dan` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_hoi_xuan_dan.png`, atlas 128px/? |
+| `itm_hoi_khi_dan` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_hoi_khi_dan.png`, atlas 128px/? |
+| `itm_tu_khi_dan` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_tu_khi_dan.png`, atlas 128px/? |
+| `itm_moc_kiem` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_moc_kiem.png`, atlas 128px/? |
+| `itm_thiet_kiem` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_thiet_kiem.png`, atlas 128px/? |
+| `itm_thanh_phong_kiem` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_thanh_phong_kiem.png`, atlas 128px/? |
+| `itm_han_quang_kiem` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_han_quang_kiem.png`, atlas 128px/? |
+| `itm_tram_ta_kiem` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_tram_ta_kiem.png`, atlas 128px/? |
+| `itm_bo_y` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_bo_y.png`, atlas 128px/? |
+| `itm_dao_bao` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_dao_bao.png`, atlas 128px/? |
+| `itm_linh_ti_bao` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_linh_ti_bao.png`, atlas 128px/? |
+| `itm_huyen_van_bao` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_huyen_van_bao.png`, atlas 128px/? |
+| `itm_ngoc_boi` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_ngoc_boi.png`, atlas 128px/? |
+| `itm_huyen_thiet_gioi` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_huyen_thiet_gioi.png`, atlas 128px/? |
+| `itm_han_giao_hoan` | Sinh b?i Codex cho d? ?n | d? ?n | 2026-11-15 | `icons/itm_han_giao_hoan.png`, atlas 128px/? |
