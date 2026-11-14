@@ -42,7 +42,7 @@ import {
 } from '@dtl/shared';
 import { MONSTER, monsterName, realmName, SKILLS, t } from '@dtl/content';
 import { get, pushLog, pushToast, set, type TargetInfo, togglePanel, useUI } from '../ui/store';
-import { type Sfx, sfx, unlockAudio } from './audio';
+import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
@@ -293,7 +293,7 @@ export class Game {
     room.onMessage(S.HAZARD, (m: HazardMsg) => {
       this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind);
       const vol = this.volumeAt(m.x, m.z);
-      setTimeout(() => sfx(m.kind === 'lightning' ? 'thunder' : 'slash', vol), m.delay * 1000);
+      setTimeout(() => sfx(m.kind === 'lightning' ? 'thunder' : 'slash', vol, m), m.delay * 1000);
     });
     room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, 'chat', m.from));
     room.onMessage(S.KICK, (m: { k: string }) => {
@@ -865,11 +865,13 @@ export class Game {
     const name = map[t];
     if (!name) return;
     let vol = 1;
-    if (x !== undefined && z !== undefined) vol = this.volumeAt(x, z);
-    else if (this.ents.chestOf(src || dst, _v)) vol = this.volumeAt(_v.x, _v.z);
+    let at: { x: number; z: number } | undefined;
+    if (x !== undefined && z !== undefined) at = { x, z };
+    else if (this.ents.chestOf(src || dst, _v)) at = _v;
+    if (at) vol = this.volumeAt(at.x, at.z);
     // Tiếng của người khác nhỏ hơn tiếng của mình.
     if (src && src !== this.sid && dst !== this.sid) vol *= 0.6;
-    sfx(name, vol);
+    sfx(name, vol, at);
   }
 
   private onDmg(m: DmgMsg): void {
@@ -888,7 +890,7 @@ export class Game {
     if (m.heal) cls = 'heal';
     else if (mine) cls = 'hurt';
     else if (byMe) cls = m.crit ? 'crit' : 'hit';
-    if (!m.heal) sfx(mine ? 'hurt' : 'hit', mine || byMe ? 1 : this.volumeAt(_v.x, _v.z) * 0.5);
+    if (!m.heal) sfx(mine ? 'hurt' : 'hit', mine || byMe ? 1 : this.volumeAt(_v.x, _v.z) * 0.5, _v);
     const text = m.heal ? `+${m.n}` : m.n === 0 ? t('ui.absorbed') : mine ? `-${m.n}` : `${m.n}${m.crit ? '!' : ''}`;
     this.dmg.spawn(text, _v, cls);
   }
@@ -1039,6 +1041,7 @@ export class Game {
     }
     this.vfx.update(dt);
     this.updateCamera(dt);
+    setListener(rp.x, rp.z, this.camYaw);
     this.env.update(dt, this.camera, rp);
     for (const disc of [this.portalDisc, this.exitDisc]) {
       if (!disc) continue;
