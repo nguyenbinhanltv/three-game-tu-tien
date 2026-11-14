@@ -5,8 +5,18 @@ description: Chạy toàn bộ Đạp Thiên Lộ ở máy local (server Colyseu
 
 # Chạy thử và test tải
 
-> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM: `/gm level|xp|gold|give|tp|heal|killall|spawn|tick`. Trong console có `window.__game`.
+> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?mute=1&auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM: `/gm level|xp|gold|give|tp|heal|killall|spawn|tick`. Trong console có `window.__game`.
 > Khi khung trình duyệt tích hợp đang ẩn, `requestAnimationFrame` không chạy: bơm khung hình bằng `setInterval(() => { __game.renderer._nodes.nodeFrame.update(); __game.frame(); }, 16)` trước khi chụp ảnh (thiếu `nodeFrame.update()` thì pass cảnh không vẽ lại, ảnh chụp là khung cũ).
+
+## Luôn tắt tiếng
+
+Người dùng làm việc cạnh máy chạy thử, tiếng game gây ồn. Mọi lần mở game hoặc trang xem asset để chơi thử, chụp ảnh hay soát bằng mắt đều phải tắt tiếng:
+
+- URL luôn có `mute=1`, ghép với tham số khác bằng `&`: `?mute=1&auto=<tên>`, `?mute=1&dev=1`, `?mute=1&viewer=asset&file=...`. Client đọc tham số này trong `apps/client/src/game/audio.ts` và tắt mọi âm (nhạc, môi trường, SFX) ngay từ đầu.
+- Browser panel của Orchestrator (`ao browser open`) cũng dùng URL có `?mute=1`.
+- Tự chạy Chromium/Playwright thì thêm cờ `--mute-audio` (ví dụ `chromium.launch({ args: ['--mute-audio'] })`).
+- Đang có tab của mình phát tiếng thì đóng ngay, hoặc tải lại với `?mute=1`.
+- Bot (`apps/bot-client`) chỉ nối WebSocket, không mở trình duyệt nên không cần gì thêm.
 
 ## Khởi động
 
@@ -33,7 +43,7 @@ Nhiều worktree (nhiều agent) có thể cùng chạy `pnpm dev`, nhưng mỗi
   - PowerShell: `$env:AUTH_DEV_BYPASS=1; $env:PORT=2597; $env:CLIENT_PORT=5197; pnpm dev`. Biến sẽ còn trong cửa sổ đó.
   - Hoặc ghi `PORT=2597` và `CLIENT_PORT=5197` vào `apps/server/.env.local` của worktree. Cả server, Vite và bot đều đọc file này; biến môi trường thật được ưu tiên hơn.
   Mỗi worktree đã có DB riêng (`apps/server/data/game.db`). Nếu chạy hai stack trong cùng một worktree thì đặt thêm `DB_FILE=` riêng.
-- Mở `http://localhost:5197/?auto=<tên>` rồi xác nhận client nối đúng server: log server của mình phải có dòng `[join] <tên>`, hoặc `curl localhost:2597/health` phải thấy `online` tăng. Đặt đạo hiệu riêng cho mỗi worktree. Nếu log có tên lạ, đó là trình duyệt hoặc bot của session khác đã vào nhầm cổng của mình. Đừng dựa vào số `online` khi đó.
+- Mở `http://localhost:5197/?mute=1&auto=<tên>` rồi xác nhận client nối đúng server: log server của mình phải có dòng `[join] <tên>`, hoặc `curl localhost:2597/health` phải thấy `online` tăng. Đặt đạo hiệu riêng cho mỗi worktree. Nếu log có tên lạ, đó là trình duyệt hoặc bot của session khác đã vào nhầm cổng của mình. Đừng dựa vào số `online` khi đó.
 - Bot và security-check:
   - `SERVER_URL=ws://localhost:2597 pnpm bots --count 10 --duration 60`, hoặc `--url ws://localhost:2597`.
   - `PORT=2597 pnpm --filter @dtl/bot-client security`, hoặc truyền `http://localhost:2597` làm đối số.
@@ -42,7 +52,7 @@ Nhiều worktree (nhiều agent) có thể cùng chạy `pnpm dev`, nhưng mỗi
 
 ## Chơi thử trong trình duyệt
 
-- Mở `http://localhost:5173/?dev=1`, chờ màn hình loading xong, chụp ảnh để xác nhận cảnh hiển thị đúng.
+- Mở `http://localhost:5173/?mute=1&dev=1`, chờ màn hình loading xong, chụp ảnh để xác nhận cảnh hiển thị đúng.
 - Với tính năng nhiều người chơi, mở 2 tab với tài khoản dev khác nhau và kiểm tra cả hai thấy nhau.
 - Đọc console trình duyệt và log server; lỗi đỏ nào cũng phải giải thích hoặc sửa trước khi báo xong.
 - Kịch bản kiểm tra nhanh: vào game → đi lại → đánh 1 con quái → nhặt đồ → mở túi đồ → bật ngự kiếm bay một vòng → rời và vào lại xem đồ còn không.

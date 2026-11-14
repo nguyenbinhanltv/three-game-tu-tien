@@ -41,4 +41,4 @@ Cột "Hiện có" ghi đúng chỗ code đang nằm; cột "Hướng tới" là
 
 ## Kiểm tra bằng mắt
 
-- Sau khi sinh, mở trang xem asset `?viewer=asset&file=/assets/<id>.<hash>.glb` khi `pnpm dev` đang chạy (so với người chuẩn 1,7m, xem tam giác, draw call, clip) và chụp ảnh nhìn trước khi báo xong. Chưa có `render_preview.py` hay ảnh xem trước tự động.
+- Sau khi sinh, mở trang xem asset `?mute=1&viewer=asset&file=/assets/<id>.<hash>.glb` khi `pnpm dev` đang chạy (so với người chuẩn 1,7m, xem tam giác, draw call, clip) và chụp ảnh nhìn trước khi báo xong. Chưa có `render_preview.py` hay ảnh xem trước tự động.

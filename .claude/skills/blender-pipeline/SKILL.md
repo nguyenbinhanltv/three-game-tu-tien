@@ -30,7 +30,7 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 2. **Tối ưu** (`tools/asset-pipeline/src/optimize.ts`, `@gltf-transform`): dedup, prune (giữ xương, socket, extras), weld, resample animation; texture sang KTX2 bằng `toktx` (ETC1S cho màu/ORM, UASTC cho normal, hạ cạnh theo ngân sách lớp); LOD bằng `simplify` theo `assets/budgets.json`; reorder, quantize (**chỉ mesh không có xương**), nén `EXT_meshopt_compression`.
 3. **Đóng gói**: tên `<id>.<hash10>.glb` vào `apps/client/public/assets/`, cập nhật `apps/client/public/assets/manifest.json` (file, byte, tam giác từng LOD, texture, xương, clip, kích thước raw/build), xóa bản hash cũ của asset đó.
 4. **Kiểm tra** (`tools/asset-pipeline/src/validate.ts`): exit 1 khi có lỗi (id sai quy ước, hash lệch, vượt ngân sách tam giác/texture/xương, thiếu LOD, mesh có xương bị quantize, LOD mất skin, thiếu dòng `assets/LICENSES.md`, `meta.json` sai schema, chiều cao raw/build lệch quá 1%). Danh sách đầy đủ trong `assets/README.md`.
-5. **Xem bằng mắt**: `pnpm dev` rồi mở `?viewer=asset&file=/assets/<id>.<hash>.glb` (người chuẩn 1,7m, số tam giác, draw call, clip), rồi gọi subagent `asset-validator`.
+5. **Xem bằng mắt**: `pnpm dev` rồi mở `?mute=1&viewer=asset&file=/assets/<id>.<hash>.glb` (người chuẩn 1,7m, số tam giác, draw call, clip), rồi gọi subagent `asset-validator`.
 
 Lệnh:
 
