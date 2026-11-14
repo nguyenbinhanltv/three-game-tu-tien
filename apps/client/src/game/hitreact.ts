@@ -1,0 +1,168 @@
+import * as THREE from 'three/webgpu';
+
+/**
+ * Phản ứng trúng đòn phía client (chỉ trình bày, không đổi kết quả hay vị trí logic):
+ * - hit-stop riêng từng thực thể: animation khựng lại, các thực thể khác vẫn chạy;
+ * - chớp sáng: tạm thay material của các mesh bằng material dùng chung;
+ * - giật lùi: độ lệch hiển thị theo hướng nguồn → đích, tắt dần về 0;
+ * - rung thân: dao động nhỏ trong khung cục bộ của model.
+ */
+
+export const HIT_STOP_LIGHT = 0.07;
+export const HIT_STOP_CRIT = 0.12;
+export const HIT_STOP_MAX = 0.15;
+
+const FLASH_MAT = new THREE.MeshBasicMaterial({ color: 0xfff6e8 });
+const FLASH_MAT_CRIT = new THREE.MeshBasicMaterial({ color: 0xffd36a });
+
+/** Thời gian giật lùi đạt đỉnh, rồi tắt dần theo hàm mũ. */
+const KNOCK_RISE = 0.05;
+const KNOCK_DECAY = 9;
+const KNOCK_LIFE = 0.6;
+
+export interface HitOpts {
+  crit?: boolean;
+  /** Hướng giật lùi trong hệ thế giới (không cần chuẩn hóa). Bỏ trống = không giật lùi. */
+  dirX?: number;
+  dirZ?: number;
+  /** Hệ số giật lùi (quái to/boss nhỏ hơn 1). */
+  mass?: number;
+  /** Trễ trước khi phản ứng (giây), để khớp lúc đạn bay tới. */
+  delay?: number;
+}
+
+export class HitReact {
+  /** Độ lệch giật lùi hiện tại (hệ thế giới, mét). */
+  kx = 0;
+  kz = 0;
+  /** Độ rung hiện tại (hệ cục bộ của model). */
+  shake = 0;
+  private stopT = 0;
+  private flashT = 0;
+  private knockT = KNOCK_LIFE;
+  private knockAmp = 0;
+  private dirX = 0;
+  private dirZ = 0;
+  private shakeT = 0;
+  private shakeAmp = 0;
+  private crit = false;
+  // Hàng chờ một chỗ: đòn mới trong lúc chờ sẽ thay đòn cũ nếu mạnh hơn hoặc bằng.
+  private pendT = -1;
+  private pend: HitOpts = {};
+  private pendStop = 0;
+  private flashing = false;
+  private orig: THREE.Material[] = [];
+
+  /** `meshes`: các mesh sẽ chớp sáng. */
+  constructor(private meshes: THREE.Mesh[] = []) {}
+
+  get stopped(): boolean {
+    return this.stopT > 0;
+  }
+
+  /** Bị trúng đòn: khựng + chớp + giật lùi + rung. */
+  react(o: HitOpts): void {
+    const stop = o.crit ? HIT_STOP_CRIT : HIT_STOP_LIGHT;
+    if (o.delay && o.delay > 0) {
+      if (this.pendT < 0 || stop >= this.pendStop) {
+        this.pendT = o.delay;
+        this.pend = o;
+        this.pendStop = stop;
+      }
+      return;
+    }
+    this.start(o, stop);
+  }
+
+  /** Chỉ khựng (người ra đòn). */
+  hitStop(dur: number, delay = 0): void {
+    if (delay > 0) {
+      if (this.pendT < 0 || dur >= this.pendStop) {
+        this.pendT = delay;
+        this.pend = {};
+        this.pendStop = -dur;
+      }
+      return;
+    }
+    this.stopT = Math.min(HIT_STOP_MAX, Math.max(this.stopT, dur));
+  }
+
+  private start(o: HitOpts, stop: number): void {
+    this.crit = !!o.crit;
+    this.stopT = Math.min(HIT_STOP_MAX, Math.max(this.stopT, stop));
+    this.flashT = Math.max(this.flashT, Math.max(0.06, stop));
+    this.shakeT = stop + 0.1;
+    this.shakeAmp = o.crit ? 0.09 : 0.05;
+    const len = Math.hypot(o.dirX ?? 0, o.dirZ ?? 0);
+    if (len > 1e-4) {
+      this.dirX = (o.dirX ?? 0) / len;
+      this.dirZ = (o.dirZ ?? 0) / len;
+      this.knockAmp = (o.crit ? 0.42 : 0.22) * Math.max(0.15, Math.min(1, o.mass ?? 1));
+      this.knockT = 0;
+    }
+  }
+
+  /**
+   * Gọi mỗi khung với dt thật. Trả về dt dùng cho animation (0 khi đang khựng).
+   */
+  update(dt: number): number {
+    if (this.pendT >= 0) {
+      this.pendT -= dt;
+      if (this.pendT < 0) {
+        if (this.pendStop < 0) this.hitStop(-this.pendStop);
+        else this.start(this.pend, this.pendStop);
+        this.pend = {};
+      }
+    }
+
+    let animDt = dt;
+    if (this.stopT > 0) {
+      const used = Math.min(this.stopT, dt);
+      this.stopT -= used;
+      animDt = dt - used;
+    }
+
+    if (this.flashT > 0) this.flashT -= dt;
+    this.setFlash(this.flashT > 0);
+
+    if (this.knockT < KNOCK_LIFE) {
+      this.knockT += dt;
+      const t = this.knockT;
+      const f = t < KNOCK_RISE ? t / KNOCK_RISE : Math.exp(-(t - KNOCK_RISE) * KNOCK_DECAY);
+      const a = t >= KNOCK_LIFE ? 0 : this.knockAmp * f;
+      this.kx = this.dirX * a;
+      this.kz = this.dirZ * a;
+    }
+
+    if (this.shakeT > 0) {
+      this.shakeT = Math.max(0, this.shakeT - dt);
+      // Dao động tần số cao, biên độ giảm dần; dùng thời gian còn lại nên không cần đồng hồ riêng.
+      this.shake = Math.sin(this.shakeT * 95) * this.shakeAmp * Math.min(1, this.shakeT * 8);
+    } else this.shake = 0;
+
+    return animDt;
+  }
+
+  private setFlash(on: boolean): void {
+    if (on === this.flashing) return;
+    this.flashing = on;
+    if (on) {
+      const fm = this.crit ? FLASH_MAT_CRIT : FLASH_MAT;
+      for (let i = 0; i < this.meshes.length; i++) {
+        this.orig[i] = this.meshes[i].material as THREE.Material;
+        this.meshes[i].material = fm;
+      }
+    } else {
+      for (let i = 0; i < this.meshes.length; i++) this.meshes[i].material = this.orig[i];
+    }
+  }
+
+  /** Trả material gốc (gọi trước khi bỏ model). */
+  reset(): void {
+    this.setFlash(false);
+    this.stopT = this.flashT = this.shakeT = 0;
+    this.pendT = -1;
+    this.knockT = KNOCK_LIFE;
+    this.kx = this.kz = this.shake = 0;
+  }
+}

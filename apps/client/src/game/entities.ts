@@ -3,6 +3,7 @@ import { DUNGEON_EXIT, groundAt, MS_ATTACK, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLY
 import { MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
 import type { QuestView } from '@dtl/shared';
 import { buildNode, disposeLabel, Humanoid, makeLabel, MonsterModel } from './models';
+import { HIT_STOP_CRIT, HIT_STOP_LIGHT } from './hitreact';
 
 export interface PState {
   name: string;
@@ -312,7 +313,8 @@ export class EntityManager {
         v.z = local.z;
         v.yaw = local.yaw;
         v.speed = local.speed;
-      } else {
+      } else if (!v.model.hit.stopped) {
+        // Đang hit-stop thì giữ nguyên hình (chỉ lớp hiển thị); hết khựng sẽ bắt kịp vị trí server.
         const ox = v.x;
         const oz = v.z;
         if (Math.abs(s.x - v.x) + Math.abs(s.z - v.z) + Math.abs(s.y - v.y) > 40) {
@@ -329,7 +331,8 @@ export class EntityManager {
         v.speed += (sp - v.speed) * Math.min(1, dt * 8);
       }
       v.fl = s.fl;
-      v.model.root.position.set(v.x, v.y, v.z);
+      // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
+      v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
       const dead = (s.fl & PF_DEAD) !== 0;
       v.model.update(dt, {
@@ -376,16 +379,19 @@ export class EntityManager {
         v.x = s.x;
         v.y = s.y;
         v.z = s.z;
-      } else {
+      } else if (!v.model.hit.stopped) {
+        // Đang hit-stop thì giữ nguyên hình (chỉ lớp hiển thị); hết khựng sẽ bắt kịp vị trí server.
         v.x += (s.x - v.x) * k;
         v.y += (s.y - v.y) * k;
         v.z += (s.z - v.z) * k;
       }
-      v.yaw = angleLerp(v.yaw, s.yaw, k);
-      const sp = Math.hypot(v.x - ox, v.z - oz) / Math.max(dt, 1e-3);
-      v.speed += (sp - v.speed) * Math.min(1, dt * 8);
+      if (!v.model.hit.stopped) {
+        v.yaw = angleLerp(v.yaw, s.yaw, k);
+        const sp = Math.hypot(v.x - ox, v.z - oz) / Math.max(dt, 1e-3);
+        v.speed += (sp - v.speed) * Math.min(1, dt * 8);
+      }
       const dead = s.st === MS_DEAD;
-      v.model.root.position.set(v.x, v.y, v.z);
+      v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
       v.model.update(dt, v.speed, dead);
       v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3);
@@ -454,6 +460,18 @@ export class EntityManager {
     } else {
       this.ring.visible = false;
     }
+  }
+
+  /**
+   * Phản ứng trúng đòn khi nhận S.DMG (chỉ hiển thị). `delay` để khớp lúc đạn bay tới.
+   * Người ra đòn là mình thì mình cũng khựng.
+   */
+  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number): void {
+    const vd = this.players.get(dst) ?? this.monsters.get(dst);
+    if (!vd) return;
+    const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
+    vd.model.hitReact({ crit, delay, dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
+    if (src && src === this.mySid && vs) vs.model.hit.hitStop(crit ? HIT_STOP_CRIT : HIT_STOP_LIGHT, delay);
   }
 
   /** Vị trí ngực của một thực thể (để bắn hiệu ứng tới). */
