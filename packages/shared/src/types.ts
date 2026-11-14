@@ -98,10 +98,24 @@ export interface MonsterChant {
   stun: number;
 }
 
+/**
+ * Boss đập vùng: mỗi `cd` giây thả một vùng tròn bán kính `r` dưới chân tối đa `max` người chơi trong 45 m,
+ * nổ sau `delay` giây với hệ số `mul` theo `atk` của boss.
+ */
+export interface MonsterSlam {
+  cd: number;
+  r: number;
+  delay: number;
+  mul: number;
+  max: number;
+  kind: 'lightning' | 'frost' | 'fire' | 'spirit';
+}
+
 export interface MonsterAi {
   combo?: MonsterCombo;
   caster?: MonsterCaster;
   chant?: MonsterChant;
+  slam?: MonsterSlam;
 }
 
 export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield';

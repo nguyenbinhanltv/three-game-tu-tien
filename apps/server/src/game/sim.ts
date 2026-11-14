@@ -3,6 +3,7 @@ import {
   type CdMsg,
   chantInterrupt,
   CHAT_MAX_LEN,
+  COMBAT_REGEN_DELAY,
   computeDamage,
   DEATH_XP_LOSS,
   type DmgMsg,
@@ -12,6 +13,9 @@ import {
   FLY_UNLOCK_LEVEL,
   type FxMsg,
   GCD,
+  hazardHit,
+  HP_REGEN_IDLE,
+  HP_REGEN_MEDITATE,
   type HazardGeom,
   groundAt,
   type HazardMsg,
@@ -39,6 +43,9 @@ import {
   MS_DEAD,
   MS_IDLE,
   MS_RETURN,
+  MP_REGEN_COMBAT,
+  MP_REGEN_IDLE,
+  MP_REGEN_MEDITATE,
   NGUNG_KHI_MAX,
   PF_CASTING,
   PF_DEAD,
@@ -98,6 +105,8 @@ export interface PlayerEnt {
   casting: { skill: SkillDef; target: string; endAt: number } | null;
   shield: { amount: number; until: number } | null;
   lastCombatAt: number;
+  /** Cửa sổ miễn vùng nổ của quái: hết lúc `until` (ms), đã nhận `taken` (xem hazardHit). */
+  hazardWin: { until: number; taken: number };
   meditating: boolean;
   xpAcc: number;
   trib: { endAt: number; nextAt: number; n: number } | null;
@@ -338,6 +347,7 @@ export class GameSim {
       casting: null,
       shield: null,
       lastCombatAt: 0,
+      hazardWin: { until: 0, taken: 0 },
       meditating: false,
       xpAcc: 0,
       trib: null,
@@ -555,9 +565,9 @@ export class GameSim {
         c.mp -= FLY_MP_PER_SEC * dt;
         if (c.mp < 0) c.mp = 0;
       }
-      const inCombat = this.now - p.lastCombatAt < 6000;
-      const hpRate = p.meditating ? 0.05 : inCombat ? 0 : 0.02;
-      const mpRate = p.move.flying ? 0 : p.meditating ? 0.08 : inCombat ? 0.012 : 0.03;
+      const inCombat = this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000;
+      const hpRate = p.meditating ? HP_REGEN_MEDITATE : inCombat ? 0 : HP_REGEN_IDLE;
+      const mpRate = p.move.flying ? 0 : p.meditating ? MP_REGEN_MEDITATE : inCombat ? MP_REGEN_COMBAT : MP_REGEN_IDLE;
       if (c.hp < c.mhp && hpRate > 0) c.hp = Math.min(c.mhp, c.hp + c.mhp * hpRate * dt);
       if (c.mp < c.mmp && mpRate > 0) c.mp = Math.min(c.mmp, c.mp + c.mmp * mpRate * dt);
       if (p.meditating) {
@@ -933,6 +943,7 @@ export class GameSim {
     c.mp = Math.round(c.mmp * 0.5);
     p.s.fl = 0;
     p.lastCombatAt = 0;
+    p.hazardWin = { until: 0, taken: 0 };
     this.sys(p, 'sys.respawned', undefined, 'info');
     this.fx({ t: 'respawn', src: p.sid });
   }
@@ -1321,14 +1332,15 @@ export class GameSim {
         }
       }
     }
-    if (def.boss && this.now >= m.abilityAt) {
-      m.abilityAt = this.now + 8000;
-      // Chiêu diện rộng báo trước: né ra khỏi vòng.
+    const slam = def.ai?.slam;
+    if (slam && this.now >= m.abilityAt) {
+      m.abilityAt = this.now + slam.cd * 1000;
+      // Chiêu diện rộng báo trước dưới chân từng người: né ra khỏi vòng.
       let n = 0;
       for (const p of this.players.values()) {
-        if (this.isDead(p) || n >= 4) continue;
+        if (this.isDead(p) || n >= slam.max) continue;
         if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) > 45) continue;
-        this.addHazard({ x: p.move.x, z: p.move.z, r: 5.5 }, 1.7, m.atk * 1.5, false, def.id === 'boss_thu_mo_tuong' ? 'lightning' : 'frost', m.id);
+        this.addHazard({ x: p.move.x, z: p.move.z, r: slam.r }, slam.delay, slam.mul, false, slam.kind, m.id, m.atk);
         n++;
       }
     }
@@ -1360,12 +1372,23 @@ export class GameSim {
         if (this.isDead(p)) continue;
         if (!inHazard(h, p.move.x, p.move.z)) continue;
         if (p.move.y - groundAt(p.move.x, p.move.z) > 8) continue;
-        const n =
+        let n =
           h.atk > 0
             ? computeDamage(h.atk, h.dmg, p.char.def, Math.random(), 1).dmg
             : h.pct
               ? p.char.mhp * h.dmg
               : Math.max(1, h.dmg - p.char.def * 0.6);
+        if (h.mon) {
+          // Vùng của quái: trong cửa sổ HAZARD_IFRAME chỉ chịu vùng mạnh nhất (chống dồn đòn).
+          const r = hazardHit(Math.max(1, Math.round(n)), p.hazardWin.until, p.hazardWin.taken, this.now);
+          p.hazardWin.until = r.until;
+          p.hazardWin.taken = r.taken;
+          if (r.dmg <= 0) {
+            this.host.broadcast(S.DMG, { dst: p.sid, n: 0, src: h.src } satisfies DmgMsg);
+            continue;
+          }
+          n = r.dmg;
+        }
         this.damagePlayer(p, n, h.src, true);
       }
     }

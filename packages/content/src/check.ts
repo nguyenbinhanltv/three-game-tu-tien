@@ -75,6 +75,16 @@ for (const m of MONSTERS) {
     if (!(ch.mul > 0 && ch.mul <= 3)) err(`monster ${m.id}: chant.mul phải trong (0, 3]`);
     if (!(ch.r > 0 && ch.r <= 20)) err(`monster ${m.id}: chant.r phải trong (0, 20]`);
   }
+  const sl = m.ai?.slam;
+  if (sl) {
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có slam`);
+    if (!['lightning', 'frost', 'fire', 'spirit'].includes(sl.kind)) err(`monster ${m.id}: slam.kind không hợp lệ`);
+    if (!(sl.delay >= 1.2)) err(`monster ${m.id}: slam.delay phải >= 1,2 giây (vùng hiện dưới chân, cần thời gian chạy ra)`);
+    if (!(sl.cd > sl.delay + 2)) err(`monster ${m.id}: slam.cd phải lớn hơn delay + 2`);
+    if (!(sl.mul > 0 && sl.mul <= 3)) err(`monster ${m.id}: slam.mul phải trong (0, 3]`);
+    if (!(sl.r > 0 && sl.r <= 8)) err(`monster ${m.id}: slam.r phải trong (0, 8]`);
+    if (!(Number.isInteger(sl.max) && sl.max >= 1 && sl.max <= 5)) err(`monster ${m.id}: slam.max phải là số nguyên 1–5`);
+  }
 }
 for (const s of SKILLS) {
   needStr(`skill.${s.id}.name`);

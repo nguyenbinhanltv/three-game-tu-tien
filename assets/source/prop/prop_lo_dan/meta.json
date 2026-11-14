@@ -1,0 +1,83 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_lo_dan",
+  "type": "prop",
+  "budgetClass": "prop",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 4000,
+    "texture": 1024
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: single game prop, a Chinese bronze ding-style alchemy furnace about 1.2 meters tall, three-legged, round body, with a domed lid,\ncast bronze (#AE8B49) with aged dark teal (#2B5552) patina in the recesses, a band of low relief cloud pattern around the belly,\ntwo upright square handles on the rim, a small knob shaped like a closed lotus bud on the lid,\nthree short sturdy legs, a small square fire opening near the bottom that is dark inside with no fire,\nTHREE-QUARTER VIEW from slightly above (about 30 degrees), the whole object complete in frame, standing upright on nothing,\nsolid construction, no loose small parts.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: cast bronze, patina, soot,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): bronze (#AE8B49), dark teal (#2B5552), dark wood (#4D3324), stone dark (#464540).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no fire, no flames,\nno magic effects, no aura, no witch cauldron,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like metallic reflections,\nno background scenery, no table, no floor, no second object, no cropped parts.\nVariant A: squat broad round body, compact domed lid, restrained shallow cloud relief, three sturdy tapered legs. Square 1024x1024. Exactly three legs arranged triangularly. 10 percent empty margin. Neutral grey background constant edge to edge, no vignette. No purple tint, no snow. Single object only.",
+      "chosen": true
+    },
+    {
+      "file": "concept/concept_34_v02.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: single game prop, a Chinese bronze ding-style alchemy furnace about 1.2 meters tall, three-legged, round body, with a domed lid,\ncast bronze (#AE8B49) with aged dark teal (#2B5552) patina in the recesses, a band of low relief cloud pattern around the belly,\ntwo upright square handles on the rim, a small knob shaped like a closed lotus bud on the lid,\nthree short sturdy legs, a small square fire opening near the bottom that is dark inside with no fire,\nTHREE-QUARTER VIEW from slightly above (about 30 degrees), the whole object complete in frame, standing upright on nothing,\nsolid construction, no loose small parts.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: cast bronze, patina, soot,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): bronze (#AE8B49), dark teal (#2B5552), dark wood (#4D3324), stone dark (#464540).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no fire, no flames,\nno magic effects, no aura, no witch cauldron,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like metallic reflections,\nno background scenery, no table, no floor, no second object, no cropped parts.\nVariant B: taller ovoid body, heavier lid rim and angular squared handles, somewhat more formal cloud band. Square 1024x1024. Exactly three legs arranged triangularly. 10 percent empty margin. Neutral grey background constant edge to edge, no vignette. No purple tint, no snow. Single object only.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_front_v01.png",
+      "view": "front",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME bronze furnace into strict orthographic FRONT VIEW at zero elevation, centered fire opening visible. Preserve squat body lid lotus knob, two square handles, exact shallow cloud relief and patina distribution, three sturdy legs in fixed triangular positions (two feet on front left/right, one centered behind).  All feet on same orthographic baseline. No top surfaces visible at zero elevation. Same overall height and scale in frame. Square image.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: cast bronze, patina, soot,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): bronze (#AE8B49), dark teal (#2B5552), dark wood (#4D3324), stone dark (#464540).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no fire, no flames,\nno magic effects, no aura, no witch cauldron,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like metallic reflections,\nno background scenery, no table, no floor, no second object, no cropped parts.\nNo snow, no purple tint, single object only.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_left_v01.png",
+      "view": "left",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME bronze furnace into strict orthographic LEFT SIDE VIEW at exactly 90 degrees from front and zero elevation, fire opening on hidden front at RIGHT edge. Preserve squat body lid lotus knob, two square handles, exact shallow cloud relief and patina distribution, three sturdy legs in fixed triangular positions (two feet on front left/right, one centered behind). Side view: near and far handles overlap at center; allow occlusion of rear foot. Do not arrange three feet symmetrically as if seen from front. All feet on same orthographic baseline. No top surfaces visible at zero elevation. Same overall height and scale in frame. Square image.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: cast bronze, patina, soot,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): bronze (#AE8B49), dark teal (#2B5552), dark wood (#4D3324), stone dark (#464540).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no fire, no flames,\nno magic effects, no aura, no witch cauldron,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like metallic reflections,\nno background scenery, no table, no floor, no second object, no cropped parts.\nNo snow, no purple tint, single object only.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_back_v01.png",
+      "view": "back",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME bronze furnace into strict orthographic BACK VIEW at 180 degrees and zero elevation, NO fire opening on back. Preserve squat body lid lotus knob, two square handles, exact shallow cloud relief and patina distribution, three sturdy legs in fixed triangular positions (two feet on front left/right, one centered behind).  All feet on same orthographic baseline. No top surfaces visible at zero elevation. Same overall height and scale in frame. Square image.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: cast bronze, patina, soot,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): bronze (#AE8B49), dark teal (#2B5552), dark wood (#4D3324), stone dark (#464540).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no fire, no flames,\nno magic effects, no aura, no witch cauldron,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph, no mirror-like metallic reflections,\nno background scenery, no table, no floor, no second object, no cropped parts.\nNo snow, no purple tint, single object only.",
+      "chosen": false
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "cli",
+      "version": 1,
+      "taskId": "bf2c9afd-c009-472c-abb5-21b01acdc63d",
+      "parentTaskId": null,
+      "model": "v3.1-20260211",
+      "params": {
+        "face_limit": 4000,
+        "smart_low_poly": true,
+        "texture_quality": "detailed",
+        "pbr": true
+      },
+      "seed": null,
+      "quote": 50,
+      "credits": 50,
+      "batch": "2026-11-15-m0-3-prop",
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Tiền xử lý tạm (chờ import_tripo.py M2-2) bằng dtl-asset-source/_batches/2026-11-15-m0-3-prep-tripo.mjs: weld, simplify LOD0 về ≤95% trần, resize texture 1024², đặt gốc ở đáy (center pivot below). GLB Tripo gốc: 5960 tam giác (vượt face_limit 4000), texture 4096². Build: LOD0 4750 / LOD1 1900 / LOD2 712 tam giác, 1430028 B. Kích thước vẫn chuẩn hóa của Tripo (cao 1 m), chưa scale theo thực tế."
+    }
+  ],
+  "license": {
+    "source": "Tripo (API trả phí) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}

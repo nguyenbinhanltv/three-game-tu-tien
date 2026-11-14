@@ -6,6 +6,10 @@ import {
   FLY_MAX_ALT,
   FLY_SPEED,
   groundAt,
+  HAZARD_IFRAME,
+  hazardHit,
+  HP_REGEN_IDLE,
+  HP_REGEN_MEDITATE,
   heightAt,
   inHazard,
   isHeavyHit,
@@ -13,6 +17,7 @@ import {
   IN_JUMP,
   IN_UP,
   KIEM_TRUNG,
+  monsterStats,
   type MoveState,
   playerBaseStats,
   RUN_SPEED,
@@ -178,5 +183,44 @@ describe('ngắt chú boss', () => {
     expect(vulnerableDamage(100, false)).toBe(100);
     expect(vulnerableDamage(100, true)).toBe(Math.round(100 * INTERRUPT_VULN_MUL));
     expect(Number.isInteger(vulnerableDamage(37, true))).toBe(true);
+  });
+});
+
+describe('miễn vùng nổ và hồi phục (M5-4)', () => {
+  it('vùng đầu tiên gây đủ sát thương và mở cửa sổ HAZARD_IFRAME giây', () => {
+    const now = 10_000;
+    expect(hazardHit(50, 0, 0, now)).toEqual({ dmg: 50, until: now + HAZARD_IFRAME * 1000, taken: 50 });
+  });
+  it('trong cửa sổ: vùng yếu hơn không gây gì, vùng mạnh hơn chỉ gây phần chênh lệch', () => {
+    const now = 10_000;
+    const w = hazardHit(50, 0, 0, now);
+    const weak = hazardHit(30, w.until, w.taken, now + 100);
+    expect(weak.dmg).toBe(0);
+    const strong = hazardHit(120, weak.until, weak.taken, now + 200);
+    expect(strong.dmg).toBe(70);
+    expect(strong.until).toBe(w.until);
+    // Tổng trong cửa sổ = vùng mạnh nhất, không phụ thuộc thứ tự nổ.
+    expect(w.dmg + weak.dmg + strong.dmg).toBe(120);
+  });
+  it('hết cửa sổ thì vùng mới gây đủ sát thương', () => {
+    const w = hazardHit(50, 0, 0, 0);
+    expect(hazardHit(30, w.until, w.taken, w.until).dmg).toBe(30);
+  });
+  it('miễn vùng ngắn hơn khoảng báo trước tối thiểu (1,5 giây) để không né hộ chiêu kế tiếp', () => {
+    expect(HAZARD_IFRAME).toBeGreaterThan(0);
+    expect(HAZARD_IFRAME).toBeLessThan(1.5);
+  });
+  it('đả tọa hồi máu nhanh hơn đứng nghỉ', () => {
+    expect(HP_REGEN_MEDITATE).toBeGreaterThan(HP_REGEN_IDLE);
+  });
+});
+
+describe('chỉ số quái theo hệ số', () => {
+  it('hpMul/atkMul nhân thẳng chỉ số gốc, phòng thủ không đổi', () => {
+    const a = monsterStats(15, 1, 1);
+    const b = monsterStats(15, 45, 1.35);
+    expect(b.hp).toBe(Math.round(a.hp * 45));
+    expect(b.atk).toBe(Math.round(a.atk * 1.35));
+    expect(b.def).toBe(a.def);
   });
 });
