@@ -61,10 +61,28 @@ for (const m of MONSTERS) {
     if (cs.shape === 'rect' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 6)) err(`monster ${m.id}: rect cần w trong (0, 6]`);
     if (cs.shape === 'cone' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 75)) err(`monster ${m.id}: cone cần w (nửa góc, độ) trong (0, 75]`);
   }
+  const ch = m.ai?.chant;
+  if (ch) {
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới niệm chú`);
+    if (!['lightning', 'frost', 'fire', 'spirit'].includes(ch.kind)) err(`monster ${m.id}: chant.kind không hợp lệ`);
+    if (!(ch.cast >= 1.2 && ch.cast <= 5)) err(`monster ${m.id}: chant.cast phải trong [1,2; 5] giây`);
+    if (!(ch.open >= 0 && ch.open <= 0.6)) err(`monster ${m.id}: chant.open phải trong [0; 0,6]`);
+    // Cửa sổ ngắt phải đủ rộng cho độ trễ mạng + GCD 1 giây.
+    if (!(ch.cast * (1 - ch.open) >= 1.2)) err(`monster ${m.id}: cửa sổ ngắt cast·(1 − open) phải >= 1,2 giây`);
+    if (!(ch.delay >= 0.9)) err(`monster ${m.id}: chant.delay phải >= 0,9 giây`);
+    if (!(ch.stun >= 1 && ch.stun <= 6)) err(`monster ${m.id}: chant.stun phải trong [1; 6] giây`);
+    if (!(ch.cd > ch.cast + ch.delay + ch.stun)) err(`monster ${m.id}: chant.cd phải lớn hơn cast + delay + stun`);
+    if (!(ch.mul > 0 && ch.mul <= 3)) err(`monster ${m.id}: chant.mul phải trong (0, 3]`);
+    if (!(ch.r > 0 && ch.r <= 20)) err(`monster ${m.id}: chant.r phải trong (0, 20]`);
+  }
 }
 for (const s of SKILLS) {
   needStr(`skill.${s.id}.name`);
   needStr(`skill.${s.id}.desc`);
+  if (s.interrupt && s.kind !== 'damage') err(`skill ${s.id}: interrupt chỉ dùng cho skill kind 'damage'`);
+}
+if (MONSTERS.some((m) => m.ai?.chant) && !SKILLS.some((s) => s.interrupt && s.unlock === 1)) {
+  err('có boss niệm chú nhưng không có skill ngắt mở từ tầng 1');
 }
 for (const r of RECIPES) {
   needItem(r.output.id, `recipe ${r.id}`);
