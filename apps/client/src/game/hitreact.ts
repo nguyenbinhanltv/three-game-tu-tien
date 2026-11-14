@@ -46,10 +46,14 @@ export class HitReact {
   private shakeT = 0;
   private shakeAmp = 0;
   private crit = false;
-  // Hàng chờ một chỗ: đòn mới trong lúc chờ sẽ thay đòn cũ nếu mạnh hơn hoặc bằng.
-  private pendT = -1;
-  private pend: HitOpts = {};
-  private pendStop = 0;
+  // Hai chỗ chờ riêng: đòn nhận vào (react) và khựng của người ra đòn (hitStop), để cái này
+  // không đè cái kia. Mỗi chỗ giữ hạn sớm nhất; đòn mới trong lúc chờ chỉ nâng cấp nội dung,
+  // không lùi hạn, nên đòn dồn dập vẫn nổ đúng lúc đạn đầu tiên chạm.
+  private pendHitT = -1;
+  private pendHit: HitOpts = {};
+  private pendHitStop = 0;
+  private pendStopT = -1;
+  private pendStopDur = 0;
   private flashing = false;
   private orig: THREE.Material[] = [];
 
@@ -64,10 +68,16 @@ export class HitReact {
   react(o: HitOpts): void {
     const stop = o.crit ? HIT_STOP_CRIT : HIT_STOP_LIGHT;
     if (o.delay && o.delay > 0) {
-      if (this.pendT < 0 || stop >= this.pendStop) {
-        this.pendT = o.delay;
-        this.pend = o;
-        this.pendStop = stop;
+      if (this.pendHitT < 0) {
+        this.pendHitT = o.delay;
+        this.pendHit = o;
+        this.pendHitStop = stop;
+      } else {
+        this.pendHitT = Math.min(this.pendHitT, o.delay);
+        if (stop >= this.pendHitStop) {
+          this.pendHit = o;
+          this.pendHitStop = stop;
+        }
       }
       return;
     }
@@ -77,10 +87,12 @@ export class HitReact {
   /** Chỉ khựng (người ra đòn). */
   hitStop(dur: number, delay = 0): void {
     if (delay > 0) {
-      if (this.pendT < 0 || dur >= this.pendStop) {
-        this.pendT = delay;
-        this.pend = {};
-        this.pendStop = -dur;
+      if (this.pendStopT < 0) {
+        this.pendStopT = delay;
+        this.pendStopDur = dur;
+      } else {
+        this.pendStopT = Math.min(this.pendStopT, delay);
+        this.pendStopDur = Math.max(this.pendStopDur, dur);
       }
       return;
     }
@@ -106,13 +118,16 @@ export class HitReact {
    * Gọi mỗi khung với dt thật. Trả về dt dùng cho animation (0 khi đang khựng).
    */
   update(dt: number): number {
-    if (this.pendT >= 0) {
-      this.pendT -= dt;
-      if (this.pendT < 0) {
-        if (this.pendStop < 0) this.hitStop(-this.pendStop);
-        else this.start(this.pend, this.pendStop);
-        this.pend = {};
+    if (this.pendHitT >= 0) {
+      this.pendHitT -= dt;
+      if (this.pendHitT < 0) {
+        this.start(this.pendHit, this.pendHitStop);
+        this.pendHit = {};
       }
+    }
+    if (this.pendStopT >= 0) {
+      this.pendStopT -= dt;
+      if (this.pendStopT < 0) this.hitStop(this.pendStopDur);
     }
 
     let animDt = dt;
@@ -161,7 +176,7 @@ export class HitReact {
   reset(): void {
     this.setFlash(false);
     this.stopT = this.flashT = this.shakeT = 0;
-    this.pendT = -1;
+    this.pendHitT = this.pendStopT = -1;
     this.knockT = KNOCK_LIFE;
     this.kx = this.kz = this.shake = 0;
   }
