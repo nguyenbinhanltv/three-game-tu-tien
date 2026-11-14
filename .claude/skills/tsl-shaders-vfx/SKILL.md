@@ -40,6 +40,7 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 - Uniform hiệu ứng trúng đòn (`uHit`, `uFlash`) đi trong pass chỉnh màu.
 - Preset Thấp tắt bloom và sương theo độ cao, giữ chỉnh màu. Bỏ SSAO/SSR ở preset Thấp và Vừa.
 - Khi có nhiều pass: đặt `renderer.info.autoReset = false` và reset ở đầu khung, nếu không số draw call/tam giác đo được sẽ sai.
+- **Bẫy three r178 khi đổi preset lúc chạy**: cache shader (`Nodes.nodeBuilderCache`) khóa theo material + môi trường, không theo MRT/số đích. Pass cảnh đổi giữa có MRT bloom (Vừa/Cao) và không MRT (Thấp) thì render object mới lấy nhầm shader của cấu hình kia: WebGPU báo `Attachment state … is not compatible`, WebGL2 im lặng ghi sai draw buffer. `render/nodeCacheFix.ts` (`patchNodeCacheKey`, gọi sau `renderer.init()`) thêm chữ ký đích vào khóa; đừng gỡ. Node `rtt()` không tự giải phóng render target: `PostPipeline.dispose()` phải `renderTarget.dispose()`. Kiểm bằng `pnpm bench:switch`.
 
 ## Kiểm tra
 
