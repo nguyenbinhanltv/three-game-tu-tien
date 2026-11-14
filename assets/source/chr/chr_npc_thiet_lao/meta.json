@@ -39,6 +39,20 @@
         "name": "death"
       }
     ],
+    "recolor": [
+      {
+        "hue": [
+          190,
+          255
+        ],
+        "satMax": 0.3,
+        "valMin": 0.36,
+        "to": "#BDB6A4",
+        "value": 0.85,
+        "saturation": 0.8,
+        "note": "tóc xám lạnh → xám ấm (stone_light, sáng 0,85, bão hòa 0,8); valMin bỏ qua da/vải tối hơi ngả lam"
+      }
+    ],
     "post": "tools/blender/anim_biped_extra.py"
   },
   "concept": [

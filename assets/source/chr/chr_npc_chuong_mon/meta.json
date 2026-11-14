@@ -39,6 +39,31 @@
         "name": "death"
       }
     ],
+    "recolor": [
+      {
+        "hue": [
+          42,
+          75
+        ],
+        "satMin": 0.45,
+        "valMax": 0.42,
+        "to": "#22364E",
+        "value": 0.62,
+        "saturation": 1.25,
+        "note": "nửa áo ô-liu → attire_elder (lam trưởng lão), sáng 0,62 / bão hòa 1,25 cho khớp áo khoác chàm; valMax tách khỏi khóa/hoa văn đồng sáng cùng hue, giữ vải ngà và viền đồng"
+      },
+      {
+        "hue": [
+          120,
+          170
+        ],
+        "satMin": 0.4,
+        "to": "#3E7552",
+        "value": 0.85,
+        "saturation": 0.65,
+        "note": "đai ngọc xanh rực → ngọc trầm (leaf, sáng 0,85, bão hòa 0,65)"
+      }
+    ],
     "post": "tools/blender/anim_biped_extra.py"
   },
   "concept": [
