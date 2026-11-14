@@ -13,7 +13,10 @@ import basisWasmUrl from 'three/addons/libs/basis/basis_transcoder.wasm?url';
  *   geometry/material/texture với bản gốc. Đếm tham chiếu theo id: handle cuối cùng `release`
  *   thì dispose geometry, material và texture của bản gốc (renderer tự giải phóng GPU).
  * - Hàng đợi nạp giới hạn số request song song; yêu cầu gần người xem hơn được nạp trước
- *   (`pos` + `setViewer`), hoặc theo `priority` số nhỏ trước.
+ *   (`pos` + `setViewer`), hoặc theo `priority` (tính như khoảng cách, mét) số nhỏ trước.
+ * - `prefetch` (M6-1) tải trước byte của GLB qua cùng hàng đợi mà chưa parse (chưa cần renderer):
+ *   gọi lúc bắt đầu kết nối để mạng chạy song song với lúc CPU dựng thế giới; `acquire` sau đó
+ *   parse từ byte đã có.
  * - Transcoder Basis (KTX2) lấy từ `node_modules/three` qua URL do Vite sinh, phục vụ cùng
  *   origin với bản build; không gọi CDN ngoài. Meshopt decoder nằm sẵn trong JS.
  * - LOD: pipeline để các mức `<tên>_lod<k>` (`userData.lod = k`) cùng file. Bản sao chỉ hiện
@@ -48,7 +51,10 @@ export interface AssetHandle {
 export interface AcquireOptions {
   /** Vị trí asset trong thế giới: gần người xem (`setViewer`) thì nạp trước. */
   pos?: { x: number; z: number };
-  /** Ưu tiên khi không có `pos`: số nhỏ nạp trước. Mặc định 0. */
+  /**
+   * Ưu tiên khi không có `pos`, cùng đơn vị với khoảng cách tới người xem (mét): số nhỏ nạp trước.
+   * Mặc định 0 (như thứ ngay cạnh người chơi).
+   */
   priority?: number;
 }
 
@@ -68,6 +74,8 @@ export interface AssetCacheStats {
 }
 
 type LoadFn = (url: string, onBytes?: (loaded: number) => void) => Promise<GLTF>;
+type FetchFn = (url: string, onBytes: (loaded: number) => void) => Promise<ArrayBuffer>;
+type ParseFn = (data: ArrayBuffer, url: string) => Promise<GLTF>;
 
 interface Entry {
   id: string;
@@ -78,12 +86,33 @@ interface Entry {
 
 interface Job {
   id: string;
-  url: string;
-  onBytes: (loaded: number) => void;
   pos?: { x: number; z: number };
   priority: number;
-  resolve: (g: GLTF) => void;
-  reject: (e: unknown) => void;
+  run: () => Promise<void>;
+}
+
+/** Tải cả file, báo số byte đã về theo từng đoạn (cho thanh tiến độ). */
+async function fetchBytes(url: string, onBytes: (loaded: number) => void): Promise<ArrayBuffer> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
+  if (!res.body) return res.arrayBuffer();
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let loaded = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.byteLength;
+    onBytes(loaded);
+  }
+  const out = new Uint8Array(loaded);
+  let o = 0;
+  for (const c of chunks) {
+    out.set(c, o);
+    o += c.byteLength;
+  }
+  return out.buffer;
 }
 
 /** URL thư mục asset tĩnh, theo `base` của Vite (CDN đặt qua `base` lúc build). */
@@ -142,13 +171,23 @@ export class AssetCache {
   private manifest: Promise<Manifest> | null = null;
   private ktx2: KTX2Loader | null = null;
   private loader: GLTFLoader | null = null;
+  /** Byte GLB đã/đang tải trước theo URL (`prefetch`), `null` nếu lỗi; xóa khi đã parse. */
+  private raw = new Map<string, Promise<ArrayBuffer | null>>();
 
   /**
-   * `load`/`manifest` thay được để test; mặc định fetch từ `assetBaseUrl()`.
-   * `concurrency`: số GLB nạp song song.
+   * `load`/`fetchBytes`/`parse`/`manifest` thay được để test; mặc định fetch từ `assetBaseUrl()`.
+   * `concurrency`: số GLB tải song song (mặc định 2). Mạng là nút thắt lúc tải đầu: ít luồng thì thứ
+   * cần trước (nhân vật mình) về sớm thay vì chia băng thông đều với mọi thứ khác.
    */
   constructor(
-    private opts: { base?: string; concurrency?: number; load?: LoadFn; fetchManifest?: () => Promise<Manifest> } = {},
+    private opts: {
+      base?: string;
+      concurrency?: number;
+      load?: LoadFn;
+      fetchBytes?: FetchFn;
+      parse?: ParseFn;
+      fetchManifest?: () => Promise<Manifest>;
+    } = {},
   ) {}
 
   private get base(): string {
@@ -198,10 +237,23 @@ export class AssetCache {
         .then((m) => {
           const a = m.assets[id];
           if (!a) throw new Error(`asset "${id}" không có trong manifest`);
-          const p = { loaded: 0, total: a.bytes };
+          const url = this.base + a.file;
+          const p = this.bytes.get(id) ?? { loaded: 0, total: a.bytes };
           this.bytes.set(id, p);
           const onBytes = (n: number) => (p.loaded = Math.min(n, p.total));
-          return this.enqueue(id, this.base + a.file, onBytes, opts).then(
+          const pre = this.raw.get(url);
+          let job: Promise<GLTF>;
+          if (pre) {
+            // Đã tải trước (hoặc đang chờ trong hàng): nâng ưu tiên, parse khi byte về; tải trước lỗi thì tải lại.
+            this.bump(id, opts);
+            job = pre.then((buf) => {
+              this.raw.delete(url);
+              return buf ? this.parse(buf, url) : this.enqueue(id, opts, () => this.load(url, onBytes));
+            });
+          } else {
+            job = this.enqueue(id, opts, () => this.load(url, onBytes));
+          }
+          return job.then(
             (g) => {
               p.loaded = p.total;
               return g;
@@ -233,6 +285,40 @@ export class AssetCache {
     return this.instance(e, gltf);
   }
 
+  /**
+   * Tải trước byte của asset (chưa parse, chưa giữ handle) theo cùng hàng đợi ưu tiên. Không làm gì nếu
+   * asset đã/đang nạp. Lỗi chỉ cảnh báo: `acquire` sau đó tự tải lại. Byte tải trước giữ tới khi `acquire`.
+   */
+  prefetch(id: string, opts: AcquireOptions = {}): void {
+    if (this.entries.has(id)) return;
+    this.getManifest().then(
+      (m) => {
+        const a = m.assets[id];
+        if (!a || this.entries.has(id)) return;
+        const url = this.base + a.file;
+        if (this.raw.has(url)) return this.bump(id, opts);
+        const p = { loaded: 0, total: a.bytes };
+        this.bytes.set(id, p);
+        const fetchFn = this.opts.fetchBytes ?? fetchBytes;
+        this.raw.set(
+          url,
+          this.enqueue(id, opts, () => fetchFn(url, (n) => (p.loaded = Math.min(n, p.total)))).then(
+            (data) => {
+              p.loaded = p.total;
+              return data;
+            },
+            (e) => {
+              console.warn(`[asset] tải trước ${id} lỗi, sẽ thử lại khi cần:`, e);
+              p.loaded = 0;
+              return null;
+            },
+          ),
+        );
+      },
+      () => undefined,
+    );
+  }
+
   /** Byte đã nạp / tổng byte của mọi asset từng yêu cầu (cho thanh tiến độ màn tải). */
   progress(): AssetProgress {
     let loaded = 0;
@@ -258,6 +344,7 @@ export class AssetCache {
   disposeAll(): void {
     for (const e of this.entries.values()) if (e.gltf) disposeObject(e.gltf.scene);
     this.entries.clear();
+    this.raw.clear();
     this.ktx2?.dispose();
     this.ktx2 = null;
     this.loader = null;
@@ -289,9 +376,10 @@ export class AssetCache {
     };
   }
 
-  private enqueue(id: string, url: string, onBytes: (n: number) => void, opts: AcquireOptions): Promise<GLTF> {
-    return new Promise<GLTF>((resolve, reject) => {
-      this.queue.push({ id, url, onBytes, pos: opts.pos, priority: opts.priority ?? 0, resolve, reject });
+  /** Xếp một việc tải vào hàng; `run` chạy khi tới lượt (chiếm một luồng tới khi xong). */
+  private enqueue<T>(id: string, opts: AcquireOptions, run: () => Promise<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      this.queue.push({ id, pos: opts.pos, priority: opts.priority ?? 0, run: () => run().then(resolve, reject) });
       this.pump();
     });
   }
@@ -313,14 +401,14 @@ export class AssetCache {
   }
 
   private pump(): void {
-    const max = this.opts.concurrency ?? 4;
+    const max = this.opts.concurrency ?? 2;
     while (this.active < max && this.queue.length > 0) {
       let best = 0;
       for (let i = 1; i < this.queue.length; i++) if (this.rank(this.queue[i]) < this.rank(this.queue[best])) best = i;
       const job = this.queue.splice(best, 1)[0];
       this.active++;
-      this.load(job.url, job.onBytes)
-        .then(job.resolve, job.reject)
+      job
+        .run()
         .finally(() => {
           this.active--;
           this.pump();
@@ -328,13 +416,22 @@ export class AssetCache {
     }
   }
 
-  private load(url: string, onBytes: (n: number) => void): Promise<GLTF> {
-    if (this.opts.load) return this.opts.load(url, onBytes);
+  private gltfLoader(): GLTFLoader {
     if (!this.loader) {
       if (!this.ktx2) this.ktx2 = createKtx2Loader();
       this.loader = createGltfLoader(this.ktx2);
     }
-    return this.loader.loadAsync(url, (ev) => onBytes(ev.loaded));
+    return this.loader;
+  }
+
+  private load(url: string, onBytes: (n: number) => void): Promise<GLTF> {
+    if (this.opts.load) return this.opts.load(url, onBytes);
+    return this.gltfLoader().loadAsync(url, (ev) => onBytes(ev.loaded));
+  }
+
+  private parse(data: ArrayBuffer, url: string): Promise<GLTF> {
+    if (this.opts.parse) return this.opts.parse(data, url);
+    return this.gltfLoader().parseAsync(data, url.slice(0, url.lastIndexOf('/') + 1));
   }
 }
 

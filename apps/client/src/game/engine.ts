@@ -65,6 +65,7 @@ import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { type AssetHandle, assets } from './assets';
+import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
@@ -101,6 +102,10 @@ export function serverUrl(): string {
     return `ws://${hostname}:${env.VITE_DEV_SERVER_PORT || '2567'}`;
   }
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
+}
+
+function isWebGPU(r: THREE.WebGPURenderer): boolean {
+  return !!(r.backend as { isWebGPUBackend?: boolean }).isWebGPUBackend;
 }
 
 /**
@@ -149,6 +154,8 @@ export class Game {
   /** Đăng nhập và vào thế giới. Lỗi được đưa lên UI qua store. */
   static async connect(opts: LoginOptions): Promise<void> {
     set({ phase: 'connecting', error: '', nameError: '' });
+    // M6-1: GLB tải song song với lúc chờ server và lúc dựng thế giới thủ tục.
+    prefetchWorldAssets();
     Game.lastLogin = opts;
     Game.session = '';
     try {
@@ -456,6 +463,25 @@ export class Game {
 
   // ---------- khởi động ----------
 
+  /**
+   * Số lần biên dịch trước đang chờ (M6-1). Khác 0 thì `frame()` bỏ qua: three r178 vẽ với pipeline WebGPU
+   * còn đang biên dịch dở là lỗi.
+   */
+  private compiling = 0;
+
+  /** Biên dịch trước mọi material trong cảnh theo đích của pass cảnh; lỗi thì để renderer biên dịch khi vẽ. */
+  private async precompile(): Promise<void> {
+    if (!this.post || this.disposed) return;
+    this.compiling++;
+    try {
+      await this.post.compileScene();
+    } catch (e) {
+      console.warn('[load] biên dịch trước lỗi, biên dịch khi vẽ:', e);
+    } finally {
+      this.compiling--;
+    }
+  }
+
   /** Thời gian từng bước khởi động (ms), để theo dõi thời gian tải. */
   loadStats: Record<string, number> = {};
 
@@ -531,6 +557,12 @@ export class Game {
     this.loadSectModel(q.shadows);
     this.bindInput();
     this.onResize();
+    // M6-1: biên dịch trước material của cảnh (trời, địa hình, kiến trúc, VFX ấm sẵn, cổng) ở màn tải, thay vì
+    // dồn vào khung đầu. Có trần thời gian: máy chậm thì cứ vẽ, phần còn lại biên dịch khi gặp.
+    this.vfx.update(0); // đưa các lưới "vẽ ấm" của VFX vào cảnh để được biên dịch cùng
+    await this.precompile();
+    mark('compile');
+    if (this.disposed) return;
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
@@ -560,6 +592,10 @@ export class Game {
         this.sectMesh.geometry = buildSect(false);
         old.dispose();
       }
+      // Còn ở màn tải, WebGL2 (M6-1): biên dịch song song (KHR_parallel_shader_compile) thay vì biên dịch +
+      // link đồng bộ trong một khung vẽ. WebGPU thì Chrome biên dịch pipeline ở tiến trình GPU, không chặn
+      // luồng chính, dừng vẽ để chờ chỉ làm trễ; đã vào game thì dừng vẽ cũng là khựng, để renderer tự làm.
+      if (!this.started && !isWebGPU(this.renderer)) await this.precompile();
     } catch (e) {
       console.warn('[asset] không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
     }
@@ -1371,7 +1407,7 @@ export class Game {
   }
 
   private frame(): void {
-    if (this.disposed) return;
+    if (this.disposed || this.compiling > 0) return;
     this.renderer.info.reset();
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.lastT) / 1000);
@@ -1471,6 +1507,7 @@ export class Game {
     this.fpsFrames++;
     if (now - this.hudAt > 100) {
       this.hudAt = now;
+      if (me) assets.setViewer(rp.x, rp.z); // trước khi có vị trí thật, giữ điểm hồi sinh do prefetch đặt
       this.syncHud(me);
       this.music.tick(now, { active: this.started, room: get().room, x: rp.x, z: rp.z, flags: me?.fl ?? 0, monsters: this.ents.monsters.values() });
     }
