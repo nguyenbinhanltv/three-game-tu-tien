@@ -17,6 +17,7 @@
     "ledger:check": "pnpm --filter @dtl/server ledger:check",
     "size": "pnpm --filter @dtl/perf size",
     "bench:client": "pnpm --filter @dtl/perf bench",
+    "bench:switch": "pnpm --filter @dtl/perf bench --switch 20",
     "assets:build": "pnpm --filter @dtl/asset-pipeline run build",
     "assets:optimize": "pnpm --filter @dtl/asset-pipeline run optimize",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
