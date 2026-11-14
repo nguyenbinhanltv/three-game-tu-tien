@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { CharView, Equipment, InvSlot, QuestView } from '@dtl/shared';
+import { sfx } from '../game/audio';
 
 export interface TargetInfo {
   id: string;
@@ -98,6 +99,7 @@ export interface UIState {
   wantFly: boolean;
   chatOpen: boolean;
   quality: string;
+  camShake: boolean;
   /** Kiểu điều khiển: 'mouse' (nhìn bằng chuột kiểu FPS), 'turn' (A/D xoay) hoặc 'strafe' (kéo chuột). */
   controls: string;
   /** Con trỏ đang bị khóa để nhìn bằng chuột. */
@@ -146,6 +148,7 @@ export const useUI = create<UIState>(() => ({
   wantFly: false,
   chatOpen: false,
   quality: localStorage.getItem('dtl.quality') ?? 'medium',
+  camShake: localStorage.getItem('dtl.camShake') !== '0',
   controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '') ? (localStorage.getItem('dtl.controls') as string) : 'mouse',
   mouseLook: false,
   queuedSkill: -1,
@@ -180,6 +183,15 @@ export function pushToast(text: string, type = 'info'): void {
 export function togglePanel(p: Panel): void {
   useUI.setState((s) => ({ panel: s.panel === p ? null : p, npc: null }));
 }
+
+// Mở/đóng bảng hay hội thoại NPC (bằng phím, nút hay nút đóng): tiếng giở/gấp sách.
+useUI.subscribe((s, prev) => {
+  const now = s.panel ?? s.npc;
+  const was = prev.panel ?? prev.npc;
+  if (now === was) return;
+  if (now) sfx('ui_open', 0.8);
+  else sfx('ui_close', 0.8);
+});
 
 export const set = useUI.setState;
 export const get = useUI.getState;

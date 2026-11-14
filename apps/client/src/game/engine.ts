@@ -50,13 +50,16 @@ import { Environment } from './env';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline } from '../render/post';
+import { createWorldMaterial } from '../render/materials/world';
 import { GRADING, GRADING_DEFAULT } from '../render/grading';
 import { MusicController } from './music';
+import { updateOcclusion, withOccluderFade } from './occlusion';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
+import { CameraShake, SHAKE } from './shake';
 import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
@@ -99,6 +102,9 @@ const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: 
 
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
+const _shakePos = new THREE.Vector3();
+const _shakeLook = new THREE.Vector3();
+const _camFocus = new THREE.Vector3();
 
 let reqCounter = 0;
 /** Khóa chống gửi trùng cho các thao tác vật phẩm/tiền. */
@@ -191,6 +197,9 @@ export class Game {
   private exitDisc: THREE.Mesh | null = null;
   private sectMesh: THREE.Mesh | null = null;
   private sectAsset: { handle: AssetHandle; mat: THREE.Material } | null = null;
+  /** Material kiến trúc tông môn: riêng với MODEL_MAT để làm mờ vật che mà không ảnh hưởng nhân vật. */
+  private sectMat = withOccluderFade(createWorldMaterial({ vertexColors: true }));
+  shake = new CameraShake();
 
   // Dự đoán di chuyển.
   private cur: MoveState = { x: 0, y: 0, z: 0, vy: 0, grounded: true, flying: false };
@@ -334,7 +343,10 @@ export class Game {
       }
       else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind);
       const vol = this.volumeAt(m.x, m.z);
-      setTimeout(() => sfx(m.kind === 'lightning' ? 'thunder' : 'slash', vol, m), m.delay * 1000);
+      setTimeout(() => {
+        sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
+        this.shakeForHazard(m);
+      }, m.delay * 1000);
     });
     room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, 'chat', m.from));
     room.onMessage(S.KICK, (m: { k: string }) => {
@@ -381,6 +393,7 @@ export class Game {
   private async transfer(m: TransferMsg): Promise<void> {
     if (!Game.client) return;
     this.leaving = true;
+    sfx('portal');
     set({ phase: 'loading' });
     try {
       await this.room.leave(true);
@@ -437,7 +450,7 @@ export class Game {
     mark('terrainCoarse');
     this.terrain.shadows = q.shadows;
     this.scene.add(this.terrain.group);
-    this.sectMesh = new THREE.Mesh(buildSect(), MODEL_MAT);
+    this.sectMesh = new THREE.Mesh(buildSect(), this.sectMat);
     this.sectMesh.castShadow = q.shadows;
     this.sectMesh.receiveShadow = q.shadows;
     this.sectMesh.frustumCulled = false;
@@ -473,7 +486,7 @@ export class Game {
         handle.release();
         return;
       }
-      const mat = MODEL_MAT.clone();
+      const mat = this.sectMat.clone();
       mat.side = THREE.DoubleSide;
       this.sectAsset = { handle, mat };
       const root = handle.scene;
@@ -739,6 +752,7 @@ export class Game {
   }
 
   setTarget(id: string, kind: TargetInfo['kind']): void {
+    if (id !== this.targetId) sfx('target', 0.8);
     this.targetId = id;
     this.targetKind = kind;
     if (kind !== 'mon') this.autoAttack = false;
@@ -826,7 +840,9 @@ export class Game {
     if (!me) return;
     this.wantFly = false;
     set({ wantFly: false });
-    this.send(C.MEDITATE, { on: (me.fl & PF_MEDITATING) === 0 });
+    const on = (me.fl & PF_MEDITATING) === 0;
+    if (on) sfx('meditate');
+    this.send(C.MEDITATE, { on });
   }
 
   interact(): void {
@@ -869,6 +885,7 @@ export class Game {
     pushLog(text, type);
     if (type === 'good' || type === 'bad' || type === 'info') pushToast(text, type);
     if (type === 'loot') sfx('loot', 0.7);
+    else if (type === 'bad') sfx('ui_error', 0.8);
     if (m.k === 'sys.fly_no_mp') {
       this.wantFly = false;
       set({ wantFly: false });
@@ -967,6 +984,17 @@ export class Game {
     }
   }
 
+  /** Rung khi vùng nổ: chỉ sấm độ kiếp của mình hoặc boss đập đất gần mình. */
+  private shakeForHazard(m: HazardMsg): void {
+    if (this.disposed || !m.src) return;
+    const d = Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z);
+    if (m.src === this.sid) {
+      if (d < m.r + 12) this.shake.kick(SHAKE.thunder * (d < m.r + 1 ? 1 : 0.6));
+    } else if (this.ents?.monsters.get(m.src)?.model.def.boss && d < Math.max(m.r, m.w ?? 0) + 8) {
+      this.shake.kick(SHAKE.slam);
+    }
+  }
+
   /** Âm lượng giảm theo khoảng cách tới người chơi. */
   private volumeAt(x: number, z: number): number {
     const d = Math.hypot(x - this.renderPos.x, z - this.renderPos.z);
@@ -980,16 +1008,19 @@ export class Game {
       rain: 'rain',
       thunder: 'thunder',
       heal: 'heal',
-      potion: 'heal',
+      potion: 'potion',
       shield: 'shield',
       levelup: 'levelup',
       ascend: 'ascend',
       quest: 'quest',
-      craft: 'loot',
-      enhance: 'loot',
+      craft: 'craft',
+      enhance: 'enhance',
       gather: 'gather',
       death: 'death',
-      respawn: 'heal',
+      respawn: 'respawn',
+      cast: 'cast',
+      mcast: 'mcast',
+      tribstart: 'trib',
     };
     const name = map[t];
     if (!name) return;
@@ -1016,13 +1047,21 @@ export class Game {
       if (_v.distanceTo(this.renderPos) > 45) return;
     }
     // Hit feel chỉ là lớp hình. Chiêu của người chơi là đạn bay ~0,2 s nên trễ cho khớp lúc chạm.
+    if (!m.heal && m.n > 0) {
+      if (byMe && m.crit) this.shake.kick(SHAKE.crit);
+      if (mine && m.hv) this.shake.kick(SHAKE.heavy);
+    }
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
     let cls = 'other';
     if (m.heal) cls = 'heal';
     else if (mine) cls = 'hurt';
     else if (byMe) cls = m.crit ? 'crit' : 'hit';
-    if (!m.heal) sfx(mine ? 'hurt' : 'hit', mine || byMe ? 1 : this.volumeAt(_v.x, _v.z) * 0.5, _v);
+    if (!m.heal) {
+      // Bị hộ thể hấp thụ hết: tiếng kim khí; chí mạng/đòn nặng: tiếng va mạnh hơn đòn thường.
+      const name: Sfx = m.n === 0 ? 'block' : mine ? 'hurt' : m.crit || m.hv ? 'crit' : 'hit';
+      sfx(name, mine || byMe ? 1 : this.volumeAt(_v.x, _v.z) * 0.5, _v);
+    }
     const text = m.heal ? `+${m.n}` : m.n === 0 ? t('ui.absorbed') : mine ? `-${m.n}` : `${m.n}${m.crit ? '!' : ''}`;
     this.dmg.spawn(text, _v, cls);
   }
@@ -1260,8 +1299,10 @@ export class Game {
       cz = tz + (cz - tz) * k;
       cy = Math.max(ty + (cy - ty) * k, groundAt(cx, cz) + 0.7 - (4 - i) * 0.5);
     }
-    this.camera.position.set(cx, cy, cz);
-    this.camera.lookAt(tx, ty, tz);
+    this.shake.update(dt, _shakePos, _shakeLook);
+    this.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
+    this.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
+    updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
   }
 
   /** Gửi (và gửi lại nếu server chưa nhận) chiêu đang chờ khi hết GCD/hồi chiêu. */
@@ -1432,6 +1473,11 @@ export class Game {
     set({ controls: this.controls });
   }
 
+  setCamShake(on: boolean): void {
+    this.shake.setEnabled(on);
+    set({ camShake: on });
+  }
+
   setQuality(q: string): void {
     localStorage.setItem('dtl.quality', q);
     set({ quality: q });
@@ -1460,6 +1506,7 @@ export class Game {
     this.sectAsset?.handle.release();
     this.sectAsset?.mat.dispose();
     this.sectAsset = null;
+    this.sectMat.dispose();
     this.dmg?.clear();
     this.stage.replaceChildren();
     this.renderer?.dispose();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOSS_EXIT, COMBAT_ENTER, COMBAT_EXIT, MIN_HOLD, MusicDirector, type MusicInput, REGION_DWELL, regionTrack } from './musicDirector';
+import { AmbientPicker, ambientFor, BOSS_EXIT, COMBAT_ENTER, COMBAT_EXIT, isNightHour, MIN_HOLD, MusicDirector, type MusicInput, REGION_DWELL, regionTrack } from './musicDirector';
 
 const base: MusicInput = { dungeon: false, biome: 'sect', combat: false, boss: false, tribulation: false, meditating: false, dead: false };
 
@@ -133,5 +133,44 @@ describe('MusicDirector', () => {
     const out = run(d, 3.2, 4, { dead: true, combat: true });
     expect(out.map((c) => c.to)).toEqual(['sect']);
     expect(d.update(4.1, { ...base, dungeon: true, biome: 'wild' })).toMatchObject({ from: 'sect', to: 'dungeon' });
+  });
+});
+
+describe('ambientFor', () => {
+  it('chọn âm môi trường theo vùng và đêm', () => {
+    expect(ambientFor(false, 'wild', false)).toBe('wind');
+    expect(ambientFor(false, 'valley', false)).toBe('wind');
+    expect(ambientFor(false, 'forest', false)).toBe('forest');
+    expect(ambientFor(false, 'sect', false)).toBe('forest');
+    expect(ambientFor(false, 'lake', false)).toBe('stream');
+    expect(ambientFor(false, 'lake', true)).toBe('stream');
+    expect(ambientFor(false, 'forest', true)).toBe('night');
+    expect(ambientFor(false, 'wild', true)).toBe('night');
+    expect(ambientFor(false, 'dungeon', false)).toBe('cave');
+    expect(ambientFor(true, 'sect', true)).toBe('cave');
+  });
+
+  it('đêm từ 19h tới trước 5h', () => {
+    expect([18, 19, 23, 0, 4, 5, 12].map(isNightHour)).toEqual([false, true, true, true, true, false, false]);
+  });
+});
+
+describe('AmbientPicker', () => {
+  it('lần đầu đổi ngay, sau đó phải giữ đủ REGION_DWELL giây', () => {
+    const p = new AmbientPicker();
+    expect(p.update(0, 'forest')).toBe('forest');
+    expect(p.update(1, 'wind')).toBeNull();
+    expect(p.update(1 + REGION_DWELL - 0.1, 'wind')).toBeNull();
+    expect(p.update(1 + REGION_DWELL, 'wind')).toBe('wind');
+    expect(p.current).toBe('wind');
+  });
+
+  it('đi qua ranh giới rồi quay lại thì không đổi', () => {
+    const p = new AmbientPicker();
+    p.update(0, 'forest');
+    expect(p.update(1, 'wind')).toBeNull();
+    expect(p.update(2, 'forest')).toBeNull();
+    expect(p.update(10, 'forest')).toBeNull();
+    expect(p.current).toBe('forest');
   });
 });

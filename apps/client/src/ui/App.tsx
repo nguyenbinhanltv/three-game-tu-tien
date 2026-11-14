@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { validName } from '@dtl/shared';
 import { t } from '@dtl/content';
 import { assets } from '../game/assets';
+import { sfx } from '../game/audio';
 import { TitleBackdrop } from '../game/backdrop';
 import { Game } from '../game/engine';
 import { Hud } from './Hud';
@@ -248,6 +249,15 @@ function dropBackdrop(): void {
 }
 
 export function App() {
+  // Tiếng bấm cho mọi nút giao diện (nút đóng bảng đã có tiếng gấp sách riêng).
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const b = (e.target as Element | null)?.closest?.('button');
+      if (b && !b.disabled && !b.classList.contains('window-close')) sfx('ui_click', 0.7);
+    };
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, []);
   const phase = useUI((s) => s.phase);
   const error = useUI((s) => s.error);
   // Màn tiêu đề còn che game cho tới khi các dòng chữ tải đã hiện xong.
