@@ -14,6 +14,17 @@ export interface TargetInfo {
   cast?: TargetCast;
 }
 
+/** Thanh boss giữa phía trên: boss đang là mục tiêu, hoặc boss gần nhất đang giao chiến. */
+export interface BossInfo {
+  id: string;
+  /** id quái (để lấy tên, danh hiệu qua i18n). */
+  def: string;
+  level: number;
+  hp: number;
+  mhp: number;
+  cast?: TargetCast;
+}
+
 export interface TargetCast {
   kind: 'chant' | 'stun';
   end: number;
@@ -78,6 +89,7 @@ export interface UIState {
   mmp: number;
   flags: number;
   target: TargetInfo | null;
+  boss: BossInfo | null;
   log: LogLine[];
   toasts: Toast[];
   /** id skill → thời điểm (đồng hồ client, ms) dùng lại được. */
@@ -128,6 +140,7 @@ export const useUI = create<UIState>(() => ({
   mmp: 0,
   flags: 0,
   target: null,
+  boss: null,
   log: [],
   toasts: [],
   cds: {},

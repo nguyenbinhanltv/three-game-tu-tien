@@ -305,9 +305,11 @@ kbd {
   transform: translateX(-50%);
   width: 300px;
 }
-.target-frame.boss {
-  width: 420px;
-  border-color: #ffb347;
+.target-frame.below-boss {
+  top: 124px;
+}
+.hud.with-boss .toasts {
+  top: 210px;
 }
 .frame-head {
   display: flex;
@@ -329,63 +331,175 @@ kbd {
   white-space: nowrap;
 }
 
-.bar {
+/* ---------- thanh đo (M4-8) ----------
+ * Một họ hình khối: đầu vát (lục giác dẹt), viền đồng thau mảnh, lòng mực lam đêm, phần đầy có gradient
+ * dọc + mép sáng nắng sớm, vạch chia, đoạn trễ màu sương. Màu theo bảng màu tâm trạng (docs/art-bible.md mục 4).
+ */
+.gauge {
+  --cut: 7px;
+  --fill: linear-gradient(180deg, #e3705f 0%, #b8473a 45%, #6f2620 100%); /* son đỏ wood_cinnabar */
   position: relative;
   height: 16px;
-  margin-top: 4px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.55);
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 5px;
+  background: linear-gradient(180deg, #e1c07a, #ae8b49 45%, #5e4620); /* đồng thau wood_bronze */
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%);
 }
-.bar-fill {
-  height: 100%;
-  transition: width 0.18s linear;
-}
-.bar.hp .bar-fill {
-  background: linear-gradient(180deg, #ee6258, #b8322a);
-}
-.bar.hp.enemy .bar-fill {
-  background: linear-gradient(180deg, #f08a4a, #c24a22);
-}
-.bar.mp .bar-fill {
-  background: linear-gradient(180deg, #5aa9ee, #2c6fb8);
-}
-.bar.xp {
-  height: 12px;
-}
-.bar.xp .bar-fill {
-  background: linear-gradient(180deg, #e6c56a, #a8853a);
-}
-/* Thanh niệm chú / choáng của mục tiêu (boss). */
-.bar.tcast {
-  height: 14px;
-}
-.bar.tcast .bar-fill {
-  position: relative;
-  transition: none;
-  background: linear-gradient(180deg, #bfefff, #4fa9d6);
-}
-.bar.tcast.guarded .bar-fill {
-  background: linear-gradient(180deg, #8c9aa6, #56616b);
-}
-.bar.tcast.stun .bar-fill {
-  background: linear-gradient(180deg, #fff2b0, #d9a63a);
-}
-.tcast-guard {
+.gauge-in {
   position: absolute;
-  inset: 0 auto 0 0;
-  background: rgba(0, 0, 0, 0.35);
-  border-right: 1px solid rgba(255, 255, 255, 0.5);
+  inset: 1.5px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0c121a, #141d28);
+  clip-path: polygon(
+    calc(var(--cut) - 1px) 0,
+    calc(100% - var(--cut) + 1px) 0,
+    100% 50%,
+    calc(100% - var(--cut) + 1px) 100%,
+    calc(var(--cut) - 1px) 100%,
+    0 50%
+  );
 }
-.bar-text {
+.gauge-fill,
+.gauge-trail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+.gauge-fill {
+  background: var(--fill);
+  transition: width 0.12s linear;
+}
+/* Mép sáng phía trên (nắng sớm air_sun_dawn). */
+.gauge-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 62% 0;
+  background: linear-gradient(180deg, rgba(255, 226, 170, 0.6), rgba(242, 196, 126, 0));
+}
+/* Mép đầu phần đầy: đọc được máu dừng ở đâu. */
+.gauge-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 2px;
+  background: rgba(255, 238, 205, 0.85);
+  box-shadow: 0 0 6px 1px rgba(242, 196, 126, 0.55);
+}
+/* Đoạn trễ: màu sương (air_mist), chạy bằng JS nên không có transition. */
+.gauge-trail {
+  background: linear-gradient(180deg, rgba(240, 245, 242, 0.95), rgba(196, 210, 204, 0.82));
+}
+.gauge-ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(100% / var(--segs) - 1px),
+    rgba(8, 12, 18, 0.6) calc(100% / var(--segs) - 1px),
+    rgba(8, 12, 18, 0.6) calc(100% / var(--segs))
+  );
+}
+.gauge-text {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   font: 600 10.5px var(--sans);
-  text-shadow: 0 1px 2px #000;
+  color: #f4f1ea;
+  text-shadow:
+    0 1px 2px #000,
+    0 0 3px rgba(0, 0, 0, 0.8);
   white-space: nowrap;
+}
+.gauge.mp {
+  --fill: linear-gradient(180deg, #9cefdc 0%, #3fa3a4 45%, #1d5560 100%); /* linh khí ngọc spirit_jade → nước ngọc */
+}
+.gauge.hp.ally {
+  --fill: linear-gradient(180deg, #a9d48a 0%, #5e9a5a 45%, #2a5a3c 100%); /* cỏ nắng → lá */
+}
+.gauge.hp.boss {
+  --cut: 11px;
+  --fill: linear-gradient(180deg, #e7735f 0%, #a83a33 42%, #4a2b5e 100%); /* son đỏ chìm vào ma khí spirit_demonic */
+  height: 20px;
+}
+.gauge.xp {
+  --cut: 5px;
+  --fill: linear-gradient(180deg, #ffe7ad 0%, #d2ae62 50%, #8a6a2c 100%); /* kim quang spirit_gold → đồng thau */
+  height: 11px;
+  margin-top: 6px;
+}
+.gauge.xp .gauge-fill::after {
+  display: none;
+}
+.gauge.xp .gauge-text {
+  font-size: 9.5px;
+}
+/* Niệm chú / choáng của boss: cùng họ thanh, mảnh hơn. */
+.gauge.tcast {
+  --cut: 6px;
+  --fill: linear-gradient(180deg, #e8f9ff 0%, #9ed8ec 45%, #3f8fb0 100%); /* kiếm khí spirit_sword */
+  height: 14px;
+}
+.gauge.tcast .gauge-fill {
+  transition: none;
+}
+.gauge.tcast.guarded {
+  --fill: linear-gradient(180deg, #a9b3ba, #6a737b 50%, #3c434a);
+}
+.gauge.tcast.stun {
+  --fill: linear-gradient(180deg, #fff3c6 0%, #f2c47e 45%, #a57a2e 100%); /* nắng sớm / kim quang */
+}
+.tcast-guard {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(0, 0, 0, 0.35);
+  border-right: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- thanh boss giữa phía trên ---------- */
+.boss-bar {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 44vw);
+  padding: 6px 18px 10px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(12, 18, 28, 0.72), rgba(12, 18, 28, 0) 72%);
+  pointer-events: none;
+}
+.boss-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.boss-name {
+  font: 700 22px var(--font-display, var(--serif));
+  letter-spacing: 1px;
+  color: #f3e3bc;
+  text-shadow:
+    0 1px 2px #000,
+    0 0 12px rgba(157, 57, 46, 0.55);
+  white-space: nowrap;
+}
+.boss-level {
+  font: 600 12px var(--font-display, var(--serif));
+  color: var(--gold-soft);
+  text-shadow: 0 1px 2px #000;
+}
+.boss-title {
+  margin-top: -1px;
+  font: italic 12.5px var(--font-display, var(--serif));
+  color: #c9d4cf;
+  text-shadow: 0 1px 2px #000;
+}
+.boss-bar .gauge.tcast {
+  width: 62%;
+  margin: 6px auto 0;
 }
 
 .right-col {
@@ -554,14 +668,14 @@ kbd {
   transform: translateX(-50%);
   width: 260px;
   height: 12px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--line);
-  overflow: hidden;
+  padding: 1.5px;
+  background: linear-gradient(180deg, #e1c07a, #ae8b49 45%, #5e4620);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0 50%);
 }
 .castbar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ffe08a, #fff6cf);
+  background: linear-gradient(180deg, #fff3c6, #f2c47e 50%, #b98a3a);
+  clip-path: polygon(5px 0, 100% 0, 100% 100%, 5px 100%, 0 50%);
 }
 
 .skillbar {
