@@ -5,6 +5,8 @@ import {
   FLY_SPEED,
   groundAt,
   heightAt,
+  inHazard,
+  isHeavyHit,
   IN_FLY,
   IN_JUMP,
   IN_UP,
@@ -115,5 +117,37 @@ describe('công thức', () => {
     expect(validName('<script>')).toBe(false);
     expect(validName('x'.repeat(20))).toBe(false);
     expect(validName(123)).toBe(false);
+  });
+});
+
+describe('vùng báo trước và đòn nặng', () => {
+  it('phân cấp đòn theo hệ số', () => {
+    expect(isHeavyHit(1)).toBe(false);
+    expect(isHeavyHit(1.7)).toBe(false);
+    expect(isHeavyHit(2.3)).toBe(true);
+  });
+  it('hình tròn', () => {
+    const h = { x: 10, z: 10, r: 3 };
+    expect(inHazard(h, 12, 10)).toBe(true);
+    expect(inHazard(h, 13.1, 10)).toBe(false);
+  });
+  it('hình chữ nhật theo hướng', () => {
+    // Gốc (0,0) nhìn về +x (yaw = π/2), dài 10, rộng 2.
+    const h = { x: 0, z: 0, r: 10, sh: 'rect' as const, yaw: Math.PI / 2, w: 2 };
+    expect(inHazard(h, 5, 0.9)).toBe(true);
+    expect(inHazard(h, 5, 1.1)).toBe(false);
+    expect(inHazard(h, -0.5, 0)).toBe(false); // sau lưng
+    expect(inHazard(h, 10.5, 0)).toBe(false); // quá chiều dài
+    // Yaw 0 nhìn về +z.
+    expect(inHazard({ ...h, yaw: 0 }, 0, 5)).toBe(true);
+    expect(inHazard({ ...h, yaw: 0 }, 5, 0)).toBe(false);
+  });
+  it('hình quạt', () => {
+    const h = { x: 0, z: 0, r: 8, sh: 'cone' as const, yaw: 0, w: Math.PI / 6 }; // nửa góc 30°
+    expect(inHazard(h, 0, 5)).toBe(true);
+    expect(inHazard(h, 2, 5)).toBe(true); // ~21.8°
+    expect(inHazard(h, 4, 5)).toBe(false); // ~38.7°
+    expect(inHazard(h, 0, 8.5)).toBe(false);
+    expect(inHazard(h, 0, -2)).toBe(false);
   });
 });
