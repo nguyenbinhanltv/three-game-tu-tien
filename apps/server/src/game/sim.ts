@@ -1,6 +1,7 @@
 import { randomInt } from 'node:crypto';
 import type { Client } from 'colyseus';
 import {
+  bossPhaseAt,
   fxSeed,
   type CdMsg,
   chantInterrupt,
@@ -31,15 +32,21 @@ import {
   type LevelDef,
   MAX_ENHANCE,
   meditateXpPerSec,
+  MF_BROKEN,
   MF_CHANT,
   MF_STUN,
   type MonsterCaster,
   type MonsterChant,
   type MonsterDef,
+  type MonsterSweep,
   monsterStats,
   monsterXp,
   type MoveInput,
   type MoveState,
+  type PhaseRules,
+  phaseRules,
+  postureDecay,
+  postureGain,
   MS_ATTACK,
   MS_CHASE,
   MS_DEAD,
@@ -174,8 +181,17 @@ export interface MonEnt {
   /** Boss đang niệm chú (ngắt được sau đoạn hộ chú); `chantAt`: lúc được niệm lần tới (0 = chưa hẹn). */
   chant: { startAt: number; endAt: number } | null;
   chantAt: number;
-  /** Bị ngắt chú: choáng tới lúc này, nhận thêm sát thương. */
+  /** Bị ngắt chú hoặc mất thế: choáng tới lúc này, nhận thêm sát thương. */
   stunUntil: number;
+  /** Pha boss (0 = pha đầu) và bộ chiêu/nhịp của pha đó (quái thường luôn ở pha 0). */
+  phase: number;
+  rules: PhaseRules;
+  /** Thanh phá thế 0–1 và lúc trúng đòn gần nhất (ms). */
+  posture: number;
+  lastHitAt: number;
+  /** Chiêu chém vùng: lúc được ra tiếp (0 = chưa hẹn); đang đứng yên khóa hướng tới `windUntil`. */
+  sweepAt: number;
+  windUntil: number;
 }
 
 interface NodeEnt {
@@ -752,12 +768,14 @@ export class GameSim {
   private hitMonster(p: PlayerEnt, mon: MonEnt, power: number): void {
     const { dmg, crit } = computeDamage(p.char.atk, power, mon.defn, Math.random(), Math.random());
     const stunned = this.now < mon.stunUntil;
-    this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || isHeavyHit(power));
+    const heavy = isHeavyHit(power);
+    // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
+    this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy);
   }
 
   /** Chiêu ngắt trúng boss: phá chú nếu đúng cửa sổ. Mục tiêu, tầm, GCD, hồi chiêu đã kiểm ở onSkill. */
   private tryInterrupt(p: PlayerEnt, mon: MonEnt): void {
-    const ch = mon.def.ai?.chant;
+    const ch = mon.rules.ai.chant;
     if (!ch || !mon.chant || mon.state === MS_DEAD || this.now < mon.evadeUntil) return;
     const r = chantInterrupt(mon.chant.startAt, mon.chant.endAt, ch.open, this.now);
     if (r === 'guarded') return this.sys(p, 'sys.chant_guarded', { boss: monsterName(mon.def.id) }, 'bad');
@@ -770,6 +788,74 @@ export class GameSim {
     this.setMonFlags(mon, MF_STUN, mon.stunUntil);
     this.fx({ t: 'interrupt', src: p.sid, dst: mon.id, d: ch.stun });
     this.sysAll('sys.chant_broken', { name: p.char.name, boss: monsterName(mon.def.id) }, 'good');
+    // Ngắt đúng lúc là nguồn lấp thanh phá thế lớn nhất.
+    const ps = mon.def.posture;
+    if (ps) this.addPosture(mon, ps.interrupt);
+  }
+
+  /** Cộng phá thế; đầy thì boss mất thế. Không lấp khi đang quỵ vì mất thế. */
+  private addPosture(m: MonEnt, n: number): void {
+    const ps = m.def.posture;
+    if (!ps || !(n > 0) || (m.state !== MS_CHASE && m.state !== MS_ATTACK)) return;
+    if (m.s.mf & MF_BROKEN && this.now < m.stunUntil) return;
+    m.lastHitAt = this.now;
+    m.posture = Math.min(1, m.posture + n);
+    if (m.posture >= 1) this.breakPosture(m);
+    else this.syncPosture(m);
+  }
+
+  private syncPosture(m: MonEnt): void {
+    const pz = Math.floor(m.posture * 100);
+    if (m.s.pz !== pz) m.s.pz = pz;
+  }
+
+  /**
+   * Đầy thanh phá thế: boss quỵ `brk` giây (đứng yên, nhận thêm sát thương), mất chú đang niệm.
+   * Vùng chém đã thả trước đó vẫn nổ đúng như báo trước (thấy gì thì trúng nấy).
+   */
+  private breakPosture(m: MonEnt): void {
+    const ps = m.def.posture!;
+    m.posture = 0;
+    this.syncPosture(m);
+    const ch = m.rules.ai.chant;
+    if (m.chant && ch) m.chantAt = this.now + ch.cd * 1000;
+    m.chant = null;
+    m.windUntil = 0;
+    m.comboAt = 0;
+    m.comboTarget = '';
+    m.cast = null;
+    m.stunUntil = Math.max(m.stunUntil, this.now + ps.brk * 1000);
+    this.setMonFlags(m, MF_STUN | MF_BROKEN, m.stunUntil);
+    this.fx({ t: 'break', src: m.id, d: ps.brk });
+    this.sysAll('sys.posture_broken', { boss: monsterName(m.def.id) }, 'good');
+  }
+
+  /** Đổi pha boss: thay bộ chiêu/nhịp; `ph` lên state để client vẽ thanh niệm chú đúng thời lượng. */
+  private setPhase(m: MonEnt, ph: number): void {
+    if (m.phase === ph) return;
+    m.phase = ph;
+    m.rules = phaseRules(m.def, ph);
+    if (m.s.ph !== ph) m.s.ph = ph;
+  }
+
+  /** Máu xuống dưới ngưỡng pha: đổi pha, báo client (câu thoại chọn ở client qua i18n), chiêu mới ra sớm. */
+  private checkPhase(m: MonEnt): void {
+    const phases = m.def.phases;
+    if (!phases || m.s.hp <= 0) return;
+    const ph = bossPhaseAt(m.s.hp / m.s.mhp, phases, m.phase);
+    if (ph === m.phase) return;
+    this.setPhase(m, ph);
+    // Pha mới bỏ chú/đọc chú thì hủy cái đang dở, không để kẹt cờ niệm chú.
+    if (m.chant && !m.rules.ai.chant) {
+      m.chant = null;
+      m.chantAt = 0;
+      if (m.s.mf & MF_CHANT) this.setMonFlags(m, 0, 0);
+    }
+    if (m.cast && !m.rules.ai.caster) m.cast = null;
+    m.comboAt = 0;
+    m.comboTarget = '';
+    if (m.rules.ai.sweep && !m.chant) m.sweepAt = this.now + 2500;
+    this.fx({ t: 'phase', src: m.id, d: ph });
   }
 
   private setMonFlags(m: MonEnt, mf: number, ce: number): void {
@@ -807,7 +893,7 @@ export class GameSim {
     this.addHazard({ x: m.s.x, z: m.s.z, r: c.r }, c.delay, c.mul, false, c.kind, m.id, m.atk);
   }
 
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false): void {
+  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv): void {
     if (mon.state === MS_DEAD) return;
     if (this.now < mon.evadeUntil) {
       this.host.broadcast(S.DMG, { dst: mon.id, n: 0 } satisfies DmgMsg);
@@ -829,6 +915,13 @@ export class GameSim {
         mon.s.st = MS_CHASE;
         mon.unreachableSince = 0;
       }
+    }
+    // Sau khi AI đã vào trận (resetAi ở trên xóa phá thế/choáng). Boss đang bỏ đuổi về nhà thì không đổi pha,
+    // không lấp phá thế: đuổi theo đánh boss đang chạy về không được lợi gì.
+    if (mon.def.boss && hp > 0 && (mon.state === MS_CHASE || mon.state === MS_ATTACK)) {
+      this.checkPhase(mon);
+      const ps = mon.def.posture;
+      if (ps && p) this.addPosture(mon, postureGain(ps, dmg, mon.s.mhp, heavy));
     }
     if (hp <= 0) this.killMonster(mon);
   }
@@ -867,7 +960,11 @@ export class GameSim {
       this.questEvent(p, 'kill', mon.def.id, 1);
     }
     mon.threat.clear();
-    if (mon.def.boss) this.sysAll('sys.boss_dead', { boss: monsterName(mon.def.id) }, 'good');
+    if (mon.def.boss) {
+      this.sysAll('sys.boss_dead', { boss: monsterName(mon.def.id) }, 'good');
+      // Boss gục: client hiện câu cuối (nếu có) cho người đứng gần.
+      this.fx({ t: 'bfall', src: mon.id });
+    }
     this.host.onMonsterKilled?.(mon);
   }
 
@@ -1014,6 +1111,12 @@ export class GameSim {
       chant: null,
       chantAt: 0,
       stunUntil: 0,
+      phase: 0,
+      rules: phaseRules(def, 0),
+      posture: 0,
+      lastHitAt: 0,
+      sweepAt: 0,
+      windUntil: 0,
     };
     this.monsters.push(m);
     this.monById.set(id, m);
@@ -1041,6 +1144,7 @@ export class GameSim {
     m.target = '';
     m.threat.clear();
     this.resetAi(m);
+    this.setPhase(m, 0);
     if (m.def.boss) this.sysAll('sys.boss_spawn', { boss: monsterName(m.def.id) }, 'info');
   }
 
@@ -1078,6 +1182,10 @@ export class GameSim {
     m.chant = null;
     m.chantAt = 0;
     m.stunUntil = 0;
+    m.posture = 0;
+    m.sweepAt = 0;
+    m.windUntil = 0;
+    this.syncPosture(m);
     this.setMonFlags(m, 0, 0);
     this.resetTargetAi(m);
   }
@@ -1144,7 +1252,7 @@ export class GameSim {
 
   /** Đòn thứ hai của chuỗi: né được nếu đã ra khỏi tầm. */
   private resolveCombo(m: MonEnt): void {
-    const combo = m.def.ai?.combo;
+    const combo = m.rules.ai.combo;
     const p = this.players.get(m.comboTarget);
     m.comboAt = 0;
     m.comboTarget = '';
@@ -1185,6 +1293,25 @@ export class GameSim {
       m.cast = { endAt: this.now + c.cast * 1000 };
       this.fx({ t: 'mcast', src: m.id, dst: target.sid, d: c.cast });
     }
+  }
+
+  /**
+   * Boss chém vùng: khóa hướng về mục tiêu, vùng báo trước (quạt/chữ nhật từ boss) hiện ngay, nổ sau `delay` giây.
+   * Boss đứng yên tới lúc nổ để hình vùng và tư thế khớp nhau; ai đứng trong vùng lúc nổ mới trúng.
+   */
+  private startSweep(m: MonEnt, target: PlayerEnt, sw: MonsterSweep): void {
+    const yaw = Math.atan2(target.move.x - m.s.x, target.move.z - m.s.z);
+    m.s.yaw = yaw;
+    const g: HazardGeom =
+      sw.shape === 'rect'
+        ? { x: m.s.x, z: m.s.z, r: sw.r, sh: 'rect', yaw, w: sw.w }
+        : { x: m.s.x, z: m.s.z, r: sw.r, sh: 'cone', yaw, w: (sw.w * Math.PI) / 180 };
+    this.addHazard(g, sw.delay, sw.mul, false, sw.kind, m.id, m.atk);
+    this.fx({ t: 'mcast', src: m.id, dst: target.sid, d: sw.delay });
+    m.sweepAt = this.now + sw.cd * 1000;
+    m.windUntil = this.now + sw.delay * 1000 + 250;
+    m.attackAt = Math.max(m.attackAt, m.windUntil + 400);
+    this.setMonState(m, MS_ATTACK);
   }
 
   private releaseCast(m: MonEnt, target: PlayerEnt, c: MonsterCaster, d: number, reachable: boolean): void {
@@ -1252,7 +1379,14 @@ export class GameSim {
     if (m.state === MS_RETURN) {
       const left = this.moveToward(m, m.homeX, m.homeZ, def.speed * 1.6, dt);
       if (m.s.hp < m.s.mhp) m.s.hp = Math.min(m.s.mhp, m.s.hp + Math.ceil(m.s.mhp * 0.25 * dt));
+      // Hồi đầy máu thì trận mới bắt đầu lại từ pha đầu.
+      if (m.s.hp >= m.s.mhp) this.setPhase(m, 0);
       if (left < 0.5) {
+        if (def.boss) {
+          // Boss về tới chỗ: đầy máu, trận sau bắt đầu lại từ pha đầu (cả khi cả đội chết ngay cạnh chỗ sinh).
+          m.s.hp = m.s.mhp;
+          this.setPhase(m, 0);
+        }
         m.threat.clear();
         m.wx = m.homeX;
         m.wz = m.homeZ;
@@ -1261,6 +1395,11 @@ export class GameSim {
       return;
     }
     // CHASE / ATTACK
+    const ps = def.posture;
+    if (ps && m.posture > 0) {
+      m.posture = postureDecay(ps, m.posture, (this.now - m.lastHitAt) / 1000, dt);
+      this.syncPosture(m);
+    }
     if (m.stunUntil) {
       if (this.now < m.stunUntil) return;
       m.stunUntil = 0;
@@ -1309,6 +1448,7 @@ export class GameSim {
         m.threat.clear();
         m.unreachableSince = 0;
         m.s.hp = m.s.mhp;
+        this.setPhase(m, 0);
         m.evadeUntil = this.now + 6000;
         this.setMonState(m, MS_RETURN);
         return;
@@ -1316,32 +1456,49 @@ export class GameSim {
     } else {
       m.unreachableSince = 0;
     }
-    const chant = def.ai?.chant;
+    const ai = m.rules.ai;
+    if (m.windUntil) {
+      // Đang vung chiêu chém vùng: đứng yên, giữ hướng đã khóa cho khớp vùng báo trước.
+      if (this.now < m.windUntil) {
+        this.setMonState(m, MS_ATTACK);
+        return;
+      }
+      m.windUntil = 0;
+    }
+    const chant = ai.chant;
     if (chant && this.tickChant(m, chant, target, d, reachable)) return;
-    const caster = def.ai?.caster;
+    const sweep = ai.sweep;
+    if (sweep && reachable && !m.comboAt) {
+      if (!m.sweepAt) m.sweepAt = this.now + sweep.cd * 500;
+      else if (this.now >= m.sweepAt && d <= sweep.r * 0.85) {
+        this.startSweep(m, target, sweep);
+        return;
+      }
+    }
+    const caster = ai.caster;
     if (caster) {
       this.tickCaster(m, target, caster, d, reachable, dt);
     } else if (!def.boss && !this.holdsMeleeSlot(m, target, d, reach)) {
       this.orbit(m, target, d, reach, dt);
     } else if (d > reach) {
-      this.moveToward(m, target.move.x, target.move.z, def.speed, dt);
+      this.moveToward(m, target.move.x, target.move.z, def.speed * m.rules.speedMul, dt);
       this.setMonState(m, MS_CHASE);
     } else {
       m.s.yaw = Math.atan2(dx, dz);
       this.setMonState(m, MS_ATTACK);
       if (reachable && this.now >= m.attackAt && !m.comboAt) {
-        m.attackAt = this.now + def.attackCd * 1000;
+        m.attackAt = this.now + def.attackCd * m.rules.cdMul * 1000;
         const { dmg } = computeDamage(m.atk, 1, target.char.def, Math.random(), 1);
         this.fx({ t: 'bite', src: m.id, dst: target.sid });
         this.damagePlayer(target, dmg, m.id);
-        const combo = def.ai?.combo;
+        const combo = ai.combo;
         if (combo && !this.isDead(target) && Math.random() < combo.chance) {
           m.comboAt = this.now + combo.delay * 1000;
           m.comboTarget = target.sid;
         }
       }
     }
-    const slam = def.ai?.slam;
+    const slam = ai.slam;
     if (slam && this.now >= m.abilityAt) {
       m.abilityAt = this.now + slam.cd * 1000;
       // Chiêu diện rộng báo trước dưới chân từng người: né ra khỏi vòng.
@@ -1824,6 +1981,20 @@ export class GameSim {
           }
         }
         return say('hạ ' + n + ' quái');
+      }
+      case 'hurt': {
+        // Thử pha boss: hạ máu quái quanh mình về `pct`% (qua damageMonster nên pha/phá thế chạy như thật).
+        const pct = Math.max(1, Math.min(100, Number(a[1]) | 0 || 50));
+        let n = 0;
+        for (const m of this.monsters) {
+          if (m.state === MS_DEAD || Math.hypot(m.s.x - p.move.x, m.s.z - p.move.z) >= 40) continue;
+          const want = Math.ceil((m.s.mhp * pct) / 100);
+          if (m.s.hp > want) {
+            this.damageMonster(m, m.s.hp - want, p);
+            n++;
+          }
+        }
+        return say('hạ máu ' + n + ' quái về ' + pct + '%');
       }
       case 'spawn': {
         // Gọi quái thử ngay cạnh mình (không hồi sinh, tự dọn sau khi chết).

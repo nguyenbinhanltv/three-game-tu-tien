@@ -26,6 +26,8 @@ export const MS_DEAD = 4;
 export const MF_CHANT = 1;
 /** Bị ngắt chú: choáng, nhận thêm sát thương. */
 export const MF_STUN = 2;
+/** Đi cùng MF_STUN khi boss quỵ vì đầy thanh phá thế (thời lượng theo `posture.brk` thay vì `chant.stun`). */
+export const MF_BROKEN = 4;
 
 /** Client → server. */
 export const C = {

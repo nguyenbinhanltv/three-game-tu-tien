@@ -155,15 +155,25 @@ describe('AssetCache', () => {
     expect(a).toBeDefined();
     const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, a.file));
     const loader = createGltfLoader(createKtx2Loader());
+    // Node không giải mã được ảnh (JPEG/PNG trong GLB): thay texture bằng Texture rỗng, chỉ kiểm hình học và material.
+    loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
     const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
     const gltf = await loader.parseAsync(ab, '');
     let tris = 0;
+    const mats = new Set<THREE.MeshStandardMaterial>();
     gltf.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh || (o.userData.lod ?? 0) > 0) return;
       const g = mesh.geometry;
       tris += (g.index ? g.index.count : g.attributes.position.count) / 3;
+      expect(g.attributes.color).toBeDefined();
+      mats.add(mesh.material as THREE.MeshStandardMaterial);
     });
     expect(tris).toBe(a.triangles);
+    // Vật liệu PBR theo chất liệu (M2-9): màu đỉnh nhân texture chi tiết lặp theo KHR_texture_transform.
+    const tile = [...mats].find((m) => m.name === 'arch_sect_tile');
+    expect(tile?.vertexColors).toBe(true);
+    expect(tile?.map?.repeat.x).toBeGreaterThan(1);
+    expect([...mats].some((m) => m.metalness > 0)).toBe(true);
   });
 });

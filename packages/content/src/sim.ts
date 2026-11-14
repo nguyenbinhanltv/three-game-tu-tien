@@ -11,6 +11,7 @@ import {
   meditateXpPerSec,
   monsterStats,
   monsterXp,
+  phaseRules,
   NGUNG_KHI_MAX,
   playerBaseStats,
   xpLevelFactor,
@@ -149,7 +150,7 @@ for (const [id, lv] of [
  * Nhóm `n` người cùng cấp `lv` đánh boss. Ngắt chú mọi lần: boss choáng `stun` giây trong mỗi chu kỳ `cd`,
  * nhận thêm sát thương và không đánh. Không ngắt: chú nổ, giả sử không ai né.
  */
-console.log('\nBoss (nhóm × cấp)                 TTK ngắt/không   tank máu/s   chú   đập   cận chiến');
+console.log('\nBoss (nhóm × cấp)                 TTK ngắt/không   tank máu/s   chú   đập   cận chiến   chém   mất thế');
 for (const [id, lv, n] of [
   ['boss_kiem_khoi', 12, 3],
   ['boss_huyet_lang_vuong', 13, 3],
@@ -170,10 +171,15 @@ for (const [id, lv, n] of [
   const melee = monsterDps({ ...def, ai: def.ai?.combo ? { combo: def.ai.combo } : undefined }, ms.atk, pl.def);
   const slamHit = sl ? hit(ms.atk, sl.mul, pl.def) : 0;
   const chantHit = ch ? hit(ms.atk, ch.mul, pl.def) : 0;
+  // Pha sau: chiêu chém vùng mạnh nhất qua các pha; số lần mất thế ước tính từ sát thương (k lần thanh trên cả trận)
+  // cộng các lần ngắt chú thành công.
+  const swHit = Math.max(0, ...(def.phases ?? []).map((_, i) => phaseRules(def, i + 1).ai.sweep).map((w) => (w ? hit(ms.atk, w.mul, pl.def) : 0)));
+  const ps = def.posture;
+  const breaks = ps ? Math.floor(ps.k + (ch ? Math.floor(ttkInt / ch.cd) * ps.interrupt : 0)) : 0;
   // Tank đứng yên: cận chiến (trừ lúc boss bận) + đập vùng + chú (nếu không ngắt).
   const tankNo = melee * (1 - chantFrac) + (sl ? slamHit / sl.cd : 0) + (ch ? chantHit / ch.cd : 0);
   console.log(
-    `${(id + ' (' + n + '×' + lv + ')').padEnd(32)} ${ttkInt.toFixed(0).padStart(4)}s/${ttkNo.toFixed(0).padStart(4)}s ${pct(tankNo / pl.hp).padStart(10)} ${(ch ? pct(chantHit / pl.hp) : '-').padStart(6)} ${pct(slamHit / pl.hp).padStart(5)} ${pct(hit(ms.atk, 1, pl.def) / pl.hp).padStart(8)}`,
+    `${(id + ' (' + n + '×' + lv + ')').padEnd(32)} ${ttkInt.toFixed(0).padStart(4)}s/${ttkNo.toFixed(0).padStart(4)}s ${pct(tankNo / pl.hp).padStart(10)} ${(ch ? pct(chantHit / pl.hp) : '-').padStart(6)} ${pct(slamHit / pl.hp).padStart(5)} ${pct(hit(ms.atk, 1, pl.def) / pl.hp).padStart(8)} ${(swHit ? pct(swHit / pl.hp) : '-').padStart(6)} ${String(breaks).padStart(8)}`,
   );
 }
-console.log('chú/đập/cận chiến: phần trăm máu một người cùng cấp mất mỗi đòn (trang bị theo nhiệm vụ).');
+console.log('chú/đập/cận chiến/chém: phần trăm máu một người cùng cấp mất mỗi đòn (trang bị theo nhiệm vụ). Mất thế: số lần ước tính mỗi trận.');
