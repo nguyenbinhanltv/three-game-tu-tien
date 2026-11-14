@@ -65,10 +65,11 @@ export function serverUrl(): string {
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
 }
 
-const QUALITY: Record<string, { pixelRatio: number; shadows: boolean; bloom: boolean }> = {
-  low: { pixelRatio: 1, shadows: false, bloom: false },
-  medium: { pixelRatio: 1.5, shadows: false, bloom: true },
-  high: { pixelRatio: 2, shadows: true, bloom: true },
+/** bloom/msaa/fxaa: cấu hình post-processing (render/post.ts); Thấp không post, không khử răng cưa. */
+const QUALITY: Record<string, { pixelRatio: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean }> = {
+  low: { pixelRatio: 1, shadows: false, bloom: false, msaa: 0, fxaa: false },
+  medium: { pixelRatio: 1.5, shadows: false, bloom: true, msaa: 0, fxaa: true },
+  high: { pixelRatio: 2, shadows: true, bloom: true, msaa: 4, fxaa: false },
 };
 
 const _v = new THREE.Vector3();
@@ -374,7 +375,8 @@ export class Game {
     };
     const q = QUALITY[get().quality] ?? QUALITY.medium;
     const params = new URLSearchParams(location.search);
-    this.renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL: params.get('renderer') === 'webgl2' });
+    // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
+    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: params.get('renderer') === 'webgl2' });
     await this.renderer.init();
     mark('rendererInit');
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
@@ -408,7 +410,7 @@ export class Game {
     this.exitDisc = buildPortalDisc(DUNGEON_EXIT.x, DUNGEON_EXIT.z, 0xffd27a);
     this.scene.add(this.portalDisc, this.exitDisc);
     for (const disc of [this.portalDisc, this.exitDisc]) markBloom(disc.material as THREE.Material, 0.8);
-    this.post = new PostPipeline(this.renderer, this.scene, this.camera, { bloom: q.bloom });
+    this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.minimap = renderMinimap(320);
@@ -1216,9 +1218,9 @@ export class Game {
     set({ quality: q });
     const cfg = QUALITY[q] ?? QUALITY.medium;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cfg.pixelRatio));
-    if (this.post && this.post.bloom !== cfg.bloom) {
+    if (this.post && !this.post.matches(cfg)) {
       this.post.dispose();
-      this.post = new PostPipeline(this.renderer, this.scene, this.camera, { bloom: cfg.bloom });
+      this.post = new PostPipeline(this.renderer, this.scene, this.camera, cfg);
     }
     this.onResize();
   }
