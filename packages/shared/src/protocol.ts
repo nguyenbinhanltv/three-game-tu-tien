@@ -107,6 +107,13 @@ export interface SysMsg {
   p?: Record<string, string | number>;
   /** 'info' | 'good' | 'bad' | 'loot'. */
   t?: string;
+  /**
+   * Chỉ với `t: 'loot'` từ hạ quái/hái linh thảo (M4-6): id vật phẩm vừa vào túi (không có = vàng).
+   * Đồ đã vào túi ở server trước khi gửi; client chỉ vẽ đồ nảy ra rồi bay vào túi. Không mang tỉ lệ rơi.
+   */
+  i?: string;
+  /** Id quái/điểm hái mà đồ nảy ra (client lấy vị trí từ trạng thái room; không có thì bỏ phần 3D). */
+  src?: string;
 }
 
 export interface FxMsg {
