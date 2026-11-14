@@ -1,0 +1,30 @@
+{
+  "batch": "2026-11-15-m0-3-phi-kiem-v02",
+  "approvedBy": "người dùng (nguyên văn \"Dựng lại phi kiếm qua CLI, để tôi Dựng đệ tử và sói trên web app\", chuyển qua orchestrator three-game-tu-tien-1)",
+  "approvedAt": "2026-11-15T01:54+07:00",
+  "cap": 60,
+  "rules": "dry-run trước; chạy thật đúng 1 lần nếu <= 60; v02 lỗi thì dừng, không chạy lại",
+  "quote": 50,
+  "balanceBefore": 850,
+  "balanceAfter": 800,
+  "jobs": [
+    {
+      "asset": "prop_phi_kiem",
+      "version": 2,
+      "taskId": "70d2072c-c993-4c70-a8d2-82931408bcc1",
+      "quote": 50,
+      "credits": 50,
+      "result": "rejected"
+    }
+  ],
+  "usage": [
+    {
+      "type": "multiview_to_model",
+      "status": "success",
+      "task_id": "70d2072c-c993-4c70-a8d2-82931408bcc1",
+      "created_at": "2026-11-14T18:54:40.843071Z",
+      "credits_consumed": 50
+    }
+  ],
+  "notes": "Báo giá khớp thực tế (50/50). Concept xoay cho kiếm dựng đứng để multiview khớp trục quay đứng: hết gãy lưỡi. Nhưng base color mất màu (toàn xám). Dừng, không chạy lại theo quy tắc đợt."
+}
