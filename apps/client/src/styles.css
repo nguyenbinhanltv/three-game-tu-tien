@@ -1095,6 +1095,22 @@ kbd {
   display: flex;
   gap: 6px;
 }
+.vol-row {
+  display: grid;
+  grid-template-columns: 11em 1fr 3em;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.vol-row input[type='range'] {
+  width: 100%;
+  accent-color: var(--gold-soft);
+}
+.vol-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
 
 @media (max-width: 1100px) {
   .chat {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { C, enhanceMul, EQUIP_SLOTS, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
-import { isMuted, setMuted } from '../game/audio';
+import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { set, useUI } from './store';
@@ -303,6 +303,36 @@ function Help() {
   );
 }
 
+/** Thanh trượt âm lượng cho master và từng bus; thả tay thì phát thử một âm trên bus đó. */
+function VolumeSlider({ k }: { k: VolumeKey }) {
+  const [v, setV] = useState(() => Math.round(getVolume(k) * 100));
+  const preview = () => {
+    if (k === 'sfx' || k === 'master') sfx('hit');
+    else if (k === 'ui') sfx('loot');
+  };
+  return (
+    <label className="vol-row">
+      <span>{t('ui.settings.vol.' + k)}</span>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={5}
+        value={v}
+        onChange={(e) => {
+          const n = Number(e.target.value);
+          unlockAudio();
+          setVolume(k, n / 100);
+          setV(n);
+        }}
+        onPointerUp={preview}
+        onKeyUp={preview}
+      />
+      <span className="vol-val">{v}%</span>
+    </label>
+  );
+}
+
 function Settings() {
   const quality = useUI((s) => s.quality);
   const fps = useUI((s) => s.fps);
@@ -350,6 +380,9 @@ function Settings() {
           {t('ui.settings.sound_off')}
         </button>
       </div>
+      {VOLUME_KEYS.map((k) => (
+        <VolumeSlider key={k} k={k} />
+      ))}
       <button
         className="btn"
         onClick={() => {
