@@ -15,6 +15,8 @@ export function xpNeed(level: number): number {
   if (level >= TRUC_CO_LEVEL) return 30000 + (level - TRUC_CO_LEVEL) * 20000;
   // 70·L²: tổng Ngưng Khí 1→15 khoảng 87 nghìn tu vi. `pnpm sim:progress` ước tính ~2 giờ đánh quái thuần,
   // cộng đi lại, boss, luyện đan, bí cảnh thì khoảng 3–4 giờ.
+  // Nhịp này đã chốt (2026-11-15, thay mốc cũ 10–15 giờ trong spec): giữ ~3–4 giờ thực tế tới viên mãn
+  // Ngưng Khí 15, sẽ dài thêm khi có thêm nội dung. Cân bằng độ khó phải giữ sim:progress quanh 2–2,5 giờ.
   return 70 * level * level;
 }
 
@@ -103,6 +105,38 @@ export function enhanceCost(plus: number, itemPrice: number): { gold: number; or
 export const DEATH_XP_LOSS = 0.05;
 export const TRIBULATION_FAIL_XP_LOSS = 0.15;
 export const TRIBULATION_DURATION = 40;
+
+// ---------- hồi phục và miễn sát thương ----------
+
+/** Giây kể từ lần cuối đánh/bị đánh mới tính là ra khỏi chiến đấu. */
+export const COMBAT_REGEN_DELAY = 6;
+/** Tỉ lệ máu tối đa hồi mỗi giây: ngoài chiến đấu, đang đả tọa (trong chiến đấu không hồi). */
+export const HP_REGEN_IDLE = 0.02;
+export const HP_REGEN_MEDITATE = 0.05;
+/** Tỉ lệ linh lực tối đa hồi mỗi giây: trong chiến đấu, ngoài chiến đấu, đang đả tọa (đang bay không hồi). */
+export const MP_REGEN_COMBAT = 0.012;
+export const MP_REGEN_IDLE = 0.03;
+export const MP_REGEN_MEDITATE = 0.08;
+
+/**
+ * Cửa sổ miễn vùng nổ: sau khi trúng một vùng nổ của quái, trong chừng này giây tổng sát thương từ vùng nổ
+ * của quái chỉ bằng vùng mạnh nhất (vùng sau chỉ gây phần chênh lệch nếu mạnh hơn).
+ * Chặn đòn dồn khi nhiều quái thả vùng trùng chỗ (vd. đợt 1 Kiếm Trủng: 6 Kiếm Linh) mà không cho dùng
+ * vùng yếu để "nuốt" vùng mạnh. Cố ý áp cả cho nhiều vùng đập của cùng một boss khi cả nhóm đứng dồn.
+ * Không áp cho đòn cận chiến và thiên lôi độ kiếp.
+ */
+export const HAZARD_IFRAME = 0.6;
+
+/**
+ * Sát thương thật của một vùng nổ của quái `n` lên người chơi.
+ * `until`: hết cửa sổ miễn (ms); `taken`: sát thương vùng đã nhận trong cửa sổ hiện tại.
+ * Trả về sát thương gây ra và trạng thái cửa sổ mới.
+ */
+export function hazardHit(n: number, until: number, taken: number, now: number): { dmg: number; until: number; taken: number } {
+  if (now >= until) return { dmg: n, until: now + HAZARD_IFRAME * 1000, taken: n };
+  if (n <= taken) return { dmg: 0, until, taken };
+  return { dmg: n - taken, until, taken: n };
+}
 
 // ---------- ngắt chiêu (boss niệm chú) ----------
 
