@@ -6,3 +6,12 @@ dist
 apps/server/data
 assets/build/raw
 bench/results
+
+# File nguồn asset lớn nằm ngoài repo (DTL_ASSET_SOURCE, xem docs/tripo-runbook.md mục 2).
+# Trong assets/source/ chỉ commit meta.json, nhật ký đợt CLI và README.
+assets/source/**
+!assets/source/**/
+!assets/source/**/meta.json
+!assets/source/_batches/*.json
+!assets/source/README.md
+tripo-out/
