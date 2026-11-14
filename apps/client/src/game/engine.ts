@@ -46,6 +46,7 @@ import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
+import { MusicController } from './music';
 import { buildPortalDisc, buildSect } from './sect';
 import { renderMinimap, Terrain } from './terrain';
 import { DamageNumbers, Vfx } from './vfx';
@@ -246,6 +247,7 @@ export class Game {
   private leaving = false;
   private debugPerf = new URLSearchParams(location.search).has('debug');
   private listeners: (() => void)[] = [];
+  private music = new MusicController();
 
   constructor(room: Room, init: InitMsg) {
     this.room = room;
@@ -943,6 +945,8 @@ export class Game {
     const byMe = m.src === this.sid;
     // Bị quái đánh khi chưa chọn mục tiêu: tự chọn kẻ tấn công để phản đòn nhanh.
     if (mine && !m.heal && !this.targetId && m.src && this.view.monsters.has(m.src)) this.setTarget(m.src, 'mon');
+    const foe = !m.heal && (mine || byMe) ? this.ents.monsters.get((mine ? m.src : m.dst) ?? '') : undefined;
+    if (foe) this.music.engage(!!foe.model.def.boss);
     if (!mine && !byMe) {
       // Sát thương của người khác: chỉ hiện khi ở gần.
       if (_v.distanceTo(this.renderPos) > 45) return;
@@ -1120,6 +1124,7 @@ export class Game {
     if (now - this.hudAt > 100) {
       this.hudAt = now;
       this.syncHud(me);
+      this.music.tick(now, { active: this.started, room: get().room, x: rp.x, z: rp.z, flags: me?.fl ?? 0, monsters: this.ents.monsters.values() });
     }
     if (!this.started && me && this.terrain.ready && this.frames > 4) {
       this.started = true;
@@ -1284,6 +1289,7 @@ export class Game {
     set({ mouseLook: false });
     this.renderer?.setAnimationLoop(null);
     for (const off of this.listeners) off();
+    this.music.dispose();
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();

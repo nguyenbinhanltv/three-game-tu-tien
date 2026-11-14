@@ -16,10 +16,14 @@
 //     "hit": { "variants": [ { "sprite": "sfx_combat", "start": 0, "dur": 0.3 }, { "file": "sfx/hit_b.webm" } ],
 //              "pitch": 0.05, "gain": 1, "bus": "sfx", "duck": 0 }
 //   },
-//   "music":   { "sect_day": { "src": ["music/sect_day.webm", "music/sect_day.m4a"], "gain": 1, "loop": true } },
+//   "music":   { "sect": { "src": ["music/sect.webm", "music/sect.m4a"], "gain": 1, "loop": true,
+//                         "credit": { "title": "Lạc Kiếm Tông", "by": "Suno (bản FREE)", "license": "phi thương mại, ghi nguồn",
+//                                     "url": "https://suno.com/song/<id>" } } },
 //   "ambient": { "wind": { "src": ["amb/wind.webm", "amb/wind.m4a"] } }
 // }
-// Nguồn: nhạc Suno, SFX CC0. Ghi giấy phép từng file vào LICENSES.md cạnh file.
+// Nguồn: nhạc Suno, SFX CC0. Ghi giấy phép từng file vào LICENSES.md cạnh file. Nhạc Suno bản FREE
+// chỉ dùng phi thương mại và phải ghi nguồn: điền `credit` cho từng bài, mục "Nguồn nhạc" trong
+// Cài đặt đọc trường này. Id bài nhạc theo máy trạng thái trong music.ts (MUSIC_TRACKS).
 
 export type Sfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend';
 export type Bus = 'music' | 'ambient' | 'sfx' | 'ui';
@@ -40,10 +44,17 @@ interface SfxEntry {
   bus?: Bus;
   duck?: number;
 }
+export interface MusicCredit {
+  title?: string;
+  by?: string;
+  license?: string;
+  url?: string;
+}
 interface StreamEntry {
   src: string | string[];
   gain?: number;
   loop?: boolean;
+  credit?: MusicCredit;
 }
 interface Manifest {
   sprites?: Record<string, string | string[]>;
@@ -623,6 +634,29 @@ export function playMusic(id: string | null, fade = 2): void {
 export function playAmbient(id: string | null, fade = 3): void {
   if (ambient) ambient.request(id, fade);
   else pending.ambient = [id, fade];
+}
+
+/** Manifest có file nhạc phát được cho bài `id` không (chưa tải manifest thì coi như không). */
+export function hasMusicFile(id: string): boolean {
+  const e = manifest?.music?.[id];
+  return !!e && pickSrc(e.src) !== null;
+}
+
+/**
+ * Nút đầu vào bus nhạc (sau ducking) cho nhạc sinh thủ tục; `null` khi chưa mở khóa âm thanh,
+ * đang tắt tiếng hoặc AudioContext chưa chạy (khi đó không lên lịch nốt để đỡ tốn CPU).
+ */
+export function musicOutput(): { ctx: AudioContext; out: AudioNode } | null {
+  if (muted || !ctx || !duckGain || ctx.state !== 'running') return null;
+  return { ctx, out: duckGain };
+}
+
+/** Danh sách ghi nguồn nhạc trong manifest (cho mục credits ở Cài đặt). */
+export async function musicCredits(): Promise<(MusicCredit & { id: string })[]> {
+  await loadManifest();
+  return Object.entries(manifest?.music ?? {})
+    .filter(([, e]) => e.credit)
+    .map(([id, e]) => ({ id, ...e.credit }));
 }
 
 /** Trạng thái để gỡ lỗi/kiểm thử. */
