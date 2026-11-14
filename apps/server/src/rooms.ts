@@ -13,9 +13,10 @@ import {
   S,
   SPAWN_POINT,
   type TransferMsg,
+  parseAppearance,
   validName,
 } from '@dtl/shared';
-import { MONSTER, monsterName, realmName } from '@dtl/content';
+import { APPEARANCE, MONSTER, monsterName, realmName } from '@dtl/content';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
 import { Character } from './game/character';
@@ -104,14 +105,15 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
    */
   static async onAuth(_token: string, options: unknown): Promise<JoinAuth> {
     const auth = await authenticate(options);
-    const o = (options ?? {}) as { name?: unknown; dev?: unknown; session?: unknown };
+    const o = (options ?? {}) as { name?: unknown; dev?: unknown; session?: unknown; ap?: unknown };
     let charId = Character.findByAccount(auth.accountId);
     if (charId === null) {
       const wanted = auth.dev && !validName(o.name) ? o.dev : o.name;
       if (!validName(wanted)) throw new ServerError(ERR_NEED_NAME, 'need_name');
       const name = wanted.trim();
       if (Character.nameTaken(name)) throw new ServerError(ERR_NAME_TAKEN, 'name_taken');
-      charId = Character.create(auth.accountId, name).id;
+      // Ngoại hình chỉ nhận lúc tạo nhân vật; id lạ / giới tính chưa mở thì dùng mặc định (không báo lỗi).
+      charId = Character.create(auth.accountId, name, parseAppearance(APPEARANCE, o.ap)).id;
       console.log(`[auth] tạo nhân vật mới: ${name}`);
     }
     const session = sessionAuth(o.session) ? (o.session as string) : issueSession(auth);

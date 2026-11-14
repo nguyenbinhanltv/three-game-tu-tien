@@ -1,9 +1,11 @@
 // Bot headless để test tải và kiểm tra giao thức.
-// Chạy: pnpm bots --count 100 --duration 300 [--url ws://localhost:2567] [--prefix bot]
+// Chạy: pnpm bots --count 100 --duration 300 [--url ws://localhost:2567] [--prefix bot] [--crowd x,z[,r]]
+// --crowd: bot không đi săn mà đi lại/đứng quanh điểm (x, z) bán kính r (mặc định 25m), để đo client giữa đám đông (vd. sân tông môn 2048,2088).
 // Không có --url thì dùng SERVER_URL hoặc PORT (xem target.ts).
 
 import { Client, type Room } from 'colyseus.js';
-import { C, IN_FLY, type InitMsg, MS_DEAD, PF_DEAD, ROOM_WORLD, S, STEP } from '@dtl/shared';
+import { C, hashName, IN_FLY, type InitMsg, MS_DEAD, PF_DEAD, ROOM_WORLD, S, STEP } from '@dtl/shared';
+import { APPEARANCE } from '@dtl/content';
 import { defaultServerWs } from './target';
 
 function arg(name: string, def: string): string {
@@ -16,6 +18,12 @@ const DURATION = Number(arg('duration', '60'));
 const URL = arg('url', defaultServerWs());
 const PREFIX = arg('prefix', 'bot');
 const VERBOSE = process.argv.includes('--verbose');
+const CROWD = (() => {
+  const v = arg('crowd', '');
+  if (!v) return null;
+  const [x, z, r = 25] = v.split(',').map(Number);
+  return Number.isFinite(x) && Number.isFinite(z) ? { x, z, r } : null;
+})();
 
 interface PlayerView {
   x: number;
@@ -50,7 +58,9 @@ class Bot {
 
   async connect(): Promise<void> {
     const client = new Client(URL);
-    this.room = await client.joinOrCreate(ROOM_WORLD, { dev: this.name });
+    // Màu áo khác nhau theo tên (chỉ có tác dụng lúc tạo nhân vật) để cảnh test tải giống người thật.
+    const dye = APPEARANCE.dyes[hashName(this.name) % APPEARANCE.dyes.length].id;
+    this.room = await client.joinOrCreate(ROOM_WORLD, { dev: this.name, ap: { g: 'm', dye } });
     this.room.onMessage(S.INIT, (m: InitMsg) => {
       this.sid = m.sid;
       this.level = m.char.level;
@@ -84,6 +94,7 @@ class Bot {
       this.target = '';
       return;
     }
+    if (CROWD) return this.crowd(me, now);
     const monsters = (this.room.state as { monsters: Map<string, MonView> }).monsters;
     // Chọn quái gần nhất còn sống.
     let tgt = this.target ? monsters.get(this.target) : undefined;
@@ -126,6 +137,24 @@ class Bot {
     }
     this.seq++;
     this.room.send(C.INPUT, { s: this.seq, mx: 0, mz, yaw: this.yaw, f: flags });
+  }
+
+  /** Đi lại quanh điểm tụ tập: ra ngoài bán kính thì quay về, thỉnh thoảng đứng yên. */
+  private moving = true;
+  private crowd(me: PlayerView, now: number): void {
+    const c = CROWD!;
+    const dx = c.x - me.x;
+    const dz = c.z - me.z;
+    if (Math.hypot(dx, dz) > c.r) {
+      this.yaw = Math.atan2(-dx, -dz) + (Math.random() - 0.5) * 0.6;
+      this.moving = true;
+    } else if (now > this.turnAt) {
+      this.turnAt = now + 1500 + Math.random() * 3500;
+      this.yaw = Math.random() * Math.PI * 2;
+      this.moving = Math.random() < 0.6;
+    }
+    this.seq++;
+    this.room.send(C.INPUT, { s: this.seq, mx: 0, mz: this.moving ? 1 : 0, yaw: this.yaw, f: 0 });
   }
 
   async leave(): Promise<void> {

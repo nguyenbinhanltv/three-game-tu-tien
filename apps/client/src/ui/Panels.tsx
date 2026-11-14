@@ -376,6 +376,7 @@ function Settings() {
   const controls = useUI((s) => s.controls);
   const camShake = useUI((s) => s.camShake);
   const offscreen = useUI((s) => s.offscreen);
+  const chapterCards = useUI((s) => s.chapterCards);
   const [mute, setMute] = useState(isMuted());
   return (
     <Window title={t('ui.settings')} onClose={() => set({ panel: null })} cls="settings">
@@ -415,6 +416,15 @@ function Settings() {
         ))}
       </div>
       <div className="muted">{t('ui.settings.offscreen_hint')}</div>
+      <div className="section-title">{t('ui.settings.chapter')}</div>
+      <div className="seg">
+        {[true, false].map((on) => (
+          <button key={String(on)} className={'btn' + (chapterCards === on ? ' primary' : '')} onClick={() => Game.current?.setChapterCards(on)}>
+            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
+          </button>
+        ))}
+      </div>
+      <div className="muted">{t('ui.settings.chapter_hint')}</div>
       <div className="section-title">{t('ui.settings.sound')}</div>
       <div className="seg">
         <button
