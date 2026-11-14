@@ -27,10 +27,12 @@ packages/content   dữ liệu game JSON trong data/, chuỗi tiếng Việt tro
 apps/client        Vite + Three.js + React (src/game: engine, terrain, entities, models, vfx; src/ui)
 apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts, game/character.ts, auth.ts, db.ts
 apps/bot-client    bot headless để test tải
-tools/blender      build_sect.py (kiến trúc tông môn → GLB), run.mjs
+tools/blender      build_sect.py (kiến trúc tông môn → GLB), build_fixture_rig.py (GLB có xương cho test), run.mjs
+tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts
+assets             README, LICENSES.md, budgets.json, meta.schema.json, source/<loại>/<id>/meta.json
 ```
 
-Chưa có: `apps/admin`, `tools/asset-pipeline` (gltf-transform, KTX2).
+Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source` (xem `assets/README.md`).
 
 ## Lệnh thường dùng
 
@@ -39,7 +41,7 @@ Chưa có: `apps/admin`, `tools/asset-pipeline` (gltf-transform, KTX2).
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
 - `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`
 - `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts` hoặc luật di chuyển/combat
-- `pnpm assets:build`: chạy Blender sinh `apps/client/public/assets/sect.glb`
+- `pnpm assets:build`: Blender sinh GLB thô vào `assets/build/raw/` (kèm bản `sect.glb` cho đường nạp cũ) rồi tối ưu ra `apps/client/public/assets/<id>.<hash>.glb` + `manifest.json`; `pnpm assets:validate` kiểm ngân sách, LICENSES, chiều cao raw/build
 - `pnpm build` rồi `pnpm start`: server phục vụ luôn bản build ở cổng 2567
 - Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | tick`
 
