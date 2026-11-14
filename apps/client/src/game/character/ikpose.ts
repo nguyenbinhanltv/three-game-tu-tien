@@ -404,12 +404,26 @@ export function resolveKeys(def: PoseDef): Resolved[] {
 
 const lerp = (a: PoseVec, b: PoseVec, u: number): PoseVec => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
 
-function slerpDir(a: PoseVec, b: PoseVec, u: number): PoseVec {
+/**
+ * Nội suy hướng theo cung (vector đơn vị). Hai hướng gần ngược nhau thì trục quay không xác định: quay quanh
+ * `axisHint` (chiếu cho vuông góc với `a`), không có thì quanh một trục vuông góc bất kỳ, để vẫn quét đủ nửa vòng
+ * thay vì đi qua vector 0.
+ */
+export function slerpDir(a: PoseVec, b: PoseVec, u: number, axisHint?: THREE.Vector3): PoseVec {
   const va = vec(a).normalize();
   const vb = vec(b).normalize();
-  if (va.dot(vb) < -0.999) return arr(va.lerp(vb, u).normalize());
-  const q = new THREE.Quaternion().setFromUnitVectors(va, vb);
-  return arr(va.applyQuaternion(new THREE.Quaternion().slerp(q, u)));
+  if (u <= 0) return arr(va);
+  if (u >= 1) return arr(vb);
+  const d = va.dot(vb);
+  if (d > -0.999) {
+    const q = new THREE.Quaternion().setFromUnitVectors(va, vb);
+    return arr(va.applyQuaternion(new THREE.Quaternion().slerp(q, u)));
+  }
+  const axis = axisHint ? axisHint.clone().addScaledVector(va, -axisHint.dot(va)) : new THREE.Vector3();
+  if (axis.lengthSq() < 1e-8) axis.set(va.y, -va.x, 0);
+  if (axis.lengthSq() < 1e-8) axis.set(0, va.z, -va.y);
+  axis.normalize();
+  return arr(va.applyAxisAngle(axis, Math.acos(Math.max(-1, d)) * u));
 }
 
 /** Cổ tay đi theo cung quanh vai (hướng slerp, khoảng cách lerp) để đòn chém có đường vòng thay vì đường thẳng. */
@@ -440,6 +454,7 @@ export function samplePose(def: PoseDef, keys: Resolved[], t: number): PoseSampl
   const u = ease(b.ease, THREE.MathUtils.clamp((t - a.t) / span, 0, 1));
   const opt = (f: 'sword' | 'edge' | 'footR' | 'footL', fn: (x: PoseVec, y: PoseVec, u: number) => PoseVec) =>
     a[f] && b[f] ? fn(a[f], b[f], u) : (a[f] ?? b[f]);
+  const swingAxis = a.sword && a.edge ? new THREE.Vector3().crossVectors(vec(a.sword), vec(a.edge)) : undefined;
   return {
     hipsPos: lerp(a.hipsPos, b.hipsPos, u),
     hipsRot: lerp(a.hipsRot, b.hipsRot, u),
@@ -449,8 +464,9 @@ export function samplePose(def: PoseDef, keys: Resolved[], t: number): PoseSampl
     handL: a.handL && b.handL ? arcHand(a.handL, b.handL, u, 1) : (a.handL ?? b.handL),
     elbowR: lerp(a.elbowR, b.elbowR, u),
     elbowL: lerp(a.elbowL, b.elbowL, u),
-    sword: opt('sword', slerpDir),
-    edge: opt('edge', slerpDir),
+    // Mũi và lưỡi quay quanh cùng một trục (mũi × lưỡi của key trước = trục chém, lưỡi đi trước) khi hướng đảo 180°.
+    sword: opt('sword', (x, y, w) => slerpDir(x, y, w, swingAxis)),
+    edge: opt('edge', (x, y, w) => slerpDir(x, y, w, swingAxis)),
     footR: opt('footR', lerp),
     footL: opt('footL', lerp),
     kneeR: lerp(a.kneeR, b.kneeR, u),

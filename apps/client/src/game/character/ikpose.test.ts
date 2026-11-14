@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { POSE, POSES } from '@dtl/content';
 import { POSE_REF, type PoseDef, type PoseVec, validatePose } from '@dtl/shared';
-import { bakePose, formatProbe, IkRig, makeAdditive, maskClip, type PoseSample, poseClipName, probeClip, resolveKeys, samplePose } from './ikpose';
+import { bakePose, formatProbe, slerpDir, IkRig, makeAdditive, maskClip, type PoseSample, poseClipName, probeClip, resolveKeys, samplePose } from './ikpose';
 import { buildMixamoFixture } from './mixamoFixture';
 import { SkinnedCharacter } from './skinned';
 import type { AnimState } from './view';
@@ -186,6 +186,39 @@ describe('key pose dữ liệu', () => {
     expect(def.hit![0]).toBeLessThanOrEqual(0.42);
     expect(def.hit![1]).toBeGreaterThanOrEqual(0.42);
   });
+});
+
+describe('hướng đảo 180°', () => {
+  it('slerpDir quét nửa vòng, luôn là vector đơn vị (kể cả gần ngược)', () => {
+    for (const b of [[0, -1, 0], [0.001, -1, 0], [0, -1, 0.03]] as PoseVec[]) {
+      for (let u = 0; u <= 1; u += 0.05) {
+        const v = slerpDir([0, 1, 0], b, u, new THREE.Vector3(1, 0, 0));
+        expect(Math.hypot(...v)).toBeCloseTo(1, 6);
+      }
+      // Quay quanh +X: nửa đường thì mũi chỉ về trước (+Z).
+      expect(dot(slerpDir([0, 1, 0], b, 0.5, new THREE.Vector3(1, 0, 0)), [0, 0, 1])).toBeGreaterThan(0.99);
+    }
+    expect(Math.hypot(...slerpDir([0, 0, -1], [0, 0, 1], 0.5))).toBeCloseTo(1, 6);
+  });
+
+  for (const [name, k0, k1] of [
+    ['chém bổ từ trên xuống', { sword: [0, 1, 0], edge: [0, 0, 1] }, { sword: [0, -1, 0], edge: [0, 0, -1] }],
+    ['đâm từ sau ra trước (không có lưỡi)', { sword: [0, 0, -1] }, { sword: [0, 0, 1] }],
+  ] as [string, Partial<PoseDef['keys'][0]>, Partial<PoseDef['keys'][0]>][]) {
+    it(`nướng ${name}: mọi giá trị hữu hạn, mũi kiếm giữa đòn là vector đơn vị`, () => {
+      const def: PoseDef = { id: 'flip', duration: 0.4, loop: false, keys: [{ t: 0, handR: [-0.1, 0.3, 0.35], ...k0 }, { t: 0.4, ease: 'linear', ...k1 }] };
+      expect(validatePose(def)).toEqual([]);
+      const rig = IkRig.from(buildMixamoFixture())!;
+      const clip = bakePose(def, rig);
+      for (const tr of clip.tracks) for (const x of tr.values) expect(Number.isFinite(x), tr.name).toBe(true);
+      const mid = samplePose(def, resolveKeys(def), 0.2);
+      expect(Math.hypot(...mid.sword!)).toBeCloseTo(1, 6);
+      if (mid.edge) expect(Math.abs(dot(mid.sword!, mid.edge))).toBeLessThan(1e-6);
+      const p = probeClip(rig, clip, 0.2);
+      expect(dot(p.sword, mid.sword!)).toBeGreaterThan(0.999);
+      expect(dot(probeClip(rig, clip, 0.4).sword, k1.sword!)).toBeGreaterThan(0.999);
+    });
+  }
 });
 
 describe('trộn với clip khác', () => {
