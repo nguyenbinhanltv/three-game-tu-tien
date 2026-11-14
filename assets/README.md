@@ -61,7 +61,7 @@ Không giảm tam giác ở bước này: `optimize.ts` hạ LOD0 về trần. C
 ## Bước tối ưu (`tools/asset-pipeline/src/optimize.ts`)
 
 1. `dedup` → `prune` (giữ nút lá: xương, socket; giữ extras) → `weld` → `resample` (animation).
-2. **Hạ LOD0 về trần**: `budget.faceLimit` trong `meta.json` nếu có (mức đã xin Tripo), không quá `triangles.max` của lớp. Dùng `simplify` của meshoptimizer, nới dần sai số; giữ `JOINTS_0`/`WEIGHTS_0`. Manifest ghi `rawTriangles` và `lod0Cap`.
+2. **Hạ LOD0 về trần**: với asset có khối `import`, trần là `budget.faceLimit` trong `meta.json` (mức đã xin Tripo), không quá `triangles.max` của lớp; asset khác (gồm job thủ tục tự giảm tam giác như `prop_phi_kiem`) dùng `triangles.max`. Dùng `simplify` của meshoptimizer, nới dần sai số; giữ `JOINTS_0`/`WEIGHTS_0`. Manifest ghi `rawTriangles` và `lod0Cap`.
 3. Texture → KTX2 qua `toktx`: ETC1S cho màu và dữ liệu thường, UASTC cho normal map; hạ cạnh dài về ngân sách lớp.
 4. **LOD** bằng `simplify` (meshoptimizer) theo `budgets.json`: đích = min(tỉ lệ × LOD0, trần). LOD nằm **cùng file** với LOD0: mỗi node có mesh sinh thêm node anh em `<tên>_lod<k>` (`extras.lod = k`, three.js đọc thành `userData.lod`), cùng transform, cùng skin, cùng material, nên texture chỉ tải một lần. Thuộc tính đỉnh (`JOINTS_0`/`WEIGHTS_0`, UV, màu) đi theo đỉnh còn lại, nên mesh có xương giữ trọng số. Simplify bị kẹt (cạnh cứng, đường UV) thì nới sai số rồi bật `Permissive`. Client (M2-8/M3-9) hiện một mức theo khoảng cách và ẩn các mức khác.
 5. `reorder` → `quantize` **chỉ với mesh không có xương** → `EXT_meshopt_compression`. Mesh có xương không quantize: nhân vật sẽ co lại khi clip có track scale.
@@ -79,7 +79,7 @@ Sau đó chạy subagent `asset-validator` để soát bằng mắt những gì 
 ## Thêm một asset
 
 1. Tạo `assets/source/<loại>/<id>/meta.json` (theo schema) và đặt file lớn vào `../dtl-asset-source/<loại>/<id>/`.
-2. Đưa GLB thô vào `assets/build/raw/<id>.glb`: job thủ tục trong `tools/blender/run.mjs`, hoặc khối `import` trong `meta.json` cho GLB Tripo (mục Nhập Tripo).
+2. Đưa GLB thô vào `assets/build/raw/<id>.glb`: job thủ tục trong `tools/blender/run.mjs`, hoặc khối `import` trong `meta.json` cho GLB Tripo (mục Nhập Tripo). Job thủ tục có trường `source` (ví dụ `prop_phi_kiem`: lưới Tripo v02 tô màu bằng `recolor_phi_kiem.py`) đọc file trong `DTL_ASSET_SOURCE`; máy không có thư mục nguồn thì job bị bỏ qua kèm cảnh báo, GLB build đã commit vẫn dùng được.
 3. Thêm dòng vào `assets/LICENSES.md`.
 4. `pnpm assets:build --only <id>` rồi `pnpm assets:validate --only <id>`; xem trong trang `?viewer=asset`.
 5. Commit `meta.json`, dòng LICENSES, GLB có hash và `manifest.json`.

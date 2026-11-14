@@ -1250,6 +1250,23 @@ kbd {
   color: var(--gold-soft);
 }
 
+/* Shared inventory/ability atlas; retain overlays and parent rarity styling. */
+.content-icon {
+  display: inline-block;
+  width: 1.6em;
+  height: 1.6em;
+  flex-shrink: 0;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  line-height: 1.6;
+  text-align: center;
+}
+.skill-icon .content-icon { width: 52px; height: 52px; }
+.slot-icon .content-icon { width: 42px; height: 42px; }
+.slot.small .content-icon { width: 30px; height: 30px; }
+.skill-item-icon .content-icon { width: 30px; height: 30px; }
+
 @media (max-width: 1100px) {
   .chat {
     width: 280px;
@@ -1264,6 +1281,10 @@ kbd {
   .skill-icon {
     font-size: 24px;
     line-height: 50px;
+  }
+  .skill-icon .content-icon {
+    width: 44px;
+    height: 44px;
   }
   .action span {
     display: none;

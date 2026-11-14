@@ -1,3 +1,4 @@
+import { ContentIcon } from './ContentIcon';
 import { useEffect, useRef, useState } from 'react';
 import { C, enhanceMul, EQUIP_SLOTS, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
@@ -24,7 +25,7 @@ export function ItemIcon({ item, onClick, selected, small }: { item: InvItem | n
       onClick={onClick}
       title={def ? itemName(def.id, item!.plus) : undefined}
     >
-      {def && <span className="slot-icon">{def.icon}</span>}
+      {def && <span className="slot-icon"><ContentIcon def={def} /></span>}
       {item && item.n > 1 && <span className="slot-n">{item.n}</span>}
       {item?.plus ? <span className="slot-plus">+{item.plus}</span> : null}
     </button>
@@ -38,7 +39,7 @@ export function ItemDetail({ item, children }: { item: InvItem; children?: React
   return (
     <div className="item-detail">
       <div className={'item-name r' + def.rarity}>
-        {def.icon} {itemName(def.id, item.plus)}
+        <ContentIcon def={def} /> {itemName(def.id, item.plus)}
       </div>
       <div className="item-kind">{t('ui.item.kind.' + def.kind)}</div>
       {statLines(def, item.plus).map((l) => (
@@ -191,7 +192,7 @@ function Character() {
       <div className="skill-list">
         {SKILLS.map((sk, i) => (
           <div key={sk.id} className={'skill-item' + (char.level < sk.unlock ? ' locked' : '')}>
-            <span className="skill-item-icon">{sk.icon}</span>
+            <span className="skill-item-icon"><ContentIcon def={sk} /></span>
             <div>
               <div className="skill-item-name">
                 [{i + 1}] {t(`skill.${sk.id}.name`)}
@@ -241,7 +242,7 @@ export function RewardLine({ id }: { id: string }) {
       {q.rewards.gold > 0 && <span>{q.rewards.gold} 💠</span>}
       {(q.rewards.items ?? []).map((it) => (
         <span key={it.id} className={'r' + (ITEM.get(it.id)?.rarity ?? 0)}>
-          {ITEM.get(it.id)?.icon} {itemName(it.id)}
+          <ContentIcon def={ITEM.get(it.id)} /> {itemName(it.id)}
           {it.n > 1 ? ` ×${it.n}` : ''}
         </span>
       ))}

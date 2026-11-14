@@ -79,11 +79,14 @@ export function classify(id: string, budgets: Budgets, sourceDir?: string): stri
 }
 
 /**
- * Trần tam giác LOD0: `budget.faceLimit` trong meta.json (mức đã xin Tripo) nếu có, không vượt `triangles.max` của lớp.
- * optimize.ts hạ LOD0 về trần này (Tripo thường trả nhiều mặt hơn face_limit).
+ * Trần tam giác LOD0: asset nhập qua import_tripo.py (meta.json có khối `import`) dùng `budget.faceLimit` (mức đã xin
+ * Tripo, vì Tripo thường trả nhiều mặt hơn) nếu có, không vượt `triangles.max` của lớp. Asset khác dùng `triangles.max`:
+ * job thủ tục tự giảm tam giác (vd. recolor_phi_kiem.py) đã tự chọn mức của mình.
  */
 export function lod0Cap(id: string, spec: BudgetClass, sourceDir?: string): number {
-  const face = (findMeta(id, sourceDir)?.data.budget as { faceLimit?: unknown } | undefined)?.faceLimit;
+  const meta = findMeta(id, sourceDir)?.data;
+  if (!meta?.import) return spec.triangles.max;
+  const face = (meta.budget as { faceLimit?: unknown } | undefined)?.faceLimit;
   return typeof face === 'number' && face > 0 ? Math.min(face, spec.triangles.max) : spec.triangles.max;
 }
 

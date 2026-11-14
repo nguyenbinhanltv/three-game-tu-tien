@@ -173,3 +173,20 @@ no text, no letters, no watermark.
 ```
 
 Cắt ra từng icon. Khi bổ sung icon, dùng lại nguyên văn câu phong cách. Hình dáng và bố cục icon tự thiết kế, không theo icon của game khác.
+
+## 9. Họ icon M4-7: khung vuông vát góc
+
+Icon UI là tranh hoàn chỉnh, không đưa vào Tripo. Mẫu này thay mẫu vòng tròn mục 8 cho M4-7. Chủ thể từng ID nằm trong `tools/icons/subjects.json` (6 skill, 23 vật phẩm).
+
+```text
+Use case: stylized-concept. ONE square original cultivation fantasy inventory/ability icon.
+Subject: <subject from tools/icons/subjects.json>.
+Same family: thin bronze chamfered SQUARE border inset 5%, dark jade teal mist gradient background,
+warm dawn gold upper-left light, cool teal shadows. Semi-realistic cinematic painterly material rendering,
+subject fills 75%, bold silhouette readable at 48px, restrained fine detail.
+Palette #2B5552 #123B45 #AE8B49 #F2C47E #DCE6DF #7FE3D0 plus subject material color.
+No text, letters, watermark, circular borders, ink brush ring, cartoon, purple background, scenery.
+Entire object inside frame. Purple only as a tiny accent under 5%.
+```
+
+Sinh bằng công cụ ảnh tích hợp Codex, mỗi icon một lần gọi riêng. Phi Kiếm đầu tiên dùng cùng bảng màu/khung/ánh sáng, có núi sương mờ phía sau. PNG gốc ở `<DTL_ASSET_SOURCE>/icons/<id>.png`; atlas 128px/ô phục vụ UI 48–64px. `pnpm icons:build` tái đóng gói; `pnpm icons:check` kiểm atlas và manifest. Trang duyệt trình bày 48px, 64px, 128px.

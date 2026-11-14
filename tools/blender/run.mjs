@@ -3,7 +3,8 @@
 // Lệnh tổng: pnpm assets:build (gọi file này rồi optimize). Chạy riêng: node tools/blender/run.mjs [--only <id>] [--force]
 //
 // Hai loại job:
-//   - script thủ tục (danh sách `procedural` bên dưới): script bpy dựng asset từ đầu.
+//   - script thủ tục (danh sách `procedural` bên dưới): script bpy dựng asset từ đầu, hoặc xử lý riêng một file trong
+//     DTL_ASSET_SOURCE (trường `source`, truyền cho script qua `--src`; thiếu file thì bỏ qua job, có cảnh báo).
 //   - nhập Tripo: mọi assets/source/<loại>/<id>/meta.json có khối "import" (kind "tripo") → tools/blender/import_tripo.py
 //     đọc GLB gốc ở DTL_ASSET_SOURCE (../dtl-asset-source). Máy không có thư mục nguồn thì bỏ qua job, có cảnh báo,
 //     và giữ GLB build đã commit.
@@ -24,8 +25,13 @@ const importScript = path.join(root, 'tools/blender/import_tripo.py');
  * id: asset id (tên file trong assets/build/raw/).
  * legacy: bản chép thêm của GLB thô. Client đã nạp arch_sect qua manifest (M2-8); bản này chỉ còn làm đầu vào
  *         cho test pipeline (tools/asset-pipeline/test), bỏ khi test có fixture riêng.
+ * source: đường dẫn tương đối trong DTL_ASSET_SOURCE, truyền cho script qua `--src`.
  */
-const procedural = [{ id: 'arch_sect', script: 'tools/blender/build_sect.py', legacy: 'apps/client/public/assets/sect.glb' }];
+const procedural = [
+  { id: 'arch_sect', script: 'tools/blender/build_sect.py', legacy: 'apps/client/public/assets/sect.glb' },
+  // Lưới Tripo v02 (task 70d2072c), tô màu theo vùng bằng script vì texture Tripo mất màu (M0-3).
+  { id: 'prop_phi_kiem', script: 'tools/blender/recolor_phi_kiem.py', source: 'prop/prop_phi_kiem/tripo/raw_v02.glb' },
+];
 
 /** @typedef {{ id: string, script: string, args: string[], deps: string[], legacy?: string }} Job */
 
@@ -33,6 +39,31 @@ const argv = process.argv.slice(2);
 const only = argv.includes('--only') ? argv[argv.indexOf('--only') + 1] : null;
 const force = argv.includes('--force');
 const out = (id) => path.join(rawDir, `${id}.glb`);
+/** @type {string | null | undefined} */
+let assetSource;
+const sourceRoot = () => (assetSource === undefined ? (assetSource = findAssetSource(root)) : assetSource);
+
+/** @returns {Job[]} */
+function proceduralJobs() {
+  const jobs = [];
+  for (const j of procedural.filter((p) => !only || p.id === only)) {
+    const deps = [path.join(root, j.script)];
+    const args = [out(j.id)];
+    if (j.source) {
+      const src = sourceRoot() ? path.join(sourceRoot(), j.source) : null;
+      if (!src || !fs.existsSync(src)) {
+        console.warn(
+          `[blender] CẢNH BÁO: bỏ qua ${j.id}, không có file nguồn ${src ?? j.source} (đặt DTL_ASSET_SOURCE nếu thư mục nguồn ở chỗ khác); giữ GLB build đã commit.`,
+        );
+        continue;
+      }
+      deps.push(src);
+      args.push('--src', src);
+    }
+    jobs.push({ ...j, args, deps });
+  }
+  return jobs;
+}
 
 /** @returns {Job[]} */
 function tripoJobs() {
@@ -48,7 +79,7 @@ function tripoJobs() {
   }
   const wanted = metas.filter((m) => m.data.import?.kind === 'tripo' && (!only || m.data.id === only));
   if (wanted.length === 0) return [];
-  const src = findAssetSource(root);
+  const src = sourceRoot();
   if (!src) {
     console.warn(
       `[blender] CẢNH BÁO: không tìm thấy thư mục nguồn asset (DTL_ASSET_SOURCE hoặc ../dtl-asset-source), bỏ qua ${wanted.length} job nhập Tripo; giữ GLB build đã commit.`,
@@ -73,12 +104,7 @@ function tripoJobs() {
 }
 
 /** @type {Job[]} */
-const jobs = [
-  ...procedural
-    .filter((j) => !only || j.id === only)
-    .map((j) => ({ ...j, args: [out(j.id)], deps: [path.join(root, j.script)] })),
-  ...tripoJobs(),
-];
+const jobs = [...proceduralJobs(), ...tripoJobs()];
 
 const pending = jobs.filter((j) => {
   const o = out(j.id);
