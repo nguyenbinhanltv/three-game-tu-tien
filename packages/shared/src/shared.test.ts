@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bossPhaseAt,
+  phaseRules,
+  postureDecay,
+  postureGain,
   chantInterrupt,
   computeDamage,
   INTERRUPT_VULN_MUL,
@@ -222,5 +226,56 @@ describe('chỉ số quái theo hệ số', () => {
     expect(b.hp).toBe(Math.round(a.hp * 45));
     expect(b.atk).toBe(Math.round(a.atk * 1.35));
     expect(b.def).toBe(a.def);
+  });
+});
+
+describe('pha boss và thanh phá thế', () => {
+  const phases = [
+    { hp: 0.6, ai: { sweep: { cd: 9, shape: 'cone' as const, r: 12, w: 35, delay: 1.4, mul: 1.5, kind: 'frost' as const } }, cdMul: 0.9 },
+    { hp: 0.3, ai: { combo: null, slam: { cd: 6, r: 5, delay: 1.5, mul: 1.5, max: 5, kind: 'frost' as const } }, speedMul: 1.2 },
+  ];
+  const base = {
+    ai: { combo: { chance: 0.3, delay: 0.4, mul: 1.3 }, slam: { cd: 8, r: 5.5, delay: 1.7, mul: 1.5, max: 4, kind: 'frost' as const } },
+    phases,
+  };
+  it('bossPhaseAt theo ngưỡng máu, không lùi pha', () => {
+    expect(bossPhaseAt(1, phases)).toBe(0);
+    expect(bossPhaseAt(0.61, phases)).toBe(0);
+    expect(bossPhaseAt(0.6, phases)).toBe(1);
+    expect(bossPhaseAt(0.31, phases)).toBe(1);
+    expect(bossPhaseAt(0.05, phases)).toBe(2);
+    expect(bossPhaseAt(0.9, phases, 2)).toBe(2);
+    expect(bossPhaseAt(0.2, undefined)).toBe(0);
+  });
+  it('phaseRules ghi đè dồn từng pha, null bỏ chiêu', () => {
+    const p0 = phaseRules(base, 0);
+    expect(p0.ai.sweep).toBeUndefined();
+    expect(p0.cdMul).toBe(1);
+    const p1 = phaseRules(base, 1);
+    expect(p1.ai.sweep?.cd).toBe(9);
+    expect(p1.ai.combo).toBeDefined();
+    expect(p1.ai.slam?.cd).toBe(8);
+    expect(p1.cdMul).toBe(0.9);
+    const p2 = phaseRules(base, 2);
+    expect(p2.ai.sweep?.cd).toBe(9);
+    expect(p2.ai.combo).toBeUndefined();
+    expect(p2.ai.slam?.cd).toBe(6);
+    expect(p2.cdMul).toBe(0.9);
+    expect(p2.speedMul).toBe(1.2);
+    // Không sửa dữ liệu gốc.
+    expect(base.ai.combo).toBeDefined();
+    expect(phaseRules(base, 9).ai.slam?.cd).toBe(6);
+  });
+  const cfg = { k: 3, heavy: 0.04, interrupt: 0.4, wait: 3, decay: 0.08, brk: 4 };
+  it('postureGain theo phần máu mất, cộng thêm đòn nặng', () => {
+    expect(postureGain(cfg, 100, 1000, false)).toBeCloseTo(0.3);
+    expect(postureGain(cfg, 100, 1000, true)).toBeCloseTo(0.34);
+    expect(postureGain(cfg, 0, 1000, false)).toBe(0);
+    expect(postureGain(cfg, 50, 0, false)).toBe(0);
+  });
+  it('postureDecay chỉ giảm sau khi ngừng đánh đủ lâu, không âm', () => {
+    expect(postureDecay(cfg, 0.5, 2.9, 1)).toBe(0.5);
+    expect(postureDecay(cfg, 0.5, 3, 1)).toBeCloseTo(0.42);
+    expect(postureDecay(cfg, 0.05, 10, 1)).toBe(0);
   });
 });

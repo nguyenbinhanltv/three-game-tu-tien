@@ -42,6 +42,10 @@ export class MonS extends Schema {
   @type('uint8') mf = 0;
   /** Thời điểm server (ms) kết thúc trạng thái trong `mf`; 0 khi không có. */
   @type('float64') ce = 0;
+  /** Pha boss (0 = pha đầu). */
+  @type('uint8') ph = 0;
+  /** Thanh phá thế của boss, 0–100 (làm tròn xuống). */
+  @type('uint8') pz = 0;
 }
 
 export class NodeS extends Schema {

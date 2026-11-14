@@ -8,6 +8,8 @@
   "mp": "linh lực",
   "atk": "công kích",
   "def": "phòng ngự",
+  "posture": "thế",
+  "posture_broken": "mất thế",
   "realms": ["Ngưng Khí", "Trúc Cơ", "Kết Đan", "Nguyên Anh", "Hóa Thần", "Anh Biến", "Vấn Đỉnh", "Âm Hư", "Dương Thực", "Khuy Niết", "Tịnh Niết", "Toái Niết", "Không Niết", "Không Linh", "Không Huyền", "Không Kiếp", "Đạp Thiên"],
   "stages": ["sơ kỳ", "trung kỳ", "hậu kỳ", "đại viên mãn"],
   "actions": {
