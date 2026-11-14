@@ -4,7 +4,7 @@
   "type": "prop",
   "budgetClass": "weapon",
   "itemId": null,
-  "status": "concept_approved",
+  "status": "imported",
   "budget": {
     "faceLimit": 2500,
     "texture": 512
@@ -119,13 +119,17 @@
       "batch": "2026-11-15-m0-3-phi-kiem-v02",
       "date": "2026-11-15",
       "output": "tripo/raw_v02.glb",
-      "result": "rejected",
-      "note": "Hình học ĐẠT: lưỡi thẳng liền khối, có sống lưng, hộ thủ mây, cầu chuôi, tua (3924 tam giác, simplify được về 2850 ≤ trần 3000). Texture KHÔNG ĐẠT: base color 4096² toàn xám bạc, mất màu quấn chuôi navy, đồng hộ thủ/cầu chuôi, tua đỏ (ảnh multiview dựng đứng có ít diện tích màu?). Không build. Dừng theo quy tắc đợt; chờ quyết: tô lại màu theo vùng trên lưới v02 (miễn phí), tripo texture lại (tốn credit), hoặc dựng thủ tục."
+      "result": "ok",
+      "note": "Hình học dùng được: lưỡi thẳng liền khối, có sống lưng (3924 tam giác). Texture màu Tripo mất màu (toàn xám) nên thay bằng tô thủ tục: tools/blender/recolor_phi_kiem.py (job prop_phi_kiem trong tools/blender/run.mjs) chia vùng theo trục dọc — lưỡi air_mist, hộ thủ + cầu chuôi wood_bronze, quấn chuôi attire_elder, tua wood_cinnabar — nhân độ sáng texture gốc, ghi ORM theo vùng, giảm còn 2850 tam giác, texture 512², gốc ở đáy, socket_grip ở giữa chuôi. Không tốn thêm credit. Chấp nhận cho M0: tua là hai cục đỏ bè ngang (bbox 0,14×0,16 m) và hộ thủ mất nét mây cuộn, quấn chuôi một màu không vân đan; nhìn xa ổn, làm đẹp sau (lưới/texture thủ tục cho hộ thủ, cắt gọn tua). budget.faceLimit 2500 là tham số gửi Tripo; build theo trần weapon 3000."
     }
   ],
   "license": {
     "source": "Tripo (API trả phí) + Codex (concept)",
     "owner": "dự án",
     "date": "2026-11-15"
+  },
+  "procedural": {
+    "script": "tools/blender/recolor_phi_kiem.py",
+    "seed": null
   }
 }
