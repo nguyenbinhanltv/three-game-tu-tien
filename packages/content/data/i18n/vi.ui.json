@@ -159,6 +159,7 @@
   "ui.target.chant": "Niệm chú",
   "ui.target.chant_guard": "Niệm chú · hộ chú",
   "ui.target.stun": "Choáng",
+  "ui.boss.hp": "{pct}%",
   "ui.trib.left": "Còn {n} giây — di chuyển liên tục để né thiên lôi!",
   "ui.chat.placeholder": "Nhấn Enter để nói…",
   "ui.chat.send_hint": "Enter gửi · Esc hủy",
