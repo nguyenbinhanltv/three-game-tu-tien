@@ -1,6 +1,8 @@
 // Bước 2 của pipeline asset: assets/build/raw/<id>.glb → apps/client/public/assets/<id>.<hash>.glb + manifest.json
 //
-//   dedup → prune (giữ nút lá: xương, socket) → weld → resample → KTX2 (nếu có toktx)
+//   dedup → prune (giữ nút lá: xương, socket) → weld → resample
+//   → hạ LOD0 về trần (meta.json budget.faceLimit, không quá ngân sách lớp; asset Tripo thường vượt face_limit)
+//   → KTX2 (nếu có toktx)
 //   → LOD bằng simplify (meshoptimizer, theo assets/budgets.json; giữ JOINTS/WEIGHTS)
 //   → reorder → quantize (CHỈ mesh không có xương) → EXT_meshopt_compression → tên theo hash
 //
@@ -30,12 +32,13 @@ import {
   classify,
   createIO,
   loadBudgets,
+  lod0Cap,
   lodTargets,
   meshopt,
   rel,
 } from './config.js';
 import { compressTexturesKTX2, findToktx, toktxVersion } from './ktx.js';
-import { type Dims, type TextureInfo, countTriangles, isSkinned, listTextures, lodLevel, maxBones, measureCurrentPose } from './stats.js';
+import { type Dims, type TextureInfo, countTriangles, primitiveTriangles, isSkinned, listTextures, lodLevel, maxBones, measureCurrentPose } from './stats.js';
 
 export interface ManifestLod {
   level: number;
@@ -55,6 +58,10 @@ export interface ManifestEntry {
   rawBytes: number;
   /** Tam giác LOD0. */
   triangles: number;
+  /** Tam giác của file thô (sau weld), trước khi hạ LOD0 về trần `lod0Cap`. */
+  rawTriangles: number;
+  /** Trần tam giác LOD0 đã áp (meta.json budget.faceLimit, không quá ngân sách lớp). */
+  lod0Cap: number;
   skinned: boolean;
   quantized: boolean;
   bones: number;
@@ -120,6 +127,56 @@ const ATTEMPTS: { error: number; permissive: boolean }[] = [
   { error: 1, permissive: true },
 ];
 
+function makeSimplifier(MeshoptSimplifier: Awaited<ReturnType<typeof meshopt>>['MeshoptSimplifier'], permissive: boolean) {
+  if (!permissive) return MeshoptSimplifier;
+  return {
+    ...MeshoptSimplifier,
+    simplify: (...args: Parameters<typeof MeshoptSimplifier.simplify>) => {
+      const [i, p, s, t, e, f = []] = args;
+      return MeshoptSimplifier.simplify(i, p, s, t, e, [...f, 'Permissive']);
+    },
+  };
+}
+
+/**
+ * Hạ LOD0 về `cap` tam giác ngay trong `doc` (thay primitive tại chỗ). Thử sai số nhỏ trước, nới dần, rồi giảm tỉ lệ
+ * cho tới khi không vượt trần. Thuộc tính đỉnh (JOINTS_0/WEIGHTS_0, UV) đi theo đỉnh còn lại nên giữ trọng số.
+ * Trả về số tam giác LOD0 sau cùng.
+ */
+async function capLod0(doc: Document, cap: number): Promise<number> {
+  const before = countTriangles(doc, 0);
+  if (before <= cap) return before;
+  const { MeshoptSimplifier } = await meshopt();
+  const nodes = doc
+    .getRoot()
+    .listNodes()
+    .filter((n) => n.getMesh() && lodLevel(n) === 0);
+  const meshes = [...new Set(nodes.map((n) => n.getMesh()!))];
+  const uses = new Map<Mesh, number>();
+  for (const n of nodes) uses.set(n.getMesh()!, (uses.get(n.getMesh()!) ?? 0) + 1);
+  let ratio = cap / before;
+  for (let round = 0; round < 8; round++, ratio *= 0.95) {
+    for (const { error, permissive } of ATTEMPTS) {
+      const simplifier = makeSimplifier(MeshoptSimplifier, permissive);
+      const trial = new Map(meshes.map((m) => [m, m.listPrimitives().map((p) => simplifyPrimitive(p.clone(), { simplifier, ratio, error }))]));
+      let got = 0;
+      for (const [m, prims] of trial) got += (uses.get(m) ?? 1) * prims.reduce((s, p) => s + primitiveTriangles(p), 0);
+      if (got <= cap) {
+        for (const [m, prims] of trial) {
+          for (const old of m.listPrimitives()) {
+            m.removePrimitive(old);
+            old.dispose();
+          }
+          for (const p of prims) m.addPrimitive(p);
+        }
+        return got;
+      }
+      for (const prims of trial.values()) for (const p of prims) p.dispose();
+    }
+  }
+  return countTriangles(doc, 0);
+}
+
 /**
  * Sinh LOD mức `level` ngay trong `doc`: mỗi node LOD0 có mesh → node anh em "<tên>_lod<level>" với mesh đã giảm.
  * Primitive được clone rồi simplify; thuộc tính đỉnh (gồm JOINTS_0/WEIGHTS_0, UV, màu) đi theo đỉnh còn lại.
@@ -138,15 +195,7 @@ async function addLod(doc: Document, level: number, target: number): Promise<num
     for (const n of created.nodes) n.dispose();
     for (const m of created.meshes) m.dispose();
     created = { nodes: [], meshes: [] };
-    const simplifier = permissive
-      ? {
-          ...MeshoptSimplifier,
-          simplify: (...args: Parameters<typeof MeshoptSimplifier.simplify>) => {
-            const [i, p, s, t, e, f = []] = args;
-            return MeshoptSimplifier.simplify(i, p, s, t, e, [...f, 'Permissive']);
-          },
-        }
-      : MeshoptSimplifier;
+    const simplifier = makeSimplifier(MeshoptSimplifier, permissive);
     const meshMap = new Map<Mesh, Mesh>();
     for (const node of sources) {
       const mesh = node.getMesh()!;
@@ -206,6 +255,7 @@ export async function optimizeAsset(
   outDir: string,
   toktx: string | null,
   warn: (msg: string) => void,
+  cap = spec.triangles.max,
 ): Promise<ManifestEntry> {
   const io = await createIO();
   const rawBytes = fs.statSync(rawFile).size;
@@ -216,10 +266,13 @@ export async function optimizeAsset(
 
   await doc.transform(dedup(), prune({ keepLeaves: true, keepExtras: true }), weld(), resample());
 
+  const rawTriangles = countTriangles(doc, 0);
+  const lod0 = await capLod0(doc, cap);
+  if (lod0 > cap) warn(`${id}: LOD0 chỉ giảm được còn ${lod0} tam giác (trần ${cap})`);
+
   let ktx2 = false;
   if (toktx && doc.getRoot().listTextures().length > 0) ktx2 = compressTexturesKTX2(doc, toktx, spec).converted > 0;
 
-  const lod0 = countTriangles(doc, 0);
   const lods: ManifestLod[] = [{ level: 0, triangles: lod0 }];
   const targets = lod0 > 0 ? lodTargets(lod0, spec) : [];
   for (let i = 0; i < targets.length; i++) {
@@ -243,6 +296,8 @@ export async function optimizeAsset(
     bytes: bytes.byteLength,
     rawBytes,
     triangles: lod0,
+    rawTriangles,
+    lod0Cap: cap,
     skinned,
     quantized: !skinned,
     bones: maxBones(doc),
@@ -294,7 +349,8 @@ export async function optimize(opts: OptimizeOptions = {}): Promise<OptimizeRepo
     }
     const rawFile = path.join(rawDir, f);
     const st = fs.statSync(rawFile);
-    const key = JSON.stringify({ m: Math.floor(st.mtimeMs), s: st.size, p: PIPELINE_VERSION, b: spec, k: toktxTag });
+    const cap = lod0Cap(id, spec);
+    const key = JSON.stringify({ m: Math.floor(st.mtimeMs), s: st.size, p: PIPELINE_VERSION, b: spec, c: cap, k: toktxTag });
     const hit = cache[id];
     if (!opts.force && hit?.key === key && fs.existsSync(path.join(outDir, hit.entry.file))) {
       manifest.assets[id] = hit.entry;
@@ -303,13 +359,14 @@ export async function optimize(opts: OptimizeOptions = {}): Promise<OptimizeRepo
     }
     const t0 = performance.now();
     try {
-      const entry = await optimizeAsset(rawFile, id, cls, spec, outDir, toktx, warn);
+      const entry = await optimizeAsset(rawFile, id, cls, spec, outDir, toktx, warn, cap);
       manifest.assets[id] = entry;
       cache[id] = { key, entry };
       report.built.push(id);
+      const capInfo = entry.rawTriangles > entry.triangles ? `LOD0 ${entry.rawTriangles}→${entry.triangles} (trần ${cap}), ` : '';
       const lodInfo = entry.lods.map((l) => `LOD${l.level} ${l.triangles}`).join(', ');
       log(
-        `[optimize] ${id} (${cls}${entry.skinned ? ', có xương, không quantize' : ''}): ${(entry.rawBytes / 1024).toFixed(0)}KB → ${(entry.bytes / 1024).toFixed(0)}KB; ${lodInfo} tam giác; ${(performance.now() - t0).toFixed(0)}ms`,
+        `[optimize] ${id} (${cls}${entry.skinned ? ', có xương, không quantize' : ''}): ${(entry.rawBytes / 1024).toFixed(0)}KB → ${(entry.bytes / 1024).toFixed(0)}KB; ${capInfo}${lodInfo} tam giác; ${(performance.now() - t0).toFixed(0)}ms`,
       );
     } catch (e) {
       report.failed.push({ id, error: e instanceof Error ? e.message : String(e) });

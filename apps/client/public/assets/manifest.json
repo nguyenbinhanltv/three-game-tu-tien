@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "pipeline": 1,
+  "pipeline": 2,
   "assets": {
     "arch_sect": {
       "id": "arch_sect",
@@ -10,6 +10,8 @@
       "bytes": 138216,
       "rawBytes": 840236,
       "triangles": 11012,
+      "rawTriangles": 11012,
+      "lod0Cap": 300000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
@@ -41,10 +43,12 @@
       "id": "prop_linh_thao",
       "class": "prop",
       "source": "assets/build/raw/prop_linh_thao.glb",
-      "file": "prop_linh_thao.d9736520b9.glb",
-      "bytes": 1051436,
-      "rawBytes": 1107296,
-      "triangles": 2897,
+      "file": "prop_linh_thao.9f4139774e.glb",
+      "bytes": 949756,
+      "rawBytes": 1059152,
+      "triangles": 1496,
+      "rawTriangles": 2897,
+      "lod0Cap": 1500,
       "skinned": false,
       "quantized": true,
       "bones": 0,
@@ -52,7 +56,16 @@
       "ktx2": false,
       "textures": [
         {
-          "name": "Color_eec1fb46-1922-479c-95c4-939052c05a4b",
+          "name": "prop_linh_thao_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_linh_thao_color",
           "mimeType": "image/jpeg",
           "width": 1024,
           "height": 1024,
@@ -61,51 +74,42 @@
           ]
         },
         {
-          "name": "ORM_eec1fb46-1922-479c-95c4-939052c05a4b",
+          "name": "prop_linh_thao_orm",
           "mimeType": "image/jpeg",
           "width": 1024,
           "height": 1024,
           "slots": [
             "metallicRoughnessTexture"
           ]
-        },
-        {
-          "name": "NormalGL_eec1fb46-1922-479c-95c4-939052c05a4b",
-          "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
-          "slots": [
-            "normalTexture"
-          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 2897
+          "triangles": 1496
         },
         {
           "level": 1,
-          "triangles": 1154,
-          "target": 1159
+          "triangles": 598,
+          "target": 598
         },
         {
           "level": 2,
-          "triangles": 434,
-          "target": 435
+          "triangles": 220,
+          "target": 224
         }
       ],
       "dims": {
         "raw": {
-          "width": 0.4501,
-          "height": 1,
-          "depth": 0.7847,
+          "width": 0.3139,
+          "height": 0.4,
+          "depth": 0.18,
           "minY": 0
         },
         "build": {
-          "width": 0.4501,
-          "height": 1,
-          "depth": 0.7848,
+          "width": 0.3053,
+          "height": 0.4,
+          "depth": 0.18,
           "minY": 0
         }
       }
@@ -114,10 +118,12 @@
       "id": "prop_lo_dan",
       "class": "prop",
       "source": "assets/build/raw/prop_lo_dan.glb",
-      "file": "prop_lo_dan.6281d98271.glb",
-      "bytes": 1430028,
-      "rawBytes": 1519816,
-      "triangles": 4750,
+      "file": "prop_lo_dan.8de670d6be.glb",
+      "bytes": 1330328,
+      "rawBytes": 1476032,
+      "triangles": 4000,
+      "rawTriangles": 5960,
+      "lod0Cap": 4000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
@@ -125,7 +131,16 @@
       "ktx2": false,
       "textures": [
         {
-          "name": "Color_bf2c9afd-c009-472c-abb5-21b01acdc63d",
+          "name": "prop_lo_dan_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_lo_dan_color",
           "mimeType": "image/jpeg",
           "width": 1024,
           "height": 1024,
@@ -134,51 +149,42 @@
           ]
         },
         {
-          "name": "ORM_bf2c9afd-c009-472c-abb5-21b01acdc63d",
+          "name": "prop_lo_dan_orm",
           "mimeType": "image/jpeg",
           "width": 1024,
           "height": 1024,
           "slots": [
             "metallicRoughnessTexture"
           ]
-        },
-        {
-          "name": "NormalGL_bf2c9afd-c009-472c-abb5-21b01acdc63d",
-          "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
-          "slots": [
-            "normalTexture"
-          ]
         }
       ],
       "lods": [
         {
           "level": 0,
-          "triangles": 4750
+          "triangles": 4000
         },
         {
           "level": 1,
-          "triangles": 1900,
-          "target": 1900
+          "triangles": 1600,
+          "target": 1600
         },
         {
           "level": 2,
-          "triangles": 712,
-          "target": 713
+          "triangles": 600,
+          "target": 600
         }
       ],
       "dims": {
         "raw": {
-          "width": 0.8258,
-          "height": 1,
-          "depth": 0.8552,
+          "width": 1.0262,
+          "height": 1.2,
+          "depth": 0.991,
           "minY": 0
         },
         "build": {
-          "width": 0.8258,
-          "height": 1,
-          "depth": 0.8552,
+          "width": 1.0263,
+          "height": 1.2,
+          "depth": 0.991,
           "minY": 0
         }
       }

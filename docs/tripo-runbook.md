@@ -215,7 +215,7 @@ Người dùng bấm; Claude soạn concept, điền `meta.json` và nhập file
 7. **Animation**: chỉ với model mẫu của mỗi kiểu xương (đệ tử nam cho người; Sói Xám cho quái bốn chân). Chọn clip theo `docs/prompts/tripo.md` mục 3, bật **in place** nếu có. NPC và người chơi nữ chỉ rig, không mua animation.
 8. **Tải về GLB** (không FBX): bản dựng hình, bản rig, từng clip. Đặt vào `<nguồn>/<loại>/<id>/tripo/` và đổi tên theo mục 3 (`raw_v01.glb`, `rig_v01.glb`, `anim_walk_v01.glb`…).
 9. **Báo Claude** (chat hoặc orchestrator): asset id; mỗi bước (dựng, rig, từng clip) tốn bao nhiêu credit (số dư trước và sau); task id hoặc đường link trang model; phương án đã chọn; điều gì thấy chưa ổn.
-10. **Claude**: điền `meta.json` (`channel: "web"`), kiểm file bằng `asset-validator` / trang xem asset (M0-4), rồi đưa qua pipeline Blender (M2), giữ nguyên texture PBR, không ép palette.
+10. **Claude**: điền `meta.json` (`channel: "web"`), kiểm file bằng `asset-validator` / trang xem asset (M0-4), rồi đưa qua pipeline Blender: thêm khối `import` vào `meta.json` (kích thước thật, `yaw`, socket; xem `assets/README.md` mục Nhập Tripo) và chạy `pnpm assets:build --only <id>`. Giữ nguyên texture PBR, không ép palette.
 
 ## 7. Theo dõi credit
 
