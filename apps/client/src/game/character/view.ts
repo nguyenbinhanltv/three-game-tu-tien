@@ -33,6 +33,15 @@ export interface CharacterView {
   /** Khoảng cách tới người xem (m): chọn LOD và tần số cập nhật animation. Model khối bỏ qua. */
   setViewDistance?(d: number): void;
   dispose(): void;
+  /**
+   * Cho vệt/hạt theo nhân vật (render/vfx/trail.ts, M4-5); model không có thì không sinh hiệu ứng đó.
+   * `steps`: số bước chân khi chạy (tăng mỗi lần chân chạm đất); `attacks`: số lần ra đòn;
+   * `hasSword`: có kiếm sau lưng; `grounded`: đang đứng trên đất ở khung gần nhất.
+   */
+  readonly steps?: number;
+  readonly attacks?: number;
+  readonly hasSword?: boolean;
+  readonly grounded?: boolean;
 }
 
 export interface MonsterView extends CharacterView {

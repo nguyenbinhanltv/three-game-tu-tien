@@ -2,8 +2,10 @@ import * as THREE from 'three/webgpu';
 import { float, min, uniform, vec3 } from 'three/tsl';
 import { markBloom } from '../post';
 import type { FxUniforms } from '../vfx/common';
+import { boltNodes, vortexNodes } from '../vfx/lightning';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
+import { trailNodes } from '../vfx/trail';
 
 /**
  * Material hiệu ứng (VFX) dùng chung, viết bằng TSL.
@@ -31,8 +33,11 @@ export const FX_MAX_HDR = 2.4;
  * - `ink`: lớp mực nền của kiếm khí, hòa trộn thường, có sương (render/vfx/slash.ts).
  * - `sigil`: pháp trận/vùng báo trước vẽ trong fragment, hòa trộn thường để có nền mực tối, bloom
  *   rất nhẹ (render/vfx/sigil.ts).
+ * - `bolt`: tia sét thiên lôi, dải quay về camera, cộng sáng có bloom (render/vfx/lightning.ts).
+ * - `vortex`: mây kiếp xoáy, hòa trộn thường, có sương, không bloom (render/vfx/lightning.ts).
+ * - `trail`: dải vệt sáng phi kiếm khi ngự kiếm, cộng sáng có bloom (render/vfx/trail.ts).
  */
-export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil';
+export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -42,6 +47,18 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   slash: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
   ink: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
   sigil: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.15, fog: false },
+  bolt: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.6, fog: false },
+  vortex: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
+  trail: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.45, fog: false },
+};
+
+const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opacity: unknown }>> = {
+  slash: (u) => slashNodes(u, false),
+  ink: (u) => slashNodes(u, true),
+  sigil: sigilNodes,
+  bolt: boltNodes,
+  vortex: vortexNodes,
+  trail: trailNodes,
 };
 
 /** Lưới hiệu ứng: dữ liệu theo lưới thay cho material riêng. */
@@ -83,10 +100,10 @@ export function fxMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
   // Trong suốt + DoubleSide mặc định vẽ 2 lượt (mặt sau rồi mặt trước). Cộng sáng không phụ thuộc
   // thứ tự, còn `solid`/`shade` là một màu phẳng không ghi depth, nên một lượt là đủ: nửa số draw call.
   m.forceSinglePass = true;
-  const custom = kind === 'slash' || kind === 'ink' ? slashNodes(U, kind === 'ink') : kind === 'sigil' ? sigilNodes(U) : null;
+  const custom = BUILDERS[kind]?.(U);
   if (custom) {
-    m.colorNode = custom.color;
-    m.opacityNode = custom.opacity;
+    m.colorNode = custom.color as THREE.Node;
+    m.opacityNode = custom.opacity as THREE.Node;
   } else {
     const hot = float(1).sub(uK).pow(2).mul(0.25).add(1);
     m.colorNode = min(vec3(uColor).mul(s.boost).mul(hot), FX_MAX_HDR);

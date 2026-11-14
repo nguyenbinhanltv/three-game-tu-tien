@@ -125,6 +125,10 @@ export interface UIState {
   chatOpen: boolean;
   quality: string;
   camShake: boolean;
+  /** Chỉ báo ngoài màn hình (M4-15) bật/tắt trong Cài đặt. */
+  offscreen: boolean;
+  /** Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới đích của nó); '' = nhiệm vụ đầu tiên trong danh sách. */
+  trackQuest: string;
   /** Kiểu điều khiển: 'mouse' (nhìn bằng chuột kiểu FPS), 'turn' (A/D xoay) hoặc 'strafe' (kéo chuột). */
   controls: string;
   /** Con trỏ đang bị khóa để nhìn bằng chuột. */
@@ -176,6 +180,8 @@ export const useUI = create<UIState>(() => ({
   chatOpen: false,
   quality: localStorage.getItem('dtl.quality') ?? 'medium',
   camShake: localStorage.getItem('dtl.camShake') !== '0',
+  offscreen: localStorage.getItem('dtl.offscreen') !== '0',
+  trackQuest: localStorage.getItem('dtl.trackQuest') ?? '',
   controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '') ? (localStorage.getItem('dtl.controls') as string) : 'mouse',
   mouseLook: false,
   queuedSkill: -1,
@@ -219,6 +225,12 @@ useUI.subscribe((s, prev) => {
   if (now) sfx('ui_open', 0.8);
   else sfx('ui_close', 0.8);
 });
+
+export function setTrackQuest(id: string): void {
+  if (id) localStorage.setItem('dtl.trackQuest', id);
+  else localStorage.removeItem('dtl.trackQuest');
+  useUI.setState({ trackQuest: id });
+}
 
 export const set = useUI.setState;
 export const get = useUI.getState;

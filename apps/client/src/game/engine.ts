@@ -45,7 +45,7 @@ import {
   type SysMsg,
   type TransferMsg,
 } from '@dtl/shared';
-import { hasString, MONSTER, monsterName, realmName, SKILLS, t } from '@dtl/content';
+import { hasString, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type MState, type PState, type WorldView } from './entities';
@@ -62,6 +62,7 @@ import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
+import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
 import { CameraShake, SHAKE } from './shake';
 import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
 import { KeyState } from '../input/keyboard';
@@ -193,6 +194,7 @@ export class Game {
   ents!: EntityManager;
   vfx!: Vfx;
   dmg!: DamageNumbers;
+  offscreen!: OffscreenIndicators;
   minimap!: HTMLCanvasElement;
   private stage: HTMLElement;
   private canvas!: HTMLCanvasElement;
@@ -318,6 +320,7 @@ export class Game {
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.snapToServer = true;
     this.dmg?.clear();
+    this.offscreen?.clear();
   }
   private snapToServer = true;
 
@@ -346,7 +349,7 @@ export class Game {
       if (m.sh && this.vfx) {
         if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m);
       }
-      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind);
+      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m));
       const vol = this.volumeAt(m.x, m.z);
       setTimeout(() => {
         sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
@@ -448,6 +451,11 @@ export class Game {
     layer.className = 'dmg-layer';
     this.stage.appendChild(layer);
     this.dmg = new DamageNumbers(layer);
+    const offLayer = document.createElement('div');
+    offLayer.className = 'offs-layer';
+    this.stage.appendChild(offLayer);
+    this.offscreen = new OffscreenIndicators(offLayer);
+    this.offscreen.enabled = get().offscreen;
 
     this.env = new Environment(this.scene, q.shadows);
     mark('env');
@@ -472,6 +480,9 @@ export class Game {
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
+    this.vfx.particles.setQuality(get().quality);
+    // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
+    this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.minimap = renderMinimap(320);
     mark('minimap');
@@ -921,14 +932,14 @@ export class Game {
           v.swordShot(_v, posDst, 0xfff3b0, 1.8, 0.16);
           // Lôi Đình Nhất Kiếm: nhát chém dọc lớn (biến thể đứng của kiếm khí) cùng lúc sét đánh.
           v.slashVertical(posDst, 0xfff3b0, 1.3);
-          v.lightning(_v2.x, _v2.y - 1, _v2.z, 0xfff0a8, 1.3);
+          v.lightning(_v2.x, _v2.y - 1, _v2.z, 0xfff0a8, 1.3, m.sd);
           if (src === this.sid || dst === this.sid) this.post?.flash(0.25);
         }
         break;
       }
       case 'rain':
         pSrc?.model.attack();
-        v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, 0x9fe0ff);
+        v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, 0x9fe0ff, m.sd, src === this.sid);
         break;
       case 'bite': {
         e.monsters.get(src)?.model.attack();
@@ -1006,10 +1017,21 @@ export class Game {
         if (src === this.sid) set({ castEnd: 0 });
         break;
       case 'tribstart':
-        v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+        v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) set({ tribEnd: Date.now() + (m.d ?? 40) * 1000 });
         break;
     }
+  }
+
+  /**
+   * Độ chớp toàn cảnh khi một tia sét đánh xuống: sấm độ kiếp của mình chớp rõ, tia gần mình chớp nhẹ
+   * theo khoảng cách, xa hơn 45 m thì không. Chỉ là lớp hình.
+   */
+  private lightningFlash(m: HazardMsg): number {
+    if (m.kind !== 'lightning') return 0;
+    if (m.src === this.sid) return 0.32;
+    const d = Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z);
+    return d < 45 ? 0.18 * (1 - d / 45) : 0;
   }
 
   /** Rung khi vùng nổ: chỉ sấm độ kiếp của mình hoặc boss đập đất gần mình. */
@@ -1271,6 +1293,7 @@ export class Game {
       this.questMarkersDirty = false;
       this.ents.updateQuestMarkers(get().quests, myLevel);
     }
+    if (me) this.vfx.trails.update(dt, this.ents.players, this.sid, this.camera);
     this.vfx.update(dt);
     this.post?.update(dt);
     this.updateCamera(dt);
@@ -1285,6 +1308,7 @@ export class Game {
     this.tickCombat(now, me);
     this.post!.render();
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
+    if (me && this.started) this.offscreen.update(this.camera, window.innerWidth, window.innerHeight, rp);
 
     this.fpsAcc += dt;
     this.fpsFrames++;
@@ -1438,6 +1462,7 @@ export class Game {
       }
     }
     const boss = this.bossFor(target, rp.x, rp.z);
+    this.offscreen.setCandidates(this.offscreenCandidates(target, boss));
     let hint = '';
     if (!(me.fl & PF_DEAD)) {
       const near = this.ents.nearestInteractable(this.cur.x, this.cur.y, this.cur.z);
@@ -1460,7 +1485,7 @@ export class Game {
     let perf = st.perf;
     if (this.debugPerf) {
       const info = this.renderer.info;
-      perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.terrain.tileCount()} ô`;
+      perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.terrain.tileCount()} ô · ${this.vfx.particles.aliveCount().total}/${this.vfx.particles.limit} hạt`;
     }
     set({
       debug: st.debugOpen ? this.debugInfo(me) : null,
@@ -1483,6 +1508,81 @@ export class Game {
       tribEnd: me.fl & PF_TRIBULATION ? st.tribEnd : 0,
       castEnd: me.fl & PF_CASTING ? st.castEnd : 0,
     });
+  }
+
+  /**
+   * Ứng viên cho chỉ báo ngoài màn hình (M4-15), theo thứ tự ưu tiên: mục tiêu đang chọn, boss đang
+   * giao chiến, đích của nhiệm vụ đang theo dõi. Chỉ đọc vị trí đã có (trạng thái room, NPC, dữ liệu bản đồ).
+   */
+  private offscreenCandidates(target: TargetInfo | null, boss: BossInfo | null): OffCandidate[] {
+    const out: OffCandidate[] = [];
+    if (!get().offscreen) return out;
+    const ents = this.ents;
+    // Mô hình chưa dựng (ngoài tầm hiển thị) thì lấy vị trí trong trạng thái room.
+    const entityPos = (id: string) => (o: THREE.Vector3) => {
+      if (ents.chestOf(id, o)) return true;
+      const e = this.view.monsters.get(id) ?? this.view.players.get(id);
+      return !!e && (o.set(e.x, e.y + 1, e.z), true);
+    };
+    const npcPos = (id: string) => {
+      const n = ents.npcs.find((e) => e.id === id);
+      return n ? (o: THREE.Vector3) => (o.set(n.x, n.y + 1.6, n.z), true) : null;
+    };
+    // Từ ngực (chestOf) xuống chân.
+    const spanOf = (id: string) => {
+      const m = ents.monsters.get(id);
+      return m ? m.model.height * 0.55 : 1.2;
+    };
+    if (target) {
+      const pos = target.kind === 'npc' ? npcPos(target.id) : entityPos(target.id);
+      if (pos) out.push({ key: target.id, kind: target.boss ? 'boss' : target.kind === 'mon' ? 'foe' : 'target', label: target.name, pos, span: target.kind === 'npc' ? 1.6 : spanOf(target.id) });
+    }
+    if (boss && boss.id !== target?.id) out.push({ key: boss.id, kind: 'boss', label: monsterName(boss.def), pos: entityPos(boss.id), span: spanOf(boss.id) });
+
+    const st = get();
+    // Cùng luật với chấm ở bảng theo dõi (trackedQuestId): chỉ chỉ tới đúng nhiệm vụ đó, không nhảy sang nhiệm vụ khác.
+    const qid = trackedQuestId(st.quests, st.trackQuest);
+    const rp = this.renderPos;
+    do {
+      const def = qid ? QUEST.get(qid) : undefined;
+      const goal = def && questGoal(def, st.quests.active[qid], NPCS);
+      if (!goal) break;
+      const label = t(`quest.${qid}.name`);
+      if (goal.kind === 'npc') {
+        // NPC không có trên bản đồ này (ví dụ đang ở bí cảnh) thì không chỉ.
+        const pos = npcPos(goal.npc);
+        if (pos) out.push({ key: qid + ':' + goal.npc, kind: goal.turnin ? 'turnin' : 'quest', label, pos, span: 1.6 });
+        break;
+      }
+      const spot = nearestGoalSpot(goal, rp.x, rp.z, this.view.monsters, this.view.nodes, LEVELS[this.view.level]);
+      if (!spot) break;
+      let pos: OffCandidate['pos'];
+      let key: string;
+      if ('id' in spot) {
+        // Cùng con quái với mục tiêu/boss thì đã có chỉ báo rồi.
+        if (spot.id === target?.id || spot.id === boss?.id) break;
+        key = spot.id;
+        const id = spot.id;
+        if (goal.kind === 'mon') pos = entityPos(id);
+        else
+          pos = (o) => {
+            const n = this.view.nodes.get(id);
+            return !!n && (o.set(n.x, n.y + 0.8, n.z), true);
+          };
+      } else {
+        key = `${spot.x},${spot.z}`;
+        const y = groundAt(spot.x, spot.z) + 1;
+        pos = (o) => (o.set(spot.x, y, spot.z), true);
+      }
+      out.push({ key: qid + ':' + key, kind: goal.kind === 'node' ? 'gather' : 'quest', label, icon: goal.kind === 'node' ? goal.item : undefined, pos, span: goal.kind === 'mon' && 'id' in spot ? spanOf(spot.id) : 0.8 });
+    } while (false);
+    return out;
+  }
+
+  setOffscreen(on: boolean): void {
+    localStorage.setItem('dtl.offscreen', on ? '1' : '0');
+    set({ offscreen: on });
+    this.offscreen.enabled = on;
   }
 
   /** Số liệu cho bảng gỡ lỗi F3 (M1-2). */
@@ -1555,6 +1655,7 @@ export class Game {
     set({ quality: q });
     const cfg = QUALITY[q] ?? QUALITY.medium;
     setHeightFog(cfg.heightFog);
+    this.vfx?.particles.setQuality(q);
     if (this.post && !this.post.matches(cfg)) {
       this.post.dispose();
       this.post = new PostPipeline(this.renderer, this.scene, this.camera, cfg);
@@ -1580,6 +1681,7 @@ export class Game {
     this.sectAsset = null;
     this.sectMat.dispose();
     this.dmg?.clear();
+    this.offscreen?.dispose();
     this.stage.replaceChildren();
     this.renderer?.dispose();
     try {
