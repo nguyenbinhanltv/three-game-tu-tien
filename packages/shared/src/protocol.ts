@@ -63,6 +63,8 @@ export const S = {
   DMG: 'dmg',
   CHAT: 'chat',
   HAZARD: 'haz',
+  BOLT: 'bolt',
+  BOLT_END: 'boltx',
   KICK: 'kick',
   TRANSFER: 'xfer',
 } as const;
@@ -173,6 +175,41 @@ export interface HazardMsg {
   w?: number;
   /** Seed hình (uint31) của tia sét khi `kind` là `lightning`: mọi client thấy cùng một tia. */
   sd?: number;
+}
+
+/**
+ * Đạn của quái vừa bắn (D1). Client tự nội suy bằng `boltXZ`/`boltY` trong packages/shared từ (x, z, yaw, v)
+ * và thời điểm `t`; server phán định trúng/vỡ và báo bằng `BoltEndMsg`. Hết `life` mà không có tin kết
+ * thúc thì client tự tắt đạn. Không mang sát thương.
+ */
+export interface BoltMsg {
+  /** Id đạn trong room (tăng dần). */
+  id: number;
+  x: number;
+  z: number;
+  yaw: number;
+  /** Tốc độ (m/s). */
+  v: number;
+  /** Bán kính (m). */
+  r: number;
+  /** Thời gian sống (giây). */
+  life: number;
+  /** Giờ server (ms) lúc phát: client bù độ trễ để thấy đạn đúng chỗ server đang tính. */
+  t: number;
+  kind: HazardKind;
+  /** Id quái bắn. */
+  src: string;
+  /** Seed hình (dao động, hạt đuôi). Chỉ là lớp hình. */
+  sd: number;
+}
+
+/** Đạn kết thúc trước hạn: trúng người (`hit` = sid), chạm vật cản, hay bị hủy (quái chết/bỏ đuổi). */
+export interface BoltEndMsg {
+  id: number;
+  /** Chỗ đạn vỡ. */
+  x: number;
+  z: number;
+  hit?: string;
 }
 
 /**

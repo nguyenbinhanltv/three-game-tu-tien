@@ -78,7 +78,11 @@ export interface MonsterCombo {
   mul: number;
 }
 
-/** Quái đánh xa: đọc chú `cast` giây, rồi thả vùng báo trước nổ sau `delay` giây. */
+/**
+ * Quái đánh xa: đọc chú `cast` giây, rồi thả vùng báo trước nổ sau `delay` giây, hoặc với `shape: 'bolt'`
+ * bắn `n` viên đạn bay chậm (`speed` m/s, bán kính `r`) nhắm vào chỗ mục tiêu đang đứng lúc bắn; đạn bay
+ * tối đa `range` × 1,6 mét. Né bằng cách bước ngang ra khỏi đường bay (`delay` bỏ qua với đạn).
+ */
 export interface MonsterCaster {
   /** Tầm bắt đầu niệm (mét). */
   range: number;
@@ -87,11 +91,17 @@ export interface MonsterCaster {
   /** Hồi chiêu (giây), tính từ lúc niệm xong. */
   cd: number;
   mul: number;
-  shape: 'circle' | 'rect' | 'cone';
-  /** Bán kính (tròn, quạt) hoặc chiều dài (chữ nhật). */
+  shape: 'circle' | 'rect' | 'cone' | 'bolt';
+  /** Bán kính (tròn, quạt, đạn) hoặc chiều dài (chữ nhật). */
   r: number;
   /** Chiều rộng (chữ nhật) hoặc nửa góc tính bằng độ (quạt). */
   w?: number;
+  /** Đạn: tốc độ bay (m/s). */
+  speed?: number;
+  /** Đạn: số viên mỗi loạt (mặc định 1). */
+  n?: number;
+  /** Đạn: tổng góc tỏa của loạt (độ). */
+  spread?: number;
   kind: 'lightning' | 'frost' | 'fire' | 'spirit';
 }
 

@@ -1,6 +1,14 @@
 import { randomInt } from 'node:crypto';
 import type { Client } from 'colyseus';
 import {
+  BOLT_MAX_LIFE,
+  BOLT_MAX_LIVE,
+  boltBlocked,
+  type BoltEndMsg,
+  boltHits,
+  type BoltMsg,
+  boltXZ,
+  boltYaws,
   bossPhaseAt,
   fxSeed,
   type CdMsg,
@@ -217,6 +225,27 @@ interface Hazard extends HazardGeom {
   src: string;
 }
 
+/** Đạn đánh xa của quái đang bay (D1). Vị trí tính lại từ gốc + thời gian, không tích lũy sai số. */
+interface Bolt {
+  id: number;
+  x0: number;
+  z0: number;
+  yaw: number;
+  v: number;
+  r: number;
+  /** Giờ server (ms) lúc phát và lúc hết hạn. */
+  t0: number;
+  endAt: number;
+  /** Vị trí ở tick trước (để quét đoạn). */
+  px: number;
+  pz: number;
+  atk: number;
+  mul: number;
+  mon: MonEnt;
+}
+
+const _bp = { x: 0, z: 0 };
+
 export interface SimHost {
   broadcast(type: string, msg: unknown): void;
   /** Bí cảnh: gọi khi một quái không hồi sinh bị hạ. */
@@ -241,6 +270,8 @@ export class GameSim {
   monById = new Map<string, MonEnt>();
   nodes = new Map<string, NodeEnt>();
   hazards: Hazard[] = [];
+  bolts: Bolt[] = [];
+  private nextBoltId = 1;
   /** sid người chơi → id quái đang giữ ô cận chiến của người đó. */
   private meleeSlot = new Map<string, string>();
   /** sid người chơi → lần cuối có quái cận chiến phải chờ ở vòng ngoài. */
@@ -487,6 +518,7 @@ export class GameSim {
     for (const p of this.players.values()) this.tickPlayer(p, dt);
     for (let i = this.monsters.length - 1; i >= 0; i--) this.tickMonster(this.monsters[i], dt);
     this.tickHazards();
+    this.tickBolts();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -1323,6 +1355,7 @@ export class GameSim {
     // Mục tiêu đã chạy xa hoặc lên chỗ không với tới: chiêu xịt.
     if (!reachable || d > c.range * 1.4) return;
     const yaw = Math.atan2(target.move.x - m.s.x, target.move.z - m.s.z);
+    if (c.shape === 'bolt') return this.fireBolts(m, c, yaw);
     let g: HazardGeom;
     if (c.shape === 'circle') g = { x: target.move.x, z: target.move.z, r: c.r };
     else if (c.shape === 'rect') g = { x: m.s.x, z: m.s.z, r: c.r, sh: 'rect', yaw, w: c.w ?? 2 };
@@ -1562,6 +1595,97 @@ export class GameSim {
         }
         this.damagePlayer(p, n, h.src, true);
       }
+    }
+  }
+
+  // ---------- đạn đánh xa (D1) ----------
+
+  /**
+   * Bắn một loạt đạn về hướng `yaw` (nhắm chỗ mục tiêu đứng lúc bắn, không đón đầu: bước ngang là né).
+   * Đạn bay thẳng, bám địa hình; server phán định trúng theo vị trí người chơi server giữ.
+   */
+  private fireBolts(m: MonEnt, c: MonsterCaster, yaw: number): void {
+    const v = c.speed ?? 9;
+    const life = Math.min(BOLT_MAX_LIFE, (c.range * 1.6) / v);
+    // Đầu nòng: trước mặt quái một chút để đạn không mọc ra từ giữa thân.
+    const off = 0.6 + m.def.scale * 0.5;
+    const ox = m.s.x + Math.sin(yaw) * off;
+    const oz = m.s.z + Math.cos(yaw) * off;
+    const spread = ((c.spread ?? 0) * Math.PI) / 180;
+    for (const a of boltYaws(yaw, Math.max(1, Math.min(5, c.n ?? 1)), spread)) {
+      if (this.bolts.length >= BOLT_MAX_LIVE) return;
+      const b: Bolt = {
+        id: this.nextBoltId++,
+        x0: ox,
+        z0: oz,
+        yaw: a,
+        v,
+        r: c.r,
+        t0: this.now,
+        endAt: this.now + life * 1000,
+        px: ox,
+        pz: oz,
+        atk: m.atk,
+        mul: c.mul,
+        mon: m,
+      };
+      this.bolts.push(b);
+      const msg: BoltMsg = { id: b.id, x: ox, z: oz, yaw: a, v, r: c.r, life, t: this.now, kind: c.kind, src: m.id, sd: visualSeed() };
+      this.host.broadcast(S.BOLT, msg);
+    }
+  }
+
+  private endBolt(i: number, x: number, z: number, hit?: string): void {
+    const b = this.bolts[i];
+    this.bolts.splice(i, 1);
+    const msg: BoltEndMsg = { id: b.id, x, z };
+    if (hit) msg.hit = hit;
+    this.host.broadcast(S.BOLT_END, msg);
+  }
+
+  private tickBolts(): void {
+    for (let i = this.bolts.length - 1; i >= 0; i--) {
+      const b = this.bolts[i];
+      const m = b.mon;
+      // Quái bắn đã chết, đã bị gỡ, hoặc đang bỏ đuổi (hồi đầy + miễn sát thương): đạn tan, không gây sát thương.
+      if (m.state === MS_DEAD || m.state === MS_RETURN || !this.monById.has(m.id)) {
+        this.endBolt(i, b.px, b.pz);
+        continue;
+      }
+      const t = Math.min(this.now, b.endAt);
+      boltXZ(b.x0, b.z0, b.yaw, b.v, (t - b.t0) / 1000, _bp);
+      let hit: PlayerEnt | null = null;
+      let best = Infinity;
+      for (const p of this.players.values()) {
+        if (this.isDead(p)) continue;
+        if (!boltHits(b.px, b.pz, _bp.x, _bp.z, b.r, p.move.x, p.move.y, p.move.z)) continue;
+        // Nhiều người trên đường bay: trúng người gần điểm xuất phát tick này nhất.
+        const dd = (p.move.x - b.px) ** 2 + (p.move.z - b.pz) ** 2;
+        if (dd < best) {
+          best = dd;
+          hit = p;
+        }
+      }
+      if (hit) {
+        this.endBolt(i, hit.move.x, hit.move.z, hit.sid);
+        const n = computeDamage(b.atk, b.mul, hit.char.def, Math.random(), 1).dmg;
+        // Chung cửa sổ miễn với vùng nổ của quái: nhiều quái bắn trúng cùng lúc chỉ tính đòn mạnh nhất
+        // (giữ cân bằng cũ khi đổi Kiếm Linh từ vùng chữ nhật sang đạn).
+        const r = hazardHit(Math.max(1, Math.round(n)), hit.hazardWin.until, hit.hazardWin.taken, this.now);
+        hit.hazardWin.until = r.until;
+        hit.hazardWin.taken = r.taken;
+        if (r.dmg <= 0) this.host.broadcast(S.DMG, { dst: hit.sid, n: 0, src: m.id } satisfies DmgMsg);
+        else this.damagePlayer(hit, r.dmg, m.id);
+        continue;
+      }
+      if (boltBlocked(_bp.x, _bp.z, b.r)) {
+        this.endBolt(i, _bp.x, _bp.z);
+        continue;
+      }
+      b.px = _bp.x;
+      b.pz = _bp.z;
+      // Hết hạn: client tự tắt theo `life`, không cần gửi tin.
+      if (this.now >= b.endAt) this.bolts.splice(i, 1);
     }
   }
 

@@ -8,3 +8,4 @@ export * from './boss';
 export * from './types';
 export * from './protocol';
 export * from './pose';
+export * from './projectile';
