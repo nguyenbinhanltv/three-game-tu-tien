@@ -613,7 +613,7 @@ export class EntityManager {
     for (const e of list) {
       const allow = e.local || (e.inView && lod0 < LOD0_MAX);
       if (allow) lod0++;
-      e.model.setView!({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow });
+      e.model.setView!({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow, self: e.local });
     }
   }
 

@@ -85,7 +85,9 @@ describe('máy trạng thái', () => {
   });
 
   it('mixer: LOD0 mỗi khung, LOD1 ≤15 Hz, LOD2 thưa hơn, ngoài khung nhìn không chạy', () => {
-    expect(mixerInterval(0)).toBe(0);
+    expect(mixerInterval(0, true, true)).toBe(0);
+    expect(mixerInterval(0, false, true)).toBe(0);
+    expect(mixerInterval(0)).toBeLessThanOrEqual(1 / 60);
     expect(mixerInterval(1)).toBeGreaterThanOrEqual(1 / 15);
     expect(mixerInterval(2)).toBeGreaterThan(mixerInterval(1));
     expect(mixerInterval(0, false)).toBe(Infinity);
@@ -204,7 +206,7 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     const t0 = act.time;
     w.update(1 / 60, anim());
     expect(act.time).toBe(t0);
-    for (let i = 0; i < 6; i++) w.update(1 / 60, anim());
+    for (let i = 0; i < 8; i++) w.update(1 / 60, anim());
     expect(act.time).toBeGreaterThan(t0);
     w.dispose();
     skins.dispose();

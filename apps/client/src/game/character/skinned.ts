@@ -78,15 +78,19 @@ interface Perform {
 }
 
 /**
- * Khoảng cập nhật mixer theo mức LOD (giây): LOD0 mỗi khung, LOD1 15 Hz, LOD2 10 Hz; ngoài khung nhìn thì không
- * cập nhật (gộp dt, vào lại khung nhìn thì bắt kịp một lần). Bộ xương chỉ đổi khi mixer chạy nên CPU giảm theo.
+ * Khoảng cập nhật mixer (giây): nhân vật của mình mỗi khung; LOD0 tối đa 60 Hz (màn 120 Hz không cần hơn cho người
+ * khác); LOD1 12 Hz; LOD2 8 Hz; ngoài khung nhìn thì không cập nhật (gộp dt, vào lại khung nhìn thì bắt kịp một lần).
+ * Bộ xương chỉ đổi khi mixer chạy nên CPU giảm theo. Đo 50 người ở sân: mixer là phần lớn nhất còn lại sau khi tách xương.
  */
-export function mixerInterval(level: number, inView = true): number {
+export function mixerInterval(level: number, inView = true, self = false): number {
+  if (self) return 0;
   if (!inView) return Infinity;
-  if (level <= 0) return 0;
-  if (level === 1) return 1 / 15;
-  return 1 / 10;
+  if (level <= 0) return 1 / 60;
+  if (level === 1) return 1 / 12;
+  return 1 / 8;
 }
+
+const MIXER_SLACK = 0.0015;
 
 /** Thông tin nhìn của một khung (EntityManager tính theo camera, M3-9). */
 export interface ViewInfo {
@@ -96,6 +100,8 @@ export interface ViewInfo {
   inView: boolean;
   /** Còn suất LOD0 (chỉ N thể gần camera nhất trong khung nhìn được LOD0). */
   allowLod0: boolean;
+  /** Nhân vật của mình: luôn cập nhật mỗi khung. */
+  self?: boolean;
 }
 
 /** Mức LOD theo khoảng cách camera; hết suất LOD0 thì tối thiểu LOD1. */
@@ -247,14 +253,14 @@ export class SkinnedCharacter implements CharacterView {
 
   /** Chỉ theo khoảng cách (luôn trong khung nhìn, được LOD0). */
   setViewDistance(d: number): void {
-    this.setView({ dist: d, inView: true, allowLod0: true });
+    this.setView({ dist: d, inView: true, allowLod0: true, self: d <= 0 });
   }
 
   /** LOD, bóng và nhịp mixer theo camera (M3-9). */
   setView(v: ViewInfo): void {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length);
     this.applyLod(level);
-    this.interval = mixerInterval(level, v.inView);
+    this.interval = mixerInterval(level, v.inView, v.self);
     // Ngoài khung nhìn: bỏ cả cây xương khỏi lượt tính ma trận và lượt dựng danh sách vẽ (mỗi pass).
     this.inner.visible = v.inView;
     this.inner.matrixWorldAutoUpdate = v.inView;
@@ -306,7 +312,8 @@ export class SkinnedCharacter implements CharacterView {
 
     // Hạ tần số mixer ở xa: gộp dt, cập nhật bộ xương thưa hơn.
     this.acc += dt;
-    if (this.acc > 0 && this.acc >= this.interval) {
+    // Dung sai 1,5 ms: ở 60 khung/giây dt dao động quanh 1/60, không để LOD0 tụt xuống 30 Hz vì làm tròn.
+    if (this.acc > 0 && this.acc >= this.interval - MIXER_SLACK) {
       this.mixer.update(this.acc);
       this.rig.updateMatrixWorld(true);
       this.acc = 0;

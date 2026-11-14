@@ -43,7 +43,7 @@ export interface CharacterView {
   /** Khoảng cách tới người xem (m): chọn LOD và tần số cập nhật animation. Model khối bỏ qua. */
   setViewDistance?(d: number): void;
   /** LOD/bóng/nhịp mixer theo camera và suất LOD0 (EntityManager, M3-9). Model khối bỏ qua. */
-  setView?(v: { dist: number; inView: boolean; allowLod0: boolean }): void;
+  setView?(v: { dist: number; inView: boolean; allowLod0: boolean; self?: boolean }): void;
   dispose(): void;
   /**
    * Cho vệt/hạt theo nhân vật (render/vfx/trail.ts, M4-5); model không có thì không sinh hiệu ứng đó.
