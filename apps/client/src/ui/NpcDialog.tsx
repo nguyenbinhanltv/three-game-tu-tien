@@ -1,3 +1,4 @@
+import { ContentIcon } from './ContentIcon';
 import { useState } from 'react';
 import { C, enhanceChance, enhanceCost, EQUIP_SLOTS, MAX_ENHANCE } from '@dtl/shared';
 import { ENHANCE_ORE, ITEM, itemName, NPC, QUESTS, realmName, RECIPES, t } from '@dtl/content';
@@ -156,7 +157,7 @@ function CraftTab({ npcId }: { npcId: string }) {
               <div className="craft-inputs">
                 {r.inputs.map((i) => (
                   <span key={i.id} className={count(i.id) >= i.n ? 'ok' : 'bad'}>
-                    {ITEM.get(i.id)?.icon} {itemName(i.id)} {count(i.id)}/{i.n}
+                    <ContentIcon def={ITEM.get(i.id)} /> {itemName(i.id)} {count(i.id)}/{i.n}
                   </span>
                 ))}
                 <span className={gold >= r.gold ? 'ok' : 'bad'}>{t('ui.craft.cost', { n: r.gold })}</span>
@@ -189,7 +190,7 @@ function EnhanceTab({ npcId }: { npcId: string }) {
   return (
     <div className="shop-list">
       <div className="section-title">
-        {t('ui.enh.title')} — {ITEM.get(ENHANCE_ORE)?.icon} {ore} · 💠 {gold}
+        {t('ui.enh.title')} — <ContentIcon def={ITEM.get(ENHANCE_ORE)} /> {ore} · 💠 {gold}
       </div>
       {worn.length === 0 && <div className="muted">{t('ui.enh.none')}</div>}
       {worn.map((es) => {

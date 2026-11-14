@@ -1,5 +1,42 @@
 # Giấy phép asset
 
+## Icon UI M4-7
+
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ. Không dùng tài sản hoặc khung icon của guizang. PNG gốc ở `<DTL_ASSET_SOURCE>/icons/<id>.png`; prompt tại `docs/prompts/codex.md` mục 9, chủ thể tại `tools/icons/subjects.json`. Atlas 128px/ô: `apps/client/public/assets/ui/icons.*.webp`. Manifest lưu SHA-256 và dung lượng từng PNG nguồn.
+
+| Asset | Nguồn | Giấy phép | Ngày | Chi tiết |
+| --- | --- | --- | --- | --- |
+| `skl_phi_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_phi_kiem.png` |
+| `skl_kiem_khi_tram` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_kiem_khi_tram.png` |
+| `skl_linh_khi_ho_the` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_linh_khi_ho_the.png` |
+| `skl_thien_kiem_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_thien_kiem_vu.png` |
+| `skl_hoi_nguyen_thuat` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_hoi_nguyen_thuat.png` |
+| `skl_loi_dinh_nhat_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_loi_dinh_nhat_kiem.png` |
+| `itm_linh_thao` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_linh_thao.png` |
+| `itm_huyet_linh_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_huyet_linh_chi.png` |
+| `itm_nanh_soi` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_nanh_soi.png` |
+| `itm_yeu_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_yeu_dan.png` |
+| `itm_thiet_tinh` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_thiet_tinh.png` |
+| `itm_han_giao_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_han_giao_dan.png` |
+| `itm_kiem_phach` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_kiem_phach.png` |
+| `itm_truc_co_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_truc_co_dan.png` |
+| `itm_hoi_xuan_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_xuan_dan.png` |
+| `itm_hoi_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_khi_dan.png` |
+| `itm_tu_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tu_khi_dan.png` |
+| `itm_moc_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_moc_kiem.png` |
+| `itm_thiet_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_thiet_kiem.png` |
+| `itm_thanh_phong_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_thanh_phong_kiem.png` |
+| `itm_han_quang_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_han_quang_kiem.png` |
+| `itm_tram_ta_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tram_ta_kiem.png` |
+| `itm_bo_y` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_bo_y.png` |
+| `itm_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_dao_bao.png` |
+| `itm_linh_ti_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_linh_ti_bao.png` |
+| `itm_huyen_van_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_huyen_van_bao.png` |
+| `itm_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_ngoc_boi.png` |
+| `itm_huyen_thiet_gioi` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_huyen_thiet_gioi.png` |
+| `itm_han_giao_hoan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_han_giao_hoan.png` |
+
+
 Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.json`) phải có **đúng một dòng** trong bảng dưới. `pnpm assets:validate` báo lỗi nếu thiếu. Cột đầu ghi asset id trong dấu `` ` ``.
 
 - **Nguồn**: Tripo (web app gói Max / API trả phí), Codex (ảnh concept), CC0 (ghi tên gói), tự sinh bằng script (ghi đường dẫn script).
