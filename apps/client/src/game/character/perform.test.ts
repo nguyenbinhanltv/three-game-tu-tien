@@ -232,6 +232,33 @@ describe('SkillPoses (khớp động tác với FX)', () => {
   });
 });
 
+describe('dự đoán theo trạng thái thật của model', () => {
+  const phi = SKILLS.find((s) => s.fx === 'sword')!;
+
+  it('đang thiền vẫn ra chiêu (server tự dừng thiền): động tác phát, FX về sớm thì giữ tới lúc ra đòn', () => {
+    const { ch } = makeChar();
+    step(ch, { ...STILL, meditating: true }, 0.3);
+    const sp = new SkillPoses();
+    sp.predict(ch, phi, 1000);
+    expect(ch.performing('phi_kiem')).toBe(true);
+    expect(sp.onFx('sword', ch, true, 1050)).toBeGreaterThan(0.1);
+    ch.dispose();
+  });
+
+  it('trên không / ngự kiếm: không ghi dự đoán, FX về thì phát ngay (không giữ hiệu ứng, không trễ sát thương)', () => {
+    for (const a of [{ ...STILL, airborne: true }, { ...STILL, flying: true }]) {
+      const { ch } = makeChar();
+      step(ch, a, 0.2);
+      const sp = new SkillPoses();
+      sp.predict(ch, phi, 1000);
+      expect(ch.performing('phi_kiem')).toBe(false);
+      expect(sp.onFx('sword', ch, true, 1050)).toBe(0);
+      expect(sp.holdLeft(1050)).toBe(0);
+      ch.dispose();
+    }
+  });
+});
+
 describe('chi phí', () => {
   it('nướng thư viện pose cho một rig', () => {
     const scene = buildMixamoFixture();

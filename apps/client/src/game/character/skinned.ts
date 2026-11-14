@@ -285,9 +285,12 @@ export class SkinnedCharacter implements CharacterView {
 
   private hasClip = (name: string): boolean => this.clips.has(name);
 
-  /** Đúng luật server: không ra chiêu khi chết, thiền, ngự kiếm hay đang ở trên không. */
+  /**
+   * Theo luật server (`sim.onSkill`): không ra chiêu khi chết, ngự kiếm hay đang ở trên không. Đang thiền thì VẪN ra
+   * chiêu được (server tự dừng thiền rồi ra chiêu), nên động tác phải phát, chồng lên tư thế thiền tới khi cờ tắt.
+   */
   private canPerform(a: AnimState | null = this.last): boolean {
-    return !this.dead && !(a && (a.dead || a.meditating || a.flying || a.airborne));
+    return !this.dead && !(a && (a.dead || a.flying || a.airborne));
   }
 
   private startPerform(id: string, clips: PoseClips, from: number): void {

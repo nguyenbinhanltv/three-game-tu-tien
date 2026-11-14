@@ -30,7 +30,8 @@ export interface CharacterView {
   attack(): void;
   /**
    * Phát động tác của một chiêu (pose id, M3-4). Trả false nếu model không có động tác này (gọi `attack()` thay);
-   * true nếu đã nhận (kể cả khi bỏ qua vì đang bay/trên không/chết, đúng luật server không cho ra chiêu).
+   * true nếu đã nhận, kể cả khi bỏ qua vì đang bay/trên không/chết (server không cho ra chiêu). Muốn biết động tác
+   * có thật sự phát không thì hỏi `performing(pose)`.
    */
   perform?(pose: string, o?: PerformOpts): boolean;
   /** Bỏ động tác đang chờ (`delay`) và tắt nhanh động tác chưa tới lúc ra đòn (vd. niệm chú bị phá). */

@@ -35,7 +35,9 @@ export class SkillPoses {
   /** Người chơi vừa gửi chiêu và mọi điều kiện kiểm được ở client đều qua: vào thế ngay. */
   predict(model: CharacterView | undefined, skill: SkillDef, now: number): void {
     if (!model?.perform || !skill.pose || skill.cast > 0) return;
-    if (!model.perform(skill.pose)) return;
+    // Chỉ ghi dự đoán khi động tác thật sự bắt đầu: bị bỏ qua (trên không, bay, chết) thì FX về phải phát ngay,
+    // không giữ hiệu ứng chờ một nhát vung không có.
+    if (!model.perform(skill.pose) || !model.performing?.(skill.pose)) return;
     this.predicted = { fx: skill.fx, at: now, release: now + releaseAt(skill) * 1000 };
   }
 
