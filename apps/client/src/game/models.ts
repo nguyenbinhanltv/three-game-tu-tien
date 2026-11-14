@@ -4,6 +4,9 @@ import { col, flat, G, GeoBuilder, mat } from './geo';
 import { createWorldMaterial } from '../render/materials/world';
 import { markBloom } from '../render/post';
 import { HitReact, type HitOpts } from './hitreact';
+import type { AnimState, CharacterView, MonsterView } from './character/view';
+
+export type { AnimState } from './character/view';
 
 /** Material dùng chung cho mọi mô hình tô màu theo đỉnh. */
 export const MODEL_MAT = createWorldMaterial({ vertexColors: true });
@@ -47,16 +50,7 @@ export interface HumanoidOpts {
   scale?: number;
 }
 
-export interface AnimState {
-  speed: number;
-  flying: boolean;
-  meditating: boolean;
-  dead: boolean;
-  casting: boolean;
-  airborne: boolean;
-}
-
-export class Humanoid {
+export class Humanoid implements CharacterView {
   root = new THREE.Group();
   pose = new THREE.Group();
   private armL: THREE.Mesh;
@@ -342,7 +336,7 @@ function monGeo(def: MonsterDef): MonGeo {
   return g;
 }
 
-export class MonsterModel {
+export class MonsterModel implements MonsterView {
   root = new THREE.Group();
   private inner = new THREE.Group();
   private legs: THREE.Mesh[] = [];
@@ -414,8 +408,9 @@ export class MonsterModel {
     this.hit.react({ ...o, mass: (o.mass ?? 1) * (this.def.boss ? 0.3 : 1 / Math.max(1, this.def.scale)) });
   }
 
-  /** `speed` m/s; `dead` chuyển sang nằm xuống rồi chìm dần. */
-  update(realDt: number, speed: number, dead: boolean): void {
+  /** `a.speed` m/s; `a.dead` chuyển sang nằm xuống rồi chìm dần. */
+  update(realDt: number, a: AnimState): void {
+    const { speed, dead } = a;
     const dt = this.hit.update(realDt);
     this.inner.position.x = this.hit.shake;
     this.time += dt;
@@ -468,6 +463,11 @@ export class MonsterModel {
     }
     this.inner.rotation.z = fall * (Math.PI / 2) * 0.95;
     this.inner.position.y = (moving ? Math.abs(sw) * 0.05 : 0) + fall * 0.25 - Math.max(0, this.deadT - 1.4) * 0.5;
+  }
+
+  /** Geometry dùng chung theo loại quái (MON_GEO) nên chỉ trả material gốc nếu đang chớp. */
+  dispose(): void {
+    this.hit.reset();
   }
 }
 

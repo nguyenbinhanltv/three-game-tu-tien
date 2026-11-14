@@ -1,0 +1,70 @@
+import type { AnimState } from './view';
+
+/**
+ * Trạng thái animation. `idle`…`death` là trạng thái nền (lặp hoặc kẹp cuối) chọn từ `AnimState`;
+ * `attack`, `hit` là đòn một lần chồng lên nền rồi trả về.
+ */
+export type CharState =
+  | 'idle'
+  | 'combatIdle'
+  | 'walk'
+  | 'run'
+  | 'jump'
+  | 'fly'
+  | 'meditate'
+  | 'cast'
+  | 'death'
+  | 'attack'
+  | 'hit';
+
+/** Trạng thái → tên clip trong GLB. Thiếu clip thì lùi theo `FALLBACK`. */
+export type ClipMap = Partial<Record<CharState, string>>;
+
+/** Trạng thái lùi khi asset không có clip riêng (null = bỏ qua, giữ clip đang chạy). */
+export const FALLBACK: Record<CharState, CharState | null> = {
+  idle: null,
+  combatIdle: 'idle',
+  walk: 'run',
+  run: 'walk',
+  jump: 'idle',
+  fly: 'idle',
+  meditate: 'idle',
+  cast: 'combatIdle',
+  death: null,
+  attack: null,
+  hit: null,
+};
+
+/** Dưới tốc độ này coi là đứng yên (m/s, trước scale). */
+export const MOVE_MIN = 0.3;
+/** Từ tốc độ này (× tốc độ tham chiếu của clip chạy) chuyển đi → chạy. */
+export const RUN_FROM = 0.6;
+
+/** Trạng thái nền theo thứ tự ưu tiên: chết > thiền > bay > trên không > niệm chú > di chuyển > đứng. */
+export function baseState(a: AnimState, refSpeed: number): CharState {
+  if (a.dead) return 'death';
+  if (a.meditating) return 'meditate';
+  if (a.flying) return 'fly';
+  if (a.airborne) return 'jump';
+  if (a.casting) return 'cast';
+  if (a.speed > MOVE_MIN) return a.speed >= refSpeed * RUN_FROM ? 'run' : 'walk';
+  return a.combat ? 'combatIdle' : 'idle';
+}
+
+/** Tên clip cho trạng thái, đi theo chuỗi lùi; null nếu không có clip nào phù hợp. */
+export function clipFor(state: CharState, map: ClipMap, has: (clip: string) => boolean): string | null {
+  const seen = new Set<CharState>();
+  let s: CharState | null = state;
+  while (s && !seen.has(s)) {
+    seen.add(s);
+    const c = map[s];
+    if (c && has(c)) return c;
+    s = FALLBACK[s];
+  }
+  return null;
+}
+
+/** Hệ số tốc độ phát clip di chuyển để chân không trượt: tốc độ thật / tốc độ của clip ở 1×. */
+export function locomotionScale(speed: number, refSpeed: number): number {
+  return Math.min(2.6, Math.max(0.45, speed / Math.max(0.01, refSpeed)));
+}
