@@ -55,7 +55,7 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 
 ## Hiện trạng MVP (2026-11-12)
 
-Đã chạy được và đã thử trong trình duyệt: đăng nhập thử, di chuyển có dự đoán + đối soát, ngự kiếm, combat tab-target 6 chiêu, 7 loại quái + boss Hàn Giao, 12 nhiệm vụ, mua bán, luyện đan, cường hóa, đả tọa, độ kiếp Trúc Cơ, bí cảnh Kiếm Trủng 4 đợt, chat, bản đồ nhỏ, kết nối lại, tự mở kênh khi đủ 50 người.
+Đã chạy được và đã thử trong trình duyệt: đăng nhập thử, di chuyển có dự đoán + đối soát, ngự kiếm, combat tab-target 6 chiêu, 7 loại quái + boss Hàn Giao, 12 nhiệm vụ, mua bán, luyện đan, cường hóa, đả tọa, độ kiếp Trúc Cơ, bí cảnh Kiếm Trủng 4 đợt, chat, bản đồ nhỏ, kết nối lại, tự mở kênh khi đủ 50 người. Cỏ tương tác (`game/grass.ts`: 1 draw call, rạp theo mình + 5 người/quái gần nhất qua `uniformArray`, preset Thấp tắt) và hạt môi trường theo vùng quanh camera (`game/ambient.ts`, phát vào hệ hạt chung M4-5 nên không thêm draw call).
 
 Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm lệch thêm):
 
@@ -75,6 +75,7 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Không cho ra chiêu khi `airborne()`; quái bỏ đuổi mục tiêu không với tới thì hồi đầy và miễn sát thương (`evadeUntil`).
 - Request listener HTTP phải bọc try/catch; `AUTH_DEV_BYPASS` tự tắt khi `NODE_ENV=production` hoặc có `GOOGLE_CLIENT_ID`.
 - Bảng rơi đồ và linh thạch rơi nằm ở `packages/content/data/loot.json`, chỉ import qua `@dtl/content/loot` (server, check, sim). `monsters.json` vào bundle client nên không được chứa `drops`/`gold` (`content:check` và `apps/client/src/no-server-data.test.ts` chặn). Client chỉ biết món đã rơi qua tin nhắn `sys.loot`.
+- Đạn đánh xa của quái (`caster.shape: 'bolt'`): server mô phỏng trong `tickBolts` bằng công thức chung `packages/shared/src/projectile.ts` (quét đoạn, chặn vật cản trên cả đoạn, đạn nâng theo độ cao mục tiêu lúc bắn để ngự kiếm sát đất không né được bằng cách lơ lửng), đi chung cửa sổ miễn `hazardHit` với vùng nổ; quái chết/bỏ đuổi thì đạn tan. Client chỉ nội suy từ `S.BOLT` và vẽ khi có `S.BOLT_END`.
 - POST `/matchmake` và bắt tay WebSocket giới hạn theo IP bằng token bucket (`apps/server/src/ratelimit.ts`, bọc ngoài listener của Colyseus, trả 429 + `Retry-After`). Env: `RATE_LIMIT_BURST` (40), `RATE_LIMIT_PER_MIN` (20), `TRUST_PROXY=1` mới đọc `X-Forwarded-For` (lấy phần tử cuối), `RATE_LIMIT_EXEMPT=loopback` cho bot ở máy dev (bị bỏ qua khi production).
 
 ## Quy tắc bất biến

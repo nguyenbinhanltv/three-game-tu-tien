@@ -123,7 +123,7 @@ export const MP_REGEN_MEDITATE = 0.08;
  * của quái chỉ bằng vùng mạnh nhất (vùng sau chỉ gây phần chênh lệch nếu mạnh hơn).
  * Chặn đòn dồn khi nhiều quái thả vùng trùng chỗ (vd. đợt 1 Kiếm Trủng: 6 Kiếm Linh) mà không cho dùng
  * vùng yếu để "nuốt" vùng mạnh. Cố ý áp cả cho nhiều vùng đập của cùng một boss khi cả nhóm đứng dồn.
- * Không áp cho đòn cận chiến và thiên lôi độ kiếp.
+ * Áp cả cho đạn đánh xa của quái (D1). Không áp cho đòn cận chiến và thiên lôi độ kiếp.
  */
 export const HAZARD_IFRAME = 0.6;
 
