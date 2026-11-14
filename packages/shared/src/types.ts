@@ -56,6 +56,10 @@ export interface MonsterDef {
   boss?: boolean;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
+  /** Chỉ boss: các pha sau pha đầu, `hp` giảm dần. */
+  phases?: MonsterPhase[];
+  /** Chỉ boss: thanh phá thế. */
+  posture?: MonsterPosture;
 }
 
 /** Đòn đôi: sau một đòn cận chiến, có xác suất đánh thêm một đòn nặng sau `delay` giây (né được nếu ra khỏi tầm). */
@@ -112,11 +116,56 @@ export interface MonsterSlam {
   kind: 'lightning' | 'frost' | 'fire' | 'spirit';
 }
 
+/**
+ * Boss chém một vùng quạt/chữ nhật từ chỗ mình về phía mục tiêu: mỗi `cd` giây (khi mục tiêu trong tầm `r`),
+ * boss đứng yên khóa hướng, vùng báo trước hiện ngay và nổ sau `delay` giây. Né bằng cách ra khỏi vùng.
+ */
+export interface MonsterSweep {
+  cd: number;
+  shape: 'rect' | 'cone';
+  /** Chiều dài (chữ nhật) hoặc bán kính (quạt). */
+  r: number;
+  /** Chiều rộng (chữ nhật, mét) hoặc nửa góc (quạt, độ). */
+  w: number;
+  delay: number;
+  mul: number;
+  kind: 'lightning' | 'frost' | 'fire' | 'spirit';
+}
+
 export interface MonsterAi {
   combo?: MonsterCombo;
   caster?: MonsterCaster;
   chant?: MonsterChant;
   slam?: MonsterSlam;
+  sweep?: MonsterSweep;
+}
+
+/**
+ * Pha của boss: vào pha khi máu còn ≤ `hp` (tỉ lệ 0–1), không lùi pha trong một trận.
+ * `ai` ghi đè từng chiêu của pha trước (chiêu nào không nhắc thì giữ); `null` bỏ chiêu đó.
+ * Câu thoại khi vào pha: i18n `mon.<id>.say.<số pha>` (pha đầu là 0, nên pha trong mảng này bắt đầu từ 1).
+ */
+export interface MonsterPhase {
+  hp: number;
+  ai?: { [K in keyof MonsterAi]?: MonsterAi[K] | null };
+  /** Nhân thời gian giữa hai đòn thường (< 1 = đánh dồn hơn). */
+  cdMul?: number;
+  /** Nhân tốc độ chạy. */
+  speedMul?: number;
+}
+
+/**
+ * Thanh phá thế của boss (0–1): lấp bằng sát thương (`k` × sát thương / máu tối đa), thêm `heavy` mỗi đòn nặng,
+ * thêm `interrupt` khi ngắt chú thành công. Không bị đánh `wait` giây thì giảm `decay` mỗi giây.
+ * Đầy thì boss quỵ `brk` giây (như bị ngắt chú: đứng yên, nhận thêm sát thương), thanh về 0.
+ */
+export interface MonsterPosture {
+  k: number;
+  heavy: number;
+  interrupt: number;
+  wait: number;
+  decay: number;
+  brk: number;
 }
 
 export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield';

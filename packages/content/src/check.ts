@@ -1,8 +1,8 @@
 // Kiểm tra nội dung game: id trùng, tham chiếu hỏng, thiếu chuỗi hiển thị.
 // Chạy: pnpm content:check
 
-import { groundAt, heightAt, WATER_Y, xpNeed } from '@dtl/shared';
-import { hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, QUEST, QUESTS, REALMS, RECIPES, SKILLS } from './index';
+import { groundAt, heightAt, type MonsterAi, type MonsterDef, phaseRules, WATER_Y, xpNeed } from '@dtl/shared';
+import { hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -36,55 +36,103 @@ for (const it of ITEMS) {
   if ((it.kind === 'weapon' || it.kind === 'robe' || it.kind === 'accessory') && it.stack !== 1) err(`item ${it.id}: trang bị phải stack = 1`);
   if (it.price > 0 && it.sell >= it.price) err(`item ${it.id}: giá bán >= giá mua (lỗ hổng kiếm tiền vô hạn)`);
 }
+const KINDS = ['lightning', 'frost', 'fire', 'spirit'];
+
+/** Kiểm bộ chiêu của quái (với boss có pha: kiểm bộ chiêu đã ghép của từng pha). `at` ghi rõ pha trong thông báo lỗi. */
+function checkAi(m: MonsterDef, ai: MonsterAi, attackCd: number, at: string) {
+  const id = `monster ${m.id}${at}`;
+  const combo = ai.combo;
+  if (combo) {
+    if (!(combo.chance > 0 && combo.chance <= 1)) err(`${id}: combo.chance phải trong (0, 1]`);
+    if (!(combo.delay >= 0.25 && combo.delay < attackCd)) err(`${id}: combo.delay phải từ 0,25 tới dưới attackCd`);
+    if (!(combo.mul > 0 && combo.mul <= 3)) err(`${id}: combo.mul phải trong (0, 3]`);
+  }
+  const cs = ai.caster;
+  if (cs) {
+    if (m.boss) err(`${id}: boss chưa hỗ trợ caster`);
+    if (!['circle', 'rect', 'cone'].includes(cs.shape)) err(`${id}: caster.shape không hợp lệ`);
+    if (!KINDS.includes(cs.kind)) err(`${id}: caster.kind không hợp lệ`);
+    // Né bằng di chuyển phải làm được: vùng hiện ít nhất 0,9 giây, tổng thời gian báo trước ít nhất 1,5 giây.
+    if (!(cs.delay >= 0.9)) err(`${id}: caster.delay phải >= 0,9 giây`);
+    if (!(cs.cast >= 0.3 && cs.cast + cs.delay >= 1.5)) err(`${id}: caster.cast + delay phải >= 1,5 giây`);
+    if (!(cs.cd >= 2)) err(`${id}: caster.cd phải >= 2 giây`);
+    if (!(cs.mul > 0 && cs.mul <= 3)) err(`${id}: caster.mul phải trong (0, 3]`);
+    if (!(cs.range > 3 && cs.range <= m.aggro + 4)) err(`${id}: caster.range phải trong (3, aggro + 4]`);
+    if (!(cs.r > 0 && cs.r <= 20)) err(`${id}: caster.r phải trong (0, 20]`);
+    if ((cs.shape === 'rect' || cs.shape === 'cone') && cs.r < cs.range) err(`${id}: caster.r phải >= range với hình rect/cone`);
+    if (cs.shape === 'rect' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 6)) err(`${id}: rect cần w trong (0, 6]`);
+    if (cs.shape === 'cone' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 75)) err(`${id}: cone cần w (nửa góc, độ) trong (0, 75]`);
+  }
+  const ch = ai.chant;
+  if (ch) {
+    if (!m.boss) err(`${id}: chỉ boss mới niệm chú`);
+    if (!KINDS.includes(ch.kind)) err(`${id}: chant.kind không hợp lệ`);
+    if (!(ch.cast >= 1.2 && ch.cast <= 5)) err(`${id}: chant.cast phải trong [1,2; 5] giây`);
+    if (!(ch.open >= 0 && ch.open <= 0.6)) err(`${id}: chant.open phải trong [0; 0,6]`);
+    // Cửa sổ ngắt phải đủ rộng cho độ trễ mạng + GCD 1 giây.
+    if (!(ch.cast * (1 - ch.open) >= 1.2)) err(`${id}: cửa sổ ngắt cast·(1 − open) phải >= 1,2 giây`);
+    if (!(ch.delay >= 0.9)) err(`${id}: chant.delay phải >= 0,9 giây`);
+    if (!(ch.stun >= 1 && ch.stun <= 6)) err(`${id}: chant.stun phải trong [1; 6] giây`);
+    if (!(ch.cd > ch.cast + ch.delay + ch.stun)) err(`${id}: chant.cd phải lớn hơn cast + delay + stun`);
+    if (!(ch.mul > 0 && ch.mul <= 3)) err(`${id}: chant.mul phải trong (0, 3]`);
+    if (!(ch.r > 0 && ch.r <= 20)) err(`${id}: chant.r phải trong (0, 20]`);
+  }
+  const sl = ai.slam;
+  if (sl) {
+    if (!m.boss) err(`${id}: chỉ boss mới có slam`);
+    if (!KINDS.includes(sl.kind)) err(`${id}: slam.kind không hợp lệ`);
+    if (!(sl.delay >= 1.2)) err(`${id}: slam.delay phải >= 1,2 giây (vùng hiện dưới chân, cần thời gian chạy ra)`);
+    if (!(sl.cd > sl.delay + 2)) err(`${id}: slam.cd phải lớn hơn delay + 2`);
+    if (!(sl.mul > 0 && sl.mul <= 3)) err(`${id}: slam.mul phải trong (0, 3]`);
+    if (!(sl.r > 0 && sl.r <= 8)) err(`${id}: slam.r phải trong (0, 8]`);
+    if (!(Number.isInteger(sl.max) && sl.max >= 1 && sl.max <= 5)) err(`${id}: slam.max phải là số nguyên 1–5`);
+  }
+  const sw = ai.sweep;
+  if (sw) {
+    if (!m.boss) err(`${id}: chỉ boss mới có sweep`);
+    if (!KINDS.includes(sw.kind)) err(`${id}: sweep.kind không hợp lệ`);
+    if (sw.shape !== 'rect' && sw.shape !== 'cone') err(`${id}: sweep.shape phải là rect hoặc cone`);
+    // Vùng hiện ngay khi boss khóa hướng: cần đủ thời gian đi ngang ra khỏi vùng.
+    if (!(sw.delay >= 1.2 && sw.delay <= 3)) err(`${id}: sweep.delay phải trong [1,2; 3] giây`);
+    if (!(sw.cd > sw.delay + 2)) err(`${id}: sweep.cd phải lớn hơn delay + 2`);
+    if (!(sw.mul > 0 && sw.mul <= 3)) err(`${id}: sweep.mul phải trong (0, 3]`);
+    if (!(sw.r > m.attackRange && sw.r <= 20)) err(`${id}: sweep.r phải trong (attackRange, 20]`);
+    if (sw.shape === 'rect' && !(sw.w > 0 && sw.w <= 6)) err(`${id}: sweep rect cần w trong (0, 6]`);
+    if (sw.shape === 'cone' && !(sw.w > 0 && sw.w <= 75)) err(`${id}: sweep cone cần w (nửa góc, độ) trong (0, 75]`);
+  }
+}
+
 for (const m of MONSTERS) {
   needStr(`mon.${m.id}`);
   if (m.boss) needStr(`mon.${m.id}.title`);
   for (const d of m.drops) needItem(d.item, `monster ${m.id}`);
-  const combo = m.ai?.combo;
-  if (combo) {
-    if (!(combo.chance > 0 && combo.chance <= 1)) err(`monster ${m.id}: combo.chance phải trong (0, 1]`);
-    if (!(combo.delay >= 0.25 && combo.delay < m.attackCd)) err(`monster ${m.id}: combo.delay phải từ 0,25 tới dưới attackCd`);
-    if (!(combo.mul > 0 && combo.mul <= 3)) err(`monster ${m.id}: combo.mul phải trong (0, 3]`);
+  checkAi(m, m.ai ?? {}, m.attackCd, '');
+  if (m.phases) {
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có pha`);
+    if (m.phases.length > 3) err(`monster ${m.id}: tối đa 3 pha sau pha đầu`);
+    let prev = 1;
+    m.phases.forEach((p, i) => {
+      if (!(p.hp > 0.05 && p.hp < prev)) err(`monster ${m.id} pha ${i + 1}: hp phải giảm dần trong (0,05; 1)`);
+      prev = p.hp;
+      if (p.cdMul !== undefined && !(p.cdMul >= 0.6 && p.cdMul <= 1.2)) err(`monster ${m.id} pha ${i + 1}: cdMul phải trong [0,6; 1,2]`);
+      if (p.speedMul !== undefined && !(p.speedMul >= 0.8 && p.speedMul <= 1.3)) err(`monster ${m.id} pha ${i + 1}: speedMul phải trong [0,8; 1,3]`);
+      const r = phaseRules(m, i + 1);
+      checkAi(m, r.ai, m.attackCd * r.cdMul, ` pha ${i + 1}`);
+      // Thoại khi vào pha: ngắn, đọc kịp trong lúc vẫn đánh (letterbox ~3 giây).
+      const key = `mon.${m.id}.say.${i + 1}`;
+      needStr(key);
+      if (hasString(key) && t(key).length > 90) err(`${key}: thoại quá dài (> 90 ký tự)`);
+    });
+    if (hasString(`mon.${m.id}.say.dead`) && t(`mon.${m.id}.say.dead`).length > 90) err(`mon.${m.id}.say.dead: thoại quá dài`);
   }
-  const cs = m.ai?.caster;
-  if (cs) {
-    if (m.boss) err(`monster ${m.id}: boss chưa hỗ trợ caster`);
-    if (!['circle', 'rect', 'cone'].includes(cs.shape)) err(`monster ${m.id}: caster.shape không hợp lệ`);
-    if (!['lightning', 'frost', 'fire', 'spirit'].includes(cs.kind)) err(`monster ${m.id}: caster.kind không hợp lệ`);
-    // Né bằng di chuyển phải làm được: vùng hiện ít nhất 0,9 giây, tổng thời gian báo trước ít nhất 1,5 giây.
-    if (!(cs.delay >= 0.9)) err(`monster ${m.id}: caster.delay phải >= 0,9 giây`);
-    if (!(cs.cast >= 0.3 && cs.cast + cs.delay >= 1.5)) err(`monster ${m.id}: caster.cast + delay phải >= 1,5 giây`);
-    if (!(cs.cd >= 2)) err(`monster ${m.id}: caster.cd phải >= 2 giây`);
-    if (!(cs.mul > 0 && cs.mul <= 3)) err(`monster ${m.id}: caster.mul phải trong (0, 3]`);
-    if (!(cs.range > 3 && cs.range <= m.aggro + 4)) err(`monster ${m.id}: caster.range phải trong (3, aggro + 4]`);
-    if (!(cs.r > 0 && cs.r <= 20)) err(`monster ${m.id}: caster.r phải trong (0, 20]`);
-    if ((cs.shape === 'rect' || cs.shape === 'cone') && cs.r < cs.range) err(`monster ${m.id}: caster.r phải >= range với hình rect/cone`);
-    if (cs.shape === 'rect' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 6)) err(`monster ${m.id}: rect cần w trong (0, 6]`);
-    if (cs.shape === 'cone' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 75)) err(`monster ${m.id}: cone cần w (nửa góc, độ) trong (0, 75]`);
-  }
-  const ch = m.ai?.chant;
-  if (ch) {
-    if (!m.boss) err(`monster ${m.id}: chỉ boss mới niệm chú`);
-    if (!['lightning', 'frost', 'fire', 'spirit'].includes(ch.kind)) err(`monster ${m.id}: chant.kind không hợp lệ`);
-    if (!(ch.cast >= 1.2 && ch.cast <= 5)) err(`monster ${m.id}: chant.cast phải trong [1,2; 5] giây`);
-    if (!(ch.open >= 0 && ch.open <= 0.6)) err(`monster ${m.id}: chant.open phải trong [0; 0,6]`);
-    // Cửa sổ ngắt phải đủ rộng cho độ trễ mạng + GCD 1 giây.
-    if (!(ch.cast * (1 - ch.open) >= 1.2)) err(`monster ${m.id}: cửa sổ ngắt cast·(1 − open) phải >= 1,2 giây`);
-    if (!(ch.delay >= 0.9)) err(`monster ${m.id}: chant.delay phải >= 0,9 giây`);
-    if (!(ch.stun >= 1 && ch.stun <= 6)) err(`monster ${m.id}: chant.stun phải trong [1; 6] giây`);
-    if (!(ch.cd > ch.cast + ch.delay + ch.stun)) err(`monster ${m.id}: chant.cd phải lớn hơn cast + delay + stun`);
-    if (!(ch.mul > 0 && ch.mul <= 3)) err(`monster ${m.id}: chant.mul phải trong (0, 3]`);
-    if (!(ch.r > 0 && ch.r <= 20)) err(`monster ${m.id}: chant.r phải trong (0, 20]`);
-  }
-  const sl = m.ai?.slam;
-  if (sl) {
-    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có slam`);
-    if (!['lightning', 'frost', 'fire', 'spirit'].includes(sl.kind)) err(`monster ${m.id}: slam.kind không hợp lệ`);
-    if (!(sl.delay >= 1.2)) err(`monster ${m.id}: slam.delay phải >= 1,2 giây (vùng hiện dưới chân, cần thời gian chạy ra)`);
-    if (!(sl.cd > sl.delay + 2)) err(`monster ${m.id}: slam.cd phải lớn hơn delay + 2`);
-    if (!(sl.mul > 0 && sl.mul <= 3)) err(`monster ${m.id}: slam.mul phải trong (0, 3]`);
-    if (!(sl.r > 0 && sl.r <= 8)) err(`monster ${m.id}: slam.r phải trong (0, 8]`);
-    if (!(Number.isInteger(sl.max) && sl.max >= 1 && sl.max <= 5)) err(`monster ${m.id}: slam.max phải là số nguyên 1–5`);
+  const ps = m.posture;
+  if (ps) {
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có thanh phá thế`);
+    if (!(ps.k > 0 && ps.k <= 6)) err(`monster ${m.id}: posture.k phải trong (0, 6]`);
+    if (!(ps.heavy >= 0 && ps.heavy <= 0.2)) err(`monster ${m.id}: posture.heavy phải trong [0; 0,2]`);
+    if (!(ps.interrupt >= 0 && ps.interrupt <= 1)) err(`monster ${m.id}: posture.interrupt phải trong [0; 1]`);
+    if (!(ps.wait >= 1 && ps.decay > 0 && ps.decay <= 0.5)) err(`monster ${m.id}: posture.wait >= 1 và decay trong (0; 0,5]`);
+    if (!(ps.brk >= 1 && ps.brk <= 6)) err(`monster ${m.id}: posture.brk phải trong [1; 6] giây`);
   }
 }
 for (const s of SKILLS) {

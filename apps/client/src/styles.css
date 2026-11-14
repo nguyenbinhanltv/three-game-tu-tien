@@ -1404,3 +1404,116 @@ kbd {
     display: none;
   }
 }
+
+/* ---------- M5-5: vạch pha, thanh phá thế, thoại boss ---------- */
+.boss-hp {
+  position: relative;
+}
+.boss-mark {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: #f3e3bc;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+  opacity: 0.85;
+}
+/* Thanh phá thế: mảnh, vàng đồng, ngay dưới máu. Gần đầy thì sáng lên, mất thế thì đầy và nhấp nháy. */
+.gauge.posture {
+  --cut: 4px;
+  --fill: linear-gradient(180deg, #ffe7ad 0%, #d2ae62 50%, #8a6a2c 100%);
+  width: 70%;
+  height: 7px;
+  margin: 5px auto 0;
+}
+.gauge.posture .gauge-fill::after {
+  display: none;
+}
+.gauge.posture .gauge-label {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 8px;
+  font: 600 11px var(--font-display, var(--serif));
+  color: var(--gold-soft);
+  text-shadow: 0 1px 2px #000;
+}
+.gauge.posture.near {
+  --fill: linear-gradient(180deg, #fff6d6 0%, #f2c47e 50%, #b0802e 100%);
+  box-shadow: 0 0 8px rgba(242, 196, 126, 0.55);
+}
+.gauge.posture.broken .gauge-fill {
+  animation: posture-blink 0.5s ease-in-out infinite alternate;
+}
+@keyframes posture-blink {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
+}
+.gauge.tcast.broken {
+  --fill: linear-gradient(180deg, #fff3c6 0%, #f2c47e 45%, #a57a2e 100%);
+}
+/* Letterbox mỏng + phụ đề: chỉ là lớp hình, không nhận chuột, không khóa điều khiển.
+   Không đặt z-index: nằm đầu .hud nên thanh boss và các khung khác vẽ đè lên dải đen. */
+.boss-line {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  animation: boss-line-fade 3.2s ease-in-out forwards;
+}
+.boss-line .lb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6vh;
+  background: rgba(0, 0, 0, 0.7);
+}
+.boss-line .lb-top {
+  top: 0;
+}
+.boss-line .lb-bot {
+  bottom: 0;
+}
+.boss-line-text {
+  position: absolute;
+  left: 50%;
+  /* Ngay dưới thanh boss (kể cả thanh niệm chú), tránh gợi ý giữa màn hình và thanh chiêu. */
+  top: 150px;
+  transform: translateX(-50%);
+  max-width: min(720px, 80vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.boss-line-name {
+  font: 600 13px var(--font-display, var(--serif));
+  color: var(--gold-soft);
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px #000;
+}
+.boss-line-say {
+  font: 500 20px var(--font-display, var(--serif));
+  color: #f4f1ea;
+  text-shadow:
+    0 1px 3px #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+}
+@keyframes boss-line-fade {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
