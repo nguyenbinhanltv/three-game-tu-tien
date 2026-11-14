@@ -60,7 +60,7 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng.
 - Bí cảnh là một lòng chảo trên cùng bản đồ (Kiếm Trủng, tây bắc), chạy trong room riêng.
 - Ngự kiếm mở ở Ngưng Khí tầng 3 (spec ghi tầng 8) để người mới sớm được bay.
-- Nhân vật và quái dựng bằng khối trong `models.ts`, animation thủ tục; chỉ kiến trúc tông môn đi qua Blender.
+- Nhân vật và phần lớn quái dựng bằng khối trong `models.ts`, animation thủ tục. Ba loài sói dùng `mon_soi_xam` có xương qua `game/character/` (`SkinnedCharacter`, bảng `MONSTER_SKINS`); `?models=legacy` hoặc nạp lỗi thì về model khối.
 - Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):
