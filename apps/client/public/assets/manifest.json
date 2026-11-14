@@ -36,6 +36,152 @@
           "minY": 0.0037
         }
       }
+    },
+    "prop_linh_thao": {
+      "id": "prop_linh_thao",
+      "class": "prop",
+      "source": "assets/build/raw/prop_linh_thao.glb",
+      "file": "prop_linh_thao.d9736520b9.glb",
+      "bytes": 1051436,
+      "rawBytes": 1107296,
+      "triangles": 2897,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "Color_eec1fb46-1922-479c-95c4-939052c05a4b",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ORM_eec1fb46-1922-479c-95c4-939052c05a4b",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "NormalGL_eec1fb46-1922-479c-95c4-939052c05a4b",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2897
+        },
+        {
+          "level": 1,
+          "triangles": 1154,
+          "target": 1159
+        },
+        {
+          "level": 2,
+          "triangles": 434,
+          "target": 435
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.4501,
+          "height": 1,
+          "depth": 0.7847,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.4501,
+          "height": 1,
+          "depth": 0.7848,
+          "minY": 0
+        }
+      }
+    },
+    "prop_lo_dan": {
+      "id": "prop_lo_dan",
+      "class": "prop",
+      "source": "assets/build/raw/prop_lo_dan.glb",
+      "file": "prop_lo_dan.6281d98271.glb",
+      "bytes": 1430028,
+      "rawBytes": 1519816,
+      "triangles": 4750,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "Color_bf2c9afd-c009-472c-abb5-21b01acdc63d",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ORM_bf2c9afd-c009-472c-abb5-21b01acdc63d",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        },
+        {
+          "name": "NormalGL_bf2c9afd-c009-472c-abb5-21b01acdc63d",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 4750
+        },
+        {
+          "level": 1,
+          "triangles": 1900,
+          "target": 1900
+        },
+        {
+          "level": 2,
+          "triangles": 712,
+          "target": 713
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.8258,
+          "height": 1,
+          "depth": 0.8552,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.8258,
+          "height": 1,
+          "depth": 0.8552,
+          "minY": 0
+        }
+      }
     }
   }
 }
