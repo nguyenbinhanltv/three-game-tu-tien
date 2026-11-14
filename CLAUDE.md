@@ -43,7 +43,7 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts` hoặc luật di chuyển/combat
 - `pnpm assets:build`: Blender sinh GLB thô vào `assets/build/raw/` rồi tối ưu ra `apps/client/public/assets/<id>.<hash>.glb` + `manifest.json`; client nạp qua `AssetCache` (`apps/client/src/game/assets.ts`); `pnpm assets:validate` kiểm ngân sách, LICENSES, chiều cao raw/build
 - `pnpm build` rồi `pnpm start`: server phục vụ luôn bản build ở cổng 2567
-- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | tick`
+- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | spawn id [n] | tick`
 
 ## Hiện trạng MVP (2026-11-12)
 

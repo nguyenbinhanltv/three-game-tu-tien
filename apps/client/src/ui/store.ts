@@ -24,6 +24,30 @@ export interface Toast {
   type: string;
 }
 
+/** Số liệu cho bảng gỡ lỗi F3; engine chỉ điền khi bảng đang mở. */
+export interface DebugInfo {
+  /** Mã phím đang giữ theo engine (KeyboardEvent.code). */
+  keys: string[];
+  /** Khóa i18n của các trạng thái đang bật (ui.debug.st.*). */
+  states: string[];
+  /** Tốc độ ngang, m/giây. */
+  speed: number;
+  /** Cửa sổ có focus (document.hasFocus()). */
+  focus: boolean;
+  visible: boolean;
+  /** Thẻ phần tử đang focus, ví dụ 'CANVAS', 'INPUT', 'BODY'. */
+  active: string;
+  pointerLock: boolean;
+  controls: string;
+  /** 8 sự kiện phím gần nhất, cũ trước mới sau; `ago` tính bằng ms. */
+  events: { id: number; kind: 'down' | 'up' | 'clear'; code: string; ago: number }[];
+  /** Ping ước tính (ms), 0 nếu chưa đo được. */
+  ping: number;
+  room: string;
+  roomId: string;
+  sid: string;
+}
+
 export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map';
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
@@ -69,6 +93,11 @@ export interface UIState {
   controls: string;
   /** Con trỏ đang bị khóa để nhìn bằng chuột. */
   mouseLook: boolean;
+  /** Ô chiêu đang chờ hết GCD để gửi (M1-11), -1 nếu không có. */
+  queuedSkill: number;
+  /** Bảng gỡ lỗi F3 đang mở. */
+  debugOpen: boolean;
+  debug: DebugInfo | null;
 }
 
 export const useUI = create<UIState>(() => ({
@@ -110,6 +139,9 @@ export const useUI = create<UIState>(() => ({
   quality: localStorage.getItem('dtl.quality') ?? 'medium',
   controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '') ? (localStorage.getItem('dtl.controls') as string) : 'mouse',
   mouseLook: false,
+  queuedSkill: -1,
+  debugOpen: false,
+  debug: null,
 }));
 
 let nextId = 1;
