@@ -41,7 +41,7 @@ Chưa có: `apps/admin`, `tools/asset-pipeline` (gltf-transform, KTX2).
 - `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts` hoặc luật di chuyển/combat
 - `pnpm assets:build`: chạy Blender sinh `apps/client/public/assets/sect.glb`
 - `pnpm build` rồi `pnpm start`: server phục vụ luôn bản build ở cổng 2567
-- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | tick`
+- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | spawn id [n] | tick`
 
 ## Hiện trạng MVP (2026-11-12)
 

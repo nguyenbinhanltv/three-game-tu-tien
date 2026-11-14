@@ -53,6 +53,38 @@ export interface MonsterDef {
   gold: [number, number];
   drops: DropDef[];
   boss?: boolean;
+  /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
+  ai?: MonsterAi;
+}
+
+/** Đòn đôi: sau một đòn cận chiến, có xác suất đánh thêm một đòn nặng sau `delay` giây (né được nếu ra khỏi tầm). */
+export interface MonsterCombo {
+  chance: number;
+  delay: number;
+  /** Hệ số sát thương của đòn thứ hai. */
+  mul: number;
+}
+
+/** Quái đánh xa: đọc chú `cast` giây, rồi thả vùng báo trước nổ sau `delay` giây. */
+export interface MonsterCaster {
+  /** Tầm bắt đầu niệm (mét). */
+  range: number;
+  cast: number;
+  delay: number;
+  /** Hồi chiêu (giây), tính từ lúc niệm xong. */
+  cd: number;
+  mul: number;
+  shape: 'circle' | 'rect' | 'cone';
+  /** Bán kính (tròn, quạt) hoặc chiều dài (chữ nhật). */
+  r: number;
+  /** Chiều rộng (chữ nhật) hoặc nửa góc tính bằng độ (quạt). */
+  w?: number;
+  kind: 'lightning' | 'frost' | 'fire' | 'spirit';
+}
+
+export interface MonsterAi {
+  combo?: MonsterCombo;
+  caster?: MonsterCaster;
 }
 
 export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield';

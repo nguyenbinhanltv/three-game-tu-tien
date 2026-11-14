@@ -5,7 +5,7 @@ description: Chạy toàn bộ Đạp Thiên Lộ ở máy local (server Colyseu
 
 # Chạy thử và test tải
 
-> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM: `/gm level|xp|gold|give|tp|heal|killall|tick`. Trong console có `window.__game`.
+> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM: `/gm level|xp|gold|give|tp|heal|killall|spawn|tick`. Trong console có `window.__game`.
 > Khi khung trình duyệt tích hợp đang ẩn, `requestAnimationFrame` không chạy: bơm khung hình bằng `setInterval(() => __game.frame(), 16)` trước khi chụp ảnh.
 
 ## Khởi động

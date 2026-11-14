@@ -121,6 +121,8 @@ export interface DmgMsg {
   crit?: boolean;
   heal?: boolean;
   src?: string;
+  /** Đòn nặng (chiêu hệ số cao, đòn thứ hai của chuỗi, vùng nổ): client khựng/giật lùi mạnh hơn. Chỉ là lớp hình. */
+  hv?: boolean;
 }
 
 export interface ChatMsg {
@@ -129,13 +131,22 @@ export interface ChatMsg {
   m: string;
 }
 
+export type HazardKind = 'lightning' | 'frost' | 'fire' | 'spirit';
+
+/**
+ * Vùng báo trước. Không có `sh` = hình tròn tâm (x, z) bán kính r (client cũ vẫn vẽ được).
+ * `rect`: gốc (x, z), hướng `yaw`, dài r, rộng w. `cone`: gốc (x, z), hướng `yaw`, bán kính r, nửa góc w (radian).
+ */
 export interface HazardMsg {
   x: number;
   z: number;
   r: number;
   /** Bao lâu nữa thì đánh xuống (giây). */
   delay: number;
-  kind: 'lightning' | 'frost';
+  kind: HazardKind;
+  sh?: 'rect' | 'cone';
+  yaw?: number;
+  w?: number;
 }
 
 export interface TransferMsg {
