@@ -46,6 +46,7 @@ import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
+import { markBloom, PostPipeline } from '../render/post';
 import { buildPortalDisc, buildSect } from './sect';
 import { renderMinimap, Terrain } from './terrain';
 import { DamageNumbers, Vfx } from './vfx';
@@ -64,10 +65,10 @@ export function serverUrl(): string {
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
 }
 
-const QUALITY: Record<string, { pixelRatio: number; shadows: boolean }> = {
-  low: { pixelRatio: 1, shadows: false },
-  medium: { pixelRatio: 1.5, shadows: false },
-  high: { pixelRatio: 2, shadows: true },
+const QUALITY: Record<string, { pixelRatio: number; shadows: boolean; bloom: boolean }> = {
+  low: { pixelRatio: 1, shadows: false, bloom: false },
+  medium: { pixelRatio: 1.5, shadows: false, bloom: true },
+  high: { pixelRatio: 2, shadows: true, bloom: true },
 };
 
 const _v = new THREE.Vector3();
@@ -149,6 +150,7 @@ export class Game {
   levelId = '';
 
   renderer!: THREE.WebGPURenderer;
+  private post: PostPipeline | null = null;
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(55, 1, 0.3, 9000);
   terrain!: Terrain;
@@ -403,6 +405,8 @@ export class Game {
     this.portalDisc = buildPortalDisc(PORTAL_POS.x, PORTAL_POS.z, 0x8fdcff);
     this.exitDisc = buildPortalDisc(DUNGEON_EXIT.x, DUNGEON_EXIT.z, 0xffd27a);
     this.scene.add(this.portalDisc, this.exitDisc);
+    for (const disc of [this.portalDisc, this.exitDisc]) markBloom(disc.material as THREE.Material, 0.8);
+    this.post = new PostPipeline(this.renderer, this.scene, this.camera, { bloom: q.bloom });
     this.vfx = new Vfx(this.scene);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.minimap = renderMinimap(320);
@@ -1047,7 +1051,7 @@ export class Game {
       (disc.material as THREE.MeshBasicMaterial).opacity = 0.55 + Math.sin(now * 0.003) * 0.2;
     }
     this.tickCombat(now, me);
-    this.renderer.render(this.scene, this.camera);
+    this.post!.render();
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
 
     this.fpsAcc += dt;
@@ -1209,6 +1213,10 @@ export class Game {
     set({ quality: q });
     const cfg = QUALITY[q] ?? QUALITY.medium;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cfg.pixelRatio));
+    if (this.post && this.post.bloom !== cfg.bloom) {
+      this.post.dispose();
+      this.post = new PostPipeline(this.renderer, this.scene, this.camera, { bloom: cfg.bloom });
+    }
     this.onResize();
   }
 
@@ -1222,6 +1230,7 @@ export class Game {
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();
+    this.post?.dispose();
     this.dmg?.clear();
     this.stage.replaceChildren();
     this.renderer?.dispose();

@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { createToonMaterial } from '../render/materials/toon';
 import {
   COLLIDERS,
   fbm,
@@ -280,8 +281,8 @@ interface TileRec {
 
 export class Terrain {
   group = new THREE.Group();
-  material = new THREE.MeshLambertMaterial({ vertexColors: true });
-  vegMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
+  material = createToonMaterial({ vertexColors: true });
+  vegMaterial = createToonMaterial({ vertexColors: true });
   private tiles = new Map<number, TileRec>();
   private coarse: THREE.Mesh;
   private coarseIndex: THREE.BufferAttribute;

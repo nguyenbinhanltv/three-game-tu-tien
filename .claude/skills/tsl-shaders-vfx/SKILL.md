@@ -5,7 +5,7 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 
 # Shader và VFX bằng TSL
 
-> Hiện trạng MVP: chưa viết shader TSL riêng và chưa có post-processing/bloom. Mọi thứ dùng `MeshLambertMaterial` tô màu đỉnh; hiệu ứng trong `apps/client/src/game/vfx.ts` là lưới `MeshBasicMaterial` cộng sáng (additive). Các mục dưới đây là hướng làm tiếp.
+> Hiện trạng (M1-6): địa hình, cây, kiến trúc, nhân vật, quái dùng material toon TSL `apps/client/src/render/materials/toon.ts` (3 bậc sáng, bóng lam xám, giảm bão hòa theo độ sâu, viền mực tùy chọn `addOutline`). Post-processing ở `apps/client/src/render/post.ts`: bloom chọn lọc qua MRT (chỉ material đã gọi `markBloom`) → tone mapping → vignette; preset Thấp vẽ thẳng, không post. Hiệu ứng trong `apps/client/src/game/vfx.ts` vẫn là `MeshBasicMaterial` cộng sáng tạo mỗi lần phát, chưa `markBloom` (việc M1-7). Các mục dưới đây là hướng làm tiếp.
 
 ## Nguyên tắc
 
