@@ -50,7 +50,7 @@ import { Environment } from './env';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline } from '../render/post';
-import { createWorldMaterial } from '../render/materials/world';
+import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/world';
 import { GRADING, GRADING_DEFAULT } from '../render/grading';
 import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
@@ -196,7 +196,7 @@ export class Game {
   private portalDisc: THREE.Mesh | null = null;
   private exitDisc: THREE.Mesh | null = null;
   private sectMesh: THREE.Mesh | null = null;
-  private sectAsset: { handle: AssetHandle; mat: THREE.Material } | null = null;
+  private sectAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** Material kiến trúc tông môn: riêng với MODEL_MAT để làm mờ vật che mà không ảnh hưởng nhân vật. */
   private sectMat = withOccluderFade(createWorldMaterial({ vertexColors: true }));
   shake = new CameraShake();
@@ -486,15 +486,13 @@ export class Game {
         handle.release();
         return;
       }
-      const mat = this.sectMat.clone();
-      mat.side = THREE.DoubleSide;
-      this.sectAsset = { handle, mat };
       const root = handle.scene;
+      // Giữ vật liệu PBR của GLB (mỗi chất liệu một material), chỉ gắn thêm làm mờ vật che.
+      this.sectAsset = { handle, mats: adoptGltfMaterials(root, withOccluderFade) };
       root.position.set(SECT.x, SECT.y, SECT.z);
       root.traverse((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
-        m.material = mat;
         m.castShadow = shadows;
         m.receiveShadow = shadows;
         m.frustumCulled = false;
@@ -1504,7 +1502,7 @@ export class Game {
     this.post?.dispose();
     this.sectMesh?.geometry.dispose();
     this.sectAsset?.handle.release();
-    this.sectAsset?.mat.dispose();
+    for (const m of this.sectAsset?.mats ?? []) m.dispose();
     this.sectAsset = null;
     this.sectMat.dispose();
     this.dmg?.clear();
