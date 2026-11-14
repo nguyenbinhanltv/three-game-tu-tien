@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "arch_sect",
+  "type": "arch",
+  "status": "in_game",
+  "procedural": { "script": "tools/blender/build_sect.py", "seed": 20261112 },
+  "license": { "source": "Tự sinh bằng script tools/blender/build_sect.py", "owner": "dự án", "date": "2026-11-12" }
+}

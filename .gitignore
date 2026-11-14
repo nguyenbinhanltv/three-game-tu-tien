@@ -4,7 +4,8 @@ dist
 *.db-*
 .env.local
 apps/server/data
-assets/build/raw
+# Đầu vào pipeline (GLB Blender xuất / import Tripo) và cache: sinh lại được, không commit.
+assets/build/
 bench/results
 
 # File nguồn asset lớn nằm ngoài repo (DTL_ASSET_SOURCE, xem docs/tripo-runbook.md mục 2).
