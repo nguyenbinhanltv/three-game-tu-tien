@@ -10,7 +10,7 @@ import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 /** Tăng khi đổi bước tối ưu để cache cũ tự mất hiệu lực. */
-export const PIPELINE_VERSION = 1;
+export const PIPELINE_VERSION = 2;
 
 export const DEFAULTS = {
   /** GLB thô: Blender xuất (tools/blender/run.mjs) hoặc import_tripo (M2-2). Không commit. */
@@ -76,6 +76,18 @@ export function classify(id: string, budgets: Budgets, sourceDir?: string): stri
   if (typeof explicit === 'string' && budgets.classes[explicit]) return explicit;
   for (const [prefix, cls] of Object.entries(budgets.prefixes)) if (id.startsWith(prefix)) return cls;
   return null;
+}
+
+/**
+ * Trần tam giác LOD0: asset nhập qua import_tripo.py (meta.json có khối `import`) dùng `budget.faceLimit` (mức đã xin
+ * Tripo, vì Tripo thường trả nhiều mặt hơn) nếu có, không vượt `triangles.max` của lớp. Asset khác dùng `triangles.max`:
+ * job thủ tục tự giảm tam giác (vd. recolor_phi_kiem.py) đã tự chọn mức của mình.
+ */
+export function lod0Cap(id: string, spec: BudgetClass, sourceDir?: string): number {
+  const meta = findMeta(id, sourceDir)?.data;
+  if (!meta?.import) return spec.triangles.max;
+  const face = (meta.budget as { faceLimit?: unknown } | undefined)?.faceLimit;
+  return typeof face === 'number' && face > 0 ? Math.min(face, spec.triangles.max) : spec.triangles.max;
 }
 
 /** Đích tam giác cho từng LOD (không gồm LOD0). */
