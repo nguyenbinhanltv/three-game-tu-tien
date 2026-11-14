@@ -1,6 +1,6 @@
 ---
 name: tsl-shaders-vfx
-description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ bằng TSL (Three Shading Language) — phong cách thủy mặc/cel-shading, mây, sương, nước, kiếm khí, linh quang, thiên lôi độ kiếp, bloom. Dùng khi tạo hoặc sửa material, post-processing hay hệ particle.
+description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ bằng TSL (Three Shading Language) — PBR cách điệu bán tả thực, chỉnh màu điện ảnh tông sương sớm, sương theo độ cao, mây, nước, kiếm khí, linh quang, thiên lôi độ kiếp, bloom. Dùng khi tạo hoặc sửa material, post-processing hay hệ particle.
 ---
 
 # Shader và VFX bằng TSL
@@ -15,10 +15,14 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 
 ## Phong cách nhìn
 
-- Bảng màu theo Art Bible: núi xa xanh lam nhạt pha xám, sương trắng ngà, ánh linh khí xanh ngọc, kiếm khí trắng xanh, ma khí tím đen, thiên lôi tím trắng.
-- Địa hình và kiến trúc: cel-shading 3 bậc sáng + viền nhẹ, không PBR đầy đủ.
-- Núi xa: shader thủy mặc — giảm bão hòa theo độ sâu, thêm nhiễu nét mực ở rìa, hòa vào màu sương.
-- Sương mù theo độ cao (height fog) + fog theo khoảng cách để che biên tải.
+**Nguồn chuẩn: `docs/art-bible.md`** (v3, bán tả thực điện ảnh): mục 3 (vật liệu), mục 5 (ánh sáng và chỉnh màu), mục 8 (điều cấm). Thông số số nằm trong khối `grading` của `assets/palette.json`. Khi skill này và art bible lệch nhau, art bible thắng.
+
+- Material: PBR cách điệu bằng `MeshStandardNodeMaterial` (base color, normal, roughness/metalness của Tripo). Vải, đá, gỗ có roughness cao; kim loại có metalness. Không có bề mặt bóng như nhựa.
+- **Không dùng cel-shading, toon 3 bậc hay viền mực inverted hull** (art bible mục 0.2 và 8.3). Hướng này đã bị bỏ.
+- Tông sương sớm: vùng sáng ngả vàng ấm, bóng ngả ngọc lam, đen được nâng lên (không đen tuyền). Có 3 preset `dawn` / `day` / `night`; đêm dùng lam trầm cùng đèn lồng ấm, không dùng tông chàm tím.
+- Màu linh quang: linh khí ngọc, kiếm khí trắng xanh, thiên lôi tím trắng, ma khí tím đen, kim quang. Tím chỉ làm điểm nhấn.
+- Núi xa: giảm bão hòa theo độ sâu, hòa vào màu sương ngọc lam. Chất thủy mặc nằm ở các lớp sương và ở VFX mực.
+- Sương theo độ cao (height fog) + fog theo khoảng cách, dày hơn hiện tại (`FogExp2` khoảng 0,0011 ban ngày), che luôn biên tải.
 - Mây: lớp mặt phẳng nhiều tầng hoặc impostor, nhiễu trôi theo thời gian; không dùng volumetric raymarch ở preset Thấp.
 
 ## VFX skill
@@ -31,8 +35,11 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 
 ## Post-processing
 
-- Chuỗi tối thiểu: bloom → tone mapping → (tùy chọn) viền thủy mặc. Bỏ SSAO/SSR ở preset Thấp và Vừa.
-- Bloom chỉ áp cho vật có cường độ phát sáng cao (VFX, phi kiếm), không làm cả cảnh mờ nhòe.
+- Chuỗi theo art bible mục 5.2: sương (khoảng cách + độ cao, giảm bão hòa theo độ sâu) → bloom → tone mapping ACES Filmic → chỉnh màu tách tông (sắc bóng / sắc vùng sáng, nâng đen, tương phản, bão hòa) → vignette → hạt phim + dither.
+- Bloom chỉ bắt vật phát sáng (VFX, phi kiếm, linh quang): ngưỡng khoảng 1,0, cường độ thấp, đỉnh HDR dưới 2,5. Không làm cả cảnh mờ nhòe.
+- Uniform hiệu ứng trúng đòn (`uHit`, `uFlash`) đi trong pass chỉnh màu.
+- Preset Thấp tắt bloom và sương theo độ cao, giữ chỉnh màu. Bỏ SSAO/SSR ở preset Thấp và Vừa.
+- Khi có nhiều pass: đặt `renderer.info.autoReset = false` và reset ở đầu khung, nếu không số draw call/tam giác đo được sẽ sai.
 
 ## Kiểm tra
 
