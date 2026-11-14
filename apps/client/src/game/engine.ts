@@ -346,7 +346,7 @@ export class Game {
       if (m.sh && this.vfx) {
         if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m);
       }
-      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind);
+      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m));
       const vol = this.volumeAt(m.x, m.z);
       setTimeout(() => {
         sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
@@ -472,6 +472,9 @@ export class Game {
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
+    this.vfx.particles.setQuality(get().quality);
+    // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
+    this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.minimap = renderMinimap(320);
     mark('minimap');
@@ -921,14 +924,14 @@ export class Game {
           v.swordShot(_v, posDst, 0xfff3b0, 1.8, 0.16);
           // Lôi Đình Nhất Kiếm: nhát chém dọc lớn (biến thể đứng của kiếm khí) cùng lúc sét đánh.
           v.slashVertical(posDst, 0xfff3b0, 1.3);
-          v.lightning(_v2.x, _v2.y - 1, _v2.z, 0xfff0a8, 1.3);
+          v.lightning(_v2.x, _v2.y - 1, _v2.z, 0xfff0a8, 1.3, m.sd);
           if (src === this.sid || dst === this.sid) this.post?.flash(0.25);
         }
         break;
       }
       case 'rain':
         pSrc?.model.attack();
-        v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, 0x9fe0ff);
+        v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, 0x9fe0ff, m.sd, src === this.sid);
         break;
       case 'bite': {
         e.monsters.get(src)?.model.attack();
@@ -1006,10 +1009,21 @@ export class Game {
         if (src === this.sid) set({ castEnd: 0 });
         break;
       case 'tribstart':
-        v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+        v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) set({ tribEnd: Date.now() + (m.d ?? 40) * 1000 });
         break;
     }
+  }
+
+  /**
+   * Độ chớp toàn cảnh khi một tia sét đánh xuống: sấm độ kiếp của mình chớp rõ, tia gần mình chớp nhẹ
+   * theo khoảng cách, xa hơn 45 m thì không. Chỉ là lớp hình.
+   */
+  private lightningFlash(m: HazardMsg): number {
+    if (m.kind !== 'lightning') return 0;
+    if (m.src === this.sid) return 0.32;
+    const d = Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z);
+    return d < 45 ? 0.18 * (1 - d / 45) : 0;
   }
 
   /** Rung khi vùng nổ: chỉ sấm độ kiếp của mình hoặc boss đập đất gần mình. */
@@ -1271,6 +1285,7 @@ export class Game {
       this.questMarkersDirty = false;
       this.ents.updateQuestMarkers(get().quests, myLevel);
     }
+    if (me) this.vfx.trails.update(dt, this.ents.players, this.sid, this.camera);
     this.vfx.update(dt);
     this.post?.update(dt);
     this.updateCamera(dt);
@@ -1460,7 +1475,7 @@ export class Game {
     let perf = st.perf;
     if (this.debugPerf) {
       const info = this.renderer.info;
-      perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.terrain.tileCount()} ô`;
+      perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.terrain.tileCount()} ô · ${this.vfx.particles.aliveCount().total}/${this.vfx.particles.limit} hạt`;
     }
     set({
       debug: st.debugOpen ? this.debugInfo(me) : null,
@@ -1555,6 +1570,7 @@ export class Game {
     set({ quality: q });
     const cfg = QUALITY[q] ?? QUALITY.medium;
     setHeightFog(cfg.heightFog);
+    this.vfx?.particles.setQuality(q);
     if (this.post && !this.post.matches(cfg)) {
       this.post.dispose();
       this.post = new PostPipeline(this.renderer, this.scene, this.camera, cfg);
