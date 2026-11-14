@@ -23,10 +23,22 @@ export interface BossInfo {
   hp: number;
   mhp: number;
   cast?: TargetCast;
+  /** Thanh phá thế 0–1 (không có nếu boss không có thanh này). */
+  posture?: number;
+  /** Ngưỡng máu (0–1) chuyển pha, vẽ thành vạch trên thanh máu. */
+  marks?: number[];
+}
+
+/** Câu thoại ngắn của boss (letterbox không khóa điều khiển). `until` theo đồng hồ client (ms). */
+export interface BossLine {
+  id: number;
+  name: string;
+  text: string;
+  until: number;
 }
 
 export interface TargetCast {
-  kind: 'chant' | 'stun';
+  kind: 'chant' | 'stun' | 'broken';
   end: number;
   total: number;
   open: number;
@@ -98,6 +110,7 @@ export interface UIState {
   castEnd: number;
   castTotal: number;
   tribEnd: number;
+  bossLine: BossLine | null;
   panel: Panel;
   npc: string | null;
   hint: string;
@@ -148,6 +161,7 @@ export const useUI = create<UIState>(() => ({
   castEnd: 0,
   castTotal: 0,
   tribEnd: 0,
+  bossLine: null,
   panel: null,
   npc: null,
   hint: '',

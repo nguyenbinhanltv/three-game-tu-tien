@@ -37,6 +37,9 @@ export interface MState {
   /** Cờ MF_* và thời điểm server (ms) hết trạng thái đó. */
   mf?: number;
   ce?: number;
+  /** Boss: pha hiện tại (0 = pha đầu) và thanh phá thế 0–100. */
+  ph?: number;
+  pz?: number;
 }
 export interface NState {
   t: string;
