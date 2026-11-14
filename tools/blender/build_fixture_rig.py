@@ -1,12 +1,15 @@
 # Sinh một GLB có xương để test pipeline asset (tools/asset-pipeline), không cần Tripo.
 #
 # Chạy (không mở giao diện):
-#   blender --background --factory-startup --python tools/blender/build_fixture_rig.py -- <out.glb> [--rings 90] [--segments 96] [--texture 1024] [--flat]
+#   blender --background --factory-startup --python tools/blender/build_fixture_rig.py -- <out.glb> [--rings 90] [--segments 96] [--texture 1024] [--flat] [--legs] [--tripo]
 #
 # Hình: thân tròn xoay cao 1,7m (bụng, cổ, đầu), khoảng 17 nghìn tam giác mặc định, UV trụ, một texture màu.
 # Xương: armature "rig_human_base" gồm root → hips → spine → neck → head; trọng số gán theo chiều cao, trộn tuyến tính.
 # Animation: clip "breathe" có track SCALE trên xương root (1 → 1,15 → 1) và xoay spine.
 # Track scale là thứ làm lộ lỗi quantize mesh có xương (nhân vật co lại), validate.ts phải bắt được.
+# --legs: thêm xương thigh_l (+X, bên trái nhân vật nhìn -Y Blender = +Z glTF) và thigh_r, và khóa location cho root
+#         (nhấc 0,1 m ở giữa clip) để test import_tripo.py; spine nghiêng 0,25 rad ở khung 1/25 nên khung đầu khác tư thế nghỉ.
+# --tripo: giả dạng đầu ra Tripo, transform để trên node (không áp): xoay 90° quanh trục đứng, cao 1 m, gốc ở tâm khối.
 
 import math
 import sys
@@ -27,6 +30,8 @@ RINGS = opt('--rings', 90)
 SEGMENTS = opt('--segments', 96)
 TEX = opt('--texture', 1024)
 FLAT = '--flat' in argv  # shading phẳng: đỉnh tách theo mặt, thử nấc Permissive của simplify
+LEGS = '--legs' in argv
+TRIPO = '--tripo' in argv
 HEIGHT = 1.7
 
 # Bán kính theo chiều cao (0..1): chân, hông, bụng, ngực, cổ, đầu.
@@ -122,6 +127,13 @@ def build_armature(obj):
             b.parent = prev
             b.use_connect = True
         prev = b
+    if LEGS:
+        hips = arm.edit_bones['hips']
+        for name, x in (('thigh_l', 0.09), ('thigh_r', -0.09)):
+            b = arm.edit_bones.new(name)
+            b.head = (x, 0, 0.45 * HEIGHT)
+            b.tail = (x, 0, 0.05 * HEIGHT)
+            b.parent = hips
     bpy.ops.object.mode_set(mode='OBJECT')
 
     groups = {name: obj.vertex_groups.new(name=name) for name, _, _ in BONES}
@@ -155,13 +167,19 @@ def build_animation(rig):
     for frame, s, rot in [(1, 1.0, 0.0), (13, 1.15, 0.35), (25, 1.0, 0.0)]:
         pb['root'].scale = (s, s, s)
         pb['root'].keyframe_insert('scale', frame=frame)
-        pb['spine'].rotation_euler = (rot, 0.0, 0.0)
+        # --legs: spine nghiêng sẵn ở khung 1 và 25 để khung đầu clip KHÁC tư thế nghỉ (bắt lỗi đặt socket theo pose).
+        pb['spine'].rotation_euler = (rot if not LEGS or frame == 13 else 0.25, 0.0, 0.0)
         pb['spine'].keyframe_insert('rotation_euler', frame=frame)
+        if LEGS:
+            # Trục Y của xương root hướng lên: nhấc 0,1 m (đơn vị armature) ở giữa clip.
+            pb['root'].location = (0.0, 0.1 if frame == 13 else 0.0, 0.0)
+            pb['root'].keyframe_insert('location', frame=frame)
     bpy.context.scene.frame_start = 1
     bpy.context.scene.frame_end = 25
     for b in pb:
         b.scale = (1, 1, 1)
         b.rotation_euler = (0, 0, 0)
+        b.location = (0, 0, 0)
 
 
 def main():
@@ -170,6 +188,10 @@ def main():
     build_material(obj)
     rig = build_armature(obj)
     build_animation(rig)
+    if TRIPO:
+        rig.rotation_euler = (0, 0, math.pi / 2)
+        rig.scale = (1 / HEIGHT,) * 3
+        rig.location = (0, 0, -0.5)
     bpy.ops.export_scene.gltf(
         filepath=OUT,
         export_format='GLB',

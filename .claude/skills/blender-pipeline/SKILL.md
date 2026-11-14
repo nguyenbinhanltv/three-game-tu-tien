@@ -7,7 +7,8 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 
 > Hiện trạng (2026-11-15, sau M2-1/5/6/7/8):
 > - **Có**: `tools/blender/run.mjs` (danh sách job → GLB thô `assets/build/raw/<id>.glb`, bỏ qua job khi GLB thô mới hơn script), `build_sect.py` (kiến trúc tông môn → `arch_sect`), `build_fixture_rig.py` (GLB có xương cho test), `find-blender.mjs` (dò Blender qua `BLENDER`, PATH, thư mục cài mặc định). `tools/asset-pipeline`: `optimize.ts`, `validate.ts`, `ktx.ts`, `config.ts`, test vitest. Client nạp theo manifest qua `AssetCache` (`apps/client/src/game/assets.ts`). Chi tiết lệnh và bố cục: `assets/README.md`.
-> - **Chưa có**: `import_tripo.py` (M2-2), `rig_human_base.py`/`export_anim_lib.py` (M2-3), client chọn LOD theo khoảng cách (M2-9; hiện chỉ hiện LOD0), `export.py` theo collection `EXPORT_`, `export_level.py`, ảnh xem trước tự động `assets/build/previews/`. Máy dev chưa cài KTX-Software (`toktx`) nên nhánh KTX2 mới kiểm bằng toktx giả trong test.
+> - **Có từ M2-2**: `import_tripo.py` chuẩn hóa GLB Tripo (hướng theo xương đùi hoặc `yaw`, scale theo `size` trong meta, gốc ở đáy, áp transform, tên theo id, socket, hạ texture); `run.mjs` tự tạo job cho meta.json có khối `import`; `optimize.ts` hạ LOD0 về `budget.faceLimit` (chỉ asset có khối `import`) hoặc ngân sách lớp. Chi tiết: `assets/README.md` mục Nhập Tripo.
+> - **Chưa có**: `rig_human_base.py`/`export_anim_lib.py` (M2-3), client chọn LOD theo khoảng cách (M2-9; hiện chỉ hiện LOD0), `export.py` theo collection `EXPORT_`, `export_level.py`, ảnh xem trước tự động `assets/build/previews/`. Máy dev chưa cài KTX-Software (`toktx`) nên nhánh KTX2 mới kiểm bằng toktx giả trong test.
 > - Máy đang dùng Blender 5.3. Tọa độ trong script là tọa độ game quanh tâm sân tông môn; vị trí công trình phải khớp `COLLIDERS` trong `packages/shared/src/level.ts`.
 
 ## Chạy Blender
@@ -26,11 +27,11 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 
 ## Các bước pipeline
 
-1. **Sinh GLB thô**: thêm job `{ id, script }` vào `jobs` trong `tools/blender/run.mjs`; script bpy nhận đường dẫn output sau `--` và xuất GLB vào `assets/build/raw/<id>.glb`. Custom properties trên object/Empty ra `extras` của glTF (three.js đọc thành `userData`). Asset từ Tripo sẽ vào raw qua `import_tripo.py` khi có M2-2.
+1. **Sinh GLB thô**: thêm job `{ id, script }` vào `jobs` trong `tools/blender/run.mjs`; script bpy nhận đường dẫn output sau `--` và xuất GLB vào `assets/build/raw/<id>.glb`. Custom properties trên object/Empty ra `extras` của glTF (three.js đọc thành `userData`). Asset từ Tripo: thêm khối `import` (`kind`, `source`, `size`, `yaw`, `sockets`) vào `meta.json`, `run.mjs` gọi `import_tripo.py`.
 2. **Tối ưu** (`tools/asset-pipeline/src/optimize.ts`, `@gltf-transform`): dedup, prune (giữ xương, socket, extras), weld, resample animation; texture sang KTX2 bằng `toktx` (ETC1S cho màu/ORM, UASTC cho normal, hạ cạnh theo ngân sách lớp); LOD bằng `simplify` theo `assets/budgets.json`; reorder, quantize (**chỉ mesh không có xương**), nén `EXT_meshopt_compression`.
 3. **Đóng gói**: tên `<id>.<hash10>.glb` vào `apps/client/public/assets/`, cập nhật `apps/client/public/assets/manifest.json` (file, byte, tam giác từng LOD, texture, xương, clip, kích thước raw/build), xóa bản hash cũ của asset đó.
 4. **Kiểm tra** (`tools/asset-pipeline/src/validate.ts`): exit 1 khi có lỗi (id sai quy ước, hash lệch, vượt ngân sách tam giác/texture/xương, thiếu LOD, mesh có xương bị quantize, LOD mất skin, thiếu dòng `assets/LICENSES.md`, `meta.json` sai schema, chiều cao raw/build lệch quá 1%). Danh sách đầy đủ trong `assets/README.md`.
-5. **Xem bằng mắt**: `pnpm dev` rồi mở `?viewer=asset&file=/assets/<id>.<hash>.glb` (người chuẩn 1,7m, số tam giác, draw call, clip), rồi gọi subagent `asset-validator`.
+5. **Xem bằng mắt**: `pnpm dev` rồi mở `?mute=1&viewer=asset&file=/assets/<id>.<hash>.glb` (người chuẩn 1,7m, số tam giác, draw call, clip), rồi gọi subagent `asset-validator`.
 
 Lệnh:
 

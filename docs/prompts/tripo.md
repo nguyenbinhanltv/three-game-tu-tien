@@ -59,7 +59,9 @@ Rig Check miễn phí, Auto Rig 25 credit mỗi model (bảng giá API, chưa ki
 | niệm chú | |
 | rút kiếm, tra kiếm | có thể tự làm bằng IK nếu không có preset hợp |
 
-Đòn kiếm và tư thế ngự kiếm **tự làm** bằng IK hai đốt (plan 2.3), không mua. Tên preset cụ thể lấy từ danh sách trên web app hoặc tài liệu Tripo khi làm M0-3; CLI chỉ cho thấy dạng `preset:idle`, `preset:walk`.
+Tên preset trên web app (2026-11-15) và tên clip tương ứng: idle → `idle`, run → `run`, slash → `attack`, hurt → `hit_light`, death (không có thì fall) → `death` (bảng đầy đủ: runbook mục 3). Quái bốn chân: Tripo chỉ có preset đi bộ, clip làm thủ tục bằng `tools/blender/anim_quadruped.py`.
+
+Đòn kiếm và tư thế ngự kiếm **tự làm** bằng IK hai đốt (plan 2.3), không mua. Clip `attack` mua từ preset slash chỉ là đòn chém cơ bản. Tên preset cụ thể lấy từ danh sách trên web app hoặc tài liệu Tripo khi làm M0-3; CLI chỉ cho thấy dạng `preset:idle`, `preset:walk`.
 
 ## 4. Lệnh CLI mẫu cho prop
 

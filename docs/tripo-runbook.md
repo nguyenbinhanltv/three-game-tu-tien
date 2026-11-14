@@ -68,7 +68,17 @@ Cấu trúc trong thư mục nguồn (giống hệt cấu trúc `assets/source/`
 - **Asset id**: tiền tố loại + tên không dấu `snake_case`, trùng id trong `packages/content` khi có. Tiền tố theo `blender-pipeline`: `chr_` (người), `mon_` (quái), boss dùng id game không thêm tiền tố (ví dụ `boss_kiem_khoi`) nhưng vẫn đặt trong thư mục `mon/`, `prop_` (prop, vũ khí, phi kiếm, đồ rơi). Prop không bắt buộc trùng id vật phẩm (ví dụ `prop_linh_thao` ứng với vật phẩm `itm_linh_thao`); ghi id vật phẩm vào trường `itemId` của `meta.json`. Ví dụ: `chr_de_tu_nam`, `chr_de_tu_nu`, `mon_soi_xam`, `prop_lo_dan`, `prop_linh_thao`, `prop_phi_kiem`.
 - **Thư mục loại**: `chr`, `mon`, `prop`.
 - **Ảnh concept**: `concept_<góc>_v<NN>.png` cho mọi phương án; bản duyệt chép thành `concept_<góc>.png`. Góc: `front`, `left`, `back`, `right`, `34` (3/4 cho prop).
-- **File Tripo**: `raw_v<NN>.glb` (dựng hình), `rig_v<NN>.glb`, `anim_<clip>_v<NN>.glb` (clip: `idle`, `idle_combat`, `walk`, `run`, `jump`, `hit_light`, `hit_heavy`, `death`, `meditate`, `cast`, `draw`, `sheathe`; quái thêm `attack`). `NN` tăng theo mỗi lần thử, không ghi đè.
+- **File Tripo**: `raw_v<NN>.glb` (dựng hình), `lowpoly_v<NN>.glb` (lưới đã hạ về Polycount bằng **Retopo** trên web, chưa rig), `rig_v<NN>.glb`, `anim_<clip>_v<NN>.glb` (clip: `idle`, `idle_combat`, `walk`, `run`, `jump`, `hit_light`, `hit_heavy`, `death`, `meditate`, `cast`, `draw`, `sheathe`, `attack` (đòn đánh chính: người chém, quái cắn)). `NN` tăng theo mỗi lần thử, không ghi đè.
+- **File đưa vào pipeline**: `import.source` trong `meta.json` ghi rõ một file. Thứ tự chọn trong cùng `NN`: `rig_v<NN>.glb` (có xương; clip mua trên Tripo nằm trong file `anim_*` cùng xương) > `lowpoly_v<NN>.glb` > `raw_v<NN>.glb`. Không nhập `raw` khi đã có `lowpoly` cùng `NN`: `raw` có thể quá nặng (M0-3: 1,95 triệu tam giác).
+- **Preset animation Tripo → tên clip**: đặt tên file theo tên clip của dự án, không theo tên preset:
+
+  | Preset Tripo | Tên clip / file |
+  | --- | --- |
+  | idle | `idle` → `anim_idle_v<NN>.glb` |
+  | run | `run` → `anim_run_v<NN>.glb` |
+  | slash | `attack` → `anim_attack_v<NN>.glb` |
+  | hurt | `hit_light` → `anim_hit_light_v<NN>.glb` |
+  | death (không có thì fall) | `death` → `anim_death_v<NN>.glb` |
 - **Tên lịch sử CLI** (`--name`): `<asset_id>_v<NN>`, ví dụ `prop_lo_dan_v01`.
 
 ## 4. `meta.json`
@@ -230,10 +240,10 @@ Người dùng bấm; Claude soạn concept, điền `meta.json` và nhập file
 6. **Generate** (65 credit, 2026-11-15). Xoay kiểm: tay áo không dính thân, chân tách, mặt không méo. Quá 3 lần không đạt thì báo Claude để sửa concept.
 7. Nếu đã có model quá nặng: **Retopo** (Triangle, Polycount theo bảng). Texture lệch thì dùng **Texture** (2K, PBR, Remove Lighting). Không dựng lại từ đầu.
 8. **Rig** trên **bản đã đúng Polycount** (không rig bản nặng). Người chọn biped (Mixamo nếu có); quái bốn chân chọn quadruped.
-9. **Animation** (chỉ model mẫu người): idle, run, slash, hurt, death (không có death thì chọn fall); bật in place nếu có.
-10. **Export GLB** (không FBX). Tải riêng từng clip. Đặt vào `<nguồn>/<loại>/<id>/tripo/` theo mục 3, ví dụ `lowpoly_v02.glb` (sau Retopo), `rig_v02.glb`, `anim_<clip>_v02.glb`. Không ghi đè bản cũ.
+9. **Animation** (chỉ model mẫu người): preset idle, run, slash, hurt, death (không có death thì chọn fall); bật in place nếu có.
+10. **Export GLB** (không FBX). Tải riêng từng clip. Đặt vào `<nguồn>/<loại>/<id>/tripo/` và đặt tên theo mục 3 (preset đổi sang tên clip): `lowpoly_v02.glb` (sau Retopo), `rig_v02.glb`, `anim_idle_v02.glb`, `anim_run_v02.glb`, `anim_attack_v02.glb` (slash), `anim_hit_light_v02.glb` (hurt), `anim_death_v02.glb`. Không ghi đè bản cũ.
 11. **Báo Claude**: asset id, credit từng bước (Retopo, Texture, Generate, Rig, Animation), clip đã chọn, có Mixamo / in place không.
-12. **Claude** kiểm từng file (số tam giác, xương, clip, hash không trùng), điền `meta.json` (`channel: "web"`), đánh giá bằng trang `?viewer=asset` và `asset-validator`, rồi đưa qua pipeline. Giữ texture PBR, không ép palette.
+12. **Claude** kiểm từng file (số tam giác, xương, clip, hash không trùng), điền `meta.json` (`channel: "web"`), đánh giá bằng trang `?viewer=asset` và `asset-validator`, rồi đưa qua pipeline: thêm khối `import` vào `meta.json` (`source` theo thứ tự chọn ở mục 3, kích thước thật, `yaw`, socket, `post` nếu cần clip thủ tục; xem `assets/README.md` mục Nhập Tripo) và chạy `pnpm assets:build --only <id>`. Giữ texture PBR, không ép palette.
 
 ## 7. Theo dõi credit
 

@@ -21,7 +21,7 @@ Cột "Hiện có" ghi đúng chỗ code đang nằm; cột "Hướng tới" là
 | Đá, cây, cỏ, linh thảo | Biến thể theo seed, vật liệu PBR đơn giản | `game/env.ts`, `game/terrain.ts`, `game/models.ts` (sinh lúc chạy) | script bpy `tools/blender/gen_*.py` → pipeline |
 | Kiến trúc tông môn | bpy thủ tục: mái cong, cột, lan can, bậc đá, cổng. **Không đi qua Tripo** | `tools/blender/build_sect.py` (job `arch_sect` trong `run.mjs`) | tách thành kit modular `kit_architecture.py` |
 | Phi kiếm, pháp bảo, lò đan | Mesh đơn giản + material phát sáng | khối trong `game/models.ts` | `tools/blender/gen_props.py` hoặc Tripo cho prop chi tiết |
-| Nhân vật, quái, boss | Tripo (multiview + rig) theo `docs/tripo-runbook.md` và `docs/prompts/`; gói CC0 có xương chỉ là dự phòng | khối trong `game/models.ts` (dự phòng giữ lại) | `assets/source/<loại>/<id>/meta.json`, file lớn ở `DTL_ASSET_SOURCE`, chuẩn hóa bằng `import_tripo.py` (M2-2) |
+| Nhân vật, quái, boss | Tripo (multiview + rig) theo `docs/tripo-runbook.md` và `docs/prompts/`; gói CC0 có xương chỉ là dự phòng | khối trong `game/models.ts` (dự phòng giữ lại) | `assets/source/<loại>/<id>/meta.json`, file lớn ở `DTL_ASSET_SOURCE`, chuẩn hóa bằng `import_tripo.py` (khối `import` trong meta.json) |
 | Animation | Clip từ Tripo (rig + animation) retarget về `rig_human_base`, cộng IK tự làm phía client (bước chân, nhìn mục tiêu); gói CC0 (Quaternius) chỉ bổ sung clip còn thiếu. Không dùng Mixamo làm nguồn chính | animation thủ tục trong `game/models.ts` | `rig_human_base.py`, `export_anim_lib.py` → `anim_human_base` (M2-3) |
 
 ## Quy tắc chung
@@ -41,4 +41,4 @@ Cột "Hiện có" ghi đúng chỗ code đang nằm; cột "Hướng tới" là
 
 ## Kiểm tra bằng mắt
 
-- Sau khi sinh, mở trang xem asset `?viewer=asset&file=/assets/<id>.<hash>.glb` khi `pnpm dev` đang chạy (so với người chuẩn 1,7m, xem tam giác, draw call, clip) và chụp ảnh nhìn trước khi báo xong. Chưa có `render_preview.py` hay ảnh xem trước tự động.
+- Sau khi sinh, mở trang xem asset `?mute=1&viewer=asset&file=/assets/<id>.<hash>.glb` khi `pnpm dev` đang chạy (so với người chuẩn 1,7m, xem tam giác, draw call, clip) và chụp ảnh nhìn trước khi báo xong. Chưa có `render_preview.py` hay ảnh xem trước tự động.

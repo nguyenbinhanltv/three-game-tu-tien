@@ -27,7 +27,7 @@ packages/content   dữ liệu game JSON trong data/, chuỗi tiếng Việt tro
 apps/client        Vite + Three.js + React (src/game: engine, terrain, entities, models, vfx; src/ui)
 apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts, game/character.ts, auth.ts, db.ts
 apps/bot-client    bot headless để test tải
-tools/blender      build_sect.py (kiến trúc tông môn → GLB), build_fixture_rig.py (GLB có xương cho test), run.mjs
+tools/blender      build_sect.py (kiến trúc tông môn → GLB), import_tripo.py (chuẩn hóa GLB Tripo), build_fixture_rig.py (GLB có xương cho test), run.mjs
 tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts
 tools/audio        build.mjs + sounds.json: SFX/âm môi trường CC0 → public/audio/{sfx,amb} + manifest.json
 assets             README, LICENSES.md, budgets.json, meta.schema.json, source/<loại>/<id>/meta.json
@@ -38,6 +38,7 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 ## Lệnh thường dùng
 
 - `pnpm dev`: server (2567) + client (5173). Đăng nhập thử bằng đạo hiệu; `?auto=<tên>` tự đăng nhập.
+- Playtest **luôn tắt tiếng**: URL game/viewer có `?mute=1` (ghép tham số khác bằng `&`, ví dụ `?mute=1&auto=<tên>`), kể cả trong `ao browser`; Chromium/Playwright thêm cờ `--mute-audio`. Tab của mình đang phát tiếng thì đóng hoặc tải lại với `?mute=1` (xem skill `playtest`).
 - Nhiều worktree chạy song song: mỗi worktree một cặp cổng riêng, ví dụ `PORT=2597 CLIENT_PORT=5197 pnpm dev` (Git Bash) hoặc `$env:PORT=2597; $env:CLIENT_PORT=5197; pnpm dev` (PowerShell), hoặc ghi `PORT=`/`CLIENT_PORT=` vào `apps/server/.env.local` (gitignore). Client dev tự nối `ws://<host>:$PORT`; `VITE_SERVER_URL` (biến môi trường hoặc `apps/client/.env.local`, không đặt ở file env của server) ghi đè. Bot và security-check đọc `SERVER_URL` hoặc `PORT` (kể cả từ `.env.local`). Kiểm cổng trống trước khi chạy, không dùng hay kill server của worktree khác, tự tắt server của mình khi xong (xem skill `playtest`).
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
 - `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`

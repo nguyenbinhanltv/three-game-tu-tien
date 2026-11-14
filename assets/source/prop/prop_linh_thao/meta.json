@@ -9,6 +9,15 @@
     "faceLimit": 1500,
     "texture": 1024
   },
+  "import": {
+    "kind": "tripo",
+    "source": "prop/prop_linh_thao/tripo/raw_v01.glb",
+    "size": {
+      "height": 0.4
+    },
+    "yaw": -90,
+    "sockets": []
+  },
   "concept": [
     {
       "file": "concept/concept_34_v01.png",
@@ -72,7 +81,7 @@
       "date": "2026-11-15",
       "output": "tripo/raw_v01.glb",
       "result": "ok",
-      "note": "Tiền xử lý tạm (chờ import_tripo.py M2-2) bằng dtl-asset-source/_batches/2026-11-15-m0-3-prep-tripo.mjs: weld, simplify LOD0 về ≤95% trần, resize texture 1024², đặt gốc ở đáy (center pivot below). GLB Tripo gốc: 2897 tam giác (vượt face_limit 1500), texture 4096². Build: LOD0 2897 / LOD1 1154 / LOD2 434 tam giác, 1051436 B. Kích thước vẫn chuẩn hóa của Tripo (cao 1 m), chưa scale theo thực tế."
+      "note": "Từ M2-2 (2026-11-15): build bằng pipeline chính thức (khối import: tools/blender/import_tripo.py rồi optimize.ts), thay script tạm 2026-11-15-m0-3-prep-tripo.mjs. GLB Tripo gốc: 2897 tam giác (vượt face_limit 1500), texture 4096²."
     }
   ],
   "license": {
