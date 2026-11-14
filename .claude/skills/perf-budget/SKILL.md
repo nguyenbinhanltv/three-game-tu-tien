@@ -6,6 +6,7 @@ description: Đo và giữ ngân sách hiệu năng của Đạp Thiên Lộ —
 # Ngân sách hiệu năng
 
 > Hiện trạng MVP: overlay bật bằng `?debug=1` (góc dưới phải: fps, draw call, tam giác, geometry, texture). Chưa có `pnpm bench:client` và `pnpm size`; kích thước xem ở output của `pnpm build`. Số đo 2026-11-12: sân tông môn ~150 draw call, ~410 nghìn tam giác; JS 357KB gzip + sect.glb 0,8MB; tick server p95 0,7ms với 50 bot mỗi kênh, 1,1ms với 100 bot trong một kênh.
+> Đếm draw call khi có hậu kỳ (từ M1-6): `engine.ts` đặt `renderer.info.autoReset = false` và gọi `renderer.info.reset()` ở đầu `frame()`, nên số trên overlay là của **cả khung** (pass cảnh + mọi pass hậu kỳ), đúng cả khi bơm khung tay bằng `__game.frame()`. Khi tự đo, đọc `renderer.info` ngay sau `frame()`, đừng reset giữa chừng. Hậu kỳ preset Vừa/Cao thêm 2 lệnh vẽ toàn màn hình mỗi khung; Thấp không thêm. M1-6 đo (14/11/2026, 1600×900, Vừa): sân 67→69, rừng ~155, hồ 33→35, cổng bí cảnh 66→68; JS 360,6→384,9KB gzip.
 
 ## Ngưỡng
 

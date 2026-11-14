@@ -381,6 +381,8 @@ export class Game {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = q.shadows;
+    // Số liệu render đếm cho cả khung (mọi pass hậu kỳ), reset ở đầu frame(), kể cả khi bơm khung tay.
+    this.renderer.info.autoReset = false;
     this.canvas = this.renderer.domElement;
     this.canvas.className = 'game-canvas';
     this.canvas.tabIndex = 0;
@@ -967,6 +969,7 @@ export class Game {
 
   private frame(): void {
     if (this.disposed) return;
+    this.renderer.info.reset();
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.lastT) / 1000);
     this.lastT = now;
