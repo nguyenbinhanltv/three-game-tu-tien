@@ -49,7 +49,7 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - `pnpm assets:build`: Blender sinh GLB thô vào `assets/build/raw/` rồi tối ưu ra `apps/client/public/assets/<id>.<hash>.glb` + `manifest.json`; client nạp qua `AssetCache` (`apps/client/src/game/assets.ts`); `pnpm assets:validate` kiểm ngân sách, LICENSES, chiều cao raw/build
 - `pnpm audio:build` (cần ffmpeg có libopus + aac; đặt `FFMPEG=` nếu không có trong PATH): sinh sprite SFX và âm môi trường từ `../dtl-asset-source/sfx` theo `tools/audio/sounds.json`, ghi `apps/client/public/audio/manifest.json` và khối âm thanh trong `assets/LICENSES.md`; `pnpm audio:check` chỉ kiểm khai báo, nguồn, giấy phép CC0
 - `pnpm build` rồi `pnpm start`: server phục vụ luôn bản build ở cổng 2567
-- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | hurt pct | spawn id [n] | tick` (`hurt` hạ máu quái quanh mình về pct% để thử pha boss)
+- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | hurt pct | spawn id [n] | tick | dye id` (`hurt` hạ máu quái quanh mình về pct% để thử pha boss; `dye` đổi màu áo, id trong `appearance.json`)
 
 ## Hiện trạng MVP (2026-11-12)
 
@@ -63,7 +63,7 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng.
 - Bí cảnh là một lòng chảo trên cùng bản đồ (Kiếm Trủng, tây bắc), chạy trong room riêng.
 - Ngự kiếm mở ở Ngưng Khí tầng 3 (spec ghi tầng 8) để người mới sớm được bay.
-- Nhân vật và phần lớn quái dựng bằng khối trong `models.ts`, animation thủ tục. Ba loài sói dùng `mon_soi_xam` có xương qua `game/character/` (`SkinnedCharacter`, bảng `MONSTER_SKINS`); `?models=legacy` hoặc nạp lỗi thì về model khối.
+- Người chơi dùng Thanh Phong (`chr_kiem_tu_nam`, có xương) qua `game/character/playerSkins.ts`; màu áo nhuộm bằng shader theo `packages/content/data/appearance.json`, chọn khi tạo nhân vật (cột `characters.appearance`). Chưa có model nữ. Bay/thiền/nhảy dùng tư thế IK tạm `tam_ngu_kiem`, `tam_thien`. NPC và phần lớn quái vẫn dựng bằng khối trong `models.ts`. Ba loài sói dùng `mon_soi_xam` có xương (`MONSTER_SKINS`). `?models=legacy` hoặc nạp lỗi thì về model khối.
 - Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):

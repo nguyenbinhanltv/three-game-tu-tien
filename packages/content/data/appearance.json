@@ -1,0 +1,18 @@
+{
+  "$comment": "Ngoại hình người chơi (quyết định 6.4b). Màu áo lấy từ assets/palette.json (playerDyes; content:check so khớp hex). Thứ tự dyes là thứ tự trên màn tạo nhân vật. Tên hiển thị: i18n appearance.dye.<id>. Giới tính nữ chưa có model nên enabled=false.",
+  "defaultGender": "m",
+  "defaultDye": "attire_sect",
+  "genders": [
+    { "id": "m", "model": "chr_kiem_tu_nam", "enabled": true },
+    { "id": "f", "model": null, "enabled": false }
+  ],
+  "dyes": [
+    { "id": "attire_sect", "hex": "#3B6584", "trim": "#22364E" },
+    { "id": "attire_ivory", "hex": "#E6DDCB", "trim": "#2B5552" },
+    { "id": "wood_roof", "hex": "#2B5552", "trim": "#E6DDCB" },
+    { "id": "wood_cinnabar", "hex": "#9D392E", "trim": "#AE8B49" },
+    { "id": "attire_rogue", "hex": "#55475F", "trim": "#7D786C" },
+    { "id": "attire_ink", "hex": "#29292C", "trim": "#88ABAA" }
+  ],
+  "legacyByNameHash": ["attire_ivory", "wood_roof", "attire_rogue", "wood_cinnabar", "wood_roof", "attire_ivory", "attire_ink", "attire_sect"]
+}

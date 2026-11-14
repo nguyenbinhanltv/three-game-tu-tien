@@ -1,4 +1,5 @@
 import type {
+  AppearanceData,
   ItemDef,
   LevelDef,
   MonsterDef,
@@ -23,6 +24,9 @@ import viJson from '../data/i18n/vi.json';
 import viUiJson from '../data/i18n/vi.ui.json';
 import poseKiemThuJson from '../data/poses/kiem_thu.json';
 import poseChemNgangJson from '../data/poses/chem_ngang.json';
+import poseTamThienJson from '../data/poses/tam_thien.json';
+import poseTamNguKiemJson from '../data/poses/tam_ngu_kiem.json';
+import appearanceJson from '../data/appearance.json';
 
 export const ITEMS = itemsJson as ItemDef[];
 export const MONSTERS = monstersJson as unknown as MonsterDef[];
@@ -37,7 +41,7 @@ export const LEVELS: Record<string, LevelDef> = {
 };
 export const GLOSSARY = glossaryJson;
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
-export const POSES = [poseKiemThuJson, poseChemNgangJson] as unknown as PoseDef[];
+export const POSES = [poseKiemThuJson, poseChemNgangJson, poseTamThienJson, poseTamNguKiemJson] as unknown as PoseDef[];
 
 function index<T extends { id: string }>(list: T[]): Map<string, T> {
   const m = new Map<string, T>();
@@ -52,6 +56,10 @@ export const RECIPE = index(RECIPES);
 export const NPC = index(NPCS);
 export const QUEST = index(QUESTS);
 export const POSE = index(POSES);
+
+/** Ngoại hình người chơi: giới tính, màu áo (quyết định 6.4b). */
+export const APPEARANCE = appearanceJson as AppearanceData;
+export const DYE = index(APPEARANCE.dyes);
 
 /** Vật phẩm dùng để cường hóa trang bị. */
 export const ENHANCE_ORE = 'itm_thiet_tinh';

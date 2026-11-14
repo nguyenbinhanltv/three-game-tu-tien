@@ -126,12 +126,12 @@ export function validatePose(p: PoseDef): string[] {
       const c = (k.sword[0] * k.edge[0] + k.sword[1] * k.edge[1] + k.sword[2] * k.edge[2]) / (len(k.sword) * len(k.edge) || 1);
       if (Math.abs(c) > 0.95) e(`${kAt}: edge gần song song với sword`);
     }
-    // Tầm với theo người tham chiếu (vai lúc nghỉ; chân tính cả hông đã dời).
+    // Tầm với theo người tham chiếu: vai và khớp háng đi theo hông đã dời (bỏ qua xoay thân; ngồi thiền hạ hông ~0,7m).
     const arm = (POSE_REF.upperArm + POSE_REF.foreArm) * REACH_SLACK;
     for (const [f, side] of [['handR', -1], ['handL', 1]] as const) {
       const v = k[f];
       if (!isVec(v)) continue;
-      const s: PoseVec = [POSE_REF.shoulder[0] * side, POSE_REF.shoulder[1], POSE_REF.shoulder[2]];
+      const s: PoseVec = [POSE_REF.shoulder[0] * side + hipsPos[0], POSE_REF.shoulder[1] + hipsPos[1], POSE_REF.shoulder[2] + hipsPos[2]];
       if (len(sub(v, s)) > arm) e(`${kAt}: ${f} ngoài tầm với (${len(sub(v, s)).toFixed(2)}m > ${arm.toFixed(2)}m)`);
     }
     const leg = (POSE_REF.thigh + POSE_REF.shin) * REACH_SLACK;

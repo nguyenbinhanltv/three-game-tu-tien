@@ -33,6 +33,8 @@ export const characters = sqliteTable('characters', {
   equip: text('equip').notNull().default('{}'),
   quests: text('quests').notNull().default('{"active":{},"done":[]}'),
   meta: text('meta').notNull().default('{}'),
+  /** Ngoại hình JSON `{"g":"m","dye":"attire_sect"}` (quyết định 6.4b); '' = nhân vật cũ, màu theo tên. */
+  appearance: text('appearance').notNull().default(''),
   updatedAt: integer('updated_at').notNull().default(0),
 });
 
@@ -85,6 +87,7 @@ CREATE TABLE IF NOT EXISTS characters (
   equip TEXT NOT NULL DEFAULT '{}',
   quests TEXT NOT NULL DEFAULT '{"active":{},"done":[]}',
   meta TEXT NOT NULL DEFAULT '{}',
+  appearance TEXT NOT NULL DEFAULT '',
   updated_at INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS items (
@@ -108,12 +111,29 @@ CREATE TABLE IF NOT EXISTS ledger (
 CREATE INDEX IF NOT EXISTS ledger_char ON ledger (char_id);
 `;
 
+/**
+ * Cột thêm sau khi bảng đã có dữ liệu: `CREATE TABLE IF NOT EXISTS` không thêm cột vào bảng cũ nên phải ALTER.
+ * Mỗi cột mới trong DDL ở trên (sau bản đầu) phải có một dòng ở đây.
+ */
+const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [['characters', 'appearance', "TEXT NOT NULL DEFAULT ''"]];
+
+function migrate(sqlite: Database.Database): void {
+  // Một transaction: lỗi giữa chừng thì không để DB nửa vời (SQLite cho ALTER trong transaction).
+  sqlite.transaction(() => {
+    for (const [table, column, ddl] of ADDED_COLUMNS) {
+      const cols = sqlite.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+      if (!cols.some((c) => c.name === column)) sqlite.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+    }
+  })();
+}
+
 export function openDb(file: string = config.dbFile) {
   if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
   const sqlite = new Database(file);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('synchronous = NORMAL');
   sqlite.exec(DDL);
+  migrate(sqlite);
   return { sqlite, db: drizzle(sqlite) };
 }
 

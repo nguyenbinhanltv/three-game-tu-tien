@@ -3,6 +3,7 @@ import type { Client } from 'colyseus';
 import {
   bossPhaseAt,
   fxSeed,
+  parseAppearance,
   type CdMsg,
   chantInterrupt,
   CHAT_MAX_LEN,
@@ -79,7 +80,7 @@ import {
   xpLevelFactor,
   xpNeed,
 } from '@dtl/shared';
-import { ENHANCE_ORE, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
+import { APPEARANCE, ENHANCE_ORE, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
 import { type Character, isEquipSlot } from './character';
 
@@ -337,6 +338,8 @@ export class GameSim {
   addPlayer(client: Client, char: Character, dev: boolean, session: string, noLoot = false): PlayerEnt {
     const s = new PlayerS();
     s.name = char.name;
+    s.g = char.appearance.g;
+    s.dye = char.appearance.dye;
     let x = this.opts.spawn.x;
     let z = this.opts.spawn.z;
     let y = 0;
@@ -1972,6 +1975,15 @@ export class GameSim {
         c.hp = c.mhp;
         c.mp = c.mmp;
         return say('đã hồi đầy');
+      case 'dye': {
+        // Thử đổi màu áo lúc đang chơi (người khác thấy qua schema); vẫn kiểm như lúc tạo nhân vật.
+        const ap = parseAppearance(APPEARANCE, { g: c.appearance.g, dye: a[1] });
+        if (!ap) return say('dye ' + APPEARANCE.dyes.map((d) => d.id).join(' | '));
+        c.setAppearance(ap);
+        p.s.g = ap.g;
+        p.s.dye = ap.dye;
+        return say('dye = ' + ap.dye);
+      }
       case 'die':
         this.damagePlayer(p, 999999, '');
         return;
