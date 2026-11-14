@@ -7,7 +7,8 @@ const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 
 // Cổng đổi được qua biến môi trường để nhiều worktree chạy song song. Biến môi trường thật
 // được ưu tiên, sau đó tới apps/server/.env.local (đã gitignore, server cũng đọc file này):
-//   CLIENT_PORT  cổng Vite dev (mặc định 5173) và preview (mặc định 4173)
+//   CLIENT_PORT  cổng Vite dev (mặc định 5173) và preview (mặc định 4173). Preview chạy bản build
+//                nên chỉ tự nối server ở 4173→2567; cổng khác thì build với VITE_SERVER_URL.
 //   PORT         cổng server Colyseus mà client dev nối tới (mặc định 2567)
 // VITE_SERVER_URL (ghi đè cách suy từ PORT) do Vite tự đọc từ process.env và apps/client/.env*,
 // không lấy từ file env của server để không bị đóng cứng vào bản build production.

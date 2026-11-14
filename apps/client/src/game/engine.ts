@@ -57,8 +57,14 @@ export interface LoginOptions {
 }
 
 /**
- * URL server: VITE_SERVER_URL nếu có; khi chạy Vite dev/preview thì nối cùng hostname ở cổng
- * PORT lúc khởi động Vite (mặc định 2567); còn lại (bản build do server phục vụ) dùng cùng origin.
+ * URL server, theo thứ tự:
+ * 1. VITE_SERVER_URL (nhận lúc chạy Vite dev hoặc lúc `vite build`).
+ * 2. Vite dev (`DEV`, mọi CLIENT_PORT): cùng hostname, cổng PORT lúc khởi động Vite (mặc định 2567).
+ * 3. Trang ở cổng mặc định 5173/4173 (kể cả `vite preview` bản build): cùng hostname, cổng 2567.
+ * 4. Còn lại (bản build do server phục vụ): cùng origin.
+ * `vite preview` chạy bản build nên không biết PORT/CLIENT_PORT. Preview ở cổng khác 4173 hoặc
+ * server khác 2567 thì phải đặt VITE_SERVER_URL khi build, không thì client nối nhầm vào chính
+ * server preview.
  */
 export function serverUrl(): string {
   const env = (import.meta as unknown as { env: Record<string, string | boolean | undefined> }).env;

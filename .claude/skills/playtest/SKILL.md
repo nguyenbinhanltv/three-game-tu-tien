@@ -20,7 +20,7 @@ Nhiều worktree (nhiều agent) có thể cùng chạy `pnpm dev`, nhưng mỗi
 
 - Biến cổng:
   - `PORT`: cổng server, mặc định 2567.
-  - `CLIENT_PORT`: cổng Vite, mặc định 5173 (preview mặc định 4173).
+  - `CLIENT_PORT`: cổng Vite, mặc định 5173 (preview mặc định 4173). `vite preview` chạy bản build nên không biết `PORT`/`CLIENT_PORT`: nó chỉ tự nối server khi chạy ở 4173 với server 2567. Muốn preview ở cặp cổng khác thì build bằng `VITE_SERVER_URL=ws://localhost:2597 pnpm build`, không thì client nối nhầm vào chính server preview.
   - `VITE_SERVER_URL`: URL WebSocket đầy đủ, ghi đè cách client tự suy `ws://<host>:$PORT`. Đặt bằng biến môi trường hoặc trong `apps/client/.env.local`, không đặt trong `apps/server/.env*`. Giá trị từ file env của server chỉ dùng khi chạy dev/preview, không bao giờ vào bản build; còn `VITE_SERVER_URL` lấy từ biến môi trường hay `apps/client/.env*` thì vẫn vào bản build, nên đừng để nó khi build production.
   - `SERVER_URL`: địa chỉ server cho bot và security-check (nếu không đặt thì chúng suy từ `PORT`).
 - Chọn cặp cổng: worktree chính dùng mặc định 2567/5173. Worktree khác lấy cặp `2500+N`/`5100+N` với `N` ít va chạm, ví dụ số cuối trong tên session (`three-game-tu-tien-10` → `2510/5110`). Hai số ví dụ trong tài liệu là `2597/5197`.
