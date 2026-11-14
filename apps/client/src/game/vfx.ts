@@ -241,7 +241,8 @@ export class Vfx {
 
   /** Cột sáng dâng lên quanh một thực thể (lên cấp, hồi phục, hồi sinh). */
   pillar(pos: PosFn, color: number, dur = 1.1, radius = 1.1, height = 7): void {
-    const m = this.fx(TUBE_GEO, color, 0.55);
+    // Ống sáng phủ lên chính nhân vật: không bloom để không nhòe hình bóng (vòng dưới chân vẫn có).
+    const m = this.fx(TUBE_GEO, color, 0.55, 'flat');
     const ring = this.fx(RING_GEO, color, 0.8);
     ring.rotation.x = -Math.PI / 2;
     this.add(
