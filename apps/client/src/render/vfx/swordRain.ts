@@ -340,6 +340,8 @@ interface Drop {
   yaw: number;
   tilt: number;
   seed: number;
+  /** Đã xin ô kiếm/sao chổi (dù có được hay không). */
+  acquired: boolean;
   sword: number;
   comet: number;
   impacted: boolean;
@@ -451,6 +453,7 @@ export class SwordRainFx {
       gy: groundAt(d.x, d.z),
       sword: -1,
       comet: -1,
+      acquired: false,
       impacted: false,
       hitAt: 0,
       crack: -1,
@@ -497,7 +500,10 @@ export class SwordRainFx {
       }
       // Rơi.
       if (!d.impacted) {
-        if (d.sword < 0) {
+        // Xin ô đúng một lần cho mỗi thanh kiếm. Hết ô (nhiều trận chồng nhau) thì thanh đó không vẽ
+        // thành phần ấy, nhưng không bao giờ xin lại: xin lại sẽ ghi đè và làm rơi ô đang giữ.
+        if (!d.acquired) {
+          d.acquired = true;
           d.sword = this.swords.acquire();
           d.comet = this.comets.acquire();
         }

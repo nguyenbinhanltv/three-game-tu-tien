@@ -3,7 +3,7 @@ import { fxSeed } from '@dtl/shared';
 import { seededRandom, seedOr } from './common';
 import { BOLT_MAX_PTS, boltPhase, boltShape } from './lightning';
 import { PARTICLE_BUDGET, Particles } from './particles';
-import { RAIN_SWORDS, rainLayout } from './swordRain';
+import { RAIN_SWORDS, rainLayout, SwordRainFx } from './swordRain';
 
 describe('seededRandom', () => {
   it('cùng seed cùng dãy, khác seed khác dãy', () => {
@@ -78,6 +78,27 @@ describe('rainLayout', () => {
       expect(d.delay).toBeGreaterThanOrEqual(0);
       expect(d.delay).toBeLessThan(0.36);
     }
+  });
+});
+
+describe('SwordRainFx', () => {
+  it('bão hòa ô kiếm (nhiều trận chồng nhau) không làm rò ô sao chổi; xong thì mọi ô về 0', () => {
+    const fx = new SwordRainFx(new Particles());
+    const step = (sec: number) => {
+      for (let t = 0; t < sec; t += 1 / 60) {
+        fx.update(1 / 60);
+        const s = fx.stats();
+        expect(s.swords).toBeLessThanOrEqual(48);
+        expect(s.comets).toBeLessThanOrEqual(48);
+      }
+    };
+    // 5 trận cùng lúc = 60 kiếm > 48 ô, rồi thêm 3 trận phát muộn đúng lúc ô sao chổi vừa được trả
+    // trong khi ô kiếm vẫn còn đầy.
+    for (let i = 0; i < 5; i++) fx.play(0, 0, 0, 8, 0x9fe0ff, 1000 + i, true);
+    step(0.45);
+    for (let i = 0; i < 3; i++) fx.play(5, 0, 5, 8, 0x9fe0ff, 2000 + i, false);
+    step(6);
+    expect(fx.stats()).toEqual({ rains: 0, swords: 0, comets: 0, cracks: 0, shocks: 0 });
   });
 });
 
