@@ -29,6 +29,8 @@ export interface HitOpts {
   mass?: number;
   /** Trễ trước khi phản ứng (giây), để khớp lúc đạn bay tới. */
   delay?: number;
+  /** Bỏ khựng (vẫn chớp/giật lùi/rung), dùng cho đòn không liên quan tới mình. */
+  noStop?: boolean;
 }
 
 export class HitReact {
@@ -75,7 +77,8 @@ export class HitReact {
       } else {
         this.pendHitT = Math.min(this.pendHitT, o.delay);
         if (stop >= this.pendHitStop) {
-          this.pendHit = o;
+          // Giữ khựng nếu một trong các đòn đang chờ có liên quan tới mình.
+          this.pendHit = { ...o, noStop: !!o.noStop && !!this.pendHit.noStop };
           this.pendHitStop = stop;
         }
       }
@@ -100,8 +103,10 @@ export class HitReact {
   }
 
   private start(o: HitOpts, stop: number): void {
-    this.crit = !!o.crit;
-    this.stopT = Math.min(HIT_STOP_MAX, Math.max(this.stopT, stop));
+    // Đang chớp đòn thường mà dính chí mạng thì đổi sang màu chí mạng ngay.
+    if (o.crit && !this.crit && this.flashing) for (const m of this.meshes) m.material = FLASH_MAT_CRIT;
+    this.crit = !!o.crit || (this.crit && this.flashing);
+    if (!o.noStop) this.stopT = Math.min(HIT_STOP_MAX, Math.max(this.stopT, stop));
     this.flashT = Math.max(this.flashT, Math.max(0.06, stop));
     this.shakeT = stop + 0.1;
     this.shakeAmp = o.crit ? 0.09 : 0.05;

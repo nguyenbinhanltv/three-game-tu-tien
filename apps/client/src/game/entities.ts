@@ -470,7 +470,9 @@ export class EntityManager {
     const vd = this.players.get(dst) ?? this.monsters.get(dst);
     if (!vd) return;
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
-    vd.model.hitReact({ crit, delay, dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
+    // Chỉ khựng khi đòn liên quan tới mình, để boss bị nhiều người đánh không đứng hình liên tục.
+    const noStop = src !== this.mySid && dst !== this.mySid;
+    vd.model.hitReact({ crit, delay, noStop, dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
     if (src && src === this.mySid && vs) vs.model.hit.hitStop(crit ? HIT_STOP_CRIT : HIT_STOP_LIGHT, delay);
   }
 
