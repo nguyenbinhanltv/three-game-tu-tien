@@ -8,7 +8,7 @@ Kiểm chứng ngày 2026-11-14 với `tripo-cli 0.11.2` bằng các lệnh ch�
 
 | Thiết lập | Giá trị | CLI | Lý do |
 | --- | --- | --- | --- |
-| Model dựng hình | `v3.1-20260211` | `--model v3.1` | Bảng giá credit của plan tính theo v3.1. CLI mặc định là `P2-20260801`, đắt hơn (text→3D với P2 báo giá 120 credit). So chất lượng v3.1 với P2 trên một asset ở M0-3 rồi mới đổi |
+| Model dựng hình | `v3.1-20260211` | `--model v3.1` | **Đã chốt** (2026-11-14): dùng v3.1 cho tới khi thử nghiệm M0 xong; chỉ đổi sau báo cáo M0-6. CLI mặc định là `P2-20260801`, đắt hơn (text→3D với P2 báo giá 120 credit), nên **luôn ghi `--model v3.1`** |
 | Texture | bật, **tiêu chuẩn** (standard), không HD/detailed | `texture=true`, `-p texture_quality=standard` | Texture chi tiết nướng nhiều sáng tối hơn và đắt hơn; pipeline ép palette về màu phẳng (art bible mục 6) |
 | PBR | **tắt** | `pbr=false` (mặc định) | Game không dùng normal/roughness/metalness |
 | Smart Low-poly | **bật** | `-p smart_low_poly=true` | Lưới gọn, đúng ngân sách; +10 credit |
@@ -27,8 +27,8 @@ Báo giá `make --dry-run` cho image→3D và multiview→3D với cài đặt t
 | --- | --- | --- | --- | --- | --- |
 | Người chơi (nam, nữ) | web app | Multiview: trước, trái, sau | **11.000** (ngân sách 10–12 nghìn) | biped, spec `mixamo`, rig `v3.0-20260909` | chỉ mua cho **một** model mẫu, bật in place |
 | NPC | web app | Multiview | 7.000 | biped `mixamo` | không (dùng chung clip) |
-| Quái bốn chân (Sói Xám, Yêu Lang, U Minh Lang, Huyết Lang Vương, Thiết Bối Trư, Hỏa Vân Hồ) | web app | Multiview: bên, trước, sau | 5.000 | quadruped, rig `v2.5-20260210` (CLI tự chọn sau rig-check) | khoảng 6 clip mỗi kiểu xương |
-| Quái hai chân (Thạch Viên, Kiếm Khôi, Thủ Mộ Thạch Tướng; Kiếm Linh nếu chốt hình người) | web app | Multiview | 5.000 | biped hoặc others (v3.0) | khoảng 6 clip |
+| Quái bốn chân (Sói Xám, Yêu Lang, U Minh Lang, Huyết Lang Vương, Thiết Bối Trư, Hỏa Vân Hồ, Kiếm Linh dạng cáo) | web app | Multiview: bên, trước, sau | 5.000 | quadruped, rig `v2.5-20260210` (CLI tự chọn sau rig-check) | khoảng 6 clip mỗi kiểu xương |
+| Quái hai chân (Thạch Viên, Kiếm Khôi, Thủ Mộ Thạch Tướng) | web app | Multiview | 5.000 | biped hoặc others (v3.0) | khoảng 6 clip |
 | Boss | web app | Multiview | 18.000–20.000 (tối đa của Tripo), giảm thêm trong Blender nếu cần | theo hình dáng | khoảng 6 clip |
 | Vũ khí, phi kiếm | **CLI** | Image (3/4) | 1.200 | không | không |
 | Prop lớn (lò đan, rương) | **CLI** | Image (3/4) | 2.500 | không | không |

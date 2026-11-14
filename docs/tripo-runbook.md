@@ -1,6 +1,6 @@
 # Runbook Tripo
 
-Phiên bản 1 · 2026-11-14 · Việc M0-1. Kiểm chứng với `tripo-cli 0.11.2`.
+Phiên bản 2 · 2026-11-14 · Việc M0-1. Kiểm chứng với `tripo-cli 0.11.2`. Các quyết định đã duyệt (hạn mức, nơi lưu nguồn, model v3.1) xem `docs/art-bible.md` mục 0.
 
 Dự án dùng **cả hai kênh** Tripo, tách theo loại asset:
 
@@ -20,7 +20,7 @@ Tham số dựng hình: [`docs/prompts/tripo.md`](prompts/tripo.md). Phong cách
 1. **Lệnh được chạy tự do** (không tốn credit): `tripo --help`, `tripo <lệnh> --help`, `tripo models`, `tripo balance`, `tripo whoami`, `tripo usage`, `tripo make … --dry-run`.
 2. **Mọi lệnh tốn credit chỉ chạy khi người dùng đã duyệt đúng đợt đó**, qua orchestrator hoặc trực tiếp trong chat. Duyệt đợt trước không có giá trị cho đợt sau.
 3. **Luôn `--dry-run` trước** với đúng tham số sẽ chạy thật, để có báo giá (`generation_credits_estimate`). Báo giá gửi cho người dùng duyệt.
-4. **Mỗi đợt có hạn mức credit** do người dùng chốt khi duyệt. Mặc định đề xuất **tối đa 300 credit mỗi đợt** và luôn giữ lại **ít nhất 100 credit** trong tài khoản. Hết hạn mức thì dừng, kể cả khi còn việc.
+4. **Hạn mức credit mỗi đợt** (người dùng đã chốt 2026-11-14): **tối đa 300 credit mỗi đợt**, và luôn giữ lại **ít nhất 100 credit** trong tài khoản. Khi duyệt một đợt, người dùng có thể đặt hạn mức thấp hơn; muốn vượt 300 phải hỏi riêng. Hết hạn mức thì dừng, kể cả khi còn việc.
 5. **Sau mỗi đợt chạy `tripo usage --json`** và `tripo balance --json`, ghi vào nhật ký đợt (mục 5.5) và vào `meta.json` của từng asset.
 6. **Cấm khi chưa có duyệt riêng**:
    - `tripo ai` (bộ lập kế hoạch tự ghép chuỗi bước, khó báo giá trước).
@@ -40,7 +40,7 @@ File lớn (ảnh concept, GLB thô, GLB rig, animation) nằm **ngoài repo**. 
 
 | Nơi | Đường dẫn | Chứa | Commit? |
 | --- | --- | --- | --- |
-| Thư mục nguồn | `DTL_ASSET_SOURCE`, mặc định `../dtl-asset-source/` (thư mục cạnh thư mục repo gốc, không nằm trong repo) | ảnh concept, GLB tải từ Tripo, nhật ký CLI thô | không. Người dùng tự sao lưu (ổ khác hoặc cloud) |
+| Thư mục nguồn | `DTL_ASSET_SOURCE`, `../dtl-asset-source/` (đã chốt; thư mục cạnh thư mục repo gốc, không nằm trong repo) | ảnh concept, GLB tải từ Tripo, nhật ký CLI thô | không. Người dùng tự sao lưu (ổ khác hoặc cloud) |
 | Metadata trong repo | `assets/source/<loại>/<asset_id>/meta.json` | prompt, task id, credit, trạng thái | có |
 | Nhật ký đợt CLI | `assets/source/_batches/<YYYY-MM-DD>-<tên-đợt>.json` | báo giá, người duyệt, hạn mức, usage | có |
 | Build | `assets/build/`, `apps/client/public/assets/` | GLB đã tối ưu (M2) | theo pipeline M2 |
@@ -209,7 +209,7 @@ Người dùng bấm; Claude soạn concept, điền `meta.json` và nhập file
 1. **Chuẩn bị** (Claude): concept 3 góc đã duyệt nằm ở `<nguồn>/<loại>/<id>/concept_front.png`, `concept_left.png`, `concept_back.png`. Claude gửi kèm bảng tham số từ `docs/prompts/tripo.md` mục 2 cho đúng loại.
 2. **Đăng nhập** tripo3d.ai bằng tài khoản gói Max. Kiểm model đang để **riêng tư** (gói trả phí cho phép; không để công khai trên thư viện Tripo). Ghi số credit hiện có.
 3. **Tạo model**: chọn chế độ Multiview (nhiều ảnh) → 3D. Tải ảnh vào đúng ô: trước, trái (ảnh bên: nhân vật quay mặt sang phải khung hình), sau. So ảnh bên với hình minh họa trên ô "trái"; nếu ngược thì báo Claude để lật ảnh.
-4. **Thiết lập**: model v3.1 (hoặc bản Claude ghi trong bảng), texture tiêu chuẩn (không HD), PBR tắt, Smart Low-poly bật, giới hạn mặt theo bảng (người chơi 11.000, quái 5.000), quad tắt.
+4. **Thiết lập**: model v3.1 (đã chốt cho tới khi M0 xong), texture tiêu chuẩn (không HD), PBR tắt, Smart Low-poly bật, giới hạn mặt theo bảng (người chơi 11.000, quái 5.000), quad tắt.
 5. **Sinh** và chọn phương án tốt nhất. Xoay xem: tay áo không dính thân, chân tách nhau, mặt không méo. Không đạt thì sinh lại (mỗi lần là một lần trả credit; báo Claude nếu quá 3 lần để sửa concept thay vì sinh tiếp).
 6. **Rig**: chạy kiểm tra rig (miễn phí) → Auto Rig. Người: biped, spec mixamo nếu có (không có thì spec mặc định). Quái bốn chân: quadruped.
 7. **Animation**: chỉ với model mẫu của mỗi kiểu xương (đệ tử nam cho người; Sói Xám cho quái bốn chân). Chọn clip theo `docs/prompts/tripo.md` mục 3, bật **in place** nếu có. NPC và người chơi nữ chỉ rig, không mua animation.

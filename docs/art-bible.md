@@ -1,6 +1,6 @@
 # Art bible: Đạp Thiên Lộ
 
-Phiên bản 1 · 2026-11-14 · Việc M0-1 trong plan phát triển mới.
+Phiên bản 2 · 2026-11-14 · Việc M0-1 trong plan phát triển mới. Người dùng đã duyệt (xem mục 0).
 
 Tài liệu này là chuẩn hình ảnh cho mọi asset vào game: model Tripo, asset thủ tục (bpy, `GeoBuilder`), VFX, icon, UI. Khi ảnh concept, model hay shader lệch với tài liệu này, sửa asset chứ không sửa tài liệu. Muốn đổi chuẩn thì sửa tài liệu trước, ghi lý do ở mục 11.
 
@@ -13,6 +13,20 @@ Nguồn chuẩn đi kèm:
 | `tools/palette/gen_palette.mjs` | Kiểm palette (đủ 32 màu, không trùng, ΔE ≥ 8) và sinh LUT; `pnpm palette:check` để kiểm LUT có khớp JSON |
 | `docs/prompts/` | Mẫu prompt Codex và Tripo dựa trên tài liệu này |
 | `docs/tripo-runbook.md` | Quy trình chạy Tripo (web app và CLI) |
+
+## 0. Quyết định đã duyệt (2026-11-14)
+
+Người dùng duyệt sau PR #6. Đây là quyết định đã chốt, không còn là đề xuất; muốn đổi thì hỏi lại người dùng.
+
+| # | Quyết định | Ghi ở |
+| --- | --- | --- |
+| 1 | Palette 32 màu trong `assets/palette.json` | mục 4 |
+| 2 | **Kiếm Linh giữ hình cáo** (khớp `"model": "fox"` trong `monsters.json`), là cáo linh thể, không phải hình người | mục 2.2, 4.4; `docs/prompts/tripo.md` |
+| 3 | 6 màu áo người chơi như mục 4.5 | mục 4.5 |
+| 4 | Tripo CLI: hạn mức **300 credit mỗi đợt**, luôn giữ lại **ít nhất 100 credit** | `docs/tripo-runbook.md` mục 1 |
+| 5 | File nguồn lớn ở `../dtl-asset-source` (biến `DTL_ASSET_SOURCE`), ngoài repo | `docs/tripo-runbook.md` mục 2 |
+| 6 | Ép palette **không dithering**, không có ngoại lệ (thay cho "dithering nhẹ" trong plan mục 2.2) | mục 6.1 |
+| 7 | Tripo dựng hình bằng **model v3.1** cho tới khi thử nghiệm M0 xong; chỉ đổi model sau báo cáo M0-6 | `docs/prompts/tripo.md` mục 1 |
 
 ---
 
@@ -64,7 +78,7 @@ Kích thước, va chạm và tầm đánh lấy từ dữ liệu (`monsters.jso
 | Thiết Bối Trư | dài khoảng 1,6 m | thân tròn nặng, lưng có giáp sắt dạng tấm |
 | Hỏa Vân Hồ | dài khoảng 1,2 m | thon, nhiều đuôi gộp thành 1–3 khối, chóp đuôi phát sáng nhẹ; lông `wood_cinnabar` + `stone_earth`, chóp đuôi `wood_bronze` (màu cam hiện tại trong `monsters.json` không có trong palette) |
 | Thạch Viên | cao khoảng 1,8 m khi đứng | vượn khối đá, tay dài chạm đất |
-| Kiếm Linh | cao khoảng 1,6 m | **đề xuất**: hình người mờ, chủ yếu là áo và kiếm bay quanh. Model thủ tục hiện tại là cáo (`"model": "fox"`); cần người dùng chốt trước khi làm concept |
+| Kiếm Linh | dài khoảng 1,3 m (scale 1,2) | **cáo linh thể** (đã chốt, khớp `"model": "fox"`): dùng chung xương cáo với Hỏa Vân Hồ; thân thon màu `ink_1`/`stone_far_light`, bán trong suốt; vài thanh kiếm nhỏ là model riêng lơ lửng quanh lưng, phát sáng `spirit_sword` ở mép |
 | Boss (Kiếm Khôi, Huyết Lang Vương, Thủ Mộ Thạch Tướng) | lớn gấp 2–3 lần quái thường | hình bóng khác hẳn quái thường, đọc được ở 60 m. Huyết Lang Vương là biến thể của xương sói; Kiếm Khôi và Thủ Mộ Thạch Tướng là biến thể của xương vượn (theo `model` trong `monsters.json`) |
 | Hàn Giao | giữ model thủ tục theo đốt trong `models.ts` (quyết định 6.2) | chỉ có thể làm lại phần đầu |
 
@@ -173,7 +187,7 @@ Một vật đơn lẻ dùng **tối đa 5 màu** palette (không tính viền).
 
 ### 4.3 Quy tắc theo nhóm
 
-- **Linh quang** (#27–#31) chỉ dùng cho phần phát sáng (emissive), VFX và điểm nhấn UI. Không tô thân quái hay áo bằng các màu này. Ngoại lệ: Kiếm Linh có thể có thân bán trong suốt `spirit_sword`.
+- **Linh quang** (#27–#31) chỉ dùng cho phần phát sáng (emissive), VFX và điểm nhấn UI. Không tô thân quái hay áo bằng các màu này. Ngoại lệ: thân cáo của Kiếm Linh được bán trong suốt và ánh `spirit_sword` ở viền.
 - **Ma khí** `spirit_demonic` là màu của tà khí và yêu ma: vệt trên quái biến dị (Yêu Lang, U Minh Lang), boss, khí đen. Người chơi không được chọn làm màu áo.
 - **Son đỏ** dành cho kiến trúc tông môn và chi tiết nhỏ (dây buộc tóc, tua kiếm). Không dùng làm màu áo chính của NPC tông môn, để cột cổng vẫn là điểm nhấn của cảnh. Người chơi được chọn son đỏ làm màu áo (mục 4.5) vì đó là lựa chọn riêng của họ.
 - **Mực đậm** `ink_5` không bao giờ là màu bóng. Bóng do shader tạo ra (mục 5).
@@ -188,7 +202,7 @@ Một vật đơn lẻ dùng **tối đa 5 màu** palette (không tính viền).
 | Tán tu, người ngoài | `attire_rogue` | `ink_3` | |
 | Yêu thú (sói, heo, cáo, vượn) | `ink_1`…`ink_4`, `stone_earth`, `wood_dark`; Hỏa Vân Hồ dùng `wood_cinnabar` | | mắt `wood_bronze`; nanh `ink_paper` (concept vẽ miệng ngậm để rig, nanh thêm ở texture) |
 | Quái biến dị, boss | như yêu thú | vệt `spirit_demonic` | mắt hoặc vết nứt phát sáng `spirit_demonic` / `spirit_thunder` |
-| Linh thể (Kiếm Linh, Kiếm Khôi) | `ink_3`, `wood_bronze` | phát sáng `spirit_sword` | |
+| Linh thể (Kiếm Linh dạng cáo, Kiếm Khôi) | Kiếm Linh: `ink_1`, `stone_far_light`; Kiếm Khôi: `ink_3`, `wood_bronze` | phát sáng `spirit_sword` | |
 
 ### 4.5 Màu áo người chơi (quyết định 6.4b)
 
@@ -269,7 +283,7 @@ Bước ép palette trong `import_tripo.py` hoặc `optimize.ts` dùng `assets/p
 
 1. Làm phẳng texture (bỏ nhiễu nhỏ) rồi gom màu bằng k-means.
 2. Ánh xạ mỗi cụm về màu palette gần nhất theo khoảng cách Lab. Chỉ xét các nhóm hợp với loại asset (ví dụ quái không lấy nhóm linh quang, trừ vùng đã đánh dấu phát sáng).
-3. **Không dithering** cho texture màu phẳng; dithering tạo nhiễu hạt trái với phong cách. Chỉ bật nếu một asset cụ thể bị vệt bậc thang rõ.
+3. **Không dithering** (đã chốt, không có ngoại lệ): dithering tạo nhiễu hạt trái với phong cách màu phẳng. Asset nào bị vệt bậc thang sau khi ép thì sửa vùng màu trong concept hoặc texture, không bật dithering.
 4. Sau khi ép, 100% điểm ảnh albedo phải là một trong 32 màu (hoặc màu mặt nạ áo của người chơi). `asset-validator` kiểm điều này.
 
 ---
@@ -326,3 +340,4 @@ Bước ép palette trong `import_tripo.py` hoặc `optimize.ts` dùng `assets/p
 | Ngày | Phiên bản | Thay đổi |
 | --- | --- | --- |
 | 2026-11-14 | 1 | Bản đầu (M0-1): tỉ lệ 1:6, palette 32 màu, hợp đồng toon với M1-6, quy tắc texture và điều cấm |
+| 2026-11-14 | 2 | Ghi 7 quyết định người dùng đã duyệt (mục 0): Kiếm Linh giữ hình cáo, không dithering tuyệt đối, palette và màu áo đã chốt |
