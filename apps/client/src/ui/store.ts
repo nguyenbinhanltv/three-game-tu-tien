@@ -98,6 +98,7 @@ export interface UIState {
   wantFly: boolean;
   chatOpen: boolean;
   quality: string;
+  camShake: boolean;
   /** Kiểu điều khiển: 'mouse' (nhìn bằng chuột kiểu FPS), 'turn' (A/D xoay) hoặc 'strafe' (kéo chuột). */
   controls: string;
   /** Con trỏ đang bị khóa để nhìn bằng chuột. */
@@ -146,6 +147,7 @@ export const useUI = create<UIState>(() => ({
   wantFly: false,
   chatOpen: false,
   quality: localStorage.getItem('dtl.quality') ?? 'medium',
+  camShake: localStorage.getItem('dtl.camShake') !== '0',
   controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '') ? (localStorage.getItem('dtl.controls') as string) : 'mouse',
   mouseLook: false,
   queuedSkill: -1,
