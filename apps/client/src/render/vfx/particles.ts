@@ -18,8 +18,11 @@ export const PARTICLE_BUDGET: Record<string, number> = { low: 5000, medium: 1200
 /** Tỉ lệ ngân sách cho lớp cộng sáng; phần còn lại cho bụi/sương. */
 const GLOW_SHARE = 0.6;
 const MAX_TOTAL = 20000;
-/** Tuổi thọ tối đa của một hạt (giây); `emit` chặn ở mức này để biết ô nào chắc chắn đã chết. */
-export const PARTICLE_MAX_LIFE = 3;
+/**
+ * Tuổi thọ tối đa của một hạt (giây); `emit` chặn ở mức này để biết ô nào chắc chắn đã chết.
+ * 9 s để mảng sương/lá rơi của hạt môi trường (game/ambient.ts) trôi chậm, hiện/tắt từ từ.
+ */
+export const PARTICLE_MAX_LIFE = 9;
 
 export type ParticleLayer = 'glow' | 'dust';
 
