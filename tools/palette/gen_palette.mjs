@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Sinh assets/palette.png (LUT 256x1) từ assets/palette.json và kiểm tra palette.
+// Sinh assets/palette.png (ô màu 256x1) từ assets/palette.json (bảng màu tâm trạng) và kiểm tra palette + khối grading.
 // Không phụ thuộc thư viện ngoài (chỉ node:zlib, node:fs).
 //
 //   node tools/palette/gen_palette.mjs                 kiểm tra + ghi assets/palette.png
 //   node tools/palette/gen_palette.mjs --check         chỉ kiểm tra, báo lỗi nếu palette.png lệch JSON
-//   node tools/palette/gen_palette.mjs --preview <f>   ghi thêm ảnh xem trước (ô = bậc sáng, 2 dải = bậc trung, bậc bóng)
+//   node tools/palette/gen_palette.mjs --preview <f>   ghi thêm ảnh xem trước (ô = màu gốc, 2 dải = dưới nắng và trong bóng theo preset grading mặc định)
 //
 // Mã thoát khác 0 khi palette sai (thiếu màu, trùng, tham chiếu hỏng, hai màu quá gần nhau).
 
@@ -119,9 +119,18 @@ colors.forEach((c, i) => {
 for (const g of groups) if (!colors.some((c) => c.group === g)) errors.push(`nhóm ${g} không có màu nào`);
 for (const id of pal.playerDyes.options) if (!byId.has(id)) errors.push(`playerDyes tham chiếu màu không có: ${id}`);
 if (!pal.playerDyes.options.includes(pal.playerDyes.default)) errors.push('playerDyes.default không nằm trong options');
-for (const k of ['shadowTint', 'ambientSky', 'sunColor', 'outlineColor', 'fogColor']) {
-  try { hexToRgb(pal.toon[k]); } catch (e) { errors.push(`toon.${k}: ${e.message}`); }
-}
+// Mọi giá trị màu trong khối grading phải là hex hợp lệ.
+const walkHex = (obj, path) => {
+  for (const [k, v] of Object.entries(obj)) {
+    if (k.startsWith('$')) continue;
+    if (v && typeof v === 'object') walkHex(v, `${path}.${k}`);
+    else if (typeof v === 'string' && /(Color|Tint|blackLift)$/.test(k)) {
+      try { hexToRgb(v); } catch (e) { errors.push(`${path}.${k}: ${e.message}`); }
+    }
+  }
+};
+if (!pal.grading?.presets?.[pal.grading.default]) errors.push('grading.default phải trỏ tới một preset có trong grading.presets');
+else walkHex(pal.grading, 'grading');
 let minPair = null;
 for (let i = 0; i < colors.length; i++) for (let j = i + 1; j < colors.length; j++) {
   const a = colors[i], b = colors[j];
@@ -130,9 +139,12 @@ for (let i = 0; i < colors.length; i++) for (let j = i + 1; j < colors.length; j
   if (!minPair || d < minPair.d) minPair = { a: a.id, b: b.id, d };
   if (d < MIN_DELTA_E) errors.push(`${a.id} và ${b.id} quá gần nhau (ΔE76 = ${d.toFixed(1)} < ${MIN_DELTA_E})`);
 }
-// Màu bóng của toon phải ngả lam xám, không ngả về đen.
-const tint = hexToRgb(pal.toon.shadowTint).map(toLin);
-if (!(tint[2] > tint[0] && tint[2] > tint[1])) errors.push('toon.shadowTint phải ngả lam (B lớn nhất)');
+// Bóng ban ngày phải ngả ngọc lam (G, B lớn hơn R), không ngả về đen hay nâu.
+const grade = pal.grading?.presets?.[pal.grading?.default];
+if (grade) {
+  const st = hexToRgb(grade.shadowTint);
+  if (!(st[1] > st[0] && st[2] > st[0])) errors.push(`grading.presets.${pal.grading.default}.shadowTint phải ngả ngọc lam (G, B > R)`);
+}
 
 if (errors.length) {
   console.error('palette SAI:\n  - ' + errors.join('\n  - '));
@@ -170,10 +182,14 @@ if (previewPath) {
   const fill = (x0, y0, w, h, rgb) => {
     for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) img.set(rgb, (y * W + x) * 3);
   };
-  fill(0, 0, W, H, byId.get('ink_paper').rgb);
-  const ink = byId.get('ink_5').rgb;
-  const { bandLuminance: L, shadowTintStrength: k } = pal.toon;
-  const shade = (rgb, lum, w) => rgb.map((c, i) => toSrgb(toLin(c) * lum * (1 + (tint[i] - 1) * k * w)));
+  const paper = byId.get('attire_ivory').rgb;
+  const ink = byId.get('attire_ink').rgb;
+  fill(0, 0, W, H, paper);
+  // Minh họa thô: nhân màu gốc với sắc nắng hoặc sắc bóng của preset mặc định (không phải shader thật).
+  const lumOf = (lin) => 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+  const tintNorm = (hex) => { const l = hexToRgb(hex).map(toLin); const y = lumOf(l); return l.map((v) => v / y); };
+  const hi = tintNorm(grade.highlightTint), sh = tintNorm(grade.shadowTint);
+  const shade = (rgb, lum, t, k) => rgb.map((c, i) => toSrgb(toLin(c) * lum * (1 + (t[i] - 1) * k)));
   // chữ số 3x5 để ghi index lên ô
   const DIGITS = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001',
     '111100111001111', '111100111101111', '111001001001001', '111101111101111', '111101111001111'];
@@ -187,12 +203,12 @@ if (previewPath) {
     const y = PAD + r * rowH;
     row.forEach((c, i) => {
       const x = PAD + i * (S + GAP);
-      // ô lớn = bậc sáng, hai dải dưới = bậc trung và bậc bóng của material toon
-      fill(x - 2, y - 2, S + 4, S + 2 * BAND + 4, ink); // viền mực
-      fill(x, y, S, S, shade(c.rgb, L.lit, 0));
-      fill(x, y + S, S, BAND, shade(c.rgb, L.mid, 0.5));
-      fill(x, y + S + BAND, S, BAND, shade(c.rgb, L.shadow, 1));
-      const txt = c.lab[0] > 55 ? ink : byId.get('ink_paper').rgb;
+      // ô lớn = màu gốc; dải 1 = dưới nắng (ấm), dải 2 = trong bóng (ngọc lam)
+      fill(x - 2, y - 2, S + 4, S + 2 * BAND + 4, ink);
+      fill(x, y, S, S, c.rgb);
+      fill(x, y + S, S, BAND, shade(c.rgb, 1.0, hi, 0.35));
+      fill(x, y + S + BAND, S, BAND, shade(c.rgb, 0.45, sh, 0.5));
+      const txt = c.lab[0] > 55 ? ink : paper;
       drawNum(c.index, x + 5, y + 5, txt);
     });
   });

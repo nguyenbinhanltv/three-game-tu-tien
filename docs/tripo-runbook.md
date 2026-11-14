@@ -1,6 +1,6 @@
 # Runbook Tripo
 
-Phiên bản 2 · 2026-11-14 · Việc M0-1. Kiểm chứng với `tripo-cli 0.11.2`. Các quyết định đã duyệt (hạn mức, nơi lưu nguồn, model v3.1) xem `docs/art-bible.md` mục 0.
+Phiên bản 3 · 2026-11-15 · Việc M0-1, cập nhật theo hướng bán tả thực. Kiểm chứng với `tripo-cli 0.11.2`. Các quyết định đã duyệt (hạn mức, nơi lưu nguồn, model v3.1) xem `docs/art-bible.md` mục 0.
 
 Dự án dùng **cả hai kênh** Tripo, tách theo loại asset:
 
@@ -100,10 +100,10 @@ Một file cho mỗi asset, tại `assets/source/<loại>/<asset_id>/meta.json`.
       "taskId": "<task id Tripo>",
       "parentTaskId": null,
       "model": "v3.1-20260211",
-      "params": { "face_limit": 2500, "smart_low_poly": true, "texture_quality": "standard", "pbr": false },
+      "params": { "face_limit": 4000, "smart_low_poly": true, "texture_quality": "detailed", "pbr": true },
       "seed": null,
-      "quote": 40,
-      "credits": 40,
+      "quote": 50,
+      "credits": 50,
       "batch": "2026-11-20-m0-3-prop",
       "date": "2026-11-20",
       "output": "tripo/raw_v01.glb",
@@ -144,12 +144,12 @@ Với **mỗi** prop, chạy đúng lệnh sẽ chạy thật, thêm `--dry-run`
 SRC="${DTL_ASSET_SOURCE:-../dtl-asset-source}"   # nên đặt DTL_ASSET_SOURCE thành đường dẫn tuyệt đối
 tripo make "$SRC/prop/prop_lo_dan/concept_34.png" \
   --model v3.1 -n 1 \
-  -p face_limit=2500 -p smart_low_poly=true -p texture_quality=standard \
+  -p face_limit=4000 -p smart_low_poly=true -p texture_quality=detailed -p pbr=true \
   --name prop_lo_dan_v01 -o "$SRC/prop/prop_lo_dan/tripo" \
   --dry-run --json
 ```
 
-Đọc kết quả: `valid` phải là `true`, `errors` rỗng, `deliverables` là `["GLB"]`, chỉ có một bước `image-to-model`, `generation_credits_estimate` là 40. Khác đi thì dừng và sửa lệnh.
+Đọc kết quả: `valid` phải là `true`, `errors` rỗng, `deliverables` là `["GLB"]`, chỉ có một bước `image-to-model`, `generation_credits_estimate` là 50. Khác đi thì dừng và sửa lệnh.
 
 ### 5.3 Xin duyệt
 
@@ -157,12 +157,12 @@ Gửi người dùng (qua orchestrator nếu đang chạy trong phiên worker) m
 
 | Prop | Lệnh (tóm tắt) | Báo giá |
 | --- | --- | --- |
-| `prop_lo_dan` v01 | image→3D, v3.1, 2.500 mặt | 40 |
-| `prop_linh_thao` v01 | image→3D, v3.1, 800 mặt | 40 |
-| `prop_phi_kiem` v01 | image→3D, v3.1, 1.200 mặt | 40 |
-| **Cộng** | | **120** |
-| **Hạn mức đề xuất** (cộng 20% dự phòng, làm tròn) | | **150** |
-| Số dư hiện tại / sau đợt (dự kiến) | | 1000 / 880 |
+| `prop_lo_dan` v01 | image→3D, v3.1, 4.000 mặt, texture chi tiết + PBR | 50 |
+| `prop_linh_thao` v01 | image→3D, v3.1, 1.500 mặt, texture chi tiết + PBR | 50 |
+| `prop_phi_kiem` v01 | image→3D, v3.1, 2.500 mặt, texture chi tiết + PBR | 50 |
+| **Cộng** | | **150** |
+| **Hạn mức đề xuất** (cộng 20% dự phòng, làm tròn; không vượt 300) | | **180** |
+| Số dư hiện tại / sau đợt (dự kiến) | | 1000 / 850 |
 
 Chỉ chạy khi người dùng trả lời rõ là đồng ý **đợt này** với **hạn mức này**. Ghi người duyệt, thời điểm (giờ Asia/Bangkok) và hạn mức vào nhật ký đợt trước khi chạy.
 
@@ -187,18 +187,18 @@ Ghi nhật ký `assets/source/_batches/<YYYY-MM-DD>-<tên-đợt>.json`:
   "batch": "2026-11-20-m0-3-prop",
   "approvedBy": "người dùng (qua orchestrator)",
   "approvedAt": "2026-11-20T14:05+07:00",
-  "cap": 150,
+  "cap": 180,
   "balanceBefore": 1000,
-  "balanceAfter": 880,
+  "balanceAfter": 850,
   "jobs": [
-    { "asset": "prop_lo_dan", "version": 1, "taskId": "<id>", "quote": 40, "credits": 40, "result": "ok" }
+    { "asset": "prop_lo_dan", "version": 1, "taskId": "<id>", "quote": 50, "credits": 50, "result": "ok" }
   ],
   "usage": "<dán nguyên kết quả tripo usage --json của các task trong đợt>",
   "notes": "báo giá khớp thực tế / lệch bao nhiêu và vì sao"
 }
 ```
 
-Báo lại người dùng: số credit đã dùng so với báo giá và hạn mức, số dư còn lại, việc nào lỗi. Rồi chuyển GLB sang pipeline (kiểm bằng `asset-validator`).
+Báo lại người dùng: số credit đã dùng so với báo giá và hạn mức, số dư còn lại, việc nào lỗi. Rồi chuyển GLB sang pipeline (kiểm bằng `asset-validator`). Pipeline **không ép palette** texture (đã bỏ từ art bible v3); chỉ có bước chuẩn hóa màu nhẹ tùy chọn và giữ nguyên các map PBR (art bible mục 3).
 
 ---
 
@@ -209,13 +209,13 @@ Người dùng bấm; Claude soạn concept, điền `meta.json` và nhập file
 1. **Chuẩn bị** (Claude): concept 3 góc đã duyệt nằm ở `<nguồn>/<loại>/<id>/concept_front.png`, `concept_left.png`, `concept_back.png`. Claude gửi kèm bảng tham số từ `docs/prompts/tripo.md` mục 2 cho đúng loại.
 2. **Đăng nhập** tripo3d.ai bằng tài khoản gói Max. Kiểm model đang để **riêng tư** (gói trả phí cho phép; không để công khai trên thư viện Tripo). Ghi số credit hiện có.
 3. **Tạo model**: chọn chế độ Multiview (nhiều ảnh) → 3D. Tải ảnh vào đúng ô: trước, trái (ảnh bên: nhân vật quay mặt sang phải khung hình), sau. So ảnh bên với hình minh họa trên ô "trái"; nếu ngược thì báo Claude để lật ảnh.
-4. **Thiết lập**: model v3.1 (đã chốt cho tới khi M0 xong), texture tiêu chuẩn (không HD), PBR tắt, Smart Low-poly bật, giới hạn mặt theo bảng (người chơi 11.000, quái 5.000), quad tắt.
+4. **Thiết lập**: model v3.1 (đã chốt cho tới khi M0 xong), texture chi tiết (HD), PBR bật, Smart Low-poly bật, giới hạn mặt theo bảng (người chơi 20.000, NPC 12.000, quái 8.000, boss 20.000), quad tắt.
 5. **Sinh** và chọn phương án tốt nhất. Xoay xem: tay áo không dính thân, chân tách nhau, mặt không méo. Không đạt thì sinh lại (mỗi lần là một lần trả credit; báo Claude nếu quá 3 lần để sửa concept thay vì sinh tiếp).
 6. **Rig**: chạy kiểm tra rig (miễn phí) → Auto Rig. Người: biped, spec mixamo nếu có (không có thì spec mặc định). Quái bốn chân: quadruped.
 7. **Animation**: chỉ với model mẫu của mỗi kiểu xương (đệ tử nam cho người; Sói Xám cho quái bốn chân). Chọn clip theo `docs/prompts/tripo.md` mục 3, bật **in place** nếu có. NPC và người chơi nữ chỉ rig, không mua animation.
 8. **Tải về GLB** (không FBX): bản dựng hình, bản rig, từng clip. Đặt vào `<nguồn>/<loại>/<id>/tripo/` và đổi tên theo mục 3 (`raw_v01.glb`, `rig_v01.glb`, `anim_walk_v01.glb`…).
 9. **Báo Claude** (chat hoặc orchestrator): asset id; mỗi bước (dựng, rig, từng clip) tốn bao nhiêu credit (số dư trước và sau); task id hoặc đường link trang model; phương án đã chọn; điều gì thấy chưa ổn.
-10. **Claude**: điền `meta.json` (`channel: "web"`), kiểm file bằng `asset-validator` / trang xem asset (M0-4), rồi đưa qua pipeline Blender (M2).
+10. **Claude**: điền `meta.json` (`channel: "web"`), kiểm file bằng `asset-validator` / trang xem asset (M0-4), rồi đưa qua pipeline Blender (M2), giữ nguyên texture PBR, không ép palette.
 
 ## 7. Theo dõi credit
 
