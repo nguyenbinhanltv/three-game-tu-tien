@@ -1,0 +1,20 @@
+{
+  "name": "@dtl/perf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "size": "tsx src/size.ts",
+    "bench": "tsx src/bench.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@dtl/shared": "workspace:*",
+    "playwright": "~1.63.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3"
+  }
+}
