@@ -35,7 +35,8 @@ export function AssetViewer() {
       const res = await job();
       setInfo(res);
       setClip(0);
-      setOpts((o) => ({ ...o, wire: false, skeleton: false }));
+      // Khung lưới giữ nguyên (scene tự áp lại cho model mới); xương luôn tạo mới ở trạng thái ẩn.
+      setOpts((o) => ({ ...o, skeleton: false }));
     } catch (e) {
       console.error('[viewer]', e);
       setError(t('viewer.err.load', { name, msg: e instanceof Error ? e.message : String(e) }));
