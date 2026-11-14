@@ -70,6 +70,17 @@ const QUALITY: Record<string, { pixelRatio: number; shadows: boolean }> = {
   high: { pixelRatio: 2, shadows: true },
 };
 
+/**
+ * Phím bổ trợ hay nuốt sự kiện thả phím khác (Cmd/Ctrl). Cố ý không có Shift (hạ độ cao khi bay)
+ * và Alt (phím chơi: thả/khóa con trỏ); Alt xử lý hẹp hơn trong `bindInput`.
+ */
+const STICKY_MODS = new Set(['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight', 'OSLeft', 'OSRight']);
+/** Cặp phím hướng ngược chiều. */
+const OPPOSITE_KEY: Record<string, string> = {
+  KeyW: 'KeyS', KeyS: 'KeyW', KeyA: 'KeyD', KeyD: 'KeyA',
+  ArrowUp: 'ArrowDown', ArrowDown: 'ArrowUp', ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft',
+};
+
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 
@@ -455,9 +466,34 @@ export class Game {
 
   private bindInput(): void {
     this.on(window, 'resize', () => this.onResize());
-    this.on(window, 'blur', () => this.keys.clear());
-    this.on(window, 'keydown', (e: KeyboardEvent) => this.onKeyDown(e));
-    this.on(window, 'keyup', (e: KeyboardEvent) => this.keys.delete(e.code));
+    // Chống kẹt phím: sự kiện thả phím hay mất khi giữ Cmd/Ctrl hoặc chuyển cửa sổ,
+    // nên xóa sạch tập phím ở những lúc đó. Không tính Shift (hạ độ cao khi bay).
+    // Alt là phím chơi (thả/khóa con trỏ): chạm Alt không xóa phím; chỉ xóa khi thả Alt
+    // sau một tổ hợp Alt+phím khác, lúc phím kia có thể đã mất sự kiện thả.
+    // Alt+Tab ra cửa sổ khác đã có blur/visibilitychange lo.
+    const clearKeys = (): void => this.keys.clear();
+    const isAlt = (code: string): boolean => code === 'AltLeft' || code === 'AltRight';
+    let altChord = false;
+    this.on(window, 'blur', clearKeys);
+    this.on(window, 'focus', clearKeys);
+    this.on(document as unknown as HTMLElement, 'visibilitychange', clearKeys);
+    this.on(window, 'keydown', (e: KeyboardEvent) => {
+      if (STICKY_MODS.has(e.code)) clearKeys();
+      else if (isAlt(e.code)) {
+        if (!e.repeat) altChord = false;
+      } else if (e.altKey && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight') altChord = true;
+      this.onKeyDown(e);
+    });
+    this.on(window, 'keyup', (e: KeyboardEvent) => {
+      if (STICKY_MODS.has(e.code)) clearKeys();
+      else {
+        if (isAlt(e.code)) {
+          if (altChord) clearKeys();
+          altChord = false;
+        }
+        this.keys.delete(e.code);
+      }
+    });
     const c = this.canvas;
     this.on(c, 'contextmenu', (e: Event) => e.preventDefault());
     this.on(c, 'pointerdown', (e: PointerEvent) => {
@@ -483,6 +519,11 @@ export class Game {
     });
     this.on(c, 'pointermove', (e: PointerEvent) => {
       if (!this.dragging) return;
+      // Mất pointerup (thả chuột ngoài cửa sổ, Alt+Tab): đồng bộ lại theo nút đang giữ thật.
+      if (e.buttons === 0) {
+        this.dragging = false;
+        return;
+      }
       const dx = e.clientX - this.lastPX;
       const dy = e.clientY - this.lastPY;
       this.lastPX = e.clientX;
@@ -502,6 +543,11 @@ export class Game {
         /* bỏ qua */
       }
       if (this.dragMoved <= 4 && e.button === 0) this.onClick(e.clientX, e.clientY);
+    });
+    // Mất capture mà không có pointerup (trình duyệt hủy, đổi cửa sổ): dừng kéo ngay, không chờ pointermove.
+    // Sự kiện này đến sau pointerup thường, lúc đó dragging đã là false nên không ảnh hưởng cú bấm.
+    this.on(c, 'lostpointercapture', () => {
+      this.dragging = false;
     });
     this.on(document as unknown as HTMLElement, 'mousemove', (e: MouseEvent) => {
       if (!this.locked) return;
@@ -580,6 +626,11 @@ export class Game {
     }
     if (code === 'Space' || code.startsWith('Arrow')) e.preventDefault();
     if (e.repeat) return;
+    // Nhấn một hướng thì bỏ hướng ngược lại (phòng phím kia đã mất sự kiện thả).
+    // Đánh đổi có chủ ý: giữ W, chạm S rồi thả thì nhân vật dừng, phải nhấn lại W. Không khôi phục W
+    // khi thả S, vì nếu W chính là phím đã mất keyup thì khôi phục sẽ làm kẹt lại.
+    const opp = OPPOSITE_KEY[code];
+    if (opp) this.keys.delete(opp);
     this.keys.add(code);
     if (code.startsWith('Digit')) {
       const i = Number(code.slice(5)) - 1;
