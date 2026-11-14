@@ -1,19 +1,28 @@
-# Sinh kiến trúc Lạc Kiếm Tông bằng Blender (bpy) và xuất GLB tô màu theo đỉnh.
+# Sinh kiến trúc Lạc Kiếm Tông bằng Blender (bpy) và xuất GLB vật liệu PBR cách điệu (art bible v3, mục 3–4).
 #
-# Chạy (không mở giao diện):
-#   blender --background --python tools/blender/build_sect.py -- apps/client/public/assets/sect.glb
+# Chạy (không mở giao diện; pnpm assets:build gọi qua tools/blender/run.mjs):
+#   blender --background --python tools/blender/build_sect.py -- assets/build/raw/arch_sect.glb
 #
 # Quy ước tọa độ trong file này là tọa độ game, gốc đặt ở tâm sân tông môn:
 #   x = đông, y = lên, z = nam. Hàm P() đổi sang hệ Blender (Z lên, Y bắc).
 # Client đặt lưới này tại (SECT.x, SECT.y, SECT.z); vị trí các công trình phải khớp
 # COLLIDERS trong packages/shared/src/level.ts.
+#
+# Vật liệu: mỗi mặt mang một "nước sơn" (Paint) = màu bảng màu tâm trạng + một chất liệu trong MATERIALS.
+# Mỗi chất liệu là một primitive glTF (một draw call) với roughness/metalness theo art bible mục 3.
+# Màu đỉnh (COLOR_0) giữ màu và AO nướng ở chân tường; texture chi tiết xám nhỏ (sinh bằng numpy, lặp theo
+# UV chiếu theo thế giới) nhân vào để có chất đá, vân gỗ, hàng ngói. glTF nhân COLOR_0 với baseColorTexture.
 
 import json
 import math
+import random
 import struct
 import sys
+from collections import namedtuple
 
+import bmesh
 import bpy
+import numpy as np
 
 SEED = 20261112
 
@@ -27,42 +36,131 @@ def srgb(hex_color):
     return tuple(out)
 
 
-STONE = srgb(0xA9A59B)
-STONE_DARK = srgb(0x86827A)
-PAVE = srgb(0xCFC9BA)
-WALL = srgb(0xE9E3D3)
-RED = srgb(0x9A2E29)
-RED_DARK = srgb(0x7A211E)
-ROOF = srgb(0x2F5560)
-ROOF_ALT = srgb(0x386470)
-ROOF_DARK = srgb(0x23424C)
-GOLD = srgb(0xCAA24C)
-WOOD = srgb(0x6B4A33)
-WOOD_DARK = srgb(0x4A3324)
-STEEL = srgb(0xC2CED6)
-STEEL_DARK = srgb(0x9FB0BB)
-BRONZE = srgb(0x8A6B3C)
-BLUE = srgb(0x27506E)
-LAMP = srgb(0xFFE2A0)
+# Chất liệu: roughness/metalness theo art bible mục 3; `tex` là texture chi tiết, `scale` là số mét mỗi lần lặp.
+# `ao`: nướng tối ở chân mặt đứng; `jitter`: lệch sáng ngẫu nhiên theo mặt (vật liệu ghép từ nhiều viên).
+Mat = namedtuple('Mat', 'rough metal tex scale ao jitter emissive', defaults=(None,))
+MATERIALS = {
+    'stone': Mat(0.9, 0.0, 'stone', 3.0, True, 0.05),
+    'plaster': Mat(0.95, 0.0, 'stone', 6.0, True, 0.0),
+    'lacquer': Mat(0.6, 0.0, 'wood', 2.5, True, 0.0),
+    'wood': Mat(0.8, 0.0, 'wood', 1.6, True, 0.03),
+    'tile': Mat(0.7, 0.0, 'tile', 2.0, False, 0.0),
+    # Kim loại: art bible cho metalness 0,8–1, nhưng cảnh chưa có env map (chỉ ánh trời hemisphere, không phản chiếu)
+    # nên kim loại gần như đen ở mọi chỗ không có ánh nắng phản xạ thẳng. Tạm hạ còn 0,45–0,5 tới khi có env map.
+    'metal': Mat(0.5, 0.45, None, 1.0, False, 0.0),
+    'steel': Mat(0.4, 0.5, None, 1.0, False, 0.0),
+    # Giấy đèn lồng: phát sáng ấm rất nhẹ (#FFB869, dưới ngưỡng bloom 1,0 của mục 5.2).
+    'lamp': Mat(0.9, 0.0, None, 1.0, False, 0.0, (0xFFB869, 0.45)),
+}
+
+# UV lưu trong [0, 1] = UV_RANGE lần lặp texture (xem face_uv). Sân rộng khoảng ±80 m, cao 25 m.
+UV_RANGE = 128
+UV_ORIGIN = 80.0
+
+Paint = namedtuple('Paint', 'rgb mat')
+
+
+def paint(hex_color, mat):
+    return Paint(srgb(hex_color), mat)
+
+
+# Bảng màu tâm trạng (assets/palette.json, art bible mục 4.1); biến thể sáng/tối là sắc độ trong cùng một màu.
+PAVE = paint(0xBDB6A4, 'stone')  # stone_light: đá lát sân
+STONE = paint(0xA29C8B, 'stone')  # giữa stone_light và stone
+STONE_DARK = paint(0x7D786C, 'stone')  # stone
+WALL = paint(0xE6DDCB, 'plaster')  # attire_ivory: tường vôi
+RED = paint(0x9D392E, 'lacquer')  # wood_cinnabar: cột, cửa sơn son
+RED_DARK = paint(0x7E2D25, 'lacquer')
+BLUE = paint(0x22364E, 'lacquer')  # attire_elder: nền hoành phi
+ROOF = paint(0x2B5552, 'tile')  # wood_roof: ngói thanh
+ROOF_DARK = paint(0x21413F, 'tile')  # bờ nóc, bờ dải
+GOLD = paint(0xAE8B49, 'metal')  # wood_bronze: diềm, đầu kìm, chữ hoành phi
+BRONZE = paint(0x8A6B3E, 'metal')  # đồng thau sẫm: lư hương, lò đan
+WOOD = paint(0x8A6944, 'wood')  # wood
+WOOD_DARK = paint(0x4D3324, 'wood')  # wood_dark: xà, trần mái
+STEEL = paint(0xBAC4CA, 'steel')  # lưỡi cự kiếm, kiếm trên giá
+STEEL_DARK = paint(0x939EA6, 'steel')
+LAMP = paint(0xEAD8B0, 'lamp')
 
 
 def P(x, y, z):
     return (x, -z, y)
 
 
+def newell(pts):
+    """Pháp tuyến (chưa chuẩn hóa) của đa giác theo tọa độ game."""
+    nx = ny = nz = 0.0
+    for i, a in enumerate(pts):
+        b = pts[(i + 1) % len(pts)]
+        nx += (a[1] - b[1]) * (a[2] + b[2])
+        ny += (a[2] - b[2]) * (a[0] + b[0])
+        nz += (a[0] - b[0]) * (a[1] + b[1])
+    n = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return nx / n, ny / n, nz / n
+
+
+def face_uv(pts, mat):
+    """UV chiếu theo trục chính của mặt (hộp chiếu, theo mét / scale).
+
+    Ngói: u chạy dọc mép mái (song song đường diềm), v xuống dốc, để hàng ngói nằm ngang.
+    Chất khác: chiều dài hơn của mặt nằm trên u (vân gỗ chạy dọc cột, dọc xà).
+    """
+    nx, ny, nz = newell(pts)
+    if MATERIALS[mat].tex is None:
+        return [(0.0, 0.0)] * len(pts), ny  # không có texture: UV hằng để weld gộp đỉnh
+    ax, ay, az = abs(nx), abs(ny), abs(nz)
+    if mat == 'tile':
+        if ay >= 0.98:
+            uv = [(p[0], p[2]) for p in pts]
+        elif az >= ax:
+            uv = [(p[0], p[2] + p[1]) for p in pts]
+        else:
+            uv = [(p[2], p[0] + p[1]) for p in pts]
+    else:
+        if ay >= ax and ay >= az:
+            uv = [(p[0], p[2]) for p in pts]
+        elif ax >= az:
+            uv = [(p[2], p[1]) for p in pts]
+        else:
+            uv = [(p[0], p[1]) for p in pts]
+        us = [u for u, _ in uv]
+        vs = [v for _, v in uv]
+        if max(vs) - min(vs) > max(us) - min(us):
+            uv = [(v, u) for u, v in uv]
+    s = MATERIALS[mat].scale
+    # Dời mọi mặt cùng một khoảng UV_ORIGIN mét (UV liền giữa các mặt kề nhau, weld vẫn gộp đỉnh), rồi chia UV_RANGE:
+    # UV nằm trong [0, 1] thì optimize.ts lượng tử hóa được (16 bit); KHR_texture_transform nhân lại UV_RANGE.
+    uv = [((u + UV_ORIGIN) / s / UV_RANGE, (v + UV_ORIGIN) / s / UV_RANGE) for u, v in uv]
+    assert all(0 <= c <= 1 for t in uv for c in t), f'UV ra ngoài [0, 1] ({mat}, {uv}): tăng UV_RANGE hoặc UV_ORIGIN'
+    return uv, ny
+
+
 class Builder:
     def __init__(self):
         self.verts = []
         self.faces = []
-        self.colors = []
+        self.colors = []  # màu từng góc (tuyến tính)
+        self.uvs = []  # UV từng góc
+        self.mats = []
         self.smooth = []
+        self.rng = random.Random(SEED)
 
     def face(self, pts, color, smooth=False):
         base = len(self.verts)
         for p in pts:
             self.verts.append(P(*p))
         self.faces.append(tuple(range(base, base + len(pts))))
-        self.colors.append(color)
+        spec = MATERIALS[color.mat]
+        uv, ny = face_uv(pts, color.mat)
+        k = 1.0 + (self.rng.uniform(-spec.jitter, spec.jitter) if spec.jitter else 0.0)
+        corners = []
+        for p in pts:
+            # AO nướng: mặt đứng tối dần về sát đất (kẽ chân tường, chân cột).
+            ao = 0.7 + 0.3 * min(1.0, max(0.0, p[1]) / 1.6) if spec.ao and abs(ny) < 0.5 else 1.0
+            corners.append(tuple(min(1.0, c * k * ao * TEX_GAIN.get(spec.tex, 1.0)) for c in color.rgb))
+        self.colors.append(corners)
+        self.uvs.append(uv)
+        self.mats.append(color.mat)
         self.smooth.append(smooth)
 
     def box(self, cx, cy, cz, sx, sy, sz, color, yaw=0.0, top_color=None):
@@ -74,7 +172,8 @@ class Builder:
 
         p = [v(-hx, -hy, -hz), v(hx, -hy, -hz), v(hx, -hy, hz), v(-hx, -hy, hz), v(-hx, hy, -hz), v(hx, hy, -hz), v(hx, hy, hz), v(-hx, hy, hz)]
         self.face([p[4], p[7], p[6], p[5]], top_color or color)  # trên
-        self.face([p[0], p[1], p[2], p[3]], color)  # dưới
+        if cy - hy > 0.05:  # mặt đáy chạm đất không bao giờ thấy: bỏ
+            self.face([p[0], p[1], p[2], p[3]], color)  # dưới
         self.face([p[3], p[2], p[6], p[7]], color)  # nam
         self.face([p[1], p[0], p[4], p[5]], color)  # bắc
         self.face([p[2], p[1], p[5], p[6]], color)  # đông
@@ -116,9 +215,7 @@ class Builder:
         for j in range(nv):
             for i in range(nu):
                 a, b, c, e = grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i]
-                # Xen kẽ hai sắc ngói theo hàng để gợi các lớp ngói.
-                stripe = ROOF if ((i if abs(-1 + 2 * (j + 0.5) / nv) * D > abs(-1 + 2 * (i + 0.5) / nu) * W - (W - D) else j) % 2 == 0) else ROOF_ALT
-                self.face([a, e, c, b], stripe, True)
+                self.face([a, e, c, b], ROOF, True)  # hàng ngói do texture `tile` vẽ
         # Diềm mái vàng chạy quanh mép.
         rim = [grid[0][i] for i in range(nu + 1)] + [grid[j][nu] for j in range(1, nv + 1)] + [grid[nv][i] for i in range(nu - 1, -1, -1)] + [grid[j][0] for j in range(nv - 1, 0, -1)]
         n = len(rim)
@@ -174,7 +271,7 @@ class Builder:
             for i in range(sides):
                 j = (i + 1) % sides
                 # Điểm giữa cạnh thấp hơn góc -> mép mái võng xuống giữa, hất lên ở góc.
-                self.face([prev[i], cur[i], cur[j], prev[j]], ROOF if (i + k) % 2 else ROOF_ALT, False)
+                self.face([prev[i], cur[i], cur[j], prev[j]], ROOF, False)
             prev = cur
         for i in range(sides):
             a, b = rim[i], rim[(i + 1) % sides]
@@ -343,43 +440,157 @@ def build():
     return b
 
 
+# ----- Texture chi tiết thủ tục (xám, lặp liền mép, 256², sRGB) -----
+
+TEX_SIZE = 256
+TEXTURES = {}  # tên -> mảng (n, n) giá trị sRGB 0..1
+TEX_GAIN = {}  # tên -> hệ số bù màu đỉnh để màu trung bình (đỉnh × texture) vẫn đúng bảng màu
+
+
+def value_noise(rng, n, cells_x, cells_y=None):
+    """Nhiễu giá trị lặp liền mép: lưới ngẫu nhiên cells_x × cells_y, nội suy smoothstep."""
+    cells_y = cells_y or cells_x
+    grid = rng.random((cells_y, cells_x))
+    t = np.arange(n) / n
+    fx, fy = t * cells_x, t * cells_y
+    x0, y0 = np.floor(fx).astype(int), np.floor(fy).astype(int)
+    sx, sy = fx - x0, fy - y0
+    sx, sy = sx * sx * (3 - 2 * sx), sy * sy * (3 - 2 * sy)
+    x1, y1 = (x0 + 1) % cells_x, (y0 + 1) % cells_y
+    top = grid[y0][:, x0] * (1 - sx) + grid[y0][:, x1] * sx
+    bot = grid[y1][:, x0] * (1 - sx) + grid[y1][:, x1] * sx
+    return top * (1 - sy)[:, None] + bot * sy[:, None]
+
+
+def fbm(rng, n, base, octaves, aspect=1):
+    out = np.zeros((n, n))
+    amp, total = 1.0, 0.0
+    for k in range(octaves):
+        c = base * 2 ** k
+        out += amp * value_noise(rng, n, c, max(1, c * aspect))
+        total += amp
+        amp *= 0.5
+    return out / total
+
+
+def norm01(a):
+    return (a - a.min()) / (a.max() - a.min() + 1e-9)
+
+
+def make_textures():
+    rng = np.random.default_rng(SEED)
+    n = TEX_SIZE
+    # Đá: mảng loang lớn + hạt mịn + vết ố thưa.
+    blot = norm01(fbm(rng, n, 4, 5))
+    grain = rng.random((n, n))
+    stain = np.clip((value_noise(rng, n, 6) - 0.62) * 4, 0, 1)
+    stone = 0.86 + 0.1 * blot + 0.04 * (grain - 0.5) - 0.04 * stain
+    # Gỗ: vân chạy theo u (hàng ngang của ảnh), uốn lượn theo nhiễu tần số thấp.
+    y = np.arange(n)[:, None] / n
+    warp = fbm(rng, n, 2, 3, aspect=4)
+    rings = np.sin((y * 14 + warp * 1.6) * math.tau) * 0.5 + 0.5
+    streak = fbm(rng, n, 2, 4, aspect=12)
+    wood = 0.8 + 0.1 * rings ** 3 + 0.1 * norm01(streak) + 0.03 * (rng.random((n, n)) - 0.5)
+    # Ngói: 8 rãnh ngói âm dương dọc dốc (theo u) × 4 hàng chồng mí (theo v); mép dưới mỗi hàng có bóng.
+    x = np.arange(n)[None, :] / n
+    channel = 0.5 + 0.5 * np.cos(x * 8 * math.tau)
+    course = (y * 4) % 1.0
+    lip = np.clip(1 - course / 0.12, 0, 1) ** 2
+    tile = (0.74 + 0.22 * channel ** 0.6) * (1 - 0.3 * lip) + 0.06 * (norm01(fbm(rng, n, 4, 4)) - 0.5)
+    for name, arr in (('stone', stone), ('wood', wood), ('tile', tile)):
+        arr = np.clip(arr, 0, 1)
+        TEXTURES[name] = arr
+        lin = np.where(arr <= 0.04045, arr / 12.92, ((arr + 0.055) / 1.055) ** 2.4)
+        TEX_GAIN[name] = 1.0 / float(lin.mean())
+
+
+def texture_image(name):
+    arr = TEXTURES[name]
+    n = arr.shape[0]
+    img = bpy.data.images.new(f'arch_sect_{name}', n, n, alpha=False)
+    rgba = np.empty((n, n, 4), dtype=np.float32)
+    rgba[..., :3] = arr[..., None]
+    rgba[..., 3] = 1.0
+    img.pixels.foreach_set(rgba.ravel())
+    img.pack()
+    return img
+
+
+def make_material(key, images):
+    spec = MATERIALS[key]
+    mat = bpy.data.materials.new(f'arch_sect_{key}')
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    bsdf = next(n for n in nodes if n.type == 'BSDF_PRINCIPLED')
+    bsdf.inputs['Roughness'].default_value = spec.rough
+    bsdf.inputs['Metallic'].default_value = spec.metal
+    if spec.tex:
+        if spec.tex not in images:
+            images[spec.tex] = texture_image(spec.tex)
+        tex = nodes.new('ShaderNodeTexImage')
+        tex.image = images[spec.tex]
+        # Mapping (scale UV_RANGE) -> exporter ghi KHR_texture_transform.
+        coord = nodes.new('ShaderNodeUVMap')
+        mapping = nodes.new('ShaderNodeMapping')
+        mapping.inputs['Scale'].default_value = (UV_RANGE, UV_RANGE, 1.0)
+        mat.node_tree.links.new(coord.outputs['UV'], mapping.inputs['Vector'])
+        mat.node_tree.links.new(mapping.outputs['Vector'], tex.inputs['Vector'])
+        mat.node_tree.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+    if spec.emissive:
+        hex_color, strength = spec.emissive
+        bsdf.inputs['Emission Color'].default_value = (*srgb(hex_color), 1.0)
+        bsdf.inputs['Emission Strength'].default_value = strength
+    return mat
+
+
 def export(builder, path):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     mesh = bpy.data.meshes.new('lac_kiem_tong')
     mesh.from_pydata(builder.verts, [], builder.faces)
     mesh.update()
     mesh.polygons.foreach_set('use_smooth', builder.smooth)
+
+    # Màu đỉnh và UV theo góc (loop); from_pydata giữ thứ tự mặt và góc.
+    colors, uvs = [], []
+    for poly, corners, uv in zip(mesh.polygons, builder.colors, builder.uvs):
+        assert poly.loop_total == len(corners)
+        for c, t in zip(corners, uv):
+            colors.extend((c[0], c[1], c[2], 1.0))
+            uvs.extend(t)
     attr = mesh.color_attributes.new(name='Color', type='FLOAT_COLOR', domain='CORNER')
-    data = []
-    for poly, colr in zip(mesh.polygons, builder.colors):
-        for _ in range(poly.loop_total):
-            data.extend((colr[0], colr[1], colr[2], 1.0))
-    attr.data.foreach_set('color', data)
+    attr.data.foreach_set('color', colors)
     mesh.color_attributes.active_color = attr
     mesh.color_attributes.render_color_index = 0
+    mesh.uv_layers.new(name='UVMap').data.foreach_set('uv', uvs)
 
-    mat = bpy.data.materials.new('vcol')
-    mat.use_nodes = True
-    nodes = mat.node_tree.nodes
-    bsdf = next((n for n in nodes if n.type == 'BSDF_PRINCIPLED'), None)
-    if bsdf is not None:
-        vc = nodes.new('ShaderNodeVertexColor')
-        vc.layer_name = 'Color'
-        mat.node_tree.links.new(vc.outputs['Color'], bsdf.inputs['Base Color'])
-        bsdf.inputs['Roughness'].default_value = 0.9
-    mesh.materials.append(mat)
+    keys = [k for k in MATERIALS if k in set(builder.mats)]
+    images = {}
+    for k in keys:
+        mesh.materials.append(make_material(k, images))
+    mesh.polygons.foreach_set('material_index', [keys.index(m) for m in builder.mats])
+
+    # Gộp đỉnh trùng: mặt `smooth` kề nhau (mái, thân cột) mới thật sự đổ bóng mềm và dùng chung đỉnh khi xuất;
+    # màu/UV vẫn theo góc, mặt phẳng vẫn phẳng (exporter tách đỉnh khi pháp tuyến/màu/UV khác nhau).
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
+    bm.to_mesh(mesh)
+    bm.free()
 
     obj = bpy.data.objects.new('arch_lac_kiem_tong', mesh)
     bpy.context.scene.collection.objects.link(obj)
 
-    base = dict(filepath=path, export_format='GLB', export_yup=True, export_apply=True)
-    for extra in (dict(export_vertex_color='MATERIAL'), dict(export_vertex_color='ACTIVE'), dict()):
-        try:
-            bpy.ops.export_scene.gltf(**base, **extra)
-            break
-        except TypeError:
-            continue
-    return len(builder.verts), len(builder.faces)
+    # COLOR_0 xuất theo thuộc tính màu đang hoạt động: glTF nhân nó với baseColorTexture/baseColorFactor.
+    bpy.ops.export_scene.gltf(
+        filepath=path,
+        export_format='GLB',
+        export_yup=True,
+        export_apply=True,
+        export_vertex_color='ACTIVE',
+        export_image_format='JPEG',
+        export_jpeg_quality=80,
+    )
+    return len(builder.verts), len(builder.faces), keys
 
 
 def inspect(path):
@@ -389,16 +600,19 @@ def inspect(path):
     doc = json.loads(blob[20:20 + length].decode('utf-8'))
     prims = [p['attributes'] for m in doc.get('meshes', []) for p in m['primitives']]
     tris = sum(doc['accessors'][p['indices']]['count'] // 3 for m in doc.get('meshes', []) for p in m['primitives'] if 'indices' in p)
-    return len(blob), prims, tris
+    return len(blob), prims, tris, doc
 
 
 if __name__ == '__main__':
     args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
     out = args[0] if args else 'sect.glb'
+    make_textures()
     b = build()
-    nv, nf = export(b, out)
-    size, prims, tris = inspect(out)
-    print(f'[build_sect] {out}: {size / 1024:.0f} KB, {nf} mặt, {tris} tam giác, thuộc tính: {[sorted(p.keys()) for p in prims]}')
-    if not any('COLOR_0' in p for p in prims):
-        print('[build_sect] CẢNH BÁO: GLB không có màu đỉnh (COLOR_0)')
+    nv, nf, keys = export(b, out)
+    size, prims, tris, doc = inspect(out)
+    print(f'[build_sect] {out}: {size / 1024:.0f} KB, {nf} mặt, {tris} tam giác, {len(prims)} primitive ({", ".join(keys)}), '
+          f'{len(doc.get("images", []))} ảnh')
+    missing = [k for k in ('COLOR_0', 'TEXCOORD_0') if not all(k in p for p in prims)]
+    if missing:
+        print(f'[build_sect] LỖI: primitive thiếu {missing}')
         sys.exit(2)
