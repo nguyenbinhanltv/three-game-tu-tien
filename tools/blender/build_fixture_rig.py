@@ -8,7 +8,7 @@
 # Animation: clip "breathe" có track SCALE trên xương root (1 → 1,15 → 1) và xoay spine.
 # Track scale là thứ làm lộ lỗi quantize mesh có xương (nhân vật co lại), validate.ts phải bắt được.
 # --legs: thêm xương thigh_l (+X, bên trái nhân vật nhìn -Y Blender = +Z glTF) và thigh_r, và khóa location cho root
-#         (nhấc 0,1 m ở giữa clip) để test import_tripo.py.
+#         (nhấc 0,1 m ở giữa clip) để test import_tripo.py; spine nghiêng 0,25 rad ở khung 1/25 nên khung đầu khác tư thế nghỉ.
 # --tripo: giả dạng đầu ra Tripo, transform để trên node (không áp): xoay 90° quanh trục đứng, cao 1 m, gốc ở tâm khối.
 
 import math
@@ -167,7 +167,8 @@ def build_animation(rig):
     for frame, s, rot in [(1, 1.0, 0.0), (13, 1.15, 0.35), (25, 1.0, 0.0)]:
         pb['root'].scale = (s, s, s)
         pb['root'].keyframe_insert('scale', frame=frame)
-        pb['spine'].rotation_euler = (rot, 0.0, 0.0)
+        # --legs: spine nghiêng sẵn ở khung 1 và 25 để khung đầu clip KHÁC tư thế nghỉ (bắt lỗi đặt socket theo pose).
+        pb['spine'].rotation_euler = (rot if not LEGS or frame == 13 else 0.25, 0.0, 0.0)
         pb['spine'].keyframe_insert('rotation_euler', frame=frame)
         if LEGS:
             # Trục Y của xương root hướng lên: nhấc 0,1 m (đơn vị armature) ở giữa clip.

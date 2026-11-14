@@ -25,6 +25,7 @@ import math
 import re
 import sys
 import unicodedata
+from contextlib import contextmanager
 
 import bpy
 from mathutils import Matrix, Vector
@@ -113,12 +114,29 @@ def roots():
 
 # ---------- đo ----------
 
-def bbox_world():
-    """Hộp bao mọi đỉnh mesh (đã qua modifier) ở tư thế nghỉ, tọa độ thế giới Blender (Z lên)."""
+@contextmanager
+def rest_pose():
+    """Tạm đưa mọi armature về tư thế nghỉ. Importer glTF gán clip đầu tiên nên khung hiện tại thường khác tư thế nghỉ,
+    trong khi exporter ghi xương và con-của-xương theo tư thế nghỉ."""
     saved = [(a, a.data.pose_position) for a in armatures()]
     for a, _ in saved:
         a.data.pose_position = 'REST'
     bpy.context.view_layer.update()
+    try:
+        yield
+    finally:
+        for a, pp in saved:
+            a.data.pose_position = pp
+        bpy.context.view_layer.update()
+
+
+def bbox_world():
+    """Hộp bao mọi đỉnh mesh (đã qua modifier) ở tư thế nghỉ, tọa độ thế giới Blender (Z lên)."""
+    with rest_pose():
+        return _bbox_world()
+
+
+def _bbox_world():
     dg = bpy.context.evaluated_depsgraph_get()
     lo = Vector((math.inf,) * 3)
     hi = Vector((-math.inf,) * 3)
@@ -131,9 +149,6 @@ def bbox_world():
             lo = Vector(map(min, lo, p))
             hi = Vector(map(max, hi, p))
         ev.to_mesh_clear()
-    for a, pp in saved:
-        a.data.pose_position = pp
-    bpy.context.view_layer.update()
     if not math.isfinite(lo.x):
         fail('GLB không có đỉnh nào')
     return lo, hi
@@ -349,6 +364,12 @@ def gltf_to_blender(p):
 
 
 def add_sockets():
+    """Đặt socket theo tọa độ thế giới ở tư thế nghỉ (khớp cách exporter ghi transform của con-của-xương)."""
+    with rest_pose():
+        return _add_sockets()
+
+
+def _add_sockets():
     names = []
     for s in IMPORT.get('sockets', []):
         name = s['name']
