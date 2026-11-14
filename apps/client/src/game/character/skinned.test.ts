@@ -8,7 +8,7 @@ import { MONSTER } from '@dtl/content';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
 import { MonsterModel } from '../models';
 import { MonsterSkins } from './monsterSkins';
-import { mixerInterval, SkinnedMonster } from './skinned';
+import { lodLevel, mixerInterval, SkinnedMonster } from './skinned';
 import { baseState, clipFor } from './states';
 import { type AnimState, legacyModelsRequested } from './view';
 
@@ -84,10 +84,19 @@ describe('máy trạng thái', () => {
     expect(legacyModelsRequested('?mute=1')).toBe(false);
   });
 
-  it('mixer xa cập nhật thưa hơn', () => {
-    expect(mixerInterval(10)).toBe(0);
-    expect(mixerInterval(30)).toBeGreaterThan(0);
-    expect(mixerInterval(120)).toBeGreaterThan(mixerInterval(30));
+  it('mixer: LOD0 mỗi khung, LOD1 ≤15 Hz, LOD2 thưa hơn, ngoài khung nhìn không chạy', () => {
+    expect(mixerInterval(0)).toBe(0);
+    expect(mixerInterval(1)).toBeGreaterThanOrEqual(1 / 15);
+    expect(mixerInterval(2)).toBeGreaterThan(mixerInterval(1));
+    expect(mixerInterval(0, false)).toBe(Infinity);
+  });
+
+  it('LOD theo khoảng cách camera, hết suất LOD0 thì tối thiểu LOD1', () => {
+    expect(lodLevel(5, [22, 55], true, 3)).toBe(0);
+    expect(lodLevel(5, [22, 55], false, 3)).toBe(1);
+    expect(lodLevel(30, [22, 55], true, 3)).toBe(1);
+    expect(lodLevel(80, [22, 55], false, 3)).toBe(2);
+    expect(lodLevel(80, [22, 55], true, 1)).toBe(0);
   });
 });
 

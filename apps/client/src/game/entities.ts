@@ -261,6 +261,22 @@ function makeMarker(ch: string, color: string): THREE.Texture {
 export type PickResult = { kind: 'mon' | 'npc' | 'node' | 'player'; id: string } | null;
 
 const _v = new THREE.Vector3();
+const _frustum = new THREE.Frustum();
+const _pv = new THREE.Matrix4();
+const _sphere = new THREE.Sphere();
+
+/**
+ * Số thể có xương tối đa được LOD0 (gần camera nhất, trong khung nhìn). Còn lại tối thiểu LOD1 (7,6k tam giác với
+ * Thanh Phong thay vì 19k) và không đổ bóng. 12 × 19k × 2 (cả pass bóng) ≈ 0,46M tam giác.
+ */
+export const LOD0_MAX = 12;
+
+interface LodEntry {
+  model: CharacterView;
+  d: number;
+  inView: boolean;
+  local: boolean;
+}
 /** AnimState dùng lại cho quái (không cấp phát mỗi khung). */
 const _monAnim: AnimState = { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, combat: false };
 
@@ -283,6 +299,9 @@ export class EntityManager {
   /** Dựng model người chơi (Thanh Phong có xương hoặc khối dự phòng), màu áo theo lựa chọn. */
   private playerSkins = new PlayerSkins();
   hasNpcs: boolean;
+  /** Camera để chọn LOD theo khoảng cách nhìn và cắt mixer ngoài khung nhìn (engine gán). */
+  camera: THREE.Camera | null = null;
+  private lodList: LodEntry[] = [];
 
   constructor(
     scene: THREE.Scene,
@@ -400,7 +419,6 @@ export class EntityManager {
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
-      v.model.setViewDistance?.(isLocal ? 0 : Math.hypot(v.x - local.x, v.z - local.z));
       const dead = (s.fl & PF_DEAD) !== 0;
       v.model.update(dt, {
         speed: v.speed,
@@ -474,7 +492,6 @@ export class EntityManager {
       _monAnim.speed = v.speed;
       _monAnim.dead = dead;
       _monAnim.combat = s.st === MS_CHASE || s.st === MS_ATTACK;
-      v.model.setViewDistance?.(Math.sqrt(d2));
       v.model.update(dt, _monAnim);
       v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3);
       const vv = v as MonVis & { deadFor?: number };
@@ -529,6 +546,7 @@ export class EntityManager {
     }
 
     bars.end();
+    this.applyLodBudget(local);
 
     // ----- vòng chọn mục tiêu -----
     const tm = this.monsters.get(targetId);
@@ -549,6 +567,65 @@ export class EntityManager {
     } else {
       this.ring.visible = false;
     }
+  }
+
+  /**
+   * LOD theo camera (M3-9): mọi model có xương (người chơi, quái) xếp theo khoảng cách tới camera; chỉ `LOD0_MAX` thể
+   * gần nhất trong khung nhìn được LOD0 (và đổ bóng); ngoài khung nhìn thì không cập nhật mixer. Nhân vật của mình
+   * luôn được LOD0. Áp cho khung sau (model đã update khung này), trễ một khung không thấy được.
+   */
+  private applyLodBudget(local: { x: number; y: number; z: number }): void {
+    const list = this.lodList;
+    let n = 0;
+    const cam = this.camera;
+    if (cam) {
+      cam.updateMatrixWorld();
+      _frustum.setFromProjectionMatrix(_pv.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
+    }
+    const ce = cam?.matrixWorld.elements;
+    const cx = ce ? ce[12] : local.x;
+    const cy = ce ? ce[13] : local.y;
+    const cz = ce ? ce[14] : local.z;
+    const add = (model: CharacterView, isLocal: boolean) => {
+      if (!model.setView) return;
+      const r = model.root;
+      const h = model.height;
+      const p = r.position;
+      const d = Math.hypot(p.x - cx, p.y + h * 0.5 - cy, p.z - cz);
+      _sphere.center.set(p.x, p.y + h * 0.5, p.z);
+      _sphere.radius = h * 0.9;
+      const inView = r.visible && (!cam || _frustum.intersectsSphere(_sphere));
+      let e = list[n];
+      if (!e) e = list[n] = { model, d, inView, local: isLocal };
+      e.model = model;
+      e.d = d;
+      e.inView = inView;
+      e.local = isLocal;
+      n++;
+    };
+    for (const [sid, v] of this.players) add(v.model, sid === this.mySid);
+    for (const v of this.monsters.values()) add(v.model, false);
+    list.length = n;
+    // Mình trước, rồi trong khung nhìn theo gần → xa.
+    list.sort((a, b) => (a.local !== b.local ? (a.local ? -1 : 1) : a.inView !== b.inView ? (a.inView ? -1 : 1) : a.d - b.d));
+    let lod0 = 0;
+    for (const e of list) {
+      const allow = e.local || (e.inView && lod0 < LOD0_MAX);
+      if (allow) lod0++;
+      e.model.setView!({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow });
+    }
+  }
+
+  /** Số model có xương theo mức LOD và số ngoài khung nhìn (gỡ lỗi, đo hiệu năng). */
+  lodStats(): { lod: number[]; offscreen: number } {
+    const lod = [0, 0, 0];
+    let offscreen = 0;
+    for (const e of this.lodList) {
+      const l = (e.model as { lod?: number }).lod ?? 0;
+      lod[l] = (lod[l] ?? 0) + 1;
+      if (!e.inView && !e.local) offscreen++;
+    }
+    return { lod, offscreen };
   }
 
   /**
