@@ -39,6 +39,87 @@
         }
       }
     },
+    "mon_soi_xam": {
+      "id": "mon_soi_xam",
+      "class": "monster",
+      "source": "assets/build/raw/mon_soi_xam.glb",
+      "file": "mon_soi_xam.02077482eb.glb",
+      "bytes": 907336,
+      "rawBytes": 915656,
+      "triangles": 7895,
+      "rawTriangles": 7895,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 28,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_soi_xam_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_soi_xam_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_soi_xam_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7895
+        },
+        {
+          "level": 1,
+          "triangles": 2761,
+          "target": 2763
+        },
+        {
+          "level": 2,
+          "triangles": 947,
+          "target": 947
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.3686,
+          "height": 0.9104,
+          "depth": 1.5,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.3686,
+          "height": 0.9104,
+          "depth": 1.5,
+          "minY": 0
+        }
+      }
+    },
     "prop_linh_thao": {
       "id": "prop_linh_thao",
       "class": "prop",
