@@ -1,6 +1,8 @@
 import * as THREE from 'three/webgpu';
 import { groundAt } from '@dtl/shared';
 import { FxPool, type FxKind, type FxMesh } from '../render/materials/vfx';
+import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../render/vfx/sigil';
+import { SLASH_GEO, SLASH_INK, slashPhase } from '../render/vfx/slash';
 import { G } from './geo';
 
 interface Fx {
@@ -15,10 +17,35 @@ type PosFn = (out: THREE.Vector3) => boolean;
 
 const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
+const _c = new THREE.Vector3();
+const _q = new THREE.Quaternion();
 const UP = new THREE.Vector3(0, 1, 0);
+const AX_X = new THREE.Vector3(1, 0, 0);
+const AX_Z = new THREE.Vector3(0, 0, 1);
+/** Tâm hình của lưới cung (SLASH_GEO) theo tọa độ lưới, để đặt dấu chém đúng giữa mục tiêu. */
+const SLASH_CENTER = new THREE.Vector3(0, 0, -0.33);
+
+/**
+ * Hướng lưới cung. `stand`: dựng cung vào mặt phẳng vuông góc với hướng `yaw` (thấy trọn hình trăng
+ * khi nhìn dọc theo `yaw`), `roll` xoay cung trong mặt phẳng đó, `lean` ngả mặt phẳng về phía trước.
+ * Không `stand`: cung nằm ngang, `roll` nghiêng quanh trục tới.
+ */
+function orientSlash(q: THREE.Quaternion, yaw: number, roll: number, stand: boolean, lean = 0): void {
+  q.setFromAxisAngle(UP, yaw);
+  if (lean) q.multiply(_q.setFromAxisAngle(AX_X, lean));
+  q.multiply(_q.setFromAxisAngle(AX_Z, roll));
+  if (stand) q.multiply(_q.setFromAxisAngle(AX_X, -Math.PI / 2));
+}
+
+/** Màu vùng báo trước theo loại đòn (dùng chung cho vùng tròn và telegraph.ts). */
+export const HAZARD_COLORS: Record<string, number> = {
+  lightning: 0xb48cff,
+  frost: 0x9fe4ff,
+  fire: 0xffa060,
+  spirit: 0xd8f0ff,
+};
 
 const RING_GEO = new THREE.RingGeometry(0.82, 1, 48);
-const DISC_GEO = new THREE.CircleGeometry(1, 40);
 const TUBE_GEO = new THREE.CylinderGeometry(1, 1, 1, 20, 1, true);
 const BOLT_GEO = new THREE.BoxGeometry(1, 1, 1);
 
@@ -33,6 +60,8 @@ const POOL = new FxPool(96);
 export class Vfx {
   group = new THREE.Group();
   readonly pool = POOL;
+  /** Camera để dấu chém đứng quay mặt về người xem (engine gán). */
+  camera: THREE.Camera | null = null;
   private items: Fx[] = [];
 
   constructor(scene: THREE.Scene) {
@@ -98,7 +127,7 @@ export class Vfx {
   }
 
   /** Phi kiếm bay từ nguồn tới đích rồi nổ. */
-  swordShot(from: THREE.Vector3, to: PosFn, color: number, size = 1, dur = 0.2): void {
+  swordShot(from: THREE.Vector3, to: PosFn, color: number, size = 1, dur = 0.2, onHit?: (at: THREE.Vector3) => void): void {
     const m = this.fx(G.octa, color, 0.95);
     const start = from.clone();
     const target = from.clone();
@@ -115,32 +144,125 @@ export class Vfx {
       () => {
         this.drop(m);
         this.burst(target, color, 0.9 * size);
+        onHit?.(target);
       },
     );
   }
 
-  /** Kiếm khí hình lưỡi liềm lao tới. */
+  /** Lấy một cặp lưới cung (lớp sáng + lớp mực nền nằm dưới) cho một nhát chém. */
+  private slashPair(color: number, ink: boolean): [FxMesh, FxMesh | null] {
+    const seed = Math.random() * 40;
+    const g = this.fx(SLASH_GEO, color, 0.95, 'slash');
+    g.fxA.z = seed;
+    if (!ink) return [g, null];
+    const i = this.fx(SLASH_GEO, SLASH_INK, 0.9, 'ink');
+    // Mực vẽ trước lớp sáng (vật trong suốt sắp theo renderOrder trước khoảng cách).
+    i.renderOrder = -1;
+    i.fxA.z = seed + 3.7;
+    return [g, i];
+  }
+
+  /**
+   * Kiếm khí (Kiếm Khí Trảm, M4-1): cung trăng lưỡi liềm bay từ người chém tới mục tiêu. Trong 30%
+   * đầu cung quét dần theo độ dài; nửa sau mép tan theo nhiễu; lớp mực trễ hơn một nhịp. Tới nơi thì
+   * để lại một dấu chém đứng nhỏ + chớp sáng. Thời lượng bay như bản cũ (0,26 giây).
+   */
   slash(from: THREE.Vector3, to: PosFn, color: number): void {
-    const m = this.fx(G.octa, color, 0.9);
+    const [g, ink] = this.slashPair(color, true);
     const start = from.clone();
     const target = from.clone();
-    const dir = new THREE.Vector3();
+    const dir = new THREE.Vector3(0, 0, 1);
     this.add(
       0.26,
       (k) => {
         to(target);
-        m.position.lerpVectors(start, target, k);
-        dir.subVectors(target, start).setY(0);
-        m.rotation.set(0, Math.atan2(dir.x, dir.z), 0.35);
-        m.scale.set(2.4 + k, 1.5, 0.16);
-        m.fxOpacity = 0.9 - k * 0.3;
-        m.fxK = k;
+        _b.subVectors(target, start).setY(0);
+        if (_b.lengthSq() > 1e-4) dir.copy(_b).normalize();
+        const yaw = Math.atan2(dir.x, dir.z);
+        const e = 1 - (1 - k) * (1 - k);
+        const R = 1.8 + k * 1.2;
+        // Cung đứng quay lưng về người chém (người xem sau lưng thấy trọn hình trăng), ngả về trước.
+        orientSlash(g.quaternion, yaw, 0.3, true, 0.45);
+        g.scale.setScalar(R);
+        // Tâm hình cung (không phải đỉnh) đi theo quỹ đạo.
+        _c.copy(SLASH_CENTER).multiplyScalar(R).applyQuaternion(g.quaternion);
+        g.position.lerpVectors(start, target, e).sub(_c);
+        const ph = slashPhase(k, 0.3, 0.55);
+        g.fxA.x = ph.head;
+        g.fxA.y = ph.erode;
+        g.fxK = k;
+        if (ink) {
+          ink.position.copy(g.position).addScaledVector(dir, -0.22 * R);
+          ink.position.y -= 0.16 * R;
+          ink.quaternion.copy(g.quaternion);
+          ink.scale.setScalar(R * 1.08);
+          const pi = slashPhase(k - 0.06, 0.3, 0.45);
+          ink.fxA.x = pi.head;
+          ink.fxA.y = pi.erode;
+        }
       },
       () => {
-        this.drop(m);
-        this.burst(target, color, 2.0, 0.35);
+        this.drop(g);
+        if (ink) this.drop(ink);
+        this.slashMark(() => true, color, 0.9, -1.15, 0.24, false, target.clone());
+        this.burst(target, color, 1.3, 0.3);
       },
     );
+  }
+
+  /**
+   * Dấu chém đứng tại một điểm, quay mặt về camera: cung quét từ trên xuống. `roll`: góc nghiêng
+   * trong mặt phẳng nhìn (−1,25 gần thẳng đứng; −0,5 chéo). `fixed`: vị trí cố định thay cho `pos`.
+   */
+  slashMark(pos: PosFn, color: number, size = 1, roll = -1.25, dur = 0.3, withInk = true, fixed?: THREE.Vector3): void {
+    const [g, ink] = this.slashPair(color, withInk);
+    const R = 1.6 * size;
+    const at = new THREE.Vector3();
+    this.add(
+      dur,
+      (k) => {
+        if (fixed) at.copy(fixed);
+        else if (!pos(at)) {
+          g.visible = false;
+          if (ink) ink.visible = false;
+          return;
+        }
+        g.visible = true;
+        const cam = this.camera?.position;
+        const yaw = cam ? Math.atan2(cam.x - at.x, cam.z - at.z) : 0;
+        orientSlash(g.quaternion, yaw, roll, true);
+        const s = R * (1 + k * 0.15);
+        g.scale.setScalar(s);
+        // Đặt tâm hình cung (không phải đỉnh) vào điểm chém.
+        _c.copy(SLASH_CENTER).multiplyScalar(s).applyQuaternion(g.quaternion);
+        g.position.copy(at).sub(_c);
+        const ph = slashPhase(k, 0.35, 0.5);
+        g.fxA.x = ph.head;
+        g.fxA.y = ph.erode;
+        g.fxK = k;
+        if (ink) {
+          ink.visible = true;
+          ink.quaternion.copy(g.quaternion);
+          ink.scale.setScalar(s * 1.12);
+          _c.copy(SLASH_CENTER).multiplyScalar(s * 1.12).applyQuaternion(g.quaternion);
+          ink.position.copy(at).sub(_c);
+          // Lùi lớp mực ra sau một chút theo hướng nhìn.
+          if (cam) ink.position.addScaledVector(_c.subVectors(at, cam).normalize(), 0.08);
+          const pi = slashPhase(k - 0.07, 0.35, 0.42);
+          ink.fxA.x = pi.head;
+          ink.fxA.y = pi.erode;
+        }
+      },
+      () => {
+        this.drop(g);
+        if (ink) this.drop(ink);
+      },
+    );
+  }
+
+  /** Nhát chém dọc lớn (Lôi Đình Nhất Kiếm): biến thể đứng của kiếm khí, có lớp mực. */
+  slashVertical(pos: PosFn, color: number, size = 1.3): void {
+    this.slashMark(pos, color, size, -1.3, 0.34, true);
   }
 
   /** Mưa kiếm rơi trong một vùng tròn. */
@@ -303,27 +425,66 @@ export class Vfx {
     );
   }
 
-  /** Vùng nguy hiểm báo trước trên mặt đất, rồi đánh xuống. */
+  /**
+   * Đặt một pháp trận (M4-3) nằm ngang ở độ cao `y`. Gốc vùng ở (x, z): tâm với hình tròn, mép
+   * sau/đỉnh với chữ nhật/quạt, hướng theo `yaw`. `w`: bề rộng (chữ nhật) hoặc nửa góc (quạt).
+   * Tiến độ đặt qua `m.fxA.x` (0..1); vạch tiến độ chạm mép là lúc nổ.
+   */
+  sigil(shape: SigilShape, x: number, z: number, yaw: number, r: number, w: number, color: number, y: number): FxMesh {
+    const L = sigilLayout(shape, r, w);
+    const m = this.fx(SIGIL_GEO, color, 0, 'sigil');
+    m.position.set(x + Math.sin(yaw) * L.offset, y, z + Math.cos(yaw) * L.offset);
+    m.rotation.y = yaw;
+    m.scale.set(L.sx, 1, L.sz);
+    m.fxA.set(0, shape, 0, Math.random() * 50);
+    m.fxB.set(r, w, L.sx, L.sz);
+    return m;
+  }
+
+  /** Pháp trận dưới chân người/quái đang niệm chú; tắt dần khi bị ngắt (`stillOn` sai). */
+  castSigil(pos: PosFn, dur: number, color: number, radius: number, stillOn: () => boolean): void {
+    const m = this.sigil(SIGIL_CIRCLE, 0, 0, 0, radius, 0, color, 0);
+    m.visible = false;
+    let t = 0;
+    let fade = 0;
+    this.add(
+      dur + 0.3,
+      (_k, dt) => {
+        t += dt;
+        if (!pos(_a)) {
+          m.visible = false;
+          return;
+        }
+        const on = t <= dur && stillOn();
+        fade = on ? Math.min(1, fade + dt * 6) : Math.max(0, fade - dt * 5);
+        m.visible = fade > 0;
+        m.position.set(_a.x, groundAt(_a.x, _a.z) + 0.12, _a.z);
+        m.fxA.x = Math.min(1, t / dur);
+        m.fxOpacity = fade;
+      },
+      () => this.drop(m),
+    );
+  }
+
+  /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
   hazard(x: number, z: number, r: number, delay: number, kind: string): void {
     const y = groundAt(x, z);
-    const color = kind === 'lightning' ? 0xb48cff : kind === 'fire' ? 0xff8a4a : kind === 'spirit' ? 0xbfe6ff : 0x7fd8ff;
-    const ring = this.fx(RING_GEO, color, 0.9);
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.set(x, y + 0.25, z);
-    ring.scale.setScalar(r);
-    const disc = this.fx(DISC_GEO, kind === 'lightning' ? 0x6a3fd0 : kind === 'fire' ? 0xb0401a : 0x2f8fd0, 0.2, 'flat');
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.set(x, y + 0.2, z);
+    const color = HAZARD_COLORS[kind] ?? HAZARD_COLORS.frost;
+    // Mặt đất không phẳng: nâng theo điểm cao nhất quanh vòng (giới hạn để không lơ lửng quá).
+    let top = y;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      top = Math.max(top, groundAt(x + Math.cos(a) * r * 0.7, z + Math.sin(a) * r * 0.7));
+    }
+    const m = this.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, color, Math.min(top, y + 1.2) + 0.22);
     this.add(
       delay,
       (k) => {
-        disc.scale.setScalar(r * k);
-        disc.fxOpacity = 0.18 + k * 0.3;
-        ring.fxOpacity = 0.6 + Math.sin(k * 40) * 0.3;
+        m.fxA.x = k;
+        m.fxOpacity = Math.min(1, k * 10);
       },
       () => {
-        this.drop(ring);
-        this.drop(disc);
+        this.drop(m);
         if (kind === 'lightning') {
           this.lightning(x, y, z, 0xe2d4ff, 1.2);
         } else if (kind !== 'frost') {
