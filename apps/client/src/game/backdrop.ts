@@ -1,9 +1,13 @@
 import * as THREE from 'three/webgpu';
 import { heightAt, SECT } from '@dtl/shared';
+import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
+import { GRADING, GRADING_DEFAULT } from '../render/grading';
+import { applyGrading, budgetPixelRatio, PostPipeline } from '../render/post';
+import { get } from '../ui/store';
 import { type AssetHandle, assets } from './assets';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
-import { buildSect } from './sect';
+import { buildSect, SECT_LANTERNS } from './sect';
 import { Terrain } from './terrain';
 
 /**
@@ -11,7 +15,8 @@ import { Terrain } from './terrain';
  * code) với camera lượn chậm quanh sơn môn. Không chờ GLB; `arch_sect` nạp song song qua
  * AssetCache và giữ handle tới lúc dispose để Game dùng lại bản đã nạp.
  *
- * Renderer riêng, sống từ màn đăng nhập tới khi vào game. Không dispose MODEL_MAT (dùng chung).
+ * Renderer riêng, sống từ màn đăng nhập tới khi vào game. Cùng chuỗi chỉnh màu/hậu kỳ với game
+ * (M1-6) nhưng không đổ bóng; nhẹ hơn theo preset chất lượng. Không dispose MODEL_MAT (dùng chung).
  */
 export class TitleBackdrop {
   private renderer: THREE.WebGPURenderer | null = null;
@@ -19,6 +24,10 @@ export class TitleBackdrop {
   private camera = new THREE.PerspectiveCamera(50, 1, 0.5, 9000);
   private terrain: Terrain | null = null;
   private env: Environment | null = null;
+  private post: PostPipeline | null = null;
+  private halos: THREE.Mesh | null = null;
+  /** Preset "thấp" thì bỏ bloom/FXAA/sương độ cao và giữ pixel ratio 1. */
+  private low = get().quality === 'low';
   private sectMesh: THREE.Mesh | null = null;
   private sectAsset: { handle: AssetHandle; mat: THREE.Material } | null = null;
   private focus = new THREE.Vector3(SECT.x, SECT.y + 24, SECT.z);
@@ -36,14 +45,14 @@ export class TitleBackdrop {
 
   async start(): Promise<void> {
     const forceWebGL = new URLSearchParams(location.search).get('renderer') === 'webgl2';
-    const r = new THREE.WebGPURenderer({ antialias: true, forceWebGL });
+    // Khử răng cưa do PostPipeline lo (giống engine), MSAA ở canvas chỉ tốn bộ nhớ.
+    const r = new THREE.WebGPURenderer({ antialias: false, forceWebGL });
     await r.init();
     if (this.disposed) {
       r.dispose();
       return;
     }
     this.renderer = r;
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     r.toneMapping = THREE.ACESFilmicToneMapping;
     r.toneMappingExposure = 1.05;
     r.domElement.className = 'ts-canvas';
@@ -55,6 +64,12 @@ export class TitleBackdrop {
     this.sectMesh = new THREE.Mesh(buildSect(), MODEL_MAT);
     this.sectMesh.frustumCulled = false;
     this.scene.add(this.sectMesh);
+    applyAtmosphere(this.scene, this.env, GRADING[GRADING_DEFAULT], GRADING_DEFAULT);
+    applyGrading(GRADING[GRADING_DEFAULT]);
+    setHeightFog(!this.low);
+    this.halos = createLanternHalos(SECT_LANTERNS);
+    this.scene.add(this.halos);
+    this.post = new PostPipeline(r, this.scene, this.camera, { bloom: !this.low, msaa: 0, fxaa: !this.low });
     this.resize();
     window.addEventListener('resize', this.onResize);
     this.last = performance.now();
@@ -80,6 +95,10 @@ export class TitleBackdrop {
     this.renderer?.setAnimationLoop(null);
     this.terrain?.dispose();
     this.sectMesh?.geometry.dispose();
+    this.halos?.geometry.dispose();
+    (this.halos?.material as THREE.Material | undefined)?.dispose();
+    this.post?.dispose();
+    this.post = null;
     this.sectAsset?.handle.release();
     this.sectAsset?.mat.dispose();
     this.sectAsset = null;
@@ -121,6 +140,7 @@ export class TitleBackdrop {
     if (!this.renderer) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
+    this.renderer.setPixelRatio(budgetPixelRatio(w, h, this.low ? 1 : 1.5, this.low ? 2e6 : 4e6));
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
     // Dời khung nhìn để sơn môn nằm giữa tiêu đề và thẻ đăng nhập (thẻ chiếm phần dưới màn hình).
@@ -142,7 +162,8 @@ export class TitleBackdrop {
     this.camera.lookAt(this.focus);
     this.terrain!.update(SECT.x, SECT.z, 4);
     this.env!.update(dt, this.camera, this.focus);
-    this.renderer!.render(this.scene, this.camera);
+    this.post!.update(dt);
+    this.post!.render();
     if (this.terrain!.ready && ++this.frames === 4) this.onReady();
   }
 }
