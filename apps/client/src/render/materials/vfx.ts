@@ -2,7 +2,9 @@ import * as THREE from 'three/webgpu';
 import { float, min, uniform, vec3 } from 'three/tsl';
 import { markBloom } from '../post';
 import type { FxUniforms } from '../vfx/common';
+import { inkNodes } from '../vfx/ink';
 import { boltNodes, vortexNodes } from '../vfx/lightning';
+import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
 import { trailNodes } from '../vfx/trail';
@@ -36,8 +38,10 @@ export const FX_MAX_HDR = 2.4;
  * - `bolt`: tia sét thiên lôi, dải quay về camera, cộng sáng có bloom (render/vfx/lightning.ts).
  * - `vortex`: mây kiếp xoáy, hòa trộn thường, có sương, không bloom (render/vfx/lightning.ts).
  * - `trail`: dải vệt sáng phi kiếm khi ngự kiếm, cộng sáng có bloom (render/vfx/trail.ts).
+ * - `beam`: cột sáng đồ rơi theo bậc phẩm chất, cộng sáng có bloom (render/vfx/loot.ts).
+ * - `inkpool`: vết mực loang trên đất khi quái chết/đòn nặng, hòa trộn thường, có sương (render/vfx/ink.ts).
  */
-export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail';
+export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail' | 'beam' | 'inkpool';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -50,6 +54,8 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   bolt: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.6, fog: false },
   vortex: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
   trail: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.45, fog: false },
+  beam: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
+  inkpool: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
 };
 
 const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opacity: unknown }>> = {
@@ -59,6 +65,8 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   bolt: boltNodes,
   vortex: vortexNodes,
   trail: trailNodes,
+  beam: beamNodes,
+  inkpool: inkNodes,
 };
 
 /** Lưới hiệu ứng: dữ liệu theo lưới thay cho material riêng. */

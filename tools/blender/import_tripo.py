@@ -18,7 +18,7 @@
 #   7. Hạ texture về ngân sách lớp (assets/budgets.json): map màu theo `texture.color`, map dữ liệu theo `texture.data`.
 #   8. Tùy chọn `import.post`: chạy một script bpy (đường dẫn tính từ gốc repo) sau khi chuẩn hóa, trước khi xuất, ví dụ
 #      đổi tên xương và thêm clip thủ tục (tools/blender/anim_quadruped.py). Script nhận biến toàn cục ASSET_ID, META,
-#      ARMATURES, MESHES, REPO và hàm fail; mọi tọa độ lúc này đã là hệ chuẩn (mét, gốc ở đáy, mặt trước +Z glTF).
+#      ARMATURES, MESHES, REPO, SOURCE_ROOT (thư mục nguồn asset), hàm fail, ascii_name, fcurves_of; mọi tọa độ lúc này đã là hệ chuẩn (mét, gốc ở đáy, mặt trước +Z glTF).
 #
 # Không giảm tam giác ở đây: optimize.ts hạ LOD0 về trần (budget.faceLimit trong meta, không quá ngân sách lớp) bằng
 # meshoptimizer, giữ JOINTS/WEIGHTS. Cùng đầu vào cho ra cùng file (không có ngẫu nhiên, thứ tự theo tên).
@@ -407,6 +407,15 @@ def _add_sockets():
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
 
+def source_root():
+    """Thư mục DTL_ASSET_SOURCE suy từ đường dẫn GLB nguồn và import.source."""
+    rel = os.path.normpath(IMPORT.get('source', ''))
+    src = os.path.normpath(os.path.abspath(SRC))
+    if rel and src.endswith(rel):
+        return src[: -len(rel)].rstrip('\/')
+    return os.path.dirname(src)
+
+
 def run_post():
     rel = IMPORT.get('post')
     if not rel:
@@ -418,6 +427,7 @@ def run_post():
         fail(f'import.post: không có script {rel}')
     result = runpy.run_path(path, init_globals={
         'ASSET_ID': ASSET_ID, 'META': META, 'ARMATURES': armatures(), 'MESHES': mesh_objects(), 'REPO': REPO, 'fail': fail,
+        'SOURCE_ROOT': source_root(), 'ascii_name': ascii_name, 'fcurves_of': fcurves_of,
     }, run_name='__import_tripo_post__')
     return result.get('REPORT', rel)
 

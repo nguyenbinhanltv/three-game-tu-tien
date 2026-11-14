@@ -276,6 +276,8 @@ export class EntityManager {
   private markerDone = makeMarker('?', '#ffd84a');
   private markerWait = makeMarker('?', '#9aa3ad');
   private time = 0;
+  /** Quái đang thấy vừa gục (một lần mỗi lần chết; engine vẽ vết mực M4-14). */
+  onMonsterDeath: ((m: MonVis) => void) | null = null;
   /** Dựng model quái (model có xương hoặc khối); giữ asset mẫu suốt đời EntityManager. */
   private skins = new MonsterSkins();
   /** Model người chơi có xương (`?models=skinned`) và thư viện động tác chiêu. */
@@ -475,6 +477,8 @@ export class EntityManager {
       v.model.update(dt, _monAnim);
       v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3);
       const vv = v as MonVis & { deadFor?: number };
+      // deadFor === 0: khung trước còn sống (mô hình mới dựng của quái đã chết sẵn thì là undefined).
+      if (dead && vv.deadFor === 0) this.onMonsterDeath?.(v);
       vv.deadFor = dead ? (vv.deadFor ?? 0) + dt : 0;
       const engaged = id === targetId || s.st === MS_CHASE || s.st === MS_ATTACK;
       const a = v.bar.tick(s.hp, s.mhp, engaged, dead, dt, this.time);
