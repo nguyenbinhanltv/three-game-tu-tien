@@ -38,6 +38,7 @@ for (const it of ITEMS) {
 }
 for (const m of MONSTERS) {
   needStr(`mon.${m.id}`);
+  if (m.boss) needStr(`mon.${m.id}.title`);
   for (const d of m.drops) needItem(d.item, `monster ${m.id}`);
   const combo = m.ai?.combo;
   if (combo) {
