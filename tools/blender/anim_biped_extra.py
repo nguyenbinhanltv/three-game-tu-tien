@@ -270,12 +270,17 @@ def back_sword_vertices(mesh):
         comps.setdefault(find(fi), []).append(faces[fi])
     big = max(len(c) for c in comps.values())
     faces = sorted(f for c in comps.values() if len(c) >= 0.08 * big for f in c)
-    return faces, round(float(hi - lo), 3)
+    # Hình trụ quanh trục kiếm (đơn vị thế giới), để lọc các đảo lưới rời được phép gắn theo kiếm.
+    zone = {'c0': c0, 'ax': ax, 'lo': float(lo), 'hi': float(hi), 'radius': float(0.05 * k), 'back': float(0.02 * k), 'k': float(k)}
+    return faces, round(float(hi - lo), 3), zone
 
 
-def detached_vertices(mesh, sword):
-    """Đỉnh của mọi đảo lưới trừ đảo lớn nhất (thân). Đỉnh trùng vị trí được coi là nối nhau, trừ khi một bên thuộc
-    kiếm vừa tách (`sword`): bmesh.ops.split để lại cặp đỉnh trùng vị trí ở đường biên kiếm–thân."""
+def detached_vertices(mesh, sword, zone):
+    """Đỉnh của các đảo lưới rời khỏi thân (trừ đảo lớn nhất) NẰM QUANH KIẾM: tâm đảo trong hình trụ quanh trục kiếm
+    (bán kính + 6 cm, hai đầu nới 5 cm) và ở sau lưng (Y Blender > 0). Đảo rời ở chỗ khác (mắt, răng, trâm, vòng tay,
+    ngón tay rời...) giữ skin cũ. Đỉnh trùng vị trí được coi là nối nhau, trừ khi một bên thuộc kiếm vừa tách (`sword`):
+    bmesh.ops.split để lại cặp đỉnh trùng vị trí ở đường biên kiếm–thân. Trả (đỉnh được gắn, danh sách đảo gắn, đảo bỏ qua)."""
+    import numpy as np
     me = mesh.data
     alias = {}
     first = {}
@@ -298,7 +303,23 @@ def detached_vertices(mesh, sword):
     for v in me.vertices:
         comps.setdefault(find(alias[v.index]), []).append(v.index)
     body = max(comps.values(), key=len)
-    return [i for c in comps.values() if c is not body for i in c]
+    k = zone['k']
+    pinned, kept, out = [], [], []
+    for c in sorted(comps.values(), key=lambda c: min(c)):
+        if c is body:
+            continue
+        cen = np.mean([tuple(mesh.matrix_world @ me.vertices[i].co) for i in c], axis=0)
+        d = cen - zone['c0']
+        t = float(d @ zone['ax'])
+        perp = float(np.linalg.norm(d - t * zone['ax']))
+        inside = (zone['lo'] - 0.05 * k <= t <= zone['hi'] + 0.05 * k) and perp <= zone['radius'] + 0.06 * k and cen[1] > 0.0
+        info = {'vertices': len(c), 'centroid': [round(float(x), 3) for x in cen], 'axisDist': round(perp, 3)}
+        if inside:
+            out.extend(c)
+            pinned.append(info)
+        else:
+            kept.append(info)
+    return out, pinned, kept
 
 
 for spec in IMPORT.get('rigid', []):
@@ -307,7 +328,7 @@ for spec in IMPORT.get('rigid', []):
     bone = bone_like(spec['bone']).name
     for mesh in MESHES:  # noqa: F821
         import bmesh
-        face_ids, length = back_sword_vertices(mesh)
+        face_ids, length, zone = back_sword_vertices(mesh)
         # Tách lưới kiếm khỏi thân (nhân đôi đỉnh dọc đường biên) để phần gán cứng không kéo giãn mặt nối với vai/tay.
         bm = bmesh.new()
         bm.from_mesh(mesh.data)
@@ -324,7 +345,8 @@ for spec in IMPORT.get('rigid', []):
         # Mọi đảo lưới không nối với thân chính (nối theo vị trí đỉnh, vì Tripo tách lưới theo đường nối UV) là phần
         # của kiếm/quai đeo đã rời khỏi thân: gán cứng và nghiêng cùng kiếm, để không còn mảnh skin theo tay hay đùi
         # (mảnh lơ lửng cạnh vai, mũi kiếm tách đôi khi bước).
-        verts = sorted(set(verts) | set(detached_vertices(mesh, set(verts))))
+        extra, pinned, skipped = detached_vertices(mesh, set(verts), zone)
+        verts = sorted(set(verts) | set(extra))
         groups = mesh.vertex_groups
         target = groups.get(bone) or groups.new(name=bone)
         for g in groups:
@@ -345,7 +367,9 @@ for spec in IMPORT.get('rigid', []):
             for i, c in zip(verts, vco):
                 mesh.data.vertices[i].co = inv @ (T @ c)
             mesh.data.update()
-        report.setdefault('rigid', []).append({'kind': 'back_sword', 'bone': bone, 'faces': len(face_ids), 'vertices': len(verts), 'length': length, 'tilt': tilt})
+        # Ghi rõ các đảo rời đã gắn theo kiếm (và đảo rời bị bỏ qua) để log build cho thấy những gì bị dán vào xương.
+        report.setdefault('rigid', []).append({'kind': 'back_sword', 'bone': bone, 'faces': len(face_ids), 'vertices': len(verts),
+                                               'length': length, 'tilt': tilt, 'pinnedIslands': pinned, 'skippedIslands': skipped})
 
 
 # ---------- 4. chỉnh màu vải ----------
