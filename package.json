@@ -16,6 +16,8 @@
     "bots": "pnpm --filter @dtl/bot-client start",
     "ledger:check": "pnpm --filter @dtl/server ledger:check",
     "assets:build": "node tools/blender/run.mjs",
+    "palette": "node tools/palette/gen_palette.mjs",
+    "palette:check": "node tools/palette/gen_palette.mjs --check",
     "invite": "pnpm --filter @dtl/server invite"
   },
   "devDependencies": {

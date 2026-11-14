@@ -188,6 +188,11 @@
   "ui.settings.sound": "Âm thanh",
   "ui.settings.sound_on": "Bật",
   "ui.settings.sound_off": "Tắt",
+  "ui.settings.vol.master": "Âm lượng chung",
+  "ui.settings.vol.music": "Nhạc nền",
+  "ui.settings.vol.ambient": "Âm thanh môi trường",
+  "ui.settings.vol.sfx": "Hiệu ứng",
+  "ui.settings.vol.ui": "Giao diện",
   "ui.settings.logout": "Thoát về màn hình đăng nhập",
   "ui.settings.fps": "{n} khung/giây",
   "ui.you": "Ngươi"
