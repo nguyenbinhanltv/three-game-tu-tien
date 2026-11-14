@@ -137,13 +137,14 @@ export interface TrailActor {
   yaw: number;
   speed: number;
   fl: number;
+  /** Model không có trường nào thì bỏ hiệu ứng tương ứng (xem `CharacterView` trong game/character/view.ts). */
   model: {
     /** Số bước chân đã bước (tăng mỗi lần chân chạm đất khi chạy). */
-    steps: number;
+    readonly steps?: number;
     /** Số lần ra đòn. */
-    attacks: number;
-    readonly hasSword: boolean;
-    readonly grounded: boolean;
+    readonly attacks?: number;
+    readonly hasSword?: boolean;
+    readonly grounded?: boolean;
     root: { scale: { x: number } };
   };
 }
@@ -186,7 +187,7 @@ export class Trails {
       const dist = Math.hypot(a.x - _cam.x, a.z - _cam.z);
       let st = this.state.get(id);
       if (!st) {
-        st = { steps: a.model.steps, attacks: a.model.attacks, mote: Math.random(), spark: 0, mist: 0, seen: 0 };
+        st = { steps: a.model.steps ?? 0, attacks: a.model.attacks ?? 0, mote: Math.random(), spark: 0, mist: 0, seen: 0 };
         this.state.set(id, st);
       }
       st.seen = this.frame;
@@ -221,9 +222,9 @@ export class Trails {
       }
 
       // ----- cầm kiếm: linh quang quanh thanh kiếm sau lưng, bừng khi ra đòn -----
-      const holding = a.model.hasSword && !flying && !dead && (a.fl & PF_MEDITATING) === 0;
-      const atk = a.model.attacks - st.attacks;
-      st.attacks = a.model.attacks;
+      const holding = !!a.model.hasSword && !flying && !dead && (a.fl & PF_MEDITATING) === 0;
+      const atk = (a.model.attacks ?? 0) - st.attacks;
+      st.attacks = a.model.attacks ?? 0;
       if (holding && pk > 0) {
         const bx = a.x + (cy * 0.14 + sy * -0.26) * s;
         const by = a.y + 1.2 * s;
@@ -238,10 +239,10 @@ export class Trails {
       }
 
       // ----- bụi khi chạy -----
-      const steps = a.model.steps - st.steps;
-      st.steps = a.model.steps;
+      const steps = (a.model.steps ?? 0) - st.steps;
+      st.steps = a.model.steps ?? 0;
       if (steps > 0 && pk > 0 && a.model.grounded && !flying && a.speed > 3.5 && Math.random() < pk) {
-        const side = (a.model.steps & 1) === 0 ? 0.11 : -0.11;
+        const side = ((a.model.steps ?? 0) & 1) === 0 ? 0.11 : -0.11;
         const fx = a.x + cy * side * s;
         const fz = a.z - sy * side * s;
         const gy = Math.max(a.y, groundAt(fx, fz));
