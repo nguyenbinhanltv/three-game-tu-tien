@@ -1,0 +1,160 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_kiem_tu_nam",
+  "type": "chr",
+  "budgetClass": "player",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 20000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "chr/chr_kiem_tu_nam/tripo/rig_v01.glb",
+    "size": {
+      "height": 1.75
+    },
+    "orient": "thigh",
+    "clips": [
+      {
+        "source": "chr/chr_kiem_tu_nam/tripo/anim_idle_v01.glb",
+        "name": "idle",
+        "loop": true
+      },
+      {
+        "source": "chr/chr_kiem_tu_nam/tripo/anim_run_v01.glb",
+        "name": "run",
+        "recenter": true,
+        "loop": true
+      },
+      {
+        "source": "chr/chr_kiem_tu_nam/tripo/anim_attack_v01.glb",
+        "name": "attack",
+        "start": 1.3,
+        "end": 2.5
+      },
+      {
+        "source": "chr/chr_kiem_tu_nam/tripo/anim_death_v01.glb",
+        "name": "death"
+      }
+    ],
+    "rigid": [
+      {
+        "kind": "back_sword",
+        "bone": "spine2"
+      }
+    ],
+    "recolor": [
+      {
+        "hue": [
+          195,
+          250
+        ],
+        "satMin": 0.12,
+        "to": "#3B6584",
+        "note": "vải lam bão hòa → attire_sect, trầm hơn 10% (value 0,9, saturation 1,1), giữ độ sáng tương đối",
+        "value": 0.9,
+        "saturation": 1.1
+      },
+      {
+        "satMax": 0.1,
+        "valMin": 0.62,
+        "to": "#E6DDCB",
+        "note": "vải trắng → attire_ivory (trắng ngà)"
+      }
+    ],
+    "post": "tools/blender/anim_biped_extra.py"
+  },
+  "concept": [
+    {
+      "file": "concept/concept_front_v01.png",
+      "view": "front",
+      "tool": "Codex (worker three-game-tu-tien-36), concept A \"Thanh Phong\"",
+      "date": "2026-11-15",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_front_v02.png",
+      "view": "front",
+      "tool": "Codex (worker three-game-tu-tien-36), concept A \"Thanh Phong\"",
+      "date": "2026-11-15",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_front_apose_v01.png",
+      "view": "front",
+      "tool": "Codex (worker three-game-tu-tien-36), concept A \"Thanh Phong\"",
+      "date": "2026-11-15",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "text_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 20000,
+        "topology": "triangle",
+        "pbr": true,
+        "texture": "2K",
+        "prompt": "text-to-3D theo trang concept-kiem-tu.html (concept A Thanh Phong)"
+      },
+      "seed": null,
+      "quote": null,
+      "credits": 30,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/lowpoly_v01.glb",
+      "result": "ok",
+      "note": "19.001 tam giác, texture 3×2048². Người dùng lưu nhầm vào chr_de_tu_nam/tripo/ (03:49–03:54), Claude chép sang đây giữ tên."
+    },
+    {
+      "step": "rig",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "biped mixamo",
+      "params": {},
+      "seed": null,
+      "quote": null,
+      "credits": 20,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/rig_v01.glb",
+      "result": "ok",
+      "note": "54 khớp mixamorig, tư thế chữ T."
+    },
+    {
+      "step": "animation",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "preset",
+      "params": {
+        "presets": [
+          "idle",
+          "run",
+          "slash",
+          "fall"
+        ]
+      },
+      "seed": null,
+      "quote": null,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/anim_{idle,run,attack,death}_v01.glb",
+      "result": "ok",
+      "note": "Animation miễn phí trên web. Mỗi clip một GLB (65 khớp, thêm xương đầu mút), hash khác rig. Không có hit_light → làm thủ tục bằng tools/blender/anim_biped_extra.py. Clip attack (preset slash, 6,58 s) cắt lấy 1,3–2,5 s: giơ hai tay qua đầu rồi chém xuống. Kiếm sau lưng bị Tripo skin như cơ thể (bẻ cong khi hạ tay) → gán cứng vào spine2 bằng import.rigid."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max, text-to-3D) + concept Codex; hit_light thủ tục tools/blender/anim_biped_extra.py",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}
