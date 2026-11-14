@@ -1,0 +1,137 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_npc_thiet_lao",
+  "type": "chr",
+  "budgetClass": "npc",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 12000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "chr/chr_npc_thiet_lao/tripo/rig_v01.glb",
+    "size": {
+      "height": 1.7
+    },
+    "orient": "thigh",
+    "clips": [
+      {
+        "source": "chr/chr_npc_thiet_lao/tripo/anim_idle_v01.glb",
+        "name": "idle",
+        "loop": true
+      },
+      {
+        "source": "chr/chr_npc_thiet_lao/tripo/anim_run_v01.glb",
+        "name": "run",
+        "recenter": true,
+        "loop": true
+      },
+      {
+        "source": "chr/chr_npc_thiet_lao/tripo/anim_attack_v01.glb",
+        "name": "attack",
+        "start": 1.3,
+        "end": 2.5
+      },
+      {
+        "source": "chr/chr_npc_thiet_lao/tripo/anim_death_v01.glb",
+        "name": "death"
+      }
+    ],
+    "recolor": [
+      {
+        "hue": [
+          190,
+          255
+        ],
+        "satMax": 0.3,
+        "valMin": 0.36,
+        "to": "#BDB6A4",
+        "value": 0.85,
+        "saturation": 0.8,
+        "note": "tóc xám lạnh → xám ấm (stone_light, sáng 0,85, bão hòa 0,8); valMin bỏ qua da/vải tối hơi ngả lam"
+      }
+    ],
+    "post": "tools/blender/anim_biped_extra.py"
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex (worker three-game-tu-tien-46), trang asset-dot-2.html",
+      "date": "2026-11-15",
+      "prompt": "Concept 3/4 chỉ để duyệt hình dáng; model dựng bằng text-to-3D (xem tripo[0].params.prompt).",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "text_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 12000,
+        "topology": "triangle",
+        "pbr": true,
+        "texture": "2K",
+        "prompt": "Full body semi-realistic older male sword keeper, clean shaved face, tied grey hair, A-pose, separate fingers. Brown split work coat, ivory sleeves, dark leather short apron, bronze wrist guards, sturdy boots. Front apron tool loops, empty hands; back plain brown coat and crossed apron straps. Broad build, matte cloth leather PBR.",
+        "negative": "snow, purple dominant, anime, chibi, text, watermark, floating ribbons, flying cloth, extra limbs, fused limbs, duplicate face on back, baked shadows, glossy plastic, cropped body, pedestal, beard, mustache, black facial stains, face paint, fused fingers, extra fingers, weapon in hand"
+      },
+      "seed": null,
+      "quote": 30,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Thiết lão (Tàng Kiếm Các, npc_thiet_lao). Người dùng dựng trên web (đợt 2). Credit thật chưa báo (ước tính ~30)."
+    },
+    {
+      "step": "rig",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "biped mixamo",
+      "params": {},
+      "seed": null,
+      "quote": 20,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/rig_v01.glb",
+      "result": "ok",
+      "note": "Credit thật chưa báo (ước tính ~20)."
+    },
+    {
+      "step": "animation",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "preset",
+      "params": {
+        "presets": [
+          "idle",
+          "run",
+          "slash",
+          "fall"
+        ]
+      },
+      "seed": null,
+      "quote": null,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/anim_{idle,run,attack,death}_v01.glb",
+      "result": "ok",
+      "note": "Animation miễn phí trên web. Mỗi file đúng 1 clip, hash khác rig. Không có hit_light → thủ tục bằng tools/blender/anim_biped_extra.py. attack (slash 6,58 s) cắt 1,3–2,5 s như Thanh Phong; NPC chỉ dùng idle trong game, các clip khác dự phòng."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max, text-to-3D) + concept Codex; hit_light thủ tục tools/blender/anim_biped_extra.py",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}
