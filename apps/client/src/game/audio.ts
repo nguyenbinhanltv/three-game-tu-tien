@@ -1,17 +1,22 @@
 // AudioManager: Web Audio chia bus  master → music | ambient | sfx | ui.
 //
 // - SFX: nạp file theo `public/audio/manifest.json` (file lẻ hoặc sprite + offset), nhiều biến thể,
-//   lệch cao độ ngẫu nhiên, StereoPanner theo hướng camera. Âm nào không có file (hoặc file lỗi)
-//   thì lùi về âm tổng hợp bằng oscillator/noise như trước, không báo lỗi.
+//   lệch cao độ ngẫu nhiên, StereoPanner theo hướng camera. Sprite thường được tải byte lúc rảnh sau khi
+//   vào trang và giải mã khi mở khóa âm thanh; sprite `lazy` chỉ tải khi lần đầu cần. Âm có trong manifest
+//   mà chưa giải mã xong thì chờ tối đa PENDING_MS rồi phát (quá thì bỏ), không phát âm tổng hợp.
+//   Chỉ khi không có manifest, không có mục cho âm đó, hoặc mọi biến thể đều lỗi mới lùi về âm tổng hợp.
 // - Nhạc nền/âm môi trường: phát dạng stream qua HTMLAudioElement + MediaElementAudioSourceNode,
 //   mỗi loại có 2 kênh để crossfade. Ducking hạ nhạc khi có âm lớn (sấm, đột phá...).
+//   Âm môi trường chưa có file (manifest chưa tải, file lỗi, mạng chậm) thì phát gió tổng hợp;
+//   gió tổng hợp tắt dần ngay khi file bắt đầu phát.
 // - AudioContext chỉ được tạo sau thao tác đầu tiên của người chơi (chính sách tự phát của trình duyệt).
 // - `?mute=1` trên URL: tắt tiếng cho bot/Playwright, không nạp file, không ghi đè cài đặt đã lưu.
 //
 // Định dạng manifest (đường dẫn tương đối với thư mục chứa manifest; mảng = các định dạng dự phòng,
 // chọn cái đầu tiên trình duyệt phát được, ví dụ Opus/WebM rồi AAC/M4A cho Safari):
 // {
-//   "sprites": { "sfx_combat": ["sfx/sfx_combat.webm", "sfx/sfx_combat.m4a"] },
+//   "sprites": { "sfx_combat": ["sfx/sfx_combat.webm", "sfx/sfx_combat.m4a"],
+//                "sfx_world": { "src": ["sfx/sfx_world.webm", "sfx/sfx_world.m4a"], "lazy": true } },
 //   "sfx": {
 //     "hit": { "variants": [ { "sprite": "sfx_combat", "start": 0, "dur": 0.3 }, { "file": "sfx/hit_b.webm" } ],
 //              "pitch": 0.05, "gain": 1, "bus": "sfx", "duck": 0 }
@@ -21,11 +26,34 @@
 //                                     "url": "https://suno.com/song/<id>" } } },
 //   "ambient": { "wind": { "src": ["amb/wind.webm", "amb/wind.m4a"] } }
 // }
-// Nguồn: nhạc Suno, SFX CC0. Ghi giấy phép từng file vào LICENSES.md cạnh file. Nhạc Suno bản FREE
+// SFX và âm môi trường do `node tools/audio/build.mjs` sinh từ nguồn CC0 (khai báo ở tools/audio/sounds.json),
+// giấy phép từng âm ghi trong assets/LICENSES.md. Nhạc Suno bản FREE
 // chỉ dùng phi thương mại và phải ghi nguồn: điền `credit` cho từng bài, mục "Nguồn nhạc" trong
 // Cài đặt đọc trường này. Id bài nhạc theo máy trạng thái trong music.ts (MUSIC_TRACKS).
 
-export type Sfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend';
+/** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
+type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend';
+/** Âm chỉ có bản file (thiếu file thì im lặng hoặc mượn âm tổng hợp gần nhất theo SYNTH_ALIAS). */
+type FileSfx =
+  | 'crit'
+  | 'block'
+  | 'impact'
+  | 'trib'
+  | 'potion'
+  | 'cast'
+  | 'mcast'
+  | 'respawn'
+  | 'portal'
+  | 'craft'
+  | 'enhance'
+  | 'meditate'
+  | 'target'
+  | 'ui_click'
+  | 'ui_open'
+  | 'ui_close'
+  | 'ui_error'
+  | 'ui_confirm';
+export type Sfx = SynthSfx | FileSfx;
 export type Bus = 'music' | 'ambient' | 'sfx' | 'ui';
 export type VolumeKey = 'master' | Bus;
 export const VOLUME_KEYS: readonly VolumeKey[] = ['master', 'music', 'ambient', 'sfx', 'ui'];
@@ -56,8 +84,9 @@ interface StreamEntry {
   loop?: boolean;
   credit?: MusicCredit;
 }
+type SpriteSrc = string | string[] | { src: string | string[]; lazy?: boolean };
 interface Manifest {
-  sprites?: Record<string, string | string[]>;
+  sprites?: Record<string, SpriteSrc>;
   sfx?: Record<string, SfxEntry>;
   music?: Record<string, StreamEntry>;
   ambient?: Record<string, StreamEntry>;
@@ -78,8 +107,21 @@ const SYNTH_GAIN = 0.22;
 const SYNTH_BUS: Partial<Record<Sfx, Bus>> = { loot: 'ui', quest: 'ui' };
 /** Âm lớn tự hạ nhạc nền (mức hạ 0..1). */
 const SYNTH_DUCK: Partial<Record<Sfx, number>> = { thunder: 0.4, ascend: 0.5, levelup: 0.4, death: 0.4 };
+/** Âm chỉ có bản file: khi không có manifest thì mượn âm tổng hợp này (thiếu = im lặng). */
+const SYNTH_ALIAS: Partial<Record<FileSfx, SynthSfx>> = {
+  crit: 'hit',
+  block: 'shield',
+  impact: 'slash',
+  trib: 'thunder',
+  potion: 'heal',
+  respawn: 'heal',
+  craft: 'loot',
+  enhance: 'loot',
+};
 const MAX_VOICES = 32;
 const DEFAULT_PITCH = 0.05;
+/** Âm có trong manifest nhưng chưa giải mã xong: chờ tối đa chừng này rồi phát, quá thì bỏ. */
+const PENDING_MS = 600;
 
 const urlMute = typeof location !== 'undefined' && new URLSearchParams(location.search).get('mute') === '1';
 let muted = urlMute || localStorage.getItem('dtl.mute') === '1';
@@ -105,6 +147,8 @@ let duckEnd = 0;
 let duckLevel = 1;
 const listener = { x: 0, z: 0, yaw: 0 };
 const stats = { file: 0, synth: 0, dropped: 0 };
+/** Số lần phát âm tổng hợp theo tên (kiểm "không còn âm tổng hợp cho combat"). */
+const synthBy: Record<string, number> = {};
 const logged = new Set<string>();
 
 function clamp01(v: number): number {
@@ -180,8 +224,20 @@ function decode(url: string): Promise<AudioBuffer | null> {
   return p;
 }
 
+function spriteOf(name: string): { src: string | string[]; lazy: boolean } | null {
+  const s = manifest?.sprites?.[name];
+  if (!s) return null;
+  if (typeof s === 'string' || Array.isArray(s)) return { src: s, lazy: false };
+  return { src: s.src, lazy: !!s.lazy };
+}
+
 function clipUrls(c: Clip): string[] {
-  return playable(c.sprite ? manifest?.sprites?.[c.sprite] : c.file);
+  return playable(c.sprite ? spriteOf(c.sprite)?.src : c.file);
+}
+
+/** Âm có biến thể nằm trong sprite `lazy`: chỉ tải/giải mã khi lần đầu cần. */
+function isLazy(e: SfxEntry): boolean {
+  return (e.variants ?? []).some((c) => !!c.sprite && !!spriteOf(c.sprite)?.lazy);
 }
 
 /** Giải mã file đầu tiên tải được; thiếu định dạng ưu tiên thì thử định dạng kế tiếp. */
@@ -193,7 +249,7 @@ async function decodeFirst(urls: string[]): Promise<AudioBuffer | null> {
   return null;
 }
 
-/** Tải manifest và tải trước byte của SFX (chưa giải mã, chưa cần AudioContext). */
+/** Tải manifest và tải trước byte của SFX không lazy (chưa giải mã, chưa cần AudioContext). */
 function loadManifest(): Promise<void> {
   manifestPromise ??= fetch(MANIFEST_DIR + 'manifest.json', { cache: 'no-cache' })
     .then((r) => (r.ok ? r.json() : null))
@@ -201,11 +257,13 @@ function loadManifest(): Promise<void> {
       // Dev server trả index.html cho file thiếu: không phải object có trường đúng thì bỏ qua.
       if (!m || typeof m !== 'object') return;
       manifest = m;
-      for (const e of Object.values(m.sfx ?? {}))
+      for (const e of Object.values(m.sfx ?? {})) {
+        if (isLazy(e)) continue;
         for (const c of e.variants ?? []) {
           const u = clipUrls(c)[0];
           if (u) void fetchRaw(u);
         }
+      }
       prepare();
       syncStreams();
     })
@@ -215,23 +273,38 @@ function loadManifest(): Promise<void> {
   return manifestPromise;
 }
 
-/** Giải mã SFX theo manifest; cần cả manifest lẫn AudioContext. */
+/** Giải mã các SFX không lazy theo manifest; cần cả manifest lẫn AudioContext. */
 function prepare(): void {
   if (prepared || !manifest || !ctx) return;
   prepared = true;
-  for (const [name, e] of Object.entries(manifest.sfx ?? {})) {
-    void Promise.all(
-      (e.variants ?? []).map(async (c): Promise<Variant | null> => {
-        const buf = await decodeFirst(clipUrls(c));
-        if (!buf) return null;
-        const start = c.sprite ? (c.start ?? 0) : 0;
-        return { buf, start, dur: c.sprite ? c.dur : undefined, gain: c.gain ?? 1 };
-      }),
-    ).then((vs) => {
-      const ok = vs.filter((v): v is Variant => v !== null);
-      if (ok.length) ready.set(name, ok);
-    });
-  }
+  for (const [name, e] of Object.entries(manifest.sfx ?? {})) if (!isLazy(e)) decodeEntry(name);
+}
+
+/** Tên đang giải mã hoặc đã xong; `failed` = mọi biến thể đều lỗi (khi đó lùi về âm tổng hợp). */
+const decoding = new Set<string>();
+const failed = new Set<string>();
+const pendingPlay = new Map<string, { t: number; volume: number; at?: { x: number; z: number } }>();
+
+function decodeEntry(name: string): void {
+  const e = manifest?.sfx?.[name];
+  if (!e || !ctx || decoding.has(name)) return;
+  decoding.add(name);
+  void Promise.all(
+    (e.variants ?? []).map(async (c): Promise<Variant | null> => {
+      const buf = await decodeFirst(clipUrls(c));
+      if (!buf) return null;
+      const start = c.sprite ? (c.start ?? 0) : 0;
+      return { buf, start, dur: c.sprite ? c.dur : undefined, gain: c.gain ?? 1 };
+    }),
+  ).then((vs) => {
+    const ok = vs.filter((v): v is Variant => v !== null);
+    if (ok.length) ready.set(name, ok);
+    else failed.add(name);
+    // Lần phát đang chờ file: phát nếu chưa quá lâu.
+    const p = pendingPlay.get(name);
+    pendingPlay.delete(name);
+    if (p && performance.now() - p.t <= PENDING_MS && !muted && ctx?.state === 'running') emit(name as Sfx, p.volume, p.at, false);
+  });
 }
 
 // ---------- đồ thị âm thanh ----------
@@ -371,7 +444,7 @@ function noise(out: AudioNode, dur: number, filter: BiquadFilterType, f0: number
   src.stop(t + dur + 0.03);
 }
 
-function synth(name: Sfx, v: number, out: AudioNode): void {
+function synth(name: SynthSfx, v: number, out: AudioNode): void {
   const c = ctx!;
   const o = c.createGain();
   o.gain.value = SYNTH_GAIN;
@@ -478,21 +551,39 @@ export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }): void 
   const now = performance.now();
   if (now - (lastPlayed.get(name) ?? 0) < 45) return;
   lastPlayed.set(name, now);
+  emit(name, volume, at, true);
+}
+
+const SYNTH_NAMES = new Set<string>(['sword', 'slash', 'rain', 'thunder', 'hit', 'hurt', 'heal', 'shield', 'levelup', 'loot', 'quest', 'death', 'fly', 'gather', 'ascend']);
+
+function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefined, allowPending: boolean): void {
+  const c = ctx!;
   const e = manifest?.sfx?.[name];
+  const useFile = !!e && !failed.has(name);
   const vs = ready.get(name);
-  const bus = e?.bus ?? SYNTH_BUS[name] ?? 'sfx';
+  if (useFile && !vs) {
+    // Có file nhưng chưa giải mã (sprite lazy, hoặc bấm ngay sau khi mở khóa): chờ file, không phát âm tổng hợp.
+    if (allowPending) {
+      pendingPlay.set(name, { t: performance.now(), volume, at });
+      decodeEntry(name);
+    }
+    return;
+  }
+  const synthName = (SYNTH_NAMES.has(name) ? name : SYNTH_ALIAS[name as FileSfx]) as SynthSfx | undefined;
+  if (!useFile && !synthName) return;
+  const bus = e?.bus ?? SYNTH_BUS[name] ?? (name.startsWith('ui_') || name === 'target' ? 'ui' : 'sfx');
   const out = voiceOut(c, bus, at);
   const duckBy = e?.duck ?? SYNTH_DUCK[name] ?? 0;
   if (duckBy > 0) duck(duckBy * Math.min(1, volume));
-  const fromFile = !!(e && vs);
-  if (fromFile) playFile(name, vs!, e!, volume, out);
+  if (useFile) playFile(name, vs!, e!, volume, out);
   else {
-    synth(name, volume, out);
+    synth(synthName!, volume, out);
     stats.synth++;
+    synthBy[name] = (synthBy[name] ?? 0) + 1;
   }
-  if (DEV && !logged.has(name + fromFile)) {
-    logged.add(name + fromFile);
-    console.info(`[audio] ${name}: ${fromFile ? 'file' : 'tổng hợp'}`);
+  if (DEV && !logged.has(name + useFile)) {
+    logged.add(name + useFile);
+    console.info(`[audio] ${name}: ${useFile ? 'file' : 'tổng hợp'}`);
   }
 }
 
@@ -534,12 +625,15 @@ class StreamDeck {
   want: string | null = null;
   playing: string | null = null;
   private fade = 2;
+  /** Gió tổng hợp dự phòng (chỉ deck âm môi trường). */
+  readonly wind: SynthWind | null;
 
   constructor(
     private c: AudioContext,
     out: AudioNode,
     private kind: 'music' | 'ambient',
   ) {
+    this.wind = kind === 'ambient' ? new SynthWind(c, out) : null;
     const mk = (): Channel => {
       const g = c.createGain();
       g.gain.value = 0;
@@ -558,11 +652,20 @@ class StreamDeck {
   /** Đưa trạng thái phát về đúng `want` khi đủ điều kiện (đã mở khóa, có manifest, không tắt tiếng). */
   sync(): void {
     const id = muted || this.c.state !== 'running' ? null : this.want;
+    if (!id) this.wind?.stop(this.fade);
     if (id === this.playing) return;
-    if (id && !manifest) return; // chờ manifest
+    if (id && !manifest) {
+      // Chờ manifest: âm môi trường tạm bằng gió tổng hợp (nhạc thì im lặng, music.ts tự lo bài giữ chỗ).
+      this.wind?.start(this.fade);
+      return;
+    }
     const entry = id ? manifest?.[this.kind]?.[id] : undefined;
     const url = entry ? pickSrc(entry.src) : null;
-    if (id && !url && this.playing === null) return; // không có file: im lặng, không có gì để tắt
+    if (id && !url && this.playing === null) {
+      // Không có file: nhạc im lặng, âm môi trường dùng gió tổng hợp.
+      this.wind?.start(this.fade);
+      return;
+    }
     const t = this.c.currentTime;
     const fade = this.fade;
     // Tắt dần kênh đang phát.
@@ -571,7 +674,10 @@ class StreamDeck {
     const oldEl = old.el;
     if (oldEl) setTimeout(() => this.release(old, oldEl), fade * 1000 + 100);
     this.playing = id;
-    if (!id || !url || !entry) return;
+    if (!id || !url || !entry) {
+      if (id) this.wind?.start(fade);
+      return;
+    }
     // Bật kênh còn lại.
     this.active = 1 - this.active;
     const ch = this.ch[this.active];
@@ -581,7 +687,16 @@ class StreamDeck {
     el.preload = 'auto';
     el.loop = entry.loop ?? true;
     el.src = url;
-    el.addEventListener('error', () => console.warn('[audio] không phát được', url), { once: true });
+    el.addEventListener(
+      'error',
+      () => {
+        console.warn('[audio] không phát được', url);
+        if (ch.el === el && this.playing === id) this.wind?.start(fade);
+      },
+      { once: true },
+    );
+    // File đã ra tiếng: tắt dần gió tổng hợp (nếu đang chạy) cùng nhịp crossfade.
+    el.addEventListener('playing', () => ch.el === el && this.wind?.stop(fade), { once: true });
     ch.el = el;
     ch.node = this.c.createMediaElementSource(el);
     ch.node.connect(ch.g);
@@ -600,6 +715,88 @@ class StreamDeck {
     ch.node?.disconnect();
     ch.el = null;
     ch.node = null;
+  }
+}
+
+/** Mức gió tổng hợp (trước bus ambient); chỉnh theo âm môi trường file ở level -22 dB. */
+const WIND_GAIN = 0.35;
+
+/**
+ * Gió tổng hợp: nhiễu 4 giây lặp → thông dải → thông thấp có tần số cắt và âm lượng thở theo 2 LFO chậm.
+ * Chỉ dựng đồ thị khi cần và gỡ hẳn khi tắt để không tốn CPU lúc đã có file.
+ */
+class SynthWind {
+  private g: GainNode;
+  private nodes: AudioScheduledSourceNode[] = [];
+  on = false;
+
+  constructor(
+    private c: AudioContext,
+    out: AudioNode,
+  ) {
+    this.g = c.createGain();
+    this.g.gain.value = 0;
+    this.g.connect(out);
+  }
+
+  start(fade: number): void {
+    if (this.on) return;
+    this.on = true;
+    const c = this.c;
+    if (!this.nodes.length) {
+      const len = c.sampleRate * 4;
+      const buf = c.createBuffer(1, len, c.sampleRate);
+      const d = buf.getChannelData(0);
+      // Nhiễu nâu nhẹ (tích phân có rò) cho tiếng gió trầm, không rít.
+      let y = 0;
+      for (let i = 0; i < len; i++) {
+        y = 0.985 * y + 0.15 * (Math.random() * 2 - 1);
+        d[i] = y;
+      }
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const bp = c.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 420;
+      bp.Q.value = 0.5;
+      const lp = c.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 800;
+      const amp = c.createGain();
+      amp.gain.value = 0.7;
+      const lfo1 = c.createOscillator();
+      lfo1.frequency.value = 0.063;
+      const l1 = c.createGain();
+      l1.gain.value = 380;
+      lfo1.connect(l1).connect(lp.frequency);
+      const lfo2 = c.createOscillator();
+      lfo2.frequency.value = 0.17;
+      const l2 = c.createGain();
+      l2.gain.value = 0.3;
+      lfo2.connect(l2).connect(amp.gain);
+      src.connect(bp).connect(lp).connect(amp).connect(this.g);
+      src.start(0, Math.random() * 4);
+      lfo1.start();
+      lfo2.start();
+      this.nodes = [src, lfo1, lfo2];
+    }
+    ramp(this.g, WIND_GAIN, c.currentTime, fade);
+    if (DEV) console.info('[audio] ambient: gió tổng hợp');
+  }
+
+  stop(fade: number): void {
+    if (!this.on) return;
+    this.on = false;
+    ramp(this.g, 0, this.c.currentTime, fade);
+    setTimeout(() => {
+      if (this.on) return;
+      for (const n of this.nodes) {
+        n.stop();
+        n.disconnect();
+      }
+      this.nodes = [];
+    }, fade * 1000 + 150);
   }
 }
 
@@ -669,8 +866,12 @@ export function audioStats() {
     voices,
     music: music?.playing ?? null,
     ambient: ambient?.playing ?? null,
+    ambientWant: ambient?.want ?? null,
+    synthWind: ambient?.wind?.on ?? false,
+    failedSfx: [...failed],
     volumes: { ...volumes },
     ...stats,
+    synthBy: { ...synthBy },
   };
 }
 

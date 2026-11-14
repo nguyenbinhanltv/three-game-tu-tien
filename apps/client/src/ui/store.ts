@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { CharView, Equipment, InvSlot, QuestView } from '@dtl/shared';
+import { sfx } from '../game/audio';
 
 export interface TargetInfo {
   id: string;
@@ -171,6 +172,15 @@ export function pushToast(text: string, type = 'info'): void {
 export function togglePanel(p: Panel): void {
   useUI.setState((s) => ({ panel: s.panel === p ? null : p, npc: null }));
 }
+
+// Mở/đóng bảng hay hội thoại NPC (bằng phím, nút hay nút đóng): tiếng giở/gấp sách.
+useUI.subscribe((s, prev) => {
+  const now = s.panel ?? s.npc;
+  const was = prev.panel ?? prev.npc;
+  if (now === was) return;
+  if (now) sfx('ui_open', 0.8);
+  else sfx('ui_close', 0.8);
+});
 
 export const set = useUI.setState;
 export const get = useUI.getState;

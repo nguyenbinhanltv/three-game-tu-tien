@@ -323,7 +323,7 @@ export class Game {
       }
       else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind);
       const vol = this.volumeAt(m.x, m.z);
-      setTimeout(() => sfx(m.kind === 'lightning' ? 'thunder' : 'slash', vol, m), m.delay * 1000);
+      setTimeout(() => sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m), m.delay * 1000);
     });
     room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, 'chat', m.from));
     room.onMessage(S.KICK, (m: { k: string }) => {
@@ -370,6 +370,7 @@ export class Game {
   private async transfer(m: TransferMsg): Promise<void> {
     if (!Game.client) return;
     this.leaving = true;
+    sfx('portal');
     set({ phase: 'loading' });
     try {
       await this.room.leave(true);
@@ -713,6 +714,7 @@ export class Game {
   }
 
   setTarget(id: string, kind: TargetInfo['kind']): void {
+    if (id !== this.targetId) sfx('target', 0.8);
     this.targetId = id;
     this.targetKind = kind;
     if (kind !== 'mon') this.autoAttack = false;
@@ -800,7 +802,9 @@ export class Game {
     if (!me) return;
     this.wantFly = false;
     set({ wantFly: false });
-    this.send(C.MEDITATE, { on: (me.fl & PF_MEDITATING) === 0 });
+    const on = (me.fl & PF_MEDITATING) === 0;
+    if (on) sfx('meditate');
+    this.send(C.MEDITATE, { on });
   }
 
   interact(): void {
@@ -843,6 +847,7 @@ export class Game {
     pushLog(text, type);
     if (type === 'good' || type === 'bad' || type === 'info') pushToast(text, type);
     if (type === 'loot') sfx('loot', 0.7);
+    else if (type === 'bad') sfx('ui_error', 0.8);
     if (m.k === 'sys.fly_no_mp') {
       this.wantFly = false;
       set({ wantFly: false });
@@ -945,16 +950,19 @@ export class Game {
       rain: 'rain',
       thunder: 'thunder',
       heal: 'heal',
-      potion: 'heal',
+      potion: 'potion',
       shield: 'shield',
       levelup: 'levelup',
       ascend: 'ascend',
       quest: 'quest',
-      craft: 'loot',
-      enhance: 'loot',
+      craft: 'craft',
+      enhance: 'enhance',
       gather: 'gather',
       death: 'death',
-      respawn: 'heal',
+      respawn: 'respawn',
+      cast: 'cast',
+      mcast: 'mcast',
+      tribstart: 'trib',
     };
     const name = map[t];
     if (!name) return;
@@ -986,7 +994,11 @@ export class Game {
     if (m.heal) cls = 'heal';
     else if (mine) cls = 'hurt';
     else if (byMe) cls = m.crit ? 'crit' : 'hit';
-    if (!m.heal) sfx(mine ? 'hurt' : 'hit', mine || byMe ? 1 : this.volumeAt(_v.x, _v.z) * 0.5, _v);
+    if (!m.heal) {
+      // Bị hộ thể hấp thụ hết: tiếng kim khí; chí mạng/đòn nặng: tiếng va mạnh hơn đòn thường.
+      const name: Sfx = m.n === 0 ? 'block' : mine ? 'hurt' : m.crit || m.hv ? 'crit' : 'hit';
+      sfx(name, mine || byMe ? 1 : this.volumeAt(_v.x, _v.z) * 0.5, _v);
+    }
     const text = m.heal ? `+${m.n}` : m.n === 0 ? t('ui.absorbed') : mine ? `-${m.n}` : `${m.n}${m.crit ? '!' : ''}`;
     this.dmg.spawn(text, _v, cls);
   }

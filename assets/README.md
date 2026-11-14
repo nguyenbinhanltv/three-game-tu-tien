@@ -60,6 +60,17 @@ Sau đó chạy subagent `asset-validator` để soát bằng mắt những gì 
 4. `pnpm assets:build --only <id>` rồi `pnpm assets:validate --only <id>`; xem trong trang `?viewer=asset`.
 5. Commit `meta.json`, dòng LICENSES, GLB có hash và `manifest.json`.
 
+## Âm thanh (`tools/audio/`)
+
+SFX và âm môi trường không đi qua pipeline GLB mà qua `pnpm audio:build` (`tools/audio/build.mjs`):
+
+- Khai báo trong `tools/audio/sounds.json`: gói nguồn (thư mục trong `../dtl-asset-source/sfx/`, tác giả, link, giấy phép; **chỉ nhận CC0-1.0**), từng âm với các biến thể (âm combat 3 biến thể, có thể trộn nhiều lớp, đổi tốc độ, cắt đoạn), nhóm sprite, bus, ducking.
+- Xử lý: giải mã 48 kHz, cắt lặng, chuẩn hóa theo RMS đoạn to nhất (đỉnh ≤ -1 dBFS), ghép sprite theo nhóm; mã hóa WebM/Opus (48 kbps) và M4A/AAC dự phòng cho Safari; tên file theo hash nội dung. Kết quả xác định nên build lại không làm đổi byte.
+- Âm môi trường: chồng lớp lặp ở nhiều tốc độ, đường bao âm lượng ngẫu nhiên có seed, nối vòng bằng crossfade; dài 40–60 giây. Lệnh in chỉ số điểm nối và độ lặp chu kỳ để soát.
+- Đầu ra: `apps/client/public/audio/sfx/`, `amb/`, `manifest.json` (giữ nguyên mục `music`), và khối giữa `<!-- audio:begin -->`…`<!-- audio:end -->` trong `LICENSES.md`.
+- Nạp: sprite thường tải byte lúc rảnh sau khi vào trang, sprite `lazy` và âm môi trường chỉ tải khi cần (stream).
+- Lấy ffmpeg không cần cài hệ thống: `npm i ffmpeg-static` ở một thư mục tạm rồi `FFMPEG=<thư mục>/node_modules/ffmpeg-static/ffmpeg.exe pnpm audio:build`.
+
 ## Chưa có
 
 - Client chưa đọc `manifest.json`: `engine.ts` vẫn nạp `assets/sect.glb` (job Blender chép thêm bản thô cho đường cũ). Chuyển sang manifest + `MeshoptDecoder`/`KTX2Loader` + chọn LOD là việc M2-8/M2-9.
