@@ -146,3 +146,28 @@ export function validatePose(p: PoseDef): string[] {
   }
   return errs;
 }
+
+/** Pose lặp cho trạng thái nền ngự kiếm và niệm chú (nhân vật có xương mà asset không có clip riêng). */
+export const POSE_FLY = 'ngu_kiem';
+export const POSE_CAST = 'niem_chu';
+
+/** Lúc ra đòn sớm nhất (giây): ít hơn thì không đủ nhịp chuẩn bị/dồn lực. */
+export const POSE_MIN_WINDUP = 0.15;
+
+/**
+ * Kiểm pose gắn với một skill: có, một lần, dài không quá `maxDuration` (GCD), có `hit` và nhịp chuẩn bị đủ dài,
+ * ít nhất 5 key (chuẩn bị, dồn lực, ra đòn, dư âm, về thế).
+ */
+export function validateSkillPose(skillId: string, poseId: string | undefined, poses: ReadonlyMap<string, PoseDef>, maxDuration: number): string[] {
+  const at = `skill ${skillId}`;
+  if (!poseId) return [`${at}: thiếu pose`];
+  const p = poses.get(poseId);
+  if (!p) return [`${at}: pose "${poseId}" không có trong data/poses`];
+  const errs: string[] = [];
+  if (p.loop) errs.push(`${at}: pose ${poseId} phải là một lần (loop: false)`);
+  if (p.duration > maxDuration + 1e-6) errs.push(`${at}: pose ${poseId} dài ${p.duration}s, quá GCD ${maxDuration}s`);
+  if (!p.hit) errs.push(`${at}: pose ${poseId} cần hit [ra đòn, hết đòn]`);
+  else if (p.hit[0] < POSE_MIN_WINDUP) errs.push(`${at}: pose ${poseId} ra đòn ở ${p.hit[0]}s, cần ≥ ${POSE_MIN_WINDUP}s để có nhịp chuẩn bị`);
+  if (p.keys.length < 5) errs.push(`${at}: pose ${poseId} cần ít nhất 5 key (chuẩn bị, dồn lực, ra đòn, dư âm, về thế)`);
+  return errs;
+}

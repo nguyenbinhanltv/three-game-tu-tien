@@ -195,6 +195,11 @@ export interface SkillDef {
   radius?: number;
   duration?: number;
   fx: string;
+  /**
+   * Động tác của người ra chiêu (id trong `packages/content/data/poses`, client nướng thành clip). Một lần,
+   * dài không quá GCD; `hit[0]` của pose là lúc ra đòn, khớp với lúc hiệu ứng `fx` phóng đi.
+   */
+  pose?: string;
   /** Ngắt được chú boss đang niệm (chỉ với kind 'damage'). */
   interrupt?: boolean;
 }
