@@ -59,6 +59,22 @@ export const COLLIDERS: CircleCollider[] = [
   { x: 900, z: 1000, r: 3.4 }, // Cự kiếm giữa Kiếm Trủng
 ];
 
+/**
+ * Vật che tầm nhìn camera (chỉ dùng ở client để làm mờ, không chặn đường đi): mọi collider
+ * cộng phần kiến trúc treo cao không có va chạm như mái và xà cổng.
+ */
+export const OCCLUDERS: CircleCollider[] = [
+  ...COLLIDERS,
+  // Cổng tam quan (z = 2128): mái giữa rộng 22 m và hai mái bên.
+  { x: 2031, z: 2128, r: 4.5 },
+  { x: 2040, z: 2128, r: 5 },
+  { x: 2048, z: 2128, r: 5 },
+  { x: 2056, z: 2128, r: 5 },
+  { x: 2065, z: 2128, r: 4.5 },
+  { x: 2048, z: 1508, r: 5.5 }, // Cổng đá bí cảnh
+  { x: 900, z: 1070, r: 5.5 }, // Cổng ra Kiếm Trủng
+];
+
 export const PORTAL_POS = { x: 2048, z: 1508 };
 export const BOSS_POS = { x: LAKE.x, z: LAKE.z };
 

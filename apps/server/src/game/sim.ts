@@ -1352,7 +1352,7 @@ export class GameSim {
   addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0): void {
     const mon = this.monById.get(src) ?? null;
     this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon });
-    const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind };
+    const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;
