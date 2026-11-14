@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -102,6 +103,79 @@ describe('installHttpRateLimit', () => {
     expect(r.status).toBe(413);
     expect(hits).toBe(0);
     expect((await fetch(base + '/matchmake/joinOrCreate/world', { method: 'POST', body: '{}' })).status).toBe(200);
+  });
+
+  it('đã bị 429 rồi gửi thân chunked quá trần: server không sập', async () => {
+    const base = await start(1, (req, res) => {
+      req.resume();
+      req.on('end', () => res.end('ok'));
+    });
+    const errors: unknown[] = [];
+    const onErr = (e: unknown) => errors.push(e);
+    process.on('uncaughtException', onErr);
+    try {
+      expect((await fetch(base + '/matchmake/joinOrCreate/world', { method: 'POST', body: '{}' })).status).toBe(200);
+      // Không có Content-Length (Transfer-Encoding: chunked), thân > trần, gửi từng mảnh.
+      const status = await new Promise<number | string>((resolve) => {
+        const u = new URL(base + '/matchmake/joinOrCreate/world');
+        const req = http.request({ host: u.hostname, port: u.port, path: u.pathname, method: 'POST' }, (res) => {
+          res.resume();
+          resolve(res.statusCode ?? 0);
+        });
+        req.on('error', (e) => resolve('err:' + e.message));
+        const piece = 'x'.repeat(4096);
+        let i = 0;
+        const pump = () => {
+          if (i++ < 10 && !req.destroyed) {
+            req.write(piece);
+            setTimeout(pump, 5);
+          } else if (!req.destroyed) req.end();
+        };
+        pump();
+      });
+      expect(status === 429 || String(status).startsWith('err:')).toBe(true);
+      await new Promise((r) => setTimeout(r, 100));
+      // Server vẫn sống: request khác vẫn có phản hồi.
+      expect((await fetch(base + '/health')).status).toBe(200);
+      expect(errors).toEqual([]);
+    } finally {
+      process.off('uncaughtException', onErr);
+    }
+  });
+
+  it('thân vượt trần sau khi response đã xong: không ghi thêm lên response (không sập)', () => {
+    // req/res giả để tái hiện chắc chắn: res.end() trên response đã xong phát 'error' như Node
+    // khi socket chưa bị hủy, và không ai nghe 'error' thì EventEmitter ném ra.
+    const srv = http.createServer((_req, res) => res.end('ok')); // trả lời ngay, chưa đọc thân
+    installHttpRateLimit(srv, { burst: 10, perMin: 1, trustProxy: false, exempt: new Set() });
+    const req = Object.assign(new EventEmitter(), {
+      method: 'POST',
+      url: '/matchmake/joinOrCreate/world',
+      headers: {},
+      socket: { remoteAddress: '10.0.0.9' },
+      resume() {},
+      destroy() {},
+    });
+    let ends = 0;
+    const res = Object.assign(new EventEmitter(), {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      writeHead() {
+        res.headersSent = true;
+      },
+      end() {
+        ends++;
+        if (res.writableEnded) res.emit('error', Object.assign(new Error('write after end'), { code: 'ERR_STREAM_WRITE_AFTER_END' }));
+        res.writableEnded = true;
+      },
+    });
+    srv.emit('request', req, res);
+    expect(ends).toBe(1);
+    expect(() => {
+      for (let i = 0; i < 5; i++) req.emit('data', Buffer.alloc(4096));
+    }).not.toThrow();
+    expect(ends).toBe(1);
   });
 
   it('IP miễn trừ không bị chặn', async () => {

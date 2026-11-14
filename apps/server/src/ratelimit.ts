@@ -199,7 +199,12 @@ export function installHttpRateLimit(
 
   // Colyseus gom cả thân request vào bộ nhớ không giới hạn; tùy chọn đăng nhập (kể cả ID token Google) chỉ vài KB.
   const capBody = (req: http.IncomingMessage, res: http.ServerResponse): boolean => {
+    let done = false;
     const tooBig = () => {
+      // Response có thể đã xong (handler khác trả lời trước khi thân đến hết): ghi thêm sẽ phát
+      // ERR_STREAM_WRITE_AFTER_END thành sự kiện 'error' không ai nghe và làm sập tiến trình.
+      if (done || res.writableEnded || res.destroyed) return;
+      done = true;
       if (!res.headersSent) res.writeHead(413, { ...corsHeaders(req), 'content-type': 'application/json', connection: 'close' });
       res.end(JSON.stringify({ code: 413, error: 'body_too_large' }));
     };
@@ -209,13 +214,16 @@ export function installHttpRateLimit(
       return false;
     }
     let n = 0;
-    req.on('data', (chunk: Buffer) => {
+    const onData = (chunk: Buffer) => {
       n += chunk.length;
       if (n > MAX_MATCHMAKE_BODY) {
+        req.off('data', onData);
         tooBig();
         req.destroy();
       }
-    });
+    };
+    req.on('data', onData);
+    res.once('close', () => req.off('data', onData));
     return true;
   };
 
@@ -225,7 +233,7 @@ export function installHttpRateLimit(
     try {
       // Colyseus nhận mọi URL chứa '/matchmake' với mọi method; chỉ preflight OPTIONS là miễn phí.
       if (req.method !== 'OPTIONS' && (req.url ?? '').includes('/matchmake')) {
-        if (!capBody(req, res)) return;
+        // Kiểm giới hạn trước: request bị 429 không gắn bộ đếm thân (tránh ghi lên response đã xong).
         const key = keyOf(req);
         if (!opts.exempt.has(key)) {
           const wait = matchmake.take(key);
@@ -236,12 +244,15 @@ export function installHttpRateLimit(
               'content-type': 'application/json',
               'retry-after': String(wait),
               'access-control-expose-headers': 'Retry-After',
+              // Đóng kết nối sau khi trả lời: không phải đọc tiếp thân của request bị từ chối.
+              connection: 'close',
             });
             res.end(JSON.stringify({ code: 429, error: 'rate_limited' }));
             req.resume();
             return;
           }
         }
+        if (!capBody(req, res)) return;
       }
     } catch (e) {
       console.error('[ratelimit] lỗi bộ lọc request:', e);
