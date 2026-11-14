@@ -1,5 +1,6 @@
+import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { KIEM_TRUNG, SECT, VALLEY } from '@dtl/shared';
+import { heightAt, KIEM_TRUNG, SECT, VALLEY } from '@dtl/shared';
 import { buildGrassChunk, buildTuftGeometry, GRASS_PRESETS, Grass, GRASS_PUSH_SLOTS, pickPushers, type Pusher } from './grass';
 
 const slots = (): Pusher[] => Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
@@ -64,5 +65,20 @@ describe('Grass', () => {
       n[q] = g.count;
     }
     expect(n.high).toBeGreaterThan(n.medium * 1.5);
+  });
+  it('hình cầu bao bám mặt đất mỗi khung, kể cả sau khi bay cao rồi đáp trong cùng ô', () => {
+    const g = new Grass();
+    g.setQuality('medium');
+    const x = VALLEY.x + 8;
+    const z = VALLEY.z + 8;
+    const ground = heightAt(x, z);
+    // Bay cao 300 m, vượt ranh ô (ô bị dựng lại ở trên không).
+    for (let i = 0; i < 40; i++) g.update(0.016, { x, y: ground + 300, z }, slots(), 4);
+    for (let i = 0; i < 40; i++) g.update(0.016, { x: x + 16, y: ground + 300, z }, slots(), 4);
+    // Đáp xuống trong cùng ô đó.
+    g.update(0.016, { x: x + 17, y: ground, z }, slots(), 4);
+    const bs = g.mesh.geometry.boundingSphere!;
+    expect(Math.abs(bs.center.y - heightAt(x + 17, z))).toBeLessThan(0.01);
+    expect(bs.containsPoint(new THREE.Vector3(x + 17, heightAt(x + 17, z), z))).toBe(true);
   });
 });

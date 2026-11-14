@@ -376,6 +376,11 @@ export class Grass {
     }
     this.uCenter.value.set(center.x, center.y, center.z);
     this.uRadius.value = R;
+    // Hình cầu bao (để frustum cull cả lưới khi nhìn lên trời) bám mặt đất dưới chân MỖI khung, không theo
+    // độ cao người chơi: bay cao qua ranh ô rồi đáp xuống trong cùng ô thì cầu không bị kẹt trên không.
+    const bs = this.geo.boundingSphere!;
+    bs.center.set(center.x, heightAt(center.x, center.z), center.z);
+    bs.radius = R + CHUNK + 60;
 
     const cx = Math.floor(center.x / CHUNK);
     const cz = Math.floor(center.z / CHUNK);
@@ -452,9 +457,6 @@ export class Grass {
     this.geo.instanceCount = n;
     this.count = n;
     this.mesh.visible = n > 0;
-    // Hình cầu bao để frustum cull cả lưới khi nhìn lên trời.
-    this.geo.boundingSphere!.center.set(center.x, center.y, center.z);
-    this.geo.boundingSphere!.radius = this.preset.radius + CHUNK + 60;
   }
 
   dispose(): void {
