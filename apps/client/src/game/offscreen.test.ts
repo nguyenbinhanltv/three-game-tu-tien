@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LEVELS, NPCS, QUEST } from '@dtl/content';
 import { MS_DEAD } from '@dtl/shared';
-import { avoidRects, DEFAULT_INSET, edgePlace, INDICATOR_EXTENT, nearestGoalSpot, questGoal } from './offscreen';
+import { avoidRects, DEFAULT_INSET, edgePlace, INDICATOR_EXTENT, nearestGoalSpot, questGoal, trackedQuestId } from './offscreen';
 
 // Chiếu phối cảnh fov 60°, khung 1600×900.
 const W = 1600;
@@ -120,5 +120,24 @@ describe('nearestGoalSpot', () => {
       ['n2', { t: 'itm_linh_thao', on: true, x: 40, y: 0, z: 0 }],
     ]);
     expect(nearestGoalSpot({ kind: 'node', item: 'itm_linh_thao' }, 0, 0, new Map(), nodes, lv)).toEqual({ id: 'n2' });
+  });
+});
+
+describe('trackedQuestId', () => {
+  it('nhiệm vụ đầu không có đích (chỉ cảnh giới/ngự kiếm) → chọn nhiệm vụ kế có đích', () => {
+    const quests = { active: { q_ngu_kiem: [0, 0], q_diet_soi: [1] }, done: [] };
+    expect(Object.keys(quests.active)[0]).toBe('q_ngu_kiem');
+    expect(trackedQuestId(quests, '')).toBe('q_diet_soi');
+  });
+  it('nhiệm vụ đã ghim thắng, kể cả khi không có đích', () => {
+    const quests = { active: { q_diet_soi: [1], q_ngu_kiem: [0, 0] }, done: [] };
+    expect(trackedQuestId(quests, 'q_ngu_kiem')).toBe('q_ngu_kiem');
+  });
+  it('ghim nhiệm vụ đã trả/không còn nhận → bỏ qua ghim', () => {
+    const quests = { active: { q_diet_soi: [1] }, done: ['q_hai_thuoc'] };
+    expect(trackedQuestId(quests, 'q_hai_thuoc')).toBe('q_diet_soi');
+  });
+  it('không nhiệm vụ nào có đích → rỗng', () => {
+    expect(trackedQuestId({ active: { q_ngu_kiem: [0, 0] }, done: [] }, '')).toBe('');
   });
 });

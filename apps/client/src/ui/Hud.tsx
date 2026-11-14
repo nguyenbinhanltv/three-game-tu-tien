@@ -4,6 +4,7 @@ import { C, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING,
 import { itemName, monsterName, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { Game } from '../game/engine';
 import { HpTrail } from '../game/hpTrail';
+import { trackedQuestId } from '../game/offscreen';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
@@ -192,8 +193,9 @@ function QuestTracker() {
   const track = useUI((s) => s.trackQuest);
   const ids = Object.keys(quests.active);
   if (!ids.length) return null;
-  // Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới): ghim bằng cú nhấp, mặc định nhiệm vụ đầu.
-  const tracked = track && quests.active[track] ? track : ids[0];
+  // Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới): ghim bằng cú nhấp; mặc định nhiệm vụ đầu tiên có đích.
+  // Cùng hàm với engine để chấm và chỉ báo luôn cùng một nhiệm vụ.
+  const tracked = trackedQuestId(quests, track);
   return (
     <div className="tracker">
       {ids.slice(0, 4).map((id) => {

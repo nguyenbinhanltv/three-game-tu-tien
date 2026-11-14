@@ -62,7 +62,7 @@ import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
-import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal } from './offscreen';
+import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
 import { CameraShake, SHAKE } from './shake';
 import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
 import { KeyState } from '../input/keyboard';
@@ -1525,22 +1525,22 @@ export class Game {
     if (boss && boss.id !== target?.id) out.push({ key: boss.id, kind: 'boss', label: monsterName(boss.def), pos: entityPos(boss.id), span: spanOf(boss.id) });
 
     const st = get();
-    const active = Object.keys(st.quests.active);
-    const order = st.trackQuest && st.quests.active[st.trackQuest] ? [st.trackQuest] : active;
+    // Cùng luật với chấm ở bảng theo dõi (trackedQuestId): chỉ chỉ tới đúng nhiệm vụ đó, không nhảy sang nhiệm vụ khác.
+    const qid = trackedQuestId(st.quests, st.trackQuest);
     const rp = this.renderPos;
-    for (const qid of order) {
-      const def = QUEST.get(qid);
-      const goal = def && questGoal(def, st.quests.active[qid], ents.npcs.length ? NPCS : []);
-      if (!goal) continue;
+    do {
+      const def = qid ? QUEST.get(qid) : undefined;
+      const goal = def && questGoal(def, st.quests.active[qid], NPCS);
+      if (!goal) break;
       const label = t(`quest.${qid}.name`);
       if (goal.kind === 'npc') {
+        // NPC không có trên bản đồ này (ví dụ đang ở bí cảnh) thì không chỉ.
         const pos = npcPos(goal.npc);
-        if (!pos) continue;
-        out.push({ key: qid + ':' + goal.npc, kind: goal.turnin ? 'turnin' : 'quest', label, pos, span: 1.6 });
+        if (pos) out.push({ key: qid + ':' + goal.npc, kind: goal.turnin ? 'turnin' : 'quest', label, pos, span: 1.6 });
         break;
       }
       const spot = nearestGoalSpot(goal, rp.x, rp.z, this.view.monsters, this.view.nodes, LEVELS[this.view.level]);
-      if (!spot) continue;
+      if (!spot) break;
       let pos: OffCandidate['pos'];
       let key: string;
       if ('id' in spot) {
@@ -1560,8 +1560,7 @@ export class Game {
         pos = (o) => (o.set(spot.x, y, spot.z), true);
       }
       out.push({ key: qid + ':' + key, kind: goal.kind === 'node' ? 'gather' : 'quest', label, icon: goal.kind === 'node' ? goal.item : undefined, pos, span: goal.kind === 'mon' && 'id' in spot ? spanOf(spot.id) : 0.8 });
-      break;
-    }
+    } while (false);
     return out;
   }
 

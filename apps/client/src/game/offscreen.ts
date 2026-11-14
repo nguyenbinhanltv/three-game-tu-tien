@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
-import type { LevelDef, NpcDef, QuestDef } from '@dtl/shared';
+import type { LevelDef, NpcDef, QuestDef, QuestView } from '@dtl/shared';
 import { MS_DEAD } from '@dtl/shared';
-import { t } from '@dtl/content';
+import { NPCS, QUEST, t } from '@dtl/content';
 import { contentIconStyle } from '../ui/ContentIcon';
 
 /**
@@ -162,6 +162,21 @@ export function questGoal(def: QuestDef, prog: number[], npcs: readonly NpcDef[]
     }
   }
   return null;
+}
+
+/**
+ * Nhiệm vụ đang theo dõi — một luật dùng chung cho chấm ở bảng theo dõi (Hud) và chỉ báo ngoài màn hình
+ * (engine): nhiệm vụ đang ghim nếu còn nhận; không thì nhiệm vụ đang nhận đầu tiên có đích (`questGoal`
+ * khác null). '' nếu không có nhiệm vụ nào như vậy. Không phụ thuộc bản đồ hiện tại: đích nằm ở bản đồ
+ * khác thì chỉ báo không hiện, nhưng chấm vẫn đứng đúng nhiệm vụ đó.
+ */
+export function trackedQuestId(quests: QuestView, pinned: string, npcs: readonly NpcDef[] = NPCS, quest: (id: string) => QuestDef | undefined = (id) => QUEST.get(id)): string {
+  if (pinned && quests.active[pinned]) return pinned;
+  for (const id of Object.keys(quests.active)) {
+    const def = quest(id);
+    if (def && questGoal(def, quests.active[id], npcs)) return id;
+  }
+  return '';
 }
 
 interface Pt {
