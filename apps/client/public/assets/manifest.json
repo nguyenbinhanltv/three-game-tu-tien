@@ -182,6 +182,69 @@
           "minY": 0
         }
       }
+    },
+    "prop_phi_kiem": {
+      "id": "prop_phi_kiem",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_phi_kiem.glb",
+      "file": "prop_phi_kiem.8b0efdf9ff.glb",
+      "bytes": 561396,
+      "rawBytes": 660396,
+      "triangles": 2850,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "NormalGL_70d2072c-c993-4c70-a8d2-82931408bcc1",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "Color_70d2072c-c993-4c70-a8d2-82931408bcc1",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ORM_70d2072c-c993-4c70-a8d2-82931408bcc1",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2850
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.1434,
+          "height": 1.003,
+          "depth": 0.1577,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.1434,
+          "height": 1.003,
+          "depth": 0.1577,
+          "minY": 0
+        }
+      }
     }
   }
 }
