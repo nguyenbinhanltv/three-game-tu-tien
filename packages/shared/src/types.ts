@@ -82,9 +82,26 @@ export interface MonsterCaster {
   kind: 'lightning' | 'frost' | 'fire' | 'spirit';
 }
 
+/**
+ * Boss niệm chú: mỗi `cd` giây đứng yên niệm `cast` giây (mọi người thấy thanh niệm chú), xong thì thả vùng tròn
+ * bán kính `r` quanh mình, nổ sau `delay` giây. Đoạn đầu (tỉ lệ `open`) có hộ chú; sau đó trúng chiêu ngắt
+ * (`SkillDef.interrupt`) thì chú bị phá, boss choáng `stun` giây và nhận thêm sát thương (`INTERRUPT_VULN_MUL`).
+ */
+export interface MonsterChant {
+  cd: number;
+  cast: number;
+  open: number;
+  r: number;
+  delay: number;
+  mul: number;
+  kind: 'lightning' | 'frost' | 'fire' | 'spirit';
+  stun: number;
+}
+
 export interface MonsterAi {
   combo?: MonsterCombo;
   caster?: MonsterCaster;
+  chant?: MonsterChant;
 }
 
 export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield';
@@ -105,6 +122,8 @@ export interface SkillDef {
   radius?: number;
   duration?: number;
   fx: string;
+  /** Ngắt được chú boss đang niệm (chỉ với kind 'damage'). */
+  interrupt?: boolean;
 }
 
 export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough';
