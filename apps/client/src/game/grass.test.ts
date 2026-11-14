@@ -1,10 +1,21 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { heightAt, KIEM_TRUNG, SECT, VALLEY } from '@dtl/shared';
-import { buildGrassChunk, buildTuftGeometry, GRASS_PRESETS, Grass, GRASS_PUSH_SLOTS, pickPushers, type Pusher } from './grass';
+import { monsterPushRadius, buildGrassChunk, buildTuftGeometry, GRASS_PRESETS, Grass, GRASS_PUSH_SLOTS, pickPushers, type Pusher } from './grass';
 
 const slots = (): Pusher[] => Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
 const count = (cx: number, cz: number) => buildGrassChunk(Math.floor(cx / 16), Math.floor(cz / 16), 1).length / 8;
+
+describe('monsterPushRadius', () => {
+  it('quái chết hoặc xác đã ẩn không đè cỏ; boss đè rộng hơn, có trần', () => {
+    expect(monsterPushRadius(true, true, 2)).toBe(0);
+    expect(monsterPushRadius(true, false, 2)).toBe(0);
+    expect(monsterPushRadius(false, false, 2)).toBe(0);
+    expect(monsterPushRadius(false, true, 1)).toBe(1.4);
+    expect(monsterPushRadius(false, true, 4)).toBeCloseTo(2.8);
+    expect(monsterPushRadius(false, true, 20)).toBe(4);
+  });
+});
 
 describe('pickPushers', () => {
   it('ô 0 là mình, rồi 5 thực thể gần nhất theo thứ tự', () => {

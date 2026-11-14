@@ -195,6 +195,16 @@ export function buildTuftGeometry(): THREE.BufferGeometry {
   return g;
 }
 
+/**
+ * Bán kính rạp cỏ của một con quái (m); 0 = không đè. Quái chết (kể cả xác đã ẩn) không đè, để không
+ * còn vòng cỏ rạp trơ trọi và không chiếm chỗ của người/quái còn sống trong 5 ô. Quái to (boss) đè rộng
+ * hơn: lấy theo chiều cao thanh máu.
+ */
+export function monsterPushRadius(dead: boolean, visible: boolean, barY: number): number {
+  if (dead || !visible) return 0;
+  return Math.max(1.4, Math.min(4, barY * 0.7));
+}
+
 /** Một vị trí rạp cỏ: chân thực thể và bán kính ảnh hưởng. */
 export interface Pusher {
   x: number;

@@ -56,7 +56,7 @@ import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot'
 import { EntityManager, type MonVis, type MState, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { AmbientParticles } from './ambient';
-import { Grass, GRASS_PUSH_SLOTS, pickPushers, type Pusher } from './grass';
+import { Grass, GRASS_PUSH_SLOTS, monsterPushRadius, pickPushers, type Pusher } from './grass';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline } from '../render/post';
@@ -1865,8 +1865,10 @@ export class Game {
       n++;
     };
     for (const [sid, v] of this.ents.players) if (sid !== this.sid) put(v.x, v.y, v.z, 1.4);
-    // Quái to (boss) đè rộng hơn: lấy theo chiều cao thanh máu.
-    for (const v of this.ents.monsters.values()) put(v.x, v.y, v.z, Math.max(1.4, Math.min(4, v.barY * 0.7)));
+    for (const v of this.ents.monsters.values()) {
+      const r = monsterPushRadius(v.s.st === MS_DEAD, v.model.root.visible, v.barY);
+      if (r > 0) put(v.x, v.y, v.z, r);
+    }
     this.pushSelf.x = rp.x;
     this.pushSelf.y = rp.y;
     this.pushSelf.z = rp.z;
