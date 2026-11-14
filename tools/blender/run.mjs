@@ -93,11 +93,16 @@ function tripoJobs() {
       console.warn(`[blender] CẢNH BÁO: ${m.data.id}: thiếu GLB nguồn ${glb}, bỏ qua.`);
       continue;
     }
+    const post = m.data.import.post ? path.join(root, m.data.import.post) : null;
+    if (post && !fs.existsSync(post)) {
+      console.error(`[blender] LỖI ${m.data.id}: import.post trỏ tới ${m.data.import.post} nhưng file không tồn tại`);
+      process.exit(1);
+    }
     jobs.push({
       id: m.data.id,
       script: path.relative(root, importScript),
       args: [glb, out(m.data.id), '--meta', m.file, '--budgets', budgetsFile],
-      deps: [importScript, m.file, budgetsFile, glb],
+      deps: [importScript, m.file, budgetsFile, glb, ...(post ? [post] : [])],
     });
   }
   return jobs;
