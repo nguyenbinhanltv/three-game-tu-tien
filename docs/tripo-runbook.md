@@ -204,18 +204,36 @@ Báo lại người dùng: số credit đã dùng so với báo giá và hạn m
 
 ## 6. Quy trình web app cho nhân vật, quái, boss (kênh a)
 
-Người dùng bấm; Claude soạn concept, điền `meta.json` và nhập file. Tên nút dưới đây **chưa kiểm chứng** (trang chặn truy cập tự động); lần đầu làm, người dùng ghi lại tên thật để sửa runbook.
+Người dùng bấm; Claude soạn concept, điền `meta.json` và nhập file. Tên nút theo giao diện người dùng gửi ngày 2026-11-15. Thanh trái gồm **Image · Model · Segment · Retopo · Smart UV · Texture · Rig**.
 
-1. **Chuẩn bị** (Claude): concept 3 góc đã duyệt nằm ở `<nguồn>/<loại>/<id>/concept_front.png`, `concept_left.png`, `concept_back.png`. Claude gửi kèm bảng tham số từ `docs/prompts/tripo.md` mục 2 cho đúng loại.
-2. **Đăng nhập** tripo3d.ai bằng tài khoản gói Max. Kiểm model đang để **riêng tư** (gói trả phí cho phép; không để công khai trên thư viện Tripo). Ghi số credit hiện có.
-3. **Tạo model**: chọn chế độ Multiview (nhiều ảnh) → 3D. Tải ảnh vào đúng ô: trước, trái (ảnh bên: nhân vật quay mặt sang phải khung hình), sau. So ảnh bên với hình minh họa trên ô "trái"; nếu ngược thì báo Claude để lật ảnh.
-4. **Thiết lập**: model v3.1 (đã chốt cho tới khi M0 xong), texture chi tiết (HD), PBR bật, Smart Low-poly bật, giới hạn mặt theo bảng (người chơi 20.000, NPC 12.000, quái 8.000, boss 20.000), quad tắt.
-5. **Sinh** và chọn phương án tốt nhất. Xoay xem: tay áo không dính thân, chân tách nhau, mặt không méo. Không đạt thì sinh lại (mỗi lần là một lần trả credit; báo Claude nếu quá 3 lần để sửa concept thay vì sinh tiếp).
-6. **Rig**: chạy kiểm tra rig (miễn phí) → Auto Rig. Người: biped, spec mixamo nếu có (không có thì spec mặc định). Quái bốn chân: quadruped.
-7. **Animation**: chỉ với model mẫu của mỗi kiểu xương (đệ tử nam cho người; Sói Xám cho quái bốn chân). Chọn clip theo `docs/prompts/tripo.md` mục 3, bật **in place** nếu có. NPC và người chơi nữ chỉ rig, không mua animation.
-8. **Tải về GLB** (không FBX): bản dựng hình, bản rig, từng clip. Đặt vào `<nguồn>/<loại>/<id>/tripo/` và đổi tên theo mục 3 (`raw_v01.glb`, `rig_v01.glb`, `anim_walk_v01.glb`…).
-9. **Báo Claude** (chat hoặc orchestrator): asset id; mỗi bước (dựng, rig, từng clip) tốn bao nhiêu credit (số dư trước và sau); task id hoặc đường link trang model; phương án đã chọn; điều gì thấy chưa ổn.
-10. **Claude**: điền `meta.json` (`channel: "web"`), kiểm file bằng `asset-validator` / trang xem asset (M0-4), rồi đưa qua pipeline Blender (M2), giữ nguyên texture PBR, không ép palette.
+**Bài học M0-3** (2026-11-15):
+- Đệ tử nam dựng với thiết lập mặc định ra **1,95 triệu tam giác**, texture màu 8192².
+- Tự giảm lưới trong Blender làm **nứt đường nối UV**. Vì vậy phải đặt **Polycount** ngay khi dựng, hoặc dùng **Retopo** của Tripo (Tripo chiếu lại texture).
+- Sói đặt Polycount 8000 ra đúng 7.895 tam giác.
+- File "anim" của sói tải về trùng hệt file rig, không có clip: mỗi clip phải tải riêng sau khi chọn.
+
+| Thiết lập | Người chơi | NPC | Quái | Boss |
+| --- | --- | --- | --- | --- |
+| **Polycount** (Topology **Triangle**) | 20000 | 12000 | 8000 | 20000 |
+| Rig | biped (Mixamo nếu có) | biped | quadruped / biped theo xương | theo xương |
+| Animation trên Tripo | 5 clip trên **một** model mẫu | không | không: Tripo chỉ có clip đi bộ cho bốn chân; làm bằng Blender thủ tục | không |
+
+1. **Chuẩn bị** (Claude): concept 3 góc đã duyệt nằm ở `<nguồn>/<loại>/<id>/concept_front.png`, `concept_left.png`, `concept_back.png`.
+2. **Đăng nhập** bằng tài khoản gói Max. Ghi số credit trước mỗi bước.
+3. **Model** → khung **Generate Model** → tab **HD Model**. Ảnh multiview: **Front** = concept_front, **Left** = concept_left (nhân vật quay mặt sang phải khung hình), **Back** = concept_back, **Right** để trống.
+4. **General Settings**: **Generate in Parts** tắt, **8K Texture** tắt, **Privacy** bật. **AI Model**: **H3.1**.
+5. Popup **Geometry & Texture**:
+   - **Ultra Mesh Quality** tắt.
+   - **Texture** bật, **Texture Quality 2K**.
+   - **Remove Lighting** bật, **PBR** bật.
+   - **Topology Triangle**, **Polycount** theo bảng.
+6. **Generate** (65 credit, 2026-11-15). Xoay kiểm: tay áo không dính thân, chân tách, mặt không méo. Quá 3 lần không đạt thì báo Claude để sửa concept.
+7. Nếu đã có model quá nặng: **Retopo** (Triangle, Polycount theo bảng). Texture lệch thì dùng **Texture** (2K, PBR, Remove Lighting). Không dựng lại từ đầu.
+8. **Rig** trên **bản đã đúng Polycount** (không rig bản nặng). Người chọn biped (Mixamo nếu có); quái bốn chân chọn quadruped.
+9. **Animation** (chỉ model mẫu người): idle, run, slash, hurt, death (không có death thì chọn fall); bật in place nếu có.
+10. **Export GLB** (không FBX). Tải riêng từng clip. Đặt vào `<nguồn>/<loại>/<id>/tripo/` theo mục 3, ví dụ `lowpoly_v02.glb` (sau Retopo), `rig_v02.glb`, `anim_<clip>_v02.glb`. Không ghi đè bản cũ.
+11. **Báo Claude**: asset id, credit từng bước (Retopo, Texture, Generate, Rig, Animation), clip đã chọn, có Mixamo / in place không.
+12. **Claude** kiểm từng file (số tam giác, xương, clip, hash không trùng), điền `meta.json` (`channel: "web"`), đánh giá bằng trang `?viewer=asset` và `asset-validator`, rồi đưa qua pipeline. Giữ texture PBR, không ép palette.
 
 ## 7. Theo dõi credit
 
@@ -228,8 +246,8 @@ Báo cáo M0-6 cộng số credit thật theo từng thao tác của cả hai k�
 
 ## 8. Chưa kiểm chứng
 
-- Tên nút, vị trí tùy chọn trên web app; web app có hiện task id không; có spec mixamo, tùy chọn in place không.
+- Web app: giá của Retopo, Texture, Rig, Animation; có hiện task id không; có spec Mixamo, tùy chọn in place không; preset animation cho người có đúng tên idle/run/slash/hurt/death không. (Tên nút đã kiểm 2026-11-15, xem mục 6.)
 - Giá credit trên web app có giống bảng giá API không.
-- Quy ước ô "left" của Tripo multiview so với ảnh nhân vật quay mặt sang phải.
+- Quy ước ô "Left" của Tripo multiview so với ảnh nhân vật quay mặt sang phải: hai lần dựng M0-3 (đệ tử, sói) ra đúng hình, nhưng chưa kiểm riêng.
 - `tripo task get --download` có thật sự không tốn credit; file tải lại có giữ được bao lâu.
 - Báo giá `make --dry-run` không gồm bước chuỗi (CLI tự ghi chú "chain steps not estimated"); prop không dùng chuỗi nên không ảnh hưởng.

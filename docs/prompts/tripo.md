@@ -2,7 +2,7 @@
 
 Phiên bản 3 (2026-11-15): hướng bán tả thực, texture chi tiết và PBR. Áp dụng cho cả web app (người dùng bấm) và Tripo CLI (Claude chạy, chỉ cho prop). Cách chạy từng bước và quy tắc credit: [`docs/tripo-runbook.md`](../tripo-runbook.md).
 
-Kiểm chứng với `tripo-cli 0.11.2` bằng các lệnh chỉ đọc (`--help`, `models`, `make --dry-run`), lần cuối 2026-11-15. Tên trường trong cột "CLI" là tên tham số API mà `make --dry-run` in ra. Tên nút trên web app **chưa kiểm chứng**; người dùng đối chiếu lần đầu và sửa bảng này.
+Kiểm chứng với `tripo-cli 0.11.2` bằng các lệnh chỉ đọc (`--help`, `models`, `make --dry-run`), lần cuối 2026-11-15. Tên trường trong cột "CLI" là tên tham số API mà `make --dry-run` in ra. Trên web app, model dựng hình tên là **H3.1** và giới hạn mặt là **Polycount** (Topology Triangle); tên nút và checklist xem runbook mục 6 (kiểm 2026-11-15).
 
 ## 1. Cài đặt chung (mọi asset)
 
