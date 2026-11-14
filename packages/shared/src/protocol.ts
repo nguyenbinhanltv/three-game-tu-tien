@@ -164,7 +164,10 @@ export interface HazardMsg {
   sd?: number;
 }
 
-/** Seed hình cho FX/vùng báo trước (uint31, xem `FxMsg.sd`). Server gọi; client chỉ đọc. */
+/**
+ * Seed hình cho FX/vùng báo trước (uint31, xem `FxMsg.sd`). Server gọi với nguồn ngẫu nhiên riêng
+ * (crypto), không dùng chung RNG với luật; client chỉ đọc.
+ */
 export function fxSeed(rand: () => number = Math.random): number {
   return Math.floor(rand() * 0x7fffffff) >>> 0;
 }

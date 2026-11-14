@@ -72,6 +72,8 @@ class Ribbon {
     }
     this.geo.setAttribute('position', this.pos);
     this.geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    // Pháp tuyến hằng (dải tự phát sáng; node material mặc định vẫn đọc).
+    this.geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(RIB_PTS * 2 * 3).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
     this.geo.setIndex(idx);
     this.geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e4);
   }

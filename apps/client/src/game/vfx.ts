@@ -326,7 +326,7 @@ export class Vfx {
     boltShape(sd, 62, 7, scale, bolt.shape);
     const m = this.fx(bolt.geo.geo, color, 1, 'bolt');
     m.fxA.z = (sd % 4000) / 100;
-    const glow = this.fx(G.ico1, color, 0.55);
+    const glow = this.fx(G.ico1, color, 0.35);
     glow.position.set(x, y + 0.6, z);
     const ring = this.fx(RING_GEO, color, 0.9);
     ring.rotation.x = -Math.PI / 2;
@@ -350,7 +350,7 @@ export class Vfx {
           if (flash > 0) this.onFlash?.(flash * 0.6);
         }
         glow.scale.set(scale * (1 + k * 2.2), scale * (0.6 + k * 1.2), scale * (1 + k * 2.2));
-        glow.fxOpacity = 0.55 * (1 - k) * (k < 0.12 ? 0.3 : 1);
+        glow.fxOpacity = 0.35 * (1 - k) * (k < 0.12 ? 0.3 : 1);
         ring.scale.setScalar(scale * (1 + Math.max(0, k - 0.12) * 4.5));
         ring.fxOpacity = k < 0.12 ? 0 : 0.9 * (1 - k);
       },

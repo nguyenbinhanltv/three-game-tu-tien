@@ -59,20 +59,20 @@ export function boltShape(seed: number, h = 62, spread = 7, scale = 1, out?: Bol
     p[i * 4 + 3] = u;
   }
   // Dịch điểm giữa theo bậc: bước 16, 8, 4, 2, 1 với biên độ giảm dần; hai đầu cố định.
-  let amp = h * 0.16;
+  let amp = h * 0.2;
   for (let step = MAIN_SEGS / 2; step >= 1; step /= 2) {
     for (let i = step; i < MAIN_SEGS; i += step * 2) {
       const a = (i - step) * 4;
       const b = (i + step) * 4;
-      // Gần đất lệch ít hơn để tia cắm đúng điểm đánh.
-      const damp = Math.min(1, (1 - i / MAIN_SEGS) * 3);
+      // Gần đất lệch ít hơn một chút; hai đầu vẫn cố định nên tia cắm đúng điểm đánh.
+      const damp = Math.min(1, 0.45 + (1 - i / MAIN_SEGS) * 2);
       p[i * 4] = (p[a] + p[b]) / 2 + (rnd() - 0.5) * amp * damp;
       p[i * 4 + 2] = (p[a + 2] + p[b + 2]) / 2 + (rnd() - 0.5) * amp * damp;
       p[i * 4 + 1] = (p[a + 1] + p[b + 1]) / 2 + (rnd() - 0.5) * amp * 0.25;
     }
-    amp *= 0.55;
+    amp *= 0.62;
   }
-  shape.strands.push({ start: 0, count: MAIN_SEGS + 1, width: 0.55 * scale });
+  shape.strands.push({ start: 0, count: MAIN_SEGS + 1, width: 0.22 * scale });
   let n = MAIN_SEGS + 1;
   // Nhánh rẽ: rẽ ra từ nửa trên của thân, đi xiên xuống, ngắn dần.
   const branches = 2 + Math.floor(rnd() * (MAX_BRANCH - 1));
@@ -98,7 +98,7 @@ export function boltShape(seed: number, h = 62, spread = 7, scale = 1, out?: Bol
       z += (dz * 0.75 + (rnd() - 0.5) * 0.9) * segLen;
       y -= (0.55 + rnd() * 0.5) * segLen;
     }
-    shape.strands.push({ start, count: BRANCH_SEGS + 1, width: (0.28 - b * 0.03) * scale });
+    shape.strands.push({ start, count: BRANCH_SEGS + 1, width: (0.12 - b * 0.012) * scale });
   }
   shape.n = n;
   return shape;
@@ -122,6 +122,8 @@ export class BoltGeometry {
     const idx = new Uint16Array((BOLT_MAX_PTS - 1) * 6);
     this.geo.setAttribute('position', this.pos);
     this.geo.setAttribute('uv', this.uvs);
+    // Pháp tuyến không dùng (dải tự phát sáng) nhưng node material mặc định vẫn đọc: điền hằng.
+    this.geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nv * 3).fill(0).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
     this.geo.setIndex(new THREE.BufferAttribute(idx, 1));
     this.geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e4);
   }
