@@ -15,7 +15,7 @@ import { contentIconStyle } from '../ui/ContentIcon';
 
 export const MAX_INDICATORS = 3;
 
-export type OffKind = 'target' | 'foe' | 'boss' | 'quest' | 'turnin' | 'gather';
+export type OffKind = 'target' | 'foe' | 'boss' | 'quest' | 'turnin' | 'gather' | 'loot';
 
 export interface OffCandidate {
   /** Khóa ổn định để giữ đúng phần tử DOM giữa các lần chọn. */

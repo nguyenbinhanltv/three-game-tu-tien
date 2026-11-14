@@ -350,7 +350,7 @@ function SkillBar() {
         <button className={'action' + (wantFly || flags & PF_FLYING ? ' on' : '')} onClick={() => Game.current?.toggleFly()} title={t('ui.help.fly_v')}>
           🗡️ <span>{t('ui.fly')}</span> <kbd>F</kbd>
         </button>
-        <button className="action" onClick={() => togglePanel('bag')}>
+        <button className="action" data-bag onClick={() => togglePanel('bag')}>
           🎒 <span>{t('ui.bag')}</span> <kbd>B</kbd>
         </button>
         <button className="action" onClick={() => togglePanel('char')}>

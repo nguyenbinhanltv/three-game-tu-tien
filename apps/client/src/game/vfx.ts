@@ -5,6 +5,8 @@ import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../render
 import { SLASH_GEO, SLASH_INK, slashPhase } from '../render/vfx/slash';
 import { seedOr } from '../render/vfx/common';
 import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '../render/vfx/lightning';
+import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../render/vfx/ink';
+import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
 import { SwordRainFx } from '../render/vfx/swordRain';
 import { Trails } from '../render/vfx/trail';
@@ -54,6 +56,15 @@ export const HAZARD_COLORS: Record<string, number> = {
 const RING_GEO = new THREE.RingGeometry(0.82, 1, 48);
 const TUBE_GEO = new THREE.CylinderGeometry(1, 1, 1, 20, 1, true);
 
+/** Một vết mực đang nằm trên đất (M4-14). */
+interface InkMark {
+  m: FxMesh;
+  t: number;
+  T: InkTiming;
+  /** Đã bị ép tan sớm vì vượt MAX_INK: tiến độ tan nhanh 0..1 (0 = không bị ép). */
+  forced: number;
+}
+
 /** Bộ đệm tia sét (lưới + hình) giữ lại giữa các lần đánh: phát không cấp phát. */
 interface Bolt {
   geo: BoltGeometry;
@@ -91,6 +102,10 @@ export class Vfx {
   onFlash: ((amount: number) => void) | null = null;
   /** Mây kiếp đang hiện: tia sét đánh gần thì bừng sáng trong mây. */
   private clouds = new Set<FxMesh>();
+  /** Vết mực trên đất (giới hạn MAX_INK); hai mảng phụ dùng lại khi chọn vết phải tan sớm. */
+  private inks: InkMark[] = [];
+  private inkAges: number[] = [];
+  private inkForced: boolean[] = [];
 
   constructor(scene: THREE.Scene) {
     scene.add(this.group);
@@ -100,7 +115,7 @@ export class Vfx {
     // Vẽ ấm các material mới (mưa kiếm, tia sét, mây kiếp, vệt kiếm) vài khung lúc đang tải: biên dịch
     // shader trước, lần dùng đầu không bị khựng. Độ trong 0, cỡ 0: không thấy gì.
     RAIN.prewarm();
-    for (const kind of ['bolt', 'vortex', 'trail'] as const) {
+    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool'] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);
       m.scale.setScalar(1e-3);
       this.add(0.15, () => {}, () => this.drop(m));
@@ -148,6 +163,7 @@ export class Vfx {
         this.items.splice(i, 1);
       }
     }
+    this.updateInk(dt);
     RAIN.update(dt);
     PARTICLES.update(dt);
   }
@@ -384,6 +400,207 @@ export class Vfx {
     }
   }
 
+  /**
+   * Đồ rơi (M4-6), chỉ là lớp hình: viên đồ nảy ra từ `from` (ngực quái) tới một điểm quanh xác, chạm
+   * đất (gọi `onLand`: chuông), cột sáng theo bậc dâng lên, nằm một lúc rồi biến mất (gọi `onCollect`
+   * với vị trí cuối: engine cho icon bay vào túi). `slot`: thứ tự món trong cùng một lần rơi, để các món
+   * tỏa ra các hướng khác nhau và nảy lệch nhịp. Trả về điểm chạm đất (cho chỉ báo ngoài màn hình).
+   */
+  lootDrop(from: THREE.Vector3, tier: LootTier, slot = 0, onLand?: () => void, onCollect?: (at: THREE.Vector3) => void): THREE.Vector3 {
+    const T = LOOT_TIERS[tier];
+    const delay = Math.min(slot, 5) * 0.12;
+    const ang = Math.random() * Math.PI * 2 + slot * 2.4;
+    const dist = 0.9 + Math.random() * 0.7;
+    const tx = from.x + Math.cos(ang) * dist;
+    const tz = from.z + Math.sin(ang) * dist;
+    const ground = groundAt(tx, tz);
+    const gy = ground + 0.32;
+    const sx = from.x;
+    const sy = from.y;
+    const sz = from.z;
+    const size = 1 + tier * 0.18;
+    const gem = this.fx(G.octa, T.color, 0.95);
+    gem.visible = false;
+    const beam = this.fx(BEAM_GEO, T.color, 0, 'beam');
+    beam.fxA.w = Math.random() * 40;
+    beam.position.set(tx, ground - 0.05, tz);
+    beam.scale.set(T.radius, T.height, T.radius);
+    const core = T.core ? this.fx(BEAM_GEO, 0xfff6dc, 0, 'beam') : null;
+    if (core) {
+      core.fxA.w = beam.fxA.w + 11;
+      core.position.copy(beam.position);
+      core.scale.set(T.radius * 0.4, T.height * 0.75, T.radius * 0.4);
+    }
+    const ring = tier > 0 ? this.fx(RING_GEO, T.color, 0) : null;
+    if (ring) {
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(tx, ground + 0.08, tz);
+    }
+    const lift = LOOT_ARC + LOOT_BOUNCE + T.hold;
+    let t = 0;
+    let landed = false;
+    let collected = false;
+    this.add(
+      delay + lootDuration(tier),
+      (_k, dt) => {
+        t += dt;
+        const tt = t - delay;
+        if (tt < 0) return;
+        // Viên đồ: vồng từ xác xuống đất, nảy lại một lần, rồi lơ lửng xoay chậm.
+        if (!collected) {
+          gem.visible = true;
+          const f = Math.min(1, tt / LOOT_ARC);
+          const bob = tt > LOOT_ARC + LOOT_BOUNCE ? 0.1 + Math.sin(tt * 3.2) * 0.05 : 0;
+          gem.position.set(sx + (tx - sx) * f, sy + (gy - sy) * f + lootHop(tt) + bob, sz + (tz - sz) * f);
+          gem.rotation.y += dt * (tt < LOOT_ARC ? 9 : 2.6);
+          gem.scale.set(0.15 * size, 0.26 * size, 0.15 * size);
+          gem.fxK = Math.min(1, tt / 0.4);
+        }
+        if (!landed && tt >= LOOT_ARC) {
+          landed = true;
+          onLand?.();
+          _a.set(tx, gy, tz);
+          this.burst(_a, T.color, 0.5 + tier * 0.25, 0.3);
+          for (let i = 0; i < T.sparks; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const r = Math.random() * T.radius * 0.8;
+            PARTICLES.emit('glow', tx + Math.cos(a) * r, ground + 0.2, tz + Math.sin(a) * r, 0, 1.4 + Math.random() * 2.2, 0, 1 + Math.random() * 0.9, 0.09, 0.02, i & 1 ? 0xfff6dc : T.color, 0.9, -0.6, 0.6);
+          }
+        }
+        // Cột sáng: dâng từ chân lên trong 0,25 giây sau khi chạm đất, tan dần sau khi đồ bay đi.
+        const bt = tt - LOOT_ARC;
+        if (bt >= 0) {
+          const out = tt > lift ? Math.max(0, 1 - (tt - lift) / 0.7) : 1;
+          beam.fxA.x = Math.min(1.1, bt / 0.25);
+          beam.fxK = Math.min(1, bt / 0.8);
+          beam.fxOpacity = T.alpha * out;
+          if (core) {
+            core.fxA.x = Math.min(1.1, bt / 0.35);
+            core.fxK = beam.fxK;
+            core.fxOpacity = 0.5 * out;
+          }
+          if (ring) {
+            // Loang ra rồi đọng lại thành quầng dưới chân cột, thở nhẹ, tắt cùng cột.
+            const rk = Math.min(1, bt / 0.5);
+            const e = 1 - (1 - rk) * (1 - rk);
+            ring.scale.setScalar((0.3 + e * 0.7) * (0.8 + tier * 0.45) * (1 + Math.sin(bt * 5) * 0.04));
+            ring.fxOpacity = (0.85 - e * 0.4) * out;
+          }
+        }
+        if (!collected && tt >= lift) {
+          collected = true;
+          gem.visible = false;
+          this.burst(gem.position, T.color, 0.35, 0.2);
+          onCollect?.(gem.position);
+        }
+      },
+      () => {
+        this.drop(gem);
+        this.drop(beam);
+        if (core) this.drop(core);
+        if (ring) this.drop(ring);
+      },
+    );
+    return new THREE.Vector3(tx, gy, tz);
+  }
+
+  /** Đồng tiền nảy ra từ xác rồi lóe lên và tan (vàng đã vào túi; không cột sáng, không bay vào túi). */
+  goldDrop(from: THREE.Vector3): void {
+    const ang = Math.random() * Math.PI * 2;
+    const tx = from.x + Math.cos(ang) * 0.7;
+    const tz = from.z + Math.sin(ang) * 0.7;
+    const gy = groundAt(tx, tz) + 0.18;
+    const sx = from.x;
+    const sy = from.y;
+    const sz = from.z;
+    const coin = this.fx(G.octa, LOOT_GOLD, 0.95);
+    const end = LOOT_ARC + LOOT_BOUNCE + 0.3;
+    let t = 0;
+    this.add(
+      end,
+      (_k, dt) => {
+        t += dt;
+        const f = Math.min(1, t / LOOT_ARC);
+        coin.position.set(sx + (tx - sx) * f, sy + (gy - sy) * f + lootHop(t, 1.1), sz + (tz - sz) * f);
+        coin.rotation.y += dt * 12;
+        const fade = t > end - 0.3 ? Math.max(0, (end - t) / 0.3) : 1;
+        coin.scale.set(0.13 * fade, 0.04 + 0.13 * fade, 0.13 * fade);
+        coin.fxOpacity = 0.95 * fade;
+      },
+      () => {
+        this.burst(coin.position, LOOT_GOLD, 0.3, 0.18);
+        this.drop(coin);
+      },
+    );
+  }
+
+  /**
+   * Vết mực loang trên đất (M4-14) tâm (x, z), bán kính `r` (m). `stretch` > 1 kéo dài vết theo hướng
+   * `yaw` (vệt dưới đòn nặng). Tấm áp nghiêng theo mặt đất. Quá `MAX_INK` vết thì vết cũ nhất tan nhanh.
+   */
+  inkSplat(x: number, z: number, r: number, T: InkTiming = INK_DEATH, yaw = Math.random() * Math.PI * 2, stretch = 1, alpha = INK_ALPHA, edge = 1): void {
+    const n = this.inks.length;
+    this.inkAges.length = this.inkForced.length = n;
+    for (let i = 0; i < n; i++) {
+      this.inkAges[i] = this.inks[i].t;
+      this.inkForced[i] = this.inks[i].forced > 0;
+    }
+    const ev = inkEvict(this.inkAges, this.inkForced);
+    if (ev >= 0) this.inks[ev].forced = 0.001;
+    const m = this.fx(SIGIL_GEO, INK_POOL, alpha, 'inkpool');
+    // Vẽ trước mọi hiệu ứng sáng (vật trong suốt sắp theo renderOrder trước khoảng cách).
+    m.renderOrder = -2;
+    m.fxA.set(0, 0, edge, Math.random() * 50);
+    // Pháp tuyến mặt đất bằng sai phân quanh tâm, để vết không chìm/lơ lửng trên dốc.
+    const e = Math.max(0.5, r * 0.6);
+    _b.set(groundAt(x - e, z) - groundAt(x + e, z), 2 * e, groundAt(x, z - e) - groundAt(x, z + e)).normalize();
+    m.quaternion.setFromUnitVectors(UP, _b).multiply(_q.setFromAxisAngle(UP, yaw));
+    m.position.set(x, groundAt(x, z) + 0.07 + r * 0.02, z);
+    m.scale.set(2 * r, 1, 2 * r * stretch);
+    this.inks.push({ m, t: 0, T, forced: 0 });
+  }
+
+  /** Vệt mực mờ dưới chân nạn nhân khi trúng đòn nặng, kéo dài theo hướng đòn (từ (fromX, fromZ) tới (x, z)). */
+  inkStreak(x: number, z: number, fromX: number, fromZ: number, r = 0.7): void {
+    const yaw = Math.atan2(x - fromX, z - fromZ);
+    // Lệch về phía sau nạn nhân: mực văng theo hướng đòn.
+    this.inkSplat(x + Math.sin(yaw) * r * 0.5, z + Math.cos(yaw) * r * 0.5, r, INK_HIT, yaw, 1.7, 0.5, 0.6);
+  }
+
+  /** Mực văng ra khi quái gục: giọt mực rơi theo trọng lực và vài đốm sương linh khí tan lên. */
+  inkBurst(pos: THREE.Vector3, size = 1): void {
+    const n = Math.round(10 * size);
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 1.5 + Math.random() * 2.5;
+      PARTICLES.emit('dust', pos.x, pos.y, pos.z, Math.cos(a) * sp, 1.5 + Math.random() * 3, Math.sin(a) * sp, 0.45 + Math.random() * 0.3, 0.2 * size, 0.06, INK_POOL, 0.9, 11, 0.5);
+    }
+    for (let i = 0; i < 5; i++) {
+      PARTICLES.emit('glow', pos.x + (Math.random() - 0.5) * size, pos.y, pos.z + (Math.random() - 0.5) * size, 0, 0.8 + Math.random(), 0, 0.9 + Math.random() * 0.5, 0.08, 0.02, 0xdce6df, 0.6, -0.3, 0.8);
+    }
+  }
+
+  private updateInk(dt: number): void {
+    for (let i = this.inks.length - 1; i >= 0; i--) {
+      const ink = this.inks[i];
+      ink.t += dt;
+      const ph = inkPhase(ink.t, ink.T);
+      if (ink.forced > 0) ink.forced = Math.min(1, ink.forced + dt / 0.6);
+      const dissolve = Math.max(ph.dissolve, ink.forced);
+      ink.m.fxA.x = ph.spread;
+      ink.m.fxA.y = dissolve;
+      if (dissolve >= 1) {
+        this.drop(ink.m);
+        this.inks.splice(i, 1);
+      }
+    }
+  }
+
+  /** Số vết mực đang nằm trên đất (để kiểm giới hạn). */
+  get inkCount(): number {
+    return this.inks.length;
+  }
+
   /** Cột sáng dâng lên quanh một thực thể (lên cấp, hồi phục, hồi sinh). */
   pillar(pos: PosFn, color: number, dur = 1.1, radius = 1.1, height = 7): void {
     // Ống sáng phủ lên chính nhân vật: không bloom để không nhòe hình bóng (vòng dưới chân vẫn có).
@@ -573,6 +790,8 @@ export class Vfx {
   dispose(): void {
     // end() có thể đẻ hiệu ứng nối tiếp (phi kiếm → nổ); rút tới khi rỗng để mọi lưới về pool.
     for (let f = this.items.pop(); f; f = this.items.pop()) f.end();
+    for (const ink of this.inks) this.drop(ink.m);
+    this.inks.length = 0;
     this.trails.dispose();
     RAIN.clear();
     PARTICLES.detach();

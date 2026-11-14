@@ -13,6 +13,10 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 > - **Thiên lôi** `render/vfx/lightning.ts`: hình tia theo seed server (`FxMsg.sd`/`HazardMsg.sd`, `seededRandom`) nên mọi client thấy cùng một tia; dải quay về camera dựng lại mỗi khung trong bộ đệm cấp sẵn (kiểu `bolt`); chớp toàn cảnh qua `vfx.onFlash` → `PostPipeline.flash` (`uFlash`); mây kiếp xoáy là một đĩa vẽ trong fragment (kiểu `vortex`).
 > - **Vệt theo nhân vật** `render/vfx/trail.ts` (`vfx.trails.update` mỗi khung): dải vệt phi kiếm khi ngự kiếm (kiểu `trail`, tối đa 8 dải), linh quang quanh kiếm khi cầm kiếm, bụi mỗi bước chạy, sương dưới chân khi bay. Người khác một nửa số hạt, xa hơn 70 m không sinh.
 >
+> Từ M4-6/M4-14:
+> - **Đồ rơi** `render/vfx/loot.ts` + `vfx.lootDrop`/`vfx.goldDrop`: chỉ là lớp hình khi `S.SYS` loại `loot` có `src` (id quái/điểm hái) và `i` (id vật phẩm; không có = vàng); đồ đã vào túi ở server. Viên đồ nảy (`lootHop`), cột sáng kiểu `beam` (ống hở `BEAM_GEO`, `fxA.x` = độ dâng, `fxA.w` = seed) theo 3 bậc `lootTier(rarity)`: sương sớm / linh khí ngọc / kim quang `spirit_gold` (không tím), chuông nhiều bồi âm `lootChime` (`game/lootBell.ts`), icon bay vào nút `[data-bag]` bằng DOM (`game/lootFly.ts`, không thêm draw call). Đồ bậc cao nằm ngoài khung nhìn có chỉ báo M4-15 (`OffKind` `loot`).
+> - **Vết mực** `render/vfx/ink.ts` + `vfx.inkSplat`/`inkStreak`/`inkBurst`: kiểu `inkpool` (hòa trộn thường, có sương) trên `SIGIL_GEO` áp nghiêng theo mặt đất; `fxA` = độ loang, độ tan, độ đậm mép, seed; tan theo nhiễu (`inkPhase`). Tối đa `MAX_INK` 14 vết, vượt thì vết cũ nhất tan nhanh (`inkEvict`). Quái chết: `EntityManager.onMonsterDeath` (chỉ khi thấy quái chuyển sống → chết); đòn nặng (`DmgMsg.hv`): vệt nhỏ kéo dài theo hướng đòn, tối đa một vệt mỗi 0,4 giây mỗi nạn nhân. Màu `INK_POOL` (mực ngả lam ngọc, không đen tuyền).
+>
 > Các mục dưới đây là hướng làm tiếp; chỗ nào nói cel-shading/thủy mặc là định hướng cũ, theo art bible v3.
 
 ## Nguyên tắc

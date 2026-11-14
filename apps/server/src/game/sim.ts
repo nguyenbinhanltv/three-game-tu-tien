@@ -288,10 +288,13 @@ export class GameSim {
     return { x: cx, z: cz };
   }
 
-  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void {
+  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src'>): void {
     const m: SysMsg = { k };
     if (params) m.p = params;
     if (type) m.t = type;
+    // Đồ rơi (M4-6): chỉ là thứ đã vào túi (sau transaction), để client vẽ đồ nảy ra từ xác quái.
+    if (drop?.i) m.i = drop.i;
+    if (drop?.src) m.src = drop.src;
     p.client.send(S.SYS, m);
   }
 
@@ -992,8 +995,8 @@ export class GameSim {
       }
       return true;
     });
-    if (gold > 0) this.sys(p, 'sys.gold', { n: gold }, 'loot');
-    for (const g of kept) this.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot');
+    if (gold > 0) this.sys(p, 'sys.gold', { n: gold }, 'loot', { src: mon.id });
+    for (const g of kept) this.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id, src: mon.id });
     if (full) this.warn(p, 'sys.inv_full');
   }
 
@@ -1646,7 +1649,7 @@ export class GameSim {
     if (!p.char.tx('gather', null, (d) => d.add(n.s.t, qty))) return this.warn(p, 'sys.inv_full');
     n.s.on = false;
     n.respawnAt = this.now + n.respawn * 1000;
-    this.sys(p, 'sys.loot', { item: itemName(n.s.t), n: qty }, 'loot');
+    this.sys(p, 'sys.loot', { item: itemName(n.s.t), n: qty }, 'loot', { i: n.s.t, src: id });
     this.questEvent(p, 'gather', n.s.t, qty);
     this.fx({ t: 'gather', src: p.sid, x: n.s.x, y: n.s.y, z: n.s.z });
   }
