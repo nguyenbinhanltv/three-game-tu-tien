@@ -1,0 +1,83 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_linh_thao",
+  "type": "prop",
+  "budgetClass": "prop",
+  "itemId": "itm_linh_thao",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 1500,
+    "texture": 1024
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: single game prop, a small magical medicinal herb clump about 40 centimeters tall,\n6 broad pointed leaves in leaf green (#3E7552) with natural veins, each leaf tip fading into a pale jade green (#7FE3D0) as painted color,\none straight central stem with a single closed flower bud in peach pink (#E9B4C0),\ngrowing from a small low mound of dark rich soil with moss and two small grey pebbles,\nTHREE-QUARTER VIEW from slightly above (about 30 degrees), the whole object complete in frame,\nleaves with visible thickness, solid construction, no thin floating parts.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: leaves, moss, soil, stone,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): leaf green (#3E7552), pine green (#23503F), jade green (#7FE3D0), peach pink (#E9B4C0), dark wood (#4D3324), stone (#7D786C).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparkles, no fireflies, no smoke, no fog,\nno magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph,\nno background scenery, no pot, no grass around, no second plant, no cropped parts.\nVariant A: low radial rosette of six broad lanceolate leaves, short thick flower stalk, compact closed peach bud. Square 1024x1024. Exactly six leaves, one stem with one bud, two pebbles attached to one small soil mound. Restrained jade tint only on distal tips, no luminous look. 10 percent margin. No purple tint, no snow. Single object only.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_34_v02.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: single game prop, a small magical medicinal herb clump about 40 centimeters tall,\n6 broad pointed leaves in leaf green (#3E7552) with natural veins, each leaf tip fading into a pale jade green (#7FE3D0) as painted color,\none straight central stem with a single closed flower bud in peach pink (#E9B4C0),\ngrowing from a small low mound of dark rich soil with moss and two small grey pebbles,\nTHREE-QUARTER VIEW from slightly above (about 30 degrees), the whole object complete in frame,\nleaves with visible thickness, solid construction, no thin floating parts.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: leaves, moss, soil, stone,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): leaf green (#3E7552), pine green (#23503F), jade green (#7FE3D0), peach pink (#E9B4C0), dark wood (#4D3324), stone (#7D786C).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparkles, no fireflies, no smoke, no fog,\nno magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph,\nno background scenery, no pot, no grass around, no second plant, no cropped parts.\nVariant B: upright rosette with six narrower pointed leaves, taller central stalk and elongated closed peach bud. Square 1024x1024. Exactly six leaves, one stem with one bud, two pebbles attached to one small soil mound. Restrained jade tint only on distal tips, no luminous look. 10 percent margin. No purple tint, no snow. Single object only.",
+      "chosen": true
+    },
+    {
+      "file": "concept/concept_front_v01.png",
+      "view": "front",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME herb into strict orthographic FRONT VIEW at zero elevation. Preserve same SIX leaves in fixed positions as three opposite pairs around one stalk, same one closed peach bud, same jade tips veins and material, same soil mound moss and two pebbles. Do not add leaves to make all visible, allow natural overlap.  Same bud top and mound baseline, same size in frame. Square image.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: leaves, moss, soil, stone,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): leaf green (#3E7552), pine green (#23503F), jade green (#7FE3D0), peach pink (#E9B4C0), dark wood (#4D3324), stone (#7D786C).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparkles, no fireflies, no smoke, no fog,\nno magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph,\nno background scenery, no pot, no grass around, no second plant, no cropped parts.\nNo snow, no purple tint. Single plant.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_left_v01.png",
+      "view": "left",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME herb into strict orthographic LEFT SIDE PROFILE at exactly 90 degrees and zero elevation. Preserve same SIX leaves in fixed positions as three opposite pairs around one stalk, same one closed peach bud, same jade tips veins and material, same soil mound moss and two pebbles. Do not add leaves to make all visible, allow natural overlap. Opposite leaf pairs seen edge-on and overlapping; silhouette narrower than front, leaves must extend both left and right of stalk, not all point to one side. The two pebbles originally in front now project on image RIGHT side of soil. Same bud top and mound baseline, same size in frame. Square image.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: leaves, moss, soil, stone,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): leaf green (#3E7552), pine green (#23503F), jade green (#7FE3D0), peach pink (#E9B4C0), dark wood (#4D3324), stone (#7D786C).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparkles, no fireflies, no smoke, no fog,\nno magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph,\nno background scenery, no pot, no grass around, no second plant, no cropped parts.\nNo snow, no purple tint. Single plant.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_back_v01.png",
+      "view": "back",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, rotate the SAME herb into strict orthographic BACK VIEW at 180 degrees and zero elevation. Preserve same SIX leaves in fixed positions as three opposite pairs around one stalk, same one closed peach bud, same jade tips veins and material, same soil mound moss and two pebbles. Do not add leaves to make all visible, allow natural overlap. The two pebbles are on hidden front of mound, not moved to back. Same bud top and mound baseline, same size in frame. Square image.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable materials with hand-painted detail: leaves, moss, soil, stone,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): leaf green (#3E7552), pine green (#23503F), jade green (#7FE3D0), peach pink (#E9B4C0), dark wood (#4D3324), stone (#7D786C).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no watermark, no logo,\nno glow, no bloom, no light rays, no particles, no sparkles, no fireflies, no smoke, no fog,\nno magic effects, no aura,\nno cel shading, no toon outlines, no flat cartoon colors, no photograph,\nno background scenery, no pot, no grass around, no second plant, no cropped parts.\nNo snow, no purple tint. Single plant.",
+      "chosen": false
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "cli",
+      "version": 1,
+      "taskId": "eec1fb46-1922-479c-95c4-939052c05a4b",
+      "parentTaskId": null,
+      "model": "v3.1-20260211",
+      "params": {
+        "face_limit": 1500,
+        "smart_low_poly": true,
+        "texture_quality": "detailed",
+        "pbr": true
+      },
+      "seed": null,
+      "quote": 50,
+      "credits": 50,
+      "batch": "2026-11-15-m0-3-prop",
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Tiền xử lý tạm (chờ import_tripo.py M2-2) bằng dtl-asset-source/_batches/2026-11-15-m0-3-prep-tripo.mjs: weld, simplify LOD0 về ≤95% trần, resize texture 1024², đặt gốc ở đáy (center pivot below). GLB Tripo gốc: 2897 tam giác (vượt face_limit 1500), texture 4096². Build: LOD0 2897 / LOD1 1154 / LOD2 434 tam giác, 1051436 B. Kích thước vẫn chuẩn hóa của Tripo (cao 1 m), chưa scale theo thực tế."
+    }
+  ],
+  "license": {
+    "source": "Tripo (API trả phí) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}
