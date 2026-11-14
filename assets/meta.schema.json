@@ -40,6 +40,53 @@
         "seed": { "type": ["integer", "string", "null"] }
       }
     },
+    "import": {
+      "type": "object",
+      "description": "Nhập GLB ngoài (Tripo) qua tools/blender/import_tripo.py. tools/blender/run.mjs tự tạo job cho mọi meta.json có khối này. Xem assets/README.md mục Nhập Tripo.",
+      "required": ["kind", "source", "size"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["tripo"] },
+        "source": { "type": "string", "description": "GLB gốc, tương đối DTL_ASSET_SOURCE (../dtl-asset-source), ví dụ prop/prop_lo_dan/tripo/raw_v01.glb." },
+        "size": {
+          "type": "object",
+          "description": "Kích thước thật (mét) của đúng một cạnh hộp bao ở tư thế nghỉ; scale đều theo cạnh này.",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "height": { "type": "number", "exclusiveMinimum": 0 },
+            "width": { "type": "number", "exclusiveMinimum": 0 },
+            "depth": { "type": "number", "exclusiveMinimum": 0 },
+            "longest": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "orient": {
+          "enum": ["auto", "thigh", "none"],
+          "description": "auto (mặc định): có cặp xương đùi trái/phải thì xoay cho bên trái nhân vật về +X, mặt nhìn +Z; thigh: bắt buộc có; none: không tự xoay."
+        },
+        "yaw": { "type": "number", "description": "Xoay thêm quanh +Y (độ, ngược chiều kim đồng hồ nhìn từ trên) sau bước orient, để mặt trước nhìn về +Z." },
+        "sockets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "position"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "pattern": "^socket_[a-z0-9]+(_[a-z0-9]+)*$" },
+              "position": {
+                "type": "array",
+                "items": { "type": "number" },
+                "minItems": 3,
+                "maxItems": 3,
+                "description": "Tọa độ glTF (Y lên, mét) sau chuẩn hóa: gốc ở đáy, mặt trước +Z."
+              },
+              "bone": { "type": "string", "description": "Gắn vào xương này (vị trí vẫn theo tọa độ thế giới ở tư thế nghỉ)." }
+            }
+          }
+        }
+      }
+    },
     "concept": {
       "type": "array",
       "items": {

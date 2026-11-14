@@ -1,5 +1,42 @@
 # Giấy phép asset
 
+## Icon UI M4-7
+
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ. Không dùng tài sản hoặc khung icon của guizang. PNG gốc ở `<DTL_ASSET_SOURCE>/icons/<id>.png`; prompt tại `docs/prompts/codex.md` mục 9, chủ thể tại `tools/icons/subjects.json`. Atlas 128px/ô: `apps/client/public/assets/ui/icons.*.webp`. Manifest lưu SHA-256 và dung lượng từng PNG nguồn.
+
+| Asset | Nguồn | Giấy phép | Ngày | Chi tiết |
+| --- | --- | --- | --- | --- |
+| `skl_phi_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_phi_kiem.png` |
+| `skl_kiem_khi_tram` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_kiem_khi_tram.png` |
+| `skl_linh_khi_ho_the` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_linh_khi_ho_the.png` |
+| `skl_thien_kiem_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_thien_kiem_vu.png` |
+| `skl_hoi_nguyen_thuat` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_hoi_nguyen_thuat.png` |
+| `skl_loi_dinh_nhat_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_loi_dinh_nhat_kiem.png` |
+| `itm_linh_thao` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_linh_thao.png` |
+| `itm_huyet_linh_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_huyet_linh_chi.png` |
+| `itm_nanh_soi` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_nanh_soi.png` |
+| `itm_yeu_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_yeu_dan.png` |
+| `itm_thiet_tinh` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_thiet_tinh.png` |
+| `itm_han_giao_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_han_giao_dan.png` |
+| `itm_kiem_phach` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_kiem_phach.png` |
+| `itm_truc_co_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_truc_co_dan.png` |
+| `itm_hoi_xuan_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_xuan_dan.png` |
+| `itm_hoi_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_khi_dan.png` |
+| `itm_tu_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tu_khi_dan.png` |
+| `itm_moc_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_moc_kiem.png` |
+| `itm_thiet_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_thiet_kiem.png` |
+| `itm_thanh_phong_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_thanh_phong_kiem.png` |
+| `itm_han_quang_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_han_quang_kiem.png` |
+| `itm_tram_ta_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tram_ta_kiem.png` |
+| `itm_bo_y` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_bo_y.png` |
+| `itm_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_dao_bao.png` |
+| `itm_linh_ti_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_linh_ti_bao.png` |
+| `itm_huyen_van_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_huyen_van_bao.png` |
+| `itm_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_ngoc_boi.png` |
+| `itm_huyen_thiet_gioi` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_huyen_thiet_gioi.png` |
+| `itm_han_giao_hoan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_han_giao_hoan.png` |
+
+
 Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.json`) phải có **đúng một dòng** trong bảng dưới. `pnpm assets:validate` báo lỗi nếu thiếu. Cột đầu ghi asset id trong dấu `` ` ``.
 
 - **Nguồn**: Tripo (web app gói Max / API trả phí), Codex (ảnh concept), CC0 (ghi tên gói), tự sinh bằng script (ghi đường dẫn script).
@@ -9,6 +46,9 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | Asset | Nguồn | Giấy phép | Ngày | Chi tiết |
 | --- | --- | --- | --- | --- |
 | `arch_sect` | Tự sinh bằng script `tools/blender/build_sect.py` (Blender headless) | dự án | 2026-11-12 | Kiến trúc Lạc Kiếm Tông; không có texture, chỉ màu đỉnh |
+| `prop_lo_dan` | Tripo API (image→3D v3.1) + Codex (concept) | dự án | 2026-11-15 | task `bf2c9afd-c009-472c-abb5-21b01acdc63d` |
+| `prop_linh_thao` | Tripo API (image→3D v3.1) + Codex (concept) | dự án | 2026-11-15 | task `eec1fb46-1922-479c-95c4-939052c05a4b` |
+| `prop_phi_kiem` | Tripo API (multiview→3D v3.1, chỉ lấy hình) + Codex (concept); màu tô bằng script `tools/blender/recolor_phi_kiem.py` | dự án | 2026-11-15 | task `70d2072c-c993-4c70-a8d2-82931408bcc1` |
 
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 
@@ -58,3 +98,12 @@ Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi đ�
 | `amb_cave` | OpenGameArt: wind whoosh loop — SketchMan3; OpenGameArt: 20 Sword Sound Effects (Attacks and Clashes) — StarNinjas | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/wind-whoosh-loop — `oga/wind-whoosh-loop/`: wind_20woosh_20loop.ogg; https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — `oga/20-sword-sound-effects-attacks-and-clashes/sword_clash_-_starninjas_0/`: sword_clash.9.ogg |
 
 <!-- audio:end -->
+
+## Font
+
+Font web tự host trong `apps/client/public/fonts/`, subset bằng `tools/fonts/subset.py` (fonttools) từ kho [google/fonts](https://github.com/google/fonts) ghim commit `cc39c4c`. Văn bản giấy phép đầy đủ nằm cạnh file font (`OFL-*.txt`); bản quyền và giấy phép cũng giữ trong bảng `name` của từng woff2. Không font nào khai Reserved Font Name.
+
+| File | Font gốc | Giấy phép | Ngày | Dùng cho |
+| --- | --- | --- | --- | --- |
+| `dtl-title.woff2` | Charm Bold, © 2018 The Charm Project Authors (Cadson Demak) | `OFL-1.1` | 2026-11-15 | Tiêu đề thư pháp trên khung hình đầu (chỉ glyph của `ui.title`), biến CSS `--font-title` |
+| `dtl-display.woff2` | Alegreya SC Bold, © 2011 The Alegreya Project Authors (Huerta Tipográfica) | `OFL-1.1` | 2026-11-15 | Tên boss, biển hiệu, phụ đề màn tiêu đề (Latin + tiếng Việt), biến CSS `--font-display` |

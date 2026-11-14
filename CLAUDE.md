@@ -27,7 +27,7 @@ packages/content   dữ liệu game JSON trong data/, chuỗi tiếng Việt tro
 apps/client        Vite + Three.js + React (src/game: engine, terrain, entities, models, vfx; src/ui)
 apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts, game/character.ts, auth.ts, db.ts
 apps/bot-client    bot headless để test tải
-tools/blender      build_sect.py (kiến trúc tông môn → GLB), build_fixture_rig.py (GLB có xương cho test), run.mjs
+tools/blender      build_sect.py (kiến trúc tông môn → GLB), import_tripo.py (chuẩn hóa GLB Tripo), build_fixture_rig.py (GLB có xương cho test), run.mjs
 tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts
 tools/audio        build.mjs + sounds.json: SFX/âm môi trường CC0 → public/audio/{sfx,amb} + manifest.json
 assets             README, LICENSES.md, budgets.json, meta.schema.json, source/<loại>/<id>/meta.json

@@ -1,3 +1,11 @@
+/* Font tự host (OFL-1.1, xem assets/LICENSES.md). DTL Title nằm trong index.html cho khung hình đầu. */
+@font-face {
+  font-family: 'DTL Display';
+  src: url(/fonts/dtl-display.woff2) format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
 :root {
   --ink: #0d1420;
   --panel: rgba(14, 21, 34, 0.86);
@@ -14,6 +22,9 @@
   --bad: #ff7a6b;
   --serif: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, 'Times New Roman', serif;
   --sans: 'Segoe UI', 'Noto Sans', Roboto, Arial, sans-serif;
+  /* Tiêu đề thư pháp (chỉ có glyph của tiêu đề game) và serif cho tên boss, biển hiệu, địa danh. */
+  --font-title: 'DTL Title', var(--serif);
+  --font-display: 'DTL Display', var(--serif);
 }
 
 * {
@@ -163,100 +174,142 @@ kbd {
 
 /* ---------- đăng nhập ---------- */
 
-.login {
+/* ---------- màn tiêu đề kiêm màn tải (M4-9) ----------
+ * Nền, tiêu đề và cảnh 3D nằm trong #boot (index.html). Phần dưới là thẻ nội dung React.
+ * Tông giấy ngà mờ, viền đồng thau mảnh, chữ mực (art bible mục 7). */
+
+#root {
+  z-index: 2;
+}
+.ts-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.title-screen {
   position: fixed;
   inset: 0;
-  pointer-events: auto;
-  display: grid;
-  place-items: center;
-  background:
-    radial-gradient(ellipse at 50% 115%, rgba(120, 170, 210, 0.35), transparent 60%),
-    radial-gradient(ellipse at 20% 0%, rgba(214, 182, 110, 0.18), transparent 50%),
-    linear-gradient(180deg, #0b1220 0%, #16263c 55%, #2a4560 100%);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Ngay dưới tiêu đề: top 15vh + chiều cao dòng tiêu đề (clamp như .ts-title). */
+  padding-top: calc(15vh + clamp(64px, 10.5vw, 148px) * 1.1 + 6px);
+  color: #29292c;
 }
-
-.login-card {
-  width: min(92vw, 420px);
-  padding: 34px 32px 30px;
-  text-align: center;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
+.ts-sub {
+  font: 700 clamp(15px, 1.35vw, 19px) var(--font-display);
+  letter-spacing: 0.14em;
+  color: #4d3324;
+  text-shadow: 0 0 12px rgba(230, 221, 203, 0.95);
 }
-
-.login-sword {
-  width: 10px;
-  height: 74px;
-  margin: 0 auto 14px;
-  background: linear-gradient(180deg, #f4fbff, #9fc4dc);
-  clip-path: polygon(50% 0, 100% 16%, 100% 100%, 0 100%, 0 16%);
-  box-shadow: 0 0 22px rgba(160, 220, 255, 0.8);
-  position: relative;
-}
-.login-sword::after {
+.ts-sub::before,
+.ts-sub::after {
   content: '';
-  position: absolute;
-  left: -13px;
-  bottom: -6px;
-  width: 36px;
-  height: 6px;
-  border-radius: 2px;
-  background: var(--gold);
+  display: inline-block;
+  width: 46px;
+  height: 1px;
+  margin: 0 14px;
+  vertical-align: middle;
+  background: linear-gradient(90deg, transparent, #ae8b49);
 }
-
-.login h1 {
-  margin: 0;
-  font: 700 40px var(--serif);
-  letter-spacing: 2px;
-  color: var(--gold);
-  text-shadow: 0 2px 18px rgba(227, 194, 122, 0.35);
+.ts-sub::after {
+  background: linear-gradient(90deg, #ae8b49, transparent);
 }
-.login-sub {
-  margin-top: 4px;
-  color: var(--gold-soft);
-  letter-spacing: 1px;
-  font-size: 13px;
+.ts-card {
+  pointer-events: auto;
+  margin-top: auto;
+  margin-bottom: 9vh;
+  width: min(92vw, 400px);
+  padding: 18px 28px 22px;
+  text-align: center;
+  background: rgba(230, 221, 203, 0.8);
+  border: 1px solid rgba(174, 139, 73, 0.75);
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px rgba(230, 221, 203, 0.35), 0 18px 50px rgba(35, 54, 78, 0.25);
+  backdrop-filter: blur(5px);
+  color: #29292c;
+  animation: ts-card-in 0.6s ease-out both;
+}
+@keyframes ts-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.ts-loading {
+  background: rgba(230, 221, 203, 0.62);
+  pointer-events: none;
+}
+.ts-line {
+  margin: 0 0 12px;
+  min-height: 1.5em;
+  font: italic 16px var(--serif);
+  color: #29292c;
+  animation: ts-line-in 0.16s ease-out both;
+}
+@keyframes ts-line-in {
+  from {
+    opacity: 0.2;
+  }
+}
+.ts-bar {
+  height: 3px;
+  background: rgba(77, 51, 36, 0.18);
+  overflow: hidden;
+}
+.ts-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ae8b49, #f2c47e);
+  transform: scaleX(0);
+  transform-origin: left;
 }
 .login-tag {
-  margin: 16px 0 6px;
-  color: var(--muted);
+  margin: 2px 0 6px;
+  color: #464540;
   font: italic 15px var(--serif);
 }
+.ts-card .btn.primary {
+  margin-top: 4px;
+}
 .login-form {
-  margin-top: 20px;
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
   gap: 9px;
   align-items: stretch;
 }
 .login-form label {
-  font-weight: 600;
-  color: var(--text);
+  font: 700 15px var(--font-display);
+  letter-spacing: 0.04em;
+  color: #4d3324;
 }
 .login-form input {
   pointer-events: auto;
   user-select: text;
   padding: 10px 12px;
-  border-radius: 7px;
-  border: 1px solid var(--line);
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--text);
+  border-radius: 3px;
+  border: 1px solid rgba(174, 139, 73, 0.7);
+  background: rgba(255, 252, 244, 0.7);
+  color: #29292c;
   font-size: 15px;
   text-align: center;
   outline: none;
 }
+.login-form input::placeholder {
+  color: #7d786c;
+}
 .login-form input:focus {
-  border-color: var(--gold);
+  border-color: #9d392e;
 }
 .login-hint {
   font-size: 12px;
-  color: var(--muted);
+  color: #5c574d;
 }
 .login-error {
-  margin-top: 14px;
-  color: var(--bad);
+  margin: 10px 0;
+  color: #9d392e;
+  font-weight: 600;
   line-height: 1.5;
 }
 .google-btn {
@@ -265,21 +318,6 @@ kbd {
   pointer-events: auto;
   min-height: 44px;
 }
-.spinner {
-  width: 30px;
-  height: 30px;
-  margin: 18px auto 0;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.15);
-  border-top-color: var(--gold);
-  animation: spin 0.9s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* ---------- HUD ---------- */
 
 .hud {
@@ -310,6 +348,10 @@ kbd {
 }
 .hud.with-boss .toasts {
   top: 210px;
+}
+.target-frame.boss .frame-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
 }
 .frame-head {
   display: flex;
@@ -535,7 +577,7 @@ kbd {
   right: 0;
   top: 5px;
   text-align: center;
-  font: 700 12px var(--serif);
+  font: 700 12px var(--font-display);
   color: #ffe9a8;
   text-shadow:
     0 0 3px #000,
@@ -1322,6 +1364,23 @@ kbd {
   color: var(--gold-soft);
 }
 
+/* Shared inventory/ability atlas; retain overlays and parent rarity styling. */
+.content-icon {
+  display: inline-block;
+  width: 1.6em;
+  height: 1.6em;
+  flex-shrink: 0;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  line-height: 1.6;
+  text-align: center;
+}
+.skill-icon .content-icon { width: 52px; height: 52px; }
+.slot-icon .content-icon { width: 42px; height: 42px; }
+.slot.small .content-icon { width: 30px; height: 30px; }
+.skill-item-icon .content-icon { width: 30px; height: 30px; }
+
 @media (max-width: 1100px) {
   .chat {
     width: 280px;
@@ -1336,6 +1395,10 @@ kbd {
   .skill-icon {
     font-size: 24px;
     line-height: 50px;
+  }
+  .skill-icon .content-icon {
+    width: 44px;
+    height: 44px;
   }
   .action span {
     display: none;

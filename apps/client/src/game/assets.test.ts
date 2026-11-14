@@ -96,6 +96,31 @@ describe('AssetCache', () => {
     h.release();
   });
 
+  it('progress cộng byte theo manifest và theo onBytes của loader', async () => {
+    const m = manifestOf('arch_a', 'arch_b');
+    m.assets.arch_a.bytes = 100;
+    m.assets.arch_b.bytes = 300;
+    let finishB: (() => void) | null = null;
+    const cache = new AssetCache({
+      fetchManifest: async () => m,
+      load: (url, onBytes) => {
+        if (url.includes('arch_a')) return Promise.resolve(fakeGltf([]));
+        onBytes?.(120);
+        return new Promise<GLTF>((r) => (finishB = () => r(fakeGltf([]))));
+      },
+    });
+    expect(cache.progress()).toEqual({ loaded: 0, total: 0 });
+    const a = await cache.acquire('arch_a');
+    const pb = cache.acquire('arch_b');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(cache.progress()).toEqual({ loaded: 220, total: 400 });
+    finishB!();
+    const b = await pb;
+    expect(cache.progress()).toEqual({ loaded: 400, total: 400 });
+    a.release();
+    b.release();
+  });
+
   it('xếp hàng theo khoảng cách tới người xem', async () => {
     const order: string[] = [];
     let unblock!: () => void;

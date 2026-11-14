@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "pipeline": 1,
+  "pipeline": 2,
   "assets": {
     "arch_sect": {
       "id": "arch_sect",
@@ -10,6 +10,8 @@
       "bytes": 138216,
       "rawBytes": 840236,
       "triangles": 11012,
+      "rawTriangles": 11012,
+      "lod0Cap": 300000,
       "skinned": false,
       "quantized": true,
       "bones": 0,
@@ -34,6 +36,221 @@
           "height": 22.5925,
           "depth": 141.6009,
           "minY": 0.0037
+        }
+      }
+    },
+    "prop_linh_thao": {
+      "id": "prop_linh_thao",
+      "class": "prop",
+      "source": "assets/build/raw/prop_linh_thao.glb",
+      "file": "prop_linh_thao.9f4139774e.glb",
+      "bytes": 949756,
+      "rawBytes": 1059152,
+      "triangles": 1496,
+      "rawTriangles": 2897,
+      "lod0Cap": 1500,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_linh_thao_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_linh_thao_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_linh_thao_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 1496
+        },
+        {
+          "level": 1,
+          "triangles": 598,
+          "target": 598
+        },
+        {
+          "level": 2,
+          "triangles": 220,
+          "target": 224
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.3139,
+          "height": 0.4,
+          "depth": 0.18,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.3053,
+          "height": 0.4,
+          "depth": 0.18,
+          "minY": 0
+        }
+      }
+    },
+    "prop_lo_dan": {
+      "id": "prop_lo_dan",
+      "class": "prop",
+      "source": "assets/build/raw/prop_lo_dan.glb",
+      "file": "prop_lo_dan.8de670d6be.glb",
+      "bytes": 1330328,
+      "rawBytes": 1476032,
+      "triangles": 4000,
+      "rawTriangles": 5960,
+      "lod0Cap": 4000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_lo_dan_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_lo_dan_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_lo_dan_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 4000
+        },
+        {
+          "level": 1,
+          "triangles": 1600,
+          "target": 1600
+        },
+        {
+          "level": 2,
+          "triangles": 600,
+          "target": 600
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.0262,
+          "height": 1.2,
+          "depth": 0.991,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.0263,
+          "height": 1.2,
+          "depth": 0.991,
+          "minY": 0
+        }
+      }
+    },
+    "prop_phi_kiem": {
+      "id": "prop_phi_kiem",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_phi_kiem.glb",
+      "file": "prop_phi_kiem.8b0efdf9ff.glb",
+      "bytes": 561396,
+      "rawBytes": 660396,
+      "triangles": 2850,
+      "rawTriangles": 2850,
+      "lod0Cap": 3000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "NormalGL_70d2072c-c993-4c70-a8d2-82931408bcc1",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "Color_70d2072c-c993-4c70-a8d2-82931408bcc1",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ORM_70d2072c-c993-4c70-a8d2-82931408bcc1",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2850
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.1434,
+          "height": 1.003,
+          "depth": 0.1577,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.1434,
+          "height": 1.003,
+          "depth": 0.1577,
+          "minY": 0
         }
       }
     }

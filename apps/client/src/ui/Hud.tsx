@@ -1,3 +1,4 @@
+import { ContentIcon } from './ContentIcon';
 import { useEffect, useRef, useState } from 'react';
 import { C, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, WORLD_SIZE } from '@dtl/shared';
 import { itemName, monsterName, QUEST, realmName, SKILLS, t } from '@dtl/content';
@@ -286,7 +287,7 @@ function SkillBar() {
               title={`${t(`skill.${sk.id}.name`)}\n${locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : t(`skill.${sk.id}.desc`)}${sk.mp ? `\n${t('ui.mp')}: ${sk.mp}` : ''}`}
               onClick={() => Game.current?.useSkill(i)}
             >
-              <span className="skill-icon">{sk.icon}</span>
+              <span className="skill-icon"><ContentIcon def={sk} /></span>
               <span className="skill-key">{i + 1}</span>
               {left > 80 && !locked && (
                 <>

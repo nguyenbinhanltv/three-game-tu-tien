@@ -52,6 +52,12 @@ export interface AcquireOptions {
   priority?: number;
 }
 
+/** Tiến độ nạp theo byte (kích thước lấy từ manifest), cộng dồn mọi asset đã yêu cầu. */
+export interface AssetProgress {
+  loaded: number;
+  total: number;
+}
+
 export interface AssetCacheStats {
   /** Số asset có bản gốc trong bộ nhớ. */
   loaded: number;
@@ -61,7 +67,7 @@ export interface AssetCacheStats {
   refs: number;
 }
 
-type LoadFn = (url: string) => Promise<GLTF>;
+type LoadFn = (url: string, onBytes?: (loaded: number) => void) => Promise<GLTF>;
 
 interface Entry {
   id: string;
@@ -73,6 +79,7 @@ interface Entry {
 interface Job {
   id: string;
   url: string;
+  onBytes: (loaded: number) => void;
   pos?: { x: number; z: number };
   priority: number;
   resolve: (g: GLTF) => void;
@@ -131,6 +138,7 @@ export class AssetCache {
   private queue: Job[] = [];
   private active = 0;
   private viewer = { x: 0, z: 0 };
+  private bytes = new Map<string, AssetProgress>();
   private manifest: Promise<Manifest> | null = null;
   private ktx2: KTX2Loader | null = null;
   private loader: GLTFLoader | null = null;
@@ -190,7 +198,19 @@ export class AssetCache {
         .then((m) => {
           const a = m.assets[id];
           if (!a) throw new Error(`asset "${id}" không có trong manifest`);
-          return this.enqueue(id, this.base + a.file, opts);
+          const p = { loaded: 0, total: a.bytes };
+          this.bytes.set(id, p);
+          const onBytes = (n: number) => (p.loaded = Math.min(n, p.total));
+          return this.enqueue(id, this.base + a.file, onBytes, opts).then(
+            (g) => {
+              p.loaded = p.total;
+              return g;
+            },
+            (err) => {
+              this.bytes.delete(id);
+              throw err;
+            },
+          );
         })
         .then((g) => {
           entry.gltf = g;
@@ -211,6 +231,17 @@ export class AssetCache {
       throw err;
     }
     return this.instance(e, gltf);
+  }
+
+  /** Byte đã nạp / tổng byte của mọi asset từng yêu cầu (cho thanh tiến độ màn tải). */
+  progress(): AssetProgress {
+    let loaded = 0;
+    let total = 0;
+    for (const p of this.bytes.values()) {
+      loaded += p.loaded;
+      total += p.total;
+    }
+    return { loaded, total };
   }
 
   stats(): AssetCacheStats {
@@ -258,9 +289,9 @@ export class AssetCache {
     };
   }
 
-  private enqueue(id: string, url: string, opts: AcquireOptions): Promise<GLTF> {
+  private enqueue(id: string, url: string, onBytes: (n: number) => void, opts: AcquireOptions): Promise<GLTF> {
     return new Promise<GLTF>((resolve, reject) => {
-      this.queue.push({ id, url, pos: opts.pos, priority: opts.priority ?? 0, resolve, reject });
+      this.queue.push({ id, url, onBytes, pos: opts.pos, priority: opts.priority ?? 0, resolve, reject });
       this.pump();
     });
   }
@@ -288,7 +319,7 @@ export class AssetCache {
       for (let i = 1; i < this.queue.length; i++) if (this.rank(this.queue[i]) < this.rank(this.queue[best])) best = i;
       const job = this.queue.splice(best, 1)[0];
       this.active++;
-      this.load(job.url)
+      this.load(job.url, job.onBytes)
         .then(job.resolve, job.reject)
         .finally(() => {
           this.active--;
@@ -297,13 +328,13 @@ export class AssetCache {
     }
   }
 
-  private load(url: string): Promise<GLTF> {
-    if (this.opts.load) return this.opts.load(url);
+  private load(url: string, onBytes: (n: number) => void): Promise<GLTF> {
+    if (this.opts.load) return this.opts.load(url, onBytes);
     if (!this.loader) {
       if (!this.ktx2) this.ktx2 = createKtx2Loader();
       this.loader = createGltfLoader(this.ktx2);
     }
-    return this.loader.loadAsync(url);
+    return this.loader.loadAsync(url, (ev) => onBytes(ev.loaded));
   }
 }
 
