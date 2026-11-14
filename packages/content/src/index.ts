@@ -3,6 +3,7 @@ import type {
   LevelDef,
   MonsterDef,
   NpcDef,
+  PoseDef,
   QuestDef,
   RealmDef,
   RecipeDef,
@@ -20,6 +21,8 @@ import kiemTrungJson from '../data/levels/kiem_trung.json';
 import glossaryJson from '../data/glossary.json';
 import viJson from '../data/i18n/vi.json';
 import viUiJson from '../data/i18n/vi.ui.json';
+import poseKiemThuJson from '../data/poses/kiem_thu.json';
+import poseChemNgangJson from '../data/poses/chem_ngang.json';
 
 export const ITEMS = itemsJson as ItemDef[];
 export const MONSTERS = monstersJson as unknown as MonsterDef[];
@@ -33,6 +36,8 @@ export const LEVELS: Record<string, LevelDef> = {
   kiem_trung: kiemTrungJson as LevelDef,
 };
 export const GLOSSARY = glossaryJson;
+/** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
+export const POSES = [poseKiemThuJson, poseChemNgangJson] as unknown as PoseDef[];
 
 function index<T extends { id: string }>(list: T[]): Map<string, T> {
   const m = new Map<string, T>();
@@ -46,6 +51,7 @@ export const SKILL = index(SKILLS);
 export const RECIPE = index(RECIPES);
 export const NPC = index(NPCS);
 export const QUEST = index(QUESTS);
+export const POSE = index(POSES);
 
 /** Vật phẩm dùng để cường hóa trang bị. */
 export const ENHANCE_ORE = 'itm_thiet_tinh';
