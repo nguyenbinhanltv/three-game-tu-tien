@@ -33,3 +33,18 @@ export function runBlender(blender, script, args, opts = {}) {
   if (r.status !== 0 && opts.quiet) process.stderr.write(`${r.stdout ?? ''}\n${r.stderr ?? ''}`);
   return r.status ?? 1;
 }
+
+/**
+ * Thư mục nguồn asset lớn (GLB Tripo, concept): biến DTL_ASSET_SOURCE, rồi `<repo>/../dtl-asset-source`,
+ * rồi cạnh checkout chính khi đang ở git worktree (thư mục cha của --git-common-dir). Không thấy thì null.
+ * @param {string} root gốc repo (hoặc worktree)
+ * @returns {string | null}
+ */
+export function findAssetSource(root) {
+  const candidates = [];
+  if (process.env.DTL_ASSET_SOURCE) candidates.push(path.resolve(root, process.env.DTL_ASSET_SOURCE));
+  candidates.push(path.resolve(root, '..', 'dtl-asset-source'));
+  const git = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
+  if (git.status === 0 && git.stdout.trim()) candidates.push(path.resolve(git.stdout.trim(), '..', '..', 'dtl-asset-source'));
+  return candidates.find((d) => fs.existsSync(d) && fs.statSync(d).isDirectory()) ?? null;
+}
