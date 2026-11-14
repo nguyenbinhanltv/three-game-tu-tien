@@ -215,3 +215,58 @@ export function fadeFor(from: MusicTrack | null, to: MusicTrack): number {
   if (to === 'meditate' || from === 'meditate') return 2.5;
   return 4;
 }
+
+// ---------- âm môi trường theo vùng (M4-12) ----------
+
+/** Id âm môi trường trong manifest.ambient (tools/audio/sounds.json). */
+export type AmbientId = 'wind' | 'forest' | 'stream' | 'night' | 'cave';
+export const AMBIENT_IDS: readonly AmbientId[] = ['wind', 'forest', 'stream', 'night', 'cave'];
+
+/**
+ * Âm môi trường cho vùng: Kiếm Trủng/bí cảnh là gió hang; ven hồ luôn có nước vỗ (kể cả đêm);
+ * còn lại ban đêm là dế, ban ngày rừng và tông môn có chim, đồng hoang và thung lũng là gió núi.
+ */
+export function ambientFor(dungeon: boolean, biome: Biome, night: boolean): AmbientId {
+  if (dungeon || biome === 'dungeon') return 'cave';
+  if (biome === 'lake') return 'stream';
+  if (night) return 'night';
+  if (biome === 'forest' || biome === 'sect') return 'forest';
+  return 'wind';
+}
+
+/** Đêm theo giờ máy người chơi (game chưa có chu kỳ ngày/đêm): 19h–5h. */
+export function isNightHour(hour: number): boolean {
+  return hour >= 19 || hour < 5;
+}
+
+/** Chống đổi qua lại ở ranh giới vùng: ứng viên mới phải giữ đủ REGION_DWELL giây mới đổi (lần đầu đổi ngay). */
+export class AmbientPicker {
+  current: AmbientId | null = null;
+  private cand: AmbientId | null = null;
+  private candSince = 0;
+
+  update(now: number, want: AmbientId): AmbientId | null {
+    if (this.current === null) {
+      this.current = want;
+      return want;
+    }
+    if (want === this.current) {
+      this.cand = null;
+      return null;
+    }
+    if (want !== this.cand) {
+      this.cand = want;
+      this.candSince = now;
+      return null;
+    }
+    if (now - this.candSince < REGION_DWELL) return null;
+    this.current = want;
+    this.cand = null;
+    return want;
+  }
+
+  reset(): void {
+    this.current = null;
+    this.cand = null;
+  }
+}

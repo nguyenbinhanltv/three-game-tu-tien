@@ -1,0 +1,193 @@
+{
+  "$comment": "Khai báo SFX và âm môi trường cho tools/audio/build.mjs. Đường dẫn nguồn dạng \"<gói>:<file>\", gói định nghĩa trong packs (thư mục tương đối với <DTL_ASSET_SOURCE>/sfx). Chỉ nhận gói CC0. level = độ to mục tiêu (dB, so với mức chuẩn -14 dBFS RMS đoạn to nhất); rate = tốc độ phát (đổi cao độ); at = thời điểm đặt lớp (giây) khi trộn nhiều lớp.",
+  "packs": {
+    "rpg": { "dir": "oga/50-rpg-sound-effects/RPGsounds_Kenney/OGG", "title": "50 RPG sound effects", "author": "Kenney", "url": "https://opengameart.org/content/50-rpg-sound-effects", "license": "CC0-1.0" },
+    "ui": { "dir": "oga/interface-sounds/kenney_interfaceSounds/Audio", "title": "Interface Sounds", "author": "Kenney", "url": "https://opengameart.org/content/interface-sounds", "license": "CC0-1.0" },
+    "jingle": { "dir": "oga/85-short-music-jingles/jingleSounds_Kenney/OGG/jingles_PIZZA", "title": "85 Short music jingles", "author": "Kenney", "url": "https://opengameart.org/content/85-short-music-jingles", "license": "CC0-1.0" },
+    "sword": { "dir": "oga/20-sword-sound-effects-attacks-and-clashes/sword_-_starninjas_1/sword - StarNinjas", "title": "20 Sword Sound Effects (Attacks and Clashes)", "author": "StarNinjas", "url": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes", "license": "CC0-1.0" },
+    "clash": { "dir": "oga/20-sword-sound-effects-attacks-and-clashes/sword_clash_-_starninjas_0", "title": "20 Sword Sound Effects (Attacks and Clashes)", "author": "StarNinjas", "url": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes", "license": "CC0-1.0" },
+    "bfh": { "dir": "oga/75-cc0-breaking-falling-hit-sfx/sfx_breaking_and_falling", "title": "75 CC0 breaking / falling / hit sfx", "author": "rubberduck", "url": "https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx", "license": "CC0-1.0" },
+    "s100": { "dir": "oga/100-cc0-sfx-2/sfx_100_v2", "title": "100 CC0 SFX #2", "author": "rubberduck", "url": "https://opengameart.org/content/100-cc0-sfx-2", "license": "CC0-1.0" },
+    "magic": { "dir": "oga/magic-spell-sfx", "title": "Magic Spell SFX", "author": "JaggedStone", "url": "https://opengameart.org/content/magic-spell-sfx", "license": "CC0-1.0" },
+    "cure": { "dir": "oga/cure-magic/curemagic", "title": "Cure Magic", "author": "Someoneman", "url": "https://opengameart.org/content/cure-magic", "license": "CC0-1.0" },
+    "wind": { "dir": "oga/wind-whoosh-loop", "title": "wind whoosh loop", "author": "SketchMan3", "url": "https://opengameart.org/content/wind-whoosh-loop", "license": "CC0-1.0" },
+    "crickets": { "dir": "oga/crickets-ambient-noise-loopable", "title": "Crickets Ambient Noise - loopable", "author": "Wolfgang_", "url": "https://opengameart.org/content/crickets-ambient-noise-loopable", "license": "CC0-1.0" },
+    "morning": { "dir": "oga/amb-morning-sounds-perfect-loop", "title": "AMB Morning Sounds (Perfect Loop)", "author": "Kresiek The Furry", "url": "https://opengameart.org/content/amb-morning-sounds-perfect-loop", "license": "CC0-1.0" },
+    "river": { "dir": "oga/sea-and-river-wave-sounds", "title": "Sea and river wave sounds", "author": "RandomMind", "url": "https://opengameart.org/content/sea-and-river-wave-sounds", "license": "CC0-1.0" },
+    "storm": { "dir": "oga/rain-long-thunder", "title": "Rain + Long Thunder", "author": "WuxiaScrub", "url": "https://opengameart.org/content/rain-long-thunder", "license": "CC0-1.0" }
+  },
+  "sprites": {
+    "sfx_combat": { "lazy": false },
+    "sfx_magic": { "lazy": false },
+    "sfx_ui": { "lazy": false },
+    "sfx_world": { "lazy": true }
+  },
+  "sfx": {
+    "sword": {
+      "sprite": "sfx_combat", "desc": "Phi kiếm (đòn thường): tiếng kiếm vút", "pitch": 0.07, "max": 0.7,
+      "variants": ["sword:sword.3.ogg", "sword:sword.4.ogg", "sword:sword.6.ogg"]
+    },
+    "slash": {
+      "sprite": "sfx_combat", "desc": "Kiếm Khí Trảm, vùng nổ của quái: nhát chém nặng", "pitch": 0.06, "max": 1.0, "level": 1,
+      "variants": [
+        [{ "src": "sword:sword.1.ogg", "rate": 0.85 }, { "src": "rpg:knifeSlice.ogg", "at": 0.05, "gain": 0.5 }],
+        [{ "src": "sword:sword.5.ogg", "rate": 0.85 }, { "src": "rpg:knifeSlice2.ogg", "at": 0.05, "gain": 0.5 }],
+        [{ "src": "sword:sword.8.ogg", "rate": 0.85 }, { "src": "rpg:knifeSlice.ogg", "at": 0.04, "gain": 0.45, "rate": 0.9 }]
+      ]
+    },
+    "rain": {
+      "sprite": "sfx_combat", "desc": "Thiên Kiếm Vũ: mưa kiếm, nhiều nhát vút chồng nhau", "pitch": 0.05, "max": 1.2,
+      "variants": [
+        [{ "src": "sword:sword.3.ogg", "rate": 1.1 }, { "src": "sword:sword.7.ogg", "at": 0.09, "gain": 0.8 }, { "src": "sword:sword.4.ogg", "at": 0.17, "rate": 1.2, "gain": 0.7 }, { "src": "sword:sword.6.ogg", "at": 0.28, "rate": 0.95, "gain": 0.6 }],
+        [{ "src": "sword:sword.4.ogg", "rate": 1.05 }, { "src": "sword:sword.3.ogg", "at": 0.08, "rate": 1.2, "gain": 0.8 }, { "src": "sword:sword.10.ogg", "at": 0.18, "gain": 0.7 }, { "src": "sword:sword.7.ogg", "at": 0.3, "rate": 1.1, "gain": 0.55 }],
+        [{ "src": "sword:sword.7.ogg" }, { "src": "sword:sword.6.ogg", "at": 0.1, "rate": 1.15, "gain": 0.8 }, { "src": "sword:sword.3.ogg", "at": 0.19, "rate": 0.95, "gain": 0.7 }, { "src": "sword:sword.4.ogg", "at": 0.27, "rate": 1.25, "gain": 0.55 }]
+      ]
+    },
+    "hit": {
+      "sprite": "sfx_combat", "desc": "Đòn trúng địch", "pitch": 0.07, "max": 0.5,
+      "variants": [
+        [{ "src": "bfh:bfh1_hit_06.ogg" }, { "src": "rpg:knifeSlice.ogg", "gain": 0.35, "rate": 1.2 }],
+        [{ "src": "bfh:bfh1_hit_07.ogg" }, { "src": "rpg:knifeSlice2.ogg", "gain": 0.35, "rate": 1.2 }],
+        [{ "src": "bfh:bfh1_hit_02.ogg" }, { "src": "rpg:chop.ogg", "gain": 0.4 }]
+      ]
+    },
+    "crit": {
+      "sprite": "sfx_combat", "desc": "Chí mạng / đòn nặng: kim khí va mạnh", "pitch": 0.05, "max": 0.8, "level": 1.5,
+      "variants": [
+        [{ "src": "clash:sword_clash.4.ogg" }, { "src": "bfh:bfh1_hit_06.ogg", "gain": 0.6 }],
+        [{ "src": "clash:sword_clash.6.ogg" }, { "src": "bfh:bfh1_hit_02.ogg", "gain": 0.6 }],
+        [{ "src": "clash:sword_clash.8.ogg" }, { "src": "bfh:bfh1_hit_07.ogg", "gain": 0.6 }]
+      ]
+    },
+    "hurt": {
+      "sprite": "sfx_combat", "desc": "Mình trúng đòn: tiếng đập trầm", "pitch": 0.06, "max": 0.5, "level": 1,
+      "variants": [
+        { "src": "s100:sfx100v2_hit_01.ogg", "rate": 0.85 },
+        { "src": "s100:sfx100v2_hit_02.ogg", "rate": 0.85 },
+        [{ "src": "bfh:bfh1_hit_02.ogg", "rate": 0.8 }, { "src": "s100:sfx100v2_hit_01.ogg", "rate": 0.75, "gain": 0.5 }]
+      ]
+    },
+    "block": {
+      "sprite": "sfx_combat", "desc": "Đòn bị hộ thể hấp thụ hết", "pitch": 0.05, "max": 0.6, "level": -2,
+      "variants": ["bfh:bfh1_metal_hit_04.ogg", "bfh:bfh1_metal_hit_05.ogg", "bfh:bfh1_metal_hit_02.ogg"]
+    },
+    "death": {
+      "sprite": "sfx_combat", "desc": "Ngã xuống", "pitch": 0.05, "max": 1.2, "duck": 0.4,
+      "variants": ["bfh:bfh1_falling_01.ogg", "bfh:bfh1_falling_04.ogg", "bfh:bfh1_falling_05.ogg"]
+    },
+    "impact": {
+      "sprite": "sfx_combat", "desc": "Vùng đập đất của quái nổ", "pitch": 0.06, "max": 1.0, "level": 1,
+      "variants": [
+        [{ "src": "bfh:bfh1_rock_breaking_01.ogg" }, { "src": "s100:sfx100v2_hit_01.ogg", "rate": 0.6, "gain": 0.7 }],
+        [{ "src": "bfh:bfh1_rock_breaking_02.ogg", "rate": 0.85 }, { "src": "s100:sfx100v2_hit_02.ogg", "rate": 0.6, "gain": 0.7 }],
+        [{ "src": "bfh:bfh1_rock_breaking_03.ogg", "rate": 0.8 }, { "src": "bfh:bfh1_hit_02.ogg", "rate": 0.7, "gain": 0.7 }]
+      ]
+    },
+    "thunder": {
+      "sprite": "sfx_magic", "desc": "Lôi Đình Nhất Kiếm, sét của quái", "pitch": 0.05, "max": 3.0, "duck": 0.4, "level": 1,
+      "variants": [
+        { "src": "s100:sfx100v2_thunder_01.ogg", "end": 3.0 },
+        [{ "src": "storm:rain-thunder.ogg", "start": 21.3, "end": 24.3 }, { "src": "clash:sword_clash.1.ogg", "gain": 0.35, "rate": 0.7 }],
+        [{ "src": "s100:sfx100v2_thunder_01.ogg", "end": 3.0, "rate": 0.85 }, { "src": "bfh:bfh1_rock_breaking_02.ogg", "gain": 0.5 }]
+      ]
+    },
+    "trib": {
+      "sprite": "sfx_world", "desc": "Bắt đầu độ kiếp: sấm rền", "pitch": 0.02, "max": 5.0, "duck": 0.5,
+      "variants": [{ "src": "storm:rain-thunder.ogg", "start": 21.0, "end": 26.0 }]
+    },
+    "shield": {
+      "sprite": "sfx_magic", "desc": "Linh Khí Hộ Thể", "pitch": 0.05, "max": 1.4,
+      "variants": ["magic:magical_2.ogg", "magic:magical_5.ogg", "magic:magical_6_0.ogg"]
+    },
+    "heal": {
+      "sprite": "sfx_magic", "desc": "Hồi Nguyên Thuật", "pitch": 0.04, "max": 1.6,
+      "variants": ["cure:Cure1.wav", "cure:Cure2.wav", "cure:Cure3.wav"]
+    },
+    "potion": {
+      "sprite": "sfx_magic", "desc": "Uống đan dược", "pitch": 0.05, "max": 1.4, "level": -2,
+      "variants": [
+        [{ "src": "rpg:metalLatch.ogg", "gain": 0.6 }, { "src": "cure:Cure4.wav", "at": 0.08 }],
+        [{ "src": "rpg:metalClick.ogg", "gain": 0.6 }, { "src": "cure:Cure5.wav", "at": 0.08 }]
+      ]
+    },
+    "cast": {
+      "sprite": "sfx_magic", "desc": "Niệm chú (tụ lực trước Lôi Đình Nhất Kiếm)", "pitch": 0.04, "max": 1.6, "level": -3,
+      "variants": ["magic:magical_1_0.ogg", "magic:magical_3.ogg", "magic:magical_7_0.ogg"]
+    },
+    "mcast": {
+      "sprite": "sfx_magic", "desc": "Quái đánh xa đọc chú", "pitch": 0.05, "max": 1.6, "level": -4,
+      "variants": [{ "src": "magic:magical_1_0.ogg", "rate": 0.75 }, { "src": "magic:magical_3.ogg", "rate": 0.75 }, { "src": "magic:magical_7_0.ogg", "rate": 0.72 }]
+    },
+    "respawn": {
+      "sprite": "sfx_world", "desc": "Hồi sinh", "pitch": 0.02, "max": 2.0,
+      "variants": ["magic:magical_4.ogg"]
+    },
+    "portal": {
+      "sprite": "sfx_world", "desc": "Qua cổng / vào bí cảnh", "pitch": 0.03, "max": 2.0,
+      "variants": [[{ "src": "cure:Cure8.wav", "rate": 0.8 }, { "src": "wind:wind_20woosh_20loop.ogg", "end": 1.6, "gain": 0.7 }]]
+    },
+    "ui_click": { "sprite": "sfx_ui", "bus": "ui", "desc": "Bấm nút", "pitch": 0.03, "level": -6, "variants": ["ui:click_001.ogg", "ui:select_001.ogg"] },
+    "ui_open": { "sprite": "sfx_ui", "bus": "ui", "desc": "Mở bảng", "pitch": 0.03, "level": -6, "variants": ["rpg:bookFlip2.ogg", "rpg:bookFlip3.ogg"] },
+    "ui_close": { "sprite": "sfx_ui", "bus": "ui", "desc": "Đóng bảng", "pitch": 0.03, "level": -7, "variants": ["rpg:bookClose.ogg", "rpg:bookPlace1.ogg"] },
+    "ui_error": { "sprite": "sfx_ui", "bus": "ui", "desc": "Thông báo lỗi / không được", "pitch": 0.02, "level": -5, "variants": ["ui:error_004.ogg"] },
+    "ui_confirm": { "sprite": "sfx_ui", "bus": "ui", "desc": "Thông báo tốt", "pitch": 0.02, "level": -5, "variants": ["ui:confirmation_001.ogg"] },
+    "target": { "sprite": "sfx_ui", "bus": "ui", "desc": "Chọn mục tiêu", "pitch": 0.03, "level": -8, "variants": ["ui:select_002.ogg"] },
+    "loot": { "sprite": "sfx_ui", "bus": "ui", "desc": "Nhặt đồ, nhận tiền", "pitch": 0.05, "level": -3, "variants": ["rpg:handleCoins.ogg", "rpg:handleCoins2.ogg"] },
+    "meditate": { "sprite": "sfx_ui", "bus": "ui", "desc": "Bắt đầu đả tọa", "pitch": 0.02, "level": -6, "variants": [{ "src": "ui:bong_001.ogg", "rate": 0.6 }] },
+    "levelup": { "sprite": "sfx_world", "desc": "Lên tầng", "pitch": 0, "duck": 0.4, "variants": ["jingle:jingles_PIZZA07.ogg"] },
+    "quest": { "sprite": "sfx_world", "bus": "ui", "desc": "Hoàn thành nhiệm vụ", "pitch": 0, "level": -2, "variants": ["jingle:jingles_PIZZA03.ogg"] },
+    "ascend": {
+      "sprite": "sfx_world", "desc": "Đột phá cảnh giới / độ kiếp thành công", "pitch": 0, "duck": 0.5, "max": 3.0,
+      "variants": [[{ "src": "jingle:jingles_PIZZA12.ogg" }, { "src": "magic:magical_4.ogg", "at": 0.3, "gain": 0.8 }, { "src": "cure:Cure6.wav", "at": 0.1, "gain": 0.5 }]]
+    },
+    "craft": { "sprite": "sfx_world", "desc": "Luyện đan thành", "pitch": 0.05, "max": 1.4, "variants": ["rpg:metalPot1.ogg", "rpg:metalPot2.ogg"] },
+    "enhance": {
+      "sprite": "sfx_world", "desc": "Cường hóa (đập đe)", "pitch": 0.04, "max": 1.0,
+      "variants": [[{ "src": "s100:sfx100v2_metal_hit_01.ogg" }, { "src": "bfh:bfh1_metal_hit_06.ogg", "at": 0.02, "gain": 0.5 }]]
+    },
+    "gather": { "sprite": "sfx_world", "desc": "Hái linh thảo", "pitch": 0.06, "level": -3, "variants": ["rpg:cloth1.ogg", "rpg:cloth3.ogg"] },
+    "fly": {
+      "sprite": "sfx_world", "desc": "Ngự kiếm cất cánh", "pitch": 0.04, "max": 1.6,
+      "variants": [[{ "src": "sword:sword.2.ogg", "rate": 0.6 }, { "src": "wind:wind_20woosh_20loop.ogg", "end": 1.5, "gain": 0.8 }]]
+    }
+  },
+  "ambient": {
+    "wind": {
+      "desc": "Gió núi (đồng hoang, thung lũng)", "len": 40, "xfade": 4, "level": -22,
+      "layers": [
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 0.93, "env": [0.1, 1.0, 5.3], "seed": 11 },
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 0.79, "offset": 1.7, "env": [0.1, 1.0, 7.7], "seed": 12, "lp": 900 },
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 1.11, "offset": 3.1, "env": [0.0, 0.9, 4.1], "seed": 13 },
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 0.67, "offset": 0.9, "env": [0.0, 0.8, 9.4], "seed": 14, "lp": 600 }
+      ]
+    },
+    "forest": {
+      "desc": "Rừng / tông môn buổi sớm: chim, lá", "len": 60, "xfade": 3, "level": -24,
+      "layers": [
+        { "src": "morning:amb_morning.wav" },
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 0.9, "gain": 0.25, "env": [0.2, 1.0, 8.0], "seed": 21, "lp": 1200 }
+      ]
+    },
+    "stream": {
+      "desc": "Ven hồ, nước vỗ", "len": 45, "xfade": 5, "level": -22,
+      "layers": [{ "src": "river:VistulaShort_0.mp3", "start": 0, "end": 51 }]
+    },
+    "night": {
+      "desc": "Đêm: dế, gió nhẹ", "len": 40, "xfade": 4, "level": -26,
+      "layers": [
+        { "src": "crickets:crickets_1.mp3", "loop": true, "rate": 1.0, "env": [0.55, 1.0, 7.0], "seed": 31 },
+        { "src": "crickets:crickets_1.mp3", "loop": true, "rate": 0.93, "offset": 4.3, "pan": 0.5, "env": [0.1, 0.7, 10.0], "seed": 32 },
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 0.85, "gain": 0.35, "env": [0.1, 1.0, 9.0], "seed": 33, "lp": 700 }
+      ]
+    },
+    "cave": {
+      "desc": "Kiếm Trủng: gió hút qua hang, kiếm cũ ngân xa", "len": 40, "xfade": 4, "level": -25,
+      "layers": [
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 0.62, "env": [0.05, 1.0, 6.1], "seed": 41, "lp": 600 },
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 0.53, "offset": 2.1, "env": [0.05, 1.0, 8.3], "seed": 42, "lp": 400 },
+        { "src": "wind:wind_20woosh_20loop.ogg", "loop": true, "rate": 0.71, "offset": 4.4, "env": [0.0, 0.8, 10.7], "seed": 44, "lp": 500 }
+      ],
+      "events": [{ "src": "clash:sword_clash.9.ogg", "count": 5, "seed": 43, "gain": [0.08, 0.16], "rate": [0.45, 0.6], "lp": 2500, "echo": [0.31, 0.45] }]
+    }
+  }
+}
