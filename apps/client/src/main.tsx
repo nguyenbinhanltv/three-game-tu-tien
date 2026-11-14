@@ -2,8 +2,15 @@ import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
 import './styles.css';
 
-const stage = document.createElement('div');
-stage.id = 'stage';
-document.body.prepend(stage);
+const root = document.getElementById('root')!;
 
-createRoot(document.getElementById('root')!).render(<App />);
+if (new URLSearchParams(location.search).get('viewer') === 'asset') {
+  // Trang xem asset: nạp động để code viewer không vào bundle game chính.
+  void import('./viewer').then((m) => m.mountViewer(root));
+} else {
+  const stage = document.createElement('div');
+  stage.id = 'stage';
+  document.body.prepend(stage);
+
+  createRoot(root).render(<App />);
+}
