@@ -144,6 +144,8 @@ export interface HazardMsg {
   /** Bao lâu nữa thì đánh xuống (giây). */
   delay: number;
   kind: HazardKind;
+  /** Ai thả vùng (sid người độ kiếp hoặc id quái); client chỉ dùng để chọn hiệu ứng như rung camera. */
+  src?: string;
   sh?: 'rect' | 'cone';
   yaw?: number;
   w?: number;

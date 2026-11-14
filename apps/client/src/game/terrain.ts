@@ -16,6 +16,7 @@ import {
   WORLD_SIZE,
 } from '@dtl/shared';
 import { col, G, GeoBuilder, mat } from './geo';
+import { withSightFade } from './occlusion';
 
 const TILE = 256;
 const NT = WORLD_SIZE / TILE;
@@ -281,7 +282,8 @@ interface TileRec {
 export class Terrain {
   group = new THREE.Group();
   material = new THREE.MeshLambertMaterial({ vertexColors: true });
-  vegMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
+  /** Cây, bụi: làm mờ khi đứng chắn giữa camera và nhân vật. */
+  vegMaterial = withSightFade(new THREE.MeshLambertNodeMaterial({ vertexColors: true }));
   private tiles = new Map<number, TileRec>();
   private coarse: THREE.Mesh;
   private coarseIndex: THREE.BufferAttribute;
