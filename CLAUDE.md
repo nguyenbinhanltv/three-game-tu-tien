@@ -29,6 +29,7 @@ apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts, game/charac
 apps/bot-client    bot headless để test tải
 tools/blender      build_sect.py (kiến trúc tông môn → GLB), import_tripo.py (chuẩn hóa GLB Tripo), build_fixture_rig.py (GLB có xương cho test), run.mjs
 tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts
+tools/perf         size.ts (pnpm size), bench.ts (pnpm bench:client, Playwright)
 tools/audio        build.mjs + sounds.json: SFX/âm môi trường CC0 → public/audio/{sfx,amb} + manifest.json
 assets             README, LICENSES.md, budgets.json, meta.schema.json, source/<loại>/<id>/meta.json
 ```
@@ -42,6 +43,8 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - Nhiều worktree chạy song song: mỗi worktree một cặp cổng riêng, ví dụ `PORT=2597 CLIENT_PORT=5197 pnpm dev` (Git Bash) hoặc `$env:PORT=2597; $env:CLIENT_PORT=5197; pnpm dev` (PowerShell), hoặc ghi `PORT=`/`CLIENT_PORT=` vào `apps/server/.env.local` (gitignore). Client dev tự nối `ws://<host>:$PORT`; `VITE_SERVER_URL` (biến môi trường hoặc `apps/client/.env.local`, không đặt ở file env của server) ghi đè. Bot và security-check đọc `SERVER_URL` hoặc `PORT` (kể cả từ `.env.local`). Kiểm cổng trống trước khi chạy, không dùng hay kill server của worktree khác, tự tắt server của mình khi xong (xem skill `playtest`).
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
 - `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`
+- `pnpm size`: tổng tải trước khi vào game (JS/CSS gzip, font, asset màn tải, âm thanh nạp đầu) so với ngân sách 30MB, lưu `bench/results/size-<ngày>.json`
+- `pnpm bench:client`: Playwright Chrome headless tắt tiếng, tự chạy `pnpm dev` ở `PORT`/`CLIENT_PORT` riêng (mặc định 2635/5135) rồi tự tắt; WebGPU + WebGL2 × 3 preset, đường camera sân/rừng/hồ; draw call, tam giác, CPU khung p50/p95, texture MB; lưu `bench/results/<ngày>.json`, so lần trước. Cờ và cách đọc: skill `perf-budget`
 - `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts` hoặc luật di chuyển/combat
 - `pnpm assets:build`: Blender sinh GLB thô vào `assets/build/raw/` rồi tối ưu ra `apps/client/public/assets/<id>.<hash>.glb` + `manifest.json`; client nạp qua `AssetCache` (`apps/client/src/game/assets.ts`); `pnpm assets:validate` kiểm ngân sách, LICENSES, chiều cao raw/build
 - `pnpm audio:build` (cần ffmpeg có libopus + aac; đặt `FFMPEG=` nếu không có trong PATH): sinh sprite SFX và âm môi trường từ `../dtl-asset-source/sfx` theo `tools/audio/sounds.json`, ghi `apps/client/public/audio/manifest.json` và khối âm thanh trong `assets/LICENSES.md`; `pnpm audio:check` chỉ kiểm khai báo, nguồn, giấy phép CC0
@@ -60,7 +63,7 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng.
 - Bí cảnh là một lòng chảo trên cùng bản đồ (Kiếm Trủng, tây bắc), chạy trong room riêng.
 - Ngự kiếm mở ở Ngưng Khí tầng 3 (spec ghi tầng 8) để người mới sớm được bay.
-- Nhân vật và quái dựng bằng khối trong `models.ts`, animation thủ tục; chỉ kiến trúc tông môn đi qua Blender.
+- Nhân vật và phần lớn quái dựng bằng khối trong `models.ts`, animation thủ tục. Ba loài sói dùng `mon_soi_xam` có xương qua `game/character/` (`SkinnedCharacter`, bảng `MONSTER_SKINS`); `?models=legacy` hoặc nạp lỗi thì về model khối.
 - Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):
