@@ -32,6 +32,21 @@ function loadAtlas() {
   });
 }
 
+/**
+ * Kiểu nền cho một ô atlas, dùng ngoài React (chỉ báo ngoài màn hình). Atlas chưa tải xong thì bắt đầu tải
+ * và trả null (bên gọi dùng dấu dự phòng; lần chọn ứng viên sau sẽ có icon).
+ */
+export function contentIconStyle(icon: string): Record<string, string> | null {
+  if (resolved === undefined) void loadAtlas();
+  const cell = resolved?.icons[icon];
+  if (!resolved || !cell) return null;
+  return {
+    backgroundImage: `url("${base}${resolved.file}")`,
+    backgroundSize: `${resolved.columns * 100}% ${resolved.rows * 100}%`,
+    backgroundPosition: `${cell.x / (resolved.columns - 1) * 100}% ${cell.y / (resolved.rows - 1) * 100}%`,
+  };
+}
+
 /** Decorative icon: the parent control supplies its localized name. */
 export function ContentIcon({ def }: { def?: IconDef }) {
   const [sheet, setSheet] = useState<Atlas | null>(() => resolved ?? null);

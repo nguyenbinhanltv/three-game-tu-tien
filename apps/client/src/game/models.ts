@@ -137,8 +137,20 @@ export class Humanoid implements CharacterView {
     this.hit = new HitReact(this.backSword ? [body, this.armL, this.armR, this.legL, this.legR, this.backSword] : [body, this.armL, this.armR, this.legL, this.legR]);
   }
 
+  /** Số bước chân khi chạy (tăng mỗi lần một chân chạm đất); cho bụi chân (render/vfx/trail.ts). */
+  steps = 0;
+  /** Số lần ra đòn; cho chùm linh quang quanh kiếm. */
+  attacks = 0;
+  /** Đang đứng trên đất (không bay, không nhảy) ở khung gần nhất. */
+  grounded = true;
+
+  get hasSword(): boolean {
+    return this.backSword !== null;
+  }
+
   attack(): void {
     this.attackT = 0.32;
+    this.attacks++;
   }
 
   hitReact(o: HitOpts): void {
@@ -151,7 +163,13 @@ export class Humanoid implements CharacterView {
     this.time += dt;
     const { armL, armR, legL, legR, pose } = this;
     const running = !a.flying && !a.dead && !a.meditating && !a.airborne && a.speed > 0.6;
-    if (running) this.phase += dt * 12 * Math.min(1.3, a.speed / 7);
+    this.grounded = !a.flying && !a.airborne;
+    if (running) {
+      // Mỗi nửa chu kỳ sin (một chân chạm đất) là một bước.
+      const before = Math.floor(this.phase / Math.PI);
+      this.phase += dt * 12 * Math.min(1.3, a.speed / 7);
+      if (Math.floor(this.phase / Math.PI) !== before) this.steps++;
+    }
     const sw = running ? Math.sin(this.phase) : 0;
 
     let legLx = sw * 0.85;

@@ -95,6 +95,150 @@ body {
   font-size: 15px;
 }
 
+/* Chỉ báo ngoài màn hình (M4-15): con dấu tròn lam đêm viền đồng thau, mũi chỉ hướng, khoảng cách.
+   Màu theo art bible mục 4: son đỏ (quái), ma khí + son đỏ (boss), kim quang (nhiệm vụ), linh khí ngọc (điểm hái). */
+.offs-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.offs {
+  --c: #e6ddcb;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
+  will-change: transform, opacity;
+}
+.offs.on {
+  opacity: 0.92;
+}
+.offs[data-k='foe'] {
+  --c: #d0574a;
+}
+.offs[data-k='boss'] {
+  --c: #e0604c;
+}
+.offs[data-k='quest'],
+.offs[data-k='turnin'] {
+  --c: #ffde96;
+}
+.offs[data-k='gather'] {
+  --c: #7fe3d0;
+}
+.offs-badge {
+  position: absolute;
+  left: -17px;
+  top: -17px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, rgba(38, 58, 78, 0.9), rgba(16, 26, 37, 0.9));
+  border: 1.5px solid #ae8b49;
+  box-shadow:
+    0 0 0 1px rgba(13, 20, 32, 0.7),
+    0 0 8px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 2px rgba(13, 20, 32, 0.6);
+  color: var(--c);
+  font: 700 19px/31px var(--font-display);
+  text-align: center;
+  text-shadow: 0 0 6px var(--c);
+}
+.offs-badge.icon {
+  background-repeat: no-repeat;
+  background-clip: padding-box;
+  border-color: var(--c);
+}
+/* Dấu nhắm: vòng + chấm, cho mục tiêu đang chọn và boss. */
+.offs[data-k='foe'] .offs-badge::before,
+.offs[data-k='target'] .offs-badge::before,
+.offs[data-k='boss'] .offs-badge::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid var(--c);
+  border-radius: 50%;
+}
+.offs[data-k='foe'] .offs-badge::after,
+.offs[data-k='target'] .offs-badge::after,
+.offs[data-k='boss'] .offs-badge::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: var(--c);
+}
+.offs[data-k='boss'] .offs-badge {
+  left: -21px;
+  top: -21px;
+  width: 42px;
+  height: 42px;
+  background: radial-gradient(circle at 50% 45%, rgba(74, 43, 94, 0.95), rgba(20, 14, 30, 0.92));
+  animation: offs-boss 1.6s ease-in-out infinite;
+}
+.offs[data-k='boss'] .offs-badge::before {
+  width: 18px;
+  height: 18px;
+  margin: -11px 0 0 -11px;
+}
+@keyframes offs-boss {
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(13, 20, 32, 0.7),
+      0 0 14px rgba(180, 70, 90, 0.75),
+      inset 0 0 0 2px rgba(13, 20, 32, 0.6);
+  }
+}
+/* Mũi chỉ hướng: phần tử xoay quanh tâm huy hiệu, mũi nằm ngoài vành. */
+.offs-arrow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+.offs-arrow::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: -7px;
+  border-left: 11px solid var(--c);
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+}
+.offs[data-k='boss'] .offs-arrow::before {
+  left: 24px;
+}
+.offs-dist {
+  position: absolute;
+  left: 0;
+  top: 19px;
+  transform: translateX(-50%);
+  /* Không dùng DTL Display ở đây: kiểu small-caps biến "m" thành "M". */
+  font: 700 12.5px var(--serif);
+  color: #dce6df;
+  white-space: nowrap;
+  text-shadow:
+    0 0 3px #000,
+    0 1px 2px rgba(0, 0, 0, 0.9);
+}
+.offs[data-k='boss'] .offs-dist {
+  top: 23px;
+}
+
 #root {
   position: fixed;
   inset: 0;
@@ -609,6 +753,20 @@ kbd {
 .tracker-title {
   font: 700 13.5px var(--serif);
   color: var(--gold);
+}
+.tracker-quest {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.tracker-quest.tracked .tracker-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 6px 2px 0;
+  border-radius: 50%;
+  background: #ffde96;
+  box-shadow: 0 0 6px #ffde96;
 }
 .tracker-obj.ok {
   color: var(--good);

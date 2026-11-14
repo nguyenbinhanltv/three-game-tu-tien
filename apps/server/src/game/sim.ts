@@ -1,6 +1,8 @@
+import { randomInt } from 'node:crypto';
 import type { Client } from 'colyseus';
 import {
   bossPhaseAt,
+  fxSeed,
   type CdMsg,
   chantInterrupt,
   CHAT_MAX_LEN,
@@ -80,6 +82,13 @@ import {
 import { ENHANCE_ORE, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
 import { type Character, isEquipSlot } from './character';
+
+/**
+ * Seed hình cho FX (tia sét, mưa kiếm, mây kiếp). Lấy từ `crypto`, KHÔNG từ `Math.random`: seed gửi
+ * cho cả kênh, nếu dùng chung RNG với luật (chí mạng, rơi đồ, cường hóa) thì lộ thêm đầu ra để đoán
+ * trạng thái RNG.
+ */
+const visualSeed = () => fxSeed(() => randomInt(0x7fffffff) / 0x7fffffff);
 
 const INTERACT_RANGE = 9;
 const GATHER_RANGE = 5;
@@ -718,7 +727,7 @@ export class GameSim {
       case 'damage': {
         const mon = this.monById.get(targetId);
         if (!mon) break;
-        this.fx({ t: skill.fx, src: p.sid, dst: mon.id });
+        this.fx(skill.fx === 'thunder' ? { t: skill.fx, src: p.sid, dst: mon.id, sd: visualSeed() } : { t: skill.fx, src: p.sid, dst: mon.id });
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
         this.hitMonster(p, mon, skill.power);
         if (skill.interrupt) this.tryInterrupt(p, mon);
@@ -730,7 +739,7 @@ export class GameSim {
         const r = skill.radius ?? 8;
         const cx = mon.s.x;
         const cz = mon.s.z;
-        this.fx({ t: skill.fx, src: p.sid, dst: mon.id, x: cx, y: mon.s.y, z: cz, r });
+        this.fx({ t: skill.fx, src: p.sid, dst: mon.id, x: cx, y: mon.s.y, z: cz, r, sd: visualSeed() });
         for (const o of this.monsters) {
           if (o.state === MS_DEAD) continue;
           const dx = o.s.x - cx;
@@ -1510,6 +1519,8 @@ export class GameSim {
     const mon = this.monById.get(src) ?? null;
     this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
+    // Tia sét có hình theo seed để mọi client thấy cùng một tia (chỉ là lớp hình).
+    if (kind === 'lightning') msg.sd = visualSeed();
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;
@@ -1563,7 +1574,7 @@ export class GameSim {
     p.trib = { endAt: this.now + TRIBULATION_DURATION * 1000, nextAt: this.now + 3000, n: 0 };
     this.setFlag(p, PF_TRIBULATION, true);
     this.sysAll('sys.trib_start', { name: c.name }, 'info');
-    this.fx({ t: 'tribstart', src: p.sid, d: TRIBULATION_DURATION });
+    this.fx({ t: 'tribstart', src: p.sid, d: TRIBULATION_DURATION, sd: visualSeed() });
   }
 
   private tickTribulation(p: PlayerEnt): void {

@@ -121,6 +121,11 @@ export interface FxMsg {
   r?: number;
   /** Thời lượng (giây). */
   d?: number;
+  /**
+   * Seed hình (uint31) do server sinh cho hiệu ứng có hình ngẫu nhiên (tia sét `thunder`, vị trí kiếm
+   * của `rain`, mây xoáy `tribstart`) để mọi client vẽ giống nhau. Chỉ là lớp hình, không mang luật.
+   */
+  sd?: number;
 }
 
 export interface DmgMsg {
@@ -157,6 +162,16 @@ export interface HazardMsg {
   sh?: 'rect' | 'cone';
   yaw?: number;
   w?: number;
+  /** Seed hình (uint31) của tia sét khi `kind` là `lightning`: mọi client thấy cùng một tia. */
+  sd?: number;
+}
+
+/**
+ * Seed hình cho FX/vùng báo trước (uint31, xem `FxMsg.sd`). Server gọi với nguồn ngẫu nhiên riêng
+ * (crypto), không dùng chung RNG với luật; client chỉ đọc.
+ */
+export function fxSeed(rand: () => number = Math.random): number {
+  return Math.floor(rand() * 0x7fffffff) >>> 0;
 }
 
 export interface TransferMsg {
