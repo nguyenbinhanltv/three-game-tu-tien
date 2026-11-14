@@ -13,7 +13,8 @@ const rawDir = path.join(root, 'assets/build/raw');
 
 /**
  * id: asset id (tên file trong assets/build/raw/).
- * legacy: bản chép thêm cho client hiện tại (engine.ts nạp assets/sect.glb) cho tới khi client đọc manifest (M2-8/M2-9).
+ * legacy: bản chép thêm của GLB thô. Client đã nạp arch_sect qua manifest (M2-8); bản này chỉ còn làm đầu vào
+ *         cho test pipeline (tools/asset-pipeline/test), bỏ khi test có fixture riêng.
  */
 const jobs = [{ id: 'arch_sect', script: 'tools/blender/build_sect.py', legacy: 'apps/client/public/assets/sect.glb' }];
 
@@ -52,7 +53,7 @@ for (const job of pending) {
   }
   if (job.legacy) {
     fs.copyFileSync(out, path.join(root, job.legacy));
-    console.log(`[blender] chép thêm → ${job.legacy} (đường nạp cũ của client)`);
+    console.log(`[blender] chép thêm → ${job.legacy} (đầu vào test pipeline)`);
   }
 }
 console.log('[blender] xong.');

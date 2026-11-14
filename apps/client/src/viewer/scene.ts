@@ -1,13 +1,10 @@
 import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { type GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import basisJsUrl from 'three/addons/libs/basis/basis_transcoder.js?url';
-import basisWasmUrl from 'three/addons/libs/basis/basis_transcoder.wasm?url';
+import type { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import dracoJsUrl from 'three/addons/libs/draco/draco_wasm_wrapper.js?url';
 import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
+import { createGltfLoader, createKtx2Loader, localLibsManager } from '../game/assets';
 import { BoneLines, makeGrid } from './helpers';
 import { collectStats, type ModelStats } from './stats';
 
@@ -87,22 +84,13 @@ export class ViewerScene {
     this.controls.maxPolarAngle = Math.PI / 2 - 0.02;
     this.frameBounds(new THREE.Box3().setFromObject(this.human));
 
+    // Cùng cấu hình loader với game (Meshopt + KTX2, transcoder cục bộ). Viewer thêm Draco để mở GLB ngoài pipeline.
     // Decoder/transcoder lấy từ node_modules qua URL do Vite sinh, không chép vào public/.
-    const manager = new THREE.LoadingManager();
-    const libs: Record<string, string> = {
-      'basis_transcoder.js': basisJsUrl,
-      'basis_transcoder.wasm': basisWasmUrl,
-      'draco_wasm_wrapper.js': dracoJsUrl,
-      'draco_decoder.wasm': dracoWasmUrl,
-    };
-    manager.setURLModifier((url) => {
-      const file = url.slice(url.lastIndexOf('/') + 1);
-      return libs[file] ?? url;
-    });
-    const ktx2 = new KTX2Loader(manager).setTranscoderPath('/libs/');
+    const manager = localLibsManager({ 'draco_wasm_wrapper.js': dracoJsUrl, 'draco_decoder.wasm': dracoWasmUrl });
+    const ktx2 = createKtx2Loader(manager);
     await ktx2.detectSupportAsync(r);
     const draco = new DRACOLoader(manager).setDecoderPath('/libs/').setDecoderConfig({ type: 'wasm' });
-    this.loader = new GLTFLoader().setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder).setDRACOLoader(draco);
+    this.loader = createGltfLoader(ktx2).setDRACOLoader(draco);
 
     window.addEventListener('resize', this.onResize);
     this.onResize();

@@ -1,5 +1,4 @@
 import * as THREE from 'three/webgpu';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Client, type Room } from 'colyseus.js';
 import {
   biomeAt,
@@ -44,15 +43,20 @@ import {
   type TransferMsg,
 } from '@dtl/shared';
 import { MONSTER, monsterName, realmName, SKILLS, t } from '@dtl/content';
-import { get, pushLog, pushToast, set, type TargetInfo, togglePanel, useUI } from '../ui/store';
+import { type DebugInfo, get, pushLog, pushToast, set, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
+import { MusicController } from './music';
 import { buildPortalDisc, buildSect } from './sect';
+import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
+import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
+import { KeyState } from '../input/keyboard';
+import { SkillQueue } from '../input/skillQueue';
 
 export interface LoginOptions {
   token?: string;
@@ -84,17 +88,6 @@ const QUALITY: Record<string, { pixelRatio: number; shadows: boolean }> = {
   low: { pixelRatio: 1, shadows: false },
   medium: { pixelRatio: 1.5, shadows: false },
   high: { pixelRatio: 2, shadows: true },
-};
-
-/**
- * Phím bổ trợ hay nuốt sự kiện thả phím khác (Cmd/Ctrl). Cố ý không có Shift (hạ độ cao khi bay)
- * và Alt (phím chơi: thả/khóa con trỏ); Alt xử lý hẹp hơn trong `bindInput`.
- */
-const STICKY_MODS = new Set(['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight', 'OSLeft', 'OSRight']);
-/** Cặp phím hướng ngược chiều. */
-const OPPOSITE_KEY: Record<string, string> = {
-  KeyW: 'KeyS', KeyS: 'KeyW', KeyA: 'KeyD', KeyD: 'KeyA',
-  ArrowUp: 'ArrowDown', ArrowDown: 'ArrowUp', ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft',
 };
 
 const _v = new THREE.Vector3();
@@ -189,6 +182,7 @@ export class Game {
   private portalDisc: THREE.Mesh | null = null;
   private exitDisc: THREE.Mesh | null = null;
   private sectMesh: THREE.Mesh | null = null;
+  private sectAsset: { handle: AssetHandle; mat: THREE.Material } | null = null;
 
   // Dự đoán di chuyển.
   private cur: MoveState = { x: 0, y: 0, z: 0, vy: 0, grounded: true, flying: false };
@@ -224,7 +218,8 @@ export class Game {
   private camPitch = 0.38;
   private camDist = 13;
   private camDistCur = 13;
-  private keys = new Set<string>();
+  private keys = new KeyState();
+  private skillQueue = new SkillQueue();
   private dragging = false;
   private dragMoved = 0;
   private lastPX = 0;
@@ -249,7 +244,11 @@ export class Game {
   private disposed = false;
   private leaving = false;
   private debugPerf = new URLSearchParams(location.search).has('debug');
+  /** performance.now() lúc gửi input, theo seq & 127 (để ước tính ping). */
+  private inputSentAt: number[] = [];
+  private ping = 0;
   private listeners: (() => void)[] = [];
+  private music = new MusicController();
 
   constructor(room: Room, init: InitMsg) {
     this.room = room;
@@ -278,7 +277,10 @@ export class Game {
     });
     this.targetId = '';
     this.autoAttack = false;
+    this.skillQueue.cancel();
+    set({ queuedSkill: -1 });
     this.pending.length = 0;
+    this.inputSentAt.length = 0;
     this.seq = 0;
     this.lastAck = -1;
     this.wantFly = false;
@@ -446,16 +448,21 @@ export class Game {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
-  /** Nạp kiến trúc tông môn dựng bằng Blender; lỗi thì giữ bản dựng bằng code. */
+  /** Nạp kiến trúc tông môn dựng bằng Blender (asset `arch_sect` qua AssetCache); lỗi thì giữ bản dựng bằng code. */
   private async loadSectModel(shadows: boolean): Promise<void> {
     try {
-      const base = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
-      const gltf = await new GLTFLoader().loadAsync(base + 'assets/sect.glb');
-      if (this.disposed) return;
+      await assets.attach(this.renderer);
+      const handle = await assets.acquire('arch_sect', { pos: { x: SECT.x, z: SECT.z } });
+      if (this.disposed) {
+        handle.release();
+        return;
+      }
       const mat = MODEL_MAT.clone();
       mat.side = THREE.DoubleSide;
-      gltf.scene.position.set(SECT.x, SECT.y, SECT.z);
-      gltf.scene.traverse((o) => {
+      this.sectAsset = { handle, mat };
+      const root = handle.scene;
+      root.position.set(SECT.x, SECT.y, SECT.z);
+      root.traverse((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
         m.material = mat;
@@ -463,14 +470,14 @@ export class Game {
         m.receiveShadow = shadows;
         m.frustumCulled = false;
       });
-      this.scene.add(gltf.scene);
+      this.scene.add(root);
       if (this.sectMesh) {
         const old = this.sectMesh.geometry;
         this.sectMesh.geometry = buildSect(false);
         old.dispose();
       }
     } catch (e) {
-      console.warn('[asset] không tải được sect.glb, dùng kiến trúc dựng bằng code:', e);
+      console.warn('[asset] không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
     }
   }
 
@@ -486,34 +493,19 @@ export class Game {
 
   private bindInput(): void {
     this.on(window, 'resize', () => this.onResize());
-    // Chống kẹt phím: sự kiện thả phím hay mất khi giữ Cmd/Ctrl hoặc chuyển cửa sổ,
-    // nên xóa sạch tập phím ở những lúc đó. Không tính Shift (hạ độ cao khi bay).
-    // Alt là phím chơi (thả/khóa con trỏ): chạm Alt không xóa phím; chỉ xóa khi thả Alt
-    // sau một tổ hợp Alt+phím khác, lúc phím kia có thể đã mất sự kiện thả.
-    // Alt+Tab ra cửa sổ khác đã có blur/visibilitychange lo.
-    const clearKeys = (): void => this.keys.clear();
-    const isAlt = (code: string): boolean => code === 'AltLeft' || code === 'AltRight';
-    let altChord = false;
-    this.on(window, 'blur', clearKeys);
-    this.on(window, 'focus', clearKeys);
-    this.on(document as unknown as HTMLElement, 'visibilitychange', clearKeys);
+    // Chống kẹt phím (luật chi tiết ở `KeyState`): mất focus, đổi tab, rời trang thì xóa sạch tập phím.
+    this.on(window, 'blur', () => this.keys.clear('blur'));
+    this.on(window, 'focus', () => this.keys.clear('focus'));
+    this.on(window, 'pagehide', () => this.keys.clear('pagehide'));
+    this.on(document as unknown as HTMLElement, 'visibilitychange', () => {
+      this.keys.clear('visibility');
+      this.setHidden(document.hidden);
+    });
     this.on(window, 'keydown', (e: KeyboardEvent) => {
-      if (STICKY_MODS.has(e.code)) clearKeys();
-      else if (isAlt(e.code)) {
-        if (!e.repeat) altChord = false;
-      } else if (e.altKey && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight') altChord = true;
+      this.keys.onDown(e.code, e.altKey, e.repeat);
       this.onKeyDown(e);
     });
-    this.on(window, 'keyup', (e: KeyboardEvent) => {
-      if (STICKY_MODS.has(e.code)) clearKeys();
-      else {
-        if (isAlt(e.code)) {
-          if (altChord) clearKeys();
-          altChord = false;
-        }
-        this.keys.delete(e.code);
-      }
-    });
+    this.on(window, 'keyup', (e: KeyboardEvent) => this.keys.onUp(e.code));
     const c = this.canvas;
     this.on(c, 'contextmenu', (e: Event) => e.preventDefault());
     this.on(c, 'pointerdown', (e: PointerEvent) => {
@@ -638,68 +630,66 @@ export class Game {
     if (get().phase !== 'game') return;
     if (this.typing()) return;
     const code = e.code;
-    if (code === 'Tab') {
+    const action = KEY_ACTIONS[code];
+    if (action === 'target') {
       e.preventDefault();
       const id = this.ents.nextTarget(this.targetId, this.cur.x, this.cur.z);
       if (id) this.setTarget(id, 'mon');
       return;
     }
-    if (code === 'Space' || code.startsWith('Arrow')) e.preventDefault();
+    if (preventsDefault(code)) e.preventDefault();
     if (e.repeat) return;
-    // Nhấn một hướng thì bỏ hướng ngược lại (phòng phím kia đã mất sự kiện thả).
-    // Đánh đổi có chủ ý: giữ W, chạm S rồi thả thì nhân vật dừng, phải nhấn lại W. Không khôi phục W
-    // khi thả S, vì nếu W chính là phím đã mất keyup thì khôi phục sẽ làm kẹt lại.
-    const opp = OPPOSITE_KEY[code];
-    if (opp) this.keys.delete(opp);
-    this.keys.add(code);
-    if (code.startsWith('Digit')) {
-      const i = Number(code.slice(5)) - 1;
-      if (i >= 0 && i < SKILLS.length) this.useSkill(i);
+    this.keys.press(code);
+    // Bắt đầu di chuyển thì hủy chiêu đang chờ (M1-11).
+    if (this.isMoveKey(code, action)) this.cancelQueuedSkill();
+    const slot = skillSlot(code);
+    if (slot >= 0) {
+      if (slot < SKILLS.length) this.useSkill(slot);
       return;
     }
-    switch (code) {
-      case 'KeyF':
+    if (isKeyFor(code, 'forward') || isKeyFor(code, 'back')) this.autorun = false;
+    switch (action) {
+      case 'fly':
         this.toggleFly();
         break;
-      case 'KeyZ':
+      case 'meditate':
         this.toggleMeditate();
         break;
-      case 'KeyE':
+      case 'interact':
         this.interact();
         break;
-      case 'KeyR':
+      case 'autorun':
         this.autorun = !this.autorun;
         break;
-      case 'KeyB':
-      case 'KeyI':
+      case 'bag':
         togglePanel('bag');
         break;
-      case 'KeyC':
+      case 'char':
         togglePanel('char');
         break;
-      case 'KeyL':
-      case 'KeyJ':
+      case 'quests':
         togglePanel('quests');
         break;
-      case 'KeyM':
+      case 'map':
         togglePanel('map');
         break;
-      case 'KeyH':
+      case 'help':
         togglePanel('help');
         break;
-      case 'Enter':
+      case 'chat':
         set({ chatOpen: true });
         break;
-      case 'Escape':
+      case 'cancel':
+        // Esc lần lượt: hủy chiêu đang chờ → đóng bảng/hội thoại → bỏ chọn mục tiêu.
+        if (this.cancelQueuedSkill()) break;
         if (get().panel || get().npc) set({ panel: null, npc: null });
         else this.clearTarget();
         break;
-      case 'KeyW':
-      case 'KeyS':
-        this.autorun = false;
+      case 'debug':
+        set({ debugOpen: !get().debugOpen });
+        this.hudAt = 0;
         break;
-      case 'AltLeft':
-      case 'AltRight':
+      case 'mouseLock':
         // Alt: thả hoặc khóa lại con trỏ khi đang ở chế độ nhìn bằng chuột.
         e.preventDefault();
         if (this.controls !== 'mouse') break;
@@ -710,6 +700,13 @@ export class Game {
         }
         break;
     }
+  }
+
+  /** Phím làm nhân vật bắt đầu di chuyển. Kiểu 'turn': A/D xoay hướng nhìn nên không tính. */
+  private isMoveKey(code: string, action: string | undefined): boolean {
+    if (action === 'autorun') return true;
+    if (isKeyFor(code, 'forward') || isKeyFor(code, 'back') || isKeyFor(code, 'up')) return true;
+    return this.controls !== 'turn' && (isKeyFor(code, 'left') || isKeyFor(code, 'right'));
   }
 
   // ---------- thao tác của người chơi (UI cũng gọi) ----------
@@ -736,6 +733,7 @@ export class Game {
     set({ target: null, autoAttack: false });
   }
 
+  /** Người chơi bấm chiêu (phím số, nút trên thanh chiêu, bấm lại mục tiêu). */
   useSkill(i: number): void {
     const skill = SKILLS[i];
     const me = this.me();
@@ -746,6 +744,32 @@ export class Game {
       pushToast(t('ui.skill_locked', { realm: realmName(skill.unlock) }), 'bad');
       return;
     }
+    // M1-11: bấm trong 0,4 giây cuối thời gian chờ thì giữ lại, gửi khi hết chờ (xem `SkillQueue`).
+    // Còn chờ lâu hơn cửa sổ thì vẫn gửi ngay như cũ và chiêu đang chờ (nếu có) giữ nguyên,
+    // nên UI luôn lấy theo ô thật trong hàng đợi.
+    const res = this.skillQueue.press(i, Date.now(), this.skillReadyAt(i));
+    set({ queuedSkill: this.skillQueue.slot });
+    if (res === 'send') this.fireSkill(i);
+  }
+
+  /** Thời điểm (đồng hồ client, ms) ô chiêu `i` dùng lại được: sau cả GCD lẫn hồi chiêu riêng. */
+  private skillReadyAt(i: number): number {
+    const st = get();
+    return Math.max(st.gcdAt, st.cds[SKILLS[i]?.id ?? ''] ?? 0);
+  }
+
+  /** Hủy chiêu đang chờ; trả true nếu có chiêu bị hủy. */
+  cancelQueuedSkill(): boolean {
+    if (!this.skillQueue.cancel()) return false;
+    set({ queuedSkill: -1 });
+    return true;
+  }
+
+  /** Gửi ý định dùng chiêu lên server (tự chọn mục tiêu nếu cần). Server vẫn kiểm mọi điều kiện. */
+  private fireSkill(i: number): void {
+    const skill = SKILLS[i];
+    const me = this.me();
+    if (!skill || !me || me.fl & PF_DEAD) return;
     const needTarget = skill.kind === 'damage' || skill.kind === 'aoe';
     if (needTarget) {
       const cur = this.ents.monsters.get(this.targetId);
@@ -965,6 +989,8 @@ export class Game {
     const byMe = m.src === this.sid;
     // Bị quái đánh khi chưa chọn mục tiêu: tự chọn kẻ tấn công để phản đòn nhanh.
     if (mine && !m.heal && !this.targetId && m.src && this.view.monsters.has(m.src)) this.setTarget(m.src, 'mon');
+    const foe = !m.heal && (mine || byMe) ? this.ents.monsters.get((mine ? m.src : m.dst) ?? '') : undefined;
+    if (foe) this.music.engage(!!foe.model.def.boss);
     if (!mine && !byMe) {
       // Sát thương của người khác: chỉ hiện khi ở gần.
       if (_v.distanceTo(this.renderPos) > 45) return;
@@ -992,7 +1018,7 @@ export class Game {
   }
 
   private buildInput(): MoveInput {
-    const k = this.keys;
+    const k = this.keys.held;
     const typing = this.typing();
     let mx = 0;
     let mz = 0;
@@ -1000,14 +1026,14 @@ export class Game {
     if (!typing) {
       // Kiểu "xoay": A/D quay hướng nhìn (xử lý ở frame), không bước ngang.
       if (this.controls !== 'turn') {
-        if (k.has('KeyD')) mx += 1;
-        if (k.has('KeyA')) mx -= 1;
+        if (isHeld(k, 'right')) mx += 1;
+        if (isHeld(k, 'left')) mx -= 1;
       }
-      if (k.has('KeyW')) mz += 1;
-      if (k.has('KeyS')) mz -= 1;
+      if (isHeld(k, 'forward')) mz += 1;
+      if (isHeld(k, 'back')) mz -= 1;
       if (this.autorun && mz === 0) mz = 1;
-      if (k.has('Space')) f |= this.wantFly ? IN_UP : IN_JUMP;
-      if (k.has('KeyX') || k.has('ShiftLeft')) f |= IN_DOWN;
+      if (isHeld(k, 'up')) f |= this.wantFly ? IN_UP : IN_JUMP;
+      if (isHeld(k, 'down')) f |= IN_DOWN;
     }
     if (this.wantFly) f |= IN_FLY;
     this.seq++;
@@ -1016,6 +1042,7 @@ export class Game {
 
   private reconcile(me: PState): void {
     if (me.seq === this.lastAck && me.x === this.lastSx && me.y === this.lastSy && me.z === this.lastSz && me.fl === this.lastFl) return;
+    if (me.seq > this.lastAck && me.seq <= this.seq) this.notePing(this.inputSentAt[me.seq & 127]);
     this.lastAck = me.seq;
     this.lastSx = me.x;
     this.lastSy = me.y;
@@ -1048,6 +1075,36 @@ export class Game {
     this.cur = base;
   }
 
+  /**
+   * Ping ước tính (ms): từ lúc gửi input tới lúc thấy server xác nhận seq đó trong state.
+   * Gồm cả chờ tick và nhịp gửi patch của server nên cao hơn RTT thuần; chỉ để gỡ lỗi.
+   */
+  private notePing(sentAt: number | undefined): void {
+    if (!sentAt) return;
+    const rtt = performance.now() - sentAt;
+    if (rtt < 0 || rtt > 5000) return;
+    this.ping = this.ping ? this.ping * 0.8 + rtt * 0.2 : rtt;
+  }
+
+  /**
+   * Tab ẩn: dừng vòng lặp render nhưng giữ kết nối (Colyseus vẫn nhận state qua WebSocket, server
+   * tự cho nhân vật đứng yên khi thiếu input). Hiện lại: bắt về vị trí server rồi chạy tiếp.
+   */
+  private setHidden(hidden: boolean): void {
+    if (this.disposed || !this.renderer) return;
+    if (hidden) {
+      this.renderer.setAnimationLoop(null);
+      this.cancelQueuedSkill();
+      this.dragging = false;
+      return;
+    }
+    this.lastT = performance.now();
+    this.acc = 0;
+    this.pending.length = 0;
+    this.snapToServer = true;
+    this.renderer.setAnimationLoop(() => this.frame());
+  }
+
   private frame(): void {
     if (this.disposed) return;
     const now = performance.now();
@@ -1068,6 +1125,7 @@ export class Game {
         this.prev = cloneMoveState(this.cur);
         stepMove(this.cur, inp, ctx);
         this.send(C.INPUT, inp);
+        this.inputSentAt[inp.s & 127] = now;
       }
       if (this.pending.length > 60) this.pending.splice(0, this.pending.length - 60);
 
@@ -1104,14 +1162,14 @@ export class Game {
     // Camera quay bằng phím mũi tên trái/phải.
     if (!this.typing()) {
       // Camera điều khiển được hoàn toàn bằng bàn phím: ← → xoay, ↑ ↓ ngẩng/cúi, - = thu phóng.
-      const k = this.keys;
+      const k = this.keys.held;
       const turn = this.controls === 'turn';
-      if (k.has('ArrowLeft') || (turn && k.has('KeyA'))) this.camYaw += dt * 2.1;
-      if (k.has('ArrowRight') || (turn && k.has('KeyD'))) this.camYaw -= dt * 2.1;
-      if (k.has('ArrowUp')) this.camPitch = Math.min(1.45, this.camPitch + dt * 1.1);
-      if (k.has('ArrowDown')) this.camPitch = Math.max(-0.45, this.camPitch - dt * 1.1);
-      if (k.has('Equal') || k.has('NumpadAdd')) this.camDist = Math.max(3, this.camDist * (1 - dt * 1.4));
-      if (k.has('Minus') || k.has('NumpadSubtract')) this.camDist = Math.min(70, this.camDist * (1 + dt * 1.4));
+      if (isHeld(k, 'camLeft') || (turn && isHeld(k, 'left'))) this.camYaw += dt * 2.1;
+      if (isHeld(k, 'camRight') || (turn && isHeld(k, 'right'))) this.camYaw -= dt * 2.1;
+      if (isHeld(k, 'camUp')) this.camPitch = Math.min(1.45, this.camPitch + dt * 1.1);
+      if (isHeld(k, 'camDown')) this.camPitch = Math.max(-0.45, this.camPitch - dt * 1.1);
+      if (isHeld(k, 'zoomIn')) this.camDist = Math.max(3, this.camDist * (1 - dt * 1.4));
+      if (isHeld(k, 'zoomOut')) this.camDist = Math.min(70, this.camDist * (1 + dt * 1.4));
     }
 
     const rp = this.renderPos;
@@ -1133,6 +1191,7 @@ export class Game {
       disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
       (disc.material as THREE.MeshBasicMaterial).opacity = 0.55 + Math.sin(now * 0.003) * 0.2;
     }
+    this.tickSkillQueue(now);
     this.tickCombat(now, me);
     this.renderer.render(this.scene, this.camera);
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
@@ -1142,6 +1201,7 @@ export class Game {
     if (now - this.hudAt > 100) {
       this.hudAt = now;
       this.syncHud(me);
+      this.music.tick(now, { active: this.started, room: get().room, x: rp.x, z: rp.z, flags: me?.fl ?? 0, monsters: this.ents.monsters.values() });
     }
     if (!this.started && me && this.terrain.ready && this.frames > 4) {
       this.started = true;
@@ -1181,9 +1241,23 @@ export class Game {
     this.camera.lookAt(tx, ty, tz);
   }
 
+  /** Gửi (và gửi lại nếu server chưa nhận) chiêu đang chờ khi hết GCD/hồi chiêu. */
+  private tickSkillQueue(now: number): void {
+    const q = this.skillQueue;
+    if (q.slot < 0) return;
+    const st = get();
+    const cdAt = st.cds[SKILLS[q.slot]?.id ?? ''] ?? 0;
+    const slot = q.poll(Date.now(), Math.max(st.gcdAt, cdAt), cdAt > st.gcdAt, this.ping);
+    if (q.slot < 0) set({ queuedSkill: -1 });
+    if (slot < 0) return;
+    // Không để đánh thường gửi chồng ngay sau chiêu vừa xả.
+    this.lastAttackSend = now;
+    this.fireSkill(slot);
+  }
+
   /** Tự đánh thường liên tục khi đã chọn mục tiêu và bật auto. */
   private tickCombat(now: number, me: PState | undefined): void {
-    if (!me || !this.targetId) return;
+    if (!me || !this.targetId || this.skillQueue.slot >= 0) return;
     if (this.targetKind === 'mon') {
       const m = this.view.monsters.get(this.targetId);
       if (!m || m.st === MS_DEAD) {
@@ -1254,6 +1328,7 @@ export class Game {
       perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.terrain.tileCount()} ô`;
     }
     set({
+      debug: st.debugOpen ? this.debugInfo(me) : null,
       hp: me.hp,
       mhp: me.mhp,
       mp: me.mp,
@@ -1272,6 +1347,42 @@ export class Game {
       tribEnd: me.fl & PF_TRIBULATION ? st.tribEnd : 0,
       castEnd: me.fl & PF_CASTING ? st.castEnd : 0,
     });
+  }
+
+  /** Số liệu cho bảng gỡ lỗi F3 (M1-2). */
+  private debugInfo(me: PState): DebugInfo {
+    const states: string[] = [];
+    const on = (cond: unknown, key: string): void => {
+      if (cond) states.push('ui.debug.st.' + key);
+    };
+    on(this.cur.grounded, 'grounded');
+    on(!this.cur.grounded && !this.cur.flying, 'airborne');
+    on(this.cur.flying, 'flying');
+    on(this.wantFly, 'want_fly');
+    on(me.fl & PF_DEAD, 'dead');
+    on(me.fl & PF_MEDITATING, 'meditating');
+    on(me.fl & PF_CASTING, 'casting');
+    on(me.fl & PF_TRIBULATION, 'tribulation');
+    on(this.autorun, 'autorun');
+    on(this.autoAttack, 'auto_attack');
+    on(this.dragging, 'dragging');
+    on(this.typing(), 'typing');
+    const now = performance.now();
+    return {
+      keys: [...this.keys.held],
+      states,
+      speed: this.speed,
+      focus: document.hasFocus(),
+      visible: !document.hidden,
+      active: document.activeElement?.tagName ?? '',
+      pointerLock: this.locked,
+      controls: this.controls,
+      events: this.keys.log.map((e) => ({ id: e.id, kind: e.kind, code: e.code, ago: Math.round(now - e.at) })),
+      ping: Math.round(this.ping),
+      room: get().room,
+      roomId: this.room.roomId,
+      sid: this.sid,
+    };
   }
 
   /** Chấm trên bản đồ nhỏ. */
@@ -1313,9 +1424,14 @@ export class Game {
     set({ mouseLook: false });
     this.renderer?.setAnimationLoop(null);
     for (const off of this.listeners) off();
+    this.music.dispose();
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();
+    this.sectMesh?.geometry.dispose();
+    this.sectAsset?.handle.release();
+    this.sectAsset?.mat.dispose();
+    this.sectAsset = null;
     this.dmg?.clear();
     this.stage.replaceChildren();
     this.renderer?.dispose();

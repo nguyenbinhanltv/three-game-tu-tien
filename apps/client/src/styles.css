@@ -599,6 +599,19 @@ kbd {
 .skill.auto {
   box-shadow: 0 0 0 2px #ffd84a inset;
 }
+.skill.queued {
+  /* Chiêu đang chờ hết GCD (M1-11): viền vàng sáng, nhịp nhanh vì chỉ kéo dài tối đa 0,4 giây. */
+  border-color: #fff6d0;
+  animation: skill-queued 0.2s ease-in-out infinite alternate;
+}
+@keyframes skill-queued {
+  from {
+    box-shadow: 0 0 0 3px #ffd84a, 0 0 14px 5px rgba(255, 206, 90, 0.75), inset 0 0 14px 4px rgba(255, 226, 140, 0.55);
+  }
+  to {
+    box-shadow: 0 0 0 3px #fff3b8, 0 0 22px 8px rgba(255, 214, 110, 0.95), inset 0 0 18px 6px rgba(255, 236, 170, 0.75);
+  }
+}
 .skill.locked {
   filter: grayscale(1);
   opacity: 0.55;
@@ -748,6 +761,59 @@ kbd {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.55);
   text-shadow: 0 1px 2px #000;
+}
+
+/* ---------- bảng gỡ lỗi F3 ---------- */
+
+.debug-panel {
+  position: absolute;
+  left: 14px;
+  top: 150px;
+  width: 340px;
+  padding: 8px 10px;
+  background: rgba(8, 12, 20, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  pointer-events: none;
+  z-index: 30;
+}
+.debug-title {
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.debug-panel dl {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 1px 8px;
+  margin: 0;
+}
+.debug-panel dt {
+  color: rgba(255, 255, 255, 0.6);
+}
+.debug-panel dd {
+  margin: 0;
+  word-break: break-all;
+}
+.debug-panel .mono {
+  font-family: ui-monospace, Consolas, monospace;
+}
+.debug-sub {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.6);
+}
+.debug-events {
+  margin: 2px 0 0;
+  padding-left: 18px;
+}
+.debug-events i {
+  color: rgba(255, 255, 255, 0.45);
+  font-style: normal;
+}
+.debug-events .ev-clear b {
+  color: #ff9a7a;
 }
 
 /* ---------- cửa sổ ---------- */
@@ -1131,6 +1197,15 @@ kbd {
   text-align: right;
   font-variant-numeric: tabular-nums;
   opacity: 0.8;
+}
+.credits {
+  margin: 4px 0 8px;
+  padding-left: 1.2em;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.credits a {
+  color: var(--gold-soft);
 }
 
 @media (max-width: 1100px) {
