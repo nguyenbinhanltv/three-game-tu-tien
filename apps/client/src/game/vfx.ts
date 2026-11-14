@@ -12,6 +12,7 @@ import { BoltFx } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
 import { Trails } from '../render/vfx/trail';
 import { assets } from './assets';
+import { PREFETCH_PRIORITY } from './preload';
 import { G } from './geo';
 
 interface Fx {
@@ -126,7 +127,7 @@ export class Vfx {
     }
     // Lưới phi kiếm thật cho mưa kiếm: nạp một lần (giữ handle suốt phiên); chưa có thì dùng lưới dự phòng.
     rainModel ??= assets
-      .acquire('prop_phi_kiem', { priority: 5 })
+      .acquire('prop_phi_kiem', { priority: PREFETCH_PRIORITY.vfx })
       .then((h) => {
         RAIN.useModel(h.scene);
       })
