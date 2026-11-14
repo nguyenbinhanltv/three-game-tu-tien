@@ -21,6 +21,12 @@ export const MS_ATTACK = 2;
 export const MS_RETURN = 3;
 export const MS_DEAD = 4;
 
+// Cờ quái (trường `mf`). `ce` là thời điểm server (ms) kết thúc trạng thái đang bật.
+/** Boss đang niệm chú (thanh niệm chú hiện cho mọi người). */
+export const MF_CHANT = 1;
+/** Bị ngắt chú: choáng, nhận thêm sát thương. */
+export const MF_STUN = 2;
+
 /** Client → server. */
 export const C = {
   INPUT: 'in',
@@ -144,6 +150,8 @@ export interface HazardMsg {
   /** Bao lâu nữa thì đánh xuống (giây). */
   delay: number;
   kind: HazardKind;
+  /** Ai thả vùng (sid người độ kiếp hoặc id quái); client chỉ dùng để chọn hiệu ứng như rung camera. */
+  src?: string;
   sh?: 'rect' | 'cone';
   yaw?: number;
   w?: number;

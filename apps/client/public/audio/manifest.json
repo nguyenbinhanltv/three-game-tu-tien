@@ -1,6 +1,582 @@
 {
-  "sprites": {},
-  "sfx": {},
+  "sprites": {
+    "sfx_combat": [
+      "sfx/sfx_combat.83777661c9.webm",
+      "sfx/sfx_combat.e386210669.m4a"
+    ],
+    "sfx_magic": [
+      "sfx/sfx_magic.dcde4cb8ef.webm",
+      "sfx/sfx_magic.4bf657ba33.m4a"
+    ],
+    "sfx_ui": [
+      "sfx/sfx_ui.754bc114cc.webm",
+      "sfx/sfx_ui.800e762a50.m4a"
+    ],
+    "sfx_world": {
+      "src": [
+        "sfx/sfx_world.2a6e89d59f.webm",
+        "sfx/sfx_world.9ca1e4a1ae.m4a"
+      ],
+      "lazy": true
+    }
+  },
+  "sfx": {
+    "sword": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 0.05,
+          "dur": 0.599
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 0.763,
+          "dur": 0.547
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 1.425,
+          "dur": 0.492
+        }
+      ],
+      "pitch": 0.07
+    },
+    "slash": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 2.031,
+          "dur": 1.005
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 3.151,
+          "dur": 1.005
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 4.271,
+          "dur": 0.855
+        }
+      ],
+      "pitch": 0.06
+    },
+    "rain": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 5.241,
+          "dur": 0.805
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 6.161,
+          "dur": 1.2049999999999998
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 7.481,
+          "dur": 0.686
+        }
+      ],
+      "pitch": 0.05
+    },
+    "hit": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 8.281,
+          "dur": 0.372
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 8.767,
+          "dur": 0.459
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 9.341,
+          "dur": 0.505
+        }
+      ],
+      "pitch": 0.07
+    },
+    "crit": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 9.961,
+          "dur": 0.626
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 10.701,
+          "dur": 0.704
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 11.519,
+          "dur": 0.426
+        }
+      ],
+      "pitch": 0.05
+    },
+    "hurt": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 12.06,
+          "dur": 0.335
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 12.509,
+          "dur": 0.177
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 12.801,
+          "dur": 0.505
+        }
+      ],
+      "pitch": 0.06
+    },
+    "block": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 13.421,
+          "dur": 0.25
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 13.786,
+          "dur": 0.28500000000000003
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 14.185,
+          "dur": 0.427
+        }
+      ],
+      "pitch": 0.05
+    },
+    "death": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 14.727,
+          "dur": 0.884
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 15.725,
+          "dur": 1.1889999999999998
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 17.028,
+          "dur": 0.711
+        }
+      ],
+      "pitch": 0.05,
+      "duck": 0.4
+    },
+    "impact": {
+      "variants": [
+        {
+          "sprite": "sfx_combat",
+          "start": 17.854,
+          "dur": 0.529
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 18.497,
+          "dur": 1.005
+        },
+        {
+          "sprite": "sfx_combat",
+          "start": 19.617,
+          "dur": 0.748
+        }
+      ],
+      "pitch": 0.06
+    },
+    "thunder": {
+      "variants": [
+        {
+          "sprite": "sfx_magic",
+          "start": 0.05,
+          "dur": 2.995
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 3.159,
+          "dur": 3.005
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 6.279,
+          "dur": 3.005
+        }
+      ],
+      "pitch": 0.05,
+      "duck": 0.4
+    },
+    "shield": {
+      "variants": [
+        {
+          "sprite": "sfx_magic",
+          "start": 9.399,
+          "dur": 1.3849999999999998
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 10.899,
+          "dur": 1.4049999999999998
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 12.419,
+          "dur": 1.1159999999999999
+        }
+      ],
+      "pitch": 0.05
+    },
+    "heal": {
+      "variants": [
+        {
+          "sprite": "sfx_magic",
+          "start": 13.65,
+          "dur": 0.888
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 14.652,
+          "dur": 0.989
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 15.755,
+          "dur": 0.979
+        }
+      ],
+      "pitch": 0.04
+    },
+    "potion": {
+      "variants": [
+        {
+          "sprite": "sfx_magic",
+          "start": 16.849,
+          "dur": 0.963
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 17.926,
+          "dur": 1.194
+        }
+      ],
+      "pitch": 0.05
+    },
+    "cast": {
+      "variants": [
+        {
+          "sprite": "sfx_magic",
+          "start": 19.235,
+          "dur": 1.599
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 20.948,
+          "dur": 1.605
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 22.668,
+          "dur": 1.5459999999999998
+        }
+      ],
+      "pitch": 0.04
+    },
+    "mcast": {
+      "variants": [
+        {
+          "sprite": "sfx_magic",
+          "start": 24.329,
+          "dur": 1.605
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 26.049,
+          "dur": 1.605
+        },
+        {
+          "sprite": "sfx_magic",
+          "start": 27.769,
+          "dur": 1.605
+        }
+      ],
+      "pitch": 0.05
+    },
+    "ui_click": {
+      "variants": [
+        {
+          "sprite": "sfx_ui",
+          "start": 0.05,
+          "dur": 0.065
+        },
+        {
+          "sprite": "sfx_ui",
+          "start": 0.229,
+          "dur": 0.046
+        }
+      ],
+      "pitch": 0.03,
+      "bus": "ui"
+    },
+    "ui_open": {
+      "variants": [
+        {
+          "sprite": "sfx_ui",
+          "start": 0.39,
+          "dur": 0.417
+        },
+        {
+          "sprite": "sfx_ui",
+          "start": 0.922,
+          "dur": 0.21
+        }
+      ],
+      "pitch": 0.03,
+      "bus": "ui"
+    },
+    "ui_close": {
+      "variants": [
+        {
+          "sprite": "sfx_ui",
+          "start": 1.246,
+          "dur": 0.23600000000000002
+        },
+        {
+          "sprite": "sfx_ui",
+          "start": 1.597,
+          "dur": 0.242
+        }
+      ],
+      "pitch": 0.03,
+      "bus": "ui"
+    },
+    "ui_error": {
+      "variants": [
+        {
+          "sprite": "sfx_ui",
+          "start": 1.954,
+          "dur": 0.11
+        }
+      ],
+      "pitch": 0.02,
+      "bus": "ui"
+    },
+    "ui_confirm": {
+      "variants": [
+        {
+          "sprite": "sfx_ui",
+          "start": 2.178,
+          "dur": 0.295
+        }
+      ],
+      "pitch": 0.02,
+      "bus": "ui"
+    },
+    "target": {
+      "variants": [
+        {
+          "sprite": "sfx_ui",
+          "start": 2.588,
+          "dur": 0.046
+        }
+      ],
+      "pitch": 0.03,
+      "bus": "ui"
+    },
+    "loot": {
+      "variants": [
+        {
+          "sprite": "sfx_ui",
+          "start": 2.748,
+          "dur": 0.733
+        },
+        {
+          "sprite": "sfx_ui",
+          "start": 3.596,
+          "dur": 0.328
+        }
+      ],
+      "pitch": 0.05,
+      "bus": "ui"
+    },
+    "meditate": {
+      "variants": [
+        {
+          "sprite": "sfx_ui",
+          "start": 4.038,
+          "dur": 0.20500000000000002
+        }
+      ],
+      "pitch": 0.02,
+      "bus": "ui"
+    },
+    "trib": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 0.05,
+          "dur": 5.005
+        }
+      ],
+      "pitch": 0.02,
+      "duck": 0.5
+    },
+    "respawn": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 5.17,
+          "dur": 1.805
+        }
+      ],
+      "pitch": 0.02
+    },
+    "portal": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 7.089,
+          "dur": 1.628
+        }
+      ],
+      "pitch": 0.03
+    },
+    "levelup": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 8.831,
+          "dur": 1.3299999999999998
+        }
+      ],
+      "pitch": 0,
+      "duck": 0.4
+    },
+    "quest": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 10.275,
+          "dur": 1.1469999999999998
+        }
+      ],
+      "pitch": 0,
+      "bus": "ui"
+    },
+    "ascend": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 11.537,
+          "dur": 1.886
+        }
+      ],
+      "pitch": 0,
+      "duck": 0.5
+    },
+    "craft": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 13.537,
+          "dur": 1.325
+        },
+        {
+          "sprite": "sfx_world",
+          "start": 14.977,
+          "dur": 0.843
+        }
+      ],
+      "pitch": 0.05
+    },
+    "enhance": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 15.934,
+          "dur": 0.65
+        }
+      ],
+      "pitch": 0.04
+    },
+    "gather": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 16.699,
+          "dur": 0.586
+        },
+        {
+          "sprite": "sfx_world",
+          "start": 17.4,
+          "dur": 0.482
+        }
+      ],
+      "pitch": 0.06
+    },
+    "fly": {
+      "variants": [
+        {
+          "sprite": "sfx_world",
+          "start": 17.996,
+          "dur": 1.605
+        }
+      ],
+      "pitch": 0.04
+    }
+  },
   "music": {},
-  "ambient": {}
+  "ambient": {
+    "wind": {
+      "src": [
+        "amb/wind.a7299bb8d5.webm",
+        "amb/wind.efc2eccdca.m4a"
+      ],
+      "loop": true
+    },
+    "forest": {
+      "src": [
+        "amb/forest.7700abff38.webm",
+        "amb/forest.587270c498.m4a"
+      ],
+      "loop": true
+    },
+    "stream": {
+      "src": [
+        "amb/stream.f36f18a38d.webm",
+        "amb/stream.db24fc0558.m4a"
+      ],
+      "loop": true
+    },
+    "night": {
+      "src": [
+        "amb/night.14ac497c8e.webm",
+        "amb/night.3f1e5887af.m4a"
+      ],
+      "loop": true
+    },
+    "cave": {
+      "src": [
+        "amb/cave.604ddecbed.webm",
+        "amb/cave.26d8dc8d99.m4a"
+      ],
+      "loop": true
+    }
+  }
 }

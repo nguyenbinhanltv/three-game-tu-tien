@@ -1,7 +1,9 @@
 import type { Client } from 'colyseus';
 import {
   type CdMsg,
+  chantInterrupt,
   CHAT_MAX_LEN,
+  COMBAT_REGEN_DELAY,
   computeDamage,
   DEATH_XP_LOSS,
   type DmgMsg,
@@ -11,6 +13,9 @@ import {
   FLY_UNLOCK_LEVEL,
   type FxMsg,
   GCD,
+  hazardHit,
+  HP_REGEN_IDLE,
+  HP_REGEN_MEDITATE,
   type HazardGeom,
   groundAt,
   type HazardMsg,
@@ -24,7 +29,10 @@ import {
   type LevelDef,
   MAX_ENHANCE,
   meditateXpPerSec,
+  MF_CHANT,
+  MF_STUN,
   type MonsterCaster,
+  type MonsterChant,
   type MonsterDef,
   monsterStats,
   monsterXp,
@@ -35,6 +43,9 @@ import {
   MS_DEAD,
   MS_IDLE,
   MS_RETURN,
+  MP_REGEN_COMBAT,
+  MP_REGEN_IDLE,
+  MP_REGEN_MEDITATE,
   NGUNG_KHI_MAX,
   PF_CASTING,
   PF_DEAD,
@@ -44,6 +55,7 @@ import {
   PF_TRIBULATION,
   PROTOCOL_VERSION,
   S,
+  SKILL_MSG_PER_SEC,
   type SkillDef,
   SPAWN_POINT,
   type SpawnDef,
@@ -53,6 +65,7 @@ import {
   TRIBULATION_DURATION,
   TRIBULATION_FAIL_XP_LOSS,
   TRUC_CO_LEVEL,
+  vulnerableDamage,
   WATER_Y,
   xpLevelFactor,
   xpNeed,
@@ -92,6 +105,8 @@ export interface PlayerEnt {
   casting: { skill: SkillDef; target: string; endAt: number } | null;
   shield: { amount: number; until: number } | null;
   lastCombatAt: number;
+  /** Cửa sổ miễn vùng nổ của quái: hết lúc `until` (ms), đã nhận `taken` (xem hazardHit). */
+  hazardWin: { until: number; taken: number };
   meditating: boolean;
   xpAcc: number;
   trib: { endAt: number; nextAt: number; n: number } | null;
@@ -99,6 +114,9 @@ export interface PlayerEnt {
   chatAt: number;
   msgWindowAt: number;
   msgCount: number;
+  /** Cửa sổ 1 giây đếm lệnh dùng skill (chống spam, riêng với giới hạn message chung). */
+  skillWindowAt: number;
+  skillCount: number;
   saveAt: number;
   /** Không nhận vật phẩm rơi (đã hết lượt thưởng bí cảnh hôm nay). */
   noLoot: boolean;
@@ -144,6 +162,11 @@ export interface MonEnt {
   /** Đang đọc chú (quái đánh xa). */
   cast: { endAt: number } | null;
   castReadyAt: number;
+  /** Boss đang niệm chú (ngắt được sau đoạn hộ chú); `chantAt`: lúc được niệm lần tới (0 = chưa hẹn). */
+  chant: { startAt: number; endAt: number } | null;
+  chantAt: number;
+  /** Bị ngắt chú: choáng tới lúc này, nhận thêm sát thương. */
+  stunUntil: number;
 }
 
 interface NodeEnt {
@@ -324,6 +347,7 @@ export class GameSim {
       casting: null,
       shield: null,
       lastCombatAt: 0,
+      hazardWin: { until: 0, taken: 0 },
       meditating: false,
       xpAcc: 0,
       trib: null,
@@ -331,6 +355,8 @@ export class GameSim {
       chatAt: 0,
       msgWindowAt: this.now,
       msgCount: 0,
+      skillWindowAt: this.now,
+      skillCount: 0,
       saveAt: this.now + SAVE_INTERVAL,
       noLoot,
       connected: true,
@@ -539,9 +565,9 @@ export class GameSim {
         c.mp -= FLY_MP_PER_SEC * dt;
         if (c.mp < 0) c.mp = 0;
       }
-      const inCombat = this.now - p.lastCombatAt < 6000;
-      const hpRate = p.meditating ? 0.05 : inCombat ? 0 : 0.02;
-      const mpRate = p.move.flying ? 0 : p.meditating ? 0.08 : inCombat ? 0.012 : 0.03;
+      const inCombat = this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000;
+      const hpRate = p.meditating ? HP_REGEN_MEDITATE : inCombat ? 0 : HP_REGEN_IDLE;
+      const mpRate = p.move.flying ? 0 : p.meditating ? MP_REGEN_MEDITATE : inCombat ? MP_REGEN_COMBAT : MP_REGEN_IDLE;
       if (c.hp < c.mhp && hpRate > 0) c.hp = Math.min(c.mhp, c.hp + c.mhp * hpRate * dt);
       if (c.mp < c.mmp && mpRate > 0) c.mp = Math.min(c.mmp, c.mp + c.mmp * mpRate * dt);
       if (p.meditating) {
@@ -593,6 +619,12 @@ export class GameSim {
   }
 
   onSkill(p: PlayerEnt, msg: unknown): void {
+    // Giới hạn riêng cho lệnh skill: GCD đã chặn ra chiêu, cái này chặn dội lệnh để dò cửa sổ ngắt chú.
+    if (this.now - p.skillWindowAt >= 1000) {
+      p.skillWindowAt = this.now;
+      p.skillCount = 0;
+    }
+    if (++p.skillCount > SKILL_MSG_PER_SEC) return;
     const m = msg as { id?: unknown; t?: unknown } | null;
     if (!m || typeof m.id !== 'string') return;
     const skill = SKILL.get(m.id);
@@ -671,7 +703,9 @@ export class GameSim {
         const mon = this.monById.get(targetId);
         if (!mon) break;
         this.fx({ t: skill.fx, src: p.sid, dst: mon.id });
+        // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
         this.hitMonster(p, mon, skill.power);
+        if (skill.interrupt) this.tryInterrupt(p, mon);
         break;
       }
       case 'aoe': {
@@ -708,7 +742,60 @@ export class GameSim {
 
   private hitMonster(p: PlayerEnt, mon: MonEnt, power: number): void {
     const { dmg, crit } = computeDamage(p.char.atk, power, mon.defn, Math.random(), Math.random());
-    this.damageMonster(mon, dmg, p, crit, isHeavyHit(power));
+    const stunned = this.now < mon.stunUntil;
+    this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || isHeavyHit(power));
+  }
+
+  /** Chiêu ngắt trúng boss: phá chú nếu đúng cửa sổ. Mục tiêu, tầm, GCD, hồi chiêu đã kiểm ở onSkill. */
+  private tryInterrupt(p: PlayerEnt, mon: MonEnt): void {
+    const ch = mon.def.ai?.chant;
+    if (!ch || !mon.chant || mon.state === MS_DEAD || this.now < mon.evadeUntil) return;
+    const r = chantInterrupt(mon.chant.startAt, mon.chant.endAt, ch.open, this.now);
+    if (r === 'guarded') return this.sys(p, 'sys.chant_guarded', { boss: monsterName(mon.def.id) }, 'bad');
+    if (r !== 'ok') return;
+    mon.chant = null;
+    mon.chantAt = this.now + ch.cd * 1000;
+    mon.stunUntil = this.now + ch.stun * 1000;
+    mon.comboAt = 0;
+    mon.comboTarget = '';
+    this.setMonFlags(mon, MF_STUN, mon.stunUntil);
+    this.fx({ t: 'interrupt', src: p.sid, dst: mon.id, d: ch.stun });
+    this.sysAll('sys.chant_broken', { name: p.char.name, boss: monsterName(mon.def.id) }, 'good');
+  }
+
+  private setMonFlags(m: MonEnt, mf: number, ce: number): void {
+    if (m.s.mf !== mf) m.s.mf = mf;
+    if (m.s.ce !== ce) m.s.ce = ce;
+  }
+
+  /** Boss niệm chú. Trả về true nếu tick này boss bận niệm (không đi, không đánh). */
+  private tickChant(m: MonEnt, c: MonsterChant, target: PlayerEnt, d: number, reachable: boolean): boolean {
+    if (m.chant) {
+      m.s.yaw = Math.atan2(target.move.x - m.s.x, target.move.z - m.s.z);
+      this.setMonState(m, MS_ATTACK);
+      if (this.now >= m.chant.endAt) this.releaseChant(m, c);
+      return true;
+    }
+    if (!m.chantAt) {
+      // Vừa vào trận: lần niệm đầu sau nửa chu kỳ.
+      m.chantAt = this.now + c.cd * 500;
+      return false;
+    }
+    if (this.now < m.chantAt || m.comboAt || !reachable || d > c.r + 12) return false;
+    m.chant = { startAt: this.now, endAt: this.now + c.cast * 1000 };
+    this.setMonFlags(m, MF_CHANT, m.chant.endAt);
+    this.setMonState(m, MS_ATTACK);
+    this.fx({ t: 'chant', src: m.id, d: c.cast });
+    return true;
+  }
+
+  /** Niệm xong: thả vùng tròn quanh boss, chạy ra khỏi vòng để né. */
+  private releaseChant(m: MonEnt, c: MonsterChant): void {
+    m.chant = null;
+    m.chantAt = this.now + c.cd * 1000;
+    m.abilityAt = Math.max(m.abilityAt, this.now + (c.delay + 2) * 1000);
+    this.setMonFlags(m, 0, 0);
+    this.addHazard({ x: m.s.x, z: m.s.z, r: c.r }, c.delay, c.mul, false, c.kind, m.id, m.atk);
   }
 
   damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false): void {
@@ -856,6 +943,7 @@ export class GameSim {
     c.mp = Math.round(c.mmp * 0.5);
     p.s.fl = 0;
     p.lastCombatAt = 0;
+    p.hazardWin = { until: 0, taken: 0 };
     this.sys(p, 'sys.respawned', undefined, 'info');
     this.fx({ t: 'respawn', src: p.sid });
   }
@@ -914,6 +1002,9 @@ export class GameSim {
       comboTarget: '',
       cast: null,
       castReadyAt: 0,
+      chant: null,
+      chantAt: 0,
+      stunUntil: 0,
     };
     this.monsters.push(m);
     this.monById.set(id, m);
@@ -975,6 +1066,18 @@ export class GameSim {
 
   /** Hủy chuỗi đòn/niệm chú đang dở và nhả ô cận chiến (bỏ đuổi, chết, hồi sinh). */
   private resetAi(m: MonEnt): void {
+    m.chant = null;
+    m.chantAt = 0;
+    m.stunUntil = 0;
+    this.setMonFlags(m, 0, 0);
+    this.resetTargetAi(m);
+  }
+
+  /**
+   * Đổi mục tiêu: chỉ hủy phần nhắm người cũ (đòn đôi, chú đánh xa, ô cận chiến). Chú của boss là vòng quanh
+   * chính nó nên giữ nguyên, kể cả lịch niệm, để không né được chú bằng cách đổi người giữ thù hận.
+   */
+  private resetTargetAi(m: MonEnt): void {
     m.comboAt = 0;
     m.comboTarget = '';
     m.cast = null;
@@ -1149,6 +1252,12 @@ export class GameSim {
       return;
     }
     // CHASE / ATTACK
+    if (m.stunUntil) {
+      if (this.now < m.stunUntil) return;
+      m.stunUntil = 0;
+      this.setMonFlags(m, 0, 0);
+      m.attackAt = Math.max(m.attackAt, this.now + 600);
+    }
     let target = this.players.get(m.target);
     if (!target || this.isDead(target)) {
       // Chuyển sang kẻ gây sát thương nhiều nhất còn sống.
@@ -1167,7 +1276,7 @@ export class GameSim {
         return;
       }
       // Đổi mục tiêu: hủy chú đang đọc/đòn đôi đang dở, người mới phải được báo trước từ đầu.
-      this.resetAi(m);
+      this.resetTargetAi(m);
       m.target = target.sid;
     }
     const leash = def.boss ? 80 : LEASH;
@@ -1198,6 +1307,8 @@ export class GameSim {
     } else {
       m.unreachableSince = 0;
     }
+    const chant = def.ai?.chant;
+    if (chant && this.tickChant(m, chant, target, d, reachable)) return;
     const caster = def.ai?.caster;
     if (caster) {
       this.tickCaster(m, target, caster, d, reachable, dt);
@@ -1221,14 +1332,15 @@ export class GameSim {
         }
       }
     }
-    if (def.boss && this.now >= m.abilityAt) {
-      m.abilityAt = this.now + 8000;
-      // Chiêu diện rộng báo trước: né ra khỏi vòng.
+    const slam = def.ai?.slam;
+    if (slam && this.now >= m.abilityAt) {
+      m.abilityAt = this.now + slam.cd * 1000;
+      // Chiêu diện rộng báo trước dưới chân từng người: né ra khỏi vòng.
       let n = 0;
       for (const p of this.players.values()) {
-        if (this.isDead(p) || n >= 4) continue;
+        if (this.isDead(p) || n >= slam.max) continue;
         if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) > 45) continue;
-        this.addHazard({ x: p.move.x, z: p.move.z, r: 5.5 }, 1.7, m.atk * 1.5, false, def.id === 'boss_thu_mo_tuong' ? 'lightning' : 'frost', m.id);
+        this.addHazard({ x: p.move.x, z: p.move.z, r: slam.r }, slam.delay, slam.mul, false, slam.kind, m.id, m.atk);
         n++;
       }
     }
@@ -1240,7 +1352,7 @@ export class GameSim {
   addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0): void {
     const mon = this.monById.get(src) ?? null;
     this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon });
-    const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind };
+    const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;
@@ -1260,12 +1372,23 @@ export class GameSim {
         if (this.isDead(p)) continue;
         if (!inHazard(h, p.move.x, p.move.z)) continue;
         if (p.move.y - groundAt(p.move.x, p.move.z) > 8) continue;
-        const n =
+        let n =
           h.atk > 0
             ? computeDamage(h.atk, h.dmg, p.char.def, Math.random(), 1).dmg
             : h.pct
               ? p.char.mhp * h.dmg
               : Math.max(1, h.dmg - p.char.def * 0.6);
+        if (h.mon) {
+          // Vùng của quái: trong cửa sổ HAZARD_IFRAME chỉ chịu vùng mạnh nhất (chống dồn đòn).
+          const r = hazardHit(Math.max(1, Math.round(n)), p.hazardWin.until, p.hazardWin.taken, this.now);
+          p.hazardWin.until = r.until;
+          p.hazardWin.taken = r.taken;
+          if (r.dmg <= 0) {
+            this.host.broadcast(S.DMG, { dst: p.sid, n: 0, src: h.src } satisfies DmgMsg);
+            continue;
+          }
+          n = r.dmg;
+        }
         this.damagePlayer(p, n, h.src, true);
       }
     }
