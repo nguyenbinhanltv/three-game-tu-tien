@@ -18,6 +18,8 @@ export const PARTICLE_BUDGET: Record<string, number> = { low: 5000, medium: 1200
 /** Tỉ lệ ngân sách cho lớp cộng sáng; phần còn lại cho bụi/sương. */
 const GLOW_SHARE = 0.6;
 const MAX_TOTAL = 20000;
+/** Tuổi thọ tối đa của một hạt (giây); `emit` chặn ở mức này để biết ô nào chắc chắn đã chết. */
+export const PARTICLE_MAX_LIFE = 3;
 
 export type ParticleLayer = 'glow' | 'dust';
 
@@ -39,6 +41,12 @@ class Layer {
   private readonly a3: THREE.InstancedBufferAttribute;
   private dirtyLo = Infinity;
   private dirtyHi = -1;
+  /** Tổng số hạt đã sinh (đếm tuyệt đối) và mốc theo thời gian, để ước số hạt có thể còn sống. */
+  private total = 0;
+  private marks: { t: number; total: number }[] = [];
+  /** Sau khi quay vòng về 0, các ô tới `hiWrap` còn có thể sống tới `hiExpire`: vẫn phải vẽ. */
+  private hiWrap = 0;
+  private hiExpire = 0;
 
   constructor(cap: number, glow: boolean) {
     this.cap = cap;
@@ -86,7 +94,8 @@ class Layer {
     if (glow) markBloom(mat, 0.5);
 
     this.sprite = new THREE.Sprite(mat);
-    this.sprite.count = cap;
+    // Số instance vẽ bám theo phần bộ đệm có thể còn hạt sống (xem `flush`), tối thiểu 1.
+    this.sprite.count = 1;
     this.sprite.frustumCulled = false;
     this.sprite.renderOrder = glow ? 2 : 1;
     this.sprite.name = mat.name;
@@ -94,7 +103,15 @@ class Layer {
 
   emit(now: number, x: number, y: number, z: number, vx: number, vy: number, vz: number, life: number, s0: number, s1: number, grav: number, drag: number, c: THREE.Color, alpha: number): void {
     const i = this.next;
-    this.next = (i + 1) % this.limit;
+    this.next = i + 1;
+    this.total++;
+    if (this.next >= this.limit) {
+      // Hết vòng: cả bộ đệm có thể còn hạt sống thêm tối đa PARTICLE_MAX_LIFE.
+      this.hiWrap = this.limit;
+      this.hiExpire = now + PARTICLE_MAX_LIFE;
+      this.next = 0;
+    }
+    life = Math.min(life, PARTICLE_MAX_LIFE);
     const o = i * 4;
     const a0 = this.a0.array as Float32Array;
     const a1 = this.a1.array as Float32Array;
@@ -120,8 +137,25 @@ class Layer {
     if (i > this.dirtyHi) this.dirtyHi = i;
   }
 
-  /** Đẩy phần bộ đệm vừa ghi lên GPU (chỉ đoạn đã đổi). */
-  flush(): void {
+  /**
+   * Đẩy phần bộ đệm vừa ghi lên GPU (chỉ đoạn đã đổi) và đặt số instance được vẽ.
+   *
+   * Hạt sống luôn nằm trong W ô ghi gần nhất (W = số hạt sinh trong PARTICLE_MAX_LIFE giây qua). Khi
+   * con trỏ đã đi xa hơn 2W thì quay về 0 sớm (ô đầu bộ đệm chắc chắn đã chết), nên số instance vẽ chỉ
+   * khoảng vài lần W thay vì cả ngân sách: lúc rảnh gần như không tốn tam giác nào.
+   */
+  flush(now: number): void {
+    const m = this.marks;
+    m.push({ t: now, total: this.total });
+    while (m.length > 1 && m[0].t < now - PARTICLE_MAX_LIFE) m.shift();
+    const w = this.total - m[0].total;
+    if (this.next >= 1024 && this.next > 2 * w + 256) {
+      this.hiWrap = Math.max(this.hiWrap, this.next);
+      this.hiExpire = now + PARTICLE_MAX_LIFE;
+      this.next = 0;
+    }
+    const need = Math.max(this.next, now < this.hiExpire ? this.hiWrap : 0);
+    this.sprite.count = Math.max(1, Math.min(this.limit, need));
     if (this.dirtyHi < 0) return;
     const start = this.dirtyLo * 4;
     const count = (this.dirtyHi - this.dirtyLo + 1) * 4;
@@ -146,7 +180,8 @@ class Layer {
     }
     this.limit = lim;
     this.next %= lim;
-    this.sprite.count = lim;
+    this.hiWrap = Math.min(this.hiWrap, lim);
+    this.sprite.count = Math.max(1, Math.min(this.sprite.count, lim));
     void now;
   }
 
@@ -205,8 +240,8 @@ export class Particles {
   update(dt: number): void {
     this.now += dt;
     uTime.value = this.now;
-    this.glow.flush();
-    this.dust.flush();
+    this.glow.flush(this.now);
+    this.dust.flush(this.now);
   }
 
   /** Số hạt đang sống (đo đạc). */

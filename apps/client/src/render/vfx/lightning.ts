@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { abs, atan, exp, float, length, log, min, mix, pow, smoothstep, time, uv, vec2, vec3 } from 'three/tsl';
+import { abs, atan, cos, exp, float, length, log, min, mix, pow, sin, smoothstep, time, uv, vec2, vec3 } from 'three/tsl';
 import { seededRandom, vnoise, type FxUniforms } from './common';
 
 /**
@@ -258,9 +258,11 @@ export function vortexNodes(U: FxUniforms) {
   const flash = U.a.y;
   const one = float(1);
   // Xoắn ốc logarit: góc + ln(r)·xoắn, cuộn chậm vào trong.
-  const sw = a.div(Math.PI * 2).add(log(r.add(0.02)).mul(0.55)).add(time.mul(0.05));
-  const n1 = vnoise(vec2(sw.mul(6).add(seed), r.mul(5).sub(time.mul(0.35))));
-  const n2 = vnoise(vec2(sw.mul(13).sub(seed), r.mul(11).sub(time.mul(0.6))));
+  // Lấy mẫu nhiễu trên vòng tròn (cos θ, sin θ) để tuần hoàn theo góc: không có đường nối ở θ = ±π.
+  const th = a.add(log(r.add(0.02)).mul(0.55 * Math.PI * 2)).add(time.mul(0.3));
+  const ring = vec2(cos(th), sin(th));
+  const n1 = vnoise(ring.mul(1.0).add(vec2(r.mul(5).sub(time.mul(0.35)), seed)));
+  const n2 = vnoise(ring.mul(2.1).add(vec2(r.mul(11).sub(time.mul(0.6)), seed.mul(1.7))));
   const dens = smoothstep(0.32, 0.75, n1.mul(0.65).add(n2.mul(0.35)));
   // Mép ngoài tan; mắt bão ở giữa mỏng hơn.
   const edge = one.sub(smoothstep(0.65, 1, r));
@@ -269,7 +271,7 @@ export function vortexNodes(U: FxUniforms) {
   // Mắt bão phát sáng tím; sét trong mây bừng theo vân nhiễu khi có tia đánh.
   const thunder = vec3(0.456, 0.262, 1.0);
   const eyeGlow = one.sub(smoothstep(0.02, 0.22, r)).mul(0.9);
-  const inner = flash.mul(smoothstep(0.45, 0.9, n2)).mul(edge).mul(2.2);
+  const inner = flash.mul(smoothstep(0.45, 0.9, n2)).mul(edge).mul(1.3);
   const shade = U.color.mul(dens.mul(0.5).add(0.6));
   const col = shade.add(thunder.mul(eyeGlow.add(inner)));
   return {

@@ -93,6 +93,25 @@ describe('Particles', () => {
       expect(n.total).toBeGreaterThan(PARTICLE_BUDGET[q] * 0.9);
     }
   });
+  it('số instance vẽ bám theo hạt có thể còn sống, không phải cả ngân sách', () => {
+    const p = new Particles();
+    p.setQuality('high');
+    p.update(0.016);
+    expect(p.glow.sprite.count).toBe(1);
+    // Sinh đều 30 hạt/giây trong 5 phút: con trỏ quay về sớm, số vẽ chỉ vài trăm đến khoảng 1.500.
+    let maxCount = 0;
+    for (let f = 0; f < 60 * 300; f++) {
+      if (f % 2 === 0) p.emit('glow', 0, 0, 0, 0, 1, 0, 1, 0.1, 0.1, 0xffffff);
+      p.update(1 / 60);
+      maxCount = Math.max(maxCount, p.glow.sprite.count);
+    }
+    expect(maxCount).toBeLessThan(1500);
+    expect(p.glow.sprite.count).toBeGreaterThanOrEqual(p.aliveCount().glow);
+    // Bùng nổ: vẫn không vượt ngân sách lớp.
+    for (let i = 0; i < 50000; i++) p.emit('glow', 0, 0, 0, 0, 0, 0, 2, 0.1, 0.1, 0xffffff);
+    p.update(0.016);
+    expect(p.glow.sprite.count).toBeLessThanOrEqual(p.glow.limit);
+  });
   it('hạt chết theo tuổi thọ; hạ preset cắt bớt hạt đang sống', () => {
     const p = new Particles();
     p.setQuality('high');

@@ -97,6 +97,14 @@ export class Vfx {
     PARTICLES.attach(this.group);
     this.group.add(RAIN.group);
     this.trails = new Trails(this, PARTICLES);
+    // Vẽ ấm các material mới (mưa kiếm, tia sét, mây kiếp, vệt kiếm) vài khung lúc đang tải: biên dịch
+    // shader trước, lần dùng đầu không bị khựng. Độ trong 0, cỡ 0: không thấy gì.
+    RAIN.prewarm();
+    for (const kind of ['bolt', 'vortex', 'trail'] as const) {
+      const m = this.fx(G.ico1, 0xffffff, 0, kind);
+      m.scale.setScalar(1e-3);
+      this.add(0.15, () => {}, () => this.drop(m));
+    }
     // Lưới phi kiếm thật cho mưa kiếm: nạp một lần (giữ handle suốt phiên); chưa có thì dùng lưới dự phòng.
     rainModel ??= assets
       .acquire('prop_phi_kiem', { priority: 5 })

@@ -83,6 +83,8 @@ class InstSet {
   readonly attr: THREE.InstancedBufferAttribute;
   private used: boolean[];
   private dirty = false;
+  /** Số khung còn phải vẽ ấm (1 instance ma trận 0) để biên dịch shader trước lần dùng đầu. */
+  warm = 0;
   private static readonly ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 
   constructor(geo: THREE.BufferGeometry, mat: THREE.Material, readonly cap: number, attr: THREE.InstancedBufferAttribute) {
@@ -119,11 +121,14 @@ class InstSet {
   }
 
   sync(): void {
-    if (!this.dirty) return;
-    this.dirty = false;
+    if (!this.dirty && this.warm <= 0) return;
+    this.dirty = this.warm > 0;
     const hi = this.used.lastIndexOf(true) + 1;
-    (this.mesh.geometry as THREE.InstancedBufferGeometry).instanceCount = hi;
-    this.mesh.visible = hi > 0;
+    // Vẽ ấm: một instance ma trận 0 (không thấy gì) để renderer dựng pipeline lúc đang tải.
+    const n = this.warm > 0 ? Math.max(hi, 1) : hi;
+    if (this.warm > 0) this.warm--;
+    (this.mesh.geometry as THREE.InstancedBufferGeometry).instanceCount = n;
+    this.mesh.visible = n > 0;
     this.mesh.instanceMatrix.clearUpdateRanges();
     this.mesh.instanceMatrix.addUpdateRange(0, Math.max(1, hi) * 16);
     this.mesh.instanceMatrix.needsUpdate = true;
@@ -424,8 +429,17 @@ export class SwordRainFx {
     (old.material as THREE.Material).dispose();
     old.geometry = ig;
     old.material = swordMaterial(src);
+    this.swords.warm = 3;
     this.modelSet = true;
     return true;
+  }
+
+  /**
+   * Vẽ ấm mọi lưới mưa kiếm vài khung (không thấy gì) để biên dịch shader trước lần dùng đầu; tránh khựng
+   * khi Thiên Kiếm Vũ phát lần đầu (WebGL2 đo được khoảng 0,2 giây).
+   */
+  prewarm(frames = 3): void {
+    for (const s of [this.swords, this.comets, this.cracks, this.shocks]) s.warm = frames;
   }
 
   /** Phát một trận mưa kiếm tại (cx, cz), bán kính r. `mine` = của mình (đủ hạt). */
