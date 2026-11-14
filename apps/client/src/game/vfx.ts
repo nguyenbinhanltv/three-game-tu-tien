@@ -3,6 +3,12 @@ import { groundAt } from '@dtl/shared';
 import { FxPool, type FxKind, type FxMesh } from '../render/materials/vfx';
 import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../render/vfx/sigil';
 import { SLASH_GEO, SLASH_INK, slashPhase } from '../render/vfx/slash';
+import { seedOr } from '../render/vfx/common';
+import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '../render/vfx/lightning';
+import { PARTICLES } from '../render/vfx/particles';
+import { SwordRainFx } from '../render/vfx/swordRain';
+import { Trails } from '../render/vfx/trail';
+import { assets } from './assets';
 import { G } from './geo';
 
 interface Fx {
@@ -47,7 +53,21 @@ export const HAZARD_COLORS: Record<string, number> = {
 
 const RING_GEO = new THREE.RingGeometry(0.82, 1, 48);
 const TUBE_GEO = new THREE.CylinderGeometry(1, 1, 1, 20, 1, true);
-const BOLT_GEO = new THREE.BoxGeometry(1, 1, 1);
+
+/** Bộ đệm tia sét (lưới + hình) giữ lại giữa các lần đánh: phát không cấp phát. */
+interface Bolt {
+  geo: BoltGeometry;
+  shape: BoltShape;
+}
+const BOLTS: Bolt[] = [];
+const takeBolt = (): Bolt => BOLTS.pop() ?? { geo: new BoltGeometry(), shape: boltShape(0) };
+for (let i = 0; i < 6; i++) BOLTS.push(takeBolt());
+
+/** Mưa kiếm (M4-2): lưới instanced dùng chung cho mọi `Vfx`. */
+const RAIN = new SwordRainFx(PARTICLES);
+let rainModel: Promise<void> | null = null;
+/** Màu mây kiếp: lam tím rất tối (không đen tuyền). */
+const CLOUD_COLOR = 0x2b2840;
 
 /**
  * Pool lưới hiệu ứng dùng chung cho mọi `Vfx` (sống qua các lần đổi room). Mỗi lưới dùng material
@@ -63,9 +83,29 @@ export class Vfx {
   /** Camera để dấu chém đứng quay mặt về người xem (engine gán). */
   camera: THREE.Camera | null = null;
   private items: Fx[] = [];
+  /** Vệt phi kiếm, linh quang khi cầm kiếm, bụi chân (M4-5). Engine gọi `trails.update` mỗi khung. */
+  readonly trails: Trails;
+  readonly particles = PARTICLES;
+  readonly rain = RAIN;
+  /** Chớp toàn cảnh (engine nối vào `PostPipeline.flash`, uniform `uFlash`). */
+  onFlash: ((amount: number) => void) | null = null;
+  /** Mây kiếp đang hiện: tia sét đánh gần thì bừng sáng trong mây. */
+  private clouds = new Set<FxMesh>();
 
   constructor(scene: THREE.Scene) {
     scene.add(this.group);
+    PARTICLES.attach(this.group);
+    this.group.add(RAIN.group);
+    this.trails = new Trails(this, PARTICLES);
+    // Lưới phi kiếm thật cho mưa kiếm: nạp một lần (giữ handle suốt phiên); chưa có thì dùng lưới dự phòng.
+    rainModel ??= assets
+      .acquire('prop_phi_kiem', { priority: 5 })
+      .then((h) => {
+        RAIN.useModel(h.scene);
+      })
+      .catch((e) => {
+        console.warn('[vfx] không nạp được prop_phi_kiem, mưa kiếm dùng lưới dự phòng', e);
+      });
   }
 
   private add(dur: number, update: (k: number, dt: number) => void, end: () => void): void {
@@ -100,6 +140,8 @@ export class Vfx {
         this.items.splice(i, 1);
       }
     }
+    RAIN.update(dt);
+    PARTICLES.update(dt);
   }
 
   /** Vụ nổ sáng nhỏ tại một điểm. */
@@ -265,100 +307,73 @@ export class Vfx {
     this.slashMark(pos, color, size, -1.3, 0.34, true);
   }
 
-  /** Mưa kiếm rơi trong một vùng tròn. */
-  swordRain(cx: number, cy: number, cz: number, r: number, color: number): void {
-    const ring = this.fx(RING_GEO, color, 0.7);
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.set(cx, cy + 0.2, cz);
-    this.add(
-      0.9,
-      (k) => {
-        ring.scale.setScalar(r * Math.min(1, 0.3 + k * 2));
-        ring.fxOpacity = 0.7 * (1 - k * k);
-      },
-      () => this.drop(ring),
-    );
-    for (let i = 0; i < 12; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const rr = Math.sqrt(Math.random()) * r * 0.9;
-      const x = cx + Math.cos(a) * rr;
-      const z = cz + Math.sin(a) * rr;
-      const gy = groundAt(x, z);
-      const delay = Math.random() * 0.35;
-      const m = this.fx(G.octa, color, 0.95);
-      m.scale.set(0.12, 1.6, 0.12);
-      m.visible = false;
-      let done = false;
-      // Bắt đầu với thời gian âm để mỗi thanh kiếm rơi lệch nhịp nhau.
-      const fx: Fx = {
-        t: -delay,
-        dur: 0.3,
-        update: (k) => {
-          if (fx.t < 0) return;
-          m.visible = true;
-          m.position.set(x, gy + 16 * (1 - k) + 0.8, z);
-        },
-        end: () => {
-          if (done) return;
-          done = true;
-          this.drop(m);
-          _a.set(x, gy + 0.4, z);
-          this.burst(_a, color, 0.9, 0.22);
-        },
-      };
-      this.items.push(fx);
-    }
+  /**
+   * Mưa kiếm (M4-2): kiếm thật cắm xuống theo seed của server (mọi client cùng hình), vệt sao chổi,
+   * vết nứt, vòng chấn động, tan theo nhiễu. `mine`: của mình thì đủ hạt, người khác một nửa.
+   */
+  swordRain(cx: number, cy: number, cz: number, r: number, color: number, seed?: number, mine = true): void {
+    RAIN.play(cx, cy, cz, r, color, seedOr(seed), mine);
   }
 
-  /** Tia sét gấp khúc đánh xuống một điểm. */
-  lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1): void {
-    const segs: FxMesh[] = [];
-    let px = x + (Math.random() - 0.5) * 14;
-    let pz = z + (Math.random() - 0.5) * 14;
-    let py = y + 60;
-    const n = 9;
-    for (let i = 0; i < n; i++) {
-      const k = (i + 1) / n;
-      const nx = i === n - 1 ? x : x + (Math.random() - 0.5) * 9 * (1 - k);
-      const nz = i === n - 1 ? z : z + (Math.random() - 0.5) * 9 * (1 - k);
-      const ny = y + 60 * (1 - k);
-      _a.set(px, py, pz);
-      _b.set(nx, ny, nz);
-      const len = _a.distanceTo(_b);
-      const m = this.fx(BOLT_GEO, color, 1);
-      m.position.lerpVectors(_a, _b, 0.5);
-      m.quaternion.setFromUnitVectors(UP, _b.sub(_a).normalize());
-      m.scale.set(0.16 * scale, len, 0.16 * scale);
-      segs.push(m);
-      px = nx;
-      py = ny;
-      pz = nz;
-    }
-    const flash = this.fx(G.ico1, color, 0.55);
-    flash.position.set(x, y + 0.6, z);
+  /**
+   * Tia sét (M4-4) đánh xuống (x, y, z). Hình theo `seed` (từ server: mọi client thấy cùng một tia);
+   * không có seed thì ngẫu nhiên tại chỗ. `flash` > 0: chớp toàn cảnh qua `onFlash` lúc tia ngược
+   * bừng (và nhỏ hơn ở lần bừng thứ hai). Thời lượng 0,42 giây như bản cũ.
+   */
+  lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1, seed?: number, flash = 0): void {
+    const sd = seedOr(seed);
+    const bolt = takeBolt();
+    boltShape(sd, 62, 7, scale, bolt.shape);
+    const m = this.fx(bolt.geo.geo, color, 1, 'bolt');
+    m.fxA.z = (sd % 4000) / 100;
+    const glow = this.fx(G.ico1, color, 0.55);
+    glow.position.set(x, y + 0.6, z);
     const ring = this.fx(RING_GEO, color, 0.9);
     ring.rotation.x = -Math.PI / 2;
     ring.position.set(x, y + 0.3, z);
+    const cam = this.camera?.position;
+    let struck = 0;
     this.add(
       0.42,
       (k) => {
-        const on = k < 0.22 || (k > 0.36 && k < 0.55);
-        const op = on ? 1 : 0.2 * (1 - k);
-        for (const m of segs) {
-          m.fxOpacity = op;
-          m.fxK = k;
+        const ph = boltPhase(k);
+        m.fxA.x = ph.head;
+        m.fxA.y = ph.lum;
+        m.fxK = k;
+        if (cam) bolt.geo.build(bolt.shape, x, y, z, cam);
+        // Tia ngược chạm đất: chớp cảnh, tia lửa, mây sáng; bừng lại lần hai nhỏ hơn.
+        if (struck === 0 && k >= 0.12) {
+          struck = 1;
+          this.strike(x, y, z, color, scale, flash);
+        } else if (struck === 1 && k >= 0.34) {
+          struck = 2;
+          if (flash > 0) this.onFlash?.(flash * 0.6);
         }
-        flash.scale.set(scale * (1 + k * 2.2), scale * (0.6 + k * 1.2), scale * (1 + k * 2.2));
-        flash.fxOpacity = 0.55 * (1 - k);
-        ring.scale.setScalar(scale * (1 + k * 4));
-        ring.fxOpacity = 0.9 * (1 - k);
+        glow.scale.set(scale * (1 + k * 2.2), scale * (0.6 + k * 1.2), scale * (1 + k * 2.2));
+        glow.fxOpacity = 0.55 * (1 - k) * (k < 0.12 ? 0.3 : 1);
+        ring.scale.setScalar(scale * (1 + Math.max(0, k - 0.12) * 4.5));
+        ring.fxOpacity = k < 0.12 ? 0 : 0.9 * (1 - k);
       },
       () => {
-        for (const m of segs) this.drop(m);
-        this.drop(flash);
+        this.drop(m);
+        this.drop(glow);
         this.drop(ring);
+        BOLTS.push(bolt);
       },
     );
+  }
+
+  private strike(x: number, y: number, z: number, color: number, scale: number, flash: number): void {
+    if (flash > 0) this.onFlash?.(flash);
+    const n = Math.round(14 * scale);
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 3 + Math.random() * 6;
+      PARTICLES.emit('glow', x, y + 0.3, z, Math.cos(a) * sp, 2 + Math.random() * 5, Math.sin(a) * sp, 0.3 + Math.random() * 0.3, 0.12, 0.03, i & 1 ? 0xffffff : color, 1, 14, 2.5);
+    }
+    for (const c of this.clouds) {
+      if (Math.hypot(c.position.x - x, c.position.z - z) < 50) c.fxA.y = 1;
+    }
   }
 
   /** Cột sáng dâng lên quanh một thực thể (lên cấp, hồi phục, hồi sinh). */
@@ -467,7 +482,7 @@ export class Vfx {
   }
 
   /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
-  hazard(x: number, z: number, r: number, delay: number, kind: string): void {
+  hazard(x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0): void {
     const y = groundAt(x, z);
     const color = HAZARD_COLORS[kind] ?? HAZARD_COLORS.frost;
     // Mặt đất không phẳng: nâng theo điểm cao nhất quanh vòng (giới hạn để không lơ lửng quá).
@@ -486,7 +501,7 @@ export class Vfx {
       () => {
         this.drop(m);
         if (kind === 'lightning') {
-          this.lightning(x, y, z, 0xe2d4ff, 1.2);
+          this.lightning(x, y, z, 0xe2d4ff, 1.2, seed, flash);
         } else if (kind !== 'frost') {
           _a.set(x, y + 0.5, z);
           this.burst(_a, color, r * 1.1, 0.45);
@@ -518,30 +533,31 @@ export class Vfx {
     );
   }
 
-  /** Mây kiếp xoáy trên đầu người độ kiếp. */
-  tribulationCloud(pos: PosFn, dur: number, stillOn: () => boolean): void {
-    const cloud = this.fx(G.ico1, 0x241a38, 0, 'shade');
-    const ring = this.fx(G.torus, 0x9a6cff, 0.5);
+  /**
+   * Mây kiếp xoáy (M4-4) trên đầu người độ kiếp: một đĩa xoắn ốc vẽ trong fragment, mắt bão tím ở
+   * giữa, bừng sáng trong mây khi có tia sét đánh gần. `seed` (từ server) cho cùng vân mây.
+   */
+  tribulationCloud(pos: PosFn, dur: number, stillOn: () => boolean, seed?: number): void {
+    const cloud = this.fx(VORTEX_GEO, CLOUD_COLOR, 0, 'vortex');
+    cloud.fxA.z = (seedOr(seed) % 997) / 10;
+    this.clouds.add(cloud);
     let t = 0;
+    let op = 0;
     this.add(
       dur + 1.5,
       (_k, dt) => {
         t += dt;
+        cloud.fxA.y = Math.max(0, cloud.fxA.y - dt * 3);
         if (!pos(_a)) return;
-        const fade = stillOn() ? Math.min(1, t / 2) : Math.max(0, cloud.fxOpacity - dt);
-        cloud.position.set(_a.x, _a.y + 70, _a.z);
-        cloud.scale.set(70, 5, 70);
-        cloud.rotation.y = t * 0.3;
-        cloud.fxOpacity = Math.min(0.85, fade * 0.85);
-        ring.position.set(_a.x, _a.y + 64, _a.z);
-        ring.rotation.x = Math.PI / 2;
-        ring.rotation.z = -t * 0.8;
-        ring.scale.setScalar(26 + Math.sin(t * 2) * 2);
-        ring.fxOpacity = 0.5 * (cloud.fxOpacity / 0.85);
+        op = stillOn() ? Math.min(1, t / 2) : Math.max(0, op - dt);
+        cloud.position.set(_a.x, _a.y + 66, _a.z);
+        cloud.scale.setScalar(64);
+        cloud.rotation.y = t * 0.06;
+        cloud.fxOpacity = op * 0.92;
       },
       () => {
+        this.clouds.delete(cloud);
         this.drop(cloud);
-        this.drop(ring);
       },
     );
   }
@@ -549,6 +565,11 @@ export class Vfx {
   dispose(): void {
     // end() có thể đẻ hiệu ứng nối tiếp (phi kiếm → nổ); rút tới khi rỗng để mọi lưới về pool.
     for (let f = this.items.pop(); f; f = this.items.pop()) f.end();
+    this.trails.dispose();
+    RAIN.clear();
+    PARTICLES.detach();
+    RAIN.group.removeFromParent();
+    this.clouds.clear();
     this.group.removeFromParent();
   }
 }

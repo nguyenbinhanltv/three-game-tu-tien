@@ -1,5 +1,6 @@
 import type { Client } from 'colyseus';
 import {
+  fxSeed,
   type CdMsg,
   chantInterrupt,
   CHAT_MAX_LEN,
@@ -702,7 +703,7 @@ export class GameSim {
       case 'damage': {
         const mon = this.monById.get(targetId);
         if (!mon) break;
-        this.fx({ t: skill.fx, src: p.sid, dst: mon.id });
+        this.fx(skill.fx === 'thunder' ? { t: skill.fx, src: p.sid, dst: mon.id, sd: fxSeed() } : { t: skill.fx, src: p.sid, dst: mon.id });
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
         this.hitMonster(p, mon, skill.power);
         if (skill.interrupt) this.tryInterrupt(p, mon);
@@ -714,7 +715,7 @@ export class GameSim {
         const r = skill.radius ?? 8;
         const cx = mon.s.x;
         const cz = mon.s.z;
-        this.fx({ t: skill.fx, src: p.sid, dst: mon.id, x: cx, y: mon.s.y, z: cz, r });
+        this.fx({ t: skill.fx, src: p.sid, dst: mon.id, x: cx, y: mon.s.y, z: cz, r, sd: fxSeed() });
         for (const o of this.monsters) {
           if (o.state === MS_DEAD) continue;
           const dx = o.s.x - cx;
@@ -1353,6 +1354,8 @@ export class GameSim {
     const mon = this.monById.get(src) ?? null;
     this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
+    // Tia sét có hình theo seed để mọi client thấy cùng một tia (chỉ là lớp hình).
+    if (kind === 'lightning') msg.sd = fxSeed();
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;
@@ -1406,7 +1409,7 @@ export class GameSim {
     p.trib = { endAt: this.now + TRIBULATION_DURATION * 1000, nextAt: this.now + 3000, n: 0 };
     this.setFlag(p, PF_TRIBULATION, true);
     this.sysAll('sys.trib_start', { name: c.name }, 'info');
-    this.fx({ t: 'tribstart', src: p.sid, d: TRIBULATION_DURATION });
+    this.fx({ t: 'tribstart', src: p.sid, d: TRIBULATION_DURATION, sd: fxSeed() });
   }
 
   private tickTribulation(p: PlayerEnt): void {
