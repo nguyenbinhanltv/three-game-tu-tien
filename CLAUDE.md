@@ -42,10 +42,10 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - Playtest **luôn tắt tiếng**: URL game/viewer có `?mute=1` (ghép tham số khác bằng `&`, ví dụ `?mute=1&auto=<tên>`), kể cả trong `ao browser`; Chromium/Playwright thêm cờ `--mute-audio`. Tab của mình đang phát tiếng thì đóng hoặc tải lại với `?mute=1` (xem skill `playtest`).
 - Nhiều worktree chạy song song: mỗi worktree một cặp cổng riêng, ví dụ `PORT=2597 CLIENT_PORT=5197 pnpm dev` (Git Bash) hoặc `$env:PORT=2597; $env:CLIENT_PORT=5197; pnpm dev` (PowerShell), hoặc ghi `PORT=`/`CLIENT_PORT=` vào `apps/server/.env.local` (gitignore). Client dev tự nối `ws://<host>:$PORT`; `VITE_SERVER_URL` (biến môi trường hoặc `apps/client/.env.local`, không đặt ở file env của server) ghi đè. Bot và security-check đọc `SERVER_URL` hoặc `PORT` (kể cả từ `.env.local`). Kiểm cổng trống trước khi chạy, không dùng hay kill server của worktree khác, tự tắt server của mình khi xong (xem skill `playtest`).
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
-- `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`
+- `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`. 100 bot chung một IP sẽ bị giới hạn `/matchmake`: chạy server với `RATE_LIMIT_EXEMPT=loopback`
 - `pnpm size`: tổng tải trước khi vào game (JS/CSS gzip, font, asset màn tải, âm thanh nạp đầu) so với ngân sách 30MB, lưu `bench/results/size-<ngày>.json`
 - `pnpm bench:client`: Playwright Chrome headless tắt tiếng, tự chạy `pnpm dev` ở `PORT`/`CLIENT_PORT` riêng (mặc định 2635/5135) rồi tự tắt; WebGPU + WebGL2 × 3 preset, đường camera sân/rừng/hồ; draw call, tam giác, CPU khung p50/p95, texture MB; lưu `bench/results/<ngày>.json`, so lần trước. Cờ và cách đọc: skill `perf-budget`
-- `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts` hoặc luật di chuyển/combat
+- `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts`, `ratelimit.ts` hoặc luật di chuyển/combat. Server không được bật `RATE_LIMIT_EXEMPT`; bài cuối làm cạn xô của IP, chạy lại cả bộ sau khoảng 1 phút
 - `pnpm assets:build`: Blender sinh GLB thô vào `assets/build/raw/` rồi tối ưu ra `apps/client/public/assets/<id>.<hash>.glb` + `manifest.json`; client nạp qua `AssetCache` (`apps/client/src/game/assets.ts`); `pnpm assets:validate` kiểm ngân sách, LICENSES, chiều cao raw/build
 - `pnpm audio:build` (cần ffmpeg có libopus + aac; đặt `FFMPEG=` nếu không có trong PATH): sinh sprite SFX và âm môi trường từ `../dtl-asset-source/sfx` theo `tools/audio/sounds.json`, ghi `apps/client/public/audio/manifest.json` và khối âm thanh trong `assets/LICENSES.md`; `pnpm audio:check` chỉ kiểm khai báo, nguồn, giấy phép CC0
 - `pnpm build` rồi `pnpm start`: server phục vụ luôn bản build ở cổng 2567
@@ -72,7 +72,8 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Vào bí cảnh cần vé một lần do `WorldRoom.onPortal` cấp; đừng kiểm điều kiện vào room mới ở room cũ mà không có vé.
 - Không cho ra chiêu khi `airborne()`; quái bỏ đuổi mục tiêu không với tới thì hồi đầy và miễn sát thương (`evadeUntil`).
 - Request listener HTTP phải bọc try/catch; `AUTH_DEV_BYPASS` tự tắt khi `NODE_ENV=production` hoặc có `GOOGLE_CLIENT_ID`.
-- Còn mở: tỉ lệ rơi đồ nằm trong bundle client; chưa giới hạn tần suất `/matchmake` theo IP.
+- Bảng rơi đồ và linh thạch rơi nằm ở `packages/content/data/loot.json`, chỉ import qua `@dtl/content/loot` (server, check, sim). `monsters.json` vào bundle client nên không được chứa `drops`/`gold` (`content:check` và `apps/client/src/no-server-data.test.ts` chặn). Client chỉ biết món đã rơi qua tin nhắn `sys.loot`.
+- POST `/matchmake` và bắt tay WebSocket giới hạn theo IP bằng token bucket (`apps/server/src/ratelimit.ts`, bọc ngoài listener của Colyseus, trả 429 + `Retry-After`). Env: `RATE_LIMIT_BURST` (40), `RATE_LIMIT_PER_MIN` (20), `TRUST_PROXY=1` mới đọc `X-Forwarded-For` (lấy phần tử cuối), `RATE_LIMIT_EXEMPT=loopback` cho bot ở máy dev (bị bỏ qua khi production).
 
 ## Quy tắc bất biến
 

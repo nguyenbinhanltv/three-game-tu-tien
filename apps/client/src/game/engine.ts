@@ -153,6 +153,7 @@ export class Game {
       else if (err.code === 4011) set({ phase: 'login', needName: true, nameError: t('ui.err.name_taken') });
       else if (err.code === 4012) set({ phase: 'error', error: t('ui.err.not_invited') });
       else if (err.code === 4013) set({ phase: 'error', error: t('ui.err.auth') });
+      else if (err.code === 429) set({ phase: 'error', error: t('ui.err.rate_limited') });
       else set({ phase: 'error', error: t('ui.err.connect') + (err.message ? ` (${err.message})` : '') });
     }
   }
