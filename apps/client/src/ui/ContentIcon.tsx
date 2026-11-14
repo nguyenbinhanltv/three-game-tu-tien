@@ -37,7 +37,7 @@ export function ContentIcon({ def }: { def?: IconDef }) {
   }, []);
   const cell = def && sheet?.icons[def.icon];
   if (!sheet || !cell) {
-    const fallback = def?.iconFallback ?? (def && !/^(itm|skl)_/.test(def.icon) ? def.icon : '?');
+    const fallback = def?.iconFallback ?? (def && !/^(itm|skl)_/.test(def.icon) ? def.icon : '\u2754');
     return <span className="content-icon fallback" aria-hidden="true">{fallback}</span>;
   }
   return <span className="content-icon" aria-hidden="true" style={{
