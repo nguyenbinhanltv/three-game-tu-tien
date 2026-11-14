@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { groundAt } from '@dtl/shared';
+import { FxPool, type FxKind, type FxMesh } from '../render/materials/vfx';
 import { G } from './geo';
 
 interface Fx {
@@ -16,26 +17,22 @@ const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);
 
-function glow(color: number, opacity = 0.9, additive = true): THREE.MeshBasicMaterial {
-  return new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity,
-    blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
-    depthWrite: false,
-    fog: false,
-    side: THREE.DoubleSide,
-  });
-}
-
 const RING_GEO = new THREE.RingGeometry(0.82, 1, 48);
 const DISC_GEO = new THREE.CircleGeometry(1, 40);
 const TUBE_GEO = new THREE.CylinderGeometry(1, 1, 1, 20, 1, true);
 const BOLT_GEO = new THREE.BoxGeometry(1, 1, 1);
 
+/**
+ * Pool lưới hiệu ứng dùng chung cho mọi `Vfx` (sống qua các lần đổi room). Mỗi lưới dùng material
+ * TSL dùng chung theo kiểu (render/materials/vfx.ts); màu/độ trong là dữ liệu của lưới. 96 lưới
+ * ấm sẵn đủ cho một trận đông bình thường; pool chỉ lớn thêm khi vượt mức đó rồi giữ lại.
+ */
+const POOL = new FxPool(96);
+
 /** Hệ hiệu ứng: mỗi hiệu ứng là vài lưới phát sáng sống trong thời gian ngắn. */
 export class Vfx {
   group = new THREE.Group();
+  readonly pool = POOL;
   private items: Fx[] = [];
 
   constructor(scene: THREE.Scene) {
@@ -51,16 +48,16 @@ export class Vfx {
     this.add(dur, update, end);
   }
 
-  private mesh(geo: THREE.BufferGeometry, mat: THREE.Material): THREE.Mesh {
-    const m = new THREE.Mesh(geo, mat);
-    m.frustumCulled = false;
+  /** Lấy một lưới từ pool và gắn vào cảnh. `kind`: xem `FxKind` (mặc định cộng sáng có bloom). */
+  fx(geo: THREE.BufferGeometry, color: number, opacity = 0.9, kind: FxKind = 'glow'): FxMesh {
+    const m = POOL.acquire(geo, kind, color, opacity);
     this.group.add(m);
     return m;
   }
 
-  private drop(m: THREE.Mesh): void {
-    this.group.remove(m);
-    (m.material as THREE.Material).dispose();
+  /** Trả lưới về pool (không dispose material: material dùng chung). */
+  drop(m: FxMesh): void {
+    POOL.release(m);
   }
 
   update(dt: number): void {
@@ -78,9 +75,9 @@ export class Vfx {
 
   /** Vụ nổ sáng nhỏ tại một điểm. */
   burst(pos: THREE.Vector3, color: number, size = 1.2, dur = 0.28): void {
-    const m = this.mesh(G.ico1, glow(color, 0.9));
+    const m = this.fx(G.ico1, color, 0.9);
     m.position.copy(pos);
-    const ring = this.mesh(RING_GEO, glow(color, 0.8));
+    const ring = this.fx(RING_GEO, color, 0.8);
     ring.position.copy(pos);
     ring.rotation.x = -Math.PI / 2;
     this.add(
@@ -88,9 +85,10 @@ export class Vfx {
       (k) => {
         const s = size * (0.3 + k * 1.1);
         m.scale.setScalar(s);
-        (m.material as THREE.MeshBasicMaterial).opacity = 0.9 * (1 - k);
+        m.fxOpacity = 0.9 * (1 - k);
         ring.scale.setScalar(size * (0.5 + k * 2.2));
-        (ring.material as THREE.MeshBasicMaterial).opacity = 0.8 * (1 - k);
+        ring.fxOpacity = 0.8 * (1 - k);
+        m.fxK = ring.fxK = k;
       },
       () => {
         this.drop(m);
@@ -101,7 +99,7 @@ export class Vfx {
 
   /** Phi kiếm bay từ nguồn tới đích rồi nổ. */
   swordShot(from: THREE.Vector3, to: PosFn, color: number, size = 1, dur = 0.2): void {
-    const m = this.mesh(G.octa, glow(color, 0.95));
+    const m = this.fx(G.octa, color, 0.95);
     const start = from.clone();
     const target = from.clone();
     const dir = new THREE.Vector3();
@@ -123,7 +121,7 @@ export class Vfx {
 
   /** Kiếm khí hình lưỡi liềm lao tới. */
   slash(from: THREE.Vector3, to: PosFn, color: number): void {
-    const m = this.mesh(G.octa, glow(color, 0.9));
+    const m = this.fx(G.octa, color, 0.9);
     const start = from.clone();
     const target = from.clone();
     const dir = new THREE.Vector3();
@@ -135,7 +133,8 @@ export class Vfx {
         dir.subVectors(target, start).setY(0);
         m.rotation.set(0, Math.atan2(dir.x, dir.z), 0.35);
         m.scale.set(2.4 + k, 1.5, 0.16);
-        (m.material as THREE.MeshBasicMaterial).opacity = 0.9 - k * 0.3;
+        m.fxOpacity = 0.9 - k * 0.3;
+        m.fxK = k;
       },
       () => {
         this.drop(m);
@@ -146,14 +145,14 @@ export class Vfx {
 
   /** Mưa kiếm rơi trong một vùng tròn. */
   swordRain(cx: number, cy: number, cz: number, r: number, color: number): void {
-    const ring = this.mesh(RING_GEO, glow(color, 0.7));
+    const ring = this.fx(RING_GEO, color, 0.7);
     ring.rotation.x = -Math.PI / 2;
     ring.position.set(cx, cy + 0.2, cz);
     this.add(
       0.9,
       (k) => {
         ring.scale.setScalar(r * Math.min(1, 0.3 + k * 2));
-        (ring.material as THREE.MeshBasicMaterial).opacity = 0.7 * (1 - k * k);
+        ring.fxOpacity = 0.7 * (1 - k * k);
       },
       () => this.drop(ring),
     );
@@ -164,7 +163,7 @@ export class Vfx {
       const z = cz + Math.sin(a) * rr;
       const gy = groundAt(x, z);
       const delay = Math.random() * 0.35;
-      const m = this.mesh(G.octa, glow(color, 0.95));
+      const m = this.fx(G.octa, color, 0.95);
       m.scale.set(0.12, 1.6, 0.12);
       m.visible = false;
       let done = false;
@@ -191,8 +190,7 @@ export class Vfx {
 
   /** Tia sét gấp khúc đánh xuống một điểm. */
   lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1): void {
-    const segs: THREE.Mesh[] = [];
-    const mat = glow(color, 1);
+    const segs: FxMesh[] = [];
     let px = x + (Math.random() - 0.5) * 14;
     let pz = z + (Math.random() - 0.5) * 14;
     let py = y + 60;
@@ -205,35 +203,36 @@ export class Vfx {
       _a.set(px, py, pz);
       _b.set(nx, ny, nz);
       const len = _a.distanceTo(_b);
-      const m = new THREE.Mesh(BOLT_GEO, mat);
-      m.frustumCulled = false;
+      const m = this.fx(BOLT_GEO, color, 1);
       m.position.lerpVectors(_a, _b, 0.5);
-      m.quaternion.setFromUnitVectors(UP, _b.clone().sub(_a).normalize());
+      m.quaternion.setFromUnitVectors(UP, _b.sub(_a).normalize());
       m.scale.set(0.16 * scale, len, 0.16 * scale);
-      this.group.add(m);
       segs.push(m);
       px = nx;
       py = ny;
       pz = nz;
     }
-    const flash = this.mesh(G.ico1, glow(color, 0.55));
+    const flash = this.fx(G.ico1, color, 0.55);
     flash.position.set(x, y + 0.6, z);
-    const ring = this.mesh(RING_GEO, glow(color, 0.9));
+    const ring = this.fx(RING_GEO, color, 0.9);
     ring.rotation.x = -Math.PI / 2;
     ring.position.set(x, y + 0.3, z);
     this.add(
       0.42,
       (k) => {
         const on = k < 0.22 || (k > 0.36 && k < 0.55);
-        mat.opacity = on ? 1 : 0.2 * (1 - k);
+        const op = on ? 1 : 0.2 * (1 - k);
+        for (const m of segs) {
+          m.fxOpacity = op;
+          m.fxK = k;
+        }
         flash.scale.set(scale * (1 + k * 2.2), scale * (0.6 + k * 1.2), scale * (1 + k * 2.2));
-        (flash.material as THREE.MeshBasicMaterial).opacity = 0.55 * (1 - k);
+        flash.fxOpacity = 0.55 * (1 - k);
         ring.scale.setScalar(scale * (1 + k * 4));
-        (ring.material as THREE.MeshBasicMaterial).opacity = 0.9 * (1 - k);
+        ring.fxOpacity = 0.9 * (1 - k);
       },
       () => {
-        for (const m of segs) this.group.remove(m);
-        mat.dispose();
+        for (const m of segs) this.drop(m);
         this.drop(flash);
         this.drop(ring);
       },
@@ -242,8 +241,8 @@ export class Vfx {
 
   /** Cột sáng dâng lên quanh một thực thể (lên cấp, hồi phục, hồi sinh). */
   pillar(pos: PosFn, color: number, dur = 1.1, radius = 1.1, height = 7): void {
-    const m = this.mesh(TUBE_GEO, glow(color, 0.55));
-    const ring = this.mesh(RING_GEO, glow(color, 0.8));
+    const m = this.fx(TUBE_GEO, color, 0.55);
+    const ring = this.fx(RING_GEO, color, 0.8);
     ring.rotation.x = -Math.PI / 2;
     this.add(
       dur,
@@ -252,10 +251,10 @@ export class Vfx {
         const h = height * Math.min(1, k * 2.5);
         m.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
         m.scale.set(radius * (1 - k * 0.4), h, radius * (1 - k * 0.4));
-        (m.material as THREE.MeshBasicMaterial).opacity = 0.55 * (1 - k * k);
+        m.fxOpacity = 0.55 * (1 - k * k);
         ring.position.set(_a.x, _a.y - 1.0, _a.z);
         ring.scale.setScalar(radius * (1 + k * 2.5));
-        (ring.material as THREE.MeshBasicMaterial).opacity = 0.8 * (1 - k);
+        ring.fxOpacity = 0.8 * (1 - k);
       },
       () => {
         this.drop(m);
@@ -266,7 +265,7 @@ export class Vfx {
 
   /** Lớp linh khí hộ thể bao quanh người. */
   shield(pos: PosFn, dur: number, stillOn: () => boolean): void {
-    const m = this.mesh(G.ico1, glow(0x7fd8ff, 0.28));
+    const m = this.fx(G.ico1, 0x7fd8ff, 0.28);
     let t = 0;
     this.add(
       dur,
@@ -280,7 +279,7 @@ export class Vfx {
         m.position.copy(_a).setY(_a.y - 0.2);
         m.scale.set(1.25, 1.5, 1.25);
         m.rotation.y = t * 1.5;
-        (m.material as THREE.MeshBasicMaterial).opacity = 0.22 + Math.sin(t * 6) * 0.06;
+        m.fxOpacity = 0.22 + Math.sin(t * 6) * 0.06;
       },
       () => this.drop(m),
     );
@@ -288,7 +287,7 @@ export class Vfx {
 
   /** Quả cầu tụ lực trước ngực khi niệm chú. */
   charge(pos: PosFn, dur: number, color: number, stillOn: () => boolean): void {
-    const m = this.mesh(G.ico1, glow(color, 0.8));
+    const m = this.fx(G.ico1, color, 0.8);
     this.add(
       dur,
       (k) => {
@@ -307,19 +306,19 @@ export class Vfx {
   hazard(x: number, z: number, r: number, delay: number, kind: string): void {
     const y = groundAt(x, z);
     const color = kind === 'lightning' ? 0xb48cff : kind === 'fire' ? 0xff8a4a : kind === 'spirit' ? 0xbfe6ff : 0x7fd8ff;
-    const ring = this.mesh(RING_GEO, glow(color, 0.9));
+    const ring = this.fx(RING_GEO, color, 0.9);
     ring.rotation.x = -Math.PI / 2;
     ring.position.set(x, y + 0.25, z);
     ring.scale.setScalar(r);
-    const disc = this.mesh(DISC_GEO, glow(kind === 'lightning' ? 0x6a3fd0 : kind === 'fire' ? 0xb0401a : 0x2f8fd0, 0.2));
+    const disc = this.fx(DISC_GEO, kind === 'lightning' ? 0x6a3fd0 : kind === 'fire' ? 0xb0401a : 0x2f8fd0, 0.2, 'flat');
     disc.rotation.x = -Math.PI / 2;
     disc.position.set(x, y + 0.2, z);
     this.add(
       delay,
       (k) => {
         disc.scale.setScalar(r * k);
-        (disc.material as THREE.MeshBasicMaterial).opacity = 0.18 + k * 0.3;
-        (ring.material as THREE.MeshBasicMaterial).opacity = 0.6 + Math.sin(k * 40) * 0.3;
+        disc.fxOpacity = 0.18 + k * 0.3;
+        ring.fxOpacity = 0.6 + Math.sin(k * 40) * 0.3;
       },
       () => {
         this.drop(ring);
@@ -336,7 +335,7 @@ export class Vfx {
           for (let i = 0; i < 7; i++) {
             const a = (i / 7) * Math.PI * 2;
             const rr = i === 0 ? 0 : r * 0.55;
-            const spike = this.mesh(G.cone6, glow(0xcdf3ff, 0.85, false));
+            const spike = this.fx(G.cone6, 0xcdf3ff, 0.85, 'solid');
             const sx = x + Math.cos(a) * rr;
             const sz = z + Math.sin(a) * rr;
             const sy = groundAt(sx, sz);
@@ -347,7 +346,7 @@ export class Vfx {
                 const up = Math.min(1, k * 5);
                 spike.position.set(sx, sy + (hgt * up) / 2 - 0.2, sz);
                 spike.scale.set(0.5, hgt * up, 0.5);
-                (spike.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - Math.max(0, k - 0.5) * 2);
+                spike.fxOpacity = 0.85 * (1 - Math.max(0, k - 0.5) * 2);
               },
               () => this.drop(spike),
             );
@@ -359,26 +358,24 @@ export class Vfx {
 
   /** Mây kiếp xoáy trên đầu người độ kiếp. */
   tribulationCloud(pos: PosFn, dur: number, stillOn: () => boolean): void {
-    const mat = new THREE.MeshBasicMaterial({ color: 0x241a38, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
-    const cloud = this.mesh(G.ico1, mat);
-    const ringMat = glow(0x9a6cff, 0.5);
-    const ring = this.mesh(G.torus, ringMat);
+    const cloud = this.fx(G.ico1, 0x241a38, 0, 'shade');
+    const ring = this.fx(G.torus, 0x9a6cff, 0.5);
     let t = 0;
     this.add(
       dur + 1.5,
       (_k, dt) => {
         t += dt;
         if (!pos(_a)) return;
-        const fade = stillOn() ? Math.min(1, t / 2) : Math.max(0, mat.opacity - dt);
+        const fade = stillOn() ? Math.min(1, t / 2) : Math.max(0, cloud.fxOpacity - dt);
         cloud.position.set(_a.x, _a.y + 70, _a.z);
         cloud.scale.set(70, 5, 70);
         cloud.rotation.y = t * 0.3;
-        mat.opacity = Math.min(0.85, fade * 0.85);
+        cloud.fxOpacity = Math.min(0.85, fade * 0.85);
         ring.position.set(_a.x, _a.y + 64, _a.z);
         ring.rotation.x = Math.PI / 2;
         ring.rotation.z = -t * 0.8;
         ring.scale.setScalar(26 + Math.sin(t * 2) * 2);
-        ringMat.opacity = 0.5 * (mat.opacity / 0.85);
+        ring.fxOpacity = 0.5 * (cloud.fxOpacity / 0.85);
       },
       () => {
         this.drop(cloud);
@@ -388,8 +385,8 @@ export class Vfx {
   }
 
   dispose(): void {
-    for (const f of this.items) f.end();
-    this.items.length = 0;
+    // end() có thể đẻ hiệu ứng nối tiếp (phi kiếm → nổ); rút tới khi rỗng để mọi lưới về pool.
+    for (let f = this.items.pop(); f; f = this.items.pop()) f.end();
     this.group.removeFromParent();
   }
 }
