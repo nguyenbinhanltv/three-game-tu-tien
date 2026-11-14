@@ -7,3 +7,4 @@ export * from './combat';
 export * from './boss';
 export * from './types';
 export * from './protocol';
+export * from './pose';
