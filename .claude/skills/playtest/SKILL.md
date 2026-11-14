@@ -60,6 +60,7 @@ Nhiều worktree (nhiều agent) có thể cùng chạy `pnpm dev`, nhưng mỗi
 ## Test tải
 
 - `pnpm bots --count 100 --room world --duration 300` chạy bot headless (`apps/bot-client`): đi lại ngẫu nhiên, đánh quái, chat, bật tắt ngự kiếm.
+- Bot chạy chung một IP nên sẽ vướng giới hạn `/matchmake` (40 dồn, 20/phút mỗi IP): bật server test tải với `RATE_LIMIT_EXEMPT=loopback`. Bài `security` thì ngược lại, chạy với server KHÔNG miễn trừ.
 - Trong lúc chạy, đọc `tick_ms` p95, bộ nhớ, số message/giây từ log server. Ngưỡng: tick p95 dưới 25ms.
 - Sau test tải, chạy `pnpm ledger:check` để chắc chắn không có vật phẩm/tiền sinh ra không có dòng ledger.
 

@@ -5,7 +5,7 @@ description: Thêm và cân bằng nội dung game Đạp Thiên Lộ — cảnh
 
 # Nội dung và cân bằng
 
-> Hiện trạng MVP: dữ liệu nằm phẳng trong `packages/content/data/` (items.json, monsters.json, skills.json, recipes.json, npcs.json, quests.json, realms.json, levels/*.json, glossary.json, i18n/vi.json, i18n/vi.ui.json). Chưa có schema zod; `src/check.ts` kiểm tra bằng code. Các đợt quái bí cảnh khai trong `apps/server/src/rooms.ts` (WAVES).
+> Hiện trạng MVP: dữ liệu nằm phẳng trong `packages/content/data/` (items.json, monsters.json, loot.json, skills.json, recipes.json, npcs.json, quests.json, realms.json, levels/*.json, glossary.json, i18n/vi.json, i18n/vi.ui.json). Chưa có schema zod; `src/check.ts` kiểm tra bằng code. Các đợt quái bí cảnh khai trong `apps/server/src/rooms.ts` (WAVES). Bảng rơi đồ và linh thạch rơi (`gold`, `drops`) của quái nằm trong `loot.json` (khóa theo id quái), chỉ server đọc qua `@dtl/content/loot`; không đặt lại vào `monsters.json` vì tệp đó vào bundle client.
 
 ## Dữ liệu ở đâu
 
