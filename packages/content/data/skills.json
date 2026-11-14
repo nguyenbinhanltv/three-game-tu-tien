@@ -1,0 +1,8 @@
+[
+  { "id": "skl_phi_kiem", "kind": "damage", "icon": "🗡️", "unlock": 1, "range": 26, "cast": 0, "cd": 0, "mp": 0, "power": 1.0, "fx": "sword" },
+  { "id": "skl_kiem_khi_tram", "kind": "damage", "icon": "🌙", "unlock": 1, "range": 26, "cast": 0, "cd": 6, "mp": 14, "power": 2.3, "fx": "slash" },
+  { "id": "skl_linh_khi_ho_the", "kind": "shield", "icon": "🛡️", "unlock": 3, "range": 0, "cast": 0, "cd": 30, "mp": 25, "power": 0.35, "duration": 8, "fx": "shield" },
+  { "id": "skl_thien_kiem_vu", "kind": "aoe", "icon": "🌧️", "unlock": 5, "range": 26, "cast": 0, "cd": 14, "mp": 34, "power": 1.7, "radius": 9, "fx": "rain" },
+  { "id": "skl_hoi_nguyen_thuat", "kind": "heal", "icon": "💚", "unlock": 7, "range": 0, "cast": 0, "cd": 25, "mp": 30, "power": 0.35, "fx": "heal" },
+  { "id": "skl_loi_dinh_nhat_kiem", "kind": "damage", "icon": "⚡", "unlock": 10, "range": 30, "cast": 1.5, "cd": 20, "mp": 45, "power": 4.6, "fx": "thunder" }
+]

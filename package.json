@@ -1,0 +1,32 @@
+{
+  "name": "dap-thien-lo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n server,client -c cyan,green \"pnpm --filter @dtl/server dev\" \"pnpm --filter @dtl/client dev\"",
+    "dev:server": "pnpm --filter @dtl/server dev",
+    "dev:client": "pnpm --filter @dtl/client dev",
+    "build": "pnpm --filter @dtl/client build",
+    "start": "pnpm --filter @dtl/server start",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "content:check": "pnpm --filter @dtl/content check",
+    "sim:progress": "pnpm --filter @dtl/content sim",
+    "bots": "pnpm --filter @dtl/bot-client start",
+    "ledger:check": "pnpm --filter @dtl/server ledger:check",
+    "assets:build": "node tools/blender/run.mjs",
+    "invite": "pnpm --filter @dtl/server invite"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "concurrently": "^9.1.0",
+    "typescript": "~5.9.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
+  }
+}

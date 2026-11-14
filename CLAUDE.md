@@ -1,0 +1,90 @@
+# Đạp Thiên Lộ — MMORPG tu tiên 3D trên web
+
+Game chơi riêng với bạn bè, không thương mại. Toàn bộ code, shader, script Blender và asset thủ tục do Claude làm; người dùng chạy thử, chơi và báo lỗi.
+
+Spec đầy đủ (Claude Doc): https://claude.ai/artifact/S6ZYqLfR37PYy8NyccDjJt
+
+## Quyết định đã chốt (2026-11-12)
+
+| Chủ đề | Quyết định |
+| --- | --- |
+| Nền tảng MVP | Chỉ desktop web (Chrome, Edge, Firefox, Safari). Mobile để sau |
+| Combat | Tab-target, GCD 1 giây. Soft-lock thêm sau nếu cần |
+| Client | TypeScript, Vite, Three.js `WebGPURenderer` (tự lùi WebGL2), shader viết bằng TSL, UI bằng React |
+| Server | Một tiến trình Node.js chạy Colyseus. Mỗi bản đồ × kênh, mỗi bí cảnh, mỗi lần độ kiếp là một room |
+| Đăng nhập | Chỉ Google. Server kiểm tra ID token, chỉ email trong danh sách mời mới vào được |
+| CSDL | SQLite qua Drizzle ORM (chuyển PostgreSQL khi cần) |
+| Hạ tầng | 1 VPS, asset tĩnh qua CDN |
+| Quy mô | Tối đa 50 người online; test tải bằng 100 bot |
+| Thế giới | Huyền Linh Giới. Bản đồ MVP: Vân Lam Sơn Mạch, tông môn Lạc Kiếm Tông |
+| Cảnh giới | Theo thang Tiên Nghịch (Nhĩ Căn). MVP: Ngưng Khí 1–15 → Trúc Cơ |
+
+## Cấu trúc repo
+
+```
+packages/shared    địa hình (heightAt), di chuyển (stepMove), công thức, giao thức, kiểu dữ liệu
+packages/content   dữ liệu game JSON trong data/, chuỗi tiếng Việt trong data/i18n/, check.ts, sim.ts
+apps/client        Vite + Three.js + React (src/game: engine, terrain, entities, models, vfx; src/ui)
+apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts, game/character.ts, auth.ts, db.ts
+apps/bot-client    bot headless để test tải
+tools/blender      build_sect.py (kiến trúc tông môn → GLB), run.mjs
+```
+
+Chưa có: `apps/admin`, `tools/asset-pipeline` (gltf-transform, KTX2).
+
+## Lệnh thường dùng
+
+- `pnpm dev`: server (2567) + client (5173). Đăng nhập thử bằng đạo hiệu; `?auto=<tên>` tự đăng nhập.
+- `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
+- `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`
+- `pnpm --filter @dtl/bot-client security`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts` hoặc luật di chuyển/combat
+- `pnpm assets:build`: chạy Blender sinh `apps/client/public/assets/sect.glb`
+- `pnpm build` rồi `pnpm start`: server phục vụ luôn bản build ở cổng 2567
+- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | tick`
+
+## Hiện trạng MVP (2026-11-12)
+
+Đã chạy được và đã thử trong trình duyệt: đăng nhập thử, di chuyển có dự đoán + đối soát, ngự kiếm, combat tab-target 6 chiêu, 7 loại quái + boss Hàn Giao, 12 nhiệm vụ, mua bán, luyện đan, cường hóa, đả tọa, độ kiếp Trúc Cơ, bí cảnh Kiếm Trủng 4 đợt, chat, bản đồ nhỏ, kết nối lại, tự mở kênh khi đủ 50 người.
+
+Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm lệch thêm):
+
+- Không dùng ECS và Rapier: thực thể là object thường; va chạm là heightmap + hình tròn trong `shared/level.ts`.
+- Chưa có AOI: cả kênh nhận trạng thái của nhau qua `@colyseus/schema`.
+- Bảng DB tạo bằng DDL trong `db.ts` (không dùng drizzle-kit migrate). Đổi schema phải sửa cả DDL lẫn bảng Drizzle.
+- Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng.
+- Bí cảnh là một lòng chảo trên cùng bản đồ (Kiếm Trủng, tây bắc), chạy trong room riêng.
+- Ngự kiếm mở ở Ngưng Khí tầng 3 (spec ghi tầng 8) để người mới sớm được bay.
+- Nhân vật và quái dựng bằng khối trong `models.ts`, animation thủ tục; chỉ kiến trúc tông môn đi qua Blender.
+- Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
+
+Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):
+
+- Xác thực nằm ở `static onAuth` của room để chạy trước khi Colyseus giữ chỗ/tạo room; client không được gọi `create` (xem `matchMaker.controller.exposedMethods` trong `index.ts`).
+- Vào bí cảnh cần vé một lần do `WorldRoom.onPortal` cấp; đừng kiểm điều kiện vào room mới ở room cũ mà không có vé.
+- Không cho ra chiêu khi `airborne()`; quái bỏ đuổi mục tiêu không với tới thì hồi đầy và miễn sát thương (`evadeUntil`).
+- Request listener HTTP phải bọc try/catch; `AUTH_DEV_BYPASS` tự tắt khi `NODE_ENV=production` hoặc có `GOOGLE_CLIENT_ID`.
+- Còn mở: tỉ lệ rơi đồ nằm trong bundle client; chưa giới hạn tần suất `/matchmake` theo IP.
+
+## Quy tắc bất biến
+
+- **Server quyết định mọi thứ.** Client chỉ gửi ý định (input, "dùng skill X lên Y"). Không bao giờ nhận sát thương, vị trí cuối cùng, phần thưởng từ client.
+- **Mọi thay đổi vật phẩm/tiền** chạy trong một transaction, có idempotency key và ghi vào `ledger`.
+- **Logic chung** (công thức, hằng số, schema) chỉ nằm trong `packages/shared`, không copy sang client/server.
+- **Ngân sách hiệu năng** (desktop): dưới 300 draw call, 1–2 triệu tam giác, 512MB texture, tải lần đầu dưới 30MB, CPU dưới 8ms/khung. Thay đổi render phải kiểm tra lại.
+- **Chuỗi hiển thị** đi qua i18n key, không viết cứng tiếng Việt trong component.
+- **Tên cảnh giới, vật phẩm, địa danh** lấy từ bảng thuật ngữ trong `packages/content/data/glossary.json`.
+
+## Skill và subagent
+
+Skill trong `.claude/skills/`, subagent trong `.claude/agents/`. Dùng skill tương ứng trước khi làm việc trong khu vực đó:
+
+- `threejs-client`: code render, streaming thế giới, input, UI trên canvas
+- `tsl-shaders-vfx`: shader TSL, hiệu ứng skill, thủy mặc, mây, độ kiếp
+- `procedural-assets`: sinh địa hình, cây, đá, kiến trúc bằng code hoặc bpy
+- `blender-pipeline`: script Blender headless, xuất GLB, tối ưu, kiểm tra asset
+- `colyseus-server`: rooms, schema, xác thực input, AOI, lưu DB
+- `game-content`: thêm quái, skill, vật phẩm, nhiệm vụ, cảnh giới, cân bằng
+- `perf-budget`: đo và giữ ngân sách hiệu năng
+- `playtest`: chạy cả stack local, bot, kiểm tra trong trình duyệt
+
+Subagent: `netcode-reviewer`, `perf-auditor`, `asset-validator`, `lore-keeper`.

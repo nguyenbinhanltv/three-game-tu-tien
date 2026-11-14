@@ -1,0 +1,118 @@
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import { matchMaker, Server } from 'colyseus';
+import { Encoder } from '@colyseus/schema';
+import { WebSocketTransport } from '@colyseus/ws-transport';
+import { config } from './config';
+import { sqlite } from './db';
+import { activeRooms, DungeonRoom, onlineCount, ROOM_DUNGEON, ROOM_WORLD, WorldRoom } from './rooms';
+
+const MIME: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.glb': 'model/gltf-binary',
+  '.ktx2': 'image/ktx2',
+  '.wasm': 'application/wasm',
+  '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2',
+};
+
+/** Mọi lỗi khi xử lý request HTTP phải dừng ở đây: một URL xấu không được làm sập cả server game. */
+function serveStatic(req: http.IncomingMessage, res: http.ServerResponse): void {
+  try {
+    handleHttp(req, res);
+  } catch {
+    if (!res.headersSent) res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Bad request');
+  }
+}
+
+function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  if (url.pathname === '/health') {
+    const rooms = [...activeRooms].map((r) => ({
+      name: r.roomName,
+      players: r.sim.players.size,
+      monsters: r.sim.monsters.length,
+      tickP95: Number(r.sim.tickP95().toFixed(2)),
+    }));
+    res.writeHead(200, { 'content-type': 'application/json', 'access-control-allow-origin': '*' });
+    res.end(JSON.stringify({ ok: true, online: onlineCount(), rooms }));
+    return;
+  }
+  const dist = config.clientDist;
+  if (!fs.existsSync(dist)) {
+    res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Đạp Thiên Lộ — server đang chạy. Client dev ở http://localhost:5173 (hoặc chạy `pnpm build` để server phục vụ bản build).');
+    return;
+  }
+  let file = path.normalize(path.join(dist, decodeURIComponent(url.pathname)));
+  if (file !== dist && !file.startsWith(dist + path.sep)) {
+    res.writeHead(403);
+    res.end();
+    return;
+  }
+  if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(dist, 'index.html');
+  const ext = path.extname(file);
+  const headers: Record<string, string> = { 'content-type': MIME[ext] ?? 'application/octet-stream' };
+  if (url.pathname.startsWith('/assets/')) headers['cache-control'] = 'public, max-age=31536000, immutable';
+  res.writeHead(200, headers);
+  const stream = fs.createReadStream(file);
+  stream.on('error', () => res.destroy());
+  stream.pipe(res);
+}
+
+// Trạng thái đầy đủ của một kênh 50–100 người vượt bộ đệm mặc định 8KB của bộ mã hóa.
+Encoder.BUFFER_SIZE = 128 * 1024;
+// Client không được tự tạo room (mở kênh mới để có boss và điểm hái mới tinh);
+// kênh mới chỉ sinh ra qua joinOrCreate khi các kênh hiện có đã đầy.
+matchMaker.controller.exposedMethods = ['joinOrCreate', 'join', 'joinById', 'reconnect'];
+
+const httpServer = http.createServer(serveStatic);
+const gameServer = new Server({ transport: new WebSocketTransport({ server: httpServer }) });
+
+gameServer.define(ROOM_WORLD, WorldRoom);
+gameServer.define(ROOM_DUNGEON, DungeonRoom);
+
+await gameServer.listen(config.port);
+console.log(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
+console.log(`[server] đăng nhập dev: ${config.devBypass ? 'BẬT (chỉ dùng khi phát triển)' : 'tắt'}; Google: ${config.googleClientId ? 'đã cấu hình' : 'chưa cấu hình'}`);
+
+setInterval(() => {
+  for (const r of activeRooms) {
+    if (r.sim.players.size > 0) {
+      console.log(`[metric] room=${r.roomName} players=${r.sim.players.size} monsters=${r.sim.monsters.length} tick_ms_p95=${r.sim.tickP95().toFixed(2)}`);
+    }
+  }
+}, 30_000).unref();
+
+let closing = false;
+async function shutdown() {
+  if (closing) return;
+  closing = true;
+  console.log('[server] đang lưu và tắt…');
+  for (const r of activeRooms) r.sim.saveAll();
+  try {
+    await gameServer.gracefullyShutdown(false);
+  } catch {
+    /* bỏ qua */
+  }
+  sqlite.close();
+  process.exit(0);
+}
+// Lỗi lọt lưới: ghi log, lưu mọi nhân vật, và tiếp tục chạy thay vì để cả nhóm rớt mạng.
+process.on('uncaughtException', (e) => {
+  console.error('[server] uncaughtException:', e);
+  for (const r of activeRooms) r.sim.saveAll();
+});
+process.on('unhandledRejection', (e) => {
+  console.error('[server] unhandledRejection:', e);
+});
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

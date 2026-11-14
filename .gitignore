@@ -1,0 +1,8 @@
+node_modules
+dist
+*.db
+*.db-*
+.env.local
+apps/server/data
+assets/build/raw
+bench/results

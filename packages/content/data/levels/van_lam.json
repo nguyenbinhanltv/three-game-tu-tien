@@ -1,0 +1,17 @@
+{
+  "id": "van_lam",
+  "spawns": [
+    { "mon": "mon_soi_xam", "x": 2048, "z": 2455, "radius": 105, "count": 14, "levelMin": 1, "levelMax": 2, "respawn": 25 },
+    { "mon": "mon_thiet_boi_tru", "x": 1870, "z": 2650, "radius": 120, "count": 12, "levelMin": 3, "levelMax": 4, "respawn": 28 },
+    { "mon": "mon_yeu_lang", "x": 2240, "z": 2770, "radius": 130, "count": 14, "levelMin": 5, "levelMax": 7, "respawn": 30 },
+    { "mon": "mon_hoa_van_ho", "x": 2550, "z": 2210, "radius": 130, "count": 14, "levelMin": 8, "levelMax": 10, "respawn": 30 },
+    { "mon": "mon_thach_vien", "x": 2830, "z": 2080, "radius": 130, "count": 12, "levelMin": 11, "levelMax": 13, "respawn": 35 },
+    { "mon": "mon_u_minh_lang", "x": 2810, "z": 2370, "radius": 120, "count": 12, "levelMin": 13, "levelMax": 15, "respawn": 35 },
+    { "mon": "boss_han_giao", "x": 1380, "z": 2180, "radius": 4, "count": 1, "levelMin": 15, "levelMax": 15, "respawn": 480 }
+  ],
+  "nodes": [
+    { "item": "itm_linh_thao", "x": 2060, "z": 2600, "radius": 230, "count": 18, "respawn": 40 },
+    { "item": "itm_linh_thao", "x": 2620, "z": 2300, "radius": 150, "count": 8, "respawn": 40 },
+    { "item": "itm_huyet_linh_chi", "x": 2760, "z": 2220, "radius": 250, "count": 10, "respawn": 75 }
+  ]
+}

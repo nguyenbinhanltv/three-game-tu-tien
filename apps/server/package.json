@@ -1,0 +1,29 @@
+{
+  "name": "@dtl/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "ledger:check": "tsx src/tools/ledgerCheck.ts",
+    "invite": "tsx src/tools/invite.ts"
+  },
+  "dependencies": {
+    "@dtl/shared": "workspace:*",
+    "@dtl/content": "workspace:*",
+    "colyseus": "0.16.5",
+    "@colyseus/core": "^0.16.24",
+    "@colyseus/schema": "^3.0.0",
+    "@colyseus/ws-transport": "^0.16.0",
+    "better-sqlite3": "^12.2.0",
+    "drizzle-orm": "^0.44.0",
+    "google-auth-library": "^10.0.0",
+    "tsx": "^4.20.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.0.0"
+  }
+}
