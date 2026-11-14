@@ -54,7 +54,7 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 
 ## Hiện trạng MVP (2026-11-12)
 
-Đã chạy được và đã thử trong trình duyệt: đăng nhập thử, di chuyển có dự đoán + đối soát, ngự kiếm, combat tab-target 6 chiêu, 7 loại quái + boss Hàn Giao, 12 nhiệm vụ, mua bán, luyện đan, cường hóa, đả tọa, độ kiếp Trúc Cơ, bí cảnh Kiếm Trủng 4 đợt, chat, bản đồ nhỏ, kết nối lại, tự mở kênh khi đủ 50 người.
+Đã chạy được và đã thử trong trình duyệt: đăng nhập thử, di chuyển có dự đoán + đối soát, ngự kiếm, combat tab-target 6 chiêu, 7 loại quái + boss Hàn Giao, 12 nhiệm vụ, mua bán, luyện đan, cường hóa, đả tọa, độ kiếp Trúc Cơ, bí cảnh Kiếm Trủng 4 đợt, chat, bản đồ nhỏ, kết nối lại, tự mở kênh khi đủ 50 người. Cỏ tương tác (`game/grass.ts`: 1 draw call, rạp theo mình + 5 người/quái gần nhất qua `uniformArray`, preset Thấp tắt) và hạt môi trường theo vùng quanh camera (`game/ambient.ts`, phát vào hệ hạt chung M4-5 nên không thêm draw call).
 
 Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm lệch thêm):
 
