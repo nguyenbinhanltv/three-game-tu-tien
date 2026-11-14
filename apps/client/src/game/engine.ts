@@ -70,6 +70,14 @@ const QUALITY: Record<string, { pixelRatio: number; shadows: boolean }> = {
   high: { pixelRatio: 2, shadows: true },
 };
 
+/** Phím bổ trợ hay nuốt sự kiện thả phím khác (Cmd/Ctrl/Alt). Cố ý không có Shift. */
+const STICKY_MODS = new Set(['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'OSLeft', 'OSRight']);
+/** Cặp phím hướng ngược chiều. */
+const OPPOSITE_KEY: Record<string, string> = {
+  KeyW: 'KeyS', KeyS: 'KeyW', KeyA: 'KeyD', KeyD: 'KeyA',
+  ArrowUp: 'ArrowDown', ArrowDown: 'ArrowUp', ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft',
+};
+
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 
@@ -455,9 +463,20 @@ export class Game {
 
   private bindInput(): void {
     this.on(window, 'resize', () => this.onResize());
-    this.on(window, 'blur', () => this.keys.clear());
-    this.on(window, 'keydown', (e: KeyboardEvent) => this.onKeyDown(e));
-    this.on(window, 'keyup', (e: KeyboardEvent) => this.keys.delete(e.code));
+    // Chống kẹt phím: sự kiện thả phím hay mất khi giữ Cmd/Ctrl/Alt hoặc chuyển cửa sổ,
+    // nên xóa sạch tập phím ở những lúc đó. Không tính Shift (Shift dùng để hạ độ cao khi bay).
+    const clearKeys = (): void => this.keys.clear();
+    this.on(window, 'blur', clearKeys);
+    this.on(window, 'focus', clearKeys);
+    this.on(document as unknown as HTMLElement, 'visibilitychange', clearKeys);
+    this.on(window, 'keydown', (e: KeyboardEvent) => {
+      if (STICKY_MODS.has(e.code)) clearKeys();
+      this.onKeyDown(e);
+    });
+    this.on(window, 'keyup', (e: KeyboardEvent) => {
+      if (STICKY_MODS.has(e.code)) clearKeys();
+      else this.keys.delete(e.code);
+    });
     const c = this.canvas;
     this.on(c, 'contextmenu', (e: Event) => e.preventDefault());
     this.on(c, 'pointerdown', (e: PointerEvent) => {
@@ -483,6 +502,11 @@ export class Game {
     });
     this.on(c, 'pointermove', (e: PointerEvent) => {
       if (!this.dragging) return;
+      // Mất pointerup (thả chuột ngoài cửa sổ, Alt+Tab): đồng bộ lại theo nút đang giữ thật.
+      if (e.buttons === 0) {
+        this.dragging = false;
+        return;
+      }
       const dx = e.clientX - this.lastPX;
       const dy = e.clientY - this.lastPY;
       this.lastPX = e.clientX;
@@ -580,6 +604,9 @@ export class Game {
     }
     if (code === 'Space' || code.startsWith('Arrow')) e.preventDefault();
     if (e.repeat) return;
+    // Nhấn một hướng thì bỏ hướng ngược lại (phòng phím kia đã mất sự kiện thả).
+    const opp = OPPOSITE_KEY[code];
+    if (opp) this.keys.delete(opp);
     this.keys.add(code);
     if (code.startsWith('Digit')) {
       const i = Number(code.slice(5)) - 1;
