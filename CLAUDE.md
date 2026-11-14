@@ -45,12 +45,13 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`. 100 bot chung một IP sẽ bị giới hạn `/matchmake`: chạy server với `RATE_LIMIT_EXEMPT=loopback`
 - `pnpm size`: tổng tải trước khi vào game (JS/CSS gzip, font, asset màn tải, âm thanh nạp đầu) so với ngân sách 30MB, lưu `bench/results/size-<ngày>.json`
 - `pnpm bench:client`: Playwright Chrome headless tắt tiếng, tự chạy `pnpm dev` ở `PORT`/`CLIENT_PORT` riêng (mặc định 2635/5135) rồi tự tắt; WebGPU + WebGL2 × 3 preset, đường camera sân/rừng/hồ; draw call, tam giác, CPU khung p50/p95, texture MB; lưu `bench/results/<ngày>.json`, so lần trước. Cờ và cách đọc: skill `perf-budget`
+- `pnpm compat`: kiểm tương thích Chrome/Edge/Firefox/WebKit (Playwright, tắt tiếng, tự chạy `pnpm dev` ở 2645/5145): backend WebGPU/WebGL2, ảnh so sánh, KTX2/meshopt, giải mã Opus/AAC, input, lỗi console; kết quả `bench/results/compat-<ngày>/`, bảng tổng hợp ở `docs/compat.md`. Firefox/WebKit cài một lần: `pnpm --filter @dtl/perf exec playwright install firefox webkit`
 - `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts`, `ratelimit.ts` hoặc luật di chuyển/combat. Server không được bật `RATE_LIMIT_EXEMPT`; bài cuối làm cạn xô của IP, chạy lại cả bộ sau khoảng 1 phút
 - `pnpm assets:build`: Blender sinh GLB thô vào `assets/build/raw/` rồi tối ưu ra `apps/client/public/assets/<id>.<hash>.glb` + `manifest.json`; client nạp qua `AssetCache` (`apps/client/src/game/assets.ts`); `pnpm assets:validate` kiểm ngân sách, LICENSES, chiều cao raw/build
 - `pnpm audio:build` (cần ffmpeg có libopus + aac; đặt `FFMPEG=` nếu không có trong PATH): sinh sprite SFX và âm môi trường từ `../dtl-asset-source/sfx` theo `tools/audio/sounds.json`, ghi `apps/client/public/audio/manifest.json` và khối âm thanh trong `assets/LICENSES.md`; `pnpm audio:check` chỉ kiểm khai báo, nguồn, giấy phép CC0
 - `pnpm music:build [--only id,id] [--preview]`: nhạc nền Suno (bản free, phi thương mại, ghi nguồn) từ `../dtl-asset-source/audio/music/<id>.mp3` theo `tools/audio/music.json`: cắt vòng lặp liền, −16 LUFS, Opus+AAC, ghi mục `music` (kèm `credit`) trong manifest và khối nhạc trong `assets/LICENSES.md`; `pnpm music:check` liệt kê bài đã có/thiếu. Prompt và hướng dẫn: `docs/audio/suno-prompts.md`. `pnpm audio:test` test hậu kỳ
 - `pnpm build` rồi `pnpm start`: server phục vụ luôn bản build ở cổng 2567
-- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | hurt pct | spawn id [n] | tick` (`hurt` hạ máu quái quanh mình về pct% để thử pha boss)
+- Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | hurt pct | spawn id [n] | tick | dye id` (`hurt` hạ máu quái quanh mình về pct% để thử pha boss; `dye` đổi màu áo, id trong `appearance.json`)
 
 ## Hiện trạng MVP (2026-11-12)
 
@@ -64,7 +65,7 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng.
 - Bí cảnh là một lòng chảo trên cùng bản đồ (Kiếm Trủng, tây bắc), chạy trong room riêng.
 - Ngự kiếm mở ở Ngưng Khí tầng 3 (spec ghi tầng 8) để người mới sớm được bay.
-- Nhân vật và phần lớn quái dựng bằng khối trong `models.ts`, animation thủ tục. Ba loài sói dùng `mon_soi_xam` có xương qua `game/character/` (`SkinnedCharacter`, bảng `MONSTER_SKINS`); `?models=legacy` hoặc nạp lỗi thì về model khối.
+- Người chơi dùng Thanh Phong (`chr_kiem_tu_nam`, có xương) qua `game/character/playerSkins.ts`; màu áo nhuộm bằng shader theo `packages/content/data/appearance.json`, chọn khi tạo nhân vật (cột `characters.appearance`). Chưa có model nữ. Chiêu, bay, niệm chú dùng pose IK của M3-4 (`withPoses`); thiền dùng tư thế tạm `tam_thien`, nhảy mượn `ngu_kiem`. NPC và phần lớn quái vẫn dựng bằng khối trong `models.ts`. Ba loài sói dùng `mon_soi_xam` có xương (`MONSTER_SKINS`). `?models=legacy` hoặc nạp lỗi thì về model khối.
 - Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):

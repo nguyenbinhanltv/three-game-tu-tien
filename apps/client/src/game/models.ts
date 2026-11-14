@@ -41,6 +41,25 @@ function buildSword(): THREE.BufferGeometry {
 }
 export const SWORD_GEO = buildSword();
 
+/**
+ * Phi kiếm dưới chân khi ngự kiếm (ẩn sẵn). Dùng chung cho model khối và model có xương.
+ * `aura` là material riêng của bản này: người gọi dispose khi bỏ model.
+ */
+export function buildFlySword(): { group: THREE.Group; aura: THREE.Material } {
+  const group = new THREE.Group();
+  const fs = new THREE.Mesh(SWORD_GEO, MODEL_MAT);
+  fs.rotation.x = Math.PI / 2;
+  fs.position.set(0, 0, -1.0);
+  fs.scale.setScalar(2.0);
+  const aura = GLOW_MAT(0x8fe4ff, 0.42);
+  const am = new THREE.Mesh(G.octa, aura);
+  am.scale.set(0.34, 0.07, 1.7);
+  group.add(fs, am);
+  group.position.y = -0.1;
+  group.visible = false;
+  return { group, aura };
+}
+
 export interface HumanoidOpts {
   robe: number | string;
   trim: number | string;
@@ -115,18 +134,9 @@ export class Humanoid implements CharacterView {
       this.backSword.rotation.set(0, 0, -0.5);
       this.pose.add(this.backSword);
 
-      this.flySword = new THREE.Group();
-      const fs = new THREE.Mesh(SWORD_GEO, MODEL_MAT);
-      fs.rotation.x = Math.PI / 2;
-      fs.position.set(0, 0, -1.0);
-      fs.scale.setScalar(2.0);
-      const auraMat = GLOW_MAT(0x8fe4ff, 0.42);
-      this.mats.push(auraMat);
-      const aura = new THREE.Mesh(G.octa, auraMat);
-      aura.scale.set(0.34, 0.07, 1.7);
-      this.flySword.add(fs, aura);
-      this.flySword.position.y = -0.1;
-      this.flySword.visible = false;
+      const fly = buildFlySword();
+      this.flySword = fly.group;
+      this.mats.push(fly.aura);
       this.root.add(this.flySword);
     }
     this.root.add(this.pose);

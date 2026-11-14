@@ -1,5 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import {
+  type Appearance,
+  appearanceFromDb,
   type CharView,
   enhanceMul,
   EQUIP_SLOTS,
@@ -16,7 +18,7 @@ import {
   SPAWN_POINT,
   xpNeed,
 } from '@dtl/shared';
-import { ITEM, QUEST } from '@dtl/content';
+import { APPEARANCE, ITEM, QUEST } from '@dtl/content';
 import { characters, db, items, ledger } from '../db';
 
 export interface CharMeta {
@@ -150,6 +152,8 @@ export class Character {
   equip: Equipment = {};
   quests: QuestView = { active: {}, done: [] };
   meta: CharMeta = {};
+  /** Ngoại hình đã kiểm (server quyết định; client chỉ gửi lựa chọn lúc tạo nhân vật). */
+  appearance: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
 
   mhp = 1;
   mmp = 0;
@@ -171,7 +175,8 @@ export class Character {
     return !!db.select({ id: characters.id }).from(characters).where(eq(characters.name, name)).get();
   }
 
-  static create(accountId: number, name: string): Character {
+  /** `appearance` phải đã qua `parseAppearance` (rooms.ts); null = mặc định. */
+  static create(accountId: number, name: string, appearance: Appearance | null = null): Character {
     const base = playerBaseStats(1);
     const row = db
       .insert(characters)
@@ -187,6 +192,7 @@ export class Character {
         y: 0,
         z: SPAWN_POINT.z,
         room: '',
+        appearance: JSON.stringify(appearance ?? { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye }),
         updatedAt: Date.now(),
       })
       .returning({ id: characters.id })
@@ -210,6 +216,7 @@ export class Character {
     c.y = row.y;
     c.z = row.z;
     c.room = row.room;
+    c.appearance = appearanceFromDb(APPEARANCE, row.appearance, row.name);
     try {
       c.equip = JSON.parse(row.equip) as Equipment;
       c.quests = JSON.parse(row.quests) as QuestView;
@@ -271,6 +278,12 @@ export class Character {
       def: this.def,
       gold: this.gold,
     };
+  }
+
+  /** Đổi ngoại hình (chỉ lệnh GM thử); `a` phải đã qua `parseAppearance`. Ghi ngay. */
+  setAppearance(a: Appearance): void {
+    this.appearance = a;
+    db.update(characters).set({ appearance: JSON.stringify(a) }).where(eq(characters.id, this.id)).run();
   }
 
   /** Lưu các trường thay đổi liên tục (không phải vật phẩm/tiền — chúng lưu ngay trong transaction). */
