@@ -4,7 +4,10 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import type { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import dracoJsUrl from 'three/addons/libs/draco/draco_wasm_wrapper.js?url';
 import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
+import { POSES } from '@dtl/content';
 import { createGltfLoader, createKtx2Loader, localLibsManager } from '../game/assets';
+import { bakePose, IkRig } from '../game/character/ikpose';
+import { buildFixtureSword, buildMixamoFixture } from '../game/character/mixamoFixture';
 import { BoneLines, makeGrid } from './helpers';
 import { collectStats, type ModelStats } from './stats';
 
@@ -112,8 +115,51 @@ export class ViewerScene {
 
   async loadBuffer(buf: ArrayBuffer, name: string, path = ''): Promise<LoadedInfo> {
     const gltf: GLTF = await this.loader.parseAsync(buf, path);
+    const json = (gltf.parser as unknown as { json: { extensionsUsed?: string[] } }).json;
+    // ?pose=…: nướng thêm các key pose IK nếu model có rig người Mixamo.
+    const clips = this.poseMode ? [...this.bakePoses(gltf.scene), ...gltf.animations] : gltf.animations;
+    return this.show(gltf.scene, clips, { name, fileBytes: buf.byteLength, extensions: json.extensionsUsed ?? [] });
+  }
+
+  /** Rig Mixamo mẫu sinh bằng code + kiếm ở tay phải, chạy các key pose IK (khi chưa có model người có xương). */
+  loadPoseFixture(): LoadedInfo {
+    const root = buildMixamoFixture({ mesh: true });
+    const clips = this.bakePoses(root);
+    return this.show(root, clips, { name: 'mixamo_fixture', fileBytes: 0, extensions: [] });
+  }
+
+  /** Đang ở chế độ xem pose (?pose=…). */
+  get poseMode(): boolean {
+    return new URLSearchParams(location.search).has('pose');
+  }
+
+  /** Dừng clip đang chạy ở thời điểm t (giây) để chụp ảnh một khung. */
+  seek(t: number): void {
+    if (!this.mixer || !this.action) return;
+    this.paused = true;
+    // Bỏ crossfade đang dở (đang dừng thì fade không bao giờ chạy hết): chỉ còn clip này, trọng số đầy.
+    const act = this.action;
+    this.mixer.stopAllAction();
+    act.play().setEffectiveWeight(1);
+    act.time = Math.min(t, act.getClip().duration - 1e-4);
+    this.mixer.update(0);
+  }
+
+  private bakePoses(root: THREE.Object3D): THREE.AnimationClip[] {
+    const rig = IkRig.from(root);
+    if (!rig) return [];
+    const clips = POSES.map((p) => bakePose(p, rig));
+    const sword = buildFixtureSword();
+    const mount = rig.swordMount();
+    sword.position.copy(mount.position);
+    sword.quaternion.copy(mount.quaternion);
+    sword.scale.setScalar(1 / (rig.bones.handR!.getWorldScale(new THREE.Vector3()).x || 1));
+    rig.bones.handR!.add(sword);
+    return clips;
+  }
+
+  private show(root: THREE.Object3D, clips: THREE.AnimationClip[], meta: { name: string; fileBytes: number; extensions: string[] }): LoadedInfo {
     this.clear();
-    const root = gltf.scene;
     root.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
@@ -139,7 +185,7 @@ export class ViewerScene {
       this.scene.add(this.skeleton);
     }
 
-    this.clips = gltf.animations;
+    this.clips = clips;
     if (this.clips.length) {
       this.mixer = new THREE.AnimationMixer(root);
       this.playClip(0);
@@ -149,14 +195,12 @@ export class ViewerScene {
     const all = new THREE.Box3().setFromObject(root, true).union(new THREE.Box3().setFromObject(this.human));
     const span = Math.max(all.max.x - all.min.x, all.max.z - all.min.z);
     this.buildGround(Math.max(12, Math.ceil(span * 1.4)));
-    this.frameBounds(all);
+    // Xem pose: khung cận cảnh vào model (nhìn chéo từ trước), không lùi ra cho cả người chuẩn.
+    this.frameBounds(this.poseMode ? new THREE.Box3().setFromObject(root, true) : all);
 
-    const json = (gltf.parser as unknown as { json: { extensionsUsed?: string[] } }).json;
     return {
-      name,
-      fileBytes: buf.byteLength,
+      ...meta,
       clips: this.clips.map((c) => ({ name: c.name, duration: c.duration })),
-      extensions: json.extensionsUsed ?? [],
       stats,
     };
   }

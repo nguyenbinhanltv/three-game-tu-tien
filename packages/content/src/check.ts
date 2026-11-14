@@ -1,8 +1,8 @@
 // Kiểm tra nội dung game: id trùng, tham chiếu hỏng, thiếu chuỗi hiển thị.
 // Chạy: pnpm content:check
 
-import { groundAt, heightAt, type MonsterAi, type MonsterDef, phaseRules, WATER_Y, xpNeed } from '@dtl/shared';
-import { hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
+import { groundAt, heightAt, type MonsterAi, type MonsterDef, phaseRules, validatePose, WATER_Y, xpNeed } from '@dtl/shared';
+import { hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -22,6 +22,8 @@ uniqueIds('skill', SKILLS);
 uniqueIds('recipe', RECIPES);
 uniqueIds('npc', NPCS);
 uniqueIds('quest', QUESTS);
+uniqueIds('pose', POSES);
+for (const p of POSES) for (const m of validatePose(p)) err(m);
 
 const needItem = (id: string, where: string) => {
   if (!ITEM.has(id)) err(`${where}: vật phẩm không tồn tại ${id}`);
@@ -191,7 +193,7 @@ for (const lv of Object.values(LEVELS)) {
 let total = 0;
 for (let l = 1; l <= 15; l++) total += xpNeed(l);
 console.log(`Tổng tu vi Ngưng Khí 1 → viên mãn tầng 15: ${total}`);
-console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${SKILLS.length} skill, ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức`);
+console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${SKILLS.length} skill, ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose`);
 
 if (errors.length) {
   console.error(`\n${errors.length} lỗi nội dung:`);

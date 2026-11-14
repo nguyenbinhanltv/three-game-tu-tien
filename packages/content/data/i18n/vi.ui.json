@@ -1,7 +1,7 @@
 {
   "viewer.title": "Xem asset",
   "viewer.open_file": "Mở tệp GLB…",
-  "viewer.drop_hint": "Kéo thả tệp .glb vào khung, hoặc thêm ?file=assets/ten.glb vào địa chỉ.",
+  "viewer.drop_hint": "Kéo thả tệp .glb vào khung, hoặc thêm ?file=assets/ten.glb vào địa chỉ. Thêm &pose=kiem_thu (và &t=giây) để xem key pose IK trên rig Mixamo mẫu hoặc trên model có rig Mixamo.",
   "viewer.loading": "Đang nạp {name}…",
   "viewer.err.bad_path": "Đường dẫn không hợp lệ: {file}. Chỉ nhận đường dẫn tương đối tới tệp .glb/.gltf.",
   "viewer.err.load": "Không nạp được {name}: {msg}",

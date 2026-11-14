@@ -23,7 +23,7 @@ Spec đầy đủ (Claude Doc): https://claude.ai/artifact/S6ZYqLfR37PYy8NyccDjJ
 
 ```
 packages/shared    địa hình (heightAt), di chuyển (stepMove), công thức, giao thức, kiểu dữ liệu
-packages/content   dữ liệu game JSON trong data/, chuỗi tiếng Việt trong data/i18n/, check.ts, sim.ts
+packages/content   dữ liệu game JSON trong data/ (key pose IK trong data/poses/), chuỗi tiếng Việt trong data/i18n/, check.ts, sim.ts
 apps/client        Vite + Three.js + React (src/game: engine, terrain, entities, models, vfx; src/ui)
 apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts, game/character.ts, auth.ts, db.ts
 apps/bot-client    bot headless để test tải
