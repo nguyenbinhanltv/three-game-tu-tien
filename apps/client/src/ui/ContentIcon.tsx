@@ -9,6 +9,8 @@ type Atlas = {
 };
 const base = `${import.meta.env.BASE_URL}assets/ui/`;
 let atlas: Promise<Atlas | null> | undefined;
+// undefined = still loading; null = failed; Atlas = ready for synchronous mounts.
+let resolved: Atlas | null | undefined;
 function loadAtlas() {
   return atlas ??= (async () => {
     try {
@@ -24,13 +26,21 @@ function loadAtlas() {
       });
       return loaded ? data : null;
     } catch { return null; }
-  })();
+  })().then((loaded) => {
+    resolved = loaded;
+    return loaded;
+  });
 }
 
 /** Decorative icon: the parent control supplies its localized name. */
 export function ContentIcon({ def }: { def?: IconDef }) {
-  const [sheet, setSheet] = useState<Atlas | null>(null);
+  const [sheet, setSheet] = useState<Atlas | null>(() => resolved ?? null);
   useEffect(() => {
+    // Also cover a load that completed between this render and its effect.
+    if (resolved !== undefined) {
+      setSheet(resolved);
+      return;
+    }
     let active = true;
     loadAtlas().then((loaded) => { if (active) setSheet(loaded); });
     return () => { active = false; };
