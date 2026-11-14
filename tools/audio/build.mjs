@@ -411,18 +411,22 @@ function licenseBlock(spec, used) {
   const lines = [LIC_BEGIN, '', '### Âm thanh (SFX, âm môi trường)', ''];
   lines.push('Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`.', '');
   lines.push('| Âm | Nguồn | Giấy phép | Ngày | Chi tiết |', '| --- | --- | --- | --- | --- |');
-  const today = new Date().toISOString().slice(0, 10);
+  // Ngày theo giờ máy (không phải UTC) để khớp ngày làm việc của người build.
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   for (const [id, srcs] of used) {
     const packs = [...new Set(srcs.map((s) => s.pack))];
+    // Nguồn: gói + tác giả; Chi tiết: link trang gói + đường dẫn file trong dtl-asset-source/sfx.
+    const source = packs.map((p) => `OpenGameArt: ${spec.packs[p].title} — ${spec.packs[p].author}`).join('; ');
     const detail = packs
       .map((p) => {
         const P = spec.packs[p];
         const files = [...new Set(srcs.filter((s) => s.pack === p).map((s) => s.file))].join(', ');
-        return `${P.title} — ${P.author} — ${P.url} — file: ${files}`;
+        return `${P.url} — \`${P.dir}/\`: ${files}`;
       })
       .join('; ');
     const lic = [...new Set(packs.map((p) => spec.packs[p].license))].join(', ');
-    lines.push(`| \`${id}\` | OpenGameArt (CC0) | ${lic} | ${today} | ${detail} |`);
+    lines.push(`| \`${id}\` | ${source} | ${lic} | ${today} | ${detail} |`);
   }
   lines.push('', LIC_END);
   return lines.join('\n');
