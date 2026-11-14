@@ -1,0 +1,83 @@
+import type {
+  ItemDef,
+  LevelDef,
+  MonsterDef,
+  NpcDef,
+  QuestDef,
+  RealmDef,
+  RecipeDef,
+  SkillDef,
+} from '@dtl/shared';
+import itemsJson from '../data/items.json';
+import monstersJson from '../data/monsters.json';
+import skillsJson from '../data/skills.json';
+import recipesJson from '../data/recipes.json';
+import npcsJson from '../data/npcs.json';
+import questsJson from '../data/quests.json';
+import realmsJson from '../data/realms.json';
+import vanLamJson from '../data/levels/van_lam.json';
+import kiemTrungJson from '../data/levels/kiem_trung.json';
+import glossaryJson from '../data/glossary.json';
+import viJson from '../data/i18n/vi.json';
+import viUiJson from '../data/i18n/vi.ui.json';
+
+export const ITEMS = itemsJson as ItemDef[];
+export const MONSTERS = monstersJson as unknown as MonsterDef[];
+export const SKILLS = skillsJson as SkillDef[];
+export const RECIPES = recipesJson as RecipeDef[];
+export const NPCS = npcsJson as NpcDef[];
+export const QUESTS = questsJson as QuestDef[];
+export const REALMS = realmsJson as RealmDef[];
+export const LEVELS: Record<string, LevelDef> = {
+  van_lam: vanLamJson as LevelDef,
+  kiem_trung: kiemTrungJson as LevelDef,
+};
+export const GLOSSARY = glossaryJson;
+
+function index<T extends { id: string }>(list: T[]): Map<string, T> {
+  const m = new Map<string, T>();
+  for (const e of list) m.set(e.id, e);
+  return m;
+}
+
+export const ITEM = index(ITEMS);
+export const MONSTER = index(MONSTERS);
+export const SKILL = index(SKILLS);
+export const RECIPE = index(RECIPES);
+export const NPC = index(NPCS);
+export const QUEST = index(QUESTS);
+
+/** Vật phẩm dùng để cường hóa trang bị. */
+export const ENHANCE_ORE = 'itm_thiet_tinh';
+export const TRUC_CO_PILL = 'itm_truc_co_dan';
+
+// ---- i18n ----
+
+const STRINGS: Record<string, string> = { ...(viJson as Record<string, string>), ...(viUiJson as Record<string, string>) };
+
+/** Lấy chuỗi hiển thị theo key, thay {tham_số}. Thiếu key thì trả về chính key để dễ phát hiện. */
+export function t(key: string, params?: Record<string, string | number>): string {
+  let s = STRINGS[key];
+  if (s === undefined) return key;
+  if (params) {
+    for (const k in params) s = s.split('{' + k + '}').join(String(params[k]));
+  }
+  return s;
+}
+
+export function hasString(key: string): boolean {
+  return STRINGS[key] !== undefined;
+}
+
+export function realmName(level: number): string {
+  return t('realm.' + level);
+}
+
+export function itemName(id: string, plus?: number): string {
+  const n = t('item.' + id + '.name');
+  return plus ? `${n} +${plus}` : n;
+}
+
+export function monsterName(id: string): string {
+  return t('mon.' + id);
+}
