@@ -15,9 +15,21 @@ export const BOLT_MAX_LIVE = 64;
 /** Đạn sống tối đa (giây) dù dữ liệu ghi gì. */
 export const BOLT_MAX_LIFE = 4;
 
-/** Độ cao tâm đạn tại (x, z): bám mặt "đứng được" (groundAt đã tính mặt nước hồ). */
-export function boltY(x: number, z: number): number {
-  return groundAt(x, z) + BOLT_HEIGHT;
+/** Đạn được nâng tối đa chừng này mét theo độ cao mục tiêu lúc bắn (vùng nổ trúng người bay tới 8 m). */
+export const BOLT_MAX_LIFT = 6.5;
+
+/**
+ * Độ nâng của đạn: mục tiêu đứng cao hơn mặt đất bao nhiêu lúc bắn (ngự kiếm, nhảy) thì đạn bay cao
+ * chừng đó, kẹp trong [0, BOLT_MAX_LIFT]. Bay lơ lửng không né được; đổi độ cao/bước ngang thì né được.
+ */
+export function boltLift(targetY: number, groundY: number): number {
+  const h = targetY - groundY;
+  return h > 0 ? Math.min(h, BOLT_MAX_LIFT) : 0;
+}
+
+/** Độ cao tâm đạn tại (x, z) với độ nâng `lift`: bám mặt "đứng được" (groundAt đã tính mặt nước hồ). */
+export function boltY(x: number, z: number, lift = 0): number {
+  return groundAt(x, z) + BOLT_HEIGHT + lift;
 }
 
 /** Vị trí ngang của đạn sau `t` giây (bay thẳng theo `yaw`, quy ước yaw = atan2(dx, dz)). */
@@ -35,36 +47,66 @@ export function boltYaws(yaw: number, n: number, spread: number): number[] {
   return out;
 }
 
-/** Khoảng cách bình phương từ điểm (cx, cz) tới đoạn AB trên mặt phẳng ngang. */
-export function segDist2(ax: number, az: number, bx: number, bz: number, cx: number, cz: number): number {
+/** Tham số t ∈ [0, 1] của điểm trên đoạn AB gần (cx, cz) nhất (mặt phẳng ngang). */
+export function segParam(ax: number, az: number, bx: number, bz: number, cx: number, cz: number): number {
   const ux = bx - ax;
   const uz = bz - az;
   const L = ux * ux + uz * uz;
-  let t = L > 0 ? ((cx - ax) * ux + (cz - az) * uz) / L : 0;
-  t = t < 0 ? 0 : t > 1 ? 1 : t;
-  const dx = ax + ux * t - cx;
-  const dz = az + uz * t - cz;
+  const t = L > 0 ? ((cx - ax) * ux + (cz - az) * uz) / L : 0;
+  return t < 0 ? 0 : t > 1 ? 1 : t;
+}
+
+/** Khoảng cách bình phương từ điểm (cx, cz) tới đoạn AB trên mặt phẳng ngang. */
+export function segDist2(ax: number, az: number, bx: number, bz: number, cx: number, cz: number): number {
+  const t = segParam(ax, az, bx, bz, cx, cz);
+  const dx = ax + (bx - ax) * t - cx;
+  const dz = az + (bz - az) * t - cz;
   return dx * dx + dz * dz;
 }
 
 /**
- * Đạn bán kính `r` quét từ A tới B trong một tick có trúng người chơi đứng ở (px, py, pz) không
- * (py là chân). Quét theo đoạn nên đạn nhanh không xuyên qua người giữa hai tick.
+ * Đạn bán kính `r`, độ nâng `lift`, quét từ A tới B trong một tick có trúng người chơi đứng ở (px, py, pz)
+ * không (py là chân). Quét theo đoạn nên đạn nhanh không xuyên qua người giữa hai tick; trục đứng xét
+ * tại điểm trên đoạn gần người nhất.
  */
-export function boltHits(ax: number, az: number, bx: number, bz: number, r: number, px: number, py: number, pz: number): boolean {
-  const by = boltY(bx, bz);
-  if (by + r < py || by - r > py + BOLT_BODY_H) return false;
+export function boltHits(ax: number, az: number, bx: number, bz: number, r: number, lift: number, px: number, py: number, pz: number): boolean {
+  const t = segParam(ax, az, bx, bz, px, pz);
+  const qx = ax + (bx - ax) * t;
+  const qz = az + (bz - az) * t;
+  const dx = qx - px;
+  const dz = qz - pz;
   const rr = r + PLAYER_RADIUS;
-  return segDist2(ax, az, bx, bz, px, pz) <= rr * rr;
+  if (dx * dx + dz * dz > rr * rr) return false;
+  const by = boltY(qx, qz, lift);
+  return !(by + r < py || by - r > py + BOLT_BODY_H);
 }
 
-/** Đạn chạm vật cản tĩnh (kiến trúc, cự kiếm Kiếm Trủng) thì vỡ. */
-export function boltBlocked(x: number, z: number, r: number): boolean {
+/**
+ * Đạn quét từ A tới B chạm vật cản tĩnh (kiến trúc, cự kiếm Kiếm Trủng) đầu tiên ở tham số t ∈ [0, 1]
+ * nào; -1 nếu không chạm. Xét cả đoạn nên tick dài cũng không xuyên tường.
+ */
+export function boltBlockedAt(ax: number, az: number, bx: number, bz: number, r: number): number {
+  const ux = bx - ax;
+  const uz = bz - az;
+  const a = ux * ux + uz * uz;
+  let best = -1;
   for (const c of COLLIDERS) {
-    const dx = x - c.x;
-    const dz = z - c.z;
+    const fx = ax - c.x;
+    const fz = az - c.z;
     const rr = c.r + r;
-    if (dx * dx + dz * dz < rr * rr) return true;
+    const cc = fx * fx + fz * fz - rr * rr;
+    if (cc <= 0) return 0; // đã ở trong vật cản
+    if (a <= 0) continue;
+    const b = 2 * (fx * ux + fz * uz);
+    const disc = b * b - 4 * a * cc;
+    if (disc < 0) continue;
+    const t = (-b - Math.sqrt(disc)) / (2 * a);
+    if (t >= 0 && t <= 1 && (best < 0 || t < best)) best = t;
   }
-  return false;
+  return best;
+}
+
+/** Điểm (x, z) đang nằm trong vật cản tĩnh (đầu nòng mọc trong tường). */
+export function boltBlocked(x: number, z: number, r: number): boolean {
+  return boltBlockedAt(x, z, x, z, r) === 0;
 }

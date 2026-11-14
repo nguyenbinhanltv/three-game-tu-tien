@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { BOLT_MAX_LIVE, type BoltEndMsg, type BoltMsg, groundAt, type MonsterCaster, MS_CHASE, MS_RETURN, S, VALLEY } from '@dtl/shared';
+import { BOLT_MAX_LIVE, type BoltEndMsg, type BoltMsg, COLLIDERS, FLY_MIN_CLEAR, groundAt, type MonsterCaster, MS_CHASE, MS_RETURN, S, VALLEY } from '@dtl/shared';
 
 // Đạn đánh xa (D1): server mô phỏng và phán định theo vị trí người chơi server giữ.
 // DB trong bộ nhớ: sim.ts kéo theo character.ts → db.ts.
@@ -51,7 +51,8 @@ function setup() {
     hazardWin: { until: 0, taken: 0 },
   };
   sim.players.set('p1', p as never);
-  const fire = (yaw = 0) => (sim as unknown as { fireBolts(m: unknown, c: MonsterCaster, yaw: number): void }).fireBolts(mon, BOLT, yaw);
+  const fire = (yaw = 0, lift = 0) =>
+    (sim as unknown as { fireBolts(m: unknown, c: MonsterCaster, yaw: number, lift: number): void }).fireBolts(mon, BOLT, yaw, lift);
   const tickTo = (ms: number) => {
     sim.now = ms;
     (sim as unknown as { tickBolts(): void }).tickBolts();
@@ -103,6 +104,31 @@ describe('đạn đánh xa: server phán định', () => {
     fire(0);
     tickTo(1_001_500); // một bước nhảy 15 m qua người đứng cách 8 m
     expect(p.char.hp).toBeLessThan(1000);
+  });
+
+  it('ngự kiếm lơ lửng sát đất vẫn trúng (đạn nâng theo độ cao lúc bắn)', () => {
+    const { sim, sent, p, fire, tickTo } = setup();
+    p.move.y += FLY_MIN_CLEAR + 0.3;
+    sim.now = 1_000_000;
+    fire(0, FLY_MIN_CLEAR + 0.3);
+    expect(of<BoltMsg>(sent, S.BOLT)[0].h).toBeCloseTo(FLY_MIN_CLEAR + 0.3);
+    for (let t = 50; t <= 1500; t += 50) tickTo(1_000_000 + t);
+    expect(p.char.hp).toBeLessThan(1000);
+  });
+
+  it('không trúng người đứng sau vật cản dù tick dài', () => {
+    const { sim, mon, p, fire, tickTo } = setup();
+    const c = COLLIDERS[COLLIDERS.length - 1]; // cự kiếm Kiếm Trủng
+    mon.s.x = c.x;
+    mon.s.z = c.z - c.r - 3;
+    p.move.x = c.x;
+    p.move.z = c.z + c.r + 2;
+    p.move.y = groundAt(p.move.x, p.move.z);
+    sim.now = 1_000_000;
+    fire(0);
+    tickTo(1_002_000);
+    expect(p.char.hp).toBe(1000);
+    expect(sim.bolts).toHaveLength(0);
   });
 
   it('bay cao trên đầu đạn (ngự kiếm) thì không trúng', () => {

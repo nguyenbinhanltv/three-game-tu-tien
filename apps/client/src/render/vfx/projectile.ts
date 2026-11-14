@@ -69,6 +69,7 @@ interface Live {
   yaw: number;
   v: number;
   r: number;
+  lift: number;
   life: number;
   age: number;
   sd: number;
@@ -87,7 +88,7 @@ const WHITE = new THREE.Color(0xffffff);
 
 /** Màu lõi: màu loại đòn pha trắng (nóng, đọc rõ trên nền sương). */
 export function coreColor(color: number): number {
-  return _w.setHex(color).lerp(WHITE, 0.55).getHex();
+  return _w.setHex(color).lerp(WHITE, 0.35).getHex();
 }
 
 export class BoltFx {
@@ -107,7 +108,7 @@ export class BoltFx {
     const h = this.host;
     const look = boltLook(m.kind);
     const core = h.fx(look === 'blade' ? SPIKE_GEO : ORB_GEO, coreColor(color), 0.95, 'glow');
-    const halo = h.fx(HALO_GEO, color, 0.32, 'glow');
+    const halo = h.fx(HALO_GEO, color, 0.22, 'glow');
     const shadow = h.fx(SHADOW_GEO, color, 0.3, 'flat');
     shadow.rotation.x = -Math.PI / 2;
     const b = this.spare.pop() ?? ({} as Live);
@@ -117,6 +118,7 @@ export class BoltFx {
     b.yaw = m.yaw;
     b.v = m.v;
     b.r = m.r;
+    b.lift = m.h ?? 0;
     b.life = m.life;
     b.age = age;
     b.sd = (m.sd % 1000) * 0.0063;
@@ -135,7 +137,7 @@ export class BoltFx {
     const i = this.live.findIndex((b) => b.id === id);
     if (i < 0) return;
     const b = this.live[i];
-    _v.set(x, boltY(x, z), z);
+    _v.set(x, boltY(x, z, b.lift), z);
     this.host.burst(_v, b.color, hit ? 1.5 : 0.9, hit ? 0.32 : 0.24);
     // Tóe hạt theo hướng bay.
     const fx = Math.sin(b.yaw);
@@ -163,7 +165,7 @@ export class BoltFx {
 
   private place(b: Live, dt: number): void {
     boltXZ(b.x0, b.z0, b.yaw, b.v, b.age, _p);
-    const by = boltY(_p.x, _p.z);
+    const by = boltY(_p.x, _p.z, b.lift);
     const y = by + Math.sin(b.age * 9 + b.sd) * 0.06;
     const a = boltAlpha(b.age, b.life);
     const pulse = 1 + Math.sin(b.age * 22 + b.sd) * 0.08;
@@ -188,9 +190,9 @@ export class BoltFx {
       halo.position.set(_p.x - fx * r * 1.1, y, _p.z - fz * r * 1.1);
     }
     core.fxOpacity = 0.95 * a;
-    halo.fxOpacity = 0.32 * a;
+    halo.fxOpacity = 0.22 * a;
     core.fxK = halo.fxK = Math.min(1, b.age * 2);
-    shadow.position.set(_p.x, by - BOLT_HEIGHT + 0.06, _p.z);
+    shadow.position.set(_p.x, by - BOLT_HEIGHT - b.lift + 0.06, _p.z);
     shadow.scale.setScalar(r * 1.6);
     shadow.fxOpacity = 0.3 * a;
     if (dt <= 0) return;

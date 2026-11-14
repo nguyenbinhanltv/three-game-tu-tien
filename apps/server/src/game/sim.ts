@@ -3,7 +3,8 @@ import type { Client } from 'colyseus';
 import {
   BOLT_MAX_LIFE,
   BOLT_MAX_LIVE,
-  boltBlocked,
+  boltBlockedAt,
+  boltLift,
   type BoltEndMsg,
   boltHits,
   type BoltMsg,
@@ -233,6 +234,8 @@ interface Bolt {
   yaw: number;
   v: number;
   r: number;
+  /** Độ nâng theo độ cao mục tiêu lúc bắn (boltLift). */
+  lift: number;
   /** Giờ server (ms) lúc phát và lúc hết hạn. */
   t0: number;
   endAt: number;
@@ -245,6 +248,7 @@ interface Bolt {
 }
 
 const _bp = { x: 0, z: 0 };
+const boltCount = (c: MonsterCaster) => Math.max(1, Math.min(5, c.n ?? 1));
 
 export interface SimHost {
   broadcast(type: string, msg: unknown): void;
@@ -1325,6 +1329,11 @@ export class GameSim {
     } else this.setMonState(m, MS_ATTACK);
     m.s.yaw = Math.atan2(dx, dz);
     if (reachable && this.now >= m.castReadyAt) {
+      // Room gần trần số đạn: hoãn đọc chú thay vì tụ lực rồi xịt.
+      if (c.shape === 'bolt' && this.bolts.length + boltCount(c) > BOLT_MAX_LIVE) {
+        m.castReadyAt = this.now + 500;
+        return;
+      }
       m.cast = { endAt: this.now + c.cast * 1000 };
       this.fx({ t: 'mcast', src: m.id, dst: target.sid, d: c.cast });
     }
@@ -1355,7 +1364,7 @@ export class GameSim {
     // Mục tiêu đã chạy xa hoặc lên chỗ không với tới: chiêu xịt.
     if (!reachable || d > c.range * 1.4) return;
     const yaw = Math.atan2(target.move.x - m.s.x, target.move.z - m.s.z);
-    if (c.shape === 'bolt') return this.fireBolts(m, c, yaw);
+    if (c.shape === 'bolt') return this.fireBolts(m, c, yaw, boltLift(target.move.y, groundAt(target.move.x, target.move.z)));
     let g: HazardGeom;
     if (c.shape === 'circle') g = { x: target.move.x, z: target.move.z, r: c.r };
     else if (c.shape === 'rect') g = { x: m.s.x, z: m.s.z, r: c.r, sh: 'rect', yaw, w: c.w ?? 2 };
@@ -1604,7 +1613,7 @@ export class GameSim {
    * Bắn một loạt đạn về hướng `yaw` (nhắm chỗ mục tiêu đứng lúc bắn, không đón đầu: bước ngang là né).
    * Đạn bay thẳng, bám địa hình; server phán định trúng theo vị trí người chơi server giữ.
    */
-  private fireBolts(m: MonEnt, c: MonsterCaster, yaw: number): void {
+  private fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void {
     const v = c.speed ?? 9;
     const life = Math.min(BOLT_MAX_LIFE, (c.range * 1.6) / v);
     // Đầu nòng: trước mặt quái một chút để đạn không mọc ra từ giữa thân.
@@ -1612,7 +1621,7 @@ export class GameSim {
     const ox = m.s.x + Math.sin(yaw) * off;
     const oz = m.s.z + Math.cos(yaw) * off;
     const spread = ((c.spread ?? 0) * Math.PI) / 180;
-    for (const a of boltYaws(yaw, Math.max(1, Math.min(5, c.n ?? 1)), spread)) {
+    for (const a of boltYaws(yaw, boltCount(c), spread)) {
       if (this.bolts.length >= BOLT_MAX_LIVE) return;
       const b: Bolt = {
         id: this.nextBoltId++,
@@ -1621,6 +1630,7 @@ export class GameSim {
         yaw: a,
         v,
         r: c.r,
+        lift,
         t0: this.now,
         endAt: this.now + life * 1000,
         px: ox,
@@ -1631,6 +1641,7 @@ export class GameSim {
       };
       this.bolts.push(b);
       const msg: BoltMsg = { id: b.id, x: ox, z: oz, yaw: a, v, r: c.r, life, t: this.now, kind: c.kind, src: m.id, sd: visualSeed() };
+      if (lift > 0) msg.h = Math.round(lift * 100) / 100;
       this.host.broadcast(S.BOLT, msg);
     }
   }
@@ -1654,11 +1665,17 @@ export class GameSim {
       }
       const t = Math.min(this.now, b.endAt);
       boltXZ(b.x0, b.z0, b.yaw, b.v, (t - b.t0) / 1000, _bp);
+      // Vật cản trên đường quét: rút ngắn đoạn tới chỗ chạm trước khi xét người (không trúng người sau tường).
+      const bt = boltBlockedAt(b.px, b.pz, _bp.x, _bp.z, b.r);
+      if (bt >= 0) {
+        _bp.x = b.px + (_bp.x - b.px) * bt;
+        _bp.z = b.pz + (_bp.z - b.pz) * bt;
+      }
       let hit: PlayerEnt | null = null;
       let best = Infinity;
       for (const p of this.players.values()) {
         if (this.isDead(p)) continue;
-        if (!boltHits(b.px, b.pz, _bp.x, _bp.z, b.r, p.move.x, p.move.y, p.move.z)) continue;
+        if (!boltHits(b.px, b.pz, _bp.x, _bp.z, b.r, b.lift, p.move.x, p.move.y, p.move.z)) continue;
         // Nhiều người trên đường bay: trúng người gần điểm xuất phát tick này nhất.
         const dd = (p.move.x - b.px) ** 2 + (p.move.z - b.pz) ** 2;
         if (dd < best) {
@@ -1675,10 +1692,10 @@ export class GameSim {
         hit.hazardWin.until = r.until;
         hit.hazardWin.taken = r.taken;
         if (r.dmg <= 0) this.host.broadcast(S.DMG, { dst: hit.sid, n: 0, src: m.id } satisfies DmgMsg);
-        else this.damagePlayer(hit, r.dmg, m.id);
+        else this.damagePlayer(hit, r.dmg, m.id, true);
         continue;
       }
-      if (boltBlocked(_bp.x, _bp.z, b.r)) {
+      if (bt >= 0) {
         this.endBolt(i, _bp.x, _bp.z);
         continue;
       }

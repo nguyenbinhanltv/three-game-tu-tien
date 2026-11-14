@@ -201,6 +201,8 @@ export interface BoltMsg {
   src: string;
   /** Seed hình (dao động, hạt đuôi). Chỉ là lớp hình. */
   sd: number;
+  /** Độ nâng (m) theo độ cao mục tiêu lúc bắn (`boltLift`); không có = 0. Dùng trong `boltY`. */
+  h?: number;
 }
 
 /** Đạn kết thúc trước hạn: trúng người (`hit` = sid), chạm vật cản, hay bị hủy (quái chết/bỏ đuổi). */
