@@ -93,7 +93,7 @@ function checkAi(m: MonsterDef, ai: MonsterAi, attackCd: number, at: string) {
   const cs = ai.caster;
   if (cs) {
     if (m.boss) err(`${id}: boss chưa hỗ trợ caster`);
-    if (!['circle', 'rect', 'cone'].includes(cs.shape)) err(`${id}: caster.shape không hợp lệ`);
+    if (!['circle', 'rect', 'cone', 'bolt'].includes(cs.shape)) err(`${id}: caster.shape không hợp lệ`);
     if (!KINDS.includes(cs.kind)) err(`${id}: caster.kind không hợp lệ`);
     // Né bằng di chuyển phải làm được: vùng hiện ít nhất 0,9 giây, tổng thời gian báo trước ít nhất 1,5 giây.
     if (!(cs.delay >= 0.9)) err(`${id}: caster.delay phải >= 0,9 giây`);
@@ -101,10 +101,21 @@ function checkAi(m: MonsterDef, ai: MonsterAi, attackCd: number, at: string) {
     if (!(cs.cd >= 2)) err(`${id}: caster.cd phải >= 2 giây`);
     if (!(cs.mul > 0 && cs.mul <= 3)) err(`${id}: caster.mul phải trong (0, 3]`);
     if (!(cs.range > 3 && cs.range <= m.aggro + 4)) err(`${id}: caster.range phải trong (3, aggro + 4]`);
-    if (!(cs.r > 0 && cs.r <= 20)) err(`${id}: caster.r phải trong (0, 20]`);
+    if (cs.shape !== 'bolt' && !(cs.r > 0 && cs.r <= 20)) err(`${id}: caster.r phải trong (0, 20]`);
     if ((cs.shape === 'rect' || cs.shape === 'cone') && cs.r < cs.range) err(`${id}: caster.r phải >= range với hình rect/cone`);
     if (cs.shape === 'rect' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 6)) err(`${id}: rect cần w trong (0, 6]`);
     if (cs.shape === 'cone' && !(cs.w !== undefined && cs.w > 0 && cs.w <= 75)) err(`${id}: cone cần w (nửa góc, độ) trong (0, 75]`);
+    if (cs.shape === 'bolt') {
+      // Đạn phải bay chậm, nhìn thấy, né được bằng bước ngang (D1).
+      const v = cs.speed ?? 0;
+      if (!(v >= 5 && v <= 14)) err(`${id}: bolt cần speed trong [5, 14] m/s (chậm, né được)`);
+      if (!(cs.r >= 0.2 && cs.r <= 1.2)) err(`${id}: bolt cần r (bán kính đạn) trong [0,2; 1,2]`);
+      if (cs.n !== undefined && !(Number.isInteger(cs.n) && cs.n >= 1 && cs.n <= 5)) err(`${id}: bolt.n phải nguyên trong [1, 5]`);
+      if (cs.spread !== undefined && !(cs.spread >= 0 && cs.spread <= 60)) err(`${id}: bolt.spread (độ) trong [0, 60]`);
+      if ((cs.n ?? 1) > 1 && !(cs.spread! > 0)) err(`${id}: bolt nhiều viên cần spread > 0`);
+      // Quái lùi giữ khoảng cách từ 0,35 × range: lúc đó vẫn phải có ít nhất 1,2 giây từ khi tụ lực tới khi đạn tới.
+      if (v > 0 && !(cs.cast + (cs.range * 0.35) / v >= 1.2)) err(`${id}: bolt cast + (0,35 × range)/speed phải >= 1,2 giây`);
+    }
   }
   const ch = ai.chant;
   if (ch) {

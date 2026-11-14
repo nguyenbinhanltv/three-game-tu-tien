@@ -13,6 +13,8 @@ import {
   type FxMsg,
   groundAt,
   type HazardMsg,
+  type BoltEndMsg,
+  type BoltMsg,
   IN_DOWN,
   IN_FLY,
   IN_JUMP,
@@ -53,6 +55,7 @@ import { chapterSting, lootChime, type Sfx, setListener, sfx, unlockAudio } from
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
+import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
 import { EntityManager, type MonVis, type MState, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
@@ -67,7 +70,7 @@ import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
-import { DamageNumbers, Vfx } from './vfx';
+import { DamageNumbers, HAZARD_COLORS, Vfx } from './vfx';
 import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
 import { CameraShake, SHAKE } from './shake';
 import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
@@ -387,6 +390,16 @@ export class Game {
         sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
         this.shakeForHazard(m);
       }, m.delay * 1000);
+    });
+    room.onMessage(S.BOLT, (m: BoltMsg) => {
+      // Đạn của quái (D1): chỉ vẽ, server phán định trúng. Bù độ trễ bằng giờ server lúc bắn.
+      if (!this.vfx || Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > BOLT_VIEW_DIST) return;
+      this.vfx.bolts.spawn(m, boltAge(m, Date.now() + this.timeOffset), HAZARD_COLORS[m.kind] ?? HAZARD_COLORS.fire);
+      sfx('sword', this.volumeAt(m.x, m.z) * 0.45, m);
+    });
+    room.onMessage(S.BOLT_END, (m: BoltEndMsg) => {
+      this.vfx?.bolts.end(m.id, m.x, m.z, !!m.hit);
+      if (m.hit) sfx('impact', m.hit === this.sid ? 0.8 : this.volumeAt(m.x, m.z) * 0.5, m);
     });
     room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, 'chat', m.from));
     room.onMessage(S.KICK, (m: { k: string }) => {

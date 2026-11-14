@@ -8,6 +8,7 @@ import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../render/vfx/ink';
 import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
+import { BoltFx } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
 import { Trails } from '../render/vfx/trail';
 import { assets } from './assets';
@@ -98,6 +99,8 @@ export class Vfx {
   readonly trails: Trails;
   readonly particles = PARTICLES;
   readonly rain = RAIN;
+  /** Đạn đánh xa của quái (D1): engine gọi `bolts.spawn/end` theo S.BOLT/S.BOLT_END. */
+  readonly bolts: BoltFx;
   /** Chớp toàn cảnh (engine nối vào `PostPipeline.flash`, uniform `uFlash`). */
   onFlash: ((amount: number) => void) | null = null;
   /** Mây kiếp đang hiện: tia sét đánh gần thì bừng sáng trong mây. */
@@ -112,6 +115,7 @@ export class Vfx {
     PARTICLES.attach(this.group);
     this.group.add(RAIN.group);
     this.trails = new Trails(this, PARTICLES);
+    this.bolts = new BoltFx(this);
     // Vẽ ấm các material mới (mưa kiếm, tia sét, mây kiếp, vệt kiếm) vài khung lúc đang tải: biên dịch
     // shader trước, lần dùng đầu không bị khựng. Độ trong 0, cỡ 0: không thấy gì.
     RAIN.prewarm();
@@ -164,6 +168,7 @@ export class Vfx {
       }
     }
     this.updateInk(dt);
+    this.bolts.update(dt);
     RAIN.update(dt);
     PARTICLES.update(dt);
   }
@@ -792,6 +797,7 @@ export class Vfx {
     for (let f = this.items.pop(); f; f = this.items.pop()) f.end();
     for (const ink of this.inks) this.drop(ink.m);
     this.inks.length = 0;
+    this.bolts.clear();
     this.trails.dispose();
     RAIN.clear();
     PARTICLES.detach();

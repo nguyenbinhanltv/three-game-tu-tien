@@ -4,7 +4,7 @@
   { "id": "mon_yeu_lang", "model": "wolf", "scale": 1.3, "color": "#3d3a4f", "accent": "#a05cff", "hpMul": 1.15, "atkMul": 1.1, "speed": 6.0, "aggro": 14, "attackRange": 2.6, "attackCd": 2.0, "xpMul": 1.1,
     "ai": { "combo": { "chance": 0.35, "delay": 0.45, "mul": 1.3 } } },
   { "id": "mon_hoa_van_ho", "model": "fox", "scale": 1.1, "color": "#c8502a", "accent": "#ffd08a", "hpMul": 1.0, "atkMul": 1.2, "speed": 6.5, "aggro": 15, "attackRange": 2.4, "attackCd": 1.8, "xpMul": 1.15,
-    "ai": { "caster": { "range": 14, "cast": 0.8, "delay": 1.2, "cd": 4, "mul": 1.3, "shape": "circle", "r": 3, "kind": "fire" } } },
+    "ai": { "caster": { "range": 14, "cast": 0.8, "delay": 1.2, "cd": 3.5, "mul": 1.3, "shape": "bolt", "r": 0.55, "speed": 9, "kind": "fire" } } },
   { "id": "mon_thach_vien", "model": "ape", "scale": 1.5, "color": "#7d7f77", "accent": "#4f6b3a", "hpMul": 1.5, "atkMul": 1.1, "speed": 5.0, "aggro": 12, "attackRange": 3.0, "attackCd": 2.4, "xpMul": 1.25,
     "ai": { "combo": { "chance": 0.4, "delay": 0.6, "mul": 1.5 } } },
   { "id": "mon_u_minh_lang", "model": "wolf", "scale": 1.45, "color": "#1f2a44", "accent": "#6fe3ff", "hpMul": 1.25, "atkMul": 1.25, "speed": 6.5, "aggro": 16, "attackRange": 2.7, "attackCd": 1.9, "xpMul": 1.3,
@@ -18,7 +18,7 @@
                   "chant": { "cd": 15, "cast": 2.4, "open": 0.3, "r": 13, "delay": 0.9, "mul": 2.8, "kind": "frost", "stun": 3.5 } } } ] },
 
   { "id": "mon_kiem_linh", "model": "fox", "scale": 1.2, "color": "#b9c4d6", "accent": "#7fd4ff", "hpMul": 1.4, "atkMul": 1.3, "speed": 6.5, "aggro": 18, "attackRange": 2.6, "attackCd": 1.8, "xpMul": 1.6,
-    "ai": { "caster": { "range": 14, "cast": 0.8, "delay": 1.1, "cd": 4, "mul": 1.35, "shape": "rect", "r": 17, "w": 2.4, "kind": "spirit" } } },
+    "ai": { "caster": { "range": 14, "cast": 0.8, "delay": 1.1, "cd": 4, "mul": 1.35, "shape": "bolt", "r": 0.45, "speed": 11, "n": 3, "spread": 24, "kind": "spirit" } } },
   { "id": "boss_kiem_khoi", "model": "ape", "scale": 2.0, "color": "#6f7b8c", "accent": "#b7e0ff", "hpMul": 20, "atkMul": 1.2, "speed": 5.5, "aggro": 30, "attackRange": 4.0, "attackCd": 2.2, "xpMul": 10, "boss": true,
     "ai": { "slam": { "cd": 8, "r": 5.5, "delay": 1.7, "mul": 1.5, "max": 4, "kind": "frost" } },
     "posture": { "k": 2, "heavy": 0.04, "interrupt": 0.4, "wait": 3, "decay": 0.08, "brk": 3.5 },

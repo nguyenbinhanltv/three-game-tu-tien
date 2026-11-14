@@ -130,7 +130,7 @@ console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng y
 
 // ---------- đòn dồn của quái đọc chú ----------
 
-console.log('\nQuái đọc chú (người cùng cấp)   1 vùng   3 vùng nổ cùng lúc');
+console.log('\nQuái đánh xa (người cùng cấp)   1 đòn    3 đòn (vùng/đạn) cùng lúc');
 for (const [id, lv] of [
   ['mon_hoa_van_ho', 10],
   ['mon_u_minh_lang', 15],
