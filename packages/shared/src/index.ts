@@ -4,5 +4,6 @@ export * from './terrain';
 export * from './movement';
 export * from './formulas';
 export * from './combat';
+export * from './boss';
 export * from './types';
 export * from './protocol';
