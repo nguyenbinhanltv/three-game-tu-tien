@@ -14,21 +14,14 @@
 // crossfade công suất bằng nhau, nên chu kỳ thực của file dài (40–60 s) và không nghe ra điểm nối.
 // Kết quả xác định (cùng nguồn → cùng byte → cùng hash), tên file theo hash nội dung để CDN cache lâu.
 
-import { spawnSync } from 'node:child_process';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
-import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { decode as ffDecode, encode as ffEncode, FFMPEG_HELP, findFfmpeg, hashName, HERE, localDate, replaceBlock, ROOT, SR, sourceRoot } from './common.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(HERE, '../..');
 const SPEC_FILE = path.join(HERE, 'sounds.json');
 const OUT_DIR = path.join(ROOT, 'apps/client/public/audio');
 const MANIFEST = path.join(OUT_DIR, 'manifest.json');
 const LICENSES = path.join(ROOT, 'assets/LICENSES.md');
-const SR = 48000;
 /** Mức chuẩn: RMS đoạn 50 ms to nhất của một SFX đặt ở -14 dBFS (+ level của âm). */
 const SFX_REF_DB = -14;
 const PEAK_MAX = 10 ** (-1 / 20);
@@ -38,32 +31,6 @@ const LIC_BEGIN = '<!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng s
 const LIC_END = '<!-- audio:end -->';
 
 const CHECK = process.argv.includes('--check');
-
-// ---------- môi trường ----------
-
-function sourceRoot() {
-  if (process.env.DTL_ASSET_SOURCE) return path.resolve(process.env.DTL_ASSET_SOURCE);
-  const r = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: ROOT, encoding: 'utf8' });
-  const common = r.status === 0 ? r.stdout.trim() : path.join(ROOT, '.git');
-  return path.resolve(path.dirname(common), '..', 'dtl-asset-source');
-}
-
-function findFfmpeg() {
-  const tries = [];
-  if (process.env.FFMPEG) tries.push(process.env.FFMPEG);
-  tries.push('ffmpeg');
-  try {
-    const p = createRequire(import.meta.url)('ffmpeg-static');
-    if (typeof p === 'string') tries.push(p);
-  } catch {
-    // không cài ffmpeg-static
-  }
-  for (const t of tries) {
-    const r = spawnSync(t, ['-hide_banner', '-encoders'], { encoding: 'utf8' });
-    if (r.status === 0 && /libopus/.test(r.stdout) && /\baac\b/.test(r.stdout)) return t;
-  }
-  return null;
-}
 
 // ---------- tiện ích ----------
 
@@ -101,43 +68,17 @@ function layersOf(v) {
 let FF = null;
 const decCache = new Map();
 
-/** Giải mã về float32 48 kHz, `ch` kênh, trả mảng kênh. */
+/** Giải mã về float32 48 kHz, `ch` kênh (có cache theo file). */
 function decode(abs, ch) {
   const key = abs + '|' + ch;
   const hit = decCache.get(key);
   if (hit) return hit;
-  const r = spawnSync(FF, ['-v', 'error', '-i', abs, '-f', 'f32le', '-ac', String(ch), '-ar', String(SR), 'pipe:1'], { maxBuffer: 1 << 30 });
-  if (r.status !== 0) throw new Error(`ffmpeg không giải mã được ${abs}: ${r.stderr}`);
-  const all = new Float32Array(r.stdout.buffer.slice(r.stdout.byteOffset, r.stdout.byteOffset + r.stdout.length));
-  const n = all.length / ch;
-  const out = [];
-  for (let c = 0; c < ch; c++) {
-    const a = new Float32Array(n);
-    for (let i = 0; i < n; i++) a[i] = all[i * ch + c];
-    out.push(a);
-  }
+  const out = ffDecode(FF, abs, ch);
   decCache.set(key, out);
   return out;
 }
 
-function encode(chans, kind, args) {
-  const ch = chans.length;
-  const n = chans[0].length;
-  const inter = new Float32Array(n * ch);
-  for (let i = 0; i < n; i++) for (let c = 0; c < ch; c++) inter[i * ch + c] = chans[c][i];
-  const fmt = kind === 'webm' ? ['-c:a', 'libopus', '-vbr', 'on', '-application', 'audio', '-f', 'webm'] : ['-c:a', 'aac', '-movflags', '+faststart', '-f', 'mp4'];
-  // MP4 cần đầu ra tua được nên ghi qua file tạm. Không ghi metadata thời gian/bộ mã hóa để byte ổn định giữa các lần build.
-  const tmp = path.join(os.tmpdir(), `dtl-audio-${process.pid}-${crypto.randomBytes(4).toString('hex')}.${kind}`);
-  const r = spawnSync(
-    FF,
-    ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(SR), '-ac', String(ch), '-i', 'pipe:0', ...args, ...fmt, '-map_metadata', '-1', '-fflags', '+bitexact', '-flags:a', '+bitexact', tmp],
-    { input: Buffer.from(inter.buffer), maxBuffer: 1 << 30 },
-  );
-  if (r.status !== 0) throw new Error(`ffmpeg mã hóa ${kind} lỗi: ${r.stderr}`);
-  const buf = fs.readFileSync(tmp);
-  fs.rmSync(tmp, { force: true });
-  return buf;
-}
+const encode = (chans, kind, args) => ffEncode(FF, chans, kind, args);
 
 // ---------- DSP ----------
 
@@ -388,13 +329,6 @@ function loopReport(out) {
 
 // ---------- ghi file ----------
 
-function hashName(dir, base, ext, buf) {
-  const h = crypto.createHash('sha256').update(buf).digest('hex').slice(0, 10);
-  const name = `${base}.${h}.${ext}`;
-  fs.writeFileSync(path.join(dir, name), buf);
-  return name;
-}
-
 function writeEncoded(subdir, base, chans, webmArgs, m4aArgs, written) {
   const dir = path.join(OUT_DIR, subdir);
   fs.mkdirSync(dir, { recursive: true });
@@ -411,9 +345,7 @@ function licenseBlock(spec, used) {
   const lines = [LIC_BEGIN, '', '### Âm thanh (SFX, âm môi trường)', ''];
   lines.push('Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`.', '');
   lines.push('| Âm | Nguồn | Giấy phép | Ngày | Chi tiết |', '| --- | --- | --- | --- | --- |');
-  // Ngày theo giờ máy (không phải UTC) để khớp ngày làm việc của người build.
-  const d = new Date();
-  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const today = localDate();
   for (const [id, srcs] of used) {
     const packs = [...new Set(srcs.map((s) => s.pack))];
     // Nguồn: gói + tác giả; Chi tiết: link trang gói + đường dẫn file trong dtl-asset-source/sfx.
@@ -430,31 +362,6 @@ function licenseBlock(spec, used) {
   }
   lines.push('', LIC_END);
   return lines.join('\n');
-}
-
-function updateLicenses(block) {
-  let md = fs.readFileSync(LICENSES, 'utf8');
-  const s = md.indexOf(LIC_BEGIN);
-  const e = md.indexOf(LIC_END);
-  if (s >= 0 && e > s) {
-    // Giữ ngày cũ của các dòng không đổi để build lại không làm bẩn diff.
-    const old = md.slice(s, e + LIC_END.length);
-    const oldDate = new Map();
-    for (const line of old.split('\n')) {
-      const m = /^\| `([a-z0-9_]+)` \|[^|]*\|[^|]*\| (\d{4}-\d{2}-\d{2}) \| (.*) \|$/.exec(line);
-      if (m) oldDate.set(m[1], { date: m[2], detail: m[3] });
-    }
-    block = block
-      .split('\n')
-      .map((line) => {
-        const m = /^(\| `([a-z0-9_]+)` \|[^|]*\|[^|]*\| )(\d{4}-\d{2}-\d{2})( \| (.*) \|)$/.exec(line);
-        const o = m && oldDate.get(m[2]);
-        return o && o.detail === m[5] ? m[1] + o.date + m[4] : line;
-      })
-      .join('\n');
-    md = md.slice(0, s) + block + md.slice(e + LIC_END.length);
-  } else md = md.trimEnd() + '\n\n' + block + '\n';
-  fs.writeFileSync(LICENSES, md);
 }
 
 // ---------- chính ----------
@@ -488,7 +395,7 @@ function main() {
   }
   FF = findFfmpeg();
   if (!FF) {
-    console.error('Không tìm thấy ffmpeg có libopus + aac. Đặt FFMPEG=<đường dẫn>, cài ffmpeg vào PATH, hoặc `npm i ffmpeg-static` ở thư mục tạm rồi đặt FFMPEG.');
+    console.error(FFMPEG_HELP);
     process.exit(1);
   }
 
@@ -549,7 +456,7 @@ function main() {
     }
   }
   fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
-  updateLicenses(licenseBlock(spec, used));
+  replaceBlock(LICENSES, LIC_BEGIN, LIC_END, licenseBlock(spec, used));
 
   const kb = (b) => (b / 1024).toFixed(1);
   console.log('file                 dài(s)  webm KB  m4a KB  nạp');
