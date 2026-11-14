@@ -16,12 +16,17 @@
 #   6. Socket: Empty `socket_*` theo `import.sockets` (tọa độ glTF sau chuẩn hóa, mét; gắn vào xương nếu có `bone`),
 #      custom property socket=1 ra extras.
 #   7. Hạ texture về ngân sách lớp (assets/budgets.json): map màu theo `texture.color`, map dữ liệu theo `texture.data`.
+#   8. Tùy chọn `import.post`: chạy một script bpy (đường dẫn tính từ gốc repo) sau khi chuẩn hóa, trước khi xuất, ví dụ
+#      đổi tên xương và thêm clip thủ tục (tools/blender/anim_quadruped.py). Script nhận biến toàn cục ASSET_ID, META,
+#      ARMATURES, MESHES, REPO và hàm fail; mọi tọa độ lúc này đã là hệ chuẩn (mét, gốc ở đáy, mặt trước +Z glTF).
 #
 # Không giảm tam giác ở đây: optimize.ts hạ LOD0 về trần (budget.faceLimit trong meta, không quá ngân sách lớp) bằng
 # meshoptimizer, giữ JOINTS/WEIGHTS. Cùng đầu vào cho ra cùng file (không có ngẫu nhiên, thứ tự theo tên).
 
 import json
 import math
+import os
+import runpy
 import re
 import sys
 import unicodedata
@@ -397,6 +402,26 @@ def _add_sockets():
     return names
 
 
+# ---------- bước sau chuẩn hóa ----------
+
+REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+
+
+def run_post():
+    rel = IMPORT.get('post')
+    if not rel:
+        return None
+    if not re.fullmatch(r'tools/blender/[a-z0-9_]+\.py', rel):
+        fail(f'import.post "{rel}" phải dạng tools/blender/<tên>.py')
+    path = os.path.join(REPO, rel)
+    if not os.path.isfile(path):
+        fail(f'import.post: không có script {rel}')
+    result = runpy.run_path(path, init_globals={
+        'ASSET_ID': ASSET_ID, 'META': META, 'ARMATURES': armatures(), 'MESHES': mesh_objects(), 'REPO': REPO, 'fail': fail,
+    }, run_name='__import_tripo_post__')
+    return result.get('REPORT', rel)
+
+
 # ---------- chính ----------
 
 def main():
@@ -430,6 +455,7 @@ def main():
     rename_all()
     sockets = add_sockets()
     textures = downscale_textures(spec)
+    post = run_post()
 
     lo, hi = bbox_world()
     bpy.ops.export_scene.gltf(
@@ -439,6 +465,7 @@ def main():
         export_apply=False,
         export_skins=True,
         export_animations=True,
+        export_animation_mode='ACTIONS',
         export_extras=True,
         export_image_format='AUTO',
         export_jpeg_quality=90,
@@ -457,6 +484,7 @@ def main():
         'sockets': sockets,
         'boneLocationCurves': keys,
         'textures': textures,
+        'post': post,
     }
     print('[import_tripo] ' + json.dumps(report, ensure_ascii=False))
 

@@ -66,6 +66,11 @@
           "description": "auto (mặc định): có cặp xương đùi trái/phải thì xoay cho bên trái nhân vật về +X, mặt nhìn +Z; thigh: bắt buộc có; none: không tự xoay."
         },
         "yaw": { "type": "number", "description": "Xoay thêm quanh +Y (độ, ngược chiều kim đồng hồ nhìn từ trên) sau bước orient, để mặt trước nhìn về +Z." },
+        "post": {
+          "type": "string",
+          "pattern": "^tools/blender/[a-z0-9_]+\\.py$",
+          "description": "Script bpy chạy sau khi chuẩn hóa, trước khi xuất (đường dẫn từ gốc repo), ví dụ tools/blender/anim_quadruped.py: đổi tên xương, thêm clip thủ tục."
+        },
         "sockets": {
           "type": "array",
           "items": {
