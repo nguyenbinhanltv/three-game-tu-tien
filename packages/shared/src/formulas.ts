@@ -15,6 +15,8 @@ export function xpNeed(level: number): number {
   if (level >= TRUC_CO_LEVEL) return 30000 + (level - TRUC_CO_LEVEL) * 20000;
   // 70·L²: tổng Ngưng Khí 1→15 khoảng 87 nghìn tu vi. `pnpm sim:progress` ước tính ~2 giờ đánh quái thuần,
   // cộng đi lại, boss, luyện đan, bí cảnh thì khoảng 3–4 giờ.
+  // Nhịp này đã chốt (2026-11-15, thay mốc cũ 10–15 giờ trong spec): giữ ~3–4 giờ thực tế tới viên mãn
+  // Ngưng Khí 15, sẽ dài thêm khi có thêm nội dung. Cân bằng độ khó phải giữ sim:progress quanh 2–2,5 giờ.
   return 70 * level * level;
 }
 
