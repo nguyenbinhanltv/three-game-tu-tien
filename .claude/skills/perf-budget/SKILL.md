@@ -5,7 +5,7 @@ description: Đo và giữ ngân sách hiệu năng của Đạp Thiên Lộ —
 
 # Ngân sách hiệu năng
 
-> Hiện trạng MVP: overlay bật bằng `?debug=1` (góc dưới phải: fps, draw call, tam giác, geometry, texture). Chưa có `pnpm bench:client` và `pnpm size`; kích thước xem ở output của `pnpm build`. Số đo 2026-11-12: sân tông môn ~150 draw call, ~410 nghìn tam giác; JS 357KB gzip + sect.glb 0,8MB; tick server p95 0,7ms với 50 bot mỗi kênh, 1,1ms với 100 bot trong một kênh.
+> Hiện trạng MVP: overlay bật bằng `?debug=1` (góc dưới phải: fps, draw call, tam giác, geometry, texture). Chưa có `pnpm bench:client` và `pnpm size`; kích thước xem ở output của `pnpm build`. Số đo 2026-11-12: sân tông môn ~150 draw call, ~410 nghìn tam giác; JS 357KB gzip + sect.glb 0,8MB; tick server p95 0,7ms với 50 bot mỗi kênh, 1,1ms với 100 bot trong một kênh. Số đo 2026-11-15 (M2-8, kiến trúc qua `AssetCache`): JS chính 402KB gzip + `arch_sect` 138KB + manifest 1KB ≈ 0,54MB (trước đó ≈ 1,21MB); transcoder Basis (248KB gzip) tách file riêng, chỉ tải khi gặp texture KTX2. Đổi room: `renderer.info.memory` đứng yên qua nhiều vòng vào/ra bí cảnh.
 
 ## Ngưỡng
 
