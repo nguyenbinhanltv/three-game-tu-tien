@@ -273,6 +273,34 @@ def back_sword_vertices(mesh):
     return faces, round(float(hi - lo), 3)
 
 
+def detached_vertices(mesh, sword):
+    """Đỉnh của mọi đảo lưới trừ đảo lớn nhất (thân). Đỉnh trùng vị trí được coi là nối nhau, trừ khi một bên thuộc
+    kiếm vừa tách (`sword`): bmesh.ops.split để lại cặp đỉnh trùng vị trí ở đường biên kiếm–thân."""
+    me = mesh.data
+    alias = {}
+    first = {}
+    for v in me.vertices:
+        k = tuple(round(c, 4) for c in (mesh.matrix_world @ v.co)) + (v.index in sword,)
+        alias[v.index] = first.setdefault(k, v.index)
+    parent = {}
+
+    def find(x):
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    for e in me.edges:
+        a, b = find(alias[e.vertices[0]]), find(alias[e.vertices[1]])
+        if a != b:
+            parent[a] = b
+    comps = {}
+    for v in me.vertices:
+        comps.setdefault(find(alias[v.index]), []).append(v.index)
+    body = max(comps.values(), key=len)
+    return [i for c in comps.values() if c is not body for i in c]
+
+
 for spec in IMPORT.get('rigid', []):
     if spec.get('kind') != 'back_sword':
         fail(f'rigid: kind "{spec.get("kind")}" chưa hỗ trợ')  # noqa: F821
@@ -293,6 +321,10 @@ for spec in IMPORT.get('rigid', []):
         bm.to_mesh(mesh.data)
         bm.free()
         mesh.data.update()
+        # Mọi đảo lưới không nối với thân chính (nối theo vị trí đỉnh, vì Tripo tách lưới theo đường nối UV) là phần
+        # của kiếm/quai đeo đã rời khỏi thân: gán cứng và nghiêng cùng kiếm, để không còn mảnh skin theo tay hay đùi
+        # (mảnh lơ lửng cạnh vai, mũi kiếm tách đôi khi bước).
+        verts = sorted(set(verts) | set(detached_vertices(mesh, set(verts))))
         groups = mesh.vertex_groups
         target = groups.get(bone) or groups.new(name=bone)
         for g in groups:
@@ -364,6 +396,9 @@ def recolor(rules):
             # Ảnh 8-bit: Image.pixels là giá trị sRGB thô (byte/255), so thẳng với hex đích.
             tr, tg, tb = (int(rule['to'][k:k + 2], 16) / 255 for k in (1, 3, 5))
             th, ts, tv = colorsys.rgb_to_hsv(tr, tg, tb)
+            # Hệ số chỉnh thêm quanh màu đích (ví dụ trầm hơn: value < 1, saturation > 1).
+            tv = min(1.0, tv * float(rule.get('value', 1.0)))
+            ts = min(1.0, ts * float(rule.get('saturation', 1.0)))
             core = w > 0.5
             # Độ sáng tham chiếu: phân vị 75 của vùng (vải sáng chính), không lấy trung bình để đai tối không kéo lệch.
             mean_v = float(np.percentile(v[core], 75)) if core.any() else float(np.average(v[m], weights=w[m]))

@@ -110,6 +110,8 @@
               "satMax": { "type": "number" },
               "valMin": { "type": "number" },
               "to": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+              "value": { "type": "number", "exclusiveMinimum": 0, "description": "Nhân độ sáng màu đích." },
+              "saturation": { "type": "number", "exclusiveMinimum": 0, "description": "Nhân độ bão hòa màu đích." },
               "note": { "type": "string" }
             }
           }

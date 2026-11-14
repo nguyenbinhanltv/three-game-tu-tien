@@ -42,8 +42,7 @@
     "rigid": [
       {
         "kind": "back_sword",
-        "bone": "spine2",
-        "tilt": 14
+        "bone": "spine2"
       }
     ],
     "recolor": [
@@ -54,7 +53,9 @@
         ],
         "satMin": 0.12,
         "to": "#3B6584",
-        "note": "vải lam bão hòa → attire_sect (lam tông môn trầm), giữ độ sáng tương đối"
+        "note": "vải lam bão hòa → attire_sect, trầm hơn 10% (value 0,9, saturation 1,1), giữ độ sáng tương đối",
+        "value": 0.9,
+        "saturation": 1.1
       },
       {
         "satMax": 0.1,
