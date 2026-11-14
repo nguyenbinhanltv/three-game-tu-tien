@@ -375,6 +375,7 @@ function Settings() {
   const fps = useUI((s) => s.fps);
   const controls = useUI((s) => s.controls);
   const camShake = useUI((s) => s.camShake);
+  const offscreen = useUI((s) => s.offscreen);
   const [mute, setMute] = useState(isMuted());
   return (
     <Window title={t('ui.settings')} onClose={() => set({ panel: null })} cls="settings">
@@ -405,6 +406,15 @@ function Settings() {
           </button>
         ))}
       </div>
+      <div className="section-title">{t('ui.settings.offscreen')}</div>
+      <div className="seg">
+        {[true, false].map((on) => (
+          <button key={String(on)} className={'btn' + (offscreen === on ? ' primary' : '')} onClick={() => Game.current?.setOffscreen(on)}>
+            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
+          </button>
+        ))}
+      </div>
+      <div className="muted">{t('ui.settings.offscreen_hint')}</div>
       <div className="section-title">{t('ui.settings.sound')}</div>
       <div className="seg">
         <button
