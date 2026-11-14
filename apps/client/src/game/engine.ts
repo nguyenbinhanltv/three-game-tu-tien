@@ -935,6 +935,8 @@ export class Game {
       // Sát thương của người khác: chỉ hiện khi ở gần.
       if (_v.distanceTo(this.renderPos) > 45) return;
     }
+    // Hit feel chỉ là lớp hình. Chiêu của người chơi là đạn bay ~0,2 s nên trễ cho khớp lúc chạm.
+    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0);
     let cls = 'other';
     if (m.heal) cls = 'heal';
     else if (mine) cls = 'hurt';
