@@ -1,12 +1,17 @@
 import * as THREE from 'three/webgpu';
 import type { MonsterDef } from '@dtl/shared';
 import { col, flat, G, GeoBuilder, mat } from './geo';
+import { createWorldMaterial } from '../render/materials/world';
+import { markBloom } from '../render/post';
 import { HitReact, type HitOpts } from './hitreact';
 
 /** Material dùng chung cho mọi mô hình tô màu theo đỉnh. */
-export const MODEL_MAT = new THREE.MeshLambertMaterial({ vertexColors: true });
-const GLOW_MAT = (color: number, opacity = 0.5) =>
-  new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+export const MODEL_MAT = createWorldMaterial({ vertexColors: true });
+const GLOW_MAT = (color: number, opacity = 0.5) => {
+  const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  markBloom(m, 1.2);
+  return m;
+};
 
 const T_ROBE = flat(new THREE.CylinderGeometry(0.2, 0.38, 0.98, 8));
 const T_SLEEVE = flat(new THREE.CylinderGeometry(0.065, 0.115, 0.6, 6));

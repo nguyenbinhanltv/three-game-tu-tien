@@ -5,7 +5,7 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 
 # Shader và VFX bằng TSL
 
-> Hiện trạng MVP: chưa viết shader TSL riêng và chưa có post-processing/bloom. Mọi thứ dùng `MeshLambertMaterial` tô màu đỉnh; hiệu ứng trong `apps/client/src/game/vfx.ts` là lưới `MeshBasicMaterial` cộng sáng (additive). Các mục dưới đây là hướng làm tiếp.
+> Hiện trạng (M1-6, phong cách bán tả thực điện ảnh theo art bible v3): địa hình, cây, kiến trúc, nhân vật, quái dùng `MeshStandardNodeMaterial` cách điệu (`render/materials/world.ts`, nhám cao, không kim loại). Sương theo khoảng cách + theo độ cao và giảm bão hòa theo độ sâu là một `scene.fogNode` (`render/atmosphere.ts`), thay `FogExp2` của `env.ts`; atmosphere cũng đặt màu mặt trời/ánh trời/vòm trời và vẽ quầng sáng giả quanh đèn đá (1 draw call). Thông số chỉnh màu ở `render/grading.ts` (chép từ khối `grading` của `assets/palette.json`, preset dawn/day/night). Post-processing `render/post.ts`: bloom chọn lọc qua MRT (chỉ material đã `markBloom`, chỉ khi preset có bloom) → ACES → tách tông bóng lạnh/sáng ấm, nâng đen, đường cong S, bão hòa → `uHit` (viền đỏ + quang sai màu khi mình trúng đòn nặng) / `uFlash` → FXAA (Vừa) → vignette → hạt phim + dither. Hiệu ứng trong `game/vfx.ts` vẫn là `MeshBasicMaterial` cộng sáng tạo mỗi lần phát, chưa `markBloom` (việc M1-7). Các mục dưới đây là hướng làm tiếp; chỗ nào nói cel-shading/thủy mặc là định hướng cũ, theo art bible v3.
 
 ## Nguyên tắc
 

@@ -36,6 +36,13 @@ function roof(b: GeoBuilder, x: number, y: number, z: number, w: number, d: numb
   }
 }
 
+/** Vị trí bầu đèn của các đèn đá dọc lối vào tông môn (để vẽ quầng sáng giả). */
+export const SECT_LANTERNS: readonly { x: number; y: number; z: number }[] = (() => {
+  const out: { x: number; y: number; z: number }[] = [];
+  for (let z = 2080; z <= 2118; z += 12) for (const sx of [-1, 1]) out.push({ x: SECT.x + sx * 7.5, y: SECT.y + 1.95, z });
+  return out;
+})();
+
 function lantern(b: GeoBuilder, x: number, y: number, z: number): void {
   b.add(G.box, mat(x, y + 0.2, z, 0, 0, 0, 0.9, 0.4, 0.9), C_STONE_DARK);
   b.add(G.box, mat(x, y + 1.0, z, 0, 0, 0, 0.35, 1.3, 0.35), C_STONE);
@@ -129,10 +136,7 @@ function buildSectBuildings(b: GeoBuilder, y: number, cx: number): void {
   roof(b, cx, y + 10.6, gz, 22, 4.6, 2.2);
 
   // --- Đèn đá dọc lối đi ---
-  for (let z = 2080; z <= 2118; z += 12) {
-    lantern(b, cx - 7.5, y, z);
-    lantern(b, cx + 7.5, y, z);
-  }
+  for (const l of SECT_LANTERNS) lantern(b, l.x, y, l.z);
   // Lối lát đá từ cổng tới chính điện.
   b.add(G.box, mat(cx, y + 0.04, 2073, 0, 0, 0, 9, 0.08, 110), col(0xcfc9ba));
 

@@ -46,8 +46,11 @@ import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
+import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
+import { applyGrading, budgetPixelRatio, markBloom, PostPipeline } from '../render/post';
+import { GRADING, GRADING_DEFAULT } from '../render/grading';
 import { MusicController } from './music';
-import { buildPortalDisc, buildSect } from './sect';
+import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
@@ -82,10 +85,14 @@ export function serverUrl(): string {
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
 }
 
-const QUALITY: Record<string, { pixelRatio: number; shadows: boolean }> = {
-  low: { pixelRatio: 1, shadows: false },
-  medium: { pixelRatio: 1.5, shadows: false },
-  high: { pixelRatio: 2, shadows: true },
+/**
+ * bloom/msaa/fxaa: post-processing (render/post.ts). maxPixels: ngân sách điểm ảnh nội bộ (hạ
+ * pixelRatio trên màn hình lớn để giữ VRAM render target dưới ngân sách). heightFog: sương theo độ cao.
+ */
+const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean }> = {
+  low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false },
+  medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true },
+  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true },
 };
 
 const _v = new THREE.Vector3();
@@ -167,6 +174,7 @@ export class Game {
   levelId = '';
 
   renderer!: THREE.WebGPURenderer;
+  private post: PostPipeline | null = null;
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(55, 1, 0.3, 9000);
   terrain!: Terrain;
@@ -403,13 +411,15 @@ export class Game {
     };
     const q = QUALITY[get().quality] ?? QUALITY.medium;
     const params = new URLSearchParams(location.search);
-    this.renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL: params.get('renderer') === 'webgl2' });
+    // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
+    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: params.get('renderer') === 'webgl2' });
     await this.renderer.init();
     mark('rendererInit');
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = q.shadows;
+    // Số liệu render đếm cho cả khung (mọi pass hậu kỳ), reset ở đầu frame(), kể cả khi bơm khung tay.
+    this.renderer.info.autoReset = false;
     this.canvas = this.renderer.domElement;
     this.canvas.className = 'game-canvas';
     this.canvas.tabIndex = 0;
@@ -434,6 +444,12 @@ export class Game {
     this.portalDisc = buildPortalDisc(PORTAL_POS.x, PORTAL_POS.z, 0x8fdcff);
     this.exitDisc = buildPortalDisc(DUNGEON_EXIT.x, DUNGEON_EXIT.z, 0xffd27a);
     this.scene.add(this.portalDisc, this.exitDisc);
+    for (const disc of [this.portalDisc, this.exitDisc]) markBloom(disc.material as THREE.Material, 0.8);
+    applyAtmosphere(this.scene, this.env, GRADING[GRADING_DEFAULT], GRADING_DEFAULT);
+    applyGrading(GRADING[GRADING_DEFAULT]);
+    setHeightFog(q.heightFog);
+    this.scene.add(createLanternHalos(SECT_LANTERNS));
+    this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.minimap = renderMinimap(320);
@@ -618,6 +634,8 @@ export class Game {
   private onResize(): void {
     const w = window.innerWidth;
     const h = window.innerHeight;
+    const q = QUALITY[get().quality] ?? QUALITY.medium;
+    this.renderer.setPixelRatio(budgetPixelRatio(w, h, q.pixelRatio, q.maxPixels));
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
@@ -876,6 +894,7 @@ export class Game {
         else if (e.chestOf(dst, _v2)) {
           v.swordShot(_v, posDst, 0xfff3b0, 1.8, 0.16);
           v.lightning(_v2.x, _v2.y - 1, _v2.z, 0xfff0a8, 1.3);
+          if (src === this.sid || dst === this.sid) this.post?.flash(0.25);
         }
         break;
       }
@@ -900,6 +919,7 @@ export class Game {
         break;
       case 'ascend':
         v.pillar(posSrc, 0xfff2b8, 3.2, 2.4, 40);
+        if (src === this.sid) this.post?.flash(0.6);
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
       case 'respawn':
@@ -987,6 +1007,7 @@ export class Game {
       if (_v.distanceTo(this.renderPos) > 45) return;
     }
     // Hit feel chỉ là lớp hình. Chiêu của người chơi là đạn bay ~0,2 s nên trễ cho khớp lúc chạm.
+    if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
     let cls = 'other';
     if (m.heal) cls = 'heal';
@@ -1098,6 +1119,7 @@ export class Game {
 
   private frame(): void {
     if (this.disposed) return;
+    this.renderer.info.reset();
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.lastT) / 1000);
     this.lastT = now;
@@ -1174,6 +1196,7 @@ export class Game {
       this.ents.updateQuestMarkers(get().quests, myLevel);
     }
     this.vfx.update(dt);
+    this.post?.update(dt);
     this.updateCamera(dt);
     setListener(rp.x, rp.z, this.camYaw);
     this.env.update(dt, this.camera, rp);
@@ -1184,7 +1207,7 @@ export class Game {
     }
     this.tickSkillQueue(now);
     this.tickCombat(now, me);
-    this.renderer.render(this.scene, this.camera);
+    this.post!.render();
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
 
     this.fpsAcc += dt;
@@ -1397,7 +1420,11 @@ export class Game {
     localStorage.setItem('dtl.quality', q);
     set({ quality: q });
     const cfg = QUALITY[q] ?? QUALITY.medium;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cfg.pixelRatio));
+    setHeightFog(cfg.heightFog);
+    if (this.post && !this.post.matches(cfg)) {
+      this.post.dispose();
+      this.post = new PostPipeline(this.renderer, this.scene, this.camera, cfg);
+    }
     this.onResize();
   }
 
@@ -1412,6 +1439,7 @@ export class Game {
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();
+    this.post?.dispose();
     this.sectMesh?.geometry.dispose();
     this.sectAsset?.handle.release();
     this.sectAsset?.mat.dispose();
