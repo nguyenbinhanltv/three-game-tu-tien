@@ -465,6 +465,7 @@ export class Game {
     this.scene.add(createLanternHalos(SECT_LANTERNS));
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
+    this.vfx.camera = this.camera;
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.minimap = renderMinimap(320);
     mark('minimap');
@@ -903,10 +904,15 @@ export class Game {
       case 'thunder': {
         pSrc?.model.attack();
         if (!e.chestOf(src, _v)) break;
-        if (m.t === 'sword') v.swordShot(_v, posDst, 0xbfeaff);
+        if (m.t === 'sword') {
+          // Phi kiếm: tới nơi để lại một dấu chém chéo nhỏ (không lớp mực, đòn thường đánh liên tục).
+          v.swordShot(_v, posDst, 0xbfeaff, 1, 0.2, (at) => v.slashMark(posDst, 0xcff3ff, 0.55, -0.55, 0.2, false, at.clone()));
+        }
         else if (m.t === 'slash') v.slash(_v, posDst, 0x8fdcff);
         else if (e.chestOf(dst, _v2)) {
           v.swordShot(_v, posDst, 0xfff3b0, 1.8, 0.16);
+          // Lôi Đình Nhất Kiếm: nhát chém dọc lớn (biến thể đứng của kiếm khí) cùng lúc sét đánh.
+          v.slashVertical(posDst, 0xfff3b0, 1.3);
           v.lightning(_v2.x, _v2.y - 1, _v2.z, 0xfff0a8, 1.3);
           if (src === this.sid || dst === this.sid) this.post?.flash(0.25);
         }
@@ -953,6 +959,8 @@ export class Game {
         break;
       case 'cast':
         v.charge(posSrc, m.d ?? 1, 0xfff0a8, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
+        // Pháp trận dưới chân: vạch tiến độ chạy theo thời gian niệm chú, tắt dần nếu bị ngắt.
+        v.castSigil(posSrc, m.d ?? 1, 0xfff0a8, 1.4, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
         if (src === this.sid) set({ castEnd: Date.now() + (m.d ?? 1) * 1000, castTotal: (m.d ?? 1) * 1000 });
         break;
       case 'mcast':
@@ -965,6 +973,8 @@ export class Game {
       case 'chant':
         // Boss niệm chú: quả cầu tụ lực lớn; thanh niệm chú hiện ở khung mục tiêu (đọc từ state `mf`/`ce`).
         v.charge(posSrc, m.d ?? 2, 0x9fe6ff, () => ((this.view.monsters.get(src)?.mf ?? 0) & MF_CHANT) !== 0);
+        // Pháp trận lớn dưới chân boss: đọc được thời gian còn lại để kịp ngắt chú (M5-3).
+        v.castSigil(posSrc, m.d ?? 2, 0x9fe6ff, 3.2, () => ((this.view.monsters.get(src)?.mf ?? 0) & MF_CHANT) !== 0);
         break;
       case 'interrupt':
         if (e.chestOf(dst, _v)) v.burst(_v, 0xfff2b0, 2.6, 0.45);
