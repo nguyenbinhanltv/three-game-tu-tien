@@ -1107,7 +1107,7 @@ export class Game {
         // Pháp trận dưới chân: vạch tiến độ chạy theo thời gian niệm chú, tắt dần nếu bị ngắt.
         v.castSigil(posSrc, m.d ?? 1, 0xfff0a8, 1.4, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
         if (src === this.sid) set({ castEnd: Date.now() + (m.d ?? 1) * 1000, castTotal: (m.d ?? 1) * 1000 });
-        this.skillPoses.onCast(pSrc?.model, m.d ?? 1);
+        this.skillPoses.onCast(pSrc?.model, m.s, m.d ?? 1);
         break;
       case 'mcast':
         // Quái đánh xa đọc chú: chỉ hiện quả cầu tụ lực; vùng báo trước tới sau qua S.HAZARD.

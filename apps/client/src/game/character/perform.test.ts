@@ -222,13 +222,23 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     const sp = new SkillPoses();
     const { m, calls } = fake();
     const thunder = SKILLS.find((s) => s.cast > 0)!;
-    sp.onCast(m, thunder.cast);
+    // Thời lượng lấy theo server (vd. đã giảm thời gian niệm), chiêu theo id chứ không đoán theo thời lượng.
+    sp.onCast(m, thunder.id, 1.2);
     expect(calls[0].pose).toBe(thunder.pose);
-    expect(calls[0].o?.delay).toBeCloseTo(thunder.cast - releaseAt(thunder), 6);
+    expect(calls[0].o?.delay).toBeCloseTo(1.2 - releaseAt(thunder), 6);
     sp.onFx(thunder.fx, m, false, 0);
     expect(calls.length).toBe(1);
     sp.onCastEnd(m);
     expect(m.cancelPerform).toHaveBeenCalled();
+  });
+
+  it('FX cast không có id chiêu hoặc id lạ: không xếp lịch (không đoán theo thời lượng)', () => {
+    const sp = new SkillPoses();
+    const { m, calls } = fake();
+    const thunder = SKILLS.find((s) => s.cast > 0)!;
+    sp.onCast(m, undefined, thunder.cast);
+    sp.onCast(m, 'skl_khong_co', thunder.cast);
+    expect(calls.length).toBe(0);
   });
 });
 

@@ -1,5 +1,5 @@
 import type { SkillDef } from '@dtl/shared';
-import { POSE, SKILLS } from '@dtl/content';
+import { POSE, SKILL, SKILLS } from '@dtl/content';
 import type { CharacterView } from './character/view';
 
 /** FX của chiêu → chiêu (mỗi chiêu một fx riêng trong skills.json). */
@@ -63,9 +63,13 @@ export class SkillPoses {
     return 0;
   }
 
-  /** FX `cast` (bắt đầu niệm chú `d` giây): xếp lịch động tác chém để ra đòn đúng lúc niệm xong. */
-  onCast(model: CharacterView | undefined, d: number): void {
-    const skill = SKILLS.find((s) => s.cast > 0 && Math.abs(s.cast - d) < 0.05);
+  /**
+   * FX `cast` (bắt đầu niệm chiêu `skillId` trong `d` giây, cả hai do server gửi): xếp lịch động tác chém để ra đòn
+   * đúng lúc niệm xong. Không có id (server cũ) hoặc id lạ thì không xếp lịch: FX chiêu tới sẽ phát động tác như
+   * người khác, không đoán chiêu theo thời lượng.
+   */
+  onCast(model: CharacterView | undefined, skillId: string | undefined, d: number): void {
+    const skill = skillId ? SKILL.get(skillId) : undefined;
     if (!model?.perform || !skill?.pose) return;
     model.perform(skill.pose, { delay: Math.max(0, d - releaseAt(skill)) });
   }

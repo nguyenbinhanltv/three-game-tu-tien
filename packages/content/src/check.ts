@@ -29,6 +29,9 @@ const POSE = new Map(POSES.map((p) => [p.id, p]));
 for (const s of SKILLS) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
 const skillPoses = SKILLS.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
+// Client chọn động tác theo fx của chiêu (FX của server chỉ mang loại hiệu ứng): fx phải riêng cho mỗi chiêu.
+const skillFx = SKILLS.map((s) => s.fx);
+if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
 for (const id of [POSE_FLY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 
 const needItem = (id: string, where: string) => {

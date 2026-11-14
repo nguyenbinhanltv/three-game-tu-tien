@@ -679,7 +679,7 @@ export class GameSim {
     if (skill.cast > 0) {
       p.casting = { skill, target: targetId, endAt: this.now + skill.cast * 1000 };
       this.setFlag(p, PF_CASTING, true);
-      this.fx({ t: 'cast', src: p.sid, dst: targetId, d: skill.cast });
+      this.fx({ t: 'cast', src: p.sid, dst: targetId, d: skill.cast, s: skill.id });
       this.sendCd(p);
       return;
     }
