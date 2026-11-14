@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { validName } from '@dtl/shared';
 import { t } from '@dtl/content';
+import { assets } from '../game/assets';
+import { TitleBackdrop } from '../game/backdrop';
 import { Game } from '../game/engine';
 import { Hud } from './Hud';
-import { set, useUI } from './store';
+import { get, type Phase, set, useUI } from './store';
 
 const GOOGLE_CLIENT_ID = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_GOOGLE_CLIENT_ID ?? '';
 const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname) || window.location.hostname.endsWith('.localhost');
@@ -67,12 +69,8 @@ function Login() {
   };
 
   return (
-    <div className="login">
-      <div className="login-card">
-        <div className="login-sword" aria-hidden="true" />
-        <h1>{t('ui.title')}</h1>
-        <div className="login-sub">{t('ui.subtitle')}</div>
-        <p className="login-tag">{t('ui.tagline')}</p>
+    <div className="ts-card">
+      <p className="login-tag">{t('ui.tagline')}</p>
 
         {needName && token ? (
           <div className="login-form">
@@ -112,48 +110,170 @@ function Login() {
             {!GOOGLE_CLIENT_ID && !DEV_LOGIN && <div className="login-error">{t('ui.login.no_method')}</div>}
           </>
         )}
-        {(err || nameError) && <div className="login-error">{nameError || err}</div>}
+      {(err || nameError) && <div className="login-error">{nameError || err}</div>}
+    </div>
+  );
+}
+
+// ---------- màn tiêu đề kiêm màn tải (M4-9) ----------
+
+/** Mỗi dòng chữ màn tải giữ ít nhất chừng này để kịp đọc, kể cả khi bước tải xong nhanh hơn. */
+const LINE_MS = 170;
+/** Các mốc trong `Game.loadStats` (engine ghi lúc khởi động) và dòng chữ tương ứng. */
+const STAGES: [stat: string, line: string][] = [
+  ['rendererInit', 'ui.load.renderer'],
+  ['env', 'ui.load.env'],
+  ['terrainCoarse', 'ui.load.terrain'],
+  ['sect', 'ui.load.sect'],
+  ['minimap', 'ui.load.minimap'],
+];
+/** Phần thanh tiến độ dành cho byte asset (AssetCache theo manifest); còn lại là các mốc dựng thế giới. */
+const ASSET_SHARE = 0.2;
+
+/** Dòng chữ theo bối cảnh + thanh tiến độ thật; gọi `onDone` khi đã vào game và đọc hết các dòng. */
+function LoadingPanel({ onDone }: { onDone: () => void }) {
+  const [line, setLine] = useState('');
+  const bar = useRef<HTMLDivElement>(null);
+  const done = useRef(onDone);
+  done.current = onDone;
+  useEffect(() => {
+    // Chuyển room (bí cảnh ↔ thế giới) thì thế giới đã dựng sẵn: chỉ một dòng.
+    const transfer = !!Game.current?.loadStats.worldReady;
+    const queue: string[] = [];
+    const seen = new Set<string>();
+    const push = (k: string) => {
+      if (seen.has(k)) return;
+      seen.add(k);
+      queue.push(k);
+    };
+    let shownAt = -Infinity;
+    let shown = 0;
+    const id = window.setInterval(() => {
+      const now = performance.now();
+      const ready = get().phase === 'game';
+      let target: number;
+      if (transfer) {
+        push('ui.load.transfer');
+        target = ready ? 1 : 0.6;
+      } else {
+        push('ui.load.connect');
+        const g = Game.current;
+        let steps = 0;
+        if (g) {
+          push('ui.load.enter');
+          steps++;
+          for (const [stat, key] of STAGES) {
+            if (g.loadStats[stat] === undefined) break;
+            push(key);
+            steps++;
+          }
+        }
+        const ap = assets.progress();
+        target = ready ? 1 : (steps / (STAGES.length + 2)) * (1 - ASSET_SHARE) + (ap.total ? (ap.loaded / ap.total) * ASSET_SHARE : 0);
+      }
+      if (ready) push('ui.load.ready');
+      shown += (target - shown) * 0.3;
+      if (bar.current) bar.current.style.transform = `scaleX(${shown.toFixed(4)})`;
+      if (queue.length && now - shownAt >= LINE_MS) {
+        setLine(t(queue.shift()!));
+        shownAt = now;
+      } else if (ready && !queue.length && now - shownAt >= LINE_MS * 3) {
+        window.clearInterval(id);
+        done.current();
+      }
+    }, 40);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <div className="ts-card ts-loading" role="status" aria-live="polite">
+      <p className="ts-line" key={line}>
+        {line}
+      </p>
+      <div className="ts-bar">
+        <div ref={bar} className="ts-bar-fill" />
       </div>
     </div>
   );
 }
 
-function Splash({ text, error }: { text: string; error?: boolean }) {
+function ErrorPanel({ text }: { text: string }) {
   return (
-    <div className="login">
-      <div className="login-card">
-        <div className="login-sword" aria-hidden="true" />
-        <h1>{t('ui.title')}</h1>
-        <div className="login-sub">{t('ui.subtitle')}</div>
-        <p className={error ? 'login-error' : 'login-tag'}>{text}</p>
-        {error ? (
-          <button
-            className="btn primary"
-            onClick={() => {
-              Game.current?.dispose();
-              set({ phase: 'login', error: '', needName: false });
-            }}
-          >
-            {t('ui.login.retry')}
-          </button>
-        ) : (
-          <div className="spinner" />
-        )}
-      </div>
+    <div className="ts-card">
+      <p className="login-error">{text}</p>
+      <button
+        className="btn primary"
+        onClick={() => {
+          Game.current?.dispose();
+          set({ phase: 'login', error: '', needName: false });
+        }}
+      >
+        {t('ui.login.retry')}
+      </button>
     </div>
   );
+}
+
+/**
+ * Cảnh nền 3D sau form đăng nhập. Chỉ dựng khi chưa có Game (lần vào đầu); chuyển room giữa
+ * chừng thì màn tiêu đề dùng nền sương tĩnh của khung hình đầu.
+ */
+let backdrop: TitleBackdrop | null = null;
+const bootEl = () => document.getElementById('boot');
+
+function syncBackdrop(phase: Phase): void {
+  const boot = bootEl();
+  if (!boot) return;
+  if (phase === 'game') return;
+  if (phase === 'loading') {
+    backdrop?.pause(); // nhường CPU/GPU cho Game đang dựng thế giới; giữ khung cuối
+    return;
+  }
+  if (!backdrop && !Game.current) {
+    const host = boot.querySelector<HTMLElement>('.ts-scene');
+    if (!host) return;
+    const b = new TitleBackdrop(host, () => boot.classList.add('lit'));
+    backdrop = b;
+    b.start().catch((e) => {
+      console.warn('[title] không dựng được cảnh nền, giữ nền tĩnh:', e);
+      if (backdrop === b) dropBackdrop();
+    });
+  }
+  backdrop?.resume();
+}
+
+function dropBackdrop(): void {
+  backdrop?.dispose();
+  backdrop = null;
+  bootEl()?.classList.remove('lit');
 }
 
 export function App() {
   const phase = useUI((s) => s.phase);
   const error = useUI((s) => s.error);
+  // Màn tiêu đề còn che game cho tới khi các dòng chữ tải đã hiện xong.
+  const [title, setTitle] = useState(true);
+  useEffect(() => {
+    if (phase !== 'game') setTitle(true);
+    syncBackdrop(phase);
+  }, [phase]);
+  useEffect(() => {
+    bootEl()?.classList.toggle('gone', !title);
+    if (title) return;
+    const timer = window.setTimeout(dropBackdrop, 1000); // sau khi #boot mờ hẳn
+    return () => window.clearTimeout(timer);
+  }, [title]);
+
   return (
     <>
-      {phase === 'login' && <Login />}
-      {phase === 'connecting' && <Splash text={t('ui.login.connecting')} />}
-      {phase === 'loading' && <Splash text={t('ui.login.loading')} />}
-      {phase === 'error' && <Splash text={error} error />}
-      {phase === 'game' && <Hud />}
+      {title && (
+        <div className="title-screen">
+          <div className="ts-sub">{t('ui.subtitle')}</div>
+          {phase === 'login' && <Login />}
+          {(phase === 'connecting' || phase === 'loading' || phase === 'game') && <LoadingPanel onDone={() => setTitle(false)} />}
+          {phase === 'error' && <ErrorPanel text={error} />}
+        </div>
+      )}
+      {phase === 'game' && !title && <Hud />}
     </>
   );
 }
