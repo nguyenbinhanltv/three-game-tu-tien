@@ -86,5 +86,7 @@ Skill trong `.claude/skills/`, subagent trong `.claude/agents/`. Dùng skill tư
 - `game-content`: thêm quái, skill, vật phẩm, nhiệm vụ, cảnh giới, cân bằng
 - `perf-budget`: đo và giữ ngân sách hiệu năng
 - `playtest`: chạy cả stack local, bot, kiểm tra trong trình duyệt
+- `guizang-game-skill` (bên ngoài, AGPL-3.0, tiếng Trung): chỉ để tham khảo khi làm cảm giác đòn đánh, animation IK, VFX, camera, lỗi input. Viết cho game offline một file HTML nên khi xung đột thì quy ước dự án thắng (WebGPU/TSL, server quyết định, i18n, ngân sách). Không chép code từ repo gốc
+- MCP `blender` (`.mcp.json`, `uvx mcp-for-blender`): điều khiển Blender đang mở để xem và thử dựng. Pipeline chính vẫn là script headless `tools/blender/` (xem `blender-pipeline`)
 
 Subagent: `netcode-reviewer`, `perf-auditor`, `asset-validator`, `lore-keeper`.

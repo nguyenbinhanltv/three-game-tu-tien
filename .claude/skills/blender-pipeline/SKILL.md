@@ -14,6 +14,14 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 - Kiểm tra Blender đã có chưa (`blender --version`). Chưa có thì báo người dùng cài Blender 4.x và thêm vào PATH; trong lúc chờ, dùng cách sinh bằng code Three.js (skill `procedural-assets`).
 - Script nhận tham số sau `--`, đọc bằng `sys.argv[sys.argv.index('--') + 1:]`.
 
+## Blender MCP (tương tác)
+
+`.mcp.json` khai báo server `blender` (`uvx mcp-for-blender`, tên mới của gói `blender-mcp`; telemetry tắt). Nó điều khiển **Blender đang mở** qua addon (cổng 9876, chỉ localhost): xem cảnh, chụp viewport, thử dựng hình, soi asset. Chỉ dùng để khám phá và kiểm tra bằng mắt.
+
+- Pipeline chính vẫn là script headless (`tools/blender/*.py`, `pnpm assets:build`). Thứ gì thử được qua MCP mà muốn giữ thì viết lại thành script trong `tools/blender/` để chạy lại được; không giao asset chỉ tồn tại trong một file `.blend` sửa tay.
+- Tool `execute_blender_code` chạy Python tùy ý trong Blender: nhắc người dùng lưu file trước, không đọc/ghi ngoài repo, không gọi mạng.
+- Không kết nối được (chưa mở Blender, chưa bật addon) thì quay về chạy headless, đừng chờ.
+
 ## Các bước pipeline
 
 1. **Sinh hoặc mở** `.blend` nguồn trong `assets/source/`.
