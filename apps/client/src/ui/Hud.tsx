@@ -4,7 +4,7 @@ import { itemName, monsterName, QUEST, realmName, SKILLS, t } from '@dtl/content
 import { Game } from '../game/engine';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
-import { set, togglePanel, useUI } from './store';
+import { set, type TargetCast, togglePanel, useUI } from './store';
 
 function Bar({ cls, value, max, text }: { cls: string; value: number; max: number; text?: string }) {
   const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
@@ -47,6 +47,25 @@ function TargetFrame() {
         {target.kind !== 'npc' && <span className="frame-realm">{target.kind === 'mon' ? t('ui.level_short', { n: target.level }) : realmName(target.level)}</span>}
       </div>
       {target.kind !== 'npc' && <Bar cls="hp enemy" value={target.hp} max={target.mhp} text={`${target.hp} / ${target.mhp}`} />}
+      {target.cast && <TargetCastBar cast={target.cast} />}
+    </div>
+  );
+}
+
+/** Thanh niệm chú/choáng của mục tiêu (boss). Đoạn đầu tô tối là lúc hộ chú, chưa phá chú được. */
+function TargetCastBar({ cast }: { cast: TargetCast }) {
+  const now = useNow(50);
+  if (now >= cast.end) return null;
+  const done = Math.max(0, Math.min(1, 1 - (cast.end - now) / cast.total));
+  const guarded = cast.kind === 'chant' && done < cast.open;
+  // Niệm chú: thanh đầy dần; choáng: thanh cạn dần.
+  const pct = (cast.kind === 'chant' ? done : 1 - done) * 100;
+  const label = cast.kind === 'stun' ? 'ui.target.stun' : guarded ? 'ui.target.chant_guard' : 'ui.target.chant';
+  return (
+    <div className={'bar tcast ' + cast.kind + (guarded ? ' guarded' : '')}>
+      {cast.kind === 'chant' && cast.open > 0 && <div className="tcast-guard" style={{ width: cast.open * 100 + '%' }} />}
+      <div className="bar-fill" style={{ width: pct + '%' }} />
+      <div className="bar-text">{t(label)}</div>
     </div>
   );
 }

@@ -103,3 +103,26 @@ export function enhanceCost(plus: number, itemPrice: number): { gold: number; or
 export const DEATH_XP_LOSS = 0.05;
 export const TRIBULATION_FAIL_XP_LOSS = 0.15;
 export const TRIBULATION_DURATION = 40;
+
+// ---------- ngắt chiêu (boss niệm chú) ----------
+
+/** Boss bị ngắt chú thì choáng và nhận thêm chừng này lần sát thương cho tới khi hết choáng. */
+export const INTERRUPT_VULN_MUL = 1.5;
+/** Tối đa lệnh dùng skill mỗi giây một người chơi; vượt thì server bỏ lệnh (chống spam). */
+export const SKILL_MSG_PER_SEC = 8;
+
+/**
+ * Kết quả một chiêu ngắt trúng boss đang niệm chú, từ lúc bắt đầu `startAt` tới `endAt` (ms server).
+ * - 'none': không có chú đang niệm (hoặc đã niệm xong), chiêu chỉ gây sát thương thường.
+ * - 'guarded': còn trong đoạn hộ chú đầu chú (`open` = tỉ lệ thời gian niệm, 0–1), chưa ngắt được.
+ * - 'ok': đúng cửa sổ, chú bị phá.
+ */
+export function chantInterrupt(startAt: number, endAt: number, open: number, now: number): 'none' | 'guarded' | 'ok' {
+  if (!(endAt > startAt) || now < startAt || now >= endAt) return 'none';
+  return (now - startAt) / (endAt - startAt) < open ? 'guarded' : 'ok';
+}
+
+/** Sát thương lên quái, nhân thêm khi quái đang choáng vì bị ngắt chú. */
+export function vulnerableDamage(dmg: number, vulnerable: boolean): number {
+  return vulnerable ? Math.round(dmg * INTERRUPT_VULN_MUL) : dmg;
+}
