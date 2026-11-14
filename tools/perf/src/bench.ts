@@ -308,8 +308,12 @@ type Run = {
   errors: string[];
 };
 
+/** Server bỏ tin chat cách tin trước dưới 800 ms (`Sim.onChat`, `sys.chat_rate`), nên chờ đủ trước lệnh kế tiếp. */
+const GM_GAP_MS = 1000;
+
 async function gm(page: Page, cmd: string): Promise<void> {
   await page.evaluate((m) => (window as unknown as BenchWindow).__game!.send('chat', { m }), '/gm ' + cmd);
+  await sleep(GM_GAP_MS);
 }
 
 async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: string): Promise<Run> {
