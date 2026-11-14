@@ -25,6 +25,7 @@ import {
   MF_CHANT,
   MF_STUN,
   MS_ATTACK,
+  MS_CHASE,
   MS_DEAD,
   PF_CASTING,
   PF_DEAD,
@@ -43,9 +44,9 @@ import {
   type TransferMsg,
 } from '@dtl/shared';
 import { MONSTER, monsterName, realmName, SKILLS, t } from '@dtl/content';
-import { type DebugInfo, get, pushLog, pushToast, set, type TargetInfo, togglePanel, useUI } from '../ui/store';
+import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { type Sfx, setListener, sfx, unlockAudio } from './audio';
-import { EntityManager, type PState, type WorldView } from './entities';
+import { EntityManager, type MState, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
@@ -288,6 +289,7 @@ export class Game {
       equip: init.equip,
       quests: init.quests,
       target: null,
+      boss: null,
       npc: null,
       tribEnd: 0,
       castEnd: 0,
@@ -466,6 +468,7 @@ export class Game {
     this.scene.add(createLanternHalos(SECT_LANTERNS));
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
+    this.vfx.camera = this.camera;
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.minimap = renderMinimap(320);
     mark('minimap');
@@ -906,10 +909,15 @@ export class Game {
       case 'thunder': {
         pSrc?.model.attack();
         if (!e.chestOf(src, _v)) break;
-        if (m.t === 'sword') v.swordShot(_v, posDst, 0xbfeaff);
+        if (m.t === 'sword') {
+          // Phi kiếm: tới nơi để lại một dấu chém chéo nhỏ (không lớp mực, đòn thường đánh liên tục).
+          v.swordShot(_v, posDst, 0xbfeaff, 1, 0.2, (at) => v.slashMark(posDst, 0xcff3ff, 0.55, -0.55, 0.2, false, at.clone()));
+        }
         else if (m.t === 'slash') v.slash(_v, posDst, 0x8fdcff);
         else if (e.chestOf(dst, _v2)) {
           v.swordShot(_v, posDst, 0xfff3b0, 1.8, 0.16);
+          // Lôi Đình Nhất Kiếm: nhát chém dọc lớn (biến thể đứng của kiếm khí) cùng lúc sét đánh.
+          v.slashVertical(posDst, 0xfff3b0, 1.3);
           v.lightning(_v2.x, _v2.y - 1, _v2.z, 0xfff0a8, 1.3);
           if (src === this.sid || dst === this.sid) this.post?.flash(0.25);
         }
@@ -956,6 +964,8 @@ export class Game {
         break;
       case 'cast':
         v.charge(posSrc, m.d ?? 1, 0xfff0a8, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
+        // Pháp trận dưới chân: vạch tiến độ chạy theo thời gian niệm chú, tắt dần nếu bị ngắt.
+        v.castSigil(posSrc, m.d ?? 1, 0xfff0a8, 1.4, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
         if (src === this.sid) set({ castEnd: Date.now() + (m.d ?? 1) * 1000, castTotal: (m.d ?? 1) * 1000 });
         break;
       case 'mcast':
@@ -968,6 +978,8 @@ export class Game {
       case 'chant':
         // Boss niệm chú: quả cầu tụ lực lớn; thanh niệm chú hiện ở khung mục tiêu (đọc từ state `mf`/`ce`).
         v.charge(posSrc, m.d ?? 2, 0x9fe6ff, () => ((this.view.monsters.get(src)?.mf ?? 0) & MF_CHANT) !== 0);
+        // Pháp trận lớn dưới chân boss: đọc được thời gian còn lại để kịp ngắt chú (M5-3).
+        v.castSigil(posSrc, m.d ?? 2, 0x9fe6ff, 3.2, () => ((this.view.monsters.get(src)?.mf ?? 0) & MF_CHANT) !== 0);
         break;
       case 'interrupt':
         if (e.chestOf(dst, _v)) v.burst(_v, 0xfff2b0, 2.6, 0.45);
@@ -1339,6 +1351,35 @@ export class Game {
     }
   }
 
+  /** Niệm chú/choáng của quái (theo đồng hồ client), nếu quái có chiêu niệm chú. */
+  private castOf(m: MState): TargetCast | undefined {
+    const ch = MONSTER.get(m.t)?.ai?.chant;
+    if (!ch || !m.mf || !m.ce) return undefined;
+    const kind = m.mf & MF_CHANT ? 'chant' : m.mf & MF_STUN ? 'stun' : null;
+    if (!kind) return undefined;
+    return { kind, end: m.ce - this.timeOffset, total: (kind === 'chant' ? ch.cast : ch.stun) * 1000, open: kind === 'chant' ? ch.open : 0 };
+  }
+
+  /** Boss cho thanh giữa phía trên: boss đang chọn, không thì boss còn sống gần nhất đang giao chiến trong 80 m. */
+  private bossFor(target: TargetInfo | null, x: number, z: number): BossInfo | null {
+    let id = target?.kind === 'mon' && target.boss ? target.id : '';
+    if (!id) {
+      let best = 80 * 80;
+      this.view.monsters.forEach((m, mid) => {
+        if (m.st === MS_DEAD || !MONSTER.get(m.t)?.boss) return;
+        if (m.st !== MS_CHASE && m.st !== MS_ATTACK && m.hp >= m.mhp) return;
+        const d2 = (m.x - x) ** 2 + (m.z - z) ** 2;
+        if (d2 < best) {
+          best = d2;
+          id = mid;
+        }
+      });
+    }
+    const m = id ? this.view.monsters.get(id) : undefined;
+    if (!m || m.st === MS_DEAD) return null;
+    return { id, def: m.t, level: m.lv, hp: m.hp, mhp: m.mhp, cast: this.castOf(m) };
+  }
+
   private syncHud(me: PState | undefined): void {
     if (!me) return;
     const rp = this.renderPos;
@@ -1349,11 +1390,8 @@ export class Game {
         const def = m ? MONSTER.get(m.t) : undefined;
         if (m && def) {
           target = { id: this.targetId, kind: 'mon', name: monsterName(def.id), level: m.lv, hp: m.hp, mhp: m.mhp, boss: !!def.boss };
-          const ch = def.ai?.chant;
-          if (ch && m.mf && m.ce) {
-            const kind = m.mf & MF_CHANT ? 'chant' : m.mf & MF_STUN ? 'stun' : null;
-            if (kind) target.cast = { kind, end: m.ce - this.timeOffset, total: (kind === 'chant' ? ch.cast : ch.stun) * 1000, open: kind === 'chant' ? ch.open : 0 };
-          }
+          const cast = this.castOf(m);
+          if (cast) target.cast = cast;
         }
       } else if (this.targetKind === 'player') {
         const p = this.view.players.get(this.targetId);
@@ -1365,6 +1403,7 @@ export class Game {
         if (n && Math.hypot(n.x - rp.x, n.z - rp.z) > 30) this.targetId = '';
       }
     }
+    const boss = this.bossFor(target, rp.x, rp.z);
     let hint = '';
     if (!(me.fl & PF_DEAD)) {
       const near = this.ents.nearestInteractable(this.cur.x, this.cur.y, this.cur.z);
@@ -1397,6 +1436,7 @@ export class Game {
       mmp: me.mmp,
       flags: me.fl,
       target,
+      boss,
       hint,
       npc,
       x: rp.x,

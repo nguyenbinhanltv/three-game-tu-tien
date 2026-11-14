@@ -1,9 +1,11 @@
 import * as THREE from 'three/webgpu';
-import { DUNGEON_EXIT, groundAt, MS_ATTACK, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
+import { DUNGEON_EXIT, groundAt, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
 import { MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
 import type { QuestView } from '@dtl/shared';
 import { buildNode, disposeLabel, Humanoid, makeLabel, MonsterModel } from './models';
 import { hitStopFor } from './hitreact';
+import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
+import { HpTrail } from './hpTrail';
 
 export interface PState {
   name: string;
@@ -74,34 +76,42 @@ function angleLerp(a: number, b: number, k: number): number {
   return a + d * k;
 }
 
-const BAR_BG = new THREE.SpriteMaterial({ color: 0x10141c, transparent: true, opacity: 0.7, depthWrite: false, fog: false });
-const BAR_RED = new THREE.SpriteMaterial({ color: 0xe0483e, depthWrite: false, fog: false });
-const BAR_GREEN = new THREE.SpriteMaterial({ color: 0x58c36a, depthWrite: false, fog: false });
+/** Thanh trên đầu còn hiện bao lâu (giây) sau lần cuối máu đổi. */
+const COMBAT_LINGER = 6;
+/** Tốc độ hiện/ẩn thanh (độ mờ mỗi giây). */
+const BAR_FADE = 6;
 
-class HpBar {
-  group = new THREE.Group();
-  private fg: THREE.Sprite;
-  constructor(green: boolean, private width = 1.5) {
-    const bg = new THREE.Sprite(BAR_BG);
-    bg.scale.set(width + 0.08, 0.2, 1);
-    this.fg = new THREE.Sprite(green ? BAR_GREEN : BAR_RED);
-    this.fg.scale.set(width, 0.13, 1);
-    this.fg.renderOrder = 7;
-    bg.renderOrder = 6;
-    this.group.add(bg, this.fg);
-  }
-  set(frac: number) {
-    const f = Math.max(0.02, Math.min(1, frac));
-    this.fg.scale.x = this.width * f;
-    // Sprite luôn quay về camera nên phải neo mép trái bằng tâm quay, không dời vị trí được.
-    this.fg.center.x = 0.5 / f;
+/**
+ * Trạng thái hiển thị thanh trên đầu của một thực thể: đoạn trễ, lúc hết giao chiến, độ mờ.
+ * Chỉ hiện khi đang giao chiến (máu vừa đổi, quái đang đuổi/đánh) hoặc đang là mục tiêu.
+ */
+class BarState {
+  trail = new HpTrail(1);
+  alpha = 0;
+  private lastHp = -1;
+  private combatUntil = 0;
+  constructor(
+    public width: number,
+    public kind: number,
+  ) {}
+  /** Trả về độ mờ (0 thì không vẽ). */
+  tick(hp: number, mhp: number, engaged: boolean, dead: boolean, dt: number, time: number): number {
+    const frac = mhp > 0 ? hp / mhp : 0;
+    if (this.lastHp >= 0 && hp !== this.lastHp) this.combatUntil = time + COMBAT_LINGER;
+    this.lastHp = hp;
+    const show = !dead && (engaged || time < this.combatUntil);
+    if (show && this.alpha <= 0) this.trail.reset(frac);
+    this.alpha = Math.max(0, Math.min(1, this.alpha + (show ? BAR_FADE : -BAR_FADE) * dt));
+    if (dead) this.alpha = 0;
+    this.trail.update(frac, dt);
+    return this.alpha;
   }
 }
 
 export class PlayerVis {
   model: Humanoid;
   label: THREE.Sprite;
-  bar: HpBar;
+  bar = new BarState(1.3, BAR_ALLY);
   x = 0;
   y = 0;
   z = 0;
@@ -120,9 +130,6 @@ export class PlayerVis {
     this.lv = s.lv;
     this.label.position.y = 2.55;
     this.model.root.add(this.label);
-    this.bar = new HpBar(true, 1.3);
-    this.bar.group.position.y = 2.12;
-    this.model.root.add(this.bar.group);
     this.x = s.x;
     this.y = s.y;
     this.z = s.z;
@@ -145,7 +152,9 @@ export class PlayerVis {
 export class MonVis {
   model: MonsterModel;
   label: THREE.Sprite | null = null;
-  bar: HpBar;
+  bar: BarState;
+  /** Độ cao tâm thanh trên đầu so với chân (m, đã tính scale). */
+  barY: number;
   x: number;
   y: number;
   z: number;
@@ -159,10 +168,8 @@ export class MonVis {
   ) {
     const def = MONSTER.get(s.t)!;
     this.model = new MonsterModel(def);
-    this.bar = new HpBar(false, def.boss ? 3 : 1.5);
-    this.bar.group.position.y = this.model.height / def.scale + 0.35;
-    this.bar.group.scale.setScalar(1 / def.scale);
-    this.model.root.add(this.bar.group);
+    this.bar = new BarState(def.boss ? 3 : 1.5, def.boss ? BAR_BOSS : BAR_ENEMY);
+    this.barY = this.model.height + 0.35 * def.scale;
     this.x = s.x;
     this.y = s.y;
     this.z = s.z;
@@ -226,6 +233,7 @@ export class EntityManager {
   nodes = new Map<string, THREE.Group>();
   npcs: NpcVis[] = [];
   ring: THREE.Mesh;
+  private bars = new HeadBars();
   private markerNew = makeMarker('!', '#ffd84a');
   private markerDone = makeMarker('?', '#ffd84a');
   private markerWait = makeMarker('?', '#9aa3ad');
@@ -265,6 +273,7 @@ export class EntityManager {
     this.ring.visible = false;
     this.ring.renderOrder = 3;
     this.group.add(this.ring);
+    this.group.add(this.bars.mesh);
   }
 
   /** Dấu ! / ? trên đầu NPC theo trạng thái nhiệm vụ. */
@@ -294,6 +303,8 @@ export class EntityManager {
   update(dt: number, view: WorldView, local: { x: number; y: number; z: number; yaw: number; speed: number; airborne: boolean }, targetId: string, myLevel: number): void {
     this.time += dt;
     const k = Math.min(1, dt * 12);
+    const bars = this.bars;
+    bars.begin();
 
     // ----- người chơi -----
     view.players.forEach((s, sid) => {
@@ -346,8 +357,13 @@ export class EntityManager {
         casting: (s.fl & PF_CASTING) !== 0,
         airborne: isLocal ? local.airborne : !s.gr,
       });
-      v.bar.group.visible = !dead && s.hp < s.mhp && !isLocal;
-      if (v.bar.group.visible) v.bar.set(s.hp / s.mhp);
+      if (!isLocal) {
+        const a = v.bar.tick(s.hp, s.mhp, sid === targetId, dead, dt, this.time);
+        if (a > 0) {
+          const r = v.model.root;
+          bars.push(r.position.x, r.position.y + 2.12 * r.scale.y, r.position.z, v.bar.width, s.hp / Math.max(1, s.mhp), v.bar.trail.value, v.bar.kind, a);
+        }
+      }
     });
     for (const [sid, v] of this.players) {
       const s = view.players.get(sid);
@@ -400,9 +416,12 @@ export class EntityManager {
       v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3);
       const vv = v as MonVis & { deadFor?: number };
       vv.deadFor = dead ? (vv.deadFor ?? 0) + dt : 0;
-      const showBar = !dead && (s.hp < s.mhp || id === targetId);
-      v.bar.group.visible = showBar;
-      if (showBar) v.bar.set(s.hp / s.mhp);
+      const engaged = id === targetId || s.st === MS_CHASE || s.st === MS_ATTACK;
+      const a = v.bar.tick(s.hp, s.mhp, engaged, dead, dt, this.time);
+      if (a > 0) {
+        const r = v.model.root;
+        bars.push(r.position.x, r.position.y + v.barY, r.position.z, v.bar.width, s.hp / Math.max(1, s.mhp), v.bar.trail.value, v.bar.kind, a);
+      }
       if (v.label) v.label.visible = !dead && d2 < 70 * 70;
       v.wasAttack = s.st === MS_ATTACK;
     });
@@ -443,6 +462,8 @@ export class EntityManager {
       n.model.update(dt, { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false });
       if (n.marker.visible) n.marker.position.y = 3.5 + Math.sin(this.time * 3) * 0.12;
     }
+
+    bars.end();
 
     // ----- vòng chọn mục tiêu -----
     const tm = this.monsters.get(targetId);
@@ -585,6 +606,7 @@ export class EntityManager {
     this.markerNew.dispose();
     this.markerDone.dispose();
     this.markerWait.dispose();
+    this.bars.dispose();
     this.group.removeFromParent();
   }
 }
