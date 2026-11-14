@@ -1,0 +1,84 @@
+{
+  "$comment": "Ngân sách theo lớp asset, theo docs/art-bible.md mục 6 (v3, 2026-11-15: bán tả thực, người chơi 15–25 nghìn tam giác). triangles: tam giác LOD0 (dưới min chỉ cảnh báo, trên max là lỗi). lods: các mức LOD sinh thêm, đích = min(ratio × LOD0, maxTriangles). texture: cạnh lớn nhất (px) cho map màu (base color, emissive) và map dữ liệu (normal, ORM). bones: số xương tối đa mỗi skin. Sửa ở đây khi art bible đổi; optimize.ts và validate.ts đọc file này.",
+  "version": 2,
+  "prefixes": {
+    "chr_": "player",
+    "mon_": "monster",
+    "boss_": "boss",
+    "prop_": "prop",
+    "arch_": "arch",
+    "fx_": "fx",
+    "anim_": "anim"
+  },
+  "classes": {
+    "player": {
+      "triangles": { "min": 15000, "max": 25000 },
+      "lods": [
+        { "ratio": 0.4, "maxTriangles": 8000 },
+        { "ratio": 0.15, "maxTriangles": 3000 }
+      ],
+      "texture": { "color": 1024, "data": 1024 },
+      "bones": 60
+    },
+    "npc": {
+      "triangles": { "min": 10000, "max": 15000 },
+      "lods": [{ "ratio": 0.4, "maxTriangles": 5000 }],
+      "texture": { "color": 1024, "data": 512 },
+      "bones": 60
+    },
+    "monster": {
+      "triangles": { "min": 5000, "max": 10000 },
+      "lods": [
+        { "ratio": 0.35, "maxTriangles": 3000 },
+        { "ratio": 0.12, "maxTriangles": 1000 }
+      ],
+      "texture": { "color": 1024, "data": 512 },
+      "bones": 60
+    },
+    "boss": {
+      "triangles": { "min": 20000, "max": 50000 },
+      "lods": [
+        { "ratio": 0.35, "maxTriangles": 15000 },
+        { "ratio": 0.12, "maxTriangles": 5000 }
+      ],
+      "texture": { "color": 2048, "data": 1024 },
+      "bones": 80
+    },
+    "weapon": {
+      "triangles": { "min": 1000, "max": 3000 },
+      "lods": [],
+      "texture": { "color": 512, "data": 512 },
+      "bones": 0
+    },
+    "prop": {
+      "triangles": { "min": 500, "max": 5000 },
+      "lods": [{ "ratio": 0.4 }, { "ratio": 0.15 }],
+      "texture": { "color": 1024, "data": 1024 },
+      "bones": 0
+    },
+    "drop": {
+      "triangles": { "min": 300, "max": 1500 },
+      "lods": [],
+      "texture": { "color": 256, "data": 256 },
+      "bones": 0
+    },
+    "arch": {
+      "triangles": { "min": 0, "max": 300000 },
+      "lods": [],
+      "texture": { "color": 1024, "data": 1024 },
+      "bones": 0
+    },
+    "fx": {
+      "triangles": { "min": 0, "max": 5000 },
+      "lods": [],
+      "texture": { "color": 512, "data": 512 },
+      "bones": 0
+    },
+    "anim": {
+      "triangles": { "min": 0, "max": 0 },
+      "lods": [],
+      "texture": { "color": 0, "data": 0 },
+      "bones": 60
+    }
+  }
+}
