@@ -37,7 +37,9 @@ import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
  * `mrtNode` của material sẽ thay luôn đầu ra màu và vẽ sai.
  *
  * Khử răng cưa theo preset (canvas không MSAA, renderer tạo với `antialias: false`):
- *   Thấp: không. Vừa: FXAA. Cao: MSAA 4x cho pass cảnh. WebGPU chỉ có 1 hoặc 4 mẫu, không có 2x.
+ *   Thấp: không. Vừa: FXAA. Cao: pixelRatio 2 (tối đa 8M điểm ảnh) + FXAA. Không dùng MSAA 4x ở Cao
+ *   vì nó nhân 4 cả màu HalfFloat, đích bloom lẫn depth (89 so với 33 B/px), vượt ngân sách VRAM.
+ *   Vẫn hỗ trợ `msaa: 4` nếu cần. WebGPU chỉ có 1 hoặc 4 mẫu, không có 2x.
  * Màu cảnh HalfFloat vì ACES cần giá trị > 1; đích bloom và buffer FXAA 8 bit.
  */
 export const postParams = {

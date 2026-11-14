@@ -92,7 +92,7 @@ export function serverUrl(): string {
 const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean }> = {
   low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false },
   medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true },
-  high: { pixelRatio: 2, maxPixels: 5.5e6, shadows: true, bloom: true, msaa: 4, fxaa: false, heightFog: true },
+  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true },
 };
 
 const _v = new THREE.Vector3();
