@@ -564,7 +564,8 @@ function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefine
   if (useFile && !vs) {
     // Có file nhưng chưa giải mã (sprite lazy, hoặc bấm ngay sau khi mở khóa): chờ file, không phát âm tổng hợp.
     if (allowPending) {
-      pendingPlay.set(name, { t: performance.now(), volume, at });
+      // Chép tọa độ: người gọi hay truyền vector tạm dùng chung (engine `_v`), sẽ bị ghi đè trước khi file giải mã xong.
+      pendingPlay.set(name, { t: performance.now(), volume, at: at ? { x: at.x, z: at.z } : undefined });
       decodeEntry(name);
     }
     return;
