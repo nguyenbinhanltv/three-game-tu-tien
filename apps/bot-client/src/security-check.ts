@@ -1,10 +1,12 @@
 // Kiểm tra hồi quy các lỗ hổng đã vá (soát netcode 2026-11-12).
 // Chạy khi server dev đang bật với AUTH_DEV_BYPASS=1:  pnpm --filter @dtl/bot-client security
+// Server khác cổng: thêm đối số http://localhost:2597, hoặc đặt SERVER_URL / PORT.
 
 import { Client, type Room } from 'colyseus.js';
 import { C, IN_FLY, IN_UP, type InitMsg, ROOM_DUNGEON, ROOM_WORLD, S } from '@dtl/shared';
+import { defaultServerHttp } from './target';
 
-const HTTP = process.argv[2] ?? 'http://localhost:2567';
+const HTTP = process.argv[2] ?? defaultServerHttp();
 const WS = HTTP.replace(/^http/, 'ws');
 const W = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let failed = 0;
