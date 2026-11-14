@@ -1,80 +1,102 @@
 {
-  "$comment": "Palette chuẩn 32 màu của Đạp Thiên Lộ. Nguồn duy nhất: sửa ở đây rồi chạy `node tools/palette/gen_palette.mjs` để sinh lại assets/palette.png. Xem docs/art-bible.md mục 4.",
-  "name": "dtl-palette",
-  "version": 1,
+  "$comment": "Bảng màu tâm trạng (mood palette) của Đạp Thiên Lộ. version 2 của file này đi kèm art bible phiên bản 3 (bán tả thực điện ảnh). Dùng để viết prompt concept, duyệt concept, chọn màu vật liệu thủ tục và làm mốc cho pass chỉnh màu. KHÔNG dùng để ép màu texture. Sửa ở đây rồi chạy `pnpm palette`. Xem docs/art-bible.md mục 4 và 5.",
+  "name": "dtl-mood-palette",
+  "version": 2,
   "lut": {
     "file": "assets/palette.png",
     "width": 256,
     "height": 1,
     "cellWidth": 8,
-    "uvRule": "u = (index + 0.5) / 32, v = 0.5"
+    "uvRule": "u = (index + 0.5) / 32, v = 0.5",
+    "use": "ô màu để tham chiếu và cho vật liệu thủ tục đơn sắc; không phải LUT chỉnh màu"
   },
   "groups": [
-    { "id": "ink", "label": "Mực và giấy", "use": "nền thủy mặc, viền, đá xám, tóc, lông thú xám" },
-    { "id": "stone", "label": "Đá và núi", "use": "núi xa, đá rêu, đường đất" },
-    { "id": "foliage", "label": "Lá và cỏ", "use": "tán cây, cỏ, linh thảo, hoa đào" },
-    { "id": "water", "label": "Nước và sương", "use": "hồ, suối, bọt nước, sương, chân trời" },
-    { "id": "wood", "label": "Gỗ và mái", "use": "cột, ngói, xà, đồ gỗ, đồng thau" },
-    { "id": "attire", "label": "Y phục theo phe", "use": "áo bào, da người; kết hợp với nhóm mực và gỗ" },
-    { "id": "spirit", "label": "Linh quang và VFX", "use": "chỉ cho phần phát sáng, VFX, UI nhấn; không dùng làm màu nền vật thể" }
+    { "id": "air", "label": "Ánh sáng và khí quyển", "use": "nắng, sương, trời, đêm; mốc cho chỉnh màu" },
+    { "id": "stone", "label": "Đá và núi", "use": "đá sân, vách, núi xa" },
+    { "id": "foliage", "label": "Lá và cỏ", "use": "tùng, lá, cỏ, hoa đào, linh thảo" },
+    { "id": "water", "label": "Nước", "use": "hồ, suối" },
+    { "id": "wood", "label": "Gỗ, mái, kim loại", "use": "cột, ngói, gỗ, đồng thau" },
+    { "id": "attire", "label": "Y phục và da", "use": "vải áo bào, da người, tóc" },
+    { "id": "spirit", "label": "Linh quang", "use": "chỉ cho phần phát sáng, VFX, UI nhấn" }
   ],
   "colors": [
-    { "index": 0, "id": "ink_paper", "hex": "#EDE6D6", "group": "ink", "label": "Giấy ngà", "role": "sương gần, áo trắng ngà, tường vôi, nền UI" },
-    { "index": 1, "id": "ink_1", "hex": "#B9B6AE", "group": "ink", "label": "Mực nhạt 1", "role": "đá sân sáng, mây bóng" },
-    { "index": 2, "id": "ink_2", "hex": "#8A8782", "group": "ink", "label": "Mực 2", "role": "đá, lông sói sáng" },
-    { "index": 3, "id": "ink_3", "hex": "#5F5D5C", "group": "ink", "label": "Mực 3", "role": "đá bóng, lông sói tối, sắt" },
-    { "index": 4, "id": "ink_4", "hex": "#48464B", "group": "ink", "label": "Mực 4", "role": "kẽ đá, đế giày, đai lưng tối" },
-    { "index": 5, "id": "ink_5", "hex": "#2B2B2E", "group": "ink", "label": "Mực đậm", "role": "viền mực, tóc đen, mắt; không bao giờ là màu bóng" },
+    { "index": 0, "id": "air_sun_dawn", "hex": "#F2C47E", "group": "air", "label": "Nắng sớm", "role": "ánh nắng sáng sớm và chiều, viền sáng trên mép vật" },
+    { "index": 1, "id": "air_mist", "hex": "#DCE6DF", "group": "air", "label": "Sương sớm", "role": "màu sương ban ngày, mây gần, hơi nước trên hồ" },
+    { "index": 2, "id": "air_sky", "hex": "#9CC4C3", "group": "air", "label": "Trời ngọc", "role": "bầu trời ban ngày, ánh trời hắt vào bóng" },
+    { "index": 3, "id": "air_night", "hex": "#1A2938", "group": "air", "label": "Đêm lam", "role": "trời đêm, bóng đêm; không đen tuyền" },
 
-    { "index": 6, "id": "stone_far_light", "hex": "#A9BCC8", "group": "stone", "label": "Núi xa nhạt", "role": "lớp núi xa nhất, hòa vào sương" },
-    { "index": 7, "id": "stone_far", "hex": "#7F9AAE", "group": "stone", "label": "Núi xa", "role": "lớp núi giữa, vách đá lạnh" },
-    { "index": 8, "id": "stone_moss", "hex": "#5E7F86", "group": "stone", "label": "Đá rêu", "role": "đá gần có rêu, bờ suối" },
-    { "index": 9, "id": "stone_earth", "hex": "#CDBF96", "group": "stone", "label": "Đất vàng", "role": "đường mòn, cát, rơm, giấy cũ" },
+    { "index": 4, "id": "stone_light", "hex": "#BDB6A4", "group": "stone", "label": "Đá sân", "role": "đá lát sân tông môn, bậc đá, tượng đá sáng" },
+    { "index": 5, "id": "stone", "hex": "#7D786C", "group": "stone", "label": "Đá", "role": "vách đá, tảng đá, tường thành" },
+    { "index": 6, "id": "stone_dark", "hex": "#464540", "group": "stone", "label": "Đá tối", "role": "kẽ đá, đá ướt, hang" },
+    { "index": 7, "id": "stone_far", "hex": "#88ABAA", "group": "stone", "label": "Núi xa", "role": "lớp núi xa đã nhuốm sương ngọc lam" },
 
-    { "index": 10, "id": "leaf_deep", "hex": "#275C3F", "group": "foliage", "label": "Lá đậm", "role": "tán tùng bách, lá trong bóng" },
-    { "index": 11, "id": "leaf", "hex": "#3A7A4C", "group": "foliage", "label": "Lá", "role": "tán cây thường, thân linh thảo" },
-    { "index": 12, "id": "leaf_grass", "hex": "#5FA04E", "group": "foliage", "label": "Cỏ", "role": "cỏ, lá non" },
-    { "index": 13, "id": "leaf_dry", "hex": "#9AA86A", "group": "foliage", "label": "Cỏ úa", "role": "cỏ khô, rêu sáng, sườn núi nắng" },
-    { "index": 14, "id": "leaf_blossom", "hex": "#F3B6C9", "group": "foliage", "label": "Hoa đào", "role": "hoa đào, hoa linh thảo" },
+    { "index": 8, "id": "leaf_pine", "hex": "#23503F", "group": "foliage", "label": "Tùng", "role": "tán tùng bách, lá trong bóng" },
+    { "index": 9, "id": "leaf", "hex": "#3E7552", "group": "foliage", "label": "Lá", "role": "tán cây thường, thân linh thảo" },
+    { "index": 10, "id": "leaf_grass", "hex": "#7EA25A", "group": "foliage", "label": "Cỏ nắng", "role": "cỏ, lá non dưới nắng" },
+    { "index": 11, "id": "leaf_dry", "hex": "#B7AC74", "group": "foliage", "label": "Cỏ úa", "role": "cỏ khô, lau sậy, sườn núi nắng" },
+    { "index": 12, "id": "leaf_blossom", "hex": "#E9B4C0", "group": "foliage", "label": "Hoa đào", "role": "hoa đào, hoa linh thảo" },
 
-    { "index": 15, "id": "water_deep", "hex": "#16384C", "group": "water", "label": "Nước sâu", "role": "lòng hồ, vực" },
-    { "index": 16, "id": "water", "hex": "#3D86AD", "group": "water", "label": "Nước", "role": "mặt hồ, suối" },
-    { "index": 17, "id": "water_mist", "hex": "#CFE0EA", "group": "water", "label": "Sương lam", "role": "chân trời, màu sương (trùng SKY_HORIZON), bọt nước" },
+    { "index": 13, "id": "water_deep", "hex": "#123B45", "group": "water", "label": "Nước sâu", "role": "lòng hồ, vực" },
+    { "index": 14, "id": "water", "hex": "#2E7D88", "group": "water", "label": "Nước ngọc", "role": "mặt hồ, suối" },
+    { "index": 15, "id": "water_shallow", "hex": "#5FA7A2", "group": "water", "label": "Nước nông", "role": "bờ nước, thác, bọt nước dưới nắng" },
 
-    { "index": 18, "id": "wood_cinnabar", "hex": "#A8322D", "group": "wood", "label": "Son đỏ", "role": "cột, lan can, cổng tông môn, dây buộc" },
-    { "index": 19, "id": "wood_roof", "hex": "#2F5D62", "group": "wood", "label": "Ngói thanh", "role": "mái ngói, viền áo tông môn" },
-    { "index": 20, "id": "wood_dark", "hex": "#5A3D2A", "group": "wood", "label": "Gỗ tối", "role": "xà, thân cây, bao kiếm, chuôi kiếm" },
-    { "index": 21, "id": "wood", "hex": "#8A6B3C", "group": "wood", "label": "Gỗ", "role": "sàn gỗ, rương, cán, giỏ tre" },
-    { "index": 22, "id": "wood_bronze", "hex": "#B8913F", "group": "wood", "label": "Đồng thau", "role": "lò đan, đầu ngói, hoa văn viền, chắn kiếm" },
+    { "index": 16, "id": "wood_cinnabar", "hex": "#9D392E", "group": "wood", "label": "Son đỏ", "role": "cột, lan can, sơn môn, dây buộc" },
+    { "index": 17, "id": "wood_roof", "hex": "#2B5552", "group": "wood", "label": "Ngói thanh", "role": "mái ngói, viền áo tông môn" },
+    { "index": 18, "id": "wood_dark", "hex": "#4D3324", "group": "wood", "label": "Gỗ tối", "role": "xà, thân cây, bao kiếm, chuôi kiếm" },
+    { "index": 19, "id": "wood", "hex": "#8A6944", "group": "wood", "label": "Gỗ", "role": "sàn gỗ, rương, giỏ tre" },
+    { "index": 20, "id": "wood_bronze", "hex": "#AE8B49", "group": "wood", "label": "Đồng thau", "role": "lò đan, đầu ngói, hoa văn viền, chắn kiếm" },
 
-    { "index": 23, "id": "attire_sect", "hex": "#3B6EA8", "group": "attire", "label": "Lam tông môn", "role": "áo đệ tử Lạc Kiếm Tông (màu nhận diện chính)" },
-    { "index": 24, "id": "attire_elder", "hex": "#1F3A5A", "group": "attire", "label": "Lam trưởng lão", "role": "áo khoác trưởng lão, đai lưng đệ tử" },
-    { "index": 25, "id": "attire_rogue", "hex": "#4E4466", "group": "attire", "label": "Tím than", "role": "tán tu, người ngoài tông môn" },
-    { "index": 26, "id": "attire_skin", "hex": "#F0CFA8", "group": "attire", "label": "Da người", "role": "da mặt, tay; chỉ một sắc da" },
+    { "index": 21, "id": "attire_ivory", "hex": "#E6DDCB", "group": "attire", "label": "Vải ngà", "role": "áo trắng ngà, áo trong, tường vôi" },
+    { "index": 22, "id": "attire_sect", "hex": "#3B6584", "group": "attire", "label": "Lam tông môn", "role": "áo đệ tử Lạc Kiếm Tông" },
+    { "index": 23, "id": "attire_elder", "hex": "#22364E", "group": "attire", "label": "Lam trưởng lão", "role": "áo khoác trưởng lão, đai lưng đệ tử" },
+    { "index": 24, "id": "attire_rogue", "hex": "#55475F", "group": "attire", "label": "Tím than", "role": "tán tu, người ngoài tông môn" },
+    { "index": 25, "id": "attire_skin", "hex": "#E6BF9C", "group": "attire", "label": "Da người", "role": "da mặt, tay" },
+    { "index": 26, "id": "attire_ink", "hex": "#29292C", "group": "attire", "label": "Mực", "role": "tóc đen, giày, áo đen; không phải màu bóng" },
 
     { "index": 27, "id": "spirit_jade", "hex": "#7FE3D0", "group": "spirit", "label": "Linh khí ngọc", "role": "linh khí, đả tọa, linh thảo phát sáng, hồi phục" },
     { "index": 28, "id": "spirit_sword", "hex": "#CFF3FF", "group": "spirit", "label": "Kiếm khí", "role": "vệt kiếm khí, phi kiếm, ngự kiếm" },
     { "index": 29, "id": "spirit_thunder", "hex": "#B48CFF", "group": "spirit", "label": "Thiên lôi", "role": "thiên lôi độ kiếp, đột phá" },
     { "index": 30, "id": "spirit_demonic", "hex": "#4A2B5E", "group": "spirit", "label": "Ma khí", "role": "ma khí, yêu khí, quái biến dị, boss" },
-    { "index": 31, "id": "spirit_gold", "hex": "#FFD98A", "group": "spirit", "label": "Kim quang", "role": "đồ rơi quý, hoàn thành nhiệm vụ, cường hóa thành công" }
+    { "index": 31, "id": "spirit_gold", "hex": "#FFDE96", "group": "spirit", "label": "Kim quang", "role": "đồ rơi quý, hoàn thành nhiệm vụ, cường hóa thành công" }
   ],
   "playerDyes": {
-    "$comment": "Màu áo người chơi chọn khi tạo nhân vật (quyết định 6.4b). Chỉ đổi vùng áo chính; viền, đai, giày giữ nguyên.",
+    "$comment": "Màu áo người chơi chọn khi tạo nhân vật (quyết định 6.4b). Đổi màu vùng áo chính bằng mặt nạ; giữ nguyên chi tiết vân vải của texture.",
     "default": "attire_sect",
-    "options": ["attire_sect", "ink_paper", "wood_roof", "wood_cinnabar", "attire_rogue", "ink_4"]
+    "options": ["attire_sect", "attire_ivory", "wood_roof", "wood_cinnabar", "attire_rogue", "attire_ink"]
   },
-  "toon": {
-    "$comment": "Hợp đồng với material toon TSL (M1-6, apps/client/src/render/materials/toon.ts). Đổi số ở đây thì phải đổi cả ở đó và ngược lại.",
-    "formula": "tính trong không gian tuyến tính: out = albedo * bandLuminance[b] * mix(vec3(1), shadowTint, shadowTintStrength * w[b]), với w = 0 (lit), 0.5 (mid), 1 (shadow); b chọn theo N·L so với thresholds",
-    "bands": 3,
-    "thresholds": { "lit": 0.45, "mid": 0.05 },
-    "bandLuminance": { "lit": 1.0, "mid": 0.8, "shadow": 0.58 },
-    "shadowTint": "#5D6E8A",
-    "shadowTintStrength": 0.35,
-    "ambientSky": "#CFE0EA",
-    "sunColor": "#FFF0D6",
-    "outlineColor": "#2B2B2E",
-    "fogColor": "#CFE0EA",
-    "depthDesaturate": { "start": 60, "end": 600, "amount": 0.55 }
+  "grading": {
+    "$comment": "Điểm khởi đầu cho pass chỉnh màu TSL (M1-6, apps/client/src/render/post.ts). Màu viết bằng sRGB hex; shader đổi sang tuyến tính. M1-6 chỉnh trong game rồi cập nhật lại đây và docs/art-bible.md mục 5 trong cùng commit.",
+    "toneMapping": "ACESFilmic",
+    "default": "day",
+    "presets": {
+      "dawn": {
+        "label": "Sáng sớm",
+        "sunColor": "#F6C27E", "sunIntensity": 2.0, "sunElevationDeg": 14,
+        "skyColor": "#B9CFC8", "skyIntensity": 0.9,
+        "fogColor": "#E4E3D6", "fogDensity": 0.0016, "heightFogTop": 60, "heightFogBoost": 2.5,
+        "shadowTint": "#2F5B5C", "highlightTint": "#FFD49A", "splitBalance": 0.15,
+        "blackLift": "#14292B", "contrast": 1.05, "saturation": 1.0, "exposure": 1.0
+      },
+      "day": {
+        "label": "Ban ngày",
+        "sunColor": "#FFE6B8", "sunIntensity": 2.6, "sunElevationDeg": 48,
+        "skyColor": "#A9CFCB", "skyIntensity": 1.0,
+        "fogColor": "#D6E4DE", "fogDensity": 0.0011, "heightFogTop": 40, "heightFogBoost": 1.8,
+        "shadowTint": "#2F5B5C", "highlightTint": "#FFE0A8", "splitBalance": 0.0,
+        "blackLift": "#13282B", "contrast": 1.08, "saturation": 1.05, "exposure": 1.0
+      },
+      "night": {
+        "label": "Đêm",
+        "sunColor": "#9DB4CF", "sunIntensity": 0.45, "sunElevationDeg": 35,
+        "skyColor": "#1A2938", "skyIntensity": 0.5,
+        "fogColor": "#22323F", "fogDensity": 0.0013, "heightFogTop": 40, "heightFogBoost": 2.0,
+        "shadowTint": "#0F1F2A", "highlightTint": "#FFB869", "splitBalance": -0.2,
+        "blackLift": "#0B1720", "contrast": 1.1, "saturation": 0.82, "exposure": 0.9
+      }
+    },
+    "bloom": { "threshold": 1.0, "strength": 0.35, "radius": 0.5, "maxHdr": 2.5 },
+    "vignette": { "amount": 0.18, "inner": 0.4, "outer": 0.9 },
+    "grain": { "amount": 0.025, "dither": true },
+    "depthDesaturate": { "start": 80, "end": 700, "amount": 0.4 }
   }
 }
