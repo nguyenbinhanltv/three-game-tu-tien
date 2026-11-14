@@ -413,6 +413,8 @@ def recolor(rules):
                 w *= 1 - ramp(sat, rule['satMax'], rule['satMax'] + 0.08)
             if 'valMin' in rule:
                 w *= ramp(v, rule['valMin'] - 0.08, rule['valMin'])
+            if 'valMax' in rule:
+                w *= 1 - ramp(v, rule['valMax'], rule['valMax'] + 0.08)
             m = w > 0.01
             if not m.any():
                 out.append({'image': img.name, 'to': rule['to'], 'pixels': 0})
