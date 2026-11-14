@@ -10,6 +10,15 @@ export interface TargetInfo {
   hp: number;
   mhp: number;
   boss: boolean;
+  /** Boss đang niệm chú hoặc đang choáng: `end` theo đồng hồ client (ms), `open` = tỉ lệ đoạn hộ chú. */
+  cast?: TargetCast;
+}
+
+export interface TargetCast {
+  kind: 'chant' | 'stun';
+  end: number;
+  total: number;
+  open: number;
 }
 
 export interface LogLine {

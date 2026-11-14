@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  chantInterrupt,
   computeDamage,
+  INTERRUPT_VULN_MUL,
   FLY_MAX_ALT,
   FLY_SPEED,
   groundAt,
@@ -18,6 +20,7 @@ import {
   STEP,
   stepMove,
   validName,
+  vulnerableDamage,
   WATER_Y,
   WORLD_SIZE,
   xpNeed,
@@ -149,5 +152,31 @@ describe('vùng báo trước và đòn nặng', () => {
     expect(inHazard(h, 4, 5)).toBe(false); // ~38.7°
     expect(inHazard(h, 0, 8.5)).toBe(false);
     expect(inHazard(h, 0, -2)).toBe(false);
+  });
+});
+
+describe('ngắt chú boss', () => {
+  const start = 10_000;
+  const end = 12_500; // niệm 2,5 giây
+  it('ngoài lúc niệm chú thì không ngắt gì', () => {
+    expect(chantInterrupt(0, 0, 0.3, start)).toBe('none');
+    expect(chantInterrupt(start, end, 0.3, start - 1)).toBe('none');
+    expect(chantInterrupt(start, end, 0.3, end)).toBe('none');
+    expect(chantInterrupt(start, end, 0.3, end + 500)).toBe('none');
+  });
+  it('đoạn hộ chú đầu chú chưa ngắt được', () => {
+    expect(chantInterrupt(start, end, 0.3, start)).toBe('guarded');
+    expect(chantInterrupt(start, end, 0.3, start + 749)).toBe('guarded');
+  });
+  it('đúng cửa sổ thì phá chú, tới sát lúc niệm xong', () => {
+    expect(chantInterrupt(start, end, 0.3, start + 750)).toBe('ok');
+    expect(chantInterrupt(start, end, 0.3, end - 1)).toBe('ok');
+    expect(chantInterrupt(start, end, 0, start)).toBe('ok');
+  });
+  it('choáng thì nhận thêm sát thương, làm tròn', () => {
+    expect(INTERRUPT_VULN_MUL).toBeGreaterThan(1);
+    expect(vulnerableDamage(100, false)).toBe(100);
+    expect(vulnerableDamage(100, true)).toBe(Math.round(100 * INTERRUPT_VULN_MUL));
+    expect(Number.isInteger(vulnerableDamage(37, true))).toBe(true);
   });
 });

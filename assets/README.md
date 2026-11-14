@@ -59,6 +59,7 @@ Sau đó chạy subagent `asset-validator` để soát bằng mắt những gì 
 3. Thêm dòng vào `assets/LICENSES.md`.
 4. `pnpm assets:build --only <id>` rồi `pnpm assets:validate --only <id>`; xem trong trang `?viewer=asset`.
 5. Commit `meta.json`, dòng LICENSES, GLB có hash và `manifest.json`.
+6. Trong client: `await assets.attach(renderer)` rồi `const h = await assets.acquire('<id>', { pos })`, thêm `h.scene` vào cảnh, `h.release()` khi bỏ (xem `apps/client/src/game/assets.ts`).
 
 ## Âm thanh (`tools/audio/`)
 
@@ -73,6 +74,6 @@ SFX và âm môi trường không đi qua pipeline GLB mà qua `pnpm audio:build
 
 ## Chưa có
 
-- Client chưa đọc `manifest.json`: `engine.ts` vẫn nạp `assets/sect.glb` (job Blender chép thêm bản thô cho đường cũ). Chuyển sang manifest + `MeshoptDecoder`/`KTX2Loader` + chọn LOD là việc M2-8/M2-9.
+- Client chọn LOD theo khoảng cách (M2-9): `AssetCache` (`apps/client/src/game/assets.ts`, M2-8) đã nạp theo manifest nhưng chỉ hiện LOD0. `public/assets/sect.glb` (bản chép GLB thô của job Blender) chỉ còn làm đầu vào cho test pipeline, client không nạp.
 - `import_tripo.py`, `rig_human_base.py` (M2-2, M2-3); ảnh xem trước `assets/build/previews/`.
 - Nhánh KTX2 mới kiểm bằng toktx giả trong test (máy dev chưa cài KTX-Software).

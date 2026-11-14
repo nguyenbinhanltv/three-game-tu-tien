@@ -17,5 +17,11 @@
     "tribulation": "độ kiếp",
     "alchemy": "luyện đan",
     "enhance": "cường hóa"
+  },
+  "combat": {
+    "chant": "niệm chú",
+    "chant_guard": "hộ chú",
+    "interrupt": "phá chú",
+    "stun": "choáng"
   }
 }

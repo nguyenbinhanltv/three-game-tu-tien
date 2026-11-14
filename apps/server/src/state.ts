@@ -38,6 +38,10 @@ export class MonS extends Schema {
   @type('uint8') lv = 1;
   /** Trạng thái MS_*. */
   @type('uint8') st = 0;
+  /** Cờ MF_* (niệm chú, choáng). */
+  @type('uint8') mf = 0;
+  /** Thời điểm server (ms) kết thúc trạng thái trong `mf`; 0 khi không có. */
+  @type('float64') ce = 0;
 }
 
 export class NodeS extends Schema {
