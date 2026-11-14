@@ -56,11 +56,17 @@ export interface LoginOptions {
   name?: string;
 }
 
+/**
+ * URL server: VITE_SERVER_URL nếu có; khi chạy Vite dev/preview thì nối cùng hostname ở cổng
+ * PORT lúc khởi động Vite (mặc định 2567); còn lại (bản build do server phục vụ) dùng cùng origin.
+ */
 export function serverUrl(): string {
-  const env = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_SERVER_URL;
-  if (env) return env;
+  const env = (import.meta as unknown as { env: Record<string, string | boolean | undefined> }).env;
+  if (typeof env.VITE_SERVER_URL === 'string' && env.VITE_SERVER_URL) return env.VITE_SERVER_URL;
   const { protocol, hostname, host, port } = window.location;
-  if (port === '5173' || port === '4173') return `ws://${hostname}:2567`;
+  if (env.DEV === true || port === '5173' || port === '4173') {
+    return `ws://${hostname}:${env.VITE_DEV_SERVER_PORT || '2567'}`;
+  }
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
 }
 

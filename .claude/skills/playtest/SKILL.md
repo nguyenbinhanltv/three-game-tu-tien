@@ -11,8 +11,34 @@ description: Chạy toàn bộ Đạp Thiên Lộ ở máy local (server Colyseu
 ## Khởi động
 
 - Cài đặt lần đầu: `pnpm install`, `pnpm db:migrate`, `pnpm content:check`.
-- Chạy cả stack: `pnpm dev` (server ở cổng 2567, client ở cổng 5173). Cấu hình trong `.claude/launch.json` để mở bằng trình duyệt tích hợp.
+- Chạy cả stack: `pnpm dev` (server ở cổng 2567, client ở cổng 5173; đổi cổng xem mục "Chạy song song nhiều worktree"). Cấu hình trong `.claude/launch.json` để mở bằng trình duyệt tích hợp.
 - Đăng nhập khi phát triển: đặt `AUTH_DEV_BYPASS=1` trong `apps/server/.env.local` để vào bằng tài khoản giả `dev1`…`dev9`, không cần Google. Không bao giờ bật biến này ở môi trường VPS.
+
+## Chạy song song nhiều worktree
+
+Nhiều worktree (nhiều agent) có thể cùng chạy `pnpm dev`, nhưng mỗi worktree phải có cặp cổng riêng.
+
+- Biến cổng:
+  - `PORT`: cổng server, mặc định 2567.
+  - `CLIENT_PORT`: cổng Vite, mặc định 5173 (preview mặc định 4173).
+  - `VITE_SERVER_URL`: URL WebSocket đầy đủ, ghi đè cách client tự suy `ws://<host>:$PORT`.
+  - `SERVER_URL`: địa chỉ server cho bot và security-check (nếu không đặt thì chúng suy từ `PORT`).
+- Chọn cặp cổng: worktree chính dùng mặc định 2567/5173. Worktree khác lấy cặp `2500+N`/`5100+N` với `N` ít va chạm, ví dụ số cuối trong tên session (`three-game-tu-tien-10` → `2510/5110`). Hai số ví dụ trong tài liệu là `2597/5197`.
+- Kiểm cổng trước khi chạy. Cả hai cổng phải trống:
+  - Git Bash: `netstat -ano | grep LISTENING | grep -E ":(2597|5197)\b"`
+  - PowerShell: `Get-NetTCPConnection -State Listen -LocalPort 2597,5197`
+  Cổng bận nghĩa là của worktree khác: đổi cặp khác, KHÔNG dùng server đó và KHÔNG kill nó. Vite chạy `strictPort`, nên khi cổng bận nó báo lỗi chứ không tự nhảy sang cổng khác.
+- Cách chạy:
+  - Git Bash: `AUTH_DEV_BYPASS=1 PORT=2597 CLIENT_PORT=5197 pnpm dev`
+  - PowerShell: `$env:AUTH_DEV_BYPASS=1; $env:PORT=2597; $env:CLIENT_PORT=5197; pnpm dev`. Biến sẽ còn trong cửa sổ đó.
+  - Hoặc ghi `PORT=2597` và `CLIENT_PORT=5197` vào `apps/server/.env.local` của worktree. Cả server, Vite và bot đều đọc file này; biến môi trường thật được ưu tiên hơn.
+  Mỗi worktree đã có DB riêng (`apps/server/data/game.db`). Nếu chạy hai stack trong cùng một worktree thì đặt thêm `DB_FILE=` riêng.
+- Mở `http://localhost:5197/?auto=<tên>` rồi xác nhận client nối đúng server: log server của mình phải có dòng `[join] <tên>`, hoặc `curl localhost:2597/health` phải thấy `online` tăng. Đặt đạo hiệu riêng cho mỗi worktree. Nếu log có tên lạ, đó là trình duyệt hoặc bot của session khác đã vào nhầm cổng của mình. Đừng dựa vào số `online` khi đó.
+- Bot và security-check:
+  - `SERVER_URL=ws://localhost:2597 pnpm bots --count 10 --duration 60`, hoặc `--url ws://localhost:2597`.
+  - `PORT=2597 pnpm --filter @dtl/bot-client security`, hoặc truyền `http://localhost:2597` làm đối số.
+- Tự tắt server của mình khi xong. Trên Windows, dừng tiến trình `pnpm dev` cha có thể để lại tiến trình node con vẫn giữ cổng. Ghi lại PID đang nghe ở hai cổng của mình ngay sau khi khởi động (`netstat -ano`). Khi xong, chỉ kill đúng các PID đó, ví dụ `taskkill //PID <pid> //T //F` trong Git Bash. Sau đó kiểm lại để chắc hai cổng đã trống. Không bao giờ kill theo tên tiến trình (`node.exe`), vì sẽ giết luôn server của worktree khác.
+- `.claude/launch.json` vẫn cố định 2567/5173 cho worktree chính.
 
 ## Chơi thử trong trình duyệt
 
