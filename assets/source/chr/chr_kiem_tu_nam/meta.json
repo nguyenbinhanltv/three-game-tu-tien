@@ -42,7 +42,25 @@
     "rigid": [
       {
         "kind": "back_sword",
-        "bone": "spine2"
+        "bone": "spine2",
+        "tilt": 14
+      }
+    ],
+    "recolor": [
+      {
+        "hue": [
+          195,
+          250
+        ],
+        "satMin": 0.12,
+        "to": "#3B6584",
+        "note": "vải lam bão hòa → attire_sect (lam tông môn trầm), giữ độ sáng tương đối"
+      },
+      {
+        "satMax": 0.1,
+        "valMin": 0.62,
+        "to": "#E6DDCB",
+        "note": "vải trắng → attire_ivory (trắng ngà)"
       }
     ],
     "post": "tools/blender/anim_biped_extra.py"

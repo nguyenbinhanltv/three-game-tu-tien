@@ -71,9 +71,9 @@
       "id": "chr_kiem_tu_nam",
       "class": "player",
       "source": "assets/build/raw/chr_kiem_tu_nam.glb",
-      "file": "chr_kiem_tu_nam.fb22c04775.glb",
-      "bytes": 1868600,
-      "rawBytes": 2213704,
+      "file": "chr_kiem_tu_nam.38fc692d84.glb",
+      "bytes": 1956752,
+      "rawBytes": 2299500,
       "triangles": 19001,
       "rawTriangles": 19001,
       "lod0Cap": 20000,
@@ -124,7 +124,7 @@
         },
         {
           "level": 1,
-          "triangles": 7595,
+          "triangles": 7594,
           "target": 7600
         },
         {

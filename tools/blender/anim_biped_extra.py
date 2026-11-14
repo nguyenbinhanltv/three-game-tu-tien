@@ -14,7 +14,10 @@
 #
 # 3. Phụ kiện cứng (`import.rigid`): Tripo auto-rig skin cả phụ kiện như cơ thể, nên kiếm đeo sau lưng bị bẻ cong khi
 #    tay hạ khỏi tư thế chữ T. Mỗi phần tử { kind, bone }: kind "back_sword" dò kiếm đeo chéo sau lưng (đỉnh màu nâu
-#    sau lưng → trục bằng PCA → mọi đỉnh sau lưng trong bán kính quanh trục, lặp 3 lần) rồi gán cứng 100% vào `bone`.
+#    sau lưng → trục bằng PCA → mọi đỉnh sau lưng trong bán kính quanh trục, lặp 3 lần), tách lưới kiếm khỏi thân rồi
+#    gán cứng 100% vào `bone`; `tilt` (độ) xoay kiếm quanh mũi để chuôi vào gần gáy.
+# 4. Chỉnh màu vải (`import.recolor`): mỗi quy tắc chọn điểm ảnh của texture màu theo hue/độ bão hòa/độ sáng (mép mềm),
+#    rồi đổi sang màu đích trong bảng tâm trạng, giữ độ sáng tương đối nên vân vải và nếp gấp còn nguyên. Không vẽ lại.
 #
 # Biến nhận từ import_tripo: ASSET_ID, META, ARMATURES, MESHES, SOURCE_ROOT, fail, ascii_name, fcurves_of.
 
@@ -232,9 +235,41 @@ def back_sword_vertices(mesh):
         cs = [col[v] for v in vs if v in col]
         if cs:
             r, g, b = np.mean(cs, axis=0)
-            if (b > r + 0.12) or (min(r, g, b) > 0.6):
+            # bỏ vải: ngả lam (áo, quai đeo) hoặc trắng
+            if (b > r + 0.05 and b >= g) or (min(r, g, b) > 0.6):
                 continue
         faces.append(poly.index)
+    # Chỉ giữ các cụm lớn (thân kiếm, chuôi, bao): nối mặt theo vị trí đỉnh vì lưới Tripo bị tách theo đường nối UV.
+    # Mảnh lẻ nhỏ là phần vai/áo dính vào vùng chọn, trả lại skin cũ.
+    key = {}
+    for i, p in enumerate(ALL):
+        key.setdefault(tuple(np.round(p, 4)), []).append(i)
+    alias = {}
+    for group in key.values():
+        for i in group:
+            alias[i] = group[0]
+    owner = {}
+    parent = list(range(len(faces)))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    for fi, f in enumerate(faces):
+        for v in me.polygons[f].vertices:
+            a = alias[v]
+            if a in owner:
+                ra, rb = find(owner[a]), find(fi)
+                if ra != rb:
+                    parent[ra] = rb
+            else:
+                owner[a] = fi
+    comps = {}
+    for fi in range(len(faces)):
+        comps.setdefault(find(fi), []).append(faces[fi])
+    big = max(len(c) for c in comps.values())
+    faces = sorted(f for c in comps.values() if len(c) >= 0.08 * big for f in c)
     return faces, round(float(hi - lo), 3)
 
 
@@ -264,7 +299,121 @@ for spec in IMPORT.get('rigid', []):
             if g != target:
                 g.remove(verts)
         target.add(verts, 1.0, 'REPLACE')
-        report.setdefault('rigid', []).append({'kind': 'back_sword', 'bone': bone, 'faces': len(face_ids), 'vertices': len(verts), 'length': length})
+        tilt = float(spec.get('tilt', 0))
+        if tilt:
+            # Xoay kiếm quanh mũi kiếm (đầu thấp nhất) trong mặt phẳng lưng để chuôi dịch vào gần gáy: ở tư thế
+            # chữ T chuôi tựa lên vai, khi tay hạ xuống thì chuôi chìa ra ngoài vai.
+            vco = [mesh.matrix_world @ mesh.data.vertices[i].co for i in verts]
+            tip = min(vco, key=lambda c: c.z)
+            top = max(vco, key=lambda c: c.z)
+            sign = -1.0 if top.x > tip.x else 1.0  # quay để chuôi tiến về x = 0
+            R = Matrix.Rotation(math.radians(tilt) * sign, 4, 'Y')
+            T = Matrix.Translation(tip) @ R @ Matrix.Translation(-tip)
+            inv = mesh.matrix_world.inverted()
+            for i, c in zip(verts, vco):
+                mesh.data.vertices[i].co = inv @ (T @ c)
+            mesh.data.update()
+        report.setdefault('rigid', []).append({'kind': 'back_sword', 'bone': bone, 'faces': len(face_ids), 'vertices': len(verts), 'length': length, 'tilt': tilt})
+
+
+# ---------- 4. chỉnh màu vải ----------
+
+def recolor(rules):
+    import colorsys
+    import numpy as np
+    out = []
+    imgs = set()
+    for mesh in MESHES:  # noqa: F821
+        for mat in mesh.data.materials:
+            for n in mat.node_tree.nodes:
+                if n.type == 'TEX_IMAGE' and n.image and any(l.to_socket.name == 'Base Color' for l in n.outputs[0].links):
+                    imgs.add(n.image)
+    for img in sorted(imgs, key=lambda i: i.name):
+        W, H = img.size
+        px = np.empty(W * H * 4, np.float32)
+        img.pixels.foreach_get(px)
+        px = px.reshape(-1, 4)
+        rgb = px[:, :3].copy()
+        mx, mn = rgb.max(1), rgb.min(1)
+        v = mx
+        sat = np.where(mx > 1e-6, (mx - mn) / np.maximum(mx, 1e-6), 0.0)
+        r, g, b = rgb[:, 0], rgb[:, 1], rgb[:, 2]
+        d = np.maximum(mx - mn, 1e-6)
+        hue = np.where(mx == r, ((g - b) / d) % 6, np.where(mx == g, (b - r) / d + 2, (r - g) / d + 4)) * 60.0
+        hue = np.where(mx - mn < 1e-6, 0.0, hue)
+
+        def ramp(x, lo, hi):
+            t = np.clip((x - lo) / max(hi - lo, 1e-6), 0, 1)
+            return t * t * (3 - 2 * t)
+
+        for rule in rules:
+            w = np.ones(len(rgb), np.float32)
+            if 'hue' in rule:
+                h0, h1 = rule['hue']
+                w *= ramp(hue, h0 - 12, h0) * (1 - ramp(hue, h1, h1 + 12))
+            if 'satMin' in rule:
+                w *= ramp(sat, rule['satMin'] - 0.08, rule['satMin'])
+            if 'satMax' in rule:
+                w *= 1 - ramp(sat, rule['satMax'], rule['satMax'] + 0.08)
+            if 'valMin' in rule:
+                w *= ramp(v, rule['valMin'] - 0.08, rule['valMin'])
+            m = w > 0.01
+            if not m.any():
+                out.append({'image': img.name, 'to': rule['to'], 'pixels': 0})
+                continue
+            # Ảnh 8-bit: Image.pixels là giá trị sRGB thô (byte/255), so thẳng với hex đích.
+            tr, tg, tb = (int(rule['to'][k:k + 2], 16) / 255 for k in (1, 3, 5))
+            th, ts, tv = colorsys.rgb_to_hsv(tr, tg, tb)
+            core = w > 0.5
+            # Độ sáng tham chiếu: phân vị 75 của vùng (vải sáng chính), không lấy trung bình để đai tối không kéo lệch.
+            mean_v = float(np.percentile(v[core], 75)) if core.any() else float(np.average(v[m], weights=w[m]))
+            mean_s = float(np.average(sat[m], weights=w[m]))
+            # Độ sáng tương đối: vải sáng chính ra đúng độ sáng màu đích, phần tối hơn (đai, nếp) giữ tỉ lệ.
+            nv = np.clip(v * (tv / max(mean_v, 1e-6)), 0, 1)
+            ns = np.clip(ts * np.clip(0.6 + 0.4 * sat / max(mean_s, 1e-6), 0.6, 1.4), 0, 1)
+            hh = th * 6.0
+            i = np.floor(hh) % 6
+            f = hh - np.floor(hh)
+            p_ = nv * (1 - ns)
+            q_ = nv * (1 - ns * f)
+            t_ = nv * (1 - ns * (1 - f))
+            sector = int(i)
+            table = [(nv, t_, p_), (q_, nv, p_), (p_, nv, t_), (p_, q_, nv), (t_, p_, nv), (nv, p_, q_)][sector]
+            new = np.stack(table, 1)
+            rgb = rgb * (1 - w[:, None]) + new * w[:, None]
+            out.append({'image': img.name, 'to': rule['to'], 'pixels': int((w > 0.5).sum())})
+        px[:, :3] = rgb
+        # Giữ JPEG như ảnh màu gốc của Tripo (PNG làm GLB nặng gần gấp đôi): dựng ảnh mới từ điểm ảnh đã chỉnh, lưu JPEG
+        # tạm, nạp lại thành ảnh đóng gói rồi thay vào mọi node đang dùng ảnh cũ.
+        import os
+        import tempfile
+        name, cs = img.name, img.colorspace_settings.name
+        tmp = os.path.join(tempfile.mkdtemp(prefix='dtl_recolor_'), f'{ascii_name(name)}.jpg')  # noqa: F821
+        work = bpy.data.images.new(name + '_work', W, H, alpha=False)
+        work.colorspace_settings.name = cs
+        work.pixels.foreach_set(px.ravel())
+        work.filepath_raw = tmp
+        work.file_format = 'JPEG'
+        bpy.context.scene.render.image_settings.quality = 90
+        work.save()
+        loaded = bpy.data.images.load(tmp)
+        loaded.colorspace_settings.name = cs
+        loaded.pack()
+        for mesh in MESHES:  # noqa: F821
+            for mat in mesh.data.materials:
+                for n in mat.node_tree.nodes:
+                    if n.type == 'TEX_IMAGE' and n.image == img:
+                        n.image = loaded
+        bpy.data.images.remove(work)
+        bpy.data.images.remove(img)
+        loaded.name = name
+        import shutil
+        shutil.rmtree(os.path.dirname(tmp), ignore_errors=True)
+    return out
+
+
+if IMPORT.get('recolor'):
+    report['recolor'] = recolor(IMPORT['recolor'])
 
 
 # ---------- 2. hit_light thủ tục ----------

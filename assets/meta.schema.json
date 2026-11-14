@@ -92,7 +92,25 @@
             "additionalProperties": false,
             "properties": {
               "kind": { "enum": ["back_sword"] },
-              "bone": { "type": "string", "description": "Hậu tố tên xương, ví dụ spine2." }
+              "bone": { "type": "string", "description": "Hậu tố tên xương, ví dụ spine2." },
+              "tilt": { "type": "number", "description": "Độ xoay kiếm quanh mũi để chuôi vào gần gáy." }
+            }
+          }
+        },
+        "recolor": {
+          "type": "array",
+          "description": "Chỉnh màu vải trên texture màu (script post anim_biped_extra.py): chọn theo hue (độ), độ bão hòa, độ sáng; đổi sang màu đích, giữ độ sáng tương đối.",
+          "items": {
+            "type": "object",
+            "required": ["to"],
+            "additionalProperties": false,
+            "properties": {
+              "hue": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+              "satMin": { "type": "number" },
+              "satMax": { "type": "number" },
+              "valMin": { "type": "number" },
+              "to": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+              "note": { "type": "string" }
             }
           }
         },
