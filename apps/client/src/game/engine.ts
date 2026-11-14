@@ -57,11 +57,23 @@ export interface LoginOptions {
   name?: string;
 }
 
+/**
+ * URL server, theo thứ tự:
+ * 1. VITE_SERVER_URL (nhận lúc chạy Vite dev hoặc lúc `vite build`).
+ * 2. Vite dev (`DEV`, mọi CLIENT_PORT): cùng hostname, cổng PORT lúc khởi động Vite (mặc định 2567).
+ * 3. Trang ở cổng mặc định 5173/4173 (kể cả `vite preview` bản build): cùng hostname, cổng 2567.
+ * 4. Còn lại (bản build do server phục vụ): cùng origin.
+ * `vite preview` chạy bản build nên không biết PORT/CLIENT_PORT. Preview ở cổng khác 4173 hoặc
+ * server khác 2567 thì phải đặt VITE_SERVER_URL khi build, không thì client nối nhầm vào chính
+ * server preview.
+ */
 export function serverUrl(): string {
-  const env = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_SERVER_URL;
-  if (env) return env;
+  const env = (import.meta as unknown as { env: Record<string, string | boolean | undefined> }).env;
+  if (typeof env.VITE_SERVER_URL === 'string' && env.VITE_SERVER_URL) return env.VITE_SERVER_URL;
   const { protocol, hostname, host, port } = window.location;
-  if (port === '5173' || port === '4173') return `ws://${hostname}:2567`;
+  if (env.DEV === true || port === '5173' || port === '4173') {
+    return `ws://${hostname}:${env.VITE_DEV_SERVER_PORT || '2567'}`;
+  }
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
 }
 
@@ -70,6 +82,17 @@ const QUALITY: Record<string, { pixelRatio: number; shadows: boolean; bloom: boo
   low: { pixelRatio: 1, shadows: false, bloom: false, msaa: 0, fxaa: false },
   medium: { pixelRatio: 1.5, shadows: false, bloom: true, msaa: 0, fxaa: true },
   high: { pixelRatio: 2, shadows: true, bloom: true, msaa: 4, fxaa: false },
+};
+
+/**
+ * Phím bổ trợ hay nuốt sự kiện thả phím khác (Cmd/Ctrl). Cố ý không có Shift (hạ độ cao khi bay)
+ * và Alt (phím chơi: thả/khóa con trỏ); Alt xử lý hẹp hơn trong `bindInput`.
+ */
+const STICKY_MODS = new Set(['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight', 'OSLeft', 'OSRight']);
+/** Cặp phím hướng ngược chiều. */
+const OPPOSITE_KEY: Record<string, string> = {
+  KeyW: 'KeyS', KeyS: 'KeyW', KeyA: 'KeyD', KeyD: 'KeyA',
+  ArrowUp: 'ArrowDown', ArrowDown: 'ArrowUp', ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft',
 };
 
 const _v = new THREE.Vector3();
@@ -463,9 +486,34 @@ export class Game {
 
   private bindInput(): void {
     this.on(window, 'resize', () => this.onResize());
-    this.on(window, 'blur', () => this.keys.clear());
-    this.on(window, 'keydown', (e: KeyboardEvent) => this.onKeyDown(e));
-    this.on(window, 'keyup', (e: KeyboardEvent) => this.keys.delete(e.code));
+    // Chống kẹt phím: sự kiện thả phím hay mất khi giữ Cmd/Ctrl hoặc chuyển cửa sổ,
+    // nên xóa sạch tập phím ở những lúc đó. Không tính Shift (hạ độ cao khi bay).
+    // Alt là phím chơi (thả/khóa con trỏ): chạm Alt không xóa phím; chỉ xóa khi thả Alt
+    // sau một tổ hợp Alt+phím khác, lúc phím kia có thể đã mất sự kiện thả.
+    // Alt+Tab ra cửa sổ khác đã có blur/visibilitychange lo.
+    const clearKeys = (): void => this.keys.clear();
+    const isAlt = (code: string): boolean => code === 'AltLeft' || code === 'AltRight';
+    let altChord = false;
+    this.on(window, 'blur', clearKeys);
+    this.on(window, 'focus', clearKeys);
+    this.on(document as unknown as HTMLElement, 'visibilitychange', clearKeys);
+    this.on(window, 'keydown', (e: KeyboardEvent) => {
+      if (STICKY_MODS.has(e.code)) clearKeys();
+      else if (isAlt(e.code)) {
+        if (!e.repeat) altChord = false;
+      } else if (e.altKey && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight') altChord = true;
+      this.onKeyDown(e);
+    });
+    this.on(window, 'keyup', (e: KeyboardEvent) => {
+      if (STICKY_MODS.has(e.code)) clearKeys();
+      else {
+        if (isAlt(e.code)) {
+          if (altChord) clearKeys();
+          altChord = false;
+        }
+        this.keys.delete(e.code);
+      }
+    });
     const c = this.canvas;
     this.on(c, 'contextmenu', (e: Event) => e.preventDefault());
     this.on(c, 'pointerdown', (e: PointerEvent) => {
@@ -491,6 +539,11 @@ export class Game {
     });
     this.on(c, 'pointermove', (e: PointerEvent) => {
       if (!this.dragging) return;
+      // Mất pointerup (thả chuột ngoài cửa sổ, Alt+Tab): đồng bộ lại theo nút đang giữ thật.
+      if (e.buttons === 0) {
+        this.dragging = false;
+        return;
+      }
       const dx = e.clientX - this.lastPX;
       const dy = e.clientY - this.lastPY;
       this.lastPX = e.clientX;
@@ -510,6 +563,11 @@ export class Game {
         /* bỏ qua */
       }
       if (this.dragMoved <= 4 && e.button === 0) this.onClick(e.clientX, e.clientY);
+    });
+    // Mất capture mà không có pointerup (trình duyệt hủy, đổi cửa sổ): dừng kéo ngay, không chờ pointermove.
+    // Sự kiện này đến sau pointerup thường, lúc đó dragging đã là false nên không ảnh hưởng cú bấm.
+    this.on(c, 'lostpointercapture', () => {
+      this.dragging = false;
     });
     this.on(document as unknown as HTMLElement, 'mousemove', (e: MouseEvent) => {
       if (!this.locked) return;
@@ -588,6 +646,11 @@ export class Game {
     }
     if (code === 'Space' || code.startsWith('Arrow')) e.preventDefault();
     if (e.repeat) return;
+    // Nhấn một hướng thì bỏ hướng ngược lại (phòng phím kia đã mất sự kiện thả).
+    // Đánh đổi có chủ ý: giữ W, chạm S rồi thả thì nhân vật dừng, phải nhấn lại W. Không khôi phục W
+    // khi thả S, vì nếu W chính là phím đã mất keyup thì khôi phục sẽ làm kẹt lại.
+    const opp = OPPOSITE_KEY[code];
+    if (opp) this.keys.delete(opp);
     this.keys.add(code);
     if (code.startsWith('Digit')) {
       const i = Number(code.slice(5)) - 1;
@@ -892,6 +955,8 @@ export class Game {
       // Sát thương của người khác: chỉ hiện khi ở gần.
       if (_v.distanceTo(this.renderPos) > 45) return;
     }
+    // Hit feel chỉ là lớp hình. Chiêu của người chơi là đạn bay ~0,2 s nên trễ cho khớp lúc chạm.
+    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0);
     let cls = 'other';
     if (m.heal) cls = 'heal';
     else if (mine) cls = 'hurt';

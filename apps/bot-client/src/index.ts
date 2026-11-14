@@ -1,8 +1,10 @@
 // Bot headless để test tải và kiểm tra giao thức.
 // Chạy: pnpm bots --count 100 --duration 300 [--url ws://localhost:2567] [--prefix bot]
+// Không có --url thì dùng SERVER_URL hoặc PORT (xem target.ts).
 
 import { Client, type Room } from 'colyseus.js';
 import { C, IN_FLY, type InitMsg, MS_DEAD, PF_DEAD, ROOM_WORLD, S, STEP } from '@dtl/shared';
+import { defaultServerWs } from './target';
 
 function arg(name: string, def: string): string {
   const i = process.argv.indexOf('--' + name);
@@ -11,7 +13,7 @@ function arg(name: string, def: string): string {
 
 const COUNT = Number(arg('count', '10'));
 const DURATION = Number(arg('duration', '60'));
-const URL = arg('url', 'ws://localhost:2567');
+const URL = arg('url', defaultServerWs());
 const PREFIX = arg('prefix', 'bot');
 const VERBOSE = process.argv.includes('--verbose');
 

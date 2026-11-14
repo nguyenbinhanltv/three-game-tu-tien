@@ -3,6 +3,7 @@ import type { MonsterDef } from '@dtl/shared';
 import { col, flat, G, GeoBuilder, mat } from './geo';
 import { createToonMaterial } from '../render/materials/toon';
 import { markBloom } from '../render/post';
+import { HitReact, type HitOpts } from './hitreact';
 
 /** Material dùng chung cho mọi mô hình tô màu theo đỉnh. */
 export const MODEL_MAT = createToonMaterial({ vertexColors: true });
@@ -70,6 +71,8 @@ export class Humanoid {
   private attackT = 0;
   private time = Math.random() * 10;
   height = 1.9;
+  /** Phản ứng trúng đòn (chỉ hiển thị). */
+  hit: HitReact;
 
   constructor(o: HumanoidOpts) {
     const robe = col(o.robe);
@@ -137,13 +140,20 @@ export class Humanoid {
     this.root.scale.setScalar(s);
     this.height = 1.95 * s;
     for (const m of [body, this.armL, this.armR, this.legL, this.legR]) m.castShadow = true;
+    this.hit = new HitReact(this.backSword ? [body, this.armL, this.armR, this.legL, this.legR, this.backSword] : [body, this.armL, this.armR, this.legL, this.legR]);
   }
 
   attack(): void {
     this.attackT = 0.32;
   }
 
-  update(dt: number, a: AnimState): void {
+  hitReact(o: HitOpts): void {
+    this.hit.react(o);
+  }
+
+  update(realDt: number, a: AnimState): void {
+    // Đang hit-stop thì animation khựng (dt = 0).
+    const dt = this.hit.update(realDt);
     this.time += dt;
     const { armL, armR, legL, legR, pose } = this;
     const running = !a.flying && !a.dead && !a.meditating && !a.airborne && a.speed > 0.6;
@@ -203,6 +213,7 @@ export class Humanoid {
     armR.rotation.z = damp(armR.rotation.z, -armZ, k, dt);
     pose.position.y = damp(pose.position.y, poseY, 10, dt);
     pose.rotation.x = damp(pose.rotation.x, poseRx, 8, dt);
+    pose.position.x = this.hit.shake;
 
     if (this.flySword && this.backSword) {
       const fly = a.flying && !a.dead;
@@ -212,6 +223,7 @@ export class Humanoid {
   }
 
   dispose(): void {
+    this.hit.reset();
     for (const g of this.geos) g.dispose();
     for (const m of this.mats) m.dispose();
   }
@@ -323,6 +335,8 @@ export class MonsterModel {
   private attackT = 0;
   private deadT = 0;
   height: number;
+  /** Phản ứng trúng đòn (chỉ hiển thị). */
+  hit: HitReact;
 
   constructor(public def: MonsterDef) {
     const g = monGeo(def);
@@ -370,14 +384,22 @@ export class MonsterModel {
     }
     this.root.add(this.inner);
     this.root.scale.setScalar(s);
+    this.hit = new HitReact(this.inner.children as THREE.Mesh[]);
   }
 
   attack(): void {
     this.attackT = 0.4;
   }
 
+  hitReact(o: HitOpts): void {
+    // Quái to bị đẩy ít hơn.
+    this.hit.react({ ...o, mass: (o.mass ?? 1) * (this.def.boss ? 0.3 : 1 / Math.max(1, this.def.scale)) });
+  }
+
   /** `speed` m/s; `dead` chuyển sang nằm xuống rồi chìm dần. */
-  update(dt: number, speed: number, dead: boolean): void {
+  update(realDt: number, speed: number, dead: boolean): void {
+    const dt = this.hit.update(realDt);
+    this.inner.position.x = this.hit.shake;
     this.time += dt;
     const moving = speed > 0.3 && !dead;
     if (moving) this.phase += dt * (5 + speed * 1.5);
