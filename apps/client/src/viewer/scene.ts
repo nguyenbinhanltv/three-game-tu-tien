@@ -1,0 +1,349 @@
+import * as THREE from 'three/webgpu';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { type GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import basisJsUrl from 'three/addons/libs/basis/basis_transcoder.js?url';
+import basisWasmUrl from 'three/addons/libs/basis/basis_transcoder.wasm?url';
+import dracoJsUrl from 'three/addons/libs/draco/draco_wasm_wrapper.js?url';
+import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
+import { BoneLines, makeGrid } from './helpers';
+import { collectStats, type ModelStats } from './stats';
+
+/** Chiều cao người chuẩn để so tỉ lệ (m). */
+export const HUMAN_HEIGHT = 1.7;
+/** Khoảng cách từ người chuẩn tới mép model (m). */
+const GAP = 0.8;
+
+export interface LoadedInfo {
+  name: string;
+  fileBytes: number;
+  clips: { name: string; duration: number }[];
+  extensions: string[];
+  stats: ModelStats;
+}
+
+export interface FrameInfo {
+  drawCalls: number;
+  triangles: number;
+  fps: number;
+  backend: string;
+}
+
+/**
+ * Cảnh xem asset: sân lát đá, người chuẩn 1,7m, ánh sáng trung tính, OrbitControls.
+ * Không phụ thuộc engine game; chỉ được nạp qua dynamic import từ main.tsx.
+ */
+export class ViewerScene {
+  readonly renderer: THREE.WebGPURenderer;
+  readonly scene = new THREE.Scene();
+  readonly camera = new THREE.PerspectiveCamera(45, 1, 0.05, 2000);
+  private controls!: OrbitControls;
+  private loader!: GLTFLoader;
+  private sun = new THREE.DirectionalLight(0xfff4e0, 2.2);
+  private human = buildHuman();
+  private ground = new THREE.Group();
+  private model: THREE.Object3D | null = null;
+  private skeleton: BoneLines | null = null;
+  private mixer: THREE.AnimationMixer | null = null;
+  private clips: THREE.AnimationClip[] = [];
+  private action: THREE.AnimationAction | null = null;
+  private clock = new THREE.Clock();
+  private fpsAcc = 0;
+  private fpsFrames = 0;
+  private fps = 0;
+  private wireframe = false;
+  speed = 1;
+  paused = false;
+
+  constructor(private host: HTMLElement) {
+    const params = new URLSearchParams(location.search);
+    this.renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL: params.get('renderer') === 'webgl2' });
+  }
+
+  async init(): Promise<void> {
+    const r = this.renderer;
+    await r.init();
+    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    r.toneMapping = THREE.ACESFilmicToneMapping;
+    r.toneMappingExposure = 1.05;
+    r.shadowMap.enabled = true;
+    r.domElement.className = 'viewer-canvas';
+    this.host.appendChild(r.domElement);
+
+    this.scene.background = new THREE.Color(0xc9d3d8);
+    this.scene.add(new THREE.HemisphereLight(0xe8f0ff, 0x5a5048, 1.1));
+    this.sun.position.set(6, 10, 4);
+    this.sun.castShadow = true;
+    this.sun.shadow.mapSize.set(2048, 2048);
+    this.sun.shadow.bias = -0.0005;
+    this.scene.add(this.sun, this.sun.target, this.human, this.ground);
+    this.buildGround(12);
+
+    this.controls = new OrbitControls(this.camera, r.domElement);
+    this.controls.enableDamping = true;
+    this.frameBounds(new THREE.Box3().setFromObject(this.human));
+
+    // Decoder/transcoder lấy từ node_modules qua URL do Vite sinh, không chép vào public/.
+    const manager = new THREE.LoadingManager();
+    const libs: Record<string, string> = {
+      'basis_transcoder.js': basisJsUrl,
+      'basis_transcoder.wasm': basisWasmUrl,
+      'draco_wasm_wrapper.js': dracoJsUrl,
+      'draco_decoder.wasm': dracoWasmUrl,
+    };
+    manager.setURLModifier((url) => {
+      const file = url.slice(url.lastIndexOf('/') + 1);
+      return libs[file] ?? url;
+    });
+    const ktx2 = new KTX2Loader(manager).setTranscoderPath('/libs/');
+    await ktx2.detectSupportAsync(r);
+    const draco = new DRACOLoader(manager).setDecoderPath('/libs/').setDecoderConfig({ type: 'wasm' });
+    this.loader = new GLTFLoader().setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder).setDRACOLoader(draco);
+
+    window.addEventListener('resize', this.onResize);
+    this.onResize();
+    r.setAnimationLoop(() => this.frame());
+  }
+
+  get backend(): string {
+    const b = (this.renderer as unknown as { backend?: { isWebGPUBackend?: boolean } }).backend;
+    return b?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
+  }
+
+  /** Nạp GLB/GLTF theo URL (cùng origin). Đường dẫn texture ngoài tính theo thư mục của URL. */
+  async loadUrl(url: string): Promise<LoadedInfo> {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
+    const buf = await res.arrayBuffer();
+    return this.loadBuffer(buf, url.slice(url.lastIndexOf('/') + 1), url.slice(0, url.lastIndexOf('/') + 1));
+  }
+
+  async loadBuffer(buf: ArrayBuffer, name: string, path = ''): Promise<LoadedInfo> {
+    const gltf: GLTF = await this.loader.parseAsync(buf, path);
+    this.clear();
+    const root = gltf.scene;
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = true;
+      m.receiveShadow = true;
+    });
+
+    // Đặt model đứng trên sân, bên phải người chuẩn. Không đổi tỉ lệ: mục đích là thấy kích thước thật.
+    const box = new THREE.Box3().setFromObject(root, true);
+    if (!box.isEmpty()) {
+      const c = box.getCenter(new THREE.Vector3());
+      root.position.set(GAP + 0.25 - box.min.x, -box.min.y, -c.z);
+    }
+    this.model = root;
+    this.scene.add(root);
+    this.applyWireframe();
+
+    let hasSkin = false;
+    root.traverse((o) => (hasSkin ||= !!(o as THREE.SkinnedMesh).isSkinnedMesh));
+    if (hasSkin) {
+      this.skeleton = new BoneLines(root);
+      this.skeleton.visible = false;
+      this.scene.add(this.skeleton);
+    }
+
+    this.clips = gltf.animations;
+    if (this.clips.length) {
+      this.mixer = new THREE.AnimationMixer(root);
+      this.playClip(0);
+    }
+
+    const stats = collectStats(root);
+    const all = new THREE.Box3().setFromObject(root, true).union(new THREE.Box3().setFromObject(this.human));
+    const span = Math.max(all.max.x - all.min.x, all.max.z - all.min.z);
+    this.buildGround(Math.max(12, Math.ceil(span * 1.4)));
+    this.frameBounds(all);
+
+    const json = (gltf.parser as unknown as { json: { extensionsUsed?: string[] } }).json;
+    return {
+      name,
+      fileBytes: buf.byteLength,
+      clips: this.clips.map((c) => ({ name: c.name, duration: c.duration })),
+      extensions: json.extensionsUsed ?? [],
+      stats,
+    };
+  }
+
+  playClip(i: number): void {
+    if (!this.mixer) return;
+    const clip = this.clips[i];
+    if (!clip) return;
+    const next = this.mixer.clipAction(clip);
+    next.reset().play();
+    if (this.action && this.action !== next) this.action.crossFadeTo(next, 0.2, false);
+    this.action = next;
+  }
+
+  setWireframe(on: boolean): void {
+    this.wireframe = on;
+    this.applyWireframe();
+  }
+
+  setSkeleton(on: boolean): void {
+    if (this.skeleton) this.skeleton.visible = on;
+  }
+
+  setHuman(on: boolean): void {
+    this.human.visible = on;
+  }
+
+  frameInfo(): FrameInfo {
+    const info = this.renderer.info.render as unknown as { drawCalls?: number; calls?: number; triangles: number };
+    return { drawCalls: info.drawCalls ?? info.calls ?? 0, triangles: info.triangles, fps: this.fps, backend: this.backend };
+  }
+
+  /** Vẽ một khung (dùng khi rAF không chạy, ví dụ khung trình duyệt bị ẩn lúc chụp ảnh). */
+  frame(): void {
+    const dt = Math.min(this.clock.getDelta(), 0.1);
+    this.fpsAcc += dt;
+    this.fpsFrames++;
+    if (this.fpsAcc >= 0.5) {
+      this.fps = Math.round(this.fpsFrames / this.fpsAcc);
+      this.fpsAcc = 0;
+      this.fpsFrames = 0;
+    }
+    if (this.mixer && !this.paused) this.mixer.update(dt * this.speed);
+    if (this.skeleton?.visible) {
+      this.model?.updateMatrixWorld(true);
+      this.skeleton.update();
+    }
+    this.controls.update();
+    this.renderer.render(this.scene, this.camera);
+  }
+
+  dispose(): void {
+    window.removeEventListener('resize', this.onResize);
+    this.renderer.setAnimationLoop(null);
+    this.clear();
+    this.controls.dispose();
+    this.renderer.dispose();
+  }
+
+  private onResize = (): void => {
+    const w = this.host.clientWidth || window.innerWidth;
+    const h = this.host.clientHeight || window.innerHeight;
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h);
+  };
+
+  private applyWireframe(): void {
+    this.model?.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
+        (mat as THREE.MeshStandardMaterial).wireframe = this.wireframe;
+      }
+    });
+  }
+
+  private clear(): void {
+    this.mixer?.stopAllAction();
+    this.mixer = null;
+    this.action = null;
+    this.clips = [];
+    if (this.skeleton) {
+      this.scene.remove(this.skeleton);
+      this.skeleton.dispose();
+      this.skeleton = null;
+    }
+    if (!this.model) return;
+    this.scene.remove(this.model);
+    disposeTree(this.model);
+    this.model = null;
+  }
+
+  private buildGround(size: number): void {
+    for (const c of [...this.ground.children]) {
+      this.ground.remove(c);
+      disposeTree(c);
+    }
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0x9a9384, roughness: 0.95 }),
+    );
+    floor.receiveShadow = true;
+    const grid = makeGrid(size, Math.min(size, 400), 0x7a7367);
+    grid.position.y = 0.002;
+    // Bậc thềm đá cao 0,15m sau lưng người chuẩn để so độ cao bậc/chân.
+    const step = new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 0.6), new THREE.MeshStandardMaterial({ color: 0x7d776c, roughness: 0.9 }));
+    step.position.set(0, 0.075, -1.2);
+    step.castShadow = true;
+    step.receiveShadow = true;
+    this.ground.add(floor, grid, step);
+
+    const half = size / 2;
+    const cam = this.sun.shadow.camera;
+    cam.left = cam.bottom = -half;
+    cam.right = cam.top = half;
+    cam.near = 0.5;
+    cam.far = size * 3;
+    cam.updateProjectionMatrix();
+    this.sun.position.set(half * 0.6, size, half * 0.4);
+  }
+
+  private frameBounds(box: THREE.Box3): void {
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const r = Math.max(sphere.radius, 1);
+    const dist = (r / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2))) * 1.05;
+    const dir = new THREE.Vector3(0.9, 0.55, 1.4).normalize();
+    this.camera.position.copy(sphere.center).addScaledVector(dir, dist);
+    this.camera.near = Math.max(0.02, dist / 500);
+    this.camera.far = dist * 20;
+    this.camera.updateProjectionMatrix();
+    this.controls.target.copy(sphere.center);
+    this.controls.maxDistance = dist * 6;
+    this.controls.update();
+  }
+}
+
+function disposeTree(root: THREE.Object3D): void {
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.geometry) return;
+    m.geometry.dispose();
+    for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
+      if (!mat) continue;
+      for (const v of Object.values(mat)) if ((v as THREE.Texture)?.isTexture) (v as THREE.Texture).dispose();
+      mat.dispose();
+    }
+  });
+}
+
+/** Người chuẩn cao đúng 1,70m (đỉnh đầu) kèm thước vạch 0,5m bên cạnh. */
+function buildHuman(): THREE.Group {
+  const g = new THREE.Group();
+  const body = new THREE.MeshStandardMaterial({ color: 0x5f7f9a, roughness: 0.7 });
+  const add = (geo: THREE.BufferGeometry, x: number, y: number, mat: THREE.Material = body) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, 0);
+    m.castShadow = true;
+    g.add(m);
+  };
+  for (const s of [-1, 1]) {
+    add(new THREE.CylinderGeometry(0.075, 0.065, 0.8, 10), s * 0.1, 0.4); // chân 0–0,8
+    add(new THREE.CylinderGeometry(0.05, 0.045, 0.62, 8), s * 0.245, 1.07); // tay 0,76–1,38
+  }
+  add(new THREE.BoxGeometry(0.38, 0.6, 0.22), 0, 1.1); // thân 0,8–1,4
+  add(new THREE.CylinderGeometry(0.05, 0.05, 0.08, 8), 0, 1.44); // cổ 1,4–1,48
+  add(new THREE.SphereGeometry(0.11, 16, 12), 0, 1.59); // đầu 1,48–1,70
+  // Thước: đoạn 0,5m xen kẽ đỏ/trắng, đoạn cuối 0,2m, tổng 1,7m.
+  const red = new THREE.MeshStandardMaterial({ color: 0xb8433a, roughness: 0.6 });
+  const white = new THREE.MeshStandardMaterial({ color: 0xf2efe8, roughness: 0.6 });
+  let y = 0;
+  for (const [i, h] of [0.5, 0.5, 0.5, 0.2].entries()) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.03, h, 0.03), i % 2 ? white : red);
+    m.position.set(-0.45, y + h / 2, 0);
+    m.castShadow = true;
+    g.add(m);
+    y += h;
+  }
+  return g;
+}
