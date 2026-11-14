@@ -83,6 +83,12 @@
             }
           }
         },
+        "extra": {
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Clip boss thủ tục do import.post sinh thêm: slam (nện), sweep (chém/quét vùng), chant (niệm chú, lặp; chỉ người/vượn), stun (choáng/mất thế, lặp). Thời điểm chạm khớp BOSS_MOVES trong apps/client/src/game/character/monsterSkins.ts.",
+          "items": { "enum": ["slam", "sweep", "chant", "stun"] }
+        },
         "rigid": {
           "type": "array",
           "description": "Phụ kiện gán cứng vào một xương (script post anim_biped_extra.py), ví dụ kiếm đeo sau lưng bị Tripo skin như cơ thể.",

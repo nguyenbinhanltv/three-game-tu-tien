@@ -51,6 +51,9 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `prop_phi_kiem` | Tripo API (multiview→3D v3.1, chỉ lấy hình) + Codex (concept); màu tô bằng script `tools/blender/recolor_phi_kiem.py` | dự án | 2026-11-15 | task `70d2072c-c993-4c70-a8d2-82931408bcc1` |
 | `mon_soi_xam` | Tripo web app (multiview H3.1 + auto rig quadruped) + Codex (concept); 5 clip thủ tục `tools/blender/anim_quadruped.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_kiem_tu_nam` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Thanh Phong"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `boss_huyet_lang_vuong` | Tripo web app (text-to-3D H3.1 + auto rig quadruped) + Codex (concept); 8 clip thủ tục `tools/blender/anim_quadruped.py` (gồm slam/sweep/stun) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `boss_kiem_khoi` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `boss_thu_mo_tuong` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/chant/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 

@@ -1,0 +1,81 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_huyet_lang_vuong",
+  "type": "mon",
+  "budgetClass": "boss",
+  "itemId": null,
+  "status": "in_game",
+  "budget": {
+    "faceLimit": 20000,
+    "texture": 2048
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "boss/boss_huyet_lang_vuong/tripo/rig_v01.glb",
+    "size": {
+      "depth": 1.8
+    },
+    "post": "tools/blender/anim_quadruped.py",
+    "extra": [
+      "slam",
+      "sweep",
+      "stun"
+    ]
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex (worker three-game-tu-tien-46)",
+      "date": "2026-11-15",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "text_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 20000,
+        "topology": "triangle",
+        "texture": "2K",
+        "pbr": true,
+        "removeLighting": true,
+        "prompt": "Full body semi-realistic giant wolf king, neutral four leg stance, separated paws. Massive shoulders, deep chest, compact coarse mane, dark warm grey fur with muted blood red neck patches, ivory fangs, amber eyes. Front broad wolf muzzle and chest ruff; rear plain haunches and single heavy tail. Matte fur PBR, readable jaw and claws.",
+        "negativePrompt": "snow, purple dominant, anime, chibi, text, watermark, floating ribbons, flying cloth, extra limbs, fused limbs, duplicate face on back, baked shadows, glossy plastic, cropped body, pedestal, extra tails, fused paws, human hands, human face, fur strands"
+      },
+      "seed": null,
+      "quote": 30,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Web app (người dùng bấm). 19512 tam giác; texture 2K. Credit thật chưa báo (người dùng ước ~30 dựng)."
+    },
+    {
+      "step": "rig",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "quadruped",
+      "params": {},
+      "seed": null,
+      "quote": 20,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/rig_v01.glb",
+      "result": "ok",
+      "note": "33 xương Tripo quadruped (có xương gốc tripo::Root, cổ Spine_3..4, đầu Head_0..2 là mõm, không có hàm; chân trước 4 đốt, chân sau trái 5 đốt). anim_run_v01.glb thật ra là preset quadruped:walk 2,58 s (hash khác rig, 1 clip) nhưng không dùng: 8 clip làm thủ tục bằng tools/blender/anim_quadruped.py (0 credit) theo bộ clip sói: idle, run, attack (cắn), hit_light, death + slam (chồm/nện, chạm 1,0 s), sweep (quét đầu hình quạt, giữa quạt 0,9 s), stun (lặp). Kích thước: dài 1,8 m ở scale 1, game nhân scale 2,3 (monsters.json)."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max, text-to-3D) + Codex (concept); clip thủ tục tools/blender/anim_quadruped.py",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}

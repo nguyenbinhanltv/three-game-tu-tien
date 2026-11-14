@@ -3,7 +3,7 @@ import type { MonsterDef } from '@dtl/shared';
 import { HitReact, type HitOpts } from '../hitreact';
 import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';
 import { baseState, type CharState, type ClipMap, clipFor, locomotionScale, MOVE_MIN } from './states';
-import type { AnimState, CharacterView, MonsterView, PerformOpts } from './view';
+import type { AnimState, BossMoveKind, CharacterView, MonsterView, PerformOpts } from './view';
 
 export interface SkinnedOpts {
   /** Bản sao riêng của asset (có bộ xương riêng). `SkinnedCharacter` sở hữu skeleton của nó. */
@@ -92,6 +92,28 @@ interface Shot {
   action: THREE.AnimationAction;
   /** Thời gian còn lại (giây theo dt animation). */
   left: number;
+  /** Đòn lớn của boss (`playMove`), không phải đòn thường. */
+  move?: boolean;
+}
+
+/** Động tác đòn lớn của boss: clip trong GLB và thời điểm chạm (giây trong clip, ở tốc độ 1×). */
+export interface BossMove {
+  clip: string;
+  impact: number;
+}
+
+/** Giới hạn tốc độ phát động tác đòn lớn để khớp lúc chạm: chậm/nhanh hơn nữa thì động tác trông sai. */
+const MOVE_RATE_MIN = 0.6;
+const MOVE_RATE_MAX = 1.5;
+
+/**
+ * Tốc độ phát và thời gian chờ để khung `impact` của clip rơi đúng sau `delay` giây: ưu tiên phát ngay (đổi tốc độ
+ * trong khoảng cho phép), còn dư thời gian thì chờ rồi mới phát.
+ */
+export function moveTiming(impact: number, delay: number): { rate: number; wait: number } {
+  const rate = Math.min(MOVE_RATE_MAX, Math.max(MOVE_RATE_MIN, impact / Math.max(delay, 1e-3)));
+  const wait = delay - impact / rate;
+  return { rate, wait: wait > 1e-6 ? wait : 0 };
 }
 
 /**
@@ -132,10 +154,16 @@ export class SkinnedCharacter implements CharacterView {
   private poses: PoseLibrary | null;
   private perf: Perform | null = null;
   private pendingPerform: { id: string; from: number; left: number } | null = null;
+  private pendingMove: { clip: string; rate: number; left: number } | null = null;
   /** Trạng thái nhận ở khung gần nhất (để quyết định có ra chiêu được không). */
   private last: AnimState | null = null;
   /** Số lần ra đòn (cho vệt/hạt theo nhân vật). */
   attacks = 0;
+  /**
+   * Trạng thái nền phải hiện ngay: cắt đòn thường đang phát (không cắt đòn lớn `playMove`) và không giật trúng đòn
+   * khi đang ở đó. Boss: niệm chú, choáng (để người chơi đọc được lúc ngắt chú). Mặc định rỗng.
+   */
+  protected holdStates: ReadonlySet<CharState> = new Set();
 
   constructor(o: SkinnedOpts) {
     this.scene = o.scene;
@@ -187,6 +215,19 @@ export class SkinnedCharacter implements CharacterView {
       return true;
     }
     this.startPerform(id, clips, from);
+    return true;
+  }
+
+  /**
+   * Phát clip đòn lớn một lần sao cho khung `impact` (giây, ở 1×) rơi đúng sau `delay` giây. Đang có đòn lớn khác
+   * (vd. slam thả nhiều vùng cùng lúc) thì bỏ qua. Trả false nếu asset không có clip.
+   */
+  playMove(clip: string, impact: number, delay: number): boolean {
+    if (!this.clips.has(clip)) return false;
+    if (this.dead || this.pendingMove || this.shot?.move) return true;
+    const { rate, wait } = moveTiming(impact, delay);
+    if (wait > 0) this.pendingMove = { clip, rate, left: wait };
+    else this.startMove(clip, rate);
     return true;
   }
 
@@ -242,6 +283,7 @@ export class SkinnedCharacter implements CharacterView {
         this.dead = true;
         this.shot = null;
         this.pendingHit = -1;
+        this.pendingMove = null;
         this.enterBase('death', FADE_DEATH);
       }
       this.deadT += dt;
@@ -253,6 +295,19 @@ export class SkinnedCharacter implements CharacterView {
         this.base = null;
         this.deadT = 0;
         this.inner.position.y = 0;
+      }
+      if (this.pendingMove) {
+        this.pendingMove.left -= dt;
+        if (this.pendingMove.left <= 0) {
+          const { clip, rate } = this.pendingMove;
+          this.pendingMove = null;
+          this.startMove(clip, rate);
+        }
+      }
+      if (this.shot && this.holdStates.has(want) && (!this.shot.move || want === 'stun')) {
+        this.shot = null;
+        this.pendingMove = want === 'stun' ? null : this.pendingMove;
+        this.base = null;
       }
       if (this.shot) {
         this.shot.left -= dt;
@@ -365,7 +420,7 @@ export class SkinnedCharacter implements CharacterView {
   private onHit(): void {
     this.pendingHit = -1;
     // Đang cắn thì không cắt ngang (đọc được đòn quan trọng hơn); chết rồi thì thôi.
-    if (this.dead || this.shot?.state === 'attack' || this.perf) return;
+    if (this.dead || this.shot?.state === 'attack' || this.perf || (this.base && this.holdStates.has(this.base))) return;
     this.playShot('hit');
   }
 
@@ -411,6 +466,21 @@ export class SkinnedCharacter implements CharacterView {
     this.shot = { state, action: act, left: clip.duration / rate };
   }
 
+  private startMove(clip: string, rate: number): void {
+    let act = this.actions.get(clip);
+    if (!act) {
+      act = this.mixer.clipAction(this.clips.get(clip)!);
+      this.actions.set(clip, act);
+    }
+    act.setLoop(THREE.LoopOnce, 1);
+    act.clampWhenFinished = true;
+    act.timeScale = rate;
+    act.reset();
+    this.fadeTo(act, FADE_IN_SHOT);
+    // Trạng thái 'attack': trúng đòn không cắt ngang động tác (xem onHit).
+    this.shot = { state: 'attack', action: act, left: act.getClip().duration / rate, move: true };
+  }
+
   private fadeTo(next: THREE.AnimationAction, fade: number): void {
     const prev = this.current;
     next.enabled = true;
@@ -435,11 +505,20 @@ export class SkinnedCharacter implements CharacterView {
 
 /** Quái dùng model có xương; cùng interface với `MonsterModel` (model khối). */
 export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
+  private moves: Partial<Record<BossMoveKind, BossMove>>;
+
   constructor(
     readonly def: MonsterDef,
-    o: Omit<SkinnedOpts, 'scale'>,
+    o: Omit<SkinnedOpts, 'scale'> & { moves?: Partial<Record<BossMoveKind, BossMove>> },
   ) {
     super({ ...o, scale: def.scale });
+    this.moves = o.moves ?? {};
+    this.holdStates = new Set<CharState>(['cast', 'stun']);
+  }
+
+  bossMove(kind: BossMoveKind, delay: number): boolean {
+    const m = this.moves[kind];
+    return !!m && this.playMove(m.clip, m.impact, delay);
   }
 
   hitReact(o: HitOpts): void {

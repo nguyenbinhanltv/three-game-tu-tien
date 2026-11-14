@@ -1,13 +1,13 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { color, dot, float, normalView, positionViewDirection, pow, saturate } from 'three/tsl';
+import { color, dot, float, normalView, positionViewDirection, pow, saturate, smoothstep, texture } from 'three/tsl';
 import type { MonsterDef } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { MonsterModel } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
-import { SkinnedMonster } from './skinned';
+import { type BossMove, SkinnedMonster } from './skinned';
 import type { ClipMap } from './states';
-import { legacyModelsRequested, type MonsterView } from './view';
+import { type BossMoveKind, legacyModelsRequested, type MonsterView } from './view';
 
 /** Quái dùng model có xương: asset, bảng clip, tông màu (nhân vào texture màu, không thêm texture). */
 export interface MonsterSkin {
@@ -21,9 +21,23 @@ export interface MonsterSkin {
   roughness?: number;
   /** Viền sáng yêu khí (fresnel) lấy màu `accent` của quái; số là cường độ. Bỏ trống = không có. */
   rim?: number;
+  /** Chỉ nạp khi quái xuất hiện lần đầu (boss trong bí cảnh), không nạp sẵn lúc vào thế giới. */
+  lazy?: boolean;
+  /** Đòn lớn có vùng báo trước (M5-5) → clip và thời điểm chạm. */
+  moves?: Partial<Record<BossMoveKind, BossMove>>;
+  /** Lõi phát sáng: phần ngả lam của texture màu phát sáng màu `accent`; số là cường độ. */
+  coreGlow?: number;
 }
 
 const WOLF_CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
+/** Boss: thêm niệm chú (M5-3) và choáng/mất thế; clip nào asset không có thì lùi theo `FALLBACK`. */
+const BOSS_CLIPS: ClipMap = { ...WOLF_CLIPS, cast: 'chant', stun: 'stun' };
+/**
+ * Thời điểm chạm (giây trong clip ở 1×) của clip thủ tục: phải khớp tools/blender/anim_quadruped.py (thú bốn chân)
+ * và tools/blender/anim_biped_extra.py (người/vượn).
+ */
+const QUAD_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'sweep', impact: 0.9 } };
+const BIPED_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'sweep', impact: 0.85 } };
 
 /**
  * Bảng quái → model mới. Quái không có ở đây vẫn dùng model khối (`MonsterModel`).
@@ -36,6 +50,10 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_yeu_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, tint: '#b3a6dc', rim: 0.55 },
   // U Minh Lang: lông xanh u tối, viền lam lạnh.
   mon_u_minh_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, tint: '#8a9fd0', roughness: -0.08, rim: 0.8 },
+  // Boss Kiếm Trủng (M3-8). refSpeed đo từ clip chạy (bàn chân lúc chạm đất) ở scale 1.
+  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 3.0, tint: '#ffffff', rim: 0.35, lazy: true, moves: QUAD_MOVES },
+  boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, tint: '#ffffff', coreGlow: 1.6, lazy: true, moves: BIPED_MOVES },
+  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: BOSS_CLIPS, refSpeed: 3.1, tint: '#ffffff', lazy: true, moves: BIPED_MOVES },
 };
 
 interface Template {
@@ -59,16 +77,18 @@ export class MonsterSkins {
     readonly legacy = legacyModelsRequested(),
   ) {}
 
-  /** Bắt đầu nạp mọi asset quái có trong bảng (bỏ qua khi `?models=legacy`). */
+  /** Bắt đầu nạp mọi asset quái có trong bảng, trừ asset nạp lười (bỏ qua khi `?models=legacy`). */
   preload(): void {
     if (this.legacy) return;
-    for (const s of Object.values(MONSTER_SKINS)) this.load(s.asset);
+    for (const s of Object.values(MONSTER_SKINS)) if (!s.lazy) this.load(s.asset);
   }
 
-  /** Quái này sẽ có model mới nhưng asset đang nạp (tạm dùng model khối, nạp xong thì đổi). */
+  /** Quái này sẽ có model mới nhưng asset đang nạp (tạm dùng model khối, nạp xong thì đổi). Asset lười bắt đầu nạp ở đây. */
   pending(def: MonsterDef): boolean {
     const s = MONSTER_SKINS[def.id];
-    return !this.legacy && !!s && this.templates.get(s.asset) === 'loading';
+    if (this.legacy || !s) return false;
+    if (s.lazy) this.load(s.asset);
+    return this.templates.get(s.asset) === 'loading';
   }
 
   create(def: MonsterDef): MonsterView {
@@ -81,7 +101,7 @@ export class MonsterSkins {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
-    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds });
+    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves });
   }
 
   dispose(): void {
@@ -127,6 +147,10 @@ export class MonsterSkins {
       // Viền sáng ở mép nhìn nghiêng: tách bóng sói tối khỏi nền cỏ/rừng, không cần texture.
       const facing = saturate(dot(normalView, positionViewDirection));
       m.emissiveNode = color(new THREE.Color(def.accent)).mul(pow(float(1).sub(facing), 3).mul(s.rim));
+    } else if (s.coreGlow && m.map) {
+      // Lõi linh thể: chỗ texture ngả lam (xanh dương trội hơn đỏ) tự sáng màu accent; giáp xám/đồng không đổi.
+      const c = texture(m.map);
+      m.emissiveNode = color(new THREE.Color(def.accent)).mul(smoothstep(0.08, 0.22, c.b.sub(c.r)).mul(c.b).mul(s.coreGlow));
     }
     this.mats.set(def.id, m);
     return m;

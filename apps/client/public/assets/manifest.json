@@ -67,6 +67,259 @@
         }
       }
     },
+    "boss_huyet_lang_vuong": {
+      "id": "boss_huyet_lang_vuong",
+      "class": "boss",
+      "source": "assets/build/raw/boss_huyet_lang_vuong.glb",
+      "file": "boss_huyet_lang_vuong.20c9fcec67.glb",
+      "bytes": 2566028,
+      "rawBytes": 2615880,
+      "triangles": 19512,
+      "rawTriangles": 19512,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 33,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_huyet_lang_vuong_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_huyet_lang_vuong_color",
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_huyet_lang_vuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19512
+        },
+        {
+          "level": 1,
+          "triangles": 6829,
+          "target": 6829
+        },
+        {
+          "level": 2,
+          "triangles": 2341,
+          "target": 2341
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.5203,
+          "height": 0.9664,
+          "depth": 1.8,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.5203,
+          "height": 0.9664,
+          "depth": 1.8,
+          "minY": 0
+        }
+      }
+    },
+    "boss_kiem_khoi": {
+      "id": "boss_kiem_khoi",
+      "class": "boss",
+      "source": "assets/build/raw/boss_kiem_khoi.glb",
+      "file": "boss_kiem_khoi.831d23ba82.glb",
+      "bytes": 3425436,
+      "rawBytes": 3846380,
+      "triangles": 19768,
+      "rawTriangles": 19768,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 59,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_kiem_khoi_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_kiem_khoi_color",
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_kiem_khoi_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19768
+        },
+        {
+          "level": 1,
+          "triangles": 6915,
+          "target": 6919
+        },
+        {
+          "level": 2,
+          "triangles": 2451,
+          "target": 2372
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.2283,
+          "height": 2.25,
+          "depth": 1.3797,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.2283,
+          "height": 2.25,
+          "depth": 1.3797,
+          "minY": 0
+        }
+      }
+    },
+    "boss_thu_mo_tuong": {
+      "id": "boss_thu_mo_tuong",
+      "class": "boss",
+      "source": "assets/build/raw/boss_thu_mo_tuong.glb",
+      "file": "boss_thu_mo_tuong.c2da26b0c8.glb",
+      "bytes": 3369436,
+      "rawBytes": 3758272,
+      "triangles": 19221,
+      "rawTriangles": 19221,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 57,
+      "animations": [
+        "attack",
+        "chant",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_thu_mo_tuong_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_thu_mo_tuong_color",
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_thu_mo_tuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19221
+        },
+        {
+          "level": 1,
+          "triangles": 6726,
+          "target": 6727
+        },
+        {
+          "level": 2,
+          "triangles": 2306,
+          "target": 2307
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.2327,
+          "height": 2.25,
+          "depth": 0.9807,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.2327,
+          "height": 2.25,
+          "depth": 0.9807,
+          "minY": 0
+        }
+      }
+    },
     "chr_kiem_tu_nam": {
       "id": "chr_kiem_tu_nam",
       "class": "player",

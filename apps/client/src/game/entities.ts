@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { DUNGEON_EXIT, groundAt, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
+import { DUNGEON_EXIT, groundAt, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
 import { APPEARANCE, MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
@@ -474,6 +474,9 @@ export class EntityManager {
       _monAnim.speed = v.speed;
       _monAnim.dead = dead;
       _monAnim.combat = s.st === MS_CHASE || s.st === MS_ATTACK;
+      // Boss niệm chú / bị ngắt chú hoặc mất thế (M5-3, M5-5): model có xương phát clip chant / stun.
+      _monAnim.casting = ((s.mf ?? 0) & MF_CHANT) !== 0;
+      _monAnim.stunned = ((s.mf ?? 0) & MF_STUN) !== 0;
       v.model.setViewDistance?.(Math.sqrt(d2));
       v.model.update(dt, _monAnim);
       v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3);
