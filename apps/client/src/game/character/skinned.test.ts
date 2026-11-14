@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { MONSTER } from '@dtl/content';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
 import { MonsterModel } from '../models';
-import { MonsterSkins } from './monsterSkins';
+import { MONSTER_SKINS, MonsterSkins } from './monsterSkins';
 import { mixerInterval, SkinnedMonster } from './skinned';
 import { baseState, clipFor } from './states';
 import { type AnimState, legacyModelsRequested } from './view';
@@ -48,7 +48,8 @@ async function wolfSkins(disposed: string[] = [], fail = false) {
   });
   const skins = new MonsterSkins(cache, false);
   skins.preload();
-  for (let i = 0; i < 50 && skins.pending(MONSTER.get('mon_soi_xam')!); i++) await new Promise((r) => setTimeout(r, 10));
+  const ids = Object.keys(MONSTER_SKINS).map((id) => MONSTER.get(id)!);
+  for (let i = 0; i < 200 && ids.some((d) => skins.pending(d)); i++) await new Promise((r) => setTimeout(r, 10));
   return { cache, skins };
 }
 
@@ -92,16 +93,45 @@ describe('máy trạng thái', () => {
 });
 
 describe('sói có xương (mon_soi_xam thật)', () => {
-  it('ba loài sói dùng model mới, quái khác vẫn model khối', async () => {
+  it('quái trong bảng dùng model mới theo scale dữ liệu, quái khác vẫn model khối', async () => {
     const { skins } = await wolfSkins();
-    for (const id of ['mon_soi_xam', 'mon_yeu_lang', 'mon_u_minh_lang']) {
+    for (const id of Object.keys(MONSTER_SKINS)) {
+      expect(MONSTER.get(id), id).toBeDefined();
       const m = skins.create(MONSTER.get(id)!);
-      expect(m).toBeInstanceOf(SkinnedMonster);
+      expect(m, id).toBeInstanceOf(SkinnedMonster);
       expect(m.root.scale.x).toBeCloseTo(MONSTER.get(id)!.scale);
       m.dispose();
     }
-    const other = [...MONSTER.values()].find((d) => d.model !== 'wolf')!;
+    const other = [...MONSTER.values()].find((d) => !MONSTER_SKINS[d.id])!;
     expect(skins.create(other)).toBeInstanceOf(MonsterModel);
+    skins.dispose();
+  });
+
+  it('mọi clip khai báo trong bảng đều có trong GLB (đủ idle/run/attack/hit/death)', () => {
+    for (const [id, s] of Object.entries(MONSTER_SKINS)) {
+      const anims = (MANIFEST.assets[s.asset] as { animations?: string[] }).animations ?? [];
+      for (const st of ['idle', 'run', 'attack', 'hit', 'death'] as const) expect(s.clips[st], `${id}.${st}`).toBeDefined();
+      for (const clip of Object.values(s.clips)) expect(anims, `${id}: ${clip}`).toContain(clip);
+    }
+  });
+
+  it('Kiếm Linh dùng chung model và texture Hỏa Vân Hồ, đổi bảng màu bằng shader', async () => {
+    const { skins } = await wolfSkins();
+    const [fox, spirit] = ['mon_hoa_van_ho', 'mon_kiem_linh'].map((id) => {
+      const m = skins.create(MONSTER.get(id)!);
+      let mat!: THREE.MeshStandardNodeMaterial;
+      m.root.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh) mat = (o as THREE.Mesh).material as THREE.MeshStandardNodeMaterial;
+      });
+      m.dispose();
+      return mat;
+    });
+    expect(MONSTER_SKINS.mon_kiem_linh.asset).toBe(MONSTER_SKINS.mon_hoa_van_ho.asset);
+    expect(spirit).not.toBe(fox);
+    expect(spirit.map).toBe(fox.map);
+    expect(spirit.colorNode).toBeTruthy();
+    expect(spirit.emissiveNode).toBeTruthy();
+    expect(fox.colorNode).toBeFalsy();
     skins.dispose();
   });
 
@@ -221,10 +251,12 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     }
     expect(skeletons.length).toBeGreaterThanOrEqual(20);
     expect(disposed).toEqual([]); // geometry/texture dùng chung chưa bị đụng
-    expect(cache.stats()).toEqual({ loaded: 1, loading: 0, refs: 1 });
+    // Mỗi asset trong bảng giữ đúng một handle mẫu.
+    const assetCount = new Set(Object.values(MONSTER_SKINS).map((s) => s.asset)).size;
+    expect(cache.stats()).toEqual({ loaded: assetCount, loading: 0, refs: assetCount });
     skins.dispose();
     expect(cache.stats()).toEqual({ loaded: 0, loading: 0, refs: 0 });
-    expect(disposed.filter((d) => d === 'geometry').length).toBe(3);
+    expect(disposed.filter((d) => d === 'geometry').length).toBe(3 * assetCount); // 3 mức LOD mỗi asset
     expect(disposed).toContain('texture');
   });
 

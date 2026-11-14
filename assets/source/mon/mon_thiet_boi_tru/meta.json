@@ -1,0 +1,95 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "mon_thiet_boi_tru",
+  "type": "mon",
+  "budgetClass": "monster",
+  "itemId": null,
+  "status": "in_game",
+  "budget": {
+    "faceLimit": 8000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "mon/mon_thiet_boi_tru/tripo/rig_v01.glb",
+    "size": {
+      "depth": 1.4
+    },
+    "quadruped": {
+      "attack": "gore"
+    },
+    "post": "tools/blender/anim_quadruped.py"
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "text_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 8000,
+        "topology": "triangle",
+        "texture": "2K",
+        "pbr": true,
+        "removeLighting": true,
+        "hd": true,
+        "negative": "snow, purple dominant, anime, chibi, text, watermark, floating ribbons, flying cloth, extra limbs, fused limbs, duplicate face on back, baked shadows, glossy plastic, cropped body, pedestal, extra tails, fused paws, human hands, human face, fur strands"
+      },
+      "seed": null,
+      "quote": 30,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Web app (người dùng bấm), prompt: Full body semi-realistic wild boar, neutral four leg stance, separated hooves. Heavy brown body, compact bristle clumps, layered iron back plates, ivory tusks, bronze eyes. Front broad snout and paired tusks; rear rounded rump and short curled tail, no rear face. Readable shoulders, matte fur and worn iron PBR. 7.862 tam giác; texture màu/normal/RM 2048².. Credit: ước tính ~30 theo người dùng, số thật chưa báo."
+    },
+    {
+      "step": "rig",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "quadruped",
+      "params": {},
+      "seed": null,
+      "quote": 20,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/rig_v01.glb",
+      "result": "ok",
+      "note": "32 xương Tripo quadruped (có tripo::Root, đuôi một xương bone_31, không xương hàm riêng); khác rig sói 28 xương nên anim_quadruped.py dò vai trò xương theo cây (generic_layout). Clip thủ tục idle/run/attack (gore: húc nanh)/hit_light/death."
+    },
+    {
+      "step": "animation",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "preset:quadruped:walk",
+      "params": {},
+      "seed": null,
+      "quote": 0,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/anim_run_v01.glb",
+      "result": "ok",
+      "note": "Preset web \"preset:quadruped:walk\", 2,58 s, 32 kênh xương. Miễn phí. File tên anim_run nhưng thật là clip đi bộ (hash khác rig, 1 clip). Đã thử nhập làm walk: chân sau gập ngược ra sau, móng lật, sải gần 0 (đo 0,3 m/s) → không dùng; client lùi về run thủ tục phát chậm."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max) text-to-3D + Codex (concept); clip thủ tục tools/blender/",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}
