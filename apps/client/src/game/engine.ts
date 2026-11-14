@@ -13,6 +13,8 @@ import {
   type FxMsg,
   groundAt,
   type HazardMsg,
+  type BoltEndMsg,
+  type BoltMsg,
   IN_DOWN,
   IN_FLY,
   IN_JUMP,
@@ -38,6 +40,7 @@ import {
   PORTAL_POS,
   type QuestView,
   SECT,
+  ROOM_DUNGEON,
   ROOM_WORLD,
   S,
   STEP,
@@ -48,9 +51,11 @@ import {
 import type { Appearance } from '@dtl/shared';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
-import { lootChime, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { chapterSting, lootChime, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
+import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
 import { EntityManager, type MonVis, type MState, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { MODEL_MAT } from './models';
@@ -65,7 +70,7 @@ import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
-import { DamageNumbers, Vfx } from './vfx';
+import { DamageNumbers, HAZARD_COLORS, Vfx } from './vfx';
 import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
 import { CameraShake, SHAKE } from './shake';
 import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
@@ -274,6 +279,10 @@ export class Game {
   private autoAttack = false;
   private lastAttackSend = 0;
   private bossLineId = 0;
+  /** Thẻ chương (C2): khung camera nhẹ, thẻ chờ tới khi thế giới đã dựng, đã xét lần đầu vào tông môn chưa. */
+  private camFrame = new CamFrame();
+  private pendingChapter: ChapterKind | null = null;
+  private sectChecked = false;
   private timeOffset = 0;
 
   private started = false;
@@ -338,6 +347,9 @@ export class Game {
     this.ents?.dispose();
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.ents.camera = this.camera;
+    // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
+    this.pendingChapter = init.room === ROOM_DUNGEON ? 'dungeon' : null;
+    this.camFrame.cancel();
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
     this.snapToServer = true;
     this.dmg?.clear();
@@ -380,6 +392,16 @@ export class Game {
         sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
         this.shakeForHazard(m);
       }, m.delay * 1000);
+    });
+    room.onMessage(S.BOLT, (m: BoltMsg) => {
+      // Đạn của quái (D1): chỉ vẽ, server phán định trúng. Bù độ trễ bằng giờ server lúc bắn.
+      if (!this.vfx || Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > BOLT_VIEW_DIST) return;
+      this.vfx.bolts.spawn(m, boltAge(m, Date.now() + this.timeOffset), HAZARD_COLORS[m.kind] ?? HAZARD_COLORS.fire);
+      sfx('sword', this.volumeAt(m.x, m.z) * 0.45, m);
+    });
+    room.onMessage(S.BOLT_END, (m: BoltEndMsg) => {
+      this.vfx?.bolts.end(m.id, m.x, m.z, !!m.hit);
+      if (m.hit) sfx('impact', m.hit === this.sid ? 0.8 : this.volumeAt(m.x, m.z) * 0.5, m);
     });
     room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, 'chat', m.from));
     room.onMessage(S.KICK, (m: { k: string }) => {
@@ -620,6 +642,7 @@ export class Game {
       this.lastPY = e.clientY;
       this.dragMoved += Math.abs(dx) + Math.abs(dy);
       if (this.dragMoved > 4) {
+        this.camFrame.cancel();
         this.camYaw -= dx * 0.0055;
         this.camPitch = Math.max(-0.45, Math.min(1.45, this.camPitch + dy * 0.0045));
       }
@@ -667,12 +690,14 @@ export class Game {
     );
     this.on(c, 'wheel', (e: WheelEvent) => {
       e.preventDefault();
+      this.camFrame.cancel();
       this.camDist = Math.max(3, Math.min(70, this.camDist * (e.deltaY > 0 ? 1.12 : 0.89)));
     }, { passive: false });
   }
 
   /** Xoay camera theo độ dịch chuột (điểm ảnh). */
   mouseLook(dx: number, dy: number): void {
+    if (dx || dy) this.camFrame.cancel();
     this.camYaw -= dx * 0.0026;
     this.camPitch = Math.max(-0.45, Math.min(1.45, this.camPitch + dy * 0.0022));
   }
@@ -1153,7 +1178,10 @@ export class Game {
         break;
       case 'tribstart':
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
-        if (src === this.sid) set({ tribEnd: Date.now() + (m.d ?? 40) * 1000 });
+        if (src === this.sid) {
+          set({ tribEnd: Date.now() + (m.d ?? 40) * 1000 });
+          this.chapter('trib');
+        }
         break;
     }
   }
@@ -1418,6 +1446,7 @@ export class Game {
       // Camera điều khiển được hoàn toàn bằng bàn phím: ← → xoay, ↑ ↓ ngẩng/cúi, - = thu phóng.
       const k = this.keys.held;
       const turn = this.controls === 'turn';
+      if ((['camLeft', 'camRight', 'camUp', 'camDown', 'zoomIn', 'zoomOut'] as const).some((a) => isHeld(k, a))) this.camFrame.cancel();
       if (isHeld(k, 'camLeft') || (turn && isHeld(k, 'left'))) this.camYaw += dt * 2.1;
       if (isHeld(k, 'camRight') || (turn && isHeld(k, 'right'))) this.camYaw -= dt * 2.1;
       if (isHeld(k, 'camUp')) this.camPitch = Math.min(1.45, this.camPitch + dt * 1.1);
@@ -1479,15 +1508,18 @@ export class Game {
   private updateCamera(dt: number): void {
     const rp = this.renderPos;
     const flying = this.cur.flying;
-    const want = this.camDist * (flying ? 1.35 : 1);
+    this.camFrame.update(dt);
+    // Khung thẻ chương cộng thêm vào góc của người chơi, không ghi đè camDist/camPitch.
+    const want = Math.min(70, this.camDist * (flying ? 1.35 : 1) * this.camFrame.distMul);
     this.camDistCur += (want - this.camDistCur) * Math.min(1, dt * 6);
-    const cp = Math.cos(this.camPitch);
+    const pitch = Math.max(-0.45, Math.min(1.45, this.camPitch + this.camFrame.pitchAdd));
+    const cp = Math.cos(pitch);
     const tx = rp.x;
     // Kiểu FPS: nhìn qua đầu nhân vật để tâm ngắm không bị nhân vật che.
     const ty = rp.y + (this.controls === 'mouse' ? 2.5 : 1.6);
     const tz = rp.z;
     let cx = tx + Math.sin(this.camYaw) * cp * this.camDistCur;
-    let cy = ty + Math.sin(this.camPitch) * this.camDistCur;
+    let cy = ty + Math.sin(pitch) * this.camDistCur;
     let cz = tz + Math.cos(this.camYaw) * cp * this.camDistCur;
     // Không để camera chui xuống đất: kéo lại gần nhân vật.
     for (let i = 0; i < 5; i++) {
@@ -1655,6 +1687,7 @@ export class Game {
       tribEnd: me.fl & PF_TRIBULATION ? st.tribEnd : 0,
       castEnd: me.fl & PF_CASTING ? st.castEnd : 0,
     });
+    this.checkChapters(rp.x, rp.z);
   }
 
   /**
@@ -1730,6 +1763,37 @@ export class Game {
       out.push({ key: l.key, kind: 'loot', label: itemName(l.item), icon: ITEM.get(l.item)?.icon, pos: (o) => (o.copy(p), true), span: 0.4 });
     }
     return out;
+  }
+
+  /**
+   * Hiện thẻ chương cho sự kiện cá nhân (C2): thẻ chữ + khung camera nhẹ + tiếng chiêng. Chỉ ở client,
+   * không gửi gì lên server, không khóa input. Tắt trong Cài đặt thì bỏ qua cả ba.
+   */
+  private chapter(kind: ChapterKind): void {
+    if (!get().chapterCards) return;
+    const p = CHAPTER[kind];
+    set({ chapter: { id: ++this.bossLineId, kind, until: Date.now() + p.card, dur: p.card } });
+    this.camFrame.start(p);
+    chapterSting(0.9);
+  }
+
+  /** Thẻ đang chờ (vào bí cảnh) và lần đầu vào Lạc Kiếm Tông của nhân vật này; gọi mỗi lần đồng bộ HUD. */
+  private checkChapters(x: number, z: number): void {
+    if (!this.started || this.snapToServer) return;
+    if (this.pendingChapter) {
+      this.chapter(this.pendingChapter);
+      this.pendingChapter = null;
+    }
+    const name = get().char?.name;
+    if (this.sectChecked || !name || get().room !== ROOM_WORLD || biomeAt(x, z) !== 'sect') return;
+    this.sectChecked = true;
+    if (firstTime(localStorage, 'sect', name)) this.chapter('sect');
+  }
+
+  setChapterCards(on: boolean): void {
+    localStorage.setItem('dtl.chapterCards', on ? '1' : '0');
+    set({ chapterCards: on, ...(on ? {} : { chapter: null }) });
+    if (!on) this.camFrame.cancel();
   }
 
   setOffscreen(on: boolean): void {

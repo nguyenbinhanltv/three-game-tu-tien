@@ -1,5 +1,5 @@
 import { ContentIcon } from './ContentIcon';
-import { useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { C, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, WORLD_SIZE } from '@dtl/shared';
 import { itemName, monsterName, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { Game } from '../game/engine';
@@ -8,7 +8,7 @@ import { trackedQuestId } from '../game/offscreen';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
-import { type BossLine, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
+import { type BossLine, type ChapterCard, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
 
 /**
  * Đoạn trễ của thanh: chạy bằng requestAnimationFrame và ghi thẳng `style.width`, không re-render React
@@ -144,6 +144,34 @@ function BossLineShow({ line }: { line: BossLine }) {
       <div className="boss-line-text">
         <span className="boss-line-name">{line.name}</span>
         <span className="boss-line-say">{t('ui.boss.say', { text: line.text })}</span>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Thẻ chương (C2): letterbox mỏng, dòng dẫn nhỏ, tiêu đề lớn (DTL Display), phụ đề một dòng mờ dần.
+ * Không nhận chuột/phím, không khóa điều khiển; tự gỡ khi hết giờ.
+ */
+function ChapterCardView() {
+  const card = useUI((s) => s.chapter);
+  return card ? <ChapterCardShow card={card} /> : null;
+}
+
+function ChapterCardShow({ card }: { card: ChapterCard }) {
+  const now = useNow(250);
+  const level = useUI((s) => s.char?.level ?? 1);
+  if (now >= card.until) return null;
+  const k = 'ui.chapter.' + card.kind;
+  return (
+    <div className={'chapter-card chapter-' + card.kind} key={card.id} style={{ '--dur': card.dur + 'ms' } as CSSProperties}>
+      <div className="lb lb-top" />
+      <div className="lb lb-bot" />
+      <div className="chapter-text">
+        <div className="chapter-kicker">{t(k + '.kicker', { realm: realmName(level) })}</div>
+        <div className="chapter-title">{t(k + '.title')}</div>
+        <div className="chapter-rule" />
+        <div className="chapter-sub">{t(k + '.sub')}</div>
       </div>
     </div>
   );
@@ -495,6 +523,7 @@ export function Hud() {
   return (
     <div className={'hud' + (hasBoss ? ' with-boss' : '')}>
       <PlayerFrame />
+      <ChapterCardView />
       <BossLineView />
       <BossBar />
       <TargetFrame below={hasBoss} />

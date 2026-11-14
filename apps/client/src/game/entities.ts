@@ -419,6 +419,7 @@ export class EntityManager {
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
+      v.model.setViewDistance?.(isLocal ? 0 : Math.hypot(v.x - local.x, v.z - local.z));
       const dead = (s.fl & PF_DEAD) !== 0;
       v.model.update(dt, {
         speed: v.speed,

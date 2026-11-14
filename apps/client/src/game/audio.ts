@@ -32,6 +32,7 @@
 // phải ghi nguồn: loop.mjs ghi `credit` cho từng bài, mục "Nguồn nhạc" trong Cài đặt đọc trường này. Id bài nhạc theo máy trạng thái trong music.ts (MUSIC_TRACKS).
 
 import { bellPartials } from './lootBell';
+import { gongPartials } from './chapter';
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
 type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend';
@@ -573,6 +574,22 @@ export function lootChime(tier: 0 | 1 | 2, volume = 1): void {
   stats.synth++;
 }
 
+/**
+ * Tiếng nhấn của thẻ chương (C2): một tiếng chiêng trầm trên bus nhạc (thanh trượt Nhạc nền chỉnh được),
+ * hạ nhạc nền một nhịp cho chiêng nổi lên. Tắt tiếng (`?mute=1`) thì im.
+ */
+export function chapterSting(volume = 1): void {
+  if (muted || volume <= 0.02) return;
+  const c = ensure();
+  if (!c || c.state !== 'running') return;
+  const o = c.createGain();
+  o.gain.value = SYNTH_GAIN * volume;
+  o.connect(voiceOut(c, 'music'));
+  for (const p of gongPartials()) tone(o, p.freq, p.freq * 0.997, p.dur, 'sine', p.gain, p.delay);
+  duck(0.45, 1.6, 1.2);
+  stats.synth++;
+}
+
 const SYNTH_NAMES = new Set<string>(['sword', 'slash', 'rain', 'thunder', 'hit', 'hurt', 'heal', 'shield', 'levelup', 'loot', 'quest', 'death', 'fly', 'gather', 'ascend']);
 
 function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefined, allowPending: boolean): void {
@@ -680,7 +697,10 @@ class StreamDeck {
       return;
     }
     const entry = id ? manifest?.[this.kind]?.[id] : undefined;
-    const url = entry ? pickSrc(entry.src) : null;
+    // Mọi định dạng trình duyệt nhận là phát được, theo thứ tự ưu tiên: định dạng đầu lỗi khi nạp
+    // (canPlayType nói có nhưng không giải mã được, ví dụ WebM/Opus trên Safari cũ) thì thử định dạng kế tiếp.
+    const urls = entry ? playable(entry.src) : [];
+    const url = urls[0] ?? null;
     if (id && !url && this.playing === null) {
       // Không có file: nhạc im lặng, âm môi trường dùng gió tổng hợp.
       this.wind?.start(this.fade);
@@ -707,14 +727,19 @@ class StreamDeck {
     el.preload = 'auto';
     el.loop = entry.loop ?? true;
     el.src = url;
-    el.addEventListener(
-      'error',
-      () => {
-        console.warn('[audio] không phát được', url);
-        if (ch.el === el && this.playing === id) this.wind?.start(fade);
-      },
-      { once: true },
-    );
+    let tried = 0;
+    el.addEventListener('error', () => {
+      // Kênh đã bị thả hoặc đã đổi bài (release() xóa src cũng bắn 'error'): bỏ qua.
+      if (ch.el !== el || this.playing !== id) return;
+      console.warn('[audio] không phát được', urls[tried]);
+      tried++;
+      if (tried < urls.length) {
+        el.src = urls[tried];
+        el.play().catch((err) => console.warn('[audio] play() bị từ chối', urls[tried], err));
+        return;
+      }
+      this.wind?.start(fade);
+    });
     // File đã ra tiếng: tắt dần gió tổng hợp (nếu đang chạy) cùng nhịp crossfade.
     el.addEventListener('playing', () => ch.el === el && this.wind?.stop(fade), { once: true });
     ch.el = el;
