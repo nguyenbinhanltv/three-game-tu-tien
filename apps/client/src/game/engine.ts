@@ -70,8 +70,11 @@ const QUALITY: Record<string, { pixelRatio: number; shadows: boolean }> = {
   high: { pixelRatio: 2, shadows: true },
 };
 
-/** Phím bổ trợ hay nuốt sự kiện thả phím khác (Cmd/Ctrl/Alt). Cố ý không có Shift. */
-const STICKY_MODS = new Set(['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'OSLeft', 'OSRight']);
+/**
+ * Phím bổ trợ hay nuốt sự kiện thả phím khác (Cmd/Ctrl). Cố ý không có Shift (hạ độ cao khi bay)
+ * và Alt (phím chơi: thả/khóa con trỏ); Alt xử lý hẹp hơn trong `bindInput`.
+ */
+const STICKY_MODS = new Set(['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight', 'OSLeft', 'OSRight']);
 /** Cặp phím hướng ngược chiều. */
 const OPPOSITE_KEY: Record<string, string> = {
   KeyW: 'KeyS', KeyS: 'KeyW', KeyA: 'KeyD', KeyD: 'KeyA',
@@ -463,19 +466,33 @@ export class Game {
 
   private bindInput(): void {
     this.on(window, 'resize', () => this.onResize());
-    // Chống kẹt phím: sự kiện thả phím hay mất khi giữ Cmd/Ctrl/Alt hoặc chuyển cửa sổ,
-    // nên xóa sạch tập phím ở những lúc đó. Không tính Shift (Shift dùng để hạ độ cao khi bay).
+    // Chống kẹt phím: sự kiện thả phím hay mất khi giữ Cmd/Ctrl hoặc chuyển cửa sổ,
+    // nên xóa sạch tập phím ở những lúc đó. Không tính Shift (hạ độ cao khi bay).
+    // Alt là phím chơi (thả/khóa con trỏ): chạm Alt không xóa phím; chỉ xóa khi thả Alt
+    // sau một tổ hợp Alt+phím khác, lúc phím kia có thể đã mất sự kiện thả.
+    // Alt+Tab ra cửa sổ khác đã có blur/visibilitychange lo.
     const clearKeys = (): void => this.keys.clear();
+    const isAlt = (code: string): boolean => code === 'AltLeft' || code === 'AltRight';
+    let altChord = false;
     this.on(window, 'blur', clearKeys);
     this.on(window, 'focus', clearKeys);
     this.on(document as unknown as HTMLElement, 'visibilitychange', clearKeys);
     this.on(window, 'keydown', (e: KeyboardEvent) => {
       if (STICKY_MODS.has(e.code)) clearKeys();
+      else if (isAlt(e.code)) {
+        if (!e.repeat) altChord = false;
+      } else if (e.altKey && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight') altChord = true;
       this.onKeyDown(e);
     });
     this.on(window, 'keyup', (e: KeyboardEvent) => {
       if (STICKY_MODS.has(e.code)) clearKeys();
-      else this.keys.delete(e.code);
+      else {
+        if (isAlt(e.code)) {
+          if (altChord) clearKeys();
+          altChord = false;
+        }
+        this.keys.delete(e.code);
+      }
     });
     const c = this.canvas;
     this.on(c, 'contextmenu', (e: Event) => e.preventDefault());
