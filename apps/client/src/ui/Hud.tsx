@@ -7,7 +7,7 @@ import { HpTrail } from '../game/hpTrail';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
-import { type BossLine, set, type TargetCast, togglePanel, useUI } from './store';
+import { type BossLine, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
 
 /**
  * Đoạn trễ của thanh: chạy bằng requestAnimationFrame và ghi thẳng `style.width`, không re-render React
@@ -189,8 +189,11 @@ export function objectiveText(o: ObjectiveDef): string {
 
 function QuestTracker() {
   const quests = useUI((s) => s.quests);
+  const track = useUI((s) => s.trackQuest);
   const ids = Object.keys(quests.active);
   if (!ids.length) return null;
+  // Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới): ghim bằng cú nhấp, mặc định nhiệm vụ đầu.
+  const tracked = track && quests.active[track] ? track : ids[0];
   return (
     <div className="tracker">
       {ids.slice(0, 4).map((id) => {
@@ -199,7 +202,12 @@ function QuestTracker() {
         const prog = quests.active[id];
         const complete = q.objectives.every((o, i) => (prog[i] ?? 0) >= o.count);
         return (
-          <div key={id} className={'tracker-quest' + (complete ? ' done' : '')}>
+          <div
+            key={id}
+            className={'tracker-quest' + (complete ? ' done' : '') + (id === tracked ? ' tracked' : '')}
+            title={t(id === tracked ? 'ui.quest.tracked' : 'ui.quest.track')}
+            onClick={() => setTrackQuest(id === track ? '' : id)}
+          >
             <div className="tracker-title">{t(`quest.${id}.name`)}</div>
             {q.objectives.map((o, i) => {
               const cur = Math.min(o.count, prog[i] ?? 0);
