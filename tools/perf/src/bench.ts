@@ -19,15 +19,14 @@
 //   --switch N: không đo; đổi preset N lần khi đang bắn VFX, báo lỗi console và rò geometry/texture (pnpm bench:switch)
 // Biến môi trường: PORT, CLIENT_PORT (cổng cho server/Vite do bench tự chạy), BENCH_CHANNEL.
 
-import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { FOREST, LAKE, LAKE_WATER_R, SPAWN_POINT } from '@dtl/shared';
 import { chromium, type Browser, type Page } from 'playwright';
+import { createDevServer, ROOT, sleep } from './devserver';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const OUT_DIR = path.join(ROOT, 'bench/results');
 
 // ---------- tham số ----------
@@ -59,113 +58,9 @@ const CAM = { pitch: 0.38, dist: 13 };
 const BUDGET = { drawCalls: 300, triangles: 2_000_000, textureMB: 512, cpuP95Ms: 8, heapMB: 500 };
 
 // ---------- quản lý server dev ----------
-let server: ChildProcess | null = null;
-let serverStopped = false;
-const logFile = path.join(os.tmpdir(), `dtl-bench-${PORT}-${Date.now()}.log`);
-const dbFile = path.join(os.tmpdir(), `dtl-bench-${PORT}-${Date.now()}.db`);
-
-/** PID đang nghe trên các cổng (chỉ dùng để kiểm cổng trống và dọn tiến trình con của chính bench). */
-function listeningPids(ports: number[]): Map<number, number> {
-  const found = new Map<number, number>();
-  try {
-    if (process.platform === 'win32') {
-      const out = execFileSync('netstat', ['-ano', '-p', 'TCP'], { encoding: 'utf8' });
-      for (const line of out.split(/\r?\n/)) {
-        const m = line.match(/^\s*TCP\s+\S+:(\d+)\s+\S+\s+LISTENING\s+(\d+)/);
-        if (m && ports.includes(Number(m[1]))) found.set(Number(m[1]), Number(m[2]));
-      }
-      // IPv6: netstat -p TCP không in, hỏi riêng.
-      const out6 = execFileSync('netstat', ['-ano', '-p', 'TCPv6'], { encoding: 'utf8' });
-      for (const line of out6.split(/\r?\n/)) {
-        const m = line.match(/^\s*TCP\s+\[[^\]]*\]:(\d+)\s+\S+\s+LISTENING\s+(\d+)/);
-        if (m && ports.includes(Number(m[1]))) found.set(Number(m[1]), Number(m[2]));
-      }
-    } else {
-      for (const p of ports) {
-        try {
-          const out = execFileSync('lsof', ['-t', `-iTCP:${p}`, '-sTCP:LISTEN'], { encoding: 'utf8' }).trim();
-          if (out) found.set(p, Number(out.split('\n')[0]));
-        } catch {
-          /* cổng trống */
-        }
-      }
-    }
-  } catch (e) {
-    console.warn('[bench] không đọc được danh sách cổng:', (e as Error).message);
-  }
-  return found;
-}
-
-function killTree(pid: number): void {
-  try {
-    if (process.platform === 'win32') execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' });
-    else process.kill(-pid, 'SIGKILL');
-  } catch {
-    /* đã thoát */
-  }
-}
-
-/** Tắt server của bench: cả cây tiến trình đã spawn, rồi mọi tiến trình còn nghe ở hai cổng (trước khi chạy đã trống, nên chắc chắn là của bench). */
-function stopServer(): void {
-  if (!server || serverStopped) return;
-  serverStopped = true;
-  if (server.pid) killTree(server.pid);
-  for (let i = 0; i < 10; i++) {
-    const left = listeningPids([PORT, CLIENT_PORT]);
-    if (left.size === 0) break;
-    for (const pid of new Set(left.values())) killTree(pid);
-    execFileSync(process.execPath, ['-e', 'setTimeout(()=>{},300)']);
-  }
-  const still = listeningPids([PORT, CLIENT_PORT]);
-  if (still.size) console.warn(`[bench] cổng vẫn bận sau khi tắt: ${[...still.keys()].join(', ')}`);
-  else console.log(`[bench] đã tắt server, cổng ${PORT}/${CLIENT_PORT} trống`);
-  for (const f of [dbFile, dbFile + '-wal', dbFile + '-shm']) fs.rmSync(f, { force: true });
-}
-process.on('exit', stopServer);
-for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP'] as const) {
-  process.on(sig, () => {
-    stopServer();
-    process.exit(130);
-  });
-}
-
-async function waitHttp(url: string, ms: number): Promise<void> {
-  const until = Date.now() + ms;
-  let last = '';
-  while (Date.now() < until) {
-    if (server?.exitCode !== null && server?.exitCode !== undefined) throw new Error(`server thoát sớm (mã ${server.exitCode}), xem ${logFile}`);
-    try {
-      const r = await fetch(url);
-      if (r.ok) return;
-      last = 'HTTP ' + r.status;
-    } catch (e) {
-      last = (e as Error).message;
-    }
-    await sleep(500);
-  }
-  throw new Error(`hết giờ chờ ${url} (${last}), xem ${logFile}`);
-}
-
-async function startServer(): Promise<void> {
-  const busy = listeningPids([PORT, CLIENT_PORT]);
-  if (busy.size) {
-    throw new Error(
-      `cổng ${[...busy.keys()].join(', ')} đang bận (có thể của worktree khác: không dùng, không kill). ` +
-        'Chọn cặp khác: PORT=26xx CLIENT_PORT=51xx pnpm bench:client',
-    );
-  }
-  console.log(`[bench] chạy pnpm dev ở ${PORT}/${CLIENT_PORT} (log: ${logFile})`);
-  const log = fs.openSync(logFile, 'w');
-  server = spawn('pnpm dev', {
-    cwd: ROOT,
-    env: { ...process.env, PORT: String(PORT), CLIENT_PORT: String(CLIENT_PORT), AUTH_DEV_BYPASS: '1', DB_FILE: dbFile, NODE_ENV: 'development' },
-    stdio: ['ignore', log, log],
-    shell: process.platform === 'win32',
-    detached: process.platform !== 'win32',
-  });
-  await waitHttp(`http://localhost:${PORT}/health`, 90_000);
-  await waitHttp(`http://localhost:${CLIENT_PORT}/`, 60_000);
-}
+const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'bench', command: 'pnpm bench:client' });
+const startServer = dev.start;
+const stopServer = dev.stop;
 
 // ---------- đo trong trang ----------
 type FrameRow = [cpuMs: number, drawCalls: number, triangles: number];
@@ -272,7 +167,6 @@ function initScript(preset: string): void {
   });
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const quant = (sorted: number[], q: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : 0);
 const round = (n: number, d = 2) => Math.round(n * 10 ** d) / 10 ** d;
 

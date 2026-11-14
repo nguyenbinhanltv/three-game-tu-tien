@@ -680,7 +680,10 @@ class StreamDeck {
       return;
     }
     const entry = id ? manifest?.[this.kind]?.[id] : undefined;
-    const url = entry ? pickSrc(entry.src) : null;
+    // Mọi định dạng trình duyệt nhận là phát được, theo thứ tự ưu tiên: định dạng đầu lỗi khi nạp
+    // (canPlayType nói có nhưng không giải mã được, ví dụ WebM/Opus trên Safari cũ) thì thử định dạng kế tiếp.
+    const urls = entry ? playable(entry.src) : [];
+    const url = urls[0] ?? null;
     if (id && !url && this.playing === null) {
       // Không có file: nhạc im lặng, âm môi trường dùng gió tổng hợp.
       this.wind?.start(this.fade);
@@ -707,14 +710,19 @@ class StreamDeck {
     el.preload = 'auto';
     el.loop = entry.loop ?? true;
     el.src = url;
-    el.addEventListener(
-      'error',
-      () => {
-        console.warn('[audio] không phát được', url);
-        if (ch.el === el && this.playing === id) this.wind?.start(fade);
-      },
-      { once: true },
-    );
+    let tried = 0;
+    el.addEventListener('error', () => {
+      // Kênh đã bị thả hoặc đã đổi bài (release() xóa src cũng bắn 'error'): bỏ qua.
+      if (ch.el !== el || this.playing !== id) return;
+      console.warn('[audio] không phát được', urls[tried]);
+      tried++;
+      if (tried < urls.length) {
+        el.src = urls[tried];
+        el.play().catch((err) => console.warn('[audio] play() bị từ chối', urls[tried], err));
+        return;
+      }
+      this.wind?.start(fade);
+    });
     // File đã ra tiếng: tắt dần gió tổng hợp (nếu đang chạy) cùng nhịp crossfade.
     el.addEventListener('playing', () => ch.el === el && this.wind?.stop(fade), { once: true });
     ch.el = el;

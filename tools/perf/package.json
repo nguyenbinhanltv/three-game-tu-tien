@@ -6,7 +6,8 @@
   "scripts": {
     "size": "tsx src/size.ts",
     "bench": "tsx src/bench.ts",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "compat": "tsx src/compat.ts"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",
