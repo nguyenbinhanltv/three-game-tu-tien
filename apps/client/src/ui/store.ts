@@ -37,6 +37,15 @@ export interface BossLine {
   until: number;
 }
 
+/** Thẻ chương (C2) cho sự kiện cá nhân; chữ lấy qua i18n `ui.chapter.<kind>.*`. `until` theo đồng hồ client (ms). */
+export interface ChapterCard {
+  id: number;
+  kind: string;
+  until: number;
+  /** Thời lượng (ms) để CSS mờ dần đúng nhịp. */
+  dur: number;
+}
+
 export interface TargetCast {
   kind: 'chant' | 'stun' | 'broken';
   end: number;
@@ -111,6 +120,7 @@ export interface UIState {
   castTotal: number;
   tribEnd: number;
   bossLine: BossLine | null;
+  chapter: ChapterCard | null;
   panel: Panel;
   npc: string | null;
   hint: string;
@@ -125,6 +135,8 @@ export interface UIState {
   chatOpen: boolean;
   quality: string;
   camShake: boolean;
+  /** Thẻ chương (C2) bật/tắt trong Cài đặt. */
+  chapterCards: boolean;
   /** Chỉ báo ngoài màn hình (M4-15) bật/tắt trong Cài đặt. */
   offscreen: boolean;
   /** Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới đích của nó); '' = nhiệm vụ đầu tiên trong danh sách. */
@@ -166,6 +178,7 @@ export const useUI = create<UIState>(() => ({
   castTotal: 0,
   tribEnd: 0,
   bossLine: null,
+  chapter: null,
   panel: null,
   npc: null,
   hint: '',
@@ -181,6 +194,7 @@ export const useUI = create<UIState>(() => ({
   quality: localStorage.getItem('dtl.quality') ?? 'medium',
   camShake: localStorage.getItem('dtl.camShake') !== '0',
   offscreen: localStorage.getItem('dtl.offscreen') !== '0',
+  chapterCards: localStorage.getItem('dtl.chapterCards') !== '0',
   trackQuest: localStorage.getItem('dtl.trackQuest') ?? '',
   controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '') ? (localStorage.getItem('dtl.controls') as string) : 'mouse',
   mouseLook: false,

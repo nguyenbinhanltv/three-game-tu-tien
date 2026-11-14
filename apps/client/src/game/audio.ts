@@ -32,6 +32,7 @@
 // phải ghi nguồn: loop.mjs ghi `credit` cho từng bài, mục "Nguồn nhạc" trong Cài đặt đọc trường này. Id bài nhạc theo máy trạng thái trong music.ts (MUSIC_TRACKS).
 
 import { bellPartials } from './lootBell';
+import { gongPartials } from './chapter';
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
 type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend';
@@ -570,6 +571,22 @@ export function lootChime(tier: 0 | 1 | 2, volume = 1): void {
   o.connect(voiceOut(c, 'ui'));
   for (const p of bellPartials(tier)) tone(o, p.freq, p.freq * 0.998, p.dur, 'sine', p.gain, p.delay);
   if (tier === 2) duck(0.25, 0.8, 0.8);
+  stats.synth++;
+}
+
+/**
+ * Tiếng nhấn của thẻ chương (C2): một tiếng chiêng trầm trên bus nhạc (thanh trượt Nhạc nền chỉnh được),
+ * hạ nhạc nền một nhịp cho chiêng nổi lên. Tắt tiếng (`?mute=1`) thì im.
+ */
+export function chapterSting(volume = 1): void {
+  if (muted || volume <= 0.02) return;
+  const c = ensure();
+  if (!c || c.state !== 'running') return;
+  const o = c.createGain();
+  o.gain.value = SYNTH_GAIN * volume;
+  o.connect(voiceOut(c, 'music'));
+  for (const p of gongPartials()) tone(o, p.freq, p.freq * 0.997, p.dur, 'sine', p.gain, p.delay);
+  duck(0.45, 1.6, 1.2);
   stats.synth++;
 }
 
