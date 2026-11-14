@@ -1,5 +1,4 @@
 import * as THREE from 'three/webgpu';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Client, type Room } from 'colyseus.js';
 import {
   biomeAt,
@@ -52,6 +51,7 @@ import { applyGrading, budgetPixelRatio, markBloom, PostPipeline } from '../rend
 import { GRADING, GRADING_DEFAULT } from '../render/grading';
 import { MusicController } from './music';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
+import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
@@ -188,6 +188,7 @@ export class Game {
   private portalDisc: THREE.Mesh | null = null;
   private exitDisc: THREE.Mesh | null = null;
   private sectMesh: THREE.Mesh | null = null;
+  private sectAsset: { handle: AssetHandle; mat: THREE.Material } | null = null;
 
   // Dự đoán di chuyển.
   private cur: MoveState = { x: 0, y: 0, z: 0, vy: 0, grounded: true, flying: false };
@@ -461,16 +462,21 @@ export class Game {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
-  /** Nạp kiến trúc tông môn dựng bằng Blender; lỗi thì giữ bản dựng bằng code. */
+  /** Nạp kiến trúc tông môn dựng bằng Blender (asset `arch_sect` qua AssetCache); lỗi thì giữ bản dựng bằng code. */
   private async loadSectModel(shadows: boolean): Promise<void> {
     try {
-      const base = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
-      const gltf = await new GLTFLoader().loadAsync(base + 'assets/sect.glb');
-      if (this.disposed) return;
+      await assets.attach(this.renderer);
+      const handle = await assets.acquire('arch_sect', { pos: { x: SECT.x, z: SECT.z } });
+      if (this.disposed) {
+        handle.release();
+        return;
+      }
       const mat = MODEL_MAT.clone();
       mat.side = THREE.DoubleSide;
-      gltf.scene.position.set(SECT.x, SECT.y, SECT.z);
-      gltf.scene.traverse((o) => {
+      this.sectAsset = { handle, mat };
+      const root = handle.scene;
+      root.position.set(SECT.x, SECT.y, SECT.z);
+      root.traverse((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
         m.material = mat;
@@ -478,14 +484,14 @@ export class Game {
         m.receiveShadow = shadows;
         m.frustumCulled = false;
       });
-      this.scene.add(gltf.scene);
+      this.scene.add(root);
       if (this.sectMesh) {
         const old = this.sectMesh.geometry;
         this.sectMesh.geometry = buildSect(false);
         old.dispose();
       }
     } catch (e) {
-      console.warn('[asset] không tải được sect.glb, dùng kiến trúc dựng bằng code:', e);
+      console.warn('[asset] không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
     }
   }
 
@@ -1434,6 +1440,10 @@ export class Game {
     this.vfx?.dispose();
     this.terrain?.dispose();
     this.post?.dispose();
+    this.sectMesh?.geometry.dispose();
+    this.sectAsset?.handle.release();
+    this.sectAsset?.mat.dispose();
+    this.sectAsset = null;
     this.dmg?.clear();
     this.stage.replaceChildren();
     this.renderer?.dispose();
