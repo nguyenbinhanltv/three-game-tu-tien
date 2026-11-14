@@ -28,6 +28,15 @@ export interface CharacterView {
   readonly hit: HitReact;
   /** Ra đòn (một lần). */
   attack(): void;
+  /**
+   * Phát động tác của một chiêu (pose id, M3-4). Trả false nếu model không có động tác này (gọi `attack()` thay);
+   * true nếu đã nhận (kể cả khi bỏ qua vì đang bay/trên không/chết, đúng luật server không cho ra chiêu).
+   */
+  perform?(pose: string, o?: PerformOpts): boolean;
+  /** Bỏ động tác đang chờ (`delay`) và tắt nhanh động tác chưa tới lúc ra đòn (vd. niệm chú bị phá). */
+  cancelPerform?(): void;
+  /** Đang phát (hoặc đang chờ phát) động tác `pose`. */
+  performing?(pose: string): boolean;
   hitReact(o: HitOpts): void;
   update(dt: number, a: AnimState): void;
   /** Khoảng cách tới người xem (m): chọn LOD và tần số cập nhật animation. Model khối bỏ qua. */
@@ -42,6 +51,13 @@ export interface CharacterView {
   readonly attacks?: number;
   readonly hasSword?: boolean;
   readonly grounded?: boolean;
+}
+
+export interface PerformOpts {
+  /** Bắt đầu từ giây này của clip (bỏ bớt nhịp chuẩn bị để lúc ra đòn khớp với hiệu ứng vừa tới). */
+  from?: number;
+  /** Chờ bao lâu (giây) rồi mới phát. */
+  delay?: number;
 }
 
 export interface MonsterView extends CharacterView {

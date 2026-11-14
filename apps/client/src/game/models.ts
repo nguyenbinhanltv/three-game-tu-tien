@@ -10,7 +10,7 @@ export type { AnimState } from './character/view';
 
 /** Material dùng chung cho mọi mô hình tô màu theo đỉnh. */
 export const MODEL_MAT = createWorldMaterial({ vertexColors: true });
-const GLOW_MAT = (color: number, opacity = 0.5) => {
+export const GLOW_MAT = (color: number, opacity = 0.5) => {
   const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
   markBloom(m, 1.2);
   return m;

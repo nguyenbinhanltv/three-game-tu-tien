@@ -5,6 +5,7 @@ import type { QuestView } from '@dtl/shared';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
 import type { AnimState, CharacterView, MonsterView } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
+import { PlayerSkins } from './character/playerSkins';
 import { hitStopFor } from './hitreact';
 import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
 import { HpTrail } from './hpTrail';
@@ -124,13 +125,17 @@ export class PlayerVis {
   speed = 0;
   fl = 0;
   lv = 0;
+  /** Đang dùng model khối tạm trong lúc model có xương còn nạp. */
+  skinPending: boolean;
   constructor(
     public sid: string,
     public s: PState,
     public local: boolean,
+    skins: PlayerSkins,
   ) {
     const [robe, trim] = ROBES[hashStr(s.name) % ROBES.length];
-    this.model = new Humanoid({ robe, trim, sword: true });
+    this.model = skins.create() ?? new Humanoid({ robe, trim, sword: true });
+    this.skinPending = skins.pending;
     this.label = makeLabel(s.name, local ? '#bfe8ff' : '#ffffff', realmName(s.lv));
     this.lv = s.lv;
     this.label.position.y = 2.55;
@@ -139,6 +144,16 @@ export class PlayerVis {
     this.y = s.y;
     this.z = s.z;
     this.yaw = s.yaw;
+  }
+  /** Model có xương nạp xong: thay model khối tạm (giữ nhãn, vị trí). */
+  swapModel(next: CharacterView): void {
+    const parent = this.model.root.parent;
+    this.model.root.remove(this.label);
+    this.model.root.removeFromParent();
+    this.model.dispose();
+    this.model = next;
+    next.root.add(this.label);
+    parent?.add(next.root);
   }
   refreshLabel() {
     this.model.root.remove(this.label);
@@ -263,6 +278,8 @@ export class EntityManager {
   private time = 0;
   /** Dựng model quái (model có xương hoặc khối); giữ asset mẫu suốt đời EntityManager. */
   private skins = new MonsterSkins();
+  /** Model người chơi có xương (`?models=skinned`) và thư viện động tác chiêu. */
+  private playerSkins = new PlayerSkins();
   hasNpcs: boolean;
 
   constructor(
@@ -272,6 +289,7 @@ export class EntityManager {
   ) {
     scene.add(this.group);
     this.skins.preload();
+    this.playerSkins.preload();
     this.hasNpcs = levelId === 'van_lam';
     if (this.hasNpcs) {
       for (const n of NPCS) {
@@ -341,9 +359,14 @@ export class EntityManager {
           const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
           if (d2 > 260 * 260) return;
         }
-        v = new PlayerVis(sid, s, isLocal);
+        v = new PlayerVis(sid, s, isLocal, this.playerSkins);
         this.players.set(sid, v);
         this.group.add(v.model.root);
+      }
+      if (v.skinPending && !this.playerSkins.pending) {
+        v.skinPending = false;
+        const next = this.playerSkins.create();
+        if (next) v.swapModel(next);
       }
       v.s = s;
       if (v.lv !== s.lv) v.refreshLabel();
@@ -375,6 +398,7 @@ export class EntityManager {
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
       const dead = (s.fl & PF_DEAD) !== 0;
+      v.model.setViewDistance?.(isLocal ? 0 : Math.hypot(v.x - local.x, v.z - local.z));
       v.model.update(dt, {
         speed: v.speed,
         flying: (s.fl & PF_FLYING) !== 0,
@@ -635,6 +659,7 @@ export class EntityManager {
     for (const v of this.players.values()) v.dispose();
     for (const v of this.monsters.values()) v.dispose();
     this.skins.dispose();
+    this.playerSkins.dispose();
     for (const n of this.npcs) {
       disposeLabel(n.label);
       n.marker.material.dispose();

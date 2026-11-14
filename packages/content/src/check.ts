@@ -1,7 +1,7 @@
 // Kiểm tra nội dung game: id trùng, tham chiếu hỏng, thiếu chuỗi hiển thị.
 // Chạy: pnpm content:check
 
-import { groundAt, heightAt, type MonsterAi, type MonsterDef, phaseRules, validatePose, WATER_Y, xpNeed } from '@dtl/shared';
+import { GCD, groundAt, heightAt, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
 import { hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
 
 const errors: string[] = [];
@@ -24,6 +24,12 @@ uniqueIds('npc', NPCS);
 uniqueIds('quest', QUESTS);
 uniqueIds('pose', POSES);
 for (const p of POSES) for (const m of validatePose(p)) err(m);
+const POSE = new Map(POSES.map((p) => [p.id, p]));
+// Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
+for (const s of SKILLS) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
+const skillPoses = SKILLS.map((s) => s.pose);
+if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
+for (const id of [POSE_FLY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 
 const needItem = (id: string, where: string) => {
   if (!ITEM.has(id)) err(`${where}: vật phẩm không tồn tại ${id}`);

@@ -68,6 +68,7 @@ import { CameraShake, SHAKE } from './shake';
 import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
+import { SkillPoses } from './skillPose';
 
 export interface LoginOptions {
   token?: string;
@@ -243,6 +244,8 @@ export class Game {
   private camDistCur = 13;
   private keys = new KeyState();
   private skillQueue = new SkillQueue();
+  /** Động tác chiêu (M3-4): dự đoán khi bấm phím, khớp lúc ra đòn với hiệu ứng. */
+  private skillPoses = new SkillPoses();
   private dragging = false;
   private dragMoved = 0;
   private lastPX = 0;
@@ -838,6 +841,11 @@ export class Game {
       this.faceTargetUntil = performance.now() + 900;
     }
     this.send(C.SKILL, { id: skill.id, t: needTarget ? this.targetId : undefined });
+    // Vào thế ngay khi bấm (chỉ hình): chỉ khi client thấy server sẽ nhận (đứng đất, hết chờ, đủ linh lực, trong tầm).
+    const mon = needTarget ? this.view.monsters.get(this.targetId) : undefined;
+    const inRange = !needTarget || (!!mon && Math.hypot(mon.x - this.cur.x, mon.z - this.cur.z) <= skill.range + 1.5 + (MONSTER.get(mon.t)?.scale ?? 1));
+    const ready = Date.now() >= this.skillReadyAt(i) - 60 && me.mp >= skill.mp && (me.fl & PF_CASTING) === 0;
+    if (inRange && ready && this.cur.grounded && !this.cur.flying) this.skillPoses.predict(this.ents.players.get(this.sid)?.model, skill, performance.now());
   }
 
   toggleFly(): void {
@@ -910,13 +918,21 @@ export class Game {
     }
   }
 
-  private onFx(m: FxMsg): void {
+  private onFx(m: FxMsg, held = false): void {
     const v = this.vfx;
     const e = this.ents;
-    if (!v || !e) return;
+    if (!v || !e || this.disposed) return;
     const src = m.src ?? '';
     const dst = m.dst ?? '';
     const pSrc = e.players.get(src);
+    if (!held) {
+      // Động tác chiêu; đòn của mình đang vào thế thì giữ hiệu ứng + tiếng tới đúng lúc ra đòn.
+      const hold = this.skillPoses.onFx(m.t, pSrc?.model, src === this.sid, performance.now());
+      if (hold > 0) {
+        setTimeout(() => this.onFx(m, true), hold * 1000);
+        return;
+      }
+    }
     this.playFxSound(m.t, src, m.dst ?? '', m.x, m.z);
     const posSrc = (out: THREE.Vector3) => e.chestOf(src, out);
     const posDst = (out: THREE.Vector3) => e.chestOf(dst, out);
@@ -924,7 +940,6 @@ export class Game {
       case 'sword':
       case 'slash':
       case 'thunder': {
-        pSrc?.model.attack();
         if (!e.chestOf(src, _v)) break;
         if (m.t === 'sword') {
           // Phi kiếm: tới nơi để lại một dấu chém chéo nhỏ (không lớp mực, đòn thường đánh liên tục).
@@ -941,7 +956,6 @@ export class Game {
         break;
       }
       case 'rain':
-        pSrc?.model.attack();
         v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, 0x9fe0ff, m.sd, src === this.sid);
         break;
       case 'bite': {
@@ -984,6 +998,7 @@ export class Game {
         // Pháp trận dưới chân: vạch tiến độ chạy theo thời gian niệm chú, tắt dần nếu bị ngắt.
         v.castSigil(posSrc, m.d ?? 1, 0xfff0a8, 1.4, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
         if (src === this.sid) set({ castEnd: Date.now() + (m.d ?? 1) * 1000, castTotal: (m.d ?? 1) * 1000 });
+        this.skillPoses.onCast(pSrc?.model, m.d ?? 1);
         break;
       case 'mcast':
         // Quái đánh xa đọc chú: chỉ hiện quả cầu tụ lực; vùng báo trước tới sau qua S.HAZARD.
@@ -1018,6 +1033,7 @@ export class Game {
       }
       case 'castend':
         if (src === this.sid) set({ castEnd: 0 });
+        this.skillPoses.onCastEnd(pSrc?.model);
         break;
       case 'tribstart':
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
@@ -1087,7 +1103,14 @@ export class Game {
     sfx(name, vol, at);
   }
 
-  private onDmg(m: DmgMsg): void {
+  private onDmg(m: DmgMsg, held = false): void {
+    if (this.disposed) return;
+    // Hiệu ứng đòn của mình đang được giữ tới lúc ra đòn: số sát thương và phản ứng trúng đòn theo cùng nhịp.
+    const hold = !held && m.src === this.sid ? this.skillPoses.holdLeft(performance.now()) : 0;
+    if (hold > 0.02) {
+      setTimeout(() => this.onDmg(m, true), hold * 1000);
+      return;
+    }
     if (!this.ents || !this.ents.topOf(m.dst, _v)) return;
     const mine = m.dst === this.sid;
     const byMe = m.src === this.sid;
