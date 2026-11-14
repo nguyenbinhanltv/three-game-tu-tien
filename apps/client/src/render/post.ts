@@ -1,99 +1,192 @@
 import * as THREE from 'three/webgpu';
-import { float, length, mix, mrt, output, pass, renderOutput, rtt, screenUV, smoothstep, uniform, vec4 } from 'three/tsl';
+import {
+  clamp,
+  float,
+  fract,
+  length,
+  luminance,
+  mix,
+  mrt,
+  output,
+  pass,
+  renderOutput,
+  rtt,
+  screenUV,
+  sin,
+  smoothstep,
+  time,
+  uniform,
+  vec2,
+  vec3,
+  vec4,
+} from 'three/tsl';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
+import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
- * Post-processing chung: cảnh (HDR) → bloom chọn lọc → tone mapping + sRGB → vignette nhẹ.
+ * Post-processing điện ảnh, một chuỗi cho cả 3 preset:
+ *   cảnh HDR → (bloom chọn lọc) → ACES + sRGB → chỉnh màu (tách tông bóng lạnh/sáng ấm, nâng đen,
+ *   đường cong S, bão hòa) → hiệu ứng trúng đòn (uHit) / chớp (uFlash) → (FXAA) → vignette → hạt
+ *   phim + dither chống vệt bậc.
  *
- * Bloom chọn lọc: cảnh ghi thêm một đích MRT `bloom` (8 bit). Vật thường ghi 0 (và che những gì sau
- * nó); material đã gọi `markBloom()` (VFX, linh quang, cổng) ghi màu × cường độ. Đích này được blur
- * Gauss 2 pass ở 1/4 độ phân giải rồi cộng vào ảnh HDR, nên chỉ những vật đó phát quang, cả cảnh
- * không nhòe. Chi phí: thêm 3 pass toàn màn hình (blur ngang, blur dọc, ghép). Không dùng `BloomNode`
- * của three vì chuỗi mip của nó tốn 12 pass, vượt ngân sách draw call ở cảnh ít vật.
+ * Bloom chọn lọc: chỉ material đã gọi `markBloom()` ghi vào đích MRT `bloom` (8 bit); đích này được
+ * blur Gauss 2 pass ở 1/4 độ phân giải rồi cộng vào ảnh HDR. MRT chỉ gắn vào material khi pipeline
+ * có bloom đang chạy (preset Vừa/Cao); preset Thấp gỡ ra, vì không có MRT của renderer thì
+ * `mrtNode` của material sẽ thay luôn đầu ra màu và vẽ sai.
  *
- * Preset Thấp không dùng post-processing: vẽ thẳng ra canvas như trước (tone mapping của renderer,
- * không bloom, không vignette), không tốn thêm render target hay pass nào.
- *
- * Khử răng cưa nằm trong pipeline, không ở canvas (renderer tạo với `antialias: false`, vì ở chế độ
- * post canvas chỉ nhận một quad toàn màn hình):
- * - Vừa: pass cảnh không MSAA, FXAA trên ảnh đã tone map (thêm 1 pass, buffer trung gian 8 bit).
- * - Cao: pass cảnh MSAA 4x. WebGPU chỉ có 1 hoặc 4 mẫu (three tự nâng 2 lên 4), nên không có mức 2x.
- * Màu cảnh giữ HalfFloat vì ACES cần giá trị > 1 trước tone mapping; đích bloom là 8 bit.
- * Bộ nhớ ước tính theo preset: xem mô tả PR #9 và skill perf-budget.
+ * Khử răng cưa theo preset (canvas không MSAA, renderer tạo với `antialias: false`):
+ *   Thấp: không. Vừa: FXAA. Cao: MSAA 4x cho pass cảnh. WebGPU chỉ có 1 hoặc 4 mẫu, không có 2x.
+ * Màu cảnh HalfFloat vì ACES cần giá trị > 1; đích bloom và buffer FXAA 8 bit.
  */
 export const postParams = {
-  bloomStrength: uniform(1.6),
-  /** Độ rộng kernel Gauss (texel ở 1/4 độ phân giải). Đổi sau khi tạo pipeline không có tác dụng. */
+  exposure: uniform(1),
+  bloomStrength: uniform(1.0),
   bloomSigma: 5,
   bloomScale: 0.25,
-  /** Độ tối ở góc (0 = tắt). */
-  vignette: uniform(0.16),
-  /** Bán kính (theo UV, tâm 0,5) bắt đầu và kết thúc vùng tối. */
-  vignetteInner: uniform(0.38),
-  vignetteOuter: uniform(0.85),
+  shadowTint: uniform(new THREE.Color()),
+  highlightTint: uniform(new THREE.Color()),
+  /** Mức nhuộm sắc ở vùng tối / vùng sáng. */
+  shadowTintAmount: uniform(0.5),
+  highlightTintAmount: uniform(0.1),
+  splitBalance: uniform(0),
+  blackLift: uniform(new THREE.Color()),
+  contrast: uniform(1.08),
+  saturation: uniform(1.05),
+  vignette: uniform(VIGNETTE.amount),
+  vignetteInner: uniform(VIGNETTE.inner),
+  vignetteOuter: uniform(VIGNETTE.outer),
+  grain: uniform(GRAIN.amount),
+  /** 0..1: mình vừa trúng đòn nặng (viền đỏ + quang sai màu), tự giảm dần. */
+  hit: uniform(0),
+  /** 0..1: chớp sáng toàn màn hình (sấm độ kiếp...), tự giảm dần. */
+  flash: uniform(0),
 };
 
-/** Đích bloom là 8 bit để đỡ bộ nhớ (MSAA nhân 4): lưu giá trị / BLOOM_RANGE, ghép thì nhân lại. */
-const BLOOM_RANGE = 4;
-
-/**
- * Đánh dấu material được phát quang khi có bloom. Gọi trước lần vẽ đầu tiên của material.
- * Với vật cộng sáng, giữ màu gốc ≤ 1; độ lóa do `strength` (0..4, khuyến nghị 0.5–2.5) quyết định.
- */
-export function markBloom(material: THREE.Material, strength = 1): void {
-  (material as unknown as { mrtNode: Node }).mrtNode = mrt({ bloom: vec4(output.rgb.mul(strength / BLOOM_RANGE), output.a) });
+/** Nạp số của một preset chỉnh màu (grading.ts) vào uniform. */
+export function applyGrading(p: GradingPreset): void {
+  // Sắc màu dùng ở không gian hiển thị (sau sRGB) nên giữ nguyên giá trị hex, không tuyến tính hóa.
+  const disp = (c: THREE.Color, hex: number) => c.setHex(hex, THREE.LinearSRGBColorSpace);
+  disp(postParams.shadowTint.value, p.shadowTint);
+  disp(postParams.highlightTint.value, p.highlightTint);
+  disp(postParams.blackLift.value, p.blackLift);
+  postParams.splitBalance.value = p.splitBalance;
+  postParams.contrast.value = p.contrast;
+  postParams.saturation.value = p.saturation;
+  postParams.exposure.value = p.exposure;
 }
 
+// ---------- bloom chọn lọc ----------
+
+/** Đích bloom 8 bit: lưu giá trị / BLOOM_RANGE, khi ghép nhân lại. */
+const BLOOM_RANGE = 4;
+const bloomMaterials = new Map<THREE.Material, number>();
+let bloomActive = false;
+
+type WithMrt = { mrtNode: Node | null };
+
+function attachBloom(m: THREE.Material, strength: number): void {
+  const s = Math.min(strength, BLOOM.maxHdr) / BLOOM_RANGE;
+  (m as unknown as WithMrt).mrtNode = mrt({ bloom: vec4(output.rgb.mul(s), output.a) });
+  m.needsUpdate = true;
+}
+
+function setBloomActive(on: boolean): void {
+  if (bloomActive === on) return;
+  bloomActive = on;
+  for (const [m, s] of bloomMaterials) {
+    if (on) attachBloom(m, s);
+    else {
+      (m as unknown as WithMrt).mrtNode = null;
+      m.needsUpdate = true;
+    }
+  }
+}
+
+/**
+ * Đánh dấu material được phát quang khi có bloom (VFX, linh quang, cổng, đèn). Gọi được bất cứ lúc
+ * nào; MRT chỉ được gắn khi pipeline có bloom. `strength` bị chặn ở BLOOM.maxHdr (2,5).
+ */
+export function markBloom(material: THREE.Material, strength = 1): void {
+  if (!bloomMaterials.has(material)) material.addEventListener('dispose', () => bloomMaterials.delete(material));
+  bloomMaterials.set(material, strength);
+  if (bloomActive) attachBloom(material, strength);
+}
+
+// ---------- pipeline ----------
+
 export interface PostOptions {
-  /** false = không post-processing (preset Thấp). */
   bloom: boolean;
   /** Số mẫu MSAA của pass cảnh: 0 hoặc 4. */
   msaa: number;
-  /** FXAA ở pass cuối (dùng khi msaa = 0). */
   fxaa: boolean;
 }
 
 export class PostPipeline {
   readonly bloom: boolean;
   private readonly key: string;
-  private renderer: THREE.WebGPURenderer;
-  private scene: THREE.Scene;
-  private camera: THREE.Camera;
-  private post: THREE.PostProcessing | null = null;
-  private scenePass: ReturnType<typeof pass> | null = null;
+  private post: THREE.PostProcessing;
+  private scenePass: ReturnType<typeof pass>;
   private blurNode: ReturnType<typeof gaussianBlur> | null = null;
 
   constructor(renderer: THREE.WebGPURenderer, scene: THREE.Scene, camera: THREE.Camera, opts: PostOptions) {
     this.bloom = opts.bloom;
     this.key = PostPipeline.keyOf(opts);
-    this.renderer = renderer;
-    this.scene = scene;
-    this.camera = camera;
-    if (!opts.bloom) return;
+    setBloomActive(opts.bloom);
 
     this.post = new THREE.PostProcessing(renderer);
     this.post.outputColorTransform = false;
     const scenePass = pass(scene, camera, { samples: opts.msaa });
     this.scenePass = scenePass;
-    scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a) }));
-    scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
-    const color = scenePass.getTextureNode('output');
-    this.blurNode = gaussianBlur(scenePass.getTextureNode('bloom'), null, postParams.bloomSigma);
-    this.blurNode.resolution.setScalar(postParams.bloomScale);
-    const hdr = color.add(vec4(this.blurNode.rgb.mul(postParams.bloomStrength.mul(BLOOM_RANGE)), 0));
+    if (opts.bloom) {
+      scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a) }));
+      scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
+    }
+    const colorTex = scenePass.getTextureNode('output');
 
-    // Tone mapping + chuyển sRGB theo cài đặt của renderer, rồi vignette trên ảnh đã hiển thị.
-    const toned = renderOutput(hdr);
-    const ldr = opts.fxaa ? vec4(fxaa(rtt(toned, null, null, { type: THREE.UnsignedByteType }))) : vec4(toned);
-    const d = length(screenUV.sub(0.5));
-    const shade = mix(float(1), float(1).sub(postParams.vignette), smoothstep(postParams.vignetteInner, postParams.vignetteOuter, d));
-    this.post.outputNode = vec4(ldr.rgb.mul(shade), ldr.a);
+    // Quang sai màu khi trúng đòn: tách kênh R/B theo hướng ra mép (độ lệch 0 khi uHit = 0).
+    const fromCenter = screenUV.sub(0.5);
+    const ca = fromCenter.mul(postParams.hit.mul(0.012));
+    let hdr = vec3(colorTex.sample(screenUV.add(ca)).r, colorTex.g, colorTex.sample(screenUV.sub(ca)).b).mul(postParams.exposure);
+    if (opts.bloom) {
+      this.blurNode = gaussianBlur(scenePass.getTextureNode('bloom'), null, postParams.bloomSigma);
+      this.blurNode.resolution.setScalar(postParams.bloomScale);
+      hdr = hdr.add(this.blurNode.rgb.mul(postParams.bloomStrength.mul(BLOOM_RANGE)));
+    }
+
+    // ACES + sRGB theo cài đặt renderer, rồi chỉnh màu ở không gian hiển thị.
+    const toned = renderOutput(vec4(hdr, 1)).rgb;
+    const l = luminance(toned);
+    const shadowW = float(1).sub(smoothstep(0, float(0.55).add(postParams.splitBalance), l));
+    const highW = smoothstep(float(0.35).add(postParams.splitBalance), 1, l);
+    const tintN = (t: typeof postParams.shadowTint) => vec3(t).div(luminance(vec3(t)).max(0.01));
+    let g = vec3(mix(toned, toned.mul(tintN(postParams.shadowTint)), shadowW.mul(postParams.shadowTintAmount)));
+    g = vec3(mix(g, g.mul(tintN(postParams.highlightTint)), highW.mul(postParams.highlightTintAmount)));
+    // Nâng đen: không có đen tuyền, vùng tối ngả ngọc lam.
+    g = vec3(postParams.blackLift).add(g.mul(vec3(1).sub(vec3(postParams.blackLift))));
+    // Đường cong S nhẹ quanh 0,5 theo `contrast`.
+    const gc = clamp(g, 0, 1);
+    g = vec3(mix(gc, gc.mul(gc).mul(vec3(3).sub(gc.mul(2))), postParams.contrast.sub(1).mul(2.5)));
+    g = vec3(mix(vec3(luminance(g)), g, postParams.saturation));
+    // Trúng đòn: viền đỏ ở mép. Chớp: sáng trắng cả màn.
+    const edge = smoothstep(0.3, 0.75, length(fromCenter));
+    g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
+    g = vec3(mix(g, vec3(1, 0.98, 0.94), postParams.flash.mul(0.75)));
+
+    const graded = vec4(g, 1);
+    const ldrRgb = opts.fxaa ? vec4(fxaa(rtt(graded, null, null, { type: THREE.UnsignedByteType }))).rgb : graded.rgb;
+
+    const vig = mix(float(1), float(1).sub(postParams.vignette), smoothstep(postParams.vignetteInner, postParams.vignetteOuter, length(fromCenter).mul(1.414)));
+    // Hạt phim + dither (±0,5/255) chống vệt bậc ở trời và sương.
+    const seed = screenUV.mul(vec2(1973.1, 2711.7)).add(fract(time.mul(0.37)).mul(101.3));
+    const noise = fract(sin(seed.x.mul(12.9898).add(seed.y.mul(78.233))).mul(43758.5453)).sub(0.5);
+    const out = ldrRgb.mul(vig).add(noise.mul(postParams.grain.add(1 / 255)));
+    this.post.outputNode = vec4(out, 1);
   }
 
   private static keyOf(o: PostOptions): string {
-    return o.bloom ? `b${o.msaa}${o.fxaa ? 'f' : ''}` : 'off';
+    return `${o.bloom ? 'b' : 'n'}${o.msaa}${o.fxaa ? 'f' : ''}`;
   }
 
   /** Pipeline hiện tại có đúng cấu hình `opts` không (để biết có cần dựng lại khi đổi preset). */
@@ -101,14 +194,36 @@ export class PostPipeline {
     return this.key === PostPipeline.keyOf(opts);
   }
 
+  /** Mình trúng đòn: `frac` = sát thương / máu tối đa. Chỉ đòn nặng (≥ 8% hoặc chí mạng) mới hiện. */
+  hit(frac: number, crit = false): void {
+    if (frac < 0.08 && !crit) return;
+    postParams.hit.value = Math.max(postParams.hit.value, Math.min(1, 0.35 + frac * 3));
+  }
+
+  /** Chớp sáng toàn màn hình (0..1), dùng cho sấm độ kiếp, đòn lớn. */
+  flash(amount: number): void {
+    postParams.flash.value = Math.max(postParams.flash.value, Math.min(1, amount));
+  }
+
+  update(dt: number): void {
+    if (postParams.hit.value > 0) postParams.hit.value = Math.max(0, postParams.hit.value - dt * 2.2);
+    if (postParams.flash.value > 0) postParams.flash.value = Math.max(0, postParams.flash.value - dt * 4);
+  }
+
   render(): void {
-    if (this.post) this.post.render();
-    else this.renderer.render(this.scene, this.camera);
+    this.post.render();
   }
 
   dispose(): void {
     this.blurNode?.dispose();
-    this.scenePass?.dispose();
-    this.post?.dispose();
+    this.scenePass.dispose();
+    this.post.dispose();
   }
+}
+
+/** pixelRatio theo ngân sách điểm ảnh nội bộ của preset: màn hình lớn thì hạ để giữ VRAM/fill rate. */
+export function budgetPixelRatio(width: number, height: number, maxRatio: number, maxPixels: number): number {
+  const dpr = Math.min(window.devicePixelRatio || 1, maxRatio);
+  const fit = Math.sqrt(maxPixels / Math.max(1, width * height));
+  return Math.max(0.5, Math.min(dpr, fit));
 }
