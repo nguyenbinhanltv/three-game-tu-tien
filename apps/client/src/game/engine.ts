@@ -22,6 +22,7 @@ import {
   type MoveCtx,
   type MoveInput,
   type MoveState,
+  MF_BROKEN,
   MF_CHANT,
   MF_STUN,
   MS_ATTACK,
@@ -33,6 +34,7 @@ import {
   PF_MEDITATING,
   PF_SHIELD,
   PF_TRIBULATION,
+  phaseRules,
   PORTAL_POS,
   type QuestView,
   SECT,
@@ -43,7 +45,7 @@ import {
   type SysMsg,
   type TransferMsg,
 } from '@dtl/shared';
-import { MONSTER, monsterName, realmName, SKILLS, t } from '@dtl/content';
+import { hasString, MONSTER, monsterName, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type MState, type PState, type WorldView } from './entities';
@@ -250,6 +252,7 @@ export class Game {
   private targetKind: TargetInfo['kind'] = 'mon';
   private autoAttack = false;
   private lastAttackSend = 0;
+  private bossLineId = 0;
   private timeOffset = 0;
 
   private started = false;
@@ -986,6 +989,21 @@ export class Game {
       case 'interrupt':
         if (e.chestOf(dst, _v)) v.burst(_v, 0xfff2b0, 2.6, 0.45);
         break;
+      case 'break':
+        // Boss mất thế: chớp vàng lớn ở ngực boss.
+        if (e.chestOf(src, _v)) v.burst(_v, 0xffd36b, 3.2, 0.55);
+        break;
+      case 'phase': {
+        if (e.chestOf(src, _v)) v.burst(_v, 0xe8f4ff, 2.2, 0.5);
+        const mt = this.view.monsters.get(src)?.t;
+        if (mt) this.bossSay(src, `mon.${mt}.say.${m.d ?? 1}`);
+        break;
+      }
+      case 'bfall': {
+        const mt = this.view.monsters.get(src)?.t;
+        if (mt) this.bossSay(src, `mon.${mt}.say.dead`);
+        break;
+      }
       case 'castend':
         if (src === this.sid) set({ castEnd: 0 });
         break;
@@ -1355,11 +1373,23 @@ export class Game {
 
   /** Niệm chú/choáng của quái (theo đồng hồ client), nếu quái có chiêu niệm chú. */
   private castOf(m: MState): TargetCast | undefined {
-    const ch = MONSTER.get(m.t)?.ai?.chant;
-    if (!ch || !m.mf || !m.ce) return undefined;
-    const kind = m.mf & MF_CHANT ? 'chant' : m.mf & MF_STUN ? 'stun' : null;
-    if (!kind) return undefined;
-    return { kind, end: m.ce - this.timeOffset, total: (kind === 'chant' ? ch.cast : ch.stun) * 1000, open: kind === 'chant' ? ch.open : 0 };
+    const def = MONSTER.get(m.t);
+    if (!def || !m.mf || !m.ce) return undefined;
+    const end = m.ce - this.timeOffset;
+    if (m.mf & MF_BROKEN && def.posture) return { kind: 'broken', end, total: def.posture.brk * 1000, open: 0 };
+    const ch = phaseRules(def, m.ph ?? 0).ai.chant;
+    if (!ch) return undefined;
+    if (m.mf & MF_CHANT) return { kind: 'chant', end, total: ch.cast * 1000, open: ch.open };
+    if (m.mf & MF_STUN) return { kind: 'stun', end, total: ch.stun * 1000, open: 0 };
+    return undefined;
+  }
+
+  /** Boss vào pha mới hoặc gục: hiện một câu thoại ngắn nếu mình đứng gần (không khóa điều khiển, không gửi gì lên server). */
+  private bossSay(src: string, key: string): void {
+    const m = this.view.monsters.get(src);
+    if (!m || !hasString(key)) return;
+    if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > 60) return;
+    set({ bossLine: { id: ++this.bossLineId, name: monsterName(m.t), text: t(key), until: Date.now() + 3200 } });
   }
 
   /** Boss cho thanh giữa phía trên: boss đang chọn, không thì boss còn sống gần nhất đang giao chiến trong 80 m. */
@@ -1379,7 +1409,11 @@ export class Game {
     }
     const m = id ? this.view.monsters.get(id) : undefined;
     if (!m || m.st === MS_DEAD) return null;
-    return { id, def: m.t, level: m.lv, hp: m.hp, mhp: m.mhp, cast: this.castOf(m) };
+    const def = MONSTER.get(m.t);
+    const info: BossInfo = { id, def: m.t, level: m.lv, hp: m.hp, mhp: m.mhp, cast: this.castOf(m) };
+    if (def?.posture) info.posture = (m.pz ?? 0) / 100;
+    if (def?.phases) info.marks = def.phases.map((p) => p.hp);
+    return info;
   }
 
   private syncHud(me: PState | undefined): void {

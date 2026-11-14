@@ -7,7 +7,7 @@ import { HpTrail } from '../game/hpTrail';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
-import { set, type TargetCast, togglePanel, useUI } from './store';
+import { type BossLine, set, type TargetCast, togglePanel, useUI } from './store';
 
 /**
  * Đoạn trễ của thanh: chạy bằng requestAnimationFrame và ghi thẳng `style.width`, không re-render React
@@ -109,8 +109,41 @@ function BossBar() {
         <span className="boss-level">{t('ui.level_short', { n: boss.level })}</span>
       </div>
       <div className="boss-title">{t(`mon.${boss.def}.title`)}</div>
-      <Gauge cls="hp boss" value={boss.hp} max={boss.mhp} text={`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`} segs={10} trail />
+      <div className="boss-hp">
+        <Gauge cls="hp boss" value={boss.hp} max={boss.mhp} text={`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`} segs={10} trail />
+        {/* Vạch chuyển pha: báo trước boss sẽ đổi chiêu ở mức máu này. */}
+        {boss.marks?.map((f) => <div key={f} className="boss-mark" style={{ left: f * 100 + '%' }} />)}
+      </div>
+      {boss.posture !== undefined && (
+        <div className={'gauge posture' + (boss.cast?.kind === 'broken' ? ' broken' : boss.posture >= 0.75 ? ' near' : '')}>
+          <div className="gauge-in">
+            <div className="gauge-fill" style={{ width: (boss.cast?.kind === 'broken' ? 100 : boss.posture * 100) + '%' }} />
+          </div>
+          <div className="gauge-label">{t('ui.boss.posture')}</div>
+        </div>
+      )}
       {boss.cast && <TargetCastBar cast={boss.cast} />}
+    </div>
+  );
+}
+
+/** Câu thoại ngắn của boss khi vào pha mới/gục: hai dải letterbox mỏng + phụ đề, không chặn chuột/phím. */
+function BossLineView() {
+  const line = useUI((s) => s.bossLine);
+  return line ? <BossLineShow line={line} /> : null;
+}
+
+function BossLineShow({ line }: { line: BossLine }) {
+  const now = useNow(250);
+  if (now >= line.until) return null;
+  return (
+    <div className="boss-line" key={line.id}>
+      <div className="lb lb-top" />
+      <div className="lb lb-bot" />
+      <div className="boss-line-text">
+        <span className="boss-line-name">{line.name}</span>
+        <span className="boss-line-say">{t('ui.boss.say', { text: line.text })}</span>
+      </div>
     </div>
   );
 }
@@ -123,7 +156,7 @@ function TargetCastBar({ cast }: { cast: TargetCast }) {
   const guarded = cast.kind === 'chant' && done < cast.open;
   // Niệm chú: thanh đầy dần; choáng: thanh cạn dần.
   const pct = (cast.kind === 'chant' ? done : 1 - done) * 100;
-  const label = cast.kind === 'stun' ? 'ui.target.stun' : guarded ? 'ui.target.chant_guard' : 'ui.target.chant';
+  const label = cast.kind === 'broken' ? 'ui.target.broken' : cast.kind === 'stun' ? 'ui.target.stun' : guarded ? 'ui.target.chant_guard' : 'ui.target.chant';
   return (
     <div className={'gauge tcast ' + cast.kind + (guarded ? ' guarded' : '')}>
       <div className="gauge-in">
@@ -452,6 +485,7 @@ export function Hud() {
   return (
     <div className={'hud' + (hasBoss ? ' with-boss' : '')}>
       <PlayerFrame />
+      <BossLineView />
       <BossBar />
       <TargetFrame below={hasBoss} />
       <div className="right-col">
