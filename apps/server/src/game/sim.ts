@@ -81,6 +81,7 @@ import {
   xpNeed,
 } from '@dtl/shared';
 import { APPEARANCE, ENHANCE_ORE, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
+import { lootOf } from '@dtl/content/loot';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
 import { type Character, isEquipSlot } from './character';
 
@@ -682,7 +683,7 @@ export class GameSim {
     if (skill.cast > 0) {
       p.casting = { skill, target: targetId, endAt: this.now + skill.cast * 1000 };
       this.setFlag(p, PF_CASTING, true);
-      this.fx({ t: 'cast', src: p.sid, dst: targetId, d: skill.cast });
+      this.fx({ t: 'cast', src: p.sid, dst: targetId, d: skill.cast, s: skill.id });
       this.sendCd(p);
       return;
     }
@@ -975,14 +976,13 @@ export class GameSim {
   }
 
   private rollLoot(p: PlayerEnt, mon: MonEnt): void {
-    const [g0, g1] = mon.def.gold;
-    const gold = p.noLoot ? 0 : g0 + Math.floor(Math.random() * (g1 - g0 + 1));
-    const got: { id: string; n: number }[] = [];
     if (p.noLoot) return;
-    if (!p.noLoot) {
-      for (const d of mon.def.drops) {
-        if (Math.random() < d.chance) got.push({ id: d.item, n: d.min + Math.floor(Math.random() * (d.max - d.min + 1)) });
-      }
+    const loot = lootOf(mon.def.id);
+    const [g0, g1] = loot.gold;
+    const gold = g0 + Math.floor(Math.random() * (g1 - g0 + 1));
+    const got: { id: string; n: number }[] = [];
+    for (const d of loot.drops) {
+      if (Math.random() < d.chance) got.push({ id: d.item, n: d.min + Math.floor(Math.random() * (d.max - d.min + 1)) });
     }
     // Vàng luôn vào túi; vật phẩm nào không còn chỗ thì bỏ.
     const kept: { id: string; n: number }[] = [];

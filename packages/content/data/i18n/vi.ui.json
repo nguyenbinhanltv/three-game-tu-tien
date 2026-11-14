@@ -71,6 +71,7 @@
   "ui.err.auth": "Đăng nhập không thành công.",
   "ui.err.connect": "Không kết nối được tới server.",
   "ui.err.disconnected": "Mất kết nối tới server.",
+  "ui.err.rate_limited": "Kết nối quá dồn dập, hãy đợi một lát rồi thử lại.",
   "ui.err.webgl": "Trình duyệt không khởi tạo được đồ họa 3D.",
   "ui.reconnecting": "Mất kết nối, đang nối lại…",
   "ui.reconnected": "Đã nối lại.",

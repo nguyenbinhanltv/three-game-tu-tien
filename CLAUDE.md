@@ -30,7 +30,7 @@ apps/bot-client    bot headless để test tải
 tools/blender      build_sect.py (kiến trúc tông môn → GLB), import_tripo.py (chuẩn hóa GLB Tripo), build_fixture_rig.py (GLB có xương cho test), run.mjs
 tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts
 tools/perf         size.ts (pnpm size), bench.ts (pnpm bench:client, Playwright)
-tools/audio        build.mjs + sounds.json: SFX/âm môi trường CC0 → public/audio/{sfx,amb} + manifest.json
+tools/audio        build.mjs + sounds.json: SFX/âm môi trường CC0 → public/audio/{sfx,amb}; loop.mjs + music.json: nhạc Suno → public/audio/music; chung manifest.json
 assets             README, LICENSES.md, budgets.json, meta.schema.json, source/<loại>/<id>/meta.json
 ```
 
@@ -42,12 +42,13 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - Playtest **luôn tắt tiếng**: URL game/viewer có `?mute=1` (ghép tham số khác bằng `&`, ví dụ `?mute=1&auto=<tên>`), kể cả trong `ao browser`; Chromium/Playwright thêm cờ `--mute-audio`. Tab của mình đang phát tiếng thì đóng hoặc tải lại với `?mute=1` (xem skill `playtest`).
 - Nhiều worktree chạy song song: mỗi worktree một cặp cổng riêng, ví dụ `PORT=2597 CLIENT_PORT=5197 pnpm dev` (Git Bash) hoặc `$env:PORT=2597; $env:CLIENT_PORT=5197; pnpm dev` (PowerShell), hoặc ghi `PORT=`/`CLIENT_PORT=` vào `apps/server/.env.local` (gitignore). Client dev tự nối `ws://<host>:$PORT`; `VITE_SERVER_URL` (biến môi trường hoặc `apps/client/.env.local`, không đặt ở file env của server) ghi đè. Bot và security-check đọc `SERVER_URL` hoặc `PORT` (kể cả từ `.env.local`). Kiểm cổng trống trước khi chạy, không dùng hay kill server của worktree khác, tự tắt server của mình khi xong (xem skill `playtest`).
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
-- `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`
+- `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`. 100 bot chung một IP sẽ bị giới hạn `/matchmake`: chạy server với `RATE_LIMIT_EXEMPT=loopback`
 - `pnpm size`: tổng tải trước khi vào game (JS/CSS gzip, font, asset màn tải, âm thanh nạp đầu) so với ngân sách 30MB, lưu `bench/results/size-<ngày>.json`
 - `pnpm bench:client`: Playwright Chrome headless tắt tiếng, tự chạy `pnpm dev` ở `PORT`/`CLIENT_PORT` riêng (mặc định 2635/5135) rồi tự tắt; WebGPU + WebGL2 × 3 preset, đường camera sân/rừng/hồ; draw call, tam giác, CPU khung p50/p95, texture MB; lưu `bench/results/<ngày>.json`, so lần trước. Cờ và cách đọc: skill `perf-budget`
-- `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts` hoặc luật di chuyển/combat
+- `pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]`: kiểm tra hồi quy bảo mật (server dev phải đang chạy); chạy lại sau mỗi lần sửa `rooms.ts`, `auth.ts`, `index.ts`, `ratelimit.ts` hoặc luật di chuyển/combat. Server không được bật `RATE_LIMIT_EXEMPT`; bài cuối làm cạn xô của IP, chạy lại cả bộ sau khoảng 1 phút
 - `pnpm assets:build`: Blender sinh GLB thô vào `assets/build/raw/` rồi tối ưu ra `apps/client/public/assets/<id>.<hash>.glb` + `manifest.json`; client nạp qua `AssetCache` (`apps/client/src/game/assets.ts`); `pnpm assets:validate` kiểm ngân sách, LICENSES, chiều cao raw/build
 - `pnpm audio:build` (cần ffmpeg có libopus + aac; đặt `FFMPEG=` nếu không có trong PATH): sinh sprite SFX và âm môi trường từ `../dtl-asset-source/sfx` theo `tools/audio/sounds.json`, ghi `apps/client/public/audio/manifest.json` và khối âm thanh trong `assets/LICENSES.md`; `pnpm audio:check` chỉ kiểm khai báo, nguồn, giấy phép CC0
+- `pnpm music:build [--only id,id] [--preview]`: nhạc nền Suno (bản free, phi thương mại, ghi nguồn) từ `../dtl-asset-source/audio/music/<id>.mp3` theo `tools/audio/music.json`: cắt vòng lặp liền, −16 LUFS, Opus+AAC, ghi mục `music` (kèm `credit`) trong manifest và khối nhạc trong `assets/LICENSES.md`; `pnpm music:check` liệt kê bài đã có/thiếu. Prompt và hướng dẫn: `docs/audio/suno-prompts.md`. `pnpm audio:test` test hậu kỳ
 - `pnpm build` rồi `pnpm start`: server phục vụ luôn bản build ở cổng 2567
 - Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | tp x z | heal | killall | hurt pct | spawn id [n] | tick | dye id` (`hurt` hạ máu quái quanh mình về pct% để thử pha boss; `dye` đổi màu áo, id trong `appearance.json`)
 
@@ -63,7 +64,7 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng.
 - Bí cảnh là một lòng chảo trên cùng bản đồ (Kiếm Trủng, tây bắc), chạy trong room riêng.
 - Ngự kiếm mở ở Ngưng Khí tầng 3 (spec ghi tầng 8) để người mới sớm được bay.
-- Người chơi dùng Thanh Phong (`chr_kiem_tu_nam`, có xương) qua `game/character/playerSkins.ts`; màu áo nhuộm bằng shader theo `packages/content/data/appearance.json`, chọn khi tạo nhân vật (cột `characters.appearance`). Chưa có model nữ. Bay/thiền/nhảy dùng tư thế IK tạm `tam_ngu_kiem`, `tam_thien`. NPC và phần lớn quái vẫn dựng bằng khối trong `models.ts`. Ba loài sói dùng `mon_soi_xam` có xương (`MONSTER_SKINS`). `?models=legacy` hoặc nạp lỗi thì về model khối.
+- Người chơi dùng Thanh Phong (`chr_kiem_tu_nam`, có xương) qua `game/character/playerSkins.ts`; màu áo nhuộm bằng shader theo `packages/content/data/appearance.json`, chọn khi tạo nhân vật (cột `characters.appearance`). Chưa có model nữ. Chiêu, bay, niệm chú dùng pose IK của M3-4 (`withPoses`); thiền dùng tư thế tạm `tam_thien`, nhảy mượn `ngu_kiem`. NPC và phần lớn quái vẫn dựng bằng khối trong `models.ts`. Ba loài sói dùng `mon_soi_xam` có xương (`MONSTER_SKINS`). `?models=legacy` hoặc nạp lỗi thì về model khối.
 - Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):
@@ -72,7 +73,8 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Vào bí cảnh cần vé một lần do `WorldRoom.onPortal` cấp; đừng kiểm điều kiện vào room mới ở room cũ mà không có vé.
 - Không cho ra chiêu khi `airborne()`; quái bỏ đuổi mục tiêu không với tới thì hồi đầy và miễn sát thương (`evadeUntil`).
 - Request listener HTTP phải bọc try/catch; `AUTH_DEV_BYPASS` tự tắt khi `NODE_ENV=production` hoặc có `GOOGLE_CLIENT_ID`.
-- Còn mở: tỉ lệ rơi đồ nằm trong bundle client; chưa giới hạn tần suất `/matchmake` theo IP.
+- Bảng rơi đồ và linh thạch rơi nằm ở `packages/content/data/loot.json`, chỉ import qua `@dtl/content/loot` (server, check, sim). `monsters.json` vào bundle client nên không được chứa `drops`/`gold` (`content:check` và `apps/client/src/no-server-data.test.ts` chặn). Client chỉ biết món đã rơi qua tin nhắn `sys.loot`.
+- POST `/matchmake` và bắt tay WebSocket giới hạn theo IP bằng token bucket (`apps/server/src/ratelimit.ts`, bọc ngoài listener của Colyseus, trả 429 + `Retry-After`). Env: `RATE_LIMIT_BURST` (40), `RATE_LIMIT_PER_MIN` (20), `TRUST_PROXY=1` mới đọc `X-Forwarded-For` (lấy phần tử cuối), `RATE_LIMIT_EXEMPT=loopback` cho bot ở máy dev (bị bỏ qua khi production).
 
 ## Quy tắc bất biến
 

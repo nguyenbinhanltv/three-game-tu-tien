@@ -38,6 +38,16 @@ export interface DropDef {
   max: number;
 }
 
+/**
+ * Bảng rơi của một loài quái. Chỉ server đọc (`@dtl/content/loot`), không bao giờ vào bundle client;
+ * người chơi chỉ thấy món đã rơi qua tin nhắn server.
+ */
+export interface LootDef {
+  /** Linh thạch [min, max]. */
+  gold: [number, number];
+  drops: DropDef[];
+}
+
 export interface MonsterDef {
   id: string;
   model: MonsterModel;
@@ -51,8 +61,6 @@ export interface MonsterDef {
   attackRange: number;
   attackCd: number;
   xpMul: number;
-  gold: [number, number];
-  drops: DropDef[];
   boss?: boolean;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
@@ -187,6 +195,11 @@ export interface SkillDef {
   radius?: number;
   duration?: number;
   fx: string;
+  /**
+   * Động tác của người ra chiêu (id trong `packages/content/data/poses`, client nướng thành clip). Một lần,
+   * dài không quá GCD; `hit[0]` của pose là lúc ra đòn, khớp với lúc hiệu ứng `fx` phóng đi.
+   */
+  pose?: string;
   /** Ngắt được chú boss đang niệm (chỉ với kind 'damage'). */
   interrupt?: boolean;
 }

@@ -1,12 +1,13 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { APPEARANCE, DYE, POSE } from '@dtl/content';
+import { APPEARANCE, DYE } from '@dtl/content';
 import type { Gender } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { applyDye } from './dye';
-import { bakePose, IkRig, poseClipName } from './ikpose';
+import { poseClipName } from './ikpose';
+import { libraryClips, type PoseLibrary, withPoses } from './poseLib';
 import { SkinnedCharacter, type SkinnedOpts } from './skinned';
 import type { CharState, ClipMap } from './states';
 import { type AnimState, type CharacterView, legacyModelsRequested } from './view';
@@ -20,7 +21,10 @@ export interface PlayerLook {
 /** Cấu hình model người chơi có xương theo asset. */
 export interface PlayerSkin {
   clips: ClipMap;
-  /** Tư thế IK tạm (packages/content/data/poses) nướng thành clip cho trạng thái chưa có clip thật. */
+  /**
+   * Trạng thái chưa có clip thật → pose IK (packages/content/data/poses). Bay và niệm chú đã có sẵn từ M3-4
+   * (`withPoses`: `ngu_kiem`, `niem_chu`); ở đây thêm thiền (`tam_thien`, tạm) và nhảy (mượn tư thế ngự kiếm).
+   */
   poses: Partial<Record<CharState, string>>;
   /** Tốc độ (m/s, scale 1) mà clip chạy phát 1× thì chân không trượt (đo bằng chân trụ). */
   refSpeed: number;
@@ -39,12 +43,14 @@ export interface PlayerSkin {
  *   chân 240 khung). Tốc độ chạy trong game 7 m/s → đúng tỉ lệ là 2,3×, trông giật; giới hạn 1,8× (chân trượt ~20%).
  * - `idle` dài 15,3 s, cử động chậm: phát 1,3×.
  * - `attack` dài 1,2 s, dài hơn GCD 1 s: phát 1,25× (0,96 s).
- * - Chưa có clip bay, thiền, nhảy: dùng tư thế IK tạm `tam_ngu_kiem`, `tam_thien` (M3-4 sẽ thay bằng clip thật).
+ * - Ra chiêu dùng động tác pose của M3-4 (`perform`); clip `attack` của asset chỉ còn cho đòn không có động tác riêng.
+ * - Chưa có clip bay/niệm chú/thiền/nhảy: bay `ngu_kiem` và niệm chú `niem_chu` (M3-4), thiền `tam_thien` (tạm),
+ *   nhảy mượn `ngu_kiem`.
  */
 export const PLAYER_SKINS: Record<string, PlayerSkin> = {
   chr_kiem_tu_nam: {
     clips: { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' },
-    poses: { fly: 'tam_ngu_kiem', jump: 'tam_ngu_kiem', meditate: 'tam_thien' },
+    poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
     refSpeed: 3.0,
     runSteps: 4,
     maxLocoScale: 1.8,
@@ -59,6 +65,8 @@ interface Template {
   bounds: THREE.Sphere;
   clips: THREE.AnimationClip[];
   clipMap: ClipMap;
+  /** Động tác chiêu và clip nền bay/niệm chú (M3-4); null nếu rig không phải người Mixamo. */
+  poses: PoseLibrary | null;
 }
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
@@ -118,6 +126,7 @@ export class PlayerSkins {
         refSpeed: skin.refSpeed,
         bounds: t.bounds,
         rates: skin.rates,
+        poses: t.poses ?? undefined,
         maxLocoScale: skin.maxLocoScale,
         sink: false,
       },
@@ -187,29 +196,19 @@ function templateOf(handle: AssetHandle, skin: PlayerSkin): Template {
   // Đủ rộng cho mọi tư thế: chết nằm dài ~1 thân người về một phía, chém giơ tay qua đầu.
   const bounds = new THREE.Sphere(new THREE.Vector3(0, height * 0.5, 0), height * 1.15);
 
-  const clips = [...handle.animations];
-  const clipMap: ClipMap = { ...skin.clips };
-  const poseIds = new Set(Object.values(skin.poses));
-  if (poseIds.size) {
-    // Nướng trên một bản sao riêng ở tư thế bind (không đụng bộ xương của bản gốc dùng để clone).
-    const rig = IkRig.from(cloneSkinned(handle.scene));
-    if (rig) {
-      const baked = new Map<string, string>();
-      for (const pid of poseIds) {
-        const def = POSE.get(pid);
-        if (!def) continue;
-        const clip = bakePose(def, rig);
-        clips.push(clip);
-        baked.set(pid, clip.name);
-      }
-      for (const [state, pid] of Object.entries(skin.poses) as [CharState, string][]) {
-        if (!clipMap[state] && baked.has(pid)) clipMap[state] = poseClipName(pid);
-      }
-    } else {
-      console.warn('[models] asset người chơi thiếu xương Mixamo, bỏ qua tư thế tạm');
+  // Nướng mọi pose một lần trên bản gốc (rig trả về tư thế nghỉ sau khi nướng); clip theo tên xương nên dùng chung.
+  const extra = withPoses(handle.scene, { ...skin.clips });
+  const poses = extra.poses ?? null;
+  const clips = poses ? [...handle.animations, ...libraryClips(poses)] : [...handle.animations];
+  const clipMap: ClipMap = { ...extra.clipMap };
+  if (poses) {
+    for (const [state, pid] of Object.entries(skin.poses) as [CharState, string][]) {
+      if (!clipMap[state] && poses.has(pid)) clipMap[state] = poseClipName(pid);
     }
+  } else {
+    console.warn('[models] asset người chơi thiếu xương Mixamo, không có động tác chiêu/tư thế tạm');
   }
-  return { handle, height, bounds, clips, clipMap };
+  return { handle, height, bounds, clips, clipMap, poses };
 }
 
 /**
@@ -219,7 +218,6 @@ function templateOf(handle: AssetHandle, skin: PlayerSkin): Template {
 export class SkinnedPlayer extends SkinnedCharacter {
   readonly hasSword = true;
   steps = 0;
-  attacks = 0;
   grounded = true;
   private flySword: THREE.Group;
   private flyAura: THREE.Material;
@@ -236,6 +234,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     this.root.add(this.flySword);
   }
 
+  /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */
   attack(): void {
     super.attack();
     this.attacks++;

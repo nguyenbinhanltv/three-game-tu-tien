@@ -119,7 +119,7 @@ describe('model người chơi (Thanh Phong)', () => {
     const sword = m.root.children.find((o) => o !== (m as unknown as { inner: THREE.Object3D }).inner)!;
     run(m, anim({ flying: true, speed: 10 }), 0.6);
     expect(m.state).toBe('fly');
-    expect(m.actionOf('pose_tam_ngu_kiem')?.isRunning()).toBe(true);
+    expect(m.actionOf('pose_ngu_kiem')?.isRunning()).toBe(true);
     expect(sword.visible).toBe(true);
     expect(m.grounded).toBe(false);
     run(m, anim({ meditating: true }), 0.6);
