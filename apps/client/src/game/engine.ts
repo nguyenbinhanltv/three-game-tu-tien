@@ -45,7 +45,7 @@ import {
   type SysMsg,
   type TransferMsg,
 } from '@dtl/shared';
-import { hasString, MONSTER, monsterName, realmName, SKILLS, t } from '@dtl/content';
+import { hasString, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { EntityManager, type MState, type PState, type WorldView } from './entities';
@@ -62,6 +62,7 @@ import { type AssetHandle, assets } from './assets';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, Vfx } from './vfx';
+import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
 import { CameraShake, SHAKE } from './shake';
 import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
 import { KeyState } from '../input/keyboard';
@@ -193,6 +194,7 @@ export class Game {
   ents!: EntityManager;
   vfx!: Vfx;
   dmg!: DamageNumbers;
+  offscreen!: OffscreenIndicators;
   minimap!: HTMLCanvasElement;
   private stage: HTMLElement;
   private canvas!: HTMLCanvasElement;
@@ -318,6 +320,7 @@ export class Game {
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.snapToServer = true;
     this.dmg?.clear();
+    this.offscreen?.clear();
   }
   private snapToServer = true;
 
@@ -448,6 +451,11 @@ export class Game {
     layer.className = 'dmg-layer';
     this.stage.appendChild(layer);
     this.dmg = new DamageNumbers(layer);
+    const offLayer = document.createElement('div');
+    offLayer.className = 'offs-layer';
+    this.stage.appendChild(offLayer);
+    this.offscreen = new OffscreenIndicators(offLayer);
+    this.offscreen.enabled = get().offscreen;
 
     this.env = new Environment(this.scene, q.shadows);
     mark('env');
@@ -1300,6 +1308,7 @@ export class Game {
     this.tickCombat(now, me);
     this.post!.render();
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
+    if (me && this.started) this.offscreen.update(this.camera, window.innerWidth, window.innerHeight, rp);
 
     this.fpsAcc += dt;
     this.fpsFrames++;
@@ -1453,6 +1462,7 @@ export class Game {
       }
     }
     const boss = this.bossFor(target, rp.x, rp.z);
+    this.offscreen.setCandidates(this.offscreenCandidates(target, boss));
     let hint = '';
     if (!(me.fl & PF_DEAD)) {
       const near = this.ents.nearestInteractable(this.cur.x, this.cur.y, this.cur.z);
@@ -1498,6 +1508,81 @@ export class Game {
       tribEnd: me.fl & PF_TRIBULATION ? st.tribEnd : 0,
       castEnd: me.fl & PF_CASTING ? st.castEnd : 0,
     });
+  }
+
+  /**
+   * Ứng viên cho chỉ báo ngoài màn hình (M4-15), theo thứ tự ưu tiên: mục tiêu đang chọn, boss đang
+   * giao chiến, đích của nhiệm vụ đang theo dõi. Chỉ đọc vị trí đã có (trạng thái room, NPC, dữ liệu bản đồ).
+   */
+  private offscreenCandidates(target: TargetInfo | null, boss: BossInfo | null): OffCandidate[] {
+    const out: OffCandidate[] = [];
+    if (!get().offscreen) return out;
+    const ents = this.ents;
+    // Mô hình chưa dựng (ngoài tầm hiển thị) thì lấy vị trí trong trạng thái room.
+    const entityPos = (id: string) => (o: THREE.Vector3) => {
+      if (ents.chestOf(id, o)) return true;
+      const e = this.view.monsters.get(id) ?? this.view.players.get(id);
+      return !!e && (o.set(e.x, e.y + 1, e.z), true);
+    };
+    const npcPos = (id: string) => {
+      const n = ents.npcs.find((e) => e.id === id);
+      return n ? (o: THREE.Vector3) => (o.set(n.x, n.y + 1.6, n.z), true) : null;
+    };
+    // Từ ngực (chestOf) xuống chân.
+    const spanOf = (id: string) => {
+      const m = ents.monsters.get(id);
+      return m ? m.model.height * 0.55 : 1.2;
+    };
+    if (target) {
+      const pos = target.kind === 'npc' ? npcPos(target.id) : entityPos(target.id);
+      if (pos) out.push({ key: target.id, kind: target.boss ? 'boss' : target.kind === 'mon' ? 'foe' : 'target', label: target.name, pos, span: target.kind === 'npc' ? 1.6 : spanOf(target.id) });
+    }
+    if (boss && boss.id !== target?.id) out.push({ key: boss.id, kind: 'boss', label: monsterName(boss.def), pos: entityPos(boss.id), span: spanOf(boss.id) });
+
+    const st = get();
+    // Cùng luật với chấm ở bảng theo dõi (trackedQuestId): chỉ chỉ tới đúng nhiệm vụ đó, không nhảy sang nhiệm vụ khác.
+    const qid = trackedQuestId(st.quests, st.trackQuest);
+    const rp = this.renderPos;
+    do {
+      const def = qid ? QUEST.get(qid) : undefined;
+      const goal = def && questGoal(def, st.quests.active[qid], NPCS);
+      if (!goal) break;
+      const label = t(`quest.${qid}.name`);
+      if (goal.kind === 'npc') {
+        // NPC không có trên bản đồ này (ví dụ đang ở bí cảnh) thì không chỉ.
+        const pos = npcPos(goal.npc);
+        if (pos) out.push({ key: qid + ':' + goal.npc, kind: goal.turnin ? 'turnin' : 'quest', label, pos, span: 1.6 });
+        break;
+      }
+      const spot = nearestGoalSpot(goal, rp.x, rp.z, this.view.monsters, this.view.nodes, LEVELS[this.view.level]);
+      if (!spot) break;
+      let pos: OffCandidate['pos'];
+      let key: string;
+      if ('id' in spot) {
+        // Cùng con quái với mục tiêu/boss thì đã có chỉ báo rồi.
+        if (spot.id === target?.id || spot.id === boss?.id) break;
+        key = spot.id;
+        const id = spot.id;
+        if (goal.kind === 'mon') pos = entityPos(id);
+        else
+          pos = (o) => {
+            const n = this.view.nodes.get(id);
+            return !!n && (o.set(n.x, n.y + 0.8, n.z), true);
+          };
+      } else {
+        key = `${spot.x},${spot.z}`;
+        const y = groundAt(spot.x, spot.z) + 1;
+        pos = (o) => (o.set(spot.x, y, spot.z), true);
+      }
+      out.push({ key: qid + ':' + key, kind: goal.kind === 'node' ? 'gather' : 'quest', label, icon: goal.kind === 'node' ? goal.item : undefined, pos, span: goal.kind === 'mon' && 'id' in spot ? spanOf(spot.id) : 0.8 });
+    } while (false);
+    return out;
+  }
+
+  setOffscreen(on: boolean): void {
+    localStorage.setItem('dtl.offscreen', on ? '1' : '0');
+    set({ offscreen: on });
+    this.offscreen.enabled = on;
   }
 
   /** Số liệu cho bảng gỡ lỗi F3 (M1-2). */
@@ -1596,6 +1681,7 @@ export class Game {
     this.sectAsset = null;
     this.sectMat.dispose();
     this.dmg?.clear();
+    this.offscreen?.dispose();
     this.stage.replaceChildren();
     this.renderer?.dispose();
     try {
