@@ -45,6 +45,7 @@ import {
   type SysMsg,
   type TransferMsg,
 } from '@dtl/shared';
+import type { Appearance } from '@dtl/shared';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { lootChime, type Sfx, setListener, sfx, unlockAudio } from './audio';
@@ -76,6 +77,8 @@ export interface LoginOptions {
   token?: string;
   dev?: string;
   name?: string;
+  /** Ngoại hình chọn lúc tạo nhân vật; server kiểm và chỉ dùng khi tạo mới. */
+  ap?: Appearance;
 }
 
 /**

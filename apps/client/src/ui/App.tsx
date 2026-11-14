@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { validName } from '@dtl/shared';
-import { t } from '@dtl/content';
+import { type Appearance, genderEnabled, type Gender, parseAppearance, validName } from '@dtl/shared';
+import { APPEARANCE, t } from '@dtl/content';
 import { assets } from '../game/assets';
 import { sfx } from '../game/audio';
 import { TitleBackdrop } from '../game/backdrop';
@@ -42,26 +42,90 @@ function GoogleButton({ onToken }: { onToken: (token: string) => void }) {
   return <div ref={ref} className="google-btn" />;
 }
 
+const LOOK_KEY = 'dtl.look';
+
+/** Lựa chọn ngoại hình nhớ lần trước (hoặc `?dye=<id>` khi thử); không hợp lệ thì mặc định. */
+function initialLook(): Appearance {
+  const def: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
+  const q = new URLSearchParams(window.location.search).get('dye');
+  if (q) return parseAppearance(APPEARANCE, { g: def.g, dye: q }) ?? def;
+  try {
+    return parseAppearance(APPEARANCE, JSON.parse(localStorage.getItem(LOOK_KEY) ?? 'null')) ?? def;
+  } catch {
+    return def;
+  }
+}
+
+/**
+ * Chọn giới tính + màu áo khi tạo nhân vật (quyết định 6.4b). Chỉ gửi lựa chọn; server kiểm và chỉ áp dụng
+ * khi tạo nhân vật mới. Nữ tu chưa có model nên hiện nhưng khóa.
+ */
+function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appearance) => void }) {
+  return (
+    <div className="look-picker">
+      <label>{t('ui.login.look')}</label>
+      <div className="look-row">
+        <span className="look-key">{t('ui.login.gender')}</span>
+        {APPEARANCE.genders.map((g) => {
+          const on = genderEnabled(APPEARANCE, g.id);
+          return (
+            <button
+              key={g.id}
+              type="button"
+              className={'look-gender' + (look.g === g.id ? ' sel' : '')}
+              disabled={!on}
+              title={on ? undefined : t('ui.login.gender_soon')}
+              onClick={() => onChange({ ...look, g: g.id as Gender })}
+            >
+              {t(`appearance.gender.${g.id}`)}
+            </button>
+          );
+        })}
+      </div>
+      <div className="look-row">
+        <span className="look-key">{t('ui.login.robe')}</span>
+        {APPEARANCE.dyes.map((d) => (
+          <button
+            key={d.id}
+            type="button"
+            className={'look-dye' + (look.dye === d.id ? ' sel' : '')}
+            style={{ background: d.hex }}
+            title={t(`appearance.dye.${d.id}`)}
+            aria-label={t(`appearance.dye.${d.id}`)}
+            onClick={() => onChange({ ...look, dye: d.id })}
+          />
+        ))}
+        <span className="look-name">{t(`appearance.dye.${look.dye}`)}</span>
+      </div>
+    </div>
+  );
+}
+
 function Login() {
   const needName = useUI((s) => s.needName);
   const nameError = useUI((s) => s.nameError);
   const [name, setName] = useState(() => localStorage.getItem('dtl.devName') ?? '');
   const [token, setToken] = useState('');
   const [err, setErr] = useState('');
+  const [look, setLookState] = useState(initialLook);
+  const setLook = (a: Appearance) => {
+    setLookState(a);
+    localStorage.setItem(LOOK_KEY, JSON.stringify(a));
+  };
 
   const submitDev = () => {
     if (!validName(name)) return setErr(t('ui.err.name_invalid'));
     localStorage.setItem('dtl.devName', name.trim());
-    Game.connect({ dev: name.trim() });
+    Game.connect({ dev: name.trim(), ap: look });
   };
   const submitName = () => {
     if (!validName(name)) return setErr(t('ui.err.name_invalid'));
-    Game.connect({ token, name: name.trim() });
+    Game.connect({ token, name: name.trim(), ap: look });
   };
   // Tiện cho kiểm thử: ?auto=<đạo hiệu> tự đăng nhập bằng tài khoản thử.
   useEffect(() => {
     const auto = new URLSearchParams(window.location.search).get('auto');
-    if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim() });
+    if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim(), ap: initialLook() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const onToken = (tk: string) => {
@@ -78,6 +142,7 @@ function Login() {
             <label>{t('ui.login.need_name')}</label>
             <input autoFocus value={name} maxLength={14} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submitName()} />
             <div className="login-hint">{t('ui.login.name_rule')}</div>
+            <LookPicker look={look} onChange={setLook} />
             <button className="btn primary" onClick={submitName}>
               {t('ui.login.enter')}
             </button>
@@ -103,6 +168,7 @@ function Login() {
                   onKeyDown={(e) => e.key === 'Enter' && submitDev()}
                 />
                 <div className="login-hint">{t('ui.login.dev_hint')}</div>
+                <LookPicker look={look} onChange={setLook} />
                 <button className="btn primary" onClick={submitDev}>
                   {t('ui.login.enter')}
                 </button>
