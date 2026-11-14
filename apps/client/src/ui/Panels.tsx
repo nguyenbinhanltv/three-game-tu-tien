@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { C, enhanceMul, EQUIP_SLOTS, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
-import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
+import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { set, useUI } from './store';
@@ -333,6 +333,42 @@ function VolumeSlider({ k }: { k: VolumeKey }) {
   );
 }
 
+/** Ghi nguồn nhạc theo manifest (nhạc Suno bản FREE: phi thương mại, bắt buộc ghi nguồn). */
+function MusicCredits() {
+  const [list, setList] = useState<(MusicCredit & { id: string })[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void musicCredits().then((l) => alive && setList(l));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return (
+    <>
+      <div className="section-title">{t('ui.settings.credits')}</div>
+      {list && list.length > 0 ? (
+        <ul className="credits">
+          {list.map((c) => (
+            <li key={c.id}>
+              {t('ui.settings.credits.line', { title: c.title ?? c.id, by: c.by ?? '?', license: c.license ?? '?' })}
+              {c.url && (
+                <>
+                  {' '}
+                  <a href={c.url} target="_blank" rel="noreferrer noopener">
+                    {t('ui.settings.credits.link')}
+                  </a>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="muted">{t('ui.settings.credits.procedural')}</div>
+      )}
+    </>
+  );
+}
+
 function Settings() {
   const quality = useUI((s) => s.quality);
   const fps = useUI((s) => s.fps);
@@ -383,6 +419,7 @@ function Settings() {
       {VOLUME_KEYS.map((k) => (
         <VolumeSlider key={k} k={k} />
       ))}
+      <MusicCredits />
       <button
         className="btn"
         onClick={() => {
