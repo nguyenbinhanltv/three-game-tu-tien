@@ -6,6 +6,7 @@ import { Encoder } from '@colyseus/schema';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import { config } from './config';
 import { sqlite } from './db';
+import { installHttpRateLimit } from './ratelimit';
 import { activeRooms, DungeonRoom, onlineCount, ROOM_DUNGEON, ROOM_WORLD, WorldRoom } from './rooms';
 
 const MIME: Record<string, string> = {
@@ -76,12 +77,22 @@ matchMaker.controller.exposedMethods = ['joinOrCreate', 'join', 'joinById', 'rec
 
 const httpServer = http.createServer(serveStatic);
 const gameServer = new Server({ transport: new WebSocketTransport({ server: httpServer }) });
+// Sau khi Colyseus gắn route /matchmake và ws gắn 'upgrade': bọc ngoài cùng để chặn trước cả hai.
+const rl = config.rateLimit;
+installHttpRateLimit(httpServer, rl, (req) => ({
+  ...matchMaker.controller.DEFAULT_CORS_HEADERS,
+  ...matchMaker.controller.getCorsHeaders(req),
+}));
 
 gameServer.define(ROOM_WORLD, WorldRoom);
 gameServer.define(ROOM_DUNGEON, DungeonRoom);
 
 await gameServer.listen(config.port);
 console.log(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
+console.log(
+  `[server] giới hạn /matchmake + websocket: ${rl.burst > 0 ? `${rl.burst} dồn, ${rl.perMin}/phút mỗi IP` : 'TẮT'}` +
+    `${rl.trustProxy ? ', tin X-Forwarded-For' : ''}${rl.exempt.size ? `, miễn: ${[...rl.exempt].join(' ')}` : ''}`,
+);
 console.log(`[server] đăng nhập dev: ${config.devBypass ? 'BẬT (chỉ dùng khi phát triển)' : 'tắt'}; Google: ${config.googleClientId ? 'đã cấu hình' : 'chưa cấu hình'}`);
 
 setInterval(() => {

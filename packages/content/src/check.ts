@@ -1,8 +1,9 @@
 // Kiểm tra nội dung game: id trùng, tham chiếu hỏng, thiếu chuỗi hiển thị.
 // Chạy: pnpm content:check
 
-import { groundAt, heightAt, type MonsterAi, type MonsterDef, phaseRules, validatePose, WATER_Y, xpNeed } from '@dtl/shared';
+import { groundAt, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, validatePose, WATER_Y, xpNeed } from '@dtl/shared';
 import { hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
+import { LOOT } from './loot';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -104,10 +105,25 @@ function checkAi(m: MonsterDef, ai: MonsterAi, attackCd: number, at: string) {
   }
 }
 
+function checkLoot(id: string, l: LootDef) {
+  const [g0, g1] = l.gold ?? [];
+  if (!(Number.isInteger(g0) && Number.isInteger(g1) && g0 >= 0 && g1 >= g0)) err(`loot ${id}: gold phải là [min, max] nguyên, 0 <= min <= max`);
+  for (const d of l.drops ?? []) {
+    needItem(d.item, `loot ${id}`);
+    if (!(d.chance > 0 && d.chance <= 1)) err(`loot ${id}/${d.item}: chance phải trong (0, 1]`);
+    if (!(Number.isInteger(d.min) && Number.isInteger(d.max) && d.min >= 1 && d.max >= d.min)) err(`loot ${id}/${d.item}: min/max không hợp lệ`);
+  }
+}
+for (const id of LOOT.keys()) if (!MONSTER.has(id)) err(`loot: quái không tồn tại ${id}`);
+
 for (const m of MONSTERS) {
   needStr(`mon.${m.id}`);
   if (m.boss) needStr(`mon.${m.id}.title`);
-  for (const d of m.drops) needItem(d.item, `monster ${m.id}`);
+  // Tỉ lệ rơi chỉ nằm trong loot.json (server đọc); monsters.json vào bundle client nên cấm.
+  if ('drops' in m || 'gold' in m) err(`monster ${m.id}: drops/gold phải nằm trong data/loot.json, không ở monsters.json`);
+  const loot = LOOT.get(m.id);
+  if (!loot) err(`monster ${m.id}: thiếu bảng rơi trong data/loot.json`);
+  else checkLoot(m.id, loot);
   checkAi(m, m.ai ?? {}, m.attackCd, '');
   if (m.phases) {
     if (!m.boss) err(`monster ${m.id}: chỉ boss mới có pha`);

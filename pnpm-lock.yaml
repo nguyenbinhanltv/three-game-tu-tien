@@ -119,6 +119,9 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.19.2
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.7(@types/node@24.19.2)(tsx@4.23.15)
 
   packages/content:
     dependencies:

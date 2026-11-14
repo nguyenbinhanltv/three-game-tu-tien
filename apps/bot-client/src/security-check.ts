@@ -1,6 +1,8 @@
 // Kiểm tra hồi quy các lỗ hổng đã vá (soát netcode 2026-11-12).
 // Chạy khi server dev đang bật với AUTH_DEV_BYPASS=1:  pnpm --filter @dtl/bot-client security
 // Server khác cổng: thêm đối số http://localhost:2597, hoặc đặt SERVER_URL / PORT.
+// Server KHÔNG được bật RATE_LIMIT_EXEMPT (bài 11 kiểm giới hạn /matchmake). Bài 11 làm cạn xô
+// của IP này, chạy lại cả bộ sau khoảng 1 phút.
 
 import { Client, type Room } from 'colyseus.js';
 import { C, IN_FLY, IN_UP, type InitMsg, MF_CHANT, MF_STUN, MS_DEAD, ROOM_DUNGEON, ROOM_WORLD, S } from '@dtl/shared';
@@ -203,6 +205,51 @@ async function main() {
   const p2 = (again.room.state as { players: Map<string, P> }).players.get(again.init.sid)!;
   check('chết rồi vào lại thì về điểm hồi sinh', Math.hypot(p2.x - 2048, p2.z - 2088) < 5 && p2.hp > 0, `(${p2.x.toFixed(0)}, ${p2.z.toFixed(0)}) hp ${p2.hp}`);
   await again.room.leave(true);
+
+  // 12. Thân request /matchmake quá lớn bị từ chối (Colyseus gom cả thân vào bộ nhớ).
+  {
+    const r = await fetch(HTTP + '/matchmake/joinOrCreate/world', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dev: 'x'.repeat(64 * 1024) }) });
+    await r.arrayBuffer();
+    check('thân /matchmake quá lớn bị từ chối 413', r.status === 413, `HTTP ${r.status}`);
+  }
+
+  // 11. Giới hạn tần suất /matchmake theo IP (đặt cuối: làm cạn xô của IP này; chạy lại sau ~1 phút).
+  //     Mỗi request mang X-Forwarded-For khác nhau: khi chưa bật TRUST_PROXY thì không lách được.
+  {
+    let limited: Response | null = null;
+    let sent = 0;
+    for (let batch = 0; batch < 10 && !limited; batch++) {
+      const rs = await Promise.all(
+        Array.from({ length: 20 }, () =>
+          fetch(HTTP + '/matchmake/joinOrCreate/world', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-forwarded-for': `203.0.113.${1 + (sent++ % 250)}` },
+            body: '{}',
+          }),
+        ),
+      );
+      for (const r of rs) {
+        if (r.status === 429 && !limited) limited = r;
+        else await r.arrayBuffer();
+      }
+    }
+    const body = limited ? ((await limited.json()) as { code?: number; error?: string }) : null;
+    check(
+      '/matchmake dồn dập bị chặn 429 (X-Forwarded-For giả không lách được)',
+      !!limited && body?.code === 429 && Number(limited.headers.get('retry-after')) > 0,
+      limited ? `sau ${sent} request, Retry-After ${limited.headers.get('retry-after')}s` : `${sent} request không bị chặn — server đang bật RATE_LIMIT_EXEMPT/TRUST_PROXY hoặc RATE_LIMIT_BURST<=0?`,
+    );
+    // Bị chặn rồi thì join qua colyseus.js báo lỗi 429 thay vì treo.
+    let code: number | undefined;
+    try {
+      const r = await new Client(WS).joinOrCreate(ROOM_WORLD, { dev: 'kiemthu' });
+      await r.leave(true);
+    } catch (e) {
+      code = (e as { code?: number }).code;
+    }
+    check('client nhận mã 429 khi bị giới hạn', code === 429, `mã ${code}`);
+    check('/health không bị giới hạn', await health());
+  }
 
   check('server vẫn sống sau toàn bộ bài kiểm tra', await health());
   console.log(failed ? `\n${failed} mục HỎNG` : '\nTất cả đều ĐẠT');
