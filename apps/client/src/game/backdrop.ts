@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { heightAt, SECT } from '@dtl/shared';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
 import { GRADING, GRADING_DEFAULT } from '../render/grading';
+import { adoptGltfMaterials } from '../render/materials/world';
 import { applyGrading, budgetPixelRatio, PostPipeline } from '../render/post';
 import { get } from '../ui/store';
 import { type AssetHandle, assets } from './assets';
@@ -29,7 +30,7 @@ export class TitleBackdrop {
   /** Preset "thấp" thì bỏ bloom/FXAA/sương độ cao và giữ pixel ratio 1. */
   private low = get().quality === 'low';
   private sectMesh: THREE.Mesh | null = null;
-  private sectAsset: { handle: AssetHandle; mat: THREE.Material } | null = null;
+  private sectAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   private focus = new THREE.Vector3(SECT.x, SECT.y + 24, SECT.z);
   private angle = 2.3;
   private last = 0;
@@ -107,7 +108,7 @@ export class TitleBackdrop {
     this.post?.dispose();
     this.post = null;
     this.sectAsset?.handle.release();
-    this.sectAsset?.mat.dispose();
+    for (const m of this.sectAsset?.mats ?? []) m.dispose();
     this.sectAsset = null;
     this.renderer?.domElement.remove();
     this.renderer?.dispose();
@@ -122,14 +123,11 @@ export class TitleBackdrop {
         handle.release();
         return;
       }
-      const mat = MODEL_MAT.clone();
-      mat.side = THREE.DoubleSide;
-      this.sectAsset = { handle, mat };
+      this.sectAsset = { handle, mats: adoptGltfMaterials(handle.scene) };
       handle.scene.position.set(SECT.x, SECT.y, SECT.z);
       handle.scene.traverse((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
-        m.material = mat;
         m.frustumCulled = false;
       });
       this.scene.add(handle.scene);
