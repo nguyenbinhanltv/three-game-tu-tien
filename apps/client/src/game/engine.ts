@@ -584,11 +584,15 @@ export class Game {
     this.loadSectModel(q.shadows);
     this.bindInput();
     this.onResize();
-    // M6-1: biên dịch trước material của cảnh (trời, địa hình, kiến trúc, VFX ấm sẵn, cổng) ở màn tải, thay vì
-    // dồn vào khung đầu. Có trần thời gian: máy chậm thì cứ vẽ, phần còn lại biên dịch khi gặp.
-    this.vfx.update(0); // đưa các lưới "vẽ ấm" của VFX vào cảnh để được biên dịch cùng
-    await this.precompile();
-    mark('compile');
+    // M6-1, WebGL2: biên dịch trước material của cảnh (trời, địa hình, kiến trúc, VFX ấm sẵn, cổng) song song
+    // (KHR_parallel_shader_compile) thay vì biên dịch + link đồng bộ ở khung đầu. pnpm bench:load (20 Mbps,
+    // trung vị 6 lượt): khung đầu − JS 1,80 → 1,59 s, vào game 3,96 → 3,47 s. WebGPU thì không lợi (dựng node
+    // TSL vẫn đồng bộ, Chrome vốn biên dịch pipeline ở tiến trình GPU) mà khung đầu trễ thêm ~0,5 s: chỉ "vẽ ấm".
+    if (!isWebGPU(this.renderer)) {
+      this.vfx.update(0); // đưa các lưới "vẽ ấm" của VFX vào cảnh để được biên dịch cùng
+      await this.precompile();
+      mark('compile');
+    }
     if (this.disposed) return;
     this.renderer.setAnimationLoop(() => this.frame());
   }
@@ -619,9 +623,8 @@ export class Game {
         this.sectMesh.geometry = buildSect(false);
         old.dispose();
       }
-      // Còn ở màn tải, WebGL2 (M6-1): biên dịch song song (KHR_parallel_shader_compile) thay vì biên dịch +
-      // link đồng bộ trong một khung vẽ. WebGPU thì Chrome biên dịch pipeline ở tiến trình GPU, không chặn
-      // luồng chính, dừng vẽ để chờ chỉ làm trễ; đã vào game thì dừng vẽ cũng là khựng, để renderer tự làm.
+      // Còn ở màn tải, WebGL2 (M6-1): biên dịch song song thay vì biên dịch + link đồng bộ trong một khung vẽ
+      // (xem `start`). Đã vào game thì dừng vẽ để chờ cũng là khựng, để renderer tự làm.
       if (!this.started && !isWebGPU(this.renderer)) await this.precompile();
     } catch (e) {
       console.warn('[asset] không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
@@ -1536,7 +1539,8 @@ export class Game {
     this.fpsFrames++;
     if (now - this.hudAt > 100) {
       this.hudAt = now;
-      if (me) assets.setViewer(rp.x, rp.z); // trước khi có vị trí thật, giữ điểm hồi sinh do prefetch đặt
+      // Lúc tải giữ điểm hồi sinh do prefetch đặt (renderPos có thể chưa khớp vị trí thật).
+      if (this.started) assets.setViewer(rp.x, rp.z);
       this.syncHud(me);
       this.music.tick(now, { active: this.started, room: get().room, x: rp.x, z: rp.z, flags: me?.fl ?? 0, monsters: this.ents.monsters.values() });
     }

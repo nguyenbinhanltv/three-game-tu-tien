@@ -18,6 +18,14 @@ import { legacyModelsRequested } from './character/view';
 export const PREFETCH_PRIORITY = { player: 0, monster: 120, vfx: 400 } as const;
 
 /**
+ * Hỏi manifest ngay khi trang chạy (1 KB): lúc bắt đầu kết nối thì đã biết tên file GLB, khỏi đợi một
+ * vòng mạng trong lúc luồng chính bận dựng thế giới.
+ */
+export function prefetchManifest(cache: AssetCache = assets): void {
+  cache.getManifest().catch(() => undefined);
+}
+
+/**
  * Bắt đầu tải byte các GLB cần sớm, gọi ngay khi bắt đầu kết nối: mạng chạy trong lúc chờ server và
  * lúc CPU dựng thế giới thủ tục. Các nơi dùng (`PlayerSkins`, `MonsterSkins`, `Game.loadSectModel`,
  * `Vfx`) vẫn `acquire` như cũ và nhận bản đã tải. Gọi nhiều lần không sao.

@@ -380,7 +380,7 @@ export class AssetCache {
   private enqueue<T>(id: string, opts: AcquireOptions, run: () => Promise<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       this.queue.push({ id, pos: opts.pos, priority: opts.priority ?? 0, run: () => run().then(resolve, reject) });
-      this.pump();
+      this.schedulePump();
     });
   }
 
@@ -398,6 +398,21 @@ export class AssetCache {
 
   private rank(j: Job): number {
     return j.pos ? this.dist(j.pos) : j.priority;
+  }
+
+  private pumpQueued = false;
+
+  /**
+   * Chọn việc ở cuối lượt microtask: mọi yêu cầu xếp cùng lượt (ví dụ các callback cùng chờ manifest)
+   * được xếp hạng cùng nhau, việc xếp trước không chiếm luồng của việc ưu tiên hơn xếp ngay sau.
+   */
+  private schedulePump(): void {
+    if (this.pumpQueued) return;
+    this.pumpQueued = true;
+    queueMicrotask(() => {
+      this.pumpQueued = false;
+      this.pump();
+    });
   }
 
   private pump(): void {

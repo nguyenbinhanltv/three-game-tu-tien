@@ -95,7 +95,8 @@ export class MonsterSkins {
   private load(id: string): void {
     if (this.templates.has(id)) return;
     this.templates.set(id, 'loading');
-    this.cache.acquire(id, { priority: 1 }).then(
+    // Cùng thang ưu tiên với prefetchWorldAssets (preload.ts): sau nhân vật mình và kiến trúc quanh chỗ hồi sinh.
+    this.cache.acquire(id, { priority: 120 }).then(
       (handle) => {
         if (this.disposed) {
           handle.release();
