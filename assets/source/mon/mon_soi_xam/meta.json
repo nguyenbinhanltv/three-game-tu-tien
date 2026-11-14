@@ -1,0 +1,111 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "mon_soi_xam",
+  "type": "mon",
+  "budgetClass": "monster",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 8000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "mon/mon_soi_xam/tripo/rig_v01.glb",
+    "size": {
+      "depth": 1.5
+    },
+    "yaw": 180,
+    "post": "tools/blender/anim_quadruped.py"
+  },
+  "concept": [
+    {
+      "file": "concept/concept_left_v01.png",
+      "view": "left",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: full body creature turnaround reference, SIDE PROFILE VIEW facing the RIGHT edge of the image,\na lean grey mountain wolf about 1.5 meters long, long muzzle, pointed upright ears, thick neck ruff,\ndense fur painted in soft clumps with visible fur direction: pale warm grey (#BDB6A4) belly, chest and muzzle, mid grey (#7D786C) body,\ndarker grey (#464540) saddle along the back and tail tip, bushy tail, bronze (#AE8B49) eyes, ink black (#29292C) nose and paw pads,\nstanding in a neutral pose: all four legs straight and visible, weight even, head level, mouth closed, tail held straight back and slightly down,\nstrict orthographic profile.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable anatomy and materials with hand-painted detail: fur, claws,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): stone greys (#BDB6A4, #7D786C, #464540), bronze (#AE8B49), ink black (#29292C), ivory (#E6DDCB).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no snow,\nno magic effects, no motion lines, no aura,\nno cel shading, no toon outlines, no black contour lines, no flat cartoon colors, no anime style, no chibi,\nno photograph, no plastic look, no baked dramatic shadows, no night scene, no snarling, no visible teeth,\nno background scenery, no props on the floor, no second creature, no cropped body parts.\nVariant A: lean long-legged mountain wolf, restrained neck ruff, weathered warm grey coat, realistic slender muzzle. Landscape 1536x1024. Exactly four legs and four paws, small fore-aft offsets separate all four in side view, neutral standing not walking. 8 percent margin. No purple tint, no snow. Single view only.",
+      "chosen": true
+    },
+    {
+      "file": "concept/concept_left_v02.png",
+      "view": "left",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: full body creature turnaround reference, SIDE PROFILE VIEW facing the RIGHT edge of the image,\na lean grey mountain wolf about 1.5 meters long, long muzzle, pointed upright ears, thick neck ruff,\ndense fur painted in soft clumps with visible fur direction: pale warm grey (#BDB6A4) belly, chest and muzzle, mid grey (#7D786C) body,\ndarker grey (#464540) saddle along the back and tail tip, bushy tail, bronze (#AE8B49) eyes, ink black (#29292C) nose and paw pads,\nstanding in a neutral pose: all four legs straight and visible, weight even, head level, mouth closed, tail held straight back and slightly down,\nstrict orthographic profile.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable anatomy and materials with hand-painted detail: fur, claws,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): stone greys (#BDB6A4, #7D786C, #464540), bronze (#AE8B49), ink black (#29292C), ivory (#E6DDCB).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no snow,\nno magic effects, no motion lines, no aura,\nno cel shading, no toon outlines, no black contour lines, no flat cartoon colors, no anime style, no chibi,\nno photograph, no plastic look, no baked dramatic shadows, no night scene, no snarling, no visible teeth,\nno background scenery, no props on the floor, no second creature, no cropped body parts.\nVariant B: broader chest and denser neck ruff, heavier paws and fuller tail, still lean natural wolf anatomy. Landscape 1536x1024. Exactly four legs and four paws, small fore-aft offsets separate all four in side view, neutral standing not walking. 8 percent margin. No purple tint, no snow. Single view only.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_front_v01.png",
+      "view": "front",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, draw the SAME wolf in strict orthographic FRONT VIEW looking directly at camera, two eyes symmetrical, mouth closed. Same neutral quadruped standing pose, same anatomy proportions fur colors markings neck ruff and tail. Exactly FOUR legs and FOUR paws total, no extra paws. Two near legs frame two farther legs, natural occlusion. Same ear tip height and foot baseline as reference; do not enlarge to fill width. Landscape 1536x1024. No parts added or removed.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable anatomy and materials with hand-painted detail: fur, claws,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): stone greys (#BDB6A4, #7D786C, #464540), bronze (#AE8B49), ink black (#29292C), ivory (#E6DDCB).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no snow,\nno magic effects, no motion lines, no aura,\nno cel shading, no toon outlines, no black contour lines, no flat cartoon colors, no anime style, no chibi,\nno photograph, no plastic look, no baked dramatic shadows, no night scene, no snarling, no visible teeth,\nno background scenery, no props on the floor, no second creature, no cropped body parts.\nNo purple tint, no snow. Single creature.",
+      "chosen": false
+    },
+    {
+      "file": "concept/concept_back_v01.png",
+      "view": "back",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Using the attached image as exact design reference, draw the SAME wolf in strict orthographic BACK VIEW seen directly behind, no face visible. Same neutral quadruped standing pose, same anatomy proportions fur colors markings neck ruff and tail. Exactly FOUR legs and FOUR paws total, no extra paws. Two near legs frame two farther legs, natural occlusion. Same ear tip height and foot baseline as reference; do not enlarge to fill width. Landscape 1536x1024. No parts added or removed.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality,\nbelievable anatomy and materials with hand-painted detail: fur, claws,\nclear readable silhouette, large shapes first and fine detail second,\ncolor guide (use only what the subject needs): stone greys (#BDB6A4, #7D786C, #464540), bronze (#AE8B49), ink black (#29292C), ivory (#E6DDCB).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting,\nno colored rim light, no color cast, neutral white balance,\nplain light grey seamless background (#D8D8D8), no floor shadow,\northographic camera, whole subject centered and fully inside the frame with margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature,\nno glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no snow,\nno magic effects, no motion lines, no aura,\nno cel shading, no toon outlines, no black contour lines, no flat cartoon colors, no anime style, no chibi,\nno photograph, no plastic look, no baked dramatic shadows, no night scene, no snarling, no visible teeth,\nno background scenery, no props on the floor, no second creature, no cropped body parts.\nNo purple tint, no snow. Single creature.",
+      "chosen": true
+    },
+    {
+      "file": "concept/concept_front_v02.png",
+      "view": "front",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-15",
+      "prompt": "Edit target image only in the lower legs and paws region. Correct anatomy to EXACTLY FOUR legs and FOUR paws total. Keep two FRONT legs as the outer pair, each ending in ONE paw. Keep two HIND legs as the inner pair, each ending in ONE paw. Remove the two extra small outer paw protrusions, merge into the front legs so there is only one coherent paw per leg. No duplicated toe clusters or disembodied feet. Preserve face, eyes, ears, fur markings, torso, tail, neutral stance, exact size framing and background unchanged. Semi-realistic painterly game asset, neutral flat studio lighting, plain light grey background. No purple, snow, effects or text.",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "multiview_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 8000,
+        "topology": "triangle",
+        "pbr": true,
+        "views": [
+          "front",
+          "left",
+          "back"
+        ]
+      },
+      "seed": null,
+      "quote": 65,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Web app (người dùng bấm). 7.895 tam giác; texture base 8192², normal/RM 4096². Credit thật chưa báo (nút Generate ghi 65)."
+    },
+    {
+      "step": "rig",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "quadruped",
+      "params": {},
+      "seed": null,
+      "quote": null,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/rig_v01.glb",
+      "result": "ok",
+      "note": "28 xương Tripo quadruped, không có xương hàm; tên chân sau đảo trái/phải (anim_quadruped.py đặt lại theo vị trí). anim_run_v01.glb tải về trùng hệt rig_v01.glb, không có clip; web không có clip bốn chân ngoài đi bộ → 5 clip làm thủ tục bằng tools/blender/anim_quadruped.py (0 credit). Clip (anim_quadruped.py): idle 2,4 s, run 0,6 s, attack 0,8 s, hit_light 0,4 s, death 1,4 s; tự nâng thân để không xuyên đất, xác nằm đúng chỗ. Tốc độ tự nhiên của run ở 1× khoảng 2,5 m/s (chân trước chạm đất); client phát run với timeScale ≈ tốc độ di chuyển / 2,5 (Sói Xám 5,5 m/s → khoảng 2,2×)."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max) + Codex (concept); clip thủ tục tools/blender/anim_quadruped.py",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}
