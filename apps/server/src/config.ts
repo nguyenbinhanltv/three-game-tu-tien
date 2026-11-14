@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { rateLimitFromEnv } from './ratelimit';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const SERVER_ROOT = path.resolve(here, '..');
@@ -39,4 +40,10 @@ export const config = {
   clientDist: path.join(REPO_ROOT, 'apps', 'client', 'dist'),
   /** Số người tối đa mỗi kênh của bản đồ thế giới. Đầy thì tự mở kênh mới. */
   maxClients: Math.max(1, Number(process.env.MAX_CLIENTS ?? 50)),
+  /**
+   * Giới hạn tần suất theo IP cho POST /matchmake và bắt tay WebSocket (mỗi loại một xô).
+   * RATE_LIMIT_BURST (mặc định 40), RATE_LIMIT_PER_MIN (20), TRUST_PROXY=1 để đọc X-Forwarded-For,
+   * RATE_LIMIT_EXEMPT=loopback|ip,... miễn giới hạn cho bot ở máy dev (bị bỏ qua khi production).
+   */
+  rateLimit: rateLimitFromEnv(process.env),
 };

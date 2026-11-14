@@ -22,14 +22,14 @@
 //              "pitch": 0.05, "gain": 1, "bus": "sfx", "duck": 0 }
 //   },
 //   "music":   { "sect": { "src": ["music/sect.webm", "music/sect.m4a"], "gain": 1, "loop": true,
-//                         "credit": { "title": "Lạc Kiếm Tông", "by": "Suno (bản FREE)", "license": "phi thương mại, ghi nguồn",
+//                         "credit": { "title": "Lạc Kiếm Tông", "by": "Suno (free, non-commercial)", "license": "phi thương mại, ghi nguồn",
 //                                     "url": "https://suno.com/song/<id>" } } },
 //   "ambient": { "wind": { "src": ["amb/wind.webm", "amb/wind.m4a"] } }
 // }
 // SFX và âm môi trường do `node tools/audio/build.mjs` sinh từ nguồn CC0 (khai báo ở tools/audio/sounds.json),
-// giấy phép từng âm ghi trong assets/LICENSES.md. Nhạc Suno bản FREE
-// chỉ dùng phi thương mại và phải ghi nguồn: điền `credit` cho từng bài, mục "Nguồn nhạc" trong
-// Cài đặt đọc trường này. Id bài nhạc theo máy trạng thái trong music.ts (MUSIC_TRACKS).
+// giấy phép từng âm ghi trong assets/LICENSES.md. Mục "music" do `node tools/audio/loop.mjs` sinh (khai báo ở
+// tools/audio/music.json, hướng dẫn ở docs/audio/suno-prompts.md). Nhạc Suno bản FREE chỉ dùng phi thương mại và
+// phải ghi nguồn: loop.mjs ghi `credit` cho từng bài, mục "Nguồn nhạc" trong Cài đặt đọc trường này. Id bài nhạc theo máy trạng thái trong music.ts (MUSIC_TRACKS).
 
 import { bellPartials } from './lootBell';
 
