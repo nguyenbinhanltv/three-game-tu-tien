@@ -399,6 +399,27 @@ kbd {
 .bar.xp .bar-fill {
   background: linear-gradient(180deg, #e6c56a, #a8853a);
 }
+/* Thanh niệm chú / choáng của mục tiêu (boss). */
+.bar.tcast {
+  height: 14px;
+}
+.bar.tcast .bar-fill {
+  position: relative;
+  transition: none;
+  background: linear-gradient(180deg, #bfefff, #4fa9d6);
+}
+.bar.tcast.guarded .bar-fill {
+  background: linear-gradient(180deg, #8c9aa6, #56616b);
+}
+.bar.tcast.stun .bar-fill {
+  background: linear-gradient(180deg, #fff2b0, #d9a63a);
+}
+.tcast-guard {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(0, 0, 0, 0.35);
+  border-right: 1px solid rgba(255, 255, 255, 0.5);
+}
 .bar-text {
   position: absolute;
   inset: 0;
