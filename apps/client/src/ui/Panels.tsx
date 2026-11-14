@@ -373,6 +373,7 @@ function Settings() {
   const quality = useUI((s) => s.quality);
   const fps = useUI((s) => s.fps);
   const controls = useUI((s) => s.controls);
+  const camShake = useUI((s) => s.camShake);
   const [mute, setMute] = useState(isMuted());
   return (
     <Window title={t('ui.settings')} onClose={() => set({ panel: null })} cls="settings">
@@ -395,6 +396,14 @@ function Settings() {
       </div>
       <div className="muted">{t('ui.settings.quality_hint')}</div>
       <div className="muted">{t('ui.settings.fps', { n: fps })}</div>
+      <div className="section-title">{t('ui.settings.cam_shake')}</div>
+      <div className="seg">
+        {[true, false].map((on) => (
+          <button key={String(on)} className={'btn' + (camShake === on ? ' primary' : '')} onClick={() => Game.current?.setCamShake(on)}>
+            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
+          </button>
+        ))}
+      </div>
       <div className="section-title">{t('ui.settings.sound')}</div>
       <div className="seg">
         <button
