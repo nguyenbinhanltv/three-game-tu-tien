@@ -24,6 +24,9 @@ export class PlayerS extends Schema {
   @type('uint32') seq = 0;
   /** id vũ khí đang cầm (để hiển thị). */
   @type('string') wp = '';
+  /** Ngoại hình (để hiển thị): giới tính 'm' | 'f' và id màu áo trong appearance.json. */
+  @type('string') g = 'm';
+  @type('string') dye = '';
 }
 
 export class MonS extends Schema {

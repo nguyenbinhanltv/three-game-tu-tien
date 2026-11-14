@@ -23,6 +23,15 @@ export interface SkinnedOpts {
    * chân/đầu khi đang chạy. Bỏ trống thì không cắt theo frustum.
    */
   bounds?: THREE.Sphere;
+  /** Tốc độ phát riêng theo trạng thái (vd. idle dài quá thì phát nhanh hơn, đòn dài hơn GCD thì rút). Mặc định 1. */
+  rates?: Partial<Record<CharState, number>>;
+  /**
+   * Trần hệ số phát clip di chuyển. Clip chạy chậm hơn tốc độ thật nhiều thì phát đúng tỉ lệ sẽ giật cục;
+   * chấp nhận chân trượt một chút thay vì vậy. Mặc định theo `locomotionScale` (2,6).
+   */
+  maxLocoScale?: number;
+  /** Xác chìm xuống đất sau khi chết (quái: có; người chơi nằm chờ hồi sinh: không). Mặc định true. */
+  sink?: boolean;
   /** Pose đã nướng cho asset này (người Mixamo): động tác chiêu, và clip nền bay/niệm chú qua `clipMap`. */
   poses?: PoseLibrary;
 }
@@ -117,6 +126,9 @@ export class SkinnedCharacter implements CharacterView {
   private acc = 0;
   private interval = 0;
   private disposed = false;
+  private rates: Partial<Record<CharState, number>>;
+  private maxLoco: number;
+  private sink: boolean;
   private poses: PoseLibrary | null;
   private perf: Perform | null = null;
   private pendingPerform: { id: string; from: number; left: number } | null = null;
@@ -132,6 +144,9 @@ export class SkinnedCharacter implements CharacterView {
     this.refSpeed = o.refSpeed * s;
     this.height = o.height * s;
     this.lodDist = o.lodDist ?? [22, 55];
+    this.rates = o.rates ?? {};
+    this.maxLoco = o.maxLocoScale ?? Infinity;
+    this.sink = o.sink ?? true;
     for (const c of o.clips) this.clips.set(c.name, c);
     this.poses = o.poses ?? null;
     if (this.poses) for (const c of libraryClips(this.poses)) if (!this.clips.has(c.name)) this.clips.set(c.name, c);
@@ -230,7 +245,7 @@ export class SkinnedCharacter implements CharacterView {
         this.enterBase('death', FADE_DEATH);
       }
       this.deadT += dt;
-      this.inner.position.y = -Math.max(0, this.deadT - SINK_AFTER) * SINK_RATE;
+      if (this.sink) this.inner.position.y = -Math.max(0, this.deadT - SINK_AFTER) * SINK_RATE;
     } else {
       if (this.dead) {
         // Hồi sinh: bỏ tư thế chết.
@@ -248,9 +263,9 @@ export class SkinnedCharacter implements CharacterView {
       }
       if (!this.shot && want !== this.base) this.enterBase(want, FADE_BASE);
       if (!this.shot && this.current) {
-        if (want === 'walk' || want === 'run') this.current.timeScale = locomotionScale(a.speed, this.refSpeed);
-        else if (want === 'combatIdle' && clipFor('combatIdle', this.map, this.hasClip) === this.map.idle) this.current.timeScale = COMBAT_IDLE_RATE;
-        else this.current.timeScale = 1;
+        if (want === 'walk' || want === 'run') this.current.timeScale = Math.min(this.maxLoco, locomotionScale(a.speed, this.refSpeed));
+        else if (want === 'combatIdle' && clipFor('combatIdle', this.map, this.hasClip) === this.map.idle) this.current.timeScale = COMBAT_IDLE_RATE * (this.rates.idle ?? 1);
+        else this.current.timeScale = this.rates[want] ?? 1;
       }
     }
 
@@ -373,7 +388,7 @@ export class SkinnedCharacter implements CharacterView {
       act.setLoop(THREE.LoopOnce, 1);
       act.clampWhenFinished = true;
       act.reset();
-      act.timeScale = 1;
+      act.timeScale = this.rates.death ?? 1;
     } else {
       act.setLoop(THREE.LoopRepeat, Infinity);
       act.clampWhenFinished = false;
@@ -389,10 +404,11 @@ export class SkinnedCharacter implements CharacterView {
     const clip = act.getClip();
     act.setLoop(THREE.LoopOnce, 1);
     act.clampWhenFinished = true;
-    act.timeScale = 1;
+    const rate = this.rates[state] ?? 1;
+    act.timeScale = rate;
     act.reset();
     this.fadeTo(act, FADE_IN_SHOT);
-    this.shot = { state, action: act, left: clip.duration };
+    this.shot = { state, action: act, left: clip.duration / rate };
   }
 
   private fadeTo(next: THREE.AnimationAction, fade: number): void {

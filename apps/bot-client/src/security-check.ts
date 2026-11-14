@@ -76,6 +76,42 @@ async function main() {
   const after = ((await (await fetch(HTTP + '/health')).json()) as { rooms: unknown[] }).rooms.length;
   check('không có room mới bị dựng', after <= Math.max(before, 1), `${before} → ${after}`);
 
+  // Ngoại hình lúc tạo nhân vật: giới tính chưa mở, màu tự do, dữ liệu sai kiểu/quá lớn → server dùng mặc định, không lỗi.
+  const tag = Math.random().toString(36).slice(2, 7);
+  const bad: [string, unknown][] = [
+    ['ap' + tag + 'a', { g: 'f', dye: 'attire_ink' }],
+    ['ap' + tag + 'b', { g: 'm', dye: '#ff00ff' }],
+    ['ap' + tag + 'c', { g: 'm', dye: 'x'.repeat(100000) }],
+    ['ap' + tag + 'd', ['m', 'attire_ink']],
+  ];
+  for (const [name, ap] of bad) {
+    const c = new Client(WS);
+    let r: Room;
+    try {
+      r = await c.joinOrCreate(ROOM_WORLD, { dev: name, ap });
+    } catch (e) {
+      // Body quá lớn bị chặn trước khi tới onAuth (giới hạn kích thước /matchmake) cũng là đạt.
+      const code = (e as { code?: number }).code;
+      check(`ngoại hình không hợp lệ bị từ chối (${JSON.stringify(ap).slice(0, 30)})`, code === 413, `mã ${code}`);
+      continue;
+    }
+    r.onMessage('*', () => {});
+    await W(400);
+    const me = (r.state as unknown as { players: Map<string, { g: string; dye: string }> }).players.get(r.sessionId);
+    check(`ngoại hình không hợp lệ thì về mặc định (${JSON.stringify(ap).slice(0, 30)})`, me?.g === 'm' && me?.dye === 'attire_sect', `${me?.g}/${me?.dye}`);
+    await r.leave(true);
+  }
+  // Chỉ nhận lúc tạo: vào lại nhân vật cũ với lựa chọn khác không đổi được màu.
+  {
+    const c = new Client(WS);
+    const r = await c.joinOrCreate(ROOM_WORLD, { dev: 'ap' + tag + 'a', ap: { g: 'm', dye: 'attire_ink' } });
+    r.onMessage('*', () => {});
+    await W(400);
+    const me = (r.state as unknown as { players: Map<string, { dye: string }> }).players.get(r.sessionId);
+    check('ngoại hình chỉ nhận lúc tạo nhân vật', me?.dye === 'attire_sect', String(me?.dye));
+    await r.leave(true);
+  }
+
   const { client, room, init } = await join('kiemthu');
   const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
   const mons = () => (room.state as { monsters: Map<string, M> }).monsters;
