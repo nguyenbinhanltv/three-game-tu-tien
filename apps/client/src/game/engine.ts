@@ -1209,11 +1209,13 @@ export class Game {
     this.camera.lookAt(tx, ty, tz);
   }
 
-  /** Gửi chiêu đang chờ khi hết GCD/hồi chiêu. */
+  /** Gửi (và gửi lại nếu server chưa nhận) chiêu đang chờ khi hết GCD/hồi chiêu. */
   private tickSkillQueue(now: number): void {
     const q = this.skillQueue;
     if (q.slot < 0) return;
-    const slot = q.poll(Date.now(), this.skillReadyAt(q.slot));
+    const st = get();
+    const cdAt = st.cds[SKILLS[q.slot]?.id ?? ''] ?? 0;
+    const slot = q.poll(Date.now(), Math.max(st.gcdAt, cdAt), cdAt > st.gcdAt, this.ping);
     if (q.slot < 0) set({ queuedSkill: -1 });
     if (slot < 0) return;
     // Không để đánh thường gửi chồng ngay sau chiêu vừa xả.

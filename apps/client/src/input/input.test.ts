@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HELD, isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from './bindings';
 import { KEY_LOG_SIZE, KeyState } from './keyboard';
-import { QUEUE_MAX_WAIT_MS, QUEUE_WINDOW_MS, SEND_LEAD_MS, SkillQueue } from './skillQueue';
+import { MAX_SENDS, QUEUE_MAX_WAIT_MS, QUEUE_WINDOW_MS, RESEND_MS, SERVER_TICK_MS, SkillQueue } from './skillQueue';
 
 describe('bindings', () => {
   it('giữ đúng bảng phím cũ', () => {
@@ -97,19 +97,57 @@ describe('SkillQueue', () => {
   it('đã hết chờ thì gửi ngay', () => {
     const q = new SkillQueue();
     expect(q.press(1, 1000, 1000)).toBe('send');
-    expect(q.press(1, 1000, 1000 + SEND_LEAD_MS)).toBe('send');
+    expect(q.press(1, 1000, 900)).toBe('send');
     expect(q.slot).toBe(-1);
   });
 
-  it('trong 0,4 giây cuối thì giữ lại và gửi khi hết chờ', () => {
+  it('chờ GCD: giữ lại, gửi đúng mốc (không gửi sớm), ở lại tới khi server xác nhận', () => {
     const q = new SkillQueue();
     const ready = 1000 + QUEUE_WINDOW_MS;
     expect(q.press(2, 1000, ready)).toBe('queued');
-    expect(q.poll(1100, ready)).toBe(-1);
+    expect(q.poll(ready - 1, ready, false)).toBe(-1);
+    expect(q.poll(ready, ready, false)).toBe(2);
+    // Đã gửi nhưng chưa có S.CD mới: vẫn trong hàng (còn viền sáng), chưa gửi lại ngay.
     expect(q.slot).toBe(2);
-    expect(q.poll(ready - SEND_LEAD_MS, ready)).toBe(2);
+    expect(q.poll(ready + 20, ready, false)).toBe(-1);
+    // S.CD mới: GCD nhảy lên sau lần gửi → xong.
+    expect(q.poll(ready + 30, ready + 1000, false)).toBe(-1);
     expect(q.slot).toBe(-1);
-    expect(q.poll(ready + 50, ready)).toBe(-1);
+  });
+
+  it('chờ hồi chiêu riêng: gửi muộn hơn mốc một tick (server không nới hồi chiêu)', () => {
+    const q = new SkillQueue();
+    q.press(3, 1000, 1300);
+    expect(q.poll(1300, 1300, true)).toBe(-1);
+    expect(q.poll(1300 + SERVER_TICK_MS - 1, 1300, true)).toBe(-1);
+    expect(q.poll(1300 + SERVER_TICK_MS, 1300, true)).toBe(3);
+  });
+
+  it('server bỏ im lặng: gửi lại sau RESEND_MS, tối đa MAX_SENDS lần rồi bỏ', () => {
+    const q = new SkillQueue();
+    q.press(1, 1000, 1300);
+    let t = 1300;
+    const sent: number[] = [];
+    for (; t < 1300 + RESEND_MS * (MAX_SENDS + 2); t += 10) if (q.poll(t, 1300, false) >= 0) sent.push(t);
+    expect(sent).toEqual(Array.from({ length: MAX_SENDS }, (_, k) => 1300 + k * RESEND_MS));
+    expect(q.slot).toBe(-1);
+  });
+
+  it('ping cao thì giãn khoảng gửi lại theo ping + một tick', () => {
+    const q = new SkillQueue();
+    q.press(1, 1000, 1300);
+    expect(q.poll(1300, 1300, false, 150)).toBe(1);
+    expect(q.poll(1300 + RESEND_MS, 1300, false, 150)).toBe(-1);
+    expect(q.poll(1300 + 150 + SERVER_TICK_MS, 1300, false, 150)).toBe(1);
+  });
+
+  it('lần gửi lại được nhận thì dừng gửi', () => {
+    const q = new SkillQueue();
+    q.press(1, 1000, 1300);
+    expect(q.poll(1300, 1300, false)).toBe(1);
+    expect(q.poll(1300 + RESEND_MS, 1300, false)).toBe(1);
+    expect(q.poll(1300 + RESEND_MS + 16, 2400, false)).toBe(-1);
+    expect(q.slot).toBe(-1);
   });
 
   it('còn chờ lâu thì gửi như cũ (server tự từ chối), không đụng hàng đợi', () => {
@@ -123,7 +161,7 @@ describe('SkillQueue', () => {
     const q = new SkillQueue();
     q.press(1, 1000, 1300);
     expect(q.press(4, 1100, 1300)).toBe('queued');
-    expect(q.poll(1300, 1300)).toBe(4);
+    expect(q.poll(1300, 1300, false)).toBe(4);
   });
 
   it('cancel và hết hạn', () => {
@@ -131,10 +169,10 @@ describe('SkillQueue', () => {
     expect(q.cancel()).toBe(false);
     q.press(1, 1000, 1300);
     expect(q.cancel()).toBe(true);
-    expect(q.poll(2000, 1300)).toBe(-1);
+    expect(q.poll(2000, 1300, false)).toBe(-1);
     // Server kéo dài thời gian chờ mãi: bỏ sau QUEUE_MAX_WAIT_MS.
     q.press(1, 1000, 1300);
-    expect(q.poll(1000 + QUEUE_MAX_WAIT_MS + 1, 9999)).toBe(-1);
+    expect(q.poll(1000 + QUEUE_MAX_WAIT_MS + 1, 9999, false)).toBe(-1);
     expect(q.slot).toBe(-1);
   });
 });
