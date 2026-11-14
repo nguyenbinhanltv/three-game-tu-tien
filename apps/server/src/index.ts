@@ -49,7 +49,7 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
   const dist = config.clientDist;
   if (!fs.existsSync(dist)) {
     res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
-    res.end('Đạp Thiên Lộ — server đang chạy. Client dev ở http://localhost:5173 (hoặc chạy `pnpm build` để server phục vụ bản build).');
+    res.end(`Đạp Thiên Lộ — server đang chạy. Client dev ở http://localhost:${process.env.CLIENT_PORT || 5173} (hoặc chạy pnpm build để server phục vụ bản build).`);
     return;
   }
   let file = path.normalize(path.join(dist, decodeURIComponent(url.pathname)));

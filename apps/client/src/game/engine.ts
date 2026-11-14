@@ -56,11 +56,23 @@ export interface LoginOptions {
   name?: string;
 }
 
+/**
+ * URL server, theo thứ tự:
+ * 1. VITE_SERVER_URL (nhận lúc chạy Vite dev hoặc lúc `vite build`).
+ * 2. Vite dev (`DEV`, mọi CLIENT_PORT): cùng hostname, cổng PORT lúc khởi động Vite (mặc định 2567).
+ * 3. Trang ở cổng mặc định 5173/4173 (kể cả `vite preview` bản build): cùng hostname, cổng 2567.
+ * 4. Còn lại (bản build do server phục vụ): cùng origin.
+ * `vite preview` chạy bản build nên không biết PORT/CLIENT_PORT. Preview ở cổng khác 4173 hoặc
+ * server khác 2567 thì phải đặt VITE_SERVER_URL khi build, không thì client nối nhầm vào chính
+ * server preview.
+ */
 export function serverUrl(): string {
-  const env = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_SERVER_URL;
-  if (env) return env;
+  const env = (import.meta as unknown as { env: Record<string, string | boolean | undefined> }).env;
+  if (typeof env.VITE_SERVER_URL === 'string' && env.VITE_SERVER_URL) return env.VITE_SERVER_URL;
   const { protocol, hostname, host, port } = window.location;
-  if (port === '5173' || port === '4173') return `ws://${hostname}:2567`;
+  if (env.DEV === true || port === '5173' || port === '4173') {
+    return `ws://${hostname}:${env.VITE_DEV_SERVER_PORT || '2567'}`;
+  }
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
 }
 
@@ -935,6 +947,8 @@ export class Game {
       // Sát thương của người khác: chỉ hiện khi ở gần.
       if (_v.distanceTo(this.renderPos) > 45) return;
     }
+    // Hit feel chỉ là lớp hình. Chiêu của người chơi là đạn bay ~0,2 s nên trễ cho khớp lúc chạm.
+    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0);
     let cls = 'other';
     if (m.heal) cls = 'heal';
     else if (mine) cls = 'hurt';
