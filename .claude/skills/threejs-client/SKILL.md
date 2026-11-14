@@ -25,7 +25,7 @@ description: Quy ước code client Three.js của Đạp Thiên Lộ — render
 ## Thế giới và streaming
 
 - Địa hình chia ô 256×256m, khóa ô `"${cx}_${cz}"`. Tải ô trong bán kính R quanh người chơi, R lớn hơn khi ngự kiếm, kèm LOD thấp hơn.
-- Tải asset trong Web Worker (GLTFLoader + MeshoptDecoder + KTX2Loader), cache bằng Cache Storage theo hash file.
+- Tải asset GLB qua `assets` (`AssetCache` trong `game/assets.ts`: GLTFLoader + MeshoptDecoder + KTX2Loader, transcoder cục bộ, nạp theo `public/assets/manifest.json`, hàng đợi ưu tiên theo khoảng cách, đếm tham chiếu). File có hash nên trình duyệt/CDN cache được vĩnh viễn. Parse vẫn chạy trên luồng chính (chỉ transcoder KTX2 chạy trong worker); chưa dùng Cache Storage.
 - Cây, đá, cỏ: `InstancedMesh` hoặc `BatchedMesh`; ở xa dùng impostor (billboard bake sẵn).
 - NPC và quái đông: Vertex Animation Texture thay vì `SkinnedMesh` (Three.js không instancing được mesh có xương).
 - Người chơi khác: 3 mức LOD; ngoài 80m chỉ còn impostor + tên; tối đa 50 nhân vật đầy đủ trên màn hình.
