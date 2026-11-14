@@ -11,16 +11,20 @@ import {
   FLY_UNLOCK_LEVEL,
   type FxMsg,
   GCD,
+  type HazardGeom,
   groundAt,
   type HazardMsg,
   heightAt,
   IN_FLY,
+  inHazard,
+  isHeavyHit,
   IN_JUMP,
   type InitMsg,
   INV_SIZE,
   type LevelDef,
   MAX_ENHANCE,
   meditateXpPerSec,
+  type MonsterCaster,
   type MonsterDef,
   monsterStats,
   monsterXp,
@@ -63,6 +67,12 @@ const LEASH = 48;
 const INPUT_BUDGET_MAX = 0.3;
 const FLY_MP_PER_SEC = 1.5;
 const SAVE_INTERVAL = 30_000;
+/** Một quái giữ ô cận chiến của một người chơi tối đa chừng này rồi nhường nếu có quái khác chờ. */
+const SLOT_HOLD_MS = 5000;
+/** Sau khi nhường ô, quái nghỉ chừng này mới được giành lại. */
+const SLOT_REST_MS = 1500;
+/** Quái chỉ giành ô khi đã ở gần mục tiêu trong khoảng này (mét, ngoài tầm đánh). */
+const SLOT_CLAIM_DIST = 4;
 
 export interface PlayerEnt {
   sid: string;
@@ -121,6 +131,19 @@ export interface MonEnt {
   evadeUntil: number;
   abilityAt: number;
   threat: Map<string, number>;
+  /** Ô cận chiến: giữ tới lúc này; không được giành lại trước `slotCdAt`. */
+  slotUntil: number;
+  slotCdAt: number;
+  /** sid người chơi có ô cận chiến mà quái này đang giữ ('' = không giữ). */
+  slotSid: string;
+  /** Chiều đi vòng ngoài (±1). */
+  orbitSign: number;
+  /** Đòn thứ hai của chuỗi đòn đôi (0 = không có). */
+  comboAt: number;
+  comboTarget: string;
+  /** Đang đọc chú (quái đánh xa). */
+  cast: { endAt: number } | null;
+  castReadyAt: number;
 }
 
 interface NodeEnt {
@@ -130,14 +153,17 @@ interface NodeEnt {
   respawnAt: number;
 }
 
-interface Hazard {
-  x: number;
-  z: number;
-  r: number;
+interface Hazard extends HazardGeom {
   at: number;
-  /** Sát thương cố định, hoặc phần trăm khí huyết tối đa nếu pct = true. */
+  /**
+   * Sát thương cố định, phần trăm khí huyết tối đa nếu pct = true,
+   * hoặc hệ số nhân với `atk` qua computeDamage nếu atk > 0.
+   */
   dmg: number;
   pct: boolean;
+  atk: number;
+  /** Quái thả vùng (null = thiên kiếp). */
+  mon: MonEnt | null;
   /** Chỉ đánh người chơi này (thiên kiếp không hại người ngoài)… trừ khi họ đứng trong vòng. */
   src: string;
 }
@@ -166,6 +192,10 @@ export class GameSim {
   monById = new Map<string, MonEnt>();
   nodes = new Map<string, NodeEnt>();
   hazards: Hazard[] = [];
+  /** sid người chơi → id quái đang giữ ô cận chiến của người đó. */
+  private meleeSlot = new Map<string, string>();
+  /** sid người chơi → lần cuối có quái cận chiến phải chờ ở vòng ngoài. */
+  private slotWait = new Map<string, number>();
   level: LevelDef;
   private nextId = 1;
   tickMs = 0;
@@ -332,6 +362,8 @@ export class GameSim {
     if (!p) return;
     if (p.trib) this.endTribulation(p, false, true);
     this.savePlayer(p);
+    this.meleeSlot.delete(sid);
+    this.slotWait.delete(sid);
     this.players.delete(sid);
     this.state.players.delete(sid);
   }
@@ -676,10 +708,10 @@ export class GameSim {
 
   private hitMonster(p: PlayerEnt, mon: MonEnt, power: number): void {
     const { dmg, crit } = computeDamage(p.char.atk, power, mon.defn, Math.random(), Math.random());
-    this.damageMonster(mon, dmg, p, crit);
+    this.damageMonster(mon, dmg, p, crit, isHeavyHit(power));
   }
 
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false): void {
+  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false): void {
     if (mon.state === MS_DEAD) return;
     if (this.now < mon.evadeUntil) {
       this.host.broadcast(S.DMG, { dst: mon.id, n: 0 } satisfies DmgMsg);
@@ -689,11 +721,13 @@ export class GameSim {
     mon.s.hp = hp;
     const msg: DmgMsg = { dst: mon.id, n: dmg };
     if (crit) msg.crit = true;
+    if (hv) msg.hv = true;
     if (p) msg.src = p.sid;
     this.host.broadcast(S.DMG, msg);
     if (p) {
       mon.threat.set(p.sid, (mon.threat.get(p.sid) ?? 0) + dmg);
       if (mon.state === MS_IDLE || (mon.state === MS_RETURN && this.homeDist(mon) < LEASH * 0.7)) {
+        this.resetAi(mon);
         mon.target = p.sid;
         mon.state = MS_CHASE;
         mon.s.st = MS_CHASE;
@@ -723,6 +757,7 @@ export class GameSim {
     mon.state = MS_DEAD;
     mon.s.st = MS_DEAD;
     mon.target = '';
+    this.resetAi(mon);
     if (mon.spawn) mon.respawnAt = this.now + mon.spawn.respawn * 1000;
     else mon.removeAt = this.now + 4000;
     const xp = monsterXp(mon.level, mon.def.xpMul);
@@ -769,7 +804,7 @@ export class GameSim {
     if (full) this.warn(p, 'sys.inv_full');
   }
 
-  damagePlayer(p: PlayerEnt, dmg: number, src: string): void {
+  damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false): void {
     if (this.isDead(p)) return;
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
@@ -789,7 +824,9 @@ export class GameSim {
       return;
     }
     c.hp -= n;
-    this.host.broadcast(S.DMG, { dst: p.sid, n, src } satisfies DmgMsg);
+    const msg: DmgMsg = { dst: p.sid, n, src };
+    if (hv) msg.hv = true;
+    this.host.broadcast(S.DMG, msg);
     if (c.hp <= 0) this.killPlayer(p);
   }
 
@@ -869,6 +906,14 @@ export class GameSim {
       evadeUntil: 0,
       abilityAt: 0,
       threat: new Map(),
+      slotUntil: 0,
+      slotCdAt: 0,
+      slotSid: '',
+      orbitSign: Math.random() < 0.5 ? -1 : 1,
+      comboAt: 0,
+      comboTarget: '',
+      cast: null,
+      castReadyAt: 0,
     };
     this.monsters.push(m);
     this.monById.set(id, m);
@@ -895,10 +940,12 @@ export class GameSim {
     m.s.st = MS_IDLE;
     m.target = '';
     m.threat.clear();
+    this.resetAi(m);
     if (m.def.boss) this.sysAll('sys.boss_spawn', { boss: monsterName(m.def.id) }, 'info');
   }
 
   private removeMonster(m: MonEnt): void {
+    this.resetAi(m);
     const i = this.monsters.indexOf(m);
     if (i >= 0) this.monsters.splice(i, 1);
     this.monById.delete(m.id);
@@ -923,6 +970,122 @@ export class GameSim {
   private setMonState(m: MonEnt, st: number): void {
     m.state = st;
     if (m.s.st !== st) m.s.st = st;
+    if (st === MS_RETURN || st === MS_DEAD || st === MS_IDLE) this.resetAi(m);
+  }
+
+  /** Hủy chuỗi đòn/niệm chú đang dở và nhả ô cận chiến (bỏ đuổi, chết, hồi sinh). */
+  private resetAi(m: MonEnt): void {
+    m.comboAt = 0;
+    m.comboTarget = '';
+    m.cast = null;
+    m.slotUntil = 0;
+    if (m.slotSid && this.meleeSlot.get(m.slotSid) === m.id) this.meleeSlot.delete(m.slotSid);
+    m.slotSid = '';
+  }
+
+  /**
+   * Mỗi người chơi chỉ một quái cận chiến được đánh cùng lúc. Trả về true nếu `m` đang giữ
+   * (hoặc vừa giành được) ô của `target`; false thì `m` phải đi vòng ngoài.
+   */
+  private holdsMeleeSlot(m: MonEnt, target: PlayerEnt, d: number, reach: number): boolean {
+    const sid = target.sid;
+    const hid = this.meleeSlot.get(sid);
+    if (hid === m.id) {
+      if (this.now < m.slotUntil) return true;
+      // Hết lượt: có quái khác đang chờ thì nhường, không thì giữ tiếp.
+      if (this.now - (this.slotWait.get(sid) ?? 0) > 400) {
+        m.slotUntil = this.now + SLOT_HOLD_MS;
+        return true;
+      }
+      this.meleeSlot.delete(sid);
+      m.slotUntil = 0;
+      m.slotSid = '';
+      m.slotCdAt = this.now + SLOT_REST_MS;
+      return false;
+    }
+    if (hid) {
+      const h = this.monById.get(hid);
+      if (h && h.target === sid && this.now < h.slotUntil && (h.state === MS_CHASE || h.state === MS_ATTACK)) {
+        if (d <= reach + SLOT_CLAIM_DIST * 2) this.slotWait.set(sid, this.now);
+        return false;
+      }
+    }
+    if (d > reach + SLOT_CLAIM_DIST || this.now < m.slotCdAt) return false;
+    if (m.slotSid && m.slotSid !== sid && this.meleeSlot.get(m.slotSid) === m.id) this.meleeSlot.delete(m.slotSid);
+    this.meleeSlot.set(sid, m.id);
+    m.slotSid = sid;
+    m.slotUntil = this.now + SLOT_HOLD_MS;
+    return true;
+  }
+
+  /** Đi vòng ngoài quanh mục tiêu, mặt hướng vào, chờ tới lượt. */
+  private orbit(m: MonEnt, target: PlayerEnt, d: number, reach: number, dt: number): void {
+    const R = reach + 2.2 + m.def.scale;
+    const px = target.move.x;
+    const pz = target.move.z;
+    const a = Math.atan2(m.s.x - px, m.s.z - pz) + m.orbitSign * 0.5;
+    const far = d > R + 1.5;
+    this.moveToward(m, px + Math.sin(a) * R, pz + Math.cos(a) * R, m.def.speed * (far ? 1 : 0.45), dt);
+    if (!far) m.s.yaw = Math.atan2(px - m.s.x, pz - m.s.z);
+    this.setMonState(m, MS_CHASE);
+  }
+
+  /** Đòn thứ hai của chuỗi: né được nếu đã ra khỏi tầm. */
+  private resolveCombo(m: MonEnt): void {
+    const combo = m.def.ai?.combo;
+    const p = this.players.get(m.comboTarget);
+    m.comboAt = 0;
+    m.comboTarget = '';
+    if (!combo || !p || this.isDead(p)) return;
+    const dx = p.move.x - m.s.x;
+    const dz = p.move.z - m.s.z;
+    const reach = m.def.attackRange + 0.8;
+    const hit = dx * dx + dz * dz <= reach * reach && p.move.y - m.s.y < 3.5 + m.def.scale * 1.5;
+    m.s.yaw = Math.atan2(dx, dz);
+    this.fx(hit ? { t: 'bite', src: m.id, dst: p.sid } : { t: 'bite', src: m.id });
+    if (!hit) return;
+    const { dmg } = computeDamage(m.atk, combo.mul, p.char.def, Math.random(), 1);
+    this.damagePlayer(p, dmg, m.id, true);
+  }
+
+  /** Quái đánh xa: giữ khoảng cách, đọc chú, rồi thả vùng báo trước đúng hình chiêu. */
+  private tickCaster(m: MonEnt, target: PlayerEnt, c: MonsterCaster, d: number, reachable: boolean, dt: number): void {
+    const dx = target.move.x - m.s.x;
+    const dz = target.move.z - m.s.z;
+    if (m.cast) {
+      m.s.yaw = Math.atan2(dx, dz);
+      this.setMonState(m, MS_ATTACK);
+      if (this.now >= m.cast.endAt) this.releaseCast(m, target, c, d, reachable);
+      return;
+    }
+    if (d > c.range) {
+      this.moveToward(m, target.move.x, target.move.z, m.def.speed, dt);
+      this.setMonState(m, MS_CHASE);
+      return;
+    }
+    if (d < c.range * 0.35 && d > 0.01) {
+      // Bị áp sát: lùi ra cho đủ khoảng cách.
+      this.moveToward(m, m.s.x - (dx / d) * 3, m.s.z - (dz / d) * 3, m.def.speed * 0.6, dt);
+      this.setMonState(m, MS_CHASE);
+    } else this.setMonState(m, MS_ATTACK);
+    m.s.yaw = Math.atan2(dx, dz);
+    if (reachable && this.now >= m.castReadyAt) {
+      m.cast = { endAt: this.now + c.cast * 1000 };
+      this.fx({ t: 'mcast', src: m.id, dst: target.sid, d: c.cast });
+    }
+  }
+
+  private releaseCast(m: MonEnt, target: PlayerEnt, c: MonsterCaster, d: number, reachable: boolean): void {
+    m.cast = null;
+    m.castReadyAt = this.now + c.cd * 1000;
+    // Mục tiêu đã chạy xa hoặc lên chỗ không với tới: chiêu xịt.
+    if (!reachable || d > c.range * 1.4) return;
+    const yaw = Math.atan2(target.move.x - m.s.x, target.move.z - m.s.z);
+    let g: HazardGeom;
+    if (c.shape === 'circle') g = { x: target.move.x, z: target.move.z, r: c.r };
+    else if (c.shape === 'rect') g = { x: m.s.x, z: m.s.z, r: c.r, sh: 'rect', yaw, w: c.w ?? 2 };
+    else g = { x: m.s.x, z: m.s.z, r: c.r, sh: 'cone', yaw, w: ((c.w ?? 30) * Math.PI) / 180 };
+    this.addHazard(g, c.delay, c.mul, false, c.kind, m.id, m.atk);
   }
 
   private tickMonster(m: MonEnt, dt: number): void {
@@ -1003,6 +1166,8 @@ export class GameSim {
         this.setMonState(m, MS_RETURN);
         return;
       }
+      // Đổi mục tiêu: hủy chú đang đọc/đòn đôi đang dở, người mới phải được báo trước từ đầu.
+      this.resetAi(m);
       m.target = target.sid;
     }
     const leash = def.boss ? 80 : LEASH;
@@ -1015,6 +1180,7 @@ export class GameSim {
       this.setMonState(m, MS_RETURN);
       return;
     }
+    if (m.comboAt && this.now >= m.comboAt) this.resolveCombo(m);
     const reach = def.attackRange + 0.4;
     const reachable = dy < 3.5 + def.scale * 1.5;
     if (!reachable) {
@@ -1032,17 +1198,27 @@ export class GameSim {
     } else {
       m.unreachableSince = 0;
     }
-    if (d > reach) {
+    const caster = def.ai?.caster;
+    if (caster) {
+      this.tickCaster(m, target, caster, d, reachable, dt);
+    } else if (!def.boss && !this.holdsMeleeSlot(m, target, d, reach)) {
+      this.orbit(m, target, d, reach, dt);
+    } else if (d > reach) {
       this.moveToward(m, target.move.x, target.move.z, def.speed, dt);
       this.setMonState(m, MS_CHASE);
     } else {
       m.s.yaw = Math.atan2(dx, dz);
       this.setMonState(m, MS_ATTACK);
-      if (reachable && this.now >= m.attackAt) {
+      if (reachable && this.now >= m.attackAt && !m.comboAt) {
         m.attackAt = this.now + def.attackCd * 1000;
         const { dmg } = computeDamage(m.atk, 1, target.char.def, Math.random(), 1);
         this.fx({ t: 'bite', src: m.id, dst: target.sid });
         this.damagePlayer(target, dmg, m.id);
+        const combo = def.ai?.combo;
+        if (combo && !this.isDead(target) && Math.random() < combo.chance) {
+          m.comboAt = this.now + combo.delay * 1000;
+          m.comboTarget = target.sid;
+        }
       }
     }
     if (def.boss && this.now >= m.abilityAt) {
@@ -1052,7 +1228,7 @@ export class GameSim {
       for (const p of this.players.values()) {
         if (this.isDead(p) || n >= 4) continue;
         if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) > 45) continue;
-        this.addHazard(p.move.x, p.move.z, 5.5, 1.7, m.atk * 1.5, false, def.id === 'boss_thu_mo_tuong' ? 'lightning' : 'frost', m.id);
+        this.addHazard({ x: p.move.x, z: p.move.z, r: 5.5 }, 1.7, m.atk * 1.5, false, def.id === 'boss_thu_mo_tuong' ? 'lightning' : 'frost', m.id);
         n++;
       }
     }
@@ -1060,9 +1236,17 @@ export class GameSim {
 
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
-  addHazard(x: number, z: number, r: number, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string): void {
-    this.hazards.push({ x, z, r, at: this.now + delay * 1000, dmg, pct, src });
-    this.host.broadcast(S.HAZARD, { x, z, r, delay, kind } satisfies HazardMsg);
+  /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0): void {
+    const mon = this.monById.get(src) ?? null;
+    this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon });
+    const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind };
+    if (g.sh) {
+      msg.sh = g.sh;
+      msg.yaw = g.yaw ?? 0;
+      msg.w = g.w;
+    }
+    this.host.broadcast(S.HAZARD, msg);
   }
 
   private tickHazards(): void {
@@ -1070,13 +1254,19 @@ export class GameSim {
       const h = this.hazards[i];
       if (this.now < h.at) continue;
       this.hazards.splice(i, 1);
+      // Quái thả vùng đã chết hoặc đang bỏ đuổi (miễn sát thương) thì vùng không gây sát thương.
+      if (h.mon && (h.mon.state === MS_DEAD || h.mon.state === MS_RETURN || !this.monById.has(h.mon.id))) continue;
       for (const p of this.players.values()) {
         if (this.isDead(p)) continue;
-        const dx = p.move.x - h.x;
-        const dz = p.move.z - h.z;
-        if (dx * dx + dz * dz > h.r * h.r) continue;
+        if (!inHazard(h, p.move.x, p.move.z)) continue;
         if (p.move.y - groundAt(p.move.x, p.move.z) > 8) continue;
-        this.damagePlayer(p, h.pct ? p.char.mhp * h.dmg : Math.max(1, h.dmg - p.char.def * 0.6), h.src);
+        const n =
+          h.atk > 0
+            ? computeDamage(h.atk, h.dmg, p.char.def, Math.random(), 1).dmg
+            : h.pct
+              ? p.char.mhp * h.dmg
+              : Math.max(1, h.dmg - p.char.def * 0.6);
+        this.damagePlayer(p, n, h.src, true);
       }
     }
   }
@@ -1107,12 +1297,12 @@ export class GameSim {
     const progress = 1 - (tr.endAt - this.now) / (TRIBULATION_DURATION * 1000);
     tr.nextAt = this.now + 2600 - progress * 1200;
     // Một tia nhắm thẳng vào người độ kiếp, vài tia rơi quanh.
-    this.addHazard(p.move.x, p.move.z, 4.2, 1.25, 0.24, true, 'lightning', p.sid);
+    this.addHazard({ x: p.move.x, z: p.move.z, r: 4.2 }, 1.25, 0.24, true, 'lightning', p.sid);
     const extra = 1 + Math.floor(progress * 3);
     for (let i = 0; i < extra; i++) {
       const a = Math.random() * Math.PI * 2;
       const r = 5 + Math.random() * 9;
-      this.addHazard(p.move.x + Math.cos(a) * r, p.move.z + Math.sin(a) * r, 3.6, 1.25 + Math.random() * 0.6, 0.2, true, 'lightning', p.sid);
+      this.addHazard({ x: p.move.x + Math.cos(a) * r, z: p.move.z + Math.sin(a) * r, r: 3.6 }, 1.25 + Math.random() * 0.6, 0.2, true, 'lightning', p.sid);
     }
   }
 
@@ -1500,6 +1690,17 @@ export class GameSim {
           }
         }
         return say('hạ ' + n + ' quái');
+      }
+      case 'spawn': {
+        // Gọi quái thử ngay cạnh mình (không hồi sinh, tự dọn sau khi chết).
+        const def = MONSTER.get(a[1] ?? '');
+        if (!def) return say('không có quái ' + (a[1] ?? ''));
+        const n = Math.max(1, Math.min(6, Math.floor(Number(a[2]) || 1)));
+        for (let i = 0; i < n; i++) {
+          const ang = (i / n) * Math.PI * 2;
+          this.spawnMonster(def, Math.max(1, p.char.level - 1), p.move.x + Math.sin(ang) * 10, p.move.z + Math.cos(ang) * 10, null);
+        }
+        return say(`gọi ${n} ${def.id}`);
       }
       case 'tick':
         return say(`tick p95 ${this.tickP95().toFixed(2)}ms, ${this.players.size} người, ${this.monsters.length} quái`);

@@ -46,6 +46,11 @@ export class Vfx {
     this.items.push({ t: 0, dur, update, end });
   }
 
+  /** Cho module hiệu ứng bên ngoài (telegraph.ts) chạy theo cùng vòng cập nhật. */
+  track(dur: number, update: (k: number, dt: number) => void, end: () => void): void {
+    this.add(dur, update, end);
+  }
+
   private mesh(geo: THREE.BufferGeometry, mat: THREE.Material): THREE.Mesh {
     const m = new THREE.Mesh(geo, mat);
     m.frustumCulled = false;
@@ -299,14 +304,14 @@ export class Vfx {
   }
 
   /** Vùng nguy hiểm báo trước trên mặt đất, rồi đánh xuống. */
-  hazard(x: number, z: number, r: number, delay: number, kind: 'lightning' | 'frost'): void {
+  hazard(x: number, z: number, r: number, delay: number, kind: string): void {
     const y = groundAt(x, z);
-    const color = kind === 'lightning' ? 0xb48cff : 0x7fd8ff;
+    const color = kind === 'lightning' ? 0xb48cff : kind === 'fire' ? 0xff8a4a : kind === 'spirit' ? 0xbfe6ff : 0x7fd8ff;
     const ring = this.mesh(RING_GEO, glow(color, 0.9));
     ring.rotation.x = -Math.PI / 2;
     ring.position.set(x, y + 0.25, z);
     ring.scale.setScalar(r);
-    const disc = this.mesh(DISC_GEO, glow(kind === 'lightning' ? 0x6a3fd0 : 0x2f8fd0, 0.2));
+    const disc = this.mesh(DISC_GEO, glow(kind === 'lightning' ? 0x6a3fd0 : kind === 'fire' ? 0xb0401a : 0x2f8fd0, 0.2));
     disc.rotation.x = -Math.PI / 2;
     disc.position.set(x, y + 0.2, z);
     this.add(
@@ -321,6 +326,9 @@ export class Vfx {
         this.drop(disc);
         if (kind === 'lightning') {
           this.lightning(x, y, z, 0xe2d4ff, 1.2);
+        } else if (kind !== 'frost') {
+          _a.set(x, y + 0.5, z);
+          this.burst(_a, color, r * 1.1, 0.45);
         } else {
           _a.set(x, y + 0.5, z);
           this.burst(_a, 0xaee8ff, r * 0.9, 0.5);
