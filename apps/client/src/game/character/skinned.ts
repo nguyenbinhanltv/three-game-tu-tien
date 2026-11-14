@@ -1,8 +1,9 @@
 import * as THREE from 'three/webgpu';
 import type { MonsterDef } from '@dtl/shared';
 import { HitReact, type HitOpts } from '../hitreact';
-import { baseState, type CharState, type ClipMap, clipFor, locomotionScale } from './states';
-import type { AnimState, CharacterView, MonsterView } from './view';
+import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';
+import { baseState, type CharState, type ClipMap, clipFor, locomotionScale, MOVE_MIN } from './states';
+import type { AnimState, CharacterView, MonsterView, PerformOpts } from './view';
 
 export interface SkinnedOpts {
   /** Bản sao riêng của asset (có bộ xương riêng). `SkinnedCharacter` sở hữu skeleton của nó. */
@@ -22,6 +23,8 @@ export interface SkinnedOpts {
    * chân/đầu khi đang chạy. Bỏ trống thì không cắt theo frustum.
    */
   bounds?: THREE.Sphere;
+  /** Pose đã nướng cho asset này (người Mixamo): động tác chiêu, và clip nền bay/niệm chú qua `clipMap`. */
+  poses?: PoseLibrary;
 }
 
 /** Thời gian chuyển giữa các trạng thái nền (giây). */
@@ -35,6 +38,35 @@ const FADE_DEATH = 0.12;
 const COMBAT_IDLE_RATE = 1.35;
 const SINK_AFTER = 1.8;
 const SINK_RATE = 0.45;
+/** Động tác chiêu: vào nhanh, về nền mềm hơn; bị hủy (bay lên, chết) thì tắt trong khoảng này. */
+const PERFORM_IN = 0.07;
+const PERFORM_OUT = 0.16;
+const PERFORM_CANCEL = 0.1;
+/** Tốc độ (1/giây) thân dưới chuyển giữa theo pose (đứng yên) và theo clip chạy. */
+const STILL_RATE = 7;
+
+/**
+ * Trọng số action cho hệ số trộn b ∈ [0, 1] khi chồng lên nền có tổng trọng số 1. Mixer lấy trung bình có trọng số
+ * (không cộng dồn) nên muốn được b phần pose thì trọng số pose phải là b / (1 − b).
+ */
+export function overlayWeight(b: number): number {
+  if (b <= 0) return 0;
+  return b >= 0.999 ? 1000 : b / (1 - b);
+}
+
+interface Perform {
+  id: string;
+  clips: PoseClips;
+  upper: THREE.AnimationAction;
+  lower: THREE.AnimationAction;
+  /** Thời điểm trong clip (giây). */
+  t: number;
+  from: number;
+  /** Phần thân dưới theo pose (1 = đứng yên). */
+  still: number;
+  /** Đang tắt vì bị hủy: độ mạnh còn lại. */
+  cancel: number;
+}
 
 /**
  * Khoảng cập nhật mixer theo khoảng cách (giây): gần thì mỗi khung, xa thì gộp dt lại cập nhật thưa.
@@ -85,6 +117,13 @@ export class SkinnedCharacter implements CharacterView {
   private acc = 0;
   private interval = 0;
   private disposed = false;
+  private poses: PoseLibrary | null;
+  private perf: Perform | null = null;
+  private pendingPerform: { id: string; from: number; left: number } | null = null;
+  /** Trạng thái nhận ở khung gần nhất (để quyết định có ra chiêu được không). */
+  private last: AnimState | null = null;
+  /** Số lần ra đòn (cho vệt/hạt theo nhân vật). */
+  attacks = 0;
 
   constructor(o: SkinnedOpts) {
     this.scene = o.scene;
@@ -94,6 +133,8 @@ export class SkinnedCharacter implements CharacterView {
     this.height = o.height * s;
     this.lodDist = o.lodDist ?? [22, 55];
     for (const c of o.clips) this.clips.set(c.name, c);
+    this.poses = o.poses ?? null;
+    if (this.poses) for (const c of libraryClips(this.poses)) if (!this.clips.has(c.name)) this.clips.set(c.name, c);
     const meshes: THREE.Mesh[] = [];
     o.scene.traverse((obj) => {
       const m = obj as THREE.Mesh;
@@ -119,6 +160,30 @@ export class SkinnedCharacter implements CharacterView {
   attack(): void {
     if (this.dead) return;
     this.playShot('attack');
+  }
+
+  perform(id: string, o: PerformOpts = {}): boolean {
+    const clips = this.poses?.get(id);
+    if (!clips) return false;
+    if (!this.canPerform()) return true;
+    const from = Math.min(Math.max(0, o.from ?? 0), clips.def.duration);
+    if (o.delay && o.delay > 0) {
+      this.pendingPerform = { id, from, left: o.delay };
+      return true;
+    }
+    this.startPerform(id, clips, from);
+    return true;
+  }
+
+  cancelPerform(): void {
+    this.pendingPerform = null;
+    const p = this.perf;
+    // Đã ra đòn rồi thì để động tác chạy hết (hiệu ứng đã phóng).
+    if (p && p.cancel >= 1 && p.t < (p.clips.def.hit?.[0] ?? 0)) p.cancel = 0.999;
+  }
+
+  performing(id: string): boolean {
+    return this.perf?.id === id || this.pendingPerform?.id === id;
   }
 
   hitReact(o: HitOpts): void {
@@ -189,6 +254,9 @@ export class SkinnedCharacter implements CharacterView {
       }
     }
 
+    this.last = a;
+    this.updatePerform(dt, a);
+
     // Hạ tần số mixer ở xa: gộp dt, cập nhật bộ xương thưa hơn.
     this.acc += dt;
     if (this.acc > 0 && this.acc >= this.interval) {
@@ -201,6 +269,8 @@ export class SkinnedCharacter implements CharacterView {
     if (this.disposed) return;
     this.disposed = true;
     this.hit.reset();
+    this.perf = null;
+    this.pendingPerform = null;
     this.mixer.stopAllAction();
     this.mixer.uncacheRoot(this.scene);
     // Geometry, material, texture dùng chung (bản gốc trong AssetCache / bảng tint); skeleton là của bản sao.
@@ -215,10 +285,72 @@ export class SkinnedCharacter implements CharacterView {
 
   private hasClip = (name: string): boolean => this.clips.has(name);
 
+  /**
+   * Theo luật server (`sim.onSkill`): không ra chiêu khi chết, ngự kiếm hay đang ở trên không. Đang thiền thì VẪN ra
+   * chiêu được (server tự dừng thiền rồi ra chiêu), nên động tác phải phát, chồng lên tư thế thiền tới khi cờ tắt.
+   */
+  private canPerform(a: AnimState | null = this.last): boolean {
+    return !this.dead && !(a && (a.dead || a.flying || a.airborne));
+  }
+
+  private startPerform(id: string, clips: PoseClips, from: number): void {
+    this.stopPerform();
+    const act = (clip: THREE.AnimationClip) => {
+      const x = this.mixer.clipAction(clip);
+      x.setLoop(THREE.LoopOnce, 1);
+      x.clampWhenFinished = true;
+      x.reset();
+      x.time = from;
+      x.setEffectiveWeight(0);
+      x.play();
+      return x;
+    };
+    const moving = (this.last?.speed ?? 0) > MOVE_MIN;
+    this.perf = { id, clips, upper: act(clips.upper), lower: act(clips.lower), t: from, from, still: moving ? 0 : 1, cancel: 1 };
+    // Đòn một lần của clip nền (vd. attack 1,2s của Tripo) nhường chỗ cho động tác chiêu.
+    if (this.shot) this.shot.left = Math.min(this.shot.left, FADE_OUT_SHOT);
+    this.attacks++;
+  }
+
+  private stopPerform(): void {
+    const p = this.perf;
+    if (!p) return;
+    p.upper.stop();
+    p.lower.stop();
+    this.perf = null;
+  }
+
+  private updatePerform(dt: number, a: AnimState): void {
+    const q = this.pendingPerform;
+    if (q) {
+      q.left -= dt;
+      if (q.left <= 0) {
+        this.pendingPerform = null;
+        const clips = this.poses?.get(q.id);
+        if (clips && this.canPerform(a)) this.startPerform(q.id, clips, q.from);
+      }
+    }
+    const p = this.perf;
+    if (!p) return;
+    p.t += dt;
+    const dur = p.clips.def.duration;
+    if (!this.canPerform(a) && p.cancel >= 1) p.cancel = 0.999;
+    if (p.cancel < 1) p.cancel -= dt / PERFORM_CANCEL;
+    if (p.t >= dur || p.cancel <= 0) {
+      this.stopPerform();
+      return;
+    }
+    const still = a.speed <= MOVE_MIN ? 1 : 0;
+    p.still += Math.sign(still - p.still) * Math.min(Math.abs(still - p.still), STILL_RATE * dt);
+    const env = Math.min(1, (p.t - p.from) / PERFORM_IN, (dur - p.t) / PERFORM_OUT) * Math.min(1, p.cancel);
+    p.upper.setEffectiveWeight(overlayWeight(env));
+    p.lower.setEffectiveWeight(overlayWeight(env * p.still));
+  }
+
   private onHit(): void {
     this.pendingHit = -1;
     // Đang cắn thì không cắt ngang (đọc được đòn quan trọng hơn); chết rồi thì thôi.
-    if (this.dead || this.shot?.state === 'attack') return;
+    if (this.dead || this.shot?.state === 'attack' || this.perf) return;
     this.playShot('hit');
   }
 

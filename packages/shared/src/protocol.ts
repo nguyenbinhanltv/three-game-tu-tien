@@ -133,6 +133,8 @@ export interface FxMsg {
    * của `rain`, mây xoáy `tribstart`) để mọi client vẽ giống nhau. Chỉ là lớp hình, không mang luật.
    */
   sd?: number;
+  /** id chiêu (FX `cast` của người chơi): client chọn đúng động tác cho chiêu đang niệm. Chỉ là lớp hình. */
+  s?: string;
 }
 
 export interface DmgMsg {
