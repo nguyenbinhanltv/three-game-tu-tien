@@ -6,17 +6,28 @@
 // dây gảy kiểu đàn tranh (Karplus-Strong) theo thang ngũ cung, nền drone, trống/chuông tùy bài.
 // Nhạc sinh thủ tục không có điểm nối nên lặp liền vô hạn; về sau vẫn giữ làm dự phòng khi mạng chậm.
 //
+// Âm môi trường (M4-12): cùng vòng tick chọn id theo vùng + đêm (ambientFor, chống đổi ở ranh giới bằng
+// AmbientPicker) rồi gọi playAmbient; AudioManager stream file, chưa có file thì phát gió tổng hợp.
+// Game chưa có chu kỳ ngày/đêm nên "đêm" theo giờ máy (19h–5h); `?night=1|0` để ép khi thử.
+//
 // Gỡ lỗi: chuyển trạng thái được log `[music] ...` khi chạy dev hoặc có `?debug`;
 // `window.__music.log` giữ 50 lần chuyển gần nhất, `__music.state()` xem trạng thái hiện tại.
 import { biomeAt, MS_ATTACK, MS_CHASE, PF_DEAD, PF_MEDITATING, PF_TRIBULATION } from '@dtl/shared';
-import { hasMusicFile, musicOutput, playMusic } from './audio';
+import { hasMusicFile, musicOutput, playAmbient, playMusic } from './audio';
 import type { MonVis } from './entities';
-import { type MusicChange, MusicDirector, type MusicInput, type MusicTrack } from './musicDirector';
+import { AmbientPicker, ambientFor, isNightHour, type MusicChange, MusicDirector, type MusicInput, type MusicTrack } from './musicDirector';
 
 export { MUSIC_TRACKS, type MusicTrack } from './musicDirector';
 
 const DEV = (import.meta as unknown as { env: { DEV: boolean } }).env.DEV;
 const DEBUG = DEV || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug'));
+const NIGHT_PARAM = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('night') : null;
+
+function isNight(): boolean {
+  if (NIGHT_PARAM === '1') return true;
+  if (NIGHT_PARAM === '0') return false;
+  return isNightHour(new Date().getHours());
+}
 
 /** Quái thường đang đuổi/đánh trong bán kính này thì tính là đang giao tranh. */
 const THREAT_R = 16;
@@ -377,6 +388,7 @@ interface LogEntry {
 export class MusicController {
   private dir = new MusicDirector();
   private synth = new Procedural();
+  private amb = new AmbientPicker();
   /** Bài đang yêu cầu và nguồn phát đã chọn cho nó. */
   private track: MusicTrack | null = null;
   private src: 'file' | 'synth' | 'none' = 'none';
@@ -390,7 +402,7 @@ export class MusicController {
     if (DEBUG && typeof window !== 'undefined') {
       (window as unknown as { __music?: unknown }).__music = {
         log: this.log,
-        state: () => ({ track: this.track, src: this.src, combat: this.dir.inCombat, boss: this.dir.inBoss, input: this.lastInput }),
+        state: () => ({ track: this.track, src: this.src, ambient: this.amb.current, combat: this.dir.inCombat, boss: this.dir.inBoss, input: this.lastInput }),
       };
     }
   }
@@ -424,6 +436,11 @@ export class MusicController {
       dead: (s.flags & PF_DEAD) !== 0,
     };
     this.lastInput = inp;
+    const amb = this.amb.update(now / 1000, ambientFor(inp.dungeon, inp.biome, isNight()));
+    if (amb) {
+      playAmbient(amb, 3);
+      if (DEBUG) console.info(`[music] âm môi trường → ${amb}`);
+    }
     const ch = this.dir.update(now / 1000, inp);
     if (ch) this.apply(ch);
     else if (this.track) this.refresh();
@@ -474,6 +491,8 @@ export class MusicController {
     clearInterval(this.pumpTimer);
     this.synth.set(null, 1.5);
     playMusic(null, 1.5);
+    playAmbient(null, 1.5);
+    this.amb.reset();
     this.dir.reset();
     this.track = null;
     this.src = 'none';
