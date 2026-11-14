@@ -55,6 +55,7 @@ import { Environment } from './env';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline } from '../render/post';
+import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/world';
 import { GRADING, GRADING_DEFAULT } from '../render/grading';
 import { MusicController } from './music';
@@ -452,6 +453,8 @@ export class Game {
     // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
     this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: params.get('renderer') === 'webgl2' });
     await this.renderer.init();
+    // Đổi preset lúc chạy làm pass cảnh đổi giữa có/không MRT bloom: phải tách cache shader theo đích (nodeCacheFix.ts).
+    patchNodeCacheKey(this.renderer);
     mark('rendererInit');
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;

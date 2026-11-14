@@ -16,6 +16,7 @@
 //   --renderers webgpu,webgl2   --presets low,medium,high   --seconds 8 (mỗi điểm)   --size 1280x720
 //   --channel chrome|msedge|chromium (mặc định chrome nếu có, không thì Chromium của Playwright)
 //   --dpr 1 (devicePixelRatio giả lập, ví dụ 2 cho màn HiDPI)   --headed (mở cửa sổ thật, vẫn tắt tiếng)
+//   --switch N: không đo; đổi preset N lần khi đang bắn VFX, báo lỗi console và rò geometry/texture (pnpm bench:switch)
 // Biến môi trường: PORT, CLIENT_PORT (cổng cho server/Vite do bench tự chạy), BENCH_CHANNEL.
 
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
@@ -443,6 +444,111 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
   }
 }
 
+// ---------- đổi preset liên tục (--switch N) ----------
+type SwitchSample = { step: number; preset: string; geometries: number; textures: number; gpuTextures: number; programs: number };
+type SwitchRun = { renderer: string; backend: string; switches: number; samples: SwitchSample[]; leaks: string[]; errors: string[] };
+
+/**
+ * Nạp game một lần, rồi đổi preset `n` lần theo vòng cao → thấp → vừa → thấp → cao… (gồm mọi cặp chuyển),
+ * trong lúc liên tục bắn VFX (mưa kiếm, sét, chém, nổ) quanh nhân vật. Mỗi lần đổi chờ ~0,6 giây cho đủ khung.
+ * Đạt khi: không lỗi console/pageerror, và sau vòng đầu (đã dựng đủ mọi pipeline/material) số geometry,
+ * texture (renderer.info.memory) và texture GPU sống không tăng thêm quá 2 ở cùng preset.
+ */
+async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: number): Promise<SwitchRun> {
+  const ctx = await browser.newContext({ viewport: { width: VW, height: VH }, deviceScaleFactor: DPR });
+  const page = await ctx.newPage();
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error' || (m.type() === 'warning' && /webgpu|pipeline|attachment|GL_INVALID/i.test(m.text()))) errors.push(m.text().slice(0, 300));
+  });
+  await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})("high");` });
+  const name = `Swap_${renderer === 'webgpu' ? 'gpu' : 'gl'}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`;
+  try {
+    await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
+    await page.waitForFunction(() => {
+      const g = (window as unknown as BenchWindow).__game;
+      return !!g && g.frames > 30 && !!g.me?.();
+    }, undefined, { timeout: 120_000, polling: 250 });
+    const backend = await page.evaluate(() => ((window as unknown as BenchWindow).__game!.renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2'));
+    // VFX liên tục: mỗi 150 ms một hiệu ứng quanh nhân vật (đủ loại material có markBloom).
+    await page.evaluate(() => {
+      const g = (window as unknown as BenchWindow).__game!;
+      let i = 0;
+      (window as any).__swapFx = setInterval(() => {
+        const p = g.renderPos;
+        const v = g.vfx;
+        const at = p.clone().add({ x: 3, y: 1, z: 0 });
+        switch (i++ % 5) {
+          case 0: v.swordRain(p.x + 4, p.y, p.z, 3, 0x9fe8ff); break;
+          case 1: v.lightning(p.x - 3, p.y, p.z + 2); break;
+          case 2: v.burst(at, 0xffd27a); break;
+          case 3: v.slash(p.clone().add({ x: 0, y: 1, z: 0 }), () => at, 0x9fe8ff); break;
+          default: v.pillar(() => at, 0xd6c4ff, 0.6); break;
+        }
+      }, 150);
+    });
+    const order = ['low', 'medium', 'low', 'high', 'medium', 'high'];
+    const samples: SwitchSample[] = [];
+    for (let step = 0; step < n; step++) {
+      const preset = order[step % order.length];
+      const s = await page.evaluate(async (q) => {
+        const w = window as unknown as BenchWindow;
+        const g = w.__game!;
+        g.setQuality(q);
+        await new Promise((r) => setTimeout(r, 600));
+        const m = g.renderer.info.memory;
+        const progs = (g.renderer.info as any).programs;
+        return { geometries: m.geometries as number, textures: m.textures as number, gpuTextures: w.__bench.texCount(), programs: Array.isArray(progs) ? progs.length : (progs ?? 0) };
+      }, preset);
+      samples.push({ step, preset, ...s });
+    }
+    await page.evaluate(() => clearInterval((window as any).__swapFx));
+    // So vòng đầu với vòng cuối, cùng preset.
+    const leaks: string[] = [];
+    for (const preset of new Set(order)) {
+      const at = samples.filter((s) => s.preset === preset);
+      if (at.length < 3) continue;
+      const first = at[1];
+      const last = at[at.length - 1];
+      for (const k of ['geometries', 'textures', 'gpuTextures'] as const) {
+        if (last[k] - first[k] > 2) leaks.push(`${preset}: ${k} ${first[k]} → ${last[k]}`);
+      }
+    }
+    return { renderer, backend, switches: n, samples, leaks, errors };
+  } finally {
+    await ctx.close().catch(() => undefined);
+  }
+}
+
+async function mainSwitch(n: number): Promise<void> {
+  await startServer();
+  const launchArgs = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
+  let browser: Browser;
+  try {
+    browser = await chromium.launch({ channel: CHANNEL === 'chromium' ? undefined : CHANNEL, headless: !HEADED, args: launchArgs });
+  } catch {
+    browser = await chromium.launch({ headless: !HEADED, args: launchArgs });
+  }
+  let fail = false;
+  try {
+    for (const renderer of RENDERERS) {
+      const r = await runSwitch(browser, renderer, n);
+      console.log(`\n[switch] ${r.backend}: ${r.switches} lần đổi preset, ${r.errors.length} lỗi console, ${r.leaks.length ? 'RÒ: ' + r.leaks.join('; ') : 'không rò'}`);
+      for (const s of r.samples) console.log(`  #${lpad(s.step, 2)} ${pad(s.preset, 7)} geo ${lpad(s.geometries, 5)} tex ${lpad(s.textures, 4)} gpuTex ${lpad(s.gpuTextures, 4)} prog ${s.programs}`);
+      for (const e of [...new Set(r.errors)].slice(0, 10)) console.log('  lỗi: ' + e);
+      if (renderer === 'webgpu' && r.backend !== 'WebGPU') console.warn('[switch] cảnh báo: yêu cầu WebGPU nhưng renderer đã lùi về WebGL2');
+      if (r.errors.length || r.leaks.length) fail = true;
+    }
+  } finally {
+    await browser.close().catch(() => undefined);
+    stopServer();
+  }
+  console.log(fail ? '\n[switch] KHÔNG ĐẠT' : '\n[switch] ĐẠT');
+  process.exitCode = fail ? 1 : 0;
+}
+
 // ---------- báo cáo ----------
 const pad = (s: string | number, n: number) => String(s).padEnd(n);
 const lpad = (s: string | number, n: number) => String(s).padStart(n);
@@ -577,7 +683,8 @@ async function main(): Promise<void> {
   console.log(`\nĐã lưu ${path.relative(ROOT, out).replace(/\\/g, '/')}`);
 }
 
-main().catch((e) => {
+const SWITCH = Number(opt('--switch', '0'));
+(SWITCH > 0 ? mainSwitch(SWITCH) : main()).catch((e) => {
   console.error('[bench] lỗi:', e instanceof Error ? e.message : e);
   stopServer();
   process.exit(1);

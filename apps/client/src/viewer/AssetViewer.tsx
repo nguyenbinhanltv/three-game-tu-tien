@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '@dtl/content';
 import { type FrameInfo, HUMAN_HEIGHT, type LoadedInfo, ViewerScene } from './scene';
 import { fmtBytes } from './stats';
+import { poseClipName } from '../game/character/ikpose';
 
 const BASE_URL = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
 /** Chỉ nhận đường dẫn tương đối cùng origin tới .glb/.gltf, không có "..". */
@@ -55,7 +56,25 @@ export function AssetViewer() {
         if (!alive) return;
         setViewer(v);
         (window as unknown as { __viewer: ViewerScene }).__viewer = v;
-        const file = new URLSearchParams(location.search).get('file');
+        const params = new URLSearchParams(location.search);
+        const file = params.get('file');
+        if (!file && v.poseMode) {
+          // ?pose=<id>[&t=giây]: rig mẫu chạy pose; chọn sẵn clip và dừng ở khung t nếu có.
+          let i = 0;
+          const t = Number(params.get('t'));
+          const seek = params.has('t') && Number.isFinite(t);
+          void load(async () => {
+            const res = v.loadPoseFixture();
+            i = Math.max(0, res.clips.findIndex((c) => c.name === poseClipName(params.get('pose') ?? '')));
+            v.playClip(i);
+            if (seek) v.seek(t);
+            return res;
+          }, 'mixamo_fixture').then(() => {
+            setClip(i);
+            setPaused(seek);
+          });
+          return;
+        }
         if (!file) return;
         const url = resolveFile(file);
         if (!url) setError(t('viewer.err.bad_path', { file }));

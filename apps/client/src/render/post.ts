@@ -131,6 +131,8 @@ export class PostPipeline {
   private post: THREE.PostProcessing;
   private scenePass: ReturnType<typeof pass>;
   private blurNode: ReturnType<typeof gaussianBlur> | null = null;
+  /** Đích LDR cho FXAA: RTTNode không tự giải phóng render target, dispose() phải làm. */
+  private fxaaInput: ReturnType<typeof rtt> | null = null;
 
   constructor(renderer: THREE.WebGPURenderer, scene: THREE.Scene, camera: THREE.Camera, opts: PostOptions) {
     this.bloom = opts.bloom;
@@ -177,7 +179,11 @@ export class PostPipeline {
     g = vec3(mix(g, vec3(1, 0.98, 0.94), postParams.flash.mul(0.75)));
 
     const graded = vec4(g, 1);
-    const ldrRgb = opts.fxaa ? vec4(fxaa(rtt(graded, null, null, { type: THREE.UnsignedByteType }))).rgb : graded.rgb;
+    let ldrRgb = graded.rgb;
+    if (opts.fxaa) {
+      this.fxaaInput = rtt(graded, null, null, { type: THREE.UnsignedByteType });
+      ldrRgb = vec4(fxaa(this.fxaaInput)).rgb;
+    }
 
     const vig = mix(float(1), float(1).sub(postParams.vignette), smoothstep(postParams.vignetteInner, postParams.vignetteOuter, length(fromCenter).mul(1.414)));
     // Hạt phim + dither (±0,5/255) chống vệt bậc ở trời và sương.
@@ -217,6 +223,11 @@ export class PostPipeline {
   }
 
   dispose(): void {
+    if (this.fxaaInput) {
+      this.fxaaInput.renderTarget?.dispose();
+      (this.fxaaInput as unknown as { _quadMesh?: { material: THREE.Material } })._quadMesh?.material.dispose();
+      this.fxaaInput.dispose();
+    }
     this.blurNode?.dispose();
     this.scenePass.dispose();
     this.post.dispose();
