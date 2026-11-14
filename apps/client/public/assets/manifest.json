@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "pipeline": 1,
+  "assets": {
+    "arch_sect": {
+      "id": "arch_sect",
+      "class": "arch",
+      "source": "assets/build/raw/arch_sect.glb",
+      "file": "arch_sect.d75e50b14a.glb",
+      "bytes": 138216,
+      "rawBytes": 840236,
+      "triangles": 11012,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11012
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 119.5885,
+          "height": 22.6,
+          "depth": 141.6009,
+          "minY": 0
+        },
+        "build": {
+          "width": 119.5961,
+          "height": 22.5925,
+          "depth": 141.6009,
+          "minY": 0.0037
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dap-thien-lo.local/assets/meta.schema.json",
+  "title": "meta.json của một asset (assets/source/<loại>/<asset_id>/meta.json)",
+  "description": "Hồ sơ nhẹ của asset: concept, các lần sinh Tripo, ngân sách, giấy phép. File lớn nằm ở DTL_ASSET_SOURCE (../dtl-asset-source). Xem docs/tripo-runbook.md mục 4.",
+  "type": "object",
+  "required": ["id", "type", "status", "license"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": {
+      "type": "string",
+      "pattern": "^(chr|mon|boss|prop|arch|fx|anim)_[a-z0-9]+(_[a-z0-9]+)*$",
+      "description": "Asset id: tiền tố loại + snake_case không dấu; trùng tên thư mục và tên GLB trong assets/build/raw/."
+    },
+    "type": { "enum": ["chr", "mon", "prop", "arch", "fx", "anim"], "description": "Thư mục loại trong assets/source/." },
+    "budgetClass": {
+      "enum": ["player", "npc", "monster", "boss", "weapon", "prop", "drop", "arch", "fx", "anim"],
+      "description": "Lớp ngân sách trong assets/budgets.json. Bỏ trống thì suy từ tiền tố id (chr_ → player, mon_ → monster…)."
+    },
+    "itemId": { "type": ["string", "null"], "description": "Id vật phẩm trong packages/content nếu asset là hình của vật phẩm." },
+    "status": {
+      "enum": ["planned", "concept_approved", "generated", "rigged", "animated", "imported", "in_game", "rejected"]
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "faceLimit": { "type": "integer", "minimum": 0 },
+        "texture": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "procedural": {
+      "type": "object",
+      "description": "Asset sinh thủ tục: script và seed để sinh lại.",
+      "required": ["script"],
+      "additionalProperties": false,
+      "properties": {
+        "script": { "type": "string" },
+        "seed": { "type": ["integer", "string", "null"] }
+      }
+    },
+    "concept": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "view", "tool", "date"],
+        "additionalProperties": false,
+        "properties": {
+          "file": { "type": "string" },
+          "view": { "enum": ["front", "left", "back", "right", "34"] },
+          "tool": { "type": "string" },
+          "date": { "type": "string", "format": "date" },
+          "prompt": { "type": "string" },
+          "chosen": { "type": "boolean" }
+        }
+      }
+    },
+    "tripo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step", "channel", "version", "date", "result"],
+        "additionalProperties": false,
+        "properties": {
+          "step": { "type": "string" },
+          "channel": { "enum": ["web", "cli"] },
+          "version": { "type": "integer", "minimum": 1 },
+          "taskId": { "type": ["string", "null"] },
+          "webUrl": { "type": ["string", "null"] },
+          "parentTaskId": { "type": ["string", "null"] },
+          "model": { "type": "string" },
+          "params": { "type": "object" },
+          "seed": { "type": ["integer", "null"] },
+          "quote": { "type": ["number", "null"] },
+          "credits": { "type": ["number", "null"] },
+          "batch": { "type": ["string", "null"] },
+          "date": { "type": "string", "format": "date" },
+          "output": { "type": ["string", "null"] },
+          "result": { "enum": ["ok", "failed", "rejected"] },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "required": ["source", "owner", "date"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string", "description": "Ví dụ: Tripo (API trả phí) + Codex; CC0 Quaternius; tự sinh bằng script." },
+        "owner": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "url": { "type": "string" },
+        "spdx": { "type": "string", "description": "Mã SPDX nếu là giấy phép mở, ví dụ CC0-1.0, CC-BY-4.0." }
+      }
+    }
+  }
+}
