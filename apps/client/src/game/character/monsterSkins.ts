@@ -38,7 +38,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_u_minh_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, tint: '#8a9fd0', roughness: -0.08, rim: 0.8 },
 };
 
-export interface Template {
+interface Template {
   handle: AssetHandle;
   height: number;
   bounds: THREE.Sphere;
@@ -134,7 +134,7 @@ export class MonsterSkins {
 }
 
 /** Chiều cao và khung cầu từ hình học LOD0 ở tư thế gốc (asset đặt chân ở y = 0, node không biến đổi). */
-export function templateOf(handle: AssetHandle): Template {
+function templateOf(handle: AssetHandle): Template {
   const box = new THREE.Box3();
   handle.scene.traverse((o) => {
     const m = o as THREE.Mesh;

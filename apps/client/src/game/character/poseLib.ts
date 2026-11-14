@@ -1,6 +1,8 @@
 import type * as THREE from 'three/webgpu';
-import type { PoseDef } from '@dtl/shared';
+import { POSE_CAST, POSE_FLY, type PoseDef } from '@dtl/shared';
+import { POSES } from '@dtl/content';
 import { bakePose, IkRig, maskClip, poseClipName } from './ikpose';
+import type { ClipMap } from './states';
 
 /** Clip nướng từ một pose: cả người (trạng thái nền lặp) và hai nửa thân (đòn một lần chồng lên nền). */
 export interface PoseClips {
@@ -35,3 +37,22 @@ export function libraryClips(lib: PoseLibrary): THREE.AnimationClip[] {
 }
 
 export { poseClipName };
+
+/** Clip nền nướng từ pose: bay đứng trên kiếm, niệm chú (asset người không có clip riêng cho hai trạng thái này). */
+export const POSE_BASE_CLIPS: ClipMap = { fly: poseClipName(POSE_FLY), cast: poseClipName(POSE_CAST) };
+
+/**
+ * Điểm nối cho model người có xương (M3-5 dựng người chơi): nướng thư viện pose từ bản gốc của asset (tư thế nghỉ,
+ * gọi một lần mỗi asset rồi dùng chung cho mọi bản sao) và trả về phần thêm vào `SkinnedOpts`:
+ *
+ *   const extra = withPoses(handle.scene, { idle: 'idle', run: 'run', hit: 'hit_light', death: 'death' });
+ *   new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, ...extra, ... });
+ *
+ * Có `poses` thì ra chiêu dùng động tác riêng (`perform`, engine gọi theo FX), không dùng clip `attack` của asset.
+ * Clip bay/niệm chú của asset (nếu có trong `clipMap`) được giữ, chỉ thêm khi thiếu. Không phải rig người → không có pose.
+ */
+export function withPoses(template: THREE.Object3D, clipMap: ClipMap, poses: readonly PoseDef[] = POSES): { poses?: PoseLibrary; clipMap: ClipMap } {
+  const lib = bakePoseLibrary(template, poses);
+  if (!lib) return { clipMap };
+  return { poses: lib, clipMap: { ...POSE_BASE_CLIPS, ...clipMap } };
+}
