@@ -58,3 +58,12 @@ Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi đ�
 | `amb_cave` | OpenGameArt: wind whoosh loop — SketchMan3; OpenGameArt: 20 Sword Sound Effects (Attacks and Clashes) — StarNinjas | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/wind-whoosh-loop — `oga/wind-whoosh-loop/`: wind_20woosh_20loop.ogg; https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — `oga/20-sword-sound-effects-attacks-and-clashes/sword_clash_-_starninjas_0/`: sword_clash.9.ogg |
 
 <!-- audio:end -->
+
+## Font
+
+Font web tự host trong `apps/client/public/fonts/`, subset bằng `tools/fonts/subset.py` (fonttools) từ kho [google/fonts](https://github.com/google/fonts) ghim commit `cc39c4c`. Văn bản giấy phép đầy đủ nằm cạnh file font (`OFL-*.txt`); bản quyền và giấy phép cũng giữ trong bảng `name` của từng woff2. Không font nào khai Reserved Font Name.
+
+| File | Font gốc | Giấy phép | Ngày | Dùng cho |
+| --- | --- | --- | --- | --- |
+| `dtl-title.woff2` | Charm Bold, © 2018 The Charm Project Authors (Cadson Demak) | `OFL-1.1` | 2026-11-15 | Tiêu đề thư pháp trên khung hình đầu (chỉ glyph của `ui.title`), biến CSS `--font-title` |
+| `dtl-display.woff2` | Alegreya SC Bold, © 2011 The Alegreya Project Authors (Huerta Tipográfica) | `OFL-1.1` | 2026-11-15 | Tên boss, biển hiệu, phụ đề màn tiêu đề (Latin + tiếng Việt), biến CSS `--font-display` |

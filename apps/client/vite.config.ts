@@ -1,9 +1,24 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 
-const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'server');
+const here = path.dirname(fileURLToPath(import.meta.url));
+const serverDir = path.resolve(here, '..', 'server');
+const uiStrings = path.resolve(here, '../../packages/content/data/i18n/vi.ui.json');
+
+/** Khung hình đầu trong index.html hiện trước khi JS chạy: chèn tiêu đề từ i18n (`ui.title`) lúc build. */
+function titleFromI18n(): Plugin {
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return {
+    name: 'dtl-title-i18n',
+    transformIndexHtml(html) {
+      const title = (JSON.parse(fs.readFileSync(uiStrings, 'utf8')) as Record<string, string>)['ui.title'];
+      return html.replaceAll('%DTL_TITLE%', esc(title));
+    },
+  };
+}
 
 // Cổng đổi được qua biến môi trường để nhiều worktree chạy song song. Biến môi trường thật
 // được ưu tiên, sau đó tới apps/server/.env.local (đã gitignore, server cũng đọc file này):
@@ -17,7 +32,7 @@ export default defineConfig(({ command, mode }) => {
   const env = command === 'serve' ? { ...loadEnv(mode, serverDir, ''), ...process.env } : process.env;
   const clientPort = env.CLIENT_PORT ? Number(env.CLIENT_PORT) : undefined;
   return {
-    plugins: [react()],
+    plugins: [react(), titleFromI18n()],
     define:
       command === 'serve'
         ? { 'import.meta.env.VITE_DEV_SERVER_PORT': JSON.stringify(String(Number(env.PORT || 2567))) }
