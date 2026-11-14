@@ -1458,20 +1458,20 @@ kbd {
 .gauge.tcast.broken {
   --fill: linear-gradient(180deg, #fff3c6 0%, #f2c47e 45%, #a57a2e 100%);
 }
-/* Letterbox mỏng + phụ đề: chỉ là lớp hình, không nhận chuột, không khóa điều khiển. */
+/* Letterbox mỏng + phụ đề: chỉ là lớp hình, không nhận chuột, không khóa điều khiển.
+   Không đặt z-index: nằm đầu .hud nên thanh boss và các khung khác vẽ đè lên dải đen. */
 .boss-line {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 5;
   animation: boss-line-fade 3.2s ease-in-out forwards;
 }
 .boss-line .lb {
   position: absolute;
   left: 0;
   right: 0;
-  height: 7vh;
-  background: rgba(0, 0, 0, 0.82);
+  height: 6vh;
+  background: rgba(0, 0, 0, 0.7);
 }
 .boss-line .lb-top {
   top: 0;
@@ -1482,7 +1482,8 @@ kbd {
 .boss-line-text {
   position: absolute;
   left: 50%;
-  bottom: calc(7vh + 150px);
+  /* Ngay dưới thanh boss (kể cả thanh niệm chú), tránh gợi ý giữa màn hình và thanh chiêu. */
+  top: 150px;
   transform: translateX(-50%);
   max-width: min(720px, 80vw);
   display: flex;
