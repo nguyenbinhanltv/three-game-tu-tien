@@ -32,6 +32,9 @@ export interface MState {
   mhp: number;
   lv: number;
   st: number;
+  /** Cờ MF_* và thời điểm server (ms) hết trạng thái đó. */
+  mf?: number;
+  ce?: number;
 }
 export interface NState {
   t: string;

@@ -22,6 +22,8 @@ import {
   type MoveCtx,
   type MoveInput,
   type MoveState,
+  MF_CHANT,
+  MF_STUN,
   MS_ATTACK,
   MS_DEAD,
   PF_CASTING,
@@ -948,6 +950,13 @@ export class Game {
           return st === MS_ATTACK;
         });
         break;
+      case 'chant':
+        // Boss niệm chú: quả cầu tụ lực lớn; thanh niệm chú hiện ở khung mục tiêu (đọc từ state `mf`/`ce`).
+        v.charge(posSrc, m.d ?? 2, 0x9fe6ff, () => ((this.view.monsters.get(src)?.mf ?? 0) & MF_CHANT) !== 0);
+        break;
+      case 'interrupt':
+        if (e.chestOf(dst, _v)) v.burst(_v, 0xfff2b0, 2.6, 0.45);
+        break;
       case 'castend':
         if (src === this.sid) set({ castEnd: 0 });
         break;
@@ -1299,7 +1308,14 @@ export class Game {
       if (this.targetKind === 'mon') {
         const m = this.view.monsters.get(this.targetId);
         const def = m ? MONSTER.get(m.t) : undefined;
-        if (m && def) target = { id: this.targetId, kind: 'mon', name: monsterName(def.id), level: m.lv, hp: m.hp, mhp: m.mhp, boss: !!def.boss };
+        if (m && def) {
+          target = { id: this.targetId, kind: 'mon', name: monsterName(def.id), level: m.lv, hp: m.hp, mhp: m.mhp, boss: !!def.boss };
+          const ch = def.ai?.chant;
+          if (ch && m.mf && m.ce) {
+            const kind = m.mf & MF_CHANT ? 'chant' : m.mf & MF_STUN ? 'stun' : null;
+            if (kind) target.cast = { kind, end: m.ce - this.timeOffset, total: (kind === 'chant' ? ch.cast : ch.stun) * 1000, open: kind === 'chant' ? ch.open : 0 };
+          }
+        }
       } else if (this.targetKind === 'player') {
         const p = this.view.players.get(this.targetId);
         if (p) target = { id: this.targetId, kind: 'player', name: p.name, level: p.lv, hp: p.hp, mhp: p.mhp, boss: false };
