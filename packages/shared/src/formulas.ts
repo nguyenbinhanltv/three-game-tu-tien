@@ -108,8 +108,11 @@ export const TRIBULATION_DURATION = 40;
 
 /** Boss bị ngắt chú thì choáng và nhận thêm chừng này lần sát thương cho tới khi hết choáng. */
 export const INTERRUPT_VULN_MUL = 1.5;
-/** Tối đa lệnh dùng skill mỗi giây một người chơi; vượt thì server bỏ lệnh (chống spam). */
-export const SKILL_MSG_PER_SEC = 8;
+/**
+ * Tối đa lệnh dùng skill mỗi giây một người chơi; vượt thì server bỏ lệnh (chống spam).
+ * Đủ rộng cho hàng đợi chiêu của client (tới 3 lần gửi lại mỗi lần bấm, xem skillQueue.ts) cộng tự đánh.
+ */
+export const SKILL_MSG_PER_SEC = 12;
 
 /**
  * Kết quả một chiêu ngắt trúng boss đang niệm chú, từ lúc bắt đầu `startAt` tới `endAt` (ms server).
