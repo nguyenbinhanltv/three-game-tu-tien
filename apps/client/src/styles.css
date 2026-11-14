@@ -1790,3 +1790,115 @@ kbd {
     opacity: 0;
   }
 }
+
+/* Thẻ chương (C2): sự kiện cá nhân. Chỉ là lớp hình, không nhận chuột, không khóa điều khiển.
+   Dải letterbox mỏng trượt vào rồi rút ra; chữ ngà trên quầng mực mờ, đường kẻ đồng thau mảnh ở giữa.
+   Nằm đầu .hud (không z-index) nên mọi khung HUD vẫn vẽ đè lên. */
+.chapter-card {
+  --dur: 3000ms;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+.chapter-card .lb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 7vh;
+  background: rgba(6, 9, 14, 0.78);
+  animation: chapter-bar var(--dur) cubic-bezier(0.3, 0, 0.2, 1) forwards;
+}
+.chapter-card .lb-top {
+  top: 0;
+  transform-origin: top;
+}
+.chapter-card .lb-bot {
+  bottom: 0;
+  transform-origin: bottom;
+}
+.chapter-text {
+  position: absolute;
+  left: 50%;
+  /* Trên đầu nhân vật, dưới thanh boss và băng độ kiếp; không đè gợi ý giữa màn hình và thanh chiêu. */
+  top: 30vh;
+  transform: translateX(-50%);
+  width: min(760px, 86vw);
+  padding: 18px 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: radial-gradient(closest-side, rgba(6, 9, 14, 0.55), rgba(6, 9, 14, 0));
+  animation: chapter-fade var(--dur) ease-in-out forwards;
+}
+.chapter-kicker {
+  font: 600 13px var(--font-display, var(--serif));
+  letter-spacing: 3px;
+  color: var(--gold-soft);
+  text-shadow: 0 1px 2px #000;
+}
+.chapter-title {
+  margin-top: 4px;
+  font: 700 clamp(30px, 3.4vw, 46px) var(--font-display, var(--serif));
+  color: #f4efe2;
+  letter-spacing: 6px;
+  text-shadow:
+    0 2px 4px #000,
+    0 0 18px rgba(0, 0, 0, 0.85);
+  animation: chapter-spread var(--dur) ease-out forwards;
+}
+.chapter-rule {
+  width: 180px;
+  height: 1px;
+  margin: 8px 0 9px;
+  background: linear-gradient(90deg, rgba(214, 182, 110, 0), var(--gold) 50%, rgba(214, 182, 110, 0));
+}
+.chapter-sub {
+  font: italic 500 17px var(--font-display, var(--serif));
+  color: #e4dccb;
+  text-shadow: 0 1px 3px #000;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chapter-card.chapter-trib .chapter-kicker {
+  color: #d9c2ff;
+}
+@keyframes chapter-bar {
+  0% {
+    transform: scaleY(0);
+  }
+  14%,
+  84% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0);
+  }
+}
+@keyframes chapter-fade {
+  0% {
+    opacity: 0;
+  }
+  16%,
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes chapter-spread {
+  from {
+    letter-spacing: 3px;
+  }
+  to {
+    letter-spacing: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chapter-title {
+    animation: none;
+  }
+}
