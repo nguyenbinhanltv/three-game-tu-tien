@@ -1288,3 +1288,69 @@ kbd {
     opacity: 1;
   }
 }
+
+/* Boss xuất hiện (P2-B2) và chuyển pha (P2-B3): letterbox mỏng hơn cảnh mở đầu, vào nhanh; tên + danh hiệu + một câu
+   thoại ở dải dưới. Ngắn (≤ 2,6 s), phím/chuột bỏ qua được, HUD ẩn như mọi cảnh (.hud.cining). */
+.cine-boss .cine-bar,
+.cine-phase .cine-bar {
+  height: 9vh;
+  animation-duration: 320ms;
+}
+.cine-name {
+  position: absolute;
+  left: 50%;
+  bottom: calc(9vh + 4vh);
+  transform: translateX(-50%);
+  width: min(760px, 88vw);
+  text-align: center;
+  font-family: var(--font-display);
+  color: #efe6d0;
+  text-shadow: 0 0 14px rgba(5, 7, 11, 0.95), 0 1px 3px rgba(5, 7, 11, 0.95);
+  opacity: 0;
+  animation: cine-name var(--dur) ease-in-out forwards;
+}
+.cine-name-main {
+  font-size: clamp(26px, 3.4vw, 44px);
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+}
+.cine-name-title {
+  margin-top: 4px;
+  font-size: clamp(13px, 1.3vw, 17px);
+  letter-spacing: 0.18em;
+  color: var(--gold-soft, #d8bd7a);
+}
+.cine-name-say {
+  margin-top: 10px;
+  font-size: clamp(15px, 1.7vw, 22px);
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+}
+.cine-phase .cine-name-main {
+  font-size: clamp(14px, 1.4vw, 18px);
+  letter-spacing: 0.2em;
+  color: var(--gold-soft, #d8bd7a);
+}
+.cine-phase .cine-name-say {
+  margin-top: 4px;
+  font-size: clamp(18px, 2.1vw, 28px);
+}
+.cine.out .cine-name {
+  opacity: 0;
+  animation: none;
+  transition: opacity 250ms;
+}
+@keyframes cine-name {
+  0%,
+  10% {
+    opacity: 0;
+  }
+  26%,
+  80% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}

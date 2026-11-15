@@ -137,11 +137,21 @@ function CineView() {
   const cine = useUI((s) => s.cine);
   if (!cine) return null;
   return (
-    <div className={'cine' + (cine.out ? ' out' : '')} key={cine.id} style={{ '--dur': cine.dur + 'ms' } as CSSProperties}>
+    <div className={'cine' + (cine.kind && cine.kind !== 'sect' ? ' cine-' + cine.kind : '') + (cine.out ? ' out' : '')} key={cine.id} style={{ '--dur': cine.dur + 'ms' } as CSSProperties}>
       <div className="cine-bar cine-top" />
       <div className="cine-bar cine-bot" />
-      <div className="cine-line">{t('ui.cine.sect.line')}</div>
-      <div className="cine-skip">{t('ui.cine.skip')}</div>
+      {cine.kind === 'boss' || cine.kind === 'phase' ? (
+        <div className="cine-name">
+          <div className="cine-name-main">{cine.name}</div>
+          {cine.title && <div className="cine-name-title">{cine.title}</div>}
+          <div className="cine-name-say">{t('ui.boss.say', { text: cine.text ?? '' })}</div>
+        </div>
+      ) : (
+        <>
+          <div className="cine-line">{t('ui.cine.sect.line')}</div>
+          <div className="cine-skip">{t('ui.cine.skip')}</div>
+        </>
+      )}
     </div>
   );
 }

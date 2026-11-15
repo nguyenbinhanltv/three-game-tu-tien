@@ -168,3 +168,52 @@ export class Cutscene {
     return false;
   }
 }
+
+/** Cảnh boss xuất hiện (P2-B2): ngắn, và tắt camera cảnh trong `out` giây khi bị bỏ qua. */
+export const BOSS_CUTSCENE = { dur: 2.6, out: 0.35 };
+/** Chuyển pha (P2-B3). */
+export const PHASE_CUTSCENE = { dur: 1.9, out: 0.3 };
+
+/** Ngoài khoảng này người chơi không tham chiến nên không bị kéo camera. */
+export const BOSS_CUTSCENE_RANGE = 42;
+
+/**
+ * Đường camera đóng khung boss. Boss đang lao tới người chơi nên mỗi điểm đặt lệch hẳn sang một bên của trục
+ * người–boss (boss chạy dọc trục nên không xuyên qua camera): đầu cảnh thấp và rộng ở khoảng giữa, nhìn lên thân
+ * boss; rồi áp sát về phía người chơi và hòa vào camera thường. Điểm nhìn lúc đầu là boss (engine nhìn theo vị trí
+ * boss hiện tại trong nửa đầu cảnh). `scale` là cỡ boss (monsters.json), `groundAt` để không chui xuống đất.
+ */
+export function bossIntroPath(boss: Vec3, scale: number, player: Vec3, groundAt: (x: number, z: number) => number): Waypoint[] {
+  const dx = boss.x - player.x;
+  const dz = boss.z - player.z;
+  const d = Math.hypot(dx, dz) || 1;
+  const ux = dx / d;
+  const uz = dz / d;
+  // Vuông góc với trục người → boss.
+  const px = -uz;
+  const pz = ux;
+  const at = (along: number, side: number, rise: number, look: number): Waypoint => {
+    const x = player.x + ux * d * along + px * side;
+    const z = player.z + uz * d * along + pz * side;
+    const y = Math.max(groundAt(x, z) + 0.9, player.y + rise);
+    return { p: v(x, y, z), look: v(boss.x, boss.y + look, boss.z) };
+  };
+  return [at(0.5, 5 + 3.2 * scale, 0.3, 1.0 * scale), at(0.2, 3.5 + 1.6 * scale, 1.7, 1.3 * scale)];
+}
+
+/**
+ * Chuyển pha: từ camera hiện tại lùi ra sau lưng người chơi (xa boss) và nâng nhẹ, mắt dời dần về ngực boss,
+ * rồi trở lại camera thường.
+ */
+export function phaseShiftPath(cam: Vec3, camLook: Vec3, boss: Vec3, scale: number, groundAt: (x: number, z: number) => number): Waypoint[] {
+  const dx = cam.x - boss.x;
+  const dz = cam.z - boss.z;
+  const d = Math.hypot(dx, dz) || 1;
+  const back = 3 + scale;
+  const x = cam.x + (dx / d) * back;
+  const z = cam.z + (dz / d) * back;
+  const y = Math.max(groundAt(x, z) + 1.2, cam.y + 1.4);
+  const look = v(boss.x, boss.y + 1.2 * scale, boss.z);
+  // Điểm đầu đúng camera hiện tại: không có mối nối.
+  return [{ p: v(cam.x, cam.y, cam.z), look: camLook }, { p: v(x, y, z), look }];
+}

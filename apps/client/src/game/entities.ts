@@ -312,6 +312,8 @@ export class EntityManager {
   npcs: NpcVis[] = [];
   ring: THREE.Mesh;
   private bars = new HeadBars();
+  /** Bật khi có cắt cảnh: thanh máu và nhãn tên trên đầu ẩn đi. */
+  tagsHidden = false;
   private markerNew = makeMarker('!', '#ffd84a');
   private markerDone = makeMarker('?', '#ffd84a');
   private markerWait = makeMarker('?', '#9aa3ad');
@@ -613,6 +615,13 @@ export class EntityManager {
 
     bars.end();
     this.applyLodBudget(local, targetId);
+    // Cắt cảnh (B6): ẩn cả thanh máu lẫn nhãn tên trên đầu, vì chúng nằm trong cảnh 3D chứ không thuộc lớp HUD.
+    if (this.tagsHidden) {
+      this.bars.mesh.visible = false;
+      for (const v of this.players.values()) v.label.visible = false;
+      for (const v of this.monsters.values()) if (v.label) v.label.visible = false;
+      for (const n of this.npcs) n.label.visible = false;
+    }
 
     // ----- vòng chọn mục tiêu -----
     const tm = this.monsters.get(targetId);

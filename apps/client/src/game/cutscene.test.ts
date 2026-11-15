@@ -1,6 +1,6 @@
 import { groundAt } from '@dtl/shared';
 import { describe, expect, it } from 'vitest';
-import { Cutscene, pathParam, SECT_CUTSCENE, SECT_PATH, samplePath, type Vec3 } from './cutscene';
+import { bossIntroPath, Cutscene, pathParam, phaseShiftPath, SECT_CUTSCENE, SECT_PATH, samplePath, type Vec3 } from './cutscene';
 
 const END_P: Vec3 = { x: 2048, y: 156.4, z: 2100 };
 const END_L: Vec3 = { x: 2048, y: 151.6, z: 2088 };
@@ -85,5 +85,56 @@ describe('Cutscene', () => {
     const c = new Cutscene();
     c.skip();
     expect(c.active).toBe(false);
+  });
+});
+
+describe('đường cảnh boss (P2-B2/B3)', () => {
+  const boss: Vec3 = { x: 100, y: 10, z: 100 };
+  const flat = (): number => 0;
+
+  it('xuất hiện: camera lệch khỏi trục người–boss, trên đất, nhìn vào boss, áp sát người chơi dần', () => {
+    const player: Vec3 = { x: 100, y: 10, z: 130 };
+    const path = bossIntroPath(boss, 2.4, player, flat);
+    expect(path).toHaveLength(2);
+    // Trục là x = 100: khoảng cách ngang tới trục chính là |x - 100|.
+    for (const w of path) {
+      expect(Math.abs(w.p.x - 100)).toBeGreaterThan(3);
+      expect(w.p.y).toBeGreaterThanOrEqual(0.9);
+      expect(w.look.x).toBe(boss.x);
+      expect(w.look.y).toBeGreaterThan(boss.y);
+    }
+    const toPlayer = path.map((w) => Math.hypot(w.p.x - player.x, w.p.z - player.z));
+    expect(toPlayer[1]).toBeLessThan(toPlayer[0]);
+  });
+
+  it('xuất hiện: không chui xuống đất dốc', () => {
+    const path = bossIntroPath(boss, 1, { x: 100, y: 10, z: 130 }, () => 50);
+    for (const w of path) expect(w.p.y).toBeGreaterThanOrEqual(50.9);
+  });
+
+  it('chuyển pha: điểm đầu đúng camera hiện tại, điểm sau lùi xa boss và cao hơn', () => {
+    const cam: Vec3 = { x: 100, y: 14, z: 112 };
+    const look: Vec3 = { x: 100, y: 11, z: 100 };
+    const path = phaseShiftPath(cam, look, boss, 2, flat);
+    expect(path[0].p).toEqual(cam);
+    expect(path[0].look).toEqual(look);
+    expect(Math.hypot(path[1].p.x - boss.x, path[1].p.z - boss.z)).toBeGreaterThan(12);
+    expect(path[1].p.y).toBeGreaterThan(cam.y);
+  });
+
+  it('cảnh ngắn chạy hết rồi báo finished, bỏ qua thì không', () => {
+    const c = new Cutscene();
+    const p = z3();
+    const l = z3();
+    c.start(bossIntroPath(boss, 2, { x: 100, y: 10, z: 130 }, flat), 2.6, 0.35);
+    let n = 0;
+    while (c.update(1 / 30, END_P, END_L, p, l) && n++ < 200);
+    expect(c.finished).toBe(true);
+    expect(n).toBeLessThan(90);
+    c.start(bossIntroPath(boss, 2, { x: 100, y: 10, z: 130 }, flat), 2.6, 0.35);
+    c.update(0.5, END_P, END_L, p, l);
+    c.skip();
+    while (c.update(1 / 30, END_P, END_L, p, l) && n++ < 400);
+    expect(c.finished).toBe(false);
   });
 });
