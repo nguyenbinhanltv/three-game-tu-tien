@@ -234,6 +234,12 @@ export class SkinnedPlayer extends SkinnedCharacter {
     this.root.add(this.flySword);
   }
 
+  /** LOD xa: bỏ hào quang phi kiếm (một draw call trong suốt), giữ thân kiếm. */
+  protected onLod(level: number): void {
+    const aura = this.flySword?.children[1];
+    if (aura) aura.visible = level < 2;
+  }
+
   /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */
   attack(): void {
     super.attack();
