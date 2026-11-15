@@ -47,7 +47,12 @@ export class StemPlayer {
 
   /** Nạp ba lớp (nền trước), không làm gì nếu đã có/đang nạp/đã lỗi. `done` gọi khi xong để music.ts chọn lại nguồn. */
   preload(zone: StemZone, done: () => void): void {
-    if (this.ready(zone) || this.loading === zone || this.failed.has(zone)) return;
+    if (this.ready(zone)) {
+      // Quay lại vùng đang giữ bộ đệm: hủy lần nạp vùng khác (kết quả của nó sẽ bị bỏ, không ghi đè bộ đệm này).
+      this.loading = null;
+      return;
+    }
+    if (this.loading === zone || this.failed.has(zone)) return;
     if (!musicOutput()) return;
     const src = stemSources(zone);
     if (!src) return;
