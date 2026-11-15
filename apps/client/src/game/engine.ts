@@ -1973,9 +1973,9 @@ export class Game {
     else this.chapter('sect');
   }
 
-  /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) và không tắt bằng `?cine=0`. */
+  /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) , người chơi chưa tắt thẻ chương trong Cài đặt và không tắt bằng `?cine=0`. */
   private canCine(x: number, z: number): boolean {
-    return new URLSearchParams(location.search).get('cine') !== '0' && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
+    return get().chapterCards && new URLSearchParams(location.search).get('cine') !== '0' && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
   }
 
   private startCine(): void {
