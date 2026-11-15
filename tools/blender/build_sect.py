@@ -432,10 +432,7 @@ def build():
     b.box(0, 7.2, gz + 0.24, 5.8, 1.1, 0.1, GOLD)
     b.hip_roof(0, 10.4, gz, 18, 3.2, 2.4, overhang=1.8, nu=20, nv=10, lift=1.3)
 
-    # ----- Đèn đá dọc lối đi -----
-    for z in range(32, 72, 12):
-        lantern(b, -7.5, z)
-        lantern(b, 7.5, z)
+    # Đèn đá dọc lối đi: từ P2-A4 là prop Tripo `prop_den_da` (packages/shared/src/props.ts), không dựng ở đây.
 
     return b
 

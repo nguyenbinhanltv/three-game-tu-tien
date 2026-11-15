@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_co_thu",
+  "type": "prop",
+  "budgetClass": "prop",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 5000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "prop/prop_co_thu/tripo/raw_v01.glb",
+    "size": {
+      "height": 18
+    },
+    "yaw": -90
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex imagegen (worker three-game-tu-tien-59), brief level-dressing P2-A1",
+      "date": "2026-11-15",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "cli",
+      "version": 1,
+      "taskId": "28cb2643-4d61-4480-8d8b-ef9b784f6159",
+      "parentTaskId": null,
+      "model": "v3.1-20260211",
+      "params": {
+        "face_limit": 10000,
+        "smart_low_poly": true,
+        "texture_quality": "detailed",
+        "pbr": true
+      },
+      "seed": null,
+      "quote": 50,
+      "credits": 50,
+      "batch": "2026-11-15-p2-prop-b2",
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Nguồn Tripo; runtime hạ LOD0 về trần lớp prop 5000 tam giác (art bible), texture 1024."
+    }
+  ],
+  "license": {
+    "source": "Tripo API (image→3D v3.1, CLI) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}

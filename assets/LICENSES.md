@@ -56,6 +56,19 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `anim_human_base` | Thư viện clip không mesh dùng chung cho nhân vật người rig Mixamo: preset animation Tripo web (idle, run, slash, fall) của rig Thanh Phong + hit_light thủ tục `tools/blender/anim_biped_extra.py`, xuất bằng `tools/blender/export_anim_lib.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_kiem_tu_nam` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Thanh Phong"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_kiem_tu_nu` | Tripo API (text-to-3D v3.1 + auto rig Mixamo, CLI) + Codex (concept "Lam Chi"); kiếm + bao thủ tục `tools/blender/biped_parts.py` | dự án | 2026-11-15 | tasks `d46f4925-70b6-4056-80af-a5fd500107d8` (model), `4fe8d7ec-24a0-4211-9c0b-5c3894065cd5` (rig) |
+| `prop_den_da` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `e164185e-13d5-45e7-abcf-ffd8d22a01ce` |
+| `prop_bia_da` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `a790d072-62de-4dc4-b323-4971a9b3e0a6` |
+| `prop_thong_co` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `c8bbd788-32bf-40b9-b4f8-c3ec9fa45c6e` |
+| `prop_co_thu` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `28cb2643-4d61-4480-8d8b-ef9b784f6159` |
+| `prop_da_nam` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `155d1dc8-741e-44a0-852f-a4ffd4639792` |
+| `prop_da_dung` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `0922240a-2732-4bdb-a309-d9aa604774fc` |
+| `prop_da_phien` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `cb75629d-e94e-4ff0-a053-f0e3f537035e` |
+| `prop_truc` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `7fc22a51-bdd8-4dd7-aaba-7288366868dd` |
+| `prop_lau` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `76413ff2-f1eb-4c6d-81b9-3dc302e47fdb` |
+| `prop_kiem_gay` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `7027728e-2700-4ce9-83dd-50324f4ca5a6` |
+| `prop_lu_huong` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `f42da251-53af-4f68-a799-f15bce1438c2` |
+| `prop_tuong_canh` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `256b6d53-5b06-479b-8cf9-7b6a27cce15f` |
+| `prop_duong_xi` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `5ef06438-a4c7-4e3c-8050-76dffebe72eb` |
 | `chr_npc_chuong_mon` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Lạc Vân chân nhân"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_duoc_su` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Tố Tâm"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_thiet_lao` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Thiết lão"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |

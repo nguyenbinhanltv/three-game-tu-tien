@@ -82,10 +82,10 @@ async function main() {
   const after = ((await (await fetch(HTTP + '/health')).json()) as { rooms: unknown[] }).rooms.length;
   check('không có room mới bị dựng', after <= Math.max(before, 1), `${before} → ${after}`);
 
-  // Ngoại hình lúc tạo nhân vật: giới tính chưa mở, màu tự do, dữ liệu sai kiểu/quá lớn → server dùng mặc định, không lỗi.
+  // Ngoại hình lúc tạo nhân vật: giới tính lạ/chưa mở (nữ đã mở từ P2-C5 nên dùng 'x'), màu tự do, dữ liệu sai kiểu/quá lớn → server dùng mặc định, không lỗi.
   const tag = Math.random().toString(36).slice(2, 7);
   const bad: [string, unknown][] = [
-    ['ap' + tag + 'a', { g: 'f', dye: 'attire_ink' }],
+    ['ap' + tag + 'a', { g: 'x', dye: 'attire_ink' }],
     ['ap' + tag + 'b', { g: 'm', dye: '#ff00ff' }],
     ['ap' + tag + 'c', { g: 'm', dye: 'x'.repeat(100000) }],
     ['ap' + tag + 'd', ['m', 'attire_ink']],

@@ -20,6 +20,7 @@ import {
 } from '@dtl/shared';
 import { col, G, GeoBuilder, mat } from './geo';
 import { withSightFade } from './occlusion';
+import { nearPropTree } from './propScatter';
 
 const TILE = 256;
 const NT = WORLD_SIZE / TILE;
@@ -250,6 +251,8 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
       const wLake = featureWeight(LAKE, x, z);
       const wPad = featureWeight(PORTAL_PAD, x, z);
       if (wPad > 0.85 || featureWeight(KIEM_TRUNG, x, z) > 0.25) continue;
+      // Quanh cổ thụ/thông Tripo (P2-A4) bỏ cây thủ tục để không chồng lên nhau.
+      if (nearPropTree(x, z)) continue;
       // Độ dốc: bỏ cây trên vách đá.
       const slope = Math.abs(heightAt(x + 3, z) - h) + Math.abs(heightAt(x, z + 3) - h);
       const s = 0.8 + r4 * 0.7;

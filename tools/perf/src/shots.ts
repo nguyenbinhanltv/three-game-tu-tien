@@ -27,8 +27,15 @@ const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
 const POINTS = [
   { name: 'san', x: SPAWN_POINT.x, z: SPAWN_POINT.z, yaw: 0.0, pitch: 0.3, dist: 16 },
   { name: 'sondao', x: 2048, z: 2330, yaw: 3.14, pitch: 0.3, dist: 14 },
+  { name: 'dao', x: 2048, z: 2150, yaw: 3.14, pitch: 0.28, dist: 14 },
   { name: 'rung', x: FOREST.x - 40, z: FOREST.z, yaw: 1.2, pitch: 0.28, dist: 14 },
   { name: 'ho', x: LAKE.x + LAKE_WATER_R + 6, z: LAKE.z, yaw: 1.57, pitch: 0.24, dist: 14 },
+  { name: 'khe', x: 1990, z: 2800, yaw: 3.14, pitch: 0.22, dist: 16 },
+  { name: 'khe0', x: 1990, z: 2800, yaw: 0, pitch: 0.22, dist: 16 },
+  { name: 'cothu', x: 2712, z: 2175, yaw: 0, pitch: 0.18, dist: 14 },
+  { name: 'cothu3', x: 2712, z: 2095, yaw: 3.14, pitch: 0.18, dist: 14 },
+  { name: 'cothu2', x: 2700, z: 2170, yaw: 3.14, pitch: 0.22, dist: 14 },
+  { name: 'bohd', x: 1642, z: 2180, yaw: 1.57, pitch: 0.2, dist: 14 },
   { name: 'dinh', x: 1860, z: 1680, yaw: 3.14, pitch: 0.4, dist: 16 },
 ].filter((p) => !ONLY.length || ONLY.includes(p.name));
 
@@ -80,7 +87,7 @@ async function main(): Promise<void> {
             if (Math.hypot(s.x - p.x, s.z - p.z) < 3 && s.ground) break;
             await sleep(300);
           }
-          await sleep(2500);
+          await sleep(Number(process.env.SHOT_SETTLE ?? 2500));
           const file = path.join(OUT, `${renderer}-${preset}-${p.name}.png`);
           await page.screenshot({ path: file });
           console.log(`[shots] ${path.basename(file)}`);

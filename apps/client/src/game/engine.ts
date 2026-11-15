@@ -72,6 +72,7 @@ import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
+import { PropLayer } from './props';
 import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
@@ -238,6 +239,7 @@ export class Game {
   env!: Environment;
   /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
   grass!: Grass;
+  props: PropLayer | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
   ambient!: AmbientParticles;
   private pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
@@ -631,6 +633,12 @@ export class Game {
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
     this.vfx.particles.setQuality(get().quality);
+    // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách. `?props=0` tắt để chụp ảnh trước/sau.
+    if (new URLSearchParams(location.search).get('props') !== '0') {
+      this.props = new PropLayer();
+      this.props.setQuality(get().quality, q.shadows);
+      this.scene.add(this.props.group);
+    }
     this.grass = new Grass();
     this.grass.setQuality(get().quality, q.shadows);
     this.scene.add(this.grass.mesh);
@@ -2093,6 +2101,7 @@ export class Game {
     this.pushSelf.z = rp.z;
     pickPushers(this.pushSelf, pool, this.pushers, 40, n);
     this.grass.update(dt, rp, this.pushers, this.started ? 1 : 6);
+    this.props?.update(dt, rp.x, rp.z);
   }
 
   setControls(mode: string): void {
@@ -2117,6 +2126,7 @@ export class Game {
     this.lanterns?.setEnabled(cfg.lights);
     this.vfx?.particles.setQuality(q);
     this.grass?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
+    this.props?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
     this.ambient?.setQuality(q);
     if (this.post && !this.post.matches(cfg)) {
       this.post.dispose();
@@ -2139,6 +2149,7 @@ export class Game {
     this.ground?.dispose();
     this.lanterns?.dispose();
     this.grass?.dispose();
+    this.props?.dispose();
     this.post?.dispose();
     this.sectMesh?.geometry.dispose();
     this.sectAsset?.handle.release();
