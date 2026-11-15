@@ -803,6 +803,31 @@ kbd {
   border-radius: 10px;
   color: #e9dcff;
 }
+/* Letterbox mỏng suốt cảnh độ kiếp. Không z-index và render đầu `.hud` nên HUD (máu, kỹ năng, bản đồ, chat) vẽ đè lên dải đen. */
+.trib-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 6.5vh;
+  background: #000;
+  pointer-events: none;
+  animation: trib-bar-in 1.2s ease-out both;
+}
+.trib-bar-top {
+  top: 0;
+}
+.trib-bar-bot {
+  bottom: 0;
+}
+@keyframes trib-bar-in {
+  from {
+    transform: scaleY(0);
+    transform-origin: var(--o, top);
+  }
+}
+.trib-bar-bot {
+  --o: bottom;
+}
 .trib-title {
   font: 700 20px var(--serif);
   color: #d9c2ff;

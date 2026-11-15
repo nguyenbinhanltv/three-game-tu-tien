@@ -29,6 +29,7 @@ const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
 const _c = new THREE.Vector3();
 const _q = new THREE.Quaternion();
+const _up = new THREE.Vector3(0, 1, 0);
 const UP = new THREE.Vector3(0, 1, 0);
 const AX_X = new THREE.Vector3(1, 0, 0);
 const AX_Z = new THREE.Vector3(0, 0, 1);
@@ -632,6 +633,50 @@ export class Vfx {
     );
   }
 
+  /**
+   * Đột phá thành công (P2-B4): quầng vàng ấm tỏa từ người, một ống sáng mảnh và chùm tia nắng xòe lên như mây kiếp
+   * vừa tách. Mảnh và cộng sáng để giữ màu cảnh (khác `pillar` bọc kín trước camera). 1 + 1 + 5 lưới trong ~2,6 giây.
+   */
+  ascendGlow(pos: PosFn, dur = 2.6): void {
+    const core = this.fx(TUBE_GEO, 0xffe6a0, 0.3, 'flat');
+    const ring = this.fx(RING_GEO, 0xffd98a, 0.7);
+    ring.rotation.x = -Math.PI / 2;
+    const rays: { m: FxMesh; dir: THREE.Vector3 }[] = [];
+    for (let i = 0; i < 5; i++) {
+      const phi = (i / 5) * Math.PI * 2 + 0.4;
+      const th = 0.16 + (i % 2) * 0.12;
+      const dir = new THREE.Vector3(Math.sin(th) * Math.cos(phi), Math.cos(th), Math.sin(th) * Math.sin(phi));
+      rays.push({ m: this.fx(TUBE_GEO, 0xffe2a0, 0.2, 'glow'), dir });
+    }
+    this.add(
+      dur,
+      (k) => {
+        if (!pos(_a)) return;
+        const rise = Math.min(1, k * 4);
+        const fade = Math.pow(1 - k, 1.5);
+        const h = 46 * rise;
+        core.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
+        core.scale.set(0.8, h, 0.8);
+        core.fxOpacity = 0.3 * fade;
+        ring.position.set(_a.x, _a.y - 1.0, _a.z);
+        ring.scale.setScalar(1.2 + k * 7);
+        ring.fxOpacity = 0.7 * (1 - k);
+        for (const r of rays) {
+          const len = 55 * rise;
+          r.m.position.set(_a.x + (r.dir.x * len) / 2, _a.y - 1.1 + (r.dir.y * len) / 2, _a.z + (r.dir.z * len) / 2);
+          r.m.quaternion.setFromUnitVectors(_up, r.dir);
+          r.m.scale.set(1.1 + k * 1.5, len, 1.1 + k * 1.5);
+          r.m.fxOpacity = 0.2 * fade;
+        }
+      },
+      () => {
+        this.drop(core);
+        this.drop(ring);
+        for (const r of rays) this.drop(r.m);
+      },
+    );
+  }
+
   /** Lớp linh khí hộ thể bao quanh người. */
   shield(pos: PosFn, dur: number, stillOn: () => boolean): void {
     const m = this.fx(G.ico1, 0x7fd8ff, 0.28);
@@ -769,28 +814,35 @@ export class Vfx {
    * giữa, bừng sáng trong mây khi có tia sét đánh gần. `seed` (từ server) cho cùng vân mây.
    */
   tribulationCloud(pos: PosFn, dur: number, stillOn: () => boolean, seed?: number): void {
-    const cloud = this.fx(VORTEX_GEO, CLOUD_COLOR, 0, 'vortex');
-    cloud.fxA.z = (seedOr(seed) % 997) / 10;
-    this.clouds.add(cloud);
-    let t = 0;
-    let op = 0;
-    this.add(
-      dur + 1.5,
-      (_k, dt) => {
-        t += dt;
-        cloud.fxA.y = Math.max(0, cloud.fxA.y - dt * 3);
-        if (!pos(_a)) return;
-        op = stillOn() ? Math.min(1, t / 2) : Math.max(0, op - dt);
-        cloud.position.set(_a.x, _a.y + 66, _a.z);
-        cloud.scale.setScalar(64);
-        cloud.rotation.y = t * 0.06;
-        cloud.fxOpacity = op * 0.92;
-      },
-      () => {
-        this.clouds.delete(cloud);
-        this.drop(cloud);
-      },
-    );
+    // Hai tầng xoáy ngược chiều, tầng dưới nhỏ và thấp hơn: mây dày và có chiều sâu mà chỉ thêm 1 draw call.
+    const layers = [
+      { y: 48, scale: 125, spin: 0.06, op: 0.95, seedAdd: 0 },
+      { y: 34, scale: 90, spin: -0.1, op: 0.8, seedAdd: 41 },
+    ];
+    for (const L of layers) {
+      const cloud = this.fx(VORTEX_GEO, CLOUD_COLOR, 0, 'vortex');
+      cloud.fxA.z = ((seedOr(seed) + L.seedAdd) % 997) / 10;
+      this.clouds.add(cloud);
+      let t = 0;
+      let op = 0;
+      this.add(
+        dur + 1.5,
+        (_k, dt) => {
+          t += dt;
+          cloud.fxA.y = Math.max(0, cloud.fxA.y - dt * 3);
+          if (!pos(_a)) return;
+          op = stillOn() ? Math.min(1, t / 2.5) : Math.max(0, op - dt);
+          cloud.position.set(_a.x, _a.y + L.y, _a.z);
+          cloud.scale.setScalar(L.scale);
+          cloud.rotation.y = t * L.spin;
+          cloud.fxOpacity = op * L.op;
+        },
+        () => {
+          this.clouds.delete(cloud);
+          this.drop(cloud);
+        },
+      );
+    }
   }
 
   dispose(): void {
