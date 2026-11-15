@@ -994,6 +994,8 @@ export class GameSim {
       }
       if (!ok) return this.abortStrike(p, true);
     }
+    // Hồi sinh: người ngã đã được hồi, hồi sinh bởi người khác hoặc rời tầm trong lúc chờ → hủy và hoàn (không phí vòng sạc).
+    if (sk.kind === 'revive' && !this.reviveTarget(p, sk.allyRadius ?? 14)) return this.abortStrike(p, true);
     p.flow.pending = null;
     this.resolveSkill(p, sk, st.target, { combo: st.combo >= 0 ? st.combo : undefined, mul: st.mul });
   }

@@ -60,7 +60,20 @@ function setup(level = 10, method?: string) {
   const resolve = () => (sim as unknown as { resolvePending(p: Ent): void }).resolvePending(p);
   const fxs = () => sent.filter((s) => s.type === S.FX).map((s) => s.msg as FxMsg);
   const cd = () => sent.filter((s) => s.type === 'to:' + S.CD).map((s) => s.msg as CdMsg);
-  return { sim, sent, p, mon, fresh, resolve, fxs, cd };
+  /** Thêm một người chơi nữa vào cùng sim, đứng cách `dx` mét. */
+  const join = (dx = 2): Ent => {
+    const c2 = Character.create(acc++, 'sg' + acc);
+    c2.level = level;
+    c2.recalc();
+    c2.hp = c2.mhp;
+    c2.mp = c2.mmp;
+    const o: Ent = sim.addPlayer({ sessionId: 'c' + acc, send: () => {} } as never, c2, true, 's' + acc);
+    o.move.x = X + dx;
+    o.move.z = Z;
+    o.move.y = groundAt(X + dx, Z);
+    return o;
+  };
+  return { sim, sent, p, mon, fresh, resolve, fxs, cd, join };
 }
 
 describe('server áp sát thương tại hitAt', () => {
@@ -158,6 +171,58 @@ describe('server áp sát thương tại hitAt', () => {
     resolve();
     expect(p.mth.charge).toBe(0);
     expect(p.mth.lockCharge).toBe(false);
+  });
+});
+
+describe('chiêu hồi sinh chờ hitAt', () => {
+  const ult = 'skl_hoi_thien_dan_lo';
+  it('đồng đội ngã vẫn còn lúc hitAt: hồi sinh được, vòng sạc tiêu', () => {
+    const { sim, p, join, fresh, resolve } = setup(10, 'thanh_moc_dan_kinh');
+    const o = join();
+    o.s.fl = PF_DEAD;
+    o.char.hp = 0;
+    fresh();
+    p.mth.charge = 100;
+    sim.onSkill(p, { id: ult });
+    expect(p.flow.pending).not.toBeNull();
+    resolve();
+    expect(o.char.hp).toBeGreaterThan(0);
+    expect(p.mth.charge).toBe(0);
+  });
+  it('đồng đội được hồi trước hitAt: hủy, hoàn vòng sạc, không mất gì', () => {
+    const { sim, p, join, fresh, resolve, fxs } = setup(10, 'thanh_moc_dan_kinh');
+    const o = join();
+    o.s.fl = PF_DEAD;
+    o.char.hp = 0;
+    fresh();
+    p.mth.charge = 100;
+    const mp0 = p.char.mp;
+    sim.onSkill(p, { id: ult });
+    expect(p.mth.charge).toBe(0);
+    // người khác hồi sinh đồng đội trong lúc chờ
+    o.s.fl = 0;
+    o.char.hp = o.char.mhp;
+    const hp = p.char.hp;
+    resolve();
+    expect(p.flow.pending).toBeNull();
+    expect(p.mth.charge).toBe(100);
+    expect(p.mth.lockCharge).toBe(false);
+    expect(p.char.mp).toBe(mp0);
+    expect(p.cds.has(ult)).toBe(false);
+    expect(p.char.hp).toBe(hp);
+    expect(fxs().some((f) => f.t === 'castend')).toBe(true);
+  });
+  it('đồng đội ngã ra khỏi tầm trước hitAt: hủy và hoàn', () => {
+    const { sim, p, join, fresh, resolve } = setup(10, 'thanh_moc_dan_kinh');
+    const o = join();
+    o.s.fl = PF_DEAD;
+    o.char.hp = 0;
+    fresh();
+    p.mth.charge = 100;
+    sim.onSkill(p, { id: ult });
+    o.move.x = X + 500;
+    resolve();
+    expect(p.mth.charge).toBe(100);
   });
 });
 
