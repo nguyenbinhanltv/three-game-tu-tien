@@ -5,10 +5,11 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 
 # Pipeline Blender → glTF
 
-> Hiện trạng (2026-11-15, sau M2-1/5/6/7/8):
+> Hiện trạng (2026-11-15, sau Phase 2; mục cũ bên dưới đã cập nhật):
 > - **Có**: `tools/blender/run.mjs` (danh sách job → GLB thô `assets/build/raw/<id>.glb`, bỏ qua job khi GLB thô mới hơn script), `build_sect.py` (kiến trúc tông môn → `arch_sect`), `build_fixture_rig.py` (GLB có xương cho test), `find-blender.mjs` (dò Blender qua `BLENDER`, PATH, thư mục cài mặc định). `tools/asset-pipeline`: `optimize.ts`, `validate.ts`, `ktx.ts`, `config.ts`, test vitest. Client nạp theo manifest qua `AssetCache` (`apps/client/src/game/assets.ts`). Chi tiết lệnh và bố cục: `assets/README.md`.
 > - **Có từ M2-2**: `import_tripo.py` chuẩn hóa GLB Tripo (hướng theo xương đùi hoặc `yaw`, scale theo `size` trong meta, gốc ở đáy, áp transform, tên theo id, socket, hạ texture); `run.mjs` tự tạo job cho meta.json có khối `import`; `optimize.ts` hạ LOD0 về `budget.faceLimit` (chỉ asset có khối `import`) hoặc ngân sách lớp. Chi tiết: `assets/README.md` mục Nhập Tripo.
-> - **Chưa có**: `rig_human_base.py`/`export_anim_lib.py` (M2-3), client chọn LOD theo khoảng cách (M2-9; hiện chỉ hiện LOD0), `export.py` theo collection `EXPORT_`, `export_level.py`, ảnh xem trước tự động `assets/build/previews/`. Máy dev chưa cài KTX-Software (`toktx`) nên nhánh KTX2 mới kiểm bằng toktx giả trong test.
+> - **Có từ M2-3/M3**: `export_anim_lib.py` (thư viện clip `anim_human_base`), `anim_biped_extra.py`/`anim_quadruped.py`/`anim_serpent.py`/`tripo_clips.py` (clip thủ tục cho người, quái, boss, rắn), `bake_impostor.py` (atlas cây xa, `pnpm assets:impostor`), `recolor_phi_kiem.py`; client chọn LOD theo camera (`LOD0_MAX` trong `entities.ts`, LOD theo từng cây trong `props.ts`). Asset trong game: người chơi nam/nữ, 3 NPC, quái có xương, 4 boss, 5 loài cây, ~20 prop, `arch_sect`, `anim_human_base` (xem `manifest.json`).
+> - **Chưa có**: `export.py` theo collection `EXPORT_`, `export_level.py`, ảnh xem trước tự động `assets/build/previews/`. Máy dev có thể chưa cài KTX-Software (`toktx`); khi đó texture giữ PNG/JPEG và `validate` cảnh báo.
 > - Máy đang dùng Blender 5.3. Tọa độ trong script là tọa độ game quanh tâm sân tông môn; vị trí công trình phải khớp `COLLIDERS` trong `packages/shared/src/level.ts`.
 
 ## Chạy Blender
@@ -60,7 +61,7 @@ pnpm --filter @dtl/asset-pipeline test
 - Tên node/mesh/material không dấu, không khoảng trắng (validate cảnh báo).
 - Đơn vị: 1 unit = 1 mét, trục Y lên khi xuất (bật `export_yup`), gốc tọa độ ở chân vật.
 - Áp dụng scale/rotation trước khi xuất (`bpy.ops.object.transform_apply`).
-- Nhân vật hình người dùng **bộ xương chung** `rig_human_base` (tối đa 60 xương) để mọi animation dùng chung (bộ xương này có ở M2-3; trước đó validate chỉ cảnh báo).
+- Nhân vật hình người dùng **bộ xương chung** `rig_human_base` (tối đa 60 xương) để mọi animation dùng chung (quái/boss không phải người có rig riêng theo loài, bảng clip trong `game/character/monsterSkins.ts`).
 - Mỗi asset cần `assets/source/<loại>/<id>/meta.json` (theo `assets/meta.schema.json`) và một dòng trong `assets/LICENSES.md`.
 
 **Ngân sách**: nguồn duy nhất là `assets/budgets.json` (theo `docs/art-bible.md` mục 6, v3). Tóm tắt lúc viết: người chơi 15–25 nghìn tam giác LOD0, texture 1024; NPC 10–15 nghìn; quái 5–10 nghìn; boss 20–50 nghìn, texture 2048; prop 500–5 nghìn có 2 mức LOD; kiến trúc tới 300 nghìn, chưa sinh LOD. Số trong file JSON thắng nếu khác bảng này.

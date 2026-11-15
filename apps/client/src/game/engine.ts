@@ -91,6 +91,7 @@ import { renderMinimap, Terrain } from './terrain';
 import { loadGroundTextures, type GroundTextures } from './groundTextures';
 import type { GroundLevel } from '../render/materials/ground';
 import { telegraph } from './telegraph';
+import { BASE_ZONE, E4_OFF, easeZoneCam, zoneCamera, type ZoneCam } from './camZones';
 import { DamageNumbers, HAZARD_COLORS, Vfx } from './vfx';
 import { skipOthersFx } from './fxBudget';
 import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
@@ -340,6 +341,9 @@ export class Game {
   private bossLineId = 0;
   /** Thẻ chương (C2): khung camera nhẹ, thẻ chờ tới khi thế giới đã dựng, đã xét lần đầu vào tông môn chưa. */
   private camFrame = new CamFrame();
+  /** Camera theo khu (P2-E4): giá trị đang áp (đã làm mượt) và đích theo vị trí. */
+  private zoneCur: ZoneCam = { ...BASE_ZONE };
+  private zoneWant: ZoneCam = { ...BASE_ZONE };
   /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
   private cine = new Cutscene();
   /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
@@ -1852,7 +1856,7 @@ export class Game {
     const ri = this.renderer.info.render;
     this.lastRender.drawCalls = ri.drawCalls ?? ri.calls;
     this.lastRender.triangles = ri.triangles;
-    this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
+    this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight, this.ents.labelBoxes);
     this.lootFly.update(dt);
     if (me && this.started) this.offscreen.update(this.camera, window.innerWidth, window.innerHeight, rp);
 
@@ -1881,10 +1885,18 @@ export class Game {
     const rp = this.renderPos;
     const flying = this.cur.flying;
     this.camFrame.update(dt);
+    // Camera theo khu: trong cảnh điện ảnh/độ kiếp thì về mặc định (cảnh tự đặt camera), ra khỏi cảnh trôi mượt lại.
+    const zw = E4_OFF || this.cine.active || this.tribScene ? BASE_ZONE : zoneCamera(rp.x, rp.z, this.zoneWant);
+    easeZoneCam(this.zoneCur, zw, dt);
+    const zc = this.zoneCur;
+    if (Math.abs(this.camera.fov - zc.fov) > 0.01) {
+      this.camera.fov = zc.fov;
+      this.camera.updateProjectionMatrix();
+    }
     // Khung thẻ chương cộng thêm vào góc của người chơi, không ghi đè camDist/camPitch.
-    const want = Math.min(70, this.camDist * (flying ? 1.35 : 1) * this.camFrame.distMul);
+    const want = Math.min(70, this.camDist * zc.distMul * (flying ? 1.35 : 1) * this.camFrame.distMul);
     this.camDistCur += (want - this.camDistCur) * Math.min(1, dt * 6);
-    const pitch = Math.max(-0.45, Math.min(1.45, this.camPitch + this.camFrame.pitchAdd));
+    const pitch = Math.max(-0.45, Math.min(1.45, this.camPitch + zc.pitchAdd + this.camFrame.pitchAdd));
     const cp = Math.cos(pitch);
     const tx = rp.x;
     // Kiểu FPS: nhìn qua đầu nhân vật để tâm ngắm không bị nhân vật che.

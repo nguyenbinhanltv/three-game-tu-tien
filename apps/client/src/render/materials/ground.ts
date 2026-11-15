@@ -1,6 +1,8 @@
 import * as THREE from 'three/webgpu';
 import {
   attribute,
+  cameraPosition,
+  dot,
   clamp,
   cos,
   float,
@@ -15,6 +17,7 @@ import {
   select,
   sin,
   smoothstep,
+  step,
   texture,
   transformNormalToView,
   uniform,
@@ -67,6 +70,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const slope = float(1).sub(nGeo.y);
   const h = positionWorld.y;
   const dist = positionView.length();
+  const ndv = dot(normalize(positionWorld.sub(cameraPosition)), nGeo).abs();
   const vc = attribute('color', 'vec3');
   const bio = attribute('biome', 'vec4'); // x rừng, y đất khô, z đất chết Kiếm Trủng
   const mask = texture(tex.mask, p.div(WORLD_SIZE));
@@ -74,13 +78,15 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const noise2 = texture(tex.mask, p.mul(0.0043)).a;
 
   // ----- trọng số -----
-  const rockW = max(smoothstep(0.1, 0.26, slope), smoothstep(175, 235, h).mul(0.65)).mul(float(1).sub(mask.g));
+  // Sân lát đá chỉ nằm trên mặt gần phẳng: sườn dốc quanh sân lát chiếu từ trên xuống bị kéo giãn thành sọc kẻ ô khi nhìn
+  // lướt (P2-E4), nên mặt nạ lát đá tắt dần theo độ dốc và để đá núi/cỏ lo phần sườn.
+  const pav = mask.g.mul(float(1).sub(smoothstep(0.05, 0.14, slope)));
+  const rockW = max(smoothstep(0.1, 0.26, slope), smoothstep(175, 235, h).mul(0.65)).mul(float(1).sub(pav));
   const cliffW = smoothstep(0.3, 0.46, slope);
   const snowW = smoothstep(252, 312, h).mul(float(1).sub(smoothstep(0.3, 0.42, slope)));
   const pathD = mask.r.add(noise2.sub(0.5).mul(0.1));
   const pathW = smoothstep(0.44, 0.54, pathD).mul(float(1).sub(rockW));
   const pathEdge = smoothstep(0.3, 0.46, pathD);
-  const pav = mask.g;
   const sand = mask.b;
   const spW = clamp(max(max(pathW, pav), sand), 0, 1);
   const spLayer = select(pav.greaterThan(0.5), int(L.paving), select(sand.greaterThan(0.5), int(L.sand), int(L.gravel)));
@@ -109,7 +115,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     baseUvA = p.div(baseScale);
     base = A(baseUvA, baseLayer);
   }
-  const special = A(p.div(spScale), spLayer);
+  // Sân lát đá có mạch vữa tương phản cao: từ ~20 m hoặc khi nhìn lướt thì hòa về màu đỉnh lưới, nếu không sinh vân ô/sọc kẻ ô (P2-E4).
+  const pavFar = max(smoothstep(20, 75, dist), smoothstep(0.35, 0.08, ndv)).mul(0.88).mul(step(0.5, pav));
+  const special = mix(A(p.div(spScale), spLayer), vc.mul(0.7), pavFar);
   const hue = mix(vec3(1), vc.div(luminance(vc).max(0.04)), float(0.6).sub(spW.mul(0.5)));
   const dirtEdge = hi ? A(p.div(5), L.dirt) : base.mul(0.85);
   let col: Node = mix(base, dirtEdge.mul(0.9), wetEdge.mul(0.8));
@@ -134,6 +142,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   col = mix(col, SNOW.mul(float(0.85).add(macro.mul(0.3))), snowW.mul(0.9));
   // Xa thì texture nhỏ hơn điểm ảnh (mipmap mảng texture không đủ) sinh vân ô vuông: hòa dần về màu đỉnh lưới.
   col = mix(col, vc.mul(0.62), smoothstep(70, 230, dist).mul(0.9));
+  // Nhìn lướt (góc giữa tia nhìn và mặt gần song song): texture bị nén mạnh theo một phương nên sinh vân ô lưới, hòa dần về
+  // màu đỉnh lưới như ở xa. Mặt phẳng nhìn từ camera thường (ndv > 0,3) không bị ảnh hưởng.
+  col = mix(col, vc.mul(0.62), smoothstep(0.3, 0.06, ndv).mul(0.55));
   mat.vertexColors = false;
   mat.colorNode = col;
 

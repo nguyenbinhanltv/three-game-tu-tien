@@ -17,7 +17,11 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 > - **Đồ rơi** `render/vfx/loot.ts` + `vfx.lootDrop`/`vfx.goldDrop`: chỉ là lớp hình khi `S.SYS` loại `loot` có `src` (id quái/điểm hái) và `i` (id vật phẩm; không có = vàng); đồ đã vào túi ở server. Viên đồ nảy (`lootHop`), cột sáng kiểu `beam` (ống hở `BEAM_GEO`, `fxA.x` = độ dâng, `fxA.w` = seed) theo 3 bậc `lootTier(rarity)`: sương sớm / linh khí ngọc / kim quang `spirit_gold` (không tím), chuông nhiều bồi âm `lootChime` (`game/lootBell.ts`), icon bay vào nút `[data-bag]` bằng DOM (`game/lootFly.ts`, không thêm draw call). Đồ bậc cao nằm ngoài khung nhìn có chỉ báo M4-15 (`OffKind` `loot`).
 > - **Vết mực** `render/vfx/ink.ts` + `vfx.inkSplat`/`inkStreak`/`inkBurst`: kiểu `inkpool` (hòa trộn thường, có sương) trên `SIGIL_GEO` áp nghiêng theo mặt đất; `fxA` = độ loang, độ tan, độ đậm mép, seed; tan theo nhiễu (`inkPhase`). Tối đa `MAX_INK` 14 vết, vượt thì vết cũ nhất tan nhanh (`inkEvict`). Quái chết: `EntityManager.onMonsterDeath` (chỉ khi thấy quái chuyển sống → chết); đòn nặng (`DmgMsg.hv`): vệt nhỏ kéo dài theo hướng đòn, tối đa một vệt mỗi 0,4 giây mỗi nạn nhân. Màu `INK_POOL` (mực ngả lam ngọc, không đen tuyền).
 >
-> Các mục dưới đây là hướng làm tiếp; chỗ nào nói cel-shading/thủy mặc là định hướng cũ, theo art bible v3.
+> Từ Phase 2 (2026-11-15): mặt đất PBR Poly Haven trộn lớp (`render/materials/ground.ts`, `render/groundMask.ts`), nước hồ, biển mây, bầu trời buổi sớm (`render/water.ts`, `clouds.ts`, `sky.ts`), AO, đèn lồng point light thật (`render/lanternLights.ts`), grading nắng vàng ấm xuyên sương + bóng ngọc lam (`render/grading.ts`, `render/post.ts`). Cây/prop Tripo dùng `adoptGltfMaterials` (`render/materials/world.ts`) để lấy texture của asset vào `MeshStandardNodeMaterial`.
+>
+> **Quy tắc VFX không lóa/HDR (bất biến)**: mọi lớp cộng sáng bị chặn ở `FX_MAX_HDR` (2,4) trong `render/materials/vfx.ts`, hạt và mưa kiếm dùng cùng trần; bloom chỉ bắt vật phát sáng đã `markBloom`, ngưỡng ~1,0, cường độ thấp, ban ngày tinh tế; hiệu ứng chồng nhau không được làm cháy sáng cả khung hay che mất vùng báo trước/thân kẻ địch; khi pool hiệu ứng đông thì bỏ phần trang trí của người khác (`game/fxBudget.ts`, giữ hiệu ứng của mình, chiêu quái/boss, vùng báo trước). Pháp trận/vùng báo trước hòa trộn thường để đọc được trên nền sáng. Đo bằng `pnpm bench:client` và `pnpm shots` (ảnh trước/sau).
+>
+> Các mục dưới đây là hướng làm tiếp; chỗ nào nói cel-shading/thủy mặc là định hướng cũ, theo art bible v3. Chất thủy mặc chỉ còn ở vết mực (`render/vfx/ink.ts`, `deathFx.ts`) và các lớp sương.
 
 ## Nguyên tắc
 
@@ -39,8 +43,8 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 
 ## VFX skill
 
-- Particle dùng three.quarks hoặc hệ GPU tự viết bằng compute TSL (chỉ khi WebGPU; WebGL2 lùi về số hạt ít hơn).
-- Mỗi hiệu ứng là một file cấu hình trong `packages/content/vfx/*.json` (thời lượng, màu, số hạt, hình dạng) để game designer chỉnh mà không sửa code.
+- Particle dùng hệ GPU tự viết `render/vfx/particles.ts` (vertex shader, không compute, chạy như nhau trên WebGPU và WebGL2); không dùng three.quarks.
+- Hiệu ứng chiêu hiện cấu hình trong `packages/content/data/skills.json` (`fx`, `pose`) và code `game/vfx.ts`, `game/methodFx.ts`; thư mục `packages/content/vfx/*.json` là hướng mở rộng, chưa có.
 - Ngân sách: tối đa 20.000 hạt hoạt động trên màn hình ở preset Cao, 5.000 ở Thấp. Hiệu ứng của người khác giảm 50% số hạt.
 - Kiếm khí và phi kiếm: mesh dải (trail) + additive blending + bloom.
 - Thiên lôi độ kiếp: tia sét sinh thủ tục (đường gấp khúc ngẫu nhiên theo seed từ server để mọi người thấy giống nhau), chớp sáng toàn cảnh ngắn, rung camera nhẹ.
