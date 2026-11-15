@@ -128,12 +128,12 @@ describe('trang bị đã roll: lưu, ledger, idempotency', () => {
     expect(c.inv.filter(Boolean)).toHaveLength(30);
   });
 
-  it('inst hỏng/sửa tay trong DB bị bỏ khi nạp (về chỉ số mẫu)', () => {
+  it('dòng chính vô lý trong DB bị bỏ riêng, món vẫn giữ phẩm/ilvl', () => {
     const c = mk('H');
     expect(c.tx('t', null, (d) => d.addRolled('itm_moc_kiem', 5, 1))).toBe(true);
     const slot = c.inv.findIndex(Boolean);
     sqlite.prepare('UPDATE items SET inst = ? WHERE char_id = ? AND slot = ?').run(JSON.stringify({ q: 4, ilvl: 5, main: { atk: 99999 }, affixes: [], gems: [], bound: false }), c.id, slot);
-    expect(Character.load(c.id).inv[slot]!.inst).toBeUndefined();
+    expect(Character.load(c.id).inv[slot]!.inst).toMatchObject({ q: 4, ilvl: 5, main: {} });
   });
 
   it('nạp trang bị: bỏ khóa ô cũ, không xóa thầm đồ lệch ô', () => {

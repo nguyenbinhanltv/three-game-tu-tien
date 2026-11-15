@@ -21,6 +21,8 @@ export const MAIN_ROLL_SPREAD = 0.05;
 /** Giá trị dòng phụ tăng theo ilvl tới mức này, trên đó giữ nguyên. */
 export const AFFIX_ILVL_CAP = 15;
 export const MAX_ILVL = 99;
+/** Trần tuyệt đối của một dòng phụ khi nạp từ DB (phân số; không phải trần cân bằng). */
+export const AFFIX_ABS_MAX = 1;
 
 /** Mỗi 1 điểm ngân sách đổi thành bao nhiêu đơn vị chỉ số. */
 export const STAT_PER_POINT = { atk: 1, def: 1, hp: 8, mp: 4 } as const;
@@ -247,24 +249,27 @@ export function parseInst(data: ItemSysData, slot: EquipSlot, raw: unknown): Ite
   if (!sd || !qd) return null;
   // Chỉ chặn giá trị vô lý tuyệt đối (không so với công thức hiện hành) để đổi cân bằng sau này không làm bác đồ đã rơi.
   const cap = budget(MAX_ILVL, (QUALITY_COUNT - 1) as Quality, Math.max(...data.slots.map((x) => x.weight))) * (1 + MAIN_ROLL_SPREAD);
-  if (sd.weight <= 0 && r.main && Object.keys(r.main).length) return null;
+  // Hỏng từng phần thì bỏ đúng phần đó, giữ phẩm, ilvl, ràng buộc và phần còn lại (không đặt lại cả món).
   const main: Partial<Record<MainStat, number>> = {};
-  for (const st of MAIN_STATS) {
-    const v = r.main?.[st];
-    if (v === undefined) continue;
-    if (!Number.isFinite(v) || v < 0 || v > cap * STAT_PER_POINT[st]) return null;
-    main[st] = v;
+  if (sd.weight > 0) {
+    for (const st of MAIN_STATS) {
+      const v = r.main?.[st];
+      if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > cap * STAT_PER_POINT[st]) continue;
+      main[st] = v;
+    }
   }
-  if (!Array.isArray(r.affixes) || r.affixes.length > Math.max(...data.qualities.map((x) => x.affixes))) return null;
   const seen = new Set<string>();
   const affixes: AffixRoll[] = [];
-  for (const a of r.affixes as AffixRoll[]) {
-    const def = data.affixes.find((d) => d.id === a?.id);
-    if (!def || (def.slots && !def.slots.includes(slot))) return null;
-    if (def.param ? typeof a.p !== 'string' || !data.params[def.param].includes(a.p) : a.p !== undefined) return null;
-    if (!Number.isFinite(a.v) || a.v < 0 || a.v > def.max * 1.001) return null;
+  const maxAffixes = Math.max(...data.qualities.map((x) => x.affixes));
+  for (const a of Array.isArray(r.affixes) ? (r.affixes as AffixRoll[]) : []) {
+    if (affixes.length >= maxAffixes) break;
+    const def = a && typeof a === 'object' ? data.affixes.find((d) => d.id === a.id) : undefined;
+    if (!def || (def.slots && !def.slots.includes(slot))) continue;
+    if (def.param ? typeof a.p !== 'string' || !data.params[def.param].includes(a.p) : a.p !== undefined) continue;
+    // Trần tuyệt đối, không phụ thuộc cân bằng hiện hành: hạ `max` trong affixes.json không làm mất đồ đã roll.
+    if (typeof a.v !== 'number' || !Number.isFinite(a.v) || a.v < 0 || a.v > AFFIX_ABS_MAX) continue;
     const k = affixKey(a);
-    if (seen.has(k)) return null;
+    if (seen.has(k)) continue;
     seen.add(k);
     affixes.push(a.p !== undefined ? { id: a.id, p: a.p, v: a.v } : { id: a.id, v: a.v });
   }

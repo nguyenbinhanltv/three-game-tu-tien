@@ -138,17 +138,25 @@ describe('parseInst chặn dữ liệu hỏng', () => {
     m(x);
     return parseInst(SYS, 'weapon', x);
   };
-  it('từ chối phẩm, ilvl, chỉ số, dòng phụ sai', () => {
+  it('phẩm hoặc ilvl hỏng thì bác cả món', () => {
     expect(bad((i) => ((i as { q: number }).q = 9))).toBeNull();
     expect(bad((i) => (i.ilvl = 0))).toBeNull();
-    expect(bad((i) => (i.main.atk = 99999))).toBeNull();
-    expect(bad((i) => i.affixes.push({ id: 'atk_pct', v: 0.03 }, { id: 'hp_pct', v: 0.03 }, { id: 'crit_rate', v: 0.02 }, { id: 'crit_dmg', v: 0.07 }, { id: 'skill_dmg', p: 'skl_a', v: 0.1 }))).toBeNull();
-    expect(bad((i) => (i.affixes[0] = { id: 'atk_pct', v: 0.5 }))).toBeNull();
-    expect(bad((i) => (i.affixes[0] = { id: 'move_speed', v: 0.03 }))).toBeNull();
-    expect(bad((i) => (i.affixes = [i.affixes[0], i.affixes[0]]))).toBeNull();
-    expect(parseInst(SYS, 'artifact', { ...good, main: { hp: 8 }, affixes: [] })).toBeNull();
     expect(parseInst(SYS, 'weapon', null)).toBeNull();
     expect(parseInst(SYS, 'weapon', 'x')).toBeNull();
+  });
+  it('phần hỏng chỉ bị bỏ riêng, giữ phẩm, ilvl, dòng khác và ràng buộc', () => {
+    const x = bad((i) => {
+      i.bound = true;
+      i.main.atk = 99999;
+      i.affixes = [{ id: 'move_speed', v: 0.03 }, { id: 'atk_pct', v: 5 }, { id: 'hp_pct', v: 0.04 }, { id: 'hp_pct', v: 0.05 }];
+    })!;
+    expect(x).toMatchObject({ q: 2, ilvl: 10, bound: true, main: {}, affixes: [{ id: 'hp_pct', v: 0.04 }] });
+    expect(parseInst(SYS, 'artifact', { ...good, main: { hp: 8 }, affixes: [] })?.main).toEqual({});
+  });
+  it('hạ trần cân bằng không làm mất dòng đã roll', () => {
+    const tuned: ItemSysData = { ...SYS, affixes: SYS.affixes.map((a) => (a.id === 'hp_pct' ? { ...a, max: 0.04 } : a)) };
+    const inst: ItemInst = { ...good, bound: true, affixes: [{ id: 'hp_pct', v: 0.06 }] };
+    expect(parseInst(tuned, 'weapon', inst)).toEqual(inst);
   });
   it('bản tốt đi qua', () => {
     expect(parseInst(SYS, 'weapon', good)).toEqual(good);
