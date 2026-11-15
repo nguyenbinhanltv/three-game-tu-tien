@@ -28,6 +28,7 @@
     "shots:method": "pnpm --filter @dtl/perf run shots:method --",
     "shots:party": "pnpm --filter @dtl/perf run shots:party --",
     "shots:p38": "pnpm --filter @dtl/perf run shots:p38 --",
+    "shots:m5": "pnpm --filter @dtl/perf run shots:m5 --",
     "shots:sets": "pnpm --filter @dtl/perf run shots:sets --",
     "shots:k1": "pnpm --filter @dtl/perf run shots:k1 --",
     "shots:k3": "pnpm --filter @dtl/perf run shots:k3 --",

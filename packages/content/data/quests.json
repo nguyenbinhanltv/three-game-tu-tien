@@ -34,5 +34,14 @@
     "rewards": { "xp": 8000, "gold": 600, "items": [ { "id": "itm_bi_tich_tan_quyen", "n": 4 }, { "id": "itm_tu_khi_dan", "n": 5 } ] } },
   { "id": "q_truc_co", "giver": "npc_chuong_mon", "turnin": "npc_chuong_mon", "requires": "q_han_giao",
     "objectives": [ { "type": "breakthrough", "count": 1 } ],
-    "rewards": { "xp": 0, "gold": 1000, "items": [ { "id": "itm_huyen_van_bao", "n": 1 } ] } }
+    "rewards": { "xp": 0, "gold": 1000, "items": [ { "id": "itm_huyen_van_bao", "n": 1 } ] } },
+  { "id": "q_cuong_hoa", "giver": "npc_mieu_cong", "turnin": "npc_mieu_cong", "requires": "q_diet_soi",
+    "objectives": [ { "type": "enhance", "count": 3 } ],
+    "rewards": { "xp": 220, "gold": 60, "items": [ { "id": "itm_thiet_tinh", "n": 2 } ] } },
+  { "id": "q_ti_thi", "giver": "npc_tieu_khe", "turnin": "npc_tieu_khe", "requires": "q_thiet_boi", "minLevel": 5,
+    "objectives": [ { "type": "duel", "count": 1 } ],
+    "rewards": { "xp": 700, "gold": 80 } },
+  { "id": "q_kiem_trung", "giver": "npc_hai_duoc", "turnin": "npc_hai_duoc", "requires": "q_yeu_lang", "minLevel": 8,
+    "objectives": [ { "type": "dungeon", "count": 1 } ],
+    "rewards": { "xp": 1600, "gold": 120, "items": [ { "id": "itm_bi_tich_tan_quyen", "n": 1 } ] } }
 ]

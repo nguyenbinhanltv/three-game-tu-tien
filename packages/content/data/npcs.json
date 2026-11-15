@@ -1,5 +1,8 @@
 [
-  { "id": "npc_chuong_mon", "x": 2048, "z": 2030, "yaw": 3.1416, "color": "#e9e4d4", "rootChange": true },
-  { "id": "npc_duoc_su", "x": 2004, "z": 2064, "yaw": 2.2, "color": "#7fb58a", "sells": ["itm_hoi_xuan_dan", "itm_hoi_khi_dan"], "recipes": true },
-  { "id": "npc_thiet_lao", "x": 2092, "z": 2064, "yaw": 4.1, "color": "#8c6b4f", "sells": ["itm_moc_kiem", "itm_bo_y", "itm_thiet_kiem", "itm_dao_bao", "itm_huyen_thiet_gioi", "itm_thiet_tinh", "itm_tay_luyen_thach"], "enhance": true, "recipes": true }
+  {"id": "npc_chuong_mon", "x": 2048, "z": 2030, "yaw": 3.1416, "color": "#e9e4d4", "rootChange": true},
+  {"id": "npc_duoc_su", "x": 2004, "z": 2064, "yaw": 2.2, "color": "#7fb58a", "sells": ["itm_hoi_xuan_dan", "itm_hoi_khi_dan"], "recipes": true},
+  {"id": "npc_thiet_lao", "x": 2092, "z": 2064, "yaw": 4.1, "color": "#8c6b4f", "sells": ["itm_moc_kiem", "itm_bo_y", "itm_thiet_kiem", "itm_dao_bao", "itm_huyen_thiet_gioi", "itm_thiet_tinh", "itm_tay_luyen_thach"], "enhance": true, "recipes": true},
+  {"id": "npc_mieu_cong", "x": 2010, "z": 2381, "yaw": 3.1416, "color": "#8a7d66"},
+  {"id": "npc_hai_duoc", "x": 2451, "z": 2016, "yaw": 3.1416, "color": "#6f9a6b"},
+  {"id": "npc_tieu_khe", "x": 2414, "z": 2449, "yaw": 3.1416, "color": "#5f8fa0"}
 ]
