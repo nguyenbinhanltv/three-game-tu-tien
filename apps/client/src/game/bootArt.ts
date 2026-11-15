@@ -64,5 +64,11 @@ export async function setBootArt(id: string, mode: 'title' | 'zone'): Promise<vo
   if (el.getAttribute('src') === url) return show();
   el.classList.remove('ready');
   el.onload = show;
+  // Lỗi tải/giải mã: trả về nền sương CSS (bỏ art-on/art-zone để hiện lại đồi và cảnh 3D).
+  el.onerror = () => {
+    boot.classList.remove('art-on', 'art-zone');
+    el.classList.remove('ready');
+    el.removeAttribute('src');
+  };
   el.src = url;
 }
