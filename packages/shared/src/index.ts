@@ -18,4 +18,6 @@ export * from './equipLoot';
 export * from './upgrade';
 export * from './sets';
 export * from './methods';
+export * from './artifacts';
+export * from './alchemy';
 export * from './party';

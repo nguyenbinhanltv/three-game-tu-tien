@@ -6,7 +6,7 @@ import { ITEM, itemName, QUEST, QUESTS, realmName, SETS, SKILLS, t, TRUC_CO_PILL
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
-import { compareLines, gearQuality, itemLines, itemSub, setLines, setLinesForItem, type TipLine, wornIds } from './gear';
+import { artifactLines, compareLines, gearQuality, itemLines, itemSub, pillLines, setLines, setLinesForItem, type TipLine, wornIds } from './gear';
 import { Button, Divider, type PanelTone, PanelWindow, ProgressBar, Segmented, Slider, Slot, TipCard, Tooltip } from './kit';
 import { MethodPanel } from './MethodPanel';
 import { BottleneckBox, RootCard } from './Realm';
@@ -27,7 +27,7 @@ export function ItemIcon({ item, onClick, selected, small, worn }: { item: InvIt
   if (!item || !def) return <Slot empty size={small ? 's' : 'm'} />;
   return (
     <Tooltip content={<ItemTip item={item} def={def} worn={worn} />}>
-      <Slot icon={<ContentIcon def={def} />} rarity={gearQuality(item, def)} count={item.n} plus={item.plus} selected={selected} size={small ? 's' : 'm'} onClick={onClick} label={itemName(def.id, item.plus)} />
+      <Slot icon={<ContentIcon def={def} />} rarity={gearQuality(item, def)} count={item.n} plus={def.kind === 'consumable' ? undefined : item.plus} selected={selected} size={small ? 's' : 'm'} onClick={onClick} label={itemName(def.id, item.plus)} />
     </Tooltip>
   );
 }
@@ -36,7 +36,9 @@ export function ItemIcon({ item, onClick, selected, small, worn }: { item: InvIt
 function useTipLines(item: InvItem, def: ItemDef, worn?: boolean): TipLine[] {
   const level = useUI((s) => s.char?.level ?? 1);
   const equip = useUI((s) => s.equip);
+  const art = useUI((s) => s.method?.art);
   const lines = itemLines(item, def);
+  lines.push(...pillLines(item, def), ...artifactLines(def, art));
   if (!worn && isEquipSlot(def.kind)) lines.push(...compareLines(level, equip, item, def));
   lines.push(...setLinesForItem(item, equip));
   if (item.inst?.bound) lines.push({ text: t('ui.item.bound'), tone: 'dim' });

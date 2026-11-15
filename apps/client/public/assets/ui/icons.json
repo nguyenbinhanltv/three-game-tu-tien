@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "file": "icons.cd1592c7b7.webp",
-  "sha256": "cd1592c7b726c8a7e7334bebcb8decc2b314b192e90a214ab603650df6ceccf6",
-  "bytes": 184682,
+  "file": "icons.50d1aed82c.webp",
+  "sha256": "50d1aed82c21d971d4e031672b5115aeb6164ce11b04ded57dc05513a6b0c3ff",
+  "bytes": 213158,
   "tileSize": 128,
   "columns": 8,
-  "rows": 5,
+  "rows": 6,
   "icons": {
     "skl_phi_kiem": {
       "x": 0,
@@ -222,6 +222,42 @@
       "y": 4,
       "sourceSha256": "aca7162e01354236b79a0c73b7429f624b2a50f1033fb56bd7c3fb20052f9d68",
       "sourceBytes": 2688879
+    },
+    "itm_tu_kim_ho_lo": {
+      "x": 4,
+      "y": 4,
+      "sourceSha256": "ddd140794be3fa31643b58e1908717c757a19498afb12de0dd5bdfc5afab8d82",
+      "sourceBytes": 2308081
+    },
+    "itm_tran_hon_linh": {
+      "x": 5,
+      "y": 4,
+      "sourceSha256": "df4684e35644750e65c790c38c5fc6c8b576c2904567d664ad38de4b7fc4f8b0",
+      "sourceBytes": 2347154
+    },
+    "itm_thanh_lien_an": {
+      "x": 6,
+      "y": 4,
+      "sourceSha256": "c1c4ad0c08a47ad725794cd58fd608daffdf1396910e85c0f6b702b69db8d59a",
+      "sourceBytes": 2426897
+    },
+    "itm_kim_cuong_dan": {
+      "x": 7,
+      "y": 4,
+      "sourceSha256": "5fce01a0dd48b748c11c5c6d1223ef8c2a58c6c2f369335488103113f7b510df",
+      "sourceBytes": 1368902
+    },
+    "itm_bao_huyet_dan": {
+      "x": 0,
+      "y": 5,
+      "sourceSha256": "8031e78f93fafcbe622eadbf8220176e23c7adb18c39116b1fa45d1598c742ca",
+      "sourceBytes": 2272798
+    },
+    "itm_manh_luc_dan": {
+      "x": 1,
+      "y": 5,
+      "sourceSha256": "52ec027ace16cc284a3068f36cb60df60b386ecde1ab90ae0bd9e299bd722f27",
+      "sourceBytes": 2449916
     }
   }
 }

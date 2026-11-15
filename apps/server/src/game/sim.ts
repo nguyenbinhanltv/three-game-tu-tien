@@ -1,6 +1,18 @@
 import { randomInt } from 'node:crypto';
 import type { Client } from 'colyseus';
 import {
+  ARTIFACT_MAX_LEVEL,
+  artifactLevelMods,
+  artifactQiGain,
+  drainMp,
+  DRAIN_MAX_TARGETS,
+  mergeBuff,
+  pillPotency,
+  PILL_TIERS,
+  rollPillQuality,
+  sealPosture,
+  sealStun,
+  shieldAmount,
   addCharge,
   BOLT_MAX_LIFE,
   BOLT_MAX_LIVE,
@@ -123,7 +135,7 @@ import {
   xpLevelFactor,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
+import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
@@ -148,6 +160,7 @@ import { RealmSystem } from './realm';
 import { DuelSystem } from './duel';
 import { parties } from './party';
 import { UpgradeSystem } from './upgrade';
+import { artifactMsg, buffsMsg, equippedArtifact, feedQi, passiveValue, progressOf, pruneBuffs } from './artifact';
 
 /**
  * Seed hình cho FX (tia sét, mưa kiếm, mây kiếp). Lấy từ `crypto`, KHÔNG từ `Math.random`: seed gửi
@@ -631,6 +644,8 @@ export class GameSim {
     if (s.wg !== wg) s.wg = wg;
     const sk = lookSet(c.stats.sets)?.id ?? '';
     if (s.sk !== sk) s.sk = sk;
+    const art = c.equip.artifact?.id ?? '';
+    if (s.art !== art) s.art = art;
     this.setFlag(p, PF_FLYING, m.flying);
   }
 
@@ -681,7 +696,7 @@ export class GameSim {
       if (p.mth.dirty && this.now - p.mth.sentAt >= METHOD_SEND_MS) {
         p.mth.dirty = false;
         p.mth.sentAt = this.now;
-        p.client.send(S.METHOD, p.mth.toMsg(c.meta, this.now));
+        p.client.send(S.METHOD, { ...p.mth.toMsg(c.meta, this.now), art: artifactMsg(c.equip, c.meta), buffs: buffsMsg(c.meta, Date.now()) });
       }
       if (this.now >= p.saveAt) {
         p.saveAt = this.now + SAVE_INTERVAL;
@@ -882,6 +897,118 @@ export class GameSim {
       return;
     }
     this.executeSkill(p, skill, targetId);
+  }
+
+  // ---------- pháp bảo phụ và đan tăng sức (P3-8) ----------
+
+  /** Hạ quái: nạp linh khí vào pháp bảo đang đeo. Lên cấp thì tính lại chỉ số (nội tại) và báo. */
+  private feedArtifact(p: PlayerEnt, mon: MonEnt): void {
+    const def = equippedArtifact(p.char.equip);
+    if (!def) return;
+    const n = artifactQiGain({ boss: !!mon.def.boss, elite: !!mon.def.elite, monLevel: mon.level, playerLevel: p.char.level });
+    if (n <= 0) return;
+    const lv = feedQi(p.char.meta, def.id, n);
+    p.mth.dirty = true;
+    if (lv !== null) {
+      p.char.recalc();
+      this.sys(p, 'sys.art_level', { item: itemName(def.id), lv }, 'good');
+    }
+  }
+
+  /** Dùng đan tăng sức: đặt buff theo luật làm mới (không cộng dồn), lưu trong meta. */
+  private applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit'; pct: number; sec: number } } }, potency: number): void {
+    const b = def.use?.buff;
+    if (!b) return;
+    const c = p.char;
+    const now = Date.now();
+    const m = b.pct * potency;
+    c.meta.buffs ??= {};
+    c.meta.buffs[b.kind] = mergeBuff(c.meta.buffs[b.kind], m, now + b.sec * 1000 * potency, now);
+    c.recalc();
+    p.mth.dirty = true;
+    this.sys(p, 'sys.pill_buff', { item: itemName(def.id), what: t('ui.pill.buff.' + b.kind), n: Math.round(m * 100), m: Math.round((b.sec * potency) / 60) }, 'good');
+    this.fx({ t: 'potion', src: p.sid });
+  }
+
+  /** Kích hoạt pháp bảo phụ đang đeo. Server quyết định hết: hồi chiêu, linh lực, mục tiêu, hiệu ứng. */
+  onArtifact(p: PlayerEnt): void {
+    if (this.now - p.skillWindowAt >= 1000) {
+      p.skillWindowAt = this.now;
+      p.skillCount = 0;
+    }
+    if (++p.skillCount > SKILL_MSG_PER_SEC) return;
+    const c = p.char;
+    if (this.isDead(p)) return this.warn(p, 'sys.dead');
+    if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
+    // Đang độ kiếp hoặc tâm ma: không dùng pháp bảo (cùng luật với đan/trang bị).
+    if (p.trib || p.trial) return this.warn(p, 'sys.busy');
+    const def = equippedArtifact(c.equip);
+    if (!def) return this.warn(p, 'sys.art_none');
+    if (this.airborne(p)) return this.warn(p, 'sys.cannot_while_flying');
+    if ((p.cds.get(def.skill) ?? 0) > this.now) return this.warn(p, 'sys.cooldown');
+    if (c.mp < def.mp) return this.warn(p, 'sys.not_enough_mp');
+    const lv = progressOf(c.meta, def.id).lv;
+    const near = this.monstersNear(p.move.x, p.move.z, def.radius);
+    const tag: Partial<FxMsg> = { s: def.id, c: def.color, lv };
+    switch (def.kind) {
+      case 'drain': {
+        const targets = near.slice(0, DRAIN_MAX_TARGETS);
+        if (!targets.length) return this.warn(p, 'sys.art_no_target');
+        let got = 0;
+        for (const mon of targets) {
+          got += drainMp(def, lv, c.mmp, !!mon.def.elite);
+          this.fx({ t: 'artdrain', src: mon.id, dst: p.sid, ...tag });
+        }
+        c.mp = Math.min(c.mmp, c.mp + got);
+        this.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.2, ...tag });
+        this.sys(p, 'sys.art_drain', { n: got }, 'good');
+        break;
+      }
+      case 'seal': {
+        // Chỉ ảnh hưởng quái đang giao chiến; quái đang rảnh không bị kéo vào trận.
+        const engaged = near.filter((m) => m.state === MS_CHASE || m.state === MS_ATTACK);
+        if (!engaged.length) return this.warn(p, 'sys.art_no_target');
+        const stunSec = sealStun(def, lv);
+        for (const mon of engaged) {
+          if (this.now < mon.evadeUntil) continue;
+          if (mon.def.boss) {
+            // Boss không choáng thẳng: cộng mạnh thanh phá thế và ngắt chú nếu đúng cửa sổ.
+            this.tryInterrupt(p, mon);
+            this.addPosture(mon, sealPosture(def, lv));
+          } else {
+            mon.cast = null;
+            mon.windUntil = 0;
+            mon.comboAt = 0;
+            mon.stunUntil = Math.max(mon.stunUntil, this.now + stunSec * 1000);
+            this.setMonFlags(mon, MF_STUN, mon.stunUntil);
+          }
+          this.fx({ t: 'artseal', src: p.sid, dst: mon.id, ...tag });
+        }
+        this.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.2, ...tag });
+        this.sys(p, 'sys.art_seal', { n: engaged.length }, 'good');
+        break;
+      }
+      case 'shield': {
+        const dur = def.duration ?? 4;
+        const who = new Set<PlayerEnt>([p]);
+        for (const o of parties.matesInRoom(c.id, this.host)) {
+          if (o !== p && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius) who.add(o);
+        }
+        for (const o of who) {
+          const amount = shieldAmount(def, lv, o.char.mhp);
+          if (o.shield && o.shield.amount > amount && o.shield.until > this.now) continue;
+          o.shield = { amount, until: this.now + dur * 1000 };
+          this.setFlag(o, PF_SHIELD, true);
+        }
+        this.fx({ t: 'art', src: p.sid, r: def.radius, d: dur, ...tag });
+        this.sys(p, 'sys.art_shield', { n: who.size }, 'good');
+        break;
+      }
+    }
+    c.mp -= def.mp;
+    p.cds.set(def.skill, this.now + def.cd * 1000 * artifactLevelMods(lv).cdMul);
+    p.lastCombatAt = this.now;
+    this.sendCd(p);
   }
 
   /** Đang ngự kiếm hoặc lơ lửng cao hơn mặt đất (vừa tắt ngự kiếm, đang rơi): không được ra chiêu. */
@@ -1294,6 +1421,10 @@ export class GameSim {
     }
     for (const p of this.players.values()) {
       const m = p.mth;
+      if (pruneBuffs(p.char.meta, Date.now())) {
+        p.char.recalc();
+        m.dirty = true;
+      }
       if (m.stacks > 0 && this.liveStacks(p) === 0) {
         m.stacks = 0;
         m.dirty = true;
@@ -1505,7 +1636,7 @@ export class GameSim {
     if (mon.def.boss && hp > 0 && (mon.state === MS_CHASE || mon.state === MS_ATTACK)) {
       this.checkPhase(mon);
       const ps = mon.def.posture;
-      if (ps && p) this.addPosture(mon, postureGain(ps, dmg, mon.s.mhp, heavy));
+      if (ps && p) this.addPosture(mon, postureGain(ps, dmg, mon.s.mhp, heavy) * (1 + passiveValue(p.char.equip, p.char.meta, 'posture')));
     }
     if (hp <= 0) this.killMonster(mon);
   }
@@ -1569,6 +1700,7 @@ export class GameSim {
         const res = parties.resonance(o) ? 1 + RESONANCE_XP : 1;
         this.giveXp(o, Math.max(1, Math.round(raw[i] * xpLevelFactor(o.char.level, mon.level) * (o.noLoot ? 0.3 : 1) * res)));
         this.questEvent(o, 'kill', mon.def.id, 1);
+        this.feedArtifact(o, mon);
         done.add(o);
       });
       // Chia đồ: boss hoặc chế độ tự do thì ai cũng có phần riêng; theo lượt thì một người nhận đồ, mọi người nhận linh thạch.
@@ -1586,11 +1718,13 @@ export class GameSim {
       // chỉ được tính nhiệm vụ diệt quái (tu vi và đồ thuộc phần chia của tổ).
       if (parties.partyOf(p.char.id)) {
         this.questEvent(p, 'kill', mon.def.id, 1);
+        this.feedArtifact(p, mon);
         continue;
       }
       if (!this.isDead(p)) this.giveXp(p, Math.max(1, Math.round(xp * xpLevelFactor(p.char.level, mon.level) * (p.noLoot ? 0.3 : 1))));
       this.rollLoot(p, mon);
       this.questEvent(p, 'kill', mon.def.id, 1);
+      this.feedArtifact(p, mon);
     }
     mon.threat.clear();
     if (mon.def.boss) {
@@ -1626,7 +1760,7 @@ export class GameSim {
       for (const g of got) {
         const def = ITEM.get(g.id)!;
         // Kiểm tra trước để một món không vừa không làm hỏng cả bản nháp.
-        const room = d.freeSlots() * def.stack + (def.stack > 1 ? d.inv.reduce((s, x) => s + (x && x.id === g.id ? def.stack - x.n : 0), 0) : 0);
+        const room = d.roomFor(g.id);
         if (room >= g.n && d.add(g.id, g.n)) kept.push(g);
         else full = true;
       }
@@ -2483,7 +2617,8 @@ export class GameSim {
     if (!def.use) return;
     if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
-    if (!c.tx('use:' + def.id, idem, (d) => !!d.removeAt(slot, 1))) return;
+    let taken = null as InvItem | null;
+    if (!c.tx('use:' + def.id, idem, (d) => !!(taken = d.removeAt(slot, 1)))) return;
     p.itemCdAt = this.now + def.use.cd * 1000;
     // Thanh Mộc Đan Kinh: hồi phục +20%, và đan dược dùng được lên đạo hữu gần (`to` = sid).
     const healMul = passiveOf(c.meta)?.healMul;
@@ -2494,14 +2629,17 @@ export class GameSim {
       if (o && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= POTION_ALLY_RANGE) who = o;
     }
     const wc = who.char;
+    // Phẩm đan (P3-8): Hạ/Trung/Thượng nhân hiệu lực hồi phục, tu vi và mức buff.
+    const potency = pillPotency(PILL_QUALITY, taken?.plus);
     if (def.use.hpPct) {
-      const n = Math.round(healAmount(Math.round(wc.mhp * def.use.hpPct), healMul) * (1 + wc.stats.healRecv));
+      const n = Math.round(healAmount(Math.round(wc.mhp * def.use.hpPct * potency), healMul) * (1 + wc.stats.healRecv));
       wc.hp = Math.min(wc.mhp, wc.hp + n);
       this.host.broadcast(S.DMG, { dst: who.sid, n, heal: true } satisfies DmgMsg);
     }
-    if (def.use.mpPct) wc.mp = Math.min(wc.mmp, wc.mp + wc.mmp * def.use.mpPct * (1 + (healMul ?? 0)));
+    if (def.use.mpPct) wc.mp = Math.min(wc.mmp, wc.mp + wc.mmp * def.use.mpPct * potency * (1 + (healMul ?? 0)));
     // Tu vi chỉ cho chính người dùng (không chuyển tu vi qua đan dược).
-    if (def.use.xp) this.giveXp(p, def.use.xp);
+    if (def.use.xp) this.giveXp(p, Math.round(def.use.xp * potency));
+    if (def.use.buff) this.applyPillBuff(p, def, potency);
     if (who !== p) this.fx({ t: 'potion', src: who.sid });
     this.fx({ t: 'potion', src: p.sid });
   }
@@ -2536,7 +2674,10 @@ export class GameSim {
       d.inv[slot as number] = prev ? { ...prev } : null;
       return true;
     });
-    if (ok) c.recalc();
+    if (ok) {
+      c.recalc();
+      if (p.mth) p.mth.dirty = true;
+    }
   }
 
   onUnequip(p: PlayerEnt, msg: unknown): void {
@@ -2563,6 +2704,7 @@ export class GameSim {
       return;
     }
     c.recalc();
+    if (p.mth) p.mth.dirty = true;
   }
 
   onMoveItem(p: PlayerEnt, msg: unknown): void {
@@ -2576,7 +2718,7 @@ export class GameSim {
       const sb = d.inv[b];
       if (!sa) return false;
       const def = ITEM.get(sa.id);
-      if (sb && def && sb.id === sa.id && def.stack > 1) {
+      if (sb && def && sb.id === sa.id && (sb.plus ?? 0) === (sa.plus ?? 0) && def.stack > 1) {
         const put = Math.min(sa.n, def.stack - sb.n);
         if (put <= 0) {
           d.inv[a] = sb;
@@ -2647,7 +2789,14 @@ export class GameSim {
     if (!rcp) return;
     if (!this.nearNpc(p, rcp.npc)) return this.warn(p, 'sys.too_far');
     const c = p.char;
+    if (rcp.reqLevel && c.level < rcp.reqLevel) return this.warn(p, 'sys.craft_level');
+    // Pháp bảo: mỗi người chỉ cần một món mỗi loại.
+    const outDef = ITEM.get(rcp.output.id);
+    if (outDef && isEquipSlot(outDef.kind) && (n !== 1 || c.inv.some((s) => s?.id === rcp.output.id) || c.equipCount(rcp.output.id) > 0)) return this.warn(p, 'sys.art_owned');
     if (c.gold < rcp.gold * n) return this.warn(p, 'sys.not_enough_gold');
+    // Phẩm chất đan (P3-8): mỗi viên roll riêng ở server; công pháp đan sư (Thanh Mộc) ra phẩm cao dễ hơn.
+    const support = passiveOf(c.meta)?.kind === 'dan_kinh';
+    const tiers = new Array<number>(PILL_TIERS).fill(0);
     let missing = false;
     let full = false;
     const ok = c.tx('craft:' + rcp.id, idem, (d) => {
@@ -2658,7 +2807,21 @@ export class GameSim {
         }
       }
       if (!d.spendGold(rcp.gold * n)) return false;
-      if (!d.add(rcp.output.id, rcp.output.n * n)) {
+      if (rcp.quality) {
+        const rolls: number[] = [];
+        for (let i = 0; i < rcp.output.n * n; i++) {
+          const q = rollPillQuality(PILL_QUALITY, support, randomInt(1_000_000) / 1_000_000);
+          tiers[q]++;
+          rolls.push(q);
+        }
+        for (let q = 0; q < PILL_TIERS; q++) {
+          if (tiers[q] > 0 && !d.add(rcp.output.id, tiers[q], q)) {
+            full = true;
+            return false;
+          }
+        }
+        d.rollSeeds.push(`pill:${rolls.join('')}`);
+      } else if (!d.add(rcp.output.id, rcp.output.n * n)) {
         full = true;
         return false;
       }
@@ -2669,7 +2832,9 @@ export class GameSim {
       else if (full) this.warn(p, 'sys.inv_full');
       return;
     }
-    this.sys(p, 'sys.crafted', { item: itemName(rcp.output.id), n: rcp.output.n * n }, 'loot');
+    if (rcp.quality) {
+      for (let q = PILL_TIERS - 1; q >= 0; q--) if (tiers[q] > 0) this.sys(p, 'sys.crafted_q', { item: itemName(rcp.output.id), q: t('ui.pill.q' + q), n: tiers[q] }, q > 0 ? 'good' : 'loot');
+    } else this.sys(p, 'sys.crafted', { item: itemName(rcp.output.id), n: rcp.output.n * n }, 'loot');
     this.questEvent(p, 'craft', rcp.output.id, rcp.output.n * n);
     this.fx({ t: 'craft', src: p.sid });
   }
@@ -2921,6 +3086,41 @@ export class GameSim {
         });
         if (ok) c.recalc();
         return say(ok ? `${slot} +${n}` : 'plus <0-10> [ô]: ô chưa mặc đồ');
+      }
+      case 'art': {
+        // /gm art <id pháp bảo> [cấp 1-5]: có và đeo luôn (không cần chế); `art off` cất vào túi. Chỉ để thử.
+        if (a[1] === 'off') {
+          const ok = c.tx('gm:art', null, (d) => {
+            const it = d.equip.artifact;
+            if (!it) return true;
+            const i = d.inv.findIndex((x) => !x);
+            if (i < 0) return false;
+            d.inv[i] = it;
+            delete d.equip.artifact;
+            return true;
+          });
+          if (ok) c.recalc();
+          return say(ok ? 'đã cất pháp bảo' : 'túi đầy');
+        }
+        if (!ARTIFACT.has(a[1])) return say('art ' + [...ARTIFACT.keys()].join(' | ') + ' | off');
+        const ok = c.tx('gm:art', null, (d) => {
+          const prev = d.equip.artifact;
+          if (prev) {
+            const i = d.inv.findIndex((x) => !x);
+            if (i < 0) return false;
+            d.inv[i] = prev;
+          }
+          d.equip.artifact = { id: a[1], n: 1 };
+          d.bump(a[1], 1);
+          return true;
+        });
+        if (!ok) return say('không đeo được');
+        const lv = Math.max(1, Math.min(ARTIFACT_MAX_LEVEL, Number(a[2] ?? 1) | 0));
+        c.meta.art ??= {};
+        c.meta.art[a[1]] = { lv, qi: 0 };
+        c.recalc();
+        p.mth.dirty = true;
+        return say('art = ' + a[1] + ' cấp ' + lv);
       }
       case 'give': {
         const ok = c.tx('gm', null, (d) => d.add(a[1], Math.max(1, Number(a[2] ?? 1) | 0)));

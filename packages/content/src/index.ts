@@ -1,5 +1,7 @@
 import { resolveSkill, type ResolvedSkill } from '@dtl/shared';
 import type {
+  ArtifactDef,
+  PillQualityCfg,
   AppearanceData,
   MethodDef,
   SkillVariant,
@@ -24,6 +26,8 @@ import monstersJson from '../data/monsters.json';
 import skillsJson from '../data/skills.json';
 import methodsJson from '../data/methods.json';
 import recipesJson from '../data/recipes.json';
+import artifactsJson from '../data/artifacts.json';
+import alchemyJson from '../data/alchemy.json';
 import npcsJson from '../data/npcs.json';
 import questsJson from '../data/quests.json';
 import realmsJson from '../data/realms.json';
@@ -62,7 +66,7 @@ import equipSetItemsJson from '../data/equipment/setItems.json';
 import forgeJson from '../data/equipment/forge.json';
 
 /** Mẫu trang bị chỉ để rơi (chưa có icon trong atlas, dùng iconFallback) nằm ở data/equipment/templates.json. */
-export const ITEMS = [...(itemsJson as ItemDef[]), ...(equipTemplatesJson as ItemDef[]), ...(equipSetItemsJson as ItemDef[]), ...(methodsJson.items as ItemDef[])];
+export const ITEMS = [...(itemsJson as ItemDef[]), ...(equipTemplatesJson as ItemDef[]), ...(equipSetItemsJson as ItemDef[]), ...(methodsJson.items as ItemDef[]), ...(artifactsJson.items as ItemDef[]), ...(alchemyJson.items as ItemDef[])];
 export const MONSTERS = monstersJson as unknown as MonsterDef[];
 /** 6 chiêu chung (ô 1–6 trên thanh chiêu). Chiêu công pháp nằm riêng ở `METHOD_SKILLS`. */
 export const SKILLS = skillsJson as SkillDef[];
@@ -71,7 +75,11 @@ export const METHODS = methodsJson.methods as MethodDef[];
 export const METHOD_SKILLS = methodsJson.skills as SkillDef[];
 /** id chiêu → biến thức A/B (cả chiêu chung lẫn chiêu công pháp). */
 export const VARIANTS = methodsJson.variants as unknown as Record<string, { a: SkillVariant; b: SkillVariant }>;
-export const RECIPES = recipesJson as RecipeDef[];
+export const RECIPES = [...(recipesJson as RecipeDef[]), ...(alchemyJson.recipes as RecipeDef[])];
+/** Pháp bảo phụ (P3-8): id vật phẩm → định nghĩa. */
+export const ARTIFACTS = artifactsJson.artifacts as ArtifactDef[];
+/** Phẩm chất đan (P3-8): xác suất theo công pháp và hệ số hiệu lực. */
+export const PILL_QUALITY = alchemyJson.quality as PillQualityCfg;
 export const NPCS = npcsJson as NpcDef[];
 export const QUESTS = questsJson as QuestDef[];
 export const REALMS = realmsJson as RealmDef[];
@@ -101,6 +109,7 @@ export const NPC = index(NPCS);
 export const QUEST = index(QUESTS);
 export const POSE = index(POSES);
 export const ROOT = index(ROOTS);
+export const ARTIFACT = index(ARTIFACTS);
 
 /** Ngoại hình người chơi: giới tính, màu áo (quyết định 6.4b). */
 export const APPEARANCE = appearanceJson as AppearanceData;
@@ -148,7 +157,10 @@ export function realmName(level: number): string {
 
 export function itemName(id: string, plus?: number): string {
   const n = t('item.' + id + '.name');
-  return plus ? `${n} +${plus}` : n;
+  if (!plus) return n;
+  // Đan: `plus` là phẩm chất (1 Trung, 2 Thượng), không phải cường hóa.
+  if (ITEM.get(id)?.kind === 'consumable') return `${n} (${t('ui.pill.q' + plus)})`;
+  return `${n} +${plus}`;
 }
 
 export function monsterName(id: string): string {

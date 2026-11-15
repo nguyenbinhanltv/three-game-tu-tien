@@ -116,6 +116,8 @@ export const G = {
   ico1: flat(new THREE.IcosahedronGeometry(1, 1)),
   /** Cầu mịn (giữ normal trơn), đã bỏ index để gộp được. */
   sphere: new THREE.SphereGeometry(1, 12, 9).toNonIndexed(),
+  /** Cầu mịn nhiều mặt cho khiên fresnel (không thấy cạnh đa giác). */
+  dome: new THREE.SphereGeometry(1, 40, 28),
   octa: flat(new THREE.OctahedronGeometry(1, 0)),
   torus: flat(new THREE.TorusGeometry(1, 0.12, 6, 20)),
 };
