@@ -23,7 +23,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { FOREST, LAKE, LAKE_WATER_R, SPAWN_POINT } from '@dtl/shared';
+import { FOREST, LAKE, SPAWN_POINT } from '@dtl/shared';
 import { chromium, type Browser, type Page } from 'playwright';
 import { createDevServer, ROOT, sleep } from './devserver';
 
@@ -49,11 +49,11 @@ const DPR = Number(opt('--dpr', '1'));
 const PORT = Number(process.env.PORT ?? 2635);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5135);
 
-/** Đường camera cố định: sân tông môn (chỗ hồi sinh), giữa rừng, bờ đông hồ (nhìn ra mặt nước khi xoay). */
+/** Đường camera cố định: sân tông môn (chỗ hồi sinh), giữa rừng, bãi ven hồ phía tây (nhìn ra mặt nước khi xoay). */
 const WAYPOINTS = [
   { name: 'san_tong_mon', x: SPAWN_POINT.x, z: SPAWN_POINT.z },
   { name: 'rung', x: FOREST.x, z: FOREST.z },
-  { name: 'ho', x: LAKE.x + LAKE_WATER_R + 12, z: LAKE.z },
+  { name: 'ho', x: LAKE.x - 185, z: LAKE.z },
 ];
 const CAM = { pitch: 0.38, dist: 13 };
 
@@ -218,7 +218,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH }, deviceScaleFactor: DPR });
   const page = await ctx.newPage();
   const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message + (e.stack ? ' @ ' + e.stack.split('\n').slice(1, 4).map((l) => l.trim().slice(0, 110)).join(' | ') : '')));
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text().slice(0, 300));
   });

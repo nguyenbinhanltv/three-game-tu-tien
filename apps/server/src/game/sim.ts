@@ -88,6 +88,7 @@ import {
   type InitMsg,
   INV_SIZE,
   type LevelDef,
+  levelSpawns,
   meditateXpPerSec,
   MF_BROKEN,
   MF_CHANT,
@@ -428,7 +429,8 @@ export class GameSim {
   ) {
     this.level = LEVELS[opts.levelId];
     state.level = opts.levelId;
-    for (const sp of this.level.spawns) {
+    // Quái đứng lẻ (tinh anh, boss) và các bãi quái (M-1); hồi sinh theo số người/AOI để M-2.
+    for (const sp of levelSpawns(this.level)) {
       for (let i = 0; i < sp.count; i++) this.spawnFromDef(sp);
     }
     for (const nd of this.level.nodes) {

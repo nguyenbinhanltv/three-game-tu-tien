@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COLLIDERS, HAND_PROPS, heightAt, PROP_COLLIDERS, SECT, WATER_Y } from '@dtl/shared';
+import { COLLIDERS, FOREST, HAND_PROPS, heightAt, PROP_COLLIDERS, SECT, VALLEY, WATER_Y } from '@dtl/shared';
 import { allProps, KIEM_GAY, nearPropTree, TREE_IDS } from './propScatter';
 import atlas from './impostors.json';
 import { PROP_CFG } from './props';
@@ -80,9 +80,9 @@ describe('bố cục prop (P2-A4)', () => {
       const sect = near(SECT.x, SECT.z, 108).filter((p) => !HAND_PROPS.some((h) => h.x === p.x && h.z === p.z));
       expect(sect.filter((p) => p.id === 'prop_anh_dao').length).toBeGreaterThan(5);
       for (const p of sect) expect(Math.hypot(p.x - SECT.x, p.z - SECT.z), `${p.id} giữa sân`).toBeGreaterThan(55);
-      expect(near(2720, 2180, 300, 'prop_soi_nui').length).toBeGreaterThan(40);
-      expect(near(2720, 2180, 300, 'prop_phong_do').length).toBeGreaterThan(15);
-      expect(near(2048, 2640, 250, 'prop_soi_nui').length).toBeGreaterThan(5);
+      expect(near(FOREST.x, FOREST.z, FOREST.outerR, 'prop_soi_nui').length).toBeGreaterThan(8);
+      expect(near(FOREST.x, FOREST.z, FOREST.outerR, 'prop_phong_do').length).toBeGreaterThan(3);
+      expect(near(VALLEY.x, VALLEY.z, VALLEY.outerR, 'prop_soi_nui').length).toBeGreaterThan(2);
     });
 
     it('không có cây đè lên lối đi tông môn–sơn đạo hoặc quá gần collider', () => {

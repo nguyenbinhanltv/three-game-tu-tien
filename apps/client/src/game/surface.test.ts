@@ -14,8 +14,8 @@ describe('surfaceAt', () => {
     expect(surfaceAt(900, 1000, 'kiem_trung')).toBe('stone');
   });
   it('lòng hồ là nước nông, bờ hồ có cát rồi tới nước', () => {
-    // Tâm hồ là đảo (ISLAND_R) nên lấy điểm lòng hồ cách tâm 150 m.
-    expect(surfaceAt(LAKE.x + 150, LAKE.z)).toBe('water');
+    // Tâm hồ là đảo (ISLAND_R) nên lấy điểm lòng hồ cách tâm 100 m.
+    expect(surfaceAt(LAKE.x + 100, LAKE.z)).toBe('water');
     const shore = shorePoints();
     expect(shore.length).toBeGreaterThanOrEqual(3);
     // Đi xuyên qua điểm bờ theo hướng từ tâm hồ: phải gặp cả cát (phía đất liền) lẫn nước.
@@ -35,7 +35,7 @@ describe('surfaceAt', () => {
     expect(dirt).toBeGreaterThan(30);
   });
   it('thung lũng bằng phẳng là cỏ; có sườn dốc là đá', () => {
-    expect(surfaceAt(VALLEY.x + 150, VALLEY.z + 120)).toBe('grass');
+    expect(surfaceAt(VALLEY.x + 40, VALLEY.z + 40)).toBe('grass');
     let rock = 0;
     for (let x = 400; x < 1200; x += 20) for (let z = 2800; z < 3600; z += 20) if (surfaceAt(x, z) === 'stone' && heightAt(x, z) > WATER_Y) rock++;
     expect(rock).toBeGreaterThan(0);

@@ -8,6 +8,7 @@ import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
+import { COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, type ZoneDef } from '@dtl/shared';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -541,6 +542,67 @@ for (const lv of Object.values(LEVELS)) {
     if (!Number.isFinite(g)) err(`level ${lv.id}: spawn ${s.mon} ngoài bản đồ`);
   }
   for (const n of lv.nodes) needItem(n.item, `level ${lv.id}`);
+  checkZonesAndCamps(lv);
+}
+
+// Vùng và bãi quái (M-1): camp phải nằm trong vùng đúng cấp, không đè collider, không dưới nước sâu.
+function checkZonesAndCamps(lv: (typeof LEVELS)[string]) {
+  const MUSIC_ZONES = ['sect', 'wild', 'forest', 'lake', 'dungeon'];
+  const zones = lv.zones ?? [];
+  const camps = lv.camps ?? [];
+  if (!zones.length && !camps.length) return;
+  const where = `level ${lv.id}`;
+  uniqueIds('zone', zones);
+  uniqueIds('camp', camps);
+  const zoneById = new Map<string, ZoneDef>(zones.map((z) => [z.id, z]));
+  for (const z of zones) {
+    needStr(`zone.${z.id}`);
+    if (!/^#[0-9a-fA-F]{6}$/.test(z.color)) err(`zone ${z.id}: color phải dạng #rrggbb`);
+    if (!MUSIC_ZONES.includes(z.music)) err(`zone ${z.id}: music ${z.music} không có (${MUSIC_ZONES.join(', ')})`);
+    if (!(z.lvMin >= 1 && z.lvMin <= z.lvMax && z.lvMax <= 15)) err(`zone ${z.id}: khoảng cấp ${z.lvMin}–${z.lvMax} không hợp lệ`);
+    if (z.poly.length < 3 || polyArea(z.poly) < 1000) err(`zone ${z.id}: đa giác ranh phải ≥ 3 đỉnh, diện tích ≥ 1000 m²`);
+    for (const [x, zz] of z.poly) if (!(x >= PLAY_BOUNDS.x0 && x <= PLAY_BOUNDS.x1 && zz >= PLAY_BOUNDS.z0 && zz <= PLAY_BOUNDS.z1)) err(`zone ${z.id}: đỉnh (${x}, ${zz}) ngoài vùng chơi chính`);
+  }
+  for (const c of camps) {
+    const m = MONSTER.get(c.mon);
+    const zn = zoneById.get(c.zone);
+    if (!m) err(`${where}: camp ${c.id} quái không tồn tại ${c.mon}`);
+    else if (m.boss || m.elite) err(`${where}: camp ${c.id} chỉ dành cho quái thường (tinh anh/boss khai ở spawns)`);
+    if (!zn) {
+      err(`${where}: camp ${c.id} thuộc vùng không có ${c.zone}`);
+      continue;
+    }
+    if (!inPoly(zn.poly, c.x, c.z)) err(`${where}: camp ${c.id} nằm ngoài đa giác vùng ${c.zone}`);
+    if (c.levelMin < zn.lvMin || c.levelMax > zn.lvMax || c.levelMin > c.levelMax) err(`${where}: camp ${c.id} cấp ${c.levelMin}–${c.levelMax} lệch khoảng cấp vùng ${c.zone} (${zn.lvMin}–${zn.lvMax})`);
+    if (!(c.count >= 3 && c.count <= 4)) err(`${where}: camp ${c.id} count ${c.count} phải 3–4`);
+    if (!(c.radius >= 18 && c.radius <= 30)) err(`${where}: camp ${c.id} radius ${c.radius} phải 18–30 m`);
+    if (!(c.respawn > 0)) err(`${where}: camp ${c.id} thiếu respawn`);
+    if (c.ranged) {
+      const r = MONSTER.get(c.ranged);
+      if (!r?.ai?.caster) err(`${where}: camp ${c.id} ranged ${c.ranged} phải là quái có ai.caster`);
+    }
+    if (heightAt(c.x, c.z) < WATER_Y + 0.5) err(`${where}: camp ${c.id} nằm dưới nước`);
+    for (const col of COLLIDERS) if ((c.x - col.x) ** 2 + (c.z - col.z) ** 2 < (col.r + 1) ** 2) err(`${where}: camp ${c.id} đè collider (${col.x}, ${col.z})`);
+  }
+  // Tinh anh và boss khai ở spawns: tinh anh phải ở trong vùng hợp cấp, mỗi vùng 2–3 con.
+  const elitePerZone = new Map<string, number>();
+  for (const s of levelSpawns(lv)) {
+    const m = MONSTER.get(s.mon);
+    if (!m?.elite) continue;
+    const zn = zones.find((z) => inPoly(z.poly, s.x, s.z));
+    if (!zn) {
+      err(`${where}: tinh anh ${s.mon} ở (${s.x}, ${s.z}) không thuộc vùng nào`);
+      continue;
+    }
+    if (s.levelMin < zn.lvMin || s.levelMax > zn.lvMax) err(`${where}: tinh anh ${s.mon} cấp ${s.levelMin}–${s.levelMax} lệch vùng ${zn.id} (${zn.lvMin}–${zn.lvMax})`);
+    elitePerZone.set(zn.id, (elitePerZone.get(zn.id) ?? 0) + s.count);
+  }
+  for (const z of zones) {
+    const n = elitePerZone.get(z.id) ?? 0;
+    if (n < 2 || n > 3) err(`zone ${z.id}: ${n} tinh anh (cần 2–3)`);
+  }
+  const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
+  if (normal < 300 || normal > 380) err(`${where}: ${normal} quái thường theo camps, mục tiêu ~300–360`);
 }
 
 // ---- Pháp bảo phụ và đan (P3-8) ----

@@ -3,7 +3,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { matchMaker, Server } from 'colyseus';
 import { Encoder } from '@colyseus/schema';
-import { WebSocketTransport } from '@colyseus/ws-transport';
+import { WebSocketClient, WebSocketTransport } from '@colyseus/ws-transport';
 import { config } from './config';
 import { sqlite } from './db';
 import { installHttpRateLimit } from './ratelimit';
@@ -76,7 +76,18 @@ Encoder.BUFFER_SIZE = 128 * 1024;
 matchMaker.controller.exposedMethods = ['joinOrCreate', 'join', 'joinById', 'reconnect'];
 
 const httpServer = http.createServer(serveStatic);
-const gameServer = new Server({ transport: new WebSocketTransport({ server: httpServer }) });
+// Colyseus mã hóa patch vào một bộ đệm dùng chung và đưa thẳng cho ws; với gói lớn ws không sao chép mà ghi bất đồng bộ
+// từ chính bộ đệm đó. Client đọc chậm (trình duyệt dừng đọc socket khi luồng chính bị chặn, ví dụ ~10 s biên dịch shader
+// WebGL2 ở khung đầu) thì gói còn nằm trong hàng đợi bị tick sau ghi đè → client giải mã hỏng ("refId" not found, mất đồng
+// bộ trạng thái). Quái nhiều (M-1: 378) làm patch đủ lớn để dính. Sao chép trước khi gửi (một memcpy vài KB mỗi gói).
+const rawSend = WebSocketClient.prototype.raw;
+WebSocketClient.prototype.raw = function (this: InstanceType<typeof WebSocketClient>, data: Uint8Array | Buffer, options?: unknown, cb?: (err?: Error) => void) {
+  return rawSend.call(this, Buffer.from(data), options as never, cb);
+};
+// Nhịp ping của ws: mặc định 3 s × 2 lần ≈ 9 s. Trình duyệt dừng đọc socket khi luồng chính của trang bị chặn (biên
+// dịch shader WebGL2 ở khung đầu có thể ~10 s, và 378 quái làm luồng patch dày hơn nên bộ đệm nhận đầy sớm), pong không
+// trả được và server cắt kết nối (mã 1006). Nới tới ~33 s: client chết thật vẫn bị dọn sau nửa phút.
+const gameServer = new Server({ transport: new WebSocketTransport({ server: httpServer, pingInterval: 3000, pingMaxRetries: 10 }) });
 // Sau khi Colyseus gắn route /matchmake và ws gắn 'upgrade': bọc ngoài cùng để chặn trước cả hai.
 const rl = config.rateLimit;
 installHttpRateLimit(httpServer, rl, (req) => ({

@@ -1,4 +1,5 @@
-import { COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
+import { LEVELS } from '@dtl/content';
+import { COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
 
 /**
  * Bố cục prop Tripo theo brief level-dressing (P2-A1, thực hiện P2-A4). Hoàn toàn xác định (hash theo chỉ số), không
@@ -26,12 +27,9 @@ interface Circle {
 
 /** Vùng cấm đặt prop: lõi spawn quái (R30), vòng NPC (≥4 m), spawn người, cổng, đảo Hàn Giao, lõi Kiếm Trủng, node hái. */
 const KEEP_CLEAR: Circle[] = [
-  { x: 2048, z: 2455, r: 32 },
-  { x: 1870, z: 2650, r: 32 },
-  { x: 2240, z: 2770, r: 32 },
-  { x: 2550, z: 2210, r: 32 },
-  { x: 2830, z: 2080, r: 32 },
-  { x: 2810, z: 2370, r: 32 },
+  // Tâm mỗi bãi quái (M-1): chừa 5 m để prop không nằm giữa chỗ đứng của cụm.
+  ...(LEVELS.van_lam.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 5 })),
+  ...LEVELS.van_lam.spawns.filter((sp) => sp.radius > 4).map((sp) => ({ x: sp.x, z: sp.z, r: 6 })),
   { x: 2048, z: 2030, r: 6 },
   { x: 2004, z: 2064, r: 6 },
   { x: 2092, z: 2064, r: 6 },
@@ -40,16 +38,16 @@ const KEEP_CLEAR: Circle[] = [
   { x: LAKE.x, z: LAKE.z, r: ISLAND_R + 6 },
   { x: KIEM_TRUNG.x, z: KIEM_TRUNG.z, r: 28 },
   { x: DUNGEON_EXIT.x, z: DUNGEON_EXIT.z - 20, r: 14 },
-  { x: 2060, z: 2600, r: 24 },
-  { x: 2620, z: 2300, r: 22 },
-  { x: 2760, z: 2220, r: 22 },
+  // Điểm hái thảo dược.
+  ...LEVELS.van_lam.nodes.map((n) => ({ x: n.x, z: n.z, r: 8 })),
 ];
 
-/** Lối đi: sân tông môn theo trục cổng–điện, sơn đạo dọc x=2048 (rộng 7,5 m, chừa thêm hai bên), đường xuống thung lũng. */
+/** Lối đi: sân tông môn theo trục cổng–điện, sơn đạo dọc x=2048 (rộng 7,5 m, chừa thêm hai bên), đường xuống thung lũng, lối lên cổng bí cảnh. */
 function onPath(x: number, z: number): boolean {
   if (Math.abs(x - SECT.x) < 14 && z > 2000 && z < 2140) return true;
   if (Math.abs(x - SECT.x) < 9 && z >= 2136 && z < 2400) return true;
-  if (Math.abs(x - SECT.x) < 8 && z >= 2400 && z < 2640) return true;
+  if (Math.abs(x - SECT.x) < 8 && z >= 2400 && z < 2500) return true;
+  if (Math.abs(x - PORTAL_PAD.x) < 8 && z > PORTAL_PAD.z - 20 && z < SECT.z - 95) return true;
   if (Math.abs(x - KIEM_TRUNG.x) < 9 && z > KIEM_TRUNG.z + 20 && z < KIEM_TRUNG.z + 90) return true;
   return false;
 }
@@ -121,32 +119,41 @@ function build(): PropInstance[] {
   scatter('prop_thong_co', 3, SECT.x, SECT.z, 100, { ...flat, gap: 18, pad: 6 });
   scatter('prop_da_nam', 5, SECT.x, SECT.z, 100, { ...flat, gap: 6, pad: 4 }, 2, 8);
   // --- 02 Sơn đạo: sườn quanh đường núi ---
-  scatter('prop_thong_co', 4, 2048, 2300, 110, { gap: 16, slope: 7, maxH: 200 });
-  scatter('prop_da_dung', 6, 2110, 2250, 80, { gap: 7, slope: 8, maxH: 200 }, 2, 14);
-  scatter('prop_da_nam', 12, 2110, 2250, 80, { gap: 5, slope: 7, maxH: 200 }, 4, 12);
-  scatter('prop_duong_xi', 40, 2048, 2290, 90, { gap: 2.5, slope: 6, s: [0.9, 1.3], maxH: 200 }, 7, 7);
+  scatter('prop_thong_co', 4, 2048, 2250, 90, { gap: 16, slope: 7, maxH: 200 });
+  scatter('prop_da_dung', 6, 2110, 2230, 70, { gap: 7, slope: 8, maxH: 200 }, 2, 14);
+  scatter('prop_da_nam', 12, 2110, 2230, 70, { gap: 5, slope: 7, maxH: 200 }, 4, 12);
+  scatter('prop_duong_xi', 40, 2048, 2250, 80, { gap: 2.5, slope: 6, s: [0.9, 1.3], maxH: 200 }, 7, 7);
   // --- 03 Thanh Khê: đảo prop ở rìa, đồng cỏ giữa để trống ---
-  scatter('prop_thong_co', 8, VALLEY.x, VALLEY.z, 380, { gap: 22, slope: 5 }, 3, 120);
-  scatter('prop_da_nam', 18, VALLEY.x, VALLEY.z, 380, { gap: 5, slope: 5 }, 6, 22);
-  scatter('prop_da_dung', 4, VALLEY.x, VALLEY.z, 380, { gap: 8, slope: 6 }, 2, 16);
-  for (const z of [2480, 2560, 2630]) {
+  scatter('prop_thong_co', 6, VALLEY.x, VALLEY.z, 150, { gap: 22, slope: 5 }, 3, 50);
+  scatter('prop_da_nam', 12, VALLEY.x, VALLEY.z, 150, { gap: 5, slope: 5 }, 5, 18);
+  scatter('prop_da_dung', 4, VALLEY.x, VALLEY.z, 150, { gap: 8, slope: 6 }, 2, 14);
+  for (const z of [2420, 2450, 2480]) {
     const x = 2048 + (z % 120 < 60 ? 11 : -11);
     out.push({ id: 'prop_bia_da', x, y: heightAt(x, z), z, yaw: hash01(z, 1, 66) * 6, s: 1 });
   }
   // --- 04 Rừng Linh Thảo: cổ thụ rìa, trúc thành khóm, dương xỉ dưới tán ---
-  scatter('prop_co_thu', 6, FOREST.x, FOREST.z, 420, { gap: 40, slope: 5, s: [0.9, 1.1], pad: 3 });
-  scatter('prop_truc', 100, FOREST.x, FOREST.z, 400, { gap: 1.6, slope: 5, s: [0.9, 1.25], pad: 1 }, 20, 6);
-  scatter('prop_duong_xi', 140, FOREST.x, FOREST.z, 400, { gap: 2.2, slope: 5, s: [0.9, 1.3] }, 28, 8);
-  scatter('prop_da_nam', 15, FOREST.x, FOREST.z, 400, { gap: 5, slope: 5 }, 5, 14);
-  scatter('prop_da_dung', 6, FOREST.x, FOREST.z, 420, { gap: 8, slope: 6 }, 2, 16);
+  scatter('prop_co_thu', 6, FOREST.x, FOREST.z, 170, { gap: 40, slope: 5, s: [0.9, 1.1], pad: 3 });
+  scatter('prop_truc', 95, FOREST.x, FOREST.z, 160, { gap: 1.6, slope: 5, s: [0.9, 1.25], pad: 1 }, 16, 6);
+  scatter('prop_duong_xi', 120, FOREST.x, FOREST.z, 160, { gap: 2.2, slope: 5, s: [0.9, 1.3] }, 20, 8);
+  scatter('prop_da_nam', 10, FOREST.x, FOREST.z, 160, { gap: 5, slope: 5 }, 4, 12);
+  scatter('prop_da_dung', 4, FOREST.x, FOREST.z, 170, { gap: 8, slope: 6 }, 2, 14);
+  // --- 04b Suối Thanh Khê: đá phiến bên dòng, dương xỉ, thông lẻ ---
+  scatter('prop_da_phien', 10, SUOI.x, SUOI.z, 140, { gap: 8, slope: 6 }, 4, 14);
+  scatter('prop_duong_xi', 40, SUOI.x, SUOI.z, 140, { gap: 2.2, slope: 5, s: [0.9, 1.3] }, 10, 8);
+  scatter('prop_thong_co', 4, SUOI.x, SUOI.z, 150, { gap: 20, slope: 6 }, 2, 40);
+  scatter('prop_da_nam', 8, SUOI.x, SUOI.z, 140, { gap: 5, slope: 6 }, 3, 14);
+  // --- 04c Vách Đá Ngọc: đá dựng và đá phiến trên cao nguyên, thông cheo leo ---
+  scatter('prop_da_dung', 12, VACH.x, VACH.z, 140, { minH: 60, maxH: 400, gap: 8, slope: 10, pad: 2 }, 4, 18);
+  scatter('prop_da_phien', 8, VACH.x, VACH.z, 140, { minH: 60, maxH: 400, gap: 6, slope: 8 }, 3, 14);
+  scatter('prop_thong_co', 4, VACH.x, VACH.z, 150, { minH: 60, maxH: 400, gap: 20, slope: 9 }, 2, 40);
   // --- 05 Hồ Sương Mù: đá phiến, lau sát bờ, bờ cao thì thông ---
-  // Bờ hồ cách tâm ~225–250 m (xa hơn là sườn núi dốc), nên rải trong đĩa R≈285.
-  const shore = { minH: WATER_Y + 1.3, maxH: WATER_Y + 6, ring: [205, 262] as [number, number] };
-  scatter('prop_da_phien', 24, LAKE.x, LAKE.z, 285, { ...shore, gap: 8, slope: 5 }, 8, 18);
-  scatter('prop_da_nam', 10, LAKE.x, LAKE.z, 285, { ...shore, gap: 6, slope: 6 }, 4, 14);
-  scatter('prop_da_dung', 3, LAKE.x, LAKE.z, 290, { minH: WATER_Y + 3, maxH: WATER_Y + 30, gap: 8, slope: 9 }, 1, 12);
-  scatter('prop_lau', 90, LAKE.x, LAKE.z, 270, { minH: WATER_Y + 0.4, maxH: WATER_Y + 2.4, gap: 1.6, slope: 4, s: [0.9, 1.25], ring: [200, 250] }, 18, 6);
-  scatter('prop_thong_co', 4, LAKE.x, LAKE.z, 300, { minH: WATER_Y + 8, maxH: 110, gap: 18, slope: 8 });
+  // Bãi ven hồ (dải phẳng) cách tâm ~150–215 m, xa hơn là sườn núi dốc.
+  const shore = { minH: WATER_Y + 1.3, maxH: WATER_Y + 6, ring: [155, 210] as [number, number] };
+  scatter('prop_da_phien', 20, LAKE.x, LAKE.z, 230, { ...shore, gap: 8, slope: 5 }, 8, 18);
+  scatter('prop_da_nam', 8, LAKE.x, LAKE.z, 230, { ...shore, gap: 6, slope: 6 }, 4, 14);
+  scatter('prop_da_dung', 3, LAKE.x, LAKE.z, 235, { minH: WATER_Y + 3, maxH: WATER_Y + 30, gap: 8, slope: 9 }, 1, 12);
+  scatter('prop_lau', 70, LAKE.x, LAKE.z, 230, { minH: WATER_Y + 0.4, maxH: WATER_Y + 4, gap: 1.6, slope: 4, s: [0.9, 1.25], ring: [150, 205] }, 14, 6);
+  scatter('prop_thong_co', 4, LAKE.x, LAKE.z, 240, { minH: WATER_Y + 8, maxH: 110, gap: 18, slope: 8 });
   // --- 06 Kiếm Trủng: kiếm gãy thay vòng kiếm thủ tục, bia ngoài vòng, đá dựng/phiến ---
   out.push(...KIEM_GAY);
   for (const [dx, dz] of [[-58, 40], [58, 40], [-72, -18], [72, -18], [-34, -64], [34, -64]] as const) {
@@ -202,6 +209,7 @@ function scatterTrees(out: PropInstance[]): void {
       const wForest = featureWeight(FOREST, x, z);
       const wValley = featureWeight(VALLEY, x, z);
       const wLake = featureWeight(LAKE, x, z);
+      const wSuoi = featureWeight(SUOI, x, z);
       if (pass === 1 && (wForest <= 0.12 || wSect > 0.8)) continue;
       const slope = Math.abs(heightAt(x + 3, z) - h) + Math.abs(heightAt(x, z + 3) - h);
       if (slope > 5.5) continue;
@@ -215,13 +223,13 @@ function scatterTrees(out: PropInstance[]): void {
         let density = 0.3;
         // Rừng: lõi dày, rìa (wForest 0,12–0,3) thưa hơn nhưng vẫn có cây; lượt 1 thêm cây ở cả hai.
         if (wForest > 0.12) density = (wForest > 0.3 ? 0.8 : 0.4) * (pass ? 0.5 : 1);
-        else if (wValley > 0.4) density = 0.2;
+        else if (wValley > 0.4 || wSuoi > 0.4) density = 0.2;
         else if (wLake > 0.3) density = 0.2;
         if (h > 200) density *= 0.5;
         if (r3 > density * 0.9) continue;
         const high = h > 150;
         if (wForest > 0.12) id = high || r5 > 0.81 ? 'prop_thong_co' : r5 < 0.5 ? 'prop_soi_nui' : r5 < 0.74 ? 'prop_phong_do' : 'prop_co_thu';
-        else if (wValley > 0.4) id = r5 < 0.58 ? 'prop_soi_nui' : r5 < 0.72 ? 'prop_anh_dao' : r5 < 0.8 ? 'prop_phong_do' : 'prop_thong_co';
+        else if (wValley > 0.4 || wSuoi > 0.4) id = r5 < 0.58 ? 'prop_soi_nui' : r5 < 0.72 ? 'prop_anh_dao' : r5 < 0.8 ? 'prop_phong_do' : 'prop_thong_co';
         else if (wLake > 0.3) id = r5 < 0.42 ? 'prop_soi_nui' : r5 < 0.62 ? 'prop_thong_co' : r5 < 0.8 ? 'prop_phong_do' : 'prop_anh_dao';
         else if (high || r4 > 0.55) id = 'prop_thong_co';
         else id = r5 < 0.74 ? 'prop_soi_nui' : r5 < 0.88 ? 'prop_phong_do' : 'prop_anh_dao';

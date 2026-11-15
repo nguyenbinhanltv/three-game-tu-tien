@@ -32,22 +32,22 @@ export const HAND_PROPS: readonly HandProp[] = [
   { id: 'prop_bia_da', x: 2038, z: 2385, yaw: 0.2, s: 1 },
   { id: 'prop_thong_co', x: 2074, z: 2232, yaw: -PI / 2, s: 1 },
   // --- 03 Thung lũng Thanh Khê: cổ thụ đồng cỏ, đèn đầu đồng ---
-  { id: 'prop_co_thu', x: 1990, z: 2835, yaw: 0.8, s: 1, r: 2.2 },
+  { id: 'prop_co_thu', x: 1990, z: 2560, yaw: 0.8, s: 1, r: 2.2 },
   lantern(2036, 2388),
   lantern(2060, 2388),
   // --- 04 Rừng Linh Thảo: cổ thụ rễ nổi ở khoảng sáng, đèn + bia cửa rừng ---
-  { id: 'prop_co_thu', x: 2710, z: 2130, yaw: 2.4, s: 1.05, r: 2.4 },
-  lantern(2390, 2200),
-  lantern(2390, 2216),
-  { id: 'prop_bia_da', x: 2398, z: 2208, yaw: 1.2, s: 1 },
-  // --- 05 Hồ Sương Mù: đèn bờ đông; bờ hồ nằm cách tâm ~225–250 m (xa hơn là núi), cao độ phải > 31,3 ---
-  lantern(1605, 2166),
-  lantern(1605, 2194),
+  { id: 'prop_co_thu', x: 2500, z: 2060, yaw: 2.4, s: 1.05, r: 2.4 },
+  lantern(2278, 2118),
+  lantern(2278, 2134),
+  { id: 'prop_bia_da', x: 2286, z: 2126, yaw: 1.2, s: 1 },
+  // --- 05 Hồ Sương Mù: đèn ở lối từ thung lũng xuống bãi nam hồ; bãi ven hồ cách tâm ~150–215 m, cao độ phải > 31,3 ---
+  lantern(1700, 2394),
+  lantern(1716, 2398),
   // --- 06 Kiếm Trủng: đèn + tượng hai bên cửa ra ---
-  lantern(889, 1066),
-  lantern(911, 1066),
-  guard(884, 1078, 0),
-  guard(916, 1078, 0),
+  lantern(1509, 1366),
+  lantern(1531, 1366),
+  guard(1504, 1378, 0),
+  guard(1536, 1378, 0),
 ];
 
 /** Va chạm của prop điểm nhấn (nối vào COLLIDERS: client và server dùng chung). */
