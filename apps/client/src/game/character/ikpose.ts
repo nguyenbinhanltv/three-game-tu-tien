@@ -535,21 +535,24 @@ export function bakePose(def: PoseDef, rig: IkRig, o: BakeOpts = {}): THREE.Anim
 
 // ---- Trộn với clip khác ----
 
-/** Thân trên = cột sống trở lên (cột sống, cổ, đầu, vai, tay, ngón). Hông và chân là thân dưới. */
-export type BodyPart = 'upper' | 'lower';
+/**
+ * Thân trên = cột sống trở lên (cột sống, cổ, đầu, vai, tay, ngón). Hông và chân là thân dưới. `armR`: chỉ cánh tay
+ * phải (cánh tay, cẳng tay, bàn tay, ngón), cho động tác chồng lên cả lúc chạy mà không đè thân/tay trái (rút/tra kiếm).
+ */
+export type BodyPart = 'upper' | 'lower' | 'armR';
 
 /**
  * Lọc track theo phần thân. Dùng để đè thân trên: phát clip nền (vd. chạy của Tripo) đã lọc `lower` cùng clip
  * pose đã lọc `upper`; hai action không chung xương nên không bị trung bình trọng số.
  */
 export function maskClip(clip: THREE.AnimationClip, rig: IkRig, part: BodyPart, name = `${clip.name}_${part}`): THREE.AnimationClip {
-  const spine = rig.bones.spine!;
-  const isUpper = (nodeName: string) => {
+  const top = part === 'armR' ? rig.bones.armR! : rig.bones.spine!;
+  const under = (nodeName: string) => {
     let o: THREE.Object3D | null | undefined = rig.mixerRoot.getObjectByName(nodeName);
-    for (; o; o = o.parent) if (o === spine) return true;
+    for (; o; o = o.parent) if (o === top) return true;
     return false;
   };
-  const tracks = clip.tracks.filter((t) => isUpper(THREE.PropertyBinding.parseTrackName(t.name).nodeName) === (part === 'upper')).map((t) => t.clone());
+  const tracks = clip.tracks.filter((t) => under(THREE.PropertyBinding.parseTrackName(t.name).nodeName) === (part !== 'lower')).map((t) => t.clone());
   return new THREE.AnimationClip(name, clip.duration, tracks, clip.blendMode);
 }
 

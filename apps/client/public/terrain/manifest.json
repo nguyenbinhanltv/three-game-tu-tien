@@ -1,0 +1,54 @@
+{
+  "size": 1024,
+  "mask": "mask.14108598d9.png",
+  "layers": [
+    {
+      "layer": "grass",
+      "ph": "leafy_grass",
+      "a": "grass.a.6751f9b5bd.webp",
+      "n": "grass.n.d63c179f29.webp"
+    },
+    {
+      "layer": "dirt",
+      "ph": "brown_mud_leaves_01",
+      "a": "dirt.a.cb31ec38ae.webp",
+      "n": "dirt.n.399598c87d.webp"
+    },
+    {
+      "layer": "forest",
+      "ph": "forrest_ground_01",
+      "a": "forest.a.7d47bfc2ca.webp",
+      "n": "forest.n.83498e92c5.webp"
+    },
+    {
+      "layer": "rock",
+      "ph": "rocky_terrain_02",
+      "a": "rock.a.d8669afd61.webp",
+      "n": "rock.n.9420e3b6ef.webp"
+    },
+    {
+      "layer": "cliff",
+      "ph": "rock_face",
+      "a": "cliff.a.06e5ba168f.webp",
+      "n": "cliff.n.a03c267a15.webp"
+    },
+    {
+      "layer": "sand",
+      "ph": "coast_sand_rocks_02",
+      "a": "sand.a.8a5c7c9515.webp",
+      "n": "sand.n.1732136520.webp"
+    },
+    {
+      "layer": "paving",
+      "ph": "cobblestone_floor_04",
+      "a": "paving.a.acb5066640.webp",
+      "n": "paving.n.94821acab5.webp"
+    },
+    {
+      "layer": "gravel",
+      "ph": "gravelly_sand",
+      "a": "gravel.a.eac626f196.webp",
+      "n": "gravel.n.25abf4ee61.webp"
+    }
+  ]
+}

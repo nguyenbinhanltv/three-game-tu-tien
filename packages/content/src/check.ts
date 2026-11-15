@@ -3,7 +3,7 @@
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { GCD, groundAt, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
+import { GCD, groundAt, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
 import { APPEARANCE, DYE, hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
 import { LOOT } from './loot';
 import { PLACE_ID, PLACES } from './places';
@@ -37,6 +37,11 @@ if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung m
 const skillFx = SKILLS.map((s) => s.fx);
 if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
 for (const id of [POSE_FLY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
+for (const [id, swap] of Object.entries(POSE_SWORD_SWAP)) {
+  const p = POSE.get(id);
+  if (!p || p.loop) err(`pose ${id} (rút/tra kiếm) phải có và là một lần`);
+  else if (!(swap > 0 && swap < p.duration)) err(`pose ${id}: lúc đổi kiếm ${swap}s nằm ngoài clip (${p.duration}s)`);
+}
 
 // ---- ngoại hình người chơi: khớp bảng màu tâm trạng (assets/palette.json) ----
 uniqueIds('dye', APPEARANCE.dyes);
