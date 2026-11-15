@@ -469,7 +469,9 @@ export class Game {
       const off = Date.now() - m.now;
       const cds: Record<string, number> = {};
       for (const k in m.cds) cds[k] = m.cds[k] + off;
-      set({ cds, gcdAt: m.gcd + off });
+      const empowered: Record<string, number> = {};
+      for (const k in m.em) empowered[k] = m.em[k] + off;
+      set({ cds, gcdAt: m.gcd + off, empowered });
     });
     room.onMessage(S.METHOD, (m: MethodMsg) => set({ method: m, methodOff: Date.now() - m.now }));
     room.onMessage(S.SYS, (m: SysMsg) => this.onSys(m));
@@ -959,6 +961,9 @@ export class Game {
       case 'autorun':
         this.autorun = !this.autorun;
         break;
+      case 'dash':
+        this.useDash();
+        break;
       case 'bag':
         togglePanel('bag');
         break;
@@ -1112,6 +1117,17 @@ export class Game {
     const res = this.skillQueue.press(i, Date.now(), this.skillReadyAt(i));
     set({ queuedSkill: this.skillQueue.slot });
     if (res === 'send') this.fireSkill(i);
+  }
+
+  /** Chiêu lướt của công pháp (phím Q, không nằm trên thanh chiêu): chỉ gửi ý định, server lập đường và kiểm (K-2). */
+  useDash(): void {
+    const me = this.me();
+    const m = METHOD.get(get().method?.method ?? '');
+    const skill = m ? SKILL.get(m.dash) : undefined;
+    if (!skill || !me || me.fl & PF_DEAD) return;
+    if ((get().char?.level ?? 0) < skill.unlock) return;
+    if ((get().cds[skill.id] ?? 0) > Date.now() + 80) return;
+    this.send(C.SKILL, { id: skill.id, t: this.targetId || undefined });
   }
 
   /** Pháp bảo phụ (phím 9, ô riêng): chỉ gửi ý định, server quyết định hồi chiêu, linh lực, mục tiêu (P3-8). */

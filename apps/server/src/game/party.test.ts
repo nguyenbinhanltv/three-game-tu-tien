@@ -350,6 +350,12 @@ describe('tỉ thí', () => {
       from.cds.clear();
       from.char.mp = from.char.mmp;
       s.sim.onSkill(from, { id: 'skl_phi_kiem', t: to.sid });
+      // K-2: đòn thường áp tại hitAt; xả đòn chờ ngay để kiểm hiệu quả.
+      const st = from.flow.pending;
+      if (st) {
+        st.at = s.sim.now;
+        (s.sim as unknown as { resolvePending(p: Ent): void }).resolvePending(from);
+      }
     }
   };
   const startFight = (s: ReturnType<typeof setup>) => {

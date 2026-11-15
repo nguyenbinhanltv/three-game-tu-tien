@@ -3,7 +3,7 @@
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
+import { salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
 import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
@@ -34,11 +34,13 @@ uniqueIds('pose', POSES);
 for (const p of POSES) for (const m of validatePose(p)) err(m);
 const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
-for (const s of ALL_SKILLS) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
-const skillPoses = ALL_SKILLS.map((s) => s.pose);
+// Chiêu lướt (K-2) không có động tác riêng: dùng chung fx `dash`, hình lướt do client dựng.
+const POSED = ALL_SKILLS.filter((s) => s.kind !== 'dash');
+for (const s of POSED) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
+const skillPoses = POSED.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
 // Client chọn động tác theo fx của chiêu (FX của server chỉ mang loại hiệu ứng): fx phải riêng cho mỗi chiêu.
-const skillFx = ALL_SKILLS.map((s) => s.fx);
+const skillFx = POSED.map((s) => s.fx);
 if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
 for (const id of [POSE_FLY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 for (const [id, swap] of Object.entries(POSE_SWORD_SWAP)) {
@@ -98,6 +100,15 @@ for (const m of METHODS) {
   needStr(`method.${m.id}.desc`);
   needStr(`method.${m.id}.passive`);
   needStr(`method.${m.id}.role`);
+  const dash = SKILL.get(m.dash);
+  if (!dash || dash.method !== m.id || dash.kind !== 'dash') err(`method ${m.id}: chiêu lướt ${m.dash} phải thuộc công pháp và có kind dash`);
+}
+// Quy tắc thời gian/liên hoàn (K-2): hitAt trùng nhịp pose, combo, cường hóa, lướt.
+const SKILL_IDS = new Set(ALL_SKILLS.map((s) => s.id));
+for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined, SKILL_IDS)) err(m);
+for (const [from, to] of Object.entries(SKILL_ID_ALIASES)) {
+  if (SKILL.has(from)) err(`SKILL_ID_ALIASES: ${from} vẫn còn là chiêu, không thể là id cũ`);
+  if (!SKILL.has(to)) err(`SKILL_ID_ALIASES: ${from} → ${to} không phải chiêu`);
 }
 for (const s of METHOD_SKILLS) {
   if (!s.method || !METHOD.has(s.method)) err(`skill ${s.id}: công pháp không tồn tại ${s.method}`);

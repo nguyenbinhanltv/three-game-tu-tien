@@ -46,6 +46,18 @@ function setup(level = 8) {
     respawn: { x: X, z: Z },
     persistPosition: false,
   });
+  // K-2: chiêu không niệm áp tại `hitAt`. Các test cũ kiểm hiệu quả của chiêu nên "xả" đòn chờ ngay lúc bấm;
+  // test về độ trễ gọi `sim.onSkillRaw` (bản gốc).
+  const raw = sim.onSkill.bind(sim);
+  (sim as unknown as { onSkillRaw: typeof raw }).onSkillRaw = raw;
+  sim.onSkill = (pl: Ent, msg: unknown) => {
+    raw(pl, msg);
+    const st = pl.flow.pending;
+    if (st) {
+      st.at = sim.now;
+      (sim as unknown as { resolvePending(p: Ent): void }).resolvePending(pl);
+    }
+  };
   const join = (name: string, lv = level): Ent => {
     const char = Character.create(nextAcc++, name + nextAcc);
     char.level = lv;
@@ -143,11 +155,11 @@ describe('chiêu công pháp: server kiểm điều kiện', () => {
     const { sim, p, mon, fresh } = setup();
     const m = mon();
     fresh(p);
-    sim.onSkill(p, { id: 'skl_kiem_anh_phan_quang', t: m.id });
+    sim.onSkill(p, { id: 'skl_phi_kiem_truy_hon', t: m.id });
     expect(m.s.hp).toBe(m.s.mhp);
     sim.onMethod(p, { method: 'bat_dong_kim_than' });
     fresh(p);
-    sim.onSkill(p, { id: 'skl_kiem_anh_phan_quang', t: m.id });
+    sim.onSkill(p, { id: 'skl_phi_kiem_truy_hon', t: m.id });
     expect(m.s.hp).toBe(m.s.mhp);
     expect(p.mth.charge).toBe(0);
   });
@@ -197,7 +209,7 @@ describe('chiêu công pháp: server kiểm điều kiện', () => {
     sim.onMethod(p, { method: 'lac_kiem_quyet' });
     const m = mon();
     fresh(p);
-    sim.onSkill(p, { id: 'skl_kiem_anh_phan_quang', t: m.id });
+    sim.onSkill(p, { id: 'skl_phi_kiem_truy_hon', t: m.id });
     expect(m.mark?.sid).toBe(p.sid);
     expect(m.mark?.mul).toBeCloseTo(0.2);
   });
@@ -274,7 +286,7 @@ describe('khiêu khích, giữ, hồi sinh', () => {
     ally.char.mhp = 1000;
     sim.onMethod(p, { method: 'thanh_moc_dan_kinh' });
     fresh(p);
-    sim.onSkill(p, { id: 'skl_xuan_phong_hoa_vu' });
+    sim.onSkill(p, { id: 'skl_hoi_xuan_quyet' });
     sim.now += 3200;
     (sim as unknown as { tickMethods(): void }).tickMethods();
     expect(ally.char.hp).toBeGreaterThan(100);
@@ -320,15 +332,15 @@ describe('nâng cấp chiêu và biến thức', () => {
     give(p, 50, 100000);
     for (let i = 0; i < 8; i++) sim.onSkillUp(p, { skill: 'skl_phi_kiem', r: 'up-' + (100000 + i) });
     expect(lv(p)).toBe(5);
-    sim.onSkillUp(p, { skill: 'skl_kiem_anh_phan_quang', r: 'up-200001' });
-    expect(lv(p, 'skl_kiem_anh_phan_quang')).toBe(1);
+    sim.onSkillUp(p, { skill: 'skl_phi_kiem_truy_hon', r: 'up-200001' });
+    expect(lv(p, 'skl_phi_kiem_truy_hon')).toBe(1);
     sim.onSkillUp(p, { skill: 'skl_khong_co', r: 'up-200002' });
     sim.onSkillUp(p, { skill: 7, r: 'up-200003' });
     sim.onSkillUp(p, { skill: 'skl_loi_dinh_nhat_kiem', r: 'up-200004' }); // cần tầng 10
     expect(lv(p, 'skl_loi_dinh_nhat_kiem')).toBe(1);
     sim.onMethod(p, { method: 'lac_kiem_quyet' });
-    sim.onSkillUp(p, { skill: 'skl_kiem_anh_phan_quang', r: 'up-200005' });
-    expect(lv(p, 'skl_kiem_anh_phan_quang')).toBe(2);
+    sim.onSkillUp(p, { skill: 'skl_phi_kiem_truy_hon', r: 'up-200005' });
+    expect(lv(p, 'skl_phi_kiem_truy_hon')).toBe(2);
   });
   it('biến thức: cấp 3 mới chọn, không chọn khi giao chiến, chỉ a/b', () => {
     const { sim, p } = setup();
@@ -343,8 +355,8 @@ describe('nâng cấp chiêu và biến thức', () => {
     p.lastCombatAt = 0;
     sim.onSkillVar(p, { skill: 'skl_phi_kiem', v: 'b' });
     expect(p.char.meta.skillVar?.skl_phi_kiem).toBe('b');
-    sim.onSkillVar(p, { skill: 'skl_kiem_anh_phan_quang', v: 'a' });
-    expect(p.char.meta.skillVar?.skl_kiem_anh_phan_quang).toBeUndefined();
+    sim.onSkillVar(p, { skill: 'skl_phi_kiem_truy_hon', v: 'a' });
+    expect(p.char.meta.skillVar?.skl_phi_kiem_truy_hon).toBeUndefined();
   });
   it('biến thức Song Kiếm đánh hai lần, cấp chiêu cộng sức mạnh, FX mang nhãn biến thức', () => {
     const { sim, sent, p, mon, fresh } = setup();
@@ -461,7 +473,7 @@ describe('hỗ trợ đồng đội không can thiệp độ kiếp/tâm ma', ()
       mark(ally, k);
       sim.onMethod(p, { method: 'thanh_moc_dan_kinh' });
       fresh(p);
-      sim.onSkill(p, { id: 'skl_xuan_phong_hoa_vu' });
+      sim.onSkill(p, { id: 'skl_hoi_xuan_quyet' });
       sim.now += 3200;
       (sim as unknown as { tickMethods(): void }).tickMethods();
       expect(ally.char.hp).toBe(1);
