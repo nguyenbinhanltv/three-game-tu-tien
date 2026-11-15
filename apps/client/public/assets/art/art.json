@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "files": {
+    "portraits": {
+      "boss_han_giao": {
+        "file": "portraits/boss_han_giao.9888b7d7cf.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 45534,
+        "sourceSha256": "deb865c7951f1bfa4573b04a4f54b952124fdfb93009d174d0fb1716a5899d6f"
+      },
+      "boss_huyet_lang_vuong": {
+        "file": "portraits/boss_huyet_lang_vuong.104c095893.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 38160,
+        "sourceSha256": "fb952e4049d03e768d0bd11530550ea4e6b6ae3f7a398b8da90656c8c9c236ae"
+      },
+      "boss_kiem_khoi": {
+        "file": "portraits/boss_kiem_khoi.df8e2863bc.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 38704,
+        "sourceSha256": "1f3c449c8efbc9cfc32943e7b1058047209acdc63cb111e176a0a3fcc998706c"
+      },
+      "boss_thu_mo_tuong": {
+        "file": "portraits/boss_thu_mo_tuong.8fc49fe95c.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 49810,
+        "sourceSha256": "4a76feba8d145860efbe5c56d474f4b5ace0db64abb45863701b339cbd283144"
+      },
+      "elite_cu_nham_vien": {
+        "file": "portraits/elite_cu_nham_vien.abe24221bd.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 36606,
+        "sourceSha256": "81a414753bb98f61a67d328ffbe525ed74cde48ed4dc4eae4b73a89f2c8b2ced"
+      },
+      "elite_huyet_nha_lang": {
+        "file": "portraits/elite_huyet_nha_lang.1ad196fbf3.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 41800,
+        "sourceSha256": "1dc2dad8c9961bbb5531278e765eb747a17d5fb6529dae95191be35c66fae45e"
+      },
+      "elite_xich_dien_ho": {
+        "file": "portraits/elite_xich_dien_ho.c1b1888529.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 34550,
+        "sourceSha256": "9a79dd0269e61847284791ae0b684e24622047532f9c7a1d2f3126fb679198d0"
+      },
+      "npc_chuong_mon": {
+        "file": "portraits/npc_chuong_mon.fad5ee5ae7.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 37456,
+        "sourceSha256": "b70b6b36589ccfe11c05091aca30b7176f281fbfbaaba25e7757f74526c4336c"
+      },
+      "npc_duoc_su": {
+        "file": "portraits/npc_duoc_su.18415ad07a.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 29864,
+        "sourceSha256": "7021b2a0e21bb8a1e2aefa007c98a7634bf39c4ae3e122aca74592fd2fd68e8e"
+      },
+      "npc_thiet_lao": {
+        "file": "portraits/npc_thiet_lao.bdf00a9613.webp",
+        "w": 480,
+        "h": 640,
+        "bytes": 39330,
+        "sourceSha256": "aa7abe38084abfbd3f7ae68cc0d01784ceac034bfd74bc3d091384e09849b45d"
+      }
+    }
+  }
+}

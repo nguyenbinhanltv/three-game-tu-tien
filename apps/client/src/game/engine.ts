@@ -2091,7 +2091,7 @@ export class Game {
         const m = this.view.monsters.get(this.targetId);
         const def = m ? MONSTER.get(m.t) : undefined;
         if (m && def) {
-          target = { id: this.targetId, kind: 'mon', name: monsterName(def.id), level: m.lv, hp: m.hp, mhp: m.mhp, boss: !!def.boss };
+          target = { id: this.targetId, kind: 'mon', name: monsterName(def.id), def: def.id, level: m.lv, hp: m.hp, mhp: m.mhp, boss: !!def.boss };
           const cast = this.castOf(m);
           if (cast) target.cast = cast;
         }
@@ -2100,7 +2100,7 @@ export class Game {
         if (p) target = { id: this.targetId, kind: 'player', name: p.name, level: p.lv, hp: p.hp, mhp: p.mhp, boss: false };
         else this.targetId = '';
       } else {
-        target = { id: this.targetId, kind: 'npc', name: t(`npc.${this.targetId}.name`), level: 0, hp: 1, mhp: 1, boss: false };
+        target = { id: this.targetId, kind: 'npc', name: t(`npc.${this.targetId}.name`), def: this.targetId, level: 0, hp: 1, mhp: 1, boss: false };
         const n = this.ents.npcs.find((e) => e.id === this.targetId);
         if (n && Math.hypot(n.x - rp.x, n.z - rp.z) > 30) this.targetId = '';
       }

@@ -1,3 +1,4 @@
+import { Portrait } from './Art';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { useState } from 'react';
 import { C, sellPrice } from '@dtl/shared';
@@ -20,7 +21,10 @@ function QuestTab({ npcId }: { npcId: string }) {
   const turnins = QUESTS.filter((q) => q.turnin === npcId && quests.active[q.id]);
   return (
     <div className="npc-quests">
-      <div className="npc-greet">“{t(`npc.${npcId}.greet`)}”</div>
+      <div className="npc-greet-row">
+        <Portrait id={npcId} className="npc-portrait" />
+        <div className="npc-greet">“{t(`npc.${npcId}.greet`)}”</div>
+      </div>
       {turnins.map((q) => {
         const prog = quests.active[q.id];
         const complete = q.objectives.every((o, i) => (prog[i] ?? 0) >= o.count || (o.type === 'talk' && o.target === npcId));
