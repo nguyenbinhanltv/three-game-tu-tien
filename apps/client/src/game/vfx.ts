@@ -29,6 +29,7 @@ const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
 const _c = new THREE.Vector3();
 const _q = new THREE.Quaternion();
+const _up = new THREE.Vector3(0, 1, 0);
 const UP = new THREE.Vector3(0, 1, 0);
 const AX_X = new THREE.Vector3(1, 0, 0);
 const AX_Z = new THREE.Vector3(0, 0, 1);
@@ -628,6 +629,50 @@ export class Vfx {
       () => {
         this.drop(m);
         this.drop(ring);
+      },
+    );
+  }
+
+  /**
+   * Đột phá thành công (P2-B4): quầng vàng ấm tỏa từ người, một ống sáng mảnh và chùm tia nắng xòe lên như mây kiếp
+   * vừa tách. Mảnh và cộng sáng để giữ màu cảnh (khác `pillar` bọc kín trước camera). 1 + 1 + 5 lưới trong ~2,6 giây.
+   */
+  ascendGlow(pos: PosFn, dur = 2.6): void {
+    const core = this.fx(TUBE_GEO, 0xffe6a0, 0.3, 'flat');
+    const ring = this.fx(RING_GEO, 0xffd98a, 0.7);
+    ring.rotation.x = -Math.PI / 2;
+    const rays: { m: FxMesh; dir: THREE.Vector3 }[] = [];
+    for (let i = 0; i < 5; i++) {
+      const phi = (i / 5) * Math.PI * 2 + 0.4;
+      const th = 0.16 + (i % 2) * 0.12;
+      const dir = new THREE.Vector3(Math.sin(th) * Math.cos(phi), Math.cos(th), Math.sin(th) * Math.sin(phi));
+      rays.push({ m: this.fx(TUBE_GEO, 0xffe2a0, 0.2, 'glow'), dir });
+    }
+    this.add(
+      dur,
+      (k) => {
+        if (!pos(_a)) return;
+        const rise = Math.min(1, k * 4);
+        const fade = Math.pow(1 - k, 1.5);
+        const h = 46 * rise;
+        core.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
+        core.scale.set(0.8, h, 0.8);
+        core.fxOpacity = 0.3 * fade;
+        ring.position.set(_a.x, _a.y - 1.0, _a.z);
+        ring.scale.setScalar(1.2 + k * 7);
+        ring.fxOpacity = 0.7 * (1 - k);
+        for (const r of rays) {
+          const len = 55 * rise;
+          r.m.position.set(_a.x + (r.dir.x * len) / 2, _a.y - 1.1 + (r.dir.y * len) / 2, _a.z + (r.dir.z * len) / 2);
+          r.m.quaternion.setFromUnitVectors(_up, r.dir);
+          r.m.scale.set(1.1 + k * 1.5, len, 1.1 + k * 1.5);
+          r.m.fxOpacity = 0.2 * fade;
+        }
+      },
+      () => {
+        this.drop(core);
+        this.drop(ring);
+        for (const r of rays) this.drop(r.m);
       },
     );
   }

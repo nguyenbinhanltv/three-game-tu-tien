@@ -261,7 +261,11 @@ export function vortexNodes(U: FxUniforms) {
   const ring = vec2(cos(th), sin(th));
   const n1 = vnoise(ring.mul(1.0).add(vec2(r.mul(5).sub(time.mul(0.35)), seed)));
   const n2 = vnoise(ring.mul(2.1).add(vec2(r.mul(11).sub(time.mul(0.6)), seed.mul(1.7))));
-  const dens = smoothstep(0.2, 0.6, n1.mul(0.65).add(n2.mul(0.35)));
+  const base = smoothstep(0.2, 0.6, n1.mul(0.65).add(n2.mul(0.35)));
+  // Cánh xoắn ốc rõ nét quanh tâm: 3 cánh theo góc đã cuộn, mờ dần ra mép để không lộ họa tiết.
+  const arms = smoothstep(-0.1, 0.9, sin(th.mul(3)));
+  const armW = one.sub(smoothstep(0.35, 0.95, r)).mul(0.6).add(0.15);
+  const dens = base.mul(one.sub(armW)).add(arms.mul(armW).mul(base.mul(0.6).add(0.4)));
   // Mép ngoài tan; mắt bão ở giữa mỏng hơn.
   const edge = one.sub(smoothstep(0.65, 1, r));
   const eye = smoothstep(0.04, 0.2, r);

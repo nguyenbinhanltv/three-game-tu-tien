@@ -1323,9 +1323,11 @@ export class Game {
         v.pillar(posSrc, 0xffe08a, 1.8, 1.4, 12);
         break;
       case 'ascend':
-        v.pillar(posSrc, 0xfff2b8, 3.2, 2.4, 40);
+        // Người khác thấy trụ sáng như cũ; của mình thì quầng + tia nắng mảnh để không phủ trắng khung hình.
+        if (src === this.sid) v.ascendGlow(posSrc);
+        else v.pillar(posSrc, 0xfff2b8, 3.2, 2.4, 40);
         if (src === this.sid) {
-          this.post?.flash(0.6);
+          this.post?.flash(0.3);
           // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
           window.setTimeout(() => !this.disposed && this.chapter('ascend', false), 1100);
         }
