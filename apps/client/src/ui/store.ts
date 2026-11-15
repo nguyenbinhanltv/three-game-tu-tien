@@ -128,6 +128,8 @@ export interface UIState {
   toasts: Toast[];
   /** id skill → thời điểm (đồng hồ client, ms) dùng lại được. */
   cds: Record<string, number>;
+  /** Chiêu đang được cường hóa → lúc hết hạn (đồng hồ client, ms): ô chiêu sáng viền (K-2). */
+  empowered: Record<string, number>;
   gcdAt: number;
   castEnd: number;
   castTotal: number;
@@ -201,6 +203,7 @@ export const useUI = create<UIState>(() => ({
   log: [],
   toasts: [],
   cds: {},
+  empowered: {},
   gcdAt: 0,
   castEnd: 0,
   castTotal: 0,

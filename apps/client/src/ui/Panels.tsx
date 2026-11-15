@@ -373,7 +373,7 @@ function Quests() {
 }
 
 function Help() {
-  const rows = ['move', 'camera', 'jump', 'fly', 'target', 'skill', 'interact', 'meditate', 'panels', 'chat'];
+  const rows = ['move', 'camera', 'jump', 'fly', 'target', 'skill', 'dash', 'interact', 'meditate', 'panels', 'chat'];
   return (
     <Window title={t('ui.help')} onClose={() => set({ panel: null })} cls="help" width={520}>
       <table className="help-table">

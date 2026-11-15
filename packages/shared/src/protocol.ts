@@ -151,6 +151,8 @@ export interface CdMsg {
   cds: Record<string, number>;
   gcd: number;
   now: number;
+  /** id chiêu đang được cường hóa → lúc hết hạn (ms, giờ server cùng gốc với `cds`): client sáng viền ô chiêu. */
+  em?: Record<string, number>;
 }
 
 export interface SysMsg {
@@ -195,6 +197,8 @@ export interface FxMsg {
   lv?: number;
   /** Màu công pháp (hex, không có `#`) của chiêu công pháp; chỉ là lớp hình. */
   c?: string;
+  /** Đòn thứ mấy (0-based) của chuỗi đánh thường; đòn cuối đẩy lùi. Chỉ là lớp hình. */
+  n?: number;
 }
 
 export interface DmgMsg {

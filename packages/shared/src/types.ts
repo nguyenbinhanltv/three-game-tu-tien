@@ -217,7 +217,44 @@ export interface MonsterPosture {
  * damage/aoe/heal/shield: 6 chiêu chung. Chiêu công pháp (Phase 3-5) thêm: `taunt` (khiêu khích quanh mình),
  * `guard` (giảm sát thương nhận), `hot` (hồi vùng theo thời gian), `revive` (hồi sinh đồng đội gần).
  */
-export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive';
+export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive' | 'dash';
+
+/** Kiểu thi triển (K-2). `channel`/`charge` đã khai báo nhưng server chưa hỗ trợ (check chặn). */
+export type CastType = 'instant' | 'cast' | 'channel' | 'charge';
+
+/** Lướt (K-2): quãng, hướng (tới mục tiêu / theo hướng nhìn / ra sau). Server lập đường bằng stepMove, không xuyên vách. */
+export interface DashDef {
+  dist: number;
+  dir: 'target' | 'forward' | 'back';
+  /** Dừng cách tâm mục tiêu chừng này mét (chỉ dir 'target'). */
+  stop?: number;
+}
+
+/** Một đòn của chuỗi đánh thường: hệ số, lúc áp (giây từ lúc bấm), đòn đẩy lùi (chỉ hiển thị). */
+export interface ComboHit {
+  power: number;
+  hitAt: number;
+  kb?: boolean;
+}
+
+/** Chuỗi đòn thường liên hoàn: bấm tiếp trong `window` giây thì sang đòn sau, hết chuỗi thì về đòn đầu. */
+export interface ComboDef {
+  window: number;
+  hits: ComboHit[];
+}
+
+/** Cường hóa: sau khi chiêu `by` áp trúng, trong `window` giây chiêu này mạnh `powerMul` lần (một lần dùng, rồi tắt). */
+export interface EmpowerDef {
+  by: string;
+  window: number;
+  powerMul: number;
+}
+
+/** Cửa sổ hủy (giây từ lúc bấm): từ mốc đó, di chuyển / lướt được phép hủy phần thu về. Client dùng để cắt hình; server chỉ nhận lướt sau `dash`. */
+export interface CancelDef {
+  move: number;
+  dash: number;
+}
 
 export interface SkillDef {
   id: string;
@@ -257,6 +294,26 @@ export interface SkillDef {
   tint?: string;
   /** Hệ ngũ hành của chiêu (kim/moc/thuy/hoa/tho): linh căn và dòng phụ `elem_dmg` cộng sát thương theo hệ này. */
   elem?: string;
+  /** Kiểu thi triển; mặc định suy từ `cast` (xem `castTypeOf`). */
+  castType?: CastType;
+  /** Thời gian vào thế trước nhát vung (giây), ≤ `hitAt[0]`. */
+  windup?: number;
+  /**
+   * Các mốc áp sát thương/hiệu quả, giây từ lúc bấm (chiêu không niệm; chiêu niệm áp lúc hết niệm, động tác xếp lịch
+   * trùng lúc đó). Mốc đầu trùng `hit[0]` của pose. Server áp tại mốc, hủy nếu mục tiêu chết/ra tầm.
+   */
+  hitAt?: number[];
+  /** Thu về sau mốc cuối (giây): `hitAt` cuối + `recovery` ≈ độ dài pose. */
+  recovery?: number;
+  /** Cho đi lại trong lúc niệm (chưa hỗ trợ). */
+  moveWhileCast?: boolean;
+  cancel?: CancelDef;
+  /** Chuỗi đánh thường liên hoàn (chiêu ô 1). */
+  combo?: ComboDef;
+  /** Cửa sổ cường hóa sau khi chiêu khác áp trúng. */
+  empower?: EmpowerDef;
+  /** Chiêu lướt (kind 'dash'). */
+  dash?: DashDef;
 }
 
 export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough';
