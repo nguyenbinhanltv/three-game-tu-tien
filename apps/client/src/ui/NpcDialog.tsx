@@ -5,6 +5,7 @@ import { ENHANCE_ORE, ITEM, itemName, NPC, QUESTS, realmName, RECIPES, t } from 
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './Panels';
+import { Button, Divider, Tabs } from './kit';
 import { set, useUI } from './store';
 
 type Tab = 'talk' | 'shop' | 'craft' | 'enhance';
@@ -22,7 +23,7 @@ function QuestTab({ npcId }: { npcId: string }) {
         const prog = quests.active[q.id];
         const complete = q.objectives.every((o, i) => (prog[i] ?? 0) >= o.count || (o.type === 'talk' && o.target === npcId));
         return (
-          <div key={q.id} className={'quest-card' + (complete ? ' ready' : '')}>
+          <div key={q.id} className={'k-card quest-card' + (complete ? ' ready' : '')}>
             <div className="quest-title">
               {complete ? '❓' : '⏳'} {t(`quest.${q.id}.name`)}
             </div>
@@ -40,11 +41,11 @@ function QuestTab({ npcId }: { npcId: string }) {
               })}
             <RewardLine id={q.id} />
             {complete ? (
-              <button className="btn primary" onClick={() => g?.send(C.QUEST, { a: 'turnin', id: q.id })}>
+              <Button variant="primary" onClick={() => g?.send(C.QUEST, { a: 'turnin', id: q.id })}>
                 {t('ui.quest.turnin')}
-              </button>
+              </Button>
             ) : (
-              <div className="muted">{t('ui.quest.in_progress')}</div>
+              <div className="k-dim">{t('ui.quest.in_progress')}</div>
             )}
           </div>
         );
@@ -52,7 +53,7 @@ function QuestTab({ npcId }: { npcId: string }) {
       {offers.map((q) => {
         const lowLevel = (q.minLevel ?? 1) > level;
         return (
-          <div key={q.id} className="quest-card offer">
+          <div key={q.id} className="k-card quest-card offer">
             <div className="quest-title">❗ {t(`quest.${q.id}.name`)}</div>
             <div className="quest-desc">{t(`quest.${q.id}.desc`)}</div>
             {q.objectives.map((o, i) => (
@@ -65,14 +66,14 @@ function QuestTab({ npcId }: { npcId: string }) {
             {lowLevel ? (
               <div className="bad">{t('ui.quest.need_level', { realm: realmName(q.minLevel ?? 1) })}</div>
             ) : (
-              <button className="btn primary" onClick={() => g?.send(C.QUEST, { a: 'accept', id: q.id })}>
+              <Button variant="primary" onClick={() => g?.send(C.QUEST, { a: 'accept', id: q.id })}>
                 {t('ui.quest.accept')}
-              </button>
+              </Button>
             )}
           </div>
         );
       })}
-      {!offers.length && !turnins.length && <div className="muted">{t('ui.npc.no_quest')}</div>}
+      {!offers.length && !turnins.length && <div className="k-dim">{t('ui.npc.no_quest')}</div>}
     </div>
   );
 }
@@ -91,23 +92,21 @@ function ShopTab({ npcId }: { npcId: string }) {
         {(npc.sells ?? []).map((id) => {
           const d = ITEM.get(id)!;
           return (
-            <div key={id} className="shop-row">
+            <div key={id} className="k-card shop-row">
               <ItemIcon item={{ id, n: 1 }} small />
               <div className="shop-info">
-                <div className={'item-name r' + d.rarity}>{itemName(id)}</div>
-                <div className="muted">{statLines(d).join(' · ') || t(`item.${id}.desc`)}</div>
+                <div className="item-name" data-q={d.rarity}>{itemName(id)}</div>
+                <div className="k-dim">{statLines(d).join(' · ') || t(`item.${id}.desc`)}</div>
               </div>
-              <button className="btn" disabled={gold < d.price} onClick={() => g?.send(C.BUY, { npc: npcId, item: id, n: 1, r: reqId() })}>
+              <Button disabled={gold < d.price} onClick={() => g?.send(C.BUY, { npc: npcId, item: id, n: 1, r: reqId() })}>
                 {t('ui.shop.buy')} {d.price} 💠
-              </button>
+              </Button>
             </div>
           );
         })}
       </div>
-      <div className="section-title">
-        {t('ui.shop.sell_title')} — 💠 {gold}
-      </div>
-      <div className="grid">
+      <Divider label={`${t('ui.shop.sell_title')} — 💠 ${gold}`} />
+      <div className="bag-grid">
         {inv.map((it, i) => (
           <ItemIcon key={i} item={it} selected={sel === i} onClick={() => setSel(it ? i : null)} />
         ))}
@@ -116,19 +115,18 @@ function ShopTab({ npcId }: { npcId: string }) {
         <ItemDetail item={item}>
           {def.sell > 0 && (
             <>
-              <button className="btn primary" onClick={() => g?.send(C.SELL, { npc: npcId, slot: sel, n: 1, r: reqId() })}>
+              <Button variant="primary" onClick={() => g?.send(C.SELL, { npc: npcId, slot: sel, n: 1, r: reqId() })}>
                 {t('ui.item.sell')} (+{def.sell} 💠)
-              </button>
+              </Button>
               {item.n > 1 && (
-                <button
-                  className="btn"
+                <Button
                   onClick={() => {
                     g?.send(C.SELL, { npc: npcId, slot: sel, n: item.n, r: reqId() });
                     setSel(null);
                   }}
                 >
                   {t('ui.item.sell_all')} (+{def.sell * item.n} 💠)
-                </button>
+                </Button>
               )}
             </>
           )}
@@ -149,11 +147,11 @@ function CraftTab({ npcId }: { npcId: string }) {
         const out = ITEM.get(r.output.id)!;
         const max = Math.min(...r.inputs.map((i) => Math.floor(count(i.id) / i.n)), r.gold > 0 ? Math.floor(gold / r.gold) : 99);
         return (
-          <div key={r.id} className="shop-row craft">
+          <div key={r.id} className="k-card shop-row craft">
             <ItemIcon item={{ id: out.id, n: r.output.n }} small />
             <div className="shop-info">
-              <div className={'item-name r' + out.rarity}>{itemName(out.id)}</div>
-              <div className="muted">{t(`item.${out.id}.desc`)}</div>
+              <div className="item-name" data-q={out.rarity}>{itemName(out.id)}</div>
+              <div className="k-dim">{t(`item.${out.id}.desc`)}</div>
               <div className="craft-inputs">
                 {r.inputs.map((i) => (
                   <span key={i.id} className={count(i.id) >= i.n ? 'ok' : 'bad'}>
@@ -164,13 +162,13 @@ function CraftTab({ npcId }: { npcId: string }) {
               </div>
             </div>
             <div className="craft-btns">
-              <button className="btn primary" disabled={max < 1} onClick={() => g?.send(C.CRAFT, { id: r.id, n: 1, r: reqId() })}>
+              <Button variant="primary" disabled={max < 1} onClick={() => g?.send(C.CRAFT, { id: r.id, n: 1, r: reqId() })}>
                 {t('ui.craft.make')}
-              </button>
+              </Button>
               {max >= 5 && (
-                <button className="btn" onClick={() => g?.send(C.CRAFT, { id: r.id, n: 5, r: reqId() })}>
+                <Button onClick={() => g?.send(C.CRAFT, { id: r.id, n: 5, r: reqId() })}>
                   {t('ui.craft.make5')}
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -189,10 +187,11 @@ function EnhanceTab({ npcId }: { npcId: string }) {
   const worn = EQUIP_SLOTS.filter((es) => equip[es]);
   return (
     <div className="shop-list">
-      <div className="section-title">
-        {t('ui.enh.title')} — <ContentIcon def={ITEM.get(ENHANCE_ORE)} /> {ore} · 💠 {gold}
+      <Divider label={t('ui.enh.title')} />
+      <div className="k-dim">
+        <ContentIcon def={ITEM.get(ENHANCE_ORE)} /> {ore} · 💠 {gold}
       </div>
-      {worn.length === 0 && <div className="muted">{t('ui.enh.none')}</div>}
+      {worn.length === 0 && <div className="k-dim">{t('ui.enh.none')}</div>}
       {worn.map((es) => {
         const it = equip[es]!;
         const def = ITEM.get(it.id)!;
@@ -200,11 +199,11 @@ function EnhanceTab({ npcId }: { npcId: string }) {
         const maxed = plus >= MAX_ENHANCE;
         const cost = enhanceCost(plus, Math.max(def.price, def.sell * 3));
         return (
-          <div key={es} className="shop-row">
+          <div key={es} className="k-card shop-row">
             <ItemIcon item={it} small />
             <div className="shop-info">
-              <div className={'item-name r' + def.rarity}>{itemName(it.id, plus)}</div>
-              <div className="muted">{statLines(def, plus).join(' · ')}</div>
+              <div className="item-name" data-q={def.rarity}>{itemName(it.id, plus)}</div>
+              <div className="k-dim">{statLines(def, plus).join(' · ')}</div>
               {!maxed && (
                 <div className="craft-inputs">
                   <span className={gold >= cost.gold && ore >= cost.ore ? 'ok' : 'bad'}>{t('ui.enh.cost', { gold: cost.gold, ore: cost.ore })}</span>
@@ -212,9 +211,9 @@ function EnhanceTab({ npcId }: { npcId: string }) {
                 </div>
               )}
             </div>
-            <button className="btn primary" disabled={maxed || gold < cost.gold || ore < cost.ore} onClick={() => g?.send(C.ENHANCE, { npc: npcId, slot: es, r: reqId() })}>
+            <Button variant="primary" disabled={maxed || gold < cost.gold || ore < cost.ore} onClick={() => g?.send(C.ENHANCE, { npc: npcId, slot: es, r: reqId() })}>
               {maxed ? t('ui.enh.max') : t('ui.enh.do')}
-            </button>
+            </Button>
           </div>
         );
       })}
@@ -232,16 +231,8 @@ export function NpcDialog({ npcId }: { npcId: string }) {
   if (npc.enhance) tabs.push('enhance');
   const cur = tabs.includes(tab) ? tab : 'talk';
   return (
-    <Window title={`${t(`npc.${npcId}.name`)} — ${t(`npc.${npcId}.title`)}`} onClose={() => set({ npc: null })} cls="npc">
-      {tabs.length > 1 && (
-        <div className="tabs">
-          {tabs.map((x) => (
-            <button key={x} className={'tab' + (cur === x ? ' on' : '')} onClick={() => setTab(x)}>
-              {t('ui.npc.tab.' + x)}
-            </button>
-          ))}
-        </div>
-      )}
+    <Window title={t(`npc.${npcId}.name`)} sub={t(`npc.${npcId}.title`)} onClose={() => set({ npc: null })} cls="npc" width={540}>
+      {tabs.length > 1 && <Tabs items={tabs.map((x) => ({ id: x, label: t('ui.npc.tab.' + x) }))} value={cur} onChange={(id) => setTab(id as Tab)} label={t('ui.npc.tabs')} />}
       {cur === 'talk' && <QuestTab npcId={npcId} />}
       {cur === 'shop' && <ShopTab npcId={npcId} />}
       {cur === 'craft' && <CraftTab npcId={npcId} />}

@@ -2,6 +2,39 @@
   "version": 1,
   "pipeline": 2,
   "assets": {
+    "anim_human_base": {
+      "id": "anim_human_base",
+      "class": "anim",
+      "source": "assets/build/raw/anim_human_base.glb",
+      "file": "anim_human_base.3ce2fc2bf0.glb",
+      "bytes": 382380,
+      "rawBytes": 710088,
+      "triangles": 0,
+      "rawTriangles": 0,
+      "lod0Cap": 0,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 0
+        }
+      ],
+      "dims": {
+        "raw": null,
+        "build": null
+      }
+    },
     "arch_sect": {
       "id": "arch_sect",
       "class": "arch",
@@ -324,22 +357,16 @@
       "id": "chr_kiem_tu_nam",
       "class": "player",
       "source": "assets/build/raw/chr_kiem_tu_nam.glb",
-      "file": "chr_kiem_tu_nam.2d46f5e2fd.glb",
-      "bytes": 1952872,
-      "rawBytes": 2297300,
-      "triangles": 19001,
-      "rawTriangles": 19001,
+      "file": "chr_kiem_tu_nam.d064960398.glb",
+      "bytes": 1713692,
+      "rawBytes": 1688380,
+      "triangles": 19096,
+      "rawTriangles": 19096,
       "lod0Cap": 20000,
       "skinned": true,
       "quantized": false,
-      "bones": 54,
-      "animations": [
-        "attack",
-        "death",
-        "hit_light",
-        "idle",
-        "run"
-      ],
+      "bones": 59,
+      "animations": [],
       "ktx2": false,
       "textures": [
         {
@@ -373,17 +400,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 19001
+          "triangles": 19096
         },
         {
           "level": 1,
-          "triangles": 7593,
-          "target": 7600
+          "triangles": 7632,
+          "target": 7638
         },
         {
           "level": 2,
-          "triangles": 2849,
-          "target": 2850
+          "triangles": 2864,
+          "target": 2864
         }
       ],
       "dims": {
@@ -405,22 +432,16 @@
       "id": "chr_npc_chuong_mon",
       "class": "npc",
       "source": "assets/build/raw/chr_npc_chuong_mon.glb",
-      "file": "chr_npc_chuong_mon.9ff0e06b31.glb",
-      "bytes": 1167284,
-      "rawBytes": 1533200,
+      "file": "chr_npc_chuong_mon.aed45b313a.glb",
+      "bytes": 798528,
+      "rawBytes": 844240,
       "triangles": 11568,
       "rawTriangles": 11568,
       "lod0Cap": 12000,
       "skinned": true,
       "quantized": false,
       "bones": 54,
-      "animations": [
-        "attack",
-        "death",
-        "hit_light",
-        "idle",
-        "run"
-      ],
+      "animations": [],
       "ktx2": false,
       "textures": [
         {
@@ -481,22 +502,16 @@
       "id": "chr_npc_duoc_su",
       "class": "npc",
       "source": "assets/build/raw/chr_npc_duoc_su.glb",
-      "file": "chr_npc_duoc_su.bc69fd3bae.glb",
-      "bytes": 1072348,
-      "rawBytes": 1446624,
+      "file": "chr_npc_duoc_su.73b72e970b.glb",
+      "bytes": 701584,
+      "rawBytes": 755528,
       "triangles": 11272,
       "rawTriangles": 11272,
       "lod0Cap": 12000,
       "skinned": true,
       "quantized": false,
       "bones": 55,
-      "animations": [
-        "attack",
-        "death",
-        "hit_light",
-        "idle",
-        "run"
-      ],
+      "animations": [],
       "ktx2": false,
       "textures": [
         {
@@ -557,22 +572,16 @@
       "id": "chr_npc_thiet_lao",
       "class": "npc",
       "source": "assets/build/raw/chr_npc_thiet_lao.glb",
-      "file": "chr_npc_thiet_lao.1655ed788d.glb",
-      "bytes": 1183520,
-      "rawBytes": 1557104,
+      "file": "chr_npc_thiet_lao.14d432f5bb.glb",
+      "bytes": 811672,
+      "rawBytes": 864464,
       "triangles": 11652,
       "rawTriangles": 11652,
       "lod0Cap": 12000,
       "skinned": true,
       "quantized": false,
       "bones": 55,
-      "animations": [
-        "attack",
-        "death",
-        "hit_light",
-        "idle",
-        "run"
-      ],
+      "animations": [],
       "ktx2": false,
       "textures": [
         {

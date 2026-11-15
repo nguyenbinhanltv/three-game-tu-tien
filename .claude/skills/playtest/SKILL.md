@@ -5,7 +5,7 @@ description: Chạy toàn bộ Đạp Thiên Lộ ở máy local (server Colyseu
 
 # Chạy thử và test tải
 
-> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?mute=1&auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM: `/gm level|xp|gold|give|tp|heal|killall|spawn|tick`. Trong console có `window.__game`.
+> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?mute=1&auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM: `/gm level|xp|gold|give|tp|god|heal|die|killall|hurt|spawn|tick|dye`. Trong console có `window.__game` (`__game.info()` cho số đo nhanh). Tham số kiểm thử `?god`, `?at=<địa điểm>`, `?show=char`: xem mục "Tham số URL kiểm thử".
 > Khi khung trình duyệt tích hợp đang ẩn, `requestAnimationFrame` không chạy: bơm khung hình bằng `setInterval(() => { __game.renderer._nodes.nodeFrame.update(); __game.frame(); }, 16)` trước khi chụp ảnh (thiếu `nodeFrame.update()` thì pass cảnh không vẽ lại, ảnh chụp là khung cũ).
 
 ## Luôn tắt tiếng
@@ -46,7 +46,7 @@ Nhiều worktree (nhiều agent) có thể cùng chạy `pnpm dev`, nhưng mỗi
 - Mở `http://localhost:5197/?mute=1&auto=<tên>` rồi xác nhận client nối đúng server: log server của mình phải có dòng `[join] <tên>`, hoặc `curl localhost:2597/health` phải thấy `online` tăng. Đặt đạo hiệu riêng cho mỗi worktree. Nếu log có tên lạ, đó là trình duyệt hoặc bot của session khác đã vào nhầm cổng của mình. Đừng dựa vào số `online` khi đó.
 - Bot và security-check:
   - `SERVER_URL=ws://localhost:2597 pnpm bots --count 10 --duration 60`, hoặc `--url ws://localhost:2597`.
-  - `PORT=2597 pnpm --filter @dtl/bot-client security`, hoặc truyền `http://localhost:2597` làm đối số.
+  - `PORT=2597 pnpm --filter @dtl/bot-client security`, hoặc truyền `http://localhost:2597` làm đối số. Bài 13 (`?god`/`?at`) tự dựng tạm hai server ở cổng trống ngẫu nhiên với DB tạm (`GOOGLE_CLIENT_ID` giả, rồi `NODE_ENV=production`) và tự tắt; không đụng server khác.
 - Tự tắt server của mình khi xong. Trên Windows, dừng tiến trình `pnpm dev` cha có thể để lại tiến trình node con vẫn giữ cổng. Ghi lại PID đang nghe ở hai cổng của mình ngay sau khi khởi động (`netstat -ano`). Khi xong, chỉ kill đúng các PID đó, ví dụ `taskkill //PID <pid> //T //F` trong Git Bash. Sau đó kiểm lại để chắc hai cổng đã trống. Không bao giờ kill theo tên tiến trình (`node.exe`), vì sẽ giết luôn server của worktree khác.
 - `.claude/launch.json` vẫn cố định 2567/5173 cho worktree chính.
 
@@ -56,6 +56,17 @@ Nhiều worktree (nhiều agent) có thể cùng chạy `pnpm dev`, nhưng mỗi
 - Với tính năng nhiều người chơi, mở 2 tab với tài khoản dev khác nhau và kiểm tra cả hai thấy nhau.
 - Đọc console trình duyệt và log server; lỗi đỏ nào cũng phải giải thích hoặc sửa trước khi báo xong.
 - Kịch bản kiểm tra nhanh: vào game → đi lại → đánh 1 con quái → nhặt đồ → mở túi đồ → bật ngự kiếm bay một vòng → rời và vào lại xem đồ còn không.
+
+## Tham số URL kiểm thử (M1-10)
+
+Ghép sau `?mute=1&auto=<tên>`. Chỉ chạy với tài khoản thử (đăng nhập thử khi server bật `AUTH_DEV_BYPASS=1`); server kiểm ở `apps/server/src/testflags.ts`. Tài khoản Google thật xin `?god`/`?at` thì bị bỏ qua và nhận thông báo `sys.test_denied`; server có `NODE_ENV=production` hoặc `GOOGLE_CLIENT_ID` thì không có đăng nhập thử nên không có đường tắt nào.
+
+- `?god`: bất tử. Vẫn bị đánh (số sát thương, khựng hiện như thường) nhưng không mất máu, đi theo cả khi vào bí cảnh. Bật/tắt lúc chơi: `/gm god [on|off]`. `/gm die` vẫn chết được để thử hồi sinh. Có god thì độ kiếp luôn thành công (thất bại duy nhất là chết): đừng dùng `?god` khi đo độ khó độ kiếp/bí cảnh.
+- `?at=<địa điểm>`: vào game ở điểm đặt tên, như `/gm tp <địa điểm>` lúc đang chơi. Chỉ áp lần vào đầu (không áp lại khi từ bí cảnh về). Bảng ở `packages/content/data/places.json` (chỉ server đọc; `content:check` kiểm). Hiện có: `tong_mon` (sân, điểm hồi sinh), `cong` / `kiem_trung` (đài truyền tống tới Kiếm Trủng; bí cảnh là room riêng nên vào bằng cổng, cần cấp 8: thêm `/gm level 8`), `thung_lung` (Sói Xám), `heo_rung`, `yeu_lang`, `rung`, `hoa_ho`, `thach_vien`, `u_minh`, `ho` (bờ đông hồ, cùng chỗ đường camera `ho` của bench), `boss` (mặt hồ, cách đảo Hàn Giao ~55m), `kt_giua` (giữa Kiếm Trủng, chỉ dùng trong room bí cảnh). Id lạ thì không dịch chuyển, chat in danh sách id hợp lệ.
+- `?show=char`: alias trang xem asset cho model người chơi (`chr_kiem_tu_nam`); `?show=<id asset>` mở asset bất kỳ trong `manifest.json`. Tương đương `?viewer=asset&file=assets/<id>.<hash>.glb` mà không cần biết hash.
+- `__game.info()`: `{ backend, drawCalls, triangles, geometries, textures, frames, room, x, y, z, hp, players, monsters, lod, particles }`. Draw call và tam giác là của khung vừa vẽ, cộng dồn qua mọi pass (bóng, cảnh, hậu kỳ), vì `renderer.info.autoReset = false` và reset ở đầu `frame()`. Gọi lúc đang tải thì trả số 0.
+- Ví dụ: `http://localhost:5197/?mute=1&auto=thu&god&at=boss` (đánh Hàn Giao không chết), `?mute=1&auto=thu&at=rung&debug=1` (đo ở rừng).
+- Thêm điểm mới: thêm dòng vào `places.json` (id `a-z0-9_`, `level` là `van_lam` hoặc `kiem_trung`), chạy `pnpm content:check`.
 
 ## Test tải
 

@@ -50,6 +50,38 @@ export const BOSS_ENTER = 0.3;
 export const BOSS_EXIT = 9;
 export const REGION_DWELL = 2.5;
 export const MIN_HOLD = 3;
+/** Có đòn đánh thật trong chừng này giây thì mức giao chiến là "đang đánh" (2), không thì chỉ "bị nhắm" (1). */
+export const ENGAGE_HOLD = 7;
+
+// ---------- nhạc chiến đấu phân lớp (M4-13) ----------
+
+/**
+ * Vùng có bộ lớp (stem) cùng tempo với bài vùng: vào/ra giao tranh chỉ tăng/giảm âm lượng lớp, không đổi bài.
+ * Rừng và hồ chưa có (tempo 80 và 66 không hợp nhịp trống/giai điệu căng viết cho vùng khác): vẫn đổi sang `combat`.
+ */
+export const STEM_ZONES = ['sect', 'wild', 'dungeon'] as const;
+export type StemZone = (typeof STEM_ZONES)[number];
+
+export function isStemZone(t: MusicTrack | null): t is StemZone {
+  return t !== null && (STEM_ZONES as readonly string[]).includes(t);
+}
+
+/** Mức giao chiến: 0 yên, 1 bị quái nhắm tới, 2 đang đánh nhau, 3 boss (boss vẫn đổi sang bài boss riêng, xem docs/audio/music.md). */
+export type CombatLevel = 0 | 1 | 2 | 3;
+
+export interface StemMix {
+  base: number;
+  pulse: number;
+  edge: number;
+}
+
+/** Âm lượng từng lớp theo mức giao chiến. Nền hạ nhẹ để tổng độ to gần như không đổi (xem tools/audio/stems.test.mjs). */
+export const STEM_MIX: Record<CombatLevel, StemMix> = {
+  0: { base: 1, pulse: 0, edge: 0 },
+  1: { base: 1, pulse: 0.6, edge: 0 },
+  2: { base: 0.85, pulse: 1, edge: 0.7 },
+  3: { base: 0.85, pulse: 1, edge: 0.7 },
+};
 
 const PRIORITY: Record<MusicTrack, number> = {
   sect: 0,
@@ -122,9 +154,23 @@ export class MusicDirector {
   private wasDungeon: boolean | null = null;
   private combat = new Latch(COMBAT_ENTER, COMBAT_EXIT);
   private boss = new Latch(BOSS_ENTER, BOSS_EXIT);
+  private lastEngage = -Infinity;
+
+  /** Bài vùng đang áp dụng (đã qua chống giật ở ranh giới), null trước lần update đầu. */
+  get regionNow(): MusicTrack | null {
+    return this.region;
+  }
+
+  /** Mức giao chiến hiện tại cho nhạc phân lớp. */
+  level(now: number): CombatLevel {
+    if (this.boss.on) return 3;
+    if (!this.combat.on) return 0;
+    return now - this.lastEngage < ENGAGE_HOLD ? 2 : 1;
+  }
 
   /** Đòn đánh thật giữa mình và quái (gây hoặc nhận sát thương): vào nhạc chiến đấu ngay. */
   engage(now: number, boss: boolean): void {
+    this.lastEngage = now;
     this.combat.force(now);
     if (boss) this.boss.force(now);
   }
@@ -202,6 +248,7 @@ export class MusicDirector {
     this.region = null;
     this.regionCand = null;
     this.wasDungeon = null;
+    this.lastEngage = -Infinity;
     this.combat.clear();
     this.boss.clear();
   }

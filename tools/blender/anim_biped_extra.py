@@ -8,6 +8,8 @@
 #    Điều kiện: tư thế nghỉ của xương trong file clip trùng rig chính (lệch < 2°), nếu không thì dừng.
 #    Tùy chọn mỗi clip: `recenter` (đưa hông về vị trí ngang của idle, cho clip Tripo có sẵn độ lệch gốc như run),
 #    `loop` (dồn đều chênh lệch cuối-đầu để clip lặp khít).
+# 1c. `import.sharedAnims` (tên thư viện, M2-3): nhân vật không mang clip riêng (bỏ clip có sẵn trong nguồn, không ghép, không
+#    sinh hit_light), dùng thư viện anim_human_base (tools/blender/export_anim_lib.py).
 # 2. Clip thủ tục: thêm `hit_light` (0,33 s) nếu chưa có: thân trên giật lùi, ngửa đầu, tay bật nhẹ, rồi về dáng đầu.
 #    Góc quay quanh trục thế giới, đổi sang trục cục bộ của xương (q = M⁻¹·R·M), như anim_quadruped.py.
 #    Dáng gốc của hit_light lấy từ khung đầu của clip `idle` nếu có (để chuyển clip không giật), không thì tư thế nghỉ.
@@ -16,6 +18,8 @@
 #    tay hạ khỏi tư thế chữ T. Mỗi phần tử { kind, bone }: kind "back_sword" dò kiếm đeo chéo sau lưng (đỉnh màu nâu
 #    sau lưng → trục bằng PCA → mọi đỉnh sau lưng trong bán kính quanh trục, lặp 3 lần), tách lưới kiếm khỏi thân rồi
 #    gán cứng 100% vào `bone`; `tilt` (độ) xoay kiếm quanh mũi để chuôi vào gần gáy.
+#    `patch: true` vá lỗ lưng áo dưới kiếm; `socket: true` tách chuôi (`hilt`: phần đầu trên theo chiều dài, mặc định
+#    0,28) + lưỡi thủ tục sang xương `dtl_sword` để client rút/tra kiếm (M3-2, xem tools/blender/biped_parts.py).
 # 4. Chỉnh màu vải (`import.recolor`): mỗi quy tắc chọn điểm ảnh của texture màu theo hue/độ bão hòa/độ sáng (mép mềm),
 #    rồi đổi sang màu đích trong bảng tâm trạng, giữ độ sáng tương đối nên vân vải và nếp gấp còn nguyên. Không vẽ lại.
 #
@@ -24,6 +28,8 @@
 #    Tên xương dò theo bí danh: Mixamo (Hips, Spine1, LeftArm) hoặc bộ xương Tripo (Hip, Spine01, L_Upperarm).
 #    `import.prune` (regex tên xương): bỏ xương phụ để vừa trần xương, dồn trọng số skin vào tổ tiên còn giữ.
 # 5. Clip boss thủ tục (`import.extra`, M3-8): slam, sweep, chant, stun (xem mục 5 bên dưới).
+# 6. Xương lò xo (`import.spring`, M3-10): { kind: "skirt", top, full, bottom, weight, radius, legClear } thêm 4 xương
+#    vạt áo con của hông, client mô phỏng lò xo ở LOD0 (biped_parts.skirt_springs, client character/spring.ts).
 #
 # Biến nhận từ import_tripo: ASSET_ID, META, ARMATURES, MESHES, REPO, SOURCE_ROOT, fail, ascii_name, fcurves_of.
 
@@ -111,6 +117,9 @@ def src_span(src):
 
 TC = runpy.run_path(os.path.join(REPO, 'tools/blender/tripo_clips.py'))  # noqa: F821
 report = {'clips': {}}
+if IMPORT.get('sharedAnims') and not IMPORT.get('clips'):
+    # Clip dùng chung (anim_human_base, M2-3): GLB nhân vật không mang clip, client retarget theo tên xương.
+    report['droppedSourceClips'] = TC['drop_existing_actions'](arm)
 if IMPORT.get('clips'):
     dropped_src = TC['drop_existing_actions'](arm)
     if dropped_src:
@@ -324,6 +333,9 @@ def detached_vertices(mesh, sword, zone):
     return out, pinned, kept
 
 
+PARTS = runpy.run_path(os.path.join(REPO, 'tools/blender/biped_parts.py'))  # noqa: F821
+STEEL = []  # (mesh, ô UV) chờ tô thép cho lưỡi kiếm, sau bước chỉnh màu vải
+
 for spec in IMPORT.get('rigid', []):
     if spec.get('kind') != 'back_sword':
         fail(f'rigid: kind "{spec.get("kind")}" chưa hỗ trợ')  # noqa: F821
@@ -331,6 +343,7 @@ for spec in IMPORT.get('rigid', []):
     for mesh in MESHES:  # noqa: F821
         import bmesh
         face_ids, length, zone = back_sword_vertices(mesh)
+        seam = PARTS['seam_keys'](mesh, face_ids) if spec.get('patch') else None
         # Tách lưới kiếm khỏi thân (nhân đôi đỉnh dọc đường biên) để phần gán cứng không kéo giãn mặt nối với vai/tay.
         bm = bmesh.new()
         bm.from_mesh(mesh.data)
@@ -370,11 +383,48 @@ for spec in IMPORT.get('rigid', []):
                 mesh.data.vertices[i].co = inv @ (T @ c)
             mesh.data.update()
         # Ghi rõ các đảo rời đã gắn theo kiếm (và đảo rời bị bỏ qua) để log build cho thấy những gì bị dán vào xương.
-        report.setdefault('rigid', []).append({'kind': 'back_sword', 'bone': bone, 'faces': len(face_ids), 'vertices': len(verts),
-                                               'length': length, 'tilt': tilt, 'pinnedIslands': pinned, 'skippedIslands': skipped})
+        entry = {'kind': 'back_sword', 'bone': bone, 'faces': len(face_ids), 'vertices': len(verts),
+                 'length': length, 'tilt': tilt, 'pinnedIslands': pinned, 'skippedIslands': skipped}
+        # M3-2: vá lỗ lưng áo dưới kiếm, rồi tách chuôi + lưỡi sang xương riêng để client rút/tra kiếm.
+        if seam is not None:
+            entry['patch'] = PARTS['patch_hole'](mesh, seam, set(verts), fail)  # noqa: F821
+        if spec.get('socket'):
+            entry['socket'], cell = PARTS['sword_socket'](mesh, arm, verts, spec, bone, fail)  # noqa: F821
+            STEEL.append((mesh, cell))
+        report.setdefault('rigid', []).append(entry)
 
 
 # ---------- 4. chỉnh màu vải ----------
+
+def replace_pixels(img, px, fmt=None):
+    """Thay điểm ảnh của ảnh đóng gói. Giữ định dạng gốc (JPEG như ảnh màu của Tripo; PNG làm GLB nặng gần gấp đôi):
+    dựng ảnh mới từ điểm ảnh đã chỉnh, lưu tạm, nạp lại thành ảnh đóng gói rồi thay vào mọi node đang dùng ảnh cũ."""
+    import shutil
+    import tempfile
+    W, H = img.size
+    fmt = fmt or ('PNG' if img.file_format == 'PNG' else 'JPEG')
+    name, cs = img.name, img.colorspace_settings.name
+    tmp = os.path.join(tempfile.mkdtemp(prefix='dtl_px_'), f'{ascii_name(name)}.{"png" if fmt == "PNG" else "jpg"}')  # noqa: F821
+    work = bpy.data.images.new(name + '_work', W, H, alpha=False)
+    work.colorspace_settings.name = cs
+    work.pixels.foreach_set(px.ravel())
+    work.filepath_raw = tmp
+    work.file_format = fmt
+    bpy.context.scene.render.image_settings.quality = 90
+    work.save()
+    loaded = bpy.data.images.load(tmp)
+    loaded.colorspace_settings.name = cs
+    loaded.pack()
+    for mesh in MESHES:  # noqa: F821
+        for mat in mesh.data.materials:
+            for n in mat.node_tree.nodes:
+                if n.type == 'TEX_IMAGE' and n.image == img:
+                    n.image = loaded
+    bpy.data.images.remove(work)
+    bpy.data.images.remove(img)
+    loaded.name = name
+    shutil.rmtree(os.path.dirname(tmp), ignore_errors=True)
+
 
 def recolor(rules):
     import colorsys
@@ -446,37 +496,31 @@ def recolor(rules):
             rgb = rgb * (1 - w[:, None]) + new * w[:, None]
             out.append({'image': img.name, 'to': rule['to'], 'pixels': int((w > 0.5).sum())})
         px[:, :3] = rgb
-        # Giữ JPEG như ảnh màu gốc của Tripo (PNG làm GLB nặng gần gấp đôi): dựng ảnh mới từ điểm ảnh đã chỉnh, lưu JPEG
-        # tạm, nạp lại thành ảnh đóng gói rồi thay vào mọi node đang dùng ảnh cũ.
-        import os
-        import tempfile
-        name, cs = img.name, img.colorspace_settings.name
-        tmp = os.path.join(tempfile.mkdtemp(prefix='dtl_recolor_'), f'{ascii_name(name)}.jpg')  # noqa: F821
-        work = bpy.data.images.new(name + '_work', W, H, alpha=False)
-        work.colorspace_settings.name = cs
-        work.pixels.foreach_set(px.ravel())
-        work.filepath_raw = tmp
-        work.file_format = 'JPEG'
-        bpy.context.scene.render.image_settings.quality = 90
-        work.save()
-        loaded = bpy.data.images.load(tmp)
-        loaded.colorspace_settings.name = cs
-        loaded.pack()
-        for mesh in MESHES:  # noqa: F821
-            for mat in mesh.data.materials:
-                for n in mat.node_tree.nodes:
-                    if n.type == 'TEX_IMAGE' and n.image == img:
-                        n.image = loaded
-        bpy.data.images.remove(work)
-        bpy.data.images.remove(img)
-        loaded.name = name
-        import shutil
-        shutil.rmtree(os.path.dirname(tmp), ignore_errors=True)
+        replace_pixels(img, px, 'JPEG')
     return out
 
 
 if IMPORT.get('recolor'):
     report['recolor'] = recolor(IMPORT['recolor'])
+
+# Tô thép cho lưỡi sau recolor (không thì quy tắc "vải trắng" biến ô thép xám thành vải ngà).
+for mesh, cell in STEEL:
+    report.setdefault('steel', []).append(PARTS['paint_cells'](mesh, cell, replace_pixels))
+
+# ---------- 6. xương lò xo vạt áo (M3-10) ----------
+
+for spec in IMPORT.get('spring', []):
+    if spec.get('kind') != 'skirt':
+        fail(f'spring: kind "{spec.get("kind")}" chưa hỗ trợ')  # noqa: F821
+    legs = []
+    for side in ('left', 'right'):
+        up, low, foot = (bone_like(side + n) for n in ('upleg', 'leg', 'foot'))
+        legs += [(arm.matrix_world @ up.head_local, arm.matrix_world @ low.head_local),
+                 (arm.matrix_world @ low.head_local, arm.matrix_world @ foot.head_local)]
+    for mesh in MESHES:  # noqa: F821
+        report.setdefault('spring', []).append(PARTS['skirt_springs'](mesh, arm, spec, bone_like('hips').name, legs, fail))  # noqa: F821
+report['bones'] = len(arm.data.bones)
+HIPS, HEAD = bone_like('hips'), bone_like('head')  # edit mode làm mất hiệu lực tham chiếu Bone cũ
 
 
 # ---------- 2. hit_light thủ tục ----------
@@ -534,7 +578,7 @@ def pose_hit(w, base):
     hips.location = base[HIPS.name][1] + M.inverted() @ Vector((0, 0.05 * w, -0.005 * w))
 
 
-if 'hit_light' not in bpy.data.actions:
+if 'hit_light' not in bpy.data.actions and not IMPORT.get('sharedAnims'):
     base = base_pose()
     act = bpy.data.actions.new('hit_light')
     act.use_fake_user = True

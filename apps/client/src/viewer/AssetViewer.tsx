@@ -3,6 +3,8 @@ import { t } from '@dtl/content';
 import { type FrameInfo, HUMAN_HEIGHT, type LoadedInfo, ViewerScene } from './scene';
 import { fmtBytes } from './stats';
 import { poseClipName } from '../game/character/ikpose';
+import { assetBaseUrl, type Manifest } from '../game/assets';
+import { showAssetId } from '../game/testParams';
 
 const BASE_URL = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
 /** Chỉ nhận đường dẫn tương đối cùng origin tới .glb/.gltf, không có "..". */
@@ -73,6 +75,17 @@ export function AssetViewer() {
             setClip(i);
             setPaused(seek);
           });
+          return;
+        }
+        const show = file ? null : showAssetId(location.search);
+        if (show) {
+          void load(async () => {
+            const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });
+            if (!res.ok) throw new Error(`HTTP ${res.status} manifest.json`);
+            const a = ((await res.json()) as Manifest).assets[show];
+            if (!a) throw new Error(`manifest.json: ${show}?`);
+            return v.loadUrl(assetBaseUrl() + a.file);
+          }, show);
           return;
         }
         if (!file) return;

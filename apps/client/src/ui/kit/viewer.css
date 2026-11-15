@@ -1,0 +1,33 @@
+/* Nền và bố cục riêng của trang ?viewer=ui; không vào bundle game. Nền giả cảnh sương sớm để thấy độ mờ của khung. */
+#root:has(.kit-view) {
+  overflow: auto;
+  pointer-events: auto;
+  background: radial-gradient(ellipse at 30% 20%, #8fb0a6, #5d7d78 55%, #34504f);
+}
+body:has(.kit-view) {
+  overflow: auto;
+}
+.kit-view {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+.kit-view-title {
+  margin: 0 0 20px;
+  font: 700 26px var(--font-display, serif);
+  letter-spacing: 0.16em;
+  color: #f2e7c9;
+  text-shadow: 0 2px 8px rgba(10, 20, 24, 0.6);
+}
+.kit-view-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 22px;
+  align-items: start;
+}
+.kit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}

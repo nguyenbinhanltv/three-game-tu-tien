@@ -53,6 +53,7 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `mon_thiet_boi_tru` | Tripo web app (text-to-3D H3.1 + auto rig quadruped) + Codex (concept); 5 clip thủ tục `tools/blender/anim_quadruped.py` (đòn húc nanh) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `mon_hoa_van_ho` | Tripo web app (text-to-3D H3.1 + auto rig quadruped, clip walk) + Codex (concept); 5 clip thủ tục `tools/blender/anim_quadruped.py`; dùng chung cho Kiếm Linh (đổi màu trong game) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `mon_thach_vien` | Tripo web app (text-to-3D H3.1 + auto rig biped, clip idle/run/slash/fall) + Codex (concept); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `anim_human_base` | Thư viện clip không mesh dùng chung cho nhân vật người rig Mixamo: preset animation Tripo web (idle, run, slash, fall) của rig Thanh Phong + hit_light thủ tục `tools/blender/anim_biped_extra.py`, xuất bằng `tools/blender/export_anim_lib.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_kiem_tu_nam` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Thanh Phong"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_chuong_mon` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Lạc Vân chân nhân"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_duoc_su` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Tố Tâm"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
@@ -60,6 +61,21 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `boss_huyet_lang_vuong` | Tripo web app (text-to-3D H3.1 + auto rig quadruped) + Codex (concept); 8 clip thủ tục `tools/blender/anim_quadruped.py` (gồm slam/sweep/stun) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `boss_kiem_khoi` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `boss_thu_mo_tuong` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/chant/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+
+## Texture mặt đất (P2-A2)
+
+Tám bộ texture PBR từ [Poly Haven](https://polyhaven.com/textures), giấy phép **CC0-1.0** (public domain, dùng thương mại được, không bắt buộc ghi nguồn; vẫn ghi để truy vết). Bản 1K gốc ở `../dtl-asset-source/texture/<id>/`, đóng gói bằng `pnpm assets:terrain` (`tools/asset-pipeline/src/terrain-textures.ts`) thành WebP 1024 trong `apps/client/public/terrain/`.
+
+| Lớp | Poly Haven | Tác giả | Giấy phép |
+| --- | --- | --- | --- |
+| cỏ | [leafy_grass](https://polyhaven.com/a/leafy_grass) | Charlotte Baglioni | CC0-1.0 |
+| đất | [brown_mud_leaves_01](https://polyhaven.com/a/brown_mud_leaves_01) | Rob Tuytel | CC0-1.0 |
+| nền rừng | [forrest_ground_01](https://polyhaven.com/a/forrest_ground_01) | Rob Tuytel | CC0-1.0 |
+| đá núi | [rocky_terrain_02](https://polyhaven.com/a/rocky_terrain_02) | Amal Kumar | CC0-1.0 |
+| vách đá | [rock_face](https://polyhaven.com/a/rock_face) | Greg Zaal (chụp), Dario Barresi (xử lý) | CC0-1.0 |
+| cát ven hồ | [coast_sand_rocks_02](https://polyhaven.com/a/coast_sand_rocks_02) | Rob Tuytel | CC0-1.0 |
+| lát sân đá | [cobblestone_floor_04](https://polyhaven.com/a/cobblestone_floor_04) | Rob Tuytel | CC0-1.0 |
+| sỏi đường mòn | [gravelly_sand](https://polyhaven.com/a/gravelly_sand) | Dario Barresi | CC0-1.0 |
 
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 
@@ -118,3 +134,36 @@ Font web tự host trong `apps/client/public/fonts/`, subset bằng `tools/fonts
 | --- | --- | --- | --- | --- |
 | `dtl-title.woff2` | Charm Bold, © 2018 The Charm Project Authors (Cadson Demak) | `OFL-1.1` | 2026-11-15 | Tiêu đề thư pháp trên khung hình đầu (chỉ glyph của `ui.title`), biến CSS `--font-title` |
 | `dtl-display.woff2` | Alegreya SC Bold, © 2011 The Alegreya Project Authors (Huerta Tipográfica) | `OFL-1.1` | 2026-11-15 | Tên boss, biển hiệu, phụ đề màn tiêu đề (Latin + tiếng Việt), biến CSS `--font-display` |
+
+<!-- music:begin (sinh bởi tools/audio/loop.mjs, đừng sửa tay) -->
+
+### Nhạc nền
+
+**Nhạc tự soạn** (Claude soạn bằng code ở `tools/audio/compose/<id>.mjs`, xuất MIDI): phát hành **CC0-1.0**. Render bằng soundfont **GeneralUser GS v2.0.3** của S. Christian Collins ([trang gốc](https://www.schristiancollins.com/generaluser.php), [repo](https://github.com/mrbumpy409/GeneralUser-GS), commit `684543d`), giấy phép *GeneralUser GS License v2.0*: “You may use GeneralUser GS without restriction for your own music creation, private or commercial … Please feel free to use it in your software projects”. Game chỉ phân phối bản âm thanh đã render, không phân phối file soundfont (file ở `../dtl-asset-source/audio/sf2/`, build tự tải theo commit ghim và kiểm SHA-256).
+
+Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằng `tools/audio/loop.mjs`. Bản build trong `apps/client/public/audio/music/`.
+
+| Bài | Tên | Nguồn | Giấy phép | Ngày | Link |
+| --- | --- | --- | --- | --- | --- |
+| `sect` | Lạc Kiếm Tông | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sect.mjs` |
+| `combat` | Giao Phong | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/combat.mjs` |
+| `wild` | Vân Lam Sơn Mạch | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/wild.mjs` |
+| `forest` | Rừng Linh Thảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/forest.mjs` |
+| `lake` | Hồ Sương Mù | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/lake.mjs` |
+| `dungeon` | Kiếm Trủng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/dungeon.mjs` |
+| `boss` | Hàn Giao | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/boss.mjs` |
+| `dungeon_boss` | Kiếm Trủng — Thủ Mộ | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/dungeon_boss.mjs` |
+| `tribulation` | Độ Kiếp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/tribulation.mjs` |
+| `meditate` | Đả Tọa | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/meditate.mjs` |
+| `title` | Đạp Thiên Lộ | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/title.mjs` |
+| `sect_pulse` | Lạc Kiếm Tông — lớp nhịp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sect_pulse.mjs` |
+| `sect_edge` | Lạc Kiếm Tông — lớp giai điệu căng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sect_edge.mjs` |
+| `wild_pulse` | Vân Lam Sơn Mạch — lớp nhịp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/wild_pulse.mjs` |
+| `wild_edge` | Vân Lam Sơn Mạch — lớp giai điệu căng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/wild_edge.mjs` |
+| `dungeon_pulse` | Kiếm Trủng — lớp nhịp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/dungeon_pulse.mjs` |
+| `dungeon_edge` | Kiếm Trủng — lớp giai điệu căng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/dungeon_edge.mjs` |
+| `sting_levelup` | Tu Vi Tinh Tiến | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sting_levelup.mjs` |
+| `sting_breakthrough` | Trúc Cơ Thành | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sting_breakthrough.mjs` |
+| `sting_death` | Thân Tử Đạo Tiêu | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sting_death.mjs` |
+
+<!-- music:end -->

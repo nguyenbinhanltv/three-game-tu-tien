@@ -93,7 +93,7 @@ function nearCollider(x: number, z: number, pad: number): boolean {
  * Kiếm Trủng, nước, dốc, tuyết, chân công trình), không thì ghi gốc, góc, cỡ, màu vào `out` (8 float).
  */
 function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, out: Float32Array, o: number): boolean {
-  if (h < WATER_Y + 1 || h > 240 || slope > 2.2) return false;
+  if (h < WATER_Y + 2.2 || h > 240 || slope > 2.2) return false;
   if (featureWeight(SECT, x, z) > 0.8 || featureWeight(PORTAL_PAD, x, z) > 0.8 || featureWeight(KIEM_TRUNG, x, z) > 0.12) return false;
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
@@ -103,7 +103,8 @@ function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   let dens = 0.62 + wValley * 0.3 - wForest * 0.15 + n * 0.55;
   dens *= 1 - slope / 2.6;
   if (h > 170) dens *= 0.5;
-  if (wLake > 0.3 && h < WATER_Y + 3) dens *= 0.5;
+  // Bờ hồ thưa dần: không cỏ sát mặt nước, đầy dần khi cách mực nước 2 → 9 m.
+  if (wLake > 0.3) dens *= Math.min(1, Math.max(0, (h - WATER_Y - 2.2) / 6.8));
   if (r > dens) return false;
   if (nearCollider(x, z, 1.2)) return false;
 

@@ -46,6 +46,14 @@ export interface ChapterCard {
   dur: number;
 }
 
+/** Cảnh mở đầu (P2-B1) đang chạy: HUD ẩn, letterbox dày, một câu thoại. `out` = đang rút letterbox sau khi hết cảnh. */
+export interface CineState {
+  id: number;
+  /** Thời lượng cảnh (ms) để CSS dàn nhịp câu thoại. */
+  dur: number;
+  out: boolean;
+}
+
 export interface TargetCast {
   kind: 'chant' | 'stun' | 'broken';
   end: number;
@@ -121,6 +129,7 @@ export interface UIState {
   tribEnd: number;
   bossLine: BossLine | null;
   chapter: ChapterCard | null;
+  cine: CineState | null;
   panel: Panel;
   npc: string | null;
   hint: string;
@@ -179,6 +188,7 @@ export const useUI = create<UIState>(() => ({
   tribEnd: 0,
   bossLine: null,
   chapter: null,
+  cine: null,
   panel: null,
   npc: null,
   hint: '',

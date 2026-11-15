@@ -5,6 +5,7 @@ import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } fro
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
+import { Button, Divider, type PanelTone, PanelWindow, ProgressBar, Segmented, Slider, Slot, TipCard, Tooltip } from './kit';
 import { set, useUI } from './store';
 
 export function statLines(def: ItemDef, plus = 0): string[] {
@@ -19,17 +20,17 @@ export function statLines(def: ItemDef, plus = 0): string[] {
 
 export function ItemIcon({ item, onClick, selected, small }: { item: InvItem | null | undefined; onClick?: () => void; selected?: boolean; small?: boolean }) {
   const def = item ? ITEM.get(item.id) : undefined;
+  if (!item || !def) return <Slot empty size={small ? 's' : 'm'} />;
   return (
-    <button
-      className={'slot' + (def ? ' r' + def.rarity : ' empty') + (selected ? ' selected' : '') + (small ? ' small' : '')}
-      onClick={onClick}
-      title={def ? itemName(def.id, item!.plus) : undefined}
-    >
-      {def && <span className="slot-icon"><ContentIcon def={def} /></span>}
-      {item && item.n > 1 && <span className="slot-n">{item.n}</span>}
-      {item?.plus ? <span className="slot-plus">+{item.plus}</span> : null}
-    </button>
+    <Tooltip content={<ItemTip item={item} def={def} />}>
+      <Slot icon={<ContentIcon def={def} />} rarity={def.rarity} count={item.n} plus={item.plus} selected={selected} size={small ? 's' : 'm'} onClick={onClick} label={itemName(def.id, item.plus)} />
+    </Tooltip>
   );
+}
+
+/** Chú giải vật phẩm (rê chuột / focus): tên theo phẩm, loại, chỉ số, mô tả. */
+function ItemTip({ item, def }: { item: InvItem; def: ItemDef }) {
+  return <TipCard title={itemName(def.id, item.plus)} rarity={def.rarity} sub={t('ui.item.kind.' + def.kind)} lines={statLines(def, item.plus).map((text) => ({ text }))} desc={t(`item.${def.id}.desc`)} />;
 }
 
 export function ItemDetail({ item, children }: { item: InvItem; children?: React.ReactNode }) {
@@ -37,11 +38,11 @@ export function ItemDetail({ item, children }: { item: InvItem; children?: React
   const level = useUI((s) => s.char?.level ?? 1);
   if (!def) return null;
   return (
-    <div className="item-detail">
-      <div className={'item-name r' + def.rarity}>
-        <ContentIcon def={def} /> {itemName(def.id, item.plus)}
+    <div className="k-card item-detail">
+      <div className="item-name" data-q={def.rarity}>
+        {itemName(def.id, item.plus)}
       </div>
-      <div className="item-kind">{t('ui.item.kind.' + def.kind)}</div>
+      <div className="k-dim">{t('ui.item.kind.' + def.kind)}</div>
       {statLines(def, item.plus).map((l) => (
         <div key={l} className="item-stat">
           {l}
@@ -49,23 +50,18 @@ export function ItemDetail({ item, children }: { item: InvItem; children?: React
       ))}
       {def.reqLevel && def.reqLevel > 1 && <div className={'item-req' + (level < def.reqLevel ? ' bad' : '')}>{t('ui.item.req', { realm: realmName(def.reqLevel) })}</div>}
       <div className="item-desc">{t(`item.${def.id}.desc`)}</div>
-      {def.sell > 0 && <div className="item-price">{t('ui.item.sell_price', { n: def.sell })} 💠</div>}
+      {def.sell > 0 && <div className="k-dim">{t('ui.item.sell_price', { n: def.sell })} 💠</div>}
       <div className="item-actions">{children}</div>
     </div>
   );
 }
 
-function Window({ title, onClose, children, cls }: { title: string; onClose: () => void; children: React.ReactNode; cls?: string }) {
+/** Cửa sổ chung của các bảng: khung kit (lam đêm, viền đồng thau, tiêu đề serif). */
+function Window({ title, sub, onClose, children, cls, width, tone }: { title: string; sub?: string; onClose: () => void; children: React.ReactNode; cls?: string; width?: number; tone?: PanelTone }) {
   return (
-    <div className={'window ' + (cls ?? '')}>
-      <div className="window-head">
-        <span>{title}</span>
-        <button className="window-close" onClick={onClose} aria-label={t('ui.close')}>
-          ✕
-        </button>
-      </div>
-      <div className="window-body">{children}</div>
-    </div>
+    <PanelWindow title={title} sub={sub} onClose={onClose} width={width} tone={tone} className={cls}>
+      {children}
+    </PanelWindow>
   );
 }
 
@@ -80,7 +76,7 @@ function Bag() {
   const eqItem = selEq ? equip[selEq] : undefined;
   const g = Game.current;
   return (
-    <Window title={t('ui.bag')} onClose={() => set({ panel: null })} cls="bag">
+    <Window title={t('ui.bag')} onClose={() => set({ panel: null })} cls="bag" width={460}>
       <div className="equip-row">
         {EQUIP_SLOTS.map((es) => (
           <div key={es} className="equip-cell">
@@ -96,11 +92,12 @@ function Bag() {
           </div>
         ))}
         <div className="gold">
-          💠 <b>{gold}</b>
+          <b>{gold}</b> 💠
           <div className="equip-label">{t('ui.gold')}</div>
         </div>
       </div>
-      <div className="grid">
+      <Divider />
+      <div className="bag-grid">
         {inv.map((it, i) => (
           <ItemIcon
             key={i}
@@ -116,36 +113,35 @@ function Bag() {
       {item && def && sel !== null ? (
         <ItemDetail item={item}>
           {def.kind === 'consumable' && (
-            <button className="btn primary" onClick={() => g?.send(C.USE, { slot: sel, r: reqId() })}>
+            <Button variant="primary" onClick={() => g?.send(C.USE, { slot: sel, r: reqId() })}>
               {t('ui.item.use')}
-            </button>
+            </Button>
           )}
           {(def.kind === 'weapon' || def.kind === 'robe' || def.kind === 'accessory') && (
-            <button
-              className="btn primary"
+            <Button
+              variant="primary"
               onClick={() => {
                 g?.send(C.EQUIP, { slot: sel });
                 setSel(null);
               }}
             >
               {t('ui.item.equip')}
-            </button>
+            </Button>
           )}
         </ItemDetail>
       ) : eqItem && selEq ? (
         <ItemDetail item={eqItem}>
-          <button
-            className="btn"
+          <Button
             onClick={() => {
               g?.send(C.UNEQUIP, { slot: selEq });
               setSelEq(null);
             }}
           >
             {t('ui.item.unequip')}
-          </button>
+          </Button>
         </ItemDetail>
       ) : (
-        <div className="item-detail muted">{t('ui.bag.empty_hint')}</div>
+        <div className="k-card k-dim">{t('ui.bag.empty_hint')}</div>
       )}
     </Window>
   );
@@ -158,62 +154,48 @@ function Character() {
   const canTrib = char.level === NGUNG_KHI_MAX;
   const xpFull = char.xp >= char.xpNeed;
   const hasPill = inv.some((s) => s?.id === TRUC_CO_PILL);
+  const stat = (k: string, v: number | string) => (
+    <div className="stat-cell">
+      <dt>{t(k)}</dt>
+      <dd>{v}</dd>
+    </div>
+  );
   return (
-    <Window title={t('ui.char')} onClose={() => set({ panel: null })} cls="char">
-      <div className="char-name">{char.name}</div>
-      <div className="char-realm">{realmName(char.level)}</div>
-      <table className="stats">
-        <tbody>
-          <tr>
-            <td>{t('ui.hp')}</td>
-            <td>{char.mhp}</td>
-            <td>{t('ui.mp')}</td>
-            <td>{char.mmp}</td>
-          </tr>
-          <tr>
-            <td>{t('ui.atk')}</td>
-            <td>{char.atk}</td>
-            <td>{t('ui.def')}</td>
-            <td>{char.def}</td>
-          </tr>
-          <tr>
-            <td>{t('ui.xp')}</td>
-            <td colSpan={3}>
-              {char.xp} / {char.xpNeed}
-            </td>
-          </tr>
-          <tr>
-            <td>{t('ui.gold')}</td>
-            <td colSpan={3}>{char.gold} 💠</td>
-          </tr>
-        </tbody>
-      </table>
-      <div className="section-title">{t('ui.char.skills')}</div>
+    <Window title={char.name} sub={realmName(char.level)} onClose={() => set({ panel: null })} cls="char" width={440}>
+      <ProgressBar cls="xp" value={char.xp} max={char.xpNeed} text={xpFull ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`} label={t('ui.xp')} />
+      <dl className="stats">
+        {stat('ui.hp', char.mhp)}
+        {stat('ui.mp', char.mmp)}
+        {stat('ui.atk', char.atk)}
+        {stat('ui.def', char.def)}
+        {stat('ui.gold', `${char.gold} 💠`)}
+      </dl>
+      <Divider label={t('ui.char.skills')} />
       <div className="skill-list">
         {SKILLS.map((sk, i) => (
           <div key={sk.id} className={'skill-item' + (char.level < sk.unlock ? ' locked' : '')}>
-            <span className="skill-item-icon"><ContentIcon def={sk} /></span>
+            <Slot size="s" rarity={1} icon={<ContentIcon def={sk} />} label={t(`skill.${sk.id}.name`)} disabled={char.level < sk.unlock} />
             <div>
               <div className="skill-item-name">
-                [{i + 1}] {t(`skill.${sk.id}.name`)}
+                <kbd>{i + 1}</kbd> {t(`skill.${sk.id}.name`)}
                 {char.level < sk.unlock && <i> — {t('ui.char.locked', { realm: realmName(sk.unlock) })}</i>}
               </div>
-              <div className="skill-item-desc">{t(`skill.${sk.id}.desc`)}</div>
+              <div className="k-dim">{t(`skill.${sk.id}.desc`)}</div>
             </div>
           </div>
         ))}
       </div>
       {canTrib && (
-        <div className="trib-box">
-          <div className="muted">{t('ui.char.breakthrough_hint')}</div>
+        <div className="k-card trib-box">
+          <div className="k-dim">{t('ui.char.breakthrough_hint')}</div>
           <div className={xpFull ? 'ok' : 'bad'}>
             {xpFull ? '✔' : '✘'} {t('ui.xp_full')}
           </div>
           <div className={hasPill ? 'ok' : 'bad'}>
             {hasPill ? '✔' : '✘'} {itemName(TRUC_CO_PILL)}
           </div>
-          <button
-            className="btn primary"
+          <Button
+            variant="primary"
             disabled={!xpFull || !hasPill}
             onClick={() => {
               Game.current?.send(C.BREAKTHROUGH);
@@ -221,7 +203,7 @@ function Character() {
             }}
           >
             ⚡ {t('ui.char.breakthrough')}
-          </button>
+          </Button>
         </div>
       )}
     </Window>
@@ -241,7 +223,7 @@ export function RewardLine({ id }: { id: string }) {
       )}
       {q.rewards.gold > 0 && <span>{q.rewards.gold} 💠</span>}
       {(q.rewards.items ?? []).map((it) => (
-        <span key={it.id} className={'r' + (ITEM.get(it.id)?.rarity ?? 0)}>
+        <span key={it.id} className="reward-item" data-q={ITEM.get(it.id)?.rarity ?? 0}>
           <ContentIcon def={ITEM.get(it.id)} /> {itemName(it.id)}
           {it.n > 1 ? ` ×${it.n}` : ''}
         </span>
@@ -254,14 +236,14 @@ function Quests() {
   const quests = useUI((s) => s.quests);
   const ids = Object.keys(quests.active);
   return (
-    <Window title={t('ui.quests')} onClose={() => set({ panel: null })} cls="quests">
-      {ids.length === 0 && <div className="muted">{t('ui.quest.none')}</div>}
+    <Window title={t('ui.quests')} sub={t('ui.quest.done_count', { n: quests.done.length, total: QUESTS.length })} onClose={() => set({ panel: null })} cls="quests" width={460}>
+      {ids.length === 0 && <div className="k-dim">{t('ui.quest.none')}</div>}
       {ids.map((id) => {
         const q = QUEST.get(id);
         if (!q) return null;
         const prog = quests.active[id];
         return (
-          <div key={id} className="quest-card">
+          <div key={id} className="k-card quest-card">
             <div className="quest-title">{t(`quest.${id}.name`)}</div>
             <div className="quest-desc">{t(`quest.${id}.desc`)}</div>
             {q.objectives.map((o, i) => {
@@ -275,12 +257,11 @@ function Quests() {
                 </div>
               );
             })}
-            <div className="quest-turnin">{t('ui.quest.turnin_at', { npc: t(`npc.${q.turnin}.name`) })}</div>
+            <div className="k-dim">{t('ui.quest.turnin_at', { npc: t(`npc.${q.turnin}.name`) })}</div>
             <RewardLine id={id} />
           </div>
         );
       })}
-      <div className="muted">{t('ui.quest.done_count', { n: quests.done.length, total: QUESTS.length })}</div>
     </Window>
   );
 }
@@ -288,7 +269,7 @@ function Quests() {
 function Help() {
   const rows = ['move', 'camera', 'jump', 'fly', 'target', 'skill', 'interact', 'meditate', 'panels', 'chat'];
   return (
-    <Window title={t('ui.help')} onClose={() => set({ panel: null })} cls="help">
+    <Window title={t('ui.help')} onClose={() => set({ panel: null })} cls="help" width={520}>
       <table className="help-table">
         <tbody>
           {rows.map((r) => (
@@ -299,7 +280,7 @@ function Help() {
           ))}
         </tbody>
       </table>
-      <div className="muted">{t('ui.help.tip')}</div>
+      <div className="k-dim">{t('ui.help.tip')}</div>
     </Window>
   );
 }
@@ -312,29 +293,24 @@ function VolumeSlider({ k }: { k: VolumeKey }) {
     else if (k === 'ui') sfx('loot');
   };
   return (
-    <label className="vol-row">
-      <span>{t('ui.settings.vol.' + k)}</span>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        step={5}
-        value={v}
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          unlockAudio();
-          setVolume(k, n / 100);
-          setV(n);
-        }}
-        onPointerUp={preview}
-        onKeyUp={preview}
-      />
-      <span className="vol-val">{v}%</span>
-    </label>
+    <Slider
+      label={t('ui.settings.vol.' + k)}
+      value={v}
+      min={0}
+      max={100}
+      step={5}
+      format={(n) => n + '%'}
+      onChange={(n) => {
+        unlockAudio();
+        setVolume(k, n / 100);
+        setV(n);
+      }}
+      onCommit={preview}
+    />
   );
 }
 
-/** Ghi nguồn nhạc theo manifest (nhạc Suno bản FREE: phi thương mại, bắt buộc ghi nguồn). */
+/** Ghi nguồn nhạc theo manifest (nhạc tự soạn CC0 + soundfont; nếu sau này có nhạc Suno thì kèm link bắt buộc). */
 function MusicCredits() {
   const [list, setList] = useState<(MusicCredit & { id: string })[] | null>(null);
   useEffect(() => {
@@ -346,7 +322,7 @@ function MusicCredits() {
   }, []);
   return (
     <>
-      <div className="section-title">{t('ui.settings.credits')}</div>
+      <Divider label={t('ui.settings.credits')} />
       {list && list.length > 0 ? (
         <ul className="credits">
           {list.map((c) => (
@@ -364,7 +340,7 @@ function MusicCredits() {
           ))}
         </ul>
       ) : (
-        <div className="muted">{t('ui.settings.credits.procedural')}</div>
+        <div className="k-dim">{t('ui.settings.credits.procedural')}</div>
       )}
     </>
   );
@@ -378,88 +354,55 @@ function Settings() {
   const offscreen = useUI((s) => s.offscreen);
   const chapterCards = useUI((s) => s.chapterCards);
   const [mute, setMute] = useState(isMuted());
+  const onOff = [
+    { value: true, label: t('ui.settings.cam_shake_on') },
+    { value: false, label: t('ui.settings.cam_shake_off') },
+  ];
   return (
-    <Window title={t('ui.settings')} onClose={() => set({ panel: null })} cls="settings">
-      <div className="section-title">{t('ui.settings.controls')}</div>
-      <div className="seg">
-        {['mouse', 'turn', 'strafe'].map((m) => (
-          <button key={m} className={'btn' + (controls === m ? ' primary' : '')} onClick={() => Game.current?.setControls(m)}>
-            {t('ui.settings.controls.' + m)}
-          </button>
-        ))}
-      </div>
-      <div className="muted">{t('ui.settings.controls_hint.' + controls)}</div>
-      <div className="section-title">{t('ui.settings.quality')}</div>
-      <div className="seg">
-        {['low', 'medium', 'high'].map((q) => (
-          <button key={q} className={'btn' + (quality === q ? ' primary' : '')} onClick={() => Game.current?.setQuality(q)}>
-            {t('ui.settings.q.' + q)}
-          </button>
-        ))}
-      </div>
-      <div className="muted">{t('ui.settings.quality_hint')}</div>
-      <div className="muted">{t('ui.settings.fps', { n: fps })}</div>
-      <div className="section-title">{t('ui.settings.cam_shake')}</div>
-      <div className="seg">
-        {[true, false].map((on) => (
-          <button key={String(on)} className={'btn' + (camShake === on ? ' primary' : '')} onClick={() => Game.current?.setCamShake(on)}>
-            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
-          </button>
-        ))}
-      </div>
-      <div className="section-title">{t('ui.settings.offscreen')}</div>
-      <div className="seg">
-        {[true, false].map((on) => (
-          <button key={String(on)} className={'btn' + (offscreen === on ? ' primary' : '')} onClick={() => Game.current?.setOffscreen(on)}>
-            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
-          </button>
-        ))}
-      </div>
-      <div className="muted">{t('ui.settings.offscreen_hint')}</div>
-      <div className="section-title">{t('ui.settings.chapter')}</div>
-      <div className="seg">
-        {[true, false].map((on) => (
-          <button key={String(on)} className={'btn' + (chapterCards === on ? ' primary' : '')} onClick={() => Game.current?.setChapterCards(on)}>
-            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
-          </button>
-        ))}
-      </div>
-      <div className="muted">{t('ui.settings.chapter_hint')}</div>
-      <div className="section-title">{t('ui.settings.sound')}</div>
-      <div className="seg">
-        <button
-          className={'btn' + (!mute ? ' primary' : '')}
-          onClick={() => {
-            setMuted(false);
-            setMute(false);
-          }}
-        >
-          {t('ui.settings.sound_on')}
-        </button>
-        <button
-          className={'btn' + (mute ? ' primary' : '')}
-          onClick={() => {
-            setMuted(true);
-            setMute(true);
-          }}
-        >
-          {t('ui.settings.sound_off')}
-        </button>
-      </div>
+    <PanelWindow title={t('ui.settings')} onClose={() => set({ panel: null })}>
+      <Divider label={t('ui.settings.controls')} />
+      <Segmented label={t('ui.settings.controls')} value={controls} onChange={(m) => Game.current?.setControls(m)} options={['mouse', 'turn', 'strafe'].map((m) => ({ value: m, label: t('ui.settings.controls.' + m) }))} />
+      <div className="k-dim">{t('ui.settings.controls_hint.' + controls)}</div>
+      <Divider label={t('ui.settings.quality')} />
+      <Segmented label={t('ui.settings.quality')} value={quality} onChange={(q) => Game.current?.setQuality(q)} options={['low', 'medium', 'high'].map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))} />
+      <div className="k-dim">{t('ui.settings.quality_hint')}</div>
+      <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
+      <Divider label={t('ui.settings.cam_shake')} />
+      <Segmented label={t('ui.settings.cam_shake')} value={camShake} onChange={(on) => Game.current?.setCamShake(on)} options={onOff} />
+      <Divider label={t('ui.settings.offscreen')} />
+      <Segmented label={t('ui.settings.offscreen')} value={offscreen} onChange={(on) => Game.current?.setOffscreen(on)} options={onOff} />
+      <div className="k-dim">{t('ui.settings.offscreen_hint')}</div>
+      <Divider label={t('ui.settings.chapter')} />
+      <Segmented label={t('ui.settings.chapter')} value={chapterCards} onChange={(on) => Game.current?.setChapterCards(on)} options={onOff} />
+      <div className="k-dim">{t('ui.settings.chapter_hint')}</div>
+      <Divider label={t('ui.settings.sound')} />
+      <Segmented
+        label={t('ui.settings.sound')}
+        value={!mute}
+        onChange={(on) => {
+          setMuted(!on);
+          setMute(!on);
+        }}
+        options={[
+          { value: true, label: t('ui.settings.sound_on') },
+          { value: false, label: t('ui.settings.sound_off') },
+        ]}
+      />
       {VOLUME_KEYS.map((k) => (
         <VolumeSlider key={k} k={k} />
       ))}
       <MusicCredits />
-      <button
-        className="btn"
-        onClick={() => {
-          Game.current?.dispose();
-          set({ phase: 'login', panel: null, needName: false, log: [] });
-        }}
-      >
-        {t('ui.settings.logout')}
-      </button>
-    </Window>
+      <div>
+        <Button
+          onClick={() => {
+            Game.current?.dispose();
+            set({ phase: 'login', panel: null, needName: false, log: [] });
+          }}
+        >
+          {t('ui.settings.logout')}
+        </Button>
+      </div>
+    </PanelWindow>
   );
 }
 
@@ -472,6 +415,7 @@ const MAP_LABELS: { key: string; x: number; z: number }[] = [
 ];
 
 function WorldMap() {
+  const zone = useUI((s) => s.zone);
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const SIZE = 560;
@@ -488,7 +432,7 @@ function WorldMap() {
       const s = SIZE / SPAN;
       const toX = (x: number) => (x - CX) * s + SIZE / 2;
       const toZ = (z: number) => (z - CZ) * s + SIZE / 2;
-      ctx.font = '600 14px "Segoe UI", sans-serif';
+      ctx.font = '700 15px "Palatino Linotype", Georgia, serif';
       ctx.textAlign = 'center';
       for (const l of MAP_LABELS) {
         ctx.lineWidth = 4;
@@ -518,7 +462,7 @@ function WorldMap() {
     return () => clearInterval(id);
   }, []);
   return (
-    <Window title={t('ui.map')} onClose={() => set({ panel: null })} cls="map">
+    <Window title={t('ui.map')} sub={zone} onClose={() => set({ panel: null })} cls="map" width={620}>
       <canvas ref={ref} width={560} height={560} />
     </Window>
   );

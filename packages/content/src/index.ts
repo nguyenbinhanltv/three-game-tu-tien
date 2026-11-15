@@ -33,6 +33,8 @@ import poseLoiDinhJson from '../data/poses/loi_dinh.json';
 import poseNguKiemJson from '../data/poses/ngu_kiem.json';
 import poseNiemChuJson from '../data/poses/niem_chu.json';
 import poseTamThienJson from '../data/poses/tam_thien.json';
+import poseRutKiemJson from '../data/poses/rut_kiem.json';
+import poseTraKiemJson from '../data/poses/tra_kiem.json';
 import appearanceJson from '../data/appearance.json';
 
 export const ITEMS = itemsJson as ItemDef[];
@@ -48,7 +50,7 @@ export const LEVELS: Record<string, LevelDef> = {
 };
 export const GLOSSARY = glossaryJson;
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
-export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNiemChuJson, poseTamThienJson] as unknown as PoseDef[];
+export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNiemChuJson, poseTamThienJson, poseRutKiemJson, poseTraKiemJson] as unknown as PoseDef[];
 
 function index<T extends { id: string }>(list: T[]): Map<string, T> {
   const m = new Map<string, T>();

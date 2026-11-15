@@ -40,6 +40,7 @@ import {
   PORTAL_POS,
   type QuestView,
   SECT,
+  SPAWN_POINT,
   ROOM_DUNGEON,
   ROOM_WORLD,
   S,
@@ -51,8 +52,9 @@ import {
 import type { Appearance } from '@dtl/shared';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
-import { chapterSting, lootChime, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { chapterSting, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
+import { Cutscene, SECT_CUTSCENE, type Vec3 } from './cutscene';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
 import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
@@ -68,10 +70,13 @@ import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/wor
 import { GRADING, GRADING_DEFAULT } from '../render/grading';
 import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
+import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
+import { loadGroundTextures, type GroundTextures } from './groundTextures';
+import type { GroundLevel } from '../render/materials/ground';
 import { telegraph } from './telegraph';
 import { DamageNumbers, HAZARD_COLORS, Vfx } from './vfx';
 import { skipOthersFx } from './fxBudget';
@@ -81,6 +86,7 @@ import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../in
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
+import { readTestParams } from './testParams';
 
 export interface LoginOptions {
   token?: string;
@@ -118,17 +124,27 @@ function isWebGPU(r: THREE.WebGPURenderer): boolean {
  * bloom/msaa/fxaa: post-processing (render/post.ts). maxPixels: ngân sách điểm ảnh nội bộ (hạ
  * pixelRatio trên màn hình lớn để giữ VRAM render target dưới ngân sách). heightFog: sương theo độ cao.
  */
-const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean }> = {
-  low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false },
-  medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true },
-  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true },
+const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean; ground: GroundLevel; ao: boolean; lights: boolean }> = {
+  low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false },
+  medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'medium', ao: true, lights: false },
+  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'high', ao: true, lights: true },
 };
 
+/** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */
+const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8 };
+
+/** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */
+const STINGS: Record<string, string> = { levelup: 'sting_levelup', ascend: 'sting_breakthrough', death: 'sting_death' };
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const _shakePos = new THREE.Vector3();
 const _shakeLook = new THREE.Vector3();
 const _camFocus = new THREE.Vector3();
+const _cineEndP = new THREE.Vector3();
+const _cineEndL = new THREE.Vector3();
+const _cineFwd = new THREE.Vector3();
+const _cineP: Vec3 = { x: 0, y: 0, z: 0 };
+const _cineL: Vec3 = { x: 0, y: 0, z: 0 };
 
 let reqCounter = 0;
 /** Khóa chống gửi trùng cho các thao tác vật phẩm/tiền. */
@@ -148,13 +164,14 @@ export class Game {
     if (!Game.client) throw new Error('no client');
     if (Game.session) {
       try {
-        return await Game.client.joinOrCreate(roomName, { session: Game.session });
+        // ?god đi theo mỗi lần vào room (bí cảnh, quay về); ?at chỉ áp lần vào đầu tiên.
+        return await Game.client.joinOrCreate(roomName, { session: Game.session, god: readTestParams(location.search).god });
       } catch (e) {
         if ((e as { code?: number }).code !== 4014) throw e;
         Game.session = '';
       }
     }
-    return Game.client.joinOrCreate(roomName, Game.lastLogin);
+    return Game.client.joinOrCreate(roomName, { ...Game.lastLogin, god: readTestParams(location.search).god });
   }
 
   /** Đăng nhập và vào thế giới. Lỗi được đưa lên UI qua store. */
@@ -166,7 +183,8 @@ export class Game {
     Game.session = '';
     try {
       Game.client = new Client(serverUrl());
-      const room = await Game.client.joinOrCreate(ROOM_WORLD, opts);
+      // M1-10: ?god / ?at=<địa điểm>; server chỉ nhận với tài khoản thử, tài khoản thật bị từ chối.
+      const room = await Game.client.joinOrCreate(ROOM_WORLD, { ...opts, ...readTestParams(location.search) });
       await Game.enter(room);
     } catch (e) {
       const err = e as { code?: number; message?: string };
@@ -210,6 +228,10 @@ export class Game {
 
   renderer!: THREE.WebGPURenderer;
   private post: PostPipeline | null = null;
+  /** Bộ texture mặt đất PBR, nạp sau khung đầu (P2-A2). */
+  private ground: GroundTextures | null = null;
+  /** Đèn lồng có ánh sáng điểm thật (chỉ preset Cao). */
+  private lanterns: LanternLights | null = null;
   /** `matrixWorldAutoUpdate = false`: `frame()` tự cập nhật ma trận một lần trước khi vẽ (M3-9). */
   scene = Object.assign(new THREE.Scene(), { matrixWorldAutoUpdate: false });
   camera = new THREE.PerspectiveCamera(55, 1, 0.3, 9000);
@@ -298,13 +320,25 @@ export class Game {
   private bossLineId = 0;
   /** Thẻ chương (C2): khung camera nhẹ, thẻ chờ tới khi thế giới đã dựng, đã xét lần đầu vào tông môn chưa. */
   private camFrame = new CamFrame();
+  /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
+  private cine = new Cutscene();
   private pendingChapter: ChapterKind | null = null;
   private sectChecked = false;
   private timeOffset = 0;
 
   private started = false;
+
+  /**
+   * Game đã vào thế giới và chưa bị hủy: MusicController của nó là chủ duy nhất của kênh nhạc nền, kể cả lúc chuyển
+   * room (pha `loading`, Game được rebind) hay màn lỗi khi chưa bấm thử lại. Màn tiêu đề chỉ phát `title` khi false.
+   */
+  get ownsMusic(): boolean {
+    return this.started && !this.disposed;
+  }
   private startedAt = 0;
   private frames = 0;
+  /** Số đo khung vừa vẽ, cộng dồn qua mọi pass (cho `__game.info()`). */
+  private lastRender = { drawCalls: 0, triangles: 0 };
   private hudAt = 0;
   private fpsAcc = 0;
   private fpsFrames = 0;
@@ -509,6 +543,26 @@ export class Game {
     }
   }
 
+  /** Nạp texture mặt đất ngoài đường găng: terrain dùng màu đỉnh tới khi xong rồi mới đổi sang shader PBR. */
+  private async loadGround(): Promise<void> {
+    if (new URLSearchParams(location.search).get('ground') === '0') return;
+    const t0 = performance.now();
+    try {
+      const self = this;
+      const tex = await loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } });
+      if (this.disposed) {
+        tex.dispose();
+        return;
+      }
+      this.ground = tex;
+      this.loadStats.groundLoad = Math.round(performance.now() - t0);
+      this.loadStats.groundAt = Math.round(performance.now());
+      this.terrain.setGround(tex, (QUALITY[get().quality] ?? QUALITY.medium).ground);
+    } catch (e) {
+      console.warn('[ground] không nạp được texture mặt đất, dùng màu đỉnh:', e);
+    }
+  }
+
   /** Thời gian từng bước khởi động (ms), để theo dõi thời gian tải. */
   loadStats: Record<string, number> = {};
 
@@ -556,6 +610,7 @@ export class Game {
     this.terrain = new Terrain();
     mark('terrainCoarse');
     this.terrain.shadows = q.shadows;
+    void this.loadGround();
     this.scene.add(this.terrain.group);
     this.sectMesh = new THREE.Mesh(buildSect(), this.sectMat);
     this.sectMesh.castShadow = q.shadows;
@@ -570,7 +625,11 @@ export class Game {
     applyAtmosphere(this.scene, this.env, GRADING[GRADING_DEFAULT], GRADING_DEFAULT);
     applyGrading(GRADING[GRADING_DEFAULT]);
     setHeightFog(q.heightFog);
+    this.env.setQuality(get().quality);
     this.scene.add(createLanternHalos(SECT_LANTERNS));
+    this.lanterns = new LanternLights(this.scene, SECT_LANTERNS);
+    this.lanterns.setEnabled(q.lights);
+    this.lanterns.setIntensityScale(LANTERN_LIGHT[GRADING_DEFAULT] ?? 1);
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
@@ -659,7 +718,10 @@ export class Game {
       this.keys.clear('visibility');
       this.setHidden(document.hidden);
     });
+    // Bấm chuột ở bất cứ đâu (kể cả trên HUD) cũng bỏ qua cảnh mở đầu, đúng như gợi ý "bấm phím bất kỳ".
+    this.on(window, 'pointerdown', () => this.skipCine(), { capture: true });
     this.on(window, 'keydown', (e: KeyboardEvent) => {
+      if (!e.repeat) this.skipCine();
       this.keys.onDown(e.code, e.altKey, e.repeat);
       this.onKeyDown(e);
     });
@@ -668,6 +730,7 @@ export class Game {
     this.on(c, 'contextmenu', (e: Event) => e.preventDefault());
     this.on(c, 'pointerdown', (e: PointerEvent) => {
       unlockAudio();
+      this.skipCine();
       c.focus();
       (document.activeElement as HTMLElement | null)?.blur?.();
       if (this.controls === 'mouse') {
@@ -839,6 +902,9 @@ export class Game {
       case 'help':
         togglePanel('help');
         break;
+      case 'settings':
+        togglePanel('settings');
+        break;
       case 'chat':
         set({ chatOpen: true });
         break;
@@ -877,6 +943,51 @@ export class Game {
   send(type: string, msg?: unknown): void {
     if (this.leaving) return;
     this.room.send(type, msg);
+  }
+
+  /**
+   * Số đo nhanh từ console / Playwright (`__game.info()`, M1-10). Draw call và tam giác là của khung
+   * vừa vẽ, cộng dồn qua MỌI pass (bóng, cảnh, hậu kỳ), không phải chỉ pass cuối như `renderer.info` tự reset.
+   */
+  info(): {
+    backend: 'WebGPU' | 'WebGL2';
+    drawCalls: number;
+    triangles: number;
+    geometries: number;
+    textures: number;
+    frames: number;
+    room: string;
+    x: number;
+    y: number;
+    z: number;
+    hp: number;
+    players: number;
+    monsters: number;
+    lod: number[];
+    particles: number;
+  } {
+    const me = this.me();
+    // Gọi được cả lúc đang tải (trước khi start() dựng renderer/thực thể): trả số 0.
+    const r = this.renderer as THREE.WebGPURenderer | undefined;
+    const mem = r?.info.memory ?? { geometries: 0, textures: 0 };
+    const ents = this.ents as EntityManager | undefined;
+    return {
+      backend: r && isWebGPU(r) ? 'WebGPU' : 'WebGL2',
+      drawCalls: this.lastRender.drawCalls,
+      triangles: this.lastRender.triangles,
+      geometries: mem.geometries,
+      textures: mem.textures,
+      frames: this.frames,
+      room: get().room,
+      x: Math.round(this.renderPos.x * 10) / 10,
+      y: Math.round(this.renderPos.y * 10) / 10,
+      z: Math.round(this.renderPos.z * 10) / 10,
+      hp: me?.hp ?? 0,
+      players: ents?.players.size ?? 0,
+      monsters: ents?.monsters.size ?? 0,
+      lod: ents?.lodStats().lod ?? [],
+      particles: (this.vfx as Vfx | undefined)?.particles.aliveCount().total ?? 0,
+    };
   }
 
   private me(): PState | undefined {
@@ -1284,6 +1395,10 @@ export class Game {
   }
 
   private playFxSound(t: string, src: string, dst: string, x?: number, z?: number): void {
+    // Sự kiện của chính mình có nhạc ngắn (sting) riêng: lên tầng và đột phá thay hẳn jingle SFX;
+    // tử vong giữ tiếng ngã (SFX) và thêm sting. Chưa có file/tắt tiếng thì dùng SFX như cũ.
+    const sting = src === this.sid ? STINGS[t] : undefined;
+    if (sting && playSting(sting) && t !== 'death') return;
     const map: Record<string, Sfx> = {
       sword: 'sword',
       slash: 'slash',
@@ -1340,6 +1455,7 @@ export class Game {
       if (byMe && m.crit) this.shake.kick(SHAKE.crit);
       if (mine && m.hv) this.shake.kick(SHAKE.heavy);
     }
+    if (mine && !m.heal && m.n > 0) this.skipCine();
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (m.hv && !m.heal && m.n > 0) this.heavyInk(m.dst, m.src);
     if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
@@ -1541,6 +1657,7 @@ export class Game {
     this.updateCamera(dt);
     setListener(rp.x, rp.z, this.camYaw);
     this.env.update(dt, this.camera, rp);
+    this.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
     if (me) this.ambient.update(dt, this.camera.position, rp);
     for (const disc of [this.portalDisc, this.exitDisc]) {
       if (!disc) continue;
@@ -1553,6 +1670,10 @@ export class Game {
     // toàn bộ cây, kể cả ~60 xương của mỗi nhân vật có xương.
     this.scene.updateMatrixWorld();
     this.post!.render();
+    // renderer.info không tự reset (M1-6): lúc này là tổng của MỌI pass trong khung (bóng, cảnh, hậu kỳ).
+    const ri = this.renderer.info.render;
+    this.lastRender.drawCalls = ri.drawCalls ?? ri.calls;
+    this.lastRender.triangles = ri.triangles;
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
     this.lootFly.update(dt);
     if (me && this.started) this.offscreen.update(this.camera, window.innerWidth, window.innerHeight, rp);
@@ -1606,6 +1727,7 @@ export class Game {
     this.shake.update(dt, _shakePos, _shakeLook);
     this.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
     this.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
+    if (this.cine.active) this.runCine(dt);
     updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
   }
 
@@ -1860,7 +1982,42 @@ export class Game {
     const name = get().char?.name;
     if (this.sectChecked || !name || get().room !== ROOM_WORLD || biomeAt(x, z) !== 'sect') return;
     this.sectChecked = true;
-    if (firstTime(localStorage, 'sect', name)) this.chapter('sect');
+    if (!firstTime(localStorage, 'sect', name)) return;
+    if (this.canCine(x, z)) this.startCine();
+    else this.chapter('sect');
+  }
+
+  /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) , người chơi chưa tắt thẻ chương trong Cài đặt và không tắt bằng `?cine=0`. */
+  private canCine(x: number, z: number): boolean {
+    return get().chapterCards && new URLSearchParams(location.search).get('cine') !== '0' && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
+  }
+
+  private startCine(): void {
+    this.cine.start();
+    this.stage.classList.add('cining');
+    set({ cine: { id: ++this.bossLineId, dur: SECT_CUTSCENE.dur * 1000, out: false } });
+  }
+
+  /** Phím/chuột/bị đánh: camera trôi về chỗ người chơi trong 0,45 giây; thẻ chương vẫn hiện sau đó. */
+  private skipCine(): void {
+    this.cine.skip();
+  }
+
+  /** Ghi đè camera đã đặt xong bằng đường cảnh (điểm cuối của đường chính là camera thường nên không có mối nối). */
+  private runCine(dt: number): void {
+    const cam = this.camera;
+    _cineEndP.set(cam.position.x, cam.position.y, cam.position.z);
+    _cineEndL.copy(_cineEndP).add(_cineFwd.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(10));
+    const on = this.cine.update(dt, _cineEndP, _cineEndL, _cineP, _cineL);
+    if (on) {
+      cam.position.set(_cineP.x, _cineP.y, _cineP.z);
+      cam.lookAt(_cineL.x, _cineL.y, _cineL.z);
+      return;
+    }
+    this.stage.classList.remove('cining');
+    set({ cine: { ...get().cine!, out: true } });
+    window.setTimeout(() => get().cine?.out && set({ cine: null }), 700);
+    this.chapter('sect');
   }
 
   setChapterCards(on: boolean): void {
@@ -1969,6 +2126,9 @@ export class Game {
     set({ quality: q });
     const cfg = QUALITY[q] ?? QUALITY.medium;
     setHeightFog(cfg.heightFog);
+    this.env?.setQuality(q);
+    if (this.ground) this.terrain.setGround(this.ground, cfg.ground);
+    this.lanterns?.setEnabled(cfg.lights);
     this.vfx?.particles.setQuality(q);
     this.grass?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
     this.ambient?.setQuality(q);
@@ -1990,6 +2150,8 @@ export class Game {
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();
+    this.ground?.dispose();
+    this.lanterns?.dispose();
     this.grass?.dispose();
     this.post?.dispose();
     this.sectMesh?.geometry.dispose();
