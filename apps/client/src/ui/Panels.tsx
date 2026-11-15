@@ -1,6 +1,6 @@
 import { PartyPanel } from './Party';
-import { ContentIcon } from './ContentIcon';
-import { useEffect, useRef, useState } from 'react';
+import { ContentIcon, UiIcon } from './ContentIcon';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { bindsOnEquip, C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SETS, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
@@ -76,7 +76,7 @@ function ItemDetailBody({ item, def, q, level, worn, children }: { item: InvItem
       ))}
       {def.reqLevel && def.reqLevel > 1 && <div className={'item-req' + (level < def.reqLevel ? ' bad' : '')}>{t('ui.item.req', { realm: realmName(def.reqLevel) })}</div>}
       <div className="item-desc">{t(`item.${def.id}.desc`)}</div>
-      {def.sell > 0 && <div className="k-dim">{t('ui.item.sell_price', { n: sellPrice(item, def) })} 💠</div>}
+      {def.sell > 0 && <div className="k-dim">{t('ui.item.sell_price', { n: sellPrice(item, def) })} <UiIcon id="cur_linh_thach" fallback="💠" className="inline" /></div>}
       <div className="item-actions">{children}</div>
     </div>
   );
@@ -119,7 +119,7 @@ function Bag() {
           </div>
         ))}
         <div className="gold">
-          <b>{gold}</b> 💠
+          <b>{gold}</b> <UiIcon id="cur_linh_thach" fallback="💠" className="inline" />
           <div className="equip-label">{t('ui.gold')}</div>
         </div>
       </div>
@@ -256,7 +256,7 @@ function Character() {
   const canTrib = char.level === NGUNG_KHI_MAX && char.bk >= NGUNG_KHI_MAX;
   const xpFull = char.xp >= char.xpNeed;
   const hasPill = inv.some((s) => s?.id === TRUC_CO_PILL);
-  const stat = (k: string, v: number | string) => (
+  const stat = (k: string, v: ReactNode) => (
     <div className="stat-cell">
       <dt>{t(k)}</dt>
       <dd>{v}</dd>
@@ -270,7 +270,7 @@ function Character() {
         {stat('ui.mp', char.mmp)}
         {stat('ui.atk', char.atk)}
         {stat('ui.def', char.def)}
-        {stat('ui.gold', `${char.gold} 💠`)}
+        {stat('ui.gold', <>{char.gold} <UiIcon id="cur_linh_thach" fallback="💠" className="inline" /></>)}
       </dl>
       <RootCard root={char.root} />
       <BottleneckBox char={char} />
@@ -328,7 +328,7 @@ export function RewardLine({ id }: { id: string }) {
           {q.rewards.xp} {t('ui.xp').toLowerCase()}
         </span>
       )}
-      {q.rewards.gold > 0 && <span>{q.rewards.gold} 💠</span>}
+      {q.rewards.gold > 0 && <span>{q.rewards.gold} <UiIcon id="cur_linh_thach" fallback="💠" className="inline" /></span>}
       {(q.rewards.items ?? []).map((it) => (
         <span key={it.id} className="reward-item" data-q={ITEM.get(it.id)?.rarity ?? 0}>
           <ContentIcon def={ITEM.get(it.id)} /> {itemName(it.id)}

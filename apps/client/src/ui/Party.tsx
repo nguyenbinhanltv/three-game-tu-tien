@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { C, inArena, type LootMode, type PartyMember } from '@dtl/shared';
 import { realmName, t } from '@dtl/content';
 import { Game } from '../game/engine';
+import { UiIcon } from './ContentIcon';
 import { Button, Divider, PanelWindow, ProgressBar } from './kit';
 import { set, togglePanel, useUI } from './store';
 
@@ -20,7 +21,13 @@ const send = (type: string, msg: unknown) => Game.current?.send(type, msg);
 
 function RoleTag({ role }: { role: PartyMember['role'] }) {
   if (!role) return null;
-  return <span className={'pty-role ' + role}>{t(`ui.party.role.${role}`)}</span>;
+  const icon = role === 'dps' ? 'role_kiem' : role === 'tank' ? 'role_tank' : 'role_ho_tro';
+  return (
+    <span className={'pty-role ' + role}>
+      <UiIcon id={icon} fallback="" className="inline" />
+      {t(`ui.party.role.${role}`)}
+    </span>
+  );
 }
 
 /** Khung tổ đội dưới khung nhân vật: máu và linh lực của từng thành viên (kể cả mình). */

@@ -6,6 +6,8 @@ export interface TargetInfo {
   id: string;
   kind: 'mon' | 'npc' | 'player';
   name: string;
+  /** id quái hoặc NPC: chọn chân dung (Portrait). */
+  def?: string;
   level: number;
   hp: number;
   mhp: number;
