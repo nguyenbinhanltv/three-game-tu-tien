@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { COLLIDERS, HAND_PROPS, heightAt, PROP_COLLIDERS, SECT, WATER_Y } from '@dtl/shared';
-import { allProps, KIEM_GAY, nearPropTree } from './propScatter';
+import { allProps, KIEM_GAY, nearPropTree, TREE_IDS } from './propScatter';
+import atlas from './impostors.json';
 import { PROP_CFG } from './props';
 
 describe('bố cục prop (P2-A4)', () => {
@@ -58,5 +59,37 @@ describe('bố cục prop (P2-A4)', () => {
     const t = all.find((p) => p.id === 'prop_co_thu')!;
     expect(nearPropTree(t.x, t.z)).toBe(true);
     expect(nearPropTree(SECT.x, 2090)).toBe(false);
+  });
+
+  describe('cây Tripo thay cây thủ tục (P2-A4b)', () => {
+    const trees = all.filter((p) => (TREE_IDS as readonly string[]).includes(p.id));
+    const near = (x: number, z: number, r: number, id?: string) => trees.filter((p) => (!id || p.id === id) && Math.hypot(p.x - x, p.z - z) < r);
+
+    it('đủ năm loài, mỗi loài có cấu hình cây, atlas impostor và mọi cây có tỉ lệ + sắc độ hữu hạn', () => {
+      for (const id of TREE_IDS) {
+        expect(PROP_CFG[id].tree, id).toBe(true);
+        expect(Object.keys(atlas.species), id).toContain(id);
+        expect(count(id), id).toBeGreaterThan(0);
+      }
+      for (const p of trees.filter((t) => t.tint)) {
+        expect([p.sy, ...(p.tint as number[])].every((v) => Number.isFinite(v) && (v as number) > 0.5 && (v as number) < 3.2)).toBe(true);
+      }
+    });
+
+    it('sân tông môn: anh đào/thông ở rìa sân, không giữa sân; rừng Linh Thảo có sồi và phong; thung lũng có sồi', () => {
+      const sect = near(SECT.x, SECT.z, 108).filter((p) => !HAND_PROPS.some((h) => h.x === p.x && h.z === p.z));
+      expect(sect.filter((p) => p.id === 'prop_anh_dao').length).toBeGreaterThan(5);
+      for (const p of sect) expect(Math.hypot(p.x - SECT.x, p.z - SECT.z), `${p.id} giữa sân`).toBeGreaterThan(55);
+      expect(near(2720, 2180, 300, 'prop_soi_nui').length).toBeGreaterThan(40);
+      expect(near(2720, 2180, 300, 'prop_phong_do').length).toBeGreaterThan(15);
+      expect(near(2048, 2640, 250, 'prop_soi_nui').length).toBeGreaterThan(5);
+    });
+
+    it('không có cây đè lên lối đi tông môn–sơn đạo hoặc quá gần collider', () => {
+      for (const p of trees.filter((t) => !HAND_PROPS.some((h) => h.x === t.x && h.z === t.z))) {
+        expect(Math.abs(p.x - SECT.x) < 9 && p.z >= 2136 && p.z < 2400, `${p.id} ${p.x},${p.z} trên sơn đạo`).toBe(false);
+        for (const c of COLLIDERS) expect(Math.hypot(p.x - c.x, p.z - c.z), `${p.id} chạm collider`).toBeGreaterThan(c.r + 2);
+      }
+    });
   });
 });

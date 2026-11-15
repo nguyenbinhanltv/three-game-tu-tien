@@ -20,7 +20,7 @@ import {
 } from '@dtl/shared';
 import { col, G, GeoBuilder, mat } from './geo';
 import { withSightFade } from './occlusion';
-import { nearPropTree } from './propScatter';
+import { LEGACY_TREES, nearPropTree } from './propScatter';
 
 const TILE = 256;
 const NT = WORLD_SIZE / TILE;
@@ -260,7 +260,7 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
       if (wSect > 0.8) {
         // Trong tông môn: hàng anh đào quanh rìa sân, không mọc giữa sân.
         const d = Math.hypot(x - SECT.x, z - SECT.z);
-        if (d > 62 && d < 108 && r3 < 0.55 && !nearCollider(x, z, 6) && Math.abs(x - SECT.x) > 9) {
+        if (LEGACY_TREES && d > 62 && d < 108 && r3 < 0.55 && !nearCollider(x, z, 6) && Math.abs(x - SECT.x) > 9) {
           addBroadleaf(b, x, h, z, s * 0.95, r4, C_SAKURA, far);
         }
         continue;
@@ -278,6 +278,8 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
         if (r3 > 0.94 && !far) addRock(b, x, h, z, 0.6 + r4 * 1.4, r1);
         continue;
       }
+      // Cây Tripo (propScatter.scatterTrees + PropLayer) thay cây thủ tục; chỉ `?trees=legacy` mới dựng lại cây khối.
+      if (!LEGACY_TREES) continue;
       if (h > 150 || (wForest < 0.3 && r4 > 0.55)) addPine(b, x, h, z, s, r4, far);
       else if (wForest > 0.3) addBroadleaf(b, x, h, z, s * 1.15, r4, r1 < 0.16 ? C_MAPLE : C_LEAF, far);
       else addBroadleaf(b, x, h, z, s, r4, r1 < 0.1 ? C_SAKURA : C_LEAF, far);
