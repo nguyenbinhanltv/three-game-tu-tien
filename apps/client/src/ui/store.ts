@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CharView, Equipment, InvSlot, MethodMsg, QuestView } from '@dtl/shared';
+import type { CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MethodMsg, PartyMsg, QuestView } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio';
 
 export interface TargetInfo {
@@ -103,7 +103,7 @@ export interface DebugInfo {
   sid: string;
 }
 
-export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method';
+export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party';
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
 export interface UIState {
@@ -167,6 +167,14 @@ export interface UIState {
   methodOff: number;
   /** Thẻ ngắn 0,6 giây khi mình tung chiêu tối thượng (tên chiêu, màu); `until` theo đồng hồ client. */
   ultCard: { id: number; skill: string; color: string; until: number } | null;
+  /** Tổ đội của mình (P3-9); null = không có. */
+  party: PartyMsg | null;
+  /** Lời mời tổ đội/tỉ thí đang chờ; `until` theo đồng hồ client (ms). */
+  invites: InviteMsg[];
+  /** Trận tỉ thí của mình; `at` theo đồng hồ client (ms). */
+  duel: DuelMsg | null;
+  /** Đạo hữu đang thấy trong room (không gồm mình), để mời tổ đội/tỉ thí. */
+  nearby: { name: string; lv: number }[];
   /** Bảng gỡ lỗi F3 đang mở. */
   debugOpen: boolean;
   debug: DebugInfo | null;
@@ -223,13 +231,25 @@ export const useUI = create<UIState>(() => ({
   method: null,
   methodOff: 0,
   ultCard: null,
+  party: null,
+  invites: [],
+  duel: null,
+  nearby: [],
   debugOpen: false,
   debug: null,
 }));
 
 let nextId = 1;
 
+let lastLog = '';
+let lastLogAt = 0;
+
 export function pushLog(text: string, type = 'info', from?: string): void {
+  // Gộp thông báo hệ thống lặp liên tiếp (ví dụ bấm chiêu khi chưa hồi): cùng nội dung trong 2 giây chỉ ghi một dòng.
+  const now = Date.now();
+  if (!from && text === lastLog && now - lastLogAt < 2000) return;
+  lastLog = from ? '' : text;
+  lastLogAt = now;
   useUI.setState((s) => {
     const log = s.log.length > 120 ? s.log.slice(-90) : s.log.slice();
     log.push({ id: nextId++, text, type, from });

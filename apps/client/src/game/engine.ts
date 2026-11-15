@@ -6,6 +6,9 @@ import {
   type CdMsg,
   type CharView,
   type ChatMsg,
+  type DuelMsg,
+  type InviteMsg,
+  type PartyMsg,
   cloneMoveState,
   type DmgMsg,
   DUNGEON_EXIT,
@@ -489,7 +492,27 @@ export class Game {
       this.vfx?.bolts.end(m.id, m.x, m.z, !!m.hit);
       if (m.hit) sfx('impact', m.hit === this.sid ? 0.8 : this.volumeAt(m.x, m.z) * 0.5, m);
     });
-    room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, 'chat', m.from));
+    room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, m.c === 'party' ? 'party' : 'chat', m.from));
+    // Tổ đội và tỉ thí (P3-9): chỉ hiển thị; mọi phán định ở server. Giờ server đổi sang đồng hồ client.
+    room.onMessage(S.PARTY, (m: PartyMsg | null) => set({ party: m }));
+    room.onMessage(S.INVITE, (m: InviteMsg) => {
+      const until = m.until - this.timeOffset;
+      set((s) => {
+        const rest = s.invites.filter((i) => !(i.kind === m.kind && i.id === m.id));
+        return { invites: m.gone ? rest : [...rest, { ...m, until }].slice(-4) };
+      });
+      if (!m.gone) sfx('ui_open', 0.8);
+    });
+    room.onMessage(S.DUEL, (m: DuelMsg) => {
+      // Vào trận: nhắm đối thủ (thay mục tiêu quái cũ); hết trận: bỏ nhắm nếu vẫn đang nhắm người đó.
+      if (m.phase === 'count') {
+        this.setTarget(m.foe, 'player');
+      } else if (m.phase === 'end' && this.targetKind === 'player' && this.targetId === m.foe) {
+        this.clearTarget();
+      }
+      set({ duel: { ...m, at: m.at - this.timeOffset } });
+      if (m.phase === 'end') setTimeout(() => set((s) => (s.duel?.phase === 'end' ? { duel: null } : {})), 4500);
+    });
     room.onMessage(S.KICK, (m: { k: string }) => {
       this.leaving = true;
       set({ phase: 'error', error: t(m.k) });
@@ -940,6 +963,9 @@ export class Game {
       case 'method':
         togglePanel('method');
         break;
+      case 'party':
+        togglePanel('party');
+        break;
       case 'map':
         togglePanel('map');
         break;
@@ -1099,6 +1125,12 @@ export class Game {
     const me = this.me();
     if (!skill || !me || me.fl & PF_DEAD) return;
     const needTarget = skill.kind === 'damage' || skill.kind === 'aoe';
+    // Đang tỉ thí: chiêu đánh nhắm đối thủ (server vẫn kiểm đúng đối thủ, đã hết đếm ngược, trong tầm).
+    const duel = get().duel;
+    if (needTarget && duel && duel.phase !== 'end') {
+      this.send(C.SKILL, { id: skill.id, t: duel.foe });
+      return;
+    }
     if (needTarget) {
       const cur = this.ents.monsters.get(this.targetId);
       if (!cur || cur.s.st === MS_DEAD) {
@@ -2016,7 +2048,15 @@ export class Game {
       const info = this.renderer.info;
       perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.ents.players.size} người · LOD ${this.ents.lodStats().lod.join('/')} (ngoài khung ${this.ents.lodStats().offscreen}) · ${this.terrain.tileCount()} ô · ${this.vfx.particles.aliveCount().total}/${this.vfx.particles.limit} hạt`;
     }
+    const nearby: { name: string; lv: number }[] = [];
+    this.view.players.forEach((p, sid) => {
+      if (sid !== this.sid) nearby.push({ name: p.name, lv: p.lv });
+    });
+    nearby.sort((a, b) => a.name.localeCompare(b.name));
+    const nearbyKey = nearby.map((n) => n.name + n.lv).join('|');
+    const sameNearby = nearbyKey === st.nearby.map((n) => n.name + n.lv).join('|');
     set({
+      ...(sameNearby ? {} : { nearby }),
       debug: st.debugOpen ? this.debugInfo(me) : null,
       hp: me.hp,
       mhp: me.mhp,

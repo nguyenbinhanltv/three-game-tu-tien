@@ -8,6 +8,7 @@ import { trackedQuestId } from '../game/offscreen';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
+import { DuelBanner, InviteStack, PartyFrame } from './Party';
 import { Panels } from './Panels';
 import { isStuck, TrialBanner } from './Realm';
 import { type BossLine, type ChapterCard, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
@@ -457,6 +458,9 @@ function SkillBar() {
         <Button size="s" onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} title={t('ui.method.title')}>
           ☯️ <span>{t('ui.method.key')}</span> <kbd>V</kbd>
         </Button>
+        <Button size="s" onClick={(e) => { togglePanel('party'); blurAfterPointer(e); }} title={t('ui.party.title')}>
+          👥 <span>{t('ui.party.key')}</span> <kbd>P</kbd>
+        </Button>
         <Button size="s" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }}>
           📜 <span>{t('ui.quests')}</span> <kbd>L</kbd>
         </Button>
@@ -524,7 +528,17 @@ function Chat() {
   }, [open]);
   const submit = () => {
     const m = text.trim();
-    if (m) Game.current?.send(C.CHAT, { m });
+    // Lệnh chat tổ đội/tỉ thí: chỉ là ý định, server kiểm mọi điều kiện.
+    const cmd = /^\/(moi|p|tithi|roi)(?:\s+(.*))?$/i.exec(m);
+    if (cmd) {
+      const arg = (cmd[2] ?? '').trim();
+      const g = Game.current;
+      const c = cmd[1].toLowerCase();
+      if (c === 'moi' && arg) g?.send(C.PARTY, { a: 'inv', n: arg });
+      else if (c === 'p' && arg) g?.send(C.PARTY, { a: 'say', m: arg });
+      else if (c === 'tithi' && arg) g?.send(C.DUEL, { a: 'inv', n: arg });
+      else if (c === 'roi') g?.send(C.PARTY, { a: 'leave' });
+    } else if (m) Game.current?.send(C.CHAT, { m });
     setText('');
     set({ chatOpen: false });
     inputRef.current?.blur();
@@ -633,10 +647,14 @@ export function Hud() {
     };
   }, [cut]);
   const cining = useUI((s) => s.cine !== null && !s.cine.out);
+  const dueling = useUI((s) => s.duel !== null);
   return (
-    <div className={'hud' + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>
+    <div className={'hud' + (dueling ? ' duel-on' : '') + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>
       <TribBars />
       <PlayerFrame />
+      <PartyFrame />
+      <InviteStack />
+      <DuelBanner />
       <CineView />
       <ChapterCardView />
       <UltCardView />
