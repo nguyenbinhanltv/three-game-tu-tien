@@ -174,11 +174,11 @@ describe('SkinnedCharacter.perform', () => {
 
 describe('SkillPoses (khớp động tác với FX)', () => {
   const fake = () => {
-    const calls: { pose: string; o?: { from?: number; delay?: number } }[] = [];
+    const calls: { pose: string; o?: Record<string, unknown> }[] = [];
     let current = '';
     const m = {
       attack: vi.fn(),
-      perform: (pose: string, o?: { from?: number; delay?: number }) => {
+      perform: (pose: string, o?: Record<string, unknown>) => {
         calls.push({ pose, o });
         current = pose;
         return true;
@@ -194,7 +194,10 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     const sp = new SkillPoses();
     const { m, calls } = fake();
     sp.predict(m, phi, 1000);
-    expect(calls).toEqual([{ pose: 'phi_kiem', o: undefined }]);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].pose).toBe('phi_kiem');
+    // Thời gian lấy từ dữ liệu chiêu, không viết cứng trong code.
+    expect((calls[0].o as { timing?: { hitAt: number[] } }).timing?.hitAt).toEqual([phi.combo!.hits[0].hitAt]);
     const hold = sp.onFx('sword', m, true, 1060);
     expect(hold).toBeCloseTo(releaseAt(phi) - 0.06, 5);
     expect(sp.holdLeft(1060)).toBeCloseTo(hold, 5);
@@ -239,6 +242,45 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     sp.onCast(m, undefined, thunder.cast);
     sp.onCast(m, 'skl_khong_co', thunder.cast);
     expect(calls.length).toBe(0);
+  });
+  it('đòn liên hoàn: bấm lặp trong cửa sổ thì đòn 1 → 2 → 3 (đòn 3 đẩy lùi), hết cửa sổ về đòn 1', () => {
+    const sp = new SkillPoses();
+    const { m, calls } = fake();
+    const combos = () => calls.map((c) => c.o?.combo);
+    sp.predict(m, phi, 1000);
+    sp.predict(m, phi, 1500);
+    sp.predict(m, phi, 2000);
+    sp.predict(m, phi, 2500);
+    expect(combos()).toEqual([0, 1, 2, 0]);
+    sp.predict(m, phi, 2500 + (phi.combo!.window + 0.5) * 1000);
+    expect(combos()[4]).toBe(0);
+    expect((calls[2].o?.timing as { kb: boolean }).kb).toBe(true);
+  });
+
+  it('lao người: chỉ chuỗi đánh thường, có mục tiêu, và không vượt chỗ đứng sát', () => {
+    const sp = new SkillPoses();
+    const { m, calls } = fake();
+    sp.predict(m, phi, 1000, 6);
+    sp.predict(m, phi, 1100, 6);
+    sp.predict(m, phi, 1200, 6);
+    sp.predict(m, phi, 5000, 1.5);
+    sp.predict(m, phi, 9000);
+    const r = calls.map((c) => c.o?.reach as number);
+    expect(r[0]).toBeGreaterThan(0);
+    expect(r[2]).toBeGreaterThan(r[0]);
+    expect(r[3]).toBeLessThanOrEqual(0.2 + 1e-9);
+    expect(r[4]).toBe(0);
+  });
+
+  it('FX của người khác mang đòn thứ n; chiêu niệm không có timing từ lúc bấm', () => {
+    const sp = new SkillPoses();
+    const { m, calls } = fake();
+    sp.onFx('sword', m, false, 0, { n: 2, gap: 5 });
+    expect(calls[0].o?.combo).toBe(2);
+    expect(calls[0].o?.from).toBeGreaterThan(0);
+    const loi = SKILLS.find((s) => s.fx === 'thunder')!;
+    sp.onCast(m, loi.id, 1.5);
+    expect(calls[1].o?.timing).toBeUndefined();
   });
 });
 

@@ -9,6 +9,9 @@ export type CharState =
   | 'combatIdle'
   | 'walk'
   | 'run'
+  | 'back'
+  | 'strafeL'
+  | 'strafeR'
   | 'jump'
   | 'fly'
   | 'meditate'
@@ -16,7 +19,8 @@ export type CharState =
   | 'stun'
   | 'death'
   | 'attack'
-  | 'hit';
+  | 'hit'
+  | 'dash';
 
 /** Trạng thái → tên clip trong GLB. Thiếu clip thì lùi theo `FALLBACK`. */
 export type ClipMap = Partial<Record<CharState, string>>;
@@ -27,6 +31,11 @@ export const FALLBACK: Record<CharState, CharState | null> = {
   combatIdle: 'idle',
   walk: 'run',
   run: 'walk',
+  // Đi lùi/ngang thiếu clip K-3 (chưa nạp xong hoặc asset không phải người) thì chạy bình thường.
+  back: 'run',
+  strafeL: 'run',
+  strafeR: 'run',
+  dash: 'run',
   jump: 'idle',
   fly: 'idle',
   meditate: 'idle',
@@ -43,15 +52,20 @@ export const MOVE_MIN = 0.3;
 export const RUN_FROM = 0.6;
 
 /** Trạng thái nền theo thứ tự ưu tiên: chết > choáng > thiền > bay > trên không > niệm chú > di chuyển > đứng. */
-export function baseState(a: AnimState, refSpeed: number): CharState {
+export function baseState(a: AnimState, refSpeed: number, combatBias = false): CharState {
   if (a.dead) return 'death';
   if (a.stunned) return 'stun';
   if (a.meditating) return 'meditate';
   if (a.flying) return 'fly';
   if (a.airborne) return 'jump';
   if (a.casting) return 'cast';
-  if (a.speed > MOVE_MIN) return a.speed >= refSpeed * RUN_FROM ? 'run' : 'walk';
-  return a.combat ? 'combatIdle' : 'idle';
+  if (a.speed > MOVE_MIN) {
+    if (a.moveDir === 'back') return 'back';
+    if (a.moveDir === 'left') return 'strafeL';
+    if (a.moveDir === 'right') return 'strafeR';
+    return a.speed >= refSpeed * RUN_FROM ? 'run' : 'walk';
+  }
+  return a.combat || combatBias ? 'combatIdle' : 'idle';
 }
 
 /** Tên clip cho trạng thái, đi theo chuỗi lùi; null nếu không có clip nào phù hợp. */
@@ -71,3 +85,6 @@ export function clipFor(state: CharState, map: ClipMap, has: (clip: string) => b
 export function locomotionScale(speed: number, refSpeed: number): number {
   return Math.min(2.6, Math.max(0.45, speed / Math.max(0.01, refSpeed)));
 }
+
+/** Trạng thái nền là di chuyển (clip lặp theo tốc độ, chân bám đất). */
+export const LOCO_STATES: ReadonlySet<CharState> = new Set<CharState>(['walk', 'run', 'back', 'strafeL', 'strafeR']);
