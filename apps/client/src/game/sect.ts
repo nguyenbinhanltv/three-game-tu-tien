@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { DUNGEON_EXIT, hash01, heightAt, KIEM_TRUNG, PORTAL_POS, SECT } from '@dtl/shared';
+import { DUNGEON_EXIT, heightAt, KIEM_TRUNG, PORTAL_POS, SECT } from '@dtl/shared';
 import { col, G, GeoBuilder, mat } from './geo';
 
 const C_STONE = col(0xa9a59b);
@@ -39,7 +39,7 @@ function roof(b: GeoBuilder, x: number, y: number, z: number, w: number, d: numb
 /** Vị trí bầu đèn của các đèn đá dọc lối vào tông môn (để vẽ quầng sáng giả). */
 export const SECT_LANTERNS: readonly { x: number; y: number; z: number }[] = (() => {
   const out: { x: number; y: number; z: number }[] = [];
-  for (let z = 2080; z <= 2118; z += 12) for (const sx of [-1, 1]) out.push({ x: SECT.x + sx * 7.5, y: SECT.y + 1.95, z });
+  for (let z = 2080; z <= 2118; z += 12) for (const sx of [-1, 1]) out.push({ x: SECT.x + sx * 7.5, y: SECT.y + 1.7, z });
   return out;
 })();
 
@@ -175,20 +175,7 @@ function buildStaticRest(b: GeoBuilder, cx: number): void {
   b.add(G.box, mat(ax, ay + 10.5, az, 0, 0.5, -0.09, 2.6, 19, 0.6), C_OLD);
   b.add(G.box, mat(ax - 0.9, ay + 20.6, az, 0, 0.5, -0.09, 7.4, 1.0, 1.3), C_RUST);
   b.add(G.cyl8, mat(ax - 1.15, ay + 23.4, az, 0, 0.5, -0.09, 0.5, 4.8, 0.5), C_RUST);
-  for (let i = 0; i < 46; i++) {
-    const a = hash01(i, 3, 4401) * Math.PI * 2;
-    const r = 30 + hash01(i, 5, 4401) * 62;
-    const x = ax + Math.cos(a) * r;
-    const z = az + Math.sin(a) * r;
-    // Chừa lối vào phía nam và khu giữa để đánh.
-    if (Math.abs(x - ax) < 9 && z > az + 20) continue;
-    const y = heightAt(x, z);
-    const s = 0.7 + hash01(i, 7, 4401) * 1.9;
-    const tilt = (hash01(i, 9, 4401) - 0.5) * 0.7;
-    const yaw = hash01(i, 11, 4401) * 6;
-    b.add(G.box, mat(x, y + 1.9 * s, z, tilt, yaw, tilt * 0.6, 0.34 * s, 4.2 * s, 0.07 * s), hash01(i, 13, 4401) > 0.5 ? C_OLD : C_STEEL);
-    b.add(G.box, mat(x, y + 4.1 * s, z, tilt, yaw, tilt * 0.6, 1.0 * s, 0.16 * s, 0.2 * s), C_RUST);
-  }
+  // Rừng kiếm gãy: từ P2-A4 là prop Tripo `prop_kiem_gay` (KIEM_GAY, game/propScatter.ts), không dựng ở đây.
   // Cổng ra.
   const ex = DUNGEON_EXIT.x;
   const ez = DUNGEON_EXIT.z;
