@@ -1371,7 +1371,9 @@ export class Game {
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
       case 'respawn':
-        v.pillar(posSrc, 0xbfe8ff, 1.2, 1.0, 8);
+        // Được Hồi Thiên Đan Lộ hồi sinh: cột sáng hẹp và mờ để nhìn rõ người vừa đứng dậy.
+        if (m.v === 'revive') v.pillar(posSrc, 0xbfe8ff, 1.2, 0.35, 6, 0.12);
+        else v.pillar(posSrc, 0xbfe8ff, 1.2, 1.0, 8);
         break;
       case 'quest':
       case 'craft':

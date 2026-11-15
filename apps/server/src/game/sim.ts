@@ -1113,7 +1113,7 @@ export class GameSim {
           dead.lastCombatAt = this.now;
           dead.hazardWin = { until: 0, taken: 0 };
           this.sys(dead, 'sys.revived', { name: c.name }, 'good');
-          this.fx({ t: 'respawn', src: dead.sid });
+          this.fx({ t: 'respawn', src: dead.sid, v: 'revive' });
         }
         for (const o of this.players.values()) {
           if (o === dead || this.isDead(o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;

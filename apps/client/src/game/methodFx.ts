@@ -42,7 +42,7 @@ export function groundRing(v: Vfx, x: number, z: number, r: number, color: numbe
     dur,
     (k) => {
       m.fxA.x = Math.min(1, k * 4);
-      m.fxOpacity = k < 0.65 ? 0.9 : 0.9 * (1 - (k - 0.65) / 0.35);
+      m.fxOpacity = k < 0.65 ? 0.28 : 0.28 * (1 - (k - 0.65) / 0.35);
     },
     () => v.drop(m),
   );
@@ -73,18 +73,18 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       v.swordShot(from.clone().add(new THREE.Vector3(0, 0.45, 0)), c.dst, color, 0.8 * sc, 0.22);
       v.swordShot(from, c.dst, color, 1.25 * sc, 0.16, (at) => {
         v.slashMark(c.dst, 0xffffff, 0.7 * sc, -0.6, 0.24, false, at.clone());
-        v.pillar(c.dst, color, m.v === 'deep' ? 0.9 : 0.6, m.v === 'deep' ? 0.8 : 0.5, m.v === 'deep' ? 4 : 2.6);
-        if (m.v === 'spread') v.burst(at, color, 3, 0.45);
+        v.pillar(c.dst, color, m.v === 'deep' ? 0.9 : 0.6, 0.3, m.v === 'deep' ? 3.4 : 2.4, 0.22);
+        if (m.v === 'spread') v.burst(at, color, 1.8, 0.45);
       });
       return true;
     }
     case 'vankiem': {
       // Vạn Kiếm Quy Tông (tối thượng): mưa kiếm to, nhát chém dọc khổng lồ, trụ sáng xuyên trời.
       v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 10, color, m.sd, c.mine);
-      v.slashVertical(c.dst, 0xffffff, 2.2);
-      v.pillar(c.dst, color, 1.1, 1.8, 14);
+      v.slashVertical(c.dst, color, 1.6);
+      v.pillar(c.dst, color, 1.1, 0.3, 9, 0.1);
       if (m.x !== undefined && m.z !== undefined) groundRing(v, m.x, m.z, m.r ?? 10, color, 1.2);
-      if (c.mine) c.flash(0.22);
+      if (c.mine) c.flash(0.1);
       return true;
     }
     case 'transon': {
@@ -93,19 +93,15 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       const z = m.z ?? 0;
       const r = m.r ?? 12;
       groundRing(v, x, z, r, color, 1.0);
-      groundRing(v, x, z, Math.max(2, r * 0.45), 0xffffff, 0.7);
-      v.pillar(c.src, color, 0.8, 1.3, 4 * sc);
-      v.burst(new THREE.Vector3(x, groundAt(x, z) + 0.3, z), color, 2.6 * sc, 0.4);
-      if (m.v === 'guard') v.shield(c.src, 3, () => true, color, 1.1);
+      v.pillar(c.src, color, 0.8, 0.3, 3 * sc, 0.12);
+      if (m.v === 'guard') v.shield(c.src, 3, () => true, color, 0.8, 0.14);
       return true;
     }
     case 'kimcuong': {
       // Kim Cương Bất Hoại (tối thượng): thân bọc vàng trong suốt thời gian giảm sát thương.
       const end = performance.now() + (m.d ?? 6) * 1000;
-      v.shield(c.src, m.d ?? 6, () => performance.now() < end, color, 1.35);
-      v.pillar(c.src, color, 1.0, 1.4, 9);
-      if (c.src(_a)) v.burst(_a, color, 3.4, 0.5);
-      if (c.mine) c.flash(0.16);
+      v.shield(c.src, m.d ?? 6, () => performance.now() < end, color, 0.8, 0.12);
+      v.pillar(c.src, color, 1.0, 0.3, 5, 0.1);
       return true;
     }
     case 'xuanphong': {
@@ -114,7 +110,7 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       const z = m.z ?? 0;
       const r = m.r ?? 10;
       groundRing(v, x, z, r, color, Math.min(m.d ?? 6, 3));
-      v.pillar(c.src, color, 1.0, 1.1 * (m.v === 'self' ? 1.3 : 1), 6);
+      v.pillar(c.src, color, 1.0, 0.3 * (m.v === 'self' ? 1.3 : 1), 5, 0.1);
       return true;
     }
     case 'hoithien': {
@@ -122,9 +118,8 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       const x = m.x ?? 0;
       const z = m.z ?? 0;
       groundRing(v, x, z, m.r ?? 14, color, 1.4);
-      v.pillar(c.src, color, 1.6, 1.8, 16);
-      if (c.src(_a)) v.burst(_a, 0xffffff, 3.6, 0.6);
-      if (c.mine) c.flash(0.18);
+      v.pillar(c.src, color, 1.6, 0.3, 9, 0.1);
+      if (c.src(_a)) v.burst(_a, color, 1.4, 0.6);
       return true;
     }
   }
@@ -152,7 +147,7 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
       break;
     }
     case 'slash:stun': {
-      if (c.dst(_a)) v.burst(_a, 0xfff2b8, 3.2, 0.35);
+      if (c.dst(_a)) v.burst(_a, 0xfff2b8, 1.8, 0.35);
       break;
     }
     case 'slash:trail': {
@@ -168,7 +163,7 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
       break;
     }
     case 'rain:focus': {
-      v.pillar(c.dst, color, 0.9, 1.2, 8);
+      v.pillar(c.dst, color, 0.9, 0.5, 6, 0.16);
       break;
     }
     case 'rain:wide': {
@@ -176,7 +171,7 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
       break;
     }
     case 'heal:hot': {
-      v.pillar(c.src, 0x7dffa0, 2.2, 0.7, 3.5);
+      v.pillar(c.src, 0x7dffa0, 2.2, 0.4, 3.5, 0.18);
       break;
     }
     case 'shield:ally':
