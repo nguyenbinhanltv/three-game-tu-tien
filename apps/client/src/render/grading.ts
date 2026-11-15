@@ -22,6 +22,10 @@ export interface GradingPreset {
   contrast: number;
   saturation: number;
   exposure: number;
+  /** Mức nhuộm sắc ở vùng tối / vùng sáng (0..1) và độ ấm của sương hướng mặt trời. */
+  shadowAmount?: number;
+  highlightAmount?: number;
+  fogScatter?: number;
 }
 
 export type GradingName = 'dawn' | 'day' | 'night';

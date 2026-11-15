@@ -47,7 +47,7 @@ export const groundParams = {
   normalStrength: uniform(0.85),
 };
 
-const SNOW = vec3(0.86, 0.9, 0.95);
+const SNOW = vec3(0.58, 0.63, 0.66);
 const TOMB_TINT = vec3(0.6, 0.58, 0.7);
 
 /** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */

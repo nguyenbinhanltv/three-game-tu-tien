@@ -77,6 +77,8 @@ export function applyGrading(p: GradingPreset): void {
   disp(postParams.shadowTint.value, p.shadowTint);
   disp(postParams.highlightTint.value, p.highlightTint);
   disp(postParams.blackLift.value, p.blackLift);
+  postParams.shadowTintAmount.value = p.shadowAmount ?? 0.5;
+  postParams.highlightTintAmount.value = p.highlightAmount ?? 0.1;
   postParams.splitBalance.value = p.splitBalance;
   postParams.contrast.value = p.contrast;
   postParams.saturation.value = p.saturation;
