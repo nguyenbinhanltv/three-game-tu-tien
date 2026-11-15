@@ -20,8 +20,12 @@ export function hitStopFor(crit: boolean, heavy: boolean): number {
   return heavy ? HIT_STOP_HEAVY : HIT_STOP_LIGHT;
 }
 
-const FLASH_MAT = new THREE.MeshBasicMaterial({ color: 0xfff6e8 });
-const FLASH_MAT_CRIT = new THREE.MeshBasicMaterial({ color: 0xffd36a });
+// Chớp trúng đòn là màu phẳng không đổ bóng: trắng tinh thì che mất hình nhân vật (art bible mục 5, 8), nên dùng màu kem/vàng dịu
+// (≈ 80% độ sáng) và chớp ngắn (`FLASH_MAX`); vẫn đủ rõ để đọc đòn mà còn thấy dáng người.
+const FLASH_MAT = new THREE.MeshBasicMaterial({ color: 0xd2c8b6 });
+const FLASH_MAT_CRIT = new THREE.MeshBasicMaterial({ color: 0xd2a850 });
+/** Chớp tối đa bao lâu (giây), kể cả khi khựng lâu hơn. */
+const FLASH_MAX = 0.06;
 
 /** Thời gian giật lùi đạt đỉnh, rồi tắt dần theo hàm mũ. */
 const KNOCK_RISE = 0.05;
@@ -121,7 +125,7 @@ export class HitReact {
     if (o.crit && !this.crit && this.flashing) for (const m of this.meshes) m.material = FLASH_MAT_CRIT;
     this.crit = !!o.crit || (this.crit && this.flashing);
     if (!o.noStop) this.stopT = Math.min(HIT_STOP_MAX, Math.max(this.stopT, stop));
-    if (!o.noFlash) this.flashT = Math.max(this.flashT, Math.max(0.06, stop));
+    if (!o.noFlash) this.flashT = Math.max(this.flashT, FLASH_MAX);
     this.shakeT = stop + 0.1;
     const f = this.feel;
     this.shakeAmp = ((o.crit ? 0.09 : 0.05) + (o.heavy ? f.heavyShake : 0)) * f.shake;
