@@ -15,6 +15,7 @@ import {
   screenUV,
   sin,
   smoothstep,
+  texture,
   time,
   uniform,
   vec2,
@@ -25,6 +26,7 @@ import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
+import { getCloudNoise } from './noiseTex';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -73,6 +75,10 @@ export const postParams = {
   /** 0..1 và màu: nhuộm thoáng qua cả khung (chuyển pha boss, P2-B3), thay màu trời/sương trong một nhịp. */
   pulse: uniform(0),
   pulseColor: uniform(new THREE.Color(0.55, 0.78, 1)),
+  /** 0..1: mực thủy mặc loang từ mép vào giữa (chết, P2-B5). 0 = không vẽ gì. */
+  ink: uniform(0),
+  /** 0..1: khử bão hòa và hạ sáng cả khung theo cảnh chết. */
+  inkDesat: uniform(0),
 };
 
 /** Nạp số của một preset chỉnh màu (grading.ts) vào uniform. */
@@ -228,6 +234,20 @@ export class PostPipeline {
     // Nhuộm thoáng qua (chuyển pha): giữ độ sáng, đổi sắc vùng tối nhiều hơn vùng sáng.
     const pl = luminance(g);
     g = vec3(mix(g, postParams.pulseColor.mul(pl.mul(1.15).add(0.06)), postParams.pulse.mul(0.65)));
+
+    // Chết (P2-B5): cảnh nhạt màu, tối dần, rồi mực loang từ mép vào giữa theo vân nhiễu 3 tầng. Viền mực đậm hơn lõi.
+    g = vec3(mix(g, vec3(luminance(g)).mul(float(1).sub(postParams.inkDesat.mul(0.3))), postParams.inkDesat.mul(0.88)));
+    // Một lần lấy mẫu texture nhiễu dùng chung (R/G/B = ba tầng chi tiết) thay cho nhiễu hash 3 tầng mỗi điểm ảnh.
+    const inkSample = texture(getCloudNoise(), screenUV.mul(vec2(1.05, 0.78)));
+    const inkN = inkSample.r.mul(0.5).add(inkSample.g.mul(0.3)).add(inkSample.b.mul(0.2));
+    const inkV = length(fromCenter).mul(1.414).add(inkN.sub(0.5).mul(0.62));
+    const inkEdge = float(1.5).sub(postParams.ink.mul(1.75));
+    const inkMask = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.1), inkV);
+    const inkRim = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.02), inkV).mul(float(1).sub(smoothstep(inkEdge.add(0.02), inkEdge.add(0.16), inkV)));
+    const inkCol = mix(vec3(0.05, 0.055, 0.07), vec3(0.012, 0.014, 0.022), inkRim.add(inkV.mul(0.25)).min(1));
+    // Lõi màn mỏng hơn để còn lờ mờ thấy nhân vật; mép dày đặc.
+    const inkBody = mix(float(0.72), float(0.95), smoothstep(0.1, 0.85, length(fromCenter).mul(1.414)));
+    g = vec3(mix(g, inkCol, inkMask.mul(inkBody)));
 
     const graded = vec4(g, 1);
     let ldrRgb = graded.rgb;
