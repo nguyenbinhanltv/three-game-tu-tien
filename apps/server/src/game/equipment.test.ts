@@ -79,7 +79,7 @@ describe('migration 3 ô → 8 ô', () => {
     const c = Character.create(acc, 'Cu' + acc, null, 'kim' as never); // Kim không cộng hp/mp/công/thủ
     sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify({ weapon: { id: 'itm_moc_kiem', n: 1, plus: 3 }, jade: { id: 'itm_ngoc_boi', n: 1, plus: 2 } }), c.id);
     const l = Character.load(c.id);
-    const base = Character.load(Character.create(acc + 1, 'Cu' + (acc + 1)).id);
+    const base = Character.load(Character.create(acc + 1, 'Cu' + (acc + 1), null, 'kim' as never).id);
     expect(l.atk).toBe(base.atk + Math.round(4 * 1.24));
     expect(l.mmp).toBe(base.mmp + Math.round(40 * 1.16));
   });
