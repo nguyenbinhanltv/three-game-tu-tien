@@ -339,8 +339,8 @@ export class EntityManager {
     scene.add(this.group);
     this.skins.preload();
     this.playerSkins.preload();
-    // Bí cảnh có boss model xương: nạp ngay khi vào room (trước đó chỉ nạp khi boss hiện ra giữa trận).
-    if (levelId === 'kiem_trung') this.skins.preloadLazy();
+    // Boss model xương của màn này (bí cảnh, Hàn Giao ở thế giới): nạp ngay khi vào room; boss màn khác không nạp.
+    this.skins.preloadLazy(levelId);
     this.hasNpcs = levelId === 'van_lam';
     if (this.hasNpcs) {
       this.npcSkins.preload();

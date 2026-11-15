@@ -31,6 +31,8 @@ export interface MonsterSkin {
   legs: 'biped' | 'quad' | 'none';
   /** Chỉ nạp khi quái xuất hiện lần đầu (boss trong bí cảnh), không nạp sẵn lúc vào thế giới. */
   lazy?: boolean;
+  /** Màn (levelId) có quái này; `preloadLazy(levelId)` chỉ nạp trước skin nạp lười của đúng màn (bỏ trống = không nạp trước, chỉ nạp khi quái xuất hiện). */
+  level?: string;
   /** Đòn lớn có vùng báo trước (M5-5) → clip và thời điểm chạm. */
   moves?: Partial<Record<BossMoveKind, BossMove>>;
   /** Ép hệ số kim loại (nhân với metalnessMap của asset): 0 = không kim loại, tránh vảy tối đen khi ngược sáng không có envMap. */
@@ -89,12 +91,12 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_thach_vien: { asset: 'mon_thach_vien', clips: WOLF_CLIPS, refSpeed: 2.15, legs: 'biped', tint: '#ffffff' },
   // Boss Kiếm Trủng (M3-8). Sói chúa: naturalSpeed 3,378 theo cùng tỉ lệ với sói (→ 2,7); hai boss vượn đo chân trụ
   // clip run Tripo ở scale 1.
-  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, legs: 'quad', tint: '#ffffff', rim: 0.35, lazy: true, moves: QUAD_MOVES },
-  boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, legs: 'biped', tint: '#ffffff', coreGlow: 1.6, lazy: true, moves: BIPED_MOVES },
-  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: CHANT_BOSS_CLIPS, refSpeed: 3.1, legs: 'biped', tint: '#ffffff', lazy: true, moves: BIPED_MOVES },
+  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, legs: 'quad', tint: '#ffffff', rim: 0.35, lazy: true, level: 'kiem_trung', moves: QUAD_MOVES },
+  boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, legs: 'biped', tint: '#ffffff', coreGlow: 1.6, lazy: true, level: 'kiem_trung', moves: BIPED_MOVES },
+  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: CHANT_BOSS_CLIPS, refSpeed: 3.1, legs: 'biped', tint: '#ffffff', lazy: true, level: 'kiem_trung', moves: BIPED_MOVES },
   // Hàn Giao (boss Hồ Sương Mù): giao băng không chân, bộ xương chuỗi 17 đốt + clip thủ tục. refSpeed 2,1 × scale 2,4 ≈ tốc độ 5 m/s
   // của boss (clip trườn 1,0 s/chu kỳ). Viền băng nhạt theo `accent`.
-  boss_han_giao: { asset: 'boss_han_giao', clips: CHANT_BOSS_CLIPS, refSpeed: 2.1, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.3, metalness: 0, lazy: true, moves: SERPENT_MOVES },
+  boss_han_giao: { asset: 'boss_han_giao', clips: CHANT_BOSS_CLIPS, refSpeed: 2.1, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.3, metalness: 0, lazy: true, level: 'van_lam', moves: SERPENT_MOVES },
 };
 
 interface Template {
@@ -124,10 +126,13 @@ export class MonsterSkins {
     for (const s of Object.values(MONSTER_SKINS)) if (!s.lazy) this.load(s.asset);
   }
 
-  /** Nạp trước các asset nạp lười (boss bí cảnh) để cảnh boss xuất hiện luôn có model thật, không đổi từ model khối giữa cảnh. */
-  preloadLazy(): void {
+  /**
+   * Nạp trước các asset nạp lười của màn `levelId` (boss bí cảnh Kiếm Trủng, Hàn Giao ở thế giới) để cảnh boss xuất hiện luôn
+   * có model thật, không đổi từ model khối giữa cảnh. Skin của màn khác không được nạp (tốn băng thông và GPU vô ích).
+   */
+  preloadLazy(levelId: string): void {
     if (this.legacy) return;
-    for (const s of Object.values(MONSTER_SKINS)) if (s.lazy) this.load(s.asset);
+    for (const s of Object.values(MONSTER_SKINS)) if (s.lazy && s.level === levelId) this.load(s.asset);
   }
 
   /** Quái này sẽ có model mới nhưng asset đang nạp (tạm dùng model khối, nạp xong thì đổi). Asset lười bắt đầu nạp ở đây. */

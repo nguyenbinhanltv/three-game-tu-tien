@@ -89,6 +89,25 @@ describe('boss có xương (asset thật)', () => {
     skins.dispose();
   });
 
+  it('nạp trước theo màn: vào kiem_trung không tải Hàn Giao, vào van_lam không tải boss bí cảnh', async () => {
+    const files = (id: string) => (MANIFEST.assets[id] as { file: string }).file;
+    const inDungeon: string[] = [];
+    const d = await bossSkins(inDungeon);
+    d.skins.preloadLazy('kiem_trung');
+    await new Promise((r) => setTimeout(r, 200));
+    for (const id of ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong']) expect(inDungeon, id).toContain(files(id));
+    expect(inDungeon).not.toContain(files('boss_han_giao'));
+    d.skins.dispose();
+
+    const inWorld: string[] = [];
+    const w = await bossSkins(inWorld);
+    w.skins.preloadLazy('van_lam');
+    await new Promise((r) => setTimeout(r, 200));
+    expect(inWorld).toContain(files('boss_han_giao'));
+    for (const id of ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong']) expect(inWorld, id).not.toContain(files(id));
+    w.skins.dispose();
+  });
+
   it('slam: động tác chạm đúng lúc vùng nổ; nhiều vùng cùng lúc chỉ phát một lần; trúng đòn không cắt ngang', async () => {
     const { skins } = await bossSkins();
     const def = MONSTER.get('boss_thu_mo_tuong')!;
