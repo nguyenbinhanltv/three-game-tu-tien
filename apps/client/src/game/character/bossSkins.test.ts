@@ -13,7 +13,7 @@ import type { AnimState } from './view';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const BOSSES = ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong'];
+const BOSSES = ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong', 'boss_han_giao'];
 
 const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
 

@@ -27,8 +27,8 @@ export interface MonsterSkin {
    * khác hẳn màu (Kiếm Linh dùng model Hỏa Vân Hồ).
    */
   palette?: { dark: string; light: string; glow?: string };
-  /** Dáng đi để bám địa hình (P2-E3): hai chân → IK chân; bốn chân → nghiêng thân theo dốc. */
-  legs: 'biped' | 'quad';
+  /** Dáng đi để bám địa hình (P2-E3): hai chân → IK chân; bốn chân → nghiêng thân theo dốc; không chân (rắn/giao) → không chỉnh. */
+  legs: 'biped' | 'quad' | 'none';
   /** Chỉ nạp khi quái xuất hiện lần đầu (boss trong bí cảnh), không nạp sẵn lúc vào thế giới. */
   lazy?: boolean;
   /** Đòn lớn có vùng báo trước (M5-5) → clip và thời điểm chạm. */
@@ -49,6 +49,8 @@ const CHANT_BOSS_CLIPS: ClipMap = { ...BOSS_CLIPS, cast: 'chant' };
  */
 const QUAD_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'sweep', impact: 0.9 } };
 const BIPED_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'sweep', impact: 0.85 } };
+/** Giao (tools/blender/anim_serpent.py): slam 1,0 s (nện đầu), sweep 0,9 s (giữa quạt). */
+const SERPENT_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'sweep', impact: 0.9 } };
 
 /**
  * Bảng quái → model mới. Quái không có ở đây vẫn dùng model khối (`MonsterModel`).
@@ -83,6 +85,9 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, legs: 'quad', tint: '#ffffff', rim: 0.35, lazy: true, moves: QUAD_MOVES },
   boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, legs: 'biped', tint: '#ffffff', coreGlow: 1.6, lazy: true, moves: BIPED_MOVES },
   boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: CHANT_BOSS_CLIPS, refSpeed: 3.1, legs: 'biped', tint: '#ffffff', lazy: true, moves: BIPED_MOVES },
+  // Hàn Giao (boss Hồ Sương Mù): giao băng không chân, bộ xương chuỗi 17 đốt + clip thủ tục. refSpeed 2,1 × scale 2,4 ≈ tốc độ 5 m/s
+  // của boss (clip trườn 1,0 s/chu kỳ). Viền băng nhạt theo `accent`.
+  boss_han_giao: { asset: 'boss_han_giao', clips: CHANT_BOSS_CLIPS, refSpeed: 2.1, legs: 'none', tint: '#ffffff', rim: 0.3, lazy: true, moves: SERPENT_MOVES },
 };
 
 interface Template {
@@ -136,7 +141,7 @@ export class MonsterSkins {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
-    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs });
+    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs === 'none' ? undefined : s.legs });
   }
 
   dispose(): void {
