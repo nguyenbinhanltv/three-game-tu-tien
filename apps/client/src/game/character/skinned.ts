@@ -78,13 +78,36 @@ interface Perform {
 }
 
 /**
- * Khoảng cập nhật mixer theo khoảng cách (giây): gần thì mỗi khung, xa thì gộp dt lại cập nhật thưa.
- * Bộ xương chỉ đổi khi mixer chạy nên CPU giảm theo; ở xa không thấy khác.
+ * Khoảng cập nhật mixer (giây): nhân vật của mình mỗi khung; LOD0 tối đa 60 Hz (màn 120 Hz không cần hơn cho người
+ * khác); LOD1 12 Hz; LOD2 8 Hz; ngoài khung nhìn thì không cập nhật (gộp dt, vào lại khung nhìn thì bắt kịp một lần).
+ * Bộ xương chỉ đổi khi mixer chạy nên CPU giảm theo. Đo 50 người ở sân: mixer là phần lớn nhất còn lại sau khi tách xương.
  */
-export function mixerInterval(d: number): number {
-  if (d < 20) return 0;
-  if (d < 50) return 1 / 30;
-  return 1 / 12;
+export function mixerInterval(level: number, inView = true, self = false): number {
+  if (self) return 0;
+  if (!inView) return Infinity;
+  if (level <= 0) return 1 / 60;
+  if (level === 1) return 1 / 12;
+  return 1 / 8;
+}
+
+const MIXER_SLACK = 0.0015;
+
+/** Thông tin nhìn của một khung (EntityManager tính theo camera, M3-9). */
+export interface ViewInfo {
+  /** Khoảng cách tới camera (m). */
+  dist: number;
+  /** Khung cầu nằm trong frustum camera. */
+  inView: boolean;
+  /** Còn suất LOD0 (chỉ N thể gần camera nhất trong khung nhìn được LOD0). */
+  allowLod0: boolean;
+  /** Nhân vật của mình: luôn cập nhật mỗi khung. */
+  self?: boolean;
+}
+
+/** Mức LOD theo khoảng cách camera; hết suất LOD0 thì tối thiểu LOD1. */
+export function lodLevel(d: number, lodDist: readonly [number, number], allowLod0: boolean, levels: number): number {
+  const want = d < lodDist[0] ? 0 : d < lodDist[1] ? 1 : 2;
+  return Math.max(0, Math.min(allowLod0 ? want : Math.max(1, want), levels - 1));
 }
 
 interface Shot {
@@ -125,6 +148,12 @@ export class SkinnedCharacter implements CharacterView {
   root = new THREE.Group();
   /** Lớp trong: rung trúng đòn ghi vào đây để không đè vị trí root. */
   protected inner = new THREE.Group();
+  /**
+   * Cây xương, tách KHỎI cảnh (M3-9): xương ở hệ nhân vật, mesh có xương dùng `DetachedBindMode` nên vẫn theo `root`.
+   * Ma trận xương chỉ tính lại khi mixer chạy (LOD0 mỗi khung, xa 15/10 Hz, ngoài khung nhìn thì không); đi lại chỉ
+   * đổi ma trận của mesh. Mỗi lượt vẽ (cảnh chính, bóng) không còn duyệt ~60 xương của mỗi nhân vật.
+   */
+  readonly rig = new THREE.Group();
   readonly height: number;
   readonly hit: HitReact;
   readonly mixer: THREE.AnimationMixer;
@@ -185,7 +214,6 @@ export class SkinnedCharacter implements CharacterView {
       const lv = typeof obj.userData.lod === 'number' ? obj.userData.lod : 0;
       (this.lods[lv] ??= []).push(m);
       meshes.push(m);
-      m.castShadow = true;
       if (o.bounds && (m as THREE.SkinnedMesh).isSkinnedMesh) (m as THREE.SkinnedMesh).boundingSphere = o.bounds;
       else if (!o.bounds) m.frustumCulled = false;
     });
@@ -194,10 +222,12 @@ export class SkinnedCharacter implements CharacterView {
     this.inner.add(o.scene);
     this.root.add(this.inner);
     this.root.scale.setScalar(s);
-    this.mixer = new THREE.AnimationMixer(o.scene);
+    detachRig(o.scene, this.rig);
+    this.mixer = new THREE.AnimationMixer(this.rig);
     this.hit = new HitReact(meshes);
     this.enterBase('idle', 0);
     this.mixer.update(0);
+    this.rig.updateMatrixWorld(true);
   }
 
   attack(): void {
@@ -264,11 +294,19 @@ export class SkinnedCharacter implements CharacterView {
     return this.lodLevel;
   }
 
+  /** Chỉ theo khoảng cách (luôn trong khung nhìn, được LOD0). */
   setViewDistance(d: number): void {
-    this.interval = mixerInterval(d);
-    const [d1, d2] = this.lodDist;
-    const want = d < d1 ? 0 : d < d2 ? 1 : 2;
-    this.applyLod(Math.max(0, Math.min(want, this.lods.length - 1)));
+    this.setView({ dist: d, inView: true, allowLod0: true, self: d <= 0 });
+  }
+
+  /** LOD, bóng và nhịp mixer theo camera (M3-9). */
+  setView(v: ViewInfo): void {
+    const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length);
+    this.applyLod(level);
+    this.interval = mixerInterval(level, v.inView, v.self);
+    // Ngoài khung nhìn: bỏ cả cây xương khỏi lượt tính ma trận và lượt dựng danh sách vẽ (mỗi pass).
+    this.inner.visible = v.inView;
+    this.inner.matrixWorldAutoUpdate = v.inView;
   }
 
   update(realDt: number, a: AnimState): void {
@@ -331,8 +369,10 @@ export class SkinnedCharacter implements CharacterView {
 
     // Hạ tần số mixer ở xa: gộp dt, cập nhật bộ xương thưa hơn.
     this.acc += dt;
-    if (this.acc > 0 && this.acc >= this.interval) {
+    // Dung sai 1,5 ms: ở 60 khung/giây dt dao động quanh 1/60, không để LOD0 tụt xuống 30 Hz vì làm tròn.
+    if (this.acc > 0 && this.acc >= this.interval - MIXER_SLACK) {
       this.mixer.update(this.acc);
+      this.rig.updateMatrixWorld(true);
       this.acc = 0;
     }
   }
@@ -344,7 +384,7 @@ export class SkinnedCharacter implements CharacterView {
     this.perf = null;
     this.pendingPerform = null;
     this.mixer.stopAllAction();
-    this.mixer.uncacheRoot(this.scene);
+    this.mixer.uncacheRoot(this.rig);
     // Geometry, material, texture dùng chung (bản gốc trong AssetCache / bảng tint); skeleton là của bản sao.
     const skeletons = new Set<THREE.Skeleton>();
     this.scene.traverse((o) => {
@@ -501,8 +541,43 @@ export class SkinnedCharacter implements CharacterView {
   private applyLod(level: number): void {
     if (level === this.lodLevel) return;
     this.lodLevel = level;
-    for (let i = 0; i < this.lods.length; i++) for (const m of this.lods[i]) m.visible = i === level;
+    // Chỉ LOD0 đổ bóng: pass bóng vẽ lại cả lưới, ở xa bóng nhỏ không thấy khác.
+    for (let i = 0; i < this.lods.length; i++)
+      for (const m of this.lods[i]) {
+        m.visible = i === level;
+        m.castShadow = i === level && level === 0;
+      }
+    this.onLod(level);
   }
+
+  /** Lớp con ẩn/gộp phần phụ (vd. hào quang phi kiếm) theo mức LOD. */
+  protected onLod(_level: number): void {}
+}
+
+/**
+ * Dời cây xương của `scene` sang `rig` (ngoài cảnh). Mỗi xương gốc giữ biến đổi của cha cũ (vd. Armature scale 0,01 của
+ * Mixamo) qua một nhóm đệm, nên ma trận xương trong `rig` bằng ma trận trong hệ `scene`. Mesh có xương chuyển sang
+ * `DetachedBindMode`: đỉnh = matrixWorld(mesh) · bindMatrix⁻¹ · xương(hệ scene) · boneInverse · bindMatrix, đúng vì
+ * bindMatrix là ma trận của mesh trong hệ scene lúc bind.
+ */
+function detachRig(scene: THREE.Object3D, rig: THREE.Group): void {
+  scene.updateMatrixWorld(true);
+  const toScene = scene.matrixWorld.clone().invert();
+  const tops: THREE.Bone[] = [];
+  scene.traverse((o) => {
+    if ((o as THREE.Bone).isBone && !(o.parent as THREE.Bone | null)?.isBone) tops.push(o as THREE.Bone);
+  });
+  for (const b of tops) {
+    const holder = new THREE.Group();
+    holder.name = b.parent?.name ?? '';
+    toScene.clone().multiply(b.parent!.matrixWorld).decompose(holder.position, holder.quaternion, holder.scale);
+    holder.add(b);
+    rig.add(holder);
+  }
+  scene.traverse((o) => {
+    if ((o as THREE.SkinnedMesh).isSkinnedMesh) (o as THREE.SkinnedMesh).bindMode = THREE.DetachedBindMode;
+  });
+  rig.updateMatrixWorld(true);
 }
 
 /** Quái dùng model có xương; cùng interface với `MonsterModel` (model khối). */

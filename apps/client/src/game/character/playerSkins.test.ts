@@ -38,8 +38,8 @@ function run(m: SkinnedPlayer, a: AnimState, sec: number) {
 
 function hipsY(m: SkinnedPlayer): number {
   let y = 0;
-  m.root.updateMatrixWorld(true);
-  m.root.traverse((o) => {
+  m.rig.updateMatrixWorld(true);
+  m.rig.traverse((o) => {
     if ((o as THREE.Bone).isBone && /hips$/i.test(o.name)) y = o.getWorldPosition(new THREE.Vector3()).y;
   });
   return y;
@@ -146,6 +146,73 @@ describe('model người chơi (Thanh Phong)', () => {
     expect((m as unknown as { inner: THREE.Object3D }).inner.position.y).toBe(0);
     run(m, anim(), 0.5);
     expect(m.state).toBe('idle');
+    m.dispose();
+    s.dispose();
+  });
+
+  it('M3-9: hết suất LOD0 thì LOD1 không bóng; ngoài khung nhìn mixer đứng; LOD2 bỏ hào quang phi kiếm', async () => {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    const shown = () => {
+      const out: { lod: number; shadow: boolean }[] = [];
+      m.root.traverse((o) => {
+        if ((o as THREE.SkinnedMesh).isSkinnedMesh && o.visible) out.push({ lod: o.userData.lod ?? 0, shadow: (o as THREE.Mesh).castShadow });
+      });
+      return out;
+    };
+    expect(shown()).toEqual([{ lod: 0, shadow: true }]);
+    m.setView({ dist: 5, inView: true, allowLod0: false });
+    expect(shown()).toEqual([{ lod: 1, shadow: false }]);
+    m.setView({ dist: 5, inView: true, allowLod0: true });
+    expect(shown()).toEqual([{ lod: 0, shadow: true }]);
+    // Ngoài khung nhìn: animation không chạy, vào lại thì bắt kịp.
+    const idle = m.actionOf('idle')!;
+    m.setView({ dist: 5, inView: false, allowLod0: false });
+    const t0 = idle.time;
+    run(m, anim(), 0.5);
+    expect(idle.time).toBe(t0);
+    m.setView({ dist: 5, inView: true, allowLod0: true });
+    m.update(1 / 60, anim());
+    expect(idle.time).toBeGreaterThan(t0 + 0.4);
+    // LOD2: thân phi kiếm còn, hào quang ẩn.
+    m.setView({ dist: 200, inView: true, allowLod0: false });
+    const fly = m.root.children.find((o) => o !== (m as unknown as { inner: THREE.Object3D }).inner)!;
+    expect(fly.children[0].visible).toBe(true);
+    expect(fly.children[1].visible).toBe(false);
+    m.dispose();
+    s.dispose();
+  });
+
+  it('M3-9: cây xương nằm ngoài cảnh; dời root không cần tính lại xương mà đỉnh vẫn theo đúng', async () => {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    let bonesInScene = 0;
+    m.root.traverse((o) => {
+      if ((o as THREE.Bone).isBone) bonesInScene++;
+    });
+    expect(bonesInScene).toBe(0);
+    let mesh!: THREE.SkinnedMesh;
+    m.root.traverse((o) => {
+      if ((o as THREE.SkinnedMesh).isSkinnedMesh && (o.userData.lod ?? 0) === 0) mesh = o as THREE.SkinnedMesh;
+    });
+    expect(mesh.bindMode).toBe(THREE.DetachedBindMode);
+    run(m, anim(), 0.3);
+    const vertexWorld = (i: number) => {
+      m.root.updateMatrixWorld(true);
+      mesh.skeleton.update();
+      return mesh.getVertexPosition(i, new THREE.Vector3()).applyMatrix4(mesh.matrixWorld);
+    };
+    const ids = [0, 1000, 5000, 9000];
+    const before = ids.map(vertexWorld);
+    // Đỉnh ở chỗ hợp lý (trong thân người cao 1,75 m quanh gốc).
+    for (const v of before) expect(v.y).toBeGreaterThan(-0.05), expect(v.y).toBeLessThan(1.95), expect(Math.hypot(v.x, v.z)).toBeLessThan(1);
+    m.root.position.set(10, 2, -5);
+    m.root.rotation.y = Math.PI / 2;
+    const after = ids.map(vertexWorld);
+    for (const [k, v] of before.entries()) {
+      const want = v.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2).add(new THREE.Vector3(10, 2, -5));
+      expect(after[k].distanceTo(want)).toBeLessThan(1e-4);
+    }
     m.dispose();
     s.dispose();
   });

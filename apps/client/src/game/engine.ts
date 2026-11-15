@@ -209,7 +209,8 @@ export class Game {
 
   renderer!: THREE.WebGPURenderer;
   private post: PostPipeline | null = null;
-  scene = new THREE.Scene();
+  /** `matrixWorldAutoUpdate = false`: `frame()` tự cập nhật ma trận một lần trước khi vẽ (M3-9). */
+  scene = Object.assign(new THREE.Scene(), { matrixWorldAutoUpdate: false });
   camera = new THREE.PerspectiveCamera(55, 1, 0.3, 9000);
   terrain!: Terrain;
   env!: Environment;
@@ -361,6 +362,7 @@ export class Game {
     this.bindRoom(room);
     this.ents?.dispose();
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents.camera = this.camera;
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
     this.pendingChapter = init.room === ROOM_DUNGEON ? 'dungeon' : null;
     this.camFrame.cancel();
@@ -578,6 +580,7 @@ export class Game {
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents.camera = this.camera;
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
     this.minimap = renderMinimap(320);
     mark('minimap');
@@ -1532,6 +1535,9 @@ export class Game {
     }
     this.tickSkillQueue(now);
     this.tickCombat(now, me);
+    // Cập nhật ma trận cả cảnh MỘT lần mỗi khung (M3-9): để tự động thì mỗi pass (cảnh chính, bóng) duyệt lại
+    // toàn bộ cây, kể cả ~60 xương của mỗi nhân vật có xương.
+    this.scene.updateMatrixWorld();
     this.post!.render();
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
     this.lootFly.update(dt);
@@ -1717,7 +1723,7 @@ export class Game {
     let perf = st.perf;
     if (this.debugPerf) {
       const info = this.renderer.info;
-      perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.terrain.tileCount()} ô · ${this.vfx.particles.aliveCount().total}/${this.vfx.particles.limit} hạt`;
+      perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.ents.players.size} người · LOD ${this.ents.lodStats().lod.join('/')} (ngoài khung ${this.ents.lodStats().offscreen}) · ${this.terrain.tileCount()} ô · ${this.vfx.particles.aliveCount().total}/${this.vfx.particles.limit} hạt`;
     }
     set({
       debug: st.debugOpen ? this.debugInfo(me) : null,
