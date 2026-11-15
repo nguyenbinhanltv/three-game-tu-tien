@@ -342,7 +342,7 @@ interface Hazard extends HazardGeom {
   atk: number;
   /** Quái thả vùng (null = thiên kiếp). */
   mon: MonEnt | null;
-  /** Chỉ đánh người chơi này (thiên kiếp không hại người ngoài)… trừ khi họ đứng trong vòng. */
+  /** Nguồn: id quái, hoặc sid người độ kiếp. Thiên kiếp trúng cả người ngoài đứng trong vòng, nhưng không giết họ (xem `tickHazards`). */
   src: string;
 }
 
@@ -2737,6 +2737,12 @@ export class GameSim {
             continue;
           }
           n = r.dmg;
+        }
+        // Thiên kiếp của người khác: đứng trong vòng vẫn trúng đòn, nhưng không chết vì kiếp của người khác (dừng ở 1 khí huyết).
+        // Nếu không, độ kiếp ở sân tông môn giết oan người mới và người treo máy (mất tu vi), kể cả khi chủ kiếp đã rớt mạng.
+        if (!h.mon && h.src !== p.sid) {
+          n = Math.min(n, p.char.hp - 1);
+          if (n <= 0) continue;
         }
         this.damagePlayer(p, n, h.src, true);
       }

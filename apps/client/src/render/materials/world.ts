@@ -1,4 +1,7 @@
 import * as THREE from 'three/webgpu';
+import { float, mix, normalView, normalWorld, positionViewDirection } from 'three/tsl';
+import { rimParams } from '../atmosphere';
+import { skyParams } from '../sky';
 
 /**
  * Material PBR cách điệu dùng chung cho thế giới (địa hình, cây, kiến trúc, nhân vật, quái) và sau
@@ -56,4 +59,18 @@ export function adoptGltfMaterials(
     mesh.material = Array.isArray(mesh.material) ? mesh.material.map(convert) : convert(mesh.material);
   });
   return [...made.values()];
+}
+
+/**
+ * Viền sáng (rim) tách khối nhân vật khỏi nền: fresnel hẹp ở mép hình bóng, sắc nắng, mạnh hơn ở phía hướng mặt trời
+ * và ở phần trên thân, gần tắt ở phía khuất nắng. Yếu có chủ ý (art bible 5.3: không rim trắng gắt); cường độ theo preset
+ * (`rimParams`, khối `grading` của palette.json). Cộng vào `emissiveNode`, không vào bloom, không thêm draw call hay texture.
+ * Chỉ gọi cho material chưa dùng emissive (thân người chơi, NPC).
+ */
+export function rimLight(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
+  const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.6);
+  const sunSide = normalWorld.dot(skyParams.sunDir).mul(0.5).add(0.5);
+  const up = normalWorld.y.mul(0.5).add(0.5);
+  m.emissiveNode = rimParams.color.mul(fres.mul(mix(float(0.25), float(1), sunSide)).mul(mix(float(0.6), float(1), up)).mul(rimParams.strength));
+  return m;
 }
