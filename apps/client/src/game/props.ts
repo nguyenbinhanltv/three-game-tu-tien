@@ -44,6 +44,8 @@ const LOAD_MARGIN = 80;
 interface LodMesh {
   geometry: THREE.BufferGeometry;
   material: THREE.Material;
+  /** Hình học nướng ra (bản sao không thuộc AssetHandle): phải tự dispose. */
+  owned?: boolean;
 }
 
 interface Template {
@@ -221,7 +223,7 @@ export class PropLayer {
       // Ma trận instance áp trước ma trận nút: nút không phải đơn vị thì nướng vào bản sao hình học.
       const baked = !m.matrixWorld.equals(IDENTITY);
       const geometry = baked ? bakeGeometry(m.geometry, m.matrixWorld) : m.geometry;
-      (lods[k] ??= []).push({ geometry, material: m.material as THREE.Material });
+      (lods[k] ??= []).push({ geometry, material: m.material as THREE.Material, owned: baked });
     });
     for (let k = 0; k < lods.length; k++) lods[k] ??= lods[Math.max(0, k - 1)] ?? [];
     return { handle, mats, lods: lods.length ? lods : [[]] };
@@ -272,6 +274,10 @@ export class PropLayer {
     for (const t of this.templates.values()) {
       if (typeof t === 'string') continue;
       for (const m of t.mats) m.dispose();
+      // `lods[k] ??= lods[k - 1]` có thể dùng chung mảng: gom vào Set trước khi dispose hình học đã nướng.
+      const owned = new Set<THREE.BufferGeometry>();
+      for (const lv of t.lods) for (const lm of lv) if (lm.owned) owned.add(lm.geometry);
+      for (const g of owned) g.dispose();
       t.handle.release();
     }
     this.templates.clear();
