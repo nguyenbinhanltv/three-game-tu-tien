@@ -8,6 +8,8 @@
 #    Điều kiện: tư thế nghỉ của xương trong file clip trùng rig chính (lệch < 2°), nếu không thì dừng.
 #    Tùy chọn mỗi clip: `recenter` (đưa hông về vị trí ngang của idle, cho clip Tripo có sẵn độ lệch gốc như run),
 #    `loop` (dồn đều chênh lệch cuối-đầu để clip lặp khít).
+# 1c. `import.sharedAnims` (tên thư viện, M2-3): nhân vật không mang clip riêng (bỏ clip có sẵn trong nguồn, không ghép, không
+#    sinh hit_light), dùng thư viện anim_human_base (tools/blender/export_anim_lib.py).
 # 2. Clip thủ tục: thêm `hit_light` (0,33 s) nếu chưa có: thân trên giật lùi, ngửa đầu, tay bật nhẹ, rồi về dáng đầu.
 #    Góc quay quanh trục thế giới, đổi sang trục cục bộ của xương (q = M⁻¹·R·M), như anim_quadruped.py.
 #    Dáng gốc của hit_light lấy từ khung đầu của clip `idle` nếu có (để chuyển clip không giật), không thì tư thế nghỉ.
@@ -115,6 +117,9 @@ def src_span(src):
 
 TC = runpy.run_path(os.path.join(REPO, 'tools/blender/tripo_clips.py'))  # noqa: F821
 report = {'clips': {}}
+if IMPORT.get('sharedAnims') and not IMPORT.get('clips'):
+    # Clip dùng chung (anim_human_base, M2-3): GLB nhân vật không mang clip, client retarget theo tên xương.
+    report['droppedSourceClips'] = TC['drop_existing_actions'](arm)
 if IMPORT.get('clips'):
     dropped_src = TC['drop_existing_actions'](arm)
     if dropped_src:
@@ -573,7 +578,7 @@ def pose_hit(w, base):
     hips.location = base[HIPS.name][1] + M.inverted() @ Vector((0, 0.05 * w, -0.005 * w))
 
 
-if 'hit_light' not in bpy.data.actions:
+if 'hit_light' not in bpy.data.actions and not IMPORT.get('sharedAnims'):
     base = base_pose()
     act = bpy.data.actions.new('hit_light')
     act.use_fake_user = True

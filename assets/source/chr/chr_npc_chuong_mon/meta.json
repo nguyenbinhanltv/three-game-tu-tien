@@ -16,29 +16,6 @@
       "height": 1.75
     },
     "orient": "thigh",
-    "clips": [
-      {
-        "source": "chr/chr_npc_chuong_mon/tripo/anim_idle_v01.glb",
-        "name": "idle",
-        "loop": true
-      },
-      {
-        "source": "chr/chr_npc_chuong_mon/tripo/anim_run_v01.glb",
-        "name": "run",
-        "recenter": true,
-        "loop": true
-      },
-      {
-        "source": "chr/chr_npc_chuong_mon/tripo/anim_attack_v01.glb",
-        "name": "attack",
-        "start": 1.3,
-        "end": 2.5
-      },
-      {
-        "source": "chr/chr_npc_chuong_mon/tripo/anim_death_v01.glb",
-        "name": "death"
-      }
-    ],
     "recolor": [
       {
         "hue": [
@@ -64,6 +41,7 @@
         "note": "đai ngọc xanh rực → ngọc trầm (leaf, sáng 0,85, bão hòa 0,65)"
       }
     ],
+    "sharedAnims": "anim_human_base",
     "post": "tools/blender/anim_biped_extra.py"
   },
   "concept": [

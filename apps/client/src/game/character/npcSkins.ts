@@ -3,6 +3,7 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { Humanoid } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
+import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { SkinnedCharacter } from './skinned';
 import type { CharState, ClipMap } from './states';
 import { type CharacterView, legacyModelsRequested } from './view';
@@ -41,6 +42,8 @@ export function legacyNpc(id: string, robe: string): Humanoid {
 
 interface Template {
   handle: AssetHandle;
+  lib: AssetHandle;
+  clips: THREE.AnimationClip[];
   height: number;
   bounds: THREE.Sphere;
   mat: THREE.MeshStandardNodeMaterial;
@@ -81,7 +84,7 @@ export class NpcSkins {
     });
     const m = new SkinnedCharacter({
       scene,
-      clips: t.handle.animations,
+      clips: t.clips,
       clipMap: NPC_CLIPS,
       height: t.height,
       refSpeed: 3,
@@ -100,6 +103,7 @@ export class NpcSkins {
     for (const t of this.templates.values()) {
       if (typeof t === 'string') continue;
       t.handle.release();
+      t.lib.release();
       t.mat.dispose();
     }
     this.templates.clear();
@@ -108,13 +112,22 @@ export class NpcSkins {
   private load(asset: string): void {
     if (this.templates.has(asset)) return;
     this.templates.set(asset, 'loading');
-    this.cache.acquire(asset, { priority: 1 }).then(
-      (handle) => {
+    // Thư viện clip chung thiếu thì model khối (không để T-pose đứng giữa sân).
+    acquireWithHumanLib(this.cache, asset).then(
+      ([handle, lib]) => {
         if (this.disposed) {
           handle.release();
+          lib.release();
           return;
         }
-        this.templates.set(asset, templateOf(handle));
+        try {
+          this.templates.set(asset, templateOf(handle, lib));
+        } catch (err) {
+          console.warn(`[models] không dựng được ${asset}, dùng model khối`, err);
+          handle.release();
+          lib.release();
+          this.templates.set(asset, 'failed');
+        }
       },
       (err) => {
         if (this.disposed) return;
@@ -126,7 +139,7 @@ export class NpcSkins {
 }
 
 /** Chiều cao, khung cầu (đủ cho mọi clip, như người chơi) và material của asset NPC. */
-function templateOf(handle: AssetHandle): Template {
+function templateOf(handle: AssetHandle, lib: AssetHandle): Template {
   const box = new THREE.Box3();
   let src: THREE.Material | null = null;
   handle.scene.traverse((o) => {
@@ -141,5 +154,6 @@ function templateOf(handle: AssetHandle): Template {
   const height = box.max.y;
   const bounds = new THREE.Sphere(new THREE.Vector3(0, height * 0.5, 0), height * 1.15);
   const mat = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
-  return { handle, height, bounds, mat };
+  const clips = mergeClips(handle.animations, retargetClips(lib.scene, lib.animations, handle.scene));
+  return { handle, lib, clips, height, bounds, mat };
 }

@@ -1,6 +1,7 @@
 import { APPEARANCE } from '@dtl/content';
 import { genderEnabled, SECT, SPAWN_POINT } from '@dtl/shared';
 import { type AssetCache, assets } from './assets';
+import { HUMAN_ANIM_LIB } from './character/animLib';
 import { MONSTER_SKINS } from './character/monsterSkins';
 import { legacyModelsRequested } from './character/view';
 
@@ -37,6 +38,7 @@ export function prefetchWorldAssets(cache: AssetCache = assets, legacy = legacyM
       if (g.model && genderEnabled(APPEARANCE, g.id)) ids.push([g.model, { priority: PREFETCH_PRIORITY.player }]);
     }
   }
+  if (!legacy) ids.push([HUMAN_ANIM_LIB, { priority: PREFETCH_PRIORITY.player }]);
   ids.push(['arch_sect', { pos: { x: SECT.x, z: SECT.z } }]);
   if (!legacy) {
     // Boss (skin `lazy`) chỉ có trong bí cảnh: nạp khi gặp, không tải trước ở thế giới mở.
