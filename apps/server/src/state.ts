@@ -1,62 +1,62 @@
-import { MapSchema, Schema, type } from '@colyseus/schema';
+import { MapSchema, Schema, type, view } from '@colyseus/schema';
 
 // Trạng thái công khai được đồng bộ cho mọi client trong room.
 // Chỉ chứa những gì người chơi khác được phép thấy.
 
 export class PlayerS extends Schema {
-  @type('string') name = '';
-  @type('float32') x = 0;
-  @type('float32') y = 0;
-  @type('float32') z = 0;
+  @view() @type('string') name = '';
+  @view() @type('float32') x = 0;
+  @view() @type('float32') y = 0;
+  @view() @type('float32') z = 0;
   /** Hướng nhìn của nhân vật: atan2(dx, dz). */
-  @type('float32') yaw = 0;
-  @type('float32') vy = 0;
+  @view() @type('float32') yaw = 0;
+  @view() @type('float32') vy = 0;
   /** Đang đứng trên mặt đất. */
-  @type('boolean') gr = true;
+  @view() @type('boolean') gr = true;
   /** Cờ PF_*. */
-  @type('uint8') fl = 0;
-  @type('uint8') lv = 1;
-  @type('int32') hp = 1;
-  @type('int32') mhp = 1;
-  @type('int32') mp = 0;
-  @type('int32') mmp = 0;
+  @view() @type('uint8') fl = 0;
+  @view() @type('uint8') lv = 1;
+  @view() @type('int32') hp = 1;
+  @view() @type('int32') mhp = 1;
+  @view() @type('int32') mp = 0;
+  @view() @type('int32') mmp = 0;
   /** Số thứ tự input cuối cùng server đã xử lý. */
-  @type('uint32') seq = 0;
+  @view() @type('uint32') seq = 0;
   /** id vũ khí đang cầm (để hiển thị). */
-  @type('string') wp = '';
+  @view() @type('string') wp = '';
   /** Bậc phát sáng của vũ khí theo cường hóa: 0, 1 (+7), 2 (+10). Chỉ để hiển thị. */
-  @type('uint8') wg = 0;
+  @view() @type('uint8') wg = 0;
   /** Ngoại hình (để hiển thị): giới tính 'm' | 'f' và id màu áo trong appearance.json. */
-  @type('string') g = 'm';
-  @type('string') dye = '';
+  @view() @type('string') g = 'm';
+  @view() @type('string') dye = '';
   /** Bộ trang bị quyết định màu áo/ánh kiếm (từ 2 món): id bộ trong sets.json, '' = không. Chỉ để hiển thị. */
-  @type('string') sk = '';
+  @view() @type('string') sk = '';
   /** Mã phụ kiện hình dáng của đồ bộ (mỗi ô một ký tự, xem `accessoryCode`), '' = không. Chỉ để hiển thị. */
-  @type('string') sa = '';
+  @view() @type('string') sa = '';
   /** id pháp bảo phụ đang đeo (P3-8), '' = không. Chỉ để hiển thị. */
-  @type('string') art = '';
+  @view() @type('string') art = '';
 }
 
 export class MonS extends Schema {
   /** id định nghĩa quái. */
-  @type('string') t = '';
-  @type('float32') x = 0;
-  @type('float32') y = 0;
-  @type('float32') z = 0;
-  @type('float32') yaw = 0;
-  @type('int32') hp = 1;
-  @type('int32') mhp = 1;
-  @type('uint8') lv = 1;
+  @view() @type('string') t = '';
+  @view() @type('float32') x = 0;
+  @view() @type('float32') y = 0;
+  @view() @type('float32') z = 0;
+  @view() @type('float32') yaw = 0;
+  @view() @type('int32') hp = 1;
+  @view() @type('int32') mhp = 1;
+  @view() @type('uint8') lv = 1;
   /** Trạng thái MS_*. */
-  @type('uint8') st = 0;
+  @view() @type('uint8') st = 0;
   /** Cờ MF_* (niệm chú, choáng). */
-  @type('uint8') mf = 0;
+  @view() @type('uint8') mf = 0;
   /** Thời điểm server (ms) kết thúc trạng thái trong `mf`; 0 khi không có. */
-  @type('float64') ce = 0;
+  @view() @type('float64') ce = 0;
   /** Pha boss (0 = pha đầu). */
-  @type('uint8') ph = 0;
+  @view() @type('uint8') ph = 0;
   /** Thanh phá thế của boss, 0–100 (làm tròn xuống). */
-  @type('uint8') pz = 0;
+  @view() @type('uint8') pz = 0;
 }
 
 export class NodeS extends Schema {
@@ -70,6 +70,12 @@ export class NodeS extends Schema {
 
 export class WorldState extends Schema {
   @type('string') level = '';
+  /**
+   * AOI (M-2, apps/server/src/aoi.ts): mọi trường của `PlayerS` và `MonS` có `@view()`, nên client chỉ nhận giá trị (vị trí, máu...)
+   * của thực thể trong `StateView` của mình. Cả hai collection vẫn hiển thị với mọi client (bản ghi rỗng cho thực thể ngoài tầm:
+   * `MonS.t` / `PlayerS.name` là rỗng hoặc undefined), vì StateView ở mức collection giải mã lỗi khi thực thể vào/ra tầm liên tục.
+   * Client coi bản ghi rỗng là "ngoài tầm" (xem `visibleMon`, `visiblePlayer` ở packages/shared).
+   */
   @type({ map: PlayerS }) players = new MapSchema<PlayerS>();
   @type({ map: MonS }) monsters = new MapSchema<MonS>();
   @type({ map: NodeS }) nodes = new MapSchema<NodeS>();
