@@ -1,4 +1,4 @@
-import { COLLIDERS, WORLD_MARGIN, WORLD_SIZE } from './level';
+import { COLLIDERS, PLAY_WALL, playDist, SECT, WORLD_MARGIN, WORLD_SIZE } from './level';
 import { groundAt } from './terrain';
 
 /** Bước mô phỏng cố định, dùng chung cho dự đoán ở client và xử lý ở server. */
@@ -104,6 +104,14 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   else if (s.x > hi) s.x = hi;
   if (s.z < lo) s.z = lo;
   else if (s.z > hi) s.z = hi;
+
+  // Ranh vùng chơi: chân vách, đẩy ngược về trong (cả khi bay).
+  const dPlay = playDist(s.x, s.z);
+  if (dPlay > PLAY_WALL) {
+    const k = PLAY_WALL / dPlay;
+    s.x = SECT.x + (s.x - SECT.x) * k;
+    s.z = SECT.z + (s.z - SECT.z) * k;
+  }
 
   const ground = groundAt(s.x, s.z);
 

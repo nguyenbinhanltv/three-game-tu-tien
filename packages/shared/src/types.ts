@@ -317,10 +317,46 @@ export interface NodeSpawnDef {
   respawn: number;
 }
 
+/** Vùng chơi có tên (M-1): đa giác ranh, khoảng cấp, màu bản đồ, nhạc. Tên hiển thị ở i18n `zone.<id>`. */
+export interface ZoneDef {
+  id: string;
+  /** Khoảng cấp hợp với vùng (cấp nhân vật). */
+  lvMin: number;
+  lvMax: number;
+  /** Màu vùng trên bản đồ (#rrggbb). */
+  color: string;
+  /** Nhạc nền của vùng (khóa nhạc ở client, ví dụ `wild`, `sect`). */
+  music: string;
+  /** Đa giác ranh [x, z][] theo chiều bất kỳ, tối thiểu 3 đỉnh. */
+  poly: [number, number][];
+}
+
+/** Bãi quái (M-1): một cụm 3–4 con quanh tâm, hồi sinh riêng. `ranged` là một con đánh xa thêm vào cụm. */
+export interface CampDef {
+  id: string;
+  zone: string;
+  mon: string;
+  x: number;
+  z: number;
+  /** Số con thường trong cụm (3–4). */
+  count: number;
+  /** Bán kính rải 18–30 m. */
+  radius: number;
+  levelMin: number;
+  levelMax: number;
+  /** Giây hồi sinh một con. */
+  respawn: number;
+  /** Có thêm một quái đánh xa (id quái có `ai.caster`) đứng trong cụm. */
+  ranged?: string;
+}
+
 export interface LevelDef {
   id: string;
+  /** Quái đứng lẻ: tinh anh, boss (quái thường nằm ở `camps`). */
   spawns: SpawnDef[];
   nodes: NodeSpawnDef[];
+  zones?: ZoneDef[];
+  camps?: CampDef[];
 }
 
 /** Điểm đặt tên cho kiểm thử (`?at=`, `/gm tp <id>`). Chỉ server đọc (`@dtl/content/places`). */

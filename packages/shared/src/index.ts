@@ -19,3 +19,4 @@ export * from './upgrade';
 export * from './sets';
 export * from './methods';
 export * from './party';
+export * from './zones';

@@ -36,23 +36,23 @@ interface Pt {
 }
 const POINTS: Pt[] = [
   { name: 'san', x: SPAWN_POINT.x, z: SPAWN_POINT.z, yaw: 0.0, pitch: 0.3, dist: 13 },
-  { name: 'kiemtrung', x: 900, z: 1052, yaw: 0.4, pitch: 0.3, dist: 13 },
-  { name: 'ho', x: LAKE.x + 380, z: LAKE.z, yaw: 1.57, pitch: 0.24, dist: 13 },
+  { name: 'kiemtrung', x: 1520, z: 1352, yaw: 0.4, pitch: 0.3, dist: 13 },
+  { name: 'ho', x: LAKE.x - 185, z: LAKE.z, yaw: -1.57, pitch: 0.24, dist: 13 },
   { name: 'nhan_sat', x: SPAWN_POINT.x, z: SPAWN_POINT.z, yaw: 0.3, pitch: 0.25, dist: 3, gm: ['spawn mon_soi_xam 1'], wait: 2500 },
   { name: 'nhan_dong', x: 2048, z: 2455, yaw: 0.3, pitch: 0.35, dist: 12, gm: ['spawn mon_soi_xam 8'], wait: 3500 },
   // Nhìn về phía mặt trời (đông nam, hướng (0.8, 0.6)) từ chân núi và từ sân.
   { name: 'matroi_sau_nui', x: 2048, z: 2455, yaw: -2.214, pitch: 0.12, dist: 14 },
   { name: 'matroi_san', x: SPAWN_POINT.x, z: SPAWN_POINT.z, yaw: -2.214, pitch: 0.08, dist: 14 },
   { name: 'matroi_cao', x: SPAWN_POINT.x, z: SPAWN_POINT.z, yaw: -2.214, pitch: -0.44, dist: 7 },
-  { name: 'matroi_ho1', x: 1822, z: 2180, yaw: -2.0, pitch: -0.2, dist: 8 },
-  { name: 'matroi_ho2', x: 1822, z: 2180, yaw: -2.1, pitch: -0.4, dist: 8 },
-  { name: 'kt_sun1', x: 900, z: 1052, yaw: -2.214, pitch: 0.0, dist: 8 },
-  { name: 'kt_sun2', x: 900, z: 1052, yaw: -2.214, pitch: -0.2, dist: 8 },
-  { name: 'kt_sun3', x: 900, z: 1052, yaw: -2.214, pitch: -0.4, dist: 8 },
+  { name: 'matroi_ho1', x: 1490, z: 2230, yaw: -2.0, pitch: -0.2, dist: 8 },
+  { name: 'matroi_ho2', x: 1490, z: 2230, yaw: -2.1, pitch: -0.4, dist: 8 },
+  { name: 'kt_sun1', x: 1520, z: 1352, yaw: -2.214, pitch: 0.0, dist: 8 },
+  { name: 'kt_sun2', x: 1520, z: 1352, yaw: -2.214, pitch: -0.2, dist: 8 },
+  { name: 'kt_sun3', x: 1520, z: 1352, yaw: -2.214, pitch: -0.4, dist: 8 },
   { name: 'sun_a', x: 1620, z: 2100, yaw: -2.214, pitch: -0.45, dist: 5 },
   { name: 'sun_b', x: 1580, z: 2140, yaw: -2.214, pitch: -0.45, dist: 5 },
   { name: 'sun_c', x: 1420, z: 2380, yaw: -2.214, pitch: -0.45, dist: 5 },
-  { name: 'matroi_dinh', x: 1860, z: 1680, yaw: -2.214, pitch: 0.1, dist: 16 },
+  { name: 'matroi_dinh', x: 2400, z: 1700, yaw: -2.214, pitch: 0.1, dist: 16 },
 ].filter((p) => !ONLY.length || ONLY.includes(p.name));
 
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'e4shots', command: 'pnpm tsx src/e4shots.ts' });

@@ -5,10 +5,17 @@ import {
   ISLAND_R,
   KIEM_TRUNG,
   LAKE,
+  LAKE_SHELF_OUT,
+  LAKE_SHELF_R,
+  LAKE_SHELF_Y,
   LAKE_WATER_R,
+  PLAY_WALL,
   PORTAL_PAD,
+  playDist,
   SECT,
+  SUOI,
   TERRAIN_SEED,
+  VACH,
   VALLEY,
   WADE_DEPTH,
   WATER_Y,
@@ -16,6 +23,8 @@ import {
 } from './level';
 
 const MIN_LAND_Y = WATER_Y + 3;
+/** Độ cao thêm của vách ranh vùng chơi (m). */
+const PLAY_WALL_H = 330;
 
 function featureWeight(f: Feature, x: number, z: number): number {
   const dx = x - f.x;
@@ -52,8 +61,14 @@ export function heightAt(x: number, z: number): number {
   let w = featureWeight(VALLEY, x, z);
   if (w > 0) h = lerp(h, VALLEY.y + detail * 2.2, w);
 
+  w = featureWeight(SUOI, x, z);
+  if (w > 0) h = lerp(h, SUOI.y + detail * 3, w);
+
   w = featureWeight(FOREST, x, z);
   if (w > 0) h = lerp(h, FOREST.y + detail * 3.5, w);
+
+  w = featureWeight(VACH, x, z);
+  if (w > 0) h = lerp(h, VACH.y + detail * 6 + ridged(x * 0.02, z * 0.02, 2, TERRAIN_SEED + 31) * 14, w);
 
   w = featureWeight(PORTAL_PAD, x, z);
   if (w > 0) h = lerp(h, PORTAL_PAD.y, w);
@@ -66,6 +81,9 @@ export function heightAt(x: number, z: number): number {
     const d = Math.sqrt(dx * dx + dz * dz);
     // Đảo nhỏ giữa hồ, nơi Hàn Giao trấn giữ.
     h += (WATER_Y + 4 - LAKE.y) * smoothstep(ISLAND_R, ISLAND_R * 0.45, d);
+    // Bãi ven hồ: dải phẳng thấp hơn mặt nước vài mét (đi bộ, đánh quái được), ngoài đó núi mới dựng lên.
+    const shelf = lerp(h, LAKE_SHELF_Y + detail * 0.8, smoothstep(LAKE_SHELF_OUT, LAKE_SHELF_R, d));
+    h = lerp(h, shelf, smoothstep(LAKE.flatR, LAKE.flatR + 40, d));
   } else if (h < MIN_LAND_Y) {
     h = MIN_LAND_Y + (h - MIN_LAND_Y) * 0.1;
   }
@@ -81,6 +99,10 @@ export function heightAt(x: number, z: number): number {
 
   w = featureWeight(SECT, x, z);
   if (w > 0) h = lerp(h, SECT.y, w);
+
+  // Ranh vùng chơi: ngay sau chân vách (PLAY_WALL) địa hình dựng đứng lên, đi tới đó gặp vách.
+  const dPlay = playDist(x, z);
+  if (dPlay > PLAY_WALL) h += PLAY_WALL_H * smoothstep(PLAY_WALL, PLAY_WALL + 60, dPlay);
 
   return h;
 }
@@ -108,7 +130,7 @@ export function biomeAt(x: number, z: number): Biome {
   if (featureWeight(KIEM_TRUNG, x, z) > 0.3) return 'dungeon';
   if (featureWeight(LAKE, x, z) > 0.3) return 'lake';
   if (featureWeight(FOREST, x, z) > 0.35) return 'forest';
-  if (featureWeight(VALLEY, x, z) > 0.35) return 'valley';
+  if (featureWeight(VALLEY, x, z) > 0.35 || featureWeight(SUOI, x, z) > 0.35) return 'valley';
   return 'wild';
 }
 

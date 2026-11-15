@@ -5,7 +5,7 @@
 //   thỉnh thoảng /gm heal để còn máu và linh lực. Không có quái thì đi lại như --crowd.
 // --level N: lúc vào game tự /gm level N (chỉ tài khoản đăng nhập thử có GM) để mở mọi chiêu.
 // --tp: lúc vào game /gm tp tới một chỗ ngẫu nhiên trong vùng --fight/--crowd thay vì đi bộ tới (cần đăng nhập thử).
-// --dungeon: tới cổng Kiếm Trủng rồi vào bí cảnh (room tối đa 5 người, cần --level ≥ 8); thường đi kèm --fight 900,988.
+// --dungeon: tới cổng Kiếm Trủng rồi vào bí cảnh (room tối đa 5 người, cần --level ≥ 8); thường đi kèm --fight 1520,1288.
 // Gõ "quit" vào stdin để mọi bot rời room ngay (pnpm bench:crowd kết thúc bot theo cách này).
 // Không có --url thì dùng SERVER_URL hoặc PORT (xem target.ts).
 
