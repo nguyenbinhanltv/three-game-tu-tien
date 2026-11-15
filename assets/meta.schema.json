@@ -106,7 +106,11 @@
             "required": ["kind", "bone"],
             "additionalProperties": false,
             "properties": {
-              "kind": { "enum": ["back_sword"] },
+              "kind": { "enum": ["back_sword", "add_sword"] },
+              "grip": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3, "description": "add_sword: lệch của tay cầm so với đầu xương `bone` (m; hệ Blender: +x trái, +y sau lưng, +z lên)." },
+              "tip": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3, "description": "add_sword: hướng mũi kiếm (hệ Blender, hướng xuống)." },
+              "length": { "type": "number", "exclusiveMinimum": 0, "description": "add_sword: tổng chiều dài kiếm gồm chuôi (m)." },
+              "shrink": { "type": "number", "exclusiveMinimum": 0.8, "maximum": 1, "description": "add_sword: hệ số thu UV/ảnh để chừa ô màu cho kiếm (mặc định 0,95)." },
               "bone": { "type": "string", "description": "Hậu tố tên xương, ví dụ spine2." },
               "tilt": { "type": "number", "description": "Độ xoay kiếm quanh mũi để chuôi vào gần gáy." },
               "patch": { "type": "boolean", "description": "Vá lỗ lưng áo chỗ lưới kiếm vừa tách (Tripo không dựng vải dưới kiếm)." },
@@ -114,6 +118,12 @@
               "hilt": { "type": "number", "exclusiveMinimum": 0, "maximum": 0.6, "description": "Phần chuôi tính từ đầu trên, theo tỉ lệ chiều dài kiếm (mặc định 0,28)." }
             }
           }
+        },
+        "flatSkinNormals": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Làm phẳng normal map trên da đầu/cổ (nhân vật người, anim_biped_extra.py).",
+          "properties": { "zMin": { "type": "number", "description": "Chỉ xét mặt có tâm cao hơn mức này (m, sau chuẩn hóa tỉ lệ)." } }
         },
         "recolor": {
           "type": "array",

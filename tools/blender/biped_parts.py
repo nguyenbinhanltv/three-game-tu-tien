@@ -176,7 +176,7 @@ def _pca(P):
     return c, vt
 
 
-def free_uv_block(me, size=3, grid=UV_GRID):
+def free_uv_block(me, size=3, grid=UV_GRID, reserved=()):
     """Ô vuông size×size (lưới grid×grid trên UV) không tam giác UV nào phủ, tính cả lề 1 ô quanh mỗi tam giác."""
     occ = np.zeros((grid, grid), bool)
     uv = me.uv_layers.active.data
@@ -198,6 +198,8 @@ def free_uv_block(me, size=3, grid=UV_GRID):
             occ[jj[hit], ii[hit]] = True
             for q in (a, b, c):
                 occ[min(grid - 1, max(0, int(q[1]))), min(grid - 1, max(0, int(q[0])))] = True
+    for ri, rj in reserved:  # ô đã cấp (size×size) trong cùng lượt
+        occ[max(0, rj):rj + size, max(0, ri):ri + size] = True
     grown = occ.copy()
     for dj in (-1, 0, 1):
         for di in (-1, 0, 1):
@@ -412,3 +414,235 @@ def skirt_springs(mesh, arm, spec, hips, legs, fail):
         fail(f'skirt_springs: chỉ {moved} đỉnh vạt áo, kiểm lại top/full/bottom')
     set_extra(mesh, 'springs', [{'bone': n, 'tail': to_gltf(tails[n])} for n in names])
     return {'bones': list(names), 'vertices': moved}
+
+
+# ---------- Kiếm dựng thủ tục cho thân không kiếm (nhân vật nữ Lam Chi) ----------
+
+def _box_ring(bm, cen, e, f, hw, ht):
+    pts = [cen + e * hw + f * ht, cen - e * hw + f * ht, cen - e * hw - f * ht, cen + e * hw - f * ht]
+    return [bm.verts.new(p) for p in pts]
+
+
+def _bridge(bm, r0, r1, cell, uvl, mat, faces):
+    n = len(r0)
+    for k in range(n):
+        f = bm.faces.new((r0[k], r0[(k + 1) % n], r1[(k + 1) % n], r1[k]))
+        faces.append((f, cell))
+
+
+def _cap(bm, ring, cell, faces, flip=False):
+    f = bm.faces.new(tuple(reversed(ring)) if flip else tuple(ring))
+    faces.append((f, cell))
+
+
+def add_back_sword(mesh, arm, spec, parent, fail):
+    """Thêm kiếm + bao dựng thủ tục vào thân không có kiếm. Bao gán cứng vào `parent` (lưng), chuôi + lưỡi vào xương
+    `dtl_sword` (con của `parent`), cùng quy ước extras `dtl.sword` như sword_socket (client rút/tra kiếm không đổi).
+    spec: grip [x, dy, dz] (lệch so với đầu xương `parent`, mét, hệ Blender: +x trái, +y sau lưng, +z lên),
+    tip [x, y, z] hướng mũi (thấp xuống), length tổng chiều dài (m). Trả (báo cáo, các ô UV cần tô)."""
+    me, mw = mesh.data, mesh.matrix_world
+    inv = mw.inverted()
+    pb = arm.matrix_world @ arm.data.bones[parent].head_local
+    ox, dy, dz = spec.get('grip', [-0.2, 0.05, 0.1])
+    # Mặt lưng ở độ cao xương lưng: đỉnh có y lớn nhất trong dải hẹp quanh trục giữa.
+    back = [ (mw @ v.co) for v in me.vertices ]
+    sel = [p for p in back if abs(p.z - (pb.z + dz)) < 0.08 and abs(p.x - (pb.x + ox)) < 0.1]
+    if not sel:
+        fail('add_sword: không thấy thân quanh vị trí kiếm')
+    back_y = max(p.y for p in sel)
+    grip = Vector((pb.x + ox, back_y + float(spec.get('clear', 0.035)), pb.z + dz))
+    t = Vector(spec.get('tip', [0.55, 0.15, -0.82])).normalized()
+    fl = Vector((0, 1, 0))
+    fl = (fl - t * fl.dot(t)).normalized()
+    e = fl.cross(t).normalized()
+    L = float(spec.get('length', 0.95))
+    hilt = float(spec.get('hilt', 0.2))
+    # Vị trí dọc trục (0 = giữa tay cầm, dương = về mũi): chuôi [-hilt*0.55, hilt*0.45], bao [hilt*0.5, L - hilt*0.55].
+    # Atlas của Tripo thường kín: thu UV về k (mặc định 0,95) để chừa dải bên phải cho 4 ô màu của kiếm. Nội dung ảnh
+    # được thu theo ở bước tô (shrink_images), sau recolor.
+    shrink = float(spec.get('shrink', 0.95))
+    uvd = me.uv_layers.active.data
+    for l in uvd:
+        l.uv = (l.uv[0] * shrink, l.uv[1] * shrink)
+    cells = {}
+    for k in ('sheath', 'wrap', 'bronze', 'steel'):
+        c = free_uv_block(me, reserved=list(cells.values()))
+        if c is None:
+            fail('add_sword: atlas UV không còn chỗ cho 4 ô màu')
+        cells[k] = c
+    uvc = {k: ((c[0] + 1.5) / UV_GRID, (c[1] + 1.5) / UV_GRID) for k, c in cells.items()}
+
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    dl = bm.verts.layers.deform.verify()
+    uvl = bm.loops.layers.uv.active
+    mat = 0
+    gi_s = (mesh.vertex_groups.get(SWORD_BONE) or mesh.vertex_groups.new(name=SWORD_BONE)).index
+    gi_p = (mesh.vertex_groups.get(parent) or mesh.vertex_groups.new(name=parent)).index
+    made = {'sheath': [], 'sword': []}
+    P = lambda d: grip + t * d  # noqa: E731
+
+    def solid(kind, d0, d1, hw0, ht0, hw1, ht1, cell, group):
+        r0 = _box_ring(bm, P(d0), e, fl, hw0, ht0)
+        r1 = _box_ring(bm, P(d1), e, fl, hw1, ht1)
+        faces = []
+        _bridge(bm, r0, r1, cell, uvl, mat, faces)
+        _cap(bm, r0, cell, faces, True)
+        _cap(bm, r1, cell, faces)
+        for f, c in faces:
+            f.material_index = mat
+            f.smooth = False
+            for l in f.loops:
+                l[uvl].uv = uvc[c]
+        made[group] += r0 + r1
+
+    sh0, sh1 = hilt * 0.5, L - hilt * 0.3
+    solid('sheath', sh0, sh1, 0.026, 0.0125, 0.019, 0.0095, 'sheath', 'sheath')      # bao
+    solid('mouth', sh0 - 0.012, sh0 + 0.035, 0.029, 0.0155, 0.029, 0.0155, 'bronze', 'sheath')  # miệng bao đồng
+    solid('chape', sh1 - 0.06, sh1 + 0.008, 0.0215, 0.0115, 0.0185, 0.0095, 'bronze', 'sheath')  # mũi bao đồng
+    solid('hilt', -hilt * 0.55, hilt * 0.42, 0.0145, 0.0125, 0.0145, 0.0125, 'wrap', 'sword')  # chuôi quấn dây
+    solid('guard', hilt * 0.42, hilt * 0.5, 0.040, 0.011, 0.040, 0.011, 'bronze', 'sword')     # hộ thủ
+    solid('pommel', -hilt * 0.55 - 0.022, -hilt * 0.55, 0.019, 0.0165, 0.019, 0.0165, 'bronze', 'sword')  # đầu chuôi
+    # Lưỡi nằm gọn trong bao: hình thoi thuôn về mũi (như sword_socket).
+    bl0, bl1 = hilt * 0.5 - 0.01, L - hilt * 0.3 - 0.07
+    width, thick = 0.0235, 0.006
+    rings = []
+    for d, wf in ((bl0, 1.0), (bl1, 0.85)):
+        cen = P(d)
+        pts = [cen + e * width * wf, cen + fl * thick, cen - e * width * wf, cen - fl * thick]
+        rings.append([bm.verts.new(p) for p in pts])
+    tipv = bm.verts.new(P(bl1 + 0.05))
+    faces = []
+    for k in range(4):
+        faces.append(bm.faces.new((rings[0][k], rings[0][(k + 1) % 4], rings[1][(k + 1) % 4], rings[1][k])))
+        faces.append(bm.faces.new((rings[1][k], rings[1][(k + 1) % 4], tipv)))
+    faces.append(bm.faces.new(tuple(reversed(rings[0]))))
+    for f in faces:
+        f.material_index = mat
+        for l in f.loops:
+            l[uvl].uv = uvc['steel']
+    made['sword'] += rings[0] + rings[1] + [tipv]
+    allf = [f for f in bm.faces if all(v in set(made['sheath'] + made['sword']) for v in f.verts)]
+    bmesh.ops.recalc_face_normals(bm, faces=allf)
+    for v in made['sheath']:
+        v[dl].clear()
+        v[dl][gi_p] = 1.0
+    for v in made['sword']:
+        v[dl].clear()
+        v[dl][gi_s] = 1.0
+    bm.to_mesh(me)
+    bm.free()
+    me.update()
+
+    gp = grip
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode='EDIT')
+    eb = arm.data.edit_bones
+    b = eb.new(SWORD_BONE)
+    ainv = arm.matrix_world.inverted()
+    b.head = ainv @ gp
+    b.tail = ainv @ (gp + t * 0.12)
+    b.parent = eb[parent]
+    b.use_deform = True
+    bpy.ops.object.mode_set(mode='OBJECT')
+    set_extra(mesh, 'sword', {'bone': SWORD_BONE, 'grip': to_gltf(gp), 'tip': to_gltf(t), 'edge': to_gltf(e)})
+    cells['shrink'] = shrink
+    return {'grip': to_gltf(gp), 'tip': to_gltf(t), 'length': L, 'backY': round(back_y, 3), 'cells': dict(cells)}, cells
+
+
+def paint_flat(mesh, cell, kind, replace_pixels):
+    """Tô một ô màu phẳng (3×3) cho bao/chuôi/đồng trong ảnh màu, ORM và normal."""
+    look = {
+        'sheath': {'color': (0.085, 0.060, 0.045), 'orm': (1.0, 0.62, 0.0)},
+        'wrap': {'color': (0.075, 0.085, 0.11), 'orm': (1.0, 0.8, 0.0)},
+        'bronze': {'color': (0.52, 0.38, 0.17), 'orm': (1.0, 0.42, 0.85)},
+    }[kind]
+    look = dict(look, normal=(0.5, 0.5, 1.0))
+    imgs = {}
+    for n in mesh.data.materials[0].node_tree.nodes:
+        if n.type == 'TEX_IMAGE' and n.image:
+            for role in ('color', 'orm', 'normal'):
+                if n.image.name.endswith('_' + role):
+                    imgs[role] = n.image
+    for role, img in sorted(imgs.items()):
+        W, H = img.size
+        px = np.empty(W * H * 4, np.float32)
+        img.pixels.foreach_get(px)
+        px = px.reshape(H, W, 4)
+        x0, x1 = int(cell[0] / UV_GRID * W), int((cell[0] + 3) / UV_GRID * W)
+        y0, y1 = int(cell[1] / UV_GRID * H), int((cell[1] + 3) / UV_GRID * H)
+        px[y0:y1, x0:x1, :3] = look[role]
+        px[y0:y1, x0:x1, 3] = 1.0
+        replace_pixels(img, px)
+
+
+def shrink_images(mesh, k, replace_pixels):
+    """Thu nội dung các ảnh màu/ORM/normal về k·(rộng, cao), đặt ở góc (0,0), phần còn lại nhân bản mép: khớp với UV đã thu."""
+    imgs = []
+    for n in mesh.data.materials[0].node_tree.nodes:
+        if n.type == 'TEX_IMAGE' and n.image and n.image not in imgs and n.image.name.rsplit('_', 1)[-1] in ('color', 'orm', 'normal'):
+            imgs.append(n.image)
+    for img in imgs:
+        W, H = img.size
+        w2, h2 = int(W * k), int(H * k)
+        tmp = img.copy()
+        tmp.scale(w2, h2)
+        px2 = np.empty(w2 * h2 * 4, np.float32)
+        tmp.pixels.foreach_get(px2)
+        px2 = px2.reshape(h2, w2, 4)
+        bpy.data.images.remove(tmp)
+        canvas = np.empty((H, W, 4), np.float32)
+        canvas[:h2, :w2] = px2
+        canvas[h2:, :w2] = px2[-1:, :, :]
+        canvas[:, w2:] = canvas[:, w2 - 1:w2, :]
+        replace_pixels(img, canvas)
+
+
+def flatten_skin_normals(mesh, z_min, replace_pixels):
+    """Làm phẳng normal map trên da mặt/cổ: Tripo vẽ nét môi, mũi, mi vào normal ở độ phân giải mà sau khi hạ về 1024 chỉ còn
+    vệt tối chạy cạnh miệng (trông như ria mép). Chọn các mặt đầu (tâm cao hơn `z_min` m) có màu da ở tâm UV, rasterize
+    tam giác UV thành mặt nạ rồi đặt normal về (0,5; 0,5; 1). Albedo giữ nguyên (môi, mắt vẫn do màu vẽ)."""
+    me, mw = mesh.data, mesh.matrix_world
+    px, W, H = _color_pixels(mesh)
+    if px is None:
+        return {'faces': 0}
+    uv = me.uv_layers.active.data
+    mask = np.zeros((H, W), bool)
+    faces = 0
+    for poly in me.polygons:
+        cz = (mw @ poly.center).z
+        if cz < z_min:
+            continue
+        uvs = np.array([tuple(uv[l].uv) for l in poly.loop_indices])
+        c = uvs.mean(0)
+        r, g, b = px[min(H - 1, max(0, int(c[1] * H))), min(W - 1, max(0, int(c[0] * W))), :3]
+        if not (r > 0.45 and r > g * 1.08 and g >= b * 0.95 and r - b > 0.14):
+            continue
+        faces += 1
+        pts = uvs * np.array([W, H])
+        for k in range(1, len(pts) - 1):
+            a_, b_, c_ = pts[0], pts[k], pts[k + 1]
+            i0, j0 = np.floor(np.minimum(np.minimum(a_, b_), c_)).astype(int) - 2
+            i1, j1 = np.floor(np.maximum(np.maximum(a_, b_), c_)).astype(int) + 2
+            ii, jj = np.meshgrid(np.arange(max(0, i0), min(W, i1 + 1)), np.arange(max(0, j0), min(H, j1 + 1)))
+            x, y = ii + 0.5, jj + 0.5
+            d = (b_[1] - c_[1]) * (a_[0] - c_[0]) + (c_[0] - b_[0]) * (a_[1] - c_[1])
+            if abs(d) < 1e-9:
+                continue
+            l1 = ((b_[1] - c_[1]) * (x - c_[0]) + (c_[0] - b_[0]) * (y - c_[1])) / d
+            l2 = ((c_[1] - a_[1]) * (x - c_[0]) + (a_[0] - c_[0]) * (y - c_[1])) / d
+            hit = (l1 >= -0.03) & (l2 >= -0.03) & (1 - l1 - l2 >= -0.03)
+            mask[jj[hit], ii[hit]] = True
+    for n in mesh.data.materials[0].node_tree.nodes:
+        if n.type == 'TEX_IMAGE' and n.image and n.image.name.endswith('_normal'):
+            img = n.image
+            w, h = img.size
+            arr = np.empty(w * h * 4, np.float32)
+            img.pixels.foreach_get(arr)
+            arr = arr.reshape(h, w, 4)
+            arr[mask, 0] = 0.5
+            arr[mask, 1] = 0.5
+            arr[mask, 2] = 1.0
+            replace_pixels(img, arr)
+            break
+    return {'faces': faces, 'pixels': int(mask.sum())}

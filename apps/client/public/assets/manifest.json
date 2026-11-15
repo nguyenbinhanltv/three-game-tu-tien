@@ -428,6 +428,81 @@
         }
       }
     },
+    "chr_kiem_tu_nu": {
+      "id": "chr_kiem_tu_nu",
+      "class": "player",
+      "source": "assets/build/raw/chr_kiem_tu_nu.glb",
+      "file": "chr_kiem_tu_nu.20136e4c39.glb",
+      "bytes": 2567200,
+      "rawBytes": 2699712,
+      "triangles": 20000,
+      "rawTriangles": 27475,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 57,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "chr_kiem_tu_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "chr_kiem_tu_nu_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "chr_kiem_tu_nu_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 20000
+        },
+        {
+          "level": 1,
+          "triangles": 8000,
+          "target": 8000
+        },
+        {
+          "level": 2,
+          "triangles": 2999,
+          "target": 3000
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.4296,
+          "height": 1.68,
+          "depth": 0.4979,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.4296,
+          "height": 1.68,
+          "depth": 0.4979,
+          "minY": 0
+        }
+      }
+    },
     "chr_npc_chuong_mon": {
       "id": "chr_npc_chuong_mon",
       "class": "npc",
