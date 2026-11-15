@@ -430,13 +430,22 @@ function Tribulation() {
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   return (
+    <div className="trib">
+      <div className="trib-title">⚡ {t('ui.trib.title')} ⚡</div>
+      <div>{t('ui.trib.left', { n: Math.ceil((tribEnd - now) / 1000) })}</div>
+    </div>
+  );
+}
+
+/** Letterbox mỏng suốt cảnh độ kiếp. Đặt đầu `.hud` (không z-index) để mọi khung HUD sau nó vẽ đè lên dải đen. */
+function TribBars() {
+  const tribEnd = useUI((s) => s.tribEnd);
+  const now = useNow(250);
+  if (!tribEnd || now >= tribEnd) return null;
+  return (
     <>
       <div className="trib-bar trib-bar-top" />
       <div className="trib-bar trib-bar-bot" />
-      <div className="trib">
-        <div className="trib-title">⚡ {t('ui.trib.title')} ⚡</div>
-        <div>{t('ui.trib.left', { n: Math.ceil((tribEnd - now) / 1000) })}</div>
-      </div>
     </>
   );
 }
@@ -554,6 +563,7 @@ export function Hud() {
   const cining = useUI((s) => s.cine !== null && !s.cine.out);
   return (
     <div className={'hud' + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>
+      <TribBars />
       <PlayerFrame />
       <CineView />
       <ChapterCardView />

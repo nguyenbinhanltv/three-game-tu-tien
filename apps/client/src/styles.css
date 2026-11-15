@@ -803,7 +803,7 @@ kbd {
   border-radius: 10px;
   color: #e9dcff;
 }
-/* Letterbox mỏng suốt cảnh độ kiếp (không che HUD: người độ kiếp còn phải né sét). */
+/* Letterbox mỏng suốt cảnh độ kiếp. Không z-index và render đầu `.hud` nên HUD (máu, kỹ năng, bản đồ, chat) vẽ đè lên dải đen. */
 .trib-bar {
   position: fixed;
   left: 0;
@@ -811,7 +811,6 @@ kbd {
   height: 6.5vh;
   background: #000;
   pointer-events: none;
-  z-index: 1;
   animation: trib-bar-in 1.2s ease-out both;
 }
 .trib-bar-top {
