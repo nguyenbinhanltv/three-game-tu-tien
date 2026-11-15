@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "file": "icons.50d1aed82c.webp",
-  "sha256": "50d1aed82c21d971d4e031672b5115aeb6164ce11b04ded57dc05513a6b0c3ff",
-  "bytes": 213158,
+  "file": "icons.c5f3c08901.webp",
+  "sha256": "c5f3c08901b6b974c1abc7f285ba6b21bf78bb8a096c43138024cf35dfabb7f2",
+  "bytes": 272108,
   "tileSize": 128,
   "columns": 8,
-  "rows": 6,
+  "rows": 9,
   "icons": {
     "skl_phi_kiem": {
       "x": 0,
@@ -258,6 +258,174 @@
       "y": 5,
       "sourceSha256": "52ec027ace16cc284a3068f36cb60df60b386ecde1ab90ae0bd9e299bd722f27",
       "sourceBytes": 2449916
+    },
+    "itm_ho_uyen_vai": {
+      "x": 2,
+      "y": 5,
+      "sourceSha256": "4b40b255e2896ca0d386ed5dffe3606774963bb0dce932d6950e5e55d2bf9576",
+      "sourceBytes": 603694
+    },
+    "itm_ho_uyen_da": {
+      "x": 3,
+      "y": 5,
+      "sourceSha256": "b3ea2df368e85e0c5acb0fde3c858cc56ae7610aa0c14d90006e57bc3d8b3088",
+      "sourceBytes": 642278
+    },
+    "itm_ho_uyen_thiet": {
+      "x": 4,
+      "y": 5,
+      "sourceSha256": "48b98a220d72f76cf9166206dcf53148af3efb5a98d01fb88fcbcbf1f84c1582",
+      "sourceBytes": 591788
+    },
+    "itm_van_ngoa_vai": {
+      "x": 5,
+      "y": 5,
+      "sourceSha256": "28113d19c70aa9c4947a668df871092ce822e8f91b47c3717fd407460a484c5f",
+      "sourceBytes": 545632
+    },
+    "itm_van_ngoa_da": {
+      "x": 6,
+      "y": 5,
+      "sourceSha256": "a2eff051495d5903f13fb8fb02693abbe59562009cf7cff69daf5afd0592f4fa",
+      "sourceBytes": 559716
+    },
+    "itm_van_ngoa_van": {
+      "x": 7,
+      "y": 5,
+      "sourceSha256": "b9ee5c72ab22b991950b183c0812b08503956bcf802558d94375ba1bb032486e",
+      "sourceBytes": 591361
+    },
+    "itm_dai_lung_vai": {
+      "x": 0,
+      "y": 6,
+      "sourceSha256": "f205175f9027c2fff66ec9ef66b0c006082f93318a76024437bb35fe034dae08",
+      "sourceBytes": 666684
+    },
+    "itm_dai_lung_da": {
+      "x": 1,
+      "y": 6,
+      "sourceSha256": "1824613dee25dd56e2ea8276a9836bee27d546d36f5766291c0c494024daf717",
+      "sourceBytes": 650755
+    },
+    "itm_dai_lung_ngoc": {
+      "x": 2,
+      "y": 6,
+      "sourceSha256": "554882cdad1edf4a553da893d6ce2bcad6fc21f4fe4ebb1de7cc7a984c1095cb",
+      "sourceBytes": 717767
+    },
+    "itm_ngoc_boi_moc": {
+      "x": 3,
+      "y": 6,
+      "sourceSha256": "fc3b41f3329c4043c28f0b8751684b3b48298d0bbe047a81ef8a2b4c7d64bac7",
+      "sourceBytes": 558640
+    },
+    "itm_ngoc_boi_thanh": {
+      "x": 4,
+      "y": 6,
+      "sourceSha256": "09ae972da2c33f8e30c32f5cda2ecf9441480669751d89431a31cb758bfe9d8c",
+      "sourceBytes": 579513
+    },
+    "itm_ngoc_boi_linh": {
+      "x": 5,
+      "y": 6,
+      "sourceSha256": "b87b86b2621e3d7fc1627dc21c721f351184e3934b796e4cb3e6196b7b6b5555",
+      "sourceBytes": 563121
+    },
+    "itm_gioi_chi_dong": {
+      "x": 6,
+      "y": 6,
+      "sourceSha256": "9c8cb418a000fa32926cf6d885e1a8fee730811f6513ad9fb5d6852cb0447b53",
+      "sourceBytes": 759952
+    },
+    "itm_lk_dao_bao": {
+      "x": 7,
+      "y": 6,
+      "sourceSha256": "468967224d8537a3dcb1ab7dd1b21fb7cf5845138181b0f8622197addf29a738",
+      "sourceBytes": 719288
+    },
+    "itm_lk_ho_uyen": {
+      "x": 0,
+      "y": 7,
+      "sourceSha256": "e589ee9916c62d90807d3bd8c12d2f95a3d5000e9f56174bf9d2060b051f89dd",
+      "sourceBytes": 678334
+    },
+    "itm_lk_dai_lung": {
+      "x": 1,
+      "y": 7,
+      "sourceSha256": "81e2daf25b83643d6f646d67d690ff4f4ea0c8a06f093c7efc1c32987c85f65d",
+      "sourceBytes": 725525
+    },
+    "itm_lk_van_ngoa": {
+      "x": 2,
+      "y": 7,
+      "sourceSha256": "643c51aa2124285e28349d5917ec9959872d65f82bcec60ef0cd9c4a6873cfaf",
+      "sourceBytes": 652653
+    },
+    "itm_hg_dao_bao": {
+      "x": 3,
+      "y": 7,
+      "sourceSha256": "c511976c3d8bedce17906e0e281ba4d9fd912b770085882cd40aa9d94e77a40a",
+      "sourceBytes": 665461
+    },
+    "itm_hg_ho_uyen": {
+      "x": 4,
+      "y": 7,
+      "sourceSha256": "f730cf34459e80470db1e0351db411c2476829ee5063006243e47597e50d01bd",
+      "sourceBytes": 642613
+    },
+    "itm_hg_dai_lung": {
+      "x": 5,
+      "y": 7,
+      "sourceSha256": "dce185068745f686ce68d5fd235168f0b319269cdd674aa39472e6311c143a50",
+      "sourceBytes": 653640
+    },
+    "itm_hg_van_ngoa": {
+      "x": 6,
+      "y": 7,
+      "sourceSha256": "f80b0f895498986a3c0ab67f2fc8417939483b9ccefc67b9399e0571a2fe4c28",
+      "sourceBytes": 566671
+    },
+    "itm_dt_dao_bao": {
+      "x": 7,
+      "y": 7,
+      "sourceSha256": "bec487b30db24ff1ca2a1a10f5c9583144e3b9f93c577557e113e2928d2d253d",
+      "sourceBytes": 666467
+    },
+    "itm_dt_ngoc_boi": {
+      "x": 0,
+      "y": 8,
+      "sourceSha256": "7d5710e904712caeec9510943650d71c55e082ebdb111c6c1367f74701fe13e8",
+      "sourceBytes": 588012
+    },
+    "itm_dt_dai_lung": {
+      "x": 1,
+      "y": 8,
+      "sourceSha256": "7062b5f5f1504aa6756110479f133844f7759b8df7ed5f2604deef07e6ea6da2",
+      "sourceBytes": 672631
+    },
+    "itm_dt_gioi_chi": {
+      "x": 2,
+      "y": 8,
+      "sourceSha256": "b4a22f865a07ae397eb5feaef76781a8d909d92a9c6a2e9cce222414e3398cfa",
+      "sourceBytes": 760938
+    },
+    "itm_hgl_kiem": {
+      "x": 3,
+      "y": 8,
+      "sourceSha256": "9790019caf8f162439ee23b5b5f57f60260c2f5aab1a4f7940ec8fb31bf1186f",
+      "sourceBytes": 488084
+    },
+    "itm_hgl_dao_bao": {
+      "x": 4,
+      "y": 8,
+      "sourceSha256": "262bdad9409b3c24695012575eaf8346f074da314f6239a282fdb7ce5f0ba70b",
+      "sourceBytes": 704260
+    },
+    "itm_hgl_gioi_chi": {
+      "x": 5,
+      "y": 8,
+      "sourceSha256": "3d1abd28f5808955828c466c80c9cc4f05784012e08f4ab931c0bdad6454b139",
+      "sourceBytes": 708026
     }
   }
 }
