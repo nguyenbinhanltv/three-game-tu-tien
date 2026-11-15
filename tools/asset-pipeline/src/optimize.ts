@@ -247,6 +247,9 @@ function readCache(file: string): Record<string, CacheEntry> {
   }
 }
 
+/** Dung sai lấy mẫu lại clip thư viện chung (K-3): clip mocap lấy mẫu 30 khung/s nhiều khóa dư; 1e-3 ≈ 0,1° quay, 1 mm vị trí. */
+const ANIM_TOLERANCE = 1e-3;
+
 export async function optimizeAsset(
   rawFile: string,
   id: string,
@@ -264,7 +267,7 @@ export async function optimizeAsset(
   const rawDims = measureCurrentPose(doc);
   const skinned = isSkinned(doc);
 
-  await doc.transform(dedup(), prune({ keepLeaves: true, keepExtras: true }), weld(), resample());
+  await doc.transform(dedup(), prune({ keepLeaves: true, keepExtras: true }), weld(), resample(cls === 'anim' ? { tolerance: ANIM_TOLERANCE } : {}));
 
   const rawTriangles = countTriangles(doc, 0);
   const lod0 = await capLod0(doc, cap);
