@@ -11,6 +11,7 @@
     "load": "tsx src/load.ts",
     "crowd": "tsx src/crowd.ts",
     "shots": "tsx src/shots.ts",
+    "e4shots": "tsx src/e4shots.ts",
     "shots:method": "tsx src/shots-method.ts"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { clamp, exp, float, instancedBufferAttribute, length, max, min, mix, pow, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
+import { cameraPosition, clamp, exp, float, instancedBufferAttribute, length, max, min, mix, pow, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
 import { markBloom } from '../post';
 import { FX_MAX_HDR } from '../materials/vfx';
 
@@ -85,13 +85,16 @@ class Layer {
       fog: !glow,
     });
     mat.positionNode = pos;
-    mat.scaleNode = mix(p2.x, p2.y, k).mul(alive);
+    const size = mix(p2.x, p2.y, k);
+    mat.scaleNode = size.mul(alive);
     // Đĩa tròn mềm; hiện nhanh, tắt dần.
     const r = length(uv().sub(0.5)).mul(2);
     const disc = glow ? pow(float(1).sub(smoothstep(0, 1, r)), 1.6) : float(1).sub(smoothstep(0.35, 1, r));
     const fade = smoothstep(0, 0.08, k).mul(pow(float(1).sub(k), glow ? 1.2 : 1.6));
     mat.colorNode = glow ? min(p3.xyz.mul(float(1.6).sub(k.mul(0.6))), FX_MAX_HDR) : p3.xyz;
-    mat.opacityNode = p3.w.mul(disc).mul(fade).mul(alive);
+    // Hạt sát camera phình thành đĩa khổng lồ che hình (P2-E4): mờ dần khi cỡ hạt vượt ~35–80% khoảng cách tới camera.
+    const near = float(1).sub(smoothstep(0.35, 0.8, size.div(max(length(pos.sub(cameraPosition)), 0.1))));
+    mat.opacityNode = p3.w.mul(disc).mul(fade).mul(near).mul(alive);
     mat.name = glow ? 'fx-particles-glow' : 'fx-particles-dust';
     if (glow) markBloom(mat, 0.5);
 

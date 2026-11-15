@@ -20,6 +20,7 @@ import {
   vec3,
   vec4,
 } from 'three/tsl';
+import { fitFactor } from './screenFit';
 
 /**
  * Thanh máu trên đầu quái/người, gom vào **một** `InstancedMesh` (1 draw call cho mọi thanh).
@@ -59,6 +60,8 @@ export class HeadBars {
   private attrA: THREE.InstancedBufferAttribute;
   private attrB: THREE.InstancedBufferAttribute;
   private n = 0;
+  /** Camera hiện tại (vị trí, FOV dọc, cao khung nhìn px) để kẹp kích thước trên màn hình (P2-E4). */
+  private cam = { x: 0, y: 0, z: 0, fov: 55, vh: 0 };
 
   constructor() {
     this.attrA = new THREE.InstancedBufferAttribute(this.a, 4);
@@ -138,12 +141,29 @@ export class HeadBars {
     this.n = 0;
   }
 
+  /** Đặt camera cho khung này; `vh` = 0 thì không kẹp. */
+  setView(x: number, y: number, z: number, fovDeg: number, viewH: number): void {
+    const c = this.cam;
+    c.x = x;
+    c.y = y;
+    c.z = z;
+    c.fov = fovDeg;
+    c.vh = viewH;
+  }
+
   /**
    * Thêm một thanh. `x,y,z`: tâm thanh trong thế giới; `width` (m); `hp`, `trail`: 0..1;
    * `kind`: BAR_ENEMY | BAR_ALLY | BAR_BOSS; `alpha`: 0..1.
    */
   push(x: number, y: number, z: number, width: number, hp: number, trail: number, kind: number, alpha = 1): void {
     if (this.n >= CAPACITY) return;
+    const c = this.cam;
+    if (c.vh > 0) {
+      // Thanh máu không to khổng lồ khi camera sát, cũng không bé tí khi xa: rộng trên màn hình trong [min, max] px.
+      const boss = kind >= 1.5;
+      const d = Math.hypot(x - c.x, y - c.y, z - c.z);
+      width *= fitFactor(width, d, c.fov, c.vh, boss ? 100 : 44, boss ? 300 : 120);
+    }
     const i = this.n++ * 4;
     this.a[i] = x;
     this.a[i + 1] = y;
