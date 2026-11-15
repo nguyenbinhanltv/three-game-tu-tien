@@ -470,6 +470,7 @@ export class GameSim {
     setFlag: (p, f, on) => this.setFlag(p, f, on),
     cancelCast: (p) => this.cancelCast(p),
     stopMeditate: (p) => this.setMeditating(p, false),
+    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
   });
 
   /** Truyền Tống Trận (M-4): mở khóa, niệm, dịch chuyển. */
@@ -494,6 +495,7 @@ export class GameSim {
     warn: (p, k, params) => this.warn(p, k, params),
     sys: (p, k, params, type) => this.sys(p, k, params, type),
     fx: (m) => this.fx(m),
+    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
   });
 
   constructor(

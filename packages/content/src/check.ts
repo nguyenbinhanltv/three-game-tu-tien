@@ -8,7 +8,7 @@ import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
-import { COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, TELE_FREE, TELE_PADS, type ZoneDef } from '@dtl/shared';
+import { HAND_PROPS, COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, TELE_FREE, TELE_PADS, type ZoneDef } from '@dtl/shared';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -629,8 +629,57 @@ function checkZonesAndCamps(lv: (typeof LEVELS)[string]) {
     const n = elitePerZone.get(z.id) ?? 0;
     if (n < 2 || n > 3) err(`zone ${z.id}: ${n} tinh anh (cần 2–3)`);
   }
+  checkPois(lv, zoneById);
   const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
   if (normal < 300 || normal > 380) err(`${where}: ${normal} quái thường theo camps, mục tiêu ~300–360`);
+}
+
+// Điểm đáng chú ý (M-5): mỗi vùng săn đúng một điểm, nằm khe giữa các bãi quái, có prop bày, tên theo glossary,
+// người giao nhiệm vụ dạy hệ thống đứng ở các điểm này.
+function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) {
+  const pois = lv.pois ?? [];
+  const camps = lv.camps ?? [];
+  const where = `level ${lv.id}`;
+  if (!pois.length) return;
+  uniqueIds('poi', pois);
+  const perZone = new Map<string, number>();
+  const glossPois = GLOSSARY.pois as Record<string, string>;
+  const clearOfCamps = (x: number, z: number, margin: number) => camps.every((c) => Math.hypot(c.x - x, c.z - z) >= c.radius + margin);
+  for (const p of pois) {
+    const w = `${where}: poi ${p.id}`;
+    needStr(`poi.${p.id}.name`);
+    needStr(`poi.${p.id}.desc`);
+    if (t(`poi.${p.id}.name`) !== glossPois[p.id]) err(`${w}: tên lệch glossary.pois`);
+    const zn = zoneById.get(p.zone);
+    if (!zn) {
+      err(`${w}: vùng không có ${p.zone}`);
+      continue;
+    }
+    perZone.set(p.zone, (perZone.get(p.zone) ?? 0) + 1);
+    if (!inPoly(zn.poly, p.x, p.z)) err(`${w}: nằm ngoài vùng ${p.zone}`);
+    if (groundAt(p.x, p.z) < WATER_Y + 1.5) err(`${w}: nằm sát nước`);
+    if (!clearOfCamps(p.x, p.z, 6)) err(`${w}: chồng bãi quái (cần cách mép bãi ≥ 6 m)`);
+    const near = HAND_PROPS.filter((h) => Math.hypot(h.x - p.x, h.z - p.z) <= 14);
+    if (near.length < 5) err(`${w}: chỉ ${near.length} prop quanh điểm (cần ≥ 5)`);
+    for (const h of near) {
+      if (!clearOfCamps(h.x, h.z, 2)) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè bãi quái`);
+      for (const pad of TELE_PADS) if (Math.hypot(h.x - pad.x, h.z - pad.z) < 4) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè Truyền Tống Trận ${pad.id}`);
+      if ((h.r ?? 0) > 1.5) err(`${w}: prop ${h.id} va chạm r=${h.r} > 1,5 m (không được chặn đường)`);
+    }
+    if (p.beamH !== undefined && !(p.beamH >= 30 && p.beamH <= 120)) err(`${w}: beamH ${p.beamH} ngoài 30–120 m`);
+  }
+  for (const z of zoneById.keys()) if ((perZone.get(z) ?? 0) !== 1) err(`${where}: vùng ${z} cần đúng một poi (có ${perZone.get(z) ?? 0})`);
+  const glossNpc = GLOSSARY.poiNpcs as Record<string, string>;
+  for (const id of Object.keys(glossNpc)) {
+    const n = NPC.get(id);
+    if (!n) {
+      err(`${where}: glossary.poiNpcs có ${id} nhưng npcs.json không có`);
+      continue;
+    }
+    if (t(`npc.${id}.name`) !== glossNpc[id]) err(`npc ${id}: tên lệch glossary.poiNpcs`);
+    if (!pois.some((p) => Math.hypot(p.x - n.x, p.z - n.z) <= 10)) err(`npc ${id}: phải đứng trong 10 m quanh một poi`);
+    if (!clearOfCamps(n.x, n.z, 4)) err(`npc ${id}: đứng trong bãi quái`);
+  }
 }
 
 // ---- Truyền Tống Trận (M-4): mỗi vùng đúng một trận trong vùng, đứng được, không đè collider/nước/bãi quái ----

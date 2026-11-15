@@ -33,7 +33,7 @@ async function skins(fail = false, legacy = false) {
 }
 
 /** Chiều cao khai báo trong meta.json (import.size.height). */
-const HEIGHT: Record<string, number> = { npc_duoc_su: 1.65, npc_thiet_lao: 1.7, npc_chuong_mon: 1.75 };
+const HEIGHT: Record<string, number> = { npc_duoc_su: 1.65, npc_thiet_lao: 1.7, npc_chuong_mon: 1.75, npc_mieu_cong: 1.7, npc_hai_duoc: 1.65, npc_tieu_khe: 1.75 };
 
 describe('model NPC (M3-6)', () => {
   it('mọi NPC trong npcs.json có asset trong bảng và trong manifest', () => {
