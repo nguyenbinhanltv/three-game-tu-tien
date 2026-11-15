@@ -169,4 +169,9 @@ export class FxPool {
   get freeCount(): number {
     return this.free.length;
   }
+
+  /** Số lưới đang dùng (mỗi lưới một draw call; ngân sách hiệu ứng người khác đọc số này, xem fxBudget.ts). */
+  get live(): number {
+    return this.created - this.free.length;
+  }
 }

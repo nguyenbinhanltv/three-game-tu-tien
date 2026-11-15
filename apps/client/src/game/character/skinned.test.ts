@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { MONSTER } from '@dtl/content';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
 import { MonsterModel } from '../models';
@@ -238,6 +238,44 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     expect(act.time).toBe(t0);
     for (let i = 0; i < 8; i++) w.update(1 / 60, anim());
     expect(act.time).toBeGreaterThan(t0);
+    w.dispose();
+    skins.dispose();
+  });
+
+  it('ma trận xương chỉ tính lại khi mixer chạy (không tính thừa mỗi khung)', async () => {
+    const { skins } = await wolfSkins();
+    const w = skins.create(MONSTER.get('mon_soi_xam')!) as SkinnedMonster;
+    let sk: THREE.Skeleton | undefined;
+    w.root.traverse((o) => (sk ??= (o as THREE.SkinnedMesh).skeleton));
+    expect(sk).toBeDefined();
+    const spy = vi.spyOn(THREE.Skeleton.prototype, 'update');
+    sk!.update();
+    expect(spy).toHaveBeenCalledTimes(1);
+    // Bộ xương chưa đổi: lần vẽ sau (khung sau, pass bóng) không tính lại.
+    sk!.update();
+    sk!.update();
+    expect(spy).toHaveBeenCalledTimes(1);
+    const before = Array.from(sk!.boneMatrices);
+    // LOD2: mixer chỉ chạy khi gộp đủ dt; chưa chạy thì vẫn không tính lại.
+    w.setViewDistance(200);
+    w.update(1 / 60, anim({ speed: 6 }));
+    sk!.update();
+    expect(spy).toHaveBeenCalledTimes(1);
+    for (let i = 0; i < 10; i++) w.update(1 / 60, anim({ speed: 6 }));
+    sk!.update();
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(Array.from(sk!.boneMatrices)).not.toEqual(before);
+    spy.mockRestore();
+    // Cây con GLB tĩnh: không compose lại ma trận cục bộ mỗi khung; root/inner vẫn tự cập nhật.
+    let meshes = 0;
+    w.root.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) {
+        meshes++;
+        expect(o.matrixAutoUpdate).toBe(false);
+      }
+    });
+    expect(meshes).toBeGreaterThan(0);
+    expect(w.root.matrixAutoUpdate).toBe(true);
     w.dispose();
     skins.dispose();
   });

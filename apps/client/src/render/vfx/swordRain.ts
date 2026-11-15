@@ -90,7 +90,6 @@ class InstSet {
   constructor(geo: THREE.BufferGeometry, mat: THREE.Material, readonly cap: number, attr: THREE.InstancedBufferAttribute) {
     // `count` giữ bằng sức chứa (xem `instancedGeometry`); số vẽ thật là `geometry.instanceCount`.
     this.mesh = new THREE.InstancedMesh(instancedGeometry(geo), mat, cap);
-    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
     this.attr = attr;
@@ -146,7 +145,6 @@ class InstSet {
 
 const instAttr = (cap: number) => {
   const a = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
-  a.setUsage(THREE.DynamicDrawUsage);
   return a;
 };
 

@@ -59,7 +59,6 @@ class Ribbon {
   fade = 0;
 
   constructor() {
-    this.pos.setUsage(THREE.DynamicDrawUsage);
     const uvs = new Float32Array(RIB_PTS * 2 * 2);
     const idx: number[] = [];
     for (let i = 0; i < RIB_PTS; i++) {

@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "compat": "tsx src/compat.ts",
     "load": "tsx src/load.ts",
+    "crowd": "tsx src/crowd.ts",
     "shots": "tsx src/shots.ts"
   },
   "dependencies": {
