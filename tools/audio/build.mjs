@@ -186,8 +186,41 @@ function envelope(n, lo, hi, period, rnd) {
 
 // ---------- SFX ----------
 
+/** Phần âm tỉ lệ (so với tần số gốc) và biên độ của lớp kim loại tổng hợp: chuông/chũm chọe, không hài hòa nên nghe "keng". */
+const METAL_PARTIALS = [
+  [1, 1],
+  [2.0, 0.55],
+  [2.76, 0.5],
+  [4.07, 0.32],
+  [5.4, 0.22],
+  [8.93, 0.12],
+];
+
+/** Lớp kim loại tổng hợp: tổng sin lệch hài, vào gắt 1,5 ms, tắt dần theo hàm mũ (phần cao tắt nhanh hơn). Tất định. */
+function synthMetal(l) {
+  const dur = l.dur ?? 0.8;
+  const n = Math.round(dur * SR);
+  const out = new Float32Array(n);
+  for (const [r, amp] of METAL_PARTIALS) {
+    const w = (2 * Math.PI * l.f * r) / SR;
+    // Thời gian tắt (hằng số e^-1): phần cao ngắn hơn; đủ để kết thúc ≈ -60 dB khi hết `dur`.
+    const tau = (dur / 6.9) / Math.pow(r, 0.55);
+    for (let i = 0; i < n; i++) {
+      const t = i / SR;
+      out[i] += Math.sin(w * i) * amp * Math.exp(-t / tau) * Math.min(1, t / 0.0015);
+    }
+  }
+  const pk = peakOf(out) || 1;
+  for (let i = 0; i < n; i++) out[i] /= pk;
+  return out;
+}
+
 function renderVariant(spec, v) {
   const parts = layersOf(v).map((l) => {
+    if (l.synth) {
+      if (l.synth !== 'metal') throw new Error(`lớp tổng hợp "${l.synth}" chưa hỗ trợ`);
+      return { a: synthMetal(l), at: Math.round((l.at ?? 0) * SR), g: l.gain ?? 1 };
+    }
     let a = decode(parseSrc(spec, l.src).abs, 1)[0];
     a = cut(a, l.start, l.end);
     a = resample(a, l.rate ?? 1);
@@ -209,6 +242,13 @@ function buildSfxClip(spec, name, def, v) {
     a = a.slice(0, Math.round(def.max * SR));
     fadeEdges(a, 0, 0.08);
   } else fadeEdges(a, 0, 0.015);
+  // Bão hòa mềm (tanh) trước khi chuẩn hóa: hạ đỉnh của âm có đỉnh nhọn để đạt được độ to mục tiêu dưới trần -1 dBFS,
+  // đồng thời thêm hài ở phần cao nên nghe giòn hơn (nhóm âm xác nhận: phá chú, đồ quý).
+  if (def.sat) {
+    const pk0 = peakOf(a) || 1;
+    const k = def.sat;
+    for (let i = 0; i < a.length; i++) a[i] = (Math.tanh((a[i] / pk0) * k) / Math.tanh(k)) * pk0;
+  }
   const target = dbToGain(SFX_REF_DB + (def.level ?? 0));
   const lr = loudRms(a);
   if (lr <= 0) throw new Error(`${name}: biến thể im lặng`);
@@ -343,7 +383,7 @@ function writeEncoded(subdir, base, chans, webmArgs, m4aArgs, written) {
 
 function licenseBlock(spec, used) {
   const lines = [LIC_BEGIN, '', '### Âm thanh (SFX, âm môi trường)', ''];
-  lines.push('Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`.', '');
+  lines.push('Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi để tra lại). File nguồn nằm ở `../dtl-asset-source/sfx/`, khai báo xử lý trong `tools/audio/sounds.json`. Bản build trong `apps/client/public/audio/`. Lớp kim loại tổng hợp (`synth: metal` trong sounds.json: `sfx_ascend`, `sfx_spellbreak`, `sfx_rare`) và âm chuông/lách tách đèn lồng ở client do code tự sinh, không dùng nguồn ngoài.', '');
   lines.push('| Âm | Nguồn | Giấy phép | Ngày | Chi tiết |', '| --- | --- | --- | --- | --- |');
   const today = localDate();
   for (const [id, srcs] of used) {
@@ -379,7 +419,7 @@ function main() {
   };
   for (const [name, def] of Object.entries(spec.sfx)) {
     if (!spec.sprites[def.sprite]) errors.push(`sfx ${name}: sprite "${def.sprite}" chưa khai báo`);
-    for (const v of def.variants) for (const l of layersOf(v)) note(`sfx_${name}`, l.src);
+    for (const v of def.variants) for (const l of layersOf(v)) if (!l.synth) note(`sfx_${name}`, l.src);
   }
   for (const [id, def] of Object.entries(spec.ambient)) {
     for (const l of def.layers) note(`amb_${id}`, l.src);

@@ -1,0 +1,4 @@
+{
+  "$comment": "Mức trộn nội bộ của từng bus khi thanh trượt ở 100% (nhân với âm lượng người chơi chọn). Client (audio.ts) và tools/audio/levels.mjs cùng đọc file này; đổi ở đây rồi chạy `pnpm audio:levels` để cập nhật docs/audio/levels.md.",
+  "bus": { "music": 0.33, "ambient": 0.25, "sfx": 1, "ui": 1 }
+}

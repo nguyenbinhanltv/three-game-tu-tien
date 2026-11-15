@@ -51,7 +51,10 @@ import {
 import type { Appearance } from '@dtl/shared';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
-import { chapterSting, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { FootstepDriver } from './footsteps';
+import { buildSources, Soundscape } from './soundscape';
+import { audioSpatialApi } from './soundscapeAudio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
@@ -224,6 +227,9 @@ export class Game {
   private ground: GroundTextures | null = null;
   /** Đèn lồng có ánh sáng điểm thật (chỉ preset Cao). */
   private lanterns: LanternLights | null = null;
+  /** Bước chân theo chất liệu mặt đất và nguồn âm theo vị trí (P2-D3); dựng lại mỗi khi đổi room (`resetSound`). */
+  private steps: FootstepDriver | null = null;
+  private scape: Soundscape | null = null;
   /** `matrixWorldAutoUpdate = false`: `frame()` tự cập nhật ma trận một lần trước khi vẽ (M3-9). */
   scene = Object.assign(new THREE.Scene(), { matrixWorldAutoUpdate: false });
   camera = new THREE.PerspectiveCamera(55, 1, 0.3, 9000);
@@ -387,6 +393,7 @@ export class Game {
     this.bindRoom(room);
     this.ents?.dispose();
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.resetSound(init.room === ROOM_WORLD);
     this.ents.camera = this.camera;
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
     this.pendingChapter = init.room === ROOM_DUNGEON ? 'dungeon' : null;
@@ -630,6 +637,7 @@ export class Game {
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.resetSound(get().room === ROOM_WORLD);
     this.ents.camera = this.camera;
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
     this.minimap = renderMinimap(320);
@@ -1367,11 +1375,22 @@ export class Game {
     return d < 8 ? 1 : Math.max(0, 1 - (d - 8) / 70);
   }
 
+  /** Dựng lại bước chân và nguồn âm theo vị trí cho room hiện tại (bí cảnh chỉ có bước chân trên nền đá). */
+  private resetSound(world: boolean): void {
+    this.scape?.dispose();
+    const log = (msg: string) => {
+      if (import.meta.env.DEV) console.info(`[audio] ${msg}`);
+    };
+    this.steps = new FootstepDriver(world ? 'van_lam' : 'kiem_trung', (name, vol, at) => sfx(name, vol, at, false), log);
+    this.scape = world ? new Soundscape(buildSources(SECT_LANTERNS), audioSpatialApi(), log) : null;
+    if (import.meta.env.DEV) (window as unknown as { __sound?: unknown }).__sound = { steps: () => this.steps?.stats, scape: () => ({ active: this.scape?.state(), ...this.scape?.stats }) };
+  }
+
   private playFxSound(t: string, src: string, dst: string, x?: number, z?: number): void {
     // Sự kiện của chính mình có nhạc ngắn (sting) riêng: lên tầng và đột phá thay hẳn jingle SFX;
     // tử vong giữ tiếng ngã (SFX) và thêm sting. Chưa có file/tắt tiếng thì dùng SFX như cũ.
     const sting = src === this.sid ? STINGS[t] : undefined;
-    if (sting && playSting(sting) && t !== 'death') return;
+    if (sting && playSting(sting) && t !== 'death' && t !== 'ascend') return;
     const map: Record<string, Sfx> = {
       sword: 'sword',
       slash: 'slash',
@@ -1391,6 +1410,9 @@ export class Game {
       cast: 'cast',
       mcast: 'mcast',
       tribstart: 'trib',
+      // Phá chú (ngắt niệm chú) và boss mất thế: tiếng xác nhận giòn, nổi nhất (D2).
+      interrupt: 'spellbreak',
+      break: 'spellbreak',
     };
     const name = map[t];
     if (!name) return;
@@ -1618,6 +1640,8 @@ export class Game {
     if (me) {
       this.ents.update(dt, this.view, { x: rp.x, y: rp.y, z: rp.z, yaw: this.facing, speed: this.speed, airborne: !this.cur.grounded && !this.cur.flying }, this.targetId, myLevel);
     }
+    if (me) this.steps?.update(this.ents, this.sid, rp, !this.cur.grounded && !this.cur.flying);
+    this.scape?.update(rp.x, rp.z, now / 1000);
     if (this.questMarkersDirty) {
       this.questMarkersDirty = false;
       this.ents.updateQuestMarkers(get().quests, myLevel);
@@ -1757,6 +1781,8 @@ export class Game {
     if (!m || !hasString(key)) return;
     if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > 60) return;
     set({ bossLine: { id: ++this.bossLineId, name: monsterName(m.t), text: t(key), until: Date.now() + 3200 } });
+    // Lời boss (thoại): hạ nhạc để đọc được và nghe được tiếng chân/đòn.
+    duckHold('boss', 0.4, 3.3);
   }
 
   /** Boss cho thanh giữa phía trên: boss đang chọn, không thì boss còn sống gần nhất đang giao chiến trong 80 m. */
@@ -1941,6 +1967,8 @@ export class Game {
     set({ chapter: { id: ++this.bossLineId, kind, until: Date.now() + p.card, dur: p.card } });
     this.camFrame.start(p);
     chapterSting(0.9);
+    // Thẻ chương/cảnh mở đầu: nhạc nền hạ thấp trong suốt thời gian thẻ để chiêng và chữ nổi lên (D2).
+    duckHold('chapter', 0.5, p.card / 1000 + 0.3);
   }
 
   /** Thẻ đang chờ (vào bí cảnh) và lần đầu vào Lạc Kiếm Tông của nhân vật này; gọi mỗi lần đồng bộ HUD. */
@@ -2083,6 +2111,10 @@ export class Game {
     this.renderer?.setAnimationLoop(null);
     for (const off of this.listeners) off();
     this.music.dispose();
+    this.scape?.dispose();
+    duckHold('chapter', 0);
+    duckHold('boss', 0);
+    duckHold('npc', 0);
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();

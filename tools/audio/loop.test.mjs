@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { decode, findFfmpeg, HERE } from './common.mjs';
-import { estimateTempo, findLoop, loudness, makeLoop, seamReport, SR, trimOneShot, truePeak } from './loopcore.mjs';
+import { estimateTempo, findLoop, loudness, makeLoop, momentaryMax, seamReport, SR, trimOneShot, truePeak } from './loopcore.mjs';
 
 const BEAT = 0.6; // 100 BPM
 const PATTERN = 8 * BEAT; // mẫu giai điệu lặp sau 2 ô nhịp
@@ -38,6 +38,21 @@ test('loudness: sin 1 kHz biên độ 0,1 hai kênh ≈ -20 LUFS', () => {
   const a = Float32Array.from({ length: n }, (_, i) => 0.1 * Math.sin((2 * Math.PI * 997 * i) / SR));
   const l = loudness([a, a.slice()]);
   assert.ok(Math.abs(l - -20) < 0.2, `đo được ${l}`);
+});
+
+test('momentaryMax: âm 100 ms được đo theo khối ngắn, không bị khoảng lặng pha loãng', () => {
+  const tone = (n) => Float32Array.from({ length: n }, (_, i) => 0.1 * Math.sin((2 * Math.PI * 997 * i) / SR));
+  const burst = new Float32Array(SR);
+  burst.set(tone(Math.round(0.1 * SR)));
+  // Khối 100 ms trúng đúng đoạn có tiếng: ≈ độ to của sin liên tục cùng biên độ (-23 LUFS mono).
+  const short = momentaryMax([burst], SR, 0.1);
+  assert.ok(Math.abs(short - -23) < 0.7, `đo được ${short}`);
+  // Khối 400 ms (mặc định) pha loãng 4 lần ≈ -6 dB.
+  const long = momentaryMax([burst]);
+  assert.ok(short - long > 5 && short - long < 7, `chênh ${short - long}`);
+  // Âm ngắn hơn một khối được đệm lặng, không lỗi.
+  assert.ok(Number.isFinite(momentaryMax([tone(Math.round(0.05 * SR))], SR, 0.4)));
+  assert.equal(momentaryMax([new Float32Array(SR)]), -Infinity);
 });
 
 test('truePeak: bắt được đỉnh giữa hai mẫu', () => {
