@@ -43,6 +43,11 @@ async function clearIntro(page: Page): Promise<void> {
 
 /** Bấm chiêu ở ô `slot` (0-based) rồi chụp sau từng mốc `at` (ms) kể từ lúc bấm. */
 async function castShots(page: Page, slot: number, name: string, at: number[]): Promise<void> {
+  // Tắt tự đánh và chờ hết GCD: chiêu bấm lúc còn chờ lâu bị server bỏ (GCD 1 giây), ảnh sẽ không có chiêu.
+  if (slot > 0) {
+    await page.evaluate(() => (window as unknown as G).__game!.clearTarget());
+    await sleep(1300);
+  }
   const t0 = Date.now();
   await page.evaluate((i) => (window as unknown as G).__game!.useSkill(i), slot);
   for (const t of at) {
@@ -130,7 +135,7 @@ async function main(): Promise<void> {
         await castShots(page, m.sig, 'kiem-kiem-anh-phan-quang', [260, 520]);
         await sleep(1200);
         await gm(page, 'charge 100', 1250);
-        await castShots(page, m.ult, 'kiem-van-kiem-quy-tong', [200, 450, 800]);
+        await castShots(page, m.ult, 'kiem-van-kiem-quy-tong', [300, 700, 1100]);
       } else if (m.tag === 'kim') {
         await castShots(page, m.sig, 'kim-tran-son-an', [300, 650]);
         await sleep(1200);
