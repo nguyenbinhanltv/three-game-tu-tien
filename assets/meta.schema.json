@@ -99,7 +99,10 @@
             "properties": {
               "kind": { "enum": ["back_sword"] },
               "bone": { "type": "string", "description": "Hậu tố tên xương, ví dụ spine2." },
-              "tilt": { "type": "number", "description": "Độ xoay kiếm quanh mũi để chuôi vào gần gáy." }
+              "tilt": { "type": "number", "description": "Độ xoay kiếm quanh mũi để chuôi vào gần gáy." },
+              "patch": { "type": "boolean", "description": "Vá lỗ lưng áo chỗ lưới kiếm vừa tách (Tripo không dựng vải dưới kiếm)." },
+              "socket": { "type": "boolean", "description": "Tách chuôi + lưỡi thủ tục sang xương dtl_sword để client rút/tra kiếm (M3-2); bao ở lại xương `bone`." },
+              "hilt": { "type": "number", "exclusiveMinimum": 0, "maximum": 0.6, "description": "Phần chuôi tính từ đầu trên, theo tỉ lệ chiều dài kiếm (mặc định 0,28)." }
             }
           }
         },
@@ -120,6 +123,24 @@
               "value": { "type": "number", "exclusiveMinimum": 0, "description": "Nhân độ sáng màu đích." },
               "saturation": { "type": "number", "exclusiveMinimum": 0, "description": "Nhân độ bão hòa màu đích." },
               "note": { "type": "string" }
+            }
+          }
+        },
+        "spring": {
+          "type": "array",
+          "description": "Xương lò xo (script post anim_biped_extra.py, M3-10); client mô phỏng ở LOD0 (character/spring.ts).",
+          "items": {
+            "type": "object",
+            "required": ["kind"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": { "enum": ["skirt"], "description": "skirt: 4 xương vạt áo (trước/sau × trái/phải) con của hông." },
+              "top": { "type": "number", "description": "Độ cao (m) bắt đầu có trọng số (thắt lưng)." },
+              "full": { "type": "number", "description": "Độ cao (m) trọng số đạt tối đa; cũng là đuôi xương." },
+              "bottom": { "type": "number", "description": "Dưới độ cao này (m) không gán (giày)." },
+              "weight": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "description": "Trọng số tối đa của xương lò xo." },
+              "radius": { "type": "number", "description": "Bán kính (m) đặt đầu xương quanh hông." },
+              "legClear": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2, "description": "Khoảng cách tới xương chân (m) từ đó trọng số tăng từ 0 lên đủ." }
             }
           }
         },

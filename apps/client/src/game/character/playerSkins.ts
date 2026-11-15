@@ -1,16 +1,19 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { APPEARANCE, DYE } from '@dtl/content';
-import type { Gender } from '@dtl/shared';
+import { type Gender, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { applyDye } from './dye';
 import { poseClipName } from './ikpose';
 import { libraryClips, type PoseLibrary, withPoses } from './poseLib';
+import { type HitOpts } from '../hitreact';
 import { SkinnedCharacter, type SkinnedOpts } from './skinned';
+import { type SpringDef, springDefs } from './spring';
+import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
 import type { CharState, ClipMap } from './states';
-import { type AnimState, type CharacterView, legacyModelsRequested } from './view';
+import { type AnimState, type CharacterView, legacyModelsRequested, type PerformOpts } from './view';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
 export interface PlayerLook {
@@ -67,6 +70,10 @@ interface Template {
   clipMap: ClipMap;
   /** Động tác chiêu và clip nền bay/niệm chú (M3-4); null nếu rig không phải người Mixamo. */
   poses: PoseLibrary | null;
+  /** Kiếm tách sang xương riêng (M3-2); null nếu asset chưa có. */
+  sword: SwordSocketDef | null;
+  /** Xương lò xo vạt áo (M3-10). */
+  springs: SpringDef[];
 }
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
@@ -129,8 +136,10 @@ export class PlayerSkins {
         poses: t.poses ?? undefined,
         maxLocoScale: skin.maxLocoScale,
         sink: false,
+        springs: t.springs,
       },
       skin.runSteps,
+      t.sword,
     );
   }
 
@@ -199,7 +208,9 @@ function templateOf(handle: AssetHandle, skin: PlayerSkin): Template {
   // Nướng mọi pose một lần trên bản gốc (rig trả về tư thế nghỉ sau khi nướng); clip theo tên xương nên dùng chung.
   const extra = withPoses(handle.scene, { ...skin.clips });
   const poses = extra.poses ?? null;
-  const clips = poses ? [...handle.animations, ...libraryClips(poses)] : [...handle.animations];
+  // Xương phụ của pipeline (kiếm, lò xo) do client điều khiển: bỏ kênh lấy mẫu ở tư thế nghỉ của exporter.
+  const own = handle.animations.map(stripPartTracks);
+  const clips = poses ? [...own, ...libraryClips(poses)] : own;
   const clipMap: ClipMap = { ...extra.clipMap };
   if (poses) {
     for (const [state, pid] of Object.entries(skin.poses) as [CharState, string][]) {
@@ -208,8 +219,15 @@ function templateOf(handle: AssetHandle, skin: PlayerSkin): Template {
   } else {
     console.warn('[models] asset người chơi thiếu xương Mixamo, không có động tác chiêu/tư thế tạm');
   }
-  return { handle, height, bounds, clips, clipMap, poses };
+  const parts = partExtras(handle.scene);
+  const sword = parts.sword ? swordSocketDef(handle.scene, parts.sword) : null;
+  if (parts.sword && !sword) console.warn('[models] asset người chơi có extras kiếm nhưng thiếu xương, kiếm giữ trên lưng');
+  const springs = parts.springs ? springDefs(handle.scene, parts.springs) : [];
+  return { handle, height, bounds, clips, clipMap, poses, sword, springs };
 }
+
+/** Rảnh bao lâu (giây: không ra chiêu, không trúng đòn, không niệm chú) thì tra kiếm (M3-2). */
+export const SHEATHE_AFTER = 5;
 
 /**
  * Người chơi dùng model có xương: thêm phi kiếm dưới chân khi ngự kiếm và các bộ đếm cho vệt/hạt theo nhân vật
@@ -222,16 +240,41 @@ export class SkinnedPlayer extends SkinnedCharacter {
   private flySword: THREE.Group;
   private flyAura: THREE.Material;
   private stepPhase = -1;
+  /** Kiếm trên lưng / trong tay (null nếu asset chưa tách kiếm: kiếm dính lưng như cũ). */
+  private sword: SwordSocket | null;
+  /** Giây kể từ lần giao chiến cuối (ra chiêu, trúng đòn, niệm chú). */
+  private calm = Infinity;
+  /** Động tác rút/tra đang phát: đổi chỗ kiếm khi tới `at` (giây trong clip) hoặc khi động tác bị thay/hủy. */
+  private swap: { id: string; at: number; drawn: boolean } | null = null;
 
   constructor(
     o: SkinnedOpts,
     private runSteps: number,
+    sword: SwordSocketDef | null = null,
   ) {
     super(o);
     const fly = buildFlySword();
     this.flySword = fly.group;
     this.flyAura = fly.aura;
     this.root.add(this.flySword);
+    this.sword = sword ? SwordSocket.create(this.rig, sword) : null;
+  }
+
+  /** Kiếm đang ở tay (đã rút xong). */
+  get swordDrawn(): boolean {
+    return this.sword?.drawn ?? false;
+  }
+
+  /** Ra chiêu: kiếm vào tay nếu động tác thật sự phát (bay, trên không, chết thì server không cho ra chiêu). */
+  perform(id: string, o?: PerformOpts): boolean {
+    const ok = super.perform(id, o);
+    if (this.performing(id)) this.engage(true);
+    return ok;
+  }
+
+  hitReact(o: HitOpts): void {
+    super.hitReact(o);
+    this.engage(false);
   }
 
   /** LOD xa: bỏ hào quang phi kiếm (một draw call trong suốt), giữ thân kiếm. */
@@ -242,12 +285,58 @@ export class SkinnedPlayer extends SkinnedCharacter {
 
   /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */
   attack(): void {
+    this.engage(true);
     super.attack();
     this.attacks++;
   }
 
+  /**
+   * Vào giao chiến: ra chiêu thì kiếm vào tay ngay (động tác chiêu bắt đầu ngay khi bấm phím, M3-4, nên không chen
+   * động tác rút); trúng đòn thì rút bằng động tác ngắn của tay phải (`rut_kiem`), không phát được thì cầm ngay.
+   */
+  private engage(skill: boolean): void {
+    this.calm = 0;
+    const s = this.sword;
+    if (!s) return;
+    if (this.swap?.drawn) {
+      if (skill) {
+        this.swap = null;
+        s.set(true);
+      }
+      return;
+    }
+    this.swap = null;
+    if (s.drawn) return;
+    if (!skill && this.gesture(POSE_SWORD_DRAW)) this.swap = { id: POSE_SWORD_DRAW, at: POSE_SWORD_SWAP[POSE_SWORD_DRAW], drawn: true };
+    else s.set(true);
+  }
+
+  /** Đổi chỗ kiếm theo động tác đang phát; rảnh đủ lâu thì tra kiếm (ngự kiếm, thiền: tra ngay, không động tác). */
+  private updateSword(dt: number, a: AnimState): void {
+    const s = this.sword;
+    if (!s) return;
+    if (this.swap) {
+      const t = this.performTime(this.swap.id);
+      if (t === null || t >= this.swap.at) {
+        s.set(this.swap.drawn);
+        this.swap = null;
+      }
+    }
+    if (a.dead) return;
+    this.calm = a.casting ? 0 : this.calm + dt;
+    if (!s.drawn || this.swap) return;
+    if (a.flying || a.meditating) {
+      s.set(false);
+      return;
+    }
+    if (this.calm < SHEATHE_AFTER || a.airborne) return;
+    if (this.gesture(POSE_SWORD_SHEATHE)) this.swap = { id: POSE_SWORD_SHEATHE, at: POSE_SWORD_SWAP[POSE_SWORD_SHEATHE], drawn: false };
+    else if (!this.performing(POSE_SWORD_SHEATHE)) s.set(false);
+  }
+
   update(dt: number, a: AnimState): void {
     super.update(dt, a);
+    this.updateSword(dt, a);
     this.grounded = !a.flying && !a.airborne;
     this.flySword.visible = a.flying && !a.dead;
     // Bước chân theo pha clip chạy: mỗi `1 / runSteps` vòng là một lần chân chạm đất.
