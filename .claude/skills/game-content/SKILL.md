@@ -5,7 +5,7 @@ description: Thêm và cân bằng nội dung game Đạp Thiên Lộ — cảnh
 
 # Nội dung và cân bằng
 
-> Hiện trạng MVP: dữ liệu nằm phẳng trong `packages/content/data/` (items.json, monsters.json, loot.json, skills.json, recipes.json, npcs.json, quests.json, realms.json, levels/*.json, glossary.json, i18n/vi.json, i18n/vi.ui.json). Chưa có schema zod; `src/check.ts` kiểm tra bằng code. Các đợt quái bí cảnh khai trong `apps/server/src/rooms.ts` (WAVES). Bảng rơi đồ và linh thạch rơi (`gold`, `drops`) của quái nằm trong `loot.json` (khóa theo id quái), chỉ server đọc qua `@dtl/content/loot`; không đặt lại vào `monsters.json` vì tệp đó vào bundle client.
+> Hiện trạng (2026-11-15): dữ liệu nằm trong `packages/content/data/` (items.json, monsters.json, loot.json, skills.json, methods.json (công pháp), roots.json (linh căn), equipment/ (mẫu trang bị, `sets.json`, `setItems.json`, `forge.json`), recipes.json, npcs.json, quests.json, realms.json, places.json, appearance.json, poses/, levels/*.json, glossary.json, i18n/vi.json, i18n/vi.ui.json). Hệ thăng tiến Phase 3: trang bị 8 ô × 5 phẩm (Phàm/Linh/Huyền/Địa/Thiên), nâng cấp, bộ, công pháp, biến thức, bình cảnh NK 5/10/15 + tâm ma, linh căn; ghi chú từng hạng mục ở `docs/p3-*/`. `pnpm content:check` còn gọi `icons:check`. Chưa có schema zod; `src/check.ts` kiểm tra bằng code. Các đợt quái bí cảnh khai trong `apps/server/src/rooms.ts` (WAVES). Bảng rơi đồ và linh thạch rơi (`gold`, `drops`) của quái nằm trong `loot.json` (khóa theo id quái), chỉ server đọc qua `@dtl/content/loot`; không đặt lại vào `monsters.json` vì tệp đó vào bundle client.
 
 ## Dữ liệu ở đâu
 
@@ -20,11 +20,11 @@ packages/content/
   quests/*.json      nhiệm vụ
   dungeons/*.json    bí cảnh
   levels/*.json      xuất từ Blender (xem skill blender-pipeline)
-  vfx/*.json         cấu hình hiệu ứng
+  vfx/*.json         (hướng mở rộng, chưa có) cấu hình hiệu ứng
   i18n/vi.json       chuỗi hiển thị
 ```
 
-- Mỗi loại có schema zod trong `packages/content/schema/`. `pnpm content:check` kiểm tra schema, id trùng, tham chiếu hỏng (quái rơi vật phẩm không tồn tại…). Chạy lệnh này sau mọi thay đổi.
+- Chưa có schema zod (`packages/content/schema/` là hướng mở rộng); `pnpm content:check` (`src/check.ts`) kiểm tra bằng code: id trùng, tham chiếu hỏng (quái rơi vật phẩm không tồn tại…). Chạy lệnh này sau mọi thay đổi.
 - Id: `snake_case` không dấu, có tiền tố (`mon_soi_xam`, `skl_kiem_khi_tram`, `itm_truc_co_dan`). Không đổi id đã phát hành; đổi tên hiển thị qua i18n.
 
 ## Thang cảnh giới (theo Tiên Nghịch)
@@ -47,7 +47,7 @@ packages/content/
 
 ## Cân bằng
 
-- Công thức (sát thương, phòng thủ, tu vi cần mỗi tầng, tỉ lệ đột phá) viết trong `packages/shared/formulas/` dưới dạng hàm thuần + test.
+- Công thức (sát thương, phòng thủ, tu vi cần mỗi tầng, tỉ lệ đột phá) viết trong `packages/shared/src/` (`formulas.ts`, `upgrade.ts`, `sets.ts`, `party.ts`…) dưới dạng hàm thuần + test.
 - Mục tiêu nhịp MVP (chốt 2026-11-15, thay mốc 10–15 giờ cũ): Ngưng Khí 1 → viên mãn tầng 15 khoảng 3–4 giờ chơi thực tế, tức `pnpm sim:progress` quanh 2–2,5 giờ (sim chưa tính đi lại, boss, bí cảnh). Nhịp sẽ dài thêm khi có thêm nội dung; đổi đường cong `xpNeed` là quyết định của người dùng.
 - `pnpm sim:progress` mô phỏng một người chơi 30 ngày (giờ chơi/ngày làm tham số), in thời điểm đạt từng cảnh giới và tổng linh thạch sinh/tiêu. Chạy sau khi đổi số tu vi, phần thưởng hay giá.
 - Không bán chỉ số bằng tiền thật (game không thu tiền, nhưng giữ nguyên tắc này nếu sau này mở rộng).

@@ -27,11 +27,15 @@ packages/content   dữ liệu game JSON trong data/ (key pose IK trong data/pos
 apps/client        Vite + Three.js + React (src/game: engine, terrain, entities, models, vfx; src/ui)
 apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts, game/character.ts, auth.ts, db.ts
 apps/bot-client    bot headless để test tải
-tools/blender      build_sect.py (kiến trúc tông môn → GLB), import_tripo.py (chuẩn hóa GLB Tripo), build_fixture_rig.py (GLB có xương cho test), run.mjs
-tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts
-tools/perf         size.ts (pnpm size), bench.ts (pnpm bench:client, Playwright)
+tools/blender      build_sect.py (kiến trúc tông môn → GLB), import_tripo.py (chuẩn hóa GLB Tripo), anim_biped_extra/anim_quadruped/anim_serpent/tripo_clips.py + export_anim_lib.py (clip thủ tục, thư viện `anim_human_base`), bake_impostor.py (atlas cây xa), recolor_phi_kiem.py, build_fixture_rig.py (GLB có xương cho test), run.mjs
+tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts, ktx.ts, terrain-textures.ts (texture mặt đất), impostor
+tools/perf         size.ts (pnpm size), bench.ts (bench:client), load.ts (bench:load), crowd.ts (bench:crowd), compat.ts (compat), shots (ảnh trước/sau), Playwright
+tools/icons        build.mjs + subjects.json: icon vật phẩm/chiêu (`pnpm icons:build|check`)
+tools/palette      gen_palette.mjs: bảng màu từ `assets/palette.json` (`pnpm palette[:check]`)
+tools/fonts        subset.py: cắt font
 tools/audio        build.mjs + sounds.json: SFX/âm môi trường CC0 → public/audio/{sfx,amb}; compose/<id>.mjs + loop.mjs + music.json: nhạc tự soạn (MIDI + soundfont) → public/audio/music; chung manifest.json
-assets             README, LICENSES.md, budgets.json, meta.schema.json, source/<loại>/<id>/meta.json
+assets             README, LICENSES.md, budgets.json, palette.json, meta.schema.json, source/<loại>/<id>/meta.json
+docs               art-bible.md (nguồn chuẩn về hình ảnh, v3), tripo-runbook.md, perf-report.md, compat.md, audio/, p2-*/ và p3-*/ (ghi chú + ảnh từng hạng mục)
 ```
 
 Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source` (xem `assets/README.md`).
@@ -45,6 +49,8 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
 - `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`. 100 bot chung một IP sẽ bị giới hạn `/matchmake`: chạy server với `RATE_LIMIT_EXEMPT=loopback`
 - `pnpm size`: tổng tải trước khi vào game (JS/CSS gzip, font, asset màn tải, âm thanh nạp đầu) so với ngân sách 30MB, lưu `bench/results/size-<ngày>.json`
+- `pnpm bench:switch`: như `bench:client` nhưng đổi preset 20 lần lúc chạy (bắt lỗi cache shader khi đổi preset); `pnpm shots:method` / `pnpm shots:party`: ảnh công pháp, tổ đội.
+- `pnpm icons:check` (nằm trong `pnpm content:check`) kiểm icon khai báo; `pnpm icons:build` sinh icon; `pnpm palette[:check]` bảng màu; `pnpm invite add|remove|list <email…>` quản lý danh sách mời; `?debug=1` bật overlay số liệu (fps, draw call, tam giác, hạt).
 - `pnpm bench:client`: Playwright Chrome headless tắt tiếng, tự chạy `pnpm dev` ở `PORT`/`CLIENT_PORT` riêng (mặc định 2635/5135) rồi tự tắt; WebGPU + WebGL2 × 3 preset, đường camera sân/rừng/hồ; draw call, tam giác, CPU khung p50/p95, texture MB; lưu `bench/results/<ngày>.json`, so lần trước. Cờ và cách đọc: skill `perf-budget`
 - `pnpm bench:load`: thời gian tải ở 20 Mbps (CDP) trên bản build có gzip, tự chạy server ở 2655/5155 rồi tự tắt: FCP, JS tới, khung game đầu (mục tiêu < 2 s sau JS), vào game, thứ tự GLB về, khựng > 50 ms khi lần đầu đánh; `--renderer webgl2`, `--runs N`; lưu `bench/results/load-<ngày>.json` (skill `perf-budget`). Thứ tự tải: `apps/client/src/game/preload.ts`
 - `pnpm bench:crowd`: ngân sách khi đông người (M6-3): N bot (`pnpm bots`) + 1 client đo ở sân tông môn, rừng, Kiếm Trủng đánh boss, bí cảnh; WebGPU/WebGL2 × Vừa/Cao; CPU p50/p95/p99 theo phần, GPU, draw call, tam giác, texture, heap, băng thông, tick server, đầu dò draw call, `--profile`; tự chạy `pnpm dev` ở 2675/5175 rồi tự tắt; lưu `bench/results/crowd-<ngày>.json`. Báo cáo: `docs/perf-report.md`
@@ -62,20 +68,32 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - Lệnh GM trong chat (chỉ tài khoản thử): `/gm level N | xp N | gold N | give id n | plus 0-10 [ô] | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id | cd | variant <chiêu> a|b | method <id> [cấp]` (`hurt` hạ máu quái quanh mình về pct% để thử pha boss; `dye` đổi màu áo, id trong `appearance.json`)
 - Tham số URL kiểm thử (chỉ tài khoản thử, server kiểm trong `apps/server/src/testflags.ts`; tài khoản thật bị bỏ qua và được báo): `?god` bất tử (vẫn bị đánh, không mất máu), `?at=<địa điểm>` vào game ở điểm đặt tên trong `packages/content/data/places.json` (`tong_mon`, `thung_lung`, `rung`, `ho`, `boss`, `cong`/`kiem_trung`…, chỉ server đọc), `?show=char` (hoặc `?show=<id asset>`) mở trang xem asset. `__game.info()` trả draw call/tam giác cộng dồn mọi pass của khung vừa vẽ. Chi tiết: skill `playtest`
 
-## Hiện trạng MVP (2026-11-12)
+## Hiện trạng (2026-11-15, sau Phase 2 "Chỉn chu" và phần lớn Phase 3 "Thăng tiến")
 
-Đã chạy được và đã thử trong trình duyệt: đăng nhập thử, di chuyển có dự đoán + đối soát, ngự kiếm, combat tab-target 6 chiêu, 7 loại quái + boss Hàn Giao, 12 nhiệm vụ, mua bán, luyện đan, cường hóa, đả tọa, độ kiếp Trúc Cơ, bí cảnh Kiếm Trủng 4 đợt, chat, bản đồ nhỏ, kết nối lại, tự mở kênh khi đủ 50 người. Cỏ tương tác (`game/grass.ts`: 1 draw call, rạp theo mình + 5 người/quái gần nhất qua `uniformArray`, preset Thấp tắt) và hạt môi trường theo vùng quanh camera (`game/ambient.ts`, phát vào hệ hạt chung M4-5 nên không thêm draw call).
+Hướng hình ảnh hiện là **bán tả thực điện ảnh, sương sớm** (`docs/art-bible.md` v3), không còn cel-shading/thủy mặc cũ.
 
-Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm lệch thêm):
+Đã chạy được và đã thử trong trình duyệt:
 
-- Không dùng ECS và Rapier: thực thể là object thường; va chạm là heightmap + hình tròn trong `shared/level.ts`.
-- Chưa có AOI: cả kênh nhận trạng thái của nhau qua `@colyseus/schema`.
+- **Lõi MVP**: đăng nhập thử, di chuyển có dự đoán + đối soát, ngự kiếm, combat tab-target, boss Hàn Giao, nhiệm vụ, mua bán, luyện đan, đả tọa, độ kiếp Trúc Cơ, bí cảnh Kiếm Trủng 4 đợt, chat, bản đồ nhỏ, kết nối lại, tự mở kênh khi đủ 50 người. Cỏ tương tác (`game/grass.ts`) và hạt môi trường (`game/ambient.ts`).
+- **Asset (Phase 2-A, M2)**: nhân vật, NPC, quái, boss và prop chi tiết sinh bằng **Tripo** rồi chuẩn hóa bằng Blender (`import_tripo.py` → `assets:build` → GLB có hash + `manifest.json`); clip thủ tục `anim_*` (`anim_human_base` retarget cho người, `tools/blender/anim_biped_extra|anim_quadruped|anim_serpent.py` cho quái/boss). Client nạp qua `AssetCache` (`game/assets.ts`, đếm tham chiếu, ưu tiên theo khoảng cách, `preload.ts`), dựng nhân vật qua `SkinnedCharacter` (`game/character/`: `playerSkins`, `npcSkins`, `monsterSkins`, `ikpose`, `animLib`), LOD theo camera (`LOD0_MAX` trong `entities.ts`), cây Tripo (5 loài) có LOD theo cây + impostor xa (`props.ts`, `treeImpostor.ts`). Có hai model người chơi (Thanh Phong nam `chr_kiem_tu_nam`, Lam Chi nữ `chr_kiem_tu_nu`), 3 NPC có xương, hàng chục prop Tripo đặt cảnh theo khu. Quái có xương: sói (3 biến thể), Thiết Bối Trư, Hỏa Vân Hồ (và Kiếm Linh dùng chung model, đổi bảng màu), Thạch Viên, cả 4 boss (nạp lười khi boss xuất hiện). **Tinh anh** (`elite_*`) vẫn dựng bằng khối trong `models.ts`; Tâm Ma dùng bóng của người chơi. `?models=legacy` hoặc nạp lỗi thì về model khối.
+- **Render (Phase 2-A/E)**: TSL, material PBR cách điệu (`render/materials/`), mặt đất PBR Poly Haven, nước hồ, biển mây, bầu trời, sương theo độ cao (`render/atmosphere.ts`), grading nắng vàng xuyên sương + bóng ngọc lam (`render/grading.ts`, `render/post.ts`), AO, đèn lồng point light thật. VFX dùng chung pool/material (`render/materials/vfx.ts`, `render/vfx/*`, `game/vfx.ts`); đỉnh HDR giữ dưới `FX_MAX_HDR` (2,4), bloom chỉ bắt vật phát sáng, không để ảnh cháy sáng hay lóa cả cảnh (art bible mục 5, 8). Hit feel theo hạng thân (`hitfeel`, `bodyfeel`), chân bám đất, thẻ chương (`chapter.ts`), chết và hồi sinh bằng mực (`deathFx.ts`).
+- **Cảnh điện ảnh (Phase 2-B)**: `game/cutscene.ts` (B1 mở đầu lần đầu vào Lạc Kiếm Tông, B2 boss xuất hiện, B3 chuyển pha), B4 độ kiếp kịch tính, B5 chết/hồi sinh; chỉ là lớp trình diễn ở client, bỏ qua được, không đổi luật. **Camera theo khu** (P2-E4, `game/camZones.ts`): khoảng cách, góc ngẩng, FOV theo vùng.
+- **Âm thanh (Phase 2-D, M4)**: `AudioManager` (`game/audio.ts`, bus master → music | ambient | sfx | ui), SFX CC0 đóng sprite, **nhạc tự soạn bằng code** (MIDI + soundfont, 14 bài; `musicDirector.ts`, stem chiến đấu phân lớp), bước chân theo chất liệu đất, nguồn âm theo vị trí, mức trộn chuẩn ở `game/audioMix.json`.
+- **UI**: bộ khung `ui/kit/` (dùng cho Cài đặt, bảng, thanh chiêu, khung mục tiêu...), store zustand ở `ui/store.ts`, tên/thanh máu trên đầu vẽ trong WebGL (`headBars.ts`), icon sinh bằng `tools/icons`.
+- **Thăng tiến (Phase 3, đã merge 3-1…3-7, 3-9)**: trang bị **8 ô × 5 phẩm** (Phàm/Linh/Huyền/Địa/Thiên) với dòng phụ roll có seed, rơi theo nguồn, tinh anh, tooltip so sánh, cột sáng bậc cao (3-1, 3-2); **nâng cấp** ở Thiết lão: cường hóa +10, khảm/ghép linh ngọc, tẩy luyện, phân giải, Hộ Phù (3-3); **bộ trang bị** 4 bộ, hiệu ứng 2/4 món, chế tạo, recolor theo bộ (3-4); **công pháp** 3 con đường (kiếm/tank/hỗ trợ), 6 chiêu, thanh chiêu 8 ô (phím số), ult sạc, khiêu khích (3-5); **cấp chiêu và biến thức A/B** (3-6); **cảnh giới**: bình cảnh ở NK 5/10/15, thử thách tâm ma, **linh căn ngũ hành**, Phá Cảnh Đan (3-7); **tổ đội 4 người**, chia tu vi/đồ, cộng hưởng vai trò, tỉ thí (3-9). Ghi chú và ảnh từng hạng mục ở `docs/p3-*/`.
+- **Đo và kiểm**: `bench:client`, `bench:load`, `bench:crowd` (báo cáo `docs/perf-report.md`), `compat` (`docs/compat.md`), `size`. Đã soát 50–100 bot, tick server p95 ~1–2 ms.
+
+Khác với spec ban đầu (chấp nhận, ghi lại để không làm lệch thêm):
+
+- Không dùng ECS, Rapier, VAT, Web Worker cho game: thực thể là object thường (đám đông dùng `SkinnedMesh` + LOD/ngân sách `LOD0_MAX`); va chạm là heightmap + hình tròn trong `shared/level.ts`.
+- Chưa có AOI: cả kênh nhận trạng thái của nhau qua `@colyseus/schema` (đã đo ổn ở 50–100 người).
 - Bảng DB tạo bằng DDL trong `db.ts` (không dùng drizzle-kit migrate). Đổi schema phải sửa cả DDL lẫn bảng Drizzle.
-- Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng.
+- Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng. Tổ đội sống trong bộ nhớ tiến trình, không lưu DB.
 - Bí cảnh là một lòng chảo trên cùng bản đồ (Kiếm Trủng, tây bắc), chạy trong room riêng.
 - Ngự kiếm mở ở Ngưng Khí tầng 3 (spec ghi tầng 8) để người mới sớm được bay.
-- Người chơi dùng Thanh Phong (`chr_kiem_tu_nam`, có xương) qua `game/character/playerSkins.ts`; màu áo nhuộm bằng shader theo `packages/content/data/appearance.json`, chọn khi tạo nhân vật (cột `characters.appearance`). Chưa có model nữ. Chiêu, bay, niệm chú dùng pose IK của M3-4 (`withPoses`); thiền dùng tư thế tạm `tam_thien`, nhảy mượn `ngu_kiem`. Ba NPC (Lạc Vân, Tố Tâm, Thiết lão) dùng model có xương `chr_npc_*` qua `game/character/npcSkins.ts` (chỉ phát idle). Phần lớn quái vẫn dựng bằng khối trong `models.ts`. Ba loài sói dùng `mon_soi_xam` có xương (`MONSTER_SKINS`). Ba boss Kiếm Trủng (Huyết Lang Vương, Kiếm Khôi, Thủ Mộ Thạch Tướng) có xương, nạp lười khi boss xuất hiện; slam/sweep phát theo `S.HAZARD` (`bossMove`, khớp lúc vùng nổ), niệm chú/choáng theo cờ `mf`. Hàn Giao vẫn thủ tục. `?models=legacy` hoặc nạp lỗi thì về model khối.
+- Màu áo nhân vật nhuộm bằng shader theo `appearance.json` (chọn khi tạo nhân vật, cột `characters.appearance`); chiêu, bay, niệm chú dùng pose IK (`withPoses`, `data/poses/`); thiền dùng tư thế tạm `tam_thien`, nhảy mượn `ngu_kiem`. NPC chỉ phát idle.
 - Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
+- Nhịp lên cấp: `pnpm sim:progress` hiện ra khoảng **2,2 giờ** tới Ngưng Khí 15 viên mãn, ngắn hơn mục tiêu 3–4 giờ.
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):
 
@@ -86,6 +104,14 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 - Bảng rơi đồ và linh thạch rơi nằm ở `packages/content/data/loot.json`, chỉ import qua `@dtl/content/loot` (server, check, sim). `monsters.json` vào bundle client nên không được chứa `drops`/`gold` (`content:check` và `apps/client/src/no-server-data.test.ts` chặn). Client chỉ biết món đã rơi qua tin nhắn `sys.loot`.
 - Đạn đánh xa của quái (`caster.shape: 'bolt'`): server mô phỏng trong `tickBolts` bằng công thức chung `packages/shared/src/projectile.ts` (quét đoạn, chặn vật cản trên cả đoạn, đạn nâng theo độ cao mục tiêu lúc bắn để ngự kiếm sát đất không né được bằng cách lơ lửng), đi chung cửa sổ miễn `hazardHit` với vùng nổ; quái chết/bỏ đuổi thì đạn tan. Client chỉ nội suy từ `S.BOLT` và vẽ khi có `S.BOLT_END`.
 - POST `/matchmake` và bắt tay WebSocket giới hạn theo IP bằng token bucket (`apps/server/src/ratelimit.ts`, bọc ngoài listener của Colyseus, trả 429 + `Retry-After`). Env: `RATE_LIMIT_BURST` (40), `RATE_LIMIT_PER_MIN` (20), `TRUST_PROXY=1` mới đọc `X-Forwarded-For` (lấy phần tử cuối), `RATE_LIMIT_EXEMPT=loopback` cho bot ở máy dev (bị bỏ qua khi production).
+
+## Còn mở
+
+- **P2-F (phát hành)**: chưa làm.
+- **Safari thật**: `pnpm compat` chỉ chạy WebKit của Playwright; chưa thử trên Safari macOS/iOS thật.
+- **Mời bạn bè**: chưa có Client ID Google thật, chưa chạy đường đăng nhập Google và danh sách mời (`pnpm invite`) trên máy chủ thật; chưa có `apps/admin`.
+- **Phase 3-8 (pháp bảo)**: đang làm. **Phase 3-10 (cân bằng)**: chưa làm; nhịp lên cấp ~2,2 giờ so với mục tiêu 3–4 giờ (xem `pnpm sim:progress`).
+- Tinh anh còn dựng bằng khối; chưa có AOI, chưa có giao dịch giữa người chơi (`tradable()` trong shared đã sẵn); chưa có mobile.
 
 ## Quy tắc bất biến
 
@@ -101,7 +127,7 @@ Khác với spec ban đầu (chấp nhận cho MVP, ghi lại để không làm 
 Skill trong `.claude/skills/`, subagent trong `.claude/agents/`. Dùng skill tương ứng trước khi làm việc trong khu vực đó:
 
 - `threejs-client`: code render, streaming thế giới, input, UI trên canvas
-- `tsl-shaders-vfx`: shader TSL, hiệu ứng skill, thủy mặc, mây, độ kiếp
+- `tsl-shaders-vfx`: shader TSL, hiệu ứng skill, vết mực, mây, độ kiếp, grading
 - `procedural-assets`: sinh địa hình, cây, đá, kiến trúc bằng code hoặc bpy
 - `blender-pipeline`: script Blender headless, xuất GLB, tối ưu, kiểm tra asset
 - `colyseus-server`: rooms, schema, xác thực input, AOI, lưu DB

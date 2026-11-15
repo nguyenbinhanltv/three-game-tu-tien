@@ -5,7 +5,7 @@ description: Chạy toàn bộ Đạp Thiên Lộ ở máy local (server Colyseu
 
 # Chạy thử và test tải
 
-> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?mute=1&auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM: `/gm level|xp|gold|give|plus|tp|god|heal|die|killall|hurt|spawn|tick|dye`. Trong console có `window.__game` (`__game.info()` cho số đo nhanh). Tham số kiểm thử `?god`, `?at=<địa điểm>`, `?show=char`: xem mục "Tham số URL kiểm thử".
+> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?mute=1&auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM (chỉ tài khoản thử): `/gm level|xp|gold|give|plus|tp|god|heal|die|killall|hurt|spawn|tick|dye|cd|variant|method|set|roll…` (danh sách đủ ở `CLAUDE.md` và `sim.ts`). Trong console có `window.__game` (`__game.info()` cho số đo nhanh). Tham số kiểm thử `?god`, `?at=<địa điểm>`, `?show=char`: xem mục "Tham số URL kiểm thử".
 > Khi khung trình duyệt tích hợp đang ẩn, `requestAnimationFrame` không chạy: bơm khung hình bằng `setInterval(() => { __game.renderer._nodes.nodeFrame.update(); __game.frame(); }, 16)` trước khi chụp ảnh (thiếu `nodeFrame.update()` thì pass cảnh không vẽ lại, ảnh chụp là khung cũ).
 
 ## Luôn tắt tiếng
