@@ -82,7 +82,7 @@ export class DeathFx {
     const o = this.out;
     o.ink = smooth(this.p) * INK_MAX;
     // Màu rút nhanh hơn mực loang một chút để ánh sáng hồi sinh hiện lên trên cảnh còn màu.
-    o.desat = smooth(Math.min(1, this.p * 1.25));
+    o.desat = smooth(Math.min(1, this.p * 1.8));
     o.drift = smooth(this.driftT / DRIFT_TIME);
     o.panel = this.dead && o.ink >= PANEL_INK;
   }

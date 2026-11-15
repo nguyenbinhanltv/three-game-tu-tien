@@ -253,11 +253,13 @@ export class PostPipeline {
     const inkUv = screenUV.mul(vec2(4.2, 3.1));
     const inkN = valueNoise(inkUv).mul(0.5).add(valueNoise(inkUv.mul(2.3).add(7.1)).mul(0.3)).add(valueNoise(inkUv.mul(5.1).add(19.4)).mul(0.2));
     const inkV = length(fromCenter).mul(1.414).add(inkN.sub(0.5).mul(0.62));
-    const inkEdge = float(1.4).sub(postParams.ink.mul(1.85));
+    const inkEdge = float(1.5).sub(postParams.ink.mul(1.75));
     const inkMask = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.1), inkV);
     const inkRim = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.02), inkV).mul(float(1).sub(smoothstep(inkEdge.add(0.02), inkEdge.add(0.16), inkV)));
     const inkCol = mix(vec3(0.05, 0.055, 0.07), vec3(0.012, 0.014, 0.022), inkRim.add(inkV.mul(0.25)).min(1));
-    g = vec3(mix(g, inkCol, inkMask.mul(0.88)));
+    // Lõi màn mỏng hơn để còn lờ mờ thấy nhân vật; mép dày đặc.
+    const inkBody = mix(float(0.72), float(0.95), smoothstep(0.1, 0.85, length(fromCenter).mul(1.414)));
+    g = vec3(mix(g, inkCol, inkMask.mul(inkBody)));
 
     const graded = vec4(g, 1);
     let ldrRgb = graded.rgb;
