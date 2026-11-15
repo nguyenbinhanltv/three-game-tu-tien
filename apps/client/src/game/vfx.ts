@@ -177,7 +177,8 @@ export class Vfx {
 
   /** Vụ nổ sáng nhỏ tại một điểm. */
   burst(pos: THREE.Vector3, color: number, size = 1.2, dur = 0.28): void {
-    const m = this.fx(G.ico1, color, 0.9);
+    // Vỏ cầu fresnel (rìa sáng, giữa trong suốt): quả cầu đặc cộng sáng che kín người/quái trúng đòn.
+    const m = this.fx(G.ico1, color, 0.9, 'dome');
     m.position.copy(pos);
     const ring = this.fx(RING_GEO, color, 0.8);
     ring.position.copy(pos);
@@ -681,7 +682,7 @@ export class Vfx {
 
   /** Lớp linh khí hộ thể bao quanh người. */
   shield(pos: PosFn, dur: number, stillOn: () => boolean, color = 0x7fd8ff, scale = 1, alpha = 0.28): void {
-    const m = this.fx(G.ico1, color, alpha);
+    const m = this.fx(G.ico1, color, alpha, 'dome');
     let t = 0;
     this.add(
       dur,
@@ -695,7 +696,8 @@ export class Vfx {
         m.position.copy(_a).setY(_a.y - 0.2);
         m.scale.set(1.25 * scale, 1.5 * scale, 1.25 * scale);
         m.rotation.y = t * 1.5;
-        m.fxOpacity = (alpha / 0.28) * (0.22 + Math.sin(t * 6) * 0.06);
+        // Kiểu `dome` chỉ sáng ở rìa nên cần độ đậm cao hơn lớp cộng sáng cũ; giữa khiên vẫn trong suốt.
+        m.fxOpacity = (alpha / 0.28) * (0.85 + Math.sin(t * 6) * 0.15);
       },
       () => this.drop(m),
     );

@@ -81,7 +81,7 @@ export function playMethodFx(c: MethodFxCtx): boolean {
         }
         if (m.v === 'spread') {
           // Ấn lan: ba tia nhỏ tỏa ra hai bên mục tiêu, như dấu ấn bắn sang quái gần.
-          v.burst(at, color, 1.8, 0.45);
+          groundRing(v, at.x, at.z, 2.2, color, 0.6);
           for (const [dx, dz] of [[2.6, 1.2], [-2.4, 1.8], [0.4, -2.8]]) {
             const p = at.clone().add(new THREE.Vector3(dx, -0.5, dz));
             v.swordShot(at.clone(), fixed(p), color, 0.6, 0.22, (h) => v.pillar(fixed(h.clone()), color, 0.6, 0.2, 2.2, 0.2));
@@ -133,7 +133,7 @@ export function playMethodFx(c: MethodFxCtx): boolean {
         v.pillar(c.src, 0xd8ffe4, 1.2, 0.55, 3.2, 0.2);
         for (let k = 1; k <= 3; k++) {
           after(v, k, () => {
-            if (c.src(_a)) v.burst(_a, color, 1.4, 0.3);
+            if (c.src(_a)) groundRing(v, _a.x, _a.z, 2.0, color, 0.8);
           });
         }
       }
@@ -172,22 +172,20 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
       if (!c.src(_a)) break;
       const from = _a.clone();
       v.swordShot(from.clone().add(new THREE.Vector3(-0.55, 0.3, 0)), c.dst, color, 0.9 * sc, 0.2);
-      after(v, 0.07, () => v.swordShot(from.clone().add(new THREE.Vector3(0.55, 0.3, 0)), c.dst, color, 0.9 * sc, 0.2, (at) => v.burst(at, color, 0.8, 0.2)));
+      after(v, 0.07, () => v.swordShot(from.clone().add(new THREE.Vector3(0.55, 0.3, 0)), c.dst, color, 0.9 * sc, 0.2));
       break;
     }
     case 'sword:pierce': {
       // Kiếm xuyên qua mục tiêu, lao tiếp tới quái phía sau (toạ độ do server gửi); chỗ xuyên có tia chớp trắng.
       if (m.x === undefined || m.z === undefined || !c.dst(_a)) break;
       const behind = new THREE.Vector3(m.x, _a.y, m.z);
-      v.burst(_a, 0xffffff, 1.2, 0.18);
       v.swordShot(_a.clone(), fixed(behind), color, 1.1 * sc, 0.2, (at) => v.slashMark(fixed(at.clone()), 0xcff3ff, 0.6, -0.55, 0.22, false, at.clone()));
       break;
     }
     case 'slash:stun': {
       // Sao choáng vàng nổ ra trên đầu mục tiêu rồi một vòng nhỏ treo lơ lửng.
       if (!c.dst(_a)) break;
-      v.burst(_a, 0xfff2b8, 2.2, 0.4);
-      v.pillar(c.dst, 0xffe9a0, 0.6, 0.22, 1.8, 0.22);
+      v.pillar(c.dst, 0xffe9a0, 0.6, 0.12, 1.8, 0.14);
       break;
     }
     case 'slash:trail': {
@@ -196,7 +194,7 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
       const x = _a.x;
       const z = _a.z;
       groundRing(v, x, z, 3.5, color, 3);
-      for (let k = 1; k <= 3; k++) after(v, k, () => v.burst(new THREE.Vector3(x, groundAt(x, z) + 0.4, z), color, 1.5, 0.3));
+      for (let k = 1; k <= 3; k++) after(v, k, () => groundRing(v, x, z, 3.0, color, 0.7));
       break;
     }
     case 'shield:big': {
@@ -210,9 +208,9 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
       // Truyền khiên: một luồng sáng từ người ra tay sang đồng đội, đồng đội dựng trụ mảnh.
       if (m.dst && c.dst(_a)) {
         const from = _a.clone();
-        v.swordShot(from, c.src, 0xcff3ff, 0.9, 0.3, (at) => v.burst(at, 0xcff3ff, 1.2, 0.3));
+        v.swordShot(from, c.src, 0xcff3ff, 0.7, 0.3);
       }
-      v.pillar(c.src, 0xcff3ff, 0.9, 0.3, 3.2, 0.2);
+      v.pillar(c.src, 0xcff3ff, 0.9, 0.25, 3.2, 0.1);
       break;
     }
     case 'rain:wide': {
@@ -234,7 +232,6 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
     case 'heal:instant': {
       // Hồi tức thì: chớp lục ngọc gắt, trụ rất ngắn.
       if (c.src(_a)) {
-        v.burst(_a, 0xb8ffd0, 1.5, 0.28);
         groundRing(v, _a.x, _a.z, 2.6, 0xb8ffd0, 0.6);
       }
       v.pillar(c.src, 0xb8ffd0, 0.45, 0.32, 3.6, 0.24);
@@ -254,7 +251,6 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
     case 'thunder:quick': {
       // Sét tức thời: vòng xung kích dưới chân mục tiêu, không có nhát chém dọc (không niệm).
       if (c.dst(_a)) {
-        v.burst(_a, 0xfff0a8, 1.1, 0.2);
         groundRing(v, _a.x, _a.z, 2.8, 0xfff0a8, 0.5);
       }
       break;

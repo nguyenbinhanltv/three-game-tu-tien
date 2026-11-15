@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { float, min, uniform, vec3 } from 'three/tsl';
+import { abs, dot, float, min, normalize, normalView, positionLocal, positionView, pow, sin, uniform, vec3 } from 'three/tsl';
 import { markBloom } from '../post';
 import type { FxUniforms } from '../vfx/common';
 import { inkNodes } from '../vfx/ink';
@@ -39,9 +39,10 @@ export const FX_MAX_HDR = 2.4;
  * - `vortex`: mây kiếp xoáy, hòa trộn thường, có sương, không bloom (render/vfx/lightning.ts).
  * - `trail`: dải vệt sáng phi kiếm khi ngự kiếm, cộng sáng có bloom (render/vfx/trail.ts).
  * - `beam`: cột sáng đồ rơi theo bậc phẩm chất, cộng sáng có bloom (render/vfx/loot.ts).
+ * - `dome`: khiên trong suốt kiểu fresnel: rìa sáng, giữa gần như trong suốt (thấy rõ người bên trong), vân phù văn rất mờ; cộng sáng, bloom nhẹ.
  * - `inkpool`: vết mực loang trên đất khi quái chết/đòn nặng, hòa trộn thường, có sương (render/vfx/ink.ts).
  */
-export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail' | 'beam' | 'inkpool';
+export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail' | 'beam' | 'dome' | 'inkpool';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -55,6 +56,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   vortex: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
   trail: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.45, fog: false },
   beam: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
+  dome: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.25, fog: false },
   inkpool: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
 };
 
@@ -67,6 +69,13 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   trail: trailNodes,
   beam: beamNodes,
   inkpool: inkNodes,
+  dome: (u) => {
+    // Fresnel: 1 ở rìa (nhìn lướt), ~0 ở giữa (nhìn thẳng). Vân phù văn: dải ngang mờ chạy theo độ cao.
+    const fres = pow(float(1).sub(abs(dot(normalize(normalView), normalize(positionView.negate())))), 2.6);
+    const runes = sin(positionLocal.y.mul(14)).mul(0.5).add(0.5).mul(0.06);
+    const a = min(fres.mul(2.2).add(runes).add(0.012), 1);
+    return { color: min(u.color.mul(1.0), u.maxHdr), opacity: u.opacity.mul(a) };
+  },
 };
 
 /** Lưới hiệu ứng: dữ liệu theo lưới thay cho material riêng. */
