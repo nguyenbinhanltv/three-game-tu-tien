@@ -3,7 +3,7 @@ import { type CSSProperties, useState } from 'react';
 import { C, MAX_SKILL_LEVEL, VARIANT_SWITCH_COOLDOWN_SEC, METHOD_UNLOCK_LEVEL, methodSwitchCost, type SkillDef, skillUpgradeCost, variantUnlocked, type VariantId } from '@dtl/shared';
 import { METHODS, METHOD, realmName, resolveBarSkill, skillBar, SKILL, t, VARIANTS } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
-import { ContentIcon } from './ContentIcon';
+import { ContentIcon, UiIcon } from './ContentIcon';
 import { Button, Divider, PanelWindow, Slot, TipCard, Tooltip } from './kit';
 import { set, useUI } from './store';
 
@@ -73,7 +73,7 @@ function SkillRow({ sk, scrolls, gold, locked, canChange }: { sk: SkillDef; scro
                   data-var={id}
                   onClick={() => g?.send(C.SKILL_VAR, { skill: sk.id, v: id })}
                 >
-                  <b>{id.toUpperCase()}</b> {t(`skill.${sk.id}.var.${id}.name`)}
+                  <UiIcon id={`var_${sk.id.replace('skl_', '')}_${id}`} fallback={id.toUpperCase()} className="inline" /> <b>{id.toUpperCase()}</b> {t(`skill.${sk.id}.var.${id}.name`)}
                   {picked && <i> · {t('ui.variant.picked')}</i>}
                 </button>
               </Tooltip>
@@ -116,6 +116,7 @@ export function MethodPanel() {
             style={{ '--mc': '#' + m.color } as CSSProperties}
             onClick={() => setView(m.id)}
           >
+            <UiIcon id={`met_${m.id}`} fallback="" className="inline" />
             <span className="mp-card-name">{t(`method.${m.id}.name`)}</span>
             <span className="mp-card-role">{t(`method.${m.id}.role`)}</span>
           </button>

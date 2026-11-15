@@ -1022,6 +1022,17 @@ kbd {
   line-height: 1.6;
   text-align: center;
 }
+/* Icon giao diện đứng cạnh chữ (nút HUD, tiền, vai trò, biến thức). */
+.content-icon.inline {
+  width: 1.35em;
+  height: 1.35em;
+  line-height: 1.35;
+  margin-inline: 0.1em;
+  vertical-align: -0.28em;
+}
+.content-icon.inline.fallback:empty {
+  display: none;
+}
 
 /* ---------- M5-5: vạch pha, thanh phá thế, thoại boss ---------- */
 .boss-hp {

@@ -67,7 +67,7 @@ export function Header({ title, sub, onClose, actions, id }: { title: string; su
 }
 
 /** Đường kẻ có mốc thoi giữa; có `label` thì thành tiêu đề mục (thay `.section-title`). */
-export function Divider({ label }: { label?: string }) {
+export function Divider({ label }: { label?: ReactNode }) {
   return (
     <div className="k-divider" role={label ? undefined : 'separator'}>
       <i aria-hidden="true" />

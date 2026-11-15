@@ -32,9 +32,13 @@ const only = process.argv.slice(2);
 const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : { version: 1, files: {} };
 for (const group of Object.keys(spec)) {
   if (only.length && !only.includes(group)) continue;
-  delete manifest.files[group];
   const dir = path.join(source, '2d', group);
-  if (!fs.existsSync(dir)) continue;
+  if (!fs.existsSync(dir)) {
+    // Thiếu nguồn: giữ nguyên nhóm trong manifest (không làm ảnh biến mất); báo lỗi nếu được yêu cầu rõ.
+    if (only.includes(group)) throw new Error(`Không có nguồn ${dir}`);
+    continue;
+  }
+  delete manifest.files[group];
   fs.mkdirSync(path.join(out, group), { recursive: true });
   const keep = new Set();
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.png')).sort()) {
