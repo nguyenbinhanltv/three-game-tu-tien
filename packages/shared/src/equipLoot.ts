@@ -36,7 +36,7 @@ export function templatesFor(items: readonly ItemDef[], slot: EquipSlot, ilvl: n
   let best = -1;
   let out: ItemDef[] = [];
   for (const it of items) {
-    if (it.kind !== slot) continue;
+    if (it.kind !== slot || it.set) continue;
     const req = it.reqLevel ?? 1;
     if (req > ilvl) continue;
     if (req > best) {
@@ -64,6 +64,14 @@ export function rollEquipDrops(rolls: readonly EquipRollDef[] | undefined, data:
     if (!(rng() < r.chance)) continue;
     const q = pickQuality(r.q, rng);
     if (q === null) continue;
+    if (r.set) {
+      // Món của bộ: chọn đều, ilvl theo cấp quái (cùng độ lệch ±1 như rơi thường).
+      const pieces = items.filter((i) => i.set === r.set);
+      if (!pieces.length) continue;
+      const ilvl = clamp(Math.round(monLevel + (r.ilvlBonus ?? 0) + Math.floor(rng() * 3) - 1), 1, MAX_ILVL);
+      out.push({ id: pieces[Math.floor(rng() * pieces.length)].id, ilvl, q });
+      continue;
+    }
     const pool = r.slots ? slots.filter((s) => (r.slots![s] ?? 0) > 0) : slots;
     const si = pickWeighted(pool.map((s) => (r.slots ? r.slots[s]! : 1)), rng);
     if (si < 0) continue;

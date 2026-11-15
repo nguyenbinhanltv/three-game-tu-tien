@@ -30,6 +30,7 @@ import {
   legacyQuality,
   MAX_ENHANCE,
   parseGem,
+  pickQuality,
   REFINE_ITEM,
   refineCost,
   rollAffixes,
@@ -38,7 +39,7 @@ import {
   seededRng,
   WARD_ITEM,
 } from '@dtl/shared';
-import { ENHANCE_ORE, ITEM, ITEM_SYS, NPC, t } from '@dtl/content';
+import { ENHANCE_ORE, FORGE_BY_ID, ITEM, ITEM_SYS, NPC, t } from '@dtl/content';
 import type { InvDraft } from './character';
 import type { PlayerEnt } from './sim';
 
@@ -180,6 +181,7 @@ export class UpgradeSystem {
    *  - 'merge'    { gem }            ghép 3 ngọc cùng cấp thành 1 cấp trên
    *  - 'refine'   { w|i, idx }       tẩy luyện dòng phụ `idx`; các dòng khác khóa
    *  - 'salvage'  { slots: number[] } phân giải các món ở túi thành Thiết Tinh/Linh Trần
+   *  - 'forge'    { id }             chế một món của bộ (công thức `forge.json`); phẩm do server roll
    */
   onUpgrade(p: PlayerEnt, msg: unknown): void {
     const b = this.begin(p, msg);
@@ -195,6 +197,8 @@ export class UpgradeSystem {
         return this.refine(p, b.m, b.idem);
       case 'salvage':
         return this.salvage(p, b.m, b.idem);
+      case 'forge':
+        return this.forge(p, b.m, b.idem);
     }
   }
 
@@ -347,6 +351,36 @@ export class UpgradeSystem {
     });
     if (!ok) return this.h.warn(p, p.char.txFail === 'abort' ? 'sys.inv_full' : 'sys.upg_bad_target');
     this.h.sys(p, 'sys.salvaged', { n, ore, dust }, 'good');
+    this.h.fx({ t: 'craft', src: p.sid });
+  }
+
+  // ---------- chế tạo bộ trang bị (P3-4) ----------
+
+  /**
+   * Chế một món của bộ: tiêu nguyên liệu + linh thạch, rồi roll phẩm (seed server) và dòng chính/phụ như đồ rơi.
+   * Một transaction, khóa idem, seed ghi vào ledger. Công thức đòi đúng NPC đang đứng gần (`begin` kiểm).
+   */
+  private forge(p: PlayerEnt, m: Record<string, unknown>, idem: string): void {
+    const rcp = typeof m.id === 'string' ? FORGE_BY_ID.get(m.id) : undefined;
+    if (!rcp || rcp.npc !== m.npc) return;
+    const c = p.char;
+    if (c.gold < rcp.gold) return this.h.warn(p, 'sys.not_enough_gold');
+    const seed = randomInt(0x7fffffff);
+    const q = pickQuality(rcp.q, seededRng(seed));
+    if (q === null) return;
+    let full = false;
+    const ok = c.tx(`forge:${rcp.id}:q${q}`, idem, (d) => {
+      for (const i of rcp.inputs) if (!d.remove(i.id, i.n)) return false;
+      if (!d.spendGold(rcp.gold)) return false;
+      if (!d.addRolled(rcp.output, rcp.ilvl, q)) {
+        full = true;
+        return false;
+      }
+      d.rollSeeds.push(`forge:${seed}`);
+      return true;
+    });
+    if (!ok) return this.h.warn(p, full ? 'sys.inv_full' : 'sys.not_enough_mat');
+    this.h.sys(p, 'sys.forged', { item: t(`item.${rcp.output}.name`), quality: t('ui.quality.' + q) }, 'loot');
     this.h.fx({ t: 'craft', src: p.sid });
   }
 }

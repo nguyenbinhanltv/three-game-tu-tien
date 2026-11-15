@@ -1,0 +1,127 @@
+[
+  {
+    "id": "set_lac_kiem",
+    "pieces": [
+      "itm_lk_dao_bao",
+      "itm_lk_ho_uyen",
+      "itm_lk_dai_lung",
+      "itm_lk_van_ngoa"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "atk_pct",
+            "v": 0.05
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "phi_kiem_extra",
+        "v": 0.2
+      }
+    ],
+    "look": {
+      "hex": "#E4DEC8",
+      "trim": "#27476E",
+      "blade": "#cfe6ff"
+    },
+    "src": "forge"
+  },
+  {
+    "id": "set_huyen_giap",
+    "pieces": [
+      "itm_hg_dao_bao",
+      "itm_hg_ho_uyen",
+      "itm_hg_dai_lung",
+      "itm_hg_van_ngoa"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "def_pct",
+            "v": 0.08
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "shield_boost",
+        "v": 0.3,
+        "w": 0.15
+      }
+    ],
+    "look": {
+      "hex": "#2A2C32",
+      "trim": "#A9873F",
+      "blade": "#d6b45e"
+    },
+    "src": "drop"
+  },
+  {
+    "id": "set_dan_tam",
+    "pieces": [
+      "itm_dt_dao_bao",
+      "itm_dt_ngoc_boi",
+      "itm_dt_dai_lung",
+      "itm_dt_gioi_chi"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "heal_recv",
+            "v": 0.1
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "heal_share",
+        "v": 0.5
+      }
+    ],
+    "look": {
+      "hex": "#4D7D68",
+      "trim": "#D8C58A",
+      "blade": "#9be8a8"
+    },
+    "src": "drop"
+  },
+  {
+    "id": "set_han_giao",
+    "pieces": [
+      "itm_hgl_kiem",
+      "itm_hgl_dao_bao",
+      "itm_hgl_gioi_chi"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "elem_res",
+            "p": "thuy",
+            "v": 0.15
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "fx": "crit_slow",
+        "v": 1
+      }
+    ],
+    "look": {
+      "hex": "#2F8798",
+      "trim": "#C9D8DE",
+      "blade": "#7fe9ff"
+    },
+    "src": "drop"
+  }
+]

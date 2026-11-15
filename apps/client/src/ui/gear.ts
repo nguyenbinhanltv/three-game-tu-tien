@@ -15,13 +15,18 @@ import {
   type ItemDef,
   legacyQuality,
   type PlayerStats,
+  type SetDef,
+  type SetFxId,
+  setStatuses,
+  type SetTier,
   type Quality,
 } from '@dtl/shared';
-import { ITEM, realmName, t } from '@dtl/content';
+import { ITEM, realmName, SET, SETS, t } from '@dtl/content';
 
 export interface TipLine {
   text: string;
-  tone?: 'good' | 'bad' | 'dim';
+  /** `set`: dòng của bộ trang bị đang sáng (kích hoạt). */
+  tone?: 'good' | 'bad' | 'dim' | 'set';
 }
 
 /** Phẩm hiển thị: món đã roll theo `inst.q`, đồ cũ theo `rarity` của mẫu. */
@@ -96,9 +101,9 @@ export interface StatDiff {
 
 /** Chênh lệch tổng chỉ số nếu mặc `item` vào ô của nó (món đang mặc ở ô đó bị thay). */
 export function equipDiff(level: number, equip: Equipment, slot: EquipSlot, item: InvItem): StatDiff[] {
-  const before = computePlayerStats(level, entries(equip));
+  const before = computePlayerStats(level, entries(equip), null, SETS);
   const next: Equipment = { ...equip, [slot]: item };
-  const after = computePlayerStats(level, entries(next));
+  const after = computePlayerStats(level, entries(next), null, SETS);
   const out: StatDiff[] = [];
   for (const key of STAT_KEYS) {
     const b = statValue(before, key);
@@ -128,4 +133,40 @@ export function compareLines(level: number, equip: Equipment, item: InvItem, def
   const head = worn ? t('ui.cmp.vs', { item: t(`item.${worn.id}.name`) }) : t('ui.cmp.vs_empty');
   const req: TipLine[] = (def.reqLevel ?? 1) > level ? [{ text: t('ui.item.req', { realm: realmName(def.reqLevel!) }), tone: 'bad' }] : [];
   return [{ text: head, tone: 'dim' }, ...(diffs.length ? diffs : [{ text: t('ui.cmp.same'), tone: 'dim' as const }]), ...req];
+}
+
+// ---------- bộ trang bị (P3-4) ----------
+
+/** Nội dung một bậc: chỉ số cộng và/hoặc hiệu ứng combat, đã định dạng. */
+export function tierText(tier: SetTier): string {
+  const parts: string[] = [];
+  for (const l of tier.lines ?? []) parts.push(affixText(l));
+  if (tier.fx) {
+    const pct = (x: number | undefined) => pctText(x ?? 0);
+    parts.push(t('set.fx.' + (tier.fx as SetFxId), { v: tier.fx === 'crit_slow' ? (tier.v ?? 0) : pct(tier.v), w: pct(tier.w) }));
+  }
+  return parts.join('; ');
+}
+
+export function wornIds(equip: Equipment): string[] {
+  return EQUIP_SLOTS.flatMap((k) => (equip[k] ? [equip[k]!.id] : []));
+}
+
+/** Các dòng bộ cho tooltip/bảng: tiêu đề x/N, danh sách món (có/chưa), từng bậc (sáng khi đã kích hoạt). */
+export function setLines(set: SetDef, equip: Equipment): TipLine[] {
+  const st = setStatuses([set], wornIds(equip))[0];
+  const n = st?.n ?? 0;
+  const out: TipLine[] = [{ text: t('ui.set.title', { name: t(`set.${set.id}.name`), n, total: set.pieces.length }), tone: n >= 2 ? 'set' : 'dim' }];
+  const worn = new Set(wornIds(equip));
+  for (const pid of set.pieces) out.push({ text: `${worn.has(pid) ? '◆' : '◇'} ${t(`item.${pid}.name`)}`, tone: worn.has(pid) ? 'set' : 'dim' });
+  for (const tier of set.tiers) out.push({ text: `${t('ui.set.tier', { n: tier.n })} ${tierText(tier)}`, tone: n >= tier.n ? 'set' : 'dim' });
+  out.push({ text: set.src === 'forge' ? t('ui.set.src.forge') : t('ui.set.src.drop', { from: t('ui.set.from.' + set.id) }), tone: 'dim' });
+  return out;
+}
+
+/** Dòng bộ của một món (rỗng nếu không thuộc bộ nào). */
+export function setLinesForItem(item: InvItem, equip: Equipment): TipLine[] {
+  const sid = ITEM.get(item.id)?.set;
+  const set = sid ? SET.get(sid) : undefined;
+  return set ? setLines(set, equip) : [];
 }
