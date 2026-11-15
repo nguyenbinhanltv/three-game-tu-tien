@@ -20,6 +20,8 @@ export interface SpringExtras {
 
 export interface PartExtras {
   sword?: SwordExtras;
+  /** Model kiếm riêng (prop_kiem_*, `swordModel.ts`): số đo theo trục mũi. */
+  blade?: Record<string, number>;
   springs?: SpringExtras[];
 }
 

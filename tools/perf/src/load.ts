@@ -312,7 +312,7 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
   const name = `Load_${Date.now().toString(36).slice(-5)}${i}`;
   const gm = (cmd: string) => page.evaluate((m) => (window as unknown as LoadWindow).__game!.send('chat', { m }), '/gm ' + cmd);
   try {
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&cine=0&auto=${name}${rendererQ}`, { waitUntil: 'load', timeout: 120_000 });
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&cine=0&auto=${name}${rendererQ}${process.env.LOAD_QUERY ?? ''}`, { waitUntil: 'load', timeout: 120_000 });
     await page.waitForFunction(() => (window as unknown as LoadWindow).__load.marks.titleGone !== undefined, undefined, { timeout: 120_000, polling: 100 });
     const backend = await page.evaluate(() => ((window as unknown as LoadWindow).__game!.renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2'));
     // Chờ mọi GLB đang nạp xong (tối đa 30 s) để biết thời điểm và thứ tự về.
