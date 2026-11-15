@@ -37,5 +37,5 @@
     "phases": [ { "hp": 0.6, "ai": { "sweep": { "cd": 9, "shape": "rect", "r": 18, "w": 4, "delay": 1.5, "mul": 1.7, "kind": "lightning" } } },
                 { "hp": 0.3, "cdMul": 0.85, "ai": { "slam": { "cd": 6.5, "r": 5.5, "delay": 1.6, "mul": 1.5, "max": 5, "kind": "lightning" },
                   "chant": { "cd": 13, "cast": 2.2, "open": 0.35, "r": 11, "delay": 0.9, "mul": 2.7, "kind": "lightning", "stun": 3 } } } ] },
-  { "id": "mon_tam_ma", "model": "wolf", "scale": 1.2, "color": "#14121f", "accent": "#b04bff", "hpMul": 1, "atkMul": 1, "speed": 5.5, "aggro": 40, "attackRange": 2.6, "attackCd": 1.8, "xpMul": 0 }
+  { "id": "mon_tam_ma", "model": "wolf", "scale": 1, "color": "#14121f", "accent": "#b04bff", "hpMul": 1, "atkMul": 1, "speed": 5.5, "aggro": 40, "attackRange": 3.6, "attackCd": 1.8, "xpMul": 0 }
 ]

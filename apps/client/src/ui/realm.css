@@ -101,7 +101,23 @@
   cursor: pointer;
 }
 .root-opt.sel {
-  outline: 2px solid var(--k-gold);
+  outline: 2px solid #9d392e;
+  outline-offset: 1px;
+}
+/* Nút "để thiên ý định đoạt": cùng kiểu .look-gender của màn đăng nhập (chữ tối trên nền be). */
+.root-opt.rnd {
+  border: 1px solid rgba(174, 139, 73, 0.7);
+  border-radius: 3px;
+  background: rgba(255, 252, 244, 0.6);
+  color: #4d3324;
+  font: inherit;
+  font-size: 13px;
+}
+.root-opt.rnd.sel {
+  outline: none;
+  border-color: #9d392e;
+  background: rgba(157, 57, 46, 0.12);
+  font-weight: 700;
 }
 .root-pick-desc {
   min-height: 1.3em;

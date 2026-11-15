@@ -1796,8 +1796,8 @@ export class GameSim {
   private spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }): MonEnt | null {
     const def = MONSTER.get('mon_tam_ma');
     if (!def) return null;
-    const x = p.move.x + Math.sin(p.lastYaw) * 7;
-    const z = p.move.z + Math.cos(p.lastYaw) * 7;
+    const x = p.move.x + Math.sin(p.s.yaw) * 7;
+    const z = p.move.z + Math.cos(p.s.yaw) * 7;
     const m = this.spawnMonster(def, p.char.level, x, z, null);
     m.owner = p.sid;
     m.atk = st.atk;

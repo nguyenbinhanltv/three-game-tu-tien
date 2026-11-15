@@ -100,6 +100,8 @@ export class MonsterSkins {
   private templates = new Map<string, Template | 'loading' | 'failed'>();
   private mats = new Map<string, THREE.MeshStandardNodeMaterial>();
   private disposed = false;
+  /** Bóng tâm ma (P3-7) là bản sao model người chơi: EntityManager nối vào PlayerSkins (cùng giới/đạo bào của mình). */
+  shadow: { create(def: MonsterDef): MonsterView | null; pending(): boolean } | null = null;
 
   constructor(
     private cache: AssetCache = assets,
@@ -120,6 +122,7 @@ export class MonsterSkins {
 
   /** Quái này sẽ có model mới nhưng asset đang nạp (tạm dùng model khối, nạp xong thì đổi). Asset lười bắt đầu nạp ở đây. */
   pending(def: MonsterDef): boolean {
+    if (def.id === 'mon_tam_ma' && this.shadow) return this.shadow.pending();
     const s = MONSTER_SKINS[def.id];
     if (this.legacy || !s) return false;
     if (s.lazy) this.load(s.asset);
@@ -127,6 +130,10 @@ export class MonsterSkins {
   }
 
   create(def: MonsterDef): MonsterView {
+    if (def.id === 'mon_tam_ma') {
+      const v = this.shadow?.create(def);
+      if (v) return v;
+    }
     const s = MONSTER_SKINS[def.id];
     const t = s && !this.legacy ? this.templates.get(s.asset) : undefined;
     if (!s || !t || typeof t === 'string') return new MonsterModel(def);
