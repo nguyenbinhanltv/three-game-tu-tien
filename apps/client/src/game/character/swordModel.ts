@@ -105,7 +105,7 @@ export function swordTemplateOf(scene: THREE.Object3D, extras: unknown, release:
 }
 
 /**
- * Cắt kiếm cũ khỏi mọi LOD của mẫu: bỏ mọi tam giác có cả ba đỉnh chịu 100% trọng số xương kiếm (đỉnh nối thân giữ nguyên).
+ * Cắt kiếm cũ khỏi lưới LOD0 của mẫu (LOD1/2 giữ nguyên): bỏ mọi tam giác có cả ba đỉnh chịu 100% trọng số xương kiếm (đỉnh nối thân giữ nguyên).
  * Trả về đoạn kiếm cũ dọc trục mũi tính từ tâm chuôi (đo ở LOD0), hoặc null nếu không tìm thấy lưới kiếm (không cắt gì).
  * Gọi một lần cho mỗi mẫu, khi mẫu còn ở tư thế nghỉ.
  */
@@ -127,7 +127,9 @@ export function cutOldSword(scene: THREE.Object3D, ex: SwordExtras): OldSwordSpa
     const sw = g.getAttribute('skinWeight');
     const pos = g.getAttribute('position');
     if (!si || !sw) return;
+    // Chỉ LOD0 dùng kiếm riêng (tối đa `LOD0_MAX` người trên màn hình, nên +≤12 draw call); LOD1/2 giữ kiếm cũ trong lưới.
     const lod0 = !(o.userData.lod > 0);
+    if (!lod0) return;
     const m = toScene.clone().multiply(mesh.matrixWorld);
     const v = new THREE.Vector3();
     const on = new Uint8Array(pos.count);

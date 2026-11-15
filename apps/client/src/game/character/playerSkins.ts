@@ -20,7 +20,7 @@ import { SwordGlow } from '../swordGlow';
 import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
 import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, type SwordTemplate, swordTemplateOf } from './swordModel';
 import type { CharState, ClipMap } from './states';
-import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
+import { type AnimState, type CharacterView, legacyModelsRequested, legacySwordsRequested, type MonsterView, type PerformOpts } from './view';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
 export interface PlayerLook {
@@ -137,6 +137,7 @@ export class PlayerSkins {
   constructor(
     private cache: AssetCache = assets,
     readonly legacy = legacyModelsRequested(),
+    private legacySwords = legacySwordsRequested(),
   ) {}
 
   preload(): void {
@@ -280,7 +281,7 @@ export class PlayerSkins {
     this.templates.set(id, 'loading');
     // Nhân vật + thư viện clip chung (anim_human_base): thiếu thư viện thì dùng model khối, không để T-pose đứng giữa sân.
     // Cùng lúc nạp kiếm mặc định: có nó rồi mới cắt kiếm cũ khỏi lưới (lỗi nạp kiếm thì giữ kiếm cũ).
-    Promise.all([acquireWithHumanLib(this.cache, id), this.loadSword(SWORD_MODEL_DEFAULT)]).then(
+    Promise.all([acquireWithHumanLib(this.cache, id), this.legacySwords ? Promise.resolve(null) : this.loadSword(SWORD_MODEL_DEFAULT)]).then(
       ([[handle, lib], sword]) => {
         if (this.disposed) {
           handle.release();
@@ -529,9 +530,9 @@ export class SkinnedPlayer extends SkinnedCharacter {
     const aura = this.flySword?.children[1];
     if (aura) aura.visible = level < 2;
     this.glow?.setStage(level >= 2 ? 0 : Math.max(this.glowStage, this.tintHex ? 1 : 0));
-    // Kiếm nhỏ ở xa: bỏ một draw call mỗi người (vỏ sáng cũng đã tắt).
+    // Kiếm riêng chỉ ở LOD0 (LOD1/2 còn kiếm cũ trong lưới): chặn số draw call thêm ở mức `LOD0_MAX` người.
     // (onLod chạy trong constructor cha, trước khi trường của lớp này được khởi tạo.)
-    if (this.bladeHolder) this.bladeHolder.visible = level < 2;
+    if (this.bladeHolder) this.bladeHolder.visible = level < 1;
   }
 
   /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */
