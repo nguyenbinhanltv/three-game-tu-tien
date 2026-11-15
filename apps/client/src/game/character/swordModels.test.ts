@@ -60,10 +60,12 @@ describe('model kiếm theo trang bị', () => {
     expect(new THREE.Vector3(0, info.grip, 0).applyMatrix4(m).length()).toBeLessThan(1e-6);
     const tip = new THREE.Vector3(0, info.len, 0).applyMatrix4(m);
     expect(tip.z).toBeCloseTo((info.len - info.grip) * k, 5);
+    expect(tip.z).toBeLessThanOrEqual(old.maxS + 1e-9);
     expect(Math.abs(tip.x) + Math.abs(tip.y)).toBeLessThan(1e-6);
     const d = glowDims(info, old);
     expect(d.start).toBeCloseTo((info.bladeStart - info.grip) * k, 6);
     expect(bladeScale(info, { minS: 0, maxS: 10 })).toBe(1.3);
+    expect(bladeScale(info, { minS: 0, maxS: 0.1 })).toBe(0.75);
   });
 
   for (const g of ['m', 'f'] as const) {

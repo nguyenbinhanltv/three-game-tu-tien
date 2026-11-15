@@ -462,8 +462,10 @@ export class EntityManager {
       if (isLocal) this.localLook = look;
       const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set || look.w !== v.look.w;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
+        // `create` trước: nó khởi động việc nạp lười (asset nhân vật, kiếm riêng), rồi mới hỏi còn nạp không để biết có phải dựng lại.
+        const next = this.playerSkins.create(look);
         v.skinPending = this.playerSkins.pending(look);
-        v.swapModel(this.playerSkins.create(look), look);
+        v.swapModel(next, look);
       }
       if (v.lv !== s.lv) v.refreshLabel();
       if (isLocal) {

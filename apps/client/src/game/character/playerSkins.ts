@@ -15,7 +15,7 @@ import { SkinnedCharacter, type SkinnedOpts } from './skinned';
 import { type SpringDef, springDefs } from './spring';
 import { SwordGlow } from '../swordGlow';
 import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
-import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, type SwordTemplate, swordTemplateOf } from './swordModel';
+import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, type SwordTemplate, swordTemplateOf } from './swordModel';
 import type { CharState, ClipMap } from './states';
 import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
 
@@ -280,7 +280,14 @@ export class PlayerSkins {
           this.swords.set(id, 'failed');
           return null;
         }
-        adoptGltfMaterials(h.scene);
+        for (const m of adoptGltfMaterials(h.scene)) {
+          m.metalness = SWORD_METALNESS;
+          m.roughness = SWORD_ROUGHNESS;
+          const tint = SWORD_TINT[id];
+          if (tint) m.color.setRGB(tint[0], tint[1], tint[2]);
+        }
+        // Dev: chỉnh vật liệu kiếm lúc chạy (tools/perf/src/shots-kiem.ts --tune).
+        if (import.meta.env.DEV) ((window as unknown as { __swordMats?: Record<string, THREE.Material> }).__swordMats ??= {})[id] = tpl.mesh.material as THREE.Material;
         this.swords.set(id, tpl);
         return tpl;
       },

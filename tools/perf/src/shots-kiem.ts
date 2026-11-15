@@ -1,5 +1,5 @@
 // pnpm shots:kiem: ảnh 5 kiếm riêng theo trang bị (prop_kiem_*): đeo lưng, cầm tay, đang chém, trên model nam/nữ.
-//   tsx src/shots-kiem.ts --out <thư mục> [--gender m|f] [--renderer webgpu|webgl2] [--only id,id] [--glow 0|1|2]
+//   tsx src/shots-kiem.ts --out <thư mục> [--hand-only] [--gender m|f] [--renderer webgpu|webgl2] [--only id,id] [--glow 0|1|2]
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175), tắt tiếng (?mute=1, --mute-audio), một tài khoản thử, dựng cảnh bằng lệnh GM.
 import path from 'node:path';
 import fs from 'node:fs';
@@ -14,6 +14,7 @@ const opt = (n: string, d: string) => {
 const OUT = path.resolve(opt('--out', 'shots-kiem'));
 const RENDERER = opt('--renderer', 'webgpu');
 const GENDER = opt('--gender', 'm');
+const HAND_ONLY = args.includes('--hand-only');
 const GLOW = Number(opt('--glow', '0'));
 const ONLY = opt('--only', '').split(',').filter(Boolean);
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
@@ -102,7 +103,7 @@ async function main(): Promise<void> {
       // Đeo lưng: nhìn từ sau-trái, gần, cho thấy chuôi và bao.
       await cam(Number(opt('--back-yaw', '3.6')), Number(opt('--pitch', '0.12')), Number(opt('--dist', '2.0')));
       await sleep(2800);
-      await shot(`${sw.file}-deo-lung.png`);
+      if (!HAND_ONLY) await shot(`${sw.file}-deo-lung.png`);
       // Cầm tay: dựng quái, ra chiêu (kiếm vào tay), chụp ở tư thế đứng chờ ngay sau.
       await gm(page, 'spawn mon_soi_xam 1', 900);
       await cam(Number(opt('--hand-yaw', '4.4')), Number(opt('--pitch', '0.12')), Number(opt('--dist', '2.0')) + 0.4);
@@ -110,6 +111,10 @@ async function main(): Promise<void> {
       await sleep(1500);
       await shot(`${sw.file}-cam-tay.png`);
       // Đang chém.
+      if (HAND_ONLY) {
+        await gm(page, 'killall', 900);
+        continue;
+      }
       for (let k = 0; k < 8; k++) {
         await page.evaluate(() => (window as unknown as G).__game!.useSkill(Math.random() < 0.5 ? 0 : 1));
         await sleep(160);

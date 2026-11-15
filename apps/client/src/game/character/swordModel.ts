@@ -37,12 +37,36 @@ export interface BladeMount {
   old: OldSwordSpan;
 }
 
+/**
+ * Vật liệu kiếm: texture ORM của Tripo cho kim loại một phần (metalness trung bình ~0,3); game không có envMap nên kim loại
+ * không phản chiếu gì và lưỡi tối đen/ám đỏ. Nhân hệ số kim loại xuống thấp (như `metalness` của quái, monsterSkins.ts) và
+ * giữ độ nhám từ map để còn vệt sáng; màu lấy nguyên từ texture màu.
+ */
+export const SWORD_METALNESS = 0.0;
+export const SWORD_ROUGHNESS = 0.7;
+
+/**
+ * Hệ số màu theo kiếm (nhân vào màu texture): ánh sáng game ngả lam ngọc (bóng lam, sương) nên thép xám và bạc đều ám xanh;
+ * nhân ấm hơn để lưỡi về đúng màu concept (bạc sáng, sắt đen, đồng cổ). Giá trị có thể > 1 (vật liệu node không kẹp).
+ */
+export const SWORD_TINT: Record<string, [number, number, number]> = {
+  prop_kiem_thanh_phong: [1.9, 1.65, 1.3],
+  prop_kiem_thiet: [1.5, 1.4, 1.2],
+  prop_kiem_han_quang: [1.7, 1.6, 1.5],
+  prop_kiem_han_giao: [1.8, 1.65, 1.45],
+  prop_kiem_tram_ta: [1.6, 1.45, 1.15],
+};
+
 const SCALE_MIN = 0.75;
 const SCALE_MAX = 1.3;
 
-/** Hệ số phóng để kiếm mới dài bằng kiếm cũ (kẹp để tỉ lệ không lệch quá nhiều so với bao kiếm). */
+/**
+ * Hệ số phóng: kiếm mới dài bằng kiếm cũ, và mũi (tính từ tâm chuôi, nơi bàn tay nắm) không vượt mũi kiếm cũ để không
+ * thò ra khỏi bao trên lưng. Kẹp để tỉ lệ không lệch quá nhiều.
+ */
 export function bladeScale(info: BladeInfo, old: OldSwordSpan): number {
-  return Math.min(SCALE_MAX, Math.max(SCALE_MIN, (old.maxS - old.minS) / info.len));
+  const k = Math.min((old.maxS - old.minS) / info.len, old.maxS / (info.len - info.grip));
+  return Math.min(SCALE_MAX, Math.max(SCALE_MIN, k));
 }
 
 /**

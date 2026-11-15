@@ -25,6 +25,7 @@ Trước đây mọi pháp kiếm dùng chung kiếm Thanh Phong nướng trong 
   (M3-2), ra chiêu, IK tay đều giữ nguyên. Đổi vũ khí → `PlayerLook.w` đổi → dựng lại model; kiếm riêng chưa nạp xong thì
   tạm cầm kiếm mặc định. Kiếm nạp lười (chỉ kiếm mặc định nạp cùng nhân vật, +~370 KB).
 - **Phát sáng +7/+10** (`swordGlow.ts`): vỏ sáng lấy số đo gốc lưỡi/chiều dài lưỡi của model mới (`glowDims`).
+- **Vật liệu** (`SWORD_METALNESS/ROUGHNESS/TINT` trong `swordModel.ts`): game không có envMap, texture ORM của Tripo cho kim loại một phần nên lưỡi tối đen/ám đỏ; ép metalness 0, độ nhám 0,7 và nhân màu theo từng kiếm (ánh sáng game ngả lam ngọc làm thép xám ám xanh). Kiếm dài = kiếm cũ nhưng mũi không vượt mũi kiếm cũ (nên vừa vỏ trên lưng).
 - Vỏ kiếm trên lưng là phần chung của nhân vật (không đổi theo kiếm).
 
 ## Ảnh (GPU thật, Chrome, preset Cao, WebGPU)
@@ -32,4 +33,5 @@ Trước đây mọi pháp kiếm dùng chung kiếm Thanh Phong nướng trong 
 `pnpm shots:kiem --out <thư mục> [--gender m|f] [--only thanh-phong,thiet,...] [--glow 1|2]`
 
 - `nam/`, `nu/`: mỗi kiếm 3 ảnh: `*-deo-lung` (đeo lưng), `*-cam-tay` (rút kiếm sau khi ra chiêu), `*-chem` (đang đánh).
+- `can/` + `so-sanh/`: kiếm cầm tay cận cạnh ảnh concept (`pnpm shots:kiem --hand-only --dist 1.2`).
 - `sang-7/` (Thanh Phong +7, ánh ngọc lục) và `sang-10/` (Hàn Giao Lân +10, vàng + vệt kiếm khí).
