@@ -115,6 +115,11 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `prop_tu_kim_ho_lo` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `prop_tran_hon_linh` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `prop_thanh_lien_an` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `prop_kiem_thanh_phong` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_kiem_thiet` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_kiem_han_quang` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_kiem_han_giao` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_kiem_tram_ta` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `prop_duong_xi` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `5ef06438-a4c7-4e3c-8050-76dffebe72eb` |
 | `chr_npc_chuong_mon` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Lạc Vân chân nhân"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_duoc_su` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Tố Tâm"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
