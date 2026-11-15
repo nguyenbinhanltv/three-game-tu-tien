@@ -28,6 +28,7 @@
     "shots:party": "pnpm --filter @dtl/perf run shots:party --",
     "shots:p38": "pnpm --filter @dtl/perf run shots:p38 --",
     "shots:k1": "pnpm --filter @dtl/perf run shots:k1 --",
+    "shots:eqicons": "pnpm --filter @dtl/perf run shots:eqicons --",
     "assets:terrain": "pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
     "assets:impostor": "pnpm --filter @dtl/asset-pipeline run impostor",

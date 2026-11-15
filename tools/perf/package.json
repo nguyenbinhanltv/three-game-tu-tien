@@ -15,7 +15,8 @@
     "shots:method": "tsx src/shots-method.ts",
     "shots:party": "tsx src/shots-party.ts",
     "shots:p38": "tsx src/shots-p38.ts",
-    "shots:k1": "tsx src/shots-k1.ts"
+    "shots:k1": "tsx src/shots-k1.ts",
+    "shots:eqicons": "tsx src/shots-eqicons.ts"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",
