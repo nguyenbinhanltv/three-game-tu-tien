@@ -1,6 +1,6 @@
 import { groundAt } from '@dtl/shared';
 import { describe, expect, it } from 'vitest';
-import { Cutscene, pathParam, SECT_CUTSCENE, SECT_PATH, samplePath, type Vec3 } from './cutscene';
+import { bossIntroPath, minBossDist, sightBlocked, Cutscene, pathParam, phaseShiftPath, SECT_CUTSCENE, SECT_PATH, samplePath, type Vec3 } from './cutscene';
 
 const END_P: Vec3 = { x: 2048, y: 156.4, z: 2100 };
 const END_L: Vec3 = { x: 2048, y: 151.6, z: 2088 };
@@ -85,5 +85,87 @@ describe('Cutscene', () => {
     const c = new Cutscene();
     c.skip();
     expect(c.active).toBe(false);
+  });
+});
+
+describe('đường cảnh boss (P2-B2/B3)', () => {
+  const boss: Vec3 = { x: 100, y: 10, z: 100 };
+  const flat = (): number => 0;
+
+  it('xuất hiện: camera ở phía mặt boss, lệch khỏi trục nhìn, trên đất, nhìn vào boss', () => {
+    // Boss nhìn về +z (yaw 0), người chơi ở phía trước-phải.
+    const player: Vec3 = { x: 105, y: 10, z: 130 };
+    for (const yaw of [0, 2.1, -1.3]) {
+      const fx = Math.sin(yaw);
+      const fz = Math.cos(yaw);
+      const path = bossIntroPath(boss, yaw, 2.4, player, flat);
+      expect(path).toHaveLength(2);
+      for (const w of path) {
+        const rx = w.p.x - boss.x;
+        const rz = w.p.z - boss.z;
+        expect(rx * fx + rz * fz).toBeGreaterThan(3); // phía trước mặt boss
+        expect(Math.abs(rx * fz - rz * fx)).toBeGreaterThan(3); // lệch khỏi trục
+        expect(w.p.y).toBeGreaterThanOrEqual(0.9);
+        expect(w.look.y).toBeGreaterThan(boss.y);
+      }
+    }
+  });
+
+  it('cự kiếm chắn tầm nhìn thì đổi góc: không camera nào bị chắn (xuất hiện và chuyển pha)', () => {
+    const player: Vec3 = { x: 100, y: 10, z: 130 };
+    const base = bossIntroPath(boss, 0, 2.4, player, flat, []);
+    // Đặt cột chắn đúng giữa camera đầu tiên và boss.
+    const w = base[0].p;
+    const pillar = [{ x: (w.x + boss.x) / 2, z: (w.z + boss.z) / 2, r: 3.4 }];
+    expect(sightBlocked(w.x, w.z, boss.x, boss.z, pillar)).toBe(true);
+    const moved = bossIntroPath(boss, 0, 2.4, player, flat, pillar);
+    for (const m of moved) expect(sightBlocked(m.p.x, m.p.z, boss.x, boss.z, pillar)).toBe(false);
+    const cam: Vec3 = { x: 100, y: 14, z: 88 };
+    const p0 = phaseShiftPath(cam, boss, boss, 0, 2, flat, []);
+    const q = p0[2].p;
+    const pillar2 = [{ x: (q.x + boss.x) / 2, z: (q.z + boss.z) / 2, r: 3.4 }];
+    const p1 = phaseShiftPath(cam, boss, boss, 0, 2, flat, pillar2);
+    for (const m of p1.slice(1)) expect(sightBlocked(m.p.x, m.p.z, boss.x, boss.z, pillar2)).toBe(false);
+  });
+
+  it('vật cản sát boss (boss đứng cạnh cột) không làm kẹt việc chọn góc', () => {
+    expect(sightBlocked(0, 0, 10, 0, [{ x: 10.5, z: 0, r: 3 }])).toBe(false);
+    expect(minBossDist(2.8)).toBeGreaterThan(minBossDist(1));
+  });
+
+  it('chuyển pha: điểm đầu đúng camera hiện tại, điểm sau lùi xa boss và cao hơn', () => {
+    const cam: Vec3 = { x: 100, y: 14, z: 112 };
+    const look: Vec3 = { x: 100, y: 11, z: 100 };
+    const path = phaseShiftPath(cam, look, boss, 0, 2, flat);
+    expect(path[0].p).toEqual(cam);
+    expect(path[0].look).toEqual(look);
+    expect(path).toHaveLength(3);
+  });
+
+  it('chuyển pha: camera cuối ở phía mặt boss dù camera đang ở sau lưng, điểm giữa không xuyên thân', () => {
+    // Boss nhìn về +z (yaw 0); camera đang ở sau lưng (z nhỏ hơn).
+    const cam: Vec3 = { x: 100, y: 14, z: 88 };
+    const path = phaseShiftPath(cam, boss, boss, 0, 2, flat);
+    const last = path[path.length - 1].p;
+    expect(last.z).toBeGreaterThan(boss.z + 4);
+    // Điểm giữa cách boss ít nhất bán kính an toàn.
+    expect(Math.hypot(path[1].p.x - boss.x, path[1].p.z - boss.z)).toBeGreaterThan(8);
+    for (const w of path.slice(1)) expect(w.look.y).toBeGreaterThan(boss.y);
+  });
+
+  it('cảnh ngắn chạy hết rồi báo finished, bỏ qua thì không', () => {
+    const c = new Cutscene();
+    const p = z3();
+    const l = z3();
+    c.start(bossIntroPath(boss, 0, 2, { x: 100, y: 10, z: 130 }, flat), 2.6, 0.35);
+    let n = 0;
+    while (c.update(1 / 30, END_P, END_L, p, l) && n++ < 200);
+    expect(c.finished).toBe(true);
+    expect(n).toBeLessThan(90);
+    c.start(bossIntroPath(boss, 0, 2, { x: 100, y: 10, z: 130 }, flat), 2.6, 0.35);
+    c.update(0.5, END_P, END_L, p, l);
+    c.skip();
+    while (c.update(1 / 30, END_P, END_L, p, l) && n++ < 400);
+    expect(c.finished).toBe(false);
   });
 });
