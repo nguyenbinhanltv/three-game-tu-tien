@@ -33,6 +33,8 @@ export function Tooltip({ content, children }: { content: ReactNode; children: R
     const b = tip.current.getBoundingClientRect();
     let y = a.top - b.height - GAP;
     if (y < MARGIN) y = a.bottom + GAP;
+    // Hết chỗ cả hai phía (chú giải dài): ép vào trong màn hình, chấp nhận che nhẹ ô gốc thay vì tràn mép dưới.
+    y = Math.max(MARGIN, Math.min(y, window.innerHeight - b.height - MARGIN));
     const x = Math.min(Math.max(MARGIN, a.left + a.width / 2 - b.width / 2), window.innerWidth - b.width - MARGIN);
     setPos({ x, y });
   }, [open, content]);

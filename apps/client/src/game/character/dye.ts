@@ -18,6 +18,10 @@ const LUMA = new THREE.Vector3(0.2126, 0.7152, 0.0722);
 /** Ngưỡng cos(góc) giữa sắc độ texel và sắc độ vải. */
 const COS_LO = 0.7;
 const COS_HI = 0.85;
+/** Vùng vải sáng (ngà) cho màu phụ của bộ: ngưỡng độ sáng tuyến tính và độ sáng tham chiếu của vải ngà. */
+const ACCENT_LO = 0.5;
+const ACCENT_HI = 0.68;
+const ACCENT_REF = 0.75;
 /** Ngưỡng độ bão hòa tương đối (|sắc độ| / độ sáng trung bình). */
 const SAT_LO = 0.12;
 const SAT_HI = 0.24;
@@ -37,8 +41,8 @@ function linear(hex: string): THREE.Color {
  * Gắn `colorNode` nhuộm áo vào material đã chuyển từ glTF (giữ map, color, alpha của nó).
  * `clothRef`: màu vải trong texture (hex sRGB); `dye`: màu áo đã chọn. Cùng màu thì giữ nguyên material.
  */
-export function applyDye(m: THREE.MeshStandardNodeMaterial, clothRef: string, dye: string): THREE.MeshStandardNodeMaterial {
-  if (clothRef.toLowerCase() === dye.toLowerCase()) return m;
+export function applyDye(m: THREE.MeshStandardNodeMaterial, clothRef: string, dye: string, accent?: string): THREE.MeshStandardNodeMaterial {
+  if (!accent && clothRef.toLowerCase() === dye.toLowerCase()) return m;
   const ref = linear(clothRef);
   const target = linear(dye);
   const dir = chromaDir(ref);
@@ -56,7 +60,17 @@ export function applyDye(m: THREE.MeshStandardNodeMaterial, clothRef: string, dy
   const ratio = dot(c, vec3(LUMA.x, LUMA.y, LUMA.z)).div(refLum);
   const gamma = targetLum > refLum ? 0.6 : 1;
   const dyed = min(vec3(target.r, target.g, target.b).mul(pow(ratio, float(gamma))), vec3(1, 1, 1));
-  m.colorNode = vec4(mix(c, dyed, mask), base.a);
+  let out = mix(c, dyed, mask);
+  if (accent) {
+    // Bộ trang bị: vùng vải sáng (áo trong màu ngà, nẹp) đổi sang màu phụ của bộ, giữ vân và nếp gấp theo độ sáng texel.
+    // Da và tóc nằm dưới ngưỡng độ sáng này nên không bị đụng tới.
+    const acc = linear(accent);
+    const lum = dot(c, vec3(LUMA.x, LUMA.y, LUMA.z));
+    const light = smoothstep(ACCENT_LO, ACCENT_HI, lum).mul(float(1).sub(mask));
+    const tinted = min(vec3(acc.r, acc.g, acc.b).mul(lum.div(ACCENT_REF)), vec3(1, 1, 1));
+    out = mix(out, tinted, light);
+  }
+  m.colorNode = vec4(out, base.a);
   m.needsUpdate = true;
   return m;
 }

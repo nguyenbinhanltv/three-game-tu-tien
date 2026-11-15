@@ -24,9 +24,9 @@
       }
     ],
     "look": {
-      "hex": "#CFE3EE",
-      "trim": "#3B6584",
-      "blade": "#9fd0ff"
+      "hex": "#E4DEC8",
+      "trim": "#27476E",
+      "blade": "#cfe6ff"
     },
     "src": "forge"
   },
@@ -56,8 +56,8 @@
       }
     ],
     "look": {
-      "hex": "#3A3F4A",
-      "trim": "#AE8B49",
+      "hex": "#2A2C32",
+      "trim": "#A9873F",
       "blade": "#d6b45e"
     },
     "src": "drop"
@@ -87,8 +87,8 @@
       }
     ],
     "look": {
-      "hex": "#4E8B5F",
-      "trim": "#D9B65B",
+      "hex": "#4D7D68",
+      "trim": "#D8C58A",
       "blade": "#9be8a8"
     },
     "src": "drop"
@@ -118,8 +118,8 @@
       }
     ],
     "look": {
-      "hex": "#2A8FA6",
-      "trim": "#9FE0E6",
+      "hex": "#2F8798",
+      "trim": "#C9D8DE",
       "blade": "#7fe9ff"
     },
     "src": "drop"

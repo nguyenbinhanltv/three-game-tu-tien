@@ -102,7 +102,7 @@ function modelOf(g: string): string | null {
 function dyeOf(id: string, set?: string) {
   const look = set ? SET.get(set)?.look : undefined;
   // Bộ trang bị nhuộm áo bằng chính cơ chế `applyDye` (tham số material), id riêng để không đụng cache màu thường.
-  if (look) return { id: `set:${set}`, hex: look.hex, trim: look.trim };
+  if (look) return { id: `set:${set}`, hex: look.hex, trim: look.trim, accent: look.trim };
   return DYE.get(id) ?? DYE.get(APPEARANCE.defaultDye)!;
 }
 
@@ -141,7 +141,7 @@ export class PlayerSkins {
     if (id && skin && !this.legacy) this.load(id);
     const t = id && skin && !this.legacy ? this.templates.get(id) : undefined;
     if (!id || !skin || !t || typeof t === 'string') return new Humanoid({ robe: dye.hex, trim: dye.trim, sword: true });
-    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex));
+    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined));
   }
 
   /** Asset người của `look` chưa nạp xong (bóng tâm ma tạm dùng model khối của quái). */
@@ -249,7 +249,7 @@ export class PlayerSkins {
     return m;
   }
 
-  private material(id: string, skin: PlayerSkin, t: Template, dyeId: string, hex: string): THREE.MeshStandardNodeMaterial {
+  private material(id: string, skin: PlayerSkin, t: Template, dyeId: string, hex: string, accent?: string): THREE.MeshStandardNodeMaterial {
     const key = `${id}/${dyeId}`;
     let m = this.mats.get(key);
     if (m) return m;
@@ -258,7 +258,7 @@ export class PlayerSkins {
       const mesh = o as THREE.Mesh;
       if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
     });
-    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined), (x) => applyDye(x, skin.clothRef, hex))[0];
+    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined), (x) => applyDye(x, skin.clothRef, hex, accent))[0];
     this.mats.set(key, m);
     return m;
   }

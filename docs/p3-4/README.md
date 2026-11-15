@@ -33,3 +33,7 @@ Lưu ý: thiết kế ghi cả Huyền Giáp lẫn Đan Tâm rơi ở đợt 4 (
 - Security (`pnpm --filter @dtl/bot-client security`): 62/62 đạt.
 - 100 bot × 120 giây: tick p95 ≤ 0,82 ms; `pnpm ledger:check` khớp toàn bộ ngoài nhân vật thử chụp ảnh (lệnh GM `set off` cũ xóa đồ không qua sổ cái; đã sửa thành cất vào túi).
 - `pnpm bench:client`: chỉ chạy xong cấu hình đầu (WebGPU nvidia/low, báo 93 lỗi console của bench) rồi bị dừng tay do quá lâu, nên không có bảng so sánh đầy đủ. Thay bằng `__game.info()` với WebGPU thật khi mặc đủ bộ: 39–84 draw call, 188k–304k tam giác (ngân sách < 300 draw call), console game không lỗi. Bộ không thêm mesh mới; ánh kiếm dùng lại `SwordGlow` (1 mesh). Cần chạy lại `bench:client` đủ 6 cấu hình trước khi merge nếu muốn số liệu chính thức.
+
+## Phối màu (sau soát)
+
+`applyDye` nhận thêm màu phụ: vải lam đổi sang màu chính của bộ, vùng vải sáng (áo trong ngà) đổi sang màu phụ, giữ vân theo độ sáng texel (da, tóc dưới ngưỡng nên không bị đụng). Lạc Kiếm ngà + lam đậm, Huyền Giáp đen sắt + đồng vàng, Đan Tâm ngọc bích trầm + vàng nhạt, Hàn Giao Lân lam ngọc + bạc băng. Đai và ống tay đen của model vẫn giữ nguyên (cùng màu với tóc nên chưa tách được bằng ngưỡng độ sáng); chưa thêm vân vảy.
