@@ -647,8 +647,9 @@ export function Hud() {
     };
   }, [cut]);
   const cining = useUI((s) => s.cine !== null && !s.cine.out);
+  const dueling = useUI((s) => s.duel !== null);
   return (
-    <div className={'hud' + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>
+    <div className={'hud' + (dueling ? ' duel-on' : '') + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>
       <TribBars />
       <PlayerFrame />
       <PartyFrame />

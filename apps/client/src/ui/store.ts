@@ -241,7 +241,15 @@ export const useUI = create<UIState>(() => ({
 
 let nextId = 1;
 
+let lastLog = '';
+let lastLogAt = 0;
+
 export function pushLog(text: string, type = 'info', from?: string): void {
+  // Gộp thông báo hệ thống lặp liên tiếp (ví dụ bấm chiêu khi chưa hồi): cùng nội dung trong 2 giây chỉ ghi một dòng.
+  const now = Date.now();
+  if (!from && text === lastLog && now - lastLogAt < 2000) return;
+  lastLog = from ? '' : text;
+  lastLogAt = now;
   useUI.setState((s) => {
     const log = s.log.length > 120 ? s.log.slice(-90) : s.log.slice();
     log.push({ id: nextId++, text, type, from });

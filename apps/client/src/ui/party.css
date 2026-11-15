@@ -190,3 +190,8 @@
 .chat-line.party {
   color: #9fe8b5;
 }
+
+/* Đang tỉ thí: thông báo nổi xếp xuống dưới dải tỉ thí, không đè chữ. */
+.hud.duel-on .toasts {
+  top: 142px;
+}
