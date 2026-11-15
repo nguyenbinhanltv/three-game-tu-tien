@@ -36,6 +36,8 @@ export interface RealmHost {
   savePlayer(p: PlayerEnt): void;
   questEvent(p: PlayerEnt, type: 'level', target: undefined, n: number): void;
   inCombat(p: PlayerEnt): boolean;
+  /** Đang tỉ thí: không mở thử thách tâm ma. */
+  inDuel(p: PlayerEnt): boolean;
   player(sid: string): PlayerEnt | undefined;
 }
 
@@ -61,6 +63,7 @@ export class RealmSystem {
   private startTrial(p: PlayerEnt): void {
     const h = this.h;
     const c = p.char;
+    if (h.inDuel(p)) return h.warn(p, 'duel.busy');
     if (h.isDead(p) || p.trib || p.trial || !h.inWorld() || p.casting || p.move.flying) return h.warn(p, 'sys.bk_not_now');
     if (!this.ready(p)) return h.warn(p, 'sys.bk_not_ready');
     const wait = Math.ceil((c.retryAt - h.now()) / 1000);

@@ -372,6 +372,7 @@ export class GameSim {
     savePlayer: (p) => this.savePlayer(p),
     questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
     inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
+    inDuel: (p) => this.duel.inDuel(p),
     player: (sid) => this.players.get(sid),
   });
 
@@ -1542,6 +1543,12 @@ export class GameSim {
     }
     for (const p of dealers) {
       if (done.has(p)) continue;
+      // Người trong tổ đội đã ra đòn nhưng đứng quá xa/đã ngã lúc quái chết: không né được phần chia để nhận trọn như người đơn;
+      // chỉ được tính nhiệm vụ diệt quái (tu vi và đồ thuộc phần chia của tổ).
+      if (parties.partyOf(p.char.id)) {
+        this.questEvent(p, 'kill', mon.def.id, 1);
+        continue;
+      }
       if (!this.isDead(p)) this.giveXp(p, Math.max(1, Math.round(xp * xpLevelFactor(p.char.level, mon.level) * (p.noLoot ? 0.3 : 1))));
       this.rollLoot(p, mon);
       this.questEvent(p, 'kill', mon.def.id, 1);
@@ -2291,6 +2298,7 @@ export class GameSim {
 
   onBreakthrough(p: PlayerEnt): void {
     const c = p.char;
+    if (this.duel.inDuel(p)) return this.warn(p, 'duel.busy');
     if (this.isDead(p) || p.trib || this.opts.levelId !== 'van_lam') return this.warn(p, 'sys.trib_not_now');
     if (c.level !== NGUNG_KHI_MAX) return this.warn(p, c.level > NGUNG_KHI_MAX ? 'sys.max_level' : 'sys.trib_need_xp');
     if (c.xp < xpNeed(c.level)) return this.warn(p, 'sys.trib_need_xp');

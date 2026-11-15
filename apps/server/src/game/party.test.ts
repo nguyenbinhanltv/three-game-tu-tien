@@ -256,6 +256,25 @@ describe('chia tu vi, đồ, nhiệm vụ khi hạ quái', () => {
     expect(c.char.xp).toBe(xp0[2]);
   });
 
+  it('thành viên ra đòn rồi lùi ra ngoài 45 m không né được phần chia để nhận trọn', () => {
+    const { sim, join, team } = setup();
+    const [a, b] = [join('a'), join('b')];
+    team(a, b);
+    const m = sim.spawnMonster(MONSTER.get('mon_soi_xam')!, 8, X + 4, Z, null);
+    m.threat.set(a.sid, m.s.mhp);
+    m.threat.set(b.sid, m.s.mhp);
+    b.move.x = X + 70;
+    const spy = vi.spyOn(sim as unknown as { rollLoot(p: Ent, m: unknown, part?: string): void }, 'rollLoot');
+    const xb = b.char.xp;
+    const xa = a.char.xp;
+    m.s.hp = 1;
+    (sim as unknown as { damageMonster(m: unknown, d: number, p: Ent): void }).damageMonster(m, 5, a);
+    expect(b.char.xp).toBe(xb);
+    expect(spy.mock.calls.every((c) => (c[0] as Ent) === a)).toBe(true);
+    // Người kết liễu (một mình trong tầm) nhận phần chia của nhóm một người, không hơn.
+    expect(a.char.xp - xa).toBeLessThanOrEqual(Math.round(12 + 7 * 8) * 1.3);
+  });
+
   it('không tổ đội: chỉ người ra đòn nhận (hành vi cũ giữ nguyên)', () => {
     const { sim, join } = setup();
     const [a, b] = [join('a'), join('b')];
@@ -438,6 +457,18 @@ describe('tỉ thí', () => {
     expect(a.char.hp).toBe(40);
     expect(a.char.mp).toBe(5);
     expect(s.sim.duel.inDuel(b)).toBe(false);
+  });
+
+  it('đang tỉ thí không mở được tâm ma hay độ kiếp', () => {
+    const s = setup();
+    const { a } = duelUp(s);
+    a.char.level = 15;
+    a.char.xp = 1e9;
+    s.sim.onBreakthrough(a);
+    s.sim.onBottleneck(a, { m: 'trial' });
+    expect(a.trib).toBeNull();
+    expect(a.trial).toBeNull();
+    expect(s.sys(a)).toContain('duel.busy');
   });
 
   it('trong trận không đổi trang bị hay dùng đan dược', () => {

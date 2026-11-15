@@ -250,7 +250,8 @@ export class DuelSystem {
       this.bySid.delete(x.sid);
       this.h.setFlag(x, PF_DUEL, false);
       const s = d.snap.get(x.sid);
-      if (s && x !== skipRestore && (x.s.fl & PF_DEAD) === 0) {
+      // Đang độ kiếp/tâm ma (phòng hờ): không ghi đè máu, thử thách phải tự vượt.
+      if (s && x !== skipRestore && (x.s.fl & PF_DEAD) === 0 && !x.trib && !x.trial) {
         x.char.hp = Math.min(x.char.mhp, Math.max(1, s.hp));
         x.char.mp = Math.min(x.char.mmp, s.mp);
         x.lastCombatAt = 0;
