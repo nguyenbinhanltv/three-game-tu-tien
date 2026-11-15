@@ -684,11 +684,10 @@
 .hud > * {
   transition: opacity 0.25s ease-out;
 }
-.hud[data-cut='chapter'] > :not(.chapter-card):not(.death):not(.crosshair) {
-  opacity: 0;
-  visibility: hidden;
+.hud[data-cut='chapter'] > :not(.chapter-card):not(.cine):not(.death):not(.crosshair) {
+  /* Gần-0 thay vì visibility:hidden: Chrome vẫn raster nên lúc hiện lại không khựng (P2-B1 đo ~70–130 ms). */
+  opacity: 0.004;
   pointer-events: none;
-  transition: opacity 0.25s ease-out, visibility 0s 0.25s;
 }
 .offs-layer,
 .loot-layer {

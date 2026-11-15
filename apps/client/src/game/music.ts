@@ -10,12 +10,30 @@
 // AmbientPicker) rồi gọi playAmbient; AudioManager stream file, chưa có file thì phát gió tổng hợp.
 // Game chưa có chu kỳ ngày/đêm nên "đêm" theo giờ máy (19h–5h); `?night=1|0` để ép khi thử.
 //
+// Nhạc chiến đấu phân lớp (M4-13, stemMusic.ts): ở vùng có bộ lớp (tông môn, đồng hoang, Kiếm Trủng) vào/ra giao tranh
+// không đổi bài mà tăng/giảm âm lượng lớp nhịp và lớp giai điệu căng theo mức giao chiến (musicDirector.level).
+// Thiếu file, nạp lỗi hoặc rừng/hồ/boss thì dùng đường crossfade cũ.
+//
 // Gỡ lỗi: chuyển trạng thái được log `[music] ...` khi chạy dev hoặc có `?debug`;
 // `window.__music.log` giữ 50 lần chuyển gần nhất, `__music.state()` xem trạng thái hiện tại.
 import { biomeAt, MS_ATTACK, MS_CHASE, PF_DEAD, PF_MEDITATING, PF_TRIBULATION } from '@dtl/shared';
-import { hasMusicFile, musicOutput, playAmbient, playMusic } from './audio';
+import { hasMusicFile, musicOutput, musicPosition, playAmbient, playMusic } from './audio';
 import type { MonVis } from './entities';
-import { AmbientPicker, ambientFor, isNightHour, type MusicChange, MusicDirector, type MusicInput, type MusicTrack } from './musicDirector';
+import {
+  AmbientPicker,
+  ambientFor,
+  type CombatLevel,
+  isNightHour,
+  isStemZone,
+  type MusicChange,
+  MusicDirector,
+  type MusicInput,
+  type MusicTrack,
+  STEM_MIX,
+  type StemMix,
+  type StemZone,
+} from './musicDirector';
+import { StemPlayer } from './stemMusic';
 
 export { MUSIC_TRACKS, type MusicTrack } from './musicDirector';
 
@@ -376,11 +394,20 @@ export interface MusicTick {
   monsters: Iterable<MonVis>;
 }
 
+interface LayerLog {
+  t: number;
+  zone: StemZone | null;
+  level: CombatLevel;
+  mix: StemMix;
+  /** Lớp có thật sự đang ra tiếng (false khi tắt tiếng hoặc chưa nạp xong stem). */
+  audible: boolean;
+}
+
 interface LogEntry {
   t: number;
   from: MusicTrack | null;
   to: MusicTrack | null;
-  src: 'file' | 'synth' | 'none';
+  src: 'file' | 'synth' | 'stems' | 'none';
   fade: number;
   reason: string;
 }
@@ -391,9 +418,14 @@ export class MusicController {
   private amb = new AmbientPicker();
   /** Bài đang yêu cầu và nguồn phát đã chọn cho nó. */
   private track: MusicTrack | null = null;
-  private src: 'file' | 'synth' | 'none' = 'none';
+  private src: 'file' | 'synth' | 'stems' | 'none' = 'none';
   private lastInput: MusicInput | null = null;
+  private stems = new StemPlayer();
+  private level: CombatLevel = 0;
+  private layerZone: StemZone | null = null;
+  private layerKey = '';
   readonly log: LogEntry[] = [];
+  readonly layerLog: LayerLog[] = [];
   private pumpTimer: ReturnType<typeof setInterval>;
 
   constructor() {
@@ -402,7 +434,16 @@ export class MusicController {
     if (DEBUG && typeof window !== 'undefined') {
       (window as unknown as { __music?: unknown }).__music = {
         log: this.log,
-        state: () => ({ track: this.track, src: this.src, ambient: this.amb.current, combat: this.dir.inCombat, boss: this.dir.inBoss, input: this.lastInput }),
+        layerLog: this.layerLog,
+        state: () => ({
+          track: this.track,
+          src: this.src,
+          ambient: this.amb.current,
+          combat: this.dir.inCombat,
+          boss: this.dir.inBoss,
+          input: this.lastInput,
+          layers: { zone: this.layerZone, level: this.level, mix: this.layerZone ? mixFor(this.level) : null, stemPlaying: this.stems.playing, stemPos: this.stems.position() },
+        }),
       };
     }
   }
@@ -444,6 +485,37 @@ export class MusicController {
     const ch = this.dir.update(now / 1000, inp);
     if (ch) this.apply(ch);
     else if (this.track) this.refresh();
+    this.updateLayers(now / 1000);
+  }
+
+  /** Vùng có stem cho bài đang yêu cầu: bài vùng, hoặc `combat` thay bài vùng đang áp dụng. null = đường crossfade cũ. */
+  private stemZoneFor(track: MusicTrack | null): StemZone | null {
+    if (isStemZone(track)) return track;
+    if (track === 'combat') {
+      const r = this.dir.regionNow;
+      return isStemZone(r) ? r : null;
+    }
+    return null;
+  }
+
+  /** Mức giao chiến → âm lượng lớp. Ghi log khi đổi (kể cả khi tắt tiếng, để playtest kiểm máy trạng thái). */
+  private updateLayers(now: number): void {
+    const zone = this.stemZoneFor(this.track);
+    this.layerZone = zone;
+    this.level = this.dir.level(now);
+    if (!zone) {
+      if (this.layerKey !== 'off') this.layerKey = 'off';
+      return;
+    }
+    const mix = mixFor(this.level);
+    if (this.stems.playing === zone) this.stems.setMix(mix);
+    const key = `${zone}:${this.level}`;
+    if (key === this.layerKey) return;
+    this.layerKey = key;
+    const audible = this.stems.playing === zone;
+    this.layerLog.push({ t: Math.round(performance.now()), zone, level: this.level, mix, audible });
+    if (this.layerLog.length > 50) this.layerLog.shift();
+    if (DEBUG) console.info(`[music] lớp ${zone}: mức ${this.level} → nền ${mix.base} nhịp ${mix.pulse} căng ${mix.edge}${audible ? '' : ' (chưa ra tiếng)'}`);
   }
 
   private apply(ch: MusicChange): void {
@@ -453,23 +525,39 @@ export class MusicController {
 
   /** Manifest tải xong muộn, vừa bật lại tiếng hay mở khóa âm thanh: chọn lại nguồn cho bài hiện tại. */
   private refresh(): void {
+    const zone = this.stemZoneFor(this.track);
+    if (zone) this.stems.preload(zone, () => this.refresh());
     const want = this.pickSrc();
-    if (want === this.src && (want !== 'synth' || this.synth.playing === this.track)) return;
+    if (want === this.src && (want !== 'synth' || this.synth.playing === this.track) && (want !== 'stems' || this.stems.playing === zone)) return;
     this.route(2, this.track, want === this.src ? 'mở lại nhạc sinh thủ tục' : 'đổi nguồn phát');
   }
 
-  private pickSrc(): 'file' | 'synth' | 'none' {
+  private pickSrc(): 'file' | 'synth' | 'stems' | 'none' {
     if (!this.track) return 'none';
+    const zone = this.stemZoneFor(this.track);
+    if (zone && musicOutput() && this.stems.ready(zone)) return 'stems';
     if (hasMusicFile(this.track)) return 'file';
     return musicOutput() ? 'synth' : 'none';
   }
 
   private route(fade: number, from: MusicTrack | null, reason: string): void {
     const src = this.pickSrc();
-    if (src === 'file') {
+    const zone = this.stemZoneFor(this.track);
+    if (zone) this.stems.preload(zone, () => this.refresh());
+    if (src === 'stems' && zone) {
+      // Bài vùng đang stream cùng vùng thì nối đúng pha của nó; khác bài (ví dụ đang nghe combat) thì từ đầu vòng.
+      if (this.stems.playing !== zone) {
+        const pos = musicPosition();
+        this.stems.start(zone, pos?.id === zone ? pos.time : 0, mixFor(this.dir.level(performance.now() / 1000)), fade);
+      }
+      this.synth.set(null, fade);
+      playMusic(null, fade);
+    } else if (src === 'file') {
+      this.stems.stop(fade);
       this.synth.set(null, fade);
       playMusic(this.track, fade);
     } else {
+      this.stems.stop(fade);
       // Không có file: tắt dần bài stream (nếu có) và phát bài giữ chỗ.
       playMusic(null, fade);
       this.synth.set(src === 'synth' ? this.track : null, fade);
@@ -490,6 +578,7 @@ export class MusicController {
   dispose(): void {
     clearInterval(this.pumpTimer);
     this.synth.set(null, 1.5);
+    this.stems.dispose(1.5);
     playMusic(null, 1.5);
     playAmbient(null, 1.5);
     this.amb.reset();
@@ -497,4 +586,9 @@ export class MusicController {
     this.track = null;
     this.src = 'none';
   }
+}
+
+/** Âm lượng lớp cho mức giao chiến (boss tính như đang đánh khi vẫn ở bộ lớp). */
+function mixFor(level: CombatLevel): StemMix {
+  return STEM_MIX[level];
 }

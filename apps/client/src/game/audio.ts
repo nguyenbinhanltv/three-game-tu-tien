@@ -87,6 +87,8 @@ interface StreamEntry {
   gain?: number;
   loop?: boolean;
   credit?: MusicCredit;
+  /** Lớp giao chiến của bài vùng `of` (M4-13): cùng tempo/độ dài vòng, phát đồng bộ mẫu bằng stemMusic.ts. */
+  stem?: { of: string; role: 'pulse' | 'edge' };
 }
 type SpriteSrc = string | string[] | { src: string | string[]; lazy?: boolean };
 interface Manifest {
@@ -719,6 +721,12 @@ class StreamDeck {
   /** Gió tổng hợp dự phòng (chỉ deck âm môi trường). */
   readonly wind: SynthWind | null;
 
+  /** Bài đang ra tiếng và vị trí phát (giây) trong vòng, để lớp stem nối đúng pha khi tiếp quản. */
+  position(): { id: string; time: number } | null {
+    const el = this.ch[this.active].el;
+    return this.playing && el ? { id: this.playing, time: el.currentTime } : null;
+  }
+
   constructor(
     private c: AudioContext,
     out: AudioNode,
@@ -936,6 +944,36 @@ export function playAmbient(id: string | null, fade = 3): void {
 export function hasMusicFile(id: string): boolean {
   const e = manifest?.music?.[id];
   return !!e && pickSrc(e.src) !== null;
+}
+
+/** Nguồn phát được (đã lọc theo định dạng trình duyệt nhận) của bài vùng và hai lớp giao chiến; null nếu thiếu lớp nào. */
+export function stemSources(zone: string): { base: string[]; pulse: string[]; edge: string[] } | null {
+  const m = manifest?.music;
+  if (!m?.[zone]) return null;
+  const find = (role: 'pulse' | 'edge') => Object.values(m).find((e) => e.stem?.of === zone && e.stem.role === role);
+  const out = { base: playable(m[zone].src), pulse: playable(find('pulse')?.src), edge: playable(find('edge')?.src) };
+  return out.base.length && out.pulse.length && out.edge.length ? out : null;
+}
+
+/** Tải và giải mã một file nhạc (thử lần lượt các định dạng), không giữ trong bộ nhớ đệm giải mã chung (stem ~50 MB/lớp). */
+export async function decodeMusic(urls: string[]): Promise<AudioBuffer | null> {
+  const c = ctx;
+  if (!c) return null;
+  for (const u of urls) {
+    try {
+      const r = await fetch(u);
+      if (!r.ok) continue;
+      return await c.decodeAudioData(await r.arrayBuffer());
+    } catch {
+      console.warn('[audio] không giải mã được stem', u);
+    }
+  }
+  return null;
+}
+
+/** Bài nhạc deck stream đang phát và vị trí trong vòng (giây). */
+export function musicPosition(): { id: string; time: number } | null {
+  return music?.position() ?? null;
 }
 
 /**

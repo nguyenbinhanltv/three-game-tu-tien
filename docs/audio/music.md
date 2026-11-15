@@ -43,6 +43,33 @@ Không có soundfont miễn phí nào có tiếng nhị, cổ cầm hay đàn b�
 
 Số đo build 2026-11-15 (trên file webm trong game): mọi bài −16,0 LUFS, đỉnh thực −1,5…−5 dBTP, 0 mẫu clip, không có đoạn lặng giữa bài, chỉ số nối 0,3–1,4 (≤ 1 tốt, > 2 dễ nghe ra). Chromium giải mã webm ra đúng số mẫu của vòng (ví dụ `sect` 6.400.000 mẫu), không có lặng đầu/cuối. Tổng nhạc ≈ 19 MB (m4a). Riêng `title` phát ở màn đăng nhập/màn tải (sau thao tác đầu tiên) nên tính vào **tải đầu**: `pnpm size` xếp nó vào phần trước khi vào game (`PRE_GAME_MUSIC` trong `tools/perf/src/size.ts`), và bài này mã hóa bitrate thấp hơn (`"bitrate": { "webm": "64k", "m4a": "80k" }` trong `music.json`: 750 KB webm / 822 KB m4a). Tải đầu sau khi thêm: 2,09 MB / 30 MB. Các bài còn lại nạp dần sau khi vào game.
 
+## 2b. Nhạc chiến đấu phân lớp (M4-13)
+
+Ở ba vùng **sect, wild, dungeon** vào/ra giao tranh không đổi bài mà bật/tắt lớp: mỗi vùng có thêm hai stem cùng tempo, cùng khóa, cùng số ô nhịp và cùng phần A/B/C… với bài vùng (nên cùng độ dài vòng tới từng mẫu):
+
+| Stem | Nội dung | Mức khi bật hết (LUFS riêng) |
+| --- | --- | --- |
+| `<vùng>` (nền) | bài vùng như cũ | −16 |
+| `<vùng>_pulse` | trống chiến 3-3-2 (taiko, trống bass, trống tay ở wild), dây trầm ostinato, mõ gỗ, chũm chọe đầu phần | −23 (đỉnh ≤ −6 dBTP) |
+| `<vùng>_edge` | dây vê dâng theo hợp âm, nhị đi câu ngắn gấp, nốt sáo cao đầu phần | −25 |
+
+Soạn ở `tools/audio/compose/stems.mjs` (bảng `ZONES` sao chép hợp âm của bài vùng: đổi hợp âm bài vùng thì sửa cả hai). Khai báo ở `music.json` với `"stem": { "of": "<vùng>", "role": "pulse" | "edge" }`, `loop.mjs` ghi `stem` vào manifest. Stem mã hóa 64k/80k, nạp dần (≈ 7 MB webm cho cả sáu), không vào tải đầu.
+
+**Mức giao chiến** (`MusicDirector.level`) và âm lượng lớp (`STEM_MIX` ở `musicDirector.ts`):
+
+| Mức | Khi | nền | nhịp | căng |
+| --- | --- | --- | --- | --- |
+| 0 | yên | 1 | 0 | 0 |
+| 1 | quái nhắm/đuổi mình (chưa đánh) | 1 | 0,6 | 0 |
+| 2 | có đòn đánh thật trong 7 s qua (`ENGAGE_HOLD`) | 0,85 | 1 | 0,7 |
+| 3 | boss | — | — | — |
+
+Boss (`boss`, `dungeon_boss`) và độ kiếp vẫn đổi sang bài riêng (nhịp 136–140, khác tempo vùng), nên mức 3 chỉ để log. Rừng (80 BPM) và hồ (66 BPM) chưa có stem: vẫn crossfade sang `combat`.
+
+Phát (`stemMusic.ts`): cả ba lớp là `AudioBufferSourceNode` `loop`, `start(cùng thời điểm ctx, cùng offset)` nên đồng bộ mẫu; lớp lên trong 0,35 s, xuống trong 3 s (`ATTACK`/`RELEASE`). Bài vùng stream bằng thẻ audio không đồng bộ mẫu được, nên khi stem nạp xong client **tiếp quản** bài đang phát: bắt đầu stem ở `currentTime` của thẻ audio rồi crossfade (sai pha cỡ vài chục ms, nghe như không). Trước lúc đó, hoặc khi thiếu/lỗi file (độ dài ba lớp lệch), vẫn là đường cũ: stream bài vùng và crossfade sang `combat`. Mỗi bộ chiếm khoảng 50 MB bộ nhớ giải mã cho mỗi lớp (150 MB một vùng), chỉ giữ bộ của vùng hiện tại.
+
+Kiểm: `pnpm audio:test` (`tools/audio/stems.test.mjs`: ba lớp bằng nhau từng mẫu, độ to sau trộn mức 0/1/2 trong ±1,5 dB quanh −16 LUFS, đỉnh mẫu < 1 và đỉnh thực < 0 dBTP; bảng trộn đọc thẳng từ code client). Trong game: `__music.state().layers` (vùng, mức, âm lượng từng lớp, `stemPlaying`, `stemPos`) và `__music.layerLog`; log `[music] lớp …` khi đổi mức. Nghe thử: `node tools/audio/stems-preview.mjs <vùng> <file.mp3>` ra MP3 khám phá → bị nhắm → đánh → khám phá.
+
 ## 3. Sửa một bài
 
 Mở `tools/audio/compose/<id>.mjs`. Mỗi bài là một hàm trả `Song`:

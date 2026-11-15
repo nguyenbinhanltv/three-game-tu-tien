@@ -674,6 +674,102 @@
         "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
       }
     },
+    "sect_pulse": {
+      "src": [
+        "music/sect_pulse.22087e6743.webm",
+        "music/sect_pulse.856bfc5664.m4a"
+      ],
+      "loop": true,
+      "stem": {
+        "of": "sect",
+        "role": "pulse"
+      },
+      "credit": {
+        "title": "Lạc Kiếm Tông — lớp nhịp",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "sect_edge": {
+      "src": [
+        "music/sect_edge.ee79185706.webm",
+        "music/sect_edge.0a298124c7.m4a"
+      ],
+      "loop": true,
+      "stem": {
+        "of": "sect",
+        "role": "edge"
+      },
+      "credit": {
+        "title": "Lạc Kiếm Tông — lớp giai điệu căng",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "wild_pulse": {
+      "src": [
+        "music/wild_pulse.8f91cb39d3.webm",
+        "music/wild_pulse.13b8efa123.m4a"
+      ],
+      "loop": true,
+      "stem": {
+        "of": "wild",
+        "role": "pulse"
+      },
+      "credit": {
+        "title": "Vân Lam Sơn Mạch — lớp nhịp",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "wild_edge": {
+      "src": [
+        "music/wild_edge.afad26b2e6.webm",
+        "music/wild_edge.e82208c4ea.m4a"
+      ],
+      "loop": true,
+      "stem": {
+        "of": "wild",
+        "role": "edge"
+      },
+      "credit": {
+        "title": "Vân Lam Sơn Mạch — lớp giai điệu căng",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "dungeon_pulse": {
+      "src": [
+        "music/dungeon_pulse.4972a60d92.webm",
+        "music/dungeon_pulse.31db346f13.m4a"
+      ],
+      "loop": true,
+      "stem": {
+        "of": "dungeon",
+        "role": "pulse"
+      },
+      "credit": {
+        "title": "Kiếm Trủng — lớp nhịp",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "dungeon_edge": {
+      "src": [
+        "music/dungeon_edge.1d35ceb82a.webm",
+        "music/dungeon_edge.ef332f3b1e.m4a"
+      ],
+      "loop": true,
+      "stem": {
+        "of": "dungeon",
+        "role": "edge"
+      },
+      "credit": {
+        "title": "Kiếm Trủng — lớp giai điệu căng",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
     "sting_levelup": {
       "src": [
         "music/sting_levelup.09adfa7d2e.webm",

@@ -5,7 +5,7 @@
 //      extension nén), canPlayType Opus/WebM và AAC/M4A, giải mã từng file âm thanh trong
 //      `audio/manifest.json` bằng OfflineAudioContext (không ra loa) theo đúng thứ tự chọn của audio.ts,
 //      và nạp metadata của âm môi trường/nhạc bằng HTMLAudioElement (muted, volume 0, không play).
-//   2. Mở game `?mute=1&debug=1&auto=<tên>` ở mỗi preset (Thấp/Vừa/Cao; Chromium thêm một lượt ép
+//   2. Mở game `?mute=1&debug=1&cine=0&auto=<tên>` ở mỗi preset (Thấp/Vừa/Cao; Chromium thêm một lượt ép
 //      `renderer=webgl2`): backend thật, thời gian vào game, ảnh chụp cùng góc camera ở sân tông môn,
 //      FPS và CPU `frame()` p50/p95 trong vài giây, lỗi/cảnh báo console.
 //   3. Ở preset Vừa: nạp mọi asset trong manifest qua `AssetCache` (GLB meshopt + texture), parse hai
@@ -225,7 +225,7 @@ async function runGame(browser: Browser, label: string, outDir: string, preset: 
   const run: GameRun = { preset, forced, ok: false, backend: '', adapter: '', pixelRatio: 0, loadMs: 0, fps: 0, cpuP50: 0, cpuP95: 0, drawCalls: 0, triangles: 0, shot: '', errors, warnings };
   const t0 = Date.now();
   try {
-    await page.goto(`${ORIGIN}/?mute=1&debug=1&auto=${name}${forced ? '&renderer=webgl2' : ''}`, { waitUntil: 'load', timeout: 120_000 });
+    await page.goto(`${ORIGIN}/?mute=1&debug=1&cine=0&auto=${name}${forced ? '&renderer=webgl2' : ''}`, { waitUntil: 'load', timeout: 120_000 });
     await page.waitForFunction(() => {
       const g = (window as unknown as W).__game;
       return !!g && g.frames > 30 && !!g.me?.();
