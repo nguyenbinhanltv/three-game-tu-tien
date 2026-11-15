@@ -56,7 +56,7 @@ describe('model NPC (M3-6)', () => {
       expect(m.actionOf('idle')?.isRunning()).toBe(true);
       // Bảng clip riêng của SkinnedCharacter (tên clip → AnimationClip).
       const names = (m as unknown as { clips: Map<string, THREE.AnimationClip> }).clips;
-      for (const c of ['idle', 'run', 'attack', 'hit_light', 'death']) expect(names.has(c), `${n.id}/${c}`).toBe(true);
+      for (const c of ['idle', 'run', 'heavy_chop', 'hit_light', 'death']) expect(names.has(c), `${n.id}/${c}`).toBe(true);
       m.dispose();
     }
     s.dispose();

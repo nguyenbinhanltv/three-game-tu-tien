@@ -4,6 +4,12 @@ import { type AssetCache, type AssetHandle } from '../assets';
 /** Thư viện clip dùng chung cho nhân vật người rig Mixamo (M2-3): tools/blender/export_anim_lib.py, không mesh. */
 export const HUMAN_ANIM_LIB = 'anim_human_base';
 
+/**
+ * Thư viện clip K-3 (26 clip: đi lùi/ngang, thủ thế, đỡ, né, trúng đòn theo hướng, ngã/đứng dậy...), tách riêng khỏi thư viện nền để
+ * mọi phiên chơi không phải tải thêm ~1,3 MB khi chưa dùng. Trang xem (`lib=1`) và máy trạng thái K-4 nạp lười; `preload.ts` không nạp.
+ */
+export const HUMAN_K3_LIB = 'anim_human_k3';
+
 /** Tần số lấy mẫu clip sau retarget (khung/giây). */
 const RETARGET_FPS = 30;
 const EPS = 1e-5;

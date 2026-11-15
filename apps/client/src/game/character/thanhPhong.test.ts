@@ -35,7 +35,7 @@ async function load(): Promise<AssetHandle> {
   return cache.acquire(ASSET);
 }
 
-const BASE = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
+const BASE = { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' };
 
 async function setup() {
   const handle = await load();

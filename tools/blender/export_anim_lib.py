@@ -43,5 +43,9 @@ for act in bpy.data.actions:
 arm.name = 'rig_human_base'
 arm.data.name = 'rig_human_base'
 
+# K-3: sửa trôi gốc/hướng, sinh clip dẫn xuất (đi ngang, lùi, lật trái/phải...) và đo; xem anim_human_k3.py.
+if (META.get('import') or {}).get('k3'):  # noqa: F821
+    runpy.run_path(os.path.join(REPO, 'tools/blender/anim_human_k3.py'), init_globals={**result, **globals()}, run_name='__import_tripo_post__')  # noqa: F821
+
 REPORT = {'clips': sorted(a.name for a in bpy.data.actions), 'bones': len(arm.data.bones), 'droppedBones': sorted(gone)}
 print(f'[export_anim_lib] {REPORT}')
