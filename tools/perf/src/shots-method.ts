@@ -173,9 +173,9 @@ async function main(): Promise<void> {
         { method: 'lac_kiem_quyet', skill: 'skl_thien_kiem_vu', at: [450, 900] },
         { method: 'lac_kiem_quyet', skill: 'skl_hoi_nguyen_thuat', at: [250, 1500] },
         { method: 'lac_kiem_quyet', skill: 'skl_loi_dinh_nhat_kiem', at: [350, 700], atB: [1900, 2300] },
-        { method: 'lac_kiem_quyet', skill: 'skl_kiem_anh_phan_quang', at: [280, 520] },
+        { method: 'lac_kiem_quyet', skill: 'skl_phi_kiem_truy_hon', at: [280, 520] },
         { method: 'bat_dong_kim_than', skill: 'skl_tran_son_an', at: [300, 650] },
-        { method: 'thanh_moc_dan_kinh', skill: 'skl_xuan_phong_hoa_vu', at: [350, 1300] },
+        { method: 'thanh_moc_dan_kinh', skill: 'skl_hoi_xuan_quyet', at: [350, 1300] },
       ];
       const only = ONLY.filter((x) => x.startsWith('var:')).map((x) => x.slice(4));
       let cur = '';

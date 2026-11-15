@@ -46,6 +46,8 @@ export interface MethodDef {
   /** id chiêu đặc trưng (ô 7) và chiêu tối thượng (ô 8). */
   sig: string;
   ult: string;
+  /** id chiêu lướt của công pháp (K-2): không nằm trên thanh chiêu, có phím riêng. */
+  dash: string;
   /** Màu VFX chiêu của công pháp (hex). */
   color: string;
   passive: MethodPassive;
@@ -250,4 +252,26 @@ export function healAmount(base: number, healMul: number | undefined): number {
 export function reduceDamage(n: number, reduce: number): number {
   const r = Math.max(0, Math.min(0.9, reduce));
   return Math.max(1, Math.round(n * (1 - r)));
+}
+
+/**
+ * Chiêu đổi id (K-2): id cũ → id mới. Server đổi khóa `skillLv`/`skillVar` trong `characters.meta` khi đọc nhân vật
+ * (idempotent, giữ cấp, biến thức; `sanitizeMethodMeta`). Không bao giờ xóa mục đã thêm: chuỗi đổi nhiều lần giữ đủ.
+ */
+export const SKILL_ID_ALIASES: Readonly<Record<string, string>> = {
+  skl_kiem_anh_phan_quang: 'skl_phi_kiem_truy_hon',
+  skl_xuan_phong_hoa_vu: 'skl_hoi_xuan_quyet',
+};
+
+/** Đổi khóa id cũ sang mới trong một bảng id → giá trị (không ghi đè khóa mới nếu đã có). Trả về true nếu có đổi. */
+export function migrateSkillKeys<T>(table: Record<string, T> | undefined | null): boolean {
+  if (!table || typeof table !== 'object') return false;
+  let changed = false;
+  for (const [from, to] of Object.entries(SKILL_ID_ALIASES)) {
+    if (!(from in table)) continue;
+    if (!(to in table)) table[to] = table[from];
+    delete table[from];
+    changed = true;
+  }
+  return changed;
 }

@@ -134,6 +134,12 @@ import {
   WATER_Y,
   xpLevelFactor,
   xpNeed,
+  comboNext,
+  dashDir,
+  DASH_MIN_GAP_MS,
+  hitOffsets,
+  planDash,
+  strikeDelay,
 } from '@dtl/shared';
 import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
@@ -157,6 +163,7 @@ const POTION_ALLY_RANGE = 12;
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
+import { empowerDeadlines, isEmpowered, SkillFlow } from './skillflow';
 import { DuelSystem } from './duel';
 import { parties } from './party';
 import { UpgradeSystem } from './upgrade';
@@ -203,6 +210,8 @@ export interface PlayerEnt {
   /** Mặc/tháo đồ: tối thiểu 200 ms giữa hai lần (mỗi lần là một giao dịch DB + dòng ledger). */
   equipCdAt: number;
   casting: { skill: SkillDef; target: string; endAt: number } | null;
+  /** Đòn chờ `hitAt`, chuỗi đánh thường, cửa sổ cường hóa, lướt (K-2). */
+  flow: SkillFlow;
   shield: { amount: number; until: number } | null;
   lastCombatAt: number;
   /** Lần đổi biến thức gần nhất (giờ server, ms): giãn các lần đổi. Không lưu DB. */
@@ -355,6 +364,12 @@ export interface SimOptions {
   persistPosition: boolean;
 }
 
+/** Ngữ cảnh một lần áp chiêu: đòn thứ mấy của chuỗi đánh thường, hệ số nhân (combo, cường hóa). */
+interface StrikeCtx {
+  combo?: number;
+  mul?: number;
+}
+
 export class GameSim {
   now = Date.now();
   players = new Map<string, PlayerEnt>();
@@ -362,6 +377,8 @@ export class GameSim {
   monById = new Map<string, MonEnt>();
   nodes = new Map<string, NodeEnt>();
   hazards: Hazard[] = [];
+  /** Việc hẹn giờ của chiêu nhiều mốc `hitAt`. */
+  private delayed: { at: number; fn: () => void }[] = [];
   private hots: Hot[] = [];
   private trails: Trail[] = [];
   bolts: Bolt[] = [];
@@ -549,6 +566,7 @@ export class GameSim {
       itemCdAt: 0,
       equipCdAt: 0,
       casting: null,
+      flow: new SkillFlow(),
       shield: null,
       lastCombatAt: 0,
       variantAt: -1e9,
@@ -803,6 +821,7 @@ export class GameSim {
         }
       }
       if (p.casting && this.now >= p.casting.endAt) this.finishCast(p);
+      if (p.flow.pending && this.now >= p.flow.pending.at) this.resolvePending(p);
       if (p.shield && this.now >= p.shield.until) {
         p.shield = null;
         this.setFlag(p, PF_SHIELD, false);
@@ -842,6 +861,8 @@ export class GameSim {
     const cds: Record<string, number> = {};
     for (const [k, v] of p.cds) if (v > this.now) cds[k] = v;
     const m: CdMsg = { cds, gcd: p.gcdAt, now: Date.now() };
+    const em = empowerDeadlines(p.flow, this.now);
+    if (Object.keys(em).length) m.em = em;
     p.client.send(S.CD, m);
   }
 
@@ -861,7 +882,8 @@ export class GameSim {
     if (c.level < skill.unlock) return this.warn(p, 'sys.level_low');
     if (skill.method && c.meta.method !== skill.method) return this.warn(p, 'sys.no_method');
     if (this.airborne(p)) return this.warn(p, 'sys.cannot_while_flying');
-    if (p.casting) return;
+    if (skill.dash) return this.onDash(p, skill, typeof m.t === 'string' ? m.t : '');
+    if (p.casting || p.flow.pending) return;
     if (this.now < p.gcdAt - 60) return;
     if ((p.cds.get(skill.id) ?? 0) > this.now) return this.warn(p, 'sys.cooldown');
     if (c.mp < skill.mp) return this.warn(p, 'sys.not_enough_mp');
@@ -896,7 +918,132 @@ export class GameSim {
       this.sendCd(p);
       return;
     }
-    this.executeSkill(p, skill, targetId);
+    this.beginSkill(p, skill, targetId);
+  }
+
+  /**
+   * Chiêu không niệm (K-2): chuỗi đánh thường, cường hóa, rồi áp ngay hoặc chờ `hitAt` (hình và sát thương cùng nhịp).
+   * Linh lực, hồi chiêu, vòng sạc trừ lúc bấm; đòn bị hủy vì mục tiêu thì hoàn lại.
+   */
+  private beginSkill(p: PlayerEnt, skill: SkillDef, targetId: string): void {
+    const f = p.flow;
+    let combo = -1;
+    let mul = 1;
+    if (skill.combo) {
+      combo = comboNext(skill.combo, f.comboIdx, f.comboAt, this.now);
+      f.comboIdx = combo;
+      f.comboAt = this.now;
+      mul *= skill.combo.hits[combo].power / Math.max(0.01, skill.power);
+    }
+    if (isEmpowered(f, skill, this.now)) {
+      mul *= skill.empower!.powerMul;
+      f.opened.delete(skill.empower!.by);
+    }
+    const delay = strikeDelay(skill, combo >= 0 ? combo : undefined) * 1000;
+    if (delay <= 0) return this.resolveWith(p, skill, targetId, { combo: combo >= 0 ? combo : undefined, mul });
+    const prevCd = p.cds.get(skill.id);
+    const prevCharge = p.mth.charge;
+    this.commitSkill(p, skill);
+    f.pending = { skill, target: targetId, at: this.now + delay, combo, mul, prevCd, prevCharge };
+    this.sendCd(p);
+  }
+
+  private resolveWith(p: PlayerEnt, skill: SkillDef, targetId: string, ctx: StrikeCtx): void {
+    this.executeSkill(p, skill, targetId, ctx);
+  }
+
+  /** Hủy đòn đang chờ. `refund`: hoàn linh lực, hồi chiêu, vòng sạc (chỉ khi mục tiêu mất, không phải do người chơi tự hủy). */
+  private abortStrike(p: PlayerEnt, refund: boolean, notify = true): void {
+    const st = p.flow.pending;
+    if (!st) return;
+    p.flow.pending = null;
+    if (st.skill.ult) {
+      p.mth.lockCharge = false;
+      if (refund) p.mth.charge = st.prevCharge;
+      p.mth.dirty = true;
+    }
+    if (refund) {
+      p.char.mp = Math.min(p.char.mmp, p.char.mp + st.skill.mp);
+      if (st.prevCd === undefined) p.cds.delete(st.skill.id);
+      else p.cds.set(st.skill.id, st.prevCd);
+    }
+    if (notify) {
+      this.fx({ t: 'castend', src: p.sid });
+      this.sendCd(p);
+    }
+  }
+
+  /** Tới `hitAt`: kiểm lại điều kiện rồi áp. Mục tiêu chết/ra tầm: hủy và hoàn; người ra chiêu chết/bay lên: hủy, không hoàn. */
+  private resolvePending(p: PlayerEnt): void {
+    const st = p.flow.pending;
+    if (!st) return;
+    if (this.isDead(p) || this.airborne(p)) return this.abortStrike(p, false);
+    const sk = st.skill;
+    if (st.target && (sk.kind === 'damage' || sk.kind === 'aoe')) {
+      const mon = this.monById.get(st.target);
+      let ok: boolean;
+      if (mon) ok = mon.state !== MS_DEAD && this.inRange(p, mon, sk.range * 1.3);
+      else {
+        const foe = this.duel.foeOf(p);
+        ok = !!foe && foe.sid === st.target && this.inRangeP(p, foe, sk.range * 1.3);
+      }
+      if (!ok) return this.abortStrike(p, true);
+    }
+    p.flow.pending = null;
+    this.resolveSkill(p, sk, st.target, { combo: st.combo >= 0 ? st.combo : undefined, mul: st.mul });
+  }
+
+  /**
+   * Lướt (K-2): quãng và hướng theo chiêu, lập đường bằng `stepMove` (không xuyên vách), không khi ngự kiếm.
+   * Không ăn GCD nhưng có hồi chiêu riêng (≥ 8 s) và khe tối thiểu giữa hai lần; hủy được đòn đang chờ/niệm
+   * (chiêu đó mất, không hoàn), nên lướt không đổi được GCD lấy lượt đánh miễn phí.
+   */
+  private onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void {
+    const def = skill.dash;
+    if (!def) return;
+    const c = p.char;
+    if (p.trib || p.trial) return this.warn(p, 'sys.busy');
+    if (this.now - p.flow.lastDashAt < DASH_MIN_GAP_MS) return;
+    if ((p.cds.get(skill.id) ?? 0) > this.now) return this.warn(p, 'sys.cooldown');
+    if (c.mp < skill.mp) return this.warn(p, 'sys.not_enough_mp');
+    const mon = targetId ? this.monById.get(targetId) : undefined;
+    const tgt = mon && mon.state !== MS_DEAD && this.inRange(p, mon, skill.range) ? mon : undefined;
+    // Đặt mốc ngay khi lệnh hợp lệ tới đây (kể cả khi bị chặn): lệnh bị chặn không thể dội để ép tính đường liên tục.
+    p.flow.lastDashAt = this.now;
+    const dir = dashDir(def, p.s.yaw, tgt ? { dx: tgt.s.x - p.move.x, dz: tgt.s.z - p.move.z } : null);
+    if (!dir) return;
+    const stop = tgt && def.dir === 'target' ? { x: tgt.s.x, z: tgt.s.z, r: (def.stop ?? 1.6) + tgt.def.scale } : undefined;
+    // Đã sát mục tiêu: không cần lướt; chiêu có sát thương (Thiết Bích Xung) vẫn húc, chiêu thuần di chuyển thì bỏ.
+    const close = !!stop && Math.hypot(stop.x - p.move.x, stop.z - p.move.z) <= stop.r + 1;
+    const plan = close ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true } : planDash(p.move, dir, def.dist, stop);
+    if (plan.dist < 1 && !(close && skill.power > 0)) return this.warn(p, close ? 'sys.dash_close' : 'sys.dash_blocked');
+    const rs = resolveFor(c.meta, skill);
+    if (p.meditating) this.setMeditating(p, false);
+    if (p.casting) this.cancelCast(p);
+    this.abortStrike(p, false);
+    c.mp -= skill.mp;
+    if (rs.cd > 0) p.cds.set(skill.id, this.now + rs.cd * 1000);
+    p.flow.lastDashAt = this.now;
+    p.lastCombatAt = this.now;
+    p.move.x = plan.x;
+    p.move.z = plan.z;
+    p.move.y = groundAt(plan.x, plan.z);
+    p.move.vy = 0;
+    p.move.grounded = true;
+    p.inputs.length = 0;
+    p.s.yaw = Math.atan2(dir.x, dir.z);
+    this.fx({ t: skill.fx, src: p.sid, x: plan.x, y: p.move.y, z: plan.z, d: 0.3, ...this.fxTag(p, rs) });
+    // Lướt có sát thương (Thiết Bích Xung): húc mục tiêu nếu đã sát người.
+    if (skill.power > 0 && tgt && this.inRange(p, tgt, 3)) {
+      let mul = 1;
+      if (isEmpowered(p.flow, skill, this.now)) {
+        mul = skill.empower!.powerMul;
+        p.flow.opened.delete(skill.empower!.by);
+      }
+      this.hitMonster(p, tgt, rs.power * mul, elemDamageMul(c.stats.elemDmg, skill.elem));
+    }
+    p.flow.opened.set(skill.id, this.now);
+    this.sendCd(p);
   }
 
   // ---------- pháp bảo phụ và đan tăng sức (P3-8) ----------
@@ -1209,13 +1356,15 @@ export class GameSim {
     }
   }
 
-  private executeSkill(p: PlayerEnt, skill: SkillDef, targetId: string): void {
-    const c = p.char;
-    const rs = resolveFor(c.meta, skill);
-    const v = rs.variant;
-    const pas = passiveOf(c.meta);
-    const healMul = pas?.healMul;
-    c.mp -= skill.mp;
+  private executeSkill(p: PlayerEnt, skill: SkillDef, targetId: string, ctx: StrikeCtx = {}): void {
+    this.commitSkill(p, skill);
+    this.resolveSkill(p, skill, targetId, ctx);
+  }
+
+  /** Trừ linh lực, đặt hồi chiêu, tiêu vòng sạc (chiêu tối thượng): tại lúc bấm (hoặc lúc niệm xong). */
+  private commitSkill(p: PlayerEnt, skill: SkillDef): void {
+    const rs = resolveFor(p.char.meta, skill);
+    p.char.mp -= skill.mp;
     if (rs.cd > 0) p.cds.set(skill.id, this.now + rs.cd * 1000);
     if (skill.ult) {
       p.mth.charge = 0;
@@ -1223,7 +1372,19 @@ export class GameSim {
       p.mth.dirty = true;
     }
     p.lastCombatAt = this.now;
+  }
+
+  /** Áp hiệu quả của chiêu (sát thương, hồi, khiên...): tại `hitAt` hoặc ngay khi không có độ trễ. */
+  private resolveSkill(p: PlayerEnt, skill: SkillDef, targetId: string, ctx: StrikeCtx = {}): void {
+    const c = p.char;
+    const rs = resolveFor(c.meta, skill);
+    const v = rs.variant;
+    const pas = passiveOf(c.meta);
+    const healMul = pas?.healMul;
     const tag = this.fxTag(p, rs);
+    if (ctx.combo !== undefined) tag.n = ctx.combo;
+    // Chiêu tối thượng nhiều mốc: giữ khóa vòng sạc tới đòn trễ cuối (không tự nạp lại vòng sạc của chính nó).
+    let holdLock = 0;
     const elemMul = elemDamageMul(c.stats.elemDmg, skill.elem);
     // Chiêu gây sát thương tiêu thụ tầng: Lôi Đình tiêu kiếm ý; chiêu có hồi chiêu tiêu thế (đòn đánh thường thì không).
     let mul = 1;
@@ -1235,6 +1396,7 @@ export class GameSim {
         p.mth.dirty = true;
       }
     }
+    mul *= ctx.mul ?? 1;
     if ((skill.kind === 'damage' || skill.kind === 'aoe') && targetId && !this.monById.has(targetId)) {
       const foe = this.players.get(targetId);
       if (foe && this.duel.foeOf(p) === foe) {
@@ -1267,7 +1429,15 @@ export class GameSim {
           }
         }
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
-        for (const h of rs.hits) this.hitMonster(p, mon, h * mul, elemMul);
+        const offs = hitOffsets(skill, rs.hits.length);
+        rs.hits.forEach((h, i) => {
+          if (offs[i] <= 0) return this.hitMonster(p, mon, h * mul, elemMul);
+          this.later(offs[i], () => {
+            // Người ra chiêu phải còn trong room, còn sống, chưa bay lên; quái chưa chết.
+            if (this.players.get(p.sid) === p && !this.isDead(p) && !this.airborne(p) && mon.state !== MS_DEAD) this.hitMonster(p, mon, h * mul, elemMul);
+          });
+          holdLock = Math.max(holdLock, offs[i]);
+        });
         // Bộ Lạc Kiếm Môn Phục (4 món): Phi Kiếm có xác suất bắn thêm một thanh (server roll, không tin client).
         if (skill.id === 'skl_phi_kiem' && c.stats.setFx.phiKiemExtra > 0 && Math.random() < c.stats.setFx.phiKiemExtra) {
           this.fx({ t: skill.fx, src: p.sid, dst: mon.id, ...tag });
@@ -1379,16 +1549,32 @@ export class GameSim {
         break;
       }
     }
-    if (skill.ult) {
+    if (skill.ult && holdLock > 0) {
+      this.later(holdLock + 0.02, () => {
+        p.mth.lockCharge = false;
+        p.mth.charge = 0;
+      });
+    } else if (skill.ult) {
       p.mth.lockCharge = false;
       p.mth.charge = 0;
     }
+    p.flow.opened.set(skill.id, this.now);
     this.sendCd(p);
+  }
+
+  /** Chạy `fn` sau `sec` giây (đòn thứ hai trở đi của chiêu nhiều mốc `hitAt`). */
+  private later(sec: number, fn: () => void): void {
+    this.delayed.push({ at: this.now + sec * 1000, fn });
   }
 
   /** Mỗi tick: hồi theo thời gian, vệt kiếm khí, kiếm ý/thế rụng. */
   private tickMethods(): void {
     const now = this.now;
+    for (let i = this.delayed.length - 1; i >= 0; i--) {
+      if (now < this.delayed[i].at) continue;
+      const [d] = this.delayed.splice(i, 1);
+      d.fn();
+    }
     for (let i = this.hots.length - 1; i >= 0; i--) {
       const h = this.hots[i];
       const o = this.players.get(h.sid);
@@ -1823,6 +2009,8 @@ export class GameSim {
     const c = p.char;
     c.hp = 0;
     p.casting = null;
+    this.abortStrike(p, false, false);
+    p.flow.reset();
     p.shield = null;
     p.meditating = false;
     p.s.fl = PF_DEAD;
