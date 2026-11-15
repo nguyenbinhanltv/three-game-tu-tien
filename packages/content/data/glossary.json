@@ -10,8 +10,31 @@
   "def": "phòng ngự",
   "posture": "thế",
   "posture_broken": "mất thế",
-  "realms": ["Ngưng Khí", "Trúc Cơ", "Kết Đan", "Nguyên Anh", "Hóa Thần", "Anh Biến", "Vấn Đỉnh", "Âm Hư", "Dương Thực", "Khuy Niết", "Tịnh Niết", "Toái Niết", "Không Niết", "Không Linh", "Không Huyền", "Không Kiếp", "Đạp Thiên"],
-  "stages": ["sơ kỳ", "trung kỳ", "hậu kỳ", "đại viên mãn"],
+  "realms": [
+    "Ngưng Khí",
+    "Trúc Cơ",
+    "Kết Đan",
+    "Nguyên Anh",
+    "Hóa Thần",
+    "Anh Biến",
+    "Vấn Đỉnh",
+    "Âm Hư",
+    "Dương Thực",
+    "Khuy Niết",
+    "Tịnh Niết",
+    "Toái Niết",
+    "Không Niết",
+    "Không Linh",
+    "Không Huyền",
+    "Không Kiếp",
+    "Đạp Thiên"
+  ],
+  "stages": [
+    "sơ kỳ",
+    "trung kỳ",
+    "hậu kỳ",
+    "đại viên mãn"
+  ],
   "actions": {
     "meditate": "đả tọa",
     "fly": "ngự kiếm",
@@ -25,5 +48,29 @@
     "chant_guard": "hộ chú",
     "interrupt": "phá chú",
     "stun": "choáng"
+  },
+  "equipSlots": {
+    "weapon": "Pháp kiếm",
+    "robe": "Đạo bào",
+    "bracer": "Hộ uyển",
+    "boots": "Vân ngoa",
+    "belt": "Đai lưng",
+    "jade": "Ngọc bội",
+    "ring": "Giới chỉ",
+    "artifact": "Pháp bảo phụ"
+  },
+  "qualities": [
+    "Phàm phẩm",
+    "Linh phẩm",
+    "Huyền phẩm",
+    "Địa phẩm",
+    "Thiên phẩm"
+  ],
+  "elements": {
+    "kim": "Kim",
+    "moc": "Mộc",
+    "thuy": "Thủy",
+    "hoa": "Hỏa",
+    "tho": "Thổ"
   }
 }

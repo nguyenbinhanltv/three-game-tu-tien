@@ -3,8 +3,8 @@
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { GCD, groundAt, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
-import { APPEARANCE, DYE, hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
+import { AFFIX_ILVL_CAP, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
+import { APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
 import { LOOT } from './loot';
 import { PLACE_ID, PLACES } from './places';
 
@@ -82,9 +82,78 @@ const needStr = (key: string) => {
 for (const it of ITEMS) {
   needStr(`item.${it.id}.name`);
   needStr(`item.${it.id}.desc`);
-  if ((it.kind === 'weapon' || it.kind === 'robe' || it.kind === 'accessory') && it.stack !== 1) err(`item ${it.id}: trang bị phải stack = 1`);
+  if (isEquipSlot(it.kind) && it.stack !== 1) err(`item ${it.id}: trang bị phải stack = 1`);
   if (it.price > 0 && it.sell >= it.price) err(`item ${it.id}: giá bán >= giá mua (lỗ hổng kiếm tiền vô hạn)`);
 }
+// ---- trang bị 8 ô (Phase 3-1) ----
+{
+  const sys = ITEM_SYS;
+  const where = 'equipment';
+  if (sys.slots.map((x) => x.id).join() !== EQUIP_SLOTS.join()) err(`${where}: slots.json phải đúng thứ tự EQUIP_SLOTS (${EQUIP_SLOTS.join(', ')})`);
+  for (const sd of sys.slots) {
+    needStr(`ui.equip.${sd.id}`);
+    needStr(`ui.item.kind.${sd.id}`);
+    if (GLOSSARY.equipSlots[sd.id as keyof typeof GLOSSARY.equipSlots] !== t(`ui.equip.${sd.id}`)) err(`${where}: tên ô ${sd.id} lệch glossary.equipSlots`);
+    if (!(sd.weight >= 0 && sd.weight <= 3)) err(`slot ${sd.id}: weight phải trong [0, 3]`);
+    const shares = Object.entries(sd.main);
+    const sum = shares.reduce((s, [, v]) => s + (v ?? 0), 0);
+    if (sd.weight > 0 && Math.abs(sum - 1) > 1e-9) err(`slot ${sd.id}: tổng chia dòng chính phải bằng 1 (đang ${sum})`);
+    if (sd.weight === 0 && shares.length) err(`slot ${sd.id}: weight 0 thì không có dòng chính`);
+    for (const [k] of shares) if (!(k in STAT_PER_POINT)) err(`slot ${sd.id}: chỉ số chính lạ ${k}`);
+  }
+  if (sys.qualities.length !== QUALITY_COUNT || QUALITY_MUL.length !== QUALITY_COUNT) err(`${where}: phải có ${QUALITY_COUNT} phẩm khớp QUALITY_MUL`);
+  sys.qualities.forEach((q, i) => {
+    if (q.id !== i) err(`quality ${i}: id phải bằng chỉ số`);
+    needStr(`ui.quality.${i}`);
+    if (GLOSSARY.qualities[i] !== t(`ui.quality.${i}`)) err(`${where}: tên phẩm ${i} lệch glossary.qualities`);
+    if (q.affixes !== i) err(`quality ${i}: số dòng phụ phải bằng ${i} (thiết kế 3.2)`);
+    if (!(q.affixFrac >= 0 && q.affixFrac < 0.6) || (i === 0) !== (q.affixFrac === 0)) err(`quality ${i}: affixFrac không hợp lệ`);
+    if (!/^#[0-9a-fA-F]{6}$/.test(q.color)) err(`quality ${i}: màu không hợp lệ`);
+    if (i > 0 && !(q.affixFrac >= sys.qualities[i - 1].affixFrac)) err(`quality ${i}: affixFrac phải không giảm`);
+  });
+  if (sys.affixes.length !== 14) err(`${where}: phải có đúng 14 loại dòng phụ (đang ${sys.affixes.length})`);
+  const slotIds = new Set<string>(EQUIP_SLOTS);
+  for (const a of sys.affixes) {
+    needStr(`ui.affix.${a.id}`);
+    if (!(a.min > 0 && a.max >= a.min && a.max < 1)) err(`affix ${a.id}: khoảng giá trị không hợp lệ`);
+    if (!(a.weight > 0)) err(`affix ${a.id}: weight phải > 0`);
+    for (const s of a.slots ?? []) if (!slotIds.has(s)) err(`affix ${a.id}: ô lạ ${s}`);
+    if (a.param && !sys.params[a.param]?.length) err(`affix ${a.id}: thiếu danh sách tham số ${a.param}`);
+    if (a.param && !t(`ui.affix.${a.id}`).includes('{p}')) err(`affix ${a.id}: chuỗi phải có {p}`);
+    if (!t(`ui.affix.${a.id}`).includes('{v}')) err(`affix ${a.id}: chuỗi phải có {v}`);
+  }
+  if (new Set(sys.affixes.map((a) => a.id)).size !== sys.affixes.length) err(`${where}: id dòng phụ trùng`);
+  for (const sk of sys.params.skill) if (!SKILLS.some((s) => s.id === sk)) err(`${where}: chiêu không tồn tại ${sk}`);
+  if (sys.params.element.join() !== ELEMENTS.join()) err(`${where}: params.element phải là ${ELEMENTS.join(', ')}`);
+  for (const e of sys.params.element) needStr(`ui.element.${e}`);
+  // Mọi ô có chỉ số phải có đủ dòng phụ hợp lệ để roll đủ phẩm Thiên (4 dòng khác nhau).
+  for (const sd of sys.slots) {
+    if (sd.weight <= 0) continue;
+    const pool = sys.affixes.filter((a) => !a.slots || a.slots.includes(sd.id)).reduce((n, a) => n + (a.param ? sys.params[a.param].length : 1), 0);
+    if (pool < sys.qualities[QUALITY_COUNT - 1].affixes) err(`slot ${sd.id}: không đủ dòng phụ để roll phẩm cao nhất`);
+  }
+  // Mô phỏng nhanh: roll nhiều lần mọi ô × phẩm phải qua parseInst, không vượt ngân sách, số dòng đúng.
+  const rng = seededRng(20261115);
+  for (const sd of sys.slots) {
+    for (let q = 0; q < QUALITY_COUNT; q++) {
+      for (const ilvl of [1, 8, AFFIX_ILVL_CAP, 30]) {
+        for (let n = 0; n < 40; n++) {
+          const inst = rollItemInstance(sys, sd.id, ilvl, q as 0, rng);
+          if (!parseInst(sys, sd.id, inst)) err(`roll ${sd.id}/q${q}/ilvl${ilvl}: parseInst từ chối kết quả roll`);
+          if (inst.affixes.length !== (sd.weight > 0 ? q : 0)) err(`roll ${sd.id}/q${q}: số dòng phụ sai (${inst.affixes.length})`);
+          const bound = budget(ilvl, q as 0, sd.weight) * 1.06;
+          const mainPts = Object.entries(inst.main).reduce((s, [k, v]) => s + (v ?? 0) / STAT_PER_POINT[k as 'atk'], 0);
+          if (mainPts > bound + 2) err(`roll ${sd.id}/q${q}/ilvl${ilvl}: dòng chính ${mainPts.toFixed(1)} vượt ngân sách ${bound.toFixed(1)}`);
+        }
+      }
+    }
+  }
+  // Mẫu trang bị: kind khớp ô hợp lệ, reqLevel có mặt.
+  for (const it of ITEMS) {
+    if (isEquipSlot(it.kind) && (it.reqLevel ?? 0) < 1) err(`item ${it.id}: trang bị phải có reqLevel`);
+  }
+}
+
 const KINDS = ['lightning', 'frost', 'fire', 'spirit'];
 
 /** Kiểm bộ chiêu của quái (với boss có pha: kiểm bộ chiêu đã ghép của từng pha). `at` ghi rõ pha trong thông báo lỗi. */
