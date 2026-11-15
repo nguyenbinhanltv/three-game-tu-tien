@@ -382,6 +382,41 @@ export function loudness(chans, sr = SR) {
   return lk(gated.reduce((a, b) => a + b, 0) / gated.length);
 }
 
+/**
+ * Độ to ngắn hạn lớn nhất (LUFS, khối `win` giây (mặc định 0,4), bước 25 ms, không cổng) theo lọc K của BS.1770-4: đo "độ to khi đánh"
+ * của âm ngắn (SFX), nơi `loudness` tích hợp không dùng được vì dưới 400 ms hoặc bị pha loãng bởi khoảng lặng.
+ * Âm ngắn hơn một khối được đệm lặng cho đủ một khối.
+ */
+export function momentaryMax(chans, sr = SR, win = 0.4) {
+  if (sr !== 48000) throw new Error('momentaryMax chỉ hỗ trợ 48 kHz');
+  const block = Math.round(win * sr);
+  const pad = (x) => {
+    if (x.length >= block) return x;
+    const o = new Float32Array(block);
+    o.set(x);
+    return o;
+  };
+  const k = chans.map((x) =>
+    biquad(
+      biquad(pad(x), [1.53512485958697, -2.69169618940638, 1.19839281085285], [1, -1.69065929318241, 0.73248077421585]),
+      [1, -2, 1],
+      [1, -1.99004745483398, 0.99007225036621],
+    ),
+  );
+  const step = Math.round(0.025 * sr);
+  let best = 0;
+  for (let s = 0; s + block <= k[0].length; s += step) {
+    let z = 0;
+    for (const c of k) {
+      let acc = 0;
+      for (let i = s; i < s + block; i++) acc += c[i] * c[i];
+      z += acc / block;
+    }
+    if (z > best) best = z;
+  }
+  return best > 0 ? -0.691 + 10 * Math.log10(best) : -Infinity;
+}
+
 /** Đỉnh thực (dBTP) gần đúng: lấy mẫu dư 4 lần bằng sinc cửa sổ Hann 32 nhịp mỗi pha. */
 export function truePeak(chans) {
   const taps = 16;

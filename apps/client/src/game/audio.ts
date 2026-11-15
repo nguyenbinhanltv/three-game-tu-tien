@@ -34,6 +34,7 @@
 
 import { bellPartials } from './lootBell';
 import { gongPartials } from './chapter';
+import MIX from './audioMix.json';
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
 type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend';
@@ -56,7 +57,15 @@ type FileSfx =
   | 'ui_open'
   | 'ui_close'
   | 'ui_error'
-  | 'ui_confirm';
+  | 'ui_confirm'
+  | 'spellbreak'
+  | 'rare'
+  | 'step_stone'
+  | 'step_grass'
+  | 'step_dirt'
+  | 'step_sand'
+  | 'step_wood'
+  | 'step_water';
 export type Sfx = SynthSfx | FileSfx;
 export type Bus = 'music' | 'ambient' | 'sfx' | 'ui';
 export type VolumeKey = 'master' | Bus;
@@ -106,8 +115,11 @@ interface Variant {
 
 const DEV = (import.meta as unknown as { env: { DEV: boolean } }).env.DEV;
 const MANIFEST_DIR = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL + 'audio/';
-/** Mức trộn nội bộ của từng bus khi thanh trượt ở 100%: nhạc khoảng 1/3 SFX để không lấn tiếng đòn đánh. */
-const BUS_MIX: Record<Bus, number> = { music: 0.33, ambient: 0.5, sfx: 1, ui: 1 };
+/**
+ * Mức trộn nội bộ của từng bus khi thanh trượt ở 100% (audioMix.json, cũng là nguồn của tools/audio/levels.mjs):
+ * nhạc khoảng 1/3 SFX để không lấn tiếng đòn đánh, âm môi trường thấp hơn nhạc. Bảng đo ở docs/audio/levels.md.
+ */
+const BUS_MIX = MIX.bus as Record<Bus, number>;
 /** Âm tổng hợp được chỉnh theo master 0,22 cũ; giữ nguyên để không có file thì nghe như trước. */
 const SYNTH_GAIN = 0.22;
 const SYNTH_BUS: Partial<Record<Sfx, Bus>> = { loot: 'ui', quest: 'ui' };
@@ -123,6 +135,8 @@ const SYNTH_ALIAS: Partial<Record<FileSfx, SynthSfx>> = {
   respawn: 'heal',
   craft: 'loot',
   enhance: 'loot',
+  spellbreak: 'shield',
+  rare: 'loot',
 };
 const MAX_VOICES = 32;
 const DEFAULT_PITCH = 0.05;
@@ -142,6 +156,8 @@ try {
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let duckGain: GainNode | null = null;
+/** Tầng hạ nhạc giữ lâu (hội thoại, thẻ chương...), đứng sau `duckGain`; nhân với hạ nhạc ngắn. */
+let holdGain: GainNode | null = null;
 const buses = new Map<Bus, GainNode>();
 let noiseBuf: AudioBuffer | null = null;
 let music: StreamDeck | null = null;
@@ -338,7 +354,9 @@ function ensure(): AudioContext | null {
       buses.set(b, g);
     }
     duckGain = ctx.createGain();
-    duckGain.connect(buses.get('music')!);
+    holdGain = ctx.createGain();
+    duckGain.connect(holdGain);
+    holdGain.connect(buses.get('music')!);
     music = new StreamDeck(ctx, duckGain, 'music');
     ambient = new StreamDeck(ctx, buses.get('ambient')!, 'ambient');
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
@@ -350,6 +368,7 @@ function ensure(): AudioContext | null {
   }
   if (!muted) void loadManifest();
   prepare();
+  applyHolds();
   return ctx;
 }
 
@@ -388,6 +407,32 @@ export function setListener(x: number, z: number, yaw: number): void {
   listener.x = x;
   listener.z = z;
   listener.yaw = yaw;
+  if (ctx) placeListener(ctx.listener, x, z, yaw);
+}
+
+/**
+ * Đặt người nghe cho PannerNode (nguồn âm theo vị trí): mặt phẳng XZ, y = 0 cho cả nguồn lẫn người nghe.
+ * Camera ở sau nhân vật theo (sin yaw, cos yaw) nên hướng nhìn là (−sin yaw, 0, −cos yaw); "bên phải" = hướng × lên = (cos yaw, 0, −sin yaw),
+ * khớp `panAt`.
+ */
+function placeListener(l: AudioListener, x: number, z: number, yaw: number): void {
+  const fx = -Math.sin(yaw);
+  const fz = -Math.cos(yaw);
+  if (l.positionX) {
+    l.positionX.value = x;
+    l.positionY.value = 0;
+    l.positionZ.value = z;
+    l.forwardX.value = fx;
+    l.forwardY.value = 0;
+    l.forwardZ.value = fz;
+    l.upX.value = 0;
+    l.upY.value = 1;
+    l.upZ.value = 0;
+  } else {
+    // Safari cũ: API đặt từng bước.
+    l.setPosition(x, 0, z);
+    l.setOrientation(fx, 0, fz, 0, 1, 0);
+  }
 }
 
 /** -1 (trái) .. 1 (phải) theo vị trí nguồn so với hướng camera; gần người nghe thì về giữa. */
@@ -549,14 +594,16 @@ function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: Audi
  * Phát một hiệu ứng. `volume` 0..1 để giảm âm lượng theo khoảng cách;
  * `at` là vị trí nguồn trên mặt đất để lệch trái/phải theo camera.
  */
-export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }): void {
+export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, throttle = true): void {
   if (muted || volume <= 0.02) return;
   const c = ensure();
   if (!c || c.state !== 'running') return;
-  // Không phát cùng một âm dày quá (nhiều sát thương cùng lúc).
-  const now = performance.now();
-  if (now - (lastPlayed.get(name) ?? 0) < 45) return;
-  lastPlayed.set(name, now);
+  // Không phát cùng một âm dày quá (nhiều sát thương cùng lúc). Bước chân của nhiều người tự giới hạn ở footsteps.ts.
+  if (throttle) {
+    const now = performance.now();
+    if (now - (lastPlayed.get(name) ?? 0) < 45) return;
+    lastPlayed.set(name, now);
+  }
   emit(name, volume, at, true);
 }
 
@@ -573,7 +620,11 @@ export function lootChime(tier: 0 | 1 | 2, volume = 1): void {
   o.gain.value = SYNTH_GAIN * volume;
   o.connect(voiceOut(c, 'ui'));
   for (const p of bellPartials(tier)) tone(o, p.freq, p.freq * 0.998, p.dur, 'sine', p.gain, p.delay);
-  if (tier === 2) duck(0.25, 0.8, 0.8);
+  if (tier === 2) {
+    duck(0.25, 0.8, 0.8);
+    // Đồ quý: thêm tiếng xác nhận giòn (2 lớp mẫu + kim loại tổng hợp) dưới tiếng chuông, nổi nhất trong các SFX (D2).
+    emit('rare', volume, undefined, true);
+  }
   stats.synth++;
 }
 
@@ -701,6 +752,182 @@ export function duck(amount = 0.4, hold = 1.2, release = 0.8): void {
   p.linearRampToValueAtTime(level, t + 0.08);
   p.setValueAtTime(level, end);
   p.linearRampToValueAtTime(1, end + release);
+}
+
+/** Hạ nhạc giữ lâu: mỗi lý do (hội thoại, lời boss, thẻ chương) một khóa; mức hạ là mức sâu nhất đang giữ. */
+const holds = new Map<string, { amount: number; until: number }>();
+let holdTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Giữ nhạc nền thấp trong lúc có thoại/thẻ chương/cảnh mở đầu. `amount` 0..1 (0 = thả khóa `key`), `seconds` = tự thả sau chừng này giây
+ * (bỏ trống thì giữ tới khi gọi lại với 0). Nhạc hạ nhanh (0,25 s) và trả lại chậm (0,7 s) để không giật.
+ */
+export function duckHold(key: string, amount: number, seconds = Infinity): void {
+  if (amount <= 0.01) holds.delete(key);
+  else holds.set(key, { amount: clamp01(amount), until: Number.isFinite(seconds) ? performance.now() + seconds * 1000 : Infinity });
+  applyHolds();
+}
+
+function applyHolds(): void {
+  if (holdTimer) {
+    clearTimeout(holdTimer);
+    holdTimer = null;
+  }
+  const now = performance.now();
+  let amount = 0;
+  let next = Infinity;
+  for (const [k, h] of holds) {
+    if (h.until <= now) holds.delete(k);
+    else {
+      amount = Math.max(amount, h.amount);
+      next = Math.min(next, h.until);
+    }
+  }
+  if (Number.isFinite(next)) holdTimer = setTimeout(applyHolds, Math.max(10, next - now + 5));
+  if (!ctx || !holdGain) return;
+  holdGain.gain.setTargetAtTime(1 - amount, ctx.currentTime, amount > 0 ? 0.25 : 0.7);
+}
+
+/** Mức hạ giữ lâu hiện tại 0..1 (gỡ lỗi/kiểm thử). */
+export function holdAmount(): number {
+  const now = performance.now();
+  let a = 0;
+  for (const h of holds.values()) if (h.until > now) a = Math.max(a, h.amount);
+  return a;
+}
+
+// ---------- nguồn âm theo vị trí (PannerNode) ----------
+
+export interface SpatialOpts {
+  /** Khoảng cách (m) mà từ đó âm bắt đầu nhỏ đi. */
+  ref: number;
+  /** Độ dốc suy giảm theo mô hình nghịch đảo của Web Audio. */
+  rolloff: number;
+}
+
+export interface SpatialLoop {
+  /** Đặt độ to 0..1 (đã nhân sẵn hệ số của nguồn), mờ dần trong `fade` giây. */
+  fade(gain: number, fade: number): void;
+  stop(fade: number): void;
+}
+
+const spatialBufs = new Map<string, AudioBuffer>();
+
+/** Đồ thị âm thanh đã mở khóa và đang bật tiếng để dựng nguồn theo vị trí; không thì nơi gọi chỉ ghi nhận trạng thái, không phát. */
+export function spatialReady(): boolean {
+  return !muted && !!ctx && ctx.state === 'running';
+}
+
+/** Bộ đệm dựng bằng code (ví dụ lách tách đèn lồng), tạo một lần theo `key`. */
+export function spatialBuffer(key: string, make: (sampleRate: number) => Float32Array): AudioBuffer | null {
+  if (!ctx) return null;
+  let b = spatialBufs.get(key);
+  if (!b) {
+    const d = make(ctx.sampleRate);
+    b = ctx.createBuffer(1, d.length, ctx.sampleRate);
+    b.copyToChannel(d as Float32Array<ArrayBuffer>, 0);
+    spatialBufs.set(key, b);
+  }
+  return b;
+}
+
+/** Giải mã một âm môi trường trong manifest (ví dụ `water`) thành bộ đệm để lặp theo vị trí; tải lần đầu khi cần. */
+export async function spatialAmbientBuffer(id: string): Promise<AudioBuffer | null> {
+  const key = `amb:${id}`;
+  const hit = spatialBufs.get(key);
+  if (hit) return hit;
+  if (!ctx || !manifest) return null;
+  const e = manifest.ambient?.[id];
+  const buf = e ? await decodeFirst(playable(e.src)) : null;
+  if (buf) spatialBufs.set(key, buf);
+  return buf;
+}
+
+function spatialNode(c: AudioContext, bus: Bus, x: number, z: number, o: SpatialOpts): PannerNode {
+  const pan = c.createPanner();
+  pan.panningModel = 'equalpower';
+  pan.distanceModel = 'inverse';
+  pan.refDistance = o.ref;
+  pan.rolloffFactor = o.rolloff;
+  if (pan.positionX) {
+    pan.positionX.value = x;
+    pan.positionY.value = 0;
+    pan.positionZ.value = z;
+  } else pan.setPosition(x, 0, z);
+  pan.connect(buses.get(bus)!);
+  return pan;
+}
+
+/** Lặp một bộ đệm tại vị trí (x, z) qua PannerNode vào bus `bus`. Bắt đầu im, gọi `fade()` để bật. */
+export function spatialLoop(buf: AudioBuffer, bus: Bus, x: number, z: number, o: SpatialOpts, rate = 1): SpatialLoop | null {
+  const c = ctx;
+  if (!spatialReady() || !c) return null;
+  const pan = spatialNode(c, bus, x, z, o);
+  const g = c.createGain();
+  g.gain.value = 0;
+  g.connect(pan);
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+  src.playbackRate.value = rate;
+  src.connect(g);
+  src.start(0, Math.random() * buf.duration);
+  let stopped = false;
+  return {
+    fade(gain, fade) {
+      if (!stopped) ramp(g, gain, c.currentTime, Math.max(0.02, fade));
+    },
+    stop(fade) {
+      if (stopped) return;
+      stopped = true;
+      ramp(g, 0, c.currentTime, Math.max(0.02, fade));
+      setTimeout(() => {
+        src.stop();
+        src.disconnect();
+        g.disconnect();
+        pan.disconnect();
+      }, fade * 1000 + 80);
+    },
+  };
+}
+
+/**
+ * Một tiếng chuông/chiêng tại (x, z): các bồi âm (như bellPartials) qua thông thấp (xa thì tối hơn) và PannerNode vào bus `bus`.
+ * Trả `true` nếu đã phát. Không đi qua hạ nhạc.
+ */
+export function spatialPartials(
+  parts: { freq: number; gain: number; dur: number; delay: number }[],
+  bus: Bus,
+  x: number,
+  z: number,
+  o: SpatialOpts,
+  volume: number,
+  lowpass = 2800,
+): boolean {
+  const c = ctx;
+  if (!spatialReady() || !c) return false;
+  const pan = spatialNode(c, bus, x, z, o);
+  const lp = c.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = lowpass;
+  const g = c.createGain();
+  g.gain.value = SYNTH_GAIN * volume;
+  g.connect(lp).connect(pan);
+  let end = 0;
+  for (const p of parts) {
+    tone(g, p.freq, p.freq * 0.997, p.dur, 'sine', p.gain, p.delay);
+    end = Math.max(end, p.delay + p.dur);
+  }
+  setTimeout(
+    () => {
+      g.disconnect();
+      lp.disconnect();
+      pan.disconnect();
+    },
+    (end + 0.3) * 1000,
+  );
+  stats.synth++;
+  return true;
 }
 
 // ---------- nhạc nền / âm môi trường (stream, crossfade 2 kênh) ----------
@@ -1009,6 +1236,7 @@ export function audioStats() {
     synthWind: ambient?.wind?.on ?? false,
     failedSfx: [...failed],
     volumes: { ...volumes },
+    duckHold: holdAmount(),
     ...stats,
     synthBy: { ...synthBy },
   };
@@ -1022,7 +1250,7 @@ if (!urlMute && typeof window !== 'undefined') {
 }
 
 if (DEV && typeof window !== 'undefined') {
-  (window as unknown as { __audio?: unknown }).__audio = { stats: audioStats, sfx, playMusic, playAmbient, duck, setVolume };
+  (window as unknown as { __audio?: unknown }).__audio = { stats: audioStats, sfx, playMusic, playAmbient, duck, duckHold, holdAmount, setVolume };
   // Nghe thử bài khi làm nội dung: ?music=<id>&ambient=<id> (phát sau thao tác đầu tiên).
   const q = new URLSearchParams(location.search);
   if (q.get('music')) playMusic(q.get('music'));

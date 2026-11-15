@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { CharView, Equipment, InvSlot, QuestView } from '@dtl/shared';
-import { sfx } from '../game/audio';
+import { duckHold, sfx } from '../game/audio';
 
 export interface TargetInfo {
   id: string;
@@ -248,6 +248,8 @@ export function togglePanel(p: Panel): void {
 
 // Mở/đóng bảng hay hội thoại NPC (bằng phím, nút hay nút đóng): tiếng giở/gấp sách.
 useUI.subscribe((s, prev) => {
+  // Hội thoại NPC: hạ nhạc nền suốt lúc nói chuyện (D2).
+  if (!!s.npc !== !!prev.npc) duckHold('npc', s.npc ? 0.35 : 0);
   const now = s.panel ?? s.npc;
   const was = prev.panel ?? prev.npc;
   if (now === was) return;
