@@ -123,6 +123,8 @@ const pick = (src: Src, profile: Profile): string => {
   const list = Array.isArray(src) ? src : [src];
   return list.find((s) => s.endsWith('.' + profile)) ?? list[0];
 };
+/** Bài nhạc phát trước khi vào game (apps/client/src/ui/App.tsx): tính vào tải đầu. */
+const PRE_GAME_MUSIC = new Set(['title']);
 const audioBoot: Record<Profile, Entry[]> = { webm: [], m4a: [] };
 const audioLater: Record<Profile, Entry[]> = { webm: [], m4a: [] };
 for (const profile of ['webm', 'm4a'] as Profile[]) {
@@ -135,7 +137,11 @@ for (const profile of ['webm', 'm4a'] as Profile[]) {
   for (const e of Object.values(audio.sfx ?? {})) for (const v of e.variants ?? []) if (v.file) loose.add(pick(v.file, profile));
   for (const f of loose) audioBoot[profile].push(measure('audio', '/audio/' + f, 'sfx lẻ'));
   for (const [kind, table] of [['ambient', audio.ambient], ['music', audio.music]] as const) {
-    for (const [id, e] of Object.entries(table ?? {})) audioLater[profile].push(measure('audio', '/audio/' + pick(e.src, profile), `${kind} ${id}`));
+    for (const [id, e] of Object.entries(table ?? {})) {
+      // Nhạc chủ đề phát ở màn đăng nhập/màn tải (App.tsx) nên tải trước khi vào game.
+      const pre = kind === 'music' && PRE_GAME_MUSIC.has(id);
+      (pre ? audioBoot : audioLater)[profile].push(measure('audio', '/audio/' + pick(e.src, profile), `${kind} ${id}${pre ? ' (màn tiêu đề)' : ''}`));
+    }
   }
 }
 
