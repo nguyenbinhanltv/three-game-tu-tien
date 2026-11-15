@@ -8,3 +8,7 @@
 - `node tools/icons/build.mjs --preview <absolute-artifact-path>/icon-sheet.html`: xuất trang tự chứa ảnh để duyệt cả 29 icon ở 48, 64, 128px. Đăng ký trang bằng Orchestrator artifact.
 
 `icon` là ID ổn định, `iconFallback` giữ emoji cũ. `ContentIcon` dùng chung cho HUD, túi đồ, trang bị, cửa hàng, công thức, cường hóa và phần thưởng. Thiếu ID hoặc tải atlas lỗi thì hiện fallback. Các nhãn/tooltip vẫn lấy từ i18n của control cha.
+
+## Icon trang bị (28 món, P3-1/3-4)
+
+`tools/icons/equipment.mjs` dựng bằng Blender (`render_equipment.py`, bảng chất liệu và màu bộ ở đầu file: vải/da/thiết/ngọc/đồng/vân cho đồ thường; Lạc Kiếm ngà+lam, Huyền Giáp đen+đồng, Đan Tâm ngọc bích+vàng nhạt, Hàn Giao Lân bạc băng+lam ngọc cho đồ bộ), ghép lên nền và khung đồng cùng họ M4-7 rồi ghi PNG 1024 vào `<DTL_ASSET_SOURCE>/icons`. Không dùng Tripo hay dịch vụ ngoài. Chạy `node tools/icons/equipment.mjs [id…]` rồi `pnpm icons:build`. Danh sách lấy từ `data/equipment/templates.json` và `setItems.json` (có trong `defs` của `build.mjs`). Atlas 8×9; ô đã có giữ nguyên chỗ, icon mới lấp ô trống.

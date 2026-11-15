@@ -11,11 +11,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const sharp = createRequire(path.join(root, 'tools/asset-pipeline/package.json'))('sharp');
 const read = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const methods = read('packages/content/data/methods.json');
-const defs = [...read('packages/content/data/skills.json'), ...methods.skills, ...read('packages/content/data/items.json'), ...methods.items, ...read('packages/content/data/artifacts.json').items, ...read('packages/content/data/alchemy.json').items];
+const defs = [...read('packages/content/data/skills.json'), ...methods.skills, ...read('packages/content/data/items.json'), ...methods.items, ...read('packages/content/data/artifacts.json').items, ...read('packages/content/data/alchemy.json').items, ...read('packages/content/data/equipment/templates.json'), ...read('packages/content/data/equipment/setItems.json')];
 const out = path.join(root, 'apps/client/public/assets/ui');
 const manifestPath = path.join(out, 'icons.json');
 const hash = (data) => createHash('sha256').update(data).digest('hex');
-const size = 128, columns = 8, rows = 6;
+const size = 128, columns = 8, rows = 9;
 if (process.argv.includes('--check')) {
   const m = read('apps/client/public/assets/ui/icons.json');
   const bytes = fs.readFileSync(path.join(out, m.file));
@@ -45,17 +45,22 @@ const git = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-comm
 if (git.status !== 0 && !process.env.DTL_ASSET_SOURCE) throw new Error(git.stderr);
 const source = process.env.DTL_ASSET_SOURCE ?? path.resolve(path.dirname(git.stdout.trim()), '../dtl-asset-source');
 const icons = {}, layers = [];
+// Ô đã có giữ nguyên chỗ (không xáo atlas); icon mới lấp ô trống đầu tiên.
+const prev = fs.existsSync(manifestPath) ? read('apps/client/public/assets/ui/icons.json') : { icons: {} };
+const used = new Set(Object.values(prev.icons).map((c) => c.y * columns + c.x));
 let index = 0;
+const nextFree = () => { while (used.has(index)) index++; used.add(index); return index; };
 for (const def of defs) {
   if (def.icon !== def.id) throw new Error(`Expected stable image id: ${def.id}`);
   const file = path.join(source, 'icons', `${def.icon}.png`);
   // Chưa có tranh gốc: không chiếm ô, client dùng emoji `iconFallback`.
   if (!fs.existsSync(file)) { console.log(`Bỏ qua (chưa có PNG): ${def.icon}`); continue; }
   const input = fs.readFileSync(file);
+  const old = prev.icons[def.icon];
+  const cellIndex = old && old.y * columns + old.x < columns * rows ? old.y * columns + old.x : nextFree();
   // Sức chứa chỉ tính vật phẩm có tranh gốc; còn lại dùng emoji `iconFallback`.
-  if (index >= columns * rows) throw new Error('Atlas capacity exceeded');
-  const x = index % columns, y = Math.floor(index / columns);
-  index++;
+  if (cellIndex >= columns * rows) throw new Error('Atlas capacity exceeded');
+  const x = cellIndex % columns, y = Math.floor(cellIndex / columns);
   icons[def.icon] = { x, y, sourceSha256: hash(input), sourceBytes: input.length };
   layers.push({ input: await sharp(input).resize(size, size, { fit: 'cover' }).png().toBuffer(), left: x * size, top: y * size });
 }
@@ -91,7 +96,7 @@ if (previewIndex >= 0) {
     const name = names[`item.${def.id}.name`] ?? names[`skill.${def.id}.name`] ?? def.id;
     return `<article><h2>${name}</h2><code>${def.id}</code><div class="samples">${[48,64,128].map((s) => `<figure><i style="width:${s}px;height:${s}px;background-position:${x/(columns-1)*100}% ${y/(rows-1)*100}%"></i><figcaption>${s}px</figcaption></figure>`).join('')}</div></article>`;
   }).join('');
-  const html = `<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Đạp Thiên Lộ — Icon M4-7</title><style>body{background:#123B45;color:#DCE6DF;font:16px system-ui;margin:32px}h1{color:#F2C47E}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:20px}article{border:1px solid #AE8B49;padding:16px;border-radius:8px}h2{font-size:18px}code{font-size:12px}.samples{display:flex;align-items:center;gap:12px}figure{margin:12px 0}figcaption{font-size:12px;text-align:center}i{display:block;background-image:url(data:image/webp;base64,${webp.toString('base64')});background-size:${columns*100}% ${rows*100}%}</style><h1>Đạp Thiên Lộ · 29 icon</h1><p>6 skill · 23 vật phẩm · ${columns*size} × ${rows*size} · ${webp.length.toLocaleString('vi-VN')} byte WebP</p><p>Codex tạo riêng cho dự án · bán tả thực · ngọc lam và nắng sớm · khung đồng vuông vát góc.</p><main>${cards}</main></html>`;
+  const html = `<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Đạp Thiên Lộ — Icon M4-7</title><style>body{background:#123B45;color:#DCE6DF;font:16px system-ui;margin:32px}h1{color:#F2C47E}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:20px}article{border:1px solid #AE8B49;padding:16px;border-radius:8px}h2{font-size:18px}code{font-size:12px}.samples{display:flex;align-items:center;gap:12px}figure{margin:12px 0}figcaption{font-size:12px;text-align:center}i{display:block;background-image:url(data:image/webp;base64,${webp.toString('base64')});background-size:${columns*100}% ${rows*100}%}</style><h1>Đạp Thiên Lộ · ${defs.length} icon</h1><p>skill và vật phẩm · ${columns*size} × ${rows*size} · ${webp.length.toLocaleString('vi-VN')} byte WebP</p><p>Codex tạo riêng cho dự án · bán tả thực · ngọc lam và nắng sớm · khung đồng vuông vát góc.</p><main>${cards}</main></html>`;
   fs.writeFileSync(path.resolve(process.argv[previewIndex + 1]), html);
 }
 console.log(`${defs.length} icons → ${file}: ${webp.length} bytes`);
