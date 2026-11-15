@@ -325,6 +325,8 @@ export class EntityManager {
   private skins = new MonsterSkins();
   /** Dựng model người chơi (Thanh Phong có xương hoặc khối dự phòng), màu áo theo lựa chọn. */
   private playerSkins = new PlayerSkins();
+  /** Ngoại hình của mình: bóng tâm ma dựng theo đây (chỉ người độ mới thấy gần, và là bóng của chính mình). */
+  private localLook: PlayerLook = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
   /** Dựng model NPC (có xương theo id dữ liệu hoặc khối dự phòng). */
   private npcSkins = new NpcSkins();
   hasNpcs: boolean;
@@ -340,6 +342,10 @@ export class EntityManager {
     scene.add(this.group);
     this.skins.preload();
     this.playerSkins.preload();
+    this.skins.shadow = {
+      create: (def) => this.playerSkins.createShadow(this.localLook, def),
+      pending: () => this.playerSkins.shadowPending(this.localLook),
+    };
     // Bí cảnh có boss model xương: nạp ngay khi vào room (trước đó chỉ nạp khi boss hiện ra giữa trận).
     if (levelId === 'kiem_trung') this.skins.preloadLazy();
     this.hasNpcs = levelId === 'van_lam';
@@ -436,6 +442,7 @@ export class EntityManager {
       }
       v.s = s;
       const look = lookOf(s);
+      if (isLocal) this.localLook = look;
       const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         v.skinPending = this.playerSkins.pending(look);

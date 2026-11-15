@@ -49,6 +49,10 @@ export const C = {
   BREAKTHROUGH: 'brk',
   MOVE_ITEM: 'mv',
   PORTAL: 'portal',
+  /** Vượt bình cảnh: `{ m: 'trial' | 'pill', r? }` (r = khóa chống trùng khi dùng đan). */
+  BOTTLENECK: 'bk',
+  /** Đổi linh căn ở NPC: `{ npc, root, r? }`. */
+  ROOT: 'root',
 } as const;
 
 /** Server → client. */

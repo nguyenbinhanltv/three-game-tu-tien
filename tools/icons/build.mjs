@@ -24,15 +24,21 @@ if (process.argv.includes('--check')) {
   if (image.width !== size * columns || image.height !== size * rows) throw new Error('Atlas dimensions mismatch');
   const cells = new Set();
   const licenses = fs.readFileSync(path.join(root, 'assets/LICENSES.md'), 'utf8');
+  let fallbackOnly = 0;
   for (const def of defs) {
     const cell = m.icons[def.icon];
+    // Atlas đã đầy (8×4): vật phẩm mới chưa có tranh thì dùng emoji `iconFallback` (client tự lùi), vẫn báo số lượng.
+    if (!cell && def.iconFallback) {
+      fallbackOnly++;
+      continue;
+    }
     if (!cell || !def.iconFallback || !licenses.includes(def.icon)) throw new Error(`Missing icon/fallback/license: ${def.id}`);
     if (!Number.isInteger(cell.x) || !Number.isInteger(cell.y) || cell.x < 0 || cell.x >= columns || cell.y < 0 || cell.y >= rows) throw new Error(`Invalid cell: ${def.id}`);
     const key = `${cell.x},${cell.y}`;
     if (cells.has(key)) throw new Error(`Duplicate cell: ${def.id}`);
     cells.add(key);
   }
-  console.log(`Icons OK: ${defs.length}, ${m.bytes} bytes, ${image.width}x${image.height}`);
+  console.log(`Icons OK: ${defs.length - fallbackOnly}/${defs.length} có tranh trong atlas (${fallbackOnly} dùng emoji dự phòng), ${m.bytes} bytes, ${image.width}x${image.height}`);
   process.exit(0);
 }
 const git = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
