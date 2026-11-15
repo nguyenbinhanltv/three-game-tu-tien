@@ -10,8 +10,31 @@
   "def": "phòng ngự",
   "posture": "thế",
   "posture_broken": "mất thế",
-  "realms": ["Ngưng Khí", "Trúc Cơ", "Kết Đan", "Nguyên Anh", "Hóa Thần", "Anh Biến", "Vấn Đỉnh", "Âm Hư", "Dương Thực", "Khuy Niết", "Tịnh Niết", "Toái Niết", "Không Niết", "Không Linh", "Không Huyền", "Không Kiếp", "Đạp Thiên"],
-  "stages": ["sơ kỳ", "trung kỳ", "hậu kỳ", "đại viên mãn"],
+  "realms": [
+    "Ngưng Khí",
+    "Trúc Cơ",
+    "Kết Đan",
+    "Nguyên Anh",
+    "Hóa Thần",
+    "Anh Biến",
+    "Vấn Đỉnh",
+    "Âm Hư",
+    "Dương Thực",
+    "Khuy Niết",
+    "Tịnh Niết",
+    "Toái Niết",
+    "Không Niết",
+    "Không Linh",
+    "Không Huyền",
+    "Không Kiếp",
+    "Đạp Thiên"
+  ],
+  "stages": [
+    "sơ kỳ",
+    "trung kỳ",
+    "hậu kỳ",
+    "đại viên mãn"
+  ],
   "actions": {
     "meditate": "đả tọa",
     "fly": "ngự kiếm",
@@ -25,5 +48,50 @@
     "chant_guard": "hộ chú",
     "interrupt": "phá chú",
     "stun": "choáng"
+  },
+  "equipSlots": {
+    "weapon": "Pháp kiếm",
+    "robe": "Đạo bào",
+    "bracer": "Hộ uyển",
+    "boots": "Vân ngoa",
+    "belt": "Đai lưng",
+    "jade": "Ngọc bội",
+    "ring": "Giới chỉ",
+    "artifact": "Pháp bảo phụ"
+  },
+  "qualities": [
+    "Phàm phẩm",
+    "Linh phẩm",
+    "Huyền phẩm",
+    "Địa phẩm",
+    "Thiên phẩm"
+  ],
+  "elements": {
+    "kim": "Kim",
+    "moc": "Mộc",
+    "thuy": "Thủy",
+    "hoa": "Hỏa",
+    "tho": "Thổ"
+  },
+  "bottleneck": "bình cảnh",
+  "inner_demon": "tâm ma",
+  "spirit_root": "linh căn",
+  "pill_breakthrough": "Phá Cảnh Đan",
+  "inner_demon_boss": "Tâm Ma Ảnh",
+  "elite": "Tinh anh",
+  "gear": {
+    "itm_ho_uyen_vai": "Bố Hộ Uyển",
+    "itm_ho_uyen_da": "Bì Hộ Uyển",
+    "itm_ho_uyen_thiet": "Huyền Thiết Hộ Uyển",
+    "itm_van_ngoa_vai": "Bố Vân Ngoa",
+    "itm_van_ngoa_da": "Bì Vân Ngoa",
+    "itm_van_ngoa_van": "Lưu Vân Ngoa",
+    "itm_dai_lung_vai": "Bố Đai Lưng",
+    "itm_dai_lung_da": "Bì Đai Lưng",
+    "itm_dai_lung_ngoc": "Ngọc Văn Đai Lưng",
+    "itm_ngoc_boi_moc": "Mộc Ngọc Bội",
+    "itm_ngoc_boi_thanh": "Thanh Tâm Ngọc Bội",
+    "itm_ngoc_boi_linh": "Linh Tuyền Ngọc Bội",
+    "itm_gioi_chi_dong": "Đồng Giới Chỉ"
   }
 }

@@ -10,6 +10,7 @@ import {
   type BoltMsg,
   boltXZ,
   boltYaws,
+  bottleneckReady,
   bossPhaseAt,
   fxSeed,
   parseAppearance,
@@ -22,11 +23,19 @@ import {
   type DmgMsg,
   enhanceChance,
   enhanceCost,
+  BIND_QUALITY,
+  rollEquipDrops,
+  sellPrice,
   type EquipSlot,
+  type InvItem,
+  type Quality,
+  QUALITY_COUNT,
   FLY_UNLOCK_LEVEL,
   type FxMsg,
   AIRBORNE_HEIGHT,
+  elemDamageMul,
   GCD,
+  initialBottleneck,
   hazardHit,
   HP_REGEN_IDLE,
   HP_REGEN_MEDITATE,
@@ -90,12 +99,13 @@ import {
   xpLevelFactor,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ENHANCE_ORE, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
+import { APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
 import { type Character, isEquipSlot } from './character';
 import type { TestFlags } from '../testflags';
+import { RealmSystem } from './realm';
 
 /**
  * Seed hình cho FX (tia sét, mưa kiếm, mây kiếp). Lấy từ `crypto`, KHÔNG từ `Math.random`: seed gửi
@@ -135,6 +145,8 @@ export interface PlayerEnt {
   gcdAt: number;
   cds: Map<string, number>;
   itemCdAt: number;
+  /** Mặc/tháo đồ: tối thiểu 200 ms giữa hai lần (mỗi lần là một giao dịch DB + dòng ledger). */
+  equipCdAt: number;
   casting: { skill: SkillDef; target: string; endAt: number } | null;
   shield: { amount: number; until: number } | null;
   lastCombatAt: number;
@@ -143,6 +155,8 @@ export interface PlayerEnt {
   meditating: boolean;
   xpAcc: number;
   trib: { endAt: number; nextAt: number; n: number } | null;
+  /** Thử thách tâm ma đang chạy (P3-7): hết giờ `endAt`, bóng `monId`, chỗ bắt đầu (x, z). Xem `game/realm.ts`. */
+  trial: { endAt: number; monId: string; x: number; z: number } | null;
   warnAt: number;
   chatAt: number;
   msgWindowAt: number;
@@ -182,6 +196,8 @@ export interface MonEnt {
   evadeUntil: number;
   abilityAt: number;
   threat: Map<string, number>;
+  /** sid chủ của quái riêng (bóng tâm ma): chỉ đánh và bị đánh bởi người này, không rơi đồ/tu vi. '' = quái thường. */
+  owner: string;
   /** Ô cận chiến: giữ tới lúc này; không được giành lại trước `slotCdAt`. */
   slotUntil: number;
   slotCdAt: number;
@@ -291,6 +307,27 @@ export class GameSim {
   private nextId = 1;
   tickMs = 0;
   tickSamples: number[] = [];
+  /** Bình cảnh, tâm ma, linh căn (P3-7). */
+  readonly realm = new RealmSystem({
+    now: () => this.now,
+    inWorld: () => this.opts.levelId === 'van_lam',
+    isDead: (p) => this.isDead(p),
+    nearNpc: (p, id) => this.nearNpc(p, id),
+    idem: (p, r) => this.idem(p, r),
+    warn: (p, k, params) => this.warn(p, k, params),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    fx: (m) => this.fx(m),
+    spawnShadow: (p, st) => this.spawnShadow(p, st),
+    dismissShadow: (id) => {
+      const m = this.monById.get(id);
+      if (m) this.removeMonster(m);
+    },
+    stopMeditate: (p) => this.setMeditating(p, false),
+    savePlayer: (p) => this.savePlayer(p),
+    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
+    inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
+    player: (sid) => this.players.get(sid),
+  });
 
   constructor(
     public state: WorldState,
@@ -331,13 +368,14 @@ export class GameSim {
     return { x: cx, z: cz };
   }
 
-  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src'>): void {
+  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void {
     const m: SysMsg = { k };
     if (params) m.p = params;
     if (type) m.t = type;
     // Đồ rơi (M4-6): chỉ là thứ đã vào túi (sau transaction), để client vẽ đồ nảy ra từ xác quái.
     if (drop?.i) m.i = drop.i;
     if (drop?.src) m.src = drop.src;
+    if (drop?.q !== undefined) m.q = drop.q;
     p.client.send(S.SYS, m);
   }
 
@@ -418,6 +456,7 @@ export class GameSim {
       gcdAt: 0,
       cds: new Map(),
       itemCdAt: 0,
+      equipCdAt: 0,
       casting: null,
       shield: null,
       lastCombatAt: 0,
@@ -425,6 +464,7 @@ export class GameSim {
       meditating: false,
       xpAcc: 0,
       trib: null,
+      trial: null,
       warnAt: 0,
       chatAt: 0,
       msgWindowAt: this.now,
@@ -461,6 +501,7 @@ export class GameSim {
     const p = this.players.get(sid);
     if (!p) return;
     if (p.trib) this.endTribulation(p, false, true);
+    this.realm.onLeave(p);
     this.savePlayer(p);
     this.meleeSlot.delete(sid);
     this.slotWait.delete(sid);
@@ -634,6 +675,7 @@ export class GameSim {
       p.budget -= STEP;
     }
 
+    this.realm.tick(p);
     const dead = this.isDead(p);
     if (!dead) {
       if (p.move.flying) {
@@ -669,7 +711,10 @@ export class GameSim {
     if (n <= 0) return;
     const c = p.char;
     const before = c.level;
+    const wasReady = bottleneckReady(c.level, c.bk, c.xp, xpNeed(c.level));
     const ups = c.gainXp(n);
+    // Vừa đầy tu vi ở tầng 5/10/15 chưa vượt: báo một lần rằng đang kẹt bình cảnh.
+    if (!wasReady && bottleneckReady(c.level, c.bk, c.xp, xpNeed(c.level))) this.sys(p, 'sys.bk_blocked', undefined, 'info');
     if (announce) this.sys(p, 'sys.xp', { n }, 'xp');
     if (ups > 0) {
       this.sys(p, 'sys.levelup', { realm: realmName(c.level) }, 'good');
@@ -779,7 +824,7 @@ export class GameSim {
         if (!mon) break;
         this.fx(skill.fx === 'thunder' ? { t: skill.fx, src: p.sid, dst: mon.id, sd: visualSeed() } : { t: skill.fx, src: p.sid, dst: mon.id });
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
-        this.hitMonster(p, mon, skill.power);
+        this.hitMonster(p, mon, skill.power, elemDamageMul(p.char.stats.elemDmg, skill.elem));
         if (skill.interrupt) this.tryInterrupt(p, mon);
         break;
       }
@@ -794,12 +839,12 @@ export class GameSim {
           if (o.state === MS_DEAD) continue;
           const dx = o.s.x - cx;
           const dz = o.s.z - cz;
-          if (dx * dx + dz * dz <= r * r) this.hitMonster(p, o, skill.power);
+          if (dx * dx + dz * dz <= r * r) this.hitMonster(p, o, skill.power, elemDamageMul(p.char.stats.elemDmg, skill.elem));
         }
         break;
       }
       case 'heal': {
-        const n = Math.round(c.mhp * skill.power);
+        const n = Math.round(c.mhp * skill.power * (1 + c.stats.healRecv));
         c.hp = Math.min(c.mhp, c.hp + n);
         this.fx({ t: skill.fx, src: p.sid });
         this.host.broadcast(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
@@ -815,8 +860,9 @@ export class GameSim {
     this.sendCd(p);
   }
 
-  private hitMonster(p: PlayerEnt, mon: MonEnt, power: number): void {
-    const { dmg, crit } = computeDamage(p.char.atk, power, mon.defn, Math.random(), Math.random());
+  /** `mul`: hệ số sát thương hệ (linh căn, dòng phụ); không đổi việc đòn có nặng hay không (theo `power` gốc). */
+  private hitMonster(p: PlayerEnt, mon: MonEnt, power: number, mul = 1): void {
+    const { dmg, crit } = computeDamage(p.char.atk, power * mul, mon.defn, Math.random(), Math.random(), p.char.stats.critRate, p.char.stats.critMul);
     const stunned = this.now < mon.stunUntil;
     const heavy = isHeavyHit(power);
     // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
@@ -945,6 +991,8 @@ export class GameSim {
 
   damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv): void {
     if (mon.state === MS_DEAD) return;
+    // Bóng tâm ma chỉ bị chủ đánh: người khác (kể cả vùng nổ lan sang) không làm gì được.
+    if (mon.owner && p?.sid !== mon.owner) return;
     if (this.now < mon.evadeUntil) {
       this.host.broadcast(S.DMG, { dst: mon.id, n: 0 } satisfies DmgMsg);
       return;
@@ -999,6 +1047,12 @@ export class GameSim {
     this.resetAi(mon);
     if (mon.spawn) mon.respawnAt = this.now + mon.spawn.respawn * 1000;
     else mon.removeAt = this.now + 4000;
+    if (mon.owner) {
+      // Bóng tâm ma: không tu vi, không rơi đồ, không tính nhiệm vụ; chỉ báo cho hệ bình cảnh.
+      mon.threat.clear();
+      this.realm.onShadowDown(mon);
+      return;
+    }
     const xp = monsterXp(mon.level, mon.def.xpMul);
     const minShare = mon.s.mhp * 0.05;
     for (const [sid, dealt] of mon.threat) {
@@ -1027,11 +1081,19 @@ export class GameSim {
     for (const d of loot.drops) {
       if (Math.random() < d.chance) got.push({ id: d.item, n: d.min + Math.floor(Math.random() * (d.max - d.min + 1)) });
     }
+    // Trang bị đã roll (Phase 3-2): phẩm, ô, ilvl chọn ở server; dòng chính/phụ roll trong addRolled (seed vào ledger).
+    const gear = rollEquipDrops(loot.equip, ITEM_SYS, ITEMS, mon.level, Math.random);
     // Vàng luôn vào túi; vật phẩm nào không còn chỗ thì bỏ.
     const kept: { id: string; n: number }[] = [];
+    const keptGear: { id: string; q: Quality; ilvl: number }[] = [];
     let full = false;
-    p.char.tx('loot:' + mon.def.id, null, (d) => {
+    const saved = p.char.tx('loot:' + mon.def.id, null, (d) => {
       d.addGold(gold);
+      for (const g of gear) {
+        // addRolled chỉ đụng túi khi còn chỗ; hết chỗ thì món đó bỏ, bản nháp vẫn dùng được.
+        if (d.freeSlots() > 0 && d.addRolled(g.id, g.ilvl, g.q)) keptGear.push(g);
+        else full = true;
+      }
       for (const g of got) {
         const def = ITEM.get(g.id)!;
         // Kiểm tra trước để một món không vừa không làm hỏng cả bản nháp.
@@ -1041,8 +1103,14 @@ export class GameSim {
       }
       return true;
     });
+    // Ghi DB lỗi: túi/ví không đổi nên không báo gì (tránh báo Thiên phẩm giả cho cả phòng).
+    if (!saved) return;
     if (gold > 0) this.sys(p, 'sys.gold', { n: gold }, 'loot', { src: mon.id });
     for (const g of kept) this.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id, src: mon.id });
+    for (const g of keptGear) {
+      this.sys(p, 'sys.loot_gear', { item: itemName(g.id), quality: t('ui.quality.' + g.q) }, 'loot', { i: g.id, src: mon.id, q: g.q });
+      if (g.q >= 4) this.sysAll('sys.loot_heaven', { name: p.char.name, item: itemName(g.id) }, 'good');
+    }
     if (full) this.warn(p, 'sys.inv_full');
   }
 
@@ -1081,6 +1149,9 @@ export class GameSim {
     p.s.fl = PF_DEAD;
     if (p.trib) {
       this.endTribulation(p, false, false);
+    } else if (p.trial) {
+      // Chết trong thử thách tâm ma: thua ngay, không mất tu vi (đúng lời hứa của UI), đợi 60 giây thử lại.
+      this.realm.failTrial(p, 'dead');
     } else {
       const lost = c.loseXp(DEATH_XP_LOSS);
       this.sys(p, 'sys.died', { n: lost }, 'bad');
@@ -1149,6 +1220,7 @@ export class GameSim {
       evadeUntil: 0,
       abilityAt: 0,
       threat: new Map(),
+      owner: '',
       slotUntil: 0,
       slotCdAt: 0,
       slotSid: '',
@@ -1398,7 +1470,7 @@ export class GameSim {
         let best: PlayerEnt | null = null;
         let bestD = def.aggro * def.aggro;
         for (const p of this.players.values()) {
-          if (this.isDead(p)) continue;
+          if (this.isDead(p) || (m.owner && p.sid !== m.owner)) continue;
           const dx = p.move.x - m.s.x;
           const dz = p.move.z - m.s.z;
           const dy = p.move.y - m.s.y;
@@ -1487,7 +1559,7 @@ export class GameSim {
     const dz = target.move.z - m.s.z;
     const d = Math.sqrt(dx * dx + dz * dz);
     const dy = target.move.y - m.s.y;
-    if (this.homeDist(m) > leash || d > 70) {
+    if ((!m.owner && this.homeDist(m) > leash) || d > 70) {
       m.target = '';
       this.setMonState(m, MS_RETURN);
       return;
@@ -1723,12 +1795,41 @@ export class GameSim {
     if (this.isDead(p) || p.trib || this.opts.levelId !== 'van_lam') return this.warn(p, 'sys.trib_not_now');
     if (c.level !== NGUNG_KHI_MAX) return this.warn(p, c.level > NGUNG_KHI_MAX ? 'sys.max_level' : 'sys.trib_need_xp');
     if (c.xp < xpNeed(c.level)) return this.warn(p, 'sys.trib_need_xp');
+    // Bình cảnh tầng 15 phải vượt (tâm ma hoặc Phá Cảnh Đan) trước khi độ kiếp.
+    if (c.bk < NGUNG_KHI_MAX) return this.warn(p, 'sys.bk_blocked');
     if (!c.tx('tribulation', null, (d) => d.remove(TRUC_CO_PILL, 1))) return this.warn(p, 'sys.trib_need_pill');
     if (p.meditating) this.setMeditating(p, false);
     p.trib = { endAt: this.now + TRIBULATION_DURATION * 1000, nextAt: this.now + 3000, n: 0 };
     this.setFlag(p, PF_TRIBULATION, true);
     this.sysAll('sys.trib_start', { name: c.name }, 'info');
     this.fx({ t: 'tribstart', src: p.sid, d: TRIBULATION_DURATION, sd: visualSeed() });
+  }
+
+  // ---------- bình cảnh, linh căn (P3-7; phần luật ở game/realm.ts) ----------
+
+  onBottleneck(p: PlayerEnt, msg: unknown): void {
+    this.realm.onBottleneck(p, msg);
+  }
+
+  onChangeRoot(p: PlayerEnt, msg: unknown): void {
+    this.realm.onChangeRoot(p, msg);
+  }
+
+  /** Bóng tâm ma của `p`: quái riêng, đứng trước mặt người chơi, đuổi đúng người đó. */
+  private spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }): MonEnt | null {
+    const def = MONSTER.get('mon_tam_ma');
+    if (!def) return null;
+    const x = p.move.x + Math.sin(p.s.yaw) * 7;
+    const z = p.move.z + Math.cos(p.s.yaw) * 7;
+    const m = this.spawnMonster(def, p.char.level, x, z, null);
+    m.owner = p.sid;
+    m.atk = st.atk;
+    m.defn = st.def;
+    m.s.mhp = st.hp;
+    m.s.hp = st.hp;
+    m.target = p.sid;
+    this.setMonState(m, MS_CHASE);
+    return m;
   }
 
   private tickTribulation(p: PlayerEnt): void {
@@ -1823,13 +1924,13 @@ export class GameSim {
     const it = c.inv[slot];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def) return;
-    if (def.kind === 'weapon' || def.kind === 'robe' || def.kind === 'accessory') return this.onEquip(p, { slot });
+    if (isEquipSlot(def.kind)) return this.onEquip(p, { slot, r: m.r });
     if (!def.use) return;
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
     if (!c.tx('use:' + def.id, idem, (d) => !!d.removeAt(slot, 1))) return;
     p.itemCdAt = this.now + def.use.cd * 1000;
     if (def.use.hpPct) {
-      const n = Math.round(c.mhp * def.use.hpPct);
+      const n = Math.round(c.mhp * def.use.hpPct * (1 + c.stats.healRecv));
       c.hp = Math.min(c.mhp, c.hp + n);
       this.host.broadcast(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
     }
@@ -1839,17 +1940,31 @@ export class GameSim {
   }
 
   onEquip(p: PlayerEnt, msg: unknown): void {
-    const slot = (msg as { slot?: unknown } | null)?.slot;
+    const m = msg as { slot?: unknown; r?: unknown } | null;
+    const slot = m?.slot;
     if (!Number.isInteger(slot) || (slot as number) < 0 || (slot as number) >= INV_SIZE || this.isDead(p)) return;
+    // Đang tâm ma: không đổi trang bị (bóng dựng theo chỉ số lúc bắt đầu).
+    if (p.trial) return this.warn(p, 'sys.busy');
+    const idem = this.idem(p, m?.r);
+    if (idem === undefined || this.now < (p.equipCdAt ?? 0)) return;
+    p.equipCdAt = this.now + 200;
     const c = p.char;
     const it = c.inv[slot as number];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def || !isEquipSlot(def.kind)) return;
     if ((def.reqLevel ?? 1) > c.level) return this.warn(p, 'sys.equip_level');
     const es = def.kind as EquipSlot;
-    const ok = c.tx('equip', null, (d) => {
+    // Đổi đồ không sinh/mất vật phẩm nên ledger ghi một dòng 'noop' có khóa idem và lý do (món vào/ra) để truy vết.
+    const prev0 = c.equip[es];
+    const ok = c.tx(`equip:${es}:${it.id}${prev0 ? '<-' + prev0.id : ''}`, idem, (d) => {
       const prev = d.equip[es];
-      d.equip[es] = { ...d.inv[slot as number]! };
+      const cur = d.inv[slot as number];
+      // Bản nháp là bản sao của túi hiện tại; kiểm lại để món ở ô đó không đổi giữa lúc đọc và lúc ghi.
+      if (!cur || cur.id !== it.id) return false;
+      const next: InvItem = { ...cur };
+      // Địa/Thiên phẩm ràng buộc khi mặc (không giao dịch được nữa).
+      if (next.inst && next.inst.q >= BIND_QUALITY && !next.inst.bound) next.inst = { ...next.inst, bound: true };
+      d.equip[es] = next;
       d.inv[slot as number] = prev ? { ...prev } : null;
       return true;
     });
@@ -1857,18 +1972,27 @@ export class GameSim {
   }
 
   onUnequip(p: PlayerEnt, msg: unknown): void {
-    const es = (msg as { slot?: unknown } | null)?.slot;
+    const m = msg as { slot?: unknown; r?: unknown } | null;
+    const es = m?.slot;
     if (!isEquipSlot(es) || this.isDead(p)) return;
+    if (p.trial) return this.warn(p, 'sys.busy');
+    const idem = this.idem(p, m?.r);
+    if (idem === undefined || this.now < (p.equipCdAt ?? 0)) return;
+    p.equipCdAt = this.now + 200;
     const c = p.char;
-    if (!c.equip[es]) return;
-    const ok = c.tx('unequip', null, (d) => {
+    const worn = c.equip[es];
+    if (!worn) return;
+    const ok = c.tx(`unequip:${es}:${worn.id}`, idem, (d) => {
       const i = d.inv.findIndex((s) => !s);
-      if (i < 0) return false;
+      if (i < 0 || !d.equip[es]) return false;
       d.inv[i] = { ...d.equip[es]! };
       delete d.equip[es];
       return true;
     });
-    if (!ok) return this.warn(p, 'sys.inv_full');
+    if (!ok) {
+      if (c.txFail === 'abort') this.warn(p, 'sys.inv_full');
+      return;
+    }
     c.recalc();
   }
 
@@ -1934,7 +2058,8 @@ export class GameSim {
     const it = p.char.inv[slot];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def || it.n < n || def.sell <= 0) return;
-    const gold = def.sell * n;
+    if (it.inst?.bound) return this.warn(p, 'sys.item_bound');
+    const gold = sellPrice(it, def) * n;
     const ok = p.char.tx('sell:' + def.id, idem, (d) => {
       if (!d.removeAt(slot, n)) return false;
       d.addGold(gold);
@@ -2126,6 +2251,7 @@ export class GameSim {
       case 'level': {
         const lv = Math.max(1, Math.min(18, Number(a[1]) | 0));
         c.level = lv;
+        c.bk = initialBottleneck(lv);
         c.xp = 0;
         c.recalc();
         c.hp = c.mhp;
@@ -2139,6 +2265,13 @@ export class GameSim {
       case 'gold':
         c.tx('gm', null, (d) => (d.addGold(Math.max(1, Number(a[1]) | 0)), true));
         return say('gold = ' + c.gold);
+      case 'roll': {
+        // /gm roll <mẫu trang bị> [phẩm 0-4] [ilvl]: roll một món (kiểm thử hệ trang bị 8 ô).
+        const q = Math.min(QUALITY_COUNT - 1, Math.max(0, Number(a[2] ?? 0) | 0));
+        const il = Math.max(1, Number(a[3] ?? c.level) | 0);
+        const ok = c.tx('gm', null, (d) => d.addRolled(a[1], il, q as Quality));
+        return say(ok ? `đã roll ${a[1]} phẩm ${q} ilvl ${il}` : 'roll <mẫu trang bị> [phẩm 0-4] [ilvl]');
+      }
       case 'give': {
         const ok = c.tx('gm', null, (d) => d.add(a[1], Math.max(1, Number(a[2] ?? 1) | 0)));
         return say(ok ? 'đã thêm ' + a[1] : 'không thêm được');

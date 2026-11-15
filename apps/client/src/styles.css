@@ -173,6 +173,20 @@ body {
     0 0 4px var(--c),
     0 0 2px #000;
 }
+.loot-fly.t3 {
+  --c: #c9a8f0;
+  box-shadow:
+    0 0 14px var(--c),
+    0 0 4px var(--c),
+    0 0 2px #000;
+}
+.loot-fly.t4 {
+  --c: #ffd45a;
+  box-shadow:
+    0 0 22px var(--c),
+    0 0 8px var(--c),
+    0 0 2px #000;
+}
 .k-btn.bag-pulse {
   animation: bag-pulse 0.42s ease-out;
 }
@@ -802,6 +816,31 @@ kbd {
   border: 1px solid #b48cff;
   border-radius: 10px;
   color: #e9dcff;
+}
+/* Letterbox mỏng suốt cảnh độ kiếp. Không z-index và render đầu `.hud` nên HUD (máu, kỹ năng, bản đồ, chat) vẽ đè lên dải đen. */
+.trib-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 6.5vh;
+  background: #000;
+  pointer-events: none;
+  animation: trib-bar-in 1.2s ease-out both;
+}
+.trib-bar-top {
+  top: 0;
+}
+.trib-bar-bot {
+  bottom: 0;
+}
+@keyframes trib-bar-in {
+  from {
+    transform: scaleY(0);
+    transform-origin: var(--o, top);
+  }
+}
+.trib-bar-bot {
+  --o: bottom;
 }
 .trib-title {
   font: 700 20px var(--serif);

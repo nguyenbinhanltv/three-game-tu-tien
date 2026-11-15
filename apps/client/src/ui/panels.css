@@ -45,8 +45,23 @@
 .reward-item[data-q='3'] {
   color: #c9a8ff;
 }
+.item-name[data-q='4'] {
+  color: #ffd45a;
+  text-shadow: 0 0 8px rgba(255, 190, 70, 0.4);
+}
 .item-stat {
   color: var(--k-sword);
+}
+.item-stat.good {
+  color: var(--k-jade);
+}
+.item-stat.bad {
+  color: var(--k-cinnabar-hi);
+}
+.item-stat.dim {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--k-text-dim);
 }
 .item-req {
   font-size: 12.5px;
@@ -77,6 +92,7 @@
   display: flex;
   gap: var(--k-s3);
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 .equip-cell {
   width: 58px;
@@ -746,4 +762,36 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   .action-row .k-btn span {
     display: none;
   }
+}
+
+/* ---------- bảng trang bị 8 ô (3-2) ---------- */
+.equip-board-grid {
+  display: grid;
+  grid-template-columns: 58px 1fr 58px;
+  gap: var(--k-s3);
+  align-items: stretch;
+}
+.equip-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-s2);
+}
+.equip-figure {
+  min-height: 200px;
+  display: grid;
+  place-items: center;
+  color: var(--k-edge-dim, #6a7a86);
+  max-height: 260px;
+}
+.equip-figure[data-q='0'] { color: #b5bdbb; }
+.equip-figure[data-q='1'] { color: #7ea25a; }
+.equip-figure[data-q='2'] { color: #5fa7d8; }
+.equip-figure[data-q='3'] { color: #b48cff; }
+.equip-figure[data-q='4'] { color: #f0b840; }
+.equip-figure svg {
+  max-height: 240px;
+}
+.equip-hint {
+  margin-top: var(--k-s2);
+  text-align: center;
 }

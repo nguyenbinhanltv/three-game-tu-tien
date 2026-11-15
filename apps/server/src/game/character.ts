@@ -1,15 +1,31 @@
+import { randomInt } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import {
   type Appearance,
   appearanceFromDb,
+  bottleneckBlocked,
+  initialBottleneck,
+  isRootId,
+  levelAfterBottleneck,
+  ROOT_IDS,
+  type RootId,
   type CharView,
-  enhanceMul,
+  computePlayerStats,
   EQUIP_SLOTS,
   type Equipment,
-  type EquipSlot,
   type InvItem,
   type InvSlot,
   INV_SIZE,
+  type ItemInst,
+  type EquippedEntry,
+  parseInst,
+  type PlayerStats,
+  type Quality,
+  QUALITY_COUNT,
+  rollItemInstance,
+  seededRng,
+  isEquipSlot,
+  MAX_ENHANCE,
   MAX_LEVEL,
   NGUNG_KHI_MAX,
   type ObjectiveType,
@@ -18,8 +34,8 @@ import {
   SPAWN_POINT,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ITEM, QUEST } from '@dtl/content';
-import { characters, db, items, ledger } from '../db';
+import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT } from '@dtl/content';
+import { characters, db, items, ledger, rootForName } from '../db';
 
 export interface CharMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
@@ -32,7 +48,11 @@ export class InvDraft {
   equip: Equipment;
   gold: number;
   itemDelta = new Map<string, number>();
+  /** Seed các lần roll trong bản nháp này; ghi vào lý do ledger để truy vết/tái hiện. */
+  rollSeeds: string[] = [];
   goldDelta = 0;
+  /** Linh căn mới (đổi ở NPC); ghi cùng transaction với phí linh thạch. */
+  root: RootId | '' = '';
 
   constructor(c: Character) {
     this.inv = c.inv.map((s) => (s ? { ...s } : null));
@@ -88,6 +108,33 @@ export class InvDraft {
     return true;
   }
 
+  /**
+   * Thêm một trang bị đã roll (không chồng được). `inst` do `rollItemInstance` ở server sinh ra.
+   * Trả về false nếu mẫu không phải trang bị hoặc túi đầy. Ghi ledger như mọi vật phẩm mới (theo id mẫu, +1).
+   */
+  addInstance(id: string, inst: ItemInst): boolean {
+    const def = ITEM.get(id);
+    if (!def || !isEquipSlot(def.kind)) return false;
+    const i = this.inv.findIndex((s) => !s);
+    if (i < 0) return false;
+    this.inv[i] = { id, n: 1, inst };
+    this.bump(id, 1);
+    return true;
+  }
+
+  /**
+   * Roll một trang bị mới từ mẫu `id` ở server (seed ngẫu nhiên thật, ghi vào ledger) rồi thêm vào túi.
+   * Nguồn duy nhất sinh `inst`: client không bao giờ gửi dòng chính/phụ.
+   */
+  addRolled(id: string, ilvl: number, q: Quality): boolean {
+    const def = ITEM.get(id);
+    if (!def || !isEquipSlot(def.kind) || !Number.isInteger(q) || q < 0 || q >= QUALITY_COUNT) return false;
+    const seed = randomInt(0x7fffffff);
+    if (!this.addInstance(id, rollItemInstance(ITEM_SYS, def.kind, ilvl, q, seededRng(seed)))) return false;
+    this.rollSeeds.push(`${seed}:q${q}:il${ilvl}`);
+    return true;
+  }
+
   /** Tiêu hao vật phẩm theo id. */
   remove(id: string, n: number): boolean {
     if (!Number.isInteger(n) || n <= 0 || this.count(id) < n) return false;
@@ -132,7 +179,7 @@ export class InvDraft {
 
 function sameSlot(a: InvSlot, b: InvSlot): boolean {
   if (!a || !b) return a === b;
-  return a.id === b.id && a.n === b.n && (a.plus ?? 0) === (b.plus ?? 0);
+  return a.id === b.id && a.n === b.n && (a.plus ?? 0) === (b.plus ?? 0) && JSON.stringify(a.inst ?? null) === JSON.stringify(b.inst ?? null);
 }
 
 export class Character {
@@ -155,10 +202,20 @@ export class Character {
   /** Ngoại hình đã kiểm (server quyết định; client chỉ gửi lựa chọn lúc tạo nhân vật). */
   appearance: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
 
+  /** Linh căn ngũ hành (`RootId`), gán lúc tạo nhân vật hoặc migration; đổi ở NPC (tx). */
+  root: RootId = 'kim';
+  /** Bình cảnh đã vượt cao nhất (0, 5, 10, 15). Tu vi chỉ tràn qua tầng 5/10/15 khi đã vượt. */
+  bk = 0;
+  /** Thử thách tâm ma: lúc kết thúc (ms; 0 = không chạy) và lúc được thử lại (ms). Không lưu DB. */
+  trialEndsAt = 0;
+  retryAt = 0;
+
   mhp = 1;
   mmp = 0;
   atk = 1;
   def = 0;
+  /** Chỉ số phụ từ dòng phụ trang bị (bạo kích, giảm hồi chiêu...). Xem `computePlayerStats`. */
+  stats!: PlayerStats;
 
   charDirty = true;
   invDirty = true;
@@ -176,7 +233,7 @@ export class Character {
   }
 
   /** `appearance` phải đã qua `parseAppearance` (rooms.ts); null = mặc định. */
-  static create(accountId: number, name: string, appearance: Appearance | null = null): Character {
+  static create(accountId: number, name: string, appearance: Appearance | null = null, root: RootId | null = null): Character {
     const base = playerBaseStats(1);
     const row = db
       .insert(characters)
@@ -193,6 +250,8 @@ export class Character {
         z: SPAWN_POINT.z,
         room: '',
         appearance: JSON.stringify(appearance ?? { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye }),
+        // Người chơi chọn thì theo, không thì thiên ý (ngẫu nhiên thật, server quyết).
+        root: root ?? ROOT_IDS[randomInt(ROOT_IDS.length)],
         updatedAt: Date.now(),
       })
       .returning({ id: characters.id })
@@ -217,8 +276,10 @@ export class Character {
     c.z = row.z;
     c.room = row.room;
     c.appearance = appearanceFromDb(APPEARANCE, row.appearance, row.name);
+    c.root = isRootId(row.root) ? row.root : rootForName(row.name);
+    c.bk = [0, 5, 10, 15].includes(row.bk) ? row.bk : initialBottleneck(row.level);
     try {
-      c.equip = JSON.parse(row.equip) as Equipment;
+      c.equip = sanitizeEquip(JSON.parse(row.equip));
       c.quests = JSON.parse(row.quests) as QuestView;
       c.meta = JSON.parse(row.meta) as CharMeta;
     } catch {
@@ -229,6 +290,8 @@ export class Character {
       if (r.slot >= 0 && r.slot < INV_SIZE && ITEM.has(r.itemId)) {
         const it: InvItem = { id: r.itemId, n: r.qty };
         if (r.plus > 0) it.plus = r.plus;
+        const inst = parseStoredInst(r.itemId, r.inst);
+        if (inst) it.inst = inst;
         c.inv[r.slot] = it;
       }
     }
@@ -238,29 +301,21 @@ export class Character {
     return c;
   }
 
-  /** Tính lại chỉ số từ cảnh giới + trang bị. */
+  /** Tính lại chỉ số từ cảnh giới + trang bị (8 ô, dòng chính + dòng phụ). */
   recalc(): void {
-    const b = playerBaseStats(this.level);
-    let hp = b.hp;
-    let mp = b.mp;
-    let atk = b.atk;
-    let def = b.def;
+    const worn: EquippedEntry[] = [];
     for (const k of EQUIP_SLOTS) {
       const e = this.equip[k];
-      const d = e ? ITEM.get(e.id) : undefined;
-      if (!d || !d.stats) continue;
-      const mul = enhanceMul(e!.plus ?? 0);
-      hp += Math.round((d.stats.hp ?? 0) * mul);
-      mp += Math.round((d.stats.mp ?? 0) * mul);
-      atk += Math.round((d.stats.atk ?? 0) * mul);
-      def += Math.round((d.stats.def ?? 0) * mul);
+      if (e) worn.push({ item: e, tpl: ITEM.get(e.id)?.stats });
     }
-    this.mhp = hp;
-    this.mmp = mp;
-    this.atk = atk;
-    this.def = def;
-    if (this.hp > hp) this.hp = hp;
-    if (this.mp > mp) this.mp = mp;
+    const st = computePlayerStats(this.level, worn, ROOT.get(this.root));
+    this.stats = st;
+    this.mhp = st.hp;
+    this.mmp = st.mp;
+    this.atk = st.atk;
+    this.def = st.def;
+    if (this.hp > st.hp) this.hp = st.hp;
+    if (this.mp > st.mp) this.mp = st.mp;
     this.charDirty = true;
   }
 
@@ -277,6 +332,10 @@ export class Character {
       atk: this.atk,
       def: this.def,
       gold: this.gold,
+      root: this.root,
+      bk: this.bk,
+      trial: this.trialEndsAt > 0 ? Math.max(0, Math.ceil((this.trialEndsAt - Date.now()) / 1000)) : 0,
+      retry: Math.max(0, Math.ceil((this.retryAt - Date.now()) / 1000)),
     };
   }
 
@@ -291,6 +350,7 @@ export class Character {
     db.update(characters)
       .set({
         level: this.level,
+        bk: this.bk,
         xp: Math.floor(this.xp),
         hp: Math.max(0, Math.ceil(this.hp)),
         mp: Math.max(0, Math.floor(this.mp)),
@@ -321,6 +381,7 @@ export class Character {
     try {
       db.transaction((tx) => {
         const rows: (typeof ledger.$inferInsert)[] = [];
+        if (d.rollSeeds.length) reason += ' roll=' + d.rollSeeds.join(',');
         if (d.goldDelta !== 0) rows.push({ charId: this.id, kind: 'gold', ref: '', delta: d.goldDelta, reason, ts });
         for (const [id, delta] of d.itemDelta) {
           if (delta !== 0) rows.push({ charId: this.id, kind: 'item', ref: id, delta, reason, ts });
@@ -335,15 +396,19 @@ export class Character {
           const b = d.inv[i];
           if (sameSlot(a, b)) continue;
           if (b) {
+            const inst = b.inst ? JSON.stringify(b.inst) : null;
             tx.insert(items)
-              .values({ charId: this.id, slot: i, itemId: b.id, qty: b.n, plus: b.plus ?? 0 })
-              .onConflictDoUpdate({ target: [items.charId, items.slot], set: { itemId: b.id, qty: b.n, plus: b.plus ?? 0 } })
+              .values({ charId: this.id, slot: i, itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst })
+              .onConflictDoUpdate({ target: [items.charId, items.slot], set: { itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst } })
               .run();
           } else {
             tx.delete(items).where(and(eq(items.charId, this.id), eq(items.slot, i))).run();
           }
         }
-        tx.update(characters).set({ gold: d.gold, equip: JSON.stringify(d.equip) }).where(eq(characters.id, this.id)).run();
+        tx.update(characters)
+          .set({ gold: d.gold, equip: JSON.stringify(d.equip), ...(d.root ? { root: d.root } : {}) })
+          .where(eq(characters.id, this.id))
+          .run();
       });
     } catch (e) {
       const msg = String((e as Error)?.message ?? e);
@@ -358,6 +423,10 @@ export class Character {
     this.inv = d.inv;
     this.equip = d.equip;
     this.gold = d.gold;
+    if (d.root && d.root !== this.root) {
+      this.root = d.root;
+      this.recalc();
+    }
     this.invDirty = true;
     this.charDirty = true;
     return true;
@@ -370,8 +439,9 @@ export class Character {
     this.xp += n;
     for (;;) {
       const need = xpNeed(this.level);
-      if (this.level === NGUNG_KHI_MAX || this.level >= MAX_LEVEL) {
-        // Viên mãn: phải độ kiếp mới lên tiếp, tu vi không vượt quá mức đầy.
+      if (this.level === NGUNG_KHI_MAX || this.level >= MAX_LEVEL || bottleneckBlocked(this.level, this.bk)) {
+        // Viên mãn hoặc kẹt bình cảnh (tầng 5/10/15 chưa vượt): phải độ kiếp / vượt bình cảnh mới lên tiếp,
+        // tu vi không vượt quá mức đầy.
         if (this.xp > need) this.xp = need;
         break;
       }
@@ -387,6 +457,24 @@ export class Character {
     }
     this.charDirty = true;
     return ups;
+  }
+
+  /**
+   * Vượt bình cảnh (thắng tâm ma hoặc dùng Phá Cảnh Đan). Server đã kiểm điều kiện. Tầng 5/10: lên một tầng, tu vi
+   * về 0 (tu vi không tràn qua bình cảnh). Tầng 15: chỉ mở đường độ kiếp, tu vi giữ đầy. Trả về tầng mới.
+   */
+  passBottleneck(): number {
+    this.bk = this.level;
+    const next = levelAfterBottleneck(this.level);
+    if (next !== this.level) {
+      this.level = next;
+      this.xp = 0;
+      this.recalc();
+      this.hp = this.mhp;
+      this.mp = this.mmp;
+    }
+    this.charDirty = true;
+    return this.level;
   }
 
   loseXp(frac: number): number {
@@ -440,6 +528,41 @@ export class Character {
   }
 }
 
-export function isEquipSlot(v: unknown): v is EquipSlot {
-  return v === 'weapon' || v === 'robe' || v === 'accessory';
+/** Đọc `inst` lưu trong DB; hỏng/vượt trần thì bỏ (món đó thành đồ cũ chỉ số mẫu). */
+function parseStoredInst(itemId: string, raw: string | null): ItemInst | null {
+  if (!raw) return null;
+  const kind = ITEM.get(itemId)?.kind;
+  if (!isEquipSlot(kind)) return null;
+  try {
+    const inst = parseInst(ITEM_SYS, kind, JSON.parse(raw));
+    if (!inst) console.warn('[load] inst trong túi bị bác, về chỉ số mẫu:', itemId);
+    return inst;
+  } catch {
+    return null;
+  }
 }
+
+/** Đọc JSON trang bị: chỉ giữ ô hợp lệ, mẫu còn tồn tại, đúng loại ô, `inst` đã qua kiểm. */
+function sanitizeEquip(raw: unknown): Equipment {
+  const out: Equipment = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const k of EQUIP_SLOTS) {
+    const e = (raw as Record<string, InvItem | undefined>)[k];
+    if (!e || typeof e.id !== 'string') continue;
+    const kind = ITEM.get(e.id)?.kind;
+    if (!kind) {
+      console.warn('[load] bỏ trang bị có mẫu không còn tồn tại:', e.id);
+      continue;
+    }
+    if (kind !== k) console.warn('[load] trang bị lệch ô (giữ nguyên):', e.id, 'ở', k);
+    const it: InvItem = { id: e.id, n: 1 };
+    if (e.plus && e.plus > 0) it.plus = Math.min(e.plus | 0, MAX_ENHANCE);
+    const inst = e.inst ? parseInst(ITEM_SYS, k, e.inst) : null;
+    if (inst) it.inst = inst;
+    else if (e.inst) console.warn('[load] inst trang bị bị bác, về chỉ số mẫu:', e.id, k);
+    out[k] = it;
+  }
+  return out;
+}
+
+export { isEquipSlot };

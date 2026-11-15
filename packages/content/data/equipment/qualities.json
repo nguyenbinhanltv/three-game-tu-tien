@@ -1,0 +1,7 @@
+[
+  { "id": 0, "color": "#e8e0cc", "affixes": 0, "affixFrac": 0 },
+  { "id": 1, "color": "#5fb88a", "affixes": 1, "affixFrac": 0.1 },
+  { "id": 2, "color": "#4a8fd0", "affixes": 2, "affixFrac": 0.15 },
+  { "id": 3, "color": "#9a7cc8", "affixes": 3, "affixFrac": 0.2 },
+  { "id": 4, "color": "#e0b84a", "affixes": 4, "affixFrac": 0.25 }
+]

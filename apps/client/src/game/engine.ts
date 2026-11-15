@@ -59,7 +59,7 @@ import { audioSpatialApi } from './soundscapeAudio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
 import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, Cutscene, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Vec3, type Waypoint } from './cutscene';
 import { LootFly } from './lootFly';
-import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
+import { gearLootTier, LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootColor, lootTier } from '../render/vfx/loot';
 import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
 import { EntityManager, type MonVis, type MState, type PState, type WorldView } from './entities';
 import { Environment } from './env';
@@ -98,6 +98,8 @@ export interface LoginOptions {
   name?: string;
   /** Ngoại hình chọn lúc tạo nhân vật; server kiểm và chỉ dùng khi tạo mới. */
   ap?: Appearance;
+  /** Linh căn chọn lúc tạo nhân vật (RootId); thiếu thì server gán ngẫu nhiên. Chỉ dùng khi tạo mới. */
+  rt?: string;
 }
 
 /**
@@ -333,6 +335,11 @@ export class Game {
   /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
   private cineKind: 'sect' | 'boss' | 'phase' = 'sect';
   private cineShakeAt = 0;
+  /** Cảnh độ kiếp của mình (P2-B4): 0..1 độ đậm của màu tối/tím toàn cảnh, và cờ đang trong cảnh (ẩn nhãn 3D). */
+  private tribMix = 0;
+  private tribScene = false;
+  /** Giờ kết thúc kiếp theo tin `tribstart`, giữ riêng để đồng bộ HUD không xoá nếu tin đến trước cờ trạng thái. */
+  private tribUntil = 0;
   /** Boss mà cảnh xuất hiện đang nhìn theo (vị trí hiện tại, vì boss đang chạy), và độ cao ngực so với chân. */
   private cineFocus: { id: string; rise: number; scale: number } | null = null;
   /** Boss đã được xét cảnh xuất hiện trong lần giao chiến này (xóa khi boss hồi/gục). */
@@ -1156,7 +1163,7 @@ export class Game {
     pushLog(text, type);
     if (type === 'good' || type === 'bad' || type === 'info') pushToast(text, type);
     // Đồ rơi từ quái/điểm hái (M4-6): vật có hình thì chuông ngân lúc chạm đất thay cho tiếng xu.
-    const shown = type === 'loot' && !!m.src && this.showLoot(m.src, m.i);
+    const shown = type === 'loot' && !!m.src && this.showLoot(m.src, m.i, m.q);
     if (type === 'loot' && (!shown || !m.i)) sfx('loot', 0.7);
     else if (type === 'bad') sfx('ui_error', 0.8);
     if (m.k === 'sys.fly_no_mp') {
@@ -1204,7 +1211,7 @@ export class Game {
    * Vẽ một món đồ rơi (M4-6) nảy ra từ quái/điểm hái `src`. `item` không có = vàng. Chỉ là lớp hình:
    * món đồ đã vào túi ở server. Trả false nếu không có vị trí để vẽ (nguồn đã mất khỏi trạng thái room).
    */
-  private showLoot(src: string, item: string | undefined): boolean {
+  private showLoot(src: string, item: string | undefined, q?: number): boolean {
     const v = this.vfx;
     const e = this.ents;
     if (!v || !e) return false;
@@ -1226,7 +1233,9 @@ export class Game {
     const slot = prev && now - prev.at < 600 ? prev.n + 1 : 0;
     this.lootSlots.set(src, { at: now, n: slot });
     if (this.lootSlots.size > 32) for (const [k, s] of this.lootSlots) if (now - s.at > 600) this.lootSlots.delete(k);
-    const tier = lootTier(def.rarity);
+    // Trang bị đã roll: bậc theo phẩm server gửi (Phàm..Thiên); còn lại theo `rarity` của mẫu.
+    const tier = q !== undefined ? gearLootTier(q) : lootTier(def.rarity);
+    const color = q !== undefined ? lootColor(tier, q) : undefined;
     const fallback = def.iconFallback ?? '❔';
     const land = v.lootDrop(
       from,
@@ -1242,10 +1251,11 @@ export class Game {
         const sy = _v.z > 1 ? h - 40 : Math.min(h - 20, Math.max(20, (-_v.y * 0.5 + 0.5) * h));
         this.lootFly.spawn(def.icon, fallback, sx, sy, tier);
       },
+      color,
     );
-    if (tier === 2) {
+    if (tier >= 2) {
       this.pruneRareLoot();
-      const hold = LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[2].hold + Math.min(slot, 5) * 0.12;
+      const hold = LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[tier].hold + Math.min(slot, 5) * 0.12;
       this.rareLoot.push({ key: src + ':' + item + ':' + now, item, pos: land, until: now + hold * 1000 });
     }
     return true;
@@ -1318,8 +1328,14 @@ export class Game {
         v.pillar(posSrc, 0xffe08a, 1.8, 1.4, 12);
         break;
       case 'ascend':
-        v.pillar(posSrc, 0xfff2b8, 3.2, 2.4, 40);
-        if (src === this.sid) this.post?.flash(0.6);
+        // Người khác thấy trụ sáng như cũ; của mình thì quầng + tia nắng mảnh để không phủ trắng khung hình.
+        if (src === this.sid) v.ascendGlow(posSrc);
+        else v.pillar(posSrc, 0xfff2b8, 3.2, 2.4, 40);
+        if (src === this.sid) {
+          this.post?.flash(0.3);
+          // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
+          window.setTimeout(() => !this.disposed && this.chapter('ascend', false), 1100);
+        }
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
       case 'respawn':
@@ -1384,7 +1400,8 @@ export class Game {
       case 'tribstart':
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) {
-          set({ tribEnd: Date.now() + (m.d ?? 40) * 1000 });
+          this.tribUntil = Date.now() + (m.d ?? 40) * 1000;
+          set({ tribEnd: this.tribUntil });
           this.chapter('trib');
         }
         break;
@@ -1770,8 +1787,25 @@ export class Game {
     this.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
     this.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
     if (this.cine.active) this.runCine(dt);
-    this.ents.tagsHidden = this.cine.active;
+    this.tribFx(dt);
+    this.ents.tagsHidden = this.cine.active || this.tribScene;
     updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
+  }
+
+  /**
+   * Cảnh độ kiếp (P2-B4): trong lúc cờ PF_TRIBULATION của mình bật, màu toàn cảnh chìm dần sang tối/tím (qua `pulse` của
+   * hậu kỳ) rồi trả về khi hết kiếp. Chỉ là lớp hình theo cờ server; cảnh boss đang chiếu thì nhường `pulse` cho cảnh đó.
+   */
+  private tribFx(dt: number): void {
+    const on = ((this.me()?.fl ?? 0) & PF_TRIBULATION) !== 0;
+    this.tribScene = on;
+    const was = this.tribMix;
+    this.tribMix = on ? Math.min(1, was + dt / 2.5) : Math.max(0, was - dt / 1.6);
+    if (this.tribMix === 0 && was === 0) return;
+    if (this.cine.active && this.cineKind !== 'sect') return;
+    const k = this.tribMix * this.tribMix * (3 - 2 * this.tribMix);
+    postParams.pulseColor.value.setRGB(0.3, 0.16, 0.55);
+    postParams.pulse.value = 0.7 * k;
   }
 
   /** Gửi (và gửi lại nếu server chưa nhận) chiêu đang chờ khi hết GCD/hồi chiêu. */
@@ -1926,7 +1960,7 @@ export class Game {
       fps: Math.round(st.fps ? st.fps * 0.6 + fps * 0.4 : fps),
       perf,
       autoAttack: this.autoAttack,
-      tribEnd: me.fl & PF_TRIBULATION ? st.tribEnd : 0,
+      tribEnd: me.fl & PF_TRIBULATION ? Math.max(st.tribEnd, this.tribUntil) : 0,
       castEnd: me.fl & PF_CASTING ? st.castEnd : 0,
     });
     this.checkChapters(rp.x, rp.z);
@@ -2011,12 +2045,12 @@ export class Game {
    * Hiện thẻ chương cho sự kiện cá nhân (C2): thẻ chữ + khung camera nhẹ + tiếng chiêng. Chỉ ở client,
    * không gửi gì lên server, không khóa input. Tắt trong Cài đặt thì bỏ qua cả ba.
    */
-  private chapter(kind: ChapterKind): void {
+  private chapter(kind: ChapterKind, sting = true): void {
     if (!get().chapterCards) return;
     const p = CHAPTER[kind];
     set({ chapter: { id: ++this.bossLineId, kind, until: Date.now() + p.card, dur: p.card } });
     this.camFrame.start(p);
-    chapterSting(0.9);
+    if (sting) chapterSting(0.9);
     // Thẻ chương/cảnh mở đầu: nhạc nền hạ thấp trong suốt thời gian thẻ để chiêng và chữ nổi lên (D2).
     duckHold('chapter', 0.5, p.card / 1000 + 0.3);
   }
@@ -2256,7 +2290,7 @@ export class Game {
     const out: { x: number; z: number; c: string; r: number }[] = [];
     if (!this.ents) return out;
     for (const m of this.ents.monsters.values()) {
-      if (m.s.st !== MS_DEAD) out.push({ x: m.x, z: m.z, c: m.model.def.boss ? '#ff9a3c' : '#e5534b', r: m.model.def.boss ? 4 : 2 });
+      if (m.s.st !== MS_DEAD) out.push({ x: m.x, z: m.z, c: m.model.def.boss ? '#ff9a3c' : m.model.def.elite ? '#7fd4ff' : '#e5534b', r: m.model.def.boss ? 4 : m.model.def.elite ? 3 : 2 });
     }
     for (const [sid, p] of this.ents.players) if (sid !== this.sid) out.push({ x: p.x, z: p.z, c: '#6fd0ff', r: 3 });
     for (const n of this.ents.npcs) out.push({ x: n.x, z: n.z, c: '#ffd84a', r: 3 });

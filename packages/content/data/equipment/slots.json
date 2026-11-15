@@ -1,0 +1,10 @@
+[
+  { "id": "weapon", "weight": 1.3, "main": { "atk": 1 } },
+  { "id": "robe", "weight": 1.2, "main": { "def": 0.5, "hp": 0.5 } },
+  { "id": "bracer", "weight": 0.7, "main": { "atk": 0.7, "def": 0.3 } },
+  { "id": "boots", "weight": 0.7, "main": { "def": 0.7, "hp": 0.3 } },
+  { "id": "belt", "weight": 0.8, "main": { "hp": 0.6, "mp": 0.4 } },
+  { "id": "jade", "weight": 0.7, "main": { "mp": 0.8, "hp": 0.2 } },
+  { "id": "ring", "weight": 0.6, "main": { "atk": 0.5, "hp": 0.5 } },
+  { "id": "artifact", "weight": 0, "main": {} }
+]

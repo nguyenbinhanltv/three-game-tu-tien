@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { type Appearance, genderEnabled, type Gender, parseAppearance, validName } from '@dtl/shared';
+import { type Appearance, genderEnabled, type Gender, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
 import { APPEARANCE, t } from '@dtl/content';
 import { assets } from '../game/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio';
@@ -7,6 +7,7 @@ import { TitleBackdrop } from '../game/backdrop';
 import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/preload';
 import { Hud } from './Hud';
+import { RootPicker } from './Realm';
 import { get, type Phase, set, useUI } from './store';
 
 const GOOGLE_CLIENT_ID = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_GOOGLE_CLIENT_ID ?? '';
@@ -102,6 +103,20 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
   );
 }
 
+const ROOT_KEY = 'dtl.root';
+
+/** Linh căn chọn lần trước (null = để thiên ý định đoạt). */
+function initialRoot(): RootId | null {
+  const q = new URLSearchParams(window.location.search).get('root');
+  if (isRootId(q)) return q;
+  try {
+    const v = localStorage.getItem(ROOT_KEY);
+    return isRootId(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 function Login() {
   const needName = useUI((s) => s.needName);
   const nameError = useUI((s) => s.nameError);
@@ -109,6 +124,12 @@ function Login() {
   const [token, setToken] = useState('');
   const [err, setErr] = useState('');
   const [look, setLookState] = useState(initialLook);
+  const [root, setRootState] = useState<RootId | null>(initialRoot);
+  const setRoot = (r: RootId | null) => {
+    setRootState(r);
+    if (r) localStorage.setItem(ROOT_KEY, r);
+    else localStorage.removeItem(ROOT_KEY);
+  };
   const setLook = (a: Appearance) => {
     setLookState(a);
     localStorage.setItem(LOOK_KEY, JSON.stringify(a));
@@ -117,16 +138,16 @@ function Login() {
   const submitDev = () => {
     if (!validName(name)) return setErr(t('ui.err.name_invalid'));
     localStorage.setItem('dtl.devName', name.trim());
-    Game.connect({ dev: name.trim(), ap: look });
+    Game.connect({ dev: name.trim(), ap: look, rt: root ?? undefined });
   };
   const submitName = () => {
     if (!validName(name)) return setErr(t('ui.err.name_invalid'));
-    Game.connect({ token, name: name.trim(), ap: look });
+    Game.connect({ token, name: name.trim(), ap: look, rt: root ?? undefined });
   };
   // Tiện cho kiểm thử: ?auto=<đạo hiệu> tự đăng nhập bằng tài khoản thử.
   useEffect(() => {
     const auto = new URLSearchParams(window.location.search).get('auto');
-    if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim(), ap: initialLook() });
+    if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim(), ap: initialLook(), rt: initialRoot() ?? undefined });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const onToken = (tk: string) => {
@@ -144,6 +165,7 @@ function Login() {
             <input autoFocus value={name} maxLength={14} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submitName()} />
             <div className="login-hint">{t('ui.login.name_rule')}</div>
             <LookPicker look={look} onChange={setLook} />
+            <RootPicker value={root} onChange={setRoot} />
             <button className="btn primary" onClick={submitName}>
               {t('ui.login.enter')}
             </button>
@@ -170,6 +192,7 @@ function Login() {
                 />
                 <div className="login-hint">{t('ui.login.dev_hint')}</div>
                 <LookPicker look={look} onChange={setLook} />
+                <RootPicker value={root} onChange={setRoot} />
                 <button className="btn primary" onClick={submitDev}>
                   {t('ui.login.enter')}
                 </button>

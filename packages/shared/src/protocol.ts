@@ -49,6 +49,10 @@ export const C = {
   BREAKTHROUGH: 'brk',
   MOVE_ITEM: 'mv',
   PORTAL: 'portal',
+  /** Vượt bình cảnh: `{ m: 'trial' | 'pill', r? }` (r = khóa chống trùng khi dùng đan). */
+  BOTTLENECK: 'bk',
+  /** Đổi linh căn ở NPC: `{ npc, root, r? }`. */
+  ROOT: 'root',
 } as const;
 
 /** Server → client. */
@@ -116,6 +120,8 @@ export interface SysMsg {
   i?: string;
   /** Id quái/điểm hái mà đồ nảy ra (client lấy vị trí từ trạng thái room; không có thì bỏ phần 3D). */
   src?: string;
+  /** Chỉ với trang bị đã roll: phẩm 0..4 (Phàm..Thiên) để client chọn màu/cột sáng. Không phải tỉ lệ rơi. */
+  q?: number;
 }
 
 export interface FxMsg {

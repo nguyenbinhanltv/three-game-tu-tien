@@ -6,7 +6,7 @@ import { SLASH_GEO, SLASH_INK, slashPhase } from '../render/vfx/slash';
 import { seedOr } from '../render/vfx/common';
 import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '../render/vfx/lightning';
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../render/vfx/ink';
-import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, type LootTier } from '../render/vfx/loot';
+import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, lootPulse, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
 import { BoltFx } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
@@ -29,6 +29,7 @@ const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
 const _c = new THREE.Vector3();
 const _q = new THREE.Quaternion();
+const _up = new THREE.Vector3(0, 1, 0);
 const UP = new THREE.Vector3(0, 1, 0);
 const AX_X = new THREE.Vector3(1, 0, 0);
 const AX_Z = new THREE.Vector3(0, 0, 1);
@@ -412,8 +413,9 @@ export class Vfx {
    * với vị trí cuối: engine cho icon bay vào túi). `slot`: thứ tự món trong cùng một lần rơi, để các món
    * tỏa ra các hướng khác nhau và nảy lệch nhịp. Trả về điểm chạm đất (cho chỉ báo ngoài màn hình).
    */
-  lootDrop(from: THREE.Vector3, tier: LootTier, slot = 0, onLand?: () => void, onCollect?: (at: THREE.Vector3) => void): THREE.Vector3 {
+  lootDrop(from: THREE.Vector3, tier: LootTier, slot = 0, onLand?: () => void, onCollect?: (at: THREE.Vector3) => void, color?: number): THREE.Vector3 {
     const T = LOOT_TIERS[tier];
+    const col = color ?? T.color;
     const delay = Math.min(slot, 5) * 0.12;
     const ang = Math.random() * Math.PI * 2 + slot * 2.4;
     const dist = 0.9 + Math.random() * 0.7;
@@ -425,9 +427,9 @@ export class Vfx {
     const sy = from.y;
     const sz = from.z;
     const size = 1 + tier * 0.18;
-    const gem = this.fx(G.octa, T.color, 0.95);
+    const gem = this.fx(G.octa, col, 0.95);
     gem.visible = false;
-    const beam = this.fx(BEAM_GEO, T.color, 0, 'beam');
+    const beam = this.fx(BEAM_GEO, col, 0, 'beam');
     beam.fxA.w = Math.random() * 40;
     beam.position.set(tx, ground - 0.05, tz);
     beam.scale.set(T.radius, T.height, T.radius);
@@ -437,7 +439,7 @@ export class Vfx {
       core.position.copy(beam.position);
       core.scale.set(T.radius * 0.4, T.height * 0.75, T.radius * 0.4);
     }
-    const ring = tier > 0 ? this.fx(RING_GEO, T.color, 0) : null;
+    const ring = tier > 0 ? this.fx(RING_GEO, col, 0) : null;
     if (ring) {
       ring.rotation.x = -Math.PI / 2;
       ring.position.set(tx, ground + 0.08, tz);
@@ -466,11 +468,11 @@ export class Vfx {
           landed = true;
           onLand?.();
           _a.set(tx, gy, tz);
-          this.burst(_a, T.color, 0.5 + tier * 0.25, 0.3);
+          this.burst(_a, col, 0.5 + tier * 0.25, 0.3);
           for (let i = 0; i < T.sparks; i++) {
             const a = Math.random() * Math.PI * 2;
             const r = Math.random() * T.radius * 0.8;
-            PARTICLES.emit('glow', tx + Math.cos(a) * r, ground + 0.2, tz + Math.sin(a) * r, 0, 1.4 + Math.random() * 2.2, 0, 1 + Math.random() * 0.9, 0.09, 0.02, i & 1 ? 0xfff6dc : T.color, 0.9, -0.6, 0.6);
+            PARTICLES.emit('glow', tx + Math.cos(a) * r, ground + 0.2, tz + Math.sin(a) * r, 0, 1.4 + Math.random() * 2.2, 0, 1 + Math.random() * 0.9, 0.09, 0.02, i & 1 ? 0xfff6dc : col, 0.9, -0.6, 0.6);
           }
         }
         // Cột sáng: dâng từ chân lên trong 0,25 giây sau khi chạm đất, tan dần sau khi đồ bay đi.
@@ -479,7 +481,7 @@ export class Vfx {
           const out = tt > lift ? Math.max(0, 1 - (tt - lift) / 0.7) : 1;
           beam.fxA.x = Math.min(1.1, bt / 0.25);
           beam.fxK = Math.min(1, bt / 0.8);
-          beam.fxOpacity = T.alpha * out;
+          beam.fxOpacity = T.alpha * out * lootPulse(tier, bt);
           if (core) {
             core.fxA.x = Math.min(1.1, bt / 0.35);
             core.fxK = beam.fxK;
@@ -496,7 +498,7 @@ export class Vfx {
         if (!collected && tt >= lift) {
           collected = true;
           gem.visible = false;
-          this.burst(gem.position, T.color, 0.35, 0.2);
+          this.burst(gem.position, col, 0.35, 0.2);
           onCollect?.(gem.position);
         }
       },
@@ -628,6 +630,50 @@ export class Vfx {
       () => {
         this.drop(m);
         this.drop(ring);
+      },
+    );
+  }
+
+  /**
+   * Đột phá thành công (P2-B4): quầng vàng ấm tỏa từ người, một ống sáng mảnh và chùm tia nắng xòe lên như mây kiếp
+   * vừa tách. Mảnh và cộng sáng để giữ màu cảnh (khác `pillar` bọc kín trước camera). 1 + 1 + 5 lưới trong ~2,6 giây.
+   */
+  ascendGlow(pos: PosFn, dur = 2.6): void {
+    const core = this.fx(TUBE_GEO, 0xffe6a0, 0.3, 'flat');
+    const ring = this.fx(RING_GEO, 0xffd98a, 0.7);
+    ring.rotation.x = -Math.PI / 2;
+    const rays: { m: FxMesh; dir: THREE.Vector3 }[] = [];
+    for (let i = 0; i < 5; i++) {
+      const phi = (i / 5) * Math.PI * 2 + 0.4;
+      const th = 0.16 + (i % 2) * 0.12;
+      const dir = new THREE.Vector3(Math.sin(th) * Math.cos(phi), Math.cos(th), Math.sin(th) * Math.sin(phi));
+      rays.push({ m: this.fx(TUBE_GEO, 0xffe2a0, 0.2, 'glow'), dir });
+    }
+    this.add(
+      dur,
+      (k) => {
+        if (!pos(_a)) return;
+        const rise = Math.min(1, k * 4);
+        const fade = Math.pow(1 - k, 1.5);
+        const h = 46 * rise;
+        core.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
+        core.scale.set(0.8, h, 0.8);
+        core.fxOpacity = 0.3 * fade;
+        ring.position.set(_a.x, _a.y - 1.0, _a.z);
+        ring.scale.setScalar(1.2 + k * 7);
+        ring.fxOpacity = 0.7 * (1 - k);
+        for (const r of rays) {
+          const len = 55 * rise;
+          r.m.position.set(_a.x + (r.dir.x * len) / 2, _a.y - 1.1 + (r.dir.y * len) / 2, _a.z + (r.dir.z * len) / 2);
+          r.m.quaternion.setFromUnitVectors(_up, r.dir);
+          r.m.scale.set(1.1 + k * 1.5, len, 1.1 + k * 1.5);
+          r.m.fxOpacity = 0.2 * fade;
+        }
+      },
+      () => {
+        this.drop(core);
+        this.drop(ring);
+        for (const r of rays) this.drop(r.m);
       },
     );
   }
@@ -769,28 +815,35 @@ export class Vfx {
    * giữa, bừng sáng trong mây khi có tia sét đánh gần. `seed` (từ server) cho cùng vân mây.
    */
   tribulationCloud(pos: PosFn, dur: number, stillOn: () => boolean, seed?: number): void {
-    const cloud = this.fx(VORTEX_GEO, CLOUD_COLOR, 0, 'vortex');
-    cloud.fxA.z = (seedOr(seed) % 997) / 10;
-    this.clouds.add(cloud);
-    let t = 0;
-    let op = 0;
-    this.add(
-      dur + 1.5,
-      (_k, dt) => {
-        t += dt;
-        cloud.fxA.y = Math.max(0, cloud.fxA.y - dt * 3);
-        if (!pos(_a)) return;
-        op = stillOn() ? Math.min(1, t / 2) : Math.max(0, op - dt);
-        cloud.position.set(_a.x, _a.y + 66, _a.z);
-        cloud.scale.setScalar(64);
-        cloud.rotation.y = t * 0.06;
-        cloud.fxOpacity = op * 0.92;
-      },
-      () => {
-        this.clouds.delete(cloud);
-        this.drop(cloud);
-      },
-    );
+    // Hai tầng xoáy ngược chiều, tầng dưới nhỏ và thấp hơn: mây dày và có chiều sâu mà chỉ thêm 1 draw call.
+    const layers = [
+      { y: 48, scale: 125, spin: 0.06, op: 0.95, seedAdd: 0 },
+      { y: 34, scale: 90, spin: -0.1, op: 0.8, seedAdd: 41 },
+    ];
+    for (const L of layers) {
+      const cloud = this.fx(VORTEX_GEO, CLOUD_COLOR, 0, 'vortex');
+      cloud.fxA.z = ((seedOr(seed) + L.seedAdd) % 997) / 10;
+      this.clouds.add(cloud);
+      let t = 0;
+      let op = 0;
+      this.add(
+        dur + 1.5,
+        (_k, dt) => {
+          t += dt;
+          cloud.fxA.y = Math.max(0, cloud.fxA.y - dt * 3);
+          if (!pos(_a)) return;
+          op = stillOn() ? Math.min(1, t / 2.5) : Math.max(0, op - dt);
+          cloud.position.set(_a.x, _a.y + L.y, _a.z);
+          cloud.scale.setScalar(L.scale);
+          cloud.rotation.y = t * L.spin;
+          cloud.fxOpacity = op * L.op;
+        },
+        () => {
+          this.clouds.delete(cloud);
+          this.drop(cloud);
+        },
+      );
+    }
   }
 
   dispose(): void {

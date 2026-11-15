@@ -608,7 +608,7 @@ export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, thrott
 }
 
 /** Phát chuông đồ rơi (âm tổng hợp, bus giao diện). Tắt tiếng (`?mute=1`) thì im. */
-export function lootChime(tier: 0 | 1 | 2, volume = 1): void {
+export function lootChime(tier: 0 | 1 | 2 | 3 | 4, volume = 1): void {
   if (muted || volume <= 0.02) return;
   const c = ensure();
   if (!c || c.state !== 'running') return;
@@ -620,8 +620,8 @@ export function lootChime(tier: 0 | 1 | 2, volume = 1): void {
   o.gain.value = SYNTH_GAIN * volume;
   o.connect(voiceOut(c, 'ui'));
   for (const p of bellPartials(tier)) tone(o, p.freq, p.freq * 0.998, p.dur, 'sine', p.gain, p.delay);
-  if (tier === 2) {
-    duck(0.25, 0.8, 0.8);
+  if (tier >= 2) {
+    duck(0.25, tier >= 4 ? 2.2 : 0.8, tier >= 4 ? 1.6 : 0.8);
     // Đồ quý: thêm tiếng xác nhận giòn (2 lớp mẫu + kim loại tổng hợp) dưới tiếng chuông, nổi nhất trong các SFX (D2).
     emit('rare', volume, undefined, true);
   }
