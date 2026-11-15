@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { type Appearance, genderEnabled, type Gender, parseAppearance, validName } from '@dtl/shared';
 import { APPEARANCE, t } from '@dtl/content';
 import { assets } from '../game/assets';
-import { sfx } from '../game/audio';
+import { playMusic, sfx, unlockAudio } from '../game/audio';
 import { TitleBackdrop } from '../game/backdrop';
 import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/preload';
@@ -327,8 +327,23 @@ export function App() {
     document.addEventListener('click', onClick, true);
     return () => document.removeEventListener('click', onClick, true);
   }, []);
+  // Thao tác đầu tiên ở màn tiêu đề (gõ đạo hiệu, bấm nút) mở khóa âm thanh để nhạc chủ đề phát được.
+  useEffect(() => {
+    const unlock = () => unlockAudio();
+    document.addEventListener('pointerdown', unlock, { once: true, capture: true });
+    document.addEventListener('keydown', unlock, { once: true, capture: true });
+    return () => {
+      document.removeEventListener('pointerdown', unlock, { capture: true });
+      document.removeEventListener('keydown', unlock, { capture: true });
+    };
+  }, []);
   const phase = useUI((s) => s.phase);
   const error = useUI((s) => s.error);
+  // Nhạc chủ đề (`title`) ở màn đăng nhập, màn tải và màn lỗi. Vào game thì MusicController giành lại kênh nhạc
+  // (nhạc vùng/chiến đấu), kể cả khi đổi room hay nối lại mà bài vùng không đổi (music.ts, refresh()).
+  useEffect(() => {
+    if (phase !== 'game') playMusic('title', 2);
+  }, [phase]);
   // Màn tiêu đề còn che game cho tới khi các dòng chữ tải đã hiện xong.
   const [title, setTitle] = useState(true);
   useEffect(() => {

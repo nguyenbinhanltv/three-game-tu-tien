@@ -1,5 +1,7 @@
 # Nhạc nền bằng Suno — danh sách bài, prompt và cách đưa vào game
 
+> **Không còn là hướng chính (2026-11-15).** Gói Suno Free không tải được bài, nên nhạc của game giờ do Claude tự soạn bằng code (MIDI + soundfont, CC0): xem [`docs/audio/music.md`](music.md). Tài liệu này giữ lại làm tùy chọn nếu sau này có gói Suno trả phí; mục 2 (bài nào phát khi nào) và mục 3 (brief âm nhạc từng bài) vẫn là brief cho bản tự soạn. Muốn dùng Suno cho một bài: bỏ `"compose": true` của bài đó trong `tools/audio/music.json` và đặt `by`/`license`/`url` của Suno (xem `music.md` mục 6).
+
 Phiên bản 1 · 2026-11-15 · Việc M0-5 (2 bài thử) và M4-10 (đủ bộ) trong plan phát triển, mục 3.1.
 
 Nhạc tạo bằng **Suno gói Free**: chỉ dùng **phi thương mại**, Suno giữ quyền sở hữu, **bắt buộc ghi nguồn**. Game riêng với bạn bè nên dùng được; ghi nguồn đã tự động (xem mục 5).
@@ -65,7 +67,7 @@ Id bài trùng với máy trạng thái nhạc (`apps/client/src/game/musicDirec
 | sau | `title` | Đạp Thiên Lộ | Màn đăng nhập, màn tải | 1:30 | 70 |
 | sau | `sting_levelup`, `sting_breakthrough`, `sting_death` | (3 nhạc ngắn) | Lên tầng, Trúc Cơ thành công, tử vong | 3–8 giây | — |
 
-`title` và ba sting đã có chỗ trong `music.json` và `loop.mjs` xử lý được, nhưng **client chưa phát** (việc của M4-10). Thứ tự ưu tiên khi nhiều trạng thái cùng lúc: độ kiếp > boss > chiến đấu > đả tọa > vùng.
+`title` (màn đăng nhập/màn tải) và ba sting (khi sự kiện là của chính mình) đã nối vào client. Thứ tự ưu tiên khi nhiều trạng thái cùng lúc: độ kiếp > boss > chiến đấu > đả tọa > vùng.
 
 **Thử trong game** (tài khoản thử): vào/ra tông môn để nghe `sect`; đánh một con quái gần tông môn để nghe `combat`. Các bài khác: `/gm tp x z` tới vùng, `/gm spawn <id>` gọi quái, `/gm level 15` rồi độ kiếp. Khi chạy `pnpm dev`, gõ `__music.state()` trong console để xem trạng thái nhạc.
 

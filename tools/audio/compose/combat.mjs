@@ -15,9 +15,9 @@ export default function combat() {
   const B4 = new Scale('B4', 'yu');
 
   const taiko = s.track('taiko', { ch: 0, program: 116, vol: 112, pan: 0, reverb: 50, humanTime: 0.006, humanVel: 5 });
-  const bassdrum = s.track('bassdrum', { ch: 1, program: 116, bank: 8, vol: 104, pan: 0, reverb: 40, humanTime: 0 });
+  const bassdrum = s.track('bassdrum', { ch: 1, program: 116, bank: 8, vol: 88, pan: 0, reverb: 40, humanTime: 0 });
   const low = s.track('low', { ch: 2, program: 48, vol: 96, pan: -0.2, reverb: 40, humanTime: 0.004 });
-  const contra = s.track('contra', { ch: 3, program: 43, vol: 92, pan: 0.1, reverb: 30, humanTime: 0.004 });
+  const contra = s.track('contra', { ch: 3, program: 43, vol: 78, pan: 0.1, reverb: 30, humanTime: 0.004 });
   const pipa = s.track('pipa', { ch: 4, program: 106, vol: 92, pan: 0.35, reverb: 45, humanTime: 0.006 });
   const erhu = s.track('erhu', { ch: 5, program: 40, vol: 100, pan: -0.1, reverb: 60, humanTime: 0.01 });
   const dizi = s.track('dizi', { ch: 6, program: 72, vol: 84, pan: 0.3, reverb: 60, humanTime: 0.008 });

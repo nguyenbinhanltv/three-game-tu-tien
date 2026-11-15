@@ -128,5 +128,17 @@ Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằn
 | --- | --- | --- | --- | --- | --- |
 | `sect` | Lạc Kiếm Tông | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sect.mjs` |
 | `combat` | Giao Phong | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/combat.mjs` |
+| `wild` | Vân Lam Sơn Mạch | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/wild.mjs` |
+| `forest` | Rừng Linh Thảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/forest.mjs` |
+| `lake` | Hồ Sương Mù | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/lake.mjs` |
+| `dungeon` | Kiếm Trủng | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/dungeon.mjs` |
+| `boss` | Hàn Giao | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/boss.mjs` |
+| `dungeon_boss` | Kiếm Trủng — Thủ Mộ | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/dungeon_boss.mjs` |
+| `tribulation` | Độ Kiếp | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/tribulation.mjs` |
+| `meditate` | Đả Tọa | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/meditate.mjs` |
+| `title` | Đạp Thiên Lộ | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/title.mjs` |
+| `sting_levelup` | Tu Vi Tinh Tiến | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sting_levelup.mjs` |
+| `sting_breakthrough` | Trúc Cơ Thành | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sting_breakthrough.mjs` |
+| `sting_death` | Thân Tử Đạo Tiêu | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sting_death.mjs` |
 
 <!-- music:end -->
