@@ -425,6 +425,68 @@ async function main() {
     await g.room.leave(true);
   }
 
+  // 14. Công pháp (P3-5): chiêu của công pháp khác, ult khi chưa sạc, nâng cấp thiếu nguyên liệu, đổi công pháp xa NPC.
+  {
+    const g = await join('kt_congphap');
+    const msgs: { k: string; p?: unknown }[] = [];
+    let method: { method: string; lv: Record<string, number>; charge: number } | null = null;
+    let gold = -1;
+    g.room.onMessage(S.SYS, (m: { k: string }) => msgs.push(m));
+    g.room.onMessage(S.METHOD, (m: { method: string; lv: Record<string, number>; charge: number }) => (method = m));
+    g.room.onMessage(S.CHAR, (c: { gold: number }) => (gold = c.gold));
+    const chat = async (m: string) => {
+      g.room.send(C.CHAT, { m });
+      await W(900);
+    };
+    await chat('/gm level 12');
+    await chat('/gm gold 5000');
+    const gold0 = gold;
+    const has = (k: string) => msgs.some((m) => m.k === k);
+    // Chưa chọn công pháp: chiêu của công pháp không ra.
+    g.room.send(C.SKILL, { id: 'skl_kim_cuong_bat_hoai' });
+    await W(300);
+    check('chiêu công pháp khi chưa chọn công pháp bị từ chối', has('sys.no_method'));
+    await W(800);
+    g.room.send(C.SKILL, { id: 'skl_tran_son_an' });
+    await W(300);
+    check('khiêu khích giả (chưa có công pháp) bị từ chối', msgs.filter((m) => m.k === 'sys.no_method').length >= 2);
+    // Nâng cấp thiếu Bí Tịch: không đổi cấp, không mất linh thạch.
+    g.room.send(C.SKILL_UP, { skill: 'skl_phi_kiem', r: 'sec-up-0001' });
+    g.room.send(C.SKILL_UP, { skill: 'skl_phi_kiem', r: 'sec-up-0001' });
+    g.room.send(C.SKILL_UP, { skill: 'skl_khong_co', r: 'sec-up-0002' });
+    g.room.send(C.SKILL_UP, { skill: { $gt: '' }, r: 'sec-up-0003' });
+    await W(600);
+    check('nâng cấp chiêu thiếu Bí Tịch bị từ chối, không mất linh thạch', gold === gold0 && !(method as { lv: Record<string, number> } | null)?.lv?.skl_phi_kiem, `vàng ${gold0} → ${gold}`);
+    // Biến thức khi chiêu chưa tới cấp 3 (warn của server giới hạn 1 lần/0,7 giây nên chờ giữa các lệnh).
+    await W(800);
+    g.room.send(C.SKILL_VAR, { skill: 'skl_phi_kiem', v: 'a' });
+    g.room.send(C.SKILL_VAR, { skill: 'skl_phi_kiem', v: '__proto__' });
+    await W(400);
+    check('chọn biến thức khi chưa đủ cấp bị từ chối', has('sys.variant_low'));
+    // Chọn công pháp (lần đầu được), rồi đổi ở xa NPC thì không được.
+    g.room.send(C.METHOD, { method: 'lac_kiem_quyet' });
+    await W(500);
+    check('chọn công pháp lần đầu ở tầng 5+ được', (method as { method: string } | null)?.method === 'lac_kiem_quyet');
+    await chat('/gm tp 2200 2400');
+    g.room.send(C.METHOD, { method: 'bat_dong_kim_than', r: 'sec-sw-0001' });
+    await W(500);
+    check('đổi công pháp xa Lạc Vân chân nhân bị từ chối', (method as { method: string } | null)?.method === 'lac_kiem_quyet' && gold === gold0);
+    // Ult khi vòng sạc chưa đầy.
+    await W(800);
+    g.room.send(C.SKILL, { id: 'skl_van_kiem_quy_tong', t: 'khong-co' });
+    await W(300);
+    check('chiêu tối thượng khi chưa đầy vòng sạc bị từ chối', has('sys.ult_not_ready'));
+    // Gửi rác vào ba message không làm sập server.
+    for (const m of [null, 7, 'x', [], { method: {} }, { skill: [], v: 1 }]) {
+      g.room.send(C.METHOD, m);
+      g.room.send(C.SKILL_UP, m);
+      g.room.send(C.SKILL_VAR, m);
+    }
+    await W(400);
+    check('message công pháp rác không làm sập server', await health());
+    await g.room.leave(true);
+  }
+
   // 13. Tham số kiểm thử ?god / ?at (M1-10): tài khoản thử dùng được; server production / có Google thì không.
   await testParamsChecks();
 

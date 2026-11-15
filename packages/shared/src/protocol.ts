@@ -49,6 +49,12 @@ export const C = {
   BREAKTHROUGH: 'brk',
   MOVE_ITEM: 'mv',
   PORTAL: 'portal',
+  /** Chọn/đổi công pháp: `{ method, npc?, r? }`. */
+  METHOD: 'mth',
+  /** Nâng cấp chiêu: `{ skill, r }`. */
+  SKILL_UP: 'sku',
+  /** Chọn biến thức: `{ skill, v: 'a' | 'b' }` (đổi miễn phí khi không giao chiến). */
+  SKILL_VAR: 'skv',
   /** Vượt bình cảnh: `{ m: 'trial' | 'pill', r? }` (r = khóa chống trùng khi dùng đan). */
   BOTTLENECK: 'bk',
   /** Đổi linh căn ở NPC: `{ npc, root, r? }`. */
@@ -71,6 +77,8 @@ export const S = {
   BOLT_END: 'boltx',
   KICK: 'kick',
   TRANSFER: 'xfer',
+  /** Trạng thái công pháp của mình (cấp chiêu, biến thức, kiếm ý/thế, vòng sạc). */
+  METHOD: 'mth',
 } as const;
 
 export interface InitMsg {
@@ -97,6 +105,24 @@ export interface SkillMsg {
   id: string;
   /** id mục tiêu (quái) nếu cần. */
   t?: string;
+}
+
+/** Trạng thái công pháp của riêng người chơi (server gửi khi đổi, tối đa vài lần mỗi giây). Chỉ để hiển thị. */
+export interface MethodMsg {
+  /** id công pháp; '' = chưa chọn. */
+  method: string;
+  /** id chiêu → cấp (chỉ chiêu đã nâng trên 1). */
+  lv: Record<string, number>;
+  /** id chiêu → biến thức đã chọn. */
+  vr: Record<string, 'a' | 'b'>;
+  /** Kiếm ý hoặc thế (0..5). */
+  stacks: number;
+  /** Vòng sạc chiêu tối thượng 0..100. */
+  charge: number;
+  /** Giảm sát thương (Kim Cương Bất Hoại) tới giờ server này (ms); 0 = không. */
+  guardUntil: number;
+  /** Giờ server lúc gửi (để client bù lệch đồng hồ). */
+  now: number;
 }
 
 export interface CdMsg {
@@ -143,6 +169,11 @@ export interface FxMsg {
   sd?: number;
   /** id chiêu (FX `cast` của người chơi): client chọn đúng động tác cho chiêu đang niệm. Chỉ là lớp hình. */
   s?: string;
+  /** Biến thức đã chọn của chiêu (`fx` của `SkillVariant`) và cấp chiêu: client đổi hình dạng hiệu ứng. Chỉ là lớp hình. */
+  v?: string;
+  lv?: number;
+  /** Màu công pháp (hex, không có `#`) của chiêu công pháp; chỉ là lớp hình. */
+  c?: string;
 }
 
 export interface DmgMsg {

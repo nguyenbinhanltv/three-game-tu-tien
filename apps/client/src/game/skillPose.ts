@@ -1,11 +1,11 @@
 import type { SkillDef } from '@dtl/shared';
-import { POSE, SKILL, SKILLS } from '@dtl/content';
+import { METHOD_SKILLS, POSE, SKILL, SKILLS } from '@dtl/content';
 import type { CharacterView } from './character/view';
 
 /** FX của chiêu → chiêu (mỗi chiêu một fx riêng trong skills.json). */
-const SKILL_BY_FX = new Map<string, SkillDef>(SKILLS.map((s) => [s.fx, s]));
+const SKILL_BY_FX = new Map<string, SkillDef>([...SKILLS, ...METHOD_SKILLS].map((s) => [s.fx, s]));
 /** FX mà model khối cũ phản ứng bằng `attack()` (giữ nguyên hành vi khi model không có động tác riêng). */
-const ATTACK_FX = new Set(['sword', 'slash', 'thunder', 'rain']);
+const ATTACK_FX = new Set(['sword', 'slash', 'thunder', 'rain', 'kanh', 'vankiem']);
 
 /** Động tác bắt đầu sớm hơn lúc ra đòn bao nhiêu khi chỉ biết qua FX (đủ cho nhịp vào thế). */
 export const FX_LEAD = 0.06;

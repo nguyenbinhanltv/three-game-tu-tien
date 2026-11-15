@@ -610,10 +610,11 @@ export class Vfx {
   }
 
   /** Cột sáng dâng lên quanh một thực thể (lên cấp, hồi phục, hồi sinh). */
-  pillar(pos: PosFn, color: number, dur = 1.1, radius = 1.1, height = 7): void {
+  pillar(pos: PosFn, color: number, dur = 1.1, radius = 1.1, height = 7, alpha = 0.55): void {
     // Ống sáng phủ lên chính nhân vật: không bloom để không nhòe hình bóng (vòng dưới chân vẫn có).
-    const m = this.fx(TUBE_GEO, color, 0.55, 'flat');
-    const ring = this.fx(RING_GEO, color, 0.8);
+    // `alpha` thấp + bán kính nhỏ cho chiêu lớn: người chơi và quái phải luôn đọc rõ.
+    const m = this.fx(TUBE_GEO, color, alpha, 'flat');
+    const ring = this.fx(RING_GEO, color, 0.8 * Math.min(1, alpha / 0.4));
     ring.rotation.x = -Math.PI / 2;
     this.add(
       dur,
@@ -622,10 +623,10 @@ export class Vfx {
         const h = height * Math.min(1, k * 2.5);
         m.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
         m.scale.set(radius * (1 - k * 0.4), h, radius * (1 - k * 0.4));
-        m.fxOpacity = 0.55 * (1 - k * k);
+        m.fxOpacity = alpha * (1 - k * k);
         ring.position.set(_a.x, _a.y - 1.0, _a.z);
         ring.scale.setScalar(radius * (1 + k * 2.5));
-        ring.fxOpacity = 0.8 * (1 - k);
+        ring.fxOpacity = 0.8 * Math.min(1, alpha / 0.4) * (1 - k);
       },
       () => {
         this.drop(m);
@@ -679,8 +680,8 @@ export class Vfx {
   }
 
   /** Lớp linh khí hộ thể bao quanh người. */
-  shield(pos: PosFn, dur: number, stillOn: () => boolean): void {
-    const m = this.fx(G.ico1, 0x7fd8ff, 0.28);
+  shield(pos: PosFn, dur: number, stillOn: () => boolean, color = 0x7fd8ff, scale = 1, alpha = 0.28): void {
+    const m = this.fx(G.ico1, color, alpha);
     let t = 0;
     this.add(
       dur,
@@ -692,9 +693,9 @@ export class Vfx {
         }
         m.visible = true;
         m.position.copy(_a).setY(_a.y - 0.2);
-        m.scale.set(1.25, 1.5, 1.25);
+        m.scale.set(1.25 * scale, 1.5 * scale, 1.25 * scale);
         m.rotation.y = t * 1.5;
-        m.fxOpacity = 0.22 + Math.sin(t * 6) * 0.06;
+        m.fxOpacity = (alpha / 0.28) * (0.22 + Math.sin(t * 6) * 0.06);
       },
       () => this.drop(m),
     );

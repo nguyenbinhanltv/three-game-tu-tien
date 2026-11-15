@@ -10,11 +10,12 @@ import { createHash } from 'node:crypto';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const sharp = createRequire(path.join(root, 'tools/asset-pipeline/package.json'))('sharp');
 const read = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
-const defs = [...read('packages/content/data/skills.json'), ...read('packages/content/data/items.json')];
+const methods = read('packages/content/data/methods.json');
+const defs = [...read('packages/content/data/skills.json'), ...methods.skills, ...read('packages/content/data/items.json'), ...methods.items];
 const out = path.join(root, 'apps/client/public/assets/ui');
 const manifestPath = path.join(out, 'icons.json');
 const hash = (data) => createHash('sha256').update(data).digest('hex');
-const size = 128, columns = 8, rows = 4;
+const size = 128, columns = 8, rows = 5;
 if (defs.length > columns * rows) throw new Error('Atlas capacity exceeded');
 if (process.argv.includes('--check')) {
   const m = read('apps/client/public/assets/ui/icons.json');
@@ -45,10 +46,15 @@ const git = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-comm
 if (git.status !== 0 && !process.env.DTL_ASSET_SOURCE) throw new Error(git.stderr);
 const source = process.env.DTL_ASSET_SOURCE ?? path.resolve(path.dirname(git.stdout.trim()), '../dtl-asset-source');
 const icons = {}, layers = [];
-for (const [index, def] of defs.entries()) {
+let index = 0;
+for (const def of defs) {
   if (def.icon !== def.id) throw new Error(`Expected stable image id: ${def.id}`);
-  const input = fs.readFileSync(path.join(source, 'icons', `${def.icon}.png`));
+  const file = path.join(source, 'icons', `${def.icon}.png`);
+  // Chưa có tranh gốc: không chiếm ô, client dùng emoji `iconFallback`.
+  if (!fs.existsSync(file)) { console.log(`Bỏ qua (chưa có PNG): ${def.icon}`); continue; }
+  const input = fs.readFileSync(file);
   const x = index % columns, y = Math.floor(index / columns);
+  index++;
   icons[def.icon] = { x, y, sourceSha256: hash(input), sourceBytes: input.length };
   layers.push({ input: await sharp(input).resize(size, size, { fit: 'cover' }).png().toBuffer(), left: x * size, top: y * size });
 }
