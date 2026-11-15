@@ -54,7 +54,7 @@ import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, r
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { chapterSting, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
-import { Cutscene, SECT_CUTSCENE, type Vec3 } from './cutscene';
+import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, Cutscene, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Vec3, type Waypoint } from './cutscene';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
 import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
@@ -64,7 +64,7 @@ import { AmbientParticles } from './ambient';
 import { Grass, GRASS_PUSH_SLOTS, monsterPushRadius, pickPushers, type Pusher } from './grass';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
-import { applyGrading, budgetPixelRatio, markBloom, PostPipeline } from '../render/post';
+import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/world';
 import { GRADING, GRADING_DEFAULT } from '../render/grading';
@@ -125,10 +125,10 @@ function isWebGPU(r: THREE.WebGPURenderer): boolean {
  * bloom/msaa/fxaa: post-processing (render/post.ts). maxPixels: ngân sách điểm ảnh nội bộ (hạ
  * pixelRatio trên màn hình lớn để giữ VRAM render target dưới ngân sách). heightFog: sương theo độ cao.
  */
-const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean; ground: GroundLevel; ao: boolean; lights: boolean }> = {
-  low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false },
-  medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'medium', ao: true, lights: false },
-  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'high', ao: true, lights: true },
+const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean; ground: GroundLevel; ao: boolean; lights: boolean; radial: boolean }> = {
+  low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false, radial: false },
+  medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'medium', ao: true, lights: false, radial: true },
+  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'high', ao: true, lights: true, radial: true },
 };
 
 /** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */
@@ -324,6 +324,13 @@ export class Game {
   private camFrame = new CamFrame();
   /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
   private cine = new Cutscene();
+  /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
+  private cineKind: 'sect' | 'boss' | 'phase' = 'sect';
+  private cineShakeAt = 0;
+  /** Boss mà cảnh xuất hiện đang nhìn theo (vị trí hiện tại, vì boss đang chạy), và độ cao ngực so với chân. */
+  private cineFocus: { id: string; rise: number; scale: number } | null = null;
+  /** Boss đã được xét cảnh xuất hiện trong lần giao chiến này (xóa khi boss hồi/gục). */
+  private bossIntroSeen = new Set<string>();
   private pendingChapter: ChapterKind | null = null;
   private sectChecked = false;
   private timeOffset = 0;
@@ -1350,9 +1357,11 @@ export class Game {
         if (e.chestOf(src, _v)) v.burst(_v, 0xffd36b, 3.2, 0.55);
         break;
       case 'phase': {
-        if (e.chestOf(src, _v)) v.burst(_v, 0xe8f4ff, 2.2, 0.5);
         const mt = this.view.monsters.get(src)?.t;
-        if (mt) this.bossSay(src, `mon.${mt}.say.${m.d ?? 1}`);
+        const cined = !!mt && this.phaseCine(src, `mon.${mt}.say.${m.d ?? 1}`);
+        if (mt && !cined) this.bossSay(src, `mon.${mt}.say.${m.d ?? 1}`);
+        // Trong cảnh camera sát boss: chớp nhỏ và mờ để vẫn thấy hình.
+        if (e.chestOf(src, _v)) v.burst(_v, 0xe8f4ff, cined ? 0.9 : 2.2, cined ? 0.3 : 0.5);
         break;
       }
       case 'bfall': {
@@ -1463,7 +1472,8 @@ export class Game {
       if (byMe && m.crit) this.shake.kick(SHAKE.crit);
       if (mine && m.hv) this.shake.kick(SHAKE.heavy);
     }
-    if (mine && !m.heal && m.n > 0) this.skipCine();
+    // Cảnh boss/chuyển pha ngắn (≤ 2,6 s) và boss vốn đang đánh mình: chỉ đòn nặng mới hủy; cảnh mở đầu thì mọi đòn đều hủy.
+    if (mine && !m.heal && m.n > 0) this.skipCine(this.cineKind === 'sect' || !!m.hv);
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (m.hv && !m.heal && m.n > 0) this.heavyInk(m.dst, m.src);
     if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
@@ -1736,6 +1746,7 @@ export class Game {
     this.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
     this.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
     if (this.cine.active) this.runCine(dt);
+    this.ents.tagsHidden = this.cine.active;
     updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
   }
 
@@ -1791,7 +1802,8 @@ export class Game {
   /** Boss vào pha mới hoặc gục: hiện một câu thoại ngắn nếu mình đứng gần (không khóa điều khiển, không gửi gì lên server). */
   private bossSay(src: string, key: string): void {
     const m = this.view.monsters.get(src);
-    if (!m || !hasString(key)) return;
+    // Đang cắt cảnh boss/chuyển pha: phụ đề của cảnh là câu thoại duy nhất, không chồng thêm dòng thoại thường.
+    if (!m || !hasString(key) || (this.cine.active && this.cineKind !== 'sect')) return;
     if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > 60) return;
     set({ bossLine: { id: ++this.bossLineId, name: monsterName(m.t), text: t(key), until: Date.now() + 3200 } });
   }
@@ -1844,6 +1856,7 @@ export class Game {
       }
     }
     const boss = this.bossFor(target, rp.x, rp.z);
+    this.checkBossIntro(me);
     this.offscreen.setCandidates(this.offscreenCandidates(target, boss));
     let hint = '';
     if (!(me.fl & PF_DEAD)) {
@@ -2001,14 +2014,91 @@ export class Game {
   }
 
   private startCine(): void {
+    this.cineKind = 'sect';
     this.cine.start();
     this.stage.classList.add('cining');
-    set({ cine: { id: ++this.bossLineId, dur: SECT_CUTSCENE.dur * 1000, out: false } });
+    set({ cine: { id: ++this.bossLineId, kind: 'sect', dur: SECT_CUTSCENE.dur * 1000, out: false } });
+  }
+
+  /** Cảnh boss/chuyển pha chỉ chạy khi người chơi bật thẻ chương, không `?cine=0`, không đang chết, không đang có cảnh khác. */
+  private canBossCine(me: PState | undefined): boolean {
+    if (!me || !this.started || this.cine.active || this.snapToServer) return false;
+    if ((me.fl & PF_DEAD) !== 0 || get().phase !== 'game') return false;
+    return get().chapterCards && new URLSearchParams(location.search).get('cine') !== '0';
+  }
+
+  private beginBossCine(kind: 'boss' | 'phase', path: readonly Waypoint[], prof: { dur: number; out: number }, info: { name: string; title?: string; text: string }): void {
+    this.cineKind = kind;
+    this.cineShakeAt = 0;
+    this.cineFocus = null;
+    this.cine.start(path, prof.dur, prof.out);
+    this.stage.classList.add('cining');
+    set({ cine: { id: ++this.bossLineId, kind, dur: prof.dur * 1000, out: false, ...info } });
+  }
+
+  /**
+   * Boss xuất hiện (P2-B2): lần đầu boss bị kéo trong lần giao chiến, chỉ người đứng trong tầm kéo của boss
+   * (`aggro`) mới thấy. Chỉ là lớp hình ở client: không gửi gì, không khóa input (phím/chuột bỏ qua), thế giới
+   * vẫn chạy. Vào giữa trận (boss đã mất máu hoặc đã sang pha sau) thì không chiếu.
+   */
+  private checkBossIntro(me: PState | undefined): void {
+    if (!me) return;
+    const rp = this.renderPos;
+    this.view.monsters.forEach((m, id) => {
+      const def = MONSTER.get(m.t);
+      if (!def?.boss) return;
+      const fighting = m.st === MS_CHASE || m.st === MS_ATTACK;
+      if (!fighting) {
+        if (m.st === MS_DEAD || m.hp >= m.mhp) this.bossIntroSeen.delete(id);
+        return;
+      }
+      if (this.bossIntroSeen.has(id)) return;
+      const fresh = m.hp >= m.mhp * 0.98 && (m.ph ?? 0) === 0;
+      const dist = Math.hypot(m.x - rp.x, m.z - rp.z);
+      const key = `mon.${m.t}.say.intro`;
+      const mine = fresh && dist <= Math.min(BOSS_CUTSCENE_RANGE, def.aggro) && hasString(key);
+      // Chưa chiếu được (đang dịch chuyển, đang có cảnh khác...): thử lại ở nhịp sau, chừng nào boss còn chưa mất máu.
+      if (mine && !this.canBossCine(me)) return;
+      this.bossIntroSeen.add(id);
+      if (!mine) return;
+      const model = this.ents.monsters.get(id)?.model;
+      const path = bossIntroPath({ x: m.x, y: m.y, z: m.z }, m.yaw, def.scale, { x: rp.x, y: rp.y, z: rp.z }, groundAt);
+      this.beginBossCine('boss', path, BOSS_CUTSCENE, { name: monsterName(m.t), title: t(`mon.${m.t}.title`), text: t(key) });
+      this.cineFocus = { id, rise: 1.15 * def.scale, scale: def.scale };
+      // Gầm: boss làm động tác lớn (nếu có), đất rung nhẹ, chớp mờ ở ngực.
+      model?.bossMove?.('slam', 0.55);
+      this.shake.kick(0.45);
+      if (this.ents.chestOf(id, _v)) this.vfx.burst(_v, 0xffd9a0, 1.0, 0.3);
+    });
+  }
+
+  /** Chuyển pha (P2-B3): cắt cảnh ngắn, camera lùi nhẹ, rung đất, màu thoáng đổi. Trả false nếu không chiếu (lúc đó dùng câu thoại thường). */
+  private phaseCine(src: string, key: string): boolean {
+    const m = this.view.monsters.get(src);
+    const def = m ? MONSTER.get(m.t) : undefined;
+    if (!m || !def || !hasString(key) || !this.canBossCine(this.me())) return false;
+    const rp = this.renderPos;
+    if (Math.hypot(m.x - rp.x, m.z - rp.z) > Math.min(BOSS_CUTSCENE_RANGE, def.aggro)) return false;
+    const cam = this.camera;
+    const look = _cineEndL.copy(cam.position).add(_cineFwd.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(10));
+    const path = phaseShiftPath(
+      { x: cam.position.x, y: cam.position.y, z: cam.position.z },
+      { x: look.x, y: look.y, z: look.z },
+      { x: m.x, y: m.y, z: m.z },
+      m.yaw,
+      def.scale,
+      groundAt,
+    );
+    postParams.pulseColor.value.set(def.accent ?? '#9fe6ff');
+    this.beginBossCine('phase', path, PHASE_CUTSCENE, { name: monsterName(m.t), text: t(key) });
+    this.cineFocus = { id: src, rise: 1.2 * def.scale, scale: def.scale };
+    this.shake.kick(0.9);
+    return true;
   }
 
   /** Phím/chuột/bị đánh: camera trôi về chỗ người chơi trong 0,45 giây; thẻ chương vẫn hiện sau đó. */
-  private skipCine(): void {
-    this.cine.skip();
+  private skipCine(force = true): void {
+    if (force) this.cine.skip();
   }
 
   /** Ghi đè camera đã đặt xong bằng đường cảnh (điểm cuối của đường chính là camera thường nên không có mối nối). */
@@ -2017,6 +2107,8 @@ export class Game {
     _cineEndP.set(cam.position.x, cam.position.y, cam.position.z);
     _cineEndL.copy(_cineEndP).add(_cineFwd.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(10));
     const on = this.cine.update(dt, _cineEndP, _cineEndL, _cineP, _cineL);
+    this.cineFx(on);
+    if (on && this.cineFocus) this.focusCine();
     if (on) {
       cam.position.set(_cineP.x, _cineP.y, _cineP.z);
       cam.lookAt(_cineL.x, _cineL.y, _cineL.z);
@@ -2025,7 +2117,59 @@ export class Game {
     this.stage.classList.remove('cining');
     set({ cine: { ...get().cine!, out: true } });
     window.setTimeout(() => get().cine?.out && set({ cine: null }), 700);
-    this.chapter('sect');
+    if (this.cineKind === 'sect') this.chapter('sect');
+  }
+
+  /**
+   * Theo boss trong cảnh: (1) cảnh xuất hiện: nửa đầu mắt luôn dõi boss đang chạy, sau đó trả dần về điểm nhìn của
+   * đường; (2) cả hai cảnh: camera không được sát boss hơn `minBossDist` (thấy trọn thân trên), nới ra dần ở 15%
+   * cuối để hòa liền vào camera thường.
+   */
+  private focusCine(): void {
+    const f = this.cineFocus!;
+    const m = this.view.monsters.get(f.id);
+    if (!m || m.st === MS_DEAD) return;
+    const smooth = (k: number): number => {
+      const c = Math.max(0, Math.min(1, k));
+      return c * c * (3 - 2 * c);
+    };
+    const x = this.cine.time / (this.cineKind === 'boss' ? BOSS_CUTSCENE.dur : PHASE_CUTSCENE.dur);
+    if (this.cineKind === 'boss') {
+      const hold = (1 - smooth((x - 0.5) / 0.4)) * this.cine.weight;
+      _cineL.x += (m.x - _cineL.x) * hold;
+      _cineL.y += (m.y + f.rise - _cineL.y) * hold;
+      _cineL.z += (m.z - _cineL.z) * hold;
+    }
+    const min = minBossDist(f.scale) * (1 - smooth((x - 0.85) / 0.15)) * this.cine.weight;
+    const dx = _cineP.x - m.x;
+    const dz = _cineP.z - m.z;
+    const d = Math.hypot(dx, dz);
+    if (d < min) {
+      const k = d > 1e-3 ? min / d : 0;
+      _cineP.x = m.x + (d > 1e-3 ? dx * k : min);
+      _cineP.z = m.z + (d > 1e-3 ? dz * k : 0);
+    }
+  }
+
+  /** Hiệu ứng hậu kỳ theo nhịp cảnh boss: nhòe hướng tâm (xuất hiện) hoặc nhuộm màu (chuyển pha), kèm rung lần hai. */
+  private cineFx(on: boolean): void {
+    const k = this.cineKind;
+    if (k === 'sect') return;
+    const w = on ? this.cine.weight : 0;
+    const prof = k === 'boss' ? BOSS_CUTSCENE : PHASE_CUTSCENE;
+    const bell = Math.sin(Math.PI * Math.min(1, this.cine.time / prof.dur));
+    if (k === 'boss') postParams.radial.value = 0.75 * bell * w;
+    else {
+      postParams.pulse.value = 0.9 * bell * w;
+      if (on && this.cineShakeAt === 0 && this.cine.time > 0.55) {
+        this.cineShakeAt = 1;
+        this.shake.kick(0.7);
+      }
+    }
+    if (!on) {
+      postParams.radial.value = 0;
+      postParams.pulse.value = 0;
+    }
   }
 
   setChapterCards(on: boolean): void {

@@ -49,6 +49,11 @@ export interface ChapterCard {
 /** Cảnh mở đầu (P2-B1) đang chạy: HUD ẩn, letterbox dày, một câu thoại. `out` = đang rút letterbox sau khi hết cảnh. */
 export interface CineState {
   id: number;
+  /** 'sect' (mặc định): cảnh mở đầu. 'boss': boss xuất hiện (tên, danh hiệu, thoại). 'phase': chuyển pha (thoại). */
+  kind?: 'sect' | 'boss' | 'phase';
+  name?: string;
+  title?: string;
+  text?: string;
   /** Thời lượng cảnh (ms) để CSS dàn nhịp câu thoại. */
   dur: number;
   out: boolean;

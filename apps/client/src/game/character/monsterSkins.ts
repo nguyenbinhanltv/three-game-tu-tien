@@ -112,6 +112,12 @@ export class MonsterSkins {
     for (const s of Object.values(MONSTER_SKINS)) if (!s.lazy) this.load(s.asset);
   }
 
+  /** Nạp trước các asset nạp lười (boss bí cảnh) để cảnh boss xuất hiện luôn có model thật, không đổi từ model khối giữa cảnh. */
+  preloadLazy(): void {
+    if (this.legacy) return;
+    for (const s of Object.values(MONSTER_SKINS)) if (s.lazy) this.load(s.asset);
+  }
+
   /** Quái này sẽ có model mới nhưng asset đang nạp (tạm dùng model khối, nạp xong thì đổi). Asset lười bắt đầu nạp ở đây. */
   pending(def: MonsterDef): boolean {
     const s = MONSTER_SKINS[def.id];
