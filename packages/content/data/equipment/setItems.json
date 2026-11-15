@@ -146,6 +146,7 @@
   {
     "id": "itm_hgl_kiem",
     "kind": "weapon",
+    "model": "prop_kiem_han_giao",
     "stack": 1,
     "price": 0,
     "sell": 700,

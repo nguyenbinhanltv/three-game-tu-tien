@@ -163,6 +163,19 @@ export function itemName(id: string, plus?: number): string {
   return `${n} +${plus}`;
 }
 
+/** Model kiếm mặc định (không đeo vũ khí, vũ khí lạ): kiếm Thanh Phong. */
+export const SWORD_MODEL_DEFAULT = 'prop_kiem_thanh_phong';
+/** Model theo phẩm (`rarity` 0..4) cho vũ khí chưa khai báo `model`: gần nhất theo phẩm. */
+const SWORD_MODEL_BY_RARITY = ['prop_kiem_thiet', 'prop_kiem_thanh_phong', 'prop_kiem_han_quang', 'prop_kiem_han_giao', 'prop_kiem_tram_ta'];
+export const SWORD_MODELS = [...new Set([SWORD_MODEL_DEFAULT, ...SWORD_MODEL_BY_RARITY])];
+
+/** Asset model 3D của kiếm đang cầm: `model` của món nếu có, không thì theo phẩm; id không phải vũ khí → kiếm mặc định. */
+export function swordModelOf(itemId: string | undefined): string {
+  const it = itemId ? ITEM.get(itemId) : undefined;
+  if (!it || it.kind !== 'weapon') return SWORD_MODEL_DEFAULT;
+  return it.model ?? SWORD_MODEL_BY_RARITY[Math.max(0, Math.min(SWORD_MODEL_BY_RARITY.length - 1, it.rarity))];
+}
+
 export function monsterName(id: string): string {
   return t('mon.' + id);
 }

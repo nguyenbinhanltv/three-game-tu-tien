@@ -5,10 +5,16 @@ import * as THREE from 'three/webgpu';
 import { markBloom } from '../render/post';
 import { G } from './geo';
 
-/** Chiều dài lưỡi ước lượng (m, hệ của asset); chỉnh theo model kiếm thật nếu đổi. */
+/** Chiều dài lưỡi ước lượng (m, hệ của asset) khi chưa biết model kiếm. */
 const BLADE_LEN = 0.95;
 /** Chuôi → gốc lưỡi (m). */
 const BLADE_START = 0.12;
+
+/** Số đo lưỡi tính từ tâm chuôi dọc mũi (m): gốc lưỡi và chiều dài lưỡi, theo model kiếm đang cầm. */
+export interface BladeDims {
+  start: number;
+  len: number;
+}
 
 interface Stage {
   color: number;
@@ -44,7 +50,10 @@ export class SwordGlow {
   private tmp = new THREE.Matrix4();
 
   /** `local`: khung chuôi (X = lưỡi, Z = mũi) trong hệ xương kiếm (`SwordSocketDef.glowLocal`). */
-  constructor(local: THREE.Matrix4) {
+  constructor(
+    local: THREE.Matrix4,
+    private dims: BladeDims = { start: BLADE_START, len: BLADE_LEN },
+  ) {
     this.local = local;
     this.group.matrixAutoUpdate = false;
     this.group.visible = false;
@@ -78,12 +87,12 @@ export class SwordGlow {
     this.sheathMat.color.setHex(this.tint ?? st.color);
     // Vệt kiếm khí luôn đặt lại màu (về màu +10 khi bỏ tint) để không giữ màu bộ cũ.
     this.streakMat.color.setHex(this.tint ?? STAGES[2].color);
-    this.sheath.position.set(0, 0, BLADE_START + BLADE_LEN / 2);
-    this.sheath.scale.set(st.w, st.t, BLADE_LEN / 2 + 0.05);
+    this.sheath.position.set(0, 0, this.dims.start + this.dims.len / 2);
+    this.sheath.scale.set(st.w, st.t, this.dims.len / 2 + 0.05);
     // Vệt kiếm khí chỉ có ở +10: dải mảnh kéo dài quá mũi, nhạt dần.
     this.streak.visible = s === 2;
-    this.streak.position.set(0, 0, BLADE_START + BLADE_LEN + BLADE_LEN * 0.45);
-    this.streak.scale.set(st.w * 0.5, st.t * 0.5, BLADE_LEN * 0.6);
+    this.streak.position.set(0, 0, this.dims.start + this.dims.len + this.dims.len * 0.45);
+    this.streak.scale.set(st.w * 0.5, st.t * 0.5, this.dims.len * 0.6);
   }
 
   /** `boneWorld`: ma trận thế giới (hệ model) của xương kiếm; gọi mỗi khung khi `active`. */

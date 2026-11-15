@@ -8,6 +8,7 @@
     "optimize": "tsx src/cli.ts optimize",
     "validate": "tsx src/cli.ts validate",
     "impostor": "tsx src/impostor.ts",
+    "minimap": "tsx src/minimap.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
