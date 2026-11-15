@@ -18,8 +18,8 @@ function files(dir: string): string[] {
 }
 
 describe('dữ liệu chỉ server', () => {
-  it('client không import bảng rơi', () => {
-    const bad = files(SRC).filter((f) => /@dtl\/content\/loot|loot\.json/.test(readFileSync(f, 'utf8')));
+  it('client không import bảng rơi và bảng địa điểm kiểm thử', () => {
+    const bad = files(SRC).filter((f) => /@dtl\/content\/(loot|places)|(loot|places)\.json/.test(readFileSync(f, 'utf8')));
     expect(bad).toEqual([]);
   });
   it('monsters.json (vào bundle client) không chứa drops/gold', () => {

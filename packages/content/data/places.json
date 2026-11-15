@@ -1,0 +1,15 @@
+[
+  { "id": "tong_mon", "level": "van_lam", "x": 2048, "z": 2088, "note": "Sân Lạc Kiếm Tông, điểm hồi sinh" },
+  { "id": "cong", "level": "van_lam", "x": 2048, "z": 1530, "note": "Đài truyền tống tới Kiếm Trủng (bắc tông môn)" },
+  { "id": "kiem_trung", "level": "van_lam", "x": 2048, "z": 1530, "note": "Bí cảnh là room riêng: dừng ở cổng, vào bằng cổng như người chơi" },
+  { "id": "thung_lung", "level": "van_lam", "x": 2048, "z": 2455, "note": "Thung lũng, Sói Xám (cấp 1–2)" },
+  { "id": "heo_rung", "level": "van_lam", "x": 1870, "z": 2650, "note": "Thiết Bối Trư" },
+  { "id": "yeu_lang", "level": "van_lam", "x": 2240, "z": 2770, "note": "Yêu Lang" },
+  { "id": "rung", "level": "van_lam", "x": 2720, "z": 2180, "note": "Giữa rừng phía đông" },
+  { "id": "hoa_ho", "level": "van_lam", "x": 2550, "z": 2210, "note": "Hỏa Vân Hồ" },
+  { "id": "thach_vien", "level": "van_lam", "x": 2830, "z": 2080, "note": "Thạch Viên" },
+  { "id": "u_minh", "level": "van_lam", "x": 2810, "z": 2370, "note": "U Minh Lang" },
+  { "id": "ho", "level": "van_lam", "x": 1822, "z": 2180, "note": "Bờ đông hồ (đường camera 'ho' của pnpm bench:client)" },
+  { "id": "boss", "level": "van_lam", "x": 1380, "z": 2235, "note": "Khu boss Hàn Giao: mặt hồ, cách đảo giữa hồ (1380, 2180) khoảng 55m" },
+  { "id": "kt_giua", "level": "kiem_trung", "x": 900, "z": 1000, "note": "Giữa lòng chảo Kiếm Trủng, chỗ đánh các đợt (chỉ dùng trong room bí cảnh)" }
+]
