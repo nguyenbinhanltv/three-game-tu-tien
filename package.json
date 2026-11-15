@@ -42,6 +42,7 @@
     "music:build": "node tools/audio/loop.mjs",
     "music:check": "node tools/audio/loop.mjs --check",
     "palette": "node tools/palette/gen_palette.mjs",
+    "minimap:build": "pnpm --filter @dtl/asset-pipeline minimap",
     "palette:check": "node tools/palette/gen_palette.mjs --check",
     "invite": "pnpm --filter @dtl/server invite",
     "icons:build": "node tools/icons/build.mjs",

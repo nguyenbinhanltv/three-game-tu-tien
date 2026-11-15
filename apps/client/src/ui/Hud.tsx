@@ -10,6 +10,7 @@ import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Toolti
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { DuelBanner, InviteStack, PartyFrame } from './Party';
+import { Minimap } from './minimap/Minimap';
 import { Panels } from './Panels';
 import { isStuck, TrialBanner } from './Realm';
 import { type BossLine, type ChapterCard, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
@@ -252,69 +253,6 @@ function QuestTracker() {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function Minimap() {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const zone = useUI((s) => s.zone);
-  const x = useUI((s) => Math.round(s.x));
-  const z = useUI((s) => Math.round(s.z));
-  useEffect(() => {
-    const SIZE = 176;
-    const SPAN = 520; // mét hiển thị theo mỗi chiều
-    const draw = () => {
-      const g = Game.current;
-      const cv = ref.current;
-      if (!g || !cv || !g.minimap) return;
-      const ctx = cv.getContext('2d')!;
-      const px = g.renderPos.x;
-      const pz = g.renderPos.z;
-      const img = g.minimap;
-      const k = img.width / WORLD_SIZE;
-      ctx.fillStyle = '#1a2330';
-      ctx.fillRect(0, 0, SIZE, SIZE);
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(img, (px - SPAN / 2) * k, (pz - SPAN / 2) * k, SPAN * k, SPAN * k, 0, 0, SIZE, SIZE);
-      const s = SIZE / SPAN;
-      for (const d of g.dots()) {
-        const dx = (d.x - px) * s + SIZE / 2;
-        const dz = (d.z - pz) * s + SIZE / 2;
-        if (dx < 0 || dz < 0 || dx > SIZE || dz > SIZE) continue;
-        ctx.fillStyle = d.c;
-        ctx.beginPath();
-        ctx.arc(dx, dz, d.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      // Mũi tên người chơi theo hướng camera.
-      ctx.save();
-      ctx.translate(SIZE / 2, SIZE / 2);
-      ctx.rotate(-g.yaw);
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#10141c';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(0, -8);
-      ctx.lineTo(5.5, 6);
-      ctx.lineTo(0, 3);
-      ctx.lineTo(-5.5, 6);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    };
-    draw();
-    const id = setInterval(draw, 200);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <div className="minimap" onClick={() => togglePanel('map')} title={t('ui.map') + ' (M)'}>
-      <canvas ref={ref} width={176} height={176} />
-      <div className="minimap-zone">{zone}</div>
-      <div className="minimap-pos">
-        {x}, {z}
-      </div>
     </div>
   );
 }
