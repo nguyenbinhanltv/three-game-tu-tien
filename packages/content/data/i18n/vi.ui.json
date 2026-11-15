@@ -218,6 +218,8 @@
   "ui.help.target_v": "Tab (quái gần nhất) hoặc đưa tâm ngắm vào quái rồi bấm chuột trái; bấm lần nữa để đánh",
   "ui.help.skill": "Kỹ năng",
   "ui.help.skill_v": "Phím 1–8 (phím 1 tự đánh liên tục; ô 7 và 8 là chiêu của công pháp, chọn ở bảng Công pháp, phím V). Bấm sớm trong 0,4 giây cuối lúc chờ thì chiêu được giữ lại và tự ra khi hết chờ; Esc hoặc di chuyển để hủy",
+  "ui.help.dash": "Lướt",
+  "ui.help.dash_v": "Q (chiêu lướt của công pháp đang tu, hồi 10–12 giây, không xuyên vách; lướt hủy được đòn đang chờ). Ô chiêu viền vàng nhấp nháy là đang được cường hóa 3 giây",
   "ui.help.interact": "Trò chuyện / hái thuốc",
   "ui.help.interact_v": "E khi đứng gần, hoặc bấm vào NPC, cây thuốc",
   "ui.help.meditate": "Đả tọa",

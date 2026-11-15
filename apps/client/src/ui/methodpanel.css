@@ -277,3 +277,13 @@
   font-size: 22px;
   line-height: 1.6;
 }
+
+/* Chiêu đang được cường hóa (K-2): viền sáng vàng nhạt, nhấp nháy chậm. */
+.skill.empowered {
+  box-shadow: 0 0 0 2px #ffe6a0, 0 0 12px 2px rgba(255, 214, 110, 0.75);
+  animation: skill-empower 0.9s ease-in-out infinite alternate;
+}
+@keyframes skill-empower {
+  from { box-shadow: 0 0 0 2px #ffe6a0, 0 0 6px 1px rgba(255, 214, 110, 0.5); }
+  to { box-shadow: 0 0 0 2px #fff2c8, 0 0 14px 3px rgba(255, 214, 110, 0.9); }
+}

@@ -11,6 +11,7 @@ export type Action =
   | 'meditate'
   | 'interact'
   | 'autorun'
+  | 'dash'
   | 'bag'
   | 'char'
   | 'quests'
@@ -30,6 +31,7 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   KeyZ: 'meditate',
   KeyE: 'interact',
   KeyR: 'autorun',
+  KeyQ: 'dash',
   KeyB: 'bag',
   KeyI: 'bag',
   KeyC: 'char',
