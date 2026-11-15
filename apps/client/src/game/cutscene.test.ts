@@ -1,6 +1,6 @@
 import { groundAt } from '@dtl/shared';
 import { describe, expect, it } from 'vitest';
-import { bossIntroPath, Cutscene, pathParam, phaseShiftPath, SECT_CUTSCENE, SECT_PATH, samplePath, type Vec3 } from './cutscene';
+import { bossIntroPath, minBossDist, sightBlocked, Cutscene, pathParam, phaseShiftPath, SECT_CUTSCENE, SECT_PATH, samplePath, type Vec3 } from './cutscene';
 
 const END_P: Vec3 = { x: 2048, y: 156.4, z: 2100 };
 const END_L: Vec3 = { x: 2048, y: 151.6, z: 2088 };
@@ -109,6 +109,28 @@ describe('đường cảnh boss (P2-B2/B3)', () => {
         expect(w.look.y).toBeGreaterThan(boss.y);
       }
     }
+  });
+
+  it('cự kiếm chắn tầm nhìn thì đổi góc: không camera nào bị chắn (xuất hiện và chuyển pha)', () => {
+    const player: Vec3 = { x: 100, y: 10, z: 130 };
+    const base = bossIntroPath(boss, 0, 2.4, player, flat, []);
+    // Đặt cột chắn đúng giữa camera đầu tiên và boss.
+    const w = base[0].p;
+    const pillar = [{ x: (w.x + boss.x) / 2, z: (w.z + boss.z) / 2, r: 3.4 }];
+    expect(sightBlocked(w.x, w.z, boss.x, boss.z, pillar)).toBe(true);
+    const moved = bossIntroPath(boss, 0, 2.4, player, flat, pillar);
+    for (const m of moved) expect(sightBlocked(m.p.x, m.p.z, boss.x, boss.z, pillar)).toBe(false);
+    const cam: Vec3 = { x: 100, y: 14, z: 88 };
+    const p0 = phaseShiftPath(cam, boss, boss, 0, 2, flat, []);
+    const q = p0[2].p;
+    const pillar2 = [{ x: (q.x + boss.x) / 2, z: (q.z + boss.z) / 2, r: 3.4 }];
+    const p1 = phaseShiftPath(cam, boss, boss, 0, 2, flat, pillar2);
+    for (const m of p1.slice(1)) expect(sightBlocked(m.p.x, m.p.z, boss.x, boss.z, pillar2)).toBe(false);
+  });
+
+  it('vật cản sát boss (boss đứng cạnh cột) không làm kẹt việc chọn góc', () => {
+    expect(sightBlocked(0, 0, 10, 0, [{ x: 10.5, z: 0, r: 3 }])).toBe(false);
+    expect(minBossDist(2.8)).toBeGreaterThan(minBossDist(1));
   });
 
   it('chuyển pha: điểm đầu đúng camera hiện tại, điểm sau lùi xa boss và cao hơn', () => {

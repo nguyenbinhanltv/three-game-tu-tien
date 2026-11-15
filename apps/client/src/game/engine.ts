@@ -54,7 +54,7 @@ import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, r
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { chapterSting, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
-import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, Cutscene, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Vec3, type Waypoint } from './cutscene';
+import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, Cutscene, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Vec3, type Waypoint } from './cutscene';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
 import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
@@ -325,7 +325,7 @@ export class Game {
   private cineKind: 'sect' | 'boss' | 'phase' = 'sect';
   private cineShakeAt = 0;
   /** Boss mà cảnh xuất hiện đang nhìn theo (vị trí hiện tại, vì boss đang chạy), và độ cao ngực so với chân. */
-  private cineFocus: { id: string; rise: number } | null = null;
+  private cineFocus: { id: string; rise: number; scale: number } | null = null;
   /** Boss đã được xét cảnh xuất hiện trong lần giao chiến này (xóa khi boss hồi/gục). */
   private bossIntroSeen = new Set<string>();
   private pendingChapter: ChapterKind | null = null;
@@ -2041,7 +2041,7 @@ export class Game {
       const model = this.ents.monsters.get(id)?.model;
       const path = bossIntroPath({ x: m.x, y: m.y, z: m.z }, m.yaw, def.scale, { x: rp.x, y: rp.y, z: rp.z }, groundAt);
       this.beginBossCine('boss', path, BOSS_CUTSCENE, { name: monsterName(m.t), title: t(`mon.${m.t}.title`), text: t(key) });
-      this.cineFocus = { id, rise: 1.15 * def.scale };
+      this.cineFocus = { id, rise: 1.15 * def.scale, scale: def.scale };
       // Gầm: boss làm động tác lớn (nếu có), đất rung nhẹ, chớp mờ ở ngực.
       model?.bossMove?.('slam', 0.55);
       this.shake.kick(0.45);
@@ -2068,6 +2068,7 @@ export class Game {
     );
     postParams.pulseColor.value.set(def.accent ?? '#9fe6ff');
     this.beginBossCine('phase', path, PHASE_CUTSCENE, { name: monsterName(m.t), text: t(key) });
+    this.cineFocus = { id: src, rise: 1.2 * def.scale, scale: def.scale };
     this.shake.kick(0.9);
     return true;
   }
@@ -2096,17 +2097,35 @@ export class Game {
     if (this.cineKind === 'sect') this.chapter('sect');
   }
 
-  /** Nửa đầu cảnh xuất hiện mắt luôn dõi boss; sau đó trả dần về điểm nhìn của đường (khớp camera thường ở cuối). */
+  /**
+   * Theo boss trong cảnh: (1) cảnh xuất hiện: nửa đầu mắt luôn dõi boss đang chạy, sau đó trả dần về điểm nhìn của
+   * đường; (2) cả hai cảnh: camera không được sát boss hơn `minBossDist` (thấy trọn thân trên), nới ra dần ở 15%
+   * cuối để hòa liền vào camera thường.
+   */
   private focusCine(): void {
     const f = this.cineFocus!;
     const m = this.view.monsters.get(f.id);
     if (!m || m.st === MS_DEAD) return;
-    const x = this.cine.time / BOSS_CUTSCENE.dur;
-    const k = Math.max(0, Math.min(1, (x - 0.5) / 0.4));
-    const hold = (1 - k * k * (3 - 2 * k)) * this.cine.weight;
-    _cineL.x += (m.x - _cineL.x) * hold;
-    _cineL.y += (m.y + f.rise - _cineL.y) * hold;
-    _cineL.z += (m.z - _cineL.z) * hold;
+    const smooth = (k: number): number => {
+      const c = Math.max(0, Math.min(1, k));
+      return c * c * (3 - 2 * c);
+    };
+    const x = this.cine.time / (this.cineKind === 'boss' ? BOSS_CUTSCENE.dur : PHASE_CUTSCENE.dur);
+    if (this.cineKind === 'boss') {
+      const hold = (1 - smooth((x - 0.5) / 0.4)) * this.cine.weight;
+      _cineL.x += (m.x - _cineL.x) * hold;
+      _cineL.y += (m.y + f.rise - _cineL.y) * hold;
+      _cineL.z += (m.z - _cineL.z) * hold;
+    }
+    const min = minBossDist(f.scale) * (1 - smooth((x - 0.85) / 0.15)) * this.cine.weight;
+    const dx = _cineP.x - m.x;
+    const dz = _cineP.z - m.z;
+    const d = Math.hypot(dx, dz);
+    if (d < min) {
+      const k = d > 1e-3 ? min / d : 0;
+      _cineP.x = m.x + (d > 1e-3 ? dx * k : min);
+      _cineP.z = m.z + (d > 1e-3 ? dz * k : 0);
+    }
   }
 
   /** Hiệu ứng hậu kỳ theo nhịp cảnh boss: nhòe hướng tâm (xuất hiện) hoặc nhuộm màu (chuyển pha), kèm rung lần hai. */

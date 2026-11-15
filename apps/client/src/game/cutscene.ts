@@ -7,6 +7,8 @@
  * chính là camera thường của người chơi (truyền vào mỗi khung) nên bàn giao không có mối nối.
  */
 
+import { OCCLUDERS, type CircleCollider } from '@dtl/shared';
+
 export interface Vec3 {
   x: number;
   y: number;
@@ -177,32 +179,75 @@ export const PHASE_CUTSCENE = { dur: 1.9, out: 0.3 };
 /** Ngoài khoảng này người chơi không tham chiến nên không bị kéo camera. */
 export const BOSS_CUTSCENE_RANGE = 42;
 
+/** Lề thêm quanh hình tròn vật cản khi kiểm tầm nhìn camera→boss. */
+const OCC_PAD = 0.9;
+/** Thử lần lượt các độ lệch góc này (rad) quanh góc mặc định cho tới khi tầm nhìn thông. */
+const TURN_TRIES = [0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05];
+
+/** Đoạn (ax,az)→(bx,bz) có xuyên hình tròn vật cản nào không. Vật cản mà đích đã nằm trong thân (không xảy ra với va chạm thật) thì bỏ qua. */
+export function sightBlocked(ax: number, az: number, bx: number, bz: number, occ: readonly CircleCollider[]): boolean {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const len2 = dx * dx + dz * dz || 1;
+  for (const o of occ) {
+    const r = o.r + OCC_PAD;
+    if (Math.hypot(o.x - bx, o.z - bz) < o.r + 0.2) continue;
+    const t = Math.max(0, Math.min(1, ((o.x - ax) * dx + (o.z - az) * dz) / len2));
+    if (Math.hypot(ax + dx * t - o.x, az + dz * t - o.z) < r) return true;
+  }
+  return false;
+}
+
 /**
  * Đường camera đóng khung boss, đặt ở phía MẶT boss (hướng `yaw` boss đang nhìn, lệch ~40° về phía người chơi để có
  * khối). Boss đang lao tới theo hướng nhìn nên camera lệch hẳn khỏi trục đó (không bị boss chạy xuyên qua): đầu cảnh
- * thấp và rộng, nhìn lên thân boss; rồi áp sát nhẹ và hòa vào camera thường. `scale` là cỡ boss (monsters.json),
- * `groundAt` để không chui xuống đất.
+ * thấp và rộng, nhìn lên thân boss; rồi áp sát nhẹ và hòa vào camera thường. Nếu cự kiếm/cột chắn tầm nhìn thì thử
+ * góc khác (`occ`). `scale` là cỡ boss (monsters.json), `groundAt` để không chui xuống đất.
  */
-export function bossIntroPath(boss: Vec3, yaw: number, scale: number, player: Vec3, groundAt: (x: number, z: number) => number): Waypoint[] {
+export function bossIntroPath(
+  boss: Vec3,
+  yaw: number,
+  scale: number,
+  player: Vec3,
+  groundAt: (x: number, z: number) => number,
+  occ: readonly CircleCollider[] = OCCLUDERS,
+): Waypoint[] {
   // Người chơi nằm bên nào của trục nhìn (dấu của tích có hướng) thì camera đứng bên đó.
   const fx = Math.sin(yaw);
   const fz = Math.cos(yaw);
   const side = fz * (player.x - boss.x) - fx * (player.z - boss.z) >= 0 ? 1 : -1;
-  const at = (turn: number, r: number, rise: number, look: number): Waypoint => {
-    const a = yaw + side * turn;
-    const x = boss.x + Math.sin(a) * r;
-    const z = boss.z + Math.cos(a) * r;
-    return { p: v(x, Math.max(groundAt(x, z) + 0.9, boss.y + rise), z), look: v(boss.x, boss.y + look, boss.z) };
+  const build = (d: number): Waypoint[] => {
+    const at = (turn: number, r: number, rise: number, look: number): Waypoint => {
+      const a = yaw + side * turn + d;
+      const x = boss.x + Math.sin(a) * r;
+      const z = boss.z + Math.cos(a) * r;
+      return { p: v(x, Math.max(groundAt(x, z) + 0.9, boss.y + rise), z), look: v(boss.x, boss.y + look, boss.z) };
+    };
+    return [at(0.7, 6 + 3.4 * scale, 0.35 * scale, 1.0 * scale), at(0.65, 5 + 2.6 * scale, 0.9 * scale + 0.4, 1.3 * scale)];
   };
-  return [at(0.7, 6 + 3.4 * scale, 0.35 * scale, 1.0 * scale), at(0.65, 5 + 2.6 * scale, 0.9 * scale + 0.4, 1.3 * scale)];
+  let first: Waypoint[] | null = null;
+  for (const d of TURN_TRIES) {
+    const path = build(d);
+    first ??= path;
+    if (!path.some((w) => sightBlocked(w.p.x, w.p.z, boss.x, boss.z, occ))) return path;
+  }
+  return first!;
 }
 
 /**
  * Chuyển pha: từ camera hiện tại vòng quanh boss sang phía MẶT boss (hướng `yaw` boss đang nhìn, lệch ~25° về phía
  * camera cho có khối), nâng nhẹ, mắt dõi ngực boss, rồi trả về camera thường. Điểm giữa nằm trên cung ngắn nhất
- * quanh boss nên camera không xuyên qua thân khi đang ở sau lưng.
+ * quanh boss nên camera không xuyên qua thân khi đang ở sau lưng. Vật cản chắn tầm nhìn thì thử góc khác.
  */
-export function phaseShiftPath(cam: Vec3, camLook: Vec3, boss: Vec3, yaw: number, scale: number, groundAt: (x: number, z: number) => number): Waypoint[] {
+export function phaseShiftPath(
+  cam: Vec3,
+  camLook: Vec3,
+  boss: Vec3,
+  yaw: number,
+  scale: number,
+  groundAt: (x: number, z: number) => number,
+  occ: readonly CircleCollider[] = OCCLUDERS,
+): Waypoint[] {
   const TAU = Math.PI * 2;
   const wrap = (a: number): number => ((((a + Math.PI) % TAU) + TAU) % TAU) - Math.PI;
   const dx = cam.x - boss.x;
@@ -210,16 +255,30 @@ export function phaseShiftPath(cam: Vec3, camLook: Vec3, boss: Vec3, yaw: number
   const camAng = Math.atan2(dx, dz);
   const camR = Math.hypot(dx, dz) || 1;
   const side = wrap(camAng - yaw) >= 0 ? 1 : -1;
-  const frontAng = yaw + side * 0.44;
   const frontR = 6 + 3 * scale;
-  const midAng = frontAng + wrap(camAng - frontAng) * 0.5;
-  const midR = Math.max(5 + 2 * scale, (camR + frontR) * 0.5);
   const look = v(boss.x, boss.y + 1.2 * scale, boss.z);
   const at = (ang: number, r: number, rise: number): Waypoint => {
     const x = boss.x + Math.sin(ang) * r;
     const z = boss.z + Math.cos(ang) * r;
     return { p: v(x, Math.max(groundAt(x, z) + 1.2, boss.y + rise), z), look };
   };
-  // Điểm đầu đúng camera hiện tại: không có mối nối.
-  return [{ p: v(cam.x, cam.y, cam.z), look: camLook }, at(midAng, midR, 1.1 * scale + 0.8), at(frontAng, frontR, 1.0 * scale + 1.2)];
+  const build = (d: number): Waypoint[] => {
+    const frontAng = yaw + side * 0.44 + d;
+    const midAng = frontAng + wrap(camAng - frontAng) * 0.5;
+    const midR = Math.max(5 + 2 * scale, (camR + frontR) * 0.5);
+    // Điểm đầu đúng camera hiện tại: không có mối nối.
+    return [{ p: v(cam.x, cam.y, cam.z), look: camLook }, at(midAng, midR, 1.1 * scale + 0.8), at(frontAng, frontR, 1.0 * scale + 1.2)];
+  };
+  let first: Waypoint[] | null = null;
+  for (const d of TURN_TRIES) {
+    const path = build(d);
+    first ??= path;
+    if (!path.slice(1).some((w) => sightBlocked(w.p.x, w.p.z, boss.x, boss.z, occ))) return path;
+  }
+  return first!;
+}
+
+/** Khoảng cách ngang tối thiểu camera cảnh giữ với boss để thấy trọn thân trên. */
+export function minBossDist(scale: number): number {
+  return 4.5 + 2.2 * scale;
 }
