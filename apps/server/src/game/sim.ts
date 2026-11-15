@@ -1516,7 +1516,7 @@ export class GameSim {
       this.realm.failTrial(p, 'dead');
     } else {
       const lost = c.loseXp(DEATH_XP_LOSS);
-      this.sys(p, 'sys.died', { n: lost }, 'bad');
+      this.sys(p, lost > 0 ? 'sys.died' : 'sys.died_free', { n: lost }, 'bad');
     }
     this.fx({ t: 'death', src: p.sid });
   }
@@ -2240,7 +2240,7 @@ export class GameSim {
       console.log(`[trib] ${c.name} đạt Trúc Cơ`);
     } else {
       const lost = c.loseXp(TRIBULATION_FAIL_XP_LOSS);
-      if (!silent) this.sys(p, 'sys.trib_fail', { n: lost }, 'bad');
+      if (!silent) this.sys(p, lost > 0 ? 'sys.trib_fail' : 'sys.trib_fail_free', { n: lost }, 'bad');
     }
   }
 

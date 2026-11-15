@@ -680,6 +680,50 @@ export class Vfx {
     );
   }
 
+  /**
+   * Hồi sinh (P2-B5): linh quang xanh ngọc nhạt dâng quanh người: ống sáng mảnh, hai vành sóng nối nhau và một vòng
+   * hạt linh khí xoáy bay lên. Cộng sáng, mảnh, để lộ màu cảnh khi mực đang rút. 3 + 10 lưới trong ~2,4 giây.
+   */
+  reviveGlow(pos: PosFn, dur = 2.4): void {
+    const core = this.fx(TUBE_GEO, 0xcdf6ff, 0.34, 'flat');
+    const rings = [this.fx(RING_GEO, 0xbff0ff, 0.8), this.fx(RING_GEO, 0xfff1c4, 0.6)];
+    for (const r of rings) r.rotation.x = -Math.PI / 2;
+    const N = 10;
+    const motes: FxMesh[] = [];
+    for (let i = 0; i < N; i++) motes.push(this.fx(G.ico1, i % 3 === 0 ? 0xfff1c4 : 0xbff0ff, 0.9));
+    this.add(
+      dur,
+      (k) => {
+        if (!pos(_a)) return;
+        const rise = Math.min(1, k * 3);
+        const fade = Math.pow(1 - k, 1.4);
+        const h = 9 * rise;
+        core.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
+        core.scale.set(0.55 * (1 - k * 0.5), h, 0.55 * (1 - k * 0.5));
+        core.fxOpacity = 0.34 * fade;
+        rings.forEach((r, j) => {
+          const kk = Math.max(0, Math.min(1, (k - j * 0.18) / 0.82));
+          r.position.set(_a.x, _a.y - 1.0, _a.z);
+          r.scale.setScalar(0.8 + kk * 4.5);
+          r.fxOpacity = 0.8 * (1 - kk) * (kk > 0 || j === 0 ? 1 : 0);
+        });
+        for (let i = 0; i < N; i++) {
+          const a = (i / N) * Math.PI * 2 + k * 5;
+          const r = (1.5 - k * 0.9) * (0.75 + (i % 3) * 0.2);
+          const y = (0.2 + ((k * 3 + i * 0.37) % 1) * 4.2) * (0.6 + 0.4 * rise);
+          motes[i].position.set(_a.x + Math.cos(a) * r, _a.y - 1.1 + y, _a.z + Math.sin(a) * r);
+          motes[i].scale.setScalar(0.16 * (1 - k * 0.6));
+          motes[i].fxOpacity = 0.9 * fade;
+        }
+      },
+      () => {
+        this.drop(core);
+        for (const r of rings) this.drop(r);
+        for (const m of motes) this.drop(m);
+      },
+    );
+  }
+
   /** Lớp linh khí hộ thể bao quanh người. */
   shield(pos: PosFn, dur: number, stillOn: () => boolean, color = 0x7fd8ff, scale = 1, alpha = 0.28): void {
     const m = this.fx(G.ico1, color, alpha, 'dome');

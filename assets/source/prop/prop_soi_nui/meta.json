@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_soi_nui",
+  "type": "prop",
+  "budgetClass": "prop",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 5000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "prop/prop_soi_nui/tripo/raw_v01.glb",
+    "size": {
+      "height": 12
+    },
+    "yaw": -90
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex imagegen, brief cây P2-A4b (prompt_34_v01.txt)",
+      "date": "2026-11-15",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "parentTaskId": null,
+      "params": {},
+      "seed": null,
+      "quote": 0,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Dựng trên Tripo web app (image-to-3D, người dùng làm tay, không có task id); runtime hạ LOD0 về trần lớp prop 5000 tam giác (art bible), texture 1024."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (image→3D) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}

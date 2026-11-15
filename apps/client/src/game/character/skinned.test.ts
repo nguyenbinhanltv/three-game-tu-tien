@@ -113,7 +113,8 @@ describe('sói có xương (mon_soi_xam thật)', () => {
       expect(m.root.scale.x).toBeCloseTo(MONSTER.get(id)!.scale);
       m.dispose();
     }
-    const other = [...MONSTER.values()].find((d) => !MONSTER_SKINS[d.id])!;
+    // Từ khi Hàn Giao có model xương, mọi quái trong dữ liệu đều có skin; quái mới thêm chưa có skin vẫn phải về model khối.
+    const other = [...MONSTER.values()].find((d) => !MONSTER_SKINS[d.id]) ?? { ...MONSTER.get('mon_soi_xam')!, id: 'mon_chua_co_skin' };
     expect(skins.create(other)).toBeInstanceOf(MonsterModel);
     skins.dispose();
   });
