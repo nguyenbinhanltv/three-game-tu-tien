@@ -19,6 +19,11 @@ Hiện theo **từng món đã mặc** (một món lẻ cũng hiện, không c�
 - Dựng lại model khi mã `sa` đổi (mặc/tháo đồ hiếm), hình học dựng một lần cho mỗi asset × mã và dùng chung.
 - Ảnh: `pnpm shots:sets --out <thư mục>` (chạy `pnpm dev` ở PORT/CLIENT_PORT, tắt tiếng, mặc bộ bằng `/gm set <id bộ>`).
 
+## Chi tiết hộ uyển, ống ủng, vai giáp
+
+- Hộ uyển và ống ủng là **ống côn** (rộng ở khuỷu/đầu gối, thon ~20% về cổ tay/cổ chân), mép trên loe vát, hai vòng viền, hàng đinh tán và một tấm dày ở mặt ngoài (hộ uyển) hoặc mặt trước (lưỡi gà ống ủng), nên không còn đối xứng trụ. Hộ uyển còn có vòng khảm màu viền ở giữa. Hoa văn khắc làm bằng hình học và màu đỉnh (không có normal map riêng).
+- Vai giáp Huyền Giáp (và Hàn Giao Lân, nhẹ hơn) có thêm 2–3 tầng vảy lục giác nhọn nghiêng xuống như ngói, nên không còn là nửa quả cầu trơn.
+
 ## Ngân sách
 
 Đo bằng `__game.info()` ở sân tông môn, một người chơi (cộng cả pass bóng), thân trần → mặc đủ bộ (draw call): Lạc Kiếm +5, Huyền Giáp +4 đến +5, Đan Tâm +5, Hàn Giao +2; tam giác +1 đến 3 nghìn mỗi người (tối đa 3000 tam giác/bộ, test giữ). Chỉ LOD0 (tối đa `LOD0_MAX` = 12 người cùng lúc) có phụ kiện.
