@@ -95,7 +95,7 @@ Hướng hình ảnh hiện là **bán tả thực điện ảnh, sương sớm*
 Khác với spec ban đầu (chấp nhận, ghi lại để không làm lệch thêm):
 
 - Không dùng ECS, Rapier, VAT, Web Worker cho game: thực thể là object thường (đám đông dùng `SkinnedMesh` + LOD/ngân sách `LOD0_MAX`); va chạm là heightmap + hình tròn trong `shared/level.ts`.
-- Chưa có AOI: cả kênh nhận trạng thái của nhau qua `@colyseus/schema` (đã đo ổn ở 50–100 người).
+- AOI (M-2): `PlayerS`/`MonS` có `@view()` từng trường, `apps/server/src/aoi.ts` thêm/bớt thực thể vào `client.view` theo khoảng cách (160/190 m, boss 300/330 m; luôn thấy mình, đồng đội, đối thủ tỉ thí); client ngoài tầm vẫn thấy khóa và số lượng (bản ghi rỗng, `visibleMon`/`visiblePlayer` che ở `game/aoiView.ts`). Đừng chuyển `@view` lên mức collection (giải mã lỗi `refId not found` ở `schema 3.0.76`). FX/sát thương chỉ gửi người trong tầm (`Sim.emit`). Bãi quái theo cụm (`game/camps.ts`), giờ hồi sinh tinh anh/boss qua `S.BOSS_TIMERS`. Chi tiết: `docs/m2-spawn/README.md`.
 - Bảng DB tạo bằng DDL trong `db.ts` (không dùng drizzle-kit migrate). Đổi schema phải sửa cả DDL lẫn bảng Drizzle.
 - Độ kiếp diễn ra ngay trong room thế giới, không phải room riêng. Tổ đội sống trong bộ nhớ tiến trình, không lưu DB.
 - Bí cảnh là một lòng chảo trên cùng bản đồ (Kiếm Trủng, tây bắc), chạy trong room riêng.
@@ -120,7 +120,7 @@ Khác với spec ban đầu (chấp nhận, ghi lại để không làm lệch t
 - **Safari thật**: `pnpm compat` chỉ chạy WebKit của Playwright; chưa thử trên Safari macOS/iOS thật.
 - **Mời bạn bè**: chưa có Client ID Google thật, chưa chạy đường đăng nhập Google và danh sách mời (`pnpm invite`) trên máy chủ thật; chưa có `apps/admin`.
 - **Phase 3-8 (pháp bảo)**: đang làm. **Phase 3-10 (cân bằng)**: chưa làm; nhịp lên cấp ~2,2 giờ so với mục tiêu 3–4 giờ (xem `pnpm sim:progress`).
-- Tinh anh còn dựng bằng khối; chưa có AOI, chưa có giao dịch giữa người chơi (`tradable()` trong shared đã sẵn); chưa có mobile.
+- Tinh anh còn dựng bằng khối; chưa có giao dịch giữa người chơi (`tradable()` trong shared đã sẵn); chưa có mobile.
 
 ## Quy tắc bất biến
 
