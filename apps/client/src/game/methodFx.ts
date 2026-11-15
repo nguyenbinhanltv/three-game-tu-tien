@@ -74,7 +74,19 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       v.swordShot(from, c.dst, color, 1.25 * sc, 0.16, (at) => {
         v.slashMark(c.dst, 0xffffff, 0.7 * sc, -0.6, 0.24, false, at.clone());
         v.pillar(c.dst, color, m.v === 'deep' ? 0.9 : 0.6, 0.3, m.v === 'deep' ? 3.4 : 2.4, 0.22);
-        if (m.v === 'spread') v.burst(at, color, 1.8, 0.45);
+        if (m.v === 'deep') {
+          // Ấn sâu: dấu chém dọc thứ hai và trụ cao, dấu ấn nặng.
+          v.slashVertical(c.dst, color, 1.0);
+          v.pillar(c.dst, 0xffffff, 1.1, 0.14, 5.5, 0.28);
+        }
+        if (m.v === 'spread') {
+          // Ấn lan: ba tia nhỏ tỏa ra hai bên mục tiêu, như dấu ấn bắn sang quái gần.
+          v.burst(at, color, 1.8, 0.45);
+          for (const [dx, dz] of [[2.6, 1.2], [-2.4, 1.8], [0.4, -2.8]]) {
+            const p = at.clone().add(new THREE.Vector3(dx, -0.5, dz));
+            v.swordShot(at.clone(), fixed(p), color, 0.6, 0.22, (h) => v.pillar(fixed(h.clone()), color, 0.6, 0.2, 2.2, 0.2));
+          }
+        }
       });
       return true;
     }
@@ -94,7 +106,11 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       const r = m.r ?? 12;
       groundRing(v, x, z, r, color, 1.0);
       v.pillar(c.src, color, 0.8, 0.3, 3 * sc, 0.12);
-      if (m.v === 'guard') v.shield(c.src, 3, () => true, color, 0.8, 0.14);
+      if (m.v === 'wide') after(v, 0.3, () => groundRing(v, x, z, r * 0.55, color, 0.8));
+      if (m.v === 'guard') {
+        const end = performance.now() + 3000;
+        v.shield(c.src, 3, () => performance.now() < end, color, 0.9, 0.16);
+      }
       return true;
     }
     case 'kimcuong': {
@@ -111,6 +127,16 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       const r = m.r ?? 10;
       groundRing(v, x, z, r, color, Math.min(m.d ?? 6, 3));
       v.pillar(c.src, color, 1.0, 0.3 * (m.v === 'self' ? 1.3 : 1), 5, 0.1);
+      if (m.v === 'wide') after(v, 0.3, () => groundRing(v, x, z, r * 0.6, color, 1.5));
+      if (m.v === 'self') {
+        // Dồn vào thân: trụ dày hơn quanh người, nhịp sáng lặp mỗi giây.
+        v.pillar(c.src, 0xd8ffe4, 1.2, 0.55, 3.2, 0.2);
+        for (let k = 1; k <= 3; k++) {
+          after(v, k, () => {
+            if (c.src(_a)) v.burst(_a, color, 1.4, 0.3);
+          });
+        }
+      }
       return true;
     }
     case 'hoithien': {
@@ -126,56 +152,120 @@ export function playMethodFx(c: MethodFxCtx): boolean {
   return false;
 }
 
+/** Chạy `fn` sau `sec` giây theo đồng hồ của Vfx (dừng cùng Vfx, không để hẹn giờ sót khi đổi room). */
+function after(v: Vfx, sec: number, fn: () => void): void {
+  v.track(sec, () => {}, fn);
+}
+
 /**
- * Phần thêm theo biến thức cho 6 chiêu chung (sau khi hiệu ứng gốc đã phát): thêm thanh kiếm, vệt đất, vòng lan…
+ * Phần thêm theo biến thức cho 6 chiêu chung (sau khi hiệu ứng gốc đã phát). Mỗi biến thức có một dấu hiệu hình riêng,
+ * đọc được từ xa: màu, số thanh, vòng đất, nhịp lặp. Chỉ cộng sáng thấp (alpha ≤ 0,3), không phủ người/quái.
  * Biến thức đổi hình dạng, không chỉ đổi con số.
  */
 export function playVariantExtras(c: MethodFxCtx, color: number): void {
   const { v, m } = c;
   if (!m.v) return;
+  const sc = levelScale(m.lv);
   switch (m.t + ':' + m.v) {
     case 'sword:twin': {
+      // Hai thanh song song, thanh thứ hai chậm một nhịp: thấy rõ "bắn đôi".
       if (!c.src(_a)) break;
-      v.swordShot(_a.clone().add(new THREE.Vector3(0.5, 0.35, 0)), c.dst, color, 0.9, 0.25);
+      const from = _a.clone();
+      v.swordShot(from.clone().add(new THREE.Vector3(-0.55, 0.3, 0)), c.dst, color, 0.9 * sc, 0.2);
+      after(v, 0.07, () => v.swordShot(from.clone().add(new THREE.Vector3(0.55, 0.3, 0)), c.dst, color, 0.9 * sc, 0.2, (at) => v.burst(at, color, 0.8, 0.2)));
       break;
     }
     case 'sword:pierce': {
-      // Kiếm xuyên qua mục tiêu, lao tiếp tới quái phía sau (toạ độ do server gửi).
+      // Kiếm xuyên qua mục tiêu, lao tiếp tới quái phía sau (toạ độ do server gửi); chỗ xuyên có tia chớp trắng.
       if (m.x === undefined || m.z === undefined || !c.dst(_a)) break;
       const behind = new THREE.Vector3(m.x, _a.y, m.z);
-      v.swordShot(_a.clone(), fixed(behind), color, 1, 0.18, (at) => v.slashMark(fixed(at.clone()), 0xcff3ff, 0.5, -0.55, 0.2, false, at.clone()));
+      v.burst(_a, 0xffffff, 1.2, 0.18);
+      v.swordShot(_a.clone(), fixed(behind), color, 1.1 * sc, 0.2, (at) => v.slashMark(fixed(at.clone()), 0xcff3ff, 0.6, -0.55, 0.22, false, at.clone()));
       break;
     }
     case 'slash:stun': {
-      if (c.dst(_a)) v.burst(_a, 0xfff2b8, 1.8, 0.35);
+      // Sao choáng vàng nổ ra trên đầu mục tiêu rồi một vòng nhỏ treo lơ lửng.
+      if (!c.dst(_a)) break;
+      v.burst(_a, 0xfff2b8, 2.2, 0.4);
+      v.pillar(c.dst, 0xffe9a0, 0.6, 0.22, 1.8, 0.22);
       break;
     }
     case 'slash:trail': {
-      // Vệt kiếm khí nằm lại trên đất 3 giây.
+      // Vệt kiếm khí nằm lại trên đất 3 giây, mỗi giây một nhịp sáng báo đang gây sát thương.
       if (!c.dst(_a)) break;
-      groundRing(v, _a.x, _a.z, 3.5, color, 3);
+      const x = _a.x;
+      const z = _a.z;
+      groundRing(v, x, z, 3.5, color, 3);
+      for (let k = 1; k <= 3; k++) after(v, k, () => v.burst(new THREE.Vector3(x, groundAt(x, z) + 0.4, z), color, 1.5, 0.3));
       break;
     }
-    case 'thunder:chain': {
-      if (!c.dst(_a)) break;
-      v.lightning(_a.x + 3.2, _a.y - 1, _a.z - 2.4, color, 0.9, m.sd ? m.sd + 7 : undefined);
-      v.lightning(_a.x - 3.0, _a.y - 1, _a.z + 2.8, color, 0.8, m.sd ? m.sd + 13 : undefined);
+    case 'shield:big': {
+      // Màn chắn lớn: thêm một lớp vỏ ngoài rộng và vòng nền to; gọn hơn về thời gian nên vỏ tắt sớm.
+      const end = performance.now() + (m.d ?? 5) * 1000;
+      v.shield(c.src, m.d ?? 5, () => performance.now() < end, color, 1.7, 0.07);
+      if (c.src(_a)) groundRing(v, _a.x, _a.z, 3.2, color, 1.0);
       break;
     }
-    case 'rain:focus': {
-      v.pillar(c.dst, color, 0.9, 0.5, 6, 0.16);
+    case 'shield:ally': {
+      // Truyền khiên: một luồng sáng từ người ra tay sang đồng đội, đồng đội dựng trụ mảnh.
+      if (m.dst && c.dst(_a)) {
+        const from = _a.clone();
+        v.swordShot(from, c.src, 0xcff3ff, 0.9, 0.3, (at) => v.burst(at, 0xcff3ff, 1.2, 0.3));
+      }
+      v.pillar(c.src, 0xcff3ff, 0.9, 0.3, 3.2, 0.2);
       break;
     }
     case 'rain:wide': {
-      if (m.x !== undefined && m.z !== undefined) groundRing(v, m.x, m.z, m.r ?? 9, color, 1.1);
+      // Mưa rộng: hai vòng đất nối nhau lan ra mép.
+      if (m.x === undefined || m.z === undefined) break;
+      const x = m.x;
+      const z = m.z;
+      const r = m.r ?? 9;
+      groundRing(v, x, z, r * 0.6, color, 0.9);
+      after(v, 0.25, () => groundRing(v, x, z, r, color, 1.1));
+      break;
+    }
+    case 'rain:focus': {
+      // Mưa dồn: một trụ sáng cao mảnh ngay mục tiêu và vòng nhỏ sắc.
+      v.pillar(c.dst, color, 0.9, 0.45, 8, 0.2);
+      if (m.x !== undefined && m.z !== undefined) groundRing(v, m.x, m.z, m.r ?? 6, 0xfff0a8, 0.9);
+      break;
+    }
+    case 'heal:instant': {
+      // Hồi tức thì: chớp lục ngọc gắt, trụ rất ngắn.
+      if (c.src(_a)) {
+        v.burst(_a, 0xb8ffd0, 1.5, 0.28);
+        groundRing(v, _a.x, _a.z, 2.6, 0xb8ffd0, 0.6);
+      }
+      v.pillar(c.src, 0xb8ffd0, 0.45, 0.32, 3.6, 0.24);
       break;
     }
     case 'heal:hot': {
-      v.pillar(c.src, 0x7dffa0, 2.2, 0.4, 3.5, 0.18);
+      // Hồi dần: ba nhịp trụ lục nhỏ lặp mỗi 1,2 giây, như dòng nước chảy vào người.
+      v.pillar(c.src, 0x7dffa0, 1.0, 0.5, 2.6, 0.28);
+      for (let k = 1; k <= 3; k++) {
+        after(v, k * 1.2, () => {
+          v.pillar(c.src, 0x7dffa0, 0.8, 0.45, 2.4, 0.3);
+          if (c.src(_a)) groundRing(v, _a.x, _a.z, 2.2, 0x7dffa0, 0.9);
+        });
+      }
       break;
     }
-    case 'shield:ally':
-    case 'shield:big':
+    case 'thunder:quick': {
+      // Sét tức thời: vòng xung kích dưới chân mục tiêu, không có nhát chém dọc (không niệm).
+      if (c.dst(_a)) {
+        v.burst(_a, 0xfff0a8, 1.1, 0.2);
+        groundRing(v, _a.x, _a.z, 2.8, 0xfff0a8, 0.5);
+      }
       break;
+    }
+    case 'thunder:chain': {
+      // Sét lan: hai tia phụ rẽ sang hai bên, mỗi đầu tia một chớp nhỏ.
+      if (!c.dst(_a)) break;
+      v.lightning(_a.x + 3.2, _a.y - 1, _a.z - 2.4, color, 0.9, m.sd ? m.sd + 7 : undefined);
+      v.lightning(_a.x - 3.0, _a.y - 1, _a.z + 2.8, color, 0.8, m.sd ? m.sd + 13 : undefined);
+      groundRing(v, _a.x, _a.z, 6, color, 0.8);
+      break;
+    }
   }
 }

@@ -487,6 +487,38 @@ async function main() {
     await g.room.leave(true);
   }
 
+  // 15. Bí tịch và biến thức (P3-6): đổi biến thức dồn dập bị giãn; chép bí tịch giả không ra bí tịch (tài khoản riêng).
+  {
+    const g = await join('kt_bitich' + (Date.now() % 100000));
+    const msgs: { k: string }[] = [];
+    let inv: unknown[] = [];
+    g.room.onMessage(S.SYS, (m: { k: string }) => msgs.push(m));
+    g.room.onMessage(S.INV, (m: { inv?: unknown[] }) => (inv = m.inv ?? inv));
+    const chat = async (m: string) => {
+      g.room.send(C.CHAT, { m });
+      await W(900);
+    };
+    await chat('/gm level 12');
+    await chat('/gm method lac_kiem_quyet 3');
+    // 3-6: đổi biến thức dồn dập bị giãn; chép bí tịch giả (thiếu nguyên liệu, xa Dược sư) không ra bí tịch.
+    await chat('/gm tp tong_mon');
+    await W(800);
+    const wait0 = msgs.filter((m) => m.k === 'sys.variant_wait').length;
+    g.room.send(C.SKILL_VAR, { skill: 'skl_phi_kiem', v: 'a' });
+    await W(800);
+    g.room.send(C.SKILL_VAR, { skill: 'skl_kiem_khi_tram', v: 'b' });
+    await W(500);
+    check('đổi biến thức hai lần liên tiếp: lần sau bị giãn', msgs.filter((m) => m.k === 'sys.variant_wait').length > wait0);
+    const scrolls = () => (inv as ({ id: string; n: number } | null)[]).reduce((n, s) => (s?.id === 'itm_bi_tich_tan_quyen' ? n + s.n : n), 0);
+    const s0 = scrolls();
+    g.room.send(C.CRAFT, { id: 'rcp_bi_tich', n: 20, r: 'sec-cr-0001' });
+    g.room.send(C.CRAFT, { id: 'rcp_bi_tich', n: -1, r: 'sec-cr-0002' });
+    await W(600);
+    check('chép bí tịch thiếu nguyên liệu không ra bí tịch', scrolls() === s0, `${s0} → ${scrolls()}`);
+    check('message chép bí tịch/biến thức không làm sập server', await health());
+    await g.room.leave(true);
+  }
+
   // 13. Tham số kiểm thử ?god / ?at (M1-10): tài khoản thử dùng được; server production / có Google thì không.
   await testParamsChecks();
 

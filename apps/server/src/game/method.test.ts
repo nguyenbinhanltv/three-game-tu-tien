@@ -11,6 +11,10 @@ let WorldState: typeof import('../state').WorldState;
 let Character: typeof import('./character').Character;
 let sqlite: typeof import('../db').sqlite;
 let MONSTER: typeof import('@dtl/content').MONSTER;
+let QUEST: typeof import('@dtl/content').QUEST;
+let SKILL: typeof import('@dtl/content').SKILL;
+let VARIANTS: typeof import('@dtl/content').VARIANTS;
+let lootOf: typeof import('@dtl/content/loot').lootOf;
 let NPC: typeof import('@dtl/content').NPC;
 
 beforeAll(async () => {
@@ -18,7 +22,8 @@ beforeAll(async () => {
   ({ WorldState } = await import('../state'));
   ({ Character } = await import('./character'));
   ({ sqlite } = await import('../db'));
-  ({ MONSTER, NPC } = await import('@dtl/content'));
+  ({ MONSTER, NPC, QUEST, SKILL, VARIANTS } = await import('@dtl/content'));
+  ({ lootOf } = await import('@dtl/content/loot'));
 });
 
 const X = 2040;
@@ -503,5 +508,73 @@ describe('hỗ trợ đồng đội không can thiệp độ kiếp/tâm ma', ()
     sim.onSkill(p, { id: 'skl_hoi_thien_dan_lo' });
     expect(dead.s.fl & PF_DEAD).toBe(0);
     expect(busy.char.hp).toBe(1);
+  });
+});
+
+describe('bí tịch: nguồn và luật đổi biến thức (3-6)', () => {
+  const cnt = (p: Ent, id: string) => p.char.inv.reduce((n, s) => (s?.id === id ? n + s.n : n), 0);
+  const lvs = (p: Ent, o: Record<string, number>) => {
+    p.char.meta.skillLv = o;
+  };
+  it('đổi biến thức cách nhau ít nhất 5 giây; chọn lại cái đang chọn không tính', () => {
+    const { sim, p } = setup(10);
+    lvs(p, { skl_phi_kiem: 3, skl_kiem_khi_tram: 3 });
+    sim.onSkillVar(p, { skill: 'skl_phi_kiem', v: 'a' });
+    expect(p.char.meta.skillVar?.skl_phi_kiem).toBe('a');
+    sim.onSkillVar(p, { skill: 'skl_kiem_khi_tram', v: 'b' });
+    expect(p.char.meta.skillVar?.skl_kiem_khi_tram).toBeUndefined();
+    sim.onSkillVar(p, { skill: 'skl_phi_kiem', v: 'a' });
+    sim.now += 5100;
+    sim.onSkillVar(p, { skill: 'skl_kiem_khi_tram', v: 'b' });
+    expect(p.char.meta.skillVar?.skl_kiem_khi_tram).toBe('b');
+  });
+  it('mọi biến thức A/B cấp 3 đều ra được: FX mang nhãn riêng, chiêu không lỗi', () => {
+    const { sim, sent, p, mon, fresh } = setup(12);
+    const m = mon();
+    p.char.meta.method = 'lac_kiem_quyet';
+    const tags = new Set<string>();
+    for (const [id, vars] of Object.entries(VARIANTS)) {
+      const sk = SKILL.get(id)!;
+      if (sk.method && sk.method !== 'lac_kiem_quyet') continue;
+      for (const v of ['a', 'b'] as const) {
+        p.char.meta.skillLv = { [id]: 3 };
+        p.char.meta.skillVar = { [id]: v };
+        p.char.hp = p.char.mhp;
+        p.char.mp = p.char.mmp;
+        fresh(p);
+        sim.onSkill(p, { id, t: m.id });
+        // Lôi Đình A bỏ niệm chú; B niệm lâu hơn bản gốc.
+        if (id === 'skl_loi_dinh_nhat_kiem') expect(p.casting === null, `${id}:${v}`).toBe(v === 'a');
+        if (p.casting) sim.now += 3000, (sim as unknown as { finishCast(p: Ent): void }).finishCast(p);
+        const fx = sent.filter((x) => x.type === S.FX).map((x) => x.msg as { v?: string }).filter((x) => x.v === vars[v].fx).pop();
+        expect(fx, `${id}:${v}`).toBeDefined();
+        tags.add(`${id}:${vars[v].fx}`);
+        sent.length = 0;
+      }
+    }
+    expect(tags.size).toBeGreaterThanOrEqual(12);
+  });
+  it('quái rơi bí tịch; có nhiệm vụ thưởng bí tịch; Dược sư chép bí tịch từ yêu đan + thiết tinh có ledger', () => {
+    const drops = [...MONSTER.values()].filter((m) => (lootOf(m.id).drops ?? []).some((d) => d.item === SCROLL));
+    expect(drops.length).toBeGreaterThanOrEqual(6);
+    expect(QUEST.size).toBeGreaterThan(0);
+    const rewarded = [...QUEST.values()].filter((q) => q.rewards.items?.some((i) => i.id === SCROLL));
+    expect(rewarded.length).toBeGreaterThanOrEqual(5);
+    const { sim, p } = setup();
+    const npc = NPC.get('npc_duoc_su')!;
+    p.move.x = npc.x;
+    p.move.z = npc.z;
+    p.char.tx('mat', null, (d) => d.add('itm_yeu_dan', 8) && d.add('itm_thiet_tinh', 2) && (d.addGold(500), true));
+    const gold = p.char.gold;
+    sim.onCraft(p, { id: 'rcp_bi_tich', n: 1, r: 'cr-000001' });
+    sim.onCraft(p, { id: 'rcp_bi_tich', n: 1, r: 'cr-000001' });
+    expect(cnt(p, SCROLL)).toBe(1);
+    expect(cnt(p, 'itm_yeu_dan')).toBe(0);
+    expect(p.char.gold).toBe(gold - 120);
+    // Thiếu nguyên liệu: không ra thêm.
+    sim.onCraft(p, { id: 'rcp_bi_tich', n: 1, r: 'cr-000002' });
+    expect(cnt(p, SCROLL)).toBe(1);
+    const rows = sqlite.prepare("SELECT kind, ref, delta FROM ledger WHERE char_id = ? AND reason = 'craft:rcp_bi_tich'").all(p.char.id) as { kind: string; ref: string; delta: number }[];
+    expect(rows.find((r) => r.ref === SCROLL)?.delta).toBe(1);
   });
 });
