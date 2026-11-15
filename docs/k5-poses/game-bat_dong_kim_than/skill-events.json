@@ -1,0 +1,318 @@
+{
+ "m-combo": [
+  {
+   "ms": 8,
+   "kind": "windup",
+   "index": 0,
+   "combo": 0,
+   "t": 0
+  },
+  {
+   "ms": 269,
+   "kind": "hit",
+   "index": 0,
+   "combo": 0,
+   "t": 0.268
+  },
+  {
+   "ms": 269,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 0,
+   "t": 0.268
+  },
+  {
+   "ms": 944,
+   "kind": "end",
+   "index": 1,
+   "combo": 0,
+   "t": 0.802
+  },
+  {
+   "ms": 982,
+   "kind": "windup",
+   "index": 0,
+   "combo": 1,
+   "t": 0
+  },
+  {
+   "ms": 1250,
+   "kind": "hit",
+   "index": 0,
+   "combo": 1,
+   "t": 0.268
+  },
+  {
+   "ms": 1250,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 1,
+   "t": 0.268
+  },
+  {
+   "ms": 1853,
+   "kind": "end",
+   "index": 1,
+   "combo": 1,
+   "t": 0.801
+  },
+  {
+   "ms": 1928,
+   "kind": "windup",
+   "index": 0,
+   "combo": 2,
+   "t": 0
+  },
+  {
+   "ms": 2194,
+   "kind": "hit",
+   "index": 0,
+   "combo": 2,
+   "t": 0.267
+  },
+  {
+   "ms": 2194,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 2,
+   "t": 0.267
+  },
+  {
+   "ms": 2801,
+   "kind": "end",
+   "index": 1,
+   "combo": 2,
+   "t": 0.804
+  },
+  {
+   "ms": 2898,
+   "kind": "windup",
+   "index": 0,
+   "combo": 0,
+   "t": 0
+  },
+  {
+   "ms": 3185,
+   "kind": "hit",
+   "index": 0,
+   "combo": 0,
+   "t": 0.263
+  },
+  {
+   "ms": 3185,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 0,
+   "t": 0.263
+  },
+  {
+   "ms": 3794,
+   "kind": "end",
+   "index": 1,
+   "combo": 0,
+   "t": 0.803
+  },
+  {
+   "ms": 3870,
+   "kind": "windup",
+   "index": 0,
+   "combo": 1,
+   "t": 0
+  },
+  {
+   "ms": 4135,
+   "kind": "hit",
+   "index": 0,
+   "combo": 1,
+   "t": 0.266
+  },
+  {
+   "ms": 4135,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 1,
+   "t": 0.266
+  }
+ ],
+ "m-skill": [
+  {
+   "ms": 7,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 280,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.28
+  },
+  {
+   "ms": 280,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.28
+  },
+  {
+   "ms": 1010,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.909
+  }
+ ],
+ "f-combo": [
+  {
+   "ms": 19,
+   "kind": "windup",
+   "index": 0,
+   "combo": 0,
+   "t": 0
+  },
+  {
+   "ms": 274,
+   "kind": "hit",
+   "index": 0,
+   "combo": 0,
+   "t": 0.266
+  },
+  {
+   "ms": 274,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 0,
+   "t": 0.266
+  },
+  {
+   "ms": 881,
+   "kind": "end",
+   "index": 1,
+   "combo": 0,
+   "t": 0.804
+  },
+  {
+   "ms": 964,
+   "kind": "windup",
+   "index": 0,
+   "combo": 1,
+   "t": 0
+  },
+  {
+   "ms": 1229,
+   "kind": "hit",
+   "index": 0,
+   "combo": 1,
+   "t": 0.266
+  },
+  {
+   "ms": 1229,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 1,
+   "t": 0.266
+  },
+  {
+   "ms": 1906,
+   "kind": "end",
+   "index": 1,
+   "combo": 1,
+   "t": 0.823
+  },
+  {
+   "ms": 1917,
+   "kind": "windup",
+   "index": 0,
+   "combo": 2,
+   "t": 0
+  },
+  {
+   "ms": 2186,
+   "kind": "hit",
+   "index": 0,
+   "combo": 2,
+   "t": 0.269
+  },
+  {
+   "ms": 2186,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 2,
+   "t": 0.269
+  },
+  {
+   "ms": 2810,
+   "kind": "end",
+   "index": 1,
+   "combo": 2,
+   "t": 0.822
+  },
+  {
+   "ms": 3116,
+   "kind": "windup",
+   "index": 0,
+   "combo": 0,
+   "t": 0
+  },
+  {
+   "ms": 3373,
+   "kind": "hit",
+   "index": 0,
+   "combo": 0,
+   "t": 0.261
+  },
+  {
+   "ms": 3373,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 0,
+   "t": 0.261
+  },
+  {
+   "ms": 3987,
+   "kind": "end",
+   "index": 1,
+   "combo": 0,
+   "t": 0.804
+  },
+  {
+   "ms": 4049,
+   "kind": "windup",
+   "index": 0,
+   "combo": 1,
+   "t": 0
+  }
+ ],
+ "f-skill": [
+  {
+   "ms": 10,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 296,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.292
+  },
+  {
+   "ms": 296,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.292
+  },
+  {
+   "ms": 1004,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.9
+  }
+ ]
+}

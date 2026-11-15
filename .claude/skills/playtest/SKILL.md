@@ -5,7 +5,7 @@ description: Chạy toàn bộ Đạp Thiên Lộ ở máy local (server Colyseu
 
 # Chạy thử và test tải
 
-> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?mute=1&auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM (chỉ tài khoản thử): `/gm level|xp|gold|give|plus|tp|god|heal|die|killall|hurt|spawn|tick|dye|cd|variant|method|set|roll…` (danh sách đủ ở `CLAUDE.md` và `sim.ts`). Trong console có `window.__game` (`__game.info()` cho số đo nhanh). Tham số kiểm thử `?god`, `?at=<địa điểm>`, `?show=char`: xem mục "Tham số URL kiểm thử".
+> Hiện trạng MVP: không có `pnpm db:migrate` (bảng tự tạo khi server khởi động). Tài khoản thử là đạo hiệu bất kỳ; `http://localhost:5173/?mute=1&auto=<tên>&debug=1` tự đăng nhập và bật số liệu hiệu năng. Lệnh GM (chỉ tài khoản thử): `/gm level|realm|trib|xp|gold|give|plus|tp|god|heal|die|killall|hurt|spawn|tick|dye|cd|variant|method|set|roll…` (danh sách đủ ở `CLAUDE.md` và `sim.ts`). Trong console có `window.__game` (`__game.info()` cho số đo nhanh). Tham số kiểm thử `?god`, `?at=<địa điểm>`, `?show=char`: xem mục "Tham số URL kiểm thử".
 > Khi khung trình duyệt tích hợp đang ẩn, `requestAnimationFrame` không chạy: bơm khung hình bằng `setInterval(() => { __game.renderer._nodes.nodeFrame.update(); __game.frame(); }, 16)` trước khi chụp ảnh (thiếu `nodeFrame.update()` thì pass cảnh không vẽ lại, ảnh chụp là khung cũ).
 
 ## Luôn tắt tiếng
@@ -63,9 +63,13 @@ Ghép sau `?mute=1&auto=<tên>`. Chỉ chạy với tài khoản thử (đăng n
 
 - `?god`: bất tử. Vẫn bị đánh (số sát thương, khựng hiện như thường) nhưng không mất máu, đi theo cả khi vào bí cảnh. Bật/tắt lúc chơi: `/gm god [on|off]`. `/gm die` vẫn chết được để thử hồi sinh. Có god thì độ kiếp luôn thành công (thất bại duy nhất là chết): đừng dùng `?god` khi đo độ khó độ kiếp/bí cảnh.
 - `?at=<địa điểm>`: vào game ở điểm đặt tên, như `/gm tp <địa điểm>` lúc đang chơi. Chỉ áp lần vào đầu (không áp lại khi từ bí cảnh về). Bảng ở `packages/content/data/places.json` (chỉ server đọc; `content:check` kiểm). Hiện có: `tong_mon` (sân, điểm hồi sinh), `cong` / `kiem_trung` (đài truyền tống tới Kiếm Trủng; bí cảnh là room riêng nên vào bằng cổng, cần cấp 8: thêm `/gm level 8`), `thung_lung` (Sói Xám), `heo_rung`, `yeu_lang`, `rung`, `hoa_ho`, `thach_vien`, `u_minh`, `ho` (bờ đông hồ, cùng chỗ đường camera `ho` của bench), `boss` (mặt hồ, cách đảo Hàn Giao ~55m), `kt_giua` (giữa Kiếm Trủng, chỉ dùng trong room bí cảnh). Id lạ thì không dịch chuyển, chat in danh sách id hợp lệ.
+- `?at=x,z`: vào game ở tọa độ (mét, trong bản đồ 0…4096), ví dụ `?at=2300,2400`. Tọa độ ngoài bản đồ hoặc sai định dạng thì không dịch chuyển.
+- `?realm=<mã>`: đặt cảnh giới lúc vào, như `/gm realm`. Mã: `nk1`…`nk15` (Ngưng Khí tầng N), `tc` hoặc `tc1`…`tc3` (Trúc Cơ sơ/trung/hậu kỳ), hoặc số cấp 1…18. Mã sai thì không áp tham số nào và chat in mã hợp lệ.
+- `?tribulation=1`: kích độ kiếp Trúc Cơ ngay sau khi vào, như `/gm trib`: server đưa về Ngưng Khí tầng 15 viên mãn đã vượt bình cảnh, cấp một viên Trúc Cơ Đan nếu thiếu (qua tx + sổ cái) rồi đi đúng đường độ kiếp của người chơi thật. Kèm `&god=1` nếu chỉ muốn xem hình (có god thì luôn thành công).
+- `?debug=1`: cho mở **bảng F3** ở bản build (bản dev luôn mở được). Bảng có FPS, thời gian khung, draw call, tam giác, thực thể, VFX, ping và nút thử nhanh; mọi nút là một lệnh `/gm` gửi lên server, riêng "Khung va chạm" chỉ vẽ ở client. Tài khoản thật mở được bảng (khi có `?debug=1`) nhưng không có nút thử nhanh.
 - `?show=char`: alias trang xem asset cho model người chơi (`chr_kiem_tu_nam`); `?show=<id asset>` mở asset bất kỳ trong `manifest.json`. Tương đương `?viewer=asset&file=assets/<id>.<hash>.glb` mà không cần biết hash.
 - `__game.info()`: `{ backend, drawCalls, triangles, geometries, textures, frames, room, x, y, z, hp, players, monsters, lod, particles }`. Draw call và tam giác là của khung vừa vẽ, cộng dồn qua mọi pass (bóng, cảnh, hậu kỳ), vì `renderer.info.autoReset = false` và reset ở đầu `frame()`. Gọi lúc đang tải thì trả số 0.
-- Ví dụ: `http://localhost:5197/?mute=1&auto=thu&god&at=boss` (đánh Hàn Giao không chết), `?mute=1&auto=thu&at=rung&debug=1` (đo ở rừng).
+- Ví dụ: `http://localhost:5197/?mute=1&auto=thu&god&at=boss` (đánh Hàn Giao không chết), `?mute=1&auto=thu&at=rung&debug=1` (đo ở rừng), `?mute=1&auto=thu&debug=1&realm=nk15&god=1&at=2048,2088` (Ngưng Khí 15 ở sân), `?mute=1&auto=thu&god=1&tribulation=1` (xem độ kiếp).
 - Thêm điểm mới: thêm dòng vào `places.json` (id `a-z0-9_`, `level` là `van_lam` hoặc `kiem_trung`), chạy `pnpm content:check`.
 
 ## Test tải

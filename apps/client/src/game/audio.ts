@@ -562,7 +562,18 @@ function synth(name: SynthSfx, v: number, out: AudioNode): void {
 
 // ---------- phát SFX ----------
 
-function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: AudioNode): void {
+/** Tuỳ chọn phát một tiếng (K-7): lên lịch theo đồng hồ AudioContext, pitch riêng cho tiếng đòn. */
+export interface SfxOpts {
+  /** Trễ (giây) kể từ bây giờ, đặt bằng `src.start(ctx.currentTime + delay)`, không dùng setTimeout. */
+  delay?: number;
+  /** Hệ số tốc độ phát nhân thêm (đã gồm biến thiên ngẫu nhiên nếu người gọi muốn): thay cho pitch ngẫu nhiên riêng của tiếng. */
+  rate?: number;
+}
+
+/** Nhật ký phát tiếng đòn (bản dev): `__audio.hitLog`. */
+export const sfxLog: { name: string; at: number; delay: number; rate: number; ctxTime: number }[] = [];
+
+function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: AudioNode, o?: SfxOpts): void {
   const c = ctx!;
   if (voices >= MAX_VOICES) {
     stats.dropped++;
@@ -576,7 +587,13 @@ function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: Audi
   const src = c.createBufferSource();
   src.buffer = va.buf;
   const pitch = e.pitch ?? DEFAULT_PITCH;
-  src.playbackRate.value = 1 + (Math.random() * 2 - 1) * pitch;
+  const rate = o?.rate ?? 1 + (Math.random() * 2 - 1) * pitch;
+  src.playbackRate.value = rate;
+  const when = c.currentTime + Math.max(0, o?.delay ?? 0);
+  if (DEV && o?.rate !== undefined) {
+    sfxLog.push({ name, at: performance.now(), delay: o.delay ?? 0, rate, ctxTime: when });
+    if (sfxLog.length > 200) sfxLog.shift();
+  }
   const g = c.createGain();
   g.gain.value = v * va.gain * (e.gain ?? 1);
   src.connect(g).connect(out);
@@ -585,8 +602,8 @@ function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: Audi
     voices--;
     g.disconnect();
   };
-  if (va.dur !== undefined) src.start(0, va.start, va.dur);
-  else src.start(0, va.start);
+  if (va.dur !== undefined) src.start(when, va.start, va.dur);
+  else src.start(when, va.start);
   stats.file++;
 }
 
@@ -594,7 +611,7 @@ function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: Audi
  * Phát một hiệu ứng. `volume` 0..1 để giảm âm lượng theo khoảng cách;
  * `at` là vị trí nguồn trên mặt đất để lệch trái/phải theo camera.
  */
-export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, throttle = true): void {
+export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, throttle = true, opts?: SfxOpts): void {
   if (muted || volume <= 0.02) return;
   const c = ensure();
   if (!c || c.state !== 'running') return;
@@ -604,7 +621,7 @@ export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, thrott
     if (now - (lastPlayed.get(name) ?? 0) < 45) return;
     lastPlayed.set(name, now);
   }
-  emit(name, volume, at, true);
+  emit(name, volume, at, true, opts);
 }
 
 /** Phát chuông đồ rơi (âm tổng hợp, bus giao diện). Tắt tiếng (`?mute=1`) thì im. */
@@ -699,7 +716,7 @@ export function musicRequested(): string | null {
 
 const SYNTH_NAMES = new Set<string>(['sword', 'slash', 'rain', 'thunder', 'hit', 'hurt', 'heal', 'shield', 'levelup', 'loot', 'quest', 'death', 'fly', 'gather', 'ascend']);
 
-function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefined, allowPending: boolean): void {
+function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefined, allowPending: boolean, o?: SfxOpts): void {
   const c = ctx!;
   const e = manifest?.sfx?.[name];
   const useFile = !!e && !failed.has(name);
@@ -719,7 +736,7 @@ function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefine
   const out = voiceOut(c, bus, at);
   const duckBy = e?.duck ?? SYNTH_DUCK[name] ?? 0;
   if (duckBy > 0) duck(duckBy * Math.min(1, volume));
-  if (useFile) playFile(name, vs!, e!, volume, out);
+  if (useFile) playFile(name, vs!, e!, volume, out, o);
   else {
     synth(synthName!, volume, out);
     stats.synth++;
@@ -1250,7 +1267,7 @@ if (!urlMute && typeof window !== 'undefined') {
 }
 
 if (DEV && typeof window !== 'undefined') {
-  (window as unknown as { __audio?: unknown }).__audio = { stats: audioStats, sfx, playMusic, playAmbient, duck, duckHold, holdAmount, setVolume };
+  (window as unknown as { __audio?: unknown }).__audio = { hitLog: sfxLog, stats: audioStats, sfx, playMusic, playAmbient, duck, duckHold, holdAmount, setVolume };
   // Nghe thử bài khi làm nội dung: ?music=<id>&ambient=<id> (phát sau thao tác đầu tiên).
   const q = new URLSearchParams(location.search);
   if (q.get('music')) playMusic(q.get('music'));

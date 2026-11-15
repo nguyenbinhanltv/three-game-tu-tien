@@ -30,6 +30,7 @@ function setup() {
     warn: (_p, k) => void warns.push(k),
     sys: () => {},
     fx: (_m: FxMsg) => {},
+    questEvent: (pl, type, target, n) => void pl.char.questEvent(type, target, n),
   });
   let n = 0;
   const send = (op: string, extra: Record<string, unknown> = {}, r = 'req-' + ++n) => {
@@ -282,6 +283,19 @@ describe('cường hóa + Hộ Phù', () => {
     wear(t2, 3);
     t2.enhance({ w: 'weapon' });
     expect(t2.c.equip.weapon!.plus).toBe(4);
+  });
+
+  it('nhiệm vụ q_cuong_hoa (M-5): chỉ xong khi một món đạt +3, lấy mức cao nhất', () => {
+    const t = setup();
+    wear(t, 0);
+    t.c.quests.active['q_cuong_hoa'] = [0];
+    t.enhance({ w: 'weapon' });
+    t.enhance({ w: 'weapon' });
+    expect(t.c.questComplete('q_cuong_hoa')).toBe(false);
+    expect(t.c.quests.active['q_cuong_hoa']).toEqual([2]);
+    t.enhance({ w: 'weapon' });
+    expect(t.c.equip.weapon!.plus).toBe(3);
+    expect(t.c.questComplete('q_cuong_hoa')).toBe(true);
   });
 
   it('+10 là trần', () => {

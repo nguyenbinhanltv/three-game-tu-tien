@@ -52,6 +52,8 @@ export interface UpgradeHost {
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void;
   fx(m: FxMsg): void;
+  /** Ghi nhận sự kiện nhiệm vụ (M-5: cường hóa đạt +N). */
+  questEvent(p: PlayerEnt, type: 'enhance', target: undefined, n: number): void;
 }
 
 /** Món cần xử lý: ô đang mặc (`w`) hoặc ô túi (`i`). */
@@ -161,6 +163,7 @@ export class UpgradeSystem {
     if ('w' in ref) c.recalc();
     const name = t(`item.${def.id}.name`);
     if (outcome === 'ok') {
+      this.h.questEvent(p, 'enhance', undefined, newPlus);
       this.h.sys(p, 'sys.enh_ok', { item: name, n: newPlus }, 'good');
       this.h.fx({ t: 'enhance', src: p.sid });
     } else if (outcome === 'ward') {

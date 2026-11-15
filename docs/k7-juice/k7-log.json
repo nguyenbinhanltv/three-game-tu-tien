@@ -1,0 +1,100 @@
+{
+ "ultDebug": {
+  "bar": [
+   "skl_phi_kiem",
+   "skl_kiem_khi_tram",
+   "skl_linh_khi_ho_the",
+   "skl_thien_kiem_vu",
+   "skl_hoi_nguyen_thuat",
+   "skl_loi_dinh_nhat_kiem",
+   "skl_phi_kiem_truy_hon",
+   "skl_van_kiem_quy_tong"
+  ],
+  "target": "m400",
+  "toasts": [
+   "sạc = 100",
+   "sạc = 100"
+  ]
+ },
+ "ult": {
+  "events": [
+   {
+    "ms": 8,
+    "kind": "windup",
+    "index": 0,
+    "combo": -1,
+    "t": 0
+   },
+   {
+    "ms": 500,
+    "kind": "hit",
+    "index": 0,
+    "combo": -1,
+    "t": 0.505
+   },
+   {
+    "ms": 500,
+    "kind": "recovery",
+    "index": 1,
+    "combo": -1,
+    "t": 0.505
+   },
+   {
+    "ms": 1086,
+    "kind": "end",
+    "index": 1,
+    "combo": -1,
+    "t": 1.003
+   }
+  ],
+  "sound": [
+   {
+    "skill": "skl_van_kiem_quy_tong",
+    "index": 0,
+    "eventAt": 27829.100000023842,
+    "soundAt": 27830,
+    "lagMs": 0.8999999761581421,
+    "synced": true,
+    "sfx": "crit",
+    "rate": 1.0215200086303318,
+    "layers": [
+     "crit",
+     "crit"
+    ]
+   },
+   {
+    "skill": "skl_van_kiem_quy_tong",
+    "index": 0,
+    "eventAt": 27829.100000023842,
+    "soundAt": 27830.20000001788,
+    "lagMs": 1.0999999940395355,
+    "synced": true,
+    "sfx": "crit",
+    "rate": 0.9344454472823902,
+    "layers": [
+     "crit",
+     "crit"
+    ]
+   },
+   {
+    "skill": "skl_van_kiem_quy_tong",
+    "index": 0,
+    "eventAt": 27829.100000023842,
+    "soundAt": 27830.30000001192,
+    "lagMs": 1.199999988079071,
+    "synced": true,
+    "sfx": "crit",
+    "rate": 0.9342452390067398,
+    "layers": [
+     "crit",
+     "crit"
+    ]
+   }
+  ],
+  "fov": {
+   "min": 57.99482751725443,
+   "max": 59.353750000335175,
+   "punch": 1.36
+  }
+ }
+}

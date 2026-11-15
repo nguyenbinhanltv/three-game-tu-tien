@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "ledger:check": "tsx src/tools/ledgerCheck.ts",
+    "fight:check": "tsx src/tools/fightCheck.ts",
     "invite": "tsx src/tools/invite.ts"
   },
   "dependencies": {

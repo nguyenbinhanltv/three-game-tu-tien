@@ -356,6 +356,8 @@ Kiểm: test đơn vị cho bảng hit-stop và hàng đợi; `__sound` log th�
 
 ### 7.5 3-10: cân bằng (ghi chú thêm từ đợt kiểm toán)
 
+> **Đã làm** (2026-11-16): xem `docs/p3-10/README.md`. Mục 1–5 xong; mục 5 (độ kiếp) chỉ chỉnh số và hoàn đan, ba pha vẫn là Sprint 2; mục 6 (Trúc Cơ cần thứ chỉ Trúc Cơ làm được) chưa làm.
+
 Đợt này **không đổi số nào**. Các việc dồn về 3-10:
 
 1. Nhịp 2,2 giờ (sim) so với mục tiêu 3–4 giờ thực tế: đo lại sau M-2 (số quái và cách hồi sinh đổi).

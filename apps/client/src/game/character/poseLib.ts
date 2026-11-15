@@ -28,13 +28,45 @@ const SWORD_GESTURES = new Set([POSE_SWORD_DRAW, POSE_SWORD_SHEATHE]);
 export function bakePoseLibrary(root: THREE.Object3D, poses: readonly PoseDef[]): PoseLibrary | null {
   const rig = IkRig.from(root);
   if (!rig) return null;
-  const lib = new Map<string, PoseClips>();
-  for (const def of poses) {
-    const full = bakePose(def, rig);
-    const arm = SWORD_GESTURES.has(def.id) ? maskClip(full, rig, 'armR') : undefined;
-    lib.set(def.id, { def, full, upper: maskClip(full, rig, 'upper'), lower: maskClip(full, rig, 'lower'), arm });
+  return new LazyPoseLibrary(rig, poses);
+}
+
+/**
+ * Thư viện pose nướng lười: pose nền/phụ (không có khung vung) nướng ngay vì được nối vào bảng clip; pose chiêu (có `hit`,
+ * ~30 pose sau K-5, mỗi pose ba clip dày khung) chỉ nướng lần đầu `get`. Nướng hết lúc nạp làm tăng bộ nhớ ngoài heap và
+ * nhịp GC (CPU p95 +1 ms ở bench); chiêu thật sự dùng chỉ vài pose. `has` đúng cho cả pose chưa nướng; duyệt (`values`)
+ * chỉ gồm pose đã nướng.
+ */
+class LazyPoseLibrary extends Map<string, PoseClips> {
+  private pending = new Map<string, PoseDef>();
+  constructor(private rig: IkRig, poses: readonly PoseDef[]) {
+    super();
+    for (const def of poses) {
+      if (def.hit) this.pending.set(def.id, def);
+      else this.bake(def);
+    }
   }
-  return lib;
+  private bake(def: PoseDef): PoseClips {
+    const full = bakePose(def, this.rig);
+    const arm = SWORD_GESTURES.has(def.id) ? maskClip(full, this.rig, 'armR') : undefined;
+    const c: PoseClips = { def, full, upper: maskClip(full, this.rig, 'upper'), lower: maskClip(full, this.rig, 'lower'), arm };
+    super.set(def.id, c);
+    this.pending.delete(def.id);
+    return c;
+  }
+  override get(id: string): PoseClips | undefined {
+    const c = super.get(id);
+    if (c) return c;
+    const def = this.pending.get(id);
+    return def ? this.bake(def) : undefined;
+  }
+  /** Số pose có trong thư viện (cả pose chưa nướng). */
+  override get size(): number {
+    return super.size + this.pending.size;
+  }
+  override has(id: string): boolean {
+    return super.has(id) || this.pending.has(id);
+  }
 }
 
 /** Mọi clip của thư viện (để `SkinnedCharacter` tra theo tên, vd. `pose_ngu_kiem` cho trạng thái bay). */

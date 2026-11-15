@@ -1,5 +1,5 @@
 // pnpm shots:k4: ảnh trong game của hệ animation K-4 (máy trạng thái chiêu, lớp thân trên/dưới, hủy thu về, lao người, trúng đòn có hướng, ngã/đứng dậy).
-//   tsx src/shots-k4.ts --out <thư mục> [--genders m,f] [--only combo,skill,dashcancel,movecancel,locomotion,hit,knockdown] [--renderer webgpu|webgl2]
+//   tsx src/shots-k4.ts --out <thư mục> [--genders m,f] [--only combo,skill,dashcancel,movecancel,locomotion,hit,knockdown] [--renderer webgpu|webgl2] [--method lac_kiem_quyet|bat_dong_kim_than|thanh_moc_dan_kinh]
 // Vào game bằng tài khoản thử (nam/nữ), dựng cảnh bằng lệnh GM, làm từng kịch bản và ghi màn hình bằng CDP screencast (khung dày, có dấu thời gian):
 // mỗi tờ ảnh là một kịch bản, mỗi ô ghi số ms thật kể từ lúc bấm; viền đỏ = khung có sự kiện `hit` (đúng khung hitAt). Cùng lúc ghi `skill-events.json`
 // (nhật ký sự kiện chiêu của game: kind, mốc, thời điểm).
@@ -18,6 +18,9 @@ const OUT = path.resolve(opt('--out', 'shots-k4'));
 const GENDERS = opt('--genders', 'm,f').split(',');
 const ONLY = opt('--only', 'combo,skill,dashcancel,movecancel,locomotion,hit,knockdown').split(',');
 const RENDERER = opt('--renderer', 'webgpu');
+/** Công pháp của nhân vật chụp (K-5: chọn giọng động tác); khác kiếm tu thì thêm hậu tố vào tên ảnh. */
+const METHOD = opt('--method', 'lac_kiem_quyet');
+const TAG = METHOD === 'lac_kiem_quyet' ? '' : `-${METHOD}`;
 const PORT = Number(process.env.PORT ?? 2675);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
 const SC_DIST = Number(opt('--dist', '3.4'));
@@ -179,7 +182,7 @@ async function main(): Promise<void> {
       await page.addStyleTag({ content: '.hud,.chat{visibility:hidden !important}' });
       await gm(page, 'level 12', 1600);
       await gm(page, 'god on', 1600);
-      await gm(page, 'method lac_kiem_quyet 5', 1200);
+      await gm(page, `method ${METHOD} 5`, 1200);
       await gm(page, 'tp 2048 2088', 1600);
       // Chờ thư viện K-3 nạp lười xong (đi lùi/ngang, thủ thế, trúng đòn có hướng, ngã/đứng dậy).
       await page.waitForFunction(() => {
@@ -187,8 +190,8 @@ async function main(): Promise<void> {
         const m = g.ents?.players.get(g.sid)?.model;
         return !!m && m.dirHits === true;
       }, undefined, { timeout: 60_000, polling: 300 });
-      const title = (s: string) => `${s} · ${g === 'm' ? 'Thanh Phong (nam)' : 'Lam Chi (nữ)'} · mỗi ô ${TILE} ms, viền đỏ = khung phát sự kiện hit`;
-      const out = (n: string) => path.join(OUT, `${g === 'm' ? 'nam' : 'nu'}-${n}.png`);
+      const title = (s: string) => `${s} · ${g === 'm' ? 'Thanh Phong (nam)' : 'Lam Chi (nữ)'} · ${METHOD} · mỗi ô ${TILE} ms, viền đỏ = khung phát sự kiện hit`;
+      const out = (n: string) => path.join(OUT, `${g === 'm' ? 'nam' : 'nu'}${TAG}-${n}.png`);
       const press = (i: number) => page.evaluate((s) => (window as unknown as G).__game!.useSkill(s), i);
 
       if (sc === 'combo') {
