@@ -453,6 +453,25 @@ def foot_lock(frames, fade=2):
     return out
 
 
+def limit_lean(frames, max_deg):
+    """Giới hạn độ cúi của thân (góc giữa hông→cổ và phương đứng): quá `max_deg` thì xoay cả nhánh từ Spine quanh đầu Spine để ngẩng
+    bớt. Cúi gập 90° làm vỏ kiếm đeo lưng (gắn xương ngực spine2) chĩa ngang qua đầu; giữ dưới ngưỡng thì kiếm nằm sát lưng."""
+    neck = bone('neck')
+    out = []
+    for M in frames:
+        u = M[neck].translation - M[HIPS].translation
+        ang = math.degrees(u.angle(Z))
+        if ang > max_deg:
+            axis = u.cross(Z)
+            if axis.length > 1e-6:
+                R = rot_pivot(Quaternion(axis.normalized(), math.radians(ang - max_deg)), M[SPINE].translation.copy())
+                M = dict(M)
+                for k in subtree(SPINE):
+                    M[k] = R @ M[k]
+        out.append(M)
+    return out
+
+
 def measure(frames, rest_frame):
     """Lệch hướng so với tư thế nghỉ ở khung đầu/giữa/cuối, độ khép vòng, tốc độ chân trụ."""
     ref_p = axis_yaw(rest_frame, L_UPLEG, R_UPLEG)
@@ -538,6 +557,8 @@ for spec in K3.get('fix', []):
         fr = yaw_frames(fr, lambda i, n, y=yaw: y)
     if spec.get('pin', True):
         fr = pin_frames(fr, ANCHOR)
+    if spec.get('lean'):
+        fr = limit_lean(fr, spec['lean'])
     if spec.get('lock'):
         m['slipBefore'] = round((stance_info(fr) or {'slip': 0})['slip'], 3)
         fr = foot_lock(fr)

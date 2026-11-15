@@ -166,7 +166,7 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
       h.scene.updateMatrixWorld(true);
       const dstRest = new Map([...bones(h.scene)].map(([n, o]) => [n, o.getWorldQuaternion(new THREE.Quaternion())]));
       const out = retargetClips(lib.scene, lib.animations, h.scene);
-      for (const name of ['run', 'attack']) {
+      for (const name of ['run', 'heavy_chop']) {
         const clip = out.find((c) => c.name === name)!;
         const t = clip.duration * 0.4;
         const sb = sample(lib.scene, lib.animations.find((c) => c.name === name)!, t);

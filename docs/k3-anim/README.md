@@ -45,3 +45,10 @@ Lam Chi cao 1,68 m nhưng bước dài hơn ~6% so với tỉ lệ hông (nhân 
 - Clip `hit_*` bắt đầu và kết thúc ở thế thủ tay quyền (hai nắm tay trước mặt), nên khớp `combat_idle` hơn `idle`.
 - Kiếm vẫn đeo lưng trong mọi clip của thư viện; chuyển kiếm sang tay vẫn do `placeSword`/pose IK lo.
 - Dung lượng thư viện: 382 KB → ~1,9 MB (thêm 30 clip, dung sai lấy mẫu lại 1e-3 cho lớp `anim`).
+
+## Sửa sau soát PR #90
+
+- Vỏ kiếm đeo lưng: kiểm trọng số trong GLB, vỏ và nút `dtl_sword` đều gắn xương `mixamorig_spine2` (ngực), không theo đầu. Kiếm chĩa ngang khi cúi gập ~90° là hệ quả hình học của clip; thêm `lean` (giới hạn độ cúi thân, `limit_lean` trong `anim_human_k3.py`) 50° cho `heavy_chop` và các clip `hit_*`.
+- `attack` đổi tên `heavy_chop` (đòn dự phòng, không phải đòn kiếm chính); `chop` trùng nên bỏ. Map clip của người chơi/NPC trỏ `attack: 'heavy_chop'`.
+- `dodge_back` phát nhanh 2,7×: 3,0 s → 1,1 s. `dodge_f/l/r` (2,4 s) giữ nguyên.
+- Bỏ `cheer`, `greet`, `bow` khỏi thư viện (file nguồn còn trong `tripo_lib`). Thư viện còn 31 clip, ~1,6 MB.

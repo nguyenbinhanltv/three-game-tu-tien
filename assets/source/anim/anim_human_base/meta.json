@@ -26,7 +26,7 @@
       },
       {
         "source": "chr/chr_kiem_tu_nam/tripo/anim_attack_v01.glb",
-        "name": "attack",
+        "name": "heavy_chop",
         "start": 1.3,
         "end": 2.5
       },
@@ -68,7 +68,7 @@
       },
       {
         "source": "anim/tripo_lib/anim_flip_v01.glb",
-        "name": "dodge_back"
+        "name": "flip_raw"
       },
       {
         "source": "anim/tripo_lib/anim_jump_v01.glb",
@@ -83,28 +83,12 @@
         "name": "cast_stand"
       },
       {
-        "source": "anim/tripo_lib/anim_chop_v01.glb",
-        "name": "chop"
-      },
-      {
         "source": "anim/tripo_lib/anim_front_kick_01_v01.glb",
         "name": "kick_1"
       },
       {
         "source": "anim/tripo_lib/anim_front_kick_02_v01.glb",
         "name": "kick_2"
-      },
-      {
-        "source": "anim/tripo_lib/anim_greet_01_v01.glb",
-        "name": "greet"
-      },
-      {
-        "source": "anim/tripo_lib/anim_bow_v01.glb",
-        "name": "bow"
-      },
-      {
-        "source": "anim/tripo_lib/anim_cheer_v01.glb",
-        "name": "cheer"
       }
     ],
     "animLib": true,
@@ -121,35 +105,40 @@
           "trim": [
             0.1,
             0.25
-          ]
+          ],
+          "lean": 50
         },
         {
           "name": "hit_front_2",
           "trim": [
             0.1,
             0.25
-          ]
+          ],
+          "lean": 50
         },
         {
           "name": "hit_l",
           "trim": [
             0.1,
             0.25
-          ]
+          ],
+          "lean": 50
         },
         {
           "name": "hit_heavy",
           "trim": [
             0.1,
             0.25
-          ]
+          ],
+          "lean": 50
         },
         {
           "name": "hit_head",
           "trim": [
             0.1,
             0.25
-          ]
+          ],
+          "lean": 50
         },
         {
           "name": "knockdown",
@@ -166,7 +155,7 @@
           ]
         },
         {
-          "name": "dodge_back",
+          "name": "flip_raw",
           "slice": [
             0.4,
             3.4
@@ -194,13 +183,6 @@
           ]
         },
         {
-          "name": "chop",
-          "trim": [
-            0.1,
-            0.25
-          ]
-        },
-        {
           "name": "kick_1",
           "trim": [
             0.1,
@@ -215,28 +197,17 @@
           ]
         },
         {
-          "name": "greet",
-          "trim": [
-            0.1,
-            0.25
-          ]
-        },
-        {
-          "name": "bow",
-          "slice": [
-            0.8,
-            5.2
-          ]
-        },
-        {
-          "name": "cheer",
-          "slice": [
-            0.0,
-            3.2
-          ]
+          "name": "heavy_chop",
+          "lean": 50
         }
       ],
       "derive": [
+        {
+          "name": "dodge_back",
+          "op": "speed",
+          "from": "flip_raw",
+          "k": 2.7
+        },
         {
           "name": "cast_hold",
           "op": "slice",
@@ -302,7 +273,8 @@
         }
       ],
       "drop": [
-        "cast_hold"
+        "cast_hold",
+        "flip_raw"
       ]
     },
     "extra": [

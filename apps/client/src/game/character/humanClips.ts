@@ -23,7 +23,7 @@ export const HUMAN_CLIPS: Record<string, HumanClipInfo> = {
   // Bộ cũ (M2-3), đang chạy trong game.
   idle: { loop: true, role: 'đứng nghỉ', state: 'idle' },
   run: { loop: true, role: 'chạy', refSpeed: 3.09, move: 'forward', state: 'run' },
-  attack: { loop: false, role: 'đòn chém chung (Tripo slash)' },
+  heavy_chop: { loop: false, role: 'chém bổ cúi người như chặt củi (Tripo slash, trước tên attack): chỉ làm đòn dự phòng, đòn kiếm làm bằng IK ở K-5' },
   hit_light: { loop: false, role: 'giật nhẹ khi trúng đòn (thủ tục, 0,33 s)' },
   death: { loop: false, role: 'chết (Tripo fall)', state: 'death' },
   // K-3: di chuyển.
@@ -41,7 +41,7 @@ export const HUMAN_CLIPS: Record<string, HumanClipInfo> = {
   dodge_f: { loop: false, role: 'né lăn về trước (Tripo dive)' },
   dodge_l: { loop: false, role: 'lăn sang trái (dodge_f xoay hình sin² 90°, trả mặt về trước)' },
   dodge_r: { loop: false, role: 'lăn sang phải' },
-  dodge_back: { loop: false, role: 'né lộn ra sau (Tripo flip)' },
+  dodge_back: { loop: false, role: 'né lộn ra sau (Tripo flip, phát nhanh 2,7×, ~1,1 s)' },
   // K-3: trúng đòn, ngã, đứng dậy.
   hit_front_1: { loop: false, role: 'trúng nhẹ từ trước' },
   hit_front_2: { loop: false, role: 'trúng vừa từ trước (xen kẽ)' },
@@ -54,13 +54,9 @@ export const HUMAN_CLIPS: Record<string, HumanClipInfo> = {
   getup: { loop: false, role: 'đứng dậy từ tư thế nằm của knockdown về thủ thế: đầu dẫn, chân đẩy, thân trên theo sau' },
   // K-3: chiêu và biểu cảm.
   cast_stand: { loop: false, role: 'niệm chú đứng', state: 'cast' },
-  chop: { loop: false, role: 'chém bổ dọc (tham khảo nhịp đòn nặng)' },
   kick_1: { loop: false, role: 'đá thẳng đẩy lùi' },
   kick_2: { loop: false, role: 'đá biến thể' },
   roar: { loop: false, role: 'khiêu khích: kéo tay vào hông, ưỡn ngực dang tay (thủ tục IK)' },
-  greet: { loop: false, role: 'chào' },
-  bow: { loop: false, role: 'vái' },
-  cheer: { loop: false, role: 'mừng thắng' },
 };
 
 /** Tên clip của thư viện, theo bảng. */
