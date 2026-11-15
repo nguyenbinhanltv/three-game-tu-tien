@@ -54,6 +54,28 @@ const MIXAMO: Record<Joint, string> = {
 };
 const OPTIONAL = new Set<Joint>(['spine1', 'spine2', 'neck']);
 
+/** Tên xương rig Tripo (Thạch Viên, Kiếm Khôi, Thủ Mộ Thạch Tướng…) khi không có tên Mixamo. */
+const TRIPO: Record<Joint, string> = {
+  hips: 'pelvis',
+  spine: 'waist',
+  spine1: 'spine01',
+  spine2: 'spine02',
+  neck: 'necktwist01',
+  head: 'head',
+  armR: 'r_upperarm',
+  foreArmR: 'r_forearm',
+  handR: 'r_hand',
+  armL: 'l_upperarm',
+  foreArmL: 'l_forearm',
+  handL: 'l_hand',
+  upLegR: 'r_thigh',
+  legR: 'r_calf',
+  footR: 'r_foot',
+  upLegL: 'l_thigh',
+  legL: 'l_calf',
+  footL: 'l_foot',
+};
+
 /** Chuẩn hóa tên xương: bỏ `mixamorig`, `mixamorig1:`, `mixamorig_`…, chữ thường. */
 export function boneKey(name: string): string {
   return name.replace(/^mixamorig\d*[:_]?/i, '').toLowerCase();
@@ -103,6 +125,7 @@ export interface PoseProbe {
 const _v1 = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const _v3 = new THREE.Vector3();
+const _tgt = new THREE.Vector3();
 const _q1 = new THREE.Quaternion();
 const _q2 = new THREE.Quaternion();
 const _m1 = new THREE.Matrix4();
@@ -159,6 +182,20 @@ export class IkRig {
   readonly bladeLocal: THREE.Vector3;
   readonly edgeLocal: THREE.Vector3;
   private rootQ = new THREE.Quaternion();
+  /** Nhóm đỡ trên cùng của cây xương (con trực tiếp của `root`): dịch nó để hạ/nâng hông mà không đụng track của mixer. */
+  private holder: THREE.Object3D | null = null;
+  private holderY0 = 0;
+  private feetQ = { R: new THREE.Quaternion(), L: new THREE.Quaternion() };
+  private feetP = { R: new THREE.Vector3(), L: new THREE.Vector3() };
+  private feetKnee = { R: new THREE.Vector3(), L: new THREE.Vector3() };
+  /**
+   * Xương chân trước/sau khi IK bám đất. Clip không có track cho xương nào thì mixer không ghi đè nó, IK sẽ cộng dồn
+   * qua từng khung; nên đầu mỗi lượt, xương còn nguyên giá trị sau IK (mixer không đụng tới) được trả về giá trị trước IK.
+   */
+  private legBones: THREE.Bone[] = [];
+  private legPre: THREE.Quaternion[] = [];
+  private legPost: THREE.Quaternion[] = [];
+  private legIk = false;
 
   private constructor(
     readonly root: THREE.Object3D,
@@ -177,6 +214,16 @@ export class IkRig {
     this.footRestQ = { R: this.charQuat(bones.footR!), L: this.charQuat(bones.footL!) };
     // Lúc T-pose: nắm kiếm thì mũi chỉ về trước (+Z), lưỡi theo hướng các ngón (ra ngoài, -X với tay phải).
     const handQ = bones.handR!.getWorldQuaternion(new THREE.Quaternion()).invert();
+    for (let o: THREE.Object3D | null = bones.hips; o; o = o.parent) {
+      if (o.parent === root) {
+        this.holder = o;
+        this.holderY0 = o.position.y;
+        break;
+      }
+    }
+    this.legBones = (['upLegR', 'legR', 'footR', 'upLegL', 'legL', 'footL'] as const).map((j) => bones[j]!);
+    this.legPre = this.legBones.map(() => new THREE.Quaternion());
+    this.legPost = this.legBones.map(() => new THREE.Quaternion());
     this.bladeLocal = this.worldDir([0, 0, 1]).applyQuaternion(handQ).normalize();
     this.edgeLocal = this.worldDir([-1, 0, 0]).applyQuaternion(handQ).normalize();
   }
@@ -190,7 +237,7 @@ export class IkRig {
     });
     const bones = {} as Record<Joint, THREE.Bone | null>;
     for (const j of Object.keys(MIXAMO) as Joint[]) {
-      bones[j] = byKey.get(MIXAMO[j]) ?? null;
+      bones[j] = byKey.get(MIXAMO[j]) ?? byKey.get(TRIPO[j]) ?? null;
       if (!bones[j] && !OPTIONAL.has(j)) return null;
     }
     return new IkRig(root, bones);
@@ -288,6 +335,83 @@ export class IkRig {
     };
   }
 
+  /**
+   * Chân bám đất, bước 1 (P2-E3): sau khi mixer đặt tư thế, trả vị trí hai cổ chân (không gian nhân vật, chưa chỉnh) để
+   * nơi gọi lấy độ cao mặt đất dưới từng chân. Đồng thời về lại vị trí gốc của nhóm đỡ hông. false nếu rig không có
+   * chuỗi hông → đùi → cẳng → bàn chân liền nhau hoặc thiếu nhóm đỡ.
+   */
+  measureFeet(outR: THREE.Vector3, outL: THREE.Vector3): boolean {
+    const h = this.holder;
+    if (!h || !this.legChain()) return false;
+    h.position.y = this.holderY0;
+    this.undoLegIk();
+    this.bones.hips!.updateWorldMatrix(true, false);
+    for (const side of ['R', 'L'] as const) {
+      const b = this.bones;
+      const up = b[`upLeg${side}`]!;
+      const mid = b[`leg${side}`]!;
+      const foot = b[`foot${side}`]!;
+      refreshWorld(up);
+      refreshWorld(mid);
+      refreshWorld(foot);
+      foot.matrixWorld.decompose(this.feetP[side], this.feetQ[side], _v1);
+      // Hướng gập gối hiện tại: gối − hông (thế giới), để IK giữ nguyên chiều gập.
+      this.feetKnee[side].setFromMatrixPosition(mid.matrixWorld).sub(_v1.setFromMatrixPosition(up.matrixWorld));
+    }
+    outR.copy(this.feetP.R);
+    outL.copy(this.feetP.L);
+    return true;
+  }
+
+  private chainOk: boolean | null = null;
+  private legChain(): boolean {
+    if (this.chainOk === null) {
+      const b = this.bones;
+      this.chainOk = (['R', 'L'] as const).every((s) => b[`upLeg${s}`]!.parent === b.hips && b[`leg${s}`]!.parent === b[`upLeg${s}`] && b[`foot${s}`]!.parent === b[`leg${s}`]);
+    }
+    return this.chainOk;
+  }
+
+  /**
+   * Chân bám đất, bước 2: hạ (hoặc nâng) hông `hipsDy` rồi đưa mỗi cổ chân lên thêm `dyR`/`dyL` so với lúc đo (đơn vị
+   * không gian nhân vật, +Y lên); bàn chân giữ hướng của clip. Gọi sau `measureFeet`, trước khi cập nhật ma trận cả cây.
+   */
+  groundFeet(hipsDy: number, dyR: number, dyL: number): void {
+    const h = this.holder;
+    if (!h) return;
+    h.position.y = this.holderY0 + hipsDy;
+    h.updateWorldMatrix(true, false);
+    const b = this.bones;
+    b.hips!.updateWorldMatrix(true, false);
+    for (let i = 0; i < 6; i++) this.legPre[i].copy(this.legBones[i].quaternion);
+    const dy = { R: dyR, L: dyL };
+    for (const side of ['R', 'L'] as const) {
+      const up = b[`upLeg${side}`]!;
+      const mid = b[`leg${side}`]!;
+      const foot = b[`foot${side}`]!;
+      refreshWorld(up);
+      refreshWorld(mid);
+      refreshWorld(foot);
+      _tgt.copy(this.feetP[side]);
+      _tgt.y += dy[side];
+      solveLeg(up, mid, foot, _tgt, this.feetKnee[side], this.feetQ[side]);
+    }
+    for (let i = 0; i < 6; i++) this.legPost[i].copy(this.legBones[i].quaternion);
+    this.legIk = true;
+  }
+
+  /** Thôi bám đất: trả nhóm đỡ hông và xương chân về chỗ cũ. */
+  releaseFeet(): void {
+    if (this.holder) this.holder.position.y = this.holderY0;
+    this.undoLegIk();
+  }
+
+  private undoLegIk(): void {
+    if (!this.legIk) return;
+    this.legIk = false;
+    for (let i = 0; i < 6; i++) if (this.legBones[i].quaternion.equals(this.legPost[i])) this.legBones[i].quaternion.copy(this.legPre[i]);
+  }
+
   /** Chỗ gắn kiếm trong hệ cục bộ xương tay phải: model kiếm mũi +Z, lưỡi ±X, gốc ở giữa chuôi (lòng bàn tay). */
   swordMount(): { position: THREE.Vector3; quaternion: THREE.Quaternion } {
     const hand = this.bones.handR!;
@@ -357,6 +481,73 @@ export class IkRig {
   private worldDir(v: PoseVec): THREE.Vector3 {
     return vec(v).applyQuaternion(this.root.getWorldQuaternion(new THREE.Quaternion()));
   }
+}
+
+/** Tính lại ma trận thế giới của một xương từ ma trận cục bộ, giả định cha đã đúng. */
+function refreshWorld(o: THREE.Object3D): void {
+  o.updateMatrix();
+  o.matrixWorld.multiplyMatrices(o.parent!.matrixWorld, o.matrix);
+}
+
+const _sa = new THREE.Vector3();
+const _sb = new THREE.Vector3();
+const _sc = new THREE.Vector3();
+const _dir = new THREE.Vector3();
+const _perp = new THREE.Vector3();
+const _elb = new THREE.Vector3();
+const _w1 = new THREE.Vector3();
+const _w2 = new THREE.Vector3();
+const _sq = new THREE.Quaternion();
+const _sq2 = new THREE.Quaternion();
+const _pq = new THREE.Quaternion();
+const _ss = new THREE.Vector3();
+
+/** Đặt quaternion thế giới của xương (cha đã đúng), cập nhật ma trận xương đó. */
+function setWorldQ(bone: THREE.Object3D, q: THREE.Quaternion): void {
+  bone.parent!.matrixWorld.decompose(_w1, _pq, _ss);
+  bone.quaternion.copy(_pq.invert().multiply(q));
+  refreshWorld(bone);
+}
+
+/**
+ * IK hai đốt không cấp phát cho chân (bám đất mỗi khung): đưa `end` tới `target`, gối về phía `pole`; bàn chân giữ hướng
+ * `endQ`. Dùng thẳng `matrixWorld` (đã làm mới), không gọi lại chuỗi cha như `getWorldPosition`.
+ */
+function solveLeg(upper: THREE.Bone, mid: THREE.Bone, end: THREE.Bone, target: THREE.Vector3, pole: THREE.Vector3, endQ: THREE.Quaternion): void {
+  const a = _sa.setFromMatrixPosition(upper.matrixWorld);
+  const bp = _sb.setFromMatrixPosition(mid.matrixWorld);
+  const c = _sc.setFromMatrixPosition(end.matrixWorld);
+  const l1 = a.distanceTo(bp);
+  const l2 = bp.distanceTo(c);
+  _dir.copy(target).sub(a);
+  const d = THREE.MathUtils.clamp(_dir.length(), Math.abs(l1 - l2) + 1e-5, l1 + l2 - 1e-5);
+  if (_dir.lengthSq() > 1e-12) _dir.normalize();
+  else _dir.copy(bp).sub(a).normalize();
+  const cosA = THREE.MathUtils.clamp((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d), -1, 1);
+  _perp.copy(pole).addScaledVector(_dir, -pole.dot(_dir));
+  if (_perp.lengthSq() < 1e-8) _perp.set(0, 0, 1).addScaledVector(_dir, -_dir.z);
+  _perp.normalize();
+  _elb.copy(a).addScaledVector(_dir, l1 * cosA).addScaledVector(_perp, l1 * Math.sqrt(1 - cosA * cosA));
+
+  // Đùi: xoay đưa gối tới vị trí mới.
+  upper.matrixWorld.decompose(_w1, _sq, _ss);
+  _w1.copy(bp).sub(a).normalize();
+  _w2.copy(_elb).sub(a).normalize();
+  _sq.premultiply(_sq2.setFromUnitVectors(_w1, _w2));
+  setWorldQ(upper, _sq);
+  refreshWorld(mid);
+
+  // Cẳng: xoay đưa cổ chân tới đích đã kẹp tầm với.
+  refreshWorld(end);
+  const b2 = _sb.setFromMatrixPosition(mid.matrixWorld);
+  const c2 = _sc.setFromMatrixPosition(end.matrixWorld);
+  _w1.copy(c2).sub(b2).normalize();
+  _w2.copy(a).addScaledVector(_dir, d).sub(b2).normalize();
+  mid.matrixWorld.decompose(_perp, _sq, _ss);
+  _sq.premultiply(_sq2.setFromUnitVectors(_w1, _w2));
+  setWorldQ(mid, _sq);
+  refreshWorld(end);
+  setWorldQ(end, endQ);
 }
 
 // ---- Nội suy key pose ----
