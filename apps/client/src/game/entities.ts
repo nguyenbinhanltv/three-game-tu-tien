@@ -270,12 +270,22 @@ const _sphere = new THREE.Sphere();
  * Thanh Phong thay vì 19k) và không đổ bóng. 12 × 19k × 2 (cả pass bóng) ≈ 0,46M tam giác.
  */
 export const LOD0_MAX = 12;
+/**
+ * Số nhãn tên tối đa (gần camera nhất, trong khung nhìn); mình và mục tiêu luôn có. Mỗi nhãn là một sprite = một draw
+ * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
+ */
+export const LABEL_MAX = 16;
 
 interface LodEntry {
   model: CharacterView;
   d: number;
   inView: boolean;
   local: boolean;
+  /** Nhãn tên (nếu có) và có phải mục tiêu đang chọn. */
+  label: THREE.Sprite | null;
+  target: boolean;
+  /** Nhãn đã có luật ẩn riêng trong khung này (quái: chết, xa 70 m): chỉ ẩn thêm, không bật lại. */
+  labelKeep: boolean;
 }
 /** AnimState dùng lại cho quái (không cấp phát mỗi khung). */
 const _monAnim: AnimState = { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, combat: false };
@@ -419,7 +429,6 @@ export class EntityManager {
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
-      v.model.setViewDistance?.(isLocal ? 0 : Math.hypot(v.x - local.x, v.z - local.z));
       const dead = (s.fl & PF_DEAD) !== 0;
       v.model.update(dt, {
         speed: v.speed,
@@ -547,7 +556,7 @@ export class EntityManager {
     }
 
     bars.end();
-    this.applyLodBudget(local);
+    this.applyLodBudget(local, targetId);
 
     // ----- vòng chọn mục tiêu -----
     const tm = this.monsters.get(targetId);
@@ -575,7 +584,7 @@ export class EntityManager {
    * gần nhất trong khung nhìn được LOD0 (và đổ bóng); ngoài khung nhìn thì không cập nhật mixer. Nhân vật của mình
    * luôn được LOD0. Áp cho khung sau (model đã update khung này), trễ một khung không thấy được.
    */
-  private applyLodBudget(local: { x: number; y: number; z: number }): void {
+  private applyLodBudget(local: { x: number; y: number; z: number }, targetId = ''): void {
     const list = this.lodList;
     let n = 0;
     const cam = this.camera;
@@ -587,8 +596,8 @@ export class EntityManager {
     const cx = ce ? ce[12] : local.x;
     const cy = ce ? ce[13] : local.y;
     const cz = ce ? ce[14] : local.z;
-    const add = (model: CharacterView, isLocal: boolean) => {
-      if (!model.setView) return;
+    const add = (model: CharacterView, isLocal: boolean, label: THREE.Sprite | null = null, target = false, labelKeep = false) => {
+      if (!model.setView && !label) return;
       const r = model.root;
       const h = model.height;
       const p = r.position;
@@ -597,23 +606,36 @@ export class EntityManager {
       _sphere.radius = h * 0.9;
       const inView = r.visible && (!cam || _frustum.intersectsSphere(_sphere));
       let e = list[n];
-      if (!e) e = list[n] = { model, d, inView, local: isLocal };
+      if (!e) e = list[n] = { model, d, inView, local: isLocal, label, target, labelKeep };
       e.model = model;
       e.d = d;
       e.inView = inView;
       e.local = isLocal;
+      e.label = label;
+      e.target = target;
+      e.labelKeep = labelKeep;
       n++;
     };
-    for (const [sid, v] of this.players) add(v.model, sid === this.mySid);
-    for (const v of this.monsters.values()) add(v.model, false);
+    for (const [sid, v] of this.players) add(v.model, sid === this.mySid, v.label, sid === targetId);
+    for (const [id, v] of this.monsters) add(v.model, false, v.label, id === targetId, true);
+    // NPC có model xương (khi có) cũng vào chung suất LOD0; model khối thì bỏ qua. Nhãn NPC luôn hiện.
+    for (const npc of this.npcs) add(npc.model as CharacterView, false);
     list.length = n;
     // Mình trước, rồi trong khung nhìn theo gần → xa.
     list.sort((a, b) => (a.local !== b.local ? (a.local ? -1 : 1) : a.inView !== b.inView ? (a.inView ? -1 : 1) : a.d - b.d));
     let lod0 = 0;
+    let labels = 0;
     for (const e of list) {
+      if (e.label) {
+        // Quái đã tự ẩn nhãn (chết, xa 70 m) thì giữ ẩn; người chơi luôn bật lại theo suất.
+        const want = e.local || e.target || (e.inView && labels < LABEL_MAX);
+        if (want && !e.local && !e.target) labels++;
+        e.label.visible = e.labelKeep ? e.label.visible && want : want;
+      }
+      if (!e.model.setView) continue;
       const allow = e.local || (e.inView && lod0 < LOD0_MAX);
       if (allow) lod0++;
-      e.model.setView!({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow, self: e.local });
+      e.model.setView({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow, self: e.local });
     }
   }
 
