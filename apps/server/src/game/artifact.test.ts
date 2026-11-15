@@ -304,3 +304,23 @@ describe('chế tạo pháp bảo', () => {
     expect(p.s.art).toBe(HO_LO);
   });
 });
+
+describe('nhặt đồ khi túi gần đầy (không nửa vời)', () => {
+  it('đan phẩm 0 rơi vào túi chỉ còn chỗ ở stack phẩm khác: không đổi túi, không lệch ledger', () => {
+    const { p } = setup();
+    p.char.inv.fill(null);
+    // Túi đầy: một stack Hạ còn 1 chỗ, một stack Trung còn nhiều chỗ, mọi ô khác là đồ khác.
+    p.char.inv[0] = { id: 'itm_tu_khi_dan', n: 49 };
+    p.char.inv[1] = { id: 'itm_tu_khi_dan', n: 10, plus: 1 };
+    for (let i = 2; i < p.char.inv.length; i++) p.char.inv[i] = { id: 'itm_thiet_tinh', n: 99 };
+    const before = JSON.stringify(p.char.inv);
+    let d0 = -1;
+    const ok = p.char.tx('test-room', null, (d) => {
+      d0 = d.roomFor('itm_tu_khi_dan', 0);
+      return d.add('itm_tu_khi_dan', 3);
+    });
+    expect(d0).toBe(1);
+    expect(ok).toBe(false);
+    expect(JSON.stringify(p.char.inv)).toBe(before);
+  });
+});

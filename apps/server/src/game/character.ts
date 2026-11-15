@@ -84,10 +84,20 @@ export class InvDraft {
     return n;
   }
 
-  /** Thêm vật phẩm mới sinh ra. Trả về false nếu túi không đủ chỗ (bản nháp khi đó không dùng được nữa). */
+  /** Chỗ còn lại cho `id` cùng `plus`: ô trống và phần trống của các stack cùng id và cùng `plus` (đan khác phẩm không chồng). */
+  roomFor(id: string, plus = 0): number {
+    const def = ITEM.get(id);
+    if (!def) return 0;
+    let room = this.freeSlots() * def.stack;
+    if (def.stack > 1) for (const s of this.inv) if (s && s.id === id && (s.plus ?? 0) === plus) room += def.stack - s.n;
+    return room;
+  }
+
+  /** Thêm vật phẩm mới sinh ra. Trả về false (và không đụng tới túi) nếu không đủ chỗ. */
   add(id: string, n: number, plus = 0): boolean {
     const def = ITEM.get(id);
     if (!def || !Number.isInteger(n) || n <= 0) return false;
+    if (this.roomFor(id, plus) < n) return false;
     let left = n;
     if (def.stack > 1) {
       for (const s of this.inv) {
@@ -101,7 +111,6 @@ export class InvDraft {
     }
     while (left > 0) {
       const i = this.inv.findIndex((s) => !s);
-      if (i < 0) return false;
       const put = Math.min(left, def.stack);
       const it: InvItem = { id, n: put };
       if (plus > 0) it.plus = plus;

@@ -1760,7 +1760,7 @@ export class GameSim {
       for (const g of got) {
         const def = ITEM.get(g.id)!;
         // Kiểm tra trước để một món không vừa không làm hỏng cả bản nháp.
-        const room = d.freeSlots() * def.stack + (def.stack > 1 ? d.inv.reduce((s, x) => s + (x && x.id === g.id ? def.stack - x.n : 0), 0) : 0);
+        const room = d.roomFor(g.id);
         if (room >= g.n && d.add(g.id, g.n)) kept.push(g);
         else full = true;
       }

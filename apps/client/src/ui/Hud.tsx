@@ -771,7 +771,7 @@ function BuffRow() {
           <Tooltip key={kind} content={<TipCard title={t('ui.buff.title')} lines={[{ text: `${t('ui.pill.buff.' + kind)} +${Math.round(mag * 100)}%`, tone: 'good' }, { text: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, tone: 'dim' }]} />}>
             <span className="buff-chip">
               <ContentIcon def={ITEM.get(BUFF_ICON[kind])} />
-              <em>{left >= 60 ? Math.ceil(left / 60) + 'p' : left + 's'}</em>
+              <em>{left >= 60 ? t('ui.buff.min', { n: Math.ceil(left / 60) }) : t('ui.buff.sec', { n: left })}</em>
             </span>
           </Tooltip>
         );

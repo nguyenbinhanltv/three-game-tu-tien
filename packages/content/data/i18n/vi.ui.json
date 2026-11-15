@@ -581,5 +581,7 @@
   "ui.buff.title": "Đan đang có hiệu lực",
   "ui.pill.quality_line": "{q}: hiệu lực {n}%",
   "ui.pill.buff_line": "{what} +{n}% trong {m} phút",
-  "ui.help.art": "Pháp bảo phụ"
+  "ui.help.art": "Pháp bảo phụ",
+  "ui.buff.min": "{n}p",
+  "ui.buff.sec": "{n}s"
 }
