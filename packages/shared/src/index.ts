@@ -26,3 +26,4 @@ export * from './teleport';
 export * from './zones';
 export * from './animrules';
 export * from './spawnrules';
+export * from './elements';
