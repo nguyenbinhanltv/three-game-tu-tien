@@ -106,7 +106,7 @@
             0.1,
             0.25
           ],
-          "lean": 50
+          "lean": 45
         },
         {
           "name": "hit_front_2",
@@ -114,7 +114,7 @@
             0.1,
             0.25
           ],
-          "lean": 50
+          "lean": 45
         },
         {
           "name": "hit_l",
@@ -122,7 +122,7 @@
             0.1,
             0.25
           ],
-          "lean": 50
+          "lean": 45
         },
         {
           "name": "hit_heavy",
@@ -130,7 +130,7 @@
             0.1,
             0.25
           ],
-          "lean": 50
+          "lean": 45
         },
         {
           "name": "hit_head",
@@ -138,7 +138,7 @@
             0.1,
             0.25
           ],
-          "lean": 50
+          "lean": 45
         },
         {
           "name": "knockdown",
@@ -152,14 +152,18 @@
           "slice": [
             0.2,
             2.6
-          ]
+          ],
+          "lean": 35,
+          "leanSoft": 0.45
         },
         {
           "name": "flip_raw",
           "slice": [
             0.4,
             3.4
-          ]
+          ],
+          "lean": 35,
+          "leanSoft": 0.45
         },
         {
           "name": "jump",
@@ -198,7 +202,8 @@
         },
         {
           "name": "heavy_chop",
-          "lean": 50
+          "lean": 30,
+          "leanSoft": 0.4
         }
       ],
       "derive": [
@@ -269,7 +274,9 @@
           "via": "dodge_f",
           "to": "combat_idle",
           "t1": 0.95,
-          "t2": 0.7
+          "t2": 0.7,
+          "lean": 30,
+          "leanSoft": 0.4
         }
       ],
       "drop": [

@@ -453,18 +453,19 @@ def foot_lock(frames, fade=2):
     return out
 
 
-def limit_lean(frames, max_deg):
+def limit_lean(frames, max_deg, soft=0.0):
     """Giới hạn độ cúi của thân (góc giữa hông→cổ và phương đứng): quá `max_deg` thì xoay cả nhánh từ Spine quanh đầu Spine để ngẩng
     bớt. Cúi gập 90° làm vỏ kiếm đeo lưng (gắn xương ngực spine2) chĩa ngang qua đầu; giữ dưới ngưỡng thì kiếm nằm sát lưng."""
     neck = bone('neck')
     out = []
     for M in frames:
-        u = M[neck].translation - M[HIPS].translation
+        u = M[neck].translation - M[SPINE2].translation  # cùng cách đo với test swordBack: ngực (spine2 → cổ) so với phương đứng
         ang = math.degrees(u.angle(Z))
         if ang > max_deg:
             axis = u.cross(Z)
             if axis.length > 1e-6:
-                R = rot_pivot(Quaternion(axis.normalized(), math.radians(ang - max_deg)), M[SPINE].translation.copy())
+                new = max_deg + (ang - max_deg) * soft  # soft = 0: chặn cứng; 0 < soft < 1: nén phần vượt ngưỡng (vẫn lộn được)
+                R = rot_pivot(Quaternion(axis.normalized(), math.radians(ang - new)), M[SPINE].translation.copy())
                 M = dict(M)
                 for k in subtree(SPINE):
                     M[k] = R @ M[k]
@@ -558,7 +559,7 @@ for spec in K3.get('fix', []):
     if spec.get('pin', True):
         fr = pin_frames(fr, ANCHOR)
     if spec.get('lean'):
-        fr = limit_lean(fr, spec['lean'])
+        fr = limit_lean(fr, spec['lean'], spec.get('leanSoft', 0.0))
     if spec.get('lock'):
         m['slipBefore'] = round((stance_info(fr) or {'slip': 0})['slip'], 3)
         fr = foot_lock(fr)
@@ -619,6 +620,8 @@ for spec in K3.get('derive', []):
         fr = [src[min(int(round(i * k)), len(src) - 1)] for i in range(n + 1)]
     else:
         fail(f'k3: op {op}?')  # noqa: F821
+    if spec.get('lean'):
+        fr = limit_lean(fr, spec['lean'], spec.get('leanSoft', 0.0))
     if spec.get('pin', True):
         fr = pin_frames(fr, ANCHOR)
     put(name, fr, loop)

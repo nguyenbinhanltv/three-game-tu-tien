@@ -1,0 +1,74 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import * as THREE from 'three/webgpu';
+import { describe, expect, it } from 'vitest';
+import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { HUMAN_ANIM_LIB, HUMAN_K3_LIB, retargetClips } from './animLib';
+
+const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
+const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
+const cache = new AssetCache({
+  base: '',
+  fetchManifest: async () => MANIFEST,
+  load: async (url) => {
+    const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
+    const loader = createGltfLoader(createKtx2Loader());
+    loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+    return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
+  },
+});
+
+/** Mỗi 0,1 s của clip: hướng vỏ kiếm lưng (xương dtl_sword) so với ngực (spine2) và độ cúi của ngực so với phương đứng. */
+function trace(target: THREE.Object3D, clip: THREE.AnimationClip): { rel: number[]; swordFromUp: number[]; chestFromUp: number[] } {
+  const root = target.clone(true);
+  new THREE.Scene().add(root);
+  const mixer = new THREE.AnimationMixer(root);
+  mixer.clipAction(clip).play();
+  const get = (n: string) => root.getObjectByName(n)!;
+  const sword = get('dtl_sword');
+  const chest = get('mixamorig_spine2');
+  const neck = get('mixamorig_neck');
+  const up = new THREE.Vector3(0, 1, 0);
+  const rel: number[] = [];
+  const swordFromUp: number[] = [];
+  const chestFromUp: number[] = [];
+  const q = new THREE.Quaternion();
+  const q0 = new THREE.Quaternion();
+  let first: THREE.Quaternion | null = null;
+  for (let t = 0; t < clip.duration; t += 0.1) {
+    mixer.setTime(t);
+    root.updateMatrixWorld(true);
+    // Hướng tương đối: quay thế giới của xương kiếm trong hệ ngực.
+    q.copy(chest.getWorldQuaternion(q0)).invert().multiply(sword.getWorldQuaternion(new THREE.Quaternion()));
+    first ??= q.clone();
+    rel.push((q.angleTo(first) * 180) / Math.PI);
+    const dirOf = (o: THREE.Object3D) => new THREE.Vector3(0, 1, 0).applyQuaternion(o.getWorldQuaternion(new THREE.Quaternion()));
+    swordFromUp.push((dirOf(sword).angleTo(up) * 180) / Math.PI);
+    const c = chest.getWorldPosition(new THREE.Vector3());
+    chestFromUp.push((neck.getWorldPosition(new THREE.Vector3()).sub(c).angleTo(up) * 180) / Math.PI);
+  }
+  return { rel, swordFromUp, chestFromUp };
+}
+
+/** Độ cúi tối đa của ngực (°) ở clip không phải ngã/chết: cúi sâu hơn thì vỏ kiếm lưng nằm ngang qua đầu. Lộn (dodge_*) cho phép sâu hơn ở đỉnh lộn. */
+const LEAN_MAX: Record<string, number> = { heavy_chop: 60, hit_front_1: 50, hit_front_2: 50, hit_heavy: 50, hit_head: 50, hit_l: 50, hit_r: 50, getup: 56, dodge_f: 85, dodge_l: 85, dodge_r: 85, dodge_back: 95, combat_idle: 20, guard: 30 };
+
+describe('vỏ kiếm đeo lưng đi theo ngực trong mọi clip của thư viện', () => {
+  it('hướng vỏ so với spine2 không đổi (< 0,5°) ở mọi clip, nam và nữ', async () => {
+    const libs = [await cache.acquire(HUMAN_ANIM_LIB), await cache.acquire(HUMAN_K3_LIB)];
+    for (const id of ['chr_kiem_tu_nam', 'chr_kiem_tu_nu']) {
+      const h = await cache.acquire(id);
+      for (const lib of libs) {
+        for (const clip of retargetClips(lib.scene, lib.animations, h.scene)) {
+          const r = trace(h.scene, clip);
+          expect(Math.max(...r.rel), `${id}/${clip.name}`).toBeLessThan(0.5);
+          if (LEAN_MAX[clip.name]) expect(Math.max(...r.chestFromUp), `${id}/${clip.name} cúi`).toBeLessThan(LEAN_MAX[clip.name]);
+          if (process.env.K3_SWORD_REPORT) console.log(id, clip.name, r.chestFromUp.map((x) => Math.round(x)).join(' '));
+        }
+      }
+      h.release();
+    }
+    libs.forEach((l) => l.release());
+  });
+});

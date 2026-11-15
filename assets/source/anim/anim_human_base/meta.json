@@ -36,7 +36,19 @@
       }
     ],
     "animLib": true,
-    "post": "tools/blender/export_anim_lib.py"
+    "post": "tools/blender/export_anim_lib.py",
+    "k3": {
+      "fix": [
+        {
+          "name": "heavy_chop",
+          "lean": 30,
+          "leanSoft": 0.4
+        }
+      ],
+      "derive": [],
+      "drop": [],
+      "report": "docs/k3-anim/clips-base.json"
+    }
   },
   "license": {
     "source": "Clip preset Tripo web (idle, run, slash, fall) của rig Mixamo Thanh Phong; hit_light thủ tục tools/blender/anim_biped_extra.py; xuất không mesh bằng tools/blender/export_anim_lib.py; K-3: clip `attack` đổi tên `heavy_chop`; 26 clip K-3 nằm ở thư viện riêng anim_human_k3",
