@@ -20,6 +20,8 @@ const rawDir = path.join(root, 'assets/build/raw');
 const sourceDir = path.join(root, 'assets/source');
 const budgetsFile = path.join(root, 'assets/budgets.json');
 const importScript = path.join(root, 'tools/blender/import_tripo.py');
+/** Helper ghép clip dùng chung của các script import.post (nạp bằng runpy). */
+const clipsHelper = path.join(root, 'tools/blender/tripo_clips.py');
 
 /**
  * id: asset id (tên file trong assets/build/raw/).
@@ -108,7 +110,7 @@ function tripoJobs() {
       id: m.data.id,
       script: path.relative(root, importScript),
       args: [glb, out(m.data.id), '--meta', m.file, '--budgets', budgetsFile],
-      deps: [importScript, m.file, budgetsFile, glb, ...clips, ...(post ? [post] : [])],
+      deps: [importScript, m.file, budgetsFile, glb, ...clips, ...(post ? [post, clipsHelper] : [])],
     });
   }
   return jobs;

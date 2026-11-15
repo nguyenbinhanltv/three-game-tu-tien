@@ -58,6 +58,8 @@ import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot'
 import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
 import { EntityManager, type MonVis, type MState, type PState, type WorldView } from './entities';
 import { Environment } from './env';
+import { AmbientParticles } from './ambient';
+import { Grass, GRASS_PUSH_SLOTS, monsterPushRadius, pickPushers, type Pusher } from './grass';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline } from '../render/post';
@@ -68,6 +70,7 @@ import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { type AssetHandle, assets } from './assets';
+import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, HAZARD_COLORS, Vfx } from './vfx';
@@ -104,6 +107,10 @@ export function serverUrl(): string {
     return `ws://${hostname}:${env.VITE_DEV_SERVER_PORT || '2567'}`;
   }
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
+}
+
+function isWebGPU(r: THREE.WebGPURenderer): boolean {
+  return !!(r.backend as { isWebGPUBackend?: boolean }).isWebGPUBackend;
 }
 
 /**
@@ -152,6 +159,8 @@ export class Game {
   /** Đăng nhập và vào thế giới. Lỗi được đưa lên UI qua store. */
   static async connect(opts: LoginOptions): Promise<void> {
     set({ phase: 'connecting', error: '', nameError: '' });
+    // M6-1: GLB tải song song với lúc chờ server và lúc dựng thế giới thủ tục.
+    prefetchWorldAssets();
     Game.lastLogin = opts;
     Game.session = '';
     try {
@@ -205,6 +214,13 @@ export class Game {
   camera = new THREE.PerspectiveCamera(55, 1, 0.3, 9000);
   terrain!: Terrain;
   env!: Environment;
+  /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
+  grass!: Grass;
+  /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
+  ambient!: AmbientParticles;
+  private pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
+  private pushSelf: Pusher = { x: 0, y: 0, z: 0, r: 1.6 };
+  private pushPool: Pusher[] = [];
   ents!: EntityManager;
   vfx!: Vfx;
   dmg!: DamageNumbers;
@@ -471,6 +487,25 @@ export class Game {
 
   // ---------- khởi động ----------
 
+  /**
+   * Số lần biên dịch trước đang chờ (M6-1). Khác 0 thì `frame()` bỏ qua: three r178 vẽ với pipeline WebGPU
+   * còn đang biên dịch dở là lỗi.
+   */
+  private compiling = 0;
+
+  /** Biên dịch trước mọi material trong cảnh theo đích của pass cảnh; lỗi thì để renderer biên dịch khi vẽ. */
+  private async precompile(): Promise<void> {
+    if (!this.post || this.disposed) return;
+    this.compiling++;
+    try {
+      await this.post.compileScene();
+    } catch (e) {
+      console.warn('[load] biên dịch trước lỗi, biên dịch khi vẽ:', e);
+    } finally {
+      this.compiling--;
+    }
+  }
+
   /** Thời gian từng bước khởi động (ms), để theo dõi thời gian tải. */
   loadStats: Record<string, number> = {};
 
@@ -535,6 +570,11 @@ export class Game {
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
     this.vfx.particles.setQuality(get().quality);
+    this.grass = new Grass();
+    this.grass.setQuality(get().quality, q.shadows);
+    this.scene.add(this.grass.mesh);
+    this.ambient = new AmbientParticles(this.vfx.particles);
+    this.ambient.setQuality(get().quality);
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
@@ -547,6 +587,16 @@ export class Game {
     this.loadSectModel(q.shadows);
     this.bindInput();
     this.onResize();
+    // M6-1, WebGL2: biên dịch trước material của cảnh (trời, địa hình, kiến trúc, VFX ấm sẵn, cổng) song song
+    // (KHR_parallel_shader_compile) thay vì biên dịch + link đồng bộ ở khung đầu. pnpm bench:load (20 Mbps,
+    // trung vị 6 lượt): khung đầu − JS 1,80 → 1,59 s, vào game 3,96 → 3,47 s. WebGPU thì không lợi (dựng node
+    // TSL vẫn đồng bộ, Chrome vốn biên dịch pipeline ở tiến trình GPU) mà khung đầu trễ thêm ~0,5 s: chỉ "vẽ ấm".
+    if (!isWebGPU(this.renderer)) {
+      this.vfx.update(0); // đưa các lưới "vẽ ấm" của VFX vào cảnh để được biên dịch cùng
+      await this.precompile();
+      mark('compile');
+    }
+    if (this.disposed) return;
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
@@ -576,6 +626,9 @@ export class Game {
         this.sectMesh.geometry = buildSect(false);
         old.dispose();
       }
+      // Còn ở màn tải, WebGL2 (M6-1): biên dịch song song thay vì biên dịch + link đồng bộ trong một khung vẽ
+      // (xem `start`). Đã vào game thì dừng vẽ để chờ cũng là khựng, để renderer tự làm.
+      if (!this.started && !isWebGPU(this.renderer)) await this.precompile();
     } catch (e) {
       console.warn('[asset] không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
     }
@@ -1387,7 +1440,7 @@ export class Game {
   }
 
   private frame(): void {
-    if (this.disposed) return;
+    if (this.disposed || this.compiling > 0) return;
     this.renderer.info.reset();
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.lastT) / 1000);
@@ -1466,11 +1519,13 @@ export class Game {
       this.ents.updateQuestMarkers(get().quests, myLevel);
     }
     if (me) this.vfx.trails.update(dt, this.ents.players, this.sid, this.camera);
+    if (me) this.updateGrass(dt, rp);
     this.vfx.update(dt);
     this.post?.update(dt);
     this.updateCamera(dt);
     setListener(rp.x, rp.z, this.camYaw);
     this.env.update(dt, this.camera, rp);
+    if (me) this.ambient.update(dt, this.camera.position, rp);
     for (const disc of [this.portalDisc, this.exitDisc]) {
       if (!disc) continue;
       disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
@@ -1490,6 +1545,8 @@ export class Game {
     this.fpsFrames++;
     if (now - this.hudAt > 100) {
       this.hudAt = now;
+      // Lúc tải giữ điểm hồi sinh do prefetch đặt (renderPos có thể chưa khớp vị trí thật).
+      if (this.started) assets.setViewer(rp.x, rp.z);
       this.syncHud(me);
       this.music.tick(now, { active: this.started, room: get().room, x: rp.x, z: rp.z, flags: me?.fl ?? 0, monsters: this.ents.monsters.values() });
     }
@@ -1855,6 +1912,30 @@ export class Game {
     return this.camYaw;
   }
 
+  /** Cỏ rạp theo mình + 5 người/quái gần nhất (chỉ đọc vị trí đã nội suy của EntityManager). */
+  private updateGrass(dt: number, rp: THREE.Vector3): void {
+    const pool = this.pushPool;
+    let n = 0;
+    const put = (x: number, y: number, z: number, r: number) => {
+      const p = pool[n] ?? (pool[n] = { x: 0, y: 0, z: 0, r: 0 });
+      p.x = x;
+      p.y = y;
+      p.z = z;
+      p.r = r;
+      n++;
+    };
+    for (const [sid, v] of this.ents.players) if (sid !== this.sid) put(v.x, v.y, v.z, 1.4);
+    for (const v of this.ents.monsters.values()) {
+      const r = monsterPushRadius(v.s.st === MS_DEAD, v.model.root.visible, v.barY);
+      if (r > 0) put(v.x, v.y, v.z, r);
+    }
+    this.pushSelf.x = rp.x;
+    this.pushSelf.y = rp.y;
+    this.pushSelf.z = rp.z;
+    pickPushers(this.pushSelf, pool, this.pushers, 40, n);
+    this.grass.update(dt, rp, this.pushers, this.started ? 1 : 6);
+  }
+
   setControls(mode: string): void {
     this.controls = mode === 'strafe' || mode === 'turn' ? mode : 'mouse';
     if (this.controls !== 'mouse') this.releaseLock();
@@ -1873,6 +1954,8 @@ export class Game {
     const cfg = QUALITY[q] ?? QUALITY.medium;
     setHeightFog(cfg.heightFog);
     this.vfx?.particles.setQuality(q);
+    this.grass?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
+    this.ambient?.setQuality(q);
     if (this.post && !this.post.matches(cfg)) {
       this.post.dispose();
       this.post = new PostPipeline(this.renderer, this.scene, this.camera, cfg);
@@ -1891,6 +1974,7 @@ export class Game {
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();
+    this.grass?.dispose();
     this.post?.dispose();
     this.sectMesh?.geometry.dispose();
     this.sectAsset?.handle.release();

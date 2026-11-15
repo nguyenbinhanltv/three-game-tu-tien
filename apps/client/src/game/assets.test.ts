@@ -149,6 +149,122 @@ describe('AssetCache', () => {
     for (const h of hs) h.release();
   });
 
+  it('prefetch tải byte theo ưu tiên, acquire parse từ byte đã có (không tải lại)', async () => {
+    const fetched: string[] = [];
+    const parsed: string[] = [];
+    const loaded: string[] = [];
+    let unblock!: () => void;
+    const gate = new Promise<void>((r) => (unblock = r));
+    const m = manifestOf('first', 'chr', 'arch', 'mon', 'fx');
+    m.assets.chr.bytes = 50;
+    const cache = new AssetCache({
+      base: '',
+      concurrency: 1,
+      fetchManifest: async () => m,
+      fetchBytes: async (url, onBytes) => {
+        fetched.push(url.split('.')[0]);
+        if (url.startsWith('first')) await gate;
+        onBytes(50);
+        return new ArrayBuffer(8);
+      },
+      parse: async (_d, url) => {
+        parsed.push(url.split('.')[0]);
+        return fakeGltf([]);
+      },
+      load: async (url) => {
+        loaded.push(url.split('.')[0]);
+        return fakeGltf([]);
+      },
+    });
+    cache.setViewer(0, 0);
+    cache.prefetch('first');
+    cache.prefetch('fx', { priority: 400 });
+    cache.prefetch('mon', { priority: 120 });
+    cache.prefetch('arch', { pos: { x: 40, z: 0 } });
+    cache.prefetch('chr', { priority: 0 });
+    cache.prefetch('chr'); // gọi lại không xếp hàng thêm
+    await new Promise((r) => setTimeout(r, 0));
+    // `chr` đang chờ trong hàng: acquire nâng ưu tiên và nhận byte của lần tải trước.
+    const hChr = cache.acquire('chr', { priority: 0 });
+    unblock();
+    const h = await hChr;
+    await new Promise((r) => setTimeout(r, 0));
+    expect(fetched).toEqual(['first', 'chr', 'arch', 'mon', 'fx']);
+    expect(parsed).toEqual(['chr']);
+    expect(loaded).toEqual([]);
+    expect(cache.progress().loaded).toBeGreaterThanOrEqual(50);
+    // Asset đã tải trước: acquire chỉ parse.
+    const hMon = await cache.acquire('mon');
+    expect(parsed).toEqual(['chr', 'mon']);
+    expect(fetched.filter((f) => f === 'mon')).toHaveLength(1);
+    // Asset đã có bản gốc: prefetch không làm gì.
+    cache.prefetch('chr');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(fetched.filter((f) => f === 'chr')).toHaveLength(1);
+    h.release();
+    hMon.release();
+  });
+
+  it('yêu cầu xếp cùng lượt được xếp hạng cùng nhau (việc xếp trước không chiếm luồng)', async () => {
+    const order: string[] = [];
+    const cache = new AssetCache({
+      base: '',
+      concurrency: 1,
+      fetchManifest: async () => manifestOf('fx', 'chr'),
+      load: async (url) => {
+        order.push(url.split('.')[0]);
+        return fakeGltf([]);
+      },
+    });
+    const hs = await Promise.all([cache.acquire('fx', { priority: 400 }), cache.acquire('chr', { priority: 0 })]);
+    expect(order).toEqual(['chr', 'fx']);
+    for (const h of hs) h.release();
+  });
+
+  it('prefetch lỗi thì acquire tự tải lại bằng loader', async () => {
+    const loaded: string[] = [];
+    const cache = new AssetCache({
+      base: '',
+      fetchManifest: async () => manifestOf('chr'),
+      fetchBytes: async () => {
+        throw new Error('mạng');
+      },
+      parse: async () => {
+        throw new Error('không được parse');
+      },
+      load: async (url) => {
+        loaded.push(url);
+        return fakeGltf([]);
+      },
+    });
+    const warn = console.warn;
+    console.warn = () => undefined;
+    try {
+      cache.prefetch('chr');
+      await new Promise((r) => setTimeout(r, 0));
+      const h = await cache.acquire('chr');
+      expect(loaded).toEqual(['chr.abc.glb']);
+      h.release();
+    } finally {
+      console.warn = warn;
+    }
+  });
+
+  it('prefetch asset không có trong manifest thì bỏ qua', async () => {
+    const fetched: string[] = [];
+    const cache = new AssetCache({
+      fetchManifest: async () => manifestOf(),
+      fetchBytes: async (url) => {
+        fetched.push(url);
+        return new ArrayBuffer(0);
+      },
+    });
+    cache.prefetch('nope');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(fetched).toEqual([]);
+    expect(cache.stats()).toEqual({ loaded: 0, loading: 0, refs: 0 });
+  });
+
   it('parse được arch_sect thật (meshopt + quantize) bằng loader chung', async () => {
     const m = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
     const a = m.assets.arch_sect;

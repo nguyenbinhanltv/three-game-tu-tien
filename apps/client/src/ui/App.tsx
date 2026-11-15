@@ -5,6 +5,7 @@ import { assets } from '../game/assets';
 import { sfx } from '../game/audio';
 import { TitleBackdrop } from '../game/backdrop';
 import { Game } from '../game/engine';
+import { prefetchManifest } from '../game/preload';
 import { Hud } from './Hud';
 import { get, type Phase, set, useUI } from './store';
 
@@ -315,6 +316,8 @@ function dropBackdrop(): void {
 }
 
 export function App() {
+  // M6-1: biết sẵn tên file GLB trước khi bắt đầu kết nối (game/preload.ts).
+  useEffect(prefetchManifest, []);
   // Tiếng bấm cho mọi nút giao diện (nút đóng bảng đã có tiếng gấp sách riêng).
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
