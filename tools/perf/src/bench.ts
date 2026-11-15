@@ -1,7 +1,7 @@
 // pnpm bench:client: đo hiệu năng client theo đường camera cố định, bằng Playwright (Chromium headless).
 //
 // Tự chạy `pnpm dev` ở cặp cổng riêng (PORT/CLIENT_PORT, mặc định 2635/5135) với DB tạm và đăng nhập thử,
-// mở game với `?mute=1&debug=1&auto=<tên>` (+ `&renderer=webgl2`), lần lượt cho mỗi renderer × preset:
+// mở game với `?mute=1&debug=1&cine=0&auto=<tên>` (+ `&renderer=webgl2`), lần lượt cho mỗi renderer × preset:
 //   dịch chuyển bằng `/gm tp` tới sân tông môn, rừng linh thảo, bờ hồ sương mù; chờ ô địa hình nạp xong;
 //   xoay camera trọn một vòng trong N giây; ghi mỗi khung: thời gian CPU của `frame()`, draw call, tam giác.
 // Không sửa code game: bench bọc `__game.frame` (vòng `setAnimationLoop` gọi `this.frame()` nên bọc ở
@@ -222,7 +222,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
   // tsx (esbuild keepNames) chèn helper `__name` vào hàm đã biên dịch; trang không có helper này nên tạo shim.
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)});` });
   const name = `Bench_${renderer === 'webgpu' ? 'gpu' : 'gl'}_${preset}`.slice(0, 14);
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`;
   const t0 = Date.now();
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
@@ -358,7 +358,7 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})("high");` });
   const name = `Swap_${renderer === 'webgpu' ? 'gpu' : 'gl'}`;
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`;
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
     await page.waitForFunction(() => {
