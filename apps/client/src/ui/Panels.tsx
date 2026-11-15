@@ -1,6 +1,6 @@
 import { ContentIcon } from './ContentIcon';
 import { useEffect, useRef, useState } from 'react';
-import { C, enhanceMul, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
+import { C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
@@ -68,7 +68,7 @@ function ItemDetailBody({ item, def, q, level, worn, children }: { item: InvItem
       ))}
       {def.reqLevel && def.reqLevel > 1 && <div className={'item-req' + (level < def.reqLevel ? ' bad' : '')}>{t('ui.item.req', { realm: realmName(def.reqLevel) })}</div>}
       <div className="item-desc">{t(`item.${def.id}.desc`)}</div>
-      {def.sell > 0 && <div className="k-dim">{t('ui.item.sell_price', { n: def.sell })} 💠</div>}
+      {def.sell > 0 && <div className="k-dim">{t('ui.item.sell_price', { n: sellPrice(item, def) })} 💠</div>}
       <div className="item-actions">{children}</div>
     </div>
   );

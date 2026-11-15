@@ -9,6 +9,8 @@ import {
   rollItemInstance,
   seededRng,
   droppableSlots,
+  rollEquipDrops,
+  sellPrice,
   templatesFor,
   GCD,
   HP_REGEN_MEDITATE,
@@ -22,6 +24,7 @@ import {
   xpLevelFactor,
   xpNeed,
 } from '@dtl/shared';
+import { lootOf } from './loot';
 import { ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, QUESTS, realmName, SKILLS } from './index';
 
 /** Trang bị dự kiến ở mỗi cảnh giới (theo phần thưởng nhiệm vụ). */
@@ -171,6 +174,22 @@ for (const q of [0, 1, 2, 3, 4] as Quality[]) {
   );
 }
 
+console.log('\nThu nhập kỳ vọng mỗi lần hạ quái (linh thạch): vàng rơi + bán trang bị rơi (giá theo ilvl, phẩm)');
+for (const sp of LEVELS.van_lam.spawns) {
+  const m = MONSTER.get(sp.mon)!;
+  const lt = lootOf(m.id);
+  const lv = Math.round((sp.levelMin + sp.levelMax) / 2);
+  const gold = (lt.gold[0] + lt.gold[1]) / 2;
+  const rng = seededRng(42);
+  let gear = 0;
+  const N = 3000;
+  for (let i = 0; i < N; i++) {
+    for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, lv, rng)) {
+      gear += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
+    }
+  }
+  console.log(`${m.id.padEnd(24)} vàng ${gold.toFixed(1).padStart(6)}  bán đồ ${(gear / N).toFixed(1).padStart(6)}  (${((gear / N / gold) * 100).toFixed(0)}% so với vàng)`);
+}
 console.log('\nTinh anh (người cùng cấp): TTK không đồ / bộ Huyền phẩm; máu/s tank đứng yên');
 for (const m of MONSTERS_ELITE()) {
   const sp = LEVELS.van_lam.spawns.find((x) => x.mon === m.id)!;

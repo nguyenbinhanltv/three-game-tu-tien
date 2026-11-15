@@ -24,6 +24,7 @@ import {
   enhanceCost,
   BIND_QUALITY,
   rollEquipDrops,
+  sellPrice,
   type EquipSlot,
   type InvItem,
   type Quality,
@@ -1978,7 +1979,7 @@ export class GameSim {
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def || it.n < n || def.sell <= 0) return;
     if (it.inst?.bound) return this.warn(p, 'sys.item_bound');
-    const gold = def.sell * n;
+    const gold = sellPrice(it, def) * n;
     const ok = p.char.tx('sell:' + def.id, idem, (d) => {
       if (!d.removeAt(slot, n)) return false;
       d.addGold(gold);
