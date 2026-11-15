@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react';
+import { uiScale } from '../uiScale';
 
 const GAP = 8;
 const MARGIN = 8;
@@ -36,7 +37,9 @@ export function Tooltip({ content, children }: { content: ReactNode; children: R
     // Hết chỗ cả hai phía (chú giải dài): ép vào trong màn hình, chấp nhận che nhẹ ô gốc thay vì tràn mép dưới.
     y = Math.max(MARGIN, Math.min(y, window.innerHeight - b.height - MARGIN));
     const x = Math.min(Math.max(MARGIN, a.left + a.width / 2 - b.width / 2), window.innerWidth - b.width - MARGIN);
-    setPos({ x, y });
+    // Tip được phóng bằng `zoom: var(--ui-scale)`: left/top của chính nó cũng bị nhân, nên chia lại để ra đúng px màn hình.
+    const s = uiScale();
+    setPos({ x: x / s, y: y / s });
   }, [open, content]);
 
   return (

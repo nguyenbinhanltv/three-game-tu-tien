@@ -369,6 +369,12 @@ Kiểm: test đơn vị cho bảng hit-stop và hàng đợi; `__sound` log th�
 
 ---
 
+## 7.6 Phát hiện thêm khi làm PR C (2026-11-16)
+
+| Phát hiện | Mức | Ai làm |
+| --- | --- | --- |
+| **Thiên lôi độ kiếp đánh mọi người chơi đứng trong vùng** (24% khí huyết tối đa mỗi tia, `tickHazards` không phân biệt chủ kiếp), kể cả khi người độ kiếp đã ngắt kết nối và đang được giữ chỗ 60 giây. Người mới ở sân tông môn có thể bị giết oan và mất 5% tu vi. Tái hiện: nhân vật thử cấp 9 vào sân lúc một nhân vật khác đang độ kiếp, chết sau vài giây | **P0** | **PR D** (sửa luật ở server + test) |
+| Sau M-2 (AOI) quái ra khỏi tầm nhìn thì client còn giữ `targetId` trỏ vào quái không còn trong state | P1 | Đã sửa ở PR C (bỏ mục tiêu khi quái rời state hoặc quá 90 m / boss 140 m) |
 ## 7.7 Kết quả soát của PR D (2026-11-16)
 
 | Việc | Kết quả |

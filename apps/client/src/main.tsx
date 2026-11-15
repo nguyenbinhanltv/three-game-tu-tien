@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
 import './styles.css';
+import { installUiScale } from './ui/uiScale';
 
 const root = document.getElementById('root')!;
 
@@ -19,5 +20,6 @@ if (q.get('viewer') === 'asset' || q.has('show')) {
   stage.id = 'stage';
   document.body.prepend(stage);
 
+  installUiScale();
   createRoot(root).render(<App />);
 }
