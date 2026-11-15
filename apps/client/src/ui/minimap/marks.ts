@@ -52,13 +52,17 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
   };
   const level = g.view.level;
 
+  // Loại boss có trong trạng thái room (mọi khoảng cách): quyết định boss còn sống hay chỉ là chỗ sinh.
+  const bossInRoom = new Set<string>();
   // Quái: lấy từ trạng thái room (không phải model đang dựng) để thấy cả bãi ở xa.
   g.view.monsters.forEach((m, id) => {
+    if (m.st !== MS_DEAD && MONSTER.get(m.t)?.boss) bossInRoom.add(m.t);
     if ((m.x - px) ** 2 + (m.z - pz) ** 2 > RANGE * RANGE) return;
     const def = MONSTER.get(m.t);
     if (!def) return;
     const dead = m.st === MS_DEAD;
     if (dead && !def.boss) return;
+    if (def.boss) bossInRoom.add(m.t); // chết trong tầm đã có biểu tượng, không vẽ thêm chỗ sinh
     const kind = def.boss ? 'boss' : def.elite ? 'elite' : 'mon';
     const sub = t('ui.mm.level', { n: m.lv }) + (def.boss ? ` · ${t('ui.mm.boss')}` : def.elite ? ` · ${t('ui.mm.elite')}` : '');
     marks.push({ kind, id, x: m.x, z: m.z, label: monsterName(m.t), sub, tone: difficultyTone(m.lv, myLevel), dead, respawnAt: dead ? minimapHooks.bossRespawnAt.get(m.t) : undefined, hurtUntil: hurt(id) });
@@ -89,7 +93,7 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
     if (lv) {
       for (const s of lv.spawns) {
         const def = MONSTER.get(s.mon);
-        if (!def?.boss || marks.some((m) => m.kind === 'boss' && m.label === monsterName(s.mon))) continue;
+        if (!def?.boss || bossInRoom.has(s.mon)) continue;
         marks.push({ kind: 'boss', id: `spawn:${s.mon}`, x: s.x, z: s.z, label: monsterName(s.mon), sub: t('ui.mm.level', { n: s.levelMax }) + ` · ${t('ui.mm.boss')}`, dead: true, respawnAt: minimapHooks.bossRespawnAt.get(s.mon) });
       }
     }
