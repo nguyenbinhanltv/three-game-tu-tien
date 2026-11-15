@@ -1,4 +1,12 @@
-import { type ButtonHTMLAttributes, type KeyboardEvent, type ReactNode, useRef } from 'react';
+import { type ButtonHTMLAttributes, type KeyboardEvent, type MouseEvent, type ReactNode, useRef } from 'react';
+
+/**
+ * Sau khi bấm chuột, bỏ focus khỏi nút để mũi tên tiếp theo tới game (xoay camera) thay vì đổi lựa chọn.
+ * Bàn phím (Enter/Space, `detail` = 0) giữ focus.
+ */
+function blurOnPointer(e: MouseEvent<HTMLButtonElement>): void {
+  if (e.detail > 0) e.currentTarget.blur();
+}
 
 /** Phím mũi tên / Home / End trong tablist, radiogroup: chuyển focus, không để game nhận phím. */
 function rovingKey(e: KeyboardEvent, count: number, index: number, go: (i: number) => void): void {
@@ -68,7 +76,10 @@ export function Segmented<T extends string | number | boolean>({ options, value,
           className="k-btn"
           data-variant="secondary"
           data-pressed={o.value === value ? 'true' : undefined}
-          onClick={() => onChange(o.value)}
+          onClick={(e) => {
+            onChange(o.value);
+            blurOnPointer(e);
+          }}
           onKeyDown={(e) =>
             rovingKey(e, options.length, i, (n) => {
               onChange(options[n].value);
@@ -111,7 +122,10 @@ export function Tabs({ items, value, onChange, label }: { items: TabItem[]; valu
           tabIndex={it.id === value ? 0 : -1}
           disabled={it.disabled}
           className="k-tab"
-          onClick={() => onChange(it.id)}
+          onClick={(e) => {
+            onChange(it.id);
+            blurOnPointer(e);
+          }}
           onKeyDown={(e) =>
             rovingKey(e, enabled.length, Math.max(0, enabled.indexOf(i)), (n) => {
               const j = enabled[n];
