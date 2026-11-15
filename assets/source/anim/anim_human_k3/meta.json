@@ -1,0 +1,297 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "anim_human_k3",
+  "type": "anim",
+  "budgetClass": "anim",
+  "itemId": null,
+  "status": "animated",
+  "import": {
+    "kind": "tripo",
+    "source": "chr/chr_kiem_tu_nam/tripo/rig_v01.glb",
+    "size": {
+      "height": 1.75
+    },
+    "orient": "thigh",
+    "clips": [
+      {
+        "source": "chr/chr_kiem_tu_nam/tripo/anim_idle_v01.glb",
+        "name": "idle",
+        "loop": true
+      },
+      {
+        "source": "chr/chr_kiem_tu_nam/tripo/anim_run_v01.glb",
+        "name": "run",
+        "recenter": true,
+        "loop": true
+      },
+      {
+        "source": "chr/chr_kiem_tu_nam/tripo/anim_attack_v01.glb",
+        "name": "heavy_chop",
+        "start": 1.3,
+        "end": 2.5
+      },
+      {
+        "source": "chr/chr_kiem_tu_nam/tripo/anim_death_v01.glb",
+        "name": "death"
+      },
+      {
+        "source": "anim/tripo_lib/anim_walk_v01.glb",
+        "name": "walk"
+      },
+      {
+        "source": "anim/tripo_lib/anim_hit_to_body_01_v01.glb",
+        "name": "hit_front_1"
+      },
+      {
+        "source": "anim/tripo_lib/anim_hit_to_body_02_v01.glb",
+        "name": "hit_front_2"
+      },
+      {
+        "source": "anim/tripo_lib/anim_hit_to_side_v01.glb",
+        "name": "hit_l"
+      },
+      {
+        "source": "anim/tripo_lib/anim_hit_to_stomach_v01.glb",
+        "name": "hit_heavy"
+      },
+      {
+        "source": "anim/tripo_lib/anim_hit_to_head_v01.glb",
+        "name": "hit_head"
+      },
+      {
+        "source": "anim/tripo_lib/anim_defeat_02_v01.glb",
+        "name": "knockdown"
+      },
+      {
+        "source": "anim/tripo_lib/anim_dive_v01.glb",
+        "name": "dodge_f"
+      },
+      {
+        "source": "anim/tripo_lib/anim_flip_v01.glb",
+        "name": "flip_raw"
+      },
+      {
+        "source": "anim/tripo_lib/anim_jump_v01.glb",
+        "name": "jump"
+      },
+      {
+        "source": "anim/tripo_lib/anim_jump_down_v01.glb",
+        "name": "land"
+      },
+      {
+        "source": "anim/tripo_lib/anim_cast_a_spell_v01.glb",
+        "name": "cast_stand"
+      },
+      {
+        "source": "anim/tripo_lib/anim_front_kick_01_v01.glb",
+        "name": "kick_1"
+      },
+      {
+        "source": "anim/tripo_lib/anim_front_kick_02_v01.glb",
+        "name": "kick_2"
+      }
+    ],
+    "animLib": true,
+    "post": "tools/blender/export_anim_lib.py",
+    "k3": {
+      "fix": [
+        {
+          "name": "walk",
+          "loop": true,
+          "lock": true
+        },
+        {
+          "name": "hit_front_1",
+          "trim": [
+            0.1,
+            0.25
+          ],
+          "lean": 50
+        },
+        {
+          "name": "hit_front_2",
+          "trim": [
+            0.1,
+            0.25
+          ],
+          "lean": 50
+        },
+        {
+          "name": "hit_l",
+          "trim": [
+            0.1,
+            0.25
+          ],
+          "lean": 50
+        },
+        {
+          "name": "hit_heavy",
+          "trim": [
+            0.1,
+            0.25
+          ],
+          "lean": 50
+        },
+        {
+          "name": "hit_head",
+          "trim": [
+            0.1,
+            0.25
+          ],
+          "lean": 50
+        },
+        {
+          "name": "knockdown",
+          "trim": [
+            0.1,
+            0.25
+          ]
+        },
+        {
+          "name": "dodge_f",
+          "slice": [
+            0.2,
+            2.6
+          ]
+        },
+        {
+          "name": "flip_raw",
+          "slice": [
+            0.4,
+            3.4
+          ]
+        },
+        {
+          "name": "jump",
+          "trim": [
+            0.1,
+            0.25
+          ]
+        },
+        {
+          "name": "land",
+          "slice": [
+            1.6,
+            3.5
+          ]
+        },
+        {
+          "name": "cast_stand",
+          "trim": [
+            0.1,
+            0.25
+          ]
+        },
+        {
+          "name": "kick_1",
+          "trim": [
+            0.1,
+            0.25
+          ]
+        },
+        {
+          "name": "kick_2",
+          "trim": [
+            0.1,
+            0.25
+          ]
+        },
+        {
+          "name": "heavy_chop",
+          "lean": 50
+        }
+      ],
+      "derive": [
+        {
+          "name": "dodge_back",
+          "op": "speed",
+          "from": "flip_raw",
+          "k": 2.7
+        },
+        {
+          "name": "cast_hold",
+          "op": "slice",
+          "from": "cast_stand",
+          "range": [
+            1.9,
+            3.7
+          ]
+        },
+        {
+          "name": "strafe_l",
+          "op": "strafe",
+          "from": "walk",
+          "yaw": 90,
+          "loop": true
+        },
+        {
+          "name": "strafe_r",
+          "op": "strafe",
+          "from": "walk",
+          "yaw": -90,
+          "loop": true
+        },
+        {
+          "name": "back",
+          "op": "reverse",
+          "from": "walk",
+          "loop": true
+        },
+        {
+          "name": "hit_r",
+          "op": "mirror",
+          "from": "hit_l"
+        },
+        {
+          "name": "dodge_l",
+          "op": "sideroll",
+          "from": "dodge_f",
+          "yaw": 90
+        },
+        {
+          "name": "dodge_r",
+          "op": "sideroll",
+          "from": "dodge_f",
+          "yaw": -90
+        },
+        {
+          "name": "cast_walk",
+          "op": "layer",
+          "from": "walk",
+          "upper": "cast_hold",
+          "pingpong": true,
+          "loop": true
+        },
+        {
+          "name": "getup",
+          "op": "getup",
+          "from": "knockdown",
+          "via": "dodge_f",
+          "to": "combat_idle",
+          "t1": 0.95,
+          "t2": 0.7
+        }
+      ],
+      "drop": [
+        "cast_hold",
+        "flip_raw",
+        "idle",
+        "run",
+        "heavy_chop",
+        "death",
+        "hit_light"
+      ]
+    },
+    "extra": [
+      "combat_idle",
+      "guard",
+      "hit_back",
+      "roar"
+    ]
+  },
+  "license": {
+    "source": "Thư viện animation Tripo web (K-3, tải 2026-11-16 vào ../dtl-asset-source/anim/tripo_lib/: walk, hit_to_body_01/02, hit_to_side, hit_to_stomach, hit_to_head, defeat_02, dive, flip, jump, jump_down, cast_a_spell, chop, front_kick_01/02, greet_01, bow, cheer) của rig Mixamo Thanh Phong, dùng theo điều khoản Tripo gói Max của tài khoản dự án; retarget và xử lý (ghim gốc, bù hướng, khóa chân trụ, nối vòng, đối xứng/đảo/xoay) bằng tools/blender/anim_human_k3.py; clip thủ tục IK combat_idle, guard, hit_back, roar, hit_light bằng tools/blender/anim_biped_extra.py; xuất không mesh bằng tools/blender/export_anim_lib.py (idle, run, heavy_chop, death dùng làm mốc dựng clip rồi bỏ khỏi thư viện này, nằm ở anim_human_base)",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}

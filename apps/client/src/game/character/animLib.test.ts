@@ -4,13 +4,13 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
-import { HUMAN_CLIP_NAMES } from './humanClips';
+import { clipNamesOf } from './humanClips';
 import { acquireWithHumanLib, HUMAN_ANIM_LIB, mergeClips, retargetClips } from './animLib';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
 const CHARACTERS = ['chr_kiem_tu_nam', 'chr_npc_chuong_mon', 'chr_npc_duoc_su', 'chr_npc_thiet_lao'];
-const CLIPS = HUMAN_CLIP_NAMES;
+const CLIPS = clipNamesOf('base');
 
 const cache = new AssetCache({
   base: '',

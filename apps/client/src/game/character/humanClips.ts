@@ -7,6 +7,8 @@ import type { CharState } from './states';
  * khớp GLB. K-3 chưa nối các clip này vào game, trừ bộ cũ (idle, run, attack, hit_light, death).
  */
 export interface HumanClipInfo {
+  /** Thư viện chứa clip: `base` = anim_human_base (nạp cùng nhân vật), `k3` = anim_human_k3 (nạp lười). */
+  lib: 'base' | 'k3';
   /** Clip lặp khít (khung cuối ≡ khung đầu). */
   loop: boolean;
   /** Việc của clip. */
@@ -21,43 +23,45 @@ export interface HumanClipInfo {
 
 export const HUMAN_CLIPS: Record<string, HumanClipInfo> = {
   // Bộ cũ (M2-3), đang chạy trong game.
-  idle: { loop: true, role: 'đứng nghỉ', state: 'idle' },
-  run: { loop: true, role: 'chạy', refSpeed: 3.09, move: 'forward', state: 'run' },
-  heavy_chop: { loop: false, role: 'chém bổ cúi người như chặt củi (Tripo slash, trước tên attack): chỉ làm đòn dự phòng, đòn kiếm làm bằng IK ở K-5' },
-  hit_light: { loop: false, role: 'giật nhẹ khi trúng đòn (thủ tục, 0,33 s)' },
-  death: { loop: false, role: 'chết (Tripo fall)', state: 'death' },
+  idle: { lib: 'base', loop: true, role: 'đứng nghỉ', state: 'idle' },
+  run: { lib: 'base', loop: true, role: 'chạy', refSpeed: 3.09, move: 'forward', state: 'run' },
+  heavy_chop: { lib: 'base', loop: false, role: 'chém bổ cúi người như chặt củi (Tripo slash, trước tên attack): chỉ làm đòn dự phòng, đòn kiếm làm bằng IK ở K-5' },
+  hit_light: { lib: 'base', loop: false, role: 'giật nhẹ khi trúng đòn (thủ tục, 0,33 s)' },
+  death: { lib: 'base', loop: false, role: 'chết (Tripo fall)', state: 'death' },
   // K-3: di chuyển.
-  walk: { loop: true, role: 'đi bộ', refSpeed: 0.978, move: 'forward', state: 'walk' },
-  back: { loop: true, role: 'đi lùi (walk đảo thời gian)', refSpeed: 0.971, move: 'back' },
-  strafe_l: { loop: true, role: 'đi ngang sang trái (hông xoay 90°, thân trên vặn ngược)', refSpeed: 0.971, move: 'left' },
-  strafe_r: { loop: true, role: 'đi ngang sang phải', refSpeed: 0.977, move: 'right' },
-  cast_walk: { loop: true, role: 'niệm chú khi đi: thân trên cast_stand, thân dưới walk', refSpeed: 0.978, move: 'forward' },
-  jump: { loop: false, role: 'khởi nhảy, lơ lửng' },
-  land: { loop: false, role: 'rơi và tiếp đất (cắt từ jump_down)' },
+  walk: { lib: 'k3', loop: true, role: 'đi bộ', refSpeed: 0.978, move: 'forward', state: 'walk' },
+  back: { lib: 'k3', loop: true, role: 'đi lùi (walk đảo thời gian)', refSpeed: 0.971, move: 'back' },
+  strafe_l: { lib: 'k3', loop: true, role: 'đi ngang sang trái (hông xoay 90°, thân trên vặn ngược)', refSpeed: 0.971, move: 'left' },
+  strafe_r: { lib: 'k3', loop: true, role: 'đi ngang sang phải', refSpeed: 0.977, move: 'right' },
+  cast_walk: { lib: 'k3', loop: true, role: 'niệm chú khi đi: thân trên cast_stand, thân dưới walk', refSpeed: 0.978, move: 'forward' },
+  jump: { lib: 'k3', loop: false, role: 'khởi nhảy, lơ lửng' },
+  land: { lib: 'k3', loop: false, role: 'rơi và tiếp đất (cắt từ jump_down)' },
   // K-3: thủ thế và đỡ.
-  combat_idle: { loop: true, role: 'thủ thế cầm kiếm (thủ tục IK)', state: 'combatIdle' },
-  guard: { loop: true, role: 'đỡ đòn: hai tay vắt chéo trước ngực, hạ trọng tâm (thủ tục IK)' },
+  combat_idle: { lib: 'k3', loop: true, role: 'thủ thế cầm kiếm (thủ tục IK)', state: 'combatIdle' },
+  guard: { lib: 'k3', loop: true, role: 'đỡ đòn: hai tay vắt chéo trước ngực, hạ trọng tâm (thủ tục IK)' },
   // K-3: né.
-  dodge_f: { loop: false, role: 'né lăn về trước (Tripo dive)' },
-  dodge_l: { loop: false, role: 'lăn sang trái (dodge_f xoay hình sin² 90°, trả mặt về trước)' },
-  dodge_r: { loop: false, role: 'lăn sang phải' },
-  dodge_back: { loop: false, role: 'né lộn ra sau (Tripo flip, phát nhanh 2,7×, ~1,1 s)' },
+  dodge_f: { lib: 'k3', loop: false, role: 'né lăn về trước (Tripo dive)' },
+  dodge_l: { lib: 'k3', loop: false, role: 'lăn sang trái (dodge_f xoay hình sin² 90°, trả mặt về trước)' },
+  dodge_r: { lib: 'k3', loop: false, role: 'lăn sang phải' },
+  dodge_back: { lib: 'k3', loop: false, role: 'né lộn ra sau (Tripo flip, phát nhanh 2,7×, ~1,1 s)' },
   // K-3: trúng đòn, ngã, đứng dậy.
-  hit_front_1: { loop: false, role: 'trúng nhẹ từ trước' },
-  hit_front_2: { loop: false, role: 'trúng vừa từ trước (xen kẽ)' },
-  hit_l: { loop: false, role: 'trúng từ bên trái' },
-  hit_r: { loop: false, role: 'trúng từ bên phải (hit_l đối xứng)' },
-  hit_back: { loop: false, role: 'trúng từ sau: ưỡn lưng, chân vọt tới (thủ tục IK)' },
-  hit_heavy: { loop: false, role: 'trúng nặng, gập người (boss, chí mạng)' },
-  hit_head: { loop: false, role: 'giật đầu (choáng nhẹ, bị ngắt niệm chú)' },
-  knockdown: { loop: false, role: 'bị hất ngã, nằm sấp ở khung cuối' },
-  getup: { loop: false, role: 'đứng dậy từ tư thế nằm của knockdown về thủ thế: đầu dẫn, chân đẩy, thân trên theo sau' },
+  hit_front_1: { lib: 'k3', loop: false, role: 'trúng nhẹ từ trước' },
+  hit_front_2: { lib: 'k3', loop: false, role: 'trúng vừa từ trước (xen kẽ)' },
+  hit_l: { lib: 'k3', loop: false, role: 'trúng từ bên trái' },
+  hit_r: { lib: 'k3', loop: false, role: 'trúng từ bên phải (hit_l đối xứng)' },
+  hit_back: { lib: 'k3', loop: false, role: 'trúng từ sau: ưỡn lưng, chân vọt tới (thủ tục IK)' },
+  hit_heavy: { lib: 'k3', loop: false, role: 'trúng nặng, gập người (boss, chí mạng)' },
+  hit_head: { lib: 'k3', loop: false, role: 'giật đầu (choáng nhẹ, bị ngắt niệm chú)' },
+  knockdown: { lib: 'k3', loop: false, role: 'bị hất ngã, nằm sấp ở khung cuối' },
+  getup: { lib: 'k3', loop: false, role: 'đứng dậy từ tư thế nằm của knockdown về thủ thế: đầu dẫn, chân đẩy, thân trên theo sau' },
   // K-3: chiêu và biểu cảm.
-  cast_stand: { loop: false, role: 'niệm chú đứng', state: 'cast' },
-  kick_1: { loop: false, role: 'đá thẳng đẩy lùi' },
-  kick_2: { loop: false, role: 'đá biến thể' },
-  roar: { loop: false, role: 'khiêu khích: kéo tay vào hông, ưỡn ngực dang tay (thủ tục IK)' },
+  cast_stand: { lib: 'k3', loop: false, role: 'niệm chú đứng', state: 'cast' },
+  kick_1: { lib: 'k3', loop: false, role: 'đá thẳng đẩy lùi' },
+  kick_2: { lib: 'k3', loop: false, role: 'đá biến thể' },
+  roar: { lib: 'k3', loop: false, role: 'khiêu khích: kéo tay vào hông, ưỡn ngực dang tay (thủ tục IK)' },
 };
 
 /** Tên clip của thư viện, theo bảng. */
 export const HUMAN_CLIP_NAMES = Object.keys(HUMAN_CLIPS);
+/** Tên clip của một thư viện. */
+export const clipNamesOf = (lib: 'base' | 'k3'): string[] => HUMAN_CLIP_NAMES.filter((n) => HUMAN_CLIPS[n].lib === lib);

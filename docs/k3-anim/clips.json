@@ -30,35 +30,6 @@
    0.9
   ]
  },
- "cast_hold": {
-  "frames": 55,
-  "seconds": 1.8,
-  "yawPelvis0": 9.1,
-  "yawShoulder0": -48.8,
-  "yawPelvisMid": 91.4,
-  "yawPelvisEnd": 75.5,
-  "loopGap": 0.5667,
-  "refSpeed": 0.079,
-  "refDir": 171.6,
-  "slipM": 0.12,
-  "stanceSegments": 2,
-  "hipsZ": [
-   0.769,
-   0.921
-  ],
-  "hipsCurve": [
-   0.92,
-   0.9,
-   0.87,
-   0.78,
-   0.77,
-   0.79,
-   0.79,
-   0.79,
-   0.8,
-   0.81
-  ]
- },
  "cast_stand": {
   "frames": 159,
   "seconds": 5.267,
@@ -331,43 +302,6 @@
    0.74,
    0.84
   ]
- },
- "flip_raw": {
-  "frames": 91,
-  "seconds": 3.0,
-  "yawPelvis0": -7.0,
-  "yawShoulder0": -19.8,
-  "yawPelvisMid": 70.3,
-  "yawPelvisEnd": -8.8,
-  "loopGap": 0.1566,
-  "hipsZ": [
-   0.892,
-   1.032
-  ],
-  "hipsCurve": [
-   1.03,
-   1.03,
-   1.03,
-   1.0,
-   0.93,
-   0.89,
-   0.93,
-   1.0,
-   1.03,
-   1.0,
-   0.9,
-   0.91,
-   0.93,
-   1.0,
-   1.01,
-   1.01
-  ],
-  "raw": {
-   "seconds": 4.467,
-   "yawPelvis0": -0.2,
-   "yawShoulder0": -9.6
-  },
-  "yawFixed": 0.0
  },
  "getup": {
   "frames": 50,
@@ -677,11 +611,15 @@
  "hit_r": {
   "frames": 39,
   "seconds": 1.267,
-  "yawPelvis0": 11.8,
-  "yawShoulder0": -156.1,
-  "yawPelvisMid": 40.6,
-  "yawPelvisEnd": 11.8,
+  "yawPelvis0": -0.9,
+  "yawShoulder0": 17.1,
+  "yawPelvisMid": 32.1,
+  "yawPelvisEnd": -0.9,
   "loopGap": 0.0,
+  "refSpeed": 0.017,
+  "refDir": 23.6,
+  "slipM": 0.105,
+  "stanceSegments": 2,
   "hipsZ": [
    0.821,
    0.863

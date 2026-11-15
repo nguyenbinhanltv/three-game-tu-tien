@@ -79,14 +79,14 @@ L_FOOT, R_FOOT = bone('leftfoot'), bone('rightfoot')
 UPPER = set(subtree(SPINE))
 LOWER = set(NAMES) - UPPER  # hông + chân (hông chứa cả thân nên thân trên tách riêng)
 Z = Vector((0, 0, 1))
-SIDE_RE = re.compile(r'(Left|Right)')
 
 
 def mirror_name(n):
-    if 'Left' in n:
-        return n.replace('Left', 'Right')
-    if 'Right' in n:
-        return n.replace('Right', 'Left')
+    """Đổi trái ↔ phải trong tên xương (tên đã hạ chữ thường: mixamorig_leftarm ↔ mixamorig_rightarm)."""
+    if 'left' in n:
+        return n.replace('left', 'right')
+    if 'right' in n:
+        return n.replace('right', 'left')
     return n
 
 
@@ -624,6 +624,11 @@ for spec in K3.get('derive', []):
     put(name, fr, loop)
     MEASURE[name] = measure(fr, REST_FRAME)
 
+# Đo clip còn lại chưa qua fix/derive (clip gốc và thủ tục) để bảng đủ cả thư viện.
+for act in bpy.data.actions:
+    if act.name not in MEASURE:
+        MEASURE[act.name] = measure(frames_of(act.name), REST_FRAME)
+
 for name in K3.get('drop', []):
     act = bpy.data.actions.get(name)
     if act:
@@ -631,11 +636,8 @@ for name in K3.get('drop', []):
             if any(s.action == act for s in t.strips):
                 arm.animation_data.nla_tracks.remove(t)  # noqa: F821
         bpy.data.actions.remove(act)
-
-# Đo clip còn lại chưa qua fix/derive (clip gốc và thủ tục) để bảng đủ cả thư viện.
-for act in bpy.data.actions:
-    if act.name not in MEASURE:
-        MEASURE[act.name] = measure(frames_of(act.name), REST_FRAME)
+    if name not in ('idle', 'run', 'heavy_chop', 'death', 'hit_light'):
+        MEASURE.pop(name, None)  # clip trung gian (cast_hold, flip_raw) không có trong thư viện
 
 arm.animation_data.use_nla = NLA_ON  # noqa: F821
 for p in pb:

@@ -109,8 +109,8 @@ export function AssetViewer() {
             const a = man.assets[show];
             if (!a) throw new Error(`manifest.json: ${show}?`);
             // ?lib=1: thêm clip của thư viện chung anim_human_base (K-3), retarget sang model người.
-            const lib = params.get('lib') ? man.assets.anim_human_base : undefined;
-            return v.loadUrl(assetBaseUrl() + a.file, lib ? assetBaseUrl() + lib.file : undefined);
+            const libs = params.get('lib') ? [man.assets.anim_human_base, man.assets.anim_human_k3].filter(Boolean).map((l) => assetBaseUrl() + l.file) : [];
+            return v.loadUrl(assetBaseUrl() + a.file, libs);
           }, show);
           return;
         }

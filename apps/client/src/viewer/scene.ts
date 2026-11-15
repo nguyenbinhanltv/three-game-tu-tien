@@ -125,22 +125,22 @@ export class ViewerScene {
   }
 
   /** Nạp GLB/GLTF theo URL (cùng origin). Đường dẫn texture ngoài tính theo thư mục của URL. */
-  async loadUrl(url: string, libUrl?: string): Promise<LoadedInfo> {
+  async loadUrl(url: string, libUrls: string[] = []): Promise<LoadedInfo> {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
     const buf = await res.arrayBuffer();
-    return this.loadBuffer(buf, url.slice(url.lastIndexOf('/') + 1), url.slice(0, url.lastIndexOf('/') + 1), libUrl);
+    return this.loadBuffer(buf, url.slice(url.lastIndexOf('/') + 1), url.slice(0, url.lastIndexOf('/') + 1), libUrls);
   }
 
-  /** `libUrl`: thư viện clip chung (anim_human_base, K-3); clip retarget sang model, clip riêng của model thắng khi trùng tên. */
-  async loadBuffer(buf: ArrayBuffer, name: string, path = '', libUrl?: string): Promise<LoadedInfo> {
+  /** `libUrls`: thư viện clip chung (anim_human_base, anim_human_k3); clip retarget sang model, clip riêng của model thắng khi trùng tên. */
+  async loadBuffer(buf: ArrayBuffer, name: string, path = '', libUrls: string[] = []): Promise<LoadedInfo> {
     const gltf: GLTF = await this.loader.parseAsync(buf, path);
     let lib: THREE.AnimationClip[] = [];
-    if (libUrl) {
+    for (const libUrl of libUrls) {
       const r = await fetch(libUrl);
       if (!r.ok) throw new Error(`HTTP ${r.status} ${libUrl}`);
       const libGltf = await this.loader.parseAsync(await r.arrayBuffer(), libUrl.slice(0, libUrl.lastIndexOf('/') + 1));
-      lib = retargetClips(libGltf.scene, libGltf.animations, gltf.scene);
+      lib = lib.concat(retargetClips(libGltf.scene, libGltf.animations, gltf.scene));
     }
     const json = (gltf.parser as unknown as { json: { extensionsUsed?: string[] } }).json;
     // ?pose=…: nướng thêm các key pose IK nếu model có rig người Mixamo.

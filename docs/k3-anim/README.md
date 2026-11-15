@@ -51,4 +51,10 @@ Lam Chi cao 1,68 m nhưng bước dài hơn ~6% so với tỉ lệ hông (nhân 
 - Vỏ kiếm đeo lưng: kiểm trọng số trong GLB, vỏ và nút `dtl_sword` đều gắn xương `mixamorig_spine2` (ngực), không theo đầu. Kiếm chĩa ngang khi cúi gập ~90° là hệ quả hình học của clip; thêm `lean` (giới hạn độ cúi thân, `limit_lean` trong `anim_human_k3.py`) 50° cho `heavy_chop` và các clip `hit_*`.
 - `attack` đổi tên `heavy_chop` (đòn dự phòng, không phải đòn kiếm chính); `chop` trùng nên bỏ. Map clip của người chơi/NPC trỏ `attack: 'heavy_chop'`.
 - `dodge_back` phát nhanh 2,7×: 3,0 s → 1,1 s. `dodge_f/l/r` (2,4 s) giữ nguyên.
-- Bỏ `cheer`, `greet`, `bow` khỏi thư viện (file nguồn còn trong `tripo_lib`). Thư viện còn 31 clip, ~1,6 MB.
+- Bỏ `cheer`, `greet`, `bow` khỏi thư viện (file nguồn còn trong `tripo_lib`). Thư viện K-3 còn 26 clip (cộng 5 clip nền = 31).
+
+## Tách thư viện và sửa đối xứng (review PR #90)
+
+- **Tách:** 26 clip K-3 nằm ở asset riêng `anim_human_k3` (`assets/source/anim/anim_human_k3/meta.json`, 1,34 MB, nạp lười: trang xem `lib=1` và K-4 dùng `HUMAN_K3_LIB`; `preload.ts` và `PlayerSkins` không nạp). `anim_human_base` chỉ còn 5 clip của M2-3 (`idle, run, heavy_chop` (trước là `attack`), `hit_light, death`), **286 KB** (trước K-3: 382 KB; nhỏ hơn nhờ dung sai lấy mẫu lại 1e-3 cho lớp `anim`). `humanClips.ts` ghi clip thuộc thư viện nào (`lib`).
+- **Đo (`pnpm size`, `pnpm bench:load --runs 1`, 20 Mbps, WebGPU):** tải đầu 2,38 MB / 30 MB đạt; `anim_human_base` 286 KB về lúc 0,81 s, `chr_kiem_tu_nam` xong 1,63 s, vào game 4,63 s, `anim_human_k3` không tải. Khi gộp chung (bản trước khi tách) thư viện nền là ~1,99 MB, tức thêm ~1,6 MB ≈ 0,65 s ở 20 Mbps trước khi model thật thay khối, và mỗi mẫu nhân vật retarget 35 clip thay vì 5: đã tránh được. Retarget K-3 chỉ diễn ra khi nạp lười (trang xem, K-4), chưa đo cú khựng vì chưa nối vào game: K-4 cần retarget từng clip khi dùng lần đầu hoặc trong lúc rảnh.
+- **Đối xứng:** `mirror_name` trước đây tìm `Left/Right` nhưng tên xương đã hạ chữ thường (`mixamorig_leftarm`) nên không đổi cặp, `hit_r` bị méo. Sửa tìm `left/right`; `hit_r.yawShoulder0` −156° → +17,1° (đối của `hit_l` −18,6°). Test `humanClips.test.ts` kiểm tay/chân/đầu của `hit_r` bằng `hit_l` lật X trên cả hai nhân vật.
