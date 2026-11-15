@@ -91,8 +91,10 @@ import {
 } from '@dtl/shared';
 import { APPEARANCE, ENHANCE_ORE, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
+import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
 import { type Character, isEquipSlot } from './character';
+import type { TestFlags } from '../testflags';
 
 /**
  * Seed hình cho FX (tia sét, mưa kiếm, mây kiếp). Lấy từ `crypto`, KHÔNG từ `Math.random`: seed gửi
@@ -119,7 +121,10 @@ export interface PlayerEnt {
   client: Client;
   char: Character;
   s: PlayerS;
+  /** Tài khoản thử (đăng nhập thử khi server bật AUTH_DEV_BYPASS): được dùng lệnh GM và tham số kiểm thử. */
   dev: boolean;
+  /** `?god` / `/gm god`: vẫn nhận đòn (số sát thương, khựng) nhưng không mất máu. Chỉ bật cho `dev`. */
+  god: boolean;
   move: MoveState;
   inputs: MoveInput[];
   budget: number;
@@ -402,6 +407,7 @@ export class GameSim {
       char,
       s,
       dev,
+      god: false,
       move: { x, y, z, vy: 0, grounded: true, flying: false },
       inputs: [],
       budget: 0,
@@ -1058,7 +1064,7 @@ export class GameSim {
       this.host.broadcast(S.DMG, { dst: p.sid, n: 0, src } satisfies DmgMsg);
       return;
     }
-    c.hp -= n;
+    if (!p.god) c.hp -= n;
     const msg: DmgMsg = { dst: p.sid, n, src };
     if (hv) msg.hv = true;
     this.host.broadcast(S.DMG, msg);
@@ -2079,6 +2085,38 @@ export class GameSim {
     this.host.broadcast(S.CHAT, { from: p.char.name, c: 'say', m: text });
   }
 
+  /** Id địa điểm thuộc level của room này. */
+  placeIds(): string[] {
+    return PLACES.filter((pl) => pl.level === this.opts.levelId).map((pl) => pl.id);
+  }
+
+  /** Dịch chuyển tức thì (chỉ gọi từ lệnh GM / tham số kiểm thử). Điểm không thuộc level của room thì từ chối. */
+  teleportTo(p: PlayerEnt, x: number, z: number, level = this.opts.levelId): boolean {
+    if (level !== this.opts.levelId || !Number.isFinite(x) || !Number.isFinite(z)) return false;
+    p.move = { x, y: groundAt(x, z), z, vy: 0, grounded: true, flying: false };
+    p.inputs.length = 0;
+    return true;
+  }
+
+  private heal(p: PlayerEnt): void {
+    p.char.hp = p.char.mhp;
+    p.char.mp = p.char.mmp;
+  }
+
+  /**
+   * Tham số kiểm thử lúc vào room (`?god`, `?at=`), đã qua `readTestFlags` ở room.
+   * `at` chỉ áp khi điểm thuộc level của room này (ví dụ `tong_mon` không áp trong bí cảnh).
+   */
+  applyTestFlags(p: PlayerEnt, f: TestFlags): void {
+    if (!p.dev) return;
+    if (f.god) {
+      p.god = true;
+      this.heal(p);
+      this.sys(p, 'sys.gm', { m: 'god on' }, 'info');
+    }
+    if (f.at && this.teleportTo(p, f.at.x, f.at.z, f.at.level)) this.sys(p, 'sys.gm', { m: `at ${f.at.id}` }, 'info');
+  }
+
   /** Lệnh GM, chỉ dành cho tài khoản dev khi AUTH_DEV_BYPASS bật. */
   private gm(p: PlayerEnt, a: string[]): void {
     const c = p.char;
@@ -2105,12 +2143,23 @@ export class GameSim {
         return say(ok ? 'đã thêm ' + a[1] : 'không thêm được');
       }
       case 'tp': {
+        // `tp x z` hoặc `tp <địa điểm>` (bảng packages/content/data/places.json, cùng bảng với ?at=).
+        if (a.length === 2) {
+          const pl = PLACE.get(a[1]);
+          if (!pl) return say('tp ' + this.placeIds().join(' | '));
+          if (!this.teleportTo(p, pl.x, pl.z, pl.level)) return say(`${pl.id} thuộc ${pl.level}, không ở room này`);
+          return say(`tp ${pl.id} (${pl.x}, ${pl.z})`);
+        }
         const x = Number(a[1]);
         const z = Number(a[2]);
-        if (!Number.isFinite(x) || !Number.isFinite(z)) return say('tp x z');
-        p.move = { x, y: groundAt(x, z), z, vy: 0, grounded: true, flying: false };
-        p.inputs.length = 0;
+        if (!Number.isFinite(x) || !Number.isFinite(z)) return say('tp x z | tp <địa điểm>');
+        this.teleportTo(p, x, z);
         return say(`tp ${x} ${z}`);
+      }
+      case 'god': {
+        p.god = a[1] === 'off' ? false : a[1] === 'on' ? true : !p.god;
+        if (p.god) this.heal(p);
+        return say('god ' + (p.god ? 'on' : 'off'));
       }
       case 'heal':
         c.hp = c.mhp;
@@ -2125,9 +2174,13 @@ export class GameSim {
         p.s.dye = ap.dye;
         return say('dye = ' + ap.dye);
       }
-      case 'die':
+      case 'die': {
+        const god = p.god;
+        p.god = false;
         this.damagePlayer(p, 999999, '');
+        p.god = god;
         return;
+      }
       case 'killall': {
         let n = 0;
         for (const m of this.monsters) {
@@ -2166,7 +2219,7 @@ export class GameSim {
       case 'tick':
         return say(`tick p95 ${this.tickP95().toFixed(2)}ms, ${this.players.size} người, ${this.monsters.length} quái`);
       default:
-        return say('level N | xp N | gold N | give id n | tp x z | heal | die | killall | tick');
+        return say('level N | xp N | gold N | give id n | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id');
     }
   }
 }

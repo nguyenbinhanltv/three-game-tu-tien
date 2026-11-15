@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { GCD, groundAt, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
 import { APPEARANCE, DYE, hasString, ITEM, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
 import { LOOT } from './loot';
+import { PLACE_ID, PLACES } from './places';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -260,6 +261,14 @@ for (const lv of Object.values(LEVELS)) {
     if (!Number.isFinite(g)) err(`level ${lv.id}: spawn ${s.mon} ngoài bản đồ`);
   }
   for (const n of lv.nodes) needItem(n.item, `level ${lv.id}`);
+}
+
+// Điểm đặt tên cho ?at= / `/gm tp <id>` (chỉ server đọc).
+uniqueIds('place', PLACES);
+for (const pl of PLACES) {
+  if (!PLACE_ID.test(pl.id)) err(`place ${pl.id}: id chỉ gồm a-z 0-9 _ (tối đa 24)`);
+  if (!LEVELS[pl.level]) err(`place ${pl.id}: level không tồn tại ${pl.level}`);
+  if (!Number.isFinite(pl.x) || !Number.isFinite(pl.z) || !Number.isFinite(groundAt(pl.x, pl.z))) err(`place ${pl.id}: tọa độ ngoài bản đồ`);
 }
 
 let total = 0;
