@@ -13,7 +13,7 @@ import type { AnimState } from './view';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const BOSSES = ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong'];
+const BOSSES = ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong', 'boss_han_giao'];
 
 const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
 
@@ -87,6 +87,25 @@ describe('boss có xương (asset thật)', () => {
     expect(m.height).toBeCloseTo(2.25 * def.scale, 1);
     m.dispose();
     skins.dispose();
+  });
+
+  it('nạp trước theo màn: vào kiem_trung không tải Hàn Giao, vào van_lam không tải boss bí cảnh', async () => {
+    const files = (id: string) => (MANIFEST.assets[id] as { file: string }).file;
+    const inDungeon: string[] = [];
+    const d = await bossSkins(inDungeon);
+    d.skins.preloadLazy('kiem_trung');
+    await new Promise((r) => setTimeout(r, 200));
+    for (const id of ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong']) expect(inDungeon, id).toContain(files(id));
+    expect(inDungeon).not.toContain(files('boss_han_giao'));
+    d.skins.dispose();
+
+    const inWorld: string[] = [];
+    const w = await bossSkins(inWorld);
+    w.skins.preloadLazy('van_lam');
+    await new Promise((r) => setTimeout(r, 200));
+    expect(inWorld).toContain(files('boss_han_giao'));
+    for (const id of ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong']) expect(inWorld, id).not.toContain(files(id));
+    w.skins.dispose();
   });
 
   it('slam: động tác chạm đúng lúc vùng nổ; nhiều vùng cùng lúc chỉ phát một lần; trúng đòn không cắt ngang', async () => {

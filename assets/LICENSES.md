@@ -81,6 +81,7 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `chr_npc_thiet_lao` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Thiết lão"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `boss_huyet_lang_vuong` | Tripo web app (text-to-3D H3.1 + auto rig quadruped) + Codex (concept); 8 clip thủ tục `tools/blender/anim_quadruped.py` (gồm slam/sweep/stun) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `boss_kiem_khoi` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `boss_han_giao` | Tripo web app (image-to-3D H3.1 từ concept Codex, không dùng Auto Rig) + Codex (concept); bộ xương chuỗi 17 đốt và 9 clip thủ tục `tools/blender/anim_serpent.py` (gồm slam/sweep/stun/chant) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `boss_thu_mo_tuong` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/chant/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 
 ## Texture mặt đất (P2-A2)
