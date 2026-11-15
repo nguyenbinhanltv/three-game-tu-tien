@@ -32,7 +32,8 @@ Lưu ý: thiết kế ghi cả Huyền Giáp lẫn Đan Tâm rơi ở đợt 4 (
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`: đạt.
 - Security (`pnpm --filter @dtl/bot-client security`): 62/62 đạt.
 - 100 bot × 120 giây: tick p95 ≤ 0,82 ms; `pnpm ledger:check` khớp toàn bộ ngoài nhân vật thử chụp ảnh (lệnh GM `set off` cũ xóa đồ không qua sổ cái; đã sửa thành cất vào túi).
-- `pnpm bench:client`: chỉ chạy xong cấu hình đầu (WebGPU nvidia/low, báo 93 lỗi console của bench) rồi bị dừng tay do quá lâu, nên không có bảng so sánh đầy đủ. Thay bằng `__game.info()` với WebGPU thật khi mặc đủ bộ: 39–84 draw call, 188k–304k tam giác (ngân sách < 300 draw call), console game không lỗi. Bộ không thêm mesh mới; ánh kiếm dùng lại `SwordGlow` (1 mesh). Cần chạy lại `bench:client` đủ 6 cấu hình trước khi merge nếu muốn số liệu chính thức.
+- `pnpm bench:client` (đủ 6 cấu hình, RTX 3060 Ti, sau khi merge main): đạt ngân sách ở mọi điểm, 0 lỗi console. Cao nhất: WebGPU/high rừng 163 draw call, 867k tam giác, CPU p95 6,0 ms, 435 MB texture; WebGPU/low 74–105 draw call, CPU p95 ≤ 3,5 ms; WebGL2/high 55–76 fps (các cấu hình còn lại ≥ 102 fps). Bộ không thêm mesh mới (ánh kiếm dùng lại `SwordGlow`). Không so sánh với file kết quả cũ trong ngày vì đó là lần chạy hẹp bị gián đoạn.
+- `pnpm ledger:check` trên DB sạch sau 100 bot × 60 s và các lệnh GM `set`/`set off`: "Sổ cái khớp" (102 nhân vật).
 
 ## Phối màu (sau soát)
 
