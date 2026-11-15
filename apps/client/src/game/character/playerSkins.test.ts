@@ -3,7 +3,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { APPEARANCE } from '@dtl/content';
+import { APPEARANCE, SKILLS } from '@dtl/content';
+import { performOpts } from '../skillPose';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
 import { Humanoid } from '../models';
 import { PLAYER_SKINS, PlayerSkins, SkinnedPlayer } from './playerSkins';
@@ -152,6 +153,9 @@ describe('model người chơi (Thanh Phong)', () => {
     expect(m.attacks).toBe(1);
     expect(m.state).toBe('attack');
     run(m, anim(), 1.0);
+    // Vừa ra đòn thì đứng thủ thế (K-4), hết thủ thế sau COMBAT_HOLD giây.
+    expect(m.state).toBe('combatIdle');
+    run(m, anim(), 5);
     expect(m.state).toBe('idle');
     run(m, anim({ dead: true }), 5);
     expect(m.state).toBe('death');
@@ -225,6 +229,195 @@ describe('model người chơi (Thanh Phong)', () => {
       const want = v.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2).add(new THREE.Vector3(10, 2, -5));
       expect(after[k].distanceTo(want)).toBeLessThan(1e-4);
     }
+    m.dispose();
+    s.dispose();
+  });
+});
+
+describe('máy trạng thái chiêu (K-4)', () => {
+  const phi = SKILLS.find((x) => x.id === 'skl_phi_kiem')!;
+  const events = (m: SkinnedPlayer) => {
+    const out: { kind: string; index: number; t: number; combo: number }[] = [];
+    m.onSkillEvent = (e) => out.push({ kind: e.kind, index: e.index, t: e.t, combo: e.combo });
+    return out;
+  };
+  const opts = (combo = 0, gap?: number) => performOpts(phi, combo, gap);
+
+  it('sự kiện hit phát đúng một lần tại hitAt (theo dữ liệu), windup trước, recovery sau, end khi hết', async () => {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    const ev = events(m);
+    m.perform(phi.pose!, opts());
+    run(m, anim(), 0.1);
+    expect(ev.map((e) => e.kind)).toEqual(['windup']);
+    run(m, anim(), 0.3);
+    const hits = ev.filter((e) => e.kind === 'hit');
+    expect(hits).toHaveLength(1);
+    // Sai số một khung (1/60 s) quanh mốc hitAt của dữ liệu.
+    expect(hits[0].t).toBeGreaterThanOrEqual(phi.combo!.hits[0].hitAt);
+    expect(hits[0].t).toBeLessThan(phi.combo!.hits[0].hitAt + 1 / 60 + 1e-6);
+    run(m, anim(), 1);
+    expect(ev.map((e) => e.kind)).toEqual(['windup', 'hit', 'recovery', 'end']);
+    m.dispose();
+    s.dispose();
+  });
+
+  it('đi lại hủy thu về chỉ sau cancel.move; trước đó đòn vẫn ra', async () => {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    const ev = events(m);
+    m.perform(phi.pose!, opts());
+    // Đi lại ngay từ đầu: chưa tới mốc hủy nên chưa hủy, đòn vẫn ra.
+    run(m, anim({ speed: 5 }), phi.cancel!.move - 0.05);
+    expect(ev.some((e) => e.kind === 'cancel')).toBe(false);
+    expect(ev.filter((e) => e.kind === 'hit')).toHaveLength(1);
+    run(m, anim({ speed: 5 }), 0.1);
+    expect(ev.some((e) => e.kind === 'cancel')).toBe(true);
+    run(m, anim({ speed: 5 }), 0.2); // tắt dần trong PERFORM_CANCEL
+    expect(m.performing(phi.pose!)).toBe(false);
+    m.dispose();
+    s.dispose();
+  });
+
+  it('đứng yên thì không bị hủy, chạy hết thu về', async () => {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    const ev = events(m);
+    m.perform(phi.pose!, opts());
+    run(m, anim(), 1);
+    expect(ev.some((e) => e.kind === 'cancel')).toBe(false);
+    expect(ev.at(-1)?.kind).toBe('end');
+    m.dispose();
+    s.dispose();
+  });
+
+  it('lướt hủy thu về ngay sau đòn đầu, và hình trượt từ chỗ cũ về chỗ thật', async () => {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    const ev = events(m);
+    m.perform(phi.pose!, opts());
+    run(m, anim(), phi.hitAt![0] + 0.05);
+    m.root.position.set(0, 0, 8); // server đã đặt người chơi cách chỗ cũ 8 m
+    m.dashFrom(0, 0, 0.3);
+    expect(ev.some((e) => e.kind === 'cancel')).toBe(true);
+    const inner = (m as unknown as { inner: THREE.Object3D }).inner;
+    run(m, anim(), 1 / 60);
+    // Ngay đầu: hình còn gần chỗ cũ (lùi 8 m trong hệ cục bộ của root nhìn +Z → z ≈ -8).
+    expect(inner.position.z).toBeLessThan(-6);
+    run(m, anim(), 0.4);
+    expect(inner.position.z).toBeCloseTo(0, 5);
+    m.dispose();
+    s.dispose();
+  });
+
+  it('lao người đòn cuối chuỗi: tới đỉnh ở hitAt rồi về 0, không quá 1,5 m', async () => {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    m.perform(phi.pose!, opts(2, 8));
+    let peak = 0;
+    for (let t = 0; t < 1; t += 1 / 60) {
+      m.update(1 / 60, anim());
+      peak = Math.max(peak, m.lunge);
+    }
+    expect(peak).toBeGreaterThan(0.9);
+    expect(peak).toBeLessThanOrEqual(1.5);
+    expect(m.lunge).toBe(0);
+    m.dispose();
+    s.dispose();
+  });
+
+  it('nối đòn liên hoàn: đòn kế vào thế từ độ mạnh của đòn trước (không tụt về nền giữa hai đòn)', async () => {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    m.perform(phi.pose!, opts(0));
+    run(m, anim(), 0.3);
+    const before = (m as unknown as { lastEnv: number }).lastEnv;
+    m.perform(phi.pose!, opts(1));
+    expect((m as unknown as { perf: { lead: number } }).perf.lead).toBeCloseTo(before, 6);
+    run(m, anim(), 1 / 60);
+    expect((m as unknown as { lastEnv: number }).lastEnv).toBeGreaterThanOrEqual(before - 1e-6);
+    m.dispose();
+    s.dispose();
+  });
+});
+
+describe('clip K-3 nạp lười (K-4)', () => {
+  /** Chờ thư viện K-3 nạp xong cho mọi bản sao dựng từ `s` (K3_DELAY + retarget từng clip). */
+  async function withK3() {
+    const s = await skins();
+    const m = s.create(MALE) as SkinnedPlayer;
+    for (let i = 0; i < 600 && !(m as unknown as { dirHits: boolean }).dirHits; i++) await new Promise((r) => setTimeout(r, 20));
+    return { s, m };
+  }
+
+  it('đi lùi / đi ngang dùng clip riêng, thủ thế dùng combat_idle; bản sao dựng sau cũng có', async () => {
+    const { s, m } = await withK3();
+    expect((m as unknown as { dirHits: boolean }).dirHits).toBe(true);
+    run(m, anim({ speed: 3, moveDir: 'back' }), 0.6);
+    expect(m.state).toBe('back');
+    expect(m.actionOf('back')?.isRunning()).toBe(true);
+    run(m, anim({ speed: 3, moveDir: 'left' }), 0.6);
+    expect(m.state).toBe('strafeL');
+    expect(m.actionOf('strafe_l')?.isRunning()).toBe(true);
+    run(m, anim({ speed: 3, moveDir: 'right' }), 0.6);
+    expect(m.state).toBe('strafeR');
+    run(m, anim({ speed: 7 }), 0.6);
+    expect(m.state).toBe('run');
+    run(m, anim({ combat: true }), 0.6);
+    expect(m.state).toBe('combatIdle');
+    expect(m.actionOf('combat_idle')?.isRunning()).toBe(true);
+    const late = s.create(MALE) as SkinnedPlayer; // dựng sau khi K-3 đã sẵn
+    run(late, anim({ speed: 3, moveDir: 'back' }), 0.6);
+    expect(late.actionOf('back')?.isRunning()).toBe(true);
+    late.dispose();
+    m.dispose();
+    s.dispose();
+  });
+
+  it('trúng đòn theo hướng: trước / sau / trái / phải, nặng thì hit_heavy', async () => {
+    const { s, m } = await withK3();
+    // Nhân vật nhìn +Z (yaw 0). Hướng giật là từ người đánh tới nạn nhân.
+    const cases: [number, number, string][] = [
+      [0, -1, 'hit_front_1'], // kẻ địch ở trước (+Z), đẩy về -Z
+      [0, 1, 'hit_back'],
+      [-1, 0, 'hit_l'], // kẻ địch ở +X (trái), đẩy về -X
+      [1, 0, 'hit_r'],
+    ];
+    for (const [dx, dz, clip] of cases) {
+      run(m, anim(), 1);
+      m.hitReact({ dirX: dx, dirZ: dz, noStop: true });
+      run(m, anim(), 0.05);
+      expect(m.state, clip).toBe('hit');
+      expect(m.actionOf(clip)?.isRunning(), clip).toBe(true);
+    }
+    run(m, anim(), 1);
+    m.hitReact({ dirX: 0, dirZ: -1, heavy: true, noStop: true });
+    run(m, anim(), 0.05);
+    expect(m.actionOf('hit_heavy')?.isRunning()).toBe(true);
+    m.dispose();
+    s.dispose();
+  });
+
+  it('ngã → nằm → đứng dậy; đi lại sau khi nằm đủ lâu thì đứng dậy sớm; lúc ngã không giật thêm', async () => {
+    const { s, m } = await withK3();
+    m.knockdown();
+    run(m, anim(), 0.1);
+    expect(m.actionOf('knockdown')?.isRunning()).toBe(true);
+    m.hitReact({ dirX: 0, dirZ: -1, noStop: true });
+    run(m, anim(), 0.1);
+    expect(m.actionOf('hit_front_1')?.isRunning() ?? false).toBe(false);
+    // Đi lại khi chưa ngã xong (clip 3,7 s phát 1,5×): chưa dậy.
+    run(m, anim({ speed: 5 }), 1.2);
+    expect(m.actionOf('getup')?.isRunning() ?? false).toBe(false);
+    // Ngã xong thì đi lại kéo dậy sớm.
+    run(m, anim({ speed: 5 }), 1.5);
+    expect(m.actionOf('getup')?.isRunning()).toBe(true);
+    run(m, anim(), 3);
+    expect(['combatIdle', 'idle']).toContain(m.state); // đứng dậy về thủ thế (hoặc nghỉ nếu đã hết COMBAT_HOLD)
+    // Đứng yên: nằm hết nhịp rồi tự đứng dậy.
+    m.knockdown();
+    run(m, anim(), (m.actionOf('knockdown')?.getClip().duration ?? 3.7) / 1.5 + 0.6);
+    expect(m.actionOf('getup')?.isRunning()).toBe(true);
     m.dispose();
     s.dispose();
   });

@@ -22,6 +22,8 @@ export * from './skillrules';
 export * from './artifacts';
 export * from './alchemy';
 export * from './party';
+export * from './teleport';
 export * from './zones';
+export * from './animrules';
 export * from './spawnrules';
 export * from './elements';

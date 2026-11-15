@@ -35,6 +35,8 @@ import {
   type QuestView,
   SPAWN_POINT,
   xpNeed,
+  TELE_FREE,
+  TELE_PAD,
 } from '@dtl/shared';
 import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
 import { characters, db, items, ledger, rootForName } from '../db';
@@ -195,6 +197,16 @@ function sameSlot(a: InvSlot, b: InvSlot): boolean {
   return a.id === b.id && a.n === b.n && (a.plus ?? 0) === (b.plus ?? 0) && JSON.stringify(a.inst ?? null) === JSON.stringify(b.inst ?? null);
 }
 
+/** Đọc cột `tele`: mảng JSON id trận; '' hoặc hỏng thì rỗng, id lạ bị bỏ. */
+export function parseTele(raw: string): string[] {
+  try {
+    const a = JSON.parse(raw || '[]') as unknown;
+    return Array.isArray(a) ? [...new Set(a.filter((x): x is string => typeof x === 'string' && TELE_PAD.has(x)))] : [];
+  } catch {
+    return [];
+  }
+}
+
 export class Character {
   id = 0;
   accountId = 0;
@@ -219,6 +231,8 @@ export class Character {
   root: RootId = 'kim';
   /** Bình cảnh đã vượt cao nhất (0, 5, 10, 15). Tu vi chỉ tràn qua tầng 5/10/15 khi đã vượt. */
   bk = 0;
+  /** Truyền Tống Trận đã mở khóa (không gồm trận mở sẵn `TELE_FREE`). Lưu ở cột `tele`. */
+  tele: string[] = [];
   /** Thử thách tâm ma: lúc kết thúc (ms; 0 = không chạy) và lúc được thử lại (ms). Không lưu DB. */
   trialEndsAt = 0;
   retryAt = 0;
@@ -291,6 +305,7 @@ export class Character {
     c.appearance = appearanceFromDb(APPEARANCE, row.appearance, row.name);
     c.root = isRootId(row.root) ? row.root : rootForName(row.name);
     c.bk = [0, 5, 10, 15].includes(row.bk) ? row.bk : initialBottleneck(row.level);
+    c.tele = parseTele(row.tele);
     try {
       c.equip = sanitizeEquip(JSON.parse(row.equip));
       c.quests = JSON.parse(row.quests) as QuestView;
@@ -365,6 +380,19 @@ export class Character {
     };
   }
 
+  /** Trận đã mở (kể cả trận mở sẵn). */
+  teleOpen(): string[] {
+    return [...TELE_FREE, ...this.tele.filter((id) => !TELE_FREE.includes(id))];
+  }
+
+  /** Mở khóa một trận; true nếu là lần đầu (ghi ngay vào DB). Id lạ bị bỏ qua. */
+  unlockTele(id: string): boolean {
+    if (!TELE_PAD.has(id) || TELE_FREE.includes(id) || this.tele.includes(id)) return false;
+    this.tele.push(id);
+    db.update(characters).set({ tele: JSON.stringify(this.tele) }).where(eq(characters.id, this.id)).run();
+    return true;
+  }
+
   /** Đổi ngoại hình (chỉ lệnh GM thử); `a` phải đã qua `parseAppearance`. Ghi ngay. */
   setAppearance(a: Appearance): void {
     this.appearance = a;
@@ -377,6 +405,7 @@ export class Character {
       .set({
         level: this.level,
         bk: this.bk,
+        tele: JSON.stringify(this.tele),
         xp: Math.floor(this.xp),
         hp: Math.max(0, Math.ceil(this.hp)),
         mp: Math.max(0, Math.floor(this.mp)),

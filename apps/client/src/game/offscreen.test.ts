@@ -143,3 +143,27 @@ describe('trackedQuestId', () => {
     expect(trackedQuestId({ active: { q_ngu_kiem: [0, 0] }, done: [] }, '')).toBe('');
   });
 });
+
+describe('spreadFrom (M-4): chỉ báo trùng chỗ', () => {
+  it('đẩy ngang khỏi chỉ báo đã đặt, không đụng chỉ báo xa', async () => {
+    const { spreadFrom } = await import('./offscreen');
+    const placed = [{ x: 640, y: 40 }];
+    const a = { x: 640, y: 40, angle: 0 };
+    spreadFrom(a, placed, 1, 1280);
+    expect(a.x).toBeGreaterThan(640 + 40);
+    const far = { x: 200, y: 40, angle: 0 };
+    spreadFrom(far, placed, 1, 1280);
+    expect(far.x).toBe(200);
+    const other = { x: 640, y: 400, angle: 0 };
+    spreadFrom(other, placed, 1, 1280);
+    expect(other.x).toBe(640);
+  });
+  it('sát mép phải thì trượt sang trái, không ra khỏi khung', async () => {
+    const { spreadFrom, DEFAULT_INSET } = await import('./offscreen');
+    const edge = 1280 - DEFAULT_INSET.right;
+    const a = { x: edge, y: 40, angle: 0 };
+    spreadFrom(a, [{ x: edge, y: 40 }], 1, 1280);
+    expect(a.x).toBeLessThan(edge);
+    expect(a.x).toBeGreaterThanOrEqual(DEFAULT_INSET.left);
+  });
+});
