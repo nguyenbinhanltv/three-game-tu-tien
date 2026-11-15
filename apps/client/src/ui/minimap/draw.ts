@@ -5,7 +5,7 @@ import type { Game } from '../../game/engine';
 import { type AncientMap, mipFor } from './ancient';
 import type { MinimapFrame } from './marks';
 import { edgeClamp, formatCountdown, type Mark, project, type View } from './model';
-import { bossSprite, edgeArrowSprite, eliteSprite, mateSprite, monSprite, nodeSprite, npcSprite, playerSprite, portalSprite, selfSprite, type Sprite, teleSprite } from './sprites';
+import { bossSprite, flagSprite, edgeArrowSprite, eliteSprite, mateSprite, monSprite, nodeSprite, npcSprite, playerSprite, portalSprite, selfSprite, type Sprite, teleSprite } from './sprites';
 import { npcFunction } from './model';
 import { NPC } from '@dtl/content';
 
@@ -17,7 +17,7 @@ export interface HitPt {
   mark: Mark;
 }
 
-const ORDER: Record<Mark['kind'], number> = { node: 0, mon: 1, player: 2, portal: 3, tele: 3, goal: 3, npc: 4, elite: 5, mate: 6, boss: 7 };
+const ORDER: Record<Mark['kind'], number> = { node: 0, mon: 1, player: 2, portal: 3, tele: 3, goal: 3, npc: 4, elite: 5, mate: 6, boss: 7, flag: 7 };
 const _p = { x: 0, y: 0 };
 
 function put(ctx: CanvasRenderingContext2D, s: Sprite, x: number, y: number, dy = 0): void {
@@ -44,6 +44,8 @@ function spriteOf(m: Mark, dpr: number): { s: Sprite; dy: number; r: number } {
       return { s: nodeSprite(dpr), dy: 0, r: 3 };
     case 'portal':
       return { s: portalSprite(dpr), dy: 0, r: 9 };
+    case 'flag':
+      return { s: flagSprite(!!m.own, dpr), dy: -5, r: 9 };
     default:
       return { s: teleSprite(dpr), dy: 0, r: 9 };
   }
@@ -92,8 +94,13 @@ export function drawMinimap(ctx: CanvasRenderingContext2D, g: Game, frame: Minim
   for (let pass = 0; pass < 8; pass++)
     for (const m of frame.marks) {
     if (ORDER[m.kind] !== pass) continue;
-    const c = project(v, m.x, m.z, _p);
-    if (c.x < -10 || c.y < -10 || c.x > size + 10 || c.y > size + 10) continue;
+    let c = project(v, m.x, m.z, _p);
+    const outside = c.x < -10 || c.y < -10 || c.x > size + 10 || c.y > size + 10;
+    // Điểm đánh dấu nằm ngoài khung: bám mép để luôn biết hướng.
+    if (outside && m.kind === 'flag') {
+      const e = edgeClamp(c.x, c.y, size, 12);
+      c = { x: e.x, y: e.y };
+    } else if (outside) continue;
     const { s: sp, dy, r } = spriteOf(m, dpr);
     if (m.hurtUntil && m.hurtUntil > now && blink) {
       ctx.beginPath();

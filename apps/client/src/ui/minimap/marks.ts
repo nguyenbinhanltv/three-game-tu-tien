@@ -1,5 +1,5 @@
 // Dựng danh sách biểu tượng minimap từ trạng thái game (đọc, không ghi). Gọi mỗi khung vẽ nên giữ nhẹ.
-import { levelSpawns, MS_DEAD, PORTAL_POS, type QuestView } from '@dtl/shared';
+import { levelSpawns, type MarkInfo, MS_DEAD, PORTAL_POS, type QuestView } from '@dtl/shared';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, NPCS, QUEST, QUESTS, t } from '@dtl/content';
 import type { Game } from '../../game/engine';
 import { questGoal, trackedQuestId } from '../../game/offscreen';
@@ -41,10 +41,39 @@ export interface MinimapFrame {
   selfHurt: boolean;
 }
 
-export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel: number, partyOrder: readonly string[], now: number): MinimapFrame {
-  const marks: Mark[] = [];
+/**
+ * Đích của nhiệm vụ đang theo dõi: vùng tô trên các bãi quái/điểm hái của đích (trong `GOAL_RANGE` quanh (px, pz)) và điểm
+ * gần nhất cho mũi tên. Dùng chung cho minimap và bản đồ lớn.
+ */
+export function questOverlay(level: string, quests: QuestView, trackPin: string, px: number, pz: number): Pick<MinimapFrame, 'goals' | 'goalPoint'> {
   const goals: MinimapFrame['goals'] = [];
   let goalPoint: MinimapFrame['goalPoint'] = null;
+  const qid = trackedQuestId(quests, trackPin);
+  const def = qid ? QUEST.get(qid) : undefined;
+  const goal = def && questGoal(def, quests.active[qid], NPCS);
+  if (def && goal && level === 'van_lam') {
+    const label = t(`quest.${qid}.name`);
+    if (goal.kind === 'npc') {
+      const n = NPC.get(goal.npc);
+      if (n) goalPoint = { x: n.x, z: n.z, label };
+    } else {
+      let best = Infinity;
+      for (const a of goalAreas(level, goal)) {
+        const d = Math.hypot(a.x - px, a.z - pz);
+        if (d > GOAL_RANGE) continue;
+        goals.push({ ...a, label });
+        if (d < best) {
+          best = d;
+          goalPoint = { x: a.x, z: a.z, label };
+        }
+      }
+    }
+  }
+  return { goals, goalPoint };
+}
+
+export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel: number, partyOrder: readonly string[], now: number, flags: readonly MarkInfo[] = []): MinimapFrame {
+  const marks: Mark[] = [];
   const px = g.renderPos.x;
   const pz = g.renderPos.z;
   const hurt = (id: string): number | undefined => {
@@ -92,6 +121,8 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
     else if ((p.x - px) ** 2 + (p.z - pz) ** 2 <= RANGE * RANGE) marks.push({ kind: 'player', id: sid, x: p.x, z: p.z, label: p.name, sub: t('ui.mm.level', { n: p.lv }) });
   });
 
+  for (const f of flags) marks.push({ kind: 'flag', id: `flag:${f.id}`, x: f.x, z: f.z, label: f.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: f.name }), sub: t('ui.wm.mark_dist', { d: Math.round(Math.hypot(f.x - px, f.z - pz)) }), own: f.own });
+
   if (level === 'van_lam') {
     for (const n of NPCS) {
       const fn = npcFunction(n);
@@ -115,28 +146,9 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
     }
   }
 
-  // Nhiệm vụ đang theo dõi: vùng tô + điểm đích cho mũi tên.
-  const qid = trackedQuestId(quests, trackPin);
-  const def = qid ? QUEST.get(qid) : undefined;
-  const goal = def && questGoal(def, quests.active[qid], NPCS);
-  if (def && goal) {
-    const label = t(`quest.${qid}.name`);
-    if (goal.kind === 'npc') {
-      const n = NPC.get(goal.npc);
-      if (n && level === 'van_lam') goalPoint = { x: n.x, z: n.z, label };
-    } else if (level === 'van_lam') {
-      let best = Infinity;
-      for (const a of goalAreas(level, goal)) {
-        const d = Math.hypot(a.x - px, a.z - pz);
-        if (d > GOAL_RANGE) continue;
-        goals.push({ ...a, label });
-        if (d < best) {
-          best = d;
-          goalPoint = { x: a.x, z: a.z, label };
-        }
-      }
-    }
-  }
+  const q = questOverlay(level, quests, trackPin, px, pz);
+  const goals = q.goals;
+  const goalPoint = q.goalPoint;
 
   return { marks, goals, goalPoint, selfHurt: hurt(g.sid) !== undefined };
 }

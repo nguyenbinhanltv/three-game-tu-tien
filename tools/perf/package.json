@@ -20,7 +20,8 @@
     "shots:k3": "tsx src/shots-k3.ts",
     "shots:k4": "tsx src/shots-k4.ts",
     "shots:eqicons": "tsx src/shots-eqicons.ts",
-    "shots:kiem": "tsx src/shots-kiem.ts"
+    "shots:kiem": "tsx src/shots-kiem.ts",
+    "shots:m4": "tsx src/shots-m4.ts"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",

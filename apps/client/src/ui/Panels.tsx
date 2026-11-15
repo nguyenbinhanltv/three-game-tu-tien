@@ -1,7 +1,7 @@
 import { PartyPanel } from './Party';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { bindsOnEquip, C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, FOREST, LAKE, NGUNG_KHI_MAX, PORTAL_POS, SECT, SUOI, VACH, VALLEY, WORLD_SIZE } from '@dtl/shared';
+import { bindsOnEquip, C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SETS, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
@@ -9,6 +9,7 @@ import { objectiveText } from './Hud';
 import { artifactLines, compareLines, gearQuality, itemLines, itemSub, pillLines, setLines, setLinesForItem, type TipLine, wornIds } from './gear';
 import { Button, Divider, type PanelTone, PanelWindow, ProgressBar, Segmented, Slider, Slot, TipCard, Tooltip } from './kit';
 import { MethodPanel } from './MethodPanel';
+import { WorldMap } from './worldmap/WorldMap';
 import { BottleneckBox, RootCard } from './Realm';
 import { set, useUI } from './store';
 
@@ -509,71 +510,6 @@ function Settings() {
         </Button>
       </div>
     </PanelWindow>
-  );
-}
-
-/** Nhãn bản đồ M lấy từ hằng số chung (level.ts) nên đi theo bố cục, không lệch khi dời vùng. */
-const MAP_LABELS: { key: string; x: number; z: number }[] = [
-  { key: 'ui.zone.sect', x: SECT.x, z: SECT.z },
-  { key: 'ui.zone.valley', x: VALLEY.x, z: VALLEY.z },
-  { key: 'zone.suoi_thanh_khe', x: SUOI.x, z: SUOI.z },
-  { key: 'ui.zone.forest', x: FOREST.x, z: FOREST.z },
-  { key: 'zone.vach_da_ngoc', x: VACH.x, z: VACH.z },
-  { key: 'ui.zone.lake', x: LAKE.x, z: LAKE.z },
-  { key: 'ui.zone.dungeon', x: PORTAL_POS.x, z: PORTAL_POS.z },
-];
-
-function WorldMap() {
-  const zone = useUI((s) => s.zone);
-  const ref = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const SIZE = 560;
-    const SPAN = 2200;
-    const CX = SECT.x;
-    const CZ = SECT.z;
-    const draw = () => {
-      const g = Game.current;
-      const cv = ref.current;
-      if (!g || !cv || !g.minimap) return;
-      const ctx = cv.getContext('2d')!;
-      const k = g.minimap.width / WORLD_SIZE;
-      ctx.drawImage(g.minimap, (CX - SPAN / 2) * k, (CZ - SPAN / 2) * k, SPAN * k, SPAN * k, 0, 0, SIZE, SIZE);
-      const s = SIZE / SPAN;
-      const toX = (x: number) => (x - CX) * s + SIZE / 2;
-      const toZ = (z: number) => (z - CZ) * s + SIZE / 2;
-      ctx.font = '700 15px "Palatino Linotype", Georgia, serif';
-      ctx.textAlign = 'center';
-      for (const l of MAP_LABELS) {
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = 'rgba(10,14,22,0.85)';
-        ctx.strokeText(t(l.key), toX(l.x), toZ(l.z) - 8);
-        ctx.fillStyle = '#ffe9a8';
-        ctx.fillText(t(l.key), toX(l.x), toZ(l.z) - 8);
-      }
-      ctx.save();
-      ctx.translate(toX(g.renderPos.x), toZ(g.renderPos.z));
-      ctx.rotate(-g.yaw);
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#10141c';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, -10);
-      ctx.lineTo(7, 8);
-      ctx.lineTo(0, 4);
-      ctx.lineTo(-7, 8);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    };
-    draw();
-    const id = setInterval(draw, 300);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <Window title={t('ui.map')} sub={zone} onClose={() => set({ panel: null })} cls="map" width={620}>
-      <canvas ref={ref} width={560} height={560} />
-    </Window>
   );
 }
 
