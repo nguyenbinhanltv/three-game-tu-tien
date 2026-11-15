@@ -1,6 +1,6 @@
 import { ContentIcon } from './ContentIcon';
 import { useEffect, useRef, useState } from 'react';
-import { C, enhanceMul, EQUIP_SLOTS, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
+import { C, enhanceMul, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
@@ -117,7 +117,7 @@ function Bag() {
               {t('ui.item.use')}
             </Button>
           )}
-          {(def.kind === 'weapon' || def.kind === 'robe' || def.kind === 'accessory') && (
+          {isEquipSlot(def.kind) && (
             <Button
               variant="primary"
               onClick={() => {

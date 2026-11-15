@@ -61,10 +61,12 @@ export function computeDamage(
   def: number,
   roll: number,
   critRoll: number,
+  critChance: number = CRIT_CHANCE,
+  critMul: number = CRIT_MULT,
 ): { dmg: number; crit: boolean } {
-  const crit = critRoll < CRIT_CHANCE;
+  const crit = critRoll < critChance;
   let raw = atk * power * (0.9 + roll * 0.2);
-  if (crit) raw *= CRIT_MULT;
+  if (crit) raw *= critMul;
   const dmg = Math.max(1, Math.round(raw - def * 0.6));
   return { dmg, crit };
 }

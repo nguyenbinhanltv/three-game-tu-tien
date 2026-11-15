@@ -23,7 +23,7 @@
   { "id": "itm_linh_ti_bao", "kind": "robe", "stack": 1, "price": 0, "sell": 260, "rarity": 1, "icon": "itm_linh_ti_bao", "iconFallback": "👘", "reqLevel": 10, "stats": { "def": 16, "hp": 150 } },
   { "id": "itm_huyen_van_bao", "kind": "robe", "stack": 1, "price": 0, "sell": 700, "rarity": 2, "icon": "itm_huyen_van_bao", "iconFallback": "🥋", "reqLevel": 13, "stats": { "def": 26, "hp": 260 } },
 
-  { "id": "itm_ngoc_boi", "kind": "accessory", "stack": 1, "price": 0, "sell": 60, "rarity": 1, "icon": "itm_ngoc_boi", "iconFallback": "📿", "reqLevel": 2, "stats": { "mp": 40, "hp": 20 } },
-  { "id": "itm_huyen_thiet_gioi", "kind": "accessory", "stack": 1, "price": 900, "sell": 200, "rarity": 1, "icon": "itm_huyen_thiet_gioi", "iconFallback": "💍", "reqLevel": 9, "stats": { "atk": 6, "def": 4 } },
-  { "id": "itm_han_giao_hoan", "kind": "accessory", "stack": 1, "price": 0, "sell": 650, "rarity": 2, "icon": "itm_han_giao_hoan", "iconFallback": "💍", "reqLevel": 13, "stats": { "atk": 10, "hp": 120, "mp": 60 } }
+  { "id": "itm_ngoc_boi", "kind": "jade", "stack": 1, "price": 0, "sell": 60, "rarity": 1, "icon": "itm_ngoc_boi", "iconFallback": "📿", "reqLevel": 2, "stats": { "mp": 40, "hp": 20 } },
+  { "id": "itm_huyen_thiet_gioi", "kind": "ring", "stack": 1, "price": 900, "sell": 200, "rarity": 1, "icon": "itm_huyen_thiet_gioi", "iconFallback": "💍", "reqLevel": 9, "stats": { "atk": 6, "def": 4 } },
+  { "id": "itm_han_giao_hoan", "kind": "ring", "stack": 1, "price": 0, "sell": 650, "rarity": 2, "icon": "itm_han_giao_hoan", "iconFallback": "💍", "reqLevel": 13, "stats": { "atk": 10, "hp": 120, "mp": 60 } }
 ]
