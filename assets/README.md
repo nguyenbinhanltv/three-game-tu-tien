@@ -105,4 +105,4 @@ SFX và âm môi trường không đi qua pipeline GLB mà qua `pnpm audio:build
 
 ## Texture mặt đất (P2-A2)
 
-`pnpm assets:terrain` tải 8 bộ Poly Haven CC0 (1K JPG) vào `../dtl-asset-source/texture/<id>/` rồi đóng gói ra `apps/client/public/terrain/` (albedo WebP + WebP pháp tuyến RG và độ nhám B, kèm `manifest.json`). Client nạp lười sau khung đầu (`game/groundTextures.ts`), không nằm trong tải đầu. Nguồn và giấy phép: `assets/LICENSES.md`. Không có `toktx` trên máy nên dùng WebP (client giải mã rồi ghép texture mảng); thêm KTX2 khi có toktx và cần cắt VRAM.
+`pnpm assets:terrain` tải 8 bộ Poly Haven CC0 (1K JPG) vào `../dtl-asset-source/texture/<id>/` rồi đóng gói ra `apps/client/public/terrain/` (albedo WebP + WebP pháp tuyến RG và độ nhám B, kèm `mask.<hash>.png` mặt nạ vùng tính sẵn từ `groundMask.ts` và `manifest.json`). Client nạp lười sau khung đầu (`game/groundTextures.ts`), không nằm trong tải đầu. Nguồn và giấy phép: `assets/LICENSES.md`. Không có `toktx` trên máy nên dùng WebP (client giải mã rồi ghép texture mảng); thêm KTX2 khi có toktx và cần cắt VRAM.

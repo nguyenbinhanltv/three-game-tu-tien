@@ -3,13 +3,14 @@
 // Nguồn lớn (JPG 1K gốc) để ở ../dtl-asset-source/texture/<id>/ (ngoài repo, xem assets/README.md).
 // Mỗi lớp ra 2 file WebP 1024: `<layer>.a.*.webp` (albedo sRGB) và `<layer>.n.*.webp`
 // (R,G = pháp tuyến OpenGL, B = độ nhám). Client ghép các lớp thành 2 texture mảng (game/groundTextures.ts), nên shader
-// chỉ tốn 2 slot texture dù có 8 lớp. Ghi `apps/client/public/terrain/manifest.json` (kèm hash nội dung).
+// chỉ tốn 2 slot texture dù có 8 lớp. Thêm `mask.<hash>.png` (RGBA, groundMask.ts). Ghi `apps/client/public/terrain/manifest.json` (kèm hash nội dung).
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { ROOT } from './config.js';
+import { buildMaskData, MASK_RES } from '../../../apps/client/src/render/groundMask.js';
 
 /** Thứ tự = chỉ số lớp trong texture mảng; khớp `GROUND_LAYER` ở client. */
 export const LAYERS = [
@@ -62,7 +63,13 @@ async function main(): Promise<void> {
     manifest.push(entry);
     console.log(`[terrain] ${L.layer} (${L.ph}): a ${(ar.length / 1024) | 0} KB, n ${(n.length / 1024) | 0} KB`);
   }
-  await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ size: SIZE, layers: manifest }, null, 2) + '\n');
+  // Mặt nạ vùng (đường mòn, sân lát, cát, nhiễu vĩ mô): tính một lần ở đây (~1 s), client chỉ giải mã PNG.
+  const maskRaw = buildMaskData();
+  const maskPng = await sharp(Buffer.from(maskRaw.buffer), { raw: { width: MASK_RES, height: MASK_RES, channels: 4 } }).png({ compressionLevel: 9 }).toBuffer();
+  const mask = `mask.${createHash('sha1').update(maskPng).digest('hex').slice(0, 10)}.png`;
+  await writeFile(path.join(OUT, mask), maskPng);
+  console.log(`[terrain] mask: ${(maskPng.length / 1024) | 0} KB`);
+  await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ size: SIZE, mask, layers: manifest }, null, 2) + '\n');
 }
 
 void main();

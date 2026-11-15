@@ -1,5 +1,4 @@
 import * as THREE from 'three/webgpu';
-import { buildMaskData, MASK_RES } from '../render/groundMask';
 
 /** Chỉ số lớp trong texture mảng; khớp thứ tự LAYERS ở tools/asset-pipeline/src/terrain-textures.ts. */
 export const GROUND_LAYER = { grass: 0, dirt: 1, forest: 2, rock: 3, cliff: 4, sand: 5, paving: 6, gravel: 7 } as const;
@@ -10,12 +9,13 @@ export interface GroundTextures {
   /** R,G = pháp tuyến (z dựng lại ở shader), B = độ nhám. */
   normal: THREE.DataArrayTexture;
   /** R đường mòn, G sân lát đá, B cát, A nhiễu vĩ mô (groundMask.ts). */
-  mask: THREE.DataTexture;
+  mask: THREE.Texture;
   dispose(): void;
 }
 
 interface Manifest {
   size: number;
+  mask: string;
   layers: { layer: string; a: string; n: string }[];
 }
 
@@ -63,9 +63,15 @@ export async function loadGroundTextures(base: string, signal?: { aborted: boole
     if (signal?.aborted) throw new Error('aborted');
     await new Promise((r) => setTimeout(r, 0));
   }
-  const maskData = buildMaskData();
-  const mask = new THREE.DataTexture(new Uint8Array(maskData.buffer), MASK_RES, MASK_RES, THREE.RGBAFormat, THREE.UnsignedByteType);
+  // Mặt nạ tính sẵn lúc build (groundMask.ts). Dùng thẳng ImageBitmap (không qua canvas) để không bị nhân alpha vào RGB.
+  const maskRes = await fetch(`${base}terrain/${manifest.mask}`);
+  if (!maskRes.ok) throw new Error(`mask: ${maskRes.status}`);
+  const maskBmp = await createImageBitmap(await maskRes.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+  const mask = new THREE.Texture(maskBmp);
+  mask.format = THREE.RGBAFormat;
   mask.colorSpace = THREE.NoColorSpace;
+  mask.flipY = false;
+  mask.premultiplyAlpha = false;
   mask.wrapS = mask.wrapT = THREE.RepeatWrapping;
   mask.magFilter = mask.minFilter = THREE.LinearFilter;
   mask.generateMipmaps = false;
@@ -80,6 +86,7 @@ export async function loadGroundTextures(base: string, signal?: { aborted: boole
       tex.dispose();
       nor.dispose();
       mask.dispose();
+      maskBmp.close();
     },
   };
 }

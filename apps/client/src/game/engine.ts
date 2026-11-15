@@ -536,6 +536,7 @@ export class Game {
   /** Nạp texture mặt đất ngoài đường găng: terrain dùng màu đỉnh tới khi xong rồi mới đổi sang shader PBR. */
   private async loadGround(): Promise<void> {
     if (new URLSearchParams(location.search).get('ground') === '0') return;
+    const t0 = performance.now();
     try {
       const self = this;
       const tex = await loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } });
@@ -544,6 +545,8 @@ export class Game {
         return;
       }
       this.ground = tex;
+      this.loadStats.groundLoad = Math.round(performance.now() - t0);
+      this.loadStats.groundAt = Math.round(performance.now());
       this.terrain.setGround(tex, (QUALITY[get().quality] ?? QUALITY.medium).ground);
     } catch (e) {
       console.warn('[ground] không nạp được texture mặt đất, dùng màu đỉnh:', e);
