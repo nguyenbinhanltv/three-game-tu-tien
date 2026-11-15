@@ -7,6 +7,7 @@ import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { compareLines, gearQuality, itemLines, itemSub, type TipLine } from './gear';
 import { Button, Divider, type PanelTone, PanelWindow, ProgressBar, Segmented, Slider, Slot, TipCard, Tooltip } from './kit';
+import { MethodPanel } from './MethodPanel';
 import { BottleneckBox, RootCard } from './Realm';
 import { set, useUI } from './store';
 
@@ -560,6 +561,8 @@ export function Panels() {
       return <Settings />;
     case 'map':
       return <WorldMap />;
+    case 'method':
+      return <MethodPanel />;
     default:
       return null;
   }
