@@ -2,10 +2,17 @@
 // Tính cả máu mất mỗi lần giết (đứng yên, không né vùng) và thời gian đả tọa hồi lại.
 // Chạy: pnpm sim:progress
 
-import type { MonsterDef } from '@dtl/shared';
+import type { MonsterDef, Quality } from '@dtl/shared';
 import {
   BOTTLENECK_LEVELS,
   computeDamage,
+  computePlayerStats,
+  rollItemInstance,
+  seededRng,
+  droppableSlots,
+  rollEquipDrops,
+  sellPrice,
+  templatesFor,
   GCD,
   HP_REGEN_MEDITATE,
   INTERRUPT_VULN_MUL,
@@ -20,7 +27,8 @@ import {
   xpLevelFactor,
   xpNeed,
 } from '@dtl/shared';
-import { ITEM, LEVELS, MONSTER, QUESTS, realmName, SKILLS } from './index';
+import { lootOf } from './loot';
+import { ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, QUESTS, realmName, SKILLS } from './index';
 
 /** Trang bị dự kiến ở mỗi cảnh giới (theo phần thưởng nhiệm vụ). */
 function gear(level: number): { atk: number; def: number; hp: number } {
@@ -83,7 +91,8 @@ const pct = (x: number) => `${(x * 100).toFixed(0)}%`;
 
 // ---------- nhịp lên cấp ----------
 
-const spawns = LEVELS.van_lam.spawns.filter((s) => !MONSTER.get(s.mon)?.boss);
+// Nhịp lên cấp tính trên quái thường: tinh anh (cờ elite) ít gặp, tính riêng ở bảng tinh anh bên dưới.
+const spawns = LEVELS.van_lam.spawns.filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite);
 let totalSec = 0;
 let fightSec = 0;
 let questXp = 0;
@@ -145,6 +154,75 @@ console.log(
 console.log('\nThử thách tâm ma (bình cảnh):');
 for (const r of trialRows) console.log(r);
 console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên; tọa: giây đả tọa hồi lại.');
+
+// ---------- đường cong trang bị theo phẩm (3-2) ----------
+
+/** Đủ 7 ô có chỉ số, cùng một phẩm, ilvl = cấp: trung bình 40 lần roll để bớt nhiễu. */
+function fullSet(level: number, q: Quality) {
+  const slots = droppableSlots(ITEM_SYS, ITEMS);
+  const acc = { atk: 0, def: 0, hp: 0, mp: 0, crit: 0, dmg: 0 };
+  const RUNS = 40;
+  for (let run = 0; run < RUNS; run++) {
+    const rng = seededRng(1000 + run);
+    const worn = slots.map((sl) => {
+      const tpl = templatesFor(ITEMS, sl, level)[0];
+      return { item: { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, level, q, rng) } };
+    });
+    const st = computePlayerStats(level, worn);
+    acc.atk += st.atk;
+    acc.def += st.def;
+    acc.hp += st.hp;
+    acc.mp += st.mp;
+    acc.crit += st.critRate;
+    // Sát thương kỳ vọng mỗi đòn (công kích × bạo kích trung bình), gồm cả dòng phụ.
+    acc.dmg += st.atk * (1 + st.critRate * (st.critMul - 1));
+  }
+  return { atk: acc.atk / RUNS, def: acc.def / RUNS, hp: acc.hp / RUNS, mp: acc.mp / RUNS, crit: acc.crit / RUNS, dmg: acc.dmg / RUNS };
+}
+
+console.log('\nBộ 7 ô cùng phẩm ở Ngưng Khí 15 (so với không đồ):');
+const base15 = playerBaseStats(NGUNG_KHI_MAX);
+console.log('phẩm       công kích   phòng ngự   khí huyết   linh lực   bạo kích   sát thương kỳ vọng (x so với không đồ)');
+const dmg0 = base15.atk * (1 + 0.1 * 0.6);
+for (const q of [0, 1, 2, 3, 4] as Quality[]) {
+  const f = fullSet(NGUNG_KHI_MAX, q);
+  const r = (a: number, b: number) => (a / b).toFixed(2) + 'x';
+  console.log(
+    `${String(q).padEnd(10)} ${f.atk.toFixed(0).padStart(6)} ${r(f.atk, base15.atk).padStart(6)} ${f.def.toFixed(0).padStart(8)} ${r(f.def, base15.def).padStart(6)} ${f.hp.toFixed(0).padStart(8)} ${r(f.hp, base15.hp).padStart(6)} ${f.mp.toFixed(0).padStart(8)} ${(f.crit * 100).toFixed(1).padStart(8)}% ${r(f.dmg, dmg0).padStart(8)}`,
+  );
+}
+
+console.log('\nThu nhập kỳ vọng mỗi lần hạ quái (linh thạch): vàng rơi + bán trang bị rơi (giá theo ilvl, phẩm)');
+for (const sp of LEVELS.van_lam.spawns) {
+  const m = MONSTER.get(sp.mon)!;
+  const lt = lootOf(m.id);
+  const lv = Math.round((sp.levelMin + sp.levelMax) / 2);
+  const gold = (lt.gold[0] + lt.gold[1]) / 2;
+  const rng = seededRng(42);
+  let gear = 0;
+  const N = 3000;
+  for (let i = 0; i < N; i++) {
+    for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, lv, rng)) {
+      gear += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
+    }
+  }
+  console.log(`${m.id.padEnd(24)} vàng ${gold.toFixed(1).padStart(6)}  bán đồ ${(gear / N).toFixed(1).padStart(6)}  (${((gear / N / gold) * 100).toFixed(0)}% so với vàng)`);
+}
+console.log('\nTinh anh (người cùng cấp): TTK không đồ / bộ Huyền phẩm; máu/s tank đứng yên');
+for (const m of MONSTERS_ELITE()) {
+  const sp = LEVELS.van_lam.spawns.find((x) => x.mon === m.id)!;
+  const lv = sp.levelMax;
+  const ms = monsterStats(lv, m.hpMul, m.atkMul);
+  const plain = player(lv);
+  const set = fullSet(lv, 2);
+  const ttk0 = ms.hp / playerDps(lv, plain.atk, ms.def);
+  const ttk1 = ms.hp / playerDps(lv, set.atk, ms.def);
+  const inc = monsterDps(m, ms.atk, set.def);
+  console.log(`${(m.id + ' (' + lv + ')').padEnd(26)} ${ttk0.toFixed(0).padStart(3)}s / ${ttk1.toFixed(0).padStart(3)}s   ${pct(inc / set.hp).padStart(4)}`);
+}
+function MONSTERS_ELITE(): MonsterDef[] {
+  return [...MONSTER.values()].filter((m) => m.elite);
+}
 
 // ---------- đòn dồn của quái đọc chú ----------
 

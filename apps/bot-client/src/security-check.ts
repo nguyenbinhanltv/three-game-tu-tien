@@ -268,7 +268,7 @@ async function main() {
   check('chết rồi vào lại thì về điểm hồi sinh', Math.hypot(p2.x - 2048, p2.z - 2088) < 5 && p2.hp > 0, `(${p2.x.toFixed(0)}, ${p2.z.toFixed(0)}) hp ${p2.hp}`);
   await again.room.leave(true);
 
-  // 14. Bình cảnh, tâm ma, linh căn (P3-7): mọi thứ do server phán định, client chỉ gửi ý định.
+  // 15. Bình cảnh, tâm ma, linh căn (P3-7): mọi thứ do server phán định, client chỉ gửi ý định.
   {
     const a = await join('binhcanh1');
     const b = await join('binhcanh2');
@@ -374,6 +374,55 @@ async function main() {
     await say(a.room, 'killall');
     await a.room.leave(true);
     await b.room.leave(true);
+  }
+
+  // 14. Trang bị (3-2): client chỉ gửi ô túi + khóa idempotency; không giả được dòng chính/phụ, không mặc đồ không có, không spam.
+  {
+    const g = await join('trangbi' + (Date.now() % 100000));
+    await W(300);
+    let inv: { id: string; inst?: { q: number } }[] = [];
+    let equip: Record<string, { id: string; inst?: { q: number } }> = {};
+    g.room.onMessage(S.INV, (m: { inv: typeof inv; equip: typeof equip }) => {
+      inv = m.inv;
+      equip = m.equip;
+    });
+    const say = async (m: string) => {
+      g.room.send(C.CHAT, { m });
+      await W(1150); // chat có giới hạn tần suất (~1 giây)
+    };
+    await say('/gm level 15');
+    await say('/gm roll itm_thanh_phong_kiem 0 12');
+    await say('/gm roll itm_dao_bao 0 5');
+    await W(300);
+    const slot = inv.findIndex((x) => x?.id === 'itm_thanh_phong_kiem');
+    // Thiếu khóa idempotency, ô ngoài khoảng, ô trống, kiểu sai, thêm trường giả: đều không làm gì.
+    for (const bad of [{ slot }, { slot, r: 'x' }, { slot: -1, r: 'bad-0001' }, { slot: 99, r: 'bad-0002' }, { slot: 29, r: 'bad-0003' }, { slot: '0', r: 'bad-0004' }, { slot: 1.5, r: 'bad-0005' }, null, 'weapon']) {
+      g.room.send(C.EQUIP, bad);
+      await W(250);
+    }
+    check('mặc đồ thiếu khóa/ô sai bị bỏ qua', !equip.weapon && !equip.robe && inv[slot]?.id === 'itm_thanh_phong_kiem', 'slot ' + slot + ' inv ' + inv.length + ' ' + JSON.stringify(Object.keys(equip)));
+    // Gửi kèm inst giả (Thiên phẩm): server bỏ qua, món mặc vào vẫn là Phàm phẩm đã roll.
+    g.room.send(C.EQUIP, { slot, r: 'forge-0001', inst: { q: 4, ilvl: 99, main: { atk: 99999 }, affixes: [], gems: [], bound: false }, id: 'itm_tram_ta_kiem' });
+    await W(500);
+    check('inst giả từ client bị bỏ qua khi mặc đồ', equip.weapon?.id === 'itm_thanh_phong_kiem' && equip.weapon?.inst?.q === 0, JSON.stringify(equip.weapon));
+    // Cùng khóa gửi lại (mất mạng, bấm đúp): không đổi thêm lần nào.
+    const before = JSON.stringify(equip);
+    g.room.send(C.UNEQUIP, { slot: 'weapon', r: 'forge-0001' });
+    await W(500);
+    check('khóa idempotency dùng lại bị bỏ qua', JSON.stringify(equip) === before, JSON.stringify(Object.keys(equip)));
+    // Tháo ô không có đồ / tên ô lạ: không crash.
+    for (const bad of [{ slot: 'robe', r: 'un-0001' }, { slot: '__proto__', r: 'un-0002' }, { slot: 'artifact', r: 'un-0003' }, { r: 'un-0004' }]) {
+      g.room.send(C.UNEQUIP, bad);
+      await W(250);
+    }
+    // Spam mặc/tháo khác khóa: vài lần đầu có hiệu lực nhưng số dòng ledger bị chặn bởi hồi 200 ms.
+    for (let i = 0; i < 60; i++) {
+      g.room.send(i % 2 ? C.UNEQUIP : C.EQUIP, i % 2 ? { slot: 'weapon', r: 'spam-u' + i } : { slot: inv.findIndex((x) => x?.id === 'itm_thanh_phong_kiem'), r: 'spam-e' + i });
+      await W(10);
+    }
+    await W(400);
+    check('spam mặc/tháo không làm sập server', await health());
+    await g.room.leave(true);
   }
 
   // 13. Tham số kiểm thử ?god / ?at (M1-10): tài khoản thử dùng được; server production / có Google thì không.

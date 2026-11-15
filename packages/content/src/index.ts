@@ -43,9 +43,11 @@ import poseTraKiemJson from '../data/poses/tra_kiem.json';
 import appearanceJson from '../data/appearance.json';
 import equipSlotsJson from '../data/equipment/slots.json';
 import equipQualitiesJson from '../data/equipment/qualities.json';
+import equipTemplatesJson from '../data/equipment/templates.json';
 import equipAffixesJson from '../data/equipment/affixes.json';
 
-export const ITEMS = itemsJson as ItemDef[];
+/** Mẫu trang bị chỉ để rơi (chưa có icon trong atlas, dùng iconFallback) nằm ở data/equipment/templates.json. */
+export const ITEMS = [...(itemsJson as ItemDef[]), ...(equipTemplatesJson as ItemDef[])];
 export const MONSTERS = monstersJson as unknown as MonsterDef[];
 export const SKILLS = skillsJson as SkillDef[];
 export const RECIPES = recipesJson as RecipeDef[];

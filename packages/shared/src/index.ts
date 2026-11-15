@@ -14,3 +14,4 @@ export * from './appearance';
 export * from './bodyfeel';
 export * from './items';
 export * from './realm';
+export * from './equipLoot';

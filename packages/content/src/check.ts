@@ -3,7 +3,7 @@
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { AFFIX_ILVL_CAP, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
+import { AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
 import { APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, t } from './index';
 import { LOOT } from './loot';
 import { PLACE_ID, PLACES } from './places';
@@ -240,7 +240,46 @@ function checkLoot(id: string, l: LootDef) {
     if (!(Number.isInteger(d.min) && Number.isInteger(d.max) && d.min >= 1 && d.max >= d.min)) err(`loot ${id}/${d.item}: min/max không hợp lệ`);
   }
 }
+function checkEquipLoot(id: string, l: LootDef) {
+  const m = MONSTER.get(id);
+  const want = !m ? undefined : m.boss ? 'boss' : m.elite ? 'elite' : undefined;
+  if (want && l.src !== want) err(`loot ${id}: src phải là '${want}'`);
+  if (!want && l.src !== 'common' && l.src !== 'dungeon') err(`loot ${id}: quái thường có src 'common' hoặc 'dungeon'`);
+  if (!l.src) return;
+  const rolls = l.equip ?? [];
+  if (!rolls.length) err(`loot ${id}: thiếu bảng rơi trang bị (equip)`);
+  const slots = droppableSlots(ITEM_SYS, ITEMS);
+  rolls.forEach((r, i) => {
+    const w = `loot ${id}/equip[${i}]`;
+    if (!(r.chance > 0 && r.chance <= 1)) err(`${w}: chance phải trong (0, 1]`);
+    if (!Array.isArray(r.q) || r.q.length !== QUALITY_COUNT || r.q.some((x) => !(x >= 0)) || !r.q.some((x) => x > 0)) err(`${w}: q phải là ${QUALITY_COUNT} trọng số >= 0, có ít nhất một số dương`);
+    for (const k of Object.keys(r.slots ?? {})) if (!slots.includes(k as EquipSlot)) err(`${w}: ô ${k} không rơi được`);
+    if (r.ilvlBonus !== undefined && !(Number.isInteger(r.ilvlBonus) && r.ilvlBonus >= 0 && r.ilvlBonus <= 3)) err(`${w}: ilvlBonus phải nguyên trong [0; 3]`);
+    const tot = r.q.reduce((a, b) => a + b, 0) || 1;
+    const lo = r.q.findIndex((x) => x > 0);
+    // Phẩm theo nguồn (thiết kế 3.2): quái thường chỉ Phàm/Linh; tinh anh từ Linh, tối đa Địa; Thiên chỉ boss.
+    const hi = r.q.reduce((a, x, k) => (x > 0 ? k : a), 0);
+    if (l.src === 'common' && hi > 1) err(`${w}: quái thường chỉ rơi Phàm/Linh phẩm`);
+    if (l.src === 'dungeon' && hi > 3) err(`${w}: bí cảnh thường chỉ rơi tới Địa phẩm`);
+    if (l.src === 'elite' && i === 0 && (hi > 3 || r.q[2] / tot < 0.3)) err(`${w}: tinh anh chủ yếu Huyền phẩm, tối đa Địa phẩm`);
+    if (l.src === 'boss' && i === 0 && lo < 2) err(`${w}: boss chỉ rơi từ Huyền phẩm`);
+  });
+  if (l.src === 'boss' && !(rolls[0]?.chance === 1)) err(`loot ${id}: boss phải chắc chắn rơi một món (equip[0].chance = 1)`);
+}
 for (const id of LOOT.keys()) if (!MONSTER.has(id)) err(`loot: quái không tồn tại ${id}`);
+for (const [id, l] of LOOT) checkEquipLoot(id, l);
+// Mọi ô có chỉ số phải có mẫu để rơi ở mọi ilvl >= 1.
+for (const s of ITEM_SYS.slots) {
+  if (s.weight > 0 && templatesFor(ITEMS, s.id, 1).length === 0) err(`ô ${s.id}: thiếu mẫu có reqLevel <= 1 để rơi ở ilvl 1`);
+}
+// Tinh anh: máu gấp ~4 quái thường cùng loài, có ít nhất một kỹ năng riêng, có tên và biệt hiệu.
+for (const m of MONSTERS) {
+  if (!m.elite) continue;
+  if (m.boss) err(`monster ${m.id}: elite và boss loại trừ nhau`);
+  if (!(m.hpMul >= 4)) err(`monster ${m.id}: tinh anh phải có hpMul >= 4`);
+  if (!(m.ai?.caster || m.ai?.slam || m.ai?.sweep || m.ai?.chant)) err(`monster ${m.id}: tinh anh cần một kỹ năng riêng (caster/slam/sweep/chant)`);
+  needStr(`mon.${m.id}.title`);
+}
 
 for (const m of MONSTERS) {
   needStr(`mon.${m.id}`);
