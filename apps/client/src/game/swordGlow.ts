@@ -76,7 +76,8 @@ export class SwordGlow {
     if (!s) return;
     const st = STAGES[s as 1 | 2];
     this.sheathMat.color.setHex(this.tint ?? st.color);
-    if (this.tint !== null) this.streakMat.color.setHex(this.tint);
+    // Vệt kiếm khí luôn đặt lại màu (về màu +10 khi bỏ tint) để không giữ màu bộ cũ.
+    this.streakMat.color.setHex(this.tint ?? STAGES[2].color);
     this.sheath.position.set(0, 0, BLADE_START + BLADE_LEN / 2);
     this.sheath.scale.set(st.w, st.t, BLADE_LEN / 2 + 0.05);
     // Vệt kiếm khí chỉ có ở +10: dải mảnh kéo dài quá mũi, nhạt dần.

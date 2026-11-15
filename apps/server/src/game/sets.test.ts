@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DUST_ITEM, INV_SIZE, type FxMsg } from '@dtl/shared';
+import { DUST_ITEM, type FxMsg } from '@dtl/shared';
 import { FORGE, ITEM, SETS } from '@dtl/content';
 
 process.env.DB_FILE = ':memory:';
@@ -87,24 +87,27 @@ describe('chế tạo bộ ở Thiết lão', () => {
     expect(noMat.warns).toContain('sys.not_enough_mat');
   });
 
-  it('công thức lạ bị bỏ qua; túi đầy (nguyên liệu không giải phóng ô nào) thì hủy cả giao dịch', () => {
+  it('công thức lạ bị bỏ qua', () => {
     const t = setup();
     t.forge('frg_khong_co');
     expect(t.c.inv.every((s) => !s)).toBe(true);
-    // Nguyên liệu mỗi loại chiếm đúng nửa ô cuối: tiêu hết vẫn không trống ô nào vì ô còn lại giữ phần dư.
-    const f = FORGE.find((x) => x.id === 'frg_lk_van_ngoa')!;
-    expect(t.c.tx('fill', null, (d) => {
-      for (let i = 0; i < INV_SIZE - f.inputs.length; i++) if (!d.add('itm_hoi_xuan_dan', 1) && !d.add('itm_nanh_soi', 1)) break;
-      return true;
-    })).toBe(true);
-    t.fund(f.id);
-    // Thêm dư mỗi loại nguyên liệu để sau khi tiêu vẫn còn lại phần dư giữ ô.
+  });
+
+  it('túi đầy: hủy cả giao dịch, nguyên liệu và linh thạch không mất', () => {
+    const t = setup();
+    const f = t.fund('frg_lk_van_ngoa');
+    // Dư một đơn vị mỗi nguyên liệu để tiêu xong ô vẫn còn đồ (không giải phóng ô trống nào), rồi lấp kín túi.
     for (const i of f.inputs) expect(t.c.tx('extra', null, (d) => d.add(i.id, 1))).toBe(true);
-    while (t.c.inv.some((s) => !s)) if (!t.c.tx('pad', null, (d) => d.add('itm_linh_thao', 99))) break;
+    while (t.c.tx('pad', null, (d) => d.add('itm_linh_thao', 99))) {
+      /* lấp tới khi hết ô */
+    }
+    expect(t.c.inv.some((s) => !s)).toBe(false);
+    const mats = f.inputs.map((i) => t.count(i.id));
     t.forge(f.id);
-    if (t.c.inv.some((s) => s?.id === f.output)) return;
+    expect(t.c.inv.some((s) => s?.id === f.output)).toBe(false);
     expect(t.warns).toContain('sys.inv_full');
-    for (const i of f.inputs) expect(t.count(i.id)).toBeGreaterThanOrEqual(i.n);
+    expect(t.c.gold).toBe(f.gold);
+    expect(f.inputs.map((i) => t.count(i.id))).toEqual(mats);
   });
 
   it('mặc 1 món chưa có thưởng, 2 món có chỉ số, đủ 4 món bật hiệu ứng Phi Kiếm', () => {
