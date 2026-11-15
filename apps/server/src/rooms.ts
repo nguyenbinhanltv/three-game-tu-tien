@@ -1,4 +1,5 @@
 import { type Client, Room, ServerError } from 'colyseus';
+import { StateView } from '@colyseus/schema';
 import {
   C,
   DUNGEON_EXIT,
@@ -16,8 +17,10 @@ import {
   isRootId,
   parseAppearance,
   validName,
+  AOI_PERIOD_MS,
 } from '@dtl/shared';
 import { APPEARANCE, MONSTER, monsterName, realmName } from '@dtl/content';
+import { Aoi } from './aoi';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
 import { Character } from './game/character';
@@ -64,6 +67,8 @@ function today(): string {
 
 export abstract class GameRoom extends Room<WorldState> implements SimHost {
   sim!: GameSim;
+  /** Vùng quan tâm của từng client (chỉ nhận state quái/người trong tầm). */
+  aoi!: Aoi;
   abstract simOptions(options: unknown): SimOptions;
 
   onCreate(options: unknown): void {
@@ -71,7 +76,15 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.setState(new WorldState());
     this.sim = new GameSim(this.state, this, this.simOptions(options));
     this.setPatchRate(50);
-    this.setSimulationInterval((dt) => this.sim.tick(dt), 50);
+    this.aoi = new Aoi(this.sim);
+    let aoiAt = 0;
+    this.setSimulationInterval((dt) => {
+      this.sim.tick(dt);
+      if (this.sim.now - aoiAt >= AOI_PERIOD_MS) {
+        aoiAt = this.sim.now;
+        this.aoi.update((sid) => this.clients.getById(sid)?.view);
+      }
+    }, 50);
     activeRooms.add(this);
 
     const on = (type: string, handler: (p: PlayerEnt, msg: unknown) => void) => {
@@ -114,6 +127,13 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.PORTAL, (p) => this.onPortal(p));
     // Bỏ qua message lạ thay vì báo lỗi.
     this.onMessage('*', () => {});
+  }
+
+  /** Cả phòng trừ các phiên ở xa (AOI): mã hóa một lần, bỏ qua `except`. */
+  broadcastExcept(type: string, msg: unknown, except: ReadonlySet<string>): void {
+    const skip: Client[] = [];
+    for (const c of this.clients) if (except.has(c.sessionId)) skip.push(c);
+    this.broadcast(type, msg, skip.length ? { except: skip } : undefined);
   }
 
   onPortal(_p: PlayerEnt): void {}
@@ -167,6 +187,11 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.prepareChar(char);
     const dev = testAccess(auth.dev, config.devBypass);
     const p = this.sim.addPlayer(client, char, dev, auth.session, this.noLootFor(char));
+    // AOI: client mới chỉ thấy mình cho tới lần cập nhật kế (tối đa 200 ms); StateView phải có trước khi gửi state đầy đủ.
+    client.view = new StateView();
+    this.aoi.attach(client.view, p.s);
+    this.aoi.update((sid) => (sid === p.sid ? client.view : this.clients.getById(sid)?.view));
+    this.sim.sendBossTimers(p);
     online.set(auth.charId, { room: this, sid: client.sessionId });
     parties.attach(p, this);
     ensurePartyTick();
@@ -219,6 +244,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     if (cur && cur.room === this && cur.sid === sid) online.delete(p.char.id);
     this.beforeRemove(sid);
     parties.detach(p);
+    this.aoi.detach(sid);
     this.sim.removePlayer(sid);
     console.log(`[leave] ${p.char.name} rời ${this.roomName}`);
   }

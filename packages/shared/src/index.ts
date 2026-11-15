@@ -23,3 +23,4 @@ export * from './artifacts';
 export * from './alchemy';
 export * from './party';
 export * from './zones';
+export * from './spawnrules';

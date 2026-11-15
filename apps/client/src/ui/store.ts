@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MethodMsg, PartyMsg, QuestView } from '@dtl/shared';
+import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MethodMsg, PartyMsg, QuestView } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio';
 
 export interface TargetInfo {
@@ -128,6 +128,8 @@ export interface UIState {
   toasts: Toast[];
   /** id skill → thời điểm (đồng hồ client, ms) dùng lại được. */
   cds: Record<string, number>;
+  /** Giờ hồi sinh tinh anh/boss toàn bản đồ (M-2): `at` là giờ server, `off` = Date.now() − now để quy đổi sang đồng hồ máy. Minimap đọc. */
+  bossTimers: (BossTimerMsg & { off: number }) | null;
   /** Chiêu đang được cường hóa → lúc hết hạn (đồng hồ client, ms): ô chiêu sáng viền (K-2). */
   empowered: Record<string, number>;
   gcdAt: number;
@@ -203,6 +205,7 @@ export const useUI = create<UIState>(() => ({
   log: [],
   toasts: [],
   cds: {},
+  bossTimers: null,
   empowered: {},
   gcdAt: 0,
   castEnd: 0,

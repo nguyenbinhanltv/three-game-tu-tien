@@ -84,6 +84,9 @@ class Bot {
     this.timer = setInterval(() => this.step(), STEP * 1000);
   }
 
+  /** Tổng byte nhận qua WebSocket từ lúc vào. */
+  bytes = 0;
+
   private async join(roomName: string): Promise<void> {
     const client = new Client(URL);
     // Màu áo khác nhau theo tên (chỉ có tác dụng lúc tạo nhân vật) để cảnh test tải giống người thật.
@@ -99,6 +102,12 @@ class Bot {
     });
     room.onMessage('*', () => {
       this.msgs++;
+    });
+    // Băng thông nhận (byte WebSocket) để so trước/sau AOI: đếm từ khung tin của transport.
+    const ws = (room.connection as unknown as { transport?: { ws?: { addEventListener?: (t: string, f: (e: { data: unknown }) => void) => void } } }).transport?.ws;
+    ws?.addEventListener?.('message', (e) => {
+      const d = e.data as { byteLength?: number; length?: number } | string;
+      this.bytes += typeof d === 'string' ? d.length : (d.byteLength ?? d.length ?? 0);
     });
     room.onMessage(S.SYS, (m: { k: string; p?: Record<string, unknown> }) => {
       if (m.k === 'sys.levelup') this.level++;
@@ -306,11 +315,15 @@ async function main() {
   }
   console.log(`${bots.length} bot đã vào, ${failed} thất bại.`);
   const httpUrl = URL.replace(/^ws/, 'http') + '/health';
+  let lastBytes = 0;
   const report = setInterval(async () => {
+    const total = bots.reduce((n, b) => n + b.bytes, 0);
+    const kbps = (total - lastBytes) / 1024 / 10 / Math.max(1, bots.length);
+    lastBytes = total;
     try {
       const h = (await (await fetch(httpUrl)).json()) as { online: number; rooms: { name: string; players: number; tickP95: number }[] };
       const lv = bots.reduce((s, b) => s + b.level, 0) / Math.max(1, bots.length);
-      console.log(`online=${h.online} ${h.rooms.map((r) => `${r.name}: ${r.players} người, tick p95 ${r.tickP95}ms`).join(' | ')} | cấp TB bot ${lv.toFixed(1)}`);
+      console.log(`online=${h.online} ${h.rooms.map((r) => `${r.name}: ${r.players} người, tick p95 ${r.tickP95}ms`).join(' | ')} | cấp TB bot ${lv.toFixed(1)} | nhận ${kbps.toFixed(1)} KB/s mỗi bot`);
     } catch {
       console.log('không đọc được /health');
     }

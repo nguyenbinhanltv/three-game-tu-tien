@@ -1,4 +1,4 @@
-import { MapSchema, Schema, type } from '@colyseus/schema';
+import { MapSchema, Schema, type, view } from '@colyseus/schema';
 
 // Trạng thái công khai được đồng bộ cho mọi client trong room.
 // Chỉ chứa những gì người chơi khác được phép thấy.
@@ -70,7 +70,11 @@ export class NodeS extends Schema {
 
 export class WorldState extends Schema {
   @type('string') level = '';
-  @type({ map: PlayerS }) players = new MapSchema<PlayerS>();
-  @type({ map: MonS }) monsters = new MapSchema<MonS>();
+  /**
+   * Người chơi và quái chỉ đồng bộ cho client có thực thể đó trong `StateView` (AOI, M-2: apps/server/src/aoi.ts).
+   * Mọi nơi đọc phải coi "không thấy" là "ở ngoài tầm", không phải "không tồn tại".
+   */
+  @view() @type({ map: PlayerS }) players = new MapSchema<PlayerS>();
+  @view() @type({ map: MonS }) monsters = new MapSchema<MonS>();
   @type({ map: NodeS }) nodes = new MapSchema<NodeS>();
 }

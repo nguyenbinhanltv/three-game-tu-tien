@@ -3,6 +3,7 @@ import { Client, type Room } from 'colyseus.js';
 import {
   biomeAt,
   C,
+  type BossTimerMsg,
   type CdMsg,
   type CharView,
   type ChatMsg,
@@ -465,6 +466,7 @@ export class Game {
       set({ quests: q });
       this.questMarkersDirty = true;
     });
+    room.onMessage(S.BOSS_TIMERS, (m: BossTimerMsg) => set({ bossTimers: { ...m, off: Date.now() - m.now } }));
     room.onMessage(S.CD, (m: CdMsg) => {
       const off = Date.now() - m.now;
       const cds: Record<string, number> = {};
