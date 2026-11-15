@@ -70,7 +70,7 @@ import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx'
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import type { DebugPerf } from '../ui/store';
 import { ColliderViz } from './debugColliders';
-import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { chapterSting, duck, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { rememberZone } from './bootArt';
 import { FootstepDriver } from './footsteps';
 import { buildSources, Soundscape } from './soundscape';
@@ -113,6 +113,7 @@ import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
 import type { SkillEvent } from './character/view';
+import { HitQueue, hitPitch, hitStopOf, layersOf, materialOf, shakeOf, ULT_FOV, ultFovAt, WHOOSH_GAIN, whooshDelay, type HitCtx, type HitSoundLog } from './hitjuice';
 import { debugAllowed, readTestParams } from './testParams';
 
 export interface LoginOptions {
@@ -172,6 +173,8 @@ const DASH_LOOKBACK = 0.3;
 const KNOCKDOWN_FRAC = 0.18;
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
+/** Chiêu theo id (sức mạnh, tối thượng, fx) cho cảm giác đòn K-7. */
+const SKILL_INFO = new Map([...SKILLS, ...METHOD_SKILLS].map((s) => [s.id, s]));
 const _shakePos = new THREE.Vector3();
 const _shakeLook = new THREE.Vector3();
 const _camFocus = new THREE.Vector3();
@@ -347,6 +350,8 @@ export class Game {
   private keys = new KeyState();
   private skillQueue = new SkillQueue();
   private ultCardId = 0;
+  /** Giây từ lúc kích cận cảnh chiêu tối thượng (K-7); −1 = không đang chạy. */
+  private ultCamT = -1;
   /** Động tác chiêu (M3-4): dự đoán khi bấm phím, khớp lúc ra đòn với hiệu ứng. */
   private skillPoses = new SkillPoses();
   private dragging = false;
@@ -410,6 +415,7 @@ export class Game {
   /** Nhật ký sự kiện chiêu gần nhất (chỉ bản dev, cho Playwright/console: `__game.skillLog`). */
   skillLog: { sid: string; e: SkillEvent; at: number }[] = [];
   private emitSkillEvent(sid: string, e: SkillEvent): void {
+    this.onSwingEvent(sid, e);
     for (const fn of this.skillListeners) fn(sid, e);
     if (import.meta.env.DEV) {
       this.skillLog.push({ sid, e, at: performance.now() });
@@ -1457,6 +1463,58 @@ export class Game {
     return (id === this.sid ? get().method?.method : this.ents?.players.get(id)?.mt) || undefined;
   }
 
+  // ---------- cảm giác đòn (K-7) ----------
+
+  /** Sát thương đang chờ khung `hit` của người ra đòn (đồng hồ game, xả ở `frame`), thay cho `setTimeout`. */
+  private hitQ = new HitQueue<DmgMsg>();
+  /** Người ra đòn đã vào thế (windup) mà chưa tới `hitAt`: sát thương của họ tới lúc này thì chờ khung `hit`. */
+  private swinging = new Set<string>();
+  /** Khung `hit` gần nhất của từng người ra đòn: ngữ cảnh (chiêu, đòn thứ mấy) cho phản ứng trúng đòn tới sau đó. */
+  private lastHit = new Map<string, { skill: string; index: number; combo: number; kb: boolean; at: number }>();
+  /** Lúc tiếng vung gần nhất của từng người (performance.now): FX `sword` tới sau không phát thêm tiếng vút nữa. */
+  private whooshAt = new Map<string, number>();
+  /** Đang xả hàng chờ trong chính khung `hit` (cho nhật ký). */
+  private flushing = false;
+  /** Nhật ký hit → âm (chỉ bản dev, `__sound.hits()`). */
+  hitSoundLog: HitSoundLog[] = [];
+
+  /** Chờ tối đa bao lâu (giây game) cho khung `hit` trước khi cứ thế phát (hoạt ảnh bị hủy, model khối cũ...). */
+  private static readonly HIT_WAIT = 0.45;
+  /** Sát thương tới sau khung `hit` trong khoảng này vẫn dùng ngữ cảnh của đòn đó (giây). */
+  private static readonly HIT_CTX_TTL = 0.6;
+
+  /**
+   * Sự kiện chiêu của máy trạng thái (K-4) → tiếng vung đặt lịch theo đồng hồ AudioContext, và xả hàng chờ đúng khung `hit`:
+   * tiếng trúng, hit-stop, rung camera của đòn rơi cùng khung hoạt ảnh ra đòn.
+   */
+  private onSwingEvent(sid: string, e: SkillEvent): void {
+    if (e.kind === 'windup') {
+      this.swinging.add(sid);
+      const whoosh = SKILL_INFO.get(e.skill);
+      if (whoosh && (whoosh.fx === 'sword' || whoosh.fx === 'slash') && !this.disposed) {
+        const mine = sid === this.sid;
+        const pv = this.ents?.players.get(sid);
+        const vol = mine ? WHOOSH_GAIN : pv ? this.volumeAt(pv.x, pv.z) * WHOOSH_GAIN * 0.6 : 0;
+        if (vol > 0) {
+          this.whooshAt.set(sid, performance.now());
+          sfx('sword', vol, pv, false, { delay: whooshDelay(e.hitIn ?? 0), rate: hitPitch(e.combo === 2) });
+        }
+      }
+    } else if (e.kind === 'hit') {
+      this.swinging.delete(sid);
+      this.lastHit.set(sid, { skill: e.skill, index: e.index, combo: e.combo, kb: e.kb, at: performance.now() });
+      if (this.lastHit.size > 64) for (const [k, v] of this.lastHit) if (performance.now() - v.at > 2000) this.lastHit.delete(k);
+      // Cận cảnh chiêu tối thượng của mình: lúc ra đòn.
+      if (sid === this.sid && SKILL_INFO.get(e.skill)?.ult) this.ultCamT = 0;
+      this.flushing = true;
+      for (const m of this.hitQ.release(sid)) this.applyDmg(m, this.lastHit.get(sid));
+      this.flushing = false;
+    } else if (e.kind === 'cancel' || e.kind === 'end') {
+      this.swinging.delete(sid);
+      for (const m of this.hitQ.release(sid)) this.applyDmg(m, undefined);
+    }
+  }
+
   private onFx(m: FxMsg, held = false): void {
     const v = this.vfx;
     const e = this.ents;
@@ -1688,7 +1746,7 @@ export class Game {
     };
     this.steps = new FootstepDriver(world ? 'van_lam' : 'kiem_trung', (name, vol, at) => sfx(name, vol, at, false), log);
     this.scape = world ? new Soundscape(buildSources(SECT_LANTERNS), audioSpatialApi(), log) : null;
-    if (import.meta.env.DEV) (window as unknown as { __sound?: unknown }).__sound = { steps: () => this.steps?.stats, scape: () => ({ active: this.scape?.state(), ...this.scape?.stats }) };
+    if (import.meta.env.DEV) (window as unknown as { __sound?: unknown }).__sound = { hits: () => this.hitSoundLog, steps: () => this.steps?.stats, scape: () => ({ active: this.scape?.state(), ...this.scape?.stats }) };
   }
 
   private playFxSound(t: string, src: string, dst: string, x?: number, z?: number): void {
@@ -1728,6 +1786,8 @@ export class Game {
     };
     const name = map[t];
     if (!name) return;
+    // Phi kiếm của người chơi đã có tiếng vung đặt lịch từ sự kiện `windup` (K-7): không phát thêm tiếng vút lúc FX tới.
+    if (t === 'sword' && src && performance.now() - (this.whooshAt.get(src) ?? -1e9) < 700) return;
     let vol = 1;
     let at: { x: number; z: number } | undefined;
     if (x !== undefined && z !== undefined) at = { x, z };
@@ -1747,15 +1807,28 @@ export class Game {
     if (m.src && this.view.monsters.has(m.src)) this.hurtAt.set(m.src, now);
   }
 
-  private onDmg(m: DmgMsg, held = false): void {
+  private onDmg(m: DmgMsg): void {
     if (this.disposed) return;
     this.markHurt(m);
-    // Hiệu ứng đòn của mình đang được giữ tới lúc ra đòn: số sát thương và phản ứng trúng đòn theo cùng nhịp.
-    const hold = !held && m.src === this.sid ? this.skillPoses.holdLeft(performance.now()) : 0;
-    if (hold > 0.02) {
-      setTimeout(() => this.onDmg(m, true), hold * 1000);
+    // Đòn của một người chơi đang vung (đã vào thế, chưa tới `hitAt`): chờ khung `hit` của hoạt ảnh để tiếng, khựng, rung
+    // rơi đúng lúc ra đòn (K-7). Quá hạn mà không có `hit` thì `frame` xả.
+    if (m.src && this.swinging.has(m.src) && !m.heal) {
+      this.hitQ.push(m.src, m, Game.HIT_WAIT);
       return;
     }
+    const lh = m.src ? this.lastHit.get(m.src) : undefined;
+    this.applyDmg(m, lh && performance.now() - lh.at < Game.HIT_CTX_TTL * 1000 ? lh : undefined);
+  }
+
+  /** Hướng nguồn → đích trên mặt đất (null nếu thiếu một đầu). */
+  private dirOf(src: string | undefined, dst: string): { x: number; z: number } | null {
+    const a = src ? (this.ents.players.get(src) ?? this.ents.monsters.get(src)) : undefined;
+    const b = this.ents.players.get(dst) ?? this.ents.monsters.get(dst);
+    return a && b ? { x: b.x - a.x, z: b.z - a.z } : null;
+  }
+
+  private applyDmg(m: DmgMsg, ev: { skill: string; index: number; combo: number; kb: boolean; at: number } | undefined): void {
+    if (this.disposed) return;
     if (!this.ents || !this.ents.topOf(m.dst, _v)) return;
     const mine = m.dst === this.sid;
     const byMe = m.src === this.sid;
@@ -1767,16 +1840,20 @@ export class Game {
       // Sát thương của người khác: chỉ hiện khi ở gần.
       if (_v.distanceTo(this.renderPos) > 45) return;
     }
-    // Hit feel chỉ là lớp hình. Chiêu của người chơi là đạn bay ~0,2 s nên trễ cho khớp lúc chạm.
+    // Ngữ cảnh đòn (K-7): đòn thứ ba của chuỗi, sức mạnh/tối thượng của chiêu lấy từ khung `hit` của hoạt ảnh.
+    const skill = ev ? SKILL_INFO.get(ev.skill) : undefined;
+    const hc: HitCtx = { crit: !!m.crit, heavy: !!m.hv, combo3: !!ev && (ev.kb || ev.combo === 2), power: skill?.power ?? 0, ult: !!skill?.ult, victimIsMe: mine, byMe };
+    // Hit feel chỉ là lớp hình. Rung camera theo bảng (lấy max, có hướng nguồn → đích); công tắc "Rung màn hình" do `CameraShake` tôn trọng.
+    const stops = hitStopOf(hc);
     if (!m.heal && m.n > 0) {
-      if (byMe && m.crit) this.shake.kick(SHAKE.crit);
-      if (mine && m.hv) this.shake.kick(SHAKE.heavy);
+      const lv = shakeOf(hc);
+      if (lv > 0) this.shake.kick(lv, this.dirOf(m.src, m.dst) ?? undefined);
     }
     // Cảnh boss/chuyển pha ngắn (≤ 2,6 s) và boss vốn đang đánh mình: chỉ đòn nặng mới hủy; cảnh mở đầu thì mọi đòn đều hủy.
     if (mine && !m.heal && m.n > 0) this.skipCine(this.cineKind === 'sect' || !!m.hv);
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (m.hv && !m.heal && m.n > 0) this.heavyInk(m.dst, m.src);
-    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
+    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops);
     // Boss đánh nặng (≥ KNOCKDOWN_FRAC máu tối đa) thì người bị đánh ngã rồi đứng dậy; chỉ hình, người chơi vẫn đi lại được và kéo dậy sớm khi di chuyển.
     if (!m.heal && m.hv && m.n > 0 && m.src) {
       const victim = this.ents.players.get(m.dst);
@@ -1789,7 +1866,26 @@ export class Game {
     if (!m.heal) {
       // Bị hộ thể hấp thụ hết: tiếng kim khí; chí mạng/đòn nặng: tiếng va mạnh hơn đòn thường.
       const name: Sfx = m.n === 0 ? 'block' : mine ? 'hurt' : m.crit || m.hv ? 'crit' : 'hit';
-      sfx(name, mine || byMe ? 1 : this.volumeAt(_v.x, _v.z) * 0.5, _v);
+      const vol = mine || byMe ? 1 : this.volumeAt(_v.x, _v.z) * 0.5;
+      // Phát ngay trong khung này: khi có `ev` thì đây chính là khung `hit` của hoạt ảnh. Pitch 0,92–1,08 (đòn 3 cao hơn một bậc).
+      const rate = hitPitch(hc.combo3);
+      sfx(name, vol, _v, true, { rate });
+      const layers: string[] = [];
+      if (m.n > 0 && !mine) {
+        // Lớp chồng theo công pháp người ra đòn và chất liệu mục tiêu (tổng ≤ +3 dB).
+        const mon = this.ents.monsters.get(m.dst);
+        for (const l of layersOf({ method: m.src ? this.methodOfPlayer(m.src) : undefined, material: materialOf(mon?.model.def), crit: hc.crit || hc.heavy, strong: hc.combo3 || hc.power >= 2 || hc.ult })) {
+          sfx(l.sfx, vol * l.gain, _v, false, { rate: rate * l.rate });
+          layers.push(l.sfx);
+        }
+        // Chiêu tối thượng của mình trúng: hạ nhạc 20% trong 120 ms.
+        if (hc.ult && byMe) duck(0.2, 0.12, 0.4);
+      }
+      if (import.meta.env.DEV && ev) {
+        const soundAt = performance.now();
+        this.hitSoundLog.push({ skill: ev.skill, index: ev.index, eventAt: ev.at, soundAt, lagMs: soundAt - ev.at, synced: this.flushing, sfx: name, rate, layers });
+        if (this.hitSoundLog.length > 200) this.hitSoundLog.shift();
+      }
     }
     const text = m.heal ? `+${m.n}` : m.n === 0 ? t('ui.absorbed') : mine ? `-${m.n}` : `${m.n}${m.crit ? '!' : ''}`;
     this.dmg.spawn(text, _v, cls);
@@ -1901,6 +1997,8 @@ export class Game {
     const dt = Math.min(0.1, (now - this.lastT) / 1000);
     this.lastT = now;
     this.frames++;
+    // Sát thương chờ khung `hit` mà quá hạn (hoạt ảnh bị hủy, model khối cũ): phát luôn, theo đồng hồ game.
+    for (const m of this.hitQ.tick(dt)) this.applyDmg(m, undefined);
     const me = this.me();
 
     if (me) {
@@ -2042,12 +2140,21 @@ export class Game {
     const zw = E4_OFF || this.cine.active || this.tribScene ? BASE_ZONE : zoneCamera(rp.x, rp.z, this.zoneWant);
     easeZoneCam(this.zoneCur, zw, dt);
     const zc = this.zoneCur;
-    if (Math.abs(this.camera.fov - zc.fov) > 0.01) {
-      this.camera.fov = zc.fov;
+    // Cận cảnh chiêu tối thượng (K-7): FOV +1,5° trong 80 ms rồi về trong 200 ms, kéo camera gần thêm chút; không chặn điều khiển.
+    // Theo công tắc "Rung màn hình" (tắt thì không cận cảnh); cảnh điện ảnh tự đặt camera nên bỏ qua.
+    let ultPunch = 0;
+    if (this.ultCamT >= 0) {
+      this.ultCamT += dt;
+      ultPunch = this.shake.enabled && !this.cine.active ? ultFovAt(this.ultCamT) : 0;
+      if (this.ultCamT > ULT_FOV.rise + ULT_FOV.fall) this.ultCamT = -1;
+    }
+    const wantFov = zc.fov + ultPunch;
+    if (Math.abs(this.camera.fov - wantFov) > 0.01) {
+      this.camera.fov = wantFov;
       this.camera.updateProjectionMatrix();
     }
     // Khung thẻ chương cộng thêm vào góc của người chơi, không ghi đè camDist/camPitch.
-    const want = Math.min(70, this.camDist * zc.distMul * (flying ? 1.35 : 1) * this.camFrame.distMul);
+    const want = Math.min(70, this.camDist * zc.distMul * (flying ? 1.35 : 1) * this.camFrame.distMul * (1 - 0.05 * (ultPunch / ULT_FOV.kick)));
     this.camDistCur += (want - this.camDistCur) * Math.min(1, dt * 6);
     const pitch = Math.max(-0.45, Math.min(1.45, this.camPitch + zc.pitchAdd + this.camFrame.pitchAdd));
     const cp = Math.cos(pitch);
