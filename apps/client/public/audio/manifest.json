@@ -541,7 +541,176 @@
       "pitch": 0.04
     }
   },
-  "music": {},
+  "music": {
+    "sect": {
+      "src": [
+        "music/sect.ef3fc8baa0.webm",
+        "music/sect.e45d57eead.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Lạc Kiếm Tông",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "combat": {
+      "src": [
+        "music/combat.cd525dc7ad.webm",
+        "music/combat.45d07225cf.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Giao Phong",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "wild": {
+      "src": [
+        "music/wild.8bc8288921.webm",
+        "music/wild.fddd1928f3.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Vân Lam Sơn Mạch",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "forest": {
+      "src": [
+        "music/forest.330a248d8b.webm",
+        "music/forest.fc0910483e.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Rừng Linh Thảo",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "lake": {
+      "src": [
+        "music/lake.a9818e402d.webm",
+        "music/lake.27f00acfb8.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Hồ Sương Mù",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "dungeon": {
+      "src": [
+        "music/dungeon.0934c067cd.webm",
+        "music/dungeon.6e65458fa5.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Kiếm Trủng",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "boss": {
+      "src": [
+        "music/boss.1ab90d74cd.webm",
+        "music/boss.595549268a.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Hàn Giao",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "dungeon_boss": {
+      "src": [
+        "music/dungeon_boss.4eacf966e2.webm",
+        "music/dungeon_boss.3360ff207c.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Kiếm Trủng — Thủ Mộ",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "tribulation": {
+      "src": [
+        "music/tribulation.1119f0e8ef.webm",
+        "music/tribulation.da127d7a51.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Độ Kiếp",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "meditate": {
+      "src": [
+        "music/meditate.68f1d73a87.webm",
+        "music/meditate.9d7591aeb4.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Đả Tọa",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "title": {
+      "src": [
+        "music/title.1e65e3398d.webm",
+        "music/title.00a242df4e.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Đạp Thiên Lộ",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "sting_levelup": {
+      "src": [
+        "music/sting_levelup.09adfa7d2e.webm",
+        "music/sting_levelup.c536402a6d.m4a"
+      ],
+      "loop": false,
+      "credit": {
+        "title": "Tu Vi Tinh Tiến",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "sting_breakthrough": {
+      "src": [
+        "music/sting_breakthrough.cc3a9b7f92.webm",
+        "music/sting_breakthrough.0749dbae2a.m4a"
+      ],
+      "loop": false,
+      "credit": {
+        "title": "Trúc Cơ Thành",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "sting_death": {
+      "src": [
+        "music/sting_death.ac305c5723.webm",
+        "music/sting_death.47eae77f45.m4a"
+      ],
+      "loop": false,
+      "credit": {
+        "title": "Thân Tử Đạo Tiêu",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    }
+  },
   "ambient": {
     "wind": {
       "src": [

@@ -330,7 +330,7 @@ function VolumeSlider({ k }: { k: VolumeKey }) {
   );
 }
 
-/** Ghi nguồn nhạc theo manifest (nhạc Suno bản FREE: phi thương mại, bắt buộc ghi nguồn). */
+/** Ghi nguồn nhạc theo manifest (nhạc tự soạn CC0 + soundfont; nếu sau này có nhạc Suno thì kèm link bắt buộc). */
 function MusicCredits() {
   const [list, setList] = useState<(MusicCredit & { id: string })[] | null>(null);
   useEffect(() => {
