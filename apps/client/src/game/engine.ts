@@ -141,7 +141,6 @@ function isWebGPU(r: THREE.WebGPURenderer): boolean {
  * pixelRatio trên màn hình lớn để giữ VRAM render target dưới ngân sách). heightFog: sương theo độ cao.
  */
 /** Bán kính (m) lấy chấm quái cho bản đồ nhỏ (khung 520 m ⇒ ±260 m, chừa lề). */
-const MINIMAP_MON_R = 300;
 
 const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean; ground: GroundLevel; ao: boolean; lights: boolean; radial: boolean }> = {
   low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false, radial: false },
@@ -280,6 +279,8 @@ export class Game {
   private inkHitAt = new Map<string, number>();
   offscreen!: OffscreenIndicators;
   minimap!: HTMLCanvasElement;
+  /** Lúc (performance.now) thực thể bị đánh/đang đánh người chơi: minimap nhấp nháy biểu tượng (M-3). */
+  hurtAt = new Map<string, number>();
   private stage: HTMLElement;
   private canvas!: HTMLCanvasElement;
   private portalDisc: THREE.Mesh | null = null;
@@ -1613,8 +1614,18 @@ export class Game {
     sfx(name, vol, at);
   }
 
+  /** Ghi nhận người chơi (mình/đồng đội) bị đánh và kẻ đánh, cho nhấp nháy trên minimap. */
+  private markHurt(m: DmgMsg): void {
+    if (m.heal || m.n <= 0 || !this.view.players.has(m.dst)) return;
+    const now = performance.now();
+    if (this.hurtAt.size > 64) for (const [k, at] of this.hurtAt) if (now - at > 3000) this.hurtAt.delete(k);
+    this.hurtAt.set(m.dst, now);
+    if (m.src && this.view.monsters.has(m.src)) this.hurtAt.set(m.src, now);
+  }
+
   private onDmg(m: DmgMsg, held = false): void {
     if (this.disposed) return;
+    this.markHurt(m);
     // Hiệu ứng đòn của mình đang được giữ tới lúc ra đòn: số sát thương và phản ứng trúng đòn theo cùng nhịp.
     const hold = !held && m.src === this.sid ? this.skillPoses.holdLeft(performance.now()) : 0;
     if (hold > 0.02) {
@@ -2454,25 +2465,6 @@ export class Game {
       roomId: this.room.roomId,
       sid: this.sid,
     };
-  }
-
-  /** Chấm trên bản đồ nhỏ. */
-  dots(): { x: number; z: number; c: string; r: number }[] {
-    const out: { x: number; z: number; c: string; r: number }[] = [];
-    if (!this.ents) return out;
-    // Chấm quái lấy từ trạng thái phòng (không phải model đang dựng: model chỉ dựng trong ~100 m) để thấy cả bãi/tinh anh
-    // ở rìa bản đồ nhỏ (±260 m). Lọc theo vòng 300 m quanh mình.
-    const rx = this.renderPos.x;
-    const rz = this.renderPos.z;
-    this.view.monsters.forEach((m) => {
-      if (m.st === MS_DEAD || (m.x - rx) ** 2 + (m.z - rz) ** 2 > MINIMAP_MON_R * MINIMAP_MON_R) return;
-      const def = MONSTER.get(m.t);
-      out.push({ x: m.x, z: m.z, c: def?.boss ? '#ff9a3c' : def?.elite ? '#7fd4ff' : '#e5534b', r: def?.boss ? 4 : def?.elite ? 3 : 2 });
-    });
-    for (const [sid, p] of this.ents.players) if (sid !== this.sid) out.push({ x: p.x, z: p.z, c: '#6fd0ff', r: 3 });
-    for (const n of this.ents.npcs) out.push({ x: n.x, z: n.z, c: '#ffd84a', r: 3 });
-    for (const g of this.ents.nodes.values()) if (g.visible) out.push({ x: g.position.x, z: g.position.z, c: '#7fffb0', r: 1.5 });
-    return out;
   }
 
   get yaw(): number {
