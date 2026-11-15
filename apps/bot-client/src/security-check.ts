@@ -990,9 +990,10 @@ async function testParamsChecks(): Promise<void> {
     await W(500);
     const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
     check('?at=thung_lung đưa tài khoản thử tới thung lũng', Math.hypot(me().x - 2048, me().z - 2400) < 3, `(${me().x.toFixed(0)}, ${me().z.toFixed(0)})`);
+    // Đứng yên giữa 4 con sói vừa gọi (cách 10 m, trong tầm phát hiện 12 m). Trước đây dịch chuyển sang (2048, 2455) rồi
+    // trông vào sói của bãi quái gần đó; sau M-1 bãi quái đổi chỗ nên có lượt không con nào tới đánh.
     room.send(C.CHAT, { m: '/gm spawn mon_soi_xam 4' });
     await W(900);
-    room.send(C.CHAT, { m: '/gm tp 2048 2455' });
     let low = me().hp;
     const mhp = me().hp;
     for (let i = 0; i < 16; i++) {
