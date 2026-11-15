@@ -52,6 +52,22 @@ export interface Rect {
 /** Vùng chiếm của một chỉ báo quanh tâm huy hiệu (px): số khoảng cách nằm dưới nên phía dưới dài hơn. */
 export const INDICATOR_EXTENT = { up: 22, down: 42, side: 30 };
 
+/**
+ * Chỉ báo trùng chỗ với chỉ báo đã đặt (ví dụ hai điểm đánh dấu cùng hướng) thì trượt ngang một bề rộng huy hiệu,
+ * sang phải; hết chỗ thì sang trái. Chỉ nhìn các chỉ báo đã đặt trước nó trong cùng khung.
+ */
+export function spreadFrom(at: EdgePlace, placed: readonly { x: number; y: number }[], n: number, w: number, inset: EdgeInset = DEFAULT_INSET): void {
+  const GAP = INDICATOR_EXTENT.side * 1.6;
+  const near = (x: number) => {
+    for (let i = 0; i < n; i++) if (Math.abs(placed[i].x - x) < GAP && Math.abs(placed[i].y - at.y) < INDICATOR_EXTENT.down) return true;
+    return false;
+  };
+  for (let k = 0; k < n + 1 && near(at.x); k++) {
+    const right = at.x + GAP;
+    at.x = right <= w - inset.right ? right : Math.max(inset.left, at.x - GAP * (k + 1));
+  }
+}
+
 /** Các khối HUD bám mép; chỉ báo trượt dọc mép để không nằm dưới chúng. */
 const AVOID_SELECTOR = '.player-frame, .target-frame, .boss-bar, .right-col, .chat, .skillbar';
 
@@ -256,6 +272,8 @@ interface Slot {
 const _p = new THREE.Vector3();
 
 export class OffscreenIndicators {
+  /** Vị trí các chỉ báo đã đặt trong khung này (để đẩy chỉ báo trùng chỗ ra xa nhau). */
+  private spots: { x: number; y: number }[] = [];
   private slots: Slot[] = [];
   private cands: OffCandidate[] = [];
   private avoid: Rect[] = [];
@@ -327,6 +345,7 @@ export class OffscreenIndicators {
   update(camera: THREE.Camera, w: number, h: number, me: { x: number; y: number; z: number }): void {
     const e = camera.matrixWorldInverse.elements;
     const pe = camera.projectionMatrix.elements;
+    let placed = 0;
     for (let i = 0; i < this.slots.length; i++) {
       const s = this.slots[i];
       const c = this.cands[i];
@@ -345,6 +364,8 @@ export class OffscreenIndicators {
         continue;
       }
       avoidRects(at, this.avoid, w, h);
+      spreadFrom(at, this.spots, placed, w, DEFAULT_INSET);
+      this.spots[placed++] = { x: at.x, y: at.y };
       if (!s.shown) {
         s.shown = true;
         s.el.classList.add('on');

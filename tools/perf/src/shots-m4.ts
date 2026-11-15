@@ -116,7 +116,7 @@ async function main(): Promise<void> {
     await A.getByRole('button', { name: 'Thu thập', exact: true }).click();
 
     // 3. Đặt điểm đánh dấu bằng chuột phải: A ở phía bắc sân (cách B ~65 m, ngay trước camera của B).
-    const pm = await mapPoint(A, 2048, 2020);
+    const pm = await mapPoint(A, 2090, 2030);
     await A.mouse.click(pm.x, pm.y, { button: 'right' });
     await sleep(1500);
     await shot(A, 'worldmap-marker.png');

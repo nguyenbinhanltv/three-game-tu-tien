@@ -37,7 +37,9 @@ Kế hoạch: `ke-hoach-ban-do-minimap.md` mục 3.3 + 3.5 (có Truyền Tống 
 
 - `pnpm typecheck`, `pnpm test` (server 204+15 test teleport/marker/migration, client + test bản đồ lớn), `pnpm content:check`.
 - `pnpm --filter @dtl/bot-client security`: thêm bài 14 (trận chưa mở/id lạ/sai kiểu, niệm đủ thì tới nơi, hồi chiêu, bị quái đánh thì không truyền tống, spam 80 lệnh `tele` và 60 lệnh `mark`, toạ độ đánh dấu sai, người ngoài tổ đội không thấy điểm).
-- Rà soát netcode theo checklist của `netcode-reviewer`: xem mô tả PR.
+- `pnpm bots --count 100 --duration 120` (server `RATE_LIMIT_EXEMPT=loopback`): 100 bot vào hết, 0 thất bại; rồi `pnpm ledger:check`: sổ cái khớp (146 nhân vật, 1936 dòng). Tick p95 ban đầu ~2 ms, lên ~10 ms lúc bot đánh nhau dày (có một bộ kiểm bảo mật khác chạy song song trên máy nên số này không sạch).
+- `pnpm bench:client` (WebGPU + WebGL2, Vừa, RTX 3060 Ti), so main hiện tại (chưa có M-4) cùng máy, cùng phiên: CPU p50 / p95 / draw call. WebGPU sân 3,6 / 5,0 / 117 (main 3,7 / 5,7 / 110), rừng 4,4 / 5,7 / 145 (5,0 / 7,2 / 134), hồ 4,5 / 6,0 / 132 (4,1 / 5,4 / 126); WebGL2 sân 4,0 / 5,5 / 117 (3,6 / 4,8 / 110), rừng 5,1 / 7,5 / 147 (5,3 / 7,2 / 134), hồ 4,8 / 6,4 / 136 (4,9 / 6,8 / 128). CPU ngang main (chênh nằm trong nhiễu đo); draw call tăng 7–11 vì mô hình trận (4 call mỗi trận trong 260 m), vẫn dưới ngân sách 300.
+- Rà soát netcode theo checklist của `netcode-reviewer` (tự làm, xem mô tả PR).
 - Ảnh (`pnpm shots:m4`, Chrome GPU thật, tắt tiếng): `worldmap-full.png`, `worldmap-filter-off.png`, `worldmap-marker.png`, `worldmap-marker-shared.png`, `marker-shared-beam.png`, `marker-edge-arrow.png`, `worldmap-tele-hover.png`, `worldmap-tele-casting.png`, `tele-cast-ring.png`, `tele-arrived.png`, `worldmap-cooldown.png`.
 
 ## Chưa làm

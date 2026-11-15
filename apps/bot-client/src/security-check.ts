@@ -68,6 +68,12 @@ async function join(name: string): Promise<{ client: Client; room: Room; init: I
 }
 
 async function main() {
+  // SECURITY_ONLY=testparams: chỉ chạy bài ?god/?at (bài 13) để thử lại nhanh.
+  if (process.env.SECURITY_ONLY === 'testparams') {
+    await testParamsChecks();
+    console.log(failed ? `${failed} mục HỎNG` : 'Tất cả đều ĐẠT');
+    process.exit(failed ? 1 : 0);
+  }
   // 1. Request HTTP xấu không được làm sập server.
   for (const path of ['//', '/%', '/..%2f..%2fpackage.json', '/%E0%A4%A']) {
     try {
