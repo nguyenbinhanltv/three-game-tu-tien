@@ -1,5 +1,24 @@
 # Giấy phép asset
 
+## Màn tải và chất liệu UI 2D Codex (2026-11-16)
+
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs loading|ui`, chủ thể ở `tools/codex-assets/loading.json`, `ui.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/<nhóm>/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs loading ui` thành WebP ở `apps/client/public/assets/art/` (nạp lười).
+
+| ID | Nguồn | Giấy phép | Ngày | Tệp |
+| --- | --- | --- | --- | --- |
+| `ho_suong_mu` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/loading/ho_suong_mu.png` |
+| `kiem_trung` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/loading/kiem_trung.png` |
+| `rung_linh_thao` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/loading/rung_linh_thao.png` |
+| `suoi_thanh_khe` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/loading/suoi_thanh_khe.png` |
+| `thung_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/loading/thung_lung.png` |
+| `title` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/loading/title.png` |
+| `tong_mon` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/loading/tong_mon.png` |
+| `vach_da_ngoc` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/loading/vach_da_ngoc.png` |
+| `corner_ornament` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/ui/corner_ornament.png` |
+| `map_bg` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/ui/map_bg.png` |
+| `paper_tile` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/ui/paper_tile.png` |
+| `seal_red` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/ui/seal_red.png` |
+
 ## Chân dung 2D Codex (2026-11-16)
 
 Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs portraits`, chủ thể ở `tools/codex-assets/portraits.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/portraits/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs portraits` thành WebP 480×640 ở `apps/client/public/assets/art/portraits/` (nạp lười).
