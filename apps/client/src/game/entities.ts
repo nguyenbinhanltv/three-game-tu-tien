@@ -312,6 +312,8 @@ export class EntityManager {
   npcs: NpcVis[] = [];
   ring: THREE.Mesh;
   private bars = new HeadBars();
+  /** Bật khi có cắt cảnh: thanh máu và nhãn tên trên đầu ẩn đi. */
+  tagsHidden = false;
   private markerNew = makeMarker('!', '#ffd84a');
   private markerDone = makeMarker('?', '#ffd84a');
   private markerWait = makeMarker('?', '#9aa3ad');
@@ -337,6 +339,8 @@ export class EntityManager {
     scene.add(this.group);
     this.skins.preload();
     this.playerSkins.preload();
+    // Bí cảnh có boss model xương: nạp ngay khi vào room (trước đó chỉ nạp khi boss hiện ra giữa trận).
+    if (levelId === 'kiem_trung') this.skins.preloadLazy();
     this.hasNpcs = levelId === 'van_lam';
     if (this.hasNpcs) {
       this.npcSkins.preload();
@@ -613,6 +617,14 @@ export class EntityManager {
 
     bars.end();
     this.applyLodBudget(local, targetId);
+    // Cắt cảnh (B6): ẩn cả thanh máu lẫn nhãn tên trên đầu, vì chúng nằm trong cảnh 3D chứ không thuộc lớp HUD.
+    if (this.tagsHidden) {
+      this.bars.mesh.visible = false;
+      for (const v of this.players.values()) v.label.visible = false;
+      for (const v of this.monsters.values()) if (v.label) v.label.visible = false;
+    }
+    // Nhãn NPC không có chỗ nào khác đặt lại (luôn hiện), nên gán theo cờ mỗi khung để hiện lại khi hết cảnh.
+    for (const n of this.npcs) n.label.visible = !this.tagsHidden;
 
     // ----- vòng chọn mục tiêu -----
     const tm = this.monsters.get(targetId);
@@ -760,7 +772,7 @@ export class EntityManager {
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
     // Chỉ khựng khi đòn liên quan tới mình, để boss bị nhiều người đánh không đứng hình liên tục.
     const noStop = src !== this.mySid && dst !== this.mySid;
-    vd.model.hitReact({ crit, heavy, delay, noStop, dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
+    vd.model.hitReact({ crit, heavy, delay, noStop, noFlash: this.tagsHidden && this.monsters.has(dst), dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
     if (src && src === this.mySid && vs) vs.model.hit.hitStop(hitStopFor(crit, heavy), delay);
   }
 

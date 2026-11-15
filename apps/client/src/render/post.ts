@@ -68,6 +68,11 @@ export const postParams = {
   hit: uniform(0),
   /** 0..1: chớp sáng toàn màn hình (sấm độ kiếp...), tự giảm dần. */
   flash: uniform(0),
+  /** 0..1: làm nhòe hướng tâm ở mép khung (cảnh boss xuất hiện, P2-B2); chỉ có khi pipeline dựng với `radial`. */
+  radial: uniform(0),
+  /** 0..1 và màu: nhuộm thoáng qua cả khung (chuyển pha boss, P2-B3), thay màu trời/sương trong một nhịp. */
+  pulse: uniform(0),
+  pulseColor: uniform(new THREE.Color(0.55, 0.78, 1)),
 };
 
 /** Nạp số của một preset chỉnh màu (grading.ts) vào uniform. */
@@ -131,9 +136,13 @@ export interface PostOptions {
   fxaa: boolean;
   /** GTAO nửa độ phân giải (preset Vừa/Cao). Cần thêm đích pháp tuyến (view space) vào MRT của pass cảnh. */
   ao?: boolean;
+  /** Nhòe hướng tâm (4 lần lấy mẫu thêm). Preset Thấp bỏ. */
+  radial?: boolean;
 }
 
 const _size = new THREE.Vector2();
+/** Ép kiểu nút về vec3 để gán lại biến `hdr` (TSL gõ kiểu theo nút cuối chuỗi). */
+const asVec3 = (n: unknown): ReturnType<typeof vec3> => n as ReturnType<typeof vec3>;
 
 export class PostPipeline {
   readonly bloom: boolean;
@@ -171,7 +180,15 @@ export class PostPipeline {
     // Quang sai màu khi trúng đòn: tách kênh R/B theo hướng ra mép (độ lệch 0 khi uHit = 0).
     const fromCenter = screenUV.sub(0.5);
     const ca = fromCenter.mul(postParams.hit.mul(0.012));
-    let hdr = vec3(colorTex.sample(screenUV.add(ca)).r, colorTex.g, colorTex.sample(screenUV.sub(ca)).b).mul(postParams.exposure);
+    let hdr = vec3(vec3(colorTex.sample(screenUV.add(ca)).r, colorTex.g, colorTex.sample(screenUV.sub(ca)).b).mul(postParams.exposure));
+    if (opts.radial) {
+      // Nhòe hướng tâm nhẹ: kéo mẫu về phía tâm, mạnh dần ra mép; tâm khung (boss) vẫn nét.
+      const dir = fromCenter.mul(postParams.radial.mul(0.07));
+      let acc = hdr;
+      for (let i = 1; i <= 4; i++) acc = asVec3(acc.add(colorTex.sample(screenUV.sub(dir.mul(i / 4))).rgb.mul(postParams.exposure)));
+      const edgeW = smoothstep(0.1, 0.55, length(fromCenter)).mul(postParams.radial.mul(3).min(1));
+      hdr = asVec3(mix(hdr, acc.div(5), edgeW));
+    }
     if (opts.ao) {
       // GTAO ở nửa độ phân giải: bán kính 1,3 m (nếp gấp, chân tường, gốc cây), tắt dần theo khoảng cách để không bẩn nền xa.
       const aoPass = ao(scenePass.getTextureNode('depth'), scenePass.getTextureNode('normal'), this.camera);
@@ -208,6 +225,9 @@ export class PostPipeline {
     const edge = smoothstep(0.3, 0.75, length(fromCenter));
     g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
     g = vec3(mix(g, vec3(1, 0.98, 0.94), postParams.flash.mul(0.75)));
+    // Nhuộm thoáng qua (chuyển pha): giữ độ sáng, đổi sắc vùng tối nhiều hơn vùng sáng.
+    const pl = luminance(g);
+    g = vec3(mix(g, postParams.pulseColor.mul(pl.mul(1.15).add(0.06)), postParams.pulse.mul(0.65)));
 
     const graded = vec4(g, 1);
     let ldrRgb = graded.rgb;
@@ -225,7 +245,7 @@ export class PostPipeline {
   }
 
   private static keyOf(o: PostOptions): string {
-    return `${o.bloom ? 'b' : 'n'}${o.msaa}${o.fxaa ? 'f' : ''}${o.ao ? 'a' : ''}`;
+    return `${o.bloom ? 'b' : 'n'}${o.msaa}${o.fxaa ? 'f' : ''}${o.ao ? 'a' : ''}${o.radial ? 'r' : ''}`;
   }
 
   /** Pipeline hiện tại có đúng cấu hình `opts` không (để biết có cần dựng lại khi đổi preset). */
