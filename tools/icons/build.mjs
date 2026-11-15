@@ -16,7 +16,6 @@ const out = path.join(root, 'apps/client/public/assets/ui');
 const manifestPath = path.join(out, 'icons.json');
 const hash = (data) => createHash('sha256').update(data).digest('hex');
 const size = 128, columns = 8, rows = 5;
-if (defs.length > columns * rows) throw new Error('Atlas capacity exceeded');
 if (process.argv.includes('--check')) {
   const m = read('apps/client/public/assets/ui/icons.json');
   const bytes = fs.readFileSync(path.join(out, m.file));
@@ -53,6 +52,8 @@ for (const def of defs) {
   // Chưa có tranh gốc: không chiếm ô, client dùng emoji `iconFallback`.
   if (!fs.existsSync(file)) { console.log(`Bỏ qua (chưa có PNG): ${def.icon}`); continue; }
   const input = fs.readFileSync(file);
+  // Sức chứa chỉ tính vật phẩm có tranh gốc; còn lại dùng emoji `iconFallback`.
+  if (index >= columns * rows) throw new Error('Atlas capacity exceeded');
   const x = index % columns, y = Math.floor(index / columns);
   index++;
   icons[def.icon] = { x, y, sourceSha256: hash(input), sourceBytes: input.length };

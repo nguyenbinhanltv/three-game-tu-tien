@@ -24,6 +24,8 @@ export class PlayerS extends Schema {
   @type('uint32') seq = 0;
   /** id vũ khí đang cầm (để hiển thị). */
   @type('string') wp = '';
+  /** Bậc phát sáng của vũ khí theo cường hóa: 0, 1 (+7), 2 (+10). Chỉ để hiển thị. */
+  @type('uint8') wg = 0;
   /** Ngoại hình (để hiển thị): giới tính 'm' | 'f' và id màu áo trong appearance.json. */
   @type('string') g = 'm';
   @type('string') dye = '';

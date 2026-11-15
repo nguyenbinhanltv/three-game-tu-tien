@@ -25,8 +25,8 @@ import {
   computeDamage,
   DEATH_XP_LOSS,
   type DmgMsg,
-  enhanceChance,
-  enhanceCost,
+  glowStage,
+  MAX_ENHANCE,
   healAmount,
   methodSwitchCost,
   METHOD_SWITCH_COOLDOWN_SEC,
@@ -64,7 +64,6 @@ import {
   type InitMsg,
   INV_SIZE,
   type LevelDef,
-  MAX_ENHANCE,
   meditateXpPerSec,
   MF_BROKEN,
   MF_CHANT,
@@ -131,6 +130,7 @@ const POTION_ALLY_RANGE = 12;
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
+import { UpgradeSystem } from './upgrade';
 
 /**
  * Seed hình cho FX (tia sét, mưa kiếm, mây kiếp). Lấy từ `crypto`, KHÔNG từ `Math.random`: seed gửi
@@ -362,6 +362,17 @@ export class GameSim {
     player: (sid) => this.players.get(sid),
   });
 
+  /** Cường hóa, khảm ngọc, tẩy luyện, phân giải (P3-3). */
+  readonly upgrade = new UpgradeSystem({
+    now: () => this.now,
+    isDead: (p) => this.isDead(p),
+    nearNpc: (p, id) => this.nearNpc(p, id),
+    idem: (p, r) => this.idem(p, r),
+    warn: (p, k, params) => this.warn(p, k, params),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    fx: (m) => this.fx(m),
+  });
+
   constructor(
     public state: WorldState,
     public host: SimHost,
@@ -580,6 +591,8 @@ export class GameSim {
     if (s.lv !== c.level) s.lv = c.level;
     const wp = c.equip.weapon?.id ?? '';
     if (s.wp !== wp) s.wp = wp;
+    const wg = glowStage(c.equip.weapon?.plus ?? 0);
+    if (s.wg !== wg) s.wg = wg;
     this.setFlag(p, PF_FLYING, m.flying);
   }
 
@@ -2469,36 +2482,11 @@ export class GameSim {
   }
 
   onEnhance(p: PlayerEnt, msg: unknown): void {
-    const m = msg as { npc?: unknown; slot?: unknown; r?: unknown } | null;
-    if (!m || typeof m.npc !== 'string' || !isEquipSlot(m.slot)) return;
-    const es = m.slot;
-    const idem = this.idem(p, m.r);
-    if (idem === undefined || this.isDead(p)) return;
-    const npc = NPC.get(m.npc);
-    if (!npc || !npc.enhance) return;
-    if (!this.nearNpc(p, npc.id)) return this.warn(p, 'sys.too_far');
-    const c = p.char;
-    const it = c.equip[es];
-    const def = it ? ITEM.get(it.id) : undefined;
-    if (!it || !def) return;
-    const plus = it.plus ?? 0;
-    if (plus >= MAX_ENHANCE) return this.warn(p, 'sys.enh_max');
-    const cost = enhanceCost(plus, Math.max(def.price, def.sell * 3));
-    if (c.gold < cost.gold) return this.warn(p, 'sys.not_enough_gold');
-    const success = Math.random() < enhanceChance(plus);
-    const ok = c.tx(success ? 'enhance:ok' : 'enhance:fail', idem, (d) => {
-      if (!d.remove(ENHANCE_ORE, cost.ore) || !d.spendGold(cost.gold)) return false;
-      if (success) d.equip[es] = { ...d.equip[es]!, plus: plus + 1 };
-      return true;
-    });
-    if (!ok) return this.warn(p, 'sys.not_enough_mat');
-    if (success) {
-      c.recalc();
-      this.sys(p, 'sys.enh_ok', { item: t(`item.${def.id}.name`), n: plus + 1 }, 'good');
-      this.fx({ t: 'enhance', src: p.sid });
-    } else {
-      this.sys(p, 'sys.enh_fail', undefined, 'bad');
-    }
+    this.upgrade.onEnhance(p, msg);
+  }
+
+  onUpgrade(p: PlayerEnt, msg: unknown): void {
+    this.upgrade.onUpgrade(p, msg);
   }
 
   // ---------- công pháp (Phase 3-5) ----------
@@ -2720,6 +2708,20 @@ export class GameSim {
         const il = Math.max(1, Number(a[3] ?? c.level) | 0);
         const ok = c.tx('gm', null, (d) => d.addRolled(a[1], il, q as Quality));
         return say(ok ? `đã roll ${a[1]} phẩm ${q} ilvl ${il}` : 'roll <mẫu trang bị> [phẩm 0-4] [ilvl]');
+      }
+      case 'plus': {
+        // Đặt cấp cường hóa của món đang mặc ở ô `a[2]` (mặc định pháp kiếm) để thử VFX +7/+10 và rớt cấp.
+        const slot = isEquipSlot(a[2]) ? a[2] : 'weapon';
+        const n = Math.max(0, Math.min(MAX_ENHANCE, Number(a[1]) | 0));
+        const ok = c.tx('gm:plus', null, (d) => {
+          const w = d.equip[slot];
+          if (!w) return false;
+          d.equip[slot] = n > 0 ? { ...w, plus: n } : { ...w, plus: undefined };
+          if (n === 0) delete d.equip[slot]!.plus;
+          return true;
+        });
+        if (ok) c.recalc();
+        return say(ok ? `${slot} +${n}` : 'plus <0-10> [ô]: ô chưa mặc đồ');
       }
       case 'give': {
         const ok = c.tx('gm', null, (d) => d.add(a[1], Math.max(1, Number(a[2] ?? 1) | 0)));

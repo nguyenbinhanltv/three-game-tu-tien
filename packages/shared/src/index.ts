@@ -15,4 +15,5 @@ export * from './bodyfeel';
 export * from './items';
 export * from './realm';
 export * from './equipLoot';
+export * from './upgrade';
 export * from './methods';
