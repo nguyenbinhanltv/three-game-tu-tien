@@ -5,7 +5,7 @@ import { AIRBORNE_HEIGHT, BAR_SIZE, C, CHARGE_MAX, groundAt, NGUNG_KHI_MAX, type
 import { itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
-import { Button, ProgressBar, TipCard, Tooltip } from './kit';
+import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
@@ -575,15 +575,28 @@ function Toasts() {
   );
 }
 
+/**
+ * Bảng hồi sinh (P2-B5): hiện khi mực thủy mặc đã phủ gần hết màn (độ trễ CSS khớp `PANEL_INK` trong deathFx), nằm trên
+ * lớp mực của hậu kỳ. Chỉ gửi ý định hồi sinh; server quyết định.
+ */
 function DeathOverlay() {
-  const flags = useUI((s) => s.flags);
-  if (!(flags & PF_DEAD)) return null;
+  const dead = useUI((s) => (s.flags & PF_DEAD) !== 0);
+  if (!dead) return null;
   return (
     <div className="death">
-      <div className="death-title">{t('ui.dead.title')}</div>
-      <button className="btn primary" onClick={() => Game.current?.send(C.RESPAWN)}>
-        {t('ui.dead.respawn')}
-      </button>
+      <Panel tone="paper" size="s" className="death-panel" role="alertdialog" aria-labelledby="death-title">
+        <Header id="death-title" title={t('ui.dead.title')} sub={t('ui.dead.sub')} />
+        <PanelBody>
+          <p className="death-line">{t('ui.dead.line')}</p>
+          <Divider />
+          <p className="death-hint">{t('ui.dead.hint')}</p>
+          <div className="death-actions">
+            <Button variant="primary" size="l" onClick={() => Game.current?.send(C.RESPAWN)}>
+              {t('ui.dead.respawn')}
+            </Button>
+          </div>
+        </PanelBody>
+      </Panel>
     </div>
   );
 }
