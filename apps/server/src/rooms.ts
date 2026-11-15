@@ -21,6 +21,7 @@ import { APPEARANCE, MONSTER, monsterName, realmName } from '@dtl/content';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
 import { Character } from './game/character';
+import { MarkerSystem } from './game/marker';
 import { parties } from './game/party';
 import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions } from './game/sim';
 import { WorldState } from './state';
@@ -64,6 +65,7 @@ function today(): string {
 
 export abstract class GameRoom extends Room<WorldState> implements SimHost {
   sim!: GameSim;
+  markers!: MarkerSystem;
   abstract simOptions(options: unknown): SimOptions;
 
   onCreate(options: unknown): void {
@@ -73,6 +75,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.setPatchRate(50);
     this.setSimulationInterval((dt) => this.sim.tick(dt), 50);
     activeRooms.add(this);
+    this.markers = new MarkerSystem(this, () => this.sim.players.values());
+    this.clock.setInterval(() => this.markers.sync(), 1000);
 
     const on = (type: string, handler: (p: PlayerEnt, msg: unknown) => void) => {
       this.onMessage(type, (client, msg) => {
@@ -112,6 +116,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.PARTY, (p, m) => parties.command(p, m));
     on(C.DUEL, (p, m) => this.sim.duel.command(p, m));
     on(C.PORTAL, (p) => this.onPortal(p));
+    on(C.TELE, (p, m) => this.sim.tele.command(p, m));
+    on(C.MARK, (p, m) => this.markers.command(p, m));
     // Bỏ qua message lạ thay vì báo lỗi.
     this.onMessage('*', () => {});
   }
@@ -156,6 +162,10 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       const oldP = prev.room.sim.players.get(prev.sid);
       if (oldP) parties.detach(oldP);
       prev.room.beforeRemove(prev.sid);
+      if (oldP) {
+        prev.room.sim.tele.drop(oldP);
+        prev.room.markers.drop(oldP);
+      }
       prev.room.sim.removePlayer(prev.sid);
       online.delete(auth.charId);
       if (old) {
@@ -169,6 +179,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     const p = this.sim.addPlayer(client, char, dev, auth.session, this.noLootFor(char));
     online.set(auth.charId, { room: this, sid: client.sessionId });
     parties.attach(p, this);
+    this.sim.tele.sendState(p);
     ensurePartyTick();
     console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
@@ -219,6 +230,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     if (cur && cur.room === this && cur.sid === sid) online.delete(p.char.id);
     this.beforeRemove(sid);
     parties.detach(p);
+    this.sim.tele.drop(p);
+    this.markers.drop(p);
     this.sim.removePlayer(sid);
     console.log(`[leave] ${p.char.name} rời ${this.roomName}`);
   }

@@ -92,3 +92,16 @@ describe('minimap model', () => {
     expect(zoneStatus(zones, 10, 10, 3).status).toBe('none');
   });
 });
+
+describe('screenToWorld', () => {
+  it('ngược của project ở cả hai chế độ', async () => {
+    const { screenToWorld } = await import('./model');
+    for (const rot of [0, 0.7, -2.1]) {
+      const v = { cx: 2000, cz: 2100, span: 250, size: 176, rot };
+      const p = project(v, 2055, 2040);
+      const w = screenToWorld(v, p.x, p.y);
+      expect(w.x).toBeCloseTo(2055, 4);
+      expect(w.z).toBeCloseTo(2040, 4);
+    }
+  });
+});

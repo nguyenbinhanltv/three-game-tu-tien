@@ -8,7 +8,11 @@ import {
   type ChatMsg,
   type DuelMsg,
   type InviteMsg,
+  type MarkMsg,
   type PartyMsg,
+  TELE_CAST_MS,
+  TELE_PAD,
+  type TeleMsg,
   cloneMoveState,
   type DmgMsg,
   DUNGEON_EXIT,
@@ -88,6 +92,8 @@ import { PropLayer } from './props';
 import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
+import { minimapHooks } from '../ui/minimap/model';
+import { MapVis } from './mapVis';
 import { loadGroundTextures, type GroundTextures } from './groundTextures';
 import type { GroundLevel } from '../render/materials/ground';
 import { telegraph } from './telegraph';
@@ -281,6 +287,8 @@ export class Game {
   minimap!: HTMLCanvasElement;
   /** Lúc (performance.now) thực thể bị đánh/đang đánh người chơi: minimap nhấp nháy biểu tượng (M-3). */
   hurtAt = new Map<string, number>();
+  /** Trận truyền tống, vòng niệm và cột sáng điểm đánh dấu (M-4). */
+  private mapVis: MapVis | null = null;
   private stage: HTMLElement;
   private canvas!: HTMLCanvasElement;
   private portalDisc: THREE.Mesh | null = null;
@@ -414,6 +422,7 @@ export class Game {
       inv: init.inv,
       equip: init.equip,
       quests: init.quests,
+      marks: [],
       target: null,
       boss: null,
       npc: null,
@@ -439,6 +448,8 @@ export class Game {
     this.bindRoom(room);
     this.ents?.dispose();
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.mapVis?.dispose();
+    this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
     this.resetSound(init.room === ROOM_WORLD);
     this.ents.camera = this.camera;
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
@@ -505,6 +516,16 @@ export class Game {
     room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, m.c === 'party' ? 'party' : 'chat', m.from));
     // Tổ đội và tỉ thí (P3-9): chỉ hiển thị; mọi phán định ở server. Giờ server đổi sang đồng hồ client.
     room.onMessage(S.PARTY, (m: PartyMsg | null) => set({ party: m }));
+    // Truyền Tống Trận và điểm đánh dấu (M-4): chỉ hiển thị; server quyết định. Thời gian còn lại đổi sang đồng hồ client.
+    room.onMessage(S.TELE, (m: TeleMsg) => {
+      const now = performance.now();
+      set({ tele: { open: m.open, cast: m.cast ? { id: m.cast.id, until: now + m.cast.ms } : null, cdUntil: m.cd > 0 ? now + m.cd : 0 } });
+      minimapHooks.teleports = m.open.flatMap((id) => {
+        const pad = TELE_PAD.get(id);
+        return pad ? [{ id, x: pad.x, z: pad.z, label: t(`tele.${id}`) }] : [];
+      });
+    });
+    room.onMessage(S.MARK, (m: MarkMsg) => set({ marks: m.marks }));
     room.onMessage(S.INVITE, (m: InviteMsg) => {
       const until = m.until - this.timeOffset;
       set((s) => {
@@ -714,6 +735,7 @@ export class Game {
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.mapVis = new MapVis(this.scene, get().room === ROOM_WORLD);
     this.resetSound(get().room === ROOM_WORLD);
     this.ents.camera = this.camera;
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
@@ -1023,6 +1045,16 @@ export class Game {
   }
 
   // ---------- thao tác của người chơi (UI cũng gọi) ----------
+
+  /** Xin truyền tống tới trận `id` (server kiểm mở khóa, giao chiến, hồi chiêu). Không `id` = hủy lượt niệm. */
+  teleport(id?: string): void {
+    this.send(C.TELE, id ? { id } : {});
+  }
+
+  /** Đặt điểm đánh dấu ở (x, z), hoặc xóa nếu không có toạ độ. Server giãn lệnh và chia sẻ cho tổ đội. */
+  setMark(pos?: { x: number; z: number }): void {
+    this.send(C.MARK, pos ? { x: pos.x, z: pos.z } : { clear: true });
+  }
 
   send(type: string, msg?: unknown): void {
     if (this.leaving) return;
@@ -1871,6 +1903,12 @@ export class Game {
     this.env.update(dt, this.camera, rp);
     this.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
     if (me) this.ambient.update(dt, this.camera.position, rp);
+    if (this.mapVis && me) {
+      const st = get();
+      this.mapVis.setOpen(st.tele.open);
+      this.mapVis.setMarks(st.marks);
+      this.mapVis.update(rp, st.tele.cast, performance.now(), TELE_CAST_MS);
+    }
     for (const disc of [this.portalDisc, this.exitDisc]) {
       if (!disc) continue;
       disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
@@ -2230,6 +2268,11 @@ export class Game {
       }
       out.push({ key: qid + ':' + key, kind: goal.kind === 'node' ? 'gather' : 'quest', label, icon: goal.kind === 'node' ? goal.item : undefined, pos, span: goal.kind === 'mon' && 'id' in spot ? spanOf(spot.id) : 0.8 });
     } while (false);
+    // Điểm đánh dấu của mình và đồng đội (M-4): mũi tên ở rìa màn hình khi nằm ngoài khung nhìn.
+    for (const m of st.marks) {
+      const y = groundAt(m.x, m.z) + 2;
+      out.push({ key: `mark:${m.id}`, kind: m.own ? 'mark' : 'mate', label: m.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: m.name }), pos: (o) => (o.set(m.x, y, m.z), true), span: 0.4 });
+    }
     // Đồ rơi quý (M4-6) đang nằm trên đất ngoài khung nhìn: chỉ trong lúc cột sáng còn đứng.
     this.pruneRareLoot();
     for (const l of this.rareLoot) {
@@ -2562,6 +2605,7 @@ export class Game {
     this.ground?.dispose();
     this.lanterns?.dispose();
     this.grass?.dispose();
+    this.mapVis?.dispose();
     this.props?.dispose();
     this.post?.dispose();
     postParams.ink.value = 0;

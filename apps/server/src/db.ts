@@ -3,8 +3,8 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { initialBottleneck, INV_SIZE, isEquipSlot, isRootId, ROOT_IDS } from '@dtl/shared';
-import { ITEM } from '@dtl/content';
+import { DUNGEON_MIN_LEVEL, initialBottleneck, INV_SIZE, isEquipSlot, isRootId, ROOT_IDS, TELE_FREE, TELE_PADS } from '@dtl/shared';
+import { ITEM, LEVELS } from '@dtl/content';
 import { config } from './config';
 
 export const accounts = sqliteTable('accounts', {
@@ -41,6 +41,8 @@ export const characters = sqliteTable('characters', {
   root: text('root').notNull().default(''),
   /** Bình cảnh đã vượt cao nhất: 0, 5, 10 hoặc 15 (Phase 3-7). */
   bk: integer('bk').notNull().default(0),
+  /** Truyền Tống Trận đã mở khóa (M-4): mảng JSON id (`TELE_PADS`), không gồm trận mở sẵn; '' = chưa qua migration. */
+  tele: text('tele').notNull().default(''),
   updatedAt: integer('updated_at').notNull().default(0),
 });
 
@@ -98,6 +100,7 @@ CREATE TABLE IF NOT EXISTS characters (
   appearance TEXT NOT NULL DEFAULT '',
   root TEXT NOT NULL DEFAULT '',
   bk INTEGER NOT NULL DEFAULT 0,
+  tele TEXT NOT NULL DEFAULT '',
   updated_at INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS items (
@@ -131,10 +134,11 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ['items', 'inst', 'TEXT'],
   ['characters', 'root', "TEXT NOT NULL DEFAULT ''"],
   ['characters', 'bk', 'INTEGER NOT NULL DEFAULT 0'],
+  ['characters', 'tele', "TEXT NOT NULL DEFAULT ''"],
 ];
 
-/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1); 2 = linh căn + bình cảnh (Phase 3-7). */
-export const DATA_VERSION = 2;
+/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1); 2 = linh căn + bình cảnh (Phase 3-7); 3 = Truyền Tống Trận (M-4). */
+export const DATA_VERSION = 3;
 
 /**
  * Chuyển trang bị từ 3 ô (weapon/robe/accessory) sang 8 ô: `accessory` đi vào ô đúng loại của mẫu
@@ -207,6 +211,25 @@ export function migrateRealm(sqlite: Database.Database): void {
   for (const r of rows) upd.run(isRootId(r.root) ? r.root : rootForName(r.name), initialBottleneck(r.level), r.id);
 }
 
+/**
+ * M-4: nhân vật cũ chưa có cột `tele`. Mở sẵn trận của vùng mà họ đã vượt cấp (cấp cao hơn khoảng hợp của vùng nên chắc đã
+ * đi qua) và trận cổng nếu đủ cấp vào Kiếm Trủng; còn lại phải chạm trận như người mới. Không đụng vật phẩm/tiền, idempotent.
+ */
+export function migrateTele(sqlite: Database.Database): void {
+  const zones = LEVELS.van_lam.zones ?? [];
+  const rows = sqlite.prepare("SELECT id, level FROM characters WHERE tele = ''").all() as { id: number; level: number }[];
+  const upd = sqlite.prepare('UPDATE characters SET tele = ? WHERE id = ?');
+  for (const r of rows) {
+    const open = TELE_PADS.filter((p) => (p.zone ? levelPast(zones, p.zone, r.level) : p.id === 'tp_cong' && r.level >= DUNGEON_MIN_LEVEL) && !TELE_FREE.includes(p.id)).map((p) => p.id);
+    upd.run(JSON.stringify(open), r.id);
+  }
+}
+
+function levelPast(zones: readonly { id: string; lvMax: number }[], zone: string, level: number): boolean {
+  const z = zones.find((x) => x.id === zone);
+  return !!z && level > z.lvMax;
+}
+
 function migrate(sqlite: Database.Database): void {
   // Một transaction: lỗi giữa chừng thì không để DB nửa vời (SQLite cho ALTER trong transaction).
   sqlite.transaction(() => {
@@ -217,6 +240,7 @@ function migrate(sqlite: Database.Database): void {
     const v = sqlite.pragma('user_version', { simple: true }) as number;
     if (v < 1) migrateEquipSlots(sqlite);
     if (v < 2) migrateRealm(sqlite);
+    if (v < 3) migrateTele(sqlite);
     if (v < DATA_VERSION) sqlite.pragma(`user_version = ${DATA_VERSION}`);
   })();
 }

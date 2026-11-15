@@ -70,6 +70,10 @@ export const C = {
   DUEL: 'duel',
   /** Kích hoạt pháp bảo phụ đang đeo (P3-8): không tham số. */
   ARTIFACT: 'art',
+  /** Dùng Truyền Tống Trận đã mở khóa (M-4): `TeleCmd`. */
+  TELE: 'tele',
+  /** Đặt/xóa điểm đánh dấu (M-4): `MarkCmd`. */
+  MARK: 'mark',
 } as const;
 
 /** Server → client. */
@@ -96,6 +100,10 @@ export const S = {
   INVITE: 'inv',
   /** Trạng thái tỉ thí của mình (`DuelMsg`). */
   DUEL: 'duel',
+  /** Truyền Tống Trận của mình: đã mở khóa, đang niệm, hồi chiêu (`TeleMsg`). */
+  TELE: 'tele',
+  /** Điểm đánh dấu mình và đồng đội đang thấy (`MarkMsg`). */
+  MARK: 'mark',
 } as const;
 
 export interface InitMsg {

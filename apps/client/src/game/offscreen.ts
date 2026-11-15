@@ -15,7 +15,7 @@ import { contentIconStyle } from '../ui/ContentIcon';
 
 export const MAX_INDICATORS = 3;
 
-export type OffKind = 'target' | 'foe' | 'boss' | 'quest' | 'turnin' | 'gather' | 'loot';
+export type OffKind = 'target' | 'foe' | 'boss' | 'quest' | 'turnin' | 'gather' | 'loot' | 'mark' | 'mate';
 
 export interface OffCandidate {
   /** Khóa ổn định để giữ đúng phần tử DOM giữa các lần chọn. */
@@ -318,6 +318,7 @@ export class OffscreenIndicators {
         // Dấu giống dấu trên đầu NPC trong thế giới: ! việc cần làm, ? chỗ trả nhiệm vụ.
         if (c.kind === 'quest') s.badge.textContent = '!';
         else if (c.kind === 'turnin') s.badge.textContent = '?';
+        else if (c.kind === 'mark' || c.kind === 'mate') s.badge.textContent = '◆';
       }
     }
   }

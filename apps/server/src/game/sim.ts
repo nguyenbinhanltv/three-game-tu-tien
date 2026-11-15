@@ -167,6 +167,7 @@ const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
 import { empowerDeadlines, isEmpowered, SkillFlow } from './skillflow';
 import { DuelSystem } from './duel';
+import { TeleportSystem } from './teleport';
 import { parties } from './party';
 import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg, equippedArtifact, feedQi, passiveValue, progressOf, pruneBuffs } from './artifact';
@@ -425,6 +426,19 @@ export class GameSim {
     warn: (p, k, params) => this.warn(p, k, params),
     setFlag: (p, f, on) => this.setFlag(p, f, on),
     cancelCast: (p) => this.cancelCast(p),
+    stopMeditate: (p) => this.setMeditating(p, false),
+  });
+
+  /** Truyền Tống Trận (M-4): mở khóa, niệm, dịch chuyển. */
+  readonly tele = new TeleportSystem({
+    now: () => this.now,
+    inWorld: () => this.opts.levelId === 'van_lam' && this.opts.roomName === 'world',
+    players: () => this.players.values(),
+    inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
+    inDuel: (p) => this.duel.inDuel(p),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    warn: (p, k, params) => this.warn(p, k, params),
+    teleportTo: (p, x, z) => this.teleportTo(p, x, z),
     stopMeditate: (p) => this.setMeditating(p, false),
   });
 
@@ -699,6 +713,7 @@ export class GameSim {
     this.tickBolts();
     this.tickMethods();
     this.duel.tick();
+    this.tele.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -3370,6 +3385,8 @@ export class GameSim {
         this.teleportTo(p, x, z);
         return say(`tp ${x} ${z}`);
       }
+      case 'tele':
+        return say(this.tele.gm(p, a[1]));
       case 'god': {
         p.god = a[1] === 'off' ? false : a[1] === 'on' ? true : !p.god;
         if (p.god) this.heal(p);
