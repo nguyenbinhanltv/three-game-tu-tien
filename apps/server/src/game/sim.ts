@@ -25,6 +25,7 @@ import {
   type EquipSlot,
   FLY_UNLOCK_LEVEL,
   type FxMsg,
+  AIRBORNE_HEIGHT,
   GCD,
   hazardHit,
   HP_REGEN_IDLE,
@@ -734,7 +735,7 @@ export class GameSim {
 
   /** Đang ngự kiếm hoặc lơ lửng cao hơn mặt đất (vừa tắt ngự kiếm, đang rơi): không được ra chiêu. */
   private airborne(p: PlayerEnt): boolean {
-    return p.move.flying || p.move.y - groundAt(p.move.x, p.move.z) > 2.5;
+    return p.move.flying || p.move.y - groundAt(p.move.x, p.move.z) > AIRBORNE_HEIGHT;
   }
 
   private inRange(p: PlayerEnt, mon: MonEnt, range: number): boolean {
