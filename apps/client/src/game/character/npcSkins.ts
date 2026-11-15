@@ -120,7 +120,14 @@ export class NpcSkins {
           lib.release();
           return;
         }
-        this.templates.set(asset, templateOf(handle, lib));
+        try {
+          this.templates.set(asset, templateOf(handle, lib));
+        } catch (err) {
+          console.warn(`[models] không dựng được ${asset}, dùng model khối`, err);
+          handle.release();
+          lib.release();
+          this.templates.set(asset, 'failed');
+        }
       },
       (err) => {
         if (this.disposed) return;

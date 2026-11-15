@@ -126,7 +126,6 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
 
   it('chân bám đất khi chạy/đứng: bàn chân thấp nhất quanh mặt đất và độ cao hông không lệch giữa các nhân vật', async () => {
     const lib = await cache.acquire(HUMAN_ANIM_LIB);
-    const rel: Record<string, number> = {};
     for (const id of CHARACTERS) {
       const h = await cache.acquire(id);
       const out = retargetClips(lib.scene, lib.animations, h.scene);
@@ -137,8 +136,11 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
         expect(Math.min(...low) - rest, `${id}/${name} lún`).toBeGreaterThan(-0.06);
         expect(Math.min(...low) - rest, `${id}/${name} lơ lửng`).toBeLessThan(0.06);
       }
-      const hy = footTrace(h.scene, out.find((c) => c.name === 'idle')!, 1).hipsY[0];
-      rel[id] = hy / h.scene.userData.height || hy;
+      // Độ cao hông khi idle so với hông ở tư thế nghỉ của chính nhân vật: lệch quá 10% nghĩa là scale hông sai tỉ lệ.
+      const restHips = footTrace(h.scene, new THREE.AnimationClip('rest', 1, []), 1).hipsY[0];
+      const idleHips = footTrace(h.scene, out.find((c) => c.name === 'idle')!, 1).hipsY[0];
+      expect(idleHips / restHips, `${id} độ cao hông`).toBeGreaterThan(0.9);
+      expect(idleHips / restHips, `${id} độ cao hông`).toBeLessThan(1.1);
       h.release();
     }
     lib.release();
