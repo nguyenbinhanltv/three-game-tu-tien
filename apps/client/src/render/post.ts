@@ -1,7 +1,9 @@
 import * as THREE from 'three/webgpu';
 import {
   clamp,
+  dot,
   float,
+  floor,
   fract,
   length,
   luminance,
@@ -73,7 +75,24 @@ export const postParams = {
   /** 0..1 và màu: nhuộm thoáng qua cả khung (chuyển pha boss, P2-B3), thay màu trời/sương trong một nhịp. */
   pulse: uniform(0),
   pulseColor: uniform(new THREE.Color(0.55, 0.78, 1)),
+  /** 0..1: mực thủy mặc loang từ mép vào giữa (chết, P2-B5). 0 = không vẽ gì. */
+  ink: uniform(0),
+  /** 0..1: khử bão hòa và hạ sáng cả khung theo cảnh chết. */
+  inkDesat: uniform(0),
 };
+
+/** Nhiễu giá trị 2D (hash sin) cho vân loang của mực. */
+function valueNoise(p: Node): ReturnType<typeof mix> {
+  const h = (q: Node) => fract(sin(dot(q, vec2(127.1, 311.7))).mul(43758.5453));
+  const i = floor(p);
+  const f = fract(p);
+  const u = f.mul(f).mul(vec2(3).sub(f.mul(2)));
+  const a = h(i);
+  const b = h(i.add(vec2(1, 0)));
+  const c = h(i.add(vec2(0, 1)));
+  const d = h(i.add(vec2(1, 1)));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
 
 /** Nạp số của một preset chỉnh màu (grading.ts) vào uniform. */
 export function applyGrading(p: GradingPreset): void {
@@ -228,6 +247,17 @@ export class PostPipeline {
     // Nhuộm thoáng qua (chuyển pha): giữ độ sáng, đổi sắc vùng tối nhiều hơn vùng sáng.
     const pl = luminance(g);
     g = vec3(mix(g, postParams.pulseColor.mul(pl.mul(1.15).add(0.06)), postParams.pulse.mul(0.65)));
+
+    // Chết (P2-B5): cảnh nhạt màu, tối dần, rồi mực loang từ mép vào giữa theo vân nhiễu 3 tầng. Viền mực đậm hơn lõi.
+    g = vec3(mix(g, vec3(luminance(g)).mul(float(1).sub(postParams.inkDesat.mul(0.3))), postParams.inkDesat.mul(0.88)));
+    const inkUv = screenUV.mul(vec2(4.2, 3.1));
+    const inkN = valueNoise(inkUv).mul(0.5).add(valueNoise(inkUv.mul(2.3).add(7.1)).mul(0.3)).add(valueNoise(inkUv.mul(5.1).add(19.4)).mul(0.2));
+    const inkV = length(fromCenter).mul(1.414).add(inkN.sub(0.5).mul(0.62));
+    const inkEdge = float(1.4).sub(postParams.ink.mul(1.85));
+    const inkMask = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.1), inkV);
+    const inkRim = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.02), inkV).mul(float(1).sub(smoothstep(inkEdge.add(0.02), inkEdge.add(0.16), inkV)));
+    const inkCol = mix(vec3(0.05, 0.055, 0.07), vec3(0.012, 0.014, 0.022), inkRim.add(inkV.mul(0.25)).min(1));
+    g = vec3(mix(g, inkCol, inkMask.mul(0.88)));
 
     const graded = vec4(g, 1);
     let ldrRgb = graded.rgb;

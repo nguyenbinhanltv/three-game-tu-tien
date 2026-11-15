@@ -57,6 +57,7 @@ import { FootstepDriver } from './footsteps';
 import { buildSources, Soundscape } from './soundscape';
 import { audioSpatialApi } from './soundscapeAudio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
+import { DeathFx } from './deathFx';
 import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, Cutscene, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Vec3, type Waypoint } from './cutscene';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
@@ -336,6 +337,8 @@ export class Game {
   /** Cảnh độ kiếp của mình (P2-B4): 0..1 độ đậm của màu tối/tím toàn cảnh, và cờ đang trong cảnh (ẩn nhãn 3D). */
   private tribMix = 0;
   private tribScene = false;
+  /** Chết và hồi sinh (P2-B5): mực loang, khử màu, camera trôi; linh quang khi sống lại. Chỉ trình diễn theo cờ PF_DEAD. */
+  private deathFx = new DeathFx();
   /** Giờ kết thúc kiếp theo tin `tribstart`, giữ riêng để đồng bộ HUD không xoá nếu tin đến trước cờ trạng thái. */
   private tribUntil = 0;
   /** Boss mà cảnh xuất hiện đang nhìn theo (vị trí hiện tại, vì boss đang chạy), và độ cao ngực so với chân. */
@@ -1334,7 +1337,8 @@ export class Game {
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
       case 'respawn':
-        v.pillar(posSrc, 0xbfe8ff, 1.2, 1.0, 8);
+        // Của mình: linh quang đầy đủ do deathVisual nổ khi cờ PF_DEAD tắt (khớp lúc mực rút). Người khác: cột sáng như cũ.
+        if (src !== this.sid) v.pillar(posSrc, 0xbfe8ff, 1.2, 1.0, 8);
         break;
       case 'quest':
       case 'craft':
@@ -1781,10 +1785,39 @@ export class Game {
     this.shake.update(dt, _shakePos, _shakeLook);
     this.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
     this.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
+    const dfx = this.deathFx.update(dt, ((this.me()?.fl ?? 0) & PF_DEAD) !== 0);
+    this.deathVisual(dfx, tx, ty, tz);
     if (this.cine.active) this.runCine(dt);
     this.tribFx(dt);
     this.ents.tagsHidden = this.cine.active || this.tribScene;
     updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
+  }
+
+  /**
+   * Chết và hồi sinh (P2-B5): đẩy số của `DeathFx` vào hậu kỳ (mực, khử màu), trôi camera ra sau và lên cao, nổ linh quang
+   * khi sống lại. Không đụng cảnh độ kiếp: tribFx chạy sau và chỉ dùng `pulse`; chết lúc kiếp thất bại thì hai lớp chồng nhau.
+   */
+  private deathVisual(d: { ink: number; desat: number; drift: number }, tx: number, ty: number, tz: number): void {
+    const fx = this.deathFx;
+    if (fx.died) {
+      // Cảnh đang chiếu (mở đầu, boss) nhường chỗ cho cảnh chết.
+      this.cine.skip();
+      this.vfx.burst(_v.set(tx, ty - 1.2, tz), 0x9aa6b8, 1.6, 0.5);
+    }
+    if (fx.revived) {
+      const sid = this.sid;
+      this.post?.flash(0.22);
+      this.vfx.reviveGlow((out) => this.ents.chestOf(sid, out));
+    }
+    postParams.ink.value = d.ink;
+    postParams.inkDesat.value = d.desat;
+    if (d.drift > 0) {
+      const k = d.drift;
+      this.camera.position.x += (this.camera.position.x - tx) * 0.22 * k;
+      this.camera.position.z += (this.camera.position.z - tz) * 0.22 * k;
+      this.camera.position.y += 1.6 * k;
+      this.camera.lookAt(tx, ty - 0.6 * k, tz);
+    }
   }
 
   /**
@@ -2374,6 +2407,8 @@ export class Game {
     this.grass?.dispose();
     this.props?.dispose();
     this.post?.dispose();
+    postParams.ink.value = 0;
+    postParams.inkDesat.value = 0;
     this.sectMesh?.geometry.dispose();
     this.sectAsset?.handle.release();
     for (const m of this.sectAsset?.mats ?? []) m.dispose();

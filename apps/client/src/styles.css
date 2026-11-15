@@ -888,17 +888,48 @@ kbd {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
-  gap: 18px;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at center, rgba(60, 8, 8, 0.35), rgba(8, 4, 4, 0.72));
+  /* Mực do hậu kỳ vẽ; lớp này chỉ giữ chuột để bấm bảng, không phủ thêm màu. */
   pointer-events: auto;
+  background: transparent;
 }
-.death-title {
-  font: 700 38px var(--serif);
-  color: #ff8a7a;
-  text-shadow: 0 3px 20px #000;
+/* Bảng hiện khi mực loang quá ~60% (INK_IN * 0,59 ≈ 1,5 s): mờ dần và nhích lên như giọt mực thấm giấy. */
+.death-panel {
+  width: min(420px, 86vw);
+  opacity: 0;
+  animation: death-in 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) 1.5s forwards;
+}
+.death-line {
+  margin: 4px 0 10px;
+  font: 400 15px/1.7 var(--serif);
+  letter-spacing: 0.04em;
+}
+.death-hint {
+  margin: 10px 0 14px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+.death-actions {
+  display: flex;
+  justify-content: center;
+}
+@keyframes death-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .death-panel {
+    animation-duration: 0.01s;
+  }
 }
 
 .corner {
