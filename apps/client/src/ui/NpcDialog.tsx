@@ -1,4 +1,4 @@
-import { ContentIcon } from './ContentIcon';
+import { ContentIcon, UiIcon } from './ContentIcon';
 import { useState } from 'react';
 import { C, sellPrice } from '@dtl/shared';
 import { hasString, ITEM, itemName, METHOD, NPC, PILL_QUALITY, QUESTS, realmName, RECIPES, t } from '@dtl/content';
@@ -27,7 +27,7 @@ function QuestTab({ npcId }: { npcId: string }) {
         return (
           <div key={q.id} className={'k-card quest-card' + (complete ? ' ready' : '')}>
             <div className="quest-title">
-              {complete ? '❓' : '⏳'} {t(`quest.${q.id}.name`)}
+              {complete ? <UiIcon id="mark_xong" fallback="❓" className="inline" /> : '⏳'} {t(`quest.${q.id}.name`)}
             </div>
             <div className="quest-desc">{complete ? `“${t(`quest.${q.id}.done`)}”` : t(`quest.${q.id}.desc`)}</div>
             {!complete &&
@@ -56,7 +56,7 @@ function QuestTab({ npcId }: { npcId: string }) {
         const lowLevel = (q.minLevel ?? 1) > level;
         return (
           <div key={q.id} className="k-card quest-card offer">
-            <div className="quest-title">❗ {t(`quest.${q.id}.name`)}</div>
+            <div className="quest-title"><UiIcon id="mark_nhan" fallback="❗" className="inline" /> {t(`quest.${q.id}.name`)}</div>
             <div className="quest-desc">{t(`quest.${q.id}.desc`)}</div>
             {q.objectives.map((o, i) => (
               <div key={i} className="quest-obj">
@@ -101,13 +101,13 @@ function ShopTab({ npcId }: { npcId: string }) {
                 <div className="k-dim">{statLines(d).join(' · ') || t(`item.${id}.desc`)}</div>
               </div>
               <Button disabled={gold < d.price} onClick={() => g?.send(C.BUY, { npc: npcId, item: id, n: 1, r: reqId() })}>
-                {t('ui.shop.buy')} {d.price} 💠
+                {t('ui.shop.buy')} {d.price} <UiIcon id="cur_linh_thach" fallback="💠" className="inline" />
               </Button>
             </div>
           );
         })}
       </div>
-      <Divider label={`${t('ui.shop.sell_title')} — 💠 ${gold}`} />
+      <Divider label={<>{t('ui.shop.sell_title')} — <UiIcon id="cur_linh_thach" fallback="💠" className="inline" /> {gold}</>} />
       <div className="bag-grid">
         {inv.map((it, i) => (
           <ItemIcon key={i} item={it} selected={sel === i} onClick={() => setSel(it ? i : null)} />
@@ -118,7 +118,7 @@ function ShopTab({ npcId }: { npcId: string }) {
           {def.sell > 0 && (
             <>
               <Button variant="primary" onClick={() => g?.send(C.SELL, { npc: npcId, slot: sel, n: 1, r: reqId() })}>
-                {t('ui.item.sell')} (+{sellPrice(item, def)} 💠)
+                {t('ui.item.sell')} (+{sellPrice(item, def)} <UiIcon id="cur_linh_thach" fallback="💠" className="inline" />)
               </Button>
               {item.n > 1 && (
                 <Button
@@ -127,7 +127,7 @@ function ShopTab({ npcId }: { npcId: string }) {
                     setSel(null);
                   }}
                 >
-                  {t('ui.item.sell_all')} (+{sellPrice(item, def) * item.n} 💠)
+                  {t('ui.item.sell_all')} (+{sellPrice(item, def) * item.n} <UiIcon id="cur_linh_thach" fallback="💠" className="inline" />)
                 </Button>
               )}
             </>

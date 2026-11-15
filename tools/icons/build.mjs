@@ -15,13 +15,16 @@ const defs = [...read('packages/content/data/skills.json'), ...methods.skills, .
 const out = path.join(root, 'apps/client/public/assets/ui');
 const manifestPath = path.join(out, 'icons.json');
 const hash = (data) => createHash('sha256').update(data).digest('hex');
-const size = 128, columns = 8, rows = 9;
+// Icon phụ (biến thức, công pháp, linh căn, vai trò, buff, tiền, nút HUD, dấu nhiệm vụ): không có trong content, khai ở codex-assets/icons.json.
+const defIcons = new Set(defs.map((d) => d.icon));
+const extras = Object.keys(read('tools/codex-assets/icons.json')).filter((id) => !defIcons.has(id));
+const size = 128, columns = 8, rows = 18;
 if (process.argv.includes('--check')) {
   const m = read('apps/client/public/assets/ui/icons.json');
   const bytes = fs.readFileSync(path.join(out, m.file));
   if (hash(bytes) !== m.sha256 || bytes.length !== m.bytes) throw new Error('Atlas hash/size mismatch');
   const image = await sharp(bytes).metadata();
-  if (image.width !== size * columns || image.height !== size * rows) throw new Error('Atlas dimensions mismatch');
+  if (image.width !== size * m.columns || image.height !== size * m.rows) throw new Error('Atlas dimensions mismatch');
   const cells = new Set();
   const licenses = fs.readFileSync(path.join(root, 'assets/LICENSES.md'), 'utf8');
   let fallbackOnly = 0;
@@ -38,6 +41,14 @@ if (process.argv.includes('--check')) {
     if (cells.has(key)) throw new Error(`Duplicate cell: ${def.id}`);
     cells.add(key);
   }
+  for (const id of extras) {
+    const cell = m.icons[id];
+    if (!cell) { fallbackOnly++; continue; }
+    if (!licenses.includes(id)) throw new Error(`Missing license: ${id}`);
+    const key = `${cell.x},${cell.y}`;
+    if (cells.has(key)) throw new Error(`Duplicate cell: ${id}`);
+    cells.add(key);
+  }
   console.log(`Icons OK: ${defs.length - fallbackOnly}/${defs.length} có tranh trong atlas (${fallbackOnly} dùng emoji dự phòng), ${m.bytes} bytes, ${image.width}x${image.height}`);
   process.exit(0);
 }
@@ -50,9 +61,14 @@ const prev = fs.existsSync(manifestPath) ? read('apps/client/public/assets/ui/ic
 const used = new Set(Object.values(prev.icons).map((c) => c.y * columns + c.x));
 let index = 0;
 const nextFree = () => { while (used.has(index)) index++; used.add(index); return index; };
-for (const def of defs) {
-  if (def.icon !== def.id) throw new Error(`Expected stable image id: ${def.id}`);
-  const file = path.join(source, 'icons', `${def.icon}.png`);
+// `icon` là khóa ảnh ổn định, có thể khác `id` (chiêu K-2 đổi id nhưng giữ icon cũ).
+const seen = new Set();
+for (const def of [...defs, ...extras.map((id) => ({ id, icon: id }))]) {
+  if (seen.has(def.icon)) continue;
+  seen.add(def.icon);
+  // Tranh Codex mới (2d/icons) thắng bản cũ (icons/, kể cả render Blender của 28 icon trang bị).
+  const v2 = path.join(source, '2d', 'icons', `${def.icon}.png`);
+  const file = fs.existsSync(v2) ? v2 : path.join(source, 'icons', `${def.icon}.png`);
   // Chưa có tranh gốc: không chiếm ô, client dùng emoji `iconFallback`.
   if (!fs.existsSync(file)) { console.log(`Bỏ qua (chưa có PNG): ${def.icon}`); continue; }
   const input = fs.readFileSync(file);
@@ -69,7 +85,7 @@ const webp = await sharp(png).webp({ quality: 90, effort: 6 }).toBuffer();
 fs.mkdirSync(out, { recursive: true });
 const sha256 = hash(webp), file = `icons.${sha256.slice(0, 10)}.webp`;
 fs.writeFileSync(path.join(out, file), webp);
-const manifest = { version: 1, file, sha256, bytes: webp.length, tileSize: size, columns, rows, icons };
+const manifest = { version: 2, file, sha256, bytes: webp.length, tileSize: size, columns, rows, icons };
 const candidates = [process.env.TOKTX, 'toktx', path.join(process.env.ProgramFiles ?? 'C:/Program Files', 'KTX-Software/bin/toktx.exe')].filter(Boolean);
 const toktx = candidates.find((candidate) => spawnSync(candidate, ['--version'], { encoding: 'utf8' }).status === 0);
 if (toktx) {
