@@ -427,6 +427,9 @@
 .k-slot[data-q='3'] {
   --q: linear-gradient(180deg, #d7bfff, var(--k-q3) 50%, #5b3f95);
 }
+.k-slot[data-q='4'] {
+  --q: linear-gradient(180deg, #fff1b8, var(--k-q4) 50%, #9a6f1c);
+}
 .k-slot-in {
   position: absolute;
   inset: var(--k-line);
@@ -437,6 +440,9 @@
 }
 .k-slot[data-q='3'] .k-slot-in {
   box-shadow: inset 0 0 10px rgba(180, 140, 255, 0.3);
+}
+.k-slot[data-q='4'] .k-slot-in {
+  box-shadow: inset 0 0 12px rgba(255, 205, 90, 0.45);
 }
 .k-slot[data-size='s'] {
   --k-slot-size: 40px;
@@ -533,6 +539,10 @@
 .k-tip-title[data-q='3'] {
   color: #d7bfff;
 }
+.k-tip-title[data-q='4'] {
+  color: #ffd45a;
+  text-shadow: 0 0 8px rgba(255, 190, 70, 0.45);
+}
 .k-tip-sub {
   font-size: 11.5px;
   color: var(--k-text-dim);
@@ -542,6 +552,11 @@
 }
 .k-tip-line.bad {
   color: var(--k-cinnabar-hi);
+}
+.k-tip-line.dim {
+  margin-top: var(--k-s1);
+  color: var(--k-text-dim);
+  font-size: 11.5px;
 }
 .k-tip-desc {
   margin-top: var(--k-s1);
