@@ -172,3 +172,15 @@ export function mergeClips(own: readonly THREE.AnimationClip[], shared: readonly
 export async function acquireHumanLib(cache: AssetCache, priority = 1): Promise<AssetHandle> {
   return cache.acquire(HUMAN_ANIM_LIB, { priority });
 }
+
+/**
+ * Nạp asset nhân vật cùng thư viện clip. Một bên lỗi thì handle bên đã nạp xong được `release()` trước khi ném lỗi,
+ * nên `AssetCache` không giữ ref treo.
+ */
+export async function acquireWithHumanLib(cache: AssetCache, id: string, priority = 1): Promise<[AssetHandle, AssetHandle]> {
+  const [a, b] = await Promise.allSettled([cache.acquire(id, { priority }), acquireHumanLib(cache, priority)]);
+  if (a.status === 'fulfilled' && b.status === 'fulfilled') return [a.value, b.value];
+  if (a.status === 'fulfilled') a.value.release();
+  if (b.status === 'fulfilled') b.value.release();
+  throw (a.status === 'rejected' ? a.reason : (b as PromiseRejectedResult).reason) as Error;
+}

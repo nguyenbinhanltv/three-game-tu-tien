@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
-import { HUMAN_ANIM_LIB, mergeClips, retargetClips } from './animLib';
+import { acquireWithHumanLib, HUMAN_ANIM_LIB, mergeClips, retargetClips } from './animLib';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
@@ -189,5 +189,19 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
     const m = mergeClips([own], shared);
     expect(m.map((c) => c.name)).toEqual(['idle', 'run']);
     expect(m[0].duration).toBe(1);
+  });
+});
+
+describe('acquireWithHumanLib', () => {
+  it('một bên lỗi thì nhả handle bên đã nạp, không để ref treo', async () => {
+    let released = 0;
+    const fake = {
+      acquire: async (id: string) => {
+        if (id === HUMAN_ANIM_LIB) throw new Error('thư viện lỗi');
+        return { release: () => released++ };
+      },
+    } as unknown as AssetCache;
+    await expect(acquireWithHumanLib(fake, 'chr_kiem_tu_nam')).rejects.toThrow('thư viện lỗi');
+    expect(released).toBe(1);
   });
 });

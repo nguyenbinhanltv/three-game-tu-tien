@@ -3,7 +3,7 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { Humanoid } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
-import { acquireHumanLib, mergeClips, retargetClips } from './animLib';
+import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { SkinnedCharacter } from './skinned';
 import type { CharState, ClipMap } from './states';
 import { type CharacterView, legacyModelsRequested } from './view';
@@ -113,7 +113,7 @@ export class NpcSkins {
     if (this.templates.has(asset)) return;
     this.templates.set(asset, 'loading');
     // Thư viện clip chung thiếu thì model khối (không để T-pose đứng giữa sân).
-    Promise.all([this.cache.acquire(asset, { priority: 1 }), acquireHumanLib(this.cache)]).then(
+    acquireWithHumanLib(this.cache, asset).then(
       ([handle, lib]) => {
         if (this.disposed) {
           handle.release();

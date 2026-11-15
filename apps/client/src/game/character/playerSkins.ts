@@ -5,7 +5,7 @@ import { type Gender, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } fro
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
-import { acquireHumanLib, mergeClips, retargetClips } from './animLib';
+import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { applyDye } from './dye';
 import { poseClipName } from './ikpose';
 import { libraryClips, type PoseLibrary, withPoses } from './poseLib';
@@ -162,7 +162,7 @@ export class PlayerSkins {
     if (this.templates.has(id)) return;
     this.templates.set(id, 'loading');
     // Nhân vật + thư viện clip chung (anim_human_base): thiếu thư viện thì dùng model khối, không để T-pose đứng giữa sân.
-    Promise.all([this.cache.acquire(id, { priority: 1 }), acquireHumanLib(this.cache)]).then(
+    acquireWithHumanLib(this.cache, id).then(
       ([handle, lib]) => {
         if (this.disposed) {
           handle.release();
