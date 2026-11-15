@@ -1,0 +1,89 @@
+/* Minimap (M-3): bản đồ cổ + nút phóng/xoay + dòng vùng/khoảng cấp bên dưới. */
+.minimap-wrap {
+  position: relative;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+.minimap-wrap .minimap {
+  pointer-events: auto;
+}
+.minimap-wrap .minimap::after {
+  display: none;
+}
+.minimap-ctl {
+  position: absolute;
+  z-index: 2;
+  left: 8px;
+  bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: default;
+}
+.mm-btn {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font: 700 14px/1 var(--k-font-body);
+  color: var(--k-gold);
+  background: rgba(24, 17, 10, 0.78);
+  border: 1px solid var(--k-edge-dim);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.mm-btn:hover:not(:disabled) {
+  background: rgba(60, 42, 20, 0.9);
+  border-color: var(--k-gold);
+}
+.mm-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.mm-btn[data-on='true'] {
+  background: rgba(104, 74, 28, 0.92);
+  border-color: var(--k-gold);
+}
+.minimap-foot {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 6px;
+  background: linear-gradient(90deg, transparent, rgba(14, 23, 34, 0.7) 20%, rgba(14, 23, 34, 0.7) 80%, transparent);
+  font-family: var(--k-font-title);
+  text-shadow: 0 1px 2px #000;
+  pointer-events: auto;
+  white-space: nowrap;
+  align-self: flex-end;
+  width: max-content;
+  min-width: 180px;
+  max-width: 300px;
+}
+.minimap-foot-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--k-gold);
+}
+.minimap-foot-lv {
+  font-size: 11px;
+  color: var(--k-text);
+  flex: none;
+}
+.minimap-foot[data-status='low'] .minimap-foot-name,
+.minimap-foot[data-status='low'] .minimap-foot-lv {
+  color: #ff8a6e;
+}
+.minimap-foot[data-status='high'] .minimap-foot-name,
+.minimap-foot[data-status='high'] .minimap-foot-lv {
+  color: #aab3b4;
+}
+.mm-tip {
+  pointer-events: none;
+  z-index: 60;
+}

@@ -13,11 +13,11 @@
   { "id": "itm_hoi_khi_dan", "kind": "consumable", "stack": 50, "price": 25, "sell": 6, "rarity": 0, "icon": "itm_hoi_khi_dan", "iconFallback": "🫧", "use": { "mpPct": 0.5, "cd": 12 } },
   { "id": "itm_tu_khi_dan", "kind": "consumable", "stack": 50, "price": 0, "sell": 20, "rarity": 1, "icon": "itm_tu_khi_dan", "iconFallback": "✨", "use": { "xp": 300, "cd": 3 } },
 
-  { "id": "itm_moc_kiem", "kind": "weapon", "stack": 1, "price": 30, "sell": 8, "rarity": 0, "icon": "itm_moc_kiem", "iconFallback": "🗡️", "reqLevel": 1, "stats": { "atk": 4 } },
-  { "id": "itm_thiet_kiem", "kind": "weapon", "stack": 1, "price": 280, "sell": 70, "rarity": 0, "icon": "itm_thiet_kiem", "iconFallback": "🗡️", "reqLevel": 4, "stats": { "atk": 11 } },
-  { "id": "itm_thanh_phong_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 220, "rarity": 1, "icon": "itm_thanh_phong_kiem", "iconFallback": "🗡️", "reqLevel": 8, "stats": { "atk": 22 } },
-  { "id": "itm_han_quang_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 600, "rarity": 2, "icon": "itm_han_quang_kiem", "iconFallback": "🗡️", "reqLevel": 12, "stats": { "atk": 38 } },
-  { "id": "itm_tram_ta_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 1500, "rarity": 3, "icon": "itm_tram_ta_kiem", "iconFallback": "⚔️", "reqLevel": 15, "stats": { "atk": 54, "hp": 80 } },
+  { "id": "itm_moc_kiem", "kind": "weapon", "stack": 1, "price": 30, "sell": 8, "rarity": 0, "icon": "itm_moc_kiem", "model": "prop_kiem_thiet", "iconFallback": "🗡️", "reqLevel": 1, "stats": { "atk": 4 } },
+  { "id": "itm_thiet_kiem", "kind": "weapon", "stack": 1, "price": 280, "sell": 70, "rarity": 0, "icon": "itm_thiet_kiem", "model": "prop_kiem_thiet", "iconFallback": "🗡️", "reqLevel": 4, "stats": { "atk": 11 } },
+  { "id": "itm_thanh_phong_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 220, "rarity": 1, "icon": "itm_thanh_phong_kiem", "model": "prop_kiem_thanh_phong", "iconFallback": "🗡️", "reqLevel": 8, "stats": { "atk": 22 } },
+  { "id": "itm_han_quang_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 600, "rarity": 2, "icon": "itm_han_quang_kiem", "model": "prop_kiem_han_quang", "iconFallback": "🗡️", "reqLevel": 12, "stats": { "atk": 38 } },
+  { "id": "itm_tram_ta_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 1500, "rarity": 3, "icon": "itm_tram_ta_kiem", "model": "prop_kiem_tram_ta", "iconFallback": "⚔️", "reqLevel": 15, "stats": { "atk": 54, "hp": 80 } },
 
   { "id": "itm_bo_y", "kind": "robe", "stack": 1, "price": 30, "sell": 8, "rarity": 0, "icon": "itm_bo_y", "iconFallback": "👘", "reqLevel": 1, "stats": { "def": 3, "hp": 20 } },
   { "id": "itm_dao_bao", "kind": "robe", "stack": 1, "price": 380, "sell": 95, "rarity": 0, "icon": "itm_dao_bao", "iconFallback": "👘", "reqLevel": 5, "stats": { "def": 8, "hp": 70 } },

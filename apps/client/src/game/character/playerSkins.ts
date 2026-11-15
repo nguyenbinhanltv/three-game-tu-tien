@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { APPEARANCE, DYE, SET, SETS } from '@dtl/content';
+import { APPEARANCE, DYE, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
@@ -18,8 +18,9 @@ import { SkinnedCharacter, type SkinnedOpts } from './skinned';
 import { type SpringDef, springDefs } from './spring';
 import { SwordGlow } from '../swordGlow';
 import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
+import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, type SwordTemplate, swordTemplateOf } from './swordModel';
 import type { CharState, ClipMap } from './states';
-import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
+import { type AnimState, type CharacterView, legacyModelsRequested, legacySwordsRequested, type MonsterView, type PerformOpts } from './view';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
 export interface PlayerLook {
@@ -27,6 +28,8 @@ export interface PlayerLook {
   dye: string;
   /** Bộ trang bị đang quyết định màu áo/ánh kiếm (id trong sets.json; undefined = màu đã chọn). */
   set?: string;
+  /** Asset model kiếm đang cầm (prop_kiem_*, `swordModelOf`); thiếu = kiếm mặc định. */
+  w?: string;
   /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`): hiện theo từng món đã mặc, không cần đủ 2 món. */
   acc?: string;
 }
@@ -62,7 +65,7 @@ export interface PlayerSkin {
  */
 export const PLAYER_SKINS: Record<string, PlayerSkin> = {
   chr_kiem_tu_nam: {
-    clips: { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' },
+    clips: { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' },
     poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
     refSpeed: 3.0,
     runSteps: 4,
@@ -72,7 +75,7 @@ export const PLAYER_SKINS: Record<string, PlayerSkin> = {
   },
   /** Lam Chi (chr_kiem_tu_nu): cùng bộ xương Mixamo 65 khớp và thư viện clip chung; cao 1,68 m nên bước ngắn hơn một chút. */
   chr_kiem_tu_nu: {
-    clips: { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' },
+    clips: { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' },
     poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
     refSpeed: 2.9,
     runSteps: 4,
@@ -96,6 +99,8 @@ interface Template {
   sword: SwordSocketDef | null;
   /** Xương lò xo vạt áo (M3-10). */
   springs: SpringDef[];
+  /** Đoạn kiếm cũ đã cắt khỏi lưới (kiếm riêng theo trang bị thay vào); null = kiếm cũ còn nguyên, không thay. */
+  oldSword: OldSwordSpan | null;
   /** Số đo thân để đặt phụ kiện đồ bộ: đo lười lần đầu có người mặc đồ bộ; null = rig không đo được. */
   fit?: BodyFit | null;
 }
@@ -119,6 +124,9 @@ function dyeOf(id: string, set?: string) {
  */
 export class PlayerSkins {
   private templates = new Map<string, Template | 'loading' | 'failed'>();
+  /** Model kiếm theo asset (prop_kiem_*), nạp lười; kiếm mặc định nạp cùng nhân vật. */
+  private swords = new Map<string, SwordTemplate | 'loading' | 'failed'>();
+  private swordLoads = new Map<string, Promise<SwordTemplate | null>>();
   /** Material theo asset + màu áo (dùng chung giữa mọi người chơi cùng màu). */
   private mats = new Map<string, THREE.MeshStandardNodeMaterial>();
   private disposed = false;
@@ -129,6 +137,7 @@ export class PlayerSkins {
   constructor(
     private cache: AssetCache = assets,
     readonly legacy = legacyModelsRequested(),
+    private legacySwords = legacySwordsRequested(),
   ) {}
 
   preload(): void {
@@ -141,7 +150,9 @@ export class PlayerSkins {
   /** Người chơi này sẽ có model mới nhưng asset đang nạp (tạm model khối, nạp xong thì đổi). */
   pending(look: PlayerLook): boolean {
     const id = modelOf(look.g);
-    return !this.legacy && !!id && this.templates.get(id) === 'loading';
+    if (this.legacy || !id) return false;
+    // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
+    return this.templates.get(id) === 'loading' || this.swords.get(look.w ?? SWORD_MODEL_DEFAULT) === 'loading';
   }
 
   create(look: PlayerLook): CharacterView {
@@ -151,7 +162,8 @@ export class PlayerSkins {
     if (id && skin && !this.legacy) this.load(id);
     const t = id && skin && !this.legacy ? this.templates.get(id) : undefined;
     if (!id || !skin || !t || typeof t === 'string') return new Humanoid({ robe: dye.hex, trim: dye.trim, sword: true });
-    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), look.acc);
+    if (t.oldSword && look.w) this.loadSword(look.w);
+    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), look.acc, look.w);
   }
 
   /** Asset người của `look` chưa nạp xong (bóng tâm ma tạm dùng model khối của quái). */
@@ -170,8 +182,23 @@ export class PlayerSkins {
     this.load(id);
     const t = this.templates.get(id);
     if (!t || typeof t === 'string') return null;
-    const view = this.build(id, skin, t, this.shadowMaterial(id, t));
+    const view = this.build(id, skin, t, this.shadowMaterial(id, t), undefined, undefined, true);
     return Object.assign(view, { def }) as unknown as MonsterView;
+  }
+
+  /** Kiếm của một bản sao: model của `want` nếu đã nạp, không thì kiếm mặc định; null nếu mẫu không thay được kiếm. */
+  private bladeFor(t: Template, want: string | undefined, shadowMat?: THREE.Material): BladeMount | null {
+    if (!t.oldSword) return null;
+    const pick = (id: string) => {
+      const s = this.swords.get(id);
+      return typeof s === 'object' ? s : null;
+    };
+    const tpl = pick(want ?? SWORD_MODEL_DEFAULT) ?? pick(SWORD_MODEL_DEFAULT);
+    if (!tpl) return null;
+    const mesh = tpl.mesh.clone();
+    // Bóng tâm ma dùng chung material mờ của bóng; thân kiếm thật dùng chung material của model (không dispose theo bản sao).
+    if (shadowMat) mesh.material = shadowMat;
+    return { mesh, info: tpl.info, old: t.oldSword };
   }
 
   /** Phụ kiện đồ bộ hiển thị theo `acc` (lỗi dựng thì bỏ qua, nhân vật vẫn đẹp bằng áo nhuộm). */
@@ -199,7 +226,7 @@ export class PlayerSkins {
     }
   }
 
-  private build(id: string, skin: PlayerSkin, t: Template, mat: THREE.MeshStandardNodeMaterial, acc?: string): SkinnedPlayer {
+  private build(id: string, skin: PlayerSkin, t: Template, mat: THREE.MeshStandardNodeMaterial, acc?: string, want?: string, shadow = false): SkinnedPlayer {
     const scene = cloneSkinned(t.handle.scene);
     scene.traverse((o) => {
       const m = o as THREE.Mesh;
@@ -225,6 +252,7 @@ export class PlayerSkins {
       skin.runSteps,
       t.sword,
       ribbons,
+      this.bladeFor(t, want, shadow ? mat : undefined),
     );
   }
 
@@ -236,6 +264,9 @@ export class PlayerSkins {
       t.lib.release();
     }
     this.templates.clear();
+    for (const s of this.swords.values()) if (typeof s === 'object') s.release();
+    this.swords.clear();
+    this.swordLoads.clear();
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
     for (const b of this.accBuilt.values()) disposeAccessories(b);
@@ -249,15 +280,16 @@ export class PlayerSkins {
     if (this.templates.has(id)) return;
     this.templates.set(id, 'loading');
     // Nhân vật + thư viện clip chung (anim_human_base): thiếu thư viện thì dùng model khối, không để T-pose đứng giữa sân.
-    acquireWithHumanLib(this.cache, id).then(
-      ([handle, lib]) => {
+    // Cùng lúc nạp kiếm mặc định: có nó rồi mới cắt kiếm cũ khỏi lưới (lỗi nạp kiếm thì giữ kiếm cũ).
+    Promise.all([acquireWithHumanLib(this.cache, id), this.legacySwords ? Promise.resolve(null) : this.loadSword(SWORD_MODEL_DEFAULT)]).then(
+      ([[handle, lib], sword]) => {
         if (this.disposed) {
           handle.release();
           lib.release();
           return;
         }
         try {
-          this.templates.set(id, templateOf(handle, lib, PLAYER_SKINS[id]));
+          this.templates.set(id, templateOf(handle, lib, PLAYER_SKINS[id], !!sword));
         } catch (err) {
           console.warn(`[models] không dựng được ${id}, dùng model khối`, err);
           handle.release();
@@ -271,6 +303,45 @@ export class PlayerSkins {
         this.templates.set(id, 'failed');
       },
     );
+  }
+
+  /** Nạp model kiếm (một lần mỗi asset). Lỗi chỉ cảnh báo và trả null: nhân vật dùng kiếm mặc định hoặc kiếm cũ. */
+  private loadSword(id: string): Promise<SwordTemplate | null> {
+    let p = this.swordLoads.get(id);
+    if (p) return p;
+    this.swords.set(id, 'loading');
+    p = this.cache.acquire(id, { priority: 20 }).then(
+      (h) => {
+        if (this.disposed) {
+          h.release();
+          return null;
+        }
+        const tpl = swordTemplateOf(h.scene, partExtras(h.scene), () => h.release());
+        if (!tpl) {
+          console.warn(`[models] ${id} thiếu số đo kiếm (extras dtl.blade), bỏ qua`);
+          h.release();
+          this.swords.set(id, 'failed');
+          return null;
+        }
+        for (const m of adoptGltfMaterials(h.scene)) {
+          m.metalness = SWORD_METALNESS;
+          m.roughness = SWORD_ROUGHNESS;
+          const tint = SWORD_TINT[id];
+          if (tint) m.color.setRGB(tint[0], tint[1], tint[2]);
+        }
+        // Dev: chỉnh vật liệu kiếm lúc chạy (tools/perf/src/shots-kiem.ts --tune).
+        if (import.meta.env.DEV && typeof window !== 'undefined') ((window as unknown as { __swordMats?: Record<string, THREE.Material> }).__swordMats ??= {})[id] = tpl.mesh.material as THREE.Material;
+        this.swords.set(id, tpl);
+        return tpl;
+      },
+      (err) => {
+        console.warn(`[models] không nạp được ${id}`, err);
+        this.swords.set(id, 'failed');
+        return null;
+      },
+    );
+    this.swordLoads.set(id, p);
+    return p;
   }
 
   private shadowMaterial(id: string, t: Template): THREE.MeshStandardNodeMaterial {
@@ -307,7 +378,7 @@ export class PlayerSkins {
 }
 
 /** Chiều cao, khung cầu, clip (gồm tư thế tạm đã nướng) của asset người chơi. */
-function templateOf(handle: AssetHandle, lib: AssetHandle, skin: PlayerSkin): Template {
+function templateOf(handle: AssetHandle, lib: AssetHandle, skin: PlayerSkin, swordReady: boolean): Template {
   const box = new THREE.Box3();
   handle.scene.traverse((o) => {
     const m = o as THREE.Mesh;
@@ -339,7 +410,9 @@ function templateOf(handle: AssetHandle, lib: AssetHandle, skin: PlayerSkin): Te
   const sword = parts.sword ? swordSocketDef(handle.scene, parts.sword) : null;
   if (parts.sword && !sword) console.warn('[models] asset người chơi có extras kiếm nhưng thiếu xương, kiếm giữ trên lưng');
   const springs = parts.springs ? springDefs(handle.scene, parts.springs) : [];
-  return { handle, lib, height, bounds, clips, clipMap, poses, sword, springs };
+  // Kiếm riêng theo trang bị: cắt kiếm cũ khỏi lưới khi đã có kiếm mới để thay (nếu không cắt được thì giữ kiếm cũ).
+  const oldSword = sword && parts.sword && swordReady ? cutOldSword(handle.scene, parts.sword) : null;
+  return { handle, lib, height, bounds, clips, clipMap, poses, sword, springs, oldSword };
 }
 
 /** Rảnh bao lâu (giây: không ra chiêu, không trúng đòn, không niệm chú) thì tra kiếm (M3-2). */
@@ -363,6 +436,11 @@ export class SkinnedPlayer extends SkinnedCharacter {
   /** Vỏ sáng cường hóa của kiếm (tạo lười khi có kiếm ≥ +7). */
   private glow: SwordGlow | null = null;
   private glowStage = 0;
+  /** Kiếm riêng (prop_kiem_*): mesh, chỗ gắn so với xương kiếm, số đo lưỡi cho vỏ sáng. */
+  private blade: THREE.Mesh | null = null;
+  private bladeHolder = new THREE.Group();
+  private bladeLocal = new THREE.Matrix4();
+  private glowDims: { start: number; len: number } | undefined;
   private tintHex = '';
   /** Xương để đặt dải lụa phụ kiện (theo tên chuẩn hóa). */
   private fitBones = new Map<FitBone, THREE.Object3D>();
@@ -374,6 +452,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     private runSteps: number,
     sword: SwordSocketDef | null = null,
     private ribbons: AttachedRibbons | null = null,
+    blade: BladeMount | null = null,
   ) {
     super(o);
     if (ribbons) {
@@ -390,6 +469,16 @@ export class SkinnedPlayer extends SkinnedCharacter {
     this.flyAura = fly.aura;
     this.root.add(this.flySword);
     this.sword = sword ? SwordSocket.create(this.rig, sword, () => this.rigChanged()) : null;
+    if (this.sword && blade) {
+      // Kiếm riêng theo trang bị: mesh không xương bám xương kiếm như vỏ sáng (cùng hệ `inner`).
+      this.blade = blade.mesh;
+      this.bladeLocal = bladeLocal(this.sword.glowLocal, blade.info, blade.old);
+      this.glowDims = glowDims(blade.info, blade.old);
+      this.bladeHolder.matrixAutoUpdate = false;
+      this.bladeHolder.add(blade.mesh);
+      this.inner.add(this.bladeHolder);
+      this.bladeHolder.matrix.copy(this.sword.boneWorld).multiply(this.bladeLocal);
+    }
   }
 
   /** Bậc phát sáng của kiếm (0/1/2). Cần model có xương kiếm tách riêng; LOD xa tắt. */
@@ -410,7 +499,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     if (!this.sword) return;
     const stage = Math.max(this.glowStage, this.tintHex ? 1 : 0);
     if (!this.glow && stage > 0) {
-      this.glow = new SwordGlow(this.sword.glowLocal);
+      this.glow = new SwordGlow(this.sword.glowLocal, this.glowDims);
       // Cùng hệ với cây xương (rig nằm ngoài cảnh nhưng trùng hệ của `inner`).
       this.inner.add(this.glow.group);
     }
@@ -441,6 +530,9 @@ export class SkinnedPlayer extends SkinnedCharacter {
     const aura = this.flySword?.children[1];
     if (aura) aura.visible = level < 2;
     this.glow?.setStage(level >= 2 ? 0 : Math.max(this.glowStage, this.tintHex ? 1 : 0));
+    // Kiếm riêng chỉ ở LOD0 (LOD1/2 còn kiếm cũ trong lưới): chặn số draw call thêm ở mức `LOD0_MAX` người.
+    // (onLod chạy trong constructor cha, trước khi trường của lớp này được khởi tạo.)
+    if (this.bladeHolder) this.bladeHolder.visible = level < 1;
   }
 
   /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */
@@ -497,6 +589,10 @@ export class SkinnedPlayer extends SkinnedCharacter {
   update(dt: number, a: AnimState): void {
     super.update(dt, a);
     this.updateSword(dt, a);
+    if (this.blade && this.sword) {
+      this.bladeHolder.matrix.copy(this.sword.boneWorld).multiply(this.bladeLocal);
+      this.bladeHolder.matrixWorldNeedsUpdate = true;
+    }
     if (this.glow?.active && this.sword) this.glow.update(dt, this.sword.boneWorld);
     if (this.ribbons && this.lod === 0 && this.inner.visible) this.ribbons.update(dt, a.speed, (b) => this.fitBones.get(b)?.matrixWorld ?? null);
     this.grounded = !a.flying && !a.airborne;

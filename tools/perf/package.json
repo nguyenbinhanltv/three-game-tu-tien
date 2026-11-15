@@ -17,7 +17,9 @@
     "shots:p38": "tsx src/shots-p38.ts",
     "shots:sets": "tsx src/shots-sets.ts",
     "shots:k1": "tsx src/shots-k1.ts",
-    "shots:eqicons": "tsx src/shots-eqicons.ts"
+    "shots:k3": "tsx src/shots-k3.ts",
+    "shots:eqicons": "tsx src/shots-eqicons.ts",
+    "shots:kiem": "tsx src/shots-kiem.ts"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",

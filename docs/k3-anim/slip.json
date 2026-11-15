@@ -1,0 +1,72 @@
+{
+ "nam:walk": {
+  "refSpeed": 0.978,
+  "bestSpeed": 0.978,
+  "plantedSegments": 6,
+  "worstSlipM": 0.017,
+  "ankleFloorM": 0.09
+ },
+ "nam:run": {
+  "refSpeed": 3.091,
+  "bestSpeed": 2.967,
+  "plantedSegments": 4,
+  "worstSlipM": 0.03,
+  "ankleFloorM": 0.094
+ },
+ "nam:back": {
+  "refSpeed": 0.971,
+  "bestSpeed": 0.971,
+  "plantedSegments": 5,
+  "worstSlipM": 0.02,
+  "ankleFloorM": 0.089
+ },
+ "nam:strafe_l": {
+  "refSpeed": 0.971,
+  "bestSpeed": 0.971,
+  "plantedSegments": 6,
+  "worstSlipM": 0.017,
+  "ankleFloorM": 0.09
+ },
+ "nam:strafe_r": {
+  "refSpeed": 0.977,
+  "bestSpeed": 0.977,
+  "plantedSegments": 6,
+  "worstSlipM": 0.016,
+  "ankleFloorM": 0.09
+ },
+ "nu:walk": {
+  "refSpeed": 0.978,
+  "bestSpeed": 1.037,
+  "plantedSegments": 5,
+  "worstSlipM": 0.024,
+  "ankleFloorM": 0.097
+ },
+ "nu:run": {
+  "refSpeed": 3.091,
+  "bestSpeed": 3.338,
+  "plantedSegments": 4,
+  "worstSlipM": 0.035,
+  "ankleFloorM": 0.088
+ },
+ "nu:back": {
+  "refSpeed": 0.971,
+  "bestSpeed": 1.029,
+  "plantedSegments": 5,
+  "worstSlipM": 0.025,
+  "ankleFloorM": 0.097
+ },
+ "nu:strafe_l": {
+  "refSpeed": 0.971,
+  "bestSpeed": 1.029,
+  "plantedSegments": 5,
+  "worstSlipM": 0.023,
+  "ankleFloorM": 0.097
+ },
+ "nu:strafe_r": {
+  "refSpeed": 0.977,
+  "bestSpeed": 1.036,
+  "plantedSegments": 5,
+  "worstSlipM": 0.023,
+  "ankleFloorM": 0.097
+ }
+}

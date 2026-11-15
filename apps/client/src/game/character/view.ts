@@ -88,6 +88,11 @@ export interface MonsterView extends CharacterView {
 export const P2E_OFF = typeof location !== 'undefined' && new URLSearchParams(location.search).get('p2e') === '0';
 
 /** `?models=legacy`: luôn dùng model khối (so sánh, hoặc khi model mới lỗi). */
+/** `?swords=legacy`: giữ kiếm nướng trong lưới nhân vật (không dùng 5 model kiếm riêng), để so ảnh/đo A/B. */
+export function legacySwordsRequested(search = typeof location === 'undefined' ? '' : location.search): boolean {
+  return new URLSearchParams(search).get('swords') === 'legacy';
+}
+
 export function legacyModelsRequested(search = typeof location === 'undefined' ? '' : location.search): boolean {
   return new URLSearchParams(search).get('models') === 'legacy';
 }

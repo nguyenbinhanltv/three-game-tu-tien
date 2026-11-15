@@ -15,7 +15,7 @@ export interface NpcSkin {
 }
 
 /** Bộ clip của rig Mixamo từ Tripo (M3-6): idle/run/attack/death từ preset, hit_light thủ tục (anim_biped_extra.py). */
-const NPC_CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
+const NPC_CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' };
 
 /**
  * Bảng id NPC (npcs.json) → asset. NPC không có ở đây vẫn dùng model khối. NPC chỉ đứng tại chỗ nên chỉ phát idle
