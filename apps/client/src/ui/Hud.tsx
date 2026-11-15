@@ -129,6 +129,23 @@ function ChapterCardShow({ card }: { card: ChapterCard }) {
   );
 }
 
+/**
+ * Cảnh mở đầu (P2-B1): letterbox dày trượt vào, một câu thoại cổ phong hiện rồi mờ, gợi ý bỏ qua nhỏ.
+ * Không nhận chuột/phím (phím bất kỳ do engine bắt); HUD khác ẩn nhờ lớp `.cine` trên `.hud`.
+ */
+function CineView() {
+  const cine = useUI((s) => s.cine);
+  if (!cine) return null;
+  return (
+    <div className={'cine' + (cine.out ? ' out' : '')} key={cine.id} style={{ '--dur': cine.dur + 'ms' } as CSSProperties}>
+      <div className="cine-bar cine-top" />
+      <div className="cine-bar cine-bot" />
+      <div className="cine-line">{t('ui.cine.sect.line')}</div>
+      <div className="cine-skip">{t('ui.cine.skip')}</div>
+    </div>
+  );
+}
+
 /** Thanh niệm chú/choáng của mục tiêu (boss). Đoạn đầu tô tối là lúc hộ chú, chưa phá chú được. */
 function TargetCastBar({ cast }: { cast: TargetCast }) {
   const now = useNow(50);
@@ -472,9 +489,11 @@ export function Hud() {
   const mouseLook = useUI((s) => s.mouseLook);
   const dead = useUI((s) => (s.flags & PF_DEAD) !== 0);
   const hasBoss = useUI((s) => s.boss !== null);
+  const cining = useUI((s) => s.cine !== null && !s.cine.out);
   return (
-    <div className={'hud' + (hasBoss ? ' with-boss' : '')}>
+    <div className={'hud' + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')}>
       <PlayerFrame />
+      <CineView />
       <ChapterCardView />
       <BossLineView />
       <BossBar />

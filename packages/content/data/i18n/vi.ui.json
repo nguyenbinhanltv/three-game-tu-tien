@@ -222,6 +222,8 @@
   "ui.offscreen.dist": "{n} m",
   "ui.settings.chapter": "Thẻ chương",
   "ui.settings.chapter_hint": "Hiện dải đen mỏng cùng tên nơi chốn trong vài giây khi vào bí cảnh, khi độ kiếp và khi lần đầu về Lạc Kiếm Tông. Không chặn điều khiển; xoay hay thu phóng camera thì khung máy quay trả lại ngay.",
+  "ui.cine.sect.line": "Mây trải ngàn dặm, kiếm cắm đầu non. Kẻ tìm đạo, hãy bước lên.",
+  "ui.cine.skip": "Bấm phím bất kỳ để bỏ qua",
   "ui.chapter.sect.kicker": "Vân Lam Sơn Mạch",
   "ui.chapter.sect.title": "Lạc Kiếm Tông",
   "ui.chapter.sect.sub": "Sơn môn ẩn trong mây sớm, đường tu hành bắt đầu từ đây.",
