@@ -119,6 +119,12 @@
             }
           }
         },
+        "flatSkinNormals": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Làm phẳng normal map trên da đầu/cổ (nhân vật người, anim_biped_extra.py).",
+          "properties": { "zMin": { "type": "number", "description": "Chỉ xét mặt có tâm cao hơn mức này (m, sau chuẩn hóa tỉ lệ)." } }
+        },
         "recolor": {
           "type": "array",
           "description": "Chỉnh màu vải trên texture màu (script post anim_biped_extra.py): chọn theo hue (độ), độ bão hòa, độ sáng; đổi sang màu đích, giữ độ sáng tương đối.",
