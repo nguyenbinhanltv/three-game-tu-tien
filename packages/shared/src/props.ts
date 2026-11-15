@@ -49,7 +49,7 @@ export const HAND_PROPS: readonly HandProp[] = [
   { id: 'prop_da_dung', x: 2004, z: 2371, yaw: 0.3, s: 1, r: 1.1 },
   { id: 'prop_da_dung', x: 2016, z: 2370, yaw: -0.4, s: 0.85, r: 1 },
   { id: 'prop_da_dung', x: 2003, z: 2383, yaw: 1.1, s: 0.7, r: 0.9 },
-  { id: 'prop_da_phien', x: 2010, z: 2374, yaw: 0.15, s: 1.2 },
+  { id: 'prop_da_phien', x: 2002, z: 2377, yaw: 0.15, s: 1.2 }, // chừa nền Truyền Tống Trận tp_thung_lung (2010, 2375) trống
   { id: 'prop_da_nam', x: 2018, z: 2380, yaw: 0.9, s: 0.9 },
   { id: 'prop_lu_huong', x: 2010, z: 2368, yaw: 0.2, s: 0.9 },
   { id: 'prop_kiem_gay', x: 2006, z: 2378, yaw: 2.2, s: 0.9 },

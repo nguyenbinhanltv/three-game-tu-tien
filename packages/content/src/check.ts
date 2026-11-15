@@ -646,6 +646,7 @@ function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) 
     if (near.length < 5) err(`${w}: chỉ ${near.length} prop quanh điểm (cần ≥ 5)`);
     for (const h of near) {
       if (!clearOfCamps(h.x, h.z, 2)) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè bãi quái`);
+      for (const pad of TELE_PADS) if (Math.hypot(h.x - pad.x, h.z - pad.z) < 4) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè Truyền Tống Trận ${pad.id}`);
       if ((h.r ?? 0) > 1.5) err(`${w}: prop ${h.id} va chạm r=${h.r} > 1,5 m (không được chặn đường)`);
     }
     if (p.beamH !== undefined && !(p.beamH >= 30 && p.beamH <= 120)) err(`${w}: beamH ${p.beamH} ngoài 30–120 m`);
