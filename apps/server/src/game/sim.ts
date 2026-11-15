@@ -36,7 +36,8 @@ import {
   skillUpgradeCost,
   stackMul,
   stacksAlive,
-  variantUnlocked,
+  variantSwitchBlock,
+  VARIANT_MIN_LEVEL,
   BIND_QUALITY,
   rollEquipDrops,
   sellPrice,
@@ -175,6 +176,8 @@ export interface PlayerEnt {
   casting: { skill: SkillDef; target: string; endAt: number } | null;
   shield: { amount: number; until: number } | null;
   lastCombatAt: number;
+  /** Lần đổi biến thức gần nhất (giờ server, ms): giãn các lần đổi. Không lưu DB. */
+  variantAt: number;
   /** Cửa sổ miễn vùng nổ của quái: hết lúc `until` (ms), đã nhận `taken` (xem hazardHit). */
   hazardWin: { until: number; taken: number };
   meditating: boolean;
@@ -504,6 +507,7 @@ export class GameSim {
       casting: null,
       shield: null,
       lastCombatAt: 0,
+      variantAt: -1e9,
       hazardWin: { until: 0, taken: 0 },
       meditating: false,
       xpAcc: 0,
@@ -1091,7 +1095,8 @@ export class GameSim {
         const ally = v?.ally ? this.nearestAlly(p, v.ally) : null;
         if (ally) {
           give(ally);
-          this.fx({ t: skill.fx, src: ally.sid, d: dur, ...tag });
+          // `dst` = người ra tay: client vẽ luồng sáng truyền khiên từ người ấy sang đồng đội (chỉ lớp hình).
+          this.fx({ t: skill.fx, src: ally.sid, dst: p.sid, d: dur, ...tag });
         }
         break;
       }
@@ -2564,9 +2569,15 @@ export class GameSim {
     const vars = sk ? VARIANTS[sk.id] : undefined;
     if (!sk || !vars) return this.warn(p, 'sys.skill_locked_up');
     const c = p.char;
-    if (!variantUnlocked(skillLevelOf(c.meta, sk.id))) return this.warn(p, 'sys.variant_low');
-    if (this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000) return this.warn(p, 'sys.variant_combat');
     if (c.meta.skillVar?.[sk.id] === m.v) return;
+    const block = variantSwitchBlock({
+      skillLevel: skillLevelOf(c.meta, sk.id),
+      inCombat: this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
+      casting: !!p.casting,
+      sinceLastSwitchMs: this.now - p.variantAt,
+    });
+    if (block) return this.warn(p, `sys.variant_${block === 'cooldown' || block === 'casting' ? 'wait' : block}`);
+    p.variantAt = this.now;
     c.meta.skillVar ??= {};
     c.meta.skillVar[sk.id] = m.v;
     c.save();
@@ -2756,6 +2767,22 @@ export class GameSim {
         p.mth.dirty = true;
         return say('sạc = ' + p.mth.charge);
       }
+      case 'cd':
+        // /gm cd: xóa hồi chiêu và GCD (chụp ảnh nhiều chiêu liên tiếp).
+        p.cds.clear();
+        p.gcdAt = 0;
+        this.sendCd(p);
+        return say('đã xóa hồi chiêu');
+      case 'variant': {
+        // /gm variant <id chiêu> <a|b>: chọn biến thức ngay (không cần cấp 3, ngoài combat, hồi chờ) để chụp ảnh/thử.
+        const sk = SKILL.get(a[1]);
+        if (!sk || !VARIANTS[sk.id] || (a[2] !== 'a' && a[2] !== 'b')) return say('variant <skill> a|b — skill: ' + Object.keys(VARIANTS).join(' | '));
+        if (skillLevelOf(c.meta, sk.id) < VARIANT_MIN_LEVEL) setSkillLevel(c.meta, sk.id, VARIANT_MIN_LEVEL);
+        c.meta.skillVar ??= {};
+        c.meta.skillVar[sk.id] = a[2];
+        p.mth.dirty = true;
+        return say('variant ' + sk.id + ' = ' + a[2]);
+      }
       case 'method': {
         // /gm method <id> [cấp chiêu]: chọn công pháp ngay (không cần tầng/NPC/linh thạch); cấp chiêu áp cho mọi chiêu mở.
         if (!METHOD.has(a[1])) return say('method ' + [...METHOD.keys()].join(' | '));
@@ -2821,7 +2848,7 @@ export class GameSim {
       case 'tick':
         return say(`tick p95 ${this.tickP95().toFixed(2)}ms, ${this.players.size} người, ${this.monsters.length} quái`);
       default:
-        return say('level N | xp N | gold N | give id n | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id');
+        return say('level N | xp N | gold N | give id n | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id | cd | variant skill a|b | method id [cấp]');
     }
   }
 }

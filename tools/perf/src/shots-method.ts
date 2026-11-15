@@ -164,6 +164,62 @@ async function main(): Promise<void> {
       }
       await gm(page, 'killall', 1200);
     }
+    if (want('var')) {
+      // Mỗi biến thức A/B (P3-6) đang ra đòn: dùng /gm variant, bấm đúng ô chiêu, chụp vài mốc. Chiêu niệm chú chụp muộn hơn.
+      const targets: { method: string; skill: string; at: number[]; atB?: number[] }[] = [
+        { method: 'lac_kiem_quyet', skill: 'skl_phi_kiem', at: [300, 520] },
+        { method: 'lac_kiem_quyet', skill: 'skl_kiem_khi_tram', at: [300, 650] },
+        { method: 'lac_kiem_quyet', skill: 'skl_linh_khi_ho_the', at: [350, 900] },
+        { method: 'lac_kiem_quyet', skill: 'skl_thien_kiem_vu', at: [450, 900] },
+        { method: 'lac_kiem_quyet', skill: 'skl_hoi_nguyen_thuat', at: [250, 1500] },
+        { method: 'lac_kiem_quyet', skill: 'skl_loi_dinh_nhat_kiem', at: [350, 700], atB: [1900, 2300] },
+        { method: 'lac_kiem_quyet', skill: 'skl_kiem_anh_phan_quang', at: [280, 520] },
+        { method: 'bat_dong_kim_than', skill: 'skl_tran_son_an', at: [300, 650] },
+        { method: 'thanh_moc_dan_kinh', skill: 'skl_xuan_phong_hoa_vu', at: [350, 1300] },
+      ];
+      const only = ONLY.filter((x) => x.startsWith('var:')).map((x) => x.slice(4));
+      let cur = '';
+      for (const tg of targets) {
+        if (only.length && !only.includes(tg.skill)) continue;
+        if (cur !== tg.method) {
+          await gm(page, `method ${tg.method} 5`);
+          cur = tg.method;
+        }
+        for (const v of ['a', 'b'] as const) {
+          await gm(page, `variant ${tg.skill} ${v}`, 900);
+          await gm(page, `variant ${tg.skill} ${v}`, 900);
+          await gm(page, 'spawn mon_soi_xam 3', 1500);
+          await gm(page, 'heal', 900);
+          await gm(page, 'cd', 900);
+          // Khiên Đồng Hành cần một đạo hữu đứng gần: mở trang thứ hai.
+          let p2: Page | null = null;
+          if (tg.skill === 'skl_linh_khi_ho_the' && v === 'b') {
+            p2 = await page.context().newPage();
+            await p2.goto(`http://localhost:${CLIENT_PORT}/?mute=1&auto=ShotMethod2${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+            await p2.waitForFunction(() => {
+              const g = (window as unknown as G).__game;
+              return !!g && g.frames > 30 && !!g.me?.();
+            }, undefined, { timeout: 120_000, polling: 250 });
+            await clearIntro(p2);
+            await gm(p2, 'god on');
+            await page.bringToFront();
+            await sleep(800);
+            await gm(page, 'cd', 900);
+          }
+          await page.evaluate(() => (window as unknown as G).__game!.camYaw = 0);
+          let slot = -1;
+          for (let tries = 0; tries < 10 && slot < 0; tries++) {
+            slot = await page.evaluate((id) => (window as unknown as G).__game!.bar().findIndex((s: { id: string }) => s.id === id), tg.skill);
+            if (slot < 0) await sleep(500);
+          }
+          if (slot < 0) throw new Error('không thấy chiêu trên thanh: ' + tg.skill);
+          await castShots(page, slot, `var-${tg.skill.replace('skl_', '')}-${v}`, v === 'b' && tg.atB ? tg.atB : tg.at);
+          await sleep(1500);
+          await p2?.close();
+          await gm(page, 'killall', 1000);
+        }
+      }
+    }
     if (errors.length) console.warn(`[shots-method] ${errors.length} lỗi console:\n  ` + [...new Set(errors)].slice(0, 8).join('\n  '));
     await ctx.close();
   } finally {
