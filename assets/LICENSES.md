@@ -61,6 +61,21 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `boss_kiem_khoi` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `boss_thu_mo_tuong` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/chant/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 
+## Texture mặt đất (P2-A2)
+
+Tám bộ texture PBR từ [Poly Haven](https://polyhaven.com/textures), giấy phép **CC0-1.0** (public domain, dùng thương mại được, không bắt buộc ghi nguồn; vẫn ghi để truy vết). Bản 1K gốc ở `../dtl-asset-source/texture/<id>/`, đóng gói bằng `pnpm assets:terrain` (`tools/asset-pipeline/src/terrain-textures.ts`) thành WebP 1024 trong `apps/client/public/terrain/`.
+
+| Lớp | Poly Haven | Tác giả | Giấy phép |
+| --- | --- | --- | --- |
+| cỏ | [leafy_grass](https://polyhaven.com/a/leafy_grass) | Charlotte Baglioni | CC0-1.0 |
+| đất | [brown_mud_leaves_01](https://polyhaven.com/a/brown_mud_leaves_01) | Rob Tuytel | CC0-1.0 |
+| nền rừng | [forrest_ground_01](https://polyhaven.com/a/forrest_ground_01) | Rob Tuytel | CC0-1.0 |
+| đá núi | [rocky_terrain_02](https://polyhaven.com/a/rocky_terrain_02) | Amal Kumar | CC0-1.0 |
+| vách đá | [rock_face](https://polyhaven.com/a/rock_face) | Greg Zaal (chụp), Dario Barresi (xử lý) | CC0-1.0 |
+| cát ven hồ | [coast_sand_rocks_02](https://polyhaven.com/a/coast_sand_rocks_02) | Rob Tuytel | CC0-1.0 |
+| lát sân đá | [cobblestone_floor_04](https://polyhaven.com/a/cobblestone_floor_04) | Rob Tuytel | CC0-1.0 |
+| sỏi đường mòn | [gravelly_sand](https://polyhaven.com/a/gravelly_sand) | Dario Barresi | CC0-1.0 |
+
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 
 ### Âm thanh (SFX, âm môi trường)

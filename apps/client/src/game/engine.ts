@@ -68,10 +68,13 @@ import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/wor
 import { GRADING, GRADING_DEFAULT } from '../render/grading';
 import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
+import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
+import { loadGroundTextures, type GroundTextures } from './groundTextures';
+import type { GroundLevel } from '../render/materials/ground';
 import { telegraph } from './telegraph';
 import { DamageNumbers, HAZARD_COLORS, Vfx } from './vfx';
 import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
@@ -117,11 +120,14 @@ function isWebGPU(r: THREE.WebGPURenderer): boolean {
  * bloom/msaa/fxaa: post-processing (render/post.ts). maxPixels: ngân sách điểm ảnh nội bộ (hạ
  * pixelRatio trên màn hình lớn để giữ VRAM render target dưới ngân sách). heightFog: sương theo độ cao.
  */
-const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean }> = {
-  low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false },
-  medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true },
-  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true },
+const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean; ground: GroundLevel; ao: boolean; lights: boolean }> = {
+  low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false },
+  medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'medium', ao: true, lights: false },
+  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'high', ao: true, lights: true },
 };
+
+/** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */
+const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8 };
 
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
@@ -209,6 +215,10 @@ export class Game {
 
   renderer!: THREE.WebGPURenderer;
   private post: PostPipeline | null = null;
+  /** Bộ texture mặt đất PBR, nạp sau khung đầu (P2-A2). */
+  private ground: GroundTextures | null = null;
+  /** Đèn lồng có ánh sáng điểm thật (chỉ preset Cao). */
+  private lanterns: LanternLights | null = null;
   /** `matrixWorldAutoUpdate = false`: `frame()` tự cập nhật ma trận một lần trước khi vẽ (M3-9). */
   scene = Object.assign(new THREE.Scene(), { matrixWorldAutoUpdate: false });
   camera = new THREE.PerspectiveCamera(55, 1, 0.3, 9000);
@@ -508,6 +518,23 @@ export class Game {
     }
   }
 
+  /** Nạp texture mặt đất ngoài đường găng: terrain dùng màu đỉnh tới khi xong rồi mới đổi sang shader PBR. */
+  private async loadGround(): Promise<void> {
+    if (new URLSearchParams(location.search).get('ground') === '0') return;
+    try {
+      const self = this;
+      const tex = await loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } });
+      if (this.disposed) {
+        tex.dispose();
+        return;
+      }
+      this.ground = tex;
+      this.terrain.setGround(tex, (QUALITY[get().quality] ?? QUALITY.medium).ground);
+    } catch (e) {
+      console.warn('[ground] không nạp được texture mặt đất, dùng màu đỉnh:', e);
+    }
+  }
+
   /** Thời gian từng bước khởi động (ms), để theo dõi thời gian tải. */
   loadStats: Record<string, number> = {};
 
@@ -553,6 +580,7 @@ export class Game {
     this.terrain = new Terrain();
     mark('terrainCoarse');
     this.terrain.shadows = q.shadows;
+    void this.loadGround();
     this.scene.add(this.terrain.group);
     this.sectMesh = new THREE.Mesh(buildSect(), this.sectMat);
     this.sectMesh.castShadow = q.shadows;
@@ -568,6 +596,9 @@ export class Game {
     applyGrading(GRADING[GRADING_DEFAULT]);
     setHeightFog(q.heightFog);
     this.scene.add(createLanternHalos(SECT_LANTERNS));
+    this.lanterns = new LanternLights(this.scene, SECT_LANTERNS);
+    this.lanterns.setEnabled(q.lights);
+    this.lanterns.setIntensityScale(LANTERN_LIGHT[GRADING_DEFAULT] ?? 1);
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
@@ -1527,6 +1558,7 @@ export class Game {
     this.updateCamera(dt);
     setListener(rp.x, rp.z, this.camYaw);
     this.env.update(dt, this.camera, rp);
+    this.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
     if (me) this.ambient.update(dt, this.camera.position, rp);
     for (const disc of [this.portalDisc, this.exitDisc]) {
       if (!disc) continue;
@@ -1955,6 +1987,8 @@ export class Game {
     set({ quality: q });
     const cfg = QUALITY[q] ?? QUALITY.medium;
     setHeightFog(cfg.heightFog);
+    if (this.ground) this.terrain.setGround(this.ground, cfg.ground);
+    this.lanterns?.setEnabled(cfg.lights);
     this.vfx?.particles.setQuality(q);
     this.grass?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
     this.ambient?.setQuality(q);
@@ -1976,6 +2010,8 @@ export class Game {
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();
+    this.ground?.dispose();
+    this.lanterns?.dispose();
     this.grass?.dispose();
     this.post?.dispose();
     this.sectMesh?.geometry.dispose();

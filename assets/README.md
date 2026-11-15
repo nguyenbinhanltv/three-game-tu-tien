@@ -102,3 +102,7 @@ SFX và âm môi trường không đi qua pipeline GLB mà qua `pnpm audio:build
 - `rig_human_base.py` (M2-3, đổi tên xương Tripo/mixamo); ảnh xem trước tự động `assets/build/previews/`.
 - `import_tripo.py` mới kiểm nhánh có xương bằng fixture (`build_fixture_rig.py --legs --tripo`); chưa chạy với GLB rig thật của Tripo.
 - Nhánh KTX2 mới kiểm bằng toktx giả trong test (máy dev chưa cài KTX-Software).
+
+## Texture mặt đất (P2-A2)
+
+`pnpm assets:terrain` tải 8 bộ Poly Haven CC0 (1K JPG) vào `../dtl-asset-source/texture/<id>/` rồi đóng gói ra `apps/client/public/terrain/` (albedo WebP + WebP pháp tuyến RG và độ nhám B, kèm `manifest.json`). Client nạp lười sau khung đầu (`game/groundTextures.ts`), không nằm trong tải đầu. Nguồn và giấy phép: `assets/LICENSES.md`. Không có `toktx` trên máy nên dùng WebP (client giải mã rồi ghép texture mảng); thêm KTX2 khi có toktx và cần cắt VRAM.
