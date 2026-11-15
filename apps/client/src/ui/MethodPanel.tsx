@@ -1,6 +1,6 @@
 import './methodpanel.css';
 import { type CSSProperties, useState } from 'react';
-import { C, MAX_SKILL_LEVEL, METHOD_UNLOCK_LEVEL, methodSwitchCost, type SkillDef, skillUpgradeCost, variantUnlocked, type VariantId } from '@dtl/shared';
+import { C, MAX_SKILL_LEVEL, VARIANT_SWITCH_COOLDOWN_SEC, METHOD_UNLOCK_LEVEL, methodSwitchCost, type SkillDef, skillUpgradeCost, variantUnlocked, type VariantId } from '@dtl/shared';
 import { METHODS, METHOD, realmName, resolveBarSkill, skillBar, SKILL, t, VARIANTS } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { ContentIcon } from './ContentIcon';
@@ -154,6 +154,8 @@ export function MethodPanel() {
           )}
       </div>
       <div className="k-dim mp-foot">{t('ui.skillup.have', { n: scrolls })}</div>
+      <div className="k-dim mp-foot">{t('ui.skillup.sources')}</div>
+      <div className="k-dim mp-foot">{t('ui.variant.rule', { n: VARIANT_SWITCH_COOLDOWN_SEC })}</div>
     </PanelWindow>
   );
 }

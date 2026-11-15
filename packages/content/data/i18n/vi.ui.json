@@ -442,6 +442,8 @@
   "ui.skillup.bonus": "Cấp chẵn +7% sức mạnh; cấp 3 và 5 giảm 8% hồi chiêu. Cấp 3 mở biến thức, cấp 5 làm biến thức mạnh thêm.",
   "ui.variant.title": "Biến thức",
   "ui.variant.locked": "Cấp 3 mở biến thức",
+  "ui.variant.rule": "Ngoài giao chiến được đổi biến thức miễn phí, hai lần đổi cách nhau {n} giây.",
+  "ui.skillup.sources": "Bí Tịch Tàn Quyển: quái rơi, rương bí cảnh, thưởng nhiệm vụ, hoặc nhờ Dược sư Tố Tâm chép (8 yêu đan + 2 thiết tinh + 120 linh thạch).",
   "ui.variant.none": "Chưa chọn biến thức",
   "ui.variant.pick": "Chọn",
   "ui.variant.picked": "Đã chọn",
