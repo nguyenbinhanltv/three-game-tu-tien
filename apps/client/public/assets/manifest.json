@@ -324,15 +324,15 @@
       "id": "chr_kiem_tu_nam",
       "class": "player",
       "source": "assets/build/raw/chr_kiem_tu_nam.glb",
-      "file": "chr_kiem_tu_nam.2d46f5e2fd.glb",
-      "bytes": 1952872,
-      "rawBytes": 2297300,
-      "triangles": 19001,
-      "rawTriangles": 19001,
+      "file": "chr_kiem_tu_nam.68f8d023ec.glb",
+      "bytes": 2098464,
+      "rawBytes": 2395644,
+      "triangles": 19096,
+      "rawTriangles": 19096,
       "lod0Cap": 20000,
       "skinned": true,
       "quantized": false,
-      "bones": 54,
+      "bones": 59,
       "animations": [
         "attack",
         "death",
@@ -373,17 +373,17 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 19001
+          "triangles": 19096
         },
         {
           "level": 1,
-          "triangles": 7593,
-          "target": 7600
+          "triangles": 7632,
+          "target": 7638
         },
         {
           "level": 2,
-          "triangles": 2849,
-          "target": 2850
+          "triangles": 2864,
+          "target": 2864
         }
       ],
       "dims": {

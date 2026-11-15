@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import type { MonsterDef } from '@dtl/shared';
 import { HitReact, type HitOpts } from '../hitreact';
 import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';
+import { type SpringDef, SpringBones } from './spring';
 import { baseState, type CharState, type ClipMap, clipFor, locomotionScale, MOVE_MIN } from './states';
 import type { AnimState, BossMoveKind, CharacterView, MonsterView, PerformOpts } from './view';
 
@@ -34,6 +35,8 @@ export interface SkinnedOpts {
   sink?: boolean;
   /** Pose đã nướng cho asset này (người Mixamo): động tác chiêu, và clip nền bay/niệm chú qua `clipMap`. */
   poses?: PoseLibrary;
+  /** Xương lò xo (vạt áo, M3-10): mô phỏng ở LOD0 khi trong khung nhìn. */
+  springs?: readonly SpringDef[];
 }
 
 /** Thời gian chuyển giữa các trạng thái nền (giây). */
@@ -67,7 +70,10 @@ interface Perform {
   id: string;
   clips: PoseClips;
   upper: THREE.AnimationAction;
-  lower: THREE.AnimationAction;
+  /** Null với động tác phụ chỉ dùng cánh tay (`gesture`). */
+  lower: THREE.AnimationAction | null;
+  /** Động tác phụ (rút/tra kiếm): không tính là ra đòn. */
+  gesture: boolean;
   /** Thời điểm trong clip (giây). */
   t: number;
   from: number;
@@ -188,6 +194,8 @@ export class SkinnedCharacter implements CharacterView {
   private last: AnimState | null = null;
   /** Số lần ra đòn (cho vệt/hạt theo nhân vật). */
   attacks = 0;
+  private springs: SpringBones | null = null;
+  private springWorld = new THREE.Matrix4();
   /**
    * Trạng thái nền phải hiện ngay: cắt đòn thường đang phát (không cắt đòn lớn `playMove`) và không giật trúng đòn
    * khi đang ở đó. Boss: niệm chú, choáng (để người chơi đọc được lúc ngắt chú). Mặc định rỗng.
@@ -223,6 +231,7 @@ export class SkinnedCharacter implements CharacterView {
     this.root.add(this.inner);
     this.root.scale.setScalar(s);
     detachRig(o.scene, this.rig);
+    if (o.springs?.length) this.springs = new SpringBones(this.rig, o.springs);
     this.mixer = new THREE.AnimationMixer(this.rig);
     this.hit = new HitReact(meshes);
     this.enterBase('idle', 0);
@@ -375,6 +384,25 @@ export class SkinnedCharacter implements CharacterView {
       this.rig.updateMatrixWorld(true);
       this.acc = 0;
     }
+    this.updateSprings(dt);
+  }
+
+  /** Số xương lò xo đang mô phỏng (0 nếu không có hoặc đang nghỉ ở LOD xa). Cho đo hiệu năng. */
+  get springCount(): number {
+    return this.springs && this.lodLevel === 0 && this.inner.visible ? this.springs.count : 0;
+  }
+
+  private updateSprings(dt: number): void {
+    const sp = this.springs;
+    if (!sp) return;
+    if (this.lodLevel !== 0 || !this.inner.visible) {
+      sp.reset();
+      return;
+    }
+    const r = this.root;
+    this.springWorld.compose(r.position, r.quaternion, r.scale);
+    if (r.parent) this.springWorld.premultiply(r.parent.matrixWorld);
+    sp.update(dt, this.springWorld);
   }
 
   dispose(): void {
@@ -405,7 +433,24 @@ export class SkinnedCharacter implements CharacterView {
     return !this.dead && !(a && (a.dead || a.flying || a.airborne));
   }
 
-  private startPerform(id: string, clips: PoseClips, from: number): void {
+  /**
+   * Động tác phụ chỉ dùng cánh tay phải (pose có clip `arm`, vd. rút/tra kiếm), chồng lên mọi trạng thái nền kể cả
+   * chạy. Không tính là ra đòn. Bỏ qua (trả false) nếu không có pose, không ra chiêu được, hoặc đang có động tác khác.
+   */
+  protected gesture(id: string): boolean {
+    const clips = this.poses?.get(id);
+    if (!clips?.arm || !this.canPerform() || this.perf || this.pendingPerform) return false;
+    this.startPerform(id, clips, 0, true);
+    return true;
+  }
+
+  /** Thời điểm (giây trong clip) của động tác `id` đang phát; null nếu không phát (đã hết hoặc bị thay). */
+  protected performTime(id: string): number | null {
+    const p = this.perf;
+    return p && p.id === id && p.cancel >= 1 ? p.t : null;
+  }
+
+  private startPerform(id: string, clips: PoseClips, from: number, gesture = false): void {
     this.stopPerform();
     const act = (clip: THREE.AnimationClip) => {
       const x = this.mixer.clipAction(clip);
@@ -418,7 +463,11 @@ export class SkinnedCharacter implements CharacterView {
       return x;
     };
     const moving = (this.last?.speed ?? 0) > MOVE_MIN;
-    this.perf = { id, clips, upper: act(clips.upper), lower: act(clips.lower), t: from, from, still: moving ? 0 : 1, cancel: 1 };
+    if (gesture) {
+      this.perf = { id, clips, upper: act(clips.arm!), lower: null, gesture, t: from, from, still: 0, cancel: 1 };
+      return;
+    }
+    this.perf = { id, clips, upper: act(clips.upper), lower: act(clips.lower), gesture, t: from, from, still: moving ? 0 : 1, cancel: 1 };
     // Đòn một lần của clip nền (vd. attack 1,2s của Tripo) nhường chỗ cho động tác chiêu.
     if (this.shot) this.shot.left = Math.min(this.shot.left, FADE_OUT_SHOT);
     this.attacks++;
@@ -428,7 +477,7 @@ export class SkinnedCharacter implements CharacterView {
     const p = this.perf;
     if (!p) return;
     p.upper.stop();
-    p.lower.stop();
+    p.lower?.stop();
     this.perf = null;
   }
 
@@ -456,13 +505,13 @@ export class SkinnedCharacter implements CharacterView {
     p.still += Math.sign(still - p.still) * Math.min(Math.abs(still - p.still), STILL_RATE * dt);
     const env = Math.min(1, (p.t - p.from) / PERFORM_IN, (dur - p.t) / PERFORM_OUT) * Math.min(1, p.cancel);
     p.upper.setEffectiveWeight(overlayWeight(env));
-    p.lower.setEffectiveWeight(overlayWeight(env * p.still));
+    p.lower?.setEffectiveWeight(overlayWeight(env * p.still));
   }
 
   private onHit(): void {
     this.pendingHit = -1;
     // Đang cắn thì không cắt ngang (đọc được đòn quan trọng hơn); chết rồi thì thôi.
-    if (this.dead || this.shot?.state === 'attack' || this.perf || (this.base && this.holdStates.has(this.base))) return;
+    if (this.dead || this.shot?.state === 'attack' || (this.perf && !this.perf.gesture) || (this.base && this.holdStates.has(this.base))) return;
     this.playShot('hit');
   }
 
