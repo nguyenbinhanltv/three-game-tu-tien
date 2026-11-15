@@ -322,7 +322,7 @@ export function App() {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const b = (e.target as Element | null)?.closest?.('button');
-      if (b && !b.disabled && !b.classList.contains('window-close')) sfx('ui_click', 0.7);
+      if (b && !b.disabled && !b.classList.contains('window-close') && !b.classList.contains('k-close')) sfx('ui_click', 0.7);
     };
     document.addEventListener('click', onClick, true);
     return () => document.removeEventListener('click', onClick, true);

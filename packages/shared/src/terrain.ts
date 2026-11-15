@@ -91,6 +91,9 @@ export function inLakeWater(x: number, z: number): boolean {
   return dx * dx + dz * dz < LAKE_WATER_R * LAKE_WATER_R;
 }
 
+/** Lơ lửng cao hơn mức này so với mặt đất thì coi là đang trên không (không ra chiêu được). Server và HUD dùng chung. */
+export const AIRBORNE_HEIGHT = 2.5;
+
 /** Độ cao "đứng được": mặt đất, hoặc mặt nước trừ độ sâu lội trong hồ. */
 export function groundAt(x: number, z: number): number {
   const h = heightAt(x, z);
