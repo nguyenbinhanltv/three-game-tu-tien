@@ -1,8 +1,14 @@
 // Kiểu dữ liệu nội dung game và trạng thái nhân vật, dùng chung client/server.
 
-export type ItemKind = 'material' | 'consumable' | 'weapon' | 'robe' | 'accessory';
-export type EquipSlot = 'weapon' | 'robe' | 'accessory';
-export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'robe', 'accessory'];
+import type { ItemInst } from './items';
+
+/**
+ * Tám ô trang bị (Phase 3-1): pháp kiếm, đạo bào, hộ uyển, vân ngoa, đai lưng, ngọc bội, giới chỉ, pháp bảo phụ.
+ * Loại vật phẩm trang bị trùng tên ô (`ItemKind` ⊃ `EquipSlot`).
+ */
+export type EquipSlot = 'weapon' | 'robe' | 'bracer' | 'boots' | 'belt' | 'jade' | 'ring' | 'artifact';
+export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'robe', 'bracer', 'boots', 'belt', 'jade', 'ring', 'artifact'];
+export type ItemKind = 'material' | 'consumable' | EquipSlot;
 
 export interface StatBlock {
   atk?: number;
@@ -299,6 +305,8 @@ export interface InvItem {
   id: string;
   n: number;
   plus?: number;
+  /** Chỉ có ở trang bị đã roll (xem `items.ts`). Thiếu = đồ cũ chỉ số cố định theo mẫu. */
+  inst?: ItemInst;
 }
 export type InvSlot = InvItem | null;
 export const INV_SIZE = 30;

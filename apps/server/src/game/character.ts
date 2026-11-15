@@ -1,15 +1,25 @@
+import { randomInt } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import {
   type Appearance,
   appearanceFromDb,
   type CharView,
-  enhanceMul,
+  computePlayerStats,
   EQUIP_SLOTS,
   type Equipment,
-  type EquipSlot,
   type InvItem,
   type InvSlot,
   INV_SIZE,
+  type ItemInst,
+  type EquippedEntry,
+  parseInst,
+  type PlayerStats,
+  type Quality,
+  QUALITY_COUNT,
+  rollItemInstance,
+  seededRng,
+  isEquipSlot,
+  MAX_ENHANCE,
   MAX_LEVEL,
   NGUNG_KHI_MAX,
   type ObjectiveType,
@@ -18,7 +28,7 @@ import {
   SPAWN_POINT,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ITEM, QUEST } from '@dtl/content';
+import { APPEARANCE, ITEM, ITEM_SYS, QUEST } from '@dtl/content';
 import { characters, db, items, ledger } from '../db';
 
 export interface CharMeta {
@@ -32,6 +42,8 @@ export class InvDraft {
   equip: Equipment;
   gold: number;
   itemDelta = new Map<string, number>();
+  /** Seed các lần roll trong bản nháp này; ghi vào lý do ledger để truy vết/tái hiện. */
+  rollSeeds: string[] = [];
   goldDelta = 0;
 
   constructor(c: Character) {
@@ -88,6 +100,33 @@ export class InvDraft {
     return true;
   }
 
+  /**
+   * Thêm một trang bị đã roll (không chồng được). `inst` do `rollItemInstance` ở server sinh ra.
+   * Trả về false nếu mẫu không phải trang bị hoặc túi đầy. Ghi ledger như mọi vật phẩm mới (theo id mẫu, +1).
+   */
+  addInstance(id: string, inst: ItemInst): boolean {
+    const def = ITEM.get(id);
+    if (!def || !isEquipSlot(def.kind)) return false;
+    const i = this.inv.findIndex((s) => !s);
+    if (i < 0) return false;
+    this.inv[i] = { id, n: 1, inst };
+    this.bump(id, 1);
+    return true;
+  }
+
+  /**
+   * Roll một trang bị mới từ mẫu `id` ở server (seed ngẫu nhiên thật, ghi vào ledger) rồi thêm vào túi.
+   * Nguồn duy nhất sinh `inst`: client không bao giờ gửi dòng chính/phụ.
+   */
+  addRolled(id: string, ilvl: number, q: Quality): boolean {
+    const def = ITEM.get(id);
+    if (!def || !isEquipSlot(def.kind) || !Number.isInteger(q) || q < 0 || q >= QUALITY_COUNT) return false;
+    const seed = randomInt(0x7fffffff);
+    if (!this.addInstance(id, rollItemInstance(ITEM_SYS, def.kind, ilvl, q, seededRng(seed)))) return false;
+    this.rollSeeds.push(`${seed}:q${q}:il${ilvl}`);
+    return true;
+  }
+
   /** Tiêu hao vật phẩm theo id. */
   remove(id: string, n: number): boolean {
     if (!Number.isInteger(n) || n <= 0 || this.count(id) < n) return false;
@@ -132,7 +171,7 @@ export class InvDraft {
 
 function sameSlot(a: InvSlot, b: InvSlot): boolean {
   if (!a || !b) return a === b;
-  return a.id === b.id && a.n === b.n && (a.plus ?? 0) === (b.plus ?? 0);
+  return a.id === b.id && a.n === b.n && (a.plus ?? 0) === (b.plus ?? 0) && JSON.stringify(a.inst ?? null) === JSON.stringify(b.inst ?? null);
 }
 
 export class Character {
@@ -159,6 +198,8 @@ export class Character {
   mmp = 0;
   atk = 1;
   def = 0;
+  /** Chỉ số phụ từ dòng phụ trang bị (bạo kích, giảm hồi chiêu...). Xem `computePlayerStats`. */
+  stats!: PlayerStats;
 
   charDirty = true;
   invDirty = true;
@@ -218,7 +259,7 @@ export class Character {
     c.room = row.room;
     c.appearance = appearanceFromDb(APPEARANCE, row.appearance, row.name);
     try {
-      c.equip = JSON.parse(row.equip) as Equipment;
+      c.equip = sanitizeEquip(JSON.parse(row.equip));
       c.quests = JSON.parse(row.quests) as QuestView;
       c.meta = JSON.parse(row.meta) as CharMeta;
     } catch {
@@ -229,6 +270,8 @@ export class Character {
       if (r.slot >= 0 && r.slot < INV_SIZE && ITEM.has(r.itemId)) {
         const it: InvItem = { id: r.itemId, n: r.qty };
         if (r.plus > 0) it.plus = r.plus;
+        const inst = parseStoredInst(r.itemId, r.inst);
+        if (inst) it.inst = inst;
         c.inv[r.slot] = it;
       }
     }
@@ -238,29 +281,21 @@ export class Character {
     return c;
   }
 
-  /** Tính lại chỉ số từ cảnh giới + trang bị. */
+  /** Tính lại chỉ số từ cảnh giới + trang bị (8 ô, dòng chính + dòng phụ). */
   recalc(): void {
-    const b = playerBaseStats(this.level);
-    let hp = b.hp;
-    let mp = b.mp;
-    let atk = b.atk;
-    let def = b.def;
+    const worn: EquippedEntry[] = [];
     for (const k of EQUIP_SLOTS) {
       const e = this.equip[k];
-      const d = e ? ITEM.get(e.id) : undefined;
-      if (!d || !d.stats) continue;
-      const mul = enhanceMul(e!.plus ?? 0);
-      hp += Math.round((d.stats.hp ?? 0) * mul);
-      mp += Math.round((d.stats.mp ?? 0) * mul);
-      atk += Math.round((d.stats.atk ?? 0) * mul);
-      def += Math.round((d.stats.def ?? 0) * mul);
+      if (e) worn.push({ item: e, tpl: ITEM.get(e.id)?.stats });
     }
-    this.mhp = hp;
-    this.mmp = mp;
-    this.atk = atk;
-    this.def = def;
-    if (this.hp > hp) this.hp = hp;
-    if (this.mp > mp) this.mp = mp;
+    const st = computePlayerStats(this.level, worn);
+    this.stats = st;
+    this.mhp = st.hp;
+    this.mmp = st.mp;
+    this.atk = st.atk;
+    this.def = st.def;
+    if (this.hp > st.hp) this.hp = st.hp;
+    if (this.mp > st.mp) this.mp = st.mp;
     this.charDirty = true;
   }
 
@@ -321,6 +356,7 @@ export class Character {
     try {
       db.transaction((tx) => {
         const rows: (typeof ledger.$inferInsert)[] = [];
+        if (d.rollSeeds.length) reason += ' roll=' + d.rollSeeds.join(',');
         if (d.goldDelta !== 0) rows.push({ charId: this.id, kind: 'gold', ref: '', delta: d.goldDelta, reason, ts });
         for (const [id, delta] of d.itemDelta) {
           if (delta !== 0) rows.push({ charId: this.id, kind: 'item', ref: id, delta, reason, ts });
@@ -335,9 +371,10 @@ export class Character {
           const b = d.inv[i];
           if (sameSlot(a, b)) continue;
           if (b) {
+            const inst = b.inst ? JSON.stringify(b.inst) : null;
             tx.insert(items)
-              .values({ charId: this.id, slot: i, itemId: b.id, qty: b.n, plus: b.plus ?? 0 })
-              .onConflictDoUpdate({ target: [items.charId, items.slot], set: { itemId: b.id, qty: b.n, plus: b.plus ?? 0 } })
+              .values({ charId: this.id, slot: i, itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst })
+              .onConflictDoUpdate({ target: [items.charId, items.slot], set: { itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst } })
               .run();
           } else {
             tx.delete(items).where(and(eq(items.charId, this.id), eq(items.slot, i))).run();
@@ -440,6 +477,41 @@ export class Character {
   }
 }
 
-export function isEquipSlot(v: unknown): v is EquipSlot {
-  return v === 'weapon' || v === 'robe' || v === 'accessory';
+/** Đọc `inst` lưu trong DB; hỏng/vượt trần thì bỏ (món đó thành đồ cũ chỉ số mẫu). */
+function parseStoredInst(itemId: string, raw: string | null): ItemInst | null {
+  if (!raw) return null;
+  const kind = ITEM.get(itemId)?.kind;
+  if (!isEquipSlot(kind)) return null;
+  try {
+    const inst = parseInst(ITEM_SYS, kind, JSON.parse(raw));
+    if (!inst) console.warn('[load] inst trong túi bị bác, về chỉ số mẫu:', itemId);
+    return inst;
+  } catch {
+    return null;
+  }
 }
+
+/** Đọc JSON trang bị: chỉ giữ ô hợp lệ, mẫu còn tồn tại, đúng loại ô, `inst` đã qua kiểm. */
+function sanitizeEquip(raw: unknown): Equipment {
+  const out: Equipment = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const k of EQUIP_SLOTS) {
+    const e = (raw as Record<string, InvItem | undefined>)[k];
+    if (!e || typeof e.id !== 'string') continue;
+    const kind = ITEM.get(e.id)?.kind;
+    if (!kind) {
+      console.warn('[load] bỏ trang bị có mẫu không còn tồn tại:', e.id);
+      continue;
+    }
+    if (kind !== k) console.warn('[load] trang bị lệch ô (giữ nguyên):', e.id, 'ở', k);
+    const it: InvItem = { id: e.id, n: 1 };
+    if (e.plus && e.plus > 0) it.plus = Math.min(e.plus | 0, MAX_ENHANCE);
+    const inst = e.inst ? parseInst(ITEM_SYS, k, e.inst) : null;
+    if (inst) it.inst = inst;
+    else if (e.inst) console.warn('[load] inst trang bị bị bác, về chỉ số mẫu:', e.id, k);
+    out[k] = it;
+  }
+  return out;
+}
+
+export { isEquipSlot };

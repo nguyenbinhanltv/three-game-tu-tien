@@ -1,0 +1,22 @@
+{
+  "affixes": [
+    { "id": "atk_pct", "min": 0.02, "max": 0.04, "weight": 10 },
+    { "id": "def_pct", "min": 0.02, "max": 0.04, "weight": 10 },
+    { "id": "hp_pct", "min": 0.03, "max": 0.06, "weight": 10 },
+    { "id": "mp_pct", "min": 0.03, "max": 0.06, "weight": 8 },
+    { "id": "crit_rate", "min": 0.015, "max": 0.03, "weight": 8 },
+    { "id": "crit_dmg", "min": 0.06, "max": 0.12, "weight": 8 },
+    { "id": "cdr", "min": 0.02, "max": 0.04, "weight": 6 },
+    { "id": "skill_dmg", "min": 0.08, "max": 0.15, "weight": 6, "param": "skill" },
+    { "id": "elem_dmg", "min": 0.04, "max": 0.08, "weight": 6, "param": "element" },
+    { "id": "elem_res", "min": 0.05, "max": 0.1, "weight": 6, "param": "element" },
+    { "id": "lifesteal", "min": 0.005, "max": 0.01, "weight": 4 },
+    { "id": "heal_recv", "min": 0.05, "max": 0.1, "weight": 6 },
+    { "id": "elite_dmg", "min": 0.04, "max": 0.08, "weight": 5 },
+    { "id": "move_speed", "min": 0.02, "max": 0.04, "weight": 10, "slots": ["boots"] }
+  ],
+  "params": {
+    "skill": ["skl_phi_kiem", "skl_kiem_khi_tram", "skl_linh_khi_ho_the", "skl_thien_kiem_vu", "skl_hoi_nguyen_thuat", "skl_loi_dinh_nhat_kiem"],
+    "element": ["kim", "moc", "thuy", "hoa", "tho"]
+  }
+}

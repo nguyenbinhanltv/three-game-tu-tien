@@ -22,7 +22,11 @@ import {
   type DmgMsg,
   enhanceChance,
   enhanceCost,
+  BIND_QUALITY,
   type EquipSlot,
+  type InvItem,
+  type Quality,
+  QUALITY_COUNT,
   FLY_UNLOCK_LEVEL,
   type FxMsg,
   AIRBORNE_HEIGHT,
@@ -816,7 +820,7 @@ export class GameSim {
   }
 
   private hitMonster(p: PlayerEnt, mon: MonEnt, power: number): void {
-    const { dmg, crit } = computeDamage(p.char.atk, power, mon.defn, Math.random(), Math.random());
+    const { dmg, crit } = computeDamage(p.char.atk, power, mon.defn, Math.random(), Math.random(), p.char.stats.critRate, p.char.stats.critMul);
     const stunned = this.now < mon.stunUntil;
     const heavy = isHeavyHit(power);
     // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
@@ -1823,7 +1827,7 @@ export class GameSim {
     const it = c.inv[slot];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def) return;
-    if (def.kind === 'weapon' || def.kind === 'robe' || def.kind === 'accessory') return this.onEquip(p, { slot });
+    if (isEquipSlot(def.kind)) return this.onEquip(p, { slot });
     if (!def.use) return;
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
     if (!c.tx('use:' + def.id, idem, (d) => !!d.removeAt(slot, 1))) return;
@@ -1849,7 +1853,10 @@ export class GameSim {
     const es = def.kind as EquipSlot;
     const ok = c.tx('equip', null, (d) => {
       const prev = d.equip[es];
-      d.equip[es] = { ...d.inv[slot as number]! };
+      const next: InvItem = { ...d.inv[slot as number]! };
+      // Địa/Thiên phẩm ràng buộc khi mặc (không giao dịch được nữa).
+      if (next.inst && next.inst.q >= BIND_QUALITY && !next.inst.bound) next.inst = { ...next.inst, bound: true };
+      d.equip[es] = next;
       d.inv[slot as number] = prev ? { ...prev } : null;
       return true;
     });
@@ -1934,6 +1941,7 @@ export class GameSim {
     const it = p.char.inv[slot];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def || it.n < n || def.sell <= 0) return;
+    if (it.inst?.bound) return this.warn(p, 'sys.item_bound');
     const gold = def.sell * n;
     const ok = p.char.tx('sell:' + def.id, idem, (d) => {
       if (!d.removeAt(slot, n)) return false;
@@ -2139,6 +2147,13 @@ export class GameSim {
       case 'gold':
         c.tx('gm', null, (d) => (d.addGold(Math.max(1, Number(a[1]) | 0)), true));
         return say('gold = ' + c.gold);
+      case 'roll': {
+        // /gm roll <mẫu trang bị> [phẩm 0-4] [ilvl]: roll một món (kiểm thử hệ trang bị 8 ô).
+        const q = Math.min(QUALITY_COUNT - 1, Math.max(0, Number(a[2] ?? 0) | 0));
+        const il = Math.max(1, Number(a[3] ?? c.level) | 0);
+        const ok = c.tx('gm', null, (d) => d.addRolled(a[1], il, q as Quality));
+        return say(ok ? `đã roll ${a[1]} phẩm ${q} ilvl ${il}` : 'roll <mẫu trang bị> [phẩm 0-4] [ilvl]');
+      }
       case 'give': {
         const ok = c.tx('gm', null, (d) => d.add(a[1], Math.max(1, Number(a[2] ?? 1) | 0)));
         return say(ok ? 'đã thêm ' + a[1] : 'không thêm được');
