@@ -83,6 +83,12 @@
             }
           }
         },
+        "extra": {
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Clip boss thủ tục do import.post sinh thêm: slam (nện), sweep (chém/quét vùng), chant (niệm chú, lặp; chỉ người/vượn), stun (choáng/mất thế, lặp). Thời điểm chạm khớp BOSS_MOVES trong apps/client/src/game/character/monsterSkins.ts.",
+          "items": { "enum": ["slam", "sweep", "chant", "stun"] }
+        },
         "rigid": {
           "type": "array",
           "description": "Phụ kiện gán cứng vào một xương (script post anim_biped_extra.py), ví dụ kiếm đeo sau lưng bị Tripo skin như cơ thể.",
@@ -130,6 +136,10 @@
             "attack": {
               "enum": ["bite", "gore"],
               "description": "Kiểu đòn: bite (đớp, mặc định: sói, cáo) hoặc gore (cúi đầu lao tới hất nanh: heo rừng)."
+            },
+            "fixCrossWeights": {
+              "type": "boolean",
+              "description": "Bỏ trọng số của xương chân/đuôi nằm xa đỉnh (> 20% chiều dài thân) rồi chuẩn hóa: sửa auto-rig gán chéo bàn chân trước ↔ chân sau (Huyết Lang Vương)."
             }
           }
         },
