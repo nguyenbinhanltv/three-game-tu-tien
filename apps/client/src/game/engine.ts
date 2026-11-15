@@ -3,6 +3,7 @@ import { Client, type Room } from 'colyseus.js';
 import {
   biomeAt,
   C,
+  type BossTimerMsg,
   type CdMsg,
   type CharView,
   type ChatMsg,
@@ -62,6 +63,8 @@ import {
 } from '@dtl/shared';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
+import { minimapHooks } from '../ui/minimap/model';
+import { visibleView } from './aoiView';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
@@ -93,7 +96,6 @@ import { PropLayer } from './props';
 import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
-import { minimapHooks } from '../ui/minimap/model';
 import { MapVis } from './mapVis';
 import { loadGroundTextures, type GroundTextures } from './groundTextures';
 import type { GroundLevel } from '../render/materials/ground';
@@ -406,7 +408,7 @@ export class Game {
   constructor(room: Room, init: InitMsg) {
     this.room = room;
     this.sid = init.sid;
-    this.view = room.state as unknown as WorldView;
+    this.view = visibleView(room.state as unknown as WorldView);
     this.stage = document.getElementById('stage')!;
     this.applyInit(init);
     this.bindRoom(room);
@@ -444,7 +446,7 @@ export class Game {
   /** Chuyển sang room khác (bí cảnh ↔ thế giới) mà không dựng lại renderer. */
   private rebind(room: Room, init: InitMsg): void {
     this.room = room;
-    this.view = room.state as unknown as WorldView;
+    this.view = visibleView(room.state as unknown as WorldView);
     this.applyInit(init);
     this.bindRoom(room);
     this.ents?.dispose();
@@ -477,6 +479,16 @@ export class Game {
     room.onMessage(S.QUESTS, (q: QuestView) => {
       set({ quests: q });
       this.questMarkersDirty = true;
+    });
+    room.onMessage(S.BOSS_TIMERS, (m: BossTimerMsg) => {
+      const off = Date.now() - m.now;
+      set({ bossTimers: { ...m, off } });
+      // Móc của minimap (M-3): giờ hồi sinh boss theo id quái (đồng hồ máy), xóa khi boss sống.
+      for (const tm of m.list) {
+        if (!MONSTER.get(tm.t)?.boss) continue;
+        if (tm.at > 0) minimapHooks.bossRespawnAt.set(tm.t, tm.at + off);
+        else minimapHooks.bossRespawnAt.delete(tm.t);
+      }
     });
     room.onMessage(S.CD, (m: CdMsg) => {
       const off = Date.now() - m.now;

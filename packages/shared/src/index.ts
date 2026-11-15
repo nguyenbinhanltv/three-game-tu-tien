@@ -24,3 +24,4 @@ export * from './alchemy';
 export * from './party';
 export * from './teleport';
 export * from './zones';
+export * from './spawnrules';

@@ -104,6 +104,8 @@ export const S = {
   TELE: 'tele',
   /** Điểm đánh dấu mình và đồng đội đang thấy (`MarkMsg`). */
   MARK: 'mark',
+  /** Giờ hồi sinh tinh anh và boss của bản đồ (`BossTimerMsg`), gửi lúc vào và mỗi khi một con đổi trạng thái (M-2). */
+  BOSS_TIMERS: 'btm',
 } as const;
 
 export interface InitMsg {
@@ -306,4 +308,28 @@ export function validName(name: unknown): name is string {
   const n = name.trim();
   if (n.length < NAME_MIN || n.length > NAME_MAX) return false;
   return /^[\p{L}\p{N} _-]+$/u.test(n);
+}
+
+/**
+ * Giờ hồi sinh của tinh anh và boss (quái đứng lẻ, không thuộc bãi), toàn bản đồ, không phụ thuộc AOI (minimap M-3 đọc).
+ * Chỉ có điểm nhà của con quái (nơi nó đứng/ về), không lộ vị trí đang đi của quái nào.
+ */
+export interface BossTimerMsg {
+  /** Giờ server (ms) lúc gửi; client quy đổi `at` sang đồng hồ máy bằng `Date.now() - now`, như `CdMsg`. */
+  now: number;
+  list: BossTimer[];
+}
+
+export interface BossTimer {
+  /** id thực thể quái (ổn định qua các lần hồi sinh). */
+  id: string;
+  /** id định nghĩa quái (`elite_*`, `boss_*`). */
+  t: string;
+  /** Điểm nhà (m). */
+  x: number;
+  z: number;
+  /** Cấp hiện tại. */
+  lv: number;
+  /** Giờ server (ms) hồi sinh; 0 = đang sống. */
+  at: number;
 }

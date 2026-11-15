@@ -3,6 +3,7 @@ import { levelSpawns, type MarkInfo, MS_DEAD, PORTAL_POS, type QuestView } from 
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, NPCS, QUEST, QUESTS, t } from '@dtl/content';
 import type { Game } from '../../game/engine';
 import { questGoal, trackedQuestId } from '../../game/offscreen';
+import { get } from '../store';
 import { difficultyTone, type Mark, minimapHooks, npcFunction, npcQuestMark } from './model';
 
 /** Bán kính lọc quái quanh mình (m): vừa quá nửa cạnh ở mức phóng xa nhất. */
@@ -96,6 +97,21 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
     const sub = t('ui.mm.level', { n: m.lv }) + (def.boss ? ` · ${t('ui.mm.boss')}` : def.elite ? ` · ${t('ui.mm.elite')}` : '');
     marks.push({ kind, id, x: m.x, z: m.z, label: monsterName(m.t), sub, tone: difficultyTone(m.lv, myLevel), dead, respawnAt: dead ? minimapHooks.bossRespawnAt.get(m.t) : undefined, hurtUntil: hurt(id) });
   });
+
+  // Tinh anh và boss từ giờ hồi sinh server gửi (M-2, BossTimerMsg): không phụ thuộc AOI nên thấy cả con ở xa; con đang trong tầm đã vẽ ở trên.
+  const bt = get().bossTimers;
+  if (bt) {
+    for (const tm of bt.list) {
+      const def = MONSTER.get(tm.t);
+      if (!def) continue;
+      if (def.boss) bossInRoom.add(tm.t);
+      if (g.view.monsters.has(tm.id) || (tm.x - px) ** 2 + (tm.z - pz) ** 2 > RANGE * RANGE) continue;
+      const dead = tm.at > 0;
+      const kind = def.boss ? 'boss' : 'elite';
+      const sub = t('ui.mm.level', { n: tm.lv }) + ` · ${def.boss ? t('ui.mm.boss') : t('ui.mm.elite')}`;
+      marks.push({ kind, id: tm.id, x: tm.x, z: tm.z, label: monsterName(tm.t), sub, tone: difficultyTone(tm.lv, myLevel), dead, respawnAt: dead ? tm.at + bt.off : undefined });
+    }
+  }
 
   // Đồng đội (có số theo thứ tự trong tổ đội) và người chơi khác.
   g.view.players.forEach((p, sid) => {
