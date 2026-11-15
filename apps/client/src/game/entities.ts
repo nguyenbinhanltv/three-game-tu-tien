@@ -43,6 +43,8 @@ export interface PState {
   sa?: string;
   /** id pháp bảo phụ đang đeo (P3-8); '' hoặc thiếu = không. */
   art?: string;
+  /** id công pháp đang tu (chọn giọng động tác, K-5); '' hoặc thiếu = chưa chọn. */
+  mt?: string;
 }
 export interface MState {
   t: string;
@@ -138,6 +140,8 @@ export class PlayerVis {
   lv = 0;
   /** Pháp bảo phụ đang đeo (nạp lười khi có `s.art`). */
   art: ArtifactVis | null = null;
+  /** Công pháp đang tu (từ `s.mt`): chọn giọng động tác của chiêu. */
+  mt = '';
   /** Vận tốc hiển thị đã làm mượt (m/s) để suy ra đi lùi/ngang so với hướng nhìn (K-4). */
   mvx = 0;
   mvz = 0;
@@ -519,6 +523,7 @@ export class EntityManager {
         v.speed += (sp - v.speed) * Math.min(1, dt * 8);
       }
       v.fl = s.fl;
+      v.mt = s.mt ?? '';
       // Pháp bảo phụ: chỉ dựng cho người trong tầm nhìn gần (nhỏ, không đáng nạp xa).
       const wantArt = s.art ?? '';
       if (wantArt && !v.art && (isLocal || (s.x - local.x) ** 2 + (s.z - local.z) ** 2 < 90 * 90)) {

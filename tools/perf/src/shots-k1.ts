@@ -1,7 +1,8 @@
 // pnpm shots:k1: dãy ảnh mốc "trước" của 12 chiêu hiện có (K-1) + bảng thời gian.
-//   tsx src/shots-k1.ts --out <thư mục> [--mode viewer|game|table|all] [--model fixture|char] [--only id,id] [--renderer webgpu|webgl2]
+//   tsx src/shots-k1.ts --out <thư mục> [--mode viewer|game|table|voices|all] [--model fixture|char] [--only id,id] [--renderer webgpu|webgl2]
 // - viewer: mở `?show=skill&id=…` (tắt tiếng), dừng ở từng khung khóa, chụp hai góc (chéo, bên) rồi ghép thành một tờ ảnh mỗi chiêu.
 // - game: vào game bằng tài khoản thử, dựng cảnh bằng lệnh GM, bấm chiêu rồi chụp liên tục (mỗi ảnh ghi số ms thật từ lúc bấm).
+// - voices (K-5): ba giọng động tác (kiếm tu / hộ pháp / đan sư) cạnh nhau ở khung 3 (tụ lực) và khung 5 (trúng), hai góc, cho đòn thường 1–3 và Kiếm Khí Trảm.
 // - table: ghi bảng thời gian (pose, khung khóa, khung vung, lúc server áp, GCD) ra README.md cùng thư mục.
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175), luôn ?mute=1 và --mute-audio.
 import path from 'node:path';
@@ -9,6 +10,8 @@ import fs from 'node:fs';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 import { createDevServer, sleep } from './devserver';
 import { allSkillTimings, type SkillTiming } from '../../../apps/client/src/viewer/skillTiming';
+import { poseOf } from '../../../apps/client/src/game/skillPose';
+import { POSE, SKILLS } from '../../../packages/content/src/index';
 
 const args = process.argv.slice(2);
 const opt = (n: string, d: string) => {
@@ -97,6 +100,55 @@ async function viewerShots(ctx: BrowserContext, errors: string[]): Promise<void>
       }
     }
     await sheet(ctx, path.join(OUT, `viewer-${r.pose}.png`), `${r.skill} · pose ${r.pose} · ${r.keys.length} khung khóa · ${s2(r.duration)} s · vung ${s2(r.hit[0])}–${s2(r.hit[1])} s`, shots);
+  }
+  await page.close();
+}
+
+/** K-5: một tờ ảnh mỗi đòn, cột = ba giọng, hàng = khung 3 / khung 5 theo hai góc nhìn. */
+async function voiceShots(ctx: BrowserContext, errors: string[]): Promise<void> {
+  const page = await ctx.newPage();
+  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+  const voices = [
+    ['kt', 'Kiếm tu · Lạc Kiếm Quyết', 'lac_kiem_quyet'],
+    ['hp', 'Hộ pháp · Bất Động Kim Thân', 'bat_dong_kim_than'],
+    ['ds', 'Đan sư · Thanh Mộc Đan Kinh', 'thanh_moc_dan_kinh'],
+  ] as const;
+  const targets = [
+    { skill: 'skl_phi_kiem', hit: 1, name: 'don-thuong-1' },
+    { skill: 'skl_phi_kiem', hit: 2, name: 'don-thuong-2' },
+    { skill: 'skl_phi_kiem', hit: 3, name: 'don-thuong-3' },
+    { skill: 'skl_kiem_khi_tram', hit: 1, name: 'kiem-khi-tram' },
+  ];
+  const model = MODEL === 'char' ? '&model=char' : '';
+  for (const tg of targets) {
+    const skill = SKILLS.find((x) => x.id === tg.skill)!;
+    const grid: { label: string; url: string; mark?: boolean }[][] = [];
+    for (const view of ['iso', 'side'] as const) for (const [fi, frame] of [[2, 'khung 3 · tụ lực'], [4, 'khung 5 · trúng']] as const) grid.push([]);
+    for (const [vi, [v, vname, method]] of voices.entries()) {
+      const id = poseOf(skill, tg.hit - 1, method);
+      await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&show=skill&id=${tg.skill}&voice=${v}&hit=${tg.hit}${model}${rq}`, { waitUntil: 'load' });
+      await page.waitForFunction((n) => (window as unknown as G).__viewer?.clipName === n, 'pose_' + id, { timeout: 90_000, polling: 250 });
+      const keys = POSE.get(id)!.keys;
+      const host = page.locator('.viewer-host');
+      let row = 0;
+      for (const view of ['iso', 'side'] as const) {
+        await page.evaluate((vw) => (window as unknown as G).__viewer!.setView(vw), view);
+        await sleep(200);
+        for (const [fi, frame] of [[2, 'khung 3 · tụ lực'], [4, 'khung 5 · trúng']] as const) {
+          await page.evaluate((tt) => {
+            const w = (window as unknown as G).__viewer!;
+            w.paused = true;
+            w.seek(tt);
+            w.frame();
+            w.frame();
+          }, keys[fi].t);
+          await sleep(250);
+          const buf = await host.screenshot();
+          grid[row++][vi] = { label: `${vname} · ${view} · ${frame} · ${s2(keys[fi].t)} s`, url: 'data:image/png;base64,' + buf.toString('base64'), mark: fi === 4 };
+        }
+      }
+    }
+    await sheet(ctx, path.join(OUT, `giong-${tg.name}.png`), `K-5 · ${tg.skill} (đòn ${tg.hit}) · ba giọng cạnh nhau ở khung 3 và khung 5`, grid);
   }
   await page.close();
 }
@@ -234,6 +286,7 @@ async function main(): Promise<void> {
     await ctx.addInitScript({ content: "localStorage.setItem('dtl.quality', 'high');" });
     if (MODE === 'viewer' || MODE === 'all') await viewerShots(ctx, errors);
     if (MODE === 'game' || MODE === 'all') await gameShots(ctx, errors);
+    if (MODE === 'voices') await voiceShots(ctx, errors);
     if (errors.length) console.warn(`[shots-k1] ${errors.length} lỗi console:\n  ` + [...new Set(errors)].slice(0, 8).join('\n  '));
     await ctx.close();
   } finally {

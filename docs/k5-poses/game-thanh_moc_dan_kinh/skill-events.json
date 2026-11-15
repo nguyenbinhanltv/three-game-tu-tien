@@ -1,0 +1,311 @@
+{
+ "m-combo": [
+  {
+   "ms": 18,
+   "kind": "windup",
+   "index": 0,
+   "combo": 0,
+   "t": 0
+  },
+  {
+   "ms": 272,
+   "kind": "hit",
+   "index": 0,
+   "combo": 0,
+   "t": 0.261
+  },
+  {
+   "ms": 272,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 0,
+   "t": 0.261
+  },
+  {
+   "ms": 881,
+   "kind": "end",
+   "index": 1,
+   "combo": 0,
+   "t": 0.801
+  },
+  {
+   "ms": 1020,
+   "kind": "windup",
+   "index": 0,
+   "combo": 1,
+   "t": 0
+  },
+  {
+   "ms": 1280,
+   "kind": "hit",
+   "index": 0,
+   "combo": 1,
+   "t": 0.261
+  },
+  {
+   "ms": 1280,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 1,
+   "t": 0.261
+  },
+  {
+   "ms": 1953,
+   "kind": "end",
+   "index": 1,
+   "combo": 1,
+   "t": 0.807
+  },
+  {
+   "ms": 2007,
+   "kind": "windup",
+   "index": 0,
+   "combo": 2,
+   "t": 0
+  },
+  {
+   "ms": 2270,
+   "kind": "hit",
+   "index": 0,
+   "combo": 2,
+   "t": 0.263
+  },
+  {
+   "ms": 2270,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 2,
+   "t": 0.263
+  },
+  {
+   "ms": 2878,
+   "kind": "end",
+   "index": 1,
+   "combo": 2,
+   "t": 0.801
+  },
+  {
+   "ms": 2987,
+   "kind": "windup",
+   "index": 0,
+   "combo": 0,
+   "t": 0
+  },
+  {
+   "ms": 3253,
+   "kind": "hit",
+   "index": 0,
+   "combo": 0,
+   "t": 0.267
+  },
+  {
+   "ms": 3253,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 0,
+   "t": 0.267
+  },
+  {
+   "ms": 3929,
+   "kind": "end",
+   "index": 1,
+   "combo": 0,
+   "t": 0.802
+  },
+  {
+   "ms": 3929,
+   "kind": "windup",
+   "index": 0,
+   "combo": 1,
+   "t": 0
+  },
+  {
+   "ms": 4198,
+   "kind": "hit",
+   "index": 0,
+   "combo": 1,
+   "t": 0.269
+  },
+  {
+   "ms": 4198,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 1,
+   "t": 0.269
+  }
+ ],
+ "m-skill": [
+  {
+   "ms": 19,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 296,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.286
+  },
+  {
+   "ms": 296,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.286
+  },
+  {
+   "ms": 1016,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.903
+  }
+ ],
+ "f-combo": [
+  {
+   "ms": 10,
+   "kind": "windup",
+   "index": 0,
+   "combo": 0,
+   "t": 0
+  },
+  {
+   "ms": 271,
+   "kind": "hit",
+   "index": 0,
+   "combo": 0,
+   "t": 0.268
+  },
+  {
+   "ms": 271,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 0,
+   "t": 0.268
+  },
+  {
+   "ms": 873,
+   "kind": "end",
+   "index": 1,
+   "combo": 0,
+   "t": 0.8
+  },
+  {
+   "ms": 1036,
+   "kind": "windup",
+   "index": 0,
+   "combo": 1,
+   "t": 0
+  },
+  {
+   "ms": 1306,
+   "kind": "hit",
+   "index": 0,
+   "combo": 1,
+   "t": 0.271
+  },
+  {
+   "ms": 1306,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 1,
+   "t": 0.271
+  },
+  {
+   "ms": 1839,
+   "kind": "end",
+   "index": 1,
+   "combo": 1,
+   "t": 0.804
+  },
+  {
+   "ms": 2461,
+   "kind": "windup",
+   "index": 0,
+   "combo": 2,
+   "t": 0
+  },
+  {
+   "ms": 2722,
+   "kind": "hit",
+   "index": 0,
+   "combo": 2,
+   "t": 0.261
+  },
+  {
+   "ms": 2722,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 2,
+   "t": 0.261
+  },
+  {
+   "ms": 3262,
+   "kind": "end",
+   "index": 1,
+   "combo": 2,
+   "t": 0.801
+  },
+  {
+   "ms": 3533,
+   "kind": "windup",
+   "index": 0,
+   "combo": 2,
+   "t": 0.2
+  },
+  {
+   "ms": 3665,
+   "kind": "hit",
+   "index": 0,
+   "combo": 2,
+   "t": 0.268
+  },
+  {
+   "ms": 3665,
+   "kind": "recovery",
+   "index": 1,
+   "combo": 2,
+   "t": 0.268
+  },
+  {
+   "ms": 3964,
+   "kind": "windup",
+   "index": 0,
+   "combo": 0,
+   "t": 0
+  }
+ ],
+ "f-skill": [
+  {
+   "ms": 9,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 287,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.286
+  },
+  {
+   "ms": 287,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.286
+  },
+  {
+   "ms": 1004,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.903
+  }
+ ]
+}
