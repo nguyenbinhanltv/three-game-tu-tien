@@ -1,0 +1,169 @@
+import * as THREE from 'three/webgpu';
+import {
+  attribute,
+  clamp,
+  cos,
+  float,
+  int,
+  luminance,
+  max,
+  mix,
+  normalGeometry,
+  normalize,
+  positionView,
+  positionWorld,
+  select,
+  sin,
+  smoothstep,
+  texture,
+  transformNormalToView,
+  uniform,
+  vec2,
+  vec3,
+} from 'three/tsl';
+import { WORLD_SIZE } from '@dtl/shared';
+import { GROUND_LAYER as L, type GroundTextures } from '../../game/groundTextures';
+
+/**
+ * Shader mặt đất PBR (P2-A2): trộn 8 lớp texture CC0 Poly Haven theo vùng, độ dốc, độ cao.
+ *   - Vùng: thuộc tính đỉnh `biome` (rừng, đất khô, đất chết) + mặt nạ thủ tục (groundMask.ts: đường mòn,
+ *     sân lát đá, cát ven hồ, nhiễu vĩ mô). Màu đỉnh cũ vẫn là "bảng màu" của art bible: chỉ lấy sắc
+ *     (hue) nhân vào texture, nên đổi màu vùng vẫn ở `terrainColor`.
+ *   - Độ dốc: đá núi (chiếu từ trên xuống), vách đá chiếu hai mặt phẳng (theo hướng pháp tuyến), tuyết ở đỉnh.
+ *   - Chống lặp: cỏ lấy hai mẫu khác tần số/góc xoay trộn theo nhiễu; cộng nhiễu vĩ mô; xa thì chuyển sang mẫu thưa.
+ *   - Pháp tuyến: gộp thành một vector lệch ở không gian thế giới (UDN), một lần transformNormalToView.
+ * Số mẫu texture theo preset: Cao 8 albedo + 5 pháp tuyến; Vừa 5 + 2; Thấp 3 + 0 (độ nhám cố định).
+ * Mọi lớp nằm trong 2 texture mảng nên chỉ tốn 2 slot texture (+ 1 mặt nạ).
+ */
+/** Node TSL: kiểu của three/tsl không phơi bày toán tử trên `Node` trần, dùng any cho gọn. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Node = any;
+
+export type GroundLevel = 'low' | 'medium' | 'high';
+
+export const groundParams = {
+  /** Độ sáng của albedo texture so với bảng màu cũ. */
+  gain: uniform(1.5),
+  normalStrength: uniform(0.85),
+};
+
+const SNOW = vec3(0.86, 0.9, 0.95);
+const TOMB_TINT = vec3(0.6, 0.58, 0.7);
+
+/** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */
+export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: GroundTextures, level: GroundLevel): void {
+  const hi = level === 'high';
+  const lo = level === 'low';
+  const p = positionWorld.xz;
+  const A = (uv: Node, layer: Node | number) => texture(tex.albedo, uv).depth(typeof layer === 'number' ? int(layer) : layer).rgb;
+  const N = (uv: Node, layer: Node | number) => texture(tex.normal, uv).depth(typeof layer === 'number' ? int(layer) : layer);
+  /** Pháp tuyến cục bộ (đã giải mã) → vector lệch ở không gian thế giới cho mặt chiếu xz / xy / zy. */
+  const offXZ = (t: Node) => vec3(t.x.mul(2).sub(1), 0, float(1).sub(t.y.mul(2)));
+  const offXY = (t: Node) => vec3(t.x.mul(2).sub(1), t.y.mul(2).sub(1), 0);
+  const offZY = (t: Node) => vec3(0, t.y.mul(2).sub(1), t.x.mul(2).sub(1));
+
+  const nGeo = normalize(normalGeometry);
+  const slope = float(1).sub(nGeo.y);
+  const h = positionWorld.y;
+  const dist = positionView.length();
+  const vc = attribute('color', 'vec3');
+  const bio = attribute('biome', 'vec4'); // x rừng, y đất khô, z đất chết Kiếm Trủng
+  const mask = texture(tex.mask, p.div(WORLD_SIZE));
+  const macro = mask.a;
+  const noise2 = texture(tex.mask, p.mul(0.0043)).a;
+
+  // ----- trọng số -----
+  const rockW = max(smoothstep(0.1, 0.26, slope), smoothstep(175, 235, h).mul(0.65)).mul(float(1).sub(mask.g));
+  const cliffW = smoothstep(0.3, 0.46, slope);
+  const snowW = smoothstep(252, 312, h).mul(float(1).sub(smoothstep(0.3, 0.42, slope)));
+  const pathD = mask.r.add(noise2.sub(0.5).mul(0.1));
+  const pathW = smoothstep(0.44, 0.54, pathD).mul(float(1).sub(rockW));
+  const pathEdge = smoothstep(0.3, 0.46, pathD);
+  const pav = mask.g;
+  const sand = mask.b;
+  const spW = clamp(max(max(pathW, pav), sand), 0, 1);
+  const spLayer = select(pav.greaterThan(0.5), int(L.paving), select(sand.greaterThan(0.5), int(L.sand), int(L.gravel)));
+  const spScale = select(pav.greaterThan(0.5), float(2.6), select(sand.greaterThan(0.5), float(4), float(2.4)));
+  const wetEdge = pathEdge.mul(float(1).sub(spW));
+
+  // Cỏ / rừng / đất khô: Cao trộn 3 mẫu, Vừa/Thấp chọn lớp trội (ranh giới bị nhiễu làm lệch cho tự nhiên).
+  const pick = bio.x.add(noise2.sub(0.5).mul(0.5));
+  const baseLayer = select(pick.greaterThan(0.5), int(L.forest), select(bio.y.add(noise2.sub(0.5).mul(0.4)).greaterThan(0.5), int(L.dirt), int(L.grass)));
+  const baseScale = select(pick.greaterThan(0.5), float(5.5), float(6));
+
+  // ----- albedo -----
+  let base: Node;
+  let baseUvA = p.div(6);
+  if (hi) {
+    const ca = cos(0.9);
+    const sa = sin(0.9);
+    const pr = vec2(p.x.mul(ca).sub(p.y.mul(sa)), p.x.mul(sa).add(p.y.mul(ca)));
+    const farK = smoothstep(35, 130, dist);
+    const mixK = clamp(smoothstep(0.3, 0.7, noise2).mul(0.55).add(farK.mul(0.5)), 0, 1);
+    const grass = mix(A(baseUvA, L.grass), A(pr.div(26).add(0.37), L.grass), mixK);
+    const forest = A(p.div(5.5), L.forest);
+    const dirt = A(p.div(5), L.dirt);
+    base = mix(mix(grass, forest, bio.x), dirt, bio.y.mul(0.85));
+  } else {
+    baseUvA = p.div(baseScale);
+    base = A(baseUvA, baseLayer);
+  }
+  const special = A(p.div(spScale), spLayer);
+  const hue = mix(vec3(1), vc.div(luminance(vc).max(0.04)), float(0.6).sub(spW.mul(0.5)));
+  const dirtEdge = hi ? A(p.div(5), L.dirt) : base.mul(0.85);
+  let col: Node = mix(base, dirtEdge.mul(0.9), wetEdge.mul(0.8));
+  col = mix(col, special, spW);
+  col = col.mul(hue).mul(float(0.84).add(macro.mul(0.32)));
+  col = mix(col, col.mul(TOMB_TINT), bio.z);
+
+  const rock = A(p.div(9), L.rock);
+  // Vách đá: chiếu theo hai mặt phẳng đứng, trọng số theo |nx|, |nz|.
+  const wx = nGeo.x.abs().pow(3);
+  const wz = nGeo.z.abs().pow(3);
+  const wsum = wx.add(wz).max(0.0001);
+  const uvXY = vec2(positionWorld.x, positionWorld.y.negate()).div(11);
+  const uvZY = vec2(positionWorld.z, positionWorld.y.negate()).div(11);
+  let cliff: Node;
+  if (lo) cliff = rock;
+  else cliff = mix(A(uvZY, L.cliff), A(uvXY, L.cliff), wz.div(wsum));
+  const rockCol = mix(rock, rock.mul(TOMB_TINT.mul(1.15)), bio.z);
+  col = mix(col, rockCol.mul(float(0.9).add(macro.mul(0.2))), rockW);
+  col = mix(col, cliff.mul(float(0.9).add(macro.mul(0.2))), cliffW);
+  col = col.mul(groundParams.gain);
+  col = mix(col, SNOW, snowW);
+  mat.vertexColors = false;
+  mat.colorNode = col;
+
+  // ----- pháp tuyến + độ nhám -----
+  if (lo) {
+    mat.roughnessNode = float(0.9);
+    mat.normalNode = null;
+  } else {
+    const nb = N(baseUvA, baseLayer);
+    const ns = N(p.div(spScale), spLayer);
+    const nr = N(p.div(9), L.rock);
+    let off: Node = mix(offXZ(nb), offXZ(ns), spW);
+    off = mix(off, offXZ(nr), rockW);
+    let rough: Node = mix(nb.z, ns.z, spW);
+    rough = mix(rough, nr.z, rockW);
+    if (hi) {
+      const nc = mix(offZY(N(uvZY, L.cliff)), offXY(N(uvXY, L.cliff)), wz.div(wsum));
+      off = mix(off, nc, cliffW);
+    } else {
+      off = mix(off, offXZ(nr), cliffW);
+    }
+    const nrm = normalize(nGeo.add(off.mul(groundParams.normalStrength)));
+    mat.normalNode = transformNormalToView(nrm);
+    mat.roughnessNode = mix(clamp(rough, 0.35, 1), float(0.7), snowW);
+  }
+  mat.needsUpdate = true;
+}
+
+/** Gỡ shader texture, về màu đỉnh (chưa nạp xong texture, hoặc nạp lỗi). */
+export function clearGroundShader(mat: THREE.MeshStandardNodeMaterial): void {
+  mat.colorNode = null;
+  mat.normalNode = null;
+  mat.roughnessNode = null;
+  mat.vertexColors = true;
+  mat.needsUpdate = true;
+}
