@@ -205,5 +205,6 @@
   "sys.dungeon_wave": "Đợt {n}: {boss} xuất hiện!",
   "sys.dungeon_clear": "Kiếm Trủng đã được dẹp yên! Cổng ra sẽ mở trong giây lát.",
   "sys.dungeon_no_reward": "Hôm nay ngươi đã nhận thưởng Kiếm Trủng: lần này không có vật phẩm và linh thạch, tu vi chỉ còn ba phần.",
-  "sys.gm": "{m}"
+  "sys.gm": "{m}",
+  "sys.test_denied": "Tham số kiểm thử (?god, ?at) chỉ dành cho tài khoản thử, đã bỏ qua."
 }

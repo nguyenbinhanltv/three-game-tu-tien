@@ -278,6 +278,16 @@ export interface LevelDef {
   nodes: NodeSpawnDef[];
 }
 
+/** Điểm đặt tên cho kiểm thử (`?at=`, `/gm tp <id>`). Chỉ server đọc (`@dtl/content/places`). */
+export interface PlaceDef {
+  id: string;
+  /** Level của room có điểm này (`van_lam` thế giới, `kiem_trung` bí cảnh). */
+  level: string;
+  x: number;
+  z: number;
+  note?: string;
+}
+
 export interface RealmDef {
   level: number;
   key: string;
