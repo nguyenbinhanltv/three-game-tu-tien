@@ -10,7 +10,7 @@ Phần nhạc nền xem `music.md`; bảng mức chuẩn (đo bằng LUFS) xem `
   đi cùng chuông đồ rơi). Mỗi âm gồm hai lớp mẫu CC0 và một lớp kim loại tổng hợp (`"synth": "metal"` trong `tools/audio/sounds.json`: tổng sin lệch hài,
   vào gắt 1,5 ms, tắt theo hàm mũ). `spellbreak` và `rare` có `"sat"`: bão hòa mềm (tanh) trước chuẩn hóa để hạ đỉnh, đạt độ to mục tiêu dưới trần −1 dBFS và giòn hơn.
 - Hạ nhạc có hai tầng nhân với nhau: `duck(amount, hold, release)` ngắn (sấm, đột phá, sting, phá chú, đồ quý), và `duckHold(key, amount, seconds?)` giữ lâu
-  (`chapter` 0,5 theo thời lượng thẻ chương; `boss` 0,4 trong lúc lời boss; `npc` 0,35 suốt hội thoại NPC). Mức hạ là mức sâu nhất trong các khóa đang giữ.
+  (`cine` 0,45 suốt cảnh mở đầu camera; `chapter` 0,5 theo thời lượng thẻ chương; `boss` 0,4 trong lúc lời boss; `npc` 0,35 suốt hội thoại NPC). Mức hạ là mức sâu nhất trong các khóa đang giữ.
 - Đổi mức: sửa `audioMix.json` hoặc `level` (dB) của âm trong `sounds.json`, `pnpm audio:build` rồi `pnpm audio:levels` để ghi lại bảng. `pnpm audio:check` fail nếu lệch quy tắc.
 
 ## Bước chân theo chất liệu (P2-D3)

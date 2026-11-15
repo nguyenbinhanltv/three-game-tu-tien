@@ -2008,6 +2008,8 @@ export class Game {
 
   private startCine(): void {
     this.cine.start();
+    // Cảnh mở đầu: nhạc nền hạ thấp suốt đoạn camera điện ảnh (D2); thả khi cảnh hết hoặc bị bỏ qua.
+    duckHold('cine', 0.45, SECT_CUTSCENE.dur + 0.5);
     this.stage.classList.add('cining');
     set({ cine: { id: ++this.bossLineId, dur: SECT_CUTSCENE.dur * 1000, out: false } });
   }
@@ -2029,6 +2031,7 @@ export class Game {
       return;
     }
     this.stage.classList.remove('cining');
+    duckHold('cine', 0);
     set({ cine: { ...get().cine!, out: true } });
     window.setTimeout(() => get().cine?.out && set({ cine: null }), 700);
     this.chapter('sect');
@@ -2165,6 +2168,7 @@ export class Game {
     duckHold('chapter', 0);
     duckHold('boss', 0);
     duckHold('npc', 0);
+    duckHold('cine', 0);
     this.ents?.dispose();
     this.vfx?.dispose();
     this.terrain?.dispose();
