@@ -383,11 +383,10 @@
   "ui.cmp.critMul": "Sát thương bạo kích",
   "ui.cmp.cdr": "Giảm hồi chiêu",
   "ui.cmp.lifesteal": "Hút khí huyết",
-  "ui.cmp.healRecv": "Hồi phục nhận",
+  "ui.cmp.healRecv": "Hồi phục được nhận",
   "ui.cmp.eliteDmg": "Sát thương tinh anh/boss",
   "ui.cmp.moveSpeed": "Tốc độ di chuyển",
   "ui.equip.board": "Trang bị",
-  "ui.equip.empty": "Trống",
   "ui.equip.hint": "Chọn một ô để xem chi tiết hoặc tháo.",
   "ui.equip.none": "Chưa mặc món nào.",
   "ui.monster.elite": "Tinh anh"

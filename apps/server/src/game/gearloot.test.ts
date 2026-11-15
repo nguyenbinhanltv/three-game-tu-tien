@@ -144,11 +144,14 @@ describe('rơi và mặc/tháo trong sim', () => {
     c.tx('t', null, (d) => d.addRolled('itm_thanh_phong_kiem', 12, 3) && d.addRolled('itm_thanh_phong_kiem', 12, 1));
     const a = c.inv.findIndex((s) => s?.inst?.q === 3);
     const b = c.inv.findIndex((s) => s?.inst?.q === 1);
+    sim.now += 300;
     sim.onEquip(p as never, { slot: a, r: 'req-aaaa' });
     expect(c.equip.weapon?.inst?.q).toBe(3);
     expect(c.equip.weapon?.inst?.bound).toBe(true);
     expect(c.inv[a]).toBeNull();
+    sim.now += 300;
     sim.onEquip(p as never, { slot: a, r: 'req-aaaa' });
+    sim.now += 300;
     sim.onEquip(p as never, { slot: b, r: 'req-bbbb' });
     expect(c.equip.weapon?.inst?.q).toBe(1);
     expect(c.inv[b]?.inst?.q).toBe(3);
@@ -162,14 +165,31 @@ describe('rơi và mặc/tháo trong sim', () => {
     const { sim, c, p } = setup(1);
     c.tx('t', null, (d) => d.addRolled('itm_han_quang_kiem', 12, 2));
     const i = c.inv.findIndex(Boolean);
+    sim.now += 300;
     sim.onEquip(p as never, { slot: i });
+    sim.now += 300;
     sim.onEquip(p as never, { slot: i, r: 'x' });
+    sim.now += 300;
     sim.onEquip(p as never, { slot: i, r: 'req-cccc' });
     expect(c.equip.weapon).toBeUndefined();
+    sim.now += 300;
     sim.onUnequip(p as never, { slot: 'weapon', r: 'req-dddd' });
+    sim.now += 300;
     sim.onUnequip(p as never, { slot: 'khong', r: 'req-eeee' });
+    sim.now += 300;
     sim.onEquip(p as never, { slot: -1, r: 'req-ffff' });
     expect(c.inv[i]).not.toBeNull();
+  });
+
+  it('mặc/tháo dồn dập trong 200 ms bị bỏ qua (không ghi thêm ledger)', () => {
+    const { sim, c, p } = setup();
+    c.tx('t', null, (d) => d.addRolled('itm_thanh_phong_kiem', 12, 2) && d.addRolled('itm_thanh_phong_kiem', 12, 1));
+    sim.now += 300;
+    sim.onEquip(p as never, { slot: 0, r: 'spam-0001' });
+    const n0 = (sqlite.prepare("SELECT COUNT(*) AS n FROM ledger WHERE char_id = ? AND kind = 'noop'").get(c.id) as { n: number }).n;
+    for (let i = 0; i < 20; i++) sim.onEquip(p as never, { slot: 1, r: 'spam-' + (100 + i) });
+    const n1 = (sqlite.prepare("SELECT COUNT(*) AS n FROM ledger WHERE char_id = ? AND kind = 'noop'").get(c.id) as { n: number }).n;
+    expect(n1).toBe(n0);
   });
 
   it('tháo: túi đầy thì giữ trên người; còn chỗ thì về túi, chỉ số cập nhật', () => {
@@ -177,12 +197,15 @@ describe('rơi và mặc/tháo trong sim', () => {
     c.tx('t', null, (d) => d.addRolled('itm_thanh_phong_kiem', 12, 2));
     const i = c.inv.findIndex(Boolean);
     const atk0 = c.atk;
+    sim.now += 300;
     sim.onEquip(p as never, { slot: i, r: 'req-gggg' });
     expect(c.atk).toBeGreaterThan(atk0);
     for (let k = 0; k < 30; k++) c.tx('fill', null, (d) => d.addRolled('itm_moc_kiem', 3, 0));
+    sim.now += 300;
     sim.onUnequip(p as never, { slot: 'weapon', r: 'req-hhhh' });
     expect(c.equip.weapon).toBeDefined();
     c.tx('t', null, (d) => !!d.removeAt(0, 1));
+    sim.now += 300;
     sim.onUnequip(p as never, { slot: 'weapon', r: 'req-iiii' });
     expect(c.equip.weapon).toBeUndefined();
     expect(c.atk).toBe(atk0);

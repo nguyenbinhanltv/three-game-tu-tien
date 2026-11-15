@@ -39,8 +39,8 @@ export const LOOT_TIERS: readonly LootTierSpec[] = [
   { color: 0xdce6df, height: 2.6, radius: 0.22, alpha: 0.45, hold: 0.55, sparks: 0, core: false },
   { color: 0x7fe3d0, height: 5.5, radius: 0.32, alpha: 0.6, hold: 0.8, sparks: 6, core: false },
   { color: 0xffde96, height: 10, radius: 0.45, alpha: 0.85, hold: 1.3, sparks: 16, core: true },
-  { color: 0xc9a8f0, height: 13, radius: 0.5, alpha: 0.9, hold: 1.6, sparks: 18, core: true },
-  { color: 0xffd45a, height: 30, radius: 0.7, alpha: 1, hold: 2.6, sparks: 30, core: true },
+  { color: 0xc9a8f0, height: 13, radius: 0.32, alpha: 0.75, hold: 1.6, sparks: 18, core: true },
+  { color: 0xffd45a, height: 30, radius: 0.5, alpha: 0.95, hold: 2.6, sparks: 30, core: true },
 ];
 
 /** Huyền phẩm dùng bậc 2 nhưng đổi sang lam (màu phẩm trong qualities.json). */

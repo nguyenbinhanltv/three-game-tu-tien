@@ -23,8 +23,9 @@ describe('lootTier (M4-6)', () => {
       const a = LOOT_TIERS[i - 1];
       const b = LOOT_TIERS[i];
       expect(b.height).toBeGreaterThan(a.height);
-      expect(b.radius).toBeGreaterThan(a.radius);
-      expect(b.alpha).toBeGreaterThan(a.alpha);
+      // Địa/Thiên phẩm cột hẹp hơn bậc 2 để không chiếm quá 5% khung hình; chỉ bậc 0..2 rộng dần.
+      if (i <= 2) expect(b.radius).toBeGreaterThan(a.radius);
+      if (i <= 2 || i === 4) expect(b.alpha).toBeGreaterThan(a.alpha);
       expect(b.hold).toBeGreaterThan(a.hold);
     }
     expect(new Set(LOOT_TIERS.map((t) => t.color)).size).toBe(5);

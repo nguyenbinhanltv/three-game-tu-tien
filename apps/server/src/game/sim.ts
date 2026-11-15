@@ -140,6 +140,8 @@ export interface PlayerEnt {
   gcdAt: number;
   cds: Map<string, number>;
   itemCdAt: number;
+  /** Mặc/tháo đồ: tối thiểu 200 ms giữa hai lần (mỗi lần là một giao dịch DB + dòng ledger). */
+  equipCdAt: number;
   casting: { skill: SkillDef; target: string; endAt: number } | null;
   shield: { amount: number; until: number } | null;
   lastCombatAt: number;
@@ -424,6 +426,7 @@ export class GameSim {
       gcdAt: 0,
       cds: new Map(),
       itemCdAt: 0,
+      equipCdAt: 0,
       casting: null,
       shield: null,
       lastCombatAt: 0,
@@ -1039,7 +1042,7 @@ export class GameSim {
     const kept: { id: string; n: number }[] = [];
     const keptGear: { id: string; q: Quality; ilvl: number }[] = [];
     let full = false;
-    p.char.tx('loot:' + mon.def.id, null, (d) => {
+    const saved = p.char.tx('loot:' + mon.def.id, null, (d) => {
       d.addGold(gold);
       for (const g of gear) {
         // addRolled chỉ đụng túi khi còn chỗ; hết chỗ thì món đó bỏ, bản nháp vẫn dùng được.
@@ -1055,6 +1058,8 @@ export class GameSim {
       }
       return true;
     });
+    // Ghi DB lỗi: túi/ví không đổi nên không báo gì (tránh báo Thiên phẩm giả cho cả phòng).
+    if (!saved) return;
     if (gold > 0) this.sys(p, 'sys.gold', { n: gold }, 'loot', { src: mon.id });
     for (const g of kept) this.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id, src: mon.id });
     for (const g of keptGear) {
@@ -1861,7 +1866,8 @@ export class GameSim {
     const slot = m?.slot;
     if (!Number.isInteger(slot) || (slot as number) < 0 || (slot as number) >= INV_SIZE || this.isDead(p)) return;
     const idem = this.idem(p, m?.r);
-    if (idem === undefined) return;
+    if (idem === undefined || this.now < (p.equipCdAt ?? 0)) return;
+    p.equipCdAt = this.now + 200;
     const c = p.char;
     const it = c.inv[slot as number];
     const def = it ? ITEM.get(it.id) : undefined;
@@ -1890,7 +1896,8 @@ export class GameSim {
     const es = m?.slot;
     if (!isEquipSlot(es) || this.isDead(p)) return;
     const idem = this.idem(p, m?.r);
-    if (idem === undefined) return;
+    if (idem === undefined || this.now < (p.equipCdAt ?? 0)) return;
+    p.equipCdAt = this.now + 200;
     const c = p.char;
     const worn = c.equip[es];
     if (!worn) return;
