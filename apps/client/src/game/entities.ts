@@ -1,4 +1,6 @@
 import * as THREE from 'three/webgpu';
+import { E4_OFF } from './camZones';
+import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
 import { DUNGEON_EXIT, groundAt, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
 import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
 import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
@@ -295,6 +297,8 @@ export const LOD0_MAX = 12;
  * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
  */
 export const LABEL_MAX = 16;
+/** Rộng tấm nhãn trên màn hình (px) được kẹp trong khoảng này (P2-E4); chữ chiếm chừng 62%. */
+const LABEL_PX = { min: 140, max: 300 };
 
 interface LodEntry {
   model: CharacterView;
@@ -431,6 +435,8 @@ export class EntityManager {
     const k = Math.min(1, dt * 12);
     const bars = this.bars;
     bars.begin();
+    const cam = this.camera as THREE.PerspectiveCamera | null;
+    if (cam && !E4_OFF) bars.setView(cam.position.x, cam.position.y, cam.position.z, cam.fov ?? 55, typeof window === 'undefined' ? 0 : window.innerHeight);
 
     // ----- người chơi -----
     view.players.forEach((s, sid) => {
@@ -751,18 +757,60 @@ export class EntityManager {
     list.sort((a, b) => (a.local !== b.local ? (a.local ? -1 : 1) : a.inView !== b.inView ? (a.inView ? -1 : 1) : a.d - b.d));
     let lod0 = 0;
     let labels = 0;
+    const boxes = this.labelBoxes;
+    boxes.length = 0;
+    const pc = cam as THREE.PerspectiveCamera | null;
+    const vw = typeof window === 'undefined' ? 0 : window.innerWidth;
+    const vh = typeof window === 'undefined' ? 0 : window.innerHeight;
     for (const e of list) {
       if (e.label) {
         // Quái đã tự ẩn nhãn (chết, xa 70 m) thì giữ ẩn; người chơi luôn bật lại theo suất.
         const want = e.local || e.target || (e.inView && labels < LABEL_MAX);
         if (want && !e.local && !e.target) labels++;
         e.label.visible = e.labelKeep ? e.label.visible && want : want;
+        if (e.label.visible && pc && vh > 0 && !E4_OFF) this.fitLabel(e, pc, vw, vh, boxes);
       }
       if (!e.model.setView) continue;
       const allow = e.local || (e.inView && lod0 < LOD0_MAX);
       if (allow) lod0++;
       e.model.setView({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow, self: e.local });
     }
+  }
+
+  /** Hộp màn hình (px) của các nhãn đang hiện khung này, để số sát thương tránh đè lên tên. */
+  labelBoxes: Box[] = [];
+
+  /**
+   * Kẹp cỡ nhãn trên màn hình (không phóng khổng lồ khi camera sát) và ẩn nhãn chồng lên nhãn gần hơn
+   * (mình và mục tiêu luôn giữ). Duyệt theo thứ tự ưu tiên của `lodList`: mình, rồi gần → xa.
+   */
+  private fitLabel(e: { model: CharacterView; label: THREE.Sprite | null; local: boolean; target: boolean; d: number }, cam: THREE.PerspectiveCamera, vw: number, vh: number, boxes: Box[]): void {
+    const sp = e.label!;
+    const ud = sp.userData as { w0?: number; h0?: number };
+    if (ud.w0 === undefined) {
+      ud.w0 = sp.scale.x;
+      ud.h0 = sp.scale.y;
+    }
+    const ps = sp.parent ? sp.parent.scale.x : 1;
+    const p = e.model.root.position;
+    const ly = sp.position.y * (sp.parent ? sp.parent.scale.y : 1);
+    const dist = Math.hypot(p.x - cam.position.x, p.y + ly - cam.position.y, p.z - cam.position.z);
+    const f = fitFactor(ud.w0 * ps, dist, cam.fov, vh, LABEL_PX.min, LABEL_PX.max);
+    sp.scale.set(ud.w0 * f, ud.h0! * f, 1);
+    // Hộp chữ trên màn hình: chữ chiếm khoảng 62% bề rộng, 55% bề cao của tấm.
+    _v.set(p.x, p.y + ly, p.z).project(cam);
+    if (_v.z > 1) return;
+    const wpx = screenWidthPx(ud.w0 * ps * f, dist, cam.fov, vh);
+    const box: Box = { x: (_v.x * 0.5 + 0.5) * vw, y: (-_v.y * 0.5 + 0.5) * vh, hw: wpx * 0.31, hh: (wpx / 4) * 0.28 };
+    if (!e.local && !e.target) {
+      for (const b of boxes) {
+        if (boxesOverlap(box, b, 2)) {
+          sp.visible = false;
+          return;
+        }
+      }
+    }
+    boxes.push(box);
   }
 
   /** Số model có xương theo mức LOD và số ngoài khung nhìn (gỡ lỗi, đo hiệu năng). */
