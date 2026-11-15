@@ -47,7 +47,8 @@ export const groundParams = {
   normalStrength: uniform(0.85),
 };
 
-const SNOW = vec3(0.58, 0.63, 0.66);
+/** Đỉnh cao: đá xám phủ rêu và cỏ khô (art bible cấm tuyết), không phải màu trắng. */
+const SNOW = vec3(0.26, 0.27, 0.22);
 const TOMB_TINT = vec3(0.6, 0.58, 0.7);
 
 /** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */
@@ -130,7 +131,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   col = mix(col, rockCol.mul(float(0.9).add(macro.mul(0.2))), rockW);
   col = mix(col, cliff.mul(float(0.9).add(macro.mul(0.2))), cliffW);
   col = col.mul(groundParams.gain);
-  col = mix(col, SNOW, snowW);
+  col = mix(col, SNOW.mul(float(0.85).add(macro.mul(0.3))), snowW.mul(0.9));
+  // Xa thì texture nhỏ hơn điểm ảnh (mipmap mảng texture không đủ) sinh vân ô vuông: hòa dần về màu đỉnh lưới.
+  col = mix(col, vc.mul(0.62), smoothstep(70, 230, dist).mul(0.9));
   mat.vertexColors = false;
   mat.colorNode = col;
 

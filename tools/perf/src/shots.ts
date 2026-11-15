@@ -29,7 +29,7 @@ const POINTS = [
   { name: 'sondao', x: 2048, z: 2330, yaw: 3.14, pitch: 0.3, dist: 14 },
   { name: 'rung', x: FOREST.x - 40, z: FOREST.z, yaw: 1.2, pitch: 0.28, dist: 14 },
   { name: 'ho', x: LAKE.x + LAKE_WATER_R + 6, z: LAKE.z, yaw: 1.57, pitch: 0.24, dist: 14 },
-  { name: 'dinh', x: 1860, z: 1680, yaw: 3.14, pitch: 0.0, dist: 8 },
+  { name: 'dinh', x: 1860, z: 1680, yaw: 3.14, pitch: 0.4, dist: 16 },
 ].filter((p) => !ONLY.length || ONLY.includes(p.name));
 
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots', command: 'pnpm shots' });

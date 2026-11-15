@@ -79,11 +79,11 @@
       },
       "day": {
         "label": "Ban ngày",
-        "sunColor": "#FFE0B0", "sunIntensity": 3.3, "sunElevationDeg": 36,
+        "sunColor": "#FFD596", "sunIntensity": 3.4, "sunElevationDeg": 36,
         "skyColor": "#9CC4C3", "skyIntensity": 0.72,
         "fogColor": "#C9DDD8", "fogDensity": 0.0011, "heightFogTop": 40, "heightFogBoost": 1.8,
-        "shadowTint": "#2A5A5E", "highlightTint": "#FFD38C", "splitBalance": 0.0,
-        "shadowAmount": 0.6, "highlightAmount": 0.15, "fogScatter": 0.55,
+        "shadowTint": "#2A5A5E", "highlightTint": "#FFC670", "splitBalance": 0.0,
+        "shadowAmount": 0.6, "highlightAmount": 0.28, "fogScatter": 0.85,
         "blackLift": "#0F2427", "contrast": 1.16, "saturation": 1.06, "exposure": 1.0
       },
       "night": {
