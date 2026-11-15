@@ -1,12 +1,13 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { APPEARANCE, DYE } from '@dtl/content';
-import { type Gender, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
+import { type Gender, type MonsterDef, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { applyDye } from './dye';
+import { applyPalette } from './monsterSkins';
 import { poseClipName } from './ikpose';
 import { libraryClips, type PoseLibrary, withPoses } from './poseLib';
 import { type HitOpts } from '../hitreact';
@@ -14,7 +15,7 @@ import { SkinnedCharacter, type SkinnedOpts } from './skinned';
 import { type SpringDef, springDefs } from './spring';
 import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
 import type { CharState, ClipMap } from './states';
-import { type AnimState, type CharacterView, legacyModelsRequested, type PerformOpts } from './view';
+import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
 export interface PlayerLook {
@@ -134,12 +135,36 @@ export class PlayerSkins {
     if (id && skin && !this.legacy) this.load(id);
     const t = id && skin && !this.legacy ? this.templates.get(id) : undefined;
     if (!id || !skin || !t || typeof t === 'string') return new Humanoid({ robe: dye.hex, trim: dye.trim, sword: true });
+    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex));
+  }
+
+  /** Asset người của `look` chưa nạp xong (bóng tâm ma tạm dùng model khối của quái). */
+  shadowPending(look: PlayerLook): boolean {
+    return this.pending(look);
+  }
+
+  /**
+   * Bóng tâm ma (P3-7): bản sao model người chơi (cùng giới), nhuộm đen-tím mờ, viền khói tím ở mép.
+   * Trả null nếu asset chưa nạp hoặc đang `?models=legacy` (bên gọi dùng model quái dự phòng).
+   */
+  createShadow(look: PlayerLook, def: MonsterDef): MonsterView | null {
+    const id = modelOf(look.g);
+    const skin = id ? PLAYER_SKINS[id] : undefined;
+    if (!id || !skin || this.legacy) return null;
+    this.load(id);
+    const t = this.templates.get(id);
+    if (!t || typeof t === 'string') return null;
+    const view = this.build(id, skin, t, this.shadowMaterial(id, t));
+    return Object.assign(view, { def }) as unknown as MonsterView;
+  }
+
+  private build(id: string, skin: PlayerSkin, t: Template, mat: THREE.MeshStandardNodeMaterial): SkinnedPlayer {
     const scene = cloneSkinned(t.handle.scene);
-    const mat = this.material(id, skin, t, dye.id, dye.hex);
     scene.traverse((o) => {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
+    void id;
     return new SkinnedPlayer(
       {
         scene,
@@ -198,6 +223,24 @@ export class PlayerSkins {
         this.templates.set(id, 'failed');
       },
     );
+  }
+
+  private shadowMaterial(id: string, t: Template): THREE.MeshStandardNodeMaterial {
+    const key = `${id}/shadow`;
+    let m = this.mats.get(key);
+    if (m) return m;
+    let src: THREE.Material | null = null;
+    t.handle.scene.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+    });
+    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
+    applyPalette(m, { dark: '#0d0916', light: '#4a3566', glow: '#b04bff' });
+    m.transparent = true;
+    m.opacity = 0.78;
+    m.depthWrite = false;
+    this.mats.set(key, m);
+    return m;
   }
 
   private material(id: string, skin: PlayerSkin, t: Template, dyeId: string, hex: string): THREE.MeshStandardNodeMaterial {

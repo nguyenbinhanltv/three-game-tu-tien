@@ -3,8 +3,8 @@
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { AFFIX_ILVL_CAP, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
-import { APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
+import { AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
+import { APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, t } from './index';
 import { LOOT } from './loot';
 import { PLACE_ID, PLACES } from './places';
 
@@ -361,6 +361,26 @@ for (const q of QUESTS) {
   for (const i of q.rewards.items ?? []) needItem(i.id, `quest ${q.id}`);
 }
 for (const r of REALMS) needStr(r.key);
+// ---- linh căn ngũ hành và bình cảnh (P3-7) ----
+uniqueIds('root', ROOTS);
+if (ROOTS.map((r) => r.id).join() !== ROOT_IDS.join()) err(`roots.json phải đủ năm linh căn theo thứ tự ${ROOT_IDS.join(', ')}`);
+for (const r of ROOTS) {
+  needStr(`root.${r.id}.name`);
+  needStr(`root.${r.id}.desc`);
+  needStr(`elem.${r.id}`);
+  if (!(ELEMENTS as readonly string[]).includes(r.elem)) err(`root ${r.id}: hệ ${r.elem} không hợp lệ`);
+  if (!(r.elemDmg > 0 && r.elemDmg <= 0.1)) err(`root ${r.id}: elemDmg phải trong (0; 0,1] (thiết kế: +8%)`);
+  const vals = Object.values(r.stat);
+  if (vals.length !== 1 || !(vals[0]! > 0 && vals[0]! <= 0.05)) err(`root ${r.id}: đúng một chỉ số phụ, tối đa +5%`);
+}
+for (const s of SKILLS) if (s.elem !== undefined && !(ELEMENTS as readonly string[]).includes(s.elem)) err(`skill ${s.id}: elem ${s.elem} không hợp lệ`);
+needItem(PHA_CANH_PILL, 'Phá Cảnh Đan');
+if (ITEM.get(PHA_CANH_PILL)?.use) err('Phá Cảnh Đan không có `use`: chỉ dùng qua bình cảnh (server)');
+if (!RECIPES.some((r) => r.output.id === PHA_CANH_PILL)) err('thiếu công thức luyện Phá Cảnh Đan');
+if (BOTTLENECK_LEVELS.join() !== '5,10,15') err('bình cảnh phải ở tầng 5, 10, 15');
+if (!MONSTER.has('mon_tam_ma')) err('thiếu quái mon_tam_ma (bóng tâm ma của thử thách bình cảnh)');
+if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
+for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);
 for (const lv of Object.values(LEVELS)) {
   for (const s of lv.spawns) {
     if (!MONSTER.has(s.mon)) err(`level ${lv.id}: quái không tồn tại ${s.mon}`);

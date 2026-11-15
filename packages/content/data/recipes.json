@@ -2,5 +2,6 @@
   { "id": "rcp_hoi_xuan_dan", "npc": "npc_duoc_su", "output": { "id": "itm_hoi_xuan_dan", "n": 1 }, "inputs": [ { "id": "itm_linh_thao", "n": 2 } ], "gold": 4 },
   { "id": "rcp_hoi_khi_dan", "npc": "npc_duoc_su", "output": { "id": "itm_hoi_khi_dan", "n": 1 }, "inputs": [ { "id": "itm_linh_thao", "n": 2 }, { "id": "itm_nanh_soi", "n": 1 } ], "gold": 4 },
   { "id": "rcp_tu_khi_dan", "npc": "npc_duoc_su", "output": { "id": "itm_tu_khi_dan", "n": 1 }, "inputs": [ { "id": "itm_linh_thao", "n": 3 }, { "id": "itm_yeu_dan", "n": 2 } ], "gold": 20 },
-  { "id": "rcp_truc_co_dan", "npc": "npc_duoc_su", "output": { "id": "itm_truc_co_dan", "n": 1 }, "inputs": [ { "id": "itm_huyet_linh_chi", "n": 5 }, { "id": "itm_yeu_dan", "n": 8 }, { "id": "itm_han_giao_dan", "n": 1 } ], "gold": 400 }
+  { "id": "rcp_truc_co_dan", "npc": "npc_duoc_su", "output": { "id": "itm_truc_co_dan", "n": 1 }, "inputs": [ { "id": "itm_huyet_linh_chi", "n": 5 }, { "id": "itm_yeu_dan", "n": 8 }, { "id": "itm_han_giao_dan", "n": 1 } ], "gold": 400 },
+  { "id": "rcp_pha_canh_dan", "npc": "npc_duoc_su", "output": { "id": "itm_pha_canh_dan", "n": 1 }, "inputs": [ { "id": "itm_linh_thao", "n": 6 }, { "id": "itm_yeu_dan", "n": 4 } ], "gold": 150 }
 ]
