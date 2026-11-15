@@ -14,6 +14,7 @@ import { Trails } from '../render/vfx/trail';
 import { assets } from './assets';
 import { PREFETCH_PRIORITY } from './preload';
 import { G } from './geo';
+import type { Box } from './screenFit';
 
 interface Fx {
   t: number;
@@ -910,7 +911,7 @@ export class Vfx {
 
 /** Số sát thương bay lên, vẽ bằng DOM. */
 export class DamageNumbers {
-  private items: { el: HTMLDivElement; pos: THREE.Vector3; t: number; dx: number }[] = [];
+  private items: { el: HTMLDivElement; pos: THREE.Vector3; t: number; dx: number; lift: number | null }[] = [];
   private pool: HTMLDivElement[] = [];
   constructor(private layer: HTMLElement) {}
 
@@ -920,10 +921,10 @@ export class DamageNumbers {
     el.className = 'dmg ' + cls;
     el.textContent = text;
     this.layer.appendChild(el);
-    this.items.push({ el, pos: pos.clone(), t: 0, dx: (Math.random() - 0.5) * 40 });
+    this.items.push({ el, pos: pos.clone(), t: 0, dx: (Math.random() - 0.5) * 40, lift: null });
   }
 
-  update(dt: number, camera: THREE.Camera, w: number, h: number): void {
+  update(dt: number, camera: THREE.Camera, w: number, h: number, avoid: readonly Box[] = []): void {
     for (let i = this.items.length - 1; i >= 0; i--) {
       const it = this.items[i];
       it.t += dt;
@@ -940,7 +941,15 @@ export class DamageNumbers {
         continue;
       }
       const x = (_a.x * 0.5 + 0.5) * w + it.dx * k;
-      const y = (-_a.y * 0.5 + 0.5) * h - k * 60;
+      const y0 = (-_a.y * 0.5 + 0.5) * h;
+      // Số mới sinh nằm trong hộp tên thì nhấc lên trên hộp đó một lần (không nhảy lúc đang bay).
+      if (it.lift === null) {
+        it.lift = 0;
+        for (const b of avoid) {
+          if (Math.abs(x - b.x) < b.hw + 26 && Math.abs(y0 - b.y) < b.hh + 14) it.lift = Math.max(it.lift, y0 - (b.y - b.hh - 16));
+        }
+      }
+      const y = y0 - it.lift - k * 60;
       it.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) scale(${(1.25 - k * 0.3).toFixed(2)})`;
       it.el.style.opacity = String(k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4);
     }

@@ -42,8 +42,9 @@ export function createSky(): THREE.Mesh {
     base.assign(mix(base, skyParams.glow, band.mul(toward).mul(0.55)));
 
     // Quầng và đĩa mặt trời (HDR > 1, ACES kéo về trắng ấm).
-    const halo = pow(sd, 6).mul(0.22).add(pow(sd, 48).mul(0.55));
-    const disc = smoothstep(0.99935, 0.99975, sd).mul(2.6);
+    // Quầng mềm liền một dải (không có số mũ cao tách thành vành riêng quanh đĩa), đĩa có mép mờ rộng.
+    const halo = pow(sd, 6).mul(0.2).add(pow(sd, 90).mul(0.42));
+    const disc = smoothstep(0.9992, 0.99975, sd).mul(2.4);
     base.addAssign(skyParams.sunColor.mul(halo.add(disc)));
 
     // Mây ti: chiếu hướng nhìn lên một mặt phẳng cao, kéo giãn thành sợi, trôi chậm.
