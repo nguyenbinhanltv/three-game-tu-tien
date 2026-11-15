@@ -1354,3 +1354,7 @@ kbd {
     opacity: 0;
   }
 }
+/* Cắt cảnh: câu thoại thường của boss (animation đặt opacity nên rule ẩn HUD không thắng) nhường cho phụ đề của cảnh. */
+.hud.cining > .boss-line {
+  display: none;
+}

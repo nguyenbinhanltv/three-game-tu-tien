@@ -1780,7 +1780,8 @@ export class Game {
   /** Boss vào pha mới hoặc gục: hiện một câu thoại ngắn nếu mình đứng gần (không khóa điều khiển, không gửi gì lên server). */
   private bossSay(src: string, key: string): void {
     const m = this.view.monsters.get(src);
-    if (!m || !hasString(key)) return;
+    // Đang cắt cảnh boss/chuyển pha: phụ đề của cảnh là câu thoại duy nhất, không chồng thêm dòng thoại thường.
+    if (!m || !hasString(key) || (this.cine.active && this.cineKind !== 'sect')) return;
     if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > 60) return;
     set({ bossLine: { id: ++this.bossLineId, name: monsterName(m.t), text: t(key), until: Date.now() + 3200 } });
   }
