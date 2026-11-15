@@ -8,7 +8,7 @@ import { togglePanel, useUI } from '../store';
 import { ancientMap } from './ancient';
 import { drawMinimap, type HitPt } from './draw';
 import { buildFrame } from './marks';
-import { clampZoom, DEFAULT_ZOOM, formatCountdown, type Mark, nearestIndex, type View, zoneStatus, ZOOM_SPANS } from './model';
+import { clampZoom, screenToWorld, DEFAULT_ZOOM, formatCountdown, type Mark, nearestIndex, type View, zoneStatus, ZOOM_SPANS } from './model';
 import '../minimap.css';
 
 const SIZE = 176;
@@ -40,6 +40,7 @@ export function Minimap() {
   const ref = useRef<HTMLCanvasElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const hits = useRef<HitPt[]>([]);
+  const viewRef = useRef<View | null>(null);
   const mouse = useRef<{ x: number; y: number; cx: number; cy: number } | null>(null);
   const [zoom, setZoom] = useState(readZoom);
   const [rotate, setRotate] = useState(() => localStorage.getItem('dtl.mm.rot') === '1');
@@ -105,9 +106,10 @@ export function Minimap() {
       const me = g.view.players.get(g.sid);
       const lv = me?.lv ?? st.char?.level ?? 1;
       const order = st.party ? st.party.members.map((m) => m.sid) : [];
-      const frame = buildFrame(g, st.quests, st.trackQuest, lv, order, nowT);
+      const frame = buildFrame(g, st.quests, st.trackQuest, lv, order, nowT, st.marks);
       const yaw = g.yaw;
       const v: View = { cx: g.renderPos.x, cz: g.renderPos.z, span, size: SIZE, rot: rotRef.current ? yaw : 0 };
+      viewRef.current = v;
       drawMinimap(ctx, g, frame, v, dpr, nowT, ancientMap(), yaw, hits.current);
       // Tooltip theo con trỏ: chọn lại theo từng khung (biểu tượng đang chuyển động) nhưng chỉ cập nhật React khi nội dung đổi.
       const m = mouse.current;
@@ -145,6 +147,22 @@ export function Minimap() {
           }}
           onMouseLeave={() => {
             mouse.current = null;
+          }}
+          onContextMenu={(e) => {
+            // Chuột phải: đặt điểm đánh dấu tại chỗ chỉ, hoặc xóa nếu bấm vào chính điểm của mình.
+            e.preventDefault();
+            e.stopPropagation();
+            const v = viewRef.current;
+            const g = Game.current;
+            if (!v || !g) return;
+            const r = e.currentTarget.getBoundingClientRect();
+            const w = screenToWorld(v, e.clientX - r.left, e.clientY - r.top);
+            const own = useUI.getState().marks.find((m) => m.own);
+            if (own) {
+              const a = Math.hypot(own.x - w.x, own.z - w.z) * (v.size / v.span);
+              if (a < 10) return g.setMark();
+            }
+            g.setMark(w);
           }}
         />
         <div className="minimap-ctl" onClick={(e) => e.stopPropagation()}>

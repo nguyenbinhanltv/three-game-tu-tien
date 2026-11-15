@@ -3,12 +3,17 @@ import { Client, type Room } from 'colyseus.js';
 import {
   biomeAt,
   C,
+  type BossTimerMsg,
   type CdMsg,
   type CharView,
   type ChatMsg,
   type DuelMsg,
   type InviteMsg,
+  type MarkMsg,
   type PartyMsg,
+  TELE_CAST_MS,
+  TELE_PAD,
+  type TeleMsg,
   cloneMoveState,
   type DmgMsg,
   DUNGEON_EXIT,
@@ -59,6 +64,8 @@ import {
 } from '@dtl/shared';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
+import { minimapHooks } from '../ui/minimap/model';
+import { visibleView } from './aoiView';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import type { DebugPerf } from '../ui/store';
@@ -92,6 +99,7 @@ import { PropLayer } from './props';
 import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
+import { MapVis } from './mapVis';
 import { loadGroundTextures, type GroundTextures } from './groundTextures';
 import type { GroundLevel } from '../render/materials/ground';
 import { telegraph } from './telegraph';
@@ -104,6 +112,7 @@ import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../in
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
+import type { SkillEvent } from './character/view';
 import { debugAllowed, readTestParams } from './testParams';
 
 export interface LoginOptions {
@@ -157,6 +166,10 @@ const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8 };
 
 /** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */
 const STINGS: Record<string, string> = { levelup: 'sting_levelup', ascend: 'sting_breakthrough', death: 'sting_death' };
+/** Lướt hiển thị xuất phát từ vị trí vẽ cách đây chừng này giây (K-4): trước lúc bấm lướt, trước khi gói vị trí mới của server tới. */
+const DASH_LOOKBACK = 0.3;
+/** Đòn nặng của boss từ tỉ lệ này của máu tối đa trở lên thì hất người bị đánh ngã (chỉ hình). */
+const KNOCKDOWN_FRAC = 0.18;
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const _shakePos = new THREE.Vector3();
@@ -285,6 +298,8 @@ export class Game {
   minimap!: HTMLCanvasElement;
   /** Lúc (performance.now) thực thể bị đánh/đang đánh người chơi: minimap nhấp nháy biểu tượng (M-3). */
   hurtAt = new Map<string, number>();
+  /** Trận truyền tống, vòng niệm và cột sáng điểm đánh dấu (M-4). */
+  private mapVis: MapVis | null = null;
   private stage: HTMLElement;
   private canvas!: HTMLCanvasElement;
   private portalDisc: THREE.Mesh | null = null;
@@ -385,6 +400,23 @@ export class Game {
   }
   private startedAt = 0;
   private frames = 0;
+  /** Người nghe sự kiện chiêu (K-4): VFX, âm thanh, rung camera đăng ký ở đây để khớp đúng khung `hitAt` (K-6, K-7). */
+  private skillListeners = new Set<(sid: string, e: SkillEvent) => void>();
+  /** Đăng ký nghe; trả hàm hủy đăng ký. */
+  onSkillEvent(fn: (sid: string, e: SkillEvent) => void): () => void {
+    this.skillListeners.add(fn);
+    return () => this.skillListeners.delete(fn);
+  }
+  /** Nhật ký sự kiện chiêu gần nhất (chỉ bản dev, cho Playwright/console: `__game.skillLog`). */
+  skillLog: { sid: string; e: SkillEvent; at: number }[] = [];
+  private emitSkillEvent(sid: string, e: SkillEvent): void {
+    for (const fn of this.skillListeners) fn(sid, e);
+    if (import.meta.env.DEV) {
+      this.skillLog.push({ sid, e, at: performance.now() });
+      if (this.skillLog.length > 200) this.skillLog.shift();
+    }
+  }
+
   /** Số đo khung vừa vẽ, cộng dồn qua mọi pass (cho `__game.info()`). */
   private lastRender = { drawCalls: 0, triangles: 0 };
   private hudAt = 0;
@@ -411,7 +443,7 @@ export class Game {
   constructor(room: Room, init: InitMsg) {
     this.room = room;
     this.sid = init.sid;
-    this.view = room.state as unknown as WorldView;
+    this.view = visibleView(room.state as unknown as WorldView);
     this.stage = document.getElementById('stage')!;
     this.applyInit(init);
     this.bindRoom(room);
@@ -429,6 +461,7 @@ export class Game {
       inv: init.inv,
       equip: init.equip,
       quests: init.quests,
+      marks: [],
       target: null,
       boss: null,
       npc: null,
@@ -449,13 +482,16 @@ export class Game {
   /** Chuyển sang room khác (bí cảnh ↔ thế giới) mà không dựng lại renderer. */
   private rebind(room: Room, init: InitMsg): void {
     this.room = room;
-    this.view = room.state as unknown as WorldView;
+    this.view = visibleView(room.state as unknown as WorldView);
     this.applyInit(init);
     this.bindRoom(room);
     this.ents?.dispose();
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.mapVis?.dispose();
+    this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
     this.resetSound(init.room === ROOM_WORLD);
     this.ents.camera = this.camera;
+    this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
     this.pendingChapter = init.room === ROOM_DUNGEON ? 'dungeon' : null;
     this.camFrame.cancel();
@@ -480,6 +516,16 @@ export class Game {
     room.onMessage(S.QUESTS, (q: QuestView) => {
       set({ quests: q });
       this.questMarkersDirty = true;
+    });
+    room.onMessage(S.BOSS_TIMERS, (m: BossTimerMsg) => {
+      const off = Date.now() - m.now;
+      set({ bossTimers: { ...m, off } });
+      // Móc của minimap (M-3): giờ hồi sinh boss theo id quái (đồng hồ máy), xóa khi boss sống.
+      for (const tm of m.list) {
+        if (!MONSTER.get(tm.t)?.boss) continue;
+        if (tm.at > 0) minimapHooks.bossRespawnAt.set(tm.t, tm.at + off);
+        else minimapHooks.bossRespawnAt.delete(tm.t);
+      }
     });
     room.onMessage(S.CD, (m: CdMsg) => {
       const off = Date.now() - m.now;
@@ -520,6 +566,16 @@ export class Game {
     room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, m.c === 'party' ? 'party' : 'chat', m.from));
     // Tổ đội và tỉ thí (P3-9): chỉ hiển thị; mọi phán định ở server. Giờ server đổi sang đồng hồ client.
     room.onMessage(S.PARTY, (m: PartyMsg | null) => set({ party: m }));
+    // Truyền Tống Trận và điểm đánh dấu (M-4): chỉ hiển thị; server quyết định. Thời gian còn lại đổi sang đồng hồ client.
+    room.onMessage(S.TELE, (m: TeleMsg) => {
+      const now = performance.now();
+      set({ tele: { open: m.open, cast: m.cast ? { id: m.cast.id, until: now + m.cast.ms } : null, cdUntil: m.cd > 0 ? now + m.cd : 0 } });
+      minimapHooks.teleports = m.open.flatMap((id) => {
+        const pad = TELE_PAD.get(id);
+        return pad ? [{ id, x: pad.x, z: pad.z, label: t(`tele.${id}`) }] : [];
+      });
+    });
+    room.onMessage(S.MARK, (m: MarkMsg) => set({ marks: m.marks }));
     room.onMessage(S.INVITE, (m: InviteMsg) => {
       const until = m.until - this.timeOffset;
       set((s) => {
@@ -729,8 +785,10 @@ export class Game {
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.mapVis = new MapVis(this.scene, get().room === ROOM_WORLD);
     this.resetSound(get().room === ROOM_WORLD);
     this.ents.camera = this.camera;
+    this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
     this.minimap = renderMinimap(320);
     mark('minimap');
@@ -1040,6 +1098,16 @@ export class Game {
 
   // ---------- thao tác của người chơi (UI cũng gọi) ----------
 
+  /** Xin truyền tống tới trận `id` (server kiểm mở khóa, giao chiến, hồi chiêu). Không `id` = hủy lượt niệm. */
+  teleport(id?: string): void {
+    this.send(C.TELE, id ? { id } : {});
+  }
+
+  /** Đặt điểm đánh dấu ở (x, z), hoặc xóa nếu không có toạ độ. Server giãn lệnh và chia sẻ cho tổ đội. */
+  setMark(pos?: { x: number; z: number }): void {
+    this.send(C.MARK, pos ? { x: pos.x, z: pos.z } : { clear: true });
+  }
+
   send(type: string, msg?: unknown): void {
     if (this.leaving) return;
     this.room.send(type, msg);
@@ -1203,12 +1271,24 @@ export class Game {
       this.faceTargetUntil = performance.now() + 900;
     }
     this.send(C.SKILL, { id: skill.id, t: needTarget ? this.targetId : undefined });
-    // Vào thế ngay khi bấm (chỉ hình): chỉ khi client thấy server sẽ nhận (đứng đất, hết chờ, đủ linh lực, trong tầm).
+    this.predictSkill(i, skill, needTarget);
+  }
+
+  /**
+   * Vào thế ngay khi gửi chiêu (chỉ hình): chỉ khi client thấy server sẽ nhận (đứng đất, hết chờ, đủ linh lực, trong tầm).
+   * Dùng cho cả bấm phím lẫn tự đánh, để chuỗi liên hoàn luôn có nhịp vào thế đủ (K-4).
+   */
+  private predictSkill(i: number, skill: SkillDef, needTarget: boolean): void {
+    const me = this.me();
+    if (!me) return;
     const mon = needTarget ? this.view.monsters.get(this.targetId) : undefined;
     const inRange = !needTarget || (!!mon && Math.hypot(mon.x - this.cur.x, mon.z - this.cur.z) <= skill.range + 1.5 + (MONSTER.get(mon.t)?.scale ?? 1));
     const ready = Date.now() >= this.skillReadyAt(i) - 60 && me.mp >= skill.mp && (me.fl & PF_CASTING) === 0 && (!skill.ult || (get().method?.charge ?? 0) >= CHARGE_MAX);
     // Biến thức có thể bỏ niệm chú (Lôi Tốc): dự đoán theo thời gian niệm đã gộp biến thức.
-    if (inRange && ready && this.cur.grounded && !this.cur.flying) this.skillPoses.predict(this.ents.players.get(this.sid)?.model, { ...skill, cast: resolveBarSkill(get().method, skill).cast }, performance.now());
+    if (inRange && ready && this.cur.grounded && !this.cur.flying) {
+      const gap = mon ? Math.hypot(mon.x - this.cur.x, mon.z - this.cur.z) - (MONSTER.get(mon.t)?.scale ?? 1) : undefined;
+      this.skillPoses.predict(this.ents.players.get(this.sid)?.model, { ...skill, cast: resolveBarSkill(get().method, skill).cast }, performance.now(), gap);
+    }
   }
 
   toggleFly(): void {
@@ -1381,7 +1461,14 @@ export class Game {
     const pSrc = e.players.get(src);
     if (!held) {
       // Động tác chiêu; đòn của mình đang vào thế thì giữ hiệu ứng + tiếng tới đúng lúc ra đòn.
-      const hold = this.skillPoses.onFx(m.t, pSrc?.model, src === this.sid, performance.now());
+      // Lướt (K-2): hình trượt từ chỗ cũ tới chỗ server đặt, và cắt phần thu về của chiêu đang phát (K-4).
+      if (pSrc && this.skillPoses.dashOf(m.t)) {
+        const from = e.posAgo(src, DASH_LOOKBACK);
+        if (from) pSrc.model.dashFrom?.(from.x, from.z, m.d ?? 0.3);
+      }
+      const dstV = dst ? (e.monsters.get(dst) ?? e.players.get(dst)) : undefined;
+      const gap = pSrc && dstV ? Math.hypot(dstV.x - pSrc.x, dstV.z - pSrc.z) - ('model' in dstV && 'def' in dstV.model ? ((dstV.model as { def?: { scale?: number } }).def?.scale ?? 1) : 0.5) : undefined;
+      const hold = this.skillPoses.onFx(m.t, pSrc?.model, src === this.sid, performance.now(), { n: m.n, gap });
       if (hold > 0) {
         setTimeout(() => this.onFx(m, true), hold * 1000);
         return;
@@ -1685,6 +1772,11 @@ export class Game {
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (m.hv && !m.heal && m.n > 0) this.heavyInk(m.dst, m.src);
     if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
+    // Boss đánh nặng (≥ KNOCKDOWN_FRAC máu tối đa) thì người bị đánh ngã rồi đứng dậy; chỉ hình, người chơi vẫn đi lại được và kéo dậy sớm khi di chuyển.
+    if (!m.heal && m.hv && m.n > 0 && m.src) {
+      const victim = this.ents.players.get(m.dst);
+      if (victim && this.ents.monsters.get(m.src)?.model.def.boss && m.n >= victim.s.mhp * KNOCKDOWN_FRAC) victim.model.knockdown?.();
+    }
     let cls = 'other';
     if (m.heal) cls = 'heal';
     else if (mine) cls = 'hurt';
@@ -1887,6 +1979,12 @@ export class Game {
     this.env.update(dt, this.camera, rp);
     this.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
     if (me) this.ambient.update(dt, this.camera.position, rp);
+    if (this.mapVis && me) {
+      const st = get();
+      this.mapVis.setOpen(st.tele.open);
+      this.mapVis.setMarks(st.marks);
+      this.mapVis.update(rp, st.tele.cast, performance.now(), TELE_CAST_MS);
+    }
     for (const disc of [this.portalDisc, this.exitDisc]) {
       if (!disc) continue;
       disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
@@ -2046,6 +2144,7 @@ export class Game {
         const dead = (me.fl & (PF_DEAD | PF_FLYING | PF_CASTING)) !== 0;
         const dist = Math.hypot(m.x - this.cur.x, m.z - this.cur.z);
         if (!dead && Date.now() >= st.gcdAt - 30 && dist < SKILLS[0].range + 1) {
+          this.predictSkill(0, this.bar()[0] ?? SKILLS[0], true);
           this.lastAttackSend = now;
           this.faceTargetUntil = now + 600;
           this.send(C.SKILL, { id: SKILLS[0].id, t: this.targetId });
@@ -2254,6 +2353,11 @@ export class Game {
       }
       out.push({ key: qid + ':' + key, kind: goal.kind === 'node' ? 'gather' : 'quest', label, icon: goal.kind === 'node' ? goal.item : undefined, pos, span: goal.kind === 'mon' && 'id' in spot ? spanOf(spot.id) : 0.8 });
     } while (false);
+    // Điểm đánh dấu của mình và đồng đội (M-4): mũi tên ở rìa màn hình khi nằm ngoài khung nhìn.
+    for (const m of st.marks) {
+      const y = groundAt(m.x, m.z) + 2;
+      out.push({ key: `mark:${m.id}`, kind: m.own ? 'mark' : 'mate', label: m.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: m.name }), pos: (o) => (o.set(m.x, y, m.z), true), span: 0.4 });
+    }
     // Đồ rơi quý (M4-6) đang nằm trên đất ngoài khung nhìn: chỉ trong lúc cột sáng còn đứng.
     this.pruneRareLoot();
     for (const l of this.rareLoot) {
@@ -2643,6 +2747,7 @@ export class Game {
     this.ground?.dispose();
     this.lanterns?.dispose();
     this.grass?.dispose();
+    this.mapVis?.dispose();
     this.props?.dispose();
     this.post?.dispose();
     postParams.ink.value = 0;

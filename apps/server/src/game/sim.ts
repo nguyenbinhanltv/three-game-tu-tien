@@ -144,6 +144,10 @@ import {
   hitOffsets,
   planDash,
   strikeDelay,
+  AOI_BOSS_OUT,
+  AOI_OUT,
+  zoneAt,
+  type BossTimerMsg,
 } from '@dtl/shared';
 import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
@@ -167,8 +171,10 @@ const POTION_ALLY_RANGE = 12;
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
+import { CampSystem, type CampRt } from './camps';
 import { empowerDeadlines, isEmpowered, SkillFlow } from './skillflow';
 import { DuelSystem } from './duel';
+import { TeleportSystem } from './teleport';
 import { parties } from './party';
 import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg, equippedArtifact, feedQi, passiveValue, progressOf, pruneBuffs } from './artifact';
@@ -254,6 +260,8 @@ export interface MonEnt {
   homeX: number;
   homeZ: number;
   spawn: SpawnDef | null;
+  /** Cụm (bãi quái) mà con này thuộc về (M-2); hồi sinh do cụm quản. */
+  camp?: CampRt;
   state: number;
   target: string;
   attackAt: number;
@@ -353,6 +361,8 @@ const boltCount = (c: MonsterCaster) => Math.max(1, Math.min(5, c.n ?? 1));
 
 export interface SimHost {
   broadcast(type: string, msg: unknown): void;
+  /** Gửi cho cả phòng trừ các phiên trong `except` (AOI: người ở xa không nhận). Không có thì lùi về `broadcast`. */
+  broadcastExcept?(type: string, msg: unknown, except: ReadonlySet<string>): void;
   /** Bí cảnh: gọi khi một quái không hồi sinh bị hạ. */
   onMonsterKilled?(m: MonEnt): void;
 }
@@ -418,6 +428,27 @@ export class GameSim {
     player: (sid) => this.players.get(sid),
   });
 
+  /** Bãi quái theo cụm (M-2): đội hình, tái sinh cả cụm, hồi sinh theo số người trong vùng. */
+  readonly camps = new CampSystem({
+    now: () => this.now,
+    spawn: (monId, level, x, z, sp) => {
+      const def = MONSTER.get(monId);
+      return def ? this.spawnMonster(def, level, x, z, sp) : null;
+    },
+    revive: (m, x, z) => this.respawnMonster(m, { x, z }),
+    remove: (m) => this.removeMonster(m),
+    snap: (x, z) => this.randomPoint(x, z, 1.5, false),
+    playersIn: (zone) => {
+      let n = 0;
+      // Chỉ người đang kết nối và còn hoạt động (có input hoặc giao chiến trong 30 s): người "ma" hay treo máy không kéo số con/tốc độ hồi sinh.
+      for (const p of this.players.values()) {
+        if (!p.connected || this.isDead(p) || (this.now - p.lastInputAt > 30_000 && this.now - p.lastCombatAt > 30_000)) continue;
+        if (zoneAt(this.level.zones, p.move.x, p.move.z)?.id === zone) n++;
+      }
+      return n;
+    },
+  });
+
   /** Tỉ thí 1v1 ở võ đài (P3-9). */
   readonly duel = new DuelSystem({
     now: () => this.now,
@@ -427,6 +458,19 @@ export class GameSim {
     warn: (p, k, params) => this.warn(p, k, params),
     setFlag: (p, f, on) => this.setFlag(p, f, on),
     cancelCast: (p) => this.cancelCast(p),
+    stopMeditate: (p) => this.setMeditating(p, false),
+  });
+
+  /** Truyền Tống Trận (M-4): mở khóa, niệm, dịch chuyển. */
+  readonly tele = new TeleportSystem({
+    now: () => this.now,
+    inWorld: () => this.opts.levelId === 'van_lam' && this.opts.roomName === 'world',
+    players: () => this.players.values(),
+    inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
+    inDuel: (p) => this.duel.inDuel(p),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    warn: (p, k, params) => this.warn(p, k, params),
+    teleportTo: (p, x, z) => this.teleportTo(p, x, z),
     stopMeditate: (p) => this.setMeditating(p, false),
   });
 
@@ -448,10 +492,11 @@ export class GameSim {
   ) {
     this.level = LEVELS[opts.levelId];
     state.level = opts.levelId;
-    // Quái đứng lẻ (tinh anh, boss) và các bãi quái (M-1); hồi sinh theo số người/AOI để M-2.
-    for (const sp of levelSpawns(this.level)) {
+    // Quái đứng lẻ (tinh anh, boss): từng con hồi sinh riêng. Bãi quái: theo cụm (M-2).
+    for (const sp of this.level.spawns) {
       for (let i = 0; i < sp.count; i++) this.spawnFromDef(sp);
     }
+    this.camps.init(this.level.camps ?? []);
     for (const nd of this.level.nodes) {
       for (let i = 0; i < nd.count; i++) {
         const pos = this.randomPoint(nd.x, nd.z, nd.radius, false);
@@ -505,8 +550,39 @@ export class GameSim {
     this.sys(p, k, params, 'bad');
   }
 
+  /** Vị trí (x, z) của một thực thể theo id (người chơi hoặc quái), undefined nếu không biết. */
+  private posOf(id?: string): { x: number; z: number } | undefined {
+    if (!id) return undefined;
+    const p = this.players.get(id);
+    if (p) return { x: p.move.x, z: p.move.z };
+    const m = this.monById.get(id);
+    return m ? { x: m.s.x, z: m.s.z } : undefined;
+  }
+
+  /**
+   * Gửi tin hiệu ứng/sát thương chỉ cho người trong tầm AOI quanh điểm xảy ra (cộng người có tên trong tin). Không xác định được điểm
+   * thì gửi cả phòng. Giảm băng thông và không lộ sự kiện ở xa (M-2).
+   */
+  private emit(type: string, payload: object): void {
+    const msg = payload as { src?: string; dst?: string; x?: number; z?: number };
+    const at = msg.x !== undefined && msg.z !== undefined ? { x: msg.x, z: msg.z } : (this.posOf(msg.src) ?? this.posOf(msg.dst));
+    if (!at || !this.host.broadcastExcept) return this.host.broadcast(type, payload);
+    // Boss thấy được tới AOI_BOSS_IN: tin có boss tham gia dùng tầm rộng hơn.
+    const boss = !!(this.monById.get(msg.src ?? '')?.def.boss || this.monById.get(msg.dst ?? '')?.def.boss);
+    const rr = boss ? AOI_BOSS_OUT : AOI_OUT;
+    const r2 = rr * rr;
+    let far: Set<string> | undefined;
+    for (const p of this.players.values()) {
+      const dx = p.move.x - at.x;
+      const dz = p.move.z - at.z;
+      if (dx * dx + dz * dz > r2 && p.sid !== msg.src && p.sid !== msg.dst) (far ??= new Set()).add(p.sid);
+    }
+    if (far) this.host.broadcastExcept(type, payload, far);
+    else this.host.broadcast(type, payload);
+  }
+
   fx(m: FxMsg): void {
-    this.host.broadcast(S.FX, m);
+    this.emit(S.FX, m);
   }
 
   private setFlag(p: PlayerEnt, flag: number, on: boolean): void {
@@ -700,7 +776,9 @@ export class GameSim {
     this.tickHazards();
     this.tickBolts();
     this.tickMethods();
+    this.camps.tick();
     this.duel.tick();
+    this.tele.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -1328,13 +1406,19 @@ export class GameSim {
   }
 
   /** Quái bị khiêu khích: vào trận ngay nếu đang rảnh. */
-  private aggroMonster(mon: MonEnt, p: PlayerEnt): void {
+  private aggroMonster(mon: MonEnt, p: PlayerEnt, assist = false): void {
     if (mon.state === MS_IDLE || (mon.state === MS_RETURN && this.homeDist(mon) < LEASH * 0.7)) {
       this.resetAi(mon);
       mon.target = p.sid;
       mon.state = MS_CHASE;
       mon.s.st = MS_CHASE;
       mon.unreachableSince = 0;
+      // Cụm cùng đánh: đồng bọn đang rảnh trong 14 m cũng lao vào.
+      if (mon.camp && !assist) {
+        for (const o of [...mon.camp.melee, ...(mon.camp.ranged ? [mon.camp.ranged] : [])]) {
+          if (o !== mon && o.state === MS_IDLE && Math.hypot(o.s.x - mon.s.x, o.s.z - mon.s.z) <= 14) this.aggroMonster(o, p, true);
+        }
+      }
     }
   }
 
@@ -1361,7 +1445,7 @@ export class GameSim {
       }
       const n = Math.round(amount * share);
       o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
-      this.host.broadcast(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+      this.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
     }
   }
 
@@ -1486,7 +1570,7 @@ export class GameSim {
         } else {
           const n = Math.round(healAmount(base, healMul) * recv);
           c.hp = Math.min(c.mhp, c.hp + n);
-          this.host.broadcast(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
+          this.emit(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
           this.setHealShare(p, n);
         }
         this.fx({ t: skill.fx, src: p.sid, ...tag });
@@ -1553,7 +1637,7 @@ export class GameSim {
           if (o === dead || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
           const n = healAmount(o.char.mhp * 0.2, healMul);
           o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
-          this.host.broadcast(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+          this.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
         }
         break;
       }
@@ -1596,7 +1680,7 @@ export class GameSim {
         const n = Math.round(h.per * (1 + o.char.stats.healRecv));
         if (n > 0 && o.char.hp < o.char.mhp) {
           o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
-          this.host.broadcast(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+          this.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
         }
       }
       if (h.nextAt > h.endAt) this.hots.splice(i, 1);
@@ -1652,7 +1736,7 @@ export class GameSim {
       if (n > 0) o.char.hp = Math.max(1, o.char.hp - n);
       const msg: DmgMsg = { dst: o.sid, n, src: p.sid };
       if (crit) msg.crit = true;
-      this.host.broadcast(S.DMG, msg);
+      this.emit(S.DMG, msg);
       if (this.duel.afterHit(p, o)) return;
     }
   }
@@ -1806,7 +1890,7 @@ export class GameSim {
     // Bóng tâm ma chỉ bị chủ đánh: người khác (kể cả vùng nổ lan sang) không làm gì được.
     if (mon.owner && p?.sid !== mon.owner) return;
     if (this.now < mon.evadeUntil) {
-      this.host.broadcast(S.DMG, { dst: mon.id, n: 0 } satisfies DmgMsg);
+      this.emit(S.DMG, { dst: mon.id, n: 0 } satisfies DmgMsg);
       return;
     }
     const hp = Math.max(0, mon.s.hp - dmg);
@@ -1815,7 +1899,7 @@ export class GameSim {
     if (crit) msg.crit = true;
     if (hv) msg.hv = true;
     if (p) msg.src = p.sid;
-    this.host.broadcast(S.DMG, msg);
+    this.emit(S.DMG, msg);
     if (p) {
       mon.threat.set(p.sid, (mon.threat.get(p.sid) ?? 0) + dmg);
       if (mon.state === MS_IDLE || (mon.state === MS_RETURN && this.homeDist(mon) < LEASH * 0.7)) {
@@ -1859,8 +1943,10 @@ export class GameSim {
     mon.s.st = MS_DEAD;
     mon.target = '';
     this.resetAi(mon);
-    if (mon.spawn) mon.respawnAt = this.now + mon.spawn.respawn * 1000;
+    if (mon.camp) this.camps.onKill(mon);
+    else if (mon.spawn) mon.respawnAt = this.now + mon.spawn.respawn * 1000;
     else mon.removeAt = this.now + 4000;
+    if (this.isTimed(mon)) this.sendBossTimers();
     if (mon.owner) {
       // Bóng tâm ma: không tu vi, không rơi đồ, không tính nhiệm vụ; chỉ báo cho hệ bình cảnh.
       mon.threat.clear();
@@ -1998,7 +2084,7 @@ export class GameSim {
     p.lastCombatAt = this.now;
     if (p.meditating) this.setMeditating(p, false);
     if (n <= 0) {
-      this.host.broadcast(S.DMG, { dst: p.sid, n: 0, src } satisfies DmgMsg);
+      this.emit(S.DMG, { dst: p.sid, n: 0, src } satisfies DmgMsg);
       return;
     }
     if (!p.god) c.hp -= n;
@@ -2009,7 +2095,7 @@ export class GameSim {
     }
     const msg: DmgMsg = { dst: p.sid, n, src };
     if (hv) msg.hv = true;
-    this.host.broadcast(S.DMG, msg);
+    this.emit(S.DMG, msg);
     if (c.hp <= 0) this.killPlayer(p);
   }
 
@@ -2121,9 +2207,9 @@ export class GameSim {
     return m;
   }
 
-  private respawnMonster(m: MonEnt): void {
+  private respawnMonster(m: MonEnt, at?: { x: number; z: number }): void {
     const sp = m.spawn!;
-    const pos = this.randomPoint(sp.x, sp.z, sp.radius, !!m.def.boss);
+    const pos = at ?? this.randomPoint(sp.x, sp.z, sp.radius, !!m.def.boss);
     m.level = sp.levelMin + Math.floor(Math.random() * (sp.levelMax - sp.levelMin + 1));
     const st = monsterStats(m.level, m.def.hpMul, m.def.atkMul);
     m.atk = st.atk;
@@ -2143,6 +2229,30 @@ export class GameSim {
     this.resetAi(m);
     this.setPhase(m, 0);
     if (m.def.boss) this.sysAll('sys.boss_spawn', { boss: monsterName(m.def.id) }, 'info');
+    if (this.isTimed(m)) this.sendBossTimers();
+  }
+
+  /** Tinh anh/boss đứng lẻ (không thuộc bãi): có giờ hồi sinh gửi xuống client (BossTimerMsg). */
+  private isTimed(m: MonEnt): boolean {
+    return !m.camp && !!m.spawn && !m.owner && (!!m.def.boss || !!m.def.elite);
+  }
+
+  /** Giờ hồi sinh mọi tinh anh/boss của bản đồ; `at` = 0 khi đang sống. Không phụ thuộc AOI. */
+  bossTimers(): BossTimerMsg {
+    const list: BossTimerMsg['list'] = [];
+    for (const m of this.monsters) {
+      if (!this.isTimed(m)) continue;
+      list.push({ id: m.id, t: m.def.id, x: Math.round(m.homeX), z: Math.round(m.homeZ), lv: m.level, at: m.state === MS_DEAD ? Math.round(m.respawnAt) : 0 });
+    }
+    return { now: this.now, list };
+  }
+
+  /** Gửi giờ hồi sinh cho một người (lúc vào) hoặc cả phòng (khi một con đổi trạng thái). */
+  sendBossTimers(p?: PlayerEnt): void {
+    const msg = this.bossTimers();
+    if (!msg.list.length) return;
+    if (p) p.client.send(S.BOSS_TIMERS, msg);
+    else this.host.broadcast(S.BOSS_TIMERS, msg);
   }
 
   private removeMonster(m: MonEnt): void {
@@ -2333,6 +2443,7 @@ export class GameSim {
 
   private tickMonster(m: MonEnt, dt: number): void {
     if (m.state === MS_DEAD) {
+      if (m.camp) return;
       if (m.spawn) {
         if (this.now >= m.respawnAt) this.respawnMonster(m);
       } else if (this.now >= m.removeAt) {
@@ -2538,7 +2649,7 @@ export class GameSim {
       msg.yaw = g.yaw ?? 0;
       msg.w = g.w;
     }
-    this.host.broadcast(S.HAZARD, msg);
+    this.emit(S.HAZARD, msg);
   }
 
   private tickHazards(): void {
@@ -2564,7 +2675,7 @@ export class GameSim {
           p.hazardWin.until = r.until;
           p.hazardWin.taken = r.taken;
           if (r.dmg <= 0) {
-            this.host.broadcast(S.DMG, { dst: p.sid, n: 0, src: h.src } satisfies DmgMsg);
+            this.emit(S.DMG, { dst: p.sid, n: 0, src: h.src } satisfies DmgMsg);
             continue;
           }
           n = r.dmg;
@@ -2609,7 +2720,7 @@ export class GameSim {
       this.bolts.push(b);
       const msg: BoltMsg = { id: b.id, x: ox, z: oz, yaw: a, v, r: c.r, life, t: this.now, kind: c.kind, src: m.id, sd: visualSeed() };
       if (lift > 0) msg.h = Math.round(lift * 100) / 100;
-      this.host.broadcast(S.BOLT, msg);
+      this.emit(S.BOLT, msg);
     }
   }
 
@@ -2618,7 +2729,7 @@ export class GameSim {
     this.bolts.splice(i, 1);
     const msg: BoltEndMsg = { id: b.id, x, z };
     if (hit) msg.hit = hit;
-    this.host.broadcast(S.BOLT_END, msg);
+    this.emit(S.BOLT_END, msg);
   }
 
   private tickBolts(): void {
@@ -2658,7 +2769,7 @@ export class GameSim {
         const r = hazardHit(Math.max(1, Math.round(n)), hit.hazardWin.until, hit.hazardWin.taken, this.now);
         hit.hazardWin.until = r.until;
         hit.hazardWin.taken = r.taken;
-        if (r.dmg <= 0) this.host.broadcast(S.DMG, { dst: hit.sid, n: 0, src: m.id } satisfies DmgMsg);
+        if (r.dmg <= 0) this.emit(S.DMG, { dst: hit.sid, n: 0, src: m.id } satisfies DmgMsg);
         else this.damagePlayer(hit, r.dmg, m.id, true);
         continue;
       }
@@ -2831,7 +2942,7 @@ export class GameSim {
     if (def.use.hpPct) {
       const n = Math.round(healAmount(Math.round(wc.mhp * def.use.hpPct * potency), healMul) * (1 + wc.stats.healRecv));
       wc.hp = Math.min(wc.mhp, wc.hp + n);
-      this.host.broadcast(S.DMG, { dst: who.sid, n, heal: true } satisfies DmgMsg);
+      this.emit(S.DMG, { dst: who.sid, n, heal: true } satisfies DmgMsg);
     }
     if (def.use.mpPct) wc.mp = Math.min(wc.mmp, wc.mp + wc.mmp * def.use.mpPct * potency * (1 + (healMul ?? 0)));
     // Tu vi chỉ cho chính người dùng (không chuyển tu vi qua đan dược).
@@ -3407,6 +3518,8 @@ export class GameSim {
         this.teleportTo(p, x, z);
         return say(`tp ${x} ${z}`);
       }
+      case 'tele':
+        return say(this.tele.gm(p, a[1]));
       case 'god': {
         p.god = a[1] === 'off' ? false : a[1] === 'on' ? true : !p.god;
         if (p.god) this.heal(p);

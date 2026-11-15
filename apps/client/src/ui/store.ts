@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MethodMsg, PartyMsg, QuestView } from '@dtl/shared';
+import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio';
 
 export interface TargetInfo {
@@ -130,6 +130,13 @@ export interface DebugPerf {
   tiles: number;
 }
 
+/** Truyền Tống Trận của mình (S.TELE). `until`/`cdUntil` đã đổi sang đồng hồ `performance.now()` của client. */
+export interface TeleState {
+  open: string[];
+  cast: { id: string; until: number } | null;
+  cdUntil: number;
+}
+
 export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party';
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
@@ -155,6 +162,8 @@ export interface UIState {
   toasts: Toast[];
   /** id skill → thời điểm (đồng hồ client, ms) dùng lại được. */
   cds: Record<string, number>;
+  /** Giờ hồi sinh tinh anh/boss toàn bản đồ (M-2): `at` là giờ server, `off` = Date.now() − now để quy đổi sang đồng hồ máy. Minimap đọc. */
+  bossTimers: (BossTimerMsg & { off: number }) | null;
   /** Chiêu đang được cường hóa → lúc hết hạn (đồng hồ client, ms): ô chiêu sáng viền (K-2). */
   empowered: Record<string, number>;
   gcdAt: number;
@@ -198,6 +207,9 @@ export interface UIState {
   ultCard: { id: number; skill: string; color: string; until: number } | null;
   /** Tổ đội của mình (P3-9); null = không có. */
   party: PartyMsg | null;
+  tele: TeleState;
+  /** Điểm đánh dấu mình và đồng đội đang thấy (S.MARK). */
+  marks: MarkInfo[];
   /** Lời mời tổ đội/tỉ thí đang chờ; `until` theo đồng hồ client (ms). */
   invites: InviteMsg[];
   /** Trận tỉ thí của mình; `at` theo đồng hồ client (ms). */
@@ -234,6 +246,7 @@ export const useUI = create<UIState>(() => ({
   log: [],
   toasts: [],
   cds: {},
+  bossTimers: null,
   empowered: {},
   gcdAt: 0,
   castEnd: 0,
@@ -266,6 +279,8 @@ export const useUI = create<UIState>(() => ({
   methodOff: 0,
   ultCard: null,
   party: null,
+  tele: { open: [], cast: null, cdUntil: 0 },
+  marks: [],
   invites: [],
   duel: null,
   nearby: [],
