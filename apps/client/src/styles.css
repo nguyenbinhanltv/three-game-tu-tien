@@ -76,24 +76,7 @@ body {
   will-change: transform, opacity;
   white-space: nowrap;
 }
-.dmg.hit {
-  color: #ffffff;
-}
-.dmg.crit {
-  color: #ffd84a;
-  font-size: 28px;
-}
-.dmg.hurt {
-  color: #ff5e52;
-  font-size: 22px;
-}
-.dmg.heal {
-  color: #7dffa0;
-}
-.dmg.other {
-  color: #c4ccd6;
-  font-size: 15px;
-}
+/* Màu và cỡ theo cấp đòn: ui/tutien.css. */
 
 /* Chỉ báo ngoài màn hình (M4-15): con dấu tròn lam đêm viền đồng thau, mũi chỉ hướng, khoảng cách.
    Màu theo art bible mục 4: son đỏ (quái), ma khí + son đỏ (boss), kim quang (nhiệm vụ), linh khí ngọc (điểm hái). */

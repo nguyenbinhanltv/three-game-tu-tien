@@ -16,6 +16,7 @@ import {
   FLY_UNLOCK_LEVEL,
   type FxMsg,
   groundAt,
+  AIRBORNE_HEIGHT,
   type HazardMsg,
   type BoltEndMsg,
   type BoltMsg,
@@ -104,6 +105,7 @@ import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../in
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
+import { BOSS_BAR_RANGE, keepMonsterTarget } from './targetRange';
 import { readTestParams } from './testParams';
 
 export interface LoginOptions {
@@ -2089,6 +2091,7 @@ export class Game {
     }
     const m = id ? this.view.monsters.get(id) : undefined;
     if (!m || m.st === MS_DEAD) return null;
+    if (Math.hypot(m.x - x, m.z - z) > BOSS_BAR_RANGE) return null;
     const def = MONSTER.get(m.t);
     const info: BossInfo = { id, def: m.t, level: m.lv, hp: m.hp, mhp: m.mhp, cast: this.castOf(m) };
     if (def?.posture) info.posture = (m.pz ?? 0) / 100;
@@ -2104,7 +2107,14 @@ export class Game {
       if (this.targetKind === 'mon') {
         const m = this.view.monsters.get(this.targetId);
         const def = m ? MONSTER.get(m.t) : undefined;
-        if (m && def) {
+        // Quái đã ra khỏi tầm nhìn (AOI) hoặc bị bỏ lại quá xa: bỏ chọn, không để khung mục tiêu/thanh boss bám theo.
+        if (!m || !def || !keepMonsterTarget(Math.hypot(m.x - rp.x, m.z - rp.z), !!def.boss)) {
+          this.targetId = '';
+          if (this.autoAttack) {
+            this.autoAttack = false;
+            set({ autoAttack: false });
+          }
+        } else {
           target = { id: this.targetId, kind: 'mon', name: monsterName(def.id), def: def.id, level: m.lv, hp: m.hp, mhp: m.mhp, boss: !!def.boss };
           const cast = this.castOf(m);
           if (cast) target.cast = cast;
@@ -2120,6 +2130,8 @@ export class Game {
       }
     }
     const boss = this.bossFor(target, rp.x, rp.z);
+    // Boss đã có thanh máu lớn trên HUD thì ẩn bảng tên 3D của nó (không để tên lộ ra sau thanh máu).
+    this.ents.hudBossId = boss?.id ?? '';
     this.checkBossIntro(me);
     this.offscreen.setCandidates(this.offscreenCandidates(target, boss));
     let hint = '';
@@ -2169,6 +2181,7 @@ export class Game {
       x: rp.x,
       y: rp.y,
       z: rp.z,
+      airborne: (me.fl & PF_FLYING) !== 0 || rp.y - groundAt(rp.x, rp.z) > AIRBORNE_HEIGHT,
       zone: t('ui.zone.' + biomeAt(rp.x, rp.z)),
       fps: Math.round(st.fps ? st.fps * 0.6 + fps * 0.4 : fps),
       perf,

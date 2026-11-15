@@ -271,8 +271,30 @@ function Character() {
         {stat('ui.def', char.def)}
         {stat('ui.gold', <>{char.gold} <UiIcon id="cur_linh_thach" fallback="💠" className="inline" /></>)}
       </dl>
-      <RootCard root={char.root} />
+      {/* Khối đột phá (bình cảnh, độ kiếp) nằm ngay dưới thanh tu vi: nút Đột Phá trên HUD mở bảng là thấy liền, không phải cuộn. */}
       <BottleneckBox char={char} />
+      {canTrib && (
+        <div className="k-card trib-box">
+          <div className="k-dim">{t('ui.char.breakthrough_hint')}</div>
+          <div className={xpFull ? 'ok' : 'bad'}>
+            {xpFull ? '✔' : '✘'} {t('ui.xp_full')}
+          </div>
+          <div className={hasPill ? 'ok' : 'bad'}>
+            {hasPill ? '✔' : '✘'} {itemName(TRUC_CO_PILL)}
+          </div>
+          <Button
+            variant="primary"
+            disabled={!xpFull || !hasPill}
+            onClick={() => {
+              Game.current?.send(C.BREAKTHROUGH);
+              set({ panel: null });
+            }}
+          >
+            {t('ui.char.breakthrough')}
+          </Button>
+        </div>
+      )}
+      <RootCard root={char.root} />
       <Divider label={t('ui.equip.board')} />
       <EquipBoard />
       <SetBoard />
@@ -291,27 +313,6 @@ function Character() {
           </div>
         ))}
       </div>
-      {canTrib && (
-        <div className="k-card trib-box">
-          <div className="k-dim">{t('ui.char.breakthrough_hint')}</div>
-          <div className={xpFull ? 'ok' : 'bad'}>
-            {xpFull ? '✔' : '✘'} {t('ui.xp_full')}
-          </div>
-          <div className={hasPill ? 'ok' : 'bad'}>
-            {hasPill ? '✔' : '✘'} {itemName(TRUC_CO_PILL)}
-          </div>
-          <Button
-            variant="primary"
-            disabled={!xpFull || !hasPill}
-            onClick={() => {
-              Game.current?.send(C.BREAKTHROUGH);
-              set({ panel: null });
-            }}
-          >
-            ⚡ {t('ui.char.breakthrough')}
-          </Button>
-        </div>
-      )}
     </Window>
   );
 }

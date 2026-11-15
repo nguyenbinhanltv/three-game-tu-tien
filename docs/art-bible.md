@@ -307,7 +307,7 @@ Số liệu thật lấy ở M0-3 và đo lại ở M3-9.
 
 - VFX dùng nhóm linh quang, cộng sáng, chịu bloom. Kiếm khí `spirit_sword`, hồi phục và đả tọa `spirit_jade`, độ kiếp `spirit_thunder`, chiêu quái biến dị và boss `spirit_demonic`, rơi đồ quý `spirit_gold`.
 - Chất thủy mặc giữ ở VFX: vệt kiếm khí dày giữa thon hai đầu như nét bút; vết mực loang trên đất khi trúng đòn nặng hoặc khi quái chết; sương cuộn quanh chân khi ngự kiếm.
-- UI: nền giấy ngà mờ hoặc lam đêm trong suốt, viền đồng thau mảnh. Thanh khí huyết, linh lực vẽ bằng code. Tiêu đề "Đạp Thiên Lộ" dựng bằng font thư pháp, bố cục và màu tự thiết kế (không theo màn tiêu đề của game demo).
+- UI (chỉnh 2026-11-16): **nền mực bán trong suốt** `#0D1117` ở 80% (`--k-ink-bg`; mực ngả lam đêm, không đen tuyền) cho khung HUD và bảng, giấy ngà cho bảng trang trọng (hồi sinh); **viền kim** `#C8A96E` (`--k-bronze`, là `wood_bronze` nâng sáng cho dễ đọc trên nền mực); **ngọc** `#38BDF8` (`--k-ngoc`) chỉ cho trạng thái đang focus/đang chọn. Tiêu đề, tên và cảnh giới dùng font có chân; chỉ số dùng sans. `spirit_jade` vẫn là màu của hồi phục và dòng chỉ số tốt. HUD thường trực dưới 15% màn hình; UI phóng theo màn hình bằng `--ui-scale` (1 tới 1920×1080, 1,35 ở 2560×1440, trần 2). Thanh khí huyết, linh lực vẽ bằng code. Tiêu đề "Đạp Thiên Lộ" dựng bằng font thư pháp, bố cục và màu tự thiết kế (không theo màn tiêu đề của game demo).
 - Mọi chuỗi hiển thị đi qua i18n; tên lấy từ `packages/content/data/glossary.json`.
 
 ---
@@ -355,4 +355,5 @@ Số liệu thật lấy ở M0-3 và đo lại ở M3-9.
 | --- | --- | --- |
 | 2026-11-14 | 1 | Bản đầu (M0-1): cách điệu 1:6 cel-shaded, palette 32 màu ép texture, material toon 3 bậc, viền mực |
 | 2026-11-14 | 2 | Ghi 7 quyết định người dùng duyệt: Kiếm Linh giữ hình cáo, không dithering, palette và màu áo, hạn mức CLI, nơi lưu nguồn, Tripo v3.1 |
+| 2026-11-16 | 3 | Mục 7: chốt ngôn ngữ UI (nền mực `#0D1117` 80%, viền kim `#C8A96E`, ngọc `#38BDF8`), phóng UI theo màn hình |
 | 2026-11-15 | 3 | **Đổi hướng**: bán tả thực điện ảnh, tỉ lệ 1:7, PBR cách điệu, tông sương sớm (ngọc lam + nắng vàng); bảng màu thành bảng tâm trạng (không ép texture), thay khối `toon` bằng `grading`; người chơi 15–25 nghìn tam giác; chỉnh sắc 6 màu áo |

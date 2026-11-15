@@ -36,7 +36,8 @@
 /* ---------- Panel ---------- */
 .k-panel {
   --cut: var(--k-cut-l);
-  --bg: linear-gradient(180deg, rgba(34, 54, 78, 0.94), rgba(26, 41, 56, 0.96));
+  /* Nền mực bán trong suốt (#0D1117 ở 80%), trên hơi sáng hơn dưới; cảnh phía sau còn thấy lờ mờ. */
+  --bg: linear-gradient(180deg, var(--k-ink-bg-hi), var(--k-ink-bg));
   --fg: var(--k-text);
   --fg-dim: var(--k-text-dim);
   position: relative;
@@ -96,13 +97,16 @@
 
 /* Cửa sổ giữa màn hình: Panel + Header + body có cuộn. */
 .k-window {
+  /* Chừa thanh chiêu và hàng điểm công pháp ở đáy (≈ 136 px): bảng nằm giữa phần còn lại và không cao quá phần đó, kể cả ở 1280×720.
+     Chia cho --ui-scale vì `zoom` của HUD nhân lại mọi độ dài tính từ vh/vw. */
+  --s: var(--ui-scale, 1);
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -52%);
+  top: calc((100vh / var(--s) - 136px) / 2);
+  left: calc(50vw / var(--s));
+  transform: translate(-50%, -50%);
   width: var(--w, 430px);
-  max-width: calc(100vw - 24px);
-  max-height: 82vh;
+  max-width: calc(100vw / var(--s) - 24px);
+  max-height: calc(100vh / var(--s) - 152px);
   display: flex;
 }
 .k-window > .k-panel {
@@ -194,7 +198,7 @@
   background: rgba(255, 222, 150, 0.1);
 }
 .k-close:focus-visible {
-  outline: 2px solid var(--k-jade);
+  outline: 2px solid var(--k-ngoc);
   outline-offset: -2px;
 }
 
@@ -385,7 +389,7 @@
   transform: scaleX(1);
 }
 .k-tab:focus-visible {
-  outline: 2px solid var(--k-jade);
+  outline: 2px solid var(--k-ngoc);
   outline-offset: -3px;
 }
 .k-tab:disabled {
@@ -467,7 +471,7 @@
   --q: linear-gradient(180deg, #fff1c4, var(--k-gold) 50%, #b08a3e);
 }
 .k-slot:focus-visible {
-  --q: linear-gradient(180deg, #d9fff6, var(--k-jade) 50%, #3a9d8c);
+  --q: linear-gradient(180deg, #d6f1ff, var(--k-ngoc) 50%, #1c6f9c);
   outline: none;
 }
 .k-slot:disabled {
