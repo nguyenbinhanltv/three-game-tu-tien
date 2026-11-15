@@ -67,6 +67,9 @@ async function main(): Promise<void> {
           const g = (window as unknown as G).__game;
           return !!g && g.frames > 30 && !!g.me?.();
         }, undefined, { timeout: 120_000, polling: 250 });
+        // Nhân vật mới có đoạn mở đầu (letterbox + chữ): bấm phím để bỏ qua trước khi chụp.
+        await page.keyboard.press('Shift');
+        await sleep(600);
         await gm(page, 'level 15');
         for (const p of POINTS) {
           await gm(page, `tp ${p.x} ${p.z}`);

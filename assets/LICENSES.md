@@ -68,6 +68,9 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `prop_kiem_gay` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `7027728e-2700-4ce9-83dd-50324f4ca5a6` |
 | `prop_lu_huong` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `f42da251-53af-4f68-a799-f15bce1438c2` |
 | `prop_tuong_canh` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `256b6d53-5b06-479b-8cf9-7b6a27cce15f` |
+| `prop_soi_nui` | Tripo web app (image→3D) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `prop_anh_dao` | Tripo web app (image→3D) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `prop_phong_do` | Tripo web app (image→3D) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `prop_duong_xi` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `5ef06438-a4c7-4e3c-8050-76dffebe72eb` |
 | `chr_npc_chuong_mon` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Lạc Vân chân nhân"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_duoc_su` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Tố Tâm"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |

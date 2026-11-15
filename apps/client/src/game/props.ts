@@ -2,6 +2,8 @@ import * as THREE from 'three/webgpu';
 import { type AssetCache, type AssetHandle, assets } from './assets';
 import { adoptGltfMaterials } from '../render/materials/world';
 import { allProps, type PropInstance } from './propScatter';
+import { ImpostorLayer } from './treeImpostor';
+import { withSightFade } from './occlusion';
 
 /**
  * Lớp prop Tripo (P2-A4): mọi instance rải ở `propScatter.ts` gom thành ô 128 m × asset, mỗi ô-asset là một
@@ -19,11 +21,23 @@ interface PropCfg {
   decor?: boolean;
   /** Đổ bóng (chỉ khi preset có bóng). */
   shadow?: boolean;
+  /**
+   * Cây (P2-A4b): LOD chọn theo từng cây (khoảng cách tới camera, không theo ô), mesh 3D chỉ ở ô cách camera < `TREE_START`,
+   * xa hơn là impostor (`treeImpostor.ts`); mờ khi che giữa camera và nhân vật.
+   */
+  tree?: boolean;
 }
 
+/** Ô cây cách camera dưới ngưỡng này (m, ở preset Vừa) dùng mesh 3D, xa hơn dùng impostor; impostor bỏ ở `TREE_RANGE`. */
+export const TREE_START = 250;
+export const TREE_RANGE = 1150;
+
 export const PROP_CFG: Record<string, PropCfg> = {
-  prop_co_thu: { range: 520, lod: [90, 220], shadow: true },
-  prop_thong_co: { range: 460, lod: [80, 200], shadow: true },
+  prop_co_thu: { range: 520, lod: [55, 125], shadow: true, tree: true },
+  prop_thong_co: { range: 460, lod: [45, 110], shadow: true, tree: true },
+  prop_soi_nui: { range: 460, lod: [40, 100], shadow: true, tree: true },
+  prop_anh_dao: { range: 460, lod: [35, 90], shadow: true, tree: true },
+  prop_phong_do: { range: 460, lod: [40, 100], shadow: true, tree: true },
   prop_truc: { range: 220, lod: [40, 100], decor: true },
   prop_da_dung: { range: 300, lod: [60, 140] },
   prop_da_nam: { range: 240, lod: [45, 110] },
@@ -54,6 +68,23 @@ interface Template {
   /** lods[k] = các mesh của mức k. */
   lods: LodMesh[][];
 }
+
+interface TreeChunk {
+  cx: number;
+  cz: number;
+  items: PropInstance[];
+  species: Set<string>;
+}
+
+/** Một mesh của pool cây: bộ đệm cấp phát một lần, `count` đổi theo số cây đang gán vào mức đó. */
+interface TreeSlot {
+  im: THREE.InstancedMesh;
+  mat: Float32Array;
+  col: Float32Array;
+}
+
+/** Sức chứa mỗi InstancedMesh của pool (cây gần camera < ~1000 mỗi loài mỗi mức). */
+const POOL_CAP = 1024;
 
 interface Cell {
   id: string;
@@ -107,6 +138,12 @@ export class PropLayer {
   private shadows = false;
   private acc = 1;
   private disposed = false;
+  private impostors: ImpostorLayer | null = null;
+  /** Cây theo ô 128 m (cùng lưới với ImpostorLayer). */
+  private treeChunks = new Map<string, TreeChunk>();
+  private treeCount = 0;
+  /** pool[id][k] = các InstancedMesh (mỗi mesh của asset ở mức LOD k) dùng chung cho mọi cây loài `id` ở mức k. */
+  private pool = new Map<string, TreeSlot[][]>();
   /** Số InstancedMesh đang hiện (đo draw call). */
   visibleMeshes = 0;
 
@@ -116,12 +153,26 @@ export class PropLayer {
   ) {
     this.group.name = 'props';
     const buckets = new Map<string, Cell>();
+    const trees: PropInstance[] = [];
     for (const p of instances) {
       if (!PROP_CFG[p.id]) continue;
+      if (PROP_CFG[p.id].tree) {
+        trees.push(p);
+        continue;
+      }
       const k = `${p.id}|${Math.floor(p.x / CHUNK)}|${Math.floor(p.z / CHUNK)}`;
       let c = buckets.get(k);
       if (!c) {
-        c = { id: p.id, items: [], cx: 0, cz: 0, radius: 0, matrices: null, meshes: null, level: -1 };
+        c = {
+          id: p.id,
+          items: [],
+          cx: 0,
+          cz: 0,
+          radius: 0,
+          matrices: null,
+          meshes: null,
+          level: -1,
+        };
         buckets.set(k, c);
       }
       c.items.push(p);
@@ -138,17 +189,32 @@ export class PropLayer {
       for (const p of c.items) c.radius = Math.max(c.radius, Math.hypot(p.x - c.cx, p.z - c.cz) + 12 * p.s);
       this.cells.push(c);
     }
+    if (trees.length) {
+      for (const p of trees) {
+        const k = `${Math.floor(p.x / CHUNK)}|${Math.floor(p.z / CHUNK)}`;
+        let ch = this.treeChunks.get(k);
+        if (!ch) {
+          ch = { cx: (Math.floor(p.x / CHUNK) + 0.5) * CHUNK, cz: (Math.floor(p.z / CHUNK) + 0.5) * CHUNK, items: [], species: new Set() };
+          this.treeChunks.set(k, ch);
+        }
+        ch.items.push(p);
+        ch.species.add(p.id);
+      }
+      this.treeCount = trees.length;
+      this.impostors = new ImpostorLayer(trees);
+      this.group.add(this.impostors.group);
+    }
   }
 
   /** Số liệu cho gỡ lỗi/bench: asset đã nạp/lỗi, ô đang hiện. */
-  stats(): { templates: Record<string, string>; cells: number; shown: number; visibleMeshes: number; instances: number } {
+  stats(): { templates: Record<string, string>; cells: number; shown: number; visibleMeshes: number; instances: number; impostors: number } {
     const templates: Record<string, string> = {};
     for (const [k, v] of this.templates) templates[k] = typeof v === 'string' ? v : 'ready';
-    return { templates, cells: this.cells.length, shown: this.cells.filter((c) => c.level >= 0).length, visibleMeshes: this.visibleMeshes, instances: this.count };
+    return { templates, cells: this.cells.length, shown: this.cells.filter((c) => c.level >= 0).length, visibleMeshes: this.visibleMeshes, instances: this.count, impostors: this.impostors?.visible ?? 0 };
   }
 
   get count(): number {
-    return this.cells.reduce((n, c) => n + c.items.length, 0);
+    return this.cells.reduce((n, c) => n + c.items.length, this.treeCount);
   }
 
   setQuality(q: string, shadows: boolean): void {
@@ -156,6 +222,16 @@ export class PropLayer {
     this.shadows = shadows;
     this.acc = 1; // cập nhật ngay khung kế
     for (const c of this.cells) if (c.meshes) for (const lv of c.meshes) for (const m of lv) m.castShadow = shadows && !!PROP_CFG[c.id].shadow;
+    this.applyPoolShadows();
+  }
+
+  /** Chỉ mức LOD 0–1 đổ bóng: mức 2 ở xa bóng không thấy rõ, mà pass bóng vẽ cả pool (không cắt theo từng instance). */
+  private applyPoolShadows(): void {
+    for (const [id, levels] of this.pool) {
+      levels.forEach((slots, k) => {
+        for (const sl of slots) sl.im.castShadow = this.shadows && !!PROP_CFG[id].shadow && k < 2;
+      });
+    }
   }
 
   private rangeScale(): number {
@@ -176,10 +252,10 @@ export class PropLayer {
       const off = (cfg.decor && this.quality === 'low') || d > range;
       if (off) {
         if (c.meshes) this.setLevel(c, -1);
-        if (!cfg.decor || this.quality !== 'low') this.ensureTemplate(c, d < range + LOAD_MARGIN);
+        if (!cfg.decor || this.quality !== 'low') this.ensureTemplate(c.id, c.cx, c.cz, d < range + LOAD_MARGIN);
         continue;
       }
-      const t = this.ensureTemplate(c, true);
+      const t = this.ensureTemplate(c.id, c.cx, c.cz, true);
       if (!t) continue;
       if (!c.meshes) this.buildCell(c, t);
       const dc = Math.hypot(c.cx - camX, c.cz - camZ);
@@ -187,33 +263,129 @@ export class PropLayer {
       this.setLevel(c, Math.min(lv, t.lods.length - 1));
       if (c.meshes && c.level >= 0) vis += c.meshes[c.level].length;
     }
+    if (this.impostors) vis += this.updateTrees(camX, camZ, scale);
     this.visibleMeshes = vis;
   }
 
-  private ensureTemplate(c: Cell, want: boolean): Template | null {
-    const t = this.templates.get(c.id);
+  /**
+   * Cây gần (ô 128 m có tâm cách camera < `TREE_START`): mỗi cây một mức LOD theo khoảng cách của chính nó, gom vào pool
+   * toàn cục (loài × mức) = tối đa 15 InstancedMesh cho cả bản đồ, thay vì một bộ mesh cho mỗi ô. Ô xa hơn do
+   * ImpostorLayer vẽ (cùng quy tắc theo ô nên không chồng, không hở). Asset loài nào chưa nạp xong (hoặc lỗi) thì tắt
+   * pool và để impostor che cả ở gần. Trả về số mesh đang hiện.
+   */
+  private updateTrees(camX: number, camZ: number, scale: number): number {
+    const start = TREE_START * scale;
+    const near: TreeChunk[] = [];
+    let pending = false;
+    for (const ch of this.treeChunks.values()) {
+      const d = Math.hypot(ch.cx - camX, ch.cz - camZ);
+      if (d >= start + LOAD_MARGIN) continue;
+      for (const id of ch.species) if (!this.ensureTemplate(id, ch.cx, ch.cz, true) && d < start) pending = true;
+      if (d < start) near.push(ch);
+    }
+    this.impostors?.update(camX, camZ, start, TREE_RANGE * scale, pending);
+    // Mọi slot về 0 trước khi gán lại.
+    const counts = new Map<TreeSlot, number>();
+    for (const levels of this.pool.values()) for (const slots of levels) for (const sl of slots) counts.set(sl, 0);
+    if (!pending) {
+      for (const ch of near) {
+        for (const p of ch.items) {
+          const levels = this.poolOf(p.id);
+          if (!levels) continue;
+          const cfg = PROP_CFG[p.id];
+          const d = Math.hypot(p.x - camX, p.z - camZ);
+          const k = Math.min(d < cfg.lod[0] * scale ? 0 : d < cfg.lod[1] * scale ? 1 : 2, levels.length - 1);
+          for (const sl of levels[k]) {
+            const n = counts.get(sl) ?? 0;
+            if (n >= POOL_CAP) continue;
+            _q.setFromAxisAngle(_up, p.yaw);
+            const sy = p.sy ?? 1;
+            _m.compose(_p.set(p.x, p.y, p.z), _q, _s.set(p.s, p.s * sy, p.s));
+            _m.toArray(sl.mat, n * 16);
+            const t = p.tint;
+            sl.col[n * 3] = t ? t[0] : 1;
+            sl.col[n * 3 + 1] = t ? t[1] : 1;
+            sl.col[n * 3 + 2] = t ? t[2] : 1;
+            counts.set(sl, n + 1);
+          }
+        }
+      }
+    }
+    let vis = 0;
+    for (const [sl, n] of counts) {
+      // WebGPU không vẽ InstancedMesh chỉ có 1 instance: nhân đôi cho tròn 2.
+      if (n === 1) {
+        sl.mat.copyWithin(16, 0, 16);
+        sl.col.copyWithin(3, 0, 3);
+      }
+      sl.im.count = n === 1 ? 2 : n;
+      sl.im.visible = n > 0;
+      if (n > 0) {
+        (sl.im.instanceMatrix as THREE.InstancedBufferAttribute).addUpdateRange(0, Math.max(n, 2) * 16);
+        (sl.im.instanceColor as THREE.InstancedBufferAttribute).addUpdateRange(0, Math.max(n, 2) * 3);
+        sl.im.instanceMatrix.needsUpdate = true;
+        (sl.im.instanceColor as THREE.InstancedBufferAttribute).needsUpdate = true;
+        vis++;
+      }
+    }
+    return vis;
+  }
+
+  /** Pool của loài `id` (dựng lần đầu khi template sẵn sàng); null nếu chưa nạp. */
+  private poolOf(id: string): TreeSlot[][] | null {
+    const have = this.pool.get(id);
+    if (have) return have;
+    const t = this.templates.get(id);
+    if (!t || typeof t === 'string') return null;
+    const shadow = this.shadows && !!PROP_CFG[id].shadow;
+    // Hình cầu bao rất lớn: ô cây không còn là đơn vị cắt hình, pool luôn nằm quanh camera.
+    const sphere = new THREE.Sphere(new THREE.Vector3(2048, 100, 2048), 1e5);
+    const levels = t.lods.map((meshes, k) =>
+      meshes.map((lm) => {
+        const im = new THREE.InstancedMesh(lm.geometry, lm.material, POOL_CAP);
+        const mat = new Float32Array(POOL_CAP * 16);
+        const col = new Float32Array(POOL_CAP * 3).fill(1);
+        im.instanceMatrix = new THREE.InstancedBufferAttribute(mat, 16);
+        im.instanceColor = new THREE.InstancedBufferAttribute(col, 3);
+        im.boundingSphere = sphere;
+        im.matrixAutoUpdate = false;
+        im.castShadow = shadow && k < 2;
+        im.receiveShadow = this.shadows;
+        im.count = 0;
+        im.visible = false;
+        im.frustumCulled = false;
+        this.group.add(im);
+        return { im, mat, col };
+      }),
+    );
+    this.pool.set(id, levels);
+    return levels;
+  }
+
+  private ensureTemplate(id: string, x: number, z: number, want: boolean): Template | null {
+    const t = this.templates.get(id);
     if (t && typeof t !== 'string') return t;
     if (!want || t) return null;
-    this.templates.set(c.id, 'loading');
+    this.templates.set(id, 'loading');
     this.cache
-      .acquire(c.id, { pos: { x: c.cx, z: c.cz } })
+      .acquire(id, { pos: { x, z } })
       .then((handle) => {
         if (this.disposed) {
           handle.release();
           return;
         }
-        this.templates.set(c.id, this.templateOf(handle));
+        this.templates.set(id, this.templateOf(handle));
         this.acc = 1;
       })
       .catch((e) => {
-        console.warn(`[props] không nạp được ${c.id}, bỏ qua`, e);
-        this.templates.set(c.id, 'failed');
+        console.warn(`[props] không nạp được ${id}, bỏ qua`, e);
+        this.templates.set(id, 'failed');
       });
     return null;
   }
 
   private templateOf(handle: AssetHandle): Template {
-    const mats = adoptGltfMaterials(handle.scene);
+    const mats = adoptGltfMaterials(handle.scene, handle.id && PROP_CFG[handle.id]?.tree ? withSightFade : undefined);
     handle.scene.updateMatrixWorld(true);
     const lods: LodMesh[][] = [];
     handle.scene.traverse((o) => {
@@ -267,10 +439,13 @@ export class PropLayer {
 
   dispose(): void {
     this.disposed = true;
+    this.impostors?.dispose();
     this.group.removeFromParent();
     for (const c of this.cells) {
       if (c.meshes) for (const lv of c.meshes) for (const m of lv) m.dispose();
     }
+    for (const levels of this.pool.values()) for (const slots of levels) for (const sl of slots) sl.im.dispose();
+    this.pool.clear();
     for (const t of this.templates.values()) {
       if (typeof t === 'string') continue;
       for (const m of t.mats) m.dispose();

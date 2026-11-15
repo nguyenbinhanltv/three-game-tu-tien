@@ -1,0 +1,31 @@
+{
+  "file": "trees.365fab2c5d.webp",
+  "rows": 5,
+  "species": {
+    "prop_co_thu": {
+      "row": 0,
+      "frame": 28.246,
+      "height": 18
+    },
+    "prop_thong_co": {
+      "row": 1,
+      "frame": 20,
+      "height": 14
+    },
+    "prop_soi_nui": {
+      "row": 2,
+      "frame": 12.319,
+      "height": 12
+    },
+    "prop_anh_dao": {
+      "row": 3,
+      "frame": 9.698,
+      "height": 7
+    },
+    "prop_phong_do": {
+      "row": 4,
+      "frame": 9.325,
+      "height": 9
+    }
+  }
+}
