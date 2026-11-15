@@ -613,6 +613,7 @@ export class Game {
     applyAtmosphere(this.scene, this.env, GRADING[GRADING_DEFAULT], GRADING_DEFAULT);
     applyGrading(GRADING[GRADING_DEFAULT]);
     setHeightFog(q.heightFog);
+    this.env.setQuality(get().quality);
     this.scene.add(createLanternHalos(SECT_LANTERNS));
     this.lanterns = new LanternLights(this.scene, SECT_LANTERNS);
     this.lanterns.setEnabled(q.lights);
@@ -2058,6 +2059,7 @@ export class Game {
     set({ quality: q });
     const cfg = QUALITY[q] ?? QUALITY.medium;
     setHeightFog(cfg.heightFog);
+    this.env?.setQuality(q);
     if (this.ground) this.terrain.setGround(this.ground, cfg.ground);
     this.lanterns?.setEnabled(cfg.lights);
     this.vfx?.particles.setQuality(q);
