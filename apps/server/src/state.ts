@@ -31,6 +31,8 @@ export class PlayerS extends Schema {
   @type('string') dye = '';
   /** Bộ trang bị quyết định màu áo/ánh kiếm (từ 2 món): id bộ trong sets.json, '' = không. Chỉ để hiển thị. */
   @type('string') sk = '';
+  /** Mã phụ kiện hình dáng của đồ bộ (mỗi ô một ký tự, xem `accessoryCode`), '' = không. Chỉ để hiển thị. */
+  @type('string') sa = '';
   /** id pháp bảo phụ đang đeo (P3-8), '' = không. Chỉ để hiển thị. */
   @type('string') art = '';
 }

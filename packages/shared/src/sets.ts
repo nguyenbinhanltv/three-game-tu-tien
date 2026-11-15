@@ -3,6 +3,7 @@
 // Server quyết định kích hoạt (tính từ trang bị thật); client chỉ dùng cùng hàm này để hiển thị x/4 và dòng sáng.
 
 import type { AffixStat } from './items';
+import { EQUIP_SLOTS, type EquipSlot } from './types';
 
 /** Hiệu ứng combat của bậc cao: server đọc cờ này trong `executeSkill`/`hitMonster`/`damagePlayer`. */
 export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow';
@@ -116,4 +117,36 @@ export interface ForgeRecipe {
   q: number[];
   inputs: { id: string; n: number }[];
   gold: number;
+}
+
+// ---------- phụ kiện hình dáng (hiển thị) ----------
+
+/** Thứ tự ô trong mã phụ kiện (mỗi ô một ký tự), khớp `EQUIP_SLOTS`. */
+const ACC_SLOTS: readonly EquipSlot[] = EQUIP_SLOTS;
+
+/**
+ * Mã phụ kiện của người chơi cho client dựng hình: mỗi ô trang bị một ký tự, '0' = không phải đồ bộ, '1'..'9' = thứ tự
+ * (từ 1) của bộ trong bảng `sets`. Trả '' nếu không mặc món bộ nào (đa số người chơi), để schema không tốn byte.
+ * Không phụ thuộc số món, nên một món lẻ cũng hiện phụ kiện của nó.
+ */
+export function accessoryCode(sets: readonly SetDef[], equip: Partial<Record<EquipSlot, { id: string } | undefined>>): string {
+  let any = false;
+  let out = '';
+  for (const slot of ACC_SLOTS) {
+    const id = equip[slot]?.id;
+    const i = id ? sets.findIndex((s) => s.pieces.includes(id)) : -1;
+    if (i >= 0 && i < 9) any = true;
+    out += i >= 0 && i < 9 ? String(i + 1) : '0';
+  }
+  return any ? out : '';
+}
+
+/** Giải mã `accessoryCode`: id bộ theo ô (ô không có phụ kiện thì vắng mặt). Mã lạ bị bỏ qua từng ký tự. */
+export function parseAccessoryCode(sets: readonly SetDef[], code: string): Partial<Record<EquipSlot, string>> {
+  const out: Partial<Record<EquipSlot, string>> = {};
+  for (let i = 0; i < ACC_SLOTS.length && i < code.length; i++) {
+    const n = code.charCodeAt(i) - 48;
+    if (n >= 1 && n <= sets.length) out[ACC_SLOTS[i]] = sets[n - 1].id;
+  }
+  return out;
 }

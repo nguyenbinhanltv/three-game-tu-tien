@@ -714,7 +714,8 @@ export class SkinnedCharacter implements CharacterView {
     for (let i = 0; i < this.lods.length; i++)
       for (const m of this.lods[i]) {
         m.visible = i === level;
-        m.castShadow = i === level && level === 0;
+        // Phụ kiện đồ bộ (`userData.noShadow`) không đổ bóng: nhỏ, và mỗi mesh đổ bóng là thêm một draw call ở pass bóng.
+        m.castShadow = i === level && level === 0 && !m.userData.noShadow;
       }
     this.onLod(level);
   }
