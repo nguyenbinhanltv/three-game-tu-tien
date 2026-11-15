@@ -16,9 +16,17 @@ Số theo preset (`palette.json`, bảng 5.1 của art bible đã cập nhật):
 | | Sáng sớm | Ban ngày | Đêm |
 | --- | --- | --- | --- |
 | `fogHaze` từ `fogHazeStart` | 0,0026 từ 50 m | 0,0021 từ 60 m | 0,0016 từ 60 m |
-| `rim` | 0,55 | 0,45 | 0,2 |
+| `rim` | 0,55 | 0,45 | 0,9 |
 
 Độ che của lớp sương xa ban ngày (chỗ thấp nhất): 100 m ≈ 8%, 300 m ≈ 40%, 600 m ≈ 68%.
+
+### Ban đêm bớt tối
+
+Ảnh đêm của M-5 cho thấy preset đêm tối tới mức thân nhân vật gần như mất, chỉ còn bảng tên. Đã nâng trong `palette.json` (preset `night`): ánh trăng 0,45 → 1,25, ánh trời đêm `#1A2938` × 0,5 → `#3B5873` × 1,0, phơi sáng 0,9 → 1,2, nâng đen `#0B1720` → `#0E1C27`, viền sáng 0,9. Màu sương, sắc bóng, độ bão hòa giữ nguyên: vẫn lam đêm trầm, đèn lồng vẫn là điểm ấm. Xem bằng `?mood=night`.
+
+![Đêm, rừng: trước | sau](dem-truoc-sau-rung.jpg)
+
+![Đêm, sân: trước | sau](dem-truoc-sau-san.jpg)
 
 ### Ảnh trước | sau (`pnpm shots`, WebGPU, Vừa; trái là `main`)
 
