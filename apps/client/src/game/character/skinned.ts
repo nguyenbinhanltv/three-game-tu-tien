@@ -1,10 +1,11 @@
 import * as THREE from 'three/webgpu';
-import type { MonsterDef } from '@dtl/shared';
+import { bodyClassOf, groundAt, HIT_FEEL, type MonsterDef } from '@dtl/shared';
 import { HitReact, type HitOpts } from '../hitreact';
+import { IkRig } from './ikpose';
 import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';
 import { type SpringDef, SpringBones } from './spring';
 import { baseState, type CharState, type ClipMap, clipFor, locomotionScale, MOVE_MIN } from './states';
-import type { AnimState, BossMoveKind, CharacterView, MonsterView, PerformOpts } from './view';
+import { type AnimState, type BossMoveKind, type CharacterView, type MonsterView, P2E_OFF, type PerformOpts } from './view';
 
 export interface SkinnedOpts {
   /** Bản sao riêng của asset (có bộ xương riêng). `SkinnedCharacter` sở hữu skeleton của nó. */
@@ -37,7 +38,23 @@ export interface SkinnedOpts {
   poses?: PoseLibrary;
   /** Xương lò xo (vạt áo, M3-10): mô phỏng ở LOD0 khi trong khung nhìn. */
   springs?: readonly SpringDef[];
+  /**
+   * Bám địa hình (P2-E3): `biped` = IK chân hai đốt + hạ hông ở LOD0 (rig tên Mixamo); `quad` = nghiêng thân theo dốc.
+   * Bỏ trống = không bám.
+   */
+  ground?: 'biped' | 'quad';
 }
+
+/** Tốc độ (1/giây) làm mượt chỉnh chân/hông và nghiêng thân theo dốc. */
+const GROUND_RATE = 14;
+const TILT_RATE = 8;
+/** Nghiêng thân thú bốn chân tối đa (rad) và nửa chiều dài/rộng thân (m, scale 1) dùng đo dốc. */
+const TILT_MAX = 0.45;
+const QUAD_HALF_LEN = 0.6;
+const QUAD_HALF_WID = 0.3;
+
+const _footR = new THREE.Vector3();
+const _footL = new THREE.Vector3();
 
 /** Thời gian chuyển giữa các trạng thái nền (giây). */
 const FADE_BASE = 0.22;
@@ -195,6 +212,16 @@ export class SkinnedCharacter implements CharacterView {
   /** Số lần ra đòn (cho vệt/hạt theo nhân vật). */
   attacks = 0;
   private springs: SpringBones | null = null;
+  /** Chân bám đất (người, quái hai chân): rig IK, trọng số bật/tắt, độ chỉnh đã làm mượt (hông, chân phải, chân trái). */
+  private feet: IkRig | null = null;
+  private feetW = 0;
+  private feetOn = false;
+  private feetD = { h: 0, r: 0, l: 0 };
+  private rawHeight: number;
+  private scaleS: number;
+  private quad: boolean;
+  private tiltX = 0;
+  private tiltZ = 0;
   private springWorld = new THREE.Matrix4();
   /**
    * Trạng thái nền phải hiện ngay: cắt đòn thường đang phát (không cắt đòn lớn `playMove`) và không giật trúng đòn
@@ -208,6 +235,9 @@ export class SkinnedCharacter implements CharacterView {
     const s = o.scale ?? 1;
     this.refSpeed = o.refSpeed * s;
     this.height = o.height * s;
+    this.rawHeight = o.height;
+    this.scaleS = s;
+    this.quad = o.ground === 'quad' && !P2E_OFF;
     this.lodDist = o.lodDist ?? [22, 55];
     this.rates = o.rates ?? {};
     this.maxLoco = o.maxLocoScale ?? Infinity;
@@ -232,6 +262,8 @@ export class SkinnedCharacter implements CharacterView {
     this.root.scale.setScalar(s);
     detachRig(o.scene, this.rig);
     if (o.springs?.length) this.springs = new SpringBones(this.rig, o.springs);
+    // Phải dựng rig IK khi xương còn ở tư thế gốc (trước mixer).
+    if (o.ground === 'biped' && !P2E_OFF) this.feet = IkRig.from(this.rig);
     this.mixer = new THREE.AnimationMixer(this.rig);
     this.hit = new HitReact(meshes);
     this.enterBase('idle', 0);
@@ -381,10 +413,85 @@ export class SkinnedCharacter implements CharacterView {
     // Dung sai 1,5 ms: ở 60 khung/giây dt dao động quanh 1/60, không để LOD0 tụt xuống 30 Hz vì làm tròn.
     if (this.acc > 0 && this.acc >= this.interval - MIXER_SLACK) {
       this.mixer.update(this.acc);
+      if (this.feet) this.groundFeet(this.acc, a);
       this.rig.updateMatrixWorld(true);
       this.acc = 0;
     }
+    if (this.quad) this.tiltToSlope(dt);
     this.updateSprings(dt);
+  }
+
+  /** Đang chỉnh chân theo địa hình (cho test và đo). */
+  get footIkActive(): boolean {
+    return this.feetOn;
+  }
+
+  /**
+   * Chân bám đất (P2-E3), ngay sau khi mixer đặt tư thế: đo cổ chân của clip, lấy độ cao mặt đất dưới từng chân so với
+   * dưới thân, hạ hông theo chân thấp hơn rồi IK hai đốt đưa mỗi chân tới mặt đất. Chỉ LOD0 trong khung nhìn, đang đứng
+   * trên đất (không bay, nhảy, thiền, chết); chuyển bật/tắt bằng trọng số để không giật.
+   */
+  private groundFeet(dt: number, a: AnimState): void {
+    const feet = this.feet!;
+    const want = this.lodLevel === 0 && this.inner.visible && !a.dead && !a.flying && !a.airborne && !a.meditating ? 1 : 0;
+    this.feetW += Math.sign(want - this.feetW) * Math.min(Math.abs(want - this.feetW), dt * 6);
+    if (this.feetW <= 0.001) {
+      if (this.feetOn) {
+        feet.releaseFeet();
+        this.feetOn = false;
+        this.feetD.h = this.feetD.r = this.feetD.l = 0;
+      }
+      return;
+    }
+    if (!feet.measureFeet(_footR, _footL)) return;
+    const r = this.root;
+    const s = this.scaleS;
+    const sin = Math.sin(r.rotation.y);
+    const cos = Math.cos(r.rotation.y);
+    const base = groundAt(r.position.x, r.position.z);
+    const lim = 0.25 * this.rawHeight;
+    const drop = (p: THREE.Vector3) => {
+      const wx = r.position.x + (p.x * cos + p.z * sin) * s;
+      const wz = r.position.z + (-p.x * sin + p.z * cos) * s;
+      return Math.max(-lim, Math.min(lim, (groundAt(wx, wz) - base) / s));
+    };
+    const dR = drop(_footR);
+    const dL = drop(_footL);
+    // Hông theo chân thấp hơn (chân cao gập gối thêm); nâng tối đa ít hơn hạ để chân thấp không duỗi quá tầm.
+    const h = Math.max(-lim, Math.min(lim * 0.4, Math.min(dR, dL)));
+    const k = this.feetOn ? 1 - Math.exp(-dt * GROUND_RATE) : 1;
+    const d = this.feetD;
+    d.h += (h - d.h) * k;
+    d.r += (dR - d.r) * k;
+    d.l += (dL - d.l) * k;
+    this.feetOn = true;
+    const w = this.feetW;
+    feet.groundFeet(d.h * w, d.r * w, d.l * w);
+  }
+
+  /** Thú bốn chân: nghiêng thân theo dốc dưới trước/sau/trái/phải (chỉ khi trong khung nhìn, LOD0–1). */
+  private tiltToSlope(dt: number): void {
+    const r = this.root;
+    let tx = 0;
+    let tz = 0;
+    if (this.lodLevel <= 1 && this.inner.visible && !this.dead) {
+      const s = this.scaleS;
+      const sin = Math.sin(r.rotation.y);
+      const cos = Math.cos(r.rotation.y);
+      const L = QUAD_HALF_LEN * s;
+      const W = QUAD_HALF_WID * s;
+      const x = r.position.x;
+      const z = r.position.z;
+      const slopeZ = (groundAt(x + sin * L, z + cos * L) - groundAt(x - sin * L, z - cos * L)) / (2 * L);
+      const slopeX = (groundAt(x + cos * W, z - sin * W) - groundAt(x - cos * W, z + sin * W)) / (2 * W);
+      tx = -Math.max(-TILT_MAX, Math.min(TILT_MAX, Math.atan(slopeZ)));
+      tz = Math.max(-TILT_MAX, Math.min(TILT_MAX, Math.atan(slopeX)));
+    }
+    const k = 1 - Math.exp(-dt * TILT_RATE);
+    this.tiltX += (tx - this.tiltX) * k;
+    this.tiltZ += (tz - this.tiltZ) * k;
+    if (Math.abs(this.tiltX) < 1e-4 && Math.abs(this.tiltZ) < 1e-4 && tx === 0 && tz === 0) this.tiltX = this.tiltZ = 0;
+    this.inner.rotation.set(this.tiltX, 0, this.tiltZ);
   }
 
   /** Số xương lò xo đang mô phỏng (0 nếu không có hoặc đang nghỉ ở LOD xa). Cho đo hiệu năng. */
@@ -640,6 +747,7 @@ export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
     super({ ...o, scale: def.scale });
     this.moves = o.moves ?? {};
     this.holdStates = new Set<CharState>(['cast', 'stun']);
+    this.hit.feel = HIT_FEEL[bodyClassOf(def)];
   }
 
   bossMove(kind: BossMoveKind, delay: number): boolean {
@@ -647,8 +755,4 @@ export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
     return !!m && this.playMove(m.clip, m.impact, delay);
   }
 
-  hitReact(o: HitOpts): void {
-    // Quái to bị đẩy ít hơn (giống MonsterModel).
-    super.hitReact({ ...o, mass: (o.mass ?? 1) * (this.def.boss ? 0.3 : 1 / Math.max(1, this.def.scale)) });
-  }
 }
