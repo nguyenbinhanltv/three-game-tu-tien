@@ -1129,6 +1129,9 @@ export class GameSim {
     p.s.fl = PF_DEAD;
     if (p.trib) {
       this.endTribulation(p, false, false);
+    } else if (p.trial) {
+      // Chết trong thử thách tâm ma: thua ngay, không mất tu vi (đúng lời hứa của UI), đợi 60 giây thử lại.
+      this.realm.failTrial(p, 'dead');
     } else {
       const lost = c.loseXp(DEATH_XP_LOSS);
       this.sys(p, 'sys.died', { n: lost }, 'bad');

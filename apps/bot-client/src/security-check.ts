@@ -41,6 +41,8 @@ interface P {
   lv: number;
 }
 interface CharV {
+  xp: number;
+  xpNeed: number;
   gold: number;
   level: number;
   bk: number;
@@ -272,6 +274,8 @@ async function main() {
     const b = await join('binhcanh2');
     let ca = null as CharV | null;
     a.room.onMessage(S.CHAR, (c: CharV) => (ca = c));
+    let cb = null as CharV | null;
+    b.room.onMessage(S.CHAR, (c: CharV) => (cb = c));
     const say = async (r: Room, cmd: string) => {
       r.send(C.CHAT, { m: '/gm ' + cmd });
       await W(900);
@@ -279,6 +283,7 @@ async function main() {
     const mons = () => (a.room.state as { monsters: Map<string, M> }).monsters;
     const shadows = () => [...mons().entries()].filter(([, m]) => m.t === 'mon_tam_ma' && m.st !== MS_DEAD);
     const rq = () => 'r' + Math.random().toString(36).slice(2, 10);
+    await say(a.room, 'tp 2048 2088'); // DB dev lưu vị trí lần chạy trước: về sân (xa Lạc Vân) cho bài đổi linh căn từ xa
     await say(a.room, 'level 5');
     await say(a.room, 'heal');
     await W(300);
@@ -324,6 +329,19 @@ async function main() {
       }
       check('người khác không làm bóng tâm ma mất máu', (mons().get(sh[0])?.hp ?? 0) >= hp0, `${hp0} → ${mons().get(sh[0])?.hp}`);
     }
+    // e2. Chết trong thử thách: thua ngay, KHÔNG mất tu vi, phải đợi thử lại (người chơi b, bóng của b).
+    b.room.send(C.RESPAWN); // DB dev nhớ lần chạy trước (b có thể đang trọng thương, tu vi đã tụt)
+    await W(700);
+    await say(b.room, 'level 5');
+    await say(b.room, 'heal');
+    await say(b.room, 'xp 9999999');
+    await W(5000); // b vừa ra chiêu lên bóng của a: đợi hết giao chiến (6 giây) mới mở tâm ma được
+    b.room.send(C.BOTTLENECK, { m: 'trial' });
+    await W(900);
+    const trialB = cb?.trial ?? 0;
+    await say(b.room, 'die');
+    await W(600);
+    check('chết trong tâm ma: không mất tu vi, đợi thử lại', trialB > 100 && cb?.trial === 0 && (cb?.retry ?? 0) > 30 && cb?.xp === cb?.xpNeed, `trial ${trialB} → ${cb?.trial}, retry ${cb?.retry}, xp ${cb?.xp}/${cb?.xpNeed}`);
     // f. Chủ hạ bóng thì thắng (GM killall chạy qua damageMonster như đòn thật).
     await say(a.room, 'killall');
     await W(600);

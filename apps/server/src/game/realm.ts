@@ -119,7 +119,7 @@ export class RealmSystem {
     p.char.charDirty = true;
   }
 
-  private fail(p: PlayerEnt, key: 'time' | 'dead' | 'far'): void {
+  failTrial(p: PlayerEnt, key: 'time' | 'dead' | 'far'): void {
     this.endTrial(p);
     const c = p.char;
     c.retryAt = this.h.now() + BOTTLENECK_RETRY_SEC * 1000;
@@ -131,9 +131,9 @@ export class RealmSystem {
   tick(p: PlayerEnt): void {
     const tr = p.trial;
     if (!tr) return;
-    if (this.h.isDead(p)) return this.fail(p, 'dead');
-    if (this.h.now() >= tr.endAt) return this.fail(p, 'time');
-    if (Math.hypot(p.move.x - tr.x, p.move.z - tr.z) > TRIAL_RADIUS) return this.fail(p, 'far');
+    if (this.h.isDead(p)) return this.failTrial(p, 'dead');
+    if (this.h.now() >= tr.endAt) return this.failTrial(p, 'time');
+    if (Math.hypot(p.move.x - tr.x, p.move.z - tr.z) > TRIAL_RADIUS) return this.failTrial(p, 'far');
   }
 
   /** Bóng tâm ma bị hạ: nếu chủ đang trong thử thách thì thắng. Gọi từ killMonster. */
