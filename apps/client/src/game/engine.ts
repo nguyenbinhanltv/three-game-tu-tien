@@ -1287,7 +1287,7 @@ export class Game {
     // Biến thức có thể bỏ niệm chú (Lôi Tốc): dự đoán theo thời gian niệm đã gộp biến thức.
     if (inRange && ready && this.cur.grounded && !this.cur.flying) {
       const gap = mon ? Math.hypot(mon.x - this.cur.x, mon.z - this.cur.z) - (MONSTER.get(mon.t)?.scale ?? 1) : undefined;
-      this.skillPoses.predict(this.ents.players.get(this.sid)?.model, { ...skill, cast: resolveBarSkill(get().method, skill).cast }, performance.now(), gap);
+      this.skillPoses.predict(this.ents.players.get(this.sid)?.model, { ...skill, cast: resolveBarSkill(get().method, skill).cast }, performance.now(), gap, get().method?.method);
     }
   }
 
@@ -1452,6 +1452,11 @@ export class Game {
     return true;
   }
 
+  /** Công pháp của người chơi `id` (mình: theo trạng thái công pháp; người khác: `mt` server gửi) để chọn giọng động tác. */
+  private methodOfPlayer(id: string): string | undefined {
+    return (id === this.sid ? get().method?.method : this.ents?.players.get(id)?.mt) || undefined;
+  }
+
   private onFx(m: FxMsg, held = false): void {
     const v = this.vfx;
     const e = this.ents;
@@ -1468,7 +1473,7 @@ export class Game {
       }
       const dstV = dst ? (e.monsters.get(dst) ?? e.players.get(dst)) : undefined;
       const gap = pSrc && dstV ? Math.hypot(dstV.x - pSrc.x, dstV.z - pSrc.z) - ('model' in dstV && 'def' in dstV.model ? ((dstV.model as { def?: { scale?: number } }).def?.scale ?? 1) : 0.5) : undefined;
-      const hold = this.skillPoses.onFx(m.t, pSrc?.model, src === this.sid, performance.now(), { n: m.n, gap });
+      const hold = this.skillPoses.onFx(m.t, pSrc?.model, src === this.sid, performance.now(), { n: m.n, gap, method: this.methodOfPlayer(src) });
       if (hold > 0) {
         setTimeout(() => this.onFx(m, true), hold * 1000);
         return;
@@ -1597,7 +1602,7 @@ export class Game {
         // Pháp trận dưới chân: vạch tiến độ chạy theo thời gian niệm chú, tắt dần nếu bị ngắt.
         v.castSigil(posSrc, m.d ?? 1, 0xfff0a8, 1.4, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
         if (src === this.sid) set({ castEnd: Date.now() + (m.d ?? 1) * 1000, castTotal: (m.d ?? 1) * 1000 });
-        this.skillPoses.onCast(pSrc?.model, m.s, m.d ?? 1);
+        this.skillPoses.onCast(pSrc?.model, m.s, m.d ?? 1, this.methodOfPlayer(src));
         break;
       case 'mcast':
         // Quái đánh xa đọc chú: chỉ hiện quả cầu tụ lực; vùng báo trước tới sau qua S.HAZARD.

@@ -758,6 +758,8 @@ export class GameSim {
     if (s.sa !== sa) s.sa = sa;
     const art = c.equip.artifact?.id ?? '';
     if (s.art !== art) s.art = art;
+    const mt = c.meta.method ?? '';
+    if (s.mt !== mt) s.mt = mt;
     this.setFlag(p, PF_FLYING, m.flying);
   }
 
