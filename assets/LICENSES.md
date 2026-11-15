@@ -33,6 +33,34 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 | `itm_kim_cuong_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_kim_cuong_dan.png` |
 | `itm_bao_huyet_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_bao_huyet_dan.png` |
 | `itm_manh_luc_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_manh_luc_dan.png` |
+| `itm_dai_lung_da` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_dai_lung_da.png` |
+| `itm_dai_lung_ngoc` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_dai_lung_ngoc.png` |
+| `itm_dai_lung_vai` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_dai_lung_vai.png` |
+| `itm_dt_dai_lung` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_dt_dai_lung.png` |
+| `itm_dt_dao_bao` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_dt_dao_bao.png` |
+| `itm_dt_gioi_chi` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_dt_gioi_chi.png` |
+| `itm_dt_ngoc_boi` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_dt_ngoc_boi.png` |
+| `itm_gioi_chi_dong` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_gioi_chi_dong.png` |
+| `itm_hg_dai_lung` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_hg_dai_lung.png` |
+| `itm_hg_dao_bao` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_hg_dao_bao.png` |
+| `itm_hg_ho_uyen` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_hg_ho_uyen.png` |
+| `itm_hg_van_ngoa` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_hg_van_ngoa.png` |
+| `itm_hgl_dao_bao` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_hgl_dao_bao.png` |
+| `itm_hgl_gioi_chi` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_hgl_gioi_chi.png` |
+| `itm_hgl_kiem` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_hgl_kiem.png` |
+| `itm_ho_uyen_da` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_ho_uyen_da.png` |
+| `itm_ho_uyen_thiet` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_ho_uyen_thiet.png` |
+| `itm_ho_uyen_vai` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_ho_uyen_vai.png` |
+| `itm_lk_dai_lung` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_lk_dai_lung.png` |
+| `itm_lk_dao_bao` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_lk_dao_bao.png` |
+| `itm_lk_ho_uyen` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_lk_ho_uyen.png` |
+| `itm_lk_van_ngoa` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_lk_van_ngoa.png` |
+| `itm_ngoc_boi_linh` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_ngoc_boi_linh.png` |
+| `itm_ngoc_boi_moc` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_ngoc_boi_moc.png` |
+| `itm_ngoc_boi_thanh` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_ngoc_boi_thanh.png` |
+| `itm_van_ngoa_da` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_van_ngoa_da.png` |
+| `itm_van_ngoa_vai` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_van_ngoa_vai.png` |
+| `itm_van_ngoa_van` | Dựng thủ tục bằng Blender cho dự án (`tools/icons/render_equipment.py`) | dự án | 2026-11-16 | `icons/itm_van_ngoa_van.png` |
 | `itm_hoi_xuan_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_xuan_dan.png` |
 | `itm_hoi_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_khi_dan.png` |
 | `itm_tu_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tu_khi_dan.png` |

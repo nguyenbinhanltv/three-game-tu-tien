@@ -12,7 +12,7 @@ export const FX_LEAD = 0.06;
 /** Dự đoán còn hiệu lực bao lâu chờ FX của server (ms). Quá thì coi như server từ chối. */
 const PREDICT_TTL = 800;
 /** Trễ hiệu ứng tối đa để chờ động tác dự đoán tới lúc ra đòn (giây). */
-const MAX_HOLD = 0.25;
+export const MAX_HOLD = 0.25;
 
 /** Lúc ra đòn (giây trong clip) của động tác chiêu, 0 nếu không có. */
 export function releaseAt(skill: SkillDef | undefined): number {
