@@ -1,6 +1,6 @@
 import { ContentIcon } from './ContentIcon';
 import { useEffect, useRef, useState } from 'react';
-import { C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
+import { bindsOnEquip, C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
@@ -37,6 +37,7 @@ function useTipLines(item: InvItem, def: ItemDef, worn?: boolean): TipLine[] {
   const lines = itemLines(item, def);
   if (!worn && isEquipSlot(def.kind)) lines.push(...compareLines(level, equip, item, def));
   if (item.inst?.bound) lines.push({ text: t('ui.item.bound'), tone: 'dim' });
+  else if (item.inst && bindsOnEquip(item.inst.q)) lines.push({ text: t('ui.item.bind_on_equip'), tone: 'dim' });
   return lines;
 }
 

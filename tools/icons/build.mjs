@@ -15,7 +15,6 @@ const out = path.join(root, 'apps/client/public/assets/ui');
 const manifestPath = path.join(out, 'icons.json');
 const hash = (data) => createHash('sha256').update(data).digest('hex');
 const size = 128, columns = 8, rows = 4;
-if (defs.length > columns * rows) throw new Error('Atlas capacity exceeded');
 if (process.argv.includes('--check')) {
   const m = read('apps/client/public/assets/ui/icons.json');
   const bytes = fs.readFileSync(path.join(out, m.file));
@@ -44,8 +43,11 @@ if (process.argv.includes('--check')) {
 const git = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
 if (git.status !== 0 && !process.env.DTL_ASSET_SOURCE) throw new Error(git.stderr);
 const source = process.env.DTL_ASSET_SOURCE ?? path.resolve(path.dirname(git.stdout.trim()), '../dtl-asset-source');
+// Chỉ đóng gói vật phẩm/skill đã có tranh nguồn; phần còn lại dùng emoji `iconFallback` (client tự lùi).
+const withArt = defs.filter((d) => fs.existsSync(path.join(source, 'icons', `${d.icon}.png`)));
+if (withArt.length > columns * rows) throw new Error('Atlas capacity exceeded');
 const icons = {}, layers = [];
-for (const [index, def] of defs.entries()) {
+for (const [index, def] of withArt.entries()) {
   if (def.icon !== def.id) throw new Error(`Expected stable image id: ${def.id}`);
   const input = fs.readFileSync(path.join(source, 'icons', `${def.icon}.png`));
   const x = index % columns, y = Math.floor(index / columns);

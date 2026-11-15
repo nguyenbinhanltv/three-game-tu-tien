@@ -47,6 +47,8 @@ export interface SwordSocketDef {
   hand: string;
   backLocal: THREE.Matrix4;
   handLocal: THREE.Matrix4;
+  /** Khung chuôi (X lưỡi, Z mũi, gốc tâm chuôi) trong hệ xương kiếm: chỗ đặt vỏ sáng cường hóa (`swordGlow.ts`). */
+  glowLocal: THREE.Matrix4;
 }
 
 const v3 = (a: number[]) => new THREE.Vector3(a[0], a[1], a[2]);
@@ -70,11 +72,12 @@ export function swordSocketDef(template: THREE.Object3D, ex: SwordExtras): Sword
   const edge = v3(ex.edge);
   edge.addScaledVector(tip, -edge.dot(tip)).normalize();
   const g = new THREE.Matrix4().makeBasis(edge, new THREE.Vector3().crossVectors(tip, edge), tip).setPosition(v3(ex.grip));
+  const glowLocal = boneW.clone().invert().multiply(g);
   const mount = rig.swordMount();
   // Bỏ scale của bàn tay (Mixamo có thể mang scale 0,01 ở Armature) để kiếm giữ đúng cỡ.
   const ws = 1 / (toScene.clone().multiply(hand.matrixWorld).getMaxScaleOnAxis() || 1);
   const handLocal = new THREE.Matrix4().compose(mount.position, mount.quaternion, new THREE.Vector3(ws, ws, ws)).multiply(g.invert()).multiply(boneW);
-  return { bone: bone.name, back: bone.parent!.name, hand: hand.name, backLocal: bone.matrix.clone(), handLocal };
+  return { bone: bone.name, back: bone.parent!.name, hand: hand.name, backLocal: bone.matrix.clone(), handLocal, glowLocal };
 }
 
 /** Chỗ gắn kiếm của một bản sao: đổi cha xương kiếm giữa lưng và tay phải. Không thêm mesh, mọi LOD đi theo. */
@@ -107,6 +110,15 @@ export class SwordSocket {
 
   get drawn(): boolean {
     return this.inHand;
+  }
+
+  /** Ma trận thế giới (hệ model) của xương kiếm, dùng để đặt vỏ sáng. */
+  get boneWorld(): THREE.Matrix4 {
+    return this.bone.matrixWorld;
+  }
+
+  get glowLocal(): THREE.Matrix4 {
+    return this.def.glowLocal;
   }
 
   set(inHand: boolean): void {

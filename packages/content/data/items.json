@@ -26,5 +26,23 @@
 
   { "id": "itm_ngoc_boi", "kind": "jade", "stack": 1, "price": 0, "sell": 60, "rarity": 1, "icon": "itm_ngoc_boi", "iconFallback": "📿", "reqLevel": 2, "stats": { "mp": 40, "hp": 20 } },
   { "id": "itm_huyen_thiet_gioi", "kind": "ring", "stack": 1, "price": 900, "sell": 200, "rarity": 1, "icon": "itm_huyen_thiet_gioi", "iconFallback": "💍", "reqLevel": 9, "stats": { "atk": 6, "def": 4 } },
-  { "id": "itm_han_giao_hoan", "kind": "ring", "stack": 1, "price": 0, "sell": 650, "rarity": 2, "icon": "itm_han_giao_hoan", "iconFallback": "💍", "reqLevel": 13, "stats": { "atk": 10, "hp": 120, "mp": 60 } }
+  { "id": "itm_han_giao_hoan", "kind": "ring", "stack": 1, "price": 0, "sell": 650, "rarity": 2, "icon": "itm_han_giao_hoan", "iconFallback": "💍", "reqLevel": 13, "stats": { "atk": 10, "hp": 120, "mp": 60 } },
+  {"id": "itm_tay_luyen_thach", "kind": "material", "stack": 99, "price": 80, "sell": 20, "rarity": 2, "icon": "itm_tay_luyen_thach", "iconFallback": "🔷"},
+  {"id": "itm_linh_tran", "kind": "material", "stack": 99, "price": 0, "sell": 5, "rarity": 1, "icon": "itm_linh_tran", "iconFallback": "✴️"},
+  {"id": "itm_ho_phu", "kind": "material", "stack": 20, "price": 0, "sell": 0, "rarity": 3, "icon": "itm_ho_phu", "iconFallback": "📿"},
+  {"id": "gem_kim_1", "kind": "material", "stack": 99, "price": 0, "sell": 15, "rarity": 1, "icon": "gem_kim_1", "iconFallback": "🔶"},
+  {"id": "gem_kim_2", "kind": "material", "stack": 99, "price": 0, "sell": 50, "rarity": 2, "icon": "gem_kim_2", "iconFallback": "🔶"},
+  {"id": "gem_kim_3", "kind": "material", "stack": 99, "price": 0, "sell": 160, "rarity": 3, "icon": "gem_kim_3", "iconFallback": "🔶"},
+  {"id": "gem_moc_1", "kind": "material", "stack": 99, "price": 0, "sell": 15, "rarity": 1, "icon": "gem_moc_1", "iconFallback": "🍃"},
+  {"id": "gem_moc_2", "kind": "material", "stack": 99, "price": 0, "sell": 50, "rarity": 2, "icon": "gem_moc_2", "iconFallback": "🍃"},
+  {"id": "gem_moc_3", "kind": "material", "stack": 99, "price": 0, "sell": 160, "rarity": 3, "icon": "gem_moc_3", "iconFallback": "🍃"},
+  {"id": "gem_thuy_1", "kind": "material", "stack": 99, "price": 0, "sell": 15, "rarity": 1, "icon": "gem_thuy_1", "iconFallback": "💧"},
+  {"id": "gem_thuy_2", "kind": "material", "stack": 99, "price": 0, "sell": 50, "rarity": 2, "icon": "gem_thuy_2", "iconFallback": "💧"},
+  {"id": "gem_thuy_3", "kind": "material", "stack": 99, "price": 0, "sell": 160, "rarity": 3, "icon": "gem_thuy_3", "iconFallback": "💧"},
+  {"id": "gem_hoa_1", "kind": "material", "stack": 99, "price": 0, "sell": 15, "rarity": 1, "icon": "gem_hoa_1", "iconFallback": "🔥"},
+  {"id": "gem_hoa_2", "kind": "material", "stack": 99, "price": 0, "sell": 50, "rarity": 2, "icon": "gem_hoa_2", "iconFallback": "🔥"},
+  {"id": "gem_hoa_3", "kind": "material", "stack": 99, "price": 0, "sell": 160, "rarity": 3, "icon": "gem_hoa_3", "iconFallback": "🔥"},
+  {"id": "gem_tho_1", "kind": "material", "stack": 99, "price": 0, "sell": 15, "rarity": 1, "icon": "gem_tho_1", "iconFallback": "🟫"},
+  {"id": "gem_tho_2", "kind": "material", "stack": 99, "price": 0, "sell": 50, "rarity": 2, "icon": "gem_tho_2", "iconFallback": "🟫"},
+  {"id": "gem_tho_3", "kind": "material", "stack": 99, "price": 0, "sell": 160, "rarity": 3, "icon": "gem_tho_3", "iconFallback": "🟫"}
 ]
