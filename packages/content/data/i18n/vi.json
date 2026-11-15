@@ -173,7 +173,7 @@
   "sys.fly_no_mp": "Linh lực cạn, phi kiếm hạ xuống.",
   "sys.died": "Ngươi đã trọng thương, mất {n} tu vi.",
   "sys.died_free": "Ngươi đã trọng thương.",
-  "sys.respawned": "Ngươi tỉnh lại ở Lạc Kiếm Tông.",
+  "sys.respawned": "Ngươi tỉnh lại ở nơi an toàn.",
   "sys.quest_accept": "Nhận nhiệm vụ: {name}",
   "sys.quest_done": "Hoàn thành nhiệm vụ: {name}",
   "sys.quest_ready": "Nhiệm vụ “{name}” đã xong, hãy về trả.",
