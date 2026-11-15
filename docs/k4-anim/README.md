@@ -26,6 +26,8 @@ Chỉ là lớp hình ở client. Server vẫn quyết định sát thương, v�
 - Tự đánh trước đây không dự đoán nên đòn nối bắt đầu giữa động tác (từ `hit[0] − FX_LEAD`); giờ đi chung `predictSkill`.
 - `perform.test.ts`, `playerSkins.test.ts` (mục "máy trạng thái chiêu", "clip K-3 nạp lười") và `animrules.test.ts` kiểm các điểm trên bằng clip thật.
 
-## Số đo
+## Số đo và ảnh
 
-Xem phần đầu PR và `bench/results/` (chạy `pnpm bench:client`); ảnh và nhật ký sự kiện chụp bằng `pnpm shots:k4 --out <thư mục tuyệt đối>` (nam và nữ, GPU thật, tắt tiếng).
+- `pnpm bench:client` (RTX 3060 Ti, Chrome, 3 điểm × 3 preset × WebGPU/WebGL2): CPU p95 từ 2,8 ms (sân, thấp) đến 7,8 ms (WebGL2/cao, rừng), dưới ngưỡng 8 ms; draw call tối đa 160 (ngân sách 300); không lỗi console. Ô WebGL2/cao ở sân tông môn chỉ 29–37 fps dù CPU 3,5 ms (GPU/bloom, lặp lại ở cả hai lần chạy; chưa đối chiếu với `main`).
+- Nhật ký sự kiện ở `skill-events.json`: đòn thường `hit` tại 0,26–0,27 s sau lúc vào thế (dữ liệu `hitAt` = 0,26 s), chiêu Kiếm Khí Trảm 0,28–0,29 s (dữ liệu 0,28 s), Hộ Thể 0,38–0,39 s (0,38 s). Hủy thu về khi đi lại: sự kiện `cancel` ở 0,47–0,48 s (dữ liệu `cancel.move` = 0,46 s cho Kiếm Khí Trảm). Lướt hủy Hộ Thể ở 0,48–0,51 s (sau `cancel.dash` = 0,38 s).
+- Ảnh (nam Thanh Phong và nữ Lam Chi, GPU thật, tắt tiếng; mỗi ô 150 ms, viền đỏ = khung sự kiện `hit`): `nam-combo-3-don.jpg` / `nu-combo-3-don.jpg` (chuỗi 3 đòn), `nu-chieu-kiem-khi-tram.jpg` (dãy khung một chiêu), `nam-luot-huy-thu-ve.jpg`, `nam-di-chuyen-huy-thu-ve.jpg`, `nam-di-lui-di-ngang.jpg`, `nu-trung-don-co-huong.jpg`, `nu-nga-dung-day.jpg`. Bộ đủ 14 tờ ảnh (cả hai giới) nằm ở artifact của phiên; chụp lại bằng `pnpm shots:k4 --out <thư mục tuyệt đối>`.
