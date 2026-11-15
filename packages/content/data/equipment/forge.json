@@ -1,0 +1,114 @@
+[
+  {
+    "id": "frg_lk_dao_bao",
+    "npc": "npc_thiet_lao",
+    "output": "itm_lk_dao_bao",
+    "ilvl": 12,
+    "q": [
+      0,
+      0,
+      85,
+      15,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_kiem_phach",
+        "n": 8
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 10
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 5
+      }
+    ],
+    "gold": 420
+  },
+  {
+    "id": "frg_lk_ho_uyen",
+    "npc": "npc_thiet_lao",
+    "output": "itm_lk_ho_uyen",
+    "ilvl": 12,
+    "q": [
+      0,
+      0,
+      85,
+      15,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_kiem_phach",
+        "n": 5
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 260
+  },
+  {
+    "id": "frg_lk_dai_lung",
+    "npc": "npc_thiet_lao",
+    "output": "itm_lk_dai_lung",
+    "ilvl": 12,
+    "q": [
+      0,
+      0,
+      85,
+      15,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_kiem_phach",
+        "n": 5
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 260
+  },
+  {
+    "id": "frg_lk_van_ngoa",
+    "npc": "npc_thiet_lao",
+    "output": "itm_lk_van_ngoa",
+    "ilvl": 12,
+    "q": [
+      0,
+      0,
+      85,
+      15,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_kiem_phach",
+        "n": 5
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 260
+  }
+]

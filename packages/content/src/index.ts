@@ -4,7 +4,9 @@ import type {
   MethodDef,
   SkillVariant,
   ItemDef,
+  ForgeRecipe,
   ItemSysData,
+  SetDef,
   QualityDef,
   SlotDef,
   LevelDef,
@@ -55,9 +57,12 @@ import equipSlotsJson from '../data/equipment/slots.json';
 import equipQualitiesJson from '../data/equipment/qualities.json';
 import equipTemplatesJson from '../data/equipment/templates.json';
 import equipAffixesJson from '../data/equipment/affixes.json';
+import equipSetsJson from '../data/equipment/sets.json';
+import equipSetItemsJson from '../data/equipment/setItems.json';
+import forgeJson from '../data/equipment/forge.json';
 
 /** Mẫu trang bị chỉ để rơi (chưa có icon trong atlas, dùng iconFallback) nằm ở data/equipment/templates.json. */
-export const ITEMS = [...(itemsJson as ItemDef[]), ...(equipTemplatesJson as ItemDef[]), ...(methodsJson.items as ItemDef[])];
+export const ITEMS = [...(itemsJson as ItemDef[]), ...(equipTemplatesJson as ItemDef[]), ...(equipSetItemsJson as ItemDef[]), ...(methodsJson.items as ItemDef[])];
 export const MONSTERS = monstersJson as unknown as MonsterDef[];
 /** 6 chiêu chung (ô 1–6 trên thanh chiêu). Chiêu công pháp nằm riêng ở `METHOD_SKILLS`. */
 export const SKILLS = skillsJson as SkillDef[];
@@ -108,6 +113,12 @@ export const ITEM_SYS: ItemSysData = {
   affixes: equipAffixesJson.affixes as ItemSysData['affixes'],
   params: equipAffixesJson.params,
 };
+
+/** Bộ trang bị (P3-4) và công thức chế ở Thiết lão. */
+export const SETS = equipSetsJson as unknown as SetDef[];
+export const SET = index(SETS);
+export const FORGE = forgeJson as ForgeRecipe[];
+export const FORGE_BY_ID = index(FORGE);
 
 /** Vật phẩm dùng để cường hóa trang bị. */
 export const ENHANCE_ORE = 'itm_thiet_tinh';

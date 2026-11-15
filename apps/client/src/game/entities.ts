@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { DUNGEON_EXIT, groundAt, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
-import { APPEARANCE, MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
+import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
 import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
@@ -34,6 +34,8 @@ export interface PState {
   /** Ngoại hình: giới tính, id màu áo (appearance.json). Server cũ chưa gửi thì undefined. */
   g?: string;
   dye?: string;
+  /** Bộ trang bị đang nhuộm áo/ánh kiếm (id bộ); '' hoặc thiếu = không. */
+  sk?: string;
 }
 export interface MState {
   t: string;
@@ -68,7 +70,8 @@ export interface WorldView {
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
-  return s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name);
+  const base = s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name);
+  return s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
 }
 
 function angleLerp(a: number, b: number, k: number): number {
@@ -445,7 +448,7 @@ export class EntityManager {
       v.s = s;
       const look = lookOf(s);
       if (isLocal) this.localLook = look;
-      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye;
+      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         v.skinPending = this.playerSkins.pending(look);
         v.swapModel(this.playerSkins.create(look), look);
@@ -476,6 +479,7 @@ export class EntityManager {
       }
       v.fl = s.fl;
       v.model.setWeaponGlow?.(s.wg ?? 0);
+      v.model.setWeaponTint?.(look.set ? (SET.get(look.set)?.look.blade ?? '') : '');
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;

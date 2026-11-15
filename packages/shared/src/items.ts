@@ -8,6 +8,7 @@ import type { EquipSlot, InvItem, StatBlock } from './types';
 import type { RootDef } from './realm';
 import { EQUIP_SLOTS } from './types';
 import { gemAffixes } from './upgrade';
+import { NO_SET_FX, setFxOf, setStatuses, type SetDef, type SetFx, type SetStatus } from './sets';
 
 /** 0 Phàm, 1 Linh, 2 Huyền, 3 Địa, 4 Thiên. */
 export type Quality = 0 | 1 | 2 | 3 | 4;
@@ -305,6 +306,9 @@ export interface PlayerStats extends BaseStats {
   skillDmg: Record<string, number>;
   elemDmg: Record<string, number>;
   elemRes: Record<string, number>;
+  /** Bộ trang bị (P3-4): món đang mặc theo bộ và hiệu ứng combat đã kích hoạt. */
+  sets: SetStatus[];
+  setFx: SetFx;
 }
 
 /** Một ô đang mặc. `tpl` là chỉ số cố định của mẫu, chỉ dùng cho đồ cũ không có `inst`. */
@@ -317,7 +321,7 @@ export interface EquippedEntry {
  * Tổng chỉ số từ cảnh giới + các ô đang mặc. Công thức: cộng phẳng (dòng chính × cường hóa), rồi nhân phần trăm.
  * Đồ cũ (không `inst`) cộng đúng như trước nên nhịp lên cấp không đổi. Linh căn cộng ở đây (P3-7); bộ trang bị, công pháp cộng ở đợt sau.
  */
-export function computePlayerStats(level: number, equipped: EquippedEntry[], root?: RootDef | null): PlayerStats {
+export function computePlayerStats(level: number, equipped: EquippedEntry[], root?: RootDef | null, sets: readonly SetDef[] = []): PlayerStats {
   const b = playerBaseStats(level);
   let hp = b.hp;
   let mp = b.mp;
@@ -337,6 +341,24 @@ export function computePlayerStats(level: number, equipped: EquippedEntry[], roo
   const skillDmg: Record<string, number> = {};
   const elemDmg: Record<string, number> = {};
   const elemRes: Record<string, number> = {};
+  const addLine = (a: { id: AffixStat; p?: string; v: number }): void => {
+    switch (a.id) {
+      case 'atk_pct': atkPct += a.v; break;
+      case 'def_pct': defPct += a.v; break;
+      case 'hp_pct': hpPct += a.v; break;
+      case 'mp_pct': mpPct += a.v; break;
+      case 'crit_rate': critRate += a.v; break;
+      case 'crit_dmg': critDmg += a.v; break;
+      case 'cdr': cdr += a.v; break;
+      case 'lifesteal': lifesteal += a.v; break;
+      case 'heal_recv': healRecv += a.v; break;
+      case 'elite_dmg': eliteDmg += a.v; break;
+      case 'move_speed': moveSpeed += a.v; break;
+      case 'skill_dmg': if (a.p) skillDmg[a.p] = (skillDmg[a.p] ?? 0) + a.v; break;
+      case 'elem_dmg': if (a.p) elemDmg[a.p] = (elemDmg[a.p] ?? 0) + a.v; break;
+      case 'elem_res': if (a.p) elemRes[a.p] = (elemRes[a.p] ?? 0) + a.v; break;
+    }
+  };
   for (const { item, tpl } of equipped) {
     const mul = enhanceMul(item.plus ?? 0);
     const flat: StatBlock = item.inst ? item.inst.main : (tpl ?? {});
@@ -346,25 +368,11 @@ export function computePlayerStats(level: number, equipped: EquippedEntry[], roo
     def += Math.round((flat.def ?? 0) * mul);
     // Ngọc khảm cộng như dòng phụ (cùng trần chỉ số).
     const lines = item.inst ? [...item.inst.affixes, ...item.inst.gems.flatMap((g) => (g ? gemAffixes(g) : []))] : [];
-    for (const a of lines) {
-      switch (a.id) {
-        case 'atk_pct': atkPct += a.v; break;
-        case 'def_pct': defPct += a.v; break;
-        case 'hp_pct': hpPct += a.v; break;
-        case 'mp_pct': mpPct += a.v; break;
-        case 'crit_rate': critRate += a.v; break;
-        case 'crit_dmg': critDmg += a.v; break;
-        case 'cdr': cdr += a.v; break;
-        case 'lifesteal': lifesteal += a.v; break;
-        case 'heal_recv': healRecv += a.v; break;
-        case 'elite_dmg': eliteDmg += a.v; break;
-        case 'move_speed': moveSpeed += a.v; break;
-        case 'skill_dmg': if (a.p) skillDmg[a.p] = (skillDmg[a.p] ?? 0) + a.v; break;
-        case 'elem_dmg': if (a.p) elemDmg[a.p] = (elemDmg[a.p] ?? 0) + a.v; break;
-        case 'elem_res': if (a.p) elemRes[a.p] = (elemRes[a.p] ?? 0) + a.v; break;
-      }
-    }
+    for (const a of lines) addLine(a);
   }
+  // Bộ trang bị: thưởng chỉ số của các bậc đã kích hoạt (hiệu ứng combat ở `setFx`).
+  const setSt = sets.length ? setStatuses(sets, equipped.map((e) => e.item.id)) : [];
+  for (const s of setSt) for (const tier of s.active) for (const a of tier.lines ?? []) addLine(a);
   // Linh căn: +% sát thương hệ của mình và một chỉ số phụ nhẹ (thiết kế mục 2).
   if (root) {
     elemDmg[root.elem] = (elemDmg[root.elem] ?? 0) + root.elemDmg;
@@ -389,6 +397,8 @@ export function computePlayerStats(level: number, equipped: EquippedEntry[], roo
     skillDmg,
     elemDmg,
     elemRes,
+    sets: setSt,
+    setFx: setSt.length ? setFxOf(setSt) : NO_SET_FX,
   };
 }
 

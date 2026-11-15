@@ -26,10 +26,10 @@ import {
   WARD_ITEM,
   GEM_MERGE_COUNT,
 } from '@dtl/shared';
-import { ENHANCE_ORE, ITEM, itemName, t } from '@dtl/content';
+import { ENHANCE_ORE, FORGE, ITEM, itemName, SET, t } from '@dtl/content';
 import { ContentIcon } from './ContentIcon';
 import { Game, reqId } from '../game/engine';
-import { affixText, gearQuality } from './gear';
+import { affixText, gearQuality, setLines } from './gear';
 import { Button, Divider } from './kit';
 import { ItemIcon, statLines } from './Panels';
 import { useUI } from './store';
@@ -361,6 +361,59 @@ export function SalvageTab({ npcId }: { npcId: string }) {
       <Button variant="primary" disabled={chosen.length === 0} onClick={run}>
         {confirm ? t('ui.salvage.confirm') : t('ui.salvage.do', { n: chosen.length })}
       </Button>
+    </div>
+  );
+}
+
+// ---------- chế tạo bộ trang bị (P3-4) ----------
+
+export function ForgeTab({ npcId }: { npcId: string }) {
+  const inv = useUI((s) => s.inv);
+  const gold = useUI((s) => s.char?.gold ?? 0);
+  const equip = useUI((s) => s.equip);
+  const g = Game.current;
+  const list = FORGE.filter((f) => f.npc === npcId);
+  const sets = [...new Set(list.map((f) => ITEM.get(f.output)?.set).filter((x): x is string => !!x))];
+  return (
+    <div className="shop-list" data-testid="forge-tab">
+      <Divider label={t('ui.forge.title')} />
+      <div className="k-dim">{t('ui.forge.desc')}</div>
+      {list.map((f) => {
+        const out = ITEM.get(f.output)!;
+        const tot = f.q.reduce((a, b) => a + b, 0) || 1;
+        const can = f.inputs.every((i) => count(inv, i.id) >= i.n) && gold >= f.gold;
+        return (
+          <div key={f.id} className="k-card shop-row craft" data-testid={`forge-${f.id}`}>
+            <ItemIcon item={{ id: out.id, n: 1 }} small />
+            <div className="shop-info">
+              <div className="item-name" data-q={f.q.findIndex((x) => x > 0)}>{itemName(out.id)}</div>
+              <div className="k-dim">{t('ui.item.kind.' + out.kind)} · {t('ui.forge.chance', { a: Math.round((f.q[2] / tot) * 100), b: Math.round((f.q[3] / tot) * 100) })}</div>
+              <div className="craft-inputs">
+                {f.inputs.map((i) => (
+                  <span key={i.id} className={count(inv, i.id) >= i.n ? 'ok' : 'bad'}>
+                    <ContentIcon def={ITEM.get(i.id)} /> {itemName(i.id)} {count(inv, i.id)}/{i.n}
+                  </span>
+                ))}
+                <span className={gold >= f.gold ? 'ok' : 'bad'}>{t('ui.craft.cost', { n: f.gold })}</span>
+              </div>
+            </div>
+            <div className="craft-btns">
+              <Button variant="primary" disabled={!can} onClick={() => g?.send(C.UPGRADE, { npc: npcId, op: 'forge', id: f.id, r: reqId() })}>
+                {t('ui.forge.make')}
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+      {sets.map((sid) => (
+        <div key={sid} className="k-card set-card">
+          {setLines(SET.get(sid)!, equip).map((l, i) => (
+            <div key={i} className={'item-stat' + (l.tone ? ' ' + l.tone : '')}>
+              {l.text}
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
