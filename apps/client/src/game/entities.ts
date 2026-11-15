@@ -1,7 +1,8 @@
 import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
+import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
-import { DUNGEON_EXIT, groundAt, locoDirOf, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
+import { DUNGEON_EXIT, groundAt, locoDirOf, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
 import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, swordModelOf, t } from '@dtl/content';
 import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
@@ -11,9 +12,9 @@ import { type AnimState, type CharacterView, type MonsterView, P2E_OFF, type Ski
 import { MonsterSkins } from './character/monsterSkins';
 import { NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
-import { hitStopFor } from './hitreact';
 import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
 import { HpTrail } from './hpTrail';
+import type { StopPair } from './hitjuice';
 import { ArtifactVis } from './artifactVis';
 
 export interface PState {
@@ -161,7 +162,7 @@ export class PlayerVis {
     this.look = lookOf(s);
     this.model = skins.create(this.look);
     this.skinPending = skins.pending(this.look);
-    this.label = makeLabel(s.name, local ? '#bfe8ff' : '#ffffff', realmName(s.lv));
+    this.label = makeLabel(s.name, local ? '#bfe8ff' : '#ffffff', realmTag(s.lv), realmTagColor(s.lv));
     this.lv = s.lv;
     this.label.position.y = labelY(this.model);
     this.model.root.add(this.label);
@@ -174,7 +175,7 @@ export class PlayerVis {
   refreshLabel() {
     this.model.root.remove(this.label);
     disposeLabel(this.label);
-    this.label = makeLabel(this.s.name, this.local ? '#bfe8ff' : '#ffffff', realmName(this.s.lv));
+    this.label = makeLabel(this.s.name, this.local ? '#bfe8ff' : '#ffffff', realmTag(this.s.lv), realmTagColor(this.s.lv));
     this.label.position.y = labelY(this.model);
     this.model.root.add(this.label);
     this.lv = this.s.lv;
@@ -328,8 +329,30 @@ const MON_FAR = 125;
  * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
  */
 export const LABEL_MAX = 16;
-/** Rộng tấm nhãn trên màn hình (px) được kẹp trong khoảng này (P2-E4); chữ chiếm chừng 62%. */
-const LABEL_PX = { min: 140, max: 300 };
+/**
+ * Rộng tấm nhãn trên màn hình (px, ở hệ số UI 1) được kẹp trong khoảng này (P2-E4); chữ chiếm chừng 62%.
+ * Trần 240 để tên không to hơn chữ HUD khi camera sát; sàn 160 để dòng cảnh giới còn đọc được khi camera xa.
+ * Nhân với `uiScale()` để màn lớn chữ không bé đi.
+ */
+const LABEL_PX = { min: 160, max: 240 };
+/** Nhãn mờ dần theo khoảng cách tới camera: rõ tới `full` mét, tắt hẳn ở `none` mét (mình và mục tiêu luôn rõ). */
+export const LABEL_FADE = { full: 45, none: 70 };
+
+/** Độ mờ nhãn ở khoảng cách `dist` (m). */
+export function labelOpacity(dist: number, keep: boolean): number {
+  if (keep) return 1;
+  return Math.max(0, Math.min(1, (LABEL_FADE.none - dist) / (LABEL_FADE.none - LABEL_FADE.full)));
+}
+
+/** Dòng cảnh giới trên bảng tên người chơi: `[Ngưng Khí tầng 9]`. */
+export function realmTag(level: number): string {
+  return t('ui.nameplate.realm', { realm: realmName(level) });
+}
+
+/** Màu dòng cảnh giới theo đại cảnh giới: Ngưng Khí vải ngà, Trúc Cơ kim quang (art bible mục 4: attire_ivory, spirit_gold). */
+export function realmTagColor(level: number): string {
+  return level >= TRUC_CO_LEVEL ? '#ffde96' : '#e6ddcb';
+}
 
 interface LodEntry {
   model: CharacterView;
@@ -358,6 +381,8 @@ export class EntityManager {
   private bars = new HeadBars();
   /** Bật khi có cắt cảnh: thanh máu và nhãn tên trên đầu ẩn đi. */
   tagsHidden = false;
+  /** Boss đang có thanh máu lớn trên HUD (engine đặt mỗi lần đồng bộ HUD): bảng tên 3D của nó ẩn đi. */
+  hudBossId = '';
   private markerNew = makeMarker('!', '#ffd84a');
   private markerDone = makeMarker('?', '#ffd84a');
   private markerWait = makeMarker('?', '#9aa3ad');
@@ -641,7 +666,7 @@ export class EntityManager {
         const r = v.model.root;
         bars.push(r.position.x, r.position.y + v.barY, r.position.z, v.bar.width, s.hp / Math.max(1, s.mhp), v.bar.trail.value, v.bar.kind, a);
       }
-      if (v.label) v.label.visible = !dead && d2 < 70 * 70;
+      if (v.label) v.label.visible = !dead && d2 < 70 * 70 && id !== this.hudBossId;
       v.wasAttack = s.st === MS_ATTACK;
     });
     for (const [id, v] of this.monsters) {
@@ -855,8 +880,15 @@ export class EntityManager {
     const p = e.model.root.position;
     const ly = sp.position.y * (sp.parent ? sp.parent.scale.y : 1);
     const dist = Math.hypot(p.x - cam.position.x, p.y + ly - cam.position.y, p.z - cam.position.z);
-    const f = fitFactor(ud.w0 * ps, dist, cam.fov, vh, LABEL_PX.min, LABEL_PX.max);
+    const ui = uiScale();
+    const f = fitFactor(ud.w0 * ps, dist, cam.fov, vh, LABEL_PX.min * ui, LABEL_PX.max * ui);
     sp.scale.set(ud.w0 * f, ud.h0! * f, 1);
+    const alpha = labelOpacity(dist, e.local || e.target);
+    sp.material.opacity = alpha;
+    if (alpha <= 0.02) {
+      sp.visible = false;
+      return;
+    }
     // Hộp chữ trên màn hình: chữ chiếm khoảng 62% bề rộng, 55% bề cao của tấm.
     _v.set(p.x, p.y + ly, p.z).project(cam);
     if (_v.z > 1) return;
@@ -889,14 +921,14 @@ export class EntityManager {
    * Phản ứng trúng đòn khi nhận S.DMG (chỉ hiển thị). `delay` để khớp lúc đạn bay tới.
    * Người ra đòn là mình thì mình cũng khựng.
    */
-  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false): void {
+  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false, stop?: StopPair): void {
     const vd = this.players.get(dst) ?? this.monsters.get(dst);
     if (!vd) return;
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
     // Chỉ khựng khi đòn liên quan tới mình, để boss bị nhiều người đánh không đứng hình liên tục.
     const noStop = src !== this.mySid && dst !== this.mySid;
-    vd.model.hitReact({ crit, heavy, delay, noStop, noFlash: this.tagsHidden && this.monsters.has(dst), dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
-    if (src && src === this.mySid && vs) vs.model.hit.hitStop(hitStopFor(crit, heavy), delay);
+    vd.model.hitReact({ crit, heavy, delay, noStop, stop: stop?.target, noFlash: this.tagsHidden && this.monsters.has(dst), dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
+    if (src && src === this.mySid && vs) vs.model.hit.hitStop(stop?.attacker ?? 0, delay);
   }
 
   /** Vị trí vẽ của người chơi cách đây `sec` giây (hoặc cũ nhất còn lưu): điểm xuất phát cho lướt hiển thị. */

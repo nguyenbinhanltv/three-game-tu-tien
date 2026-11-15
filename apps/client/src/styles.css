@@ -76,24 +76,7 @@ body {
   will-change: transform, opacity;
   white-space: nowrap;
 }
-.dmg.hit {
-  color: #ffffff;
-}
-.dmg.crit {
-  color: #ffd84a;
-  font-size: 28px;
-}
-.dmg.hurt {
-  color: #ff5e52;
-  font-size: 22px;
-}
-.dmg.heal {
-  color: #7dffa0;
-}
-.dmg.other {
-  color: #c4ccd6;
-  font-size: 15px;
-}
+/* Màu và cỡ theo cấp đòn: ui/tutien.css. */
 
 /* Chỉ báo ngoài màn hình (M4-15): con dấu tròn lam đêm viền đồng thau, mũi chỉ hướng, khoảng cách.
    Màu theo art bible mục 4: son đỏ (quái), ma khí + son đỏ (boss), kim quang (nhiệm vụ), linh khí ngọc (điểm hái). */
@@ -454,6 +437,22 @@ kbd {
   backdrop-filter: blur(5px);
   color: #29292c;
   animation: ts-card-in 0.6s ease-out both;
+}
+/* Màn thấp (≤ 800 px): khung đăng nhập hạ xuống và gọn lại để dòng phụ đề dưới tiêu đề không chạm mép trên khung. */
+@media (max-height: 800px) {
+  .ts-sub {
+    margin-bottom: 22px;
+  }
+  /* Khung rộng hơn để các hàng lựa chọn nằm một dòng, và không cao quá phần màn hình còn lại dưới phụ đề
+     (đỉnh khung ≈ 15vh + tiêu đề + phụ đề + 22 px); nội dung dài hơn thì cuộn trong khung. */
+  .ts-card {
+    width: min(92vw, 620px);
+    margin-bottom: 3vh;
+    padding: 12px 28px 14px;
+    max-height: calc(84vh - clamp(64px, 10.5vw, 148px) * 1.1 - 56px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
 }
 @keyframes ts-card-in {
   from {

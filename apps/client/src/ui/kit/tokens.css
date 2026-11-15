@@ -13,10 +13,13 @@
   --k-stone: #464540; /* stone_dark */
   --k-stone-2: #7d786c; /* stone */
   --k-ink: #29292c; /* attire_ink */
+  /* Nền mực bán trong suốt cho khung HUD và bảng: #0D1117 ở 80% (mực ngả lam đêm, không đen tuyền). */
+  --k-ink-bg: rgba(13, 17, 23, 0.8);
+  --k-ink-bg-hi: rgba(22, 30, 42, 0.86);
 
   /* viền đồng thau (wood_bronze, sáng lên bằng nắng sớm) */
-  --k-bronze: #ae8b49; /* wood_bronze */
-  --k-bronze-hi: #e1c07a;
+  --k-bronze: #c8a96e; /* viền kim: wood_bronze #AE8B49 nâng sáng bằng nắng sớm cho dễ đọc trên nền mực */
+  --k-bronze-hi: #ead29a;
   --k-bronze-lo: #5e4620;
   --k-edge: linear-gradient(180deg, var(--k-bronze-hi), var(--k-bronze) 45%, var(--k-bronze-lo));
   --k-edge-dim: rgba(174, 139, 73, 0.4);
@@ -31,6 +34,8 @@
   --k-jade: #7fe3d0; /* spirit_jade */
   --k-gold: #ffde96; /* spirit_gold */
   --k-sword: #cff3ff; /* spirit_sword */
+  /* Ngọc: viền/điểm nhấn thay cho kim ở trạng thái đang chọn, focus bàn phím. */
+  --k-ngoc: #38bdf8;
   --k-cinnabar: #9d392e; /* wood_cinnabar */
   --k-cinnabar-hi: #d9604f;
 

@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { HIT_FEEL_HUMAN, type HitFeel } from '@dtl/shared';
+import { HIT_STOP_CAP, hitStopOf } from './hitjuice';
 
 /**
  * Phản ứng trúng đòn phía client (chỉ trình bày, không đổi kết quả hay vị trí logic):
@@ -9,16 +10,8 @@ import { HIT_FEEL_HUMAN, type HitFeel } from '@dtl/shared';
  * - rung thân: dao động nhỏ trong khung cục bộ của model.
  */
 
-export const HIT_STOP_LIGHT = 0.07;
-export const HIT_STOP_HEAVY = 0.1;
-export const HIT_STOP_CRIT = 0.12;
-export const HIT_STOP_MAX = 0.15;
-
-/** Độ dài khựng theo cấp đòn: thường < nặng < chí mạng < chí mạng + nặng. */
-export function hitStopFor(crit: boolean, heavy: boolean): number {
-  if (crit) return heavy ? HIT_STOP_MAX : HIT_STOP_CRIT;
-  return heavy ? HIT_STOP_HEAVY : HIT_STOP_LIGHT;
-}
+/** Trần khựng (K-7): 90 ms. Bảng theo cấp đòn nằm ở `hitjuice.ts` (`hitStopOf`). */
+export const HIT_STOP_MAX = HIT_STOP_CAP;
 
 // Chớp trúng đòn là màu phẳng không đổ bóng: trắng tinh thì che mất hình nhân vật (art bible mục 5, 8), nên dùng màu kem/vàng dịu
 // (≈ 80% độ sáng) và chớp ngắn (`FLASH_MAX`); vẫn đủ rõ để đọc đòn mà còn thấy dáng người.
@@ -43,6 +36,8 @@ export interface HitOpts {
   mass?: number;
   /** Trễ trước khi phản ứng (giây), để khớp lúc đạn bay tới. */
   delay?: number;
+  /** Khựng (giây, trước hệ số hạng thân) theo bảng K-7; bỏ trống = suy từ `crit`/`heavy`. */
+  stop?: number;
   /** Bỏ khựng (vẫn chớp/giật lùi/rung), dùng cho đòn không liên quan tới mình. */
   noStop?: boolean;
   /** Bỏ chớp trắng (cảnh boss: camera sát thân nên chớp che hết hình); vẫn giật lùi/rung. */
@@ -86,7 +81,8 @@ export class HitReact {
 
   /** Bị trúng đòn: khựng + chớp + giật lùi + rung. */
   react(o: HitOpts): void {
-    const stop = hitStopFor(!!o.crit, !!o.heavy) * this.feel.stop;
+    const base = o.stop ?? hitStopOf({ crit: !!o.crit, heavy: !!o.heavy, combo3: false, power: 0, ult: false, victimIsMe: false, byMe: false }).target;
+    const stop = base * this.feel.stop;
     if (o.delay && o.delay > 0) {
       if (this.pendHitT < 0) {
         this.pendHitT = o.delay;
