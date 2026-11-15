@@ -5,7 +5,7 @@ description: Sinh asset thủ tục cho Đạp Thiên Lộ khi không có artist
 
 # Asset thủ tục
 
-> Hiện trạng (2026-11-15): địa hình, cây, đá, mây, nước sinh lúc chạy trong `apps/client/src/game/terrain.ts` và `env.ts` (dùng `GeoBuilder` gộp lưới tô màu đỉnh); nhân vật, quái, cây thuốc dựng bằng khối trong `models.ts`; kiến trúc tông môn bằng Blender (`tools/blender/build_sect.py` → asset `arch_sect`, client nạp qua `AssetCache` trong `game/assets.ts`), có bản dự phòng bằng code trong `sect.ts`. Pipeline asset (`pnpm assets:build` / `assets:validate`, xem `assets/README.md` và skill `blender-pipeline`) đã chạy được. `assets/LICENSES.md` đã có (mới một dòng `arch_sect`). Chưa dùng gói CC0 nào, chưa có asset Tripo trong game.
+> Hiện trạng (2026-11-15, sau Phase 2): địa hình, nước, mây, bầu trời sinh lúc chạy trong `apps/client/src/game/terrain.ts`, `env.ts` và `render/` (mặt đất trộn texture PBR Poly Haven CC0 qua `pnpm assets:terrain`, mặt nạ vùng thủ tục ở `render/groundMask.ts`). **Nhân vật, NPC, quái, boss và prop chi tiết đã là GLB Tripo** chuẩn hóa bằng `import_tripo.py` (người chơi nam/nữ, 3 NPC, quái có xương, 4 boss, 5 loài cây, ~20 prop; xem `apps/client/public/assets/manifest.json`), nạp qua `AssetCache`. Kiến trúc tông môn: `build_sect.py` → `arch_sect`. Clip: `anim_human_base` + clip thủ tục cho quái (`tools/blender/anim_*.py`). Cây rải theo khu bằng `game/propScatter.ts`, cây xa là impostor. `models.ts` chỉ còn là dự phòng (`?models=legacy`, lỗi nạp) và dựng tinh anh. Pipeline `pnpm assets:build` / `assets:validate` chạy đầy đủ; `assets/LICENSES.md` có dòng cho từng asset.
 
 Dự án chỉ có AI làm, nên asset môi trường được **sinh bằng thuật toán** chứ không nặn tay. Nhân vật, quái, boss và prop chi tiết dựng bằng Tripo (xem `docs/tripo-runbook.md`); gói CC0 chỉ để bổ sung khi thiếu.
 
@@ -17,12 +17,12 @@ Cột "Hiện có" ghi đúng chỗ code đang nằm; cột "Hướng tới" là
 
 | Asset | Cách làm | Hiện có | Hướng tới |
 | --- | --- | --- | --- |
-| Địa hình, núi, hồ | Heightmap từ noise (fBm + ridged); độ cao dùng chung client/server qua `heightAt` | `packages/shared` (heightAt), `game/terrain.ts` | xói mòn, sinh offline thành tile trong `tools/procgen/terrain/` |
-| Đá, cây, cỏ, linh thảo | Biến thể theo seed, vật liệu PBR đơn giản | `game/env.ts`, `game/terrain.ts`, `game/models.ts` (sinh lúc chạy) | script bpy `tools/blender/gen_*.py` → pipeline |
+| Địa hình, núi, hồ | Heightmap từ noise (fBm + ridged); độ cao dùng chung client/server qua `heightAt` | `packages/shared/src/terrain.ts` (heightAt), `game/terrain.ts` | xói mòn, sinh offline thành tile trong `tools/procgen/terrain/` |
+| Đá, cây, cỏ, linh thảo | Cây, đá, linh thảo: Tripo (`prop_*`) rải theo khu; cỏ sinh lúc chạy | `game/props.ts` + `propScatter.ts` (cây, prop), `game/grass.ts`, `game/env.ts` | thêm loài/prop mới qua Tripo + `meta.json` |
 | Kiến trúc tông môn | bpy thủ tục: mái cong, cột, lan can, bậc đá, cổng. **Không đi qua Tripo** | `tools/blender/build_sect.py` (job `arch_sect` trong `run.mjs`) | tách thành kit modular `kit_architecture.py` |
-| Phi kiếm, pháp bảo, lò đan | Mesh đơn giản + material phát sáng | khối trong `game/models.ts` | `tools/blender/gen_props.py` hoặc Tripo cho prop chi tiết |
-| Nhân vật, quái, boss | Tripo (multiview + rig) theo `docs/tripo-runbook.md` và `docs/prompts/`; gói CC0 có xương chỉ là dự phòng | khối trong `game/models.ts` (dự phòng giữ lại) | `assets/source/<loại>/<id>/meta.json`, file lớn ở `DTL_ASSET_SOURCE`, chuẩn hóa bằng `import_tripo.py` (khối `import` trong meta.json) |
-| Animation | Clip từ Tripo (rig + animation) retarget về `rig_human_base`, cộng IK tự làm phía client (bước chân, nhìn mục tiêu); gói CC0 (Quaternius) chỉ bổ sung clip còn thiếu. Không dùng Mixamo làm nguồn chính | animation thủ tục trong `game/models.ts` | `rig_human_base.py`, `export_anim_lib.py` → `anim_human_base` (M2-3) |
+| Phi kiếm, pháp bảo, lò đan | Tripo (`prop_phi_kiem`, `prop_lo_dan`…) + material phát sáng; recolor theo bộ trang bị (`recolor_phi_kiem.py`, `swordGlow.ts`) | `assets/source/prop/` | pháp bảo (Phase 3-8) |
+| Nhân vật, quái, boss | Tripo (multiview + rig) theo `docs/tripo-runbook.md` và `docs/prompts/`; gói CC0 có xương chỉ là dự phòng | `assets/source/<loại>/<id>/meta.json`, file lớn ở `DTL_ASSET_SOURCE`, chuẩn hóa bằng `import_tripo.py` (khối `import`); client dựng qua `game/character/*Skins.ts`; khối trong `models.ts` là dự phòng | tinh anh `elite_*` còn dùng khối, cần model Tripo |
+| Animation | Clip từ Tripo (rig + animation) retarget về `rig_human_base`, cộng IK tự làm phía client (bước chân, nhìn mục tiêu); gói CC0 (Quaternius) chỉ bổ sung clip còn thiếu. Không dùng Mixamo làm nguồn chính | `tools/blender/export_anim_lib.py` → `anim_human_base`, clip thủ tục `anim_quadruped.py`/`anim_serpent.py`/`anim_biped_extra.py`/`tripo_clips.py`, pose IK ở `game/character/ikpose.ts` + `data/poses/` | clip còn thiếu (nhảy, thiền riêng) |
 
 ## Quy tắc chung
 
