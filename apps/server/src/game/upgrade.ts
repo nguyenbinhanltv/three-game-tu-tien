@@ -330,7 +330,7 @@ export class UpgradeSystem {
         // Chỉ trang bị trong túi (không đụng đồ đang mặc, nguyên liệu, đan dược).
         if (!it || it.id !== ids[k] || !def || !isEquipSlot(def.kind) || it.n !== 1) return false;
         const q = it.inst ? it.inst.q : legacyQuality(def.rarity);
-        const y = salvageYield(q, it.plus ?? 0);
+        const y = salvageYield(q, it.plus ?? 0, it.inst ? 0 : def.price, ITEM.get(ENHANCE_ORE)?.price ?? 0);
         totalOre += y.ore;
         totalDust += y.dust;
         for (const g of it.inst?.gems ?? []) if (g) gems.push(g);

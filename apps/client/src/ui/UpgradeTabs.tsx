@@ -294,7 +294,7 @@ export function SalvageTab({ npcId }: { npcId: string }) {
   let risky = false;
   for (const e of chosen) {
     const q = gearQuality(e.item);
-    const y = salvageYield(q, e.item.plus ?? 0);
+    const y = salvageYield(q, e.item.plus ?? 0, e.item.inst ? 0 : (ITEM.get(e.item.id)?.price ?? 0), ITEM.get(ENHANCE_ORE)?.price ?? 0);
     ore += y.ore;
     dust += y.dust;
     if (q >= 2 || (e.item.plus ?? 0) > 0) risky = true;
@@ -329,7 +329,7 @@ export function SalvageTab({ npcId }: { npcId: string }) {
       <div className="upg-grid">
         {list.map((e) => {
           const i = (e.ref as { i: number }).i;
-          const y = salvageYield(gearQuality(e.item), e.item.plus ?? 0);
+          const y = salvageYield(gearQuality(e.item), e.item.plus ?? 0, e.item.inst ? 0 : (ITEM.get(e.item.id)?.price ?? 0), ITEM.get(ENHANCE_ORE)?.price ?? 0);
           return (
             <div
               key={e.key}

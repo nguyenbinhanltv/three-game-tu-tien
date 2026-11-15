@@ -111,9 +111,18 @@ export function refineCost(ilvl: number, q: Quality): { gold: number; stones: nu
 
 export const SALVAGE_MAX_BATCH = 30;
 
-/** Nguyên liệu nhận khi phân giải: Thiết Tinh theo phẩm và cường hóa, Linh Trần từ phẩm Linh trở lên. Xác định, không roll. */
-export function salvageYield(q: Quality, plus: number): { ore: number; dust: number } {
-  return { ore: 1 + q + Math.floor(plus / 2), dust: q >= 1 ? q : 0 };
+/** Nguyên liệu nhận khi phân giải: Thiết Tinh theo phẩm và cường hóa, Linh Trần từ phẩm Linh trở lên. Xác định, không roll. `shopPrice`: giá mua của mẫu ở NPC (0 nếu không bán), `orePrice`: giá mua Thiết Tinh. */
+export function salvageYield(q: Quality, plus: number, shopPrice = 0, orePrice = 0): { ore: number; dust: number } {
+  let ore = 1 + q + Math.floor(plus / 2);
+  let dust = q >= 1 ? q : 0;
+  // Đồ mua được ở cửa hàng (price > 0): giá trị nguyên liệu nhận về phải thấp hơn giá mua, nếu không mua đồ rồi phân giải
+  // thành cách mua Thiết Tinh rẻ hơn cửa hàng. Cửa hàng chỉ bán đồ chưa roll, nên người gọi chỉ truyền `shopPrice` cho đồ không có `inst`.
+  if (shopPrice > 0) {
+    if (orePrice > 0) ore = Math.min(ore, Math.floor((shopPrice - 1) / orePrice));
+    // Linh Trần không bán ở cửa hàng nên không thể là lối vòng: đồ mua được thì không ra Linh Trần.
+    dust = 0;
+  }
+  return { ore, dust };
 }
 
 // ---------- ràng buộc ----------

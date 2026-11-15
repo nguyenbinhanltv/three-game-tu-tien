@@ -100,6 +100,15 @@ describe('tẩy luyện, phân giải, ràng buộc', () => {
     expect(salvageYield(2, 6).ore).toBe(salvageYield(2, 0).ore + 3);
   });
 
+  it('đồ mua được ở cửa hàng: nguyên liệu nhận về luôn rẻ hơn giá mua (không mua rồi phân giải để lấy Thiết Tinh rẻ)', () => {
+    // Mộc kiếm giá 30 < Thiết Tinh 60: không ra gì; Thiết kiếm 280 → tối đa 4 viên (240 < 280).
+    expect(salvageYield(0, 0, 30, 60)).toEqual({ ore: 0, dust: 0 });
+    expect(salvageYield(0, 0, 280, 60).ore).toBeLessThan(280 / 60);
+    for (const price of [1, 30, 60, 61, 120, 380, 900]) for (const plus of [0, 5, 10]) expect(salvageYield(0, plus, price, 60).ore * 60).toBeLessThan(price);
+    // Không bán ở cửa hàng: giữ nguyên.
+    expect(salvageYield(0, 0, 0, 60)).toEqual({ ore: 1, dust: 0 });
+  });
+
   it('ràng buộc: Địa/Thiên phẩm khi mặc; Phàm..Huyền không; đã ràng buộc thì không giao dịch', () => {
     const mk = (q: 0 | 1 | 2 | 3 | 4, bound = false): ItemInst => ({ q, ilvl: 5, main: {}, affixes: [], gems: [], bound });
     for (const q of [0, 1, 2] as const) expect(bindOnEquip(mk(q)).bound).toBe(false);

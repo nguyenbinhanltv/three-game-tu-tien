@@ -197,6 +197,16 @@ describe('phân giải', () => {
     expect(t.count(SWORD)).toBe(0);
   });
 
+  it('đồ mua ở cửa hàng (không inst, giá thấp) phân giải không ra Thiết Tinh rẻ hơn giá cửa hàng', () => {
+    const t = setup();
+    // Mộc kiếm giá 30 < Thiết Tinh 60.
+    t.give((d) => void d.add('itm_moc_kiem', 1));
+    const a = t.c.inv.findIndex((s) => s?.id === 'itm_moc_kiem');
+    t.send('salvage', { slots: [a], ids: ['itm_moc_kiem'] });
+    expect(t.count('itm_moc_kiem')).toBe(0);
+    expect(t.count('itm_thiet_tinh')).toBe(0);
+  });
+
   it('túi đầy khiến cả lô bị hủy (không mất đồ)', () => {
     const t = setup();
     t.give((d) => {
