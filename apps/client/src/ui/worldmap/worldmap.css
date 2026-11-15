@@ -1,0 +1,132 @@
+/* Bản đồ lớn (M-4): khung bản đồ cổ bên trái, bộ lọc + danh sách vùng bên phải. */
+.wm {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.wm-main {
+  position: relative;
+  flex: none;
+  border: 2px solid var(--k-edge-dim);
+  background: #2a2218;
+}
+.wm-main canvas {
+  display: block;
+  cursor: grab;
+}
+.wm-main canvas:active {
+  cursor: grabbing;
+}
+.wm-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--k-text);
+  text-align: center;
+  background: linear-gradient(0deg, rgba(14, 10, 6, 0.82), transparent);
+  pointer-events: none;
+}
+.wm-side {
+  flex: 1;
+  min-width: 0;
+  height: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wm-layers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.wm-chip {
+  padding: 3px 9px;
+  font: 600 12px var(--k-font-body);
+  color: var(--k-text-dim);
+  background: rgba(24, 17, 10, 0.7);
+  border: 1px solid var(--k-edge-dim);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.wm-chip[data-on='true'] {
+  color: var(--k-gold);
+  border-color: var(--k-gold);
+  background: rgba(104, 74, 28, 0.55);
+}
+.wm-actions {
+  display: flex;
+  gap: 6px;
+}
+.wm-tele {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--k-text);
+  background: rgba(20, 44, 52, 0.6);
+  border: 1px solid #4ea6ba;
+}
+.wm-cd {
+  color: var(--k-text-dim);
+}
+.wm-zones {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+.wm-zone {
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--k-text);
+  background: rgba(14, 23, 34, 0.55);
+  border-left: 3px solid var(--k-edge-dim);
+}
+.wm-zone[data-here='true'] {
+  border-left-color: var(--k-gold);
+  background: rgba(60, 46, 22, 0.55);
+}
+.wm-zone-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.wm-zone-head i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid #2a1f16;
+}
+.wm-zone-name {
+  font: 700 13px var(--k-font-title);
+  color: var(--k-gold);
+}
+.wm-zone-lv {
+  margin-left: auto;
+  font-size: 11px;
+}
+.wm-zone[data-status='low'] .wm-zone-lv {
+  color: #ff8a6e;
+}
+.wm-zone[data-status='high'] .wm-zone-lv {
+  color: #aab3b4;
+}
+.wm-row b {
+  color: var(--k-text-dim);
+  font-weight: 600;
+}
