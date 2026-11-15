@@ -117,6 +117,22 @@
             }
           }
         },
+        "prune": {
+          "type": "array",
+          "description": "Regex tên xương cần bỏ (script post anim_biped_extra.py) để vừa trần xương của lớp ngân sách, ví dụ xương xoắn, xương phụ khuỷu/gối, mắt; trọng số skin dồn vào tổ tiên gần nhất còn giữ.",
+          "items": { "type": "string" }
+        },
+        "quadruped": {
+          "type": "object",
+          "description": "Tùy chọn clip thủ tục của tools/blender/anim_quadruped.py.",
+          "additionalProperties": false,
+          "properties": {
+            "attack": {
+              "enum": ["bite", "gore"],
+              "description": "Kiểu đòn: bite (đớp, mặc định: sói, cáo) hoặc gore (cúi đầu lao tới hất nanh: heo rừng)."
+            }
+          }
+        },
         "post": {
           "type": "string",
           "pattern": "^tools/blender/[a-z0-9_]+\\.py$",
