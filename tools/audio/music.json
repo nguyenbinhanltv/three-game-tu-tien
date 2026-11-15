@@ -1,26 +1,26 @@
 {
-  "$comment": "Khai báo nhạc nền cho tools/audio/loop.mjs. Nguồn: <DTL_ASSET_SOURCE>/audio/music/<id>.mp3 (hoặc .wav/.m4a/.flac/.ogg; đặt \"file\" để đổi tên). Id phải trùng MusicTrack trong apps/client/src/game/musicDirector.ts (title/sting_* chưa nối vào client). url = link bài trên suno.com (bắt buộc với Suno bản free để ghi nguồn). Tùy chọn mỗi bài: bpm (ép nhịp khi dò sai), beatsPerBar (mặc định 4), start/end (giây, ép điểm vòng), minLen/maxLen (giây), xfade (giây), lufs. Xem docs/audio/suno-prompts.md.",
+  "$comment": "Khai báo nhạc nền cho tools/audio/loop.mjs. Id phải trùng MusicTrack trong apps/client/src/game/musicDirector.ts. \"compose\": true = nhạc tự soạn bằng code ở tools/audio/compose/<id>.mjs, render MIDI bằng soundfont GeneralUser GS (tools/audio/compose/render.mjs), vòng lặp chính xác theo ô nhịp. Bài không có compose: file <DTL_ASSET_SOURCE>/audio/music/<id>.mp3 (hoặc .wav/.m4a/.flac/.ogg; đặt \"file\" để đổi tên), qua bước dò vòng; nhạc Suno thì đặt by/license của Suno và url bài (bắt buộc ghi nguồn). Tùy chọn cho bài từ file: bpm, beatsPerBar, start/end (giây), minLen/maxLen, xfade. Mọi bài: lufs, by, license, url. Xem docs/audio/music.md.",
   "defaults": {
     "lufs": -16,
     "peak": -1,
     "xfade": 0.12,
-    "by": "Suno (free, non-commercial)",
-    "license": "phi thương mại, ghi nguồn"
+    "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+    "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
   },
   "tracks": {
-    "sect": { "title": "Lạc Kiếm Tông", "url": "", "loop": true, "maxLen": 150 },
-    "combat": { "title": "Giao Phong", "url": "", "loop": true, "maxLen": 90 },
-    "wild": { "title": "Vân Lam Sơn Mạch", "url": "", "loop": true, "maxLen": 180 },
-    "forest": { "title": "Rừng Linh Thảo", "url": "", "loop": true, "maxLen": 150 },
-    "lake": { "title": "Hồ Sương Mù", "url": "", "loop": true, "maxLen": 150 },
-    "dungeon": { "title": "Kiếm Trủng", "url": "", "loop": true, "maxLen": 150 },
-    "boss": { "title": "Hàn Giao", "url": "", "loop": true, "maxLen": 150 },
-    "dungeon_boss": { "title": "Kiếm Trủng — Thủ Mộ", "url": "", "loop": true, "maxLen": 120 },
-    "tribulation": { "title": "Độ Kiếp", "url": "", "loop": true, "maxLen": 60 },
-    "meditate": { "title": "Đả Tọa", "url": "", "loop": true, "maxLen": 120 },
-    "title": { "title": "Đạp Thiên Lộ", "url": "", "loop": true, "maxLen": 90 },
-    "sting_levelup": { "title": "Tu Vi Tinh Tiến", "url": "", "loop": false },
-    "sting_breakthrough": { "title": "Trúc Cơ Thành", "url": "", "loop": false },
-    "sting_death": { "title": "Thân Tử Đạo Tiêu", "url": "", "loop": false }
+    "sect": { "title": "Lạc Kiếm Tông", "compose": true, "loop": true, "maxLen": 150 },
+    "combat": { "title": "Giao Phong", "compose": true, "loop": true, "maxLen": 90 },
+    "wild": { "title": "Vân Lam Sơn Mạch", "loop": true, "maxLen": 180 },
+    "forest": { "title": "Rừng Linh Thảo", "loop": true, "maxLen": 150 },
+    "lake": { "title": "Hồ Sương Mù", "loop": true, "maxLen": 150 },
+    "dungeon": { "title": "Kiếm Trủng", "loop": true, "maxLen": 150 },
+    "boss": { "title": "Hàn Giao", "loop": true, "maxLen": 150 },
+    "dungeon_boss": { "title": "Kiếm Trủng — Thủ Mộ", "loop": true, "maxLen": 120 },
+    "tribulation": { "title": "Độ Kiếp", "loop": true, "maxLen": 60 },
+    "meditate": { "title": "Đả Tọa", "loop": true, "maxLen": 120 },
+    "title": { "title": "Đạp Thiên Lộ", "loop": true, "maxLen": 90 },
+    "sting_levelup": { "title": "Tu Vi Tinh Tiến", "loop": false },
+    "sting_breakthrough": { "title": "Trúc Cơ Thành", "loop": false },
+    "sting_death": { "title": "Thân Tử Đạo Tiêu", "loop": false }
   }
 }

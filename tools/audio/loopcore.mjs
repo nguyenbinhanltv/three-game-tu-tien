@@ -422,6 +422,67 @@ export function normalizeGain(chans, lufs = -16, peak = -1, sr = SR) {
   return { gainDb, before, peakBefore, limited };
 }
 
+/**
+ * Giới hạn đỉnh mềm (nhạc tự soạn nhiều trống): giảm khuếch đại khi đỉnh mẫu vượt `ceilingDb`, nhìn trước `lookMs`
+ * (không cắt méo), nhả theo hàm mũ `releaseMs`. `circular`: tín hiệu là vòng lặp, đường bao tính vòng tròn
+ * (chạy 2 lượt) để đầu và cuối vòng khớp nhau. Sửa tại chỗ, trả mức giảm lớn nhất (dB, ≤ 0).
+ */
+export function limitPeaks(chans, ceilingDb = -1.5, sr = SR, { lookMs = 5, releaseMs = 120, circular = true } = {}) {
+  const n = chans[0].length;
+  const ceil = dbToGain(ceilingDb);
+  const W = Math.max(1, Math.round((lookMs / 1000) * sr));
+  // Hệ số cần ở từng mẫu.
+  const need = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    let p = 0;
+    for (const a of chans) p = Math.max(p, Math.abs(a[i]));
+    need[i] = p > ceil ? ceil / p : 1;
+  }
+  const at = (i) => need[circular ? ((i % n) + n) % n : Math.min(n - 1, i)];
+  // Nhìn trước: min của need trong [i, i + W] (hàng đợi đơn điệu), qua 2 vòng nếu circular.
+  const passes = circular ? 2 : 1;
+  const len = n * passes;
+  const ahead = new Float32Array(len);
+  const dq = new Int32Array(len + W + 1);
+  let h = 0;
+  let t = 0;
+  for (let j = 0; j < len + W; j++) {
+    const v = at(j);
+    while (t > h && at(dq[t - 1]) >= v) t--;
+    dq[t++] = j;
+    const i = j - W;
+    if (i >= 0) {
+      while (dq[h] < i) h++;
+      ahead[i] = at(dq[h]);
+    }
+  }
+  // Nhả: đường bao chỉ đi lên chậm, đi xuống tức thì (đã nhìn trước). Rồi làm mượt bằng trung bình trượt W mẫu
+  // (trung bình của các giá trị ≤ min trong cửa sổ nhìn trước nên vẫn đủ giảm).
+  const rel = Math.exp(-1 / ((releaseMs / 1000) * sr));
+  const env = new Float32Array(len);
+  let e = 1;
+  for (let i = 0; i < len; i++) {
+    e = Math.min(ahead[i], 1 - (1 - e) * rel);
+    env[i] = e;
+  }
+  const out = new Float32Array(n);
+  let sum = 0;
+  for (let i = 0; i < len; i++) {
+    sum += env[i];
+    if (i >= W) sum -= env[i - W];
+    // Lượt cuối là lượt đã ổn định trạng thái (vòng tròn): ghi kết quả.
+    const k = i - (passes - 1) * n;
+    if (k >= 0) out[k] = i >= W ? Math.min(sum / W, env[i]) : env[i];
+  }
+  let minG = 1;
+  for (let i = 0; i < n; i++) {
+    const g = out[i];
+    if (g < minG) minG = g;
+    for (const a of chans) a[i] *= g;
+  }
+  return gainToDb(minG);
+}
+
 export function applyGain(chans, db) {
   const g = dbToGain(db);
   for (const a of chans) for (let i = 0; i < a.length; i++) a[i] *= g;

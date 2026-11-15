@@ -115,3 +115,18 @@ Font web tự host trong `apps/client/public/fonts/`, subset bằng `tools/fonts
 | --- | --- | --- | --- | --- |
 | `dtl-title.woff2` | Charm Bold, © 2018 The Charm Project Authors (Cadson Demak) | `OFL-1.1` | 2026-11-15 | Tiêu đề thư pháp trên khung hình đầu (chỉ glyph của `ui.title`), biến CSS `--font-title` |
 | `dtl-display.woff2` | Alegreya SC Bold, © 2011 The Alegreya Project Authors (Huerta Tipográfica) | `OFL-1.1` | 2026-11-15 | Tên boss, biển hiệu, phụ đề màn tiêu đề (Latin + tiếng Việt), biến CSS `--font-display` |
+
+<!-- music:begin (sinh bởi tools/audio/loop.mjs, đừng sửa tay) -->
+
+### Nhạc nền
+
+**Nhạc tự soạn** (Claude soạn bằng code ở `tools/audio/compose/<id>.mjs`, xuất MIDI): phát hành **CC0-1.0**. Render bằng soundfont **GeneralUser GS v2.0.3** của S. Christian Collins ([trang gốc](https://www.schristiancollins.com/generaluser.php), [repo](https://github.com/mrbumpy409/GeneralUser-GS), commit `684543d`), giấy phép *GeneralUser GS License v2.0*: “You may use GeneralUser GS without restriction for your own music creation, private or commercial … Please feel free to use it in your software projects”. Game chỉ phân phối bản âm thanh đã render, không phân phối file soundfont (file ở `../dtl-asset-source/audio/sf2/`, build tự tải theo commit ghim và kiểm SHA-256).
+
+Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằng `tools/audio/loop.mjs`. Bản build trong `apps/client/public/audio/music/`.
+
+| Bài | Tên | Nguồn | Giấy phép | Ngày | Link |
+| --- | --- | --- | --- | --- | --- |
+| `sect` | Lạc Kiếm Tông | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/sect.mjs` |
+| `combat` | Giao Phong | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-15 | `tools/audio/compose/combat.mjs` |
+
+<!-- music:end -->

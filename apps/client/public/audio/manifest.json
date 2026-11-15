@@ -541,7 +541,32 @@
       "pitch": 0.04
     }
   },
-  "music": {},
+  "music": {
+    "sect": {
+      "src": [
+        "music/sect.ef3fc8baa0.webm",
+        "music/sect.e45d57eead.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Lạc Kiếm Tông",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "combat": {
+      "src": [
+        "music/combat.75bef621ca.webm",
+        "music/combat.c438a689fd.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Giao Phong",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    }
+  },
   "ambient": {
     "wind": {
       "src": [

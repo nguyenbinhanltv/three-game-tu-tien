@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Hậu kỳ nhạc nền (M0-5, M4-10): cắt vòng lặp liền, chuẩn hóa độ to, mã hóa Opus + AAC, ghi manifest và ghi nguồn.
+// Hậu kỳ nhạc nền (M0-5, M4-10): render nhạc tự soạn hoặc cắt vòng lặp liền, chuẩn hóa độ to, mã hóa Opus + AAC,
+// ghi manifest và ghi nguồn.
 //
 //   node tools/audio/loop.mjs                 xử lý mọi bài có file nguồn, ghi apps/client/public/audio/music/ + manifest.json (mục music)
 //                                            + khối "Nhạc nền" trong assets/LICENSES.md
@@ -8,21 +9,28 @@
 //   node tools/audio/loop.mjs --preview       thêm file WAV nghe thử chỗ nối (6 s cuối + 6 s đầu, lặp 2 lần) vào thư mục tạm
 //   Cho test: --spec <music.json> --out <thư mục audio> --licenses <LICENSES.md>; DTL_ASSET_SOURCE=<thư mục nguồn>.
 //
-// Đầu vào: tools/audio/music.json + <DTL_ASSET_SOURCE>/audio/music/<id>.mp3 (không commit; nhạc Suno tải về).
+// Đầu vào: tools/audio/music.json.
+// Bài `"compose": true` (mặc định của dự án): soạn bằng code ở tools/audio/compose/<id>.mjs, render bằng soundfont
+// GeneralUser GS (compose/render.mjs) ra đúng một vòng lặp liền, rồi chỉ chuẩn hóa + mã hóa. Bản WAV/MIDI trung gian
+// ghi vào <DTL_ASSET_SOURCE>/audio/music/compose/ để nghe hoặc mở bằng phần mềm soạn nhạc.
+// Bài còn lại: <DTL_ASSET_SOURCE>/audio/music/<id>.mp3 (không commit; ví dụ nhạc Suno tải về), qua bước dò vòng:
 // Xử lý (DSP ở loopcore.mjs): giải mã 48 kHz stereo → dò nhịp và phần có nhạc (bỏ lặng đầu, đuôi fade-out)
 // → chọn điểm vòng theo ô nhịp, khớp pha, điểm qua 0 → crossfade đoạn nối (mặc định 120 ms)
 // → chuẩn hóa -16 LUFS, đỉnh thực ≤ -1 dBTP → Opus/WebM 96 kbps + AAC/M4A 128 kbps, tên file theo hash.
 // Bài `loop: false` (sting) chỉ cắt lặng và chuẩn hóa.
 //
-// Ghi nguồn: Suno bản free chỉ cho dùng phi thương mại và bắt buộc ghi nguồn. Mỗi bài có `credit` trong manifest
-// (mục "Nguồn nhạc" trong Cài đặt đọc trường này) và một dòng trong assets/LICENSES.md.
+// Ghi nguồn: mỗi bài có `credit` trong manifest (mục "Nguồn nhạc" trong Cài đặt đọc trường này) và một dòng trong
+// assets/LICENSES.md. Nhạc tự soạn: CC0, ghi kèm soundfont. Suno bản free: phi thương mại, bắt buộc ghi nguồn kèm url.
 // Bài chưa có file nguồn: giữ nguyên mục cũ trong manifest nếu có (không xóa nhạc đã build).
 
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { decode, encode, FFMPEG_HELP, findFfmpeg, hashName, HERE, localDate, replaceBlock, ROOT, SR, sourceRoot } from './common.mjs';
-import { applyGain, findLoop, loudness, makeLoop, normalizeGain, seamReport, trimOneShot, truePeak } from './loopcore.mjs';
+import { applyGain, findLoop, limitPeaks, loudness, makeLoop, normalizeGain, seamReport, trimOneShot, truePeak } from './loopcore.mjs';
+
+/** Bộ render nhạc tự soạn, nạp khi cần (spessasynth_core cài trong @dtl/audio). */
+const composer = () => import('./compose/render.mjs');
 
 const argv = process.argv.slice(2);
 const arg = (name) => {
@@ -43,6 +51,7 @@ const EXTS = ['.mp3', '.wav', '.flac', '.m4a', '.ogg'];
 const ID_RE = /^[a-z0-9_]+$/;
 
 function sourceOf(id, def) {
+  if (def.compose) return path.join(HERE, 'compose', `${id}.mjs`);
   const dir = path.join(sourceRoot(), 'audio', 'music');
   if (def.file) return path.join(dir, def.file);
   for (const e of EXTS) {
@@ -93,12 +102,29 @@ function seamPreview(chans) {
   });
 }
 
-function processTrack(FF, id, def, d) {
+async function processTrack(FF, id, def, d) {
   const src = sourceOf(id, def);
-  let chans = decode(FF, src, 2);
-  const info = { id, src: path.relative(sourceRoot(), src).replaceAll('\\', '/'), srcDur: chans[0].length / SR };
   const loop = def.loop !== false;
-  if (loop) {
+  let chans;
+  let info;
+  if (def.compose) {
+    const { loadSong, renderSong, wavFloat } = await composer();
+    const song = await loadSong(id);
+    if (song.loop !== loop) throw new Error(`compose/${id}.mjs có loop=${song.loop}, khác music.json`);
+    const dir = path.join(sourceRoot(), 'audio', 'music', 'compose');
+    chans = await renderSong(song, { midiOut: path.join(dir, `${id}.mid`) });
+    fs.writeFileSync(path.join(dir, `${id}.wav`), wavFloat(chans));
+    info = { id, src: `compose/${id}.mjs`, srcDur: chans[0].length / SR, composed: song.summary() };
+    // Bài lặp đã là đúng một vòng liền (render.mjs), không dò vòng; sting chỉ bỏ lặng cuối.
+    if (loop) Object.assign(info, { start: 0, end: chans[0].length / SR, bpm: song.bpm, conf: 1, sim: 1, corr: 1, bars: song.bars });
+    else chans = trimOneShot(chans, SR);
+  } else {
+    chans = decode(FF, src, 2);
+    info = { id, src: path.relative(sourceRoot(), src).replaceAll('\\', '/'), srcDur: chans[0].length / SR };
+  }
+  if (def.compose) {
+    // Đã xử lý vòng/sting ở trên.
+  } else if (loop) {
     const r = findLoop(chans, { bpm: def.bpm, beatsPerBar: def.beatsPerBar, start: def.start, end: def.end, minLen: def.minLen, maxLen: def.maxLen, xfade: def.xfade ?? d.xfade }, SR);
     chans = makeLoop(chans, r.start, r.end, Math.round((def.xfade ?? d.xfade) * SR), r.corr);
     Object.assign(info, { start: r.start / SR, end: r.end / SR, bpm: r.bpm, conf: r.confidence, sim: r.score, corr: r.corr, bars: r.bars });
@@ -113,6 +139,13 @@ function processTrack(FF, id, def, d) {
     }
     chans = trimOneShot(chans, SR);
   }
+  if (def.compose) {
+    // Nhạc tự soạn nhiều trống có đỉnh nhọn: đưa về gần đích độ to rồi giới hạn đỉnh mềm (vòng tròn nếu lặp),
+    // để bước chuẩn hóa dưới không phải hạ cả bài vì vài cú trống.
+    const target = def.lufs ?? d.lufs;
+    applyGain(chans, target + 0.5 - loudness(chans, SR));
+    info.limitDb = limitPeaks(chans, (def.peak ?? d.peak) - 0.6, SR, { circular: loop });
+  }
   const n = normalizeGain(chans, def.lufs ?? d.lufs, def.peak ?? d.peak, SR);
   applyGain(chans, n.gainDb);
   Object.assign(info, { dur: chans[0].length / SR, lufsIn: n.before, gainDb: n.gainDb, limited: n.limited, lufs: loudness(chans, SR), tp: truePeak(chans), loop });
@@ -122,23 +155,31 @@ function processTrack(FF, id, def, d) {
 
 function licenseBlock(spec, entries) {
   const d = spec.defaults ?? {};
+  const tracks = spec.tracks ?? {};
   const lines = [LIC_BEGIN, '', '### Nhạc nền', ''];
+  if (Object.keys(entries).some((id) => tracks[id]?.compose))
+    lines.push(
+      '**Nhạc tự soạn** (Claude soạn bằng code ở `tools/audio/compose/<id>.mjs`, xuất MIDI): phát hành **CC0-1.0**. Render bằng soundfont **GeneralUser GS v2.0.3** của S. Christian Collins ([trang gốc](https://www.schristiancollins.com/generaluser.php), [repo](https://github.com/mrbumpy409/GeneralUser-GS), commit `684543d`), giấy phép *GeneralUser GS License v2.0*: “You may use GeneralUser GS without restriction for your own music creation, private or commercial … Please feel free to use it in your software projects”. Game chỉ phân phối bản âm thanh đã render, không phân phối file soundfont (file ở `../dtl-asset-source/audio/sf2/`, build tự tải theo commit ghim và kiểm SHA-256).',
+      '',
+    );
+  if (Object.values(entries).some((e) => /suno/i.test(e.credit?.by ?? '')))
+    lines.push('Nhạc tạo bằng **Suno gói Free**: chỉ dùng **phi thương mại**, Suno giữ quyền sở hữu, **bắt buộc ghi nguồn** (game cũng ghi ở Cài đặt → Nguồn nhạc).', '');
   lines.push(
-    'Nhạc tạo bằng **Suno gói Free**: chỉ dùng **phi thương mại**, Suno giữ quyền sở hữu, **bắt buộc ghi nguồn** (game cũng ghi ở Cài đặt → Nguồn nhạc).',
-    'File nguồn nằm ở `../dtl-asset-source/audio/music/`, khai báo ở `tools/audio/music.json`, hậu kỳ (cắt vòng, -16 LUFS) bằng `tools/audio/loop.mjs`. Bản build trong `apps/client/public/audio/music/`.',
+    'Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằng `tools/audio/loop.mjs`. Bản build trong `apps/client/public/audio/music/`.',
     '',
     '| Bài | Tên | Nguồn | Giấy phép | Ngày | Link |',
     '| --- | --- | --- | --- | --- | --- |',
   );
   for (const [id, e] of Object.entries(entries)) {
     const c = e.credit ?? {};
-    lines.push(`| \`${id}\` | ${c.title ?? id} | ${c.by ?? d.by} | ${c.license ?? d.license} | ${e.date ?? localDate()} | ${c.url ?? '(chưa điền url)'} |`);
+    const link = c.url ?? (tracks[id]?.compose ? `\`tools/audio/compose/${id}.mjs\`` : '(chưa điền url)');
+    lines.push(`| \`${id}\` | ${c.title ?? id} | ${c.by ?? d.by} | ${c.license ?? d.license} | ${e.date ?? localDate()} | ${link} |`);
   }
   lines.push('', LIC_END);
   return lines.join('\n');
 }
 
-function main() {
+async function main() {
   const spec = JSON.parse(fs.readFileSync(SPEC_FILE, 'utf8'));
   const d = { lufs: -16, peak: -1, xfade: 0.12, by: 'Suno (free, non-commercial)', license: 'phi thương mại, ghi nguồn', ...(spec.defaults ?? {}) };
   const tracks = spec.tracks ?? {};
@@ -157,9 +198,10 @@ function main() {
   const have = [];
   const missing = [];
   for (const [id, def] of Object.entries(tracks)) (fs.existsSync(sourceOf(id, def)) ? have : missing).push(id);
-  const noUrl = have.filter((id) => !tracks[id].url);
+  // Suno bản free bắt buộc ghi nguồn kèm link bài; nhạc tự soạn không cần.
+  const noUrl = have.filter((id) => !tracks[id].url && /suno/i.test(tracks[id].by ?? d.by));
   if (CHECK) {
-    console.log(`Nguồn: ${path.join(sourceRoot(), 'audio', 'music')}`);
+    console.log(`Nguồn: tools/audio/compose/ (tự soạn), ${path.join(sourceRoot(), 'audio', 'music')} (file)`);
     console.log(`Đã có (${have.length}): ${have.join(', ') || '—'}`);
     console.log(`Chưa có (${missing.length}): ${missing.join(', ') || '—'}`);
     if (noUrl.length) console.log(`Cảnh báo: chưa điền url Suno (cần để ghi nguồn): ${noUrl.join(', ')}`);
@@ -185,7 +227,7 @@ function main() {
       continue;
     }
     try {
-      const { chans, info } = processTrack(FF, id, def, d);
+      const { chans, info } = await processTrack(FF, id, def, d);
       const files = [];
       for (const [kind, args] of [
         ['webm', ['-b:a', '96k']],
@@ -230,6 +272,7 @@ function main() {
       console.log(
         `${r.id.padEnd(16)} ${f1(r.srcDur).padStart(6)} ${f1(r.dur).padStart(7)}  ${pts} ${bpm} ${loopCols}  ${f1(r.lufsIn).padStart(5)}→${f1(r.lufs).padStart(5)} ${f1(r.tp).padStart(6)} ${kb(r.webm).padStart(8)} ${kb(r.m4a).padStart(7)}${r.limited ? '  (giới hạn đỉnh, nhỏ hơn đích)' : ''}`,
       );
+      if (r.composed) console.log(`  ${r.composed}; giới hạn đỉnh tối đa ${r.limitDb.toFixed(1)} dB`);
       if (r.preview) console.log(`  nghe thử chỗ nối: ${r.preview}`);
       if (r.loop && (r.sim < 0.5 || r.seam > 2)) console.log(`  ⚠ ${r.id}: chỗ nối có thể nghe ra (giống=${r.sim.toFixed(2)}, nối=${r.seam.toFixed(1)}). Thử --preview, ép bpm hoặc start/end trong music.json.`);
     }
@@ -244,4 +287,4 @@ function main() {
   }
 }
 
-main();
+await main();
