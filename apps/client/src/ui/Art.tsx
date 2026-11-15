@@ -42,8 +42,9 @@ export function useArtUrl(group: string, id: string | undefined): string | null 
 /** Chân dung khung dọc 3:4 (NPC, boss, tinh anh). Thiếu ảnh thì không vẽ gì. Hiện dần khi ảnh tải xong. */
 export function Portrait({ id, className }: { id: string | undefined; className?: string }) {
   const url = useArtUrl('portraits', id);
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(false), [url]);
+  // Nhớ URL đã tải xong (không dùng cờ boolean): ảnh trong cache có thể báo onLoad trước mọi effect.
+  const [loaded, setLoaded] = useState<string | null>(null);
   if (!url) return null;
-  return <img className={'portrait' + (className ? ' ' + className : '') + (ready ? ' ready' : '')} src={url} alt="" draggable={false} decoding="async" onLoad={() => setReady(true)} />;
+  const ready = loaded === url;
+  return <img key={url} className={'portrait' + (className ? ' ' + className : '') + (ready ? ' ready' : '')} src={url} alt="" draggable={false} decoding="async" onLoad={() => setLoaded(url)} />;
 }
