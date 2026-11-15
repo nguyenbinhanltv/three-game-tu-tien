@@ -121,9 +121,9 @@ function ChapterCardShow({ card }: { card: ChapterCard }) {
       <div className="lb lb-bot" />
       <div className="chapter-text">
         <div className="chapter-kicker">{t(k + '.kicker', { realm: realmName(level) })}</div>
-        <div className="chapter-title">{t(k + '.title')}</div>
+        <div className="chapter-title">{t(k + '.title', { realm: realmName(level) })}</div>
         <div className="chapter-rule" />
-        <div className="chapter-sub">{t(k + '.sub')}</div>
+        <div className="chapter-sub">{t(k + '.sub', { realm: realmName(level) })}</div>
       </div>
     </div>
   );
@@ -437,6 +437,19 @@ function Tribulation() {
   );
 }
 
+/** Letterbox mỏng suốt cảnh độ kiếp. Đặt đầu `.hud` (không z-index) để mọi khung HUD sau nó vẽ đè lên dải đen. */
+function TribBars() {
+  const tribEnd = useUI((s) => s.tribEnd);
+  const now = useNow(250);
+  if (!tribEnd || now >= tribEnd) return null;
+  return (
+    <>
+      <div className="trib-bar trib-bar-top" />
+      <div className="trib-bar trib-bar-bot" />
+    </>
+  );
+}
+
 function Chat() {
   const log = useUI((s) => s.log);
   const open = useUI((s) => s.chatOpen);
@@ -550,6 +563,7 @@ export function Hud() {
   const cining = useUI((s) => s.cine !== null && !s.cine.out);
   return (
     <div className={'hud' + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>
+      <TribBars />
       <PlayerFrame />
       <CineView />
       <ChapterCardView />
