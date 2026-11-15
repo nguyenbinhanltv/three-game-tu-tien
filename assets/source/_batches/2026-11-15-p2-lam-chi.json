@@ -1,0 +1,17 @@
+{
+  "batch": "2026-11-15-p2-lam-chi",
+  "approvedBy": "người dùng (nguyên văn lựa chọn \"Chỉ dùng 800 hiện có\": tổng hạn mức 750 cho Lam Chi + prop, giữ lại >= 50)",
+  "approvedAt": "2026-11-15",
+  "cap": 80,
+  "balanceBefore": 800,
+  "balanceAfter": 735,
+  "jobs": [
+    { "asset": "chr_kiem_tu_nu", "step": "text_to_model", "version": 1, "taskId": "d46f4925-70b6-4056-80af-a5fd500107d8", "quote": 40, "credits": 40, "result": "ok" },
+    { "asset": "chr_kiem_tu_nu", "step": "rig (biped, mixamo)", "version": 1, "taskId": "4fe8d7ec-24a0-4211-9c0b-5c3894065cd5", "quote": null, "credits": 25, "result": "ok" }
+  ],
+  "usage": [
+    { "type": "animate_rig", "task_id": "4fe8d7ec-24a0-4211-9c0b-5c3894065cd5", "credits_consumed": 25 },
+    { "type": "text_to_model", "task_id": "d46f4925-70b6-4056-80af-a5fd500107d8", "credits_consumed": 40 }
+  ],
+  "notes": "Text-to-3D báo giá 40 (rẻ hơn image-to-3D 50). Rig không có --dry-run, giá 25 theo bảng giá API, khớp thực tế. Hạn mức tổng 750 cho toàn bộ P2 (Lam Chi + prop); không dùng redo."
+}

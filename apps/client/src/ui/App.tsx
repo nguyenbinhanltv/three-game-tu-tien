@@ -59,7 +59,7 @@ function initialLook(): Appearance {
 
 /**
  * Chọn giới tính + màu áo khi tạo nhân vật (quyết định 6.4b). Chỉ gửi lựa chọn; server kiểm và chỉ áp dụng
- * khi tạo nhân vật mới. Nữ tu chưa có model nên hiện nhưng khóa.
+ * khi tạo nhân vật mới. Giới tính chưa bật (enabled=false) hiện nhưng khóa.
  */
 function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appearance) => void }) {
   return (

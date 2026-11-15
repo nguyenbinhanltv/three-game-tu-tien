@@ -44,3 +44,13 @@ describe('prefetchWorldAssets (M6-1)', () => {
     expect(calls.map(([id]) => id)).toEqual(['arch_sect', 'prop_phi_kiem']);
   });
 });
+
+describe('prefetchWorldAssets theo giới tính', () => {
+  it('chỉ tải model của giới tính đang chọn', () => {
+    const f = fakeCache();
+    prefetchWorldAssets(f.cache, false, 'f');
+    const ids = f.calls.map(([id]) => id);
+    expect(ids).toContain('chr_kiem_tu_nu');
+    expect(ids).not.toContain('chr_kiem_tu_nam');
+  });
+});
