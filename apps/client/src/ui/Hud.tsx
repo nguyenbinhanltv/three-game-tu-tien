@@ -1,11 +1,11 @@
 import { ContentIcon } from './ContentIcon';
+import './panels.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { C, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, WORLD_SIZE } from '@dtl/shared';
+import { AIRBORNE_HEIGHT, C, groundAt, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, WORLD_SIZE } from '@dtl/shared';
 import { itemName, monsterName, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { Game } from '../game/engine';
-import { HpTrail } from '../game/hpTrail';
 import { trackedQuestId } from '../game/offscreen';
-import { ProgressBar } from './kit';
+import { Button, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
@@ -38,12 +38,12 @@ function TargetFrame({ below }: { below: boolean }) {
   // Boss đang chọn đã có thanh lớn ở giữa phía trên.
   if (!target || (target.boss && target.id === bossId)) return null;
   return (
-    <div className={'frame target-frame' + (below ? ' below-boss' : '')}>
+    <div className={'frame target-frame' + (below ? ' below-boss' : '')} data-kind={target.kind}>
       <div className="frame-head">
         <span className="frame-name">{target.name}</span>
         {target.kind !== 'npc' && <span className="frame-realm">{target.kind === 'mon' ? t('ui.level_short', { n: target.level }) : realmName(target.level)}</span>}
       </div>
-      {target.kind !== 'npc' && <ProgressBar key={target.id} cls={'hp ' + (target.kind === 'player' ? 'ally' : 'enemy')} value={target.hp} max={target.mhp} text={`${target.hp} / ${target.mhp}`} segs={4} trail />}
+      {target.kind !== 'npc' && <ProgressBar key={target.id} cls={'hp ' + (target.kind === 'player' ? 'ally' : 'enemy')} value={target.hp} max={target.mhp} text={`${target.hp} / ${target.mhp}`} segs={4} trail label={t('ui.hp')} />}
       {target.cast && <TargetCastBar cast={target.cast} />}
     </div>
   );
@@ -211,6 +211,8 @@ function QuestTracker() {
             {q.objectives.map((o, i) => {
               const cur = Math.min(o.count, prog[i] ?? 0);
               const ok = cur >= o.count;
+              // Nhiệm vụ không theo dõi chỉ hiện mục tiêu chưa xong đầu tiên cho gọn.
+              if (id !== tracked && (ok || q.objectives.findIndex((x, j) => (prog[j] ?? 0) < x.count) !== i)) return null;
               const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' ? '' : ` ${cur}/${o.count}`;
               return (
                 <div key={i} className={'tracker-obj' + (ok ? ' ok' : '')}>
@@ -300,6 +302,16 @@ function useNow(ms: number): number {
   return now;
 }
 
+/** Bấm bằng chuột xong thì bỏ focus để phím số/mũi tên tiếp theo tới game (bàn phím giữ focus). */
+function blurAfterPointer(e: React.MouseEvent<HTMLElement>): void {
+  if (e.detail > 0) e.currentTarget.blur();
+}
+
+/**
+ * Thanh chiêu: ô vát viền đồng thau, icon atlas, nhãn phím, hồi chiêu quét theo vòng (conic, bắt đầu từ trên,
+ * chiều kim đồng hồ) kèm số giây, xám khi thiếu linh lực hoặc không ra chiêu được (ngự kiếm/lơ lửng, khớp luật
+ * `airborne()` của server), khóa khi chưa đủ cảnh giới. Viền hàng đợi (M1-11) và vòng tự đánh giữ nguyên.
+ */
 function SkillBar() {
   const char = useUI((s) => s.char);
   const cds = useUI((s) => s.cds);
@@ -309,8 +321,12 @@ function SkillBar() {
   const wantFly = useUI((s) => s.wantFly);
   const mp = useUI((s) => s.mp);
   const queued = useUI((s) => s.queuedSkill);
+  const px = useUI((s) => s.x);
+  const py = useUI((s) => s.y);
+  const pz = useUI((s) => s.z);
   const now = useNow(100);
   if (!char) return null;
+  const airborne = (flags & PF_FLYING) !== 0 || py - groundAt(px, pz) > AIRBORNE_HEIGHT;
   return (
     <div className="skillbar">
       <div className="skill-row">
@@ -319,49 +335,68 @@ function SkillBar() {
           const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
           const left = Math.max(0, ready - now);
           const total = (cds[sk.id] ?? 0) > gcdAt ? sk.cd * 1000 : 1000;
-          const noMp = mp < sk.mp;
+          const noMp = !locked && mp < sk.mp;
+          const blocked = !locked && airborne;
+          const state = locked ? 'locked' : blocked ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
+          const lines = [
+            ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
+            ...(sk.cd ? [{ text: t('ui.skill.cd', { n: sk.cd }) }] : []),
+            ...(blocked ? [{ text: t('ui.skill.airborne'), tone: 'bad' as const }] : []),
+            ...(noMp ? [{ text: t('ui.skill.no_mp'), tone: 'bad' as const }] : []),
+          ];
           return (
-            <button
+            <Tooltip
               key={sk.id}
-              className={'skill' + (locked ? ' locked' : '') + (noMp && !locked ? ' nomp' : '') + (i === 0 && auto ? ' auto' : '') + (i === queued ? ' queued' : '')}
-              title={`${t(`skill.${sk.id}.name`)}\n${locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : t(`skill.${sk.id}.desc`)}${sk.mp ? `\n${t('ui.mp')}: ${sk.mp}` : ''}`}
-              onClick={() => Game.current?.useSkill(i)}
+              content={<TipCard title={t(`skill.${sk.id}.name`)} sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined} lines={lines} desc={t(`skill.${sk.id}.desc`)} />}
             >
-              <span className="skill-icon"><ContentIcon def={sk} /></span>
-              <span className="skill-key">{i + 1}</span>
-              {left > 80 && !locked && (
-                <>
-                  <span className="skill-cd" style={{ height: Math.min(100, (left / total) * 100) + '%' }} />
-                  {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
-                </>
-              )}
-              {locked && <span className="skill-lock">🔒</span>}
-            </button>
+              <button
+                type="button"
+                className={'skill' + (i === 0 && auto ? ' auto' : '') + (i === queued ? ' queued' : '')}
+                data-state={state}
+                aria-label={`${t(`skill.${sk.id}.name`)} (${i + 1})`}
+                onClick={(e) => {
+                  Game.current?.useSkill(i);
+                  blurAfterPointer(e);
+                }}
+              >
+                <span className="skill-icon">
+                  <ContentIcon def={sk} />
+                </span>
+                <span className="skill-key">{i + 1}</span>
+                {left > 80 && !locked && (
+                  <>
+                    <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
+                    {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+                  </>
+                )}
+                {locked && <span className="skill-lock">🔒</span>}
+              </button>
+            </Tooltip>
           );
         })}
       </div>
       <div className="action-row">
-        <button className={'action' + (flags & PF_MEDITATING ? ' on' : '')} onClick={() => Game.current?.toggleMeditate()} title={t('ui.help.meditate_v')}>
+        <Button size="s" pressed={(flags & PF_MEDITATING) !== 0} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} title={t('ui.help.meditate_v')}>
           🧘 <span>{t('ui.meditate')}</span> <kbd>Z</kbd>
-        </button>
-        <button className={'action' + (wantFly || flags & PF_FLYING ? ' on' : '')} onClick={() => Game.current?.toggleFly()} title={t('ui.help.fly_v')}>
+        </Button>
+        <Button size="s" pressed={wantFly || (flags & PF_FLYING) !== 0} onClick={(e) => { Game.current?.toggleFly(); blurAfterPointer(e); }} title={t('ui.help.fly_v')}>
           🗡️ <span>{t('ui.fly')}</span> <kbd>F</kbd>
-        </button>
-        <button className="action" data-bag onClick={() => togglePanel('bag')}>
+        </Button>
+        <Button size="s" data-bag onClick={(e) => { togglePanel('bag'); blurAfterPointer(e); }}>
           🎒 <span>{t('ui.bag')}</span> <kbd>B</kbd>
-        </button>
-        <button className="action" onClick={() => togglePanel('char')}>
+        </Button>
+        <Button size="s" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
           👤 <span>{t('ui.char')}</span> <kbd>C</kbd>
-        </button>
-        <button className="action" onClick={() => togglePanel('quests')}>
+        </Button>
+        <Button size="s" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }}>
           📜 <span>{t('ui.quests')}</span> <kbd>L</kbd>
-        </button>
-        <button className="action" onClick={() => togglePanel('help')}>
+        </Button>
+        <Button size="s" onClick={(e) => { togglePanel('help'); blurAfterPointer(e); }} title={t('ui.help')}>
           ❔ <kbd>H</kbd>
-        </button>
-        <button className="action" onClick={() => togglePanel('settings')} title={t('ui.settings')}>
-          ⚙️
-        </button>
+        </Button>
+        <Button size="s" onClick={(e) => { togglePanel('settings'); blurAfterPointer(e); }} title={`${t('ui.settings')} (O)`}>
+          ⚙️ <kbd>O</kbd>
+        </Button>
       </div>
     </div>
   );
@@ -489,9 +524,22 @@ export function Hud() {
   const mouseLook = useUI((s) => s.mouseLook);
   const dead = useUI((s) => (s.flags & PF_DEAD) !== 0);
   const hasBoss = useUI((s) => s.boss !== null);
+  const chapter = useUI((s) => s.chapter);
+  const bossLine = useUI((s) => s.bossLine);
+  const now = useNow(250);
+  // Cắt cảnh: thẻ chương ẩn toàn bộ HUD; câu thoại boss (letterbox) chỉ ẩn phần không cần khi đang đánh.
+  const cut = chapter && now < chapter.until ? 'chapter' : bossLine && now < bossLine.until ? 'line' : undefined;
+  // Chỉ báo ngoài màn hình nằm ngoài .hud (trong lớp cảnh), nên đánh dấu thêm trên body để CSS ẩn cùng lúc.
+  useEffect(() => {
+    if (cut === 'chapter') document.body.dataset.cut = cut;
+    else delete document.body.dataset.cut;
+    return () => {
+      delete document.body.dataset.cut;
+    };
+  }, [cut]);
   const cining = useUI((s) => s.cine !== null && !s.cine.out);
   return (
-    <div className={'hud' + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')}>
+    <div className={'hud' + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>
       <PlayerFrame />
       <CineView />
       <ChapterCardView />

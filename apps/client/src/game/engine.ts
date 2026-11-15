@@ -897,6 +897,9 @@ export class Game {
       case 'help':
         togglePanel('help');
         break;
+      case 'settings':
+        togglePanel('settings');
+        break;
       case 'chat':
         set({ chatOpen: true });
         break;

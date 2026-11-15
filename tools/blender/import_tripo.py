@@ -440,7 +440,7 @@ def main():
     cleanup_import()
     if not mesh_objects():
         fail('GLB không có mesh')
-    tris = triangles()
+    tris = triangles()  # thư viện clip (import.animLib): mesh chỉ để đo/chuẩn hóa, post bỏ mesh trước khi xuất
     spec = budget_class()
 
     angle, how = orientation()
@@ -464,10 +464,10 @@ def main():
 
     rename_all()
     sockets = add_sockets()
-    textures = downscale_textures(spec)
+    textures = [] if IMPORT.get('animLib') else downscale_textures(spec)  # thư viện clip bỏ ảnh ở post
     post = run_post()
 
-    lo, hi = bbox_world()
+    lo, hi = bbox_world() if mesh_objects() else (Vector((0, 0, 0)), Vector((0, 0, 0)))
     bpy.ops.export_scene.gltf(
         filepath=OUT,
         export_format='GLB',

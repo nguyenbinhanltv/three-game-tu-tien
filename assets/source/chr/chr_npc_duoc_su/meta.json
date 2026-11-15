@@ -16,29 +16,7 @@
       "height": 1.65
     },
     "orient": "thigh",
-    "clips": [
-      {
-        "source": "chr/chr_npc_duoc_su/tripo/anim_idle_v01.glb",
-        "name": "idle",
-        "loop": true
-      },
-      {
-        "source": "chr/chr_npc_duoc_su/tripo/anim_run_v01.glb",
-        "name": "run",
-        "recenter": true,
-        "loop": true
-      },
-      {
-        "source": "chr/chr_npc_duoc_su/tripo/anim_attack_v01.glb",
-        "name": "attack",
-        "start": 1.3,
-        "end": 2.5
-      },
-      {
-        "source": "chr/chr_npc_duoc_su/tripo/anim_death_v01.glb",
-        "name": "death"
-      }
-    ],
+    "sharedAnims": "anim_human_base",
     "post": "tools/blender/anim_biped_extra.py"
   },
   "concept": [
