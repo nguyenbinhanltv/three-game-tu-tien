@@ -24,8 +24,8 @@
       }
     ],
     "look": {
-      "hex": "#4F8FB8",
-      "trim": "#E6DDCB",
+      "hex": "#CFE3EE",
+      "trim": "#3B6584",
       "blade": "#9fd0ff"
     },
     "src": "forge"

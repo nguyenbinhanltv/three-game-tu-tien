@@ -25,6 +25,7 @@ import {
   computeDamage,
   DEATH_XP_LOSS,
   type DmgMsg,
+  EQUIP_SLOTS,
   glowStage,
   lookSet,
   MAX_ENHANCE,
@@ -113,7 +114,7 @@ import {
   xpLevelFactor,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
+import { APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
@@ -2774,6 +2775,41 @@ export class GameSim {
         const ok = c.tx('gm', null, (d) => d.add(a[1], Math.max(1, Number(a[2] ?? 1) | 0)));
         return say(ok ? 'đã thêm ' + a[1] : 'không thêm được');
       }
+      case 'set': {
+        // `set <id bộ> [số món]`: roll rồi mặc luôn các món của bộ (Địa phẩm) để thử hiệu ứng 2/4 món và màu áo; `set off` cởi hết.
+        if (a[1] === 'off') {
+          // Cất đồ vào túi (không xóa) để sổ cái vẫn khớp.
+          const ok = c.tx('gm:set', null, (d) => {
+            for (const k of EQUIP_SLOTS) {
+              const it = d.equip[k];
+              if (!it) continue;
+              const i = d.inv.findIndex((x) => !x);
+              if (i < 0) return false;
+              d.inv[i] = it;
+              delete d.equip[k];
+            }
+            return true;
+          });
+          if (ok) c.recalc();
+          return say(ok ? 'đã cởi hết' : 'túi đầy');
+        }
+        const st = SET.get(a[1] ?? '');
+        if (!st) return say('set off | ' + SETS.map((x) => x.id).join(' | ') + ' [số món]');
+        const n = Math.max(1, Math.min(st.pieces.length, Number(a[2] ?? st.pieces.length) | 0));
+        const ok = c.tx('gm:set', null, (d) => {
+          for (const pid of st.pieces.slice(0, n)) {
+            if (!d.addRolled(pid, c.level, 3)) return false;
+            const i = d.inv.findIndex((s) => s?.id === pid && s.inst);
+            const slot = ITEM.get(pid)!.kind as EquipSlot;
+            const old = d.equip[slot];
+            d.equip[slot] = d.inv[i]!;
+            d.inv[i] = old ?? null;
+          }
+          return true;
+        });
+        if (ok) c.recalc();
+        return say(ok ? `mặc ${n}/${st.pieces.length} món ${st.id}` : 'túi đầy');
+      }
       case 'tp': {
         // `tp x z` hoặc `tp <địa điểm>` (bảng packages/content/data/places.json, cùng bảng với ?at=).
         if (a.length === 2) {
@@ -2868,7 +2904,7 @@ export class GameSim {
       case 'tick':
         return say(`tick p95 ${this.tickP95().toFixed(2)}ms, ${this.players.size} người, ${this.monsters.length} quái`);
       default:
-        return say('level N | xp N | gold N | give id n | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id');
+        return say('level N | xp N | gold N | give id n | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id | set id [n]');
     }
   }
 }

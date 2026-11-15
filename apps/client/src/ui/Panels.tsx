@@ -270,9 +270,9 @@ function Character() {
       </dl>
       <RootCard root={char.root} />
       <BottleneckBox char={char} />
-      <SetBoard />
       <Divider label={t('ui.equip.board')} />
       <EquipBoard />
+      <SetBoard />
       <Divider label={t('ui.char.skills')} />
       <div className="skill-list">
         {SKILLS.map((sk, i) => (
