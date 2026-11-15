@@ -1,9 +1,7 @@
 import * as THREE from 'three/webgpu';
 import {
   clamp,
-  dot,
   float,
-  floor,
   fract,
   length,
   luminance,
@@ -17,6 +15,7 @@ import {
   screenUV,
   sin,
   smoothstep,
+  texture,
   time,
   uniform,
   vec2,
@@ -27,6 +26,7 @@ import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
+import { getCloudNoise } from './noiseTex';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -80,19 +80,6 @@ export const postParams = {
   /** 0..1: khử bão hòa và hạ sáng cả khung theo cảnh chết. */
   inkDesat: uniform(0),
 };
-
-/** Nhiễu giá trị 2D (hash sin) cho vân loang của mực. */
-function valueNoise(p: Node): ReturnType<typeof mix> {
-  const h = (q: Node) => fract(sin(dot(q, vec2(127.1, 311.7))).mul(43758.5453));
-  const i = floor(p);
-  const f = fract(p);
-  const u = f.mul(f).mul(vec2(3).sub(f.mul(2)));
-  const a = h(i);
-  const b = h(i.add(vec2(1, 0)));
-  const c = h(i.add(vec2(0, 1)));
-  const d = h(i.add(vec2(1, 1)));
-  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
-}
 
 /** Nạp số của một preset chỉnh màu (grading.ts) vào uniform. */
 export function applyGrading(p: GradingPreset): void {
@@ -250,8 +237,9 @@ export class PostPipeline {
 
     // Chết (P2-B5): cảnh nhạt màu, tối dần, rồi mực loang từ mép vào giữa theo vân nhiễu 3 tầng. Viền mực đậm hơn lõi.
     g = vec3(mix(g, vec3(luminance(g)).mul(float(1).sub(postParams.inkDesat.mul(0.3))), postParams.inkDesat.mul(0.88)));
-    const inkUv = screenUV.mul(vec2(4.2, 3.1));
-    const inkN = valueNoise(inkUv).mul(0.5).add(valueNoise(inkUv.mul(2.3).add(7.1)).mul(0.3)).add(valueNoise(inkUv.mul(5.1).add(19.4)).mul(0.2));
+    // Một lần lấy mẫu texture nhiễu dùng chung (R/G/B = ba tầng chi tiết) thay cho nhiễu hash 3 tầng mỗi điểm ảnh.
+    const inkSample = texture(getCloudNoise(), screenUV.mul(vec2(1.05, 0.78)));
+    const inkN = inkSample.r.mul(0.5).add(inkSample.g.mul(0.3)).add(inkSample.b.mul(0.2));
     const inkV = length(fromCenter).mul(1.414).add(inkN.sub(0.5).mul(0.62));
     const inkEdge = float(1.5).sub(postParams.ink.mul(1.75));
     const inkMask = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.1), inkV);
