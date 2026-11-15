@@ -13,6 +13,8 @@ export const PF_MEDITATING = 4;
 export const PF_CASTING = 8;
 export const PF_TRIBULATION = 16;
 export const PF_SHIELD = 32;
+/** Đang tỉ thí (chỉ để hiển thị). */
+export const PF_DUEL = 64;
 
 // Trạng thái quái (trường `st`).
 export const MS_IDLE = 0;
@@ -61,6 +63,10 @@ export const C = {
   BOTTLENECK: 'bk',
   /** Đổi linh căn ở NPC: `{ npc, root, r? }`. */
   ROOT: 'root',
+  /** Tổ đội (P3-9): `PartyCmd`. */
+  PARTY: 'pty',
+  /** Tỉ thí 1v1 ở võ đài: `DuelCmd`. */
+  DUEL: 'duel',
 } as const;
 
 /** Server → client. */
@@ -81,6 +87,12 @@ export const S = {
   TRANSFER: 'xfer',
   /** Trạng thái công pháp của mình (cấp chiêu, biến thức, kiếm ý/thế, vòng sạc). */
   METHOD: 'mth',
+  /** Trạng thái tổ đội của mình (`PartyMsg | null`). */
+  PARTY: 'pty',
+  /** Lời mời tổ đội/tỉ thí đang chờ (`InviteMsg`). */
+  INVITE: 'inv',
+  /** Trạng thái tỉ thí của mình (`DuelMsg`). */
+  DUEL: 'duel',
 } as const;
 
 export interface InitMsg {

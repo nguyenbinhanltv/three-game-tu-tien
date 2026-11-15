@@ -131,5 +131,16 @@
     "set_dan_tam": "Đan Tâm Y Bát",
     "set_han_giao": "Hàn Giao Lân",
     "forge": "Chế tạo"
+  },
+  "party": {
+    "name": "Tổ đội",
+    "duel": "Tỉ thí",
+    "arena": "Võ đài",
+    "resonance": "Cộng hưởng",
+    "roles": {
+      "dps": "Kiếm tu",
+      "tank": "Hộ pháp",
+      "support": "Đan sư"
+    }
   }
 }

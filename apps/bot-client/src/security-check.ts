@@ -622,6 +622,133 @@ async function main() {
     await g.room.leave(true);
   }
 
+  // 16. Tổ đội và tỉ thí (P3-9): server giữ lời mời, chặn spam, không cho đánh đồng đội ngoài tỉ thí, tỉ thí không thưởng.
+  {
+    const A = 'doi_a' + (Date.now() % 1000);
+    const B = 'doi_b' + (Date.now() % 1000);
+    const Cn = 'doi_c' + (Date.now() % 1000);
+    const a = await join(A);
+    const b = await join(B);
+    const c = await join(Cn);
+    const players = (r: Room) => (r.state as { players: Map<string, P> }).players;
+    const pa = () => players(a.room).get(a.init.sid)!;
+    const pb = () => players(a.room).get(b.init.sid)!;
+    const pc = () => players(a.room).get(c.init.sid)!;
+    const say = async (r: Room, cmd: string) => {
+      r.send(C.CHAT, { m: '/gm ' + cmd });
+      await W(900);
+    };
+    const keys = (r: Room) => {
+      const out: string[] = [];
+      r.onMessage(S.SYS, (m: { k: string }) => out.push(m.k));
+      return out;
+    };
+    let partyA = undefined as { members: { id: number }[]; loot: string } | null | undefined;
+    let partyB = undefined as { members: { id: number }[] } | null | undefined;
+    a.room.onMessage(S.PARTY, (m) => (partyA = m));
+    b.room.onMessage(S.PARTY, (m) => (partyB = m));
+    const inviteB: { id: number; kind: string }[] = [];
+    b.room.onMessage(S.INVITE, (m: { id: number; kind: string; gone?: boolean }) => !m.gone && inviteB.push(m));
+    const sysA = keys(a.room);
+    const sysB = keys(b.room);
+    const sysC = keys(c.room);
+    let duelA = null as { phase: string; won?: boolean; why?: string } | null;
+    a.room.onMessage(S.DUEL, (m) => (duelA = m));
+    let ca = null as CharV | null;
+    a.room.onMessage(S.CHAR, (v: CharV) => (ca = v));
+    for (const r of [a, b, c]) {
+      await say(r.room, 'level 12');
+      await say(r.room, 'god off');
+      await say(r.room, 'tp 2048 2455'); // xa võ đài
+    }
+    // a. Rác không làm sập, không tạo tổ đội.
+    for (const m of [null, 5, 'x', {}, { a: 7 }, { a: 'inv' }, { a: 'inv', n: 5 }, { a: 'acc', id: 'x' }, { a: 'kick', id: NaN }, { a: 'loot', m: 'bậy' }, { a: 'inv', n: 'x'.repeat(500) }]) a.room.send(C.PARTY, m);
+    for (const m of [null, 5, { a: 'inv', n: {} }, { a: 'acc', id: -1 }, { a: 'yield' }]) a.room.send(C.DUEL, m);
+    await W(600);
+    check('lệnh tổ đội/tỉ thí sai kiểu bị bỏ qua, server còn sống', !partyA && (await health()));
+    // b. Nhận lời khi không có lời mời: không vào tổ đội.
+    b.room.send(C.PARTY, { a: 'acc', id: Number.MAX_SAFE_INTEGER });
+    await W(500);
+    check('nhận lời mời giả (không ai mời) không lập được tổ đội', !partyB);
+    // c. Mời, nhận lời → tổ đội; mời dồn dập bị chặn.
+    a.room.send(C.PARTY, { a: 'inv', n: B });
+    await W(500);
+    check('lời mời tổ đội tới đúng người', inviteB.length === 1 && inviteB[0].kind === 'party');
+    a.room.send(C.PARTY, { a: 'inv', n: Cn });
+    await W(500);
+    check('mời liên tục trong 2 giây bị chặn', sysA.includes('party.invite_rate'));
+    b.room.send(C.PARTY, { a: 'acc', id: inviteB[0].id });
+    await W(700);
+    check('nhận lời mời hợp lệ: cả hai cùng thấy tổ đội 2 người', partyA?.members.length === 2 && partyB?.members.length === 2);
+    // d. Người không phải trưởng nhóm không đổi được chia đồ/đuổi.
+    b.room.send(C.PARTY, { a: 'loot', m: 'free' });
+    b.room.send(C.PARTY, { a: 'kick', id: inviteB[0].id });
+    await W(500);
+    check('thành viên thường không đổi được chia đồ hay đuổi trưởng nhóm', partyA?.loot === 'turn' && partyA?.members.length === 2 && sysB.includes('party.not_leader'));
+    // e. Không đánh được đồng đội hay người lạ bằng chiêu.
+    await say(a.room, 'tp 2048 2090');
+    await say(b.room, 'tp 2050 2090');
+    await say(c.room, 'tp 2052 2090');
+    await say(a.room, 'heal');
+    const hpB = pb().hp;
+    const hpC = pc().hp;
+    for (const t of [pb(), pc()]) void t;
+    for (let i = 0; i < 4; i++) {
+      a.room.send(C.SKILL, { id: 'skl_phi_kiem', t: b.init.sid });
+      await W(1100);
+      a.room.send(C.SKILL, { id: 'skl_phi_kiem', t: c.init.sid });
+      await W(1100);
+    }
+    check('không đánh được đồng đội hay người lạ ngoài tỉ thí', pb().hp >= hpB && pc().hp >= hpC, `B ${hpB} → ${pb().hp}, C ${hpC} → ${pc().hp}`);
+    // f. Tỉ thí ngoài võ đài bị từ chối.
+    await say(b.room, 'tp 2048 2455');
+    await say(a.room, 'tp 2048 2455');
+    a.room.send(C.DUEL, { a: 'inv', n: B });
+    await W(600);
+    check('tỉ thí ngoài võ đài bị từ chối', sysA.includes('duel.not_in_arena') && !duelA);
+    // g. Tỉ thí trong võ đài: giữa chừng người thứ ba không can thiệp được; kết thúc không thưởng, không mất gì.
+    await say(a.room, 'tp 2048 2088');
+    await say(b.room, 'tp 2052 2088');
+    await say(c.room, 'tp 2046 2088');
+    await say(a.room, 'heal');
+    await say(b.room, 'heal');
+    const duelInvB: { id: number }[] = [];
+    b.room.onMessage(S.INVITE, (m: { id: number; kind: string; gone?: boolean }) => m.kind === 'duel' && !m.gone && duelInvB.push(m));
+    a.room.send(C.DUEL, { a: 'inv', n: B });
+    await W(600);
+    check('lời thách đấu tới đúng người', duelInvB.length === 1);
+    const xp0 = ca?.xp ?? 0;
+    const gold0 = ca?.gold ?? 0;
+    b.room.send(C.DUEL, { a: 'acc', id: duelInvB[0].id });
+    await W(500);
+    check('chấp nhận thì vào đếm ngược', duelA?.phase === 'count');
+    const hpBefore = pb().hp;
+    a.room.send(C.SKILL, { id: 'skl_phi_kiem', t: b.init.sid });
+    await W(500);
+    check('đang đếm ngược chưa đánh được', pb().hp === hpBefore);
+    await W(3200);
+    c.room.send(C.SKILL, { id: 'skl_phi_kiem', t: b.init.sid });
+    await W(400);
+    check('người thứ ba không đánh được người đang tỉ thí', pb().hp === hpBefore);
+    let min = 1e9;
+    for (let i = 0; i < 40 && duelA?.phase !== 'end'; i++) {
+      a.room.send(C.SKILL, { id: 'skl_phi_kiem', t: b.init.sid });
+      await W(1050);
+      min = Math.min(min, pb().hp);
+    }
+    check('đánh được đối thủ, máu giảm nhưng không chết', min < hpBefore && min >= 1 && (pb().fl & 2) === 0, `thấp nhất ${min}`);
+    await say(a.room, 'tp 2048 2088');
+    if (duelA?.phase !== 'end') {
+      b.room.send(C.DUEL, { a: 'yield' });
+      await W(600);
+    }
+    check('kết thúc rõ ràng, có kết quả gửi cho người chơi', duelA?.phase === 'end' && (pb().fl & 2) === 0);
+    check('tỉ thí không cho tu vi hay linh thạch', (ca?.xp ?? 0) === xp0 && (ca?.gold ?? 0) === gold0, `xp ${xp0} → ${ca?.xp}, vàng ${gold0} → ${ca?.gold}`);
+    check('người thua không ngã (không mất tu vi), trận hết thì đánh được quái bình thường', !sysB.includes('sys.died') && !sysA.includes('sys.died'));
+    void sysC;
+    for (const r of [a, b, c]) await r.room.leave(true);
+  }
+
   // 13. Tham số kiểm thử ?god / ?at (M1-10): tài khoản thử dùng được; server production / có Google thì không.
   await testParamsChecks();
 
