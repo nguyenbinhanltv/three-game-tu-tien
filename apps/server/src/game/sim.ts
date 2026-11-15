@@ -74,6 +74,8 @@ import {
   elemDamageMul,
   GCD,
   initialBottleneck,
+  MAX_LEVEL,
+  parseRealmCode,
   hazardHit,
   HP_REGEN_IDLE,
   HP_REGEN_MEDITATE,
@@ -3342,12 +3344,47 @@ export class GameSim {
    */
   applyTestFlags(p: PlayerEnt, f: TestFlags): void {
     if (!p.dev) return;
+    if (f.realm) {
+      this.gmSetLevel(p, f.realm);
+      this.sys(p, 'sys.gm', { m: 'level = ' + p.char.level }, 'info');
+    }
     if (f.god) {
       p.god = true;
       this.heal(p);
       this.sys(p, 'sys.gm', { m: 'god on' }, 'info');
     }
     if (f.at && this.teleportTo(p, f.at.x, f.at.z, f.at.level)) this.sys(p, 'sys.gm', { m: `at ${f.at.id}` }, 'info');
+    else if (!f.at && f.pos && this.teleportTo(p, f.pos.x, f.pos.z)) this.sys(p, 'sys.gm', { m: `at ${Math.round(f.pos.x)},${Math.round(f.pos.z)}` }, 'info');
+    if (f.trib) this.sys(p, 'sys.gm', { m: this.gmTribulation(p) }, 'info');
+  }
+
+  /** Đặt cấp cho tài khoản thử (`/gm level`, `/gm realm`, `?realm=`): bình cảnh các mốc thấp hơn coi như đã vượt, hồi đầy. */
+  private gmSetLevel(p: PlayerEnt, level: number): void {
+    const c = p.char;
+    const lv = Math.max(1, Math.min(MAX_LEVEL, level | 0));
+    c.level = lv;
+    c.bk = initialBottleneck(lv);
+    c.xp = 0;
+    c.recalc();
+    c.hp = c.mhp;
+    c.mp = c.mmp;
+    this.questEvent(p, 'level', undefined, lv);
+  }
+
+  /**
+   * Kích độ kiếp ngay cho tài khoản thử (`/gm trib`, `?tribulation=1`): đưa về Ngưng Khí tầng 15 viên mãn đã vượt bình cảnh,
+   * cấp một viên Trúc Cơ Đan nếu thiếu (qua tx + sổ cái), rồi đi đúng đường `onBreakthrough` như người chơi thật.
+   * Trả dòng báo cho người gọi.
+   */
+  private gmTribulation(p: PlayerEnt): string {
+    const c = p.char;
+    if (this.opts.levelId !== 'van_lam' || this.isDead(p) || p.trib || p.trial || this.duel.inDuel(p)) return 'trib: không độ kiếp được lúc này';
+    if (c.level !== NGUNG_KHI_MAX) this.gmSetLevel(p, NGUNG_KHI_MAX);
+    c.bk = NGUNG_KHI_MAX;
+    c.xp = xpNeed(NGUNG_KHI_MAX);
+    if (!c.inv.some((it) => it?.id === TRUC_CO_PILL) && !c.tx('gm', null, (d) => d.add(TRUC_CO_PILL, 1))) return 'trib: túi đầy, không thêm được Trúc Cơ Đan';
+    this.onBreakthrough(p);
+    return p.trib ? 'trib: bắt đầu độ kiếp' : 'trib: không bắt đầu được';
   }
 
   /** Lệnh GM, chỉ dành cho tài khoản dev khi AUTH_DEV_BYPASS bật. */
@@ -3355,17 +3392,17 @@ export class GameSim {
     const c = p.char;
     const say = (m: string) => this.sys(p, 'sys.gm', { m }, 'info');
     switch (a[0]) {
-      case 'level': {
-        const lv = Math.max(1, Math.min(18, Number(a[1]) | 0));
-        c.level = lv;
-        c.bk = initialBottleneck(lv);
-        c.xp = 0;
-        c.recalc();
-        c.hp = c.mhp;
-        c.mp = c.mmp;
-        this.questEvent(p, 'level', undefined, lv);
-        return say('level = ' + lv);
+      case 'level':
+      case 'realm': {
+        // `level N` hoặc `realm nk1…nk15 | tc | tc1…tc3`: cùng một đường đặt cấp.
+        const lv = a[0] === 'realm' ? parseRealmCode(a[1] ?? '') : Math.max(1, Math.min(MAX_LEVEL, Number(a[1]) | 0));
+        if (lv === null) return say('realm nk1…nk15 | tc | tc1…tc3');
+        this.gmSetLevel(p, lv);
+        return say('level = ' + c.level);
       }
+      case 'trib':
+        // /gm trib: kích độ kiếp Trúc Cơ ngay (đặt Ngưng Khí 15 viên mãn + Trúc Cơ Đan nếu thiếu).
+        return say(this.gmTribulation(p));
       case 'xp':
         this.giveXp(p, Math.max(0, Number(a[1]) | 0));
         return;
@@ -3579,7 +3616,7 @@ export class GameSim {
       case 'tick':
         return say(`tick p95 ${this.tickP95().toFixed(2)}ms, ${this.players.size} người, ${this.monsters.length} quái`);
       default:
-        return say('level N | xp N | gold N | give id n | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id | cd | variant skill a|b | method id [cấp] | set id [n]');
+        return say('level N | realm nk1…tc3 | trib | xp N | gold N | give id n | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id | cd | variant skill a|b | method id [cấp] | set id [n]');
     }
   }
 }
