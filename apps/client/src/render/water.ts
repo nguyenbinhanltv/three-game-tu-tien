@@ -66,9 +66,9 @@ function getDepthTexture(): THREE.DataTexture {
 }
 
 export const waterParams = {
-  shallow: uniform(new THREE.Color(0x5fa7a2)),
-  mid: uniform(new THREE.Color(0x2e7d88)),
-  deep: uniform(new THREE.Color(0x123b45)),
+  shallow: uniform(new THREE.Color(0x4fb3aa)),
+  mid: uniform(new THREE.Color(0x1c7f8c)),
+  deep: uniform(new THREE.Color(0x0a3644)),
   foam: uniform(new THREE.Color(0xe9f3ee)),
 };
 
@@ -107,12 +107,12 @@ function waterMaterial(level: 0 | 1 | 2): THREE.MeshBasicNodeMaterial {
     const d0 = depthAt(dTex, p);
 
     // Thân nước theo độ sâu.
-    const body0 = mix(waterParams.shallow, waterParams.mid, smoothstep(0.2, 3.2, depth));
-    const body = mix(body0, waterParams.deep, smoothstep(3.5, 15, depth)).toVar();
+    const body0 = mix(waterParams.shallow, waterParams.mid, smoothstep(0.1, 2.2, depth));
+    const body = mix(body0, waterParams.deep, smoothstep(2.5, 11, depth)).toVar();
     // Ánh nắng khuếch tán lên thân nước (mặt trời thấp thì tối hơn), pha chút sương nền.
     const sunTerm = clamp(dot(N, skyParams.sunDir), 0, 1);
-    body.assign(body.mul(float(0.62).add(sunTerm.mul(0.5))));
-    body.assign(mix(body, skyParams.horizon, 0.07));
+    body.assign(body.mul(float(0.7).add(sunTerm.mul(0.4))));
+    body.assign(mix(body, skyParams.horizon, 0.02));
     if (level >= 2) {
       // Vân sáng dưới đáy nông (caustics).
       const c1 = texture(nTex, p.mul(0.34).add(vec2(t.mul(0.03), t.mul(-0.022)))).b;
@@ -131,7 +131,7 @@ function waterMaterial(level: 0 | 1 | 2): THREE.MeshBasicNodeMaterial {
 
     // Fresnel (Schlick) có nâng nhẹ để hồ lên màu trời ở góc nhìn thấp.
     const cosT = clamp(dot(N, V), 0, 1);
-    const fres = clamp(float(0.03).add(pow(float(1).sub(cosT), 5).mul(0.97)).mul(1.15).add(0.04), 0, 1);
+    const fres = clamp(float(0.03).add(pow(float(1).sub(cosT), 4).mul(0.97)).mul(1.1).add(0.03), 0, 1);
     const col = mix(body, refl, fres).toVar();
 
     // Bọt mép: đứt đoạn theo nhiễu, nhịp sóng vỗ nhẹ.
@@ -145,7 +145,7 @@ function waterMaterial(level: 0 | 1 | 2): THREE.MeshBasicNodeMaterial {
     col.assign(mix(col, waterParams.foam.mul(mix(1, 1.15, sunTerm)), foam.mul(0.85)));
 
     // Độ trong: nông thì trong, sâu và góc thấp thì đục; mép gặp bờ mờ dần.
-    const a0 = mix(0.5, 0.96, smoothstep(0.0, 4.5, d0));
+    const a0 = mix(0.62, 0.97, smoothstep(0.0, 4.5, d0));
     const alpha = max(max(a0, fres.mul(0.92)), foam).mul(smoothstep(-0.15, 0.3, d0));
     return vec4(col, alpha);
   })();
@@ -171,8 +171,8 @@ function mistMaterial(heightOffset: number, seed: number, strength: number): THR
     // Sương bám mặt nước hơn là bờ cạn.
     const wet = smoothstep(-1, 5, depthAt(dTex, p));
     const toCam = positionWorld.sub(cameraPosition);
-    const near = smoothstep(8, 55, length(toCam));
-    const level = smoothstep(0.6, 3.5, cameraPosition.y.sub(py).abs());
+    const near = smoothstep(70, 300, length(toCam));
+    const level = smoothstep(0.6, 3.5, cameraPosition.y.sub(py).abs()).mul(float(1).sub(smoothstep(25, 110, cameraPosition.y.sub(py)).mul(0.8)));
     const warm = pow(max(dot(normalize(vec3(toCam.x, 0.001, toCam.z)), skyParams.sunDir.mul(vec3(1, 0, 1)).normalize().negate()), 0), 3);
     const col = mix(mix(skyParams.horizon, vec3(1), 0.35), skyParams.glow.add(0.2), warm.mul(0.45));
     return vec4(col, dens.mul(edge).mul(wet).mul(near).mul(level).mul(strength));
@@ -201,8 +201,8 @@ export class Lake {
     const mgeo = new THREE.CircleGeometry(LAKE_WATER_R * 1.04, 64);
     mgeo.rotateX(-Math.PI / 2);
     [
-      { y: 2.2, seed: 0, s: 0.5 },
-      { y: 6.5, seed: 0.6, s: 0.34 },
+      { y: 2.2, seed: 0, s: 0.3 },
+      { y: 6.5, seed: 0.6, s: 0.2 },
     ].forEach((m, i) => {
       const mesh = new THREE.Mesh(mgeo, mistMaterial(m.y, m.seed, m.s));
       mesh.position.set(LAKE.x, WATER_Y + m.y, LAKE.z);
