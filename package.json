@@ -27,6 +27,7 @@
     "shots:method": "pnpm --filter @dtl/perf run shots:method --",
     "shots:party": "pnpm --filter @dtl/perf run shots:party --",
     "shots:p38": "pnpm --filter @dtl/perf run shots:p38 --",
+    "shots:sets": "pnpm --filter @dtl/perf run shots:sets --",
     "shots:k1": "pnpm --filter @dtl/perf run shots:k1 --",
     "shots:eqicons": "pnpm --filter @dtl/perf run shots:eqicons --",
     "shots:kiem": "pnpm --filter @dtl/perf run shots:kiem --",
