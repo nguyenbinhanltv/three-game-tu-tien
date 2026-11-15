@@ -308,6 +308,14 @@ export class Game {
   private timeOffset = 0;
 
   private started = false;
+
+  /**
+   * Game đã vào thế giới và chưa bị hủy: MusicController của nó là chủ duy nhất của kênh nhạc nền, kể cả lúc chuyển
+   * room (pha `loading`, Game được rebind) hay màn lỗi khi chưa bấm thử lại. Màn tiêu đề chỉ phát `title` khi false.
+   */
+  get ownsMusic(): boolean {
+    return this.started && !this.disposed;
+  }
   private startedAt = 0;
   private frames = 0;
   /** Số đo khung vừa vẽ, cộng dồn qua mọi pass (cho `__game.info()`). */

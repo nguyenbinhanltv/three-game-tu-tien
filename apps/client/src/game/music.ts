@@ -13,7 +13,7 @@
 // Gỡ lỗi: chuyển trạng thái được log `[music] ...` khi chạy dev hoặc có `?debug`;
 // `window.__music.log` giữ 50 lần chuyển gần nhất, `__music.state()` xem trạng thái hiện tại.
 import { biomeAt, MS_ATTACK, MS_CHASE, PF_DEAD, PF_MEDITATING, PF_TRIBULATION } from '@dtl/shared';
-import { hasMusicFile, musicOutput, musicRequested, playAmbient, playMusic } from './audio';
+import { hasMusicFile, musicOutput, playAmbient, playMusic } from './audio';
 import type { MonVis } from './entities';
 import { AmbientPicker, ambientFor, isNightHour, type MusicChange, MusicDirector, type MusicInput, type MusicTrack } from './musicDirector';
 
@@ -454,9 +454,7 @@ export class MusicController {
   /** Manifest tải xong muộn, vừa bật lại tiếng hay mở khóa âm thanh: chọn lại nguồn cho bài hiện tại. */
   private refresh(): void {
     const want = this.pickSrc();
-    // Màn tiêu đề (đổi room, nối lại) có thể đã đổi kênh nhạc sang `title`: giành lại cho bài hiện tại.
-    const stream = musicRequested() === (want === 'file' ? this.track : null);
-    if (want === this.src && stream && (want !== 'synth' || this.synth.playing === this.track)) return;
+    if (want === this.src && (want !== 'synth' || this.synth.playing === this.track)) return;
     this.route(2, this.track, want === this.src ? 'mở lại nhạc sinh thủ tục' : 'đổi nguồn phát');
   }
 

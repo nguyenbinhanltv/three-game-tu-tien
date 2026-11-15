@@ -339,10 +339,11 @@ export function App() {
   }, []);
   const phase = useUI((s) => s.phase);
   const error = useUI((s) => s.error);
-  // Nhạc chủ đề (`title`) ở màn đăng nhập, màn tải và màn lỗi. Vào game thì MusicController giành lại kênh nhạc
-  // (nhạc vùng/chiến đấu), kể cả khi đổi room hay nối lại mà bài vùng không đổi (music.ts, refresh()).
+  // Nhạc chủ đề (`title`) ở màn đăng nhập và lần tải/kết nối đầu, khi chưa có Game nào đã vào thế giới. Một khi Game
+  // đã vào (`ownsMusic`), MusicController của nó là chủ duy nhất của kênh nhạc: chuyển room (pha `loading`) hay màn
+  // lỗi khi Game còn sống giữ nguyên nhạc vùng, không chen `title` (tránh tải thừa và phát lại bài vùng từ đầu).
   useEffect(() => {
-    if (phase !== 'game') playMusic('title', 2);
+    if (phase !== 'game' && !Game.current?.ownsMusic) playMusic('title', 2);
   }, [phase]);
   // Màn tiêu đề còn che game cho tới khi các dòng chữ tải đã hiện xong.
   const [title, setTitle] = useState(true);
