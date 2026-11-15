@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { APPEARANCE, SKILLS } from '@dtl/content';
 import { POSE_SWORD_SWAP } from '@dtl/shared';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
@@ -200,5 +200,37 @@ describe('lò xo vạt áo (M3-10)', () => {
     console.info(`[M3-10] lò xo 12 thể × 4 xương: ${(ms * 1000).toFixed(1)} µs/khung`);
     expect(ms).toBeLessThan(0.5);
     handle.release();
+  });
+});
+
+describe('ma trận xương khi đổi ngoài mixer (M6-3)', () => {
+  it('kiếm đổi socket và lò xo vạt áo làm skeleton tính lại dù mixer chưa chạy', async () => {
+    const { m, s } = await player();
+    run(m, anim(), 0.2);
+    let sk: THREE.Skeleton | undefined;
+    m.root.traverse((o) => (sk ??= (o as THREE.SkinnedMesh).skeleton));
+    const spy = vi.spyOn(THREE.Skeleton.prototype, 'update');
+    // Người khác ở LOD0: mixer 60 Hz; bước 1/240 giây thì mixer chưa chạy nhưng lò xo chạy.
+    m.setView({ dist: 5, inView: true, allowLod0: true, self: false });
+    m.update(1 / 60, anim({ speed: 7 }));
+    sk!.update();
+    const n0 = spy.mock.calls.length;
+    sk!.update();
+    expect(spy.mock.calls.length).toBe(n0);
+    m.update(1 / 240, anim({ speed: 7 }));
+    sk!.update();
+    expect(spy.mock.calls.length).toBe(n0 + 1);
+    // LOD1 (mixer 12 Hz): ra chiêu thì kiếm vào tay ngay, ma trận xương phải theo.
+    m.setView({ dist: 40, inView: true, allowLod0: false, self: false });
+    m.update(1 / 240, anim());
+    sk!.update();
+    const n1 = spy.mock.calls.length;
+    m.perform(SKILLS.find((k) => k.pose && k.cast === 0)!.pose!);
+    expect(m.swordDrawn).toBe(true);
+    sk!.update();
+    expect(spy.mock.calls.length).toBe(n1 + 1);
+    spy.mockRestore();
+    m.dispose();
+    s.dispose();
   });
 });

@@ -212,6 +212,11 @@ export class SkinnedCharacter implements CharacterView {
   /** Số lần ra đòn (cho vệt/hạt theo nhân vật). */
   attacks = 0;
   private springs: SpringBones | null = null;
+  /**
+   * Báo ma trận xương đã đổi ngoài mixer (lò xo, kiếm đổi socket): `skeleton.update()` chỉ chạy lại khi phiên bản
+   * cây xương đổi (M6-3, xem `skipUnchangedSkeletons`). Mixer chạy thì `rig.updateMatrixWorld` tự tăng.
+   */
+  protected rigChanged: () => void = () => {};
   /** Chân bám đất (người, quái hai chân): rig IK, trọng số bật/tắt, độ chỉnh đã làm mượt (hông, chân phải, chân trái). */
   private feet: IkRig | null = null;
   private feetW = 0;
@@ -261,6 +266,13 @@ export class SkinnedCharacter implements CharacterView {
     this.root.add(this.inner);
     this.root.scale.setScalar(s);
     detachRig(o.scene, this.rig);
+    this.rigChanged = skipUnchangedSkeletons(o.scene, this.rig);
+    // Cây con GLB (sau khi tách xương chỉ còn node trung gian và mesh LOD) có biến đổi cục bộ không đổi: rung, chìm,
+    // giật lùi ghi vào `inner`/`root`. Tính `matrix` một lần, khỏi compose lại mỗi khung cho ~10 node/nhân vật (M6-3).
+    o.scene.traverse((n) => {
+      n.updateMatrix();
+      n.matrixAutoUpdate = false;
+    });
     if (o.springs?.length) this.springs = new SpringBones(this.rig, o.springs);
     // Phải dựng rig IK khi xương còn ở tư thế gốc (trước mixer).
     if (o.ground === 'biped' && !P2E_OFF) this.feet = IkRig.from(this.rig);
@@ -503,13 +515,14 @@ export class SkinnedCharacter implements CharacterView {
     const sp = this.springs;
     if (!sp) return;
     if (this.lodLevel !== 0 || !this.inner.visible) {
-      sp.reset();
+      if (sp.reset()) this.rigChanged();
       return;
     }
     const r = this.root;
     this.springWorld.compose(r.position, r.quaternion, r.scale);
     if (r.parent) this.springWorld.premultiply(r.parent.matrixWorld);
     sp.update(dt, this.springWorld);
+    this.rigChanged();
   }
 
   dispose(): void {
@@ -734,6 +747,37 @@ function detachRig(scene: THREE.Object3D, rig: THREE.Group): void {
     if ((o as THREE.SkinnedMesh).isSkinnedMesh) (o as THREE.SkinnedMesh).bindMode = THREE.DetachedBindMode;
   });
   rig.updateMatrixWorld(true);
+}
+
+/**
+ * three gọi `skeleton.update()` (nhân ~60 ma trận xương với boneInverse) mỗi khung cho mọi mesh có xương được vẽ, kể cả
+ * khi bộ xương không đổi (M6-3, profile 100 người ở rừng: ~1,5 ms/khung). Với cây xương tách khỏi cảnh, ma trận xương
+ * chỉ đổi khi `rig.updateMatrixWorld` chạy (mixer cập nhật: LOD1 12 Hz, LOD2 8 Hz, ngoài khung nhìn thì không), nên
+ * đếm phiên bản ở đó và bỏ qua `skeleton.update()` khi phiên bản chưa đổi. Trả về hàm tăng phiên bản cho chỗ đổi xương
+ * ngoài mixer (lò xo, kiếm đổi socket).
+ */
+function skipUnchangedSkeletons(scene: THREE.Object3D, rig: THREE.Object3D): () => void {
+  let version = 0;
+  const updateRig = rig.updateMatrixWorld.bind(rig);
+  rig.updateMatrixWorld = (force?: boolean) => {
+    version++;
+    updateRig(force);
+  };
+  const seen = new Set<THREE.Skeleton>();
+  scene.traverse((o) => {
+    const sk = (o as THREE.SkinnedMesh).skeleton;
+    if (!sk || seen.has(sk)) return;
+    seen.add(sk);
+    let at = -1;
+    sk.update = function (this: THREE.Skeleton) {
+      if (at === version) return;
+      at = version;
+      THREE.Skeleton.prototype.update.call(this);
+    };
+  });
+  return () => {
+    version++;
+  };
 }
 
 /** Quái dùng model có xương; cùng interface với `MonsterModel` (model khối). */

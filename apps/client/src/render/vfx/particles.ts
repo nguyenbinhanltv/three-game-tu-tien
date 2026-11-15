@@ -56,7 +56,6 @@ class Layer {
     this.limit = cap;
     const mk = () => {
       const a = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
-      a.setUsage(THREE.DynamicDrawUsage);
       return a;
     };
     this.a0 = mk();

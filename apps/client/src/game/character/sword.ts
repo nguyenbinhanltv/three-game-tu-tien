@@ -85,11 +85,12 @@ export class SwordSocket {
   private inHand = false;
 
   /** `rig`: cây xương của bản sao (đã tách khỏi cảnh, xem `SkinnedCharacter.rig`). Null nếu thiếu xương. */
-  static create(rig: THREE.Object3D, def: SwordSocketDef): SwordSocket | null {
+  /** `onChange`: gọi sau khi đổi socket (ma trận xương kiếm đổi ngoài mixer, xem `SkinnedCharacter.rigChanged`). */
+  static create(rig: THREE.Object3D, def: SwordSocketDef, onChange: () => void = () => {}): SwordSocket | null {
     const bone = rig.getObjectByName(def.bone) as THREE.Bone | undefined;
     const back = rig.getObjectByName(def.back);
     const hand = rig.getObjectByName(def.hand);
-    return bone?.isBone && back && hand ? new SwordSocket(bone, back, hand, def) : null;
+    return bone?.isBone && back && hand ? new SwordSocket(bone, back, hand, def, onChange) : null;
   }
 
   private constructor(
@@ -97,6 +98,7 @@ export class SwordSocket {
     back: THREE.Object3D,
     hand: THREE.Object3D,
     private def: SwordSocketDef,
+    private onChange: () => void,
   ) {
     this.bone = bone;
     this.back = back;
@@ -113,6 +115,7 @@ export class SwordSocket {
     (inHand ? this.hand : this.back).add(this.bone);
     (inHand ? this.def.handLocal : this.def.backLocal).decompose(this.bone.position, this.bone.quaternion, this.bone.scale);
     this.bone.updateMatrixWorld(true);
+    this.onChange();
   }
 
   /** Vị trí tâm chuôi trong hệ của rig (cho test). */

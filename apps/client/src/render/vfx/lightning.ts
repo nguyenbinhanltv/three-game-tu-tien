@@ -116,9 +116,7 @@ export class BoltGeometry {
   constructor() {
     const nv = BOLT_MAX_PTS * 2;
     this.pos = new THREE.BufferAttribute(new Float32Array(nv * 3), 3);
-    this.pos.setUsage(THREE.DynamicDrawUsage);
     this.uvs = new THREE.BufferAttribute(new Float32Array(nv * 2), 2);
-    this.uvs.setUsage(THREE.DynamicDrawUsage);
     const idx = new Uint16Array((BOLT_MAX_PTS - 1) * 6);
     this.geo.setAttribute('position', this.pos);
     this.geo.setAttribute('uv', this.uvs);
