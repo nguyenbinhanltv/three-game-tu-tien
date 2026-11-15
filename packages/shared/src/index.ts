@@ -25,5 +25,6 @@ export * from './party';
 export * from './teleport';
 export * from './zones';
 export * from './animrules';
+export * from './posestyle';
 export * from './spawnrules';
 export * from './elements';

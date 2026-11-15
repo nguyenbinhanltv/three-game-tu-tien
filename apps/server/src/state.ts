@@ -35,6 +35,8 @@ export class PlayerS extends Schema {
   @view() @type('string') sa = '';
   /** id pháp bảo phụ đang đeo (P3-8), '' = không. Chỉ để hiển thị. */
   @view() @type('string') art = '';
+  /** id công pháp đang tu (chọn giọng động tác của chiêu, K-5), '' = chưa chọn. Chỉ để hiển thị. */
+  @view() @type('string') mt = '';
 }
 
 export class MonS extends Schema {
