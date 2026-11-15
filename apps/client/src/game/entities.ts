@@ -11,9 +11,9 @@ import { type AnimState, type CharacterView, type MonsterView, P2E_OFF, type Ski
 import { MonsterSkins } from './character/monsterSkins';
 import { NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
-import { hitStopFor } from './hitreact';
 import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
 import { HpTrail } from './hpTrail';
+import type { StopPair } from './hitjuice';
 import { ArtifactVis } from './artifactVis';
 
 export interface PState {
@@ -889,14 +889,14 @@ export class EntityManager {
    * Phản ứng trúng đòn khi nhận S.DMG (chỉ hiển thị). `delay` để khớp lúc đạn bay tới.
    * Người ra đòn là mình thì mình cũng khựng.
    */
-  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false): void {
+  hitReact(dst: string, src: string | undefined, crit: boolean, delay: number, heavy = false, stop?: StopPair): void {
     const vd = this.players.get(dst) ?? this.monsters.get(dst);
     if (!vd) return;
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
     // Chỉ khựng khi đòn liên quan tới mình, để boss bị nhiều người đánh không đứng hình liên tục.
     const noStop = src !== this.mySid && dst !== this.mySid;
-    vd.model.hitReact({ crit, heavy, delay, noStop, noFlash: this.tagsHidden && this.monsters.has(dst), dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
-    if (src && src === this.mySid && vs) vs.model.hit.hitStop(hitStopFor(crit, heavy), delay);
+    vd.model.hitReact({ crit, heavy, delay, noStop, stop: stop?.target, noFlash: this.tagsHidden && this.monsters.has(dst), dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
+    if (src && src === this.mySid && vs) vs.model.hit.hitStop(stop?.attacker ?? 0, delay);
   }
 
   /** Vị trí vẽ của người chơi cách đây `sec` giây (hoặc cũ nhất còn lưu): điểm xuất phát cho lướt hiển thị. */
