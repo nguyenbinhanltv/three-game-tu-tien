@@ -105,9 +105,12 @@ export function AssetViewer() {
           void load(async () => {
             const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });
             if (!res.ok) throw new Error(`HTTP ${res.status} manifest.json`);
-            const a = ((await res.json()) as Manifest).assets[show];
+            const man = (await res.json()) as Manifest;
+            const a = man.assets[show];
             if (!a) throw new Error(`manifest.json: ${show}?`);
-            return v.loadUrl(assetBaseUrl() + a.file);
+            // ?lib=1: thêm clip của thư viện chung anim_human_base (K-3), retarget sang model người.
+            const lib = params.get('lib') ? man.assets.anim_human_base : undefined;
+            return v.loadUrl(assetBaseUrl() + a.file, lib ? assetBaseUrl() + lib.file : undefined);
           }, show);
           return;
         }

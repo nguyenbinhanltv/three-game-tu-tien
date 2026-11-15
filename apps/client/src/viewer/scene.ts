@@ -7,6 +7,7 @@ import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
 import { POSES } from '@dtl/content';
 import { POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { createGltfLoader, createKtx2Loader, localLibsManager } from '../game/assets';
+import { mergeClips, retargetClips } from '../game/character/animLib';
 import { bakePose, formatProbe, IkRig, poseClipName } from '../game/character/ikpose';
 import { isSkillViewer } from '../game/testParams';
 import { buildFixtureSword, buildMixamoFixture } from '../game/character/mixamoFixture';
@@ -69,6 +70,11 @@ export class ViewerScene {
   private nextRig: IkRig | null = null;
   speed = 1;
   paused = false;
+  /** Tịnh tiến model theo travelDir (mặc định hướng mặt +Z) theo thời gian clip, m/s (K-3: đúng tốc độ nền của clip đi lại thì chân trụ đứng yên so với đất). */
+  travel = 0;
+  travelDir = new THREE.Vector3(0, 0, 1);
+  private travelBase = new THREE.Vector3();
+  private marks = new THREE.Group();
 
   constructor(private host: HTMLElement) {
     const params = new URLSearchParams(location.search);
@@ -119,18 +125,26 @@ export class ViewerScene {
   }
 
   /** Nạp GLB/GLTF theo URL (cùng origin). Đường dẫn texture ngoài tính theo thư mục của URL. */
-  async loadUrl(url: string): Promise<LoadedInfo> {
+  async loadUrl(url: string, libUrl?: string): Promise<LoadedInfo> {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
     const buf = await res.arrayBuffer();
-    return this.loadBuffer(buf, url.slice(url.lastIndexOf('/') + 1), url.slice(0, url.lastIndexOf('/') + 1));
+    return this.loadBuffer(buf, url.slice(url.lastIndexOf('/') + 1), url.slice(0, url.lastIndexOf('/') + 1), libUrl);
   }
 
-  async loadBuffer(buf: ArrayBuffer, name: string, path = ''): Promise<LoadedInfo> {
+  /** `libUrl`: thư viện clip chung (anim_human_base, K-3); clip retarget sang model, clip riêng của model thắng khi trùng tên. */
+  async loadBuffer(buf: ArrayBuffer, name: string, path = '', libUrl?: string): Promise<LoadedInfo> {
     const gltf: GLTF = await this.loader.parseAsync(buf, path);
+    let lib: THREE.AnimationClip[] = [];
+    if (libUrl) {
+      const r = await fetch(libUrl);
+      if (!r.ok) throw new Error(`HTTP ${r.status} ${libUrl}`);
+      const libGltf = await this.loader.parseAsync(await r.arrayBuffer(), libUrl.slice(0, libUrl.lastIndexOf('/') + 1));
+      lib = retargetClips(libGltf.scene, libGltf.animations, gltf.scene);
+    }
     const json = (gltf.parser as unknown as { json: { extensionsUsed?: string[] } }).json;
     // ?pose=…: nướng thêm các key pose IK nếu model có rig người Mixamo.
-    const own = gltf.animations.map(stripPartTracks);
+    const own = mergeClips(gltf.animations.map(stripPartTracks), lib);
     const clips = this.poseMode ? [...this.bakePoses(gltf.scene), ...own] : own;
     return this.show(gltf.scene, clips, { name, fileBytes: buf.byteLength, extensions: json.extensionsUsed ?? [] });
   }
@@ -156,6 +170,38 @@ export class ViewerScene {
   }
   get clipName(): string {
     return this.action?.getClip().name ?? '';
+  }
+
+  private applyTravel(): void {
+    if (this.model && this.travel) this.model.position.copy(this.travelBase).addScaledVector(this.travelDir, this.travel * this.clipTime);
+  }
+
+  /** Vị trí thế giới hai bàn chân [trái, phải] (xương *leftfoot/*rightfoot); rỗng nếu model không có. */
+  footsWorld(): number[][] {
+    if (!this.model) return [];
+    this.model.updateMatrixWorld(true);
+    const out: number[][] = [];
+    for (const side of ['left', 'right']) {
+      let b: THREE.Object3D | undefined;
+      this.model.traverse((o) => {
+        if (o.name.toLowerCase().endsWith(`${side}foot`)) b = o;
+      });
+      if (b) out.push(b.getWorldPosition(new THREE.Vector3()).toArray());
+    }
+    return out;
+  }
+
+  /** Đánh dấu một điểm trên đất (đĩa đỏ): chứng minh chân trụ không trượt. */
+  markGround(x: number, z: number, color = 0xd85a46): void {
+    if (!this.marks.parent) this.scene.add(this.marks);
+    const m = new THREE.Mesh(new THREE.CircleGeometry(0.05, 20), new THREE.MeshBasicMaterial({ color }));
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(x, 0.004, z);
+    this.marks.add(m);
+  }
+
+  clearMarks(): void {
+    this.marks.clear();
   }
 
   /** Đầu dò số ở khung hiện tại (tay, chân, mũi kiếm); rỗng nếu model không có rig IK. */
@@ -201,6 +247,7 @@ export class ViewerScene {
     act.play().setEffectiveWeight(1);
     act.time = Math.min(t, act.getClip().duration - 1e-4);
     this.mixer.update(0);
+    this.applyTravel();
     this.placeSword();
   }
 
@@ -255,6 +302,7 @@ export class ViewerScene {
       root.position.set(GAP + 0.25 - box.min.x, -box.min.y, -c.z);
     }
     this.model = root;
+    this.travelBase.copy(root.position);
     this.sword = this.nextSword;
     this.nextSword = null;
     this.ikRig = this.nextRig;
@@ -329,6 +377,7 @@ export class ViewerScene {
       this.fpsFrames = 0;
     }
     if (this.mixer && !this.paused) this.mixer.update(dt * this.speed);
+    this.applyTravel();
     this.placeSword();
     if (this.skeleton?.visible) {
       this.model?.updateMatrixWorld(true);

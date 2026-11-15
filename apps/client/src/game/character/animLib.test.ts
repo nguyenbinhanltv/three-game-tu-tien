@@ -4,12 +4,13 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { HUMAN_CLIP_NAMES } from './humanClips';
 import { acquireWithHumanLib, HUMAN_ANIM_LIB, mergeClips, retargetClips } from './animLib';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
 const CHARACTERS = ['chr_kiem_tu_nam', 'chr_npc_chuong_mon', 'chr_npc_duoc_su', 'chr_npc_thiet_lao'];
-const CLIPS = ['idle', 'run', 'attack', 'hit_light', 'death'];
+const CLIPS = HUMAN_CLIP_NAMES;
 
 const cache = new AssetCache({
   base: '',
@@ -54,7 +55,7 @@ function footTrace(target: THREE.Object3D, clip: THREE.AnimationClip, steps: num
 }
 
 describe('thư viện clip chung anim_human_base (M2-3)', () => {
-  it('có đủ 5 clip, không mesh, chỉ xương mixamorig', async () => {
+  it('có đủ clip theo bảng humanClips, không mesh, chỉ xương mixamorig', async () => {
     const lib = await cache.acquire(HUMAN_ANIM_LIB);
     expect(lib.animations.map((c) => c.name).sort()).toEqual([...CLIPS].sort());
     let meshes = 0;
