@@ -22,6 +22,8 @@
 #    đầu xương `bone`, `tip` hướng mũi, `length`.
 #    `patch: true` vá lỗ lưng áo dưới kiếm; `socket: true` tách chuôi (`hilt`: phần đầu trên theo chiều dài, mặc định
 #    0,28) + lưỡi thủ tục sang xương `dtl_sword` để client rút/tra kiếm (M3-2, xem tools/blender/biped_parts.py).
+# 3b. `import.flatSkinNormals` { zMin }: làm phẳng normal map trên da đầu/cổ (biped_parts.flatten_skin_normals), bỏ vệt tối
+#    trông như ria mép khi hạ texture về 1024.
 # 4. Chỉnh màu vải (`import.recolor`): mỗi quy tắc chọn điểm ảnh của texture màu theo hue/độ bão hòa/độ sáng (mép mềm),
 #    rồi đổi sang màu đích trong bảng tâm trạng, giữ độ sáng tương đối nên vân vải và nếp gấp còn nguyên. Không vẽ lại.
 #
@@ -517,6 +519,10 @@ def recolor(rules):
 
 if IMPORT.get('recolor'):
     report['recolor'] = recolor(IMPORT['recolor'])
+
+for mesh in MESHES:  # noqa: F821
+    if IMPORT.get('flatSkinNormals'):
+        report['flatSkinNormals'] = PARTS['flatten_skin_normals'](mesh, float(IMPORT['flatSkinNormals'].get('zMin', 1.45)), replace_pixels)
 
 for mesh, k in SHRINK:
     PARTS['shrink_images'](mesh, k, replace_pixels)

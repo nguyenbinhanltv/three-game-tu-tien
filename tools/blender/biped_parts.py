@@ -596,3 +596,53 @@ def shrink_images(mesh, k, replace_pixels):
         canvas[h2:, :w2] = px2[-1:, :, :]
         canvas[:, w2:] = canvas[:, w2 - 1:w2, :]
         replace_pixels(img, canvas)
+
+
+def flatten_skin_normals(mesh, z_min, replace_pixels):
+    """Làm phẳng normal map trên da mặt/cổ: Tripo vẽ nét môi, mũi, mi vào normal ở độ phân giải mà sau khi hạ về 1024 chỉ còn
+    vệt tối chạy cạnh miệng (trông như ria mép). Chọn các mặt đầu (tâm cao hơn `z_min` m) có màu da ở tâm UV, rasterize
+    tam giác UV thành mặt nạ rồi đặt normal về (0,5; 0,5; 1). Albedo giữ nguyên (môi, mắt vẫn do màu vẽ)."""
+    me, mw = mesh.data, mesh.matrix_world
+    px, W, H = _color_pixels(mesh)
+    if px is None:
+        return {'faces': 0}
+    uv = me.uv_layers.active.data
+    mask = np.zeros((H, W), bool)
+    faces = 0
+    for poly in me.polygons:
+        cz = (mw @ poly.center).z
+        if cz < z_min:
+            continue
+        uvs = np.array([tuple(uv[l].uv) for l in poly.loop_indices])
+        c = uvs.mean(0)
+        r, g, b = px[min(H - 1, max(0, int(c[1] * H))), min(W - 1, max(0, int(c[0] * W))), :3]
+        if not (r > 0.45 and r > g * 1.08 and g >= b * 0.95 and r - b > 0.14):
+            continue
+        faces += 1
+        pts = uvs * np.array([W, H])
+        for k in range(1, len(pts) - 1):
+            a_, b_, c_ = pts[0], pts[k], pts[k + 1]
+            i0, j0 = np.floor(np.minimum(np.minimum(a_, b_), c_)).astype(int) - 2
+            i1, j1 = np.floor(np.maximum(np.maximum(a_, b_), c_)).astype(int) + 2
+            ii, jj = np.meshgrid(np.arange(max(0, i0), min(W, i1 + 1)), np.arange(max(0, j0), min(H, j1 + 1)))
+            x, y = ii + 0.5, jj + 0.5
+            d = (b_[1] - c_[1]) * (a_[0] - c_[0]) + (c_[0] - b_[0]) * (a_[1] - c_[1])
+            if abs(d) < 1e-9:
+                continue
+            l1 = ((b_[1] - c_[1]) * (x - c_[0]) + (c_[0] - b_[0]) * (y - c_[1])) / d
+            l2 = ((c_[1] - a_[1]) * (x - c_[0]) + (a_[0] - c_[0]) * (y - c_[1])) / d
+            hit = (l1 >= -0.03) & (l2 >= -0.03) & (1 - l1 - l2 >= -0.03)
+            mask[jj[hit], ii[hit]] = True
+    for n in mesh.data.materials[0].node_tree.nodes:
+        if n.type == 'TEX_IMAGE' and n.image and n.image.name.endswith('_normal'):
+            img = n.image
+            w, h = img.size
+            arr = np.empty(w * h * 4, np.float32)
+            img.pixels.foreach_get(arr)
+            arr = arr.reshape(h, w, 4)
+            arr[mask, 0] = 0.5
+            arr[mask, 1] = 0.5
+            arr[mask, 2] = 1.0
+            replace_pixels(img, arr)
+            break
+    return {'faces': faces, 'pixels': int(mask.sum())}

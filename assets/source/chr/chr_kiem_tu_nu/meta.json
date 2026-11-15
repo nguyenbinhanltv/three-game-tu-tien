@@ -19,6 +19,7 @@
       { "satMax": 0.1, "valMin": 0.62, "to": "#E6DDCB", "note": "vải trắng → attire_ivory" }
     ],
     "prune": ["(handindex4|handmiddle4|handpinky4|handring4|handthumb4|toe_end|headtop_end)$"],
+    "flatSkinNormals": { "zMin": 1.45 },
     "sharedAnims": "anim_human_base",
     "post": "tools/blender/anim_biped_extra.py",
     "spring": [
