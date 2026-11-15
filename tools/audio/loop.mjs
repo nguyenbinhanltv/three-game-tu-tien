@@ -239,7 +239,7 @@ async function main() {
         files.push(`music/${hashName(MUSIC_DIR, id, kind, buf)}`);
         info[kind] = buf.length;
       }
-      music[id] = { src: files, loop: info.loop, credit: credit(def, d) };
+      music[id] = { src: files, loop: info.loop, ...(def.stem ? { stem: def.stem } : {}), credit: credit(def, d) };
       if (PREVIEW && info.loop) {
         const dir = path.join(os.tmpdir(), 'dtl-music-preview');
         fs.mkdirSync(dir, { recursive: true });
