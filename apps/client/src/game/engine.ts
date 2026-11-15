@@ -114,7 +114,7 @@ import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
 import type { SkillEvent } from './character/view';
-import { HitQueue, hitPitch, hitStopOf, layersOf, materialOf, shakeOf, ULT_FOV, ultFovAt, WHOOSH_GAIN, whooshDelay, type HitCtx, type HitSoundLog } from './hitjuice';
+import { HitQueue, SwingGuard, hitPitch, hitStopOf, layersOf, materialOf, shakeOf, ULT_FOV, ultFovAt, WHOOSH_GAIN, whooshDelay, type HitCtx, type HitSoundLog } from './hitjuice';
 import { debugAllowed, readTestParams } from './testParams';
 
 export interface LoginOptions {
@@ -1478,7 +1478,7 @@ export class Game {
   /** Sát thương đang chờ khung `hit` của người ra đòn (đồng hồ game, xả ở `frame`), thay cho `setTimeout`. */
   private hitQ = new HitQueue<DmgMsg>();
   /** Người ra đòn đã vào thế (windup) mà chưa tới `hitAt`: sát thương của họ tới lúc này thì chờ khung `hit`. */
-  private swinging = new Set<string>();
+  private swinging = new SwingGuard();
   /** Khung `hit` gần nhất của từng người ra đòn: ngữ cảnh (chiêu, đòn thứ mấy) cho phản ứng trúng đòn tới sau đó. */
   private lastHit = new Map<string, { skill: string; index: number; combo: number; kb: boolean; at: number }>();
   /** Lúc tiếng vung gần nhất của từng người (performance.now): FX `sword` tới sau không phát thêm tiếng vút nữa. */
@@ -1499,7 +1499,7 @@ export class Game {
    */
   private onSwingEvent(sid: string, e: SkillEvent): void {
     if (e.kind === 'windup') {
-      this.swinging.add(sid);
+      this.swinging.begin(sid, e.hitIn ?? 0, performance.now());
       const whoosh = SKILL_INFO.get(e.skill);
       if (whoosh && (whoosh.fx === 'sword' || whoosh.fx === 'slash') && !this.disposed) {
         const mine = sid === this.sid;
@@ -1822,7 +1822,7 @@ export class Game {
     this.markHurt(m);
     // Đòn của một người chơi đang vung (đã vào thế, chưa tới `hitAt`): chờ khung `hit` của hoạt ảnh để tiếng, khựng, rung
     // rơi đúng lúc ra đòn (K-7). Quá hạn mà không có `hit` thì `frame` xả.
-    if (m.src && this.swinging.has(m.src) && !m.heal) {
+    if (m.src && this.swinging.active(m.src, performance.now()) && !m.heal) {
       this.hitQ.push(m.src, m, Game.HIT_WAIT);
       return;
     }

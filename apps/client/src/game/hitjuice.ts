@@ -201,6 +201,37 @@ export class HitQueue<T> {
   }
 }
 
+/** Dư thêm (giây) sau `hitAt` dự kiến, đủ cho hit-stop (≤ 90 ms) làm đồng hồ animation chậm lại. */
+export const SWING_MARGIN = 0.15;
+
+/**
+ * Người ra đòn đang vung (đã `windup`, chưa tới `hitAt`). Tự hết hạn thay vì chờ sự kiện kết thúc: nhiều đường dừng hoạt ảnh
+ * (ngã `knockdown`, bị chặn khi chết/bay, thực thể bị gỡ) không phát `hit`/`cancel`/`end`, và cờ treo sẽ làm trễ mọi sát thương sau đó.
+ */
+export class SwingGuard {
+  private until = new Map<string, number>();
+
+  /** `hitIn` giây (đồng hồ animation) tới `hitAt`; `nowMs` theo `performance.now()`. */
+  begin(sid: string, hitIn: number, nowMs: number): void {
+    this.until.set(sid, nowMs + (Math.max(0, hitIn) + SWING_MARGIN) * 1000);
+    if (this.until.size > 64) for (const [k, v] of this.until) if (v <= nowMs) this.until.delete(k);
+  }
+
+  active(sid: string, nowMs: number): boolean {
+    const d = this.until.get(sid);
+    if (d === undefined) return false;
+    if (d <= nowMs) {
+      this.until.delete(sid);
+      return false;
+    }
+    return true;
+  }
+
+  delete(sid: string): void {
+    this.until.delete(sid);
+  }
+}
+
 /** Nhật ký hit → âm (bản dev): độ lệch giữa khung `hit` của hoạt ảnh và lúc đặt lịch tiếng. */
 export interface HitSoundLog {
   skill: string;

@@ -7,6 +7,8 @@ import {
   HIT_STOP,
   HIT_STOP_CAP,
   HitQueue,
+  SwingGuard,
+  SWING_MARGIN,
   hitPitch,
   hitStopOf,
   LAYER_GAIN_CAP,
@@ -211,5 +213,26 @@ describe('hàng đợi theo thời gian game', () => {
     q.push('x', 1, 0.1);
     expect(q.tick(5)).toEqual([1]);
     expect(q.tick(5)).toEqual([]);
+  });
+});
+
+describe('SwingGuard (cờ đang vung tự hết hạn)', () => {
+  it('đang vung tới hitAt + dư; hết hạn thì không treo dù không có hit/cancel/end (ngã, bị gỡ)', () => {
+    const g = new SwingGuard();
+    g.begin('a', 0.26, 1000);
+    expect(g.active('a', 1000 + 100)).toBe(true);
+    expect(g.active('a', 1000 + (0.26 + SWING_MARGIN) * 1000 - 1)).toBe(true);
+    expect(g.active('a', 1000 + (0.26 + SWING_MARGIN) * 1000 + 1)).toBe(false);
+    // Sau khi hết hạn, sát thương kế tiếp (DoT, đạn, người vào lại tầm nhìn) không bị giữ.
+    expect(g.active('a', 5000)).toBe(false);
+  });
+  it('hit/cancel xóa ngay; người khác không bị ảnh hưởng', () => {
+    const g = new SwingGuard();
+    g.begin('a', 0.5, 0);
+    g.begin('b', 0.5, 0);
+    g.delete('a');
+    expect(g.active('a', 10)).toBe(false);
+    expect(g.active('b', 10)).toBe(true);
+    expect(g.active('zzz', 10)).toBe(false);
   });
 });
