@@ -240,12 +240,13 @@ async function main() {
       const seen = Date.now();
       if (mf() & MF_CHANT) {
         a.room.send(C.SKILL, { id: 'skl_kiem_khi_tram', t: id });
-        await W(250);
+        // Chiêu áp tại hitAt (0,28 s): chờ qua mốc đó rồi mới đọc kết quả.
+        await W(500);
         guardOk = guardMsg === 'sys.chant_guarded' && (mf() & MF_CHANT) !== 0;
         // Qua đoạn hộ chú (30% của 2,6 giây) thì người thứ hai phá chú.
         await W(Math.max(0, 1000 - (Date.now() - seen)));
         b.room.send(C.SKILL, { id: 'skl_kiem_khi_tram', t: id });
-        await W(300);
+        await W(550);
         stunOk = (mf() & MF_STUN) !== 0;
         detail = `mf=${mf()}, thông báo hộ chú: ${guardMsg || 'không có'}`;
       } else detail = 'boss không niệm chú trong 16 giây';
@@ -775,7 +776,7 @@ async function main() {
       g.room.send(C.ARTIFACT, bad);
       await W(150);
     }
-    check('kích hoạt pháp bảo khi chưa đeo bị từ chối', has('sys.art_none') && !artId);
+    check('kích hoạt pháp bảo khi chưa đeo bị từ chối', has('sys.art_none') && !artId, `${JSON.stringify(msgs.map((m) => m.k))} artId=${artId}`);
     // Chế pháp bảo ở xa Thiết lão, thiếu nguyên liệu: từ chối, không mất linh thạch, không ra món nào.
     const gold0 = gold;
     await chat('/gm tp 2200 2400');
@@ -813,6 +814,69 @@ async function main() {
     }
     await W(300);
     check('spam kích hoạt pháp bảo không làm sập server', await health() && mp <= 100000);
+    await g.room.leave(true);
+  }
+
+  // 20. K-2: lướt và hủy chiêu. Spam lướt chỉ ra một lần (khe + hồi chiêu), lướt không xuyên mép bản đồ, lệnh rác không làm sập,
+  // người chưa theo công pháp không lướt được, hủy đòn chờ bằng lướt không cho đánh thêm miễn phí.
+  {
+    const g = await join('kt_luot');
+    const pos = () => {
+      const pl = (g.room.state as unknown as { players: Map<string, { x: number; z: number }> }).players.get(g.init.sid)!;
+      return { x: pl.x, z: pl.z };
+    };
+    const msgs: { k: string }[] = [];
+    g.room.onMessage(S.SYS, (m: { k: string }) => msgs.push(m));
+    const chat = async (m: string) => {
+      g.room.send(C.CHAT, { m });
+      await W(900);
+    };
+    await chat('/gm level 12');
+    await chat('/gm tp 2048 2088');
+    // Chưa theo công pháp: lướt của công pháp bị từ chối, vị trí không đổi.
+    const p0 = pos();
+    g.room.send(C.SKILL, { id: 'skl_kiem_anh_bo' });
+    await W(400);
+    const p1 = pos();
+    check('lướt khi chưa theo công pháp bị từ chối', msgs.some((m) => m.k === 'sys.no_method') && Math.hypot(p1.x - p0.x, p1.z - p0.z) < 0.5, `${JSON.stringify(msgs.map((m) => m.k))} di chuyển ${Math.hypot(p1.x - p0.x, p1.z - p0.z).toFixed(2)} m`);
+    g.room.send(C.METHOD, { method: 'lac_kiem_quyet' });
+    await W(500);
+    await chat('/gm cd');
+    // Spam lướt 30 lệnh: tối đa một lần lướt (≤ 8,5 m), vẫn trong bản đồ.
+    const q0 = pos();
+    for (let i = 0; i < 30; i++) g.room.send(C.SKILL, { id: 'skl_kiem_anh_bo' });
+    await W(700);
+    const q1 = pos();
+    const moved = Math.hypot(q1.x - q0.x, q1.z - q0.z);
+    check('spam lướt chỉ ra một lần (≤ 8,5 m)', moved <= 8.5, `${moved.toFixed(2)} m`);
+    // Lệnh rác (kiểu sai, id mảng, mục tiêu đối tượng) không làm sập, không làm di chuyển thêm.
+    await W(700);
+    for (const bad of [{ id: ['skl_kiem_anh_bo'] }, { id: 'skl_kiem_anh_bo', t: { $gt: '' } }, { id: 'skl_kiem_anh_bo', t: 12345 }, { id: { toString: 1 } }, null, 7]) g.room.send(C.SKILL, bad as never);
+    await W(500);
+    const q2 = pos();
+    check('lệnh lướt rác bị bỏ qua (còn hồi chiêu), không di chuyển thêm', Math.hypot(q2.x - q1.x, q2.z - q1.z) < 0.5);
+    check('server vẫn sống sau lệnh lướt rác', await health());
+    // Hủy chiêu bằng lướt: bấm một đòn rồi lướt ngay, lặp lại: hồi chiêu vẫn giữ, không đánh thêm miễn phí → chỉ cần không crash và vị trí trong bản đồ.
+    await chat('/gm cd');
+    await chat('/gm spawn mon_soi_xam 3');
+    for (let i = 0; i < 6; i++) {
+      g.room.send(C.SKILL, { id: 'skl_kiem_khi_tram' });
+      g.room.send(C.SKILL, { id: 'skl_kiem_anh_bo' });
+      g.room.send(C.SKILL, { id: 'skl_phi_kiem' });
+      await W(120);
+    }
+    await W(600);
+    const q3 = pos();
+    check('hủy chiêu bằng lướt dồn dập: vị trí hợp lệ, server sống', Number.isFinite(q3.x) && q3.x > 0 && q3.z > 0 && (await health()));
+    // Lướt ra mép bản đồ không ra ngoài.
+    await chat('/gm tp 2 2');
+    await chat('/gm cd');
+    for (let i = 0; i < 4; i++) {
+      g.room.send(C.SKILL, { id: 'skl_luu_huong_bo' });
+      await W(500);
+    }
+    const q4 = pos();
+    check('lướt ở mép bản đồ không ra ngoài', q4.x >= 0 && q4.z >= 0 && q4.x <= 4096 && q4.z <= 4096, `${q4.x.toFixed(1)}, ${q4.z.toFixed(1)}`);
     await g.room.leave(true);
   }
 
@@ -925,7 +989,7 @@ async function testParamsChecks(): Promise<void> {
     room.onMessage('*', () => {});
     await W(500);
     const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
-    check('?at=thung_lung đưa tài khoản thử tới thung lũng', Math.hypot(me().x - 2048, me().z - 2455) < 3, `(${me().x.toFixed(0)}, ${me().z.toFixed(0)})`);
+    check('?at=thung_lung đưa tài khoản thử tới thung lũng', Math.hypot(me().x - 2048, me().z - 2400) < 3, `(${me().x.toFixed(0)}, ${me().z.toFixed(0)})`);
     room.send(C.CHAT, { m: '/gm spawn mon_soi_xam 4' });
     await W(900);
     room.send(C.CHAT, { m: '/gm tp 2048 2455' });

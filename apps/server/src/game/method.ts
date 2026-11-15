@@ -5,6 +5,7 @@ import {
   clampSkillLevel,
   CHARGE_MAX,
   MAX_SKILL_LEVEL,
+  migrateSkillKeys,
   resolveSkill,
   type MethodDef,
   type MethodMsg,
@@ -29,6 +30,9 @@ export interface MethodMeta {
 /** Làm sạch phần công pháp của meta khi đọc từ DB (dữ liệu hỏng/cũ: bỏ phần lạ). */
 export function sanitizeMethodMeta(meta: MethodMeta): void {
   if (typeof meta.method !== 'string' || !METHOD.has(meta.method)) delete meta.method;
+  // Chiêu đổi id (K-2): giữ cấp và biến thức theo id mới.
+  migrateSkillKeys(meta.skillLv);
+  migrateSkillKeys(meta.skillVar);
   const lv: Record<string, number> = {};
   if (meta.skillLv && typeof meta.skillLv === 'object') {
     for (const [id, n] of Object.entries(meta.skillLv)) {

@@ -3,11 +3,12 @@
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
+import { salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
 import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
+import { COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, type ZoneDef } from '@dtl/shared';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -33,11 +34,13 @@ uniqueIds('pose', POSES);
 for (const p of POSES) for (const m of validatePose(p)) err(m);
 const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
-for (const s of ALL_SKILLS) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
-const skillPoses = ALL_SKILLS.map((s) => s.pose);
+// Chiêu lướt (K-2) không có động tác riêng: dùng chung fx `dash`, hình lướt do client dựng.
+const POSED = ALL_SKILLS.filter((s) => s.kind !== 'dash');
+for (const s of POSED) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
+const skillPoses = POSED.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
 // Client chọn động tác theo fx của chiêu (FX của server chỉ mang loại hiệu ứng): fx phải riêng cho mỗi chiêu.
-const skillFx = ALL_SKILLS.map((s) => s.fx);
+const skillFx = POSED.map((s) => s.fx);
 if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
 for (const id of [POSE_FLY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 for (const [id, swap] of Object.entries(POSE_SWORD_SWAP)) {
@@ -97,6 +100,15 @@ for (const m of METHODS) {
   needStr(`method.${m.id}.desc`);
   needStr(`method.${m.id}.passive`);
   needStr(`method.${m.id}.role`);
+  const dash = SKILL.get(m.dash);
+  if (!dash || dash.method !== m.id || dash.kind !== 'dash') err(`method ${m.id}: chiêu lướt ${m.dash} phải thuộc công pháp và có kind dash`);
+}
+// Quy tắc thời gian/liên hoàn (K-2): hitAt trùng nhịp pose, combo, cường hóa, lướt.
+const SKILL_IDS = new Set(ALL_SKILLS.map((s) => s.id));
+for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined, SKILL_IDS)) err(m);
+for (const [from, to] of Object.entries(SKILL_ID_ALIASES)) {
+  if (SKILL.has(from)) err(`SKILL_ID_ALIASES: ${from} vẫn còn là chiêu, không thể là id cũ`);
+  if (!SKILL.has(to)) err(`SKILL_ID_ALIASES: ${from} → ${to} không phải chiêu`);
 }
 for (const s of METHOD_SKILLS) {
   if (!s.method || !METHOD.has(s.method)) err(`skill ${s.id}: công pháp không tồn tại ${s.method}`);
@@ -541,6 +553,67 @@ for (const lv of Object.values(LEVELS)) {
     if (!Number.isFinite(g)) err(`level ${lv.id}: spawn ${s.mon} ngoài bản đồ`);
   }
   for (const n of lv.nodes) needItem(n.item, `level ${lv.id}`);
+  checkZonesAndCamps(lv);
+}
+
+// Vùng và bãi quái (M-1): camp phải nằm trong vùng đúng cấp, không đè collider, không dưới nước sâu.
+function checkZonesAndCamps(lv: (typeof LEVELS)[string]) {
+  const MUSIC_ZONES = ['sect', 'wild', 'forest', 'lake', 'dungeon'];
+  const zones = lv.zones ?? [];
+  const camps = lv.camps ?? [];
+  if (!zones.length && !camps.length) return;
+  const where = `level ${lv.id}`;
+  uniqueIds('zone', zones);
+  uniqueIds('camp', camps);
+  const zoneById = new Map<string, ZoneDef>(zones.map((z) => [z.id, z]));
+  for (const z of zones) {
+    needStr(`zone.${z.id}`);
+    if (!/^#[0-9a-fA-F]{6}$/.test(z.color)) err(`zone ${z.id}: color phải dạng #rrggbb`);
+    if (!MUSIC_ZONES.includes(z.music)) err(`zone ${z.id}: music ${z.music} không có (${MUSIC_ZONES.join(', ')})`);
+    if (!(z.lvMin >= 1 && z.lvMin <= z.lvMax && z.lvMax <= 15)) err(`zone ${z.id}: khoảng cấp ${z.lvMin}–${z.lvMax} không hợp lệ`);
+    if (z.poly.length < 3 || polyArea(z.poly) < 1000) err(`zone ${z.id}: đa giác ranh phải ≥ 3 đỉnh, diện tích ≥ 1000 m²`);
+    for (const [x, zz] of z.poly) if (!(x >= PLAY_BOUNDS.x0 && x <= PLAY_BOUNDS.x1 && zz >= PLAY_BOUNDS.z0 && zz <= PLAY_BOUNDS.z1)) err(`zone ${z.id}: đỉnh (${x}, ${zz}) ngoài vùng chơi chính`);
+  }
+  for (const c of camps) {
+    const m = MONSTER.get(c.mon);
+    const zn = zoneById.get(c.zone);
+    if (!m) err(`${where}: camp ${c.id} quái không tồn tại ${c.mon}`);
+    else if (m.boss || m.elite) err(`${where}: camp ${c.id} chỉ dành cho quái thường (tinh anh/boss khai ở spawns)`);
+    if (!zn) {
+      err(`${where}: camp ${c.id} thuộc vùng không có ${c.zone}`);
+      continue;
+    }
+    if (!inPoly(zn.poly, c.x, c.z)) err(`${where}: camp ${c.id} nằm ngoài đa giác vùng ${c.zone}`);
+    if (c.levelMin < zn.lvMin || c.levelMax > zn.lvMax || c.levelMin > c.levelMax) err(`${where}: camp ${c.id} cấp ${c.levelMin}–${c.levelMax} lệch khoảng cấp vùng ${c.zone} (${zn.lvMin}–${zn.lvMax})`);
+    if (!(c.count >= 3 && c.count <= 4)) err(`${where}: camp ${c.id} count ${c.count} phải 3–4`);
+    if (!(c.radius >= 18 && c.radius <= 30)) err(`${where}: camp ${c.id} radius ${c.radius} phải 18–30 m`);
+    if (!(c.respawn > 0)) err(`${where}: camp ${c.id} thiếu respawn`);
+    if (c.ranged) {
+      const r = MONSTER.get(c.ranged);
+      if (!r?.ai?.caster) err(`${where}: camp ${c.id} ranged ${c.ranged} phải là quái có ai.caster`);
+    }
+    if (heightAt(c.x, c.z) < WATER_Y + 0.5) err(`${where}: camp ${c.id} nằm dưới nước`);
+    for (const col of COLLIDERS) if ((c.x - col.x) ** 2 + (c.z - col.z) ** 2 < (col.r + 1) ** 2) err(`${where}: camp ${c.id} đè collider (${col.x}, ${col.z})`);
+  }
+  // Tinh anh và boss khai ở spawns: tinh anh phải ở trong vùng hợp cấp, mỗi vùng 2–3 con.
+  const elitePerZone = new Map<string, number>();
+  for (const s of levelSpawns(lv)) {
+    const m = MONSTER.get(s.mon);
+    if (!m?.elite) continue;
+    const zn = zones.find((z) => inPoly(z.poly, s.x, s.z));
+    if (!zn) {
+      err(`${where}: tinh anh ${s.mon} ở (${s.x}, ${s.z}) không thuộc vùng nào`);
+      continue;
+    }
+    if (s.levelMin < zn.lvMin || s.levelMax > zn.lvMax) err(`${where}: tinh anh ${s.mon} cấp ${s.levelMin}–${s.levelMax} lệch vùng ${zn.id} (${zn.lvMin}–${zn.lvMax})`);
+    elitePerZone.set(zn.id, (elitePerZone.get(zn.id) ?? 0) + s.count);
+  }
+  for (const z of zones) {
+    const n = elitePerZone.get(z.id) ?? 0;
+    if (n < 2 || n > 3) err(`zone ${z.id}: ${n} tinh anh (cần 2–3)`);
+  }
+  const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
+  if (normal < 300 || normal > 380) err(`${where}: ${normal} quái thường theo camps, mục tiêu ~300–360`);
 }
 
 // ---- Pháp bảo phụ và đan (P3-8) ----

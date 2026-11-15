@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
 import { DUNGEON_EXIT, groundAt, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
-import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
+import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, swordModelOf, t } from '@dtl/content';
 import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
@@ -77,7 +77,7 @@ export interface WorldView {
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
-  const base = s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name);
+  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: swordModelOf(s.wp) };
   const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
   return s.sa ? { ...look, acc: s.sa } : look;
 }
@@ -302,6 +302,12 @@ const _sphere = new THREE.Sphere();
  */
 export const LOD0_MAX = 12;
 /**
+ * Quái chỉ dựng model trong 100 m quanh mình (xóa khi quá 125 m, chừa vùng đệm để không dựng/xóa liên tục ở rìa).
+ * Bãi quái dày (M-1: ~1 800 quái/km² vùng săn) nên bán kính 240 m cũ dựng cả trăm model xương không ai thấy qua sương.
+ */
+const MON_NEAR = 100;
+const MON_FAR = 125;
+/**
  * Số nhãn tên tối đa (gần camera nhất, trong khung nhìn); mình và mục tiêu luôn có. Mỗi nhãn là một sprite = một draw
  * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
  */
@@ -463,10 +469,12 @@ export class EntityManager {
       v.s = s;
       const look = lookOf(s);
       if (isLocal) this.localLook = look;
-      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set || look.acc !== v.look.acc;
+      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set || look.acc !== v.look.acc || look.w !== v.look.w;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
+        // `create` trước: nó khởi động việc nạp lười (asset nhân vật, kiếm riêng), rồi mới hỏi còn nạp không để biết có phải dựng lại.
+        const next = this.playerSkins.create(look);
         v.skinPending = this.playerSkins.pending(look);
-        v.swapModel(this.playerSkins.create(look), look);
+        v.swapModel(next, look);
       }
       if (v.lv !== s.lv) v.refreshLabel();
       if (isLocal) {
@@ -538,11 +546,12 @@ export class EntityManager {
       let v = this.monsters.get(id);
       const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
       if (!v) {
-        if (d2 > 240 * 240 || !MONSTER.has(s.t)) return;
+        const mdef = MONSTER.get(s.t);
+        if (!mdef || d2 > (mdef.boss ? 240 : MON_NEAR) ** 2) return;
         v = new MonVis(id, s, this.skins);
         this.monsters.set(id, v);
         this.group.add(v.model.root);
-      } else if (d2 > 280 * 280) {
+      } else if (d2 > (v.model.def && MONSTER.get(s.t)?.boss ? 280 : MON_FAR) ** 2) {
         this.group.remove(v.model.root);
         v.dispose();
         this.monsters.delete(id);

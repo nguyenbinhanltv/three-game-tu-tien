@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import type { LevelDef, NpcDef, QuestDef, QuestView } from '@dtl/shared';
-import { MS_DEAD } from '@dtl/shared';
+import { levelSpawns, MS_DEAD } from '@dtl/shared';
 import { NPCS, QUEST, t } from '@dtl/content';
 import { contentIconStyle } from '../ui/ContentIcon';
 
@@ -228,7 +228,7 @@ export function nearestGoalSpot(
     });
   }
   if (id) return { id };
-  const zones = goal.kind === 'mon' ? level?.spawns.filter((s) => s.mon === goal.mon) : level?.nodes.filter((s) => s.item === goal.item);
+  const zones = goal.kind === 'mon' ? (level ? levelSpawns(level) : []).filter((s) => s.mon === goal.mon) : level?.nodes.filter((s) => s.item === goal.item);
   let spot: { x: number; z: number } | null = null;
   best = Infinity;
   for (const s of zones ?? []) {

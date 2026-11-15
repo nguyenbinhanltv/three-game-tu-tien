@@ -1852,6 +1852,331 @@
         }
       }
     },
+    "prop_kiem_han_giao": {
+      "id": "prop_kiem_han_giao",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_kiem_han_giao.glb",
+      "file": "prop_kiem_han_giao.6f3c7cef27.glb",
+      "bytes": 458000,
+      "rawBytes": 510820,
+      "triangles": 2930,
+      "rawTriangles": 2930,
+      "lod0Cap": 3000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_kiem_han_giao_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_han_giao_color",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_han_giao_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2930
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.1463,
+          "height": 0.95,
+          "depth": 0.1413,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.1464,
+          "height": 0.95,
+          "depth": 0.1414,
+          "minY": 0
+        }
+      }
+    },
+    "prop_kiem_han_quang": {
+      "id": "prop_kiem_han_quang",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_kiem_han_quang.glb",
+      "file": "prop_kiem_han_quang.de4c5ce47b.glb",
+      "bytes": 369504,
+      "rawBytes": 429676,
+      "triangles": 2500,
+      "rawTriangles": 2962,
+      "lod0Cap": 2500,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_kiem_han_quang_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_han_quang_color",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_han_quang_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2500
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.1445,
+          "height": 0.95,
+          "depth": 0.2864,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.1445,
+          "height": 0.95,
+          "depth": 0.2864,
+          "minY": 0
+        }
+      }
+    },
+    "prop_kiem_thanh_phong": {
+      "id": "prop_kiem_thanh_phong",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_kiem_thanh_phong.glb",
+      "file": "prop_kiem_thanh_phong.50c23f8ddb.glb",
+      "bytes": 380912,
+      "rawBytes": 435996,
+      "triangles": 2500,
+      "rawTriangles": 2796,
+      "lod0Cap": 2500,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_kiem_thanh_phong_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_thanh_phong_color",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_thanh_phong_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2500
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.1343,
+          "height": 0.95,
+          "depth": 0.1224,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.1343,
+          "height": 0.95,
+          "depth": 0.1223,
+          "minY": 0
+        }
+      }
+    },
+    "prop_kiem_thiet": {
+      "id": "prop_kiem_thiet",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_kiem_thiet.glb",
+      "file": "prop_kiem_thiet.055c61639c.glb",
+      "bytes": 405176,
+      "rawBytes": 460584,
+      "triangles": 2500,
+      "rawTriangles": 2816,
+      "lod0Cap": 2500,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_kiem_thiet_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_thiet_color",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_thiet_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2500
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.1463,
+          "height": 0.95,
+          "depth": 0.1505,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.1464,
+          "height": 0.95,
+          "depth": 0.1505,
+          "minY": 0
+        }
+      }
+    },
+    "prop_kiem_tram_ta": {
+      "id": "prop_kiem_tram_ta",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_kiem_tram_ta.glb",
+      "file": "prop_kiem_tram_ta.a9d7b929ba.glb",
+      "bytes": 464448,
+      "rawBytes": 521268,
+      "triangles": 2902,
+      "rawTriangles": 2902,
+      "lod0Cap": 3000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_kiem_tram_ta_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_tram_ta_color",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_tram_ta_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2902
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.1696,
+          "height": 0.95,
+          "depth": 0.1724,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.1695,
+          "height": 0.95,
+          "depth": 0.1723,
+          "minY": 0
+        }
+      }
+    },
     "prop_lau": {
       "id": "prop_lau",
       "class": "prop",

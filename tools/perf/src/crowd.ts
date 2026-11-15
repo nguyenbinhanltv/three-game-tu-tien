@@ -556,7 +556,7 @@ async function openClient(browser: Browser, renderer: 'webgpu' | 'webgl2', prese
     if (m.type() === 'error') errors.push(m.text().slice(0, 300));
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)}, ${PORT});` });
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&gputime=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&gputime=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${process.env.CROWD_QUERY ?? ''}`;
   await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
   await waitInGame(page);
   const info = await page.evaluate(async () => {

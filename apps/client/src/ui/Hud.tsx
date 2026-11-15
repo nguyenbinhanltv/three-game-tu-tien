@@ -347,6 +347,7 @@ function SkillBar() {
   const wantFly = useUI((s) => s.wantFly);
   const mp = useUI((s) => s.mp);
   const queued = useUI((s) => s.queuedSkill);
+  const empowered = useUI((s) => s.empowered);
   const px = useUI((s) => s.x);
   const py = useUI((s) => s.y);
   const pz = useUI((s) => s.z);
@@ -412,7 +413,7 @@ function SkillBar() {
             >
               <button
                 type="button"
-                className={'skill' + (i === 0 && auto ? ' auto' : '') + (i === queued ? ' queued' : '')}
+                className={'skill' + (i === 0 && auto ? ' auto' : '') + (i === queued ? ' queued' : '') + ((empowered[sk.id] ?? 0) > Date.now() ? ' empowered' : '')}
                 data-state={state}
                 data-method={sk.method ? '1' : undefined}
                 aria-label={`${t(`skill.${sk.id}.name`)} (${i + 1})`}
