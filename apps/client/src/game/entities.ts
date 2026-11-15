@@ -339,6 +339,8 @@ export class EntityManager {
     scene.add(this.group);
     this.skins.preload();
     this.playerSkins.preload();
+    // Bí cảnh có boss model xương: nạp ngay khi vào room (trước đó chỉ nạp khi boss hiện ra giữa trận).
+    if (levelId === 'kiem_trung') this.skins.preloadLazy();
     this.hasNpcs = levelId === 'van_lam';
     if (this.hasNpcs) {
       this.npcSkins.preload();
@@ -769,7 +771,7 @@ export class EntityManager {
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
     // Chỉ khựng khi đòn liên quan tới mình, để boss bị nhiều người đánh không đứng hình liên tục.
     const noStop = src !== this.mySid && dst !== this.mySid;
-    vd.model.hitReact({ crit, heavy, delay, noStop, dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
+    vd.model.hitReact({ crit, heavy, delay, noStop, noFlash: this.tagsHidden && this.monsters.has(dst), dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
     if (src && src === this.mySid && vs) vs.model.hit.hitStop(hitStopFor(crit, heavy), delay);
   }
 

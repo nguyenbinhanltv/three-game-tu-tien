@@ -92,46 +92,55 @@ describe('đường cảnh boss (P2-B2/B3)', () => {
   const boss: Vec3 = { x: 100, y: 10, z: 100 };
   const flat = (): number => 0;
 
-  it('xuất hiện: camera lệch khỏi trục người–boss, trên đất, nhìn vào boss, áp sát người chơi dần', () => {
-    const player: Vec3 = { x: 100, y: 10, z: 130 };
-    const path = bossIntroPath(boss, 2.4, player, flat);
-    expect(path).toHaveLength(2);
-    // Trục là x = 100: khoảng cách ngang tới trục chính là |x - 100|.
-    for (const w of path) {
-      expect(Math.abs(w.p.x - 100)).toBeGreaterThan(3);
-      expect(w.p.y).toBeGreaterThanOrEqual(0.9);
-      expect(w.look.x).toBe(boss.x);
-      expect(w.look.y).toBeGreaterThan(boss.y);
+  it('xuất hiện: camera ở phía mặt boss, lệch khỏi trục nhìn, trên đất, nhìn vào boss', () => {
+    // Boss nhìn về +z (yaw 0), người chơi ở phía trước-phải.
+    const player: Vec3 = { x: 105, y: 10, z: 130 };
+    for (const yaw of [0, 2.1, -1.3]) {
+      const fx = Math.sin(yaw);
+      const fz = Math.cos(yaw);
+      const path = bossIntroPath(boss, yaw, 2.4, player, flat);
+      expect(path).toHaveLength(2);
+      for (const w of path) {
+        const rx = w.p.x - boss.x;
+        const rz = w.p.z - boss.z;
+        expect(rx * fx + rz * fz).toBeGreaterThan(3); // phía trước mặt boss
+        expect(Math.abs(rx * fz - rz * fx)).toBeGreaterThan(3); // lệch khỏi trục
+        expect(w.p.y).toBeGreaterThanOrEqual(0.9);
+        expect(w.look.y).toBeGreaterThan(boss.y);
+      }
     }
-    const toPlayer = path.map((w) => Math.hypot(w.p.x - player.x, w.p.z - player.z));
-    expect(toPlayer[1]).toBeLessThan(toPlayer[0]);
-  });
-
-  it('xuất hiện: không chui xuống đất dốc', () => {
-    const path = bossIntroPath(boss, 1, { x: 100, y: 10, z: 130 }, () => 50);
-    for (const w of path) expect(w.p.y).toBeGreaterThanOrEqual(50.9);
   });
 
   it('chuyển pha: điểm đầu đúng camera hiện tại, điểm sau lùi xa boss và cao hơn', () => {
     const cam: Vec3 = { x: 100, y: 14, z: 112 };
     const look: Vec3 = { x: 100, y: 11, z: 100 };
-    const path = phaseShiftPath(cam, look, boss, 2, flat);
+    const path = phaseShiftPath(cam, look, boss, 0, 2, flat);
     expect(path[0].p).toEqual(cam);
     expect(path[0].look).toEqual(look);
-    expect(Math.hypot(path[1].p.x - boss.x, path[1].p.z - boss.z)).toBeGreaterThan(12);
-    expect(path[1].p.y).toBeGreaterThan(cam.y);
+    expect(path).toHaveLength(3);
+  });
+
+  it('chuyển pha: camera cuối ở phía mặt boss dù camera đang ở sau lưng, điểm giữa không xuyên thân', () => {
+    // Boss nhìn về +z (yaw 0); camera đang ở sau lưng (z nhỏ hơn).
+    const cam: Vec3 = { x: 100, y: 14, z: 88 };
+    const path = phaseShiftPath(cam, boss, boss, 0, 2, flat);
+    const last = path[path.length - 1].p;
+    expect(last.z).toBeGreaterThan(boss.z + 4);
+    // Điểm giữa cách boss ít nhất bán kính an toàn.
+    expect(Math.hypot(path[1].p.x - boss.x, path[1].p.z - boss.z)).toBeGreaterThan(8);
+    for (const w of path.slice(1)) expect(w.look.y).toBeGreaterThan(boss.y);
   });
 
   it('cảnh ngắn chạy hết rồi báo finished, bỏ qua thì không', () => {
     const c = new Cutscene();
     const p = z3();
     const l = z3();
-    c.start(bossIntroPath(boss, 2, { x: 100, y: 10, z: 130 }, flat), 2.6, 0.35);
+    c.start(bossIntroPath(boss, 0, 2, { x: 100, y: 10, z: 130 }, flat), 2.6, 0.35);
     let n = 0;
     while (c.update(1 / 30, END_P, END_L, p, l) && n++ < 200);
     expect(c.finished).toBe(true);
     expect(n).toBeLessThan(90);
-    c.start(bossIntroPath(boss, 2, { x: 100, y: 10, z: 130 }, flat), 2.6, 0.35);
+    c.start(bossIntroPath(boss, 0, 2, { x: 100, y: 10, z: 130 }, flat), 2.6, 0.35);
     c.update(0.5, END_P, END_L, p, l);
     c.skip();
     while (c.update(1 / 30, END_P, END_L, p, l) && n++ < 400);

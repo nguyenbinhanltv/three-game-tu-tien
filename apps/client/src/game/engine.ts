@@ -1335,9 +1335,11 @@ export class Game {
         if (e.chestOf(src, _v)) v.burst(_v, 0xffd36b, 3.2, 0.55);
         break;
       case 'phase': {
-        if (e.chestOf(src, _v)) v.burst(_v, 0xe8f4ff, 2.2, 0.5);
         const mt = this.view.monsters.get(src)?.t;
-        if (mt && !this.phaseCine(src, `mon.${mt}.say.${m.d ?? 1}`)) this.bossSay(src, `mon.${mt}.say.${m.d ?? 1}`);
+        const cined = !!mt && this.phaseCine(src, `mon.${mt}.say.${m.d ?? 1}`);
+        if (mt && !cined) this.bossSay(src, `mon.${mt}.say.${m.d ?? 1}`);
+        // Trong cảnh camera sát boss: chớp nhỏ và mờ để vẫn thấy hình.
+        if (e.chestOf(src, _v)) v.burst(_v, 0xe8f4ff, cined ? 0.9 : 2.2, cined ? 0.3 : 0.5);
         break;
       }
       case 'bfall': {
@@ -2037,14 +2039,13 @@ export class Game {
       this.bossIntroSeen.add(id);
       if (!mine) return;
       const model = this.ents.monsters.get(id)?.model;
-      const path = bossIntroPath({ x: m.x, y: m.y, z: m.z }, def.scale, { x: rp.x, y: rp.y, z: rp.z }, groundAt);
+      const path = bossIntroPath({ x: m.x, y: m.y, z: m.z }, m.yaw, def.scale, { x: rp.x, y: rp.y, z: rp.z }, groundAt);
       this.beginBossCine('boss', path, BOSS_CUTSCENE, { name: monsterName(m.t), title: t(`mon.${m.t}.title`), text: t(key) });
       this.cineFocus = { id, rise: 1.15 * def.scale };
       // Gầm: boss làm động tác lớn (nếu có), đất rung nhẹ, chớp mờ ở ngực.
       model?.bossMove?.('slam', 0.55);
       this.shake.kick(0.45);
-      this.post?.flash(0.12);
-      if (this.ents.chestOf(id, _v)) this.vfx.burst(_v, 0xffd9a0, 2.8, 0.5);
+      if (this.ents.chestOf(id, _v)) this.vfx.burst(_v, 0xffd9a0, 1.0, 0.3);
     });
   }
 
@@ -2061,6 +2062,7 @@ export class Game {
       { x: cam.position.x, y: cam.position.y, z: cam.position.z },
       { x: look.x, y: look.y, z: look.z },
       { x: m.x, y: m.y, z: m.z },
+      m.yaw,
       def.scale,
       groundAt,
     );

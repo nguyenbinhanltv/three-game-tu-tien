@@ -41,6 +41,8 @@ export interface HitOpts {
   delay?: number;
   /** Bỏ khựng (vẫn chớp/giật lùi/rung), dùng cho đòn không liên quan tới mình. */
   noStop?: boolean;
+  /** Bỏ chớp trắng (cảnh boss: camera sát thân nên chớp che hết hình); vẫn giật lùi/rung. */
+  noFlash?: boolean;
 }
 
 export class HitReact {
@@ -119,7 +121,7 @@ export class HitReact {
     if (o.crit && !this.crit && this.flashing) for (const m of this.meshes) m.material = FLASH_MAT_CRIT;
     this.crit = !!o.crit || (this.crit && this.flashing);
     if (!o.noStop) this.stopT = Math.min(HIT_STOP_MAX, Math.max(this.stopT, stop));
-    this.flashT = Math.max(this.flashT, Math.max(0.06, stop));
+    if (!o.noFlash) this.flashT = Math.max(this.flashT, Math.max(0.06, stop));
     this.shakeT = stop + 0.1;
     const f = this.feel;
     this.shakeAmp = ((o.crit ? 0.09 : 0.05) + (o.heavy ? f.heavyShake : 0)) * f.shake;

@@ -178,42 +178,48 @@ export const PHASE_CUTSCENE = { dur: 1.9, out: 0.3 };
 export const BOSS_CUTSCENE_RANGE = 42;
 
 /**
- * Đường camera đóng khung boss. Boss đang lao tới người chơi nên mỗi điểm đặt lệch hẳn sang một bên của trục
- * người–boss (boss chạy dọc trục nên không xuyên qua camera): đầu cảnh thấp và rộng ở khoảng giữa, nhìn lên thân
- * boss; rồi áp sát về phía người chơi và hòa vào camera thường. Điểm nhìn lúc đầu là boss (engine nhìn theo vị trí
- * boss hiện tại trong nửa đầu cảnh). `scale` là cỡ boss (monsters.json), `groundAt` để không chui xuống đất.
+ * Đường camera đóng khung boss, đặt ở phía MẶT boss (hướng `yaw` boss đang nhìn, lệch ~40° về phía người chơi để có
+ * khối). Boss đang lao tới theo hướng nhìn nên camera lệch hẳn khỏi trục đó (không bị boss chạy xuyên qua): đầu cảnh
+ * thấp và rộng, nhìn lên thân boss; rồi áp sát nhẹ và hòa vào camera thường. `scale` là cỡ boss (monsters.json),
+ * `groundAt` để không chui xuống đất.
  */
-export function bossIntroPath(boss: Vec3, scale: number, player: Vec3, groundAt: (x: number, z: number) => number): Waypoint[] {
-  const dx = boss.x - player.x;
-  const dz = boss.z - player.z;
-  const d = Math.hypot(dx, dz) || 1;
-  const ux = dx / d;
-  const uz = dz / d;
-  // Vuông góc với trục người → boss.
-  const px = -uz;
-  const pz = ux;
-  const at = (along: number, side: number, rise: number, look: number): Waypoint => {
-    const x = player.x + ux * d * along + px * side;
-    const z = player.z + uz * d * along + pz * side;
-    const y = Math.max(groundAt(x, z) + 0.9, player.y + rise);
-    return { p: v(x, y, z), look: v(boss.x, boss.y + look, boss.z) };
+export function bossIntroPath(boss: Vec3, yaw: number, scale: number, player: Vec3, groundAt: (x: number, z: number) => number): Waypoint[] {
+  // Người chơi nằm bên nào của trục nhìn (dấu của tích có hướng) thì camera đứng bên đó.
+  const fx = Math.sin(yaw);
+  const fz = Math.cos(yaw);
+  const side = fz * (player.x - boss.x) - fx * (player.z - boss.z) >= 0 ? 1 : -1;
+  const at = (turn: number, r: number, rise: number, look: number): Waypoint => {
+    const a = yaw + side * turn;
+    const x = boss.x + Math.sin(a) * r;
+    const z = boss.z + Math.cos(a) * r;
+    return { p: v(x, Math.max(groundAt(x, z) + 0.9, boss.y + rise), z), look: v(boss.x, boss.y + look, boss.z) };
   };
-  return [at(0.5, 5 + 3.2 * scale, 0.3, 1.0 * scale), at(0.2, 3.5 + 1.6 * scale, 1.7, 1.3 * scale)];
+  return [at(0.7, 6 + 3.4 * scale, 0.35 * scale, 1.0 * scale), at(0.65, 5 + 2.6 * scale, 0.9 * scale + 0.4, 1.3 * scale)];
 }
 
 /**
- * Chuyển pha: từ camera hiện tại lùi ra sau lưng người chơi (xa boss) và nâng nhẹ, mắt dời dần về ngực boss,
- * rồi trở lại camera thường.
+ * Chuyển pha: từ camera hiện tại vòng quanh boss sang phía MẶT boss (hướng `yaw` boss đang nhìn, lệch ~25° về phía
+ * camera cho có khối), nâng nhẹ, mắt dõi ngực boss, rồi trả về camera thường. Điểm giữa nằm trên cung ngắn nhất
+ * quanh boss nên camera không xuyên qua thân khi đang ở sau lưng.
  */
-export function phaseShiftPath(cam: Vec3, camLook: Vec3, boss: Vec3, scale: number, groundAt: (x: number, z: number) => number): Waypoint[] {
+export function phaseShiftPath(cam: Vec3, camLook: Vec3, boss: Vec3, yaw: number, scale: number, groundAt: (x: number, z: number) => number): Waypoint[] {
+  const TAU = Math.PI * 2;
+  const wrap = (a: number): number => ((((a + Math.PI) % TAU) + TAU) % TAU) - Math.PI;
   const dx = cam.x - boss.x;
   const dz = cam.z - boss.z;
-  const d = Math.hypot(dx, dz) || 1;
-  const back = 3 + scale;
-  const x = cam.x + (dx / d) * back;
-  const z = cam.z + (dz / d) * back;
-  const y = Math.max(groundAt(x, z) + 1.2, cam.y + 1.4);
+  const camAng = Math.atan2(dx, dz);
+  const camR = Math.hypot(dx, dz) || 1;
+  const side = wrap(camAng - yaw) >= 0 ? 1 : -1;
+  const frontAng = yaw + side * 0.44;
+  const frontR = 6 + 3 * scale;
+  const midAng = frontAng + wrap(camAng - frontAng) * 0.5;
+  const midR = Math.max(5 + 2 * scale, (camR + frontR) * 0.5);
   const look = v(boss.x, boss.y + 1.2 * scale, boss.z);
+  const at = (ang: number, r: number, rise: number): Waypoint => {
+    const x = boss.x + Math.sin(ang) * r;
+    const z = boss.z + Math.cos(ang) * r;
+    return { p: v(x, Math.max(groundAt(x, z) + 1.2, boss.y + rise), z), look };
+  };
   // Điểm đầu đúng camera hiện tại: không có mối nối.
-  return [{ p: v(cam.x, cam.y, cam.z), look: camLook }, { p: v(x, y, z), look }];
+  return [{ p: v(cam.x, cam.y, cam.z), look: camLook }, at(midAng, midR, 1.1 * scale + 0.8), at(frontAng, frontR, 1.0 * scale + 1.2)];
 }
