@@ -1,4 +1,4 @@
-import { ContentIcon } from './ContentIcon';
+import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { artifactLevelMods, AIRBORNE_HEIGHT, BAR_SIZE, C, CHARGE_MAX, groundAt, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, type SkillDef, WORLD_SIZE } from '@dtl/shared';
@@ -386,31 +386,31 @@ function SkillBar() {
       <BuffRow />
       <div className="action-row">
         <Button size="s" pressed={(flags & PF_MEDITATING) !== 0} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} title={t('ui.help.meditate_v')}>
-          🧘 <span>{t('ui.meditate')}</span> <kbd>Z</kbd>
+          <UiIcon id="hud_thien" fallback="🧘" className="inline" /> <span>{t('ui.meditate')}</span> <kbd>Z</kbd>
         </Button>
         <Button size="s" pressed={wantFly || (flags & PF_FLYING) !== 0} onClick={(e) => { Game.current?.toggleFly(); blurAfterPointer(e); }} title={t('ui.help.fly_v')}>
-          🗡️ <span>{t('ui.fly')}</span> <kbd>F</kbd>
+          <UiIcon id="hud_ngu_kiem" fallback="🗡️" className="inline" /> <span>{t('ui.fly')}</span> <kbd>F</kbd>
         </Button>
         <Button size="s" data-bag onClick={(e) => { togglePanel('bag'); blurAfterPointer(e); }}>
-          🎒 <span>{t('ui.bag')}</span> <kbd>B</kbd>
+          <UiIcon id="hud_tui" fallback="🎒" className="inline" /> <span>{t('ui.bag')}</span> <kbd>B</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
-          👤 <span>{t('ui.char')}</span> <kbd>C</kbd>
+          <UiIcon id="hud_nhan_vat" fallback="👤" className="inline" /> <span>{t('ui.char')}</span> <kbd>C</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} title={t('ui.method.title')}>
-          ☯️ <span>{t('ui.method.key')}</span> <kbd>V</kbd>
+          <UiIcon id="hud_cong_phap" fallback="☯️" className="inline" /> <span>{t('ui.method.key')}</span> <kbd>V</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('party'); blurAfterPointer(e); }} title={t('ui.party.title')}>
-          👥 <span>{t('ui.party.key')}</span> <kbd>P</kbd>
+          <UiIcon id="hud_to_doi" fallback="👥" className="inline" /> <span>{t('ui.party.key')}</span> <kbd>P</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }}>
-          📜 <span>{t('ui.quests')}</span> <kbd>L</kbd>
+          <UiIcon id="hud_nhiem_vu" fallback="📜" className="inline" /> <span>{t('ui.quests')}</span> <kbd>L</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('help'); blurAfterPointer(e); }} title={t('ui.help')}>
-          ❔ <kbd>H</kbd>
+          <UiIcon id="hud_tro_giup" fallback="❔" className="inline" /> <kbd>H</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('settings'); blurAfterPointer(e); }} title={`${t('ui.settings')} (O)`}>
-          ⚙️ <kbd>O</kbd>
+          <UiIcon id="hud_cai_dat" fallback="⚙️" className="inline" /> <kbd>O</kbd>
         </Button>
       </div>
     </div>
@@ -693,7 +693,7 @@ function ArtifactSlot() {
   );
 }
 
-const BUFF_ICON: Record<string, string> = { atk: 'itm_manh_luc_dan', def: 'itm_kim_cuong_dan', crit: 'itm_bao_huyet_dan' };
+const BUFF_ICON: Record<string, string> = { atk: 'buff_atk', def: 'buff_def', crit: 'buff_crit' };
 
 /** Hàng đan tăng sức đang có hiệu lực (P3-8), kèm thời gian còn lại. */
 function BuffRow() {
@@ -709,7 +709,7 @@ function BuffRow() {
         return (
           <Tooltip key={kind} content={<TipCard title={t('ui.buff.title')} lines={[{ text: `${t('ui.pill.buff.' + kind)} +${Math.round(mag * 100)}%`, tone: 'good' }, { text: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, tone: 'dim' }]} />}>
             <span className="buff-chip">
-              <ContentIcon def={ITEM.get(BUFF_ICON[kind])} />
+              <UiIcon id={BUFF_ICON[kind] ?? 'buff_atk'} fallback={ITEM.get(BUFF_ICON[kind])?.iconFallback ?? '✦'} />
               <em>{left >= 60 ? t('ui.buff.min', { n: Math.ceil(left / 60) }) : t('ui.buff.sec', { n: left })}</em>
             </span>
           </Tooltip>

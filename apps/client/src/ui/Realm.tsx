@@ -18,6 +18,7 @@ import {
 } from '@dtl/shared';
 import { itemName, ROOT, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
+import { UiIcon } from './ContentIcon';
 import { Button, Divider } from './kit';
 import { set, useUI } from './store';
 
@@ -48,7 +49,7 @@ export function RootCard({ root }: { root: string }) {
   return (
     <div className="k-card root-card" data-root={root}>
       <span className="root-glyph" aria-hidden="true">
-        {t(`elem.${root}`)}
+        <UiIcon id={`root_${root}`} fallback={t(`elem.${root}`)} />
       </span>
       <div>
         <div className="root-name">
@@ -124,7 +125,7 @@ export function RootPicker({ value, onChange }: { value: RootId | null; onChange
       <div className="root-row">
         {ROOT_IDS.map((id) => (
           <button key={id} type="button" className={'root-opt' + (value === id ? ' sel' : '')} data-root={id} title={t(`root.${id}.desc`)} onClick={() => onChange(id)}>
-            {t(`elem.${id}`)}
+            <UiIcon id={`root_${id}`} fallback={t(`elem.${id}`)} className="inline" /> {t(`elem.${id}`)}
           </button>
         ))}
         <button type="button" className={'root-opt rnd' + (value === null ? ' sel' : '')} onClick={() => onChange(null)}>
@@ -146,7 +147,7 @@ export function RootTab({ npcId }: { npcId: string }) {
     <div className="shop-list">
       <Divider label={t('ui.root.change')} />
       <div className="k-dim">
-        {t('ui.root.change_desc', { n: cost })} · 💠 {char.gold}
+        {t('ui.root.change_desc', { n: cost })} · <UiIcon id="cur_linh_thach" fallback="💠" className="inline" /> {char.gold}
       </div>
       {ROOT_IDS.map((id) => {
         const def = ROOT.get(id)!;
@@ -154,7 +155,7 @@ export function RootTab({ npcId }: { npcId: string }) {
         return (
           <div key={id} className="k-card shop-row" data-root={id}>
             <span className="root-glyph" aria-hidden="true">
-              {t(`elem.${def.elem}`)}
+              <UiIcon id={`root_${id}`} fallback={t(`elem.${def.elem}`)} />
             </span>
             <div className="shop-info">
               <div className="item-name">{t(`root.${id}.name`)}</div>
