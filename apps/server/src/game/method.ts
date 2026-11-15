@@ -110,6 +110,8 @@ export class MethodRt {
   /** Gửi lại cho client khi đổi (tối đa ~4 lần/giây). */
   dirty = true;
   sentAt = 0;
+  /** Đang tung chiêu tối thượng: đòn của nó không nạp lại vòng sạc. */
+  lockCharge = false;
 
   reset(): void {
     this.stacks = 0;
@@ -121,8 +123,9 @@ export class MethodRt {
 
   setGuard(now: number, reduce: number, sec: number): void {
     const until = now + sec * 1000;
-    if (now < this.guardUntil && this.guardReduce >= reduce && this.guardUntil >= until) return;
-    if (now >= this.guardUntil || reduce >= this.guardReduce) this.guardReduce = reduce;
+    // Lớp yếu không kéo dài lớp mạnh đang chạy.
+    if (now < this.guardUntil && reduce < this.guardReduce) return;
+    this.guardReduce = reduce;
     this.guardUntil = Math.max(this.guardUntil, until);
     this.dirty = true;
   }

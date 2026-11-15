@@ -949,7 +949,7 @@ export class GameSim {
   private monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] {
     const out: { m: MonEnt; d: number }[] = [];
     for (const o of this.monsters) {
-      if (o === except || o.state === MS_DEAD) continue;
+      if (o === except || o.state === MS_DEAD || o.owner) continue;
       const d = (o.s.x - x) ** 2 + (o.s.z - z) ** 2;
       if (d <= r * r) out.push({ m: o, d });
     }
@@ -985,6 +985,7 @@ export class GameSim {
     if (rs.cd > 0) p.cds.set(skill.id, this.now + rs.cd * 1000);
     if (skill.ult) {
       p.mth.charge = 0;
+      p.mth.lockCharge = true;
       p.mth.dirty = true;
     }
     p.lastCombatAt = this.now;
@@ -1079,8 +1080,6 @@ export class GameSim {
         this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, d: sec, ...tag });
         for (const o of this.monstersNear(p.move.x, p.move.z, r)) {
           o.taunt = { sid: p.sid, until: this.now + sec * 1000 * (o.def.boss ? TAUNT_BOSS_MUL : 1) };
-          // Giữ phần tối thiểu để được tính công hạ quái; không nhân thù hận lên mức vượt người đánh thật.
-          o.threat.set(p.sid, Math.max(o.threat.get(p.sid) ?? 0, o.s.mhp * 0.05));
           this.aggroMonster(o, p);
           this.hitMonster(p, o, rs.power * mul);
         }
@@ -1124,6 +1123,10 @@ export class GameSim {
         }
         break;
       }
+    }
+    if (skill.ult) {
+      p.mth.lockCharge = false;
+      p.mth.charge = 0;
     }
     this.sendCd(p);
   }
@@ -1184,10 +1187,14 @@ export class GameSim {
     const stunned = this.now < mon.stunUntil;
     const heavy = isHeavyHit(power);
     // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
+    // Đòn không có hiệu lực (quái đã chết, đang miễn sát thương, bóng tâm ma của người khác) không cho kiếm ý/sạc.
+    const lands = mon.state !== MS_DEAD && !(mon.owner && mon.owner !== p.sid) && this.now >= mon.evadeUntil;
     this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy);
+    if (!lands) return;
     const pas = passiveOf(p.char.meta);
     if (pas?.kind === 'kiem_y') this.addStack(p, pas.max ?? 5, pas.decay ?? 10);
-    this.gainCharge(p, chargeFromDealt(dmg, p.char.atk));
+    // Chiêu tối thượng đang ra không tự nạp lại vòng sạc của chính nó.
+    if (!p.mth.lockCharge) this.gainCharge(p, chargeFromDealt(dmg, p.char.atk));
   }
 
   /** Chiêu ngắt trúng boss: phá chú nếu đúng cửa sổ. Mục tiêu, tầm, GCD, hồi chiêu đã kiểm ở onSkill. */
@@ -2272,7 +2279,7 @@ export class GameSim {
     const to = (msg as { to?: unknown }).to;
     if (healMul !== undefined && typeof to === 'string' && to !== p.sid) {
       const o = this.players.get(to);
-      if (o && !this.isDead(o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= POTION_ALLY_RANGE) who = o;
+      if (o && !this.isDead(o) && !o.trib && !o.trial && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= POTION_ALLY_RANGE) who = o;
     }
     const wc = who.char;
     if (def.use.hpPct) {
@@ -2281,7 +2288,8 @@ export class GameSim {
       this.host.broadcast(S.DMG, { dst: who.sid, n, heal: true } satisfies DmgMsg);
     }
     if (def.use.mpPct) wc.mp = Math.min(wc.mmp, wc.mp + wc.mmp * def.use.mpPct * (1 + (healMul ?? 0)));
-    if (def.use.xp) this.giveXp(who, def.use.xp);
+    // Tu vi chỉ cho chính người dùng (không chuyển tu vi qua đan dược).
+    if (def.use.xp) this.giveXp(p, def.use.xp);
     if (who !== p) this.fx({ t: 'potion', src: who.sid });
     this.fx({ t: 'potion', src: p.sid });
   }
@@ -2490,7 +2498,7 @@ export class GameSim {
   /** Chọn lần đầu (Ngưng Khí tầng 5 trở lên, ở đâu cũng được) hoặc đổi (phải ở chỗ Lạc Vân chân nhân, tốn linh thạch). */
   onMethod(p: PlayerEnt, msg: unknown): void {
     const m = msg as { method?: unknown; r?: unknown } | null;
-    if (!m || typeof m.method !== 'string' || this.isDead(p)) return;
+    if (!m || typeof m.method !== 'string' || this.isDead(p) || p.casting) return;
     const def = METHOD.get(m.method);
     if (!def) return;
     const c = p.char;
@@ -2555,13 +2563,14 @@ export class GameSim {
   /** Chọn biến thức A/B (từ cấp 3), đổi miễn phí khi không giao chiến. */
   onSkillVar(p: PlayerEnt, msg: unknown): void {
     const m = msg as { skill?: unknown; v?: unknown } | null;
-    if (!m || this.isDead(p) || (m.v !== 'a' && m.v !== 'b')) return;
+    if (!m || this.isDead(p) || p.casting || (m.v !== 'a' && m.v !== 'b')) return;
     const sk = this.ownedSkill(p, m.skill);
     const vars = sk ? VARIANTS[sk.id] : undefined;
     if (!sk || !vars) return this.warn(p, 'sys.skill_locked_up');
     const c = p.char;
     if (!variantUnlocked(skillLevelOf(c.meta, sk.id))) return this.warn(p, 'sys.variant_low');
     if (this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000) return this.warn(p, 'sys.variant_combat');
+    if (c.meta.skillVar?.[sk.id] === m.v) return;
     c.meta.skillVar ??= {};
     c.meta.skillVar[sk.id] = m.v;
     c.save();

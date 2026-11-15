@@ -393,3 +393,54 @@ describe('đồng bộ', () => {
     expect(MS_DEAD).toBe(4);
   });
 });
+
+describe('soát netcode: lỗ hổng đã vá', () => {
+  it('chiêu tối thượng đánh nhiều quái không tự nạp lại vòng sạc', () => {
+    const { sim, p, mon, fresh } = setup(10);
+    sim.onMethod(p, { method: 'lac_kiem_quyet' });
+    const ms = Array.from({ length: 8 }, (_, i) => mon(X + 3 + i * 0.5, Z));
+    p.mth.charge = CHARGE_MAX;
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_van_kiem_quy_tong', t: ms[0].id });
+    expect(p.mth.charge).toBe(0);
+    expect(p.mth.lockCharge).toBe(false);
+  });
+  it('đánh quái đang miễn sát thương không cho kiếm ý hay sạc', () => {
+    const { sim, p, mon, fresh } = setup(10);
+    sim.onMethod(p, { method: 'lac_kiem_quyet' });
+    const m = mon();
+    m.evadeUntil = sim.now + 60_000;
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_phi_kiem', t: m.id });
+    expect(p.mth.stacks).toBe(0);
+    expect(p.mth.charge).toBe(0);
+  });
+  it('khiêu khích bỏ qua bóng tâm ma của người khác', () => {
+    const { sim, p, mon, fresh } = setup(10);
+    sim.onMethod(p, { method: 'bat_dong_kim_than' });
+    const shadow = mon();
+    shadow.owner = 'someone-else';
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_tran_son_an' });
+    expect(shadow.taunt).toBeUndefined();
+  });
+  it('đổi biến thức/công pháp khi đang niệm bị từ chối; chọn lại cùng biến thức không ghi lại', () => {
+    const { sim, p, mon, fresh } = setup(10);
+    const m = mon();
+    p.char.meta.skillLv = { skl_loi_dinh_nhat_kiem: 3 };
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_loi_dinh_nhat_kiem', t: m.id });
+    expect(p.casting).not.toBeNull();
+    p.lastCombatAt = 0;
+    sim.onSkillVar(p, { skill: 'skl_loi_dinh_nhat_kiem', v: 'b' });
+    expect(p.char.meta.skillVar?.skl_loi_dinh_nhat_kiem).toBeUndefined();
+  });
+  it('lớp giáp yếu không kéo dài lớp mạnh', () => {
+    const { p, sim } = setup(10);
+    p.mth.setGuard(sim.now, 0.6, 1);
+    const until = p.mth.guardUntil;
+    p.mth.setGuard(sim.now, 0.25, 3);
+    expect(p.mth.guardUntil).toBe(until);
+    expect(p.mth.guardReduce).toBe(0.6);
+  });
+});
