@@ -1,0 +1,105 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_kiem_khoi",
+  "type": "mon",
+  "budgetClass": "boss",
+  "itemId": null,
+  "status": "in_game",
+  "budget": {
+    "faceLimit": 20000,
+    "texture": 2048
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "boss/boss_kiem_khoi/tripo/rig_v01.glb",
+    "size": {
+      "height": 2.25
+    },
+    "orient": "thigh",
+    "clips": [
+      {
+        "source": "boss/boss_kiem_khoi/tripo/anim_idle_v01.glb",
+        "name": "idle",
+        "loop": true
+      },
+      {
+        "source": "boss/boss_kiem_khoi/tripo/anim_run_v01.glb",
+        "name": "run",
+        "recenter": true,
+        "loop": true
+      },
+      {
+        "source": "boss/boss_kiem_khoi/tripo/anim_attack_v01.glb",
+        "name": "attack",
+        "start": 1.0,
+        "end": 3.2
+      },
+      {
+        "source": "boss/boss_kiem_khoi/tripo/anim_death_v01.glb",
+        "name": "death"
+      }
+    ],
+    "post": "tools/blender/anim_biped_extra.py",
+    "extra": [
+      "slam",
+      "sweep",
+      "stun"
+    ]
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex (worker three-game-tu-tien-46)",
+      "date": "2026-11-15",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "text_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 20000,
+        "topology": "triangle",
+        "texture": "2K",
+        "pbr": true,
+        "removeLighting": true,
+        "prompt": "Full body semi-realistic sword guardian automaton, ape-like biped proportions, long heavy arms, broad shoulders, A-pose, separated block fingers. Weathered grey stone and bronze joint collars, pale blue inset chest core. Front angular visor and breastplate; back plain segmented spine plates. Compact blade-shaped forearm armor, matte PBR.",
+        "negativePrompt": "snow, purple dominant, anime, chibi, text, watermark, floating ribbons, flying cloth, extra limbs, fused limbs, duplicate face on back, baked shadows, glossy plastic, cropped body, pedestal, fused fingers, extra fingers, detached armor, floating weapons"
+      },
+      "seed": null,
+      "quote": 30,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Web app (người dùng bấm). 19768 tam giác; texture 2K. Credit thật chưa báo (người dùng ước ~30 dựng)."
+    },
+    {
+      "step": "rig",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "biped",
+      "params": {},
+      "seed": null,
+      "quote": 20,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/rig_v01.glb",
+      "result": "ok",
+      "note": "Rig biped Tripo (không phải tên Mixamo: BoneRoot/Hip/Pelvis/Waist/Spine01-02/NeckTwist01/L_Thigh/L_Upperarm…, 54 khớp skin trong rig, 78 trong file clip). Preset web miễn phí: idle 15,3 s, run 1,25 s, slash 6,58 s (lấy đoạn 1,0–3,2 s: vung → nện), fall 3,0 s; mỗi file anim hash khác rig, đúng 1 clip. Không có hurt → hit_light thủ tục; thêm thủ tục bằng tools/blender/anim_biped_extra.py (0 credit): slam (giơ hai tay → nện, chạm 1,0 s), sweep (chém dọc tới trước theo vùng chữ nhật, chạm 0,85 s), stun (lặp). Cao 2,25 m ở scale 1 (bằng model khối 'ape'), game nhân scale 2,0. Tay dài vừa phải, vai rộng; tư thế nghỉ của rig hơi sải bước (không ảnh hưởng clip)."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max, text-to-3D, rig + preset animation miễn phí) + Codex (concept); clip thủ tục tools/blender/anim_biped_extra.py",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}
