@@ -1141,7 +1141,7 @@ export class GameSim {
       }
       this.hitMonster(p, tgt, rs.power * mul, elemDamageMul(c.stats.elemDmg, skill.elem), skill.elem);
       // Húc choáng quái thường (hộ pháp): tinh anh nửa thời gian, boss miễn.
-      if (skill.stun && tgt.state !== MS_DEAD && !tgt.def.boss) {
+      if (skill.stun && tgt.state !== MS_DEAD && !tgt.def.boss && !(tgt.owner && tgt.owner !== p.sid) && this.now >= tgt.evadeUntil) {
         tgt.stunUntil = Math.max(tgt.stunUntil, this.now + skill.stun * (tgt.def.elite ? 500 : 1000));
         tgt.cast = null;
         tgt.windUntil = 0;

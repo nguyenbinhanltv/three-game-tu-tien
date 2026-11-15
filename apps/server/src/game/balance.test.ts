@@ -116,6 +116,20 @@ describe('bản sắc công pháp (số)', () => {
     sim.onSkill(p, { id: 'skl_thiet_bich_xung', t: boss.id });
     expect(boss.stunUntil).toBe(0);
   });
+  it('Hộ pháp: Thiết Bích Xung không choáng bóng tâm ma của người khác hay quái đang miễn sát thương', () => {
+    const { sim, p, mon, fresh } = setup(10, 'bat_dong_kim_than');
+    const shadow = mon('mon_yeu_lang', 5);
+    shadow.owner = 'nguoi-khac';
+    const evading = mon('mon_yeu_lang', 5);
+    evading.evadeUntil = sim.now + 60_000;
+    for (const m of [shadow, evading]) {
+      fresh();
+      p.flow.lastDashAt = 0;
+      p.move.x = X;
+      sim.onSkill(p, { id: 'skl_thiet_bich_xung', t: m.id });
+      expect(m.stunUntil).toBe(0);
+    }
+  });
   it('Đan sư: Hồi Xuân Quyết gieo mộc độc lên quái gần, độc gây sát thương theo thời gian', () => {
     const { sim, p, mon, fresh, dmgOn } = setup(10, 'thanh_moc_dan_kinh');
     const m = mon('mon_soi_xam', 4);
