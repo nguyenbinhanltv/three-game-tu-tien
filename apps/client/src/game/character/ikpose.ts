@@ -196,6 +196,16 @@ export class IkRig {
     return new IkRig(root, bones);
   }
 
+  /**
+   * Gốc để mixer tìm xương theo tên: tổ tiên trên cùng của xương hông. Thường là `root`; với nhân vật đã tách cây
+   * xương khỏi cảnh (`SkinnedCharacter.rig`, M3-9) thì là nhóm rig đó.
+   */
+  get mixerRoot(): THREE.Object3D {
+    let r: THREE.Object3D = this.bones.hips!;
+    while (r.parent) r = r.parent;
+    return r;
+  }
+
   /** Về tư thế nghỉ. */
   reset(): void {
     for (const r of this.rest) {
@@ -535,7 +545,7 @@ export type BodyPart = 'upper' | 'lower';
 export function maskClip(clip: THREE.AnimationClip, rig: IkRig, part: BodyPart, name = `${clip.name}_${part}`): THREE.AnimationClip {
   const spine = rig.bones.spine!;
   const isUpper = (nodeName: string) => {
-    let o: THREE.Object3D | null | undefined = rig.root.getObjectByName(nodeName);
+    let o: THREE.Object3D | null | undefined = rig.mixerRoot.getObjectByName(nodeName);
     for (; o; o = o.parent) if (o === spine) return true;
     return false;
   };
@@ -552,7 +562,7 @@ export function makeAdditive(clip: THREE.AnimationClip, rig: IkRig, name = `${cl
   const ref: THREE.KeyframeTrack[] = [];
   for (const t of clip.tracks) {
     const { nodeName, propertyName } = THREE.PropertyBinding.parseTrackName(t.name);
-    const node = rig.root.getObjectByName(nodeName);
+    const node = rig.mixerRoot.getObjectByName(nodeName);
     if (!node) continue;
     if (propertyName === 'quaternion') ref.push(new THREE.QuaternionKeyframeTrack(t.name, [0], node.quaternion.toArray()));
     else if (propertyName === 'position') ref.push(new THREE.VectorKeyframeTrack(t.name, [0], node.position.toArray()));
@@ -567,7 +577,7 @@ export function makeAdditive(clip: THREE.AnimationClip, rig: IkRig, name = `${cl
 
 /** Đặt rig theo clip ở thời điểm t (qua `AnimationMixer`), đọc đầu dò rồi trả rig về tư thế nghỉ. */
 export function probeClip(rig: IkRig, clip: THREE.AnimationClip, t: number): PoseProbe {
-  const mixer = new THREE.AnimationMixer(rig.root);
+  const mixer = new THREE.AnimationMixer(rig.mixerRoot);
   const act = mixer.clipAction(clip);
   act.setLoop(THREE.LoopOnce, 1);
   act.clampWhenFinished = true;
@@ -575,7 +585,7 @@ export function probeClip(rig: IkRig, clip: THREE.AnimationClip, t: number): Pos
   mixer.update(Math.min(t, clip.duration - 1e-6));
   const p = rig.probe();
   mixer.stopAllAction();
-  mixer.uncacheRoot(rig.root);
+  mixer.uncacheRoot(rig.mixerRoot);
   rig.reset();
   return p;
 }
