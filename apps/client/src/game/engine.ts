@@ -61,6 +61,7 @@ import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MON
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { rememberZone } from './bootArt';
 import { FootstepDriver } from './footsteps';
 import { buildSources, Soundscape } from './soundscape';
 import { audioSpatialApi } from './soundscapeAudio';
@@ -2124,6 +2125,7 @@ export class Game {
       const n = this.ents.npcs.find((e) => e.id === npc);
       if (!n || Math.hypot(n.x - rp.x, n.z - rp.z) > 10) npc = null;
     }
+    rememberZone(rp.x, rp.z);
     const fps = this.fpsAcc > 0 ? Math.round(this.fpsFrames / this.fpsAcc) : 0;
     this.fpsAcc = 0;
     this.fpsFrames = 0;
