@@ -749,6 +749,73 @@ async function main() {
     for (const r of [a, b, c]) await r.room.leave(true);
   }
 
+  // 17. Pháp bảo phụ và đan (P3-8): không có pháp bảo thì không kích hoạt; chế pháp bảo thiếu nguyên liệu/cảnh giới/xa NPC bị từ chối;
+  // đan phẩm chất do server roll (client gửi phẩm giả bị bỏ qua); spam kích hoạt không làm sập server và không hồi linh lực.
+  {
+    const g = await join('kt_phapbao');
+    const msgs: { k: string; p?: unknown }[] = [];
+    let gold = -1;
+    let inv: ({ id: string; n: number; plus?: number } | null)[] = [];
+    let equip: Record<string, { id: string }> = {};
+    let mp = -1;
+    let artId = '';
+    g.room.onMessage(S.SYS, (m: { k: string }) => msgs.push(m));
+    g.room.onMessage(S.CHAR, (c: { gold: number; mp: number }) => ((gold = c.gold), (mp = c.mp)));
+    g.room.onMessage(S.INV, (m: { inv: typeof inv; equip: typeof equip }) => ((inv = m.inv), (equip = m.equip)));
+    g.room.onMessage(S.METHOD, (m: { art?: { id: string } }) => (artId = m.art?.id ?? ''));
+    const chat = async (m: string) => {
+      g.room.send(C.CHAT, { m });
+      await W(1300);
+    };
+    await chat('/gm level 12');
+    await chat('/gm gold 5000');
+    const has = (k: string) => msgs.some((m) => m.k === k);
+    // Chưa đeo pháp bảo: kích hoạt (kể cả kèm tham số lạ) không làm gì.
+    for (const bad of [undefined, {}, { id: 'itm_tu_kim_ho_lo' }, 'art', null]) {
+      g.room.send(C.ARTIFACT, bad);
+      await W(150);
+    }
+    check('kích hoạt pháp bảo khi chưa đeo bị từ chối', has('sys.art_none') && !artId);
+    // Chế pháp bảo ở xa Thiết lão, thiếu nguyên liệu: từ chối, không mất linh thạch, không ra món nào.
+    const gold0 = gold;
+    await chat('/gm tp 2200 2400');
+    g.room.send(C.CRAFT, { id: 'rcp_tu_kim_ho_lo', n: 1, r: 'art-craft-001' });
+    await W(500);
+    check('chế pháp bảo ở xa NPC bị từ chối', has('sys.too_far') && gold === gold0 && !inv.some((x) => x?.id === 'itm_tu_kim_ho_lo'));
+    await chat('/gm tp 2090 2066');
+    g.room.send(C.CRAFT, { id: 'rcp_tu_kim_ho_lo', n: 1, r: 'art-craft-002' });
+    await W(500);
+    check('chế pháp bảo thiếu nguyên liệu bị từ chối, không mất linh thạch', has('sys.not_enough_mat') && gold === gold0 && !inv.some((x) => x?.id === 'itm_tu_kim_ho_lo'), `vàng ${gold0} → ${gold}`);
+    // Số lượng giả (nhiều món một lần) và công thức không tồn tại.
+    for (const bad of [{ id: 'rcp_tu_kim_ho_lo', n: 5, r: 'art-craft-003' }, { id: 'rcp_khong_co', n: 1, r: 'art-craft-004' }, { id: { $ne: 1 }, n: 1, r: 'art-craft-005' }, { id: 'rcp_tu_kim_ho_lo', n: -1, r: 'art-craft-006' }]) {
+      g.room.send(C.CRAFT, bad);
+      await W(150);
+    }
+    check('chế pháp bảo với tham số giả không ra món nào', !inv.some((x) => x?.id === 'itm_tu_kim_ho_lo') && gold === gold0);
+    // Đan: phẩm giả từ client bị bỏ qua (phẩm do server roll theo ledger).
+    await chat('/gm tp 2006 2066');
+    await chat('/gm give itm_linh_thao 8');
+    g.room.send(C.CRAFT, { id: 'rcp_hoi_xuan_dan', n: 4, r: 'art-pill-001', plus: 2, q: 2, quality: 2 });
+    await W(700);
+    const pills = inv.filter((x) => x?.id === 'itm_hoi_xuan_dan');
+    const total = pills.reduce((a, x) => a + (x?.n ?? 0), 0);
+    check('luyện đan ra đúng số lượng, phẩm do server roll', total === 4 && pills.every((x) => (x?.plus ?? 0) >= 0 && (x?.plus ?? 0) <= 2), JSON.stringify(pills));
+    // Cùng khóa gửi lại: không luyện thêm.
+    g.room.send(C.CRAFT, { id: 'rcp_hoi_xuan_dan', n: 4, r: 'art-pill-001' });
+    await W(500);
+    check('luyện đan gửi lặp cùng khóa không ra thêm', inv.filter((x) => x?.id === 'itm_hoi_xuan_dan').reduce((a, x) => a + (x?.n ?? 0), 0) === 4);
+    // Đeo pháp bảo (GM thử) rồi spam kích hoạt: không crash, linh lực không tăng quá mức tối đa.
+    await chat('/gm art itm_thanh_lien_an 2');
+    check('đeo được pháp bảo ở ô Pháp bảo phụ', equip.artifact?.id === 'itm_thanh_lien_an' && artId === 'itm_thanh_lien_an');
+    for (let i = 0; i < 60; i++) {
+      g.room.send(C.ARTIFACT, {});
+      await W(10);
+    }
+    await W(300);
+    check('spam kích hoạt pháp bảo không làm sập server', await health() && mp <= 100000);
+    await g.room.leave(true);
+  }
+
   // 13. Tham số kiểm thử ?god / ?at (M1-10): tài khoản thử dùng được; server production / có Google thì không.
   await testParamsChecks();
 

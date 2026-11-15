@@ -11,11 +11,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const sharp = createRequire(path.join(root, 'tools/asset-pipeline/package.json'))('sharp');
 const read = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const methods = read('packages/content/data/methods.json');
-const defs = [...read('packages/content/data/skills.json'), ...methods.skills, ...read('packages/content/data/items.json'), ...methods.items];
+const defs = [...read('packages/content/data/skills.json'), ...methods.skills, ...read('packages/content/data/items.json'), ...methods.items, ...read('packages/content/data/artifacts.json').items, ...read('packages/content/data/alchemy.json').items];
 const out = path.join(root, 'apps/client/public/assets/ui');
 const manifestPath = path.join(out, 'icons.json');
 const hash = (data) => createHash('sha256').update(data).digest('hex');
-const size = 128, columns = 8, rows = 5;
+const size = 128, columns = 8, rows = 6;
 if (process.argv.includes('--check')) {
   const m = read('apps/client/public/assets/ui/icons.json');
   const bytes = fs.readFileSync(path.join(out, m.file));

@@ -34,7 +34,7 @@ export interface ItemDef {
   stats?: StatBlock;
   /** id bộ trang bị (P3-4): món này thuộc bộ nào. Món có `set` không rơi theo bảng chung, chỉ chế tạo hoặc rơi theo `EquipRollDef.set`. */
   set?: string;
-  use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number };
+  use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number; /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit'; pct: number; sec: number } };
 }
 
 export type MonsterModel = 'wolf' | 'boar' | 'fox' | 'ape' | 'serpent';
@@ -282,6 +282,10 @@ export interface RecipeDef {
   output: { id: string; n: number };
   inputs: { id: string; n: number }[];
   gold: number;
+  /** Đan có phẩm chất (P3-8): server roll Hạ/Trung/Thượng khi luyện. */
+  quality?: boolean;
+  /** Cảnh giới tối thiểu để luyện/chế (pháp bảo). */
+  reqLevel?: number;
 }
 
 export interface NpcDef {

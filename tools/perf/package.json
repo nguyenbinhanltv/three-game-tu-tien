@@ -13,7 +13,8 @@
     "shots": "tsx src/shots.ts",
     "e4shots": "tsx src/e4shots.ts",
     "shots:method": "tsx src/shots-method.ts",
-    "shots:party": "tsx src/shots-party.ts"
+    "shots:party": "tsx src/shots-party.ts",
+    "shots:p38": "tsx src/shots-p38.ts"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",

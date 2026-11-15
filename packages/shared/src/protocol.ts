@@ -1,5 +1,6 @@
 // Giao thức mạng giữa client và server. Tên message ngắn để tiết kiệm băng thông.
 
+import type { ArtifactMsg } from './artifacts';
 import type { CharView, Equipment, InvSlot, QuestView } from './types';
 
 export const PROTOCOL_VERSION = 1;
@@ -67,6 +68,8 @@ export const C = {
   PARTY: 'pty',
   /** Tỉ thí 1v1 ở võ đài: `DuelCmd`. */
   DUEL: 'duel',
+  /** Kích hoạt pháp bảo phụ đang đeo (P3-8): không tham số. */
+  ARTIFACT: 'art',
 } as const;
 
 /** Server → client. */
@@ -137,6 +140,10 @@ export interface MethodMsg {
   guardUntil: number;
   /** Giờ server lúc gửi (để client bù lệch đồng hồ). */
   now: number;
+  /** Pháp bảo phụ đang đeo (P3-8): cấp và linh khí. */
+  art?: ArtifactMsg;
+  /** Buff đan đang chạy: loại → [mức, giờ server hết hạn (ms)]. */
+  buffs?: Record<string, [number, number]>;
 }
 
 export interface CdMsg {

@@ -27,6 +27,12 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 | `skl_xuan_phong_hoa_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_xuan_phong_hoa_vu.png` |
 | `skl_hoi_thien_dan_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_hoi_thien_dan_lo.png` |
 | `itm_bi_tich_tan_quyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_bi_tich_tan_quyen.png` |
+| `itm_tu_kim_ho_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tu_kim_ho_lo.png` |
+| `itm_tran_hon_linh` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tran_hon_linh.png` |
+| `itm_thanh_lien_an` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_thanh_lien_an.png` |
+| `itm_kim_cuong_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_kim_cuong_dan.png` |
+| `itm_bao_huyet_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_bao_huyet_dan.png` |
+| `itm_manh_luc_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_manh_luc_dan.png` |
 | `itm_hoi_xuan_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_xuan_dan.png` |
 | `itm_hoi_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_khi_dan.png` |
 | `itm_tu_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tu_khi_dan.png` |
@@ -78,6 +84,9 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `prop_soi_nui` | Tripo web app (image→3D) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `prop_anh_dao` | Tripo web app (image→3D) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `prop_phong_do` | Tripo web app (image→3D) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `prop_tu_kim_ho_lo` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `prop_tran_hon_linh` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `prop_thanh_lien_an` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `prop_duong_xi` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `5ef06438-a4c7-4e3c-8050-76dffebe72eb` |
 | `chr_npc_chuong_mon` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Lạc Vân chân nhân"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_duoc_su` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Tố Tâm"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |

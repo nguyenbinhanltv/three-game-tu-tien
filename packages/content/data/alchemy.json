@@ -1,0 +1,20 @@
+{
+  "quality": {
+    "base": [0.62, 0.3, 0.08],
+    "support": [0.34, 0.4, 0.26],
+    "potency": [1, 1.2, 1.45]
+  },
+  "items": [
+    { "id": "itm_kim_cuong_dan", "kind": "consumable", "stack": 50, "price": 0, "sell": 30, "rarity": 1, "icon": "itm_kim_cuong_dan", "iconFallback": "🛡️", "use": { "cd": 3, "buff": { "kind": "def", "pct": 0.15, "sec": 600 } } },
+    { "id": "itm_bao_huyet_dan", "kind": "consumable", "stack": 50, "price": 0, "sell": 36, "rarity": 1, "icon": "itm_bao_huyet_dan", "iconFallback": "🩸", "use": { "cd": 3, "buff": { "kind": "crit", "pct": 0.08, "sec": 600 } } },
+    { "id": "itm_manh_luc_dan", "kind": "consumable", "stack": 50, "price": 0, "sell": 28, "rarity": 1, "icon": "itm_manh_luc_dan", "iconFallback": "💪", "use": { "cd": 3, "buff": { "kind": "atk", "pct": 0.1, "sec": 600 } } }
+  ],
+  "recipes": [
+    { "id": "rcp_kim_cuong_dan", "npc": "npc_duoc_su", "output": { "id": "itm_kim_cuong_dan", "n": 1 }, "inputs": [ { "id": "itm_linh_thao", "n": 4 }, { "id": "itm_thiet_tinh", "n": 1 } ], "gold": 60, "quality": true },
+    { "id": "rcp_bao_huyet_dan", "npc": "npc_duoc_su", "output": { "id": "itm_bao_huyet_dan", "n": 1 }, "inputs": [ { "id": "itm_huyet_linh_chi", "n": 2 }, { "id": "itm_yeu_dan", "n": 2 } ], "gold": 80, "quality": true },
+    { "id": "rcp_manh_luc_dan", "npc": "npc_duoc_su", "output": { "id": "itm_manh_luc_dan", "n": 1 }, "inputs": [ { "id": "itm_linh_thao", "n": 3 }, { "id": "itm_nanh_soi", "n": 3 }, { "id": "itm_yeu_dan", "n": 1 } ], "gold": 50, "quality": true },
+    { "id": "rcp_tu_kim_ho_lo", "npc": "npc_thiet_lao", "output": { "id": "itm_tu_kim_ho_lo", "n": 1 }, "inputs": [ { "id": "itm_yeu_dan", "n": 12 }, { "id": "itm_kiem_phach", "n": 3 }, { "id": "itm_thiet_tinh", "n": 4 } ], "gold": 500, "reqLevel": 6 },
+    { "id": "rcp_tran_hon_linh", "npc": "npc_thiet_lao", "output": { "id": "itm_tran_hon_linh", "n": 1 }, "inputs": [ { "id": "itm_kiem_phach", "n": 6 }, { "id": "itm_thiet_tinh", "n": 6 }, { "id": "itm_yeu_dan", "n": 10 } ], "gold": 800, "reqLevel": 9 },
+    { "id": "rcp_thanh_lien_an", "npc": "npc_thiet_lao", "output": { "id": "itm_thanh_lien_an", "n": 1 }, "inputs": [ { "id": "itm_huyet_linh_chi", "n": 8 }, { "id": "itm_kiem_phach", "n": 8 }, { "id": "itm_han_giao_dan", "n": 1 } ], "gold": 1500, "reqLevel": 12 }
+  ]
+}

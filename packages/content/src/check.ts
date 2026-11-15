@@ -4,8 +4,9 @@
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
-import { FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
+import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
 import { COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, type ZoneDef } from '@dtl/shared';
 
@@ -602,6 +603,39 @@ function checkZonesAndCamps(lv: (typeof LEVELS)[string]) {
   }
   const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
   if (normal < 300 || normal > 380) err(`${where}: ${normal} quái thường theo camps, mục tiêu ~300–360`);
+}
+
+// ---- Pháp bảo phụ và đan (P3-8) ----
+uniqueIds('artifact', ARTIFACTS);
+for (const a of ARTIFACTS) {
+  const w = `pháp bảo ${a.id}`;
+  const def = ITEM.get(a.id);
+  if (!def || def.kind !== 'artifact') err(`${w}: vật phẩm phải có kind artifact`);
+  if (!fs.existsSync(fileURLToPath(new URL(`../../../assets/source/prop/${a.asset}/meta.json`, import.meta.url)))) err(`${w}: thiếu assets/source/prop/${a.asset}/meta.json`);
+  for (const k of [`item.${a.id}.name`, `item.${a.id}.desc`, `art.${a.id}.skill`, `art.${a.id}.skill.desc`, `art.passive.${a.passive.kind}`]) needStr(k);
+  if (t(`item.${a.id}.name`) !== (GLOSSARY.artifacts as Record<string, string>)[a.id]) err(`${w}: tên lệch glossary.artifacts`);
+  if (!(a.cd > 0) || !(a.radius > 0) || !(a.power > 0)) err(`${w}: cd, radius, power phải > 0`);
+  if (a.passive.per * ARTIFACT_MAX_LEVEL > 0.3) err(`${w}: nội tại cấp tối đa quá 30%`);
+  if (!RECIPES.some((r) => r.output.id === a.id)) err(`${w}: không có công thức chế`);
+}
+for (const k of ['drain', 'seal', 'shield']) if (!ARTIFACTS.some((a) => a.kind === k)) err(`thiếu pháp bảo loại ${k}`);
+if (new Set(ARTIFACTS.map((a) => a.skill)).size !== ARTIFACTS.length) err('hai pháp bảo dùng chung khóa hồi chiêu');
+for (const k of ['base', 'support', 'potency'] as const) if (PILL_QUALITY[k].length !== PILL_TIERS) err(`alchemy.quality.${k} cần ${PILL_TIERS} phần tử`);
+for (const k of ['base', 'support'] as const) if (Math.abs(PILL_QUALITY[k].reduce((a, b) => a + b, 0) - 1) > 1e-6) err(`alchemy.quality.${k} phải cộng bằng 1`);
+if (PILL_QUALITY.potency.some((x, i) => i > 0 && x < PILL_QUALITY.potency[i - 1])) err('alchemy.quality.potency phải không giảm theo phẩm');
+if (PILL_QUALITY.potency.some((x) => x > 1.6)) err('alchemy.quality.potency quá 1,6 (phá nhịp lên cấp)');
+GLOSSARY.pillQualities.forEach((nm, i) => { if (t(`ui.pill.q${i}`) !== nm) err(`phẩm đan ${i}: tên lệch glossary.pillQualities`); });
+for (const it of ITEMS) {
+  const b = it.use?.buff;
+  if (!b) continue;
+  if (!PILL_BUFF_KINDS.includes(b.kind)) err(`${it.id}: loại buff ${b.kind} lạ`);
+  if (!(b.pct > 0 && b.pct <= 0.2) || !(b.sec > 0 && b.sec <= 900)) err(`${it.id}: buff ngoài khoảng (pct ≤ 20%, ≤ 15 phút)`);
+  if (t(`item.${it.id}.name`) !== (GLOSSARY.pills as Record<string, string>)[it.id]) err(`${it.id}: tên lệch glossary.pills`);
+  if (!RECIPES.some((r) => r.output.id === it.id)) err(`${it.id}: không có công thức luyện`);
+}
+for (const r of RECIPES) {
+  if (r.quality && ITEM.get(r.output.id)?.kind !== 'consumable') err(`${r.id}: chỉ đan (consumable) mới có phẩm chất`);
+  if (r.reqLevel !== undefined && !(r.reqLevel >= 1 && r.reqLevel <= 18)) err(`${r.id}: reqLevel ngoài khoảng`);
 }
 
 // Điểm đặt tên cho ?at= / `/gm tp <id>` (chỉ server đọc).
