@@ -44,6 +44,7 @@ import {
   PF_MEDITATING,
   PF_SHIELD,
   PF_TRIBULATION,
+  TRIBULATION_DURATION,
   phaseRules,
   PORTAL_POS,
   type QuestView,
@@ -67,6 +68,8 @@ import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
+import type { DebugPerf } from '../ui/store';
+import { ColliderViz } from './debugColliders';
 import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { rememberZone } from './bootArt';
 import { FootstepDriver } from './footsteps';
@@ -84,6 +87,7 @@ import { AmbientParticles } from './ambient';
 import { Grass, GRASS_PUSH_SLOTS, monsterPushRadius, pickPushers, type Pusher } from './grass';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
+import { Beacons } from '../render/beacons';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/world';
@@ -111,7 +115,7 @@ import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
 import { SkillFx } from './skillFx';
 import type { SkillEvent } from './character/view';
-import { readTestParams } from './testParams';
+import { debugAllowed, readTestParams } from './testParams';
 
 export interface LoginOptions {
   token?: string;
@@ -276,6 +280,8 @@ export class Game {
   /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
   grass!: Grass;
   props: PropLayer | null = null;
+  /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. `?beacons=0` tắt để so ảnh. */
+  beacons: Beacons | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
   ambient!: AmbientParticles;
   private pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
@@ -381,6 +387,8 @@ export class Game {
   private deathFx = new DeathFx();
   /** Giờ kết thúc kiếp theo tin `tribstart`, giữ riêng để đồng bộ HUD không xoá nếu tin đến trước cờ trạng thái. */
   private tribUntil = 0;
+  /** Lúc thấy cờ độ kiếp của mình bật (ms, đồng hồ client); 0 = cờ đang tắt. Dùng để dựng lại HUD khi lỡ tin `tribstart`. */
+  private tribFlagAt = 0;
   /** Boss mà cảnh xuất hiện đang nhìn theo (vị trí hiện tại, vì boss đang chạy), và độ cao ngực so với chân. */
   private cineFocus: { id: string; rise: number; scale: number } | null = null;
   /** Boss đã được xét cảnh xuất hiện trong lần giao chiến này (xóa khi boss hồi/gục). */
@@ -426,7 +434,15 @@ export class Game {
   private lastT = performance.now();
   private disposed = false;
   private leaving = false;
+  /** `?debug`: dòng số đo gọn ở góc (công cụ đo vẫn dùng); bảng F3 cần `debugOk` (bản dev hoặc `?debug`). */
   private debugPerf = new URLSearchParams(location.search).has('debug');
+  private debugOk = debugAllowed(location.search, (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true);
+  /** CPU của `frame()` cộng dồn giữa hai lần đồng bộ HUD (cho bảng F3). */
+  private cpuAcc = 0;
+  private cpuMax = 0;
+  private cpuAvg = 0;
+  private cpuPeak = 0;
+  private colliderViz: ColliderViz | null = null;
   /** performance.now() lúc gửi input, theo seq & 127 (để ước tính ping). */
   private inputSentAt: number[] = [];
   private ping = 0;
@@ -449,6 +465,7 @@ export class Game {
       phase: this.started ? 'game' : 'loading',
       room: init.room,
       dev: init.dev,
+      debugAllowed: this.debugOk,
       char: init.char,
       inv: init.inv,
       equip: init.equip,
@@ -482,6 +499,7 @@ export class Game {
     this.mapVis?.dispose();
     this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
     this.resetSound(init.room === ROOM_WORLD);
+    if (this.beacons) this.beacons.mesh.visible = init.room === ROOM_WORLD;
     this.ents.camera = this.camera;
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
@@ -775,6 +793,12 @@ export class Game {
       this.props = new PropLayer();
       this.props.setQuality(get().quality, q.shadows);
       this.scene.add(this.props.group);
+    }
+    const pois = LEVELS.van_lam.pois ?? [];
+    if (pois.length && new URLSearchParams(location.search).get('beacons') !== '0') {
+      this.beacons = new Beacons(pois.filter((p) => p.beamH).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
+      this.beacons.mesh.visible = get().room === ROOM_WORLD;
+      this.scene.add(this.beacons.mesh);
     }
     this.grass = new Grass();
     this.grass.setQuality(get().quality, q.shadows);
@@ -1071,7 +1095,8 @@ export class Game {
         else this.clearTarget();
         break;
       case 'debug':
-        set({ debugOpen: !get().debugOpen });
+        // Bảng F3 chỉ mở ở bản dev hoặc khi URL có ?debug.
+        if (this.debugOk) set({ debugOpen: !get().debugOpen });
         this.hudAt = 0;
         break;
       case 'mouseLock':
@@ -1285,7 +1310,7 @@ export class Game {
     // Biến thức có thể bỏ niệm chú (Lôi Tốc): dự đoán theo thời gian niệm đã gộp biến thức.
     if (inRange && ready && this.cur.grounded && !this.cur.flying) {
       const gap = mon ? Math.hypot(mon.x - this.cur.x, mon.z - this.cur.z) - (MONSTER.get(mon.t)?.scale ?? 1) : undefined;
-      this.skillPoses.predict(this.ents.players.get(this.sid)?.model, { ...skill, cast: resolveBarSkill(get().method, skill).cast }, performance.now(), gap);
+      this.skillPoses.predict(this.ents.players.get(this.sid)?.model, { ...skill, cast: resolveBarSkill(get().method, skill).cast }, performance.now(), gap, get().method?.method);
     }
   }
 
@@ -1450,6 +1475,11 @@ export class Game {
     return true;
   }
 
+  /** Công pháp của người chơi `id` (mình: theo trạng thái công pháp; người khác: `mt` server gửi) để chọn giọng động tác. */
+  private methodOfPlayer(id: string): string | undefined {
+    return (id === this.sid ? get().method?.method : this.ents?.players.get(id)?.mt) || undefined;
+  }
+
   private onFx(m: FxMsg, held = false): void {
     const v = this.vfx;
     const e = this.ents;
@@ -1466,7 +1496,7 @@ export class Game {
       }
       const dstV = dst ? (e.monsters.get(dst) ?? e.players.get(dst)) : undefined;
       const gap = pSrc && dstV ? Math.hypot(dstV.x - pSrc.x, dstV.z - pSrc.z) - ('model' in dstV && 'def' in dstV.model ? ((dstV.model as { def?: { scale?: number } }).def?.scale ?? 1) : 0.5) : undefined;
-      const hold = this.skillPoses.onFx(m.t, pSrc?.model, src === this.sid, performance.now(), { n: m.n, gap });
+      const hold = this.skillPoses.onFx(m.t, pSrc?.model, src === this.sid, performance.now(), { n: m.n, gap, method: this.methodOfPlayer(src) });
       if (hold > 0) {
         setTimeout(() => this.onFx(m, true), hold * 1000);
         return;
@@ -1595,7 +1625,7 @@ export class Game {
         // Pháp trận dưới chân: vạch tiến độ chạy theo thời gian niệm chú, tắt dần nếu bị ngắt.
         v.castSigil(posSrc, m.d ?? 1, 0xfff0a8, 1.4, () => ((this.view.players.get(src)?.fl ?? 0) & PF_CASTING) !== 0);
         if (src === this.sid) set({ castEnd: Date.now() + (m.d ?? 1) * 1000, castTotal: (m.d ?? 1) * 1000 });
-        this.skillPoses.onCast(pSrc?.model, m.s, m.d ?? 1);
+        this.skillPoses.onCast(pSrc?.model, m.s, m.d ?? 1, this.methodOfPlayer(src));
         break;
       case 'mcast':
         // Quái đánh xa đọc chú: chỉ hiện quả cầu tụ lực; vùng báo trước tới sau qua S.HAZARD.
@@ -2011,6 +2041,10 @@ export class Game {
 
     this.fpsAcc += dt;
     this.fpsFrames++;
+    const cpu = performance.now() - now;
+    this.cpuAcc += cpu;
+    if (cpu > this.cpuMax) this.cpuMax = cpu;
+    this.colliderViz?.update(rp.x, rp.z);
     if (now - this.hudAt > 100) {
       this.hudAt = now;
       // Lúc tải giữ điểm hồi sinh do prefetch đặt (renderPos có thể chưa khớp vị trí thật).
@@ -2245,14 +2279,17 @@ export class Game {
       if (!n || Math.hypot(n.x - rp.x, n.z - rp.z) > 10) npc = null;
     }
     rememberZone(rp.x, rp.z);
+    this.recoverTribulation(me);
     const fps = this.fpsAcc > 0 ? Math.round(this.fpsFrames / this.fpsAcc) : 0;
+    this.cpuAvg = this.fpsFrames > 0 ? this.cpuAcc / this.fpsFrames : 0;
+    this.cpuPeak = this.cpuMax;
+    this.cpuAcc = 0;
+    this.cpuMax = 0;
     this.fpsAcc = 0;
     this.fpsFrames = 0;
     let perf = st.perf;
-    if (this.debugPerf) {
-      const info = this.renderer.info;
-      perf = `${info.render.drawCalls ?? info.render.calls} draw · ${Math.round(info.render.triangles / 1000)}k tri · ${info.memory.geometries} geo · ${info.memory.textures} tex · ${this.ents.monsters.size} quái · ${this.ents.players.size} người · LOD ${this.ents.lodStats().lod.join('/')} (ngoài khung ${this.ents.lodStats().offscreen}) · ${this.terrain.tileCount()} ô · ${this.vfx.particles.aliveCount().total}/${this.vfx.particles.limit} hạt`;
-    }
+    // Dòng gọn ở góc khi có ?debug (chỉ số và đơn vị quốc tế, không có chữ cần dịch); số đủ nằm trong bảng F3.
+    if (this.debugPerf) perf = `${this.cpuAvg.toFixed(1)} ms · ${this.lastRender.drawCalls} draw · ${Math.round(this.lastRender.triangles / 1000)}k tri`;
     const nearby: { name: string; lv: number }[] = [];
     this.view.players.forEach((p, sid) => {
       if (sid !== this.sid) nearby.push({ name: p.name, lv: p.lv });
@@ -2262,7 +2299,7 @@ export class Game {
     const sameNearby = nearbyKey === st.nearby.map((n) => n.name + n.lv).join('|');
     set({
       ...(sameNearby ? {} : { nearby }),
-      debug: st.debugOpen ? this.debugInfo(me) : null,
+      debug: st.debugOpen ? this.debugInfo(me, Math.round(st.fps ? st.fps * 0.6 + fps * 0.4 : fps)) : null,
       hp: me.hp,
       mhp: me.mhp,
       mp: me.mp,
@@ -2573,8 +2610,27 @@ export class Game {
     this.offscreen.enabled = on;
   }
 
+  /**
+   * Lỡ tin `tribstart` (vào room hoặc kết nối lại khi mình đang độ kiếp, ví dụ `?tribulation=1`): cờ PF_TRIBULATION đã bật
+   * hơn 0,6 giây mà chưa có giờ kết thúc thì dựng lại HUD và mây kiếp. Không biết lúc bắt đầu thật nên đếm từ đủ thời lượng
+   * (cận trên); HUD vẫn tắt đúng lúc vì nó theo cờ của server.
+   */
+  private recoverTribulation(me: PState): void {
+    const now = Date.now();
+    if (!(me.fl & PF_TRIBULATION)) {
+      this.tribFlagAt = 0;
+      return;
+    }
+    if (!this.tribFlagAt) this.tribFlagAt = now;
+    if (this.tribUntil > now || now - this.tribFlagAt < 600 || !this.started) return;
+    this.tribUntil = now + TRIBULATION_DURATION * 1000;
+    const sid = this.sid;
+    this.vfx.tribulationCloud((out) => this.ents.chestOf(sid, out), TRIBULATION_DURATION, () => ((this.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+    set({ tribEnd: this.tribUntil });
+  }
+
   /** Số liệu cho bảng gỡ lỗi F3 (M1-2). */
-  private debugInfo(me: PState): DebugInfo {
+  private debugInfo(me: PState, fps: number): DebugInfo {
     const states: string[] = [];
     const on = (cond: unknown, key: string): void => {
       if (cond) states.push('ui.debug.st.' + key);
@@ -2606,7 +2662,45 @@ export class Game {
       room: get().room,
       roomId: this.room.roomId,
       sid: this.sid,
+      perf: this.debugPerfInfo(fps),
     };
+  }
+
+  private debugPerfInfo(fps: number): DebugPerf {
+    const mem = this.renderer.info.memory;
+    const lod = this.ents.lodStats();
+    return {
+      backend: isWebGPU(this.renderer) ? 'WebGPU' : 'WebGL2',
+      fps,
+      cpuMs: this.cpuAvg,
+      cpuMaxMs: this.cpuPeak,
+      drawCalls: this.lastRender.drawCalls,
+      triangles: this.lastRender.triangles,
+      geometries: mem.geometries,
+      textures: mem.textures,
+      players: this.ents.players.size,
+      monsters: this.ents.monsters.size,
+      npcs: this.ents.npcs.length,
+      lod: lod.lod,
+      offscreen: lod.offscreen,
+      fxMeshes: this.vfx.pool.live,
+      particles: this.vfx.particles.aliveCount().total,
+      particleLimit: this.vfx.particles.limit,
+      tiles: this.terrain.tileCount(),
+    };
+  }
+
+  /** Bật/tắt khung va chạm (bảng F3). Chỉ là lớp hiển thị ở client: vẽ lại vòng tròn collider dùng chung với server. */
+  setDebugColliders(on: boolean): void {
+    if (!this.debugOk) return;
+    if (on && !this.colliderViz) {
+      this.colliderViz = new ColliderViz();
+      this.scene.add(this.colliderViz.group);
+    } else if (!on && this.colliderViz) {
+      this.colliderViz.dispose();
+      this.colliderViz = null;
+    }
+    set({ debugColliders: on });
   }
 
   get yaw(): number {
@@ -2704,6 +2798,9 @@ export class Game {
     this.lootFly?.clear();
     this.lootLayer?.remove();
     this.offscreen?.dispose();
+    this.colliderViz?.dispose();
+    this.colliderViz = null;
+    set({ debugColliders: false, debugOpen: false });
     this.stage.replaceChildren();
     this.renderer?.dispose();
     try {

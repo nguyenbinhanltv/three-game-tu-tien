@@ -40,7 +40,7 @@ import {
 } from '@dtl/shared';
 import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
 import { characters, db, items, ledger, rootForName } from '../db';
-import { methodDefMul, sanitizeMethodMeta, type MethodMeta } from './method';
+import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './method';
 import { type ArtifactMeta, passiveValue, sanitizeArtifactMeta } from './artifact';
 
 export interface CharMeta extends MethodMeta, ArtifactMeta {
@@ -343,8 +343,11 @@ export class Character {
     // Đan tăng sức đang chạy (P3-8): công/thủ nhân thêm, bạo kích cộng thẳng.
     const now = Date.now();
     const buffCrit = buffMag(this.meta.buffs, 'crit', now);
-    this.stats = buffCrit > 0 ? { ...st, critRate: Math.min(st.critRate + buffCrit, STAT_CAPS.critRate) } : st;
-    this.mhp = st.hp;
+    // Nội tại công pháp (3-10): kiếm tu cộng bạo kích gốc, hộ pháp cộng khí huyết tối đa.
+    const mp0 = methodOf(this.meta)?.passive;
+    const critAdd = buffCrit + (mp0?.critBase ?? 0);
+    this.stats = critAdd > 0 ? { ...st, critRate: Math.min(st.critRate + critAdd, STAT_CAPS.critRate) } : st;
+    this.mhp = mp0?.hpMul ? Math.round(st.hp * (1 + mp0.hpMul)) : st.hp;
     // Nội tại pháp bảo (P3-8): Hồ Lô cộng linh lực tối đa, Thanh Liên Ấn cộng phòng ngự.
     const mpPas = passiveValue(this.equip, this.meta, 'mp');
     this.mmp = mpPas > 0 ? Math.round(st.mp * (1 + mpPas)) : st.mp;
@@ -352,7 +355,7 @@ export class Character {
     this.atk = atkBuff > 0 ? Math.round(st.atk * (1 + atkBuff)) : st.atk;
     // Nội tại Kim Thân: phòng ngự cộng thêm theo tỉ lệ.
     this.def = Math.round(st.def * (1 + methodDefMul(this.meta) + passiveValue(this.equip, this.meta, 'def') + buffMag(this.meta.buffs, 'def', now)));
-    if (this.hp > st.hp) this.hp = st.hp;
+    if (this.hp > this.mhp) this.hp = this.mhp;
     if (this.mp > this.mmp) this.mp = this.mmp;
     this.charDirty = true;
   }
@@ -565,7 +568,7 @@ export class Character {
         if (o.target && o.target !== target) return;
         const cur = prog[i] ?? 0;
         if (cur >= o.count) return;
-        const next = type === 'level' ? Math.min(o.count, Math.max(cur, n)) : Math.min(o.count, cur + n);
+        const next = type === 'level' || type === 'enhance' ? Math.min(o.count, Math.max(cur, n)) : Math.min(o.count, cur + n);
         if (next !== cur) {
           prog[i] = next;
           changed = true;

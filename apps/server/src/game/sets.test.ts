@@ -30,6 +30,7 @@ function setup() {
     warn: (_p, k) => void warns.push(k),
     sys: () => {},
     fx: (_m: FxMsg) => {},
+    questEvent: (pl, type, target, n) => void pl.char.questEvent(type, target, n),
   });
   let n = 0;
   const forge = (id: string, r = 'frg-' + ++n) => {
