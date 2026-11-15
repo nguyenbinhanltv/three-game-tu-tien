@@ -40,5 +40,6 @@
     "equip": [ {"chance": 1, "q": [0, 30, 60, 10, 0]}, {"chance": 0.5, "q": [30, 60, 10, 0, 0]} ] },
   "elite_cu_nham_vien": { "gold": [60, 90], "src": "elite",
     "drops": [ {"item": "itm_bi_tich_tan_quyen", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_yeu_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 0.6, "min": 1, "max": 2} ],
-    "equip": [ {"chance": 1, "q": [0, 25, 60, 15, 0]}, {"chance": 0.5, "q": [30, 60, 10, 0, 0]} ] }
+    "equip": [ {"chance": 1, "q": [0, 25, 60, 15, 0]}, {"chance": 0.5, "q": [30, 60, 10, 0, 0]} ] },
+  "mon_tam_ma": { "gold": [0, 0], "src": "common", "drops": [], "equip": [ {"chance": 0.01, "q": [100, 0, 0, 0, 0]} ] }
 }

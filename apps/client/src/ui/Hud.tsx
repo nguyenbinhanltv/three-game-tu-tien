@@ -9,6 +9,7 @@ import { Button, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
+import { isStuck, TrialBanner } from './Realm';
 import { type BossLine, type ChapterCard, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
 
 function PlayerFrame() {
@@ -18,13 +19,14 @@ function PlayerFrame() {
   const mp = useUI((s) => s.mp);
   const mmp = useUI((s) => s.mmp);
   if (!char) return null;
-  const full = char.level === NGUNG_KHI_MAX && char.xp >= char.xpNeed;
+  const full = (char.level === NGUNG_KHI_MAX && char.xp >= char.xpNeed) || isStuck(char);
   return (
     <div className="frame player-frame">
       <div className="frame-head">
         <span className="frame-name">{char.name}</span>
         <span className="frame-realm">{realmName(char.level)}</span>
       </div>
+      {isStuck(char) && <div className="frame-bk">{t('ui.bk.badge')}</div>}
       <ProgressBar cls="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} segs={4} trail />
       <ProgressBar cls="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} segs={4} trail />
       <ProgressBar cls="xp" value={char.xp} max={char.xpNeed} text={full ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`} />
@@ -634,6 +636,7 @@ export function Hud() {
       </div>
       <Toasts />
       <Tribulation />
+      <TrialBanner />
       {mouseLook && <div className="crosshair" />}
       {controls === 'mouse' && !mouseLook && !npc && !panel && !dead && <div className="hint lock">{t('ui.hint.lock')}</div>}
       {hint && !npc && <div className="hint">{hint}</div>}

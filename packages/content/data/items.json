@@ -8,6 +8,7 @@
   { "id": "itm_kiem_phach", "kind": "material", "stack": 99, "price": 0, "sell": 40, "rarity": 2, "icon": "itm_kiem_phach", "iconFallback": "💠" },
   { "id": "itm_truc_co_dan", "kind": "material", "stack": 10, "price": 0, "sell": 0, "rarity": 3, "icon": "itm_truc_co_dan", "iconFallback": "🌕" },
 
+  { "id": "itm_pha_canh_dan", "kind": "consumable", "stack": 10, "price": 0, "sell": 0, "rarity": 3, "icon": "itm_pha_canh_dan", "iconFallback": "🔆" },
   { "id": "itm_hoi_xuan_dan", "kind": "consumable", "stack": 50, "price": 25, "sell": 6, "rarity": 0, "icon": "itm_hoi_xuan_dan", "iconFallback": "💊", "use": { "hpPct": 0.4, "cd": 12 } },
   { "id": "itm_hoi_khi_dan", "kind": "consumable", "stack": 50, "price": 25, "sell": 6, "rarity": 0, "icon": "itm_hoi_khi_dan", "iconFallback": "🫧", "use": { "mpPct": 0.5, "cd": 12 } },
   { "id": "itm_tu_khi_dan", "kind": "consumable", "stack": 50, "price": 0, "sell": 20, "rarity": 1, "icon": "itm_tu_khi_dan", "iconFallback": "✨", "use": { "xp": 300, "cd": 3 } },

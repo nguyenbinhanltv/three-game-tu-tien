@@ -55,6 +55,10 @@ export const C = {
   SKILL_UP: 'sku',
   /** Chọn biến thức: `{ skill, v: 'a' | 'b' }` (đổi miễn phí khi không giao chiến). */
   SKILL_VAR: 'skv',
+  /** Vượt bình cảnh: `{ m: 'trial' | 'pill', r? }` (r = khóa chống trùng khi dùng đan). */
+  BOTTLENECK: 'bk',
+  /** Đổi linh căn ở NPC: `{ npc, root, r? }`. */
+  ROOT: 'root',
 } as const;
 
 /** Server → client. */

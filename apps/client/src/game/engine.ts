@@ -103,6 +103,8 @@ export interface LoginOptions {
   name?: string;
   /** Ngoại hình chọn lúc tạo nhân vật; server kiểm và chỉ dùng khi tạo mới. */
   ap?: Appearance;
+  /** Linh căn chọn lúc tạo nhân vật (RootId); thiếu thì server gán ngẫu nhiên. Chỉ dùng khi tạo mới. */
+  rt?: string;
 }
 
 /**

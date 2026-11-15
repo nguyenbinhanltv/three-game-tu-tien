@@ -249,6 +249,8 @@ export interface SkillDef {
   allyRadius?: number;
   /** Tên hiệu ứng nâng cấp riêng (client). */
   tint?: string;
+  /** Hệ ngũ hành của chiêu (kim/moc/thuy/hoa/tho): linh căn và dòng phụ `elem_dmg` cộng sát thương theo hệ này. */
+  elem?: string;
 }
 
 export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough';
@@ -287,6 +289,8 @@ export interface NpcDef {
   sells?: string[];
   recipes?: boolean;
   enhance?: boolean;
+  /** Đổi linh căn ở NPC này (tốn linh thạch, `rootChangeCost`). */
+  rootChange?: boolean;
 }
 
 export interface SpawnDef {
@@ -356,6 +360,14 @@ export interface CharView {
   atk: number;
   def: number;
   gold: number;
+  /** Linh căn ngũ hành (`RootId`); '' = chưa có (không xảy ra sau khi nạp). */
+  root: string;
+  /** Bình cảnh đã vượt cao nhất (0, 5, 10, 15). */
+  bk: number;
+  /** Giây còn lại của thử thách tâm ma đang chạy (0 = không có). */
+  trial: number;
+  /** Giây còn phải đợi mới thử lại thử thách (0 = thử được). */
+  retry: number;
 }
 
 export interface QuestView {
