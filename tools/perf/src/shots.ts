@@ -1,7 +1,7 @@
 // pnpm shots: chụp ảnh màn hình cố định để so trước/sau khi đổi render (P2-A2/A6).
 //   tsx src/shots.ts --out <thư mục> [--renderers webgpu,webgl2] [--presets low,medium,high] [--points a,b] [--size 1280x720]
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175) với DB tạm, mở game `?mute=1&auto=<tên>`, tắt tiếng
-// (--mute-audio), dịch chuyển bằng `/gm tp` tới 4 điểm (sân tông môn, sơn đạo, rừng, ven hồ), đặt camera cố định,
+// (--mute-audio), dịch chuyển bằng `/gm tp` tới 5 điểm (sân tông môn, sơn đạo, rừng, ven hồ, đỉnh núi nhìn biển mây), đặt camera cố định,
 // chờ ô địa hình và (nếu có) texture mặt đất nạp xong rồi chụp `<out>/<renderer>-<preset>-<điểm>.png`.
 import path from 'node:path';
 import fs from 'node:fs';
@@ -29,6 +29,7 @@ const POINTS = [
   { name: 'sondao', x: 2048, z: 2330, yaw: 3.14, pitch: 0.3, dist: 14 },
   { name: 'rung', x: FOREST.x - 40, z: FOREST.z, yaw: 1.2, pitch: 0.28, dist: 14 },
   { name: 'ho', x: LAKE.x + LAKE_WATER_R + 6, z: LAKE.z, yaw: 1.57, pitch: 0.24, dist: 14 },
+  { name: 'dinh', x: 1860, z: 1680, yaw: 3.14, pitch: 0.4, dist: 16 },
 ].filter((p) => !ONLY.length || ONLY.includes(p.name));
 
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots', command: 'pnpm shots' });

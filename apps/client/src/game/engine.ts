@@ -40,6 +40,7 @@ import {
   PORTAL_POS,
   type QuestView,
   SECT,
+  SPAWN_POINT,
   ROOM_DUNGEON,
   ROOM_WORLD,
   S,
@@ -56,6 +57,7 @@ import { FootstepDriver } from './footsteps';
 import { buildSources, Soundscape } from './soundscape';
 import { audioSpatialApi } from './soundscapeAudio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
+import { Cutscene, SECT_CUTSCENE, type Vec3 } from './cutscene';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
 import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
@@ -140,6 +142,11 @@ const _v2 = new THREE.Vector3();
 const _shakePos = new THREE.Vector3();
 const _shakeLook = new THREE.Vector3();
 const _camFocus = new THREE.Vector3();
+const _cineEndP = new THREE.Vector3();
+const _cineEndL = new THREE.Vector3();
+const _cineFwd = new THREE.Vector3();
+const _cineP: Vec3 = { x: 0, y: 0, z: 0 };
+const _cineL: Vec3 = { x: 0, y: 0, z: 0 };
 
 let reqCounter = 0;
 /** Khóa chống gửi trùng cho các thao tác vật phẩm/tiền. */
@@ -318,6 +325,8 @@ export class Game {
   private bossLineId = 0;
   /** Thẻ chương (C2): khung camera nhẹ, thẻ chờ tới khi thế giới đã dựng, đã xét lần đầu vào tông môn chưa. */
   private camFrame = new CamFrame();
+  /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
+  private cine = new Cutscene();
   private pendingChapter: ChapterKind | null = null;
   private sectChecked = false;
   private timeOffset = 0;
@@ -714,7 +723,10 @@ export class Game {
       this.keys.clear('visibility');
       this.setHidden(document.hidden);
     });
+    // Bấm chuột ở bất cứ đâu (kể cả trên HUD) cũng bỏ qua cảnh mở đầu, đúng như gợi ý "bấm phím bất kỳ".
+    this.on(window, 'pointerdown', () => this.skipCine(), { capture: true });
     this.on(window, 'keydown', (e: KeyboardEvent) => {
+      if (!e.repeat) this.skipCine();
       this.keys.onDown(e.code, e.altKey, e.repeat);
       this.onKeyDown(e);
     });
@@ -723,6 +735,7 @@ export class Game {
     this.on(c, 'contextmenu', (e: Event) => e.preventDefault());
     this.on(c, 'pointerdown', (e: PointerEvent) => {
       unlockAudio();
+      this.skipCine();
       c.focus();
       (document.activeElement as HTMLElement | null)?.blur?.();
       if (this.controls === 'mouse') {
@@ -1450,6 +1463,7 @@ export class Game {
       if (byMe && m.crit) this.shake.kick(SHAKE.crit);
       if (mine && m.hv) this.shake.kick(SHAKE.heavy);
     }
+    if (mine && !m.heal && m.n > 0) this.skipCine();
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (m.hv && !m.heal && m.n > 0) this.heavyInk(m.dst, m.src);
     if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv);
@@ -1723,6 +1737,7 @@ export class Game {
     this.shake.update(dt, _shakePos, _shakeLook);
     this.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
     this.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
+    if (this.cine.active) this.runCine(dt);
     updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
   }
 
@@ -1981,7 +1996,42 @@ export class Game {
     const name = get().char?.name;
     if (this.sectChecked || !name || get().room !== ROOM_WORLD || biomeAt(x, z) !== 'sect') return;
     this.sectChecked = true;
-    if (firstTime(localStorage, 'sect', name)) this.chapter('sect');
+    if (!firstTime(localStorage, 'sect', name)) return;
+    if (this.canCine(x, z)) this.startCine();
+    else this.chapter('sect');
+  }
+
+  /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) , người chơi chưa tắt thẻ chương trong Cài đặt và không tắt bằng `?cine=0`. */
+  private canCine(x: number, z: number): boolean {
+    return get().chapterCards && new URLSearchParams(location.search).get('cine') !== '0' && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
+  }
+
+  private startCine(): void {
+    this.cine.start();
+    this.stage.classList.add('cining');
+    set({ cine: { id: ++this.bossLineId, dur: SECT_CUTSCENE.dur * 1000, out: false } });
+  }
+
+  /** Phím/chuột/bị đánh: camera trôi về chỗ người chơi trong 0,45 giây; thẻ chương vẫn hiện sau đó. */
+  private skipCine(): void {
+    this.cine.skip();
+  }
+
+  /** Ghi đè camera đã đặt xong bằng đường cảnh (điểm cuối của đường chính là camera thường nên không có mối nối). */
+  private runCine(dt: number): void {
+    const cam = this.camera;
+    _cineEndP.set(cam.position.x, cam.position.y, cam.position.z);
+    _cineEndL.copy(_cineEndP).add(_cineFwd.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(10));
+    const on = this.cine.update(dt, _cineEndP, _cineEndL, _cineP, _cineL);
+    if (on) {
+      cam.position.set(_cineP.x, _cineP.y, _cineP.z);
+      cam.lookAt(_cineL.x, _cineL.y, _cineL.z);
+      return;
+    }
+    this.stage.classList.remove('cining');
+    set({ cine: { ...get().cine!, out: true } });
+    window.setTimeout(() => get().cine?.out && set({ cine: null }), 700);
+    this.chapter('sect');
   }
 
   setChapterCards(on: boolean): void {
