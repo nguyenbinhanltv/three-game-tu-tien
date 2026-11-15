@@ -47,6 +47,7 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 - Nhiều worktree chạy song song: mỗi worktree một cặp cổng riêng, ví dụ `PORT=2597 CLIENT_PORT=5197 pnpm dev` (Git Bash) hoặc `$env:PORT=2597; $env:CLIENT_PORT=5197; pnpm dev` (PowerShell), hoặc ghi `PORT=`/`CLIENT_PORT=` vào `apps/server/.env.local` (gitignore). Client dev tự nối `ws://<host>:$PORT`; `VITE_SERVER_URL` (biến môi trường hoặc `apps/client/.env.local`, không đặt ở file env của server) ghi đè. Bot và security-check đọc `SERVER_URL` hoặc `PORT` (kể cả từ `.env.local`). Kiểm cổng trống trước khi chạy, không dùng hay kill server của worktree khác, tự tắt server của mình khi xong (xem skill `playtest`).
 - Bộ khung UI chung (P2-C1): `apps/client/src/ui/kit/` (Panel, Header, Tabs, Button, Segmented, Slot, Tooltip, Modal, Divider, Slider, ProgressBar; biến `--k-*` trong `tokens.css`). Bảng mới import từ `./kit`; xem mọi thành phần ở `?mute=1&viewer=ui`. Bảng Cài đặt là mẫu
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
+- `pnpm --filter @dtl/server fight:check [--runs N] [--levels 4,10,15] [--pull N] [--nogear]` (3-10): đánh thử trong sim server thật (đồng hồ giả) theo cấp × công pháp, in TTK và máu mất mỗi con; đối chiếu với bảng của `pnpm sim:progress`.
 - `pnpm bots --count 100 --duration 120`, rồi `pnpm ledger:check`. 100 bot chung một IP sẽ bị giới hạn `/matchmake`: chạy server với `RATE_LIMIT_EXEMPT=loopback`
 - `pnpm map:report [--png out.png] [--json out.json]` (M-1): báo cáo bố cục bản đồ từ `levels/van_lam.json` + địa hình dùng chung: diện tích vùng, mật độ quái, khoảng cách giữa các vùng, độ phủ (khoảng cách tới quái thường gần nhất, mục tiêu ≤ 35 m trong vùng săn), quét chỗ kẹt (đẩy 8 hướng theo `stepMove`), ảnh nhìn từ trên xuống. Chạy lại sau khi đổi bố cục, `zones`/`camps` hay collider; số trước/sau và ảnh: `docs/m1-map/`
 - `pnpm minimap:build` (M-3): dựng nền bản đồ cổ cho minimap (giấy, đồng mức mực, hồ, ranh vùng nét đứt, đường mòn) từ địa hình + `zones` → `apps/client/public/map/van_lam.webp` + `.json` (`tools/asset-pipeline/src/minimap.ts`). Chạy lại khi đổi địa hình, `zones` hay đường mòn (`TRAILS`). Minimap ở `apps/client/src/ui/minimap/` (`model.ts` logic thuần + hook `minimapHooks` cho giờ hồi sinh boss/truyền tống, `marks.ts`, `draw.ts`, `sprites.ts`, `Minimap.tsx`); ảnh, số đo: `docs/m3-minimap/`
@@ -102,7 +103,7 @@ Khác với spec ban đầu (chấp nhận, ghi lại để không làm lệch t
 - Ngự kiếm mở ở Ngưng Khí tầng 3 (spec ghi tầng 8) để người mới sớm được bay.
 - Màu áo nhân vật nhuộm bằng shader theo `appearance.json` (chọn khi tạo nhân vật, cột `characters.appearance`); chiêu, bay, niệm chú dùng pose IK (`withPoses`, `data/poses/`); thiền dùng tư thế tạm `tam_thien`, nhảy mượn `ngu_kiem`. NPC chỉ phát idle.
 - Đăng nhập Google chưa thử với Client ID thật (chưa có); đường đăng nhập thử đã kiểm.
-- Nhịp lên cấp: `pnpm sim:progress` hiện ra khoảng **2,2 giờ** tới Ngưng Khí 15 viên mãn, ngắn hơn mục tiêu 3–4 giờ.
+- Nhịp lên cấp (3-10): `pnpm sim:progress` ra **3,1–3,4 giờ** tới Ngưng Khí 15 viên mãn cho cả ba công pháp (`xpNeed = 90·L²`; sim đã tính đi giữa các cụm quái của M-2 và áp lực quái; chưa tính boss/bí cảnh). Sim báo LỖI nếu ngoài 3–4 giờ, TTK quái thường ngoài 3,5–8,5 s, quái thường không gây áp lực từ tầng 6, tinh anh ngoài 20–40 s, giá cường hóa/kinh tế lệch. Số trước/sau, bảng TTK, kinh tế: `docs/p3-10/README.md`.
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):
 
@@ -119,7 +120,7 @@ Khác với spec ban đầu (chấp nhận, ghi lại để không làm lệch t
 - **P2-F (phát hành)**: chưa làm.
 - **Safari thật**: `pnpm compat` chỉ chạy WebKit của Playwright; chưa thử trên Safari macOS/iOS thật.
 - **Mời bạn bè**: chưa có Client ID Google thật, chưa chạy đường đăng nhập Google và danh sách mời (`pnpm invite`) trên máy chủ thật; chưa có `apps/admin`.
-- **Phase 3-8 (pháp bảo)**: đang làm. **Phase 3-10 (cân bằng)**: chưa làm; nhịp lên cấp ~2,2 giờ so với mục tiêu 3–4 giờ (xem `pnpm sim:progress`).
+- **Phase 3-8 (pháp bảo)**: đang làm. **Phase 3-10 (cân bằng)**: xong (xem `docs/p3-10/`); còn lại cho Sprint 2: độ kiếp ba pha, hộ pháp chia sát thương (`docs/GAME_DESIGN_CORE.md` 5.3), UI hiển thị cờ khắc chế `DmgMsg.ke` (PR C).
 - Tinh anh còn dựng bằng khối; chưa có giao dịch giữa người chơi (`tradable()` trong shared đã sẵn); chưa có mobile.
 
 ## Quy tắc bất biến

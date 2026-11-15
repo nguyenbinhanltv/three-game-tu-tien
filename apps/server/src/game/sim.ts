@@ -72,6 +72,9 @@ import {
   type FxMsg,
   AIRBORNE_HEIGHT,
   elemDamageMul,
+  elemCounter,
+  STAT_CAPS,
+  counterMul,
   GCD,
   initialBottleneck,
   hazardHit,
@@ -130,6 +133,12 @@ import {
   stepMove,
   type SysMsg,
   TRIBULATION_DURATION,
+  TRIBULATION_REFUND_AFTER,
+  TRIB_AIM,
+  TRIB_EXTRA,
+  TRIB_FIRST_DELAY,
+  TRIB_GAP_END,
+  TRIB_GAP_START,
   TRIBULATION_FAIL_XP_LOSS,
   TRUC_CO_LEVEL,
   vulnerableDamage,
@@ -308,6 +317,8 @@ export interface MonEnt {
   taunt?: { sid: string; until: number };
   /** Bị làm chậm (đòn bạo kích của bộ Hàn Giao Lân): tốc độ đuổi nhân `mul` tới `until`. */
   slow?: { until: number; mul: number };
+  /** Mộc độc của Hồi Xuân Quyết (đan sư): mỗi giây gây `per` sát thương tới `until`. */
+  poison?: { sid: string; until: number; nextAt: number; per: number };
 }
 
 interface NodeEnt {
@@ -972,7 +983,7 @@ export class GameSim {
         p.s.yaw = Math.atan2(foe.move.x - p.move.x, foe.move.z - p.move.z);
       } else {
       if (!mon || mon.state === MS_DEAD) return this.warn(p, 'sys.no_target');
-      if (!this.inRange(p, mon, skill.range)) return this.warn(p, 'sys.out_of_range');
+      if (!this.inRange(p, mon, this.skillRange(p, skill))) return this.warn(p, 'sys.out_of_range');
       targetId = mon.id;
       p.s.yaw = Math.atan2(mon.s.x - p.move.x, mon.s.z - p.move.z);
       }
@@ -1002,6 +1013,9 @@ export class GameSim {
       f.comboIdx = combo;
       f.comboAt = this.now;
       mul *= skill.combo.hits[combo].power / Math.max(0.01, skill.power);
+      // Kiếm tu: đòn cuối chuỗi hoàn lại một phần GCD (đánh nhanh hơn).
+      const refund = passiveOf(p.char.meta)?.gcdRefund;
+      if (refund && combo === skill.combo.hits.length - 1) p.gcdAt -= refund * 1000;
     }
     if (isEmpowered(f, skill, this.now)) {
       mul *= skill.empower!.powerMul;
@@ -1050,7 +1064,7 @@ export class GameSim {
     if (st.target && (sk.kind === 'damage' || sk.kind === 'aoe')) {
       const mon = this.monById.get(st.target);
       let ok: boolean;
-      if (mon) ok = mon.state !== MS_DEAD && this.inRange(p, mon, sk.range * 1.3);
+      if (mon) ok = mon.state !== MS_DEAD && this.inRange(p, mon, this.skillRange(p, sk) * 1.3);
       else {
         const foe = this.duel.foeOf(p);
         ok = !!foe && foe.sid === st.target && this.inRangeP(p, foe, sk.range * 1.3);
@@ -1110,7 +1124,15 @@ export class GameSim {
         mul = skill.empower!.powerMul;
         p.flow.opened.delete(skill.empower!.by);
       }
-      this.hitMonster(p, tgt, rs.power * mul, elemDamageMul(c.stats.elemDmg, skill.elem));
+      this.hitMonster(p, tgt, rs.power * mul, elemDamageMul(c.stats.elemDmg, skill.elem), skill.elem);
+      // Húc choáng quái thường (hộ pháp): tinh anh nửa thời gian, boss miễn.
+      if (skill.stun && tgt.state !== MS_DEAD && !tgt.def.boss) {
+        tgt.stunUntil = Math.max(tgt.stunUntil, this.now + skill.stun * (tgt.def.elite ? 500 : 1000));
+        tgt.cast = null;
+        tgt.windUntil = 0;
+        tgt.comboAt = 0;
+        this.setMonFlags(tgt, MF_STUN, tgt.stunUntil);
+      }
     }
     p.flow.opened.set(skill.id, this.now);
     this.sendCd(p);
@@ -1231,6 +1253,12 @@ export class GameSim {
   /** Đang ngự kiếm hoặc lơ lửng cao hơn mặt đất (vừa tắt ngự kiếm, đang rơi): không được ra chiêu. */
   private airborne(p: PlayerEnt): boolean {
     return p.move.flying || p.move.y - groundAt(p.move.x, p.move.z) > AIRBORNE_HEIGHT;
+  }
+
+  /** Tầm chiêu của người chơi: đan sư xa hơn (nội tại `rangeBonus`), chỉ chiêu đánh. */
+  private skillRange(p: PlayerEnt, skill: SkillDef): number {
+    const b = passiveOf(p.char.meta)?.rangeBonus ?? 0;
+    return skill.range > 0 && (skill.kind === 'damage' || skill.kind === 'aoe') ? skill.range + b : skill.range;
   }
 
   private inRange(p: PlayerEnt, mon: MonEnt, range: number): boolean {
@@ -1507,21 +1535,21 @@ export class GameSim {
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
         const offs = hitOffsets(skill, rs.hits.length);
         rs.hits.forEach((h, i) => {
-          if (offs[i] <= 0) return this.hitMonster(p, mon, h * mul, elemMul);
+          if (offs[i] <= 0) return this.hitMonster(p, mon, h * mul, elemMul, skill.elem);
           this.later(offs[i], () => {
             // Người ra chiêu phải còn trong room, còn sống, chưa bay lên; quái chưa chết.
-            if (this.players.get(p.sid) === p && !this.isDead(p) && !this.airborne(p) && mon.state !== MS_DEAD) this.hitMonster(p, mon, h * mul, elemMul);
+            if (this.players.get(p.sid) === p && !this.isDead(p) && !this.airborne(p) && mon.state !== MS_DEAD) this.hitMonster(p, mon, h * mul, elemMul, skill.elem);
           });
           holdLock = Math.max(holdLock, offs[i]);
         });
         // Bộ Lạc Kiếm Môn Phục (4 món): Phi Kiếm có xác suất bắn thêm một thanh (server roll, không tin client).
         if (skill.id === 'skl_phi_kiem' && c.stats.setFx.phiKiemExtra > 0 && Math.random() < c.stats.setFx.phiKiemExtra) {
           this.fx({ t: skill.fx, src: p.sid, dst: mon.id, ...tag });
-          this.hitMonster(p, mon, rs.power * mul, elemMul);
+          this.hitMonster(p, mon, rs.power * mul, elemMul, skill.elem);
         }
-        if (behind && v?.pierce) this.hitMonster(p, behind, rs.power * v.pierce * mul, elemMul);
+        if (behind && v?.pierce) this.hitMonster(p, behind, rs.power * v.pierce * mul, elemMul, skill.elem);
         if (v?.cleave) {
-          for (const o of this.monstersNear(mon.s.x, mon.s.z, v.cleave.r, mon)) this.hitMonster(p, o, rs.power * v.cleave.mul * mul, elemMul);
+          for (const o of this.monstersNear(mon.s.x, mon.s.z, v.cleave.r, mon)) this.hitMonster(p, o, rs.power * v.cleave.mul * mul, elemMul, skill.elem);
         }
         if (v?.trail) {
           this.trails.push({ owner: p.sid, x: mon.s.x, z: mon.s.z, r: v.trail.r, nextAt: this.now + 1000, endAt: this.now + v.trail.dur * 1000, power: rs.power * v.trail.mul });
@@ -1540,7 +1568,7 @@ export class GameSim {
           if (o.state === MS_DEAD) continue;
           const dx = o.s.x - cx;
           const dz = o.s.z - cz;
-          if (dx * dx + dz * dz <= r * r) this.hitMonster(p, o, rs.power * mul, elemMul);
+          if (dx * dx + dz * dz <= r * r) this.hitMonster(p, o, rs.power * mul, elemMul, skill.elem);
         }
         break;
       }
@@ -1601,6 +1629,14 @@ export class GameSim {
           if (o !== p && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
           const total = healAmount(o.char.mhp * rs.power * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
           this.addHot(o.sid, total / sec, sec);
+        }
+        // Mộc độc (đan sư): quái trong vùng chịu sát thương theo thời gian.
+        if (skill.poison) {
+          for (const o of this.monstersNear(p.move.x, p.move.z, skill.poison.r)) {
+            if (o.owner && o.owner !== p.sid) continue;
+            o.poison = { sid: p.sid, until: this.now + skill.poison.dur * 1000, nextAt: this.now + 1000, per: Math.max(1, Math.round(c.atk * skill.poison.mul)) };
+            this.aggroMonster(o, p);
+          }
         }
         break;
       }
@@ -1725,19 +1761,27 @@ export class GameSim {
   }
 
   /** `mul`: hệ số sát thương hệ (linh căn, dòng phụ); không đổi việc đòn có nặng hay không (theo `power` gốc). */
-  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1): void {
+  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void {
     // Dấu ấn của chính người đánh: sát thương nhân thêm (Kiếm Ảnh Phân Quang).
     const mk = mon.mark;
     const power0 = mk && mk.sid === p.sid && this.now < mk.until ? basePower * (1 + mk.mul) : basePower;
     // Cộng hưởng vai trò (tổ đội đủ Kiếm tu/Hộ pháp/Đan sư đứng gần nhau): đánh mạnh hơn một chút.
     const power = parties.resonance(p) ? power0 * (1 + RESONANCE_DMG) : power0;
-    const { dmg, crit } = computeDamage(p.char.atk, power * mul, mon.defn, Math.random(), Math.random(), p.char.stats.critRate, p.char.stats.critMul);
+    // Khắc chế ngũ hành (3-10): server tính, client chỉ nhận cờ `ke` để hiển thị.
+    const ke = elemCounter(elem, mon.def.elem);
+    // Nội tại công pháp (3-10): kiếm tu đủ kiếm ý thì bạo kích cao hơn; hộ pháp đánh cận chiến mạnh hơn.
+    const pas0 = passiveOf(p.char.meta);
+    let critRate = p.char.stats.critRate;
+    if (pas0?.kind === 'kiem_y' && pas0.critAtMax && this.liveStacks(p) >= (pas0.max ?? 5)) critRate = Math.min(STAT_CAPS.critRate, critRate + pas0.critAtMax);
+    let meleeMul = 1;
+    if (pas0?.melee && Math.hypot(mon.s.x - p.move.x, mon.s.z - p.move.z) <= pas0.melee.r + mon.def.scale) meleeMul += pas0.melee.mul;
+    const { dmg, crit } = computeDamage(p.char.atk, power * mul * counterMul(ke) * meleeMul, mon.defn, Math.random(), Math.random(), critRate, p.char.stats.critMul);
     const stunned = this.now < mon.stunUntil;
     const heavy = isHeavyHit(power);
     // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
     // Đòn không có hiệu lực (quái đã chết, đang miễn sát thương, bóng tâm ma của người khác) không cho kiếm ý/sạc.
     const lands = mon.state !== MS_DEAD && !(mon.owner && mon.owner !== p.sid) && this.now >= mon.evadeUntil;
-    this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy);
+    this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy, ke);
     if (!lands) return;
     // Bộ Hàn Giao Lân (3 món): đòn bạo kích làm chậm mục tiêu (boss chỉ chậm nhẹ).
     const slowSec = p.char.stats.setFx.critSlowSec;
@@ -1868,7 +1912,7 @@ export class GameSim {
     this.addHazard({ x: m.s.x, z: m.s.z, r: c.r }, c.delay, c.mul, false, c.kind, m.id, m.atk);
   }
 
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv): void {
+  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0): void {
     if (mon.state === MS_DEAD) return;
     // Bóng tâm ma chỉ bị chủ đánh: người khác (kể cả vùng nổ lan sang) không làm gì được.
     if (mon.owner && p?.sid !== mon.owner) return;
@@ -1881,6 +1925,7 @@ export class GameSim {
     const msg: DmgMsg = { dst: mon.id, n: dmg };
     if (crit) msg.crit = true;
     if (hv) msg.hv = true;
+    if (ke) msg.ke = ke;
     if (p) msg.src = p.sid;
     this.emit(S.DMG, msg);
     if (p) {
@@ -2435,6 +2480,15 @@ export class GameSim {
       return;
     }
     const def = m.def;
+    if (m.poison) {
+      if (this.now >= m.poison.until) m.poison = undefined;
+      else if (this.now >= m.poison.nextAt) {
+        m.poison.nextAt += 1000;
+        const owner = this.players.get(m.poison.sid) ?? null;
+        this.damageMonster(m, m.poison.per, owner);
+        if (m.state === MS_DEAD) return;
+      }
+    }
     if (m.state === MS_IDLE) {
       if (this.now >= m.thinkAt) {
         m.thinkAt = this.now + 400;
@@ -2779,7 +2833,7 @@ export class GameSim {
     if (c.bk < NGUNG_KHI_MAX) return this.warn(p, 'sys.bk_blocked');
     if (!c.tx('tribulation', null, (d) => d.remove(TRUC_CO_PILL, 1))) return this.warn(p, 'sys.trib_need_pill');
     if (p.meditating) this.setMeditating(p, false);
-    p.trib = { endAt: this.now + TRIBULATION_DURATION * 1000, nextAt: this.now + 3000, n: 0 };
+    p.trib = { endAt: this.now + TRIBULATION_DURATION * 1000, nextAt: this.now + TRIB_FIRST_DELAY * 1000, n: 0 };
     this.setFlag(p, PF_TRIBULATION, true);
     this.sysAll('sys.trib_start', { name: c.name }, 'info');
     this.fx({ t: 'tribstart', src: p.sid, d: TRIBULATION_DURATION, sd: visualSeed() });
@@ -2821,19 +2875,20 @@ export class GameSim {
     if (this.now < tr.nextAt) return;
     tr.n++;
     const progress = 1 - (tr.endAt - this.now) / (TRIBULATION_DURATION * 1000);
-    tr.nextAt = this.now + 2600 - progress * 1200;
+    tr.nextAt = this.now + (TRIB_GAP_START - progress * (TRIB_GAP_START - TRIB_GAP_END)) * 1000;
     // Một tia nhắm thẳng vào người độ kiếp, vài tia rơi quanh.
-    this.addHazard({ x: p.move.x, z: p.move.z, r: 4.2 }, 1.25, 0.24, true, 'lightning', p.sid);
-    const extra = 1 + Math.floor(progress * 3);
+    this.addHazard({ x: p.move.x, z: p.move.z, r: TRIB_AIM.r }, TRIB_AIM.delay, TRIB_AIM.pct, true, 'lightning', p.sid);
+    const extra = Math.min(TRIB_EXTRA.maxCount, 1 + Math.floor(progress * 3));
     for (let i = 0; i < extra; i++) {
       const a = Math.random() * Math.PI * 2;
-      const r = 5 + Math.random() * 9;
-      this.addHazard({ x: p.move.x + Math.cos(a) * r, z: p.move.z + Math.sin(a) * r, r: 3.6 }, 1.25 + Math.random() * 0.6, 0.2, true, 'lightning', p.sid);
+      const r = TRIB_EXTRA.distMin + Math.random() * (TRIB_EXTRA.distMax - TRIB_EXTRA.distMin);
+      this.addHazard({ x: p.move.x + Math.cos(a) * r, z: p.move.z + Math.sin(a) * r, r: TRIB_EXTRA.r }, TRIB_EXTRA.delayMin + Math.random() * (TRIB_EXTRA.delayMax - TRIB_EXTRA.delayMin), TRIB_EXTRA.pct, true, 'lightning', p.sid);
     }
   }
 
   private endTribulation(p: PlayerEnt, success: boolean, silent: boolean): void {
     const c = p.char;
+    const elapsed = p.trib ? TRIBULATION_DURATION - (p.trib.endAt - this.now) / 1000 : 0;
     p.trib = null;
     this.setFlag(p, PF_TRIBULATION, false);
     if (success) {
@@ -2851,6 +2906,8 @@ export class GameSim {
     } else {
       const lost = c.loseXp(TRIBULATION_FAIL_XP_LOSS);
       if (!silent) this.sys(p, lost > 0 ? 'sys.trib_fail' : 'sys.trib_fail_free', { n: lost }, 'bad');
+      // Trụ qua nửa đầu: hoàn Trúc Cơ Đan (chỉ khi chết trong lôi kiếp, không hoàn khi thoát game giữa chừng).
+      if (!silent && elapsed >= TRIBULATION_REFUND_AFTER && c.tx('tribulation:refund', null, (d) => d.add(TRUC_CO_PILL, 1))) this.sys(p, 'sys.trib_refund', undefined, 'info');
     }
   }
 

@@ -211,6 +211,8 @@ export interface DmgMsg {
   src?: string;
   /** Đòn nặng (chiêu hệ số cao, đòn thứ hai của chuỗi, vùng nổ): client khựng/giật lùi mạnh hơn. Chỉ là lớp hình. */
   hv?: boolean;
+  /** Khắc chế ngũ hành (server tính): 1 chiêu khắc hệ quái, -1 bị hệ quái khắc. Chỉ hiển thị. */
+  ke?: 1 | -1;
 }
 
 export interface ChatMsg {

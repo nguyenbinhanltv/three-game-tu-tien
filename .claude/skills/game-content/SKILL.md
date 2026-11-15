@@ -48,7 +48,7 @@ packages/content/
 ## Cân bằng
 
 - Công thức (sát thương, phòng thủ, tu vi cần mỗi tầng, tỉ lệ đột phá) viết trong `packages/shared/src/` (`formulas.ts`, `upgrade.ts`, `sets.ts`, `party.ts`…) dưới dạng hàm thuần + test.
-- Mục tiêu nhịp MVP (chốt 2026-11-15, thay mốc 10–15 giờ cũ): Ngưng Khí 1 → viên mãn tầng 15 khoảng 3–4 giờ chơi thực tế, tức `pnpm sim:progress` quanh 2–2,5 giờ (sim chưa tính đi lại, boss, bí cảnh). Nhịp sẽ dài thêm khi có thêm nội dung; đổi đường cong `xpNeed` là quyết định của người dùng.
+- Mục tiêu nhịp MVP (chốt 2026-11-15, thay mốc 10–15 giờ cũ): Ngưng Khí 1 → viên mãn tầng 15 khoảng 3–4 giờ chơi thực tế, và từ 3-10 `pnpm sim:progress` ra thẳng 3–4 giờ (sim đã tính đi giữa các cụm quái, kéo 2 con mỗi cụm và áp lực quái; chưa tính boss, bí cảnh) và báo LỖI nếu lệch; `xpNeed` hiện `90·L²`. Nhịp sẽ dài thêm khi có thêm nội dung; đổi đường cong `xpNeed` là quyết định của người dùng.
 - `pnpm sim:progress` mô phỏng một người chơi 30 ngày (giờ chơi/ngày làm tham số), in thời điểm đạt từng cảnh giới và tổng linh thạch sinh/tiêu. Chạy sau khi đổi số tu vi, phần thưởng hay giá.
 - Không bán chỉ số bằng tiền thật (game không thu tiền, nhưng giữ nguyên tắc này nếu sau này mở rộng).
 
