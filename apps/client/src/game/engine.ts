@@ -59,6 +59,7 @@ import {
 } from '@dtl/shared';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
+import { minimapHooks } from '../ui/minimap/model';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
@@ -467,7 +468,16 @@ export class Game {
       set({ quests: q });
       this.questMarkersDirty = true;
     });
-    room.onMessage(S.BOSS_TIMERS, (m: BossTimerMsg) => set({ bossTimers: { ...m, off: Date.now() - m.now } }));
+    room.onMessage(S.BOSS_TIMERS, (m: BossTimerMsg) => {
+      const off = Date.now() - m.now;
+      set({ bossTimers: { ...m, off } });
+      // Móc của minimap (M-3): giờ hồi sinh boss theo id quái (đồng hồ máy), xóa khi boss sống.
+      for (const tm of m.list) {
+        if (!MONSTER.get(tm.t)?.boss) continue;
+        if (tm.at > 0) minimapHooks.bossRespawnAt.set(tm.t, tm.at + off);
+        else minimapHooks.bossRespawnAt.delete(tm.t);
+      }
+    });
     room.onMessage(S.CD, (m: CdMsg) => {
       const off = Date.now() - m.now;
       const cds: Record<string, number> = {};
