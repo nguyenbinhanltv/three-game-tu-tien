@@ -520,12 +520,13 @@ def recolor(rules):
 if IMPORT.get('recolor'):
     report['recolor'] = recolor(IMPORT['recolor'])
 
+for mesh, k in SHRINK:
+    PARTS['shrink_images'](mesh, k, replace_pixels)
+
+# Sau khi ảnh đã thu theo UV (cùng hệ toạ độ): làm phẳng normal da bằng mặt nạ rasterize từ UV hiện tại.
 for mesh in MESHES:  # noqa: F821
     if IMPORT.get('flatSkinNormals'):
         report['flatSkinNormals'] = PARTS['flatten_skin_normals'](mesh, float(IMPORT['flatSkinNormals'].get('zMin', 1.45)), replace_pixels)
-
-for mesh, k in SHRINK:
-    PARTS['shrink_images'](mesh, k, replace_pixels)
 
 # Tô thép cho lưỡi sau recolor (không thì quy tắc "vải trắng" biến ô thép xám thành vải ngà).
 for mesh, cell in STEEL:
