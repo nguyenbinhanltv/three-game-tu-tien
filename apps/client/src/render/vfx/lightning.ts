@@ -261,16 +261,20 @@ export function vortexNodes(U: FxUniforms) {
   const ring = vec2(cos(th), sin(th));
   const n1 = vnoise(ring.mul(1.0).add(vec2(r.mul(5).sub(time.mul(0.35)), seed)));
   const n2 = vnoise(ring.mul(2.1).add(vec2(r.mul(11).sub(time.mul(0.6)), seed.mul(1.7))));
-  const dens = smoothstep(0.32, 0.75, n1.mul(0.65).add(n2.mul(0.35)));
+  const base = smoothstep(0.2, 0.6, n1.mul(0.65).add(n2.mul(0.35)));
+  // Cánh xoắn ốc rõ nét quanh tâm: 3 cánh theo góc đã cuộn, mờ dần ra mép để không lộ họa tiết.
+  const arms = smoothstep(-0.1, 0.9, sin(th.mul(3)));
+  const armW = one.sub(smoothstep(0.35, 0.95, r)).mul(0.6).add(0.15);
+  const dens = base.mul(one.sub(armW)).add(arms.mul(armW).mul(base.mul(0.6).add(0.4)));
   // Mép ngoài tan; mắt bão ở giữa mỏng hơn.
   const edge = one.sub(smoothstep(0.65, 1, r));
   const eye = smoothstep(0.04, 0.2, r);
-  const body = dens.mul(0.6).add(0.4).mul(edge).mul(eye.mul(0.75).add(0.25));
+  const body = dens.mul(0.45).add(0.55).mul(edge).mul(eye.mul(0.75).add(0.25));
   // Mắt bão phát sáng tím; sét trong mây bừng theo vân nhiễu khi có tia đánh.
   const thunder = vec3(0.456, 0.262, 1.0);
   const eyeGlow = one.sub(smoothstep(0.02, 0.22, r)).mul(0.9);
   const inner = flash.mul(smoothstep(0.45, 0.9, n2)).mul(edge).mul(1.3);
-  const shade = U.color.mul(dens.mul(0.5).add(0.6));
+  const shade = U.color.mul(dens.mul(0.55).add(0.45));
   const col = shade.add(thunder.mul(eyeGlow.add(inner)));
   return {
     color: min(col, U.maxHdr),
