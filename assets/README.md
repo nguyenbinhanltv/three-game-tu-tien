@@ -56,7 +56,13 @@ GLB Tripo cao đúng 1 m, gốc ở tâm khối, mặt trước thường nhìn 
 5. **Socket**: Empty `socket_*` ở tọa độ glTF sau chuẩn hóa, `bone` để gắn vào xương; extras `socket: 1`.
 6. **Texture** hạ về ngân sách lớp: map màu theo `texture.color`, normal/ORM theo `texture.data`.
 
+Khối `"grade": { "saturation": 0.8, "warm": 0.22 }` (tùy chọn) chỉnh màu map màu lúc nhập: giảm bão hòa và kéo vùng đỏ về cam (dùng cho `prop_phong_do`); impostor bake từ GLB đã chỉnh nên khớp.
+
 Không giảm tam giác ở bước này: `optimize.ts` hạ LOD0 về trần. Cùng đầu vào cho ra cùng file (đã kiểm bằng hash).
+
+## Impostor cây xa (`pnpm assets:impostor`)
+
+Năm cây (`prop_co_thu`, `prop_thong_co`, `prop_soi_nui`, `prop_anh_dao`, `prop_phong_do`) có thêm impostor cho khoảng cách xa: `tools/blender/bake_impostor.py` (Blender, Workbench, màu thuần không đèn) render GLB thô `assets/build/raw/<id>.glb` ở hai góc nhìn trực giao vuông góc (từ +Z và +X) nền trong suốt; `tools/asset-pipeline/src/impostor.ts` ghép cả năm loài thành **một atlas** WebP (`apps/client/public/assets/impostor/trees.<hash>.webp`, mỗi loài một hàng) và ghi `apps/client/src/game/impostors.json` (tên file, hàng, khung vuông phủ, chiều cao). Client dựng hai tấm cắt chéo từ atlas (`game/treeImpostor.ts`, 1 draw call mỗi ô). Đổi mô hình cây hoặc thêm loài thì chạy `pnpm assets:build --only <id>` rồi `pnpm assets:impostor` (cần Blender; sửa `TREES` trong `impostor.ts` khi thêm loài).
 
 ## Bước tối ưu (`tools/asset-pipeline/src/optimize.ts`)
 

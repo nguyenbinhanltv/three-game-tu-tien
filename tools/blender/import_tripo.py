@@ -340,6 +340,24 @@ def rename_all():
 
 # ---------- texture ----------
 
+def grade_image(img, g):
+    """Chỉnh màu map màu (meta import.grade): saturation < 1 giảm bão hòa; warm kéo vùng đỏ về cam (nâng G, B theo độ đỏ)."""
+    import numpy as np
+    a = np.empty(len(img.pixels), dtype=np.float32)
+    img.pixels.foreach_get(a)
+    a = a.reshape(-1, 4)
+    rgb = a[:, :3]
+    lum = rgb @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
+    rgb = lum[:, None] + (rgb - lum[:, None]) * float(g.get('saturation', 1))
+    red = np.clip(rgb[:, 0] - rgb[:, 1], 0, None)
+    warm = float(g.get('warm', 0))
+    rgb[:, 1] += red * warm
+    rgb[:, 2] += red * warm * 0.35
+    a[:, :3] = np.clip(rgb, 0, 1)
+    img.pixels.foreach_set(a.ravel())
+    img.update()
+
+
 def downscale_textures(spec):
     out = []
     roles = image_roles()
@@ -358,6 +376,9 @@ def downscale_textures(spec):
             out.append(f'{img.name} {w}x{h}→{nw}x{nh}')
         else:
             out.append(f'{img.name} {w}x{h}')
+        if color and not data and IMPORT.get('grade'):
+            grade_image(img, IMPORT['grade'])
+            out.append(f'{img.name} grade {IMPORT["grade"]}')
     return out
 
 
