@@ -62,7 +62,13 @@ export interface EnvLike {
   sun: THREE.DirectionalLight;
   hemi: THREE.HemisphereLight;
   sky: THREE.Mesh;
+  /** Vector người chơi → mặt trời (Environment.sunDir). */
+  sunDir?: THREE.Vector3;
 }
+
+/** Hướng nắng giữ phương vị cũ (đông nam), độ cao theo `sunElevationDeg` của preset. */
+const SUN_AZIMUTH = Math.atan2(90, 120);
+const SUN_DISTANCE = 260;
 
 /** Áp preset chỉnh màu cho đèn, trời, sương. Gọi lại khi đổi thời điểm trong ngày. */
 export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string): void {
@@ -75,6 +81,10 @@ export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPres
 
   env.sun.color.setHex(p.sunColor);
   env.sun.intensity = p.sunIntensity;
+  if (env.sunDir) {
+    const el = (p.sunElevationDeg * Math.PI) / 180;
+    env.sunDir.set(Math.cos(el) * Math.cos(SUN_AZIMUTH), Math.sin(el), Math.cos(el) * Math.sin(SUN_AZIMUTH)).multiplyScalar(SUN_DISTANCE);
+  }
   env.hemi.color.setHex(p.skyColor);
   env.hemi.intensity = 1.25 * p.skyIntensity;
   haloParams.intensity.value = HALO_INTENSITY[name] ?? HALO_INTENSITY.day;

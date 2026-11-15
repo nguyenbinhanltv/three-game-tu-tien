@@ -15,6 +15,8 @@ export class Environment {
   cloudSea: CloudSea;
   lake: Lake;
   water: THREE.Mesh;
+  /** Vector từ người chơi tới mặt trời (hướng + khoảng cách); applyAtmosphere đặt theo độ cao nắng của preset. */
+  sunDir = new THREE.Vector3(120, 220, 90);
   private t = 0;
 
   constructor(scene: THREE.Scene, shadows: boolean) {
@@ -67,9 +69,9 @@ export class Environment {
     this.sky.position.copy(camera.position);
     // Bóng đổ bám theo người chơi.
     this.sun.target.position.copy(focus);
-    this.sun.position.set(focus.x + 120, focus.y + 220, focus.z + 90);
+    this.sun.position.set(focus.x + this.sunDir.x, focus.y + this.sunDir.y, focus.z + this.sunDir.z);
     this.cloudSea.update(camera);
     this.lake.update(this.t);
-    setSunDirection(this.sun.position.x - focus.x, this.sun.position.y - focus.y, this.sun.position.z - focus.z);
+    setSunDirection(this.sunDir.x, this.sunDir.y, this.sunDir.z);
   }
 }

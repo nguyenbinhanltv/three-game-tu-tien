@@ -7,6 +7,7 @@ import {
   luminance,
   mix,
   mrt,
+  normalView,
   output,
   pass,
   renderOutput,
@@ -21,6 +22,7 @@ import {
   vec4,
 } from 'three/tsl';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
+import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
@@ -60,6 +62,8 @@ export const postParams = {
   vignetteInner: uniform(VIGNETTE.inner),
   vignetteOuter: uniform(VIGNETTE.outer),
   grain: uniform(GRAIN.amount),
+  /** Mức che sáng môi trường (GTAO) áp vào ảnh, 0..1. */
+  aoStrength: uniform(0.8),
   /** 0..1: mình vừa trúng đòn nặng (viền đỏ + quang sai màu), tự giảm dần. */
   hit: uniform(0),
   /** 0..1: chớp sáng toàn màn hình (sấm độ kiếp...), tự giảm dần. */
@@ -123,6 +127,8 @@ export interface PostOptions {
   /** Số mẫu MSAA của pass cảnh: 0 hoặc 4. */
   msaa: number;
   fxaa: boolean;
+  /** GTAO nửa độ phân giải (preset Vừa/Cao). Cần thêm đích pháp tuyến (view space) vào MRT của pass cảnh. */
+  ao?: boolean;
 }
 
 const _size = new THREE.Vector2();
@@ -133,6 +139,7 @@ export class PostPipeline {
   private post: THREE.PostProcessing;
   private scenePass: ReturnType<typeof pass>;
   private blurNode: ReturnType<typeof gaussianBlur> | null = null;
+  private aoNode: ReturnType<typeof ao> | null = null;
   /** Đích LDR cho FXAA: RTTNode không tự giải phóng render target, dispose() phải làm. */
   private fxaaInput: ReturnType<typeof rtt> | null = null;
 
@@ -150,9 +157,12 @@ export class PostPipeline {
     this.post.outputColorTransform = false;
     const scenePass = pass(scene, camera, { samples: opts.msaa });
     this.scenePass = scenePass;
-    if (opts.bloom) {
-      scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a) }));
-      scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
+    if (opts.bloom || opts.ao) {
+      const targets: Record<string, Node> = { output };
+      if (opts.bloom) targets.bloom = vec4(0, 0, 0, output.a);
+      if (opts.ao) targets.normal = normalView;
+      scenePass.setMRT(mrt(targets));
+      if (opts.bloom) scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
     }
     const colorTex = scenePass.getTextureNode('output');
 
@@ -160,6 +170,16 @@ export class PostPipeline {
     const fromCenter = screenUV.sub(0.5);
     const ca = fromCenter.mul(postParams.hit.mul(0.012));
     let hdr = vec3(colorTex.sample(screenUV.add(ca)).r, colorTex.g, colorTex.sample(screenUV.sub(ca)).b).mul(postParams.exposure);
+    if (opts.ao) {
+      // GTAO ở nửa độ phân giải: bán kính 1,3 m (nếp gấp, chân tường, gốc cây), tắt dần theo khoảng cách để không bẩn nền xa.
+      const aoPass = ao(scenePass.getTextureNode('depth'), scenePass.getTextureNode('normal'), this.camera);
+      aoPass.resolutionScale = 0.5;
+      aoPass.radius.value = 1.3;
+      aoPass.thickness.value = 1.2;
+      aoPass.scale.value = 1.1;
+      this.aoNode = aoPass;
+      hdr = hdr.mul(mix(float(1), aoPass.getTextureNode().r, postParams.aoStrength));
+    }
     if (opts.bloom) {
       this.blurNode = gaussianBlur(scenePass.getTextureNode('bloom'), null, postParams.bloomSigma);
       this.blurNode.resolution.setScalar(postParams.bloomScale);
@@ -201,7 +221,7 @@ export class PostPipeline {
   }
 
   private static keyOf(o: PostOptions): string {
-    return `${o.bloom ? 'b' : 'n'}${o.msaa}${o.fxaa ? 'f' : ''}`;
+    return `${o.bloom ? 'b' : 'n'}${o.msaa}${o.fxaa ? 'f' : ''}${o.ao ? 'a' : ''}`;
   }
 
   /** Pipeline hiện tại có đúng cấu hình `opts` không (để biết có cần dựng lại khi đổi preset). */
@@ -278,6 +298,7 @@ export class PostPipeline {
       this.fxaaInput.dispose();
     }
     this.blurNode?.dispose();
+    this.aoNode?.dispose();
     this.scenePass.dispose();
     this.post.dispose();
   }
