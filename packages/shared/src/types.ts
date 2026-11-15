@@ -30,6 +30,8 @@ export interface ItemDef {
   rarity: number;
   icon: string;
   iconFallback?: string;
+  /** id asset model 3D của vũ khí (kind weapon); thiếu thì theo phẩm (`swordModelOf`). */
+  model?: string;
   reqLevel?: number;
   stats?: StatBlock;
   /** id bộ trang bị (P3-4): món này thuộc bộ nào. Món có `set` không rơi theo bảng chung, chỉ chế tạo hoặc rơi theo `EquipRollDef.set`. */

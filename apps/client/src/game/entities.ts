@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
 import { DUNGEON_EXIT, groundAt, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
-import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
+import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, swordModelOf, t } from '@dtl/content';
 import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
@@ -75,7 +75,7 @@ export interface WorldView {
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
-  const base = s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name);
+  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: swordModelOf(s.wp) };
   return s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
 }
 
@@ -460,7 +460,7 @@ export class EntityManager {
       v.s = s;
       const look = lookOf(s);
       if (isLocal) this.localLook = look;
-      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set;
+      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set || look.w !== v.look.w;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         v.skinPending = this.playerSkins.pending(look);
         v.swapModel(this.playerSkins.create(look), look);

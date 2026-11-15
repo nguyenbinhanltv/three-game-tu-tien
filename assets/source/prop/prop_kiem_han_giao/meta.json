@@ -1,0 +1,61 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_kiem_han_giao",
+  "type": "prop",
+  "budgetClass": "weapon",
+  "itemId": "itm_hgl_kiem",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 3000,
+    "texture": 512
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "prop/prop_kiem_han_giao/tripo/raw_v01.glb",
+    "size": {
+      "longest": 0.95
+    },
+    "orient": "none",
+    "post": "tools/blender/orient_sword.py"
+  },
+  "concept": [
+    {
+      "file": "concept/concept_side_v01.png",
+      "view": "right",
+      "tool": "Codex built-in imagegen (worker three-game-tu-tien-91)",
+      "date": "2026-11-16",
+      "prompt": "SUBJECT: single game prop concept for image-to-3D, an original cultivation one-handed straight double-edged Chinese sword (jian), about 95 cm long overall (blade about 70 cm, hilt and pommel about 25 cm), the BARE sword without scabbard, lying perfectly HORIZONTAL and perfectly straight in the frame, blade pointing to the RIGHT, seen in strict orthographic SIDE PROFILE, the blade and guard fully visible, solid thick readable blade with a clearly visible central ridge, blade of pale ice-silver steel with a fine overlapping scale pattern along the lower half (like a serpent-dragon scale) and a teal-blue tint toward the edge, guard shaped like a coiled water-serpent head in ice-silver metal with teal enamel, grip wrapped in deep teal cord, pommel a rounded scale-shaped silver cap (Han Giao Lan set: ice silver and lake teal), compact construction as one single object, no loose small parts, no dangling thin chains.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality, believable materials with hand-painted detail: polished steel, bronze, jade, lacquered wood grain, silk cord, clear readable silhouette, large shapes first and fine detail second, color guide (use only what the subject needs): ice silver (#C9D8DE), deep lake teal (#2F8798), dark teal (#2B5552), pale steel, jade accent (#7FE3D0) only tiny, dark navy (#22364E).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting, no colored rim light, no color cast, neutral white balance, plain light grey seamless background (#D8D8D8), no floor shadow, orthographic camera, strict SIDE VIEW, whole subject centered and fully inside the frame with generous margin on all sides.\nAVOID: no text, no letters, no calligraphy, no engraved characters, no seal script, no watermark, no logo, no signature, no glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no snow, no magic effects, no motion lines, no aura, no energy trail, no cel shading, no toon outlines, no black contour lines, no flat cartoon colors, no anime style, no photograph, no plastic look, no mirror-like reflections, no baked dramatic shadows, no night scene, no purple tint on the background, no ground, no stand, no table, no scabbard, no hand holding it, no crossguard, no European sword shapes, no background scenery, no second object, no cropped parts.",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "parentTaskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 3000,
+        "topology": "triangle",
+        "texture": "2K",
+        "pbr": true,
+        "remove_lighting": true
+      },
+      "seed": null,
+      "quote": 0,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Dựng trên Tripo web (gói Max); kiếm trần không vỏ, runtime ≤ 3000 tam giác, texture 512 (lớp weapon)."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (image→3D H3.1) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}
