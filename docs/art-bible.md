@@ -236,14 +236,16 @@ Kỹ thuật: vùng áo chính có mặt nạ trong texture; material nhân màu
 
 | Thông số | Sáng sớm (`dawn`) | Ban ngày (`day`, mặc định) | Đêm (`night`) |
 | --- | --- | --- | --- |
-| Mặt trời / trăng | `#F6C27E`, cường độ 2,0, cao 14° | `#FFE6B8`, 2,6, cao 48° | trăng `#9DB4CF`, 0,45, cao 35° |
-| Ánh trời | `#B9CFC8`, 0,9 | `#A9CFCB`, 1,0 | `#1A2938`, 0,5 |
-| Sương: màu, mật độ `FogExp2` | `#E4E3D6`, 0,0016 | `#D6E4DE`, 0,0011 | `#22323F`, 0,0013 |
+| Mặt trời / trăng | `#F6C27E`, cường độ 2,0, cao 14° | `#FFD596`, 3,4, cao 36° | trăng `#9DB4CF`, 0,45, cao 35° |
+| Ánh trời | `#B9CFC8`, 0,9 | `#9CC4C3`, 0,72 | `#1A2938`, 0,5 |
+| Sương: màu, mật độ `FogExp2` | `#E4E3D6`, 0,0016 | `#C9DDD8`, 0,0011 | `#22323F`, 0,0013 |
 | Sương theo độ cao: đỉnh lớp, hệ số | 60 m, ×2,5 | 40 m, ×1,8 | 40 m, ×2,0 |
-| Sắc bóng (`shadowTint`) | `#2F5B5C` ngọc lam | `#2F5B5C` ngọc lam | `#0F1F2A` lam đêm |
-| Sắc vùng sáng (`highlightTint`) | `#FFD49A` | `#FFE0A8` | `#FFB869` (đèn lồng) |
-| Nâng đen (`blackLift`) | `#14292B` | `#13282B` | `#0B1720` |
-| Tương phản / bão hòa / phơi sáng | 1,05 / 1,0 / 1,0 | 1,08 / 1,05 / 1,0 | 1,1 / 0,82 / 0,9 |
+| Sắc bóng (`shadowTint`) | `#2F5B5C` ngọc lam | `#2A5A5E` ngọc lam | `#0F1F2A` lam đêm |
+| Sắc vùng sáng (`highlightTint`) | `#FFD49A` | `#FFC670` | `#FFB869` (đèn lồng) |
+| Nâng đen (`blackLift`) | `#14292B` | `#0F2427` | `#0B1720` |
+| Tương phản / bão hòa / phơi sáng | 1,05 / 1,0 / 1,0 | 1,16 / 1,06 / 1,0 | 1,1 / 0,82 / 0,9 |
+
+Chỉnh 2026-11-15 (P2 grading): ban ngày hạ ánh trời (0,72) và hạ mặt trời xuống 36° với cường độ 3,3 để có bóng dài, tương phản sáng–tối; mức nhuộm tách tông riêng từng preset (`shadowAmount` 0,6 / `highlightAmount` 0,28 ban ngày; mặc định 0,5 / 0,1); `fogScatter` 0,85: sương phía mặt trời ngả `highlightTint` (nắng vàng xuyên sương), phía đối diện giữ ngọc lam; giảm bão hòa theo độ sâu còn 30%. Đỉnh núi là đá xám phủ rêu và cỏ khô, không có tuyết (mục 8); mặt đất xa hơn khoảng 70 m hòa dần về màu đỉnh lưới để không vân ô vuông; AO tắt dần từ 60 đến 140 m.
 
 Sương ban ngày dày hơn mức hiện tại trong `env.ts` (`FogExp2` 0,00068) để có chiều sâu; phải kiểm lại biên tải thế giới và độ dễ đọc mục tiêu tab ở 40–60 m.
 

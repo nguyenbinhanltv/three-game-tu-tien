@@ -79,11 +79,12 @@
       },
       "day": {
         "label": "Ban ngày",
-        "sunColor": "#FFE6B8", "sunIntensity": 2.6, "sunElevationDeg": 48,
-        "skyColor": "#A9CFCB", "skyIntensity": 1.0,
-        "fogColor": "#D6E4DE", "fogDensity": 0.0011, "heightFogTop": 40, "heightFogBoost": 1.8,
-        "shadowTint": "#2F5B5C", "highlightTint": "#FFE0A8", "splitBalance": 0.0,
-        "blackLift": "#13282B", "contrast": 1.08, "saturation": 1.05, "exposure": 1.0
+        "sunColor": "#FFD596", "sunIntensity": 3.4, "sunElevationDeg": 36,
+        "skyColor": "#9CC4C3", "skyIntensity": 0.72,
+        "fogColor": "#C9DDD8", "fogDensity": 0.0011, "heightFogTop": 40, "heightFogBoost": 1.8,
+        "shadowTint": "#2A5A5E", "highlightTint": "#FFC670", "splitBalance": 0.0,
+        "shadowAmount": 0.6, "highlightAmount": 0.28, "fogScatter": 0.85,
+        "blackLift": "#0F2427", "contrast": 1.16, "saturation": 1.06, "exposure": 1.0
       },
       "night": {
         "label": "Đêm",
@@ -97,6 +98,6 @@
     "bloom": { "threshold": 1.0, "strength": 0.35, "radius": 0.5, "maxHdr": 2.5 },
     "vignette": { "amount": 0.18, "inner": 0.4, "outer": 0.9 },
     "grain": { "amount": 0.025, "dither": true },
-    "depthDesaturate": { "start": 80, "end": 700, "amount": 0.4 }
+    "depthDesaturate": { "start": 80, "end": 700, "amount": 0.3 }
   }
 }

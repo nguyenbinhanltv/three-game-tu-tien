@@ -77,6 +77,8 @@ export function applyGrading(p: GradingPreset): void {
   disp(postParams.shadowTint.value, p.shadowTint);
   disp(postParams.highlightTint.value, p.highlightTint);
   disp(postParams.blackLift.value, p.blackLift);
+  postParams.shadowTintAmount.value = p.shadowAmount ?? 0.5;
+  postParams.highlightTintAmount.value = p.highlightAmount ?? 0.1;
   postParams.splitBalance.value = p.splitBalance;
   postParams.contrast.value = p.contrast;
   postParams.saturation.value = p.saturation;
@@ -178,7 +180,9 @@ export class PostPipeline {
       aoPass.thickness.value = 1.2;
       aoPass.scale.value = 1.1;
       this.aoNode = aoPass;
-      hdr = hdr.mul(mix(float(1), aoPass.getTextureNode().r, postParams.aoStrength));
+      // Xa quá 70 m GTAO nửa độ phân giải cho vân sọc/ô vuông (độ sâu thưa), nên tắt dần: AO chỉ cần ở gần.
+      const aoNear = float(1).sub(smoothstep(60, 140, scenePass.getViewZNode().negate()));
+      hdr = hdr.mul(mix(float(1), aoPass.getTextureNode().r, postParams.aoStrength.mul(aoNear)));
     }
     if (opts.bloom) {
       this.blurNode = gaussianBlur(scenePass.getTextureNode('bloom'), null, postParams.bloomSigma);

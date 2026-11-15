@@ -10,3 +10,4 @@ export * from './protocol';
 export * from './pose';
 export * from './projectile';
 export * from './appearance';
+export * from './bodyfeel';
