@@ -940,6 +940,8 @@ export class GameSim {
     const c = p.char;
     if (this.isDead(p)) return this.warn(p, 'sys.dead');
     if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
+    // Đang độ kiếp hoặc tâm ma: không dùng pháp bảo (cùng luật với đan/trang bị).
+    if (p.trib || p.trial) return this.warn(p, 'sys.busy');
     const def = equippedArtifact(c.equip);
     if (!def) return this.warn(p, 'sys.art_none');
     if (this.airborne(p)) return this.warn(p, 'sys.cannot_while_flying');
@@ -990,7 +992,7 @@ export class GameSim {
         const dur = def.duration ?? 4;
         const who = new Set<PlayerEnt>([p]);
         for (const o of parties.matesInRoom(c.id, this.host)) {
-          if (o !== p && !this.isDead(o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius) who.add(o);
+          if (o !== p && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius) who.add(o);
         }
         for (const o of who) {
           const amount = shieldAmount(def, lv, o.char.mhp);
