@@ -91,6 +91,7 @@ export class NpcSkins {
       bounds: t.bounds,
       rates: s.rates,
       sink: false,
+      ground: 'biped',
     });
     // Lệch pha idle để các NPC không thở cùng nhịp.
     const idle = m.actionOf('idle');

@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { HIT_FEEL_HUMAN, type HitFeel } from '@dtl/shared';
 
 /**
  * Phản ứng trúng đòn phía client (chỉ trình bày, không đổi kết quả hay vị trí logic):
@@ -34,7 +35,7 @@ export interface HitOpts {
   /** Hướng giật lùi trong hệ thế giới (không cần chuẩn hóa). Bỏ trống = không giật lùi. */
   dirX?: number;
   dirZ?: number;
-  /** Hệ số giật lùi (quái to/boss nhỏ hơn 1). */
+  /** Hệ số giật lùi thêm (ngoài `feel` theo hạng thân). */
   mass?: number;
   /** Trễ trước khi phản ứng (giây), để khớp lúc đạn bay tới. */
   delay?: number;
@@ -48,6 +49,8 @@ export class HitReact {
   kz = 0;
   /** Độ rung hiện tại (hệ cục bộ của model). */
   shake = 0;
+  /** Tham số theo hạng thân (P2-E1): quái nhỏ giật nhiều, boss gần như đứng vững. Chủ model gán khi dựng. */
+  feel: HitFeel = HIT_FEEL_HUMAN;
   private stopT = 0;
   private flashT = 0;
   private knockT = KNOCK_LIFE;
@@ -77,7 +80,7 @@ export class HitReact {
 
   /** Bị trúng đòn: khựng + chớp + giật lùi + rung. */
   react(o: HitOpts): void {
-    const stop = hitStopFor(!!o.crit, !!o.heavy);
+    const stop = hitStopFor(!!o.crit, !!o.heavy) * this.feel.stop;
     if (o.delay && o.delay > 0) {
       if (this.pendHitT < 0) {
         this.pendHitT = o.delay;
@@ -118,12 +121,13 @@ export class HitReact {
     if (!o.noStop) this.stopT = Math.min(HIT_STOP_MAX, Math.max(this.stopT, stop));
     this.flashT = Math.max(this.flashT, Math.max(0.06, stop));
     this.shakeT = stop + 0.1;
-    this.shakeAmp = (o.crit ? 0.09 : 0.05) + (o.heavy ? 0.03 : 0);
+    const f = this.feel;
+    this.shakeAmp = ((o.crit ? 0.09 : 0.05) + (o.heavy ? f.heavyShake : 0)) * f.shake;
     const len = Math.hypot(o.dirX ?? 0, o.dirZ ?? 0);
     if (len > 1e-4) {
       this.dirX = (o.dirX ?? 0) / len;
       this.dirZ = (o.dirZ ?? 0) / len;
-      this.knockAmp = (o.crit ? 0.42 : 0.22) * (o.heavy ? 1.4 : 1) * Math.max(0.15, Math.min(1, o.mass ?? 1));
+      this.knockAmp = (o.crit ? 0.42 : 0.22) * (o.heavy ? f.heavyKnock : 1) * f.knock * Math.max(0.15, Math.min(1, o.mass ?? 1));
       this.knockT = 0;
     }
   }
