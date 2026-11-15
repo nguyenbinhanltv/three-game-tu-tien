@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { Humanoid } from '../models';
-import { adoptGltfMaterials } from '../../render/materials/world';
+import { adoptGltfMaterials, rimLight } from '../../render/materials/world';
 import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { SkinnedCharacter } from './skinned';
 import type { CharState, ClipMap } from './states';
@@ -154,7 +154,7 @@ function templateOf(handle: AssetHandle, lib: AssetHandle): Template {
   if (box.isEmpty()) box.set(new THREE.Vector3(-0.4, 0, -0.3), new THREE.Vector3(0.4, 1.7, 0.3));
   const height = box.max.y;
   const bounds = new THREE.Sphere(new THREE.Vector3(0, height * 0.5, 0), height * 1.15);
-  const mat = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
+  const mat = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0]);
   const clips = mergeClips(handle.animations, retargetClips(lib.scene, lib.animations, handle.scene));
   return { handle, lib, clips, height, bounds, mat };
 }

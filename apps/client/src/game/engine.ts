@@ -2093,8 +2093,10 @@ export class Game {
     if (this.tribMix === 0 && was === 0) return;
     if (this.cine.active && this.cineKind !== 'sect') return;
     const k = this.tribMix * this.tribMix * (3 - 2 * this.tribMix);
-    postParams.pulseColor.value.setRGB(0.3, 0.16, 0.55);
-    postParams.pulse.value = 0.7 * k;
+    // Trời kiếp: lam đêm ngả chàm, không nhuộm tím cả khung (art bible mục 1: tím dưới 5% khung hình, chỉ là điểm nhấn).
+    // Sắc tím để dành cho tia sét và vùng báo trước.
+    postParams.pulseColor.value.setRGB(0.2, 0.25, 0.4);
+    postParams.pulse.value = 0.62 * k;
   }
 
   /** Gửi (và gửi lại nếu server chưa nhận) chiêu đang chờ khi hết GCD/hồi chiêu. */

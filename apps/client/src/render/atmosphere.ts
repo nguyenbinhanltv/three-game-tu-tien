@@ -44,6 +44,9 @@ export const fogParams = {
   /** Nắng xuyên sương: sương phía mặt trời ngả sắc vùng sáng ấm (cường độ 0 = tắt). */
   glow: uniform(new THREE.Color(0xffd49a)),
   scatter: uniform(0.5),
+  /** Sương xa (phối cảnh không khí): mật độ bậc một và khoảng cách bắt đầu (m). 0 = tắt. */
+  haze: uniform(0.0012),
+  hazeStart: uniform(70),
   desatStart: uniform(DEPTH_DESATURATE.start),
   desatEnd: uniform(DEPTH_DESATURATE.end),
   desatAmount: uniform(DEPTH_DESATURATE.amount),
@@ -60,13 +63,23 @@ const atmosphereFog = Fn(() => {
   // Sương theo độ cao: điểm càng thấp (gần đáy lớp) thì mật độ càng lớn.
   const h = clamp(fogParams.base.add(fogParams.top).sub(positionWorld.y).div(fogParams.top), 0, 1);
   const dens = fogParams.density.mul(float(1).add(fogParams.boost.sub(1).mul(h)));
-  const f = float(1).sub(exp(dens.mul(dist).pow(2).negate()));
+  const near = float(1).sub(exp(dens.mul(dist).pow(2).negate()));
+  // Lớp sương xa: bậc một nên núi/rừng ở 200–600 m nhạt dần đều thành từng lớp (bậc hai ở trên gần như chưa ăn tới
+  // tầm đó); chỗ thấp dày hơn chỗ cao. Trước `hazeStart` bằng 0 nên tầm chiến đấu không đổi.
+  const far = float(1).sub(exp(fogParams.haze.mul(dist.sub(fogParams.hazeStart).max(0)).mul(h.mul(0.5).add(0.5)).negate()));
+  const f = float(1).sub(float(1).sub(near).mul(float(1).sub(far)));
   // Tán xạ tới: nhìn về phía mặt trời thì sương ấm vàng, quay lưng thì giữ ngọc lam lạnh.
   const view = normalize(positionWorld.sub(cameraPosition));
   const toSun = dot(view, skyParams.sunDir).max(0).pow(3);
   const fogCol = mix(fogParams.color, fogParams.glow, toSun.mul(fogParams.scatter));
   return vec4(mix(desat, fogCol, f), output.a);
 });
+
+/** Viền sáng nhân vật (xem `rimLight` trong render/materials/world.ts). */
+export const rimParams = {
+  color: uniform(new THREE.Color(0xf2c47e)),
+  strength: uniform(0.22),
+};
 
 export interface EnvLike {
   sun: THREE.DirectionalLight;
@@ -88,6 +101,11 @@ export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPres
   fogParams.glow.value.setHex(p.highlightTint);
   fogParams.scatter.value = p.fogScatter ?? 0;
   fogParams.top.value = p.heightFogTop;
+  fogParams.haze.value = p.fogHaze ?? 0;
+  fogParams.hazeStart.value = p.fogHazeStart ?? 70;
+  rimParams.strength.value = p.rim ?? 0;
+  // Viền sáng lấy sắc nắng (đêm: sắc trăng), không dùng trắng.
+  rimParams.color.value.setHex(p.sunColor);
   heightFogBoost = p.heightFogBoost;
   (scene.background as THREE.Color | null)?.setHex?.(p.fogColor);
 

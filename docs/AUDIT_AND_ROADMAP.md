@@ -367,6 +367,16 @@ Kiểm: test đơn vị cho bảng hit-stop và hàng đợi; `__sound` log th�
 
 ---
 
+## 7.7 Kết quả soát của PR D (2026-11-16)
+
+| Việc | Kết quả |
+| --- | --- |
+| Thiên lôi độ kiếp của người khác | Đã đổi luật ở server: người ngoài đứng trong vòng vẫn trúng đòn nhưng dừng ở 1 khí huyết, không chết và không mất tu vi vì kiếp của người khác. Có test |
+| Soát core loop bằng kịch bản tự động (2 tab, không god ở phần đánh quái, tâm ma, độ kiếp) | 18/19 bước đạt, bước còn lại là bộ chọn DOM của script sai (trạng thái đúng). Không thấy lỗi logic nào khác ngoài thiên lôi |
+| Nội suy người chơi khác, 30 bot đi lại ở sân (G13) | 0 lần nhảy vị trí quá 1,5 m, 0 lần khựng, 7 lần đảo hướng trên 26.691 mẫu đang di chuyển (0,03%), bước lớn nhất 0,11 m/khung ở 120 fps. **Không giật.** Tốc độ hiển thị dao động (hệ số biến thiên trung vị 0,35) do nội suy kiểu trượt về snapshot 20 Hz; muốn đều hơn thì chuyển sang nội suy theo bộ đệm thời gian: việc Sprint 2, không gấp |
+| Bộ `security` trên `origin/main` `f1e3676` | 3 mục của Truyền Tống Trận (M-4) hỏng cả trên main nguyên bản: đã báo Orchestrator, không thuộc PR D |
+| WebGL2 preset Cao 25–40 fps ở sân (T6) | Vẫn vậy trên main và trên nhánh: nghẽn GPU ở pixelRatio 2 + FXAA + đèn lồng point light, không phải CPU. Chưa sửa; đề xuất Sprint 2: hạ `maxPixels` của preset Cao trên WebGL2 hoặc tắt đèn lồng thật ở WebGL2 |
+
 ## 8. Kế hoạch bốn PR của đợt này
 
 | PR | Phạm vi | Vùng code | Không đụng |

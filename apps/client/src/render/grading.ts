@@ -26,6 +26,14 @@ export interface GradingPreset {
   shadowAmount?: number;
   highlightAmount?: number;
   fogScatter?: number;
+  /**
+   * Lớp sương xa kiểu thủy mặc (phối cảnh không khí): mật độ hàm mũ bậc một tính từ `fogHazeStart` mét trở ra.
+   * Tầm gần (chiến đấu, chọn mục tiêu 40–60 m) không đổi; núi và rừng ở 200–600 m nhạt dần thành từng lớp.
+   */
+  fogHaze?: number;
+  fogHazeStart?: number;
+  /** Cường độ viền sáng (rim) của nhân vật: sắc nắng, yếu (art bible 5.3). 0 = tắt. */
+  rim?: number;
 }
 
 export type GradingName = 'dawn' | 'day' | 'night';
