@@ -5,6 +5,7 @@ import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } fro
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
+import { Button, Divider, PanelWindow, Segmented, Slider } from './kit';
 import { set, useUI } from './store';
 
 export function statLines(def: ItemDef, plus = 0): string[] {
@@ -312,25 +313,20 @@ function VolumeSlider({ k }: { k: VolumeKey }) {
     else if (k === 'ui') sfx('loot');
   };
   return (
-    <label className="vol-row">
-      <span>{t('ui.settings.vol.' + k)}</span>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        step={5}
-        value={v}
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          unlockAudio();
-          setVolume(k, n / 100);
-          setV(n);
-        }}
-        onPointerUp={preview}
-        onKeyUp={preview}
-      />
-      <span className="vol-val">{v}%</span>
-    </label>
+    <Slider
+      label={t('ui.settings.vol.' + k)}
+      value={v}
+      min={0}
+      max={100}
+      step={5}
+      format={(n) => n + '%'}
+      onChange={(n) => {
+        unlockAudio();
+        setVolume(k, n / 100);
+        setV(n);
+      }}
+      onCommit={preview}
+    />
   );
 }
 
@@ -346,7 +342,7 @@ function MusicCredits() {
   }, []);
   return (
     <>
-      <div className="section-title">{t('ui.settings.credits')}</div>
+      <Divider label={t('ui.settings.credits')} />
       {list && list.length > 0 ? (
         <ul className="credits">
           {list.map((c) => (
@@ -364,7 +360,7 @@ function MusicCredits() {
           ))}
         </ul>
       ) : (
-        <div className="muted">{t('ui.settings.credits.procedural')}</div>
+        <div className="k-dim">{t('ui.settings.credits.procedural')}</div>
       )}
     </>
   );
@@ -378,88 +374,55 @@ function Settings() {
   const offscreen = useUI((s) => s.offscreen);
   const chapterCards = useUI((s) => s.chapterCards);
   const [mute, setMute] = useState(isMuted());
+  const onOff = [
+    { value: true, label: t('ui.settings.cam_shake_on') },
+    { value: false, label: t('ui.settings.cam_shake_off') },
+  ];
   return (
-    <Window title={t('ui.settings')} onClose={() => set({ panel: null })} cls="settings">
-      <div className="section-title">{t('ui.settings.controls')}</div>
-      <div className="seg">
-        {['mouse', 'turn', 'strafe'].map((m) => (
-          <button key={m} className={'btn' + (controls === m ? ' primary' : '')} onClick={() => Game.current?.setControls(m)}>
-            {t('ui.settings.controls.' + m)}
-          </button>
-        ))}
-      </div>
-      <div className="muted">{t('ui.settings.controls_hint.' + controls)}</div>
-      <div className="section-title">{t('ui.settings.quality')}</div>
-      <div className="seg">
-        {['low', 'medium', 'high'].map((q) => (
-          <button key={q} className={'btn' + (quality === q ? ' primary' : '')} onClick={() => Game.current?.setQuality(q)}>
-            {t('ui.settings.q.' + q)}
-          </button>
-        ))}
-      </div>
-      <div className="muted">{t('ui.settings.quality_hint')}</div>
-      <div className="muted">{t('ui.settings.fps', { n: fps })}</div>
-      <div className="section-title">{t('ui.settings.cam_shake')}</div>
-      <div className="seg">
-        {[true, false].map((on) => (
-          <button key={String(on)} className={'btn' + (camShake === on ? ' primary' : '')} onClick={() => Game.current?.setCamShake(on)}>
-            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
-          </button>
-        ))}
-      </div>
-      <div className="section-title">{t('ui.settings.offscreen')}</div>
-      <div className="seg">
-        {[true, false].map((on) => (
-          <button key={String(on)} className={'btn' + (offscreen === on ? ' primary' : '')} onClick={() => Game.current?.setOffscreen(on)}>
-            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
-          </button>
-        ))}
-      </div>
-      <div className="muted">{t('ui.settings.offscreen_hint')}</div>
-      <div className="section-title">{t('ui.settings.chapter')}</div>
-      <div className="seg">
-        {[true, false].map((on) => (
-          <button key={String(on)} className={'btn' + (chapterCards === on ? ' primary' : '')} onClick={() => Game.current?.setChapterCards(on)}>
-            {t(on ? 'ui.settings.cam_shake_on' : 'ui.settings.cam_shake_off')}
-          </button>
-        ))}
-      </div>
-      <div className="muted">{t('ui.settings.chapter_hint')}</div>
-      <div className="section-title">{t('ui.settings.sound')}</div>
-      <div className="seg">
-        <button
-          className={'btn' + (!mute ? ' primary' : '')}
-          onClick={() => {
-            setMuted(false);
-            setMute(false);
-          }}
-        >
-          {t('ui.settings.sound_on')}
-        </button>
-        <button
-          className={'btn' + (mute ? ' primary' : '')}
-          onClick={() => {
-            setMuted(true);
-            setMute(true);
-          }}
-        >
-          {t('ui.settings.sound_off')}
-        </button>
-      </div>
+    <PanelWindow title={t('ui.settings')} onClose={() => set({ panel: null })}>
+      <Divider label={t('ui.settings.controls')} />
+      <Segmented label={t('ui.settings.controls')} value={controls} onChange={(m) => Game.current?.setControls(m)} options={['mouse', 'turn', 'strafe'].map((m) => ({ value: m, label: t('ui.settings.controls.' + m) }))} />
+      <div className="k-dim">{t('ui.settings.controls_hint.' + controls)}</div>
+      <Divider label={t('ui.settings.quality')} />
+      <Segmented label={t('ui.settings.quality')} value={quality} onChange={(q) => Game.current?.setQuality(q)} options={['low', 'medium', 'high'].map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))} />
+      <div className="k-dim">{t('ui.settings.quality_hint')}</div>
+      <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
+      <Divider label={t('ui.settings.cam_shake')} />
+      <Segmented label={t('ui.settings.cam_shake')} value={camShake} onChange={(on) => Game.current?.setCamShake(on)} options={onOff} />
+      <Divider label={t('ui.settings.offscreen')} />
+      <Segmented label={t('ui.settings.offscreen')} value={offscreen} onChange={(on) => Game.current?.setOffscreen(on)} options={onOff} />
+      <div className="k-dim">{t('ui.settings.offscreen_hint')}</div>
+      <Divider label={t('ui.settings.chapter')} />
+      <Segmented label={t('ui.settings.chapter')} value={chapterCards} onChange={(on) => Game.current?.setChapterCards(on)} options={onOff} />
+      <div className="k-dim">{t('ui.settings.chapter_hint')}</div>
+      <Divider label={t('ui.settings.sound')} />
+      <Segmented
+        label={t('ui.settings.sound')}
+        value={!mute}
+        onChange={(on) => {
+          setMuted(!on);
+          setMute(!on);
+        }}
+        options={[
+          { value: true, label: t('ui.settings.sound_on') },
+          { value: false, label: t('ui.settings.sound_off') },
+        ]}
+      />
       {VOLUME_KEYS.map((k) => (
         <VolumeSlider key={k} k={k} />
       ))}
       <MusicCredits />
-      <button
-        className="btn"
-        onClick={() => {
-          Game.current?.dispose();
-          set({ phase: 'login', panel: null, needName: false, log: [] });
-        }}
-      >
-        {t('ui.settings.logout')}
-      </button>
-    </Window>
+      <div>
+        <Button
+          onClick={() => {
+            Game.current?.dispose();
+            set({ phase: 'login', panel: null, needName: false, log: [] });
+          }}
+        >
+          {t('ui.settings.logout')}
+        </Button>
+      </div>
+    </PanelWindow>
   );
 }
 

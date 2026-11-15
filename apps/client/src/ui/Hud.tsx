@@ -5,59 +5,11 @@ import { itemName, monsterName, QUEST, realmName, SKILLS, t } from '@dtl/content
 import { Game } from '../game/engine';
 import { HpTrail } from '../game/hpTrail';
 import { trackedQuestId } from '../game/offscreen';
+import { ProgressBar } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { Panels } from './Panels';
 import { type BossLine, type ChapterCard, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
-
-/**
- * Đoạn trễ của thanh: chạy bằng requestAnimationFrame và ghi thẳng `style.width`, không re-render React
- * mỗi khung. Vòng lặp chỉ chạy khi đoạn trễ còn nằm trên máu. Đổi mục tiêu thì component được mount lại
- * (`key`) nên đoạn trễ bắt đầu từ máu hiện tại.
- */
-function useTrail(frac: number) {
-  const el = useRef<HTMLDivElement>(null);
-  const trail = useRef<HpTrail | null>(null);
-  if (!trail.current) trail.current = new HpTrail(frac);
-  const target = useRef(frac);
-  target.current = frac;
-  useEffect(() => {
-    let raf = 0;
-    let last = performance.now();
-    const loop = (now: number) => {
-      const v = trail.current!.update(target.current, Math.min(0.1, (now - last) / 1000));
-      last = now;
-      if (el.current) el.current.style.width = v * 100 + '%';
-      raf = v > target.current ? requestAnimationFrame(loop) : 0;
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [frac]);
-  return { el, width: trail.current.value * 100 + '%' };
-}
-
-/**
- * Thanh đo kiểu mới: đầu vát, viền đồng thau, gradient theo bảng màu tâm trạng, mép sáng,
- * vạch chia (`segs` đoạn), đoạn trễ màu nhạt (`trail`).
- */
-function Gauge({ cls, value, max, text, segs = 0, trail = false }: { cls: string; value: number; max: number; text?: string; segs?: number; trail?: boolean }) {
-  const frac = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
-  return (
-    <div className={'gauge ' + cls} style={segs ? ({ '--segs': segs } as React.CSSProperties) : undefined}>
-      <div className="gauge-in">
-        {trail && <GaugeTrail frac={frac} />}
-        <div className="gauge-fill" style={{ width: frac * 100 + '%' }} />
-        {segs > 1 && <div className="gauge-ticks" />}
-      </div>
-      {text !== undefined && <div className="gauge-text">{text}</div>}
-    </div>
-  );
-}
-
-function GaugeTrail({ frac }: { frac: number }) {
-  const { el, width } = useTrail(frac);
-  return <div ref={el} className="gauge-trail" style={{ width }} />;
-}
 
 function PlayerFrame() {
   const char = useUI((s) => s.char);
@@ -73,9 +25,9 @@ function PlayerFrame() {
         <span className="frame-name">{char.name}</span>
         <span className="frame-realm">{realmName(char.level)}</span>
       </div>
-      <Gauge cls="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} segs={4} trail />
-      <Gauge cls="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} segs={4} trail />
-      <Gauge cls="xp" value={char.xp} max={char.xpNeed} text={full ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`} />
+      <ProgressBar cls="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} segs={4} trail />
+      <ProgressBar cls="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} segs={4} trail />
+      <ProgressBar cls="xp" value={char.xp} max={char.xpNeed} text={full ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`} />
     </div>
   );
 }
@@ -91,7 +43,7 @@ function TargetFrame({ below }: { below: boolean }) {
         <span className="frame-name">{target.name}</span>
         {target.kind !== 'npc' && <span className="frame-realm">{target.kind === 'mon' ? t('ui.level_short', { n: target.level }) : realmName(target.level)}</span>}
       </div>
-      {target.kind !== 'npc' && <Gauge key={target.id} cls={'hp ' + (target.kind === 'player' ? 'ally' : 'enemy')} value={target.hp} max={target.mhp} text={`${target.hp} / ${target.mhp}`} segs={4} trail />}
+      {target.kind !== 'npc' && <ProgressBar key={target.id} cls={'hp ' + (target.kind === 'player' ? 'ally' : 'enemy')} value={target.hp} max={target.mhp} text={`${target.hp} / ${target.mhp}`} segs={4} trail />}
       {target.cast && <TargetCastBar cast={target.cast} />}
     </div>
   );
@@ -111,7 +63,7 @@ function BossBar() {
       </div>
       <div className="boss-title">{t(`mon.${boss.def}.title`)}</div>
       <div className="boss-hp">
-        <Gauge cls="hp boss" value={boss.hp} max={boss.mhp} text={`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`} segs={10} trail />
+        <ProgressBar cls="hp boss" value={boss.hp} max={boss.mhp} text={`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`} segs={10} trail />
         {/* Vạch chuyển pha: báo trước boss sẽ đổi chiêu ở mức máu này. */}
         {boss.marks?.map((f) => <div key={f} className="boss-mark" style={{ left: f * 100 + '%' }} />)}
       </div>

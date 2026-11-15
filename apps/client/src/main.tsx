@@ -10,6 +10,10 @@ if (q.get('viewer') === 'asset' || q.has('show')) {
   // `?show=char` (M1-10) là alias: mở model người chơi (`?show=<id asset>` cho asset khác trong manifest).
   document.getElementById('boot')?.remove();
   void import('./viewer').then((m) => m.mountViewer(root));
+} else if (q.get('viewer') === 'ui') {
+  // Trang xem thử bộ khung UI (P2-C1), nạp động như viewer asset.
+  document.getElementById('boot')?.remove();
+  void import('./ui/kit/viewer').then((m) => m.mountKitViewer(root));
 } else {
   const stage = document.createElement('div');
   stage.id = 'stage';
