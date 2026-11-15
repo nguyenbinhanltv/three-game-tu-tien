@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { APPEARANCE, DYE } from '@dtl/content';
+import { APPEARANCE, DYE, SET } from '@dtl/content';
 import { type Gender, type MonsterDef, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
@@ -22,6 +22,8 @@ import { type AnimState, type CharacterView, legacyModelsRequested, type Monster
 export interface PlayerLook {
   g: string;
   dye: string;
+  /** Bộ trang bị đang quyết định màu áo/ánh kiếm (id trong sets.json; undefined = màu đã chọn). */
+  set?: string;
 }
 
 /** Cấu hình model người chơi có xương theo asset. */
@@ -97,7 +99,10 @@ function modelOf(g: string): string | null {
   return own ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender)?.model ?? null;
 }
 
-function dyeOf(id: string) {
+function dyeOf(id: string, set?: string) {
+  const look = set ? SET.get(set)?.look : undefined;
+  // Bộ trang bị nhuộm áo bằng chính cơ chế `applyDye` (tham số material), id riêng để không đụng cache màu thường.
+  if (look) return { id: `set:${set}`, hex: look.hex, trim: look.trim };
   return DYE.get(id) ?? DYE.get(APPEARANCE.defaultDye)!;
 }
 
@@ -130,7 +135,7 @@ export class PlayerSkins {
   }
 
   create(look: PlayerLook): CharacterView {
-    const dye = dyeOf(look.dye);
+    const dye = dyeOf(look.dye, look.set);
     const id = modelOf(look.g);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (id && skin && !this.legacy) this.load(id);
@@ -316,6 +321,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
   /** Vỏ sáng cường hóa của kiếm (tạo lười khi có kiếm ≥ +7). */
   private glow: SwordGlow | null = null;
   private glowStage = 0;
+  private tintHex = '';
   /** Động tác rút/tra đang phát: đổi chỗ kiếm khi tới `at` (giây trong clip) hoặc khi động tác bị thay/hủy. */
   private swap: { id: string; at: number; drawn: boolean } | null = null;
 
@@ -336,12 +342,25 @@ export class SkinnedPlayer extends SkinnedCharacter {
   setWeaponGlow(stage: number): void {
     if (stage === this.glowStage) return;
     this.glowStage = stage;
+    this.applyGlow();
+  }
+
+  /** Ánh kiếm theo bộ trang bị: bậc tối thiểu 1 với màu của bộ ('' = bỏ). */
+  setWeaponTint(hex: string): void {
+    if (hex === this.tintHex) return;
+    this.tintHex = hex;
+    this.applyGlow();
+  }
+
+  private applyGlow(): void {
     if (!this.sword) return;
+    const stage = Math.max(this.glowStage, this.tintHex ? 1 : 0);
     if (!this.glow && stage > 0) {
       this.glow = new SwordGlow(this.sword.glowLocal);
       // Cùng hệ với cây xương (rig nằm ngoài cảnh nhưng trùng hệ của `inner`).
       this.inner.add(this.glow.group);
     }
+    this.glow?.setTint(this.tintHex ? new THREE.Color(this.tintHex).getHex() : null);
     this.glow?.setStage(this.lod >= 2 ? 0 : stage);
   }
 
@@ -366,7 +385,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
   protected onLod(level: number): void {
     const aura = this.flySword?.children[1];
     if (aura) aura.visible = level < 2;
-    this.glow?.setStage(level >= 2 ? 0 : this.glowStage);
+    this.glow?.setStage(level >= 2 ? 0 : Math.max(this.glowStage, this.tintHex ? 1 : 0));
   }
 
   /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */

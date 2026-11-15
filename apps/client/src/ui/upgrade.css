@@ -89,3 +89,14 @@
 .upg-total {
   font-size: 13px;
 }
+
+/* Bộ trang bị (P3-4): thẻ bộ trong tab Chế tạo và bảng nhân vật. */
+.set-card {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.set-board {
+  margin-top: 4px;
+}

@@ -92,7 +92,22 @@
     "itm_ngoc_boi_moc": "Mộc Ngọc Bội",
     "itm_ngoc_boi_thanh": "Thanh Tâm Ngọc Bội",
     "itm_ngoc_boi_linh": "Linh Tuyền Ngọc Bội",
-    "itm_gioi_chi_dong": "Đồng Giới Chỉ"
+    "itm_gioi_chi_dong": "Đồng Giới Chỉ",
+    "itm_lk_dao_bao": "Lạc Kiếm Đạo Bào",
+    "itm_lk_ho_uyen": "Lạc Kiếm Hộ Uyển",
+    "itm_lk_dai_lung": "Lạc Kiếm Đai Lưng",
+    "itm_lk_van_ngoa": "Lạc Kiếm Vân Ngoa",
+    "itm_hg_dao_bao": "Huyền Giáp Đạo Bào",
+    "itm_hg_ho_uyen": "Huyền Giáp Hộ Uyển",
+    "itm_hg_dai_lung": "Huyền Giáp Đai Lưng",
+    "itm_hg_van_ngoa": "Huyền Giáp Vân Ngoa",
+    "itm_dt_dao_bao": "Đan Tâm Đạo Bào",
+    "itm_dt_ngoc_boi": "Đan Tâm Ngọc Bội",
+    "itm_dt_dai_lung": "Đan Tâm Đai Lưng",
+    "itm_dt_gioi_chi": "Đan Tâm Giới Chỉ",
+    "itm_hgl_kiem": "Hàn Giao Lân Kiếm",
+    "itm_hgl_dao_bao": "Hàn Giao Lân Đạo Bào",
+    "itm_hgl_gioi_chi": "Hàn Giao Lân Giới Chỉ"
   },
   "upgrade": {
     "gem": "Linh Ngọc",
@@ -109,5 +124,12 @@
     "salvage": "phân giải",
     "bound": "ràng buộc",
     "enhance": "cường hóa"
+  },
+  "sets": {
+    "set_lac_kiem": "Lạc Kiếm Môn Phục",
+    "set_huyen_giap": "Huyền Giáp Hộ Pháp",
+    "set_dan_tam": "Đan Tâm Y Bát",
+    "set_han_giao": "Hàn Giao Lân",
+    "forge": "Chế tạo"
   }
 }

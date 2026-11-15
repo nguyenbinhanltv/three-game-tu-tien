@@ -37,6 +37,8 @@ export class SwordGlow {
   private sheathMat = glowMat(STAGES[1].color);
   private streakMat = glowMat(STAGES[2].color);
   private stage = 0;
+  /** Màu theo bộ trang bị (P3-4); null = màu theo bậc cường hóa. */
+  private tint: number | null = null;
   private time = Math.random() * 6;
   private local: THREE.Matrix4;
   private tmp = new THREE.Matrix4();
@@ -57,6 +59,15 @@ export class SwordGlow {
     return this.stage > 0;
   }
 
+  /** Đổi màu ánh kiếm theo bộ (null = trả về màu theo bậc). Gọi `setStage` sau đó để áp lại. */
+  setTint(hex: number | null): void {
+    if (hex === this.tint) return;
+    this.tint = hex;
+    const was = this.stage;
+    this.stage = -1;
+    this.setStage(was);
+  }
+
   setStage(stage: number): void {
     const s = stage >= 2 ? 2 : stage >= 1 ? 1 : 0;
     if (s === this.stage) return;
@@ -64,7 +75,8 @@ export class SwordGlow {
     this.group.visible = s > 0;
     if (!s) return;
     const st = STAGES[s as 1 | 2];
-    this.sheathMat.color.setHex(st.color);
+    this.sheathMat.color.setHex(this.tint ?? st.color);
+    if (this.tint !== null) this.streakMat.color.setHex(this.tint);
     this.sheath.position.set(0, 0, BLADE_START + BLADE_LEN / 2);
     this.sheath.scale.set(st.w, st.t, BLADE_LEN / 2 + 0.05);
     // Vệt kiếm khí chỉ có ở +10: dải mảnh kéo dài quá mũi, nhạt dần.

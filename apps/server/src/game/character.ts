@@ -34,7 +34,7 @@ import {
   SPAWN_POINT,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT } from '@dtl/content';
+import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
 import { characters, db, items, ledger, rootForName } from '../db';
 import { methodDefMul, sanitizeMethodMeta, type MethodMeta } from './method';
 
@@ -311,7 +311,7 @@ export class Character {
       const e = this.equip[k];
       if (e) worn.push({ item: e, tpl: ITEM.get(e.id)?.stats });
     }
-    const st = computePlayerStats(this.level, worn, ROOT.get(this.root));
+    const st = computePlayerStats(this.level, worn, ROOT.get(this.root), SETS);
     this.stats = st;
     this.mhp = st.hp;
     this.mmp = st.mp;

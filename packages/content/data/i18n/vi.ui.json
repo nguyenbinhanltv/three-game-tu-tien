@@ -489,5 +489,27 @@
   "ui.salvage.pick_hint": "Bấm vào món để chọn.",
   "ui.salvage.do": "Phân giải ({n})",
   "ui.salvage.confirm": "Có món quý hoặc đã cường hóa, bấm lần nữa để xác nhận",
-  "ui.item.bind_on_equip": "Ràng buộc khi mặc"
+  "ui.item.bind_on_equip": "Ràng buộc khi mặc",
+
+  "ui.npc.tab.forge": "Chế tạo",
+  "ui.forge.title": "Chế tạo bộ Lạc Kiếm Môn Phục",
+  "ui.forge.desc": "Thiết lão chế từng món từ nguyên liệu bí cảnh. Phẩm do lò quyết định, có dòng phụ như đồ rơi.",
+  "ui.forge.make": "Chế tạo",
+  "ui.forge.chance": "Huyền phẩm {a}% · Địa phẩm {b}%",
+  "ui.forge.need": "Nguyên liệu",
+  "ui.forge.owned": "Đã có {n}/4 món bộ này trên người",
+  "ui.set.title": "{name} ({n}/{total})",
+  "ui.set.tier": "{n} món:",
+  "ui.set.stat": "Thưởng chỉ số",
+  "ui.set.src.forge": "Nguồn: chế tạo ở Thiết lão",
+  "ui.set.src.drop": "Nguồn: rơi từ {from}",
+  "ui.set.from.set_huyen_giap": "Thủ Mộ Thạch Tướng (Kiếm Trủng đợt 4)",
+  "ui.set.from.set_dan_tam": "Thủ Mộ Thạch Tướng (Kiếm Trủng đợt 4)",
+  "ui.set.from.set_han_giao": "Hàn Giao",
+  "ui.set.piece": "Món bộ",
+  "ui.set.panel": "Bộ trang bị",
+  "ui.set.none": "Chưa mặc món bộ nào.",
+  "ui.set.active": "đang sáng",
+  "ui.set.worn": "đang mặc",
+  "ui.set.missing": "chưa có"
 }

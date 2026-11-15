@@ -26,6 +26,7 @@ import {
   DEATH_XP_LOSS,
   type DmgMsg,
   glowStage,
+  lookSet,
   MAX_ENHANCE,
   healAmount,
   methodSwitchCost,
@@ -124,6 +125,10 @@ import { type Hot, MethodRt, methodOf, passiveOf, resolveFor, setSkillLevel, ski
 const SKILL_SCROLL = 'itm_bi_tich_tan_quyen';
 /** Chiêu khiêu khích với boss chỉ giữ chừng này thời gian (tỉ lệ). */
 const TAUNT_BOSS_MUL = 0.5;
+/** Bộ trang bị (P3-4): bán kính hồi cho đồng đội, hệ số tốc độ của quái bị làm chậm (thường / boss). */
+const SET_HEAL_RADIUS = 14;
+const SET_SLOW_MUL = 0.5;
+const SET_SLOW_BOSS = 0.8;
 const METHOD_NPC = 'npc_chuong_mon';
 /** Đan dược dùng lên đồng đội (Thanh Mộc Đan Kinh) trong tầm này (mét). */
 const POTION_ALLY_RANGE = 12;
@@ -256,6 +261,8 @@ export interface MonEnt {
   mark?: { sid: string; until: number; mul: number };
   /** Bị khiêu khích: buộc nhắm người `sid` tới `until` (ms). */
   taunt?: { sid: string; until: number };
+  /** Bị làm chậm (đòn bạo kích của bộ Hàn Giao Lân): tốc độ đuổi nhân `mul` tới `until`. */
+  slow?: { until: number; mul: number };
 }
 
 interface NodeEnt {
@@ -593,6 +600,8 @@ export class GameSim {
     if (s.wp !== wp) s.wp = wp;
     const wg = glowStage(c.equip.weapon?.plus ?? 0);
     if (s.wg !== wg) s.wg = wg;
+    const sk = lookSet(c.stats.sets)?.id ?? '';
+    if (s.sk !== sk) s.sk = sk;
     this.setFlag(p, PF_FLYING, m.flying);
   }
 
@@ -996,6 +1005,25 @@ export class GameSim {
     this.hots.push({ sid, nextAt: this.now + 1000, endAt: this.now + sec * 1000, per: perSec });
   }
 
+  /**
+   * Bộ Đan Tâm Y Bát (4 món): Hồi Nguyên Thuật hồi thêm cho đồng đội gần (`SET_HEAL_RADIUS` m), bằng tỉ lệ của lượng hồi bản thân.
+   * `hotSec`: biến thức hồi dần thì đồng đội cũng nhận theo thời gian.
+   */
+  private setHealShare(p: PlayerEnt, amount: number, hotSec = 0): void {
+    const share = p.char.stats.setFx.healShare;
+    if (!(share > 0) || amount <= 0) return;
+    for (const o of this.players.values()) {
+      if (o === p || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > SET_HEAL_RADIUS) continue;
+      if (hotSec > 0) {
+        this.addHot(o.sid, (amount * share) / hotSec, hotSec);
+        continue;
+      }
+      const n = Math.round(amount * share);
+      o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
+      this.host.broadcast(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+    }
+  }
+
   private executeSkill(p: PlayerEnt, skill: SkillDef, targetId: string): void {
     const c = p.char;
     const rs = resolveFor(c.meta, skill);
@@ -1042,6 +1070,11 @@ export class GameSim {
         }
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
         for (const h of rs.hits) this.hitMonster(p, mon, h * mul, elemMul);
+        // Bộ Lạc Kiếm Môn Phục (4 món): Phi Kiếm có xác suất bắn thêm một thanh (server roll, không tin client).
+        if (skill.id === 'skl_phi_kiem' && c.stats.setFx.phiKiemExtra > 0 && Math.random() < c.stats.setFx.phiKiemExtra) {
+          this.fx({ t: skill.fx, src: p.sid, dst: mon.id, ...tag });
+          this.hitMonster(p, mon, rs.power * mul, elemMul);
+        }
         if (behind && v?.pierce) this.hitMonster(p, behind, rs.power * v.pierce * mul, elemMul);
         if (v?.cleave) {
           for (const o of this.monstersNear(mon.s.x, mon.s.z, v.cleave.r, mon)) this.hitMonster(p, o, rs.power * v.cleave.mul * mul, elemMul);
@@ -1072,10 +1105,12 @@ export class GameSim {
         const recv = 1 + c.stats.healRecv;
         if (v?.hot) {
           this.addHot(p.sid, healAmount(base * v.hot.totalMul, healMul) / v.hot.dur, v.hot.dur);
+          this.setHealShare(p, Math.round(healAmount(base * v.hot.totalMul, healMul)), v.hot.dur);
         } else {
           const n = Math.round(healAmount(base, healMul) * recv);
           c.hp = Math.min(c.mhp, c.hp + n);
           this.host.broadcast(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
+          this.setHealShare(p, n);
         }
         this.fx({ t: skill.fx, src: p.sid, ...tag });
         break;
@@ -1083,7 +1118,7 @@ export class GameSim {
       case 'shield': {
         const dur = rs.duration ?? 8;
         const give = (o: PlayerEnt) => {
-          o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1)), until: this.now + dur * 1000 };
+          o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1) * (o === p && skill.id === 'skl_linh_khi_ho_the' ? 1 + c.stats.setFx.shieldBoost : 1)), until: this.now + dur * 1000 };
           this.setFlag(o, PF_SHIELD, true);
         };
         give(p);
@@ -1212,6 +1247,9 @@ export class GameSim {
     const lands = mon.state !== MS_DEAD && !(mon.owner && mon.owner !== p.sid) && this.now >= mon.evadeUntil;
     this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy);
     if (!lands) return;
+    // Bộ Hàn Giao Lân (3 món): đòn bạo kích làm chậm mục tiêu (boss chỉ chậm nhẹ).
+    const slowSec = p.char.stats.setFx.critSlowSec;
+    if (crit && slowSec > 0 && mon.state !== MS_DEAD) mon.slow = { until: this.now + slowSec * 1000, mul: mon.def.boss ? SET_SLOW_BOSS : SET_SLOW_MUL };
     const pas = passiveOf(p.char.meta);
     if (pas?.kind === 'kiem_y') this.addStack(p, pas.max ?? 5, pas.decay ?? 10);
     // Chiêu tối thượng đang ra không tự nạp lại vòng sạc của chính nó.
@@ -1473,6 +1511,14 @@ export class GameSim {
     if (p.shield) {
       const absorbed = Math.min(p.shield.amount, n);
       p.shield.amount -= absorbed;
+      // Bộ Huyền Giáp Hộ Pháp (4 món): phản một phần sát thương khiên đã đỡ về quái đánh mình.
+      const reflect = c.stats.setFx.shieldReflect;
+      if (reflect > 0 && absorbed > 0 && src) {
+        const attacker = this.monById.get(src);
+        if (attacker && attacker.state !== MS_DEAD && !(attacker.owner && attacker.owner !== p.sid)) {
+          this.damageMonster(attacker, Math.max(1, Math.round(absorbed * reflect)), p);
+        }
+      }
       n -= absorbed;
       if (p.shield.amount <= 0) {
         p.shield = null;
@@ -1639,7 +1685,8 @@ export class GameSim {
     const dz = tz - m.s.z;
     const d = Math.sqrt(dx * dx + dz * dz);
     if (d < 0.05) return d;
-    const step = Math.min(d, speed * dt);
+    const slowed = m.slow && this.now < m.slow.until ? m.slow.mul : 1;
+    const step = Math.min(d, speed * slowed * dt);
     const nx = m.s.x + (dx / d) * step;
     const nz = m.s.z + (dz / d) * step;
     m.s.x = nx;

@@ -55,6 +55,10 @@
 .item-stat.good {
   color: var(--k-jade);
 }
+.item-stat.set {
+  color: #ffd45a;
+  text-shadow: 0 0 6px rgba(255, 190, 70, 0.45);
+}
 .item-stat.bad {
   color: var(--k-cinnabar-hi);
 }

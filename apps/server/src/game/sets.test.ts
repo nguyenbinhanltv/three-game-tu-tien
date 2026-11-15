@@ -1,0 +1,135 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { DUST_ITEM, INV_SIZE, type FxMsg } from '@dtl/shared';
+import { FORGE, ITEM, SETS } from '@dtl/content';
+
+process.env.DB_FILE = ':memory:';
+
+type Ch = InstanceType<typeof import('./character').Character>;
+let Character: typeof import('./character').Character;
+let UpgradeSystem: typeof import('./upgrade').UpgradeSystem;
+let sqlite: typeof import('../db').sqlite;
+
+beforeAll(async () => {
+  ({ Character } = await import('./character'));
+  ({ UpgradeSystem } = await import('./upgrade'));
+  ({ sqlite } = await import('../db'));
+});
+
+let seq = 0;
+function setup() {
+  const acc = 950_000 + ++seq;
+  const c: Ch = Character.create(acc, 'St' + acc, null, 'kim' as never);
+  const warns: string[] = [];
+  let now = 10_000;
+  const p = { sid: 's' + acc, char: c, trial: 0 } as never as import('./sim').PlayerEnt;
+  const sys = new UpgradeSystem({
+    now: () => now,
+    isDead: () => false,
+    nearNpc: () => true,
+    idem: (pl, r) => (typeof r === 'string' && r.length >= 4 ? `${pl.char.id}:${r}` : undefined),
+    warn: (_p, k) => void warns.push(k),
+    sys: () => {},
+    fx: (_m: FxMsg) => {},
+  });
+  let n = 0;
+  const forge = (id: string, r = 'frg-' + ++n) => {
+    now += 1000;
+    sys.onUpgrade(p, { npc: 'npc_thiet_lao', op: 'forge', id, r });
+  };
+  const fund = (id: string) => {
+    const f = FORGE.find((x) => x.id === id)!;
+    expect(c.tx('fund', null, (d) => (f.inputs.every((i) => d.add(i.id, i.n)), d.addGold(f.gold), true))).toBe(true);
+    return f;
+  };
+  const count = (id: string) => c.inv.reduce((s, x) => s + (x && x.id === id ? x.n : 0), 0);
+  return { c, forge, fund, count, warns };
+}
+
+describe('dữ liệu bộ', () => {
+  it('bốn bộ, mỗi món trỏ đúng bộ, công thức chế chỉ ra món của bộ Lạc Kiếm', () => {
+    expect(SETS.map((s) => s.id)).toEqual(['set_lac_kiem', 'set_huyen_giap', 'set_dan_tam', 'set_han_giao']);
+    for (const s of SETS) for (const pid of s.pieces) expect(ITEM.get(pid)?.set).toBe(s.id);
+    for (const f of FORGE) expect(ITEM.get(f.output)?.set).toBe('set_lac_kiem');
+  });
+});
+
+describe('chế tạo bộ ở Thiết lão', () => {
+  it('trừ nguyên liệu + linh thạch, ra món có inst (Huyền/Địa), ledger ghi seed', () => {
+    const t = setup();
+    const f = t.fund('frg_lk_dao_bao');
+    t.forge(f.id);
+    const out = t.c.inv.find((s) => s?.id === f.output);
+    expect(out?.inst).toBeTruthy();
+    expect([2, 3]).toContain(out!.inst!.q);
+    expect(out!.inst!.affixes.length).toBe(out!.inst!.q);
+    for (const i of f.inputs) expect(t.count(i.id)).toBe(0);
+    expect(t.c.gold).toBe(0);
+    const rows = sqlite.prepare("SELECT reason FROM ledger WHERE char_id = ? AND reason LIKE 'forge:%'").all(t.c.id) as { reason: string }[];
+    expect(rows.length).toBeGreaterThan(0);
+  });
+
+  it('cùng khóa idem không chế hai lần; thiếu nguyên liệu hoặc linh thạch thì không đổi gì', () => {
+    const t = setup();
+    const f = t.fund('frg_lk_ho_uyen');
+    t.fund('frg_lk_ho_uyen');
+    t.forge(f.id, 'dup-key');
+    t.forge(f.id, 'dup-key');
+    expect(t.c.inv.filter((s) => s?.id === f.output)).toHaveLength(1);
+    expect(t.count(DUST_ITEM)).toBe(f.inputs.find((i) => i.id === DUST_ITEM)!.n);
+    const poor = setup();
+    poor.forge(f.id);
+    expect(poor.c.inv.some((s) => s?.id === f.output)).toBe(false);
+    expect(poor.warns).toContain('sys.not_enough_gold');
+    const noMat = setup();
+    expect(noMat.c.tx('g', null, (d) => (d.addGold(f.gold), true))).toBe(true);
+    noMat.forge(f.id);
+    expect(noMat.c.gold).toBe(f.gold);
+    expect(noMat.warns).toContain('sys.not_enough_mat');
+  });
+
+  it('công thức lạ bị bỏ qua; túi đầy (nguyên liệu không giải phóng ô nào) thì hủy cả giao dịch', () => {
+    const t = setup();
+    t.forge('frg_khong_co');
+    expect(t.c.inv.every((s) => !s)).toBe(true);
+    // Nguyên liệu mỗi loại chiếm đúng nửa ô cuối: tiêu hết vẫn không trống ô nào vì ô còn lại giữ phần dư.
+    const f = FORGE.find((x) => x.id === 'frg_lk_van_ngoa')!;
+    expect(t.c.tx('fill', null, (d) => {
+      for (let i = 0; i < INV_SIZE - f.inputs.length; i++) if (!d.add('itm_hoi_xuan_dan', 1) && !d.add('itm_nanh_soi', 1)) break;
+      return true;
+    })).toBe(true);
+    t.fund(f.id);
+    // Thêm dư mỗi loại nguyên liệu để sau khi tiêu vẫn còn lại phần dư giữ ô.
+    for (const i of f.inputs) expect(t.c.tx('extra', null, (d) => d.add(i.id, 1))).toBe(true);
+    while (t.c.inv.some((s) => !s)) if (!t.c.tx('pad', null, (d) => d.add('itm_linh_thao', 99))) break;
+    t.forge(f.id);
+    if (t.c.inv.some((s) => s?.id === f.output)) return;
+    expect(t.warns).toContain('sys.inv_full');
+    for (const i of f.inputs) expect(t.count(i.id)).toBeGreaterThanOrEqual(i.n);
+  });
+
+  it('mặc 1 món chưa có thưởng, 2 món có chỉ số, đủ 4 món bật hiệu ứng Phi Kiếm', () => {
+    const t = setup();
+    t.c.level = 13;
+    const set = SETS.find((s) => s.id === 'set_lac_kiem')!;
+    const wear = (ids: string[]) => {
+      t.c.tx('wear', null, (d) => {
+        d.equip = {};
+        for (const id of ids) d.addRolled(id, 12, 2);
+        for (const id of ids) {
+          const i = d.inv.findIndex((s) => s?.id === id);
+          d.equip[ITEM.get(id)!.kind as 'robe'] = d.inv[i]!;
+          d.inv[i] = null;
+        }
+        return true;
+      });
+      t.c.recalc();
+    };
+    wear(set.pieces.slice(0, 1));
+    expect(t.c.stats.setFx.phiKiemExtra).toBe(0);
+    wear(set.pieces.slice(0, 2));
+    expect(t.c.stats.sets[0].n).toBe(2);
+    expect(t.c.stats.setFx.phiKiemExtra).toBe(0);
+    wear(set.pieces);
+    expect(t.c.stats.setFx.phiKiemExtra).toBe(0.2);
+  });
+});
