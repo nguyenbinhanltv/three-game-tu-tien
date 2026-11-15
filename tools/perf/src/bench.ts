@@ -41,6 +41,9 @@ const SECONDS = Number(opt('--seconds', '8'));
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
 const CHANNEL = opt('--channel', process.env.BENCH_CHANNEL ?? 'chrome');
 const HEADED = args.includes('--headed');
+/** `--query a=b&c=d`: thêm vào URL game (A/B cờ kiểm thử). `--points rung,ho`: chỉ đo các điểm này. */
+const EXTRA_QUERY = opt('--query', '');
+const ONLY_POINTS = opt('--points', '').split(',').filter(Boolean);
 /** devicePixelRatio giả lập; engine lấy min(dpr, pixelRatio của preset) nên dpr 1 làm các preset chỉ khác hậu kỳ/bóng. */
 const DPR = Number(opt('--dpr', '1'));
 const PORT = Number(process.env.PORT ?? 2635);
@@ -222,7 +225,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
   // tsx (esbuild keepNames) chèn helper `__name` vào hàm đã biên dịch; trang không có helper này nên tạo shim.
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)});` });
   const name = `Bench_${renderer === 'webgpu' ? 'gpu' : 'gl'}_${preset}`.slice(0, 14);
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${EXTRA_QUERY ? '&' + EXTRA_QUERY : ''}`;
   const t0 = Date.now();
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
@@ -252,7 +255,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
     });
     await gm(page, 'level 15');
     const points: Point[] = [];
-    for (const wp of WAYPOINTS) {
+    for (const wp of WAYPOINTS.filter((w) => !ONLY_POINTS.length || ONLY_POINTS.includes(w.name))) {
       await gm(page, `tp ${wp.x} ${wp.z}`);
       await gm(page, 'heal');
       // Chờ tới nơi và ô địa hình quanh đó nạp xong (số ô đứng yên 1,5 giây, tối thiểu 3 giây, tối đa 20 giây).

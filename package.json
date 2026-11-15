@@ -27,6 +27,7 @@
     "shots:method": "pnpm --filter @dtl/perf run shots:method --",
     "assets:terrain": "pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
+    "assets:impostor": "pnpm --filter @dtl/asset-pipeline run impostor",
     "audio:build": "node tools/audio/build.mjs",
     "audio:check": "node tools/audio/build.mjs --check && node tools/audio/loop.mjs --check && node tools/audio/levels.mjs --check",
     "audio:levels": "node tools/audio/levels.mjs --write",
