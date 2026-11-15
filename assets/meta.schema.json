@@ -83,6 +83,15 @@
             }
           }
         },
+        "sharedAnims": {
+          "type": "string",
+          "pattern": "^anim_[a-z0-9]+(_[a-z0-9]+)*$",
+          "description": "Id thư viện clip dùng chung (anim_human_base, M2-3): GLB không mang clip, client retarget theo tên xương. Dùng với post anim_biped_extra.py, thay cho clips."
+        },
+        "animLib": {
+          "type": "boolean",
+          "description": "Thư viện clip không mesh dùng chung cho mọi nhân vật người rig Mixamo (M2-3): post tools/blender/export_anim_lib.py bỏ mesh và xương phụ, chỉ giữ xương mixamorig + clip."
+        },
         "extra": {
           "type": "array",
           "uniqueItems": true,
