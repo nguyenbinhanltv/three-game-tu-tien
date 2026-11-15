@@ -1,0 +1,76 @@
+/*
+ * Design tokens của bộ khung UI (P2-C1). Màu lấy từ bảng màu tâm trạng assets/palette.json
+ * (id ghi cạnh từng biến); khi sửa bảng màu thì sửa ở đây theo. Chỉ dùng biến --k-* trong kit.
+ * Tiết chế: nền lam đêm hoặc giấy ngà, viền đồng thau mảnh, linh quang chỉ để nhấn.
+ */
+:root {
+  /* nền */
+  --k-night: #1a2938; /* air_night */
+  --k-night-2: #22364e; /* attire_elder */
+  --k-night-0: #0e1722; /* lòng thanh, lòng ô: tối hơn air_night một bậc */
+  --k-paper: #e6ddcb; /* attire_ivory */
+  --k-paper-2: #bdb6a4; /* stone_light */
+  --k-stone: #464540; /* stone_dark */
+  --k-stone-2: #7d786c; /* stone */
+  --k-ink: #29292c; /* attire_ink */
+
+  /* viền đồng thau (wood_bronze, sáng lên bằng nắng sớm) */
+  --k-bronze: #ae8b49; /* wood_bronze */
+  --k-bronze-hi: #e1c07a;
+  --k-bronze-lo: #5e4620;
+  --k-edge: linear-gradient(180deg, var(--k-bronze-hi), var(--k-bronze) 45%, var(--k-bronze-lo));
+  --k-edge-dim: rgba(174, 139, 73, 0.4);
+
+  /* chữ */
+  --k-text: #e6ddcb; /* attire_ivory trên nền tối */
+  --k-text-dim: #a5b3b6; /* sương trời pha tối: air_mist ≈ 70% */
+  --k-text-ink: #29292c; /* chữ trên giấy hoặc trên nút vàng */
+  --k-text-ink-dim: #5b564b;
+
+  /* nhấn: linh quang, chỉ dùng ở focus, đang chọn, thành công */
+  --k-jade: #7fe3d0; /* spirit_jade */
+  --k-gold: #ffde96; /* spirit_gold */
+  --k-sword: #cff3ff; /* spirit_sword */
+  --k-cinnabar: #9d392e; /* wood_cinnabar */
+  --k-cinnabar-hi: #d9604f;
+
+  /* phẩm chất vật phẩm (rarity 0–3) */
+  --k-q0: #8f9a98; /* xám đá: stone_far pha xám */
+  --k-q1: #7ea25a; /* leaf_grass */
+  --k-q2: #5fa7d8; /* nước nông ngả lam */
+  --k-q3: #b48cff; /* spirit_thunder */
+
+  /* hình khối: góc vát (không bo tròn) */
+  --k-cut-s: 4px;
+  --k-cut-m: 7px;
+  --k-cut-l: 12px;
+  --k-line: 1.5px;
+
+  /* khoảng cách */
+  --k-s1: 4px;
+  --k-s2: 8px;
+  --k-s3: 12px;
+  --k-s4: 16px;
+  --k-s5: 24px;
+
+  /* chữ: serif giãn cách cho tiêu đề, sans cho thân bảng */
+  --k-font-title: var(--font-display, 'DTL Display'), var(--serif, Georgia, serif);
+  --k-font-serif: var(--serif, Georgia, serif);
+  --k-font-body: var(--sans, 'Segoe UI', sans-serif);
+  --k-track-title: 0.14em;
+  --k-track-label: 0.06em;
+
+  /* chuyển động */
+  --k-dur: 0.12s;
+  --k-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* lớp xếp chồng */
+  --k-z-tip: 60;
+  --k-z-modal: 50;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --k-dur: 0s;
+  }
+}
