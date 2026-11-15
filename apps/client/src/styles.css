@@ -110,6 +110,12 @@ body {
 .offs[data-k='turnin'] {
   --c: #ffde96;
 }
+.offs[data-k='mark'] {
+  --c: #ffd54a;
+}
+.offs[data-k='mate'] {
+  --c: #5cb8ff;
+}
 .offs[data-k='gather'] {
   --c: #7fe3d0;
 }

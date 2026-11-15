@@ -904,3 +904,8 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 body > .k-tip {
   zoom: var(--ui-scale, 1);
 }
+/* Bản đồ lớn (M-4) tự tính tọa độ chuột theo px màn hình nên không phóng bằng zoom; nó vốn rộng 980 px. */
+.hud > .k-window.worldmap {
+  zoom: 1;
+  --s: 1;
+}

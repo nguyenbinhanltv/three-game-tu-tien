@@ -8,7 +8,8 @@ import { adoptGltfMaterials, createWorldMaterial } from '../../render/materials/
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
 import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
-import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
+import { acquireWithHumanLib, HUMAN_K3_LIB, mergeClips, retargetClips } from './animLib';
+import { HUMAN_CLIPS } from './humanClips';
 import { applyDye } from './dye';
 import { applyPalette } from './monsterSkins';
 import { poseClipName } from './ikpose';
@@ -101,9 +102,25 @@ interface Template {
   springs: SpringDef[];
   /** Đoạn kiếm cũ đã cắt khỏi lưới (kiếm riêng theo trang bị thay vào); null = kiếm cũ còn nguyên, không thay. */
   oldSword: OldSwordSpan | null;
+  /** Clip K-3 (đi lùi/ngang, thủ thế, trúng đòn có hướng, ngã/đứng dậy) đã retarget sang asset này; null = chưa nạp xong hoặc lỗi. */
+  k3: K3Extra | null;
+  /** Bản sao đã dựng chờ clip K-3 (nạp lười sau khung đầu). */
+  waiting: WeakRef<SkinnedPlayer>[];
   /** Số đo thân để đặt phụ kiện đồ bộ: đo lười lần đầu có người mặc đồ bộ; null = rig không đo được. */
   fit?: BodyFit | null;
 }
+
+/** Phần thêm vào model người khi thư viện K-3 nạp xong: clip, bảng trạng thái → clip, tốc độ nền clip đi lại (m/s, scale 1). */
+interface K3Extra {
+  clips: THREE.AnimationClip[];
+  map: ClipMap;
+  locoRef: Partial<Record<CharState, number>>;
+}
+
+/** Trạng thái nền → clip K-3. Đứng thủ thế khi giao chiến, đi bộ chậm, đi lùi/ngang khi nhìn mục tiêu. */
+const K3_STATES: Partial<Record<CharState, string>> = { walk: 'walk', back: 'back', strafeL: 'strafe_l', strafeR: 'strafe_r', combatIdle: 'combat_idle' };
+/** Chờ bao lâu sau khi dựng mẫu rồi mới nạp K-3 (ms): không chen vào đường tải trước khung game đầu. */
+const K3_DELAY = 1500;
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
 function modelOf(g: string): string | null {
@@ -234,7 +251,7 @@ export class PlayerSkins {
     });
     // Phụ kiện thêm sau khi đã gán material thân (mesh phụ kiện có material riêng).
     const ribbons = this.accessories(id, t, scene, acc);
-    return new SkinnedPlayer(
+    const player = new SkinnedPlayer(
       {
         scene,
         clips: t.clips,
@@ -253,6 +270,62 @@ export class PlayerSkins {
       t.sword,
       ribbons,
       this.bladeFor(t, want, shadow ? mat : undefined),
+    );
+    if (t.k3) player.addClips(t.k3.clips, t.k3.map, t.k3.locoRef);
+    else t.waiting.push(new WeakRef(player));
+    return player;
+  }
+
+  /**
+   * Nạp lười thư viện K-3 cho một asset rồi retarget từng clip (mỗi clip một lượt `setTimeout` để không khựng khung), xong thì
+   * đưa vào mọi bản sao đã dựng và các bản sau. Lỗi thì giữ máy trạng thái cũ (chạy/idle/hit_light), không ném.
+   */
+  private loadK3(id: string, skin: PlayerSkin): void {
+    const t = this.templates.get(id);
+    if (!t || typeof t === 'string' || t.k3 || this.disposed) return;
+    this.cache.acquire(HUMAN_K3_LIB, { priority: 40 }).then(
+      (lib) => {
+        if (this.disposed) {
+          lib.release();
+          return;
+        }
+        const tpl = this.templates.get(id);
+        if (!tpl || typeof tpl === 'string') {
+          lib.release();
+          return;
+        }
+        const out: THREE.AnimationClip[] = [];
+        const have = new Set(tpl.clips.map((c) => c.name));
+        const todo = lib.animations.filter((c) => !have.has(c.name));
+        const step = () => {
+          if (this.disposed) {
+            lib.release();
+            return;
+          }
+          const c = todo.shift();
+          if (c) {
+            out.push(...retargetClips(lib.scene, [c], tpl.handle.scene));
+            setTimeout(step, 0);
+            return;
+          }
+          lib.release();
+          // Tốc độ nền của clip K-3 đo trên Thanh Phong; nhân vật khác theo tỉ lệ tốc độ chạy.
+          const f = skin.refSpeed / (HUMAN_CLIPS.run.refSpeed ?? 3.09);
+          const map: ClipMap = {};
+          const locoRef: Partial<Record<CharState, number>> = {};
+          for (const [state, clip] of Object.entries(K3_STATES) as [CharState, string][]) {
+            if (!out.some((x) => x.name === clip)) continue;
+            map[state] = clip;
+            const ref = HUMAN_CLIPS[clip]?.refSpeed;
+            if (ref) locoRef[state] = ref * f;
+          }
+          tpl.k3 = { clips: out, map, locoRef };
+          for (const w of tpl.waiting) w.deref()?.addClips(out, map, locoRef);
+          tpl.waiting = [];
+        };
+        step();
+      },
+      (err) => console.warn('[models] không nạp được thư viện clip K-3, giữ bộ clip cũ', err),
     );
   }
 
@@ -290,6 +363,7 @@ export class PlayerSkins {
         }
         try {
           this.templates.set(id, templateOf(handle, lib, PLAYER_SKINS[id], !!sword));
+          setTimeout(() => this.loadK3(id, PLAYER_SKINS[id]), K3_DELAY);
         } catch (err) {
           console.warn(`[models] không dựng được ${id}, dùng model khối`, err);
           handle.release();
@@ -412,11 +486,13 @@ function templateOf(handle: AssetHandle, lib: AssetHandle, skin: PlayerSkin, swo
   const springs = parts.springs ? springDefs(handle.scene, parts.springs) : [];
   // Kiếm riêng theo trang bị: cắt kiếm cũ khỏi lưới khi đã có kiếm mới để thay (nếu không cắt được thì giữ kiếm cũ).
   const oldSword = sword && parts.sword && swordReady ? cutOldSword(handle.scene, parts.sword) : null;
-  return { handle, lib, height, bounds, clips, clipMap, poses, sword, springs, oldSword };
+  return { handle, lib, height, bounds, clips, clipMap, poses, sword, springs, oldSword, k3: null, waiting: [] };
 }
 
 /** Rảnh bao lâu (giây: không ra chiêu, không trúng đòn, không niệm chú) thì tra kiếm (M3-2). */
 export const SHEATHE_AFTER = 5;
+/** Còn thủ thế bao lâu (giây) sau lần giao chiến cuối khi đứng yên. */
+export const COMBAT_HOLD = 4;
 
 /**
  * Người chơi dùng model có xương: thêm phi kiếm dưới chân khi ngự kiếm và các bộ đếm cho vệt/hạt theo nhân vật
@@ -574,7 +650,10 @@ export class SkinnedPlayer extends SkinnedCharacter {
         this.swap = null;
       }
     }
-    if (a.dead) return;
+    if (a.dead) {
+      this.calm = Infinity;
+      return;
+    }
     this.calm = a.casting ? 0 : this.calm + dt;
     if (!s.drawn || this.swap) return;
     if (a.flying || a.meditating) {
@@ -587,6 +666,8 @@ export class SkinnedPlayer extends SkinnedCharacter {
   }
 
   update(dt: number, a: AnimState): void {
+    // Vừa ra chiêu/trúng đòn/niệm chú trong khoảng gần thì đứng thủ thế (clip `combat_idle` của K-3).
+    this.combatBias = this.calm < COMBAT_HOLD && !!this.sword?.drawn;
     super.update(dt, a);
     this.updateSword(dt, a);
     if (this.blade && this.sword) {

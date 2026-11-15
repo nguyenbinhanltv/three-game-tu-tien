@@ -52,7 +52,9 @@ Giới hạn đã biết: bản đồ nhỏ không phóng (thuộc M-4; ở 2560
 
 ## Kiểm
 
-Script Playwright (Chrome headless có GPU, `?mute=1`, `--mute-audio`) ở ba độ phân giải: nút hàng hành động ≥ 30×22 px và nằm trong màn hình; bảng Túi và bảng Nhân vật không vượt khung nhìn, không đè thanh chiêu; tooltip Thiên phẩm nằm trọn trong màn hình; nút Đột Phá hiện đúng lúc và mở đúng khối; boss có thanh HUD thì nhãn 3D ẩn; rời xa thì thanh boss tắt và bỏ mục tiêu; HUD độ kiếp hiện. 1280: 13/13, 1920: 9/9, 2560: 10/11 (mục còn lại là script gửi lệnh GM quá nhanh nên thiếu Trúc Cơ Đan, không phải lỗi game). 0 lỗi console.
+Script Playwright (Chrome headless có GPU, `?mute=1`, `--mute-audio`) ở ba độ phân giải: nút hàng hành động ≥ 30×22 px và nằm trong màn hình; bảng Túi và bảng Nhân vật không vượt khung nhìn, không đè thanh chiêu; tooltip Thiên phẩm nằm trọn trong màn hình; nút Đột Phá hiện đúng lúc và mở đúng khối; boss có thanh HUD thì nhãn 3D ẩn; rời xa thì thanh boss tắt và bỏ mục tiêu; HUD độ kiếp hiện. Sau khi gộp `main` (có M-2, K-4, M-4): 36/36 mục đạt ở cả ba độ phân giải, 0 lỗi console. Bản đồ lớn của M-4 không phóng bằng `zoom` (nó tự tính tọa độ chuột theo px màn hình) và vẫn nằm trọn trong màn hình.
+
+`pnpm bench:client` lượt đủ ma trận chạy lúc máy đang tải nặng cho CPU p95 cao hơn lượt của PR B ở mọi preset; A/B xen kẽ hai vòng với commit gốc của nhánh (WebGPU + WebGL2, Vừa) cho thấy hai bên như nhau: CPU p50 3,7–5,4 ms (gốc) so với 4,1–5,7 ms (nhánh), draw call và tam giác bằng nhau. PR này không đổi render.
 
 ## Ảnh
 
@@ -69,6 +71,8 @@ Script Playwright (Chrome headless có GPU, `?mute=1`, `--mute-audio`) ở ba đ
 ![Nút Đột Phá mở bảng Nhân vật](dot-pha-nhan-vat-1280.jpg)
 
 ![Chiến đấu: bảng tên, hồi chiêu vòng linh văn](chien-dau-1280.jpg)
+
+![Bản đồ lớn ở 2560×1440 (không phóng)](ban-do-lon-2560.jpg)
 
 ![Boss: chỉ còn thanh HUD, không có bảng tên 3D](boss-1280.jpg)
 

@@ -10,7 +10,7 @@ export function clampZoom(i: number): number {
   return Math.max(0, Math.min(ZOOM_SPANS.length - 1, Math.round(i)));
 }
 
-export type MarkKind = 'npc' | 'mon' | 'elite' | 'boss' | 'mate' | 'player' | 'node' | 'portal' | 'tele' | 'goal';
+export type MarkKind = 'npc' | 'mon' | 'elite' | 'boss' | 'mate' | 'player' | 'node' | 'portal' | 'tele' | 'goal' | 'flag';
 export type QuestMark = '' | 'give' | 'turn' | 'wait';
 export type Tone = 'gray' | 'white' | 'yellow' | 'red';
 
@@ -36,6 +36,8 @@ export interface Mark {
   respawnAt?: number;
   /** Bán kính vùng tô (m), cho `goal`. */
   radius?: number;
+  /** Điểm đánh dấu: của mình (vàng) hay của đồng đội (lam). */
+  own?: boolean;
   /** Nhấp nháy tới thời điểm này (performance.now, ms). */
   hurtUntil?: number;
 }
@@ -162,4 +164,14 @@ export function formatCountdown(sec: number): string {
 export function arrowAngle(v: View, x: number, z: number): number {
   const p = project(v, x, z);
   return Math.atan2(p.y - v.size / 2, p.x - v.size / 2);
+}
+
+/** Ngược của `project`: toạ độ trên canvas → thế giới. */
+export function screenToWorld(v: View, sx: number, sy: number): { x: number; z: number } {
+  const s = v.size / v.span;
+  const dx = sx - v.size / 2;
+  const dy = sy - v.size / 2;
+  const c = Math.cos(v.rot);
+  const si = Math.sin(v.rot);
+  return { x: v.cx + (dx * c + dy * si) / s, z: v.cz + (-dx * si + dy * c) / s };
 }

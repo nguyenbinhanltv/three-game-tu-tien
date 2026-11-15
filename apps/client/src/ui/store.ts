@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MethodMsg, PartyMsg, QuestView } from '@dtl/shared';
+import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio';
 
 export interface TargetInfo {
@@ -105,6 +105,13 @@ export interface DebugInfo {
   sid: string;
 }
 
+/** Truyền Tống Trận của mình (S.TELE). `until`/`cdUntil` đã đổi sang đồng hồ `performance.now()` của client. */
+export interface TeleState {
+  open: string[];
+  cast: { id: string; until: number } | null;
+  cdUntil: number;
+}
+
 export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party';
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
@@ -177,6 +184,9 @@ export interface UIState {
   ultCard: { id: number; skill: string; color: string; until: number } | null;
   /** Tổ đội của mình (P3-9); null = không có. */
   party: PartyMsg | null;
+  tele: TeleState;
+  /** Điểm đánh dấu mình và đồng đội đang thấy (S.MARK). */
+  marks: MarkInfo[];
   /** Lời mời tổ đội/tỉ thí đang chờ; `until` theo đồng hồ client (ms). */
   invites: InviteMsg[];
   /** Trận tỉ thí của mình; `at` theo đồng hồ client (ms). */
@@ -243,6 +253,8 @@ export const useUI = create<UIState>(() => ({
   methodOff: 0,
   ultCard: null,
   party: null,
+  tele: { open: [], cast: null, cdUntil: 0 },
+  marks: [],
   invites: [],
   duel: null,
   nearby: [],

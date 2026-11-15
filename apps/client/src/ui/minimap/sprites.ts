@@ -230,3 +230,22 @@ export function selfSprite(dpr: number): Sprite {
     outline(g, '#ffffff', 1.5);
   });
 }
+
+/** Điểm đánh dấu: cờ nhọn, vàng của mình, lam của đồng đội. */
+export function flagSprite(own: boolean, dpr: number): Sprite {
+  return make(`flag:${own}`, 20, 24, dpr, (g) => {
+    g.beginPath();
+    g.moveTo(-5, 10);
+    g.lineTo(-5, -9);
+    g.lineTo(6, -5);
+    g.lineTo(-5, -1);
+    g.lineWidth = 3;
+    g.strokeStyle = INK;
+    g.stroke();
+    g.fillStyle = own ? GOLD : '#5cb8ff';
+    g.fill();
+    g.lineWidth = 1.2;
+    g.strokeStyle = own ? '#fff3c0' : '#d3ecff';
+    g.stroke();
+  });
+}

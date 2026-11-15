@@ -2,13 +2,13 @@ import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
 import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
-import { DUNGEON_EXIT, groundAt, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
+import { DUNGEON_EXIT, groundAt, locoDirOf, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
 import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, swordModelOf, t } from '@dtl/content';
 import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
-import { type AnimState, type CharacterView, type MonsterView, P2E_OFF } from './character/view';
+import { type AnimState, type CharacterView, type MonsterView, P2E_OFF, type SkillEvent } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
 import { NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
@@ -139,6 +139,16 @@ export class PlayerVis {
   lv = 0;
   /** Pháp bảo phụ đang đeo (nạp lười khi có `s.art`). */
   art: ArtifactVis | null = null;
+  /** Vận tốc hiển thị đã làm mượt (m/s) để suy ra đi lùi/ngang so với hướng nhìn (K-4). */
+  mvx = 0;
+  mvz = 0;
+  /** Vị trí vài chục khung gần nhất (để lướt hiển thị biết xuất phát từ đâu, K-4). */
+  hist: { t: number; x: number; z: number }[] = [];
+  /** Chuyển sự kiện chiêu của model ra ngoài (engine/VFX/âm thanh/camera đăng ký). */
+  onSkillEvent: ((sid: string, e: SkillEvent) => void) | null = null;
+  bindEvents(): void {
+    this.model.onSkillEvent = (e) => this.onSkillEvent?.(this.sid, e);
+  }
   constructor(
     public sid: string,
     public s: PState,
@@ -156,6 +166,7 @@ export class PlayerVis {
     this.y = s.y;
     this.z = s.z;
     this.yaw = s.yaw;
+    this.bindEvents();
   }
   refreshLabel() {
     this.model.root.remove(this.label);
@@ -172,6 +183,7 @@ export class PlayerVis {
     this.model.root.removeFromParent();
     this.model.dispose();
     this.model = next;
+    this.bindEvents();
     this.look = look;
     this.label.position.y = labelY(next);
     next.root.add(this.label);
@@ -349,6 +361,9 @@ interface LodEntry {
   /** Nhãn đã có luật ẩn riêng trong khung này (quái: chết, xa 70 m): chỉ ẩn thêm, không bật lại. */
   labelKeep: boolean;
 }
+/** Lưu vị trí vẽ bao lâu (giây) cho `posAgo`. */
+const HIST_SEC = 0.5;
+
 /** AnimState dùng lại cho quái (không cấp phát mỗi khung). */
 const _monAnim: AnimState = { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, combat: false };
 
@@ -368,6 +383,8 @@ export class EntityManager {
   private markerDone = makeMarker('?', '#ffd84a');
   private markerWait = makeMarker('?', '#9aa3ad');
   private time = 0;
+  /** Nghe sự kiện chiêu của mọi người chơi trong tầm (K-4): `sid`, sự kiện (windup/hit/recovery/cancel/end). */
+  onSkillEvent: ((sid: string, e: SkillEvent) => void) | null = null;
   /** Quái đang thấy vừa gục (một lần mỗi lần chết; engine vẽ vết mực M4-14). */
   onMonsterDeath: ((m: MonVis) => void) | null = null;
   /** Dựng model quái (model có xương hoặc khối); giữ asset mẫu suốt đời EntityManager. */
@@ -488,6 +505,7 @@ export class EntityManager {
           if (d2 > 260 * 260) return;
         }
         v = new PlayerVis(sid, s, isLocal, this.playerSkins);
+        v.onSkillEvent = (id, e) => this.onSkillEvent?.(id, e);
         this.players.set(sid, v);
         this.group.add(v.model.root);
       }
@@ -539,7 +557,18 @@ export class EntityManager {
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;
       const dead = (s.fl & PF_DEAD) !== 0;
+      // Hướng đi so với hướng nhìn (đi lùi/ngang khi nhìn mục tiêu): vận tốc hiển thị làm mượt theo vị trí vẽ.
+      const h = v.hist;
+      const prev = h.length ? h[h.length - 1] : null;
+      if (prev && dt > 1e-4) {
+        const kv = Math.min(1, dt * 10);
+        v.mvx += ((v.x - prev.x) / dt - v.mvx) * kv;
+        v.mvz += ((v.z - prev.z) / dt - v.mvz) * kv;
+      }
+      h.push({ t: this.time, x: v.x, z: v.z });
+      while (h.length > 1 && this.time - h[0].t > HIST_SEC) h.shift();
       v.model.update(dt, {
+        moveDir: v.speed > 0.3 ? locoDirOf(v.yaw, v.mvx, v.mvz) : undefined,
         speed: v.speed,
         flying: (s.fl & PF_FLYING) !== 0,
         meditating: (s.fl & PF_MEDITATING) !== 0,
@@ -895,6 +924,16 @@ export class EntityManager {
     const noStop = src !== this.mySid && dst !== this.mySid;
     vd.model.hitReact({ crit, heavy, delay, noStop, noFlash: this.tagsHidden && this.monsters.has(dst), dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
     if (src && src === this.mySid && vs) vs.model.hit.hitStop(hitStopFor(crit, heavy), delay);
+  }
+
+  /** Vị trí vẽ của người chơi cách đây `sec` giây (hoặc cũ nhất còn lưu): điểm xuất phát cho lướt hiển thị. */
+  posAgo(sid: string, sec: number): { x: number; z: number } | null {
+    const v = this.players.get(sid);
+    if (!v || !v.hist.length) return null;
+    const want = this.time - sec;
+    let best = v.hist[0];
+    for (const e of v.hist) if (e.t <= want) best = e;
+    return best;
   }
 
   /** Vị trí ngực của một thực thể (để bắn hiệu ứng tới). */
