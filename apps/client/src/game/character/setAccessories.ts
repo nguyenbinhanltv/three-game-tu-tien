@@ -37,6 +37,20 @@ export interface Ribbon {
 export interface BuiltAccessories {
   parts: Part[];
   ribbons: Ribbon[];
+  /**
+   * Hình học đã gộp theo vật liệu, đã gắn skinIndex/skinWeight (thứ tự xương giống nhau giữa mọi bản sao `cloneSkinned`).
+   * Tạo lười ở lần gắn đầu tiên rồi dùng chung cho mọi người chơi cùng đồ; chủ cache giải phóng bằng `disposeAccessories`.
+   */
+  merged?: Partial<Record<Kind, THREE.BufferGeometry>>;
+}
+
+/** Giải phóng mọi hình học của một bản dựng (phần cứng, dải lụa, bản gộp). */
+export function disposeAccessories(b: BuiltAccessories | null | undefined): void {
+  if (!b) return;
+  for (const p of b.parts) p.geo.dispose();
+  for (const r of b.ribbons) r.geo.dispose();
+  for (const g of Object.values(b.merged ?? {})) g?.dispose();
+  b.merged = undefined;
 }
 
 // ---------- tiện ích hình học ----------
@@ -493,17 +507,8 @@ export interface AttachedAccessories {
   dispose(): void;
 }
 
-/** Gộp phần cứng theo vật liệu thành `SkinnedMesh` gắn vào cùng cha với mesh LOD0 của `scene` (bản sao đã clone). */
-export function attachAccessories(scene: THREE.Object3D, fit: BodyFit, built: BuiltAccessories, mats: AccessoryMaterials): { meshes: THREE.SkinnedMesh[]; ribbons: AttachedRibbons | null } {
-  let base: THREE.SkinnedMesh | null = null;
-  scene.traverse((o) => {
-    const m = o as THREE.SkinnedMesh;
-    if (m.isSkinnedMesh && !base && !(o.userData.lod > 0)) base = m;
-  });
-  const lod0 = base as THREE.SkinnedMesh | null;
-  if (!lod0) return { meshes: [], ribbons: null };
-  const boneIndex = new Map<string, number>();
-  lod0.skeleton.bones.forEach((b, i) => boneIndex.set(boneKey(b.name), i));
+/** Gộp phần cứng theo vật liệu: về hệ cục bộ của mesh thân, gắn cứng vào xương (chỉ số theo `boneIndex`). */
+function mergeByKind(fit: BodyFit, built: BuiltAccessories, boneIndex: Map<string, number>): Partial<Record<Kind, THREE.BufferGeometry>> {
   const toMesh = fit.meshToScene.clone().invert();
 
   const byKind: Record<Kind, THREE.BufferGeometry[]> = { cloth: [], hard: [] };
@@ -525,11 +530,31 @@ export function attachAccessories(scene: THREE.Object3D, fit: BodyFit, built: Bu
     g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4));
     byKind[p.kind].push(g);
   }
-  const meshes: THREE.SkinnedMesh[] = [];
+  const out: Partial<Record<Kind, THREE.BufferGeometry>> = {};
   for (const kind of ['cloth', 'hard'] as Kind[]) {
     if (!byKind[kind].length) continue;
     const geo = mergeGeometries(byKind[kind], false);
     for (const g of byKind[kind]) g.dispose();
+    if (geo) out[kind] = geo;
+  }
+  return out;
+}
+
+/** Gộp phần cứng theo vật liệu thành `SkinnedMesh` gắn vào cùng cha với mesh LOD0 của `scene` (bản sao đã clone). */
+export function attachAccessories(scene: THREE.Object3D, fit: BodyFit, built: BuiltAccessories, mats: AccessoryMaterials): { meshes: THREE.SkinnedMesh[]; ribbons: AttachedRibbons | null } {
+  let base: THREE.SkinnedMesh | null = null;
+  scene.traverse((o) => {
+    const m = o as THREE.SkinnedMesh;
+    if (m.isSkinnedMesh && !base && !(o.userData.lod > 0)) base = m;
+  });
+  const lod0 = base as THREE.SkinnedMesh | null;
+  if (!lod0) return { meshes: [], ribbons: null };
+  const boneIndex = new Map<string, number>();
+  lod0.skeleton.bones.forEach((b, i) => boneIndex.set(boneKey(b.name), i));
+  const merged = (built.merged ??= mergeByKind(fit, built, boneIndex));
+  const meshes: THREE.SkinnedMesh[] = [];
+  for (const kind of ['cloth', 'hard'] as Kind[]) {
+    const geo = merged[kind];
     if (!geo) continue;
     const mesh = new THREE.SkinnedMesh(geo, kind === 'cloth' ? mats.cloth : mats.hard);
     mesh.name = `acc_${kind}`;

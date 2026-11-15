@@ -6,7 +6,7 @@ import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials, createWorldMaterial } from '../../render/materials/world';
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
-import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories } from './setAccessories';
+import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
 import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { applyDye } from './dye';
@@ -238,7 +238,7 @@ export class PlayerSkins {
     this.templates.clear();
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
-    for (const b of this.accBuilt.values()) for (const r of b?.ribbons ?? []) r.geo.dispose();
+    for (const b of this.accBuilt.values()) disposeAccessories(b);
     this.accBuilt.clear();
     this.accMats?.cloth.dispose();
     this.accMats?.hard.dispose();

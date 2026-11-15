@@ -9,7 +9,7 @@ import { accessoryCode, parseAccessoryCode } from '@dtl/shared';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
 import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { type BodyFit, fitBody } from './bodyFit';
-import { accessorySlots, attachAccessories, buildAccessories, createAccessoryMaterials } from './setAccessories';
+import { accessorySlots, attachAccessories, buildAccessories, createAccessoryMaterials, disposeAccessories } from './setAccessories';
 import { stripPartTracks } from './sword';
 
 // Phụ kiện đồ bộ trên model thật (nam + nữ): số đo thân hợp lý, đủ phụ kiện theo ô, gắn được vào bản sao, không chui vào thân.
@@ -85,6 +85,22 @@ describe('phụ kiện đồ bộ', () => {
       expect(tris, s.id).toBeLessThan(3000);
       expect(built.ribbons.length, s.id).toBeLessThanOrEqual(2);
     }
+  }, 60_000);
+
+  it.skipIf(!HAS).each(ASSETS)('%s: hình học gộp dùng chung giữa người chơi, dispose giải phóng', async (id, height) => {
+    const { h, fit } = await setup(id, height);
+    const mats = createAccessoryMaterials(() => new THREE.MeshBasicMaterial());
+    const built = buildAccessories(fit, slotsOf(SETS[1].id));
+    const a = attachAccessories(cloneSkinned(h.scene), fit, built, mats).meshes;
+    const b = attachAccessories(cloneSkinned(h.scene), fit, built, mats).meshes;
+    expect(a.length).toBeGreaterThan(0);
+    // Hai người chơi cùng đồ: cùng một geometry (không tạo thêm bộ đệm GPU cho mỗi người).
+    a.forEach((m, i) => expect(m.geometry).toBe(b[i].geometry));
+    let freed = 0;
+    for (const g of [...built.parts.map((p) => p.geo), ...built.ribbons.map((r) => r.geo), ...Object.values(built.merged ?? {})]) g.addEventListener('dispose', () => freed++);
+    const total = built.parts.length + built.ribbons.length + Object.keys(built.merged ?? {}).length;
+    disposeAccessories(built);
+    expect(freed).toBe(total);
   }, 60_000);
 
   it.skipIf(!HAS).each(ASSETS)('%s: phần gắn xương không chui vào thân (tư thế nghỉ)', async (id, height) => {
