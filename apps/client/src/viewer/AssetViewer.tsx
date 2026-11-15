@@ -4,7 +4,9 @@ import { type FrameInfo, HUMAN_HEIGHT, type LoadedInfo, ViewerScene } from './sc
 import { fmtBytes } from './stats';
 import { poseClipName } from '../game/character/ikpose';
 import { assetBaseUrl, type Manifest } from '../game/assets';
-import { showAssetId } from '../game/testParams';
+import { isSkillViewer, SHOW_ALIASES, showAssetId } from '../game/testParams';
+import { SkillPanel } from './SkillPanel';
+import { skillForId } from './skillTiming';
 
 const BASE_URL = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
 /** Chỉ nhận đường dẫn tương đối cùng origin tới .glb/.gltf, không có "..". */
@@ -29,6 +31,8 @@ export function AssetViewer() {
   const [clip, setClip] = useState(0);
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(1);
+  const [skillId, setSkillId] = useState('');
+  const skillMode = isSkillViewer(location.search);
   const [opts, setOpts] = useState({ human: true, wire: false, skeleton: false });
 
   const load = useCallback(async (job: () => Promise<LoadedInfo>, name: string) => {
@@ -60,6 +64,25 @@ export function AssetViewer() {
         (window as unknown as { __viewer: ViewerScene }).__viewer = v;
         const params = new URLSearchParams(location.search);
         const file = params.get('file');
+        if (skillMode) {
+          // ?show=skill&id=<chiêu|pose>[&model=char]: rig mẫu (hoặc model người chơi thật) chạy pose của chiêu.
+          const id = skillForId(params.get('id') ?? '')?.id ?? 'skl_phi_kiem';
+          setSkillId(id);
+          // Người chuẩn che khung nhìn bên: ẩn mặc định ở trang chiêu (bật lại ở ô «Người chuẩn»).
+          v.setHuman(false);
+          setOpts((o) => ({ ...o, human: false }));
+          const real = params.get('model');
+          void load(async () => {
+            if (!real) return v.loadPoseFixture();
+            const key = SHOW_ALIASES[real] ?? real;
+            const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });
+            if (!res.ok) throw new Error(`HTTP ${res.status} manifest.json`);
+            const a = ((await res.json()) as Manifest).assets[key];
+            if (!a) throw new Error(`manifest.json: ${key}?`);
+            return v.loadUrl(assetBaseUrl() + a.file);
+          }, real ?? 'mixamo_fixture');
+          return;
+        }
         if (!file && v.poseMode) {
           // ?pose=<id>[&t=giây]: rig mẫu chạy pose; chọn sẵn clip và dừng ở khung t nếu có.
           let i = 0;
@@ -120,6 +143,12 @@ export function AssetViewer() {
   };
 
   const s = info?.stats;
+  const pickSkill = (id: string) => {
+    setSkillId(id);
+    const u = new URL(location.href);
+    u.searchParams.set('id', id);
+    history.replaceState(null, '', u);
+  };
   return (
     <div
       className="viewer"
@@ -139,6 +168,10 @@ export function AssetViewer() {
         <p className="viewer-hint">{t('viewer.drop_hint')}</p>
         {status && <p className="viewer-status">{status}</p>}
         {error && <p className="viewer-error">{error}</p>}
+
+        {skillMode && viewer && info && skillId && (
+          <SkillPanel viewer={viewer} skillId={skillId} onPick={pickSkill} clips={info.clips.map((c) => c.name)} />
+        )}
 
         {info && s && (
           <>
