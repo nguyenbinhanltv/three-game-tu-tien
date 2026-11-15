@@ -194,7 +194,7 @@ export class Lake {
     geo.rotateX(-Math.PI / 2);
     this.water = new THREE.Mesh(geo, this.material(1));
     this.water.position.set(LAKE.x, WATER_Y, LAKE.z);
-    this.water.renderOrder = 1;
+    this.water.renderOrder = -6; // dưới mọi VFX (0) và mực (-2): hiệu ứng trên hồ không bị nước phủ
     this.water.name = 'lake-water';
     this.group.add(this.water);
 
@@ -206,7 +206,7 @@ export class Lake {
     ].forEach((m, i) => {
       const mesh = new THREE.Mesh(mgeo, mistMaterial(m.y, m.seed, m.s));
       mesh.position.set(LAKE.x, WATER_Y + m.y, LAKE.z);
-      mesh.renderOrder = 2 + i;
+      mesh.renderOrder = -5 + i;
       mesh.frustumCulled = false;
       mesh.name = `lake-mist-${i}`;
       this.mists.push(mesh);

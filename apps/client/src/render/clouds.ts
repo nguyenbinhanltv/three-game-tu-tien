@@ -155,8 +155,8 @@ export class CloudSea {
       m.scale.set(7000, 1, 7000);
       m.position.y = l.y;
       m.frustumCulled = false;
-      // Sau địa hình/nước (đục) và trước hạt/VFX; lớp cao vẽ sau lớp thấp.
-      m.renderOrder = 2 + i;
+      // Trước mọi VFX (renderOrder 0, mực -2) để VFX không bị mây phủ lên; lớp cao vẽ sau lớp thấp.
+      m.renderOrder = -9 + i;
       m.name = `cloud-sea-${i}`;
       this.meshes.push(m);
       this.group.add(m);
