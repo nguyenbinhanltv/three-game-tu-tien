@@ -1,5 +1,5 @@
 import type * as THREE from 'three/webgpu';
-import type { MonsterDef } from '@dtl/shared';
+import type { LocoDir, MonsterDef, SkillTiming } from '@dtl/shared';
 import type { HitOpts, HitReact } from '../hitreact';
 
 /** Trạng thái hiển thị một nhân vật/quái nhận mỗi khung (chỉ trình bày, suy từ trạng thái server). */
@@ -13,6 +13,8 @@ export interface AnimState {
   airborne: boolean;
   /** Đang giao chiến (quái đuổi/đánh): đứng yên thì dùng tư thế thủ thay vì idle thường. */
   combat?: boolean;
+  /** Hướng đi so với hướng nhìn (K-4): đi lùi/ngang khi nhân vật nhìn mục tiêu. Bỏ trống = đi tới. */
+  moveDir?: LocoDir;
   /** Boss bị ngắt chú hoặc mất thế (cờ MF_STUN). */
   stunned?: boolean;
 }
@@ -45,6 +47,14 @@ export interface CharacterView {
   setWeaponTint?(hex: string): void;
   /** Bỏ động tác đang chờ (`delay`) và tắt nhanh động tác chưa tới lúc ra đòn (vd. niệm chú bị phá). */
   cancelPerform?(): void;
+  /** Di chuyển/lướt hủy phần thu về của động tác chiêu đang phát, nếu đã qua mốc hủy trong dữ liệu chiêu (K-4). */
+  cancelRecovery?(kind: 'move' | 'dash'): boolean;
+  /** Lướt hiển thị: hình bắt đầu ở (fromX, fromZ) thế giới rồi trượt về vị trí thật trong `dur` giây (K-4). */
+  dashFrom?(fromX: number, fromZ: number, dur: number): void;
+  /** Bị hất ngã rồi đứng dậy (K-4). */
+  knockdown?(): void;
+  /** Nghe sự kiện chiêu (K-4). */
+  onSkillEvent?: ((e: SkillEvent) => void) | null;
   /** Đang phát (hoặc đang chờ phát) động tác `pose`. */
   performing?(pose: string): boolean;
   hitReact(o: HitOpts): void;
@@ -70,7 +80,29 @@ export interface CharacterView {
   readonly grounded?: boolean;
 }
 
+/** Sự kiện từ máy trạng thái chiêu (K-4), phát đúng khung hình: VFX, âm thanh, rung camera đăng ký ở đây (K-6, K-7). */
+export interface SkillEvent {
+  kind: 'windup' | 'hit' | 'recovery' | 'cancel' | 'end';
+  /** Id chiêu (rỗng nếu động tác không gắn chiêu). */
+  skill: string;
+  /** Mốc `hitAt` thứ mấy (0-based) khi `kind` = 'hit'; còn lại là số mốc đã qua. */
+  index: number;
+  /** Đòn thứ mấy của chuỗi đánh thường (0-based), -1 nếu không phải chuỗi. */
+  combo: number;
+  /** Giây kể từ lúc bấm (theo đồng hồ animation, dừng khi khựng hit-stop). */
+  t: number;
+  /** Đòn đẩy lùi (đòn cuối chuỗi). */
+  kb: boolean;
+}
+
 export interface PerformOpts {
+  /** Thời gian của chiêu (từ dữ liệu) để máy trạng thái phát sự kiện `hitAt` và cắt thu về khi di chuyển/lướt (K-4). */
+  timing?: SkillTiming;
+  skill?: string;
+  /** Đòn thứ mấy của chuỗi đánh thường. */
+  combo?: number;
+  /** Tầm lao người hiển thị (m) về phía trước trong lúc vung (xem `lungeReach`). */
+  reach?: number;
   /** Bắt đầu từ giây này của clip (bỏ bớt nhịp chuẩn bị để lúc ra đòn khớp với hiệu ứng vừa tới). */
   from?: number;
   /** Chờ bao lâu (giây) rồi mới phát. */
