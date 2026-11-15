@@ -1,5 +1,5 @@
 {
-  "$comment": "Khai báo SFX và âm môi trường cho tools/audio/build.mjs. Đường dẫn nguồn dạng \"<gói>:<file>\", gói định nghĩa trong packs (thư mục tương đối với <DTL_ASSET_SOURCE>/sfx). Chỉ nhận gói CC0. level = độ to mục tiêu (dB, so với mức chuẩn -14 dBFS RMS đoạn to nhất); rate = tốc độ phát (đổi cao độ); at = thời điểm đặt lớp (giây) khi trộn nhiều lớp.",
+  "$comment": "Khai báo SFX và âm môi trường cho tools/audio/build.mjs. Đường dẫn nguồn dạng \"<gói>:<file>\", gói định nghĩa trong packs (thư mục tương đối với <DTL_ASSET_SOURCE>/sfx). Chỉ nhận gói CC0. sat = bão hòa mềm trước chuẩn hóa (hạ đỉnh, thêm hài); level = độ to mục tiêu (dB, so với mức chuẩn -14 dBFS RMS đoạn to nhất); rate = tốc độ phát (đổi cao độ); at = thời điểm đặt lớp (giây) khi trộn nhiều lớp.",
   "packs": {
     "rpg": { "dir": "oga/50-rpg-sound-effects/RPGsounds_Kenney/OGG", "title": "50 RPG sound effects", "author": "Kenney", "url": "https://opengameart.org/content/50-rpg-sound-effects", "license": "CC0-1.0" },
     "ui": { "dir": "oga/interface-sounds/kenney_interfaceSounds/Audio", "title": "Interface Sounds", "author": "Kenney", "url": "https://opengameart.org/content/interface-sounds", "license": "CC0-1.0" },
@@ -14,12 +14,14 @@
     "crickets": { "dir": "oga/crickets-ambient-noise-loopable", "title": "Crickets Ambient Noise - loopable", "author": "Wolfgang_", "url": "https://opengameart.org/content/crickets-ambient-noise-loopable", "license": "CC0-1.0" },
     "morning": { "dir": "oga/amb-morning-sounds-perfect-loop", "title": "AMB Morning Sounds (Perfect Loop)", "author": "Kresiek The Furry", "url": "https://opengameart.org/content/amb-morning-sounds-perfect-loop", "license": "CC0-1.0" },
     "river": { "dir": "oga/sea-and-river-wave-sounds", "title": "Sea and river wave sounds", "author": "RandomMind", "url": "https://opengameart.org/content/sea-and-river-wave-sounds", "license": "CC0-1.0" },
+    "loops": { "dir": "oga/30-cc0-sfx-loops/sfx_loops", "title": "30 CC0 SFX Loops", "author": "rubberduck", "url": "https://opengameart.org/content/30-cc0-sfx-loops", "license": "CC0-1.0" },
     "storm": { "dir": "oga/rain-long-thunder", "title": "Rain + Long Thunder", "author": "WuxiaScrub", "url": "https://opengameart.org/content/rain-long-thunder", "license": "CC0-1.0" }
   },
   "sprites": {
     "sfx_combat": { "lazy": false },
     "sfx_magic": { "lazy": false },
     "sfx_ui": { "lazy": false },
+    "sfx_step": { "lazy": false },
     "sfx_world": { "lazy": true }
   },
   "sfx": {
@@ -100,7 +102,7 @@
       "variants": ["magic:magical_2.ogg", "magic:magical_5.ogg", "magic:magical_6_0.ogg"]
     },
     "heal": {
-      "sprite": "sfx_magic", "desc": "Hồi Nguyên Thuật", "pitch": 0.04, "max": 1.6,
+      "sprite": "sfx_magic", "desc": "Hồi Nguyên Thuật", "pitch": 0.04, "max": 1.6, "level": -2,
       "variants": ["cure:Cure1.wav", "cure:Cure2.wav", "cure:Cure3.wav"]
     },
     "potion": {
@@ -126,6 +128,50 @@
       "sprite": "sfx_world", "desc": "Qua cổng / vào bí cảnh", "pitch": 0.03, "max": 2.0,
       "variants": [[{ "src": "cure:Cure8.wav", "rate": 0.8 }, { "src": "wind:wind_20woosh_20loop.ogg", "end": 1.6, "gain": 0.7 }]]
     },
+    "spellbreak": {
+      "sprite": "sfx_combat", "desc": "Phá chú (ngắt niệm chú, boss mất thế): nhóm xác nhận, giòn và nổi nhất — 2 lớp mẫu + 1 lớp kim loại tổng hợp", "pitch": 0.03, "max": 1.2, "level": 3, "sat": 3, "duck": 0.25,
+      "variants": [
+        [{ "src": "clash:sword_clash.4.ogg", "rate": 1.12 }, { "src": "bfh:bfh1_metal_hit_04.ogg", "at": 0.012, "gain": 0.7 }, { "synth": "metal", "f": 1760, "dur": 0.9, "gain": 0.45 }],
+        [{ "src": "clash:sword_clash.6.ogg", "rate": 1.12 }, { "src": "bfh:bfh1_metal_hit_05.ogg", "at": 0.012, "gain": 0.7 }, { "synth": "metal", "f": 1976, "dur": 0.9, "gain": 0.45 }],
+        [{ "src": "clash:sword_clash.8.ogg", "rate": 1.1 }, { "src": "bfh:bfh1_metal_hit_02.ogg", "at": 0.012, "gain": 0.7 }, { "synth": "metal", "f": 1568, "dur": 0.9, "gain": 0.45 }]
+      ]
+    },
+    "rare": {
+      "sprite": "sfx_ui", "desc": "Đồ quý rơi (nhóm xác nhận): 2 lớp mẫu + 1 lớp kim loại tổng hợp, đi cùng chuông đồ rơi", "pitch": 0.02, "level": 4, "sat": 3, "duck": 0.2,
+      "variants": [[{ "src": "rpg:handleCoins.ogg", "rate": 1.15 }, { "src": "cure:Cure5.wav", "at": 0.04, "gain": 0.6 }, { "synth": "metal", "f": 2093, "dur": 1.1, "gain": 0.4, "at": 0.02 }]]
+    },
+    "step_stone": {
+      "sprite": "sfx_step", "desc": "Bước chân trên đá lát, sỏi, đá núi", "pitch": 0.08, "max": 0.45, "level": -9,
+      "variants": [{ "src": "s100:sfx100v2_footstep_01.ogg" }, { "src": "s100:sfx100v2_footstep_02.ogg" }, { "src": "s100:sfx100v2_footstep_01.ogg", "rate": 1.12 }]
+    },
+    "step_grass": {
+      "sprite": "sfx_step", "desc": "Bước chân trên cỏ, thảm lá rừng", "pitch": 0.08, "max": 0.4, "level": -12,
+      "variants": [
+        [{ "src": "rpg:footstep03.ogg", "lp": 2600 }, { "src": "rpg:cloth1.ogg", "gain": 0.35, "rate": 1.25 }],
+        [{ "src": "rpg:footstep05.ogg", "lp": 2600 }, { "src": "rpg:cloth3.ogg", "gain": 0.35, "rate": 1.25 }],
+        [{ "src": "rpg:footstep09.ogg", "lp": 2600 }, { "src": "rpg:cloth1.ogg", "gain": 0.3, "rate": 1.4 }]
+      ]
+    },
+    "step_dirt": {
+      "sprite": "sfx_step", "desc": "Bước chân trên đường đất mòn", "pitch": 0.07, "max": 0.4, "level": -10,
+      "variants": ["rpg:footstep00.ogg", "rpg:footstep02.ogg", "rpg:footstep07.ogg"]
+    },
+    "step_sand": {
+      "sprite": "sfx_step", "desc": "Bước chân trên cát ven hồ: trầm, lạo xạo", "pitch": 0.07, "max": 0.45, "level": -12,
+      "variants": [
+        [{ "src": "rpg:footstep01.ogg", "rate": 0.88, "lp": 2200 }, { "src": "rpg:cloth3.ogg", "gain": 0.4, "rate": 1.6, "at": 0.03 }],
+        [{ "src": "rpg:footstep04.ogg", "rate": 0.9, "lp": 2200 }, { "src": "rpg:cloth1.ogg", "gain": 0.4, "rate": 1.6, "at": 0.03 }],
+        [{ "src": "rpg:footstep08.ogg", "rate": 0.88, "lp": 2200 }, { "src": "rpg:cloth3.ogg", "gain": 0.4, "rate": 1.5, "at": 0.03 }]
+      ]
+    },
+    "step_wood": {
+      "sprite": "sfx_step", "desc": "Bước chân trên sàn gỗ, cầu gỗ", "pitch": 0.06, "max": 0.45, "level": -9,
+      "variants": ["s100:sfx100v2_footstep_wood_01.ogg", "s100:sfx100v2_footstep_wood_02.ogg", "s100:sfx100v2_footstep_wood_03.ogg", "s100:sfx100v2_footstep_wood_04.ogg"]
+    },
+    "step_water": {
+      "sprite": "sfx_step", "desc": "Lội nước nông", "pitch": 0.06, "max": 0.5, "level": -8,
+      "variants": ["s100:sfx100v2_footstep_wet_01.ogg", "s100:sfx100v2_footstep_wet_02.ogg", "s100:sfx100v2_footstep_wet_03.ogg"]
+    },
     "ui_click": { "sprite": "sfx_ui", "bus": "ui", "desc": "Bấm nút", "pitch": 0.03, "level": -6, "variants": ["ui:click_001.ogg", "ui:select_001.ogg"] },
     "ui_open": { "sprite": "sfx_ui", "bus": "ui", "desc": "Mở bảng", "pitch": 0.03, "level": -6, "variants": ["rpg:bookFlip2.ogg", "rpg:bookFlip3.ogg"] },
     "ui_close": { "sprite": "sfx_ui", "bus": "ui", "desc": "Đóng bảng", "pitch": 0.03, "level": -7, "variants": ["rpg:bookClose.ogg", "rpg:bookPlace1.ogg"] },
@@ -137,8 +183,8 @@
     "levelup": { "sprite": "sfx_world", "desc": "Lên tầng", "pitch": 0, "duck": 0.4, "variants": ["jingle:jingles_PIZZA07.ogg"] },
     "quest": { "sprite": "sfx_world", "bus": "ui", "desc": "Hoàn thành nhiệm vụ", "pitch": 0, "level": -2, "variants": ["jingle:jingles_PIZZA03.ogg"] },
     "ascend": {
-      "sprite": "sfx_world", "desc": "Đột phá cảnh giới / độ kiếp thành công", "pitch": 0, "duck": 0.5, "max": 3.0,
-      "variants": [[{ "src": "jingle:jingles_PIZZA12.ogg" }, { "src": "magic:magical_4.ogg", "at": 0.3, "gain": 0.8 }, { "src": "cure:Cure6.wav", "at": 0.1, "gain": 0.5 }]]
+      "sprite": "sfx_world", "desc": "Đột phá cảnh giới / độ kiếp thành công (nhóm xác nhận: nổi nhất)", "pitch": 0, "duck": 0.5, "max": 3.0, "level": 4,
+      "variants": [[{ "src": "jingle:jingles_PIZZA12.ogg" }, { "src": "magic:magical_4.ogg", "at": 0.3, "gain": 0.8 }, { "synth": "metal", "f": 1319, "dur": 1.6, "gain": 0.4 }]]
     },
     "craft": { "sprite": "sfx_world", "desc": "Luyện đan thành", "pitch": 0.05, "max": 1.4, "variants": ["rpg:metalPot1.ogg", "rpg:metalPot2.ogg"] },
     "enhance": {
@@ -147,7 +193,7 @@
     },
     "gather": { "sprite": "sfx_world", "desc": "Hái linh thảo", "pitch": 0.06, "level": -3, "variants": ["rpg:cloth1.ogg", "rpg:cloth3.ogg"] },
     "fly": {
-      "sprite": "sfx_world", "desc": "Ngự kiếm cất cánh", "pitch": 0.04, "max": 1.6,
+      "sprite": "sfx_world", "desc": "Ngự kiếm cất cánh", "pitch": 0.04, "max": 1.6, "level": -3,
       "variants": [[{ "src": "sword:sword.2.ogg", "rate": 0.6 }, { "src": "wind:wind_20woosh_20loop.ogg", "end": 1.5, "gain": 0.8 }]]
     }
   },
@@ -171,6 +217,15 @@
     "stream": {
       "desc": "Ven hồ, nước vỗ", "len": 45, "xfade": 5, "level": -22,
       "layers": [{ "src": "river:VistulaShort_0.mp3", "start": 0, "end": 51 }]
+    },
+    "water": {
+      "desc": "Nước chảy/vỗ — nguồn âm theo vị trí ven hồ (không dùng làm nền vùng)", "len": 24, "xfade": 2.5, "level": -22,
+      "layers": [
+        { "src": "loops:water_flowing.ogg", "loop": true, "rate": 1.0, "env": [0.45, 1.0, 2.9], "seed": 51 },
+        { "src": "loops:water_flowing.ogg", "loop": true, "rate": 0.83, "offset": 0.9, "gain": 0.8, "env": [0.2, 1.0, 4.3], "seed": 52, "lp": 3800 },
+        { "src": "loops:water_flowing.ogg", "loop": true, "rate": 1.19, "offset": 1.3, "gain": 0.55, "env": [0.1, 1.0, 6.7], "seed": 53 },
+        { "src": "loops:water_flowing.ogg", "loop": true, "rate": 0.69, "offset": 0.4, "gain": 0.6, "env": [0.0, 1.0, 9.1], "seed": 54, "lp": 2400 }
+      ]
     },
     "night": {
       "desc": "Đêm: dế, gió nhẹ", "len": 40, "xfade": 4, "level": -26,
