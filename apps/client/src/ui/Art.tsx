@@ -48,3 +48,22 @@ export function Portrait({ id, className }: { id: string | undefined; className?
   const ready = loaded === url;
   return <img key={url} className={'portrait' + (className ? ' ' + className : '') + (ready ? ' ready' : '')} src={url} alt="" draggable={false} decoding="async" onLoad={() => setLoaded(url)} />;
 }
+
+/** Chờ manifest rồi trả đường dẫn ảnh (null nếu thiếu). Dùng ngoài React (màn tải, nền màn tiêu đề). */
+export function loadArtUrl(group: string, id: string): Promise<string | null> {
+  return loadManifest().then(() => artUrl(group, id));
+}
+
+/**
+ * Chất liệu UI (nền giấy, hoa văn góc, triện, nền bản đồ): đặt thành biến CSS `--art-*` sau khi manifest về.
+ * CSS dùng `var(--art-paper, none)`, thiếu ảnh thì giữ giao diện thuần CSS như cũ.
+ */
+export async function applyUiArt(): Promise<void> {
+  const m = await loadManifest();
+  if (!m?.files.ui) return;
+  const style = document.documentElement.style;
+  for (const [id, prop] of [['paper_tile', '--art-paper'], ['corner_ornament', '--art-corner'], ['seal_red', '--art-seal'], ['map_bg', '--art-map']] as const) {
+    const e = m.files.ui[id];
+    if (e) style.setProperty(prop, `url("${base}${e.file}")`);
+  }
+}

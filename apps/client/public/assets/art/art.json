@@ -72,6 +72,94 @@
         "bytes": 39330,
         "sourceSha256": "aa7abe38084abfbd3f7ae68cc0d01784ceac034bfd74bc3d091384e09849b45d"
       }
+    },
+    "loading": {
+      "ho_suong_mu": {
+        "file": "loading/ho_suong_mu.1d5d454666.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 72460,
+        "sourceSha256": "8f4abee3f74d337d00825aff3426b0e64c06ddb49b3c697026dcd7eabc9cf2de"
+      },
+      "kiem_trung": {
+        "file": "loading/kiem_trung.866ec9743c.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 90706,
+        "sourceSha256": "b72a894b485c311eab2bdbf93b37aa0c7b63f32adb1e69c37f7f00bd417af8be"
+      },
+      "rung_linh_thao": {
+        "file": "loading/rung_linh_thao.316ada573a.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 103262,
+        "sourceSha256": "148f098e0463c4606a296bb3c07d74f5d9e2c2dbd449cc1dfba61ae14e8e1792"
+      },
+      "suoi_thanh_khe": {
+        "file": "loading/suoi_thanh_khe.f81d1ca62c.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 137386,
+        "sourceSha256": "be08fbf077b6b9e923a743346b8f547fc551bd8fe97387a359094108104159ad"
+      },
+      "thung_lung": {
+        "file": "loading/thung_lung.69a6b8e724.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 76132,
+        "sourceSha256": "7ab22a4253b576a92c6fee36235297a5905ef4b29b5a92963908b9912aa58be0"
+      },
+      "title": {
+        "file": "loading/title.a3204594c9.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 62432,
+        "sourceSha256": "317555a912178019157b3f2379ed3edd572fdc36ff7d2e265f4028ddc9005c79"
+      },
+      "tong_mon": {
+        "file": "loading/tong_mon.d6d38c286d.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 133846,
+        "sourceSha256": "9da7e489c42347803228ddda4244d2233c84a59751824dc8960cb2e9e2ba563a"
+      },
+      "vach_da_ngoc": {
+        "file": "loading/vach_da_ngoc.9f05f8a42e.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 100876,
+        "sourceSha256": "4012dfb636943d539cd20c5ecd5827868f251abd23961236129b6cd578acc84f"
+      }
+    },
+    "ui": {
+      "corner_ornament": {
+        "file": "ui/corner_ornament.b9982da931.webp",
+        "w": 320,
+        "h": 320,
+        "bytes": 7434,
+        "sourceSha256": "451d27ce610bce76ff0343901f00d109c547ee9c2472072d0c1f5bc323d28198"
+      },
+      "map_bg": {
+        "file": "ui/map_bg.a7fc802ca4.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 118382,
+        "sourceSha256": "ec5ff968ea86c26e49ad559e9b9cb10cbf2af441247471173f0e66400b173bc1"
+      },
+      "paper_tile": {
+        "file": "ui/paper_tile.17935682ca.webp",
+        "w": 512,
+        "h": 512,
+        "bytes": 20880,
+        "sourceSha256": "064861d91332a15e767a230a04712a5d8ff308a30600f72aaa182b3044409b6b"
+      },
+      "seal_red": {
+        "file": "ui/seal_red.9a5f31db58.webp",
+        "w": 192,
+        "h": 192,
+        "bytes": 12022,
+        "sourceSha256": "0bf62183cb49d257ad715bc5b0db57250ac3309dd52c4cc1f5effcd844948613"
+      }
     }
   }
 }
