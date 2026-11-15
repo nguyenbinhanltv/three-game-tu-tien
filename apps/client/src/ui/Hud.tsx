@@ -210,6 +210,12 @@ export function objectiveText(o: ObjectiveDef): string {
       return t('ui.obj.talk', { name: t(`npc.${o.target}.name`) });
     case 'fly':
       return t('ui.obj.fly');
+    case 'enhance':
+      return t('ui.obj.enhance', { n: o.count });
+    case 'dungeon':
+      return t('ui.obj.dungeon');
+    case 'duel':
+      return t('ui.obj.duel');
     default:
       return t('ui.obj.breakthrough');
   }
@@ -243,7 +249,7 @@ function QuestTracker() {
               const ok = cur >= o.count;
               // Nhiệm vụ không theo dõi chỉ hiện mục tiêu chưa xong đầu tiên cho gọn.
               if (id !== tracked && (ok || q.objectives.findIndex((x, j) => (prog[j] ?? 0) < x.count) !== i)) return null;
-              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' ? '' : ` ${cur}/${o.count}`;
+              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' || o.type === 'enhance' || o.type === 'dungeon' || o.type === 'duel' ? '' : ` ${cur}/${o.count}`;
               return (
                 <div key={i} className={'tracker-obj' + (ok ? ' ok' : '')}>
                   {ok ? '✔ ' : '· '}

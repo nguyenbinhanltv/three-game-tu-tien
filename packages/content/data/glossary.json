@@ -157,5 +157,17 @@
     "Hạ phẩm",
     "Trung phẩm",
     "Thượng phẩm"
-  ]
+  ],
+  "pois": {
+    "mieu_do": "Miếu Đổ Thanh Phong",
+    "linh_tuyen": "Linh Tuyền Thanh Khê",
+    "dinh_nghi": "Đình Nghỉ Linh Thảo",
+    "bia_da": "Bia Đá Vách Ngọc",
+    "dai_ho": "Đài Canh Hồ"
+  },
+  "poiNpcs": {
+    "npc_mieu_cong": "Lão Miếu Công",
+    "npc_tieu_khe": "Tiểu Khê",
+    "npc_hai_duoc": "Hạ Thảo"
+  }
 }

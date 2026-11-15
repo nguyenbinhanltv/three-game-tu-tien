@@ -322,7 +322,10 @@ export interface SkillDef {
   poison?: { r: number; mul: number; dur: number };
 }
 
-export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough';
+/**
+ * `enhance` (M-5): món trang bị đạt +count (lấy mức cao nhất, như `level`); `dungeon`: vào Kiếm Trủng; `duel`: hoàn tất một trận tỉ thí.
+ */
+export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough' | 'enhance' | 'dungeon' | 'duel';
 
 export interface ObjectiveDef {
   type: ObjectiveType;
@@ -426,6 +429,18 @@ export interface LevelDef {
   nodes: NodeSpawnDef[];
   zones?: ZoneDef[];
   camps?: CampDef[];
+  /** Điểm đáng chú ý (M-5): bày prop sẵn có + cột linh quang nhìn từ xa. Tên ở i18n `poi.<id>.name`. */
+  pois?: PoiDef[];
+}
+
+/** Điểm đáng chú ý trong một vùng săn (M-5). */
+export interface PoiDef {
+  id: string;
+  zone: string;
+  x: number;
+  z: number;
+  /** Cao cột linh quang (m); 0 hoặc không có thì không dựng cột. */
+  beamH?: number;
 }
 
 /** Điểm đặt tên cho kiểm thử (`?at=`, `/gm tp <id>`). Chỉ server đọc (`@dtl/content/places`). */

@@ -31,6 +31,8 @@ export interface DuelHost {
   setFlag(p: PlayerEnt, flag: number, on: boolean): void;
   cancelCast(p: PlayerEnt): void;
   stopMeditate(p: PlayerEnt): void;
+  /** Ghi nhận sự kiện nhiệm vụ (M-5: hoàn tất một trận tỉ thí). */
+  questEvent(p: PlayerEnt, type: 'duel', target: undefined, n: number): void;
 }
 
 interface Duel {
@@ -260,6 +262,8 @@ export class DuelSystem {
     parties.setPairCooldown('duel', d.a.char.id, d.b.char.id, DUEL_PAIR_COOLDOWN_MS);
     parties.setPairCooldown('duel', d.b.char.id, d.a.char.id, DUEL_PAIR_COOLDOWN_MS);
     this.notify(d, 'end', winner ?? undefined, why);
+    // M-5: trận đã đánh thật (đã qua đếm ngược) thì cả hai tính là đã tỉ thí, thắng thua đều được.
+    if (d.fought && (why === 'win' || why === 'yield' || why === 'timeout')) for (const x of [d.a, d.b]) this.h.questEvent(x, 'duel', undefined, 1);
     if (winner) {
       const loser = winner === d.a ? d.b : d.a;
       for (const x of [winner, loser]) this.h.sys(x, x === winner ? 'duel.win' : 'duel.lose', { name: (x === winner ? loser : winner).char.name }, x === winner ? 'good' : 'info');
