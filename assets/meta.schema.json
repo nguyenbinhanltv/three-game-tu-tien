@@ -65,6 +65,12 @@
           "enum": ["auto", "thigh", "none"],
           "description": "auto (mặc định): có cặp xương đùi trái/phải thì xoay cho bên trái nhân vật về +X, mặt nhìn +Z; thigh: bắt buộc có; none: không tự xoay."
         },
+        "grade": {
+          "type": "object",
+          "description": "Chỉnh màu map màu lúc nhập: saturation (nhân độ bão hòa, 1 = giữ), warm (kéo vùng đỏ về cam, 0 = tắt).",
+          "additionalProperties": false,
+          "properties": { "saturation": { "type": "number", "minimum": 0, "maximum": 2 }, "warm": { "type": "number", "minimum": 0, "maximum": 1 } }
+        },
         "yaw": { "type": "number", "description": "Xoay thêm quanh +Y (độ, ngược chiều kim đồng hồ nhìn từ trên) sau bước orient, để mặt trước nhìn về +Z." },
         "clips": {
           "type": "array",

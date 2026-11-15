@@ -29,7 +29,7 @@ interface PropCfg {
 }
 
 /** Ô cây cách camera dưới ngưỡng này (m, ở preset Vừa) dùng mesh 3D, xa hơn dùng impostor; impostor bỏ ở `TREE_RANGE`. */
-export const TREE_START = 250;
+export const TREE_START = 220;
 export const TREE_RANGE = 1150;
 
 export const PROP_CFG: Record<string, PropCfg> = {
@@ -74,6 +74,9 @@ interface TreeChunk {
   cz: number;
   items: PropInstance[];
   species: Set<string>;
+  /** Ma trận (16 số) và màu (3 số) của từng cây, tính một lần khi cần. */
+  mat?: Float32Array;
+  col?: Float32Array;
 }
 
 /** Một mesh của pool cây: bộ đệm cấp phát một lần, `count` đổi theo số cây đang gán vào mức đó. */
@@ -142,6 +145,12 @@ export class PropLayer {
   /** Cây theo ô 128 m (cùng lưới với ImpostorLayer). */
   private treeChunks = new Map<string, TreeChunk>();
   private treeCount = 0;
+  private lastX = 0;
+  private lastZ = 0;
+  private lastScale = 0;
+  private lastVis = 0;
+  /** Lần cập nhật trước đã gán đủ cây (không còn chờ asset): mới được bỏ qua khi camera đứng yên. */
+  private poolReady = false;
   /** pool[id][k] = các InstancedMesh (mỗi mesh của asset ở mức LOD k) dùng chung cho mọi cây loài `id` ở mức k. */
   private pool = new Map<string, TreeSlot[][]>();
   /** Số InstancedMesh đang hiện (đo draw call). */
@@ -225,11 +234,11 @@ export class PropLayer {
     this.applyPoolShadows();
   }
 
-  /** Chỉ mức LOD 0–1 đổ bóng: mức 2 ở xa bóng không thấy rõ, mà pass bóng vẽ cả pool (không cắt theo từng instance). */
+  /** Chỉ mức LOD 0 đổ bóng: mức 2 ở xa bóng không thấy rõ, mà pass bóng vẽ cả pool (không cắt theo từng instance). */
   private applyPoolShadows(): void {
     for (const [id, levels] of this.pool) {
       levels.forEach((slots, k) => {
-        for (const sl of slots) sl.im.castShadow = this.shadows && !!PROP_CFG[id].shadow && k < 2;
+        for (const sl of slots) sl.im.castShadow = this.shadows && !!PROP_CFG[id].shadow && k < 1;
       });
     }
   }
@@ -275,6 +284,7 @@ export class PropLayer {
    */
   private updateTrees(camX: number, camZ: number, scale: number): number {
     const start = TREE_START * scale;
+    if (this.poolReady && Math.hypot(camX - this.lastX, camZ - this.lastZ) < 2 && scale === this.lastScale) return this.lastVis;
     const near: TreeChunk[] = [];
     let pending = false;
     for (const ch of this.treeChunks.values()) {
@@ -284,12 +294,18 @@ export class PropLayer {
       if (d < start) near.push(ch);
     }
     this.impostors?.update(camX, camZ, start, TREE_RANGE * scale, pending);
+    this.lastX = camX;
+    this.lastZ = camZ;
+    this.lastScale = scale;
+    this.poolReady = !pending;
     // Mọi slot về 0 trước khi gán lại.
     const counts = new Map<TreeSlot, number>();
     for (const levels of this.pool.values()) for (const slots of levels) for (const sl of slots) counts.set(sl, 0);
     if (!pending) {
       for (const ch of near) {
-        for (const p of ch.items) {
+        if (!ch.mat) this.bakeTreeChunk(ch);
+        for (let i = 0; i < ch.items.length; i++) {
+          const p = ch.items[i];
           const levels = this.poolOf(p.id);
           if (!levels) continue;
           const cfg = PROP_CFG[p.id];
@@ -298,14 +314,8 @@ export class PropLayer {
           for (const sl of levels[k]) {
             const n = counts.get(sl) ?? 0;
             if (n >= POOL_CAP) continue;
-            _q.setFromAxisAngle(_up, p.yaw);
-            const sy = p.sy ?? 1;
-            _m.compose(_p.set(p.x, p.y, p.z), _q, _s.set(p.s, p.s * sy, p.s));
-            _m.toArray(sl.mat, n * 16);
-            const t = p.tint;
-            sl.col[n * 3] = t ? t[0] : 1;
-            sl.col[n * 3 + 1] = t ? t[1] : 1;
-            sl.col[n * 3 + 2] = t ? t[2] : 1;
+            sl.mat.set((ch.mat as Float32Array).subarray(i * 16, i * 16 + 16), n * 16);
+            sl.col.set((ch.col as Float32Array).subarray(i * 3, i * 3 + 3), n * 3);
             counts.set(sl, n + 1);
           }
         }
@@ -328,7 +338,19 @@ export class PropLayer {
         vis++;
       }
     }
+    this.lastVis = vis;
     return vis;
+  }
+
+  private bakeTreeChunk(ch: TreeChunk): void {
+    ch.mat = new Float32Array(ch.items.length * 16);
+    ch.col = new Float32Array(ch.items.length * 3);
+    ch.items.forEach((p, i) => {
+      _q.setFromAxisAngle(_up, p.yaw);
+      _m.compose(_p.set(p.x, p.y, p.z), _q, _s.set(p.s, p.s * (p.sy ?? 1), p.s));
+      _m.toArray(ch.mat as Float32Array, i * 16);
+      (ch.col as Float32Array).set(p.tint ?? [1, 1, 1], i * 3);
+    });
   }
 
   /** Pool của loài `id` (dựng lần đầu khi template sẵn sàng); null nếu chưa nạp. */
@@ -349,7 +371,7 @@ export class PropLayer {
         im.instanceColor = new THREE.InstancedBufferAttribute(col, 3);
         im.boundingSphere = sphere;
         im.matrixAutoUpdate = false;
-        im.castShadow = shadow && k < 2;
+        im.castShadow = shadow && k < 1;
         im.receiveShadow = this.shadows;
         im.count = 0;
         im.visible = false;

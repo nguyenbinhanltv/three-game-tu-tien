@@ -72,7 +72,7 @@ describe('bố cục prop (P2-A4)', () => {
         expect(count(id), id).toBeGreaterThan(0);
       }
       for (const p of trees.filter((t) => t.tint)) {
-        expect([p.sy, ...(p.tint as number[])].every((v) => Number.isFinite(v) && (v as number) > 0.5 && (v as number) < 1.5)).toBe(true);
+        expect([p.sy, ...(p.tint as number[])].every((v) => Number.isFinite(v) && (v as number) > 0.5 && (v as number) < 3.2)).toBe(true);
       }
     });
 

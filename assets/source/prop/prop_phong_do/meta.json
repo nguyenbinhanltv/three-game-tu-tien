@@ -15,7 +15,11 @@
     "size": {
       "height": 9
     },
-    "yaw": -90
+    "yaw": -90,
+    "grade": {
+      "saturation": 0.8,
+      "warm": 0.22
+    }
   },
   "concept": [
     {
