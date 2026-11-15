@@ -39,7 +39,9 @@ export function prefetchWorldAssets(cache: AssetCache = assets, legacy = legacyM
   }
   ids.push(['arch_sect', { pos: { x: SECT.x, z: SECT.z } }]);
   if (!legacy) {
-    for (const asset of new Set(Object.values(MONSTER_SKINS).map((s) => s.asset))) ids.push([asset, { priority: PREFETCH_PRIORITY.monster }]);
+    // Boss (skin `lazy`) chỉ có trong bí cảnh: nạp khi gặp, không tải trước ở thế giới mở.
+    const eager = Object.values(MONSTER_SKINS).filter((s) => !s.lazy);
+    for (const asset of new Set(eager.map((s) => s.asset))) ids.push([asset, { priority: PREFETCH_PRIORITY.monster }]);
   }
   ids.push(['prop_phi_kiem', { priority: PREFETCH_PRIORITY.vfx }]);
   cache.setViewer(SPAWN_POINT.x, SPAWN_POINT.z);
