@@ -41,7 +41,7 @@
       "fix": [
         {
           "name": "heavy_chop",
-          "lean": 30,
+          "lean": 25,
           "leanSoft": 0.4
         }
       ],

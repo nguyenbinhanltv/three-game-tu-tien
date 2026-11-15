@@ -153,8 +153,8 @@
             0.2,
             2.6
           ],
-          "lean": 35,
-          "leanSoft": 0.45
+          "lean": 25,
+          "leanSoft": 0.4
         },
         {
           "name": "flip_raw",
@@ -162,8 +162,8 @@
             0.4,
             3.4
           ],
-          "lean": 35,
-          "leanSoft": 0.45
+          "lean": 25,
+          "leanSoft": 0.4
         },
         {
           "name": "jump",
@@ -177,7 +177,9 @@
           "slice": [
             1.6,
             3.5
-          ]
+          ],
+          "lean": 30,
+          "leanSoft": 0.4
         },
         {
           "name": "cast_stand",
@@ -202,7 +204,7 @@
         },
         {
           "name": "heavy_chop",
-          "lean": 30,
+          "lean": 25,
           "leanSoft": 0.4
         }
       ],
@@ -275,7 +277,7 @@
           "to": "combat_idle",
           "t1": 0.95,
           "t2": 0.7,
-          "lean": 30,
+          "lean": 25,
           "leanSoft": 0.4
         }
       ],
