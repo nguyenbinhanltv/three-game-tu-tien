@@ -248,21 +248,33 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     const { m, calls } = fake();
     const combos = () => calls.map((c) => c.o?.combo);
     sp.predict(m, phi, 1000);
-    sp.predict(m, phi, 1500);
-    sp.predict(m, phi, 2000);
-    sp.predict(m, phi, 2500);
+    sp.predict(m, phi, 2050);
+    sp.predict(m, phi, 3100);
+    sp.predict(m, phi, 4150);
     expect(combos()).toEqual([0, 1, 2, 0]);
-    sp.predict(m, phi, 2500 + (phi.combo!.window + 0.5) * 1000);
+    sp.predict(m, phi, 4150 + (phi.combo!.window + 0.5) * 1000);
     expect(combos()[4]).toBe(0);
     expect((calls[2].o?.timing as { kb: boolean }).kb).toBe(true);
+  });
+
+  it('gửi lặp trong GCD (tự đánh 220 ms/lần) không dự đoán lại: không khởi động lại động tác, không tăng đòn liên hoàn', () => {
+    const sp = new SkillPoses();
+    const { m, calls } = fake();
+    for (let t = 1000; t < 1900; t += 220) sp.predict(m, phi, t);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].o?.combo).toBe(0);
+    // Hết GCD thì đòn kế (đòn 2) mới được đoán.
+    sp.predict(m, phi, 2050);
+    expect(calls).toHaveLength(2);
+    expect(calls[1].o?.combo).toBe(1);
   });
 
   it('lao người: chỉ chuỗi đánh thường, có mục tiêu, và không vượt chỗ đứng sát', () => {
     const sp = new SkillPoses();
     const { m, calls } = fake();
     sp.predict(m, phi, 1000, 6);
-    sp.predict(m, phi, 1100, 6);
-    sp.predict(m, phi, 1200, 6);
+    sp.predict(m, phi, 2050, 6);
+    sp.predict(m, phi, 3100, 6);
     sp.predict(m, phi, 5000, 1.5);
     sp.predict(m, phi, 9000);
     const r = calls.map((c) => c.o?.reach as number);
