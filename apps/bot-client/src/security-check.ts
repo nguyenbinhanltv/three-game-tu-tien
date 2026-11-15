@@ -68,6 +68,12 @@ async function join(name: string): Promise<{ client: Client; room: Room; init: I
 }
 
 async function main() {
+  // SECURITY_ONLY=testparams: chỉ chạy bài ?god/?at (bài 13) để thử lại nhanh.
+  if (process.env.SECURITY_ONLY === 'testparams') {
+    await testParamsChecks();
+    console.log(failed ? `${failed} mục HỎNG` : 'Tất cả đều ĐẠT');
+    process.exit(failed ? 1 : 0);
+  }
   // 1. Request HTTP xấu không được làm sập server.
   for (const path of ['//', '/%', '/..%2f..%2fpackage.json', '/%E0%A4%A']) {
     try {
@@ -966,6 +972,112 @@ async function main() {
     const r = await fetch(HTTP + '/matchmake/joinOrCreate/world', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dev: 'x'.repeat(64 * 1024) }) });
     await r.arrayBuffer();
     check('thân /matchmake quá lớn bị từ chối 413', r.status === 413, `HTTP ${r.status}`);
+  }
+
+  // 14. Truyền Tống Trận và điểm đánh dấu (M-4): server quyết định mở khóa, giao chiến, spam, kiểu gửi lạ, chia sẻ chỉ trong tổ đội.
+  {
+    const ta = await join('tele' + tag + 'a');
+    const tb = await join('tele' + tag + 'b');
+    interface TeleV {
+      open: string[];
+      cast: { id: string; ms: number } | null;
+      cd: number;
+    }
+    let teleA = null as TeleV | null;
+    const sysA: string[] = [];
+    let teleMsgs = 0;
+    ta.room.onMessage(S.TELE, (m: TeleV) => {
+      teleA = m;
+      teleMsgs++;
+    });
+    ta.room.onMessage(S.SYS, (m: { k: string }) => sysA.push(m.k));
+    let marksA = 0;
+    let marksB = 0;
+    ta.room.onMessage(S.MARK, () => marksA++);
+    tb.room.onMessage(S.MARK, () => marksB++);
+    const sayT = async (r: Room, cmd: string) => {
+      r.send(C.CHAT, { m: '/gm ' + cmd });
+      await W(900);
+    };
+    const mp = (r: Room, sid: string) => (r.state as { players: Map<string, P> }).players.get(sid)!;
+    await sayT(ta.room, 'level 12');
+    await sayT(ta.room, 'god off');
+    await sayT(ta.room, 'tele none');
+    await sayT(ta.room, 'tp 2048 2088');
+    await sayT(ta.room, 'heal');
+    const start = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
+    const moved = () => Math.hypot(mp(ta.room, ta.init.sid).x - start.x, mp(ta.room, ta.init.sid).z - start.z);
+    // a. Trận chưa mở khóa, id lạ, sai kiểu: không niệm, không dịch chuyển, server sống.
+    for (const m of [{ id: 'tp_thung_lung' }, { id: '../../etc' }, { id: 5 }, { id: ['tp_ho'] }, null, 'x']) {
+      ta.room.send(C.TELE, m);
+      await W(450);
+    }
+    await W(3600);
+    check('trận chưa mở khóa / id lạ / sai kiểu: không niệm, không dịch chuyển', moved() < 3 && !teleA?.cast && (await health()), `lệch ${moved().toFixed(1)} m, thông báo: ${[...new Set(sysA)].join(',')}`);
+    // b. Mở khóa rồi niệm đủ: dịch chuyển; hồi chiêu chặn lần sau.
+    await sayT(ta.room, 'tele tp_thung_lung');
+    await W(500);
+    ta.room.send(C.TELE, { id: 'tp_thung_lung' });
+    await W(3800);
+    const dest = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
+    check('niệm đủ 3 giây thì tới trận đã mở khóa', Math.hypot(dest.x - 2010, dest.z - 2375) < 20, `(${dest.x.toFixed(0)}, ${dest.z.toFixed(0)})`);
+    check('sau khi tới có hồi chiêu', (teleA?.cd ?? 0) > 20_000, `cd ${teleA?.cd}`);
+    await sayT(ta.room, 'tele cd');
+    // c. Giao chiến thật (tự đánh một con sói): bắt đầu niệm rồi ra chiêu thì lượt niệm bị hủy; đang giao chiến thì không bắt đầu niệm được.
+    await sayT(ta.room, 'tp 2048 2088');
+    await sayT(ta.room, 'tele all');
+    await sayT(ta.room, 'spawn mon_soi_xam 1');
+    await W(800);
+    const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - 2048, x[1].z - 2088) - Math.hypot(y[1].x - 2048, y[1].z - 2088))[0];
+    if (!wolf) check('dựng được sói để thử giao chiến', false);
+    else {
+      await sayT(ta.room, `tp ${wolf[1].x.toFixed(1)} ${(wolf[1].z + 3).toFixed(1)}`);
+      await W(1500);
+      const here = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
+      sysA.length = 0;
+      ta.room.send(C.TELE, { id: 'tp_ho' });
+      await W(700);
+      const casting = !!teleA?.cast;
+      ta.room.send(C.SKILL, { id: 'skl_phi_kiem', t: wolf[0] });
+      await W(4200);
+      const p1 = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
+      check('đang niệm mà ra chiêu đánh quái: lượt niệm bị hủy, không dịch chuyển', casting && Math.hypot(p1.x - 1580, p1.z - 2070) > 100 && sysA.includes('sys.tele_broken'), `niệm ${casting ? 'có' : 'không'}, (${p1.x.toFixed(0)}, ${p1.z.toFixed(0)}), sys ${[...new Set(sysA)].join(',')}`);
+      // Vừa đánh xong (đang trong cửa sổ giao chiến): không bắt đầu niệm được.
+      await sayT(ta.room, 'heal');
+      ta.room.send(C.SKILL, { id: 'skl_phi_kiem', t: wolf[0] });
+      await W(300);
+      sysA.length = 0;
+      ta.room.send(C.TELE, { id: 'tp_ho' });
+      await W(700);
+      check('đang giao chiến: không bắt đầu niệm Truyền Tống', !teleA?.cast && sysA.includes('sys.tele_combat'), `cast ${teleA?.cast ? 'có' : 'không'}, sys ${[...new Set(sysA)].join(',')}`);
+      void here;
+    }
+    await sayT(ta.room, 'killall');
+    await sayT(ta.room, 'heal');
+    await W(11000);
+    // d. Spam lệnh: server giãn lệnh, không tạo hàng loạt thông báo.
+    const t0 = teleMsgs;
+    for (let i = 0; i < 80; i++) ta.room.send(C.TELE, { id: 'tp_rung' });
+    await W(600);
+    check('spam 80 lệnh tele chỉ sinh vài trạng thái', teleMsgs - t0 <= 4 && (await health()), `${teleMsgs - t0} tin`);
+    ta.room.send(C.TELE, {});
+    await W(500);
+    // e. Điểm đánh dấu: kiểu lạ / ngoài vùng bị bỏ qua; spam bị giãn; không cùng tổ đội thì người khác không thấy.
+    const m0 = marksA;
+    for (const m of [{ x: NaN, z: 1 }, { x: 'a', z: 1 }, { x: 1e9, z: 0 }, { x: 0, z: 0 }, { x: 2100 }, null, 'x', [1, 2]]) {
+      ta.room.send(C.MARK, m);
+      await W(1050);
+    }
+    check('điểm đánh dấu sai kiểu / ngoài vùng chơi bị bỏ qua', marksA === m0 && (await health()), `${marksA - m0} tin`);
+    const m1 = marksA;
+    for (let i = 0; i < 60; i++) ta.room.send(C.MARK, { x: 2100 + i, z: 2100 });
+    await W(1300);
+    check('spam 60 lệnh đánh dấu chỉ sinh ≤ 2 tin cho chủ điểm', marksA - m1 <= 2 && marksA - m1 >= 1, `${marksA - m1} tin`);
+    check('người ngoài tổ đội không thấy điểm đánh dấu của người khác', marksB === 0, `${marksB} tin`);
+    ta.room.send(C.MARK, { clear: true });
+    await W(1200);
+    await ta.room.leave(true);
+    await tb.room.leave(true);
   }
 
   // 11. Giới hạn tần suất /matchmake theo IP (đặt cuối: làm cạn xô của IP này; chạy lại sau ~1 phút).

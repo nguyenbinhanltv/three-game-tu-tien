@@ -8,7 +8,7 @@ import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
-import { HAND_PROPS, COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, type ZoneDef } from '@dtl/shared';
+import { HAND_PROPS, COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, TELE_FREE, TELE_PADS, type ZoneDef } from '@dtl/shared';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -661,6 +661,30 @@ function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) 
     if (t(`npc.${id}.name`) !== glossNpc[id]) err(`npc ${id}: tên lệch glossary.poiNpcs`);
     if (!pois.some((p) => Math.hypot(p.x - n.x, p.z - n.z) <= 10)) err(`npc ${id}: phải đứng trong 10 m quanh một poi`);
     if (!clearOfCamps(n.x, n.z, 4)) err(`npc ${id}: đứng trong bãi quái`);
+  }
+}
+
+// ---- Truyền Tống Trận (M-4): mỗi vùng đúng một trận trong vùng, đứng được, không đè collider/nước/bãi quái ----
+{
+  const lv = LEVELS.van_lam;
+  uniqueIds('trận', [...TELE_PADS]);
+  for (const z of lv.zones ?? []) if (TELE_PADS.filter((p) => p.zone === z.id).length !== 1) err(`vùng ${z.id}: cần đúng một Truyền Tống Trận`);
+  if (!TELE_PADS.some((p) => TELE_FREE.includes(p.id))) err('cần ít nhất một trận mở sẵn');
+  for (const pad of TELE_PADS) {
+    const w = `trận ${pad.id}`;
+    needStr(`tele.${pad.id}`);
+    if (pad.zone) {
+      const zn = (lv.zones ?? []).find((z) => z.id === pad.zone);
+      if (!zn) err(`${w}: vùng ${pad.zone} không tồn tại`);
+      else if (!inPoly(zn.poly, pad.x, pad.z)) err(`${w}: không nằm trong vùng ${pad.zone}`);
+    }
+    if (pad.x < PLAY_BOUNDS.x0 || pad.x > PLAY_BOUNDS.x1 || pad.z < PLAY_BOUNDS.z0 || pad.z > PLAY_BOUNDS.z1) err(`${w}: ngoài vùng chơi`);
+    for (const col of COLLIDERS) if (Math.hypot(pad.x - col.x, pad.z - col.z) < col.r + 4) err(`${w}: đè collider (${col.x}, ${col.z})`);
+    if (heightAt(pad.x, pad.z) < WATER_Y + 1) err(`${w}: dưới nước`);
+    const slope = Math.max(Math.abs(heightAt(pad.x + 4, pad.z) - heightAt(pad.x, pad.z)), Math.abs(heightAt(pad.x, pad.z + 4) - heightAt(pad.x, pad.z)));
+    if (slope > 2.6) err(`${w}: dốc ${slope.toFixed(1)} m/4 m, cần chỗ bằng`);
+    for (const c of lv.camps ?? []) if (Math.hypot(pad.x - c.x, pad.z - c.z) < c.radius + 4) err(`${w}: nằm trong bãi quái ${c.id}`);
+    for (const s of lv.spawns) if (Math.hypot(pad.x - s.x, pad.z - s.z) < s.radius + 20) err(`${w}: quá gần điểm sinh ${s.mon}`);
   }
 }
 
