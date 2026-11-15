@@ -27,7 +27,7 @@ import {
   GEM_MERGE_COUNT,
 } from '@dtl/shared';
 import { ENHANCE_ORE, FORGE, ITEM, itemName, SET, t } from '@dtl/content';
-import { ContentIcon } from './ContentIcon';
+import { ContentIcon, UiIcon } from './ContentIcon';
 import { Game, reqId } from '../game/engine';
 import { affixText, gearQuality, setLines } from './gear';
 import { Button, Divider } from './kit';
@@ -84,7 +84,7 @@ function Mats({ ids }: { ids: string[] }) {
           <ContentIcon def={ITEM.get(id)} /> {count(inv, id)}
         </span>
       ))}
-      <span>💠 {gold}</span>
+      <span><UiIcon id="cur_linh_thach" fallback="💠" className="inline" /> {gold}</span>
     </div>
   );
 }
