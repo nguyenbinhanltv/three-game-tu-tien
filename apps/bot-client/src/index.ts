@@ -56,6 +56,8 @@ interface PlayerView {
   seq: number;
 }
 interface MonView {
+  /** id loại quái; rỗng = ngoài tầm AOI (bản ghi rỗng). */
+  t?: string;
   x: number;
   z: number;
   st: number;
@@ -187,6 +189,7 @@ class Bot {
       this.target = '';
       let best = 60 * 60;
       monsters.forEach((m, id) => {
+        if (!m.t) return; // ngoài tầm AOI: bản ghi rỗng
         if (m.st === MS_DEAD || m.lv > this.level + 2) return;
         const d = (m.x - me.x) ** 2 + (m.z - me.z) ** 2;
         if (d < best) {
@@ -241,6 +244,7 @@ class Bot {
       tgt = undefined;
       let best = Infinity;
       monsters.forEach((m, id) => {
+        if (!m.t) return; // ngoài tầm AOI: bản ghi rỗng
         if (!inZone(m)) return;
         const d = (m.x - me.x) ** 2 + (m.z - me.z) ** 2;
         if (d < best) {

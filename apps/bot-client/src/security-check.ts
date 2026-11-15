@@ -886,8 +886,8 @@ async function main() {
     const A = await join('kt_aoi_a');
     const B = await join('kt_aoi_b');
     type Ent = { x: number; z: number; hp?: number; t?: string };
-    const mons = (g: { room: Room }) => (g.room.state as unknown as { monsters: Map<string, Ent> }).monsters;
-    const plrs = (g: { room: Room }) => (g.room.state as unknown as { players: Map<string, Ent> }).players;
+    const mons = (g: { room: Room }) => new Map([...(g.room.state as unknown as { monsters: Map<string, Ent> }).monsters].filter(([, m]) => !!m.t));
+    const plrs = (g: { room: Room }) => new Map([...(g.room.state as unknown as { players: Map<string, Ent & { name?: string }> }).players].filter(([, p]) => !!p.name));
     const chat = async (g: { room: Room }, m: string) => {
       g.room.send(C.CHAT, { m });
       await W(1000);

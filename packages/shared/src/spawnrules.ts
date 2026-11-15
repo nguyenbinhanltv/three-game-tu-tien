@@ -60,3 +60,13 @@ export function aoiVisible(d2: number, inView: boolean, boss: boolean): boolean 
   const r = inView ? (boss ? AOI_BOSS_OUT : AOI_OUT) : boss ? AOI_BOSS_IN : AOI_IN;
   return d2 <= r * r;
 }
+
+// Client: bản ghi của thực thể ngoài tầm AOI là bản ghi rỗng (mọi trường `@view()` chưa tới). Lọc bằng hai hàm này.
+/** Quái có dữ liệu thật (trong tầm AOI)? Bản ghi ngoài tầm có `t` rỗng/undefined. */
+export function visibleMon(m: { t?: string } | undefined): boolean {
+  return !!m && !!m.t;
+}
+/** Người chơi có dữ liệu thật (trong tầm AOI hoặc chính mình)? Bản ghi ngoài tầm có `name` rỗng/undefined. */
+export function visiblePlayer(p: { name?: string } | undefined): boolean {
+  return !!p && !!p.name;
+}

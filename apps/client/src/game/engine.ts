@@ -60,6 +60,7 @@ import {
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
+import { visibleView } from './aoiView';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
@@ -399,7 +400,7 @@ export class Game {
   constructor(room: Room, init: InitMsg) {
     this.room = room;
     this.sid = init.sid;
-    this.view = room.state as unknown as WorldView;
+    this.view = visibleView(room.state as unknown as WorldView);
     this.stage = document.getElementById('stage')!;
     this.applyInit(init);
     this.bindRoom(room);
@@ -436,7 +437,7 @@ export class Game {
   /** Chuyển sang room khác (bí cảnh ↔ thế giới) mà không dựng lại renderer. */
   private rebind(room: Room, init: InitMsg): void {
     this.room = room;
-    this.view = room.state as unknown as WorldView;
+    this.view = visibleView(room.state as unknown as WorldView);
     this.applyInit(init);
     this.bindRoom(room);
     this.ents?.dispose();
