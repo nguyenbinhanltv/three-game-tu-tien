@@ -425,6 +425,21 @@ describe('tỉ thí', () => {
     expect(s2.sim.duel.inDuel(d2.b)).toBe(false);
   });
 
+  it('thoát giữa trận không giữ máu/linh lực đầy (không thành cách hồi miễn phí)', () => {
+    const s = setup();
+    const a = s.join('a', undefined, 12);
+    const b = s.join('b', undefined, 12);
+    a.char.hp = 40;
+    a.char.mp = 5;
+    s.sim.duel.command(a, { a: 'inv', n: b.char.name });
+    s.sim.duel.command(b, { a: 'acc', id: a.char.id });
+    expect(a.char.hp).toBe(a.char.mhp);
+    s.sim.removePlayer(a.sid);
+    expect(a.char.hp).toBe(40);
+    expect(a.char.mp).toBe(5);
+    expect(s.sim.duel.inDuel(b)).toBe(false);
+  });
+
   it('trong trận không đổi trang bị hay dùng đan dược', () => {
     const s = setup();
     const { a } = duelUp(s);

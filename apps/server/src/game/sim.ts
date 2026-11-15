@@ -1626,7 +1626,7 @@ export class GameSim {
   }
 
   private killPlayer(p: PlayerEnt): void {
-    this.duel.onGone(p);
+    this.duel.onGone(p, true);
     const c = p.char;
     c.hp = 0;
     p.casting = null;

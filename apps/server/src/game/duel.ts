@@ -227,10 +227,14 @@ export class DuelSystem {
     }
   }
 
-  /** Người chơi rời room hoặc chết thật (do quái): hủy trận, không ai thắng. */
-  onGone(p: PlayerEnt): void {
+  /**
+   * Người chơi rời room (`dead` = false) hoặc chết thật do quái (`dead` = true): hủy trận, không ai thắng.
+   * Người rời room vẫn được trả máu/linh lực như trước trận (trước khi lưu), nếu không mở trận rồi thoát
+   * sẽ thành cách hồi đầy miễn phí. Chỉ người chết thật bỏ qua (cái chết tính như thường).
+   */
+  onGone(p: PlayerEnt, dead = false): void {
     const d = this.bySid.get(p.sid);
-    if (d && !d.over) this.finish(d, null, 'abort', p);
+    if (d && !d.over) this.finish(d, null, 'abort', dead ? p : undefined);
     this.invites.delete(p.char.id);
     for (const [id, inv] of this.invites) if (inv.from === p) this.invites.delete(id);
   }
