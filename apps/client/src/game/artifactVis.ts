@@ -51,7 +51,7 @@ export function activePose(kind: ArtifactKind, t: number, out: ArtPose = blank()
       Object.assign(out, { x: 0, y: 1.42, z: 1.0 + Math.sin(t * 30) * 0.03, rx: 0.5, ry: 0, rz: Math.sin(t * 38) * 0.28, s: 2.3 });
       break;
     case 'shield':
-      Object.assign(out, { x: 0, y: 2.6 + Math.sin(t * 3) * 0.06, z: 0, rx: 0, ry: t * 1.2, rz: 0, s: 3.3 });
+      Object.assign(out, { x: 0, y: 3.25 + Math.sin(t * 3) * 0.06, z: 0, rx: 0, ry: t * 1.2, rz: 0, s: 2.1 });
       break;
   }
   return out;

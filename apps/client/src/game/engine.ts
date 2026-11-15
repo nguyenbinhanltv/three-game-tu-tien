@@ -1411,7 +1411,7 @@ export class Game {
         // Pháp bảo phụ (P3-8): pháp bảo bay lên theo animation thủ tục; thêm một vòng sáng nhỏ dưới chân, không trụ sáng, không chớp toàn cảnh.
         e.players.get(src)?.art?.trigger(m.d ?? 1.2);
         const col = tint(0xc9a2ff);
-        if (e.chestOf(src, _v)) v.burst(_v.set(_v.x, _v.y - 1.05, _v.z).clone(), col, Math.min(5, (m.r ?? 8) * 0.35), 0.55);
+        if (e.chestOf(src, _v)) v.burst(_v.set(_v.x, _v.y - 1.05, _v.z).clone(), col, Math.min(1.5, (m.r ?? 8) * 0.12), 0.4);
         if (m.s === 'itm_thanh_lien_an') {
           // Khiên trùm cả tổ đội: vẽ cho người trong tầm đang mang khiên (cờ về sau vài chục ms).
           const rr = (m.r ?? 22) ** 2;
@@ -1420,7 +1420,7 @@ export class Game {
             for (const [sid, pv] of e.players) {
               if (from && (pv.x - from.x) ** 2 + (pv.z - from.z) ** 2 > rr) continue;
               if (sid !== src && !((pv.s.fl ?? 0) & PF_SHIELD)) continue;
-              v.shield((out) => e.chestOf(sid, out), m.d ?? 4, () => (((this.view.players.get(sid)?.fl ?? 0) & PF_SHIELD) !== 0), col, 1, 0.2);
+              v.shield((out) => e.chestOf(sid, out), m.d ?? 4, () => (((this.view.players.get(sid)?.fl ?? 0) & PF_SHIELD) !== 0), col, 1, 0.09);
             }
           }, 120);
         }
