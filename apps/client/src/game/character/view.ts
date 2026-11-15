@@ -13,7 +13,12 @@ export interface AnimState {
   airborne: boolean;
   /** Đang giao chiến (quái đuổi/đánh): đứng yên thì dùng tư thế thủ thay vì idle thường. */
   combat?: boolean;
+  /** Boss bị ngắt chú hoặc mất thế (cờ MF_STUN). */
+  stunned?: boolean;
 }
+
+/** Đòn lớn của boss có vùng báo trước (M5-5): `slam` vùng tròn, `sweep` vùng chữ nhật/quạt từ boss. */
+export type BossMoveKind = 'slam' | 'sweep';
 
 /**
  * Lớp hiển thị một nhân vật: model khối (`Humanoid`, `MonsterModel`) hoặc model có xương
@@ -40,6 +45,11 @@ export interface CharacterView {
   performing?(pose: string): boolean;
   hitReact(o: HitOpts): void;
   update(dt: number, a: AnimState): void;
+  /**
+   * Boss vừa thả vùng báo trước: phát động tác đòn lớn sao cho lúc chạm khớp lúc vùng nổ sau `delay` giây.
+   * Trả false nếu model không có động tác này.
+   */
+  bossMove?(kind: BossMoveKind, delay: number): boolean;
   /** Khoảng cách tới người xem (m): chọn LOD và tần số cập nhật animation. Model khối bỏ qua. */
   setViewDistance?(d: number): void;
   /** LOD/bóng/nhịp mixer theo camera và suất LOD0 (EntityManager, M3-9). Model khối bỏ qua. */

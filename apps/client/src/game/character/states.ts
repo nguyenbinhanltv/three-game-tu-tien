@@ -13,6 +13,7 @@ export type CharState =
   | 'fly'
   | 'meditate'
   | 'cast'
+  | 'stun'
   | 'death'
   | 'attack'
   | 'hit';
@@ -30,6 +31,7 @@ export const FALLBACK: Record<CharState, CharState | null> = {
   fly: 'idle',
   meditate: 'idle',
   cast: 'combatIdle',
+  stun: 'combatIdle',
   death: null,
   attack: null,
   hit: null,
@@ -40,9 +42,10 @@ export const MOVE_MIN = 0.3;
 /** Từ tốc độ này (× tốc độ tham chiếu của clip chạy) chuyển đi → chạy. */
 export const RUN_FROM = 0.6;
 
-/** Trạng thái nền theo thứ tự ưu tiên: chết > thiền > bay > trên không > niệm chú > di chuyển > đứng. */
+/** Trạng thái nền theo thứ tự ưu tiên: chết > choáng > thiền > bay > trên không > niệm chú > di chuyển > đứng. */
 export function baseState(a: AnimState, refSpeed: number): CharState {
   if (a.dead) return 'death';
+  if (a.stunned) return 'stun';
   if (a.meditating) return 'meditate';
   if (a.flying) return 'fly';
   if (a.airborne) return 'jump';
