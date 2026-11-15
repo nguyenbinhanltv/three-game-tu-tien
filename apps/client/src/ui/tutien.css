@@ -243,3 +243,12 @@
   font-size: calc(14px * var(--s));
   opacity: 0.85;
 }
+
+/* ---------- thông báo nổi nằm trên bảng ----------
+ * Toast (ví dụ "Tu vi đã đầy nhưng gặp bình cảnh…") trước đây nằm dưới bảng đang mở nên bị che giữa câu.
+ * Đưa lên trên bảng, dưới tooltip; không nhận chuột để không chặn nút đóng bảng.
+ */
+.hud .toasts {
+  z-index: 55;
+  pointer-events: none;
+}

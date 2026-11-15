@@ -24,8 +24,9 @@ function PlayerFrame() {
   const mhp = useUI((s) => s.mhp);
   const mp = useUI((s) => s.mp);
   const mmp = useUI((s) => s.mmp);
-  if (!char) return null;
+  // Mọi hook phải đứng trước lệnh return sớm (store khởi đầu với char = null).
   const flags = useUI((s) => s.flags);
+  if (!char) return null;
   const goal = breakGoal(char);
   // Đang độ kiếp thì không mời đột phá nữa.
   if (flags & PF_TRIBULATION) goal.ready = false;

@@ -13,6 +13,12 @@
 | T9 | Thanh chiêu dựng lại mỗi lần vị trí đổi | `SkillBar` đăng ký `x`, `y`, `z` của store chỉ để biết đang lơ lửng | Engine tính một cờ `airborne` |
 | | Thanh đếm độ kiếp, dòng chữ có gạch dài và emoji | | HUD độ kiếp theo bộ khung: tiêu đề serif, thanh đếm `ProgressBar`, một dòng gợi ý |
 
+Sửa sau khi soát ảnh và review (2026-11-16):
+
+- `PlayerFrame` gọi `useUI` sau lệnh `return` sớm (vi phạm Rules of Hooks, có thể làm sập HUD khi `char` chuyển từ null sang có): đã đưa hook lên trước.
+- Toast nằm dưới bảng đang mở nên bị che giữa câu: lớp `.toasts` giờ có `z-index: 55` (trên bảng, dưới tooltip), không nhận chuột.
+- Màn tiêu đề ở màn thấp (≤ 800 px): phụ đề "Huyền Linh Giới · Vân Lam Sơn Mạch" chạm mép trên khung đăng nhập. Khung giờ rộng 620 px, cách phụ đề 22 px, cao tối đa bằng phần màn hình còn lại và cuộn bên trong (`man-tieu-de-1280.jpg`).
+
 ## Thêm mới
 
 - **Nút Đột Phá** trên khung nhân vật: sáng khi tu vi đầy ở bình cảnh (tầng 5/10/15) hoặc ở tầng 15 viên mãn. Bấm thì mở bảng Nhân vật; khối bình cảnh/độ kiếp đã được đưa lên ngay dưới thanh tu vi. Nút **không** tự bắt đầu độ kiếp: độ kiếp tốn Trúc Cơ Đan nên vẫn cần bấm trong bảng. Logic ở `ui/breakGoal.ts` (hàm thuần, có test); server vẫn kiểm mọi điều kiện.
@@ -68,7 +74,9 @@ Script Playwright (Chrome headless có GPU, `?mute=1`, `--mute-audio`) ở ba đ
 
 ![Túi trữ vật và tooltip, 2560×1440](tui-tooltip-2560.jpg)
 
-![Nút Đột Phá mở bảng Nhân vật](dot-pha-nhan-vat-1280.jpg)
+![Nút Đột Phá mở bảng Nhân vật, toast nằm trên bảng](dot-pha-nhan-vat-1280.jpg)
+
+![Màn tiêu đề 1280×720](man-tieu-de-1280.jpg)
 
 ![Chiến đấu: bảng tên, hồi chiêu vòng linh văn](chien-dau-1280.jpg)
 
