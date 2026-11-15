@@ -11,7 +11,7 @@ Mỗi vùng săn có một điểm bày bằng **prop sẵn có** (không asset 
 | Bãi Hồ Sương Mù | Đài Canh Hồ (1490, 2288) | 3 bậc đá, 2 trụ, tượng thú, 2 đèn, lau sậy | không (lore) |
 
 ## Cột linh quang
-`render/beacons.ts`: một `InstancedMesh` (một draw call cho cả năm cột), vỏ nón cụt hở, shader TSL không texture. Cường độ theo thời điểm (`beaconParams` trong `atmosphere.ts`: sáng sớm 0,5, ban ngày 0,3, đêm 1,0), đỉnh HDR ≤ 1,5, gần cột mờ còn ~22% để đứng cạnh không bị lóa, không đánh dấu bloom (bloom làm dải sáng mảnh ở xa ra khối chữ nhật). Chỉ hiện ở thế giới chính. `?beacons=0` tắt để so ảnh; `?mood=dawn|day|night` đổi thời điểm khi xem/chụp (client, không lưu).
+`render/beacons.ts`: một `InstancedMesh` (một draw call cho cả năm cột), vỏ nón cụt hở, shader TSL không texture. Cường độ theo thời điểm (`beaconParams` trong `atmosphere.ts`: sáng sớm 0,5, ban ngày 0,3, đêm 1,0), đỉnh HDR ≤ 2,0 (lõi) và 1,2 (quầng mềm rộng 3×), gần cột mờ còn ~22% để đứng cạnh không bị lóa, không đánh dấu bloom (bloom làm dải sáng mảnh ở xa ra khối chữ nhật). Chỉ hiện ở thế giới chính. `?beacons=0` tắt để so ảnh; `?mood=dawn|day|night` đổi thời điểm khi xem/chụp (client, không lưu).
 
 ## Ba nhiệm vụ
 Mục tiêu mới `enhance` (một món đạt +3, lấy mức cao nhất), `dungeon` (vào Kiếm Trủng, tính khi vào room bí cảnh), `duel` (hoàn tất một trận tỉ thí: thắng, đầu hàng hoặc hết giờ; hủy giữa chừng không tính). Thưởng nhỏ, không đổi công thức hay số cân bằng. Chuỗi ở i18n `quest.*`, `npc.*`, `poi.*`, `ui.obj.*`; tên điểm và NPC mới ở `glossary.json` (`pois`, `poiNpcs`), `content:check` kiểm khớp.

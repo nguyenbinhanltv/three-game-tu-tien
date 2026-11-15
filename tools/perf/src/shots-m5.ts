@@ -22,13 +22,13 @@ const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5200);
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots-m5', command: 'pnpm shots:m5' });
 type G = { __game?: Record<string, any> };
 
-// Điểm (khớp levels/van_lam.json pois), npc đứng cạnh nếu có, vị trí đứng xa (180–320 m, chọn bằng quét tầm nhìn: thấy cả thân cột).
+// Điểm (khớp levels/van_lam.json pois), npc đứng cạnh nếu có, vị trí đứng xa (180–320 m, chọn bằng quét tầm nhìn: thấy từ chân tới giữa cột, mắt cao 6 m).
 const POIS = [
-  { id: 'mieu_do', x: 2010, z: 2376, far: [2236, 2458], npc: 'npc_mieu_cong' },
-  { id: 'linh_tuyen', x: 2414, z: 2443, far: [2314, 2616], npc: 'npc_tieu_khe' },
-  { id: 'dinh_nghi', x: 2451, z: 2010, far: [2677, 2092], npc: 'npc_hai_duoc' },
-  { id: 'bia_da', x: 2419, z: 1795, far: [2265, 1611], npc: '' },
-  { id: 'dai_ho', x: 1490, z: 2288, far: [1726, 2330], npc: '' },
+  { id: 'mieu_do', x: 2010, z: 2376, far: [2010, 2601], npc: 'npc_mieu_cong' },
+  { id: 'linh_tuyen', x: 2414, z: 2443, far: [2414, 2293], npc: 'npc_tieu_khe' },
+  { id: 'dinh_nghi', x: 2451, z: 2010, far: [2359, 2216], npc: 'npc_hai_duoc' },
+  { id: 'bia_da', x: 2419, z: 1795, far: [2502, 1652], npc: '' },
+  { id: 'dai_ho', x: 1490, z: 2288, far: [1582, 2082], npc: '' },
 ];
 
 const gm = async (page: Page, cmd: string, wait = 1100) => {
