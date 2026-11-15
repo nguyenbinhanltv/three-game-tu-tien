@@ -48,6 +48,7 @@ import {
   EQUIP_SLOTS,
   glowStage,
   lookSet,
+  accessoryCode,
   MAX_ENHANCE,
   healAmount,
   methodSwitchCost,
@@ -646,6 +647,8 @@ export class GameSim {
     if (s.wg !== wg) s.wg = wg;
     const sk = lookSet(c.stats.sets)?.id ?? '';
     if (s.sk !== sk) s.sk = sk;
+    const sa = accessoryCode(SETS, c.equip);
+    if (s.sa !== sa) s.sa = sa;
     const art = c.equip.artifact?.id ?? '';
     if (s.art !== art) s.art = art;
     this.setFlag(p, PF_FLYING, m.flying);

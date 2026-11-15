@@ -7,7 +7,8 @@ import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
 import { POSES } from '@dtl/content';
 import { POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { createGltfLoader, createKtx2Loader, localLibsManager } from '../game/assets';
-import { bakePose, IkRig, poseClipName } from '../game/character/ikpose';
+import { bakePose, formatProbe, IkRig, poseClipName } from '../game/character/ikpose';
+import { isSkillViewer } from '../game/testParams';
 import { buildFixtureSword, buildMixamoFixture } from '../game/character/mixamoFixture';
 import { partExtras, stripPartTracks, SwordSocket, swordSocketDef } from '../game/character/sword';
 import { BoneLines, makeGrid } from './helpers';
@@ -63,6 +64,9 @@ export class ViewerScene {
   private sword: SwordSocket | null = null;
   /** Socket của model đang nạp (tạo lúc nướng pose, gán sau khi `show` dọn model cũ). */
   private nextSword: SwordSocket | null = null;
+  /** Rig IK của model đang xem (chỉ ở chế độ pose), dùng cho đầu dò số. */
+  private ikRig: IkRig | null = null;
+  private nextRig: IkRig | null = null;
   speed = 1;
   paused = false;
 
@@ -140,7 +144,51 @@ export class ViewerScene {
 
   /** Đang ở chế độ xem pose (?pose=…). */
   get poseMode(): boolean {
-    return new URLSearchParams(location.search).has('pose');
+    return new URLSearchParams(location.search).has('pose') || isSkillViewer(location.search);
+  }
+
+  /** Thời điểm (giây) và độ dài của clip đang phát; 0 nếu không có. */
+  get clipTime(): number {
+    return this.action?.time ?? 0;
+  }
+  get clipDuration(): number {
+    return this.action?.getClip().duration ?? 0;
+  }
+  get clipName(): string {
+    return this.action?.getClip().name ?? '';
+  }
+
+  /** Đầu dò số ở khung hiện tại (tay, chân, mũi kiếm); rỗng nếu model không có rig IK. */
+  probeText(): string {
+    if (!this.ikRig) return '';
+    try {
+      return formatProbe(this.ikRig.probe());
+    } catch {
+      return '';
+    }
+  }
+
+  setAutoRotate(on: boolean): void {
+    this.controls.autoRotate = on;
+    this.controls.autoRotateSpeed = 2.5;
+  }
+
+  /** Đặt camera nhìn quanh model theo hướng cố định: trước (+Z), bên phải nhân vật (-X), sau, chéo. */
+  setView(view: 'front' | 'side' | 'back' | 'iso'): void {
+    if (!this.model) return;
+    const box = new THREE.Box3().setFromObject(this.model, true);
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const dist = (Math.max(sphere.radius, 1) / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2))) * 0.8;
+    const dirs = { front: [0, 0.18, 1], side: [-1, 0.18, 0], back: [0, 0.18, -1], iso: [0.9, 0.55, 1.4] } as const;
+    const d = new THREE.Vector3(...dirs[view]).normalize();
+    this.camera.position.copy(sphere.center).addScaledVector(d, dist);
+    this.controls.target.copy(sphere.center);
+    this.controls.update();
+  }
+
+  /** Dừng và đặt clip ở thời điểm t, vẽ lại một khung (cho thanh kéo và bước khung). */
+  scrub(t: number): void {
+    this.seek(t);
   }
 
   /** Dừng clip đang chạy ở thời điểm t (giây) để chụp ảnh một khung. */
@@ -173,6 +221,7 @@ export class ViewerScene {
   private bakePoses(root: THREE.Object3D): THREE.AnimationClip[] {
     const rig = IkRig.from(root);
     if (!rig) return [];
+    this.nextRig = rig;
     // Asset có kiếm riêng (extras dtl.sword): dùng kiếm của asset, tính socket ở tư thế nghỉ trước khi nướng.
     const ex = partExtras(root).sword;
     const def = ex ? swordSocketDef(root, ex) : null;
@@ -208,6 +257,8 @@ export class ViewerScene {
     this.model = root;
     this.sword = this.nextSword;
     this.nextSword = null;
+    this.ikRig = this.nextRig;
+    this.nextRig = null;
     this.scene.add(root);
     this.applyWireframe();
 
@@ -315,6 +366,7 @@ export class ViewerScene {
 
   private clear(): void {
     this.sword = null;
+    this.ikRig = null;
     this.mixer?.stopAllAction();
     this.mixer = null;
     this.action = null;

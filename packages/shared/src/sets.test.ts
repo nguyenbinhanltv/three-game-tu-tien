@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computePlayerStats, seededRng, type EquippedEntry } from './items';
-import { lookSet, NO_SET_FX, setFxOf, setStatuses, type SetDef } from './sets';
+import { accessoryCode, lookSet, NO_SET_FX, parseAccessoryCode, setFxOf, setStatuses, type SetDef } from './sets';
 import { rollEquipDrops } from './equipLoot';
 import type { ItemDef } from './types';
 
@@ -57,5 +57,21 @@ describe('rơi theo bộ', () => {
       const g = rollEquipDrops([{ chance: 1, q: [1, 0, 0, 0, 0], slots: { robe: 1 } }], data, items, 15, rng);
       expect(g[0].id).toBe('plain');
     }
+  });
+});
+
+describe('mã phụ kiện hiển thị', () => {
+  const S2: SetDef = { ...SET, id: 's2', pieces: ['x', 'y'] };
+  it('một ký tự mỗi ô; món lẻ cũng có; không đồ bộ thì rỗng', () => {
+    expect(accessoryCode([SET, S2], {})).toBe('');
+    expect(accessoryCode([SET, S2], { robe: { id: 'zzz' } })).toBe('');
+    expect(accessoryCode([SET, S2], { robe: { id: 'a' }, belt: { id: 'x' } })).toBe('01002000');
+    expect(accessoryCode([SET, S2], { robe: { id: 'a' } })).toBe('01000000');
+  });
+  it('giải mã khớp mã hóa, bỏ ký tự lạ', () => {
+    const code = accessoryCode([SET, S2], { robe: { id: 'a' }, belt: { id: 'x' } });
+    expect(parseAccessoryCode([SET, S2], code)).toEqual({ robe: 's1', belt: 's2' });
+    expect(parseAccessoryCode([SET, S2], '0?9xz')).toEqual({});
+    expect(parseAccessoryCode([SET, S2], '')).toEqual({});
   });
 });

@@ -39,6 +39,8 @@ export interface PState {
   dye?: string;
   /** Bộ trang bị đang nhuộm áo/ánh kiếm (id bộ); '' hoặc thiếu = không. */
   sk?: string;
+  /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`); '' hoặc thiếu = không. */
+  sa?: string;
   /** id pháp bảo phụ đang đeo (P3-8); '' hoặc thiếu = không. */
   art?: string;
 }
@@ -76,7 +78,8 @@ export interface WorldView {
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
   const base = s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name);
-  return s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
+  const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
+  return s.sa ? { ...look, acc: s.sa } : look;
 }
 
 function angleLerp(a: number, b: number, k: number): number {
@@ -466,7 +469,7 @@ export class EntityManager {
       v.s = s;
       const look = lookOf(s);
       if (isLocal) this.localLook = look;
-      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set;
+      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set || look.acc !== v.look.acc;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         v.skinPending = this.playerSkins.pending(look);
         v.swapModel(this.playerSkins.create(look), look);
