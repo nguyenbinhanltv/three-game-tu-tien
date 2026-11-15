@@ -322,8 +322,10 @@ export class Character {
     this.stats = buffCrit > 0 ? { ...st, critRate: Math.min(st.critRate + buffCrit, STAT_CAPS.critRate) } : st;
     this.mhp = st.hp;
     // Nội tại pháp bảo (P3-8): Hồ Lô cộng linh lực tối đa, Thanh Liên Ấn cộng phòng ngự.
-    this.mmp = Math.round(st.mp * (1 + passiveValue(this.equip, this.meta, 'mp')));
-    this.atk = Math.round(st.atk * (1 + buffMag(this.meta.buffs, 'atk', now)));
+    const mpPas = passiveValue(this.equip, this.meta, 'mp');
+    this.mmp = mpPas > 0 ? Math.round(st.mp * (1 + mpPas)) : st.mp;
+    const atkBuff = buffMag(this.meta.buffs, 'atk', now);
+    this.atk = atkBuff > 0 ? Math.round(st.atk * (1 + atkBuff)) : st.atk;
     // Nội tại Kim Thân: phòng ngự cộng thêm theo tỉ lệ.
     this.def = Math.round(st.def * (1 + methodDefMul(this.meta) + passiveValue(this.equip, this.meta, 'def') + buffMag(this.meta.buffs, 'def', now)));
     if (this.hp > st.hp) this.hp = st.hp;
