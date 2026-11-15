@@ -51,7 +51,7 @@ import {
 import type { Appearance } from '@dtl/shared';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
-import { chapterSting, lootChime, type Sfx, setListener, sfx, unlockAudio } from './audio';
+import { chapterSting, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
 import { LootFly } from './lootFly';
 import { LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootTier } from '../render/vfx/loot';
@@ -124,6 +124,9 @@ const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: 
   high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true },
 };
 
+
+/** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */
+const STINGS: Record<string, string> = { levelup: 'sting_levelup', ascend: 'sting_breakthrough', death: 'sting_death' };
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const _shakePos = new THREE.Vector3();
@@ -305,6 +308,14 @@ export class Game {
   private timeOffset = 0;
 
   private started = false;
+
+  /**
+   * Game đã vào thế giới và chưa bị hủy: MusicController của nó là chủ duy nhất của kênh nhạc nền, kể cả lúc chuyển
+   * room (pha `loading`, Game được rebind) hay màn lỗi khi chưa bấm thử lại. Màn tiêu đề chỉ phát `title` khi false.
+   */
+  get ownsMusic(): boolean {
+    return this.started && !this.disposed;
+  }
   private startedAt = 0;
   private frames = 0;
   /** Số đo khung vừa vẽ, cộng dồn qua mọi pass (cho `__game.info()`). */
@@ -1320,6 +1331,10 @@ export class Game {
   }
 
   private playFxSound(t: string, src: string, dst: string, x?: number, z?: number): void {
+    // Sự kiện của chính mình có nhạc ngắn (sting) riêng: lên tầng và đột phá thay hẳn jingle SFX;
+    // tử vong giữ tiếng ngã (SFX) và thêm sting. Chưa có file/tắt tiếng thì dùng SFX như cũ.
+    const sting = src === this.sid ? STINGS[t] : undefined;
+    if (sting && playSting(sting) && t !== 'death') return;
     const map: Record<string, Sfx> = {
       sword: 'sword',
       slash: 'slash',

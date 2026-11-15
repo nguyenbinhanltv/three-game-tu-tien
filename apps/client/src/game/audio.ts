@@ -22,14 +22,15 @@
 //              "pitch": 0.05, "gain": 1, "bus": "sfx", "duck": 0 }
 //   },
 //   "music":   { "sect": { "src": ["music/sect.webm", "music/sect.m4a"], "gain": 1, "loop": true,
-//                         "credit": { "title": "Lạc Kiếm Tông", "by": "Suno (free, non-commercial)", "license": "phi thương mại, ghi nguồn",
-//                                     "url": "https://suno.com/song/<id>" } } },
+//                         "credit": { "title": "Lạc Kiếm Tông", "by": "Đạp Thiên Lộ (original, CC0/tự soạn)", "license": "CC0-1.0; …" } },
+//              "sting_levelup": { "src": [...], "loop": false, "credit": {...} } },
 //   "ambient": { "wind": { "src": ["amb/wind.webm", "amb/wind.m4a"] } }
 // }
 // SFX và âm môi trường do `node tools/audio/build.mjs` sinh từ nguồn CC0 (khai báo ở tools/audio/sounds.json),
 // giấy phép từng âm ghi trong assets/LICENSES.md. Mục "music" do `node tools/audio/loop.mjs` sinh (khai báo ở
-// tools/audio/music.json, hướng dẫn ở docs/audio/suno-prompts.md). Nhạc Suno bản FREE chỉ dùng phi thương mại và
-// phải ghi nguồn: loop.mjs ghi `credit` cho từng bài, mục "Nguồn nhạc" trong Cài đặt đọc trường này. Id bài nhạc theo máy trạng thái trong music.ts (MUSIC_TRACKS).
+// tools/audio/music.json, hướng dẫn ở docs/audio/music.md): nhạc tự soạn bằng code (MIDI + soundfont GeneralUser GS,
+// CC0). loop.mjs ghi `credit` cho từng bài, mục "Nguồn nhạc" trong Cài đặt đọc trường này. Id bài lặp theo máy trạng
+// thái trong music.ts (MUSIC_TRACKS); thêm `title` (màn tiêu đề, App.tsx) và `sting_*` (playSting, engine.ts).
 
 import { bellPartials } from './lootBell';
 import { gongPartials } from './chapter';
@@ -590,6 +591,59 @@ export function chapterSting(volume = 1): void {
   stats.synth++;
 }
 
+/**
+ * Nhạc ngắn (sting) trong manifest.music (`loop: false`, ví dụ `sting_levelup`): phát một lần trên bus nhạc
+ * (thanh trượt Nhạc nền chỉnh được, không bị ducking) và hạ nhạc nền trong lúc phát. File chỉ tải khi phát lần đầu
+ * (vài chục KB), các lần sau lấy từ cache HTTP. Trả `false` khi không phát được (tắt tiếng, chưa mở khóa âm thanh,
+ * chưa có file) để nơi gọi dùng tiếng thay thế.
+ */
+export function playSting(id: string, volume = 1): boolean {
+  if (muted || volume <= 0.02) return false;
+  const c = ensure();
+  const bus = buses.get('music');
+  const e = manifest?.music?.[id];
+  if (!c || c.state !== 'running' || !bus || !e) return false;
+  const url = pickSrc(e.src);
+  if (!url) return false;
+  const el = new Audio();
+  el.crossOrigin = 'anonymous';
+  el.preload = 'auto';
+  el.src = url;
+  const node = c.createMediaElementSource(el);
+  const g = c.createGain();
+  g.gain.value = (e.gain ?? 1) * volume;
+  node.connect(g);
+  g.connect(bus);
+  let done = false;
+  const release = () => {
+    if (done) return;
+    done = true;
+    node.disconnect();
+    g.disconnect();
+    el.removeAttribute('src');
+    el.load();
+  };
+  el.addEventListener('ended', release, { once: true });
+  el.addEventListener('error', () => {
+    console.warn('[audio] không phát được sting', id, url);
+    release();
+  });
+  el.play()
+    .then(() => duck(0.6, Math.max(0.5, (Number.isFinite(el.duration) ? el.duration : 4) - 1), 1.2))
+    .catch((err) => {
+      console.warn('[audio] play() sting bị từ chối', id, err);
+      release();
+    });
+  if (DEV) console.info(`[audio] sting: ${id}`);
+  return true;
+}
+
+/** Bài nhạc nền (id manifest) đang được yêu cầu phát, kể cả khi còn chờ mở khóa/manifest. */
+export function musicRequested(): string | null {
+  if (pending.music) return pending.music[0];
+  return music?.want ?? null;
+}
+
 const SYNTH_NAMES = new Set<string>(['sword', 'slash', 'rain', 'thunder', 'hit', 'hurt', 'heal', 'shield', 'levelup', 'loot', 'quest', 'death', 'fly', 'gather', 'ascend']);
 
 function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefined, allowPending: boolean): void {
@@ -910,6 +964,8 @@ export function audioStats() {
     readySfx: [...ready.keys()],
     voices,
     music: music?.playing ?? null,
+    /** Bài được yêu cầu (vẫn ghi khi tắt tiếng, để kiểm máy trạng thái bằng ?mute=1). */
+    musicWant: musicRequested(),
     ambient: ambient?.playing ?? null,
     ambientWant: ambient?.want ?? null,
     synthWind: ambient?.wind?.on ?? false,
