@@ -5,9 +5,11 @@ import type { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import dracoJsUrl from 'three/addons/libs/draco/draco_wasm_wrapper.js?url';
 import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
 import { POSES } from '@dtl/content';
+import { POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { createGltfLoader, createKtx2Loader, localLibsManager } from '../game/assets';
-import { bakePose, IkRig } from '../game/character/ikpose';
+import { bakePose, IkRig, poseClipName } from '../game/character/ikpose';
 import { buildFixtureSword, buildMixamoFixture } from '../game/character/mixamoFixture';
+import { partExtras, stripPartTracks, SwordSocket, swordSocketDef } from '../game/character/sword';
 import { BoneLines, makeGrid } from './helpers';
 import { collectStats, type ModelStats } from './stats';
 
@@ -30,6 +32,9 @@ export interface FrameInfo {
   fps: number;
   backend: string;
 }
+
+/** Clip pose có kiếm trong tay (viewer): mọi pose trừ ngự kiếm và tĩnh tọa (rút/tra xét riêng theo thời điểm). */
+const SWORD_IN_HAND = new Set(POSES.filter((p) => p.id !== POSE_FLY && p.id !== 'tam_thien').map((p) => poseClipName(p.id)));
 
 /**
  * Cảnh xem asset: sân lát đá, người chuẩn 1,7m, ánh sáng trung tính, OrbitControls.
@@ -54,6 +59,10 @@ export class ViewerScene {
   private fpsFrames = 0;
   private fps = 0;
   private wireframe = false;
+  /** Kiếm tách sang xương riêng (M3-2) của asset đang xem: đổi lưng ↔ tay theo clip đang phát. */
+  private sword: SwordSocket | null = null;
+  /** Socket của model đang nạp (tạo lúc nướng pose, gán sau khi `show` dọn model cũ). */
+  private nextSword: SwordSocket | null = null;
   speed = 1;
   paused = false;
 
@@ -117,7 +126,8 @@ export class ViewerScene {
     const gltf: GLTF = await this.loader.parseAsync(buf, path);
     const json = (gltf.parser as unknown as { json: { extensionsUsed?: string[] } }).json;
     // ?pose=…: nướng thêm các key pose IK nếu model có rig người Mixamo.
-    const clips = this.poseMode ? [...this.bakePoses(gltf.scene), ...gltf.animations] : gltf.animations;
+    const own = gltf.animations.map(stripPartTracks);
+    const clips = this.poseMode ? [...this.bakePoses(gltf.scene), ...own] : own;
     return this.show(gltf.scene, clips, { name, fileBytes: buf.byteLength, extensions: json.extensionsUsed ?? [] });
   }
 
@@ -143,12 +153,34 @@ export class ViewerScene {
     act.play().setEffectiveWeight(1);
     act.time = Math.min(t, act.getClip().duration - 1e-4);
     this.mixer.update(0);
+    this.placeSword();
+  }
+
+  /**
+   * Chỗ kiếm theo clip đang phát: rút kiếm thì sang tay sau lúc nắm chuôi, tra kiếm thì về lưng sau lúc tra; pose
+   * đòn, thế thủ, niệm chú: ở tay; còn lại (clip của asset như idle/chạy, ngự kiếm, thiền): trên lưng. Giống luật trong game, nhưng
+   * theo clip thay vì thời gian rảnh.
+   */
+  private placeSword(): void {
+    if (!this.sword || !this.action) return;
+    const name = this.action.getClip().name;
+    const t = this.action.time;
+    if (name === poseClipName(POSE_SWORD_DRAW)) this.sword.set(t >= POSE_SWORD_SWAP[POSE_SWORD_DRAW]);
+    else if (name === poseClipName(POSE_SWORD_SHEATHE)) this.sword.set(t < POSE_SWORD_SWAP[POSE_SWORD_SHEATHE]);
+    else this.sword.set(SWORD_IN_HAND.has(name));
   }
 
   private bakePoses(root: THREE.Object3D): THREE.AnimationClip[] {
     const rig = IkRig.from(root);
     if (!rig) return [];
+    // Asset có kiếm riêng (extras dtl.sword): dùng kiếm của asset, tính socket ở tư thế nghỉ trước khi nướng.
+    const ex = partExtras(root).sword;
+    const def = ex ? swordSocketDef(root, ex) : null;
     const clips = POSES.map((p) => bakePose(p, rig));
+    if (def) {
+      this.nextSword = SwordSocket.create(root, def);
+      return clips;
+    }
     const sword = buildFixtureSword();
     const mount = rig.swordMount();
     sword.position.copy(mount.position);
@@ -174,6 +206,8 @@ export class ViewerScene {
       root.position.set(GAP + 0.25 - box.min.x, -box.min.y, -c.z);
     }
     this.model = root;
+    this.sword = this.nextSword;
+    this.nextSword = null;
     this.scene.add(root);
     this.applyWireframe();
 
@@ -244,6 +278,7 @@ export class ViewerScene {
       this.fpsFrames = 0;
     }
     if (this.mixer && !this.paused) this.mixer.update(dt * this.speed);
+    this.placeSword();
     if (this.skeleton?.visible) {
       this.model?.updateMatrixWorld(true);
       this.skeleton.update();
@@ -279,6 +314,7 @@ export class ViewerScene {
   }
 
   private clear(): void {
+    this.sword = null;
     this.mixer?.stopAllAction();
     this.mixer = null;
     this.action = null;

@@ -319,8 +319,9 @@ def paint_cells(mesh, cell, replace_pixels):
             for role in ('color', 'orm', 'normal'):
                 if n.image.name.endswith('_' + role):
                     imgs[role] = n.image
-    ridge = {'color': (0.52, 0.55, 0.58), 'orm': (1.0, 0.36, 0.92), 'normal': (0.5, 0.5, 1.0)}
-    rim = {'color': (0.86, 0.88, 0.9), 'orm': (1.0, 0.2, 0.95), 'normal': (0.5, 0.5, 1.0)}
+    # Kim loại vừa phải: cảnh sương sớm ít nguồn phản chiếu, metallic ~1 làm lưỡi gần như đen trong game.
+    ridge = {'color': (0.66, 0.69, 0.72), 'orm': (1.0, 0.38, 0.6), 'normal': (0.5, 0.5, 1.0)}
+    rim = {'color': (0.9, 0.92, 0.94), 'orm': (1.0, 0.24, 0.65), 'normal': (0.5, 0.5, 1.0)}
     done = []
     for role, img in sorted(imgs.items()):
         W, H = img.size
