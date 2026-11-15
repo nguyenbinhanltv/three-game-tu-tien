@@ -177,7 +177,7 @@ export class Game {
   static async connect(opts: LoginOptions): Promise<void> {
     set({ phase: 'connecting', error: '', nameError: '' });
     // M6-1: GLB tải song song với lúc chờ server và lúc dựng thế giới thủ tục.
-    prefetchWorldAssets();
+    prefetchWorldAssets(undefined, undefined, opts.ap?.g);
     Game.lastLogin = opts;
     Game.session = '';
     try {

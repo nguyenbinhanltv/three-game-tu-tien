@@ -69,11 +69,23 @@ describe('model người chơi (Thanh Phong)', () => {
     legacy.dispose();
   });
 
-  it('giới tính chưa có model (nữ) và màu lạ thì lùi về mặc định, không lỗi', async () => {
+  it('nữ tu Lam Chi: model có xương riêng, cao 1,6–1,75 m, có kiếm và clip chung; giới tính lạ lùi về nam', async () => {
     const s = await skins();
-    const f = s.create({ g: 'f', dye: '#ff0000' });
+    const FEMALE = { g: 'f', dye: APPEARANCE.defaultDye };
+    const first = s.create(FEMALE); // lần đầu: nạp lười, tạm model khối
+    expect(first).toBeInstanceOf(Humanoid);
+    first.dispose();
+    for (let i = 0; i < 300 && s.pending(FEMALE); i++) await new Promise((r) => setTimeout(r, 10));
+    const f = s.create(FEMALE) as SkinnedPlayer;
     expect(f).toBeInstanceOf(SkinnedPlayer);
+    expect(f.height).toBeGreaterThan(1.6);
+    expect(f.height).toBeLessThan(1.75);
+    expect(f.actionOf('idle')?.isRunning()).toBe(true);
+    expect(f.hasSword).toBe(true);
     f.dispose();
+    const odd = s.create({ g: 'zzz', dye: '#ff0000' });
+    expect(odd).toBeInstanceOf(SkinnedPlayer);
+    odd.dispose();
     s.dispose();
   });
 

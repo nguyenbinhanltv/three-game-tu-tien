@@ -31,12 +31,12 @@ export function prefetchManifest(cache: AssetCache = assets): void {
  * lúc CPU dựng thế giới thủ tục. Các nơi dùng (`PlayerSkins`, `MonsterSkins`, `Game.loadSectModel`,
  * `Vfx`) vẫn `acquire` như cũ và nhận bản đã tải. Gọi nhiều lần không sao.
  */
-export function prefetchWorldAssets(cache: AssetCache = assets, legacy = legacyModelsRequested()): string[] {
+export function prefetchWorldAssets(cache: AssetCache = assets, legacy = legacyModelsRequested(), gender?: string): string[] {
   const ids: [string, { pos?: { x: number; z: number }; priority?: number }][] = [];
   if (!legacy) {
-    for (const g of APPEARANCE.genders) {
-      if (g.model && genderEnabled(APPEARANCE, g.id)) ids.push([g.model, { priority: PREFETCH_PRIORITY.player }]);
-    }
+    // Chỉ model của giới tính đang chọn (gợi ý từ màn đăng nhập); giới tính kia nạp khi có người chơi đó xuất hiện (PlayerSkins.create).
+    const g = APPEARANCE.genders.find((x) => x.id === gender && genderEnabled(APPEARANCE, x.id)) ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender);
+    if (g?.model) ids.push([g.model, { priority: PREFETCH_PRIORITY.player }]);
   }
   if (!legacy) ids.push([HUMAN_ANIM_LIB, { priority: PREFETCH_PRIORITY.player }]);
   ids.push(['arch_sect', { pos: { x: SECT.x, z: SECT.z } }]);

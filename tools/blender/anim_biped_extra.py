@@ -18,6 +18,8 @@
 #    tay hạ khỏi tư thế chữ T. Mỗi phần tử { kind, bone }: kind "back_sword" dò kiếm đeo chéo sau lưng (đỉnh màu nâu
 #    sau lưng → trục bằng PCA → mọi đỉnh sau lưng trong bán kính quanh trục, lặp 3 lần), tách lưới kiếm khỏi thân rồi
 #    gán cứng 100% vào `bone`; `tilt` (độ) xoay kiếm quanh mũi để chuôi vào gần gáy.
+#    kind "add_sword" (thân không kiếm): dựng kiếm + bao thủ tục (biped_parts.add_back_sword), `grip` [x, dy, dz] lệch so với
+#    đầu xương `bone`, `tip` hướng mũi, `length`.
 #    `patch: true` vá lỗ lưng áo dưới kiếm; `socket: true` tách chuôi (`hilt`: phần đầu trên theo chiều dài, mặc định
 #    0,28) + lưỡi thủ tục sang xương `dtl_sword` để client rút/tra kiếm (M3-2, xem tools/blender/biped_parts.py).
 # 4. Chỉnh màu vải (`import.recolor`): mỗi quy tắc chọn điểm ảnh của texture màu theo hue/độ bão hòa/độ sáng (mép mềm),
@@ -336,7 +338,20 @@ def detached_vertices(mesh, sword, zone):
 PARTS = runpy.run_path(os.path.join(REPO, 'tools/blender/biped_parts.py'))  # noqa: F821
 STEEL = []  # (mesh, ô UV) chờ tô thép cho lưỡi kiếm, sau bước chỉnh màu vải
 
+SHRINK = []  # (mesh, k) thu ảnh theo UV đã thu để chừa ô màu
+FLAT = []  # (mesh, ô UV, loại) ô màu phẳng của kiếm dựng thủ tục
 for spec in IMPORT.get('rigid', []):
+    if spec.get('kind') == 'add_sword':
+        # Thân không kiếm (Lam Chi): dựng bao + chuôi + lưỡi thủ tục, cùng quy ước xương dtl_sword và extras như back_sword.
+        bone = bone_like(spec['bone']).name
+        for mesh in MESHES:  # noqa: F821
+            rep, cells = PARTS['add_back_sword'](mesh, arm, spec, bone, fail)  # noqa: F821
+            SHRINK.append((mesh, cells['shrink']))
+            STEEL.append((mesh, cells['steel']))
+            for k in ('sheath', 'wrap', 'bronze'):
+                FLAT.append((mesh, cells[k], k))
+            report.setdefault('rigid', []).append({'kind': 'add_sword', 'bone': bone, **rep})
+        continue
     if spec.get('kind') != 'back_sword':
         fail(f'rigid: kind "{spec.get("kind")}" chưa hỗ trợ')  # noqa: F821
     bone = bone_like(spec['bone']).name
@@ -503,9 +518,14 @@ def recolor(rules):
 if IMPORT.get('recolor'):
     report['recolor'] = recolor(IMPORT['recolor'])
 
+for mesh, k in SHRINK:
+    PARTS['shrink_images'](mesh, k, replace_pixels)
+
 # Tô thép cho lưỡi sau recolor (không thì quy tắc "vải trắng" biến ô thép xám thành vải ngà).
 for mesh, cell in STEEL:
     report.setdefault('steel', []).append(PARTS['paint_cells'](mesh, cell, replace_pixels))
+for mesh, cell, kind in FLAT:
+    PARTS['paint_flat'](mesh, cell, kind, replace_pixels)
 
 # ---------- 6. xương lò xo vạt áo (M3-10) ----------
 

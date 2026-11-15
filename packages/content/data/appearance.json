@@ -1,10 +1,10 @@
 {
-  "$comment": "Ngoại hình người chơi (quyết định 6.4b). Màu áo lấy từ assets/palette.json (playerDyes; content:check so khớp hex). Thứ tự dyes là thứ tự trên màn tạo nhân vật. Tên hiển thị: i18n appearance.dye.<id>. Giới tính nữ chưa có model nên enabled=false.",
+  "$comment": "Ngoại hình người chơi (quyết định 6.4b). Màu áo lấy từ assets/palette.json (playerDyes; content:check so khớp hex). Thứ tự dyes là thứ tự trên màn tạo nhân vật. Tên hiển thị: i18n appearance.dye.<id>. Nữ tu: Lam Chi (chr_kiem_tu_nu).",
   "defaultGender": "m",
   "defaultDye": "attire_sect",
   "genders": [
     { "id": "m", "model": "chr_kiem_tu_nam", "enabled": true },
-    { "id": "f", "model": null, "enabled": false }
+    { "id": "f", "model": "chr_kiem_tu_nu", "enabled": true }
   ],
   "dyes": [
     { "id": "attire_sect", "hex": "#3B6584", "trim": "#22364E" },

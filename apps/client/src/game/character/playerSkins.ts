@@ -61,6 +61,16 @@ export const PLAYER_SKINS: Record<string, PlayerSkin> = {
     rates: { idle: 1.3, attack: 1.25 },
     clothRef: '#3B6584',
   },
+  /** Lam Chi (chr_kiem_tu_nu): cùng bộ xương Mixamo 65 khớp và thư viện clip chung; cao 1,68 m nên bước ngắn hơn một chút. */
+  chr_kiem_tu_nu: {
+    clips: { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' },
+    poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
+    refSpeed: 2.9,
+    runSteps: 4,
+    maxLocoScale: 1.8,
+    rates: { idle: 1.3, attack: 1.25 },
+    clothRef: '#3B6584',
+  },
 };
 
 interface Template {
@@ -106,7 +116,9 @@ export class PlayerSkins {
 
   preload(): void {
     if (this.legacy) return;
-    for (const g of APPEARANCE.genders) if (g.model && PLAYER_SKINS[g.model]) this.load(g.model);
+    // Giới tính mặc định nạp sớm; giới tính khác nạp khi có người chơi đó xuất hiện (`create`), khỏi tải thừa ~2,5 MB.
+    const id = modelOf(APPEARANCE.defaultGender);
+    if (id && PLAYER_SKINS[id]) this.load(id);
   }
 
   /** Người chơi này sẽ có model mới nhưng asset đang nạp (tạm model khối, nạp xong thì đổi). */
@@ -119,6 +131,7 @@ export class PlayerSkins {
     const dye = dyeOf(look.dye);
     const id = modelOf(look.g);
     const skin = id ? PLAYER_SKINS[id] : undefined;
+    if (id && skin && !this.legacy) this.load(id);
     const t = id && skin && !this.legacy ? this.templates.get(id) : undefined;
     if (!id || !skin || !t || typeof t === 'string') return new Humanoid({ robe: dye.hex, trim: dye.trim, sword: true });
     const scene = cloneSkinned(t.handle.scene);
