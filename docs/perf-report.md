@@ -138,6 +138,8 @@ Bản đã merge `origin/main` mới nhất (có thêm mặt đất PBR, nước
 | Bí cảnh Kiếm Trủng | 4 | WebGL2 | Vừa | 3.2 / 5.5 / 7.9 | 2.45 / 4.2 | 117 | 375k | 153.3 | 188.4 | 0.8 | 0.14 | đạt |
 | Bí cảnh Kiếm Trủng | 4 | WebGL2 | Cao | 3.4 / 4.7 / 5.6 | 2.95 / 3.68 | 137 | 560k | 153 | 202.5 | 0.8 | 0.09 | đạt |
 
+Sau đó main có thêm #62 (chỉnh màu) và #64 (hit feel theo hạng thân, tách thân hiển thị, chân bám đất bằng IK ở LOD0). Đo lại rừng và boss, Vừa, trên bản đã merge cả hai (máy tải ~60%): phần `ents` tăng 0,1–0,5 ms/khung (IK chân + tách thân), draw call không đổi (196–281). 50 người: rừng WebGPU p95 6,5 ms, rừng WebGL2 8,1 ms, boss WebGL2 7,8 ms, boss WebGPU 11,1 ms (cùng lượt, boss 100 người WebGPU chỉ 7,8 ms: lượt nhiễu). Chân bám đất chạy trong nhánh mixer trước `rig.updateMatrixWorld`, nên tối ưu `skeleton.update` không làm sai IK.
+
 Ảnh (WebGPU, chụp giữa vòng xoay camera):
 
 ![Trận boss Huyết Lang Vương, 100 người, Cao](screenshots/m6-3-01-boss-100-nguoi.jpg)
