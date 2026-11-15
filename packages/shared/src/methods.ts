@@ -38,6 +38,17 @@ export interface MethodPassive {
   defMul?: number;
   /** Hồi phục cộng thêm (Đan Kinh). */
   healMul?: number;
+  /** Kiếm tu: bạo kích gốc cộng thêm; đủ `max` tầng kiếm ý thì cộng thêm `critAtMax`. */
+  critBase?: number;
+  critAtMax?: number;
+  /** Kiếm tu: đòn thứ ba của chuỗi đánh thường hoàn lại chừng này giây GCD. */
+  gcdRefund?: number;
+  /** Hộ pháp: khí huyết tối đa cộng thêm (tỉ lệ). */
+  hpMul?: number;
+  /** Hộ pháp: sát thương lên quái trong `r` mét nhân thêm `mul` (cận chiến thật). */
+  melee?: { r: number; mul: number };
+  /** Đan sư: tầm các chiêu đánh xa cộng thêm (mét). */
+  rangeBonus?: number;
 }
 
 export interface MethodDef {

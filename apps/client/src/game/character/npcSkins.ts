@@ -26,6 +26,10 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
   npc_chuong_mon: { asset: 'chr_npc_chuong_mon' },
   npc_duoc_su: { asset: 'chr_npc_duoc_su' },
   npc_thiet_lao: { asset: 'chr_npc_thiet_lao' },
+  // M-5: ba người giao nhiệm vụ ở các điểm đáng chú ý dùng lại model có sẵn (không tạo asset mới).
+  npc_mieu_cong: { asset: 'chr_npc_thiet_lao' },
+  npc_hai_duoc: { asset: 'chr_npc_duoc_su' },
+  npc_tieu_khe: { asset: 'chr_npc_chuong_mon' },
 };
 
 /** Model khối cũ của NPC (dự phòng khi asset chưa nạp/lỗi, và `?models=legacy`). */

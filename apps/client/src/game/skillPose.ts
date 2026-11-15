@@ -1,4 +1,4 @@
-import { comboNext, GCD, lungeReach, skillTiming, usesStrikeTiming, type SkillDef } from '@dtl/shared';
+import { comboNext, GCD, lungeReach, poseIdFor, skillTiming, usesStrikeTiming, type SkillDef } from '@dtl/shared';
 import { METHOD_SKILLS, POSE, SKILL, SKILLS } from '@dtl/content';
 import type { CharacterView, PerformOpts } from './character/view';
 
@@ -32,9 +32,20 @@ export function performOpts(skill: SkillDef, combo: number | undefined, gap: num
   return { timing, skill: skill.id, combo: idx ?? -1, reach };
 }
 
-/** Lúc ra đòn (giây trong clip) của động tác chiêu, 0 nếu không có. */
-export function releaseAt(skill: SkillDef | undefined): number {
-  return (skill?.pose && POSE.get(skill.pose)?.hit?.[0]) || 0;
+/**
+ * Pose của chiêu theo đòn trong chuỗi và công pháp của người ra chiêu (K-5: ba ngôn ngữ động tác). Thiếu pose riêng
+ * thì rơi về pose gốc của chiêu (`content:check` bảo đảm đủ bộ cho đòn thường và Kiếm Khí Trảm).
+ */
+export function poseOf(skill: SkillDef, combo?: number, method?: string): string {
+  const base = skill.pose!;
+  const id = poseIdFor(base, { combo, method });
+  return POSE.has(id) ? id : base;
+}
+
+/** Lúc ra đòn (giây trong clip) của động tác chiêu `skill` (đúng pose `poseId` nếu đã chọn), 0 nếu không có. */
+export function releaseAt(skill: SkillDef | undefined, poseId?: string): number {
+  const id = poseId ?? skill?.pose;
+  return (id && POSE.get(id)?.hit?.[0]) || 0;
 }
 
 /**
@@ -55,7 +66,7 @@ export class SkillPoses {
   private holdUntil = 0;
 
   /** Người chơi vừa gửi chiêu và mọi điều kiện kiểm được ở client đều qua: vào thế ngay. */
-  predict(model: CharacterView | undefined, skill: SkillDef, now: number, gap?: number): void {
+  predict(model: CharacterView | undefined, skill: SkillDef, now: number, gap?: number, method?: string): void {
     if (!model?.perform || !skill.pose || skill.cast > 0) return;
     // Mỗi đòn dự đoán một lần: server chỉ nhận một chiêu mỗi GCD, nên trong GCD (trừ dung sai 100 ms của `ready` ở engine) mọi lần gọi
     // thêm chỉ là gửi lặp, không khởi động lại nhát vung, không tăng chỉ số liên hoàn, không phát lại sự kiện windup/hit.
@@ -63,17 +74,18 @@ export class SkillPoses {
     const idx = skill.combo ? comboNext(skill.combo, this.combo.idx, this.combo.at, now) : undefined;
     // Chỉ ghi dự đoán khi động tác thật sự bắt đầu: bị bỏ qua (trên không, bay, chết) thì FX về phải phát ngay,
     // không giữ hiệu ứng chờ một nhát vung không có.
-    if (!model.perform(skill.pose, performOpts(skill, idx, gap)) || !model.performing?.(skill.pose)) return;
+    const pose = poseOf(skill, idx, method);
+    if (!model.perform(pose, performOpts(skill, idx, gap)) || !model.performing?.(pose)) return;
     this.lastPredictAt = now;
     if (idx !== undefined) this.combo = { idx, at: now };
-    this.predicted = { fx: skill.fx, at: now, release: now + releaseAt(skill) * 1000 };
+    this.predicted = { fx: skill.fx, at: now, release: now + releaseAt(skill, pose) * 1000 };
   }
 
   /**
    * FX chiêu của người chơi `model` tới. Trả về số giây nên giữ hiệu ứng lại (chỉ với đòn của mình đã dự đoán),
    * 0 = phát ngay.
    */
-  onFx(fx: string, model: CharacterView | undefined, mine: boolean, now: number, extra: { n?: number; gap?: number } = {}): number {
+  onFx(fx: string, model: CharacterView | undefined, mine: boolean, now: number, extra: { n?: number; gap?: number; method?: string } = {}): number {
     const skill = SKILL_BY_FX.get(fx);
     if (!skill || !model) return 0;
     const p = this.predicted;
@@ -87,8 +99,9 @@ export class SkillPoses {
       return hold;
     }
     // Đã xếp lịch từ lúc niệm chú.
-    if (skill.pose && model.performing?.(skill.pose)) return 0;
-    const done = skill.pose ? model.perform?.(skill.pose, { ...performOpts(skill, extra.n, extra.gap), from: Math.max(0, releaseAt(skill) - FX_LEAD) }) : false;
+    const pose = skill.pose ? poseOf(skill, extra.n, extra.method) : undefined;
+    if (pose && model.performing?.(pose)) return 0;
+    const done = pose ? model.perform?.(pose, { ...performOpts(skill, extra.n, extra.gap), from: Math.max(0, releaseAt(skill, pose) - FX_LEAD) }) : false;
     if (!done && ATTACK_FX.has(fx)) model.attack();
     return 0;
   }
@@ -98,10 +111,11 @@ export class SkillPoses {
    * đúng lúc niệm xong. Không có id (server cũ) hoặc id lạ thì không xếp lịch: FX chiêu tới sẽ phát động tác như
    * người khác, không đoán chiêu theo thời lượng.
    */
-  onCast(model: CharacterView | undefined, skillId: string | undefined, d: number): void {
+  onCast(model: CharacterView | undefined, skillId: string | undefined, d: number, method?: string): void {
     const skill = skillId ? SKILL.get(skillId) : undefined;
     if (!model?.perform || !skill?.pose) return;
-    model.perform(skill.pose, { ...performOpts(skill, undefined, undefined), delay: Math.max(0, d - releaseAt(skill)) });
+    const pose = poseOf(skill, undefined, method);
+    model.perform(pose, { ...performOpts(skill, undefined, undefined), delay: Math.max(0, d - releaseAt(skill, pose)) });
   }
 
   /** Chiêu lướt (K-2) ứng với FX `fx`, nếu có. */

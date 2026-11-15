@@ -3,12 +3,12 @@
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
+import { poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
 import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
-import { COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, TELE_FREE, TELE_PADS, type ZoneDef } from '@dtl/shared';
+import { HAND_PROPS, COLLIDERS, inPoly, levelSpawns, PLAY_BOUNDS, polyArea, TELE_FREE, TELE_PADS, type ZoneDef } from '@dtl/shared';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -106,6 +106,20 @@ for (const m of METHODS) {
 // Quy tắc thời gian/liên hoàn (K-2): hitAt trùng nhịp pose, combo, cường hóa, lướt.
 const SKILL_IDS = new Set(ALL_SKILLS.map((s) => s.id));
 for (const s of ALL_SKILLS) for (const m of validateSkillRules(s, s.pose ? POSE.get(s.pose) : undefined, SKILL_IDS)) err(m);
+// K-5: pose theo đòn trong chuỗi và theo giọng công pháp phải đủ bộ và khớp nhịp từng đòn.
+for (const s of ALL_SKILLS) {
+  if (!s.pose) continue;
+  const hits = s.combo?.hits.length ?? 1;
+  const ids = poseIdsFor(s.pose, hits);
+  // `poseIdsFor` liệt kê theo giọng rồi theo đòn: đòn thứ n = n % hits.
+  ids.forEach((id, i) => {
+    const p = POSE.get(id);
+    if (!p) return err(`skill ${s.id}: thiếu pose ${id} (đòn/giọng của pose ${s.pose})`);
+    const hitAt = s.combo ? s.combo.hits[i % hits].hitAt : s.hitAt?.[0];
+    if (hitAt !== undefined && p.hit && Math.abs(p.hit[0] - hitAt) > 0.03) err(`skill ${s.id}: hitAt ${hitAt} lệch hit[0] = ${p.hit[0]} của pose ${id}`);
+    if (s.recovery !== undefined && hitAt !== undefined && Math.abs(hitAt + s.recovery - p.duration) > 0.06) err(`skill ${s.id}: hitAt + recovery lệch độ dài pose ${id} (${p.duration}s)`);
+  });
+}
 for (const [from, to] of Object.entries(SKILL_ID_ALIASES)) {
   if (SKILL.has(from)) err(`SKILL_ID_ALIASES: ${from} vẫn còn là chiêu, không thể là id cũ`);
   if (!SKILL.has(to)) err(`SKILL_ID_ALIASES: ${from} → ${to} không phải chiêu`);
@@ -538,6 +552,9 @@ for (const r of ROOTS) {
   if (vals.length !== 1 || !(vals[0]! > 0 && vals[0]! <= 0.05)) err(`root ${r.id}: đúng một chỉ số phụ, tối đa +5%`);
 }
 for (const s of SKILLS) if (s.elem !== undefined && !(ELEMENTS as readonly string[]).includes(s.elem)) err(`skill ${s.id}: elem ${s.elem} không hợp lệ`);
+for (const m of MONSTERS) if (m.elem !== undefined && !(ELEMENTS as readonly string[]).includes(m.elem)) err(`quái ${m.id}: elem ${m.elem} không hợp lệ`);
+// Mỗi tinh anh/boss có hệ (khắc chế ngũ hành, 3-10): người chơi cần đọc được hệ để chọn chiêu.
+for (const m of MONSTERS) if ((m.elite || m.boss) && !m.elem) err(`quái ${m.id}: tinh anh/boss phải có elem`);
 needItem(PHA_CANH_PILL, 'Phá Cảnh Đan');
 if (ITEM.get(PHA_CANH_PILL)?.use) err('Phá Cảnh Đan không có `use`: chỉ dùng qua bình cảnh (server)');
 if (!RECIPES.some((r) => r.output.id === PHA_CANH_PILL)) err('thiếu công thức luyện Phá Cảnh Đan');
@@ -612,8 +629,57 @@ function checkZonesAndCamps(lv: (typeof LEVELS)[string]) {
     const n = elitePerZone.get(z.id) ?? 0;
     if (n < 2 || n > 3) err(`zone ${z.id}: ${n} tinh anh (cần 2–3)`);
   }
+  checkPois(lv, zoneById);
   const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
   if (normal < 300 || normal > 380) err(`${where}: ${normal} quái thường theo camps, mục tiêu ~300–360`);
+}
+
+// Điểm đáng chú ý (M-5): mỗi vùng săn đúng một điểm, nằm khe giữa các bãi quái, có prop bày, tên theo glossary,
+// người giao nhiệm vụ dạy hệ thống đứng ở các điểm này.
+function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) {
+  const pois = lv.pois ?? [];
+  const camps = lv.camps ?? [];
+  const where = `level ${lv.id}`;
+  if (!pois.length) return;
+  uniqueIds('poi', pois);
+  const perZone = new Map<string, number>();
+  const glossPois = GLOSSARY.pois as Record<string, string>;
+  const clearOfCamps = (x: number, z: number, margin: number) => camps.every((c) => Math.hypot(c.x - x, c.z - z) >= c.radius + margin);
+  for (const p of pois) {
+    const w = `${where}: poi ${p.id}`;
+    needStr(`poi.${p.id}.name`);
+    needStr(`poi.${p.id}.desc`);
+    if (t(`poi.${p.id}.name`) !== glossPois[p.id]) err(`${w}: tên lệch glossary.pois`);
+    const zn = zoneById.get(p.zone);
+    if (!zn) {
+      err(`${w}: vùng không có ${p.zone}`);
+      continue;
+    }
+    perZone.set(p.zone, (perZone.get(p.zone) ?? 0) + 1);
+    if (!inPoly(zn.poly, p.x, p.z)) err(`${w}: nằm ngoài vùng ${p.zone}`);
+    if (groundAt(p.x, p.z) < WATER_Y + 1.5) err(`${w}: nằm sát nước`);
+    if (!clearOfCamps(p.x, p.z, 6)) err(`${w}: chồng bãi quái (cần cách mép bãi ≥ 6 m)`);
+    const near = HAND_PROPS.filter((h) => Math.hypot(h.x - p.x, h.z - p.z) <= 14);
+    if (near.length < 5) err(`${w}: chỉ ${near.length} prop quanh điểm (cần ≥ 5)`);
+    for (const h of near) {
+      if (!clearOfCamps(h.x, h.z, 2)) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè bãi quái`);
+      for (const pad of TELE_PADS) if (Math.hypot(h.x - pad.x, h.z - pad.z) < 4) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè Truyền Tống Trận ${pad.id}`);
+      if ((h.r ?? 0) > 1.5) err(`${w}: prop ${h.id} va chạm r=${h.r} > 1,5 m (không được chặn đường)`);
+    }
+    if (p.beamH !== undefined && !(p.beamH >= 30 && p.beamH <= 120)) err(`${w}: beamH ${p.beamH} ngoài 30–120 m`);
+  }
+  for (const z of zoneById.keys()) if ((perZone.get(z) ?? 0) !== 1) err(`${where}: vùng ${z} cần đúng một poi (có ${perZone.get(z) ?? 0})`);
+  const glossNpc = GLOSSARY.poiNpcs as Record<string, string>;
+  for (const id of Object.keys(glossNpc)) {
+    const n = NPC.get(id);
+    if (!n) {
+      err(`${where}: glossary.poiNpcs có ${id} nhưng npcs.json không có`);
+      continue;
+    }
+    if (t(`npc.${id}.name`) !== glossNpc[id]) err(`npc ${id}: tên lệch glossary.poiNpcs`);
+    if (!pois.some((p) => Math.hypot(p.x - n.x, p.z - n.z) <= 10)) err(`npc ${id}: phải đứng trong 10 m quanh một poi`);
+    if (!clearOfCamps(n.x, n.z, 4)) err(`npc ${id}: đứng trong bãi quái`);
+  }
 }
 
 // ---- Truyền Tống Trận (M-4): mỗi vùng đúng một trận trong vùng, đứng được, không đè collider/nước/bãi quái ----

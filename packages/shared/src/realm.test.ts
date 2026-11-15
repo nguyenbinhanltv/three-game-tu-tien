@@ -81,3 +81,17 @@ describe('linh căn', () => {
     expect(rootChangeCost(15)).toBeGreaterThan(rootChangeCost(1));
   });
 });
+
+describe('mã cảnh giới kiểm thử', () => {
+  it('nk1…nk15, tc, tc1…tc3 và số cấp', async () => {
+    const { parseRealmCode } = await import('./realm');
+    expect(parseRealmCode('nk1')).toBe(1);
+    expect(parseRealmCode(' NK15 ')).toBe(15);
+    expect(parseRealmCode('tc')).toBe(16);
+    expect(parseRealmCode('tc1')).toBe(16);
+    expect(parseRealmCode('tc3')).toBe(18);
+    expect(parseRealmCode('7')).toBe(7);
+    expect(parseRealmCode(18)).toBe(18);
+    for (const bad of ['', 'nk0', 'nk16', 'tc0', 'tc4', '19', '0', 'kd', 'nk1x', '1e1', 0, 19, 2.5, NaN, null, undefined, {}, []]) expect(parseRealmCode(bad), String(bad)).toBeNull();
+  });
+});

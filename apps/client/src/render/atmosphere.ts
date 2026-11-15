@@ -118,6 +118,7 @@ export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPres
   env.hemi.color.setHex(p.skyColor);
   env.hemi.intensity = 1.25 * p.skyIntensity;
   haloParams.intensity.value = HALO_INTENSITY[name] ?? HALO_INTENSITY.day;
+  beaconParams.intensity.value = BEACON_INTENSITY[name] ?? BEACON_INTENSITY.day;
 
   // Vòm trời (render/sky.ts): chân trời trùng màu sương để không lộ mép, quầng nắng theo sắc vùng sáng.
   applySkyPreset(name, p.fogColor, p.highlightTint, p.sunColor);
@@ -131,6 +132,10 @@ export function setHeightFog(on: boolean): void {
 // ---------- quầng sáng giả quanh đèn ----------
 
 const HALO_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 0.9 };
+
+/** Cột linh quang (M-5, render/beacons.ts): yếu ban ngày, rõ ban đêm. */
+const BEACON_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 1 };
+export const beaconParams = { intensity: uniform(0.3) };
 
 export const haloParams = {
   color: uniform(new THREE.Color(0xffc985)),

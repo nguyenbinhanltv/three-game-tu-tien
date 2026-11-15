@@ -103,6 +103,31 @@ export interface DebugInfo {
   room: string;
   roomId: string;
   sid: string;
+  perf: DebugPerf;
+}
+
+/** Số đo hiệu năng trong bảng F3: trung bình trên khoảng lấy mẫu gần nhất (~100 ms), draw call/tam giác của khung vừa vẽ (mọi pass). */
+export interface DebugPerf {
+  backend: string;
+  fps: number;
+  /** CPU của `Game.frame()` (ms): trung bình và lớn nhất trong khoảng lấy mẫu. */
+  cpuMs: number;
+  cpuMaxMs: number;
+  drawCalls: number;
+  triangles: number;
+  geometries: number;
+  textures: number;
+  players: number;
+  monsters: number;
+  npcs: number;
+  /** Số thực thể đang vẽ ở từng mức LOD và số ngoài khung nhìn. */
+  lod: number[];
+  offscreen: number;
+  /** Lưới hiệu ứng đang sống trong pool VFX. */
+  fxMeshes: number;
+  particles: number;
+  particleLimit: number;
+  tiles: number;
 }
 
 /** Truyền Tống Trận của mình (S.TELE). `until`/`cdUntil` đã đổi sang đồng hồ `performance.now()` của client. */
@@ -194,6 +219,10 @@ export interface UIState {
   /** Bảng gỡ lỗi F3 đang mở. */
   debugOpen: boolean;
   debug: DebugInfo | null;
+  /** Được mở bảng F3 và dùng nút test (bản dev hoặc URL có `?debug`). */
+  debugAllowed: boolean;
+  /** Đang vẽ khung va chạm (chỉ hiển thị ở client). */
+  debugColliders: boolean;
 }
 
 export const useUI = create<UIState>(() => ({
@@ -257,6 +286,8 @@ export const useUI = create<UIState>(() => ({
   nearby: [],
   debugOpen: false,
   debug: null,
+  debugAllowed: false,
+  debugColliders: false,
 }));
 
 let nextId = 1;

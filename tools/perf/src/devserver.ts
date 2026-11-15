@@ -91,7 +91,17 @@ export function createDevServer(o: { port: number; clientPort: number; tag: stri
     const still = listeningPids(owned);
     if (still.size) console.warn(`[${tag}] cổng vẫn bận sau khi tắt: ${[...still.keys()].join(', ')}`);
     else console.log(`[${tag}] đã tắt server, cổng ${owned.join('/')} trống`);
-    for (const f of [dbFile, dbFile + '-wal', dbFile + '-shm']) fs.rmSync(f, { force: true });
+    // Windows có thể còn giữ khóa tệp vài trăm ms sau khi tiến trình chết: thử lại, không làm hỏng cả lần chạy vì tệp tạm.
+    for (const f of [dbFile, dbFile + '-wal', dbFile + '-shm']) {
+      for (let k = 0; k < 5; k++) {
+        try {
+          fs.rmSync(f, { force: true });
+          break;
+        } catch {
+          execFileSync(process.execPath, ['-e', 'setTimeout(()=>{},400)']);
+        }
+      }
+    }
   }
   process.on('exit', stop);
   for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP'] as const) {

@@ -211,10 +211,12 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     // M1-10: ?god / ?at=<địa điểm>. Server kiểm quyền; tài khoản thật bị từ chối và được báo.
     const tf = readTestFlags(options, auth.dev, config.devBypass);
     if (tf.kind === 'denied') {
-      console.warn(`[join] ${char.name} xin tham số kiểm thử (?god/?at) nhưng không phải tài khoản thử: từ chối`);
+      console.warn(`[join] ${char.name} xin tham số kiểm thử (?god/?at/?realm/?tribulation) nhưng không phải tài khoản thử: từ chối`);
       this.sim.sys(p, 'sys.test_denied', undefined, 'bad');
     } else if (tf.kind === 'bad_place') {
       this.sim.sys(p, 'sys.gm', { m: `at ${tf.id}? ${this.sim.placeIds().join(' | ')}` }, 'info');
+    } else if (tf.kind === 'bad_realm') {
+      this.sim.sys(p, 'sys.gm', { m: `realm ${tf.id}? nk1…nk15 | tc | tc1…tc3` }, 'info');
     } else if (tf.kind === 'ok') {
       this.sim.applyTestFlags(p, tf.flags);
     }
@@ -362,6 +364,7 @@ export class DungeonRoom extends GameRoom {
 
   afterJoin(p: PlayerEnt): void {
     this.sim.sys(p, 'sys.dungeon_enter', undefined, 'info');
+    this.sim.questEvent(p, 'dungeon', undefined, 1);
     if (p.noLoot) this.sim.sys(p, 'sys.dungeon_no_reward', undefined, 'bad');
   }
 

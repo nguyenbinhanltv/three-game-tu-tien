@@ -61,6 +61,8 @@ function makeChar() {
   const scene = buildMixamoFixture({ mesh: true });
   const rig = IkRig.from(scene)!;
   const lib = bakePoseLibrary(scene, POSES)!;
+  // Test dùng chung một cảnh cho thư viện và nhân vật: nướng trước mọi pose chiêu (nướng lười sẽ đặt lại xương giữa chừng).
+  for (const p of POSES) lib.get(p.id);
   const idle = bakePose({ id: 'idle', duration: 1, loop: true, keys: [{ t: 0, handR: [-0.25, -0.05, 0.02], handL: [0.25, -0.05, 0.02] }] }, rig, { name: 'idle' });
   const run = bakePose(
     { id: 'run', duration: 1, loop: true, keys: [{ t: 0, footR: [-0.1, 0.05, 0.3], footL: [0.1, 0, -0.3], handR: [-0.3, -0.1, -0.15], handL: [0.3, -0.1, 0.15] }] },

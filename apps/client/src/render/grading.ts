@@ -63,7 +63,13 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   night: parse(raw.presets.night),
 };
 
-export const GRADING_DEFAULT: GradingName = raw.default;
+/** `?mood=dawn|day|night` đổi thời điểm trong ngày khi xem/chụp ảnh (không lưu); mặc định theo palette.json. */
+function moodFromUrl(): GradingName | null {
+  if (typeof location === 'undefined') return null;
+  const m = new URLSearchParams(location.search).get('mood');
+  return m === 'dawn' || m === 'day' || m === 'night' ? m : null;
+}
+export const GRADING_DEFAULT: GradingName = moodFromUrl() ?? raw.default;
 export const BLOOM = raw.bloom;
 export const VIGNETTE = raw.vignette;
 export const GRAIN = raw.grain;

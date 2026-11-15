@@ -408,7 +408,8 @@ export class SkinnedCharacter implements CharacterView {
   }
 
   private emit(p: Perform, kind: SkillEvent['kind'], index: number): void {
-    this.onSkillEvent?.({ kind, skill: p.skill, index, combo: p.combo, t: p.t, kb: !!p.timing?.kb });
+    const hitIn = kind === 'windup' && p.timing ? Math.max(0, p.timing.hitAt[0] - p.t) : undefined;
+    this.onSkillEvent?.({ kind, skill: p.skill, index, combo: p.combo, t: p.t, kb: !!p.timing?.kb, ...(hitIn !== undefined && { hitIn }) });
   }
 
   /** Lao người hiển thị và lướt: ghi vào `inner` (hệ cục bộ của root, đã chia scale), không đụng vị trí thật. */

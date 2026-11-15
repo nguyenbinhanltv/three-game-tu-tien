@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { METHOD_SKILLS, POSE, SKILLS, skillName, t } from '@dtl/content';
+import { POSE_VOICES, VOICED_POSES, type PoseVoice } from '@dtl/shared';
+import { poseOf } from '../game/skillPose';
 import { poseClipName } from '../game/character/ikpose';
 import { timingOf } from './skillTiming';
 import type { ViewerScene } from './scene';
@@ -13,7 +15,14 @@ const ALL = [...SKILLS, ...METHOD_SKILLS].filter((s) => s.pose);
  */
 export function SkillPanel({ viewer, skillId, onPick, clips }: { viewer: ViewerScene; skillId: string; onPick: (id: string) => void; clips: string[] }) {
   const skill = ALL.find((s) => s.id === skillId) ?? ALL[0];
-  const pose = POSE.get(skill.pose!)!;
+  // Giọng động tác (K-5) và đòn thứ mấy của chuỗi: `?voice=hp&hit=2` mở thẳng; chỉ chiêu có đủ bộ mới đổi được.
+  const q = new URLSearchParams(location.search);
+  const [voice, setVoice] = useState<PoseVoice>(() => (POSE_VOICES as readonly string[]).includes(q.get('voice') ?? '') ? (q.get('voice') as PoseVoice) : 'kt');
+  const [hit, setHit] = useState(() => Math.max(0, Number(q.get('hit') ?? 1) - 1) || 0);
+  const voiced = VOICED_POSES.has(skill.pose!);
+  const hits = skill.combo?.hits.length ?? 1;
+  const method = { kt: 'lac_kiem_quyet', hp: 'bat_dong_kim_than', ds: 'thanh_moc_dan_kinh' }[voice];
+  const pose = POSE.get(poseOf(skill, hits > 1 ? Math.min(hit, hits - 1) : undefined, voiced ? method : undefined))!;
   const tm = timingOf(skill, pose);
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -56,6 +65,35 @@ export function SkillPanel({ viewer, skillId, onPick, clips }: { viewer: ViewerS
           </option>
         ))}
       </select>
+
+      {(voiced || hits > 1) && (
+        <div className="viewer-anim">
+          {voiced && (
+            <label>
+              {t('viewer.skill.voice')}{' '}
+              <select value={voice} onChange={(e) => setVoice(e.target.value as PoseVoice)}>
+                {POSE_VOICES.map((v) => (
+                  <option key={v} value={v}>
+                    {t('viewer.skill.voice.' + v)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {hits > 1 && (
+            <label>
+              {t('viewer.skill.combo')}{' '}
+              <select value={Math.min(hit, hits - 1)} onChange={(e) => setHit(Number(e.target.value))}>
+                {Array.from({ length: hits }, (_, i) => (
+                  <option key={i} value={i}>
+                    {i + 1}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
 
       <div className="viewer-anim">
         <button

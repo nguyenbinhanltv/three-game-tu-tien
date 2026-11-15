@@ -15,10 +15,12 @@
     "shots:method": "tsx src/shots-method.ts",
     "shots:party": "tsx src/shots-party.ts",
     "shots:p38": "tsx src/shots-p38.ts",
+    "shots:m5": "tsx src/shots-m5.ts",
     "shots:sets": "tsx src/shots-sets.ts",
     "shots:k1": "tsx src/shots-k1.ts",
     "shots:k3": "tsx src/shots-k3.ts",
     "shots:k4": "tsx src/shots-k4.ts",
+    "shots:k7": "tsx src/shots-k7.ts",
     "shots:eqicons": "tsx src/shots-eqicons.ts",
     "shots:kiem": "tsx src/shots-kiem.ts",
     "shots:m4": "tsx src/shots-m4.ts"

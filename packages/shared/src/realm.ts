@@ -98,3 +98,21 @@ export function elemDamageMul(elemDmg: Record<string, number>, elem: string | un
 export function rootChangeCost(level: number): number {
   return 200 + 60 * level;
 }
+
+// ---------- mã cảnh giới cho công cụ kiểm thử (`?realm=`, `/gm realm`) ----------
+
+/**
+ * Mã cảnh giới → cấp: `nk1`…`nk15` (Ngưng Khí tầng N), `tc` hoặc `tc1`…`tc3` (Trúc Cơ sơ/trung/hậu kỳ), hoặc số cấp 1…MAX_LEVEL.
+ * Sai định dạng hoặc ngoài khoảng thì trả null. Chỉ dùng cho tài khoản thử; server vẫn tự kiểm quyền.
+ */
+export function parseRealmCode(code: unknown): number | null {
+  if (typeof code === 'number') return Number.isInteger(code) && code >= 1 && code <= MAX_LEVEL ? code : null;
+  if (typeof code !== 'string' || code.length > 8) return null;
+  const m = /^(nk|tc)?(\d{1,2})?$/.exec(code.trim().toLowerCase());
+  if (!m || (!m[1] && !m[2])) return null;
+  const n = m[2] === undefined ? 1 : Number(m[2]);
+  const level = m[1] === 'tc' ? TRUC_CO_LEVEL + n - 1 : n;
+  if (m[1] === 'nk' && (n < 1 || n > NGUNG_KHI_MAX)) return null;
+  if (m[1] === 'tc' && n < 1) return null;
+  return level >= 1 && level <= MAX_LEVEL ? level : null;
+}
