@@ -21,6 +21,8 @@ import {
   monsterXp,
   phaseRules,
   NGUNG_KHI_MAX,
+  MAX_SKILL_LEVEL,
+  skillUpgradeCost,
   shadowStats,
   TRIAL_DURATION,
   playerBaseStats,
@@ -99,6 +101,11 @@ let questXp = 0;
 let trialSec = 0;
 const trialRows: string[] = [];
 const questByLevel = new Map<number, number>();
+const questScrollByLevel = new Map<number, number>();
+const SCROLL_ID = 'itm_bi_tich_tan_quyen';
+const scrollAt: number[] = [];
+let scrollTotal = 0;
+let goldTotal = 0;
 for (const q of QUESTS) {
   // Nhiệm vụ làm xong quanh cấp của quái mục tiêu.
   let lv = q.minLevel ?? 1;
@@ -107,6 +114,7 @@ for (const q of QUESTS) {
     if (sp) lv = Math.max(lv, sp.levelMin);
   }
   questByLevel.set(lv, (questByLevel.get(lv) ?? 0) + q.rewards.xp);
+  questScrollByLevel.set(lv, (questScrollByLevel.get(lv) ?? 0) + (q.rewards.items ?? []).filter((i) => i.id === SCROLL_ID).reduce((n, i) => n + i.n, 0));
 }
 
 console.log('Cảnh giới            quái (cấp)              TTK  máu/s  mất/lần  tọa   giết   phút   cộng dồn');
@@ -128,6 +136,13 @@ for (let level = 1; level <= NGUNG_KHI_MAX; level++) {
   questXp += qx;
   need = Math.max(0, need - qx);
   const kills = Math.ceil(need / xpPerKill);
+  {
+    const lt = lootOf(def.id);
+    const d = lt.drops.find((x) => x.item === SCROLL_ID);
+    scrollTotal += kills * (d ? d.chance * ((d.min + d.max) / 2) : 0) + (questScrollByLevel.get(level) ?? 0);
+    goldTotal += kills * ((lt.gold[0] + lt.gold[1]) / 2) + 0;
+    scrollAt[level] = scrollTotal;
+  }
   // Mỗi lần giết: thời gian đánh + 6 giây tìm quái + đả tọa hồi máu.
   const sec = kills * (ttk + 6 + rest);
   totalSec += sec;
@@ -155,6 +170,29 @@ console.log('\nThử thách tâm ma (bình cảnh):');
 for (const r of trialRows) console.log(r);
 console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên; tọa: giây đả tọa hồi lại.');
 
+{
+  // Bí Tịch Tàn Quyển (3-6): nguồn từ quái thường + nhiệm vụ (chưa tính tinh anh, boss, rương bí cảnh, đổi ở Dược sư).
+  const costTo = (lv: number) => {
+    let s = 0;
+    let g = 0;
+    for (let l = 2; l <= lv; l++) {
+      const c = skillUpgradeCost(l)!;
+      s += c.scrolls;
+      g += c.gold;
+    }
+    return { s, g };
+  };
+  const c3 = costTo(3);
+  const c5 = costTo(MAX_SKILL_LEVEL);
+  console.log(`
+Bí Tịch Tàn Quyển (quái thường + nhiệm vụ): tầng 5 ≈ ${scrollAt[5].toFixed(0)}, tầng 10 ≈ ${scrollAt[10].toFixed(0)}, viên mãn tầng 15 ≈ ${scrollAt[15].toFixed(0)} cuộn; linh thạch từ quái ≈ ${goldTotal.toFixed(0)}.`);
+  console.log(`Nâng một chiêu: cấp 3 = ${c3.s} cuộn + ${c3.g} linh thạch, cấp 5 = ${c5.s} cuộn + ${c5.g} linh thạch. 4 chiêu chủ lực cấp 3 = ${4 * c3.s} cuộn; 8 chiêu cấp 3 = ${8 * c3.s}; 8 chiêu cấp 5 = ${8 * c5.s}.`);
+  console.log('Đổi ở Dược sư (8 yêu đan + 2 thiết tinh + 120 linh thạch mỗi cuộn) là đường bù khi rơi xui; boss, tinh anh và rương bí cảnh cho thêm.');
+  // Nhịp: tới viên mãn nên đủ nâng 4 chiêu chủ lực lên cấp 3 (có biến thức), nhưng chưa đủ nâng đủ 8 chiêu lên cấp 5 (mục tiêu hậu kỳ).
+  if (scrollAt[15] < 4 * c3.s) { console.error('LỖI: tới tầng 15 chưa đủ cuộn nâng 4 chiêu chủ lực lên cấp 3'); process.exitCode = 1; }
+  if (scrollAt[15] >= 8 * c5.s) { console.error('LỖI: tới tầng 15 đã đủ cuộn nâng mọi chiêu lên cấp 5 (quá dễ)'); process.exitCode = 1; }
+  if (goldTotal < 4 * c3.g) { console.error('LỖI: linh thạch từ quái không đủ nâng 4 chiêu lên cấp 3'); process.exitCode = 1; }
+}
 // ---------- đường cong trang bị theo phẩm (3-2) ----------
 
 /** Đủ 7 ô có chỉ số, cùng một phẩm, ilvl = cấp: trung bình 40 lần roll để bớt nhiễu. */

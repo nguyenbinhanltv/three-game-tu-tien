@@ -11,6 +11,8 @@ import {
   resolveSkill,
   skillLevelMods,
   skillUpgradeCost,
+  variantSwitchBlock,
+  VARIANT_SWITCH_COOLDOWN_SEC,
   stackMul,
   stacksAlive,
   activeVariant,
@@ -121,5 +123,29 @@ describe('sạc và nội tại', () => {
     expect(reduceDamage(100, 0.6)).toBe(40);
     expect(reduceDamage(100, 5)).toBe(10);
     expect(reduceDamage(1, 0.9)).toBe(1);
+  });
+});
+
+describe('luật đổi biến thức', () => {
+  const ok = { skillLevel: 3, inCombat: false, casting: false, sinceLastSwitchMs: 1e9 };
+  it('chỉ đổi được khi cấp ≥ 3, ngoài giao chiến, không niệm, đã quá hồi chờ', () => {
+    expect(variantSwitchBlock(ok)).toBeNull();
+    expect(variantSwitchBlock({ ...ok, skillLevel: 2 })).toBe('low');
+    expect(variantSwitchBlock({ ...ok, inCombat: true })).toBe('combat');
+    expect(variantSwitchBlock({ ...ok, casting: true })).toBe('casting');
+    expect(variantSwitchBlock({ ...ok, sinceLastSwitchMs: VARIANT_SWITCH_COOLDOWN_SEC * 1000 - 1 })).toBe('cooldown');
+    expect(variantSwitchBlock({ ...ok, sinceLastSwitchMs: VARIANT_SWITCH_COOLDOWN_SEC * 1000 })).toBeNull();
+  });
+  it('chi phí nâng tăng dần và có trần; tổng một chiêu cấp 5 vẫn vừa nhịp', () => {
+    let s = 0;
+    let prev = 0;
+    for (let l = 2; l <= 5; l++) {
+      const c = skillUpgradeCost(l)!;
+      expect(c.scrolls).toBeGreaterThanOrEqual(prev);
+      prev = c.scrolls;
+      s += c.scrolls;
+    }
+    expect(s).toBe(11);
+    expect(skillUpgradeCost(6)).toBeNull();
   });
 });
