@@ -154,6 +154,8 @@ async function main(): Promise<void> {
     const before = await pos(A);
     await sleep(2800);
     await shot(A, 'tele-arrived.png');
+    await sleep(2500);
+    await shot(A, 'tele-arrived-settled.png');
     const after = await pos(A);
     console.log(`[shots-m4] vị trí A: ${JSON.stringify(before)} → ${JSON.stringify(after)}`);
     // Vòng chờ hồi chiêu: bấm lại ngay thì bị từ chối.
@@ -162,7 +164,7 @@ async function main(): Promise<void> {
     await shot(A, 'worldmap-cooldown.png');
   } finally {
     await browser.close();
-    await dev.stop();
+    dev.stop();
   }
   if (errors.length) console.log(`[shots-m4] ${errors.length} lỗi console:\n` + errors.slice(0, 10).join('\n'));
   else console.log('[shots-m4] 0 lỗi console');

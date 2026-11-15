@@ -619,7 +619,7 @@ function checkZonesAndCamps(lv: (typeof LEVELS)[string]) {
 // ---- Truyền Tống Trận (M-4): mỗi vùng đúng một trận trong vùng, đứng được, không đè collider/nước/bãi quái ----
 {
   const lv = LEVELS.van_lam;
-  uniqueIds('trận', TELE_PADS);
+  uniqueIds('trận', [...TELE_PADS]);
   for (const z of lv.zones ?? []) if (TELE_PADS.filter((p) => p.zone === z.id).length !== 1) err(`vùng ${z.id}: cần đúng một Truyền Tống Trận`);
   if (!TELE_PADS.some((p) => TELE_FREE.includes(p.id))) err('cần ít nhất một trận mở sẵn');
   for (const pad of TELE_PADS) {
