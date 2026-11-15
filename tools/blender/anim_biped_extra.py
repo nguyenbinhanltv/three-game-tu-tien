@@ -638,8 +638,8 @@ if 'hit_light' not in bpy.data.actions and not IMPORT.get('sharedAnims'):
 
 EXTRA = list(IMPORT.get('extra', []))
 for name in EXTRA:
-    if name not in ('slam', 'sweep', 'chant', 'stun'):
-        fail(f'anim_biped_extra: import.extra "{name}" chưa hỗ trợ (slam | sweep | chant | stun)')  # noqa: F821
+    if name not in ('slam', 'sweep', 'chant', 'stun', 'combat_idle', 'guard', 'hit_back', 'roar'):
+        fail(f'anim_biped_extra: import.extra "{name}" chưa hỗ trợ (slam | sweep | chant | stun | combat_idle | guard | hit_back | roar)')  # noqa: F821
 
 if EXTRA:
     Y_AX, Z_AX = Vector((0, 1, 0)), Vector((0, 0, 1))
@@ -687,11 +687,12 @@ if EXTRA:
     THIGH = {s: head_of(L['upleg']) for s, L in LIMB.items()}
     SEG = {s: ((KNEE[s] - THIGH[s]).length, (FOOT[s].translation - KNEE[s]).length) for s in SIDES}
 
-    def leg_ik(s):
-        """IK hai đốt: đưa bàn chân về chỗ cũ (FOOT), đầu gối theo hướng gối của dáng gốc, rồi trả hướng bàn chân."""
+    def leg_ik(s, off=(0, 0, 0)):
+        """IK hai đốt: đưa bàn chân về chỗ cũ (FOOT) cộng độ lệch `off` (phần chiều cao, K-3: thủ thế bước chân), đầu gối theo
+        hướng gối của dáng gốc, rồi trả hướng bàn chân."""
         L = LIMB[s]
         a = head_of(L['upleg'])
-        goal = FOOT[s].translation
+        goal = FOOT[s].translation + Vector(off) * H
         l1, l2 = SEG[s]
         d = goal - a
         dist = min(max(d.length, abs(l1 - l2) + 1e-4), l1 + l2 - 1e-4)
@@ -704,7 +705,7 @@ if EXTRA:
         aim(L['upleg'], L['leg'], knee - a)
         aim(L['leg'], L['foot'], goal - head_of(L['leg']))
         m = FOOT[s].copy()
-        m.translation = head_of(L['foot'])
+        m.translation = head_of(L['foot'])  # (bàn chân giữ hướng dáng gốc)
         pb[L['foot']].matrix = m
         upd()
 
@@ -739,7 +740,7 @@ if EXTRA:
             aim(L['arm'], L['forearm'], k['dir'][s]['arm'])
             aim(L['forearm'], L['hand'], k['dir'][s]['fore'])
         for s in SIDES:
-            leg_ik(s)
+            leg_ik(s, k.get('feet', {}).get(s, (0, 0, 0)))
 
     def resolved(k):
         k = dict(k)
@@ -754,6 +755,8 @@ if EXTRA:
         for key in ('twist', 'head'):
             out[key] = a.get(key, 0) * (1 - w) + b.get(key, 0) * w
         out['dir'] = {s: {p: nlerp(a['dir'][s][p], b['dir'][s][p], w) for p in ('arm', 'fore')} for s in SIDES}
+        out['feet'] = {s: tuple(x * (1 - w) + y * w for x, y in zip(a.get('feet', {}).get(s, (0, 0, 0)), b.get('feet', {}).get(s, (0, 0, 0))))
+                       for s in SIDES}
         return out
 
     def key_frame(f):
@@ -766,6 +769,9 @@ if EXTRA:
         act.use_fake_user = True
         arm.animation_data_create()
         arm.animation_data.action = act
+        # Đổi action làm Blender dựng lại tư thế: khung 0 đầu tiên đọc ma trận cũ nên sai (cột sống gập). Dựng một dáng nghỉ trước.
+        apply_key(resolved({}))
+        upd()
         return act
 
     def end(act, n):
@@ -838,6 +844,45 @@ if EXTRA:
                     'hips': (0.012 * math.sin(a), 0, -0.1),
                     'arms': both(lambda sx: ((sx * 0.15, -0.25 + 0.05 * math.sin(a), -0.95), (sx * 0.05, -0.35, -0.93)))}
         looped_clip('stun', 1.6, stun)
+
+    # ---- K-3: thủ thế cầm kiếm, đỡ đòn, trúng đòn từ sau, gầm khiêu khích ----
+    # Hướng cánh tay/cẳng tay là vector thế giới (x + là bên trái nhân vật, -y là phía trước, z lên); `feet` là độ lệch bàn
+    # chân so với dáng nghỉ theo phần chiều cao (x trái, y trước-sau với -y là tới trước).
+    if 'combat_idle' in EXTRA:
+        def combat(t):
+            a = 2 * math.pi * t
+            br = math.sin(a)
+            return {'spine': (6 + 1.2 * br, 5 + 1.2 * br, 3), 'twist': 20, 'head': -3, 'hips': (0, -0.008, -0.05 + 0.004 * math.sin(2 * a)),
+                    'feet': {'R': (-0.03, -0.075, 0), 'L': (0.05, 0.07, 0)},
+                    'arms': {'R': ((-0.30, -0.45, -0.84), (0.20, -0.85 + 0.03 * br, 0.15)),
+                             'L': ((0.35, -0.35, -0.87), (-0.55, -0.70, 0.45 + 0.03 * br))}}
+        looped_clip('combat_idle', 2.4, combat)
+
+    if 'guard' in EXTRA:
+        def guard(t):
+            a = 2 * math.pi * t
+            br = math.sin(a)
+            return {'spine': (10 + br, 10 + br, 6), 'head': 8, 'hips': (0, 0.01, -0.06 + 0.003 * math.sin(2 * a)),
+                    'feet': {'R': (-0.035, -0.03, 0), 'L': (0.035, 0.03, 0)},
+                    'arms': {'L': ((0.15, -0.35, -0.92), (-0.80, -0.55, 0.30 + 0.02 * br)),
+                             'R': ((-0.15, -0.35, -0.92), (0.80, -0.55, 0.30 + 0.02 * br))}}
+        looped_clip('guard', 1.2, guard)
+
+    if 'hit_back' in EXTRA:
+        # Bị đánh từ sau: chân vọt tới, lưng ưỡn, đầu ngửa, hai tay văng ra sau rồi lấy lại thăng bằng.
+        hb = {'spine': (-12, -14, -10), 'head': -16, 'hips': (0, -0.05, -0.02), 'feet': {'R': (0, -0.12, 0), 'L': (0, 0.03, 0)},
+              'arms': both(lambda sx: ((sx * 0.55, 0.5, -0.65), (sx * 0.25, 0.3, -0.92)))}
+        hb2 = {'spine': (-5, -6, -4), 'head': -6, 'hips': (0, -0.07, -0.05), 'feet': {'R': (0, -0.14, 0), 'L': (0, -0.02, 0)},
+               'arms': both(lambda sx: ((sx * 0.45, 0.2, -0.87), (sx * 0.2, -0.2, -0.95)))}
+        keyed_clip('hit_back', 0.8, [(0.0, REST_K), (0.1, hb), (0.28, hb), (0.5, hb2), (0.8, REST_K)])
+
+    if 'roar' in EXTRA:
+        # Khiêu khích / Sư Tử Hống: hạ thấp, kéo hai tay vào hông, rồi ưỡn ngực ngửa đầu dang tay, giậm chân (0,92 s).
+        r1 = {'spine': (14, 14, 10), 'head': 10, 'hips': (0, 0.02, -0.07), 'feet': both(lambda sx: ((sx * -0.05), 0, 0)),
+              'arms': both(lambda sx: ((sx * 0.3, 0.1, -0.95), (sx * -0.25, -0.5, 0.2)))}
+        r2 = {'spine': (-12, -14, -10), 'head': -22, 'hips': (0, 0.0, 0.0), 'feet': both(lambda sx: ((sx * -0.07), 0, 0)),
+              'arms': both(lambda sx: ((sx * 0.85, 0.0, 0.35), (sx * 0.9, -0.15, 0.25)))}
+        keyed_clip('roar', 1.8, [(0.0, REST_K), (0.5, r1), (0.62, r1), (0.95, r2), (1.4, r2), (1.8, REST_K)])
 
 
 for p in pb:

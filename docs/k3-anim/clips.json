@@ -1,0 +1,1086 @@
+{
+ "back": {
+  "frames": 71,
+  "seconds": 2.333,
+  "yawPelvis0": 2.8,
+  "yawShoulder0": -0.4,
+  "yawPelvisMid": 3.5,
+  "yawPelvisEnd": 2.8,
+  "loopGap": 0.0014,
+  "refSpeed": 0.971,
+  "refDir": 89.6,
+  "slipM": 0.016,
+  "stanceSegments": 4,
+  "hipsZ": [
+   0.88,
+   0.915
+  ],
+  "hipsCurve": [
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.88,
+   0.89,
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.88,
+   0.9
+  ]
+ },
+ "cast_stand": {
+  "frames": 159,
+  "seconds": 5.267,
+  "yawPelvis0": 0.2,
+  "yawShoulder0": -42.2,
+  "yawPelvisMid": 90.0,
+  "yawPelvisEnd": 0.3,
+  "loopGap": 0.0041,
+  "refSpeed": 0.027,
+  "refDir": 154.2,
+  "slipM": 0.25,
+  "stanceSegments": 3,
+  "hipsZ": [
+   0.769,
+   0.941
+  ],
+  "hipsCurve": [
+   0.84,
+   0.84,
+   0.84,
+   0.84,
+   0.81,
+   0.83,
+   0.9,
+   0.94,
+   0.94,
+   0.93,
+   0.91,
+   0.89,
+   0.82,
+   0.77,
+   0.78,
+   0.79,
+   0.79,
+   0.79,
+   0.8,
+   0.83,
+   0.88,
+   0.89,
+   0.89,
+   0.88,
+   0.86,
+   0.85,
+   0.84
+  ],
+  "raw": {
+   "seconds": 5.367,
+   "yawPelvis0": 0.3,
+   "yawShoulder0": -41.9,
+   "window": [
+    0.1,
+    5.37
+   ]
+  },
+  "yawFixed": 0.0
+ },
+ "cast_walk": {
+  "frames": 71,
+  "seconds": 2.333,
+  "yawPelvis0": 2.8,
+  "yawShoulder0": -53.5,
+  "yawPelvisMid": 3.5,
+  "yawPelvisEnd": 2.8,
+  "loopGap": 0.0249,
+  "refSpeed": 0.978,
+  "refDir": -90.7,
+  "slipM": 0.016,
+  "stanceSegments": 4,
+  "hipsZ": [
+   0.88,
+   0.915
+  ],
+  "hipsCurve": [
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.89,
+   0.89,
+   0.91,
+   0.88,
+   0.9
+  ]
+ },
+ "combat_idle": {
+  "frames": 73,
+  "seconds": 2.4,
+  "yawPelvis0": 1.0,
+  "yawShoulder0": 20.1,
+  "yawPelvisMid": 1.0,
+  "yawPelvisEnd": 1.0,
+  "loopGap": 0.0,
+  "hipsZ": [
+   0.834,
+   0.846
+  ],
+  "hipsCurve": [
+   0.84,
+   0.85,
+   0.85,
+   0.84,
+   0.83,
+   0.83,
+   0.84,
+   0.85,
+   0.85,
+   0.84,
+   0.83,
+   0.83,
+   0.84
+  ]
+ },
+ "death": {
+  "frames": 91,
+  "seconds": 3.0,
+  "yawPelvis0": -45.5,
+  "yawShoulder0": -17.7,
+  "yawPelvisMid": -28.8,
+  "yawPelvisEnd": -44.2,
+  "loopGap": 0.6212,
+  "refSpeed": 0.423,
+  "refDir": -8.1,
+  "slipM": 0.164,
+  "stanceSegments": 3,
+  "hipsZ": [
+   0.258,
+   0.853
+  ],
+  "hipsCurve": [
+   0.8,
+   0.83,
+   0.84,
+   0.85,
+   0.83,
+   0.81,
+   0.73,
+   0.51,
+   0.28,
+   0.27,
+   0.26,
+   0.29,
+   0.29,
+   0.29,
+   0.29,
+   0.29
+  ]
+ },
+ "dodge_back": {
+  "frames": 34,
+  "seconds": 1.1,
+  "yawPelvis0": -7.0,
+  "yawShoulder0": -19.8,
+  "yawPelvisMid": 62.5,
+  "yawPelvisEnd": -10.5,
+  "loopGap": 0.1613,
+  "hipsZ": [
+   0.895,
+   1.032
+  ],
+  "hipsCurve": [
+   1.03,
+   1.01,
+   0.9,
+   1.03,
+   0.91,
+   1.0
+  ]
+ },
+ "dodge_f": {
+  "frames": 73,
+  "seconds": 2.4,
+  "yawPelvis0": -3.0,
+  "yawShoulder0": 3.3,
+  "yawPelvisMid": 9.1,
+  "yawPelvisEnd": -3.7,
+  "loopGap": 0.1386,
+  "refSpeed": 1.2,
+  "refDir": -93.1,
+  "slipM": 0.062,
+  "stanceSegments": 3,
+  "hipsZ": [
+   0.206,
+   1.083
+  ],
+  "hipsCurve": [
+   0.81,
+   0.73,
+   0.76,
+   0.82,
+   0.75,
+   1.04,
+   1.03,
+   0.64,
+   0.24,
+   0.21,
+   0.51,
+   0.74,
+   0.84
+  ],
+  "raw": {
+   "seconds": 2.7,
+   "yawPelvis0": -4.6,
+   "yawShoulder0": 1.6
+  },
+  "yawFixed": 0.0
+ },
+ "dodge_l": {
+  "frames": 73,
+  "seconds": 2.4,
+  "yawPelvis0": -3.0,
+  "yawShoulder0": 3.3,
+  "yawPelvisMid": 99.1,
+  "yawPelvisEnd": -3.7,
+  "loopGap": 0.1386,
+  "refSpeed": 1.456,
+  "refDir": -45.2,
+  "slipM": 0.176,
+  "stanceSegments": 3,
+  "hipsZ": [
+   0.206,
+   1.083
+  ],
+  "hipsCurve": [
+   0.81,
+   0.73,
+   0.76,
+   0.82,
+   0.75,
+   1.04,
+   1.03,
+   0.64,
+   0.24,
+   0.21,
+   0.51,
+   0.74,
+   0.84
+  ]
+ },
+ "dodge_r": {
+  "frames": 73,
+  "seconds": 2.4,
+  "yawPelvis0": -3.0,
+  "yawShoulder0": 3.3,
+  "yawPelvisMid": -80.9,
+  "yawPelvisEnd": -3.7,
+  "loopGap": 0.1386,
+  "refSpeed": 1.546,
+  "refDir": -140.9,
+  "slipM": 0.221,
+  "stanceSegments": 3,
+  "hipsZ": [
+   0.206,
+   1.083
+  ],
+  "hipsCurve": [
+   0.81,
+   0.73,
+   0.76,
+   0.82,
+   0.75,
+   1.04,
+   1.03,
+   0.64,
+   0.24,
+   0.21,
+   0.51,
+   0.74,
+   0.84
+  ]
+ },
+ "getup": {
+  "frames": 50,
+  "seconds": 1.633,
+  "yawPelvis0": -24.5,
+  "yawShoulder0": -38.1,
+  "yawPelvisMid": 12.3,
+  "yawPelvisEnd": 1.0,
+  "loopGap": 0.513,
+  "refSpeed": 2.317,
+  "refDir": -87.6,
+  "slipM": 0.535,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.174,
+   0.847
+  ],
+  "hipsCurve": [
+   0.17,
+   0.18,
+   0.39,
+   0.72,
+   0.62,
+   0.56,
+   0.79,
+   0.84,
+   0.84
+  ]
+ },
+ "guard": {
+  "frames": 37,
+  "seconds": 1.2,
+  "yawPelvis0": 1.0,
+  "yawShoulder0": 0.1,
+  "yawPelvisMid": 1.0,
+  "yawPelvisEnd": 1.0,
+  "loopGap": 0.0,
+  "hipsZ": [
+   0.82,
+   0.829
+  ],
+  "hipsCurve": [
+   0.82,
+   0.83,
+   0.82,
+   0.82,
+   0.83,
+   0.82,
+   0.82
+  ]
+ },
+ "heavy_chop": {
+  "frames": 37,
+  "seconds": 1.2,
+  "yawPelvis0": 18.1,
+  "yawShoulder0": 36.5,
+  "yawPelvisMid": 5.2,
+  "yawPelvisEnd": -24.9,
+  "loopGap": 0.3837,
+  "refSpeed": 0.282,
+  "refDir": -126.2,
+  "slipM": 0.248,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.84,
+   0.922
+  ],
+  "hipsCurve": [
+   0.87,
+   0.9,
+   0.92,
+   0.92,
+   0.85,
+   0.85,
+   0.86
+  ],
+  "raw": {
+   "seconds": 1.2,
+   "yawPelvis0": 18.1,
+   "yawShoulder0": 36.3
+  },
+  "yawFixed": 0.0
+ },
+ "hit_back": {
+  "frames": 25,
+  "seconds": 0.8,
+  "yawPelvis0": 1.0,
+  "yawShoulder0": 0.0,
+  "yawPelvisMid": 1.0,
+  "yawPelvisEnd": 1.0,
+  "loopGap": 0.0,
+  "hipsZ": [
+   0.84,
+   0.916
+  ],
+  "hipsCurve": [
+   0.92,
+   0.89,
+   0.86,
+   0.86,
+   0.92
+  ]
+ },
+ "hit_front_1": {
+  "frames": 40,
+  "seconds": 1.3,
+  "yawPelvis0": -0.0,
+  "yawShoulder0": -18.6,
+  "yawPelvisMid": -13.3,
+  "yawPelvisEnd": -0.0,
+  "loopGap": 0.0,
+  "refSpeed": 0.048,
+  "refDir": -54.4,
+  "slipM": 0.067,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.822,
+   0.872
+  ],
+  "hipsCurve": [
+   0.82,
+   0.86,
+   0.86,
+   0.86,
+   0.86,
+   0.85,
+   0.83
+  ],
+  "raw": {
+   "seconds": 1.3,
+   "yawPelvis0": -0.0,
+   "yawShoulder0": -18.6,
+   "window": [
+    0.0,
+    1.3
+   ]
+  },
+  "yawFixed": 0.0
+ },
+ "hit_front_2": {
+  "frames": 52,
+  "seconds": 1.7,
+  "yawPelvis0": -0.0,
+  "yawShoulder0": -18.6,
+  "yawPelvisMid": -4.5,
+  "yawPelvisEnd": -0.0,
+  "loopGap": 0.0014,
+  "refSpeed": 0.202,
+  "refDir": -150.3,
+  "slipM": 0.096,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.788,
+   0.91
+  ],
+  "hipsCurve": [
+   0.83,
+   0.84,
+   0.9,
+   0.8,
+   0.8,
+   0.83,
+   0.85,
+   0.86,
+   0.84
+  ],
+  "raw": {
+   "seconds": 1.7,
+   "yawPelvis0": -0.0,
+   "yawShoulder0": -18.6,
+   "window": [
+    0.0,
+    1.7
+   ]
+  },
+  "yawFixed": 0.0
+ },
+ "hit_head": {
+  "frames": 56,
+  "seconds": 1.833,
+  "yawPelvis0": -0.0,
+  "yawShoulder0": -18.6,
+  "yawPelvisMid": -9.7,
+  "yawPelvisEnd": -0.0,
+  "loopGap": 0.0,
+  "refSpeed": 0.097,
+  "refDir": -135.5,
+  "slipM": 0.182,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.819,
+   0.921
+  ],
+  "hipsCurve": [
+   0.84,
+   0.91,
+   0.9,
+   0.84,
+   0.82,
+   0.82,
+   0.83,
+   0.85,
+   0.86,
+   0.85
+  ],
+  "raw": {
+   "seconds": 1.833,
+   "yawPelvis0": -0.0,
+   "yawShoulder0": -18.6,
+   "window": [
+    0.0,
+    1.83
+   ]
+  },
+  "yawFixed": 0.0
+ },
+ "hit_heavy": {
+  "frames": 47,
+  "seconds": 1.533,
+  "yawPelvis0": -0.0,
+  "yawShoulder0": -18.6,
+  "yawPelvisMid": -8.8,
+  "yawPelvisEnd": -0.1,
+  "loopGap": 0.0014,
+  "refSpeed": 0.041,
+  "refDir": -81.5,
+  "slipM": 0.057,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.821,
+   0.858
+  ],
+  "hipsCurve": [
+   0.82,
+   0.84,
+   0.84,
+   0.85,
+   0.86,
+   0.86,
+   0.85,
+   0.83
+  ],
+  "raw": {
+   "seconds": 1.533,
+   "yawPelvis0": -0.0,
+   "yawShoulder0": -18.6,
+   "window": [
+    0.0,
+    1.53
+   ]
+  },
+  "yawFixed": 0.0
+ },
+ "hit_l": {
+  "frames": 39,
+  "seconds": 1.267,
+  "yawPelvis0": -0.0,
+  "yawShoulder0": -18.6,
+  "yawPelvisMid": -33.0,
+  "yawPelvisEnd": -0.0,
+  "loopGap": 0.0,
+  "refSpeed": 0.024,
+  "refDir": 162.1,
+  "slipM": 0.106,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.821,
+   0.864
+  ],
+  "hipsCurve": [
+   0.82,
+   0.84,
+   0.86,
+   0.84,
+   0.85,
+   0.84,
+   0.82
+  ],
+  "raw": {
+   "seconds": 1.267,
+   "yawPelvis0": -0.0,
+   "yawShoulder0": -18.6,
+   "window": [
+    0.0,
+    1.27
+   ]
+  },
+  "yawFixed": 0.0
+ },
+ "hit_light": {
+  "frames": 11,
+  "seconds": 0.333,
+  "yawPelvis0": 1.0,
+  "yawShoulder0": 0.0,
+  "yawPelvisMid": 1.0,
+  "yawPelvisEnd": 1.0,
+  "loopGap": 0.0,
+  "hipsZ": [
+   0.911,
+   0.916
+  ],
+  "hipsCurve": [
+   0.92,
+   0.91
+  ]
+ },
+ "hit_r": {
+  "frames": 39,
+  "seconds": 1.267,
+  "yawPelvis0": -0.9,
+  "yawShoulder0": 17.1,
+  "yawPelvisMid": 32.1,
+  "yawPelvisEnd": -0.9,
+  "loopGap": 0.0,
+  "refSpeed": 0.017,
+  "refDir": 23.6,
+  "slipM": 0.105,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.821,
+   0.863
+  ],
+  "hipsCurve": [
+   0.82,
+   0.84,
+   0.86,
+   0.84,
+   0.85,
+   0.84,
+   0.82
+  ]
+ },
+ "idle": {
+  "frames": 461,
+  "seconds": 15.333,
+  "yawPelvis0": 1.0,
+  "yawShoulder0": 0.0,
+  "yawPelvisMid": -3.1,
+  "yawPelvisEnd": 1.0,
+  "loopGap": 0.0,
+  "refSpeed": 0.004,
+  "refDir": 70.4,
+  "slipM": 0.187,
+  "stanceSegments": 3,
+  "hipsZ": [
+   0.904,
+   0.919
+  ],
+  "hipsCurve": [
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.91,
+   0.9,
+   0.9,
+   0.91,
+   0.91,
+   0.91,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.91,
+   0.91,
+   0.92
+  ]
+ },
+ "jump": {
+  "frames": 67,
+  "seconds": 2.2,
+  "yawPelvis0": -2.9,
+  "yawShoulder0": -8.5,
+  "yawPelvisMid": 2.4,
+  "yawPelvisEnd": -2.0,
+  "loopGap": 0.0596,
+  "refSpeed": 0.149,
+  "refDir": 167.7,
+  "slipM": 0.032,
+  "stanceSegments": 8,
+  "hipsZ": [
+   0.799,
+   1.254
+  ],
+  "hipsCurve": [
+   0.87,
+   1.19,
+   0.83,
+   1.08,
+   1.16,
+   0.86,
+   1.11,
+   0.85,
+   1.08,
+   0.85,
+   1.07,
+   0.9
+  ],
+  "raw": {
+   "seconds": 2.2,
+   "yawPelvis0": -2.9,
+   "yawShoulder0": -8.5,
+   "window": [
+    0.0,
+    2.2
+   ]
+  },
+  "yawFixed": 0.0
+ },
+ "kick_1": {
+  "frames": 76,
+  "seconds": 2.5,
+  "yawPelvis0": -0.0,
+  "yawShoulder0": -6.9,
+  "yawPelvisMid": -137.2,
+  "yawPelvisEnd": -0.3,
+  "loopGap": 0.0148,
+  "refSpeed": 0.604,
+  "refDir": -147.4,
+  "slipM": 0.306,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.851,
+   0.986
+  ],
+  "hipsCurve": [
+   0.87,
+   0.9,
+   0.85,
+   0.89,
+   0.94,
+   0.97,
+   0.96,
+   0.96,
+   0.95,
+   0.9,
+   0.86,
+   0.93,
+   0.96
+  ],
+  "raw": {
+   "seconds": 2.5,
+   "yawPelvis0": 34.3,
+   "yawShoulder0": 27.4,
+   "window": [
+    0.0,
+    2.5
+   ]
+  },
+  "yawFixed": -34.3
+ },
+ "kick_2": {
+  "frames": 42,
+  "seconds": 1.367,
+  "yawPelvis0": -0.0,
+  "yawShoulder0": -6.9,
+  "yawPelvisMid": -147.9,
+  "yawPelvisEnd": 14.1,
+  "loopGap": 0.0957,
+  "refSpeed": 0.921,
+  "refDir": -110.0,
+  "slipM": 0.194,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.83,
+   0.954
+  ],
+  "hipsCurve": [
+   0.87,
+   0.95,
+   0.83,
+   0.92,
+   0.95,
+   0.95,
+   0.94
+  ],
+  "raw": {
+   "seconds": 1.367,
+   "yawPelvis0": 34.3,
+   "yawShoulder0": 27.4,
+   "window": [
+    0.0,
+    1.37
+   ]
+  },
+  "yawFixed": -34.3
+ },
+ "knockdown": {
+  "frames": 111,
+  "seconds": 3.667,
+  "yawPelvis0": -0.2,
+  "yawShoulder0": -0.8,
+  "yawPelvisMid": 5.4,
+  "yawPelvisEnd": -24.5,
+  "loopGap": 0.6399,
+  "refSpeed": 0.319,
+  "refDir": 75.0,
+  "slipM": 0.53,
+  "stanceSegments": 5,
+  "hipsZ": [
+   0.174,
+   0.968
+  ],
+  "hipsCurve": [
+   0.96,
+   0.95,
+   0.97,
+   0.96,
+   0.93,
+   0.89,
+   0.95,
+   0.95,
+   0.92,
+   0.85,
+   0.74,
+   0.57,
+   0.52,
+   0.49,
+   0.4,
+   0.24,
+   0.18,
+   0.18,
+   0.18
+  ],
+  "raw": {
+   "seconds": 5.533,
+   "yawPelvis0": -0.1,
+   "yawShoulder0": -0.6,
+   "window": [
+    0.17,
+    3.83
+   ]
+  },
+  "yawFixed": 0.0
+ },
+ "land": {
+  "frames": 58,
+  "seconds": 1.9,
+  "yawPelvis0": 4.3,
+  "yawShoulder0": -6.2,
+  "yawPelvisMid": 3.7,
+  "yawPelvisEnd": -7.2,
+  "loopGap": 0.3295,
+  "refSpeed": 0.26,
+  "refDir": -104.3,
+  "slipM": 0.11,
+  "stanceSegments": 2,
+  "hipsZ": [
+   0.406,
+   1.843
+  ],
+  "hipsCurve": [
+   1.84,
+   1.65,
+   1.25,
+   0.69,
+   0.41,
+   0.56,
+   0.8,
+   0.94,
+   0.93,
+   0.92
+  ],
+  "raw": {
+   "seconds": 3.7,
+   "yawPelvis0": 0.4,
+   "yawShoulder0": -1.8
+  },
+  "yawFixed": 0.0
+ },
+ "roar": {
+  "frames": 55,
+  "seconds": 1.8,
+  "yawPelvis0": 1.0,
+  "yawShoulder0": 0.0,
+  "yawPelvisMid": 1.0,
+  "yawPelvisEnd": 1.0,
+  "loopGap": 0.0001,
+  "hipsZ": [
+   0.809,
+   0.916
+  ],
+  "hipsCurve": [
+   0.92,
+   0.88,
+   0.82,
+   0.81,
+   0.87,
+   0.92,
+   0.92,
+   0.92,
+   0.92,
+   0.92
+  ]
+ },
+ "run": {
+  "frames": 39,
+  "seconds": 1.267,
+  "yawPelvis0": -4.0,
+  "yawShoulder0": -10.2,
+  "yawPelvisMid": -4.1,
+  "yawPelvisEnd": -4.0,
+  "loopGap": 0.0,
+  "refSpeed": 3.091,
+  "refDir": -92.2,
+  "slipM": 0.045,
+  "stanceSegments": 3,
+  "hipsZ": [
+   0.779,
+   0.837
+  ],
+  "hipsCurve": [
+   0.78,
+   0.84,
+   0.79,
+   0.8,
+   0.82,
+   0.78,
+   0.81
+  ]
+ },
+ "strafe_l": {
+  "frames": 71,
+  "seconds": 2.333,
+  "yawPelvis0": 92.8,
+  "yawShoulder0": -0.4,
+  "yawPelvisMid": 93.5,
+  "yawPelvisEnd": 92.8,
+  "loopGap": 0.0014,
+  "refSpeed": 0.971,
+  "refDir": -0.7,
+  "slipM": 0.015,
+  "stanceSegments": 4,
+  "hipsZ": [
+   0.88,
+   0.915
+  ],
+  "hipsCurve": [
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.89,
+   0.89,
+   0.91,
+   0.88,
+   0.9
+  ]
+ },
+ "strafe_r": {
+  "frames": 71,
+  "seconds": 2.333,
+  "yawPelvis0": -87.2,
+  "yawShoulder0": -0.4,
+  "yawPelvisMid": -86.5,
+  "yawPelvisEnd": -87.2,
+  "loopGap": 0.0014,
+  "refSpeed": 0.977,
+  "refDir": 179.6,
+  "slipM": 0.015,
+  "stanceSegments": 4,
+  "hipsZ": [
+   0.88,
+   0.915
+  ],
+  "hipsCurve": [
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.89,
+   0.89,
+   0.91,
+   0.88,
+   0.9
+  ]
+ },
+ "walk": {
+  "frames": 71,
+  "seconds": 2.333,
+  "yawPelvis0": 2.8,
+  "yawShoulder0": -0.4,
+  "yawPelvisMid": 3.5,
+  "yawPelvisEnd": 2.8,
+  "loopGap": 0.0014,
+  "refSpeed": 0.978,
+  "refDir": -90.7,
+  "slipM": 0.016,
+  "stanceSegments": 4,
+  "hipsZ": [
+   0.88,
+   0.915
+  ],
+  "hipsCurve": [
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.89,
+   0.9,
+   0.91,
+   0.89,
+   0.89,
+   0.91,
+   0.88,
+   0.9
+  ],
+  "raw": {
+   "seconds": 2.333,
+   "yawPelvis0": 2.8,
+   "yawShoulder0": -0.4,
+   "slipBefore": 0.199
+  },
+  "yawFixed": 0.0
+ }
+}

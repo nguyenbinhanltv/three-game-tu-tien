@@ -4,6 +4,8 @@ import { APPEARANCE, t } from '@dtl/content';
 import { assets } from '../game/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio';
 import { TitleBackdrop } from '../game/backdrop';
+import { lastZoneArt, setBootArt } from '../game/bootArt';
+import { applyUiArt } from './Art';
 import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/preload';
 import { Hud } from './Hud';
@@ -361,6 +363,12 @@ export function App() {
     };
   }, []);
   const phase = useUI((s) => s.phase);
+  useEffect(() => void applyUiArt(), []);
+  // Tranh nền: màn tiêu đề ở đăng nhập, tranh vùng cuối cùng lúc nối/nạp (Codex, nạp lười).
+  useEffect(() => {
+    if (phase === 'login') void setBootArt('title', 'title');
+    else if (phase === 'connecting' || phase === 'loading') void setBootArt(lastZoneArt(), 'zone');
+  }, [phase]);
   const error = useUI((s) => s.error);
   // Nhạc chủ đề (`title`) ở màn đăng nhập và lần tải/kết nối đầu, khi chưa có Game nào đã vào thế giới. Một khi Game
   // đã vào (`ownsMusic`), MusicController của nó là chủ duy nhất của kênh nhạc: chuyển room (pha `loading`) hay màn

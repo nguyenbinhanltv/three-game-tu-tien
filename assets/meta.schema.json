@@ -101,8 +101,19 @@
         "extra": {
           "type": "array",
           "uniqueItems": true,
-          "description": "Clip boss thủ tục do import.post sinh thêm: slam (nện), sweep (chém/quét vùng), chant (niệm chú, lặp; chỉ người/vượn), stun (choáng/mất thế, lặp). Thời điểm chạm khớp BOSS_MOVES trong apps/client/src/game/character/monsterSkins.ts.",
-          "items": { "enum": ["slam", "sweep", "chant", "stun"] }
+          "description": "Clip boss thủ tục do import.post sinh thêm: slam (nện), sweep (chém/quét vùng), chant (niệm chú, lặp; chỉ người/vượn), stun (choáng/mất thế, lặp). Thời điểm chạm khớp BOSS_MOVES trong apps/client/src/game/character/monsterSkins.ts. K-3 (thư viện clip người): combat_idle (thủ thế cầm kiếm), guard (đỡ đòn), hit_back (trúng từ sau), roar (khiêu khích).",
+          "items": { "enum": ["slam", "sweep", "chant", "stun", "combat_idle", "guard", "hit_back", "roar"] }
+        },
+        "k3": {
+          "type": "object",
+          "description": "K-3, thư viện clip người: hậu xử lý của tools/blender/anim_human_k3.py. fix = sửa clip đã ghép (yaw bù hướng, pin ghim ngang hông, lock khóa chân trụ, loop nối vòng, trim/slice cắt); derive = sinh clip từ clip khác (op: mirror, reverse, strafe, sideroll, layer, slice, speed, getup); drop = bỏ clip trung gian; report = đường dẫn JSON số đo.",
+          "additionalProperties": false,
+          "properties": {
+            "fix": { "type": "array", "items": { "type": "object", "required": ["name"] } },
+            "derive": { "type": "array", "items": { "type": "object", "required": ["name", "op", "from"] } },
+            "drop": { "type": "array", "items": { "type": "string" } },
+            "report": { "type": "string" }
+          }
         },
         "rigid": {
           "type": "array",

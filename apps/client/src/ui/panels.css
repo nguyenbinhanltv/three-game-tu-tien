@@ -843,3 +843,50 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 .craft-chance[data-support='1'] {
   color: #7dffa0;
 }
+
+/* ---------- Chân dung Codex (nạp lười, hiện dần khi tải xong) ---------- */
+.portrait {
+  display: block;
+  object-fit: cover;
+  border: 1px solid var(--k-bronze);
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  user-select: none;
+  pointer-events: none;
+}
+.portrait.ready {
+  opacity: 1;
+}
+.frame-portrait {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  bottom: 8px;
+  width: 48px;
+  height: auto;
+}
+.target-frame:has(.frame-portrait.ready) {
+  padding-left: 66px;
+}
+.boss-portrait {
+  position: absolute;
+  left: -44px;
+  top: 6px;
+  width: 60px;
+  height: 80px;
+}
+.npc-greet-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.npc-portrait {
+  flex: none;
+  width: 96px;
+  height: 128px;
+}
+.npc-portrait:not(.ready) {
+  display: none;
+}

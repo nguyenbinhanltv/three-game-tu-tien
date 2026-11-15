@@ -682,3 +682,62 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ---------- Chất liệu Codex (nạp lười qua applyUiArt; thiếu ảnh thì không đổi gì) ---------- */
+.k-panel-edge {
+  position: relative;
+}
+.k-panel-in {
+  position: relative;
+  isolation: isolate;
+}
+/* Vân giấy/lụa rất nhẹ phủ nền bảng, không đổi màu chủ đạo. */
+.k-panel-in::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--art-paper, none) center / 384px;
+  mix-blend-mode: soft-light;
+  opacity: 0.22;
+  pointer-events: none;
+}
+.k-panel[data-tone='paper'] .k-panel-in::before {
+  mix-blend-mode: multiply;
+  opacity: 0.35;
+}
+/* Hoa văn viền góc: trên-trái và dưới-phải (xoay 180°) cho bảng lớn. */
+.k-panel[data-size='l'] .k-panel-edge::before,
+.k-panel[data-size='l'] .k-panel-edge::after {
+  content: '';
+  position: absolute;
+  width: 84px;
+  height: 84px;
+  background: var(--art-corner, none) 0 0 / contain no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1;
+}
+.k-panel[data-size='l'] .k-panel-edge::before {
+  left: 2px;
+  top: 2px;
+}
+.k-panel[data-size='l'] .k-panel-edge::after {
+  right: 2px;
+  bottom: 2px;
+  transform: rotate(180deg);
+}
+/* Triện đỏ ở chân bảng giấy (không chữ). */
+.k-panel[data-tone='paper'] .k-panel-in::after {
+  content: '';
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  width: 44px;
+  height: 44px;
+  background: var(--art-seal, none) center / contain no-repeat;
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+  pointer-events: none;
+}

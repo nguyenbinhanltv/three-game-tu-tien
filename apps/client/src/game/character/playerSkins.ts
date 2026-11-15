@@ -65,7 +65,7 @@ export interface PlayerSkin {
  */
 export const PLAYER_SKINS: Record<string, PlayerSkin> = {
   chr_kiem_tu_nam: {
-    clips: { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' },
+    clips: { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' },
     poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
     refSpeed: 3.0,
     runSteps: 4,
@@ -75,7 +75,7 @@ export const PLAYER_SKINS: Record<string, PlayerSkin> = {
   },
   /** Lam Chi (chr_kiem_tu_nu): cùng bộ xương Mixamo 65 khớp và thư viện clip chung; cao 1,68 m nên bước ngắn hơn một chút. */
   chr_kiem_tu_nu: {
-    clips: { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' },
+    clips: { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' },
     poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
     refSpeed: 2.9,
     runSteps: 4,
