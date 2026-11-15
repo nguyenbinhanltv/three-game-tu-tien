@@ -6,6 +6,7 @@ import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { Button, Divider, type PanelTone, PanelWindow, ProgressBar, Segmented, Slider, Slot, TipCard, Tooltip } from './kit';
+import { BottleneckBox, RootCard } from './Realm';
 import { set, useUI } from './store';
 
 export function statLines(def: ItemDef, plus = 0): string[] {
@@ -151,7 +152,8 @@ function Character() {
   const char = useUI((s) => s.char);
   const inv = useUI((s) => s.inv);
   if (!char) return null;
-  const canTrib = char.level === NGUNG_KHI_MAX;
+  // Tầng 15 phải vượt bình cảnh (char.bk = 15) trước khi độ kiếp.
+  const canTrib = char.level === NGUNG_KHI_MAX && char.bk >= NGUNG_KHI_MAX;
   const xpFull = char.xp >= char.xpNeed;
   const hasPill = inv.some((s) => s?.id === TRUC_CO_PILL);
   const stat = (k: string, v: number | string) => (
@@ -170,6 +172,8 @@ function Character() {
         {stat('ui.def', char.def)}
         {stat('ui.gold', `${char.gold} 💠`)}
       </dl>
+      <RootCard root={char.root} />
+      <BottleneckBox char={char} />
       <Divider label={t('ui.char.skills')} />
       <div className="skill-list">
         {SKILLS.map((sk, i) => (

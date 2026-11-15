@@ -4,6 +4,7 @@
 
 import type { MonsterDef } from '@dtl/shared';
 import {
+  BOTTLENECK_LEVELS,
   computeDamage,
   GCD,
   HP_REGEN_MEDITATE,
@@ -13,6 +14,8 @@ import {
   monsterXp,
   phaseRules,
   NGUNG_KHI_MAX,
+  shadowStats,
+  TRIAL_DURATION,
   playerBaseStats,
   xpLevelFactor,
   xpNeed,
@@ -84,6 +87,8 @@ const spawns = LEVELS.van_lam.spawns.filter((s) => !MONSTER.get(s.mon)?.boss);
 let totalSec = 0;
 let fightSec = 0;
 let questXp = 0;
+let trialSec = 0;
+const trialRows: string[] = [];
 const questByLevel = new Map<number, number>();
 for (const q of QUESTS) {
   // Nhiệm vụ làm xong quanh cấp của quái mục tiêu.
@@ -118,14 +123,27 @@ for (let level = 1; level <= NGUNG_KHI_MAX; level++) {
   const sec = kills * (ttk + 6 + rest);
   totalSec += sec;
   fightSec += kills * (ttk + 6);
+  // Bình cảnh tầng 5/10/15: thêm một thử thách tâm ma (đánh bóng của mình, mỗi lần ~ TTK + 20 giây chuẩn bị/đi lại).
+  if (BOTTLENECK_LEVELS.includes(level)) {
+    const sh = shadowStats(level, pl.atk, pl.def);
+    const tt = sh.hp / playerDps(level, pl.atk, sh.def);
+    // Bóng đánh mỗi 1,8 giây (xem monsters.json), người chơi dùng khiên/hồi nguyên như thường.
+    const raw = (hit(sh.atk, 1, pl.def) / 1.8) * tt;
+    const taken = Math.max(0, raw - selfSustain(level) * pl.hp * tt);
+    trialSec += tt + 20;
+    totalSec += tt + 20;
+    trialRows.push(`${realmName(level).padEnd(20)} bóng hp ${String(sh.hp).padStart(5)}  TTK ${tt.toFixed(0).padStart(3)}s / ${TRIAL_DURATION}s  mất máu ${pct(raw / pl.hp).padStart(4)} nếu đứng yên, ${pct(taken / pl.hp).padStart(4)} sau khiên + hồi nguyên`);
+  }
   console.log(
     `${realmName(level).padEnd(20)} ${(def.id + ' (' + mlv + ')').padEnd(23)} ${ttk.toFixed(1).padStart(4)}s ${pct(inc / pl.hp).padStart(5)} ${pct(lost / pl.hp).padStart(7)} ${rest.toFixed(0).padStart(4)}s ${String(kills).padStart(5)} ${(sec / 60).toFixed(0).padStart(6)} ${(totalSec / 3600).toFixed(1).padStart(8)} giờ`,
   );
 }
 console.log(
   `\nTổng tu vi từ nhiệm vụ: ${questXp}. Ước tính từ tầng 1 đến viên mãn tầng 15: ${(totalSec / 3600).toFixed(1)} giờ chơi một mình` +
-    ` (${(fightSec / 3600).toFixed(1)} giờ đánh + ${((totalSec - fightSec) / 3600).toFixed(1)} giờ đả tọa hồi máu; chưa tính đi lại, boss, bí cảnh).`,
+    ` (${(fightSec / 3600).toFixed(1)} giờ đánh + ${((totalSec - fightSec - trialSec) / 3600).toFixed(1)} giờ đả tọa hồi máu; chưa tính đi lại, boss, bí cảnh; đã gồm ${(trialSec / 60).toFixed(0)} phút thử thách tâm ma ở bình cảnh).`,
 );
+console.log('\nThử thách tâm ma (bình cảnh):');
+for (const r of trialRows) console.log(r);
 console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên; tọa: giây đả tọa hồi lại.');
 
 // ---------- đòn dồn của quái đọc chú ----------

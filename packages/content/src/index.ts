@@ -10,6 +10,7 @@ import type {
   PoseDef,
   QuestDef,
   RealmDef,
+  RootDef,
   RecipeDef,
   SkillDef,
 } from '@dtl/shared';
@@ -20,6 +21,7 @@ import recipesJson from '../data/recipes.json';
 import npcsJson from '../data/npcs.json';
 import questsJson from '../data/quests.json';
 import realmsJson from '../data/realms.json';
+import rootsJson from '../data/roots.json';
 import vanLamJson from '../data/levels/van_lam.json';
 import kiemTrungJson from '../data/levels/kiem_trung.json';
 import glossaryJson from '../data/glossary.json';
@@ -54,6 +56,8 @@ export const LEVELS: Record<string, LevelDef> = {
   van_lam: vanLamJson as LevelDef,
   kiem_trung: kiemTrungJson as LevelDef,
 };
+/** Năm linh căn ngũ hành (P3-7). */
+export const ROOTS = rootsJson as RootDef[];
 export const GLOSSARY = glossaryJson;
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
 export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNiemChuJson, poseTamThienJson, poseRutKiemJson, poseTraKiemJson] as unknown as PoseDef[];
@@ -71,6 +75,7 @@ export const RECIPE = index(RECIPES);
 export const NPC = index(NPCS);
 export const QUEST = index(QUESTS);
 export const POSE = index(POSES);
+export const ROOT = index(ROOTS);
 
 /** Ngoại hình người chơi: giới tính, màu áo (quyết định 6.4b). */
 export const APPEARANCE = appearanceJson as AppearanceData;

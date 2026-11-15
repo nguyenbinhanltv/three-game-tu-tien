@@ -20,5 +20,6 @@
   "boss_huyet_lang_vuong": { "gold": [160, 260],
     "drops": [ { "item": "itm_kiem_phach", "chance": 1, "min": 2, "max": 4 }, { "item": "itm_han_quang_kiem", "chance": 0.3, "min": 1, "max": 1 }, { "item": "itm_tu_khi_dan", "chance": 1, "min": 2, "max": 2 } ] },
   "boss_thu_mo_tuong": { "gold": [300, 450],
-    "drops": [ { "item": "itm_kiem_phach", "chance": 1, "min": 4, "max": 6 }, { "item": "itm_huyen_van_bao", "chance": 0.4, "min": 1, "max": 1 }, { "item": "itm_tram_ta_kiem", "chance": 0.2, "min": 1, "max": 1 }, { "item": "itm_tu_khi_dan", "chance": 1, "min": 3, "max": 4 } ] }
+    "drops": [ { "item": "itm_kiem_phach", "chance": 1, "min": 4, "max": 6 }, { "item": "itm_huyen_van_bao", "chance": 0.4, "min": 1, "max": 1 }, { "item": "itm_tram_ta_kiem", "chance": 0.2, "min": 1, "max": 1 }, { "item": "itm_tu_khi_dan", "chance": 1, "min": 3, "max": 4 } ] },
+  "mon_tam_ma": { "gold": [0, 0], "drops": [] }
 }

@@ -6,9 +6,10 @@ import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './Panels';
 import { Button, Divider, Tabs } from './kit';
+import { RootTab } from './Realm';
 import { set, useUI } from './store';
 
-type Tab = 'talk' | 'shop' | 'craft' | 'enhance';
+type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'root';
 
 function QuestTab({ npcId }: { npcId: string }) {
   const quests = useUI((s) => s.quests);
@@ -229,6 +230,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
   if (npc.sells) tabs.push('shop');
   if (npc.recipes) tabs.push('craft');
   if (npc.enhance) tabs.push('enhance');
+  if (npc.rootChange) tabs.push('root');
   const cur = tabs.includes(tab) ? tab : 'talk';
   return (
     <Window title={t(`npc.${npcId}.name`)} sub={t(`npc.${npcId}.title`)} onClose={() => set({ npc: null })} cls="npc" width={540}>
@@ -237,6 +239,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
       {cur === 'shop' && <ShopTab npcId={npcId} />}
       {cur === 'craft' && <CraftTab npcId={npcId} />}
       {cur === 'enhance' && <EnhanceTab npcId={npcId} />}
+      {cur === 'root' && <RootTab npcId={npcId} />}
     </Window>
   );
 }

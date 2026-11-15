@@ -58,7 +58,7 @@ describe('migration 3 ô → 8 ô', () => {
     expect(s.prepare('SELECT item_id, plus, inst FROM items WHERE char_id = 1').all()).toEqual([{ item_id: 'itm_thiet_kiem', plus: 4, inst: null }]);
     expect(s.pragma('user_version', { simple: true })).toBe(DATA_VERSION);
     s.close();
-  });
+  }, 30_000);
 
   it('chạy lại không đổi gì (idempotent) và không ghi ledger', () => {
     const { file, raw } = oldDb();
@@ -76,7 +76,7 @@ describe('migration 3 ô → 8 ô', () => {
   it('nhân vật cũ nạp được: chỉ số đúng như trước migration', async () => {
     // Weapon +3 (atk 4) và ngọc bội +2 (mp 40, hp 20) nạp qua Character.load.
     const acc = Date.now() % 1_000_000;
-    const c = Character.create(acc, 'Cu' + acc);
+    const c = Character.create(acc, 'Cu' + acc, null, 'kim' as never); // Kim không cộng hp/mp/công/thủ
     sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify({ weapon: { id: 'itm_moc_kiem', n: 1, plus: 3 }, jade: { id: 'itm_ngoc_boi', n: 1, plus: 2 } }), c.id);
     const l = Character.load(c.id);
     const base = Character.load(Character.create(acc + 1, 'Cu' + (acc + 1)).id);

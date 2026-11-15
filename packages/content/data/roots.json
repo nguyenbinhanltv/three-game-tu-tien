@@ -1,0 +1,7 @@
+[
+  {"id": "kim", "elem": "kim", "elemDmg": 0.08, "stat": {"critRate": 0.05}},
+  {"id": "moc", "elem": "moc", "elemDmg": 0.08, "stat": {"healRecv": 0.05}},
+  {"id": "thuy", "elem": "thuy", "elemDmg": 0.08, "stat": {"mpPct": 0.05}},
+  {"id": "hoa", "elem": "hoa", "elemDmg": 0.08, "stat": {"atkPct": 0.05}},
+  {"id": "tho", "elem": "tho", "elemDmg": 0.08, "stat": {"defPct": 0.05}}
+]
