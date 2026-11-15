@@ -1,5 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { createWorldMaterial } from '../render/materials/world';
+import { applyGroundShader, clearGroundShader, type GroundLevel } from '../render/materials/ground';
+import type { GroundTextures } from './groundTextures';
 import {
   COLLIDERS,
   fbm,
@@ -73,6 +75,15 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   if (wTomb > 0.15) out.lerp(C_TOMB, Math.min(1, (wTomb - 0.15) * 1.8));
 }
 
+/** Trọng số vùng cho shader mặt đất: x rừng, y đất khô, z đất chết Kiếm Trủng, w dự phòng. */
+function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
+  const n = fbm(x * 0.013, z * 0.013, 2, TERRAIN_SEED + 300);
+  o[k] = Math.min(1, featureWeight(FOREST, x, z) * 1.4);
+  o[k + 1] = Math.max(0, Math.min(1, n * 1.6 + 0.1 - featureWeight(VALLEY, x, z) * 0.6));
+  o[k + 2] = Math.min(1, Math.max(0, (featureWeight(KIEM_TRUNG, x, z) - 0.15) * 1.8));
+  o[k + 3] = 0;
+}
+
 function buildTileGeometry(x0: number, z0: number, size: number, res: number, skirt: number): THREE.BufferGeometry {
   const cell = size / res;
   const w = res + 3;
@@ -86,6 +97,7 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
   const pos = new Float32Array(vcount * 3);
   const nor = new Float32Array(vcount * 3);
   const colr = new Float32Array(vcount * 3);
+  const bio = new Float32Array(vcount * 4);
   let o = 0;
   for (let j = 0; j < n1; j++) {
     for (let i = 0; i < n1; i++) {
@@ -110,6 +122,7 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
       colr[o] = _c.r;
       colr[o + 1] = _c.g;
       colr[o + 2] = _c.b;
+      biomeWeights(x, z, bio, (o / 3) * 4);
       o += 3;
     }
   }
@@ -140,6 +153,7 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
         colr[dst] = colr[src];
         colr[dst + 1] = colr[src + 1];
         colr[dst + 2] = colr[src + 2];
+        bio.copyWithin(sv * 4, (src / 3) * 4, (src / 3) * 4 + 4);
         sv++;
       }
       for (let k = 0; k < res; k++) {
@@ -159,6 +173,7 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
   g.setAttribute('color', new THREE.BufferAttribute(colr, 3));
+  g.setAttribute('biome', new THREE.BufferAttribute(bio, 4));
   g.setIndex(idx);
   g.computeBoundingSphere();
   return g;
@@ -423,6 +438,12 @@ export class Terrain {
       this.group.remove(t.veg);
       t.veg.geometry.dispose();
     }
+  }
+
+  /** Bật shader mặt đất PBR khi bộ texture đã nạp; gọi lại khi đổi preset. */
+  setGround(tex: GroundTextures | null, level: GroundLevel): void {
+    if (tex) applyGroundShader(this.material, tex, level);
+    else clearGroundShader(this.material);
   }
 
   tileCount(): number {

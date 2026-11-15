@@ -22,6 +22,7 @@ import {
 import { WATER_Y } from '@dtl/shared';
 import { DEPTH_DESATURATE, type GradingPreset } from './grading';
 import { markBloom } from './post';
+import { applySkyPreset } from './sky';
 
 /**
  * Bầu không khí: sương theo khoảng cách + theo độ cao, giảm bão hòa theo độ sâu, màu đèn/trời theo
@@ -57,14 +58,17 @@ const atmosphereFog = Fn(() => {
   return vec4(mix(desat, fogParams.color, f), output.a);
 });
 
-/** Màu đỉnh vòm trời theo preset (không có trong art bible; chọn cho khớp màu sương). */
-const SKY_TOP: Record<string, number> = { dawn: 0x7ea6b6, day: 0x4f93bf, night: 0x0b1520 };
-
 export interface EnvLike {
   sun: THREE.DirectionalLight;
   hemi: THREE.HemisphereLight;
   sky: THREE.Mesh;
+  /** Vector người chơi → mặt trời (Environment.sunDir). */
+  sunDir?: THREE.Vector3;
 }
+
+/** Hướng nắng giữ phương vị cũ (đông nam), độ cao theo `sunElevationDeg` của preset. */
+const SUN_AZIMUTH = Math.atan2(90, 120);
+const SUN_DISTANCE = 260;
 
 /** Áp preset chỉnh màu cho đèn, trời, sương. Gọi lại khi đổi thời điểm trong ngày. */
 export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string): void {
@@ -77,28 +81,16 @@ export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPres
 
   env.sun.color.setHex(p.sunColor);
   env.sun.intensity = p.sunIntensity;
+  if (env.sunDir) {
+    const el = (p.sunElevationDeg * Math.PI) / 180;
+    env.sunDir.set(Math.cos(el) * Math.cos(SUN_AZIMUTH), Math.sin(el), Math.cos(el) * Math.sin(SUN_AZIMUTH)).multiplyScalar(SUN_DISTANCE);
+  }
   env.hemi.color.setHex(p.skyColor);
   env.hemi.intensity = 1.25 * p.skyIntensity;
   haloParams.intensity.value = HALO_INTENSITY[name] ?? HALO_INTENSITY.day;
 
-  // Vòm trời: chân trời trùng màu sương để không lộ mép, lên cao ngả lam ngọc.
-  const g = env.sky.geometry;
-  const pos = g.getAttribute('position');
-  const col = g.getAttribute('color') as THREE.BufferAttribute | undefined;
-  if (col) {
-    const top = new THREE.Color(SKY_TOP[name] ?? SKY_TOP.day);
-    const hor = new THREE.Color(p.fogColor);
-    const glow = new THREE.Color(p.highlightTint);
-    const c = new THREE.Color();
-    const r = Math.max(1, g.boundingSphere?.radius ?? 4200);
-    for (let i = 0; i < pos.count; i++) {
-      const h = Math.max(0, pos.getY(i) / r);
-      c.copy(hor).lerp(top, Math.min(1, Math.pow(h * 1.6, 0.6)));
-      if (h < 0.08) c.lerp(glow, (0.08 - h) * 2.5);
-      col.setXYZ(i, c.r, c.g, c.b);
-    }
-    col.needsUpdate = true;
-  }
+  // Vòm trời (render/sky.ts): chân trời trùng màu sương để không lộ mép, quầng nắng theo sắc vùng sáng.
+  applySkyPreset(name, p.fogColor, p.highlightTint, p.sunColor);
 }
 
 /** Bật/tắt sương theo độ cao (preset Thấp tắt). */
