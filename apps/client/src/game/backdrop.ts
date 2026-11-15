@@ -73,6 +73,7 @@ export class TitleBackdrop {
     applyAtmosphere(this.scene, this.env, GRADING[GRADING_DEFAULT], GRADING_DEFAULT);
     applyGrading(GRADING[GRADING_DEFAULT]);
     setHeightFog(!this.low);
+    this.env.setQuality(this.low ? 'low' : 'medium');
     this.halos = createLanternHalos(SECT_LANTERNS);
     this.scene.add(this.halos);
     this.post = new PostPipeline(r, this.scene, this.camera, { bloom: !this.low, msaa: 0, fxaa: !this.low });
