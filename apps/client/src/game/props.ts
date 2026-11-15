@@ -290,8 +290,9 @@ export class PropLayer {
     for (const ch of this.treeChunks.values()) {
       const d = Math.hypot(ch.cx - camX, ch.cz - camZ);
       if (d >= start + LOAD_MARGIN) continue;
-      for (const id of ch.species) if (!this.ensureTemplate(id, ch.cx, ch.cz, true) && d < start) pending = true;
-      if (d < start) near.push(ch);
+      // Chọn theo từng cây (khoảng cách của chính cây < start); ô có tâm trong start + nửa đường chéo ô là ứng viên.
+      for (const id of ch.species) if (!this.ensureTemplate(id, ch.cx, ch.cz, true) && d < start + CHUNK * 0.71) pending = true;
+      if (d < start + CHUNK * 0.71) near.push(ch);
     }
     this.impostors?.update(camX, camZ, start, TREE_RANGE * scale, pending);
     this.lastX = camX;
@@ -310,6 +311,7 @@ export class PropLayer {
           if (!levels) continue;
           const cfg = PROP_CFG[p.id];
           const d = Math.hypot(p.x - camX, p.z - camZ);
+          if (d >= start) continue;
           const k = Math.min(d < cfg.lod[0] * scale ? 0 : d < cfg.lod[1] * scale ? 1 : 2, levels.length - 1);
           for (const sl of levels[k]) {
             const n = counts.get(sl) ?? 0;

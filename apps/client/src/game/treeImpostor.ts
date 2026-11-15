@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { attribute, texture, uv, vec2 } from 'three/tsl';
+import { attribute, length, step, texture, uniform, uv, vec2, vec4 } from 'three/tsl';
 import { createWorldMaterial } from '../render/materials/world';
 import { withSightFade } from './occlusion';
 import { assetBaseUrl } from './assets';
@@ -12,9 +12,7 @@ import type { PropInstance } from './propScatter';
  * 128 m quyết định (cùng lưới với `PropLayer`: ô nào PropLayer ẩn mesh 3D thì ô đó hiện impostor, không chồng, không hở).
  * Để ít draw call, vùng hoàn toàn ở xa gộp thành siêu ô 512 m (một mesh); ô biên giữa gần/xa vẽ từng ô 128 m.
  */
-export const CHUNK = 128;
-const SUPER = 4; // ô/cạnh siêu ô
-const SUPER_SIZE = CHUNK * SUPER;
+const SUPER_SIZE = 512;
 
 interface Group {
   items: PropInstance[];
@@ -53,7 +51,8 @@ function crossQuads(): THREE.BufferGeometry {
 
 export class ImpostorLayer {
   readonly group = new THREE.Group();
-  private chunks = new Map<string, Group>();
+  private uCam = uniform(new THREE.Vector2());
+  private uStart = uniform(0);
   private supers = new Map<string, Group>();
   private material: THREE.MeshStandardNodeMaterial | null = null;
   private tex: THREE.Texture | null = null;
@@ -66,9 +65,6 @@ export class ImpostorLayer {
     this.group.name = 'tree-impostors';
     for (const p of instances) {
       if (!(p.id in SPECIES)) continue;
-      const cx = Math.floor(p.x / CHUNK);
-      const cz = Math.floor(p.z / CHUNK);
-      this.add(this.chunks, `${cx}|${cz}`, p, cx * CHUNK, cz * CHUNK, CHUNK);
       const sx = Math.floor(p.x / SUPER_SIZE);
       const sz = Math.floor(p.z / SUPER_SIZE);
       this.add(this.supers, `${sx}|${sz}`, p, sx * SUPER_SIZE, sz * SUPER_SIZE, SUPER_SIZE);
@@ -100,7 +96,9 @@ export class ImpostorLayer {
         this.tex = t;
         const row = attribute('aRow', 'float');
         const m = createWorldMaterial({ side: THREE.DoubleSide, alphaTest: 0.42, roughness: 1 });
-        m.colorNode = texture(t, vec2(uv().x, uv().y.add(row).div(atlas.rows)));
+        const tex = texture(t, vec2(uv().x, uv().y.add(row).div(atlas.rows)));
+        const dist = length(attribute('aPos', 'vec2').sub(this.uCam));
+        m.colorNode = vec4(tex.rgb, tex.a.mul(step(this.uStart, dist)));
         this.material = withSightFade(m);
       },
       undefined,
@@ -118,6 +116,7 @@ export class ImpostorLayer {
     const mat = new Float32Array(n * 16);
     const col = new Float32Array(n * 3);
     const row = new Float32Array(n);
+    const pos = new Float32Array(n * 2);
     for (let i = 0; i < n; i++) {
       const p = g.items[Math.min(i, g.items.length - 1)];
       const sp = SPECIES[p.id];
@@ -131,9 +130,12 @@ export class ImpostorLayer {
       col[i * 3 + 1] = t[1];
       col[i * 3 + 2] = t[2];
       row[i] = atlas.rows - 1 - sp.row;
+      pos[i * 2] = p.x;
+      pos[i * 2 + 1] = p.z;
     }
     const geo = this.geometry.clone();
     geo.setAttribute('aRow', new THREE.InstancedBufferAttribute(row, 1));
+    geo.setAttribute('aPos', new THREE.InstancedBufferAttribute(pos, 2));
     const im = new THREE.InstancedMesh(geo, this.material as THREE.Material, n);
     im.instanceMatrix = new THREE.InstancedBufferAttribute(mat, 16);
     im.instanceColor = new THREE.InstancedBufferAttribute(col, 3);
@@ -162,48 +164,28 @@ export class ImpostorLayer {
   }
 
   /**
-   * `start`: ô 128 m có tâm cách camera < start là ô 3D (không hiện impostor); `range`: xa hơn thì bỏ. `forceNear`: mesh 3D
+   * Mỗi siêu ô là một mesh; cây gần hơn `start` (khoảng cách của chính cây, tính trong shader) bị bỏ ở mức điểm ảnh, khớp
+   * quy tắc chọn cây 3D của `PropLayer` nên không chồng, không hở. `range`: siêu ô xa hơn thì không vẽ. `forceNear`: mesh 3D
    * chưa nạp xong thì hiện impostor cả ở gần để không hở cây.
    */
   update(camX: number, camZ: number, start: number, range: number, forceNear: boolean): void {
     if (!this.loading) this.loadTexture();
     if (!this.material) return;
     this.visible = 0;
-    const near = forceNear ? -1 : start;
+    this.uCam.value.set(camX, camZ);
+    this.uStart.value = forceNear ? 0 : start;
     for (const sg of this.supers.values()) {
       const d = ImpostorLayer.dist(sg, camX, camZ);
-      if (d >= range) {
-        this.show(sg, false);
-        this.eachChild(sg, (c) => this.show(c, false));
-      } else if (d >= near) {
-        // Cả siêu ô ở xa: một mesh, tắt mọi ô con (tâm ô con ≥ khoảng cách hộp ≥ near).
-        this.show(sg, true);
-        this.eachChild(sg, (c) => this.show(c, false));
-      } else {
-        this.show(sg, false);
-        this.eachChild(sg, (c) => {
-          const dc = Math.hypot(c.x0 + CHUNK / 2 - camX, c.z0 + CHUNK / 2 - camZ);
-          this.show(c, dc >= near && dc < range);
-        });
-      }
-    }
-  }
-
-  private eachChild(sg: Group, fn: (c: Group) => void): void {
-    const sx = Math.floor(sg.x0 / SUPER_SIZE) * SUPER;
-    const sz = Math.floor(sg.z0 / SUPER_SIZE) * SUPER;
-    for (let j = 0; j < SUPER; j++) {
-      for (let i = 0; i < SUPER; i++) {
-        const c = this.chunks.get(`${sx + i}|${sz + j}`);
-        if (c) fn(c);
-      }
+      // Xa quá tầm, hoặc nằm trọn trong vùng 3D (góc xa nhất vẫn gần hơn `start`): không có điểm ảnh nào cần vẽ.
+      const far = Math.hypot(Math.max(camX - sg.x0, sg.x1 - camX), Math.max(camZ - sg.z0, sg.z1 - camZ));
+      this.show(sg, d < range && (forceNear || far >= start));
     }
   }
 
   dispose(): void {
     this.disposed = true;
     this.group.removeFromParent();
-    for (const g of [...this.chunks.values(), ...this.supers.values()]) {
+    for (const g of this.supers.values()) {
       if (g.mesh) {
         g.mesh.geometry.dispose();
         g.mesh.dispose();
@@ -212,7 +194,6 @@ export class ImpostorLayer {
     this.geometry.dispose();
     this.material?.dispose();
     this.tex?.dispose();
-    this.chunks.clear();
     this.supers.clear();
   }
 }
