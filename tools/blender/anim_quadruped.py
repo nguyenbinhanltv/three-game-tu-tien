@@ -1,19 +1,28 @@
-# Clip thủ tục cho quái bốn chân dùng rig Tripo (quadruped: sói 28 xương, boss 33 xương), chạy như bước `import.post`
-# của import_tripo.py. Rig 33 xương còn được sửa trọng số chéo chân (mục 1b) và có thể thêm clip boss (mục 4, import.extra).
+# Clip thủ tục cho quái bốn chân dùng rig Tripo quadruped, chạy như bước `import.post` của import_tripo.py.
 #
 # Không chạy riêng: import_tripo.py gọi file này sau khi chuẩn hóa (mét, gốc ở đáy, mặt trước +Z glTF = -Y Blender,
-# bên trái con vật = +X), trước khi xuất. Biến toàn cục nhận từ import_tripo: ASSET_ID, META, ARMATURES, MESHES, fail.
+# bên trái con vật = +X), trước khi xuất. Biến toàn cục nhận từ import_tripo: ASSET_ID, META, ARMATURES, MESHES, REPO,
+# SOURCE_ROOT, fail, ascii_name.
 #
-# 1. Đổi tên xương Tripo sang tên dễ đọc, xác định trái/phải theo vị trí thật (+X là trái) vì Tripo đặt tên chân sau
-#    ngược với chân trước: spine_0..2, neck, head, shoulder_l/r, leg_f{l,r}_0..2, leg_h{l,r}_0..3, tail_0..3, hip_aux_*.
+# 1. Đổi tên xương Tripo sang tên vai trò: spine_0..2, neck, head, shoulder_l/r, leg_f{l,r}_<i>, leg_h{l,r}_<i>,
+#    tail_<i> (hip_aux_* riêng của sói). Trái/phải xác định theo vị trí thật (+X là trái) vì Tripo có khi đặt tên chân
+#    sau ngược với chân trước. Rig sói 28 xương dùng bảng tên cố định; rig khác (Tripo đổi số xương theo con: heo 32,
+#    cáo 42) dò vai trò theo cây xương và vị trí (xem generic_layout). Đuôi nhiều đốt hơn 4 thì chia đều góc.
 # 2. Thêm 5 clip (30 khung/giây), mỗi clip đặt khóa cho mọi xương:
 #      idle      2,4 s lặp   thở, nhìn quanh, vẫy đuôi
 #      run       0,6 s lặp   phi nước đại (gallop xoay vòng), lưng uốn, nhún, tại chỗ
-#      attack    0,8 s       thu người → lao tới → đớp bằng đầu/cổ (rig không có xương hàm) → về chỗ cũ
+#      attack    `import.quadruped.attack`:
+#                  bite (mặc định) 0,8 s: thu người → lao tới → đớp bằng đầu/cổ (rig không có xương hàm) → về chỗ cũ
+#                  gore            0,9 s: cúi đầu dồn vai → lao xa → hất nanh lên → về chỗ cũ (heo rừng)
 #      hit_light 0,4 s       giật lùi, ngửa đầu, cụp đuôi
 #      death     1,4 s       khuỵu chân trước, đổ nghiêng sang phải, nằm yên ở khung cuối
 #    Góc tính quanh trục thế giới rồi đổi sang trục cục bộ của từng xương (q = M⁻¹·R·M với M là hướng nghỉ của xương),
 #    nên không phụ thuộc trục xương Tripo. Không có ngẫu nhiên: cùng đầu vào cho cùng clip.
+# 3. Clip Tripo kèm theo (`import.clips`, ví dụ walk của web): ghép bằng tools/blender/tripo_clips.py, đổi tên kênh theo
+#    bảng ở bước 1.
+# 4. Báo cáo tốc độ tự nhiên (m/s, scale 1) của run/walk khi phát 1× (đo theo chân trụ), để đặt refSpeed ở client.
+# 5. Tùy chọn boss (M3-8): `import.quadruped.fixCrossWeights` sửa trọng số chéo chân của auto-rig (mục 1b);
+#    `import.extra` thêm clip đòn lớn slam/sweep/stun (mục 3b).
 
 import math
 
@@ -29,6 +38,8 @@ if len(ARMATURES) != 1:  # noqa: F821 (biến do import_tripo truyền vào)
     fail(f'anim_quadruped cần đúng 1 armature, có {len(ARMATURES)}')  # noqa: F821
 arm = ARMATURES[0]  # noqa: F821
 bones = arm.data.bones
+IMPORT = META.get('import') or {}  # noqa: F821
+QUAD = IMPORT.get('quadruped') or {}
 
 
 # ---------- 1. đổi tên ----------
@@ -47,72 +58,100 @@ def chain(prefix, n):
     return [f'{prefix}_{i}' for i in range(n)]
 
 
-def limb_len(prefix):
-    n = 0
-    while f'{prefix}_{n}' in bones:
-        n += 1
-    return n
-
-
-# Tên sau rename_all của import_tripo ("tripo::Spine_0" → "tripo_spine_0").
-# Hai kiểu rig quadruped Tripo đã gặp:
-#   sói (28 xương): không có xương gốc, cổ là bone_4, vai trái/phải là tripo_spine_3 / bone_10, đuôi bone_14..16 + tail_0;
-#   boss (33 xương, M3-8): có xương gốc tripo_root, vai bone_x là con của spine_2, cổ spine_3..4, đầu head_0..2 (mõm,
-#   không có hàm), chân trước 4 đốt, đuôi bone_x + tail_0..3. Kiểu boss dò theo cấu trúc cây, không theo số bone_x.
-WOLF28 = 'bone_10' in bones and 'tripo_root' not in bones
-FRONT_N = 3 if WOLF28 else limb_len('tripo_0_left_limb')
-front_a, front_b = chain('tripo_0_right_limb', FRONT_N), chain('tripo_0_left_limb', FRONT_N)
-hind_a = chain('tripo_1_right_limb', 4 if WOLF28 else limb_len('tripo_1_right_limb'))
-hind_b = chain('tripo_1_left_limb', 4 if WOLF28 else limb_len('tripo_1_left_limb'))
-if min(len(front_a), len(hind_a), len(hind_b)) < 3:
-    fail('anim_quadruped: thiếu chuỗi xương chân tripo_{0,1}_{left,right}_limb_*')  # noqa: F821
-front_l, front_r = (front_a, front_b) if head_x(front_a[1]) > head_x(front_b[1]) else (front_b, front_a)
-hind_l, hind_r = (hind_a, hind_b) if head_x(hind_a[1]) > head_x(hind_b[1]) else (hind_b, hind_a)
-if abs(head_x(front_a[1]) - head_x(front_b[1])) < 1e-4 or abs(head_x(hind_a[1]) - head_x(hind_b[1])) < 1e-4:
-    fail('anim_quadruped: không phân biệt được chân trái/phải theo X')  # noqa: F821
-if WOLF28:
+def wolf_layout():
+    """Rig quadruped Tripo 28 xương (sói): tên cố định, vai là spine_3/bone_10. None nếu không phải rig này."""
+    # Tên sau rename_all của import_tripo ("tripo::Spine_0" → "tripo_spine_0").
+    if 'bone_10' not in bones or 'tripo_spine_3' not in bones or 'tripo_root' in bones:
+        return None
+    front_a, front_b = chain('tripo_0_right_limb', 3), chain('tripo_0_left_limb', 3)
+    hind_a, hind_b = chain('tripo_1_right_limb', 4), chain('tripo_1_left_limb', 4)
+    front_l, front_r = (front_a, front_b) if head_x(front_a[1]) > head_x(front_b[1]) else (front_b, front_a)
+    hind_l, hind_r = (hind_a, hind_b) if head_x(hind_a[1]) > head_x(hind_b[1]) else (hind_b, hind_a)
+    if abs(head_x(front_a[1]) - head_x(front_b[1])) < 1e-4 or abs(head_x(hind_a[1]) - head_x(hind_b[1])) < 1e-4:
+        fail('anim_quadruped: không phân biệt được chân trái/phải theo X')  # noqa: F821
     shoulder_of = {front_a[0]: 'tripo_spine_3', front_b[0]: 'bone_10'}
-else:
-    shoulder_of = {f[0]: need(f[0]).parent.name for f in (front_a, front_b) if need(f[0]).parent}
-    if len(shoulder_of) != 2 or any(need(s).parent is None or need(s).parent.name != 'tripo_spine_2' for s in shoulder_of.values()):
-        fail('anim_quadruped: vai (cha của chân trước) phải là con của tripo_spine_2')  # noqa: F821
-for limb, sh in shoulder_of.items():
-    if need(limb).parent is None or need(limb).parent.name != sh:
-        fail(f'anim_quadruped: {limb} không phải con của {sh} (cây xương Tripo khác dự kiến)')  # noqa: F821
-
-if WOLF28:
-    RENAME = {
+    for limb, sh in shoulder_of.items():
+        if need(limb).parent is None or need(limb).parent.name != sh:
+            fail(f'anim_quadruped: {limb} không phải con của {sh} (cây xương Tripo khác dự kiến)')  # noqa: F821
+    out = {
         'tripo_spine_0': 'spine_0', 'tripo_spine_1': 'spine_1', 'tripo_spine_2': 'spine_2',
         'bone_4': 'neck', 'tripo_head_0': 'head',
         shoulder_of[front_l[0]]: 'shoulder_l', shoulder_of[front_r[0]]: 'shoulder_r',
         'bone_14': 'tail_0', 'bone_15': 'tail_1', 'bone_16': 'tail_2', 'tripo_tail_0': 'tail_3',
         'bone_26': 'hip_aux_0', 'bone_27': 'hip_aux_1', 'bone_28': 'hip_aux_2',
     }
-else:
-    RENAME = {
-        'tripo_root': 'root', 'tripo_spine_0': 'spine_0', 'tripo_spine_1': 'spine_1', 'tripo_spine_2': 'spine_2',
-        'tripo_spine_3': 'neck', 'tripo_spine_4': 'neck_1',
-        shoulder_of[front_l[0]]: 'shoulder_l', shoulder_of[front_r[0]]: 'shoulder_r',
-    }
-    for i in range(limb_len('tripo_head')):
-        RENAME[f'tripo_head_{i}'] = 'head' if i == 0 else f'head_{i}'
-    # Đuôi: từ tripo_tail_0 đi ngược lên tới con trực tiếp của gốc (bone_x nối đuôi với gốc), rồi xuôi xuống.
-    tail = []
-    b = need('tripo_tail_0').parent
-    while b is not None and b.parent is not None:
-        tail.insert(0, b.name)
-        b = b.parent
-    tail += chain('tripo_tail', limb_len('tripo_tail'))
-    for i, name in enumerate(tail):
-        RENAME[name] = f'tail_{i}'
-for i, b in enumerate(front_l):
-    RENAME[b] = f'leg_fl_{i}'
-for i, b in enumerate(front_r):
-    RENAME[b] = f'leg_fr_{i}'
-for i, b in enumerate(hind_l):
-    RENAME[b] = f'leg_hl_{i}'
-for i, b in enumerate(hind_r):
-    RENAME[b] = f'leg_hr_{i}'
+    for side, lst in (('fl', front_l), ('fr', front_r), ('hl', hind_l), ('hr', hind_r)):
+        for i, b in enumerate(lst):
+            out[b] = f'leg_{side}_{i}'
+    return out
+
+
+def generic_layout():
+    """Rig quadruped Tripo khác (có xương tripo_root, số đốt chân/đuôi tùy con): dò vai trò theo cây xương và vị trí
+    sau chuẩn hóa (đầu ở -Y, trái ở +X, đất ở Z = 0).
+      cột sống: tổ tiên của tripo_head_0, bỏ xương gốc nằm sát đất; cuối là neck, ngược lên là spine_2, spine_1, spine_0.
+      chân: con của xương cột sống/gốc mà cây con chạm đất; đi xuống theo nhánh thấp nhất. Chuỗi chân trước có xương vai
+            (shoulder_*) đứng đầu rồi leg_f*_0..; chuỗi chân sau bắt đầu từ hông là leg_h*_0. Trước/sau theo Y, trái/phải theo X.
+      đuôi: chuỗi xương giữa (|x| nhỏ) dài nhất mọc ra sau từ cột sống/gốc."""
+    head = need('tripo_head_0')
+    top = max(b.head_local.z for b in bones)
+    path = []
+    p = head.parent
+    while p is not None:
+        path.append(p)
+        p = p.parent
+    path.reverse()
+    spine = [b for b in path if b.head_local.z > 0.3 * top]
+    if len(spine) < 2:
+        fail('anim_quadruped: cột sống quá ngắn (cây xương khác dự kiến)')  # noqa: F821
+    hosts = path + [None]  # xương có thể mọc chân/đuôi (None = không cha)
+    span = max(b.head_local.x for b in bones) - min(b.head_local.x for b in bones)
+    centered = lambda b: abs(b.head_local.x) < 0.08 * span and abs(b.tail_local.x) < 0.08 * span
+
+    def low(b):
+        return min([b.tail_local.z] + [low(c) for c in b.children])
+
+    def down(b):
+        out = [b]
+        while b.children:
+            b = min(b.children, key=low)
+            out.append(b)
+        return out
+    kids = [b for b in bones if (b.parent in hosts) and b not in path and b != head]
+    # Chân: cây con chạm đất và đầu mút lệch khỏi đường giữa (đuôi cong rủ gần đất vẫn nằm giữa).
+    legs = [c for c in (down(b) for b in kids if low(b) < 0.25 * top) if abs(c[-1].tail_local.x) > 0.08 * span]
+    if len(legs) != 4:
+        fail(f'anim_quadruped: tìm thấy {len(legs)} chân, cần 4')  # noqa: F821
+    legs.sort(key=lambda c: c[-1].tail_local.y)  # đầu ở -Y: hai chân trước đứng trước
+    out = {head.name: 'head', spine[-1].name: 'neck'}
+    for name, b in zip(('spine_2', 'spine_1', 'spine_0'), reversed(spine[:-1])):
+        out[b.name] = name
+    for pair, front in ((legs[:2], True), (legs[2:], False)):
+        pair.sort(key=lambda c: -c[-1].tail_local.x)  # +X (trái) trước
+        if pair[0][-1].tail_local.x <= 0 or pair[1][-1].tail_local.x >= 0:
+            fail('anim_quadruped: không phân biệt được chân trái/phải theo X')  # noqa: F821
+        for side, c in zip('lr', pair):
+            if front:
+                out[c[0].name] = f'shoulder_{side}'
+                c = c[1:]
+            for i, b in enumerate(c):
+                out[b.name] = f'leg_{"f" if front else "h"}{side}_{i}'
+    tails = []
+    for b in kids:
+        if b in [c[0] for c in legs] or not centered(b) or b.tail_local.y <= b.head_local.y:
+            continue
+        c = [b]
+        while c[-1].children:
+            c.append(max(c[-1].children, key=lambda x: len(x.children_recursive)))
+        tails.append(c)
+    if tails:
+        for i, b in enumerate(max(tails, key=len)):
+            out[b.name] = f'tail_{i}'
+    return out
+
+
+RENAME = wolf_layout() or generic_layout()
+LAYOUT = 'wolf28' if 'bone_10' in RENAME else 'generic'
 for old in RENAME:
     need(old)
 for old, new in RENAME.items():
@@ -120,10 +159,10 @@ for old, new in RENAME.items():
 if head_x('leg_fl_1') <= 0 or head_x('leg_hl_1') <= 0:
     fail('anim_quadruped: chân trái phải nằm ở +X sau chuẩn hóa (kiểm import.yaw)')  # noqa: F821
 
-# ---------- 1b. sửa trọng số chéo chân (rig boss) ----------
-# Auto-rig Tripo (rig 33 xương) gán một phần đỉnh bàn chân trước cho xương chân sau cùng bên (và ngược lại): khi một
+# ---------- 1b. sửa trọng số chéo chân (tùy chọn) ----------
+# Auto-rig Tripo (Huyết Lang Vương) gán một phần đỉnh bàn chân trước cho xương chân sau cùng bên (và ngược lại): khi một
 # chân gập, các đỉnh đó bị kéo thành gai dài. Bỏ trọng số của xương chân/đuôi mà đoạn xương (tư thế nghỉ) cách đỉnh xa
-# hơn REACH_W, rồi chuẩn hóa lại tổng trọng số. Đỉnh mất hết trọng số thì giữ nguyên. Rig sói đã dùng trong game không đổi.
+# hơn 20% chiều dài thân, rồi chuẩn hóa lại tổng trọng số. Đỉnh mất hết trọng số thì giữ nguyên.
 
 def segment_dist(p, a, b):
     ab = b - a
@@ -132,23 +171,18 @@ def segment_dist(p, a, b):
 
 
 weights_fixed = 0
-if not WOLF28:
-    _lo = Vector((1e9,) * 3)
-    _hi = Vector((-1e9,) * 3)
-    for m in MESHES:  # noqa: F821
-        for v in m.data.vertices:
-            w = m.matrix_world @ v.co
-            _lo = Vector(map(min, _lo, w))
-            _hi = Vector(map(max, _hi, w))
-    REACH_W = 0.2 * (_hi.y - _lo.y)
+if QUAD.get('fixCrossWeights'):
+    ys = [(m.matrix_world @ v.co).y for m in MESHES for v in m.data.vertices]  # noqa: F821
+    REACH_W = 0.2 * (max(ys) - min(ys))
     SEG = {b.name: (arm.matrix_world @ b.head_local, arm.matrix_world @ b.tail_local)
            for b in bones if b.name.startswith(('leg_', 'tail_'))}
     for m in MESHES:  # noqa: F821
         names = {g.index: g.name for g in m.vertex_groups}
         for v in m.data.vertices:
             p = m.matrix_world @ v.co
-            far = [g for g in v.groups if names[g.group] in SEG and g.weight > 0 and segment_dist(p, *SEG[names[g.group]]) > REACH_W]
-            if not far or len(far) == len([g for g in v.groups if g.weight > 0]):
+            live = [g for g in v.groups if g.weight > 0]
+            far = [g for g in live if names[g.group] in SEG and segment_dist(p, *SEG[names[g.group]]) > REACH_W]
+            if not far or len(far) == len(live):
                 continue
             for g in far:
                 m.vertex_groups[g.group].remove([v.index])
@@ -299,7 +333,10 @@ def keyed(name, seconds, keys, settle=None):
 
 S = math.sin
 TAU = 2 * math.pi
-TAIL = [f'tail_{i}' for i in range(4 if WOLF28 else limb_len('tail'))]
+TAIL = sorted((b.name for b in bones if b.name.startswith('tail_')), key=lambda n: int(n[5:]))
+# Góc/pha đuôi viết cho 4 đốt (sói). Đuôi nhiều đốt hơn thì chia đều để tổng độ cong giữ nguyên; đuôi ít đốt hơn (heo:
+# một xương) giữ góc mỗi đốt, không nhân lên (một xương quay cả góc của 4 đốt thì đuôi quật như roi).
+TK = min(1.0, 4 / len(TAIL)) if TAIL else 1.0
 
 
 def merge(*specs):
@@ -319,7 +356,8 @@ def idle(t):
         'neck': [(Z, 7 * S(a)), (X, 2 * S(2 * a))], 'head': [(Z, 4 * S(a - 0.6)), (X, -2 * S(2 * a))],
     }
     for i, b in enumerate(TAIL):
-        spec[b] = [(X, -3), (Z, (6 + 3 * i) * S(a - 0.5 * i))]
+        j = i * TK
+        spec[b] = [(X, -3 * TK), (Z, (6 + 3 * j) * TK * S(a - 0.5 * j))]
     return spec, (0, 0, 0.004 * HEIGHT * S(2 * a)), None
 
 
@@ -343,7 +381,8 @@ def run(t):
         },
     )
     for i, b in enumerate(TAIL):
-        spec[b] = [(X, 12 + 6 * S(a - 0.7 * i)), (Z, 5 * S(a - 0.7 * i))]
+        j = i * TK
+        spec[b] = [(X, (12 + 6 * S(a - 0.7 * j)) * TK), (Z, 5 * TK * S(a - 0.7 * j))]
     return spec, (0, 0, 0.035 * HEIGHT * S(2 * a - 0.8)), None
 
 
@@ -380,13 +419,39 @@ LIE = WIDTH * 0.5 * 0.85  # nằm nghiêng: nâng gốc khoảng nửa bề ngan
 
 n_idle = sampled('idle', 2.4, idle)
 n_run = sampled('run', 0.6, run, step=1)
-n_attack = keyed('attack', 0.8, [
-    (0.00, REST_KEY, (0, 0, 0), None),
-    (0.30, crouch, (0, 0.03 * LENGTH, -0.06 * HEIGHT), None),
-    (0.50, lunge, (0, -REACH, 0.02 * HEIGHT), None),
-    (0.62, bite, (0, -REACH, 0.0), None),
-    (1.00, REST_KEY, (0, 0, 0), None),
-])
+# Húc nanh (heo rừng): cúi thấp đầu, dồn sức vai, lao xa hơn đớp, rồi hất đầu lên ở cuối cú lao.
+gore_brace = {
+    'leg_fl_0': [(X, 18)], 'leg_fr_0': [(X, 18)], 'leg_fl_1': [(X, -20)], 'leg_fr_1': [(X, -20)],
+    'leg_hl_0': [(X, -22)], 'leg_hr_0': [(X, -22)], 'leg_hl_1': [(X, 34)], 'leg_hr_1': [(X, 34)],
+    'spine_1': [(X, 6)], 'spine_2': [(X, 6)], 'neck': [(X, 26)], 'head': [(X, 14)], 'tail_0': [(X, 10)],
+}
+gore_charge = {
+    'leg_fl_0': [(X, -38)], 'leg_fr_0': [(X, -30)], 'leg_hl_0': [(X, 26)], 'leg_hr_0': [(X, 30)],
+    'leg_hl_1': [(X, -12)], 'leg_hr_1': [(X, -12)], 'spine_1': [(X, 2)], 'spine_2': [(X, 4)],
+    'neck': [(X, 28)], 'head': [(X, 16)], 'tail_0': [(X, 20)],
+}
+gore_hook = merge(gore_charge, {'neck': [(X, -34), (Z, 8)], 'head': [(X, -14)], 'spine_2': [(X, -4)]})
+GORE = 0.3 * LENGTH
+
+ATTACK = QUAD.get('attack', 'bite')
+if ATTACK == 'bite':
+    n_attack = keyed('attack', 0.8, [
+        (0.00, REST_KEY, (0, 0, 0), None),
+        (0.30, crouch, (0, 0.03 * LENGTH, -0.06 * HEIGHT), None),
+        (0.50, lunge, (0, -REACH, 0.02 * HEIGHT), None),
+        (0.62, bite, (0, -REACH, 0.0), None),
+        (1.00, REST_KEY, (0, 0, 0), None),
+    ])
+elif ATTACK == 'gore':
+    n_attack = keyed('attack', 0.9, [
+        (0.00, REST_KEY, (0, 0, 0), None),
+        (0.32, gore_brace, (0, 0.06 * LENGTH, -0.05 * HEIGHT), None),
+        (0.50, gore_charge, (0, -GORE, 0.0), None),
+        (0.60, gore_hook, (0, -GORE, 0.03 * HEIGHT), None),
+        (1.00, REST_KEY, (0, 0, 0), None),
+    ])
+else:
+    fail(f'anim_quadruped: import.quadruped.attack "{ATTACK}" chưa hỗ trợ (bite | gore)')  # noqa: F821
 n_hit = keyed('hit_light', 0.4, [
     (0.00, REST_KEY, (0, 0, 0), None),
     (0.30, hit, (0, 0.05 * LENGTH, -0.02 * HEIGHT), None),
@@ -406,13 +471,13 @@ n_death = keyed('death', 1.4, [
     (1.00, limp, (0, 0, LIE), (Y, -88)),
 ], settle=lambda roll: (DEATH_DX * min(1.0, abs(roll) / 88), 0.0))
 
-# ---------- 4. clip boss (tùy chọn, import.extra) ----------
-# Đòn lớn đọc được từ xa: client (monsterSkins.ts, BOSS_MOVES) phát clip sao cho khung chạm đất (IMPACT) rơi đúng lúc vùng
-# báo trước của server nổ. Đổi thời điểm ở đây thì sửa cùng IMPACT phía client.
+# ---------- 3b. clip boss (tùy chọn, import.extra) ----------
+# Đòn lớn đọc được từ xa: client (monsterSkins.ts, QUAD_MOVES) phát clip sao cho khung chạm đất rơi đúng lúc vùng báo
+# trước của server nổ. Đổi thời điểm ở đây thì sửa cùng phía client.
 #   slam   1,8 s  thu người → chồm đứng hai chân sau → nện hai chân trước xuống (chạm đất 1,0 s) → giữ → về chỗ cũ
-#   sweep  1,7 s  ngửa cổ lấy đà → hạ đầu sát đất và quét đầu từ phải sang trái theo hình quạt (giữa quạt ở 0,9 s)
+#   sweep  1,7 s  ngửa cổ lấy đà → hạ đầu sát đất, quét đầu từ phải sang trái theo hình quạt (giữa quạt 0,9 s)
 #   stun   1,6 s lặp  quỵ chân trước, đầu gục, lắc lư (bị ngắt chú hoặc mất thế)
-EXTRA = list((META.get('import') or {}).get('extra', []))  # noqa: F821
+EXTRA = list(IMPORT.get('extra', []))
 extra_clips = {}
 for name in EXTRA:
     if name not in ('slam', 'sweep', 'stun'):
@@ -459,16 +524,86 @@ if 'stun' in EXTRA:
             'neck': [(X, 28), (Z, 8 * S(a))], 'head': [(X, 14), (Z, 5 * S(a - 0.5))], 'spine_1': [(Z, 3 * S(a))],
         })
         for i, b in enumerate(TAIL):
-            spec.setdefault(b, []).extend([(X, -12), (Z, 4 * S(a - 0.4 * i))])
+            j = i * TK
+            spec.setdefault(b, []).extend([(X, -12 * TK), (Z, 4 * TK * S(a - 0.4 * j))])
         return spec, (0, 0, -0.15 * HEIGHT + 0.01 * HEIGHT * S(2 * a)), (Y, 4 * S(a))
     extra_clips['stun'] = sampled('stun', 1.6, stun)
 
 set_pose({})
 bpy.context.scene.render.fps = FPS
+
+# ---------- 4. clip Tripo kèm theo (import.clips, ví dụ walk) ----------
+
+merged = {}
+if IMPORT.get('clips'):
+    import os
+    import re
+    import runpy
+    TC = runpy.run_path(os.path.join(REPO, 'tools/blender/tripo_clips.py'))  # noqa: F821
+
+    def bone_map(name):
+        n = name if re.fullmatch(r'[A-Za-z0-9_.]+', name) else ascii_name(name)  # noqa: F821
+        n = RENAME.get(n, n)
+        return n if n in bones else None
+
+    def span_of(a):
+        found = {bone_map(b.name): b for b in a.data.bones}
+        if 'head' not in found or 'leg_hl_0' not in found:
+            fail('anim_quadruped: GLB clip thiếu xương đầu/hông')  # noqa: F821
+        return (found['head'].head_local - found['leg_hl_0'].head_local).length
+
+    merged = TC['merge_clips'](arm, IMPORT['clips'], source_root=SOURCE_ROOT, fail=fail, bone_map=bone_map,  # noqa: F821
+                               main_span=(bones['head'].head_local - bones['leg_hl_0'].head_local).length, span_of=span_of)
+
+
+# ---------- 5. tốc độ tự nhiên của clip di chuyển ----------
+
+def natural_speed(name):
+    """Tốc độ thân (m/s, scale 1) khi phát clip 1×: trung vị vận tốc lùi của bàn chân đang chạm đất (đầu mút chuỗi chân
+    thấp hơn 1,5% chiều cao so với điểm thấp nhất của chính bàn chân đó trong clip). Client đặt refSpeed theo số này."""
+    act = bpy.data.actions.get(name)
+    if not act:
+        return None
+    feet = []
+    for side in ('fl', 'fr', 'hl', 'hr'):
+        ns = sorted((b.name for b in bones if b.name.startswith(f'leg_{side}_')), key=lambda n: int(n.rsplit('_', 1)[1]))
+        feet.append(ns[-1])
+    arm.animation_data_create()
+    saved = [(t, t.mute) for t in arm.animation_data.nla_tracks]
+    for t, _ in saved:
+        t.mute = True
+    arm.animation_data.action = act
+    if hasattr(arm.animation_data, 'action_slot') and getattr(act, 'slots', None):
+        arm.animation_data.action_slot = act.slots[0]
+    f0, f1 = int(act.frame_range[0]), int(act.frame_range[1])
+    track = {f: [] for f in feet}
+    for fr in range(f0, f1 + 1):
+        bpy.context.scene.frame_set(fr)
+        for f in feet:
+            track[f].append((arm.matrix_world @ arm.pose.bones[f].tail).copy())
+    arm.animation_data.action = None
+    for t, m in saved:
+        t.mute = m
+    v = []
+    for f in feet:
+        pts = track[f]
+        zmin = min(p.z for p in pts)
+        for a, b in zip(pts, pts[1:]):
+            if a.z < zmin + 0.015 * HEIGHT and b.z < zmin + 0.015 * HEIGHT:
+                v.append((b.y - a.y) * FPS)  # đầu ở -Y: chân trụ trôi về +Y khi thân tiến
+    v.sort()
+    return round(v[len(v) // 2], 3) if v else None
+
+
 REPORT = {
+    'layout': LAYOUT,
     'renamed': len(RENAME),
     'weightsFixed': weights_fixed,
+    'attack': ATTACK,
     'clips': {'idle': n_idle, 'run': n_run, 'attack': n_attack, 'hit_light': n_hit, 'death': n_death, **extra_clips},
+    'merged': merged,
+    'naturalSpeed': {c: natural_speed(c) for c in ('run', 'walk') if bpy.data.actions.get(c)},
+    'tail': len(TAIL),
     'size': [round(WIDTH, 3), round(HEIGHT, 3), round(LENGTH, 3)],
     'deathDx': round(DEATH_DX, 3),
 }

@@ -19,11 +19,18 @@
 # 4. Chỉnh màu vải (`import.recolor`): mỗi quy tắc chọn điểm ảnh của texture màu theo hue/độ bão hòa/độ sáng (mép mềm),
 #    rồi đổi sang màu đích trong bảng tâm trạng, giữ độ sáng tương đối nên vân vải và nếp gấp còn nguyên. Không vẽ lại.
 #
-# Biến nhận từ import_tripo: ASSET_ID, META, ARMATURES, MESHES, SOURCE_ROOT, fail, ascii_name, fcurves_of.
+#    Phần ghép clip dùng chung tools/blender/tripo_clips.py. Khi có `import.clips`, clip sẵn có trong GLB nguồn chính bị bỏ
+#    (mọi clip phải khai báo trong `clips`), vì vậy nguồn chính có thể là một file anim_* có bộ xương đầy đủ hơn rig.
+#    Tên xương dò theo bí danh: Mixamo (Hips, Spine1, LeftArm) hoặc bộ xương Tripo (Hip, Spine01, L_Upperarm).
+#    `import.prune` (regex tên xương): bỏ xương phụ để vừa trần xương, dồn trọng số skin vào tổ tiên còn giữ.
+# 5. Clip boss thủ tục (`import.extra`, M3-8): slam, sweep, chant, stun (xem mục 5 bên dưới).
+#
+# Biến nhận từ import_tripo: ASSET_ID, META, ARMATURES, MESHES, REPO, SOURCE_ROOT, fail, ascii_name, fcurves_of.
 
 import math
 import os
 import re
+import runpy
 
 import bpy
 from mathutils import Matrix, Quaternion, Vector
@@ -42,32 +49,44 @@ def clean(name):
     return name if re.fullmatch(r'[A-Za-z0-9_.]+', name) else ascii_name(name)  # noqa: F821
 
 
-# Tên thay thế khi rig không theo tên Mixamo: rig biped Tripo kiểu "L_Thigh/L_Upperarm/Spine01" (boss M3-8).
-# Chỉ dùng khi không có xương nào mang hậu tố Mixamo, nên rig Mixamo (Thanh Phong) không đổi.
+# Bí danh theo hậu tố tên (không phân biệt hoa thường), thử lần lượt: Mixamo (mixamorig:Hips, Spine1, LeftArm...) rồi
+# bộ xương người Tripo xuất kèm clip (Hip, Waist, Spine01, NeckTwist01, L_Upperarm...).
 ALIASES = {
-    'hips': ['hip'], 'spine': ['waist'], 'spine1': ['spine01'], 'spine2': ['spine02'], 'neck': ['necktwist01'],
-    'leftshoulder': ['l_clavicle'], 'rightshoulder': ['r_clavicle'],
-    'leftarm': ['l_upperarm'], 'rightarm': ['r_upperarm'], 'leftforearm': ['l_forearm'], 'rightforearm': ['r_forearm'],
-    'lefthand': ['l_hand'], 'righthand': ['r_hand'],
-    'leftupleg': ['l_thigh'], 'rightupleg': ['r_thigh'], 'leftleg': ['l_calf'], 'rightleg': ['r_calf'],
-    'leftfoot': ['l_foot'], 'rightfoot': ['r_foot'],
+    'hips': ('hips', 'hip'),
+    'head': ('head',),
+    'spine': ('spine', 'waist'),
+    'spine1': ('spine1', 'spine01'),
+    'spine2': ('spine2', 'spine02'),
+    'neck': ('neck', 'necktwist01'),
+    'leftarm': ('leftarm', 'l_upperarm'),
+    'rightarm': ('rightarm', 'r_upperarm'),
+    'leftforearm': ('leftforearm', 'l_forearm'),
+    'rightforearm': ('rightforearm', 'r_forearm'),
+    # Chỉ clip boss thủ tục (import.extra) tra các tên dưới đây.
+    'lefthand': ('lefthand', 'l_hand'),
+    'righthand': ('righthand', 'r_hand'),
+    'leftupleg': ('leftupleg', 'l_thigh'),
+    'rightupleg': ('rightupleg', 'r_thigh'),
+    'leftleg': ('leftleg', 'l_calf'),
+    'rightleg': ('rightleg', 'r_calf'),
+    'leftfoot': ('leftfoot', 'l_foot'),
+    'rightfoot': ('rightfoot', 'r_foot'),
 }
 
 
-def find_bone(bones, name):
-    for b in bones:
-        if b.name.lower().endswith(name.lower()):
-            return b
-    for alt in ALIASES.get(name.lower(), []):
-        for b in bones:
-            if b.name.lower() == alt:
+def suffix_bone(bones, name):
+    """Xương đầu tiên (theo tên) có hậu tố khớp một bí danh của `name`; None nếu không có."""
+    for alias in ALIASES.get(name.lower(), (name.lower(),)):
+        for b in sorted(bones, key=lambda b: b.name):
+            n = b.name.lower()
+            if n.endswith(alias) and not (alias == 'head' and n.endswith('_end')):
                 return b
     return None
 
 
 def bone_like(name):
-    """Tìm xương rig chính theo hậu tố tên (Hips, Head...), không phân biệt hoa thường; lùi về ALIASES."""
-    b = find_bone(arm.data.bones, name)
+    """Tìm xương rig chính theo hậu tố tên (Hips, Head...), không phân biệt hoa thường."""
+    b = suffix_bone(arm.data.bones, name)
     if b is None:
         fail(f'anim_biped_extra: rig không có xương *{name}')  # noqa: F821
     return b
@@ -77,128 +96,88 @@ HIPS, HEAD = bone_like('hips'), bone_like('head')
 MAIN_SPAN = (HEAD.head_local - HIPS.head_local).length
 
 
-def channelbags(action):
-    if hasattr(action, 'layers') and len(action.layers):
-        for layer in action.layers:
-            for strip in layer.strips:
-                yield from strip.channelbags
-    else:
-        yield action
-
-
 def add_to_nla(act):
-    arm.animation_data_create()
-    track = arm.animation_data.nla_tracks.new()
-    track.name = act.name
-    track.strips.new(act.name, int(act.frame_range[0]), act)
+    TC['add_to_nla'](arm, act)
+
+
+def src_span(src):
+    sh, sd = suffix_bone(src.data.bones, 'hips'), suffix_bone(src.data.bones, 'head')
+    if not sh or not sd:
+        fail('anim_biped_extra: GLB clip thiếu xương hông/đầu')  # noqa: F821
+    return (sd.head_local - sh.head_local).length
 
 
 # ---------- 1. ghép clip ----------
 
+TC = runpy.run_path(os.path.join(REPO, 'tools/blender/tripo_clips.py'))  # noqa: F821
 report = {'clips': {}}
-IDLE_HIPS = {}
-_up = HIPS.matrix_local.to_3x3().inverted() @ Vector((0, 0, 1))
-HIPS_UP = max(range(3), key=lambda i: abs(_up[i]))  # thành phần location hông ứng với trục đứng
-for spec in IMPORT.get('clips', []):
-    path = os.path.join(SOURCE_ROOT, spec['source'])  # noqa: F821
-    if not os.path.isfile(path):
-        fail(f'clip {spec["name"]}: không có {path}')  # noqa: F821
-    before_obj, before_act = set(bpy.data.objects), set(bpy.data.actions)
-    before_data = {c: set(getattr(bpy.data, c)) for c in ('meshes', 'materials', 'images', 'armatures')}
-    bpy.ops.import_scene.gltf(filepath=path)
-    new_objs = set(bpy.data.objects) - before_obj
-    src = next((o for o in new_objs if o.type == 'ARMATURE'), None)
-    acts = sorted(set(bpy.data.actions) - before_act, key=lambda a: a.name)
-    if not src or not acts:
-        fail(f'clip {spec["name"]}: {spec["source"]} không có armature hoặc animation (file trùng rig?)')  # noqa: F821
-    act = acts[0]
+if IMPORT.get('clips'):
+    dropped_src = TC['drop_existing_actions'](arm)
+    if dropped_src:
+        report['droppedSourceClips'] = dropped_src
+    report['clips'] = TC['merge_clips'](
+        arm, IMPORT['clips'], source_root=SOURCE_ROOT, fail=fail,  # noqa: F821
+        bone_map=lambda n: clean(n) if arm.data.bones.get(clean(n)) else None,
+        main_span=MAIN_SPAN, span_of=src_span, hips=HIPS.name,
+    )
 
-    # Tư thế nghỉ phải trùng (theo hướng xương trong không gian thế giới, bỏ qua scale).
-    worst = 0.0
-    for b in src.data.bones:
-        mb = arm.data.bones.get(clean(b.name))
-        if not mb:
-            continue
-        qa = (arm.matrix_world @ mb.matrix_local).to_quaternion()
-        qb = (src.matrix_world @ b.matrix_local).to_quaternion()
-        worst = max(worst, math.degrees(qa.rotation_difference(qb).angle))
-    if worst > 2.0:
-        fail(f'clip {spec["name"]}: tư thế nghỉ lệch rig chính {worst:.1f}° (cần retarget, chưa hỗ trợ)')  # noqa: F821
+# ---------- 1b. bỏ xương phụ ----------
 
-    sh = find_bone(src.data.bones, 'hips')
-    sd = next(b for b in src.data.bones if b.name.lower().endswith('head') and not b.name.lower().endswith('end'))
-    k = MAIN_SPAN / max((sd.head_local - sh.head_local).length, 1e-6)
+def prune_bones(patterns):
+    """Bỏ xương khớp một regex trong `import.prune` (xương xoắn, xương phụ khuỷu/gối, mắt...) để vừa trần xương của lớp
+    ngân sách: trọng số skin dồn vào tổ tiên gần nhất còn giữ, con của xương bị bỏ nối lên tổ tiên đó, kênh clip của
+    xương bị bỏ bị xóa. Xương xoắn chỉ thêm độ vặn quanh trục chi nên tay/chân vẫn gập đúng."""
+    rx = [re.compile(p) for p in patterns]
+    gone = {b.name for b in arm.data.bones if any(r.search(b.name) for r in rx)}
+    if not gone:
+        return []
+    keep = {}
+    for b in arm.data.bones:
+        p = b
+        while p is not None and p.name in gone:
+            p = p.parent
+        keep[b.name] = p.name if p is not None else None
+    for name in gone:
+        if keep[name] is None:
+            fail(f'prune: xương {name} không có tổ tiên nào được giữ')  # noqa: F821
+    for mesh in MESHES:  # noqa: F821
+        groups = mesh.vertex_groups
+        idx = {g.index: g.name for g in groups}
+        acc = {}
+        for v in mesh.data.vertices:
+            for ge in v.groups:
+                n = idx[ge.group]
+                if n in gone and ge.weight > 0:
+                    acc.setdefault(keep[n], []).append((v.index, ge.weight))
+        for target, items in sorted(acc.items()):
+            g = groups.get(target) or groups.new(name=target)
+            for vi, w in items:
+                g.add([vi], w, 'ADD')
+        for n in sorted(gone):
+            if groups.get(n):
+                groups.remove(groups[n])
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode='EDIT')
+    eb = arm.data.edit_bones
+    for b in list(eb):
+        if b.name not in gone and b.parent is not None and b.parent.name in gone:
+            b.parent = eb[keep[b.parent.name]]
+    for n in sorted(gone):
+        eb.remove(eb[n])
+    bpy.ops.object.mode_set(mode='OBJECT')
+    for act in bpy.data.actions:
+        for bag in TC['channelbags'](act):
+            for fc in list(bag.fcurves):
+                m = re.match(r'pose\.bones\["(.+?)"\]', fc.data_path)
+                if m and m.group(1) in gone:
+                    bag.fcurves.remove(fc)
+    return sorted(gone)
 
-    fps_src = bpy.context.scene.render.fps  # importer đặt khung theo fps cảnh hiện tại
-    start = spec.get('start')
-    end = spec.get('end')
-    f0 = act.frame_range[0] + (start * fps_src if start is not None else 0)
-    f1 = act.frame_range[0] + end * fps_src if end is not None else act.frame_range[1]
-    dropped = 0
-    for bag in channelbags(act):
-        for fc in list(bag.fcurves):
-            m = re.match(r'pose\.bones\["(.+?)"\]\.(\w+)', fc.data_path)
-            if not m or not arm.data.bones.get(clean(m.group(1))):
-                bag.fcurves.remove(fc)
-                dropped += 1
-                continue
-            fc.data_path = f'pose.bones["{clean(m.group(1))}"].{m.group(2)}'
-            pts = fc.keyframe_points
-            for i in range(len(pts) - 1, -1, -1):
-                if pts[i].co.x < f0 - 1e-3 or pts[i].co.x > f1 + 1e-3:
-                    pts.remove(pts[i])
-            for p in pts:
-                p.co.x -= f0
-                p.handle_left.x -= f0
-                p.handle_right.x -= f0
-                if m.group(2) == 'location':
-                    p.co.y *= k
-                    p.handle_left.y *= k
-                    p.handle_right.y *= k
-    act.name = spec['name']
-    act.use_fake_user = True
-    act.frame_range = (0, f1 - f0)
-    hips_path = f'pose.bones["{HIPS.name}"].location'
-    hips_fc = {fc.array_index: fc for bag in channelbags(act) for fc in bag.fcurves if fc.data_path == hips_path}
-    if spec['name'] == 'idle':
-        IDLE_HIPS.update({i: fc.evaluate(0) for i, fc in hips_fc.items()})
-    if spec.get('recenter'):
-        # Đưa hông về cùng vị trí ngang với idle khung 0 (hoặc tư thế nghỉ), giữ trục đứng: clip tại chỗ không bị nhảy.
-        for i, fc in hips_fc.items():
-            if i == HIPS_UP:
-                continue
-            pts = fc.keyframe_points
-            shift = IDLE_HIPS.get(i, 0.0) - sum(p.co.y for p in pts) / max(len(pts), 1)
-            for p in pts:
-                p.co.y += shift
-                p.handle_left.y += shift
-                p.handle_right.y += shift
-    if spec.get('loop'):
-        # Khép vòng: dồn chênh lệch cuối-đầu đều dọc clip để khung cuối trùng khung đầu, không giật ở chỗ nối.
-        span = max(f1 - f0, 1e-6)
-        for bag in channelbags(act):
-            for fc in bag.fcurves:
-                pts = fc.keyframe_points
-                if len(pts) < 2:
-                    continue
-                gap = pts[-1].co.y - pts[0].co.y
-                for p in pts:
-                    d = gap * (p.co.x / span)
-                    p.co.y -= d
-                    p.handle_left.y -= d
-                    p.handle_right.y -= d
-                fc.update()
-    add_to_nla(act)
 
-    # Dọn mọi thứ GLB clip mang vào (mesh, material, ảnh, armature), chỉ giữ action.
-    for o in new_objs:
-        bpy.data.objects.remove(o, do_unlink=True)
-    for c, old in before_data.items():
-        coll = getattr(bpy.data, c)
-        for block in set(coll) - old:
-            if block.users == 0:
-                coll.remove(block)
-    report['clips'][spec['name']] = {'seconds': round((f1 - f0) / fps_src, 3), 'dropped': dropped, 'locScale': round(k, 5)}
+if IMPORT.get('prune'):
+    report['pruned'] = prune_bones(IMPORT['prune'])
+    report['bones'] = len(arm.data.bones)
+    HIPS, HEAD = bone_like('hips'), bone_like('head')  # edit mode làm mất hiệu lực tham chiếu Bone cũ
 
 # ---------- 3. phụ kiện cứng ----------
 
@@ -788,6 +767,7 @@ if EXTRA:
                     'hips': (0.012 * math.sin(a), 0, -0.1),
                     'arms': both(lambda sx: ((sx * 0.15, -0.25 + 0.05 * math.sin(a), -0.95), (sx * 0.05, -0.35, -0.93)))}
         looped_clip('stun', 1.6, stun)
+
 
 for p in pb:
     p.rotation_quaternion = (1, 0, 0, 0)

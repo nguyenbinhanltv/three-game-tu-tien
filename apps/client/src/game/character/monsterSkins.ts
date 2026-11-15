@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { color, dot, float, normalView, positionViewDirection, pow, saturate, smoothstep, texture } from 'three/tsl';
+import { color, dot, float, materialColor, mix, normalView, positionViewDirection, pow, saturate, smoothstep, texture, vec3, vec4 } from 'three/tsl';
 import type { MonsterDef } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { MonsterModel } from '../models';
@@ -21,6 +21,12 @@ export interface MonsterSkin {
   roughness?: number;
   /** Viền sáng yêu khí (fresnel) lấy màu `accent` của quái; số là cường độ. Bỏ trống = không có. */
   rim?: number;
+  /**
+   * Đổi hẳn bảng màu (thay cho `tint`): độ sáng texture màu ánh xạ sang dải `dark` → `light` (sRGB), giữ vân lông.
+   * `glow`: màu phát sáng nhỏ ở mép nhìn nghiêng và vùng sáng nhất (ngực, chóp đuôi). Dùng cho biến thể cùng model
+   * khác hẳn màu (Kiếm Linh dùng model Hỏa Vân Hồ).
+   */
+  palette?: { dark: string; light: string; glow?: string };
   /** Chỉ nạp khi quái xuất hiện lần đầu (boss trong bí cảnh), không nạp sẵn lúc vào thế giới. */
   lazy?: boolean;
   /** Đòn lớn có vùng báo trước (M5-5) → clip và thời điểm chạm. */
@@ -30,8 +36,11 @@ export interface MonsterSkin {
 }
 
 const WOLF_CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
-/** Boss: thêm niệm chú (M5-3) và choáng/mất thế; clip nào asset không có thì lùi theo `FALLBACK`. */
-const BOSS_CLIPS: ClipMap = { ...WOLF_CLIPS, cast: 'chant', stun: 'stun' };
+/** Cáo có thêm clip đi bộ của Tripo (quái đi tuần chậm); thú khác lùi về clip chạy phát chậm. */
+const FOX_CLIPS: ClipMap = { ...WOLF_CLIPS, walk: 'walk' };
+/** Boss: thêm choáng/mất thế; boss có niệm chú (M5-3) thêm clip chant. Boss không niệm thì `cast` lùi về idle. */
+const BOSS_CLIPS: ClipMap = { ...WOLF_CLIPS, stun: 'stun' };
+const CHANT_BOSS_CLIPS: ClipMap = { ...BOSS_CLIPS, cast: 'chant' };
 /**
  * Thời điểm chạm (giây trong clip ở 1×) của clip thủ tục: phải khớp tools/blender/anim_quadruped.py (thú bốn chân)
  * và tools/blender/anim_biped_extra.py (người/vượn).
@@ -50,10 +59,28 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_yeu_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, tint: '#b3a6dc', rim: 0.55 },
   // U Minh Lang: lông xanh u tối, viền lam lạnh.
   mon_u_minh_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, tint: '#8a9fd0', roughness: -0.08, rim: 0.8 },
-  // Boss Kiếm Trủng (M3-8). refSpeed đo từ clip chạy (bàn chân lúc chạm đất) ở scale 1.
-  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 3.0, tint: '#ffffff', rim: 0.35, lazy: true, moves: QUAD_MOVES },
+  // refSpeed của các thú dưới theo tỉ lệ tốc độ chân trụ đo trong Blender (anim_quadruped naturalSpeed) so với sói
+  // (đo 3,14 ↔ 2,5 đã chỉnh trong game); vượn so với Thanh Phong cùng loại clip Tripo (đo 3,34 ↔ 3,0).
+  // Thiết Bối Trư: clip đòn húc nanh (gore), chân ngắn nên bước nhanh.
+  mon_thiet_boi_tru: { asset: 'mon_thiet_boi_tru', clips: WOLF_CLIPS, refSpeed: 1.3, tint: '#ffffff' },
+  // Hỏa Vân Hồ: lông son của asset, viền ánh lửa nhẹ.
+  mon_hoa_van_ho: { asset: 'mon_hoa_van_ho', clips: FOX_CLIPS, refSpeed: 2.0, tint: '#ffffff', rim: 0.3 },
+  // Kiếm Linh: cùng model cáo, lông trắng sương → lam núi xa, phát sáng kiếm khí nhỏ (art: asset đợt 2).
+  mon_kiem_linh: {
+    asset: 'mon_hoa_van_ho',
+    clips: FOX_CLIPS,
+    refSpeed: 2.0,
+    tint: '#ffffff',
+    roughness: -0.1,
+    palette: { dark: '#88ABAA', light: '#DCE6DF', glow: '#CFF3FF' },
+  },
+  // Thạch Viên: vượn đá hai chân, đòn nện hai tay (clip slash của Tripo đã cắt).
+  mon_thach_vien: { asset: 'mon_thach_vien', clips: WOLF_CLIPS, refSpeed: 2.15, tint: '#ffffff' },
+  // Boss Kiếm Trủng (M3-8). Sói chúa: naturalSpeed 3,378 theo cùng tỉ lệ với sói (→ 2,7); hai boss vượn đo chân trụ
+  // clip run Tripo ở scale 1.
+  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, tint: '#ffffff', rim: 0.35, lazy: true, moves: QUAD_MOVES },
   boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, tint: '#ffffff', coreGlow: 1.6, lazy: true, moves: BIPED_MOVES },
-  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: BOSS_CLIPS, refSpeed: 3.1, tint: '#ffffff', lazy: true, moves: BIPED_MOVES },
+  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: CHANT_BOSS_CLIPS, refSpeed: 3.1, tint: '#ffffff', lazy: true, moves: BIPED_MOVES },
 };
 
 interface Template {
@@ -144,7 +171,8 @@ export class MonsterSkins {
     m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
     m.color.multiply(new THREE.Color(s.tint));
     if (s.roughness) m.roughness = Math.min(1, Math.max(0, m.roughness + s.roughness));
-    if (s.rim) {
+    if (s.palette) applyPalette(m, s.palette);
+    else if (s.rim) {
       // Viền sáng ở mép nhìn nghiêng: tách bóng sói tối khỏi nền cỏ/rừng, không cần texture.
       const facing = saturate(dot(normalView, positionViewDirection));
       m.emissiveNode = color(new THREE.Color(def.accent)).mul(pow(float(1).sub(facing), 3).mul(s.rim));
@@ -156,6 +184,32 @@ export class MonsterSkins {
     this.mats.set(def.id, m);
     return m;
   }
+}
+
+/** Màu tuyến tính từ hex sRGB. */
+function linear(hex: string): THREE.Vector3 {
+  const c = new THREE.Color().setStyle(hex, THREE.SRGBColorSpace);
+  return new THREE.Vector3(c.r, c.g, c.b);
+}
+
+/**
+ * Đổi bảng màu theo độ sáng: texel tối (chân, viền mắt) → `dark`, sáng (ngực, chóp đuôi) → `light`. Độ sáng texture
+ * lông cáo (tuyến tính) nằm khoảng 0,02–0,6 nên kéo giãn dải đó. Phát sáng: fresnel ở mép + vùng sáng nhất, nhỏ để
+ * không lấn bloom của chiêu.
+ */
+export function applyPalette(m: THREE.MeshStandardNodeMaterial, p: NonNullable<MonsterSkin['palette']>): void {
+  const lum = dot(materialColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+  const t = smoothstep(0.02, 0.6, lum);
+  const d = linear(p.dark);
+  const l = linear(p.light);
+  m.colorNode = vec4(mix(vec3(d.x, d.y, d.z), vec3(l.x, l.y, l.z), t), materialColor.a);
+  if (p.glow) {
+    const g = linear(p.glow);
+    const facing = saturate(dot(normalView, positionViewDirection));
+    const amount = pow(float(1).sub(facing), 3).mul(0.6).add(pow(t, 4).mul(0.25));
+    m.emissiveNode = vec3(g.x, g.y, g.z).mul(amount);
+  }
+  m.needsUpdate = true;
 }
 
 /** Chiều cao và khung cầu từ hình học LOD0 ở tư thế gốc (asset đặt chân ở y = 0, node không biến đổi). */
