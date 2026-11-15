@@ -127,6 +127,23 @@ export function variantUnlocked(level: number): boolean {
   return clampSkillLevel(level) >= VARIANT_MIN_LEVEL;
 }
 
+/** Đổi biến thức miễn phí nhưng không dồn dập: giữa hai lần đổi (mọi chiêu) cách nhau chừng này giây. */
+export const VARIANT_SWITCH_COOLDOWN_SEC = 5;
+
+export type VariantBlock = 'low' | 'combat' | 'casting' | 'cooldown';
+
+/**
+ * Quy tắc đổi biến thức (server quyết, client chỉ dùng để làm mờ nút): chiêu phải từ cấp 3; không đổi khi đang giao
+ * chiến, đang niệm chú, hay vừa đổi chưa quá `VARIANT_SWITCH_COOLDOWN_SEC`. Trả về lý do bị chặn hoặc null nếu được đổi.
+ */
+export function variantSwitchBlock(o: { skillLevel: number; inCombat: boolean; casting: boolean; sinceLastSwitchMs: number }): VariantBlock | null {
+  if (!variantUnlocked(o.skillLevel)) return 'low';
+  if (o.inCombat) return 'combat';
+  if (o.casting) return 'casting';
+  if (o.sinceLastSwitchMs < VARIANT_SWITCH_COOLDOWN_SEC * 1000) return 'cooldown';
+  return null;
+}
+
 /** Chiêu đã mở biến thức `v` chưa thì mới được dùng; chưa mở hoặc id lạ thì không có biến thức. */
 export function activeVariant(
   variants: { a: SkillVariant; b: SkillVariant } | undefined,
