@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { isRootId, rootChangeCost, xpNeed } from '@dtl/shared';
+import { isRootId, PF_DEAD, rootChangeCost, xpNeed } from '@dtl/shared';
 
 process.env.DB_FILE = ':memory:';
 
@@ -143,5 +143,29 @@ describe('Character: bình cảnh', () => {
     expect(isRootId(v.root)).toBe(true);
     expect(v.trial).toBeGreaterThan(85);
     expect(v.retry).toBeGreaterThan(25);
+  });
+});
+
+describe('thiên kiếp và người ngoài cuộc', () => {
+  it('người đứng trong vòng sét của người khác vẫn mất máu nhưng không chết; chủ kiếp thì chết được', async () => {
+    const { GameSim } = await import('./sim');
+    const { WorldState } = await import('../state');
+    const sim = new GameSim(new WorldState(), { broadcast: () => {} } as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: 2048, z: 2088 }, respawn: { x: 2048, z: 2088 }, persistPosition: false });
+    const join = (sid: string) => sim.addPlayer({ sessionId: sid, send: () => {} } as never, fresh(), false, 'sess', false);
+    const owner = join('own');
+    const by = join('by');
+    for (const p of [owner, by]) p.move = { ...p.move, x: 2048, z: 2088 };
+    const lv0 = by.char.level;
+    const xp0 = by.char.xp;
+    // 8 tia 24% khí huyết tối đa đánh thẳng vào chỗ cả hai đang đứng.
+    for (let i = 0; i < 8; i++) {
+      sim.addHazard({ x: 2048, z: 2088, r: 4.2 }, 0, 0.24, true, 'lightning', owner.sid);
+      sim.now += 10;
+      (sim as unknown as { tickHazards(): void }).tickHazards();
+    }
+    expect(by.char.hp).toBe(1);
+    expect(by.s.fl & PF_DEAD).toBe(0);
+    expect([by.char.level, by.char.xp]).toEqual([lv0, xp0]);
+    expect(owner.s.fl & PF_DEAD).toBe(PF_DEAD);
   });
 });

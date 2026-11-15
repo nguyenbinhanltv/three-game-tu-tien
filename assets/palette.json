@@ -74,6 +74,7 @@
         "sunColor": "#F6C27E", "sunIntensity": 2.0, "sunElevationDeg": 14,
         "skyColor": "#B9CFC8", "skyIntensity": 0.9,
         "fogColor": "#E4E3D6", "fogDensity": 0.0016, "heightFogTop": 60, "heightFogBoost": 2.5,
+        "fogHaze": 0.0026, "fogHazeStart": 50, "rim": 0.55,
         "shadowTint": "#2F5B5C", "highlightTint": "#FFD49A", "splitBalance": 0.15,
         "blackLift": "#14292B", "contrast": 1.05, "saturation": 1.0, "exposure": 1.0
       },
@@ -82,6 +83,7 @@
         "sunColor": "#FFD596", "sunIntensity": 3.4, "sunElevationDeg": 36,
         "skyColor": "#9CC4C3", "skyIntensity": 0.72,
         "fogColor": "#C9DDD8", "fogDensity": 0.0011, "heightFogTop": 40, "heightFogBoost": 1.8,
+        "fogHaze": 0.0021, "fogHazeStart": 60, "rim": 0.45,
         "shadowTint": "#2A5A5E", "highlightTint": "#FFC670", "splitBalance": 0.0,
         "shadowAmount": 0.6, "highlightAmount": 0.28, "fogScatter": 0.85,
         "blackLift": "#0F2427", "contrast": 1.16, "saturation": 1.06, "exposure": 1.0
@@ -91,6 +93,7 @@
         "sunColor": "#9DB4CF", "sunIntensity": 0.45, "sunElevationDeg": 35,
         "skyColor": "#1A2938", "skyIntensity": 0.5,
         "fogColor": "#22323F", "fogDensity": 0.0013, "heightFogTop": 40, "heightFogBoost": 2.0,
+        "fogHaze": 0.0016, "fogHazeStart": 60, "rim": 0.2,
         "shadowTint": "#0F1F2A", "highlightTint": "#FFB869", "splitBalance": -0.2,
         "blackLift": "#0B1720", "contrast": 1.1, "saturation": 0.82, "exposure": 0.9
       }
