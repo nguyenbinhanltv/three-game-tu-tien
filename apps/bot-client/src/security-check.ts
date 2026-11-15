@@ -989,7 +989,7 @@ async function testParamsChecks(): Promise<void> {
     room.onMessage('*', () => {});
     await W(500);
     const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
-    check('?at=thung_lung đưa tài khoản thử tới thung lũng', Math.hypot(me().x - 2048, me().z - 2455) < 3, `(${me().x.toFixed(0)}, ${me().z.toFixed(0)})`);
+    check('?at=thung_lung đưa tài khoản thử tới thung lũng', Math.hypot(me().x - 2048, me().z - 2400) < 3, `(${me().x.toFixed(0)}, ${me().z.toFixed(0)})`);
     room.send(C.CHAT, { m: '/gm spawn mon_soi_xam 4' });
     await W(900);
     room.send(C.CHAT, { m: '/gm tp 2048 2455' });

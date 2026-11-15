@@ -2,7 +2,7 @@
 // Tính cả máu mất mỗi lần giết (đứng yên, không né vùng) và thời gian đả tọa hồi lại.
 // Chạy: pnpm sim:progress
 
-import type { MonsterDef, Quality } from '@dtl/shared';
+import { levelSpawns, type MonsterDef, type Quality } from '@dtl/shared';
 import {
   BOTTLENECK_LEVELS,
   computeDamage,
@@ -94,7 +94,7 @@ const pct = (x: number) => `${(x * 100).toFixed(0)}%`;
 // ---------- nhịp lên cấp ----------
 
 // Nhịp lên cấp tính trên quái thường: tinh anh (cờ elite) ít gặp, tính riêng ở bảng tinh anh bên dưới.
-const spawns = LEVELS.van_lam.spawns.filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite);
+const spawns = levelSpawns(LEVELS.van_lam).filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite);
 let totalSec = 0;
 let fightSec = 0;
 let questXp = 0;
@@ -231,7 +231,7 @@ for (const q of [0, 1, 2, 3, 4] as Quality[]) {
 }
 
 console.log('\nThu nhập kỳ vọng mỗi lần hạ quái (linh thạch): vàng rơi + bán trang bị rơi (giá theo ilvl, phẩm)');
-for (const sp of LEVELS.van_lam.spawns) {
+for (const sp of levelSpawns(LEVELS.van_lam)) {
   const m = MONSTER.get(sp.mon)!;
   const lt = lootOf(m.id);
   const lv = Math.round((sp.levelMin + sp.levelMax) / 2);
@@ -248,7 +248,7 @@ for (const sp of LEVELS.van_lam.spawns) {
 }
 console.log('\nTinh anh (người cùng cấp): TTK không đồ / bộ Huyền phẩm; máu/s tank đứng yên');
 for (const m of MONSTERS_ELITE()) {
-  const sp = LEVELS.van_lam.spawns.find((x) => x.mon === m.id)!;
+  const sp = levelSpawns(LEVELS.van_lam).find((x) => x.mon === m.id)!;
   const lv = sp.levelMax;
   const ms = monsterStats(lv, m.hpMul, m.atkMul);
   const plain = player(lv);

@@ -140,6 +140,9 @@ function isWebGPU(r: THREE.WebGPURenderer): boolean {
  * bloom/msaa/fxaa: post-processing (render/post.ts). maxPixels: ngân sách điểm ảnh nội bộ (hạ
  * pixelRatio trên màn hình lớn để giữ VRAM render target dưới ngân sách). heightFog: sương theo độ cao.
  */
+/** Bán kính (m) lấy chấm quái cho bản đồ nhỏ (khung 520 m ⇒ ±260 m, chừa lề). */
+const MINIMAP_MON_R = 300;
+
 const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean; ground: GroundLevel; ao: boolean; lights: boolean; radial: boolean }> = {
   low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false, radial: false },
   medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'medium', ao: true, lights: false, radial: true },
@@ -2473,9 +2476,15 @@ export class Game {
   dots(): { x: number; z: number; c: string; r: number }[] {
     const out: { x: number; z: number; c: string; r: number }[] = [];
     if (!this.ents) return out;
-    for (const m of this.ents.monsters.values()) {
-      if (m.s.st !== MS_DEAD) out.push({ x: m.x, z: m.z, c: m.model.def.boss ? '#ff9a3c' : m.model.def.elite ? '#7fd4ff' : '#e5534b', r: m.model.def.boss ? 4 : m.model.def.elite ? 3 : 2 });
-    }
+    // Chấm quái lấy từ trạng thái phòng (không phải model đang dựng: model chỉ dựng trong ~100 m) để thấy cả bãi/tinh anh
+    // ở rìa bản đồ nhỏ (±260 m). Lọc theo vòng 300 m quanh mình.
+    const rx = this.renderPos.x;
+    const rz = this.renderPos.z;
+    this.view.monsters.forEach((m) => {
+      if (m.st === MS_DEAD || (m.x - rx) ** 2 + (m.z - rz) ** 2 > MINIMAP_MON_R * MINIMAP_MON_R) return;
+      const def = MONSTER.get(m.t);
+      out.push({ x: m.x, z: m.z, c: def?.boss ? '#ff9a3c' : def?.elite ? '#7fd4ff' : '#e5534b', r: def?.boss ? 4 : def?.elite ? 3 : 2 });
+    });
     for (const [sid, p] of this.ents.players) if (sid !== this.sid) out.push({ x: p.x, z: p.z, c: '#6fd0ff', r: 3 });
     for (const n of this.ents.npcs) out.push({ x: n.x, z: n.z, c: '#ffd84a', r: 3 });
     for (const g of this.ents.nodes.values()) if (g.visible) out.push({ x: g.position.x, z: g.position.z, c: '#7fffb0', r: 1.5 });

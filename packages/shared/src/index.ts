@@ -22,3 +22,4 @@ export * from './skillrules';
 export * from './artifacts';
 export * from './alchemy';
 export * from './party';
+export * from './zones';

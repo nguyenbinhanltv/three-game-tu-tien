@@ -39,6 +39,8 @@ export interface PState {
   dye?: string;
   /** Bộ trang bị đang nhuộm áo/ánh kiếm (id bộ); '' hoặc thiếu = không. */
   sk?: string;
+  /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`); '' hoặc thiếu = không. */
+  sa?: string;
   /** id pháp bảo phụ đang đeo (P3-8); '' hoặc thiếu = không. */
   art?: string;
 }
@@ -76,7 +78,8 @@ export interface WorldView {
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
   const base = s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name);
-  return s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
+  const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
+  return s.sa ? { ...look, acc: s.sa } : look;
 }
 
 function angleLerp(a: number, b: number, k: number): number {
@@ -299,6 +302,12 @@ const _sphere = new THREE.Sphere();
  */
 export const LOD0_MAX = 12;
 /**
+ * Quái chỉ dựng model trong 100 m quanh mình (xóa khi quá 125 m, chừa vùng đệm để không dựng/xóa liên tục ở rìa).
+ * Bãi quái dày (M-1: ~1 800 quái/km² vùng săn) nên bán kính 240 m cũ dựng cả trăm model xương không ai thấy qua sương.
+ */
+const MON_NEAR = 100;
+const MON_FAR = 125;
+/**
  * Số nhãn tên tối đa (gần camera nhất, trong khung nhìn); mình và mục tiêu luôn có. Mỗi nhãn là một sprite = một draw
  * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
  */
@@ -460,7 +469,7 @@ export class EntityManager {
       v.s = s;
       const look = lookOf(s);
       if (isLocal) this.localLook = look;
-      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set;
+      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set || look.acc !== v.look.acc;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         v.skinPending = this.playerSkins.pending(look);
         v.swapModel(this.playerSkins.create(look), look);
@@ -535,11 +544,12 @@ export class EntityManager {
       let v = this.monsters.get(id);
       const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
       if (!v) {
-        if (d2 > 240 * 240 || !MONSTER.has(s.t)) return;
+        const mdef = MONSTER.get(s.t);
+        if (!mdef || d2 > (mdef.boss ? 240 : MON_NEAR) ** 2) return;
         v = new MonVis(id, s, this.skins);
         this.monsters.set(id, v);
         this.group.add(v.model.root);
-      } else if (d2 > 280 * 280) {
+      } else if (d2 > (v.model.def && MONSTER.get(s.t)?.boss ? 280 : MON_FAR) ** 2) {
         this.group.remove(v.model.root);
         v.dispose();
         this.monsters.delete(id);

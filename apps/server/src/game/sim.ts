@@ -48,6 +48,7 @@ import {
   EQUIP_SLOTS,
   glowStage,
   lookSet,
+  accessoryCode,
   MAX_ENHANCE,
   healAmount,
   methodSwitchCost,
@@ -87,6 +88,7 @@ import {
   type InitMsg,
   INV_SIZE,
   type LevelDef,
+  levelSpawns,
   meditateXpPerSec,
   MF_BROKEN,
   MF_CHANT,
@@ -444,7 +446,8 @@ export class GameSim {
   ) {
     this.level = LEVELS[opts.levelId];
     state.level = opts.levelId;
-    for (const sp of this.level.spawns) {
+    // Quái đứng lẻ (tinh anh, boss) và các bãi quái (M-1); hồi sinh theo số người/AOI để M-2.
+    for (const sp of levelSpawns(this.level)) {
       for (let i = 0; i < sp.count; i++) this.spawnFromDef(sp);
     }
     for (const nd of this.level.nodes) {
@@ -662,6 +665,8 @@ export class GameSim {
     if (s.wg !== wg) s.wg = wg;
     const sk = lookSet(c.stats.sets)?.id ?? '';
     if (s.sk !== sk) s.sk = sk;
+    const sa = accessoryCode(SETS, c.equip);
+    if (s.sa !== sa) s.sa = sa;
     const art = c.equip.artifact?.id ?? '';
     if (s.art !== art) s.art = art;
     this.setFlag(p, PF_FLYING, m.flying);
