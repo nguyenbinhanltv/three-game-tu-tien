@@ -26,20 +26,39 @@ const MIN_LAND_Y = WATER_Y + 3;
 /** Độ cao thêm của vách ranh vùng chơi (m). */
 const PLAY_WALL_H = 330;
 
+/**
+ * Khoảng cách tới tâm khu, méo bằng nhiễu thấp tần số (±~20 %, biên độ nhiễu thực ~0,3): mép khu (bãi bằng, bờ hồ) là một hình lồi lõm như
+ * hợp mượt của vài vòng tròn chứ không phải đĩa tròn đều. Mỗi khu có pha nhiễu riêng theo tâm.
+ */
+function warpedDist(f: Feature, x: number, z: number): number {
+  const dx = x - f.x;
+  const dz = z - f.z;
+  const d = Math.sqrt(dx * dx + dz * dz);
+  if (d < 1) return d;
+  const ph = f.x * 0.013 + f.z * 0.007;
+  const n = fbm(x * 0.007 + ph, z * 0.007 - ph, 3, TERRAIN_SEED + 211) * 0.9 + fbm(x * 0.021 - ph, z * 0.021 + ph, 1, TERRAIN_SEED + 223) * 0.1;
+  return d * (1 + 0.6 * n);
+}
+
 function featureWeight(f: Feature, x: number, z: number): number {
   const dx = x - f.x;
   const dz = z - f.z;
   const d2 = dx * dx + dz * dz;
-  if (d2 >= f.outerR * f.outerR) return 0;
-  return smoothstep(f.outerR, f.flatR, Math.sqrt(d2));
+  // Ngoài 2 × outerR chắc chắn bằng 0 (méo tối đa ~60 % × biên độ nhiễu): bỏ qua nhiễu cho nhanh.
+  if (d2 >= f.outerR * f.outerR * 4) return 0;
+  // Sân tông môn, bệ cổng và lòng chảo Kiếm Trủng giữ hình tròn (kiến trúc/đấu trường dựng theo bán kính).
+  const d = f === SECT || f === PORTAL_PAD || f === KIEM_TRUNG ? Math.sqrt(d2) : warpedDist(f, x, z);
+  if (d >= f.outerR) return 0;
+  return smoothstep(f.outerR, f.flatR, d);
 }
 
 /** Độ cao địa hình tự nhiên trước khi đặt các khu. */
 function naturalHeight(x: number, z: number): number {
   const base = fbm(x * 0.0011, z * 0.0011, 5, TERRAIN_SEED);
-  const ridge = ridged(x * 0.00075, z * 0.00075, 4, TERRAIN_SEED + 101);
-  const mountainMask = smoothstep(-0.15, 0.55, fbm(x * 0.00042, z * 0.00042, 2, TERRAIN_SEED + 7));
-  let h = 78 + base * 46 + ridge * ridge * 300 * mountainMask;
+  const ridge = ridged(x * 0.0011, z * 0.0011, 4, TERRAIN_SEED + 101);
+  // Vùng núi chiếm khoảng nửa bản đồ (mặt nạ nhiễu thấp tần số), sống núi uốn mềm theo gradient lệch trục.
+  const mountainMask = smoothstep(-0.35, 0.3, fbm(x * 0.00055, z * 0.00055, 2, TERRAIN_SEED + 7));
+  let h = 78 + base * 56 + ridge * ridge * 340 * mountainMask;
 
   // Ngọn núi lớn dưới chân tông môn.
   const dxs = x - SECT.x;
@@ -76,9 +95,7 @@ export function heightAt(x: number, z: number): number {
   const wl = featureWeight(LAKE, x, z);
   if (wl > 0) {
     h = lerp(h, LAKE.y, wl);
-    const dx = x - LAKE.x;
-    const dz = z - LAKE.z;
-    const d = Math.sqrt(dx * dx + dz * dz);
+    const d = warpedDist(LAKE, x, z);
     // Đảo nhỏ giữa hồ, nơi Hàn Giao trấn giữ.
     h += (WATER_Y + 4 - LAKE.y) * smoothstep(ISLAND_R, ISLAND_R * 0.45, d);
     // Bãi ven hồ: dải phẳng thấp hơn mặt nước vài mét (đi bộ, đánh quái được), ngoài đó núi mới dựng lên.

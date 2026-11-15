@@ -267,7 +267,8 @@ if (jsonOut) {
 const pngOut = opt('--png');
 if (pngOut) {
   const SIZE = Number(opt('--size') ?? 1100);
-  const b = PLAY;
+  const bo = opt('--bounds')?.split(',').map(Number);
+  const b = bo && bo.length === 4 ? { x0: bo[0], z0: bo[1], x1: bo[2], z1: bo[3] } : PLAY;
   const sx = (b.x1 - b.x0) / SIZE;
   const sz = (b.z1 - b.z0) / SIZE;
   const hs = new Float32Array(SIZE * SIZE);
