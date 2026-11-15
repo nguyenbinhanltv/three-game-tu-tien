@@ -12,6 +12,7 @@ import { type PlayerLook, PlayerSkins } from './character/playerSkins';
 import { hitStopFor } from './hitreact';
 import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
 import { HpTrail } from './hpTrail';
+import { ArtifactVis } from './artifactVis';
 
 export interface PState {
   name: string;
@@ -36,6 +37,8 @@ export interface PState {
   dye?: string;
   /** Bộ trang bị đang nhuộm áo/ánh kiếm (id bộ); '' hoặc thiếu = không. */
   sk?: string;
+  /** id pháp bảo phụ đang đeo (P3-8); '' hoặc thiếu = không. */
+  art?: string;
 }
 export interface MState {
   t: string;
@@ -128,6 +131,8 @@ export class PlayerVis {
   speed = 0;
   fl = 0;
   lv = 0;
+  /** Pháp bảo phụ đang đeo (nạp lười khi có `s.art`). */
+  art: ArtifactVis | null = null;
   constructor(
     public sid: string,
     public s: PState,
@@ -168,6 +173,7 @@ export class PlayerVis {
   }
   dispose() {
     disposeLabel(this.label);
+    this.art?.dispose();
     this.model.dispose();
   }
 }
@@ -478,6 +484,13 @@ export class EntityManager {
         v.speed += (sp - v.speed) * Math.min(1, dt * 8);
       }
       v.fl = s.fl;
+      // Pháp bảo phụ: chỉ dựng cho người trong tầm nhìn gần (nhỏ, không đáng nạp xa).
+      const wantArt = s.art ?? '';
+      if (wantArt && !v.art && (isLocal || (s.x - local.x) ** 2 + (s.z - local.z) ** 2 < 90 * 90)) {
+        v.art = new ArtifactVis();
+        this.group.add(v.art.root);
+      }
+      v.art?.setItem(wantArt);
       v.model.setWeaponGlow?.(s.wg ?? 0);
       v.model.setWeaponTint?.(look.set ? (SET.get(look.set)?.look.blade ?? '') : '');
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
@@ -492,6 +505,7 @@ export class EntityManager {
         casting: (s.fl & PF_CASTING) !== 0,
         airborne: isLocal ? local.airborne : !s.gr,
       });
+      v.art?.update(dt, v.model.root.position.x, v.model.root.position.y, v.model.root.position.z, v.yaw, v.speed, dead);
       if (!isLocal) {
         const a = v.bar.tick(s.hp, s.mhp, sid === targetId, dead, dt, this.time);
         if (a > 0) {

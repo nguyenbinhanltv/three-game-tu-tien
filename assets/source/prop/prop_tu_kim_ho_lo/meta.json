@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_tu_kim_ho_lo",
+  "type": "prop",
+  "budgetClass": "artifact",
+  "itemId": "itm_tu_kim_ho_lo",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 3000,
+    "texture": 512
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "prop/prop_tu_kim_ho_lo/tripo/raw_v01.glb",
+    "size": {
+      "height": 0.3
+    }
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex imagegen (worker three-game-tu-tien-86), P3-8",
+      "date": "2026-11-15",
+      "prompt": "SUBJECT: single game prop concept for image-to-3D, an original cultivation artifact: a double-bulb gourd (hồ lô) about 30 cm tall, lacquered in deep purple-gold (aged violet-bronze lacquer with fine hand-painted gold scrollwork vines in relief, NO letters), slim waist with a thick braided cinnabar-red silk cord tied around the waist in a flat knot, a short carved dark-wood stopper plug on top with a small bronze cap, lower bulb larger than the upper, subtle wear on the edges, graceful elegant silhouette. THREE-QUARTER VIEW from slightly above (about 25 degrees), floating upright with nothing under it, the whole object complete in frame, solid compact construction as one single mesh-friendly object, no loose small parts, no dangling thin chains.\nSTYLE: semi-realistic stylized 3D game asset concept for a Chinese fantasy cultivation world, cinematic painterly quality, believable materials with hand-painted detail: polished bronze, aged gold-purple lacquer, jade, weathered stone, silk cord, clear readable silhouette, large shapes first and fine detail second, color guide (use only what the subject needs): bronze (#AE8B49), dark wood (#4D3324), cinnabar red (#9D392E), ivory (#E6DDCB), dark teal (#2B5552), jade green (#7FE3D0) only as a small painted accent, stone greys (#BDB6A4, #7D786C).\nRENDER: neutral flat even studio lighting, soft diffuse light from the front, no strong directional shadows, no dramatic lighting, no colored rim light, no color cast, neutral white balance, plain light grey seamless background (#D8D8D8), no floor shadow, orthographic camera, whole subject centered and fully inside the frame with generous margin on all sides.\nAVOID: no text, no letters, no calligraphy, no seal script, no watermark, no logo, no signature, no glow, no bloom, no light rays, no particles, no sparks, no smoke, no fog, no mist, no snow, no magic effects, no aura, no energy, no cel shading, no toon outlines, no black contour lines, no flat cartoon colors, no anime style, no photograph, no plastic look, no baked dramatic shadows, no night scene, no purple tint on the background, no ground, no stand, no table, no background scenery, no hands, no people, no second object, no cropped parts.",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "parentTaskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 3000,
+        "topology": "triangle",
+        "texture": "2K",
+        "pbr": true,
+        "remove_lighting": true
+      },
+      "seed": null,
+      "quote": 0,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-15",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Dựng trên Tripo web (gói Max); runtime LOD0 ≤ 3000 tam giác, texture 512 (lớp artifact)."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (image→3D H3.1) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-15"
+  }
+}

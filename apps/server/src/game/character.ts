@@ -9,6 +9,8 @@ import {
   levelAfterBottleneck,
   ROOT_IDS,
   type RootId,
+  buffMag,
+  STAT_CAPS,
   type CharView,
   computePlayerStats,
   EQUIP_SLOTS,
@@ -37,8 +39,9 @@ import {
 import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
 import { characters, db, items, ledger, rootForName } from '../db';
 import { methodDefMul, sanitizeMethodMeta, type MethodMeta } from './method';
+import { type ArtifactMeta, passiveValue, sanitizeArtifactMeta } from './artifact';
 
-export interface CharMeta extends MethodMeta {
+export interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
   dungeonDay?: string;
 }
@@ -65,7 +68,7 @@ export class InvDraft {
     this.gold = c.gold;
   }
 
-  private bump(id: string, n: number) {
+  bump(id: string, n: number) {
     this.itemDelta.set(id, (this.itemDelta.get(id) ?? 0) + n);
   }
 
@@ -89,7 +92,7 @@ export class InvDraft {
     if (def.stack > 1) {
       for (const s of this.inv) {
         if (left <= 0) break;
-        if (s && s.id === id && s.n < def.stack) {
+        if (s && s.id === id && (s.plus ?? 0) === plus && s.n < def.stack) {
           const put = Math.min(left, def.stack - s.n);
           s.n += put;
           left -= put;
@@ -288,6 +291,7 @@ export class Character {
     }
     if (!c.meta || typeof c.meta !== 'object') c.meta = {};
     sanitizeMethodMeta(c.meta);
+    sanitizeArtifactMeta(c.meta);
     if (!c.quests || typeof c.quests.active !== 'object' || !Array.isArray(c.quests.done)) c.quests = { active: {}, done: [] };
     for (const r of db.select().from(items).where(eq(items.charId, id)).all()) {
       if (r.slot >= 0 && r.slot < INV_SIZE && ITEM.has(r.itemId)) {
@@ -312,14 +316,18 @@ export class Character {
       if (e) worn.push({ item: e, tpl: ITEM.get(e.id)?.stats });
     }
     const st = computePlayerStats(this.level, worn, ROOT.get(this.root), SETS);
-    this.stats = st;
+    // Đan tăng sức đang chạy (P3-8): công/thủ nhân thêm, bạo kích cộng thẳng.
+    const now = Date.now();
+    const buffCrit = buffMag(this.meta.buffs, 'crit', now);
+    this.stats = buffCrit > 0 ? { ...st, critRate: Math.min(st.critRate + buffCrit, STAT_CAPS.critRate) } : st;
     this.mhp = st.hp;
-    this.mmp = st.mp;
-    this.atk = st.atk;
+    // Nội tại pháp bảo (P3-8): Hồ Lô cộng linh lực tối đa, Thanh Liên Ấn cộng phòng ngự.
+    this.mmp = Math.round(st.mp * (1 + passiveValue(this.equip, this.meta, 'mp')));
+    this.atk = Math.round(st.atk * (1 + buffMag(this.meta.buffs, 'atk', now)));
     // Nội tại Kim Thân: phòng ngự cộng thêm theo tỉ lệ.
-    this.def = Math.round(st.def * (1 + methodDefMul(this.meta)));
+    this.def = Math.round(st.def * (1 + methodDefMul(this.meta) + passiveValue(this.equip, this.meta, 'def') + buffMag(this.meta.buffs, 'def', now)));
     if (this.hp > st.hp) this.hp = st.hp;
-    if (this.mp > st.mp) this.mp = st.mp;
+    if (this.mp > this.mmp) this.mp = this.mmp;
     this.charDirty = true;
   }
 

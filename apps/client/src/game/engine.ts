@@ -57,7 +57,7 @@ import {
   CHARGE_MAX,
 } from '@dtl/shared';
 import type { Appearance } from '@dtl/shared';
-import { hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
+import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
@@ -935,6 +935,7 @@ export class Game {
     if (slot >= 0) {
       if (slot < this.bar().length) this.useSkill(slot);
       else if (slot < BAR_SIZE) pushToast(t('ui.method.empty_slot'), 'info');
+      else if (slot === BAR_SIZE) this.useArtifact();
       return;
     }
     if (isKeyFor(code, 'forward') || isKeyFor(code, 'back')) this.autorun = false;
@@ -1104,6 +1105,20 @@ export class Game {
     const res = this.skillQueue.press(i, Date.now(), this.skillReadyAt(i));
     set({ queuedSkill: this.skillQueue.slot });
     if (res === 'send') this.fireSkill(i);
+  }
+
+  /** Pháp bảo phụ (phím 9, ô riêng): chỉ gửi ý định, server quyết định hồi chiêu, linh lực, mục tiêu (P3-8). */
+  useArtifact(): void {
+    const me = this.me();
+    const st = get();
+    if (!me || me.fl & PF_DEAD) return;
+    const def = st.method?.art?.id ? ARTIFACT.get(st.method.art.id) : undefined;
+    if (!def) {
+      pushToast(t('sys.art_none'), 'info');
+      return;
+    }
+    if ((st.cds[def.skill] ?? 0) > Date.now() + 80) return;
+    this.send(C.ARTIFACT, {});
   }
 
   /** Thời điểm (đồng hồ client, ms) ô chiêu `i` dùng lại được: sau cả GCD lẫn hồi chiêu riêng. */
@@ -1388,6 +1403,32 @@ export class Game {
       case 'potion':
         v.pillar(posSrc, tint(0x7dffa0), 1.0, 0.9, 4);
         break;
+      case 'art': {
+        // Pháp bảo phụ (P3-8): pháp bảo bay lên theo animation thủ tục; thêm một vòng sáng nhỏ dưới chân, không trụ sáng, không chớp toàn cảnh.
+        e.players.get(src)?.art?.trigger(m.d ?? 1.2);
+        const col = tint(0xc9a2ff);
+        if (e.chestOf(src, _v)) v.burst(_v.set(_v.x, _v.y - 1.05, _v.z).clone(), col, Math.min(5, (m.r ?? 8) * 0.35), 0.55);
+        if (m.s === 'itm_thanh_lien_an') {
+          // Khiên trùm cả tổ đội: vẽ cho người trong tầm đang mang khiên (cờ về sau vài chục ms).
+          const rr = (m.r ?? 22) ** 2;
+          const from = e.players.get(src);
+          window.setTimeout(() => {
+            for (const [sid, pv] of e.players) {
+              if (from && (pv.x - from.x) ** 2 + (pv.z - from.z) ** 2 > rr) continue;
+              if (sid !== src && !((pv.s.fl ?? 0) & PF_SHIELD)) continue;
+              v.shield((out) => e.chestOf(sid, out), m.d ?? 4, () => (((this.view.players.get(sid)?.fl ?? 0) & PF_SHIELD) !== 0), col, 1, 0.2);
+            }
+          }, 120);
+        }
+        break;
+      }
+      case 'artdrain':
+        // Hồ Lô hút linh lực: một tia nhỏ từ quái bay về người dùng.
+        if (e.chestOf(src, _v)) v.swordShot(_v, posDst, tint(0xc9a2ff), 0.45, 0.5);
+        break;
+      case 'artseal':
+        if (e.chestOf(dst, _v)) v.burst(_v.clone(), tint(0xe8c46a), 0.9, 0.35);
+        break;
       case 'shield':
         v.shield(posSrc, m.d ?? 8, () => ((this.view.players.get(src)?.fl ?? 0) & PF_SHIELD) !== 0, tint(0x7fd8ff), m.v === 'big' ? 1.4 : 1);
         break;
@@ -1530,6 +1571,7 @@ export class Game {
       thunder: 'thunder',
       heal: 'heal',
       potion: 'potion',
+      art: 'shield',
       shield: 'shield',
       levelup: 'levelup',
       ascend: 'ascend',

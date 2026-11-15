@@ -1,10 +1,11 @@
 import { ContentIcon } from './ContentIcon';
 import './panels.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { AIRBORNE_HEIGHT, BAR_SIZE, C, CHARGE_MAX, groundAt, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, type SkillDef, WORLD_SIZE } from '@dtl/shared';
-import { itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
+import { artifactLevelMods, AIRBORNE_HEIGHT, BAR_SIZE, C, CHARGE_MAX, groundAt, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { ARTIFACT, ITEM, itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
+import { artifactLines } from './gear';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
@@ -441,7 +442,9 @@ function SkillBar() {
             </Tooltip>
           );
         })}
+        <ArtifactSlot />
       </div>
+      <BuffRow />
       <div className="action-row">
         <Button size="s" pressed={(flags & PF_MEDITATING) !== 0} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} title={t('ui.help.meditate_v')}>
           🧘 <span>{t('ui.meditate')}</span> <kbd>Z</kbd>
@@ -679,6 +682,100 @@ export function Hud() {
       <DeathOverlay />
       <DebugPanel />
       <Corner />
+    </div>
+  );
+}
+
+
+/** Ô pháp bảo phụ (P3-8): ô riêng cuối thanh chiêu, phím 9. Server quyết định mọi thứ; ô chỉ gửi ý định. */
+function ArtifactSlot() {
+  const art = useUI((s) => s.method?.art);
+  const cds = useUI((s) => s.cds);
+  const mp = useUI((s) => s.mp);
+  const flags = useUI((s) => s.flags);
+  const py = useUI((s) => s.y);
+  const px = useUI((s) => s.x);
+  const pz = useUI((s) => s.z);
+  const now = useNow(100);
+  const def = art?.id ? ARTIFACT.get(art.id) : undefined;
+  const item = art?.id ? ITEM.get(art.id) : undefined;
+  if (!def || !item || !art) {
+    return (
+      <>
+        <span className="sep" />
+        <Tooltip content={<TipCard title={t('ui.art.slot')} desc={t('ui.art.none')} />}>
+          <button type="button" className="skill" data-state="empty" aria-label={`${t('ui.art.slot')} (9)`} onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
+            <span className="skill-icon">
+              <span className="content-icon">＋</span>
+            </span>
+            <span className="skill-key">9</span>
+          </button>
+        </Tooltip>
+      </>
+    );
+  }
+  const mods = artifactLevelMods(art.lv);
+  const total = Math.max(1, def.cd * mods.cdMul) * 1000;
+  const left = Math.max(0, (cds[def.skill] ?? 0) - now);
+  const airborne = (flags & PF_FLYING) !== 0 || py - groundAt(px, pz) > AIRBORNE_HEIGHT;
+  const noMp = mp < def.mp;
+  const state = airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
+  return (
+    <>
+      <span className="sep" />
+      <Tooltip content={<TipCard title={itemName(item.id)} sub={t('ui.art.title')} lines={artifactLines(item, art)} desc={t(`item.${item.id}.desc`)} />}>
+        <button
+          type="button"
+          className="skill art-slot"
+          data-state={state}
+          data-method="1"
+          style={{ '--mc': '#' + def.color } as CSSProperties}
+          aria-label={`${itemName(item.id)} (9)`}
+          onClick={(e) => {
+            Game.current?.useArtifact();
+            blurAfterPointer(e);
+          }}
+        >
+          <span className="skill-icon">
+            <ContentIcon def={item} />
+          </span>
+          <span className="skill-key">9</span>
+          <span className="art-lv">{art.lv}</span>
+          {art.need > 0 && <span className="art-qi" style={{ '--p': Math.min(1, art.qi / art.need) } as CSSProperties} />}
+          {left > 80 && (
+            <>
+              <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
+              {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+            </>
+          )}
+        </button>
+      </Tooltip>
+    </>
+  );
+}
+
+const BUFF_ICON: Record<string, string> = { atk: 'itm_manh_luc_dan', def: 'itm_kim_cuong_dan', crit: 'itm_bao_huyet_dan' };
+
+/** Hàng đan tăng sức đang có hiệu lực (P3-8), kèm thời gian còn lại. */
+function BuffRow() {
+  const buffs = useUI((s) => s.method?.buffs);
+  const off = useUI((s) => s.methodOff);
+  const now = useNow(1000);
+  const list = Object.entries(buffs ?? {}).filter(([, [, until]]) => until + off > now);
+  if (!list.length) return null;
+  return (
+    <div className="buff-row" aria-label={t('ui.buff.title')}>
+      {list.map(([kind, [mag, until]]) => {
+        const left = Math.max(0, Math.ceil((until + off - now) / 1000));
+        return (
+          <Tooltip key={kind} content={<TipCard title={t('ui.buff.title')} lines={[{ text: `${t('ui.pill.buff.' + kind)} +${Math.round(mag * 100)}%`, tone: 'good' }, { text: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, tone: 'dim' }]} />}>
+            <span className="buff-chip">
+              <ContentIcon def={ITEM.get(BUFF_ICON[kind])} />
+              <em>{left >= 60 ? Math.ceil(left / 60) + 'p' : left + 's'}</em>
+            </span>
+          </Tooltip>
+        );
+      })}
     </div>
   );
 }

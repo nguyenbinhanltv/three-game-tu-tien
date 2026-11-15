@@ -142,5 +142,20 @@
       "tank": "Hộ pháp",
       "support": "Đan sư"
     }
-  }
+  },
+  "artifacts": {
+    "itm_tu_kim_ho_lo": "Tử Kim Hồ Lô",
+    "itm_tran_hon_linh": "Trấn Hồn Linh",
+    "itm_thanh_lien_an": "Thanh Liên Ấn"
+  },
+  "pills": {
+    "itm_kim_cuong_dan": "Kim Cương Đan",
+    "itm_bao_huyet_dan": "Bạo Huyết Đan",
+    "itm_manh_luc_dan": "Mãnh Lực Đan"
+  },
+  "pillQualities": [
+    "Hạ phẩm",
+    "Trung phẩm",
+    "Thượng phẩm"
+  ]
 }

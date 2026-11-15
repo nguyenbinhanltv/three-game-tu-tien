@@ -1,7 +1,7 @@
 import { ContentIcon } from './ContentIcon';
 import { useState } from 'react';
 import { C, sellPrice } from '@dtl/shared';
-import { ITEM, itemName, NPC, QUESTS, realmName, RECIPES, t } from '@dtl/content';
+import { hasString, ITEM, itemName, METHOD, NPC, PILL_QUALITY, QUESTS, realmName, RECIPES, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './Panels';
@@ -142,18 +142,30 @@ function CraftTab({ npcId }: { npcId: string }) {
   const inv = useUI((s) => s.inv);
   const gold = useUI((s) => s.char?.gold ?? 0);
   const g = Game.current;
+  const level = useUI((s) => s.char?.level ?? 1);
+  const equip = useUI((s) => s.equip);
+  const methodId = useUI((s) => s.method?.method);
+  const support = methodId ? METHOD.get(methodId)?.passive.kind === 'dan_kinh' : false;
   const count = (id: string) => inv.reduce((s, x) => s + (x && x.id === id ? x.n : 0), 0);
+  const pct = (n: number) => Math.round(n * 100);
   return (
     <div className="shop-list">
       {RECIPES.filter((r) => r.npc === npcId).map((r) => {
         const out = ITEM.get(r.output.id)!;
-        const max = Math.min(...r.inputs.map((i) => Math.floor(count(i.id) / i.n)), r.gold > 0 ? Math.floor(gold / r.gold) : 99);
+        // Pháp bảo (trang bị): mỗi người một món; đã có (túi hoặc đang đeo) thì khóa nút.
+        const isGear = out.kind !== 'consumable' && out.kind !== 'material';
+        const owned = isGear && (count(out.id) > 0 || Object.values(equip).some((e) => e?.id === out.id));
+        const lowLevel = !!r.reqLevel && level < r.reqLevel;
+        const w = support ? PILL_QUALITY.support : PILL_QUALITY.base;
+        const max = isGear ? (owned || lowLevel ? 0 : Math.min(1, ...r.inputs.map((i) => Math.floor(count(i.id) / i.n)), r.gold > 0 ? Math.floor(gold / r.gold) : 1)) : lowLevel ? 0 : Math.min(...r.inputs.map((i) => Math.floor(count(i.id) / i.n)), r.gold > 0 ? Math.floor(gold / r.gold) : 99);
         return (
           <div key={r.id} className="k-card shop-row craft">
             <ItemIcon item={{ id: out.id, n: r.output.n }} small />
             <div className="shop-info">
               <div className="item-name" data-q={out.rarity}>{itemName(out.id)}</div>
               <div className="k-dim">{t(`item.${out.id}.desc`)}</div>
+              {r.quality && <div className="craft-chance" data-support={support ? '1' : undefined}>{t(support ? 'ui.craft.chance_support' : 'ui.craft.chance', { a: pct(w[0]), b: pct(w[1]), c: pct(w[2]) })}</div>}
+              {r.reqLevel && <div className={lowLevel ? 'bad' : 'k-dim'}>{t('ui.craft.need_level', { n: realmName(r.reqLevel) })}</div>}
               <div className="craft-inputs">
                 {r.inputs.map((i) => (
                   <span key={i.id} className={count(i.id) >= i.n ? 'ok' : 'bad'}>
@@ -167,7 +179,8 @@ function CraftTab({ npcId }: { npcId: string }) {
               <Button variant="primary" disabled={max < 1} onClick={() => g?.send(C.CRAFT, { id: r.id, n: 1, r: reqId() })}>
                 {t('ui.craft.make')}
               </Button>
-              {max >= 5 && (
+              {owned && <span className="k-dim">{t('ui.craft.owned')}</span>}
+              {!isGear && max >= 5 && (
                 <Button onClick={() => g?.send(C.CRAFT, { id: r.id, n: 5, r: reqId() })}>
                   {t('ui.craft.make5')}
                 </Button>
@@ -192,7 +205,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
   const cur = tabs.includes(tab) ? tab : 'talk';
   return (
     <Window title={t(`npc.${npcId}.name`)} sub={t(`npc.${npcId}.title`)} onClose={() => set({ npc: null })} cls="npc" width={540}>
-      {tabs.length > 1 && <Tabs items={tabs.map((x) => ({ id: x, label: t('ui.npc.tab.' + x) }))} value={cur} onChange={(id) => setTab(id as Tab)} label={t('ui.npc.tabs')} />}
+      {tabs.length > 1 && <Tabs items={tabs.map((x) => ({ id: x, label: hasString(`ui.npc.tab.${x}.${npcId}`) ? t(`ui.npc.tab.${x}.${npcId}`) : t('ui.npc.tab.' + x) }))} value={cur} onChange={(id) => setTab(id as Tab)} label={t('ui.npc.tabs')} />}
       {cur === 'talk' && <QuestTab npcId={npcId} />}
       {cur === 'shop' && <ShopTab npcId={npcId} />}
       {cur === 'craft' && <CraftTab npcId={npcId} />}
