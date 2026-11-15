@@ -1,8 +1,10 @@
 // Nhiễu gradient 2D tất định (chỉ dùng phép toán số nguyên + IEEE cơ bản,
 // không dùng sin/cos) để server và mọi trình duyệt tính ra cùng một địa hình.
 
-const GX = [1, -1, 1, -1, 1, -1, 0, 0];
-const GZ = [1, 1, -1, -1, 0, 0, 1, -1];
+// 16 hướng gradient lệch 11,25° so với trục (không có hướng song song trục): gradient dọc trục làm nhiễu về 0 dọc
+// các đường lưới nên sống núi (ridged) lộ vết cắt thẳng hình chữ nhật. Hằng số viết sẵn để mọi máy cùng kết quả.
+const GX = [0.980785, 0.83147, 0.55557, 0.19509, -0.19509, -0.55557, -0.83147, -0.980785, -0.980785, -0.83147, -0.55557, -0.19509, 0.19509, 0.55557, 0.83147, 0.980785];
+const GZ = [0.19509, 0.55557, 0.83147, 0.980785, 0.980785, 0.83147, 0.55557, 0.19509, -0.19509, -0.55557, -0.83147, -0.980785, -0.980785, -0.83147, -0.55557, -0.19509];
 
 export function hash2(ix: number, iz: number, seed: number): number {
   let h = Math.imul(ix, 374761393) ^ Math.imul(iz, 668265263) ^ Math.imul(seed, 1274126177);
@@ -16,7 +18,7 @@ export function hash01(ix: number, iz: number, seed: number): number {
 }
 
 function grad(ix: number, iz: number, dx: number, dz: number, seed: number): number {
-  const h = hash2(ix, iz, seed) & 7;
+  const h = (hash2(ix, iz, seed) >>> 7) & 15;
   return GX[h] * dx + GZ[h] * dz;
 }
 
@@ -34,7 +36,8 @@ export function perlin2(x: number, z: number, seed: number): number {
   const n11 = grad(x0 + 1, z0 + 1, fx - 1, fz - 1, seed);
   const a = n00 + (n10 - n00) * u;
   const b = n01 + (n11 - n01) * u;
-  return a + (b - a) * v;
+  // 1,22: bù độ dài gradient (bộ cũ có hướng chéo dài √2) để biên độ địa hình gần như cũ.
+  return (a + (b - a) * v) * 1.22;
 }
 
 /** fBm, trả về xấp xỉ [-1, 1]. */

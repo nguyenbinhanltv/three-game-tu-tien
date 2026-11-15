@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LEVELS, NPCS, QUEST } from '@dtl/content';
-import { MS_DEAD } from '@dtl/shared';
+import { levelSpawns, MS_DEAD } from '@dtl/shared';
 import { avoidRects, DEFAULT_INSET, edgePlace, INDICATOR_EXTENT, nearestGoalSpot, questGoal, trackedQuestId } from './offscreen';
 
 // Chiếu phối cảnh fov 60°, khung 1600×900.
@@ -110,7 +110,9 @@ describe('nearestGoalSpot', () => {
   });
 
   it('không có con nào đang sống → tâm vùng xuất hiện', () => {
-    const spawn = lv.spawns.find((s) => s.mon === 'mon_soi_xam')!;
+    const spawn = levelSpawns(lv)
+      .filter((s) => s.mon === 'mon_soi_xam')
+      .sort((a, b) => a.x ** 2 + a.z ** 2 - (b.x ** 2 + b.z ** 2))[0];
     expect(nearestGoalSpot({ kind: 'mon', mon: 'mon_soi_xam' }, 0, 0, new Map(), new Map(), lv)).toEqual({ x: spawn.x, z: spawn.z });
   });
 

@@ -1,7 +1,7 @@
 import { PartyPanel } from './Party';
 import { ContentIcon } from './ContentIcon';
 import { useEffect, useRef, useState } from 'react';
-import { bindsOnEquip, C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
+import { bindsOnEquip, C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, FOREST, LAKE, NGUNG_KHI_MAX, PORTAL_POS, SECT, SUOI, VACH, VALLEY, WORLD_SIZE } from '@dtl/shared';
 import { ITEM, itemName, QUEST, QUESTS, realmName, SETS, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
@@ -512,12 +512,15 @@ function Settings() {
   );
 }
 
+/** Nhãn bản đồ M lấy từ hằng số chung (level.ts) nên đi theo bố cục, không lệch khi dời vùng. */
 const MAP_LABELS: { key: string; x: number; z: number }[] = [
-  { key: 'ui.zone.sect', x: 2048, z: 2048 },
-  { key: 'ui.zone.valley', x: 2048, z: 2640 },
-  { key: 'ui.zone.forest', x: 2720, z: 2180 },
-  { key: 'ui.zone.lake', x: 1380, z: 2180 },
-  { key: 'ui.zone.dungeon', x: 2048, z: 1508 },
+  { key: 'ui.zone.sect', x: SECT.x, z: SECT.z },
+  { key: 'ui.zone.valley', x: VALLEY.x, z: VALLEY.z },
+  { key: 'zone.suoi_thanh_khe', x: SUOI.x, z: SUOI.z },
+  { key: 'ui.zone.forest', x: FOREST.x, z: FOREST.z },
+  { key: 'zone.vach_da_ngoc', x: VACH.x, z: VACH.z },
+  { key: 'ui.zone.lake', x: LAKE.x, z: LAKE.z },
+  { key: 'ui.zone.dungeon', x: PORTAL_POS.x, z: PORTAL_POS.z },
 ];
 
 function WorldMap() {
@@ -526,8 +529,8 @@ function WorldMap() {
   useEffect(() => {
     const SIZE = 560;
     const SPAN = 2200;
-    const CX = 2048;
-    const CZ = 2150;
+    const CX = SECT.x;
+    const CZ = SECT.z;
     const draw = () => {
       const g = Game.current;
       const cv = ref.current;

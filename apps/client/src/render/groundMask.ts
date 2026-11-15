@@ -3,10 +3,13 @@ import {
   fbm,
   FOREST,
   heightAt,
+  KIEM_TRUNG,
   LAKE,
   PORTAL_PAD,
   SECT,
+  SUOI,
   TERRAIN_SEED,
+  VACH,
   VALLEY,
   WATER_Y,
   WORLD_SIZE,
@@ -30,13 +33,17 @@ interface P {
   z: number;
 }
 
-/** Đường mòn nối các khu: tông môn ↔ thung lũng, rừng, bệ cổng, hồ; thung lũng ↔ rừng. */
+/** Đường mòn nối các khu: tông môn ↔ thung lũng, rừng, bệ cổng, hồ; thung lũng ↔ suối ↔ rừng ↔ vách; cổng ↔ Kiếm Trủng (đèo tây bắc). */
 const ROUTES: { from: P; to: P; bend: number; seed: number }[] = [
-  { from: { x: SECT.x, z: SECT.z + 90 }, to: { x: VALLEY.x, z: VALLEY.z - 200 }, bend: 40, seed: 1 },
-  { from: { x: SECT.x + 90, z: SECT.z }, to: { x: FOREST.x - 230, z: FOREST.z }, bend: 55, seed: 2 },
-  { from: { x: SECT.x, z: SECT.z - 90 }, to: { x: PORTAL_PAD.x, z: PORTAL_PAD.z + 55 }, bend: 35, seed: 3 },
-  { from: { x: SECT.x - 90, z: SECT.z }, to: { x: LAKE.x + 330, z: LAKE.z }, bend: 60, seed: 4 },
-  { from: { x: VALLEY.x + 120, z: VALLEY.z - 80 }, to: { x: FOREST.x - 220, z: FOREST.z + 120 }, bend: 50, seed: 5 },
+  { from: { x: SECT.x, z: SECT.z + 90 }, to: { x: VALLEY.x, z: VALLEY.z - 80 }, bend: 28, seed: 1 },
+  { from: { x: SECT.x + 90, z: SECT.z }, to: { x: FOREST.x - 130, z: FOREST.z }, bend: 30, seed: 2 },
+  { from: { x: SECT.x, z: SECT.z - 90 }, to: { x: PORTAL_PAD.x, z: PORTAL_PAD.z + 55 }, bend: 25, seed: 3 },
+  { from: { x: SECT.x - 90, z: SECT.z }, to: { x: LAKE.x + 200, z: LAKE.z - 20 }, bend: 40, seed: 4 },
+  { from: { x: VALLEY.x - 100, z: VALLEY.z + 10 }, to: { x: LAKE.x + 60, z: LAKE.z + 165 }, bend: 30, seed: 9 },
+  { from: { x: VALLEY.x + 100, z: VALLEY.z - 20 }, to: { x: SUOI.x - 90, z: SUOI.z }, bend: 24, seed: 5 },
+  { from: { x: SUOI.x, z: SUOI.z - 100 }, to: { x: FOREST.x, z: FOREST.z + 110 }, bend: 28, seed: 6 },
+  { from: { x: FOREST.x, z: FOREST.z - 110 }, to: { x: VACH.x, z: VACH.z + 100 }, bend: 30, seed: 7 },
+  { from: { x: PORTAL_PAD.x - 40, z: PORTAL_PAD.z - 20 }, to: { x: KIEM_TRUNG.x + 60, z: KIEM_TRUNG.z + 150 }, bend: 90, seed: 8 },
 ];
 
 const STEPS = 28;

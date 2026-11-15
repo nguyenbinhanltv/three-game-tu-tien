@@ -13,6 +13,7 @@
     "test": "pnpm -r test && pnpm audio:test",
     "content:check": "pnpm --filter @dtl/content check && pnpm icons:check",
     "sim:progress": "pnpm --filter @dtl/content sim",
+    "map:report": "pnpm --filter @dtl/content map:report",
     "bots": "pnpm --filter @dtl/bot-client start",
     "ledger:check": "pnpm --filter @dtl/server ledger:check",
     "size": "pnpm --filter @dtl/perf size",

@@ -102,9 +102,9 @@ describe('god và tp <địa điểm> trong sim', () => {
   it('?at dịch chuyển tới điểm cùng level, điểm của level khác thì không', () => {
     const { sim, p } = setup(true);
     sim.applyTestFlags(p as never, { god: false, at: PLACE.get('rung')! });
-    expect([p.move.x, p.move.z]).toEqual([2720, 2180]);
+    expect([p.move.x, p.move.z]).toEqual([2450, 2110]);
     sim.applyTestFlags(p as never, { god: false, at: PLACE.get('kt_giua')! });
-    expect([p.move.x, p.move.z]).toEqual([2720, 2180]);
+    expect([p.move.x, p.move.z]).toEqual([2450, 2110]);
   });
 
   it('chat /gm god và /gm tp <địa điểm> chỉ chạy với tài khoản thử', () => {
