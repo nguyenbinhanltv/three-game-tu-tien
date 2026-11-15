@@ -207,6 +207,8 @@ def key_all(frame):
 
 
 def new_clip(name):
+    LIFT_BY[name] = 0.0
+    LIFT_CLIP[0] = name
     act = bpy.data.actions.new(name)
     act.use_fake_user = True
     arm.animation_data_create()
@@ -222,7 +224,9 @@ def finish_clip(act, frames):
     arm.animation_data.action = None
 
 
+LIFT_CLIP = ['']
 LIFTS = []
+LIFT_BY = {}  # clip -> nâng thân lớn nhất (m) để chống xuyên đất; lớn nghĩa là dáng đang ép đầu/thân xuống đất
 
 
 def ground_min():
@@ -242,6 +246,7 @@ def grounded(angles, move):
     low = ground_min()
     if low < -1e-4:
         LIFTS.append(-low)
+        LIFT_BY[LIFT_CLIP[0]] = max(LIFT_BY.get(LIFT_CLIP[0], 0.0), -low)
         set_pose(angles, (move[0], move[1], move[2] - low))
 
 
@@ -284,28 +289,40 @@ def keyed(name, seconds, keys):
     return n
 
 
-def pose(neck_pitch=0.0, head_pitch=0.0, neck_yaw=0.0, head_yaw=0.0, tail_pitch=0.0, tail_yaw=0.0, body_yaw=0.0, body_pitch=0.0):
-    """Dáng tĩnh: góc tuyệt đối tăng dần dọc cổ (theo nu) và đuôi (theo tau), đầu thêm riêng."""
-    ang = {ROOT: (body_pitch, body_yaw)}
+FRONT_SPAN = 6  # số đốt thân sau gốc tham gia nhấc thân trước (bản lề trải đều, không gập một khớp)
+
+
+def pose(neck_pitch=0.0, head_pitch=0.0, neck_yaw=0.0, head_yaw=0.0, tail_pitch=0.0, tail_yaw=0.0, body_yaw=0.0, body_pitch=0.0,
+         front=0.0, s_curve=0.0, s_waves=0.75):
+    """Dáng tĩnh. Góc tuyệt đối tăng dần dọc cổ (theo nu) và đuôi (theo tau), đầu thêm riêng.
+    front: nhấc thân trước (độ): đốt gốc, cổ, đầu ngả lên hẳn; FRONT_SPAN đốt thân kề gốc giảm dần về 0 nên đoạn thân
+    sau vẫn nằm đất. s_curve: đuôi uốn chữ S (biên độ độ, s_waves nửa chu kỳ... theo chiều dài đuôi) cho dáng đổ/nằm."""
+    ang = {ROOT: (body_pitch - front, body_yaw)}
     for i in range(NB):
         if i > ROOT:
             n = nu(i)
-            ang[i] = (body_pitch + neck_pitch * n, body_yaw + neck_yaw * n)
+            ang[i] = (body_pitch - front + neck_pitch * n, body_yaw + neck_yaw * n)
         elif i < ROOT:
             t = tau(i)
-            ang[i] = (body_pitch + tail_pitch * t, body_yaw + tail_yaw * t)
+            k = ROOT - i  # 1 = đốt kề gốc
+            ramp = max(0.0, 1.0 - k / FRONT_SPAN)
+            s = s_curve * math.sin(TAU * s_waves * t) * min(1.0, t * 4.0)
+            ang[i] = (body_pitch + tail_pitch * t - front * ramp, body_yaw + tail_yaw * t + s)
     h = NB - 1
     ang[h] = (ang[h][0] + head_pitch, ang[h][1] + head_yaw)
     return ang
 
 
-def wave(ph, tail_amp, body_amp, neck_amp, speed_k, neck_phase=1.0, head_amp=0.0):
-    """Sóng rẽ ngang chạy dọc thân; ph ∈ radian. Đuôi lắc mạnh dần, cổ lắc nhẹ, đầu lệch pha."""
+def wave(ph, tail_amp, body_amp, neck_amp, speed_k, neck_phase=1.0, head_amp=0.0, vert_amp=0.0, vert_k=None):
+    """Sóng chạy dọc thân: rẽ ngang (quay, biên độ tăng dần về đuôi, pha lệch theo đốt) và nhấp nhô dọc (chúi, vert_amp).
+    ph: radian. Cổ lắc nhẹ ngược pha đuôi, đầu lệch pha."""
+    vk = speed_k if vert_k is None else vert_k
     ang = {ROOT: (0.0, body_amp * math.sin(ph))}
     for i in range(NB):
         if i < ROOT:
             t = tau(i)
-            ang[i] = (0.0, (body_amp + (tail_amp - body_amp) * t) * math.sin(ph - speed_k * t))
+            amp = body_amp + (tail_amp - body_amp) * t
+            ang[i] = (vert_amp * math.sin(ph - vk * t + 1.3) * min(1.0, t * 3.0), amp * math.sin(ph - speed_k * t))
         elif i > ROOT:
             n = nu(i)
             ang[i] = (0.0, neck_amp * n * math.sin(ph + neck_phase * n))
@@ -327,24 +344,27 @@ REST_KEY = {}
 LEN = LENGTH  # tham chiếu cho dịch chuyển (mét)
 TAU = 2 * math.pi
 
-# idle: thở, cổ đung đưa, đuôi trườn nhẹ
+
+# idle: thở, cổ đung đưa, thân và đuôi uốn lượn chậm (sóng chạy từ gốc ra đuôi)
 def idle(t):
     a = TAU * t
-    ang = add(wave(a, 9.0, 1.5, 3.5, 5.0, head_amp=2.0), pose(neck_pitch=1.6 * math.sin(a), head_pitch=2.5 * math.sin(a - 0.8)))
+    ang = add(wave(a, 26.0, 8.0, 7.0, 5.2, head_amp=3.0, vert_amp=2.0),
+              pose(neck_pitch=2.0 * math.sin(a), head_pitch=3.0 * math.sin(a - 0.8)))
     return ang, (0.0, 0.0, 0.0)
 
 
-# run: trườn, sóng lớn, cổ ngẩng hơi chúi tới
+# run: trườn, sóng lớn chạy dọc thân, cổ ngẩng hơi chúi tới
 def run(t):
     a = TAU * t
-    ang = add(wave(a, 17.0, 7.0, 8.0, 6.0, neck_phase=2.2, head_amp=3.0), pose(neck_pitch=12.0, head_pitch=-6.0))
+    ang = add(wave(a, 34.0, 15.0, 10.0, 7.5, neck_phase=2.2, head_amp=4.0, vert_amp=4.0),
+              pose(neck_pitch=12.0, head_pitch=-6.0, front=4.0 * math.sin(a)))
     return ang, (0.0, 0.0, 0.0)
 
 
 REACH = 0.16 * LEN  # lao tới tối đa (m)
-coil = pose(neck_pitch=-30.0, head_pitch=-20.0, tail_yaw=8.0)
-strike = pose(neck_pitch=66.0, head_pitch=34.0)
-biteo = pose(neck_pitch=58.0, head_pitch=52.0)
+coil = pose(neck_pitch=-30.0, head_pitch=-20.0, tail_yaw=14.0, front=16.0)
+strike = pose(neck_pitch=66.0, head_pitch=34.0, tail_yaw=-12.0, front=-4.0)
+biteo = pose(neck_pitch=58.0, head_pitch=52.0, tail_yaw=-18.0, front=-6.0)
 
 n_idle = sampled('idle', 3.2, idle)
 n_run = sampled('run', 1.0, run)
@@ -353,41 +373,41 @@ n_attack = keyed('attack', 0.9, [
     (0.26, coil, (0, 0.04 * LEN, 0)),
     (0.42, strike, (0, -REACH, 0)),
     (0.52, biteo, (0, -REACH, 0)),
-    (0.70, pose(neck_pitch=22.0, head_pitch=14.0), (0, -0.05 * LEN, 0)),
+    (0.70, pose(neck_pitch=22.0, head_pitch=14.0, tail_yaw=8.0), (0, -0.05 * LEN, 0)),
     (1.00, REST_KEY, (0, 0, 0)),
 ])
 n_hit = keyed('hit_light', 0.4, [
     (0.00, REST_KEY, (0, 0, 0)),
-    (0.30, pose(neck_pitch=-20.0, head_pitch=-20.0, tail_yaw=-6.0), (0, 0.02 * LEN, 0)),
+    (0.30, pose(neck_pitch=-20.0, head_pitch=-20.0, tail_yaw=-24.0, s_curve=10.0, front=8.0), (0, 0.03 * LEN, 0)),
     (1.00, REST_KEY, (0, 0, 0)),
 ])
 n_death = keyed('death', 2.6, [
     (0.00, REST_KEY, (0, 0, 0)),
-    (0.14, pose(neck_pitch=-20.0, head_pitch=-14.0), (0, 0.03 * LEN, 0)),
-    (0.38, pose(neck_pitch=70.0, head_pitch=20.0, neck_yaw=14.0, tail_yaw=12.0), (0, -0.04 * LEN, 0)),
-    (0.60, pose(neck_pitch=104.0, head_pitch=8.0, neck_yaw=34.0, tail_yaw=26.0, body_yaw=5.0), (0, -0.07 * LEN, 0)),
-    (1.00, pose(neck_pitch=108.0, head_pitch=4.0, neck_yaw=38.0, tail_yaw=30.0, body_yaw=6.0), (0, -0.07 * LEN, 0)),
+    (0.14, pose(neck_pitch=-24.0, head_pitch=-16.0, front=28.0, tail_yaw=10.0), (0, 0.03 * LEN, 0)),
+    (0.34, pose(neck_pitch=40.0, head_pitch=24.0, neck_yaw=18.0, front=8.0, tail_yaw=26.0, s_curve=18.0), (0, -0.05 * LEN, 0)),
+    (0.60, pose(neck_pitch=104.0, head_pitch=8.0, neck_yaw=38.0, tail_yaw=40.0, body_yaw=8.0, s_curve=34.0), (0, -0.08 * LEN, 0)),
+    (1.00, pose(neck_pitch=108.0, head_pitch=4.0, neck_yaw=42.0, tail_yaw=46.0, body_yaw=10.0, s_curve=40.0), (0, -0.08 * LEN, 0)),
 ])
 
 extra_clips = {}
 if 'slam' in EXTRA:
-    # thu cổ → ngửa cao → nện đầu xuống (chạm 1,0 s) → giữ → về
-    rear = pose(neck_pitch=-52.0, head_pitch=-28.0, tail_pitch=0.0)
-    smash = pose(neck_pitch=100.0, head_pitch=40.0)
+    # nhấc thân trước lên cao ngửa cổ → nện cả thân trước và đầu xuống (chạm 1,0 s) → giữ → về
+    rear = pose(neck_pitch=-30.0, head_pitch=-22.0, front=58.0, tail_yaw=12.0)
+    smash = pose(neck_pitch=88.0, head_pitch=40.0, front=-6.0, tail_yaw=-16.0)
     extra_clips['slam'] = keyed('slam', 1.8, [
         (0.00, REST_KEY, (0, 0, 0)),
-        (0.22, pose(neck_pitch=-24.0, head_pitch=-12.0), (0, 0.03 * LEN, 0)),
+        (0.22, pose(neck_pitch=-18.0, head_pitch=-10.0, front=26.0, tail_yaw=6.0), (0, 0.03 * LEN, 0)),
         (0.47, rear, (0, 0.06 * LEN, 0)),
         (0.53, rear, (0, 0.06 * LEN, 0)),
-        (0.556, smash, (0, -0.11 * LEN, 0)),
-        (0.75, smash, (0, -0.11 * LEN, 0)),
+        (0.556, smash, (0, -0.12 * LEN, 0)),
+        (0.75, smash, (0, -0.12 * LEN, 0)),
         (1.00, REST_KEY, (0, 0, 0)),
     ])
 if 'sweep' in EXTRA:
-    # ngả cổ sang phải lấy đà → hạ thấp quét đầu từ phải sang trái (giữa quạt 0,9 s) → giữ → về
-    draw = pose(neck_pitch=-18.0, head_pitch=4.0, neck_yaw=-60.0, head_yaw=-14.0, tail_yaw=20.0)
-    mid = pose(neck_pitch=46.0, head_pitch=22.0, neck_yaw=0.0, tail_yaw=0.0)
-    end = pose(neck_pitch=46.0, head_pitch=22.0, neck_yaw=60.0, head_yaw=14.0, tail_yaw=-20.0)
+    # ngả cổ sang phải, đuôi cuộn sang trái lấy đà → quật: đầu quét từ phải sang trái (giữa quạt 0,9 s) cùng đuôi quật ngược lại
+    draw = pose(neck_pitch=-18.0, head_pitch=4.0, neck_yaw=-60.0, head_yaw=-14.0, tail_yaw=62.0, body_yaw=-6.0, front=14.0)
+    mid = pose(neck_pitch=46.0, head_pitch=22.0, neck_yaw=0.0, tail_yaw=0.0, body_yaw=0.0, front=0.0)
+    end = pose(neck_pitch=46.0, head_pitch=22.0, neck_yaw=60.0, head_yaw=14.0, tail_yaw=-70.0, body_yaw=6.0, front=0.0)
     extra_clips['sweep'] = keyed('sweep', 1.7, [
         (0.00, REST_KEY, (0, 0, 0)),
         (0.30, draw, (0, 0.05 * LEN, 0)),
@@ -399,14 +419,15 @@ if 'sweep' in EXTRA:
 if 'stun' in EXTRA:
     def stun(t):
         a = TAU * t
-        ang = add(wave(a, 5.0, 1.0, 4.0, 3.0), pose(neck_pitch=40.0 + 3.0 * math.sin(2 * a), head_pitch=24.0, tail_yaw=0.0))
+        ang = add(wave(a, 9.0, 2.0, 5.0, 3.0, vert_amp=1.5), pose(neck_pitch=40.0 + 3.0 * math.sin(2 * a), head_pitch=24.0, s_curve=10.0))
         return ang, (0.0, 0.0, 0.0)
     extra_clips['stun'] = sampled('stun', 1.6, stun)
 if 'chant' in EXTRA:
     def chant(t):
         a = TAU * t
         pulse = math.sin(2 * a)
-        ang = add(wave(a, 6.0, 2.0, 3.0, 4.0), pose(neck_pitch=-24.0 + 4.0 * pulse, head_pitch=-22.0 + 5.0 * pulse))
+        ang = add(wave(a, 14.0, 5.0, 4.0, 4.5, vert_amp=2.0),
+                  pose(neck_pitch=-24.0 + 4.0 * pulse, head_pitch=-22.0 + 5.0 * pulse, front=22.0 + 3.0 * pulse))
         return ang, (0.0, 0.0, 0.0)
     extra_clips['chant'] = sampled('chant', 2.0, chant)
 
@@ -422,5 +443,6 @@ REPORT = {
     'height': round(float(HEIGHT), 3),
     'clips': {'idle': n_idle, 'run': n_run, 'attack': n_attack, 'hit_light': n_hit, 'death': n_death, **extra_clips},
     'maxLift': round(max(LIFTS), 3) if LIFTS else 0.0,
+    'liftByClip': {k: round(v, 3) for k, v in LIFT_BY.items()},
 }
 print(f'[anim_serpent] {ASSET_ID}: {REPORT}')  # noqa: F821
