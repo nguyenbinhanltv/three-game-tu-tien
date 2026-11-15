@@ -115,7 +115,9 @@ interface Perform {
 const LUNGE_MAX = 1.5;
 /** Nằm sau khi ngã trước khi đứng dậy (giây) và thời gian tối thiểu nằm trước khi di chuyển kéo dậy sớm. */
 const KNOCK_LIE = 0.35;
-const KNOCK_MIN_LIE = 0.5;
+/** Tốc độ phát clip ngã (3,7 s ở 1×: loạng choạng 1,2 s rồi mới ngã) và đứng dậy (1,6 s): nhanh hơn để không bắt người chơi nằm quá lâu. */
+const KNOCK_RATE = 1.5;
+const GETUP_RATE = 1.3;
 /** Clip lướt hiển thị: phát nhanh clip chạy. */
 const DASH_RATE = 2.2;
 /** Clip trúng đòn có hướng (K-3) theo phía bị đánh. */
@@ -392,7 +394,7 @@ export class SkinnedCharacter implements CharacterView {
     if (this.dead || !this.clips.has('knockdown')) return;
     this.stopPerform();
     this.pendingPerform = null;
-    this.playShot('hit', 'knockdown', 1, undefined, this.clips.has('getup') ? 'getup' : undefined, true);
+    this.playShot('hit', 'knockdown', KNOCK_RATE, undefined, this.clips.has('getup') ? 'getup' : undefined, true);
   }
 
   /** Thêm clip nạp lười (thư viện K-3) và nối vào bảng clip: trạng thái nền được chọn lại ở khung kế. */
@@ -528,11 +530,11 @@ export class SkinnedCharacter implements CharacterView {
         const sh = this.shot;
         if (sh.lie !== undefined) {
           sh.lie += dt;
-          // Nằm đủ lâu mà người chơi đã đi lại thì đứng dậy ngay, không bắt nằm hết nhịp.
-          if (sh.next && sh.lie >= KNOCK_MIN_LIE && a.speed > MOVE_MIN) sh.left = Math.min(sh.left, FADE_OUT_SHOT);
+          // Đã ngã xong (đang nằm hết `KNOCK_LIE`) mà người chơi đi lại thì đứng dậy ngay; chưa ngã xong thì chưa dậy.
+          if (sh.next && sh.left <= KNOCK_LIE && a.speed > MOVE_MIN) sh.left = Math.min(sh.left, FADE_OUT_SHOT);
         }
         if (sh.left <= FADE_OUT_SHOT) {
-          if (sh.next && this.clips.has(sh.next)) this.playShot('hit', sh.next, 1);
+          if (sh.next && this.clips.has(sh.next)) this.playShot('hit', sh.next, GETUP_RATE);
           else {
             this.shot = null;
             this.base = null;

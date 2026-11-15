@@ -20,6 +20,7 @@ const ONLY = opt('--only', 'combo,skill,dashcancel,movecancel,locomotion,hit,kno
 const RENDERER = opt('--renderer', 'webgpu');
 const PORT = Number(process.env.PORT ?? 2675);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
+const SC_DIST = Number(opt('--dist', '3.4'));
 const TILE = Number(opt('--tile', '130'));
 
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots-k4', command: 'pnpm shots:k4' });
@@ -42,6 +43,33 @@ const cam = (page: Page, yaw: number, pitch: number, dist: number) =>
     g.camDist = d;
     g.camDistCur = d;
   }, [yaw, pitch, dist] as const);
+
+/**
+ * Camera cận cảnh góc 3/4 ngang hông: cách nhân vật `dist` m, pitch thấp, nhìn lệch ~50° so với hướng nhìn của người chơi (hoặc vuông góc với
+ * đường tới con sói gần nhất nếu có, để thấy cả người lẫn đối thủ). Gọi sau khi nhân vật đã quay mặt vào việc sắp làm.
+ */
+async function closeCam(page: Page, dist = 3.4): Promise<void> {
+  await page.evaluate((d) => {
+    const g = (window as unknown as G).__game!;
+    let yaw = g.cur.yaw as number;
+    let near: { x: number; z: number } | null = null;
+    let best = 1e9;
+    for (const m of g.view.monsters.values()) {
+      const dd = Math.hypot(m.x - g.cur.x, m.z - g.cur.z);
+      if (m.st !== 3 && dd < best) {
+        best = dd;
+        near = m;
+      }
+    }
+    // Hướng nhìn dự kiến: về phía sói nếu có (người chơi sẽ quay mặt vào nó khi ra chiêu).
+    if (near) yaw = Math.atan2(near.x - g.cur.x, near.z - g.cur.z);
+    g.camYaw = yaw + 0.9;
+    g.camPitch = 0.08;
+    g.camDist = d;
+    g.camDistCur = d;
+  }, dist);
+  await sleep(700);
+}
 
 async function clearIntro(page: Page): Promise<void> {
   const until = Date.now() + 40_000;
@@ -159,13 +187,13 @@ async function main(): Promise<void> {
         const m = g.ents?.players.get(g.sid)?.model;
         return !!m && m.dirHits === true;
       }, undefined, { timeout: 60_000, polling: 300 });
-      await cam(page, Math.PI * 0.8, 0.14, 3.6);
       const title = (s: string) => `${s} · ${g === 'm' ? 'Thanh Phong (nam)' : 'Lam Chi (nữ)'} · mỗi ô ${TILE} ms, viền đỏ = khung phát sự kiện hit`;
       const out = (n: string) => path.join(OUT, `${g === 'm' ? 'nam' : 'nu'}-${n}.png`);
       const press = (i: number) => page.evaluate((s) => (window as unknown as G).__game!.useSkill(s), i);
 
       if (sc === 'combo') {
         await scene(page);
+        await closeCam(page, SC_DIST);
         const r = await record(ctx, page, 4200, async () => {
           for (let k = 0; k < 3; k++) {
             await press(0);
@@ -177,6 +205,7 @@ async function main(): Promise<void> {
       }
       if (sc === 'skill') {
         await scene(page);
+        await closeCam(page, SC_DIST);
         const r = await record(ctx, page, 1700, async () => {
           await press(1);
         });
@@ -186,6 +215,7 @@ async function main(): Promise<void> {
       if (sc === 'dashcancel') {
         // Chiêu Hộ Thể (ô 3, không cần mục tiêu): lướt (Q) ở 480 ms, sau mốc cancel.dash (380 ms), cắt phần thu về; không sói nên lướt đủ 8 m.
         await scene(page, 0);
+        await closeCam(page, SC_DIST);
         await gm(page, 'cd', 600);
         const r = await record(ctx, page, 1800, async () => {
           await press(2);
@@ -197,6 +227,7 @@ async function main(): Promise<void> {
       }
       if (sc === 'movecancel') {
         await scene(page);
+        await closeCam(page, SC_DIST);
         await gm(page, 'cd', 600);
         const r = await record(ctx, page, 1500, async () => {
           await press(1);
@@ -209,8 +240,8 @@ async function main(): Promise<void> {
       }
       if (sc === 'locomotion') {
         await scene(page);
-        await cam(page, Math.PI * 0.8, 0.14, 3.6);
-        const r = await record(ctx, page, 4200, async () => {
+        await closeCam(page, SC_DIST);
+          const r = await record(ctx, page, 4200, async () => {
           for (const k of ['KeyS', 'KeyA', 'KeyD']) {
             await page.keyboard.down(k);
             await sleep(1100);
@@ -223,6 +254,7 @@ async function main(): Promise<void> {
       if (sc === 'hit') {
         // Gọi phản ứng trúng đòn của model từ 4 phía rồi một đòn nặng (chỉ hình, giống lúc S.DMG tới): trước, phải, sau, trái, nặng.
         await scene(page, 0);
+        await closeCam(page, SC_DIST);
         const r = await record(ctx, page, 5600, async () => {
           for (const k of ['front', 'right', 'back', 'left', 'heavy']) {
             await page.evaluate((kind) => {
@@ -242,12 +274,13 @@ async function main(): Promise<void> {
       }
       if (sc === 'knockdown') {
         await scene(page, 0);
-        const r = await record(ctx, page, 3200, async () => {
+        await closeCam(page, SC_DIST);
+        const r = await record(ctx, page, 5400, async () => {
           await page.evaluate(() => {
             const gm2 = (window as unknown as G).__game!;
             gm2.ents.players.get(gm2.sid).model.knockdown();
           });
-          await sleep(3000);
+          await sleep(5200);
         });
         await sheet(ctx, out('nga-dung-day'), title('Bị hất ngã (knockdown) rồi tự đứng dậy (getup) về thủ thế'), r.shots, 10);
       }

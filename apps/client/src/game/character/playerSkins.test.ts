@@ -406,16 +406,17 @@ describe('clip K-3 nạp lười (K-4)', () => {
     m.hitReact({ dirX: 0, dirZ: -1, noStop: true });
     run(m, anim(), 0.1);
     expect(m.actionOf('hit_front_1')?.isRunning() ?? false).toBe(false);
-    // Đi lại ngay: chưa nằm đủ KNOCK_MIN_LIE nên vẫn nằm.
-    run(m, anim({ speed: 5 }), 0.2);
+    // Đi lại khi chưa ngã xong (clip 3,7 s phát 1,5×): chưa dậy.
+    run(m, anim({ speed: 5 }), 1.2);
     expect(m.actionOf('getup')?.isRunning() ?? false).toBe(false);
-    run(m, anim({ speed: 5 }), 0.6);
+    // Ngã xong thì đi lại kéo dậy sớm.
+    run(m, anim({ speed: 5 }), 1.5);
     expect(m.actionOf('getup')?.isRunning()).toBe(true);
     run(m, anim(), 3);
-    expect(m.state).toBe('combatIdle'); // đứng dậy về thủ thế
+    expect(['combatIdle', 'idle']).toContain(m.state); // đứng dậy về thủ thế (hoặc nghỉ nếu đã hết COMBAT_HOLD)
     // Đứng yên: nằm hết nhịp rồi tự đứng dậy.
     m.knockdown();
-    run(m, anim(), (m.actionOf('knockdown')?.getClip().duration ?? 1.5) + 0.3);
+    run(m, anim(), (m.actionOf('knockdown')?.getClip().duration ?? 3.7) / 1.5 + 0.6);
     expect(m.actionOf('getup')?.isRunning()).toBe(true);
     m.dispose();
     s.dispose();
