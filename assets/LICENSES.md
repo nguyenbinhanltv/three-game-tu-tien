@@ -1,5 +1,22 @@
 # Giấy phép asset
 
+## Chân dung 2D Codex (2026-11-16)
+
+Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`tools/codex-assets/gen.mjs portraits`, chủ thể ở `tools/codex-assets/portraits.json`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/portraits/<id>.png` và `<id>.prompt.txt`. Đóng gói bằng `tools/codex-assets/pack.mjs portraits` thành WebP 480×640 ở `apps/client/public/assets/art/portraits/` (nạp lười).
+
+| ID | Nguồn | Giấy phép | Ngày | Tệp |
+| --- | --- | --- | --- | --- |
+| `boss_han_giao` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/boss_han_giao.png` |
+| `boss_huyet_lang_vuong` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/boss_huyet_lang_vuong.png` |
+| `boss_kiem_khoi` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/boss_kiem_khoi.png` |
+| `boss_thu_mo_tuong` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/boss_thu_mo_tuong.png` |
+| `elite_cu_nham_vien` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/elite_cu_nham_vien.png` |
+| `elite_huyet_nha_lang` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/elite_huyet_nha_lang.png` |
+| `elite_xich_dien_ho` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/elite_xich_dien_ho.png` |
+| `npc_chuong_mon` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/npc_chuong_mon.png` |
+| `npc_duoc_su` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/npc_duoc_su.png` |
+| `npc_thiet_lao` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/portraits/npc_thiet_lao.png` |
+
 ## Icon UI M4-7
 
 Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên Lộ. Không dùng tài sản hoặc khung icon của guizang. PNG gốc ở `<DTL_ASSET_SOURCE>/icons/<id>.png`; prompt tại `docs/prompts/codex.md` mục 9, chủ thể tại `tools/icons/subjects.json`. Atlas 128px/ô: `apps/client/public/assets/ui/icons.*.webp`. Manifest lưu SHA-256 và dung lượng từng PNG nguồn.

@@ -1,3 +1,4 @@
+import { Portrait } from './Art';
 import { ContentIcon } from './ContentIcon';
 import './panels.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
@@ -44,6 +45,7 @@ function TargetFrame({ below }: { below: boolean }) {
   if (!target || (target.boss && target.id === bossId)) return null;
   return (
     <div className={'frame target-frame' + (below ? ' below-boss' : '')} data-kind={target.kind}>
+      {target.kind !== 'player' && <Portrait id={target.def} className="frame-portrait" />}
       <div className="frame-head">
         <span className="frame-name">{target.name}</span>
         {target.kind !== 'npc' && <span className="frame-realm">{target.kind === 'mon' ? t('ui.level_short', { n: target.level }) : realmName(target.level)}</span>}
@@ -62,6 +64,7 @@ function BossBar() {
   const pct = boss.hp > 0 && boss.mhp > 0 ? Math.max(1, Math.floor((boss.hp / boss.mhp) * 100)) : 0;
   return (
     <div className="boss-bar" key={boss.id}>
+      <Portrait id={boss.def} className="boss-portrait" />
       <div className="boss-head">
         <span className="boss-name">{monsterName(boss.def)}</span>
         <span className="boss-level">{t('ui.level_short', { n: boss.level })}</span>
