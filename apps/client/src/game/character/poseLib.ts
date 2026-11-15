@@ -1,5 +1,5 @@
 import type * as THREE from 'three/webgpu';
-import { POSE_CAST, POSE_FLY, type PoseDef } from '@dtl/shared';
+import { POSE_CAST, POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, type PoseDef } from '@dtl/shared';
 import { POSES } from '@dtl/content';
 import { bakePose, IkRig, maskClip, poseClipName } from './ikpose';
 import type { ClipMap } from './states';
@@ -12,9 +12,14 @@ export interface PoseClips {
   upper: THREE.AnimationClip;
   /** Hông và chân: chỉ theo pose khi đứng yên, đang chạy thì để clip chạy giữ bước chân. */
   lower: THREE.AnimationClip;
+  /** Chỉ cánh tay phải: động tác phụ chồng lên mọi trạng thái nền (rút/tra kiếm, `SWORD_GESTURES`). */
+  arm?: THREE.AnimationClip;
 }
 
 export type PoseLibrary = ReadonlyMap<string, PoseClips>;
+
+/** Pose động tác phụ chỉ dùng cánh tay phải (M3-2). */
+const SWORD_GESTURES = new Set([POSE_SWORD_DRAW, POSE_SWORD_SHEATHE]);
 
 /**
  * Nướng mọi pose cho một asset người (bản gốc trong AssetCache, ở tư thế nghỉ). Clip theo tên xương nên dùng chung
@@ -26,7 +31,8 @@ export function bakePoseLibrary(root: THREE.Object3D, poses: readonly PoseDef[])
   const lib = new Map<string, PoseClips>();
   for (const def of poses) {
     const full = bakePose(def, rig);
-    lib.set(def.id, { def, full, upper: maskClip(full, rig, 'upper'), lower: maskClip(full, rig, 'lower') });
+    const arm = SWORD_GESTURES.has(def.id) ? maskClip(full, rig, 'armR') : undefined;
+    lib.set(def.id, { def, full, upper: maskClip(full, rig, 'upper'), lower: maskClip(full, rig, 'lower'), arm });
   }
   return lib;
 }
