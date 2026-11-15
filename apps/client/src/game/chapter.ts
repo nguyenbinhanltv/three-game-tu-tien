@@ -4,7 +4,7 @@
  * Phần thuần (preset, khung camera, cờ đã xem) tách ở đây để test được không cần renderer.
  */
 
-export type ChapterKind = 'sect' | 'dungeon' | 'trib';
+export type ChapterKind = 'sect' | 'dungeon' | 'trib' | 'ascend';
 
 export interface ChapterPreset {
   /** Thẻ hiện bao lâu (ms). */
@@ -23,6 +23,8 @@ export const CHAPTER: Record<ChapterKind, ChapterPreset> = {
   sect: { card: 3000, dist: 1.3, pitch: 0.1, cam: 2.4 },
   dungeon: { card: 2800, dist: 1.2, pitch: 0.06, cam: 2.2 },
   trib: { card: 2800, dist: 1.25, pitch: -0.14, cam: 2.2 },
+  /** Đột phá thành công: ngẩng lên trời quang sau mây kiếp. */
+  ascend: { card: 3000, dist: 1.3, pitch: 0.12, cam: 3 },
 };
 
 const EASE_IN = 0.7;

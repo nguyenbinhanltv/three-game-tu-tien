@@ -121,9 +121,9 @@ function ChapterCardShow({ card }: { card: ChapterCard }) {
       <div className="lb lb-bot" />
       <div className="chapter-text">
         <div className="chapter-kicker">{t(k + '.kicker', { realm: realmName(level) })}</div>
-        <div className="chapter-title">{t(k + '.title')}</div>
+        <div className="chapter-title">{t(k + '.title', { realm: realmName(level) })}</div>
         <div className="chapter-rule" />
-        <div className="chapter-sub">{t(k + '.sub')}</div>
+        <div className="chapter-sub">{t(k + '.sub', { realm: realmName(level) })}</div>
       </div>
     </div>
   );
@@ -430,10 +430,14 @@ function Tribulation() {
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   return (
-    <div className="trib">
-      <div className="trib-title">⚡ {t('ui.trib.title')} ⚡</div>
-      <div>{t('ui.trib.left', { n: Math.ceil((tribEnd - now) / 1000) })}</div>
-    </div>
+    <>
+      <div className="trib-bar trib-bar-top" />
+      <div className="trib-bar trib-bar-bot" />
+      <div className="trib">
+        <div className="trib-title">⚡ {t('ui.trib.title')} ⚡</div>
+        <div>{t('ui.trib.left', { n: Math.ceil((tribEnd - now) / 1000) })}</div>
+      </div>
+    </>
   );
 }
 

@@ -325,6 +325,11 @@ export class Game {
   /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
   private cineKind: 'sect' | 'boss' | 'phase' = 'sect';
   private cineShakeAt = 0;
+  /** Cảnh độ kiếp của mình (P2-B4): 0..1 độ đậm của màu tối/tím toàn cảnh, và cờ đang trong cảnh (ẩn nhãn 3D). */
+  private tribMix = 0;
+  private tribScene = false;
+  /** Giờ kết thúc kiếp theo tin `tribstart`, giữ riêng để đồng bộ HUD không xoá nếu tin đến trước cờ trạng thái. */
+  private tribUntil = 0;
   /** Boss mà cảnh xuất hiện đang nhìn theo (vị trí hiện tại, vì boss đang chạy), và độ cao ngực so với chân. */
   private cineFocus: { id: string; rise: number; scale: number } | null = null;
   /** Boss đã được xét cảnh xuất hiện trong lần giao chiến này (xóa khi boss hồi/gục). */
@@ -1303,7 +1308,11 @@ export class Game {
         break;
       case 'ascend':
         v.pillar(posSrc, 0xfff2b8, 3.2, 2.4, 40);
-        if (src === this.sid) this.post?.flash(0.6);
+        if (src === this.sid) {
+          this.post?.flash(0.6);
+          // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
+          window.setTimeout(() => !this.disposed && this.chapter('ascend', false), 1100);
+        }
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
       case 'respawn':
@@ -1368,7 +1377,8 @@ export class Game {
       case 'tribstart':
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) {
-          set({ tribEnd: Date.now() + (m.d ?? 40) * 1000 });
+          this.tribUntil = Date.now() + (m.d ?? 40) * 1000;
+          set({ tribEnd: this.tribUntil });
           this.chapter('trib');
         }
         break;
@@ -1738,8 +1748,25 @@ export class Game {
     this.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
     this.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
     if (this.cine.active) this.runCine(dt);
-    this.ents.tagsHidden = this.cine.active;
+    this.tribFx(dt);
+    this.ents.tagsHidden = this.cine.active || this.tribScene;
     updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
+  }
+
+  /**
+   * Cảnh độ kiếp (P2-B4): trong lúc cờ PF_TRIBULATION của mình bật, màu toàn cảnh chìm dần sang tối/tím (qua `pulse` của
+   * hậu kỳ) rồi trả về khi hết kiếp. Chỉ là lớp hình theo cờ server; cảnh boss đang chiếu thì nhường `pulse` cho cảnh đó.
+   */
+  private tribFx(dt: number): void {
+    const on = ((this.me()?.fl ?? 0) & PF_TRIBULATION) !== 0;
+    this.tribScene = on;
+    const was = this.tribMix;
+    this.tribMix = on ? Math.min(1, was + dt / 2.5) : Math.max(0, was - dt / 1.6);
+    if (this.tribMix === 0 && was === 0) return;
+    if (this.cine.active && this.cineKind !== 'sect') return;
+    const k = this.tribMix * this.tribMix * (3 - 2 * this.tribMix);
+    postParams.pulseColor.value.setRGB(0.3, 0.16, 0.55);
+    postParams.pulse.value = 0.7 * k;
   }
 
   /** Gửi (và gửi lại nếu server chưa nhận) chiêu đang chờ khi hết GCD/hồi chiêu. */
@@ -1892,7 +1919,7 @@ export class Game {
       fps: Math.round(st.fps ? st.fps * 0.6 + fps * 0.4 : fps),
       perf,
       autoAttack: this.autoAttack,
-      tribEnd: me.fl & PF_TRIBULATION ? st.tribEnd : 0,
+      tribEnd: me.fl & PF_TRIBULATION ? Math.max(st.tribEnd, this.tribUntil) : 0,
       castEnd: me.fl & PF_CASTING ? st.castEnd : 0,
     });
     this.checkChapters(rp.x, rp.z);
@@ -1977,12 +2004,12 @@ export class Game {
    * Hiện thẻ chương cho sự kiện cá nhân (C2): thẻ chữ + khung camera nhẹ + tiếng chiêng. Chỉ ở client,
    * không gửi gì lên server, không khóa input. Tắt trong Cài đặt thì bỏ qua cả ba.
    */
-  private chapter(kind: ChapterKind): void {
+  private chapter(kind: ChapterKind, sting = true): void {
     if (!get().chapterCards) return;
     const p = CHAPTER[kind];
     set({ chapter: { id: ++this.bossLineId, kind, until: Date.now() + p.card, dur: p.card } });
     this.camFrame.start(p);
-    chapterSting(0.9);
+    if (sting) chapterSting(0.9);
   }
 
   /** Thẻ đang chờ (vào bí cảnh) và lần đầu vào Lạc Kiếm Tông của nhân vật này; gọi mỗi lần đồng bộ HUD. */

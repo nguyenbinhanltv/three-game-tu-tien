@@ -769,28 +769,35 @@ export class Vfx {
    * giữa, bừng sáng trong mây khi có tia sét đánh gần. `seed` (từ server) cho cùng vân mây.
    */
   tribulationCloud(pos: PosFn, dur: number, stillOn: () => boolean, seed?: number): void {
-    const cloud = this.fx(VORTEX_GEO, CLOUD_COLOR, 0, 'vortex');
-    cloud.fxA.z = (seedOr(seed) % 997) / 10;
-    this.clouds.add(cloud);
-    let t = 0;
-    let op = 0;
-    this.add(
-      dur + 1.5,
-      (_k, dt) => {
-        t += dt;
-        cloud.fxA.y = Math.max(0, cloud.fxA.y - dt * 3);
-        if (!pos(_a)) return;
-        op = stillOn() ? Math.min(1, t / 2) : Math.max(0, op - dt);
-        cloud.position.set(_a.x, _a.y + 66, _a.z);
-        cloud.scale.setScalar(64);
-        cloud.rotation.y = t * 0.06;
-        cloud.fxOpacity = op * 0.92;
-      },
-      () => {
-        this.clouds.delete(cloud);
-        this.drop(cloud);
-      },
-    );
+    // Hai tầng xoáy ngược chiều, tầng dưới nhỏ và thấp hơn: mây dày và có chiều sâu mà chỉ thêm 1 draw call.
+    const layers = [
+      { y: 48, scale: 125, spin: 0.06, op: 0.95, seedAdd: 0 },
+      { y: 34, scale: 90, spin: -0.1, op: 0.8, seedAdd: 41 },
+    ];
+    for (const L of layers) {
+      const cloud = this.fx(VORTEX_GEO, CLOUD_COLOR, 0, 'vortex');
+      cloud.fxA.z = ((seedOr(seed) + L.seedAdd) % 997) / 10;
+      this.clouds.add(cloud);
+      let t = 0;
+      let op = 0;
+      this.add(
+        dur + 1.5,
+        (_k, dt) => {
+          t += dt;
+          cloud.fxA.y = Math.max(0, cloud.fxA.y - dt * 3);
+          if (!pos(_a)) return;
+          op = stillOn() ? Math.min(1, t / 2.5) : Math.max(0, op - dt);
+          cloud.position.set(_a.x, _a.y + L.y, _a.z);
+          cloud.scale.setScalar(L.scale);
+          cloud.rotation.y = t * L.spin;
+          cloud.fxOpacity = op * L.op;
+        },
+        () => {
+          this.clouds.delete(cloud);
+          this.drop(cloud);
+        },
+      );
+    }
   }
 
   dispose(): void {
