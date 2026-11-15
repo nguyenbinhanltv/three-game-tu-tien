@@ -156,6 +156,10 @@ export function questGoal(def: QuestDef, prog: number[], npcs: readonly NpcDef[]
     if (o.type === 'talk' && o.target) return { kind: 'npc', npc: o.target, turnin: false };
     if (o.type === 'kill' && o.target) return { kind: 'mon', mon: o.target };
     if (o.type === 'gather' && o.target) return { kind: 'node', item: o.target };
+    if (o.type === 'enhance') {
+      const n = npcs.find((x) => x.enhance);
+      if (n) return { kind: 'npc', npc: n.id, turnin: false };
+    }
     if (o.type === 'craft') {
       const n = npcs.find((x) => x.recipes);
       if (n) return { kind: 'npc', npc: n.id, turnin: false };

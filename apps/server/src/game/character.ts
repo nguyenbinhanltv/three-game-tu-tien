@@ -536,7 +536,7 @@ export class Character {
         if (o.target && o.target !== target) return;
         const cur = prog[i] ?? 0;
         if (cur >= o.count) return;
-        const next = type === 'level' ? Math.min(o.count, Math.max(cur, n)) : Math.min(o.count, cur + n);
+        const next = type === 'level' || type === 'enhance' ? Math.min(o.count, Math.max(cur, n)) : Math.min(o.count, cur + n);
         if (next !== cur) {
           prog[i] = next;
           changed = true;

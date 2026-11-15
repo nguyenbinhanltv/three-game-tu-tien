@@ -80,6 +80,7 @@ import { AmbientParticles } from './ambient';
 import { Grass, GRASS_PUSH_SLOTS, monsterPushRadius, pickPushers, type Pusher } from './grass';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
+import { Beacons } from '../render/beacons';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/world';
@@ -265,6 +266,8 @@ export class Game {
   /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
   grass!: Grass;
   props: PropLayer | null = null;
+  /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. `?beacons=0` tắt để so ảnh. */
+  beacons: Beacons | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
   ambient!: AmbientParticles;
   private pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
@@ -444,6 +447,7 @@ export class Game {
     this.ents?.dispose();
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
     this.resetSound(init.room === ROOM_WORLD);
+    if (this.beacons) this.beacons.mesh.visible = init.room === ROOM_WORLD;
     this.ents.camera = this.camera;
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
     this.pendingChapter = init.room === ROOM_DUNGEON ? 'dungeon' : null;
@@ -719,6 +723,12 @@ export class Game {
       this.props = new PropLayer();
       this.props.setQuality(get().quality, q.shadows);
       this.scene.add(this.props.group);
+    }
+    const pois = LEVELS.van_lam.pois ?? [];
+    if (pois.length && new URLSearchParams(location.search).get('beacons') !== '0') {
+      this.beacons = new Beacons(pois.filter((p) => p.beamH).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
+      this.beacons.mesh.visible = get().room === ROOM_WORLD;
+      this.scene.add(this.beacons.mesh);
     }
     this.grass = new Grass();
     this.grass.setQuality(get().quality, q.shadows);

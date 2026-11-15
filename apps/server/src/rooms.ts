@@ -349,6 +349,7 @@ export class DungeonRoom extends GameRoom {
 
   afterJoin(p: PlayerEnt): void {
     this.sim.sys(p, 'sys.dungeon_enter', undefined, 'info');
+    this.sim.questEvent(p, 'dungeon', undefined, 1);
     if (p.noLoot) this.sim.sys(p, 'sys.dungeon_no_reward', undefined, 'bad');
   }
 

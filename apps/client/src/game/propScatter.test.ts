@@ -17,15 +17,15 @@ describe('bố cục prop (P2-A4)', () => {
     for (const id of new Set(all.map((p) => p.id))) expect(PROP_CFG[id], id).toBeDefined();
   });
 
-  it('số lượng theo brief: đèn 22, kiếm gãy theo vòng cũ, trúc/dương xỉ/lau đủ cụm', () => {
-    expect(count('prop_den_da')).toBe(22);
-    expect(count('prop_kiem_gay')).toBe(KIEM_GAY.length);
+  it('số lượng theo brief: đèn 22 + 7 của M-5, kiếm gãy theo vòng cũ, trúc/dương xỉ/lau đủ cụm', () => {
+    expect(count('prop_den_da')).toBe(29);
+    expect(count('prop_kiem_gay')).toBe(KIEM_GAY.length + HAND_PROPS.filter((h) => h.id === 'prop_kiem_gay').length);
     expect(KIEM_GAY.length).toBeGreaterThan(30);
     expect(count('prop_co_thu')).toBeGreaterThanOrEqual(7);
     expect(count('prop_truc')).toBeGreaterThanOrEqual(80);
     expect(count('prop_duong_xi')).toBeGreaterThanOrEqual(150);
     expect(count('prop_lau')).toBeGreaterThanOrEqual(60);
-    expect(count('prop_tuong_canh')).toBe(4);
+    expect(count('prop_tuong_canh')).toBe(6);
   });
 
   it('prop rải (không phải đặt tay) không đứng trong nước, trên đường tông môn hay trong collider', () => {
@@ -40,7 +40,9 @@ describe('bố cục prop (P2-A4)', () => {
 
   it('đèn đá và vật đặt tay không đè lên collider khác; collider prop chỉ cho cổ thụ, tượng, lư hương', () => {
     expect(PROP_COLLIDERS.length).toBe(HAND_PROPS.filter((p) => p.r).length);
-    expect(PROP_COLLIDERS.length).toBeLessThanOrEqual(8);
+    // 8 collider cũ + 11 trụ/bia của năm điểm đáng chú ý (M-5, r ≤ 1,2 m).
+    expect(PROP_COLLIDERS.length).toBeLessThanOrEqual(20);
+    for (const c of PROP_COLLIDERS) expect(c.r).toBeLessThanOrEqual(2.4);
     for (const h of HAND_PROPS.filter((p) => !p.r)) {
       for (const c of COLLIDERS) expect(Math.hypot(h.x - c.x, h.z - c.z), `${h.id} ${h.x},${h.z}`).toBeGreaterThan(c.r * 0.5);
     }
