@@ -90,12 +90,12 @@
       },
       "night": {
         "label": "Đêm",
-        "sunColor": "#9DB4CF", "sunIntensity": 0.45, "sunElevationDeg": 35,
-        "skyColor": "#1A2938", "skyIntensity": 0.5,
+        "sunColor": "#9DB4CF", "sunIntensity": 1.25, "sunElevationDeg": 35,
+        "skyColor": "#3B5873", "skyIntensity": 1.0,
         "fogColor": "#22323F", "fogDensity": 0.0013, "heightFogTop": 40, "heightFogBoost": 2.0,
-        "fogHaze": 0.0016, "fogHazeStart": 60, "rim": 0.2,
+        "fogHaze": 0.0016, "fogHazeStart": 60, "rim": 0.9,
         "shadowTint": "#0F1F2A", "highlightTint": "#FFB869", "splitBalance": -0.2,
-        "blackLift": "#0B1720", "contrast": 1.1, "saturation": 0.82, "exposure": 0.9
+        "blackLift": "#0E1C27", "contrast": 1.08, "saturation": 0.82, "exposure": 1.2
       }
     },
     "bloom": { "threshold": 1.0, "strength": 0.35, "radius": 0.5, "maxHdr": 2.5 },
