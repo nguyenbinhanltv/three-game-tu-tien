@@ -225,11 +225,12 @@ export class MonVis {
     }
     const def = this.model.def;
     const d = this.s.lv - myLevel;
-    const color = def.boss ? '#ffb347' : d >= 3 ? '#ff6b5e' : d >= 1 ? '#ffd166' : d <= -5 ? '#9aa3ad' : '#f2f2f2';
-    this.label = makeLabel(monsterName(def.id), color, t('ui.level_short', { n: this.s.lv }), '#c9d4de');
+    const color = def.boss ? '#ffb347' : def.elite ? '#7fd4ff' : d >= 3 ? '#ff6b5e' : d >= 1 ? '#ffd166' : d <= -5 ? '#9aa3ad' : '#f2f2f2';
+    this.label = makeLabel(def.elite ? `${monsterName(def.id)} · ${t('ui.monster.elite')}` : monsterName(def.id), color, t('ui.level_short', { n: this.s.lv }), '#c9d4de');
     this.label.position.y = this.model.height / def.scale + 0.95;
     this.label.scale.multiplyScalar(1 / def.scale);
     if (def.boss) this.label.scale.multiplyScalar(1.8);
+    else if (def.elite) this.label.scale.multiplyScalar(1.25);
     this.model.root.add(this.label);
     this.lv = this.s.lv;
   }

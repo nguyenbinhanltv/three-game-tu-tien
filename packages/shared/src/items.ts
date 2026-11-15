@@ -128,6 +128,15 @@ export function isInstance(it: InvItem | null | undefined): it is ItemInstance {
   return !!it?.inst;
 }
 
+// ---------- giá bán ----------
+
+/** Giá bán một đơn vị cho NPC. Trang bị đã roll: (3 + ilvl) × hệ số phẩm, không vượt giá mẫu; còn lại: giá mẫu. Server (`onSell`) và client dùng chung. */
+export function sellPrice(item: InvItem, def: { sell: number }): number {
+  if (!item.inst) return def.sell;
+  if (def.sell <= 0) return 0;
+  return Math.min(def.sell, Math.max(1, Math.round((3 + item.inst.ilvl) * (QUALITY_MUL[item.inst.q] ?? 1))));
+}
+
 // ---------- ngân sách ----------
 
 /** Ngân sách chỉ số một món: (6 + 2,2·ilvl) × hệ số phẩm × trọng số ô. */

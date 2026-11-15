@@ -1,6 +1,6 @@
 import { ContentIcon } from './ContentIcon';
 import { useState } from 'react';
-import { C, enhanceChance, enhanceCost, EQUIP_SLOTS, MAX_ENHANCE } from '@dtl/shared';
+import { C, enhanceChance, sellPrice, enhanceCost, EQUIP_SLOTS, MAX_ENHANCE } from '@dtl/shared';
 import { ENHANCE_ORE, ITEM, itemName, NPC, QUESTS, realmName, RECIPES, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
@@ -116,7 +116,7 @@ function ShopTab({ npcId }: { npcId: string }) {
           {def.sell > 0 && (
             <>
               <Button variant="primary" onClick={() => g?.send(C.SELL, { npc: npcId, slot: sel, n: 1, r: reqId() })}>
-                {t('ui.item.sell')} (+{def.sell} 💠)
+                {t('ui.item.sell')} (+{sellPrice(item, def)} 💠)
               </Button>
               {item.n > 1 && (
                 <Button
@@ -125,7 +125,7 @@ function ShopTab({ npcId }: { npcId: string }) {
                     setSel(null);
                   }}
                 >
-                  {t('ui.item.sell_all')} (+{def.sell * item.n} 💠)
+                  {t('ui.item.sell_all')} (+{sellPrice(item, def) * item.n} 💠)
                 </Button>
               )}
             </>
