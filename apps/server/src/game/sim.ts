@@ -21,6 +21,14 @@ import {
   type CdMsg,
   chantInterrupt,
   CHAT_MAX_LEN,
+  DUEL_DAMAGE_MUL,
+  nextTurn,
+  PARTY_SHARE_RANGE,
+  RESONANCE_DEF,
+  RESONANCE_DMG,
+  RESONANCE_XP,
+  splitXp,
+  xpShareWeight,
   COMBAT_REGEN_DELAY,
   computeDamage,
   DEATH_XP_LOSS,
@@ -130,6 +138,8 @@ const POTION_ALLY_RANGE = 12;
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
+import { DuelSystem } from './duel';
+import { parties } from './party';
 import { UpgradeSystem } from './upgrade';
 
 /**
@@ -362,6 +372,18 @@ export class GameSim {
     player: (sid) => this.players.get(sid),
   });
 
+  /** Tỉ thí 1v1 ở võ đài (P3-9). */
+  readonly duel = new DuelSystem({
+    now: () => this.now,
+    inWorld: () => this.opts.levelId === 'van_lam' && this.opts.roomName === 'world',
+    players: () => this.players.values(),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    warn: (p, k, params) => this.warn(p, k, params),
+    setFlag: (p, f, on) => this.setFlag(p, f, on),
+    cancelCast: (p) => this.cancelCast(p),
+    stopMeditate: (p) => this.setMeditating(p, false),
+  });
+
   /** Cường hóa, khảm ngọc, tẩy luyện, phân giải (P3-3). */
   readonly upgrade = new UpgradeSystem({
     now: () => this.now,
@@ -547,6 +569,7 @@ export class GameSim {
     if (!p) return;
     if (p.trib) this.endTribulation(p, false, true);
     this.realm.onLeave(p);
+    this.duel.onGone(p);
     this.savePlayer(p);
     this.meleeSlot.delete(sid);
     this.slotWait.delete(sid);
@@ -622,6 +645,7 @@ export class GameSim {
     this.tickHazards();
     this.tickBolts();
     this.tickMethods();
+    this.duel.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -818,10 +842,20 @@ export class GameSim {
     if (skill.kind === 'damage' || skill.kind === 'aoe') {
       if (typeof m.t !== 'string') return this.warn(p, 'sys.no_target');
       const mon = this.monById.get(m.t);
+      if (!mon && this.players.has(m.t)) {
+        // Người chơi chỉ là mục tiêu hợp lệ của đúng đối thủ tỉ thí, và chỉ sau khi hết đếm ngược.
+        const foe = this.duel.anyFoe(p);
+        if (!foe || foe.sid !== m.t) return this.warn(p, 'sys.no_target');
+        if (!this.duel.foeOf(p)) return this.warn(p, 'duel.not_started');
+        if (!this.inRangeP(p, foe, skill.range)) return this.warn(p, 'sys.out_of_range');
+        targetId = foe.sid;
+        p.s.yaw = Math.atan2(foe.move.x - p.move.x, foe.move.z - p.move.z);
+      } else {
       if (!mon || mon.state === MS_DEAD) return this.warn(p, 'sys.no_target');
       if (!this.inRange(p, mon, skill.range)) return this.warn(p, 'sys.out_of_range');
       targetId = mon.id;
       p.s.yaw = Math.atan2(mon.s.x - p.move.x, mon.s.z - p.move.z);
+      }
     }
     if (p.meditating) this.setMeditating(p, false);
     p.gcdAt = this.now + GCD * 1000;
@@ -848,6 +882,14 @@ export class GameSim {
     return dx * dx + dz * dz + dy * dy * 0.25 <= r * r;
   }
 
+  private inRangeP(p: PlayerEnt, o: PlayerEnt, range: number): boolean {
+    const dx = o.move.x - p.move.x;
+    const dz = o.move.z - p.move.z;
+    const dy = o.move.y - p.move.y;
+    const r = range + 2;
+    return dx * dx + dz * dz + dy * dy * 0.25 <= r * r;
+  }
+
   private cancelCast(p: PlayerEnt): void {
     if (!p.casting) return;
     p.casting = null;
@@ -862,6 +904,16 @@ export class GameSim {
     p.casting = null;
     this.setFlag(p, PF_CASTING, false);
     const mon = this.monById.get(cast.target);
+    if (!mon && cast.target) {
+      // Đang niệm lên đối thủ tỉ thí: trận phải còn và đối thủ còn trong tầm.
+      const foe = this.duel.foeOf(p);
+      if (this.airborne(p) || !foe || foe.sid !== cast.target || !this.inRangeP(p, foe, cast.skill.range * 1.3)) {
+        this.fx({ t: 'castend', src: p.sid });
+        return;
+      }
+      if (p.char.mp < cast.skill.mp) return;
+      return this.executeSkill(p, cast.skill, cast.target);
+    }
     if (this.airborne(p) || (cast.target && (!mon || mon.state === MS_DEAD || !this.inRange(p, mon, cast.skill.range * 1.3)))) {
       this.fx({ t: 'castend', src: p.sid });
       return;
@@ -921,7 +973,7 @@ export class GameSim {
    * (các thử thách này phải tự vượt, người khác không can thiệp). Chính mình luôn được.
    */
   private canAssist(p: PlayerEnt, o: PlayerEnt): boolean {
-    return o === p || (!this.isDead(o) && !o.trib && !o.trial);
+    return o === p || (!this.isDead(o) && !o.trib && !o.trial && !this.duel.inDuel(o));
   }
 
   /** Đạo hữu còn sống gần nhất trong `r` mét (không phải mình). */
@@ -1021,6 +1073,19 @@ export class GameSim {
         p.mth.stacks = 0;
         p.mth.dirty = true;
       }
+    }
+    if ((skill.kind === 'damage' || skill.kind === 'aoe') && targetId && !this.monById.has(targetId)) {
+      const foe = this.players.get(targetId);
+      if (foe && this.duel.foeOf(p) === foe) {
+        this.fx({ t: skill.fx, src: p.sid, dst: foe.sid, x: foe.move.x, y: foe.move.y, z: foe.move.z, r: rs.radius ?? 0, ...tag });
+        this.duelStrike(p, foe, rs.hits.map((h) => h * mul), elemMul);
+      }
+      if (skill.ult) {
+        p.mth.lockCharge = false;
+        p.mth.charge = 0;
+      }
+      this.sendCd(p);
+      return;
     }
     switch (skill.kind) {
       case 'damage': {
@@ -1199,11 +1264,38 @@ export class GameSim {
     }
   }
 
+  /** Đòn đánh lên đối thủ tỉ thí: sát thương giảm (đấu tập), không xuống dưới 1 máu, không cho kiếm ý/sạc, không thưởng gì. */
+  private duelStrike(p: PlayerEnt, o: PlayerEnt, powers: number[], elemMul: number): void {
+    for (const power of powers) {
+      if (this.duel.foeOf(p) !== o) return;
+      const { dmg, crit } = computeDamage(p.char.atk, power * elemMul * DUEL_DAMAGE_MUL, o.char.def, Math.random(), Math.random(), p.char.stats.critRate, p.char.stats.critMul);
+      let n = Math.max(1, Math.round(dmg));
+      if (this.now < o.mth.guardUntil) n = reduceDamage(n, o.mth.guardReduce);
+      if (o.shield) {
+        const absorbed = Math.min(o.shield.amount, n);
+        o.shield.amount -= absorbed;
+        n -= absorbed;
+        if (o.shield.amount <= 0) {
+          o.shield = null;
+          this.setFlag(o, PF_SHIELD, false);
+        }
+      }
+      p.lastCombatAt = o.lastCombatAt = this.now;
+      if (n > 0) o.char.hp = Math.max(1, o.char.hp - n);
+      const msg: DmgMsg = { dst: o.sid, n, src: p.sid };
+      if (crit) msg.crit = true;
+      this.host.broadcast(S.DMG, msg);
+      if (this.duel.afterHit(p, o)) return;
+    }
+  }
+
   /** `mul`: hệ số sát thương hệ (linh căn, dòng phụ); không đổi việc đòn có nặng hay không (theo `power` gốc). */
   private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1): void {
     // Dấu ấn của chính người đánh: sát thương nhân thêm (Kiếm Ảnh Phân Quang).
     const mk = mon.mark;
-    const power = mk && mk.sid === p.sid && this.now < mk.until ? basePower * (1 + mk.mul) : basePower;
+    const power0 = mk && mk.sid === p.sid && this.now < mk.until ? basePower * (1 + mk.mul) : basePower;
+    // Cộng hưởng vai trò (tổ đội đủ Kiếm tu/Hộ pháp/Đan sư đứng gần nhau): đánh mạnh hơn một chút.
+    const power = parties.resonance(p) ? power0 * (1 + RESONANCE_DMG) : power0;
     const { dmg, crit } = computeDamage(p.char.atk, power * mul, mon.defn, Math.random(), Math.random(), p.char.stats.critRate, p.char.stats.critMul);
     const stunned = this.now < mon.stunUntil;
     const heavy = isHeavyHit(power);
@@ -1406,10 +1498,45 @@ export class GameSim {
     }
     const xp = monsterXp(mon.level, mon.def.xpMul);
     const minShare = mon.s.mhp * 0.05;
+    const dealers = new Set<PlayerEnt>();
     for (const [sid, dealt] of mon.threat) {
       const p = this.players.get(sid);
       if (!p || dealt < minShare) continue;
       if (Math.hypot(p.move.x - mon.s.x, p.move.z - mon.s.z) > 90) continue;
+      dealers.add(p);
+    }
+    const done = new Set<PlayerEnt>();
+    const dist = (o: PlayerEnt) => Math.hypot(o.move.x - mon.s.x, o.move.z - mon.s.z);
+    // Tổ đội (P3-9): đồng đội còn sống trong tầm cùng chia tu vi, cùng được tính diệt quái và chia đồ,
+    // kể cả khi không ra đòn (Hộ pháp, Đan sư). Người đánh mà ở xa/đã ngã thì tính riêng như người đơn.
+    const groups = new Map<NonNullable<ReturnType<typeof parties.partyOf>>, PlayerEnt[]>();
+    for (const p of dealers) {
+      const party = parties.partyOf(p.char.id);
+      if (!party || groups.has(party)) continue;
+      groups.set(
+        party,
+        parties.matesInRoom(p.char.id, this.host).filter((o) => !this.isDead(o) && !o.trib && !o.trial && dist(o) <= PARTY_SHARE_RANGE),
+      );
+    }
+    for (const [party, pool] of groups) {
+      const raw = splitXp(xp, pool.map((o) => xpShareWeight(dist(o))));
+      pool.forEach((o, i) => {
+        const res = parties.resonance(o) ? 1 + RESONANCE_XP : 1;
+        this.giveXp(o, Math.max(1, Math.round(raw[i] * xpLevelFactor(o.char.level, mon.level) * (o.noLoot ? 0.3 : 1) * res)));
+        this.questEvent(o, 'kill', mon.def.id, 1);
+        done.add(o);
+      });
+      // Chia đồ: boss hoặc chế độ tự do thì ai cũng có phần riêng; theo lượt thì một người nhận đồ, mọi người nhận linh thạch.
+      const turn = party.loot === 'turn' && !mon.def.boss;
+      let pick = -1;
+      if (turn) {
+        pick = nextTurn(party.members.length, party.lastTurn, (i) => pool.some((o) => o.char.id === party.members[i] && !o.noLoot));
+        if (pick >= 0) party.lastTurn = pick;
+      }
+      for (const o of pool) this.rollLoot(o, mon, !turn || party.members[pick] === o.char.id ? 'all' : 'gold');
+    }
+    for (const p of dealers) {
+      if (done.has(p)) continue;
       if (!this.isDead(p)) this.giveXp(p, Math.max(1, Math.round(xp * xpLevelFactor(p.char.level, mon.level) * (p.noLoot ? 0.3 : 1))));
       this.rollLoot(p, mon);
       this.questEvent(p, 'kill', mon.def.id, 1);
@@ -1423,17 +1550,17 @@ export class GameSim {
     this.host.onMonsterKilled?.(mon);
   }
 
-  private rollLoot(p: PlayerEnt, mon: MonEnt): void {
+  private rollLoot(p: PlayerEnt, mon: MonEnt, part: 'all' | 'gold' = 'all'): void {
     if (p.noLoot) return;
     const loot = lootOf(mon.def.id);
     const [g0, g1] = loot.gold;
     const gold = g0 + Math.floor(Math.random() * (g1 - g0 + 1));
     const got: { id: string; n: number }[] = [];
-    for (const d of loot.drops) {
+    for (const d of part === 'gold' ? [] : loot.drops) {
       if (Math.random() < d.chance) got.push({ id: d.item, n: d.min + Math.floor(Math.random() * (d.max - d.min + 1)) });
     }
     // Trang bị đã roll (Phase 3-2): phẩm, ô, ilvl chọn ở server; dòng chính/phụ roll trong addRolled (seed vào ledger).
-    const gear = rollEquipDrops(loot.equip, ITEM_SYS, ITEMS, mon.level, Math.random);
+    const gear = part === 'gold' ? [] : rollEquipDrops(loot.equip, ITEM_SYS, ITEMS, mon.level, Math.random);
     // Vàng luôn vào túi; vật phẩm nào không còn chỗ thì bỏ.
     const kept: { id: string; n: number }[] = [];
     const keptGear: { id: string; q: Quality; ilvl: number }[] = [];
@@ -1470,6 +1597,7 @@ export class GameSim {
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
     if (this.now < p.mth.guardUntil) n = reduceDamage(n, p.mth.guardReduce);
+    if (parties.resonance(p)) n = Math.max(1, Math.round(n * (1 - RESONANCE_DEF)));
     if (p.shield) {
       const absorbed = Math.min(p.shield.amount, n);
       p.shield.amount -= absorbed;
@@ -1498,6 +1626,7 @@ export class GameSim {
   }
 
   private killPlayer(p: PlayerEnt): void {
+    this.duel.onGone(p);
     const c = p.char;
     c.hp = 0;
     p.casting = null;
@@ -2291,6 +2420,7 @@ export class GameSim {
     if (!it || !def) return;
     if (isEquipSlot(def.kind)) return this.onEquip(p, { slot, r: m.r });
     if (!def.use) return;
+    if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
     if (!c.tx('use:' + def.id, idem, (d) => !!d.removeAt(slot, 1))) return;
     p.itemCdAt = this.now + def.use.cd * 1000;
@@ -2319,6 +2449,7 @@ export class GameSim {
     const m = msg as { slot?: unknown; r?: unknown } | null;
     const slot = m?.slot;
     if (!Number.isInteger(slot) || (slot as number) < 0 || (slot as number) >= INV_SIZE || this.isDead(p)) return;
+    if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     // Đang tâm ma: không đổi trang bị (bóng dựng theo chỉ số lúc bắt đầu).
     if (p.trial) return this.warn(p, 'sys.busy');
     const idem = this.idem(p, m?.r);
@@ -2351,6 +2482,7 @@ export class GameSim {
     const m = msg as { slot?: unknown; r?: unknown } | null;
     const es = m?.slot;
     if (!isEquipSlot(es) || this.isDead(p)) return;
+    if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     if (p.trial) return this.warn(p, 'sys.busy');
     const idem = this.idem(p, m?.r);
     if (idem === undefined || this.now < (p.equipCdAt ?? 0)) return;

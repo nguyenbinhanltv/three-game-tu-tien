@@ -109,5 +109,16 @@
     "salvage": "phân giải",
     "bound": "ràng buộc",
     "enhance": "cường hóa"
+  },
+  "party": {
+    "name": "Tổ đội",
+    "duel": "Tỉ thí",
+    "arena": "Võ đài",
+    "resonance": "Cộng hưởng",
+    "roles": {
+      "dps": "Kiếm tu",
+      "tank": "Hộ pháp",
+      "support": "Đan sư"
+    }
   }
 }

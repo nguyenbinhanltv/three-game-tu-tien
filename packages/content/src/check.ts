@@ -161,6 +161,12 @@ for (const it of ITEMS) {
       if (y.ore * orePrice >= it.price || y.dust > 0) err(`${it.id}: phân giải (+${plus}) ra ${y.ore} Thiết Tinh/${y.dust} Linh Trần, giá trị >= giá mua ${it.price} (lỗ hổng mua-rồi-phân-giải)`);
     }
   }
+  for (const [role, name] of Object.entries(GLOSSARY.party.roles)) {
+    if (t(`ui.party.role.${role}`) !== name) err(`vai trò tổ đội ${role}: tên lệch glossary.party.roles`);
+  }
+  for (const m of METHODS) {
+    if (t(`method.${m.id}.role`) !== GLOSSARY.party.roles[m.role]) err(`công pháp ${m.id}: tên vai trò lệch glossary.party.roles`);
+  }
   for (const k of ['gem', 'refineStone', 'dust', 'ward'] as const) if (!GLOSSARY.upgrade[k]) err(`glossary.upgrade.${k} thiếu`);
   if (t(`item.${REFINE_ITEM}.name`) !== GLOSSARY.upgrade.refineStone) err('tên Tẩy Luyện Thạch lệch glossary');
   if (t(`item.${DUST_ITEM}.name`) !== GLOSSARY.upgrade.dust) err('tên Linh Trần lệch glossary');

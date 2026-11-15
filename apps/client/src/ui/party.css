@@ -1,0 +1,192 @@
+/* Tổ đội và tỉ thí (P3-9). Màu theo biến --k-* của bộ khung UI. */
+.pty-frame {
+  position: absolute;
+  left: 14px;
+  top: 150px;
+  width: 226px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+}
+.pty-row {
+  padding: 5px 9px 6px;
+  background: linear-gradient(180deg, rgba(26, 41, 56, 0.8), rgba(14, 23, 34, 0.84));
+  border: 1px solid var(--k-edge-dim);
+  border-left: 3px solid var(--k-bronze);
+}
+.pty-row.me {
+  border-left-color: var(--k-bronze-hi);
+}
+.pty-row.dead {
+  opacity: 0.55;
+  filter: grayscale(0.7);
+}
+.pty-row.off {
+  opacity: 0.5;
+}
+.pty-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+.pty-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.pty-crown {
+  font-style: normal;
+  color: var(--k-bronze-hi);
+  margin-right: 3px;
+}
+.pty-lv {
+  font-size: 11px;
+  opacity: 0.75;
+}
+.pty-role {
+  font-size: 10px;
+  padding: 0 5px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.03em;
+}
+.pty-role.dps {
+  color: #9fd8ff;
+}
+.pty-role.tank {
+  color: #ffc95a;
+}
+.pty-role.support {
+  color: #7dffa0;
+}
+.pty-mp {
+  height: 3px;
+  margin-top: 2px;
+  background: rgba(0, 0, 0, 0.45);
+}
+.pty-mp i {
+  display: block;
+  height: 100%;
+  background: #4f9bd6;
+}
+.pty-res {
+  align-self: flex-start;
+  font-size: 11px;
+  padding: 1px 8px;
+  color: #ffe9a8;
+  border: 1px solid var(--k-bronze-hi);
+  background: rgba(60, 44, 12, 0.7);
+}
+
+.pty-invites {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+  z-index: 5;
+}
+.pty-invite {
+  min-width: 280px;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, rgba(26, 41, 56, 0.94), rgba(14, 23, 34, 0.96));
+  border: 1px solid var(--k-bronze);
+}
+.pty-invite[data-kind='duel'] {
+  border-color: var(--k-cinnabar-hi);
+}
+.pty-invite-title {
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.pty-invite-btns {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.pty-count {
+  margin-left: auto;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.duel-banner {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+.duel-banner.fight {
+  top: 98px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 12px;
+  background: rgba(14, 23, 34, 0.82);
+  border: 1px solid var(--k-cinnabar-hi);
+  pointer-events: auto;
+}
+.duel-big {
+  font-size: 84px;
+  line-height: 1;
+  color: #ffe9a8;
+}
+.duel-result {
+  font-size: 56px;
+  letter-spacing: 0.2em;
+  color: #ffe9a8;
+}
+.duel-banner[data-res='lose'] .duel-result {
+  color: #c9d3dc;
+}
+.duel-sub {
+  font-size: 15px;
+}
+.duel-sub.dim {
+  opacity: 0.65;
+  font-size: 12px;
+}
+
+.pty-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pty-li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+.pty-acts {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.pty-loot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.pty-hint {
+  margin-top: 6px;
+  font-size: 12px;
+}
+.pty-foot {
+  margin-top: 8px;
+}
+.chat-line.party {
+  color: #9fe8b5;
+}

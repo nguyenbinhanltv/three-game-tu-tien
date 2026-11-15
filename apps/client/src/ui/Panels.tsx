@@ -1,3 +1,4 @@
+import { PartyPanel } from './Party';
 import { ContentIcon } from './ContentIcon';
 import { useEffect, useRef, useState } from 'react';
 import { bindsOnEquip, C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
@@ -564,6 +565,8 @@ export function Panels() {
       return <WorldMap />;
     case 'method':
       return <MethodPanel />;
+    case 'party':
+      return <PartyPanel />;
     default:
       return null;
   }

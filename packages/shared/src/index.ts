@@ -17,3 +17,4 @@ export * from './realm';
 export * from './equipLoot';
 export * from './upgrade';
 export * from './methods';
+export * from './party';

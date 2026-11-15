@@ -15,6 +15,7 @@ export type Action =
   | 'char'
   | 'quests'
   | 'method'
+  | 'party'
   | 'map'
   | 'help'
   | 'settings'
@@ -35,6 +36,7 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   KeyL: 'quests',
   KeyJ: 'quests',
   KeyV: 'method',
+  KeyP: 'party',
   KeyM: 'map',
   KeyH: 'help',
   KeyO: 'settings',

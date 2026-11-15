@@ -25,6 +25,7 @@
     "assets:optimize": "pnpm --filter @dtl/asset-pipeline run optimize",
     "shots": "pnpm --filter @dtl/perf run shots --",
     "shots:method": "pnpm --filter @dtl/perf run shots:method --",
+    "shots:party": "pnpm --filter @dtl/perf run shots:party --",
     "assets:terrain": "pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
     "assets:impostor": "pnpm --filter @dtl/asset-pipeline run impostor",
