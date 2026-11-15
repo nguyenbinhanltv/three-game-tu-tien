@@ -487,6 +487,109 @@ async function main() {
     await g.room.leave(true);
   }
 
+  // 15. Nâng cấp trang bị (P3-3): khảm/tháo/ghép ngọc, tẩy luyện, phân giải, cường hóa. Server quyết định; client chỉ gửi ý định.
+  {
+    const g = await join('nangcap' + (Date.now() % 100000));
+    await W(300);
+    type It = { id: string; n: number; plus?: number; inst?: { q: number; gems: string[]; affixes: unknown[] } };
+    let inv: (It | null)[] = [];
+    let gold = 0;
+    g.room.onMessage(S.INV, (m: { inv: typeof inv }) => {
+      inv = m.inv;
+    });
+    g.room.onMessage(S.CHAR, (m: { gold: number }) => (gold = m.gold));
+    const say = async (m: string) => {
+      g.room.send(C.CHAT, { m });
+      await W(1150);
+    };
+    const count = (id: string) => inv.reduce((n, x) => n + (x && x.id === id ? x.n : 0), 0);
+    const upg = async (m: Record<string, unknown>) => {
+      g.room.send(C.UPGRADE, { npc: 'npc_thiet_lao', ...m });
+      await W(320); // hồi 250 ms mỗi lần
+    };
+    await say('/gm level 15');
+    await say('/gm gold 5000');
+    await say('/gm roll itm_thiet_kiem 0 5');
+    await say('/gm roll itm_han_quang_kiem 2 12');
+    await say('/gm give gem_kim_1 4');
+    await say('/gm give itm_linh_tran 6');
+    await W(300);
+    const sword = inv.findIndex((x) => x?.id === 'itm_thiet_kiem');
+    const rare = inv.findIndex((x) => x?.id === 'itm_han_quang_kiem');
+    const snap = () => JSON.stringify([inv, gold]);
+    // Đứng xa Thiết lão: mọi lệnh bị bỏ qua.
+    const far = snap();
+    await upg({ op: 'salvage', slots: [sword], ids: ['itm_thiet_kiem'], r: 'far-0001' });
+    await upg({ op: 'merge', gem: 'gem_kim_1', r: 'far-0002' });
+    await upg({ op: 'socket', i: rare, idx: 0, gem: 'gem_kim_1', r: 'far-0003' });
+    check('nâng cấp khi đứng xa Thiết lão bị bỏ qua', snap() === far);
+    await say('/gm tp 2088 2064');
+    await W(600);
+    // Payload xấu: thiếu khóa, ô/lỗ ngoài khoảng, kiểu sai, ngọc/loại lạ, lô quá lớn, ô trùng: không đổi gì.
+    const bad: Record<string, unknown>[] = [
+      { op: 'salvage', slots: [sword], ids: ['itm_thiet_kiem'] },
+      { op: 'salvage', slots: [sword], ids: ['itm_thiet_kiem'], r: 'x' },
+      { op: 'salvage', slots: [sword, sword], ids: ['itm_thiet_kiem', 'itm_thiet_kiem'], r: 'bad-0001' },
+      { op: 'salvage', slots: [sword], ids: ['itm_dao_bao'], r: 'bad-0002' },
+      { op: 'salvage', slots: [sword], ids: [], r: 'bad-0003' },
+      { op: 'salvage', slots: Array.from({ length: 31 }, (_, i) => i % 30), ids: Array(31).fill('x'), r: 'bad-0004' },
+      { op: 'salvage', slots: [-1], ids: ['x'], r: 'bad-0005' },
+      { op: 'salvage', slots: ['0'], ids: ['x'], r: 'bad-0006' },
+      { op: 'salvage', slots: 'all', r: 'bad-0007' },
+      { op: 'socket', i: rare, idx: 5, gem: 'gem_kim_1', r: 'bad-0008' },
+      { op: 'socket', i: rare, idx: -1, gem: 'gem_kim_1', r: 'bad-0009' },
+      { op: 'socket', i: rare, idx: 0.5, gem: 'gem_kim_1', r: 'bad-0010' },
+      { op: 'socket', i: rare, idx: 0, gem: 'gem_kim_9', r: 'bad-0011' },
+      { op: 'socket', i: rare, idx: 0, gem: '__proto__', r: 'bad-0012' },
+      { op: 'socket', i: rare, idx: 0, gem: 'gem_tho_3', r: 'bad-0013' }, // không sở hữu
+      { op: 'socket', i: 99, idx: 0, gem: 'gem_kim_1', r: 'bad-0014' },
+      { op: 'socket', w: 'robe', idx: 0, gem: 'gem_kim_1', r: 'bad-0015' }, // ô chưa mặc
+      { op: 'unsocket', i: rare, idx: 0, r: 'bad-0016' }, // lỗ trống
+      { op: 'merge', gem: 'gem_kim_3', r: 'bad-0017' }, // đã cấp cao nhất
+      { op: 'merge', gem: 'itm_thiet_tinh', r: 'bad-0018' },
+      { op: 'refine', i: rare, idx: 0, r: 'bad-0019' }, // thiếu Tẩy Luyện Thạch
+      { op: 'refine', i: sword, idx: 0, r: 'bad-0020' }, // Phàm phẩm không có dòng phụ
+      { op: 'hack', r: 'bad-0021' },
+    ];
+    let changed = '';
+    for (const b of bad) {
+      const was = snap();
+      await upg(b);
+      if (snap() !== was) changed = JSON.stringify(b).slice(0, 70);
+    }
+    check('payload nâng cấp xấu không đổi túi/tiền', !changed, changed);
+    // inst giả kèm lệnh khảm hợp lệ: chỉ ngọc sở hữu có hiệu lực, ngọc giả cấp 3 không xuất hiện.
+    await upg({ op: 'socket', i: rare, idx: 0, gem: 'gem_kim_1', r: 'sock-0001', inst: { q: 4, gems: ['gem_kim_3', 'gem_kim_3'], affixes: [] } });
+    check('inst giả trong lệnh khảm bị bỏ qua', inv[rare]?.inst?.gems.join(',') === 'gem_kim_1' && count('gem_kim_3') === 0 && count('gem_kim_1') === 3, JSON.stringify(inv[rare]?.inst?.gems));
+    // Cùng khóa gửi lại (mất mạng): không trừ thêm ngọc/tiền.
+    const goldNow = gold;
+    await upg({ op: 'socket', i: rare, idx: 0, gem: 'gem_kim_1', r: 'sock-0001' });
+    check('khóa idempotency dùng lại không khảm/trừ tiền lần hai', gold === goldNow && count('gem_kim_1') === 3, `gold ${gold}/${goldNow} gem ${count('gem_kim_1')}`);
+    // Hai lệnh tháo cùng một lỗ (khóa khác nhau): chỉ trả ngọc một lần.
+    await upg({ op: 'unsocket', i: rare, idx: 0, r: 'un-a-0001' });
+    await upg({ op: 'unsocket', i: rare, idx: 0, r: 'un-b-0001' });
+    check('tháo ngọc hai lần cùng lỗ chỉ trả một viên', count('gem_kim_1') === 4 && inv[rare]?.inst?.gems[0] === '', `gem ${count('gem_kim_1')}`);
+    // Ghép ngọc: 3 → 1, không ghép khi thiếu.
+    const dust = count('itm_linh_tran');
+    await upg({ op: 'merge', gem: 'gem_kim_1', r: 'mg-0001' });
+    await upg({ op: 'merge', gem: 'gem_kim_1', r: 'mg-0002' }); // chỉ còn 1 viên
+    check('ghép ngọc 3 → 1 và không ghép khi thiếu', count('gem_kim_2') === 1 && count('gem_kim_1') === 1 && count('itm_linh_tran') === dust - 2, `kim2 ${count('gem_kim_2')} kim1 ${count('gem_kim_1')}`);
+    // Phân giải: một lần, rồi không nhân đôi khi gửi lại hoặc khi ô đã trống.
+    const ore = count('itm_thiet_tinh');
+    await upg({ op: 'salvage', slots: [sword], ids: ['itm_thiet_kiem'], r: 'sv-0001' });
+    await upg({ op: 'salvage', slots: [sword], ids: ['itm_thiet_kiem'], r: 'sv-0001' });
+    await upg({ op: 'salvage', slots: [sword], ids: ['itm_thiet_kiem'], r: 'sv-0002' });
+    check('phân giải không nhân đôi (khóa lặp và ô đã trống)', count('itm_thiet_kiem') === 0 && count('itm_thiet_tinh') === ore + 1, `Thiết Tinh ${count('itm_thiet_tinh')} (cũ ${ore})`);
+    // Spam cường hóa khác khóa: hồi 250 ms/người, server vẫn sống.
+    for (let i = 0; i < 60; i++) {
+      g.room.send(C.ENHANCE, { npc: 'npc_thiet_lao', i: rare, r: 'enh-spam' + i });
+      await W(10);
+    }
+    await W(500);
+    check('spam cường hóa không làm sập server', await health());
+    await g.room.leave(true);
+  }
+
   // 13. Tham số kiểm thử ?god / ?at (M1-10): tài khoản thử dùng được; server production / có Google thì không.
   await testParamsChecks();
 

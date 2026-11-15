@@ -3,6 +3,8 @@
 
 import {
   type AffixRoll,
+  bindsOnEquip,
+  gemAffixes,
   computePlayerStats,
   enhanceMul,
   EQUIP_SLOTS,
@@ -48,6 +50,14 @@ export function itemLines(item: InvItem, def: ItemDef): TipLine[] {
   if (flat.hp) out.push({ text: t('ui.stat.hp', { n: Math.round(flat.hp * mul) }) });
   if (flat.mp) out.push({ text: t('ui.stat.mp', { n: Math.round(flat.mp * mul) }) });
   for (const a of item.inst?.affixes ?? []) out.push({ text: affixText(a) });
+  // Lỗ khảm: ngọc đã khảm kèm hiệu quả, lỗ trống mờ.
+  for (const g of item.inst?.gems ?? []) {
+    if (!g) {
+      out.push({ text: t('ui.gem.slot_empty'), tone: 'dim' });
+      continue;
+    }
+    out.push({ text: `◆ ${t(`item.${g}.name`)}: ${gemAffixes(g).map(affixText).join(', ')}` });
+  }
   return out;
 }
 

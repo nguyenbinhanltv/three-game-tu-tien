@@ -39,6 +39,8 @@ export interface CharacterView {
    * có thật sự phát không thì hỏi `performing(pose)`.
    */
   perform?(pose: string, o?: PerformOpts): boolean;
+  /** Bậc phát sáng của vũ khí theo cường hóa (0, 1 từ +7, 2 từ +10); model không hỗ trợ thì bỏ qua. */
+  setWeaponGlow?(stage: number): void;
   /** Bỏ động tác đang chờ (`delay`) và tắt nhanh động tác chưa tới lúc ra đòn (vd. niệm chú bị phá). */
   cancelPerform?(): void;
   /** Đang phát (hoặc đang chờ phát) động tác `pose`. */
