@@ -41,6 +41,8 @@ export interface CharacterView {
   perform?(pose: string, o?: PerformOpts): boolean;
   /** Bậc phát sáng của vũ khí theo cường hóa (0, 1 từ +7, 2 từ +10); model không hỗ trợ thì bỏ qua. */
   setWeaponGlow?(stage: number): void;
+  /** Màu ánh kiếm theo bộ trang bị (hex '#rrggbb'; '' = không); kiếm có ánh nhẹ dù chưa +7. */
+  setWeaponTint?(hex: string): void;
   /** Bỏ động tác đang chờ (`delay`) và tắt nhanh động tác chưa tới lúc ra đòn (vd. niệm chú bị phá). */
   cancelPerform?(): void;
   /** Đang phát (hoặc đang chờ phát) động tác `pose`. */

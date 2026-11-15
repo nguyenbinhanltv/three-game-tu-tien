@@ -1,11 +1,12 @@
+import { PartyPanel } from './Party';
 import { ContentIcon } from './ContentIcon';
 import { useEffect, useRef, useState } from 'react';
 import { bindsOnEquip, C, enhanceMul, sellPrice, EQUIP_SLOTS, isEquipSlot, type EquipSlot, type InvItem, type ItemDef, NGUNG_KHI_MAX, WORLD_SIZE } from '@dtl/shared';
-import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
+import { ITEM, itemName, QUEST, QUESTS, realmName, SETS, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
-import { compareLines, gearQuality, itemLines, itemSub, type TipLine } from './gear';
+import { compareLines, gearQuality, itemLines, itemSub, setLines, setLinesForItem, type TipLine, wornIds } from './gear';
 import { Button, Divider, type PanelTone, PanelWindow, ProgressBar, Segmented, Slider, Slot, TipCard, Tooltip } from './kit';
 import { MethodPanel } from './MethodPanel';
 import { BottleneckBox, RootCard } from './Realm';
@@ -37,6 +38,7 @@ function useTipLines(item: InvItem, def: ItemDef, worn?: boolean): TipLine[] {
   const equip = useUI((s) => s.equip);
   const lines = itemLines(item, def);
   if (!worn && isEquipSlot(def.kind)) lines.push(...compareLines(level, equip, item, def));
+  lines.push(...setLinesForItem(item, equip));
   if (item.inst?.bound) lines.push({ text: t('ui.item.bound'), tone: 'dim' });
   else if (item.inst && bindsOnEquip(item.inst.q)) lines.push({ text: t('ui.item.bind_on_equip'), tone: 'dim' });
   return lines;
@@ -221,6 +223,28 @@ function EquipBoard() {
   );
 }
 
+/** Bảng bộ trang bị trong bảng nhân vật: mỗi bộ đang mặc từ một món trở lên, đếm x/N và dòng sáng khi kích hoạt. */
+function SetBoard() {
+  const equip = useUI((s) => s.equip);
+  const worn = wornIds(equip);
+  const sets = SETS.filter((st) => st.pieces.some((p) => worn.includes(p)));
+  if (!sets.length) return null;
+  return (
+    <div className="set-board" data-testid="set-board">
+      <Divider label={t('ui.set.panel')} />
+      {sets.map((st) => (
+        <div key={st.id} className="k-card set-card" data-set={st.id}>
+          {setLines(st, equip).map((l, i) => (
+            <div key={i} className={'item-stat' + (l.tone ? ' ' + l.tone : '')}>
+              {l.text}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Character() {
   const char = useUI((s) => s.char);
   const inv = useUI((s) => s.inv);
@@ -249,6 +273,7 @@ function Character() {
       <BottleneckBox char={char} />
       <Divider label={t('ui.equip.board')} />
       <EquipBoard />
+      <SetBoard />
       <Divider label={t('ui.char.skills')} />
       <div className="skill-list">
         {SKILLS.map((sk, i) => (
@@ -564,6 +589,8 @@ export function Panels() {
       return <WorldMap />;
     case 'method':
       return <MethodPanel />;
+    case 'party':
+      return <PartyPanel />;
     default:
       return null;
   }

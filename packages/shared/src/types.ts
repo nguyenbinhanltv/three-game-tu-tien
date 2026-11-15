@@ -32,6 +32,8 @@ export interface ItemDef {
   iconFallback?: string;
   reqLevel?: number;
   stats?: StatBlock;
+  /** id bộ trang bị (P3-4): món này thuộc bộ nào. Món có `set` không rơi theo bảng chung, chỉ chế tạo hoặc rơi theo `EquipRollDef.set`. */
+  set?: string;
   use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number };
 }
 
@@ -65,6 +67,8 @@ export interface EquipRollDef {
   slots?: Partial<Record<EquipSlot, number>>;
   /** Cộng vào cấp quái để ra ilvl (Địa/Thiên của bí cảnh, boss). */
   ilvlBonus?: number;
+  /** Rơi một món của bộ này (chọn đều trong các món của bộ; bỏ qua `slots`). */
+  set?: string;
 }
 
 export interface MonsterDef {

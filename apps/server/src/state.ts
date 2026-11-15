@@ -29,6 +29,8 @@ export class PlayerS extends Schema {
   /** Ngoại hình (để hiển thị): giới tính 'm' | 'f' và id màu áo trong appearance.json. */
   @type('string') g = 'm';
   @type('string') dye = '';
+  /** Bộ trang bị quyết định màu áo/ánh kiếm (từ 2 món): id bộ trong sets.json, '' = không. Chỉ để hiển thị. */
+  @type('string') sk = '';
 }
 
 export class MonS extends Schema {

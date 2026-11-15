@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
-import { ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
 import { PLACE_ID, PLACES } from './places';
 
@@ -160,6 +160,12 @@ for (const it of ITEMS) {
       const y = salvageYield(legacyQuality(it.rarity), plus, it.price, orePrice);
       if (y.ore * orePrice >= it.price || y.dust > 0) err(`${it.id}: phân giải (+${plus}) ra ${y.ore} Thiết Tinh/${y.dust} Linh Trần, giá trị >= giá mua ${it.price} (lỗ hổng mua-rồi-phân-giải)`);
     }
+  }
+  for (const [role, name] of Object.entries(GLOSSARY.party.roles)) {
+    if (t(`ui.party.role.${role}`) !== name) err(`vai trò tổ đội ${role}: tên lệch glossary.party.roles`);
+  }
+  for (const m of METHODS) {
+    if (t(`method.${m.id}.role`) !== GLOSSARY.party.roles[m.role]) err(`công pháp ${m.id}: tên vai trò lệch glossary.party.roles`);
   }
   for (const k of ['gem', 'refineStone', 'dust', 'ward'] as const) if (!GLOSSARY.upgrade[k]) err(`glossary.upgrade.${k} thiếu`);
   if (t(`item.${REFINE_ITEM}.name`) !== GLOSSARY.upgrade.refineStone) err('tên Tẩy Luyện Thạch lệch glossary');
@@ -346,6 +352,7 @@ function checkEquipLoot(id: string, l: LootDef) {
     const w = `loot ${id}/equip[${i}]`;
     if (!(r.chance > 0 && r.chance <= 1)) err(`${w}: chance phải trong (0, 1]`);
     if (!Array.isArray(r.q) || r.q.length !== QUALITY_COUNT || r.q.some((x) => !(x >= 0)) || !r.q.some((x) => x > 0)) err(`${w}: q phải là ${QUALITY_COUNT} trọng số >= 0, có ít nhất một số dương`);
+    if (r.set && !SETS.some((x) => x.id === r.set)) err(`${w}: bộ không tồn tại ${r.set}`);
     for (const k of Object.keys(r.slots ?? {})) if (!slots.includes(k as EquipSlot)) err(`${w}: ô ${k} không rơi được`);
     if (r.ilvlBonus !== undefined && !(Number.isInteger(r.ilvlBonus) && r.ilvlBonus >= 0 && r.ilvlBonus <= 3)) err(`${w}: ilvlBonus phải nguyên trong [0; 3]`);
     const tot = r.q.reduce((a, b) => a + b, 0) || 1;
@@ -428,6 +435,57 @@ for (const r of RECIPES) {
   if (out) {
     const cost = r.gold + r.inputs.reduce((s, i) => s + (ITEM.get(i.id)?.sell ?? 0) * i.n, 0);
     if (out.sell * r.output.n > cost + 30) err(`recipe ${r.id}: bán thành phẩm lời quá nhiều (${out.sell * r.output.n} so với ${cost})`);
+  }
+}
+
+// ---- bộ trang bị (P3-4) ----
+{
+  const LOOT_SETS = new Set<string>();
+  for (const l of LOOT.values()) for (const r of l.equip ?? []) if (r.set) LOOT_SETS.add(r.set);
+  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow'];
+  const hex = /^#[0-9a-fA-F]{6}$/;
+  uniqueIds('set', SETS);
+  for (const st of SETS) {
+    const w = `set ${st.id}`;
+    needStr(`set.${st.id}.name`);
+    if (t(`set.${st.id}.name`) !== (GLOSSARY.sets as Record<string, string>)[st.id]) err(`${w}: tên lệch glossary.sets`);
+    if (st.pieces.length < 3 || st.pieces.length > 4) err(`${w}: bộ gồm 3-4 món`);
+    const slots = new Set<string>();
+    for (const pid of st.pieces) {
+      const it = ITEM.get(pid);
+      if (!it) { err(`${w}: món không tồn tại ${pid}`); continue; }
+      if (it.set !== st.id) err(`${w}: ${pid} phải có set = ${st.id}`);
+      if (!isEquipSlot(it.kind)) err(`${w}: ${pid} không phải trang bị`);
+      if (slots.has(it.kind)) err(`${w}: hai món cùng ô ${it.kind}`);
+      slots.add(it.kind);
+      if (t(`item.${pid}.name`) !== (GLOSSARY.gear as Record<string, string>)[pid]) err(`${w}: tên ${pid} lệch glossary.gear`);
+      needStr(`item.${pid}.desc`);
+    }
+    if (st.tiers.length !== 2 || st.tiers[0].n !== 2 || !(st.tiers[1].n > 2 && st.tiers[1].n <= st.pieces.length)) err(`${w}: cần bậc 2 món (chỉ số) và một bậc cao ≤ số món`);
+    st.tiers.forEach((tr, i) => {
+      if (tr.fx && !FX.includes(tr.fx)) err(`${w}: fx lạ ${tr.fx}`);
+      if (tr.fx) { needStr(`set.fx.${tr.fx}`); if (!(tr.v! > 0)) err(`${w}: bậc ${i} thiếu v`); }
+      if (!tr.fx && !(tr.lines?.length)) err(`${w}: bậc ${i} trống`);
+      for (const l of tr.lines ?? []) {
+        if (!ITEM_SYS.affixes.some((a) => a.id === l.id)) err(`${w}: dòng lạ ${l.id}`);
+        if (!(l.v > 0 && l.v <= 0.25)) err(`${w}: dòng ${l.id} v ngoài (0; 0,25]`);
+      }
+    });
+    for (const c of [st.look.hex, st.look.trim, st.look.blade]) if (!hex.test(c)) err(`${w}: màu sai ${c}`);
+    if (st.src === 'forge' && !FORGE.some((f) => ITEM.get(f.output)?.set === st.id)) err(`${w}: src forge nhưng không có công thức`);
+    if (st.src === 'drop' && !LOOT_SETS.has(st.id)) err(`${w}: src drop nhưng không có nguồn rơi trong loot.json`);
+  }
+  for (const it of ITEMS) if (it.set && !SETS.some((s) => s.id === it.set)) err(`vật phẩm ${it.id}: bộ không tồn tại ${it.set}`);
+  uniqueIds('forge', FORGE);
+  for (const f of FORGE) {
+    const w = `forge ${f.id}`;
+    const out = ITEM.get(f.output);
+    if (!out?.set) err(`${w}: thành phẩm phải là món của bộ`);
+    if (!NPC.get(f.npc)?.enhance) err(`${w}: npc phải là thợ (enhance)`);
+    for (const i of f.inputs) needItem(i.id, w);
+    if (f.q.length !== QUALITY_COUNT || f.q.some((x) => !(x >= 0)) || !f.q.some((x) => x > 0)) err(`${w}: q sai`);
+    if (f.q[4] > 0 || f.q[3] / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3) err(`${w}: chế tạo không ra Thiên phẩm, Địa phẩm ≤ 30%`);
+    if (!(f.ilvl >= 1 && f.ilvl <= 99) || !(f.gold >= 0)) err(`${w}: ilvl/gold sai`);
   }
 }
 for (const n of NPCS) {

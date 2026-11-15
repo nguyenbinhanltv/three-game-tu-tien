@@ -12,7 +12,8 @@
     "crowd": "tsx src/crowd.ts",
     "shots": "tsx src/shots.ts",
     "e4shots": "tsx src/e4shots.ts",
-    "shots:method": "tsx src/shots-method.ts"
+    "shots:method": "tsx src/shots-method.ts",
+    "shots:party": "tsx src/shots-party.ts"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",

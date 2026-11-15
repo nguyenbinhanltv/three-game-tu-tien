@@ -21,6 +21,7 @@ import { APPEARANCE, MONSTER, monsterName, realmName } from '@dtl/content';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
 import { Character } from './game/character';
+import { parties } from './game/party';
 import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions } from './game/sim';
 import { WorldState } from './state';
 import { readTestFlags, testAccess } from './testflags';
@@ -47,6 +48,14 @@ function takeTicket(charId: number): boolean {
   const exp = dungeonTickets.get(charId);
   dungeonTickets.delete(charId);
   return exp !== undefined && exp >= Date.now();
+}
+
+let partyTimer: ReturnType<typeof setInterval> | null = null;
+/** Đẩy trạng thái tổ đội (máu, linh lực) mỗi 500 ms, hết hạn lời mời, dọn người ngoại tuyến. */
+function ensurePartyTick(): void {
+  if (partyTimer) return;
+  partyTimer = setInterval(() => parties.tick(), 500);
+  partyTimer.unref();
 }
 
 function today(): string {
@@ -99,6 +108,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.BREAKTHROUGH, (p) => this.sim.onBreakthrough(p));
     on(C.BOTTLENECK, (p, m) => this.sim.onBottleneck(p, m));
     on(C.ROOT, (p, m) => this.sim.onChangeRoot(p, m));
+    on(C.PARTY, (p, m) => parties.command(p, m));
+    on(C.DUEL, (p, m) => this.sim.duel.command(p, m));
     on(C.PORTAL, (p) => this.onPortal(p));
     // Bỏ qua message lạ thay vì báo lỗi.
     this.onMessage('*', () => {});
@@ -141,6 +152,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     const prev = online.get(auth.charId);
     if (prev) {
       const old = prev.room.clients.getById(prev.sid);
+      const oldP = prev.room.sim.players.get(prev.sid);
+      if (oldP) parties.detach(oldP);
       prev.room.beforeRemove(prev.sid);
       prev.room.sim.removePlayer(prev.sid);
       online.delete(auth.charId);
@@ -154,6 +167,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     const dev = testAccess(auth.dev, config.devBypass);
     const p = this.sim.addPlayer(client, char, dev, auth.session, this.noLootFor(char));
     online.set(auth.charId, { room: this, sid: client.sessionId });
+    parties.attach(p, this);
+    ensurePartyTick();
     console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
     // M1-10: ?god / ?at=<địa điểm>. Server kiểm quyền; tài khoản thật bị từ chối và được báo.
@@ -202,6 +217,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     const cur = online.get(p.char.id);
     if (cur && cur.room === this && cur.sid === sid) online.delete(p.char.id);
     this.beforeRemove(sid);
+    parties.detach(p);
     this.sim.removePlayer(sid);
     console.log(`[leave] ${p.char.name} rời ${this.roomName}`);
   }
@@ -216,6 +232,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   onDispose(): void {
     this.sim.saveAll();
     for (const p of this.sim.players.values()) {
+      parties.detach(p);
       const cur = online.get(p.char.id);
       if (cur && cur.room === this) online.delete(p.char.id);
     }

@@ -550,6 +550,10 @@
 .k-tip-line.good {
   color: var(--k-jade);
 }
+.k-tip-line.set {
+  color: #ffd45a;
+  text-shadow: 0 0 6px rgba(255, 190, 70, 0.45);
+}
 .k-tip-line.bad {
   color: var(--k-cinnabar-hi);
 }
