@@ -32,6 +32,7 @@
     "shots:k1": "pnpm --filter @dtl/perf run shots:k1 --",
     "shots:k3": "pnpm --filter @dtl/perf run shots:k3 --",
     "shots:k4": "pnpm --filter @dtl/perf run shots:k4 --",
+    "shots:k6": "pnpm --filter @dtl/perf run shots:k6 --",
     "shots:eqicons": "pnpm --filter @dtl/perf run shots:eqicons --",
     "shots:m4": "pnpm --filter @dtl/perf run shots:m4 --",
     "shots:kiem": "pnpm --filter @dtl/perf run shots:kiem --",

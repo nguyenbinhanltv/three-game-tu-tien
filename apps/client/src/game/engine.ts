@@ -109,6 +109,7 @@ import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../in
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
+import { SkillFx } from './skillFx';
 import type { SkillEvent } from './character/view';
 import { readTestParams } from './testParams';
 
@@ -282,6 +283,10 @@ export class Game {
   private pushPool: Pusher[] = [];
   ents!: EntityManager;
   vfx!: Vfx;
+  /** VFX ba pha theo sự kiện chiêu + vệt kiếm + linh quang hộ thể (K-6). */
+  skillFx: SkillFx | null = null;
+  /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
+  hazardLog?: { k: string; sh: string; src: string; boss: boolean; t: string }[];
   dmg!: DamageNumbers;
   lootFly!: LootFly;
   private lootLayer: HTMLDivElement | null = null;
@@ -406,6 +411,7 @@ export class Game {
   skillLog: { sid: string; e: SkillEvent; at: number }[] = [];
   private emitSkillEvent(sid: string, e: SkillEvent): void {
     for (const fn of this.skillListeners) fn(sid, e);
+    this.skillFx?.handle(sid, e);
     if (import.meta.env.DEV) {
       this.skillLog.push({ sid, e, at: performance.now() });
       if (this.skillLog.length > 200) this.skillLog.shift();
@@ -526,11 +532,12 @@ export class Game {
     room.onMessage(S.FX, (m: FxMsg) => this.onFx(m));
     room.onMessage(S.DMG, (m: DmgMsg) => this.onDmg(m));
     room.onMessage(S.HAZARD, (m: HazardMsg) => {
+      if (import.meta.env.DEV) (this.hazardLog ??= []).push({ k: m.kind, sh: m.sh ?? 'circle', src: m.src ?? '', boss: this.isBossSrc(m.src), t: this.view.monsters.get(m.src ?? '')?.t ?? '' });
       // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
       if (m.sh && this.vfx) {
-        if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m);
+        if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m, this.isBossSrc(m.src));
       }
-      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m));
+      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src));
       // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
       if (m.src) this.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
       const vol = this.volumeAt(m.x, m.z);
@@ -756,6 +763,12 @@ export class Game {
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
+    this.skillFx = new SkillFx(this.vfx, {
+      player: (sid) => this.ents?.players.get(sid),
+      mySid: () => this.sid,
+      myMethod: () => get().method?.method,
+      camera: () => this.camera as THREE.PerspectiveCamera,
+    });
     this.vfx.particles.setQuality(get().quality);
     // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách. `?props=0` tắt để chụp ảnh trước/sau.
     if (new URLSearchParams(location.search).get('props') !== '0') {
@@ -1632,6 +1645,12 @@ export class Game {
     }
   }
 
+  /** Vùng báo do boss thả (màu ma khí) hay quái thường (son đỏ). */
+  private isBossSrc(src: string | undefined): boolean {
+    const t = src ? this.view.monsters.get(src)?.t : undefined;
+    return !!t && !!MONSTER.get(t)?.boss;
+  }
+
   /**
    * Độ chớp toàn cảnh khi một tia sét đánh xuống: sấm độ kiếp của mình chớp rõ, tia gần mình chớp nhẹ
    * theo khoảng cách, xa hơn 45 m thì không. Chỉ là lớp hình.
@@ -1956,6 +1975,7 @@ export class Game {
       this.ents.updateQuestMarkers(get().quests, myLevel);
     }
     if (me) this.vfx.trails.update(dt, this.ents.players, this.sid, this.camera);
+    this.skillFx?.update(dt);
     if (me) this.updateGrass(dt, rp);
     this.vfx.update(dt);
     this.post?.update(dt);
@@ -2663,6 +2683,8 @@ export class Game {
     duckHold('npc', 0);
     duckHold('cine', 0);
     this.ents?.dispose();
+    this.skillFx?.dispose();
+    this.skillFx = null;
     this.vfx?.dispose();
     this.terrain?.dispose();
     this.ground?.dispose();

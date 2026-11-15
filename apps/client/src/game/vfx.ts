@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { groundAt } from '@dtl/shared';
-import { FxPool, type FxKind, type FxMesh } from '../render/materials/vfx';
+import { FxBatcher } from '../render/materials/fxBatch';
+import { BATCHING, BATCH_KINDS, FxPool, type FxKind, type FxMesh } from '../render/materials/vfx';
 import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../render/vfx/sigil';
 import { SLASH_GEO, SLASH_INK, slashPhase } from '../render/vfx/slash';
 import { seedOr } from '../render/vfx/common';
@@ -8,6 +9,7 @@ import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../render/vfx/ink';
 import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, lootPulse, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
+import { hazardFlash, hazardStyle } from '../render/vfx/phases';
 import { BoltFx } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
 import { Trails } from '../render/vfx/trail';
@@ -95,6 +97,8 @@ const POOL = new FxPool(96);
 export class Vfx {
   group = new THREE.Group();
   readonly pool = POOL;
+  /** Gộp draw call các kiểu trong `BATCH_KINDS` thành InstancedMesh (K-6). */
+  readonly batch = new FxBatcher(POOL);
   /** Camera để dấu chém đứng quay mặt về người xem (engine gán). */
   camera: THREE.Camera | null = null;
   private items: Fx[] = [];
@@ -115,6 +119,7 @@ export class Vfx {
 
   constructor(scene: THREE.Scene) {
     scene.add(this.group);
+    this.group.add(this.batch.root);
     PARTICLES.attach(this.group);
     this.group.add(RAIN.group);
     this.trails = new Trails(this, PARTICLES);
@@ -122,7 +127,7 @@ export class Vfx {
     // Vẽ ấm các material mới (mưa kiếm, tia sét, mây kiếp, vệt kiếm) vài khung lúc đang tải: biên dịch
     // shader trước, lần dùng đầu không bị khựng. Độ trong 0, cỡ 0: không thấy gì.
     RAIN.prewarm();
-    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome'] as const) {
+    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome', 'glow', 'flat', 'solid', 'slash', 'ink', 'sigil'] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);
       m.scale.setScalar(1e-3);
       this.add(0.15, () => {}, () => this.drop(m));
@@ -150,7 +155,8 @@ export class Vfx {
   /** Lấy một lưới từ pool và gắn vào cảnh. `kind`: xem `FxKind` (mặc định cộng sáng có bloom). */
   fx(geo: THREE.BufferGeometry, color: number, opacity = 0.9, kind: FxKind = 'glow'): FxMesh {
     const m = POOL.acquire(geo, kind, color, opacity);
-    this.group.add(m);
+    // Kiểu gộp chỉ là tay cầm: FxBatcher vẽ chúng bằng InstancedMesh.
+    if (!BATCHING || !BATCH_KINDS.has(kind)) this.group.add(m);
     return m;
   }
 
@@ -174,6 +180,7 @@ export class Vfx {
     this.bolts.update(dt);
     RAIN.update(dt);
     PARTICLES.update(dt);
+    this.batch.flush();
   }
 
   /** Vụ nổ sáng nhỏ tại một điểm. */
@@ -807,9 +814,10 @@ export class Vfx {
   }
 
   /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
-  hazard(x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0): void {
+  hazard(x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0, boss = false): void {
     const y = groundAt(x, z);
-    const color = HAZARD_COLORS[kind] ?? HAZARD_COLORS.frost;
+    const style = hazardStyle(kind, boss);
+    const color = kind === 'lightning' ? (HAZARD_COLORS[kind] ?? style.color) : style.color;
     // Mặt đất không phẳng: nâng theo điểm cao nhất quanh vòng (giới hạn để không lơ lửng quá).
     let top = y;
     for (let i = 0; i < 6; i++) {
@@ -817,10 +825,12 @@ export class Vfx {
       top = Math.max(top, groundAt(x + Math.cos(a) * r * 0.7, z + Math.sin(a) * r * 0.7));
     }
     const m = this.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, color, Math.min(top, y + 1.2) + 0.22);
+    if (kind !== 'lightning') m.fxColor.multiplyScalar(style.gain);
     this.add(
       delay,
       (k) => {
         m.fxA.x = k;
+        m.fxA.z = hazardFlash(k, delay);
         m.fxOpacity = Math.min(1, k * 10);
       },
       () => {
@@ -901,6 +911,7 @@ export class Vfx {
     this.inks.length = 0;
     this.bolts.clear();
     this.trails.dispose();
+    this.batch.dispose();
     RAIN.clear();
     PARTICLES.detach();
     RAIN.group.removeFromParent();

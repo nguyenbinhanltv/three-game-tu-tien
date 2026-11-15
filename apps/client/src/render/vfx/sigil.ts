@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { abs, atan, clamp, color, float, floor, fract, length, max, min, positionLocal, select, sin, smoothstep, step, time, vec2 } from 'three/tsl';
+import { abs, atan, clamp, color, float, floor, fract, length, max, min, select, sin, smoothstep, step, time, uv, vec2 } from 'three/tsl';
 import { hash21, type FxUniforms, type N } from './common';
 
 /**
@@ -16,7 +16,7 @@ import { hash21, type FxUniforms, type N } from './common';
  * **vạch tiến độ** chạy từ gốc ra mép. Vạch chạm mép là lúc nổ; vùng tròn có thêm viền sáng dần như
  * kim đồng hồ. 25% cuối viền nháy nhanh dần và sáng hơn.
  *
- * Tham số theo lưới: `fxA` = (tiến độ k 0..1, hình 0/1/2, 0, seed); `fxB` = (r, w, cỡ tấm x, cỡ tấm z)
+ * Tham số theo lưới: `fxA` = (tiến độ k 0..1, hình 0/1/2, nháy 0/1 ở 80 ms cuối, seed); `fxB` = (r, w, cỡ tấm x, cỡ tấm z)
  * theo mét. Tấm là `SIGIL_GEO` (1×1 nằm ngang) phóng theo `sigilLayout`.
  */
 
@@ -88,11 +88,16 @@ export function sigilNodes(U: FxUniforms) {
   const k = U.a.x;
   const shape = U.a.y;
   const seed = U.a.w;
+  /** 80 ms cuối của vùng báo (K-6): 1 = nháy sáng một lần. */
+  const flash = U.a.z;
   const r = U.b.x;
   const w = U.b.y;
   const one = float(1);
 
-  const p = vec2(positionLocal.x.mul(U.b.z), positionLocal.z.mul(U.b.w));
+  // Tọa độ cục bộ suy từ uv (tấm 1×1 nằm ngang: x = u − 0,5, z = −(v − 0,5)). Không dùng `positionLocal`: với InstancedMesh
+  // three gán lại nó theo ma trận instance (gộp draw call, K-6).
+  const st = uv();
+  const p = vec2(st.x.sub(0.5).mul(U.b.z), float(0.5).sub(st.y).mul(U.b.w));
   const isCircle = shape.lessThan(0.5);
   const isRect = shape.greaterThan(0.5).and(shape.lessThan(1.5));
   // Gốc vùng: tâm (tròn) hoặc mép sau / đỉnh quạt.
@@ -145,11 +150,13 @@ export function sigilNodes(U: FxUniforms) {
     .mul(one.sub(filled))
     .mul(smoothstep(0.05, 0.6, d));
 
-  const L = borderL.add(innerLine).add(runes.mul(0.85)).add(front).add(stripe.mul(0.32)).add(filled.mul(0.28));
+  const L0 = borderL.add(innerLine).add(runes.mul(0.85)).add(front).add(stripe.mul(0.32)).add(filled.mul(0.16));
+  const L = L0.add(flash.mul(borderL.add(front).mul(0.9).add(0.12).mul(inside)));
   const b = clamp(L.mul(0.95), 0, 0.95);
-  const wash = inside.mul(0.42).add(filled.mul(0.1));
+  // Nền ≤ 0,35 (K-6) để vẫn đọc được chân nhân vật.
+  const wash = inside.mul(0.3).add(filled.mul(0.04));
   const A = b.add(wash.mul(one.sub(b)));
-  const hot = one.add(urg.mul(0.5)).add(front.mul(0.4));
+  const hot = one.add(urg.mul(0.5)).add(front.mul(0.4)).add(flash.mul(0.5));
   const bright = min(U.color.mul(hot), U.maxHdr);
   const col = bright.mul(b).add(color(SIGIL_INK).mul(wash.mul(one.sub(b)))).div(max(A, 0.001));
   return { color: col, opacity: A.mul(U.opacity) };

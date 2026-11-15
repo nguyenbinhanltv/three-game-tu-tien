@@ -77,6 +77,8 @@ export interface CharacterView {
   readonly steps?: number;
   readonly attacks?: number;
   readonly hasSword?: boolean;
+  /** Gốc và mũi lưỡi kiếm (thế giới) nếu kiếm đang cầm tay (K-6). */
+  bladePoints?(base: THREE.Vector3, tip: THREE.Vector3): boolean;
   readonly grounded?: boolean;
 }
 
