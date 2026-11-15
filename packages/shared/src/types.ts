@@ -86,6 +86,8 @@ export interface MonsterDef {
   attackRange: number;
   attackCd: number;
   xpMul: number;
+  /** Hệ ngũ hành của quái (kim/moc/thuy/hoa/tho): chiêu cùng hệ khắc chế được tính ở server (`elemCounter`). */
+  elem?: string;
   boss?: boolean;
   /** Tinh anh: có tên riêng, máu gấp bốn quái thường cùng loài, một kỹ năng riêng, rơi Huyền phẩm. */
   elite?: boolean;
@@ -314,6 +316,10 @@ export interface SkillDef {
   empower?: EmpowerDef;
   /** Chiêu lướt (kind 'dash'). */
   dash?: DashDef;
+  /** Lướt húc: choáng quái thường (giây); tinh anh chỉ nửa, boss miễn. */
+  stun?: number;
+  /** Hồi Xuân Quyết: gieo độc lên quái trong bán kính `r`, mỗi giây `mul` × công kích, kéo dài `dur` giây. */
+  poison?: { r: number; mul: number; dur: number };
 }
 
 export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough';

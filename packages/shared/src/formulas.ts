@@ -13,11 +13,11 @@ export const CRIT_MULT = 1.6;
 export function xpNeed(level: number): number {
   if (level >= MAX_LEVEL) return 99_999_999;
   if (level >= TRUC_CO_LEVEL) return 30000 + (level - TRUC_CO_LEVEL) * 20000;
-  // 70·L²: tổng Ngưng Khí 1→15 khoảng 87 nghìn tu vi. `pnpm sim:progress` ước tính ~2 giờ đánh quái thuần,
-  // cộng đi lại, boss, luyện đan, bí cảnh thì khoảng 3–4 giờ.
-  // Nhịp này đã chốt (2026-11-15, thay mốc cũ 10–15 giờ trong spec): giữ ~3–4 giờ thực tế tới viên mãn
-  // Ngưng Khí 15, sẽ dài thêm khi có thêm nội dung. Cân bằng độ khó phải giữ sim:progress quanh 2–2,5 giờ.
-  return 70 * level * level;
+  // 90·L²: tổng Ngưng Khí 1→15 khoảng 112 nghìn tu vi. `pnpm sim:progress` (3-10) mô phỏng cả đi tìm quái theo cụm của M-2,
+  // áp lực quái thường và đả tọa, ra 3,2–3,5 giờ tới viên mãn Ngưng Khí 15 cho cả ba công pháp (chưa tính boss, bí cảnh).
+  // Mục tiêu đã chốt (2026-11-15): 3–4 giờ; cũ 70·L² cho 2,2 giờ. Sẽ dài thêm khi có thêm nội dung; đổi đường cong
+  // phải chạy lại `pnpm sim:progress` (cờ LỖI nếu ra ngoài 3–4 giờ).
+  return 90 * level * level;
 }
 
 export interface BaseStats {
@@ -96,9 +96,10 @@ export function enhanceChance(plus: number): number {
   return [0.8, 0.65, 0.5, 0.4, 0.3][plus - 5] ?? 0.3;
 }
 
+/** Giá cường hóa (3-10): 0,06 × giá cơ sở × (cấp+1), chỉnh để lên +9 (có Hộ Phù) tốn 3–6 giờ thu nhập ở cấp của món (`pnpm sim:progress`). */
 export function enhanceCost(plus: number, itemPrice: number): { gold: number; ore: number } {
   return {
-    gold: Math.round(30 + itemPrice * 0.15 * (plus + 1)),
+    gold: Math.round(30 + itemPrice * 0.06 * (plus + 1)),
     ore: 1 + Math.floor(plus / 3),
   };
 }
@@ -107,6 +108,17 @@ export function enhanceCost(plus: number, itemPrice: number): { gold: number; or
 export const DEATH_XP_LOSS = 0.05;
 export const TRIBULATION_FAIL_XP_LOSS = 0.15;
 export const TRIBULATION_DURATION = 40;
+/**
+ * Thiên lôi độ kiếp (3-10): số liệu một đợt. Tia nhắm thẳng người độ kiếp (báo trước `AIM_DELAY` giây, né bằng cách bước ra khỏi vòng),
+ * `1..4` tia rơi quanh. Nhịp giữa hai đợt giảm tuyến tính theo tiến độ.
+ */
+export const TRIB_FIRST_DELAY = 3;
+export const TRIB_GAP_START = 2.6;
+export const TRIB_GAP_END = 1.4;
+export const TRIB_AIM = { r: 4.2, delay: 1.25, pct: 0.24 };
+export const TRIB_EXTRA = { r: 3.6, delayMin: 1.25, delayMax: 1.85, pct: 0.2, distMin: 5, distMax: 14, maxCount: 4 };
+/** Chết sau chừng này giây thì hoàn lại Trúc Cơ Đan (viên đan cần nội đan Hàn Giao, mất trắng là phạt quá nặng). Vẫn mất tu vi. */
+export const TRIBULATION_REFUND_AFTER = 20;
 
 // ---------- hồi phục và miễn sát thương ----------
 
