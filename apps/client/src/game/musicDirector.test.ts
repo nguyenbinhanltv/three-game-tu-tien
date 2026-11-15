@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AmbientPicker, ambientFor, BOSS_EXIT, COMBAT_ENTER, COMBAT_EXIT, isNightHour, MIN_HOLD, MusicDirector, type MusicInput, REGION_DWELL, regionTrack } from './musicDirector';
+import { AmbientPicker, ambientFor, BOSS_EXIT, COMBAT_ENTER, COMBAT_EXIT, ENGAGE_HOLD, isNightHour, isStemZone, MIN_HOLD, MusicDirector, type MusicInput, REGION_DWELL, regionTrack, STEM_MIX, STEM_ZONES } from './musicDirector';
 
 const base: MusicInput = { dungeon: false, biome: 'sect', combat: false, boss: false, tribulation: false, meditating: false, dead: false };
 
@@ -172,5 +172,61 @@ describe('AmbientPicker', () => {
     expect(p.update(2, 'forest')).toBeNull();
     expect(p.update(10, 'forest')).toBeNull();
     expect(p.current).toBe('forest');
+  });
+});
+
+describe('nhạc phân lớp (M4-13)', () => {
+  it('vùng có stem: tông môn, đồng hoang, Kiếm Trủng; rừng/hồ/boss thì không', () => {
+    expect([...STEM_ZONES]).toEqual(['sect', 'wild', 'dungeon']);
+    expect(isStemZone('sect')).toBe(true);
+    expect(isStemZone('forest')).toBe(false);
+    expect(isStemZone('combat')).toBe(false);
+    expect(isStemZone(null)).toBe(false);
+  });
+
+  it('mức giao chiến: yên 0 → bị nhắm 1 → đang đánh 2 → hết đòn về 1 → hết quái về 0', () => {
+    const d = new MusicDirector();
+    d.update(0, { ...base, biome: 'wild' });
+    expect(d.level(0)).toBe(0);
+    // Quái nhắm mình nhưng chưa đánh nhau.
+    run(d, 0.1, 1, { biome: 'wild', combat: true });
+    expect(d.level(1)).toBe(1);
+    // Đòn đánh thật: lên 2 ngay.
+    d.engage(2, false);
+    d.update(2, { ...base, biome: 'wild', combat: true });
+    expect(d.level(2)).toBe(2);
+    // Quái vẫn đuổi nhưng ngừng đánh quá ENGAGE_HOLD: hạ về 1.
+    run(d, 2.1, 2 + ENGAGE_HOLD + 0.5, { biome: 'wild', combat: true });
+    expect(d.level(2 + ENGAGE_HOLD + 0.5)).toBe(1);
+    // Mất tín hiệu quá COMBAT_EXIT: về 0.
+    const t = 2 + ENGAGE_HOLD + 0.6;
+    run(d, t, t + COMBAT_EXIT + 0.5, { biome: 'wild' });
+    expect(d.level(t + COMBAT_EXIT + 0.5)).toBe(0);
+    // Bài vùng vẫn là vùng ở mọi mức (client giữ nguyên bài, chỉ chỉnh lớp).
+    expect(d.regionNow).toBe('wild');
+  });
+
+  it('boss là mức 3; chết thì về 0', () => {
+    const d = new MusicDirector();
+    d.update(0, { ...base, biome: 'wild' });
+    d.engage(1, true);
+    d.update(1, { ...base, biome: 'wild', combat: true, boss: true });
+    expect(d.level(1)).toBe(3);
+    d.update(1.1, { ...base, biome: 'wild', dead: true });
+    expect(d.level(1.1)).toBe(0);
+  });
+
+  it('bảng trộn: yên chỉ có nền; mọi mức giữ tổng năng lượng quanh 1 (nền hạ khi lớp vào)', () => {
+    expect(STEM_MIX[0]).toEqual({ base: 1, pulse: 0, edge: 0 });
+    for (const lv of [1, 2, 3] as const) {
+      const m = STEM_MIX[lv];
+      expect(m.base).toBeGreaterThanOrEqual(0.8);
+      expect(m.pulse).toBeGreaterThan(0);
+      expect(m.pulse).toBeLessThanOrEqual(1);
+      expect(m.edge).toBeLessThanOrEqual(1);
+    }
+    // Lớp tăng đơn điệu theo mức.
+    expect(STEM_MIX[2].pulse).toBeGreaterThanOrEqual(STEM_MIX[1].pulse);
+    expect(STEM_MIX[2].edge).toBeGreaterThan(STEM_MIX[1].edge);
   });
 });

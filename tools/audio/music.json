@@ -1,5 +1,5 @@
 {
-  "$comment": "Khai báo nhạc nền cho tools/audio/loop.mjs. Id phải trùng MusicTrack trong apps/client/src/game/musicDirector.ts. \"compose\": true = nhạc tự soạn bằng code ở tools/audio/compose/<id>.mjs, render MIDI bằng soundfont GeneralUser GS (tools/audio/compose/render.mjs), vòng lặp chính xác theo ô nhịp. Bài không có compose: file <DTL_ASSET_SOURCE>/audio/music/<id>.mp3 (hoặc .wav/.m4a/.flac/.ogg; đặt \"file\" để đổi tên), qua bước dò vòng; nhạc Suno thì đặt by/license của Suno và url bài (bắt buộc ghi nguồn). Tùy chọn cho bài từ file: bpm, beatsPerBar, start/end (giây), minLen/maxLen, xfade. Mọi bài: lufs, by, license, url, bitrate ({ webm, m4a }, mặc định 96k/128k; title hạ vì tải trước khi vào game). Xem docs/audio/music.md.",
+  "$comment": "Khai báo nhạc nền cho tools/audio/loop.mjs. Id phải trùng MusicTrack trong apps/client/src/game/musicDirector.ts. \"compose\": true = nhạc tự soạn bằng code ở tools/audio/compose/<id>.mjs, render MIDI bằng soundfont GeneralUser GS (tools/audio/compose/render.mjs), vòng lặp chính xác theo ô nhịp. Bài không có compose: file <DTL_ASSET_SOURCE>/audio/music/<id>.mp3 (hoặc .wav/.m4a/.flac/.ogg; đặt \"file\" để đổi tên), qua bước dò vòng; nhạc Suno thì đặt by/license của Suno và url bài (bắt buộc ghi nguồn). Tùy chọn cho bài từ file: bpm, beatsPerBar, start/end (giây), minLen/maxLen, xfade. Mọi bài: lufs, by, license, url, bitrate ({ webm, m4a }, mặc định 96k/128k; title hạ vì tải trước khi vào game). Xem docs/audio/music.md. \"stem\": { \"of\": <id bài vùng>, \"role\": \"pulse\"|\"edge\" } = lớp giao chiến (M4-13), cùng tempo và số ô nhịp với bài vùng, client phát đồng bộ mẫu rồi chỉnh âm lượng (apps/client/src/game/stemMusic.ts); lufs của stem là mức khi lớp bật hết.",
   "defaults": {
     "lufs": -16,
     "peak": -1,
@@ -19,6 +19,12 @@
     "tribulation": { "title": "Độ Kiếp", "compose": true, "loop": true, "maxLen": 60 },
     "meditate": { "title": "Đả Tọa", "compose": true, "loop": true, "maxLen": 120 },
     "title": { "title": "Đạp Thiên Lộ", "compose": true, "loop": true, "maxLen": 90, "bitrate": { "webm": "64k", "m4a": "80k" } },
+    "sect_pulse": { "title": "Lạc Kiếm Tông — lớp nhịp", "compose": true, "loop": true, "maxLen": 150, "lufs": -23, "peak": -6, "stem": { "of": "sect", "role": "pulse" }, "bitrate": { "webm": "64k", "m4a": "80k" } },
+    "sect_edge": { "title": "Lạc Kiếm Tông — lớp giai điệu căng", "compose": true, "loop": true, "maxLen": 150, "lufs": -25, "stem": { "of": "sect", "role": "edge" }, "bitrate": { "webm": "64k", "m4a": "80k" } },
+    "wild_pulse": { "title": "Vân Lam Sơn Mạch — lớp nhịp", "compose": true, "loop": true, "maxLen": 180, "lufs": -23, "peak": -6, "stem": { "of": "wild", "role": "pulse" }, "bitrate": { "webm": "64k", "m4a": "80k" } },
+    "wild_edge": { "title": "Vân Lam Sơn Mạch — lớp giai điệu căng", "compose": true, "loop": true, "maxLen": 180, "lufs": -25, "stem": { "of": "wild", "role": "edge" }, "bitrate": { "webm": "64k", "m4a": "80k" } },
+    "dungeon_pulse": { "title": "Kiếm Trủng — lớp nhịp", "compose": true, "loop": true, "maxLen": 150, "lufs": -23, "peak": -6, "stem": { "of": "dungeon", "role": "pulse" }, "bitrate": { "webm": "64k", "m4a": "80k" } },
+    "dungeon_edge": { "title": "Kiếm Trủng — lớp giai điệu căng", "compose": true, "loop": true, "maxLen": 150, "lufs": -25, "stem": { "of": "dungeon", "role": "edge" }, "bitrate": { "webm": "64k", "m4a": "80k" } },
     "sting_levelup": { "title": "Tu Vi Tinh Tiến", "compose": true, "loop": false },
     "sting_breakthrough": { "title": "Trúc Cơ Thành", "compose": true, "loop": false },
     "sting_death": { "title": "Thân Tử Đạo Tiêu", "compose": true, "loop": false }
