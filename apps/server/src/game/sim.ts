@@ -142,6 +142,7 @@ import {
   hitOffsets,
   planDash,
   strikeDelay,
+  AOI_BOSS_OUT,
   AOI_OUT,
   zoneAt,
   type BossTimerMsg,
@@ -436,7 +437,11 @@ export class GameSim {
     snap: (x, z) => this.randomPoint(x, z, 1.5, false),
     playersIn: (zone) => {
       let n = 0;
-      for (const p of this.players.values()) if (!this.isDead(p) && zoneAt(this.level.zones, p.move.x, p.move.z)?.id === zone) n++;
+      // Chỉ người đang kết nối và còn hoạt động (có input hoặc giao chiến trong 30 s): người "ma" hay treo máy không kéo số con/tốc độ hồi sinh.
+      for (const p of this.players.values()) {
+        if (!p.connected || this.isDead(p) || (this.now - p.lastInputAt > 30_000 && this.now - p.lastCombatAt > 30_000)) continue;
+        if (zoneAt(this.level.zones, p.move.x, p.move.z)?.id === zone) n++;
+      }
       return n;
     },
   });
@@ -546,7 +551,10 @@ export class GameSim {
     const msg = payload as { src?: string; dst?: string; x?: number; z?: number };
     const at = msg.x !== undefined && msg.z !== undefined ? { x: msg.x, z: msg.z } : (this.posOf(msg.src) ?? this.posOf(msg.dst));
     if (!at || !this.host.broadcastExcept) return this.host.broadcast(type, payload);
-    const r2 = AOI_OUT * AOI_OUT;
+    // Boss thấy được tới AOI_BOSS_IN: tin có boss tham gia dùng tầm rộng hơn.
+    const boss = !!(this.monById.get(msg.src ?? '')?.def.boss || this.monById.get(msg.dst ?? '')?.def.boss);
+    const rr = boss ? AOI_BOSS_OUT : AOI_OUT;
+    const r2 = rr * rr;
     let far: Set<string> | undefined;
     for (const p of this.players.values()) {
       const dx = p.move.x - at.x;

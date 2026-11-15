@@ -920,6 +920,35 @@ async function main() {
     A.room.send(C.SKILL, { id: 'skl_phi_kiem', t: farId });
     await W(300);
     check('AOI: server vẫn sống sau lệnh nhắm quái ngoài tầm', await health());
+    // Mất kết nối rồi nối lại giữa lúc quái đang vào/ra tầm: view giữ nguyên, không lỗi giải mã (refId not found), vẫn thấy quái trong tầm.
+    {
+      let decodeErr = 0;
+      const warn = console.warn;
+      const err = console.error;
+      const hook = (...a: unknown[]) => {
+        if (a.some((x) => typeof x === 'string' && x.includes('refId'))) decodeErr++;
+      };
+      console.warn = (...a: unknown[]) => (hook(...a), undefined);
+      console.error = (...a: unknown[]) => (hook(...a), undefined);
+      try {
+        const token = (A.room as unknown as { reconnectionToken: string }).reconnectionToken;
+        const ws = (A.room.connection as unknown as { transport?: { ws?: { terminate?: () => void; close?: () => void } } }).transport?.ws;
+        (ws?.terminate ?? ws?.close)?.call(ws);
+        await W(700);
+        const again = await new Client(WS).reconnect(token);
+        again.onMessage('*', () => {});
+        await W(1500);
+        const st = again.state as unknown as { monsters: Map<string, Ent> };
+        const n = [...st.monsters.values()].filter((m) => !!m.t).length;
+        check('AOI: nối lại sau khi mất kết nối vẫn thấy quái trong tầm, không lỗi giải mã', n > 0 && decodeErr === 0, `${n} quái, ${decodeErr} lỗi refId`);
+        A.room = again;
+      } catch (e) {
+        check('AOI: nối lại sau khi mất kết nối vẫn thấy quái trong tầm, không lỗi giải mã', false, String((e as Error).message ?? e));
+      } finally {
+        console.warn = warn;
+        console.error = err;
+      }
+    }
     // Tới gần nhau thì thấy nhau.
     const here = plrs(A).get(A.init.sid)!;
     await chat(B, `/gm tp ${Math.round(here.x) + 5} ${Math.round(here.z)}`);

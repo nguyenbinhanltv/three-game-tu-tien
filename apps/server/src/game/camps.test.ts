@@ -151,6 +151,21 @@ describe('bãi quái theo cụm', () => {
     expect(sim.monsters.length).toBeLessThan(total);
     for (const m of rt.melee) expect(sim.monById.get(m.id)).toBe(m);
   });
+  it('người "ma" (mất kết nối) hay treo máy không được tính vào số người trong vùng', () => {
+    const { sim, join, kill } = setup();
+    const rt = sim.camps.camps[0];
+    for (let i = 0; i < 12; i++) {
+      const p = join(rt.def.x + i * 0.2, rt.def.z);
+      if (i % 2 === 0) p.connected = false;
+      else p.lastInputAt = p.lastCombatAt = sim.now - 60_000;
+    }
+    const t0 = sim.now;
+    for (const m of members(rt)) kill(m);
+    expect(rt.respawnAt - t0).toBeCloseTo(Math.min(rt.def.respawn, CAMP_RESPAWN_MAX) * 1000, -2);
+    sim.now = rt.respawnAt;
+    sim.camps.tick();
+    expect(rt.melee).toHaveLength(rt.def.count);
+  });
   it('một con bị đánh thì đồng bọn rảnh trong 14 m cùng lao vào', () => {
     const { sim, join } = setup();
     const rt = sim.camps.camps.find((c) => c.melee.length >= 3)!;
