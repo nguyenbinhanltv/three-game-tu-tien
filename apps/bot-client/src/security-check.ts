@@ -82,7 +82,7 @@ async function main() {
   const after = ((await (await fetch(HTTP + '/health')).json()) as { rooms: unknown[] }).rooms.length;
   check('không có room mới bị dựng', after <= Math.max(before, 1), `${before} → ${after}`);
 
-  // Ngoại hình lúc tạo nhân vật: giới tính lạ/chưa mở (nữ đã mở từ P2-C5 nên dùng 'x'), màu tự do, dữ liệu sai kiểu/quá lớn → server dùng mặc định, không lỗi.
+  // Ngoại hình lúc tạo nhân vật: giới tính không tồn tại ('x'; nữ 'f' đã mở nên là ca dương tính bên dưới), màu tự do, dữ liệu sai kiểu/quá lớn → server dùng mặc định, không lỗi.
   const tag = Math.random().toString(36).slice(2, 7);
   const bad: [string, unknown][] = [
     ['ap' + tag + 'a', { g: 'x', dye: 'attire_ink' }],
@@ -105,6 +105,16 @@ async function main() {
     await W(400);
     const me = (r.state as unknown as { players: Map<string, { g: string; dye: string }> }).players.get(r.sessionId);
     check(`ngoại hình không hợp lệ thì về mặc định (${JSON.stringify(ap).slice(0, 30)})`, me?.g === 'm' && me?.dye === 'attire_sect', `${me?.g}/${me?.dye}`);
+    await r.leave(true);
+  }
+  // Ca dương tính: nữ tu hợp lệ được nhận lúc tạo nhân vật mới.
+  {
+    const c = new Client(WS);
+    const r = await c.joinOrCreate(ROOM_WORLD, { dev: 'ap' + tag + 'f', ap: { g: 'f', dye: 'attire_ink' } });
+    r.onMessage('*', () => {});
+    await W(400);
+    const me = (r.state as unknown as { players: Map<string, { g: string; dye: string }> }).players.get(r.sessionId);
+    check('giới tính nữ hợp lệ được nhận lúc tạo nhân vật', me?.g === 'f' && me?.dye === 'attire_ink', `${me?.g}/${me?.dye}`);
     await r.leave(true);
   }
   // Chỉ nhận lúc tạo: vào lại nhân vật cũ với lựa chọn khác không đổi được màu.
