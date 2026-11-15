@@ -1,6 +1,9 @@
 import type {
   AppearanceData,
   ItemDef,
+  ItemSysData,
+  QualityDef,
+  SlotDef,
   LevelDef,
   MonsterDef,
   NpcDef,
@@ -36,6 +39,9 @@ import poseTamThienJson from '../data/poses/tam_thien.json';
 import poseRutKiemJson from '../data/poses/rut_kiem.json';
 import poseTraKiemJson from '../data/poses/tra_kiem.json';
 import appearanceJson from '../data/appearance.json';
+import equipSlotsJson from '../data/equipment/slots.json';
+import equipQualitiesJson from '../data/equipment/qualities.json';
+import equipAffixesJson from '../data/equipment/affixes.json';
 
 export const ITEMS = itemsJson as ItemDef[];
 export const MONSTERS = monstersJson as unknown as MonsterDef[];
@@ -69,6 +75,14 @@ export const POSE = index(POSES);
 /** Ngoại hình người chơi: giới tính, màu áo (quyết định 6.4b). */
 export const APPEARANCE = appearanceJson as AppearanceData;
 export const DYE = index(APPEARANCE.dyes);
+
+/** Bảng trang bị 8 ô: ô, phẩm, dòng phụ (truyền vào các hàm roll/tính chỉ số của `@dtl/shared`). */
+export const ITEM_SYS: ItemSysData = {
+  slots: equipSlotsJson as SlotDef[],
+  qualities: equipQualitiesJson as QualityDef[],
+  affixes: equipAffixesJson.affixes as ItemSysData['affixes'],
+  params: equipAffixesJson.params,
+};
 
 /** Vật phẩm dùng để cường hóa trang bị. */
 export const ENHANCE_ORE = 'itm_thiet_tinh';

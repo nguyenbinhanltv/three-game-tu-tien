@@ -3,6 +3,8 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { INV_SIZE, isEquipSlot } from '@dtl/shared';
+import { ITEM } from '@dtl/content';
 import { config } from './config';
 
 export const accounts = sqliteTable('accounts', {
@@ -46,6 +48,8 @@ export const items = sqliteTable(
     itemId: text('item_id').notNull(),
     qty: integer('qty').notNull(),
     plus: integer('plus').notNull().default(0),
+    /** Phần đã roll của trang bị (JSON `ItemInst`: phẩm, ilvl, dòng chính/phụ, ngọc, ràng buộc); NULL = đồ cũ/vật phẩm thường. */
+    inst: text('inst'),
   },
   (t) => [primaryKey({ columns: [t.charId, t.slot] })],
 );
@@ -96,6 +100,7 @@ CREATE TABLE IF NOT EXISTS items (
   item_id TEXT NOT NULL,
   qty INTEGER NOT NULL,
   plus INTEGER NOT NULL DEFAULT 0,
+  inst TEXT,
   PRIMARY KEY (char_id, slot)
 );
 CREATE TABLE IF NOT EXISTS ledger (
@@ -115,7 +120,67 @@ CREATE INDEX IF NOT EXISTS ledger_char ON ledger (char_id);
  * Cột thêm sau khi bảng đã có dữ liệu: `CREATE TABLE IF NOT EXISTS` không thêm cột vào bảng cũ nên phải ALTER.
  * Mỗi cột mới trong DDL ở trên (sau bản đầu) phải có một dòng ở đây.
  */
-const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [['characters', 'appearance', "TEXT NOT NULL DEFAULT ''"]];
+const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
+  ['characters', 'appearance', "TEXT NOT NULL DEFAULT ''"],
+  ['items', 'inst', 'TEXT'],
+];
+
+/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1). */
+export const DATA_VERSION = 1;
+
+/**
+ * Chuyển trang bị từ 3 ô (weapon/robe/accessory) sang 8 ô: `accessory` đi vào ô đúng loại của mẫu
+ * (ngọc bội → jade, giới chỉ → ring). Chỉ đổi chỗ, không tạo hay mất vật phẩm nên không ghi ledger.
+ * Khóa lạ khác được đưa về túi. Chạy một lần (user_version), idempotent.
+ */
+export function migrateEquipSlots(sqlite: Database.Database): void {
+  const rows = sqlite.prepare('SELECT id, equip FROM characters').all() as { id: number; equip: string }[];
+  const upd = sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?');
+  const usedSlots = sqlite.prepare('SELECT slot FROM items WHERE char_id = ?');
+  const putItem = sqlite.prepare('INSERT INTO items (char_id, slot, item_id, qty, plus, inst) VALUES (?, ?, ?, 1, ?, ?)');
+  for (const r of rows) {
+    let eq: Record<string, { id: string; n: number; plus?: number; inst?: unknown }>;
+    try {
+      eq = JSON.parse(r.equip) as typeof eq;
+    } catch {
+      continue;
+    }
+    if (!eq || typeof eq !== 'object') continue;
+    const out: typeof eq = {};
+    const stray: { id: string; n: number; plus?: number; inst?: unknown }[] = [];
+    let changed = false;
+    for (const [k, it] of Object.entries(eq)) {
+      if (!it || typeof it.id !== 'string') {
+        changed = true;
+        continue;
+      }
+      if (isEquipSlot(k)) {
+        out[k] = it;
+        continue;
+      }
+      changed = true;
+      const kind = ITEM.get(it.id)?.kind;
+      if (isEquipSlot(kind) && !out[kind] && !eq[kind]) out[kind] = it;
+      else stray.push(it);
+    }
+    if (!changed) continue;
+    if (stray.length) {
+      const used = new Set((usedSlots.all(r.id) as { slot: number }[]).map((x) => x.slot));
+      for (const it of stray) {
+        let i = 0;
+        while (i < INV_SIZE && used.has(i)) i++;
+        if (i >= INV_SIZE) {
+          // Không xảy ra với dữ liệu 3 ô cũ (accessory luôn có ô); chỉ là lưới an toàn cho khóa lạ.
+          console.warn('[migrate] túi đầy, bỏ vật phẩm không có ô:', r.id, it.id);
+          continue;
+        }
+        used.add(i);
+        putItem.run(r.id, i, it.id, it.plus ?? 0, it.inst ? JSON.stringify(it.inst) : null);
+      }
+    }
+    upd.run(JSON.stringify(out), r.id);
+  }
+}
 
 function migrate(sqlite: Database.Database): void {
   // Một transaction: lỗi giữa chừng thì không để DB nửa vời (SQLite cho ALTER trong transaction).
@@ -124,6 +189,9 @@ function migrate(sqlite: Database.Database): void {
       const cols = sqlite.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
       if (!cols.some((c) => c.name === column)) sqlite.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
     }
+    const v = sqlite.pragma('user_version', { simple: true }) as number;
+    if (v < 1) migrateEquipSlots(sqlite);
+    if (v < DATA_VERSION) sqlite.pragma(`user_version = ${DATA_VERSION}`);
   })();
 }
 
