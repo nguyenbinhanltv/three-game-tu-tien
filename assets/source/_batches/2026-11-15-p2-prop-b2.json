@@ -1,0 +1,95 @@
+{
+  "batch": "2026-11-15-p2-prop-b2",
+  "approvedBy": "người dùng (nguyên văn lựa chọn \"Chỉ dùng 800 hiện có\": tổng hạn mức 750, giữ lại >= 50; ≤250 credit mỗi đợt)",
+  "approvedAt": "2026-11-15",
+  "cap": 250,
+  "rules": "dry-run cả đợt trước (50/prop), image-to-3D v3.1 detailed+PBR+smart low-poly, không redo; đợt 3 và 4 chạy các việc song song (tổng báo giá đã nằm trong hạn mức)",
+  "quote": 250,
+  "balanceBefore": 735,
+  "balanceAfter": 485,
+  "jobs": [
+    {
+      "asset": "prop_den_da",
+      "version": 1,
+      "taskId": "e164185e-13d5-45e7-abcf-ffd8d22a01ce",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok",
+      "faceLimit": 6000
+    },
+    {
+      "asset": "prop_bia_da",
+      "version": 1,
+      "taskId": "a790d072-62de-4dc4-b323-4971a9b3e0a6",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok",
+      "faceLimit": 5000
+    },
+    {
+      "asset": "prop_thong_co",
+      "version": 1,
+      "taskId": "c8bbd788-32bf-40b9-b4f8-c3ec9fa45c6e",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok",
+      "faceLimit": 10000
+    },
+    {
+      "asset": "prop_co_thu",
+      "version": 1,
+      "taskId": "28cb2643-4d61-4480-8d8b-ef9b784f6159",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok",
+      "faceLimit": 10000
+    },
+    {
+      "asset": "prop_da_nam",
+      "version": 1,
+      "taskId": "155d1dc8-741e-44a0-852f-a4ffd4639792",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok",
+      "faceLimit": 6000
+    }
+  ],
+  "usage": [
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "e164185e-13d5-45e7-abcf-ffd8d22a01ce",
+      "created_at": "2026-11-15T02:55:14.965236Z",
+      "credits_consumed": 50
+    },
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "a790d072-62de-4dc4-b323-4971a9b3e0a6",
+      "created_at": "2026-11-15T02:59:40.859532Z",
+      "credits_consumed": 50
+    },
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "c8bbd788-32bf-40b9-b4f8-c3ec9fa45c6e",
+      "created_at": "2026-11-15T03:04:38.437422Z",
+      "credits_consumed": 50
+    },
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "28cb2643-4d61-4480-8d8b-ef9b784f6159",
+      "created_at": "2026-11-15T03:12:40.206376Z",
+      "credits_consumed": 50
+    },
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "155d1dc8-741e-44a0-852f-a4ffd4639792",
+      "created_at": "2026-11-15T03:20:46.578921Z",
+      "credits_consumed": 50
+    }
+  ],
+  "notes": "Báo giá khớp thực tế 100%."
+}

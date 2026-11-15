@@ -1,0 +1,63 @@
+{
+  "batch": "2026-11-15-p2-prop-b4",
+  "approvedBy": "người dùng (nguyên văn lựa chọn \"Chỉ dùng 800 hiện có\": tổng hạn mức 750, giữ lại >= 50; ≤250 credit mỗi đợt)",
+  "approvedAt": "2026-11-15",
+  "cap": 250,
+  "rules": "dry-run cả đợt trước (50/prop), image-to-3D v3.1 detailed+PBR+smart low-poly, không redo; đợt 3 và 4 chạy các việc song song (tổng báo giá đã nằm trong hạn mức)",
+  "quote": 150,
+  "balanceBefore": 235,
+  "balanceAfter": 85,
+  "jobs": [
+    {
+      "asset": "prop_lu_huong",
+      "version": 1,
+      "taskId": "f42da251-53af-4f68-a799-f15bce1438c2",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok",
+      "faceLimit": 7000
+    },
+    {
+      "asset": "prop_tuong_canh",
+      "version": 1,
+      "taskId": "256b6d53-5b06-479b-8cf9-7b6a27cce15f",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok",
+      "faceLimit": 8000
+    },
+    {
+      "asset": "prop_duong_xi",
+      "version": 1,
+      "taskId": "5ef06438-a4c7-4e3c-8050-76dffebe72eb",
+      "quote": 50,
+      "credits": 50,
+      "result": "ok",
+      "faceLimit": 5000
+    }
+  ],
+  "usage": [
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "f42da251-53af-4f68-a799-f15bce1438c2",
+      "created_at": "2026-11-15T03:33:19.815945Z",
+      "credits_consumed": 50
+    },
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "256b6d53-5b06-479b-8cf9-7b6a27cce15f",
+      "created_at": "2026-11-15T03:33:19.354327Z",
+      "credits_consumed": 50
+    },
+    {
+      "type": "image_to_model",
+      "status": "success",
+      "task_id": "5ef06438-a4c7-4e3c-8050-76dffebe72eb",
+      "created_at": "2026-11-15T03:33:19.985867Z",
+      "credits_consumed": 50
+    }
+  ],
+  "notes": "Báo giá khớp thực tế 100%."
+}

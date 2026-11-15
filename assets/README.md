@@ -106,3 +106,12 @@ SFX và âm môi trường không đi qua pipeline GLB mà qua `pnpm audio:build
 ## Texture mặt đất (P2-A2)
 
 `pnpm assets:terrain` tải 8 bộ Poly Haven CC0 (1K JPG) vào `../dtl-asset-source/texture/<id>/` rồi đóng gói ra `apps/client/public/terrain/` (albedo WebP + WebP pháp tuyến RG và độ nhám B, kèm `mask.<hash>.png` mặt nạ vùng tính sẵn từ `groundMask.ts` và `manifest.json`). Client nạp lười sau khung đầu (`game/groundTextures.ts`), không nằm trong tải đầu. Nguồn và giấy phép: `assets/LICENSES.md`. Không có `toktx` trên máy nên dùng WebP (client giải mã rồi ghép texture mảng); thêm KTX2 khi có toktx và cần cắt VRAM.
+
+## Prop Tripo và đặt cảnh (P2-A4)
+
+13 prop image→3D (Tripo CLI v3.1, detailed + PBR + smart low-poly, 5–10 nghìn mặt nguồn): `prop_den_da`, `prop_bia_da`, `prop_lu_huong`, `prop_tuong_canh`, `prop_thong_co`, `prop_co_thu`, `prop_da_nam`, `prop_da_dung`, `prop_da_phien`, `prop_truc`, `prop_lau`, `prop_kiem_gay`, `prop_duong_xi`. Nhập bằng khối `import` (`size` theo brief, `yaw: -90`), lớp `prop`: LOD0 hạ về trần 5.000 tam giác, LOD1 ×0,4, LOD2 ×0,15, texture 1024. Nhật ký đợt: `assets/source/_batches/2026-11-15-p2-prop-b{2,3,4}.json`.
+
+- **Bố cục**: `packages/shared/src/props.ts` (prop điểm nhấn đặt tay + va chạm của cổ thụ, tượng thú, lư hương, nối vào `COLLIDERS` nên server cũng chặn) và `apps/client/src/game/propScatter.ts` (rải xác định theo cụm quanh từng khu, tránh nước, dốc, lối đi, vòng NPC, lõi spawn quái, node hái, lõi Kiếm Trủng). Test: `propScatter.test.ts`.
+- **Vẽ**: `apps/client/src/game/props.ts` (`PropLayer`): ô 128 m × asset, mỗi ô-asset một `InstancedMesh` cho từng LOD dùng chung `instanceMatrix`, chọn LOD và tầm vẽ theo khoảng cách (preset Thấp: tầm ×0,55 và bỏ cỏ trang trí trúc/dương xỉ/lau). Asset nạp lười theo khoảng cách sau khung đầu, không nằm trong tải đầu. Hình học lượng tử hóa int16 phải đổi sang float trước khi nướng ma trận nút (`bakeGeometry`). `?props=0` tắt cả lớp (để chụp ảnh trước/sau); `__game.props.stats()` cho số liệu.
+- Đèn đá và kiếm gãy thay đèn/vòng kiếm thủ tục cũ (đã bỏ khỏi `build_sect.py` và `sect.ts`); cây thủ tục của terrain bỏ quanh cổ thụ/thông Tripo (`nearPropTree`).
+- Nhân vật không kiếm (Lam Chi): `import.rigid` kiểu `add_sword` dựng kiếm + bao thủ tục (`biped_parts.add_back_sword`); atlas Tripo kín nên thu UV/ảnh 5% chừa 4 ô màu.

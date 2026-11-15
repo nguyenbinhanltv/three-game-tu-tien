@@ -1,6 +1,8 @@
 // Bố cục bản đồ Vân Lam Sơn Mạch. Dùng chung cho địa hình (client + server),
 // va chạm và vị trí các khu. Đơn vị: mét. x về phía đông, z về phía nam.
 
+import { PROP_COLLIDERS } from './props';
+
 export const WORLD_SIZE = 4096;
 export const WORLD_MARGIN = 24;
 export const TERRAIN_SEED = 20261112;
@@ -57,6 +59,7 @@ export const COLLIDERS: CircleCollider[] = [
   { x: 2048, z: 2066, r: 2.4 }, // Lư hương giữa sân
   { x: 2048, z: 1500, r: 3.2 }, // Cổng bí cảnh (khối đá)
   { x: 900, z: 1000, r: 3.4 }, // Cự kiếm giữa Kiếm Trủng
+  ...PROP_COLLIDERS, // Prop điểm nhấn có va chạm (cổ thụ, tượng thú, lư hương)
 ];
 
 /**
