@@ -47,19 +47,22 @@ function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: bool
 /**
  * Nạp bộ texture mặt đất (WebP, ~4 MB) sau khi game đã chạy, không nằm trong tải đầu. Giải mã từng lớp
  * một (nhường khung hình giữa các lớp) rồi ghép vào 2 texture mảng, nên shader địa hình chỉ tốn 2 slot
- * texture. VRAM: 2 × 8 lớp × 1024² × 4 B + mip ≈ 85 MB.
+ * texture. VRAM: albedo 8 × 1024² × 4 B + mip ≈ 43 MB, pháp tuyến 8 × 512² ≈ 11 MB.
  */
 export async function loadGroundTextures(base: string, signal?: { aborted: boolean }): Promise<GroundTextures> {
   const manifest = (await (await fetch(`${base}terrain/manifest.json`)).json()) as Manifest;
   const size = manifest.size;
+  // Pháp tuyến/độ nhám tải ở nửa độ phân giải (chi tiết vi mô mềm hơn chút, đổi lấy ~32 MB VRAM: ngân sách texture 512 MB).
+  const nsize = size >> 1;
   const layerBytes = size * size * 4;
+  const nLayerBytes = nsize * nsize * 4;
   const albedo = new Uint8Array(layerBytes * manifest.layers.length);
-  const normal = new Uint8Array(layerBytes * manifest.layers.length);
+  const normal = new Uint8Array(nLayerBytes * manifest.layers.length);
   for (let i = 0; i < manifest.layers.length; i++) {
     const L = manifest.layers[i];
-    const [a, n] = await Promise.all([decode(`${base}terrain/${L.a}`, size), decode(`${base}terrain/${L.n}`, size)]);
+    const [a, n] = await Promise.all([decode(`${base}terrain/${L.a}`, size), decode(`${base}terrain/${L.n}`, nsize)]);
     albedo.set(a, i * layerBytes);
-    normal.set(n, i * layerBytes);
+    normal.set(n, i * nLayerBytes);
     if (signal?.aborted) throw new Error('aborted');
     await new Promise((r) => setTimeout(r, 0));
   }
@@ -77,7 +80,7 @@ export async function loadGroundTextures(base: string, signal?: { aborted: boole
   mask.generateMipmaps = false;
   mask.needsUpdate = true;
   const tex = arrayTexture(albedo, size, manifest.layers.length, true);
-  const nor = arrayTexture(normal, size, manifest.layers.length, false);
+  const nor = arrayTexture(normal, nsize, manifest.layers.length, false);
   return {
     albedo: tex,
     normal: nor,

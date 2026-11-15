@@ -43,7 +43,7 @@ export function shorePoints(): { x: number; z: number }[] {
   const n = 16;
   for (let k = 0; k < n; k++) {
     const a = -Math.PI + (k * 2 * Math.PI) / n;
-    for (let r = 460; r > 200; r -= 2) {
+    for (let r = 300; r > 90; r -= 2) {
       const x = LAKE.x + Math.cos(a) * r;
       const z = LAKE.z + Math.sin(a) * r;
       if (heightAt(x, z) < WATER_Y + 0.3) {

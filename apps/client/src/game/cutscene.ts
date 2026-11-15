@@ -24,14 +24,15 @@ export interface Waypoint {
 const v = (x: number, y: number, z: number): Vec3 => ({ x, y, z });
 
 /**
- * Điểm đi qua, tọa độ thế giới Vân Lam Sơn Mạch: mở ở trên biển mây (mây cao nhất y≈121) phía nam, bay lên sơn đạo
- * (x=2048), hạ thấp dần để chui qua cổng tam quan (z=2128, xà dưới ~156,7) rồi nối vào camera người chơi.
+ * Điểm đi qua, tọa độ thế giới Vân Lam Sơn Mạch: mở ở trên biển mây (mây cao nhất y≈121) phía nam (thung lũng), bay lên sơn đạo
+ * (x=2048, vượt gờ núi cao ~181 m ở z≈2240), hạ thấp dần để chui qua cổng tam quan (z=2128, xà dưới ~156,7) rồi nối vào camera người chơi.
  */
 export const SECT_PATH: readonly Waypoint[] = [
-  { p: v(1990, 134, 2600), look: v(2048, 122, 2300) },
-  { p: v(2020, 140, 2440), look: v(2048, 140, 2180) },
-  { p: v(2048, 160, 2300), look: v(2048, 154, 2130) },
-  { p: v(2048, 168, 2215), look: v(2048, 152, 2110) },
+  { p: v(1990, 134, 2560), look: v(2048, 122, 2300) },
+  { p: v(2020, 150, 2430), look: v(2048, 150, 2180) },
+  { p: v(2048, 162, 2300), look: v(2048, 160, 2130) },
+  { p: v(2048, 196, 2236), look: v(2048, 160, 2120) },
+  { p: v(2048, 176, 2190), look: v(2048, 154, 2110) },
   { p: v(2048, 157.5, 2150), look: v(2048, 153, 2095) },
   { p: v(2048, 154, 2128), look: v(2048, 152.5, 2085) },
 ];
