@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CharView, Equipment, InvSlot, QuestView } from '@dtl/shared';
+import type { CharView, Equipment, InvSlot, MethodMsg, QuestView } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio';
 
 export interface TargetInfo {
@@ -103,7 +103,7 @@ export interface DebugInfo {
   sid: string;
 }
 
-export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map';
+export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method';
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
 export interface UIState {
@@ -161,6 +161,12 @@ export interface UIState {
   mouseLook: boolean;
   /** Ô chiêu đang chờ hết GCD để gửi (M1-11), -1 nếu không có. */
   queuedSkill: number;
+  /** Công pháp: cấp chiêu, biến thức, kiếm ý/thế, vòng sạc (server gửi). null = chưa nhận. */
+  method: MethodMsg | null;
+  /** Lệch đồng hồ client − server (ms) lúc nhận `method`, để đổi `guardUntil` sang giờ client. */
+  methodOff: number;
+  /** Thẻ ngắn 0,6 giây khi mình tung chiêu tối thượng (tên chiêu, màu); `until` theo đồng hồ client. */
+  ultCard: { id: number; skill: string; color: string; until: number } | null;
   /** Bảng gỡ lỗi F3 đang mở. */
   debugOpen: boolean;
   debug: DebugInfo | null;
@@ -214,6 +220,9 @@ export const useUI = create<UIState>(() => ({
   controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '') ? (localStorage.getItem('dtl.controls') as string) : 'mouse',
   mouseLook: false,
   queuedSkill: -1,
+  method: null,
+  methodOff: 0,
+  ultCard: null,
   debugOpen: false,
   debug: null,
 }));

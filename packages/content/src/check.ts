@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
-import { APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, t } from './index';
+import { APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
 import { PLACE_ID, PLACES } from './places';
 
@@ -22,7 +22,9 @@ function uniqueIds(kind: string, list: { id: string }[]) {
 
 uniqueIds('item', ITEMS);
 uniqueIds('monster', MONSTERS);
-uniqueIds('skill', SKILLS);
+const ALL_SKILLS = [...SKILLS, ...METHOD_SKILLS];
+uniqueIds('skill', ALL_SKILLS);
+uniqueIds('method', METHODS);
 uniqueIds('recipe', RECIPES);
 uniqueIds('npc', NPCS);
 uniqueIds('quest', QUESTS);
@@ -30,11 +32,11 @@ uniqueIds('pose', POSES);
 for (const p of POSES) for (const m of validatePose(p)) err(m);
 const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
-for (const s of SKILLS) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
-const skillPoses = SKILLS.map((s) => s.pose);
+for (const s of ALL_SKILLS) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
+const skillPoses = ALL_SKILLS.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
 // Client chọn động tác theo fx của chiêu (FX của server chỉ mang loại hiệu ứng): fx phải riêng cho mỗi chiêu.
-const skillFx = SKILLS.map((s) => s.fx);
+const skillFx = ALL_SKILLS.map((s) => s.fx);
 if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
 for (const id of [POSE_FLY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 for (const [id, swap] of Object.entries(POSE_SWORD_SWAP)) {
@@ -78,6 +80,58 @@ const needItem = (id: string, where: string) => {
 const needStr = (key: string) => {
   if (!hasString(key)) err(`thiếu chuỗi i18n: ${key}`);
 };
+
+// ---- công pháp (Phase 3-5): chiêu công pháp, nội tại, biến thức ----
+for (const s of SKILLS) if (s.method || s.ult) err(`skill ${s.id}: chiêu chung không có method/ult (đặt trong methods.json)`);
+for (const m of METHODS) {
+  const sig = SKILL.get(m.sig);
+  const ult = SKILL.get(m.ult);
+  if (!sig || sig.method !== m.id || sig.ult) err(`method ${m.id}: chiêu đặc trưng ${m.sig} phải thuộc công pháp và không phải tối thượng`);
+  if (!ult || ult.method !== m.id || !ult.ult) err(`method ${m.id}: chiêu tối thượng ${m.ult} phải thuộc công pháp và có ult`);
+  if (!/^[0-9a-f]{6}$/i.test(m.color)) err(`method ${m.id}: màu phải là hex 6 ký tự`);
+  if (m.passive.kind === 'kiem_y' || m.passive.kind === 'the') {
+    if (!(m.passive.max! >= 1 && m.passive.max! <= 9 && m.passive.perStack! > 0 && m.passive.decay! > 0)) err(`method ${m.id}: nội tại thiếu max/perStack/decay`);
+  }
+  needStr(`method.${m.id}.name`);
+  needStr(`method.${m.id}.desc`);
+  needStr(`method.${m.id}.passive`);
+  needStr(`method.${m.id}.role`);
+}
+for (const s of METHOD_SKILLS) {
+  if (!s.method || !METHOD.has(s.method)) err(`skill ${s.id}: công pháp không tồn tại ${s.method}`);
+  if (s.ult && (s.mp !== 0 || s.cd !== 0)) err(`skill ${s.id}: chiêu tối thượng chỉ giới hạn bằng vòng sạc (mp, cd phải 0)`);
+  if (s.kind === 'taunt' && !(s.radius! > 0 && s.duration! > 0)) err(`skill ${s.id}: khiêu khích cần radius và duration`);
+  if (s.kind === 'guard' && !(s.reduce! > 0 && s.reduce! <= 0.9 && s.duration! > 0)) err(`skill ${s.id}: giữ cần reduce (0–0,9) và duration`);
+  if ((s.kind === 'hot' || s.kind === 'revive') && !(s.allyRadius! > 0)) err(`skill ${s.id}: cần allyRadius`);
+  if (s.kind === 'hot' && !(s.duration! > 0)) err(`skill ${s.id}: hồi theo thời gian cần duration`);
+}
+for (const [id, v] of Object.entries(VARIANTS)) {
+  const sk = SKILL.get(id);
+  if (!sk) {
+    err(`variants: chiêu không tồn tại ${id}`);
+    continue;
+  }
+  if (sk.ult) err(`variants ${id}: chiêu tối thượng không có biến thức`);
+  if (v.a.id !== 'a' || v.b.id !== 'b') err(`variants ${id}: id biến thức phải là a và b`);
+  if (v.a.fx === v.b.fx) err(`variants ${id}: hai biến thức dùng chung fx`);
+  needStr(`skill.${id}.var.a.name`);
+  needStr(`skill.${id}.var.a.desc`);
+  needStr(`skill.${id}.var.b.name`);
+  needStr(`skill.${id}.var.b.desc`);
+  for (const x of [v.a, v.b]) {
+    const kindOk =
+      (x.hits || x.pierce || x.cleave || x.trail || x.stunOnInterrupt || x.markBonus || x.markSpread) ? sk.kind === 'damage' || sk.kind === 'aoe' : true;
+    if (!kindOk) err(`variants ${id}.${x.id}: tham số sát thương trên chiêu ${sk.kind}`);
+    if (x.ally && sk.kind !== 'shield') err(`variants ${id}.${x.id}: ally chỉ cho lá chắn`);
+    if (x.hot && sk.kind !== 'heal') err(`variants ${id}.${x.id}: hot chỉ cho chiêu hồi tức thì`);
+    if (x.hits && x.hits.some((h) => !(h > 0))) err(`variants ${id}.${x.id}: hits phải dương`);
+  }
+}
+for (const s of ALL_SKILLS) {
+  if (!s.ult && s.kind !== 'revive' && !VARIANTS[s.id] && !s.method) err(`skill ${s.id}: chiêu chung thiếu biến thức A/B`);
+}
+for (const id of ['itm_bi_tich_tan_quyen']) if (!ITEM.has(id)) err(`thiếu vật phẩm ${id}`);
+
 
 for (const it of ITEMS) {
   needStr(`item.${it.id}.name`);
@@ -348,7 +402,7 @@ for (const m of MONSTERS) {
     if (!(ps.brk >= 1 && ps.brk <= 6)) err(`monster ${m.id}: posture.brk phải trong [1; 6] giây`);
   }
 }
-for (const s of SKILLS) {
+for (const s of ALL_SKILLS) {
   needStr(`skill.${s.id}.name`);
   needStr(`skill.${s.id}.desc`);
   if (s.interrupt && s.kind !== 'damage') err(`skill ${s.id}: interrupt chỉ dùng cho skill kind 'damage'`);
@@ -432,7 +486,7 @@ for (const pl of PLACES) {
 let total = 0;
 for (let l = 1; l <= 15; l++) total += xpNeed(l);
 console.log(`Tổng tu vi Ngưng Khí 1 → viên mãn tầng 15: ${total}`);
-console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${SKILLS.length} skill, ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose, ${APPEARANCE.dyes.length} màu áo`);
+console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILLS.length} skill (${METHODS.length} công pháp), ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose, ${APPEARANCE.dyes.length} màu áo`);
 
 if (errors.length) {
   console.error(`\n${errors.length} lỗi nội dung:`);

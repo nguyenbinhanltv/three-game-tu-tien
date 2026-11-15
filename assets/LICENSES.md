@@ -20,6 +20,13 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 | `itm_han_giao_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_han_giao_dan.png` |
 | `itm_kiem_phach` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_kiem_phach.png` |
 | `itm_truc_co_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_truc_co_dan.png` |
+| `skl_kiem_anh_phan_quang` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_kiem_anh_phan_quang.png` |
+| `skl_van_kiem_quy_tong` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_van_kiem_quy_tong.png` |
+| `skl_tran_son_an` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_tran_son_an.png` |
+| `skl_kim_cuong_bat_hoai` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_kim_cuong_bat_hoai.png` |
+| `skl_xuan_phong_hoa_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_xuan_phong_hoa_vu.png` |
+| `skl_hoi_thien_dan_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/skl_hoi_thien_dan_lo.png` |
+| `itm_bi_tich_tan_quyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_bi_tich_tan_quyen.png` |
 | `itm_hoi_xuan_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_xuan_dan.png` |
 | `itm_hoi_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_hoi_khi_dan.png` |
 | `itm_tu_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-15 | `icons/itm_tu_khi_dan.png` |
