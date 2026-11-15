@@ -715,6 +715,8 @@ export class Game {
       this.keys.clear('visibility');
       this.setHidden(document.hidden);
     });
+    // Bấm chuột ở bất cứ đâu (kể cả trên HUD) cũng bỏ qua cảnh mở đầu, đúng như gợi ý "bấm phím bất kỳ".
+    this.on(window, 'pointerdown', () => this.skipCine(), { capture: true });
     this.on(window, 'keydown', (e: KeyboardEvent) => {
       if (!e.repeat) this.skipCine();
       this.keys.onDown(e.code, e.altKey, e.repeat);

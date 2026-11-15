@@ -1185,6 +1185,7 @@ kbd {
 .hud.cining > :not(.cine) {
   /* Không dùng 0 hay visibility:hidden: Chrome bỏ qua vẽ, nên lúc hiện lại phải raster/giải mã icon cùng lúc và khựng ~100 ms. */
   opacity: 0.004;
+  pointer-events: none;
   transition: none;
 }
 #stage.cining :is(.dmg-layer, .offs-layer, .loot-layer) {
