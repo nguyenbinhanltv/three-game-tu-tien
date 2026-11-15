@@ -679,8 +679,8 @@ export class Vfx {
   }
 
   /** Lớp linh khí hộ thể bao quanh người. */
-  shield(pos: PosFn, dur: number, stillOn: () => boolean): void {
-    const m = this.fx(G.ico1, 0x7fd8ff, 0.28);
+  shield(pos: PosFn, dur: number, stillOn: () => boolean, color = 0x7fd8ff, scale = 1): void {
+    const m = this.fx(G.ico1, color, 0.28);
     let t = 0;
     this.add(
       dur,
@@ -692,7 +692,7 @@ export class Vfx {
         }
         m.visible = true;
         m.position.copy(_a).setY(_a.y - 0.2);
-        m.scale.set(1.25, 1.5, 1.25);
+        m.scale.set(1.25 * scale, 1.5 * scale, 1.25 * scale);
         m.rotation.y = t * 1.5;
         m.fxOpacity = 0.22 + Math.sin(t * 6) * 0.06;
       },

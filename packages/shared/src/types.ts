@@ -207,7 +207,11 @@ export interface MonsterPosture {
   brk: number;
 }
 
-export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield';
+/**
+ * damage/aoe/heal/shield: 6 chiêu chung. Chiêu công pháp (Phase 3-5) thêm: `taunt` (khiêu khích quanh mình),
+ * `guard` (giảm sát thương nhận), `hot` (hồi vùng theo thời gian), `revive` (hồi sinh đồng đội gần).
+ */
+export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive';
 
 export interface SkillDef {
   id: string;
@@ -233,6 +237,18 @@ export interface SkillDef {
   pose?: string;
   /** Ngắt được chú boss đang niệm (chỉ với kind 'damage'). */
   interrupt?: boolean;
+  /** Chỉ người theo công pháp này mới dùng được (chiêu đặc trưng/tối thượng). Chiêu chung không có trường này. */
+  method?: string;
+  /** Chiêu tối thượng: cần vòng sạc đầy (không dùng linh lực/hồi chiêu để giới hạn). */
+  ult?: boolean;
+  /** Đánh dấu mục tiêu: trong `dur` giây, sát thương của người đánh dấu lên nó nhân thêm `mul`. */
+  mark?: { dur: number; mul: number };
+  /** `guard`: tỉ lệ sát thương được giảm. `taunt`: bán kính nằm ở `radius`, thời gian ở `duration`. */
+  reduce?: number;
+  /** `hot`: tổng lượng hồi (theo % máu tối đa) chia đều trong `duration`; `healAllies` bán kính hồi cho đồng đội. */
+  allyRadius?: number;
+  /** Tên hiệu ứng nâng cấp riêng (client). */
+  tint?: string;
 }
 
 export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough';

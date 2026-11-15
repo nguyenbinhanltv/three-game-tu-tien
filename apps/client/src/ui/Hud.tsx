@@ -1,8 +1,8 @@
 import { ContentIcon } from './ContentIcon';
 import './panels.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { AIRBORNE_HEIGHT, C, groundAt, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, WORLD_SIZE } from '@dtl/shared';
-import { itemName, monsterName, QUEST, realmName, SKILLS, t } from '@dtl/content';
+import { AIRBORNE_HEIGHT, BAR_SIZE, C, CHARGE_MAX, groundAt, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { Button, ProgressBar, TipCard, Tooltip } from './kit';
@@ -105,6 +105,18 @@ function BossLineShow({ line }: { line: BossLine }) {
  * Thẻ chương (C2): letterbox mỏng, dòng dẫn nhỏ, tiêu đề lớn (DTL Display), phụ đề một dòng mờ dần.
  * Không nhận chuột/phím, không khóa điều khiển; tự gỡ khi hết giờ.
  */
+/** Thẻ ngắn 0,6 giây khi mình tung chiêu tối thượng: viền sáng theo màu công pháp, tên chiêu. Không nhận chuột/phím. */
+function UltCardView() {
+  const card = useUI((s) => s.ultCard);
+  const now = useNow(100);
+  if (!card || now >= card.until) return null;
+  return (
+    <div className="ult-card" key={card.id} style={{ '--mc': '#' + card.color } as CSSProperties}>
+      <div className="ult-card-name">{t(`skill.${card.skill}.name`)}</div>
+    </div>
+  );
+}
+
 function ChapterCardView() {
   const card = useUI((s) => s.chapter);
   return card ? <ChapterCardShow card={card} /> : null;
@@ -334,23 +346,58 @@ function SkillBar() {
   const px = useUI((s) => s.x);
   const py = useUI((s) => s.y);
   const pz = useUI((s) => s.z);
+  const method = useUI((s) => s.method);
   const now = useNow(100);
   if (!char) return null;
   const airborne = (flags & PF_FLYING) !== 0 || py - groundAt(px, pz) > AIRBORNE_HEIGHT;
+  const mdef = method?.method ? METHOD.get(method.method) : undefined;
+  const bar = skillBar(method?.method);
+  const charge = method?.charge ?? 0;
+  const pas = mdef?.passive;
+  const stackKind = pas?.kind === 'kiem_y' || pas?.kind === 'the' ? pas.kind : null;
+  const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE }, (_, i) => bar[i] ?? null);
   return (
-    <div className="skillbar">
+    <div className="skillbar" style={mdef ? ({ '--mc': '#' + mdef.color } as CSSProperties) : undefined}>
+      {stackKind && (
+        <div className="stack-pips" aria-label={t(`ui.method.stacks.${stackKind}`)}>
+          <span>{t(`ui.method.stacks.${stackKind}`)}</span>
+          {Array.from({ length: pas?.max ?? 5 }, (_, i) => (
+            <i key={i} className={i < (method?.stacks ?? 0) ? 'on' : ''} />
+          ))}
+        </div>
+      )}
       <div className="skill-row">
-        {SKILLS.map((sk, i) => {
+        {slots.map((sk, i) => {
+          if (!sk) {
+            // Ô 7–8 khi chưa chọn công pháp: ô trống, bấm để mở bảng Công pháp.
+            return (
+              <Tooltip key={'empty' + i} content={<TipCard title={t(i === 6 ? 'ui.method.slot7' : 'ui.method.slot8')} desc={t('ui.method.empty_slot')} />}>
+                <button type="button" className="skill" data-state="empty" aria-label={`${t(i === 6 ? 'ui.method.slot7' : 'ui.method.slot8')} (${i + 1})`} onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }}>
+                  <span className="skill-icon">
+                    <span className="content-icon">＋</span>
+                  </span>
+                  <span className="skill-key">{i + 1}</span>
+                </button>
+              </Tooltip>
+            );
+          }
+          const rs = resolveBarSkill(method, sk);
           const locked = char.level < sk.unlock;
           const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
           const left = Math.max(0, ready - now);
-          const total = (cds[sk.id] ?? 0) > gcdAt ? sk.cd * 1000 : 1000;
+          const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
           const noMp = !locked && mp < sk.mp;
           const blocked = !locked && airborne;
-          const state = locked ? 'locked' : blocked ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
+          const charging = !locked && !!sk.ult && charge < CHARGE_MAX;
+          const state = locked ? 'locked' : blocked ? 'air' : charging ? 'charging' : noMp ? 'nomp' : sk.ult ? 'ultready' : left > 80 ? 'cd' : 'ready';
+          const lv = method?.lv[sk.id] ?? 1;
+          const vr = method?.vr[sk.id];
           const lines = [
+            ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
+            ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
+            ...(sk.ult ? [{ text: t('ui.skill.ult_charge', { n: Math.floor(charge) }), tone: charging ? ('bad' as const) : undefined }] : []),
             ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
-            ...(sk.cd ? [{ text: t('ui.skill.cd', { n: sk.cd }) }] : []),
+            ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
             ...(blocked ? [{ text: t('ui.skill.airborne'), tone: 'bad' as const }] : []),
             ...(noMp ? [{ text: t('ui.skill.no_mp'), tone: 'bad' as const }] : []),
           ];
@@ -363,6 +410,7 @@ function SkillBar() {
                 type="button"
                 className={'skill' + (i === 0 && auto ? ' auto' : '') + (i === queued ? ' queued' : '')}
                 data-state={state}
+                data-method={sk.method ? '1' : undefined}
                 aria-label={`${t(`skill.${sk.id}.name`)} (${i + 1})`}
                 onClick={(e) => {
                   Game.current?.useSkill(i);
@@ -373,7 +421,13 @@ function SkillBar() {
                   <ContentIcon def={sk} />
                 </span>
                 <span className="skill-key">{i + 1}</span>
-                {left > 80 && !locked && (
+                {charging && (
+                  <>
+                    <span className="skill-charge" style={{ '--p': Math.min(1, charge / CHARGE_MAX) } as CSSProperties} />
+                    <span className="skill-charge-text">{Math.floor(charge)}</span>
+                  </>
+                )}
+                {!charging && left > 80 && !locked && (
                   <>
                     <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
                     {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
@@ -397,6 +451,9 @@ function SkillBar() {
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
           👤 <span>{t('ui.char')}</span> <kbd>C</kbd>
+        </Button>
+        <Button size="s" onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} title={t('ui.method.title')}>
+          ☯️ <span>{t('ui.method.key')}</span> <kbd>V</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }}>
           📜 <span>{t('ui.quests')}</span> <kbd>L</kbd>
@@ -567,6 +624,7 @@ export function Hud() {
       <PlayerFrame />
       <CineView />
       <ChapterCardView />
+      <UltCardView />
       <BossLineView />
       <BossBar />
       <TargetFrame below={hasBoss} />

@@ -48,9 +48,14 @@ import {
   stepMove,
   type SysMsg,
   type TransferMsg,
+  type MethodMsg,
+  type SkillDef,
+  BAR_SIZE,
+  CHARGE_MAX,
 } from '@dtl/shared';
 import type { Appearance } from '@dtl/shared';
-import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPCS, QUEST, realmName, SKILLS, t } from '@dtl/content';
+import { hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
+import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { chapterSting, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
 import { FootstepDriver } from './footsteps';
@@ -311,6 +316,7 @@ export class Game {
   private camDistCur = 13;
   private keys = new KeyState();
   private skillQueue = new SkillQueue();
+  private ultCardId = 0;
   /** Động tác chiêu (M3-4): dự đoán khi bấm phím, khớp lúc ra đòn với hiệu ứng. */
   private skillPoses = new SkillPoses();
   private dragging = false;
@@ -450,6 +456,7 @@ export class Game {
       for (const k in m.cds) cds[k] = m.cds[k] + off;
       set({ cds, gcdAt: m.gcd + off });
     });
+    room.onMessage(S.METHOD, (m: MethodMsg) => set({ method: m, methodOff: Date.now() - m.now }));
     room.onMessage(S.SYS, (m: SysMsg) => this.onSys(m));
     room.onMessage(S.FX, (m: FxMsg) => this.onFx(m));
     room.onMessage(S.DMG, (m: DmgMsg) => this.onDmg(m));
@@ -898,7 +905,8 @@ export class Game {
     if (this.isMoveKey(code, action)) this.cancelQueuedSkill();
     const slot = skillSlot(code);
     if (slot >= 0) {
-      if (slot < SKILLS.length) this.useSkill(slot);
+      if (slot < this.bar().length) this.useSkill(slot);
+      else if (slot < BAR_SIZE) pushToast(t('ui.method.empty_slot'), 'info');
       return;
     }
     if (isKeyFor(code, 'forward') || isKeyFor(code, 'back')) this.autorun = false;
@@ -923,6 +931,9 @@ export class Game {
         break;
       case 'quests':
         togglePanel('quests');
+        break;
+      case 'method':
+        togglePanel('method');
         break;
       case 'map':
         togglePanel('map');
@@ -1037,14 +1048,23 @@ export class Game {
   }
 
   /** Người chơi bấm chiêu (phím số, nút trên thanh chiêu, bấm lại mục tiêu). */
+  /** Thanh chiêu hiện tại: 6 chiêu chung + 2 chiêu của công pháp đang tu. */
+  bar(): SkillDef[] {
+    return skillBar(get().method?.method);
+  }
+
   useSkill(i: number): void {
-    const skill = SKILLS[i];
+    const skill = this.bar()[i];
     const me = this.me();
     const ch = get().char;
     if (!skill || !me || !ch) return;
     if (me.fl & PF_DEAD) return;
     if (ch.level < skill.unlock) {
       pushToast(t('ui.skill_locked', { realm: realmName(skill.unlock) }), 'bad');
+      return;
+    }
+    if (skill.ult && (get().method?.charge ?? 0) < CHARGE_MAX) {
+      pushToast(t('sys.ult_not_ready'), 'bad');
       return;
     }
     // M1-11: bấm trong 0,4 giây cuối thời gian chờ thì giữ lại, gửi khi hết chờ (xem `SkillQueue`).
@@ -1058,7 +1078,7 @@ export class Game {
   /** Thời điểm (đồng hồ client, ms) ô chiêu `i` dùng lại được: sau cả GCD lẫn hồi chiêu riêng. */
   private skillReadyAt(i: number): number {
     const st = get();
-    return Math.max(st.gcdAt, st.cds[SKILLS[i]?.id ?? ''] ?? 0);
+    return Math.max(st.gcdAt, st.cds[this.bar()[i]?.id ?? ''] ?? 0);
   }
 
   /** Hủy chiêu đang chờ; trả true nếu có chiêu bị hủy. */
@@ -1070,7 +1090,7 @@ export class Game {
 
   /** Gửi ý định dùng chiêu lên server (tự chọn mục tiêu nếu cần). Server vẫn kiểm mọi điều kiện. */
   private fireSkill(i: number): void {
-    const skill = SKILLS[i];
+    const skill = this.bar()[i];
     const me = this.me();
     if (!skill || !me || me.fl & PF_DEAD) return;
     const needTarget = skill.kind === 'damage' || skill.kind === 'aoe';
@@ -1094,8 +1114,9 @@ export class Game {
     // Vào thế ngay khi bấm (chỉ hình): chỉ khi client thấy server sẽ nhận (đứng đất, hết chờ, đủ linh lực, trong tầm).
     const mon = needTarget ? this.view.monsters.get(this.targetId) : undefined;
     const inRange = !needTarget || (!!mon && Math.hypot(mon.x - this.cur.x, mon.z - this.cur.z) <= skill.range + 1.5 + (MONSTER.get(mon.t)?.scale ?? 1));
-    const ready = Date.now() >= this.skillReadyAt(i) - 60 && me.mp >= skill.mp && (me.fl & PF_CASTING) === 0;
-    if (inRange && ready && this.cur.grounded && !this.cur.flying) this.skillPoses.predict(this.ents.players.get(this.sid)?.model, skill, performance.now());
+    const ready = Date.now() >= this.skillReadyAt(i) - 60 && me.mp >= skill.mp && (me.fl & PF_CASTING) === 0 && (!skill.ult || (get().method?.charge ?? 0) >= CHARGE_MAX);
+    // Biến thức có thể bỏ niệm chú (Lôi Tốc): dự đoán theo thời gian niệm đã gộp biến thức.
+    if (inRange && ready && this.cur.grounded && !this.cur.flying) this.skillPoses.predict(this.ents.players.get(this.sid)?.model, { ...skill, cast: resolveBarSkill(get().method, skill).cast }, performance.now());
   }
 
   toggleFly(): void {
@@ -1288,6 +1309,17 @@ export class Game {
     }
     const posSrc = (out: THREE.Vector3) => e.chestOf(src, out);
     const posDst = (out: THREE.Vector3) => e.chestOf(dst, out);
+    // Màu theo công pháp (chiêu chung đổi màu khi đã chọn công pháp) và hình dạng theo biến thức / cấp chiêu.
+    const tint = (d: number) => fxColor(m, d);
+    const mctx = { v, m, src: posSrc, dst: posDst, mine: src === this.sid, flash: (a: number) => this.post?.flash(a) };
+    if (METHOD_FX.has(m.t)) {
+      playMethodFx(mctx);
+      // Chiêu tối thượng của mình: thẻ ngắn 0,6 giây (viền sáng, tên chiêu), không khóa input.
+      const ult = src === this.sid ? METHOD_SKILLS.find((s) => s.fx === m.t && s.ult) : undefined;
+      if (ult) set({ ultCard: { id: ++this.ultCardId, skill: ult.id, color: m.c ?? 'ffffff', until: Date.now() + 600 } });
+      return;
+    }
+    if (m.v) playVariantExtras(mctx, tint(0xbfeaff));
     switch (m.t) {
       case 'sword':
       case 'slash':
@@ -1295,11 +1327,11 @@ export class Game {
         if (!e.chestOf(src, _v)) break;
         if (m.t === 'sword') {
           // Phi kiếm: tới nơi để lại một dấu chém chéo nhỏ (không lớp mực, đòn thường đánh liên tục).
-          v.swordShot(_v, posDst, 0xbfeaff, 1, 0.2, (at) => v.slashMark(posDst, 0xcff3ff, 0.55, -0.55, 0.2, false, at.clone()));
+          v.swordShot(_v, posDst, tint(0xbfeaff), 1, 0.2, (at) => v.slashMark(posDst, 0xcff3ff, 0.55, -0.55, 0.2, false, at.clone()));
         }
-        else if (m.t === 'slash') v.slash(_v, posDst, 0x8fdcff);
+        else if (m.t === 'slash') v.slash(_v, posDst, tint(0x8fdcff));
         else if (e.chestOf(dst, _v2)) {
-          v.swordShot(_v, posDst, 0xfff3b0, 1.8, 0.16);
+          v.swordShot(_v, posDst, tint(0xfff3b0), 1.8, 0.16);
           // Lôi Đình Nhất Kiếm: nhát chém dọc lớn (biến thể đứng của kiếm khí) cùng lúc sét đánh.
           v.slashVertical(posDst, 0xfff3b0, 1.3);
           v.lightning(_v2.x, _v2.y - 1, _v2.z, 0xfff0a8, 1.3, m.sd);
@@ -1308,7 +1340,7 @@ export class Game {
         break;
       }
       case 'rain':
-        v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, 0x9fe0ff, m.sd, src === this.sid);
+        v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, tint(0x9fe0ff), m.sd, src === this.sid);
         break;
       case 'bite': {
         e.monsters.get(src)?.model.attack();
@@ -1317,10 +1349,10 @@ export class Game {
       }
       case 'heal':
       case 'potion':
-        v.pillar(posSrc, 0x7dffa0, 1.0, 0.9, 4);
+        v.pillar(posSrc, tint(0x7dffa0), 1.0, 0.9, 4);
         break;
       case 'shield':
-        v.shield(posSrc, m.d ?? 8, () => ((this.view.players.get(src)?.fl ?? 0) & PF_SHIELD) !== 0);
+        v.shield(posSrc, m.d ?? 8, () => ((this.view.players.get(src)?.fl ?? 0) & PF_SHIELD) !== 0, tint(0x7fd8ff), m.v === 'big' ? 1.4 : 1);
         break;
       case 'levelup':
         v.pillar(posSrc, 0xffe08a, 1.8, 1.4, 12);
@@ -1467,6 +1499,12 @@ export class Game {
       death: 'death',
       respawn: 'respawn',
       cast: 'cast',
+      kanh: 'slash',
+      vankiem: 'rain',
+      transon: 'thunder',
+      kimcuong: 'shield',
+      xuanphong: 'heal',
+      hoithien: 'heal',
       mcast: 'mcast',
       tribstart: 'trib',
       // Phá chú (ngắt niệm chú) và boss mất thế: tiếng xác nhận giòn, nổi nhất (D2).
@@ -1811,7 +1849,7 @@ export class Game {
     const q = this.skillQueue;
     if (q.slot < 0) return;
     const st = get();
-    const cdAt = st.cds[SKILLS[q.slot]?.id ?? ''] ?? 0;
+    const cdAt = st.cds[this.bar()[q.slot]?.id ?? ''] ?? 0;
     const slot = q.poll(Date.now(), Math.max(st.gcdAt, cdAt), cdAt > st.gcdAt, this.ping);
     if (q.slot < 0) set({ queuedSkill: -1 });
     if (slot < 0) return;

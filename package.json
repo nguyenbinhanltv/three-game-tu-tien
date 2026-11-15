@@ -24,6 +24,7 @@
     "assets:build": "pnpm --filter @dtl/asset-pipeline run build",
     "assets:optimize": "pnpm --filter @dtl/asset-pipeline run optimize",
     "shots": "pnpm --filter @dtl/perf run shots --",
+    "shots:method": "pnpm --filter @dtl/perf run shots:method --",
     "assets:terrain": "pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
     "audio:build": "node tools/audio/build.mjs",

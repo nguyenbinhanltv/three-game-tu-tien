@@ -30,8 +30,9 @@ import {
 } from '@dtl/shared';
 import { APPEARANCE, ITEM, ITEM_SYS, QUEST } from '@dtl/content';
 import { characters, db, items, ledger } from '../db';
+import { methodDefMul, sanitizeMethodMeta, type MethodMeta } from './method';
 
-export interface CharMeta {
+export interface CharMeta extends MethodMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
   dungeonDay?: string;
 }
@@ -265,6 +266,8 @@ export class Character {
     } catch {
       /* dữ liệu hỏng: dùng mặc định */
     }
+    if (!c.meta || typeof c.meta !== 'object') c.meta = {};
+    sanitizeMethodMeta(c.meta);
     if (!c.quests || typeof c.quests.active !== 'object' || !Array.isArray(c.quests.done)) c.quests = { active: {}, done: [] };
     for (const r of db.select().from(items).where(eq(items.charId, id)).all()) {
       if (r.slot >= 0 && r.slot < INV_SIZE && ITEM.has(r.itemId)) {
@@ -293,7 +296,8 @@ export class Character {
     this.mhp = st.hp;
     this.mmp = st.mp;
     this.atk = st.atk;
-    this.def = st.def;
+    // Nội tại Kim Thân: phòng ngự cộng thêm theo tỉ lệ.
+    this.def = Math.round(st.def * (1 + methodDefMul(this.meta)));
     if (this.hp > st.hp) this.hp = st.hp;
     if (this.mp > st.mp) this.mp = st.mp;
     this.charDirty = true;
