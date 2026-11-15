@@ -116,6 +116,8 @@ export interface SysMsg {
   i?: string;
   /** Id quái/điểm hái mà đồ nảy ra (client lấy vị trí từ trạng thái room; không có thì bỏ phần 3D). */
   src?: string;
+  /** Chỉ với trang bị đã roll: phẩm 0..4 (Phàm..Thiên) để client chọn màu/cột sáng. Không phải tỉ lệ rơi. */
+  q?: number;
 }
 
 export interface FxMsg {

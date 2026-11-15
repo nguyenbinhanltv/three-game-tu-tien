@@ -5,6 +5,7 @@ import { ITEM, itemName, QUEST, QUESTS, realmName, SKILLS, t, TRUC_CO_PILL } fro
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../game/audio';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
+import { compareLines, gearQuality, itemLines, itemSub, type TipLine } from './gear';
 import { Button, Divider, type PanelTone, PanelWindow, ProgressBar, Segmented, Slider, Slot, TipCard, Tooltip } from './kit';
 import { set, useUI } from './store';
 
@@ -18,34 +19,51 @@ export function statLines(def: ItemDef, plus = 0): string[] {
   return out;
 }
 
-export function ItemIcon({ item, onClick, selected, small }: { item: InvItem | null | undefined; onClick?: () => void; selected?: boolean; small?: boolean }) {
+export function ItemIcon({ item, onClick, selected, small, worn }: { item: InvItem | null | undefined; onClick?: () => void; selected?: boolean; small?: boolean; worn?: boolean }) {
   const def = item ? ITEM.get(item.id) : undefined;
   if (!item || !def) return <Slot empty size={small ? 's' : 'm'} />;
   return (
-    <Tooltip content={<ItemTip item={item} def={def} />}>
-      <Slot icon={<ContentIcon def={def} />} rarity={def.rarity} count={item.n} plus={item.plus} selected={selected} size={small ? 's' : 'm'} onClick={onClick} label={itemName(def.id, item.plus)} />
+    <Tooltip content={<ItemTip item={item} def={def} worn={worn} />}>
+      <Slot icon={<ContentIcon def={def} />} rarity={gearQuality(item, def)} count={item.n} plus={item.plus} selected={selected} size={small ? 's' : 'm'} onClick={onClick} label={itemName(def.id, item.plus)} />
     </Tooltip>
   );
 }
 
-/** Chú giải vật phẩm (rê chuột / focus): tên theo phẩm, loại, chỉ số, mô tả. */
-function ItemTip({ item, def }: { item: InvItem; def: ItemDef }) {
-  return <TipCard title={itemName(def.id, item.plus)} rarity={def.rarity} sub={t('ui.item.kind.' + def.kind)} lines={statLines(def, item.plus).map((text) => ({ text }))} desc={t(`item.${def.id}.desc`)} />;
+/** Dòng chỉ số + so sánh với món đang mặc (chỉ khi món này chưa mặc và là trang bị). */
+function useTipLines(item: InvItem, def: ItemDef, worn?: boolean): TipLine[] {
+  const level = useUI((s) => s.char?.level ?? 1);
+  const equip = useUI((s) => s.equip);
+  const lines = itemLines(item, def);
+  if (!worn && isEquipSlot(def.kind)) lines.push(...compareLines(level, equip, item, def));
+  if (item.inst?.bound) lines.push({ text: t('ui.item.bound'), tone: 'dim' });
+  return lines;
 }
 
-export function ItemDetail({ item, children }: { item: InvItem; children?: React.ReactNode }) {
+/** Chú giải vật phẩm (rê chuột / focus): tên theo phẩm, loại, chỉ số, dòng phụ, so sánh, mô tả. */
+function ItemTip({ item, def, worn }: { item: InvItem; def: ItemDef; worn?: boolean }) {
+  const lines = useTipLines(item, def, worn);
+  return <TipCard title={itemName(def.id, item.plus)} rarity={gearQuality(item, def)} sub={itemSub(item, def)} lines={lines} desc={t(`item.${def.id}.desc`)} />;
+}
+
+export function ItemDetail({ item, children, worn }: { item: InvItem; children?: React.ReactNode; worn?: boolean }) {
   const def = ITEM.get(item.id);
   const level = useUI((s) => s.char?.level ?? 1);
   if (!def) return null;
+  const q = gearQuality(item, def);
+  return <ItemDetailBody item={item} def={def} q={q} level={level} worn={worn}>{children}</ItemDetailBody>;
+}
+
+function ItemDetailBody({ item, def, q, level, worn, children }: { item: InvItem; def: ItemDef; q: number; level: number; worn?: boolean; children?: React.ReactNode }) {
+  const lines = useTipLines(item, def, worn);
   return (
     <div className="k-card item-detail">
-      <div className="item-name" data-q={def.rarity}>
+      <div className="item-name" data-q={q}>
         {itemName(def.id, item.plus)}
       </div>
-      <div className="k-dim">{t('ui.item.kind.' + def.kind)}</div>
-      {statLines(def, item.plus).map((l) => (
-        <div key={l} className="item-stat">
-          {l}
+      <div className="k-dim">{itemSub(item, def)}</div>
+      {lines.map((l, i) => (
+        <div key={i} className={'item-stat' + (l.tone ? ' ' + l.tone : '')}>
+          {l.text}
         </div>
       ))}
       {def.reqLevel && def.reqLevel > 1 && <div className={'item-req' + (level < def.reqLevel ? ' bad' : '')}>{t('ui.item.req', { realm: realmName(def.reqLevel) })}</div>}
@@ -82,6 +100,7 @@ function Bag() {
           <div key={es} className="equip-cell">
             <ItemIcon
               item={equip[es]}
+              worn
               selected={selEq === es}
               onClick={() => {
                 setSelEq(equip[es] ? es : null);
@@ -121,7 +140,7 @@ function Bag() {
             <Button
               variant="primary"
               onClick={() => {
-                g?.send(C.EQUIP, { slot: sel });
+                g?.send(C.EQUIP, { slot: sel, r: reqId() });
                 setSel(null);
               }}
             >
@@ -130,10 +149,10 @@ function Bag() {
           )}
         </ItemDetail>
       ) : eqItem && selEq ? (
-        <ItemDetail item={eqItem}>
+        <ItemDetail item={eqItem} worn>
           <Button
             onClick={() => {
-              g?.send(C.UNEQUIP, { slot: selEq });
+              g?.send(C.UNEQUIP, { slot: selEq, r: reqId() });
               setSelEq(null);
             }}
           >
@@ -144,6 +163,58 @@ function Bag() {
         <div className="k-card k-dim">{t('ui.bag.empty_hint')}</div>
       )}
     </Window>
+  );
+}
+
+const BOARD_LEFT: EquipSlot[] = ['weapon', 'bracer', 'belt', 'ring'];
+const BOARD_RIGHT: EquipSlot[] = ['robe', 'boots', 'jade', 'artifact'];
+
+/** Bảng trang bị 8 ô quanh hình người (viền theo phẩm). Chọn ô để xem chi tiết và tháo. */
+function EquipBoard() {
+  const equip = useUI((s) => s.equip);
+  const [sel, setSel] = useState<EquipSlot | null>(null);
+  const g = Game.current;
+  const best = EQUIP_SLOTS.reduce((m, es) => (equip[es] ? Math.max(m, gearQuality(equip[es]!)) : m), -1);
+  const cell = (es: EquipSlot) => (
+    <div key={es} className="equip-cell">
+      <ItemIcon item={equip[es]} worn selected={sel === es} onClick={() => setSel(sel === es ? null : es)} />
+      <div className="equip-label">{t('ui.equip.' + es)}</div>
+    </div>
+  );
+  const item = sel ? equip[sel] : undefined;
+  return (
+    <div className="equip-board">
+      <div className="equip-board-grid">
+        <div className="equip-col">{BOARD_LEFT.map(cell)}</div>
+        <div className="equip-figure" data-q={best} aria-hidden="true">
+          <svg viewBox="0 0 80 160" width="100%" height="100%">
+            <defs>
+              <radialGradient id="eqglow" cx="50%" cy="45%" r="55%">
+                <stop offset="0%" stopColor="currentColor" stopOpacity="0.55" />
+                <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="40" cy="80" rx="38" ry="74" fill="url(#eqglow)" />
+            <path d="M40 18c7 0 11 5 11 11s-4 12-11 12-11-6-11-12 4-11 11-11zm-17 30c6-4 12-6 17-6s11 2 17 6l9 40-10 4 2 50H44l-4-34-4 34H22l2-50-10-4z" fill="rgba(20,32,46,0.92)" stroke="currentColor" strokeWidth="1.2" />
+          </svg>
+        </div>
+        <div className="equip-col">{BOARD_RIGHT.map(cell)}</div>
+      </div>
+      {item && sel ? (
+        <ItemDetail item={item} worn>
+          <Button
+            onClick={() => {
+              g?.send(C.UNEQUIP, { slot: sel, r: reqId() });
+              setSel(null);
+            }}
+          >
+            {t('ui.item.unequip')}
+          </Button>
+        </ItemDetail>
+      ) : (
+        <div className="k-dim equip-hint">{EQUIP_SLOTS.some((es) => equip[es]) ? t('ui.equip.hint') : t('ui.equip.none')}</div>
+      )}
+    </div>
   );
 }
 
@@ -170,6 +241,8 @@ function Character() {
         {stat('ui.def', char.def)}
         {stat('ui.gold', `${char.gold} 💠`)}
       </dl>
+      <Divider label={t('ui.equip.board')} />
+      <EquipBoard />
       <Divider label={t('ui.char.skills')} />
       <div className="skill-list">
         {SKILLS.map((sk, i) => (

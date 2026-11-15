@@ -52,6 +52,19 @@ export interface LootDef {
   /** Linh thạch [min, max]. */
   gold: [number, number];
   drops: DropDef[];
+  /** Nguồn rơi trang bị (Phase 3-2): `common` quái thường, `elite` tinh anh, `dungeon` bí cảnh, `boss`. */
+  src?: 'common' | 'elite' | 'dungeon' | 'boss';
+  /** Các lần roll trang bị đã roll dòng chính/phụ khi quái chết (chỉ server đọc, xem `rollEquipDrops`). */
+  equip?: EquipRollDef[];
+}
+
+/** Một lần roll trang bị: xác suất, trọng số 5 phẩm (Phàm..Thiên), trọng số ô (bỏ trống = đều các ô có chỉ số). */
+export interface EquipRollDef {
+  chance: number;
+  q: number[];
+  slots?: Partial<Record<EquipSlot, number>>;
+  /** Cộng vào cấp quái để ra ilvl (Địa/Thiên của bí cảnh, boss). */
+  ilvlBonus?: number;
 }
 
 export interface MonsterDef {
@@ -68,6 +81,8 @@ export interface MonsterDef {
   attackCd: number;
   xpMul: number;
   boss?: boolean;
+  /** Tinh anh: có tên riêng, máu gấp bốn quái thường cùng loài, một kỹ năng riêng, rơi Huyền phẩm. */
+  elite?: boolean;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
   /** Chỉ boss: các pha sau pha đầu, `hp` giảm dần. */

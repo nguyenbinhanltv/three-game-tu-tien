@@ -11,9 +11,13 @@ import { vnoise, type FxUniforms } from './common';
  * - bậc 0 (`rarity` 0): sương sớm `air_mist`, cột thấp mảnh.
  * - bậc 1 (`rarity` 1): linh khí ngọc `spirit_jade`, cột vừa, có vòng sáng dưới đất.
  * - bậc 2 (`rarity` ≥ 2): kim quang `spirit_gold`, cột cao hai lớp, hạt sáng bay lên, giữ lâu hơn.
+ *
+ * Trang bị đã roll (3-2) có phẩm 0..4 riêng (server gửi `SysMsg.q`): Phàm/Linh/Huyền dùng bậc 0/1/2 (Huyền đổi sang
+ * màu lam bằng `LOOT_HUYEN_COLOR`), Địa phẩm bậc 3 (tử kim nhạt, cột nhỏ để không quá 5% khung hình), Thiên phẩm bậc 4
+ * (vàng kim, cột xuyên trời, xung nhịp, hạt sáng dày). Vẫn chỉ là lớp hình; bậc 4 hiếm nên giữ được ngân sách.
  */
 
-export type LootTier = 0 | 1 | 2;
+export type LootTier = 0 | 1 | 2 | 3 | 4;
 
 export interface LootTierSpec {
   /** Màu sRGB hex của viên đồ và cột sáng. */
@@ -35,7 +39,27 @@ export const LOOT_TIERS: readonly LootTierSpec[] = [
   { color: 0xdce6df, height: 2.6, radius: 0.22, alpha: 0.45, hold: 0.55, sparks: 0, core: false },
   { color: 0x7fe3d0, height: 5.5, radius: 0.32, alpha: 0.6, hold: 0.8, sparks: 6, core: false },
   { color: 0xffde96, height: 10, radius: 0.45, alpha: 0.85, hold: 1.3, sparks: 16, core: true },
+  { color: 0xc9a8f0, height: 13, radius: 0.5, alpha: 0.9, hold: 1.6, sparks: 18, core: true },
+  { color: 0xffd45a, height: 30, radius: 0.7, alpha: 1, hold: 2.6, sparks: 30, core: true },
 ];
+
+/** Huyền phẩm dùng bậc 2 nhưng đổi sang lam (màu phẩm trong qualities.json). */
+export const LOOT_HUYEN_COLOR = 0x6fb4f0;
+
+/** Bậc cột sáng của trang bị theo phẩm 0..4. */
+export function gearLootTier(q: number): LootTier {
+  return Math.max(0, Math.min(4, Math.round(q))) as LootTier;
+}
+
+/** Màu cột sáng/viên đồ: Huyền phẩm lam, còn lại theo bậc. */
+export function lootColor(tier: LootTier, q?: number): number {
+  return q === 2 ? LOOT_HUYEN_COLOR : LOOT_TIERS[tier].color;
+}
+
+/** Thiên phẩm xung nhịp: hệ số độ trong (1 ± 0,18) theo giây `t` kể từ lúc cột dâng; các bậc khác = 1. */
+export function lootPulse(tier: LootTier, t: number): number {
+  return tier >= 4 ? 1 + 0.18 * Math.sin(t * 3.1) : 1;
+}
 
 /** Màu vàng của đồng tiền nảy ra (không cột sáng, không bay vào túi). */
 export const LOOT_GOLD = 0xffde96;

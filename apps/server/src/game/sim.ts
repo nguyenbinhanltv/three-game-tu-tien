@@ -23,6 +23,7 @@ import {
   enhanceChance,
   enhanceCost,
   BIND_QUALITY,
+  rollEquipDrops,
   type EquipSlot,
   type InvItem,
   type Quality,
@@ -94,7 +95,7 @@ import {
   xpLevelFactor,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ENHANCE_ORE, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
+import { APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
@@ -335,13 +336,14 @@ export class GameSim {
     return { x: cx, z: cz };
   }
 
-  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src'>): void {
+  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void {
     const m: SysMsg = { k };
     if (params) m.p = params;
     if (type) m.t = type;
     // Đồ rơi (M4-6): chỉ là thứ đã vào túi (sau transaction), để client vẽ đồ nảy ra từ xác quái.
     if (drop?.i) m.i = drop.i;
     if (drop?.src) m.src = drop.src;
+    if (drop?.q !== undefined) m.q = drop.q;
     p.client.send(S.SYS, m);
   }
 
@@ -1031,11 +1033,19 @@ export class GameSim {
     for (const d of loot.drops) {
       if (Math.random() < d.chance) got.push({ id: d.item, n: d.min + Math.floor(Math.random() * (d.max - d.min + 1)) });
     }
+    // Trang bị đã roll (Phase 3-2): phẩm, ô, ilvl chọn ở server; dòng chính/phụ roll trong addRolled (seed vào ledger).
+    const gear = rollEquipDrops(loot.equip, ITEM_SYS, ITEMS, mon.level, Math.random);
     // Vàng luôn vào túi; vật phẩm nào không còn chỗ thì bỏ.
     const kept: { id: string; n: number }[] = [];
+    const keptGear: { id: string; q: Quality; ilvl: number }[] = [];
     let full = false;
     p.char.tx('loot:' + mon.def.id, null, (d) => {
       d.addGold(gold);
+      for (const g of gear) {
+        // addRolled chỉ đụng túi khi còn chỗ; hết chỗ thì món đó bỏ, bản nháp vẫn dùng được.
+        if (d.freeSlots() > 0 && d.addRolled(g.id, g.ilvl, g.q)) keptGear.push(g);
+        else full = true;
+      }
       for (const g of got) {
         const def = ITEM.get(g.id)!;
         // Kiểm tra trước để một món không vừa không làm hỏng cả bản nháp.
@@ -1047,6 +1057,10 @@ export class GameSim {
     });
     if (gold > 0) this.sys(p, 'sys.gold', { n: gold }, 'loot', { src: mon.id });
     for (const g of kept) this.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id, src: mon.id });
+    for (const g of keptGear) {
+      this.sys(p, 'sys.loot_gear', { item: itemName(g.id), quality: t('ui.quality.' + g.q) }, 'loot', { i: g.id, src: mon.id, q: g.q });
+      if (g.q >= 4) this.sysAll('sys.loot_heaven', { name: p.char.name, item: itemName(g.id) }, 'good');
+    }
     if (full) this.warn(p, 'sys.inv_full');
   }
 
@@ -1827,7 +1841,7 @@ export class GameSim {
     const it = c.inv[slot];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def) return;
-    if (isEquipSlot(def.kind)) return this.onEquip(p, { slot });
+    if (isEquipSlot(def.kind)) return this.onEquip(p, { slot, r: m.r });
     if (!def.use) return;
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
     if (!c.tx('use:' + def.id, idem, (d) => !!d.removeAt(slot, 1))) return;
@@ -1843,17 +1857,25 @@ export class GameSim {
   }
 
   onEquip(p: PlayerEnt, msg: unknown): void {
-    const slot = (msg as { slot?: unknown } | null)?.slot;
+    const m = msg as { slot?: unknown; r?: unknown } | null;
+    const slot = m?.slot;
     if (!Number.isInteger(slot) || (slot as number) < 0 || (slot as number) >= INV_SIZE || this.isDead(p)) return;
+    const idem = this.idem(p, m?.r);
+    if (idem === undefined) return;
     const c = p.char;
     const it = c.inv[slot as number];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def || !isEquipSlot(def.kind)) return;
     if ((def.reqLevel ?? 1) > c.level) return this.warn(p, 'sys.equip_level');
     const es = def.kind as EquipSlot;
-    const ok = c.tx('equip', null, (d) => {
+    // Đổi đồ không sinh/mất vật phẩm nên ledger ghi một dòng 'noop' có khóa idem và lý do (món vào/ra) để truy vết.
+    const prev0 = c.equip[es];
+    const ok = c.tx(`equip:${es}:${it.id}${prev0 ? '<-' + prev0.id : ''}`, idem, (d) => {
       const prev = d.equip[es];
-      const next: InvItem = { ...d.inv[slot as number]! };
+      const cur = d.inv[slot as number];
+      // Bản nháp là bản sao của túi hiện tại; kiểm lại để món ở ô đó không đổi giữa lúc đọc và lúc ghi.
+      if (!cur || cur.id !== it.id) return false;
+      const next: InvItem = { ...cur };
       // Địa/Thiên phẩm ràng buộc khi mặc (không giao dịch được nữa).
       if (next.inst && next.inst.q >= BIND_QUALITY && !next.inst.bound) next.inst = { ...next.inst, bound: true };
       d.equip[es] = next;
@@ -1864,18 +1886,25 @@ export class GameSim {
   }
 
   onUnequip(p: PlayerEnt, msg: unknown): void {
-    const es = (msg as { slot?: unknown } | null)?.slot;
+    const m = msg as { slot?: unknown; r?: unknown } | null;
+    const es = m?.slot;
     if (!isEquipSlot(es) || this.isDead(p)) return;
+    const idem = this.idem(p, m?.r);
+    if (idem === undefined) return;
     const c = p.char;
-    if (!c.equip[es]) return;
-    const ok = c.tx('unequip', null, (d) => {
+    const worn = c.equip[es];
+    if (!worn) return;
+    const ok = c.tx(`unequip:${es}:${worn.id}`, idem, (d) => {
       const i = d.inv.findIndex((s) => !s);
-      if (i < 0) return false;
+      if (i < 0 || !d.equip[es]) return false;
       d.inv[i] = { ...d.equip[es]! };
       delete d.equip[es];
       return true;
     });
-    if (!ok) return this.warn(p, 'sys.inv_full');
+    if (!ok) {
+      if (c.txFail === 'abort') this.warn(p, 'sys.inv_full');
+      return;
+    }
     c.recalc();
   }
 

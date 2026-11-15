@@ -1,0 +1,15 @@
+[
+  { "id": "itm_ho_uyen_vai", "kind": "bracer", "stack": 1, "price": 0, "sell": 18, "rarity": 0, "icon": "itm_ho_uyen_vai", "iconFallback": "🧤", "reqLevel": 1 },
+  { "id": "itm_ho_uyen_da", "kind": "bracer", "stack": 1, "price": 0, "sell": 70, "rarity": 0, "icon": "itm_ho_uyen_da", "iconFallback": "🧤", "reqLevel": 6 },
+  { "id": "itm_ho_uyen_thiet", "kind": "bracer", "stack": 1, "price": 0, "sell": 160, "rarity": 0, "icon": "itm_ho_uyen_thiet", "iconFallback": "🧤", "reqLevel": 11 },
+  { "id": "itm_van_ngoa_vai", "kind": "boots", "stack": 1, "price": 0, "sell": 18, "rarity": 0, "icon": "itm_van_ngoa_vai", "iconFallback": "🥾", "reqLevel": 1 },
+  { "id": "itm_van_ngoa_da", "kind": "boots", "stack": 1, "price": 0, "sell": 70, "rarity": 0, "icon": "itm_van_ngoa_da", "iconFallback": "🥾", "reqLevel": 6 },
+  { "id": "itm_van_ngoa_van", "kind": "boots", "stack": 1, "price": 0, "sell": 160, "rarity": 0, "icon": "itm_van_ngoa_van", "iconFallback": "🥾", "reqLevel": 11 },
+  { "id": "itm_dai_lung_vai", "kind": "belt", "stack": 1, "price": 0, "sell": 18, "rarity": 0, "icon": "itm_dai_lung_vai", "iconFallback": "🎗️", "reqLevel": 1 },
+  { "id": "itm_dai_lung_da", "kind": "belt", "stack": 1, "price": 0, "sell": 70, "rarity": 0, "icon": "itm_dai_lung_da", "iconFallback": "🎗️", "reqLevel": 6 },
+  { "id": "itm_dai_lung_ngoc", "kind": "belt", "stack": 1, "price": 0, "sell": 160, "rarity": 0, "icon": "itm_dai_lung_ngoc", "iconFallback": "🎗️", "reqLevel": 11 },
+  { "id": "itm_ngoc_boi_moc", "kind": "jade", "stack": 1, "price": 0, "sell": 18, "rarity": 0, "icon": "itm_ngoc_boi_moc", "iconFallback": "📿", "reqLevel": 1 },
+  { "id": "itm_ngoc_boi_thanh", "kind": "jade", "stack": 1, "price": 0, "sell": 110, "rarity": 0, "icon": "itm_ngoc_boi_thanh", "iconFallback": "📿", "reqLevel": 8 },
+  { "id": "itm_ngoc_boi_linh", "kind": "jade", "stack": 1, "price": 0, "sell": 240, "rarity": 0, "icon": "itm_ngoc_boi_linh", "iconFallback": "📿", "reqLevel": 13 },
+  { "id": "itm_gioi_chi_dong", "kind": "ring", "stack": 1, "price": 0, "sell": 18, "rarity": 0, "icon": "itm_gioi_chi_dong", "iconFallback": "💍", "reqLevel": 1 }
+]

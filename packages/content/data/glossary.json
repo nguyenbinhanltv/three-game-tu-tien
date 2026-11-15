@@ -72,5 +72,20 @@
     "thuy": "Thủy",
     "hoa": "Hỏa",
     "tho": "Thổ"
+  },
+  "elite": "Tinh anh",
+  "gear": {
+      "itm_ho_uyen_vai": "Bố Hộ Uyển",
+      "itm_ho_uyen_da": "Bì Hộ Uyển",
+      "itm_ho_uyen_thiet": "Huyền Thiết Hộ Uyển",
+      "itm_van_ngoa_vai": "Bố Vân Ngoa",
+      "itm_van_ngoa_da": "Bì Vân Ngoa",
+      "itm_van_ngoa_van": "Lưu Vân Ngoa",
+      "itm_dai_lung_vai": "Bố Đai Lưng",
+      "itm_dai_lung_da": "Bì Đai Lưng",
+      "itm_dai_lung_ngoc": "Ngọc Văn Đai Lưng",
+      "itm_ngoc_boi_thanh": "Thanh Tâm Ngọc Bội",
+      "itm_ngoc_boi_linh": "Linh Tuyền Ngọc Bội",
+      "itm_gioi_chi_dong": "Đồng Giới Chỉ"
   }
 }
