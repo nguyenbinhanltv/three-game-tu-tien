@@ -149,14 +149,15 @@ export class SpringBones {
     this.live = true;
   }
 
-  /** Về tư thế nghỉ (LOD xa, ngoài khung nhìn); lần chạy sau bắt đầu lại từ đuôi lúc nghỉ. */
-  reset(): void {
-    if (!this.live) return;
+  /** Về tư thế nghỉ (LOD xa, ngoài khung nhìn); lần chạy sau bắt đầu lại từ đuôi lúc nghỉ. Trả true nếu xương đã đổi. */
+  reset(): boolean {
+    if (!this.live) return false;
     this.live = false;
     for (const b of this.bones) {
       b.bone.quaternion.copy(b.restQ);
       b.bone.updateMatrixWorld();
     }
+    return true;
   }
 }
 

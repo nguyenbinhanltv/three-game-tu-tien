@@ -8,7 +8,7 @@ import {
   float,
   fract,
   fwidth,
-  instancedDynamicBufferAttribute,
+  instancedBufferAttribute,
   max,
   min,
   mix,
@@ -61,10 +61,10 @@ export class HeadBars {
   private n = 0;
 
   constructor() {
-    this.attrA = new THREE.InstancedBufferAttribute(this.a, 4).setUsage(THREE.DynamicDrawUsage);
-    this.attrB = new THREE.InstancedBufferAttribute(this.b, 4).setUsage(THREE.DynamicDrawUsage);
-    const A = instancedDynamicBufferAttribute(this.attrA, 'vec4'); // tâm xyz (thế giới), rộng
-    const B = instancedDynamicBufferAttribute(this.attrB, 'vec4'); // máu, đoạn trễ, loại, độ mờ
+    this.attrA = new THREE.InstancedBufferAttribute(this.a, 4);
+    this.attrB = new THREE.InstancedBufferAttribute(this.b, 4);
+    const A = instancedBufferAttribute(this.attrA, 'vec4'); // tâm xyz (thế giới), rộng
+    const B = instancedBufferAttribute(this.attrB, 'vec4'); // máu, đoạn trễ, loại, độ mờ
 
     const w = A.w;
     // Chiều cao (m) theo độ rộng: rộng 1,5 → 0,165; boss rộng 3 → 0,24.

@@ -282,7 +282,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     this.flySword = fly.group;
     this.flyAura = fly.aura;
     this.root.add(this.flySword);
-    this.sword = sword ? SwordSocket.create(this.rig, sword) : null;
+    this.sword = sword ? SwordSocket.create(this.rig, sword, () => this.rigChanged()) : null;
   }
 
   /** Kiếm đang ở tay (đã rút xong). */

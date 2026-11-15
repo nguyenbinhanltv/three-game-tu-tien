@@ -44,7 +44,7 @@ export function listeningPids(ports: number[]): Map<number, number> {
   return found;
 }
 
-function killTree(pid: number): void {
+export function killTree(pid: number): void {
   try {
     if (process.platform === 'win32') execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' });
     else process.kill(-pid, 'SIGKILL');
@@ -65,9 +65,10 @@ export interface DevServer {
  * `tag` dùng trong tên file log/DB tạm và tiền tố log; `command` là tên lệnh gợi ý khi cổng bận.
  * `serverOnly`: chỉ chạy server game (`pnpm --filter @dtl/server start`), không Vite; `clientPort` khi đó
  * do công cụ tự phục vụ nên chỉ được kiểm trống lúc đầu, không bao giờ bị kill lúc tắt.
+ * `env`: biến môi trường thêm cho server (vd. `RATE_LIMIT_EXEMPT=loopback` khi chạy bot).
  * Đăng ký tự tắt khi tiến trình thoát hoặc nhận SIGINT/SIGTERM/SIGHUP.
  */
-export function createDevServer(o: { port: number; clientPort: number; tag: string; command: string; serverOnly?: boolean }): DevServer {
+export function createDevServer(o: { port: number; clientPort: number; tag: string; command: string; serverOnly?: boolean; env?: Record<string, string> }): DevServer {
   const { port, clientPort, tag } = o;
   const owned = o.serverOnly ? [port] : [port, clientPort];
   let child: ChildProcess | null = null;
@@ -130,7 +131,7 @@ export function createDevServer(o: { port: number; clientPort: number; tag: stri
     const log = fs.openSync(logFile, 'w');
     child = spawn(script, {
       cwd: ROOT,
-      env: { ...process.env, PORT: String(port), CLIENT_PORT: String(clientPort), AUTH_DEV_BYPASS: '1', DB_FILE: dbFile, NODE_ENV: 'development' },
+      env: { ...process.env, PORT: String(port), CLIENT_PORT: String(clientPort), AUTH_DEV_BYPASS: '1', DB_FILE: dbFile, NODE_ENV: 'development', ...o.env },
       stdio: ['ignore', log, log],
       shell: process.platform === 'win32',
       detached: process.platform !== 'win32',

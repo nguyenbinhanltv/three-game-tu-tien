@@ -71,6 +71,7 @@ Ghép sau `?mute=1&auto=<tên>`. Chỉ chạy với tài khoản thử (đăng n
 ## Test tải
 
 - `pnpm bots --count 100 --room world --duration 300` chạy bot headless (`apps/bot-client`): đi lại ngẫu nhiên, đánh quái, chat, bật tắt ngự kiếm.
+- Cờ bot: `--crowd x,z[,r]` (đi lại quanh điểm), `--fight x,z[,r]` (đánh quái trong vùng bằng đủ chiêu, tự `/gm heal`), `--level N` (`/gm level N` lúc vào), `--tp` (dịch chuyển thẳng vào vùng), `--dungeon` (vào bí cảnh qua cổng; room tối đa 5 người). Gõ `quit` vào stdin để bot rời êm. Đo hiệu năng client giữa đám đông: `pnpm bench:crowd` (skill `perf-budget`).
 - Bot chạy chung một IP nên sẽ vướng giới hạn `/matchmake` (40 dồn, 20/phút mỗi IP): bật server test tải với `RATE_LIMIT_EXEMPT=loopback`. Bài `security` thì ngược lại, chạy với server KHÔNG miễn trừ.
 - Trong lúc chạy, đọc `tick_ms` p95, bộ nhớ, số message/giây từ log server. Ngưỡng: tick p95 dưới 25ms.
 - Sau test tải, chạy `pnpm ledger:check` để chắc chắn không có vật phẩm/tiền sinh ra không có dòng ledger.
