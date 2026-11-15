@@ -13,6 +13,7 @@ import { libraryClips, type PoseLibrary, withPoses } from './poseLib';
 import { type HitOpts } from '../hitreact';
 import { SkinnedCharacter, type SkinnedOpts } from './skinned';
 import { type SpringDef, springDefs } from './spring';
+import { SwordGlow } from '../swordGlow';
 import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
 import type { CharState, ClipMap } from './states';
 import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
@@ -312,6 +313,9 @@ export class SkinnedPlayer extends SkinnedCharacter {
   private sword: SwordSocket | null;
   /** Giây kể từ lần giao chiến cuối (ra chiêu, trúng đòn, niệm chú). */
   private calm = Infinity;
+  /** Vỏ sáng cường hóa của kiếm (tạo lười khi có kiếm ≥ +7). */
+  private glow: SwordGlow | null = null;
+  private glowStage = 0;
   /** Động tác rút/tra đang phát: đổi chỗ kiếm khi tới `at` (giây trong clip) hoặc khi động tác bị thay/hủy. */
   private swap: { id: string; at: number; drawn: boolean } | null = null;
 
@@ -326,6 +330,19 @@ export class SkinnedPlayer extends SkinnedCharacter {
     this.flyAura = fly.aura;
     this.root.add(this.flySword);
     this.sword = sword ? SwordSocket.create(this.rig, sword, () => this.rigChanged()) : null;
+  }
+
+  /** Bậc phát sáng của kiếm (0/1/2). Cần model có xương kiếm tách riêng; LOD xa tắt. */
+  setWeaponGlow(stage: number): void {
+    if (stage === this.glowStage) return;
+    this.glowStage = stage;
+    if (!this.sword) return;
+    if (!this.glow && stage > 0) {
+      this.glow = new SwordGlow(this.sword.glowLocal);
+      // Cùng hệ với cây xương (rig nằm ngoài cảnh nhưng trùng hệ của `inner`).
+      this.inner.add(this.glow.group);
+    }
+    this.glow?.setStage(this.lod >= 2 ? 0 : stage);
   }
 
   /** Kiếm đang ở tay (đã rút xong). */
@@ -349,6 +366,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
   protected onLod(level: number): void {
     const aura = this.flySword?.children[1];
     if (aura) aura.visible = level < 2;
+    this.glow?.setStage(level >= 2 ? 0 : this.glowStage);
   }
 
   /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */
@@ -405,6 +423,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
   update(dt: number, a: AnimState): void {
     super.update(dt, a);
     this.updateSword(dt, a);
+    if (this.glow?.active && this.sword) this.glow.update(dt, this.sword.boneWorld);
     this.grounded = !a.flying && !a.airborne;
     this.flySword.visible = a.flying && !a.dead;
     // Bước chân theo pha clip chạy: mỗi `1 / runSteps` vòng là một lần chân chạm đất.
@@ -421,5 +440,6 @@ export class SkinnedPlayer extends SkinnedCharacter {
   dispose(): void {
     super.dispose();
     this.flyAura.dispose();
+    this.glow?.dispose();
   }
 }

@@ -42,6 +42,8 @@ export const C = {
   SELL: 'sell',
   CRAFT: 'craft',
   ENHANCE: 'enh',
+  /** Khảm/tháo/ghép ngọc, tẩy luyện, phân giải ở Thiết lão: `{ npc, op, ..., r }` (xem server/game/upgrade.ts). */
+  UPGRADE: 'upg',
   QUEST: 'q',
   TALK: 'talk',
   CHAT: 'chat',

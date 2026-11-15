@@ -7,6 +7,7 @@ import { enhanceMul, type BaseStats, playerBaseStats, CRIT_CHANCE, CRIT_MULT } f
 import type { EquipSlot, InvItem, StatBlock } from './types';
 import type { RootDef } from './realm';
 import { EQUIP_SLOTS } from './types';
+import { gemAffixes } from './upgrade';
 
 /** 0 Phàm, 1 Linh, 2 Huyền, 3 Địa, 4 Thiên. */
 export type Quality = 0 | 1 | 2 | 3 | 4;
@@ -15,7 +16,7 @@ export const QUALITY_COUNT = 5;
 export const QUALITY_MUL: readonly number[] = [1, 1.15, 1.3, 1.5, 1.75];
 /** Từ phẩm này trở lên đồ bị ràng buộc khi mặc (Địa, Thiên). */
 export const BIND_QUALITY: Quality = 3;
-/** Số lỗ khảm ngọc theo phẩm (khảm thật ở đợt 3-3). */
+/** Số lỗ khảm ngọc theo phẩm (khảm ở `upgrade.ts`). */
 export const SOCKETS_BY_QUALITY: readonly number[] = [0, 0, 1, 2, 2];
 /** Độ lệch ngẫu nhiên của dòng chính quanh ngân sách: ±5%. */
 export const MAIN_ROLL_SPREAD = 0.05;
@@ -343,7 +344,9 @@ export function computePlayerStats(level: number, equipped: EquippedEntry[], roo
     mp += Math.round((flat.mp ?? 0) * mul);
     atk += Math.round((flat.atk ?? 0) * mul);
     def += Math.round((flat.def ?? 0) * mul);
-    for (const a of item.inst?.affixes ?? []) {
+    // Ngọc khảm cộng như dòng phụ (cùng trần chỉ số).
+    const lines = item.inst ? [...item.inst.affixes, ...item.inst.gems.flatMap((g) => (g ? gemAffixes(g) : []))] : [];
+    for (const a of lines) {
       switch (a.id) {
         case 'atk_pct': atkPct += a.v; break;
         case 'def_pct': defPct += a.v; break;

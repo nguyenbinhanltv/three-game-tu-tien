@@ -1,15 +1,16 @@
 import { ContentIcon } from './ContentIcon';
 import { useState } from 'react';
-import { C, enhanceChance, sellPrice, enhanceCost, EQUIP_SLOTS, MAX_ENHANCE } from '@dtl/shared';
-import { ENHANCE_ORE, ITEM, itemName, NPC, QUESTS, realmName, RECIPES, t } from '@dtl/content';
+import { C, sellPrice } from '@dtl/shared';
+import { ITEM, itemName, NPC, QUESTS, realmName, RECIPES, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './Panels';
 import { Button, Divider, Tabs } from './kit';
 import { RootTab } from './Realm';
+import { EnhanceTab, GemTab, RefineTab, SalvageTab } from './UpgradeTabs';
 import { set, useUI } from './store';
 
-type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'root';
+type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'gem' | 'refine' | 'salvage' | 'root';
 
 function QuestTab({ npcId }: { npcId: string }) {
   const quests = useUI((s) => s.quests);
@@ -179,49 +180,6 @@ function CraftTab({ npcId }: { npcId: string }) {
   );
 }
 
-function EnhanceTab({ npcId }: { npcId: string }) {
-  const equip = useUI((s) => s.equip);
-  const inv = useUI((s) => s.inv);
-  const gold = useUI((s) => s.char?.gold ?? 0);
-  const g = Game.current;
-  const ore = inv.reduce((s, x) => s + (x && x.id === ENHANCE_ORE ? x.n : 0), 0);
-  const worn = EQUIP_SLOTS.filter((es) => equip[es]);
-  return (
-    <div className="shop-list">
-      <Divider label={t('ui.enh.title')} />
-      <div className="k-dim">
-        <ContentIcon def={ITEM.get(ENHANCE_ORE)} /> {ore} · 💠 {gold}
-      </div>
-      {worn.length === 0 && <div className="k-dim">{t('ui.enh.none')}</div>}
-      {worn.map((es) => {
-        const it = equip[es]!;
-        const def = ITEM.get(it.id)!;
-        const plus = it.plus ?? 0;
-        const maxed = plus >= MAX_ENHANCE;
-        const cost = enhanceCost(plus, Math.max(def.price, def.sell * 3));
-        return (
-          <div key={es} className="k-card shop-row">
-            <ItemIcon item={it} small />
-            <div className="shop-info">
-              <div className="item-name" data-q={def.rarity}>{itemName(it.id, plus)}</div>
-              <div className="k-dim">{statLines(def, plus).join(' · ')}</div>
-              {!maxed && (
-                <div className="craft-inputs">
-                  <span className={gold >= cost.gold && ore >= cost.ore ? 'ok' : 'bad'}>{t('ui.enh.cost', { gold: cost.gold, ore: cost.ore })}</span>
-                  <span>{t('ui.enh.chance', { n: Math.round(enhanceChance(plus) * 100) })}</span>
-                </div>
-              )}
-            </div>
-            <Button variant="primary" disabled={maxed || gold < cost.gold || ore < cost.ore} onClick={() => g?.send(C.ENHANCE, { npc: npcId, slot: es, r: reqId() })}>
-              {maxed ? t('ui.enh.max') : t('ui.enh.do')}
-            </Button>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export function NpcDialog({ npcId }: { npcId: string }) {
   const npc = NPC.get(npcId);
   const [tab, setTab] = useState<Tab>('talk');
@@ -229,7 +187,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
   const tabs: Tab[] = ['talk'];
   if (npc.sells) tabs.push('shop');
   if (npc.recipes) tabs.push('craft');
-  if (npc.enhance) tabs.push('enhance');
+  if (npc.enhance) tabs.push('enhance', 'gem', 'refine', 'salvage');
   if (npc.rootChange) tabs.push('root');
   const cur = tabs.includes(tab) ? tab : 'talk';
   return (
@@ -239,6 +197,9 @@ export function NpcDialog({ npcId }: { npcId: string }) {
       {cur === 'shop' && <ShopTab npcId={npcId} />}
       {cur === 'craft' && <CraftTab npcId={npcId} />}
       {cur === 'enhance' && <EnhanceTab npcId={npcId} />}
+      {cur === 'gem' && <GemTab npcId={npcId} />}
+      {cur === 'refine' && <RefineTab npcId={npcId} />}
+      {cur === 'salvage' && <SalvageTab npcId={npcId} />}
       {cur === 'root' && <RootTab npcId={npcId} />}
     </Window>
   );

@@ -29,6 +29,8 @@ export interface PState {
   mmp: number;
   seq: number;
   wp: string;
+  /** Bậc phát sáng của vũ khí (0/1/2); server cũ chưa gửi thì undefined. */
+  wg?: number;
   /** Ngoại hình: giới tính, id màu áo (appearance.json). Server cũ chưa gửi thì undefined. */
   g?: string;
   dye?: string;
@@ -473,6 +475,7 @@ export class EntityManager {
         v.speed += (sp - v.speed) * Math.min(1, dt * 8);
       }
       v.fl = s.fl;
+      v.model.setWeaponGlow?.(s.wg ?? 0);
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
       v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
       v.model.root.rotation.y = v.yaw;

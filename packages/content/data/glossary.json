@@ -93,5 +93,21 @@
     "itm_ngoc_boi_thanh": "Thanh Tâm Ngọc Bội",
     "itm_ngoc_boi_linh": "Linh Tuyền Ngọc Bội",
     "itm_gioi_chi_dong": "Đồng Giới Chỉ"
+  },
+  "upgrade": {
+    "gem": "Linh Ngọc",
+    "gemTiers": [
+      "Hạ",
+      "Trung",
+      "Thượng"
+    ],
+    "refineStone": "Tẩy Luyện Thạch",
+    "dust": "Linh Trần",
+    "ward": "Hộ Phù",
+    "socket": "khảm",
+    "refine": "tẩy luyện",
+    "salvage": "phân giải",
+    "bound": "ràng buộc",
+    "enhance": "cường hóa"
   }
 }
