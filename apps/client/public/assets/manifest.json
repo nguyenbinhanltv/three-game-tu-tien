@@ -401,6 +401,234 @@
         }
       }
     },
+    "chr_npc_chuong_mon": {
+      "id": "chr_npc_chuong_mon",
+      "class": "npc",
+      "source": "assets/build/raw/chr_npc_chuong_mon.glb",
+      "file": "chr_npc_chuong_mon.9ff0e06b31.glb",
+      "bytes": 1167284,
+      "rawBytes": 1533200,
+      "triangles": 11568,
+      "rawTriangles": 11568,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 54,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "chr_npc_chuong_mon_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "chr_npc_chuong_mon_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "chr_npc_chuong_mon_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11568
+        },
+        {
+          "level": 1,
+          "triangles": 4626,
+          "target": 4627
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.6184,
+          "height": 1.75,
+          "depth": 0.4217,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.6184,
+          "height": 1.75,
+          "depth": 0.4217,
+          "minY": 0
+        }
+      }
+    },
+    "chr_npc_duoc_su": {
+      "id": "chr_npc_duoc_su",
+      "class": "npc",
+      "source": "assets/build/raw/chr_npc_duoc_su.glb",
+      "file": "chr_npc_duoc_su.bc69fd3bae.glb",
+      "bytes": 1072348,
+      "rawBytes": 1446624,
+      "triangles": 11272,
+      "rawTriangles": 11272,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 55,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "chr_npc_duoc_su_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "chr_npc_duoc_su_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "chr_npc_duoc_su_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11272
+        },
+        {
+          "level": 1,
+          "triangles": 4506,
+          "target": 4509
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.534,
+          "height": 1.65,
+          "depth": 0.4048,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.534,
+          "height": 1.65,
+          "depth": 0.4048,
+          "minY": 0
+        }
+      }
+    },
+    "chr_npc_thiet_lao": {
+      "id": "chr_npc_thiet_lao",
+      "class": "npc",
+      "source": "assets/build/raw/chr_npc_thiet_lao.glb",
+      "file": "chr_npc_thiet_lao.1655ed788d.glb",
+      "bytes": 1183520,
+      "rawBytes": 1557104,
+      "triangles": 11652,
+      "rawTriangles": 11652,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 55,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "chr_npc_thiet_lao_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "chr_npc_thiet_lao_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "chr_npc_thiet_lao_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11652
+        },
+        {
+          "level": 1,
+          "triangles": 4654,
+          "target": 4661
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.6995,
+          "height": 1.7,
+          "depth": 0.4397,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.6995,
+          "height": 1.7,
+          "depth": 0.4397,
+          "minY": 0
+        }
+      }
+    },
     "mon_soi_xam": {
       "id": "mon_soi_xam",
       "class": "monster",

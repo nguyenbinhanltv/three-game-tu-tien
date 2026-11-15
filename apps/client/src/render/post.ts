@@ -125,6 +125,8 @@ export interface PostOptions {
   fxaa: boolean;
 }
 
+const _size = new THREE.Vector2();
+
 export class PostPipeline {
   readonly bloom: boolean;
   private readonly key: string;
@@ -134,7 +136,12 @@ export class PostPipeline {
   /** Đích LDR cho FXAA: RTTNode không tự giải phóng render target, dispose() phải làm. */
   private fxaaInput: ReturnType<typeof rtt> | null = null;
 
-  constructor(renderer: THREE.WebGPURenderer, scene: THREE.Scene, camera: THREE.Camera, opts: PostOptions) {
+  constructor(
+    private renderer: THREE.WebGPURenderer,
+    private scene: THREE.Scene,
+    private camera: THREE.Camera,
+    opts: PostOptions,
+  ) {
     this.bloom = opts.bloom;
     this.key = PostPipeline.keyOf(opts);
     setBloomActive(opts.bloom);
@@ -220,6 +227,48 @@ export class PostPipeline {
 
   render(): void {
     this.post.render();
+  }
+
+  /**
+   * Biên dịch trước (M6-1) mọi material đang có trong cảnh cho đúng đích của pass cảnh (render target,
+   * số mẫu MSAA, MRT bloom), như `PassNode.updateBefore` sẽ vẽ, để khung đầu và lần đầu thấy hiệu ứng
+   * không phải biên dịch đồng bộ. Tạm tắt frustum culling để gồm cả vật ngoài khung nhìn hiện tại.
+   * WebGPU: `createRenderPipelineAsync`; WebGL2: `KHR_parallel_shader_compile` nếu có.
+   *
+   * Luôn biên dịch cả cảnh: khóa cache của three gồm cả scene (sương, môi trường), biên dịch riêng một
+   * cây con chưa nằm trong cảnh cho ra shader khác, vô ích. Người gọi KHÔNG được vẽ cho tới khi promise
+   * xong: three r178 không chặn lệnh vẽ dùng pipeline WebGPU còn đang biên dịch dở (lỗi `setPipeline`).
+   * Hậu kỳ (quad chỉnh màu, bloom, FXAA) không có đường biên dịch trước, vẫn dựng ở khung đầu.
+   */
+  async compileScene(): Promise<void> {
+    const r = this.renderer;
+    const root = this.scene;
+    const culled: THREE.Object3D[] = [];
+    root.traverse((o) => {
+      if (o.frustumCulled) {
+        o.frustumCulled = false;
+        culled.push(o);
+      }
+    });
+    const prevTarget = r.getRenderTarget();
+    const prevMrt = r.getMRT();
+    // Cỡ đích như lúc vẽ thật (PassNode.updateBefore): đổi cỡ sau khi biên dịch sẽ làm mất cache.
+    r.getSize(_size);
+    this.scenePass.setPixelRatio(r.getPixelRatio());
+    this.scenePass.setSize(_size.x, _size.y);
+    r.setRenderTarget(this.scenePass.renderTarget);
+    r.setMRT(this.scenePass.getMRT());
+    let done: Promise<unknown>;
+    try {
+      // Phần dựng node + gửi lệnh biên dịch chạy đồng bộ trong lời gọi; chỉ chờ biên dịch xong là bất đồng bộ.
+      // Khôi phục ngay để khung vẽ chen vào lúc chờ không bị sai đích.
+      done = r.compileAsync(root, this.camera);
+    } finally {
+      r.setRenderTarget(prevTarget);
+      r.setMRT(prevMrt);
+      for (const o of culled) o.frustumCulled = true;
+    }
+    await done;
   }
 
   dispose(): void {

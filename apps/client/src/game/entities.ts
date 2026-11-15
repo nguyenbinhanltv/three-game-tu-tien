@@ -5,6 +5,7 @@ import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shar
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
 import type { AnimState, CharacterView, MonsterView } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
+import { NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
 import { hitStopFor } from './hitreact';
 import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
@@ -233,9 +234,15 @@ export class MonVis {
 
 interface NpcVis {
   id: string;
-  model: Humanoid;
+  color: string;
+  yaw: number;
+  model: CharacterView;
+  /** Asset NPC đang nạp: đang dùng model khối, nạp xong thì đổi. */
+  skinPending: boolean;
   label: THREE.Sprite;
   marker: THREE.Sprite;
+  /** Độ cao dấu ! / ? (theo chiều cao model). */
+  markerY: number;
   x: number;
   y: number;
   z: number;
@@ -282,6 +289,8 @@ export class EntityManager {
   private skins = new MonsterSkins();
   /** Dựng model người chơi (Thanh Phong có xương hoặc khối dự phòng), màu áo theo lựa chọn. */
   private playerSkins = new PlayerSkins();
+  /** Dựng model NPC (có xương theo id dữ liệu hoặc khối dự phòng). */
+  private npcSkins = new NpcSkins();
   hasNpcs: boolean;
 
   constructor(
@@ -294,21 +303,27 @@ export class EntityManager {
     this.playerSkins.preload();
     this.hasNpcs = levelId === 'van_lam';
     if (this.hasNpcs) {
+      this.npcSkins.preload();
       for (const n of NPCS) {
-        const model = new Humanoid({ robe: n.color, trim: n.id === 'npc_chuong_mon' ? 0x3b6ea8 : 0x4a3a2a, hair: n.id === 'npc_duoc_su' ? 0x2a2026 : 0xb9bcc2, elder: n.id !== 'npc_duoc_su', sword: n.id === 'npc_chuong_mon', scale: 1.06 });
-        const y = groundAt(n.x, n.z);
-        model.root.position.set(n.x, y, n.z);
-        model.root.rotation.y = n.yaw;
         const label = makeLabel(t(`npc.${n.id}.name`), '#ffe9a8', t(`npc.${n.id}.title`), '#e8d6a0');
-        label.position.y = 2.6;
-        model.root.add(label);
         const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
         marker.scale.set(0.9, 0.9, 1);
-        marker.position.y = 3.5;
         marker.visible = false;
-        model.root.add(marker);
-        this.group.add(model.root);
-        this.npcs.push({ id: n.id, model, label, marker, x: n.x, y, z: n.z });
+        const npc: NpcVis = {
+          id: n.id,
+          color: n.color,
+          yaw: n.yaw,
+          model: this.npcSkins.create(n.id, n.color),
+          skinPending: this.npcSkins.pending(n.id),
+          label,
+          marker,
+          markerY: 0,
+          x: n.x,
+          y: groundAt(n.x, n.z),
+          z: n.z,
+        };
+        this.placeNpc(npc);
+        this.npcs.push(npc);
       }
     }
     this.ring = new THREE.Mesh(
@@ -320,6 +335,19 @@ export class EntityManager {
     this.ring.renderOrder = 3;
     this.group.add(this.ring);
     this.group.add(this.bars.mesh);
+  }
+
+  /** Gắn model NPC vào cảnh: vị trí, hướng theo dữ liệu, nhãn và dấu nhiệm vụ theo chiều cao model. */
+  private placeNpc(n: NpcVis): void {
+    const root = n.model.root;
+    root.position.set(n.x, n.y, n.z);
+    root.rotation.y = n.yaw;
+    // Model khối: nhãn 2,6, dấu 3,5 như cũ; model có xương (1,65–1,75 m) hạ theo chiều cao.
+    n.label.position.y = Math.min(2.6, n.model.height + 0.7);
+    n.markerY = n.label.position.y + 0.9;
+    n.marker.position.y = n.markerY;
+    root.add(n.label, n.marker);
+    this.group.add(root);
   }
 
   /** Dấu ! / ? trên đầu NPC theo trạng thái nhiệm vụ. */
@@ -527,8 +555,20 @@ export class EntityManager {
 
     // ----- NPC -----
     for (const n of this.npcs) {
+      if (n.skinPending && !this.npcSkins.pending(n.id)) {
+        n.skinPending = false;
+        const next = this.npcSkins.create(n.id, n.color);
+        if (next.constructor !== n.model.constructor) {
+          n.model.root.remove(n.label, n.marker);
+          n.model.root.removeFromParent();
+          n.model.dispose();
+          n.model = next;
+          this.placeNpc(n);
+        } else next.dispose();
+      }
+      n.model.setViewDistance?.(Math.hypot(n.x - local.x, n.z - local.z));
       n.model.update(dt, { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false });
-      if (n.marker.visible) n.marker.position.y = 3.5 + Math.sin(this.time * 3) * 0.12;
+      if (n.marker.visible) n.marker.position.y = n.markerY + Math.sin(this.time * 3) * 0.12;
     }
 
     bars.end();
@@ -673,6 +713,7 @@ export class EntityManager {
       n.marker.material.dispose();
       n.model.dispose();
     }
+    this.npcSkins.dispose();
     this.markerNew.dispose();
     this.markerDone.dispose();
     this.markerWait.dispose();
