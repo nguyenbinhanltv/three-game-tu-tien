@@ -74,6 +74,7 @@ import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
 import { telegraph } from './telegraph';
 import { DamageNumbers, HAZARD_COLORS, Vfx } from './vfx';
+import { skipOthersFx } from './fxBudget';
 import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
 import { CameraShake, SHAKE } from './shake';
 import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../input/bindings';
@@ -519,7 +520,9 @@ export class Game {
     const q = QUALITY[get().quality] ?? QUALITY.medium;
     const params = new URLSearchParams(location.search);
     // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
-    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: params.get('renderer') === 'webgl2' });
+    // `?gputime=1` (chỉ cho công cụ đo, pnpm bench:crowd): bật timestamp query để đọc thời gian GPU bằng
+    // `renderer.resolveTimestampsAsync()`; không ai resolve thì three cảnh báo hết chỗ query, nên đừng bật khi chơi.
+    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: params.get('renderer') === 'webgl2', trackTimestamp: params.get('gputime') === '1' });
     await this.renderer.init();
     // Đổi preset lúc chạy làm pass cảnh đổi giữa có/không MRT bloom: phải tách cache shader theo đích (nodeCacheFix.ts).
     patchNodeCacheKey(this.renderer);
@@ -1130,6 +1133,17 @@ export class Game {
       }
     }
     this.playFxSound(m.t, src, m.dst ?? '', m.x, m.z);
+    // Ngân sách hiệu ứng không dính tới mình (M6-3): đông thì bỏ phần trang trí; động tác, âm thanh vẫn giữ.
+    const involvesMe = src === this.sid || dst === this.sid;
+    if (!involvesMe) {
+      const at = m.t === 'rain' ? { x: m.x ?? 0, z: m.z ?? 0 } : (e.players.get(m.t === 'bite' ? dst : src) ?? e.monsters.get(src));
+      const dist = at ? Math.hypot(at.x - this.renderPos.x, at.z - this.renderPos.z) : 0;
+      if (skipOthersFx(m.t, { involvesMe, live: v.pool.live, dist })) {
+        // Cú cắn vẫn phát động tác của quái, chỉ bỏ chớp sáng ở người bị cắn.
+        if (m.t === 'bite') e.monsters.get(src)?.model.attack();
+        return;
+      }
+    }
     const posSrc = (out: THREE.Vector3) => e.chestOf(src, out);
     const posDst = (out: THREE.Vector3) => e.chestOf(dst, out);
     switch (m.t) {

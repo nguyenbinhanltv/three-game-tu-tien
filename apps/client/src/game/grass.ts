@@ -295,7 +295,6 @@ export class Grass {
     this.geo.setIndex(tuft.getIndex());
     const mk = () => {
       const a = new THREE.InstancedBufferAttribute(new Float32Array(MAX_INSTANCES * 4), 4);
-      a.setUsage(THREE.DynamicDrawUsage);
       return a;
     };
     this.a0 = mk();

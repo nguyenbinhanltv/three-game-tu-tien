@@ -298,7 +298,6 @@ export class Terrain {
   constructor() {
     const g = buildTileGeometry(0, 0, WORLD_SIZE, COARSE_N, 0);
     this.coarseIndex = new THREE.BufferAttribute(new Uint16Array(COARSE_N * COARSE_N * 6), 1);
-    this.coarseIndex.setUsage(THREE.DynamicDrawUsage);
     g.setIndex(this.coarseIndex);
     this.coarse = new THREE.Mesh(g, this.material);
     this.coarse.frustumCulled = false;

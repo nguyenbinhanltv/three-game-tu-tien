@@ -8,7 +8,8 @@
     "bench": "tsx src/bench.ts",
     "typecheck": "tsc -p tsconfig.json",
     "compat": "tsx src/compat.ts",
-    "load": "tsx src/load.ts"
+    "load": "tsx src/load.ts",
+    "crowd": "tsx src/crowd.ts"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",
