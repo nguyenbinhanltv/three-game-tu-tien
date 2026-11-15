@@ -16,6 +16,7 @@ export type Action =
   | 'quests'
   | 'map'
   | 'help'
+  | 'settings'
   | 'chat'
   | 'cancel'
   | 'mouseLock'
@@ -34,6 +35,7 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   KeyJ: 'quests',
   KeyM: 'map',
   KeyH: 'help',
+  KeyO: 'settings',
   Enter: 'chat',
   Escape: 'cancel',
   AltLeft: 'mouseLock',

@@ -1,0 +1,750 @@
+/*
+ * Các bảng và HUD dựng bằng ui/kit (P2-C2/C3/C4). Màu, góc vát và cỡ chữ lấy từ biến --k-* (tokens.css);
+ * khung vát vẽ bằng clip-path như kit. Ở đây chỉ có phần bố cục riêng của từng bảng.
+ */
+
+/* ---------- khối con dùng chung trong bảng ---------- */
+.k-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 12px;
+  background: rgba(8, 14, 22, 0.42);
+  border-left: 2px solid var(--k-edge-dim);
+  line-height: 1.5;
+}
+.k-card.ready {
+  border-left-color: var(--k-gold);
+}
+.k-card.offer {
+  border-left-color: var(--k-bronze);
+}
+.k-card .k-btn {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+.k-panel .ok {
+  color: #8fe0a8;
+}
+.k-panel .bad {
+  color: var(--k-cinnabar-hi);
+}
+.item-name {
+  font: 700 15px var(--k-font-serif);
+  color: var(--k-text);
+}
+.item-name[data-q='1'],
+.reward-item[data-q='1'] {
+  color: #a6d27f;
+}
+.item-name[data-q='2'],
+.reward-item[data-q='2'] {
+  color: #86c3ee;
+}
+.item-name[data-q='3'],
+.reward-item[data-q='3'] {
+  color: #c9a8ff;
+}
+.item-stat {
+  color: var(--k-sword);
+}
+.item-req {
+  font-size: 12.5px;
+  color: var(--k-bronze-hi);
+}
+.item-desc {
+  font: italic 12.5px var(--k-font-serif);
+  color: var(--k-text-dim);
+}
+.item-actions {
+  display: flex;
+  gap: var(--k-s2);
+}
+.item-actions:empty {
+  display: none;
+}
+.k-panel kbd {
+  font: 600 10px var(--k-font-body);
+  padding: 0 4px;
+  background: rgba(8, 14, 22, 0.5);
+  border: 1px solid var(--k-edge-dim);
+  color: var(--k-bronze-hi);
+  border-radius: 0;
+}
+
+/* ---------- túi đồ ---------- */
+.equip-row {
+  display: flex;
+  gap: var(--k-s3);
+  align-items: flex-start;
+}
+.equip-cell {
+  width: 58px;
+  text-align: center;
+}
+.equip-cell .k-tip-host {
+  display: flex;
+  justify-content: center;
+}
+.equip-label {
+  margin-top: 3px;
+  font-size: 11px;
+  letter-spacing: var(--k-track-label);
+  color: var(--k-text-dim);
+}
+.gold {
+  margin-left: auto;
+  text-align: right;
+  font: 700 18px var(--k-font-serif);
+  color: var(--k-gold);
+}
+.bag-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.bag-grid .k-tip-host {
+  display: flex;
+  width: 100%;
+}
+.bag-grid .k-slot[data-size] {
+  --k-slot-size: 100%;
+}
+
+/* ---------- nhân vật ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 var(--k-s4);
+  margin: 0;
+}
+.stat-cell {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 2px;
+  border-bottom: 1px solid rgba(174, 139, 73, 0.2);
+}
+.stat-cell dt {
+  color: var(--k-text-dim);
+  letter-spacing: var(--k-track-label);
+}
+.stat-cell dd {
+  margin: 0;
+  font: 700 15px var(--k-font-serif);
+  color: var(--k-text);
+}
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.skill-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.skill-item.locked {
+  opacity: 0.55;
+}
+.skill-item .k-slot {
+  flex: none;
+}
+.skill-item-name {
+  font-weight: 600;
+}
+.skill-item-name i {
+  font-weight: 400;
+  color: var(--k-text-dim);
+}
+.trib-box {
+  border-left-color: var(--k-q3);
+  background: rgba(60, 30, 100, 0.22);
+}
+
+/* ---------- nhiệm vụ, đối thoại ---------- */
+.quest-title {
+  font: 700 15px var(--k-font-serif);
+  color: var(--k-gold);
+}
+.quest-desc {
+  color: var(--k-text);
+  font-size: 13px;
+}
+.quest-obj.ok {
+  color: #8fe0a8;
+}
+.rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12.5px;
+  color: var(--k-text-dim);
+}
+.rewards b {
+  color: var(--k-bronze-hi);
+  font-weight: 600;
+}
+.reward-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.reward-item .content-icon {
+  width: 1.5em;
+  height: 1.5em;
+}
+.npc-greet {
+  font: italic 15px var(--k-font-serif);
+  color: var(--k-text);
+  padding: 2px 4px 4px;
+}
+.npc-quests,
+.shop,
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-s2);
+}
+.shop-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+}
+.shop-row .k-tip-host {
+  flex: none;
+}
+.shop-row .k-btn {
+  align-self: center;
+  margin-top: 0;
+  flex: none;
+}
+.shop-info {
+  flex: 1;
+  min-width: 0;
+}
+.craft-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-top: 2px;
+  font-size: 12px;
+}
+.craft-inputs .content-icon {
+  width: 1.4em;
+  height: 1.4em;
+}
+.craft-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.craft-btns .k-btn {
+  align-self: stretch;
+}
+
+/* ---------- hướng dẫn, bản đồ ---------- */
+.help-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.help-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(174, 139, 73, 0.2);
+  vertical-align: top;
+}
+.help-table td:first-child {
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--k-bronze-hi);
+}
+.k-window.map canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+.credits {
+  margin: 4px 0 8px;
+  padding-left: 1.2em;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.credits a {
+  color: var(--k-bronze-hi);
+}
+
+/* ---------- khung nhân vật, khung mục tiêu ---------- */
+.frame {
+  --corner: var(--k-bronze);
+  position: absolute;
+  top: 14px;
+  width: 270px;
+  padding: 8px 12px 9px;
+  background: linear-gradient(180deg, rgba(26, 41, 56, 0.82), rgba(14, 23, 34, 0.86));
+  border: 1px solid var(--k-edge-dim);
+  pointer-events: auto;
+}
+/* Mốc đồng thau ở hai góc chéo: cùng ngôn ngữ vát với bảng, nhưng nhẹ để không che cảnh. */
+.frame::before,
+.frame::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  pointer-events: none;
+}
+.frame::before {
+  left: -2px;
+  top: -2px;
+  border-left: 2px solid var(--corner);
+  border-top: 2px solid var(--corner);
+}
+.frame::after {
+  right: -2px;
+  bottom: -2px;
+  border-right: 2px solid var(--corner);
+  border-bottom: 2px solid var(--corner);
+}
+.player-frame {
+  left: 14px;
+}
+.target-frame {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 270px;
+  padding: 6px 12px 8px;
+}
+.target-frame[data-kind='mon'] {
+  --corner: var(--k-cinnabar-hi);
+}
+.target-frame[data-kind='player'] {
+  --corner: var(--k-q1);
+}
+.target-frame.below-boss {
+  top: 124px;
+}
+.frame-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.frame-name {
+  font: 700 16px var(--k-font-serif);
+  letter-spacing: 0.02em;
+  color: var(--k-gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px #000;
+}
+.target-frame .frame-name {
+  color: var(--k-text);
+}
+.frame-realm {
+  font: 600 12px var(--k-font-serif);
+  color: var(--k-bronze-hi);
+  white-space: nowrap;
+}
+
+/* ---------- bản đồ nhỏ ---------- */
+.right-col {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+.minimap {
+  --cut: 10px;
+  position: relative;
+  width: 180px;
+  height: 180px;
+  padding: 2px;
+  background: var(--k-edge);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  pointer-events: auto;
+  cursor: pointer;
+}
+.minimap canvas {
+  display: block;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+}
+.minimap::after {
+  /* tối nhẹ ở mép trên để tên vùng đọc được trên mọi nền */
+  content: '';
+  position: absolute;
+  inset: 2px 2px auto 2px;
+  height: 30px;
+  background: linear-gradient(180deg, rgba(10, 16, 24, 0.7), transparent);
+  pointer-events: none;
+}
+.minimap-zone {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: 6px;
+  text-align: center;
+  font: 700 12.5px var(--k-font-title);
+  letter-spacing: 0.1em;
+  color: var(--k-gold);
+  text-shadow: 0 1px 2px #000;
+}
+.minimap-pos {
+  position: absolute;
+  z-index: 1;
+  right: 9px;
+  bottom: 6px;
+  font-size: 10px;
+  color: var(--k-text);
+  text-shadow: 0 1px 2px #000;
+}
+
+/* ---------- theo dõi nhiệm vụ: chữ trên nền mờ tắt dần, không có khung để không che cảnh ---------- */
+.tracker {
+  width: 100%;
+  padding: 4px 10px 6px 18px;
+  text-align: right;
+  background: linear-gradient(270deg, rgba(14, 23, 34, 0.55), rgba(14, 23, 34, 0));
+  border-right: 2px solid var(--k-edge-dim);
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0.88;
+}
+.tracker:hover {
+  opacity: 1;
+}
+.tracker-quest {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.tracker-quest + .tracker-quest {
+  margin-top: 7px;
+}
+.tracker-title {
+  font: 700 13px var(--k-font-serif);
+  letter-spacing: 0.04em;
+  color: var(--k-gold);
+  text-shadow: 0 1px 2px #000;
+}
+.tracker-obj {
+  color: var(--k-text);
+  text-shadow: 0 1px 2px #000;
+}
+.tracker-quest.tracked .tracker-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 6px 2px 0;
+  background: var(--k-gold);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.tracker-obj.ok {
+  color: #8fe0a8;
+}
+.tracker-turnin {
+  color: var(--k-gold);
+  font-weight: 600;
+  text-shadow: 0 1px 2px #000;
+}
+
+/* ---------- thanh chiêu ---------- */
+.skillbar {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+.skill-row {
+  display: flex;
+  gap: 7px;
+  padding: 7px 9px;
+  background: linear-gradient(180deg, rgba(26, 41, 56, 0.82), rgba(14, 23, 34, 0.88));
+  border: 1px solid var(--k-edge-dim);
+}
+.skill-row .k-tip-host {
+  display: block;
+}
+.skill {
+  --cut: 7px;
+  --edge: linear-gradient(180deg, var(--k-bronze-hi), var(--k-bronze) 50%, var(--k-bronze-lo));
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  background: var(--edge);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+}
+.skill::before {
+  /* lòng ô, vát nhỏ hơn viền một chút */
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  background: radial-gradient(circle at 50% 35%, #2a4160, var(--k-night-0) 90%);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  transition: filter var(--k-dur) var(--k-ease);
+}
+.skill:hover::before {
+  filter: brightness(1.3);
+}
+.skill:focus-visible {
+  --edge: linear-gradient(180deg, #d9fff6, var(--k-jade) 50%, #3a9d8c);
+  outline: none;
+}
+.skill-icon {
+  position: absolute;
+  inset: 1.5px;
+  display: grid;
+  place-items: center;
+  transition: filter var(--k-dur) var(--k-ease);
+}
+.skill-icon .content-icon {
+  width: 44px;
+  height: 44px;
+}
+.skill-key {
+  position: absolute;
+  left: 5px;
+  top: 3px;
+  font: 700 11px var(--k-font-body);
+  color: var(--k-gold);
+  text-shadow: 0 1px 2px #000, 0 0 3px #000;
+}
+/* Hồi chiêu quét theo vòng: phần còn chờ tối dần co lại theo chiều kim đồng hồ, bắt đầu từ trên. */
+.skill-sweep {
+  position: absolute;
+  inset: 1.5px;
+  background: conic-gradient(from 0deg, transparent calc((1 - var(--p)) * 1turn), rgba(6, 10, 18, 0.78) 0);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  pointer-events: none;
+}
+.skill-cd-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 20px var(--k-font-serif);
+  color: var(--k-text);
+  text-shadow: 0 1px 3px #000, 0 0 6px #000;
+  pointer-events: none;
+}
+.skill-lock {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  font-size: 12px;
+}
+/* Xám khi thiếu linh lực (tối hơn, ngả lam) hoặc không ra chiêu được lúc ngự kiếm/lơ lửng (xám hẳn, gạch chéo). */
+.skill[data-state='nomp'] .skill-icon {
+  filter: grayscale(0.85) brightness(0.6) sepia(0.2) hue-rotate(170deg);
+}
+.skill[data-state='air'] .skill-icon {
+  filter: grayscale(1) brightness(0.55);
+}
+.skill[data-state='air']::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 2px;
+  background: var(--k-cinnabar-hi);
+  opacity: 0.8;
+  transform: rotate(-35deg);
+  pointer-events: none;
+}
+.skill[data-state='locked'] {
+  --edge: linear-gradient(180deg, #8a8575, #5d5a50);
+}
+.skill[data-state='locked'] .skill-icon {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+/* Tự đánh (phím 1): viền kim quang, lòng sáng nhẹ. */
+.skill.auto {
+  --edge: linear-gradient(180deg, #fff1c4, var(--k-gold) 50%, #b08a3e);
+}
+.skill.auto::before {
+  box-shadow: inset 0 0 10px 2px rgba(255, 222, 150, 0.35);
+}
+/* Chiêu đang chờ hết GCD (M1-11): viền vàng sáng nhịp nhanh vì chỉ giữ tối đa 0,4 giây. */
+.skill.queued {
+  --edge: linear-gradient(180deg, #fff9dc, #ffd84a 50%, #fff3b8);
+  animation: skill-queued 0.2s ease-in-out infinite alternate;
+}
+.skill.queued::before {
+  box-shadow: inset 0 0 14px 4px rgba(255, 226, 140, 0.6);
+}
+@keyframes skill-queued {
+  from {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(1.45);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skill.queued {
+    animation: none;
+    filter: brightness(1.3);
+  }
+}
+.action-row {
+  display: flex;
+  gap: 6px;
+}
+.action-row .k-btn kbd {
+  margin-left: 2px;
+}
+.k-btn.bag-pulse {
+  animation: bag-pulse 0.42s ease-out;
+}
+
+/* ---------- chat ---------- */
+.chat {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  width: 360px;
+  pointer-events: auto;
+}
+.chat-log {
+  height: 150px;
+  overflow-y: auto;
+  padding: 6px 10px;
+  border: 1px solid var(--k-edge-dim);
+  border-bottom: 0;
+  background: linear-gradient(180deg, rgba(14, 23, 34, 0.42), rgba(14, 23, 34, 0.62));
+  font-size: 12.5px;
+  line-height: 1.5;
+  scrollbar-width: thin;
+  scrollbar-color: var(--k-edge-dim) transparent;
+  user-select: text;
+}
+.chat.open .chat-log {
+  background: linear-gradient(180deg, rgba(14, 23, 34, 0.82), rgba(14, 23, 34, 0.92));
+}
+.chat-line {
+  color: var(--k-text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  overflow-wrap: anywhere;
+}
+.chat-line.good {
+  color: var(--k-gold);
+}
+.chat-line.bad {
+  color: var(--k-cinnabar-hi);
+}
+.chat-line.loot {
+  color: #8fe0a8;
+}
+.chat-line.xp {
+  color: #c4b4ff;
+}
+.chat-line.info {
+  color: var(--k-text-dim);
+}
+.chat-line.chat b {
+  color: var(--k-bronze-hi);
+}
+.chat-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--k-edge-dim);
+  background: rgba(14, 23, 34, 0.7);
+  color: var(--k-text);
+  font: 13px var(--k-font-body);
+  outline: none;
+  user-select: text;
+}
+.chat-input::placeholder {
+  color: var(--k-text-dim);
+}
+.chat-input:focus {
+  border-color: var(--k-bronze-hi);
+  background: rgba(14, 23, 34, 0.94);
+}
+
+/* ---------- cắt cảnh: thẻ chương ẩn toàn bộ HUD, thoại boss chỉ ẩn phần không cần khi đang đánh ---------- */
+.hud > * {
+  transition: opacity 0.25s ease-out;
+}
+.hud[data-cut='chapter'] > :not(.chapter-card):not(.death):not(.crosshair) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out, visibility 0s 0.25s;
+}
+.offs-layer,
+.loot-layer {
+  transition: opacity 0.25s ease-out;
+}
+body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
+  opacity: 0;
+}
+.hud[data-cut='line'] > :is(.right-col, .chat, .hint, .toasts, .k-window),
+.hud[data-cut='line'] .action-row {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-height: 760px) {
+  /* Màn thấp: túi đồ 8 cột (4 hàng) để phần chi tiết vật phẩm còn nằm trong khung nhìn. */
+  .bag-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+/* ---------- vừa màn hình nhỏ (≥1100px) ---------- */
+@media (max-width: 1366px) {
+  /* Hàng nút dưới thanh chiêu rút còn icon + phím để không đè khung chat. */
+  .action-row .k-btn span {
+    display: none;
+  }
+}
+@media (max-width: 1280px) {
+  .frame,
+  .target-frame {
+    width: 240px;
+  }
+  .chat {
+    width: 320px;
+  }
+  .chat-log {
+    height: 120px;
+  }
+}
+@media (max-width: 1100px) {
+  .chat {
+    width: 280px;
+  }
+  .chat-log {
+    height: 100px;
+  }
+  .skill {
+    width: 50px;
+    height: 50px;
+  }
+  .skill-icon .content-icon {
+    width: 38px;
+    height: 38px;
+  }
+  .action-row .k-btn span {
+    display: none;
+  }
+}
