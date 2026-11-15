@@ -1,14 +1,15 @@
 import { ContentIcon } from './ContentIcon';
 import { useState } from 'react';
-import { C, enhanceChance, enhanceCost, EQUIP_SLOTS, MAX_ENHANCE } from '@dtl/shared';
+import { C, enhanceChance, sellPrice, enhanceCost, EQUIP_SLOTS, MAX_ENHANCE } from '@dtl/shared';
 import { ENHANCE_ORE, ITEM, itemName, NPC, QUESTS, realmName, RECIPES, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './Panels';
 import { Button, Divider, Tabs } from './kit';
+import { RootTab } from './Realm';
 import { set, useUI } from './store';
 
-type Tab = 'talk' | 'shop' | 'craft' | 'enhance';
+type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'root';
 
 function QuestTab({ npcId }: { npcId: string }) {
   const quests = useUI((s) => s.quests);
@@ -116,7 +117,7 @@ function ShopTab({ npcId }: { npcId: string }) {
           {def.sell > 0 && (
             <>
               <Button variant="primary" onClick={() => g?.send(C.SELL, { npc: npcId, slot: sel, n: 1, r: reqId() })}>
-                {t('ui.item.sell')} (+{def.sell} 💠)
+                {t('ui.item.sell')} (+{sellPrice(item, def)} 💠)
               </Button>
               {item.n > 1 && (
                 <Button
@@ -125,7 +126,7 @@ function ShopTab({ npcId }: { npcId: string }) {
                     setSel(null);
                   }}
                 >
-                  {t('ui.item.sell_all')} (+{def.sell * item.n} 💠)
+                  {t('ui.item.sell_all')} (+{sellPrice(item, def) * item.n} 💠)
                 </Button>
               )}
             </>
@@ -229,6 +230,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
   if (npc.sells) tabs.push('shop');
   if (npc.recipes) tabs.push('craft');
   if (npc.enhance) tabs.push('enhance');
+  if (npc.rootChange) tabs.push('root');
   const cur = tabs.includes(tab) ? tab : 'talk';
   return (
     <Window title={t(`npc.${npcId}.name`)} sub={t(`npc.${npcId}.title`)} onClose={() => set({ npc: null })} cls="npc" width={540}>
@@ -237,6 +239,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
       {cur === 'shop' && <ShopTab npcId={npcId} />}
       {cur === 'craft' && <CraftTab npcId={npcId} />}
       {cur === 'enhance' && <EnhanceTab npcId={npcId} />}
+      {cur === 'root' && <RootTab npcId={npcId} />}
     </Window>
   );
 }

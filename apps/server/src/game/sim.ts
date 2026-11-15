@@ -1,6 +1,7 @@
 import { randomInt } from 'node:crypto';
 import type { Client } from 'colyseus';
 import {
+  addCharge,
   BOLT_MAX_LIFE,
   BOLT_MAX_LIVE,
   boltBlockedAt,
@@ -10,6 +11,10 @@ import {
   type BoltMsg,
   boltXZ,
   boltYaws,
+  CHARGE_MAX,
+  chargeFromDealt,
+  chargeFromTaken,
+  bottleneckReady,
   bossPhaseAt,
   fxSeed,
   parseAppearance,
@@ -22,7 +27,19 @@ import {
   type DmgMsg,
   enhanceChance,
   enhanceCost,
+  healAmount,
+  methodSwitchCost,
+  METHOD_SWITCH_COOLDOWN_SEC,
+  METHOD_UNLOCK_LEVEL,
+  MAX_SKILL_LEVEL,
+  reduceDamage,
+  skillUpgradeCost,
+  stackMul,
+  stacksAlive,
+  variantUnlocked,
   BIND_QUALITY,
+  rollEquipDrops,
+  sellPrice,
   type EquipSlot,
   type InvItem,
   type Quality,
@@ -30,7 +47,9 @@ import {
   FLY_UNLOCK_LEVEL,
   type FxMsg,
   AIRBORNE_HEIGHT,
+  elemDamageMul,
   GCD,
+  initialBottleneck,
   hazardHit,
   HP_REGEN_IDLE,
   HP_REGEN_MEDITATE,
@@ -94,12 +113,24 @@ import {
   xpLevelFactor,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ENHANCE_ORE, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL } from '@dtl/content';
+import { APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
 import { type Character, isEquipSlot } from './character';
 import type { TestFlags } from '../testflags';
+import { type Hot, MethodRt, methodOf, passiveOf, resolveFor, setSkillLevel, skillLevelOf, type Trail } from './method';
+
+/** Bí Tịch Tàn Quyển: nguyên liệu nâng cấp chiêu. */
+const SKILL_SCROLL = 'itm_bi_tich_tan_quyen';
+/** Chiêu khiêu khích với boss chỉ giữ chừng này thời gian (tỉ lệ). */
+const TAUNT_BOSS_MUL = 0.5;
+const METHOD_NPC = 'npc_chuong_mon';
+/** Đan dược dùng lên đồng đội (Thanh Mộc Đan Kinh) trong tầm này (mét). */
+const POTION_ALLY_RANGE = 12;
+/** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
+const METHOD_SEND_MS = 250;
+import { RealmSystem } from './realm';
 
 /**
  * Seed hình cho FX (tia sét, mưa kiếm, mây kiếp). Lấy từ `crypto`, KHÔNG từ `Math.random`: seed gửi
@@ -139,6 +170,8 @@ export interface PlayerEnt {
   gcdAt: number;
   cds: Map<string, number>;
   itemCdAt: number;
+  /** Mặc/tháo đồ: tối thiểu 200 ms giữa hai lần (mỗi lần là một giao dịch DB + dòng ledger). */
+  equipCdAt: number;
   casting: { skill: SkillDef; target: string; endAt: number } | null;
   shield: { amount: number; until: number } | null;
   lastCombatAt: number;
@@ -147,6 +180,8 @@ export interface PlayerEnt {
   meditating: boolean;
   xpAcc: number;
   trib: { endAt: number; nextAt: number; n: number } | null;
+  /** Thử thách tâm ma đang chạy (P3-7): hết giờ `endAt`, bóng `monId`, chỗ bắt đầu (x, z). Xem `game/realm.ts`. */
+  trial: { endAt: number; monId: string; x: number; z: number } | null;
   warnAt: number;
   chatAt: number;
   msgWindowAt: number;
@@ -154,6 +189,8 @@ export interface PlayerEnt {
   /** Cửa sổ 1 giây đếm lệnh dùng skill (chống spam, riêng với giới hạn message chung). */
   skillWindowAt: number;
   skillCount: number;
+  /** Trạng thái công pháp (kiếm ý/thế, vòng sạc, giảm sát thương). */
+  mth: MethodRt;
   saveAt: number;
   /** Không nhận vật phẩm rơi (đã hết lượt thưởng bí cảnh hôm nay). */
   noLoot: boolean;
@@ -186,6 +223,8 @@ export interface MonEnt {
   evadeUntil: number;
   abilityAt: number;
   threat: Map<string, number>;
+  /** sid chủ của quái riêng (bóng tâm ma): chỉ đánh và bị đánh bởi người này, không rơi đồ/tu vi. '' = quái thường. */
+  owner: string;
   /** Ô cận chiến: giữ tới lúc này; không được giành lại trước `slotCdAt`. */
   slotUntil: number;
   slotCdAt: number;
@@ -213,6 +252,10 @@ export interface MonEnt {
   /** Chiêu chém vùng: lúc được ra tiếp (0 = chưa hẹn); đang đứng yên khóa hướng tới `windUntil`. */
   sweepAt: number;
   windUntil: number;
+  /** Dấu ấn của người chơi `sid` (Kiếm Ảnh Phân Quang): sát thương của người đó nhân (1 + mul) tới `until`. */
+  mark?: { sid: string; until: number; mul: number };
+  /** Bị khiêu khích: buộc nhắm người `sid` tới `until` (ms). */
+  taunt?: { sid: string; until: number };
 }
 
 interface NodeEnt {
@@ -285,6 +328,8 @@ export class GameSim {
   monById = new Map<string, MonEnt>();
   nodes = new Map<string, NodeEnt>();
   hazards: Hazard[] = [];
+  private hots: Hot[] = [];
+  private trails: Trail[] = [];
   bolts: Bolt[] = [];
   private nextBoltId = 1;
   /** sid người chơi → id quái đang giữ ô cận chiến của người đó. */
@@ -295,6 +340,27 @@ export class GameSim {
   private nextId = 1;
   tickMs = 0;
   tickSamples: number[] = [];
+  /** Bình cảnh, tâm ma, linh căn (P3-7). */
+  readonly realm = new RealmSystem({
+    now: () => this.now,
+    inWorld: () => this.opts.levelId === 'van_lam',
+    isDead: (p) => this.isDead(p),
+    nearNpc: (p, id) => this.nearNpc(p, id),
+    idem: (p, r) => this.idem(p, r),
+    warn: (p, k, params) => this.warn(p, k, params),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    fx: (m) => this.fx(m),
+    spawnShadow: (p, st) => this.spawnShadow(p, st),
+    dismissShadow: (id) => {
+      const m = this.monById.get(id);
+      if (m) this.removeMonster(m);
+    },
+    stopMeditate: (p) => this.setMeditating(p, false),
+    savePlayer: (p) => this.savePlayer(p),
+    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
+    inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
+    player: (sid) => this.players.get(sid),
+  });
 
   constructor(
     public state: WorldState,
@@ -335,13 +401,14 @@ export class GameSim {
     return { x: cx, z: cz };
   }
 
-  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src'>): void {
+  sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void {
     const m: SysMsg = { k };
     if (params) m.p = params;
     if (type) m.t = type;
     // Đồ rơi (M4-6): chỉ là thứ đã vào túi (sau transaction), để client vẽ đồ nảy ra từ xác quái.
     if (drop?.i) m.i = drop.i;
     if (drop?.src) m.src = drop.src;
+    if (drop?.q !== undefined) m.q = drop.q;
     p.client.send(S.SYS, m);
   }
 
@@ -422,6 +489,7 @@ export class GameSim {
       gcdAt: 0,
       cds: new Map(),
       itemCdAt: 0,
+      equipCdAt: 0,
       casting: null,
       shield: null,
       lastCombatAt: 0,
@@ -429,12 +497,14 @@ export class GameSim {
       meditating: false,
       xpAcc: 0,
       trib: null,
+      trial: null,
       warnAt: 0,
       chatAt: 0,
       msgWindowAt: this.now,
       msgCount: 0,
       skillWindowAt: this.now,
       skillCount: 0,
+      mth: new MethodRt(),
       saveAt: this.now + SAVE_INTERVAL,
       noLoot,
       connected: true,
@@ -465,6 +535,7 @@ export class GameSim {
     const p = this.players.get(sid);
     if (!p) return;
     if (p.trib) this.endTribulation(p, false, true);
+    this.realm.onLeave(p);
     this.savePlayer(p);
     this.meleeSlot.delete(sid);
     this.slotWait.delete(sid);
@@ -537,6 +608,7 @@ export class GameSim {
     for (let i = this.monsters.length - 1; i >= 0; i--) this.tickMonster(this.monsters[i], dt);
     this.tickHazards();
     this.tickBolts();
+    this.tickMethods();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -553,6 +625,11 @@ export class GameSim {
       if (c.questDirty) {
         c.questDirty = false;
         p.client.send(S.QUESTS, c.quests);
+      }
+      if (p.mth.dirty && this.now - p.mth.sentAt >= METHOD_SEND_MS) {
+        p.mth.dirty = false;
+        p.mth.sentAt = this.now;
+        p.client.send(S.METHOD, p.mth.toMsg(c.meta, this.now));
       }
       if (this.now >= p.saveAt) {
         p.saveAt = this.now + SAVE_INTERVAL;
@@ -638,6 +715,7 @@ export class GameSim {
       p.budget -= STEP;
     }
 
+    this.realm.tick(p);
     const dead = this.isDead(p);
     if (!dead) {
       if (p.move.flying) {
@@ -673,7 +751,10 @@ export class GameSim {
     if (n <= 0) return;
     const c = p.char;
     const before = c.level;
+    const wasReady = bottleneckReady(c.level, c.bk, c.xp, xpNeed(c.level));
     const ups = c.gainXp(n);
+    // Vừa đầy tu vi ở tầng 5/10/15 chưa vượt: báo một lần rằng đang kẹt bình cảnh.
+    if (!wasReady && bottleneckReady(c.level, c.bk, c.xp, xpNeed(c.level))) this.sys(p, 'sys.bk_blocked', undefined, 'info');
     if (announce) this.sys(p, 'sys.xp', { n }, 'xp');
     if (ups > 0) {
       this.sys(p, 'sys.levelup', { realm: realmName(c.level) }, 'good');
@@ -711,11 +792,15 @@ export class GameSim {
     const c = p.char;
     if (this.isDead(p)) return this.warn(p, 'sys.dead');
     if (c.level < skill.unlock) return this.warn(p, 'sys.level_low');
+    if (skill.method && c.meta.method !== skill.method) return this.warn(p, 'sys.no_method');
     if (this.airborne(p)) return this.warn(p, 'sys.cannot_while_flying');
     if (p.casting) return;
     if (this.now < p.gcdAt - 60) return;
     if ((p.cds.get(skill.id) ?? 0) > this.now) return this.warn(p, 'sys.cooldown');
     if (c.mp < skill.mp) return this.warn(p, 'sys.not_enough_mp');
+    if (skill.ult && p.mth.charge < CHARGE_MAX) return this.warn(p, 'sys.ult_not_ready');
+    if (skill.kind === 'revive' && !this.reviveTarget(p, skill.allyRadius ?? 14)) return this.warn(p, 'sys.no_ally_dead');
+    const rs = resolveFor(c.meta, skill);
     let targetId = '';
     if (skill.kind === 'damage' || skill.kind === 'aoe') {
       if (typeof m.t !== 'string') return this.warn(p, 'sys.no_target');
@@ -727,10 +812,10 @@ export class GameSim {
     }
     if (p.meditating) this.setMeditating(p, false);
     p.gcdAt = this.now + GCD * 1000;
-    if (skill.cast > 0) {
-      p.casting = { skill, target: targetId, endAt: this.now + skill.cast * 1000 };
+    if (rs.cast > 0) {
+      p.casting = { skill, target: targetId, endAt: this.now + rs.cast * 1000 };
       this.setFlag(p, PF_CASTING, true);
-      this.fx({ t: 'cast', src: p.sid, dst: targetId, d: skill.cast, s: skill.id });
+      this.fx({ t: 'cast', src: p.sid, dst: targetId, d: rs.cast, s: skill.id, ...this.fxTag(p, rs) });
       this.sendCd(p);
       return;
     }
@@ -772,63 +857,356 @@ export class GameSim {
     this.executeSkill(p, cast.skill, cast.target);
   }
 
+  /** Thông tin hình cho FX chiêu: biến thức, cấp chiêu, màu công pháp. Chỉ là lớp hình. */
+  private fxTag(p: PlayerEnt, rs: ReturnType<typeof resolveFor>): Partial<FxMsg> {
+    const o: Partial<FxMsg> = {};
+    if (rs.variant) o.v = rs.variant.fx;
+    if (rs.level > 1) o.lv = rs.level;
+    const m = methodOf(p.char.meta);
+    if (m) o.c = m.color;
+    return o;
+  }
+
+  private liveStacks(p: PlayerEnt): number {
+    const pas = passiveOf(p.char.meta);
+    if (!pas || (pas.kind !== 'kiem_y' && pas.kind !== 'the')) return 0;
+    return stacksAlive(p.mth.stacks, p.mth.stackAt, this.now, pas.decay ?? 10);
+  }
+
+  private addStack(p: PlayerEnt, max: number, decay: number): void {
+    const cur = stacksAlive(p.mth.stacks, p.mth.stackAt, this.now, decay);
+    p.mth.stacks = Math.min(max, cur + 1);
+    p.mth.stackAt = this.now;
+    p.mth.dirty = true;
+  }
+
+  private gainCharge(p: PlayerEnt, n: number): void {
+    if (!p.char.meta.method || !(n > 0) || p.mth.charge >= CHARGE_MAX) return;
+    p.mth.charge = addCharge(p.mth.charge, n);
+    p.mth.dirty = true;
+  }
+
+  /** Đạo hữu ngã gần nhất trong `r` mét (không phải mình). */
+  private reviveTarget(p: PlayerEnt, r: number): PlayerEnt | null {
+    let best: PlayerEnt | null = null;
+    let bd = r * r;
+    for (const o of this.players.values()) {
+      if (o === p || !this.isDead(o)) continue;
+      const dx = o.move.x - p.move.x;
+      const dz = o.move.z - p.move.z;
+      const d = dx * dx + dz * dz;
+      if (d <= bd) {
+        bd = d;
+        best = o;
+      }
+    }
+    return best;
+  }
+
+  /**
+   * Có được hỗ trợ (hồi, khiên, đan dược) lên `o` không: còn sống, và không đang độ kiếp hay thử thách tâm ma
+   * (các thử thách này phải tự vượt, người khác không can thiệp). Chính mình luôn được.
+   */
+  private canAssist(p: PlayerEnt, o: PlayerEnt): boolean {
+    return o === p || (!this.isDead(o) && !o.trib && !o.trial);
+  }
+
+  /** Đạo hữu còn sống gần nhất trong `r` mét (không phải mình). */
+  private nearestAlly(p: PlayerEnt, r: number): PlayerEnt | null {
+    let best: PlayerEnt | null = null;
+    let bd = r * r;
+    for (const o of this.players.values()) {
+      if (o === p || !this.canAssist(p, o)) continue;
+      const dx = o.move.x - p.move.x;
+      const dz = o.move.z - p.move.z;
+      const d = dx * dx + dz * dz;
+      if (d <= bd) {
+        bd = d;
+        best = o;
+      }
+    }
+    return best;
+  }
+
+  /** Quái sống thứ hai nằm phía sau mục tiêu trên đường từ người đánh (biến thức xuyên). */
+  private pierceTarget(p: PlayerEnt, mon: MonEnt): MonEnt | null {
+    const dx = mon.s.x - p.move.x;
+    const dz = mon.s.z - p.move.z;
+    const len = Math.hypot(dx, dz) || 1;
+    const fx = dx / len;
+    const fz = dz / len;
+    let best: MonEnt | null = null;
+    let bd = 8 * 8;
+    for (const o of this.monsters) {
+      if (o === mon || o.state === MS_DEAD) continue;
+      const ox = o.s.x - mon.s.x;
+      const oz = o.s.z - mon.s.z;
+      const along = ox * fx + oz * fz;
+      const side = Math.abs(ox * fz - oz * fx);
+      if (along <= 0 || along > 8 || side > 2.5) continue;
+      const d = ox * ox + oz * oz;
+      if (d < bd) {
+        bd = d;
+        best = o;
+      }
+    }
+    return best;
+  }
+
+  /** Quái sống trong `r` mét quanh (x, z), trừ `except`, gần nhất trước. */
+  private monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] {
+    const out: { m: MonEnt; d: number }[] = [];
+    for (const o of this.monsters) {
+      if (o === except || o.state === MS_DEAD || o.owner) continue;
+      const d = (o.s.x - x) ** 2 + (o.s.z - z) ** 2;
+      if (d <= r * r) out.push({ m: o, d });
+    }
+    return out.sort((a, b) => a.d - b.d).map((e) => e.m);
+  }
+
+  /** Quái bị khiêu khích: vào trận ngay nếu đang rảnh. */
+  private aggroMonster(mon: MonEnt, p: PlayerEnt): void {
+    if (mon.state === MS_IDLE || (mon.state === MS_RETURN && this.homeDist(mon) < LEASH * 0.7)) {
+      this.resetAi(mon);
+      mon.target = p.sid;
+      mon.state = MS_CHASE;
+      mon.s.st = MS_CHASE;
+      mon.unreachableSince = 0;
+    }
+  }
+
+  private addHot(sid: string, perSec: number, sec: number): void {
+    // Mỗi người chỉ một dòng hồi theo thời gian từ cùng nguồn: dòng mới thay dòng cũ nếu mạnh hơn.
+    const old = this.hots.find((h) => h.sid === sid);
+    if (old && old.per > perSec && old.endAt > this.now + sec * 1000) return;
+    if (old) this.hots.splice(this.hots.indexOf(old), 1);
+    this.hots.push({ sid, nextAt: this.now + 1000, endAt: this.now + sec * 1000, per: perSec });
+  }
+
   private executeSkill(p: PlayerEnt, skill: SkillDef, targetId: string): void {
     const c = p.char;
+    const rs = resolveFor(c.meta, skill);
+    const v = rs.variant;
+    const pas = passiveOf(c.meta);
+    const healMul = pas?.healMul;
     c.mp -= skill.mp;
-    if (skill.cd > 0) p.cds.set(skill.id, this.now + skill.cd * 1000);
+    if (rs.cd > 0) p.cds.set(skill.id, this.now + rs.cd * 1000);
+    if (skill.ult) {
+      p.mth.charge = 0;
+      p.mth.lockCharge = true;
+      p.mth.dirty = true;
+    }
     p.lastCombatAt = this.now;
+    const tag = this.fxTag(p, rs);
+    const elemMul = elemDamageMul(c.stats.elemDmg, skill.elem);
+    // Chiêu gây sát thương tiêu thụ tầng: Lôi Đình tiêu kiếm ý; chiêu có hồi chiêu tiêu thế (đòn đánh thường thì không).
+    let mul = 1;
+    if (skill.kind === 'damage' || skill.kind === 'aoe') {
+      const eat = (pas?.kind === 'kiem_y' && skill.id === 'skl_loi_dinh_nhat_kiem') || (pas?.kind === 'the' && skill.cd > 0);
+      if (eat && pas) {
+        mul = stackMul(this.liveStacks(p), pas.perStack ?? 0, pas.max ?? 5);
+        p.mth.stacks = 0;
+        p.mth.dirty = true;
+      }
+    }
     switch (skill.kind) {
       case 'damage': {
         const mon = this.monById.get(targetId);
         if (!mon) break;
-        this.fx(skill.fx === 'thunder' ? { t: skill.fx, src: p.sid, dst: mon.id, sd: visualSeed() } : { t: skill.fx, src: p.sid, dst: mon.id });
+        const extra: Partial<FxMsg> = { ...tag };
+        const behind = v?.pierce ? this.pierceTarget(p, mon) : null;
+        if (behind) {
+          extra.x = behind.s.x;
+          extra.z = behind.s.z;
+        }
+        this.fx(skill.fx === 'thunder' ? { t: skill.fx, src: p.sid, dst: mon.id, sd: visualSeed(), ...extra } : { t: skill.fx, src: p.sid, dst: mon.id, ...extra });
+        if (skill.mark) {
+          const mm = skill.mark.mul + (v?.markBonus ?? 0);
+          mon.mark = { sid: p.sid, until: this.now + skill.mark.dur * 1000, mul: mm };
+          if (v?.markSpread) {
+            for (const o of this.monstersNear(mon.s.x, mon.s.z, 8, mon).slice(0, v.markSpread)) o.mark = { sid: p.sid, until: this.now + skill.mark.dur * 1000, mul: mm };
+          }
+        }
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
-        this.hitMonster(p, mon, skill.power);
-        if (skill.interrupt) this.tryInterrupt(p, mon);
+        for (const h of rs.hits) this.hitMonster(p, mon, h * mul, elemMul);
+        if (behind && v?.pierce) this.hitMonster(p, behind, rs.power * v.pierce * mul, elemMul);
+        if (v?.cleave) {
+          for (const o of this.monstersNear(mon.s.x, mon.s.z, v.cleave.r, mon)) this.hitMonster(p, o, rs.power * v.cleave.mul * mul, elemMul);
+        }
+        if (v?.trail) {
+          this.trails.push({ owner: p.sid, x: mon.s.x, z: mon.s.z, r: v.trail.r, nextAt: this.now + 1000, endAt: this.now + v.trail.dur * 1000, power: rs.power * v.trail.mul });
+        }
+        if (skill.interrupt) this.tryInterrupt(p, mon, v?.stunOnInterrupt ?? 0);
         break;
       }
       case 'aoe': {
         const mon = this.monById.get(targetId);
         if (!mon) break;
-        const r = skill.radius ?? 8;
+        const r = rs.radius ?? 8;
         const cx = mon.s.x;
         const cz = mon.s.z;
-        this.fx({ t: skill.fx, src: p.sid, dst: mon.id, x: cx, y: mon.s.y, z: cz, r, sd: visualSeed() });
+        this.fx({ t: skill.fx, src: p.sid, dst: mon.id, x: cx, y: mon.s.y, z: cz, r, sd: visualSeed(), ...tag });
         for (const o of this.monsters) {
           if (o.state === MS_DEAD) continue;
           const dx = o.s.x - cx;
           const dz = o.s.z - cz;
-          if (dx * dx + dz * dz <= r * r) this.hitMonster(p, o, skill.power);
+          if (dx * dx + dz * dz <= r * r) this.hitMonster(p, o, rs.power * mul, elemMul);
         }
         break;
       }
       case 'heal': {
-        const n = Math.round(c.mhp * skill.power);
-        c.hp = Math.min(c.mhp, c.hp + n);
-        this.fx({ t: skill.fx, src: p.sid });
-        this.host.broadcast(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
+        const base = c.mhp * rs.power;
+        const recv = 1 + c.stats.healRecv;
+        if (v?.hot) {
+          this.addHot(p.sid, healAmount(base * v.hot.totalMul, healMul) / v.hot.dur, v.hot.dur);
+        } else {
+          const n = Math.round(healAmount(base, healMul) * recv);
+          c.hp = Math.min(c.mhp, c.hp + n);
+          this.host.broadcast(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
+        }
+        this.fx({ t: skill.fx, src: p.sid, ...tag });
         break;
       }
       case 'shield': {
-        p.shield = { amount: Math.round(c.mhp * skill.power), until: this.now + (skill.duration ?? 8) * 1000 };
-        this.setFlag(p, PF_SHIELD, true);
-        this.fx({ t: skill.fx, src: p.sid, d: skill.duration ?? 8 });
+        const dur = rs.duration ?? 8;
+        const give = (o: PlayerEnt) => {
+          o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1)), until: this.now + dur * 1000 };
+          this.setFlag(o, PF_SHIELD, true);
+        };
+        give(p);
+        this.fx({ t: skill.fx, src: p.sid, d: dur, ...tag });
+        const ally = v?.ally ? this.nearestAlly(p, v.ally) : null;
+        if (ally) {
+          give(ally);
+          this.fx({ t: skill.fx, src: ally.sid, d: dur, ...tag });
+        }
         break;
       }
+      case 'taunt': {
+        const r = rs.radius ?? 12;
+        const sec = (rs.duration ?? 5) * (v?.tauntMul ?? 1);
+        this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, d: sec, ...tag });
+        for (const o of this.monstersNear(p.move.x, p.move.z, r)) {
+          o.taunt = { sid: p.sid, until: this.now + sec * 1000 * (o.def.boss ? TAUNT_BOSS_MUL : 1) };
+          this.aggroMonster(o, p);
+          this.hitMonster(p, o, rs.power * mul);
+        }
+        if (v?.tauntGuard) p.mth.setGuard(this.now, v.tauntGuard, 3);
+        break;
+      }
+      case 'guard': {
+        p.mth.setGuard(this.now, skill.reduce ?? 0.6, rs.duration ?? 6);
+        this.fx({ t: skill.fx, src: p.sid, d: rs.duration ?? 6, ...tag });
+        break;
+      }
+      case 'hot': {
+        const r = (skill.allyRadius ?? 10) * (v?.healRadiusMul ?? 1);
+        const sec = rs.duration ?? 6;
+        this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, d: sec, ...tag });
+        for (const o of this.players.values()) {
+          if (!this.canAssist(p, o)) continue;
+          if (o !== p && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
+          const total = healAmount(o.char.mhp * rs.power * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
+          this.addHot(o.sid, total / sec, sec);
+        }
+        break;
+      }
+      case 'revive': {
+        const r = skill.allyRadius ?? 14;
+        const dead = this.reviveTarget(p, r);
+        this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, ...tag });
+        if (dead) {
+          dead.char.hp = Math.max(1, Math.round(dead.char.mhp * rs.power));
+          dead.s.fl = 0;
+          dead.lastCombatAt = this.now;
+          dead.hazardWin = { until: 0, taken: 0 };
+          this.sys(dead, 'sys.revived', { name: c.name }, 'good');
+          this.fx({ t: 'respawn', src: dead.sid, v: 'revive' });
+        }
+        for (const o of this.players.values()) {
+          if (o === dead || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
+          const n = healAmount(o.char.mhp * 0.2, healMul);
+          o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
+          this.host.broadcast(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+        }
+        break;
+      }
+    }
+    if (skill.ult) {
+      p.mth.lockCharge = false;
+      p.mth.charge = 0;
     }
     this.sendCd(p);
   }
 
-  private hitMonster(p: PlayerEnt, mon: MonEnt, power: number): void {
-    const { dmg, crit } = computeDamage(p.char.atk, power, mon.defn, Math.random(), Math.random(), p.char.stats.critRate, p.char.stats.critMul);
+  /** Mỗi tick: hồi theo thời gian, vệt kiếm khí, kiếm ý/thế rụng. */
+  private tickMethods(): void {
+    const now = this.now;
+    for (let i = this.hots.length - 1; i >= 0; i--) {
+      const h = this.hots[i];
+      const o = this.players.get(h.sid);
+      if (!o || this.isDead(o) || now >= h.endAt + 5) {
+        this.hots.splice(i, 1);
+        continue;
+      }
+      while (now >= h.nextAt && h.nextAt <= h.endAt) {
+        h.nextAt += 1000;
+        const n = Math.round(h.per * (1 + o.char.stats.healRecv));
+        if (n > 0 && o.char.hp < o.char.mhp) {
+          o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
+          this.host.broadcast(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+        }
+      }
+      if (h.nextAt > h.endAt) this.hots.splice(i, 1);
+    }
+    for (let i = this.trails.length - 1; i >= 0; i--) {
+      const tr = this.trails[i];
+      const owner = this.players.get(tr.owner);
+      if (!owner || now >= tr.endAt + 5) {
+        this.trails.splice(i, 1);
+        continue;
+      }
+      while (now >= tr.nextAt && tr.nextAt <= tr.endAt) {
+        tr.nextAt += 1000;
+        for (const o of this.monstersNear(tr.x, tr.z, tr.r)) this.hitMonster(owner, o, tr.power);
+      }
+      if (tr.nextAt > tr.endAt) this.trails.splice(i, 1);
+    }
+    for (const p of this.players.values()) {
+      const m = p.mth;
+      if (m.stacks > 0 && this.liveStacks(p) === 0) {
+        m.stacks = 0;
+        m.dirty = true;
+      }
+      if (m.guardUntil && now >= m.guardUntil) {
+        m.guardUntil = 0;
+        m.guardReduce = 0;
+        m.dirty = true;
+      }
+    }
+  }
+
+  /** `mul`: hệ số sát thương hệ (linh căn, dòng phụ); không đổi việc đòn có nặng hay không (theo `power` gốc). */
+  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1): void {
+    // Dấu ấn của chính người đánh: sát thương nhân thêm (Kiếm Ảnh Phân Quang).
+    const mk = mon.mark;
+    const power = mk && mk.sid === p.sid && this.now < mk.until ? basePower * (1 + mk.mul) : basePower;
+    const { dmg, crit } = computeDamage(p.char.atk, power * mul, mon.defn, Math.random(), Math.random(), p.char.stats.critRate, p.char.stats.critMul);
     const stunned = this.now < mon.stunUntil;
     const heavy = isHeavyHit(power);
     // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
+    // Đòn không có hiệu lực (quái đã chết, đang miễn sát thương, bóng tâm ma của người khác) không cho kiếm ý/sạc.
+    const lands = mon.state !== MS_DEAD && !(mon.owner && mon.owner !== p.sid) && this.now >= mon.evadeUntil;
     this.damageMonster(mon, vulnerableDamage(dmg, stunned), p, crit, stunned || heavy, heavy);
+    if (!lands) return;
+    const pas = passiveOf(p.char.meta);
+    if (pas?.kind === 'kiem_y') this.addStack(p, pas.max ?? 5, pas.decay ?? 10);
+    // Chiêu tối thượng đang ra không tự nạp lại vòng sạc của chính nó.
+    if (!p.mth.lockCharge) this.gainCharge(p, chargeFromDealt(dmg, p.char.atk));
   }
 
   /** Chiêu ngắt trúng boss: phá chú nếu đúng cửa sổ. Mục tiêu, tầm, GCD, hồi chiêu đã kiểm ở onSkill. */
-  private tryInterrupt(p: PlayerEnt, mon: MonEnt): void {
+  private tryInterrupt(p: PlayerEnt, mon: MonEnt, extraStun = 0): void {
     const ch = mon.rules.ai.chant;
     if (!ch || !mon.chant || mon.state === MS_DEAD || this.now < mon.evadeUntil) return;
     const r = chantInterrupt(mon.chant.startAt, mon.chant.endAt, ch.open, this.now);
@@ -836,11 +1214,11 @@ export class GameSim {
     if (r !== 'ok') return;
     mon.chant = null;
     mon.chantAt = this.now + ch.cd * 1000;
-    mon.stunUntil = this.now + ch.stun * 1000;
+    mon.stunUntil = this.now + (ch.stun + extraStun) * 1000;
     mon.comboAt = 0;
     mon.comboTarget = '';
     this.setMonFlags(mon, MF_STUN, mon.stunUntil);
-    this.fx({ t: 'interrupt', src: p.sid, dst: mon.id, d: ch.stun });
+    this.fx({ t: 'interrupt', src: p.sid, dst: mon.id, d: ch.stun + extraStun });
     this.sysAll('sys.chant_broken', { name: p.char.name, boss: monsterName(mon.def.id) }, 'good');
     // Ngắt đúng lúc là nguồn lấp thanh phá thế lớn nhất.
     const ps = mon.def.posture;
@@ -949,6 +1327,8 @@ export class GameSim {
 
   damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv): void {
     if (mon.state === MS_DEAD) return;
+    // Bóng tâm ma chỉ bị chủ đánh: người khác (kể cả vùng nổ lan sang) không làm gì được.
+    if (mon.owner && p?.sid !== mon.owner) return;
     if (this.now < mon.evadeUntil) {
       this.host.broadcast(S.DMG, { dst: mon.id, n: 0 } satisfies DmgMsg);
       return;
@@ -997,12 +1377,20 @@ export class GameSim {
   }
 
   private killMonster(mon: MonEnt): void {
+    mon.mark = undefined;
+    mon.taunt = undefined;
     mon.state = MS_DEAD;
     mon.s.st = MS_DEAD;
     mon.target = '';
     this.resetAi(mon);
     if (mon.spawn) mon.respawnAt = this.now + mon.spawn.respawn * 1000;
     else mon.removeAt = this.now + 4000;
+    if (mon.owner) {
+      // Bóng tâm ma: không tu vi, không rơi đồ, không tính nhiệm vụ; chỉ báo cho hệ bình cảnh.
+      mon.threat.clear();
+      this.realm.onShadowDown(mon);
+      return;
+    }
     const xp = monsterXp(mon.level, mon.def.xpMul);
     const minShare = mon.s.mhp * 0.05;
     for (const [sid, dealt] of mon.threat) {
@@ -1031,11 +1419,19 @@ export class GameSim {
     for (const d of loot.drops) {
       if (Math.random() < d.chance) got.push({ id: d.item, n: d.min + Math.floor(Math.random() * (d.max - d.min + 1)) });
     }
+    // Trang bị đã roll (Phase 3-2): phẩm, ô, ilvl chọn ở server; dòng chính/phụ roll trong addRolled (seed vào ledger).
+    const gear = rollEquipDrops(loot.equip, ITEM_SYS, ITEMS, mon.level, Math.random);
     // Vàng luôn vào túi; vật phẩm nào không còn chỗ thì bỏ.
     const kept: { id: string; n: number }[] = [];
+    const keptGear: { id: string; q: Quality; ilvl: number }[] = [];
     let full = false;
-    p.char.tx('loot:' + mon.def.id, null, (d) => {
+    const saved = p.char.tx('loot:' + mon.def.id, null, (d) => {
       d.addGold(gold);
+      for (const g of gear) {
+        // addRolled chỉ đụng túi khi còn chỗ; hết chỗ thì món đó bỏ, bản nháp vẫn dùng được.
+        if (d.freeSlots() > 0 && d.addRolled(g.id, g.ilvl, g.q)) keptGear.push(g);
+        else full = true;
+      }
       for (const g of got) {
         const def = ITEM.get(g.id)!;
         // Kiểm tra trước để một món không vừa không làm hỏng cả bản nháp.
@@ -1045,8 +1441,14 @@ export class GameSim {
       }
       return true;
     });
+    // Ghi DB lỗi: túi/ví không đổi nên không báo gì (tránh báo Thiên phẩm giả cho cả phòng).
+    if (!saved) return;
     if (gold > 0) this.sys(p, 'sys.gold', { n: gold }, 'loot', { src: mon.id });
     for (const g of kept) this.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id, src: mon.id });
+    for (const g of keptGear) {
+      this.sys(p, 'sys.loot_gear', { item: itemName(g.id), quality: t('ui.quality.' + g.q) }, 'loot', { i: g.id, src: mon.id, q: g.q });
+      if (g.q >= 4) this.sysAll('sys.loot_heaven', { name: p.char.name, item: itemName(g.id) }, 'good');
+    }
     if (full) this.warn(p, 'sys.inv_full');
   }
 
@@ -1054,6 +1456,7 @@ export class GameSim {
     if (this.isDead(p)) return;
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
+    if (this.now < p.mth.guardUntil) n = reduceDamage(n, p.mth.guardReduce);
     if (p.shield) {
       const absorbed = Math.min(p.shield.amount, n);
       p.shield.amount -= absorbed;
@@ -1070,6 +1473,11 @@ export class GameSim {
       return;
     }
     if (!p.god) c.hp -= n;
+    if (src && c.meta.method) {
+      this.gainCharge(p, chargeFromTaken(n, c.mhp));
+      const pas = passiveOf(c.meta);
+      if (pas?.kind === 'the') this.addStack(p, pas.max ?? 5, pas.decay ?? 8);
+    }
     const msg: DmgMsg = { dst: p.sid, n, src };
     if (hv) msg.hv = true;
     this.host.broadcast(S.DMG, msg);
@@ -1085,6 +1493,9 @@ export class GameSim {
     p.s.fl = PF_DEAD;
     if (p.trib) {
       this.endTribulation(p, false, false);
+    } else if (p.trial) {
+      // Chết trong thử thách tâm ma: thua ngay, không mất tu vi (đúng lời hứa của UI), đợi 60 giây thử lại.
+      this.realm.failTrial(p, 'dead');
     } else {
       const lost = c.loseXp(DEATH_XP_LOSS);
       this.sys(p, lost > 0 ? 'sys.died' : 'sys.died_free', { n: lost }, 'bad');
@@ -1153,6 +1564,7 @@ export class GameSim {
       evadeUntil: 0,
       abilityAt: 0,
       threat: new Map(),
+      owner: '',
       slotUntil: 0,
       slotCdAt: 0,
       slotSid: '',
@@ -1402,7 +1814,7 @@ export class GameSim {
         let best: PlayerEnt | null = null;
         let bestD = def.aggro * def.aggro;
         for (const p of this.players.values()) {
-          if (this.isDead(p)) continue;
+          if (this.isDead(p) || (m.owner && p.sid !== m.owner)) continue;
           const dx = p.move.x - m.s.x;
           const dz = p.move.z - m.s.z;
           const dy = p.move.y - m.s.y;
@@ -1465,6 +1877,14 @@ export class GameSim {
       this.setMonFlags(m, 0, 0);
       m.attackAt = Math.max(m.attackAt, this.now + 600);
     }
+    if (m.taunt) {
+      const tp = this.players.get(m.taunt.sid);
+      if (this.now >= m.taunt.until || !tp || this.isDead(tp)) m.taunt = undefined;
+      else if (m.target !== tp.sid) {
+        m.target = tp.sid;
+        this.resetTargetAi(m);
+      }
+    }
     let target = this.players.get(m.target);
     if (!target || this.isDead(target)) {
       // Chuyển sang kẻ gây sát thương nhiều nhất còn sống.
@@ -1491,7 +1911,7 @@ export class GameSim {
     const dz = target.move.z - m.s.z;
     const d = Math.sqrt(dx * dx + dz * dz);
     const dy = target.move.y - m.s.y;
-    if (this.homeDist(m) > leash || d > 70) {
+    if ((!m.owner && this.homeDist(m) > leash) || d > 70) {
       m.target = '';
       this.setMonState(m, MS_RETURN);
       return;
@@ -1727,12 +2147,41 @@ export class GameSim {
     if (this.isDead(p) || p.trib || this.opts.levelId !== 'van_lam') return this.warn(p, 'sys.trib_not_now');
     if (c.level !== NGUNG_KHI_MAX) return this.warn(p, c.level > NGUNG_KHI_MAX ? 'sys.max_level' : 'sys.trib_need_xp');
     if (c.xp < xpNeed(c.level)) return this.warn(p, 'sys.trib_need_xp');
+    // Bình cảnh tầng 15 phải vượt (tâm ma hoặc Phá Cảnh Đan) trước khi độ kiếp.
+    if (c.bk < NGUNG_KHI_MAX) return this.warn(p, 'sys.bk_blocked');
     if (!c.tx('tribulation', null, (d) => d.remove(TRUC_CO_PILL, 1))) return this.warn(p, 'sys.trib_need_pill');
     if (p.meditating) this.setMeditating(p, false);
     p.trib = { endAt: this.now + TRIBULATION_DURATION * 1000, nextAt: this.now + 3000, n: 0 };
     this.setFlag(p, PF_TRIBULATION, true);
     this.sysAll('sys.trib_start', { name: c.name }, 'info');
     this.fx({ t: 'tribstart', src: p.sid, d: TRIBULATION_DURATION, sd: visualSeed() });
+  }
+
+  // ---------- bình cảnh, linh căn (P3-7; phần luật ở game/realm.ts) ----------
+
+  onBottleneck(p: PlayerEnt, msg: unknown): void {
+    this.realm.onBottleneck(p, msg);
+  }
+
+  onChangeRoot(p: PlayerEnt, msg: unknown): void {
+    this.realm.onChangeRoot(p, msg);
+  }
+
+  /** Bóng tâm ma của `p`: quái riêng, đứng trước mặt người chơi, đuổi đúng người đó. */
+  private spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }): MonEnt | null {
+    const def = MONSTER.get('mon_tam_ma');
+    if (!def) return null;
+    const x = p.move.x + Math.sin(p.s.yaw) * 7;
+    const z = p.move.z + Math.cos(p.s.yaw) * 7;
+    const m = this.spawnMonster(def, p.char.level, x, z, null);
+    m.owner = p.sid;
+    m.atk = st.atk;
+    m.defn = st.def;
+    m.s.mhp = st.hp;
+    m.s.hp = st.hp;
+    m.target = p.sid;
+    this.setMonState(m, MS_CHASE);
+    return m;
   }
 
   private tickTribulation(p: PlayerEnt): void {
@@ -1827,33 +2276,55 @@ export class GameSim {
     const it = c.inv[slot];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def) return;
-    if (isEquipSlot(def.kind)) return this.onEquip(p, { slot });
+    if (isEquipSlot(def.kind)) return this.onEquip(p, { slot, r: m.r });
     if (!def.use) return;
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
     if (!c.tx('use:' + def.id, idem, (d) => !!d.removeAt(slot, 1))) return;
     p.itemCdAt = this.now + def.use.cd * 1000;
-    if (def.use.hpPct) {
-      const n = Math.round(c.mhp * def.use.hpPct);
-      c.hp = Math.min(c.mhp, c.hp + n);
-      this.host.broadcast(S.DMG, { dst: p.sid, n, heal: true } satisfies DmgMsg);
+    // Thanh Mộc Đan Kinh: hồi phục +20%, và đan dược dùng được lên đạo hữu gần (`to` = sid).
+    const healMul = passiveOf(c.meta)?.healMul;
+    let who = p;
+    const to = (msg as { to?: unknown }).to;
+    if (healMul !== undefined && typeof to === 'string' && to !== p.sid) {
+      const o = this.players.get(to);
+      if (o && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= POTION_ALLY_RANGE) who = o;
     }
-    if (def.use.mpPct) c.mp = Math.min(c.mmp, c.mp + c.mmp * def.use.mpPct);
+    const wc = who.char;
+    if (def.use.hpPct) {
+      const n = Math.round(healAmount(Math.round(wc.mhp * def.use.hpPct), healMul) * (1 + wc.stats.healRecv));
+      wc.hp = Math.min(wc.mhp, wc.hp + n);
+      this.host.broadcast(S.DMG, { dst: who.sid, n, heal: true } satisfies DmgMsg);
+    }
+    if (def.use.mpPct) wc.mp = Math.min(wc.mmp, wc.mp + wc.mmp * def.use.mpPct * (1 + (healMul ?? 0)));
+    // Tu vi chỉ cho chính người dùng (không chuyển tu vi qua đan dược).
     if (def.use.xp) this.giveXp(p, def.use.xp);
+    if (who !== p) this.fx({ t: 'potion', src: who.sid });
     this.fx({ t: 'potion', src: p.sid });
   }
 
   onEquip(p: PlayerEnt, msg: unknown): void {
-    const slot = (msg as { slot?: unknown } | null)?.slot;
+    const m = msg as { slot?: unknown; r?: unknown } | null;
+    const slot = m?.slot;
     if (!Number.isInteger(slot) || (slot as number) < 0 || (slot as number) >= INV_SIZE || this.isDead(p)) return;
+    // Đang tâm ma: không đổi trang bị (bóng dựng theo chỉ số lúc bắt đầu).
+    if (p.trial) return this.warn(p, 'sys.busy');
+    const idem = this.idem(p, m?.r);
+    if (idem === undefined || this.now < (p.equipCdAt ?? 0)) return;
+    p.equipCdAt = this.now + 200;
     const c = p.char;
     const it = c.inv[slot as number];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def || !isEquipSlot(def.kind)) return;
     if ((def.reqLevel ?? 1) > c.level) return this.warn(p, 'sys.equip_level');
     const es = def.kind as EquipSlot;
-    const ok = c.tx('equip', null, (d) => {
+    // Đổi đồ không sinh/mất vật phẩm nên ledger ghi một dòng 'noop' có khóa idem và lý do (món vào/ra) để truy vết.
+    const prev0 = c.equip[es];
+    const ok = c.tx(`equip:${es}:${it.id}${prev0 ? '<-' + prev0.id : ''}`, idem, (d) => {
       const prev = d.equip[es];
-      const next: InvItem = { ...d.inv[slot as number]! };
+      const cur = d.inv[slot as number];
+      // Bản nháp là bản sao của túi hiện tại; kiểm lại để món ở ô đó không đổi giữa lúc đọc và lúc ghi.
+      if (!cur || cur.id !== it.id) return false;
+      const next: InvItem = { ...cur };
       // Địa/Thiên phẩm ràng buộc khi mặc (không giao dịch được nữa).
       if (next.inst && next.inst.q >= BIND_QUALITY && !next.inst.bound) next.inst = { ...next.inst, bound: true };
       d.equip[es] = next;
@@ -1864,18 +2335,27 @@ export class GameSim {
   }
 
   onUnequip(p: PlayerEnt, msg: unknown): void {
-    const es = (msg as { slot?: unknown } | null)?.slot;
+    const m = msg as { slot?: unknown; r?: unknown } | null;
+    const es = m?.slot;
     if (!isEquipSlot(es) || this.isDead(p)) return;
+    if (p.trial) return this.warn(p, 'sys.busy');
+    const idem = this.idem(p, m?.r);
+    if (idem === undefined || this.now < (p.equipCdAt ?? 0)) return;
+    p.equipCdAt = this.now + 200;
     const c = p.char;
-    if (!c.equip[es]) return;
-    const ok = c.tx('unequip', null, (d) => {
+    const worn = c.equip[es];
+    if (!worn) return;
+    const ok = c.tx(`unequip:${es}:${worn.id}`, idem, (d) => {
       const i = d.inv.findIndex((s) => !s);
-      if (i < 0) return false;
+      if (i < 0 || !d.equip[es]) return false;
       d.inv[i] = { ...d.equip[es]! };
       delete d.equip[es];
       return true;
     });
-    if (!ok) return this.warn(p, 'sys.inv_full');
+    if (!ok) {
+      if (c.txFail === 'abort') this.warn(p, 'sys.inv_full');
+      return;
+    }
     c.recalc();
   }
 
@@ -1942,7 +2422,7 @@ export class GameSim {
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def || it.n < n || def.sell <= 0) return;
     if (it.inst?.bound) return this.warn(p, 'sys.item_bound');
-    const gold = def.sell * n;
+    const gold = sellPrice(it, def) * n;
     const ok = p.char.tx('sell:' + def.id, idem, (d) => {
       if (!d.removeAt(slot, n)) return false;
       d.addGold(gold);
@@ -2020,6 +2500,92 @@ export class GameSim {
       this.sys(p, 'sys.enh_fail', undefined, 'bad');
     }
   }
+
+  // ---------- công pháp (Phase 3-5) ----------
+
+  /** Chọn lần đầu (Ngưng Khí tầng 5 trở lên, ở đâu cũng được) hoặc đổi (phải ở chỗ Lạc Vân chân nhân, tốn linh thạch). */
+  onMethod(p: PlayerEnt, msg: unknown): void {
+    const m = msg as { method?: unknown; r?: unknown } | null;
+    if (!m || typeof m.method !== 'string' || this.isDead(p) || p.casting) return;
+    const def = METHOD.get(m.method);
+    if (!def) return;
+    const c = p.char;
+    if (c.level < METHOD_UNLOCK_LEVEL) return this.warn(p, 'sys.method_low', { realm: realmName(METHOD_UNLOCK_LEVEL) });
+    if (c.meta.method === def.id) return this.warn(p, 'sys.method_same');
+    if (this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000) return this.warn(p, 'sys.method_combat');
+    if (c.meta.method) {
+      // Đổi công pháp: gặp người, tốn linh thạch, có chờ.
+      if (!this.nearNpc(p, METHOD_NPC)) return this.warn(p, 'sys.method_far', { npc: t(`npc.${METHOD_NPC}.name`) });
+      if (this.now - (c.meta.methodAt ?? 0) < METHOD_SWITCH_COOLDOWN_SEC * 1000) return this.warn(p, 'sys.method_cd');
+      const idem = this.idem(p, m.r);
+      if (idem === undefined) return;
+      const cost = methodSwitchCost(c.level);
+      if (c.gold < cost) return this.warn(p, 'sys.not_enough_gold');
+      if (!c.tx('method:switch', idem, (d) => d.spendGold(cost))) return this.warn(p, 'sys.not_enough_gold');
+    }
+    c.meta.method = def.id;
+    c.meta.methodAt = this.now;
+    p.mth.reset();
+    // Cooldown của chiêu công pháp cũ không mang sang.
+    for (const id of [...p.cds.keys()]) if (SKILL.get(id)?.method) p.cds.delete(id);
+    c.recalc();
+    c.save();
+    this.sys(p, 'sys.method_chosen', { method: t(`method.${def.id}.name`) }, 'good');
+    this.fx({ t: 'levelup', src: p.sid });
+    this.sendCd(p);
+  }
+
+  /** Chiêu mà người chơi này được phép nâng/chọn biến thức: đã mở khóa, và là chiêu chung hoặc của công pháp đang tu. */
+  private ownedSkill(p: PlayerEnt, id: unknown): SkillDef | null {
+    if (typeof id !== 'string') return null;
+    const sk = SKILL.get(id);
+    if (!sk) return null;
+    if (sk.method && p.char.meta.method !== sk.method) return null;
+    if (p.char.level < sk.unlock) return null;
+    return sk;
+  }
+
+  /** Nâng cấp chiêu: tốn Bí Tịch Tàn Quyển và linh thạch trong một giao dịch có khóa chống trùng và ghi ledger. */
+  onSkillUp(p: PlayerEnt, msg: unknown): void {
+    const m = msg as { skill?: unknown; r?: unknown } | null;
+    if (!m || this.isDead(p)) return;
+    const idem = this.idem(p, m.r);
+    if (idem === undefined) return;
+    const sk = this.ownedSkill(p, m.skill);
+    if (!sk) return this.warn(p, 'sys.skill_locked_up');
+    const c = p.char;
+    const lv = skillLevelOf(c.meta, sk.id);
+    if (lv >= MAX_SKILL_LEVEL) return this.warn(p, 'sys.skill_max');
+    const cost = skillUpgradeCost(lv + 1);
+    if (!cost) return this.warn(p, 'sys.skill_max');
+    if (c.gold < cost.gold) return this.warn(p, 'sys.skill_need');
+    // Cấp chỉ tăng nếu giao dịch ghi DB thành công (trùng khóa hoặc thiếu nguyên liệu thì không đổi gì).
+    if (!c.tx(`skillup:${sk.id}:${lv + 1}`, idem, (d) => d.remove(SKILL_SCROLL, cost.scrolls) && d.spendGold(cost.gold))) return this.warn(p, 'sys.skill_need');
+    setSkillLevel(c.meta, sk.id, lv + 1);
+    c.save();
+    p.mth.dirty = true;
+    this.sys(p, 'sys.skill_up_ok', { skill: skillName(sk.id), n: lv + 1 }, 'good');
+    this.fx({ t: 'enhance', src: p.sid });
+  }
+
+  /** Chọn biến thức A/B (từ cấp 3), đổi miễn phí khi không giao chiến. */
+  onSkillVar(p: PlayerEnt, msg: unknown): void {
+    const m = msg as { skill?: unknown; v?: unknown } | null;
+    if (!m || this.isDead(p) || p.casting || (m.v !== 'a' && m.v !== 'b')) return;
+    const sk = this.ownedSkill(p, m.skill);
+    const vars = sk ? VARIANTS[sk.id] : undefined;
+    if (!sk || !vars) return this.warn(p, 'sys.skill_locked_up');
+    const c = p.char;
+    if (!variantUnlocked(skillLevelOf(c.meta, sk.id))) return this.warn(p, 'sys.variant_low');
+    if (this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000) return this.warn(p, 'sys.variant_combat');
+    if (c.meta.skillVar?.[sk.id] === m.v) return;
+    c.meta.skillVar ??= {};
+    c.meta.skillVar[sk.id] = m.v;
+    c.save();
+    p.mth.dirty = true;
+    this.sys(p, 'sys.variant_set', { skill: skillName(sk.id), name: t(`skill.${sk.id}.var.${m.v}.name`) }, 'info');
+  }
+
 
   // ---------- NPC, nhiệm vụ ----------
 
@@ -2134,6 +2700,7 @@ export class GameSim {
       case 'level': {
         const lv = Math.max(1, Math.min(18, Number(a[1]) | 0));
         c.level = lv;
+        c.bk = initialBottleneck(lv);
         c.xp = 0;
         c.recalc();
         c.hp = c.mhp;
@@ -2181,6 +2748,23 @@ export class GameSim {
         c.hp = c.mhp;
         c.mp = c.mmp;
         return say('đã hồi đầy');
+      case 'charge': {
+        // /gm charge [0-100]: đặt vòng sạc chiêu tối thượng (mặc định đầy).
+        p.mth.charge = Math.max(0, Math.min(CHARGE_MAX, a[1] === undefined ? CHARGE_MAX : Number(a[1]) | 0));
+        p.mth.dirty = true;
+        return say('sạc = ' + p.mth.charge);
+      }
+      case 'method': {
+        // /gm method <id> [cấp chiêu]: chọn công pháp ngay (không cần tầng/NPC/linh thạch); cấp chiêu áp cho mọi chiêu mở.
+        if (!METHOD.has(a[1])) return say('method ' + [...METHOD.keys()].join(' | '));
+        c.meta.method = a[1];
+        const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, Number(a[2] ?? 1) | 0));
+        for (const sk of SKILL.values()) if (!sk.method || sk.method === a[1]) setSkillLevel(c.meta, sk.id, lv);
+        p.mth.reset();
+        c.recalc();
+        return say('method = ' + a[1] + ' cấp chiêu ' + lv);
+      }
+
       case 'dye': {
         // Thử đổi màu áo lúc đang chơi (người khác thấy qua schema); vẫn kiểm như lúc tạo nhân vật.
         const ap = parseAppearance(APPEARANCE, { g: c.appearance.g, dye: a[1] });

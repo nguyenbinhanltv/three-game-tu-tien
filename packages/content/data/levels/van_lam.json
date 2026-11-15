@@ -7,6 +7,9 @@
     { "mon": "mon_hoa_van_ho", "x": 2550, "z": 2210, "radius": 130, "count": 14, "levelMin": 8, "levelMax": 10, "respawn": 30 },
     { "mon": "mon_thach_vien", "x": 2830, "z": 2080, "radius": 130, "count": 12, "levelMin": 11, "levelMax": 13, "respawn": 35 },
     { "mon": "mon_u_minh_lang", "x": 2810, "z": 2370, "radius": 120, "count": 12, "levelMin": 13, "levelMax": 15, "respawn": 35 },
+    { "mon": "elite_huyet_nha_lang", "x": 2300, "z": 2820, "radius": 50, "count": 1, "levelMin": 7, "levelMax": 7, "respawn": 150 },
+    { "mon": "elite_xich_dien_ho", "x": 2600, "z": 2180, "radius": 50, "count": 1, "levelMin": 10, "levelMax": 10, "respawn": 150 },
+    { "mon": "elite_cu_nham_vien", "x": 2880, "z": 2120, "radius": 50, "count": 1, "levelMin": 13, "levelMax": 13, "respawn": 150 },
     { "mon": "boss_han_giao", "x": 1380, "z": 2180, "radius": 4, "count": 1, "levelMin": 15, "levelMax": 15, "respawn": 480 }
   ],
   "nodes": [

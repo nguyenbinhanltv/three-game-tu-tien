@@ -173,6 +173,20 @@ body {
     0 0 4px var(--c),
     0 0 2px #000;
 }
+.loot-fly.t3 {
+  --c: #c9a8f0;
+  box-shadow:
+    0 0 14px var(--c),
+    0 0 4px var(--c),
+    0 0 2px #000;
+}
+.loot-fly.t4 {
+  --c: #ffd45a;
+  box-shadow:
+    0 0 22px var(--c),
+    0 0 8px var(--c),
+    0 0 2px #000;
+}
 .k-btn.bag-pulse {
   animation: bag-pulse 0.42s ease-out;
 }

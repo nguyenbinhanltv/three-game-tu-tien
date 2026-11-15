@@ -12,6 +12,7 @@ import {
   QUALITY_MUL,
   rollAffixes,
   rollItemInstance,
+  sellPrice,
   seededRng,
   STAT_CAPS,
   STAT_PER_POINT,
@@ -202,5 +203,20 @@ describe('tổng chỉ số nhân vật', () => {
     const inst: ItemInst = { q: 2, ilvl: 5, main: {}, gems: [], bound: false, affixes: [{ id: 'skill_dmg', p: 'skl_a', v: 0.1 }] };
     const s = computePlayerStats(1, [{ item: { id: 'a', n: 1, inst } }, { item: { id: 'b', n: 1, inst } }]);
     expect(s.skillDmg.skl_a).toBeCloseTo(0.2);
+  });
+});
+
+describe('giá bán trang bị đã roll', () => {
+  const inst = (q: 0 | 1 | 2 | 3 | 4, ilvl: number) => ({ id: 'x', n: 1, inst: { q, ilvl, main: {}, affixes: [], gems: [], bound: false } });
+  it('đồ cũ không inst: giá mẫu; đồ roll: (3 + ilvl) × hệ số phẩm, không vượt giá mẫu', () => {
+    expect(sellPrice({ id: 'x', n: 1 }, { sell: 700 })).toBe(700);
+    expect(sellPrice(inst(0, 15), { sell: 1500 })).toBe(18);
+    expect(sellPrice(inst(4, 16), { sell: 1500 })).toBe(33);
+    expect(sellPrice(inst(0, 15), { sell: 8 })).toBe(8);
+    expect(sellPrice(inst(2, 12), { sell: 0 })).toBe(0);
+  });
+  it('phẩm cao và ilvl cao bán được nhiều hơn', () => {
+    for (let q = 1; q < 5; q++) expect(sellPrice(inst(q as 1, 12), { sell: 9999 })).toBeGreaterThan(sellPrice(inst((q - 1) as 0, 12), { sell: 9999 }));
+    expect(sellPrice(inst(2, 15), { sell: 9999 })).toBeGreaterThan(sellPrice(inst(2, 5), { sell: 9999 }));
   });
 });

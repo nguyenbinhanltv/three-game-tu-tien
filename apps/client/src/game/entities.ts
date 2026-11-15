@@ -225,11 +225,12 @@ export class MonVis {
     }
     const def = this.model.def;
     const d = this.s.lv - myLevel;
-    const color = def.boss ? '#ffb347' : d >= 3 ? '#ff6b5e' : d >= 1 ? '#ffd166' : d <= -5 ? '#9aa3ad' : '#f2f2f2';
-    this.label = makeLabel(monsterName(def.id), color, t('ui.level_short', { n: this.s.lv }), '#c9d4de');
+    const color = def.boss ? '#ffb347' : def.elite ? '#7fd4ff' : d >= 3 ? '#ff6b5e' : d >= 1 ? '#ffd166' : d <= -5 ? '#9aa3ad' : '#f2f2f2';
+    this.label = makeLabel(def.elite ? `${monsterName(def.id)} · ${t('ui.monster.elite')}` : monsterName(def.id), color, t('ui.level_short', { n: this.s.lv }), '#c9d4de');
     this.label.position.y = this.model.height / def.scale + 0.95;
     this.label.scale.multiplyScalar(1 / def.scale);
     if (def.boss) this.label.scale.multiplyScalar(1.8);
+    else if (def.elite) this.label.scale.multiplyScalar(1.25);
     this.model.root.add(this.label);
     this.lv = this.s.lv;
   }
@@ -324,6 +325,8 @@ export class EntityManager {
   private skins = new MonsterSkins();
   /** Dựng model người chơi (Thanh Phong có xương hoặc khối dự phòng), màu áo theo lựa chọn. */
   private playerSkins = new PlayerSkins();
+  /** Ngoại hình của mình: bóng tâm ma dựng theo đây (chỉ người độ mới thấy gần, và là bóng của chính mình). */
+  private localLook: PlayerLook = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
   /** Dựng model NPC (có xương theo id dữ liệu hoặc khối dự phòng). */
   private npcSkins = new NpcSkins();
   hasNpcs: boolean;
@@ -339,6 +342,10 @@ export class EntityManager {
     scene.add(this.group);
     this.skins.preload();
     this.playerSkins.preload();
+    this.skins.shadow = {
+      create: (def) => this.playerSkins.createShadow(this.localLook, def),
+      pending: () => this.playerSkins.shadowPending(this.localLook),
+    };
     // Bí cảnh có boss model xương: nạp ngay khi vào room (trước đó chỉ nạp khi boss hiện ra giữa trận).
     if (levelId === 'kiem_trung') this.skins.preloadLazy();
     this.hasNpcs = levelId === 'van_lam';
@@ -435,6 +442,7 @@ export class EntityManager {
       }
       v.s = s;
       const look = lookOf(s);
+      if (isLocal) this.localLook = look;
       const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         v.skinPending = this.playerSkins.pending(look);

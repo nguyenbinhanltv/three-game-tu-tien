@@ -1,0 +1,279 @@
+/* ---------- bảng Công pháp (3-5) ---------- */
+.mp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 8px 0;
+}
+.mp-card {
+  --mc: var(--k-jade);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  text-align: left;
+  color: var(--k-text);
+  background: linear-gradient(180deg, rgba(26, 41, 56, 0.9), rgba(14, 23, 34, 0.94));
+  border: 1px solid var(--k-edge-dim);
+  border-left: 3px solid var(--mc);
+  cursor: pointer;
+  font: inherit;
+}
+.mp-card.sel {
+  border-color: var(--mc);
+  box-shadow: inset 0 0 14px -4px var(--mc);
+}
+.mp-card.cur .mp-card-name::after {
+  content: ' ✦';
+  color: var(--mc);
+}
+.mp-card-name {
+  font: 600 15px var(--k-font-serif);
+}
+.mp-card-role {
+  font-size: 11px;
+  color: var(--k-text-dim, #9aa7b4);
+}
+.mp-detail {
+  --mc: var(--k-jade);
+  padding: 8px 10px;
+  border: 1px solid var(--k-edge-dim);
+  border-left: 3px solid var(--mc);
+  background: rgba(10, 18, 28, 0.55);
+  display: grid;
+  gap: 6px;
+}
+.mp-passive b {
+  color: var(--mc);
+}
+.mp-pick {
+  display: flex;
+  justify-content: flex-end;
+}
+.mp-skills {
+  display: grid;
+  gap: 8px;
+  max-height: 340px;
+  overflow: auto;
+  padding-right: 4px;
+}
+.mp-skill {
+  padding: 6px 8px;
+  border: 1px solid var(--k-edge-dim);
+  background: rgba(10, 18, 28, 0.45);
+}
+.mp-skill[data-ult='1'] {
+  border-color: #b8923e;
+  background: linear-gradient(90deg, rgba(120, 90, 30, 0.22), rgba(10, 18, 28, 0.45));
+}
+.mp-skill.locked {
+  opacity: 0.55;
+}
+.mp-skill-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.mp-skill-name {
+  font-weight: 600;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.mp-facts {
+  font-size: 11px;
+  color: var(--k-gold);
+}
+.mp-pips {
+  display: inline-flex;
+  gap: 3px;
+}
+.mp-pips i {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  border: 1px solid var(--k-bronze);
+  background: transparent;
+}
+.mp-pips i.on {
+  background: var(--k-gold);
+  border-color: var(--k-gold);
+}
+.mp-up .ok {
+  color: var(--k-jade);
+  font-size: 12px;
+}
+.mp-vars {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.mp-var {
+  padding: 3px 10px;
+  color: var(--k-text);
+  font: inherit;
+  font-size: 12px;
+  background: rgba(26, 41, 56, 0.8);
+  border: 1px solid var(--k-edge-dim);
+  cursor: pointer;
+}
+.mp-var b {
+  color: var(--k-gold);
+}
+.mp-var.picked {
+  border-color: var(--k-jade);
+  box-shadow: inset 0 0 10px -3px var(--k-jade);
+}
+.mp-var:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.mp-var-lock {
+  font-size: 11px;
+}
+.mp-foot {
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* ---------- thanh chiêu 8 ô: ô công pháp, vòng sạc, kiếm ý ---------- */
+.skill[data-state='empty'] {
+  --edge: linear-gradient(180deg, #6d6a60, #46443d);
+  opacity: 0.7;
+}
+.skill[data-state='empty'] .skill-icon {
+  opacity: 0.35;
+}
+.skill-row .sep {
+  width: 1px;
+  background: var(--k-edge-dim);
+  margin: 4px 0;
+}
+.skill[data-method='1'] {
+  --edge: linear-gradient(180deg, color-mix(in srgb, var(--mc) 60%, #fff), var(--mc) 50%, color-mix(in srgb, var(--mc) 50%, #000));
+}
+/* Vòng sạc chiêu tối thượng: quầng sáng theo vòng, đầy thì nhịp sáng. */
+.skill-charge {
+  position: absolute;
+  inset: 1.5px;
+  pointer-events: none;
+  background: conic-gradient(from 0deg, color-mix(in srgb, var(--mc) 55%, transparent) calc(var(--p) * 1turn), rgba(6, 10, 18, 0.7) 0);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  mix-blend-mode: normal;
+}
+.skill[data-state='charging'] .skill-icon {
+  filter: grayscale(0.6) brightness(0.8);
+}
+.skill[data-state='ultready'] {
+  animation: ult-ready 1.1s ease-in-out infinite alternate;
+}
+.skill[data-state='ultready']::before {
+  box-shadow: inset 0 0 16px 3px color-mix(in srgb, var(--mc) 70%, transparent);
+}
+@keyframes ult-ready {
+  from {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(1.5) drop-shadow(0 0 6px var(--mc));
+  }
+}
+.skill-charge-text {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font: 700 10px var(--k-font-body);
+  color: var(--k-text);
+  text-shadow: 0 1px 2px #000;
+}
+.stack-pips {
+  --mc: var(--k-gold);
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 2px;
+  font-size: 11px;
+  color: var(--mc);
+  text-shadow: 0 1px 2px #000;
+}
+.stack-pips i {
+  width: 9px;
+  height: 9px;
+  transform: rotate(45deg);
+  border: 1px solid var(--mc);
+  background: transparent;
+  transition: background 0.12s;
+}
+.stack-pips i.on {
+  background: var(--mc);
+  box-shadow: 0 0 6px var(--mc);
+}
+
+/* ---------- thẻ chiêu tối thượng 0,6 giây ---------- */
+.ult-card {
+  --mc: #fff;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  animation: ult-card 0.6s ease-out forwards;
+  background: radial-gradient(ellipse at center, transparent 55%, color-mix(in srgb, var(--mc) 35%, transparent) 100%);
+}
+.ult-card-name {
+  margin-top: -18vh;
+  font: 700 clamp(22px, 3.2vw, 38px) var(--k-font-serif);
+  letter-spacing: 0.18em;
+  color: color-mix(in srgb, var(--mc) 70%, #fff);
+  text-shadow: 0 0 18px var(--mc), 0 2px 4px #000;
+  animation: ult-name 0.6s ease-out forwards;
+}
+@keyframes ult-card {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes ult-name {
+  0% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skill[data-state='ultready'] {
+    animation: none;
+    filter: brightness(1.3);
+  }
+  .ult-card,
+  .ult-card-name {
+    animation-duration: 0.3s;
+  }
+}
+
+/* Chưa có icon vẽ cho chiêu/vật phẩm mới (xem tools/icons/subjects.json): biểu tượng dự phòng cho vừa ô. */
+.skill-icon .content-icon.fallback {
+  font-size: 30px;
+  line-height: 44px;
+  filter: drop-shadow(0 1px 2px #000);
+}
+.k-slot .content-icon.fallback {
+  font-size: 22px;
+  line-height: 1.6;
+}

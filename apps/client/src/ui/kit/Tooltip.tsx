@@ -69,15 +69,15 @@ export function Tooltip({ content, children }: { content: ReactNode; children: R
 }
 
 /** Bố cục chuẩn cho nội dung chú giải: tên (tô màu theo phẩm), dòng phụ, các dòng chỉ số, mô tả. */
-export function TipCard({ title, rarity, sub, lines, desc }: { title: string; rarity?: number; sub?: string; lines?: { text: string; tone?: 'good' | 'bad' }[]; desc?: string }) {
+export function TipCard({ title, rarity, sub, lines, desc }: { title: string; rarity?: number; sub?: string; lines?: { text: string; tone?: 'good' | 'bad' | 'dim' }[]; desc?: string }) {
   return (
     <div>
       <div className="k-tip-title" data-q={rarity}>
         {title}
       </div>
       {sub && <div className="k-tip-sub">{sub}</div>}
-      {lines?.map((l) => (
-        <div key={l.text} className={'k-tip-line' + (l.tone ? ' ' + l.tone : '')}>
+      {lines?.map((l, i) => (
+        <div key={i} className={'k-tip-line' + (l.tone ? ' ' + l.tone : '')}>
           {l.text}
         </div>
       ))}

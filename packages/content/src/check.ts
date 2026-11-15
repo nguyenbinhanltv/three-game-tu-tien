@@ -3,8 +3,8 @@
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { AFFIX_ILVL_CAP, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
-import { APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, SKILLS, t } from './index';
+import { AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, groundAt, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, heightAt, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, WATER_Y, xpNeed } from '@dtl/shared';
+import { APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
 import { PLACE_ID, PLACES } from './places';
 
@@ -22,7 +22,9 @@ function uniqueIds(kind: string, list: { id: string }[]) {
 
 uniqueIds('item', ITEMS);
 uniqueIds('monster', MONSTERS);
-uniqueIds('skill', SKILLS);
+const ALL_SKILLS = [...SKILLS, ...METHOD_SKILLS];
+uniqueIds('skill', ALL_SKILLS);
+uniqueIds('method', METHODS);
 uniqueIds('recipe', RECIPES);
 uniqueIds('npc', NPCS);
 uniqueIds('quest', QUESTS);
@@ -30,11 +32,11 @@ uniqueIds('pose', POSES);
 for (const p of POSES) for (const m of validatePose(p)) err(m);
 const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Mỗi skill một động tác riêng, không dài quá GCD (chiêu niệm chú: động tác chém sau khi niệm xong cũng ≤ GCD).
-for (const s of SKILLS) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
-const skillPoses = SKILLS.map((s) => s.pose);
+for (const s of ALL_SKILLS) for (const m of validateSkillPose(s.id, s.pose, POSE, GCD)) err(m);
+const skillPoses = ALL_SKILLS.map((s) => s.pose);
 if (new Set(skillPoses).size !== skillPoses.length) err('hai skill dùng chung một pose');
 // Client chọn động tác theo fx của chiêu (FX của server chỉ mang loại hiệu ứng): fx phải riêng cho mỗi chiêu.
-const skillFx = SKILLS.map((s) => s.fx);
+const skillFx = ALL_SKILLS.map((s) => s.fx);
 if (new Set(skillFx).size !== skillFx.length) err('hai skill dùng chung một fx');
 for (const id of [POSE_FLY, POSE_CAST]) if (!POSE.get(id)?.loop) err(`pose ${id} (trạng thái nền) phải có và lặp`);
 for (const [id, swap] of Object.entries(POSE_SWORD_SWAP)) {
@@ -78,6 +80,58 @@ const needItem = (id: string, where: string) => {
 const needStr = (key: string) => {
   if (!hasString(key)) err(`thiếu chuỗi i18n: ${key}`);
 };
+
+// ---- công pháp (Phase 3-5): chiêu công pháp, nội tại, biến thức ----
+for (const s of SKILLS) if (s.method || s.ult) err(`skill ${s.id}: chiêu chung không có method/ult (đặt trong methods.json)`);
+for (const m of METHODS) {
+  const sig = SKILL.get(m.sig);
+  const ult = SKILL.get(m.ult);
+  if (!sig || sig.method !== m.id || sig.ult) err(`method ${m.id}: chiêu đặc trưng ${m.sig} phải thuộc công pháp và không phải tối thượng`);
+  if (!ult || ult.method !== m.id || !ult.ult) err(`method ${m.id}: chiêu tối thượng ${m.ult} phải thuộc công pháp và có ult`);
+  if (!/^[0-9a-f]{6}$/i.test(m.color)) err(`method ${m.id}: màu phải là hex 6 ký tự`);
+  if (m.passive.kind === 'kiem_y' || m.passive.kind === 'the') {
+    if (!(m.passive.max! >= 1 && m.passive.max! <= 9 && m.passive.perStack! > 0 && m.passive.decay! > 0)) err(`method ${m.id}: nội tại thiếu max/perStack/decay`);
+  }
+  needStr(`method.${m.id}.name`);
+  needStr(`method.${m.id}.desc`);
+  needStr(`method.${m.id}.passive`);
+  needStr(`method.${m.id}.role`);
+}
+for (const s of METHOD_SKILLS) {
+  if (!s.method || !METHOD.has(s.method)) err(`skill ${s.id}: công pháp không tồn tại ${s.method}`);
+  if (s.ult && (s.mp !== 0 || s.cd !== 0)) err(`skill ${s.id}: chiêu tối thượng chỉ giới hạn bằng vòng sạc (mp, cd phải 0)`);
+  if (s.kind === 'taunt' && !(s.radius! > 0 && s.duration! > 0)) err(`skill ${s.id}: khiêu khích cần radius và duration`);
+  if (s.kind === 'guard' && !(s.reduce! > 0 && s.reduce! <= 0.9 && s.duration! > 0)) err(`skill ${s.id}: giữ cần reduce (0–0,9) và duration`);
+  if ((s.kind === 'hot' || s.kind === 'revive') && !(s.allyRadius! > 0)) err(`skill ${s.id}: cần allyRadius`);
+  if (s.kind === 'hot' && !(s.duration! > 0)) err(`skill ${s.id}: hồi theo thời gian cần duration`);
+}
+for (const [id, v] of Object.entries(VARIANTS)) {
+  const sk = SKILL.get(id);
+  if (!sk) {
+    err(`variants: chiêu không tồn tại ${id}`);
+    continue;
+  }
+  if (sk.ult) err(`variants ${id}: chiêu tối thượng không có biến thức`);
+  if (v.a.id !== 'a' || v.b.id !== 'b') err(`variants ${id}: id biến thức phải là a và b`);
+  if (v.a.fx === v.b.fx) err(`variants ${id}: hai biến thức dùng chung fx`);
+  needStr(`skill.${id}.var.a.name`);
+  needStr(`skill.${id}.var.a.desc`);
+  needStr(`skill.${id}.var.b.name`);
+  needStr(`skill.${id}.var.b.desc`);
+  for (const x of [v.a, v.b]) {
+    const kindOk =
+      (x.hits || x.pierce || x.cleave || x.trail || x.stunOnInterrupt || x.markBonus || x.markSpread) ? sk.kind === 'damage' || sk.kind === 'aoe' : true;
+    if (!kindOk) err(`variants ${id}.${x.id}: tham số sát thương trên chiêu ${sk.kind}`);
+    if (x.ally && sk.kind !== 'shield') err(`variants ${id}.${x.id}: ally chỉ cho lá chắn`);
+    if (x.hot && sk.kind !== 'heal') err(`variants ${id}.${x.id}: hot chỉ cho chiêu hồi tức thì`);
+    if (x.hits && x.hits.some((h) => !(h > 0))) err(`variants ${id}.${x.id}: hits phải dương`);
+  }
+}
+for (const s of ALL_SKILLS) {
+  if (!s.ult && s.kind !== 'revive' && !VARIANTS[s.id] && !s.method) err(`skill ${s.id}: chiêu chung thiếu biến thức A/B`);
+}
+for (const id of ['itm_bi_tich_tan_quyen']) if (!ITEM.has(id)) err(`thiếu vật phẩm ${id}`);
+
 
 for (const it of ITEMS) {
   needStr(`item.${it.id}.name`);
@@ -240,7 +294,46 @@ function checkLoot(id: string, l: LootDef) {
     if (!(Number.isInteger(d.min) && Number.isInteger(d.max) && d.min >= 1 && d.max >= d.min)) err(`loot ${id}/${d.item}: min/max không hợp lệ`);
   }
 }
+function checkEquipLoot(id: string, l: LootDef) {
+  const m = MONSTER.get(id);
+  const want = !m ? undefined : m.boss ? 'boss' : m.elite ? 'elite' : undefined;
+  if (want && l.src !== want) err(`loot ${id}: src phải là '${want}'`);
+  if (!want && l.src !== 'common' && l.src !== 'dungeon') err(`loot ${id}: quái thường có src 'common' hoặc 'dungeon'`);
+  if (!l.src) return;
+  const rolls = l.equip ?? [];
+  if (!rolls.length) err(`loot ${id}: thiếu bảng rơi trang bị (equip)`);
+  const slots = droppableSlots(ITEM_SYS, ITEMS);
+  rolls.forEach((r, i) => {
+    const w = `loot ${id}/equip[${i}]`;
+    if (!(r.chance > 0 && r.chance <= 1)) err(`${w}: chance phải trong (0, 1]`);
+    if (!Array.isArray(r.q) || r.q.length !== QUALITY_COUNT || r.q.some((x) => !(x >= 0)) || !r.q.some((x) => x > 0)) err(`${w}: q phải là ${QUALITY_COUNT} trọng số >= 0, có ít nhất một số dương`);
+    for (const k of Object.keys(r.slots ?? {})) if (!slots.includes(k as EquipSlot)) err(`${w}: ô ${k} không rơi được`);
+    if (r.ilvlBonus !== undefined && !(Number.isInteger(r.ilvlBonus) && r.ilvlBonus >= 0 && r.ilvlBonus <= 3)) err(`${w}: ilvlBonus phải nguyên trong [0; 3]`);
+    const tot = r.q.reduce((a, b) => a + b, 0) || 1;
+    const lo = r.q.findIndex((x) => x > 0);
+    // Phẩm theo nguồn (thiết kế 3.2): quái thường chỉ Phàm/Linh; tinh anh từ Linh, tối đa Địa; Thiên chỉ boss.
+    const hi = r.q.reduce((a, x, k) => (x > 0 ? k : a), 0);
+    if (l.src === 'common' && hi > 1) err(`${w}: quái thường chỉ rơi Phàm/Linh phẩm`);
+    if (l.src === 'dungeon' && hi > 3) err(`${w}: bí cảnh thường chỉ rơi tới Địa phẩm`);
+    if (l.src === 'elite' && i === 0 && (hi > 3 || r.q[2] / tot < 0.3)) err(`${w}: tinh anh chủ yếu Huyền phẩm, tối đa Địa phẩm`);
+    if (l.src === 'boss' && i === 0 && lo < 2) err(`${w}: boss chỉ rơi từ Huyền phẩm`);
+  });
+  if (l.src === 'boss' && !(rolls[0]?.chance === 1)) err(`loot ${id}: boss phải chắc chắn rơi một món (equip[0].chance = 1)`);
+}
 for (const id of LOOT.keys()) if (!MONSTER.has(id)) err(`loot: quái không tồn tại ${id}`);
+for (const [id, l] of LOOT) checkEquipLoot(id, l);
+// Mọi ô có chỉ số phải có mẫu để rơi ở mọi ilvl >= 1.
+for (const s of ITEM_SYS.slots) {
+  if (s.weight > 0 && templatesFor(ITEMS, s.id, 1).length === 0) err(`ô ${s.id}: thiếu mẫu có reqLevel <= 1 để rơi ở ilvl 1`);
+}
+// Tinh anh: máu gấp ~4 quái thường cùng loài, có ít nhất một kỹ năng riêng, có tên và biệt hiệu.
+for (const m of MONSTERS) {
+  if (!m.elite) continue;
+  if (m.boss) err(`monster ${m.id}: elite và boss loại trừ nhau`);
+  if (!(m.hpMul >= 4)) err(`monster ${m.id}: tinh anh phải có hpMul >= 4`);
+  if (!(m.ai?.caster || m.ai?.slam || m.ai?.sweep || m.ai?.chant)) err(`monster ${m.id}: tinh anh cần một kỹ năng riêng (caster/slam/sweep/chant)`);
+  needStr(`mon.${m.id}.title`);
+}
 
 for (const m of MONSTERS) {
   needStr(`mon.${m.id}`);
@@ -279,7 +372,7 @@ for (const m of MONSTERS) {
     if (!(ps.brk >= 1 && ps.brk <= 6)) err(`monster ${m.id}: posture.brk phải trong [1; 6] giây`);
   }
 }
-for (const s of SKILLS) {
+for (const s of ALL_SKILLS) {
   needStr(`skill.${s.id}.name`);
   needStr(`skill.${s.id}.desc`);
   if (s.interrupt && s.kind !== 'damage') err(`skill ${s.id}: interrupt chỉ dùng cho skill kind 'damage'`);
@@ -322,6 +415,26 @@ for (const q of QUESTS) {
   for (const i of q.rewards.items ?? []) needItem(i.id, `quest ${q.id}`);
 }
 for (const r of REALMS) needStr(r.key);
+// ---- linh căn ngũ hành và bình cảnh (P3-7) ----
+uniqueIds('root', ROOTS);
+if (ROOTS.map((r) => r.id).join() !== ROOT_IDS.join()) err(`roots.json phải đủ năm linh căn theo thứ tự ${ROOT_IDS.join(', ')}`);
+for (const r of ROOTS) {
+  needStr(`root.${r.id}.name`);
+  needStr(`root.${r.id}.desc`);
+  needStr(`elem.${r.id}`);
+  if (!(ELEMENTS as readonly string[]).includes(r.elem)) err(`root ${r.id}: hệ ${r.elem} không hợp lệ`);
+  if (!(r.elemDmg > 0 && r.elemDmg <= 0.1)) err(`root ${r.id}: elemDmg phải trong (0; 0,1] (thiết kế: +8%)`);
+  const vals = Object.values(r.stat);
+  if (vals.length !== 1 || !(vals[0]! > 0 && vals[0]! <= 0.05)) err(`root ${r.id}: đúng một chỉ số phụ, tối đa +5%`);
+}
+for (const s of SKILLS) if (s.elem !== undefined && !(ELEMENTS as readonly string[]).includes(s.elem)) err(`skill ${s.id}: elem ${s.elem} không hợp lệ`);
+needItem(PHA_CANH_PILL, 'Phá Cảnh Đan');
+if (ITEM.get(PHA_CANH_PILL)?.use) err('Phá Cảnh Đan không có `use`: chỉ dùng qua bình cảnh (server)');
+if (!RECIPES.some((r) => r.output.id === PHA_CANH_PILL)) err('thiếu công thức luyện Phá Cảnh Đan');
+if (BOTTLENECK_LEVELS.join() !== '5,10,15') err('bình cảnh phải ở tầng 5, 10, 15');
+if (!MONSTER.has('mon_tam_ma')) err('thiếu quái mon_tam_ma (bóng tâm ma của thử thách bình cảnh)');
+if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
+for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);
 for (const lv of Object.values(LEVELS)) {
   for (const s of lv.spawns) {
     if (!MONSTER.has(s.mon)) err(`level ${lv.id}: quái không tồn tại ${s.mon}`);
@@ -343,7 +456,7 @@ for (const pl of PLACES) {
 let total = 0;
 for (let l = 1; l <= 15; l++) total += xpNeed(l);
 console.log(`Tổng tu vi Ngưng Khí 1 → viên mãn tầng 15: ${total}`);
-console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${SKILLS.length} skill, ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose, ${APPEARANCE.dyes.length} màu áo`);
+console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILLS.length} skill (${METHODS.length} công pháp), ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose, ${APPEARANCE.dyes.length} màu áo`);
 
 if (errors.length) {
   console.error(`\n${errors.length} lỗi nội dung:`);

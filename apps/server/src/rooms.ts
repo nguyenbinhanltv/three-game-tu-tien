@@ -13,6 +13,7 @@ import {
   S,
   SPAWN_POINT,
   type TransferMsg,
+  isRootId,
   parseAppearance,
   validName,
 } from '@dtl/shared';
@@ -87,11 +88,16 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.SELL, (p, m) => this.sim.onSell(p, m));
     on(C.CRAFT, (p, m) => this.sim.onCraft(p, m));
     on(C.ENHANCE, (p, m) => this.sim.onEnhance(p, m));
+    on(C.METHOD, (p, m) => this.sim.onMethod(p, m));
+    on(C.SKILL_UP, (p, m) => this.sim.onSkillUp(p, m));
+    on(C.SKILL_VAR, (p, m) => this.sim.onSkillVar(p, m));
     on(C.TALK, (p, m) => this.sim.onTalk(p, m));
     on(C.QUEST, (p, m) => this.sim.onQuest(p, m));
     on(C.CHAT, (p, m) => this.sim.onChat(p, m));
     on(C.RESPAWN, (p) => this.sim.onRespawn(p));
     on(C.BREAKTHROUGH, (p) => this.sim.onBreakthrough(p));
+    on(C.BOTTLENECK, (p, m) => this.sim.onBottleneck(p, m));
+    on(C.ROOT, (p, m) => this.sim.onChangeRoot(p, m));
     on(C.PORTAL, (p) => this.onPortal(p));
     // Bỏ qua message lạ thay vì báo lỗi.
     this.onMessage('*', () => {});
@@ -106,7 +112,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
    */
   static async onAuth(_token: string, options: unknown): Promise<JoinAuth> {
     const auth = await authenticate(options);
-    const o = (options ?? {}) as { name?: unknown; dev?: unknown; session?: unknown; ap?: unknown };
+    const o = (options ?? {}) as { name?: unknown; dev?: unknown; session?: unknown; ap?: unknown; rt?: unknown };
     let charId = Character.findByAccount(auth.accountId);
     if (charId === null) {
       const wanted = auth.dev && !validName(o.name) ? o.dev : o.name;
@@ -114,7 +120,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       const name = wanted.trim();
       if (Character.nameTaken(name)) throw new ServerError(ERR_NAME_TAKEN, 'name_taken');
       // Ngoại hình chỉ nhận lúc tạo nhân vật; id lạ / giới tính chưa mở thì dùng mặc định (không báo lỗi).
-      charId = Character.create(auth.accountId, name, parseAppearance(APPEARANCE, o.ap)).id;
+      charId = Character.create(auth.accountId, name, parseAppearance(APPEARANCE, o.ap), isRootId(o.rt) ? o.rt : null).id;
       console.log(`[auth] tạo nhân vật mới: ${name}`);
     }
     const session = sessionAuth(o.session) ? (o.session as string) : issueSession(auth);
@@ -250,7 +256,7 @@ export class WorldRoom extends GameRoom {
     const dx = p.move.x - PORTAL_POS.x;
     const dz = p.move.z - PORTAL_POS.z;
     if (dx * dx + dz * dz > 14 * 14) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
-    if ((p.s.fl & PF_DEAD) !== 0 || p.trib) return this.sim.sys(p, 'sys.busy', undefined, 'bad');
+    if ((p.s.fl & PF_DEAD) !== 0 || p.trib || p.trial) return this.sim.sys(p, 'sys.busy', undefined, 'bad');
     if (p.char.level < DUNGEON_MIN_LEVEL) return this.sim.sys(p, 'sys.dungeon_level', { realm: realmName(DUNGEON_MIN_LEVEL) }, 'bad');
     dungeonTickets.set(p.char.id, Date.now() + TICKET_TTL);
     this.transfer(p, ROOM_DUNGEON);

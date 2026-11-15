@@ -5,7 +5,7 @@
 // của IP này, chạy lại cả bộ sau khoảng 1 phút.
 
 import { Client, type Room } from 'colyseus.js';
-import { C, IN_FLY, IN_UP, type InitMsg, MF_CHANT, MF_STUN, MS_DEAD, ROOM_DUNGEON, ROOM_WORLD, S } from '@dtl/shared';
+import { C, IN_FLY, rootChangeCost, IN_UP, type InitMsg, MF_CHANT, MF_STUN, MS_DEAD, ROOM_DUNGEON, ROOM_WORLD, S } from '@dtl/shared';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import net from 'node:net';
@@ -39,6 +39,16 @@ interface P {
   hp: number;
   fl: number;
   lv: number;
+}
+interface CharV {
+  xp: number;
+  xpNeed: number;
+  gold: number;
+  level: number;
+  bk: number;
+  root: string;
+  trial: number;
+  retry: number;
 }
 interface M {
   t: string;
@@ -257,6 +267,225 @@ async function main() {
   const p2 = (again.room.state as { players: Map<string, P> }).players.get(again.init.sid)!;
   check('chết rồi vào lại thì về điểm hồi sinh', Math.hypot(p2.x - 2048, p2.z - 2088) < 5 && p2.hp > 0, `(${p2.x.toFixed(0)}, ${p2.z.toFixed(0)}) hp ${p2.hp}`);
   await again.room.leave(true);
+
+  // 15. Bình cảnh, tâm ma, linh căn (P3-7): mọi thứ do server phán định, client chỉ gửi ý định.
+  {
+    const a = await join('binhcanh1');
+    const b = await join('binhcanh2');
+    let ca = null as CharV | null;
+    a.room.onMessage(S.CHAR, (c: CharV) => (ca = c));
+    let cb = null as CharV | null;
+    b.room.onMessage(S.CHAR, (c: CharV) => (cb = c));
+    const say = async (r: Room, cmd: string) => {
+      r.send(C.CHAT, { m: '/gm ' + cmd });
+      await W(900);
+    };
+    const mons = () => (a.room.state as { monsters: Map<string, M> }).monsters;
+    const shadows = () => [...mons().entries()].filter(([, m]) => m.t === 'mon_tam_ma' && m.st !== MS_DEAD);
+    const rq = () => 'r' + Math.random().toString(36).slice(2, 10);
+    await say(a.room, 'tp 2048 2088'); // DB dev lưu vị trí lần chạy trước: về sân (xa Lạc Vân) cho bài đổi linh căn từ xa
+    await say(a.room, 'level 5');
+    await say(a.room, 'heal');
+    await W(300);
+    // a. Tu vi chưa đầy: không bắt đầu được tâm ma, không dùng được đan (kể cả khi có đan).
+    await say(a.room, 'give itm_pha_canh_dan 1');
+    a.room.send(C.BOTTLENECK, { m: 'trial' });
+    a.room.send(C.BOTTLENECK, { m: 'pill', r: rq() });
+    await W(700);
+    check('tu vi chưa đầy: không mở được tâm ma, không dùng được Phá Cảnh Đan', shadows().length === 0 && ca?.level === 5 && ca?.bk === 0 && ca?.trial === 0, `lv ${ca?.level} bk ${ca?.bk}`);
+    // b. Kiểu gửi lạ không làm gì, không sập.
+    for (const m of [null, 'x', { m: 'hack' }, { m: 'pill' }, { m: 'pill', r: 5 }, { m: ['trial'] }]) a.room.send(C.BOTTLENECK, m);
+    await W(500);
+    check('lệnh bình cảnh sai kiểu bị bỏ qua', ca?.level === 5 && (await health()));
+    // c. Đầy tu vi: chủ chưa đủ điều kiện độ kiếp tầng 15 khi chưa vượt bình cảnh.
+    await say(a.room, 'level 15');
+    await say(a.room, 'xp 9999999');
+    await say(a.room, 'give itm_truc_co_dan 1');
+    a.room.send(C.BREAKTHROUGH);
+    await W(700);
+    const pa = (a.room.state as { players: Map<string, P> }).players.get(a.init.sid)!;
+    check('tầng 15 chưa vượt bình cảnh: không độ kiếp được', (pa.fl & 16) === 0 && ca?.level === 15 && ca?.bk === 10, `fl ${pa.fl} bk ${ca?.bk}`);
+    // d. Đan: dùng một viên, vượt đúng một lần; trên tầng 15 chỉ mở đường độ kiếp.
+    await say(a.room, 'give itm_pha_canh_dan 1');
+    const r1 = rq();
+    a.room.send(C.BOTTLENECK, { m: 'pill', r: r1 });
+    a.room.send(C.BOTTLENECK, { m: 'pill', r: r1 });
+    await W(900);
+    check('Phá Cảnh Đan tầng 15: bình cảnh vỡ (bk 15), vẫn Ngưng Khí 15', ca?.bk === 15 && ca?.level === 15, `lv ${ca?.level} bk ${ca?.bk}`);
+    // e. Tâm ma: người khác không đánh được bóng của mình.
+    await say(a.room, 'level 5');
+    await say(a.room, 'xp 9999999');
+    await say(b.room, 'level 5');
+    await say(b.room, 'heal');
+    a.room.send(C.BOTTLENECK, { m: 'trial' });
+    await W(900);
+    const sh = shadows()[0];
+    check('tâm ma: server dựng bóng riêng và báo thời gian', !!sh && (ca?.trial ?? 0) > 100, `bóng ${sh ? 'có' : 'không'}, còn ${ca?.trial}s`);
+    if (sh) {
+      const hp0 = sh[1].hp;
+      for (let i = 0; i < 4; i++) {
+        b.room.send(C.SKILL, { id: 'skl_phi_kiem', t: sh[0] });
+        await W(1100);
+      }
+      check('người khác không làm bóng tâm ma mất máu', (mons().get(sh[0])?.hp ?? 0) >= hp0, `${hp0} → ${mons().get(sh[0])?.hp}`);
+    }
+    // e2. Chết trong thử thách: thua ngay, KHÔNG mất tu vi, phải đợi thử lại (người chơi b, bóng của b).
+    b.room.send(C.RESPAWN); // DB dev nhớ lần chạy trước (b có thể đang trọng thương, tu vi đã tụt)
+    await W(700);
+    await say(b.room, 'level 5');
+    await say(b.room, 'heal');
+    await say(b.room, 'xp 9999999');
+    await W(5000); // b vừa ra chiêu lên bóng của a: đợi hết giao chiến (6 giây) mới mở tâm ma được
+    b.room.send(C.BOTTLENECK, { m: 'trial' });
+    await W(900);
+    const trialB = cb?.trial ?? 0;
+    await say(b.room, 'die');
+    await W(600);
+    check('chết trong tâm ma: không mất tu vi, đợi thử lại', trialB > 100 && cb?.trial === 0 && (cb?.retry ?? 0) > 30 && cb?.xp === cb?.xpNeed, `trial ${trialB} → ${cb?.trial}, retry ${cb?.retry}, xp ${cb?.xp}/${cb?.xpNeed}`);
+    // f. Chủ hạ bóng thì thắng (GM killall chạy qua damageMonster như đòn thật).
+    await say(a.room, 'killall');
+    await W(600);
+    check('hạ bóng tâm ma: vượt bình cảnh tầng 5 → tầng 6', ca?.level === 6 && ca?.bk === 5 && ca?.trial === 0, `lv ${ca?.level} bk ${ca?.bk}`);
+    // g. Đổi linh căn: sai NPC / xa NPC / root lạ / thiếu tiền đều bị từ chối.
+    const before = ca?.root;
+    await say(a.room, 'gold 100000');
+    for (const m of [
+      { npc: 'npc_chuong_mon', root: before === 'kim' ? 'moc' : 'kim', r: rq() }, // đứng xa NPC
+      { npc: 'npc_thiet_lao', root: 'kim', r: rq() }, // NPC không đổi linh căn
+      { npc: 'npc_chuong_mon', root: 'rong', r: rq() },
+      { npc: 'npc_chuong_mon', root: 'kim' }, // thiếu khóa chống trùng
+      { npc: 5, root: 'kim', r: rq() },
+    ])
+      a.room.send(C.ROOT, m);
+    await W(700);
+    check('đổi linh căn từ xa / sai NPC / root lạ / thiếu khóa bị từ chối', ca?.root === before, `${before} → ${ca?.root}`);
+    // h. Đứng cạnh Lạc Vân: đổi được, trừ đúng phí một lần; gửi lại cùng khóa không bị trừ lần hai.
+    await say(a.room, 'tp 2048 2033');
+    const want = before === 'kim' ? 'moc' : 'kim';
+    const g0 = (ca as CharV | null)?.gold ?? 0;
+    const rr = rq();
+    a.room.send(C.ROOT, { npc: 'npc_chuong_mon', root: want, r: rr });
+    await W(700);
+    const g1 = (ca as CharV | null)?.gold ?? 0;
+    const flipped = ca?.root === want;
+    a.room.send(C.ROOT, { npc: 'npc_chuong_mon', root: before, r: rr }); // cùng khóa, root khác: phải bị chặn
+    await W(700);
+    check('đổi linh căn cạnh NPC: đổi đúng, trừ phí một lần, khóa trùng bị chặn', flipped && g0 - g1 === rootChangeCost(6) && ca?.root === want && ((ca as CharV | null)?.gold ?? 0) === g1, `${before} → ${ca?.root}, linh thạch ${g0} → ${g1}`);
+    await say(a.room, 'killall');
+    await a.room.leave(true);
+    await b.room.leave(true);
+  }
+
+  // 14. Trang bị (3-2): client chỉ gửi ô túi + khóa idempotency; không giả được dòng chính/phụ, không mặc đồ không có, không spam.
+  {
+    const g = await join('trangbi' + (Date.now() % 100000));
+    await W(300);
+    let inv: { id: string; inst?: { q: number } }[] = [];
+    let equip: Record<string, { id: string; inst?: { q: number } }> = {};
+    g.room.onMessage(S.INV, (m: { inv: typeof inv; equip: typeof equip }) => {
+      inv = m.inv;
+      equip = m.equip;
+    });
+    const say = async (m: string) => {
+      g.room.send(C.CHAT, { m });
+      await W(1150); // chat có giới hạn tần suất (~1 giây)
+    };
+    await say('/gm level 15');
+    await say('/gm roll itm_thanh_phong_kiem 0 12');
+    await say('/gm roll itm_dao_bao 0 5');
+    await W(300);
+    const slot = inv.findIndex((x) => x?.id === 'itm_thanh_phong_kiem');
+    // Thiếu khóa idempotency, ô ngoài khoảng, ô trống, kiểu sai, thêm trường giả: đều không làm gì.
+    for (const bad of [{ slot }, { slot, r: 'x' }, { slot: -1, r: 'bad-0001' }, { slot: 99, r: 'bad-0002' }, { slot: 29, r: 'bad-0003' }, { slot: '0', r: 'bad-0004' }, { slot: 1.5, r: 'bad-0005' }, null, 'weapon']) {
+      g.room.send(C.EQUIP, bad);
+      await W(250);
+    }
+    check('mặc đồ thiếu khóa/ô sai bị bỏ qua', !equip.weapon && !equip.robe && inv[slot]?.id === 'itm_thanh_phong_kiem', 'slot ' + slot + ' inv ' + inv.length + ' ' + JSON.stringify(Object.keys(equip)));
+    // Gửi kèm inst giả (Thiên phẩm): server bỏ qua, món mặc vào vẫn là Phàm phẩm đã roll.
+    g.room.send(C.EQUIP, { slot, r: 'forge-0001', inst: { q: 4, ilvl: 99, main: { atk: 99999 }, affixes: [], gems: [], bound: false }, id: 'itm_tram_ta_kiem' });
+    await W(500);
+    check('inst giả từ client bị bỏ qua khi mặc đồ', equip.weapon?.id === 'itm_thanh_phong_kiem' && equip.weapon?.inst?.q === 0, JSON.stringify(equip.weapon));
+    // Cùng khóa gửi lại (mất mạng, bấm đúp): không đổi thêm lần nào.
+    const before = JSON.stringify(equip);
+    g.room.send(C.UNEQUIP, { slot: 'weapon', r: 'forge-0001' });
+    await W(500);
+    check('khóa idempotency dùng lại bị bỏ qua', JSON.stringify(equip) === before, JSON.stringify(Object.keys(equip)));
+    // Tháo ô không có đồ / tên ô lạ: không crash.
+    for (const bad of [{ slot: 'robe', r: 'un-0001' }, { slot: '__proto__', r: 'un-0002' }, { slot: 'artifact', r: 'un-0003' }, { r: 'un-0004' }]) {
+      g.room.send(C.UNEQUIP, bad);
+      await W(250);
+    }
+    // Spam mặc/tháo khác khóa: vài lần đầu có hiệu lực nhưng số dòng ledger bị chặn bởi hồi 200 ms.
+    for (let i = 0; i < 60; i++) {
+      g.room.send(i % 2 ? C.UNEQUIP : C.EQUIP, i % 2 ? { slot: 'weapon', r: 'spam-u' + i } : { slot: inv.findIndex((x) => x?.id === 'itm_thanh_phong_kiem'), r: 'spam-e' + i });
+      await W(10);
+    }
+    await W(400);
+    check('spam mặc/tháo không làm sập server', await health());
+    await g.room.leave(true);
+  }
+
+  // 14. Công pháp (P3-5): chiêu của công pháp khác, ult khi chưa sạc, nâng cấp thiếu nguyên liệu, đổi công pháp xa NPC.
+  {
+    const g = await join('kt_congphap');
+    const msgs: { k: string; p?: unknown }[] = [];
+    let method: { method: string; lv: Record<string, number>; charge: number } | null = null;
+    let gold = -1;
+    g.room.onMessage(S.SYS, (m: { k: string }) => msgs.push(m));
+    g.room.onMessage(S.METHOD, (m: { method: string; lv: Record<string, number>; charge: number }) => (method = m));
+    g.room.onMessage(S.CHAR, (c: { gold: number }) => (gold = c.gold));
+    const chat = async (m: string) => {
+      g.room.send(C.CHAT, { m });
+      await W(900);
+    };
+    await chat('/gm level 12');
+    await chat('/gm gold 5000');
+    const gold0 = gold;
+    const has = (k: string) => msgs.some((m) => m.k === k);
+    // Chưa chọn công pháp: chiêu của công pháp không ra.
+    g.room.send(C.SKILL, { id: 'skl_kim_cuong_bat_hoai' });
+    await W(300);
+    check('chiêu công pháp khi chưa chọn công pháp bị từ chối', has('sys.no_method'));
+    await W(800);
+    g.room.send(C.SKILL, { id: 'skl_tran_son_an' });
+    await W(300);
+    check('khiêu khích giả (chưa có công pháp) bị từ chối', msgs.filter((m) => m.k === 'sys.no_method').length >= 2);
+    // Nâng cấp thiếu Bí Tịch: không đổi cấp, không mất linh thạch.
+    g.room.send(C.SKILL_UP, { skill: 'skl_phi_kiem', r: 'sec-up-0001' });
+    g.room.send(C.SKILL_UP, { skill: 'skl_phi_kiem', r: 'sec-up-0001' });
+    g.room.send(C.SKILL_UP, { skill: 'skl_khong_co', r: 'sec-up-0002' });
+    g.room.send(C.SKILL_UP, { skill: { $gt: '' }, r: 'sec-up-0003' });
+    await W(600);
+    check('nâng cấp chiêu thiếu Bí Tịch bị từ chối, không mất linh thạch', gold === gold0 && !(method as { lv: Record<string, number> } | null)?.lv?.skl_phi_kiem, `vàng ${gold0} → ${gold}`);
+    // Biến thức khi chiêu chưa tới cấp 3 (warn của server giới hạn 1 lần/0,7 giây nên chờ giữa các lệnh).
+    await W(800);
+    g.room.send(C.SKILL_VAR, { skill: 'skl_phi_kiem', v: 'a' });
+    g.room.send(C.SKILL_VAR, { skill: 'skl_phi_kiem', v: '__proto__' });
+    await W(400);
+    check('chọn biến thức khi chưa đủ cấp bị từ chối', has('sys.variant_low'));
+    // Chọn công pháp (lần đầu được), rồi đổi ở xa NPC thì không được.
+    g.room.send(C.METHOD, { method: 'lac_kiem_quyet' });
+    await W(500);
+    check('chọn công pháp lần đầu ở tầng 5+ được', (method as { method: string } | null)?.method === 'lac_kiem_quyet');
+    await chat('/gm tp 2200 2400');
+    g.room.send(C.METHOD, { method: 'bat_dong_kim_than', r: 'sec-sw-0001' });
+    await W(500);
+    check('đổi công pháp xa Lạc Vân chân nhân bị từ chối', (method as { method: string } | null)?.method === 'lac_kiem_quyet' && gold === gold0);
+    // Ult khi vòng sạc chưa đầy.
+    await W(800);
+    g.room.send(C.SKILL, { id: 'skl_van_kiem_quy_tong', t: 'khong-co' });
+    await W(300);
+    check('chiêu tối thượng khi chưa đầy vòng sạc bị từ chối', has('sys.ult_not_ready'));
+    // Gửi rác vào ba message không làm sập server.
+    for (const m of [null, 7, 'x', [], { method: {} }, { skill: [], v: 1 }]) {
+      g.room.send(C.METHOD, m);
+      g.room.send(C.SKILL_UP, m);
+      g.room.send(C.SKILL_VAR, m);
+    }
+    await W(400);
+    check('message công pháp rác không làm sập server', await health());
+    await g.room.leave(true);
+  }
 
   // 13. Tham số kiểm thử ?god / ?at (M1-10): tài khoản thử dùng được; server production / có Google thì không.
   await testParamsChecks();

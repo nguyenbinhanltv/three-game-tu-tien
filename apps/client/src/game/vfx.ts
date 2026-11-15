@@ -6,7 +6,7 @@ import { SLASH_GEO, SLASH_INK, slashPhase } from '../render/vfx/slash';
 import { seedOr } from '../render/vfx/common';
 import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '../render/vfx/lightning';
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../render/vfx/ink';
-import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, type LootTier } from '../render/vfx/loot';
+import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, lootPulse, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
 import { BoltFx } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
@@ -413,8 +413,9 @@ export class Vfx {
    * với vị trí cuối: engine cho icon bay vào túi). `slot`: thứ tự món trong cùng một lần rơi, để các món
    * tỏa ra các hướng khác nhau và nảy lệch nhịp. Trả về điểm chạm đất (cho chỉ báo ngoài màn hình).
    */
-  lootDrop(from: THREE.Vector3, tier: LootTier, slot = 0, onLand?: () => void, onCollect?: (at: THREE.Vector3) => void): THREE.Vector3 {
+  lootDrop(from: THREE.Vector3, tier: LootTier, slot = 0, onLand?: () => void, onCollect?: (at: THREE.Vector3) => void, color?: number): THREE.Vector3 {
     const T = LOOT_TIERS[tier];
+    const col = color ?? T.color;
     const delay = Math.min(slot, 5) * 0.12;
     const ang = Math.random() * Math.PI * 2 + slot * 2.4;
     const dist = 0.9 + Math.random() * 0.7;
@@ -426,9 +427,9 @@ export class Vfx {
     const sy = from.y;
     const sz = from.z;
     const size = 1 + tier * 0.18;
-    const gem = this.fx(G.octa, T.color, 0.95);
+    const gem = this.fx(G.octa, col, 0.95);
     gem.visible = false;
-    const beam = this.fx(BEAM_GEO, T.color, 0, 'beam');
+    const beam = this.fx(BEAM_GEO, col, 0, 'beam');
     beam.fxA.w = Math.random() * 40;
     beam.position.set(tx, ground - 0.05, tz);
     beam.scale.set(T.radius, T.height, T.radius);
@@ -438,7 +439,7 @@ export class Vfx {
       core.position.copy(beam.position);
       core.scale.set(T.radius * 0.4, T.height * 0.75, T.radius * 0.4);
     }
-    const ring = tier > 0 ? this.fx(RING_GEO, T.color, 0) : null;
+    const ring = tier > 0 ? this.fx(RING_GEO, col, 0) : null;
     if (ring) {
       ring.rotation.x = -Math.PI / 2;
       ring.position.set(tx, ground + 0.08, tz);
@@ -467,11 +468,11 @@ export class Vfx {
           landed = true;
           onLand?.();
           _a.set(tx, gy, tz);
-          this.burst(_a, T.color, 0.5 + tier * 0.25, 0.3);
+          this.burst(_a, col, 0.5 + tier * 0.25, 0.3);
           for (let i = 0; i < T.sparks; i++) {
             const a = Math.random() * Math.PI * 2;
             const r = Math.random() * T.radius * 0.8;
-            PARTICLES.emit('glow', tx + Math.cos(a) * r, ground + 0.2, tz + Math.sin(a) * r, 0, 1.4 + Math.random() * 2.2, 0, 1 + Math.random() * 0.9, 0.09, 0.02, i & 1 ? 0xfff6dc : T.color, 0.9, -0.6, 0.6);
+            PARTICLES.emit('glow', tx + Math.cos(a) * r, ground + 0.2, tz + Math.sin(a) * r, 0, 1.4 + Math.random() * 2.2, 0, 1 + Math.random() * 0.9, 0.09, 0.02, i & 1 ? 0xfff6dc : col, 0.9, -0.6, 0.6);
           }
         }
         // Cột sáng: dâng từ chân lên trong 0,25 giây sau khi chạm đất, tan dần sau khi đồ bay đi.
@@ -480,7 +481,7 @@ export class Vfx {
           const out = tt > lift ? Math.max(0, 1 - (tt - lift) / 0.7) : 1;
           beam.fxA.x = Math.min(1.1, bt / 0.25);
           beam.fxK = Math.min(1, bt / 0.8);
-          beam.fxOpacity = T.alpha * out;
+          beam.fxOpacity = T.alpha * out * lootPulse(tier, bt);
           if (core) {
             core.fxA.x = Math.min(1.1, bt / 0.35);
             core.fxK = beam.fxK;
@@ -497,7 +498,7 @@ export class Vfx {
         if (!collected && tt >= lift) {
           collected = true;
           gem.visible = false;
-          this.burst(gem.position, T.color, 0.35, 0.2);
+          this.burst(gem.position, col, 0.35, 0.2);
           onCollect?.(gem.position);
         }
       },
@@ -609,10 +610,11 @@ export class Vfx {
   }
 
   /** Cột sáng dâng lên quanh một thực thể (lên cấp, hồi phục, hồi sinh). */
-  pillar(pos: PosFn, color: number, dur = 1.1, radius = 1.1, height = 7): void {
+  pillar(pos: PosFn, color: number, dur = 1.1, radius = 1.1, height = 7, alpha = 0.55): void {
     // Ống sáng phủ lên chính nhân vật: không bloom để không nhòe hình bóng (vòng dưới chân vẫn có).
-    const m = this.fx(TUBE_GEO, color, 0.55, 'flat');
-    const ring = this.fx(RING_GEO, color, 0.8);
+    // `alpha` thấp + bán kính nhỏ cho chiêu lớn: người chơi và quái phải luôn đọc rõ.
+    const m = this.fx(TUBE_GEO, color, alpha, 'flat');
+    const ring = this.fx(RING_GEO, color, 0.8 * Math.min(1, alpha / 0.4));
     ring.rotation.x = -Math.PI / 2;
     this.add(
       dur,
@@ -621,10 +623,10 @@ export class Vfx {
         const h = height * Math.min(1, k * 2.5);
         m.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
         m.scale.set(radius * (1 - k * 0.4), h, radius * (1 - k * 0.4));
-        m.fxOpacity = 0.55 * (1 - k * k);
+        m.fxOpacity = alpha * (1 - k * k);
         ring.position.set(_a.x, _a.y - 1.0, _a.z);
         ring.scale.setScalar(radius * (1 + k * 2.5));
-        ring.fxOpacity = 0.8 * (1 - k);
+        ring.fxOpacity = 0.8 * Math.min(1, alpha / 0.4) * (1 - k);
       },
       () => {
         this.drop(m);
@@ -722,8 +724,8 @@ export class Vfx {
   }
 
   /** Lớp linh khí hộ thể bao quanh người. */
-  shield(pos: PosFn, dur: number, stillOn: () => boolean): void {
-    const m = this.fx(G.ico1, 0x7fd8ff, 0.28);
+  shield(pos: PosFn, dur: number, stillOn: () => boolean, color = 0x7fd8ff, scale = 1, alpha = 0.28): void {
+    const m = this.fx(G.ico1, color, alpha);
     let t = 0;
     this.add(
       dur,
@@ -735,9 +737,9 @@ export class Vfx {
         }
         m.visible = true;
         m.position.copy(_a).setY(_a.y - 0.2);
-        m.scale.set(1.25, 1.5, 1.25);
+        m.scale.set(1.25 * scale, 1.5 * scale, 1.25 * scale);
         m.rotation.y = t * 1.5;
-        m.fxOpacity = 0.22 + Math.sin(t * 6) * 0.06;
+        m.fxOpacity = (alpha / 0.28) * (0.22 + Math.sin(t * 6) * 0.06);
       },
       () => this.drop(m),
     );

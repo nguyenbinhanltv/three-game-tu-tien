@@ -52,6 +52,19 @@ export interface LootDef {
   /** Linh thạch [min, max]. */
   gold: [number, number];
   drops: DropDef[];
+  /** Nguồn rơi trang bị (Phase 3-2): `common` quái thường, `elite` tinh anh, `dungeon` bí cảnh, `boss`. */
+  src?: 'common' | 'elite' | 'dungeon' | 'boss';
+  /** Các lần roll trang bị đã roll dòng chính/phụ khi quái chết (chỉ server đọc, xem `rollEquipDrops`). */
+  equip?: EquipRollDef[];
+}
+
+/** Một lần roll trang bị: xác suất, trọng số 5 phẩm (Phàm..Thiên), trọng số ô (bỏ trống = đều các ô có chỉ số). */
+export interface EquipRollDef {
+  chance: number;
+  q: number[];
+  slots?: Partial<Record<EquipSlot, number>>;
+  /** Cộng vào cấp quái để ra ilvl (Địa/Thiên của bí cảnh, boss). */
+  ilvlBonus?: number;
 }
 
 export interface MonsterDef {
@@ -68,6 +81,8 @@ export interface MonsterDef {
   attackCd: number;
   xpMul: number;
   boss?: boolean;
+  /** Tinh anh: có tên riêng, máu gấp bốn quái thường cùng loài, một kỹ năng riêng, rơi Huyền phẩm. */
+  elite?: boolean;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
   /** Chỉ boss: các pha sau pha đầu, `hp` giảm dần. */
@@ -192,7 +207,11 @@ export interface MonsterPosture {
   brk: number;
 }
 
-export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield';
+/**
+ * damage/aoe/heal/shield: 6 chiêu chung. Chiêu công pháp (Phase 3-5) thêm: `taunt` (khiêu khích quanh mình),
+ * `guard` (giảm sát thương nhận), `hot` (hồi vùng theo thời gian), `revive` (hồi sinh đồng đội gần).
+ */
+export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive';
 
 export interface SkillDef {
   id: string;
@@ -218,6 +237,20 @@ export interface SkillDef {
   pose?: string;
   /** Ngắt được chú boss đang niệm (chỉ với kind 'damage'). */
   interrupt?: boolean;
+  /** Chỉ người theo công pháp này mới dùng được (chiêu đặc trưng/tối thượng). Chiêu chung không có trường này. */
+  method?: string;
+  /** Chiêu tối thượng: cần vòng sạc đầy (không dùng linh lực/hồi chiêu để giới hạn). */
+  ult?: boolean;
+  /** Đánh dấu mục tiêu: trong `dur` giây, sát thương của người đánh dấu lên nó nhân thêm `mul`. */
+  mark?: { dur: number; mul: number };
+  /** `guard`: tỉ lệ sát thương được giảm. `taunt`: bán kính nằm ở `radius`, thời gian ở `duration`. */
+  reduce?: number;
+  /** `hot`: tổng lượng hồi (theo % máu tối đa) chia đều trong `duration`; `healAllies` bán kính hồi cho đồng đội. */
+  allyRadius?: number;
+  /** Tên hiệu ứng nâng cấp riêng (client). */
+  tint?: string;
+  /** Hệ ngũ hành của chiêu (kim/moc/thuy/hoa/tho): linh căn và dòng phụ `elem_dmg` cộng sát thương theo hệ này. */
+  elem?: string;
 }
 
 export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough';
@@ -256,6 +289,8 @@ export interface NpcDef {
   sells?: string[];
   recipes?: boolean;
   enhance?: boolean;
+  /** Đổi linh căn ở NPC này (tốn linh thạch, `rootChangeCost`). */
+  rootChange?: boolean;
 }
 
 export interface SpawnDef {
@@ -325,6 +360,14 @@ export interface CharView {
   atk: number;
   def: number;
   gold: number;
+  /** Linh căn ngũ hành (`RootId`); '' = chưa có (không xảy ra sau khi nạp). */
+  root: string;
+  /** Bình cảnh đã vượt cao nhất (0, 5, 10, 15). */
+  bk: number;
+  /** Giây còn lại của thử thách tâm ma đang chạy (0 = không có). */
+  trial: number;
+  /** Giây còn phải đợi mới thử lại thử thách (0 = thử được). */
+  retry: number;
 }
 
 export interface QuestView {

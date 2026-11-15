@@ -5,6 +5,7 @@
 import { clamp, lerp, mulberry32 } from './noise';
 import { enhanceMul, type BaseStats, playerBaseStats, CRIT_CHANCE, CRIT_MULT } from './formulas';
 import type { EquipSlot, InvItem, StatBlock } from './types';
+import type { RootDef } from './realm';
 import { EQUIP_SLOTS } from './types';
 
 /** 0 Phàm, 1 Linh, 2 Huyền, 3 Địa, 4 Thiên. */
@@ -126,6 +127,15 @@ export type ItemInstance = InvItem & { inst: ItemInst };
 
 export function isInstance(it: InvItem | null | undefined): it is ItemInstance {
   return !!it?.inst;
+}
+
+// ---------- giá bán ----------
+
+/** Giá bán một đơn vị cho NPC. Trang bị đã roll: (3 + ilvl) × hệ số phẩm, không vượt giá mẫu; còn lại: giá mẫu. Server (`onSell`) và client dùng chung. */
+export function sellPrice(item: InvItem, def: { sell: number }): number {
+  if (!item.inst) return def.sell;
+  if (def.sell <= 0) return 0;
+  return Math.min(def.sell, Math.max(1, Math.round((3 + item.inst.ilvl) * (QUALITY_MUL[item.inst.q] ?? 1))));
 }
 
 // ---------- ngân sách ----------
@@ -304,9 +314,9 @@ export interface EquippedEntry {
 
 /**
  * Tổng chỉ số từ cảnh giới + các ô đang mặc. Công thức: cộng phẳng (dòng chính × cường hóa), rồi nhân phần trăm.
- * Đồ cũ (không `inst`) cộng đúng như trước nên nhịp lên cấp không đổi. Bộ trang bị, linh căn, công pháp cộng ở đợt sau.
+ * Đồ cũ (không `inst`) cộng đúng như trước nên nhịp lên cấp không đổi. Linh căn cộng ở đây (P3-7); bộ trang bị, công pháp cộng ở đợt sau.
  */
-export function computePlayerStats(level: number, equipped: EquippedEntry[]): PlayerStats {
+export function computePlayerStats(level: number, equipped: EquippedEntry[], root?: RootDef | null): PlayerStats {
   const b = playerBaseStats(level);
   let hp = b.hp;
   let mp = b.mp;
@@ -351,6 +361,15 @@ export function computePlayerStats(level: number, equipped: EquippedEntry[]): Pl
         case 'elem_res': if (a.p) elemRes[a.p] = (elemRes[a.p] ?? 0) + a.v; break;
       }
     }
+  }
+  // Linh căn: +% sát thương hệ của mình và một chỉ số phụ nhẹ (thiết kế mục 2).
+  if (root) {
+    elemDmg[root.elem] = (elemDmg[root.elem] ?? 0) + root.elemDmg;
+    atkPct += root.stat.atkPct ?? 0;
+    defPct += root.stat.defPct ?? 0;
+    mpPct += root.stat.mpPct ?? 0;
+    critRate += root.stat.critRate ?? 0;
+    healRecv += root.stat.healRecv ?? 0;
   }
   return {
     hp: Math.round(hp * (1 + hpPct)),

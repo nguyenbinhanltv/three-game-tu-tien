@@ -3,6 +3,12 @@ import { and, eq } from 'drizzle-orm';
 import {
   type Appearance,
   appearanceFromDb,
+  bottleneckBlocked,
+  initialBottleneck,
+  isRootId,
+  levelAfterBottleneck,
+  ROOT_IDS,
+  type RootId,
   type CharView,
   computePlayerStats,
   EQUIP_SLOTS,
@@ -28,10 +34,11 @@ import {
   SPAWN_POINT,
   xpNeed,
 } from '@dtl/shared';
-import { APPEARANCE, ITEM, ITEM_SYS, QUEST } from '@dtl/content';
-import { characters, db, items, ledger } from '../db';
+import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT } from '@dtl/content';
+import { characters, db, items, ledger, rootForName } from '../db';
+import { methodDefMul, sanitizeMethodMeta, type MethodMeta } from './method';
 
-export interface CharMeta {
+export interface CharMeta extends MethodMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
   dungeonDay?: string;
 }
@@ -45,6 +52,8 @@ export class InvDraft {
   /** Seed các lần roll trong bản nháp này; ghi vào lý do ledger để truy vết/tái hiện. */
   rollSeeds: string[] = [];
   goldDelta = 0;
+  /** Linh căn mới (đổi ở NPC); ghi cùng transaction với phí linh thạch. */
+  root: RootId | '' = '';
 
   constructor(c: Character) {
     this.inv = c.inv.map((s) => (s ? { ...s } : null));
@@ -194,6 +203,14 @@ export class Character {
   /** Ngoại hình đã kiểm (server quyết định; client chỉ gửi lựa chọn lúc tạo nhân vật). */
   appearance: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
 
+  /** Linh căn ngũ hành (`RootId`), gán lúc tạo nhân vật hoặc migration; đổi ở NPC (tx). */
+  root: RootId = 'kim';
+  /** Bình cảnh đã vượt cao nhất (0, 5, 10, 15). Tu vi chỉ tràn qua tầng 5/10/15 khi đã vượt. */
+  bk = 0;
+  /** Thử thách tâm ma: lúc kết thúc (ms; 0 = không chạy) và lúc được thử lại (ms). Không lưu DB. */
+  trialEndsAt = 0;
+  retryAt = 0;
+
   mhp = 1;
   mmp = 0;
   atk = 1;
@@ -217,7 +234,7 @@ export class Character {
   }
 
   /** `appearance` phải đã qua `parseAppearance` (rooms.ts); null = mặc định. */
-  static create(accountId: number, name: string, appearance: Appearance | null = null): Character {
+  static create(accountId: number, name: string, appearance: Appearance | null = null, root: RootId | null = null): Character {
     const base = playerBaseStats(1);
     const row = db
       .insert(characters)
@@ -234,6 +251,8 @@ export class Character {
         z: SPAWN_POINT.z,
         room: '',
         appearance: JSON.stringify(appearance ?? { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye }),
+        // Người chơi chọn thì theo, không thì thiên ý (ngẫu nhiên thật, server quyết).
+        root: root ?? ROOT_IDS[randomInt(ROOT_IDS.length)],
         updatedAt: Date.now(),
       })
       .returning({ id: characters.id })
@@ -258,6 +277,8 @@ export class Character {
     c.z = row.z;
     c.room = row.room;
     c.appearance = appearanceFromDb(APPEARANCE, row.appearance, row.name);
+    c.root = isRootId(row.root) ? row.root : rootForName(row.name);
+    c.bk = [0, 5, 10, 15].includes(row.bk) ? row.bk : initialBottleneck(row.level);
     try {
       c.equip = sanitizeEquip(JSON.parse(row.equip));
       c.quests = JSON.parse(row.quests) as QuestView;
@@ -265,6 +286,8 @@ export class Character {
     } catch {
       /* dữ liệu hỏng: dùng mặc định */
     }
+    if (!c.meta || typeof c.meta !== 'object') c.meta = {};
+    sanitizeMethodMeta(c.meta);
     if (!c.quests || typeof c.quests.active !== 'object' || !Array.isArray(c.quests.done)) c.quests = { active: {}, done: [] };
     for (const r of db.select().from(items).where(eq(items.charId, id)).all()) {
       if (r.slot >= 0 && r.slot < INV_SIZE && ITEM.has(r.itemId)) {
@@ -288,12 +311,13 @@ export class Character {
       const e = this.equip[k];
       if (e) worn.push({ item: e, tpl: ITEM.get(e.id)?.stats });
     }
-    const st = computePlayerStats(this.level, worn);
+    const st = computePlayerStats(this.level, worn, ROOT.get(this.root));
     this.stats = st;
     this.mhp = st.hp;
     this.mmp = st.mp;
     this.atk = st.atk;
-    this.def = st.def;
+    // Nội tại Kim Thân: phòng ngự cộng thêm theo tỉ lệ.
+    this.def = Math.round(st.def * (1 + methodDefMul(this.meta)));
     if (this.hp > st.hp) this.hp = st.hp;
     if (this.mp > st.mp) this.mp = st.mp;
     this.charDirty = true;
@@ -312,6 +336,10 @@ export class Character {
       atk: this.atk,
       def: this.def,
       gold: this.gold,
+      root: this.root,
+      bk: this.bk,
+      trial: this.trialEndsAt > 0 ? Math.max(0, Math.ceil((this.trialEndsAt - Date.now()) / 1000)) : 0,
+      retry: Math.max(0, Math.ceil((this.retryAt - Date.now()) / 1000)),
     };
   }
 
@@ -326,6 +354,7 @@ export class Character {
     db.update(characters)
       .set({
         level: this.level,
+        bk: this.bk,
         xp: Math.floor(this.xp),
         hp: Math.max(0, Math.ceil(this.hp)),
         mp: Math.max(0, Math.floor(this.mp)),
@@ -380,7 +409,10 @@ export class Character {
             tx.delete(items).where(and(eq(items.charId, this.id), eq(items.slot, i))).run();
           }
         }
-        tx.update(characters).set({ gold: d.gold, equip: JSON.stringify(d.equip) }).where(eq(characters.id, this.id)).run();
+        tx.update(characters)
+          .set({ gold: d.gold, equip: JSON.stringify(d.equip), ...(d.root ? { root: d.root } : {}) })
+          .where(eq(characters.id, this.id))
+          .run();
       });
     } catch (e) {
       const msg = String((e as Error)?.message ?? e);
@@ -395,6 +427,10 @@ export class Character {
     this.inv = d.inv;
     this.equip = d.equip;
     this.gold = d.gold;
+    if (d.root && d.root !== this.root) {
+      this.root = d.root;
+      this.recalc();
+    }
     this.invDirty = true;
     this.charDirty = true;
     return true;
@@ -407,8 +443,9 @@ export class Character {
     this.xp += n;
     for (;;) {
       const need = xpNeed(this.level);
-      if (this.level === NGUNG_KHI_MAX || this.level >= MAX_LEVEL) {
-        // Viên mãn: phải độ kiếp mới lên tiếp, tu vi không vượt quá mức đầy.
+      if (this.level === NGUNG_KHI_MAX || this.level >= MAX_LEVEL || bottleneckBlocked(this.level, this.bk)) {
+        // Viên mãn hoặc kẹt bình cảnh (tầng 5/10/15 chưa vượt): phải độ kiếp / vượt bình cảnh mới lên tiếp,
+        // tu vi không vượt quá mức đầy.
         if (this.xp > need) this.xp = need;
         break;
       }
@@ -424,6 +461,24 @@ export class Character {
     }
     this.charDirty = true;
     return ups;
+  }
+
+  /**
+   * Vượt bình cảnh (thắng tâm ma hoặc dùng Phá Cảnh Đan). Server đã kiểm điều kiện. Tầng 5/10: lên một tầng, tu vi
+   * về 0 (tu vi không tràn qua bình cảnh). Tầng 15: chỉ mở đường độ kiếp, tu vi giữ đầy. Trả về tầng mới.
+   */
+  passBottleneck(): number {
+    this.bk = this.level;
+    const next = levelAfterBottleneck(this.level);
+    if (next !== this.level) {
+      this.level = next;
+      this.xp = 0;
+      this.recalc();
+      this.hp = this.mhp;
+      this.mp = this.mmp;
+    }
+    this.charDirty = true;
+    return this.level;
   }
 
   loseXp(frac: number): number {
