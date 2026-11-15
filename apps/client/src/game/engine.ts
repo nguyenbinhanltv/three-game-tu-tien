@@ -83,6 +83,7 @@ import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../in
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
+import { readTestParams } from './testParams';
 
 export interface LoginOptions {
   token?: string;
@@ -153,13 +154,14 @@ export class Game {
     if (!Game.client) throw new Error('no client');
     if (Game.session) {
       try {
-        return await Game.client.joinOrCreate(roomName, { session: Game.session });
+        // ?god đi theo mỗi lần vào room (bí cảnh, quay về); ?at chỉ áp lần vào đầu tiên.
+        return await Game.client.joinOrCreate(roomName, { session: Game.session, god: readTestParams(location.search).god });
       } catch (e) {
         if ((e as { code?: number }).code !== 4014) throw e;
         Game.session = '';
       }
     }
-    return Game.client.joinOrCreate(roomName, Game.lastLogin);
+    return Game.client.joinOrCreate(roomName, { ...Game.lastLogin, god: readTestParams(location.search).god });
   }
 
   /** Đăng nhập và vào thế giới. Lỗi được đưa lên UI qua store. */
@@ -171,7 +173,8 @@ export class Game {
     Game.session = '';
     try {
       Game.client = new Client(serverUrl());
-      const room = await Game.client.joinOrCreate(ROOM_WORLD, opts);
+      // M1-10: ?god / ?at=<địa điểm>; server chỉ nhận với tài khoản thử, tài khoản thật bị từ chối.
+      const room = await Game.client.joinOrCreate(ROOM_WORLD, { ...opts, ...readTestParams(location.search) });
       await Game.enter(room);
     } catch (e) {
       const err = e as { code?: number; message?: string };
@@ -314,6 +317,8 @@ export class Game {
   private started = false;
   private startedAt = 0;
   private frames = 0;
+  /** Số đo khung vừa vẽ, cộng dồn qua mọi pass (cho `__game.info()`). */
+  private lastRender = { drawCalls: 0, triangles: 0 };
   private hudAt = 0;
   private fpsAcc = 0;
   private fpsFrames = 0;
@@ -905,6 +910,51 @@ export class Game {
   send(type: string, msg?: unknown): void {
     if (this.leaving) return;
     this.room.send(type, msg);
+  }
+
+  /**
+   * Số đo nhanh từ console / Playwright (`__game.info()`, M1-10). Draw call và tam giác là của khung
+   * vừa vẽ, cộng dồn qua MỌI pass (bóng, cảnh, hậu kỳ), không phải chỉ pass cuối như `renderer.info` tự reset.
+   */
+  info(): {
+    backend: 'WebGPU' | 'WebGL2';
+    drawCalls: number;
+    triangles: number;
+    geometries: number;
+    textures: number;
+    frames: number;
+    room: string;
+    x: number;
+    y: number;
+    z: number;
+    hp: number;
+    players: number;
+    monsters: number;
+    lod: number[];
+    particles: number;
+  } {
+    const me = this.me();
+    // Gọi được cả lúc đang tải (trước khi start() dựng renderer/thực thể): trả số 0.
+    const r = this.renderer as THREE.WebGPURenderer | undefined;
+    const mem = r?.info.memory ?? { geometries: 0, textures: 0 };
+    const ents = this.ents as EntityManager | undefined;
+    return {
+      backend: r && isWebGPU(r) ? 'WebGPU' : 'WebGL2',
+      drawCalls: this.lastRender.drawCalls,
+      triangles: this.lastRender.triangles,
+      geometries: mem.geometries,
+      textures: mem.textures,
+      frames: this.frames,
+      room: get().room,
+      x: Math.round(this.renderPos.x * 10) / 10,
+      y: Math.round(this.renderPos.y * 10) / 10,
+      z: Math.round(this.renderPos.z * 10) / 10,
+      hp: me?.hp ?? 0,
+      players: ents?.players.size ?? 0,
+      monsters: ents?.monsters.size ?? 0,
+      lod: ents?.lodStats().lod ?? [],
+      particles: (this.vfx as Vfx | undefined)?.particles.aliveCount().total ?? 0,
+    };
   }
 
   private me(): PState | undefined {
@@ -1571,6 +1621,10 @@ export class Game {
     // toàn bộ cây, kể cả ~60 xương của mỗi nhân vật có xương.
     this.scene.updateMatrixWorld();
     this.post!.render();
+    // renderer.info không tự reset (M1-6): lúc này là tổng của MỌI pass trong khung (bóng, cảnh, hậu kỳ).
+    const ri = this.renderer.info.render;
+    this.lastRender.drawCalls = ri.drawCalls ?? ri.calls;
+    this.lastRender.triangles = ri.triangles;
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight);
     this.lootFly.update(dt);
     if (me && this.started) this.offscreen.update(this.camera, window.innerWidth, window.innerHeight, rp);

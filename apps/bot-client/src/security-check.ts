@@ -6,6 +6,12 @@
 
 import { Client, type Room } from 'colyseus.js';
 import { C, IN_FLY, IN_UP, type InitMsg, MF_CHANT, MF_STUN, MS_DEAD, ROOM_DUNGEON, ROOM_WORLD, S } from '@dtl/shared';
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import net from 'node:net';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defaultServerHttp } from './target';
 
 const HTTP = process.argv[2] ?? defaultServerHttp();
@@ -242,6 +248,9 @@ async function main() {
   check('chết rồi vào lại thì về điểm hồi sinh', Math.hypot(p2.x - 2048, p2.z - 2088) < 5 && p2.hp > 0, `(${p2.x.toFixed(0)}, ${p2.z.toFixed(0)}) hp ${p2.hp}`);
   await again.room.leave(true);
 
+  // 13. Tham số kiểm thử ?god / ?at (M1-10): tài khoản thử dùng được; server production / có Google thì không.
+  await testParamsChecks();
+
   // 12. Thân request /matchmake quá lớn bị từ chối (Colyseus gom cả thân vào bộ nhớ).
   {
     const r = await fetch(HTTP + '/matchmake/joinOrCreate/world', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dev: 'x'.repeat(64 * 1024) }) });
@@ -290,6 +299,119 @@ async function main() {
   check('server vẫn sống sau toàn bộ bài kiểm tra', await health());
   console.log(failed ? `\n${failed} mục HỎNG` : '\nTất cả đều ĐẠT');
   process.exit(failed ? 1 : 0);
+}
+
+/** Cổng TCP trống (để server tạm không đụng server của worktree khác). */
+function freePort(): Promise<number> {
+  return new Promise((res, rej) => {
+    const srv = net.createServer();
+    srv.once('error', rej);
+    srv.listen(0, '127.0.0.1', () => {
+      const port = (srv.address() as net.AddressInfo).port;
+      srv.close(() => res(port));
+    });
+  });
+}
+
+/**
+ * Dựng tạm một server với `env` (DB tạm, cổng trống), chạy `fn` rồi tắt. AUTH_DEV_BYPASS=1 luôn được bật
+ * để chứng minh chốt chặn trong config.ts thắng (giống lỡ mang .env.local lên VPS).
+ */
+async function withServer(env: Record<string, string>, fn: (http: string) => Promise<void>): Promise<void> {
+  const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'server');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-sec-'));
+  const port = await freePort();
+  const childEnv: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), DB_FILE: path.join(tmp, 'game.db'), AUTH_DEV_BYPASS: '1', ...env };
+  delete childEnv.RATE_LIMIT_EXEMPT;
+  const child = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], { cwd: serverDir, env: childEnv, stdio: ['ignore', 'pipe', 'pipe'] });
+  let log = '';
+  child.stdout.on('data', (d) => (log += d));
+  child.stderr.on('data', (d) => (log += d));
+  const http = `http://127.0.0.1:${port}`;
+  try {
+    let up = false;
+    for (let i = 0; i < 60 && !up && child.exitCode === null; i++) {
+      await W(500);
+      up = await fetch(http + '/health').then((r) => r.ok, () => false);
+    }
+    if (!up) throw new Error(`server tạm không lên (${JSON.stringify(env)}):
+${log.slice(-800)}`);
+    await fn(http);
+  } finally {
+    child.kill();
+    await new Promise((r) => (child.exitCode !== null ? r(null) : child.once('exit', r)));
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+async function testParamsChecks(): Promise<void> {
+  // a) Tài khoản thử trên server dev: ?at đưa tới điểm đặt tên, ?god không mất máu dù bị quái đánh.
+  {
+    const client = new Client(WS);
+    const room = await client.joinOrCreate(ROOM_WORLD, { dev: 'kiemthu_god', god: true, at: 'thung_lung' });
+    const init = await new Promise<InitMsg>((res) => room.onMessage(S.INIT, res));
+    let hits = 0;
+    room.onMessage(S.DMG, (m: { dst: string; n: number }) => {
+      if (m.dst === init.sid && m.n > 0) hits++;
+    });
+    room.onMessage('*', () => {});
+    await W(500);
+    const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
+    check('?at=thung_lung đưa tài khoản thử tới thung lũng', Math.hypot(me().x - 2048, me().z - 2455) < 3, `(${me().x.toFixed(0)}, ${me().z.toFixed(0)})`);
+    room.send(C.CHAT, { m: '/gm spawn mon_soi_xam 4' });
+    await W(900);
+    room.send(C.CHAT, { m: '/gm tp 2048 2455' });
+    let low = me().hp;
+    const mhp = me().hp;
+    for (let i = 0; i < 16; i++) {
+      await W(500);
+      low = Math.min(low, me().hp);
+    }
+    check('?god: bị đánh nhưng không mất máu', hits > 0 && low === mhp, `${hits} đòn trúng, máu thấp nhất ${low}/${mhp}`);
+    room.send(C.CHAT, { m: '/gm killall' });
+    await W(300);
+    await room.leave(true);
+  }
+
+  // b) ?at lạ / sai kiểu không làm gì (và không làm sập room).
+  for (const at of ['__proto__', 'khong_co', { x: 1 }, 'a'.repeat(5000)]) {
+    let ok = false;
+    try {
+      const r = await new Client(WS).joinOrCreate(ROOM_WORLD, { dev: 'kiemthu_at', at });
+      const init = await new Promise<InitMsg>((res) => r.onMessage(S.INIT, res));
+      r.onMessage('*', () => {});
+      await W(300);
+      const p = (r.state as { players: Map<string, P> }).players.get(init.sid);
+      ok = !!p && Number.isFinite(p.x);
+      await r.leave(true);
+    } catch {
+      ok = true; // bị từ chối hẳn cũng được
+    }
+    check(`?at không hợp lệ bị bỏ qua (${JSON.stringify(at).slice(0, 20)})`, ok && (await health()));
+  }
+
+  // c) Server production / đã cấu hình Google (kể cả lỡ để AUTH_DEV_BYPASS=1): đăng nhập thử kèm ?god/?at
+  //    và token giả kèm ?god/?at đều bị từ chối, không có đường tắt.
+  //    Tài khoản Google thật xin ?god/?at bị bỏ qua: xem apps/server/src/testflags.test.ts (cần token thật mới chạy được ở đây).
+  const envs: Record<string, string>[] = [{ GOOGLE_CLIENT_ID: 'security-check.apps.googleusercontent.com' }, { NODE_ENV: 'production', GOOGLE_CLIENT_ID: '' }];
+  for (const env of envs) {
+    const tag = env.NODE_ENV ? 'NODE_ENV=production' : 'có GOOGLE_CLIENT_ID';
+    await withServer(env, async (http) => {
+      const ws = http.replace(/^http/, 'ws');
+      for (const opts of [{ dev: 'kiemthu', god: true, at: 'boss' }, { token: 'a.b.c', god: true, at: 'boss' }]) {
+        let code: number | undefined;
+        let joined = false;
+        try {
+          const r = await new Client(ws).joinOrCreate(ROOM_WORLD, opts);
+          joined = true;
+          await r.leave(true);
+        } catch (e) {
+          code = (e as { code?: number }).code;
+        }
+        check(`${tag}: ${opts.dev ? 'đăng nhập thử' : 'token giả'} kèm ?god/?at bị từ chối`, !joined, `mã ${code}`);
+      }
+    });
+  }
 }
 
 main().catch((e) => {

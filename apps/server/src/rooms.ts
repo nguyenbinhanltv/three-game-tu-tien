@@ -22,6 +22,7 @@ import { config } from './config';
 import { Character } from './game/character';
 import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions } from './game/sim';
 import { WorldState } from './state';
+import { readTestFlags, testAccess } from './testflags';
 
 interface JoinAuth extends AuthResult {
   charId: number;
@@ -128,7 +129,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   /** Chỉnh nhân vật trước khi đưa vào thế giới (ví dụ: vị trí khi vừa rời bí cảnh). */
   prepareChar(_char: Character): void {}
 
-  onJoin(client: Client, _options: unknown, auth: JoinAuth): void {
+  onJoin(client: Client, options: unknown, auth: JoinAuth): void {
     // Đăng nhập trùng: đá phiên cũ (và lưu) trước khi nạp nhân vật.
     const prev = online.get(auth.charId);
     if (prev) {
@@ -143,10 +144,21 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     }
     const char = Character.load(auth.charId);
     this.prepareChar(char);
-    const p = this.sim.addPlayer(client, char, auth.dev, auth.session, this.noLootFor(char));
+    const dev = testAccess(auth.dev, config.devBypass);
+    const p = this.sim.addPlayer(client, char, dev, auth.session, this.noLootFor(char));
     online.set(auth.charId, { room: this, sid: client.sessionId });
     console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
+    // M1-10: ?god / ?at=<địa điểm>. Server kiểm quyền; tài khoản thật bị từ chối và được báo.
+    const tf = readTestFlags(options, auth.dev, config.devBypass);
+    if (tf.kind === 'denied') {
+      console.warn(`[join] ${char.name} xin tham số kiểm thử (?god/?at) nhưng không phải tài khoản thử: từ chối`);
+      this.sim.sys(p, 'sys.test_denied', undefined, 'bad');
+    } else if (tf.kind === 'bad_place') {
+      this.sim.sys(p, 'sys.gm', { m: `at ${tf.id}? ${this.sim.placeIds().join(' | ')}` }, 'info');
+    } else if (tf.kind === 'ok') {
+      this.sim.applyTestFlags(p, tf.flags);
+    }
   }
 
   afterJoin(_p: PlayerEnt): void {}
