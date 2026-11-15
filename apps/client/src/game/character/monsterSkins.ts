@@ -27,12 +27,21 @@ export interface MonsterSkin {
    * khác hẳn màu (Kiếm Linh dùng model Hỏa Vân Hồ).
    */
   palette?: { dark: string; light: string; glow?: string };
-  /** Dáng đi để bám địa hình (P2-E3): hai chân → IK chân; bốn chân → nghiêng thân theo dốc. */
-  legs: 'biped' | 'quad';
+  /** Dáng đi để bám địa hình (P2-E3): hai chân → IK chân; bốn chân → nghiêng thân theo dốc; không chân (rắn/giao) → không chỉnh. */
+  legs: 'biped' | 'quad' | 'none';
   /** Chỉ nạp khi quái xuất hiện lần đầu (boss trong bí cảnh), không nạp sẵn lúc vào thế giới. */
   lazy?: boolean;
+  /** Màn (levelId) có quái này; `preloadLazy(levelId)` chỉ nạp trước skin nạp lười của đúng màn (bỏ trống = không nạp trước, chỉ nạp khi quái xuất hiện). */
+  level?: string;
   /** Đòn lớn có vùng báo trước (M5-5) → clip và thời điểm chạm. */
   moves?: Partial<Record<BossMoveKind, BossMove>>;
+  /** Ép hệ số kim loại (nhân với metalnessMap của asset): 0 = không kim loại, tránh vảy tối đen khi ngược sáng không có envMap. */
+  metalness?: number;
+  /**
+   * Nâng sáng nền (ambient giả): cộng `màu texture × lift` vào emissive để mặt ngược sáng/trong bóng vẫn đọc ra màu
+   * (giao ngọc lam bạc không chìm thành xanh than). Nhỏ thì chỉ nâng bóng, lớn thì phẳng hình khối.
+   */
+  lift?: number;
   /** Lõi phát sáng: phần ngả lam của texture màu phát sáng màu `accent`; số là cường độ. */
   coreGlow?: number;
 }
@@ -49,6 +58,8 @@ const CHANT_BOSS_CLIPS: ClipMap = { ...BOSS_CLIPS, cast: 'chant' };
  */
 const QUAD_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'sweep', impact: 0.9 } };
 const BIPED_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'sweep', impact: 0.85 } };
+/** Giao (tools/blender/anim_serpent.py): slam 1,0 s (nện đầu), sweep 0,9 s (giữa quạt). */
+const SERPENT_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'sweep', impact: 0.9 } };
 
 /**
  * Bảng quái → model mới. Quái không có ở đây vẫn dùng model khối (`MonsterModel`).
@@ -80,9 +91,12 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_thach_vien: { asset: 'mon_thach_vien', clips: WOLF_CLIPS, refSpeed: 2.15, legs: 'biped', tint: '#ffffff' },
   // Boss Kiếm Trủng (M3-8). Sói chúa: naturalSpeed 3,378 theo cùng tỉ lệ với sói (→ 2,7); hai boss vượn đo chân trụ
   // clip run Tripo ở scale 1.
-  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, legs: 'quad', tint: '#ffffff', rim: 0.35, lazy: true, moves: QUAD_MOVES },
-  boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, legs: 'biped', tint: '#ffffff', coreGlow: 1.6, lazy: true, moves: BIPED_MOVES },
-  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: CHANT_BOSS_CLIPS, refSpeed: 3.1, legs: 'biped', tint: '#ffffff', lazy: true, moves: BIPED_MOVES },
+  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, legs: 'quad', tint: '#ffffff', rim: 0.35, lazy: true, level: 'kiem_trung', moves: QUAD_MOVES },
+  boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, legs: 'biped', tint: '#ffffff', coreGlow: 1.6, lazy: true, level: 'kiem_trung', moves: BIPED_MOVES },
+  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: CHANT_BOSS_CLIPS, refSpeed: 3.1, legs: 'biped', tint: '#ffffff', lazy: true, level: 'kiem_trung', moves: BIPED_MOVES },
+  // Hàn Giao (boss Hồ Sương Mù): giao băng không chân, bộ xương chuỗi 17 đốt + clip thủ tục. refSpeed 2,1 × scale 2,4 ≈ tốc độ 5 m/s
+  // của boss (clip trườn 1,0 s/chu kỳ). Viền băng nhạt theo `accent`.
+  boss_han_giao: { asset: 'boss_han_giao', clips: CHANT_BOSS_CLIPS, refSpeed: 2.1, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.3, metalness: 0, lazy: true, level: 'van_lam', moves: SERPENT_MOVES },
 };
 
 interface Template {
@@ -114,10 +128,13 @@ export class MonsterSkins {
     for (const s of Object.values(MONSTER_SKINS)) if (!s.lazy) this.load(s.asset);
   }
 
-  /** Nạp trước các asset nạp lười (boss bí cảnh) để cảnh boss xuất hiện luôn có model thật, không đổi từ model khối giữa cảnh. */
-  preloadLazy(): void {
+  /**
+   * Nạp trước các asset nạp lười của màn `levelId` (boss bí cảnh Kiếm Trủng, Hàn Giao ở thế giới) để cảnh boss xuất hiện luôn
+   * có model thật, không đổi từ model khối giữa cảnh. Skin của màn khác không được nạp (tốn băng thông và GPU vô ích).
+   */
+  preloadLazy(levelId: string): void {
     if (this.legacy) return;
-    for (const s of Object.values(MONSTER_SKINS)) if (s.lazy) this.load(s.asset);
+    for (const s of Object.values(MONSTER_SKINS)) if (s.lazy && s.level === levelId) this.load(s.asset);
   }
 
   /** Quái này sẽ có model mới nhưng asset đang nạp (tạm dùng model khối, nạp xong thì đổi). Asset lười bắt đầu nạp ở đây. */
@@ -143,7 +160,7 @@ export class MonsterSkins {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
-    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs });
+    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs === 'none' ? undefined : s.legs });
   }
 
   dispose(): void {
@@ -185,12 +202,14 @@ export class MonsterSkins {
     });
     m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
     m.color.multiply(new THREE.Color(s.tint));
+    if (s.metalness !== undefined) m.metalness = s.metalness;
     if (s.roughness) m.roughness = Math.min(1, Math.max(0, m.roughness + s.roughness));
     if (s.palette) applyPalette(m, s.palette);
-    else if (s.rim) {
+    else if (s.rim || s.lift) {
       // Viền sáng ở mép nhìn nghiêng: tách bóng sói tối khỏi nền cỏ/rừng, không cần texture.
       const facing = saturate(dot(normalView, positionViewDirection));
-      m.emissiveNode = color(new THREE.Color(def.accent)).mul(pow(float(1).sub(facing), 3).mul(s.rim));
+      const rim = color(new THREE.Color(def.accent)).mul(pow(float(1).sub(facing), 3).mul(s.rim ?? 0));
+      m.emissiveNode = s.lift ? rim.add(materialColor.rgb.mul(s.lift)) : rim;
     } else if (s.coreGlow && m.map) {
       // Lõi linh thể: chỗ texture ngả lam (xanh dương trội hơn đỏ) tự sáng màu accent; giáp xám/đồng không đổi.
       const c = texture(m.map);
