@@ -20,8 +20,15 @@ import {
   setStatuses,
   type SetTier,
   type Quality,
+  type ArtifactMsg,
+  ARTIFACT_MAX_LEVEL,
+  artifactLevelMods,
+  artifactPassive,
+  clampPillQuality,
+  pillPotency,
+  sealStun,
 } from '@dtl/shared';
-import { ITEM, realmName, SET, SETS, t } from '@dtl/content';
+import { ARTIFACT, ITEM, PILL_QUALITY, realmName, SET, SETS, t } from '@dtl/content';
 
 export interface TipLine {
   text: string;
@@ -31,7 +38,10 @@ export interface TipLine {
 
 /** Phẩm hiển thị: món đã roll theo `inst.q`, đồ cũ theo `rarity` của mẫu. */
 export function gearQuality(item: InvItem, def?: ItemDef): Quality {
-  return item.inst ? item.inst.q : legacyQuality((def ?? ITEM.get(item.id))?.rarity ?? 0);
+  const d = def ?? ITEM.get(item.id);
+  // Đan: `plus` là phẩm chất (Trung = xanh dương, Thượng = tím), không phải cường hóa.
+  if (d?.kind === 'consumable' && item.plus) return Math.min(4, 1 + clampPillQuality(item.plus)) as Quality;
+  return item.inst ? item.inst.q : legacyQuality(d?.rarity ?? 0);
 }
 
 /** 0,035 → "3,5"; bỏ số lẻ thừa. */
@@ -68,7 +78,9 @@ export function itemLines(item: InvItem, def: ItemDef): TipLine[] {
 
 /** Dòng phụ: "Huyền phẩm · Pháp kiếm · Cấp vật phẩm 12". */
 export function itemSub(item: InvItem, def: ItemDef): string {
-  const parts = [t('ui.quality.' + gearQuality(item, def)), t('ui.item.kind.' + def.kind)];
+  // Đan có phẩm riêng (Hạ/Trung/Thượng) thay cho phẩm trang bị.
+  const q = def.kind === 'consumable' && item.plus ? t('ui.pill.q' + clampPillQuality(item.plus)) : t('ui.quality.' + gearQuality(item, def));
+  const parts = [q, t('ui.item.kind.' + def.kind)];
   if (item.inst) parts.push(t('ui.item.ilvl', { n: item.inst.ilvl }));
   return parts.join(' · ');
 }
@@ -169,4 +181,43 @@ export function setLinesForItem(item: InvItem, equip: Equipment): TipLine[] {
   const sid = ITEM.get(item.id)?.set;
   const set = sid ? SET.get(sid) : undefined;
   return set ? setLines(set, equip) : [];
+}
+
+/** Dòng chú giải đan: phẩm chất, hiệu lực theo phẩm, hiệu ứng buff (P3-8). */
+export function pillLines(item: InvItem, def: ItemDef): TipLine[] {
+  if (def.kind !== 'consumable') return [];
+  const q = clampPillQuality(item.plus);
+  const out: TipLine[] = [];
+  const isQuality = !!def.use && (def.use.hpPct || def.use.mpPct || def.use.xp || def.use.buff);
+  if (!isQuality) return out;
+  const pot = pillPotency(PILL_QUALITY, q);
+  out.push({ text: t('ui.pill.quality_line', { q: t('ui.pill.q' + q), n: Math.round(pot * 100) }), tone: q > 0 ? 'good' : 'dim' });
+  const b = def.use?.buff;
+  if (b) out.push({ text: t('ui.pill.buff_line', { what: t('ui.pill.buff.' + b.kind), n: Math.round(b.pct * pot * 100), m: Math.round((b.sec * pot) / 60) }) });
+  return out;
+}
+
+/** Số liệu kỹ năng pháp bảo ở cấp `lv`, dùng cho chuỗi mô tả. */
+export function artifactParams(id: string, lv: number): Record<string, number> {
+  const def = ARTIFACT.get(id);
+  if (!def) return {};
+  return { r: def.radius, n: Math.round(def.power * artifactLevelMods(lv).powerMul * 100), s: Math.round((def.kind === 'seal' ? sealStun(def, lv) : (def.duration ?? 0)) * 10) / 10 };
+}
+
+/** Dòng chú giải pháp bảo phụ: kỹ năng, hồi chiêu, nội tại, cấp và linh khí (P3-8). `prog` chỉ có khi đang đeo. */
+export function artifactLines(def: ItemDef, prog?: ArtifactMsg): TipLine[] {
+  const a = ARTIFACT.get(def.id);
+  if (!a) return [];
+  const lv = prog?.id === def.id ? prog.lv : 1;
+  const mods = artifactLevelMods(lv);
+  const out: TipLine[] = [
+    { text: `${t('ui.art.skill')}: ${t(`art.${a.id}.skill`)}`, tone: 'good' },
+    { text: t(`art.${a.id}.skill.desc`, artifactParams(a.id, lv)), tone: 'dim' },
+    { text: t('ui.art.cd', { n: Math.round(a.cd * mods.cdMul) }) },
+  ];
+  if (a.mp) out.push({ text: t('ui.art.mp', { n: a.mp }) });
+  out.push({ text: `${t('ui.art.passive')}: ${t(`art.passive.${a.passive.kind}`, { n: Math.round(artifactPassive(a, lv) * 100) })}` });
+  out.push({ text: t('ui.art.level', { lv, max: ARTIFACT_MAX_LEVEL }) });
+  if (prog?.id === def.id) out.push({ text: prog.need > 0 ? t('ui.art.qi', { qi: prog.qi, need: prog.need }) : t('ui.art.qi_max'), tone: 'dim' });
+  return out;
 }

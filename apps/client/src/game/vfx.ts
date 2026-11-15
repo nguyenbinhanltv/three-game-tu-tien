@@ -727,7 +727,7 @@ export class Vfx {
 
   /** Lớp linh khí hộ thể bao quanh người. */
   shield(pos: PosFn, dur: number, stillOn: () => boolean, color = 0x7fd8ff, scale = 1, alpha = 0.28): void {
-    const m = this.fx(G.ico1, color, alpha, 'dome');
+    const m = this.fx(G.dome, color, alpha, 'dome');
     let t = 0;
     this.add(
       dur,
