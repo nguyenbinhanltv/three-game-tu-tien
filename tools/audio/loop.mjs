@@ -229,9 +229,11 @@ async function main() {
     try {
       const { chans, info } = await processTrack(FF, id, def, d);
       const files = [];
+      // Bitrate theo bài (music.json "bitrate": { "webm": "64k", "m4a": "80k" }), mặc định 96k/128k.
+      const br = { webm: '96k', m4a: '128k', ...(def.bitrate ?? {}) };
       for (const [kind, args] of [
-        ['webm', ['-b:a', '96k']],
-        ['m4a', ['-b:a', '128k']],
+        ['webm', ['-b:a', br.webm]],
+        ['m4a', ['-b:a', br.m4a]],
       ]) {
         const buf = encode(FF, chans, kind, args);
         files.push(`music/${hashName(MUSIC_DIR, id, kind, buf)}`);

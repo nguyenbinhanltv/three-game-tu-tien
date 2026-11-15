@@ -41,7 +41,7 @@ Id bài lặp trùng máy trạng thái nhạc (`apps/client/src/game/musicDirec
 
 Không có soundfont miễn phí nào có tiếng nhị, cổ cầm hay đàn bầu thật. Bản thay gần nhất: nhị dùng Violin/Fiddle có vuốt (pitch bend) và rung; cổ cầm/cổ tranh dùng Koto; tỳ bà vê dùng Shamisen lặp 1/8 phách; tiêu dùng Shakuhachi; sáo trúc dùng Flute/Piccolo/Pan Flute.
 
-Số đo build 2026-11-15 (trên file webm trong game): mọi bài −16,0 LUFS, đỉnh thực −1,5…−5 dBTP, 0 mẫu clip, không có đoạn lặng giữa bài, chỉ số nối 0,3–1,4 (≤ 1 tốt, > 2 dễ nghe ra). Chromium giải mã webm ra đúng số mẫu của vòng (ví dụ `sect` 6.400.000 mẫu), không có lặng đầu/cuối. Tổng nhạc ≈ 20 MB (m4a) nạp dần sau khi vào game; tải đầu không đổi (`pnpm size`: 1,29 MB / 30 MB).
+Số đo build 2026-11-15 (trên file webm trong game): mọi bài −16,0 LUFS, đỉnh thực −1,5…−5 dBTP, 0 mẫu clip, không có đoạn lặng giữa bài, chỉ số nối 0,3–1,4 (≤ 1 tốt, > 2 dễ nghe ra). Chromium giải mã webm ra đúng số mẫu của vòng (ví dụ `sect` 6.400.000 mẫu), không có lặng đầu/cuối. Tổng nhạc ≈ 19 MB (m4a). Riêng `title` phát ở màn đăng nhập/màn tải (sau thao tác đầu tiên) nên tính vào **tải đầu**: `pnpm size` xếp nó vào phần trước khi vào game (`PRE_GAME_MUSIC` trong `tools/perf/src/size.ts`), và bài này mã hóa bitrate thấp hơn (`"bitrate": { "webm": "64k", "m4a": "80k" }` trong `music.json`: 750 KB webm / 822 KB m4a). Tải đầu sau khi thêm: 2,09 MB / 30 MB. Các bài còn lại nạp dần sau khi vào game.
 
 ## 3. Sửa một bài
 
@@ -72,7 +72,7 @@ Nghe nhanh một bài sau khi build: mở `../dtl-asset-source/audio/music/compo
 1. Dựng dòng sự kiện MIDI (`Song.timeline`): một phách dạo đầu (GS reset, reverb, chọn nhạc cụ), rồi bài lặp 3 lần, rồi đuôi lặng. Nốt nào dài quá cuối vòng bị cắt đúng ở cuối vòng (đuôi ngân vẫn chảy sang vòng sau).
 2. Render bằng spessasynth_core, **tự lập lịch theo mẫu**: chạy synth tới đúng mẫu của sự kiện rồi mới gửi, nên phần khô của các vòng giống nhau tới từng mẫu.
 3. Lấy **vòng thứ hai**: đầu vòng đã có đuôi ngân/reverb của cuối vòng trước, đúng như khi phát lặp. Reverb GS có điều biến chạy tự do nên phần vang lệch chút ít giữa các vòng; vì vậy 0,2 s đầu vòng được trộn từ đầu vòng thứ ba (âm thanh nối tiếp thật của cuối vòng hai) sang chính đầu vòng hai. Mẫu đầu vòng liền mẫu cuối, và hai tín hiệu trộn gần như trùng nhau.
-4. `loop.mjs`: đưa về gần −16 LUFS, **giới hạn đỉnh mềm** (`loopcore.limitPeaks`: nhìn trước 5 ms, nhả 120 ms, đường bao tính vòng tròn để đầu/cuối vòng khớp), rồi chuẩn hóa −16 LUFS / ≤ −1 dBTP như cũ, mã hóa Opus/WebM 96 kbps + AAC/M4A 128 kbps. Bảng in thêm mức giới hạn đỉnh lớn nhất của mỗi bài.
+4. `loop.mjs`: đưa về gần −16 LUFS, **giới hạn đỉnh mềm** (`loopcore.limitPeaks`: nhìn trước 5 ms, nhả 120 ms, đường bao tính vòng tròn để đầu/cuối vòng khớp), rồi chuẩn hóa −16 LUFS / ≤ −1 dBTP như cũ, mã hóa Opus/WebM 96 kbps + AAC/M4A 128 kbps (đổi theo bài bằng `bitrate`). Bảng in thêm mức giới hạn đỉnh lớn nhất của mỗi bài.
 5. Sting (`loop: false`): render một lần + đuôi, bỏ lặng cuối, fade 50 ms.
 
 ## 5. Giấy phép
