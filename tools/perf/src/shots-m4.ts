@@ -107,6 +107,23 @@ async function main(): Promise<void> {
     await sleep(1200);
     await shot(A, 'worldmap-full.png');
 
+    // 1b. Zoom gần quanh hồ (nhãn vùng ngoài mép, không đè biểu tượng).
+    const lake = await mapPoint(A, 1640, 2230);
+    await A.mouse.move(lake.x, lake.y);
+    for (let i = 0; i < 4; i++) {
+      await A.mouse.wheel(0, -120);
+      await sleep(150);
+    }
+    await sleep(500);
+    await shot(A, 'worldmap-zoom.png');
+    const forest = await mapPoint(A, 2335, 2110);
+    void forest;
+    for (let i = 0; i < 6; i++) {
+      await A.mouse.wheel(0, 120);
+      await sleep(120);
+    }
+    await sleep(400);
+
     // 2. Bộ lọc: tắt lớp Quái và Thu thập.
     await A.getByRole('button', { name: 'Quái', exact: true }).click();
     await A.getByRole('button', { name: 'Thu thập', exact: true }).click();

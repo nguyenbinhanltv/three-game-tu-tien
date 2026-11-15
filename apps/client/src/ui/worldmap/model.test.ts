@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LEVELS } from '@dtl/content';
 import { PLAY_BOUNDS } from '@dtl/shared';
-import { clampView, fitScale, fitView, MAX_SCALE, panBy, parseLayers, pick, screenToWorld, soloSpawns, worldToScreen, zoneInfos, zoomAt } from './model';
+import { clampView, placeLabels, fitScale, fitView, MAX_SCALE, panBy, parseLayers, pick, screenToWorld, soloSpawns, worldToScreen, zoneInfos, zoomAt } from './model';
 
 const SIZE = { w: 660, h: 560 };
 
@@ -64,5 +64,25 @@ describe('bản đồ lớn: kéo và zoom', () => {
     ];
     expect(pick(pts, 12, 10)?.n).toBe('a');
     expect(pick(pts, 100, 100)).toBeNull();
+  });
+});
+
+describe('bản đồ lớn: xếp nhãn', () => {
+  it('nhãn đè nhau thì đẩy lên, nhãn xa nhau giữ nguyên', () => {
+    const a = { x: 100, y: 100, w: 80, h: 30 };
+    const b = { x: 110, y: 95, w: 80, h: 30 };
+    const far = { x: 400, y: 100, w: 80, h: 30 };
+    placeLabels([a, b, far]);
+    expect(a.y).toBe(100);
+    expect(far.y).toBe(100);
+    expect(b.y).toBeLessThanOrEqual(a.y - a.h);
+  });
+  it('ba nhãn chồng cùng chỗ thì xếp thành cột, không còn đè', () => {
+    const items = [0, 1, 2].map(() => ({ x: 50, y: 200, w: 60, h: 20 }));
+    placeLabels(items);
+    for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) expect(items[j].y - items[j].h).toBeLessThan(items[i].y);
+    expect(new Set(items.map((q) => q.y)).size).toBe(3);
+    expect(items[1].y).toBeLessThanOrEqual(items[0].y - 20);
+    expect(items[2].y).toBeLessThanOrEqual(items[1].y - 20);
   });
 });

@@ -10,7 +10,7 @@ import { difficultyTone, formatCountdown, npcFunction, npcQuestMark } from '../m
 import { bossSprite, eliteSprite, flagSprite, mateSprite, nodeSprite, npcSprite, selfSprite, teleSprite } from '../minimap/sprites';
 import { set, useUI } from '../store';
 import './worldmap.css';
-import { campSpots, clampView, fitView, type Layer, LAYERS, type MapView, panBy, parseLayers, pick, screenToWorld, soloSpawns, worldToScreen, zoneInfos, zoomAt } from './model';
+import { campSpots, clampView, fitView, type LabelBox, placeLabels, type Layer, LAYERS, type MapView, panBy, parseLayers, pick, screenToWorld, soloSpawns, worldToScreen, zoneInfos, zoomAt } from './model';
 
 const W = 660;
 const H = 560;
@@ -33,12 +33,14 @@ const LEVEL = LEVELS.van_lam;
 const SPOTS = campSpots(LEVEL);
 const SOLO = soloSpawns(LEVEL);
 
-function outlined(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, fill: string, size: number, weight = 700): void {
+/** Chữ mực có viền giấy (halo) để đọc được trên mọi nền, kể cả khi đè lên nét đồng mức. */
+function haloText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, fill: string, size: number, weight = 700): void {
   ctx.font = `${weight} ${size}px "Palatino Linotype", Georgia, serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = 'rgba(28,18,10,0.9)';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 4.5;
+  ctx.strokeStyle = 'rgba(244,234,208,0.96)';
   ctx.strokeText(text, x, y);
   ctx.fillStyle = fill;
   ctx.fillText(text, x, y);
@@ -131,20 +133,46 @@ export function WorldMap() {
         }
       }
 
-      // Tên vùng + khoảng cấp.
-      for (const zi of infos) {
-        const c = P(zi.cx, zi.cz);
-        if (!inView(c, 80)) continue;
-        outlined(ctx, t(`zone.${zi.zone.id}`), c.x, c.y - 8, '#fff0c4', 14);
-        const bad = lv < zi.zone.lvMin ? '#ff9a80' : lv > zi.zone.lvMax ? '#b9c0c1' : '#cfe8c8';
-        outlined(ctx, t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax }), c.x, c.y + 8, bad, 11, 600);
-      }
-      const place = (name: string, x: number, z: number, dy = -18) => {
-        const c = P(x, z);
-        if (inView(c, 60)) outlined(ctx, name, c.x, c.y + dy, '#ffe3a0', 13);
+      // Tên vùng + khoảng cấp: đặt phía trên mép vùng (không đè lên bãi quái, boss, trận), chữ mực có viền giấy, nhãn không chồng nhau.
+      const labels: (LabelBox & { name: string; lvText: string; lvColor: string })[] = [];
+      ctx.font = '700 14px "Palatino Linotype", Georgia, serif';
+      const zoneBox = (zi: (typeof infos)[number]) => {
+        const xs = zi.zone.poly.map((q) => q[0]);
+        const zs = zi.zone.poly.map((q) => q[1]);
+        const a = P(Math.min(...xs), Math.min(...zs));
+        const b = P(Math.max(...xs), Math.max(...zs));
+        return { l: a.x, t: a.y, r: b.x, b: b.y };
       };
-      place(t('ui.zone.sect'), SECT.x, SECT.z, -74 * v.scale - 8);
-      place(t('ui.zone.dungeon'), PORTAL_POS.x, PORTAL_POS.z, -22);
+      const boxes = infos.map(zoneBox);
+      for (const [i, zi] of infos.entries()) {
+        const bx = boxes[i];
+        const cx = (bx.l + bx.r) / 2;
+        if (!inView({ x: cx, y: bx.t }, 80)) continue;
+        const name = t(`zone.${zi.zone.id}`);
+        const w = Math.max(ctx.measureText(name).width, 60) + 8;
+        // Ưu tiên phía trên mép vùng; nếu chỗ đó đã nằm trong vùng khác thì đặt phía dưới.
+        const aboveHits = boxes.some((o, j) => j !== i && cx + w / 2 > o.l && cx - w / 2 < o.r && bx.t - 6 > o.t && bx.t - 36 < o.b);
+        labels.push({
+          x: cx,
+          y: aboveHits ? bx.b + 36 : bx.t - 6,
+          w,
+          h: 30,
+          name,
+          lvText: t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax }),
+          lvColor: lv < zi.zone.lvMin ? '#b3402c' : lv > zi.zone.lvMax ? '#5d6466' : '#3d6b36',
+        });
+      }
+      const place = (name: string, x: number, z: number, dy: number) => {
+        const c = P(x, z);
+        if (inView(c, 60)) labels.push({ x: c.x, y: c.y + dy, w: ctx.measureText(name).width + 8, h: 16, name, lvText: '', lvColor: '' });
+      };
+      place(t('ui.zone.sect'), SECT.x, SECT.z, -95 * v.scale - 6);
+      place(t('ui.zone.dungeon'), PORTAL_POS.x, PORTAL_POS.z, -48 * v.scale - 6);
+      placeLabels(labels);
+      for (const l of labels) {
+        haloText(ctx, l.name, l.x, l.y - (l.lvText ? 17 : 8), '#33210f', l.lvText ? 14 : 13, 700);
+        if (l.lvText) haloText(ctx, l.lvText, l.x, l.y - 4, l.lvColor, 11, 700);
+      }
 
       const put = (s: { cv: HTMLCanvasElement; w: number; h: number }, x: number, y: number, dy = 0, alpha = 1) => {
         ctx.globalAlpha = alpha;

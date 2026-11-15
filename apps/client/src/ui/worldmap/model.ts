@@ -157,3 +157,26 @@ export function pick<T extends { x: number; y: number; r: number }>(pts: readonl
   }
   return best;
 }
+
+export interface LabelBox {
+  /** Tâm ngang và mép dưới mong muốn (px màn hình). */
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Xếp nhãn không chồng nhau: nhãn nào đè lên nhãn đã đặt thì đẩy lên trên (mép dưới = mép trên của nhãn bị đè), lặp tới khi
+ * hết đè. Thứ tự đầu vào là thứ tự ưu tiên (nhãn trước giữ chỗ). Sửa trực tiếp `y`.
+ */
+export function placeLabels(items: LabelBox[], gap = 2): void {
+  for (let i = 0; i < items.length; i++) {
+    const a = items[i];
+    for (let guard = 0; guard < items.length + 1; guard++) {
+      const hit = items.slice(0, i).find((b) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 && a.y > b.y - b.h - gap && a.y - a.h < b.y + gap);
+      if (!hit) break;
+      a.y = hit.y - hit.h - gap;
+    }
+  }
+}
