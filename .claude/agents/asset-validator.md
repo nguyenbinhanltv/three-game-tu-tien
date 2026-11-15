@@ -13,7 +13,8 @@ Việc cần làm cho các asset được giao:
 2. Soát thủ công những điểm script chưa bắt được:
    - asset id đúng tiền tố (`chr_`, `mon_`, `boss_`, `prop_`, `arch_`, `fx_`, `anim_`), `snake_case` không dấu; có `assets/source/<loại>/<id>/meta.json`
    - số trong manifest (tam giác từng LOD, cạnh texture, số xương) so với `assets/budgets.json`; lớp có `lods` thì đủ mức `_lod<k>`
-   - nhân vật hình người dùng `rig_human_base` (bộ xương này có từ M2-3; trước đó chỉ ghi chú)
+   - nhân vật hình người dùng `rig_human_base` (thư viện clip `anim_human_base`); quái/boss có rig riêng theo loài, kèm bảng clip trong `game/character/monsterSkins.ts`
+   - asset Tripo có khối `import` trong `meta.json` (`import_tripo.py`), chiều cao raw/build lệch dưới 1%
    - code client nạp asset qua `assets.acquire` (`apps/client/src/game/assets.ts`) và có `release()` tương ứng, không `new GLTFLoader()` riêng
    - asset sinh thủ tục có kèm script + seed trong repo
    - asset bên thứ ba có dòng trong `assets/LICENSES.md` với nguồn và giấy phép
