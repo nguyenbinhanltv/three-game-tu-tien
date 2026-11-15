@@ -444,3 +444,64 @@ describe('soát netcode: lỗ hổng đã vá', () => {
     expect(p.mth.guardReduce).toBe(0.6);
   });
 });
+
+describe('hỗ trợ đồng đội không can thiệp độ kiếp/tâm ma', () => {
+  const mark = (o: Ent, k: 'trib' | 'trial') => ((o as unknown as Record<string, unknown>)[k] = k === 'trib' ? { endAt: Date.now() + 1e6, nextAt: 0, n: 0 } : { until: Date.now() + 1e6 });
+  for (const k of ['trib', 'trial'] as const) {
+    it(`Xuân Phong Hóa Vũ và Hồi Thiên bỏ qua người đang ${k}`, () => {
+      const { sim, p, join, fresh } = setup(10);
+      const ally = join('b', 10);
+      ally.char.mhp = 1000;
+      ally.char.hp = 1;
+      mark(ally, k);
+      sim.onMethod(p, { method: 'thanh_moc_dan_kinh' });
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_xuan_phong_hoa_vu' });
+      sim.now += 3200;
+      (sim as unknown as { tickMethods(): void }).tickMethods();
+      expect(ally.char.hp).toBe(1);
+      p.mth.charge = CHARGE_MAX;
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_hoi_thien_dan_lo' }); // không ai ngã: bị từ chối, nhưng vòng hồi 20% cũng không áp được
+      expect(ally.char.hp).toBe(1);
+    });
+    it(`khiên Đồng Hành không che người đang ${k}`, () => {
+      const { sim, p, join, fresh } = setup(10);
+      const ally = join('b', 10);
+      mark(ally, k);
+      p.char.meta.skillLv = { skl_linh_khi_ho_the: 3 };
+      p.char.meta.skillVar = { skl_linh_khi_ho_the: 'b' };
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_linh_khi_ho_the' });
+      expect(p.shield).not.toBeNull();
+      expect(ally.shield).toBeNull();
+    });
+  }
+  it('đan dược Đan Kinh không dùng lên người đang độ kiếp', () => {
+    const { sim, p, join } = setup(10);
+    const ally = join('b', 10);
+    mark(ally, 'trib');
+    ally.char.hp = 1;
+    ally.char.mhp = 1000;
+    sim.onMethod(p, { method: 'thanh_moc_dan_kinh' });
+    p.char.tx('t', null, (d) => d.add('itm_hoi_xuan_dan', 1));
+    const slot = p.char.inv.findIndex((x) => x?.id === 'itm_hoi_xuan_dan');
+    sim.onUse(p, { slot, r: 'use-000001', to: ally.sid });
+    expect(ally.char.hp).toBe(1);
+  });
+  it('vòng hồi 20% của Hồi Thiên không áp lên người đang độ kiếp', () => {
+    const { sim, p, join, fresh } = setup(10);
+    const dead = join('c', 10);
+    const busy = join('b', 10);
+    busy.char.mhp = 1000;
+    busy.char.hp = 1;
+    mark(busy, 'trib');
+    sim.onMethod(p, { method: 'thanh_moc_dan_kinh' });
+    sim.damagePlayer(dead, 999999, '');
+    p.mth.charge = CHARGE_MAX;
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_hoi_thien_dan_lo' });
+    expect(dead.s.fl & PF_DEAD).toBe(0);
+    expect(busy.char.hp).toBe(1);
+  });
+});

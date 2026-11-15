@@ -903,12 +903,20 @@ export class GameSim {
     return best;
   }
 
+  /**
+   * Có được hỗ trợ (hồi, khiên, đan dược) lên `o` không: còn sống, và không đang độ kiếp hay thử thách tâm ma
+   * (các thử thách này phải tự vượt, người khác không can thiệp). Chính mình luôn được.
+   */
+  private canAssist(p: PlayerEnt, o: PlayerEnt): boolean {
+    return o === p || (!this.isDead(o) && !o.trib && !o.trial);
+  }
+
   /** Đạo hữu còn sống gần nhất trong `r` mét (không phải mình). */
   private nearestAlly(p: PlayerEnt, r: number): PlayerEnt | null {
     let best: PlayerEnt | null = null;
     let bd = r * r;
     for (const o of this.players.values()) {
-      if (o === p || this.isDead(o)) continue;
+      if (o === p || !this.canAssist(p, o)) continue;
       const dx = o.move.x - p.move.x;
       const dz = o.move.z - p.move.z;
       const d = dx * dx + dz * dz;
@@ -1096,7 +1104,7 @@ export class GameSim {
         const sec = rs.duration ?? 6;
         this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, d: sec, ...tag });
         for (const o of this.players.values()) {
-          if (this.isDead(o)) continue;
+          if (!this.canAssist(p, o)) continue;
           if (o !== p && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
           const total = healAmount(o.char.mhp * rs.power * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
           this.addHot(o.sid, total / sec, sec);
@@ -1116,7 +1124,7 @@ export class GameSim {
           this.fx({ t: 'respawn', src: dead.sid, v: 'revive' });
         }
         for (const o of this.players.values()) {
-          if (o === dead || this.isDead(o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
+          if (o === dead || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
           const n = healAmount(o.char.mhp * 0.2, healMul);
           o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
           this.host.broadcast(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
@@ -2279,7 +2287,7 @@ export class GameSim {
     const to = (msg as { to?: unknown }).to;
     if (healMul !== undefined && typeof to === 'string' && to !== p.sid) {
       const o = this.players.get(to);
-      if (o && !this.isDead(o) && !o.trib && !o.trial && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= POTION_ALLY_RANGE) who = o;
+      if (o && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= POTION_ALLY_RANGE) who = o;
     }
     const wc = who.char;
     if (def.use.hpPct) {
