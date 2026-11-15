@@ -202,9 +202,11 @@ describe('phân giải', () => {
     // Mộc kiếm giá 30 < Thiết Tinh 60.
     t.give((d) => void d.add('itm_moc_kiem', 1));
     const a = t.c.inv.findIndex((s) => s?.id === 'itm_moc_kiem');
+    const ore = t.count('itm_thiet_tinh');
+    const swords = t.count('itm_moc_kiem');
     t.send('salvage', { slots: [a], ids: ['itm_moc_kiem'] });
-    expect(t.count('itm_moc_kiem')).toBe(0);
-    expect(t.count('itm_thiet_tinh')).toBe(0);
+    expect(t.count('itm_moc_kiem')).toBe(swords - 1);
+    expect(t.count('itm_thiet_tinh')).toBe(ore);
   });
 
   it('túi đầy khiến cả lô bị hủy (không mất đồ)', () => {

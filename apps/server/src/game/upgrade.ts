@@ -337,7 +337,7 @@ export class UpgradeSystem {
         if (!d.removeAt(slots[k], 1)) return false;
       }
       // Ngọc đã khảm không mất: trả về túi.
-      if (!d.add(ENHANCE_ORE, totalOre)) return false;
+      if (totalOre > 0 && !d.add(ENHANCE_ORE, totalOre)) return false;
       if (totalDust > 0 && !d.add(DUST_ITEM, totalDust)) return false;
       for (const g of gems) if (!d.add(g, 1)) return false;
       ore = totalOre;
