@@ -622,8 +622,9 @@ export class EntityManager {
       this.bars.mesh.visible = false;
       for (const v of this.players.values()) v.label.visible = false;
       for (const v of this.monsters.values()) if (v.label) v.label.visible = false;
-      for (const n of this.npcs) n.label.visible = false;
     }
+    // Nhãn NPC không có chỗ nào khác đặt lại (luôn hiện), nên gán theo cờ mỗi khung để hiện lại khi hết cảnh.
+    for (const n of this.npcs) n.label.visible = !this.tagsHidden;
 
     // ----- vòng chọn mục tiêu -----
     const tm = this.monsters.get(targetId);
