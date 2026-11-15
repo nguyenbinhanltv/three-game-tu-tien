@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import {
   attribute,
+  cameraPosition,
   cameraProjectionMatrix,
   clamp,
   exp,
@@ -10,6 +11,8 @@ import {
   luminance,
   mix,
   modelViewMatrix,
+  normalize,
+  dot,
   output,
   positionView,
   positionWorld,
@@ -22,7 +25,7 @@ import {
 import { WATER_Y } from '@dtl/shared';
 import { DEPTH_DESATURATE, type GradingPreset } from './grading';
 import { markBloom } from './post';
-import { applySkyPreset } from './sky';
+import { applySkyPreset, skyParams } from './sky';
 
 /**
  * Bầu không khí: sương theo khoảng cách + theo độ cao, giảm bão hòa theo độ sâu, màu đèn/trời theo
@@ -38,6 +41,9 @@ export const fogParams = {
   top: uniform(40),
   /** Hệ số nhân mật độ ở đáy lớp; 1 = tắt sương theo độ cao (preset Thấp). */
   boost: uniform(1.8),
+  /** Nắng xuyên sương: sương phía mặt trời ngả sắc vùng sáng ấm (cường độ 0 = tắt). */
+  glow: uniform(new THREE.Color(0xffd49a)),
+  scatter: uniform(0.5),
   desatStart: uniform(DEPTH_DESATURATE.start),
   desatEnd: uniform(DEPTH_DESATURATE.end),
   desatAmount: uniform(DEPTH_DESATURATE.amount),
@@ -55,7 +61,11 @@ const atmosphereFog = Fn(() => {
   const h = clamp(fogParams.base.add(fogParams.top).sub(positionWorld.y).div(fogParams.top), 0, 1);
   const dens = fogParams.density.mul(float(1).add(fogParams.boost.sub(1).mul(h)));
   const f = float(1).sub(exp(dens.mul(dist).pow(2).negate()));
-  return vec4(mix(desat, fogParams.color, f), output.a);
+  // Tán xạ tới: nhìn về phía mặt trời thì sương ấm vàng, quay lưng thì giữ ngọc lam lạnh.
+  const view = normalize(positionWorld.sub(cameraPosition));
+  const toSun = dot(view, skyParams.sunDir).max(0).pow(3);
+  const fogCol = mix(fogParams.color, fogParams.glow, toSun.mul(fogParams.scatter));
+  return vec4(mix(desat, fogCol, f), output.a);
 });
 
 export interface EnvLike {
@@ -75,6 +85,8 @@ export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPres
   scene.fogNode = atmosphereFog();
   fogParams.color.value.setHex(p.fogColor);
   fogParams.density.value = p.fogDensity;
+  fogParams.glow.value.setHex(p.highlightTint);
+  fogParams.scatter.value = p.fogScatter ?? 0;
   fogParams.top.value = p.heightFogTop;
   heightFogBoost = p.heightFogBoost;
   (scene.background as THREE.Color | null)?.setHex?.(p.fogColor);

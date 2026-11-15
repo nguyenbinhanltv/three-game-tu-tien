@@ -27,6 +27,8 @@ export interface MonsterSkin {
    * khác hẳn màu (Kiếm Linh dùng model Hỏa Vân Hồ).
    */
   palette?: { dark: string; light: string; glow?: string };
+  /** Dáng đi để bám địa hình (P2-E3): hai chân → IK chân; bốn chân → nghiêng thân theo dốc. */
+  legs: 'biped' | 'quad';
   /** Chỉ nạp khi quái xuất hiện lần đầu (boss trong bí cảnh), không nạp sẵn lúc vào thế giới. */
   lazy?: boolean;
   /** Đòn lớn có vùng báo trước (M5-5) → clip và thời điểm chạm. */
@@ -54,33 +56,33 @@ const BIPED_MOVES: MonsterSkin['moves'] = { slam: { clip: 'slam', impact: 1.0 },
  */
 export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // Sói núi xám: giữ nguyên màu asset.
-  mon_soi_xam: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, tint: '#ffffff' },
+  mon_soi_xam: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, legs: 'quad', tint: '#ffffff' },
   // Yêu Lang: lông ngả tím than, viền yêu khí tím.
-  mon_yeu_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, tint: '#b3a6dc', rim: 0.55 },
+  mon_yeu_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, legs: 'quad', tint: '#b3a6dc', rim: 0.55 },
   // U Minh Lang: lông xanh u tối, viền lam lạnh.
-  mon_u_minh_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, tint: '#8a9fd0', roughness: -0.08, rim: 0.8 },
+  mon_u_minh_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, legs: 'quad', tint: '#8a9fd0', roughness: -0.08, rim: 0.8 },
   // refSpeed của các thú dưới theo tỉ lệ tốc độ chân trụ đo trong Blender (anim_quadruped naturalSpeed) so với sói
   // (đo 3,14 ↔ 2,5 đã chỉnh trong game); vượn so với Thanh Phong cùng loại clip Tripo (đo 3,34 ↔ 3,0).
   // Thiết Bối Trư: clip đòn húc nanh (gore), chân ngắn nên bước nhanh.
-  mon_thiet_boi_tru: { asset: 'mon_thiet_boi_tru', clips: WOLF_CLIPS, refSpeed: 1.3, tint: '#ffffff' },
+  mon_thiet_boi_tru: { asset: 'mon_thiet_boi_tru', clips: WOLF_CLIPS, refSpeed: 1.3, legs: 'quad', tint: '#ffffff' },
   // Hỏa Vân Hồ: lông son của asset, viền ánh lửa nhẹ.
-  mon_hoa_van_ho: { asset: 'mon_hoa_van_ho', clips: FOX_CLIPS, refSpeed: 2.0, tint: '#ffffff', rim: 0.3 },
+  mon_hoa_van_ho: { asset: 'mon_hoa_van_ho', clips: FOX_CLIPS, refSpeed: 2.0, legs: 'quad', tint: '#ffffff', rim: 0.3 },
   // Kiếm Linh: cùng model cáo, lông trắng sương → lam núi xa, phát sáng kiếm khí nhỏ (art: asset đợt 2).
   mon_kiem_linh: {
     asset: 'mon_hoa_van_ho',
     clips: FOX_CLIPS,
-    refSpeed: 2.0,
+    refSpeed: 2.0, legs: 'quad',
     tint: '#ffffff',
     roughness: -0.1,
     palette: { dark: '#88ABAA', light: '#DCE6DF', glow: '#CFF3FF' },
   },
   // Thạch Viên: vượn đá hai chân, đòn nện hai tay (clip slash của Tripo đã cắt).
-  mon_thach_vien: { asset: 'mon_thach_vien', clips: WOLF_CLIPS, refSpeed: 2.15, tint: '#ffffff' },
+  mon_thach_vien: { asset: 'mon_thach_vien', clips: WOLF_CLIPS, refSpeed: 2.15, legs: 'biped', tint: '#ffffff' },
   // Boss Kiếm Trủng (M3-8). Sói chúa: naturalSpeed 3,378 theo cùng tỉ lệ với sói (→ 2,7); hai boss vượn đo chân trụ
   // clip run Tripo ở scale 1.
-  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, tint: '#ffffff', rim: 0.35, lazy: true, moves: QUAD_MOVES },
-  boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, tint: '#ffffff', coreGlow: 1.6, lazy: true, moves: BIPED_MOVES },
-  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: CHANT_BOSS_CLIPS, refSpeed: 3.1, tint: '#ffffff', lazy: true, moves: BIPED_MOVES },
+  boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, legs: 'quad', tint: '#ffffff', rim: 0.35, lazy: true, moves: QUAD_MOVES },
+  boss_kiem_khoi: { asset: 'boss_kiem_khoi', clips: BOSS_CLIPS, refSpeed: 4.6, legs: 'biped', tint: '#ffffff', coreGlow: 1.6, lazy: true, moves: BIPED_MOVES },
+  boss_thu_mo_tuong: { asset: 'boss_thu_mo_tuong', clips: CHANT_BOSS_CLIPS, refSpeed: 3.1, legs: 'biped', tint: '#ffffff', lazy: true, moves: BIPED_MOVES },
 };
 
 interface Template {
@@ -128,7 +130,7 @@ export class MonsterSkins {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
-    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves });
+    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs });
   }
 
   dispose(): void {

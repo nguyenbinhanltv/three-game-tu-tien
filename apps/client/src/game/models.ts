@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import type { MonsterDef } from '@dtl/shared';
+import { bodyClassOf, HIT_FEEL, type MonsterDef } from '@dtl/shared';
 import { col, flat, G, GeoBuilder, mat } from './geo';
 import { createWorldMaterial } from '../render/materials/world';
 import { markBloom } from '../render/post';
@@ -407,6 +407,7 @@ export class MonsterModel implements MonsterView {
     this.root.add(this.inner);
     this.root.scale.setScalar(s);
     this.hit = new HitReact(this.inner.children as THREE.Mesh[]);
+    this.hit.feel = HIT_FEEL[bodyClassOf(def)];
   }
 
   attack(): void {
@@ -414,8 +415,8 @@ export class MonsterModel implements MonsterView {
   }
 
   hitReact(o: HitOpts): void {
-    // Quái to bị đẩy ít hơn.
-    this.hit.react({ ...o, mass: (o.mass ?? 1) * (this.def.boss ? 0.3 : 1 / Math.max(1, this.def.scale)) });
+    // Độ giật theo hạng thân (hit.feel gán lúc dựng).
+    this.hit.react(o);
   }
 
   /** `a.speed` m/s; `a.dead` chuyển sang nằm xuống rồi chìm dần. */

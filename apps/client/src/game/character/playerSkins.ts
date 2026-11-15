@@ -153,6 +153,7 @@ export class PlayerSkins {
         maxLocoScale: skin.maxLocoScale,
         sink: false,
         springs: t.springs,
+        ground: 'biped',
       },
       skin.runSteps,
       t.sword,

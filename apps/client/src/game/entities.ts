@@ -1,9 +1,11 @@
 import * as THREE from 'three/webgpu';
 import { DUNGEON_EXIT, groundAt, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
 import { APPEARANCE, MONSTER, monsterName, NPCS, QUESTS, realmName, t } from '@dtl/content';
+import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
+import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
-import type { AnimState, CharacterView, MonsterView } from './character/view';
+import { type AnimState, type CharacterView, type MonsterView, P2E_OFF } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
 import { NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
@@ -185,6 +187,10 @@ export class MonVis {
   speed = 0;
   lv = -1;
   wasAttack = false;
+  /** Độ lệch tách thân đang hiển thị (P2-E2, chỉ trình bày) và bán kính thân. */
+  sepX = 0;
+  sepZ = 0;
+  readonly radius: number;
   constructor(
     public id: string,
     public s: MState,
@@ -195,6 +201,7 @@ export class MonVis {
     this.skinPending = skins.pending(def);
     this.bar = new BarState(def.boss ? 3 : 1.5, def.boss ? BAR_BOSS : BAR_ENEMY);
     this.barY = this.model.height + 0.35 * def.scale;
+    this.radius = bodyRadiusOf(def);
     this.x = s.x;
     this.y = s.y;
     this.z = s.z;
@@ -525,7 +532,11 @@ export class EntityManager {
         v.speed += (sp - v.speed) * Math.min(1, dt * 8);
       }
       const dead = s.st === MS_DEAD;
-      v.model.root.position.set(v.x + v.model.hit.kx, v.y, v.z + v.model.hit.kz);
+      // Tách thân (kết quả khung trước) và giật lùi là độ lệch hiển thị; y theo mặt đất tại chỗ lệch.
+      const sx = v.sepX;
+      const sz = v.sepZ;
+      const sy = sx * sx + sz * sz > 1e-4 ? groundAt(v.x + sx, v.z + sz) - groundAt(v.x, v.z) : 0;
+      v.model.root.position.set(v.x + v.model.hit.kx + sx, v.y + sy, v.z + v.model.hit.kz + sz);
       v.model.root.rotation.y = v.yaw;
       _monAnim.speed = v.speed;
       _monAnim.dead = dead;
@@ -555,6 +566,8 @@ export class EntityManager {
         this.monsters.delete(id);
       }
     }
+
+    this.separate(dt, local);
 
     // ----- điểm hái thuốc -----
     view.nodes.forEach((s, id) => {
@@ -619,6 +632,49 @@ export class EntityManager {
       (this.ring.material as THREE.MeshBasicMaterial).color.set(tn ? 0xffd84a : 0x6fd0ff);
     } else {
       this.ring.visible = false;
+    }
+  }
+
+  private sepBodies: Body[] = [];
+  private sepMons: (MonVis | null)[] = [];
+
+  /**
+   * Tách thân hiển thị (P2-E2): quái gần mình không chồng lên nhau hay xuyên người chơi/NPC. Người chơi, NPC đứng yên;
+   * quái tự né. Giải từ vị trí logic mỗi khung rồi làm mượt độ lệch, áp ở khung sau. Vị trí logic không đổi.
+   */
+  private separate(dt: number, local: { x: number; z: number }): void {
+    if (P2E_OFF) return;
+    const bodies = this.sepBodies;
+    const mons = this.sepMons;
+    let n = 0;
+    const R2 = 60 * 60;
+    const put = (x: number, z: number, r: number, fixed: boolean, m: MonVis | null) => {
+      if ((x - local.x) ** 2 + (z - local.z) ** 2 > R2) return;
+      const b = (bodies[n] ??= { x: 0, z: 0, r: 0, fixed: true, ox: 0, oz: 0 });
+      b.x = x;
+      b.z = z;
+      b.r = r;
+      b.fixed = fixed;
+      mons[n] = m;
+      n++;
+    };
+    for (const v of this.players.values()) put(v.x, v.z, PLAYER_BODY_RADIUS, true, null);
+    for (const npc of this.npcs) put(npc.x, npc.z, PLAYER_BODY_RADIUS, true, null);
+    for (const v of this.monsters.values()) {
+      if (v.s.st === MS_DEAD) {
+        v.sepX *= 0.9;
+        v.sepZ *= 0.9;
+        continue;
+      }
+      put(v.x, v.z, v.radius, false, v);
+    }
+    solveSeparation(bodies, n);
+    const k = Math.min(1, dt * 10);
+    for (let i = 0; i < n; i++) {
+      const v = mons[i];
+      if (!v) continue;
+      v.sepX += (bodies[i].ox - v.sepX) * k;
+      v.sepZ += (bodies[i].oz - v.sepZ) * k;
     }
   }
 
