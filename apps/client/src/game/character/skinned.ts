@@ -201,7 +201,9 @@ export class SkinnedCharacter implements CharacterView {
   }
 
   attack(): void {
-    if (this.dead) return;
+    // Đòn lớn (playMove) đang phát hoặc đang chờ phát: bỏ cú đánh thường để khung chạm vẫn trùng lúc vùng nổ
+    // (server không khóa boss khi slam nên vẫn có thể cắn trong lúc đó; chớp sát thương vẫn hiện ở engine).
+    if (this.dead || this.shot?.move || this.pendingMove) return;
     this.playShot('attack');
   }
 

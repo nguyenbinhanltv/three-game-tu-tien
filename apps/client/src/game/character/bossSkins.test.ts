@@ -111,6 +111,33 @@ describe('boss có xương (asset thật)', () => {
     skins.dispose();
   });
 
+  it('cú đánh thường giữa đòn lớn (đang chờ hoặc đang phát) không cắt động tác, khung chạm vẫn đúng lúc', async () => {
+    const { skins } = await bossSkins();
+    const def = MONSTER.get('boss_thu_mo_tuong')!;
+    skins.pending(def);
+    await ready(skins, def.id);
+    const impact = MONSTER_SKINS[def.id].moves!.slam!.impact;
+    // Đang phát.
+    const b = skins.create(def) as SkinnedMonster;
+    const delay = def.ai!.slam!.delay;
+    b.bossMove('slam', delay);
+    run(b, anim({ combat: true }), 0.6);
+    b.attack();
+    run(b, anim({ combat: true }), delay - 0.6);
+    expect(b.actionOf('attack')).toBeNull();
+    expect(b.actionOf('slam')!.time).toBeCloseTo(impact, 1);
+    // Đang chờ phát (delay dài hơn thời gian chạm ở tốc độ chậm nhất): cắn lúc chờ cũng bị bỏ.
+    const c = skins.create(def) as SkinnedMonster;
+    c.bossMove('slam', 2.5);
+    c.attack();
+    run(c, anim({ combat: true }), 2.5);
+    expect(c.actionOf('attack')).toBeNull();
+    expect(c.actionOf('slam')!.time).toBeCloseTo(impact, 1);
+    b.dispose();
+    c.dispose();
+    skins.dispose();
+  });
+
   it('niệm chú → chant, bị ngắt → stun; boss không có chant thì đứng thủ', async () => {
     const { skins } = await bossSkins();
     for (const id of ['boss_thu_mo_tuong', 'boss_kiem_khoi']) {
