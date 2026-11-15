@@ -5,6 +5,7 @@ import { type Gender, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } fro
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
+import { acquireHumanLib, mergeClips, retargetClips } from './animLib';
 import { applyDye } from './dye';
 import { poseClipName } from './ikpose';
 import { libraryClips, type PoseLibrary, withPoses } from './poseLib';
@@ -64,6 +65,8 @@ export const PLAYER_SKINS: Record<string, PlayerSkin> = {
 
 interface Template {
   handle: AssetHandle;
+  /** Thư viện clip chung (anim_human_base), retarget sang asset này lúc dựng mẫu. */
+  lib: AssetHandle;
   height: number;
   bounds: THREE.Sphere;
   clips: THREE.AnimationClip[];
@@ -145,7 +148,11 @@ export class PlayerSkins {
 
   dispose(): void {
     this.disposed = true;
-    for (const t of this.templates.values()) if (typeof t !== 'string') t.handle.release();
+    for (const t of this.templates.values()) {
+      if (typeof t === 'string') continue;
+      t.handle.release();
+      t.lib.release();
+    }
     this.templates.clear();
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
@@ -154,23 +161,26 @@ export class PlayerSkins {
   private load(id: string): void {
     if (this.templates.has(id)) return;
     this.templates.set(id, 'loading');
-    this.cache.acquire(id, { priority: 1 }).then(
-      (handle) => {
+    // Nhân vật + thư viện clip chung (anim_human_base): thiếu thư viện thì dùng model khối, không để T-pose đứng giữa sân.
+    Promise.all([this.cache.acquire(id, { priority: 1 }), acquireHumanLib(this.cache)]).then(
+      ([handle, lib]) => {
         if (this.disposed) {
           handle.release();
+          lib.release();
           return;
         }
         try {
-          this.templates.set(id, templateOf(handle, PLAYER_SKINS[id]));
+          this.templates.set(id, templateOf(handle, lib, PLAYER_SKINS[id]));
         } catch (err) {
           console.warn(`[models] không dựng được ${id}, dùng model khối`, err);
           handle.release();
+          lib.release();
           this.templates.set(id, 'failed');
         }
       },
       (err) => {
         if (this.disposed) return;
-        console.warn(`[models] không nạp được ${id}, dùng model khối`, err);
+        console.warn(`[models] không nạp được ${id} hoặc thư viện clip, dùng model khối`, err);
         this.templates.set(id, 'failed');
       },
     );
@@ -192,7 +202,7 @@ export class PlayerSkins {
 }
 
 /** Chiều cao, khung cầu, clip (gồm tư thế tạm đã nướng) của asset người chơi. */
-function templateOf(handle: AssetHandle, skin: PlayerSkin): Template {
+function templateOf(handle: AssetHandle, lib: AssetHandle, skin: PlayerSkin): Template {
   const box = new THREE.Box3();
   handle.scene.traverse((o) => {
     const m = o as THREE.Mesh;
@@ -209,7 +219,8 @@ function templateOf(handle: AssetHandle, skin: PlayerSkin): Template {
   const extra = withPoses(handle.scene, { ...skin.clips });
   const poses = extra.poses ?? null;
   // Xương phụ của pipeline (kiếm, lò xo) do client điều khiển: bỏ kênh lấy mẫu ở tư thế nghỉ của exporter.
-  const own = handle.animations.map(stripPartTracks);
+  // Clip riêng của asset (nếu còn) thắng clip chung cùng tên; clip chung retarget theo tên xương và tỉ lệ độ dài xương.
+  const own = mergeClips(handle.animations.map(stripPartTracks), retargetClips(lib.scene, lib.animations, handle.scene));
   const clips = poses ? [...own, ...libraryClips(poses)] : own;
   const clipMap: ClipMap = { ...extra.clipMap };
   if (poses) {
@@ -223,7 +234,7 @@ function templateOf(handle: AssetHandle, skin: PlayerSkin): Template {
   const sword = parts.sword ? swordSocketDef(handle.scene, parts.sword) : null;
   if (parts.sword && !sword) console.warn('[models] asset người chơi có extras kiếm nhưng thiếu xương, kiếm giữ trên lưng');
   const springs = parts.springs ? springDefs(handle.scene, parts.springs) : [];
-  return { handle, height, bounds, clips, clipMap, poses, sword, springs };
+  return { handle, lib, height, bounds, clips, clipMap, poses, sword, springs };
 }
 
 /** Rảnh bao lâu (giây: không ra chiêu, không trúng đòn, không niệm chú) thì tra kiếm (M3-2). */
