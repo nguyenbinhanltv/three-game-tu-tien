@@ -2845,6 +2845,7 @@ export class GameSim {
   }
 
   private removeMonster(m: MonEnt): void {
+    this.gmSpawned.delete(m);
     this.resetAi(m);
     const i = this.monsters.indexOf(m);
     if (i >= 0) this.monsters.splice(i, 1);
@@ -4416,8 +4417,8 @@ export class GameSim {
         if (a[1] === 'clear') {
           let n = 0;
           for (const m of [...this.gmSpawned]) {
-            this.gmSpawned.delete(m);
-            if (this.monsters.includes(m)) (this.removeMonster(m), n++);
+            this.removeMonster(m);
+            n++;
           }
           return say(t('gm.msg.spawn_clear', { n }));
         }
