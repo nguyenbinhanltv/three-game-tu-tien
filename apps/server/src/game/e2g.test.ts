@@ -426,6 +426,18 @@ describe('E2-G: hiệu ứng 4 món của bộ bậc 2 (E2-F) nối vào chiêu'
     // 70 sát thương sau giảm; phản (20% + 10%) = 21.
     expect(before - m.s.hp).toBe(21);
   });
+  it('bộ 4 món chỉ làm Kim Chung Trấn phản thêm: Kim Cương Bất Hoại không phản', () => {
+    const { sim, p, mon, fresh } = setup('bat_dong_kim_than', 20);
+    p.char.stats.setFx.kimChungReflect = 0.1;
+    const m = mon(X + 2, Z);
+    p.mth.charge = 100;
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_kim_cuong_bat_hoai' });
+    expect(p.mth.reflectUntil).toBe(0);
+    const before = m.s.hp;
+    sim.damagePlayer(p, 100, m.id);
+    expect(m.s.hp).toBe(before);
+  });
   it('Mộc Linh Trận kéo dài thêm mocLinhDur: còn hồi ở giây 9 (gốc 8 giây)', () => {
     const run = (dur: number) => {
       const { sim, p, fresh, wait } = setup('thanh_moc_dan_kinh', 16);

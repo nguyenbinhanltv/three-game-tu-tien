@@ -1872,7 +1872,7 @@ export class GameSim {
       case 'guard': {
         p.mth.setGuard(this.now, skill.reduce ?? 0.6, rs.duration ?? 6);
         // Bộ Hộ Pháp bậc 2 (4 món): phản thêm `kimChungReflect`.
-        const refl = (v?.reflect ?? skill.reflect ?? 0) + c.stats.setFx.kimChungReflect;
+        const refl = (v?.reflect ?? skill.reflect ?? 0) + (skill.id === 'skl_kim_chung_tran' ? c.stats.setFx.kimChungReflect : 0);
         if (refl) p.mth.setReflect(this.now, refl, rs.duration ?? 6);
         this.fx({ t: skill.fx, src: p.sid, d: rs.duration ?? 6, ...tag });
         if (v?.guardAlly) {
