@@ -69,9 +69,11 @@ export type BottleneckMode = 'trial' | 'pill';
 export const PHA_CANH_PILL = 'itm_pha_canh_dan';
 /** Phá Cảnh Đan bậc hai (E2-F): dùng cho bình cảnh từ Trúc Cơ tầng 17 trở lên. */
 export const PHA_CANH_PILL_2 = 'itm_pha_canh_dan_2';
+/** Vân Phá Cảnh Đan (E3-F): dùng cho bình cảnh từ Kết Đan tầng 21 trở lên. */
+export const PHA_CANH_PILL_3 = 'itm_pha_canh_dan_3';
 /** Đan phá cảnh cần dùng ở bình cảnh tại cấp `level`. */
 export function bottleneckPill(level: number): string {
-  return level >= 17 ? PHA_CANH_PILL_2 : PHA_CANH_PILL;
+  return level >= 21 ? PHA_CANH_PILL_3 : level >= 17 ? PHA_CANH_PILL_2 : PHA_CANH_PILL;
 }
 
 /**
