@@ -2,14 +2,14 @@
 
 Bản 1 · 2026-11-16 · đi kèm `docs/EXPANSION_DESIGN.md`.
 
-**59 asset** người dùng tự dựng trên **Tripo web** (kênh web app trong `docs/tripo-runbook.md`; không dùng credit CLI). Mỗi mục có ảnh concept sinh bằng Codex (`node tools/codex-assets/gen.mjs concepts [id…]`, không tốn credit Tripo), prompt Tripo tiếng Anh theo `docs/art-bible.md` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong `<DTL_ASSET_SOURCE>/`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
+**59 asset** người dùng tự dựng trên **Tripo web** (kênh web app trong `docs/tripo-runbook.md`; không dùng credit CLI). **Mục cỏ (ưu tiên 4) không dựng trên Tripo**: worker làm thẻ cỏ alpha instanced từ ảnh concept. Mỗi mục còn lại có ảnh concept sinh bằng Codex (`node tools/codex-assets/gen.mjs concepts [id…]`, không tốn credit Tripo), prompt Tripo tiếng Anh theo `docs/art-bible.md` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong `<DTL_ASSET_SOURCE>/`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
 
 Bản HTML xem ảnh + prompt có nút sao chép: `huong-dan-concept-asset.html` (thư mục artifact của phiên). Ảnh gốc PNG (3:2) nằm ở `<DTL_ASSET_SOURCE>/2d/concepts/<id>.png` kèm `<id>.prompt.txt` (prompt sinh ảnh); ảnh nén WebP trong repo: `docs/asset-concepts/<id>.webp`.
 
 ## Cách dùng một mục (quy trình rút gọn)
 
 1. Mở ảnh concept (`docs/asset-concepts/<id>.webp`).
-2. Tripo web → **Image to 3D** (model **H3.1**), tải ảnh PNG gốc từ `2d/concepts/<id>.png`; dán prompt Tripo làm mô tả phụ. Thiết lập theo dòng "Tripo" của mục (Texture Detailed, PBR bật, Smart Low-poly bật, Polycount theo mục, quad tắt).
+2. Tripo web → **Image to 3D** (model **H3.1**), dùng **ảnh PNG gốc** `<DTL_ASSET_SOURCE>/2d/concepts/<id>.png` (không dùng bản WebP nén); **nếu giao diện có ô mô tả/prompt phụ thì dán prompt Tripo của mục vào đó**, nếu không có ô thì chỉ cần ảnh. Thiết lập theo dòng "Tripo" của mục (Texture Detailed, PBR bật, Smart Low-poly bật, Polycount theo mục, quad tắt).
 3. Chọn bản tốt nhất; nếu lưới nặng, dùng **Retopo** về đúng Polycount. Với asset **có xương**: rig theo cột "Xương" (cùng preset với quái/NPC hiện có, `docs/prompts/tripo.md` mục 2). Không mua animation: clip thủ tục đã có (`anim_quadruped`, `anim_biped_extra`, `anim_serpent`, `anim_human_base`).
 4. Tải **GLB** về thư mục đích (cột "Thư mục"): `tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb`, `rig_v01.glb`; chép ảnh concept đã duyệt vào `concept/concept_34_v01.png` (đúng quy ước đặt tên ở `docs/tripo-runbook.md` mục 3). Tăng `NN` khi thử lại.
 5. Báo cho Claude/worker: worker tạo `assets/source/<loại>/<id>/meta.json`, chạy `tools/blender/import_tripo.py` và `pnpm assets:build`.
@@ -837,17 +837,13 @@ a stone warrior statue come alive about 2.4 meters tall, dark blue-grey carved s
 | Texture (base color / normal / ORM) | 512 (atlas 4 bụi) |
 | Xương | Không xương (mesh tĩnh) |
 | Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_co_hoang_coc/` (`concept/`, `tripo/`) |
-| Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 500, quad tắt, GLB; texture mục tiêu base color 512 (atlas 4 bụi) |
+| Tripo | Không dựng trên Tripo (thẻ cỏ alpha do worker làm từ ảnh concept). |
 
-**Prompt Tripo (tiếng Anh):**
-
-```text
-a dry canyon grass clump about 0.7 meters tall, straight and arching blades in warm straw-gold and ochre with a few green blades at the base, some tall seed stalks, slightly windswept, game-ready foliage card clump. game-ready foliage card clump, stylized semi-realistic, alpha cutout blades, no ground, no base, no text.
-```
+**Không dựng trên Tripo.** Cỏ KHÔNG dựng 3D trên Tripo. Worker E-2 làm **thẻ cỏ alpha instanced** (atlas 512², tấm cắt cắt chéo, alpha cutout) từ ảnh concept này, nạp qua `game/grass.ts`; bạn không cần làm gì với mục này.
 
 **Ghi chú pipeline:** Nạp cùng bản đồ 2. Cùng cơ chế instancing với G7.
 
-**Import:** `prop/prop_co_hoang_coc/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_co_hoang_coc/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `prop`.
+**Import:** Worker cắt ảnh concept thành atlas thẻ cỏ alpha (`apps/client/public/`), instancing ở `game/grass.ts`; không có GLB, không `meta.json` Tripo.
 
 ### `prop_co_van_hai` · Cỏ Vân Hải
 
@@ -862,17 +858,13 @@ a dry canyon grass clump about 0.7 meters tall, straight and arching blades in w
 | Texture (base color / normal / ORM) | 512 (atlas 4 bụi) |
 | Xương | Không xương (mesh tĩnh) |
 | Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_co_van_hai/` (`concept/`, `tripo/`) |
-| Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 500, quad tắt, GLB; texture mục tiêu base color 512 (atlas 4 bụi) |
+| Tripo | Không dựng trên Tripo (thẻ cỏ alpha do worker làm từ ảnh concept). |
 
-**Prompt Tripo (tiếng Anh):**
-
-```text
-a fluffy sky-island grass clump about 0.6 meters tall, fine soft blades in pale silver-green and misty blue-grey, feathery pale seed tufts at the tips like tiny clouds, slightly curved outward, game-ready foliage card clump. game-ready foliage card clump, stylized semi-realistic, alpha cutout blades, no ground, no base, no text.
-```
+**Không dựng trên Tripo.** Cỏ KHÔNG dựng 3D trên Tripo. Worker E-2 làm **thẻ cỏ alpha instanced** (atlas 512², tấm cắt cắt chéo, alpha cutout) từ ảnh concept này, nạp qua `game/grass.ts`; bạn không cần làm gì với mục này.
 
 **Ghi chú pipeline:** Nạp cùng bản đồ 3. Đầu lông bông là tấm cắt nhỏ, không hạt.
 
-**Import:** `prop/prop_co_van_hai/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_co_van_hai/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `prop`.
+**Import:** Worker cắt ảnh concept thành atlas thẻ cỏ alpha (`apps/client/public/`), instancing ở `game/grass.ts`; không có GLB, không `meta.json` Tripo.
 
 ### `prop_co_co_thanh` · Cỏ Cổ Thành
 
@@ -887,17 +879,13 @@ a fluffy sky-island grass clump about 0.6 meters tall, fine soft blades in pale 
 | Texture (base color / normal / ORM) | 512 (atlas 4 bụi) |
 | Xương | Không xương (mesh tĩnh) |
 | Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_co_co_thanh/` (`concept/`, `tripo/`) |
-| Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 500, quad tắt, GLB; texture mục tiêu base color 512 (atlas 4 bụi) |
+| Tripo | Không dựng trên Tripo (thẻ cỏ alpha do worker làm từ ảnh concept). |
 
-**Prompt Tripo (tiếng Anh):**
-
-```text
-a night ruin grass clump about 0.6 meters tall, dark blue-green blades with soft silver edge tint, a few tiny pale blue star-shaped flowers with faintly glowing centers, arching blades, game-ready foliage card clump. game-ready foliage card clump, stylized semi-realistic, alpha cutout blades, no ground, no base, no text.
-```
+**Không dựng trên Tripo.** Cỏ KHÔNG dựng 3D trên Tripo. Worker E-2 làm **thẻ cỏ alpha instanced** (atlas 512², tấm cắt cắt chéo, alpha cutout) từ ảnh concept này, nạp qua `game/grass.ts`; bạn không cần làm gì với mục này.
 
 **Ghi chú pipeline:** Hoa phát sáng nhẹ (emissive nhỏ, chỉ vào ban đêm).
 
-**Import:** `prop/prop_co_co_thanh/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_co_co_thanh/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `prop`.
+**Import:** Worker cắt ảnh concept thành atlas thẻ cỏ alpha (`apps/client/public/`), instancing ở `game/grass.ts`; không có GLB, không `meta.json` Tripo.
 
 ### `prop_co_linh_rung` · Cỏ Linh Rừng (thay bụi nhọn sẫm)
 
@@ -912,17 +900,13 @@ a night ruin grass clump about 0.6 meters tall, dark blue-green blades with soft
 | Texture (base color / normal / ORM) | 512 (atlas 4 bụi) |
 | Xương | Không xương (mesh tĩnh) |
 | Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_co_linh_rung/` (`concept/`, `tripo/`) |
-| Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 600, quad tắt, GLB; texture mục tiêu base color 512 (atlas 4 bụi) |
+| Tripo | Không dựng trên Tripo (thẻ cỏ alpha do worker làm từ ảnh concept). |
 
-**Prompt Tripo (tiếng Anh):**
-
-```text
-a soft clump of wild forest grass about 0.7 meters tall, many slender arching blades in layered tones of fresh jade-green with pale yellow-green tips, a few small white seed heads, tapering blades with gentle curves, a little darker root base, game-ready foliage card clump. game-ready foliage card clump, stylized semi-realistic, alpha cutout blades, no ground, no base, no text.
-```
+**Không dựng trên Tripo.** Cỏ KHÔNG dựng 3D trên Tripo. Worker E-2 làm **thẻ cỏ alpha instanced** (atlas 512², tấm cắt cắt chéo, alpha cutout) từ ảnh concept này, nạp qua `game/grass.ts`; bạn không cần làm gì với mục này.
 
 **Ghi chú pipeline:** Giao ước G7: thay 'bụi nhọn sẫm'. Dựng 3 bụi biến thể (cao, thấp, có hoa) gộp một atlas 512²; instancing ở `game/grass.ts`. Lá là tấm cắt, alpha cutout (không alpha blend).
 
-**Import:** `prop/prop_co_linh_rung/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_co_linh_rung/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `prop`.
+**Import:** Worker cắt ảnh concept thành atlas thẻ cỏ alpha (`apps/client/public/`), instancing ở `game/grass.ts`; không có GLB, không `meta.json` Tripo.
 
 
 ---

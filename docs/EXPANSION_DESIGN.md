@@ -21,11 +21,11 @@ Nguồn quyết định: `ke-hoach-mo-rong-ket-dan-hoa-than.md` (2026-11-16): t�
 | Cơ chế mở sau độ kiếp | Thần thức, bản mệnh pháp bảo, ô chiêu 9 | Nguyên anh xuất khiếu, ngự không, thuấn di | Phân thân thần niệm, lĩnh vực lớn, ô chiêu 10 |
 | Câu chuyện | Ai cắt mạch? Tàng Mạch Hội đào mạch tinh bán cho các tông | Mạch tinh trôi lên mây: Kính Nguyệt Cung giữ "bóng của mạch" | Cựu Thiên Điện hút cạn mạch vào Cổ Thành để giữ một Hóa Thần đã chết |
 
-**Cách hiểu "mỗi cảnh giới một bản đồ"** (cần bạn xác nhận ở mục 15): *chương N là chặng kết thúc bằng độ kiếp vào cảnh giới N*. Người chơi cày bản đồ của chương trong lúc còn ở cảnh giới trước, độ kiếp ở cuối chương, rồi mang cơ chế mới của cảnh giới vừa đạt vào chương sau. Nhờ vậy ba nhịp 4/6/8 giờ khớp chính xác với ba bản đồ, và mỗi bản đồ được thiết kế quanh cơ chế người chơi **đã có** khi tới (Trúc Cơ: bay thấp tiết kiệm; Kết Đan: thần thức; Nguyên Anh: xuất khiếu và thuấn di).
+**Cách hiểu "mỗi cảnh giới một bản đồ"** (đã chốt, mục 15): *chương N là chặng kết thúc bằng độ kiếp vào cảnh giới N*. Người chơi cày bản đồ của chương trong lúc còn ở cảnh giới trước, độ kiếp ở cuối chương, rồi mang cơ chế mới của cảnh giới vừa đạt vào chương sau. Nhờ vậy ba nhịp 4/6/8 giờ khớp chính xác với ba bản đồ, và mỗi bản đồ được thiết kế quanh cơ chế người chơi **đã có** khi tới (Trúc Cơ: bay thấp tiết kiệm; Kết Đan: thần thức; Nguyên Anh: xuất khiếu và thuấn di).
 
 **Thang cấp mới** (mở rộng `realms.json`): Trúc Cơ thêm tầng đại viên mãn (cấp 19); Kết Đan cấp 20–23; Nguyên Anh cấp 24–27; Hóa Thần sơ kỳ cấp 28 (trần tạm, `MAX_LEVEL = 28`). Mỗi đại cảnh giới có 4 tiểu cảnh giới (sơ, trung, hậu kỳ, đại viên mãn) theo `glossary.stages`.
 
-**Quyết định cần bạn chốt:** mục 15 (6 điểm).
+**Quyết định:** đã chốt, xem mục 15.
 
 ---
 
@@ -349,7 +349,7 @@ Cụm: 12 / 12 / 13 / 14 / 9 = 60 cụm ≈ 230 quái thường, 12 tinh anh.
 
 ### 4.4 Cỏ rừng Vân Lam (G7)
 
-Giao ước **G7** ("cỏ rừng là bụi nhọn sẫm, thưa và lặp", `AUDIT_AND_ROADMAP.md`): thay bằng `prop_co_linh_rung` (lá mềm nhiều tầng xanh ngọc nhạt, 3 biến thể một atlas). Người dùng dựng trên Tripo từ concept (`docs/ASSET_CONCEPTS.md` mục cỏ). E-2 thay bụi nhọn thủ tục bằng tấm cắt từ atlas ở `game/grass.ts`; ngân sách: dưới 15 draw call cho cỏ (instancing theo ô 64 m), alpha cutout (không blend).
+Giao ước **G7** ("cỏ rừng là bụi nhọn sẫm, thưa và lặp", `AUDIT_AND_ROADMAP.md`): thay bằng `prop_co_linh_rung` (lá mềm nhiều tầng xanh ngọc nhạt, 3 biến thể một atlas). **Không dựng trên Tripo** (quyết định 7, mục 15): worker E-2 làm thẻ cỏ alpha instanced từ ảnh concept (`docs/ASSET_CONCEPTS.md` mục cỏ). E-2 thay bụi nhọn thủ tục bằng tấm cắt từ atlas ở `game/grass.ts`; ngân sách: dưới 15 draw call cho cỏ (instancing theo ô 64 m), alpha cutout (không blend).
 
 ---
 
@@ -755,16 +755,18 @@ Phiên làm việc này không gọi subagent; **chưa có lượt soát độc 
 
 ---
 
-## 15. Quyết định cần bạn chốt
+## 15. Quyết định (đã chốt)
 
-| # | Câu hỏi | Đề xuất của tôi |
+Người dùng đã chốt ngày 2026-11-16:
+
+| # | Quyết định | Trạng thái |
 | --- | --- | --- |
-| 1 | **"Mỗi cảnh giới một bản đồ"**: chương N là chặng kết thúc bằng độ kiếp vào cảnh giới N (cày bản đồ khi còn ở cảnh giới trước, độ kiếp ở cuối chương, cơ chế mới dùng ở chương sau). Hay: bản đồ của cảnh giới N là nơi cày khi đã ở cảnh giới N? | Cách đầu: khớp 4/6/8 giờ và ba độ kiếp, mỗi bản đồ có cơ chế người chơi đã có sẵn khi tới |
-| 2 | **Thang cấp**: Trúc Cơ thêm đại viên mãn (cấp 19), Kết Đan 20–23, Nguyên Anh 24–27, Hóa Thần sơ kỳ 28 là trần tạm; đổi `xpNeed` cấp 16–18 (30k/50k/70k → 56k/59k/62k), **kéo dài Trúc Cơ ~2,5 giờ → 4,0 giờ (+60%)** | Đồng ý, kèm migration tỉ lệ cho người đang ở Trúc Cơ |
-| 3 | **Diện tích**: ~2 km² (1,5 × 1,4 km) như bạn chốt, nhỏ hơn Vân Lam (vùng chơi 4,8 km²); mật độ 120 quái/km² thay 70 | Giữ 2 km² (đi nhanh hơn, ít chỗ trống); nếu muốn rộng như Vân Lam thì nói, tăng mật độ cụm tương ứng |
-| 4 | **Độ kiếp Nguyên Anh và Hóa Thần ở room riêng**, tổ đội cùng vào (Kết Đan vẫn ở world room): một mình vẫn qua được, hộ pháp chỉ giảm sát thương | Đồng ý; chỉ khác Trúc Cơ ở độ dài và số cơ chế |
-| 5 | **Cơ chế đặc trưng Hóa Thần**: phân thân thần niệm (phím `G`, 20 giây, 90 giây hồi, dùng lại chiêu cuối ở 50%) thay vì lĩnh vực mượn thế | Phân thân thần niệm; lĩnh vực mượn thế để chương Anh Biến |
-| 6 | **Danh sách asset người dùng dựng** (`ASSET_CONCEPTS.md`, 59 mục, 6 mức ưu tiên): có thể bỏ bớt các mục ưu tiên 5–6 (prop môi trường, kiếm, bộ trang bị) để làm sau; đặc biệt kiến trúc nên dựng bằng bpy thủ tục (art bible mục 6) | Làm theo thứ tự ưu tiên 1→4 trước (tinh anh, boss, quái, cỏ); 5–6 theo từng chương |
+| 1 | Bản đồ N = chặng tới cảnh giới N, kết thúc bằng độ kiếp vào cảnh giới N (chương 2 → Kết Đan, 3 → Nguyên Anh, 4 → Hóa Thần) | **Đã chốt** |
+| 2 | Thang cấp mới: Trúc Cơ đại viên mãn (cấp 19), Kết Đan 20–23, Nguyên Anh 24–27, Hóa Thần sơ kỳ 28 (trần tạm); đổi `xpNeed` cấp 16–18 kèm migration giữ tiến độ người đang ở Trúc Cơ (Trúc Cơ dài ~2,5 giờ → 4,0 giờ) | **Đã chốt** |
+| 3 | Độ kiếp Nguyên Anh và Hóa Thần ở room riêng, tổ đội vào cùng; một mình vẫn qua được (Kết Đan ở world room) | **Đã chốt** |
+| 4 | Cơ chế đặc trưng Hóa Thần là **phân thân thần niệm** (lĩnh vực mượn thế để chương Anh Biến) | **Đã chốt** |
+| 5 | Giữ mặc định: bản đồ ~2 km², mật độ 120 quái/km² | **Đã chốt (mặc định)** |
+| 6 | Asset làm theo ưu tiên 1–4 trước (tinh anh, boss, quái, cỏ); prop môi trường, kiếm, bộ trang bị theo từng chương; **kiến trúc dựng bằng bpy**, Tripo chỉ nháp | **Đã chốt (mặc định)** |
+| 7 | **Cỏ không dựng 3D trên Tripo**: worker làm thẻ cỏ alpha instanced (atlas, alpha cutout, `game/grass.ts`) từ ảnh concept; người dùng chỉ dựng trên Tripo mục không phải cỏ, bằng image-to-3D với PNG gốc (dán prompt làm mô tả phụ nếu giao diện có ô) | **Đã chốt** |
 
 Những điều không cần quyết: tên chiêu, tên vật phẩm, tên NPC (đề xuất ở trên, `lore-keeper` soát sau).
-

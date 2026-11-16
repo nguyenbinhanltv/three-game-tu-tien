@@ -40,8 +40,10 @@ const kind = (c) => (['elite', 'boss', 'mon'].includes(c) ? 'creature' : c);
 const face = (tris) => (/^\d+$/.test(tris) ? Number(tris) : null);
 const dirOf = (a) => (a.dir === 'chr' ? 'chr' : a.dir);
 const dest = (id, a) => `<DTL_ASSET_SOURCE>/${dirOf(a)}/${id}/`;
+const GRASS_NOTE = 'Cỏ KHÔNG dựng 3D trên Tripo. Worker E-2 làm **thẻ cỏ alpha instanced** (atlas 512², tấm cắt cắt chéo, alpha cutout) từ ảnh concept này, nạp qua `game/grass.ts`; bạn không cần làm gì với mục này.';
 const tripoPrompt = (a) => `${a.look}. ${TRIPO_SUFFIX[kind(a.cat)]}.`;
 const tripoParams = (a) => {
+  if (a.cat === 'grass') return 'Không dựng trên Tripo (thẻ cỏ alpha do worker làm từ ảnh concept).';
   if (a.cat === 'set') return 'Không dựng trên Tripo (dùng recolor + phụ kiện thủ tục của hệ 3-4); ảnh chỉ để chốt màu và hình khối.';
   const f = face(a.tris);
   const tex = a.tex.split('/')[0];
@@ -49,6 +51,7 @@ const tripoParams = (a) => {
     + `; texture mục tiêu base color ${tex}${a.tex.includes('/') ? ` / normal ${a.tex.split('/')[1]} / ORM ${a.tex.split('/')[2]}` : ''}`;
 };
 const pipeline = (id, a) => {
+  if (a.cat === 'grass') return 'Worker cắt ảnh concept thành atlas thẻ cỏ alpha (`apps/client/public/`), instancing ở `game/grass.ts`; không có GLB, không `meta.json` Tripo.';
   if (a.cat === 'set') return 'Không import GLB. Tham chiếu cho `recolorSet` và `setAccessories.ts` (xem `docs/set-accessories/README.md`).';
   const d = dirOf(a);
   const post = { quadruped: 'anim_quadruped.py', biped: 'anim_biped_extra.py', human: 'anim_human_base (retarget)', serpent: 'anim_serpent.py', float: '(không)', none: '(không)' }[a.rig];
@@ -66,14 +69,14 @@ let md = `# Asset concept cho Tripo (E-0)
 
 Bản 1 · 2026-11-16 · đi kèm \`docs/EXPANSION_DESIGN.md\`.
 
-**${ids.length} asset** người dùng tự dựng trên **Tripo web** (kênh web app trong \`docs/tripo-runbook.md\`; không dùng credit CLI). Mỗi mục có ảnh concept sinh bằng Codex (\`node tools/codex-assets/gen.mjs concepts [id…]\`, không tốn credit Tripo), prompt Tripo tiếng Anh theo \`docs/art-bible.md\` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong \`<DTL_ASSET_SOURCE>/\`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
+**${ids.length} asset** người dùng tự dựng trên **Tripo web** (kênh web app trong \`docs/tripo-runbook.md\`; không dùng credit CLI). **Mục cỏ (ưu tiên 4) không dựng trên Tripo**: worker làm thẻ cỏ alpha instanced từ ảnh concept. Mỗi mục còn lại có ảnh concept sinh bằng Codex (\`node tools/codex-assets/gen.mjs concepts [id…]\`, không tốn credit Tripo), prompt Tripo tiếng Anh theo \`docs/art-bible.md\` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong \`<DTL_ASSET_SOURCE>/\`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
 
 Bản HTML xem ảnh + prompt có nút sao chép: \`huong-dan-concept-asset.html\` (thư mục artifact của phiên). Ảnh gốc PNG (3:2) nằm ở \`<DTL_ASSET_SOURCE>/2d/concepts/<id>.png\` kèm \`<id>.prompt.txt\` (prompt sinh ảnh); ảnh nén WebP trong repo: \`docs/asset-concepts/<id>.webp\`.
 
 ## Cách dùng một mục (quy trình rút gọn)
 
 1. Mở ảnh concept (\`docs/asset-concepts/<id>.webp\`).
-2. Tripo web → **Image to 3D** (model **H3.1**), tải ảnh PNG gốc từ \`2d/concepts/<id>.png\`; dán prompt Tripo làm mô tả phụ. Thiết lập theo dòng "Tripo" của mục (Texture Detailed, PBR bật, Smart Low-poly bật, Polycount theo mục, quad tắt).
+2. Tripo web → **Image to 3D** (model **H3.1**), dùng **ảnh PNG gốc** \`<DTL_ASSET_SOURCE>/2d/concepts/<id>.png\` (không dùng bản WebP nén); **nếu giao diện có ô mô tả/prompt phụ thì dán prompt Tripo của mục vào đó**, nếu không có ô thì chỉ cần ảnh. Thiết lập theo dòng "Tripo" của mục (Texture Detailed, PBR bật, Smart Low-poly bật, Polycount theo mục, quad tắt).
 3. Chọn bản tốt nhất; nếu lưới nặng, dùng **Retopo** về đúng Polycount. Với asset **có xương**: rig theo cột "Xương" (cùng preset với quái/NPC hiện có, \`docs/prompts/tripo.md\` mục 2). Không mua animation: clip thủ tục đã có (\`anim_quadruped\`, \`anim_biped_extra\`, \`anim_serpent\`, \`anim_human_base\`).
 4. Tải **GLB** về thư mục đích (cột "Thư mục"): \`tripo/raw_v01.glb\` (dựng hình), \`lowpoly_v01.glb\`, \`rig_v01.glb\`; chép ảnh concept đã duyệt vào \`concept/concept_34_v01.png\` (đúng quy ước đặt tên ở \`docs/tripo-runbook.md\` mục 3). Tăng \`NN\` khi thử lại.
 5. Báo cho Claude/worker: worker tạo \`assets/source/<loại>/<id>/meta.json\`, chạy \`tools/blender/import_tripo.py\` và \`pnpm assets:build\`.
@@ -98,7 +101,9 @@ for (const p of [1, 2, 3, 4, 5, 6]) {
     md += `| Vai trò | ${a.role} |\n| Bản đồ | ${MAP[a.map]} |\n| Kích thước trong game | ${a.size} |\n`;
     md += `| Tam giác (Polycount LOD0) | ${a.tris} |\n| Texture (base color / normal / ORM) | ${a.tex} |\n| Xương | ${RIG[a.rig]} |\n`;
     md += `| Thư mục đích | \`${dest(id, a)}\` (\`concept/\`, \`tripo/\`) |\n| Tripo | ${tripoParams(a)} |\n\n`;
-    md += `**Prompt Tripo (tiếng Anh):**\n\n\`\`\`text\n${tripoPrompt(a)}\n\`\`\`\n\n`;
+    md += a.cat === 'grass' ? `**Không dựng trên Tripo.** ${GRASS_NOTE}
+
+` : `**Prompt Tripo (tiếng Anh):**\n\n\`\`\`text\n${tripoPrompt(a)}\n\`\`\`\n\n`;
     md += `**Ghi chú pipeline:** ${a.notes}\n\n**Import:** ${pipeline(id, a)}\n\n`;
   }
 }
@@ -123,7 +128,7 @@ if (htmlOut) {
 <tr><th>Thư mục</th><td><code>${dest(id, a)}</code></td></tr>
 <tr><th>Tripo</th><td>${esc(tripoParams(a))}</td></tr>
 </table>
-<div class="prompt"><button onclick="cp(this)">Sao chép prompt</button><pre>${esc(tripoPrompt(a))}</pre></div>
+${a.cat === 'grass' ? `<p class="note"><b>Không dựng trên Tripo.</b> ${esc(GRASS_NOTE.replace(/\*\*/g, '').replace(/`/g, ''))}</p>` : `<div class="prompt"><button onclick="cp(this)">Sao chép prompt</button><pre>${esc(tripoPrompt(a))}</pre></div>`}
 <p class="note">${esc(a.notes)}</p></div></section>`;
   };
   const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
