@@ -5,7 +5,7 @@
 //   - font (preload trong HTML và @font-face trong CSS khởi động)
 //   - asset 3D nạp ở màn tải qua AssetCache: assets/manifest.json + mọi id gọi `assets.acquire('<id>'`
 //     bằng chuỗi hằng trong apps/client/src (trừ trang viewer)
-//   - bảng icon UI (HUD hiện icon ngay khi vào)
+//   - bảng icon HUD (bảng vật phẩm nạp lười khi mở Túi)
 //   - âm thanh nạp đầu: audio/manifest.json + sprite SFX không `lazy` (audio.ts tải trước byte khi không tắt tiếng)
 // Âm thanh tính theo từng định dạng (webm cho Chrome/Firefox/Edge, m4a cho Safari); ngân sách so với định dạng nặng hơn.
 // Phần nạp sau khi vào (âm môi trường, nhạc, sprite lazy, chunk JS động, GLB khác) in riêng, không cộng vào ngân sách.
@@ -103,7 +103,7 @@ for (const [id, from] of bootAssetIds) {
 const iconsJson = path.join(DIST, 'assets/ui/icons.json');
 if (fs.existsSync(iconsJson)) {
   boot.push(measure('ui', '/assets/ui/icons.json'));
-  boot.push(measure('ui', '/assets/ui/' + (JSON.parse(fs.readFileSync(iconsJson, 'utf8')) as { file: string }).file));
+  boot.push(measure('ui', '/assets/ui/' + (JSON.parse(fs.readFileSync(iconsJson, 'utf8')) as { sheets: { hud: { file: string } } }).sheets.hud.file));
 }
 
 // ---------- âm thanh ----------

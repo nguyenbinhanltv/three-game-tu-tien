@@ -150,6 +150,25 @@ const _size = new THREE.Vector2();
 /** Ép kiểu nút về vec3 để gán lại biến `hdr` (TSL gõ kiểu theo nút cuối chuỗi). */
 const asVec3 = (n: unknown): ReturnType<typeof vec3> => n as ReturnType<typeof vec3>;
 
+/**
+ * Ẩn mọi vật vẽ được (mesh, sprite, đường, điểm) trong `root`, trừ cây con `keep`; Group và đèn giữ nguyên để
+ * `compileAsync` (duyệt vật `visible`) vẫn thu đủ đèn. Trả hàm khôi phục.
+ */
+export function hideRenderables(root: THREE.Object3D, keep: THREE.Object3D): () => void {
+  const hidden: THREE.Object3D[] = [];
+  root.traverse((o) => {
+    const d = o as THREE.Mesh & THREE.Sprite & THREE.Line & THREE.Points;
+    if (o.visible && (d.isMesh || d.isSprite || d.isLine || d.isPoints)) {
+      for (let p: THREE.Object3D | null = o; p; p = p.parent) if (p === keep) return;
+      o.visible = false;
+      hidden.push(o);
+    }
+  });
+  return () => {
+    for (const o of hidden) o.visible = true;
+  };
+}
+
 export class PostPipeline {
   readonly bloom: boolean;
   private readonly key: string;
@@ -305,6 +324,29 @@ export class PostPipeline {
    * Hậu kỳ (quad chỉnh màu, bloom, FXAA) không có đường biên dịch trước, vẫn dựng ở khung đầu.
    */
   async compileScene(): Promise<void> {
+    await this.compileInScene();
+  }
+
+  /**
+   * Biên dịch trước một nhóm tạm (T5, skin quái/boss vừa nạp): đưa vào cảnh chính đúng lúc phần đồng bộ của `compileAsync`
+   * (duyệt cảnh, gửi lệnh biên dịch) chạy, rồi gỡ ra ngay, nên các khung vẽ trong lúc chờ không thấy nhóm tạm. Dùng đúng khóa
+   * cache (sương, môi trường). Người gọi không được vẽ mesh dùng các pipeline này tới khi promise xong.
+   */
+  async compileObject(obj: THREE.Object3D): Promise<void> {
+    // Chỉ biên dịch nhóm tạm: ẩn tạm mọi vật vẽ được khác, giữ nguyên Group và đèn (số đèn nằm trong khóa cache).
+    const restore = hideRenderables(this.scene, obj);
+    this.scene.add(obj);
+    let done: Promise<void>;
+    try {
+      done = this.compileInScene();
+    } finally {
+      this.scene.remove(obj);
+      restore();
+    }
+    await done;
+  }
+
+  private async compileInScene(): Promise<void> {
     const r = this.renderer;
     const root = this.scene;
     const culled: THREE.Object3D[] = [];

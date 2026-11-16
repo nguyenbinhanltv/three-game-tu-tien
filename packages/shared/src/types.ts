@@ -424,6 +424,8 @@ export interface CampDef {
 
 export interface LevelDef {
   id: string;
+  /** Id địa hình trong `terrainOf` (E1-A); thiếu thì dùng `id`. */
+  terrain?: string;
   /** Quái đứng lẻ: tinh anh, boss (quái thường nằm ở `camps`). */
   spawns: SpawnDef[];
   nodes: NodeSpawnDef[];

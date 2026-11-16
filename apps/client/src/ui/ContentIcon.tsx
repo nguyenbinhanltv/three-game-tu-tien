@@ -1,35 +1,75 @@
 import { useEffect, useState } from 'react';
 
 type IconDef = { icon: string; iconFallback?: string };
+type Sheet = { file: string; columns: number; rows: number };
 type Atlas = {
-  file: string;
-  columns: number;
-  rows: number;
-  icons: Record<string, { x: number; y: number }>;
+  sheets: Record<string, Sheet>;
+  icons: Record<string, { s: string; x: number; y: number }>;
 };
 const base = `${import.meta.env.BASE_URL}assets/ui/`;
 let atlas: Promise<Atlas | null> | undefined;
-// undefined = still loading; null = failed; Atlas = ready for synchronous mounts.
+// undefined = đang tải; null = lỗi; Atlas = đã có manifest.
 let resolved: Atlas | null | undefined;
+// Bảng ảnh đã tải xong. `hud` nạp ngay sau manifest, `items` nạp lười khi có ô vật phẩm đầu tiên cần vẽ (T7).
+const ready = new Set<string>();
+const loading = new Map<string, Promise<void>>();
+const listeners = new Set<() => void>();
+const EAGER = ['hud'];
+
+function loadSheet(data: Atlas, name: string): Promise<void> {
+  let p = loading.get(name);
+  if (!p) {
+    const sheet = data.sheets[name];
+    p = new Promise<void>((resolve) => {
+      if (!sheet || !/^icons-[a-z]+\.[a-f0-9]{10}\.webp$/.test(sheet.file)) return resolve();
+      const image = new Image();
+      image.onload = () => {
+        ready.add(name);
+        resolve();
+      };
+      image.onerror = () => resolve();
+      image.src = base + sheet.file;
+    }).then(() => listeners.forEach((fn) => fn()));
+    loading.set(name, p);
+  }
+  return p;
+}
+
 function loadAtlas() {
   return atlas ??= (async () => {
     try {
       const response = await fetch(`${base}icons.json`);
       if (!response.ok) return null;
       const data = await response.json() as Atlas;
-      if (!/^icons\.[a-f0-9]{10}\.webp$/.test(data.file) || !data.icons || data.columns < 2 || data.rows < 2) return null;
-      const loaded = await new Promise<boolean>((resolve) => {
-        const image = new Image();
-        image.onload = () => resolve(true);
-        image.onerror = () => resolve(false);
-        image.src = base + data.file;
-      });
-      return loaded ? data : null;
+      if (!data.icons || !data.sheets) return null;
+      await Promise.all(EAGER.map((name) => loadSheet(data, name)));
+      return data;
     } catch { return null; }
   })().then((loaded) => {
     resolved = loaded;
     return loaded;
   });
+}
+
+/** Ô icon sẵn sàng vẽ (bảng của nó đã tải); chưa thì bắt đầu tải bảng và trả null để bên gọi dùng ký hiệu dự phòng. */
+function cellOf(icon: string) {
+  const data = resolved;
+  const cell = data?.icons[icon];
+  if (!data || !cell) return null;
+  if (!ready.has(cell.s)) {
+    void loadSheet(data, cell.s);
+    return null;
+  }
+  return { cell, sheet: data.sheets[cell.s] };
+}
+
+function styleOf(c: NonNullable<ReturnType<typeof cellOf>>): Record<string, string> {
+  const { cell, sheet } = c;
+  return {
+    backgroundImage: `url("${base}${sheet.file}")`,
+    backgroundSize: `${sheet.columns * 100}% ${sheet.rows * 100}%`,
+    backgroundPosition: `${cell.x / (sheet.columns - 1) * 100}% ${cell.y / (sheet.rows - 1) * 100}%`,
+  };
 }
 
 /**
@@ -38,38 +78,29 @@ function loadAtlas() {
  */
 export function contentIconStyle(icon: string): Record<string, string> | null {
   if (resolved === undefined) void loadAtlas();
-  const cell = resolved?.icons[icon];
-  if (!resolved || !cell) return null;
-  return {
-    backgroundImage: `url("${base}${resolved.file}")`,
-    backgroundSize: `${resolved.columns * 100}% ${resolved.rows * 100}%`,
-    backgroundPosition: `${cell.x / (resolved.columns - 1) * 100}% ${cell.y / (resolved.rows - 1) * 100}%`,
-  };
+  const c = cellOf(icon);
+  return c ? styleOf(c) : null;
 }
 
 /** Decorative icon: the parent control supplies its localized name. */
 export function ContentIcon({ def, className }: { def?: IconDef; className?: string }) {
-  const [sheet, setSheet] = useState<Atlas | null>(() => resolved ?? null);
+  const [, bump] = useState(0);
   useEffect(() => {
-    // Also cover a load that completed between this render and its effect.
-    if (resolved !== undefined) {
-      setSheet(resolved);
-      return;
-    }
     let active = true;
-    loadAtlas().then((loaded) => { if (active) setSheet(loaded); });
-    return () => { active = false; };
+    const fn = () => active && bump((n) => n + 1);
+    listeners.add(fn);
+    if (resolved === undefined) void loadAtlas().then(fn);
+    return () => {
+      active = false;
+      listeners.delete(fn);
+    };
   }, []);
-  const cell = def && sheet?.icons[def.icon];
-  if (!sheet || !cell) {
-    const fallback = def?.iconFallback ?? (def && !/^(itm|skl)_/.test(def.icon) ? def.icon : '\u2754');
+  const c = def ? cellOf(def.icon) : null;
+  if (!c) {
+    const fallback = def?.iconFallback ?? (def && !/^(itm_|skl_)/.test(def.icon) ? def.icon : '❔');
     return <span className={'content-icon fallback' + (className ? ' ' + className : '')} aria-hidden="true">{fallback}</span>;
   }
-  return <span className={'content-icon' + (className ? ' ' + className : '')} aria-hidden="true" style={{
-    backgroundImage: `url("${base}${sheet.file}")`,
-    backgroundSize: `${sheet.columns * 100}% ${sheet.rows * 100}%`,
-    backgroundPosition: `${cell.x / (sheet.columns - 1) * 100}% ${cell.y / (sheet.rows - 1) * 100}%`,
-  }} />;
+  return <span className={'content-icon' + (className ? ' ' + className : '')} aria-hidden="true" style={styleOf(c)} />;
 }
 
 /** Icon giao diện (nút HUD, linh căn, vai trò, tiền…): tranh trong atlas, thiếu thì dùng ký hiệu dự phòng. */
