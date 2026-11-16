@@ -1,6 +1,6 @@
 // pnpm shots:vfx: video webm + dãy khung từng chiêu (VFX-V0/V1), nam và nữ.
 //   tsx src/shots-vfx.ts --out <thư mục tuyệt đối> [--skills skl_kiem_khi_tram,skl_phi_kiem] [--genders m,f] [--fxq high|medium|low]
-//                        [--old] [--combo] [--webm-only] [--sheet-only] [--fps 24]
+//                        [--old] [--webm-only] [--sheet-only] [--frames] [--fps 24] [--tile 40] [--tmax 1000] [--dist 7] [--query &a=b]
 // Vào game bằng tài khoản thử, dựng cảnh bằng lệnh GM (một con sói trước mặt), ghi màn hình bằng CDP screencast rồi:
 //   - ghép mỗi chiêu hai video webm (chậm 0,25× để xem chi tiết, tốc độ thật) bằng ffmpeg-static (VP9);
 //   - ghép một tờ ảnh dãy khung (mỗi ô một mốc thời gian game, viền đỏ = khung hit) như docs/e2g-skills.
@@ -23,7 +23,7 @@ const GENDERS = opt('--genders', 'm,f').split(',');
 const SKILLS = opt('--skills', 'skl_kiem_khi_tram,skl_phi_kiem').split(',');
 const FXQ = opt('--fxq', 'high');
 const OLD = args.includes('--old');
-const COMBO = args.includes('--combo');
+const PERF = args.includes('--perf');
 const WEBM_ONLY = args.includes('--webm-only');
 const SHEET_ONLY = args.includes('--sheet-only');
 const FPS = Number(opt('--fps', '24'));
@@ -109,9 +109,7 @@ async function record(ctx: BrowserContext, page: Page, slow: number, spanGame: n
   await page.bringToFront();
   await sleep(300);
   await page.evaluate(() => ((window as unknown as G).__game!.skillLog.length = 0));
-  if (args.includes('--debug')) {
-    await page.evaluate(`(() => { const g = window.__game; const out = (window.__vfxprobe = []); const V = g.camera.position.constructor; const pr = (x, y, z) => { const v = new V(x, y, z).project(g.camera); return [Math.round((v.x * 0.5 + 0.5) * 1100), Math.round((-v.y * 0.5 + 0.5) * 900)]; }; let n = 0; (function tick(){ const hs = [...g.vfx.pool.batched]; const dc = hs.filter((m) => m.fxKind === 'decal' && m.fxA.w === 0); if (dc.length && n++ % 5 === 0 && out.length < 8) { const m = dc[0]; const mon = [...g.ents.monsters.values()][0]; out.push({ crack: pr(m.position.x, m.position.y, m.position.z), cp: m.position.toArray().map((x) => +x.toFixed(1)), me: pr(g.renderPos.x, g.renderPos.y, g.renderPos.z), wolfEnt: mon ? pr(mon.x, mon.y, mon.z) : null, wolfPos: mon ? [mon.x, mon.z] : null }); } requestAnimationFrame(tick); })(); })()`);
-  }
+  if (PERF) await page.evaluate(`(() => { const g = window.__game; const o = (window.__perf = { dc: [], tri: [], ms: [] }); let last = performance.now(); (function t() { const i = g.info(); const n = performance.now(); o.dc.push(i.drawCalls); o.tri.push(i.triangles); o.ms.push(n - last); last = n; requestAnimationFrame(t); })(); })()`);
   const cdp = await ctx.newCDPSession(page);
   const frames: Frame[] = [];
   cdp.on('Page.screencastFrame', (f: { data: string; sessionId: number; metadata: { timestamp?: number } }) => {
@@ -238,57 +236,10 @@ async function main(): Promise<void> {
           if (i < 0) throw new Error('không thấy chiêu ' + id);
           await page.evaluate((s) => (window as unknown as G).__game!.useSkill(s), i);
         };
-        if (args.includes('--lab2')) {
-          await scene(page);
-          if (args.includes('--nowolf')) await gm(page, 'killall', 1200);
-          await closeCam(page, DIST);
-          await press(SKILLS[0]);
-          for (let n = 0; n < 12; n++) {
-            await sleep(n === 0 ? 900 : 250);
-            if (n === 2) console.log('[mat]', JSON.stringify(await page.evaluate(`[...window.__game.vfx.pool.batched].filter((m) => m.fxKind === 'crystal').slice(0,2).map((m) => [m.parent && m.parent.type, m.visible, m.layers.mask, m.material && m.material.name, m.frustumCulled, m.matrixAutoUpdate, m.geometry.uuid.slice(0,4), m.geometry.boundingSphere && m.geometry.boundingSphere.radius, m.fxA.toArray()])`)));
-            if (n === 1 && args.includes('--dummy')) await page.evaluate(`(() => { const g = window.__game, L = window.__fxlab; const m = g.vfx.fx(L.shapeGeometry('spike'), 0x2cc7dc, 0, 'crystal'); m.position.set(g.cur.x + 3, 150, g.cur.z - 2); m.scale.setScalar(0.01); m.fxA.set(1.2, 0, 1, 0); })()`);
-            if (n === 1 && args.includes('--hidefx')) await page.evaluate(`window.__game.vfx.group.visible = false`);
-            console.log('[dup]', n, JSON.stringify(await page.evaluate(`(() => { const p = window.__game.vfx.pool; return [p.free.length, new Set(p.free).size, p.created, p.batched.size]; })()`)));
-            if (n >= 100) console.log('[ext]', n, JSON.stringify(await page.evaluate(`(() => { const g = window.__game; const V = g.camera.position.constructor; return [...g.vfx.pool.batched].map((m) => { m.updateMatrix(); const pos = m.geometry.getAttribute('position'); let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (let i = 0; i < pos.count; i += 3) { const v = new V(pos.getX(i), pos.getY(i), pos.getZ(i)).applyMatrix4(m.matrix).project(g.camera); const sx = (v.x * 0.5 + 0.5) * 1100, sy = (-v.y * 0.5 + 0.5) * 900; x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); } return [m.fxKind, pos.count, m.fxColor.toArray().map((x) => +x.toFixed(2)), [Math.round(x0), Math.round(y0), Math.round(x1), Math.round(y1)]]; }); })()`)));
-            if (n >= 1 && n <= 2) console.log('[chk]', n, JSON.stringify(await page.evaluate(`window.__game.vfx.batch.root.children.filter((c) => c.visible).map((c) => [c.material.name, c.count, c.renderOrder])`)));
-            if (n >= 1 && n <= 3) console.log('[grp]', n, JSON.stringify(await page.evaluate(`window.__game.vfx.group.children.filter((c) => c.visible).map((c) => [c.type, c.material && c.material.name, c.fxKind, c.scale && c.scale.toArray().map((x) => +x.toFixed(1)), c.children.length])`)));
-            if (n >= 1 && n <= 3) console.log('[hand]', n, JSON.stringify(await page.evaluate(`[...window.__game.vfx.pool.batched].map((m) => [m.fxKind, m.geometry.getAttribute('position').count, m.scale.toArray().map((x) => +x.toFixed(2)), m.position.toArray().map((x) => +x.toFixed(1)), m.fxColor.toArray().map((x) => +x.toFixed(2)), m.fxA.w])`)));
-            if (n === 2) console.log('[full]', JSON.stringify(await page.evaluate(`[...window.__game.vfx.pool.batched].filter((m) => m.fxKind === 'crystal').map((m) => ({ p: m.position.toArray(), s: m.scale.toArray(), q: m.quaternion.toArray(), a: m.fxA.toArray(), b: m.fxB.toArray(), c: m.fxColor.toArray(), o: m.fxOpacity, k: m.fxK, ro: m.renderOrder, v: m.visible }))`)));
-            if (n === 2) console.log('[all]', JSON.stringify(await page.evaluate(`[...window.__game.vfx.pool.batched].filter((m) => m.fxKind === 'crystal').map((m) => [...m.position.toArray(), ...m.scale.toArray(), ...m.quaternion.toArray()].map((x) => +x.toFixed(2)))`)));
-            console.log('[chunks]', n, JSON.stringify(await page.evaluate(`window.__game.vfx.batch.root.children.filter((c) => c.visible && c.material.name === 'fx-crystal-i').map((c) => ['C', [...c.geometry.getAttribute('aFxC').array.slice(0, 8)].map((x) => +x.toFixed(2)), 'A', [...c.geometry.getAttribute('aFxA').array.slice(0, 8)].map((x) => +x.toFixed(2)), 'B', [...c.geometry.getAttribute('aFxB').array.slice(0, 4)].map((x) => +x.toFixed(2)), 'K', [...c.geometry.getAttribute('aFxK').array.slice(0, 4)].map((x) => +x.toFixed(2)), 'M', [...c.instanceMatrix.array.slice(0, 16)].map((x) => +x.toFixed(2))])`)));
-            console.log('[lab2]', n, JSON.stringify(await page.evaluate(`(() => { const g = window.__game; const V = g.camera.position.constructor; const pr = (m) => { const v = new V(m.position.x, m.position.y + 1, m.position.z).project(g.camera); return [Math.round((v.x * 0.5 + 0.5) * 1100), Math.round((-v.y * 0.5 + 0.5) * 900)]; }; return [...g.vfx.pool.batched].filter((m) => m.fxKind === 'crystal').slice(0, 2).map((m) => ({ p: m.position.toArray(), s: m.scale.toArray(), q: m.quaternion.toArray(), a: m.fxA.toArray(), b: m.fxB.toArray(), c: m.fxColor.toArray(), o: m.fxOpacity, k: m.fxK, ro: m.renderOrder, v: m.visible, geo: m.geometry.getAttribute('position').count, mat: m.matrix.elements.slice(0, 16).map((x) => +x.toFixed(2)) })); })()`)));
-            await page.screenshot({ path: path.join(OUT, `lab2-${g}-${pass}-${n}.png`) });
-          }
-          await ctx.close();
-          continue;
-        }
-        if (args.includes('--lab')) {
-          // Phòng thử: bày các hình FX cố định trước mặt nhân vật rồi chụp (tìm lỗi shader/vị trí).
-          await scene(page);
-          await closeCam(page, 6);
-          await page.evaluate(`(() => { const g = window.__game, L = window.__fxlab; const me = g.renderPos;
-            const mk = (shape, kind, x, z, o) => { const m = g.vfx.fx(L.shapeGeometry(shape), o.c ?? 0x2cc7dc, 1, kind); m.position.set(me.x + x, me.y + (o.y ?? 0.2), me.z + z); if (o.rx) m.rotation.x = o.rx; m.scale.setScalar(o.s ?? 1); m.fxB.set(0.9, 0.99, 1, 0.5); m.fxA.set(o.a0 ?? 1.06, o.a1 ?? 0, 3.3, o.w ?? 0); m.fxK = o.k ?? 0.5; return m; };
-            const dk = (shape, x, z, w, a0, r, k) => { const m = mk(shape,'decal',x,z,{s:r,a0,w,k,y:0.14}); m.fxA.y = 0; return m; };
-            const cur = g.cur; const actor = { x: cur.x, y: cur.y, z: cur.z, yaw: 1.2, model: {} };
-            const c = { sid: g.sid, actor, mine: true, tier: 2, pal: L.paletteOf('lac_kiem_quyet'), seed: 3.1, dist: 5 };
-            const tgt = { x: cur.x + Math.sin(1.2) * 3, y: cur.y, z: cur.z + Math.cos(1.2) * 3, chest: 1 };
-            const R = g.skillFx.runner;
-            R.mesh(c, { type: 'mesh', shape: 'spike', at: 'ground', t: 0, tier: 0, offset: [0.5, 0, 0.3], rot: [-81, 0, -20], scale: 0.7, dur: 8, sweep: 0.18, erodeFrom: 0.95, alpha: 0.97, seed: 1 }, tgt, 0);
-            R.mesh(c, { type: 'mesh', shape: 'spike', at: 'ground', t: 0, tier: 0, offset: [-0.5, 0, 0.8], rot: [-90, 0, 0], scale: 0.7, dur: 8, sweep: 0.18, erodeFrom: 0.95, alpha: 0.97, seed: 2 }, tgt, 1);
-            const Q = g.camera.quaternion.constructor; const E = g.camera.rotation.constructor;
-            const qs = [new Q(-0.7071, 0, 0, 0.7071), new Q().setFromAxisAngle({ x: 0, y: 1, z: 0 }, 1.2).multiply(new Q(-0.7071, 0, 0, 0.7071)), new Q().setFromEuler(new E(-1.4, 0, -0.35, 'XYZ')), new Q().setFromAxisAngle({ x: 0, y: 1, z: 0 }, 0.4).multiply(new Q().setFromEuler(new E(-1.4, 0, -0.35, 'XYZ')))];
-            window.__lab = qs.map((q, i) => { const m = mk('spike','crystal', i * 1.6 - 2.4, 1.5, {s:0.5,a0:1.2,y:0}); m.quaternion.copy(q); return m; });
-            for (const m of window.__lab) m.fxOpacity = 1; })()`);
-          await sleep(1500);
-          console.log('[lab]', JSON.stringify(await page.evaluate(`({ st: window.__game.vfx.batch.stats(), n: window.__lab.length, p: [...window.__game.vfx.pool.batched].map((m) => ({ k: m.fxKind, p: m.position.toArray().map((x) => +x.toFixed(2)), s: m.scale.toArray().map((x) => +x.toFixed(2)), q: m.quaternion.toArray().map((x) => +x.toFixed(2)), a: m.fxA.toArray().map((x) => +x.toFixed(2)), b: m.fxB.toArray().map((x) => +x.toFixed(2)), c: m.fxColor.toArray().map((x) => +x.toFixed(2)), o: m.fxOpacity, ro: m.renderOrder, kk: m.fxK, vis: m.visible })), cur: window.__game.cur, rp: window.__game.renderPos.toArray() })`)));
-          await page.screenshot({ path: path.join(OUT, `lab-${g}-${pass}.png`) });
-          await ctx.close();
-          continue;
-        }
         for (const sk of SKILLS) {
           await scene(page);
           await closeCam(page, DIST);
-          const combo = sk === 'skl_phi_kiem' && (COMBO || true);
+          const combo = sk === 'skl_phi_kiem';
           const span = combo ? 3000 : 1700;
           const act = async () => {
             if (!combo) return press(sk);
@@ -301,8 +252,11 @@ async function main(): Promise<void> {
           const r = await record(ctx, page, slow, span, act);
           const gerr = (await page.evaluate(() => JSON.stringify((window as unknown as G).__game!.gpuErrors ?? []))) as string;
           if (gerr !== '[]') console.warn('[shots-vfx] gpuErrors:', gerr.slice(0, 1500));
-          if (args.includes('--debug')) console.log('[shots-vfx] probe', JSON.stringify(await page.evaluate(() => (window as unknown as { __vfxprobe: unknown }).__vfxprobe)));
-          if (args.includes('--debug')) console.log('[shots-vfx] runner.log', JSON.stringify(await page.evaluate(() => (window as unknown as G).__game!.skillFx.runner.log.map((x: { type: string; at: number; tgt?: number[]; me?: number[] }) => x.type + '@' + x.at.toFixed(2) + (x.tgt ? JSON.stringify(x.tgt.map(Math.round)) + JSON.stringify(x.me.map(Math.round)) : '')))), JSON.stringify(await page.evaluate(() => (window as unknown as G).__game!.vfx.batch.stats())));
+          if (PERF) {
+            const p = (await page.evaluate(() => (window as unknown as { __perf: { dc: number[]; tri: number[]; ms: number[] } }).__perf)) as { dc: number[]; tri: number[]; ms: number[] };
+            const q = (a: number[], f: number) => [...a].sort((x, y) => x - y)[Math.floor((a.length - 1) * f)];
+            console.log(`[perf] ${sk} ${pass} ${OLD ? 'cu' : 'moi'}: draw p50/max ${q(p.dc, 0.5)}/${Math.max(...p.dc)}, tam giác p50/max ${q(p.tri, 0.5)}/${Math.max(...p.tri)}, khung ms p50/p95 ${q(p.ms, 0.5).toFixed(1)}/${q(p.ms, 0.95).toFixed(1)}`);
+          }
           const tag = `${g === 'm' ? 'nam' : 'nu'}-${sk.replace('skl_', '')}${OLD ? '-cu' : ''}`;
           if (!SHEET_ONLY) {
             const ok = encodeWebm(r.frames, r.t0, path.join(OUT, `${tag}-${pass === 'slow' ? 'cham' : 'that'}.webm`));

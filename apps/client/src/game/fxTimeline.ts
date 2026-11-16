@@ -112,7 +112,7 @@ export class FxRunner {
   private decals = 0;
   private serial = 0;
   /** Nhật ký dev: sự kiện đã phát (`__game.skillFx.runner.log`). */
-  readonly log: { skill: string; type: string; at: number; real: number; tgt?: number[]; me?: number[] }[] = [];
+  readonly log: { skill: string; type: string; at: number; real: number }[] = [];
 
   constructor(
     private v: Vfx,
@@ -182,8 +182,7 @@ export class FxRunner {
   private play(c: Cast, s: Queued): void {
     const ev = s.ev;
     if (import.meta.env.DEV) {
-      const t0 = this.env.targetOf(c.sid);
-      this.log.push({ tgt: t0 ? [t0.x, t0.y, t0.z] : undefined, me: [c.actor.x, c.actor.y, c.actor.z], skill: c.def.id, type: ev.type + (ev.type === 'mesh' ? ':' + ev.shape : ev.type === 'decal' ? ':' + ev.tex : ''), at: s.at, real: performance.now() });
+      this.log.push({ skill: c.def.id, type: ev.type + (ev.type === 'mesh' ? ':' + ev.shape : ev.type === 'decal' ? ':' + ev.tex : ''), at: s.at, real: performance.now() });
       if (this.log.length > 300) this.log.shift();
     }
     const tgt = this.env.targetOf(c.sid);
@@ -424,5 +423,3 @@ export class FxRunner {
   }
 }
 
-// Bản dev: lấy lưới/hằng số để thử hình trong console hoặc công cụ chụp (`shots-vfx --lab`).
-if (import.meta.env.DEV && typeof window !== 'undefined') (window as unknown as { __fxlab: unknown }).__fxlab = { shapeGeometry, shapeKind, QUAD_XZ, paletteOf };

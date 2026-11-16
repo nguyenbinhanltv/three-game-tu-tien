@@ -20,7 +20,7 @@ import { hash21, vnoise, type FxUniforms, type N } from './common';
  */
 
 /** Ramp ba tầng: `s` 0..1 → lõi dưới `t1`, thân tới `t2`, viền trên `t2`; `soft` là độ mềm mép giữa các tầng. */
-export function ramp3(s: N, core: N, body: N, rim: N, t1 = 0.42, t2 = 0.8, soft = 0.04): N {
+export function ramp3(s: N, core: N, body: N, rim: N, t1 = 0.52, t2 = 0.86, soft = 0.04): N {
   return mix(mix(core, body, smoothstep(float(t1).sub(soft), float(t1).add(soft), s)), rim, smoothstep(float(t2).sub(soft), float(t2).add(soft), s));
 }
 
@@ -46,7 +46,7 @@ export function fresnelRim(power = 2.4): N {
 }
 
 /** Màu lõi suy từ màu thân: sẫm hơn và bão hòa hơn (bình phương trong không gian tuyến tính). */
-const coreOf = (body: N) => body.mul(body).mul(0.62);
+const coreOf = (body: N) => body.mul(body).mul(0.42);
 
 /**
  * `toon`: lưỡi liềm, vòng, dải xoắn... UV: `u` dọc hình (chiều quét), `v` từ mép trong (0) ra mép ngoài (1).
@@ -314,7 +314,7 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
   const smokeMask = one.sub(smoothstep(smokeEdge.sub(0.05), smokeEdge, r));
   const smokeLive = dissolve(sn2.mul(0.55).add(r.mul(0.35)).add(0.05), fade.mul(1.15), 0.06);
   const tone = step(0.52, sn2.add(p.y.mul(0.12)));
-  const smokeCol = mix(mix(body, vec3(0.05, 0.1, 0.13), 0.45), mix(rim, body, 0.25), tone);
+  const smokeCol = mix(mix(body, vec3(0.04, 0.09, 0.12), 0.6), mix(body, vec3(0.5, 0.6, 0.66), 0.45), tone);
   const smokeA = smokeMask.mul(smokeLive);
 
   const isCrack = step(-0.5, kind).mul(step(kind, 0.5));
