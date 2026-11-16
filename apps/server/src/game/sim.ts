@@ -216,6 +216,7 @@ import { DuelSystem } from './duel';
 import { TeleportSystem } from './teleport';
 import { QuestObjSystem } from './questobj';
 import { SpiritSystem } from './spirit';
+import { MirrorSystem, wardMul } from './mirror';
 import { SoulSystem } from './soul';
 import { parties } from './party';
 import { InventorySystem } from './inventory';
@@ -619,7 +620,33 @@ export class GameSim {
     warn: (p, k, params) => this.warn(p, k, params),
     sys: (p, k, params, type) => this.sys(p, k, params, type),
     stopMeditate: (p) => this.setMeditating(p, false),
-    onScanned: (p, hits) => this.questObj.onSpiritScan(p, hits),
+    onScanned: (p, hits) => {
+      this.questObj.onSpiritScan(p, hits);
+      this.mirror.onScan(p, hits);
+    },
+  });
+
+  /** Cung gương (E3-M): bóng giả, lặp lại, đĩa gương, nguyệt phản của Kính Nguyệt Chân Quân. Chỉ chạy khi room có boss `mirror`. */
+  readonly mirror = new MirrorSystem({
+    now: () => this.now,
+    players: () => this.players.values(),
+    monsters: () => this.monsters,
+    isDead: (p) => this.isDead(p),
+    monsterDef: (id) => MONSTER.get(id),
+    spawnMinion: (def, level, x, z, owner) => {
+      const e = this.spawnMonster(def, level, x, z, null);
+      e.minionOf = owner.id;
+      return e;
+    },
+    addHazard: (g, delay, mul, kind, src, atk) => this.addHazard(g, delay, mul, false, kind, src, atk),
+    damagePlayer: (p, n, src) => this.damagePlayer(p, n, src, true),
+    fx: (m) => this.fx(m),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    sysAll: (k, params, type) => this.sysAll(k, params, type),
+    spawnShadow: (p, st, o) => this.spawnShadow(p, st, o),
+    sense: (m, until) => this.monSkills.sense(m, until),
+    markReal: (m) => this.monSkills.markReal(m),
+    groundAt: (x, z) => this.terrain.groundAt(x, z),
   });
 
   /** Nguyên anh xuất khiếu (E3-K, phím X; cứu mạng khi chết ở Nguyên Anh trở lên). */
@@ -960,6 +987,7 @@ export class GameSim {
     this.tele.tick();
     this.questObj.tick();
     this.spirit.tick();
+    this.mirror.tick();
     this.soul.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
@@ -1206,6 +1234,7 @@ export class GameSim {
    */
   private beginSkill(p: PlayerEnt, skill: SkillDef, targetId: string): void {
     const f = p.flow;
+    this.mirror.onSkill(p, skill.id);
     let combo = -1;
     let mul = 1;
     if (skill.combo) {
@@ -1386,7 +1415,7 @@ export class GameSim {
   }
 
   /** Dùng đan tăng sức: đặt buff theo luật làm mới (không cộng dồn), lưu trong meta. */
-  private applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit'; pct: number; sec: number } } }, potency: number): void {
+  private applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void {
     const b = def.use?.buff;
     if (!b) return;
     const c = p.char;
@@ -1396,7 +1425,8 @@ export class GameSim {
     c.meta.buffs[b.kind] = mergeBuff(c.meta.buffs[b.kind], m, now + b.sec * 1000 * potency, now);
     c.recalc();
     p.mth.dirty = true;
-    this.sys(p, 'sys.pill_buff', { item: itemName(def.id), what: t('ui.pill.buff.' + b.kind), n: Math.round(m * 100), m: Math.round((b.sec * potency) / 60) }, 'good');
+    if (b.kind === 'ward') this.sys(p, 'sys.ward_buff', { item: itemName(def.id), n: Math.round(m * 100), s: Math.round(b.sec * potency) }, 'good');
+    else this.sys(p, 'sys.pill_buff', { item: itemName(def.id), what: t('ui.pill.buff.' + b.kind), n: Math.round(m * 100), m: Math.round((b.sec * potency) / 60) }, 'good');
     this.fx({ t: 'potion', src: p.sid });
   }
 
@@ -2308,6 +2338,7 @@ export class GameSim {
     const ph = bossPhaseAt(m.s.hp / m.s.mhp, phases, m.phase);
     if (ph === m.phase) return;
     this.setPhase(m, ph);
+    this.mirror.onPhase(m, ph);
     // Pha mới bỏ chú/đọc chú thì hủy cái đang dở, không để kẹt cờ niệm chú.
     if (m.chant && !m.rules.ai.chant) {
       m.chant = null;
@@ -2440,6 +2471,7 @@ export class GameSim {
     else if (mon.spawn) mon.respawnAt = this.now + mon.spawn.respawn * 1000;
     else mon.removeAt = this.now + 4000;
     if (this.isTimed(mon)) this.sendBossTimers();
+    this.mirror.onKill(mon);
     if (mon.minionOf) {
       // Đệ tử do quái gọi: không tu vi, không rơi đồ, không tính nhiệm vụ.
       mon.threat.clear();
@@ -2599,6 +2631,15 @@ export class GameSim {
     if (this.isDead(p) || this.soul.isScouting(p)) return;
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
+    // Định Thần Phù (E3-M): giảm sát thương "gương" (quái `glass`, boss gương, bóng tâm ma trong cung).
+    if (src) {
+      const ward = buffMag(c.meta.buffs, 'ward', Date.now());
+      if (ward > 0) {
+        const a = this.monById.get(src);
+        if (a && (a.def.glass || a.def.mirror || (a.owner && this.mirror.active()))) n = Math.max(1, Math.round(n * wardMul(ward)));
+      }
+    }
+    if (src && this.bossDmgMul !== 1 && this.monById.get(src)?.def.boss) n = Math.max(1, Math.round(n * this.bossDmgMul));
     if (this.now < p.mth.guardUntil) n = reduceDamage(n, p.mth.guardReduce);
     // Kim Chung Trấn (E2-G): phản một phần sát thương (sau khi giảm) về quái đánh mình.
     if (this.now < p.mth.reflectUntil && src) {
@@ -3992,7 +4033,16 @@ export class GameSim {
     p.chatAt = this.now;
     if (p.dev && (text as string).startsWith('/gm ')) return this.gm(p, (text as string).slice(4).trim().split(/\s+/));
     this.host.broadcast(S.CHAT, { from: p.char.name, c: 'say', m: text });
+    // Kính Nguyệt Chân Quân lặp lại câu cuối của người đối diện (E3-M).
+    const echo = this.mirror.echoLine(text as string);
+    if (echo && this.now - this.mirrorChatAt > 6000) {
+      this.mirrorChatAt = this.now;
+      this.host.broadcast(S.CHAT, { from: monsterName(echo.boss.def.id), c: 'say', m: echo.line });
+    }
   }
+  private mirrorChatAt = 0;
+  /** Hệ số sát thương boss lên người chơi (E3-M: giải đố ba gương đúng thì < 1). */
+  bossDmgMul = 1;
 
   /** Id địa điểm thuộc level của room này. */
   placeIds(): string[] {
