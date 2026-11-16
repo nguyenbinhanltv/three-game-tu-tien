@@ -3,6 +3,10 @@ import type { Client } from 'colyseus';
 import {
   ARTIFACT_MAX_LEVEL,
   artifactLevelMods,
+  BONDED_ARTIFACT_ID,
+  bondedLevel,
+  furnaceHeal,
+  type ArtifactDef,
   artifactQiGain,
   drainMp,
   DRAIN_MAX_TARGETS,
@@ -167,7 +171,7 @@ import {
   type Terrain,
 } from '@dtl/shared';
 import { TribSystem, type GuardCfg, type TribState } from './trib';
-import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, nextMajorRealmName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
+import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, nextMajorRealmName, NPC, QUEST, QUESTS, realmName, RECIPE, SET, SETS, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
@@ -199,6 +203,8 @@ import { CampSystem, type CampRt } from './camps';
 import { empowerDeadlines, isEmpowered, SkillFlow } from './skillflow';
 import { DuelSystem } from './duel';
 import { TeleportSystem } from './teleport';
+import { QuestObjSystem } from './questobj';
+import { SpiritSystem } from './spirit';
 import { parties } from './party';
 import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg, equippedArtifact, feedQi, passiveValue, progressOf, pruneBuffs } from './artifact';
@@ -575,6 +581,31 @@ export class GameSim {
     stopMeditate: (p) => this.setMeditating(p, false),
   });
 
+  /** Mục tiêu nhiệm vụ `touch`/`scan`/`escort` (E2-H). */
+  readonly questObj = new QuestObjSystem({
+    now: () => this.now,
+    level: () => this.level,
+    players: () => this.players.values(),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    warn: (p, k, params) => this.warn(p, k, params),
+    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
+  });
+
+  /** Thần thức (E2-E, phím V): quét vùng quanh người, server quyết định kết quả. */
+  readonly spirit = new SpiritSystem({
+    now: () => this.now,
+    players: () => this.players.values(),
+    monsters: () => this.monsters,
+    nodes: () => this.nodes.values(),
+    pois: () => this.level.pois ?? [],
+    isMate: (a, b) => parties.matesInRoom(a.char.id, this.host).includes(b),
+    inDuel: (p) => this.duel.inDuel(p),
+    warn: (p, k, params) => this.warn(p, k, params),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    stopMeditate: (p) => this.setMeditating(p, false),
+    onScanned: (p, hits) => this.questObj.onSpiritScan(p, hits),
+  });
+
   /** Cường hóa, khảm ngọc, tẩy luyện, phân giải (P3-3). */
   readonly upgrade = new UpgradeSystem({
     now: () => this.now,
@@ -799,6 +830,7 @@ export class GameSim {
     if (p.trib) this.endTribulation(p, false, true);
     this.realm.onLeave(p);
     this.duel.onGone(p);
+    this.questObj.drop(p);
     this.savePlayer(p);
     this.meleeSlot.delete(sid);
     this.slotWait.delete(sid);
@@ -885,6 +917,8 @@ export class GameSim {
     this.camps.tick();
     this.duel.tick();
     this.tele.tick();
+    this.questObj.tick();
+    this.spirit.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -1042,6 +1076,7 @@ export class GameSim {
     if (ups > 0) {
       this.sys(p, 'sys.levelup', { realm: realmName(c.level) }, 'good');
       this.fx({ t: 'levelup', src: p.sid });
+      this.spirit.sendState(p);
       this.questEvent(p, 'level', undefined, c.level);
       console.log(`[level] ${c.name}: ${before} → ${c.level}`);
     }
@@ -1312,22 +1347,49 @@ export class GameSim {
 
   /** Kích hoạt pháp bảo phụ đang đeo. Server quyết định hết: hồi chiêu, linh lực, mục tiêu, hiệu ứng. */
   onArtifact(p: PlayerEnt): void {
+    if (!this.artifactGate(p)) return;
+    const def = equippedArtifact(p.char.equip);
+    if (!def) return this.warn(p, 'sys.art_none');
+    this.fireArtifact(p, def, progressOf(p.char.meta, def.id).lv);
+  }
+
+  /** Bản mệnh pháp bảo Ngưng Đan Lô (E2-E): có từ Kết Đan, không tháo, cấp theo cấp của chủ (không tốn vật phẩm, không đụng túi/ledger). */
+  onBonded(p: PlayerEnt): void {
+    if (!this.artifactGate(p)) return;
+    const lv = bondedLevel(p.char.level);
+    const def = ARTIFACT.get(BONDED_ARTIFACT_ID);
+    if (lv < 1 || !def) return this.warn(p, 'sys.bonded_locked');
+    this.fireArtifact(p, def, lv);
+  }
+
+  /** Giới hạn tần suất và điều kiện chung cho mọi pháp bảo (chết, tỉ thí, độ kiếp/tâm ma). */
+  private artifactGate(p: PlayerEnt): boolean {
     if (this.now - p.skillWindowAt >= 1000) {
       p.skillWindowAt = this.now;
       p.skillCount = 0;
     }
-    if (++p.skillCount > SKILL_MSG_PER_SEC) return;
-    const c = p.char;
-    if (this.isDead(p)) return this.warn(p, 'sys.dead');
-    if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
+    if (++p.skillCount > SKILL_MSG_PER_SEC) return false;
+    if (this.isDead(p)) {
+      this.warn(p, 'sys.dead');
+      return false;
+    }
+    if (this.duel.inDuel(p)) {
+      this.warn(p, 'duel.no_items');
+      return false;
+    }
     // Đang độ kiếp hoặc tâm ma: không dùng pháp bảo (cùng luật với đan/trang bị).
-    if (p.trib || p.trial) return this.warn(p, 'sys.busy');
-    const def = equippedArtifact(c.equip);
-    if (!def) return this.warn(p, 'sys.art_none');
+    if (p.trib || p.trial) {
+      this.warn(p, 'sys.busy');
+      return false;
+    }
+    return true;
+  }
+
+  private fireArtifact(p: PlayerEnt, def: ArtifactDef, lv: number): void {
+    const c = p.char;
     if (this.airborne(p)) return this.warn(p, 'sys.cannot_while_flying');
     if ((p.cds.get(def.skill) ?? 0) > this.now) return this.warn(p, 'sys.cooldown');
     if (c.mp < def.mp) return this.warn(p, 'sys.not_enough_mp');
-    const lv = progressOf(c.meta, def.id).lv;
     const near = this.monstersNear(p.move.x, p.move.z, def.radius);
     const tag: Partial<FxMsg> = { s: def.id, c: def.color, lv };
     switch (def.kind) {
@@ -1382,6 +1444,22 @@ export class GameSim {
         }
         this.fx({ t: 'art', src: p.sid, r: def.radius, d: dur, ...tag });
         this.sys(p, 'sys.art_shield', { n: who.size }, 'good');
+        break;
+      }
+      case 'heal': {
+        // Ngưng Đan Lô: hồi khí huyết cho bản thân và đồng đội trong tầm (đồng đội cần cùng tổ đội, cùng room, còn sống).
+        const who = new Set<PlayerEnt>([p]);
+        for (const o of parties.matesInRoom(c.id, this.host)) {
+          if (o !== p && !this.isDead(o) && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius) who.add(o);
+        }
+        for (const o of who) {
+          const n = furnaceHeal(def, lv, o.char.mhp);
+          o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
+          this.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+          this.fx({ t: 'artheal', src: o.sid, ...tag });
+        }
+        this.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.4, ...tag });
+        this.sys(p, 'sys.art_heal', { n: who.size }, 'good');
         break;
       }
     }
@@ -3783,6 +3861,12 @@ export class GameSim {
         return 0;
       });
       c.questDirty = true;
+      let teleNew = false;
+      for (const id of q.unlockTele ?? []) if (c.unlockTele(id)) teleNew = true;
+      if (teleNew) {
+        for (const id of q.unlockTele ?? []) this.sys(p, 'sys.tele_unlock', { n: t(`tele.${id}`) }, 'good');
+        this.tele.sendState(p);
+      }
       this.sys(p, 'sys.quest_accept', { name: t(`quest.${q.id}.name`) }, 'info');
       // Mục tiêu "nói chuyện" với chính NPC đang đứng cạnh thì tính luôn.
       for (const o of q.objectives) if (o.type === 'talk' && o.target && this.nearNpc(p, o.target)) this.questEvent(p, 'talk', o.target, 1);
@@ -4048,6 +4132,23 @@ export class GameSim {
       }
       case 'tele':
         return say(this.tele.gm(p, a[1]));
+      case 'qdone': {
+        // /gm qdone <id|chuong2>: ghi nhiệm vụ đã xong (bỏ qua điều kiện) để thử chuỗi nhiệm vụ; chuong2 = mọi q2_* trước q2_ket_dan.
+        const ids = a[1] === 'chuong2' ? QUESTS.filter((q) => q.id.startsWith('q2_') && q.id !== 'q2_ket_dan').map((q) => q.id) : QUEST.has(a[1] ?? '') ? [a[1]!] : [];
+        if (!ids.length) return say('qdone <id nhiệm vụ> | chuong2');
+        for (const id of ids) {
+          delete p.char.quests.active[id];
+          if (!p.char.quests.done.includes(id)) p.char.quests.done.push(id);
+        }
+        p.char.questDirty = true;
+        return say('qdone ' + ids.join(','));
+      }
+      case 'qev': {
+        // /gm qev <loại> [đích] [n]: bắn một sự kiện nhiệm vụ (ví dụ `qev dungeon phuc_mach_quat` thay cho phó bản chưa có).
+        const n = Number(a[3] ?? 1);
+        this.questEvent(p, a[1] as never, a[2] === '-' ? undefined : a[2], Number.isFinite(n) ? n : 1);
+        return say(`qev ${a[1]} ${a[2] ?? '-'} ${n}`);
+      }
       case 'god': {
         p.god = a[1] === 'off' ? false : a[1] === 'on' ? true : !p.god;
         if (p.god) this.heal(p);
@@ -4064,10 +4165,11 @@ export class GameSim {
         return say('sạc = ' + p.mth.charge);
       }
       case 'cd':
-        // /gm cd: xóa hồi chiêu và GCD (chụp ảnh nhiều chiêu liên tiếp).
+        // /gm cd: xóa hồi chiêu, GCD và hồi thần thức (chụp ảnh nhiều chiêu liên tiếp).
         p.cds.clear();
         p.gcdAt = 0;
         this.sendCd(p);
+        this.spirit.resetCooldown(p);
         return say('đã xóa hồi chiêu');
       case 'variant': {
         // /gm variant <id chiêu> <a|b>: chọn biến thức ngay (không cần cấp 3, ngoài combat, hồi chờ) để chụp ảnh/thử.

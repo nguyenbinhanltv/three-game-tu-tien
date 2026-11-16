@@ -1,5 +1,6 @@
 import { biomeAt, featureWeight, SUOI, VACH } from '@dtl/shared';
 import { loadArtUrl } from '../ui/Art';
+import { levelId } from './levelCtx';
 
 /**
  * Tranh nền màn tiêu đề và màn tải (ảnh Codex, nạp lười sau khung đầu). Màn tải chọn theo vùng người chơi đứng lần cuối
@@ -8,8 +9,13 @@ import { loadArtUrl } from '../ui/Art';
 const KEY = 'dtl.lastZone';
 const DEFAULT_ZONE = 'tong_mon';
 
+/** Level riêng có một tranh màn tải chung (E2): bản đồ nào chưa có ảnh thì rơi về logic vùng Vân Lam. */
+export const LEVEL_ART: Record<string, string> = { doan_mach: 'doan_mach', phuc_mach_quat: 'phuc_mach_quat' };
+
 /** Id ảnh theo vị trí: khớp tên vùng ở `zone.<id>` của i18n, riêng tông môn/Kiếm Trủng theo biome. */
 export function zoneArtId(x: number, z: number): string {
+  const byLevel = LEVEL_ART[levelId()];
+  if (byLevel) return byLevel;
   const biome = biomeAt(x, z);
   if (biome === 'sect') return 'tong_mon';
   if (biome === 'dungeon') return 'kiem_trung';
@@ -20,6 +26,19 @@ export function zoneArtId(x: number, z: number): string {
 }
 
 let last = '';
+/** Gọi trước khi đổi level: màn tải của lần chuyển này hiện ngay tranh của level đích. */
+export function rememberLevel(id: string): void {
+  // Level không có tranh riêng thì về tranh mặc định (Kiếm Trủng theo biome), không giữ tranh của level trước;
+  // `last` cập nhật theo để `rememberZone` ghi lại đúng vùng khi người chơi đã vào thế giới.
+  const art = LEVEL_ART[id] ?? (id === 'kiem_trung' ? 'kiem_trung' : DEFAULT_ZONE);
+  last = art;
+  try {
+    localStorage.setItem(KEY, art);
+  } catch {
+    /* localStorage bị chặn: bỏ qua */
+  }
+}
+
 /** Gọi định kỳ khi đang chơi: ghi nhớ vùng hiện tại (chỉ ghi khi đổi). */
 export function rememberZone(x: number, z: number): void {
   const id = zoneArtId(x, z);

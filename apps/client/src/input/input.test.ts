@@ -16,6 +16,13 @@ describe('bindings', () => {
     expect(HELD.down).toEqual(['KeyX', 'ShiftLeft']);
   });
 
+  it('E2-E: V là thần thức, T là bản mệnh pháp bảo, bảng Công pháp chuyển sang K; không phím nào trùng', () => {
+    expect(KEY_ACTIONS.KeyV).toBe('spirit');
+    expect(KEY_ACTIONS.KeyT).toBe('bonded');
+    expect(KEY_ACTIONS.KeyK).toBe('method');
+    expect(Object.values(KEY_ACTIONS).filter((a) => a === 'method')).toHaveLength(1);
+  });
+
   it('phím số → ô chiêu', () => {
     expect(skillSlot('Digit1')).toBe(0);
     expect(skillSlot('Digit6')).toBe(5);

@@ -3134,6 +3134,79 @@
       "radius": 60,
       "count": 5,
       "respawn": 60
+    },
+    {
+      "item": "itm_mach_tinh_phien",
+      "x": 1420,
+      "z": 950,
+      "radius": 70,
+      "count": 8,
+      "respawn": 60
+    },
+    {
+      "item": "itm_hoang_sa_thao",
+      "x": 950,
+      "z": 1440,
+      "radius": 70,
+      "count": 8,
+      "respawn": 60
+    }
+  ],
+  "spots": [
+    {
+      "id": "kiem_gay_1",
+      "zone": "kho_ha_dao",
+      "x": 1495,
+      "z": 973
+    },
+    {
+      "id": "kiem_gay_2",
+      "zone": "hoang_sa_huyet",
+      "x": 952,
+      "z": 1518
+    },
+    {
+      "id": "kiem_gay_3",
+      "zone": "tuyet_bich",
+      "x": 1041,
+      "z": 477
+    },
+    {
+      "id": "kiem_gay_4",
+      "zone": "sa_thach_pha",
+      "x": 1236,
+      "z": 1226
+    },
+    {
+      "id": "kiem_gay_5",
+      "zone": "cuu_mo_khu",
+      "x": 606,
+      "z": 962
+    }
+  ],
+  "escorts": [
+    {
+      "id": "esc_thuong_nhan",
+      "npc": "npc_thuong_nhan",
+      "speed": 4,
+      "path": [
+        [
+          1046,
+          1050
+        ],
+        [
+          1180,
+          990
+        ],
+        [
+          1338,
+          922
+        ],
+        [
+          1488,
+          976
+        ]
+      ]
     }
   ]
 }

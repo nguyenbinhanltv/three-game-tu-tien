@@ -162,6 +162,10 @@ addProp('prop_lau', -16, 10, -0.4, 1);
 addProp('prop_bia_da', 0, 22, 0, 1);
 for (const [x, z] of [[-12, -22], [12, -22], [-22, 14], [22, 14], [0, -8]]) addProp('prop_den_da', x, z, 0, 1);
 
+// E2-H: hai mảnh kiếm gãy thêm (s2_kiem_gay có 5 điểm; ba mảnh kia nằm sẵn ở các điểm đáng chú ý).
+addProp('prop_kiem_gay', 212, 202, 0.7, 1);
+addProp('prop_kiem_gay', -418, -62, 2.1, 1);
+
 // ---- tinh anh / boss ----
 const ELITES = [
   { zone: 'sa_thach_pha', mon: 'elite_liet_cot_bao', n: 2 },
@@ -402,7 +406,19 @@ const nodes = [
   { item: 'itm_linh_thao', x: W(-60), z: W(430), radius: 70, count: 6, respawn: 60 },
   { item: 'itm_linh_thao', x: W(300), z: W(-30), radius: 70, count: 6, respawn: 60 },
   { item: 'itm_linh_thao', x: W(-380), z: W(-170), radius: 60, count: 5, respawn: 60 },
+  // E2-H: nguyên liệu nhiệm vụ chương 2 (q2_cau_da, s2_cu_tho).
+  { item: 'itm_mach_tinh_phien', x: 1420, z: 950, radius: 70, count: 8, respawn: 60 },
+  { item: 'itm_hoang_sa_thao', x: 950, z: 1440, radius: 70, count: 8, respawn: 60 },
 ];
+// E2-H: điểm chạm của s2_kiem_gay (đúng chỗ prop_kiem_gay) và người đồng hành của s2_ho_tong. Tên ở i18n `spot.<id>.name`.
+const spots = [
+  { id: 'kiem_gay_1', zone: 'kho_ha_dao', x: 1495, z: 973 },
+  { id: 'kiem_gay_2', zone: 'hoang_sa_huyet', x: 952, z: 1518 },
+  { id: 'kiem_gay_3', zone: 'tuyet_bich', x: 1041, z: 477 },
+  { id: 'kiem_gay_4', zone: 'sa_thach_pha', x: 1236, z: 1226 },
+  { id: 'kiem_gay_5', zone: 'cuu_mo_khu', x: 606, z: 962 },
+];
+const escorts = [{ id: 'esc_thuong_nhan', npc: 'npc_thuong_nhan', speed: 4, path: [[1046, 1050], [1180, 990], [1338, 922], [1488, 976]] }];
 
 // ---- địa hình ----
 const flat = (id, off, y, flatR, outerR, extra = {}) => ({ id, x: W(off[0]), z: W(off[1]), y, flatR, outerR, round: true, ...extra });
@@ -443,6 +459,8 @@ const level = {
   camps,
   spawns,
   nodes,
+  spots,
+  escorts,
 };
 
 const out = (rel, text) => fs.writeFileSync(path.join(ROOT, rel), text);

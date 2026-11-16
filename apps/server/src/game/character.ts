@@ -42,7 +42,7 @@ import {
 import { APPEARANCE, ITEM, ITEM_SYS, QUEST, ROOT, SETS } from '@dtl/content';
 import { characters, db, items, ledger, rootForName } from '../db';
 import { methodDefMul, methodOf, sanitizeMethodMeta, type MethodMeta } from './method';
-import { type ArtifactMeta, passiveValue, sanitizeArtifactMeta } from './artifact';
+import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta } from './artifact';
 
 export interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
@@ -350,7 +350,9 @@ export class Character {
     const mp0 = methodOf(this.meta)?.passive;
     const critAdd = buffCrit + (mp0?.critBase ?? 0);
     this.stats = critAdd > 0 ? { ...st, critRate: Math.min(st.critRate + critAdd, STAT_CAPS.critRate) } : st;
-    this.mhp = mp0?.hpMul ? Math.round(st.hp * (1 + mp0.hpMul)) : st.hp;
+    // Bản mệnh pháp bảo Ngưng Đan Lô (E2-E): khí huyết tối đa cộng thêm theo cấp của chủ.
+    const bondedHp = bondedHpPassive(this.level);
+    this.mhp = mp0?.hpMul || bondedHp > 0 ? Math.round(st.hp * (1 + (mp0?.hpMul ?? 0) + bondedHp)) : st.hp;
     // Nội tại pháp bảo (P3-8): Hồ Lô cộng linh lực tối đa, Thanh Liên Ấn cộng phòng ngự.
     const mpPas = passiveValue(this.equip, this.meta, 'mp');
     this.mmp = mpPas > 0 ? Math.round(st.mp * (1 + mpPas)) : st.mp;
