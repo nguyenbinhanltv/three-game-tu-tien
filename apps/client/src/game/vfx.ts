@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { groundAt } from './levelCtx';
 import { FxBatcher } from '../render/materials/fxBatch';
 import { BATCHING, BATCH_KINDS, FxPool, type FxKind, type FxMesh } from '../render/materials/vfx';
-import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../render/vfx/sigil';
+import { SIGIL_CIRCLE, SIGIL_GEO, SIGIL_RECT, sigilLayout, type SigilShape } from '../render/vfx/sigil';
 import { SLASH_GEO, SLASH_INK, slashPhase } from '../render/vfx/slash';
 import { seedOr } from '../render/vfx/common';
 import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '../render/vfx/lightning';
@@ -878,6 +878,86 @@ export class Vfx {
         stopping = true;
       },
     };
+  }
+
+  /**
+   * Đĩa gương (E3-M, Kính Nguyệt Chân Quân): `n` tia dài `len` rộng `w` xoay quanh (x, z) từ góc `theta0` (rad) với tốc độ `spin`
+   * độ/giây, theo CÙNG công thức server (`discAngle`: góc 0 hướng +z). `warn` giây đầu tia mờ và chưa gây sát thương (vạch tụ dần), sau
+   * đó sáng lên; một vành đĩa mờ nằm dưới chân. Cộng sáng thấp, sắc lam bạc để không che nhân vật. Tự tắt khi hết giờ hoặc `stillOn()` sai.
+   */
+  mirrorDisc(x: number, z: number, len: number, w: number, n: number, theta0: number, spin: number, warn: number, dur: number, stillOn: () => boolean): void {
+    const y = groundAt(x, z) + 0.16;
+    const L = sigilLayout(SIGIL_RECT, len, w);
+    const beams: FxMesh[] = [];
+    for (let i = 0; i < n; i++) beams.push(this.sigil(SIGIL_RECT, x, z, 0, len, w, 0x9fd0ff, y));
+    const ring = this.fx(RING_GEO, 0xbfe0ff, 0.3);
+    ring.rotation.x = -Math.PI / 2;
+    let t = 0;
+    let fade = 0;
+    const it = {
+      t: 0,
+      dur: warn + dur + 1,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const on = t < warn + dur && stillOn();
+        fade = on ? Math.min(1, fade + dt * 4) : Math.max(0, fade - dt * 3);
+        if (!on && fade <= 0) it.t = it.dur;
+        const live = t >= warn;
+        const rot = live ? t - warn : 0;
+        for (let i = 0; i < beams.length; i++) {
+          const yaw = theta0 + (i * Math.PI * 2) / n + (spin * Math.PI * rot) / 180;
+          const m = beams[i];
+          m.position.set(x + Math.sin(yaw) * L.offset, y, z + Math.cos(yaw) * L.offset);
+          m.rotation.y = yaw;
+          m.fxA.x = live ? 1 : Math.min(1, t / warn);
+          m.fxOpacity = (live ? 0.8 : 0.4) * fade;
+          m.fxColor.setHex(live ? 0xdff0ff : 0x9fd0ff);
+        }
+        ring.position.set(x, y + 0.05, z);
+        ring.scale.setScalar(2.6 + Math.sin(t * 3) * 0.12);
+        ring.fxOpacity = 0.35 * fade;
+      },
+      end: () => {
+        for (const m of beams) this.drop(m);
+        this.drop(ring);
+      },
+    };
+    this.items.push(it);
+  }
+
+  /**
+   * Cột gương của đợt đố (E3-M): ống sáng mảnh ở (x, z) tới khi hết `dur` giây hoặc `stillOn()` sai; `lit` thì sáng hơn
+   * (đã chạm đúng). Màu theo thứ tự cột (lam, đỏ, vàng).
+   */
+  mirrorPillar(x: number, z: number, color: number, dur: number, lit: boolean, stillOn: () => boolean): void {
+    const y = groundAt(x, z);
+    const tube = this.fx(TUBE_GEO, color, lit ? 0.5 : 0.28, 'flat');
+    const ring = this.fx(RING_GEO, color, lit ? 0.9 : 0.55);
+    ring.rotation.x = -Math.PI / 2;
+    let t = 0;
+    let fade = 0;
+    const it = {
+      t: 0,
+      dur: dur + 1,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const on = t < dur && stillOn();
+        fade = on ? Math.min(1, fade + dt * 3) : Math.max(0, fade - dt * 2);
+        if (!on && fade <= 0) it.t = it.dur;
+        const pulse = 1 + Math.sin(t * 3.2) * 0.08;
+        tube.position.set(x, y + 4.5, z);
+        tube.scale.set(0.9 * pulse, 9, 0.9 * pulse);
+        tube.fxOpacity = (lit ? 0.5 : 0.28) * fade;
+        ring.position.set(x, y + 0.15, z);
+        ring.scale.setScalar(2.4 * pulse);
+        ring.fxOpacity = (lit ? 0.9 : 0.55) * fade;
+      },
+      end: () => {
+        this.drop(tube);
+        this.drop(ring);
+      },
+    };
+    this.items.push(it);
   }
 
   /**

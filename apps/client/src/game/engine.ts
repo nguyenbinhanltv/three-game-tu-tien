@@ -1,12 +1,12 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { applyInvMsg, C, caveBoundOf, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, propsOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg } from '@dtl/shared';
+import { applyInvMsg, C, caveBoundOf, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, propsOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REAL, MF_REFLECT, MF_SENSED, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg } from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, heightAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, thanThongSkill, tierBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
-import { MON_AURA_REFLECT, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
+import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, closeTopPanel, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import { BlankWatch, canFallback, frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from './gpuGuard';
@@ -39,7 +39,7 @@ import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { gatesToDraw } from './gates';
-import { buildCaveShell, buildCrystalGlow } from './caveShell';
+import { buildCaveShell, buildCrystalGlow, buildMirrorFloor } from './caveShell';
 import { PropLayer } from './props';
 import { allProps } from './propScatter';
 import { type AssetHandle, assets } from './assets';
@@ -374,6 +374,10 @@ export class Game {
   /** Đan Trận đang hiện (E2-D): theo sid chủ kiếp. */
   private ch2Checked = false;
   private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
+  /** Phiên bản hiệu ứng cung gương (E3-M): tin mới/tin tắt tăng số, hiệu ứng cũ thấy số lệch thì tự tắt. */
+  private mirrorDiscVer = 0;
+  private mirrorVeilVer = 0;
+  private mirrorPillarVer: number[] = [];
   /** Nguyên anh xuất khiếu đang hiện (E3-L): theo sid chủ kiếp. */
   private soulVfx = new Map<string, { stop(): void }>();
   private cineShakeAt = 0;
@@ -913,10 +917,17 @@ export class Game {
     const cave = levelAssets(id).cave;
     if (cave) {
       // Phó bản hang (E2-C): vách + trần tối che chân trời, tinh thể mạch phát sáng lam lục (hai draw call).
-      const shell = buildCaveShell(cave, heightAt(cave.x, cave.z));
+      const palace = !!levelAssets(id).palace;
+      const shell = buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
       const glow = buildCrystalGlow(propsOf(id).filter((p) => p.id === 'prop_mach_tinh_tru').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 1.8, z: p.z })));
       this.scene.add(shell, glow);
       this.levelObjs.push(shell, glow);
+      if (palace) {
+        // Cung gương (E3-M): sàn gương giả phủ lòng chảo (một draw call, không phản chiếu thật).
+        const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt(cave.x, cave.z));
+        this.scene.add(floor);
+        this.levelObjs.push(floor);
+      }
     }
     if (F.sect) void this.loadSectModel(q.shadows);
   }
@@ -978,6 +989,7 @@ export class Game {
       drop(o);
       const m = o as THREE.Mesh;
       m.geometry?.dispose();
+      (m.material as THREE.MeshBasicMaterial | undefined)?.map?.dispose();
       (m.material as THREE.Material | undefined)?.dispose();
     }
     this.levelObjs.length = 0;
@@ -1726,6 +1738,9 @@ export class Game {
     const left = Math.max(0.3, ((this.view.monsters.get(id)?.ce ?? 0) - (Date.now() + this.timeOffset)) / 1000);
     if (e.on & MF_REFLECT) v.castSigil(pos, left, MON_AURA_REFLECT.color, MON_AURA_REFLECT.radius, () => ((this.view.monsters.get(id)?.mf ?? 0) & MF_REFLECT) !== 0);
     if (e.on & MF_WEAK) v.castSigil(pos, left, MON_AURA_WEAK.color, MON_AURA_WEAK.radius, () => ((this.view.monsters.get(id)?.mf ?? 0) & MF_WEAK) !== 0);
+    // Thể thật của Kính Nguyệt Chân Quân (E3-M): vết ngọc lam suốt trận; thần thức soi ra thì vòng vàng tới `ce`.
+    if (e.on & MF_REAL) v.castSigil(pos, 3600, MON_AURA_REAL.color, MON_AURA_REAL.radius, () => ((this.view.monsters.get(id)?.mf ?? 0) & MF_REAL) !== 0 && (this.view.monsters.get(id)?.hp ?? 0) > 0);
+    if (e.on & MF_SENSED) v.castSigil(pos, left, MON_AURA_SENSED.color, MON_AURA_SENSED.radius, () => ((this.view.monsters.get(id)?.mf ?? 0) & MF_SENSED) !== 0);
     if ((e.on | e.off) & MF_BURROW) {
       _v2.set(m.x, m.y + 0.4, m.z);
       v.burst(_v2, MON_BURROW_DIRT, Math.min(3, 1 + m.model.height * 0.5), 0.4);
@@ -2100,6 +2115,51 @@ export class Game {
         this.soulVfx.delete(src);
         if (src === this.sid) set({ soulUntil: 0 });
         break;
+      case 'mirror_disc': {
+        // Đĩa gương (E3-M): tia xoay theo đúng công thức server (góc đầu = sd/1000, báo pg/100 giây); d = 0 là tắt.
+        const ver = ++this.mirrorDiscVer;
+        if ((m.d ?? 0) <= 0) break;
+        v.mirrorDisc(m.x ?? 0, m.z ?? 0, m.r ?? 24, 3, m.n ?? 3, (m.sd ?? 0) / 1000, 25, (m.pg ?? 150) / 100, m.d ?? 8, () => this.mirrorDiscVer === ver);
+        break;
+      }
+      case 'mirror_pillar': {
+        // Cột gương của đợt đố: màu theo thứ tự cột (lam, đỏ, vàng); d = 0 tắt; pg = 1 là cột đã chạm đúng.
+        const n = m.n ?? 0;
+        const ver = (this.mirrorPillarVer[n] = (this.mirrorPillarVer[n] ?? 0) + 1);
+        if ((m.d ?? 0) <= 0) break;
+        v.mirrorPillar(m.x ?? 0, m.z ?? 0, [0x5aa8ff, 0xe0584a, 0xe8c15a][n] ?? 0xffffff, m.d ?? 20, m.pg === 1, () => this.mirrorPillarVer[n] === ver);
+        break;
+      }
+      case 'mirror_veil': {
+        // Nguyệt phản: vòng gương bạc phủ vùng r quanh boss suốt d giây; d = 0 là tắt.
+        const ver = ++this.mirrorVeilVer;
+        if ((m.d ?? 0) <= 0) break;
+        const cx = m.x ?? 0;
+        const cz = m.z ?? 0;
+        v.castSigil((out) => (out.set(cx, groundAt(cx, cz), cz), true), m.d ?? 18, 0xc8d8ff, m.r ?? 14, () => this.mirrorVeilVer === ver);
+        _v.set(cx, groundAt(cx, cz) + 1.5, cz);
+        v.burst(_v, 0xdde8ff, 4, 0.6);
+        if (this.sid && src) this.shake.kick(0.35);
+        break;
+      }
+      case 'mirror_echo': {
+        // Lặp lại: bóng thật phản đúng chiêu; một chớp bạc ở chỗ người bị phản (vạch báo do vùng nguy hiểm vẽ).
+        _v.set(m.x ?? 0, groundAt(m.x ?? 0, m.z ?? 0) + 1, m.z ?? 0);
+        v.burst(_v, 0xbfd8ff, 1.6, 0.35);
+        break;
+      }
+      case 'mirror_shatter': {
+        // Bóng giả vỡ: mảnh gương bạc bắn ra, vòng nổ báo trước do vùng nguy hiểm vẽ.
+        _v.set(m.x ?? 0, (m.y ?? 0) + 1.4, m.z ?? 0);
+        v.burst(_v, 0xe6f2ff, 3.4, 0.5);
+        break;
+      }
+      case 'mirror_split': {
+        // Bốn thân hiện ra: chớp bạc lớn tại boss.
+        _v.set(m.x ?? 0, groundAt(m.x ?? 0, m.z ?? 0) + 1.6, m.z ?? 0);
+        v.burst(_v, 0xdde8ff, 5, 0.7);
+        break;
+      }
       case 'tamma_cast': {
         // Tâm Ma Ảnh tụ lực dùng chiêu của người độ kiếp: một nhịp tụ khí tím sẫm ở bóng (vạch báo do vùng nguy hiểm vẽ).
         const sm = this.view.monsters.get(src);
@@ -3489,6 +3549,7 @@ export class Game {
     for (const o of this.levelObjs) {
       const m = o as THREE.Mesh;
       m.geometry?.dispose();
+      (m.material as THREE.MeshBasicMaterial | undefined)?.map?.dispose();
       (m.material as THREE.Material | undefined)?.dispose();
     }
     this.levelObjs.length = 0;

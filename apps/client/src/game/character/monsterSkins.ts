@@ -145,7 +145,11 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // Vân Hải Kình Vương: kình ngư bay 18 m, xương chuỗi kiểu bơi.
   boss_van_hai_kinh_vuong: { asset: 'boss_van_hai_kinh_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 5.9, legs: 'none', tint: '#ffffff', rim: 0.25, lift: 0.25, metalness: 0, lazy: true, level: 'van_hai', moves: SERPENT_MOVES },
   // Kính Nguyệt Chân Quân (Kính Nguyệt Cung): người 3,6 m áo choàng bạc.
-  boss_kinh_nguyet_chan_quan: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', rim: 0.3, lift: 0.15, lazy: true, level: 'kinh_nguyet_cung', moves: BIPED_MOVES },
+  boss_kinh_nguyet_chan_quan: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', rim: 0.3, lift: 0.15, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
+  // Bóng giả của Kính Nguyệt Chân Quân (E3-M): cùng model, cùng kích thước; chỉ thể thật có vết ngọc lam dưới chân (MF_REAL).
+  mon_kinh_anh_gia: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', rim: 0.3, lift: 0.15, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
+  // Kính Diện Ma Quân (mini-boss đợt 2 Kính Nguyệt Cung): skin tinh anh E-1b.
+  elite_kinh_dien_ma_quan: { ...ELITE_SKINS_NEW.elite_kinh_dien_ma_quan, level: 'kinh_nguyet' },
   // Thiên Khuyết Thủ Linh: tượng thần đá 8 m, kích thước lớn nên bước chậm.
   boss_thien_khuyet_thu_linh: { asset: 'boss_thien_khuyet_thu_linh', clips: CHANT_BOSS_CLIPS, refSpeed: 2.5, legs: 'biped', tint: '#ffffff', lift: 0.1, lazy: true, level: 'thien_khuyet', moves: BIPED_MOVES },
   // Vô Diện Thần Quân (Thần Tàng Điện): người 4,6 m sáu tay phụ liền lưới.
