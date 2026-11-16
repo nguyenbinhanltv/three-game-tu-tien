@@ -67,7 +67,7 @@ Trước đây sim chỉ có bảng kinh tế chương 3 theo `TIER_INCOME_HOUR`
 
 ## 4. Kết quả cuối (`pnpm sim:progress`)
 
-Giờ theo thành phần (Kiếm tu 6,13 giờ, sau khi merge -148: nhiệm vụ phụ `s3_do_thuyen`, `s3_guong_nuoc` đã tính): quái thường 4,54 · tinh anh 0,25 · đả tọa 0,07 · nhiệm vụ 0,54 · Kính Nguyệt Cung 0,40 · Kình Vương 0,13 · tâm ma 0,04 · chế đan 0,07 · Tam Trọng Kiếp 0,10.
+Giờ theo thành phần (Kiếm tu 6,13 giờ, đã tính nhiệm vụ phụ `s3_do_thuyen`, `s3_guong_nuoc` của #156): quái thường 4,54 · tinh anh 0,25 · đả tọa 0,07 · nhiệm vụ 0,54 · Kính Nguyệt Cung 0,40 · Kình Vương 0,13 · tâm ma 0,04 · chế đan 0,07 · Tam Trọng Kiếp 0,10.
 
 | Cấp | TTK quái (Kiếm/Hộ/Đan) | Mất máu/lần | TTK tinh anh (Kiếm) | Giờ cấp (Kiếm) |
 | --- | --- | --- | --- | --- |
@@ -88,7 +88,7 @@ Kình Vương nhóm 4 hạ trong 81 s; Kính Nguyệt Cung 23,8 phút kể cả 
 
 **Hộ pháp không đổi tỉ lệ qua** (khác Đan Hỏa Kiếp ở #142: 66% → 81%). Lý do là luật hiện có, không phải mô hình: hộ pháp chỉ chắn ở tia khóa mệnh (`final`, `shareToGuards`), mà `nguyen_anh` không có `final` (chỉ pha ba `shadows` do chủ kiếp tự đánh). Nếu muốn hộ pháp có tác dụng ở kiếp này, cần thêm luật mới (ví dụ chắn một phần tia nhắm hoặc ô lửa nặng): để người dùng quyết, chưa làm trong gói này.
 
-**Độ nhạy theo đồ bậc 3** (Kiếm tu): không có món nào 6,66 giờ, đủ bộ phẩm Linh từ cấp 20 là 5,91 giờ; kkỳ vọng 6,13. Cả hai mốc cực đều trong ±12% của 6 giờ (5,28–6,72).
+**Độ nhạy theo đồ bậc 3** (Kiếm tu): không có món nào 6,66 giờ, đủ bộ phẩm Linh từ cấp 20 là 5,91 giờ; kỳ vọng 6,13. Cả hai mốc cực đều trong ±12% của 6 giờ (5,28–6,72).
 
 ## 5. Kinh tế linh thạch (một mình)
 
@@ -108,7 +108,7 @@ Nguyên liệu: Ngưng Anh Phách ≈ 4,9 (cần 3 + làm lại ≈ 3,5); các n
 
 - Mô hình Tam Trọng Kiếp dùng giả định về xác suất trúng của người đứng yên (vạch tia xích ≈ 70%, ô lửa nặng luôn ở ô người độ kiếp, xuất khiếu dùng ngay khi sẵn sàng); số tay nghề (né 60/80/92%) là giả định như E2-J. Cần người chơi thật thử, hai con số nên chỉnh trước tiên là `aimPct` pha lôi và `tamCanh.hurt`.
 - Mô hình chưa tính thời gian di chuyển giữa các đảo (cầu xích) ngoài hệ số `PATH_FACTOR`, nên giờ thật có thể nhỉnh hơn một chút (dự phòng nằm ở phía đáy khung: giữa khung 6,13 so với 6,72).
-- Nhiệm vụ phụ `s3_do_thuyen`, `s3_guong_nuoc` (-148) chưa merge lúc đo: khi merge, `git merge origin/main` rồi chạy lại `pnpm sim:progress` (mỗi nhiệm vụ phụ ≈ 1% giờ).
+- Nhiệm vụ phụ `s3_do_thuyen`, `s3_guong_nuoc` (#156) đã merge và nằm trong số đo cuối (nhiệm vụ 0,46 → 0,54 giờ, chương 3 +0,02 giờ).
 
 ## 8. Kiểm chứng
 
