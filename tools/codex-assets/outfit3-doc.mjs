@@ -36,8 +36,10 @@ const specOf = (id) => (items[id].kind === 'sword' ? SWORD.items[items[id].piece
 const ownerOf = (id) => (items[id].kind === 'sword' ? SWORD : SETS[items[id].set]);
 const destDir = (id) => path.join(source, ownerOf(id).dir, ownerOf(id).srcId, 'concept');
 
+const only = process.argv.slice(2); // tiền tố id cần xử lý (mặc định: tất cả), ví dụ: kinh_quang van_kinh
 const have = [];
 for (const id of Object.keys(items)) {
+  if (only.length && !only.some((o) => id.startsWith(o))) continue;
   const png = path.join(srcImgDir, `${id}.png`);
   if (!fs.existsSync(png)) continue;
   have.push(id);
