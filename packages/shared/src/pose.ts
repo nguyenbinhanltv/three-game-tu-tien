@@ -154,6 +154,8 @@ export function validatePose(p: PoseDef): string[] {
 /** Pose lặp cho trạng thái nền ngự kiếm và niệm chú (nhân vật có xương mà asset không có clip riêng). */
 export const POSE_FLY = 'ngu_kiem';
 export const POSE_CAST = 'niem_chu';
+/** Ngự không (E3-K): bay không cần kiếm, thân đứng thẳng lơ lửng. */
+export const POSE_SKY = 'ngu_khong';
 /**
  * Rút / tra kiếm (M3-2): chỉ cánh tay phải, chồng lên mọi trạng thái nền. Client đổi kiếm từ lưng sang tay (hoặc
  * ngược lại) đúng lúc `POSE_SWORD_SWAP` (giây trong clip), khi bàn tay nắm chuôi ở chỗ kiếm đang tra.

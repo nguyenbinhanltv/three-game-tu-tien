@@ -942,5 +942,14 @@
   "sys.spirit_moved": "Di chuyển làm thần thức tản đi.",
   "sys.spirit_done": "Thần thức quét {r} m: {n} dấu vết.",
   "sys.spirit_none": "Thần thức quét {r} m, không thấy gì đáng chú ý.",
-  "sys.spirit_mp": "Thiếu linh lực để vận thần thức."
+  "sys.spirit_mp": "Thiếu linh lực để vận thần thức.",
+  "sys.soul_locked": "Nguyên anh xuất khiếu mở khi lên Nguyên Anh.",
+  "sys.soul_busy": "Lúc này không thể xuất khiếu.",
+  "sys.soul_combat": "Đang giao chiến, tâm thần bất định, chưa xuất khiếu được.",
+  "sys.soul_cd": "Nguyên anh còn {s} giây mới xuất khiếu lại được.",
+  "sys.soul_out": "Nguyên anh rời khỏi thân xác. Bấm X để nhập lại.",
+  "sys.soul_in": "Nguyên anh nhập lại thân xác.",
+  "sys.soul_time": "Thần niệm cạn, nguyên anh tự nhập lại thân xác.",
+  "sys.soul_escape": "Nguyên anh thoát khiếu cứu mạng! {s} giây nữa sẽ hồi sinh ở nơi an toàn, không mất tu vi.",
+  "sys.respawned_soul": "Nguyên anh nhập lại thân xác ở nơi an toàn."
 }
