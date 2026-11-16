@@ -87,3 +87,13 @@ it('chiêng có bồi âm trầm, tần số hợp lệ', () => {
     expect(p.dur).toBeGreaterThan(0);
   }
 });
+
+describe('thẻ chương E2-D', () => {
+  it('có preset cho Kết Đan và Chương 2, mỗi cái có chữ i18n đủ ba dòng', async () => {
+    const { hasString } = await import('@dtl/content');
+    for (const k of ['ascend_kd', 'ch2'] as const) {
+      expect(CHAPTER[k].card).toBeGreaterThan(2000);
+      for (const part of ['kicker', 'title', 'sub']) expect(hasString(`ui.chapter.${k}.${part}`)).toBe(true);
+    }
+  });
+});

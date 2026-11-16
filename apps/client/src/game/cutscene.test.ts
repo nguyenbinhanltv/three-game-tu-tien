@@ -169,3 +169,22 @@ describe('đường cảnh boss (P2-B2/B3)', () => {
     expect(c.finished).toBe(false);
   });
 });
+
+describe('danTranPath (E2-D)', () => {
+  it('bắt đầu đúng camera hiện tại, kết thúc trên cao nhìn vào tâm vòng, không xuyên đất', async () => {
+    const { danTranPath } = await import('./cutscene');
+    const ground = (x: number, z: number) => 5 + Math.sin(x * 0.1) * 0.5 + z * 0;
+    const cam = { x: 100, y: 12, z: 112 };
+    const look = { x: 100, y: 8, z: 100 };
+    const c = { x: 100, y: 5, z: 100 };
+    const p = danTranPath(cam, look, c, ground);
+    expect(p.length).toBe(3);
+    expect(p[0].p).toEqual(cam);
+    for (const w of p.slice(1)) {
+      expect(w.p.y).toBeGreaterThan(ground(w.p.x, w.p.z) + 1);
+      expect(Math.hypot(w.p.x - c.x, w.p.z - c.z)).toBeGreaterThan(8);
+      expect(w.look.x).toBe(c.x);
+      expect(w.look.z).toBe(c.z);
+    }
+  });
+});
