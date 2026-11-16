@@ -5,7 +5,7 @@
     { "id": "bat_dong_kim_than", "role": "tank", "dash": "skl_thiet_bich_xung", "sig": "skl_tran_son_an", "ult": "skl_kim_cuong_bat_hoai", "color": "ffc95a",
       "passive": { "kind": "the", "max": 5, "perStack": 0.08, "decay": 8, "defMul": 0.15, "hpMul": 0.12, "melee": { "r": 6, "mul": 0.1 } } },
     { "id": "thanh_moc_dan_kinh", "role": "support", "dash": "skl_luu_huong_bo", "sig": "skl_hoi_xuan_quyet", "ult": "skl_hoi_thien_dan_lo", "color": "7dffa0",
-      "passive": { "kind": "dan_kinh", "healMul": 0.2, "rangeBonus": 4, "hpMul": -0.08 } }
+      "passive": { "kind": "dan_kinh", "healMul": 0.2, "rangeBonus": 4, "hpMul": -0.12 } }
   ],
   "skills": [
     { "id": "skl_kiem_anh_bo", "kind": "dash", "method": "lac_kiem_quyet", "icon": "skl_kiem_anh_bo", "iconFallback": "💨", "unlock": 5, "range": 26, "cast": 0, "cd": 10, "mp": 12, "power": 0, "fx": "dash", "dash": { "dist": 8, "dir": "target", "stop": 1.8 } },

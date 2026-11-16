@@ -22,6 +22,7 @@ Mọi số lấy từ `pnpm sim:progress` (mô phỏng một người chơi, nay
 | Trước (mô hình cũ: tìm quái 6 s, không công pháp) | 2,2 giờ | | |
 | Trước (mô hình mới, dữ liệu cũ) | 2,27 | 2,35 | 2,27 |
 | **Sau** | **3,37** | **3,43** | **3,11** |
+| Sprint 2 (sim sau M-2, `hpMul` Đan sư −0,12) | 3,25 | 3,30 | 3,04 |
 
 Ràng buộc trong sim: cả ba trong 3–4 giờ. Sim chưa tính boss/bí cảnh/tinh anh (cho tu vi nhưng tốn thời gian): thực tế dao động quanh 3–4 giờ; núm chỉnh là hệ số trong `xpNeed`.
 
@@ -55,7 +56,7 @@ Ràng buộc trong sim: cả ba trong 3–4 giờ. Sim chưa tính boss/bí cả
 | --- | --- | --- |
 | Kiếm tu | `critBase` 0,05; `critAtMax` 0,10 (đủ 5 kiếm ý); `gcdRefund` 0,2 | bạo kích 15% → 25% khi đánh liên tục; đòn thứ ba của chuỗi hoàn 0,2 s GCD |
 | Hộ pháp | `hpMul` 0,12; `melee` {6 m, +10%}; Thiết Bích Xung `stun` 1 s (quái thường; tinh anh nửa, boss miễn) | cận chiến thật, khống chế đầu tiên ngoài khiêu khích |
-| Đan sư | `rangeBonus` 4 m; `hpMul` −0,08; Hồi Xuân Quyết `poison` {10 m, 40% công/s, 8 s} | tầm xa hơn, sát thương riêng theo thời gian (mộc độc) |
+| Đan sư | `rangeBonus` 4 m; `hpMul` −0,12 (Sprint 2, từ −0,08, để nhịp Đan sư ≥ 3 giờ); Hồi Xuân Quyết `poison` {10 m, 40% công/s, 8 s} | tầm xa hơn, sát thương riêng theo thời gian (mộc độc) |
 
 Server: `hitMonster` (bạo kích, cận chiến, khắc chế), `onDash` (choáng), `case 'hot'` + `tickMonster` (độc), `skillRange`, `beginSkill` (hoàn GCD), `Character.recalc` (máu, bạo kích gốc). Đòn nhận hệ qua tham số `elem` của `hitMonster`.
 

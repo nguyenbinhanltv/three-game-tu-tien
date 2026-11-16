@@ -1,4 +1,5 @@
 import { type Client, Room, ServerError } from 'colyseus';
+import { installViewPatchFix } from './viewSerializer';
 import { StateView } from '@colyseus/schema';
 import {
   C,
@@ -65,6 +66,8 @@ function ensurePartyTick(): void {
 function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+installViewPatchFix();
 
 export abstract class GameRoom extends Room<WorldState> implements SimHost {
   sim!: GameSim;
