@@ -29,6 +29,7 @@
     "shots:k7": "tsx src/shots-k7.ts",
     "shots:e2a": "tsx src/shots-e2a.ts",
     "shots:e2b": "tsx src/shots-e2b.ts",
+    "shots:e2c": "tsx src/shots-e2c.ts",
     "shots:boss": "tsx src/shots-boss.ts",
     "shots:trib": "tsx src/shots-trib.ts",
     "shots:e2d": "tsx src/shots-e2d.ts",

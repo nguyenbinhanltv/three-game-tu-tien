@@ -1,4 +1,4 @@
-import { LEVEL_ASSETS } from '@dtl/content';
+import { LEVEL_ASSETS, LEVELS } from '@dtl/content';
 import { type Biome, type LevelAssets, type Terrain, terrainOf } from '@dtl/shared';
 import { ensureTestLevel, TEST_ASSETS, TEST_LEVEL } from './testLevel';
 
@@ -64,5 +64,7 @@ export function sameLayout(a: string, b: string): boolean {
 
 /** Khóa i18n tên vùng ở chỗ không thuộc vùng nào: bản đồ mở rộng dùng tên bản đồ (`map.<level>`), Vân Lam theo biome (`ui.zone.<biome>`). */
 export function areaKey(level: string, biome: string): string {
+  // Phó bản mở rộng (E2-C) dùng tên phó bản; Kiếm Trủng giữ `ui.zone.dungeon`.
+  if (LEVELS[level]?.dungeon && !LEVELS[level].tribulation && level !== 'kiem_trung') return `dungeon.${level}.name`;
   return biome === 'wild' && level !== 'van_lam' && level !== 'kiem_trung' ? `map.${level}` : `ui.zone.${biome}`;
 }

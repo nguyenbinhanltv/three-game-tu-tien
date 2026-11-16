@@ -62,6 +62,14 @@ export interface MoveCtx {
   speedMul: number;
   /** Địa hình của level đang đứng (E1-A); thiếu thì Vân Lam. */
   terrain?: Terrain;
+  /** Vách hang của phó bản (E2-C, `DungeonDef.bound`): đẩy ngược về trong vòng tròn này mỗi bước, cả khi bay; client và server cùng truyền. */
+  bound?: { x: number; z: number; r: number };
+}
+
+/** Vách hang của level (phó bản có `DungeonDef.bound`) để truyền vào `MoveCtx.bound`. */
+export function caveBoundOf(level: { dungeon?: { center: { x: number; z: number }; bound?: number } } | undefined): MoveCtx['bound'] {
+  const d = level?.dungeon;
+  return d?.bound ? { x: d.center.x, z: d.center.z, r: d.bound } : undefined;
 }
 
 /** Áp một bước input lên trạng thái di chuyển. Sửa trực tiếp `s`. */
@@ -131,6 +139,17 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
       const k = terrain.playWall / dPlay;
       s.x = play.cx + (s.x - play.cx) * k;
       s.z = play.cz + (s.z - play.cz) * k;
+    }
+  }
+
+  const b = ctx.bound;
+  if (b) {
+    const dx = s.x - b.x;
+    const dz = s.z - b.z;
+    const d = Math.sqrt(dx * dx + dz * dz);
+    if (d > b.r) {
+      s.x = b.x + (dx * b.r) / d;
+      s.z = b.z + (dz * b.r) / d;
     }
   }
 

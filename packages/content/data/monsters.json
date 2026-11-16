@@ -76,5 +76,26 @@
       { "hp": 0.3, "cdMul": 0.85, "speedMul": 1.1, "ai": {
         "slam": { "cd": 7.5, "r": 6, "delay": 1.6, "mul": 1.5, "max": 5, "kind": "spirit" },
         "chant": { "cd": 20, "cast": 2.6, "open": 0.3, "r": 14, "delay": 0.9, "mul": 2.6, "kind": "spirit", "stun": 3 } } } ] },
+  { "id": "boss_thach_tam_khoi_vuong", "elem": "tho", "model": "ape", "scale": 1.3, "color": "#7a5a3c", "accent": "#5fe0d0", "hpMul": 26, "atkMul": 1.3, "speed": 3.8, "aggro": 34, "attackRange": 5.0, "attackCd": 2.4, "xpMul": 9, "boss": true,
+    "ai": { "leap": { "cd": 9, "min": 3, "range": 14, "r": 4.5, "delay": 1.2, "mul": 1.8, "kind": "spirit" },
+      "line": { "cd": 12, "range": 10, "r": 10, "w": 3, "delay": 1.3, "mul": 1.3, "kind": "spirit" },
+      "reveal": { "cd": 16, "dur": 4, "mul": 1.8, "guard": 0.75, "posture": 0.25 } },
+    "posture": { "k": 2, "heavy": 0.04, "interrupt": 0.35, "wait": 3, "decay": 0.08, "brk": 4 },
+    "phases": [
+      { "hp": 0.66, "cdMul": 0.9, "ai": { "reveal": { "cd": 14, "dur": 4, "mul": 1.8, "guard": 0.75, "posture": 0.25 } } },
+      { "hp": 0.33, "cdMul": 0.85, "speedMul": 1.1, "ai": { "reveal": { "cd": 12, "dur": 4, "mul": 1.8, "guard": 0.75, "posture": 0.25 }, "leap": { "cd": 7, "min": 3, "range": 14, "r": 4.5, "delay": 1.1, "mul": 1.8, "kind": "spirit" } } } ] },
+  { "id": "boss_thon_mach_ngo_cong_vuong", "elem": "moc", "model": "serpent", "scale": 1.0, "color": "#6b4a32", "accent": "#7fe6b0", "hpMul": 75, "atkMul": 1.4, "speed": 4.6, "aggro": 34, "attackRange": 7.0, "attackCd": 2.3, "xpMul": 22, "boss": true,
+    "ai": { "slam": { "cd": 8, "r": 5.5, "delay": 1.7, "mul": 1.5, "max": 4, "kind": "spirit" },
+      "chant": { "cd": 18, "cast": 2.6, "open": 0.3, "r": 12, "delay": 0.9, "mul": 1.6, "kind": "spirit", "stun": 4, "drain": 0.02 } },
+    "posture": { "k": 2, "heavy": 0.03, "interrupt": 0.35, "wait": 3, "decay": 0.06, "brk": 4 },
+    "phases": [
+      { "hp": 0.65, "cdMul": 0.95, "ai": {
+        "burrow": { "cd": 14, "range": 22, "hide": 2, "n": 3, "r": 4, "spread": 5, "mul": 1.3, "cone": { "r": 14, "w": 35, "delay": 1.5, "mul": 1.6 }, "kind": "spirit" },
+        "reveal": { "cd": 20, "dur": 3, "mul": 1.4, "after": "burrow" },
+        "summon": { "cd": 20, "mon": "mon_ngo_cong_au", "n": 2, "max": 6, "r": 6, "delay": 1.5 } } },
+      { "hp": 0.35, "cdMul": 0.9, "speedMul": 1.15, "ai": {
+        "line": { "cd": 10, "range": 22, "r": 22, "w": 3, "delay": 1.2, "mul": 1.3, "kind": "spirit" } } },
+      { "hp": 0.1, "cdMul": 0.85, "ai": {
+        "chant": { "cd": 14, "cast": 2.6, "open": 0.5, "r": 12, "delay": 2, "mul": 4.6, "kind": "spirit", "stun": 2 } } } ] },
   { "id": "mon_tam_ma", "model": "wolf", "scale": 1, "color": "#14121f", "accent": "#b04bff", "hpMul": 1, "atkMul": 1, "speed": 5.5, "aggro": 40, "attackRange": 3.6, "attackCd": 1.8, "xpMul": 0 }
 ]

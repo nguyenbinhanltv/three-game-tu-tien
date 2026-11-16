@@ -152,6 +152,8 @@ export interface MonsterChant {
   mul: number;
   kind: 'lightning' | 'frost' | 'fire' | 'spirit';
   stun: number;
+  /** Hút mạch (E2-C, Thôn Mạch): trong lúc niệm boss hồi `drain` (tỉ lệ máu tối đa) mỗi giây; ngắt chú thì ngừng. */
+  drain?: number;
 }
 
 /**
@@ -607,7 +609,27 @@ export interface PortalDef {
 }
 
 export interface WaveDef {
-  mons: { id: string; level: number; n: number }[];
+  /** `at`: chỉ số điểm trong `points` của đợt (E2-C); bỏ trống = vòng tròn quanh `center` như Kiếm Trủng. */
+  mons: { id: string; level: number; n: number; at?: number }[];
+  /** Điểm sinh riêng của đợt (hang, khe tường); quái cùng điểm tỏa quanh điểm đó trong 4 m. */
+  points?: { x: number; z: number }[];
+  /** Nghỉ trước đợt này (giây); mặc định 6 (đợt đầu 8). */
+  delay?: number;
+  /** Tên đợt (i18n `dungeon.<level>.wave.<n>`); bỏ trống thì thông báo theo con đầu đợt. */
+  title?: boolean;
+}
+
+/** Thưởng khi dẹp xong phó bản, nhận một lần mỗi ngày và mỗi nhân vật (khóa idem `dungeon:<level>:<ngày>`). */
+export interface DungeonReward {
+  /** Phần trăm tu vi cần để lên tầng kế tiếp (15% theo thiết kế). */
+  xpPct: number;
+  /** [thấp, cao] linh thạch. */
+  gold: number[];
+  items: { item: string; chance: number; min: number; max: number }[];
+  /** Cùng khuôn `loot.json` `equip`: phẩm + (tuỳ chọn) bộ. */
+  equip?: { chance: number; q: number[]; set?: string; ilvlBonus?: number }[];
+  /** Cấp để tính ilvl trang bị rơi. */
+  level: number;
 }
 
 /** Bí cảnh theo dữ liệu (E1-B): điểm vào/ra, tâm trận, đợt quái, nơi về. */
@@ -621,7 +643,17 @@ export interface DungeonDef {
   /** Level thế giới nhận người khi ra, và điểm xuất hiện ở đó. */
   returnLevel: string;
   returnSpawn: { x: number; z: number };
+  /** Bán kính (m) quanh `center` mà người chơi không ra khỏi được (vách hang); bỏ trống = không giới hạn. */
+  bound?: number;
   waves: WaveDef[];
+  /** Mỗi lượt vào là một room riêng cho nhóm cùng đi (khóa `dgKey` trong vé); bỏ trống = ghép chung room còn chỗ như Kiếm Trủng. */
+  private?: boolean;
+  /** Khóa room (không cho người mới vào) sau khi đợt này bắt đầu; mặc định 2. */
+  lockAt?: number;
+  /** Số lần hồi sinh tối đa của mỗi người trong phó bản; hết thì bị đưa ra ngoài. Bỏ trống = không giới hạn (Kiếm Trủng). */
+  maxRevives?: number;
+  /** Thưởng hoàn thành (nhận một lần mỗi ngày); bỏ trống = chỉ có rơi đồ của quái. */
+  reward?: DungeonReward;
 }
 
 /**
@@ -649,6 +681,8 @@ export interface LevelAssets {
     beacons: boolean;
     vegetation: boolean;
   };
+  /** Vỏ hang (E2-C): vách đá + trần tối che chân trời và bầu trời; đèn đá và tinh thể mạch của level được thêm quầng sáng. */
+  cave?: { x: number; z: number; r: number; h: number };
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */
