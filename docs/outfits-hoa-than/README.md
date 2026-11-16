@@ -65,12 +65,21 @@ Bảng màu: chính `#212A38` mực đêm xanh, phụ `#DCD2B8` ngà cổ, viề
 - Hàng rào còn lại: GLB không có mesh, hoặc không đúng một mesh, vẫn dừng với thông báo rõ. GLB không vật liệu/không UV (như ủng này) đi đường thủ tục. Khi người dùng xuất lại ủng có texture thì pipeline tự dùng texture, cấu hình `proc` thành thừa.
 - Giới hạn: ủng nhẵn hơn các mảnh có texture (không hoa văn thêu), ngọc nhấn chỉ ở đồ rời nhỏ; chưa có pháp tuyến riêng (dùng phẳng).
 
-## Voan xuyên sáng (alpha-test/dither)
+## Voan xuyên sáng (blend thật, hai lượt vẽ)
 
-Voan choàng sao nằm chung lưới với đạo bào (Tripo không tách). `import.outfit.alpha = {"ao_ngoai": "veil"}`: pipeline nhận vùng voan theo màu texel (xám-tím sáng, lam ≥ đỏ, lục ≤ lam) và ghi alpha 0,6 vào atlas màu (~23% ô áo ngoài), material glTF đánh dấu `dtl_outfitAlpha`. Client (`createOutfitMaterial`): không blend (khỏi sắp xếp độ sâu, tốn GPU) mà dither theo toạ độ màn hình (nhiễu gradient xen kẽ) + `alphaTest` 0,5: texel alpha a được giữ lại với xác suất a. Chỉ **một** mảnh xuyên sáng cho cả bộ (áo ngoài); dải lụa đai tối màu nên chưa tách (còn dư một suất trong giới hạn 2 mảnh).
+Voan choàng sao nằm chung lưới với đạo bào (Tripo không tách). `import.outfit.alpha = {"ao_ngoai": "veil"}`: pipeline nhận vùng voan theo màu texel (xám-tím sáng, lam ≥ đỏ, lục ≤ lam, ~23% ô áo ngoài) và ghi alpha 0,6 vào atlas màu; material glTF đánh dấu `dtl_outfitAlpha`.
+
+Bản đầu dùng dither theo toạ độ màn hình: ở ảnh cận lộ rõ chấm/lỗ thủng như giấy rách. Nay **không còn dither**: cùng một hình học vẽ hai lượt (`createOutfitMaterial(src, dye, mode)`, `PlayerSkins.dress`):
+
+- `cutout`: phần đặc (texel alpha ≥ 0,95), alphaTest. Thân, áo trong, đầu và mọi mảnh khác luôn đục.
+- `veil`: chỉ texel voan, **blend thật**, `depthWrite` tắt, hai mặt, `renderOrder` sau thân, độ đục 0,42 cộng tối đa ~0,2 ở mép nhìn nghiêng, mép sáng nhẹ (fresnel xanh nhạt), không đổ bóng.
+- Chỉ ở LOD0 (tối đa vài người trong tầm gần): +1 draw call mỗi người. LOD1/2 vẽ voan như vải đặc (`solid`), nên đám đông không tăng draw call.
+- Chỉ **một** mảnh xuyên sáng cho cả bộ (áo ngoài); dải lụa đai tối màu chưa tách (còn dư một suất trong giới hạn 2 mảnh).
+
+Sửa thêm sau review: `gain` 1,5 → 1,2 (lớp dưới ngà bị cháy trắng nên khung chém trông như bóng ma; vật liệu trong suốt chỉ áp lên voan, không lên thân/áo trong) và `normalFlat` 0,8 (kéo pháp tuyến bake của Tripo về phẳng 80%, hết vẻ nứt/nhàu như giấy vò; thêm tham số `import.outfit.normalFlat` cho `outfit_build.py`).
 
 ## Kiểm xuyên mesh và số đo
 
 - `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 0 đến 32 ở chạy/chém giơ tay/ngồi xổm (nam), 0,5 đến 3,5 (nữ), sâu ≤ 4 cm; ảnh game không thấy xuyên mesh. `check/set_than_tang_dan_bao_*.json`.
-- `bench:crowd` sân 50 bot WebGPU high, cùng mặc (ép áo bằng `CROWD_QUERY`): **269 draw (< 300)**, 789k tam giác, CPU p50/p95/p99 5,7 / 7,8 / 33,8 ms (đạt; p99 là khung nạp pipeline đầu), texture 404 MB, heap 310 MB, tick p95 1,6 ms.
+- `bench:crowd` sân 50 bot WebGPU high, cùng mặc (ép áo bằng `CROWD_QUERY`), sau khi voan thành lượt blend riêng ở LOD0, hai lần đo: **294 và 272 draw (< 300)**, ~1,0M tam giác, CPU p50/p95 6,8 / 10,4 và 7,0 / 10,7 ms (p95 hơi trên 8 ms), texture 404 MB, heap 260–323 MB, tick p95 1,7–2,2 ms. Trước khi thêm lượt voan: 269 draw, 789k tam giác. Chênh lệch lớn giữa các lần do số bot rơi vào tầm LOD0 (voan chỉ tốn thêm draw ở LOD0); biên so với 300 còn nhỏ ở lần đo xấu (6 draw).
 - Ảnh: `sheet_than_tang_<m|f>.jpg`, `matrix_than_tang_<m|f>.jpg`, `bang_than_tang_<m|f>.jpg` (cùng bố cục Tinh Khuyết; chụp bằng `pnpm shots:outfit --sets set_phuc_mach --query outfit=set_than_tang_dan_bao`).

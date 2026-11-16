@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { dot, float, fract, materialColor, mix, screenCoordinate, step, texture, uniform, uv, vec2, vec3, vec4 } from 'three/tsl';
+import { float, materialColor, mix, normalView, positionViewDirection, select, texture, uniform, uv, vec3, vec4 } from 'three/tsl';
 import { createWorldMaterial, rimLight } from './world';
 
 /**
@@ -9,10 +9,20 @@ import { createWorldMaterial, rimLight } from './world';
  * - Nhuộm 3 kênh: màu texel × (1 + Σ mặt nạ_k · (màu nhuộm_k / màu bảng_k − 1)). Không nhuộm thì giữ nguyên (không thêm nút).
  * - Vải và kim loại: vùng viền (B) bóng và kim loại (metalness ≤ 0,6, roughness 0,4); vùng còn lại là vải nhám (0,84).
  * - Vân sáng = emissiveMap × `outfitGlow` (mặc định 1,2, trần HDR của dự án 2,4), cộng viền sáng chung của nhân vật (`rimLight`).
- * - Voan xuyên sáng (extras `dtl_outfitAlpha`, alpha của atlas màu thấp ở vùng voan): không dùng blend (sắp xếp độ sâu, tốn GPU) mà dither
- *   theo toạ độ màn hình + alphaTest: texel có alpha a giữ lại với xác suất a (nhiễu gradient xen kẽ), phần còn lại bị loại.
+ * - Voan xuyên sáng (extras `dtl_outfitAlpha`: alpha của atlas màu < `VEIL_CUT` ở vùng voan) KHÔNG dither (chấm lộ rõ ở ảnh cận) và KHÔNG blend cả
+ *   mảnh (không sắp xếp được nếp vải): cùng một hình học vẽ hai lượt. `cutout` (đặc, bỏ texel voan) + `veil` (chỉ texel voan, blend thật,
+ *   depthWrite tắt, hai mặt, độ đục `VEIL_OPACITY` tăng nhẹ ở mép nhìn nghiêng, mép sáng nhẹ). `solid` (mặc định, cả LOD xa) vẽ voan như vải đặc.
+ *   Chỉ lượt `veil` trong suốt; thân, áo trong, đầu và mọi mảnh khác luôn đục.
  * Asset cũ (#119, ORM thật không phải mặt nạ) rơi về material glTF + rim.
  */
+
+/** Texel atlas có alpha dưới ngưỡng này là voan (pipeline ghi alpha 1 − `veilAlpha` ở vùng voan, 1 ở chỗ đặc). */
+export const VEIL_CUT = 0.95;
+/** Độ đục cơ bản của voan khi blend, cộng thêm tối đa ~0,2 ở mép nhìn nghiêng. */
+export const VEIL_OPACITY = 0.42;
+
+/** `solid`: vải đặc (kể cả voan, dùng ở LOD xa); `cutout`: phần đặc khi có lượt voan; `veil`: chỉ voan, blend. */
+export type OutfitMode = 'solid' | 'cutout' | 'veil';
 
 /** Độ sáng vân phát sáng của mọi bộ (sau này theo bậc/cường hóa). */
 export const outfitGlow = uniform(1.2);
@@ -33,7 +43,7 @@ export function hasOutfitMask(src: THREE.MeshStandardMaterial): boolean {
   return src.userData?.dtl_outfitMask === 1 && !!src.roughnessMap && src.roughnessMap === src.metalnessMap;
 }
 
-export function createOutfitMaterial(src: THREE.MeshStandardMaterial, dye?: OutfitDye): THREE.MeshStandardNodeMaterial {
+export function createOutfitMaterial(src: THREE.MeshStandardMaterial, dye?: OutfitDye, mode: OutfitMode = 'solid'): THREE.MeshStandardNodeMaterial {
   const m = createWorldMaterial({
     name: src.name,
     map: src.map,
@@ -56,19 +66,24 @@ export function createOutfitMaterial(src: THREE.MeshStandardMaterial, dye?: Outf
     const tint = vec3(1, 1, 1).add(mask.x.mul(ratio('main').sub(1))).add(mask.y.mul(ratio('sec').sub(1))).add(mask.z.mul(ratio('trim').sub(1)));
     color = color.mul(tint);
   }
-  const veil = src.userData?.dtl_outfitAlpha === 1;
-  m.colorNode = vec4(color, veil ? 1 : materialColor.a);
-  if (veil) {
-    const noise = fract(float(52.9829189).mul(fract(dot(screenCoordinate, vec2(0.06711056, 0.00583715)))));
-    m.opacityNode = step(noise, materialColor.a);
+  m.colorNode = vec4(color, 1);
+  const isVeil = src.userData?.dtl_outfitAlpha === 1 && mode !== 'solid';
+  const fres = float(1).sub(normalView.dot(positionViewDirection).abs().clamp(0, 1)).pow(2);
+  if (isVeil && mode === 'cutout') {
+    m.opacityNode = select(materialColor.a.greaterThan(VEIL_CUT), float(1), float(0));
     m.alphaTest = 0.5;
-    m.transparent = false;
+  } else if (isVeil && mode === 'veil') {
+    m.opacityNode = select(materialColor.a.greaterThan(VEIL_CUT), float(0), fres.mul(0.2).add(VEIL_OPACITY));
+    m.alphaTest = 0.01;
+    m.transparent = true;
+    m.depthWrite = false;
   }
   m.metalnessNode = mask.z.mul(0.6);
   m.roughnessNode = mix(float(0.9), float(0.45), mask.z);
   rimLight(m);
   const rim = m.emissiveNode as unknown as ReturnType<typeof vec3>;
-  m.emissiveNode = src.emissiveMap ? rim.add(texture(src.emissiveMap, uv()).rgb.mul(outfitGlow)) : rim;
+  const lit = src.emissiveMap ? rim.add(texture(src.emissiveMap, uv()).rgb.mul(outfitGlow)) : rim;
+  m.emissiveNode = isVeil && mode === 'veil' ? lit.add(vec3(0.62, 0.7, 0.9).mul(fres).mul(0.18)) : lit; // mép voan sáng nhẹ
   m.needsUpdate = true;
   return m;
 }
