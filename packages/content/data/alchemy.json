@@ -139,6 +139,60 @@
           "sec": 600
         }
       }
+    },
+    {
+      "id": "itm_kim_cuong_dan_3",
+      "kind": "consumable",
+      "stack": 50,
+      "price": 0,
+      "sell": 120,
+      "rarity": 2,
+      "icon": "itm_kim_cuong_dan_3",
+      "iconFallback": "🛡️",
+      "use": {
+        "cd": 3,
+        "buff": {
+          "kind": "def",
+          "pct": 0.18,
+          "sec": 600
+        }
+      }
+    },
+    {
+      "id": "itm_bao_huyet_dan_3",
+      "kind": "consumable",
+      "stack": 50,
+      "price": 0,
+      "sell": 130,
+      "rarity": 2,
+      "icon": "itm_bao_huyet_dan_3",
+      "iconFallback": "🩸",
+      "use": {
+        "cd": 3,
+        "buff": {
+          "kind": "crit",
+          "pct": 0.15,
+          "sec": 600
+        }
+      }
+    },
+    {
+      "id": "itm_manh_luc_dan_3",
+      "kind": "consumable",
+      "stack": 50,
+      "price": 0,
+      "sell": 105,
+      "rarity": 2,
+      "icon": "itm_manh_luc_dan_3",
+      "iconFallback": "💪",
+      "use": {
+        "cd": 3,
+        "buff": {
+          "kind": "atk",
+          "pct": 0.18,
+          "sec": 600
+        }
+      }
     }
   ],
   "recipes": [
@@ -393,6 +447,125 @@
       ],
       "gold": 600,
       "reqLevel": 16
+    },
+    {
+      "id": "rcp_kim_cuong_dan_3",
+      "npc": "npc_duoc_su",
+      "output": {
+        "id": "itm_kim_cuong_dan_3",
+        "n": 1
+      },
+      "inputs": [
+        {
+          "id": "itm_van_hai_lo",
+          "n": 4
+        },
+        {
+          "id": "itm_thiet_tinh",
+          "n": 1
+        }
+      ],
+      "gold": 240,
+      "quality": true,
+      "reqLevel": 20
+    },
+    {
+      "id": "rcp_bao_huyet_dan_3",
+      "npc": "npc_duoc_su",
+      "output": {
+        "id": "itm_bao_huyet_dan_3",
+        "n": 1
+      },
+      "inputs": [
+        {
+          "id": "itm_van_hai_lo",
+          "n": 3
+        },
+        {
+          "id": "itm_yeu_dan",
+          "n": 2
+        },
+        {
+          "id": "itm_huyet_linh_chi",
+          "n": 1
+        }
+      ],
+      "gold": 250,
+      "quality": true,
+      "reqLevel": 20
+    },
+    {
+      "id": "rcp_manh_luc_dan_3",
+      "npc": "npc_duoc_su",
+      "output": {
+        "id": "itm_manh_luc_dan_3",
+        "n": 1
+      },
+      "inputs": [
+        {
+          "id": "itm_van_hai_lo",
+          "n": 3
+        },
+        {
+          "id": "itm_kinh_hoa_sa",
+          "n": 1
+        },
+        {
+          "id": "itm_yeu_dan",
+          "n": 1
+        }
+      ],
+      "gold": 190,
+      "quality": true,
+      "reqLevel": 20
+    },
+    {
+      "id": "rcp_pha_canh_dan_3",
+      "npc": "npc_duoc_su",
+      "output": {
+        "id": "itm_pha_canh_dan_3",
+        "n": 1
+      },
+      "inputs": [
+        {
+          "id": "itm_van_hai_lo",
+          "n": 6
+        },
+        {
+          "id": "itm_yeu_dan",
+          "n": 4
+        },
+        {
+          "id": "itm_bich_ngoc_nhi",
+          "n": 1
+        }
+      ],
+      "gold": 900,
+      "reqLevel": 21
+    },
+    {
+      "id": "rcp_duong_anh_dan",
+      "npc": "npc_duoc_su",
+      "output": {
+        "id": "itm_duong_anh_dan",
+        "n": 1
+      },
+      "inputs": [
+        {
+          "id": "itm_bich_ngoc_nhi",
+          "n": 3
+        },
+        {
+          "id": "itm_van_hai_lo",
+          "n": 10
+        },
+        {
+          "id": "itm_linh_thao",
+          "n": 6
+        }
+      ],
+      "gold": 2400,
+      "reqLevel": 23
     }
   ]
 }

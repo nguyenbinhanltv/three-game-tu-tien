@@ -1,5 +1,5 @@
 // pnpm shots:sets: chụp ảnh phụ kiện hình dáng của 4 bộ trang bị (nam + nữ × trước/sau lưng/nghiêng), cộng ảnh đang chạy và đang chém để soát xuyên mesh.
-//   tsx src/shots-sets.ts --out <thư mục> [--renderer webgpu|webgl2] [--sets set_lac_kiem,...] [--genders m,f] [--only still|motion]
+//   tsx src/shots-sets.ts --out <thư mục> [--renderer webgpu|webgl2] [--sets set_lac_kiem,...] [--level 12] [--genders m,f] [--only still|motion]
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175), vào game tắt tiếng (?mute=1, --mute-audio) bằng tài khoản thử, mặc bộ bằng lệnh GM `set`.
 import path from 'node:path';
 import fs from 'node:fs';
@@ -71,7 +71,7 @@ async function main(): Promise<void> {
       }, undefined, { timeout: 120_000, polling: 250 });
       await clearIntro(page);
       await page.addStyleTag({ content: '.hud,.chat{visibility:hidden !important}' });
-      await gm(page, 'level 12', 1600);
+      await gm(page, `level ${opt('--level', '12')}`, 1600);
       await gm(page, 'god on', 1600);
       await gm(page, 'tp 2048 2088', 1600);
       const shot = async (file: string) => {

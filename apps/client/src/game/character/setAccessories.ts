@@ -177,6 +177,12 @@ function paletteOf(setId: string): Pal {
       return { cloth: '#3b2a1f', cloth2: hex, hard: '#7a5a3c', trim, gem: '#d98a2b' };
     case 'set_phuc_mach':
       return { cloth: hex, cloth2: '#34503a', hard: '#9a8a52', trim, gem: '#8fe3b4' };
+    case 'set_kinh_quang':
+      return { cloth: hex, cloth2: '#f1f5fb', hard: '#a9bbd2', trim, gem: '#9fe6ff' };
+    case 'set_van_kinh':
+      return { cloth: '#3e4a59', cloth2: hex, hard: '#97a6b8', trim, gem: '#8fc8ff' };
+    case 'set_luu_ly':
+      return { cloth: hex, cloth2: '#e8f1e4', hard: '#8fd3c8', trim, gem: '#7df5e0' };
     default:
       return { cloth: hex, cloth2: '#1d5d6c', hard: '#4aa3b4', trim, gem: '#bfe9f0' };
   }
@@ -516,6 +522,58 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     belt: (c) => {
       belt(c, { h: 0.05, color: c.pal.cloth2, rim: c.pal.trim, buckle: c.pal.hard, gem: c.pal.gem });
       hipCharm(c, { cord: c.pal.trim, item: 'gourd', color: c.pal.cloth2, accent: c.pal.gem, gain: 0.05 });
+    },
+    ring: (c) => handBand(c, { color: c.pal.hard, gem: c.pal.gem }),
+  },
+  // Kính Quang Kiếm Y (bậc 3, kiếm tu): bạc trắng như mặt gương, vai tròn bóng, mảnh gương nhỏ ở đai, ủng bạc.
+  set_kinh_quang: {
+    robe: (c) => {
+      for (const s of [1, -1] as const) {
+        pauldron(c, s, { r: shR(c, s, s < 0 ? 1.28 : 1.1), facets: 10, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.66, theta: 1.05, lift: 0.22, color: c.pal.cloth2, kind: 'hard' }] });
+      }
+      backTails(c, { w: 0.065, len: 0.44, color: c.pal.cloth2, stripe: c.pal.trim, tip: 'v', gain: 0.08 });
+    },
+    bracer: (c) => {
+      for (const s of [1, -1] as const) bracer(c, s, { len: 0.11, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth2, gem: c.pal.gem });
+    },
+    belt: (c) => {
+      belt(c, { h: 0.056, color: c.pal.hard, rim: c.pal.trim, buckle: c.pal.cloth2, gem: c.pal.gem });
+      hipCharm(c, { cord: c.pal.trim, item: 'jade', color: c.pal.cloth2, accent: c.pal.gem, gain: 0.05 });
+    },
+    boots: (c) => {
+      for (const s of [1, -1] as const) cuff(c, s, { len: 0.12, kind: 'hard', color: c.pal.hard, rim: c.pal.gem, flare: 0.008, plate: c.pal.cloth2 });
+    },
+  },
+  // Vân Kình Thiết Giáp (bậc 3, hộ pháp): xám thép lam, vai ba lớp đội mây, đai thiết bản rộng, ủng thiết.
+  set_van_kinh: {
+    robe: (c) => {
+      for (const s of [1, -1] as const) {
+        pauldron(c, s, { r: shR(c, s, 1.38), facets: 6, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, scales: { color: '#56667a', tiers: [[0.45, 6, 0.27], [0.82, 9, 0.29], [1.12, 12, 0.3]] }, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.8, theta: 1.0, lift: 0.3, color: c.pal.cloth2, kind: 'hard' }, { k: 0.5, theta: 0.8, lift: 0.52, color: c.pal.trim, kind: 'hard' }] });
+      }
+      backTails(c, { w: 0.095, len: 0.34, color: c.pal.cloth, stripe: c.pal.trim, tip: 'flat', gain: 0.04 });
+    },
+    bracer: (c) => {
+      for (const s of [1, -1] as const) bracer(c, s, { len: 0.14, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
+    },
+    belt: (c) => {
+      belt(c, { h: 0.085, color: c.pal.cloth, rim: c.pal.trim, buckle: c.pal.hard, gem: c.pal.gem, wide: true });
+    },
+    boots: (c) => {
+      for (const s of [1, -1] as const) cuff(c, s, { len: 0.16, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.016, plate: c.pal.cloth });
+    },
+  },
+  // Lưu Ly Đan Y (bậc 3, đan sư): xanh ngọc, ngà, ngọc bội giọt nước, bình thuốc lưu ly ở đai, vòng ngọc ở tay; mềm.
+  set_luu_ly: {
+    robe: (c) => {
+      for (const s of [1, -1] as const) {
+        pauldron(c, s, { r: shR(c, s, 1.22), facets: 12, rim: c.pal.trim, rimKind: 'hard', layers: [{ k: 1, theta: 1.38, lift: 0, color: c.pal.cloth, kind: 'cloth' }, { k: 0.68, theta: 1.12, lift: 0.2, color: c.pal.cloth2, kind: 'cloth' }] });
+      }
+      backTails(c, { w: 0.085, len: 0.44, color: c.pal.cloth, stripe: c.pal.trim, tip: 'point', gain: 0.08 });
+    },
+    jade: (c) => pendant(c, { cord: c.pal.trim, jade: c.pal.gem, rim: c.pal.hard }),
+    belt: (c) => {
+      belt(c, { h: 0.05, color: c.pal.cloth2, rim: c.pal.trim, buckle: c.pal.hard, gem: c.pal.gem });
+      hipCharm(c, { cord: c.pal.trim, item: 'gourd', color: c.pal.gem, accent: c.pal.cloth2, gain: 0.05 });
     },
     ring: (c) => handBand(c, { color: c.pal.hard, gem: c.pal.gem }),
   },

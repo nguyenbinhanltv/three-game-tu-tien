@@ -33,6 +33,7 @@ const SWORDS = MODEL ? [{ id: '', file: MODEL.replace('prop_kiem_', ''), name: '
   { id: 'itm_hgl_kiem', file: 'han-giao-lan', name: 'Hàn Giao Lân Kiếm' },
   { id: 'itm_tram_ta_kiem', file: 'tram-ta', name: 'Trảm Tà Kiếm' },
   { id: 'itm_liet_mach_kiem', file: 'liet-mach', name: 'Liệt Mạch Kiếm' },
+  { id: 'itm_kinh_quang_kiem', file: 'kinh-quang-vp', name: 'Kính Quang Kiếm' },
 ];
 
 const gm = async (page: Page, cmd: string, wait = 1100) => {
@@ -72,7 +73,7 @@ async function main(): Promise<void> {
       return !!g && g.frames > 30 && !!g.me?.();
     }, undefined, { timeout: 120_000, polling: 250 });
     await clearIntro(page);
-    await gm(page, 'level 15');
+    await gm(page, 'level 20');
     await gm(page, 'god on');
     await gm(page, 'tp 2048 2088');
     await page.addStyleTag({ content: 'body.nohud .hud, body.nohud .chat, body.nohud .minimap { visibility: hidden !important; }' });
