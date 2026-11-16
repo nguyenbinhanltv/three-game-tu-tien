@@ -125,7 +125,9 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_khai_mach_khoi_loi: { asset: 'mon_khai_mach_khoi_loi', clips: WOLF_CLIPS, refSpeed: 1.7, legs: 'biped', tint: '#ffffff', lazy: true, level: 'doan_mach' },
   mon_thach_giap_te: { asset: 'mon_thach_giap_te', clips: WOLF_CLIPS, refSpeed: 1.75, legs: 'quad', tint: '#ffffff', lazy: true, level: 'doan_mach' },
   mon_ngo_cong_au: { asset: 'mon_ngo_cong_au', clips: WOLF_CLIPS, refSpeed: 7.3, legs: 'none', tint: '#ffffff', lazy: true, level: 'doan_mach' },
-  // Vân Hải Phù Đảo (E-3). Vân Hạc và Kim Thiền bay: client nâng thân theo `fly` của quái (không nằm trong skin).
+  // Vân Hải Phù Đảo (E-3). Vân Hạc, Kim Thiền, Vân Hạc Vương và Kình Vương bay: client nâng thân theo `hover` của quái trong monsters.json (game/hover.ts, không nằm trong skin).
+  elite_van_hac_vuong: { ...ELITE_SKINS_NEW.elite_van_hac_vuong, level: 'van_hai' },
+  elite_loi_van_su_vuong: { ...ELITE_SKINS_NEW.elite_loi_van_su_vuong, level: 'van_hai' },
   mon_van_hac: { asset: 'mon_van_hac', clips: WOLF_CLIPS, refSpeed: 2.7, legs: 'none', tint: '#ffffff', lazy: true, level: 'van_hai' },
   mon_kinh_linh: { asset: 'mon_kinh_linh', clips: GUARD_CLIPS, refSpeed: 2.1, legs: 'biped', tint: '#ffffff', palette: { dark: '#1c2c48', light: '#b8d4f4', glow: '#7fc4ff' }, lazy: true, level: 'van_hai' },
   mon_phu_dao_thach_quy: { asset: 'mon_phu_dao_thach_quy', clips: WOLF_CLIPS, refSpeed: 3.2, legs: 'quad', tint: '#ffffff', palette: { dark: '#2a2630', light: '#c4a870', glow: '#8fd0ff' }, lazy: true, level: 'van_hai' },

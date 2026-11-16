@@ -488,13 +488,23 @@ n_hit = keyed('hit_light', 0.4, [
     (0.30, pose(neck_pitch=-20.0, head_pitch=-20.0, tail_yaw=-24.0, s_curve=10.0, front=8.0), (0, 0.03 * LEN, 0)),
     (1.00, REST_KEY, (0, 0, 0)),
 ])
-n_death = keyed('death', 2.6, [
-    (0.00, REST_KEY, (0, 0, 0)),
-    (0.14, pose(neck_pitch=-24.0, head_pitch=-16.0, front=28.0, tail_yaw=10.0), (0, 0.03 * LEN, 0)),
-    (0.34, pose(neck_pitch=40.0, head_pitch=24.0, neck_yaw=18.0, front=8.0, tail_yaw=26.0, s_curve=18.0), (0, -0.05 * LEN, 0)),
-    (0.60, pose(neck_pitch=104.0, head_pitch=8.0, neck_yaw=38.0, tail_yaw=40.0, body_yaw=8.0, s_curve=34.0), (0, -0.08 * LEN, 0)),
-    (1.00, pose(neck_pitch=108.0, head_pitch=4.0, neck_yaw=42.0, tail_yaw=46.0, body_yaw=10.0, s_curve=40.0), (0, -0.08 * LEN, 0)),
-])
+# Kiểu `swim` (kình ngư vây rộng): chết thì đầu cúi dần, thân hơi nghiêng chìm, đuôi buông (góc nhỏ, không uốn S). Gập cổ ~100° và
+# uốn đuôi 40° làm lưới vây rộng bị kéo thành vệt méo; kiểu bò (ngô công, giao) giữ dáng cũ.
+if STYLE == 'swim':
+    n_death = keyed('death', 2.6, [
+        (0.00, REST_KEY, (0, 0, 0)),
+        (0.18, pose(neck_pitch=-10.0, head_pitch=-8.0, front=10.0, tail_yaw=4.0), (0, 0.01 * LEN, 0)),
+        (0.50, pose(neck_pitch=26.0, head_pitch=14.0, neck_yaw=6.0, tail_yaw=8.0, s_curve=4.0, body_pitch=4.0), (0, -0.02 * LEN, 0)),
+        (1.00, pose(neck_pitch=34.0, head_pitch=10.0, neck_yaw=8.0, tail_yaw=10.0, s_curve=5.0, body_pitch=6.0), (0, -0.03 * LEN, 0)),
+    ])
+else:
+    n_death = keyed('death', 2.6, [
+        (0.00, REST_KEY, (0, 0, 0)),
+        (0.14, pose(neck_pitch=-24.0, head_pitch=-16.0, front=28.0, tail_yaw=10.0), (0, 0.03 * LEN, 0)),
+        (0.34, pose(neck_pitch=40.0, head_pitch=24.0, neck_yaw=18.0, front=8.0, tail_yaw=26.0, s_curve=18.0), (0, -0.05 * LEN, 0)),
+        (0.60, pose(neck_pitch=104.0, head_pitch=8.0, neck_yaw=38.0, tail_yaw=40.0, body_yaw=8.0, s_curve=34.0), (0, -0.08 * LEN, 0)),
+        (1.00, pose(neck_pitch=108.0, head_pitch=4.0, neck_yaw=42.0, tail_yaw=46.0, body_yaw=10.0, s_curve=40.0), (0, -0.08 * LEN, 0)),
+    ])
 
 extra_clips = {}
 if 'slam' in EXTRA:

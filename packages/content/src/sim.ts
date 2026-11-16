@@ -838,6 +838,7 @@ for (const [id, lv, n] of [
   ['boss_thu_mo_tuong', 15, 3],
   ['boss_han_giao', 15, 4],
   ['boss_dia_mach_long', 19, 4],
+  ['boss_van_hai_kinh_vuong', 23, 4],
 ] as const) {
   const def = MONSTER.get(id)!;
   const ms = monsterStats(lv, def.hpMul, def.atkMul);
