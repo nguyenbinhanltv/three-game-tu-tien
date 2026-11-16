@@ -30,6 +30,11 @@ Gói E2-B (`docs/EXPANSION_DESIGN.md` 6.1, 5.4, 11.2). Dữ liệu thay bản t�
 - **Scale boss**: `scale` 0,85 (≈ 7,6 m dài, 3,9 m cao so với người 1,8 m).
 - **Thạch Giáp Tê chết bị bẹp**: lăn nghiêng 88° làm thân rộng dẹt thành khối. Thêm `import.quadruped.death: "prone"` (quỵ bốn chân, nằm sấp). Ảnh: `te-chet.jpg`.
 
+## Sửa sau soát (orchestrator)
+
+- **Tinh anh đứng như cột**: ba tinh anh E2-B chưa nằm trong `MONSTER_SKINS` (chỉ ở `ELITE_SKINS_NEW`), nên trong game vẫn là model khối cũ (rết = cột đốt chồng). Đã gộp vào `monsterSkins.ts` với `level: 'doan_mach'`. Asset GLB đúng (rết bò ngang, xem `view-elite_xich_sa_ngo_cong-*.png`, `view-mon_ngo_cong_au.jpg`); trục xoay không lỗi. Ngô Công Ấu đã dùng skin thật, nhìn thẳng từ đầu thì ngắn như cột nên ảnh game chụp ngang thân.
+- **Địa Mạch Long xanh lam**: không phải tint/emissive sai, skin đúng (nâu đá có vân lam khi nhìn ngang). Ảnh cũ chụp ngược sáng từ phía trước nên viền yêu khí (`rim` 0,3) và bóng lam phủ cả thân. Đã giảm `rim` 0,12, thêm `lift` 0,2 và chụp lại từ bên, gần 14 m.
+
 ## Ảnh (trong game, `pnpm shots:e2b --out <thư mục tuyệt đối>`; mỗi tấm: 6 khung vạch báo/chiêu, 3 khung chết)
 
 | | |
@@ -42,6 +47,8 @@ Gói E2-B (`docs/EXPANSION_DESIGN.md` 6.1, 5.4, 11.2). Dữ liệu thay bản t�
 | Hộ Mạch Khôi Tướng | ![](elite_ho_mach_khoi_tuong.jpg) |
 | Xích Sa Ngô Công | ![](elite_xich_sa_ngo_cong.jpg) |
 | Địa Mạch Long (pha 1) | ![](boss_dia_mach_long.jpg) |
+| Địa Mạch Long (99% máu, chiêu slam) | ![](boss_dia_mach_long-hurt99.jpg) |
+| Ngô Công Ấu / Xích Sa trong trang xem | ![](view-mon_ngo_cong_au.jpg) ![](view-elite_xich_sa_ngo_cong-stills.png) |
 | Địa Mạch Long (≤ 45% máu) | ![](boss_dia_mach_long-hurt45.jpg) |
 | Địa Mạch Long (≤ 25% máu) | ![](boss_dia_mach_long-hurt25.jpg) |
 | Boss: các clip (`pnpm shots:boss`) | ![](boss-view/boss_dia_mach_long_clips.jpg) |

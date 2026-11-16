@@ -27,6 +27,8 @@ interface Spec {
   flag?: number;
   /** Đứng yên (chiêu dùng được ở sát). */
   stand?: boolean;
+  /** Góc camera (rad), mặc định π: nhìn từ phía người chơi về quái. */
+  yaw?: number;
   /** Lệnh /gm chạy sau khi gọi quái (ví dụ hạ máu để vào pha). */
   after?: string[];
   shots?: number;
@@ -34,14 +36,15 @@ interface Spec {
 const SPECS: Spec[] = [
   { mon: 'mon_thach_giap_te', lv: 17, dist: 8, pitch: 0.45 },
   { mon: 'mon_khai_mach_khoi_loi', lv: 18, dist: 7, pitch: 0.45, stand: true },
-  { mon: 'mon_ngo_cong_au', lv: 19, dist: 7, pitch: 0.45 },
+  { mon: 'mon_ngo_cong_au', lv: 19, dist: 12, pitch: 0.3, yaw: Math.PI / 2, stand: true },
   { mon: 'mon_mach_thuong_ho_ve', lv: 19, dist: 7, pitch: 0.45, stand: true },
   { mon: 'elite_liet_cot_bao', lv: 17, dist: 9, pitch: 0.45 },
   { mon: 'elite_ho_mach_khoi_tuong', lv: 18, dist: 9, pitch: 0.45 },
-  { mon: 'elite_xich_sa_ngo_cong', lv: 19, dist: 9, pitch: 0.45, shots: 10 },
-  { mon: 'boss_dia_mach_long', lv: 19, dist: 22, pitch: 0.45, shots: 8 },
-  { mon: 'boss_dia_mach_long', lv: 19, dist: 22, pitch: 0.45, after: ['hurt 45'], shots: 6 },
-  { mon: 'boss_dia_mach_long', lv: 19, dist: 22, pitch: 0.45, after: ['hurt 25'], shots: 8 },
+  { mon: 'elite_xich_sa_ngo_cong', lv: 19, dist: 12, pitch: 0.3, yaw: Math.PI / 2, shots: 10 },
+  { mon: 'boss_dia_mach_long', lv: 19, dist: 14, pitch: 0.3, yaw: Math.PI / 2, shots: 8 },
+  { mon: 'boss_dia_mach_long', lv: 19, dist: 13, pitch: 0.3, yaw: Math.PI / 2, after: ['hurt 99'], shots: 4 },
+  { mon: 'boss_dia_mach_long', lv: 19, dist: 14, pitch: 0.3, yaw: Math.PI / 2, after: ['hurt 45'], shots: 6 },
+  { mon: 'boss_dia_mach_long', lv: 19, dist: 14, pitch: 0.3, yaw: Math.PI / 2, after: ['hurt 25'], shots: 8 },
 ];
 
 const gm = async (page: Page, cmd: string, wait = 1100) => {
@@ -91,16 +94,16 @@ async function main(): Promise<void> {
     await sleep(4000);
     await gm(page, 'god on', 1000);
     const shot = async (label: string) => fs.writeFileSync(path.join(OUT, `${label}.jpg`), await page.screenshot({ type: 'jpeg', quality: 82 }));
-    const cam = (pitch: number, dist: number) =>
+    const cam = (pitch: number, dist: number, yaw = Math.PI) =>
       page.evaluate(
-        ([p, d]) => {
+        ([p, d, y]) => {
           const g = (window as unknown as G).__game!;
-          g.camYaw = Math.PI;
+          g.camYaw = y;
           g.camPitch = p;
           g.camDist = d;
           g.camDistCur = d;
         },
-        [pitch, dist] as const,
+        [pitch, dist, yaw] as const,
       );
     const hazards = () => page.evaluate(() => ((window as unknown as G).__game!.hazardLog ?? []).length);
     const flags = () =>
@@ -115,17 +118,19 @@ async function main(): Promise<void> {
       const tag = `${sp.mon}${sp.after ? '-' + sp.after[0].replace(/\s+/g, '') : ''}`;
       idx++;
       if (only.length && !only.includes(sp.mon)) continue;
+      let seen = false;
+      // Chập chờn (quái áp sát trước khi ra chiêu, người chơi chết...): thử lại tối đa 3 lần.
+      for (let attempt = 0; attempt < 3 && !seen; attempt++) {
       await gm(page, `level ${sp.lv}`, 1200);
       await gm(page, 'killall', 800);
       await gm(page, 'tp dm_tram', 1800);
       await gm(page, 'heal', 400);
       await gm(page, 'god on', 400);
       await page.evaluate(() => ((window as unknown as G).__game!.hazardLog = []));
-      await cam(sp.pitch, sp.dist);
-      await gm(page, `spawn ${sp.mon} 1`, 700);
+      await cam(sp.pitch, sp.dist, sp.yaw);
+      await gm(page, `spawn ${sp.mon} 1`, 3500);
       for (const c of sp.after ?? []) await gm(page, c, 700);
-      const until = Date.now() + 45_000;
-      let seen = false;
+      const until = Date.now() + 25_000;
       // Chạy thẳng về phía bắc cho quái ở xa (chiêu lao/vồ cần khoảng cách), thả phím khi thấy chiêu.
       let tick = 0;
       while (Date.now() < until) {
@@ -144,8 +149,9 @@ async function main(): Promise<void> {
         await sleep(60);
       }
       await page.keyboard.up('KeyW');
+      }
       if (!seen) {
-        console.log(`[shots-e2b] ${tag}: không thấy chiêu trong 45 s`);
+        console.log(`[shots-e2b] ${tag}: không thấy chiêu sau 3 lần thử`);
         await shot(`${tag}-MISS`);
         console.log(JSON.stringify(await page.evaluate(() => { const g = (window as unknown as G).__game!; const m = g.me(); return { me: m && { x: m.x, z: m.z }, mons: [...g.view.monsters.values()].filter((q: any) => q.t === 'elite_liet_cot_bao').map((q: any) => ({ t: q.t, x: q.x, z: q.z, st: q.st, hp: q.hp })), hz: (g.hazardLog ?? []).length, keys: Object.keys(g).filter((k) => /haz/i.test(k)) }; })));
         continue;

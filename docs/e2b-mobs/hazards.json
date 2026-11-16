@@ -1,66 +1,81 @@
 {
- "mon_khai_mach_khoi_loi": [
-  {
-   "sh": "circle",
-   "r": 3.5
-  }
- ],
- "mon_ngo_cong_au": [
-  {
-   "sh": "cone",
-   "r": 9,
-   "w": 0.5235987755982988
-  }
- ],
- "mon_mach_thuong_ho_ve": [
-  {
-   "sh": "rect",
-   "r": 5,
-   "w": 2.5
-  }
- ],
- "elite_ho_mach_khoi_tuong": [
-  {
-   "sh": "circle",
-   "r": 5
-  }
- ],
- "elite_xich_sa_ngo_cong": [
-  {
-   "sh": "cone",
-   "r": 12,
-   "w": 0.5235987755982988
-  }
- ],
- "boss_dia_mach_long": [
-  {
-   "sh": "circle",
-   "r": 6
-  }
- ],
- "boss_dia_mach_long-hurt45": [
-  {
-   "sh": "circle",
-   "r": 6
-  }
- ],
- "boss_dia_mach_long-hurt25": [
-  {
-   "sh": "circle",
-   "r": 6
-  }
- ],
- "mon_thach_giap_te": [
-  {
-   "sh": "rect",
-   "r": 12,
-   "w": 2
-  }
- ],
- "elite_liet_cot_bao": [
-  {
-   "sh": "circle",
-   "r": 3
-  }
- ]
+  "mon_thach_giap_te": [
+    {
+      "sh": "rect",
+      "r": 12,
+      "w": 2
+    }
+  ],
+  "mon_khai_mach_khoi_loi": [
+    {
+      "sh": "circle",
+      "r": 3.5
+    }
+  ],
+  "mon_ngo_cong_au": [
+    {
+      "sh": "cone",
+      "r": 9,
+      "w": 0.5235987755982988
+    }
+  ],
+  "mon_mach_thuong_ho_ve": [
+    {
+      "sh": "rect",
+      "r": 5,
+      "w": 2.5
+    }
+  ],
+  "elite_liet_cot_bao": [
+    {
+      "sh": "circle",
+      "r": 3
+    }
+  ],
+  "elite_ho_mach_khoi_tuong": [
+    {
+      "sh": "circle",
+      "r": 5
+    }
+  ],
+  "elite_xich_sa_ngo_cong": [
+    {
+      "sh": "cone",
+      "r": 12,
+      "w": 0.5235987755982988
+    }
+  ],
+  "boss_dia_mach_long": [
+    {
+      "sh": "circle",
+      "r": 6
+    },
+    {
+      "sh": "rect",
+      "r": 30,
+      "w": 4
+    }
+  ],
+  "boss_dia_mach_long-hurt99": [
+    {
+      "sh": "circle",
+      "r": 6
+    }
+  ],
+  "boss_dia_mach_long-hurt45": [
+    {
+      "sh": "circle",
+      "r": 6
+    }
+  ],
+  "boss_dia_mach_long-hurt25": [
+    {
+      "sh": "circle",
+      "r": 6
+    },
+    {
+      "sh": "circle",
+      "r": 6
+    }
+  ]
 }
