@@ -2,6 +2,8 @@
 
 Gói E3-B (`docs/EXPANSION_DESIGN.md` 6.2, 5.4, 11.2). Thay quái tạm của Đoạn Mạch trên bản đồ E3-A bằng quái riêng; dùng skin GLB người dùng đã nhập (#115–#117), không Tripo, không dựng model mới. Vị trí cụm/tinh anh giữ nguyên của E3-A (chạy lại `node tools/maps/gen-van-hai.mjs`: chỉ đổi loại quái và thêm boss; mật độ, độ phủ, chỗ kẹt không đổi).
 
+> Sau khi merge main (#149 Kính Nguyệt Cung): `mon_kinh_linh`, `mon_phu_dao_thach_quy`, `elite_kinh_dien_ma_quan` đã được #149 định nghĩa trước (dùng chung với phó bản), nên giữ bản của #149 (chiêu và bảng rơi `dungeon` khác bảng chiêu ghi dưới đây cho ba con này, ví dụ Thạch Quy dùng `charge`). Ảnh của ba con này chụp theo bản cũ của gói này.
+
 ## Dữ liệu (`packages/content/data/monsters.json`, `loot.json`, `levels/van_hai.json`)
 
 | Đảo (cấp) | Quái thường | Tinh anh | Ghi chú |

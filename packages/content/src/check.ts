@@ -542,6 +542,24 @@ for (const m of MONSTERS) {
     });
     if (hasString(`mon.${m.id}.say.dead`) && t(`mon.${m.id}.say.dead`).length > 90) err(`mon.${m.id}.say.dead: thoại quá dài`);
   }
+  if (m.mirror) {
+    const mi = m.mirror;
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có mirror`);
+    const nph = (m.phases?.length ?? 0) + 1;
+    for (const [k, f] of Object.entries(mi) as [string, { phase: number } | undefined][]) if (f && !(Number.isInteger(f.phase) && f.phase >= 0 && f.phase < nph)) err(`monster ${m.id}: mirror.${k}.phase ngoài số pha`);
+    if (mi.decoys) {
+      const dd = MONSTER.get(mi.decoys.mon);
+      if (!dd) err(`monster ${m.id}: mirror.decoys.mon không tồn tại`);
+      else if (dd.boss || dd.elite || !(dd.hpMul <= 0.1)) err(`monster ${m.id}: bóng giả phải là quái thường chết trong một đòn (hpMul ≤ 0,1)`);
+      if (!(mi.decoys.n >= 1 && mi.decoys.n <= 5 && mi.decoys.boom.delay >= 1 && mi.decoys.boom.r <= 8)) err(`monster ${m.id}: mirror.decoys n ∈ [1;5], nổ báo ≥ 1 giây, r ≤ 8`);
+    }
+    if (mi.echo && !(mi.echo.delay >= 1 && mi.echo.cd >= 4)) err(`monster ${m.id}: mirror.echo báo ≥ 1 giây, hồi ≥ 4 giây`);
+    if (mi.disc) {
+      const dc = mi.disc;
+      if (!(dc.warn >= 1 && dc.beams >= 2 && dc.beams <= 4 && dc.spin > 0 && dc.spin <= 40 && dc.w >= 2 && dc.dur <= 10)) err(`monster ${m.id}: mirror.disc: báo ≥ 1 s, 2–4 tia, quay ≤ 40°/s (đi vòng kịp), rộng ≥ 2 m, ≤ 10 s`);
+    }
+    if (mi.veil && !(mi.veil.r <= 16 && mi.veil.dur <= 25 && mi.veil.hpMul > 0 && mi.veil.hpMul <= 0.5)) err(`monster ${m.id}: mirror.veil: r ≤ 16, ≤ 25 s, hpMul ∈ (0; 0,5]`);
+  }
   const ps = m.posture;
   if (ps) {
     if (!m.boss) err(`monster ${m.id}: chỉ boss mới có thanh phá thế`);
@@ -791,6 +809,15 @@ for (const lv of Object.values(LEVELS)) {
       if (!(g.n >= 1)) err(`${ww}: quái ${g.id} số lượng phải >= 1`);
     }
     for (const pt of wv.points ?? []) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${ww}: điểm sinh (${pt.x}, ${pt.z}) ngoài bản đồ`);
+    if (wv.puzzle) {
+      const pz = wv.puzzle;
+      if (pz.points.length !== 3) err(`${ww}: đố gương cần đúng 3 điểm`);
+      for (const pt of pz.points) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${ww}: cột gương (${pt.x}, ${pt.z}) ngoài bản đồ`);
+      if (!(pz.secs >= 10 && pz.secs <= 60)) err(`${ww}: đố gương secs phải trong [10; 60]`);
+      if (!MONSTER.get(pz.wrong.mon)) err(`${ww}: quái phạt ${pz.wrong.mon} không tồn tại`);
+      if (!(pz.bossCut >= 0 && pz.bossCut <= 0.2)) err(`${ww}: bossCut phải trong [0; 0,2]`);
+      if (!wv.title) err(`${ww}: đợt đố gương phải có title`);
+    }
     if (wv.title && !hasString(`dungeon.${lv.id}.wave.${i + 1}`)) err(`${ww}: thiếu chuỗi dungeon.${lv.id}.wave.${i + 1}`);
   });
   if (!lv.tribulation && !hasString(`dungeon.${lv.id}.name`)) err(`${w}: thiếu chuỗi dungeon.${lv.id}.name`);
@@ -919,7 +946,9 @@ for (const it of ITEMS) {
   const b = it.use?.buff;
   if (!b) continue;
   if (!PILL_BUFF_KINDS.includes(b.kind)) err(`${it.id}: loại buff ${b.kind} lạ`);
-  if (!(b.pct > 0 && b.pct <= 0.2) || !(b.sec > 0 && b.sec <= 900)) err(`${it.id}: buff ngoài khoảng (pct ≤ 20%, ≤ 15 phút)`);
+  // `ward` (Định Thần Phù, E3-M) là bùa ngắn mạnh: ≤ 50%, ≤ 60 giây.
+  const ward = b.kind === 'ward';
+  if (!(b.pct > 0 && b.pct <= (ward ? 0.5 : 0.2)) || !(b.sec > 0 && b.sec <= (ward ? 60 : 900))) err(`${it.id}: buff ngoài khoảng (pct ≤ 20%, ≤ 15 phút; bùa ward ≤ 50%, ≤ 60 giây)`);
   if (t(`item.${it.id}.name`) !== (GLOSSARY.pills as Record<string, string>)[it.id]) err(`${it.id}: tên lệch glossary.pills`);
   if (!RECIPES.some((r) => r.output.id === it.id)) err(`${it.id}: không có công thức luyện`);
 }

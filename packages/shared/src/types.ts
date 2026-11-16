@@ -42,7 +42,7 @@ export interface ItemDef {
   quest?: boolean;
   /** Đích Thăng Bậc của món này (cùng ô, bậc kế); thiếu = món thường cùng ô ở bậc kế. */
   promoteTo?: string;
-  use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number; /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit'; pct: number; sec: number } };
+  use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number; /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } };
 }
 
 export type MonsterModel = 'wolf' | 'boar' | 'fox' | 'ape' | 'serpent';
@@ -102,12 +102,30 @@ export interface MonsterDef {
   boss?: boolean;
   /** Tinh anh: có tên riêng, máu gấp bốn quái thường cùng loài, một kỹ năng riêng, rơi Huyền phẩm. */
   elite?: boolean;
+  /** Sát thương của quái này là "gương" (E3-M): Định Thần Phù giảm. */
+  glass?: boolean;
+  /** Cơ chế cung gương của boss (E3-M), xem `MonsterMirror`. */
+  mirror?: MonsterMirror;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
   /** Chỉ boss: các pha sau pha đầu, `hp` giảm dần. */
   phases?: MonsterPhase[];
   /** Chỉ boss: thanh phá thế. */
   posture?: MonsterPosture;
+}
+
+/**
+ * Cơ chế cung gương (E3-M, Kính Nguyệt Chân Quân). `phase` là số pha (như `say.<n>`: 0 = từ đầu) từ đó cơ chế bật.
+ * - `decoys`: `n` bóng giả (`mon`, một đòn là chết) đứng quanh `r` mét; chết thì nổ vòng `boom.r` sau `boom.delay` giây. Mỗi lần vào pha mới dựng lại.
+ * - `echo`: sau chiêu của người chơi, bóng thật phản lại đúng chỗ người đó (vòng `r`, báo `delay` giây, `mul` × công); mỗi người `cd` giây một lần.
+ * - `disc`: đĩa gương, `beams` tia dài `len` rộng `w` xoay `spin` độ/giây trong `dur` giây (báo `warn` giây đầu, chưa trúng); trúng mỗi 0,5 giây `mul` × công.
+ * - `veil`: màn gương vùng `r` mét quanh boss trong `dur` giây: người trong vùng lúc dựng bị Tâm Ma Ảnh của chính mình đuổi; hồi `cd` giây.
+ */
+export interface MonsterMirror {
+  decoys?: { phase: number; mon: string; n: number; r: number; boom: { r: number; delay: number; mul: number } };
+  echo?: { phase: number; r: number; delay: number; mul: number; cd: number };
+  disc?: { phase: number; beams: number; len: number; w: number; dur: number; warn: number; spin: number; mul: number; cd: number };
+  veil?: { phase: number; r: number; dur: number; cd: number; hpMul: number; atkMul: number };
 }
 
 /** Đòn đôi: sau một đòn cận chiến, có xác suất đánh thêm một đòn nặng sau `delay` giây (né được nếu ra khỏi tầm). */
@@ -624,6 +642,12 @@ export interface WaveDef {
   delay?: number;
   /** Tên đợt (i18n `dungeon.<level>.wave.<n>`); bỏ trống thì thông báo theo con đầu đợt. */
   title?: boolean;
+  /**
+   * Đợt giải đố ba gương (E3-M): không quái. Ba cột gương ở `points` mỗi cột một màu; server bốc thứ tự màu, người chơi chạm
+   * cột theo đúng thứ tự trong `secs` giây. Sai hoặc hết giờ thì `wrong` quái xuất hiện thêm (đố làm lại); đúng thì
+   * sát thương boss giảm `bossCut` suốt phó bản.
+   */
+  puzzle?: { points: { x: number; z: number }[]; secs: number; wrong: { mon: string; level: number; n: number }; bossCut: number };
 }
 
 /** Thưởng khi dẹp xong phó bản, nhận một lần mỗi ngày và mỗi nhân vật (khóa idem `dungeon:<level>:<ngày>`). */
@@ -690,6 +714,8 @@ export interface LevelAssets {
   };
   /** Vỏ hang (E2-C): vách đá + trần tối che chân trời và bầu trời; đèn đá và tinh thể mạch của level được thêm quầng sáng. */
   cave?: { x: number; z: number; r: number; h: number };
+  /** Cung gương (E3-M): vỏ `cave` dựng thành cung điện sáng lạnh, sàn gương phản chiếu giả. */
+  palace?: boolean;
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */

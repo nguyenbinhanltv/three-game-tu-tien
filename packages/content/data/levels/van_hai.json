@@ -4,6 +4,14 @@
     "x": 1024,
     "z": 1036
   },
+  "portals": [
+    {
+      "x": 1168,
+      "z": 1598,
+      "r": 12,
+      "to": "kinh_nguyet"
+    }
+  ],
   "zones": [
     {
       "id": "tung_dai_dao",

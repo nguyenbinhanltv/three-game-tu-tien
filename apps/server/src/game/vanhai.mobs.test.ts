@@ -122,12 +122,10 @@ describe('quái thường', () => {
     expect(a.sent.filter((x) => x.type === S.BOLT).length).toBeGreaterThanOrEqual(3);
   });
 
-  it('Phù Đảo Thạch Quy: giậm r 5 báo 1,8 s xuống chỗ người đứng', () => {
-    const a = setup('mon_phu_dao_thach_quy', 21, 4);
+  it('Phù Đảo Thạch Quy (định nghĩa chung với Kính Nguyệt Cung, #149): lao line 12 m báo 1 s', () => {
+    const a = setup('mon_phu_dao_thach_quy', 21, 8);
     a.run(DT);
-    expect(a.hazards()[0]).toMatchObject({ mv: 'leap', r: 5, delay: 1.8 });
-    a.run(1900);
-    expect(hp(a.p)).toBeLessThan(100000);
+    expect(a.hazards()[0]).toMatchObject({ mv: 'charge', r: 12, delay: 1 });
   });
 
   it('Bích Ngọc Kim Thiền: đâm thẳng là vạch ngắn 6×1,2, né ngang thì không trúng', () => {
@@ -157,10 +155,11 @@ describe('tinh anh', () => {
     expect(a.hazards().some((h) => h.sh === undefined && h.r === 4 && h.delay === 1.2)).toBe(true);
   });
 
-  it('Kính Diện Ma Quân: cắt kiếm bạc nón 10 m báo 1,2 s', () => {
+  it('Kính Diện Ma Quân (định nghĩa chung với Kính Nguyệt Cung, #149): có vạch báo và khiên phản', () => {
     const a = setup('elite_kinh_dien_ma_quan', 22, 6);
-    for (let i = 0; i < 100 && a.hazards().length === 0; i++) a.run(DT);
-    expect(a.hazards().some((h) => h.sh === 'cone' && h.r === 10 && h.delay === 1.2)).toBe(true);
+    a.run(3000);
+    expect(a.hazards().length).toBeGreaterThan(0);
+    expect(C.MONSTER.get('elite_kinh_dien_ma_quan')!.ai!.reflect).toBeTruthy();
   });
 
   it('Tuyết Vũ Vân Hạc Vương: mưa lông 5 đạn', () => {

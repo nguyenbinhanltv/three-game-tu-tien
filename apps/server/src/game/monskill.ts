@@ -12,7 +12,9 @@ import {
   lineGeom,
   MF_BURROW,
   MF_MX_MASK,
+  MF_REAL,
   MF_REFLECT,
+  MF_SENSED,
   MF_WEAK,
   MON_SKILLS,
   reflectPhase,
@@ -49,6 +51,8 @@ export interface MonSkillRt {
   act: Act | null;
   reflect: ReflectWin | null;
   weakUntil: number;
+  /** Thần thức soi ra thể thật (E3-M) tới lúc này (ms). */
+  sensedUntil: number;
   /** id đệ tử đã gọi. */
   minions: string[];
   /** Cờ MF_* và `ce` do chiêu này giữ (sim ghép với cờ chú/choáng). */
@@ -57,7 +61,7 @@ export interface MonSkillRt {
 }
 
 export function newRt(): MonSkillRt {
-  return { next: {}, act: null, reflect: null, weakUntil: 0, minions: [], bits: 0, ce: 0 };
+  return { next: {}, act: null, reflect: null, weakUntil: 0, sensedUntil: 0, minions: [], bits: 0, ce: 0 };
 }
 
 /** Phần của quái mà chiêu cần (MonEnt thỏa cấu trúc này). */
@@ -324,6 +328,17 @@ export class MonSkills {
     this.refresh(m, now);
   }
 
+  /** Thần thức soi ra thể thật tới `until` (E3-M). */
+  sense(m: MxMon, until: number): void {
+    m.mx.sensedUntil = until;
+    this.refresh(m, this.h.now());
+  }
+
+  /** Cờ thể thật của boss gương (E3-M): bật ngay khi vào trận. */
+  markReal(m: MxMon): void {
+    this.refresh(m, this.h.now());
+  }
+
   /** Đệ tử còn sống của `m`. */
   alive(m: MxMon): number {
     let n = 0;
@@ -343,6 +358,10 @@ export class MonSkills {
     }
     if (rt.weakUntil && now >= rt.weakUntil) {
       rt.weakUntil = 0;
+      dirty = true;
+    }
+    if (rt.sensedUntil && now >= rt.sensedUntil) {
+      rt.sensedUntil = 0;
       dirty = true;
     }
     if (dirty) this.refresh(m, now);
@@ -365,6 +384,11 @@ export class MonSkills {
     if (rt.weakUntil > now) {
       bits |= MF_WEAK;
       ce = Math.max(ce, rt.weakUntil);
+    }
+    if (m.def.mirror) bits |= MF_REAL;
+    if (rt.sensedUntil > now) {
+      bits |= MF_SENSED;
+      ce = Math.max(ce, rt.sensedUntil);
     }
     rt.bits = bits;
     rt.ce = ce;
@@ -410,6 +434,7 @@ export class MonSkills {
     rt.act = null;
     rt.reflect = null;
     rt.weakUntil = 0;
+    rt.sensedUntil = 0;
     rt.next = {};
     rt.bits = 0;
     rt.ce = 0;
