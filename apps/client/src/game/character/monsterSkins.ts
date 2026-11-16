@@ -46,6 +46,8 @@ export interface MonsterSkin {
   lift?: number;
   /** Lõi phát sáng: phần ngả lam của texture màu phát sáng màu `accent`; số là cường độ. */
   coreGlow?: number;
+  /** Bóng ma/gương trong mờ (E3-M): độ đục 0–1 của vật liệu (không ghi chiều sâu). */
+  ghost?: number;
 }
 
 const WOLF_CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
@@ -125,8 +127,8 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_ngo_cong_au: { asset: 'mon_ngo_cong_au', clips: WOLF_CLIPS, refSpeed: 7.3, legs: 'none', tint: '#ffffff', lazy: true, level: 'doan_mach' },
   // Vân Hải Phù Đảo (E-3). Vân Hạc và Kim Thiền bay: client nâng thân theo `fly` của quái (không nằm trong skin).
   mon_van_hac: { asset: 'mon_van_hac', clips: WOLF_CLIPS, refSpeed: 2.7, legs: 'none', tint: '#ffffff', lazy: true, level: 'van_hai' },
-  mon_kinh_linh: { asset: 'mon_kinh_linh', clips: GUARD_CLIPS, refSpeed: 2.1, legs: 'biped', tint: '#ffffff', rim: 0.25, lazy: true, level: 'van_hai' },
-  mon_phu_dao_thach_quy: { asset: 'mon_phu_dao_thach_quy', clips: WOLF_CLIPS, refSpeed: 3.2, legs: 'quad', tint: '#ffffff', lazy: true, level: 'van_hai' },
+  mon_kinh_linh: { asset: 'mon_kinh_linh', clips: GUARD_CLIPS, refSpeed: 2.1, legs: 'biped', tint: '#ffffff', palette: { dark: '#1c2c48', light: '#b8d4f4', glow: '#7fc4ff' }, lazy: true, level: 'van_hai' },
+  mon_phu_dao_thach_quy: { asset: 'mon_phu_dao_thach_quy', clips: WOLF_CLIPS, refSpeed: 3.2, legs: 'quad', tint: '#ffffff', palette: { dark: '#2a2630', light: '#c4a870', glow: '#8fd0ff' }, lazy: true, level: 'van_hai' },
   mon_bich_ngoc_kim_thien: { asset: 'mon_bich_ngoc_kim_thien', clips: WOLF_CLIPS, refSpeed: 2.9, legs: 'none', tint: '#ffffff', lazy: true, level: 'van_hai' },
   // Thiên Khuyết Cổ Thành (E-4)
   mon_thach_tuong_vo_si: { asset: 'mon_thach_tuong_vo_si', clips: GUARD_CLIPS, refSpeed: 1.9, legs: 'biped', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
@@ -145,9 +147,9 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // Vân Hải Kình Vương: kình ngư bay 18 m, xương chuỗi kiểu bơi.
   boss_van_hai_kinh_vuong: { asset: 'boss_van_hai_kinh_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 5.9, legs: 'none', tint: '#ffffff', rim: 0.25, lift: 0.25, metalness: 0, lazy: true, level: 'van_hai', moves: SERPENT_MOVES },
   // Kính Nguyệt Chân Quân (Kính Nguyệt Cung): người 3,6 m áo choàng bạc.
-  boss_kinh_nguyet_chan_quan: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', rim: 0.3, lift: 0.15, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
+  boss_kinh_nguyet_chan_quan: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', palette: { dark: '#2c1840', light: '#f0b860', glow: '#ffd890' }, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
   // Bóng giả của Kính Nguyệt Chân Quân (E3-M): cùng model, cùng kích thước; chỉ thể thật có vết ngọc lam dưới chân (MF_REAL).
-  mon_kinh_anh_gia: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', rim: 0.3, lift: 0.15, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
+  mon_kinh_anh_gia: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', palette: { dark: '#16305a', light: '#c8e8ff', glow: '#8fe0ff' }, ghost: 0.5, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
   // Kính Diện Ma Quân (mini-boss đợt 2 Kính Nguyệt Cung): skin tinh anh E-1b.
   elite_kinh_dien_ma_quan: { ...ELITE_SKINS_NEW.elite_kinh_dien_ma_quan, level: 'kinh_nguyet' },
   // Thiên Khuyết Thủ Linh: tượng thần đá 8 m, kích thước lớn nên bước chậm.
@@ -309,6 +311,11 @@ export class MonsterSkins {
     if (s.metalness !== undefined) m.metalness = s.metalness;
     if (s.roughness) m.roughness = Math.min(1, Math.max(0, m.roughness + s.roughness));
     if (s.palette) applyPalette(m, s.palette);
+    if (s.ghost !== undefined) {
+      m.transparent = true;
+      m.opacity = s.ghost;
+      m.depthWrite = false;
+    }
     else if (s.rim || s.lift) {
       // Viền sáng ở mép nhìn nghiêng: tách bóng sói tối khỏi nền cỏ/rừng, không cần texture.
       const facing = saturate(dot(normalView, positionViewDirection));

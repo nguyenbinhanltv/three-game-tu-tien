@@ -2,11 +2,11 @@
   "room": "dungeon-kinh_nguyet",
   "info": {
     "backend": "WebGPU",
-    "draw": 53,
-    "tri": 224241
+    "draw": 54,
+    "tri": 226717
   },
   "puzzleSeen": true,
-  "puzzleText": "Đỏ → Vàng → Lam",
+  "puzzleText": "Vàng → Đỏ → Lam",
   "boss0": [
     {
       "t": "boss_kinh_nguyet_chan_quan",
@@ -30,10 +30,6 @@
     {
       "t": "boss_kinh_nguyet_chan_quan",
       "mf": 64
-    },
-    {
-      "t": "mon_kinh_anh_gia",
-      "mf": 0
     },
     {
       "t": "mon_kinh_anh_gia",

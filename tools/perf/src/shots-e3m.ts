@@ -122,6 +122,12 @@ async function main(): Promise<void> {
     await cam(0.12, 9, Math.PI);
     await sleep(600);
     await shot('01b-vach-cung');
+    await cam(0.62, 46, 0);
+    await sleep(700);
+    await shot('01c-toan-canh');
+    await cam(0.2, 18, 0);
+    await gm(page, 'tp 1520 1280', 1200);
+    await shot('01d-guong-vach');
     await cam(0.55, 24, 0);
     await gm(page, 'tp 1520 1320', 900);
     await cam(0.5, 24, 0);

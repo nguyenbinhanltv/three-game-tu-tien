@@ -1,5 +1,5 @@
 import { DUNGEON_EXIT, PORTAL_POS } from '@dtl/shared';
-import { LEVELS } from '@dtl/content';
+import { LEVELS, LEVEL_ASSETS } from '@dtl/content';
 
 /** Cổng tương tác của một level: `portal` đi xuống phó bản, `exit` đi ra khỏi phó bản. */
 export interface Gate {
@@ -30,6 +30,6 @@ export function gatesOf(level: string): Gate[] {
   if (level === 'kiem_trung') return [{ id: 'exit', ...DUNGEON_EXIT, color: GOLD }];
   const lv = LEVELS[level];
   const out: Gate[] = (lv?.portals ?? []).map((q) => ({ id: 'portal' as const, x: q.x, z: q.z, color: BLUE, to: q.to }));
-  if (lv?.dungeon && !lv.tribulation) out.push({ id: 'exit', x: lv.dungeon.exit.x, z: lv.dungeon.exit.z, color: lv.dungeon.bound ? 0xc9863a : GOLD, opacity: lv.dungeon.bound ? 0.2 : undefined, flat: !!lv.dungeon.bound });
+  if (lv?.dungeon && !lv.tribulation) out.push({ id: 'exit', x: lv.dungeon.exit.x, z: lv.dungeon.exit.z, color: lv.dungeon.bound ? (LEVEL_ASSETS[level]?.palace ? 0x5f7ca8 : 0xc9863a) : GOLD, opacity: lv.dungeon.bound ? 0.2 : undefined, flat: !!lv.dungeon.bound });
   return out;
 }

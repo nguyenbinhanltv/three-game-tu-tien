@@ -39,7 +39,7 @@ import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { gatesToDraw } from './gates';
-import { buildCaveShell, buildCrystalGlow, buildMirrorFloor } from './caveShell';
+import { buildCaveShell, buildCrystalGlow, buildMirrorFloor, buildPalaceHall } from './caveShell';
 import { PropLayer } from './props';
 import { allProps } from './propScatter';
 import { type AssetHandle, assets } from './assets';
@@ -903,6 +903,8 @@ export class Game {
       });
       this.scene.add(...this.gateDiscs);
       for (const disc of this.gateDiscs) markBloom(disc.material as THREE.Material, 0.8);
+      // Cung gương: vòng ra nằm trên sàn gương (cao hơn 0,08 m của sàn), không bị sàn cắt thành bán nguyệt.
+      if (levelAssets(id).palace) for (const disc of this.gateDiscs) disc.position.y += 0.2;
     }
     const mood = this.moodOf(id);
     this.levelMood = mood;
@@ -914,12 +916,13 @@ export class Game {
     if (F.lanterns) {
       // Vân Lam: đèn lồng tông môn; level khác: đèn đá bày trong `propsOf` (E2-C).
       const pts = id === 'van_lam' || id === 'kiem_trung' ? SECT_LANTERNS : propsOf(id).filter((p) => p.id === 'prop_den_da').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
-      const halos = createLanternHalos(pts);
+      // Cung gương: quầng đèn nhỏ, màu lạnh, không vào bloom (đèn đá không cháy trắng).
+      const halos = levelAssets(id).palace ? createLanternHalos(pts, 1.3, 0xb8cdee) : createLanternHalos(pts);
       this.scene.add(halos);
       this.levelObjs.push(halos);
       this.lanterns = new LanternLights(this.scene, pts);
       this.lanterns.setEnabled(q.lights && isWebGPU(this.renderer)); // T6: đèn lồng point light thật chỉ ở WebGPU
-      this.lanterns.setIntensityScale(LANTERN_LIGHT[mood] ?? 1);
+      this.lanterns.setIntensityScale((LANTERN_LIGHT[mood] ?? 1) * (levelAssets(id).palace ? 0.35 : 1));
     }
     const cave = levelAssets(id).cave;
     if (cave) {
@@ -932,8 +935,9 @@ export class Game {
       if (palace) {
         // Cung gương (E3-M): sàn gương giả phủ lòng chảo (một draw call, không phản chiếu thật).
         const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt);
-        this.scene.add(floor);
-        this.levelObjs.push(floor);
+        const hall = buildPalaceHall(cave, heightAt);
+        this.scene.add(floor, hall);
+        this.levelObjs.push(floor, hall);
       }
     }
     if (F.sect) void this.loadSectModel(q.shadows);

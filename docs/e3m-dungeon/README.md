@@ -48,6 +48,9 @@ Rơi đồ từng quái ở `loot.json`. Khi dẹp xong, `GameSim.grantDungeonRe
 Lòng chảo Kiếm Trủng dựng thành sảnh gương treo giữa mây, bằng tài nguyên sẵn có:
 - **Vỏ cung** (`caveShell.ts`, `LevelAssets.palace`): nửa quả cầu úp nhẵn, hàng cột sáng bạc mỗi 15°, trần xanh đen có lỗ trăng mờ ở đỉnh. Mood `night` (ánh trăng lạnh).
 - **Sàn gương giả** (`buildMirrorFloor`): đĩa bám địa hình (+0,08 m), một texture canvas 1024²: đá đen bóng, vân vòng, tấm ghép tỏa tia, vệt phản chiếu hàng cột, quầng trăng. KHÔNG phản chiếu thật (không render lần hai): một draw call.
+- **Khung cung** (`buildPalaceHall`): 20 cột lam bạc có đế, đầu cột và gờ ngang, gương lớn treo giữa các cột (khung bạc + mặt gương), gờ sàn bạc; một lưới màu đỉnh, một draw call, màu giữ tối.
+- Đèn đá: quầng nhỏ màu lạnh không vào bloom, ánh sáng điểm giảm còn 35%; vòng ra màu bạc xanh nằm trên sàn.
+- Màu quái (`palette`): Kính Nguyệt Chân Quân thân thật áo tím thẫm + vàng, bóng giả cyan trong mờ (`ghost` 0,5); Kính Linh lam bạc, Ma Quân tím nhạt, Thạch Quy đá đồng.
 - Prop (`shared/src/props.kinhnguyet.ts`): cổng đình, Kính Hồ Đài, vòng đá trôi, mảnh gương (`prop_anh_ngoc_kinh`), đèn đá.
 - VFX: đĩa gương (`Vfx.mirrorDisc`), cột đố (`mirrorPillar`), vòng màn gương, chớp bóng giả vỡ, vết ngọc lam thể thật (`monFlags.ts`).
 - Ngân sách: 43–59 draw call, 177–275k tam giác, 120 fps ở 1280×720 (WebGPU).
@@ -65,6 +68,8 @@ Lòng chảo Kiếm Trủng dựng thành sảnh gương treo giữa mây, bằn
 | Cổng | ![](00-cong.jpg) |
 | Vào cung | ![](01-vao-cung.jpg) |
 | Vách cung | ![](01b-vach-cung.jpg) |
+| Toàn cảnh sảnh | ![](01c-toan-canh.jpg) |
+| Cột đá và gương lớn treo vách | ![](01d-guong-vach.jpg) |
 | Đợt 1 Kính Linh | ![](02-dot1-kinh-linh.jpg) |
 | Đợt 2 Kính Diện Ma Quân | ![](03-dot2-ma-quan.jpg) |
 | Đợt 3 đố ba gương (cột lam góc trái, thứ tự trong tin hệ thống) | ![](04-dot3-do-ba-guong.jpg) |
