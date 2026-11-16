@@ -140,6 +140,8 @@ export const S = {
   TELE: 'tele',
   /** Điểm đánh dấu mình và đồng đội đang thấy (`MarkMsg`). */
   MARK: 'mark',
+  /** Người đồng hành của nhiệm vụ hộ tống (`EscortMsg`); `st: 0` = đã hết (xong/hủy). */
+  ESCORT: 'esc',
   /** Giờ hồi sinh tinh anh và boss của bản đồ (`BossTimerMsg`), gửi lúc vào và mỗi khi một con đổi trạng thái (M-2). */
   BOSS_TIMERS: 'btm',
   /** Trạng thái thần thức của mình (`SpiritStateMsg`). */

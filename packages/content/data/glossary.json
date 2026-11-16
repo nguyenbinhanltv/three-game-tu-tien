@@ -253,5 +253,21 @@
     "itm_hoang_sa_thao": "Hoàng Sa Thảo",
     "itm_ngung_dan_mach_tinh": "Ngưng Đan Mạch Tinh",
     "itm_pha_canh_dan_2": "Mạch Phá Cảnh Đan"
+  },
+  "stationNpcs": {
+    "npc_to_van_ngu": "Tô Vãn Ngư",
+    "npc_hua_lao": "Hứa lão",
+    "npc_khieu_han_son": "Khưu Hàn Sơn",
+    "npc_thuong_nhan": "Trần Tam"
+  },
+  "factions": {
+    "tang_mach_hoi": "Tàng Mạch Hội"
+  },
+  "spots": {
+    "kiem_gay_1": "Mảnh kiếm gãy bên Cầu Đá",
+    "kiem_gay_2": "Mảnh kiếm gãy ở Hố Sa Lún",
+    "kiem_gay_3": "Mảnh kiếm gãy dưới Vách Đứt Mạch",
+    "kiem_gay_4": "Mảnh kiếm gãy ở Sa Thạch Pha",
+    "kiem_gay_5": "Mảnh kiếm gãy gần Cựu Mỏ"
   }
 }

@@ -37,6 +37,8 @@ export interface SpiritHost {
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
   stopMeditate(p: PlayerEnt): void;
+  /** Quét xong (E2-H: nhiệm vụ `scan` đọc bản quét). */
+  onScanned?(p: PlayerEnt, hits: readonly SpiritHit[]): void;
 }
 
 interface Channel {
@@ -71,6 +73,12 @@ export class SpiritSystem {
       cd: Math.max(0, (cdUntil.get(p.char.id) ?? 0) - now),
       r: spiritRadius(p.char.level),
     } satisfies SpiritStateMsg);
+  }
+
+  /** Lệnh GM `cd`: xóa hồi chiêu thần thức của nhân vật (chụp ảnh/thử nhiều lần liên tiếp). */
+  resetCooldown(p: PlayerEnt): void {
+    cdUntil.delete(p.char.id);
+    this.sendState(p);
   }
 
   drop(p: PlayerEnt): void {
@@ -150,6 +158,7 @@ export class SpiritSystem {
     const r = spiritRadius(p.char.level);
     const hits = this.scan(p, r);
     p.client.send(S.SPIRIT_SCAN, { x: round1(p.move.x), z: round1(p.move.z), r, ttl: SPIRIT_REVEAL_MS, hits } satisfies SpiritScanMsg);
+    this.h.onScanned?.(p, hits);
     if (hits.length) this.h.sys(p, 'sys.spirit_done', { r, n: hits.length }, 'good');
     else this.h.sys(p, 'sys.spirit_none', { r }, 'info');
     this.sendState(p);

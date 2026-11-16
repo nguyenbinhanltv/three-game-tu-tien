@@ -24,6 +24,8 @@ function PerfRows({ p }: { p: DebugPerf }) {
     <dl>
       <dt>{t('ui.debug.fps')}</dt>
       <dd className={p.fps < 55 ? 'warn' : ''}>{t('ui.debug.fps_v', { n: p.fps, backend: p.backend })}</dd>
+      <dt>{t('ui.debug.gpu')}</dt>
+      <dd className="gpu-info">{p.gpu}</dd>
       <dt>{t('ui.debug.frame')}</dt>
       <dd className={tone(p.cpuMs, BUDGET.cpuMs)}>{t('ui.debug.frame_v', { avg: p.cpuMs.toFixed(1), max: p.cpuMaxMs.toFixed(1) })}</dd>
       <dt>{t('ui.debug.draw')}</dt>
