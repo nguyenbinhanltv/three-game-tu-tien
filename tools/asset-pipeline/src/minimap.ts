@@ -1,11 +1,12 @@
 // Dựng nền bản đồ cổ cho minimap/bản đồ lớn (M-3): giấy ngà, nét mực đường đồng mức, hồ nước, ranh vùng nét đứt,
 // đường mòn chấm. Vẽ từ địa hình dùng chung (`heightAt`) và `zones` của level — KHÔNG phải ảnh chụp địa hình thô.
-// Chạy: pnpm minimap:build   → apps/client/public/map/van_lam.webp + van_lam.json (toạ độ phủ, px/m).
+// Chạy: pnpm minimap:build [--level <id>]   → apps/client/public/map/<id>.webp + <id>.json (toạ độ phủ, px/m). Mặc định van_lam.
+// Level khác Vân Lam: phủ vùng chơi ± 100 m quanh tâm vùng chơi của `terrainOf(level)` (hoặc cả thế giới nếu không có ranh), đường mòn tự nối các vùng theo cấp.
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { fbm, hash01, inPoly, SECT, PORTAL_POS, mulberry32, terrainOf } from '../../../packages/shared/src/index';
-import { LEVELS } from '../../../packages/content/src/index';
+import { ensureLevel } from '../../../packages/content/src/fixtures';
 import { ROOT } from './config.js';
 
 export const MAP_HALF = 1200; // phủ SECT ± 1200 m (vùng chơi ±1100 m + lề)
@@ -41,23 +42,29 @@ export const TRAILS: [number, number][][] = [
   [[2048, 2088], [1860, 2150], [1700, 2215]],
 ];
 
-/** Dựng nền bản đồ cổ của một level (E1-D: `--level <id>`). Mặc định Vân Lam, kết quả không đổi. */
+/** Đường mòn tự động cho level không có `TRAILS` riêng: nối tâm các vùng liên tiếp theo cấp (đường đi tu luyện). */
+export function autoTrails(zones: { lvMin: number; poly: [number, number][] }[]): [number, number][][] {
+  const centers = [...zones].sort((a, b) => a.lvMin - b.lvMin).map((z): [number, number] => [z.poly.reduce((a, p) => a + p[0], 0) / z.poly.length, z.poly.reduce((a, p) => a + p[1], 0) / z.poly.length]);
+  return centers.slice(1).map((c, i) => [centers[i], c]);
+}
+
+/** Vùng phủ của level: vuông quanh tâm vùng chơi (± nửa cạnh + 100 m), hoặc cả thế giới nếu không có ranh. Vân Lam: SECT ± MAP_HALF. */
+export function minimapBounds(levelId: string): { x0: number; z0: number; size: number } {
+  const tr = terrainOf(levelId);
+  const play = tr.def.play;
+  if (!play) return { x0: 0, z0: 0, size: tr.size };
+  const half = play.half + 100;
+  return { x0: play.cx - half, z0: play.cz - half, size: half * 2 };
+}
+
 export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArray; meta: MinimapMeta } {
-  const terrain = terrainOf(levelId);
-  const vanLam = terrain.id === 'van_lam';
-  const heightAt = terrain.heightAt;
-  const inLakeWater = terrain.inWater;
-  const WATER_Y = terrain.def.water?.y ?? -Infinity;
-  const PLAY_WALL = terrain.playWall;
-  const playDist = terrain.playDist;
-  const play = terrain.def.play;
-  const cx = play?.cx ?? terrain.size / 2;
-  const cz = play?.cz ?? terrain.size / 2;
-  const half = play ? play.half + 100 : terrain.size / 2;
+  const lv = ensureLevel(levelId);
+  if (!lv) throw new Error(`minimap: không có level ${levelId}`);
+  const tr = terrainOf(lv);
+  const { heightAt, inWater: inLakeWater, playDist, playWall: PLAY_WALL } = tr;
+  const WATER_Y = tr.def.water?.y ?? -Infinity;
   const N = MAP_PX;
-  const x0 = cx - half;
-  const z0 = cz - half;
-  const size = half * 2;
+  const { x0, z0, size } = minimapBounds(levelId);
   const step = size / N;
   const H = new Float32Array((N + 2) * (N + 2));
   const hAt = (i: number, j: number) => H[(j + 1) * (N + 2) + (i + 1)];
@@ -95,7 +102,7 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   }
 
   // 2) vùng: màu lót mờ
-  const zones = LEVELS[levelId]?.zones ?? [];
+  const zones = lv.zones ?? [];
   for (const zn of zones) {
     const c = hex(zn.color);
     let ax = Infinity, bx = -Infinity, az = Infinity, bz = -Infinity;
@@ -179,7 +186,7 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   };
   for (const zn of zones) stroke([...zn.poly, zn.poly[0]], 1.5, INK, 0.8, 14, 8);
   // Đường mòn: bezier bậc hai giữa các điểm, nét chấm nâu.
-  for (const tr of vanLam ? TRAILS : []) {
+  for (const tr of levelId === 'van_lam' ? TRAILS : autoTrails(zones)) {
     const pts: [number, number][] = [];
     for (let s = 0; s + 1 < tr.length; s++) {
       const [a, b] = [tr[s], tr[s + 1]];
@@ -196,7 +203,7 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
     for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.1) pts.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r]);
     stroke(pts, 1.2, INK, 0.7, 30, 6);
   };
-  if (vanLam) {
+  if (levelId === 'van_lam') {
     ring(SECT.x, SECT.z, 95);
     ring(PORTAL_POS.x, PORTAL_POS.z, 40);
   }
@@ -220,8 +227,8 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
 
 async function main(): Promise<void> {
   const t0 = Date.now();
-  const li = process.argv.indexOf('--level');
-  const levelId = li > 0 ? process.argv[li + 1] : 'van_lam';
+  const i = process.argv.indexOf('--level');
+  const levelId = i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : 'van_lam';
   const { data, meta } = buildMinimapPixels(levelId);
   const dir = path.join(ROOT, 'apps/client/public/map');
   await mkdir(dir, { recursive: true });

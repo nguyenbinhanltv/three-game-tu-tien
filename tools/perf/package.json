@@ -31,15 +31,18 @@
     "shots:e0": "tsx src/shots-e0.ts",
     "shots:m4": "tsx src/shots-m4.ts",
     "shots:s2b": "tsx src/shots-s2b.ts",
-    "levels": "tsx src/levelswitch.ts"
+    "levels": "tsx src/levelswitch.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",
-    "playwright": "~1.63.0"
+    "playwright": "~1.63.0",
+    "@dtl/content": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
     "tsx": "^4.23.15",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.7"
   }
 }
