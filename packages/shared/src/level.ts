@@ -160,6 +160,21 @@ export interface IslandDef {
   y: number;
 }
 
+/** Cầu xích nối hai điểm trên đảo (E3-N): dải đi được, độ cao nội suy giữa hai đầu, võng nhẹ ở giữa. */
+export interface BridgeDef {
+  id: string;
+  ax: number;
+  az: number;
+  ay: number;
+  bx: number;
+  bz: number;
+  by: number;
+  /** Nửa bề rộng mặt cầu (m). */
+  halfW: number;
+  /** Độ võng giữa nhịp (m). */
+  sag: number;
+}
+
 export interface TerrainDef {
   id: string;
   seed: number;
@@ -170,8 +185,12 @@ export interface TerrainDef {
   features: TerrainFeature[];
   /** Đảo nổi: có thì nền tự nhiên bị thay bằng `voidFloor`, chỉ còn đảo và các khu. */
   islands?: IslandDef[];
-  /** Độ cao khoảng trống giữa các đảo (m). */
+  /** Độ cao khoảng trống giữa các đảo (m): sàn mây đi bộ được, rơi xuống đây không chết. */
   voidFloor?: number;
+  /** Cầu xích nối các đảo (E3-N). */
+  bridges?: BridgeDef[];
+  /** Đảo giả (E3-N): chỉ để vẽ, KHÔNG vào `heightAt` (bước lên là rơi xuống sàn mây); thần thức làm chúng mờ đi. */
+  fakeIslands?: IslandDef[];
   /** Mặt nước, độ lội tối đa, đĩa nước của hồ. */
   water?: { y: number; wade: number; lake?: { x: number; z: number; r: number } };
   /** Ranh vùng chơi: ô vuông bo tròn quanh tâm, vách dựng lên sau `half - 10`. */

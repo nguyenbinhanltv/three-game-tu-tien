@@ -40,6 +40,9 @@ import doanMachTerrainJson from '../data/levels/doan_mach.terrain.json';
 import vanLamAssetsJson from '../data/levels/van_lam.assets.json';
 import kiemTrungAssetsJson from '../data/levels/kiem_trung.assets.json';
 import doanMachAssetsJson from '../data/levels/doan_mach.assets.json';
+import vanHaiJson from '../data/levels/van_hai.json';
+import vanHaiTerrainJson from '../data/levels/van_hai.terrain.json';
+import vanHaiAssetsJson from '../data/levels/van_hai.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
 import phucMachJson from '../data/levels/phuc_mach.json';
 import phucMachAssetsJson from '../data/levels/phuc_mach.assets.json';
@@ -129,16 +132,19 @@ export const LEVELS: Record<string, LevelDef> = {
   van_lam: vanLamJson as LevelDef,
   kiem_trung: kiemTrungJson as LevelDef,
   doan_mach: doanMachJson as LevelDef,
+  van_hai: vanHaiJson as LevelDef,
   do_kiep: doKiepJson as LevelDef,
   phuc_mach: phucMachJson as LevelDef,
 };
 // Địa hình dữ liệu hóa của bản đồ mở rộng (E2-A): đăng ký khi nạp @dtl/content để server, client và công cụ cùng thấy `terrainOf('doan_mach')`.
 registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
+registerTerrain(vanHaiTerrainJson as unknown as TerrainDef); // E3-A/E3-N: đảo nổi, cầu xích, sàn mây
 /** Asset client theo level (`levels/<id>.assets.json`, E1-D). */
 export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   van_lam: vanLamAssetsJson as LevelAssets,
   kiem_trung: kiemTrungAssetsJson as LevelAssets,
   doan_mach: doanMachAssetsJson as LevelAssets,
+  van_hai: vanHaiAssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
   phuc_mach: phucMachAssetsJson as LevelAssets,
 };
