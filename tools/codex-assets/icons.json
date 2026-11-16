@@ -141,5 +141,7 @@
   "itm_pm_dao_bao": "a moss-green alchemist robe with wide sleeves and a faint herb pattern, laid out flat, no person (Phuc Mach alchemy set)",
   "itm_pm_ngoc_boi": "a cool pale-green jade pendant shaped like a small leaf with a living-moss glow, pale gold tassel (Phuc Mach alchemy set)",
   "itm_pm_dai_lung": "a moss-green belt hanging a small medicine pouch with a bronze clasp (Phuc Mach alchemy set)",
-  "itm_pm_gioi_chi": "a pale jade-green ring with a thin bronze band (Phuc Mach alchemy set)"
+  "itm_pm_gioi_chi": "a pale jade-green ring with a thin bronze band (Phuc Mach alchemy set)",
+  "itm_ngung_dan_lo": "a small ornate bronze alchemy cauldron (pill furnace) with a pearl-gold elixir core glowing inside, tiny cool-blue flame under it, personal bound artifact look, three legs, no text",
+  "hud_than_thuc": "a pale cyan translucent eye-like ripple radiating outward in concentric rings from a small bright point, spiritual sense scan, mist"
 }

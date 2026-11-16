@@ -889,7 +889,7 @@ function SpiritSlot() {
         onPointerLeave={() => Game.current?.spiritHold(false)}
       >
         <span className="skill-icon">
-          <span className="content-icon">👁</span>
+          <UiIcon id="hud_than_thuc" fallback="👁" />
         </span>
         <span className="skill-key">V</span>
         {channel && <span className="skill-charge" style={{ '--p': 1 - Math.min(1, (sp.chUntil - now) / SPIRIT_CHANNEL_MS) } as CSSProperties} />}

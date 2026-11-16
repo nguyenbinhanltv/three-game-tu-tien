@@ -475,3 +475,5 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 | `itm_pm_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_pm_ngoc_boi.png` |
 | `itm_pm_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_pm_dai_lung.png` |
 | `itm_pm_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_pm_gioi_chi.png` |
+| `itm_ngung_dan_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_ngung_dan_lo.png` |
+| `hud_than_thuc` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/hud_than_thuc.png` |
