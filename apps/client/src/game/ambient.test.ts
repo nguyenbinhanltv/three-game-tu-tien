@@ -20,6 +20,11 @@ describe('hạt môi trường theo vùng', () => {
     expect(tomb.ash).toBeGreaterThan(20);
     expect(tomb.pollen + tomb.petal + tomb.leaf).toBe(0);
   });
+  it('Vân Hải không có sương billboard, lá, phấn hoa (E3-H): chỉ bụi sáng và linh khí', () => {
+    const r = ambientRates(1024, 1036, 3, undefined, 'van_hai');
+    expect(r.mist + r.leaf + r.pollen + r.petal + r.ash).toBe(0);
+    expect(r.mote).toBeGreaterThan(0);
+  });
   it('bay cao thì hết sương/lá sát đất', () => {
     const r = ambientRates(FOREST.x, FOREST.z, 60);
     expect(r.mist + r.leaf).toBe(0);

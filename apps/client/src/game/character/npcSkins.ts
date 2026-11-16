@@ -15,6 +15,11 @@ export interface NpcSkin {
   rates?: Partial<Record<CharState, number>>;
   /** Nhân màu lên vật liệu (0xRRGGBB) để NPC dùng chung asset không giống hệt nhau (E2-H). */
   tint?: number;
+  /**
+   * NPC dựng từ model người chơi nam/nữ (có texture mặt, tóc, áo) và chỉ nhuộm kênh vải: `g` giới tính, `hex` màu áo, `accent` màu viền (E3-H).
+   * Có `look` thì `entities.ts` dựng qua `PlayerSkins.createNpc`, `asset`/`tint` không dùng.
+   */
+  look?: { g: string; hex: string; accent?: string };
 }
 
 /** Bộ clip của rig Mixamo từ Tripo (M3-6): idle/run/attack/death từ preset, hit_light thủ tục (anim_biped_extra.py). */
@@ -37,6 +42,10 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
   npc_hua_lao: { asset: 'chr_npc_thiet_lao', tint: 0xe3c58a },
   npc_to_van_ngu: { asset: 'chr_npc_duoc_su', tint: 0x6fb4ee },
   npc_khieu_han_son: { asset: 'chr_npc_chuong_mon', tint: 0xb4ad9c },
+  // E3-H: Phù Đảo Các (Vân Hải) cũng dùng lại model sẵn có, đổi màu.
+  // Lâm Chiếu Dung: nữ, áo ngà điểm hổ phách. Tô Vãn Ngư (bản Phù Đảo Các): nữ, áo lam đậm của tông.
+  npc_lam_chieu_dung: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#E6DDCB', accent: '#E0962C' } },
+  npc_to_van_ngu_hai: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#3B6584', accent: '#22364E' } },
   // Người đồng hành của nhiệm vụ hộ tống (không phải NPC đứng thật, xem `LevelDef.escorts`).
   npc_thuong_nhan: { asset: 'chr_npc_thiet_lao', tint: 0xb89a6a },
 };
@@ -79,7 +88,7 @@ export class NpcSkins {
 
   preload(): void {
     if (this.legacy) return;
-    for (const s of Object.values(NPC_SKINS)) this.load(s.asset);
+    for (const s of Object.values(NPC_SKINS)) if (!s.look) this.load(s.asset);
   }
 
   /** NPC này sẽ có model mới nhưng asset đang nạp (tạm model khối, nạp xong thì đổi). */
