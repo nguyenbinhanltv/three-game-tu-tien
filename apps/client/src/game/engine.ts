@@ -1904,7 +1904,7 @@ export class Game {
       }
       case 'artheal':
         // Ngưng Đan Lô: cột đan hỏa mảnh và mờ (không che người), số hồi do DmgMsg heal hiện.
-        v.pillar(posSrc, tint(0xffb35a), 1.3, 0.55, 3.2, 0.26);
+        v.pillar(posSrc, tint(0xffb35a), 0.8, 0.3, 2.2, 0.1);
         break;
       case 'artdrain':
         // Hồ Lô hút linh lực: một tia nhỏ từ quái bay về người dùng.

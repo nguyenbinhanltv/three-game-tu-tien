@@ -21,7 +21,7 @@ const additive = (color: number, opacity: number) => new THREE.MeshBasicMaterial
 
 export class SpiritVis {
   private group = new THREE.Group();
-  private geo = { ring: new THREE.RingGeometry(0.9, 1, 96), focus: new THREE.RingGeometry(0.94, 1, 64), beam: new THREE.CylinderGeometry(0.4, 0.4, BEAM_H, 10, 1, true), foot: new THREE.RingGeometry(0.55, 0.8, 24) };
+  private geo = { ring: new THREE.RingGeometry(0.985, 1, 128), focus: new THREE.RingGeometry(0.985, 1, 96), beam: new THREE.CylinderGeometry(0.4, 0.4, BEAM_H, 10, 1, true), foot: new THREE.RingGeometry(0.55, 0.8, 24) };
   private mats = new Map<number, THREE.MeshBasicMaterial>();
   private wave: THREE.Mesh;
   private focus: THREE.Mesh;
@@ -33,7 +33,7 @@ export class SpiritVis {
   constructor(parent: THREE.Object3D) {
     this.group.name = 'spiritVis';
     parent.add(this.group);
-    this.wave = new THREE.Mesh(this.geo.ring, additive(0x9fe8ff, 0));
+    this.wave = new THREE.Mesh(this.geo.ring, additive(0x7fc8e8, 0));
     this.wave.rotation.x = -Math.PI / 2;
     this.wave.visible = false;
     this.focus = new THREE.Mesh(this.geo.focus, additive(0x9fe8ff, 0));
@@ -88,7 +88,7 @@ export class SpiritVis {
       this.focus.position.set(me.x, groundAt(me.x, me.z) + 0.13, me.z);
       this.focus.scale.setScalar(Math.max(1.2, state.r * (1 - k) * 0.4));
       this.focus.rotation.z = now * 0.002 * (1 + k * 4);
-      (this.focus.material as THREE.MeshBasicMaterial).opacity = 0.1 + 0.2 * k;
+      (this.focus.material as THREE.MeshBasicMaterial).opacity = 0.06 + 0.14 * k;
     }
     // Kết quả mới: một lần sóng nở và dựng cột sáng.
     if (scan !== this.scan) {
@@ -108,7 +108,7 @@ export class SpiritVis {
         this.wave.visible = true;
         this.wave.position.set(this.scan.x, groundAt(this.scan.x, this.scan.z) + 0.15, this.scan.z);
         this.wave.scale.setScalar(Math.max(1, this.scan.r * (1 - (1 - k) ** 2)));
-        (this.wave.material as THREE.MeshBasicMaterial).opacity = 0.8 * (1 - k);
+        (this.wave.material as THREE.MeshBasicMaterial).opacity = 0.3 * (1 - k) ** 1.5;
       }
     }
     if (this.beams.length && this.scan) {

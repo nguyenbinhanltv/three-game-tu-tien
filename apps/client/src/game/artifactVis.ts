@@ -59,7 +59,7 @@ export function activePose(kind: ArtifactKind, t: number, out: ArtPose = blank()
       break;
     case 'heal':
       // Bay lên trên đầu, nghiêng nắp rót đan khí xuống, xoay chậm.
-      Object.assign(out, { x: 0, y: 2.7 + Math.sin(t * 4) * 0.05, z: 0.1, rx: 0.35, ry: t * 1.6, rz: 0, s: 2.0 });
+      Object.assign(out, { x: 0, y: 3.15 + Math.sin(t * 4) * 0.05, z: 0.1, rx: 0.35, ry: t * 1.6, rz: 0, s: 2.0 });
       break;
   }
   return out;
