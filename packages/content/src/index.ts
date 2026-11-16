@@ -243,6 +243,19 @@ export function skillBar(methodId: string | undefined): SkillDef[] {
   return bar;
 }
 
+/** Phím tắt hàng chiêu bậc cao: Shift + số (E2-G). */
+export const TIER_MIN_UNLOCK = 16;
+
+/**
+ * Chiêu bậc 2–3 của công pháp (mở theo cảnh giới Trúc Cơ/Kết Đan), xếp theo cảnh giới mở. Hàng này nằm sau 8 ô chính
+ * (chỉ số ≥ `BAR_SIZE` trong `Game.bar()`), phím Shift+1…; ô thần thông chính thức ô 9–10 là việc của E2-E.
+ * Chiêu còn khóa (Nguyên Anh trở lên, cơ chế chưa làm) không có trong hàng.
+ */
+export function tierBar(methodId: string | undefined): SkillDef[] {
+  if (!methodId) return [];
+  return METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock >= TIER_MIN_UNLOCK && !s.locked).sort((a, b) => a.unlock - b.unlock);
+}
+
 /** Chiêu `skill` đã gộp cấp chiêu và biến thức theo trạng thái công pháp server gửi (null = chưa có: cấp 1, không biến thức). */
 export function resolveBarSkill(m: { lv: Record<string, number>; vr: Record<string, 'a' | 'b'> } | null | undefined, skill: SkillDef): ResolvedSkill {
   return resolveSkill(skill, m?.lv[skill.id] ?? 1, VARIANTS[skill.id], m?.vr[skill.id]);

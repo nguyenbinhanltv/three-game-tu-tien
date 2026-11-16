@@ -208,5 +208,15 @@ export function distToSegment(ax: number, az: number, bx: number, bz: number, x:
   return Math.hypot(x - (ax + sx * u), z - (az + sz * u));
 }
 
+/** Chiêu cần chọn mục tiêu (tab-target): đánh đơn, vòng quanh mục tiêu, vệt chém. Vòng quanh mình (`self`) thì không. */
+export function needsTarget(s: Pick<SkillDef, 'kind' | 'self'>): boolean {
+  return s.kind === 'damage' || s.kind === 'line' || (s.kind === 'aoe' && !s.self);
+}
+
+/** Chiêu gây sát thương lên quái: tiêu thụ thế (hộ pháp), tính dấu ấn. */
+export function dealsDamage(s: Pick<SkillDef, 'kind'>): boolean {
+  return s.kind === 'damage' || s.kind === 'aoe' || s.kind === 'line';
+}
+
 /** Quãng lướt tối đa của một chiêu (kiểm tra dữ liệu và biến thức `lenMul`). */
 export const DASH_MAX_DIST = 12;

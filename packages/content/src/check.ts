@@ -134,6 +134,18 @@ for (const s of METHOD_SKILLS) {
   if ((s.kind === 'hot' || s.kind === 'revive') && !(s.allyRadius! > 0)) err(`skill ${s.id}: cần allyRadius`);
   if (s.kind === 'hot' && !(s.duration! > 0)) err(`skill ${s.id}: hồi theo thời gian cần duration`);
 }
+// E2-G: tên chiêu bậc 2–3 khớp glossary.skillsTier; chiêu khóa (Nguyên Anh trở lên) không được nằm trong hàng chiêu chơi được.
+for (const [id, name] of Object.entries(GLOSSARY.skillsTier)) {
+  if (!SKILL.has(id)) err(`glossary.skillsTier: ${id} không phải chiêu`);
+  else if (t(`skill.${id}.name`) !== name) err(`chiêu ${id}: tên "${t(`skill.${id}.name`)}" lệch glossary.skillsTier ("${name}")`);
+}
+for (const s of METHOD_SKILLS) {
+  if (s.unlock >= 16 && !(s.id in GLOSSARY.skillsTier)) err(`chiêu bậc cao ${s.id}: thiếu trong glossary.skillsTier`);
+  if (s.unlock >= 24 && !s.locked) err(`chiêu ${s.id}: mở từ cấp ${s.unlock} (Nguyên Anh trở lên) phải có locked: true tới khi làm cơ chế`);
+  if (s.kind === 'line' && !s.line) err(`chiêu ${s.id}: kind line cần trường line`);
+  if (s.kind === 'summon' && !s.summon) err(`chiêu ${s.id}: kind summon cần trường summon`);
+  if (s.kind === 'buff' && !(s.duration! > 0 && s.buff)) err(`chiêu ${s.id}: kind buff cần duration và buff`);
+}
 for (const [id, v] of Object.entries(VARIANTS)) {
   const sk = SKILL.get(id);
   if (!sk) {

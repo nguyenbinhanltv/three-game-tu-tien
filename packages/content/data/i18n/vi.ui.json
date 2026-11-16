@@ -508,6 +508,8 @@
   "ui.skill.ult_charge": "Sạc {n}/100",
   "ui.skill.ult_need": "Cần đầy vòng sạc",
   "ui.skill.level_tag": "Cấp {n}",
+  "ui.skill.tier_row": "Chiêu bậc cao",
+  "ui.skill.tier_key": "Phím: Shift + {n}",
   "ui.skill.variant_tag": "Biến thức {name}",
   "ui.skill.guard": "Giảm {n}% sát thương trong {s} giây",
   "ui.npc.tab.gem": "Khảm ngọc",

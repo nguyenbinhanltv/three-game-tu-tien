@@ -158,6 +158,8 @@ import {
   dashDir,
   DASH_MIN_GAP_MS,
   DASH_MAX_DIST,
+  needsTarget,
+  dealsDamage,
   DASH_MAX_SLOPE,
   distToSegment,
   inLine,
@@ -189,10 +191,6 @@ const SET_HEAL_RADIUS = 14;
 const SET_SLOW_MUL = 0.5;
 const SET_SLOW_BOSS = 0.8;
 
-/** E2-G: chiêu cần chọn mục tiêu (tab-target): đánh đơn, vòng quanh mục tiêu, vệt chém. Vòng quanh mình (`self`) thì không. */
-const needsTarget = (s: SkillDef): boolean => s.kind === 'damage' || s.kind === 'line' || (s.kind === 'aoe' && !s.self);
-/** Chiêu gây sát thương lên quái: tiêu thụ thế (hộ pháp), tính dấu ấn. */
-const dealsDamage = (s: SkillDef): boolean => s.kind === 'damage' || s.kind === 'aoe' || s.kind === 'line';
 /** Kiếm đan bản mệnh (E2-G): mỗi người một bộ, nhịp đánh theo `every`. */
 interface Summon { sid: string; until: number; nextAt: number; every: number; count: number; range: number; power: number; markFirst: boolean; elem?: string }
 /** Giậm của Sơn Nhạc Hóa Thân (E2-G). */
@@ -1953,7 +1951,7 @@ export class GameSim {
         const pool = sm.markFirst ? [...near.filter((o) => o.mark?.sid === sm.sid), ...near.filter((o) => o.mark?.sid !== sm.sid)] : near;
         const em = elemDamageMul(owner.char.stats.elemDmg, sm.elem);
         for (const o of pool.slice(0, sm.count)) {
-          this.fx({ t: 'kiemdan', src: owner.sid, dst: o.id, v: 'hit' });
+          this.fx({ t: 'kiemdan_hit', src: owner.sid, dst: o.id });
           this.hitMonster(owner, o, sm.power, em, sm.elem);
         }
       }
@@ -1967,7 +1965,7 @@ export class GameSim {
       }
       while (now >= st.nextAt) {
         st.nextAt += st.every * 1000;
-        this.fx({ t: 'sonnhac', src: owner.sid, x: owner.move.x, y: owner.move.y, z: owner.move.z, r: st.r, v: 'stomp' });
+        this.fx({ t: 'sonnhac_stomp', src: owner.sid, x: owner.move.x, y: owner.move.y, z: owner.move.z, r: st.r });
         for (const o of this.monstersNear(owner.move.x, owner.move.z, st.r)) this.hitMonster(owner, o, st.power, elemDamageMul(owner.char.stats.elemDmg, 'tho'), 'tho');
       }
     }

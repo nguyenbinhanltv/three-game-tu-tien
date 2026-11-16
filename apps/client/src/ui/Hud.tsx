@@ -4,7 +4,7 @@ import './panels.css';
 import './tutien.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { artifactLevelMods, BAR_SIZE, C, CHARGE_MAX, NGUNG_KHI_MAX, TRIBULATION_DURATION, TRIB_FINAL, TRIB_PHASE_END, tribPhaseAt, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
-import { ARTIFACT, ITEM, itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
+import { ARTIFACT, ITEM, itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { artifactLines } from './gear';
@@ -334,6 +334,7 @@ function SkillBar() {
   const pas = mdef?.passive;
   const stackKind = pas?.kind === 'kiem_y' || pas?.kind === 'the' ? pas.kind : null;
   const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE }, (_, i) => bar[i] ?? null);
+  const tier = tierBar(method?.method);
   return (
     <div className="skillbar" style={mdef ? ({ '--mc': '#' + mdef.color } as CSSProperties) : undefined}>
       {stackKind && (
@@ -418,6 +419,45 @@ function SkillBar() {
         })}
         <ArtifactSlot />
       </div>
+      {tier.length > 0 && (
+        <div className="skill-row tier-row" aria-label={t('ui.skill.tier_row')}>
+          {tier.map((sk, j) => {
+            const rs = resolveBarSkill(method, sk);
+            const locked = char.level < sk.unlock;
+            const ready = Math.max(cds[sk.id] ?? 0, gcdAt);
+            const left = Math.max(0, ready - now);
+            const total = (cds[sk.id] ?? 0) > gcdAt ? Math.max(1, rs.cd) * 1000 : 1000;
+            const noMp = !locked && mp < sk.mp;
+            const state = locked ? 'locked' : airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
+            const lv = method?.lv[sk.id] ?? 1;
+            const vr = method?.vr[sk.id];
+            const lines = [
+              { text: t('ui.skill.tier_key', { n: j + 1 }) },
+              ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
+              ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
+              ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
+              ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
+            ];
+            return (
+              <Tooltip key={sk.id} content={<TipCard title={t(`skill.${sk.id}.name`)} sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined} lines={lines} desc={t(`skill.${sk.id}.desc`)} />}>
+                <button type="button" className="skill" data-state={state} data-method="1" aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`} onClick={(e) => { Game.current?.useSkill(BAR_SIZE + j); blurAfterPointer(e); }}>
+                  <span className="skill-icon">
+                    <ContentIcon def={sk} />
+                  </span>
+                  <span className="skill-key">⇧{j + 1}</span>
+                  {!locked && left > 80 && (
+                    <>
+                      <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
+                      {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+                    </>
+                  )}
+                  {locked && <span className="skill-lock">🔒</span>}
+                </button>
+              </Tooltip>
+            );
+          })}
+        </div>
+      )}
       <BuffRow />
       <div className="action-row">
         <Button size="s" pressed={(flags & PF_MEDITATING) !== 0} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} title={t('ui.help.meditate_v')}>

@@ -1,9 +1,9 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, TRIBULATION_DURATION, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_WORLD, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX } from '@dtl/shared';
+import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, TRIBULATION_DURATION, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_WORLD, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget } from '@dtl/shared';
 import { biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
+import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, tierBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
@@ -1193,7 +1193,13 @@ export class Game {
     if (this.isMoveKey(code, action)) this.cancelQueuedSkill();
     const slot = skillSlot(code);
     if (slot >= 0) {
-      if (slot < this.bar().length) this.useSkill(slot);
+      if (e.shiftKey) {
+        // Hàng chiêu bậc cao (E2-G): Shift + số.
+        const tier = BAR_SIZE + slot;
+        if (tier < this.bar().length) this.useSkill(tier);
+        return;
+      }
+      if (slot < Math.min(this.bar().length, BAR_SIZE)) this.useSkill(slot);
       else if (slot < BAR_SIZE) pushToast(t('ui.method.empty_slot'), 'info');
       else if (slot === BAR_SIZE) this.useArtifact();
       return;
@@ -1356,7 +1362,8 @@ export class Game {
   /** Người chơi bấm chiêu (phím số, nút trên thanh chiêu, bấm lại mục tiêu). */
   /** Thanh chiêu hiện tại: 6 chiêu chung + 2 chiêu của công pháp đang tu. */
   bar(): SkillDef[] {
-    return skillBar(get().method?.method);
+    const m = get().method?.method;
+    return [...skillBar(m), ...tierBar(m)];
   }
 
   useSkill(i: number): void {
@@ -1424,7 +1431,7 @@ export class Game {
     const skill = this.bar()[i];
     const me = this.me();
     if (!skill || !me || me.fl & PF_DEAD) return;
-    const needTarget = skill.kind === 'damage' || skill.kind === 'aoe';
+    const needTarget = needsTarget(skill) || (skill.kind === 'dash' && skill.dash?.dir === 'target');
     // Đang tỉ thí: chiêu đánh nhắm đối thủ (server vẫn kiểm đúng đối thủ, đã hết đếm ngược, trong tầm).
     const duel = get().duel;
     if (needTarget && duel && duel.phase !== 'end') {
