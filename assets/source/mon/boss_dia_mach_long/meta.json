@@ -1,0 +1,82 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_dia_mach_long",
+  "type": "mon",
+  "budgetClass": "boss",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 20000,
+    "texture": 2048
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "boss/boss_dia_mach_long/tripo/rig_v01.glb",
+    "size": {
+      "depth": 9
+    },
+    "orient": "none",
+    "yaw": 90,
+    "quadruped": {
+      "attack": "bite",
+      "fixCrossWeights": true,
+      "layout": {
+        "tripo_spine_0": "spine_0",
+        "tripo_spine_1": "spine_1",
+        "tripo_0_right_limb_0": "spine_2",
+        "bone_4": "neck",
+        "tripo_head_0": "head",
+        "bone_8": "shoulder_l",
+        "bone_9": "leg_fl_0",
+        "bone_10": "leg_fl_1",
+        "bone_11": "leg_fl_2",
+        "bone_17": "leg_hl_0",
+        "bone_18": "leg_hl_1",
+        "bone_19": "leg_hl_2",
+        "bone_20": "leg_hl_3",
+        "bone_12": "shoulder_r",
+        "bone_13": "leg_fr_0",
+        "bone_14": "leg_fr_1",
+        "bone_15": "leg_fr_2",
+        "tripo_0_left_limb_1": "leg_hr_0",
+        "tripo_0_left_limb_2": "leg_hr_1",
+        "tripo_0_left_limb_3": "leg_hr_2",
+        "tripo_0_left_limb_4": "leg_hr_3",
+        "bone_25": "tail_0",
+        "bone_26": "tail_1",
+        "bone_27": "tail_2",
+        "bone_28": "tail_3",
+        "bone_29": "tail_4",
+        "bone_30": "tail_5"
+      }
+    },
+    "post": "tools/blender/anim_quadruped.py",
+    "extra": [
+      "slam",
+      "sweep",
+      "stun"
+    ]
+  },
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "model": "H3.1",
+      "params": {
+        "face_limit": 20000,
+        "texture_quality": "2K",
+        "pbr": true
+      },
+      "credits": 0,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok"
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max, image-to-3D H3.1, ảnh concept docs/asset-concepts) do người dùng dựng; rig quadruped Tripo (33 xương, bảng layout tường minh) + clip thủ tục tools/blender/anim_quadruped.py",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}
