@@ -198,6 +198,14 @@ async function main() {
     b.room.send(C.TELE, { id: 'tp_rung' });
     await W(700);
     check('Truyền Tống tới trận lạ / chưa mở khóa không chuyển room', xfers.length === 0 && (await health()));
+    // E2-H: nhận nhiệm vụ mở trận khi chưa đủ điều kiện (chưa Trúc Cơ xong, đứng xa NPC) không được mở trận; spam thần thức không làm sập.
+    b.room.send(C.QUEST, { a: 'accept', id: 'q2_thu_ha_son' });
+    b.room.send(C.QUEST, { a: 'accept', id: { toString: 1 } });
+    for (let i = 0; i < 200; i++) b.room.send(C.SCAN, i % 2 ? { x: 1e9 } : undefined);
+    await W(900);
+    b.room.send(C.TELE, { id: 'dm_tp_tram' });
+    await W(700);
+    check('nhận q2_thu_ha_son sai điều kiện không mở dm_tp_tram; spam thần thức không sập', xfers.length === 0 && (await health()));
 
     await bgm('tp 2048 1712');
     b.room.send(C.PORTAL, {});

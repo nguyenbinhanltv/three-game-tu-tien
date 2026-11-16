@@ -180,6 +180,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.PORTAL, (p) => this.onPortal(p));
     on(C.TELE, (p, m) => this.sim.tele.command(p, m));
     on(C.MARK, (p, m) => this.markers.command(p, m));
+    on(C.SCAN, (p) => this.sim.onScan(p));
     // Bỏ qua message lạ thay vì báo lỗi.
     this.onMessage('*', () => {});
   }

@@ -48,4 +48,6 @@ export const DOAN_MACH_PROPS: readonly HandProp[] = [
   { id: 'prop_den_da', x: 1002, z: 1038, yaw: 0, s: 1 },
   { id: 'prop_den_da', x: 1046, z: 1038, yaw: 0, s: 1 },
   { id: 'prop_den_da', x: 1024, z: 1016, yaw: 0, s: 1 },
+  { id: 'prop_kiem_gay', x: 1236, z: 1226, yaw: 0.7, s: 1 },
+  { id: 'prop_kiem_gay', x: 606, z: 962, yaw: 2.1, s: 1 },
 ];

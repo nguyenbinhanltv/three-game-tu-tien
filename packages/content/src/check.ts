@@ -11,7 +11,7 @@ import { monSkillsOf } from '@dtl/shared';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
 import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, tribForLevel, peakGated } from '@dtl/shared';
-import { TELE_PADS, terrainOf } from '@dtl/shared';
+import { TELE_PADS, TELE_PAD, SCAN_MIN_LEVEL, terrainOf, questSpot, inPoly } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
 
 const errors: string[] = [];
@@ -667,6 +667,15 @@ for (const q of QUESTS) {
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target)) err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
   }
   for (const i of q.rewards.items ?? []) needItem(i.id, `quest ${q.id}`);
+  for (const id of q.unlockTele ?? []) if (!TELE_PAD.has(id)) err(`quest ${q.id}: unlockTele ${id} không phải trận`);
+  // E2-H: mục tiêu do server chấm. Mỗi loại phải trỏ tới đúng thứ có trong một level; level của người nhận suy từ NPC giao việc.
+  for (const o of q.objectives) {
+    if (o.type === 'touch' || o.type === 'scan') {
+      if (!Object.values(LEVELS).some((lv) => questSpot(lv, o.target))) err(`quest ${q.id}: ${o.type} ${o.target} không phải poi/spot của level nào`);
+      if (o.type === 'scan' && (q.minLevel ?? 1) < SCAN_MIN_LEVEL) err(`quest ${q.id}: scan cần minLevel ≥ ${SCAN_MIN_LEVEL} (thần thức mở từ Kết Đan)`);
+    }
+    if (o.type === 'escort' && !Object.values(LEVELS).some((lv) => lv.escorts?.some((e) => e.id === o.target))) err(`quest ${q.id}: escort ${o.target} không có trong level nào`);
+  }
 }
 for (const r of REALMS) needStr(r.key);
 // ---- linh căn ngũ hành và bình cảnh (P3-7) ----
@@ -879,3 +888,35 @@ if (errors.length) {
   process.exit(1);
 }
 console.log('Nội dung hợp lệ.');
+
+// E2-H: điểm phụ (`spots`), người đồng hành (`escorts`) và NPC trạm theo glossary.
+{
+  const glossSpots = GLOSSARY.spots as Record<string, string>;
+  const glossNpc = GLOSSARY.stationNpcs as Record<string, string>;
+  for (const lv of Object.values(LEVELS)) {
+    const zones = lv.zones ?? [];
+    for (const sp of lv.spots ?? []) {
+      needStr(`spot.${sp.id}.name`);
+      if (t(`spot.${sp.id}.name`) !== glossSpots[sp.id]) err(`level ${lv.id}: spot ${sp.id} lệch glossary.spots`);
+      const zn = zones.find((z) => z.id === sp.zone);
+      if (!zn || !inPoly(zn.poly, sp.x, sp.z)) err(`level ${lv.id}: spot ${sp.id} không nằm trong vùng ${sp.zone}`);
+    }
+    for (const e of lv.escorts ?? []) {
+      needStr(`npc.${e.npc}.name`);
+      if (e.path.length < 2) err(`level ${lv.id}: escort ${e.id} cần ≥ 2 điểm`);
+      if (!(e.speed > 0 && e.speed <= 6)) err(`level ${lv.id}: escort ${e.id} tốc độ ${e.speed} ngoài (0; 6] m/s`);
+      if (NPC.has(e.npc)) err(`level ${lv.id}: escort ${e.id} dùng npc ${e.npc} đang là NPC đứng thật (cần id riêng)`);
+    }
+  }
+  for (const id of Object.keys(glossNpc)) {
+    if (!NPC.has(id) && !Object.values(LEVELS).some((lv) => lv.escorts?.some((e) => e.npc === id))) err(`glossary.stationNpcs có ${id} nhưng không có NPC/escort`);
+    if (t(`npc.${id}.name`) !== glossNpc[id]) err(`npc ${id}: tên lệch glossary.stationNpcs`);
+  }
+  for (const id of ['npc_to_van_ngu', 'npc_khieu_han_son']) {
+    const n = NPC.get(id);
+    if (!n) err(`thiếu NPC ${id}`);
+    else if (!LEVELS[n.level ?? 'van_lam']) err(`npc ${id}: level không tồn tại`);
+  }
+  // Chuỗi chương 2: q2_* nối đuôi nhau, không đứt (mỗi nhiệm vụ trừ đầu chương đều `requires` một nhiệm vụ có thật).
+  for (const q of QUESTS) if (q.id.startsWith('q2_') && q.id !== 'q2_thu_ha_son' && !q.requires?.startsWith('q2_')) err(`quest ${q.id}: chuỗi chương 2 phải requires một q2_*`);
+}

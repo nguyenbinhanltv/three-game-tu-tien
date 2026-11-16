@@ -268,6 +268,8 @@
   "ui.help.interact_v": "E khi đứng gần, hoặc bấm vào NPC, cây thuốc",
   "ui.help.meditate": "Đả tọa",
   "ui.help.meditate_v": "Z (hồi phục nhanh, tăng tu vi chậm)",
+  "ui.help.scan": "Thần thức",
+  "ui.help.scan_v": "T (từ Kết Đan; quét điểm cần dò của nhiệm vụ trong tầm gần, hồi 3 giây)",
   "ui.help.panels": "Bảng",
   "ui.help.panels_v": "B túi đồ · C nhân vật · L nhiệm vụ · M bản đồ · H hướng dẫn · O cài đặt · Esc đóng bảng",
   "ui.help.chat": "Trò chuyện",
@@ -584,7 +586,7 @@
   "ui.item.bind_on_equip": "Ràng buộc khi mặc",
   "ui.npc.tab.forge": "Chế tạo",
   "ui.forge.title": "Chế tạo bộ trang bị",
-  "ui.forge.desc": "Thiết lão chế từng món từ nguyên liệu bí cảnh. Phẩm do lò quyết định, có dòng phụ như đồ rơi.",
+  "ui.forge.desc": "Chế từng món từ nguyên liệu bí cảnh và mạch tinh. Phẩm do lò quyết định, có dòng phụ như đồ rơi.",
   "ui.forge.make": "Chế tạo",
   "ui.forge.chance": "Huyền phẩm {a}% · Địa phẩm {b}%",
   "ui.forge.need": "Nguyên liệu",
@@ -768,5 +770,8 @@
   "ui.promote.to": "Thành",
   "ui.item.tier": "Bậc {n}",
   "ui.npc.tab.promote": "Thăng Bậc",
-  "ui.promote.fee": "Phí Thăng Bậc: {n} linh thạch"
+  "ui.promote.fee": "Phí Thăng Bậc: {n} linh thạch",
+  "ui.obj.touch": "Đứng sát {name}",
+  "ui.obj.scan": "Dùng thần thức (phím T) gần {name}",
+  "ui.obj.escort": "Hộ tống {name} tới nơi"
 }

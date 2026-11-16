@@ -1,0 +1,25 @@
+{
+ "afterAccept": {
+  "tracker": "Thư Từ Chưởng Môn\n· Gặp Tô Vãn Ngư"
+ },
+ "arrive": {
+  "level": "doan_mach",
+  "x": 1147,
+  "z": 1116
+ },
+ "afterTurnin": {
+  "tracker": "",
+  "npcText": "“Đứng đó làm gì. Mạch không tự chảy lại đâu.”\n Vết Đào Đầu Tiên\nTô Vãn Ngư dẫn ngươi ra Sa Thạch Pha, nơi có vết đào đầu tiên. Hạ lũ Thạch Giáp Tê quanh đó cho thông đường, rồi chạm vào Mạch Tinh Trụ để dò mạch.\n○ Hạ Thạch Giáp Tê ×12\n○ Đứng sát Mạch Tinh Trụ\nPhần thưởng:\n1900 tu vi\n400 \nNhận nhiệm vụ\n Thần Thức Lần Đầu\nKết Đan rồi thì thần thức mở. Đứng gần Mạch Tinh Trụ, Hố Sa Lún và Cổng Mỏ Khai Mạch, bấm T để thần thức quét; mỗi nơi quét một lần. Mạch cạn hay còn, thần thức nghe được trước khi mắt thấy.\n○ Dùng thần thức (phím T) gần Mạch Tinh Trụ\n○ Dùng thần thức (phím T) gần Hố Sa Lún\n○ Dùng thần thức (phím T) gần Cổng Mỏ Khai Mạch\nPhần thưởng:\n2500 tu vi\n600 \nCần Kết Đan sơ kỳ"
+ },
+ "touch": {
+  "tracker": "Vết Đào Đầu Tiên\n· Hạ Thạch Giáp Tê 0/12\n✔ Đứng sát Mạch Tinh Trụ"
+ },
+ "escort": {
+  "tracker": "Vết Đào Đầu Tiên\n· Hạ Thạch Giáp Tê 0/12\n✔ Đứng sát Mạch Tinh Trụ\nQua Khô Hà Đạo\nTrả nhiệm vụ: Hứa lão",
+  "still": null
+ },
+ "scan": {
+  "tracker": "Vết Đào Đầu Tiên\n· Hạ Thạch Giáp Tê 0/12\n✔ Đứng sát Mạch Tinh Trụ\nQua Khô Hà Đạo\nTrả nhiệm vụ: Hứa lão\nThần Thức Lần Đầu\nTrả nhiệm vụ: Tô Vãn Ngư"
+ },
+ "errors": []
+}

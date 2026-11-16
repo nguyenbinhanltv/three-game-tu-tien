@@ -403,6 +403,38 @@ console.log(
   console.log('Quái Vân Lam (cấp ≤ 15) cho tu vi đủ cho Trúc Cơ (hơi dài hơn 4 giờ vì tu vi hạ dần theo chênh cấp), nhưng từ Kết Đan chênh cấp làm tu vi rơi về 10%: các chặng Kết Đan và Nguyên Anh cần quái, phó bản và boss của E-2/E-3/E-4 (mục 4–6, 11 của thiết kế) mới đạt 4/6/8 giờ.');
 }
 
+// ---------- tu vi từ nhiệm vụ chương 2 (E2-H) ----------
+{
+  const mainQ = QUESTS.filter((q) => q.id.startsWith('q2_'));
+  const sideQ = QUESTS.filter((q) => q.id.startsWith('s2_'));
+  const sum = (qs: typeof mainQ) => qs.reduce((n, q) => n + q.rewards.xp, 0);
+  let stageXp = 0;
+  for (let l = TRUC_CO_LEVEL; l < KET_DAN_LEVEL; l++) stageXp += xpNeed(l);
+  const income = (l: number) => 400 * (12 + 7 * l) * 1.25 * 0.9;
+  console.log('\nNhiệm vụ chương 2 (E2-H): tu vi thưởng so với chặng Trúc Cơ (nhịp thiết kế 4 giờ)');
+  console.log('nhiệm vụ            cấp  tu vi   linh thạch  tích lũy   % chặng   giờ tương đương');
+  let cum = 0;
+  for (const q of mainQ) {
+    cum += q.rewards.xp;
+    const lv = Math.max(TRUC_CO_LEVEL, q.minLevel ?? TRUC_CO_LEVEL);
+    console.log(`${q.id.padEnd(19)} ${String(lv).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)} ${(q.rewards.xp / income(lv)).toFixed(2).padStart(10)}`);
+  }
+  const mainShare = sum(mainQ) / stageXp;
+  const sideXp = sum(sideQ);
+  console.log(`Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sideXp} (${pct(sideXp / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 4 giờ.`);
+  if (mainShare < 0.12 || mainShare > 0.16) {
+    console.error(`LỖI: tu vi nhiệm vụ chính chương 2 chiếm ${pct(mainShare)} chặng Trúc Cơ, ngoài 12–16% (thiết kế ≈ 14%)`);
+    process.exitCode = 1;
+  }
+  for (const q of [...mainQ, ...sideQ]) {
+    const need = xpNeed(Math.max(q.minLevel ?? TRUC_CO_LEVEL, TRUC_CO_LEVEL));
+    if (q.rewards.xp > need * 0.2) {
+      console.error(`LỖI: ${q.id} thưởng ${q.rewards.xp} tu vi, hơn 20% một cấp (${need}): lên cấp quá nhanh bằng nhiệm vụ`);
+      process.exitCode = 1;
+    }
+  }
+}
+
 console.log('\nThử thách tâm ma (bình cảnh, Kiếm tu):');
 for (const r of main.trialRows) console.log(r);
 console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên, đã nhân kéo cụm; tọa: giây đả tọa hồi lại; tìm: giây tìm quái mỗi lần giết.');
@@ -621,7 +653,8 @@ Chương 2 (bậc 2): thu nhập ~${income.toFixed(0)} (4 giờ) | hố tiêu c�
 }
 {
   // Nguồn/tiêu tới viên mãn tầng 15 (một mình).
-  const quest = QUESTS.reduce((n, q) => n + (q.rewards.gold ?? 0), 0);
+  // Chỉ nhiệm vụ làm được tới tầng 15 (nhiệm vụ chương 2 trở đi, minLevel ≥ 16, có bảng kinh tế riêng).
+  const quest = QUESTS.filter((q) => (q.minLevel ?? 1) <= NGUNG_KHI_MAX).reduce((n, q) => n + (q.rewards.gold ?? 0), 0);
   let sold = 0;
   for (let l = 1; l <= NGUNG_KHI_MAX; l++) {
     const sp = pickSpawn(l);

@@ -23,6 +23,7 @@ export * from './artifacts';
 export * from './alchemy';
 export * from './party';
 export * from './teleport';
+export * from './questobj';
 export * from './zones';
 export * from './animrules';
 export * from './posestyle';

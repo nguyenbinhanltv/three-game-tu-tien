@@ -9,6 +9,7 @@ export type Action =
   | 'target'
   | 'fly'
   | 'meditate'
+  | 'scan'
   | 'interact'
   | 'autorun'
   | 'dash'
@@ -29,6 +30,7 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   Tab: 'target',
   KeyF: 'fly',
   KeyZ: 'meditate',
+  KeyT: 'scan',
   KeyE: 'interact',
   KeyR: 'autorun',
   KeyQ: 'dash',
