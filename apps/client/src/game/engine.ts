@@ -2030,7 +2030,8 @@ export class Game {
       return;
     }
     // Chiêu đã có dòng thời gian hiệu ứng (data/fx/<id>.json): hình do `SkillFx.runner` phát theo sự kiện chiêu, bỏ hình cũ.
-    if (replacedFx(m.t)) return;
+    // Chỉ khi người ra chiêu có model phát sự kiện chiêu (SkinnedCharacter): model khối (`?models=legacy`, nạp lỗi) không có, giữ hình cũ.
+    if (replacedFx(m.t) && typeof pSrc?.model.performClock === 'function') return;
     if (m.v) playVariantExtras(mctx, tint(0xbfeaff));
     switch (m.t) {
       case 'sword':
