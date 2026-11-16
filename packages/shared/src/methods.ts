@@ -105,6 +105,31 @@ export interface SkillVariant {
   healRadiusMul?: number;
   /** Nhân lượng hồi cho bản thân. */
   selfHealMul?: number;
+  /** E2-G: nhân chiều dài vệt (`line`) hoặc quãng lướt (`dash`, tối đa 12 m). */
+  lenMul?: number;
+  /** E2-G: nhân sức độc (Mộc Linh Trận); nhân thời gian thiêu đốt (Đan Hỏa Phong Tràn); đẩy lùi mục tiêu ở nhát cuối (m). */
+  poisonMul?: number;
+  burnMul?: number;
+  knock?: number;
+  /** E2-G: `guard` đổi tỉ lệ phản; `guardAlly` giảm sát thương cho đồng đội trong `r` mét. */
+  reflect?: number;
+  guardAlly?: { r: number; reduce: number };
+  /** E2-G: khiên tổ đội thêm hồi `regen` (tỉ lệ máu tối đa mỗi giây) trong thời gian khiên. */
+  regen?: number;
+  /** E2-G: `buff` thêm hồi/giậm. */
+  buffRegen?: number;
+  buffStomp?: { every: number; r: number; mul: number };
+  /** E2-G: số kiếm đan; ưu tiên quái đã đánh dấu. */
+  count?: number;
+  markFirst?: boolean;
+  /** E2-G: lướt xong quay về chỗ cũ; đẩy đổi thành kéo; choáng; không choáng; làm chậm vùng. */
+  returnBack?: boolean;
+  pull?: boolean;
+  stun?: number;
+  noStun?: boolean;
+  slow?: { dur: number; mul: number };
+  /** E2-G: người được hồi (Dược Vũ) nhận thêm khiên bằng tỉ lệ này của máu tối đa. */
+  selfShield?: number;
   /** Nhãn hình dạng hiệu ứng cho client. */
   fx: string;
 }
@@ -179,6 +204,12 @@ export function empowerVariant(v: SkillVariant): SkillVariant {
   if (v.trail) out.trail = { ...v.trail, mul: up(v.trail.mul)! };
   if (v.cleave) out.cleave = { ...v.cleave, mul: up(v.cleave.mul)! };
   if (v.hot) out.hot = { ...v.hot, totalMul: up(v.hot.totalMul)! };
+  out.reflect = up(v.reflect);
+  out.regen = up(v.regen);
+  out.buffRegen = up(v.buffRegen);
+  out.selfShield = up(v.selfShield);
+  if (v.guardAlly) out.guardAlly = { ...v.guardAlly, reduce: Math.min(0.9, up(v.guardAlly.reduce)!) };
+  if (v.buffStomp) out.buffStomp = { ...v.buffStomp, mul: up(v.buffStomp.mul)! };
   out.markBonus = up(v.markBonus);
   if (v.powerMul !== undefined && v.powerMul > 1) out.powerMul = 1 + (v.powerMul - 1) * EMPOWER_MUL;
   for (const k of Object.keys(out) as (keyof SkillVariant)[]) if (out[k] === undefined) delete out[k];
@@ -205,7 +236,7 @@ export function resolveSkill(def: SkillDef, level: unknown, variants: { a: Skill
   const mods = skillLevelMods(lv);
   const v = activeVariant(variants, lv, chosen);
   const power = def.power * mods.powerMul * (v?.powerMul ?? 1);
-  const hits = (v?.hits ?? [1]).map((h) => h * power);
+  const hits = (v?.hits ?? def.hitsMul ?? [1]).map((h) => h * power);
   return {
     def,
     level: lv,
