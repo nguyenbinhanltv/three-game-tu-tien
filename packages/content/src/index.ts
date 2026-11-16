@@ -69,6 +69,25 @@ import posePhiKiem2DsJson from '../data/poses/phi_kiem_2_ds.json';
 import posePhiKiem3DsJson from '../data/poses/phi_kiem_3_ds.json';
 import poseKiemKhiTramHpJson from '../data/poses/kiem_khi_tram_hp.json';
 import poseKiemKhiTramDsJson from '../data/poses/kiem_khi_tram_ds.json';
+import poseHoanhKiemJson from '../data/poses/hoanh_kiem.json';
+import poseThuanDiTramJson from '../data/poses/thuan_di_tram.json';
+import poseThienKiemHoaHinhJson from '../data/poses/thien_kiem_hoa_hinh.json';
+import poseThietQuyenJson from '../data/poses/thiet_quyen.json';
+import poseDanHoaJson from '../data/poses/dan_hoa.json';
+import poseKiemVuJson from '../data/poses/kiem_vu.json';
+import poseKiemDanJson from '../data/poses/kiem_dan.json';
+import posePhanAnhKiemAnhJson from '../data/poses/phan_anh_kiem_anh.json';
+import poseKimChungJson from '../data/poses/kim_chung.json';
+import poseSonNhacJson from '../data/poses/son_nhac.json';
+import poseAnhThietThanJson from '../data/poses/anh_thiet_than.json';
+import poseThuanDiHoTheJson from '../data/poses/thuan_di_ho_the.json';
+import poseThienKimPhapTuongJson from '../data/poses/thien_kim_phap_tuong.json';
+import poseMocLinhJson from '../data/poses/moc_linh.json';
+import poseDuocVuJson from '../data/poses/duoc_vu.json';
+import poseNgungDanJson from '../data/poses/ngung_dan.json';
+import poseAnhDuocHoaThanJson from '../data/poses/anh_duoc_hoa_than.json';
+import poseThuanDiCuuVienJson from '../data/poses/thuan_di_cuu_vien.json';
+import poseThienDanPhapGioiJson from '../data/poses/thien_dan_phap_gioi.json';
 import appearanceJson from '../data/appearance.json';
 import equipSlotsJson from '../data/equipment/slots.json';
 import equipQualitiesJson from '../data/equipment/qualities.json';
@@ -109,7 +128,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
 export const ROOTS = rootsJson as RootDef[];
 export const GLOSSARY = glossaryJson;
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
-export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNiemChuJson, poseTamThienJson, poseRutKiemJson, poseTraKiemJson, poseKiemAnhJson, poseVanKiemJson, poseTranSonJson, poseKimCuongJson, poseXuanPhongJson, poseHoiThienJson, posePhiKiem2Json, posePhiKiem3Json, posePhiKiemHpJson, posePhiKiem2HpJson, posePhiKiem3HpJson, posePhiKiemDsJson, posePhiKiem2DsJson, posePhiKiem3DsJson, poseKiemKhiTramHpJson, poseKiemKhiTramDsJson] as unknown as PoseDef[];
+export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNiemChuJson, poseTamThienJson, poseRutKiemJson, poseTraKiemJson, poseKiemAnhJson, poseVanKiemJson, poseTranSonJson, poseKimCuongJson, poseXuanPhongJson, poseHoiThienJson, posePhiKiem2Json, posePhiKiem3Json, posePhiKiemHpJson, posePhiKiem2HpJson, posePhiKiem3HpJson, posePhiKiemDsJson, posePhiKiem2DsJson, posePhiKiem3DsJson, poseKiemKhiTramHpJson, poseKiemKhiTramDsJson, poseHoanhKiemJson, poseThuanDiTramJson, poseThienKiemHoaHinhJson, poseThietQuyenJson, poseDanHoaJson, poseKiemVuJson, poseKiemDanJson, posePhanAnhKiemAnhJson, poseKimChungJson, poseSonNhacJson, poseAnhThietThanJson, poseThuanDiHoTheJson, poseThienKimPhapTuongJson, poseMocLinhJson, poseDuocVuJson, poseNgungDanJson, poseAnhDuocHoaThanJson, poseThuanDiCuuVienJson, poseThienDanPhapGioiJson] as unknown as PoseDef[];
 
 function index<T extends { id: string }>(list: T[]): Map<string, T> {
   const m = new Map<string, T>();

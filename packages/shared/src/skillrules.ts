@@ -187,3 +187,26 @@ export function validateSkillRules(s: SkillDef, pose: PoseDef | undefined, ids: 
   } else if (s.kind === 'dash') errs.push(`${at}: kind dash cần trường dash`);
   return errs;
 }
+
+// ---------- hình học chiêu bậc 2–3 (E2-G) ----------
+
+/** Điểm (x, z) có nằm trong vệt chữ nhật dài `len`, rộng `width` xuất phát từ (ox, oz) theo hướng đơn vị (dx, dz) không? Tính cả `pad` (bán kính thân quái). */
+export function inLine(ox: number, oz: number, dx: number, dz: number, len: number, width: number, x: number, z: number, pad = 0): boolean {
+  const rx = x - ox;
+  const rz = z - oz;
+  const along = rx * dx + rz * dz;
+  const side = Math.abs(rx * dz - rz * dx);
+  return along >= -pad && along <= len + pad && side <= width / 2 + pad;
+}
+
+/** Khoảng cách từ điểm (x, z) tới đoạn thẳng (ax, az)–(bx, bz). */
+export function distToSegment(ax: number, az: number, bx: number, bz: number, x: number, z: number): number {
+  const sx = bx - ax;
+  const sz = bz - az;
+  const l2 = sx * sx + sz * sz;
+  const u = l2 < 1e-9 ? 0 : Math.max(0, Math.min(1, ((x - ax) * sx + (z - az) * sz) / l2));
+  return Math.hypot(x - (ax + sx * u), z - (az + sz * u));
+}
+
+/** Quãng lướt tối đa của một chiêu (kiểm tra dữ liệu và biến thức `lenMul`). */
+export const DASH_MAX_DIST = 12;

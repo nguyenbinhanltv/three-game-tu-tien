@@ -1,0 +1,345 @@
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { groundAt, MS_DEAD, S } from '@dtl/shared';
+
+// E2-G: chiêu bậc 2–3 (Lạc Kiếm Quyết / Bất Động Kim Thân / Thanh Mộc Đan Kinh). Server áp sát thương tại hitAt như K-2.
+process.env.DB_FILE = ':memory:';
+
+type Sim = import('./sim').GameSim;
+type Ent = import('./sim').PlayerEnt;
+let GameSim: typeof import('./sim').GameSim;
+let WorldState: typeof import('../state').WorldState;
+let Character: typeof import('./character').Character;
+let MONSTER: typeof import('@dtl/content').MONSTER;
+let METHOD_SKILLS: typeof import('@dtl/content').METHOD_SKILLS;
+
+beforeAll(async () => {
+  ({ GameSim } = await import('./sim'));
+  ({ WorldState } = await import('../state'));
+  ({ Character } = await import('./character'));
+  ({ MONSTER, METHOD_SKILLS } = await import('@dtl/content'));
+});
+
+const X = 2040;
+const Z = 2040;
+let nextAcc = 5000;
+
+// Đồng hồ giả: `sim.tick` đọc Date.now(), các chiêu có độ trễ (hitAt nhiều mốc, kiếm đan, hồi dần) chạy theo đó.
+afterEach(() => vi.useRealTimers());
+
+function setup(method: string, level = 22) {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(1_800_000_000_000);
+  const sent: { type: string; msg: Record<string, unknown> }[] = [];
+  const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg: msg as Record<string, unknown> }) };
+  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  sim.now = Date.now();
+  const raw = sim.onSkill.bind(sim);
+  // Xả đòn chờ `hitAt` ngay lúc bấm (như method.test.ts); các mốc sau của chiêu nhiều nhát chạy qua `sim.tick`.
+  sim.onSkill = (pl: Ent, msg: unknown) => {
+    raw(pl, msg);
+    const st = pl.flow.pending;
+    if (st) {
+      st.at = sim.now;
+      (sim as unknown as { resolvePending(p: Ent): void }).resolvePending(pl);
+    }
+  };
+  const join = (name: string): Ent => {
+    const char = Character.create(nextAcc++, name + nextAcc);
+    char.level = level;
+    char.meta.method = method;
+    char.recalc();
+    char.hp = char.mhp;
+    char.mp = char.mmp;
+    const client = { sessionId: name + nextAcc, send: () => {} };
+    const p = sim.addPlayer(client as never, char, true, 's' + nextAcc);
+    p.move.x = X;
+    p.move.z = Z;
+    p.move.y = groundAt(X, Z);
+    return p;
+  };
+  const p = join('a');
+  const mon = (x = X + 6, z = Z, hp = 1_000_000) => {
+    const m = sim.spawnMonster(MONSTER.get('mon_soi_xam')!, 10, x, z, null);
+    m.s.hp = m.s.mhp = hp;
+    return m;
+  };
+  const fresh = (e: Ent) => {
+    e.gcdAt = 0;
+    e.cds.clear();
+    e.flow.lastDashAt = -1e9;
+    e.char.mp = e.char.mmp;
+    e.lastCombatAt = 0;
+  };
+  /** Đẩy đồng hồ sim qua `ms` rồi chạy các đòn trễ/tick. */
+  const wait = (ms: number) => {
+    for (let t = 0; t < ms; t += 50) {
+      vi.setSystemTime(Date.now() + 50);
+      sim.tick(50);
+    }
+  };
+  const setVar = (skill: string, v: 'a' | 'b') => {
+    p.char.meta.skillLv = { ...(p.char.meta.skillLv ?? {}), [skill]: 3 };
+    p.char.meta.skillVar = { ...(p.char.meta.skillVar ?? {}), [skill]: v };
+  };
+  /** Đếm số lần `hitMonster` được gọi. */
+  const countHits = () => {
+    const box = { n: 0 };
+    const o = sim as unknown as { hitMonster: (...a: unknown[]) => void };
+    const orig = o.hitMonster.bind(sim);
+    o.hitMonster = (...args: unknown[]) => {
+      box.n++;
+      orig(...args);
+    };
+    return box;
+  };
+  return { sim, sent, p, join, mon, fresh, wait, setVar, countHits };
+}
+
+const lost = (m: { s: { hp: number; mhp: number } }) => m.s.mhp - m.s.hp;
+
+describe('E2-G: dữ liệu chiêu', () => {
+  it('21 chiêu bậc 2–3, mỗi công pháp 7 chiêu; chiêu từ Nguyên Anh (24+) khóa, Trúc Cơ/Kết Đan chơi được', () => {
+    const tier = METHOD_SKILLS.filter((s) => s.unlock >= 16);
+    expect(tier.length).toBe(21);
+    for (const m of ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh']) {
+      const mine = tier.filter((s) => s.method === m);
+      expect(mine.length, m).toBe(7);
+      for (const s of mine) expect(!!s.locked, s.id).toBe(s.unlock >= 24);
+    }
+  });
+  it('chiêu khóa bị server từ chối', () => {
+    const { sim, p, mon, fresh } = setup('lac_kiem_quyet', 28);
+    const m = mon();
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_thien_kiem_hoa_hinh', t: m.id });
+    expect(lost(m)).toBe(0);
+  });
+  it('chưa đủ cấp thì không dùng được', () => {
+    const { sim, p, mon, fresh } = setup('lac_kiem_quyet', 15);
+    const m = mon();
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_hoanh_kiem_pha_mach', t: m.id });
+    expect(lost(m)).toBe(0);
+  });
+});
+
+describe('E2-G: Lạc Kiếm Quyết', () => {
+  it('Hoành Kiếm Phá Mạch trúng mọi quái trong vệt 12×3 m, không trúng quái ngoài vệt', () => {
+    const { sim, p, mon, fresh } = setup('lac_kiem_quyet', 16);
+    const a = mon(X + 5, Z);
+    const b = mon(X + 10, Z + 1);
+    const off = mon(X + 6, Z + 6);
+    const far = mon(X + 14, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_hoanh_kiem_pha_mach', t: a.id });
+    expect(lost(a)).toBeGreaterThan(0);
+    expect(lost(b)).toBeGreaterThan(0);
+    expect(lost(off)).toBe(0);
+    expect(lost(far)).toBe(0);
+  });
+  it('Cuồng Mạch (B) đánh hai đợt', () => {
+    const { sim, p, mon, fresh, wait, setVar, countHits } = setup('lac_kiem_quyet', 16);
+    setVar('skl_hoanh_kiem_pha_mach', 'b');
+    const a = mon(X + 5, Z);
+    fresh(p);
+    const hits = countHits();
+    sim.onSkill(p, { id: 'skl_hoanh_kiem_pha_mach', t: a.id });
+    wait(500);
+    expect(hits.n).toBe(2);
+  });
+  it('Kiếm Vũ Tam Điệp đánh ba nhát liền trong một lần bấm; B bốn nhát', () => {
+    const { sim, p, mon, fresh, wait, setVar, countHits } = setup('lac_kiem_quyet', 18);
+    const a = mon(X + 4, Z);
+    fresh(p);
+    const hits = countHits();
+    sim.onSkill(p, { id: 'skl_kiem_vu_tam_diep', t: a.id });
+    wait(700);
+    expect(hits.n).toBe(3);
+    setVar('skl_kiem_vu_tam_diep', 'b');
+    fresh(p);
+    hits.n = 0;
+    sim.onSkill(p, { id: 'skl_kiem_vu_tam_diep', t: a.id });
+    wait(700);
+    expect(hits.n).toBe(4);
+  });
+  it('Kiếm Đan Bản Mệnh đâm quái gần nhất mỗi giây trong 10 giây, rồi tan', () => {
+    const { sim, sent, p, mon, fresh, wait } = setup('lac_kiem_quyet', 20);
+    const a = mon(X + 5, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_kiem_dan_ban_menh' });
+    wait(3100);
+    const l3 = lost(a);
+    expect(l3).toBeGreaterThan(0);
+    wait(8000);
+    const l11 = lost(a);
+    wait(3000);
+    expect(lost(a)).toBe(l11);
+    expect(l11).toBeGreaterThan(l3);
+    expect(sent.some((x) => x.type === S.FX && x.msg.t === 'kiemdan')).toBe(true);
+  });
+  it('Kiếm Đan B ưu tiên quái đã mang dấu ấn', () => {
+    const { sim, p, mon, fresh, wait, setVar } = setup('lac_kiem_quyet', 20);
+    setVar('skl_kiem_dan_ban_menh', 'b');
+    const near = mon(X + 3, Z);
+    const marked = mon(X + 9, Z);
+    marked.mark = { sid: p.sid, until: Date.now() + 60000, mul: 0.2 };
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_kiem_dan_ban_menh' });
+    wait(1100);
+    expect(lost(marked)).toBeGreaterThan(0);
+    expect(lost(near)).toBe(0);
+  });
+  it('Nghịch Kiếm Chuyển Phong lao xuyên 10 m, chém mọi quái sát đường; biến thức A về chỗ cũ', () => {
+    const { sim, p, mon, fresh, setVar, wait } = setup('lac_kiem_quyet', 22);
+    p.s.yaw = Math.PI / 2; // hướng +x
+    const a = mon(X + 3, Z + 1);
+    const b = mon(X + 8, Z - 1);
+    const off = mon(X + 5, Z + 8);
+    fresh(p);
+    const x0 = p.move.x;
+    sim.onSkill(p, { id: 'skl_nghich_kiem_chuyen_phong' });
+    expect(p.move.x).toBeGreaterThan(x0 + 6);
+    expect(lost(a)).toBeGreaterThan(0);
+    expect(lost(b)).toBeGreaterThan(0);
+    expect(lost(off)).toBe(0);
+    setVar('skl_nghich_kiem_chuyen_phong', 'a');
+    p.move.x = x0;
+    p.move.z = Z;
+    wait(2000);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_nghich_kiem_chuyen_phong' });
+    expect(Math.abs(p.move.x - x0)).toBeLessThan(0.01);
+  });
+});
+
+describe('E2-G: Bất Động Kim Thân', () => {
+  it('Thiết Quyền Chấn Địa đánh quanh mình không cần mục tiêu, choáng quái thường', () => {
+    const { sim, p, mon, fresh } = setup('bat_dong_kim_than', 16);
+    const a = mon(X + 3, Z);
+    const out = mon(X + 9, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_thiet_quyen_chan_dia' });
+    expect(lost(a)).toBeGreaterThan(0);
+    expect(a.stunUntil).toBeGreaterThan(sim.now);
+    expect(lost(out)).toBe(0);
+  });
+  it('Thiết Quyền B làm chậm; A bán kính 8 không choáng', () => {
+    const { sim, p, mon, fresh, setVar } = setup('bat_dong_kim_than', 16);
+    setVar('skl_thiet_quyen_chan_dia', 'b');
+    const a = mon(X + 3, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_thiet_quyen_chan_dia' });
+    expect(!!a.slow && a.slow.until > sim.now).toBe(true);
+    const s2 = setup('bat_dong_kim_than', 16);
+    s2.setVar('skl_thiet_quyen_chan_dia', 'a');
+    const c = s2.mon(X + 7.5, Z);
+    s2.fresh(s2.p);
+    s2.sim.onSkill(s2.p, { id: 'skl_thiet_quyen_chan_dia' });
+    expect(lost(c)).toBeGreaterThan(0);
+    expect(c.stunUntil).toBeLessThanOrEqual(s2.sim.now);
+  });
+  it('Kim Chung Trấn giảm sát thương và phản 20% về quái đánh mình', () => {
+    const { sim, p, mon, fresh } = setup('bat_dong_kim_than', 18);
+    const m = mon(X + 2, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_kim_chung_tran' });
+    const before = m.s.hp;
+    sim.damagePlayer(p, 100, m.id);
+    // Sau giảm 30%: 70 sát thương; phản 20% = 14.
+    expect(before - m.s.hp).toBe(14);
+    expect(p.char.mhp - p.char.hp).toBe(70);
+  });
+  it('Kim Chung B che đồng đội trong 8 m', () => {
+    const { sim, p, join, fresh, setVar } = setup('bat_dong_kim_than', 18);
+    setVar('skl_kim_chung_tran', 'b');
+    const ally = join('b');
+    ally.move.x = X + 4;
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_kim_chung_tran' });
+    expect(ally.mth.guardReduce).toBeCloseTo(0.1);
+  });
+  it('Sơn Nhạc Hóa Thân giảm sát thương; biến thức B giậm gây sát thương quanh mình', () => {
+    const { sim, p, mon, fresh, wait, setVar } = setup('bat_dong_kim_than', 20);
+    setVar('skl_son_nhac_hoa_than', 'b');
+    const m = mon(X + 4, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_son_nhac_hoa_than' });
+    expect(p.mth.guardReduce).toBeCloseTo(0.2);
+    wait(4500);
+    expect(lost(m)).toBeGreaterThan(0);
+  });
+  it('Dịch Sơn Xung đẩy mục tiêu ra xa; B kéo sát lại', () => {
+    const { sim, p, mon, fresh } = setup('bat_dong_kim_than', 22);
+    p.s.yaw = Math.PI / 2;
+    const a = mon(X + 6, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_dich_son_xung', t: a.id });
+    expect(Math.hypot(a.s.x - p.move.x, a.s.z - p.move.z)).toBeGreaterThan(5);
+    expect(lost(a)).toBeGreaterThan(0);
+    const s2 = setup('bat_dong_kim_than', 22);
+    s2.setVar('skl_dich_son_xung', 'b');
+    const c = s2.mon(X + 6, Z);
+    s2.fresh(s2.p);
+    s2.sim.onSkill(s2.p, { id: 'skl_dich_son_xung', t: c.id });
+    expect(Math.hypot(c.s.x - s2.p.move.x, c.s.z - s2.p.move.z)).toBeLessThan(4);
+  });
+});
+
+describe('E2-G: Thanh Mộc Đan Kinh', () => {
+  it('Mộc Linh Trận hồi cho người trong 8 m và độc quái trong trận', () => {
+    const { sim, p, mon, fresh, wait } = setup('thanh_moc_dan_kinh', 16);
+    const m = mon(X + 4, Z);
+    p.char.hp = Math.floor(p.char.mhp * 0.3);
+    fresh(p);
+    const hp0 = p.char.hp;
+    sim.onSkill(p, { id: 'skl_moc_linh_tran' });
+    wait(3100);
+    expect(p.char.hp).toBeGreaterThan(hp0);
+    expect(lost(m)).toBeGreaterThan(0);
+  });
+  it('Dược Vũ hồi theo thời gian; A thêm khiên', () => {
+    const { sim, p, fresh, wait, setVar } = setup('thanh_moc_dan_kinh', 18);
+    setVar('skl_duoc_vu', 'a');
+    p.char.hp = Math.floor(p.char.mhp * 0.3);
+    fresh(p);
+    const hp0 = p.char.hp;
+    sim.onSkill(p, { id: 'skl_duoc_vu' });
+    expect(p.shield?.amount ?? 0).toBeGreaterThan(0);
+    wait(4200);
+    expect(p.char.hp).toBeGreaterThan(hp0);
+  });
+  it('Ngưng Đan Hộ Thế khiên cả đội trong 12 m, không với người xa', () => {
+    const { sim, p, join, fresh } = setup('thanh_moc_dan_kinh', 20);
+    const near = join('b');
+    near.move.x = X + 5;
+    const far = join('c');
+    far.move.x = X + 30;
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_ngung_dan_ho_the' });
+    expect(p.shield?.amount ?? 0).toBeGreaterThan(0);
+    expect(near.shield?.amount ?? 0).toBeGreaterThan(0);
+    expect(far.shield).toBeFalsy();
+    expect(near.shield!.amount).toBe(Math.round(near.char.mhp * 0.15));
+  });
+  it('Đan Hỏa Phong Tràn nổ 6 m quanh mục tiêu và thiêu đốt', () => {
+    const { sim, p, mon, fresh, wait } = setup('thanh_moc_dan_kinh', 22);
+    const a = mon(X + 10, Z);
+    const b = mon(X + 14, Z);
+    const out = mon(X + 20, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_dan_hoa_phong_tran', t: a.id });
+    expect(lost(a)).toBeGreaterThan(0);
+    expect(lost(b)).toBeGreaterThan(0);
+    expect(lost(out)).toBe(0);
+    const l0 = lost(a);
+    wait(2100);
+    expect(lost(a)).toBeGreaterThan(l0);
+  });
+  it('quái chết bởi vệt chém thì chuyển sang trạng thái chết', () => {
+    const { sim, p, mon, fresh } = setup('lac_kiem_quyet', 16);
+    const a = mon(X + 5, Z, 1);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_hoanh_kiem_pha_mach', t: a.id });
+    expect(a.state).toBe(MS_DEAD);
+  });
+});

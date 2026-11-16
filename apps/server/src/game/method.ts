@@ -111,6 +111,9 @@ export class MethodRt {
   /** Giảm sát thương tới lúc `guardUntil` (ms), tỉ lệ `guardReduce`. */
   guardUntil = 0;
   guardReduce = 0;
+  /** Kim Chung Trấn (E2-G): phản lại tỉ lệ `reflectMul` sát thương quái đánh vào, tới `reflectUntil` (ms). */
+  reflectUntil = 0;
+  reflectMul = 0;
   /** Gửi lại cho client khi đổi (tối đa ~4 lần/giây). */
   dirty = true;
   sentAt = 0;
@@ -122,7 +125,14 @@ export class MethodRt {
     this.charge = 0;
     this.guardUntil = 0;
     this.guardReduce = 0;
+    this.reflectUntil = 0;
+    this.reflectMul = 0;
     this.dirty = true;
+  }
+
+  setReflect(now: number, mul: number, sec: number): void {
+    this.reflectMul = mul;
+    this.reflectUntil = now + sec * 1000;
   }
 
   setGuard(now: number, reduce: number, sec: number): void {
