@@ -5,9 +5,10 @@
 
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { type MarkInfo, padsOfLevel, type TelePad, terrainOf } from '@dtl/shared';
+import { type MarkInfo, type QuestView, padsOfLevel, type TelePad, terrainOf } from '@dtl/shared';
 import { groundAt } from './levelCtx';
 import { SpiritVis } from './scan';
+import { QuestSpotVis } from './questSpots';
 import { SkyIslands } from './skyIslands';
 import type { SpiritScan, SpiritState } from '../ui/store';
 
@@ -43,6 +44,8 @@ export class MapVis {
   /** Thần thức (E2-E): vòng vận, sóng quét, cột sáng điểm lộ. */
   readonly spirit: SpiritVis;
   private sky: SkyIslands | null = null;
+  /** Mảnh gương nước của nhiệm vụ phụ Vân Hải (E3-H2). */
+  private spots: QuestSpotVis;
   private castRing: THREE.Mesh;
   private pulse: THREE.Mesh;
   private pulseAt = -1;
@@ -74,6 +77,7 @@ export class MapVis {
     this.group.name = 'mapVis';
     if (padLevel) for (const pad of padsOfLevel(padLevel)) this.pads.push(this.buildPad(pad));
     this.spirit = new SpiritVis(this.group);
+    this.spots = new QuestSpotVis(this.group, padLevel);
     // Level đảo nổi (E3-N): cầu xích và đảo giả.
     if (padLevel) {
       const tr = terrainOf(padLevel);
@@ -193,6 +197,7 @@ export class MapVis {
       p.runeB.rotation.z = -t * 0.3;
       if (p.open) p.beam.scale.set(1, 1, 1);
     }
+    this.spots.update(me, now);
     for (const it of this.marks.values()) {
       const ring = it.root.children[1];
       ring.rotation.z = t * 0.8;
@@ -234,6 +239,10 @@ export class MapVis {
     return this.sky?.revealed ?? 0;
   }
 
+  setQuests(q: QuestView): void {
+    this.spots.setQuests(q);
+  }
+
   updateSpirit(me: THREE.Vector3, state: SpiritState, scan: SpiritScan | null, now: number): void {
     this.spirit.update(me, state, scan, now);
     this.sky?.update(scan, now);
@@ -241,6 +250,7 @@ export class MapVis {
 
   dispose(): void {
     this.spirit.dispose();
+    this.spots.dispose();
     this.sky?.dispose();
     this.group.removeFromParent();
     for (const g of Object.values(this.geo)) g.dispose();
