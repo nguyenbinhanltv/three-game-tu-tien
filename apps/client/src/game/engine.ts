@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX } from '@dtl/shared';
+import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX } from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
@@ -37,6 +37,7 @@ import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
+import { gatesToDraw } from './gates';
 import { PropLayer } from './props';
 import { allProps } from './propScatter';
 import { type AssetHandle, assets } from './assets';
@@ -281,8 +282,8 @@ export class Game {
   private mapVis: MapVis | null = null;
   private stage: HTMLElement;
   private canvas!: HTMLCanvasElement;
-  private portalDisc: THREE.Mesh | null = null;
-  private exitDisc: THREE.Mesh | null = null;
+  /** Đĩa sáng của cổng vào/ra phó bản (E2-C: theo dữ liệu level, xem `gates.ts`). */
+  private gateDiscs: THREE.Mesh[] = [];
   private sectMesh: THREE.Mesh | null = null;
   private sectAsset: { handle: AssetHandle; mats: THREE.Material[] } | null = null;
   /** Material kiến trúc tông môn: riêng với MODEL_MAT để làm mờ vật che mà không ảnh hưởng nhân vật. */
@@ -849,10 +850,9 @@ export class Game {
       this.scene.add(this.sectMesh);
     }
     if (F.portals) {
-      this.portalDisc = buildPortalDisc(PORTAL_POS.x, PORTAL_POS.z, 0x8fdcff);
-      this.exitDisc = buildPortalDisc(DUNGEON_EXIT.x, DUNGEON_EXIT.z, 0xffd27a);
-      this.scene.add(this.portalDisc, this.exitDisc);
-      for (const disc of [this.portalDisc, this.exitDisc]) markBloom(disc.material as THREE.Material, 0.8);
+      this.gateDiscs = gatesToDraw(id).map((g) => buildPortalDisc(g.x, g.z, g.color));
+      this.scene.add(...this.gateDiscs);
+      for (const disc of this.gateDiscs) markBloom(disc.material as THREE.Material, 0.8);
     }
     const mood = this.moodOf(id);
     this.levelMood = mood;
@@ -919,13 +919,12 @@ export class Game {
       for (const m of this.sectAsset.mats) m.dispose();
       this.sectAsset = null;
     }
-    for (const d of [this.portalDisc, this.exitDisc]) {
-      if (!d) continue;
+    for (const d of this.gateDiscs) {
       drop(d);
       d.geometry.dispose();
       (d.material as THREE.Material).dispose();
     }
-    this.portalDisc = this.exitDisc = null;
+    this.gateDiscs = [];
     for (const o of this.levelObjs) {
       drop(o);
       const m = o as THREE.Mesh;
@@ -2348,8 +2347,7 @@ export class Game {
       this.mapVis.setMarks(st.marks);
       this.mapVis.update(rp, st.tele.cast, performance.now(), TELE_CAST_MS);
     }
-    for (const disc of [this.portalDisc, this.exitDisc]) {
-      if (!disc) continue;
+    for (const disc of this.gateDiscs) {
       disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
       (disc.material as THREE.MeshBasicMaterial).opacity = 0.55 + Math.sin(now * 0.003) * 0.2;
     }
@@ -2618,7 +2616,7 @@ export class Game {
       if (near) {
         if (near.kind === 'npc') hint = t('ui.hint.talk', { name: t(`npc.${near.id}.name`) });
         else if (near.kind === 'node') hint = t('ui.hint.gather', { name: t(`item.${this.view.nodes.get(near.id)?.t}.name`) });
-        else hint = t(near.id === 'exit' ? 'ui.hint.exit' : 'ui.hint.portal');
+        else hint = t(near.id === 'exit' ? 'ui.hint.exit' : 'ui.hint.portal', { name: t(`dungeon.${near.id === 'exit' ? levelId() : (near.to ?? 'kiem_trung')}.name`) });
       }
     }
     const st = get();

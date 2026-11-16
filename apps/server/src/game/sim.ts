@@ -45,6 +45,7 @@ import {
   computeDamage,
   DEATH_XP_LOSS,
   type DmgMsg,
+  type DungeonReward,
   EQUIP_SLOTS,
   glowStage,
   lookSet,
@@ -307,7 +308,7 @@ export interface MonEnt {
   cast: { endAt: number } | null;
   castReadyAt: number;
   /** Boss đang niệm chú (ngắt được sau đoạn hộ chú); `chantAt`: lúc được niệm lần tới (0 = chưa hẹn). */
-  chant: { startAt: number; endAt: number } | null;
+  chant: { startAt: number; endAt: number; lastAt?: number } | null;
   chantAt: number;
   /** Bị ngắt chú hoặc mất thế: choáng tới lúc này, nhận thêm sát thương. */
   stunUntil: number;
@@ -2001,6 +2002,13 @@ export class GameSim {
     if (m.chant) {
       m.s.yaw = Math.atan2(target.move.x - m.s.x, target.move.z - m.s.z);
       this.setMonState(m, MS_ATTACK);
+      // Thôn Mạch (E2-C): trong lúc niệm hút mạch hồi máu; phá chú (ngắt/choáng) thì `m.chant` về null nên ngừng.
+      if (c.drain) {
+        const last = m.chant.lastAt ?? m.chant.startAt;
+        const upto = Math.min(this.now, m.chant.endAt);
+        if (upto > last) m.s.hp = Math.min(m.s.mhp, m.s.hp + Math.round((m.s.mhp * c.drain * (upto - last)) / 1000));
+        m.chant.lastAt = upto;
+      }
       if (this.now >= m.chant.endAt) this.releaseChant(m, c);
       return true;
     }
@@ -2210,6 +2218,45 @@ export class GameSim {
       if (g.q >= 4) this.sysAll('sys.loot_heaven', { name: p.char.name, item: itemName(g.id) }, 'good');
     }
     if (full) this.warn(p, 'sys.inv_full');
+  }
+
+  /**
+   * Thưởng hoàn thành phó bản (E2-C): một transaction (vàng, nguyên liệu, trang bị đã roll) với khóa idem `key`
+   * (chứa id nhân vật và ngày) và ghi ledger; khóa đã dùng thì giao dịch bị từ chối và không phát gì (kể cả tu vi).
+   * Tu vi `xpPct` của chặng hiện tại chỉ cộng sau khi giao dịch lưu thành công. Trả true nếu đã phát.
+   */
+  grantDungeonReward(p: PlayerEnt, r: DungeonReward, key: string, label: string): boolean {
+    if (p.noLoot || this.isDead(p)) return false;
+    const gold = r.gold[0] + Math.floor(Math.random() * (r.gold[1] - r.gold[0] + 1));
+    const gear = rollEquipDrops(r.equip as unknown as Parameters<typeof rollEquipDrops>[0], ITEM_SYS, ITEMS, r.level, Math.random);
+    const got: { id: string; n: number }[] = [];
+    for (const d of r.items) {
+      if (Math.random() < d.chance) got.push({ id: d.item, n: d.min + Math.floor(Math.random() * (d.max - d.min + 1)) });
+    }
+    const kept: { id: string; n: number }[] = [];
+    const keptGear: { id: string; q: Quality; ilvl: number }[] = [];
+    let full = false;
+    const saved = p.char.tx('dungeon:' + label, key, (d) => {
+      d.addGold(gold);
+      for (const g of gear) {
+        if (d.freeSlots() > 0 && d.addRolled(g.id, g.ilvl, g.q)) keptGear.push(g);
+        else full = true;
+      }
+      for (const g of got) {
+        if (d.roomFor(g.id) >= g.n && d.add(g.id, g.n)) kept.push(g);
+        else full = true;
+      }
+      return true;
+    });
+    if (!saved) return false;
+    const xp = Math.max(1, Math.round(xpNeed(p.char.level) * r.xpPct));
+    this.giveXp(p, xp, false);
+    this.sys(p, 'sys.dungeon_reward', { name: t('dungeon.' + label + '.name'), xp }, 'good');
+    if (gold > 0) this.sys(p, 'sys.gold', { n: gold }, 'loot');
+    for (const g of kept) this.sys(p, 'sys.loot', { item: itemName(g.id), n: g.n }, 'loot', { i: g.id });
+    for (const g of keptGear) this.sys(p, 'sys.loot_gear', { item: itemName(g.id), quality: t('ui.quality.' + g.q) }, 'loot', { i: g.id, q: g.q });
+    if (full) this.warn(p, 'sys.inv_full');
+    return true;
   }
 
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false): void {

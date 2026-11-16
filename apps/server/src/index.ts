@@ -101,7 +101,7 @@ installHttpRateLimit(httpServer, rl, (req) => ({
 // Vào level ngoài Vân Lam và bí cảnh cần vé một lần (xem transfer.ts); client không tự tạo room được (exposedMethods ở trên).
 for (const lv of Object.values(LEVELS)) {
   if (lv.tribulation) continue;
-  if (lv.dungeon) gameServer.define(dungeonRoomName(lv.id), defineDungeon(lv.id));
+  if (lv.dungeon) gameServer.define(dungeonRoomName(lv.id), defineDungeon(lv.id)).filterBy(['dgKey']);
   else gameServer.define(worldRoomName(lv.id), defineWorld(lv.id));
 }
 

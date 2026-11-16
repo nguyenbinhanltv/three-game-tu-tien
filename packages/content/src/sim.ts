@@ -759,3 +759,64 @@ for (const [id, lv, n] of [
   );
 }
 console.log('chú/đập/cận chiến/chém: phần trăm máu một người cùng cấp mất mỗi đòn (trang bị theo nhiệm vụ). Mất thế: số lần ước tính mỗi trận.');
+
+// ---------- phó bản (E2-C) ----------
+
+/**
+ * Thời gian dẹp một phó bản theo dữ liệu `levels/<id>.json`: nhóm 4 người (kiếm tu ×2, hộ pháp, đan sư) cùng cấp quái thấp nhất của phó bản.
+ * Mỗi đợt: tổng máu / sát thương nhóm × hiệu suất (đứng vị trí, né vạch, đổi mục tiêu) + nghỉ trước đợt + gom đồ/hồi sức.
+ * Boss: thời gian không đánh được (chui đất) và máu hút lại khi chú không bị phá được trừ vào sát thương. Cộng đường đi vào, rồi nhân hệ số
+ * "lỡ tay lần đầu" (hồi sinh, học cơ chế). Mục tiêu thiết kế mục 5.1: khoảng 20 phút.
+ */
+const DG_EFF_TRASH = 0.7;
+const DG_EFF_BOSS = 0.6;
+const DG_REGROUP = 45;
+const DG_ENTRY = 60;
+const DG_FIRST_TRY = 1.8;
+const DG_INTERRUPT_RATE = 0.7;
+console.log('\nPhó bản (nhóm 4 × cấp thấp nhất)   đợt   sạch thuần   kể cả lỡ tay lần đầu   (mục tiêu ~20 phút, thiết kế 5.1)');
+for (const lv of Object.values(LEVELS)) {
+  const d = lv.dungeon;
+  if (!d || lv.tribulation || !d.waves.length) continue;
+  const L = Math.min(...d.waves.flatMap((w) => w.mons.map((m) => m.level)));
+  const pl = player(L);
+  const rows: string[] = [];
+  let total = DG_ENTRY;
+  d.waves.forEach((w, i) => {
+    let hp = 0;
+    let boss: MonsterDef | undefined;
+    let ref = 0;
+    for (const g of w.mons) {
+      const def = MONSTER.get(g.id)!;
+      const ms = monsterStats(g.level, def.hpMul, def.atkMul);
+      hp += ms.hp * g.n;
+      if (def.boss) {
+        boss = def;
+        ref = ms.def;
+      }
+    }
+    const refDef = ref || monsterStats(w.mons[0].level, MONSTER.get(w.mons[0].id)!.hpMul, MONSTER.get(w.mons[0].id)!.atkMul).def;
+    const grp = [...Array(2).fill('lac_kiem_quyet'), 'bat_dong_kim_than', 'thanh_moc_dan_kinh'].reduce((s: number, id) => s + playerDps(L, pl.atk, refDef, id as MethodId, w.mons[0] ? MONSTER.get(w.mons[0].id)?.elem : undefined), 0);
+    let dps = grp * (boss ? DG_EFF_BOSS : DG_EFF_TRASH);
+    if (boss) {
+      const bu = boss.ai?.burrow ?? boss.phases?.map((_, k) => phaseRules(boss!, k + 1).ai.burrow).find(Boolean);
+      if (bu) dps *= 1 - bu.hide / bu.cd;
+      const ch = boss.ai?.chant;
+      if (ch?.drain) {
+        // Chú không bị phá hồi `drain × cast` máu tối đa mỗi chu kỳ; bị phá thì boss choáng (nhận thêm sát thương).
+        const ms = monsterStats(w.mons[0].level, boss.hpMul, boss.atkMul);
+        const healPerSec = ((1 - DG_INTERRUPT_RATE) * ch.drain * ch.cast * ms.hp) / ch.cd;
+        dps = dps * (1 + (INTERRUPT_VULN_MUL - 1) * DG_INTERRUPT_RATE * (ch.stun / ch.cd)) - healPerSec;
+      }
+    }
+    const t = hp / Math.max(1, dps) + (w.delay ?? (i === 0 ? 8 : 6)) + DG_REGROUP;
+    total += t;
+    rows.push(`${i + 1}:${t.toFixed(0)}s`);
+  });
+  const first = (total * DG_FIRST_TRY) / 60;
+  if (lv.id === 'phuc_mach' && (first < 15 || first > 25)) {
+    console.error(`LỖI: Phục Mạch Quật ra ${first.toFixed(1)} phút, ngoài khoảng 15–25 phút quanh mục tiêu ~20 phút`);
+    process.exitCode = 1;
+  }
+  console.log(`${(lv.id + ' (4×' + L + ')').padEnd(32)} ${String(d.waves.length).padStart(3)} ${(total / 60).toFixed(1).padStart(8)} phút ${((total * DG_FIRST_TRY) / 60).toFixed(1).padStart(14)} phút   [${rows.join(' ')}]`);
+}
