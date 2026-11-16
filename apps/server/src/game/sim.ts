@@ -1193,9 +1193,11 @@ export class GameSim {
     const dashDist = Math.min(DASH_MAX_DIST, def.dist * (rsv?.lenMul ?? 1));
     const stop = tgt && def.dir === 'target' ? { x: tgt.s.x, z: tgt.s.z, r: (def.stop ?? 1.6) + tgt.def.scale } : undefined;
     // Đã sát mục tiêu: không cần lướt; chiêu có sát thương (Thiết Bích Xung) vẫn húc, chiêu thuần di chuyển thì bỏ.
+    // Dịch Sơn Xung B (kéo): không lướt, kéo mục tiêu (và quái quanh nó) từ xa về sát người.
+    const pullOnly = !!(def.push && rsv?.pull && tgt);
     const close = !!stop && Math.hypot(stop.x - p.move.x, stop.z - p.move.z) <= stop.r + 1;
-    const plan = close ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true } : planDash(p.move, dir, dashDist, stop);
-    if (plan.dist < 1 && !(close && skill.power > 0)) return this.warn(p, close ? 'sys.dash_close' : 'sys.dash_blocked');
+    const plan = close || pullOnly ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true } : planDash(p.move, dir, dashDist, stop);
+    if (plan.dist < 1 && !(close && skill.power > 0) && !pullOnly) return this.warn(p, close ? 'sys.dash_close' : 'sys.dash_blocked');
     const rs = resolveFor(c.meta, skill);
     if (p.meditating) this.setMeditating(p, false);
     if (p.casting) this.cancelCast(p);
@@ -1217,7 +1219,7 @@ export class GameSim {
     if (def.pierce && skill.power > 0) {
       const em = elemDamageMul(c.stats.elemDmg, skill.elem);
       for (const o of this.monsters) {
-        if (o.state === MS_DEAD || o.owner) continue;
+        if (o.state === MS_DEAD || (o.owner && o.owner !== p.sid)) continue;
         if (distToSegment(from.x, from.z, plan.x, plan.z, o.s.x, o.s.z) <= def.pierce.r + o.def.scale) this.hitMonster(p, o, rs.power, em, skill.elem);
       }
       if (rs.variant?.returnBack) {
@@ -1227,7 +1229,7 @@ export class GameSim {
       }
     }
     // Lướt có sát thương (Thiết Bích Xung): húc mục tiêu nếu đã sát người.
-    if (skill.power > 0 && tgt && this.inRange(p, tgt, 3)) {
+    if (skill.power > 0 && tgt && (pullOnly || this.inRange(p, tgt, 3))) {
       let mul = 1;
       if (isEmpowered(p.flow, skill, this.now)) {
         mul = skill.empower!.powerMul;
@@ -1238,7 +1240,11 @@ export class GameSim {
       const stunSec = rs.variant?.stun ?? skill.stun;
       if (stunSec && tgt.state !== MS_DEAD) this.stunMonster(p, tgt, stunSec);
       // Dịch Sơn Xung: đẩy (hoặc kéo) mục tiêu.
-      if (def.push && tgt.state !== MS_DEAD) this.pushMonster(tgt, p.move.x, p.move.z, rs.variant?.pull ? -def.push : def.push);
+      if (def.push && pullOnly) {
+        // Kéo cả cụm quanh mục tiêu (4 m) về phía người ra chiêu, mục tiêu chính sát nhất.
+        const near = this.monstersNear(tgt.s.x, tgt.s.z, 4, tgt);
+        for (const o of [tgt, ...near]) if (o.state !== MS_DEAD) this.pushMonster(o, p.move.x, p.move.z, -def.push);
+      } else if (def.push && tgt.state !== MS_DEAD) this.pushMonster(tgt, p.move.x, p.move.z, def.push);
     }
     p.flow.opened.set(skill.id, this.now);
     this.sendCd(p);
@@ -1720,7 +1726,7 @@ export class GameSim {
         const stun = v?.noStun ? 0 : (v?.stun ?? skill.stun ?? 0);
         const burn = skill.burn ? { per: Math.max(1, Math.round(c.atk * skill.burn.mul)), dur: skill.burn.dur * (v?.burnMul ?? 1) } : null;
         for (const o of this.monsters) {
-          if (o.state === MS_DEAD || o.owner) continue;
+          if (o.state === MS_DEAD || (o.owner && o.owner !== p.sid)) continue;
           const dx = o.s.x - cx;
           const dz = o.s.z - cz;
           if (dx * dx + dz * dz > r * r) continue;
@@ -1744,7 +1750,7 @@ export class GameSim {
         const uz = dz / dl;
         this.fx({ t: skill.fx, src: p.sid, dst: mon.id, x: p.move.x + ux * len, y: mon.s.y, z: p.move.z + uz * len, r: len, d: def.width, sd: visualSeed(), ...tag });
         // Chốt danh sách mục tiêu lúc áp (mốc `hitAt`); các đợt sau đánh đúng những con đó nếu còn sống.
-        const hit = this.monsters.filter((o) => o.state !== MS_DEAD && !o.owner && inLine(p.move.x, p.move.z, ux, uz, len, def.width, o.s.x, o.s.z, o.def.scale));
+        const hit = this.monsters.filter((o) => o.state !== MS_DEAD && !(o.owner && o.owner !== p.sid) && inLine(p.move.x, p.move.z, ux, uz, len, def.width, o.s.x, o.s.z, o.def.scale));
         const offs = hitOffsets(skill, rs.hits.length);
         rs.hits.forEach((h, i) => {
           const run = () => {

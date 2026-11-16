@@ -278,10 +278,18 @@ describe('E2-G: Bất Động Kim Thân', () => {
     expect(lost(a)).toBeGreaterThan(0);
     const s2 = setup('bat_dong_kim_than', 22);
     s2.setVar('skl_dich_son_xung', 'b');
-    const c = s2.mon(X + 6, Z);
+    // B: không lướt; kéo mục tiêu ở xa (và quái cạnh nó) về sát người.
+    const c = s2.mon(X + 14, Z);
+    const side = s2.mon(X + 14, Z + 2.5);
+    const far = s2.mon(X + 14, Z + 12);
     s2.fresh(s2.p);
+    const px = s2.p.move.x;
     s2.sim.onSkill(s2.p, { id: 'skl_dich_son_xung', t: c.id });
-    expect(Math.hypot(c.s.x - s2.p.move.x, c.s.z - s2.p.move.z)).toBeLessThan(4);
+    expect(s2.p.move.x).toBe(px);
+    expect(Math.hypot(c.s.x - px, c.s.z - Z)).toBeLessThan(9);
+    expect(side.s.x).toBeLessThan(X + 14);
+    expect(far.s.x).toBe(X + 14);
+    expect(lost(c)).toBeGreaterThan(0);
   });
 });
 
@@ -341,5 +349,50 @@ describe('E2-G: Thanh Mộc Đan Kinh', () => {
     fresh(p);
     sim.onSkill(p, { id: 'skl_hoanh_kiem_pha_mach', t: a.id });
     expect(a.state).toBe(MS_DEAD);
+  });
+});
+
+describe('E2-G: Tâm Ma (quái có chủ) — chiêu vùng chỉ chạm bóng của chính mình', () => {
+  /** Bóng tâm ma của `owner` đặt tại (x, z). */
+  const shadow = (m: { s: { hp: number; mhp: number }; owner: string }, owner: string) => {
+    m.owner = owner;
+    m.s.hp = m.s.mhp = 1_000_000;
+  };
+  it('aoe quanh mình (Thiết Quyền) đánh bóng của mình, bỏ qua bóng của người khác', () => {
+    const { sim, p, join, mon, fresh } = setup('bat_dong_kim_than', 16);
+    const other = join('b');
+    const mine = mon(X + 3, Z);
+    const theirs = mon(X - 3, Z);
+    shadow(mine, p.sid);
+    shadow(theirs, other.sid);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_thiet_quyen_chan_dia' });
+    expect(lost(mine)).toBeGreaterThan(0);
+    expect(lost(theirs)).toBe(0);
+  });
+  it('vệt chém (Hoành Kiếm) trúng bóng của mình khi nhắm vào nó, bỏ qua bóng của người khác trong vệt', () => {
+    const { sim, p, join, mon, fresh } = setup('lac_kiem_quyet', 16);
+    const other = join('b');
+    const mine = mon(X + 5, Z);
+    const theirs = mon(X + 9, Z);
+    shadow(mine, p.sid);
+    shadow(theirs, other.sid);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_hoanh_kiem_pha_mach', t: mine.id });
+    expect(lost(mine)).toBeGreaterThan(0);
+    expect(lost(theirs)).toBe(0);
+  });
+  it('lướt xuyên (Nghịch Kiếm) chém bóng của mình, bỏ qua bóng của người khác', () => {
+    const { sim, p, join, mon, fresh } = setup('lac_kiem_quyet', 22);
+    p.s.yaw = Math.PI / 2;
+    const other = join('b');
+    const mine = mon(X + 3, Z);
+    const theirs = mon(X + 6, Z);
+    shadow(mine, p.sid);
+    shadow(theirs, other.sid);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_nghich_kiem_chuyen_phong' });
+    expect(lost(mine)).toBeGreaterThan(0);
+    expect(lost(theirs)).toBe(0);
   });
 });
