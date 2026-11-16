@@ -9,7 +9,7 @@ import { swordOverride } from './testParams';
 import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
 import { bodyRadiusOf, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
-import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
+import { hashName as hashStr, legacyAppearance, type EscortMsg, type QuestView } from '@dtl/shared';
 import { LABELS, type Label } from './labelBatch';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
 import { type AnimState, type CharacterView, type MonsterView, P2E_OFF, type SkillEvent } from './character/view';
@@ -298,6 +298,9 @@ interface NpcVis {
   x: number;
   y: number;
   z: number;
+  /** Người đồng hành hộ tống (E2-H): đích từ server, vẽ trượt tới đó. */
+  tx?: number;
+  tz?: number;
 }
 
 function makeMarker(ch: string, color: string): THREE.Texture {
@@ -388,6 +391,8 @@ export class EntityManager {
   monsters = new Map<string, MonVis>();
   nodes = new Map<string, THREE.Group>();
   npcs: NpcVis[] = [];
+  /** Người đồng hành của nhiệm vụ hộ tống (E2-H), theo id `escorts` của level. Không phải NPC tương tác. */
+  escorts = new Map<string, NpcVis>();
   ring: THREE.Mesh;
   private bars = new HeadBars();
   /** Bật khi có cắt cảnh: thanh máu và nhãn tên trên đầu ẩn đi. */
@@ -431,12 +436,12 @@ export class EntityManager {
     };
     // Boss model xương của màn này (bí cảnh, Hàn Giao ở thế giới): nạp ngay khi vào room; boss màn khác không nạp.
     this.skins.preloadLazy(levelId);
+    // `hasNpcs` chỉ còn nghĩa "đây là thế giới Vân Lam" (cổng bí cảnh Kiếm Trủng); NPC dựng ở mọi level theo `NpcDef.level` (E2-H).
     this.hasNpcs = levelId === 'van_lam';
-    if (this.hasNpcs) {
+    const here = NPCS.filter((n) => (n.level ?? 'van_lam') === levelId);
+    if (here.length) {
       this.npcSkins.preload();
-      for (const n of NPCS) {
-        // NPC của level khác (Hứa lão ở Đoạn Mạch) chưa dựng ở Vân Lam; E2-H bật `hasNpcs` cho level đó.
-        if ((n.level ?? 'van_lam') !== levelId) continue;
+      for (const n of here) {
         const label = makeLabel(t(`npc.${n.id}.name`), '#ffe9a8', t(`npc.${n.id}.title`), '#e8d6a0');
         const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
         marker.scale.set(0.9, 0.9, 1);
@@ -468,6 +473,38 @@ export class EntityManager {
     this.group.add(this.ring);
     this.group.add(this.bars.mesh);
     this.group.add(LABELS.mesh);
+  }
+
+  /** Tin `S.ESCORT`: dựng/dời người đồng hành, hoặc gỡ khi `st` = 0. Server là nguồn vị trí; client chỉ nội suy. */
+  setEscort(m: EscortMsg): void {
+    let e = this.escorts.get(m.id);
+    if (m.st === 0) {
+      if (e) this.removeEscort(m.id);
+      return;
+    }
+    if (!e) {
+      const label = makeLabel(t(`npc.${m.npc}.name`), '#ffe9a8', t(`npc.${m.npc}.title`), '#e8d6a0');
+      const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
+      marker.visible = false;
+      e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcSkins.create(m.npc, '#b89a6a'), skinPending: false, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
+      this.npcSkins.addWalk(e.model, m.npc);
+      this.placeNpc(e);
+      this.escorts.set(m.id, e);
+    }
+    e.tx = m.x;
+    e.tz = m.z;
+    e.yaw = m.yaw;
+  }
+
+  private removeEscort(id: string): void {
+    const e = this.escorts.get(id);
+    if (!e) return;
+    e.model.root.remove(e.label, e.marker);
+    e.model.root.removeFromParent();
+    disposeLabel(e.label);
+    e.marker.material.dispose();
+    e.model.dispose();
+    this.escorts.delete(id);
   }
 
   /** Gắn model NPC vào cảnh: vị trí, hướng theo dữ liệu, nhãn và dấu nhiệm vụ theo chiều cao model. */
@@ -742,9 +779,34 @@ export class EntityManager {
           this.placeNpc(n);
         } else next.dispose();
       }
+      // Độ cao theo địa hình của level đang hiển thị: NPC dựng khi vào room, lúc đó địa hình level mới có thể chưa nạp xong (Đoạn Mạch).
+      const gy = groundAt(n.x, n.z);
+      if (gy !== n.y) {
+        n.y = gy;
+        n.model.root.position.y = gy;
+      }
       // LOD/bóng/nhịp mixer của NPC có xương do applyLodBudget quyết định (theo camera, chung suất LOD0).
       n.model.update(dt, { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false });
       if (n.marker.visible) n.marker.position.y = n.markerY + Math.sin(this.time * 3) * 0.12;
+    }
+
+    // ----- người đồng hành hộ tống: trượt tới điểm server báo, bước đi theo quãng đã trượt -----
+    for (const e of this.escorts.values()) {
+      const dx = (e.tx ?? e.x) - e.x;
+      const dz = (e.tz ?? e.z) - e.z;
+      const d = Math.hypot(dx, dz);
+      const step = d > 20 ? d : Math.min(d, Math.max(d * Math.min(1, dt * 6), 0));
+      if (d > 1e-4) {
+        e.x += (dx / d) * step;
+        e.z += (dz / d) * step;
+      }
+      e.y = groundAt(e.x, e.z);
+      e.model.root.position.set(e.x, e.y, e.z);
+      let dy = e.yaw - e.model.root.rotation.y;
+      dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      e.model.root.rotation.y += dy * Math.min(1, dt * 8);
+      e.model.update(dt, { speed: step > 1e-3 ? 1.4 : 0, flying: false, meditating: false, dead: false, casting: false, airborne: false });
+      e.label.visible = !this.tagsHidden;
     }
 
     bars.end();
@@ -1078,6 +1140,7 @@ export class EntityManager {
       n.marker.material.dispose();
       n.model.dispose();
     }
+    for (const id of [...this.escorts.keys()]) this.removeEscort(id);
     this.npcSkins.dispose();
     this.markerNew.dispose();
     this.markerDone.dispose();

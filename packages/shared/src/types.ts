@@ -466,9 +466,11 @@ export interface SkillDef {
 }
 
 /**
+ * E2-H: `touch` (đứng trong `TOUCH_R` của điểm đáng chú ý `target` = id `pois` của level), `scan` (quét bằng thần thức E2-E, phím V: điểm `target`
+ * nằm trong bán kính quét; cần Kết Đan), `escort` (đưa người đồng hành `target` = id `escorts` của level tới nơi). Cả ba do server quyết định.
  * `enhance` (M-5): món trang bị đạt +count (lấy mức cao nhất, như `level`); `dungeon`: vào Kiếm Trủng; `duel`: hoàn tất một trận tỉ thí.
  */
-export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough' | 'enhance' | 'dungeon' | 'duel' | 'meditate';
+export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough' | 'enhance' | 'dungeon' | 'duel' | 'meditate' | 'scan' | 'escort' | 'touch';
 
 export interface ObjectiveDef {
   type: ObjectiveType;
@@ -485,6 +487,8 @@ export interface QuestDef {
   minLevel?: number;
   objectives: ObjectiveDef[];
   rewards: { xp: number; gold: number; items?: { id: string; n: number }[] };
+  /** Id Truyền Tống Trận mở khóa ngay khi nhận nhiệm vụ (E2-H: `dm_tp_tram` ở nhiệm vụ đầu chương 2). */
+  unlockTele?: string[];
 }
 
 export interface RecipeDef {
@@ -578,6 +582,10 @@ export interface LevelDef {
   camps?: CampDef[];
   /** Điểm đáng chú ý (M-5): bày prop sẵn có + cột linh quang nhìn từ xa. Tên ở i18n `poi.<id>.name`. */
   pois?: PoiDef[];
+  /** Điểm chạm/quét phụ cho nhiệm vụ `touch`/`scan` (E2-H): khác `pois` ở chỗ không bị luật "mỗi vùng một điểm" và không dựng cột. */
+  spots?: SpotDef[];
+  /** Người đồng hành cho nhiệm vụ `escort` (E2-H). */
+  escorts?: EscortDef[];
   /** Điểm xuất hiện và hồi sinh của room thế giới (E1-B); thiếu thì dùng `SPAWN_POINT` (chỉ Vân Lam). */
   spawn?: { x: number; z: number };
   /** Cổng vào bí cảnh đặt trong level này (E1-B). */
@@ -645,6 +653,23 @@ export interface LevelAssets {
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */
   grassCards?: string;
+}
+
+/** Điểm phụ của nhiệm vụ (E2-H). Tên ở i18n `spot.<id>.name`. */
+export interface SpotDef {
+  id: string;
+  zone: string;
+  x: number;
+  z: number;
+}
+
+/** Người đồng hành của nhiệm vụ hộ tống: đi dọc `path` (x, z) với tốc độ `speed` m/s khi người nhận ở gần. */
+export interface EscortDef {
+  id: string;
+  /** Id NPC mượn model và tên (`npc.<npc>.name`); đứng ở đầu đường, không phải NPC thật. */
+  npc: string;
+  path: [number, number][];
+  speed: number;
 }
 
 /** Điểm đáng chú ý trong một vùng săn (M-5). */

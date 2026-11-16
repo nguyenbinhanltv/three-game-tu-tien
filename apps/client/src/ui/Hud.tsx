@@ -3,8 +3,8 @@ import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { ARTIFACT_MAX_LEVEL, artifactLevelMods, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
+import { ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { artifactLines } from './gear';
@@ -227,6 +227,23 @@ function TargetCastBar({ cast }: { cast: TargetCast }) {
   );
 }
 
+/** Tên điểm của mục tiêu `touch`/`scan`: tìm ở mọi level (id điểm là duy nhất toàn game). */
+function spotName(id: string | undefined): string {
+  for (const lv of Object.values(LEVELS)) {
+    const sp = questSpot(lv, id);
+    if (sp) return t(sp.nameKey);
+  }
+  return id ?? '';
+}
+
+function escortName(id: string | undefined): string {
+  for (const lv of Object.values(LEVELS)) {
+    const e = lv.escorts?.find((x) => x.id === id);
+    if (e) return t(`npc.${e.npc}.name`);
+  }
+  return id ?? '';
+}
+
 export function objectiveText(o: ObjectiveDef): string {
   switch (o.type) {
     case 'kill':
@@ -244,11 +261,18 @@ export function objectiveText(o: ObjectiveDef): string {
     case 'enhance':
       return t('ui.obj.enhance', { n: o.count });
     case 'dungeon':
-      return t('ui.obj.dungeon');
+      // Có `target` (Phục Mạch Quật…) thì nêu tên bí cảnh đó; không có thì là Kiếm Trủng như cũ.
+      return o.target ? t('ui.obj.dungeon_named', { name: t(`dungeon.${o.target}.name`) }) : t('ui.obj.dungeon');
     case 'duel':
       return t('ui.obj.duel');
     case 'meditate':
       return t('ui.obj.meditate');
+    case 'touch':
+      return t('ui.obj.touch', { name: spotName(o.target) });
+    case 'scan':
+      return t('ui.obj.scan', { name: spotName(o.target) });
+    case 'escort':
+      return t('ui.obj.escort', { name: escortName(o.target) });
     default:
       return t('ui.obj.breakthrough');
   }
@@ -282,7 +306,7 @@ function QuestTracker() {
               const ok = cur >= o.count;
               // Nhiệm vụ không theo dõi chỉ hiện mục tiêu chưa xong đầu tiên cho gọn.
               if (id !== tracked && (ok || q.objectives.findIndex((x, j) => (prog[j] ?? 0) < x.count) !== i)) return null;
-              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' || o.type === 'enhance' || o.type === 'dungeon' || o.type === 'duel' ? '' : ` ${cur}/${o.count}`;
+              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' || o.type === 'enhance' || o.type === 'dungeon' || o.type === 'duel' || o.type === 'touch' || o.type === 'scan' || o.type === 'escort' ? '' : ` ${cur}/${o.count}`;
               return (
                 <div key={i} className={'tracker-obj' + (ok ? ' ok' : '')}>
                   {ok ? '✔ ' : '· '}
