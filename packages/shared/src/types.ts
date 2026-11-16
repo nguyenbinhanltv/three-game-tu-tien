@@ -339,7 +339,7 @@ export interface MonsterPosture {
  * damage/aoe/heal/shield: 6 chiêu chung. Chiêu công pháp (Phase 3-5) thêm: `taunt` (khiêu khích quanh mình),
  * `guard` (giảm sát thương nhận), `hot` (hồi vùng theo thời gian), `revive` (hồi sinh đồng đội gần).
  */
-export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive' | 'dash';
+export type SkillKind = 'damage' | 'aoe' | 'heal' | 'shield' | 'taunt' | 'guard' | 'hot' | 'revive' | 'dash' | 'line' | 'summon' | 'buff';
 
 /** Kiểu thi triển (K-2). `channel`/`charge` đã khai báo nhưng server chưa hỗ trợ (check chặn). */
 export type CastType = 'instant' | 'cast' | 'channel' | 'charge';
@@ -350,6 +350,10 @@ export interface DashDef {
   dir: 'target' | 'forward' | 'back';
   /** Dừng cách tâm mục tiêu chừng này mét (chỉ dir 'target'). */
   stop?: number;
+  /** Lướt xuyên: trúng mọi quái trong `r` mét hai bên đường lướt (hệ số `power` mỗi con). */
+  pierce?: { r: number };
+  /** Lướt rồi đẩy mục tiêu (dương) ra xa hoặc kéo (âm) vào, tính bằng mét. */
+  push?: number;
 }
 
 /** Một đòn của chuỗi đánh thường: hệ số, lúc áp (giây từ lúc bấm), đòn đẩy lùi (chỉ hiển thị). */
@@ -440,6 +444,27 @@ export interface SkillDef {
   stun?: number;
   /** Hồi Xuân Quyết: gieo độc lên quái trong bán kính `r`, mỗi giây `mul` × công kích, kéo dài `dur` giây. */
   poison?: { r: number; mul: number; dur: number };
+  /**
+   * E2-G: chiêu bậc 2–3 chưa chơi được (cơ chế server chưa làm hoặc chờ Nguyên Anh/Hóa Thần): có dữ liệu để duyệt
+   * nhưng server từ chối ra chiêu và client không xếp lên thanh chiêu bậc cao.
+   */
+  locked?: boolean;
+  /** `line`: vệt chém thẳng từ người ra chiêu về phía mục tiêu, dài `len` rộng `width` (mét), trúng mọi quái trong vệt. */
+  line?: { len: number; width: number };
+  /** `aoe`: tâm vòng là chính người ra chiêu (không cần mục tiêu để chọn tâm; vẫn cần mục tiêu trong tầm để ra đòn). */
+  self?: boolean;
+  /** `guard`: phản lại tỉ lệ sát thương quái đánh vào mình (sau khi giảm) trong thời gian giữ thế. */
+  reflect?: number;
+  /** `shield`: cả đồng đội trong bán kính này cùng nhận khiên (khiên tổ đội). */
+  party?: number;
+  /** `aoe`: thiêu đốt quái trúng: mỗi giây `mul` × công, kéo dài `dur` giây. */
+  burn?: { mul: number; dur: number };
+  /** `summon`: `count` kiếm đan, mỗi `every` giây đánh quái gần nhất trong `range` mét; `power` là hệ số mỗi nhịp. */
+  summon?: { count: number; every: number; range: number };
+  /** `buff`: giảm sát thương nhận `reduce` trong `duration` giây; `stomp` giậm quanh mình mỗi `every` giây; `regen` hồi %/giây. */
+  buff?: { reduce?: number; regen?: number; stomp?: { every: number; r: number; mul: number } };
+  /** Hệ số từng nhát khi chiêu đánh nhiều lần trong một lần bấm (nhân `power`); `hitAt[i]` là mốc nhát i. */
+  hitsMul?: number[];
 }
 
 /**
