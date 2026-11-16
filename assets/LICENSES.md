@@ -244,7 +244,7 @@ Bộ ochre cho `doan_mach`, cũng từ [Poly Haven](https://polyhaven.com/textur
 | --- | --- | --- |
 | cỏ (đất khô) | [dry_ground_rocks](https://polyhaven.com/a/dry_ground_rocks) | CC0-1.0 |
 | đất | [red_laterite_soil_stones](https://polyhaven.com/a/red_laterite_soil_stones) | CC0-1.0 |
-| nền nứt | [cracked_red_ground](https://polyhaven.com/a/cracked_red_ground) | CC0-1.0 |
+| nền sỏi cát | [gravelly_sand](https://polyhaven.com/a/gravelly_sand) | CC0-1.0 |
 | đá | [sandstone_cracks](https://polyhaven.com/a/sandstone_cracks) | CC0-1.0 |
 | vách đá | [rock_face_03](https://polyhaven.com/a/rock_face_03) | CC0-1.0 |
 | cát | [aerial_sand](https://polyhaven.com/a/aerial_sand) | CC0-1.0 |

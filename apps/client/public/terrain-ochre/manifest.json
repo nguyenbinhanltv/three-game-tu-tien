@@ -4,49 +4,49 @@
     {
       "layer": "grass",
       "ph": "dry_ground_rocks",
-      "a": "grass.a.021b6c5755.webp",
+      "a": "grass.a.ed009d6fbd.webp",
       "n": "grass.n.23129d5fce.webp"
     },
     {
       "layer": "dirt",
       "ph": "red_laterite_soil_stones",
-      "a": "dirt.a.1d19ff20f5.webp",
+      "a": "dirt.a.271e50f911.webp",
       "n": "dirt.n.a5368e68f5.webp"
     },
     {
       "layer": "forest",
-      "ph": "cracked_red_ground",
-      "a": "forest.a.c2813cc696.webp",
-      "n": "forest.n.9df685e77d.webp"
+      "ph": "gravelly_sand",
+      "a": "forest.a.a3a6149535.webp",
+      "n": "forest.n.25abf4ee61.webp"
     },
     {
       "layer": "rock",
       "ph": "sandstone_cracks",
-      "a": "rock.a.5ff623b3ea.webp",
+      "a": "rock.a.fb433a7eab.webp",
       "n": "rock.n.16156e28c8.webp"
     },
     {
       "layer": "cliff",
       "ph": "rock_face_03",
-      "a": "cliff.a.8a2a256393.webp",
+      "a": "cliff.a.9457f67955.webp",
       "n": "cliff.n.92455df03d.webp"
     },
     {
       "layer": "sand",
       "ph": "aerial_sand",
-      "a": "sand.a.8ec495de68.webp",
+      "a": "sand.a.7017c6be0f.webp",
       "n": "sand.n.da812ae190.webp"
     },
     {
       "layer": "paving",
       "ph": "cobblestone_floor_04",
-      "a": "paving.a.e82b7ef3f4.webp",
+      "a": "paving.a.bc5c54b24e.webp",
       "n": "paving.n.94821acab5.webp"
     },
     {
       "layer": "gravel",
       "ph": "gravelly_sand",
-      "a": "gravel.a.9b8b65c1da.webp",
+      "a": "gravel.a.d4f328bd9e.webp",
       "n": "gravel.n.25abf4ee61.webp"
     }
   ]

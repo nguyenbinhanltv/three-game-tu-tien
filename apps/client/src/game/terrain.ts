@@ -41,11 +41,11 @@ function isVanLam(): boolean {
 }
 
 const C_VOID_ROCK = col(0x6b6a72);
-const C_OCHRE = col(0xb89a72);
-const C_OCHRE_DRY = col(0xcdb287);
-const C_OCHRE_RED = col(0xa87858);
-const C_SANDSTONE = col(0xa88c70);
-const C_SANDSTONE_DARK = col(0x7d6450);
+const C_OCHRE = col(0xb2a082);
+const C_OCHRE_DRY = col(0xc4b08e);
+const C_OCHRE_RED = col(0x9f8068);
+const C_SANDSTONE = col(0xa09078);
+const C_SANDSTONE_DARK = col(0x7d6e5c);
 /** Đất son cốc đứt mạch: ngả vàng đất khô ↔ đỏ gạch theo nhiễu, dốc lộ sa thạch (không tuyết: art bible). */
 function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
   const n = fbm(x * 0.013, z * 0.013, 2, T.def.seed + 300);
@@ -107,12 +107,8 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 /** Trọng số vùng cho shader mặt đất: x rừng, y đất khô, z đất chết Kiếm Trủng, w dự phòng. */
 function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
   if (OCHRE) {
-    // x: đất nứt sẫm (lớp `forest` của bộ ochre), y: đất son đỏ (lớp `dirt`): hai mảng nhiễu khác tần số.
-    const m = fbm(x * 0.013, z * 0.013, 2, T.def.seed + 300);
-    const c = fbm(x * 0.006, z * 0.006, 2, T.def.seed + 911);
-    o[k] = Math.min(1, Math.max(0, (c - 0.18) * 2.4));
-    o[k + 1] = Math.max(0, Math.min(1, m * 1.5 + 0.15));
-    o[k + 2] = o[k + 3] = 0;
+    // Một lớp nền duy nhất: ở preset Vừa/Thấp lớp nền chọn cứng theo ngưỡng nên mảng đất/đất nứt hiện thành vệt mép gắt (E2-I); biến thiên màu do màu đỉnh (`ochreColor`) lo.
+    o[k] = o[k + 1] = o[k + 2] = o[k + 3] = 0;
     return;
   }
   if (!isVanLam()) {

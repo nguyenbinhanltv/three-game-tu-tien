@@ -104,7 +104,7 @@
         "fogColor": "#D9BFA5", "fogDensity": 0.0019, "heightFogTop": 45, "heightFogBoost": 2.0,
         "fogHaze": 0.003, "fogHazeStart": 45, "rim": 0.55,
         "shadowTint": "#35454F", "highlightTint": "#FFC27E", "splitBalance": 0.1,
-        "blackLift": "#1C1815", "contrast": 1.06, "saturation": 0.94, "exposure": 1.0
+        "blackLift": "#1C1815", "contrast": 1.06, "saturation": 0.84, "exposure": 1.0
       },
       "ochre": {
         "label": "Đoạn Mạch — ban ngày",
@@ -114,7 +114,7 @@
         "fogHaze": 0.0028, "fogHazeStart": 50, "rim": 0.5,
         "shadowTint": "#3A4955", "highlightTint": "#FFC27A", "splitBalance": 0.05,
         "shadowAmount": 0.55, "highlightAmount": 0.25, "fogScatter": 0.8,
-        "blackLift": "#1C1815", "contrast": 1.1, "saturation": 0.8, "exposure": 0.95
+        "blackLift": "#1C1815", "contrast": 1.1, "saturation": 0.72, "exposure": 0.95
       },
       "ochre_night": {
         "label": "Đoạn Mạch — đêm",

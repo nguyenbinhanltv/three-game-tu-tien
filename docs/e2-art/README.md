@@ -20,7 +20,7 @@ Gói E2-I (`docs/EXPANSION_DESIGN.md` 11.2). Chỉ hình/âm, không đụng sim
 
 ## Giới hạn / để duyệt
 
-- Mặt đất vẫn khá đỏ ở nắng ngày; chỉnh ở `OCHRE_LAYERS.tint`/`saturation` rồi `--set ochre`.
+- Vòng 2 (theo soát ảnh): giảm bão hòa ochre, ngả khaki xám; bỏ mảng đất/đất nứt (ở preset Vừa lớp nền chọn cứng theo ngưỡng nên thành vệt mép gắt) bằng một lớp nền duy nhất; bỏ hạt sương/phấn hoa kiểu Vân Lam ở `doan_mach` (`ambientRates`, chỉ còn bụi nắng thưa). Chỉnh tông ở `OCHRE_LAYERS.tint`/`saturation` rồi `--set ochre`.
 - `wild_ochre`: chỗ nối vòng lặp 2,3 (các bài khác 0,4–0,6) mới nghe ra nhẹ; chưa tách stem giao chiến, chưa có `cave_lull`/`boss_dia_mach`.
 - Mặt nạ mặt đất `neutral` (chưa có đường mòn/cát riêng); chưa có nước/khe nứt phát sáng.
-- Console có cảnh báo `THREE.TSL: Vertex attribute "normal" not found` (5 lần); chưa xác định nguồn (có thể sẵn từ trước).
+- Console có cảnh báo `THREE.TSL: Vertex attribute "normal" not found` (5 lần) **không do PR này**: vẫn còn khi tắt cỏ, prop, cột sáng, gộp VFX, K6 và texture mặt đất; nguồn chưa rõ (chưa so với main).

@@ -30,9 +30,9 @@ export const LAYERS = [
  * Không có mặt nạ riêng: level dùng mặt nạ `neutral`.
  */
 export const OCHRE_LAYERS = [
-  { layer: 'grass', ph: 'dry_ground_rocks', author: 'Rob Tuytel', tint: [1.05, 0.95, 0.82] },
-  { layer: 'dirt', ph: 'red_laterite_soil_stones', author: 'Rob Tuytel', tint: [1.0, 0.9, 0.82] },
-  { layer: 'forest', ph: 'cracked_red_ground', author: 'Rob Tuytel', tint: [0.92, 0.82, 0.72] },
+  { layer: 'grass', ph: 'dry_ground_rocks', author: 'Rob Tuytel', tint: [1.02, 0.96, 0.86] },
+  { layer: 'dirt', ph: 'red_laterite_soil_stones', author: 'Rob Tuytel', tint: [1.6, 1.5, 1.4] },
+  { layer: 'forest', ph: 'gravelly_sand', author: 'Dario Barresi', tint: [0.96, 0.9, 0.8] },
   { layer: 'rock', ph: 'sandstone_cracks', author: 'Rob Tuytel', tint: [1.04, 0.92, 0.8] },
   { layer: 'cliff', ph: 'rock_face_03', author: 'Rob Tuytel', tint: [1.04, 0.9, 0.78] },
   { layer: 'sand', ph: 'aerial_sand', author: 'Rob Tuytel', tint: [1.04, 0.94, 0.8] },
@@ -68,7 +68,7 @@ async function main(): Promise<void> {
   for (const L of layers) {
     const [diff, nor, rough] = await Promise.all([source(L.ph, 'Diffuse'), source(L.ph, 'nor_gl'), source(L.ph, 'Rough')]);
     let img = sharp(diff).resize(SIZE, SIZE).removeAlpha();
-    if (L.tint) img = img.modulate({ saturation: 0.66, brightness: 1.06 }).linear([...L.tint], [0, 0, 0]);
+    if (L.tint) img = img.modulate({ saturation: 0.48, brightness: 1.08 }).linear([...L.tint], [0, 0, 0]);
     const albedo = await img.webp({ quality: 76 }).toBuffer();
     // Pháp tuyến: R = x, G = y (z dựng lại ở shader), B = độ nhám.
     const nrm = await sharp(nor).resize(SIZE, SIZE).removeAlpha().raw().toBuffer();
