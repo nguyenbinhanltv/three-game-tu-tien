@@ -18,13 +18,19 @@ Nối tiếp E3-H (`docs/e3h-quests/`). Cả hai giao và trả ở Lâm Chiếu
 
 `EntityManager.setEscort` (`entities.ts`) trước đây dựng người đồng hành bằng `npcSkins.create`, bỏ qua `look` (nên hiện thành model Thiết Lão). Nay dùng `npcModel` như NPC đứng; clip đi bộ K-3 chỉ gắn cho NPC không có `look`.
 
+## Mảnh gương nước (hình)
+
+`game/questSpots.ts` (`QuestSpotVis`, gắn vào `MapVis`): ở mỗi điểm `guong_nuoc_*` dựng kim cương mảnh phát sáng lam nổi + vòng dưới chân + cột sáng mảnh (3 draw call mỗi mảnh, chỉ hiện trong 220 m). Hiện khi nhiệm vụ đang làm và mục tiêu `touch` của điểm đó chưa xong, tắt ngay khi đã chạm (tiến độ lấy từ `QuestView`; server vẫn là bên chấm). Độ cao lấy lại mỗi khung vì địa hình level nạp sau lúc dựng.
+
+Khối mờ lớn kiểu "IOI" ở góc phải trên ảnh `07` cũ là cổng phó bản Kính Nguyệt Cung (`moon-gate` ở (1168, 1598), `levels/van_hai.json` `portals`, E3-M) nhìn nghiêng qua sương từ ~80 m, không phải vật sót; giữ nguyên.
+
 ## Kiểm
 
 - `apps/server/src/game/quest3b.test.ts` (4 test): dữ liệu, chạm gương một lần, đi hết tuyến hộ tống rồi trả một lần (ghi ledger `quest:<id>`), bỏ xa thì quay về.
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress` (không cờ LỖI mới), `security` 139/139 đạt trên DB mới, 100 bot 120 s (tick p95 ~9 ms, 0 dòng `refId`), `ledger:check` khớp.
-- Ảnh (`pnpm --filter @dtl/perf run shots:e3h2 --out <thư mục tuyệt đối>`, tắt tiếng): `01` hộp thoại Lâm Chiếu Dung, `02` theo dõi nhiệm vụ, `03`–`05` hộ tống từ Phù Đảo Các qua cầu, `06`–`08` chạm bốn mảnh gương ở Kính Hồ Đài. Log: `e3h2-log.json`.
+- Ảnh (`pnpm --filter @dtl/perf run shots:e3h2 --out <thư mục tuyệt đối>`, tắt tiếng): `01` hộp thoại Lâm Chiếu Dung, `02` theo dõi nhiệm vụ, `03`–`05` hộ tống từ Phù Đảo Các qua cầu, `06`/`06b` Kính Hồ Đài, `07` mảnh gương nước trước khi chạm, `07b` sau khi chạm (tắt), `08` đủ bốn mảnh. Log: `e3h2-log.json`.
 
 ## Việc để lại
 
 - Hộ tống chưa có điểm dừng/thoại ở từng đảo (cần mở rộng `EscortDef` ở server).
-- Mảnh gương chưa có prop dựng riêng (chỉ có điểm chạm và dòng tiến độ); tiến độ `touch` chưa có chỉ báo trên bản đồ.
+- Tiến độ `touch` chưa có chỉ báo trên bản đồ.

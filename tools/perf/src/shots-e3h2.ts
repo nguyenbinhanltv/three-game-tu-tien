@@ -111,17 +111,34 @@ async function main(): Promise<void> {
     await shot(page, '05-ho-tong-sang-dao');
     log.afterEscortTracker = await text(page, '.tracker');
 
-    // 3) Gương nước: bốn mảnh quanh Kính Hồ Đài.
+    // 3) Gương nước: bốn mảnh quanh Kính Hồ Đài (mảnh phát sáng lam, tắt khi đã chạm).
     const spots: [number, number][] = [[1128, 1548], [1208, 1536], [1214, 1606], [1132, 1600]];
-    await gm(page, '/gm tp 1110 1525');
-    await page.evaluate(() => { const g = (window as any).__game; g.camYaw = Math.PI; g.camDist = 9; g.camDistCur = 9; });
+    const look = (fx: number, fz: number, d: number) => page.evaluate(([x, z, dd]) => { const g = (window as any).__game; g.camYaw = Math.atan2(-(x - g.cur.x), -(z - g.cur.z)); g.camDist = dd; g.camDistCur = dd; }, [fx, fz, d] as const);
+    await gm(page, '/gm tp 1170 1520');
+    await look(1168, 1571, 9);
     await sleep(2500);
-    await shot(page, '06-kinh-ho-dai-truoc-khi-cham');
-    for (let i = 0; i < spots.length; i++) {
+    await shot(page, '06-kinh-ho-dai-bon-manh-guong');
+    await gm(page, '/gm tp 1150 1545');
+    await look(1168, 1571, 14);
+    await sleep(1500);
+    await shot(page, '06b-kinh-ho-dai-goc-rong');
+    await gm(page, `/gm tp ${spots[1][0] - 9} ${spots[1][1] - 6}`);
+    await look(spots[1][0], spots[1][1], 7);
+    await sleep(1500);
+    await shot(page, '07-manh-guong-truoc-khi-cham');
+    await gm(page, `/gm tp ${spots[1][0]} ${spots[1][1]}`);
+    await sleep(1200);
+    await gm(page, `/gm tp ${spots[1][0] - 9} ${spots[1][1] - 6}`);
+    await look(spots[1][0], spots[1][1], 7);
+    await sleep(1200);
+    await shot(page, '07b-manh-guong-sau-khi-cham');
+    for (const i of [0, 2, 3]) {
       await gm(page, `/gm tp ${spots[i][0]} ${spots[i][1]}`);
-      await sleep(1500);
-      if (i === 1) await shot(page, '07-cham-manh-guong');
+      await sleep(1200);
     }
+    await gm(page, '/gm tp 1170 1520');
+    await look(1168, 1571, 9);
+    await sleep(1500);
     await shot(page, '08-du-bon-manh-guong');
     log.afterMirror = await text(page, '.tracker');
     log.errors = [...new Set(errors)];
