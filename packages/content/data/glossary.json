@@ -164,11 +164,36 @@
     "linh_tuyen": "Linh Tuyền Thanh Khê",
     "dinh_nghi": "Đình Nghỉ Linh Thảo",
     "bia_da": "Bia Đá Vách Ngọc",
-    "dai_ho": "Đài Canh Hồ"
+    "dai_ho": "Đài Canh Hồ",
+    "mach_tinh_tru": "Mạch Tinh Trụ",
+    "cau_da_gay": "Cầu Đá Gãy",
+    "ho_sa_lun": "Hố Sa Lún",
+    "cong_mo": "Cổng Mỏ Khai Mạch",
+    "vach_dut_mach": "Vách Đứt Mạch"
   },
   "poiNpcs": {
     "npc_mieu_cong": "Lão Miếu Công",
     "npc_tieu_khe": "Tiểu Khê",
     "npc_hai_duoc": "Hạ Thảo"
+  },
+  "maps": {
+    "van_lam": "Vân Lam Sơn Mạch",
+    "doan_mach": "Đoạn Mạch Cổ Cốc"
+  },
+  "zones": {
+    "sa_thach_pha": "Sa Thạch Pha",
+    "kho_ha_dao": "Khô Hà Đạo",
+    "hoang_sa_huyet": "Hoang Sa Huyệt",
+    "cuu_mo_khu": "Cựu Mỏ Khu",
+    "tuyet_bich": "Đoạn Mạch Tuyệt Bích"
+  },
+  "teleports": {
+    "tp_thien_mach": "Trận Thiên Mạch Đài",
+    "dm_tp_tram": "Trận Hạ Khuyết Trạm",
+    "dm_tp_sa_thach": "Trận Sa Thạch Pha",
+    "dm_tp_kho_ha": "Trận Khô Hà Đạo",
+    "dm_tp_hoang_sa": "Trận Hoang Sa Huyệt",
+    "dm_tp_cuu_mo": "Trận Cựu Mỏ Khu",
+    "dm_tp_tuyet_bich": "Trận Đoạn Mạch Tuyệt Bích"
   }
 }

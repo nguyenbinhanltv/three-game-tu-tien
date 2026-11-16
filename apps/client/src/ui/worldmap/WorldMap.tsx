@@ -1,6 +1,6 @@
 import { type MouseEvent as RMouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { type LevelDef, PORTAL_POS, SECT, TELE_CAST_MS, TELE_PADS } from '@dtl/shared';
+import { type LevelDef, PORTAL_POS, SECT, TELE_CAST_MS, TELE_PADS, padsOfLevel } from '@dtl/shared';
 import { itemName, LEVELS, monsterName, NPCS, QUESTS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { Button, Divider, PanelWindow, ProgressBar, TipCard } from '../kit';
@@ -72,6 +72,8 @@ export function WorldMap() {
   const zone = useUI((s) => s.zone);
   const level = useUI((s) => s.level);
   const infos = useMemo(() => zoneInfos(levelData(level).def), [level]);
+  /** Trận đã mở ở bản đồ khác: tọa độ không thuộc bản đồ này nên không vẽ, chỉ liệt kê để bấm truyền tống. */
+  const foreign = useMemo(() => TELE_PADS.filter((p) => p.level !== level && tele.open.includes(p.id)), [level, tele.open]);
   const ownMark = marks.find((m) => m.own);
   const [now, setNow] = useState(performance.now());
 
@@ -170,7 +172,7 @@ export function WorldMap() {
           w,
           h: 30,
           name,
-          lvText: t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax }),
+          lvText: (zi.zone.lvMin === zi.zone.lvMax ? t('ui.mm.zone_lv1', { a: zi.zone.lvMin }) : t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax })),
           lvColor: lv < zi.zone.lvMin ? '#b3402c' : lv > zi.zone.lvMax ? '#5d6466' : '#3d6b36',
         });
       }
@@ -242,7 +244,7 @@ export function WorldMap() {
       // Truyền Tống Trận: đã mở bấm để dịch chuyển, chưa mở thì mờ.
       if (L.tele) {
         const open = new Set(st.tele.open);
-        for (const pad of TELE_PADS) {
+        for (const pad of padsOfLevel(level)) {
           const c = P(pad.x, pad.z);
           if (!inView(c)) continue;
           const isOpen = open.has(pad.id);
@@ -411,6 +413,16 @@ export function WorldMap() {
               )}
             </div>
           )}
+          {foreign.length > 0 && (
+            <div className="wm-tele">
+              <div>{t('ui.wm.tele_other')}</div>
+              {foreign.map((p) => (
+                <Button key={p.id} onClick={() => Game.current?.teleport(p.id)}>
+                  {t(`tele.${p.id}`)}
+                </Button>
+              ))}
+            </div>
+          )}
           <Divider />
           <div className="wm-zones">
             {infos.map((zi) => {
@@ -421,7 +433,7 @@ export function WorldMap() {
                   <button type="button" className="wm-zone-head" onClick={() => focusZone(zi.cx, zi.cz)}>
                     <i style={{ background: zi.zone.color }} />
                     <span className="wm-zone-name">{t(`zone.${zi.zone.id}`)}</span>
-                    <span className="wm-zone-lv">{t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax })}</span>
+                    <span className="wm-zone-lv">{(zi.zone.lvMin === zi.zone.lvMax ? t('ui.mm.zone_lv1', { a: zi.zone.lvMin }) : t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax }))}</span>
                   </button>
                   <Row label={t('ui.wm.row.mon')}>{zi.monsters.map((m) => `${monsterName(m.id)} (${m.lvMin}–${m.lvMax})`).join(', ')}</Row>
                   {zi.elites.length > 0 && <Row label={t('ui.wm.row.elite')}>{zi.elites.map((m) => monsterName(m.id)).join(', ')}</Row>}

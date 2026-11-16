@@ -1,5 +1,5 @@
 import { LEVELS } from '@dtl/content';
-import { COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
+import { propsOf, terrainOf, COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
 
 /**
  * Bố cục prop Tripo theo brief level-dressing (P2-A1, thực hiện P2-A4). Hoàn toàn xác định (hash theo chỉ số), không
@@ -282,9 +282,18 @@ export const KIEM_GAY: readonly PropInstance[] = (() => {
 
 let cache: PropInstance[] | null = null;
 /** Mọi instance prop (điểm nhấn + rải). Tính một lần. */
-export function allProps(): PropInstance[] {
-  return (cache ??= build());
+export function allProps(level = 'van_lam'): PropInstance[] {
+  if (level === 'van_lam' || level === 'kiem_trung') return (cache ??= build());
+  // Bản đồ mở rộng (E2-A): chỉ prop đặt tay của level (`propsOf`), cao độ theo địa hình riêng; chưa rải cây/đá tự động.
+  let list = levelCache.get(level);
+  if (!list) {
+    const tr = terrainOf(level);
+    list = propsOf(level).map((h) => ({ id: h.id, x: h.x, y: tr.heightAt(h.x, h.z), z: h.z, yaw: h.yaw, s: h.s }));
+    levelCache.set(level, list);
+  }
+  return list;
 }
+const levelCache = new Map<string, PropInstance[]>();
 
 /** Lưới tra nhanh "gần cây lớn": terrain bỏ cây thủ tục quanh cổ thụ/thông Tripo để không chồng lên nhau. */
 let treeGrid: Map<string, Circle[]> | null = null;
