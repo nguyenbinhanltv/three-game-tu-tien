@@ -203,7 +203,8 @@
     "iconFallback": "👘",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_liet_mach"
+    "set": "set_liet_mach",
+    "promoteTo": "itm_kq_dao_bao"
   },
   {
     "id": "itm_lm_ho_uyen",
@@ -216,7 +217,8 @@
     "iconFallback": "🧤",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_liet_mach"
+    "set": "set_liet_mach",
+    "promoteTo": "itm_kq_ho_uyen"
   },
   {
     "id": "itm_lm_dai_lung",
@@ -229,7 +231,8 @@
     "iconFallback": "🎗️",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_liet_mach"
+    "set": "set_liet_mach",
+    "promoteTo": "itm_kq_dai_lung"
   },
   {
     "id": "itm_lm_van_ngoa",
@@ -242,7 +245,8 @@
     "iconFallback": "🥾",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_liet_mach"
+    "set": "set_liet_mach",
+    "promoteTo": "itm_kq_van_ngoa"
   },
   {
     "id": "itm_dg_dao_bao",
@@ -255,7 +259,8 @@
     "iconFallback": "👘",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_dia_giap"
+    "set": "set_dia_giap",
+    "promoteTo": "itm_vk_dao_bao"
   },
   {
     "id": "itm_dg_ho_uyen",
@@ -268,7 +273,8 @@
     "iconFallback": "🧤",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_dia_giap"
+    "set": "set_dia_giap",
+    "promoteTo": "itm_vk_ho_uyen"
   },
   {
     "id": "itm_dg_dai_lung",
@@ -281,7 +287,8 @@
     "iconFallback": "🎗️",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_dia_giap"
+    "set": "set_dia_giap",
+    "promoteTo": "itm_vk_dai_lung"
   },
   {
     "id": "itm_dg_van_ngoa",
@@ -294,7 +301,8 @@
     "iconFallback": "🥾",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_dia_giap"
+    "set": "set_dia_giap",
+    "promoteTo": "itm_vk_van_ngoa"
   },
   {
     "id": "itm_pm_dao_bao",
@@ -307,7 +315,8 @@
     "iconFallback": "👘",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_phuc_mach"
+    "set": "set_phuc_mach",
+    "promoteTo": "itm_ll_dao_bao"
   },
   {
     "id": "itm_pm_ngoc_boi",
@@ -320,7 +329,8 @@
     "iconFallback": "📿",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_phuc_mach"
+    "set": "set_phuc_mach",
+    "promoteTo": "itm_ll_ngoc_boi"
   },
   {
     "id": "itm_pm_dai_lung",
@@ -333,7 +343,8 @@
     "iconFallback": "🎗️",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_phuc_mach"
+    "set": "set_phuc_mach",
+    "promoteTo": "itm_ll_dai_lung"
   },
   {
     "id": "itm_pm_gioi_chi",
@@ -346,6 +357,163 @@
     "iconFallback": "💍",
     "reqLevel": 16,
     "tier": 2,
-    "set": "set_phuc_mach"
+    "set": "set_phuc_mach",
+    "promoteTo": "itm_ll_gioi_chi"
+  },
+  {
+    "id": "itm_kq_dao_bao",
+    "kind": "robe",
+    "stack": 1,
+    "price": 0,
+    "sell": 4307,
+    "rarity": 3,
+    "icon": "itm_kq_dao_bao",
+    "iconFallback": "👘",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_kinh_quang"
+  },
+  {
+    "id": "itm_kq_ho_uyen",
+    "kind": "bracer",
+    "stack": 1,
+    "price": 0,
+    "sell": 2512,
+    "rarity": 3,
+    "icon": "itm_kq_ho_uyen",
+    "iconFallback": "🧤",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_kinh_quang"
+  },
+  {
+    "id": "itm_kq_dai_lung",
+    "kind": "belt",
+    "stack": 1,
+    "price": 0,
+    "sell": 2872,
+    "rarity": 3,
+    "icon": "itm_kq_dai_lung",
+    "iconFallback": "🎗️",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_kinh_quang"
+  },
+  {
+    "id": "itm_kq_van_ngoa",
+    "kind": "boots",
+    "stack": 1,
+    "price": 0,
+    "sell": 2512,
+    "rarity": 3,
+    "icon": "itm_kq_van_ngoa",
+    "iconFallback": "🥾",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_kinh_quang"
+  },
+  {
+    "id": "itm_vk_dao_bao",
+    "kind": "robe",
+    "stack": 1,
+    "price": 0,
+    "sell": 4307,
+    "rarity": 3,
+    "icon": "itm_vk_dao_bao",
+    "iconFallback": "👘",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_van_kinh"
+  },
+  {
+    "id": "itm_vk_ho_uyen",
+    "kind": "bracer",
+    "stack": 1,
+    "price": 0,
+    "sell": 2512,
+    "rarity": 3,
+    "icon": "itm_vk_ho_uyen",
+    "iconFallback": "🧤",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_van_kinh"
+  },
+  {
+    "id": "itm_vk_dai_lung",
+    "kind": "belt",
+    "stack": 1,
+    "price": 0,
+    "sell": 2872,
+    "rarity": 3,
+    "icon": "itm_vk_dai_lung",
+    "iconFallback": "🎗️",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_van_kinh"
+  },
+  {
+    "id": "itm_vk_van_ngoa",
+    "kind": "boots",
+    "stack": 1,
+    "price": 0,
+    "sell": 2512,
+    "rarity": 3,
+    "icon": "itm_vk_van_ngoa",
+    "iconFallback": "🥾",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_van_kinh"
+  },
+  {
+    "id": "itm_ll_dao_bao",
+    "kind": "robe",
+    "stack": 1,
+    "price": 0,
+    "sell": 4307,
+    "rarity": 3,
+    "icon": "itm_ll_dao_bao",
+    "iconFallback": "👘",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_luu_ly"
+  },
+  {
+    "id": "itm_ll_ngoc_boi",
+    "kind": "jade",
+    "stack": 1,
+    "price": 0,
+    "sell": 2512,
+    "rarity": 3,
+    "icon": "itm_ll_ngoc_boi",
+    "iconFallback": "📿",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_luu_ly"
+  },
+  {
+    "id": "itm_ll_dai_lung",
+    "kind": "belt",
+    "stack": 1,
+    "price": 0,
+    "sell": 2872,
+    "rarity": 3,
+    "icon": "itm_ll_dai_lung",
+    "iconFallback": "🎗️",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_luu_ly"
+  },
+  {
+    "id": "itm_ll_gioi_chi",
+    "kind": "ring",
+    "stack": 1,
+    "price": 0,
+    "sell": 2154,
+    "rarity": 3,
+    "icon": "itm_ll_gioi_chi",
+    "iconFallback": "💍",
+    "reqLevel": 20,
+    "tier": 3,
+    "set": "set_luu_ly"
   }
 ]

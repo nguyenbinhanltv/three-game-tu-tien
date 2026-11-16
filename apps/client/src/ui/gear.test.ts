@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Equipment, InvItem, ItemInst } from '@dtl/shared';
-import { affixText, compareLines, diffLines, equipDiff, gearQuality, itemLines, itemSub, pctText } from './gear';
+import { affixText, compareLines, diffLines, equipDiff, gearQuality, itemLines, itemSub, pctText, tierText } from './gear';
 import { ITEM } from '@dtl/content';
 
 const inst = (q: 0 | 1 | 2 | 3 | 4, atk: number, extra: Partial<ItemInst> = {}): ItemInst => ({ q, ilvl: 12, main: { atk }, affixes: [], gems: [], bound: false, ...extra });
@@ -53,5 +53,29 @@ describe('so sánh với món đang mặc', () => {
     expect(lines.some((l) => l.tone === 'bad' && l.text.startsWith('Yêu cầu'))).toBe(true);
     expect(compareLines(12, {}, { id: 'itm_linh_thao', n: 1 }, ITEM.get('itm_linh_thao')!)).toEqual([]);
     expect(compareLines(12, worn, worn.weapon!, def).some((l) => l.text === 'Không đổi chỉ số')).toBe(true);
+  });
+});
+
+describe('đồ bậc 3 (E3-F)', () => {
+  const kq = ITEM.get('itm_kinh_quang_kiem')!;
+  const lm = ITEM.get('itm_liet_mach_kiem')!;
+  const mk = (id: string, ilvl: number, atk: number): InvItem => ({ id, n: 1, inst: { q: 2, ilvl, main: { atk }, affixes: [], gems: ['', '', ''], bound: false } });
+
+  it('dòng phụ ghi bậc 3 và cấp vật phẩm', () => {
+    expect(itemSub(mk(kq.id, 21, 100), kq)).toBe('Huyền phẩm · Pháp kiếm · Cấp vật phẩm 21 · Bậc 3');
+  });
+
+  it('so với kiếm bậc 2 đang mặc: công kích tăng (xanh); đòi cảnh giới 20 nên dưới đó có dòng đỏ', () => {
+    const worn: Equipment = { weapon: mk(lm.id, 17, 150) };
+    const d = diffLines(equipDiff(20, worn, 'weapon', mk(kq.id, 21, 230)));
+    expect(d[0].tone).toBe('good');
+    expect(d[0].text).toMatch(/^Công kích \d+ → \d+ \(\+80\)$/);
+    expect(compareLines(19, worn, mk(kq.id, 21, 230), kq).some((l) => l.tone === 'bad' && l.text.startsWith('Yêu cầu'))).toBe(true);
+  });
+
+  it('hiệu ứng 4 món của ba bộ mới có chữ đúng giá trị', () => {
+    expect(tierText({ n: 4, fx: 'nghich_kiem', v: 0.4 })).toContain('40%');
+    expect(tierText({ n: 4, fx: 'dich_son', v: 0.5 })).toContain('0,5');
+    expect(tierText({ n: 4, fx: 'ngung_dan', v: 0.05 })).toContain('5%');
   });
 });

@@ -68,6 +68,11 @@ describe('mã phụ kiện hiển thị', () => {
     expect(accessoryCode([SET, S2], { robe: { id: 'a' }, belt: { id: 'x' } })).toBe('01002000');
     expect(accessoryCode([SET, S2], { robe: { id: 'a' } })).toBe('01000000');
   });
+  it('quá 9 bộ vẫn mã hóa và giải mã đúng (E3-F có 10 bộ)', () => {
+    const many: SetDef[] = Array.from({ length: 12 }, (_, i) => ({ ...SET, id: 'm' + i, pieces: ['p' + i] }));
+    const code = accessoryCode(many, { robe: { id: 'p9' }, belt: { id: 'p11' }, boots: { id: 'p0' } });
+    expect(parseAccessoryCode(many, code)).toEqual({ robe: 'm9', belt: 'm11', boots: 'm0' });
+  });
   it('giải mã khớp mã hóa, bỏ ký tự lạ', () => {
     const code = accessoryCode([SET, S2], { robe: { id: 'a' }, belt: { id: 'x' } });
     expect(parseAccessoryCode([SET, S2], code)).toEqual({ robe: 's1', belt: 's2' });

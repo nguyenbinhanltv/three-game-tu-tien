@@ -576,7 +576,7 @@ for (const r of RECIPES) {
 {
   const LOOT_SETS = new Set<string>();
   for (const l of LOOT.values()) for (const r of l.equip ?? []) if (r.set) LOOT_SETS.add(r.set);
-  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow', 'hoanh_kiem', 'kim_chung', 'moc_linh'];
+  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow', 'hoanh_kiem', 'kim_chung', 'moc_linh', 'nghich_kiem', 'dich_son', 'ngung_dan'];
   const hex = /^#[0-9a-fA-F]{6}$/;
   uniqueIds('set', SETS);
   for (const st of SETS) {
