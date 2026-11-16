@@ -32,6 +32,7 @@
     "shots:p38": "pnpm --filter @dtl/perf run shots:p38 --",
     "shots:m5": "pnpm --filter @dtl/perf run shots:m5 --",
     "shots:sets": "pnpm --filter @dtl/perf run shots:sets --",
+    "shots:outfit": "pnpm --filter @dtl/perf run shots:outfit --",
     "shots:k1": "pnpm --filter @dtl/perf run shots:k1 --",
     "shots:k3": "pnpm --filter @dtl/perf run shots:k3 --",
     "shots:k4": "pnpm --filter @dtl/perf run shots:k4 --",

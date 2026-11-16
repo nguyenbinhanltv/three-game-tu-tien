@@ -1,0 +1,43 @@
+{
+  "outfit": "apps/client/public/assets/set_kinh_quang_kiem_y_nu.4ae493febd.glb",
+  "keep": "kept",
+  "tol": 0.02,
+  "poses": {
+    "run": {
+      "maxDepth": 0.1179,
+      "sign": -1,
+      "insideAtWorst": 11,
+      "meanInside": 5.5
+    },
+    "chop": {
+      "maxDepth": 0.1154,
+      "sign": -1,
+      "insideAtWorst": 9,
+      "meanInside": 8.5
+    },
+    "arms_down": {
+      "maxDepth": 0.1006,
+      "sign": 1,
+      "insideAtWorst": 2,
+      "meanInside": 1.0
+    },
+    "crouch": {
+      "maxDepth": 0.0,
+      "sign": -1,
+      "insideAtWorst": 0,
+      "meanInside": 0.0
+    },
+    "sit": {
+      "maxDepth": 0.0,
+      "sign": -1,
+      "insideAtWorst": 0,
+      "meanInside": 0.0
+    },
+    "fall": {
+      "maxDepth": 0.1136,
+      "sign": 1,
+      "insideAtWorst": 3,
+      "meanInside": 1.5
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "outfit": "apps/client/public/assets/set_tinh_khuyet_kiem_bao_nam.255b764d37.glb",
+  "keep": "kept",
+  "tol": 0.02,
+  "poses": {
+    "run": {
+      "maxDepth": 0.1032,
+      "sign": 1,
+      "insideAtWorst": 8,
+      "meanInside": 4.0
+    },
+    "chop": {
+      "maxDepth": 0.1175,
+      "sign": 1,
+      "insideAtWorst": 8,
+      "meanInside": 12.0
+    },
+    "arms_down": {
+      "maxDepth": 0.119,
+      "sign": 1,
+      "insideAtWorst": 25,
+      "meanInside": 19.5
+    },
+    "crouch": {
+      "maxDepth": 0.0326,
+      "sign": -1,
+      "insideAtWorst": 2,
+      "meanInside": 1.0
+    },
+    "sit": {
+      "maxDepth": 0.1151,
+      "sign": -1,
+      "insideAtWorst": 8,
+      "meanInside": 6.5
+    },
+    "fall": {
+      "maxDepth": 0.1042,
+      "sign": -1,
+      "insideAtWorst": 8,
+      "meanInside": 4.0
+    }
+  }
+}
