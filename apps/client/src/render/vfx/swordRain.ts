@@ -14,6 +14,7 @@ import {
   mix,
   normalView,
   positionLocal,
+  positionView,
   pow,
   smoothstep,
   step,
@@ -183,6 +184,18 @@ function fallbackSwordGeometry(): THREE.BufferGeometry {
   return out;
 }
 
+/**
+ * Mưa kiếm che nhân vật khi camera thấp (G5, K-6): vật nằm trong `RAIN_NEAR_FULL` m quanh camera tan hẳn, tới
+ * `RAIN_NEAR_CLEAR` m mới đặc như cũ. Trả 0 (đã tan) … 1 (đặc) theo khoảng cách tới camera (không gian nhìn).
+ */
+export const RAIN_NEAR_FULL = 2;
+export const RAIN_NEAR_CLEAR = 6;
+export function rainNearFade(d: number): number {
+  const t = Math.min(1, Math.max(0, (d - RAIN_NEAR_FULL) / (RAIN_NEAR_CLEAR - RAIN_NEAR_FULL)));
+  return t * t * (3 - 2 * t);
+}
+const rainNear = () => smoothstep(RAIN_NEAR_FULL, RAIN_NEAR_CLEAR, length(positionView));
+
 const SWORD_CAP = 48;
 /** x = ngưỡng tan 0..1,05, y = độ linh quang, z = seed. */
 const SWORD_ATTR = instAttr(SWORD_CAP);
@@ -205,7 +218,8 @@ function swordMaterial(src?: THREE.MeshStandardMaterial): THREE.MeshStandardNode
   const dis = f.x;
   // Nhiễu tan theo thân kiếm (tọa độ lưới: dọc thân y 0..1).
   const n = vnoise(vec2(positionLocal.x.add(positionLocal.z).mul(16).add(f.z), positionLocal.y.mul(9).add(f.z.mul(0.37))));
-  m.opacityNode = step(dis, n);
+  // Gần camera thì ngưỡng tan nâng lên: kiếm rỗ dần rồi biến mất thay vì che nhân vật (G5).
+  m.opacityNode = step(max(dis, float(1.06).mul(float(1).sub(rainNear()))), n);
   m.alphaTest = 0.5;
   const burn = float(1).sub(smoothstep(dis, dis.add(0.08), n)).mul(step(0.01, dis));
   const rim = pow(float(1).sub(abs(normalView.z)), 2);
@@ -256,7 +270,7 @@ function cometMaterial(): THREE.MeshBasicNodeMaterial {
   const streak = vnoise(vec2(st.x.mul(5).add(f.y), along.mul(6).add(time.mul(9)))).mul(0.5).add(0.6);
   const lum = core.mul(tail).mul(streak).add(head.mul(core).mul(1.5));
   m.colorNode = min(mix(vec3(uRain), vec3(1, 1, 1), head.mul(0.6)).mul(lum.mul(1.6)), FX_MAX_HDR);
-  m.opacityNode = f.x.mul(min(lum, 1));
+  m.opacityNode = f.x.mul(min(lum, 1)).mul(rainNear());
   m.name = 'fx-rain-comet';
   markBloom(m, 0.5);
   return m;

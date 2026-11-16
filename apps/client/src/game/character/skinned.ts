@@ -741,6 +741,12 @@ export class SkinnedCharacter implements CharacterView {
     this.perf = null;
   }
 
+  /** Đồng hồ animation của động tác chiêu đang phát (giây từ lúc bấm, dừng khi hit-stop) và id chiêu; null nếu không có (K-6). */
+  performClock(): { t: number; skill: string } | null {
+    const p = this.perf;
+    return p && p.timing && p.cancel >= 1 ? { t: p.t, skill: p.skill } : null;
+  }
+
   private updatePerform(dt: number, a: AnimState): void {
     const q = this.pendingPerform;
     if (q) {

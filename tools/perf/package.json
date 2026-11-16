@@ -20,6 +20,7 @@
     "shots:k1": "tsx src/shots-k1.ts",
     "shots:k3": "tsx src/shots-k3.ts",
     "shots:k4": "tsx src/shots-k4.ts",
+    "shots:k6": "tsx src/shots-k6.ts",
     "shots:k7": "tsx src/shots-k7.ts",
     "shots:eqicons": "tsx src/shots-eqicons.ts",
     "shots:kiem": "tsx src/shots-kiem.ts",

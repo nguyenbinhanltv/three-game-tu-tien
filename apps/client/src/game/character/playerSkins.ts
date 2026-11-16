@@ -139,6 +139,7 @@ function dyeOf(id: string, set?: string) {
  * Dựng model người chơi: model có xương theo giới tính nếu asset đã nạp, nếu không (đang nạp, lỗi, `?models=legacy`)
  * thì model khối `Humanoid` cùng màu áo. Giữ handle mẫu suốt đời đối tượng này (giống `MonsterSkins`).
  */
+const _bpM = new THREE.Matrix4();
 export class PlayerSkins {
   private templates = new Map<string, Template | 'loading' | 'failed'>();
   /** Model kiếm theo asset (prop_kiem_*), nạp lười; kiếm mặc định nạp cùng nhân vật. */
@@ -584,6 +585,21 @@ export class SkinnedPlayer extends SkinnedCharacter {
   }
 
   /** Kiếm đang ở tay (đã rút xong). */
+  /**
+   * Gốc và mũi lưỡi kiếm trong tọa độ thế giới (từ xương `dtl_sword`, K-6: vệt kiếm bám mũi kiếm).
+   * False nếu không có xương kiếm hoặc kiếm đang trên lưng.
+   */
+  bladePoints(base: THREE.Vector3, tip: THREE.Vector3): boolean {
+    const s = this.sword;
+    if (!s || !s.drawn) return false;
+    const d = this.glowDims ?? { start: 0.18, len: 0.8 };
+    // Không gọi updateWorldMatrix ở đây: engine cập nhật ma trận một lần trước khi vẽ (matrixWorldAutoUpdate = false); dùng ma trận khung trước (lệch ≤ 1 khung).
+    _bpM.copy(s.boneWorld).multiply(s.glowLocal);
+    base.set(0, 0, d.start).applyMatrix4(_bpM).applyMatrix4(this.inner.matrixWorld);
+    tip.set(0, 0, d.start + d.len).applyMatrix4(_bpM).applyMatrix4(this.inner.matrixWorld);
+    return true;
+  }
+
   get swordDrawn(): boolean {
     return this.sword?.drawn ?? false;
   }

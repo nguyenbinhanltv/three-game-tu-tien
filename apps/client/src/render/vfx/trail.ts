@@ -4,6 +4,7 @@ import { groundAt, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { vnoise, type FxUniforms } from './common';
 import type { Particles } from './particles';
 import type { FxKind, FxMesh } from '../materials/vfx';
+import { BladeRibbon } from './bladeTrail';
 
 /**
  * Vệt và hạt theo nhân vật (M4-5). Chỉ là lớp hình, không đổi luật hay thời điểm:
@@ -21,7 +22,8 @@ import type { FxKind, FxMesh } from '../materials/vfx';
 const RIB_PTS = 24;
 /** Khoảng lấy mẫu lịch sử (giây): dải dài khoảng 0,5 giây đường bay. */
 const RIB_DT = 1 / 48;
-const MAX_RIBBONS = 8;
+/** Dải vệt sống cùng lúc toàn cảnh (phi kiếm + vệt kiếm), K-6 nâng 8 → 12. */
+export const MAX_RIBBONS = 12;
 const NEAR = 70;
 
 const C_SWORD = 0xcff3ff; // spirit_sword
@@ -167,6 +169,8 @@ const _cam = new THREE.Vector3();
 
 export class Trails {
   private ribbons: Ribbon[] = [];
+  /** Vệt kiếm bám mũi kiếm (K-6): dùng chung hạn mức `MAX_RIBBONS` với vệt phi kiếm. */
+  private blades: { r: BladeRibbon; mesh: FxMesh | null }[] = [];
   private state = new Map<string, ActorState>();
   private frame = 0;
 
@@ -175,6 +179,45 @@ export class Trails {
     private particles: Particles,
   ) {
     for (let i = 0; i < MAX_RIBBONS; i++) this.ribbons.push(new Ribbon());
+  }
+
+  private usedRibbons(): number {
+    let n = 0;
+    for (const r of this.ribbons) if (r.mesh) n++;
+    for (const b of this.blades) if (b.mesh) n++;
+    return n;
+  }
+
+  /**
+   * Mở một vệt kiếm cho `owner` (lấy dải còn trống, null nếu đã đủ `MAX_RIBBONS`). Gọi `push` mỗi khung trong cửa sổ
+   * lấy mẫu rồi `finish`; dải tự tan sau `BLADE_LIFE` giây và trả về pool.
+   */
+  openBlade(owner: string, color: number): BladeRibbon | null {
+    if (this.usedRibbons() >= MAX_RIBBONS) return null;
+    let b = this.blades.find((q) => !q.mesh);
+    if (!b) {
+      b = { r: new BladeRibbon(), mesh: null };
+      this.blades.push(b);
+    }
+    b.r.reset(owner);
+    b.mesh = this.src.fx(b.r.geo, color, 0.9, 'trail');
+    b.mesh.fxA.z = Math.random() * 40;
+    return b.r;
+  }
+
+  /** Già đi các vệt kiếm; vệt hết mẫu thì trả về pool. */
+  private updateBlades(dt: number): void {
+    for (const b of this.blades) {
+      if (!b.mesh) continue;
+      const n = b.r.step(dt);
+      if (n === 0 && !b.r.sampling) {
+        this.src.drop(b.mesh);
+        b.mesh = null;
+        b.r.owner = '';
+        continue;
+      }
+      b.mesh.visible = b.r.build() > 0;
+    }
   }
 
   update(dt: number, actors: Map<string, TrailActor>, mySid: string, camera: THREE.Camera): void {
@@ -274,6 +317,7 @@ export class Trails {
       r.build(_cam, 0.32);
       r.mesh.fxOpacity = 0.85 * r.fade;
     }
+    this.updateBlades(dt);
     for (const [id, st] of this.state) if (st.seen !== this.frame) this.state.delete(id);
   }
 
@@ -281,7 +325,7 @@ export class Trails {
     let r = this.ribbons.find((q) => q.owner === id && q.mesh);
     if (!r) {
       r = this.ribbons.find((q) => !q.mesh);
-      if (!r) return;
+      if (!r || this.usedRibbons() >= MAX_RIBBONS) return;
       r.owner = id;
       r.fade = 0;
       r.reset(x, y, z);
@@ -301,6 +345,12 @@ export class Trails {
       if (r.mesh) this.src.drop(r.mesh);
       r.mesh = null;
       r.owner = '';
+    }
+    for (const b of this.blades) {
+      if (b.mesh) this.src.drop(b.mesh);
+      b.mesh = null;
+      b.r.owner = '';
+      b.r.sampling = false;
     }
     this.state.clear();
   }
