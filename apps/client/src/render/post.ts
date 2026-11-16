@@ -150,6 +150,25 @@ const _size = new THREE.Vector2();
 /** Ép kiểu nút về vec3 để gán lại biến `hdr` (TSL gõ kiểu theo nút cuối chuỗi). */
 const asVec3 = (n: unknown): ReturnType<typeof vec3> => n as ReturnType<typeof vec3>;
 
+/**
+ * Ẩn mọi vật vẽ được (mesh, sprite, đường, điểm) trong `root`, trừ cây con `keep`; Group và đèn giữ nguyên để
+ * `compileAsync` (duyệt vật `visible`) vẫn thu đủ đèn. Trả hàm khôi phục.
+ */
+export function hideRenderables(root: THREE.Object3D, keep: THREE.Object3D): () => void {
+  const hidden: THREE.Object3D[] = [];
+  root.traverse((o) => {
+    const d = o as THREE.Mesh & THREE.Sprite & THREE.Line & THREE.Points;
+    if (o.visible && (d.isMesh || d.isSprite || d.isLine || d.isPoints)) {
+      for (let p: THREE.Object3D | null = o; p; p = p.parent) if (p === keep) return;
+      o.visible = false;
+      hidden.push(o);
+    }
+  });
+  return () => {
+    for (const o of hidden) o.visible = true;
+  };
+}
+
 export class PostPipeline {
   readonly bloom: boolean;
   private readonly key: string;
@@ -314,22 +333,15 @@ export class PostPipeline {
    * cache (sương, môi trường). Người gọi không được vẽ mesh dùng các pipeline này tới khi promise xong.
    */
   async compileObject(obj: THREE.Object3D): Promise<void> {
-    // Chỉ biên dịch nhóm tạm: ẩn tạm mọi con khác của cảnh (trừ đèn, vì số đèn nằm trong khóa cache) trong phần đồng bộ,
-    // để không kích hoạt pipeline bất đồng bộ cho vật khác mà khung vẽ xen giữa sẽ dùng khi còn dở.
-    const hidden: THREE.Object3D[] = [];
-    for (const c of this.scene.children) {
-      if (c.visible && !(c as THREE.Light).isLight) {
-        c.visible = false;
-        hidden.push(c);
-      }
-    }
+    // Chỉ biên dịch nhóm tạm: ẩn tạm mọi vật vẽ được khác, giữ nguyên Group và đèn (số đèn nằm trong khóa cache).
+    const restore = hideRenderables(this.scene, obj);
     this.scene.add(obj);
     let done: Promise<void>;
     try {
       done = this.compileInScene();
     } finally {
       this.scene.remove(obj);
-      for (const c of hidden) c.visible = true;
+      restore();
     }
     await done;
   }
