@@ -1,6 +1,6 @@
 // E3-N: đảo nổi trên biển mây: sàn mây đi bộ được, cầu xích, rơi không chết, đảo giả không đứng được, chặn leo bậc cao.
 import { describe, expect, it } from 'vitest';
-import { cloneMoveState, GRAVITY, MAX_STEP_UP, type MoveCtx, type MoveInput, type MoveState, registerTerrain, stepMove, type TerrainDef } from './index';
+import { cloneMoveState, GRAVITY, MAX_SLOPE_UP, type MoveCtx, type MoveInput, type MoveState, registerTerrain, stepMove, type TerrainDef } from './index';
 
 const DEF: TerrainDef = {
   id: 'test_sky',
@@ -10,8 +10,8 @@ const DEF: TerrainDef = {
   natural: { freq: 0.002, baseOct: 1, ridgeOct: 1, level: 0, baseAmp: 0, ridgeAmp: 0, maskFreq: 0.001, maskOct: 1, maskLo: 0, maskHi: 1 },
   features: [],
   islands: [
-    { x: 300, z: 500, r: 80, edge: 30, y: 120 },
-    { x: 600, z: 500, r: 80, edge: 30, y: 130 },
+    { x: 300, z: 500, r: 80, edge: 12, y: 120 },
+    { x: 600, z: 500, r: 80, edge: 12, y: 130 },
   ],
   fakeIslands: [{ x: 450, z: 800, r: 50, edge: 20, y: 125 }],
   voidFloor: 60,
@@ -82,7 +82,7 @@ describe('E3-N: địa hình đảo', () => {
     run(s, 80, input(0, -1, 0));
     expect(s.y).toBeCloseTo(60, 3);
     expect(s.z).toBeLessThan(500 - 2.5);
-    expect(MAX_STEP_UP).toBeLessThan(5);
+    expect(MAX_SLOPE_UP).toBeGreaterThan(0.74);
   });
 
   it('rơi từ đảo xuống sàn mây: vận tốc rơi có trần, không chạm vực', () => {
@@ -105,5 +105,60 @@ describe('E3-N: địa hình đảo', () => {
     expect(s.x).toBeGreaterThan(540);
     for (let k = 0; k < 200; k++) stepMove(s, input(0, 0, EAST, 0), fly);
     expect(s.y).toBeCloseTo(T.heightAt(s.x, s.z), 3);
+  });
+});
+
+// Luật chặn leo tính theo độ dốc (không theo cao độ mỗi bước): đi chéo vào vách/thành cầu, đi chậm, hay nhảy đều không lên được.
+describe('E3-N: chặn leo vách đảo và thành cầu', () => {
+  /** Hướng thế giới (dx, dz) → yaw để mz = 1 đi đúng hướng đó. */
+  const yawOf = (dx: number, dz: number) => Math.atan2(-dx, -dz);
+  const walk = (s: MoveState, dir: [number, number], steps: number, opt: { jump?: boolean; speedMul?: number } = {}) => {
+    const ctx: MoveCtx = { ...CTX, speedMul: opt.speedMul ?? 1 };
+    let maxY = s.y;
+    for (let i = 0; i < steps; i++) {
+      stepMove(s, { s: i, mx: 0, mz: 1, yaw: yawOf(dir[0], dir[1]), f: opt.jump ? 1 : 0 }, ctx);
+      maxY = Math.max(maxY, s.y);
+    }
+    return maxY;
+  };
+  const floor = DEF.voidFloor!;
+  const ANGLES = [10, 20, 30, 45];
+  const OPTS = [{}, { jump: true }, { speedMul: 0.4 }, { jump: true, speedMul: 0.4 }];
+
+  it('đảo (300, 500, r 80): đi chéo 10–45° so với đường mép, có/không nhảy, chạy chậm: vẫn ở sàn mây', () => {
+    for (const deg of ANGLES)
+      for (const opt of OPTS) {
+        // đứng ở phía đông đảo trên sàn mây, hướng vào tâm lệch `deg` so với đường tiếp tuyến
+        const sx = 300 + 80 + 30 + 25;
+        const s: MoveState = { x: sx, y: floor, z: 500 - 120, vy: 0, grounded: true, flying: false };
+        const a = (deg * Math.PI) / 180;
+        // tiếp tuyến = +z, pháp tuyến vào trong = -x
+        const maxY = walk(s, [-Math.sin(a), Math.cos(a)], 700, opt);
+        expect(maxY, `${deg}° ${JSON.stringify(opt)}`).toBeLessThan(floor + 3);
+        expect(s.y).toBeLessThan(floor + 3);
+      }
+  });
+
+  it('thành cầu (dải z = 500, x 370..530): đi chéo 10–45°, nhảy, chạy chậm: vẫn ở sàn mây', () => {
+    for (const deg of ANGLES)
+      for (const opt of OPTS) {
+        const s: MoveState = { x: 400, y: floor, z: 500 + 40, vy: 0, grounded: true, flying: false };
+        const a = (deg * Math.PI) / 180;
+        const maxY = walk(s, [Math.cos(a), -Math.sin(a)], 400, opt);
+        expect(maxY, `${deg}° ${JSON.stringify(opt)}`).toBeLessThan(floor + 3);
+      }
+  });
+
+  it('nhảy thẳng vào vách đảo và vào thành cầu: không bị đặt lên trên', () => {
+    const a: MoveState = { x: 300 + 80 + 40, y: floor, z: 560, vy: 0, grounded: true, flying: false };
+    expect(walk(a, [-1, 0], 300, { jump: true })).toBeLessThan(floor + 3);
+    const b: MoveState = { x: 450, y: floor, z: 500 + 20, vy: 0, grounded: true, flying: false };
+    expect(walk(b, [0, -1], 200, { jump: true })).toBeLessThan(floor + 3);
+  });
+
+  it('đi dọc cầu và lên thang vẫn bình thường (không chặn nhầm)', () => {
+    const s: MoveState = { x: 330, y: 120, z: 500, vy: 0, grounded: true, flying: false };
+    expect(walk(s, [1, 0], 800)).toBeGreaterThan(125);
+    expect(s.grounded).toBe(true);
   });
 });

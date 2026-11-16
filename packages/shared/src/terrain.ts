@@ -16,9 +16,14 @@ import {
   VAN_LAM_TERRAIN,
 } from './level';
 
-/** Độ cao mặt cầu tại tham số t (0..1) dọc nhịp: nội suy hai đầu, võng ở giữa. */
-export function bridgeDeckY(b: { ay: number; by: number; sag: number }, t: number): number {
-  return b.ay + (b.by - b.ay) * t - b.sag * 4 * t * (1 - t);
+/** Hai đầu cầu giữ phẳng đúng độ cao đảo (m) để mặt cầu gặp mặt đảo liền mạch (không vấp bậc ở vai mép đảo). */
+export const BRIDGE_FLAT_END = 10;
+/** Độ cao mặt cầu tại tham số t (0..1) dọc nhịp: hai đầu phẳng `BRIDGE_FLAT_END` m, giữa nội suy tuyến tính có võng (võng tắt dần về hai đầu). */
+export function bridgeDeckY(b: { ax?: number; az?: number; bx?: number; bz?: number; ay: number; by: number; sag: number }, t: number): number {
+  const len = b.ax !== undefined && b.bx !== undefined ? Math.hypot(b.bx - b.ax, (b.bz ?? 0) - (b.az ?? 0)) : 0;
+  const f = len > 2 * BRIDGE_FLAT_END ? BRIDGE_FLAT_END / len : 0;
+  const u = f > 0 ? Math.max(0, Math.min(1, (t - f) / (1 - 2 * f))) : t;
+  return b.ay + (b.by - b.ay) * u - b.sag * 4 * u * (1 - u);
 }
 
 /** Địa hình đã dựng của một level: hàm thuần, tất định, dùng chung client/server/công cụ. */

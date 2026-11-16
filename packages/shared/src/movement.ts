@@ -14,8 +14,8 @@ export const GRAVITY = 24;
 export const FLY_MIN_CLEAR = 1.6;
 export const FLY_MAX_ALT = 520;
 export const PLAYER_RADIUS = 0.5;
-/** Level đảo nổi: bậc cao hơn mức này trong một bước (m) thì đi bộ không lên được. */
-export const MAX_STEP_UP = 2.2;
+/** Level đảo nổi: dốc (m cao / m ngang) lớn hơn mức này thì đi bộ không lên được (dốc thang mây 0,74; vách đảo và thành cầu dựng đứng). Tính theo độ lớn gradient của mặt đất (không theo cao độ mỗi bước hay hướng đi) nên đi chéo hay chậm (speedMul) cũng không lách được. */
+export const MAX_SLOPE_UP = 1.5;
 /** Trúc Cơ: ngự kiếm dưới độ cao này (so với mặt đất) không tốn linh lực và bay được cả khi cạn linh lực. */
 export const TRUC_CO_FREE_FLY_ALT = 20;
 
@@ -82,6 +82,19 @@ export interface MoveCtx {
 export function caveBoundOf(level: { dungeon?: { center: { x: number; z: number }; bound?: number } } | undefined): MoveCtx['bound'] {
   const d = level?.dungeon;
   return d?.bound ? { x: d.center.x, z: d.center.z, r: d.bound } : undefined;
+}
+
+/** Độ dốc đi LÊN lớn nhất quanh (x, z) (m cao / m ngang, tám hướng, mẫu cách 0,15 m): ở vai mép đảo/cầu (một phía là vực) không tính là dốc, chỉ vách phía trước mới tính. */
+function groundSlope(groundAt: (x: number, z: number) => number, x: number, z: number): number {
+  const d = 0.15;
+  const g0 = groundAt(x, z);
+  let up = 0;
+  for (let k = 0; k < 8; k++) {
+    const a = (k * Math.PI) / 4;
+    const r = (groundAt(x + Math.cos(a) * d, z + Math.sin(a) * d) - g0) / d;
+    if (r > up) up = r;
+  }
+  return up;
 }
 
 /** Áp một bước input lên trạng thái di chuyển. Sửa trực tiếp `s`. */
@@ -181,8 +194,10 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
 
   let ground = groundAt(s.x, s.z);
 
-  // Level đảo nổi (E3-N): đi bộ không leo được bậc cao đột ngột (thành cầu xích, vách đảo): chặn bước đó.
-  if (terrain.blockRise && !s.flying && s.grounded && ground - s.y > MAX_STEP_UP) {
+  // Level đảo nổi (E3-N): chặn leo vách đảo và thành cầu. Không cho bước vào chỗ mặt đất dốc hơn `MAX_SLOPE_UP` (độ dốc đi lên lớn nhất quanh chỗ mới, không phụ
+  // thuộc hướng đi hay tốc độ nên đi chéo/chạy chậm không lách được) trừ khi đang đi xuống (mặt đất mới thấp hơn chỗ cũ: rơi khỏi mép, bước xuống).
+  // So mặt đất cũ với mới chứ không so với độ cao người nên nhảy cũng không leo được. Không áp khi ngự kiếm.
+  if (terrain.blockRise && !s.flying && (s.x !== px || s.z !== pz) && ground >= groundAt(px, pz) - 1e-3 && groundSlope(groundAt, s.x, s.z) > MAX_SLOPE_UP) {
     s.x = px;
     s.z = pz;
     ground = groundAt(s.x, s.z);

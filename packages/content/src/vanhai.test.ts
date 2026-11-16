@@ -106,3 +106,92 @@ describe('van_hai', () => {
     expect(tr.heightAt(s.x, s.z)).toBeGreaterThan(tr.def.voidFloor! + 40);
   });
 });
+
+describe('van_hai: chặn leo vách đảo và thành cầu (đảo và cầu thật)', () => {
+  const d = tr.def;
+  const floor = d.voidFloor!;
+  const yawOf = (dx: number, dz: number) => Math.atan2(-dx, -dz);
+  const OPTS = [{}, { jump: true }, { speedMul: 0.4 }, { jump: true, speedMul: 0.4 }];
+  const segs = d.bridges!.map((b) => ({ id: b.id, ax: b.ax, az: b.az, bx: b.bx, bz: b.bz }));
+  const nearSeg = (x: number, z: number) =>
+    Math.min(
+      ...segs.map((q) => {
+        const dx = q.bx - q.ax;
+        const dz = q.bz - q.az;
+        const t = Math.max(0, Math.min(1, ((x - q.ax) * dx + (z - q.az) * dz) / (dx * dx + dz * dz)));
+        return Math.hypot(q.ax + dx * t - x, q.az + dz * t - z);
+      }),
+    );
+  /** Đi `steps` bước theo hướng (dx, dz); trả [cao nhất, gần cầu/thang nhất]. */
+  const walk = (s: MoveState, dir: [number, number], steps: number, opt: { jump?: boolean; speedMul?: number }) => {
+    let maxY = s.y;
+    let near = Infinity;
+    for (let i = 0; i < steps; i++) {
+      stepMove(s, { s: i, mx: 0, mz: 1, yaw: yawOf(dir[0], dir[1]), f: opt.jump ? 1 : 0 }, { canFly: false, frozen: false, speedMul: opt.speedMul ?? 1, terrain: tr });
+      maxY = Math.max(maxY, s.y);
+      near = Math.min(near, nearSeg(s.x, s.z));
+    }
+    return [maxY, near];
+  };
+
+  it('đi dọc từng cầu từ đảo này sang đảo kia: không bị chặn nhầm ở chỗ nối', () => {
+    for (const b of d.bridges!.filter((x) => !x.id.startsWith('thang_'))) {
+      const len = Math.hypot(b.bx - b.ax, b.bz - b.az);
+      const ux = (b.bx - b.ax) / len;
+      const uz = (b.bz - b.az) / len;
+      const s: MoveState = { x: b.ax - ux * 8, y: b.ay, z: b.az - uz * 8, vy: 0, grounded: true, flying: false };
+      walk(s, [ux, uz], Math.ceil((len + 16) / 0.35), {});
+      expect(s.y, b.id).toBeGreaterThan(b.by - 1);
+      expect(s.grounded, b.id).toBe(true);
+    }
+  });
+
+  it('vách từng đảo: đi chéo 10–30° so với mép, nhảy, chạy chậm: vẫn ở sàn mây', () => {
+    let checked = 0;
+    for (const isl of d.islands!) {
+      for (let k = 0; k < 8; k++) {
+        const ang = (k * Math.PI) / 4 + 0.3;
+        const nx = -Math.cos(ang); // pháp tuyến vào trong
+        const nz = -Math.sin(ang);
+        const tx = -nz; // tiếp tuyến
+        const tz = nx;
+        const sx = isl.x - nx * (isl.r + isl.edge + 25);
+        const sz = isl.z - nz * (isl.r + isl.edge + 25);
+        if (nearSeg(sx, sz) < 120) continue;
+        for (const deg of [10, 20, 30]) {
+          const a = (deg * Math.PI) / 180;
+          const dir: [number, number] = [nx * Math.sin(a) + tx * Math.cos(a), nz * Math.sin(a) + tz * Math.cos(a)];
+          for (const opt of OPTS) {
+            const s: MoveState = { x: sx, y: floor, z: sz, vy: 0, grounded: true, flying: false };
+            const [maxY, near] = walk(s, dir, 400, opt);
+            if (near < 8) continue; // đi ngang qua một thang/cầu: không tính
+            expect(maxY, `${isl.x},${isl.z} k${k} ${deg}° ${JSON.stringify(opt)}`).toBeLessThan(floor + 3);
+            checked++;
+          }
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(100);
+  });
+
+  it('thành từng cầu: đi chéo 10–30° vào dải cầu từ sàn mây, nhảy, chạy chậm: vẫn ở sàn mây', () => {
+    for (const b of d.bridges!.filter((x) => !x.id.startsWith('thang_'))) {
+      const len = Math.hypot(b.bx - b.ax, b.bz - b.az);
+      const ux = (b.bx - b.ax) / len;
+      const uz = (b.bz - b.az) / len;
+      const mx = (b.ax + b.bx) / 2;
+      const mz = (b.az + b.bz) / 2;
+      for (const side of [-1, 1])
+        for (const deg of [10, 20, 30]) {
+          const a = (deg * Math.PI) / 180;
+          for (const opt of OPTS) {
+            // đứng cách đường tim cầu 25 m, đi về phía cầu lệch `deg` so với đường tim
+            const s: MoveState = { x: mx - uz * side * 25 - ux * 10, y: floor, z: mz + ux * side * 25 - uz * 10, vy: 0, grounded: true, flying: false };
+            const dir: [number, number] = [ux * Math.cos(a) + uz * side * Math.sin(a), uz * Math.cos(a) - ux * side * Math.sin(a)];
+            const [maxY] = walk(s, dir, 150, { ...opt });
+            expect(maxY, `${b.id} ${side} ${deg}° ${JSON.stringify(opt)}`).toBeLessThan(floor + 3);
+          }
+        }
+    }
+  });
+});
