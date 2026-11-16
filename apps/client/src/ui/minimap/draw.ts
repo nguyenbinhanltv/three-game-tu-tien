@@ -5,7 +5,7 @@ import type { Game } from '../../game/engine';
 import { type AncientMap, mipFor } from './ancient';
 import type { MinimapFrame } from './marks';
 import { edgeClamp, formatCountdown, type Mark, project, type View } from './model';
-import { bossSprite, flagSprite, edgeArrowSprite, eliteSprite, mateSprite, monSprite, nodeSprite, npcSprite, playerSprite, portalSprite, selfSprite, type Sprite, teleSprite } from './sprites';
+import { bossSprite, flagSprite, edgeArrowSprite, eliteSprite, mateSprite, monSprite, nodeSprite, npcSprite, scanSprite, playerSprite, portalSprite, selfSprite, type Sprite, teleSprite } from './sprites';
 import { npcFunction } from './model';
 import { NPC } from '@dtl/content';
 
@@ -17,7 +17,7 @@ export interface HitPt {
   mark: Mark;
 }
 
-const ORDER: Record<Mark['kind'], number> = { node: 0, mon: 1, player: 2, portal: 3, tele: 3, goal: 3, npc: 4, elite: 5, mate: 6, boss: 7, flag: 7 };
+const ORDER: Record<Mark['kind'], number> = { node: 0, mon: 1, player: 2, portal: 3, tele: 3, goal: 3, npc: 4, elite: 5, mate: 6, boss: 7, flag: 7, scan: 6 };
 const _p = { x: 0, y: 0 };
 
 function put(ctx: CanvasRenderingContext2D, s: Sprite, x: number, y: number, dy = 0): void {
@@ -44,6 +44,8 @@ function spriteOf(m: Mark, dpr: number): { s: Sprite; dy: number; r: number } {
       return { s: nodeSprite(dpr), dy: 0, r: 3 };
     case 'portal':
       return { s: portalSprite(dpr), dy: 0, r: 9 };
+    case 'scan':
+      return { s: scanSprite(m.scanKind ?? 'mon', dpr), dy: 0, r: 8 };
     case 'flag':
       return { s: flagSprite(!!m.own, dpr), dy: -5, r: 9 };
     default:

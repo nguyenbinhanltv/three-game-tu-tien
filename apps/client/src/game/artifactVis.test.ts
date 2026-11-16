@@ -16,6 +16,14 @@ describe('animation thủ tục của pháp bảo', () => {
     }
   });
 
+  it('Ngưng Đan Lô (heal): nghỉ lơ lửng sau vai, kích hoạt bay lên trên đầu', () => {
+    const i = idlePose('heal', 0, 0);
+    const a = activePose('heal', 0);
+    expect(i.z).toBeLessThan(0);
+    expect(a.y).toBeGreaterThan(2.3);
+    expect(Math.abs(idlePose('heal', 1, 0).y - idlePose('heal', 2.4, 0).y)).toBeGreaterThan(0);
+  });
+
   it('hồ lô xoay quanh người ở bán kính ổn định; linh ở trước mặt; ấn trên đầu', () => {
     for (const t of [0, 0.3, 0.9, 2.2]) {
       const h = activePose('drain', t);

@@ -1,9 +1,9 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget } from '@dtl/shared';
+import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg } from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, tierBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
+import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, thanThongSkill, tierBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
 import { MON_AURA_REFLECT, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
@@ -571,6 +571,18 @@ export class Game {
       });
     });
     room.onMessage(S.MARK, (m: MarkMsg) => set({ marks: m.marks }));
+    // Thần thức (E2-E): chỉ hiển thị; server quyết định kết quả quét. Thời gian đổi sang đồng hồ client.
+    room.onMessage(S.SPIRIT_STATE, (m: SpiritStateMsg) => {
+      const now = performance.now();
+      set({ spirit: { open: m.open, chUntil: m.ch > 0 ? now + m.ch : 0, cdUntil: m.cd > 0 ? now + m.cd : 0, r: m.r } });
+    });
+    room.onMessage(S.SPIRIT_SCAN, (m: SpiritScanMsg) => {
+      const now = performance.now();
+      set({ spiritScan: { x: m.x, z: m.z, r: m.r, at: now, until: now + m.ttl, hits: m.hits } });
+      const kinds: Record<string, number> = {};
+      for (const h of m.hits) kinds[h.k] = (kinds[h.k] ?? 0) + 1;
+      this.spiritLog.push({ r: m.r, n: m.hits.length, kinds, hits: m.hits });
+    });
     room.onMessage(S.INVITE, (m: InviteMsg) => {
       const until = m.until - this.timeOffset;
       set((s) => {
@@ -1077,7 +1089,10 @@ export class Game {
       this.keys.onDown(e.code, e.altKey, e.repeat);
       this.onKeyDown(e);
     });
-    this.on(window, 'keyup', (e: KeyboardEvent) => this.keys.onUp(e.code));
+    this.on(window, 'keyup', (e: KeyboardEvent) => {
+      this.keys.onUp(e.code);
+      if (e.code === 'KeyV') this.spiritHold(false);
+    });
     const c = this.canvas;
     this.on(c, 'contextmenu', (e: Event) => e.preventDefault());
     this.on(c, 'pointerdown', (e: PointerEvent) => {
@@ -1222,11 +1237,17 @@ export class Game {
     this.keys.press(code);
     // Bắt đầu di chuyển thì hủy chiêu đang chờ (M1-11).
     if (this.isMoveKey(code, action)) this.cancelQueuedSkill();
+    // Ô chiêu 9, thần thông Kết Đan (E2-E): phím 0 (phím 9 vẫn là pháp bảo phụ).
+    if (code === 'Digit0' && !e.shiftKey) {
+      if (this.bar().length > BAR_SIZE) this.useSkill(BAR_SIZE);
+      else pushToast(t('ui.method.empty_slot'), 'info');
+      return;
+    }
     const slot = skillSlot(code);
     if (slot >= 0) {
       if (e.shiftKey) {
-        // Hàng chiêu bậc cao (E2-G): Shift + số.
-        const tier = BAR_SIZE + slot;
+        // Hàng chiêu bậc cao (E2-G): Shift + số, sau ô 9.
+        const tier = BAR_SIZE + 1 + slot;
         if (tier < this.bar().length) this.useSkill(tier);
         return;
       }
@@ -1251,6 +1272,12 @@ export class Game {
         break;
       case 'dash':
         this.useDash();
+        break;
+      case 'spirit':
+        this.spiritHold(true);
+        break;
+      case 'bonded':
+        this.useBonded();
         break;
       case 'bag':
         togglePanel('bag');
@@ -1391,10 +1418,11 @@ export class Game {
   }
 
   /** Người chơi bấm chiêu (phím số, nút trên thanh chiêu, bấm lại mục tiêu). */
-  /** Thanh chiêu hiện tại: 6 chiêu chung + 2 chiêu của công pháp đang tu. */
+  /** Thanh chiêu hiện tại: 6 chiêu chung + 2 chiêu công pháp (ô 1–8), thần thông ô 9 (chỉ số `BAR_SIZE`), rồi hàng bậc cao (Shift+số). */
   bar(): SkillDef[] {
     const m = get().method?.method;
-    return [...skillBar(m), ...tierBar(m)];
+    const tt = thanThongSkill(m);
+    return [...skillBar(m), ...(tt ? [tt] : []), ...tierBar(m)];
   }
 
   useSkill(i: number): void {
@@ -1428,6 +1456,45 @@ export class Game {
     if ((get().char?.level ?? 0) < skill.unlock) return;
     if ((get().cds[skill.id] ?? 0) > Date.now() + 80) return;
     this.send(C.SKILL, { id: skill.id, t: this.targetId || undefined });
+  }
+
+  /** Nhật ký các lần quét thần thức đã nhận (dev, để ảnh chụp/kiểm tay). */
+  spiritLog: { r: number; n: number; kinds: Record<string, number>; hits: SpiritScanMsg['hits'] }[] = [];
+
+  /** Thần thức (phím V, giữ): chỉ gửi ý định bắt đầu/thả; server giữ 2,5 giây, kiểm điều kiện, quyết định kết quả. */
+  private spiritHeld = false;
+
+  spiritHold(on: boolean): void {
+    const st = get();
+    if (on) {
+      const me = this.me();
+      if (!me || me.fl & PF_DEAD) return;
+      if (!spiritUnlocked(st.char?.level ?? 0)) {
+        pushToast(t('sys.spirit_locked'), 'info');
+        return;
+      }
+      if (st.spirit.chUntil > performance.now()) return;
+      this.spiritHeld = true;
+    } else {
+      // Thả phím: luôn gửi nếu đã gửi lệnh giữ, bất kể server đã báo `chUntil` hay chưa (chạm nhanh trong một RTT).
+      if (!this.spiritHeld) return;
+      this.spiritHeld = false;
+    }
+    this.send(C.SPIRIT, { on });
+  }
+
+  /** Bản mệnh pháp bảo Ngưng Đan Lô (phím T): có từ Kết Đan; chỉ gửi ý định, server quyết định hồi chiêu, linh lực, mục tiêu. */
+  useBonded(): void {
+    const me = this.me();
+    const st = get();
+    if (!me || me.fl & PF_DEAD) return;
+    const def = ARTIFACT.get(BONDED_ARTIFACT_ID);
+    if (!def || bondedLevel(st.char?.level ?? 0) < 1) {
+      pushToast(t('sys.bonded_locked'), 'info');
+      return;
+    }
+    if ((st.cds[def.skill] ?? 0) > Date.now() + 80) return;
+    this.send(C.BONDED, {});
   }
 
   /** Pháp bảo phụ (phím 9, ô riêng): chỉ gửi ý định, server quyết định hồi chiêu, linh lực, mục tiêu (P3-8). */
@@ -1824,8 +1891,9 @@ export class Game {
         break;
       case 'art': {
         // Pháp bảo phụ (P3-8): pháp bảo bay lên theo animation thủ tục; thêm một vòng sáng nhỏ dưới chân, không trụ sáng, không chớp toàn cảnh.
-        e.players.get(src)?.art?.trigger(m.d ?? 1.2);
-        const col = tint(0xc9a2ff);
+        if (m.s === BONDED_ARTIFACT_ID) e.players.get(src)?.lo?.trigger(m.d ?? 1.4);
+        else e.players.get(src)?.art?.trigger(m.d ?? 1.2);
+        const col = tint(m.s === BONDED_ARTIFACT_ID ? 0xffb35a : 0xc9a2ff);
         if (e.chestOf(src, _v)) v.burst(_v.set(_v.x, _v.y - 1.05, _v.z).clone(), col, Math.min(1.5, (m.r ?? 8) * 0.12), 0.4);
         if (m.s === 'itm_thanh_lien_an') {
           // Khiên trùm cả tổ đội: vẽ cho người trong tầm đang mang khiên (cờ về sau vài chục ms).
@@ -1841,6 +1909,10 @@ export class Game {
         }
         break;
       }
+      case 'artheal':
+        // Ngưng Đan Lô: cột đan hỏa mảnh và mờ (không che người), số hồi do DmgMsg heal hiện.
+        v.pillar(posSrc, tint(0xffb35a), 0.8, 0.3, 2.2, 0.1);
+        break;
       case 'artdrain':
         // Hồ Lô hút linh lực: một tia nhỏ từ quái bay về người dùng.
         if (e.chestOf(src, _v)) v.swordShot(_v, posDst, tint(0xc9a2ff), 0.45, 0.5);
@@ -2354,6 +2426,7 @@ export class Game {
       this.mapVis.setOpen(st.tele.open);
       this.mapVis.setMarks(st.marks);
       this.mapVis.update(rp, st.tele.cast, performance.now(), TELE_CAST_MS);
+      this.mapVis.updateSpirit(rp, st.spirit, st.spiritScan, performance.now());
     }
     for (const disc of [this.portalDisc, this.exitDisc]) {
       if (!disc) continue;

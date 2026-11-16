@@ -7,7 +7,7 @@ import { DUNGEON_EXIT, locoDirOf, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, M
 import { groundAt } from './levelCtx';
 import { swordOverride } from './testParams';
 import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
-import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
+import { bodyRadiusOf, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
 import { LABELS, type Label } from './labelBatch';
@@ -147,6 +147,8 @@ export class PlayerVis {
   lv = 0;
   /** Pháp bảo phụ đang đeo (nạp lười khi có `s.art`). */
   art: ArtifactVis | null = null;
+  /** Bản mệnh pháp bảo Ngưng Đan Lô (từ Kết Đan, cấp 20; E2-E). */
+  lo: ArtifactVis | null = null;
   /** Công pháp đang tu (từ `s.mt`): chọn giọng động tác của chiêu. */
   mt = '';
   /** Vận tốc hiển thị đã làm mượt (m/s) để suy ra đi lùi/ngang so với hướng nhìn (K-4). */
@@ -202,6 +204,7 @@ export class PlayerVis {
   dispose() {
     disposeLabel(this.label);
     this.art?.dispose();
+    this.lo?.dispose();
     this.model.dispose();
   }
 }
@@ -569,6 +572,11 @@ export class EntityManager {
         this.group.add(v.art.root);
       }
       v.art?.setItem(wantArt);
+      if (s.lv >= BONDED_UNLOCK_LEVEL && !v.lo && (isLocal || (s.x - local.x) ** 2 + (s.z - local.z) ** 2 < 90 * 90)) {
+        v.lo = new ArtifactVis();
+        this.group.add(v.lo.root);
+      }
+      v.lo?.setItem(s.lv >= BONDED_UNLOCK_LEVEL ? BONDED_ARTIFACT_ID : '');
       v.model.setWeaponGlow?.(s.wg ?? 0);
       v.model.setWeaponTint?.(look.set ? (SET.get(look.set)?.look.blade ?? '') : '');
       // Giật lùi là độ lệch hiển thị cộng vào root, không ghi vào v.x/z hay trạng thái server.
@@ -595,6 +603,7 @@ export class EntityManager {
         airborne: isLocal ? local.airborne : !s.gr,
       });
       v.art?.update(dt, v.model.root.position.x, v.model.root.position.y, v.model.root.position.z, v.yaw, v.speed, dead);
+      v.lo?.update(dt, v.model.root.position.x, v.model.root.position.y, v.model.root.position.z, v.yaw, v.speed, dead);
       if (!isLocal) {
         const a = v.bar.tick(s.hp, s.mhp, sid === targetId, dead, dt, this.time);
         if (a > 0) {
