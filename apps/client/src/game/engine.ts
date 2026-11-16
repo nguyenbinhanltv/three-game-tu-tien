@@ -2348,11 +2348,72 @@ export class Game {
 
   private renderFails = 0;
   private fellBack = false;
+  /** Lỗi WebGPU gần nhất (tối đa 20): bảng F3 và `__game.gpuErrors`. */
+  gpuErrors: string[] = [];
+  private blankChecks = 0;
+  private blankNextAt = 0;
+  private blankProbe: CanvasRenderingContext2D | null = null;
+
+  /**
+   * Khung đen/trơn liên tục (cảnh không vẽ ra gì dù vòng lặp chạy): chỉ WebGPU, 30 s đầu sau khi vào game.
+   * Thu canvas về 24×14 điểm, độ lệch chuẩn độ sáng gần 0 ba lần liên tiếp thì lùi WebGL2.
+   * Chạy ngay sau `post.render()` trong cùng tác vụ, lúc đó canvas WebGPU còn đọc được.
+   */
+  private checkBlankFrame(now: number): void {
+    if (this.fellBack || document.hidden || !isWebGPU(this.renderer)) return;
+    if (!this.blankNextAt) {
+      this.blankNextAt = now + 4000;
+      this.loadedAt = now;
+    }
+    if (now < this.blankNextAt || now > this.loadedAt + 34000) return;
+    this.blankNextAt = now + 1500;
+    if (!this.blankProbe) {
+      const c = document.createElement('canvas');
+      c.width = 24;
+      c.height = 14;
+      this.blankProbe = c.getContext('2d', { willReadFrequently: true });
+    }
+    const x = this.blankProbe;
+    if (!x) return;
+    try {
+      x.drawImage(this.canvas, 0, 0, 24, 14);
+      const d = x.getImageData(0, 0, 24, 14).data;
+      let sum = 0;
+      let sq = 0;
+      const n = d.length / 4;
+      for (let i = 0; i < d.length; i += 4) {
+        const l = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+        sum += l;
+        sq += l * l;
+      }
+      const mean = sum / n;
+      const sd = Math.sqrt(Math.max(0, sq / n - mean * mean));
+      this.lastBlank = { mean: +mean.toFixed(1), sd: +sd.toFixed(2) };
+      this.blankChecks = sd < 1.5 ? this.blankChecks + 1 : 0;
+      if (this.blankChecks >= 3) {
+        console.error('[gpu] khung trơn liên tục', this.lastBlank, 'lỗi:', this.gpuErrors);
+        this.fallbackToWebGL2('blank-frame');
+      }
+    } catch {
+      /* không đọc được canvas: không kết luận */
+    }
+  }
+  lastBlank: { mean: number; sd: number } | null = null;
+  private loadedAt = performance.now();
 
   /** WebGPU mất thiết bị (driver reset, tràn VRAM, GPU bị rút): cảnh đen mà vòng lặp vẫn chạy. */
   private watchGpuDevice(): void {
     if (!isWebGPU(this.renderer)) return;
-    const dev = (this.renderer.backend as { device?: { lost?: Promise<{ reason?: string; message?: string }> } }).device;
+    const dev = (this.renderer.backend as {
+      device?: { lost?: Promise<{ reason?: string; message?: string }>; addEventListener?: (t: string, f: (e: { error?: { message?: string } }) => void) => void };
+    }).device;
+    // Lỗi WebGPU không bắt được (validation, shader/pipeline hỏng): ghi lại để bảng F3 và console cho thấy nguyên nhân.
+    dev?.addEventListener?.('uncapturederror', (e) => {
+      const msg = String(e.error?.message ?? e.error ?? 'unknown').slice(0, 400);
+      this.gpuErrors.push(msg);
+      if (this.gpuErrors.length > 20) this.gpuErrors.shift();
+      console.error('[gpu] uncapturederror:', msg);
+    });
     void dev?.lost?.then((info) => {
       if (this.disposed || info?.reason === 'destroyed') return;
       console.error('[gpu] device lost:', info?.reason, info?.message);
@@ -2487,6 +2548,7 @@ export class Game {
     try {
       this.post!.render();
       this.renderFails = 0;
+      this.checkBlankFrame(now);
     } catch (e) {
       // Vẽ ném lỗi liên tục (thiết bị WebGPU hỏng, shader không biên dịch được): cảnh chỉ còn nền đen dù HUD vẫn chạy.
       console.error('[render]', e);
