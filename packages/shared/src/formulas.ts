@@ -2,22 +2,63 @@
 
 export const NGUNG_KHI_MAX = 15;
 export const TRUC_CO_LEVEL = 16;
-export const MAX_LEVEL = 18;
+/** Cấp đầu của từng đại cảnh giới. Trúc Cơ 16–19 (19 = đại viên mãn), Kết Đan 20–23, Nguyên Anh 24–27, Hóa Thần 28 (sơ kỳ, trần tạm). */
+export const KET_DAN_LEVEL = 20;
+export const NGUYEN_ANH_LEVEL = 24;
+export const HOA_THAN_LEVEL = 28;
+export const MAX_LEVEL = 28;
 export const FLY_UNLOCK_LEVEL = 3;
 
 export const GCD = 1.0;
 export const CRIT_CHANCE = 0.1;
 export const CRIT_MULT = 1.6;
 
+/**
+ * Tu vi cần để đầy từng cấp Trúc Cơ → Nguyên Anh (cấp 16…27), `docs/EXPANSION_DESIGN.md` 2.2.
+ * = giờ/cấp (Trúc Cơ 1,0 · Kết Đan 1,5 · Nguyên Anh 2,0) × thu nhập tu vi/giờ tại cấp (`400 × (12+7L) × 1,25 × 0,9`).
+ * Tích lũy từ đầu mỗi đại cảnh giới: Trúc Cơ 242.000 (4,0 giờ), Kết Đan 439.000 (6,0 giờ), Nguyên Anh 686.000 (8,0 giờ).
+ * Trúc Cơ cũ là 30k/50k/70k (cấp 16–18, 2,5 giờ): đường cong mới kéo dài chặng này, db.ts có migration giữ tỉ lệ tiến độ.
+ */
+const XP_NEED_ADV: readonly number[] = [
+  56_000, 59_000, 62_000, 65_000, // Trúc Cơ 16–19
+  102_500, 107_500, 112_000, 117_000, // Kết Đan 20–23
+  162_000, 168_500, 174_500, 181_000, // Nguyên Anh 24–27
+];
+
 /** Tu vi cần để đầy cảnh giới hiện tại. */
 export function xpNeed(level: number): number {
   if (level >= MAX_LEVEL) return 99_999_999;
-  if (level >= TRUC_CO_LEVEL) return 30000 + (level - TRUC_CO_LEVEL) * 20000;
+  if (level >= TRUC_CO_LEVEL) return XP_NEED_ADV[level - TRUC_CO_LEVEL];
   // 90·L²: tổng Ngưng Khí 1→15 khoảng 112 nghìn tu vi. `pnpm sim:progress` (3-10) mô phỏng cả đi tìm quái theo cụm của M-2,
   // áp lực quái thường và đả tọa, ra 3,2–3,5 giờ tới viên mãn Ngưng Khí 15 cho cả ba công pháp (chưa tính boss, bí cảnh).
   // Mục tiêu đã chốt (2026-11-15): 3–4 giờ; cũ 70·L² cho 2,2 giờ. Sẽ dài thêm khi có thêm nội dung; đổi đường cong
   // phải chạy lại `pnpm sim:progress` (cờ LỖI nếu ra ngoài 3–4 giờ).
   return 90 * level * level;
+}
+
+/**
+ * Hệ số cảnh giới nhân hp/mp/atk/def của người chơi và hp/atk của quái (một nguồn cho server, client tooltip và sim):
+ * Ngưng Khí 1,0 · Trúc Cơ 1,6 · Kết Đan 2,5 · Nguyên Anh 3,8 · Hóa Thần 5,5. Quái cũng nhân để thời gian hạ quái không sụp
+ * khi người chơi nhảy cảnh giới (`docs/EXPANSION_DESIGN.md` 2.3).
+ */
+export const REALM_MUL: readonly { from: number; mul: number }[] = [
+  { from: 1, mul: 1 },
+  { from: TRUC_CO_LEVEL, mul: 1.6 },
+  { from: KET_DAN_LEVEL, mul: 2.5 },
+  { from: NGUYEN_ANH_LEVEL, mul: 3.8 },
+  { from: HOA_THAN_LEVEL, mul: 5.5 },
+];
+export const MONSTER_REALM_MUL = REALM_MUL;
+
+export function realmMul(level: number): number {
+  let m = 1;
+  for (const r of REALM_MUL) if (level >= r.from) m = r.mul;
+  return m;
+}
+
+/** Đại cảnh giới của cấp: 0 Ngưng Khí, 1 Trúc Cơ, 2 Kết Đan, 3 Nguyên Anh, 4 Hóa Thần (chỉ số của `glossary.realms`). */
+export function majorRealmOf(level: number): number {
+  return level >= HOA_THAN_LEVEL ? 4 : level >= NGUYEN_ANH_LEVEL ? 3 : level >= KET_DAN_LEVEL ? 2 : level >= TRUC_CO_LEVEL ? 1 : 0;
 }
 
 export interface BaseStats {
@@ -29,20 +70,21 @@ export interface BaseStats {
 
 export function playerBaseStats(level: number): BaseStats {
   const l = level - 1;
-  const realmMul = level >= TRUC_CO_LEVEL ? 1.6 : 1;
+  const m = realmMul(level);
   return {
-    hp: Math.round((120 + 34 * l) * realmMul),
-    mp: Math.round((80 + 14 * l) * realmMul),
-    atk: Math.round((12 + 4.2 * l) * realmMul),
-    def: Math.round((3 + 1.6 * l) * realmMul),
+    hp: Math.round((120 + 34 * l) * m),
+    mp: Math.round((80 + 14 * l) * m),
+    atk: Math.round((12 + 4.2 * l) * m),
+    def: Math.round((3 + 1.6 * l) * m),
   };
 }
 
 export function monsterStats(level: number, hpMul: number, atkMul: number): BaseStats {
+  const m = realmMul(level);
   return {
-    hp: Math.round((60 + 42 * level) * hpMul),
+    hp: Math.round((60 + 42 * level) * hpMul * m),
     mp: 0,
-    atk: Math.round((7 + 3.4 * level) * atkMul),
+    atk: Math.round((7 + 3.4 * level) * atkMul * m),
     def: Math.round(1 + 1.3 * level),
   };
 }

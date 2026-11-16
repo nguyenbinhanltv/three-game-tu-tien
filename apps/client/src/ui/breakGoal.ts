@@ -23,7 +23,7 @@ export interface BreakGoal {
  */
 export function breakGoal(c: BreakChar): BreakGoal {
   if (c.level > NGUNG_KHI_MAX) return { kind: null, level: 0, ready: false };
-  const bk = BOTTLENECK_LEVELS.find((b) => b >= c.level && c.bk < b);
+  const bk = BOTTLENECK_LEVELS.find((b) => b <= NGUNG_KHI_MAX && b >= c.level && c.bk < b);
   if (bk !== undefined) return { kind: 'bk', level: bk, ready: bottleneckReady(c.level, c.bk, c.xp, c.xpNeed) };
   return { kind: 'trib', level: NGUNG_KHI_MAX, ready: c.level === NGUNG_KHI_MAX && c.xp >= c.xpNeed };
 }
