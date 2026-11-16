@@ -1,0 +1,32 @@
+{
+ "me": {
+  "lv": 20,
+  "room": "world-doan_mach"
+ },
+ "beams": 2,
+ "scan": [
+  {
+   "r": 60,
+   "n": 2,
+   "kinds": {
+    "poi": 1,
+    "elite": 1
+   },
+   "hits": [
+    {
+     "k": "poi",
+     "x": 1279,
+     "z": 1199,
+     "n": "mach_tinh_tru"
+    },
+    {
+     "k": "elite",
+     "x": 1296.1,
+     "z": 1305.9,
+     "n": "elite_liet_cot_bao",
+     "lv": 17
+    }
+   ]
+  }
+ ]
+}

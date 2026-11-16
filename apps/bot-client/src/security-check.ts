@@ -1154,6 +1154,40 @@ async function main() {
     check('người ngoài tổ đội không thấy điểm đánh dấu của người khác', marksB === 0, `${marksB} tin`);
     ta.room.send(C.MARK, { clear: true });
     await W(1200);
+    // f. Thần thức và bản mệnh pháp bảo (E2-E): chưa Kết Đan thì từ chối hết; Kết Đan rồi thì spam/rác không tạo thêm quét, không tốn thêm linh lực.
+    {
+      let scans = 0;
+      let spiStates = 0;
+      ta.room.onMessage(S.SPIRIT_SCAN, () => scans++);
+      ta.room.onMessage(S.SPIRIT_STATE, () => spiStates++);
+      await sayT(ta.room, 'level 12');
+      await sayT(ta.room, 'tp 2048 2088');
+      await sayT(ta.room, 'heal');
+      await W(400);
+      for (let i = 0; i < 60; i++) ta.room.send(C.SPIRIT, { on: true });
+      for (let i = 0; i < 60; i++) ta.room.send(C.BONDED, {});
+      await W(3200);
+      check('chưa Kết Đan: thần thức và Ngưng Đan Lô bị từ chối, không có kết quả quét', scans === 0 && (await health()), `${scans} kết quả quét`);
+      await sayT(ta.room, 'level 20');
+      await sayT(ta.room, 'god on');
+      await W(600);
+      for (const m of [null, undefined, 5, 'x', [1], { on: 'yes' }, { on: {} }, { on: 1 }]) {
+        ta.room.send(C.SPIRIT, m);
+        await W(150);
+      }
+      await W(3000);
+      check('lệnh thần thức sai kiểu bị bỏ qua, không có kết quả quét', scans === 0 && (await health()), `${scans} kết quả quét`);
+      const s0 = spiStates;
+      for (let i = 0; i < 80; i++) ta.room.send(C.SPIRIT, { on: true });
+      await W(3400);
+      check('Kết Đan: spam 80 lệnh giữ V chỉ cho đúng một lần quét', scans === 1 && spiStates - s0 <= 4 && (await health()), `${scans} kết quả quét, ${spiStates - s0} trạng thái`);
+      for (let i = 0; i < 80; i++) ta.room.send(C.SPIRIT, { on: true });
+      await W(3000);
+      check('đang hồi chiêu: giữ V lại không quét thêm', scans === 1, `${scans} kết quả quét`);
+      for (let i = 0; i < 80; i++) ta.room.send(C.BONDED, {});
+      await W(800);
+      check('spam 80 lệnh Ngưng Đan Lô: server vẫn sống', await health());
+    }
     await ta.room.leave(true);
     await tb.room.leave(true);
   }
