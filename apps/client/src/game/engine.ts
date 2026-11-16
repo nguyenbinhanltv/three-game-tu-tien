@@ -108,6 +108,21 @@ export function serverUrl(): string {
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
 }
 
+const RENDERER_KEY = 'dtl.renderer';
+const RENDER_FAIL_LIMIT = 30;
+
+/** `?renderer=webgl2` ép WebGL2 và nhớ lại; `?renderer=auto` xóa lựa chọn nhớ. */
+function wantWebGL2(params: URLSearchParams): boolean {
+  const q = params.get('renderer');
+  try {
+    if (q === 'auto') localStorage.removeItem(RENDERER_KEY);
+    else if (q === 'webgl2') localStorage.setItem(RENDERER_KEY, 'webgl2');
+    return q === 'webgl2' || (q !== 'auto' && localStorage.getItem(RENDERER_KEY) === 'webgl2');
+  } catch {
+    return q === 'webgl2';
+  }
+}
+
 function isWebGPU(r: THREE.WebGPURenderer): boolean {
   return !!(r.backend as { isWebGPUBackend?: boolean }).isWebGPUBackend;
 }
@@ -745,8 +760,9 @@ export class Game {
     // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
     // `?gputime=1` (chỉ cho công cụ đo, pnpm bench:crowd): bật timestamp query để đọc thời gian GPU bằng
     // `renderer.resolveTimestampsAsync()`; không ai resolve thì three cảnh báo hết chỗ query, nên đừng bật khi chơi.
-    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: params.get('renderer') === 'webgl2', trackTimestamp: params.get('gputime') === '1' });
+    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: wantWebGL2(params), trackTimestamp: params.get('gputime') === '1' });
     await this.renderer.init();
+    this.watchGpuDevice();
     // Đổi preset lúc chạy làm pass cảnh đổi giữa có/không MRT bloom: phải tách cache shader theo đích (nodeCacheFix.ts).
     patchNodeCacheKey(this.renderer);
     mark('rendererInit');
@@ -2330,6 +2346,34 @@ export class Game {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
+  private renderFails = 0;
+  private fellBack = false;
+
+  /** WebGPU mất thiết bị (driver reset, tràn VRAM, GPU bị rút): cảnh đen mà vòng lặp vẫn chạy. */
+  private watchGpuDevice(): void {
+    if (!isWebGPU(this.renderer)) return;
+    const dev = (this.renderer.backend as { device?: { lost?: Promise<{ reason?: string; message?: string }> } }).device;
+    void dev?.lost?.then((info) => {
+      if (this.disposed || info?.reason === 'destroyed') return;
+      console.error('[gpu] device lost:', info?.reason, info?.message);
+      this.fallbackToWebGL2('device-lost');
+    });
+  }
+
+  /** Nhớ chọn WebGL2 cho các lần vào sau, báo trên HUD rồi nạp lại trang (WebGPU không dựng lại được trong cùng trang). */
+  private fallbackToWebGL2(why: string): void {
+    if (this.fellBack || this.disposed) return;
+    this.fellBack = true;
+    console.warn('[gpu] lùi WebGL2:', why);
+    try {
+      localStorage.setItem(RENDERER_KEY, 'webgl2');
+    } catch {
+      /* bỏ qua */
+    }
+    pushToast(t('sys.gpu_fallback'), 'bad');
+    setTimeout(() => location.reload(), 2500);
+  }
+
   private frame(): void {
     if (this.disposed || this.compiling > 0) return;
     this.renderer.info.reset();
@@ -2440,7 +2484,14 @@ export class Game {
     // Cập nhật ma trận cả cảnh MỘT lần mỗi khung (M3-9): để tự động thì mỗi pass (cảnh chính, bóng) duyệt lại
     // toàn bộ cây, kể cả ~60 xương của mỗi nhân vật có xương.
     this.scene.updateMatrixWorld();
-    this.post!.render();
+    try {
+      this.post!.render();
+      this.renderFails = 0;
+    } catch (e) {
+      // Vẽ ném lỗi liên tục (thiết bị WebGPU hỏng, shader không biên dịch được): cảnh chỉ còn nền đen dù HUD vẫn chạy.
+      console.error('[render]', e);
+      if (++this.renderFails >= RENDER_FAIL_LIMIT) this.fallbackToWebGL2('render-error');
+    }
     // renderer.info không tự reset (M1-6): lúc này là tổng của MỌI pass trong khung (bóng, cảnh, hậu kỳ).
     const ri = this.renderer.info.render;
     this.lastRender.drawCalls = ri.drawCalls ?? ri.calls;
