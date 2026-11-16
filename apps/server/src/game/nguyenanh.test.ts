@@ -200,7 +200,10 @@ describe('Tam Trọng Kiếp: pha 3 tâm ma, tâm cảnh', () => {
     t.run(46);
     const sh = t.shadow()!;
     t.sim.damageMonster(sh, sh.s.mhp + 1, t.p);
+    const hz0 = t.hazards().length;
     t.run(47);
+    // Đã ascend thì không còn tia/bóng nào mang tên người đó phát thêm.
+    expect(t.hazards().length).toBe(hz0);
     expect(t.p.trib).toBeNull();
     expect(t.char.level).toBe(24);
     expect(t.fx('ascend')[0]?.tb).toBe('nguyen_anh');

@@ -11,8 +11,9 @@ Dãy khung một lần độ kiếp Nguyên Anh 65 s (`/gm trib nguyen_anh`, ch�
 | `05`, `06` | pha 2 | Ô lửa cháy, ô nặng nhất không rơi vào ô thân đứng khi đang xuất khiếu |
 | `07-pha3-tam-ma-cat-canh` | ~43 s | Cắt cảnh nhìn xuống chỗ Tâm Ma Ảnh sắp hiện (tông tím trầm) |
 | `08-pha3-tam-canh-bong` | ~47 s | Tâm Ma Ảnh tầng 25, thanh tâm cảnh ở HUD |
+| `08c`, `08d` | pha 3 | Cận cảnh Tâm Ma Ảnh (hai góc): bản sao tối màu của người chơi, viền tím/đỏ sẫm, vành tím + vành đỏ nở nhịp dưới chân (`Vfx.tamMaAura`), không lóa |
 | `08b-pha3-tam-ma-ra-chieu-1/2` | pha 3 | Bóng dùng chiêu của người chơi: vạch báo 1,1 s |
-| `09`, `10`, `11` | cuối | Hết kiếp, vành ascend (tông lam tím nhạt), thẻ chương Nguyên Anh |
+| `09`, `10`, `11` | cuối | Hết kiếp, vành ascend (rất mảnh, alpha thấp, tan nhanh, nhân vật rõ), thẻ chương Nguyên Anh |
 
 Kiểm tự động: `apps/server/src/game/nguyenanh.test.ts` (dữ liệu/cổng, tiêu vật phẩm, tia xích, xuất khiếu 6 s/hồi 20 s/đẩy ô lửa, tâm cảnh giảm-hồi-về 0 thất bại, hạ bóng thì thành, kéo dài tới 65 s thì thành, chết thì thất bại), `tribroom.test.ts` (vé, hộ pháp, về Vân Lam), `content:check` (thông số cơ chế, kiếp bật phải có vật phẩm + công thức, `peakGated`).
 

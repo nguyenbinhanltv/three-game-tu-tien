@@ -67,6 +67,7 @@ async function main(): Promise<void> {
     let seenChain = 0;
     let seenCast = 0;
     let soulSent = false;
+    let closeShot = false;
     const hz = (f: string) => page.evaluate((fn) => ((window as unknown as G).__game!.hazardLog ?? []).filter(new Function('h', 'return ' + fn) as (h: unknown) => boolean).length, f);
     const top = async (file: string) => {
       await page.evaluate(() => {
@@ -99,6 +100,36 @@ async function main(): Promise<void> {
         if (!soulSent && el > 19) {
           soulSent = true;
           await page.keyboard.press('KeyX');
+        }
+        // Cận cảnh Tâm Ma Ảnh: camera quay về phía bóng, thấp, để thấy dáng bản sao tối màu và quầng nhận diện.
+        if (el > 45 && !closeShot) {
+          closeShot = true;
+          await page.evaluate(() => {
+            const g = (window as unknown as G).__game!;
+            const me = g.me();
+            let sh: { x: number; z: number } | undefined;
+            g.view.monsters.forEach((m: { t: string; hp: number; x: number; z: number }) => {
+              if (m.t === 'mon_tam_ma' && m.hp > 0) sh = m;
+            });
+            if (sh) g.camYaw = Math.atan2(sh.x - me.x, sh.z - me.z);
+            g.camPitch = 0.28;
+            g.camDist = 7;
+            g.camDistCur = 7;
+          });
+          await sleep(500);
+          await page.screenshot({ path: path.join(OUT, '08c-pha3-tam-ma-can-canh.jpg'), type: 'jpeg', quality: 85 });
+          await page.evaluate(() => {
+            const g = (window as unknown as G).__game!;
+            g.camYaw += Math.PI;
+          });
+          await sleep(500);
+          await page.screenshot({ path: path.join(OUT, '08d-pha3-tam-ma-can-canh-nguoc.jpg'), type: 'jpeg', quality: 85 });
+          await page.evaluate(() => {
+            const g = (window as unknown as G).__game!;
+            g.camPitch = 0.45;
+            g.camDist = 9;
+            g.camDistCur = 9;
+          });
         }
         // Bóng tâm ma ra chiêu của người chơi (vùng `spirit`).
         if (el > 43 && castShot < 2) {

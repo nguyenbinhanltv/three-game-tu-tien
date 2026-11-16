@@ -2070,6 +2070,20 @@ export class Game {
         if (first) {
           const me = this.me();
           if (me) this.danCine(this.renderPos.x, this.renderPos.z, '#8a78c8');
+          // Quầng nhận diện bản sao tối màu của Tâm Ma Ảnh (theo dõi quái `mon_tam_ma` đang sống trong tầm nhìn).
+          v.tamMaAura(
+            (out) => {
+              let found = false;
+              this.view.monsters.forEach((mm) => {
+                if (!found && mm.t === 'mon_tam_ma' && mm.hp > 0) {
+                  out.set(mm.x, groundAt(mm.x, mm.z), mm.z);
+                  found = true;
+                }
+              });
+              return found;
+            },
+            () => get().tamCanh >= 0,
+          );
         }
         break;
       }

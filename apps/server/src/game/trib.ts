@@ -93,6 +93,8 @@ export class TribSystem {
       this.h.sys(p, 'sys.trib_final', undefined, 'bad');
     }
     runMechanic(ph.mechanic, 'tick', ctx);
+    // Cơ chế tick có thể kết thúc kiếp (tâm cảnh về 0, hạ bóng): không phát thêm tia/bóng cho người đã xong kiếp.
+    if (p.trib !== tr) return;
     this.tickShadows(p, tr, ph, now, pi);
     if (now < tr.nextAt) return;
     tr.n++;
