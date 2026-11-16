@@ -350,6 +350,24 @@ function checkAi(m: MonsterDef, ai: MonsterAi, attackCd: number, at: string) {
     // Trần 5: đòn tự bạo cuối trận của Thôn Mạch (E2-C) cần ~65% máu tối đa người cấp 19.
     if (!(ch.mul > 0 && ch.mul <= 5)) err(`${id}: chant.mul phải trong (0, 5]`);
     if (!(ch.r > 0 && ch.r <= 20)) err(`${id}: chant.r phải trong (0, 20]`);
+    const pu = ch.pull;
+    if (pu) {
+      if (!(pu.range >= ch.r && pu.range <= 30)) err(`${id}: chant.pull.range phải trong [chant.r; 30] m`);
+      if (!(pu.delay >= 0.9 && pu.delay <= 3)) err(`${id}: chant.pull.delay phải trong [0,9; 3] giây (đủ thời gian báo)`);
+      if (!(pu.dur >= 0.4 && pu.dur <= 2)) err(`${id}: chant.pull.dur phải trong [0,4; 2] giây`);
+      if (!(pu.stop >= 1 && pu.stop <= ch.r)) err(`${id}: chant.pull.stop phải trong [1; chant.r] m (kéo vào trong vùng nổ)`);
+      if (!(ch.cd > ch.cast + pu.delay + pu.dur + ch.delay + ch.stun)) err(`${id}: chant.cd phải lớn hơn cast + pull.delay + pull.dur + delay + stun`);
+    }
+  }
+  const dp = m.deathPool;
+  if (dp) {
+    if (m.boss) err(`${id}: vũng độc khi chết chỉ cho quái thường/tinh anh`);
+    if (!KINDS.includes(dp.kind)) err(`${id}: deathPool.kind không hợp lệ`);
+    if (!(dp.r >= 1 && dp.r <= 6)) err(`${id}: deathPool.r phải trong [1; 6] m`);
+    if (!(dp.delay >= 0.9 && dp.delay <= 3)) err(`${id}: deathPool.delay phải trong [0,9; 3] giây (đủ thời gian báo)`);
+    if (!(dp.dur >= 2 && dp.dur <= 10)) err(`${id}: deathPool.dur phải trong [2; 10] giây`);
+    if (!(dp.tick >= 0.5 && dp.tick <= 2)) err(`${id}: deathPool.tick phải trong [0,5; 2] giây`);
+    if (!(dp.mul > 0 && dp.mul <= 0.5)) err(`${id}: deathPool.mul phải trong (0; 0,5] (sát thương nhỏ mỗi nhịp)`);
   }
   const sl = ai.slam;
   if (sl) {
@@ -391,7 +409,7 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!inR(line.delay, 0.9, 3)) err(`${id}: line.delay phải trong [0,9; 3] giây`);
     if (!(line.cd > line.delay + 2)) err(`${id}: line.cd phải lớn hơn delay + 2`);
     if (!mulOk(line.mul)) err(`${id}: line.mul phải trong (0, 3]`);
-    if (!(inR(line.r, 2, m.boss ? 30 : 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, ${m.boss ? 30 : 20}]`);
+    if (!(inR(line.r, 2, m.boss ? 40 : 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, ${m.boss ? 40 : 20}]`);
     if (!inR(line.w, 0.5, 6)) err(`${id}: line.w phải trong [0,5; 6] mét`);
     if (!(line.range > 0 && line.range <= line.r)) err(`${id}: line.range phải trong (0, r]`);
   }
@@ -675,8 +693,6 @@ for (const r of RECIPES) {
     for (const m of r.mons) if (MONSTER.has(m) && !LOOT.has(m)) err(`loot.$mats: quái ${m} chưa có bảng rơi`);
   }
 }
-// E3-H: quái Vân Hải chưa có trong monsters.json (E3-B). TODO: xóa tập này khi E3-B merge.
-const E3B_PENDING_MONS = new Set(['mon_van_hac', 'mon_kinh_linh', 'mon_phu_dao_thach_quy', 'mon_bich_ngoc_kim_thien', 'elite_loi_van_su_vuong', 'boss_van_hai_kinh_vuong']);
 for (const n of NPCS) {
   needStr(`npc.${n.id}.name`);
   const nl = LEVELS[n.level ?? 'van_lam'];
@@ -697,7 +713,7 @@ for (const q of QUESTS) {
   if (!NPC.has(q.turnin)) err(`quest ${q.id}: turnin không tồn tại`);
   if (q.requires && !QUEST.has(q.requires)) err(`quest ${q.id}: requires không tồn tại ${q.requires}`);
   for (const o of q.objectives) {
-    if (o.type === 'kill' && !MONSTER.has(o.target ?? '') && !E3B_PENDING_MONS.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
+    if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target)) err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
@@ -979,13 +995,6 @@ console.log(`Tổng tu vi Ngưng Khí 1 → viên mãn tầng 15: ${total}`);
 }
 console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILLS.length} skill (${METHODS.length} công pháp), ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose, ${APPEARANCE.dyes.length} màu áo`);
 
-if (errors.length) {
-  console.error(`\n${errors.length} lỗi nội dung:`);
-  for (const e of errors) console.error(' - ' + e);
-  process.exit(1);
-}
-console.log('Nội dung hợp lệ.');
-
 // E2-H: điểm phụ (`spots`), người đồng hành (`escorts`) và NPC trạm theo glossary.
 {
   const glossSpots = GLOSSARY.spots as Record<string, string>;
@@ -1028,8 +1037,7 @@ console.log('Nội dung hợp lệ.');
 }
 // Chuỗi chương 3 (E3-H): q3_* nối đuôi từ q2_ket_dan tới q3_nguyen_anh; phụ s3_* nhận sau khi vào chương; mọi nhiệm vụ nhận ở NPC có thật.
 {
-  // TODO (sau khi #148 và E3-B merge): thêm 'q3_nguyen_anh' vào chuỗi, đổi giao/trả sang npc_lam_chieu_dung và requires q3_kinh_vuong.
-  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong'];
+  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong', 'q3_nguyen_anh'];
   main3.forEach((id, i) => {
     const q = QUEST.get(id);
     if (!q) return err(`thiếu nhiệm vụ chính chương 3 ${id}`);
@@ -1040,5 +1048,13 @@ console.log('Nội dung hợp lệ.');
   const first = QUEST.get('q3_len_may');
   if (first && !(first.unlockTele ?? []).includes('vh_tp_hub')) err('q3_len_may phải mở trận vh_tp_hub (unlockTele)');
   const na = QUEST.get('q3_nguyen_anh');
+  if (na && (na.giver !== 'npc_lam_chieu_dung' || na.turnin !== 'npc_lam_chieu_dung')) err('q3_nguyen_anh phải giao và trả ở npc_lam_chieu_dung');
   if (na && !na.objectives.some((o) => o.type === 'breakthrough' && o.target === 'nguyen_anh')) err('q3_nguyen_anh phải có mục tiêu breakthrough nguyen_anh');
 }
+
+if (errors.length) {
+  console.error(`\n${errors.length} lỗi nội dung:`);
+  for (const e of errors) console.error(' - ' + e);
+  process.exit(1);
+}
+console.log('Nội dung hợp lệ.');

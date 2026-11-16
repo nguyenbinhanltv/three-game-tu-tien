@@ -1,12 +1,12 @@
 import * as THREE from 'three/webgpu';
 import { float, normalView, positionViewDirection, vec3 } from 'three/tsl';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { APPEARANCE, DYE, OUTFITS, SCABBARD_DEFAULT, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
+import { APPEARANCE, DYE, OUTFITS, scabbardOf, SET, SETS, SWORD_GLOW_TINT, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials, createWorldMaterial, rimLight } from '../../render/materials/world';
-import { createOutfitMaterial, hasOutfitMask } from '../../render/materials/outfit';
+import { createOutfitMaterial, hasOutfitMask, type OutfitMode } from '../../render/materials/outfit';
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
 import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
@@ -190,7 +190,7 @@ export class PlayerSkins {
   private outfits = new Map<string, OutfitTemplate | 'loading' | 'failed'>();
   private outMats = new Map<string, THREE.MeshStandardNodeMaterial>();
   /** Vỏ kiếm đeo lưng dùng chung (nạp lười khi có người mặc áo mô-đun). */
-  private scabbard: ScabbardTemplate | 'loading' | 'failed' | null = null;
+  private scabbards = new Map<string, ScabbardTemplate | 'loading' | 'failed'>();
   /** Lưới nhân vật đã cắt phần áo che (theo hình học gốc) và lưới áo đã đổi chỉ số xương (theo asset áo + LOD). */
   private dressed = new Map<THREE.BufferGeometry, THREE.BufferGeometry | null>();
   private remapped = new Map<string, THREE.BufferGeometry | null>();
@@ -214,7 +214,7 @@ export class PlayerSkins {
     if (this.legacy || !id) return false;
     // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
     const oids = this.outfitIds(look);
-    if (this.templates.get(id) !== 'failed' && (oids.some((o) => this.outfits.get(o) === 'loading') || (oids.length > 0 && this.scabbard === 'loading'))) return true;
+    if (this.templates.get(id) !== 'failed' && (oids.some((o) => this.outfits.get(o) === 'loading') || (oids.length > 0 && this.scabbards.get(scabbardOf(look.w)) === 'loading'))) return true;
     return this.templates.get(id) === 'loading' || this.swords.get(look.w ?? SWORD_MODEL_DEFAULT) === 'loading';
   }
 
@@ -254,7 +254,7 @@ export class PlayerSkins {
     if (t.oldSword && look.w) this.loadSword(look.w);
     // Áo riêng của bộ: có thì thay lưới áo của nhân vật (bỏ phụ kiện thủ tục: áo đã có vai giáp, đai...); chưa nạp xong/lỗi thì giữ đường recolor + phụ kiện.
     const parts = this.outfitIds(look).map((o) => ({ id: o, tpl: this.loadOutfit(o) }));
-    if (parts.length) this.loadScabbard();
+    if (parts.length) this.loadScabbard(scabbardOf(look.w));
     const outfit: Outfit | undefined = parts.length && parts.every((p) => p.tpl) ? { parts: parts as Outfit['parts'] } : undefined;
     return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), outfit ? undefined : look.acc, look.w, false, outfit);
   }
@@ -329,12 +329,13 @@ export class PlayerSkins {
       const s = this.swords.get(id);
       return typeof s === 'object' ? s : null;
     };
-    const tpl = pick(want ?? SWORD_MODEL_DEFAULT) ?? pick(SWORD_MODEL_DEFAULT);
+    const id = pick(want ?? SWORD_MODEL_DEFAULT) ? (want ?? SWORD_MODEL_DEFAULT) : SWORD_MODEL_DEFAULT;
+    const tpl = pick(id);
     if (!tpl) return null;
     const mesh = tpl.mesh.clone();
     // Bóng tâm ma dùng chung material mờ của bóng; thân kiếm thật dùng chung material của model (không dispose theo bản sao).
     if (shadowMat) mesh.material = shadowMat;
-    return { mesh, info: tpl.info, old: t.oldSword };
+    return { mesh, info: tpl.info, old: t.oldSword, tint: SWORD_GLOW_TINT[id] };
   }
 
   /** Phụ kiện đồ bộ hiển thị theo `acc` (lỗi dựng thì bỏ qua, nhân vật vẫn đẹp bằng áo nhuộm). */
@@ -397,7 +398,9 @@ export class PlayerSkins {
           this.remapped.set(rk, geo);
         }
         if (!geo) continue;
-        const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl));
+        // Mảnh có voan (extras dtl_outfitAlpha): LOD0 vẽ hai lượt cùng hình học (phần đặc `cutout` + voan blend thật), LOD xa vẽ voan như vải đặc.
+        const veilPart = lod === 0 && (part.tpl.meshes[0].material as THREE.MeshStandardMaterial).userData?.dtl_outfitAlpha === 1;
+        const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, veilPart ? 'cutout' : 'solid'));
         g.name = `${part.id}_${lod}`;
         g.userData.outfit = true;
         g.userData.lod = lod;
@@ -407,34 +410,48 @@ export class PlayerSkins {
         g.receiveShadow = pm.receiveShadow;
         pm.parent.add(g);
         g.bind(pm.skeleton, pm.bindMatrix);
+        if (veilPart) {
+          const v = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, 'veil'));
+          v.name = `${part.id}_${lod}_veil`;
+          v.userData.outfit = true;
+          v.userData.lod = lod;
+          v.matrix.copy(g.matrix);
+          v.matrix.decompose(v.position, v.quaternion, v.scale);
+          v.castShadow = false; // voan không đổ bóng (phần đặc đã đổ)
+          v.receiveShadow = pm.receiveShadow;
+          v.renderOrder = 2; // sau thân và áo đặc
+          pm.parent.add(v);
+          v.bind(pm.skeleton, pm.bindMatrix);
+        }
       }
     }
     return springs;
   }
 
-  private outfitMaterial(id: string, tpl: OutfitTemplate): THREE.MeshStandardNodeMaterial {
-    let m = this.outMats.get(id);
+  private outfitMaterial(id: string, tpl: OutfitTemplate, mode: OutfitMode = 'solid'): THREE.MeshStandardNodeMaterial {
+    const key = mode === 'solid' ? id : `${id}|${mode}`;
+    let m = this.outMats.get(key);
     if (m) return m;
     const src = tpl.meshes[0].material as THREE.MeshStandardMaterial;
-    if (hasOutfitMask(src)) m = createOutfitMaterial(src); // bộ mô-đun T-5: nhuộm 3 kênh, vải/kim loại, vân sáng
+    if (hasOutfitMask(src)) m = createOutfitMaterial(src, undefined, mode); // bộ mô-đun T-5: nhuộm 3 kênh, vải/kim loại, vân sáng
     else {
       m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src))[0]);
       m.side = THREE.DoubleSide; // bản tạm #119: các tấm vỏ mỏng (vạt, tay áo): không cull mặt sau
     }
-    this.outMats.set(id, m);
+    this.outMats.set(key, m);
     return m;
   }
 
   /** Bản sao mesh vỏ kiếm nếu đã nạp (null: chưa nạp hoặc lỗi; kiếm cũ giữ vỏ nướng sẵn). */
-  private scabbardMount(): ScabbardMount | null {
-    const s = this.scabbard;
+  private scabbardMount(asset: string): ScabbardMount | null {
+    const s = this.scabbards.get(asset);
     return s && typeof s === 'object' ? { mesh: s.mesh.clone(), len: s.len } : null;
   }
 
-  private loadScabbard(): void {
-    if (this.scabbard) return;
-    this.scabbard = 'loading';
-    this.cache.acquire(SCABBARD_DEFAULT, { priority: 18 }).then(
+  private loadScabbard(asset: string): void {
+    if (this.scabbards.has(asset)) return;
+    this.scabbards.set(asset, 'loading');
+    this.cache.acquire(asset, { priority: 18 }).then(
       (h) => {
         if (this.disposed) {
           h.release();
@@ -446,20 +463,20 @@ export class PlayerSkins {
         });
         const len = (partExtras(h.scene) as { scabbard?: { len?: number } }).scabbard?.len;
         if (!mesh || !len) {
-          console.warn(`[models] ${SCABBARD_DEFAULT} thiếu số đo vỏ (extras dtl.scabbard), bỏ qua`);
+          console.warn(`[models] ${asset} thiếu số đo vỏ (extras dtl.scabbard), bỏ qua`);
           h.release();
-          this.scabbard = 'failed';
+          this.scabbards.set(asset, 'failed');
           return;
         }
         for (const m of adoptGltfMaterials(h.scene)) {
           m.metalness = 0;
           m.roughness = 0.65;
         }
-        this.scabbard = { mesh, len, release: () => h.release() };
+        this.scabbards.set(asset, { mesh, len, release: () => h.release() });
       },
       (err) => {
-        console.warn(`[models] không nạp được ${SCABBARD_DEFAULT}`, err);
-        if (!this.disposed) this.scabbard = 'failed';
+        console.warn(`[models] không nạp được ${asset}`, err);
+        if (!this.disposed) this.scabbards.set(asset, 'failed');
       },
     );
   }
@@ -525,7 +542,7 @@ export class PlayerSkins {
       t.sword,
       ribbons,
       blade,
-      outfit && blade && !shadow ? this.scabbardMount() : null,
+      outfit && blade && !shadow ? this.scabbardMount(scabbardOf(want)) : null,
     );
     if (t.k3) player.addClips(t.k3.clips, t.k3.map, t.k3.locoRef);
     else t.waiting.push(new WeakRef(player));
@@ -598,8 +615,8 @@ export class PlayerSkins {
     this.swordLoads.clear();
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
-    if (this.scabbard && typeof this.scabbard === 'object') this.scabbard.release();
-    this.scabbard = null;
+    for (const sc of this.scabbards.values()) if (typeof sc === 'object') sc.release();
+    this.scabbards.clear();
     for (const o of this.outfits.values()) if (typeof o === 'object') o.handle.release();
     this.outfits.clear();
     for (const m of this.outMats.values()) m.dispose();
@@ -788,6 +805,8 @@ export class SkinnedPlayer extends SkinnedCharacter {
   private hasScabbard = false;
   private glowDims: { start: number; len: number } | undefined;
   private tintHex = '';
+  /** Màu hào quang riêng của kiếm đang cầm (thắng màu theo bộ); '' = dùng màu bộ/mặc định. */
+  private swordTint = '';
   /** Xương để đặt dải lụa phụ kiện (theo tên chuẩn hóa). */
   private fitBones = new Map<FitBone, THREE.Object3D>();
   /** Động tác rút/tra đang phát: đổi chỗ kiếm khi tới `at` (giây trong clip) hoặc khi động tác bị thay/hủy. */
@@ -819,6 +838,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     if (this.sword && blade) {
       // Kiếm riêng theo trang bị: mesh không xương bám xương kiếm như vỏ sáng (cùng hệ `inner`).
       this.blade = blade.mesh;
+      this.swordTint = blade.tint ?? '';
       this.bladeLocal = bladeLocal(this.sword.glowLocal, blade.info, blade.old);
       this.glowDims = glowDims(blade.info, blade.old);
       this.bladeHolder.matrixAutoUpdate = false;
@@ -872,7 +892,8 @@ export class SkinnedPlayer extends SkinnedCharacter {
       // Cùng hệ với cây xương (rig nằm ngoài cảnh nhưng trùng hệ của `inner`).
       this.inner.add(this.glow.group);
     }
-    this.glow?.setTint(this.tintHex ? new THREE.Color(this.tintHex).getHex() : null);
+    const tint = this.swordTint || this.tintHex;
+    this.glow?.setTint(tint ? new THREE.Color(tint).getHex() : null);
     this.glow?.setStage(this.lod >= 2 ? 0 : stage);
   }
 

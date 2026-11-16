@@ -1,0 +1,145 @@
+{
+  "errors": [],
+  "log": {
+    "kimThienSeen": [
+      {
+        "t": "elite_van_hac_vuong",
+        "st": 0,
+        "x": 674,
+        "z": 1352
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 813,
+        "z": 1179
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 796,
+        "z": 1186
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 808,
+        "z": 1160
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 569,
+        "z": 1284
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 558,
+        "z": 1290
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 680,
+        "z": 1194
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 655,
+        "z": 1189
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 671,
+        "z": 1178
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 716,
+        "z": 1326
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 734,
+        "z": 1326
+      },
+      {
+        "t": "mon_van_hac",
+        "st": 0,
+        "x": 725,
+        "z": 1338
+      },
+      {
+        "t": "mon_bich_ngoc_kim_thien",
+        "st": 1,
+        "x": 716,
+        "z": 1276
+      }
+    ],
+    "kimThien": [
+      {
+        "sh": "circle",
+        "r": 2.5,
+        "k": "spirit",
+        "src": "m116"
+      }
+    ],
+    "kinhVuong": [
+      {
+        "k": "frost",
+        "sh": "circle",
+        "r": 7
+      },
+      {
+        "k": "frost",
+        "sh": "rect",
+        "r": 40
+      },
+      {
+        "k": "frost",
+        "sh": "cone",
+        "r": 18
+      },
+      {
+        "k": "frost",
+        "sh": "circle",
+        "r": 7
+      },
+      {
+        "k": "frost",
+        "sh": "rect",
+        "r": 40
+      },
+      {
+        "k": "frost",
+        "sh": "circle",
+        "r": 7
+      },
+      {
+        "k": "frost",
+        "sh": "circle",
+        "r": 20
+      },
+      {
+        "k": "frost",
+        "sh": "circle",
+        "r": 8
+      },
+      {
+        "k": "frost",
+        "sh": "cone",
+        "r": 18
+      },
+      {
+        "k": "frost",
+        "sh": "rect",
+        "r": 40
+      }
+    ]
+  }
+}

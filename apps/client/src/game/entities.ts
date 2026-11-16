@@ -3,11 +3,12 @@ import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
 import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
-import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
+import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { groundAt } from './levelCtx';
 import { swordOverride } from './testParams';
 import { gatesOf, type Gate } from './gates';
 import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
+import { hoverBob, hoverTarget, stepHover } from './hover';
 import { bodyRadiusOf, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type EscortMsg, type QuestView } from '@dtl/shared';
@@ -232,6 +233,8 @@ export class MonVis {
   wasAttack = false;
   /** Cờ `mf` ở khung trước (E1-E: phát hiện bật/tắt phản đòn, yếu điểm, chui đất). */
   mf0 = 0;
+  /** Độ cao bay lơ lửng đang hiển thị (m, `MonsterDef.hover`, xem `hover.ts`). */
+  hover = 0;
   /** Độ lệch tách thân đang hiển thị (P2-E2, chỉ trình bày) và bán kính thân. */
   sepX = 0;
   sepZ = 0;
@@ -302,6 +305,8 @@ interface NpcVis {
   /** Người đồng hành hộ tống (E2-H): đích từ server, vẽ trượt tới đó. */
   tx?: number;
   tz?: number;
+  /** Id NPC mượn model (người đồng hành; `id` là id tuyến hộ tống). */
+  npc?: string;
 }
 
 function makeMarker(ch: string, color: string): THREE.Texture {
@@ -506,8 +511,8 @@ export class EntityManager {
       const label = makeLabel(t(`npc.${m.npc}.name`), '#ffe9a8', t(`npc.${m.npc}.title`), '#e8d6a0');
       const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
       marker.visible = false;
-      e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcSkins.create(m.npc, '#b89a6a'), skinPending: false, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
-      this.npcSkins.addWalk(e.model, m.npc);
+      e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcModel(m.npc, '#b89a6a'), skinPending: this.npcPending(m.npc), npc: m.npc, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
+      if (!NPC_SKINS[m.npc]?.look) this.npcSkins.addWalk(e.model, m.npc);
       this.placeNpc(e);
       this.escorts.set(m.id, e);
     }
@@ -729,7 +734,14 @@ export class EntityManager {
       const sx = v.sepX;
       const sz = v.sepZ;
       const sy = sx * sx + sz * sz > 1e-4 ? groundAt(v.x + sx, v.z + sz) - groundAt(v.x, v.z) : 0;
-      v.model.root.position.set(v.x + v.model.hit.kx + sx, v.y + sy, v.z + v.model.hit.kz + sz);
+      const hv = v.model.def.hover ?? 0;
+      let lift = 0;
+      if (hv > 0) {
+        const low = (((s.mf ?? 0) & (MF_WEAK | MF_STUN)) !== 0);
+        v.hover = stepHover(v.hover, hoverTarget(hv, dead, low), dt, dead);
+        lift = v.hover + hoverBob(hv, v.hover, this.time, hashStr(v.id) % 7);
+      }
+      v.model.root.position.set(v.x + v.model.hit.kx + sx, v.y + sy + lift, v.z + v.model.hit.kz + sz);
       v.model.root.rotation.y = v.yaw;
       _monAnim.speed = v.speed;
       _monAnim.dead = dead;
@@ -816,6 +828,19 @@ export class EntityManager {
 
     // ----- người đồng hành hộ tống: trượt tới điểm server báo, bước đi theo quãng đã trượt -----
     for (const e of this.escorts.values()) {
+      // Model nạp chưa xong lúc dựng (vào Vân Hải khi đang hộ tống, kết nối lại): đổi sang model thật khi xong, như NPC đứng.
+      if (e.skinPending && e.npc && !this.npcPending(e.npc)) {
+        e.skinPending = false;
+        const next = this.npcModel(e.npc, e.color);
+        if (next.constructor !== e.model.constructor) {
+          e.model.root.remove(e.label, e.marker);
+          e.model.root.removeFromParent();
+          e.model.dispose();
+          e.model = next;
+          if (!NPC_SKINS[e.npc]?.look) this.npcSkins.addWalk(e.model, e.npc);
+          this.placeNpc(e);
+        } else next.dispose();
+      }
       const dx = (e.tx ?? e.x) - e.x;
       const dz = (e.tz ?? e.z) - e.z;
       const d = Math.hypot(dx, dz);

@@ -285,7 +285,7 @@ export class Game {
   /** VFX ba pha theo sự kiện chiêu + vệt kiếm + linh quang hộ thể (K-6). */
   skillFx: SkillFx | null = null;
   /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
-  hazardLog?: { k: string; sh: string; src: string; boss: boolean; t: string; x?: number; z?: number; r?: number; yaw?: number; w?: number; big?: boolean; px?: number; pz?: number }[];
+  hazardLog?: { k: string; mv?: string; sh: string; src: string; boss: boolean; t: string; x?: number; z?: number; r?: number; yaw?: number; w?: number; big?: boolean; px?: number; pz?: number }[];
   dmg!: DamageNumbers;
   lootFly!: LootFly;
   private lootLayer: HTMLDivElement | null = null;
@@ -563,15 +563,18 @@ export class Game {
     room.onMessage(S.FX, (m: FxMsg) => this.onFx(m));
     room.onMessage(S.DMG, (m: DmgMsg) => this.onDmg(m));
     room.onMessage(S.HAZARD, (m: HazardMsg) => {
-      if (import.meta.env.DEV) (this.hazardLog ??= []).push({ k: m.kind, sh: m.sh ?? 'circle', src: m.src ?? '', boss: this.isBossSrc(m.src), t: this.view.monsters.get(m.src ?? '')?.t ?? '', x: m.x, z: m.z, r: m.r, yaw: m.yaw, w: m.w, big: m.big, px: this.cur.x, pz: this.cur.z });
+      if (import.meta.env.DEV) (this.hazardLog ??= []).push({ k: m.kind, mv: m.mv, sh: m.sh ?? 'circle', src: m.src ?? '', boss: this.isBossSrc(m.src), t: this.view.monsters.get(m.src ?? '')?.t ?? '', x: m.x, z: m.z, r: m.r, yaw: m.yaw, w: m.w, big: m.big, px: this.cur.x, pz: this.cur.z });
       if (import.meta.env.DEV && this.hazardLog && this.hazardLog.length > 200) this.hazardLog.shift();
       // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
       if (m.sh && this.vfx) {
         if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m, this.isBossSrc(m.src));
       }
+      else if (m.mv === 'pool') this.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
       else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src), m.hot);
       // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
       if (m.src) this.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
+      // Vòng kéo (Nuốt) và vũng độc không nổ: không âm nện/rung màn hình.
+      if (m.mv === 'pull' || m.mv === 'pool') return;
       const vol = this.volumeAt(m.x, m.z);
       setTimeout(() => {
         sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
@@ -2833,6 +2836,7 @@ export class Game {
       const st = get();
       this.mapVis.setOpen(st.tele.open);
       this.mapVis.setMarks(st.marks);
+      this.mapVis.setQuests(st.quests);
       this.mapVis.update(rp, st.tele.cast, performance.now(), TELE_CAST_MS);
       this.mapVis.updateSpirit(rp, st.spirit, st.spiritScan, performance.now());
     }

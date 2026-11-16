@@ -7,6 +7,10 @@
 #   palette   { main, sec, trim, accent } hex: bảng màu 3 kênh + màu vân sáng; mặt nạ nhuộm sinh từ texture màu theo bảng này
 #   fitPose   { armDown: độ } tư thế tay thả của thân nền khi căn (khớp tay áo thả của mảnh; mặc định 70)
 #   gain      nhân sáng texture màu (mặc định 1)
+#   normalFlat kéo pháp tuyến bake về phẳng 0..1 (mặc định 0): áo Tripo nhàu/nứt quá
+#   files     { <mảnh>: tên tệp } ghi đè raw_<mảnh>_v01.glb (vd ao_ngoai → raw_ao_ngoai_v02.glb)
+#   proc      { <mảnh>: { base, metal, accent, top, toe, edge } } vật liệu thủ tục cho mảnh KHÔNG có texture (GLB 0 ảnh): UV tự sinh, nướng vào ô atlas
+#   alpha     { <mảnh>: 'veil' } vùng voan xám-tím nhạt của mảnh có alpha thấp (client dither); veilAlpha (mặc định 0,4) là độ phủ bị trừ
 #   atlas     cạnh atlas (mặc định 1024); ô theo `cells` (mặc định xếp sẵn cho 6 mảnh)
 #   pieces    { <mảnh>: { fit:{...}, weights, spring:{count,minDist,weight}, hide:bool } } ghi đè mặc định PIECE_DEFAULTS
 #
@@ -60,6 +64,11 @@ PIECE_DEFAULTS = {
     'trang_suc_dau': {'fit': {'x': '0.30', 'top': 'head_z+0.19', 'cy': 'y_head', 'alignZ': 'top'},
                       'weights': 'head', 'spring': {'count': 3, 'minDist': 0.03, 'weight': 0.9}},
 }
+
+
+def lin_hex(hx):
+    c = [int(hx[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    return np.array([x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c], np.float32)
 
 
 def key(name):
@@ -188,7 +197,7 @@ def find_image(socket):
 
 
 def load_piece(name):
-    path = os.path.join(SRC, f'raw_{name}_v01.glb')
+    path = os.path.join(SRC, (CFG.get('files') or {}).get(name, f'raw_{name}_v01.glb'))  # files: ghi đè tên tệp mảnh (vd áo ngoài dựng lại v02)
     if not os.path.isfile(path):
         fail(f'thiếu mảnh {path}')  # noqa: F821
     b0 = set(bpy.data.objects)
@@ -201,12 +210,147 @@ def load_piece(name):
     verts = [m.matrix_world @ v.co for v in m.data.vertices]
     polys = [tuple(p.vertices) for p in m.data.polygons]
     uvl = m.data.uv_layers.active
-    loops = [tuple(uvl.data[li].uv) for p in m.data.polygons for li in p.loop_indices]
-    mat = m.data.materials[0]
-    bsdf = next(n for n in mat.node_tree.nodes if n.type == 'BSDF_PRINCIPLED')
-    color = find_image(bsdf.inputs['Base Color'])
-    normal = find_image(bsdf.inputs['Normal'])
-    return {'name': name, 'verts': verts, 'polys': polys, 'uv': loops, 'color': color, 'normal': normal, 'objs': ob}
+    loops = [tuple(uvl.data[li].uv) for p in m.data.polygons for li in p.loop_indices] if uvl else []
+    mat = m.data.materials[0] if m.data.materials else None
+    bsdf = next((n for n in mat.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'), None) if mat and mat.use_nodes else None
+    color = find_image(bsdf.inputs['Base Color']) if bsdf else None
+    normal = find_image(bsdf.inputs['Normal']) if bsdf else None
+    proc = color is None
+    if proc:
+        # GLB xuất từ Tripo chưa chạy bước texture (Smart Mesh): hình khối hợp lệ nhưng 0 ảnh. Không chặn: sinh UV mới và nướng vật liệu thủ tục
+        # theo bảng màu bộ (bake_proc). Báo cảnh báo rõ để biết mảnh nào dùng đường này.
+        print(f'[outfit_build] CẢNH BÁO: {name} ({os.path.basename(path)}) không có texture màu: dùng vật liệu thủ tục theo concept')
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.view_layer.objects.active = m
+        m.select_set(True)
+        if not m.data.uv_layers:
+            m.data.uv_layers.new(name='UVMap')
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.02)
+        bpy.ops.object.mode_set(mode='OBJECT')
+        uvl = m.data.uv_layers.active
+        loops = [tuple(uvl.data[li].uv) for p in m.data.polygons for li in p.loop_indices]
+    return {'name': name, 'verts': verts, 'polys': polys, 'uv': loops, 'color': color, 'normal': normal, 'objs': ob, 'proc': proc}
+
+
+def bake_proc(name, pc, st, w, h):
+    """Vật liệu thủ tục cho mảnh không texture: nướng màu vào ô atlas (w×h px) qua UV (smart project) từ thuộc tính đỉnh.
+    Đồ nhỏ rời (đèn, khóa, tua) và cạnh sắc = kim loại viền, dải đỉnh/mũi = kim loại, đồ rời xen kẽ = ngọc nhấn; còn lại vải/da nền.
+    Thêm vân nhiễu 3D, đường dệt và khắc nhẹ ở vùng kim loại. Màu theo st {base, metal, accent, top, toe, edge}; trả mảng (h, w, 4) mã sRGB (cùng không gian với texture Tripo trong atlas)."""
+    V = pc['verts']
+    keyv = [(round(v.x * 1e4), round(v.y * 1e4), round(v.z * 1e4)) for v in V]
+    canon, cid = {}, []
+    for k in keyv:
+        cid.append(canon.setdefault(k, len(canon)))
+    nc = len(canon)
+    P = np.zeros((nc, 3))
+    for i, v in enumerate(V):
+        P[cid[i]] = (v.x, v.y, v.z)
+    tri = []
+    for p in pc['polys']:
+        q = [cid[i] for i in p]
+        for i in range(1, len(q) - 1):
+            if len({q[0], q[i], q[i + 1]}) == 3:
+                tri.append((q[0], q[i], q[i + 1]))
+    T = np.array(tri)
+    fn = np.cross(P[T[:, 1]] - P[T[:, 0]], P[T[:, 2]] - P[T[:, 0]])
+    area = np.linalg.norm(fn, axis=1) / 2
+    fn = fn / (np.linalg.norm(fn, axis=1, keepdims=True) + 1e-12)
+    # pháp tuyến đỉnh và độ sắc (góc lớn nhất giữa mặt và pháp tuyến đỉnh)
+    vn = np.zeros((nc, 3))
+    for k in range(3):
+        np.add.at(vn, T[:, k], fn * area[:, None])
+    vn /= np.linalg.norm(vn, axis=1, keepdims=True) + 1e-12
+    sharp = np.zeros(nc)
+    for k in range(3):
+        ang = np.degrees(np.arccos(np.clip((fn * vn[T[:, k]]).sum(1), -1, 1)))
+        np.maximum.at(sharp, T[:, k], ang)
+    sharp = np.clip((sharp - 50) / 30, 0, 1)
+    # thành phần liên thông và diện tích
+    par = list(range(nc))
+
+    def find(a):
+        while par[a] != a:
+            par[a] = par[par[a]]
+            a = par[a]
+        return a
+    for t in T:
+        par[find(t[1])] = find(t[0])
+        par[find(t[2])] = find(t[0])
+    root = np.array([find(i) for i in range(nc)])
+    comp_area = {}
+    for ti, t in enumerate(T):
+        comp_area[root[t[0]]] = comp_area.get(root[t[0]], 0.0) + area[ti]
+    tot = sum(comp_area.values()) or 1.0
+    order = sorted(comp_area, key=lambda r: -comp_area[r])
+    rank = {r: i for i, r in enumerate(order)}
+    small = np.array([1.0 if (root[i] in comp_area and rank[root[i]] > 0 and comp_area[root[i]] < 0.05 * tot) else 0.0 for i in range(nc)])
+    jade = np.array([1.0 if (root[i] in rank and rank[root[i]] % 2 == 1) else 0.0 for i in range(nc)]) * small
+    lo, hi = P.min(0), P.max(0)
+    tz = (P[:, 2] - lo[2]) / max(hi[2] - lo[2], 1e-6)
+    front = (hi[1] - P[:, 1]) / max(hi[1] - lo[1], 1e-6)  # 0 = sau (+Y), 1 = trước (-Y)
+    attr = np.stack([P[:, 0], P[:, 1], P[:, 2], sharp, small, jade, tz, front], 1)
+    # rasterize theo UV
+    UVL = np.array(pc['uv'])
+    buf = np.zeros((h, w, 8), np.float32)
+    cov = np.zeros((h, w), bool)
+    li = 0
+    for p in pc['polys']:
+        loops = list(range(li, li + len(p)))
+        li += len(p)
+        for j in range(1, len(p) - 1):
+            ids = [0, j, j + 1]
+            uv = np.array([UVL[loops[i]] for i in ids])
+            at = np.array([attr[cid[p[i]]] for i in ids])
+            px = uv[:, 0] * (w - 1)
+            py = uv[:, 1] * (h - 1)
+            x0, x1 = int(max(0, np.floor(px.min()))), int(min(w - 1, np.ceil(px.max())))
+            y0, y1 = int(max(0, np.floor(py.min()))), int(min(h - 1, np.ceil(py.max())))
+            if x1 < x0 or y1 < y0:
+                continue
+            d = (py[1] - py[2]) * (px[0] - px[2]) + (px[2] - px[1]) * (py[0] - py[2])
+            if abs(d) < 1e-9:
+                continue
+            gx, gy = np.meshgrid(np.arange(x0, x1 + 1), np.arange(y0, y1 + 1))
+            l0 = ((py[1] - py[2]) * (gx - px[2]) + (px[2] - px[1]) * (gy - py[2])) / d
+            l1 = ((py[2] - py[0]) * (gx - px[2]) + (px[0] - px[2]) * (gy - py[2])) / d
+            l2 = 1 - l0 - l1
+            ins = (l0 >= -0.03) & (l1 >= -0.03) & (l2 >= -0.03)
+            if not ins.any():
+                continue
+            val = l0[..., None] * at[0] + l1[..., None] * at[1] + l2[..., None] * at[2]
+            sub = buf[y0:y1 + 1, x0:x1 + 1]
+            sub[ins] = val[ins]
+            cov[y0:y1 + 1, x0:x1 + 1] |= ins
+    for _ in range(6):  # nở viền để không lộ khe khi lọc texture
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            sh_b = np.roll(buf, (dy, dx), (0, 1))
+            sh_c = np.roll(cov, (dy, dx), (0, 1))
+            take = (~cov) & sh_c
+            buf[take] = sh_b[take]
+            cov |= take
+    X, Y, Z, SH, SM, JD, TZ, FR = (buf[..., i] for i in range(8))
+    f = 9.0
+    nz = (np.sin(f * X + 2.3 * np.sin(f * 0.7 * Z)) * np.sin(f * 1.3 * Y + 1.7) + np.sin(f * 2.1 * Z + 1.1 * np.sin(f * 1.9 * X))) * 0.25 + 0.5
+    nz2 = np.sin(f * 4.7 * X + 3.1) * np.sin(f * 5.3 * Y + 1.3) * np.sin(f * 4.1 * Z + 0.7) * 0.5 + 0.5
+    weave = 0.5 + 0.5 * np.sin(Z * 310) * np.sin((X + Y) * 280)
+    top = float(st.get('top', 0))
+    band = np.clip((TZ - (1 - top)) / max(top * 0.35, 1e-3), 0, 1) if top else np.zeros_like(TZ)
+    toe = np.clip((0.17 - TZ) / 0.05, 0, 1) * np.clip((FR - 0.72) / 0.12, 0, 1) if st.get('toe') else np.zeros_like(TZ)
+    sole = np.clip((0.025 - TZ) / 0.012, 0, 1) if st.get('toe') else np.zeros_like(TZ)
+    edge = np.clip(SH * float(st.get('edge', 0.8)), 0, 1)
+    wm = np.clip(np.maximum.reduce([SM, edge, band, toe, sole]), 0, 1)
+    wj = np.clip(JD, 0, 1) * wm
+    base, metal, accent = (np.array([int(st[k][i:i + 2], 16) / 255 for i in (1, 3, 5)], np.float32) for k in ('base', 'metal', 'accent'))  # mã sRGB thẳng: atlas giữ giá trị mã hóa (như texture Tripo)
+    cloth = base[None, None, :] * (0.78 + 0.34 * nz[..., None] * (0.7 + 0.3 * nz2[..., None])) * (0.94 + 0.12 * weave[..., None])
+    groove = 1 - 0.28 * np.clip(np.sin(Z * 150 + nz * 6) * 1.5, 0, 1) * (1 - SH)
+    met = metal[None, None, :] * (0.78 + 0.4 * nz2[..., None]) * groove[..., None] * (1 + 0.35 * SH[..., None])
+    jd = accent[None, None, :] * (0.8 + 0.3 * nz[..., None])
+    col = cloth * (1 - wm[..., None]) + met * (wm[..., None] * (1 - wj[..., None])) + jd * wj[..., None]
+    out = np.ones((h, w, 4), np.float32)
+    out[..., :3] = np.clip(col, 0, 1)
+    return out
 
 
 def ev(expr):
@@ -396,6 +540,7 @@ def kmeans(idx, pts, k):
 
 # ---------- xử lý từng mảnh ----------
 MERGED = {'verts': [], 'polys': [], 'uv': [], 'w': [], 'ids': []}
+PROCS = {}  # mảnh không texture: mảng màu đã nướng
 SPRING = []  # (tên, xương cha, đầu rest, đuôi rest)
 report_pieces = {}
 imgs_color, imgs_normal = {}, {}
@@ -411,6 +556,13 @@ for name in ORDER:
     if d.get('hide'):
         continue
     pts, sc = fit(pc['verts'], d['fit'])
+    if pc.get('proc'):
+        st = dict((CFG.get('proc') or {}).get(name) or {})
+        pal_ = CFG.get('palette') or {}
+        st.setdefault('base', pal_.get('main', '#808080'))
+        st.setdefault('metal', pal_.get('trim', '#B0A080'))
+        st.setdefault('accent', pal_.get('accent', '#80C0A0'))
+        PROCS[name] = bake_proc(name, pc, st, int(round(CELLS[name][2] * ATLAS)), int(round(CELLS[name][3] * ATLAS)))
     if d['weights'] == 'head':
         hb = by_key['head']
         infl = [{hb: 1.0} for _ in pts]
@@ -519,20 +671,38 @@ for name in ORDER:
     y1 = int(round((1 - cy) * ATLAS))
     h = int(round(ch * ATLAS))
     y0 = y1 - h  # hàng 0 = đáy (Blender)
-    if imgs_color[name]:
+    if name in PROCS:
+        atlas_c[y0:y1, x0:x0 + w] = PROCS[name]
+    elif imgs_color[name]:
         atlas_c[y0:y1, x0:x0 + w] = pixels(imgs_color[name], w, h)
     if imgs_normal[name]:
         atlas_n[y0:y1, x0:x0 + w] = pixels(imgs_normal[name], w, h)
-
-
-def lin_hex(hx):
-    c = [int(hx[i:i + 2], 16) / 255 for i in (1, 3, 5)]
-    return np.array([x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c], np.float32)
+NFLAT = float(CFG.get('normalFlat', 0.0))
+if NFLAT > 0:
+    # Pháp tuyến bake của Tripo nhiễu (nứt, nhàu như giấy vò dưới ánh game): kéo về phẳng theo hệ số (0 = giữ nguyên, 1 = phẳng hoàn toàn).
+    atlas_n[..., 0] = 0.5 + (atlas_n[..., 0] - 0.5) * (1 - NFLAT)
+    atlas_n[..., 1] = 0.5 + (atlas_n[..., 1] - 0.5) * (1 - NFLAT)
+    atlas_n[..., 2] = atlas_n[..., 2] + (1.0 - atlas_n[..., 2]) * NFLAT
 
 
 pal = CFG.get('palette') or {}
 cols = [lin_hex(pal.get(k, '#808080')) for k in ('main', 'sec', 'trim')]
 acc = lin_hex(pal.get('accent', '#E8A33D'))
+HAS_ALPHA = False
+for name, kind in (CFG.get('alpha') or {}).items():
+    # Voan xuyên sáng nằm chung lưới với đạo bào (Tripo không tách): nhận theo màu texel, xám-tím sáng (lam ≥ đỏ, lục ≤ lam), alpha thấp = lỗ dither
+    if kind != 'veil' or name not in CELLS:
+        continue
+    cx, cy, cw, ch = CELLS[name]
+    x0, w = int(round(cx * ATLAS)), int(round(cw * ATLAS))
+    y1 = int(round((1 - cy) * ATLAS))
+    y0 = y1 - int(round(ch * ATLAS))
+    reg = atlas_c[y0:y1, x0:x0 + w, :3]
+    r_, g_, b_ = reg[..., 0], reg[..., 1], reg[..., 2]
+    lum = 0.2126 * r_ + 0.7152 * g_ + 0.0722 * b_
+    vm = np.clip((lum - 0.40) / 0.10, 0, 1) * np.clip((b_ / (r_ + 1e-4) - 1.0) / 0.06, 0, 1) * (g_ <= b_ * 1.03)  # theo mã sRGB: voan xám-tím sáng, đạo bào tối và vàng ngà bị loại
+    atlas_c[y0:y1, x0:x0 + w, 3] = 1.0 - float(CFG.get('veilAlpha', 0.4)) * vm
+    HAS_ALPHA = True
 GAIN = float(CFG.get('gain', 1.0))  # nâng sáng texture (bộ sẫm như Địa Long)
 if GAIN != 1.0:
     atlas_c[..., :3] = np.clip(atlas_c[..., :3] * GAIN, 0, 1)
@@ -560,10 +730,10 @@ em[..., 0:3] = (glow[..., None] * acc[None, None, :])
 em[..., 3] = 1.0
 
 
-def make_img(nm, arr, srgb):
+def make_img(nm, arr, srgb, alpha=False):
     """Ảnh từ mảng numpy: ghi PNG tạm rồi nạp lại (foreach_set + pack trên ảnh sinh ra cho ảnh đen ở Blender 5)."""
     import tempfile
-    im = bpy.data.images.new(nm + '_gen', ATLAS, ATLAS, alpha=False)
+    im = bpy.data.images.new(nm + '_gen', ATLAS, ATLAS, alpha=alpha)
     im.pixels.foreach_set(arr.reshape(-1))
     im.update()
     path = os.path.join(tempfile.gettempdir(), f'{nm}.png')
@@ -578,7 +748,7 @@ def make_img(nm, arr, srgb):
     return im2
 
 
-im_c = make_img(ASSET_ID + '_color', atlas_c, True)  # noqa: F821
+im_c = make_img(ASSET_ID + '_color', atlas_c, True, HAS_ALPHA)  # noqa: F821
 im_n = make_img(ASSET_ID + '_normal', atlas_n, False)  # noqa: F821
 im_m = make_img(ASSET_ID + '_orm', ma, False)  # noqa: F821
 im_e = make_img(ASSET_ID + '_emissive', em, True)  # noqa: F821
@@ -659,6 +829,9 @@ def tex(im, nc):
 
 tc = tex(im_c, False)
 nt.links.new(tc.outputs['Color'], bs.inputs['Base Color'])
+if HAS_ALPHA:
+    nt.links.new(tc.outputs['Alpha'], bs.inputs['Alpha'])
+    mat['dtl_outfitAlpha'] = 1  # client: dither/alphaTest cho voan (createOutfitMaterial)
 tn = tex(im_n, True)
 nm = nt.nodes.new('ShaderNodeNormalMap')
 nt.links.new(tn.outputs['Color'], nm.inputs['Color'])
