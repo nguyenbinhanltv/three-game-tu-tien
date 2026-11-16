@@ -170,7 +170,7 @@ export function WorldMap() {
           w,
           h: 30,
           name,
-          lvText: t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax }),
+          lvText: (zi.zone.lvMin === zi.zone.lvMax ? t('ui.mm.zone_lv1', { a: zi.zone.lvMin }) : t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax })),
           lvColor: lv < zi.zone.lvMin ? '#b3402c' : lv > zi.zone.lvMax ? '#5d6466' : '#3d6b36',
         });
       }
@@ -421,7 +421,7 @@ export function WorldMap() {
                   <button type="button" className="wm-zone-head" onClick={() => focusZone(zi.cx, zi.cz)}>
                     <i style={{ background: zi.zone.color }} />
                     <span className="wm-zone-name">{t(`zone.${zi.zone.id}`)}</span>
-                    <span className="wm-zone-lv">{t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax })}</span>
+                    <span className="wm-zone-lv">{(zi.zone.lvMin === zi.zone.lvMax ? t('ui.mm.zone_lv1', { a: zi.zone.lvMin }) : t('ui.mm.zone_lv', { a: zi.zone.lvMin, b: zi.zone.lvMax }))}</span>
                   </button>
                   <Row label={t('ui.wm.row.mon')}>{zi.monsters.map((m) => `${monsterName(m.id)} (${m.lvMin}–${m.lvMax})`).join(', ')}</Row>
                   {zi.elites.length > 0 && <Row label={t('ui.wm.row.elite')}>{zi.elites.map((m) => monsterName(m.id)).join(', ')}</Row>}

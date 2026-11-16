@@ -20,7 +20,10 @@ const ONLY = opt('--points', '').split(',').filter(Boolean);
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
 const PORT = Number(process.env.PORT ?? 2675);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
-const POINTS = levelPoints('doan_mach').filter((p) => !ONLY.length || ONLY.includes(p.name));
+// Boss to: đứng xa hơn (z + 18) và lùi camera để thấy toàn thân cùng người chơi.
+const POINTS = levelPoints('doan_mach')
+  .filter((p) => !ONLY.length || ONLY.includes(p.name))
+  .map((p) => (p.name.startsWith('boss_') ? { ...p, z: p.z + 18, yaw: 0, pitch: 0.2, dist: 34 } : p));
 
 type G = { __game?: Record<string, any> };
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots-e2a', command: 'pnpm shots:e2a' });

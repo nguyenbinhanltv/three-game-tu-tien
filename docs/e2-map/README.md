@@ -60,11 +60,13 @@ Tổng: 60 cụm, 228 quái thường (trong đó 3 quái đánh xa kèm cụm),
 | Hoang Sa Huyệt | ![](zone-hoang-sa-huyet.jpg) |
 | Cựu Mỏ Khu | ![](zone-cuu-mo-khu.jpg) |
 | Cầu Đá Gãy | ![](poi-cau-da-gay.jpg) |
+| Mạch Tinh Trụ | ![](poi-mach-tinh-tru.jpg) |
 | Cổng Mỏ Khai Mạch | ![](poi-cong-mo.jpg) |
+| Vách Đứt Mạch | ![](poi-vach-dut-mach.jpg) |
 | Tinh anh Liệt Cốt Báo Vương | ![](elite-liet-cot-bao-0.jpg) |
-| Boss Địa Mạch Long | ![](boss-dia-mach-long.jpg) |
+| Boss Địa Mạch Long (toàn thân, cùng người chơi) | ![](boss-dia-mach-long.jpg) |
 
-Trong game mặt đất vẫn là texture Vân Lam (xanh) vì bộ ochre và mood là việc của E2-I; ảnh chỉ chứng minh địa hình, bố cục, quái và đường vào.
+Trong game mặt đất vẫn là cỏ xanh Vân Lam, chưa có tông đất son "cốc đứt mạch": bộ texture ochre, mood, cỏ/cây riêng là việc của E2-I (mỹ thuật). Ảnh chỉ chứng minh địa hình, bố cục, quái, prop tạm và đường vào. Prop ở điểm đáng chú ý là đá/đèn đá Vân Lam dùng tạm; thay bằng PROP_LIB (#118) theo bảng dưới khi nó merge.
 
 ## Chỗ để PROP_LIB (#118) và việc kế tiếp
 
@@ -82,6 +84,6 @@ Chưa merge nên điểm đáng chú ý dùng prop sẵn có làm chỗ đứng 
 Để lại cho các gói khác (không nằm trong E2-A):
 
 - **E2-B**: `monsters.json`/`loot.json` có **bản tạm** cho 4 quái thường, 3 tinh anh, boss `boss_dia_mach_long` (chỉ để `content:check` qua: chưa có `charge`/`leap`/`dig`, tinh anh dùng `caster`); E2-B thay bằng bản có AI riêng, có thể xung đột chỗ cuối hai tệp này (giữ bản của E2-B). Bài test `skinned.test.ts` ("12 skin E-0") đã sửa để không coi quái có dòng là "chưa có".
-- **E2-I**: texture ochre cho `ground` (`doan_mach.assets.json` đang `neutral`), mood, nhạc (`wild_ochre`, `cave_lull`, `boss_dia_mach`: hiện cả năm vùng dùng `wild` vì `MUSIC_ZONES` chưa có), cỏ/cây/đá riêng; client hiện còn vẽ cỏ Vân Lam ở level này và **chưa vẽ prop theo `propsOf(level)`** (engine chỉ đọc `HAND_PROPS`) nên prop của Đoạn Mạch chưa hiện trong game.
-- **Client (E1-D)**: tên vùng ở chỗ không thuộc vùng nào (trạm) và tiêu đề bản đồ lớn vẫn hiện "Vân Lam Sơn Mạch" (`ui.zone.wild`, glossary `map`); cần lấy theo `map.<level>` đã thêm sẵn.
+- **E2-I**: texture ochre cho `ground` (`doan_mach.assets.json` đang `neutral`), mood, nhạc (`wild_ochre`, `cave_lull`, `boss_dia_mach`: hiện cả năm vùng dùng `wild` vì `MUSIC_ZONES` chưa có), cỏ/cây/đá riêng; client còn vẽ cỏ Vân Lam ở level này. Prop theo `propsOf(level)` đã được vẽ (`allProps(level)`, `trees: scatter` trong `doan_mach.assets.json`; chỉ prop đặt tay, chưa rải cây/đá tự động).
+- **Client**: đã sửa trong PR này: tên vùng/tiêu đề bản đồ lớn ở chỗ không thuộc vùng nào lấy `map.<level>` (`areaKey`), nhãn cấp `NK19` khi min = max (`ui.mm.zone_lv1`).
 - **E2-H**: mở khóa `dm_tp_tram` bằng nhiệm vụ; NPC (Hứa lão, Tô Vãn Ngư) đặt ở trạm; `nodes` dùng tạm `itm_linh_thao` đến khi E2-F có Hoàng Sa Thảo.
