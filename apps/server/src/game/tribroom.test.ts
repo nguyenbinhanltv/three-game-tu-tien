@@ -280,6 +280,8 @@ describe('kiếp mới: cờ enabled, GM và pha chung', () => {
     g1.move.x += 4;
     g2.move.z += 6;
     far.move.x += 40;
+    const party = { members: [owner, g1, g2, far].map((m) => m.char.id), leader: owner.char.id };
+    for (const m of [owner, g1, g2, far]) (parties as unknown as { byChar: Map<number, unknown> }).byChar.set(m.char.id, party);
     sim.beginTribulation(owner, tribDef('hoa_than'), false);
     for (const m of [owner, g1, g2, far]) {
       m.char.hp = m.char.mhp = 1_000_000;
@@ -305,6 +307,51 @@ describe('kiếp mới: cờ enabled, GM và pha chung', () => {
     const ownerLoss = o0 - owner.char.hp;
     const guardLoss = lost(g1, 0) + lost(g2, 1);
     expect(guardLoss / (guardLoss + ownerLoss)).toBeCloseTo(0.25, 1);
+  });
+});
+
+describe('hộ pháp chỉ nhận đồng đội', () => {
+  it('người lạ đứng trong tầm hộ pháp (12 m) nhưng ngoài vòng tia (11 m) không bị kéo vào; đồng đội thì chắn', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const { sim, join, run } = mkSim();
+    const owner = join('ht2', 27);
+    const mate = join('dd', 27);
+    const stranger = join('la', 27);
+    mate.move.x += 4;
+    stranger.move.x += 11.6; // trong g.r = 12, ngoài r tia = 11
+    const party = { members: [owner.char.id, mate.char.id], leader: owner.char.id };
+    for (const m of [owner, mate]) (parties as unknown as { byChar: Map<number, unknown> }).byChar.set(m.char.id, party);
+    sim.beginTribulation(owner, tribDef('hoa_than'), false);
+    for (const m of [owner, mate, stranger]) {
+      m.char.hp = m.char.mhp = 1_000_000;
+      m.s.hp = m.s.mhp = 1_000_000;
+    }
+    owner.trib!.endAt = sim.now + 25_000;
+    owner.trib!.nextAt = sim.now + 60_000;
+    run(owner, 0.1, false);
+    const hpM = mate.char.hp;
+    const hpS = stranger.char.hp;
+    run(owner, 4.3, false);
+    expect(hpM - mate.char.hp).toBeGreaterThan(0);
+    expect(hpS - stranger.char.hp).toBe(0);
+  });
+
+  it('người lạ đứng sát chủ kiếp (trong vòng tia) trúng đòn nhưng không chết: dừng ở 1 khí huyết (#107)', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const { sim, join, run } = mkSim();
+    const owner = join('ht3', 27);
+    const stranger = join('la2', 27);
+    stranger.move.x += 3;
+    sim.beginTribulation(owner, tribDef('hoa_than'), false);
+    owner.char.hp = owner.char.mhp = 1_000_000;
+    owner.s.hp = owner.s.mhp = 1_000_000;
+    stranger.char.hp = stranger.s.hp = 200;
+    owner.trib!.endAt = sim.now + 25_000;
+    owner.trib!.nextAt = sim.now + 60_000;
+    run(owner, 0.1, false);
+    run(owner, 4.3, false);
+    expect(stranger.char.hp).toBeGreaterThanOrEqual(1);
+    expect(stranger.s.fl & PF_DEAD).toBe(0);
   });
 });
 
