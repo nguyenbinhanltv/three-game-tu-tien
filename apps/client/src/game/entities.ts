@@ -3,11 +3,12 @@ import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
 import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
-import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
+import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { groundAt } from './levelCtx';
 import { swordOverride } from './testParams';
 import { gatesOf, type Gate } from './gates';
 import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
+import { hoverBob, hoverTarget, stepHover } from './hover';
 import { bodyRadiusOf, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type EscortMsg, type QuestView } from '@dtl/shared';
@@ -232,6 +233,8 @@ export class MonVis {
   wasAttack = false;
   /** Cờ `mf` ở khung trước (E1-E: phát hiện bật/tắt phản đòn, yếu điểm, chui đất). */
   mf0 = 0;
+  /** Độ cao bay lơ lửng đang hiển thị (m, `MonsterDef.hover`, xem `hover.ts`). */
+  hover = 0;
   /** Độ lệch tách thân đang hiển thị (P2-E2, chỉ trình bày) và bán kính thân. */
   sepX = 0;
   sepZ = 0;
@@ -729,7 +732,14 @@ export class EntityManager {
       const sx = v.sepX;
       const sz = v.sepZ;
       const sy = sx * sx + sz * sz > 1e-4 ? groundAt(v.x + sx, v.z + sz) - groundAt(v.x, v.z) : 0;
-      v.model.root.position.set(v.x + v.model.hit.kx + sx, v.y + sy, v.z + v.model.hit.kz + sz);
+      const hv = v.model.def.hover ?? 0;
+      let lift = 0;
+      if (hv > 0) {
+        const low = (((s.mf ?? 0) & (MF_WEAK | MF_STUN)) !== 0);
+        v.hover = stepHover(v.hover, hoverTarget(hv, dead, low), dt, dead);
+        lift = v.hover + hoverBob(hv, v.hover, this.time, hashStr(v.id) % 7);
+      }
+      v.model.root.position.set(v.x + v.model.hit.kx + sx, v.y + sy + lift, v.z + v.model.hit.kz + sz);
       v.model.root.rotation.y = v.yaw;
       _monAnim.speed = v.speed;
       _monAnim.dead = dead;

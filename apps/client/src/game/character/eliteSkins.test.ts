@@ -20,6 +20,8 @@ const IN_GAME = ['elite_huyet_nha_lang', 'elite_xich_dien_ho', 'elite_cu_nham_vi
 
 const DOAN_MACH = ['elite_liet_cot_bao', 'elite_ho_mach_khoi_tuong', 'elite_xich_sa_ngo_cong'];
 
+const VAN_HAI = ['elite_van_hac_vuong', 'elite_loi_van_su_vuong'];
+
 describe('12 tinh anh Tripo (E-1b)', () => {
   const ids = [...IN_GAME, ...Object.keys(ELITE_SKINS_NEW)];
 
@@ -38,7 +40,7 @@ describe('12 tinh anh Tripo (E-1b)', () => {
     }
   });
 
-  it('ba tinh anh Vân Lam có skin nạp lười theo màn (không vào tải đầu), ba con Đoạn Mạch (E2-B) và Kính Diện Ma Quân (E3-M) đã gộp vào bảng, các con còn lại chưa', () => {
+  it('ba tinh anh Vân Lam có skin nạp lười theo màn (không vào tải đầu), ba con Đoạn Mạch (E2-B), Kính Diện Ma Quân (E3-M) và hai con Vân Hải (E3-B) đã gộp vào bảng, các con còn lại chưa', () => {
     for (const id of IN_GAME) {
       expect(MONSTER_SKINS[id]?.lazy, id).toBe(true);
       expect(MONSTER_SKINS[id].level, id).toBe('van_lam');
@@ -46,6 +48,9 @@ describe('12 tinh anh Tripo (E-1b)', () => {
     for (const [id, s] of Object.entries(ELITE_SKINS_NEW)) {
       if (DOAN_MACH.includes(id)) {
         expect(MONSTER_SKINS[id]?.level, id).toBe('doan_mach');
+        expect(MONSTER_SKINS[id].lazy, id).toBe(true);
+      } else if (VAN_HAI.includes(id)) {
+        expect(MONSTER_SKINS[id]?.level, id).toBe('van_hai');
         expect(MONSTER_SKINS[id].lazy, id).toBe(true);
       } else if (id === 'elite_kinh_dien_ma_quan') {
         // Kính Nguyệt Cung (E3-M) đã gộp vào bảng.
