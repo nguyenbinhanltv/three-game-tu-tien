@@ -341,7 +341,7 @@ export async function optimize(opts: OptimizeOptions = {}): Promise<OptimizeRepo
     const id = path.basename(f, path.extname(f));
     if (opts.only && id !== opts.only) continue;
     if (!ASSET_ID.test(id)) {
-      report.failed.push({ id, error: `tên "${id}" sai quy ước (tiền tố chr_/mon_/boss_/prop_/arch_/fx_/anim_ + snake_case không dấu)` });
+      report.failed.push({ id, error: `tên "${id}" sai quy ước (tiền tố chr_/mon_/elite_/boss_/prop_/arch_/fx_/anim_ + snake_case không dấu)` });
       continue;
     }
     const cls = classify(id, budgets);
