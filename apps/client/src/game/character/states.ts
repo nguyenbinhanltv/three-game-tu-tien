@@ -14,6 +14,7 @@ export type CharState =
   | 'strafeR'
   | 'jump'
   | 'fly'
+  | 'sky'
   | 'meditate'
   | 'cast'
   | 'stun'
@@ -38,6 +39,7 @@ export const FALLBACK: Record<CharState, CharState | null> = {
   dash: 'run',
   jump: 'idle',
   fly: 'idle',
+  sky: 'fly',
   meditate: 'idle',
   cast: 'combatIdle',
   stun: 'combatIdle',
@@ -56,7 +58,7 @@ export function baseState(a: AnimState, refSpeed: number, combatBias = false): C
   if (a.dead) return 'death';
   if (a.stunned) return 'stun';
   if (a.meditating) return 'meditate';
-  if (a.flying) return 'fly';
+  if (a.flying) return a.sky ? 'sky' : 'fly';
   if (a.airborne) return 'jump';
   if (a.casting) return 'cast';
   if (a.speed > MOVE_MIN) {

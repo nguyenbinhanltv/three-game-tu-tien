@@ -1195,6 +1195,51 @@ async function main() {
       await W(800);
       check('spam 80 lệnh Ngưng Đan Lô: server vẫn sống', await health());
     }
+    // g. Nguyên anh xuất khiếu / ngự không / thuấn di (E3-K): chưa Nguyên Anh thì từ chối; rác và spam không sập; dạng nguyên anh không bỏ trốn quá tầm,
+    //    không ra chiêu, vị trí lưu là của thân xác; thuấn di không vượt 12 m.
+    {
+      const souls: { k: number; bx: number; bz: number }[] = [];
+      ta.room.onMessage(S.SOUL_STATE, (m: { k: number; bx: number; bz: number }) => souls.push(m));
+      const lastK = () => souls.at(-1)?.k ?? 0;
+      const mine = () => ta.room.state.players.get(ta.room.sessionId) as { x: number; z: number; fl: number } | undefined;
+      await sayT(ta.room, 'level 23');
+      await sayT(ta.room, 'tp 2048 2088');
+      await W(600);
+      for (let i = 0; i < 40; i++) ta.room.send(C.SOUL, {});
+      await W(1200);
+      check('chưa Nguyên Anh: X bị từ chối', lastK() === 0 && ((mine()?.fl ?? 0) & 128) === 0 && (await health()), `k ${lastK()}`);
+      await sayT(ta.room, 'level 24');
+      await sayT(ta.room, 'god on');
+      await W(600);
+      const body = { x: mine()?.x ?? 0, z: mine()?.z ?? 0 };
+      ta.room.send(C.SOUL, { on: true });
+      await W(700);
+      check('xuất khiếu được từ Nguyên Anh', lastK() === 1 && (((mine()?.fl ?? 0) & 128) !== 0));
+      // Cố chạy thật xa bằng input (không giới hạn phía client).
+      let seq = 1000;
+      for (let i = 0; i < 90; i++) {
+        ta.room.send(C.INPUT, { s: seq++, mx: 0, mz: 1, yaw: -Math.PI / 2, f: 0 });
+        await W(55);
+      }
+      const d = Math.hypot((mine()?.x ?? 0) - body.x, (mine()?.z ?? 0) - body.z);
+      check('dạng nguyên anh không rời thân xác quá 60 m', d <= 60.6 && (await health()), `${d.toFixed(1)} m`);
+      ta.room.send(C.SKILL, { id: 'skl_phi_kiem' });
+      await W(600);
+      check('dạng nguyên anh: lệnh ra chiêu bị bỏ qua (không vào trạng thái niệm)', (await health()) && ((mine()?.fl ?? 0) & 8) === 0);
+      ta.room.send(C.SOUL, { on: false });
+      await W(900);
+      const back = Math.hypot((mine()?.x ?? 0) - body.x, (mine()?.z ?? 0) - body.z);
+      check('nhập lại: về đúng chỗ thân xác', back < 1.5 && lastK() === 0, `${back.toFixed(2)} m`);
+      // Đang hồi chiêu (30 s): rác và spam không mở lại được dạng nguyên anh.
+      for (const m of [null, undefined, 5, 'x', [1], { on: 'yes' }, { on: {} }, { on: 1 }, { on: NaN }]) {
+        ta.room.send(C.SOUL, m);
+        await W(450);
+      }
+      await W(800);
+      for (let i = 0; i < 80; i++) ta.room.send(C.SOUL, {});
+      await W(1200);
+      check('đang hồi chiêu: rác và spam 80 lệnh X không mở lại nguyên anh, server sống', (await health()) && lastK() === 0 && (((mine()?.fl ?? 0) & 128) === 0), `k ${lastK()}`);
+    }
     await ta.room.leave(true);
     await tb.room.leave(true);
   }

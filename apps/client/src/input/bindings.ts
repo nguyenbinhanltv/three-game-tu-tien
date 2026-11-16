@@ -13,6 +13,7 @@ export type Action =
   | 'autorun'
   | 'dash'
   | 'spirit'
+  | 'soul'
   | 'bonded'
   | 'bag'
   | 'char'
@@ -36,6 +37,8 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   KeyQ: 'dash',
   // Thần thức (giữ, thả để hủy) và bản mệnh pháp bảo (E2-E).
   KeyV: 'spirit',
+  // Nguyên anh xuất khiếu (E3-K). Bay xuống chỉ còn Shift (X không còn là phím xuống).
+  KeyX: 'soul',
   KeyT: 'bonded',
   KeyB: 'bag',
   KeyI: 'bag',
@@ -76,7 +79,7 @@ export const HELD: Readonly<Record<HeldAction, readonly string[]>> = {
   right: ['KeyD'],
   /** Nhảy khi đi bộ, bay lên khi ngự kiếm. */
   up: ['Space'],
-  down: ['KeyX', 'ShiftLeft'],
+  down: ['ShiftLeft'],
   camLeft: ['ArrowLeft'],
   camRight: ['ArrowRight'],
   camUp: ['ArrowUp'],

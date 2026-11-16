@@ -3,9 +3,9 @@
   "tileSize": 128,
   "sheets": {
     "hud": {
-      "file": "icons-hud.4b9c355e22.webp",
-      "sha256": "4b9c355e2206be55e1a0d976b924c964d346da79a0024c0e637dbba5b1661a89",
-      "bytes": 477592,
+      "file": "icons-hud.23548631f5.webp",
+      "sha256": "23548631f5c77c083eca84f35405f54bb4c001e4e1b716d3d3ecfd4a7b97ddbe",
+      "bytes": 483898,
       "columns": 8,
       "rows": 11
     },
@@ -1320,9 +1320,16 @@
       "sourceSha256": "6ecdaf0ccf1b406746d836bd91a322ec50c039633b6d3a2107b34182617d00dd",
       "sourceBytes": 2063194
     },
-    "hud_than_thuc": {
+    "hud_nguyen_anh": {
       "s": "hud",
       "x": 4,
+      "y": 10,
+      "sourceSha256": "5ce537788c9eb4d80f10677b130d7b4768ec27458fdb244b3827612251717d56",
+      "sourceBytes": 2047020
+    },
+    "hud_than_thuc": {
+      "s": "hud",
+      "x": 5,
       "y": 10,
       "sourceSha256": "0bfea0556131f72ae19f7871b554f67210bdf244bcb5f1de1666f598f2a5ae3c",
       "sourceBytes": 2141615

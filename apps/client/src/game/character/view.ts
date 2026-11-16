@@ -7,6 +7,8 @@ export interface AnimState {
   /** Tốc độ ngang (m/s). */
   speed: number;
   flying: boolean;
+  /** Ngự không (E3-K): đang bay mà không cần kiếm (Nguyên Anh, trong 30 m so với mặt đất). */
+  sky?: boolean;
   meditating: boolean;
   dead: boolean;
   casting: boolean;
