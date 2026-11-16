@@ -28,10 +28,10 @@
   "info": {
     "backend": "WebGPU",
     "draw": 56,
-    "tri": 254809
+    "tri": 254767
   },
   "puzzleSeen": true,
-  "puzzleText": "Đỏ → Vàng → Lam",
+  "puzzleText": "Vàng → Đỏ → Lam",
   "boss0": [
     {
       "t": "boss_kinh_nguyet_chan_quan",
