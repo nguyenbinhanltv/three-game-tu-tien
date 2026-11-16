@@ -29,3 +29,4 @@ export * from './posestyle';
 export * from './spawnrules';
 export * from './elements';
 export * from './tribulation';
+export * from './propLib';
