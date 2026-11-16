@@ -1,11 +1,12 @@
 import { type MouseEvent as RMouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { biomeAt } from '@dtl/shared';
+import { biomeAt } from '../../game/levelCtx';
 import { LEVELS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { TipCard, Tooltip } from '../kit';
 import { togglePanel, useUI } from '../store';
 import { ancientMap } from './ancient';
+import { levelAssets } from '../../game/levelCtx';
 import { drawMinimap, type HitPt } from './draw';
 import { buildFrame } from './marks';
 import { clampZoom, screenToWorld, DEFAULT_ZOOM, formatCountdown, type Mark, nearestIndex, type View, zoneStatus, ZOOM_SPANS } from './model';
@@ -54,8 +55,9 @@ export function Minimap() {
   const rz = useUI((s) => Math.round(s.z));
   const myLv = useUI((s) => s.char?.level ?? 1);
   const room = useUI((s) => s.room);
-  const zones = LEVELS.van_lam.zones;
-  const zs = useMemo(() => zoneStatus(room === 'world' || room === '' ? zones : undefined, rx, rz, myLv), [zones, room, rx, rz, myLv]);
+  const level = useUI((s) => s.level);
+  const zones = LEVELS[level]?.zones;
+  const zs = useMemo(() => zoneStatus(room === 'dungeon' ? undefined : zones, rx, rz, myLv), [zones, room, rx, rz, myLv]);
   const zoneName = zs.zone ? t(`zone.${zs.zone.id}`) : t('ui.zone.' + biomeAt(rx, rz));
 
   useEffect(() => {
@@ -110,7 +112,7 @@ export function Minimap() {
       const yaw = g.yaw;
       const v: View = { cx: g.renderPos.x, cz: g.renderPos.z, span, size: SIZE, rot: rotRef.current ? yaw : 0 };
       viewRef.current = v;
-      drawMinimap(ctx, g, frame, v, dpr, nowT, ancientMap(), yaw, hits.current);
+      drawMinimap(ctx, g, frame, v, dpr, nowT, ancientMap(levelAssets(useUI.getState().level).minimap), yaw, hits.current);
       // Tooltip theo con trỏ: chọn lại theo từng khung (biểu tượng đang chuyển động) nhưng chỉ cập nhật React khi nội dung đổi.
       const m = mouse.current;
       if (m) {

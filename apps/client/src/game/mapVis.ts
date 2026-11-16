@@ -5,7 +5,8 @@
 
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { groundAt, type MarkInfo, TELE_PADS, type TelePad } from '@dtl/shared';
+import { type MarkInfo, TELE_PADS, type TelePad } from '@dtl/shared';
+import { groundAt } from './levelCtx';
 
 const PAD_SHOW = 260;
 const OPEN_COLOR = 0x8fe8ff;

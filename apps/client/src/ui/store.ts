@@ -146,6 +146,8 @@ export interface UIState {
   needName: boolean;
   nameError: string;
   room: string;
+  /** Level đang hiển thị (E1-D): minimap và bản đồ lớn theo level này. */
+  level: string;
   dev: boolean;
   char: CharView | null;
   inv: InvSlot[];
@@ -233,6 +235,7 @@ export const useUI = create<UIState>(() => ({
   needName: false,
   nameError: '',
   room: '',
+  level: 'van_lam',
   dev: false,
   char: null,
   inv: [],

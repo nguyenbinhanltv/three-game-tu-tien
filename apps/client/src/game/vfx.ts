@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { groundAt } from '@dtl/shared';
+import { groundAt } from './levelCtx';
 import { FxBatcher } from '../render/materials/fxBatch';
 import { BATCHING, BATCH_KINDS, FxPool, type FxKind, type FxMesh } from '../render/materials/vfx';
 import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../render/vfx/sigil';
