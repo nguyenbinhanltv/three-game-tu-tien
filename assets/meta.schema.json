@@ -10,12 +10,12 @@
     "$schema": { "type": "string" },
     "id": {
       "type": "string",
-      "pattern": "^(chr|mon|boss|prop|arch|fx|anim)_[a-z0-9]+(_[a-z0-9]+)*$",
+      "pattern": "^(chr|mon|elite|boss|prop|arch|fx|anim)_[a-z0-9]+(_[a-z0-9]+)*$",
       "description": "Asset id: tiền tố loại + snake_case không dấu; trùng tên thư mục và tên GLB trong assets/build/raw/."
     },
     "type": { "enum": ["chr", "mon", "prop", "arch", "fx", "anim"], "description": "Thư mục loại trong assets/source/." },
     "budgetClass": {
-      "enum": ["player", "npc", "monster", "boss", "weapon", "artifact", "prop", "drop", "arch", "fx", "anim"],
+      "enum": ["player", "npc", "monster", "elite", "boss", "weapon", "artifact", "prop", "drop", "arch", "fx", "anim"],
       "description": "Lớp ngân sách trong assets/budgets.json. Bỏ trống thì suy từ tiền tố id (chr_ → player, mon_ → monster…)."
     },
     "itemId": { "type": ["string", "null"], "description": "Id vật phẩm trong packages/content nếu asset là hình của vật phẩm." },
@@ -102,7 +102,7 @@
           "type": "array",
           "uniqueItems": true,
           "description": "Clip boss thủ tục do import.post sinh thêm: slam (nện), sweep (chém/quét vùng), chant (niệm chú, lặp; chỉ người/vượn), stun (choáng/mất thế, lặp). Thời điểm chạm khớp BOSS_MOVES trong apps/client/src/game/character/monsterSkins.ts. K-3 (thư viện clip người): combat_idle (thủ thế cầm kiếm), guard (đỡ đòn), hit_back (trúng từ sau), roar (khiêu khích).",
-          "items": { "enum": ["slam", "sweep", "chant", "stun", "combat_idle", "guard", "hit_back", "roar"] }
+          "items": { "enum": ["idle", "run", "attack", "death", "slam", "sweep", "chant", "stun", "combat_idle", "guard", "hit_back", "roar"] }
         },
         "k3": {
           "type": "object",
@@ -184,6 +184,17 @@
           "type": "array",
           "description": "Regex tên xương cần bỏ (script post anim_biped_extra.py) để vừa trần xương của lớp ngân sách, ví dụ xương xoắn, xương phụ khuỷu/gối, mắt; trọng số skin dồn vào tổ tiên gần nhất còn giữ.",
           "items": { "type": "string" }
+        },
+        "serpent": {
+          "type": "object",
+          "description": "Tùy chọn của tools/blender/anim_serpent.py: auto = tự đo đường tâm từ lưới (thay cho SPINE_RAW đo tay của Hàn Giao) cho thân nằm ngang uốn chữ S; bins số lát, headFrac phần thân ở đầu, rootFrac chỗ xương gốc.",
+          "additionalProperties": false,
+          "properties": {
+            "auto": { "type": "boolean" },
+            "bins": { "type": "integer", "minimum": 6, "maximum": 40 },
+            "headFrac": { "type": "number", "exclusiveMinimum": 0, "maximum": 0.5 },
+            "rootFrac": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 }
+          }
         },
         "quadruped": {
           "type": "object",

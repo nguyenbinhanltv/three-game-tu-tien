@@ -638,8 +638,8 @@ if 'hit_light' not in bpy.data.actions and not IMPORT.get('sharedAnims'):
 
 EXTRA = list(IMPORT.get('extra', []))
 for name in EXTRA:
-    if name not in ('slam', 'sweep', 'chant', 'stun', 'combat_idle', 'guard', 'hit_back', 'roar'):
-        fail(f'anim_biped_extra: import.extra "{name}" chưa hỗ trợ (slam | sweep | chant | stun | combat_idle | guard | hit_back | roar)')  # noqa: F821
+    if name not in ('idle', 'run', 'attack', 'death', 'slam', 'sweep', 'chant', 'stun', 'combat_idle', 'guard', 'hit_back', 'roar'):
+        fail(f'anim_biped_extra: import.extra "{name}" chưa hỗ trợ (idle | run | attack | death | slam | sweep | chant | stun | combat_idle | guard | hit_back | roar)')  # noqa: F821
 
 if EXTRA:
     Y_AX, Z_AX = Vector((0, 1, 0)), Vector((0, 0, 1))
@@ -883,6 +883,50 @@ if EXTRA:
         r2 = {'spine': (-12, -14, -10), 'head': -22, 'hips': (0, 0.0, 0.0), 'feet': both(lambda sx: ((sx * -0.07), 0, 0)),
               'arms': both(lambda sx: ((sx * 0.85, 0.0, 0.35), (sx * 0.9, -0.15, 0.25)))}
         keyed_clip('roar', 1.8, [(0.0, REST_K), (0.5, r1), (0.62, r1), (0.95, r2), (1.4, r2), (1.8, REST_K)])
+
+
+    # ---- Clip nền thủ tục (tinh anh Tripo chỉ có rig, không kèm clip): idle, run, attack, death ----
+    # Cùng khung `keyed_clip/looped_clip` ở trên. Thời điểm chạm của attack (0,45 s) khớp BIPED_BASIC_IMPACT ở monsterSkins.ts.
+    if 'idle' in EXTRA:
+        def idle(t):
+            a = 2 * math.pi * t
+            br = math.sin(a)
+            return {'spine': (1.5 * br, 1.5 * br, 1.0 * br), 'head': -2 * br, 'twist': 1.5 * math.sin(a + 1),
+                    'hips': (0.004 * math.sin(a), 0, 0.005 * math.sin(2 * a)),
+                    'arms': both(lambda sx: ((sx * (0.2 + 0.02 * br), 0.02, -0.97), (sx * 0.1, -0.3 - 0.03 * br, -0.9)))}
+        looped_clip('idle', 2.4, idle)
+
+    if 'run' in EXTRA:
+        def run(t):
+            a = 2 * math.pi * t
+            feet, arms = {}, {}
+            for s, sx in SIDES.items():
+                ph = a + (0 if s == 'R' else math.pi)
+                feet[s] = (0.0, -0.16 * math.sin(ph), 0.09 * max(0.0, math.cos(ph)))
+                sw = 0.55 * math.sin(ph)  # tay đối nhịp với chân cùng bên
+                arms[s] = ((sx * 0.22, sw, -0.82), (sx * 0.1, -0.55 + 0.25 * sw, -0.35))
+            return {'spine': (9, 9, 6), 'twist': 9 * math.sin(a), 'head': -5, 'feet': feet, 'arms': arms,
+                    'hips': (0.012 * math.sin(a), -0.02, -0.04 + 0.02 * math.cos(2 * a))}
+        looped_clip('run', 0.6, run)
+
+    if 'attack' in EXTRA:
+        # Một vung chém một tay từ sau đầu: thu tay + vặn thân (0,3 s) → chém xuống chéo (chạm 0,45 s) → giữ → về.
+        a_wind = {'spine': (-5, -5, -3), 'twist': -20, 'head': -4, 'hips': (0, 0.02, 0.0),
+                  'arms': {'R': ((-0.3, 0.35, 0.88), (-0.1, 0.45, 0.88)), 'L': ((0.4, -0.2, -0.85), (0.2, -0.6, -0.4))}}
+        a_mid = {'spine': (3, 4, 3), 'twist': -2, 'head': 0, 'hips': (0, -0.02, -0.04),
+                 'arms': {'R': ((-0.12, -0.55, 0.83), (-0.05, -0.85, 0.52)), 'L': ((0.4, -0.2, -0.85), (0.2, -0.6, -0.4))}}
+        a_hit = {'spine': (13, 15, 10), 'twist': 16, 'head': 7, 'hips': (0, -0.07, -0.1),
+                 'arms': {'R': ((-0.08, -0.92, -0.38), (-0.02, -0.75, -0.66)), 'L': ((0.5, -0.1, -0.85), (0.3, -0.4, -0.5))}}
+        keyed_clip('attack', 0.9, [(0.0, REST_K), (0.3, a_wind), (0.4, a_mid), (0.45, a_hit), (0.65, a_hit), (0.9, REST_K)])
+
+    if 'death' in EXTRA:
+        d1 = {'spine': (8, 8, 6), 'head': 14, 'hips': (0, -0.02, -0.12),
+              'arms': both(lambda sx: ((sx * 0.3, -0.2, -0.93), (sx * 0.15, -0.5, -0.85)))}
+        d2 = {'spine': (28, 30, 22), 'head': 28, 'hips': (0, -0.06, -0.30),
+              'arms': both(lambda sx: ((sx * 0.35, -0.35, -0.87), (sx * 0.2, -0.6, -0.78)))}
+        d3 = {'spine': (46, 50, 36), 'head': 38, 'hips': (0, -0.10, -0.40),
+              'arms': both(lambda sx: ((sx * 0.4, -0.5, -0.77), (sx * 0.2, -0.7, -0.68)))}
+        keyed_clip('death', 1.6, [(0.0, REST_K), (0.35, d1), (0.9, d2), (1.3, d3), (1.6, d3)])
 
 
 for p in pb:

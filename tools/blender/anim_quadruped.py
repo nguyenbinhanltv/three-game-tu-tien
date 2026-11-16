@@ -150,7 +150,113 @@ def generic_layout():
     return out
 
 
-RENAME = wolf_layout() or generic_layout()
+def geometric_layout():
+    """Rig Tripo quadruped có cây xương lộn xộn (tinh anh P3-E: chân mọc từ xương đầu hoặc đuôi, tên "Limb" gắn nhầm vào
+    đuôi, có khi không có xương đầu riêng). Không tin tên và cha-con: tách cây thành chuỗi xương đơn (cắt ở chỗ rẽ nhánh),
+    phân loại theo hình học sau chuẩn hóa (đầu ở -Y, trái ở +X, đất ở Z = 0):
+      chân:  chuỗi bắt đầu cao, rơi xuống nhiều hơn đi ngang (đúng 4);
+      đuôi:  chuỗi lá còn lại dài nhất đi về phía +Y (các đuôi phụ giữ nguyên, chỉ đi theo cha);
+      đầu:   chuỗi lá còn lại nằm xa nhất về phía -Y; cột sống là tổ tiên của nó (bỏ xương gốc sát đất). Nếu đường cột sống
+             có xương tên "head" thì từ đó trở đi là nhóm đầu (head = xương đó), trước nó là neck, cột sống; không thì
+             xương cuối là head.
+    Chân/đuôi gắn sai cha (con của nhóm đầu, đuôi, hay chân khác) được gắn lại vào xương cột sống gần nhất ở chế độ Edit
+    (tư thế nghỉ và trọng số không đổi). Trả về (bảng đổi tên, bảng gắn lại cha {tên: tên cha mới})."""
+    top = max(b.head_local.z for b in bones)
+
+    def chain_from(b):
+        c = [b]
+        while len(c[-1].children) == 1:
+            c.append(c[-1].children[0])
+        return c
+
+    chains, stack = [], [b for b in bones if b.parent is None]
+    seen = set()
+    while stack:
+        b = stack.pop()
+        c = chain_from(b)
+        chains.append(c)
+        seen.update(x.name for x in c)
+        stack.extend(c[-1].children)
+    legs, others = [], []
+    for c in chains:
+        a, z = c[0].head_local, c[-1].tail_local
+        horiz = math.hypot(z.x - a.x, z.y - a.y)
+        drop = a.z - z.z
+        (legs if len(c) >= 2 and a.z > 0.25 * top and z.z < 0.25 * top and drop > 0.8 * horiz and drop > 0.15 * top else others).append(c)
+    if len(legs) != 4:
+        fail(f'anim_quadruped: dò hình học thấy {len(legs)} chân, cần 4')  # noqa: F821
+    leaf = [c for c in others if not c[-1].children]
+    tail_chain = max((c for c in leaf if c[-1].tail_local.y > c[0].head_local.y), key=lambda c: len(c), default=None)
+    head_cands = [c for c in leaf if c is not tail_chain]
+    if not head_cands:  # đầu là chuỗi dài có chân mọc ngang cuối (không phải lá)
+        head_cands = [c for c in others if c is not tail_chain and c[-1].tail_local.z > 0.3 * top]
+    if not head_cands:
+        fail('anim_quadruped: không thấy chuỗi đầu')  # noqa: F821
+    head_leaf = min(head_cands, key=lambda c: c[-1].tail_local.y)
+    path, p = [], head_leaf[-1]
+    while p is not None:
+        path.append(p)
+        p = p.parent
+    path.reverse()
+    path = [b for b in path if b.head_local.z > 0.3 * top] or path
+    hi = next((i for i, b in enumerate(path) if 'head' in b.name.lower()), None)
+    if hi is None:
+        hi = len(path) - 1
+    spine = path[:hi]
+    out = {path[hi].name: 'head'}
+    if len(spine) >= 2:
+        out[spine[-1].name] = 'neck'
+        for name, b in zip(('spine_2', 'spine_1', 'spine_0'), reversed(spine[:-1])):
+            out[b.name] = name
+    elif len(spine) == 1:
+        out[spine[0].name] = 'spine_1'
+    if not spine:
+        fail('anim_quadruped: không có xương cột sống')  # noqa: F821
+    legs.sort(key=lambda c: c[0].head_local.y)  # đầu ở -Y: hai chân trước đứng trước
+    reparent = {}
+    host = list(spine) + [b for b in bones if b.parent is None]
+
+    def nearest_host(b):
+        return min(host, key=lambda h: (h.head_local - b.head_local).length)
+
+    for pair, front in ((legs[:2], True), (legs[2:], False)):
+        pair.sort(key=lambda c: -c[0].head_local.x)  # +X (trái) trước
+        if pair[0][0].head_local.x <= pair[1][0].head_local.x:
+            fail('anim_quadruped: không phân biệt được chân trái/phải theo X')  # noqa: F821
+        for side, c in zip('lr', pair):
+            if front:
+                out[c[0].name] = f'shoulder_{side}'
+                names = c[1:]
+            else:
+                names = c
+            for i, b in enumerate(names):
+                out[b.name] = f'leg_{"f" if front else "h"}{side}_{i}'
+            if c[0].parent is None or c[0].parent not in host:
+                reparent[c[0].name] = nearest_host(c[0]).name
+    if tail_chain:
+        for i, b in enumerate(tail_chain):
+            out[b.name] = f'tail_{i}'
+        if tail_chain[0].parent is None or tail_chain[0].parent not in host:
+            reparent[tail_chain[0].name] = nearest_host(tail_chain[0]).name
+    return out, reparent
+
+
+REPARENT = {}
+RENAME = wolf_layout()
+if not RENAME:
+    try:
+        RENAME = generic_layout()
+    except SystemExit:
+        RENAME, REPARENT = geometric_layout()
+        print(f'[anim_quadruped] bố cục hình học: {RENAME} gắn lại cha: {REPARENT}')
+if REPARENT:
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode='EDIT')
+    eb = arm.data.edit_bones
+    for child, new_parent in REPARENT.items():
+        eb[child].use_connect = False
+        eb[child].parent = eb[new_parent]
+    bpy.ops.object.mode_set(mode='OBJECT')
 LAYOUT = 'wolf28' if 'bone_10' in RENAME else 'generic'
 for old in RENAME:
     need(old)
