@@ -10,7 +10,7 @@
 #   normalFlat kéo pháp tuyến bake về phẳng 0..1 (mặc định 0): áo Tripo nhàu/nứt quá
 #   files     { <mảnh>: tên tệp } ghi đè raw_<mảnh>_v01.glb (vd ao_ngoai → raw_ao_ngoai_v02.glb)
 #   proc      { <mảnh>: { base, metal, accent, top, toe, edge } } vật liệu thủ tục cho mảnh KHÔNG có texture (GLB 0 ảnh): UV tự sinh, nướng vào ô atlas
-#   alpha     { <mảnh>: 'veil' } vùng voan xám-tím nhạt của mảnh có alpha thấp (client dither); veilAlpha (mặc định 0,4) là độ phủ bị trừ
+#   alpha     { <mảnh>: 'veil' | 'sleeve' } voan: 'veil' nhận vùng xám-tím nhạt theo màu texel; 'sleeve' theo hình học nửa dưới tay áo (tham số veil {xmin,zlo,zhi}, biểu thức theo mốc); alpha thấp (client vẽ blend hai lượt); veilAlpha (mặc định 0,4) là độ phủ bị trừ
 #   atlas     cạnh atlas (mặc định 1024); ô theo `cells` (mặc định xếp sẵn cho 6 mảnh)
 #   pieces    { <mảnh>: { fit:{...}, weights, spring:{count,minDist,weight}, hide:bool } } ghi đè mặc định PIECE_DEFAULTS
 #
@@ -353,6 +353,47 @@ def bake_proc(name, pc, st, w, h):
     return out
 
 
+def raster_scalar(pc, vals, w, h):
+    """Nướng một đại lượng theo đỉnh (vals[i] ứng với pc['verts'][i], 0..1) vào ô w×h px qua UV; chỗ trống nở viền 6 px. Trả mảng (h, w)."""
+    UVL = np.array(pc['uv'])
+    buf = np.zeros((h, w), np.float32)
+    cov = np.zeros((h, w), bool)
+    li = 0
+    for p in pc['polys']:
+        loops = list(range(li, li + len(p)))
+        li += len(p)
+        for j in range(1, len(p) - 1):
+            ids = [0, j, j + 1]
+            uv = np.array([UVL[loops[i]] for i in ids])
+            at = np.array([vals[p[i]] for i in ids], np.float32)
+            px = uv[:, 0] * (w - 1)
+            py = uv[:, 1] * (h - 1)
+            x0, x1 = int(max(0, np.floor(px.min()))), int(min(w - 1, np.ceil(px.max())))
+            y0, y1 = int(max(0, np.floor(py.min()))), int(min(h - 1, np.ceil(py.max())))
+            d = (py[1] - py[2]) * (px[0] - px[2]) + (px[2] - px[1]) * (py[0] - py[2])
+            if x1 < x0 or y1 < y0 or abs(d) < 1e-9:
+                continue
+            gx, gy = np.meshgrid(np.arange(x0, x1 + 1), np.arange(y0, y1 + 1))
+            l0 = ((py[1] - py[2]) * (gx - px[2]) + (px[2] - px[1]) * (gy - py[2])) / d
+            l1 = ((py[2] - py[0]) * (gx - px[2]) + (px[0] - px[2]) * (gy - py[2])) / d
+            l2 = 1 - l0 - l1
+            ins = (l0 >= -0.03) & (l1 >= -0.03) & (l2 >= -0.03)
+            if not ins.any():
+                continue
+            val = l0 * at[0] + l1 * at[1] + l2 * at[2]
+            sub = buf[y0:y1 + 1, x0:x1 + 1]
+            sub[ins] = val[ins]
+            cov[y0:y1 + 1, x0:x1 + 1] |= ins
+    for _ in range(6):
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            sh_b = np.roll(buf, (dy, dx), (0, 1))
+            sh_c = np.roll(cov, (dy, dx), (0, 1))
+            take = (~cov) & sh_c
+            buf[take] = sh_b[take]
+            cov |= take
+    return buf
+
+
 def ev(expr):
     """Biểu thức số học theo mốc (chỉ + - * / ngoặc, số và tên trong LM), tính bằng ast, không eval."""
     if not isinstance(expr, str):
@@ -541,6 +582,7 @@ def kmeans(idx, pts, k):
 # ---------- xử lý từng mảnh ----------
 MERGED = {'verts': [], 'polys': [], 'uv': [], 'w': [], 'ids': []}
 PROCS = {}  # mảnh không texture: mảng màu đã nướng
+VEIL_W = {}  # voan theo hình học tay áo: trọng số 0..1 đã nướng theo ô atlas
 SPRING = []  # (tên, xương cha, đầu rest, đuôi rest)
 report_pieces = {}
 imgs_color, imgs_normal = {}, {}
@@ -556,6 +598,16 @@ for name in ORDER:
     if d.get('hide'):
         continue
     pts, sc = fit(pc['verts'], d['fit'])
+    if (CFG.get('alpha') or {}).get(name) == 'sleeve':
+        # Voan là nửa dưới tay áo (không tách được theo màu vì cùng màu lụa): đỉnh ở ngoài thân (|x| > xmin) và trong dải z [zlo, zhi] ở tư thế tay thả
+        vz = CFG.get('veil') or {}
+        xmin, zlo, zhi = ev(vz.get('xmin', 'waist_w*0.5+0.10')), ev(vz.get('zlo', 'hip_z-0.25')), ev(vz.get('zhi', 'shoulder_z-0.10'))
+
+        def ss(t):
+            t = min(1.0, max(0.0, t))
+            return t * t * (3 - 2 * t)
+        vw = [ss((abs(q.x) - xmin) / 0.06) * ss((q.z - zlo) / 0.08) * ss((zhi - q.z) / 0.08) for q in pts]
+        VEIL_W[name] = raster_scalar(pc, vw, int(round(CELLS[name][2] * ATLAS)), int(round(CELLS[name][3] * ATLAS)))
     if pc.get('proc'):
         st = dict((CFG.get('proc') or {}).get(name) or {})
         pal_ = CFG.get('palette') or {}
@@ -691,12 +743,16 @@ acc = lin_hex(pal.get('accent', '#E8A33D'))
 HAS_ALPHA = False
 for name, kind in (CFG.get('alpha') or {}).items():
     # Voan xuyên sáng nằm chung lưới với đạo bào (Tripo không tách): nhận theo màu texel, xám-tím sáng (lam ≥ đỏ, lục ≤ lam), alpha thấp = lỗ dither
-    if kind != 'veil' or name not in CELLS:
+    if kind not in ('veil', 'sleeve') or name not in CELLS:
         continue
     cx, cy, cw, ch = CELLS[name]
     x0, w = int(round(cx * ATLAS)), int(round(cw * ATLAS))
     y1 = int(round((1 - cy) * ATLAS))
     y0 = y1 - int(round(ch * ATLAS))
+    if kind == 'sleeve':
+        atlas_c[y0:y1, x0:x0 + w, 3] = 1.0 - float(CFG.get('veilAlpha', 0.4)) * VEIL_W[name]
+        HAS_ALPHA = True
+        continue
     reg = atlas_c[y0:y1, x0:x0 + w, :3]
     r_, g_, b_ = reg[..., 0], reg[..., 1], reg[..., 2]
     lum = 0.2126 * r_ + 0.7152 * g_ + 0.0722 * b_
