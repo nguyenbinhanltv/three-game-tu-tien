@@ -542,6 +542,24 @@ for (const m of MONSTERS) {
     });
     if (hasString(`mon.${m.id}.say.dead`) && t(`mon.${m.id}.say.dead`).length > 90) err(`mon.${m.id}.say.dead: thoại quá dài`);
   }
+  if (m.mirror) {
+    const mi = m.mirror;
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có mirror`);
+    const nph = (m.phases?.length ?? 0) + 1;
+    for (const [k, f] of Object.entries(mi) as [string, { phase: number } | undefined][]) if (f && !(Number.isInteger(f.phase) && f.phase >= 0 && f.phase < nph)) err(`monster ${m.id}: mirror.${k}.phase ngoài số pha`);
+    if (mi.decoys) {
+      const dd = MONSTER.get(mi.decoys.mon);
+      if (!dd) err(`monster ${m.id}: mirror.decoys.mon không tồn tại`);
+      else if (dd.boss || dd.elite || !(dd.hpMul <= 0.1)) err(`monster ${m.id}: bóng giả phải là quái thường chết trong một đòn (hpMul ≤ 0,1)`);
+      if (!(mi.decoys.n >= 1 && mi.decoys.n <= 5 && mi.decoys.boom.delay >= 1 && mi.decoys.boom.r <= 8)) err(`monster ${m.id}: mirror.decoys n ∈ [1;5], nổ báo ≥ 1 giây, r ≤ 8`);
+    }
+    if (mi.echo && !(mi.echo.delay >= 1 && mi.echo.cd >= 4)) err(`monster ${m.id}: mirror.echo báo ≥ 1 giây, hồi ≥ 4 giây`);
+    if (mi.disc) {
+      const dc = mi.disc;
+      if (!(dc.warn >= 1 && dc.beams >= 2 && dc.beams <= 4 && dc.spin > 0 && dc.spin <= 40 && dc.w >= 2 && dc.dur <= 10)) err(`monster ${m.id}: mirror.disc: báo ≥ 1 s, 2–4 tia, quay ≤ 40°/s (đi vòng kịp), rộng ≥ 2 m, ≤ 10 s`);
+    }
+    if (mi.veil && !(mi.veil.r <= 16 && mi.veil.dur <= 25 && mi.veil.hpMul > 0 && mi.veil.hpMul <= 0.5)) err(`monster ${m.id}: mirror.veil: r ≤ 16, ≤ 25 s, hpMul ∈ (0; 0,5]`);
+  }
   const ps = m.posture;
   if (ps) {
     if (!m.boss) err(`monster ${m.id}: chỉ boss mới có thanh phá thế`);
@@ -654,6 +672,8 @@ for (const r of RECIPES) {
     for (const m of r.mons) if (MONSTER.has(m) && !LOOT.has(m)) err(`loot.$mats: quái ${m} chưa có bảng rơi`);
   }
 }
+// E3-H: quái Vân Hải chưa có trong monsters.json (E3-B). TODO: xóa tập này khi E3-B merge.
+const E3B_PENDING_MONS = new Set(['mon_van_hac', 'mon_kinh_linh', 'mon_phu_dao_thach_quy', 'mon_bich_ngoc_kim_thien', 'elite_loi_van_su_vuong', 'boss_van_hai_kinh_vuong']);
 for (const n of NPCS) {
   needStr(`npc.${n.id}.name`);
   const nl = LEVELS[n.level ?? 'van_lam'];
@@ -674,7 +694,7 @@ for (const q of QUESTS) {
   if (!NPC.has(q.turnin)) err(`quest ${q.id}: turnin không tồn tại`);
   if (q.requires && !QUEST.has(q.requires)) err(`quest ${q.id}: requires không tồn tại ${q.requires}`);
   for (const o of q.objectives) {
-    if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
+    if (o.type === 'kill' && !MONSTER.has(o.target ?? '') && !E3B_PENDING_MONS.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target)) err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
@@ -791,6 +811,15 @@ for (const lv of Object.values(LEVELS)) {
       if (!(g.n >= 1)) err(`${ww}: quái ${g.id} số lượng phải >= 1`);
     }
     for (const pt of wv.points ?? []) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${ww}: điểm sinh (${pt.x}, ${pt.z}) ngoài bản đồ`);
+    if (wv.puzzle) {
+      const pz = wv.puzzle;
+      if (pz.points.length !== 3) err(`${ww}: đố gương cần đúng 3 điểm`);
+      for (const pt of pz.points) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${ww}: cột gương (${pt.x}, ${pt.z}) ngoài bản đồ`);
+      if (!(pz.secs >= 10 && pz.secs <= 60)) err(`${ww}: đố gương secs phải trong [10; 60]`);
+      if (!MONSTER.get(pz.wrong.mon)) err(`${ww}: quái phạt ${pz.wrong.mon} không tồn tại`);
+      if (!(pz.bossCut >= 0 && pz.bossCut <= 0.2)) err(`${ww}: bossCut phải trong [0; 0,2]`);
+      if (!wv.title) err(`${ww}: đợt đố gương phải có title`);
+    }
     if (wv.title && !hasString(`dungeon.${lv.id}.wave.${i + 1}`)) err(`${ww}: thiếu chuỗi dungeon.${lv.id}.wave.${i + 1}`);
   });
   if (!lv.tribulation && !hasString(`dungeon.${lv.id}.name`)) err(`${w}: thiếu chuỗi dungeon.${lv.id}.name`);
@@ -919,7 +948,9 @@ for (const it of ITEMS) {
   const b = it.use?.buff;
   if (!b) continue;
   if (!PILL_BUFF_KINDS.includes(b.kind)) err(`${it.id}: loại buff ${b.kind} lạ`);
-  if (!(b.pct > 0 && b.pct <= 0.2) || !(b.sec > 0 && b.sec <= 900)) err(`${it.id}: buff ngoài khoảng (pct ≤ 20%, ≤ 15 phút)`);
+  // `ward` (Định Thần Phù, E3-M) là bùa ngắn mạnh: ≤ 50%, ≤ 60 giây.
+  const ward = b.kind === 'ward';
+  if (!(b.pct > 0 && b.pct <= (ward ? 0.5 : 0.2)) || !(b.sec > 0 && b.sec <= (ward ? 60 : 900))) err(`${it.id}: buff ngoài khoảng (pct ≤ 20%, ≤ 15 phút; bùa ward ≤ 50%, ≤ 60 giây)`);
   if (t(`item.${it.id}.name`) !== (GLOSSARY.pills as Record<string, string>)[it.id]) err(`${it.id}: tên lệch glossary.pills`);
   if (!RECIPES.some((r) => r.output.id === it.id)) err(`${it.id}: không có công thức luyện`);
 }
@@ -975,7 +1006,7 @@ console.log('Nội dung hợp lệ.');
     if (!NPC.has(id) && !Object.values(LEVELS).some((lv) => lv.escorts?.some((e) => e.npc === id))) err(`glossary.stationNpcs có ${id} nhưng không có NPC/escort`);
     if (t(`npc.${id}.name`) !== glossNpc[id]) err(`npc ${id}: tên lệch glossary.stationNpcs`);
   }
-  for (const id of ['npc_to_van_ngu', 'npc_khieu_han_son']) {
+  for (const id of ['npc_to_van_ngu', 'npc_khieu_han_son', 'npc_lam_chieu_dung', 'npc_to_van_ngu_hai']) {
     const n = NPC.get(id);
     if (!n) err(`thiếu NPC ${id}`);
     else if (!LEVELS[n.level ?? 'van_lam']) err(`npc ${id}: level không tồn tại`);
@@ -991,4 +1022,20 @@ console.log('Nội dung hợp lệ.');
       }
     }
   }
+}
+// Chuỗi chương 3 (E3-H): q3_* nối đuôi từ q2_ket_dan tới q3_nguyen_anh; phụ s3_* nhận sau khi vào chương; mọi nhiệm vụ nhận ở NPC có thật.
+{
+  // TODO (sau khi #148 và E3-B merge): thêm 'q3_nguyen_anh' vào chuỗi, đổi giao/trả sang npc_lam_chieu_dung và requires q3_kinh_vuong.
+  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong'];
+  main3.forEach((id, i) => {
+    const q = QUEST.get(id);
+    if (!q) return err(`thiếu nhiệm vụ chính chương 3 ${id}`);
+    const want = i === 0 ? 'q2_ket_dan' : main3[i - 1];
+    if (q.requires !== want) err(`quest ${id}: phải requires ${want}`);
+  });
+  for (const q of QUESTS) if (q.id.startsWith('s3_') && !q.requires?.startsWith('q3_')) err(`quest ${q.id}: phụ chương 3 phải requires một q3_*`);
+  const first = QUEST.get('q3_len_may');
+  if (first && !(first.unlockTele ?? []).includes('vh_tp_hub')) err('q3_len_may phải mở trận vh_tp_hub (unlockTele)');
+  const na = QUEST.get('q3_nguyen_anh');
+  if (na && !na.objectives.some((o) => o.type === 'breakthrough' && o.target === 'nguyen_anh')) err('q3_nguyen_anh phải có mục tiêu breakthrough nguyen_anh');
 }

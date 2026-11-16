@@ -273,7 +273,7 @@ export function makeTerrain(def: TerrainDef): Terrain {
 
 const REGISTRY = new Map<string, Terrain>();
 /** Level dùng chung địa hình với level khác (bí cảnh Kiếm Trủng nằm trên bản đồ Vân Lam). */
-const TERRAIN_ALIAS: Record<string, string> = { kiem_trung: 'van_lam', do_kiep: 'van_lam', phuc_mach: 'van_lam' };
+const TERRAIN_ALIAS: Record<string, string> = { kiem_trung: 'van_lam', do_kiep: 'van_lam', phuc_mach: 'van_lam', kinh_nguyet: 'van_lam' };
 
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
 export function registerTerrain(def: TerrainDef): Terrain {

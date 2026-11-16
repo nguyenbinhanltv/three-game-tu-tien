@@ -198,6 +198,7 @@
   },
   "pills": {
     "itm_kim_cuong_dan": "Kim Cương Đan",
+    "itm_dinh_than_phu": "Định Thần Phù",
     "itm_bao_huyet_dan": "Bạo Huyết Đan",
     "itm_manh_luc_dan": "Mãnh Lực Đan",
     "itm_hoi_mach_dan": "Hồi Mạch Đan",
@@ -304,7 +305,9 @@
     "npc_to_van_ngu": "Tô Vãn Ngư",
     "npc_hua_lao": "Hứa lão",
     "npc_khieu_han_son": "Khưu Hàn Sơn",
-    "npc_thuong_nhan": "Trần Tam"
+    "npc_thuong_nhan": "Trần Tam",
+    "npc_lam_chieu_dung": "Lâm Chiếu Dung",
+    "npc_to_van_ngu_hai": "Tô Vãn Ngư"
   },
   "factions": {
     "tang_mach_hoi": "Tàng Mạch Hội"

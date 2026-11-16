@@ -476,6 +476,36 @@ console.log(
   }
 }
 
+// ---------- tu vi từ nhiệm vụ chương 3 (E3-H) ----------
+{
+  const mainQ = QUESTS.filter((q) => q.id.startsWith('q3_'));
+  const sideQ = QUESTS.filter((q) => q.id.startsWith('s3_'));
+  const sum = (qs: typeof mainQ) => qs.reduce((n, q) => n + q.rewards.xp, 0);
+  let stageXp = 0;
+  for (let l = KET_DAN_LEVEL; l < NGUYEN_ANH_LEVEL; l++) stageXp += xpNeed(l);
+  console.log('\nNhiệm vụ chương 3 (E3-H): tu vi thưởng so với chặng Kết Đan (nhịp thiết kế 6 giờ)');
+  console.log('nhiệm vụ            cấp  tu vi   linh thạch  tích lũy   % chặng');
+  let cum = 0;
+  for (const q of mainQ) {
+    cum += q.rewards.xp;
+    const lv = Math.max(KET_DAN_LEVEL, q.minLevel ?? KET_DAN_LEVEL);
+    console.log(`${q.id.padEnd(19)} ${String(lv).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)}`);
+  }
+  const mainShare = sum(mainQ) / stageXp;
+  console.log(`Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sum(sideQ)} (${pct(sum(sideQ) / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 6 giờ.`);
+  if (mainShare < 0.12 || mainShare > 0.16) {
+    console.error(`LỖI: tu vi nhiệm vụ chính chương 3 chiếm ${pct(mainShare)} chặng Kết Đan, ngoài 12–16% (thiết kế ≈ 14%)`);
+    process.exitCode = 1;
+  }
+  for (const q of [...mainQ, ...sideQ]) {
+    const need = xpNeed(Math.max(q.minLevel ?? KET_DAN_LEVEL, KET_DAN_LEVEL));
+    if (q.rewards.xp > need * 0.2) {
+      console.error(`LỖI: ${q.id} thưởng ${q.rewards.xp} tu vi, hơn 20% một cấp (${need}): lên cấp quá nhanh bằng nhiệm vụ`);
+      process.exitCode = 1;
+    }
+  }
+}
+
 console.log('\nThử thách tâm ma (bình cảnh, Kiếm tu):');
 for (const r of main.trialRows) console.log(r);
 console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên, đã nhân kéo cụm; tọa: giây đả tọa hồi lại; tìm: giây tìm quái mỗi lần giết.');
@@ -852,6 +882,8 @@ const DG_ENTRY = 60;
 const DG_FIRST_TRY = 1.8;
 const DG_INTERRUPT_RATE = 0.7;
 /** Phút dẹp phó bản kể cả lỡ tay lần đầu, theo id level (chương 2 dùng cho nhịp giờ). */
+/** Hệ số hiệu suất DPS khi đánh boss gương (giả định chưa kiểm bằng người thật: bóng giả, né đĩa, nguyệt phản). */
+const DG_MIRROR_EFF = 0.55;
 const dgFirstMin = new Map<string, number>();
 console.log('\nPhó bản (nhóm 4 × cấp thấp nhất)   đợt   sạch thuần   kể cả lỡ tay lần đầu   (mục tiêu ~20 phút, thiết kế 5.1)');
 for (const lv of Object.values(LEVELS)) {
@@ -862,6 +894,13 @@ for (const lv of Object.values(LEVELS)) {
   const rows: string[] = [];
   let total = DG_ENTRY;
   d.waves.forEach((w, i) => {
+    // Đợt giải đố ba gương (E3-M): không quái; tốn thời gian đố (đọc thứ tự, chạy ba cột, thường dư vài giây) cộng nghỉ.
+    if (w.puzzle) {
+      const tp = (w.delay ?? 6) + w.puzzle.secs * 0.75 + DG_REGROUP;
+      total += tp;
+      rows.push(`${i + 1}:${tp.toFixed(0)}s`);
+      return;
+    }
     let hp = 0;
     let boss: MonsterDef | undefined;
     let ref = 0;
@@ -878,6 +917,8 @@ for (const lv of Object.values(LEVELS)) {
     const grp = [...Array(2).fill('lac_kiem_quyet'), 'bat_dong_kim_than', 'thanh_moc_dan_kinh'].reduce((s: number, id) => s + playerDps(L, pl.atk, refDef, id as MethodId, w.mons[0] ? MONSTER.get(w.mons[0].id)?.elem : undefined), 0);
     let dps = grp * (boss ? DG_EFF_BOSS : DG_EFF_TRASH);
     if (boss) {
+      // Boss gương (E3-M): ba bóng giả phải tìm/đánh, tránh đĩa gương, Tâm Ma Ảnh chiếm người trong màn: hiệu suất giảm.
+      if (boss.mirror) dps *= DG_MIRROR_EFF;
       const bu = boss.ai?.burrow ?? boss.phases?.map((_, k) => phaseRules(boss!, k + 1).ai.burrow).find(Boolean);
       if (bu) dps *= 1 - bu.hide / bu.cd;
       const ch = boss.ai?.chant;
@@ -894,6 +935,10 @@ for (const lv of Object.values(LEVELS)) {
   });
   const first = (total * DG_FIRST_TRY) / 60;
   dgFirstMin.set(lv.id, first);
+  if (lv.id === 'kinh_nguyet' && (first < 20 || first > 30)) {
+    console.error(`LỖI: Kính Nguyệt Cung ra ${first.toFixed(1)} phút, ngoài khoảng 20–30 phút quanh mục tiêu ~25 phút`);
+    process.exitCode = 1;
+  }
   if (lv.id === 'phuc_mach' && (first < 15 || first > 25)) {
     console.error(`LỖI: Phục Mạch Quật ra ${first.toFixed(1)} phút, ngoài khoảng 15–25 phút quanh mục tiêu ~20 phút`);
     process.exitCode = 1;
