@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { float, normalView, positionViewDirection, vec3 } from 'three/tsl';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { APPEARANCE, DYE, OUTFITS, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
@@ -240,6 +241,49 @@ export class PlayerSkins {
     if (!t || typeof t === 'string') return null;
     const view = this.build(id, skin, t, this.shadowMaterial(id, t), undefined, undefined, true);
     return Object.assign(view, { def }) as unknown as MonsterView;
+  }
+
+  /**
+   * Nguyên anh (E3-K): bản thu nhỏ của chính nhân vật (cùng giới, cùng model), vật liệu linh thể.
+   * `soul`: trong mờ ánh ngọc, rìa vàng nhạt kiểu fresnel; `husk`: thân xác bỏ lại, xám ngọc mờ hơn nhiều.
+   * Trả null nếu asset chưa nạp hoặc `?models=legacy` (bên gọi dùng hình dự phòng).
+   */
+  createSoul(look: PlayerLook, kind: 'soul' | 'husk'): CharacterView | null {
+    const id = modelOf(look.g);
+    const skin = id ? PLAYER_SKINS[id] : undefined;
+    if (!id || !skin || this.legacy) return null;
+    this.load(id);
+    const t = this.templates.get(id);
+    if (!t || typeof t === 'string') return null;
+    return this.build(id, skin, t, this.soulMaterial(id, t, kind), undefined, undefined, true);
+  }
+
+  private soulMaterial(id: string, t: Template, kind: 'soul' | 'husk'): THREE.MeshStandardNodeMaterial {
+    const key = `${id}/${kind}`;
+    let m = this.mats.get(key);
+    if (m) return m;
+    let src: THREE.Material | null = null;
+    t.handle.scene.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+    });
+    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
+    const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.2);
+    if (kind === 'soul') {
+      applyPalette(m, { dark: '#8fb7aa', light: '#eaf6ee', glow: '#f0dc9c' });
+      // Cộng sáng: thân ngọc trong mờ, rìa fresnel vàng nhạt đậm dần (đỉnh dưới ngưỡng bloom, không lóa).
+      m.emissiveNode = vec3(0.62, 0.78, 0.66).mul(0.16).add(vec3(0.94, 0.82, 0.5).mul(fres.mul(0.85)));
+      m.opacityNode = fres.mul(0.45).add(0.42);
+      m.blending = THREE.AdditiveBlending;
+    } else {
+      applyPalette(m, { dark: '#3a4a46', light: '#b4c7bf', glow: '#6d8a7a' });
+      m.opacityNode = fres.mul(0.2).add(0.34);
+    }
+    m.transparent = true;
+    m.depthWrite = false;
+    m.needsUpdate = true;
+    this.mats.set(key, m);
+    return m;
   }
 
   /** Kiếm của một bản sao: model của `want` nếu đã nạp, không thì kiếm mặc định; null nếu mẫu không thay được kiếm. */
@@ -829,7 +873,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     if (this.glow?.active && this.sword) this.glow.update(dt, this.sword.boneWorld);
     if (this.ribbons && this.lod === 0 && this.inner.visible) this.ribbons.update(dt, a.speed, (b) => this.fitBones.get(b)?.matrixWorld ?? null);
     this.grounded = !a.flying && !a.airborne;
-    this.flySword.visible = a.flying && !a.dead;
+    this.flySword.visible = a.flying && !a.sky && !a.dead;
     // Bước chân theo pha clip chạy: mỗi `1 / runSteps` vòng là một lần chân chạm đất.
     const run = this.state === 'run' ? this.actionOf('run') : null;
     if (run) {

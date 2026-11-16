@@ -149,6 +149,11 @@ import {
   bottleneckBlocked,
   buffMag,
   TRUC_CO_FREE_FLY_ALT,
+  BLINK_CD,
+  BLINK_DIST,
+  SOUL_DEATH_HP,
+  blinkReplaces,
+  skyFlightUnlocked,
   vulnerableDamage,
   WATER_Y,
   xpLevelFactor,
@@ -211,6 +216,7 @@ import { DuelSystem } from './duel';
 import { TeleportSystem } from './teleport';
 import { QuestObjSystem } from './questobj';
 import { SpiritSystem } from './spirit';
+import { SoulSystem } from './soul';
 import { parties } from './party';
 import { InventorySystem } from './inventory';
 import { UpgradeSystem } from './upgrade';
@@ -616,6 +622,21 @@ export class GameSim {
     onScanned: (p, hits) => this.questObj.onSpiritScan(p, hits),
   });
 
+  /** Nguyên anh xuất khiếu (E3-K, phím X; cứu mạng khi chết ở Nguyên Anh trở lên). */
+  readonly soul = new SoulSystem({
+    now: () => this.now,
+    players: () => this.players.values(),
+    warn: (p, k, params) => this.warn(p, k, params),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    fx: (m) => this.fx(m),
+    groundAt: (x, z) => this.terrain.groundAt(x, z),
+    inDuel: (p) => this.duel.inDuel(p),
+    stopMeditate: (p) => this.setMeditating(p, false),
+    respawnPoint: () => this.opts.respawn,
+    allowDeathEscape: () => this.level.dungeon?.maxRevives === undefined,
+    respawn: (p) => this.onRespawn(p),
+  });
+
   /** Sắp xếp, khóa ô, tách chồng (TD-A). */
   readonly inventory = new InventorySystem({
     now: () => this.now,
@@ -859,9 +880,11 @@ export class GameSim {
   savePlayer(p: PlayerEnt): void {
     const c = p.char;
     if (this.opts.persistPosition) {
-      c.x = p.move.x;
-      c.y = p.move.y;
-      c.z = p.move.z;
+      // Đang xuất khiếu thám thính: lưu chỗ thân xác, không phải chỗ nguyên anh (có thể trong tường/giữa không).
+      const at = this.soul.bodyOf(p) ?? p.move;
+      c.x = at.x;
+      c.y = at.y;
+      c.z = at.z;
       c.room = this.opts.levelId;
     }
     try {
@@ -937,6 +960,7 @@ export class GameSim {
     this.tele.tick();
     this.questObj.tick();
     this.spirit.tick();
+    this.soul.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -995,7 +1019,7 @@ export class GameSim {
   }
 
   private canFly(p: PlayerEnt): boolean {
-    return !this.isDead(p) && !p.trib && canFlyAt(p.char.level, p.char.mp, p.move.x, p.move.y, p.move.z);
+    return !this.isDead(p) && !p.trib && (this.soul.isScouting(p) || canFlyAt(p.char.level, p.char.mp, p.move.x, p.move.y, p.move.z));
   }
 
   private applyInput(p: PlayerEnt, inp: MoveInput): void {
@@ -1009,11 +1033,12 @@ export class GameSim {
     const wasFlying = p.move.flying;
     const px = p.move.x;
     const pz = p.move.z;
-    stepMove(p.move, inp, { canFly, frozen: dead || this.tribSys.soulFrozen(p), speedMul: 1, terrain: this.terrain, bound: caveBoundOf(this.level) });
-    if (p.move.flying && !wasFlying) {
+    const ghost = this.soul.ghostOf(p);
+    stepMove(p.move, inp, { canFly, frozen: dead || this.tribSys.soulFrozen(p), speedMul: 1, terrain: this.terrain, bound: caveBoundOf(this.level), sky: skyFlightUnlocked(p.char.level), ghost });
+    if (p.move.flying && !wasFlying && !ghost) {
       this.questEvent(p, 'fly', undefined, 1);
     }
-    if ((inp.f & IN_FLY) !== 0 && !canFly && !dead && !p.trib) {
+    if ((inp.f & IN_FLY) !== 0 && !canFly && !dead && !p.trib && !ghost) {
       if (p.char.level < FLY_UNLOCK_LEVEL) this.warn(p, 'sys.fly_locked', { realm: realmName(FLY_UNLOCK_LEVEL) });
       else if (wasFlying) this.sys(p, 'sys.fly_no_mp', undefined, 'bad');
     }
@@ -1046,7 +1071,7 @@ export class GameSim {
     this.realm.tick(p);
     const dead = this.isDead(p);
     if (!dead) {
-      if (p.move.flying && !freeFlight(c.level, p.move.x, p.move.y, p.move.z)) {
+      if (p.move.flying && !this.soul.isScouting(p) && !freeFlight(c.level, p.move.x, p.move.y, p.move.z)) {
         c.mp -= FLY_MP_PER_SEC * dt;
         if (c.mp < 0) c.mp = 0;
       }
@@ -1095,6 +1120,7 @@ export class GameSim {
       this.sys(p, 'sys.levelup', { realm: realmName(c.level) }, 'good');
       this.fx({ t: 'levelup', src: p.sid });
       this.spirit.sendState(p);
+      this.soul.sendState(p);
       this.questEvent(p, 'level', undefined, c.level);
       console.log(`[level] ${c.name}: ${before} → ${c.level}`);
     }
@@ -1272,7 +1298,9 @@ export class GameSim {
     const dir = dashDir(def, p.s.yaw, tgt ? { dx: tgt.s.x - p.move.x, dz: tgt.s.z - p.move.z } : null);
     if (!dir) return;
     const rsv = resolveFor(c.meta, skill).variant;
-    const dashDist = Math.min(DASH_MAX_DIST, def.dist * (rsv?.lenMul ?? 1));
+    // Thuấn di (E3-K, Nguyên Anh trở lên): thay Lướt cơ bản, xa hơn, hồi lâu hơn; vẫn lập đường bằng `planDash` nên không xuyên vách.
+    const blink = blinkReplaces(c.level, def);
+    const dashDist = blink ? BLINK_DIST : Math.min(DASH_MAX_DIST, def.dist * (rsv?.lenMul ?? 1));
     const stop = tgt && def.dir === 'target' ? { x: tgt.s.x, z: tgt.s.z, r: (def.stop ?? 1.6) + tgt.def.scale } : undefined;
     // Đã sát mục tiêu: không cần lướt; chiêu có sát thương (Thiết Bích Xung) vẫn húc, chiêu thuần di chuyển thì bỏ.
     // Dịch Sơn Xung B (kéo): không lướt, kéo mục tiêu (và quái quanh nó) từ xa về sát người.
@@ -1285,7 +1313,8 @@ export class GameSim {
     if (p.casting) this.cancelCast(p);
     this.abortStrike(p, false);
     c.mp -= skill.mp;
-    if (rs.cd > 0) p.cds.set(skill.id, this.now + rs.cd * 1000);
+    const cdSec = blink ? BLINK_CD : rs.cd;
+    if (cdSec > 0) p.cds.set(skill.id, this.now + cdSec * 1000);
     p.flow.lastDashAt = this.now;
     p.lastCombatAt = this.now;
     const from = { x: p.move.x, z: p.move.z, y: p.move.y };
@@ -1296,7 +1325,7 @@ export class GameSim {
     p.move.grounded = true;
     p.inputs.length = 0;
     p.s.yaw = Math.atan2(dir.x, dir.z);
-    this.fx({ t: skill.fx, src: p.sid, x: plan.x, y: p.move.y, z: plan.z, d: 0.3, ...this.fxTag(p, rs) });
+    this.fx({ t: blink ? 'blink' : skill.fx, src: p.sid, x: plan.x, y: p.move.y, z: plan.z, d: blink ? 0.4 : 0.3, ...(blink ? { ox: from.x, oz: from.z } : this.fxTag(p, rs)) });
     // Lướt xuyên (Nghịch Kiếm Chuyển Phong): chém mọi quái sát đường lướt.
     if (def.pierce && skill.power > 0) {
       const em = elemDamageMul(c.stats.elemDmg, skill.elem);
@@ -2559,7 +2588,7 @@ export class GameSim {
   }
 
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false): void {
-    if (this.isDead(p)) return;
+    if (this.isDead(p) || this.soul.isScouting(p)) return;
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
     if (this.now < p.mth.guardUntil) n = reduceDamage(n, p.mth.guardReduce);
@@ -2621,7 +2650,7 @@ export class GameSim {
     } else if (p.trial) {
       // Chết trong thử thách tâm ma: thua ngay, không mất tu vi (đúng lời hứa của UI), đợi 60 giây thử lại.
       this.realm.failTrial(p, 'dead');
-    } else {
+    } else if (!this.soul.onDeath(p)) {
       const lost = c.loseXp(DEATH_XP_LOSS);
       this.sys(p, lost > 0 ? 'sys.died' : 'sys.died_free', { n: lost }, 'bad');
     }
@@ -2631,15 +2660,16 @@ export class GameSim {
   onRespawn(p: PlayerEnt): void {
     if (!this.isDead(p)) return;
     const c = p.char;
+    const soulWake = this.soul.consumeDeath(p);
     const { x, z } = this.opts.respawn;
     p.move = { x, y: this.terrain.groundAt(x, z), z, vy: 0, grounded: true, flying: false };
     p.inputs.length = 0;
-    c.hp = Math.round(c.mhp * 0.5);
+    c.hp = Math.round(c.mhp * (soulWake ? SOUL_DEATH_HP : 0.5));
     c.mp = Math.round(c.mmp * 0.5);
     p.s.fl = 0;
     p.lastCombatAt = 0;
     p.hazardWin = { until: 0, taken: 0 };
-    this.sys(p, 'sys.respawned', undefined, 'info');
+    this.sys(p, soulWake ? 'sys.respawned_soul' : 'sys.respawned', undefined, 'info');
     this.fx({ t: 'respawn', src: p.sid });
   }
 
@@ -2976,7 +3006,7 @@ export class GameSim {
         let best: PlayerEnt | null = null;
         let bestD = def.aggro * def.aggro;
         for (const p of this.players.values()) {
-          if (this.isDead(p) || (m.owner && p.sid !== m.owner)) continue;
+          if (this.isDead(p) || this.soul.isScouting(p) || (m.owner && p.sid !== m.owner)) continue;
           const dx = p.move.x - m.s.x;
           const dz = p.move.z - m.s.z;
           const dy = p.move.y - m.s.y;
@@ -3048,13 +3078,13 @@ export class GameSim {
       }
     }
     let target = this.players.get(m.target);
-    if (!target || this.isDead(target)) {
+    if (!target || this.isDead(target) || this.soul.isScouting(target)) {
       // Chuyển sang kẻ gây sát thương nhiều nhất còn sống.
       target = undefined;
       let top = 0;
       for (const [sid, v] of m.threat) {
         const q = this.players.get(sid);
-        if (q && !this.isDead(q) && v > top && Math.hypot(q.move.x - m.s.x, q.move.z - m.s.z) < 50) {
+        if (q && !this.isDead(q) && !this.soul.isScouting(q) && v > top && Math.hypot(q.move.x - m.s.x, q.move.z - m.s.z) < 50) {
           top = v;
           target = q;
         }
@@ -4213,6 +4243,7 @@ export class GameSim {
         p.gcdAt = 0;
         this.sendCd(p);
         this.spirit.resetCooldown(p);
+        this.soul.resetCooldown(p);
         return say('đã xóa hồi chiêu');
       case 'variant': {
         // /gm variant <id chiêu> <a|b>: chọn biến thức ngay (không cần cấp 3, ngoài combat, hồi chờ) để chụp ảnh/thử.

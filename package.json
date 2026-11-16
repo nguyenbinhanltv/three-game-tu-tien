@@ -50,6 +50,7 @@
     "shots:e3l": "pnpm --filter @dtl/perf run shots:e3l --",
     "shots:e2h": "pnpm --filter @dtl/perf run shots:e2h --",
     "shots:e2e": "pnpm --filter @dtl/perf run shots:e2e --",
+    "shots:e3k": "pnpm --filter @dtl/perf run shots:e3k --",
     "shots:eqicons": "pnpm --filter @dtl/perf run shots:eqicons --",
     "shots:m4": "pnpm --filter @dtl/perf run shots:m4 --",
     "shots:kiem": "pnpm --filter @dtl/perf run shots:kiem --",
