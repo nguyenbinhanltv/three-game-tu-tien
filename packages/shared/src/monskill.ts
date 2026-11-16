@@ -126,3 +126,18 @@ export function summonSpots(cx: number, cz: number, n: number, r: number, a0: nu
 export function burrowTimeline(cfg: MonsterBurrow): { emergeAt: number; coneAt: number } {
   return { emergeAt: cfg.hide, coneAt: cfg.hide + cfg.cone.delay };
 }
+
+/**
+ * Một bước kéo (Nuốt, E3-G): người cách tâm boss `dist` m ban đầu `d0`, cần tới cách `stop` m sau `dur` giây; trả quãng kéo
+ * trong `dt` giây, không vượt chỗ còn lại (`dist - stop`).
+ */
+export function pullStep(d0: number, dist: number, stop: number, dur: number, dt: number): number {
+  const left = dist - stop;
+  if (left <= 0 || !(dur > 0)) return 0;
+  return Math.min(left, (Math.max(0, d0 - stop) * dt) / dur);
+}
+
+/** Người ở (px, pz) có nằm trong vũng độc tâm (x, z) bán kính r không. */
+export function inPool(x: number, z: number, r: number, px: number, pz: number): boolean {
+  return (px - x) ** 2 + (pz - z) ** 2 <= r * r;
+}
