@@ -65,7 +65,7 @@ async function main(): Promise<void> {
     await gm(page, '/gm tp dm_tram');
     await sleep(6000);
     await gm(page, '/gm level 20');
-    await done('q_truc_co', 'chuong2');
+    await done('q_truc_co', 'chuong2', 'q2_ket_dan', 's2_thu_nghiem');
     await gm(page, '/gm tp 1010 1044');
     await faceSouth(page);
     await sleep(2500);
