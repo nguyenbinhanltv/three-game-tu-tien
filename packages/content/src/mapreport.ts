@@ -1,5 +1,6 @@
 // Báo cáo bố cục bản đồ (M-1): diện tích vùng, mật độ quái, khoảng cách giữa các vùng, độ phủ của bãi quái, quét chỗ kẹt.
-// Chạy: pnpm map:report [--json out.json] [--png out.png] [--seed N]
+// Chạy: pnpm map:report [--level <id>] [--json out.json] [--png out.png] [--seed N]
+//   --level: level cần đo (mặc định van_lam); địa hình, collider, vùng chơi lấy theo level (`terrainOf`). Mục khoảng cách tới tông môn/cổng/Kiếm Trủng chỉ có nghĩa với Vân Lam.
 //   --png: ảnh nhìn từ trên xuống (bóng đổ địa hình, nước, ranh vùng, bãi quái) để làm ảnh trước/sau.
 // Hàm thuần theo dữ liệu level + địa hình dùng chung với client/server, nên số đo khớp cái người chơi gặp.
 
@@ -7,10 +8,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import {
-  COLLIDERS,
-  heightAt,
-  groundAt,
   inPoly,
+  KIEM_TRUNG,
   levelSpawns,
   MoveCtx,
   MoveState,
@@ -19,12 +18,11 @@ import {
   SECT,
   SPAWN_POINT,
   stepMove,
+  terrainOf,
   WATER_Y,
-  WORLD_SIZE,
   type SpawnDef,
   type ZoneDef,
 } from '@dtl/shared';
-import * as Shared from '@dtl/shared';
 import { LEVELS, MONSTER, NPCS } from './index';
 import { PLACES } from './places';
 
@@ -37,11 +35,17 @@ const SEED = Number(opt('--seed') ?? 1);
 /** pnpm chạy trong packages/content; đường dẫn tương đối tính từ nơi gõ lệnh. */
 const abs = (p: string) => path.resolve(process.env.INIT_CWD ?? process.cwd(), p);
 
-const level = LEVELS.van_lam;
+const LEVEL_ID = opt('--level') ?? 'van_lam';
+const level = LEVELS[LEVEL_ID];
+if (!level) throw new Error(`map:report: không có level ${LEVEL_ID} (có: ${Object.keys(LEVELS).join(', ')})`);
+const terrain = terrainOf(level);
+const { heightAt, groundAt } = terrain;
+const COLLIDERS = terrain.colliders;
+const WORLD_SIZE = terrain.size;
 const zones: ZoneDef[] = level.zones ?? [];
 const camps = level.camps ?? [];
-/** Vùng chơi chính nếu level.ts có khai (M-1), không thì cả thế giới (bố cục cũ). */
-const PLAY = (Shared as unknown as { PLAY_BOUNDS?: { x0: number; z0: number; x1: number; z1: number } }).PLAY_BOUNDS ?? { x0: 0, z0: 0, x1: WORLD_SIZE, z1: WORLD_SIZE };
+/** Vùng chơi chính của level (M-1), không có ranh thì cả thế giới. */
+const PLAY = terrain.playBounds;
 const isLand = (x: number, z: number) => groundAt(x, z) > WATER_Y + 0.5 && heightAt(x, z) > WATER_Y + 0.5;
 
 function rng(seed: number) {
@@ -143,7 +147,7 @@ if (zones.length) {
   if (boss) sectToZone.push({ zone: 'boss_han_giao', m: Math.hypot(boss.x - SECT.x, boss.z - SECT.z) });
 }
 const portalM = Math.hypot(PORTAL_POS.x - SECT.x, PORTAL_POS.z - SECT.z);
-const ktM = Math.hypot(Shared.KIEM_TRUNG.x - PORTAL_POS.x, Shared.KIEM_TRUNG.z - PORTAL_POS.z);
+const ktM = Math.hypot(KIEM_TRUNG.x - PORTAL_POS.x, KIEM_TRUNG.z - PORTAL_POS.z);
 
 // ---- độ phủ: khoảng cách từ điểm đi được tới quái thường gần nhất ----
 function coverage(step: number, inArea: (x: number, z: number) => boolean) {
@@ -181,7 +185,7 @@ const covAll = coverage(24, () => true);
 
 // ---- quét chỗ kẹt: đẩy 8 hướng theo luật stepMove ----
 const DIRS = Array.from({ length: 8 }, (_, i) => (i * Math.PI) / 4);
-const ctx: MoveCtx = { canFly: false, frozen: false, speedMul: 1 };
+const ctx: MoveCtx = { canFly: false, frozen: false, speedMul: 1, terrain };
 function escapes(x: number, z: number): boolean {
   const g = groundAt(x, z);
   for (const yaw of DIRS) {
