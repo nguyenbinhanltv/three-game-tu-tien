@@ -13,10 +13,12 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "check": "tsx src/check.ts",
+    "check": "tsx src/check.ts && tsx src/gen-sources.ts --check",
     "sim": "tsx src/sim.ts",
     "map:report": "tsx src/mapreport.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "sources:build": "tsx src/gen-sources.ts",
+    "sources:check": "tsx src/gen-sources.ts --check"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*"

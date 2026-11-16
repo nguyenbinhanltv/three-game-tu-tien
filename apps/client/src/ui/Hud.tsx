@@ -15,6 +15,7 @@ import { DuelBanner, InviteStack, PartyFrame } from './Party';
 import { Minimap } from './minimap/Minimap';
 import { Panels } from './windows/Panels';
 import { TrialBanner } from './Realm';
+import { BagWarn } from './BagWarn';
 import { breakGoal } from './breakGoal';
 import { type BossLine, type ChapterCard, openPanel, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
 
@@ -761,6 +762,7 @@ export function Hud() {
       <Toasts />
       <Tribulation />
       <TrialBanner />
+      <BagWarn />
       {mouseLook && <div className="crosshair" />}
       {controls === 'mouse' && !mouseLook && !npc && !panel && !dead && <LockHint />}
       {hint && !npc && <div className="hint">{hint}</div>}

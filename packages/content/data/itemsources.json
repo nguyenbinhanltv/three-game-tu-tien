@@ -1,0 +1,197 @@
+{
+ "gem_hoa_1": [
+  "elite_huyet_nha_lang",
+  "mon_hoa_van_ho"
+ ],
+ "gem_hoa_2": [
+  "boss_huyet_lang_vuong"
+ ],
+ "gem_kim_1": [
+  "elite_liet_cot_bao",
+  "elite_xich_dien_ho",
+  "mon_kiem_linh",
+  "mon_mach_thuong_ho_ve"
+ ],
+ "gem_kim_2": [
+  "boss_kiem_khoi"
+ ],
+ "gem_moc_1": [
+  "elite_xich_sa_ngo_cong",
+  "mon_ngo_cong_au",
+  "mon_yeu_lang"
+ ],
+ "gem_moc_2": [
+  "boss_thon_mach_ngo_cong_vuong",
+  "boss_thu_mo_tuong"
+ ],
+ "gem_tho_1": [
+  "boss_dia_mach_long",
+  "elite_cu_nham_vien",
+  "elite_ho_mach_khoi_tuong",
+  "mon_khai_mach_khoi_loi",
+  "mon_thach_giap_te",
+  "mon_thach_vien"
+ ],
+ "gem_tho_2": [
+  "boss_dia_mach_long",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thu_mo_tuong"
+ ],
+ "gem_thuy_1": [
+  "boss_han_giao",
+  "mon_u_minh_lang"
+ ],
+ "gem_thuy_2": [
+  "boss_han_giao"
+ ],
+ "itm_bi_tich_tan_quyen": [
+  "boss_dia_mach_long",
+  "boss_han_giao",
+  "boss_huyet_lang_vuong",
+  "boss_kiem_khoi",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thon_mach_ngo_cong_vuong",
+  "boss_thu_mo_tuong",
+  "elite_cu_nham_vien",
+  "elite_ho_mach_khoi_tuong",
+  "elite_huyet_nha_lang",
+  "elite_liet_cot_bao",
+  "elite_xich_dien_ho",
+  "elite_xich_sa_ngo_cong",
+  "mon_hoa_van_ho",
+  "mon_khai_mach_khoi_loi",
+  "mon_kiem_linh",
+  "mon_mach_thuong_ho_ve",
+  "mon_ngo_cong_au",
+  "mon_soi_xam",
+  "mon_thach_giap_te",
+  "mon_thach_vien",
+  "mon_thiet_boi_tru",
+  "mon_u_minh_lang",
+  "mon_yeu_lang"
+ ],
+ "itm_han_giao_dan": [
+  "boss_han_giao"
+ ],
+ "itm_ho_phu": [
+  "boss_dia_mach_long",
+  "boss_han_giao",
+  "boss_huyet_lang_vuong",
+  "boss_kiem_khoi",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thon_mach_ngo_cong_vuong",
+  "boss_thu_mo_tuong"
+ ],
+ "itm_hoang_sa_thao": [
+  "boss_dia_mach_long",
+  "elite_ho_mach_khoi_tuong",
+  "elite_liet_cot_bao",
+  "elite_xich_sa_ngo_cong",
+  "mon_khai_mach_khoi_loi",
+  "mon_mach_thuong_ho_ve",
+  "mon_ngo_cong_au",
+  "mon_thach_giap_te"
+ ],
+ "itm_hoi_xuan_dan": [
+  "mon_thiet_boi_tru"
+ ],
+ "itm_huyet_linh_chi": [
+  "elite_xich_dien_ho",
+  "mon_hoa_van_ho"
+ ],
+ "itm_ket_dan_dich": [
+  "boss_dia_mach_long"
+ ],
+ "itm_kiem_phach": [
+  "boss_huyet_lang_vuong",
+  "boss_kiem_khoi",
+  "boss_thu_mo_tuong",
+  "mon_kiem_linh"
+ ],
+ "itm_linh_thao": [
+  "mon_soi_xam"
+ ],
+ "itm_mach_tinh_phien": [
+  "boss_dia_mach_long",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thon_mach_ngo_cong_vuong",
+  "elite_ho_mach_khoi_tuong",
+  "elite_liet_cot_bao",
+  "elite_xich_sa_ngo_cong",
+  "mon_khai_mach_khoi_loi",
+  "mon_mach_thuong_ho_ve",
+  "mon_ngo_cong_au",
+  "mon_thach_giap_te"
+ ],
+ "itm_nanh_soi": [
+  "mon_soi_xam",
+  "mon_yeu_lang"
+ ],
+ "itm_ngung_dan_mach_tinh": [
+  "boss_dia_mach_long",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thon_mach_ngo_cong_vuong",
+  "elite_ho_mach_khoi_tuong",
+  "elite_liet_cot_bao",
+  "elite_xich_sa_ngo_cong"
+ ],
+ "itm_tay_luyen_thach": [
+  "boss_dia_mach_long",
+  "boss_han_giao",
+  "boss_huyet_lang_vuong",
+  "boss_kiem_khoi",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thon_mach_ngo_cong_vuong",
+  "boss_thu_mo_tuong",
+  "elite_cu_nham_vien",
+  "elite_ho_mach_khoi_tuong",
+  "elite_huyet_nha_lang",
+  "elite_liet_cot_bao",
+  "elite_xich_dien_ho",
+  "elite_xich_sa_ngo_cong"
+ ],
+ "itm_thiet_tinh": [
+  "boss_dia_mach_long",
+  "boss_han_giao",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thon_mach_ngo_cong_vuong",
+  "elite_cu_nham_vien",
+  "elite_ho_mach_khoi_tuong",
+  "elite_liet_cot_bao",
+  "elite_xich_sa_ngo_cong",
+  "mon_khai_mach_khoi_loi",
+  "mon_mach_thuong_ho_ve",
+  "mon_ngo_cong_au",
+  "mon_thach_giap_te",
+  "mon_thach_vien",
+  "mon_u_minh_lang"
+ ],
+ "itm_tu_khi_dan": [
+  "boss_dia_mach_long",
+  "boss_han_giao",
+  "boss_huyet_lang_vuong",
+  "boss_kiem_khoi",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thon_mach_ngo_cong_vuong",
+  "boss_thu_mo_tuong",
+  "mon_u_minh_lang"
+ ],
+ "itm_yeu_dan": [
+  "elite_cu_nham_vien",
+  "elite_ho_mach_khoi_tuong",
+  "elite_huyet_nha_lang",
+  "elite_liet_cot_bao",
+  "elite_xich_dien_ho",
+  "elite_xich_sa_ngo_cong",
+  "mon_hoa_van_ho",
+  "mon_khai_mach_khoi_loi",
+  "mon_kiem_linh",
+  "mon_mach_thuong_ho_ve",
+  "mon_ngo_cong_au",
+  "mon_thach_giap_te",
+  "mon_thach_vien",
+  "mon_thiet_boi_tru",
+  "mon_u_minh_lang",
+  "mon_yeu_lang"
+ ]
+}

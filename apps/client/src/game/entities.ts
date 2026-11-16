@@ -1134,6 +1134,18 @@ export class EntityManager {
     return list[(i + 1) % list.length].id;
   }
 
+  /** Khóa ngoại hình của mình (xem trước nhân vật 3D, TD-C): đổi khi đổi đồ, giới tính, màu áo, kiếm. */
+  previewKey(): string {
+    return JSON.stringify(this.localLook);
+  }
+
+  /** Dựng một model riêng cho xem trước nhân vật (không đưa vào cảnh chính); bên gọi tự dispose. */
+  previewBuild(): { model: CharacterView; key: string; pending: boolean } {
+    const look = this.localLook;
+    const model = this.playerSkins.create(look);
+    return { model, key: JSON.stringify(look), pending: this.playerSkins.pending(look) };
+  }
+
   dispose(): void {
     for (const v of this.players.values()) v.dispose();
     for (const v of this.monsters.values()) v.dispose();

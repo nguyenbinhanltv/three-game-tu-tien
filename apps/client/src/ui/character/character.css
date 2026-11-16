@@ -1,0 +1,163 @@
+/* Bảng nhân vật 3 tab (TD-C). Nạp sau panels.css nên chỉ thêm/ghi đè phần mới. */
+.char-overview,
+.char-attrs,
+.char-settrain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-s3);
+  margin-top: var(--k-s3);
+}
+
+/* Sân khấu xem trước nhân vật: canvas 3D hoặc hình bóng 2D dự phòng, viền theo phẩm cao nhất đang mặc. */
+.equip-stage {
+  position: relative;
+  height: 290px;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(174, 139, 73, 0.35);
+  background: radial-gradient(ellipse at 50% 38%, rgba(60, 86, 110, 0.55), rgba(10, 18, 28, 0.9) 70%);
+  overflow: hidden;
+}
+.equip-stage .char-preview {
+  height: 100%;
+  width: auto;
+  aspect-ratio: 256 / 352;
+  max-width: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+.equip-stage .char-preview:active {
+  cursor: grabbing;
+}
+.equip-cell[data-drop="ok"] .k-slot {
+  outline: 2px solid var(--k-gold, #e0b45c);
+  outline-offset: 1px;
+}
+
+.char-bars {
+  display: grid;
+  gap: 4px;
+}
+.char-main-stats {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Tab Thuộc tính */
+.attr-group {
+  display: flex;
+  flex-direction: column;
+}
+.attr-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 4px;
+  border-bottom: 1px solid rgba(174, 139, 73, 0.2);
+  cursor: help;
+}
+.attr-row:hover,
+.attr-row:focus-visible {
+  background: rgba(174, 139, 73, 0.12);
+  outline: none;
+}
+.attr-name {
+  color: var(--k-text-dim);
+  letter-spacing: var(--k-track-label);
+}
+.attr-val {
+  font: 700 15px var(--k-font-serif);
+  color: var(--k-text);
+}
+.attr-elems {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--k-s2);
+}
+.attr-elem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border: 1px solid rgba(174, 139, 73, 0.25);
+  cursor: help;
+}
+.attr-elem.own {
+  border-color: var(--k-gold, #e0b45c);
+  background: rgba(224, 180, 92, 0.1);
+}
+
+/* Tab Bộ & tu luyện */
+.method-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--k-s3);
+}
+.method-name {
+  font: 700 15px var(--k-font-serif);
+}
+
+/* Tooltip: nhãn so sánh lực chiến, nhãn chưa đủ cấp */
+.k-tip-line.bad,
+.item-stat.bad {
+  color: #e06a5a;
+}
+
+/* Cảnh báo túi sắp đầy trên HUD */
+.hud .bag-warn {
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 12px;
+  border: 1px solid rgba(224, 180, 92, 0.7);
+  border-radius: 999px;
+  background: rgba(30, 22, 10, 0.82);
+  color: #f2d48a;
+  font: 600 13px var(--k-font-serif);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.hud .bag-warn.full {
+  border-color: rgba(224, 106, 90, 0.85);
+  color: #ff9d8e;
+}
+
+/* Gọn cho 1280×720: ô trang bị nhỏ lại, thanh khí huyết và linh lực đứng cạnh nhau */
+.char .equip-board-grid {
+  grid-template-columns: 52px 1fr 52px;
+  gap: var(--k-s2);
+}
+.char .equip-col {
+  gap: 4px;
+}
+.char .equip-label {
+  font-size: 10px;
+  margin-top: 1px;
+}
+.char .equip-cell {
+  width: 52px;
+}
+.char-bars {
+  grid-template-columns: 1fr 1fr;
+}
+.char-bars .gauge.xp {
+  grid-column: 1 / -1;
+}
+
+.attr-rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 var(--k-s4);
+}
+.attr-rows .k-tip-host,
+.attr-elems .k-tip-host {
+  display: block;
+}
+.attr-row .attr-name {
+  margin-right: 8px;
+}
+.method-card.k-card { display: flex; flex-direction: row; }
