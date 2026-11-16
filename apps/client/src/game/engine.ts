@@ -8,7 +8,7 @@ import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
 import { MON_AURA_REFLECT, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
-import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
+import { type BossInfo, closeTopPanel, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import type { DebugPerf } from '../ui/store';
 import { ColliderViz } from './debugColliders';
 import { chapterSting, duck, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
@@ -1166,7 +1166,7 @@ export class Game {
     // Mở bảng, hộp thoại, chat hay khi trọng thương: thả con trỏ để bấm được giao diện; đóng lại thì khóa tiếp.
     this.listeners.push(
       useUI.subscribe((st) => {
-        const need = st.phase !== 'game' || !!st.panel || !!st.npc || st.chatOpen || (st.flags & PF_DEAD) !== 0;
+        const need = st.phase !== 'game' || st.windows.length > 0 || !!st.npc || st.chatOpen || (st.flags & PF_DEAD) !== 0;
         if (need === this.uiNeedsCursor) return;
         this.uiNeedsCursor = need;
         if (need && this.locked) {
@@ -1310,7 +1310,8 @@ export class Game {
       case 'cancel':
         // Esc lần lượt: hủy chiêu đang chờ → đóng bảng/hội thoại → bỏ chọn mục tiêu.
         if (this.cancelQueuedSkill()) break;
-        if (get().panel || get().npc) set({ panel: null, npc: null });
+        if (closeTopPanel()) break;
+        if (get().npc) set({ npc: null });
         else this.clearTarget();
         break;
       case 'debug':
@@ -1608,7 +1609,7 @@ export class Game {
   openNpc(id: string): void {
     this.setTarget(id, 'npc');
     this.send(C.TALK, { npc: id });
-    set({ npc: id, panel: null });
+    set({ npc: id, windows: [] });
   }
 
   private onClick(x: number, y: number, aim?: number): void {

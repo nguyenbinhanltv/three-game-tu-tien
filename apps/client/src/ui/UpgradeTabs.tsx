@@ -37,7 +37,7 @@ import { ContentIcon, UiIcon } from './ContentIcon';
 import { Game, reqId } from '../game/engine';
 import { affixText, gearQuality, setLines } from './gear';
 import { Button, Divider } from './kit';
-import { ItemIcon, statLines } from './Panels';
+import { ItemIcon, statLines } from './windows/common';
 import { useUI } from './store';
 
 /** Món có thể xử lý: đang mặc (`w`) hoặc ở túi (`i`). */

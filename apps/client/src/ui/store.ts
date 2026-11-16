@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView, SpiritHit } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio';
+import { uiScale } from './uiScale';
+import { closeWindow, focusWindow, loadSavedPos, moveWindow, openWindow, savePos, topWindow, type Viewport, type WinId, type WinState } from './windows/layout';
 
 export interface TargetInfo {
   id: string;
@@ -156,7 +158,7 @@ export interface SpiritScan {
   hits: SpiritHit[];
 }
 
-export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party';
+export type Panel = WinId;
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
 export interface UIState {
@@ -198,7 +200,8 @@ export interface UIState {
   bossLine: BossLine | null;
   chapter: ChapterCard | null;
   cine: CineState | null;
-  panel: Panel;
+  /** Cửa sổ đang mở (TD-B): nhiều cái cùng lúc, `z` lớn nhất nằm trên cùng. */
+  windows: WinState[];
   npc: string | null;
   hint: string;
   x: number;
@@ -288,7 +291,7 @@ export const useUI = create<UIState>(() => ({
   bossLine: null,
   chapter: null,
   cine: null,
-  panel: null,
+  windows: [],
   npc: null,
   hint: '',
   x: 0,
@@ -358,16 +361,62 @@ export function pushToast(text: string, type = 'info'): void {
   setTimeout(() => useUI.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== id) })), 3200);
 }
 
+/** Mở một cửa sổ (đã mở thì đưa lên trên). Mở cửa sổ tắt hội thoại NPC như trước. */
+export function openPanel(p: Panel): void {
+  useUI.setState((s) => ({ windows: openWindow(s.windows, p, viewportFor(p), loadSavedPos(p)).list, npc: null }));
+}
+
+export function closePanel(p: Panel): void {
+  useUI.setState((s) => (s.windows.some((w) => w.id === p) ? { windows: closeWindow(s.windows, p) } : s));
+}
+
+export function closeAllPanels(): void {
+  useUI.setState((s) => (s.windows.length ? { windows: [] } : s));
+}
+
+/** Đóng cửa sổ trên cùng (Esc). Trả true nếu có cái để đóng. */
+export function closeTopPanel(): boolean {
+  const top = topWindow(useUI.getState().windows);
+  if (!top) return false;
+  closePanel(top.id);
+  return true;
+}
+
 export function togglePanel(p: Panel): void {
-  useUI.setState((s) => ({ panel: s.panel === p ? null : p, npc: null }));
+  if (useUI.getState().windows.some((w) => w.id === p)) closePanel(p);
+  else openPanel(p);
+}
+
+export function focusPanel(p: Panel): void {
+  useUI.setState((s) => (s.windows.some((w) => w.id === p) && topWindow(s.windows)?.id !== p ? { windows: focusWindow(s.windows, p).list } : s));
+}
+
+/** Kéo cửa sổ tới (x, y) theo đơn vị thiết kế; `save` ghi nhớ vị trí (thả chuột). */
+export function movePanel(p: Panel, x: number, y: number, save = false): void {
+  const vp = viewportFor(p);
+  useUI.setState((s) => ({ windows: moveWindow(s.windows, p, x, y, vp) }));
+  if (save) {
+    const w = useUI.getState().windows.find((o) => o.id === p);
+    if (w) savePos(p, w.x, w.y);
+  }
+}
+
+/** Bản đồ lớn tự tính tọa độ chuột theo px màn hình nên không phóng (xem panels.css). */
+export function panelScale(p: Panel): number {
+  return p === 'map' ? 1 : uiScale() || 1;
+}
+
+function viewportFor(p: Panel): Viewport {
+  const k = panelScale(p);
+  return { vw: window.innerWidth / k, vh: window.innerHeight / k };
 }
 
 // Mở/đóng bảng hay hội thoại NPC (bằng phím, nút hay nút đóng): tiếng giở/gấp sách.
 useUI.subscribe((s, prev) => {
   // Hội thoại NPC: hạ nhạc nền suốt lúc nói chuyện (D2).
   if (!!s.npc !== !!prev.npc) duckHold('npc', s.npc ? 0.35 : 0);
-  const now = s.panel ?? s.npc;
-  const was = prev.panel ?? prev.npc;
+  const now = s.windows.length ? 'w' : s.npc;
+  const was = prev.windows.length ? 'w' : prev.npc;
   if (now === was) return;
   if (now) sfx('ui_open', 0.8);
   else sfx('ui_close', 0.8);
