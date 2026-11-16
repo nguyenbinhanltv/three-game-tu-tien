@@ -159,6 +159,7 @@ export class SkillFx {
     if (tl) {
       if (e.kind === 'windup') this.runner.start(sid, actor, def, tl, e, mine, dist, this.env.myMethod());
       else if (e.kind === 'end') this.runner.drop(sid);
+      else if (e.kind === 'cancel') this.runner.cancel(sid, e.t);
       return;
     }
     if (import.meta.env.DEV) {

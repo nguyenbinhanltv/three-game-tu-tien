@@ -62,6 +62,8 @@ interface Cast {
   clock: number;
   seed: number;
   dist: number;
+  /** Mốc trúng đầu tiên (giây từ bấm): hủy trước mốc này thì đòn không trúng, bỏ các sự kiện chưa phát. */
+  firstHit: number;
 }
 
 interface BladeJob {
@@ -106,6 +108,11 @@ export function scheduleEvents(events: readonly FxEvent[], hitAt: readonly numbe
   return out;
 }
 
+/** Hủy ở giây `t` có làm đòn không trúng được không (chưa tới mốc trúng đầu). */
+export function cancelDropsCast(t: number, firstHit: number): boolean {
+  return t < firstHit - 1e-3;
+}
+
 export class FxRunner {
   private casts = new Map<string, Cast>();
   private jobs: BladeJob[] = [];
@@ -127,8 +134,19 @@ export class FxRunner {
     const pal = paletteOf(tl.palette ?? def.method ?? (mine ? method : undefined));
     const events = fxEventsFor(tl, e.combo);
     const q = scheduleEvents(events, tm.hitAt, tier).map((s, idx) => ({ ...s, idx, done: false }));
-    this.casts.set(sid, { sid, actor, def, mine, tier, pal, q, clock: e.t, seed: ++this.serial * 7.31, dist });
+    this.casts.set(sid, { sid, actor, def, mine, tier, pal, q, clock: e.t, seed: ++this.serial * 7.31, dist, firstHit: Math.min(...tm.hitAt) });
     this.pump(this.casts.get(sid)!, e.t);
+  }
+
+  /**
+   * Động tác bị hủy (`cancel`) ở giây `t` của đồng hồ animation: chưa tới mốc trúng đầu thì bỏ cả đòn (không phát lưỡi liềm, khựng, rung,
+   * chớp, âm cho cú trúng không xảy ra); hủy sau khi đã trúng (cắt phần thu về) thì giữ phần đuôi sau trúng. Trả true nếu đã bỏ.
+   */
+  cancel(sid: string, t: number): boolean {
+    const c = this.casts.get(sid);
+    if (!c || !cancelDropsCast(t, c.firstHit)) return false;
+    this.casts.delete(sid);
+    return true;
   }
 
   /** Bỏ các sự kiện chưa phát của `sid` (đòn kết thúc/bị hủy). Hiệu ứng đã phát tự tan. */

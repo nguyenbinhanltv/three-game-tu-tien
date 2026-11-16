@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FX_TIMELINE, SKILL } from '@dtl/content';
 import { fxEventsFor, skillTiming, validateFxTimeline } from '@dtl/shared';
 import { paletteOf } from '../render/vfx/palette';
-import { scheduleEvents } from './fxTimeline';
+import { cancelDropsCast, scheduleEvents } from './fxTimeline';
 
 describe('FxRunner.scheduleEvents', () => {
   const evs = fxEventsFor(FX_TIMELINE.get('skl_kiem_khi_tram')!, -1);
@@ -33,6 +33,14 @@ describe('FxRunner.scheduleEvents', () => {
     const tl = FX_TIMELINE.get('skl_phi_kiem')!;
     const n = (c: number) => scheduleEvents(fxEventsFor(tl, c), [0.26], 2).length;
     expect(n(2)).toBeGreaterThan(n(0));
+  });
+});
+
+describe('hủy động tác', () => {
+  it('hủy trước mốc trúng thì bỏ đòn; sau mốc trúng thì giữ phần đuôi', () => {
+    expect(cancelDropsCast(0.1, 0.28)).toBe(true);
+    expect(cancelDropsCast(0.279, 0.28)).toBe(false);
+    expect(cancelDropsCast(0.46, 0.28)).toBe(false);
   });
 });
 
