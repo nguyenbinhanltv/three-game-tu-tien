@@ -693,7 +693,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     if (this.glow?.active && this.sword) this.glow.update(dt, this.sword.boneWorld);
     if (this.ribbons && this.lod === 0 && this.inner.visible) this.ribbons.update(dt, a.speed, (b) => this.fitBones.get(b)?.matrixWorld ?? null);
     this.grounded = !a.flying && !a.airborne;
-    this.flySword.visible = a.flying && !a.dead;
+    this.flySword.visible = a.flying && !a.sky && !a.dead;
     // Bước chân theo pha clip chạy: mỗi `1 / runSteps` vòng là một lần chân chạm đất.
     const run = this.state === 'run' ? this.actionOf('run') : null;
     if (run) {

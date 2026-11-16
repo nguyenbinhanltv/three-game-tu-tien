@@ -3,7 +3,7 @@ import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
 import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
-import { locoDirOf, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
+import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { groundAt } from './levelCtx';
 import { swordOverride } from './testParams';
 import { gatesOf, type Gate } from './gates';
@@ -637,11 +637,15 @@ export class EntityManager {
         moveDir: v.speed > 0.3 ? locoDirOf(v.yaw, v.mvx, v.mvz) : undefined,
         speed: v.speed,
         flying: (s.fl & PF_FLYING) !== 0,
+        // Ngự không (E3-K): Nguyên Anh bay trong 30 m so với mặt đất thì không cần kiếm.
+        sky: (s.fl & PF_FLYING) !== 0 && inSkyBand(s.lv, v.y, groundAt(v.x, v.z)),
         meditating: (s.fl & PF_MEDITATING) !== 0,
         dead,
         casting: (s.fl & PF_CASTING) !== 0,
         airborne: isLocal ? local.airborne : !s.gr,
       });
+      // Nguyên anh đang xuất khiếu thám thính: thân xác không còn ở đây, chỉ còn bóng anh (`soulVis`).
+      v.model.root.visible = !((s.fl & PF_SOUL) !== 0 && !dead);
       v.art?.update(dt, v.model.root.position.x, v.model.root.position.y, v.model.root.position.z, v.yaw, v.speed, dead);
       v.lo?.update(dt, v.model.root.position.x, v.model.root.position.y, v.model.root.position.z, v.yaw, v.speed, dead);
       if (!isLocal) {

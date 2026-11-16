@@ -110,6 +110,9 @@ function uncorkAll(socks: Corkable[]): void {
   }
 }
 
+/** Lệnh còn dùng được khi nguyên anh đang xuất khiếu (E3-K). */
+const SOUL_ALLOWED: ReadonlySet<string> = new Set([C.INPUT, C.SOUL, C.CHAT, C.SPIRIT, C.MARK, C.PARTY]);
+
 export abstract class GameRoom extends Room<WorldState> implements SimHost {
   sim!: GameSim;
   markers!: MarkerSystem;
@@ -145,6 +148,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       this.onMessage(type, (client, msg) => {
         const p = this.sim.players.get(client.sessionId);
         if (!p || !this.sim.rateOk(p)) return;
+        // Nguyên anh đang xuất khiếu (E3-K): chỉ di chuyển, nhập lại, trò chuyện, thần thức, đánh dấu; mọi thao tác khác của thân xác bị chặn.
+        if (!SOUL_ALLOWED.has(type) && this.sim.soul.isScouting(p)) return;
         try {
           handler(p, msg);
         } catch (e) {
@@ -157,6 +162,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.ARTIFACT, (p) => this.sim.onArtifact(p));
     on(C.BONDED, (p) => this.sim.onBonded(p));
     on(C.SPIRIT, (p, m) => this.sim.spirit.command(p, m));
+    on(C.SOUL, (p, m) => this.sim.soul.command(p, m));
     on(C.MEDITATE, (p, m) => this.sim.onMeditate(p, m));
     on(C.GATHER, (p, m) => this.sim.onGather(p, m));
     on(C.USE, (p, m) => this.sim.onUse(p, m));
@@ -271,6 +277,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       if (oldP) {
         prev.room.sim.tele.drop(oldP);
         prev.room.sim.spirit.drop(oldP);
+        prev.room.sim.soul.drop(oldP);
         prev.room.markers.drop(oldP);
       }
       prev.room.sim.removePlayer(prev.sid);
@@ -303,6 +310,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     parties.attach(p, this);
     this.sim.tele.sendState(p);
     this.sim.spirit.sendState(p);
+    this.sim.soul.sendState(p);
     ensurePartyTick();
     console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
@@ -358,6 +366,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     parties.detach(p);
     this.sim.tele.drop(p);
     this.sim.spirit.drop(p);
+    this.sim.soul.drop(p);
     this.markers.drop(p);
     this.aoi.detach(sid);
     this.sim.removePlayer(sid);
@@ -368,6 +377,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
 
   /** Lưu nhân vật rồi bảo client sang room của `level` (vé phải được cấp trước). */
   protected sendTransfer(p: PlayerEnt, level: string, options: Record<string, string> = {}): void {
+    this.sim.soul.drop(p);
     this.sim.savePlayer(p);
     p.client.send(S.TRANSFER, { room: roomNameOf(level), level, options } satisfies TransferMsg);
   }

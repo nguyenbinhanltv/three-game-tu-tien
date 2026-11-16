@@ -36,6 +36,7 @@
     "shots:e2d": "tsx src/shots-e2d.ts",
     "shots:e2h": "tsx src/shots-e2h.ts",
     "shots:e2e": "tsx src/shots-e2e.ts",
+    "shots:e3k": "tsx src/shots-e3k.ts",
     "shots:eqicons": "tsx src/shots-eqicons.ts",
     "shots:kiem": "tsx src/shots-kiem.ts",
     "shots:props": "tsx src/shots-props.ts",

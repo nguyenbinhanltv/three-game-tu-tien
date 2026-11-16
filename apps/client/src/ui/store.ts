@@ -142,6 +142,23 @@ export interface TeleState {
 }
 
 /** Thần thức của mình (S.SPIRIT_STATE). Thời gian đổi sang đồng hồ `performance.now()` của client. */
+/** Nguyên anh xuất khiếu (E3-K): thời gian theo đồng hồ client (performance.now). */
+export interface SoulState {
+  open: boolean;
+  /** 0 không, 1 thám thính, 2 vừa thoát ra khi tử vong. */
+  k: 0 | 1 | 2;
+  /** Hết dạng nguyên anh lúc này (0 = không). */
+  until: number;
+  /** Thân xác. */
+  bx: number;
+  by: number;
+  bz: number;
+  /** Nơi nguyên anh bay về khi tử vong. */
+  to: { x: number; z: number } | null;
+  cdUntil: number;
+  deathCdUntil: number;
+}
+
 export interface SpiritState {
   open: boolean;
   /** Quét xong lúc này (0 = không đang quét). */
@@ -241,6 +258,7 @@ export interface UIState {
   party: PartyMsg | null;
   tele: TeleState;
   spirit: SpiritState;
+  soul: SoulState;
   /** Kết quả quét thần thức đang hiện (E2-E); null = không. */
   spiritScan: SpiritScan | null;
   /** Điểm đánh dấu mình và đồng đội đang thấy (S.MARK). */
@@ -320,6 +338,7 @@ export const useUI = create<UIState>(() => ({
   party: null,
   tele: { open: [], cast: null, cdUntil: 0 },
   spirit: { open: false, chUntil: 0, cdUntil: 0, r: 60 },
+  soul: { open: false, k: 0, until: 0, bx: 0, by: 0, bz: 0, to: null, cdUntil: 0, deathCdUntil: 0 },
   spiritScan: null,
   marks: [],
   invites: [],

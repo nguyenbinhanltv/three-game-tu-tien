@@ -22,6 +22,7 @@ export * from './methods';
 export * from './skillrules';
 export * from './artifacts';
 export * from './spirit';
+export * from './soul';
 export * from './alchemy';
 export * from './party';
 export * from './teleport';
