@@ -579,6 +579,9 @@ export class Game {
     room.onMessage(S.SPIRIT_SCAN, (m: SpiritScanMsg) => {
       const now = performance.now();
       set({ spiritScan: { x: m.x, z: m.z, r: m.r, at: now, until: now + m.ttl, hits: m.hits } });
+      const kinds: Record<string, number> = {};
+      for (const h of m.hits) kinds[h.k] = (kinds[h.k] ?? 0) + 1;
+      this.spiritLog.push({ r: m.r, n: m.hits.length, kinds, hits: m.hits });
     });
     room.onMessage(S.INVITE, (m: InviteMsg) => {
       const until = m.until - this.timeOffset;
@@ -1455,6 +1458,9 @@ export class Game {
     this.send(C.SKILL, { id: skill.id, t: this.targetId || undefined });
   }
 
+  /** Nhật ký các lần quét thần thức đã nhận (dev, để ảnh chụp/kiểm tay). */
+  spiritLog: { r: number; n: number; kinds: Record<string, number>; hits: SpiritScanMsg['hits'] }[] = [];
+
   /** Thần thức (phím V, giữ): chỉ gửi ý định bắt đầu/thả; server giữ 2,5 giây, kiểm điều kiện, quyết định kết quả. */
   spiritHold(on: boolean): void {
     const st = get();
@@ -1896,6 +1902,10 @@ export class Game {
         }
         break;
       }
+      case 'artheal':
+        // Ngưng Đan Lô: cột đan hỏa mảnh và mờ (không che người), số hồi do DmgMsg heal hiện.
+        v.pillar(posSrc, tint(0xffb35a), 1.3, 0.55, 3.2, 0.26);
+        break;
       case 'artdrain':
         // Hồ Lô hút linh lực: một tia nhỏ từ quái bay về người dùng.
         if (e.chestOf(src, _v)) v.swordShot(_v, posDst, tint(0xc9a2ff), 0.45, 0.5);

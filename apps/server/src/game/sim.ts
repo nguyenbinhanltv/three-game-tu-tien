@@ -1441,7 +1441,7 @@ export class GameSim {
           const n = furnaceHeal(def, lv, o.char.mhp);
           o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
           this.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
-          this.fx({ t: 'heal', src: o.sid, ...tag });
+          this.fx({ t: 'artheal', src: o.sid, ...tag });
         }
         this.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.4, ...tag });
         this.sys(p, 'sys.art_heal', { n: who.size }, 'good');

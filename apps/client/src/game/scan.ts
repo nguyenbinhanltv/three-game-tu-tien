@@ -15,12 +15,13 @@ const BEAM_KINDS: ReadonlySet<SpiritKind> = new Set(['boss', 'elite', 'node', 'p
 const MAX_BEAMS = 28;
 const BEAM_H = 46;
 const WAVE_MS = 1100;
+const BEAM_ALPHA = 0.5;
 
 const additive = (color: number, opacity: number) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
 
 export class SpiritVis {
   private group = new THREE.Group();
-  private geo = { ring: new THREE.RingGeometry(0.965, 1, 96), focus: new THREE.RingGeometry(0.62, 1, 40), beam: new THREE.CylinderGeometry(0.16, 0.16, BEAM_H, 8, 1, true), foot: new THREE.RingGeometry(0.55, 0.8, 24) };
+  private geo = { ring: new THREE.RingGeometry(0.9, 1, 96), focus: new THREE.RingGeometry(0.94, 1, 64), beam: new THREE.CylinderGeometry(0.4, 0.4, BEAM_H, 10, 1, true), foot: new THREE.RingGeometry(0.55, 0.8, 24) };
   private mats = new Map<number, THREE.MeshBasicMaterial>();
   private wave: THREE.Mesh;
   private focus: THREE.Mesh;
@@ -44,7 +45,7 @@ export class SpiritVis {
   private mat(color: number): THREE.MeshBasicMaterial {
     let m = this.mats.get(color);
     if (!m) {
-      m = additive(color, 0.34);
+      m = additive(color, BEAM_ALPHA);
       this.mats.set(color, m);
     }
     return m;
@@ -85,9 +86,9 @@ export class SpiritVis {
       const left = Math.max(0, state.chUntil - now);
       const k = 1 - Math.min(1, left / 2500);
       this.focus.position.set(me.x, groundAt(me.x, me.z) + 0.13, me.z);
-      this.focus.scale.setScalar(Math.max(1.2, state.r * (1 - k) * 0.5));
+      this.focus.scale.setScalar(Math.max(1.2, state.r * (1 - k) * 0.4));
       this.focus.rotation.z = now * 0.002 * (1 + k * 4);
-      (this.focus.material as THREE.MeshBasicMaterial).opacity = 0.12 + 0.4 * k;
+      (this.focus.material as THREE.MeshBasicMaterial).opacity = 0.1 + 0.2 * k;
     }
     // Kết quả mới: một lần sóng nở và dựng cột sáng.
     if (scan !== this.scan) {
@@ -107,14 +108,14 @@ export class SpiritVis {
         this.wave.visible = true;
         this.wave.position.set(this.scan.x, groundAt(this.scan.x, this.scan.z) + 0.15, this.scan.z);
         this.wave.scale.setScalar(Math.max(1, this.scan.r * (1 - (1 - k) ** 2)));
-        (this.wave.material as THREE.MeshBasicMaterial).opacity = 0.6 * (1 - k);
+        (this.wave.material as THREE.MeshBasicMaterial).opacity = 0.8 * (1 - k);
       }
     }
     if (this.beams.length && this.scan) {
       const left = this.scan.until - now;
       const fade = Math.max(0, Math.min(1, left / 800));
       const pulse = 0.85 + 0.15 * Math.sin(now * 0.006);
-      for (const m of this.mats.values()) m.opacity = 0.34 * fade * pulse;
+      for (const m of this.mats.values()) m.opacity = BEAM_ALPHA * fade * pulse;
       if (left <= 0) this.rebuild(null);
     }
   }
