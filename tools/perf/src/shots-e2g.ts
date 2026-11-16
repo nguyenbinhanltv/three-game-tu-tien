@@ -24,6 +24,8 @@ const LIST: Record<string, string[]> = {
   dansu: ['skl_moc_linh_tran', 'skl_duoc_vu', 'skl_ngung_dan_ho_the', 'skl_dan_hoa_phong_tran'],
 };
 const RENDERER = opt('--renderer', 'webgpu');
+/** Chỉ chụp các chiêu này (id, cách nhau dấu phẩy); mặc định chụp hết. */
+const SKILLS_ONLY = opt('--skills', '').split(',').filter(Boolean);
 const PORT = Number(process.env.PORT ?? 2675);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
 const SC_DIST = Number(opt('--dist', '3.2'));
@@ -251,7 +253,7 @@ async function main(): Promise<void> {
 
       // Ảnh chụp dùng `?quiet=1`: sói vẫn cắn nhưng không nháy trắng model (hitReact) và không nổ cầu hồng (`bite`), vốn che nhân vật và lẫn vào VFX K-6.
       // E2-G: mỗi chiêu bậc 2–3 chơi được một tờ ảnh (cảnh: ba con sói trước mặt, cận cảnh góc 3/4).
-      for (const id of LIST[sc] ?? []) {
+      for (const id of (LIST[sc] ?? []).filter((x) => !SKILLS_ONLY.length || SKILLS_ONLY.includes(x))) {
         await scene(page, 3);
         await closeCam(page, SC_DIST);
         const r = await record(ctx, page, 1500, async () => pressId(id));

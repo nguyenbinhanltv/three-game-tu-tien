@@ -255,17 +255,13 @@ export function playMethodFx(c: MethodFxCtx): boolean {
     }
     case 'kimchung': {
       // Kim Chung Trấn: chuông vàng úp quanh thân suốt thời gian giữ thế.
-      const end = performance.now() + (m.d ?? 6) * 1000;
-      v.shield(c.src, m.d ?? 6, () => performance.now() < end, color, m.v === 'thorn' ? 0.7 : 0.6, 0.09);
-      v.pillar(c.src, color, 0.7, 0.4, 3.2, 0.1);
+      softDome(c, color, m.d ?? 6, m.v === 'thorn' ? 0.7 : 0.6, 0.06);
       return true;
     }
     case 'sonnhac': {
       // Sơn Nhạc Hóa Thân: thân ngọc đá phình ra (vòng đất vàng + trụ đá), mỗi lần giậm có vòng chấn động.
-      const end = performance.now() + (m.d ?? 10) * 1000;
-      v.shield(c.src, m.d ?? 10, () => performance.now() < end, 0xc9b27a, 0.8, 0.07);
+      softDome(c, 0xc9b27a, m.d ?? 10, 0.8, 0.05);
       groundRing(v, m.x ?? 0, m.z ?? 0, 2.4, color, 1.2);
-      v.pillar(c.src, color, 0.9, 0.5, 4, 0.1);
       return true;
     }
     case 'dichson': {
@@ -283,7 +279,6 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       const r = m.r ?? 8;
       groundRing(v, x, z, r, color, Math.min(m.d ?? 8, 4));
       after(v, 4, () => groundRing(v, x, z, r * 0.9, color, 3.5));
-      v.pillar(c.src, color, 0.9, 0.3, 3, 0.1);
       if (m.v === 'venom') after(v, 0.2, () => groundRing(v, x, z, r * 0.6, 0x9fe05a, 2));
       return true;
     }
@@ -303,8 +298,7 @@ export function playMethodFx(c: MethodFxCtx): boolean {
     }
     case 'ngungdan': {
       // Ngưng Đan Hộ Thế: quầng đan ngọc bao mỗi người nhận khiên.
-      const end = performance.now() + (m.d ?? 10) * 1000;
-      v.shield(c.src, m.d ?? 10, () => performance.now() < end, color, m.v === 'big' ? 0.65 : 0.55, 0.08);
+      softDome(c, color, m.d ?? 10, m.v === 'big' ? 0.65 : 0.55, 0.06);
       if (c.src(_a)) groundRing(v, _a.x, _a.z, 1.8, color, 0.9);
       return true;
     }
@@ -322,6 +316,32 @@ export function playMethodFx(c: MethodFxCtx): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Quầng bao thân của chiêu giữ thế (E2-G): kiểu `dome` (rìa sáng, giữa trong suốt), độ đậm thấp, giữ nguyên nửa giây đầu rồi mờ
+ * còn một phần tư tới hết thời gian chiêu: nhân vật giữ màu gốc, quầng chỉ báo "đang có hiệu lực".
+ */
+function softDome(c: MethodFxCtx, color: number, dur: number, scale: number, alpha: number): void {
+  const m = c.v.fx(G.dome, color, alpha, 'dome');
+  let t = 0;
+  c.v.track(
+    dur,
+    (_k, dt) => {
+      t += dt;
+      if (!c.src(_a)) {
+        m.visible = false;
+        return;
+      }
+      m.visible = true;
+      m.position.copy(_a).setY(_a.y - 0.2);
+      m.scale.set(1.25 * scale, 1.5 * scale, 1.25 * scale);
+      m.rotation.y = t * 1.5;
+      const f = t < 0.5 ? 1 : Math.max(0.25, 1 - (t - 0.5) / 1.0);
+      m.fxOpacity = (alpha / 0.28) * f * (0.92 + Math.sin(t * 5) * 0.08);
+    },
+    () => c.v.drop(m),
+  );
 }
 
 /** Chạy `fn` sau `sec` giây theo đồng hồ của Vfx (dừng cùng Vfx, không để hẹn giờ sót khi đổi room). */
