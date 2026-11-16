@@ -213,6 +213,15 @@ describe('đố ba gương (MirrorPuzzle)', () => {
     expect(log.wrong).toBe(0);
   });
 
+  it('chạm sai rồi đứng yên trên cột: không bị tính chạm mới, chỉ một lần phạt', () => {
+    const { pz, log, order, touch } = mk();
+    touch(order()[1]);
+    expect(log.wrong).toBe(1);
+    for (let i = 0; i < 6; i++) pz.tick();
+    expect(log.wrong).toBe(1);
+    expect(pz.done).toBe(false);
+  });
+
   it('chạm sai thứ tự hoặc hết giờ: quái phạt, đố lại; quá 3 lần thì bỏ đố không thưởng', () => {
     const { pz, log, order, touch, away, wait } = mk();
     touch(order()[1]);

@@ -52,9 +52,22 @@ export class MirrorPuzzle {
     this.order = shuffle3(this.rnd);
     this.idx = 0;
     this.until = this.h.now() + this.def.secs * 1000;
+    // Ai đang đứng trên một cột lúc bắt đầu vòng mới chỉ được tính chạm khi rời ra rồi chạm lại (tránh một bước sai đốt hết lượt).
     this.on.clear();
+    for (const p of this.h.players()) {
+      const at = this.pointAt(p);
+      if (at >= 0) this.on.set(p.sid, at);
+    }
     this.def.points.forEach((p, i) => this.h.fx({ t: 'mirror_pillar', n: i, x: p.x, z: p.z, d: this.def.secs, pg: 0 }));
     this.h.say('sys.mirror_puzzle', { order: this.order.map((i) => this.h.colorName(i)).join(' → '), s: this.def.secs }, 'info');
+  }
+
+  private pointAt(p: { x: number; z: number }): number {
+    let at = -1;
+    this.def.points.forEach((pt, i) => {
+      if (Math.hypot(p.x - pt.x, p.z - pt.z) <= TOUCH_R) at = i;
+    });
+    return at;
   }
 
   /** Còn đang đố (director chờ). */
@@ -68,10 +81,7 @@ export class MirrorPuzzle {
     if (now >= this.until) return this.fail('sys.mirror_puzzle_time');
     for (const p of this.h.players()) {
       if (p.dead) continue;
-      let at = -1;
-      this.def.points.forEach((pt, i) => {
-        if (Math.hypot(p.x - pt.x, p.z - pt.z) <= TOUCH_R) at = i;
-      });
+      const at = this.pointAt(p);
       const was = this.on.get(p.sid) ?? -1;
       if (at === was) continue;
       if (at < 0) {
