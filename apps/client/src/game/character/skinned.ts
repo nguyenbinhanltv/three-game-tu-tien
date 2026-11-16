@@ -216,7 +216,7 @@ export class SkinnedCharacter implements CharacterView {
   private actions = new Map<string, THREE.AnimationAction>();
   private map: ClipMap;
   private refSpeed: number;
-  private scene: THREE.Object3D;
+  protected scene: THREE.Object3D;
   private current: THREE.AnimationAction | null = null;
   private base: CharState | null = null;
   private shot: Shot | null = null;

@@ -515,5 +515,44 @@
     "reqLevel": 20,
     "tier": 3,
     "set": "set_luu_ly"
+  },
+  {
+    "id": "itm_lm_trang_suc",
+    "kind": "head",
+    "stack": 1,
+    "price": 0,
+    "sell": 1746,
+    "rarity": 3,
+    "icon": "itm_lm_trang_suc",
+    "iconFallback": "👑",
+    "reqLevel": 16,
+    "tier": 2,
+    "set": "set_liet_mach"
+  },
+  {
+    "id": "itm_dg_trang_suc",
+    "kind": "head",
+    "stack": 1,
+    "price": 0,
+    "sell": 1746,
+    "rarity": 3,
+    "icon": "itm_dg_trang_suc",
+    "iconFallback": "👑",
+    "reqLevel": 16,
+    "tier": 2,
+    "set": "set_dia_giap"
+  },
+  {
+    "id": "itm_pm_trang_suc",
+    "kind": "head",
+    "stack": 1,
+    "price": 0,
+    "sell": 1746,
+    "rarity": 3,
+    "icon": "itm_pm_trang_suc",
+    "iconFallback": "👑",
+    "reqLevel": 16,
+    "tier": 2,
+    "set": "set_phuc_mach"
   }
 ]

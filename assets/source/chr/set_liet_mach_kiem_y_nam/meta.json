@@ -5,46 +5,31 @@
   "budgetClass": "outfit",
   "status": "imported",
   "budget": {
-    "faceLimit": 2000,
+    "faceLimit": 14000,
     "texture": 1024
   },
   "import": {
     "kind": "tripo",
-    "source": "chr/set_liet_mach_kiem_y/tripo/rig_v01.glb",
+    "source": "chr/set_liet_mach_kiem_y/tripo/raw_ao_ngoai_v01.glb",
     "size": {
-      "height": 1.75
+      "height": 1.0
     },
-    "orient": "thigh",
+    "orient": "none",
     "yaw": 0,
-    "post": "tools/blender/retarget_set.py",
-    "retarget": {
+    "post": "tools/blender/outfit_build.py",
+    "outfit": {
       "player": "chr_kiem_tu_nam",
-      "cut": [
-        "head",
-        "neck",
-        "hand"
-      ],
-      "clampLen": [
-        0.75,
-        1.35
-      ],
-      "legBlend": 0.5,
-      "spring": [
-        {
-          "kind": "skirt",
-          "top": 0.84,
-          "full": 0.35,
-          "bottom": 0.1,
-          "weight": 0.5,
-          "radius": 0.14
-        },
-        {
-          "kind": "sleeve",
-          "side": "both",
-          "from": 0.4,
-          "weight": 0.7
-        }
-      ]
+      "dir": "chr/set_liet_mach_kiem_y/tripo",
+      "palette": {
+        "main": "#E6DDCB",
+        "sec": "#9A4A32",
+        "trim": "#B07A3C",
+        "accent": "#E8A33D"
+      },
+      "fitPose": {
+        "armDown": 70
+      },
+      "atlas": 1024
     }
   },
   "concept": [
