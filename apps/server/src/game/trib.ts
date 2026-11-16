@@ -3,7 +3,7 @@
 // Độ kiếp Trúc Cơ (S2-C) giữ hành vi y hệt bản cũ trong sim.ts: thứ tự gọi Math.random và thứ tự phát vùng không đổi
 // (test băm `trib.golden.test.ts`).
 
-import { PF_DEAD, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type HazardKind, type TribDef, type TribId, type TribPhaseDef } from '@dtl/shared';
+import { PF_DEAD, type FxMsg, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type HazardKind, type TribDef, type TribId, type TribPhaseDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './sim';
 import { runMechanic, type TribMechCtx } from './tribmech';
 
@@ -38,7 +38,9 @@ export interface GuardCfg {
 
 export interface TribHost {
   now(): number;
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardKind, src: string, atk?: number, lock?: boolean, grp?: number, guard?: GuardCfg, cut?: { mul: number; max: number }): void;
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardKind, src: string, atk?: number, lock?: boolean, grp?: number, guard?: GuardCfg, cut?: { mul: number; max: number }, hot?: boolean): void;
+  fx(m: FxMsg): void;
+  isDead(p: PlayerEnt): boolean;
   nextGrp(): number;
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void;
   spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o?: { dyaw?: number; level?: number }): MonEnt | null;
@@ -62,13 +64,15 @@ export class TribSystem {
     const ph = def.phases[pi];
     const ctx: TribMechCtx = { host: this.h, p, tr, def, phase: ph, phaseIdx: pi, elapsed, now };
     if (tr.pi !== pi) this.changePhase(ctx, def, tr.pi ?? -1);
+    // Cơ chế đổi pha có thể kết thúc kiếp (ví dụ ngưng đan không đầy): không phát thêm gì nữa.
+    if (p.trib !== tr) return;
     // Pha có tia khóa mệnh mở bằng tia cuối; trong lúc nó tích tụ trời lặng đi, rồi mưa sét dồn dập.
     if (ph.final && !tr.fin) {
       const f = ph.final;
       tr.fin = true;
       tr.nextAt = Math.max(tr.nextAt, now + f.delay * 1000);
       const guard = f.guardShare ? { share: f.guardShare, max: f.guardMax ?? 2, r: f.guardR ?? 12 } : undefined;
-      this.h.addHazard({ x: p.move.x, z: p.move.z, r: f.r }, f.delay, f.pct, true, 'lightning', p.sid, 0, true, 0, guard, { mul: f.defMul, max: f.defMaxCut });
+      this.h.addHazard({ x: p.move.x, z: p.move.z, r: f.r }, f.delay, f.pct, true, 'lightning', p.sid, 0, true, 0, guard, { mul: f.defMul, max: f.defMaxCut }, ph.hot);
       this.h.sys(p, 'sys.trib_final', undefined, 'bad');
     }
     runMechanic(ph.mechanic, 'tick', ctx);
@@ -78,7 +82,7 @@ export class TribSystem {
     tr.nextAt = now + tribGapAt(def, pi, elapsed) * 1000;
     if (ph.grid) this.fireGrid(p, tr, ph, now);
     // Một tia nhắm thẳng vào người độ kiếp, vài tia rơi quanh.
-    if (ph.aimPct) this.h.addHazard({ x: p.move.x, z: p.move.z, r: def.aim.r }, def.aim.delay, ph.aimPct, true, 'lightning', p.sid);
+    if (ph.aimPct) this.h.addHazard({ x: p.move.x, z: p.move.z, r: def.aim.r }, def.aim.delay, ph.aimPct, true, 'lightning', p.sid, 0, false, 0, undefined, undefined, ph.hot);
     const extra = ph.extra ?? 0;
     for (let i = 0; i < extra; i++) {
       const a = Math.random() * Math.PI * 2;
@@ -90,6 +94,12 @@ export class TribSystem {
         true,
         'lightning',
         p.sid,
+        0,
+        false,
+        0,
+        undefined,
+        undefined,
+        ph.hot,
       );
     }
     if (ph.net && tr.n % ph.net.every === 0) this.net(p, ph);

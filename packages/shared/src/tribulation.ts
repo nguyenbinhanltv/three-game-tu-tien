@@ -54,6 +54,24 @@ export interface TribShadows {
   maxAlive: number;
 }
 
+/** Đan Trận (Kết Đan, cơ chế `dan_tran`): vòng dưới chân, đứng yên trong vòng thì thanh ngưng đan đầy, ra khỏi vòng thì tụt; thiên lôi quét vạch qua vòng. */
+export interface TribDanTran {
+  /** Bán kính vòng (m). */
+  r: number;
+  /** Số giây đứng yên trong vòng để thanh 0→100. */
+  fill: number;
+  /** Tụt bao nhiêu % mỗi giây khi ra khỏi vòng. */
+  drain: number;
+  /** Dưới ngưỡng này (m/s) coi là đứng yên. */
+  still: number;
+  /** Tia quét: chu kỳ, chiều dài, bề rộng (m), thời gian báo (s), % khí huyết tối đa. */
+  sweepEvery: number;
+  sweepLen: number;
+  sweepW: number;
+  sweepWarn: number;
+  sweepPct: number;
+}
+
 export interface TribPhaseDef {
   id: string;
   kind: TribPhaseKind;
@@ -71,6 +89,10 @@ export interface TribPhaseDef {
   final?: TribFinal;
   grid?: TribGrid;
   shadows?: TribShadows;
+  /** Cơ chế Đan Trận (chỉ dùng khi `mechanic` = `dan_tran`). */
+  danTran?: TribDanTran;
+  /** Thiên lôi pha này nhuốm lửa (lôi hỏa): client đổi màu tia (HDR vẫn dưới trần). Chỉ là lớp hình. */
+  hot?: boolean;
   /** Móc cơ chế riêng (tribmech.ts). */
   mechanic?: string;
 }

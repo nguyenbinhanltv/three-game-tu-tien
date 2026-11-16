@@ -453,7 +453,9 @@ export class GameSim {
   /** Lõi nhịp độ kiếp theo dữ liệu (E1-F, game/trib.ts). */
   private readonly tribSys = new TribSystem({
     now: () => this.now,
-    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut),
+    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, hot) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, hot),
+    fx: (m) => this.fx(m),
+    isDead: (p) => this.isDead(p),
     nextGrp: () => this.nextHazardGrp(),
     sys: (p, k, params, type) => this.sys(p, k, params, type),
     spawnShadow: (p, st, o) => this.spawnShadow(p, st, o),
@@ -2754,13 +2756,14 @@ export class GameSim {
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
   /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }): void {
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, hot = false): void {
     const mon = this.monById.get(src) ?? null;
     this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined, guard, cut });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
     // Tia sét có hình theo seed để mọi client thấy cùng một tia (chỉ là lớp hình).
     if (kind === 'lightning') msg.sd = visualSeed();
     if (lock) msg.big = true;
+    if (hot) msg.hot = true;
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;
@@ -3051,7 +3054,7 @@ export class GameSim {
       c.hp = c.mhp;
       c.mp = c.mmp;
       this.sysAll('sys.trib_ok', { name: c.name, realm: nextMajorRealmName(def.from) }, 'good');
-      this.fx({ t: 'ascend', src: p.sid });
+      this.fx({ t: 'ascend', src: p.sid, tb: def.id });
       if (def.id === 'truc_co') this.sys(p, 'sys.tc_fly_hint', { n: TRUC_CO_FREE_FLY_ALT }, 'info');
       this.questEvent(p, 'breakthrough', undefined, 1);
       this.questEvent(p, 'level', undefined, c.level);

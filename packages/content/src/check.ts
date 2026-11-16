@@ -9,7 +9,7 @@ import { LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_O
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
-import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS } from '@dtl/shared';
+import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, tribForLevel, peakGated } from '@dtl/shared';
 import { TELE_PADS, terrainOf } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
 
@@ -676,6 +676,23 @@ if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
     });
     needStr(`ui.trib.${id}.title`);
   }
+  // Kiếp đã bật cho người chơi phải có vật phẩm đột phá thật, chế được, nhặt được; cơ chế `dan_tran` phải có thông số Đan Trận (E2-D).
+  for (const [id, d] of Object.entries(TRIB_DEFS)) {
+    if (d.enabled && d.item) {
+      if (!ITEM.get(d.item)) err(`độ kiếp ${id}: vật phẩm ${d.item} không tồn tại`);
+      if (!RECIPES.some((r) => r.output.id === d.item)) err(`độ kiếp ${id}: ${d.item} không có công thức chế`);
+    }
+    if (d.enabled && !d.item && id !== 'truc_co') err(`độ kiếp ${id}: bật mà chưa có vật phẩm đột phá`);
+    for (const p of d.phases) {
+      if (p.mechanic === 'dan_tran') {
+        const dt = p.danTran;
+        if (!dt || !(dt.r > 0 && dt.fill > 0 && dt.drain >= 0 && dt.sweepEvery > 0 && dt.sweepLen > 0 && dt.sweepW > 0 && dt.sweepWarn > 0 && dt.sweepPct > 0 && dt.sweepPct < 1)) err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số danTran`);
+        else if (dt.fill > p.end - (d.phases[d.phases.indexOf(p) - 1]?.end ?? 0)) err(`độ kiếp ${id}/${p.id}: fill dài hơn pha, không thể ngưng đan`);
+      }
+    }
+  }
+  if (!tribForLevel(19)?.enabled) err('độ kiếp Kết Đan (cấp 19) phải đang bật (E2-D)');
+  if (peakGated(19) || !peakGated(23) || !peakGated(27)) err('peakGated: chỉ Kết Đan 23 và Nguyên Anh 27 còn chặn (bình cảnh Trúc Cơ 19 đã mở)');
   if (TRIB_DEFS.truc_co.room !== 'world' || !TRIB_DEFS.truc_co.enabled) err('độ kiếp truc_co: phải chạy ở room world và đang bật');
 }
 
@@ -709,7 +726,7 @@ for (const it of ITEMS) {
 }
 for (const r of RECIPES) {
   if (r.quality && ITEM.get(r.output.id)?.kind !== 'consumable') err(`${r.id}: chỉ đan (consumable) mới có phẩm chất`);
-  if (r.reqLevel !== undefined && !(r.reqLevel >= 1 && r.reqLevel <= 18)) err(`${r.id}: reqLevel ngoài khoảng`);
+  if (r.reqLevel !== undefined && !(r.reqLevel >= 1 && r.reqLevel <= 28)) err(`${r.id}: reqLevel ngoài khoảng`);
 }
 
 // Điểm đặt tên cho ?at= / `/gm tp <id>` (chỉ server đọc).

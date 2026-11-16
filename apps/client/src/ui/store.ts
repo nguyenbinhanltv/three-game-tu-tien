@@ -52,7 +52,7 @@ export interface ChapterCard {
 export interface CineState {
   id: number;
   /** 'sect' (mặc định): cảnh mở đầu. 'boss': boss xuất hiện (tên, danh hiệu, thoại). 'phase': chuyển pha (thoại). */
-  kind?: 'sect' | 'boss' | 'phase';
+  kind?: 'sect' | 'boss' | 'phase' | 'dan';
   name?: string;
   title?: string;
   text?: string;
@@ -172,6 +172,8 @@ export interface UIState {
   castEnd: number;
   castTotal: number;
   tribEnd: number;
+  /** Tiến độ ngưng đan 0..100 của Đan Trận (E2-D); -1 = không có vòng. */
+  danPg: number;
   /** Kiếp đang độ (id trong `tribulations.json`) để HUD đọc pha. */
   tribId: string;
   bossLine: BossLine | null;
@@ -259,6 +261,7 @@ export const useUI = create<UIState>(() => ({
   castEnd: 0,
   castTotal: 0,
   tribEnd: 0,
+  danPg: -1,
   tribId: 'truc_co',
   bossLine: null,
   chapter: null,

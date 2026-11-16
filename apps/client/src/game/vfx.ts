@@ -28,6 +28,8 @@ interface Fx {
 
 type PosFn = (out: THREE.Vector3) => boolean;
 
+const HOT_BOLT = 0xff9a5a;
+const HOT_BOLT_CORE = 0xffc89a;
 const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
 const _c = new THREE.Vector3();
@@ -651,9 +653,12 @@ export class Vfx {
    * Đột phá thành công (P2-B4): quầng vàng ấm tỏa từ người, một ống sáng mảnh và chùm tia nắng xòe lên như mây kiếp
    * vừa tách. Mảnh và cộng sáng để giữ màu cảnh (khác `pillar` bọc kín trước camera). 1 + 1 + 5 lưới trong ~2,6 giây.
    */
-  ascendGlow(pos: PosFn, dur = 2.6): void {
-    const core = this.fx(TUBE_GEO, 0xffe6a0, 0.3, 'flat');
-    const ring = this.fx(RING_GEO, 0xffd98a, 0.7);
+  ascendGlow(pos: PosFn, dur = 2.6, danQuang = false): void {
+    const core = this.fx(TUBE_GEO, danQuang ? 0xffcf8a : 0xffe6a0, 0.3, 'flat');
+    const ring = this.fx(RING_GEO, danQuang ? 0x8fcfff : 0xffd98a, 0.7);
+    // Kết Đan: thêm một vành đan quang vàng ấm nở chậm hơn vành lam (vẫn cộng sáng, mảnh).
+    const ring2 = danQuang ? this.fx(RING_GEO, 0xffd98a, 0.5) : null;
+    if (ring2) ring2.rotation.x = -Math.PI / 2;
     ring.rotation.x = -Math.PI / 2;
     const rays: { m: FxMesh; dir: THREE.Vector3 }[] = [];
     for (let i = 0; i < 5; i++) {
@@ -675,6 +680,11 @@ export class Vfx {
         ring.position.set(_a.x, _a.y - 1.0, _a.z);
         ring.scale.setScalar(1.2 + k * 7);
         ring.fxOpacity = 0.7 * (1 - k);
+        if (ring2) {
+          ring2.position.set(_a.x, _a.y - 0.4 + k * 2.2, _a.z);
+          ring2.scale.setScalar(0.8 + k * 4.2);
+          ring2.fxOpacity = 0.5 * Math.pow(1 - k, 1.3);
+        }
         for (const r of rays) {
           const len = 55 * rise;
           r.m.position.set(_a.x + (r.dir.x * len) / 2, _a.y - 1.1 + (r.dir.y * len) / 2, _a.z + (r.dir.z * len) / 2);
@@ -686,6 +696,7 @@ export class Vfx {
       () => {
         this.drop(core);
         this.drop(ring);
+        if (ring2) this.drop(ring2);
         for (const r of rays) this.drop(r.m);
       },
     );
@@ -816,11 +827,64 @@ export class Vfx {
     );
   }
 
+  /**
+   * Đan Trận (E2-D, Đan Hỏa Kiếp): vòng pháp trận lam đậm nằm dưới chân người độ kiếp, vành tiến độ chạy theo thanh ngưng đan,
+   * một viên đan nhỏ lơ lửng giữa vòng lớn dần và ngả sang vàng ấm khi đầy. Tông trầm, mảnh, cộng sáng thấp để không che người.
+   * Trả tay cầm: `set(pg)` cập nhật tiến độ 0..100, `stop()` khép vòng. Tự khép khi `stillOn()` sai (hết kiếp, chết).
+   */
+  danTran(x: number, z: number, r: number, dur: number, stillOn: () => boolean): { set(pg: number): void; stop(): void } {
+    const y = groundAt(x, z);
+    const m = this.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, 0x4f8fd8, y + 0.18);
+    const orb = this.fx(G.ico1, 0x7fbfff, 0.5);
+    const ring = this.fx(RING_GEO, 0x6fa8ee, 0.4);
+    ring.rotation.x = -Math.PI / 2;
+    let pg = 0;
+    let t = 0;
+    let fade = 0;
+    let stopping = false;
+    const it = {
+      t: 0,
+      dur: dur + 2,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const on = !stopping && stillOn();
+        fade = on ? Math.min(1, fade + dt * 3) : Math.max(0, fade - dt * 2.5);
+        if (!on && fade <= 0) it.t = it.dur;
+        const f = pg / 100;
+        m.fxA.x = f;
+        m.fxA.z = 0;
+        m.fxOpacity = 0.9 * fade;
+        const pulse = 1 + Math.sin(t * 2.4) * 0.06;
+        ring.position.set(x, y + 0.25, z);
+        ring.scale.setScalar(r * 0.98 * pulse);
+        ring.fxOpacity = 0.35 * fade;
+        orb.position.set(x, y + 2.3 + Math.sin(t * 1.7) * 0.12, z);
+        orb.scale.setScalar(0.18 + 0.5 * f);
+        orb.fxColor.setHex(f >= 1 ? 0xffd79a : 0x7fbfff);
+        orb.fxOpacity = (0.35 + 0.4 * f) * fade;
+      },
+      end: () => {
+        this.drop(m);
+        this.drop(orb);
+        this.drop(ring);
+      },
+    };
+    this.items.push(it);
+    return {
+      set: (v) => {
+        pg = Math.max(0, Math.min(100, v));
+      },
+      stop: () => {
+        stopping = true;
+      },
+    };
+  }
+
   /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
-  hazard(x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0, boss = false): void {
+  hazard(x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0, boss = false, hot = false): void {
     const y = groundAt(x, z);
     const style = hazardStyle(kind, boss);
-    const color = kind === 'lightning' ? (HAZARD_COLORS[kind] ?? style.color) : style.color;
+    const color = kind === 'lightning' ? (hot ? HOT_BOLT : (HAZARD_COLORS[kind] ?? style.color)) : style.color;
     // Mặt đất không phẳng: nâng theo điểm cao nhất quanh vòng (giới hạn để không lơ lửng quá).
     let top = y;
     for (let i = 0; i < 6; i++) {
@@ -839,7 +903,7 @@ export class Vfx {
       () => {
         this.drop(m);
         if (kind === 'lightning') {
-          this.lightning(x, y, z, 0xe2d4ff, 1.2, seed, flash);
+          this.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, flash);
         } else if (kind !== 'frost') {
           _a.set(x, y + 0.5, z);
           this.burst(_a, color, r * 1.1, 0.45);

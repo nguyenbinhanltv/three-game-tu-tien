@@ -1,6 +1,7 @@
 // Cảnh giới Phase 3-7: bình cảnh (Ngưng Khí tầng 5/10/15), thử thách tâm ma, linh căn ngũ hành.
 // Hàm thuần dùng chung client (hiển thị) và server (phán định). Bảng linh căn nằm ở packages/content/data/roots.json.
 
+import { tribForLevel } from './tribulation';
 import { HOA_THAN_LEVEL, KET_DAN_LEVEL, MAX_LEVEL, NGUNG_KHI_MAX, NGUYEN_ANH_LEVEL, TRUC_CO_LEVEL, playerBaseStats } from './formulas';
 
 // ---------- bình cảnh ----------
@@ -23,11 +24,14 @@ export function isPeakLevel(level: number): boolean {
 }
 
 /**
- * Đại viên mãn mà độ kiếp chưa có (Trúc Cơ 19, Kết Đan 23, Nguyên Anh 27: E1-F/E2-D): chưa cho vượt bình cảnh,
- * vì thử thách tâm ma hay Phá Cảnh Đan ở đó chỉ dẫn tới trạng thái không đi tiếp được. Bỏ điều kiện này khi độ kiếp tương ứng vào game.
+ * Đại viên mãn mà độ kiếp chưa mở cho người chơi (cờ `enabled` trong `tribulations.json`: hiện Nguyên Anh 27 và Hóa Thần): chưa cho
+ * vượt bình cảnh, vì thử thách tâm ma hay Phá Cảnh Đan ở đó chỉ dẫn tới trạng thái không đi tiếp được. Trúc Cơ 19 mở cùng Đan Hỏa Kiếp (E2-D);
+ * Kết Đan 23 và Nguyên Anh 27 vẫn chặn tới E3/E4. Bật cờ `enabled` của kiếp là tự bỏ chặn.
  */
 export function peakGated(level: number): boolean {
-  return isPeakLevel(level) && level > NGUNG_KHI_MAX;
+  if (!isPeakLevel(level) || level <= NGUNG_KHI_MAX) return false;
+  const d = tribForLevel(level);
+  return !d || !d.enabled;
 }
 
 export function isBottleneckLevel(level: number): boolean {

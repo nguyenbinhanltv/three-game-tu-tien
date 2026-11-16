@@ -229,6 +229,8 @@ export interface FxMsg {
   n?: number;
   /** Kiếp nào (`tribstart`): id trong `tribulations.json`; thiếu = Trúc Cơ. HUD và cảnh điện ảnh đọc pha từ dữ liệu theo id này. */
   tb?: string;
+  /** Tiến độ ngưng đan 0..100 (`dantran`, của chủ kiếp); -1 = Đan Trận khép lại. Chỉ là lớp hình, luật ở server. */
+  pg?: number;
 }
 
 export interface DmgMsg {
@@ -271,6 +273,8 @@ export interface HazardMsg {
   sd?: number;
   /** Tia cuối của độ kiếp (khóa mệnh, nổ cực lớn): client rung mạnh hơn. */
   big?: boolean;
+  /** Thiên lôi nhuốm lửa (pha lôi hỏa của Đan Hỏa Kiếp): chỉ là lớp màu. */
+  hot?: boolean;
 }
 
 /**
