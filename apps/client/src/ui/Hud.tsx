@@ -3,7 +3,7 @@ import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
@@ -454,6 +454,7 @@ function SkillBar() {
         <ArtifactSlot />
         <BondedSlot />
         <SpiritSlot />
+        <SoulSlot />
       </div>
       {tier.length > 0 && (
         <div className="skill-row tier-row" aria-label={t('ui.skill.tier_row')}>
@@ -696,13 +697,17 @@ function Toasts() {
  */
 function DeathOverlay() {
   const dead = useUI((s) => (s.flags & PF_DEAD) !== 0);
+  const soulFlee = useUI((s) => (s.flags & PF_SOUL) !== 0);
+  const until = useUI((s) => s.soul.until);
+  const now = performance.now();
+  useNow(250);
   if (!dead) return null;
   return (
     <div className="death">
       <Panel tone="paper" size="s" className="death-panel" role="alertdialog" aria-labelledby="death-title">
-        <Header id="death-title" title={t('ui.dead.title')} sub={t('ui.dead.sub')} />
+        <Header id="death-title" title={soulFlee ? t('ui.dead.soul_title') : t('ui.dead.title')} sub={soulFlee ? t('ui.dead.soul_sub') : t('ui.dead.sub')} />
         <PanelBody>
-          <p className="death-line">{t('ui.dead.line')}</p>
+          <p className="death-line">{soulFlee ? t('ui.dead.soul_line', { n: Math.max(0, Math.ceil((until - now) / 1000)) }) : t('ui.dead.line')}</p>
           <Divider />
           <p className="death-hint">{t('ui.dead.hint')}</p>
           <div className="death-actions">
@@ -934,6 +939,48 @@ function SpiritSlot() {
         {!channel && left > 80 && (
           <>
             <span className="skill-sweep" style={{ '--p': Math.min(1, left / SPIRIT_CD_MS) } as CSSProperties} />
+            {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+          </>
+        )}
+      </button>
+    </Tooltip>
+  );
+}
+
+/** Nguyên anh xuất khiếu (E3-K, phím X): hiện từ Nguyên Anh; đồng hồ hồi chiêu, đếm ngược lúc đang xuất khiếu. */
+function SoulSlot() {
+  const level = useUI((s) => s.char?.level ?? 0);
+  const soul = useUI((s) => s.soul);
+  const now = performance.now();
+  useNow(100);
+  if (!soulUnlocked(level)) return null;
+  const out = soul.k === SOUL_SCOUT;
+  const left = Math.max(0, soul.cdUntil - now);
+  const state = out ? 'charging' : left > 80 ? 'cd' : 'ready';
+  const rescue = soul.deathCdUntil - now;
+  const lines = [
+    { text: t('ui.soul.range', { n: SOUL_RANGE, s: SOUL_SCOUT_MS / 1000 }) },
+    { text: t('ui.skill.cd', { n: SOUL_SCOUT_CD_MS / 1000 }) },
+    { text: rescue > 0 ? t('ui.soul.rescue_cd', { n: Math.ceil(rescue / 1000) }) : t('ui.soul.rescue', { n: SOUL_DEATH_CD_MS / 60000 }), tone: rescue > 0 ? ('bad' as const) : undefined },
+  ];
+  return (
+    <Tooltip content={<TipCard title={t('ui.soul.title')} lines={lines} desc={t('ui.soul.desc')} />}>
+      <button
+        type="button"
+        className="skill"
+        data-state={state}
+        data-method="1"
+        aria-label={`${t('ui.soul.title')} (X)`}
+        onPointerDown={(e) => { Game.current?.soulToggle(); blurAfterPointer(e); }}
+      >
+        <span className="skill-icon">
+          <UiIcon id="hud_nguyen_anh" fallback="👻" />
+        </span>
+        <span className="skill-key">X</span>
+        {out && <span className="skill-cd-text">{Math.max(0, Math.ceil((soul.until - now) / 1000))}</span>}
+        {!out && left > 80 && (
+          <>
+            <span className="skill-sweep" style={{ '--p': Math.min(1, left / SOUL_SCOUT_CD_MS) } as CSSProperties} />
             {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
           </>
         )}

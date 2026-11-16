@@ -34,6 +34,8 @@ export const PF_TRIBULATION = 16;
 export const PF_SHIELD = 32;
 /** Đang tỉ thí (chỉ để hiển thị). */
 export const PF_DUEL = 64;
+/** Nguyên anh đã xuất khiếu (E3-K): đang thám thính hoặc vừa thoát ra khi tử vong; hiển thị bóng anh. */
+export const PF_SOUL = 128;
 
 // Trạng thái quái (trường `st`).
 export const MS_IDLE = 0;
@@ -116,6 +118,8 @@ export const C = {
   SPIRIT: 'spi',
   /** Kích hoạt bản mệnh pháp bảo Ngưng Đan Lô (E2-E): không tham số. */
   BONDED: 'bm',
+  /** Nguyên anh xuất khiếu/nhập lại (E3-K, phím X): `SoulCmd`. */
+  SOUL: 'soul',
 } as const;
 
 /** Server → client. */
@@ -154,6 +158,8 @@ export const S = {
   SPIRIT_STATE: 'spis',
   /** Kết quả một lần quét thần thức (`SpiritScanMsg`). */
   SPIRIT_SCAN: 'spic',
+  /** Trạng thái nguyên anh của mình (`SoulStateMsg`, E3-K). */
+  SOUL_STATE: 'souls',
 } as const;
 
 export interface InitMsg {
@@ -255,6 +261,9 @@ export interface FxMsg {
   y?: number;
   z?: number;
   r?: number;
+  /** Điểm xuất phát (thuấn di `blink`): chỉ là lớp hình. */
+  ox?: number;
+  oz?: number;
   /** Thời lượng (giây). */
   d?: number;
   /**

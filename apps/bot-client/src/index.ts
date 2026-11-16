@@ -26,6 +26,8 @@ function point(name: string, defR: number): { x: number; z: number; r: number } 
   return Number.isFinite(x) && Number.isFinite(z) ? { x, z, r } : null;
 }
 
+// --set <id bộ> (hoặc BOT_SET): lúc vào game /gm set <bộ> để đo client với đám đông mặc bộ trang bị (áo mặc thật).
+const SET = arg('set', process.env.BOT_SET ?? '');
 const COUNT = Number(arg('count', '10'));
 const DURATION = Number(arg('duration', '60'));
 const URL = arg('url', defaultServerWs());
@@ -151,6 +153,10 @@ class Bot {
     if (LEVEL > 0 && this.level < LEVEL) {
       setTimeout(() => this.chat(`/gm level ${LEVEL}`), at);
       this.level = LEVEL;
+      at += 1000;
+    }
+    if (SET) {
+      setTimeout(() => this.chat(`/gm set ${SET}`), at);
       at += 1000;
     }
     if (DUNGEON && roomName === ROOM_WORLD) {

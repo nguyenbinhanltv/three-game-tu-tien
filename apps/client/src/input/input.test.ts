@@ -13,11 +13,12 @@ describe('bindings', () => {
     expect(KEY_ACTIONS.Escape).toBe('cancel');
     expect(KEY_ACTIONS.AltRight).toBe('mouseLock');
     expect(KEY_ACTIONS.F3).toBe('debug');
-    expect(HELD.down).toEqual(['KeyX', 'ShiftLeft']);
+    expect(HELD.down).toEqual(['ShiftLeft']);
   });
 
   it('E2-E: V là thần thức, T là bản mệnh pháp bảo, bảng Công pháp chuyển sang K; không phím nào trùng', () => {
     expect(KEY_ACTIONS.KeyV).toBe('spirit');
+    expect(KEY_ACTIONS.KeyX).toBe('soul');
     expect(KEY_ACTIONS.KeyT).toBe('bonded');
     expect(KEY_ACTIONS.KeyK).toBe('method');
     expect(Object.values(KEY_ACTIONS).filter((a) => a === 'method')).toHaveLength(1);

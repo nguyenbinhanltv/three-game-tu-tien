@@ -1026,5 +1026,14 @@
   "mirror.color.1": "Đỏ",
   "mirror.color.2": "Vàng",
   "item.itm_dinh_than_phu.name": "Định Thần Phù",
-  "item.itm_dinh_than_phu.desc": "Bùa ngưng thần chế từ Kính Hoa Sa. Trong 10 giây, giảm 40% sát thương từ bóng gương của Kính Nguyệt Cung."
+  "item.itm_dinh_than_phu.desc": "Bùa ngưng thần chế từ Kính Hoa Sa. Trong 10 giây, giảm 40% sát thương từ bóng gương của Kính Nguyệt Cung.",
+  "sys.soul_locked": "Nguyên anh xuất khiếu mở khi lên Nguyên Anh.",
+  "sys.soul_busy": "Lúc này không thể xuất khiếu.",
+  "sys.soul_combat": "Đang giao chiến, tâm thần bất định, chưa xuất khiếu được.",
+  "sys.soul_cd": "Nguyên anh còn {s} giây mới xuất khiếu lại được.",
+  "sys.soul_out": "Nguyên anh rời khỏi thân xác. Bấm X để nhập lại.",
+  "sys.soul_in": "Nguyên anh nhập lại thân xác.",
+  "sys.soul_time": "Thần niệm cạn, nguyên anh tự nhập lại thân xác.",
+  "sys.soul_escape": "Nguyên anh thoát khiếu cứu mạng! {s} giây nữa sẽ hồi sinh ở nơi an toàn, không mất tu vi.",
+  "sys.respawned_soul": "Nguyên anh nhập lại thân xác ở nơi an toàn."
 }
