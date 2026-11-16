@@ -161,6 +161,8 @@ function isWebGPU(r: THREE.WebGPURenderer): boolean {
  */
 /** Bán kính (m) lấy chấm quái cho bản đồ nhỏ (khung 520 m ⇒ ±260 m, chừa lề). */
 
+/** Trần điểm ảnh nội bộ trên WebGL2 (mọi preset). */
+const WEBGL2_MAX_PIXELS = 4e6;
 const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean; ground: GroundLevel; ao: boolean; lights: boolean; radial: boolean }> = {
   low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false, radial: false },
   medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'medium', ao: true, lights: false, radial: true },
@@ -511,6 +513,7 @@ export class Game {
     this.bindRoom(room);
     this.ents?.dispose();
     this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents.setWarm(this.warmObject);
     this.mapVis?.dispose();
     this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
     this.resetSound(init.room === ROOM_WORLD);
@@ -707,6 +710,29 @@ export class Game {
     }
   }
 
+  /**
+   * Hàng đợi biên dịch trước skin quái/boss (T5): từng nhóm một, lúc rảnh. Không chặn `frame()` và không bỏ vẽ: nhóm tạm
+   * chỉ nằm trong cảnh lúc phần đồng bộ của `compileAsync` chạy, còn quái thật giữ model khối tới khi biên dịch xong
+   * (`MonsterSkins`), nên không có lệnh vẽ nào dùng pipeline WebGPU còn dở (M6-1). `warmMs`: tổng thời gian biên dịch.
+   */
+  warmMs = 0;
+  private warmChain: Promise<void> = Promise.resolve();
+  private warmObject = (obj: THREE.Object3D): Promise<void> => {
+    const run = async () => {
+      if (!this.post || this.disposed) return;
+      await new Promise<void>((r) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(() => r(), { timeout: 2000 }) : setTimeout(r, 50)));
+      if (!this.post || this.disposed) return;
+      const t0 = performance.now();
+      try {
+        await this.post.compileObject(obj);
+      } finally {
+        this.warmMs += performance.now() - t0;
+      }
+    };
+    this.warmChain = this.warmChain.then(run, run);
+    return this.warmChain;
+  };
+
   /** Nạp texture mặt đất ngoài đường găng: terrain dùng màu đỉnh tới khi xong rồi mới đổi sang shader PBR. */
   private async loadGround(): Promise<void> {
     if (new URLSearchParams(location.search).get('ground') === '0') return;
@@ -792,7 +818,7 @@ export class Game {
     this.env.setQuality(get().quality);
     this.scene.add(createLanternHalos(SECT_LANTERNS));
     this.lanterns = new LanternLights(this.scene, SECT_LANTERNS);
-    this.lanterns.setEnabled(q.lights);
+    this.lanterns.setEnabled(q.lights && isWebGPU(this.renderer)); // T6: đèn lồng point light thật chỉ ở WebGPU
     this.lanterns.setIntensityScale(LANTERN_LIGHT[GRADING_DEFAULT] ?? 1);
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
@@ -824,6 +850,7 @@ export class Game {
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents.setWarm(this.warmObject);
     this.mapVis = new MapVis(this.scene, get().room === ROOM_WORLD);
     this.resetSound(get().room === ROOM_WORLD);
     this.ents.camera = this.camera;
@@ -1030,7 +1057,9 @@ export class Game {
     const w = window.innerWidth;
     const h = window.innerHeight;
     const q = QUALITY[get().quality] ?? QUALITY.medium;
-    this.renderer.setPixelRatio(budgetPixelRatio(w, h, q.pixelRatio, q.maxPixels));
+    // WebGL2 nghẽn GPU ở preset Cao (T6: 25–67 fps ở pixelRatio ~2): hạ ngân sách điểm ảnh xuống bằng preset Vừa.
+    const maxPixels = isWebGPU(this.renderer) ? q.maxPixels : Math.min(q.maxPixels, WEBGL2_MAX_PIXELS);
+    this.renderer.setPixelRatio(budgetPixelRatio(w, h, q.pixelRatio, maxPixels));
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
@@ -1619,7 +1648,7 @@ export class Game {
         break;
       case 'bite': {
         e.monsters.get(src)?.model.attack();
-        if (!(QUIET && dst === this.sid) && e.chestOf(dst, _v)) v.burst(_v, 0xff6a5a, 0.7, 0.2);
+        if (!(QUIET && dst === this.sid) && e.chestOf(dst, _v)) v.burst(_v, 0xe8c4a8, 0.6, 0.2, 0.25); // cắn: chỉ viền mờ màu kem, không cầu hồng đặc
         break;
       }
       case 'heal':
@@ -2890,7 +2919,7 @@ export class Game {
     setHeightFog(cfg.heightFog);
     this.env?.setQuality(q);
     if (this.ground) this.terrain.setGround(this.ground, cfg.ground);
-    this.lanterns?.setEnabled(cfg.lights);
+    this.lanterns?.setEnabled(cfg.lights && isWebGPU(this.renderer));
     this.vfx?.particles.setQuality(q);
     this.grass?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
     this.props?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);

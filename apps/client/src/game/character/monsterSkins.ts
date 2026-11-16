@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { color, dot, float, materialColor, mix, normalView, positionViewDirection, pow, saturate, smoothstep, texture, vec3, vec4 } from 'three/tsl';
 import type { MonsterDef } from '@dtl/shared';
+import { MONSTER } from '@dtl/content';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { MonsterModel } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
@@ -114,8 +115,15 @@ export class MonsterSkins {
   private templates = new Map<string, Template | 'loading' | 'failed'>();
   private mats = new Map<string, THREE.MeshStandardNodeMaterial>();
   private disposed = false;
+  /** Template đã nạp nhưng đang biên dịch trước (chưa dùng được, xem `warm`). */
+  private warming = new Map<string, Template>();
   /** Bóng tâm ma (P3-7) là bản sao model người chơi: EntityManager nối vào PlayerSkins (cùng giới/đạo bào của mình). */
   shadow: { create(def: MonsterDef): MonsterView | null; pending(): boolean } | null = null;
+  /**
+   * Biên dịch trước pipeline của skin vừa nạp xong (T5): quái/boss hiện lần đầu không còn khựng 12–33 ms vì 11–14
+   * pipeline mới. Nhận một nhóm tạm (mọi mức LOD đều hiện, không nằm trong cảnh) để `compileAsync` dựng sẵn.
+   */
+  warm: ((obj: THREE.Object3D) => Promise<void>) | null = null;
 
   constructor(
     private cache: AssetCache = assets,
@@ -166,6 +174,7 @@ export class MonsterSkins {
   dispose(): void {
     this.disposed = true;
     for (const t of this.templates.values()) if (typeof t !== 'string') t.handle.release();
+    // Template đang biên dịch: `warmUp(...).finally` thấy `disposed` và tự trả handle.
     this.templates.clear();
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
@@ -181,7 +190,18 @@ export class MonsterSkins {
           handle.release();
           return;
         }
-        this.templates.set(id, templateOf(handle));
+        const tpl = templateOf(handle);
+        if (!this.warm) {
+          this.templates.set(id, tpl);
+          return;
+        }
+        // Giữ 'loading' (quái dùng model khối) tới khi pipeline biên dịch xong: không có mesh thật nào vẽ bằng pipeline còn dở.
+        this.warming.set(id, tpl);
+        void this.warmUp(id, tpl).finally(() => {
+          this.warming.delete(id);
+          if (!this.disposed) this.templates.set(id, tpl);
+          else handle.release();
+        });
       },
       (err) => {
         if (this.disposed) return;
@@ -189,6 +209,34 @@ export class MonsterSkins {
         this.templates.set(id, 'failed');
       },
     );
+  }
+
+  /** Dựng một bản sao tạm cho mỗi loại quái dùng asset `id` (material riêng từng loại), hiện mọi LOD, rồi nhờ renderer biên dịch trước. */
+  private async warmUp(id: string, t: Template): Promise<void> {
+    const warm = this.warm;
+    if (!warm) return;
+    for (const [mid, s] of Object.entries(MONSTER_SKINS)) {
+      const def = MONSTER.get(mid);
+      if (s.asset !== id || !def || this.disposed) continue;
+      const scene = cloneSkinned(t.handle.scene);
+      const mat = this.material(def, s, t);
+      const tmp = new THREE.Group();
+      scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        m.material = mat;
+        m.visible = true;
+        m.frustumCulled = false;
+      });
+      tmp.add(scene);
+      try {
+        await warm(tmp);
+      } catch (e) {
+        console.warn(`[models] biên dịch trước ${mid} lỗi:`, e);
+      } finally {
+        scene.traverse((o) => (o as THREE.SkinnedMesh).skeleton?.dispose());
+      }
+    }
   }
 
   /** Material riêng cho mỗi loại quái (cùng texture của asset, khác màu nhân). */

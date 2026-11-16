@@ -184,7 +184,7 @@ export class Vfx {
   }
 
   /** Vụ nổ sáng nhỏ tại một điểm. */
-  burst(pos: THREE.Vector3, color: number, size = 1.2, dur = 0.28): void {
+  burst(pos: THREE.Vector3, color: number, size = 1.2, dur = 0.28, alpha = 0.9): void {
     // Không che quá 25% màn hình (K-6): vòng chấn động tối đa 2,7 × size, nên size bị chặn theo khoảng cách camera.
     const cam = this.camera as THREE.PerspectiveCamera | null;
     if (cam?.isPerspectiveCamera) size = Math.max(0.15, Math.min(size, maxRadiusFor(cam.position.distanceTo(pos), cam.fov, cam.aspect) / 2.7));
@@ -199,9 +199,9 @@ export class Vfx {
       (k) => {
         const s = size * (0.3 + k * 1.1);
         m.scale.setScalar(s);
-        m.fxOpacity = 0.9 * (1 - k);
+        m.fxOpacity = alpha * (1 - k);
         ring.scale.setScalar(size * (0.5 + k * 2.2));
-        ring.fxOpacity = 0.8 * (1 - k);
+        ring.fxOpacity = Math.min(0.8, alpha * 0.9) * (1 - k);
         m.fxK = ring.fxK = k;
       },
       () => {

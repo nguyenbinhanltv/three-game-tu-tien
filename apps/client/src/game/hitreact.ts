@@ -14,11 +14,11 @@ import { HIT_STOP_CAP, hitStopOf } from './hitjuice';
 export const HIT_STOP_MAX = HIT_STOP_CAP;
 
 // Chớp trúng đòn là màu phẳng không đổ bóng: trắng tinh thì che mất hình nhân vật (art bible mục 5, 8), nên dùng màu kem/vàng dịu
-// (≈ 80% độ sáng) và chớp ngắn (`FLASH_MAX`); vẫn đủ rõ để đọc đòn mà còn thấy dáng người.
-const FLASH_MAT = new THREE.MeshBasicMaterial({ color: 0xd2c8b6 });
+// (≈ 60% độ sáng, hậu kỳ nâng lên cream) và chớp ngắn (`FLASH_MAX`); vẫn đủ rõ để đọc đòn mà còn thấy dáng người.
+const FLASH_MAT = new THREE.MeshBasicMaterial({ color: 0x9c8f76 });
 const FLASH_MAT_CRIT = new THREE.MeshBasicMaterial({ color: 0xd2a850 });
 /** Chớp tối đa bao lâu (giây), kể cả khi khựng lâu hơn. */
-const FLASH_MAX = 0.06;
+const FLASH_MAX = 0.05;
 
 /** Thời gian giật lùi đạt đỉnh, rồi tắt dần theo hàm mũ. */
 const KNOCK_RISE = 0.05;

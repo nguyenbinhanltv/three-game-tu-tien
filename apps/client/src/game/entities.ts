@@ -7,6 +7,7 @@ import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, swordMo
 import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
+import { LABELS, type Label } from './labelBatch';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
 import { type AnimState, type CharacterView, type MonsterView, P2E_OFF, type SkillEvent } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
@@ -130,7 +131,7 @@ export class PlayerVis {
   look: PlayerLook;
   /** Đang dùng model khối tạm trong lúc asset model mới còn nạp. */
   skinPending: boolean;
-  label: THREE.Sprite;
+  label: Label;
   bar = new BarState(1.3, BAR_ALLY);
   x = 0;
   y = 0;
@@ -209,7 +210,7 @@ export class MonVis {
   model: MonsterView;
   /** Đang dùng model khối tạm trong lúc asset model mới còn nạp. */
   skinPending: boolean;
-  label: THREE.Sprite | null = null;
+  label: Label | null = null;
   bar: BarState;
   /** Độ cao tâm thanh trên đầu so với chân (m, đã tính scale). */
   barY: number;
@@ -280,7 +281,7 @@ interface NpcVis {
   model: CharacterView;
   /** Asset NPC đang nạp: đang dùng model khối, nạp xong thì đổi. */
   skinPending: boolean;
-  label: THREE.Sprite;
+  label: Label;
   marker: THREE.Sprite;
   /** Độ cao dấu ! / ? (theo chiều cao model). */
   markerY: number;
@@ -360,7 +361,7 @@ interface LodEntry {
   inView: boolean;
   local: boolean;
   /** Nhãn tên (nếu có) và có phải mục tiêu đang chọn. */
-  label: THREE.Sprite | null;
+  label: Label | null;
   target: boolean;
   /** Nhãn đã có luật ẩn riêng trong khung này (quái: chết, xa 70 m): chỉ ẩn thêm, không bật lại. */
   labelKeep: boolean;
@@ -452,6 +453,7 @@ export class EntityManager {
     this.ring.renderOrder = 3;
     this.group.add(this.ring);
     this.group.add(this.bars.mesh);
+    this.group.add(LABELS.mesh);
   }
 
   /** Gắn model NPC vào cảnh: vị trí, hướng theo dữ liệu, nhãn và dấu nhiệm vụ theo chiều cao model. */
@@ -731,6 +733,7 @@ export class EntityManager {
     }
     // Nhãn NPC không có chỗ nào khác đặt lại (luôn hiện), nên gán theo cờ mỗi khung để hiện lại khi hết cảnh.
     for (const n of this.npcs) n.label.visible = !this.tagsHidden;
+    LABELS.update();
 
     // ----- vòng chọn mục tiêu -----
     const tm = this.monsters.get(targetId);
@@ -813,7 +816,7 @@ export class EntityManager {
     const cx = ce ? ce[12] : local.x;
     const cy = ce ? ce[13] : local.y;
     const cz = ce ? ce[14] : local.z;
-    const add = (model: CharacterView, isLocal: boolean, label: THREE.Sprite | null = null, target = false, labelKeep = false) => {
+    const add = (model: CharacterView, isLocal: boolean, label: Label | null = null, target = false, labelKeep = false) => {
       if (!model.setView && !label) return;
       const r = model.root;
       const h = model.height;
@@ -862,6 +865,11 @@ export class EntityManager {
     }
   }
 
+  /** Nhờ renderer biên dịch trước skin quái vừa nạp (T5). */
+  setWarm(fn: ((obj: THREE.Object3D) => Promise<void>) | null): void {
+    this.skins.warm = fn;
+  }
+
   /** Hộp màn hình (px) của các nhãn đang hiện khung này, để số sát thương tránh đè lên tên. */
   labelBoxes: Box[] = [];
 
@@ -869,7 +877,7 @@ export class EntityManager {
    * Kẹp cỡ nhãn trên màn hình (không phóng khổng lồ khi camera sát) và ẩn nhãn chồng lên nhãn gần hơn
    * (mình và mục tiêu luôn giữ). Duyệt theo thứ tự ưu tiên của `lodList`: mình, rồi gần → xa.
    */
-  private fitLabel(e: { model: CharacterView; label: THREE.Sprite | null; local: boolean; target: boolean; d: number }, cam: THREE.PerspectiveCamera, vw: number, vh: number, boxes: Box[]): void {
+  private fitLabel(e: { model: CharacterView; label: Label | null; local: boolean; target: boolean; d: number }, cam: THREE.PerspectiveCamera, vw: number, vh: number, boxes: Box[]): void {
     const sp = e.label!;
     const ud = sp.userData as { w0?: number; h0?: number };
     if (ud.w0 === undefined) {
@@ -1051,6 +1059,7 @@ export class EntityManager {
     this.markerDone.dispose();
     this.markerWait.dispose();
     this.bars.dispose();
+    LABELS.mesh.removeFromParent();
     this.group.removeFromParent();
   }
 }
