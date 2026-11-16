@@ -1357,7 +1357,7 @@ a small elegant three-legged bronze alchemy cauldron about 40 centimeters tall, 
 
 **Ghi chú pipeline:** Dựng cùng quy trình `prop_tu_kim_ho_lo`; hiển thị lơ lửng bên hông người chơi (`artifactVis.ts`).
 
-**Import:** `prop/prop_ngung_dan_lo/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_ngung_dan_lo/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `weapon`.
+**Import:** `prop/prop_ngung_dan_lo/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_ngung_dan_lo/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `artifact`.
 
 ### `prop_kiem_liet_mach` · Liệt Mạch Kiếm
 
@@ -1432,7 +1432,7 @@ a small round hand-mirror artifact about 35 centimeters wide, a polished pale si
 
 **Ghi chú pipeline:** Hiển thị lơ lửng sau lưng.
 
-**Import:** `prop/prop_anh_ngoc_kinh/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_anh_ngoc_kinh/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `weapon`.
+**Import:** `prop/prop_anh_ngoc_kinh/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_anh_ngoc_kinh/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `artifact`.
 
 ### `prop_kiem_kinh_quang` · Kính Quang Kiếm
 
@@ -1507,7 +1507,7 @@ a small floating pearl artifact about 25 centimeters in diameter, a luminous pal
 
 **Ghi chú pipeline:** Ba vòng là mesh rời (xoay thủ tục), một draw call gộp.
 
-**Import:** `prop/prop_than_nien_chau/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_than_nien_chau/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `weapon`.
+**Import:** `prop/prop_than_nien_chau/tripo/raw_v01.glb` (dựng hình), `lowpoly_v01.glb` (nếu Retopo), `rig_v01.glb` (nếu có xương) → `assets/source/prop/prop_than_nien_chau/meta.json` (`import.kind: "tripo"`, `import.source`, `size`, `yaw`, `post: (không)`) → `pnpm assets:build` → `pnpm assets:validate` (ngân sách tam giác/texture) → khai báo trong `assets/budgets.json`/lớp ngân sách `artifact`.
 
 ### `prop_kiem_tinh_khuyet` · Tinh Khuyết Kiếm
 

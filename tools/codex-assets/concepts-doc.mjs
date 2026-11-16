@@ -54,7 +54,7 @@ const pipeline = (id, a) => {
   const post = { quadruped: 'anim_quadruped.py', biped: 'anim_biped_extra.py', human: 'anim_human_base (retarget)', serpent: 'anim_serpent.py', float: '(không)', none: '(không)' }[a.rig];
   return `\`${d}/${id}/tripo/raw_v01.glb\` (dựng hình), \`lowpoly_v01.glb\` (nếu Retopo), \`rig_v01.glb\` (nếu có xương) → \`assets/source/${d}/${id}/meta.json\` (\`import.kind: "tripo"\`, \`import.source\`, \`size\`, \`yaw\`, \`post: ${post}\`) → \`pnpm assets:build\` → \`pnpm assets:validate\` (ngân sách tam giác/texture) → khai báo trong \`assets/budgets.json\`/lớp ngân sách \`${budgetClass(a)}\`.`;
 };
-const budgetClass = (a) => ({ elite: 'monster', mon: 'monster', boss: 'boss', grass: 'prop', env: 'prop', gear: a.id?.includes('lo') ? 'artifact' : 'weapon' }[a.cat] ?? 'prop');
+const budgetClass = (a) => a.budget ?? ({ elite: 'monster', mon: 'monster', boss: 'boss', grass: 'prop', env: 'prop', gear: 'weapon' }[a.cat] ?? 'prop');
 
 const ids = Object.keys(data);
 const sorted = [...ids].sort((x, y) => data[x].prio - data[y].prio || (data[x].map > data[y].map ? 1 : -1));
