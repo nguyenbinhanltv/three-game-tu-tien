@@ -2,7 +2,7 @@
 // `TribSystem` gọi `enter`/`tick`/`exit` của cơ chế đó. Các cơ chế dưới đây là CHỖ TRỐNG có chủ: chưa làm gì ngoài ghi log một lần,
 // để E2-D (Kết Đan), E3 (Nguyên Anh), E4 (Hóa Thần) cài thật bằng `registerMechanic` mà không phải đụng lõi.
 //
-//   dan_tran    Kết Đan, pha Ngưng đan: vòng Đan Trận 4 m, thanh ngưng đan 0→100 trong 20 s khi đứng yên trong vòng, ra khỏi vòng tụt 3%/s.
+//   dan_tran    Kết Đan, pha Ngưng đan: vòng Đan Trận 4 m, thanh ngưng đan 0→100 trong 14 s (E2-J) khi đứng yên trong vòng, ra khỏi vòng tụt 3%/s.
 //   tia_xich    Nguyên Anh, pha Lôi: tia xích nối giữa hai tia.
 //   xuat_khieu  Nguyên Anh, pha Hỏa: phím X cho nguyên anh rời thân 6 s (hồi 20 s), thân đứng yên chịu lửa, nguyên anh không chịu lửa.
 //   tam_canh    Nguyên Anh, pha Tâm ma: thanh tâm cảnh (giảm khi bị đánh trúng, hồi khi đánh trúng); Tâm Ma Ảnh dùng 2 chiêu của người chơi.

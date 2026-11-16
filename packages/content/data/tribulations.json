@@ -59,18 +59,18 @@
       "extraDist": { "min": 5, "max": 14 },
       "guard": { "r": 20 },
       "phases": [
-        { "id": "loi_van_tu", "kind": "lei", "end": 12, "gap": 2.6, "aimPct": 0.24, "extra": 2, "extraR": 3.6, "extraPct": 0.2 },
+        { "id": "loi_van_tu", "kind": "lei", "end": 12, "gap": 2.6, "aimPct": 0.2, "extra": 2, "extraR": 3.6, "extraPct": 0.2 },
         {
           "id": "ngung_dan",
           "kind": "lei",
           "end": 40,
-          "gap": 2.4,
-          "aimPct": 0.2,
+          "gap": 2.8,
+          "aimPct": 0.17,
           "extra": 1,
           "extraR": 3.6,
           "extraPct": 0.18,
           "mechanic": "dan_tran",
-          "danTran": { "r": 4, "fill": 20, "drain": 3, "still": 1.2, "sweepEvery": 4.5, "sweepLen": 18, "sweepW": 3, "sweepWarn": 0.9, "sweepPct": 0.26 },
+          "danTran": { "r": 4, "fill": 14, "drain": 3, "still": 1.2, "sweepEvery": 5.5, "sweepLen": 18, "sweepW": 3, "sweepWarn": 0.9, "sweepPct": 0.22 },
           "shadows": { "every": 7, "count": 3, "levelDelta": 0, "hpFrac": 0.4, "maxAlive": 6 }
         },
         {
@@ -79,7 +79,7 @@
           "hot": true,
           "end": 55,
           "gap": 0.9,
-          "aimPct": 0.16,
+          "aimPct": 0.13,
           "extra": 2,
           "extraR": 3.4,
           "extraPct": 0.1,
