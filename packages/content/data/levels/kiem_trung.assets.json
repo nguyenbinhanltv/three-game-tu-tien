@@ -1,0 +1,8 @@
+{
+  "mood": "default",
+  "glb": ["arch_sect"],
+  "ground": { "set": "terrain", "mask": "manifest" },
+  "music": ["dungeon", "dungeon_boss"],
+  "features": { "sect": true, "portals": true, "lanterns": true, "lake": true, "clouds": true, "grass": true, "trees": "scatter", "beacons": false, "vegetation": true },
+  "minimap": "van_lam"
+}

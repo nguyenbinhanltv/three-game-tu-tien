@@ -1,4 +1,5 @@
-import { FOREST, featureWeight, heightAt, KIEM_TRUNG, LAKE, SECT, VALLEY, WATER_Y } from '@dtl/shared';
+import { FOREST, featureWeight, KIEM_TRUNG, LAKE, SECT, VALLEY, WATER_Y } from '@dtl/shared';
+import { heightAt } from './levelCtx';
 import type { Particles } from '../render/vfx/particles';
 
 /**

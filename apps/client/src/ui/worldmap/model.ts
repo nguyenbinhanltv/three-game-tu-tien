@@ -1,5 +1,6 @@
 // Bản đồ lớn (M-4): dữ liệu vùng, bộ lọc lớp, phép chiếu kéo/zoom. Phần thuần, không đụng DOM để test được.
-import { inPoly, levelSpawns, type LevelDef, PLAY_BOUNDS, type ZoneDef } from '@dtl/shared';
+import { inPoly, levelSpawns, type LevelDef, type ZoneDef } from '@dtl/shared';
+import { levelTerrain } from '../../game/levelCtx';
 import { MONSTER } from '@dtl/content';
 
 export type Layer = 'npc' | 'quest' | 'mon' | 'gather' | 'tele';
@@ -102,16 +103,16 @@ export interface MapView {
   scale: number;
 }
 
-/** Toàn vùng chơi (PLAY_BOUNDS) vừa khung; thu nhỏ tối thiểu là mức này, phóng to tối đa ~2,2 px/m. */
+/** Toàn vùng chơi (levelTerrain().playBounds) vừa khung; thu nhỏ tối thiểu là mức này, phóng to tối đa ~2,2 px/m. */
 export function fitScale(size: { w: number; h: number }): number {
-  const spanX = PLAY_BOUNDS.x1 - PLAY_BOUNDS.x0;
-  const spanZ = PLAY_BOUNDS.z1 - PLAY_BOUNDS.z0;
+  const spanX = levelTerrain().playBounds.x1 - levelTerrain().playBounds.x0;
+  const spanZ = levelTerrain().playBounds.z1 - levelTerrain().playBounds.z0;
   return Math.min(size.w / spanX, size.h / spanZ);
 }
 export const MAX_SCALE = 2.2;
 
 export function fitView(size: { w: number; h: number }): MapView {
-  return { cx: (PLAY_BOUNDS.x0 + PLAY_BOUNDS.x1) / 2, cz: (PLAY_BOUNDS.z0 + PLAY_BOUNDS.z1) / 2, scale: fitScale(size) };
+  return { cx: (levelTerrain().playBounds.x0 + levelTerrain().playBounds.x1) / 2, cz: (levelTerrain().playBounds.z0 + levelTerrain().playBounds.z1) / 2, scale: fitScale(size) };
 }
 
 /** Kẹp tỉ lệ và tâm để không kéo ra khỏi vùng chơi quá nửa khung. */
@@ -120,7 +121,7 @@ export function clampView(v: MapView, size: { w: number; h: number }): MapView {
   const halfW = size.w / scale / 2;
   const halfH = size.h / scale / 2;
   const clampAxis = (c: number, lo: number, hi: number, half: number) => (hi - lo <= half * 2 ? (lo + hi) / 2 : Math.min(hi - half, Math.max(lo + half, c)));
-  return { scale, cx: clampAxis(v.cx, PLAY_BOUNDS.x0, PLAY_BOUNDS.x1, halfW), cz: clampAxis(v.cz, PLAY_BOUNDS.z0, PLAY_BOUNDS.z1, halfH) };
+  return { scale, cx: clampAxis(v.cx, levelTerrain().playBounds.x0, levelTerrain().playBounds.x1, halfW), cz: clampAxis(v.cz, levelTerrain().playBounds.z0, levelTerrain().playBounds.z1, halfH) };
 }
 
 export function worldToScreen(v: MapView, size: { w: number; h: number }, x: number, z: number): { x: number; y: number } {

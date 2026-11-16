@@ -10,8 +10,18 @@ export interface GroundTextures {
   normal: THREE.DataArrayTexture;
   /** R đường mòn, G sân lát đá, B cát, A nhiễu vĩ mô (groundMask.ts). */
   mask: THREE.Texture;
+  /** Loại mặt nạ đang dùng (`manifest`: vẽ riêng cho Vân Lam; `neutral`: phẳng cho level chưa có mặt nạ riêng). */
+  maskKind: GroundMaskKind;
+  /**
+   * Đổi mặt nạ (E1-D, đổi level) theo hai pha, vì mặt nạ cũ còn được địa hình cũ vẽ cho tới khi level cũ bị gỡ: `prepareMask` nạp mặt nạ mới
+   * (chưa đụng cái cũ) và trả hàm `commit`; gọi `commit()` sau khi gỡ địa hình cũ mới giải phóng mặt nạ cũ rồi dựng `Terrain` mới + `setGround`.
+   * Giải phóng mặt nạ khi cảnh còn dùng thì WebGPU báo "ImageBitmap has been detached".
+   */
+  prepareMask(kind: GroundMaskKind): Promise<() => void>;
   dispose(): void;
 }
+
+export type GroundMaskKind = 'manifest' | 'neutral';
 
 interface Manifest {
   size: number;
@@ -28,6 +38,44 @@ async function decode(url: string, size: number): Promise<Uint8ClampedArray> {
   g.drawImage(bmp, 0, 0, size, size);
   bmp.close();
   return g.getImageData(0, 0, size, size).data;
+}
+
+interface MaskRec {
+  tex: THREE.Texture;
+  dispose(): void;
+}
+
+/** Mặt nạ vùng: `manifest` = ảnh tính sẵn lúc build; `neutral` = 1 texel (không đường mòn/sân lát/cát, nhiễu vĩ mô trung bình). */
+async function makeMask(base: string, manifest: Manifest, kind: GroundMaskKind): Promise<MaskRec> {
+  if (kind === 'neutral') {
+    const t = new THREE.DataTexture(new Uint8Array([0, 0, 0, 128]), 1, 1, THREE.RGBAFormat);
+    t.colorSpace = THREE.NoColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.magFilter = t.minFilter = THREE.LinearFilter;
+    t.generateMipmaps = false;
+    t.needsUpdate = true;
+    return { tex: t, dispose: () => t.dispose() };
+  }
+  // Mặt nạ tính sẵn lúc build (groundMask.ts). Dùng thẳng ImageBitmap (không qua canvas) để không bị nhân alpha vào RGB.
+  const maskRes = await fetch(`${base}terrain/${manifest.mask}`);
+  if (!maskRes.ok) throw new Error(`mask: ${maskRes.status}`);
+  const maskBmp = await createImageBitmap(await maskRes.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+  const mask = new THREE.Texture(maskBmp);
+  mask.format = THREE.RGBAFormat;
+  mask.colorSpace = THREE.NoColorSpace;
+  mask.flipY = false;
+  mask.premultiplyAlpha = false;
+  mask.wrapS = mask.wrapT = THREE.RepeatWrapping;
+  mask.magFilter = mask.minFilter = THREE.LinearFilter;
+  mask.generateMipmaps = false;
+  mask.needsUpdate = true;
+  return {
+    tex: mask,
+    dispose() {
+      mask.dispose();
+      maskBmp.close();
+    },
+  };
 }
 
 function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: boolean): THREE.DataArrayTexture {
@@ -49,7 +97,7 @@ function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: bool
  * một (nhường khung hình giữa các lớp) rồi ghép vào 2 texture mảng, nên shader địa hình chỉ tốn 2 slot
  * texture. VRAM: albedo 8 × 1024² × 4 B + mip ≈ 43 MB, pháp tuyến 8 × 512² ≈ 11 MB.
  */
-export async function loadGroundTextures(base: string, signal?: { aborted: boolean }): Promise<GroundTextures> {
+export async function loadGroundTextures(base: string, signal?: { aborted: boolean }, kind: GroundMaskKind = 'manifest'): Promise<GroundTextures> {
   const manifest = (await (await fetch(`${base}terrain/manifest.json`)).json()) as Manifest;
   const size = manifest.size;
   // Pháp tuyến/độ nhám tải ở nửa độ phân giải (chi tiết vi mô mềm hơn chút, đổi lấy ~32 MB VRAM: ngân sách texture 512 MB).
@@ -66,30 +114,29 @@ export async function loadGroundTextures(base: string, signal?: { aborted: boole
     if (signal?.aborted) throw new Error('aborted');
     await new Promise((r) => setTimeout(r, 0));
   }
-  // Mặt nạ tính sẵn lúc build (groundMask.ts). Dùng thẳng ImageBitmap (không qua canvas) để không bị nhân alpha vào RGB.
-  const maskRes = await fetch(`${base}terrain/${manifest.mask}`);
-  if (!maskRes.ok) throw new Error(`mask: ${maskRes.status}`);
-  const maskBmp = await createImageBitmap(await maskRes.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
-  const mask = new THREE.Texture(maskBmp);
-  mask.format = THREE.RGBAFormat;
-  mask.colorSpace = THREE.NoColorSpace;
-  mask.flipY = false;
-  mask.premultiplyAlpha = false;
-  mask.wrapS = mask.wrapT = THREE.RepeatWrapping;
-  mask.magFilter = mask.minFilter = THREE.LinearFilter;
-  mask.generateMipmaps = false;
-  mask.needsUpdate = true;
+  let cur = await makeMask(base, manifest, kind);
   const tex = arrayTexture(albedo, size, manifest.layers.length, true);
   const nor = arrayTexture(normal, nsize, manifest.layers.length, false);
-  return {
+  const out: GroundTextures = {
     albedo: tex,
     normal: nor,
-    mask,
+    mask: cur.tex,
+    maskKind: kind,
+    async prepareMask(next) {
+      if (next === out.maskKind) return () => undefined;
+      const fresh = await makeMask(base, manifest, next);
+      return () => {
+        cur.dispose();
+        cur = fresh;
+        out.mask = fresh.tex;
+        out.maskKind = next;
+      };
+    },
     dispose() {
       tex.dispose();
       nor.dispose();
-      mask.dispose();
-      maskBmp.close();
+      cur.dispose();
     },
   };
+  return out;
 }

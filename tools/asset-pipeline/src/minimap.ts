@@ -4,7 +4,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import { fbm, hash01, heightAt, inLakeWater, inPoly, PLAY_WALL, playDist, SECT, WATER_Y, PORTAL_POS, mulberry32 } from '../../../packages/shared/src/index';
+import { fbm, hash01, inPoly, SECT, PORTAL_POS, mulberry32, terrainOf } from '../../../packages/shared/src/index';
 import { LEVELS } from '../../../packages/content/src/index';
 import { ROOT } from './config.js';
 
@@ -41,11 +41,23 @@ export const TRAILS: [number, number][][] = [
   [[2048, 2088], [1860, 2150], [1700, 2215]],
 ];
 
-export function buildMinimapPixels(): { data: Uint8ClampedArray; meta: MinimapMeta } {
+/** Dựng nền bản đồ cổ của một level (E1-D: `--level <id>`). Mặc định Vân Lam, kết quả không đổi. */
+export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArray; meta: MinimapMeta } {
+  const terrain = terrainOf(levelId);
+  const vanLam = terrain.id === 'van_lam';
+  const heightAt = terrain.heightAt;
+  const inLakeWater = terrain.inWater;
+  const WATER_Y = terrain.def.water?.y ?? -Infinity;
+  const PLAY_WALL = terrain.playWall;
+  const playDist = terrain.playDist;
+  const play = terrain.def.play;
+  const cx = play?.cx ?? terrain.size / 2;
+  const cz = play?.cz ?? terrain.size / 2;
+  const half = play ? play.half + 100 : terrain.size / 2;
   const N = MAP_PX;
-  const x0 = SECT.x - MAP_HALF;
-  const z0 = SECT.z - MAP_HALF;
-  const size = MAP_HALF * 2;
+  const x0 = cx - half;
+  const z0 = cz - half;
+  const size = half * 2;
   const step = size / N;
   const H = new Float32Array((N + 2) * (N + 2));
   const hAt = (i: number, j: number) => H[(j + 1) * (N + 2) + (i + 1)];
@@ -83,7 +95,7 @@ export function buildMinimapPixels(): { data: Uint8ClampedArray; meta: MinimapMe
   }
 
   // 2) vùng: màu lót mờ
-  const zones = LEVELS.van_lam.zones ?? [];
+  const zones = LEVELS[levelId]?.zones ?? [];
   for (const zn of zones) {
     const c = hex(zn.color);
     let ax = Infinity, bx = -Infinity, az = Infinity, bz = -Infinity;
@@ -167,7 +179,7 @@ export function buildMinimapPixels(): { data: Uint8ClampedArray; meta: MinimapMe
   };
   for (const zn of zones) stroke([...zn.poly, zn.poly[0]], 1.5, INK, 0.8, 14, 8);
   // Đường mòn: bezier bậc hai giữa các điểm, nét chấm nâu.
-  for (const tr of TRAILS) {
+  for (const tr of vanLam ? TRAILS : []) {
     const pts: [number, number][] = [];
     for (let s = 0; s + 1 < tr.length; s++) {
       const [a, b] = [tr[s], tr[s + 1]];
@@ -184,8 +196,10 @@ export function buildMinimapPixels(): { data: Uint8ClampedArray; meta: MinimapMe
     for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.1) pts.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r]);
     stroke(pts, 1.2, INK, 0.7, 30, 6);
   };
-  ring(SECT.x, SECT.z, 95);
-  ring(PORTAL_POS.x, PORTAL_POS.z, 40);
+  if (vanLam) {
+    ring(SECT.x, SECT.z, 95);
+    ring(PORTAL_POS.x, PORTAL_POS.z, 40);
+  }
 
   // 7) viền giấy cũ
   const data = new Uint8ClampedArray(N * N * 4);
@@ -206,12 +220,14 @@ export function buildMinimapPixels(): { data: Uint8ClampedArray; meta: MinimapMe
 
 async function main(): Promise<void> {
   const t0 = Date.now();
-  const { data, meta } = buildMinimapPixels();
+  const li = process.argv.indexOf('--level');
+  const levelId = li > 0 ? process.argv[li + 1] : 'van_lam';
+  const { data, meta } = buildMinimapPixels(levelId);
   const dir = path.join(ROOT, 'apps/client/public/map');
   await mkdir(dir, { recursive: true });
   const webp = await sharp(Buffer.from(data.buffer), { raw: { width: meta.px, height: meta.px, channels: 4 } }).webp({ quality: 82, effort: 5 }).toBuffer();
-  await writeFile(path.join(dir, 'van_lam.webp'), webp);
-  await writeFile(path.join(dir, 'van_lam.json'), JSON.stringify(meta) + '\n');
+  await writeFile(path.join(dir, `${levelId}.webp`), webp);
+  await writeFile(path.join(dir, `${levelId}.json`), JSON.stringify(meta) + '\n');
   console.log(`minimap: ${(webp.length / 1024).toFixed(0)} KB, ${meta.px}px / ${meta.size} m, ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 }
 

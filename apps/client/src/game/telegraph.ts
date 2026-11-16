@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
-import { groundAt, type HazardMsg } from '@dtl/shared';
+import { type HazardMsg } from '@dtl/shared';
+import { groundAt } from './levelCtx';
 import { SIGIL_CONE, SIGIL_RECT } from '../render/vfx/sigil';
 import { hazardFlash, hazardStyle } from '../render/vfx/phases';
 import type { Vfx } from './vfx';

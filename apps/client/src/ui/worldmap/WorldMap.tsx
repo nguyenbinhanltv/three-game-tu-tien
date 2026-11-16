@@ -1,10 +1,11 @@
 import { type MouseEvent as RMouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { PORTAL_POS, SECT, TELE_CAST_MS, TELE_PADS } from '@dtl/shared';
+import { type LevelDef, PORTAL_POS, SECT, TELE_CAST_MS, TELE_PADS } from '@dtl/shared';
 import { itemName, LEVELS, monsterName, NPCS, QUESTS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { Button, Divider, PanelWindow, ProgressBar, TipCard } from '../kit';
 import { ancientMap, mipFor } from '../minimap/ancient';
+import { levelAssets, levelTerrain } from '../../game/levelCtx';
 import { questOverlay } from '../minimap/marks';
 import { difficultyTone, formatCountdown, npcFunction, npcQuestMark } from '../minimap/model';
 import { bossSprite, eliteSprite, flagSprite, mateSprite, nodeSprite, npcSprite, selfSprite, teleSprite } from '../minimap/sprites';
@@ -29,9 +30,18 @@ interface Hit {
   act?: () => void;
 }
 
-const LEVEL = LEVELS.van_lam;
-const SPOTS = campSpots(LEVEL);
-const SOLO = soloSpawns(LEVEL);
+const EMPTY_LEVEL: LevelDef = { id: '', spawns: [], nodes: [] };
+const LEVEL_CACHE = new Map<string, { def: LevelDef; spots: ReturnType<typeof campSpots>; solo: ReturnType<typeof soloSpawns> }>();
+/** Dữ liệu bản đồ lớn của một level (cache; level chưa có LevelDef thì rỗng). */
+function levelData(id: string) {
+  let d = LEVEL_CACHE.get(id);
+  if (!d) {
+    const def = LEVELS[id] ?? EMPTY_LEVEL;
+    d = { def, spots: campSpots(def), solo: soloSpawns(def) };
+    LEVEL_CACHE.set(id, d);
+  }
+  return d;
+}
 
 /** Chữ mực có viền giấy (halo) để đọc được trên mọi nền, kể cả khi đè lên nét đồng mức. */
 function haloText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, fill: string, size: number, weight = 700): void {
@@ -60,7 +70,8 @@ export function WorldMap() {
   const marks = useUI((s) => s.marks);
   const myLv = useUI((s) => s.char?.level ?? 1);
   const zone = useUI((s) => s.zone);
-  const infos = useMemo(() => zoneInfos(LEVEL), []);
+  const level = useUI((s) => s.level);
+  const infos = useMemo(() => zoneInfos(levelData(level).def), [level]);
   const ownMark = marks.find((m) => m.own);
   const [now, setNow] = useState(performance.now());
 
@@ -102,7 +113,8 @@ export function WorldMap() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.fillStyle = '#2a2218';
       ctx.fillRect(0, 0, W, H);
-      const map = ancientMap();
+      const LV = levelData(st.level);
+      const map = ancientMap(levelAssets(st.level).minimap);
       ctx.save();
       ctx.translate(W / 2, H / 2);
       ctx.scale(v.scale, v.scale);
@@ -110,7 +122,7 @@ export function WorldMap() {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       if (map) ctx.drawImage(mipFor(map, v.scale * dpr), map.meta.x0, map.meta.z0, map.meta.size, map.meta.size);
-      else if (g.minimap) ctx.drawImage(g.minimap, 0, 0, 4096, 4096);
+      else if (g.minimap) ctx.drawImage(g.minimap, 0, 0, levelTerrain().size, levelTerrain().size);
       ctx.restore();
       const P = (x: number, z: number) => worldToScreen(v, SIZE, x, z);
       const inView = (p: { x: number; y: number }, m = 14) => p.x > -m && p.y > -m && p.x < W + m && p.y < H + m;
@@ -182,7 +194,7 @@ export function WorldMap() {
 
       // Thu thập: điểm hái là vòng mờ + lá ở tâm.
       if (L.gather) {
-        for (const n of LEVEL.nodes) {
+        for (const n of LV.def.nodes) {
           const c = P(n.x, n.z);
           if (!inView(c, n.radius * v.scale + 10)) continue;
           ctx.beginPath();
@@ -196,7 +208,7 @@ export function WorldMap() {
       // Quái: mỗi bãi một chấm (màu theo độ khó so cấp mình), tinh anh sọ, boss ngôi sao.
       if (L.mon) {
         const dot = Math.max(2, Math.min(4.5, v.scale * 6));
-        for (const sp of SPOTS) {
+        for (const sp of LV.spots) {
           const c = P(sp.x, sp.z);
           if (!inView(c)) continue;
           const tone = difficultyTone(sp.lvMax, lv);
@@ -209,7 +221,7 @@ export function WorldMap() {
           ctx.stroke();
           out.push({ x: c.x, y: c.y, r: dot + 2, title: monsterName(sp.mon), sub: sp.lvMin === sp.lvMax ? t('ui.mm.level', { n: sp.lvMin }) : t('ui.wm.level_range', { a: sp.lvMin, b: sp.lvMax }) });
         }
-        for (const s of SOLO) {
+        for (const s of LV.solo) {
           const c = P(s.x, s.z);
           if (!inView(c)) continue;
           put(s.boss ? bossSprite(false, dpr) : eliteSprite(false, dpr), c.x, c.y);
