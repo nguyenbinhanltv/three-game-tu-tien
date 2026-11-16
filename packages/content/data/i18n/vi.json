@@ -280,6 +280,8 @@
   "sys.kicked_dup": "Tài khoản vừa đăng nhập ở nơi khác.",
   "sys.cast_cancel": "Thi triển bị gián đoạn.",
   "sys.chant_broken": "{name} phá chú của {boss}!",
+  "sys.pull_hit": "Bị hút về phía quái, chạy ra khỏi vùng nổ!",
+  "sys.pull_resist": "Ngự kiếm trên không, không bị hút.",
   "sys.chant_guarded": "{boss} còn đang hộ chú, chưa thể phá chú.",
   "sys.posture_broken": "{boss} mất thế, lộ sơ hở.",
   "sys.dead": "Ngươi đang trọng thương.",

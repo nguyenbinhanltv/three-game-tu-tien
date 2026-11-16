@@ -348,6 +348,24 @@ function checkAi(m: MonsterDef, ai: MonsterAi, attackCd: number, at: string) {
     // Trần 5: đòn tự bạo cuối trận của Thôn Mạch (E2-C) cần ~65% máu tối đa người cấp 19.
     if (!(ch.mul > 0 && ch.mul <= 5)) err(`${id}: chant.mul phải trong (0, 5]`);
     if (!(ch.r > 0 && ch.r <= 20)) err(`${id}: chant.r phải trong (0, 20]`);
+    const pu = ch.pull;
+    if (pu) {
+      if (!(pu.range >= ch.r && pu.range <= 30)) err(`${id}: chant.pull.range phải trong [chant.r; 30] m`);
+      if (!(pu.delay >= 0.9 && pu.delay <= 3)) err(`${id}: chant.pull.delay phải trong [0,9; 3] giây (đủ thời gian báo)`);
+      if (!(pu.dur >= 0.4 && pu.dur <= 2)) err(`${id}: chant.pull.dur phải trong [0,4; 2] giây`);
+      if (!(pu.stop >= 1 && pu.stop <= ch.r)) err(`${id}: chant.pull.stop phải trong [1; chant.r] m (kéo vào trong vùng nổ)`);
+      if (!(ch.cd > ch.cast + pu.delay + pu.dur + ch.delay + ch.stun)) err(`${id}: chant.cd phải lớn hơn cast + pull.delay + pull.dur + delay + stun`);
+    }
+  }
+  const dp = m.deathPool;
+  if (dp) {
+    if (m.boss) err(`${id}: vũng độc khi chết chỉ cho quái thường/tinh anh`);
+    if (!KINDS.includes(dp.kind)) err(`${id}: deathPool.kind không hợp lệ`);
+    if (!(dp.r >= 1 && dp.r <= 6)) err(`${id}: deathPool.r phải trong [1; 6] m`);
+    if (!(dp.delay >= 0.9 && dp.delay <= 3)) err(`${id}: deathPool.delay phải trong [0,9; 3] giây (đủ thời gian báo)`);
+    if (!(dp.dur >= 2 && dp.dur <= 10)) err(`${id}: deathPool.dur phải trong [2; 10] giây`);
+    if (!(dp.tick >= 0.5 && dp.tick <= 2)) err(`${id}: deathPool.tick phải trong [0,5; 2] giây`);
+    if (!(dp.mul > 0 && dp.mul <= 0.5)) err(`${id}: deathPool.mul phải trong (0; 0,5] (sát thương nhỏ mỗi nhịp)`);
   }
   const sl = ai.slam;
   if (sl) {
