@@ -305,6 +305,8 @@ interface NpcVis {
   /** Người đồng hành hộ tống (E2-H): đích từ server, vẽ trượt tới đó. */
   tx?: number;
   tz?: number;
+  /** Id NPC mượn model (người đồng hành; `id` là id tuyến hộ tống). */
+  npc?: string;
 }
 
 function makeMarker(ch: string, color: string): THREE.Texture {
@@ -509,8 +511,8 @@ export class EntityManager {
       const label = makeLabel(t(`npc.${m.npc}.name`), '#ffe9a8', t(`npc.${m.npc}.title`), '#e8d6a0');
       const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
       marker.visible = false;
-      e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcSkins.create(m.npc, '#b89a6a'), skinPending: false, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
-      this.npcSkins.addWalk(e.model, m.npc);
+      e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcModel(m.npc, '#b89a6a'), skinPending: this.npcPending(m.npc), npc: m.npc, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
+      if (!NPC_SKINS[m.npc]?.look) this.npcSkins.addWalk(e.model, m.npc);
       this.placeNpc(e);
       this.escorts.set(m.id, e);
     }
@@ -826,6 +828,19 @@ export class EntityManager {
 
     // ----- người đồng hành hộ tống: trượt tới điểm server báo, bước đi theo quãng đã trượt -----
     for (const e of this.escorts.values()) {
+      // Model nạp chưa xong lúc dựng (vào Vân Hải khi đang hộ tống, kết nối lại): đổi sang model thật khi xong, như NPC đứng.
+      if (e.skinPending && e.npc && !this.npcPending(e.npc)) {
+        e.skinPending = false;
+        const next = this.npcModel(e.npc, e.color);
+        if (next.constructor !== e.model.constructor) {
+          e.model.root.remove(e.label, e.marker);
+          e.model.root.removeFromParent();
+          e.model.dispose();
+          e.model = next;
+          if (!NPC_SKINS[e.npc]?.look) this.npcSkins.addWalk(e.model, e.npc);
+          this.placeNpc(e);
+        } else next.dispose();
+      }
       const dx = (e.tx ?? e.x) - e.x;
       const dz = (e.tz ?? e.z) - e.z;
       const d = Math.hypot(dx, dz);

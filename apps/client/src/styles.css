@@ -1045,6 +1045,9 @@ kbd {
   flex: 1;
   min-width: 0;
 }
+.debug-row.wrap label {
+  flex: 1 1 150px;
+}
 .debug-row label span {
   flex: 0 0 76px;
   color: rgba(255, 255, 255, 0.6);

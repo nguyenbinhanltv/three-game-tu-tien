@@ -1,0 +1,17 @@
+{
+ "lamChieuDung": {
+  "npcText": "“Ngươi tới tìm đảo, hay đảo tìm ngươi? Thôi, trả lời sau. Giúp ta trước.”\n Gương Quay Mặt\nGương trên Kính Hồ Đảo đều quay mặt về phía Kính Nguyệt Cung, như hoa hướng nắng. Phá mười sáu Kính Linh, rồi nhặt tám Kính Hoa Sa vụn ra từ gương.\n○ Hạ Kính Linh ×16\n○ Hái Kính Hoa Sa ×8\nPhần thưởng:\n7700 tu vi\n1100 \nTẩy Luyện Thạch ×3\nNhận nhiệm vụ\n Bích Ngọc Kim Thiền\nBầy Bích Ngọc Kim Thiền kêu suốt đêm trên Tùng Đài Đảo, tiếng chúng làm gương trên đảo rung theo. Diệt mười tám con cho đảo yên.\n○ Hạ Bích Ngọc Kim Thiền ×18\nPhần thưởng:\n1200 tu vi\n500 \nHồi Khí Đan ×5\nNhận nhiệm vụ\n Ba Chuyến Qua Cầu\nLâm Chiếu Dung phải sang Tùng Đài Đảo, Thạch Quy Đảo rồi Kính Hồ Đảo trong một buổi, mà cầu xích thì đung đưa, gió trên đảo thì không có quy củ. Đi cùng bà, giữ trong mười bốn bước, chớ để bà đi lạc. Bỏ xa quá thì bà quay về Phù Đảo Các, tuyến phải đi lại từ đầu.\n○ Hộ tống Lâm Chiếu Dung tới nơi\nPhần thưởng:\n1800 tu vi\n700 \nKính Hoa Sa ×2\nNhận nhiệm vụ\n Gương Nước Kính Hồ\nQuanh Kính Hồ Đài có bốn mảnh gương nước rơi từ trên cao xuống, mỗi mảnh nằm một góc đài. Lâm Chiếu Dung muốn đặt đủ bốn về chỗ cũ để mặt hồ phẳng lại. Đứng sát mảnh gương là đặt được.\n○ Đứng sát Mảnh gương nước thứ nhất\n○ Đứng sát Mảnh gương nước thứ hai\n○ Đứng sát Mảnh gương nước thứ ba\n○ Đứng sát Mảnh gương nước thứ tư\nPhần thưởng:\n2000 tu vi\n700 \nNhận nhiệm vụ"
+ },
+ "tracker": "Ba Chuyến Qua Cầu\n· Hộ tống Lâm Chiếu Dung tới nơi\nGương Nước Kính Hồ\n· Đứng sát Mảnh gương nước thứ nhất",
+ "escortStart": {
+  "x": 1052.0002697928771,
+  "z": 1064.300047895975
+ },
+ "escortMid": {
+  "x": 980.1165846417231,
+  "z": 1056.4833846922386
+ },
+ "afterEscortTracker": "Ba Chuyến Qua Cầu\n· Hộ tống Lâm Chiếu Dung tới nơi\nGương Nước Kính Hồ\n· Đứng sát Mảnh gương nước thứ nhất",
+ "afterMirror": "Ba Chuyến Qua Cầu\n· Hộ tống Lâm Chiếu Dung tới nơi\nGương Nước Kính Hồ\n✔ Đứng sát Mảnh gương nước thứ nhất\n✔ Đứng sát Mảnh gương nước thứ hai\n✔ Đứng sát Mảnh gương nước thứ ba\n✔ Đứng sát Mảnh gương nước thứ tư\nTrả nhiệm vụ: Lâm Chiếu Dung",
+ "errors": []
+}

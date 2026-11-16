@@ -60,11 +60,11 @@ describe('dữ liệu chương 3', () => {
     for (const q of QUEST.values()) if (/^[qs]3_/.test(q.id)) expect(q.rewards.xp).toBeLessThanOrEqual(xpNeed(Math.max(q.minLevel ?? KET_DAN_LEVEL, KET_DAN_LEVEL)) * 0.2);
   });
 
-  it('mục tiêu dùng loại sẵn có; scan từ Kết Đan; dungeon có tên', () => {
+  it('mục tiêu dùng loại sẵn có (touch/escort cho phụ E3-H2); scan từ Kết Đan; dungeon có tên', () => {
     for (const q of QUEST.values()) {
       if (!/^[qs]3_/.test(q.id)) continue;
       for (const o of q.objectives) {
-        expect(['kill', 'gather', 'talk', 'scan', 'dungeon', 'breakthrough']).toContain(o.type);
+        expect(['kill', 'gather', 'talk', 'scan', 'dungeon', 'breakthrough', 'touch', 'escort']).toContain(o.type);
         if (o.type === 'scan') expect(q.minLevel ?? 1).toBeGreaterThanOrEqual(SPIRIT_UNLOCK_LEVEL);
       }
     }

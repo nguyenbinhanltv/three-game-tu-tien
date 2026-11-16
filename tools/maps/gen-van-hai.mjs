@@ -379,6 +379,25 @@ const level = {
   spawn: { x: C, z: C + 12 },
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 90 })),
+  // E3-H2: điểm phụ và tuyến hộ tống cho s3_guong_nuoc / s3_do_thuyen (toạ độ tuyệt đối, đi dọc các cầu `cau_phu_dao_cac_*`).
+  spots: [
+    ['guong_nuoc_1', 1128, 1548],
+    ['guong_nuoc_2', 1208, 1536],
+    ['guong_nuoc_3', 1214, 1606],
+    ['guong_nuoc_4', 1132, 1600],
+  ].map(([id, x, z]) => ({ id, zone: 'kinh_ho_dao', x, z })),
+  escorts: [
+    {
+      id: 'esc_do_thuyen',
+      npc: 'npc_lam_chieu_dung_do',
+      speed: 4,
+      path: [
+        [1062, 1066], [1004, 1056], [952, 1057], [846, 1107], [770, 1150], [846, 1107], [952, 1057], [1030, 1050],
+        [1100, 1045], [1226, 1079], [1330, 1112], [1226, 1079], [1100, 1045], [1030, 1054],
+        [1034, 1102], [1060, 1316], [1096, 1440], [1150, 1540],
+      ],
+    },
+  ],
   camps,
   spawns,
   nodes,

@@ -119,5 +119,11 @@
     "rewards": { "xp": 1200, "gold": 500, "items": [ { "id": "itm_hoi_khi_dan", "n": 5 } ] } },
   { "id": "s3_thu_ban_ve", "giver": "npc_to_van_ngu_hai", "turnin": "npc_to_van_ngu_hai", "requires": "q3_than_thuc", "minLevel": 21,
     "objectives": [ { "type": "scan", "target": "dinh_sam", "count": 1 }, { "type": "scan", "target": "vuc_kinh_ngu", "count": 1 }, { "type": "scan", "target": "phu_dao_dinh", "count": 1 } ],
-    "rewards": { "xp": 2400, "gold": 800 } }
+    "rewards": { "xp": 2400, "gold": 800 } },
+  { "id": "s3_do_thuyen", "giver": "npc_lam_chieu_dung", "turnin": "npc_lam_chieu_dung", "requires": "q3_len_may", "minLevel": 20,
+    "objectives": [ { "type": "escort", "target": "esc_do_thuyen", "count": 1 } ],
+    "rewards": { "xp": 1800, "gold": 700, "items": [ { "id": "itm_kinh_hoa_sa", "n": 2 } ] } },
+  { "id": "s3_guong_nuoc", "giver": "npc_lam_chieu_dung", "turnin": "npc_lam_chieu_dung", "requires": "q3_than_thuc", "minLevel": 21,
+    "objectives": [ { "type": "touch", "target": "guong_nuoc_1", "count": 1 }, { "type": "touch", "target": "guong_nuoc_2", "count": 1 }, { "type": "touch", "target": "guong_nuoc_3", "count": 1 }, { "type": "touch", "target": "guong_nuoc_4", "count": 1 } ],
+    "rewards": { "xp": 2000, "gold": 700 } }
 ]
