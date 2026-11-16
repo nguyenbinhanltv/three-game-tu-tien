@@ -4,12 +4,6 @@ import type { EscortDef, LevelDef } from './types';
 
 /** Đứng trong bán kính này (m) của điểm đáng chú ý thì `touch` được tính. */
 export const TOUCH_R = 5;
-/** Thần thức quét được điểm đáng chú ý trong bán kính này (m). */
-export const SCAN_R = 45;
-/** Hồi lệnh `scan` (ms): thần thức tốn sức, không bấm liên tục. */
-export const SCAN_CD_MS = 3000;
-/** Cảnh giới tối thiểu dùng thần thức: Kết Đan tầng 1 (cấp 20). */
-export const SCAN_MIN_LEVEL = 20;
 /** Người đồng hành chỉ đi khi người nhận cách không quá chừng này (m); xa hơn thì đứng đợi. */
 export const ESCORT_FOLLOW_R = 14;
 /** Tới đích khi còn cách điểm cuối chừng này (m). */

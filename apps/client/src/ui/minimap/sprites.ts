@@ -1,5 +1,6 @@
 // Biểu tượng minimap vẽ sẵn một lần vào canvas nhỏ (theo hệ số màn hình), mỗi khung chỉ drawImage.
 // Mỗi loại có hình dáng riêng để phân biệt không cần dựa vào màu.
+import type { SpiritKind } from '@dtl/shared';
 import type { NpcFn, QuestMark, Tone } from './model';
 
 const INK = '#2a1f16';
@@ -247,5 +248,33 @@ export function flagSprite(own: boolean, dpr: number): Sprite {
     g.lineWidth = 1.2;
     g.strokeStyle = own ? '#fff3c0' : '#d3ecff';
     g.stroke();
+  });
+}
+
+const SCAN_COLOR: Record<SpiritKind, string> = { boss: '#ff6a4a', elite: '#ffb84a', mon: '#e6dfc8', node: '#7dffa0', player: '#5cb8ff', poi: '#e8c46a' };
+
+/** Dấu thần thức (E2-E): vòng sáng có chấm giữa, màu theo loại; viền vòng ngoài để phân biệt với biểu tượng thường. */
+export function scanSprite(kind: SpiritKind, dpr: number): Sprite {
+  return make(`scan:${kind}`, 20, 20, dpr, (g) => {
+    const c = SCAN_COLOR[kind];
+    g.beginPath();
+    g.arc(0, 0, 7.5, 0, Math.PI * 2);
+    g.lineWidth = 3.4;
+    g.strokeStyle = INK;
+    g.stroke();
+    g.lineWidth = 1.6;
+    g.strokeStyle = c;
+    g.stroke();
+    g.beginPath();
+    if (kind === 'boss' || kind === 'elite') {
+      // Hình thoi cho thủ lĩnh/tinh anh.
+      g.moveTo(0, -4);
+      g.lineTo(3.4, 0);
+      g.lineTo(0, 4);
+      g.lineTo(-3.4, 0);
+      g.closePath();
+    } else g.arc(0, 0, kind === 'mon' ? 1.8 : 2.6, 0, Math.PI * 2);
+    g.fillStyle = c;
+    g.fill();
   });
 }

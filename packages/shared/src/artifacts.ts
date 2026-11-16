@@ -7,8 +7,8 @@ export const DRAIN_MAX_TARGETS = 5;
 /** Người chơi chỉ hưởng linh khí từ quái không thấp hơn mình quá chừng này cấp. */
 export const ARTIFACT_QI_LEVEL_GAP = 5;
 
-export type ArtifactKind = 'drain' | 'seal' | 'shield';
-export type ArtifactPassiveKind = 'mp' | 'posture' | 'def';
+export type ArtifactKind = 'drain' | 'seal' | 'shield' | 'heal';
+export type ArtifactPassiveKind = 'mp' | 'posture' | 'def' | 'hp';
 
 export interface ArtifactDef {
   /** id vật phẩm (mẫu trang bị ô `artifact`). */
@@ -30,6 +30,24 @@ export interface ArtifactDef {
   passive: { kind: ArtifactPassiveKind; per: number };
   /** Màu hiệu ứng (hex không có `#`). Chỉ là lớp hình. */
   color: string;
+  /** Bản mệnh pháp bảo (E2-E): tự có khi lên Kết Đan, không tháo, cấp theo cấp của chủ (`bondedLevel`), phím T. */
+  bonded?: boolean;
+}
+
+/** Cấp tối thiểu có bản mệnh pháp bảo (Kết Đan sơ kỳ). */
+export const BONDED_UNLOCK_LEVEL = 20;
+/** id bản mệnh pháp bảo Kết Đan (Ngưng Đan Lô). */
+export const BONDED_ARTIFACT_ID = 'itm_ngung_dan_lo';
+
+/** Bản mệnh pháp bảo lên cấp theo chủ: Kết Đan sơ kỳ (20) = cấp 1, mỗi cảnh giới nhỏ thêm 1, tối đa 5. 0 = chưa mở. */
+export function bondedLevel(playerLevel: number): number {
+  if (playerLevel < BONDED_UNLOCK_LEVEL) return 0;
+  return Math.max(1, Math.min(ARTIFACT_MAX_LEVEL, playerLevel - BONDED_UNLOCK_LEVEL + 1));
+}
+
+/** Ngưng Đan Lô (kind `heal`): lượng khí huyết hồi cho một người (tỉ lệ khí huyết tối đa của người đó). */
+export function furnaceHeal(def: ArtifactDef, level: number, mhp: number): number {
+  return Math.round(mhp * def.power * artifactLevelMods(level).powerMul);
 }
 
 export interface ArtifactLevelMods {

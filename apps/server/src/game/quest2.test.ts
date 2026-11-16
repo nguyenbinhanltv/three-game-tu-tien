@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ESCORT_FOLLOW_R, escortAdvance, escortStart, questSpot, S, SCAN_CD_MS, SCAN_MIN_LEVEL, TELE_FREE, TOUCH_R, type EscortMsg } from '@dtl/shared';
+import { ESCORT_FOLLOW_R, escortAdvance, escortStart, questSpot, S, SPIRIT_UNLOCK_LEVEL, TELE_FREE, TOUCH_R, type EscortMsg } from '@dtl/shared';
 import { LEVELS, NPC, QUEST } from '@dtl/content';
 
 // Nhiệm vụ chương 2 (E2-H): chuỗi q2_*, mục tiêu touch/scan/escort do server chấm, mở trận bằng nhiệm vụ, thưởng một lần (tx + ledger).
@@ -127,7 +127,7 @@ describe('touch', () => {
   });
 });
 
-describe('scan', () => {
+describe('scan (qua thần thức E2-E)', () => {
   const start = (level: number): T => {
     const t = setup('doan_mach', level);
     t.char.quests.done.push('q2_thu_ha_son');
@@ -135,35 +135,30 @@ describe('scan', () => {
     t.accept('s2_thu_nghiem');
     return t;
   };
+  const poi = (id: string) => ({ k: 'poi' as const, x: 0, z: 0, n: id });
 
-  it('chưa Kết Đan thì không nhận được nhiệm vụ thần thức, quét bị báo khóa', () => {
-    const t = start(SCAN_MIN_LEVEL - 1);
+  it('chưa Kết Đan thì không nhận được nhiệm vụ thần thức', () => {
+    const t = start(SPIRIT_UNLOCK_LEVEL - 1);
     expect(t.char.quests.active.s2_thu_nghiem).toBeUndefined();
-    t.sim.now += 5000;
-    t.sim.onScan(t.p);
-    expect(t.sys()).toContain('sys.scan_locked');
   });
 
-  it('quét gần điểm thì tính; có hồi lệnh; xa thì báo không thấy', () => {
-    const t = start(SCAN_MIN_LEVEL);
+  it('bản quét có điểm của mục tiêu thì tính; điểm khác hoặc loại khác thì không', () => {
+    const t = start(SPIRIT_UNLOCK_LEVEL);
     expect(t.char.quests.active.s2_thu_nghiem).toEqual([0, 0, 0]);
+    t.sim.questObj.onSpiritScan(t.p, [poi('mach_tinh_tru'), { k: 'mon', x: 0, z: 0, n: 'ho_sa_lun' }, poi('vach_dut_mach')]);
+    expect(t.char.quests.active.s2_thu_nghiem).toEqual([1, 0, 0]);
+    t.sim.questObj.onSpiritScan(t.p, [poi('ho_sa_lun'), poi('cong_mo')]);
+    expect(t.char.quests.active.s2_thu_nghiem).toEqual([1, 1, 1]);
+    expect(t.char.questComplete('s2_thu_nghiem')).toBe(true);
+  });
+
+  it('SpiritSystem thật: quét xong gọi nhiệm vụ với điểm trong bán kính', () => {
+    const t = start(SPIRIT_UNLOCK_LEVEL);
     const a = questSpot(DM, 'mach_tinh_tru')!;
-    t.at(a.x + 20, a.z);
-    t.sim.onScan(t.p);
-    expect(t.char.quests.active.s2_thu_nghiem).toEqual([1, 0, 0]);
-    // Quét ngay lần nữa: bị hồi lệnh nuốt, không tính gì thêm.
-    const b = questSpot(DM, 'ho_sa_lun')!;
-    t.at(b.x, b.z);
-    t.sim.onScan(t.p);
-    expect(t.char.quests.active.s2_thu_nghiem).toEqual([1, 0, 0]);
-    t.sim.now += SCAN_CD_MS + 10;
-    t.sim.onScan(t.p);
-    expect(t.char.quests.active.s2_thu_nghiem).toEqual([1, 1, 0]);
-    t.sim.now += SCAN_CD_MS + 10;
-    t.at(a.x + 500, a.z);
-    t.sim.onScan(t.p);
-    expect(t.sys()).toContain('sys.scan_none');
-    expect(t.char.quests.active.s2_thu_nghiem).toEqual([1, 1, 0]);
+    t.at(a.x + 10, a.z);
+    const hits = t.sim.spirit.scan(t.p, 60);
+    t.sim.questObj.onSpiritScan(t.p, hits);
+    expect(t.char.quests.active.s2_thu_nghiem?.[0]).toBe(1);
   });
 });
 

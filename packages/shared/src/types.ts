@@ -466,8 +466,8 @@ export interface SkillDef {
 }
 
 /**
- * E2-H: `touch` (đứng trong `TOUCH_R` của điểm đáng chú ý `target` = id `pois` của level), `scan` (dùng thần thức, phím T, trong
- * `SCAN_R` của điểm `target`, cần Kết Đan), `escort` (đưa người đồng hành `target` = id `escorts` của level tới nơi). Cả ba do server quyết định.
+ * E2-H: `touch` (đứng trong `TOUCH_R` của điểm đáng chú ý `target` = id `pois` của level), `scan` (quét bằng thần thức E2-E, phím V: điểm `target`
+ * nằm trong bán kính quét; cần Kết Đan), `escort` (đưa người đồng hành `target` = id `escorts` của level tới nơi). Cả ba do server quyết định.
  * `enhance` (M-5): món trang bị đạt +count (lấy mức cao nhất, như `level`); `dungeon`: vào Kiếm Trủng; `duel`: hoàn tất một trận tỉ thí.
  */
 export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough' | 'enhance' | 'dungeon' | 'duel' | 'meditate' | 'scan' | 'escort' | 'touch';

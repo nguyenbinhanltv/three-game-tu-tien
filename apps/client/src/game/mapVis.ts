@@ -7,6 +7,8 @@ import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { type MarkInfo, padsOfLevel, type TelePad } from '@dtl/shared';
 import { groundAt } from './levelCtx';
+import { SpiritVis } from './scan';
+import type { SpiritScan, SpiritState } from '../ui/store';
 
 const PAD_SHOW = 260;
 const OPEN_COLOR = 0x8fe8ff;
@@ -37,6 +39,8 @@ export class MapVis {
   private marks = new Map<number, MarkVisItem>();
   private lastMarks: readonly MarkInfo[] | null = null;
   private lastOpen: readonly string[] | null = null;
+  /** Thần thức (E2-E): vòng vận, sóng quét, cột sáng điểm lộ. */
+  readonly spirit: SpiritVis;
   private castRing: THREE.Mesh;
   private pulse: THREE.Mesh;
   private pulseAt = -1;
@@ -67,6 +71,7 @@ export class MapVis {
   constructor(scene: THREE.Scene, padLevel: string | null) {
     this.group.name = 'mapVis';
     if (padLevel) for (const pad of padsOfLevel(padLevel)) this.pads.push(this.buildPad(pad));
+    this.spirit = new SpiritVis(this.group);
     this.castRing = new THREE.Mesh(this.geo.cast, this.mat.cast);
     this.castRing.rotation.x = -Math.PI / 2;
     this.castRing.visible = false;
@@ -216,7 +221,13 @@ export class MapVis {
     }
   }
 
+  /** Thần thức: gọi mỗi khung cùng `update`. */
+  updateSpirit(me: THREE.Vector3, state: SpiritState, scan: SpiritScan | null, now: number): void {
+    this.spirit.update(me, state, scan, now);
+  }
+
   dispose(): void {
+    this.spirit.dispose();
     this.group.removeFromParent();
     for (const g of Object.values(this.geo)) g.dispose();
     for (const m of Object.values(this.mat)) m.dispose();

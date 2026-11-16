@@ -35,6 +35,10 @@ export function idlePose(kind: ArtifactKind, t: number, speed: number, out: ArtP
     case 'shield':
       Object.assign(out, { x: 0, y: 1.22, z: -0.38, rx: -0.3, ry: 0, rz: 0, s: 1.2 });
       break;
+    case 'heal':
+      // Ngưng Đan Lô lơ lửng sau vai phải, nhấp nhô chậm như đang nung.
+      Object.assign(out, { x: -0.42, y: 1.4 + Math.sin(t * 1.7) * 0.04, z: -0.32, rx: 0.08, ry: t * 0.35, rz: sway * 0.5, s: 1.25 });
+      break;
   }
   return out;
 }
@@ -52,6 +56,10 @@ export function activePose(kind: ArtifactKind, t: number, out: ArtPose = blank()
       break;
     case 'shield':
       Object.assign(out, { x: 0, y: 3.25 + Math.sin(t * 3) * 0.06, z: 0, rx: 0, ry: t * 1.2, rz: 0, s: 2.1 });
+      break;
+    case 'heal':
+      // Bay lên trên đầu, nghiêng nắp rót đan khí xuống, xoay chậm.
+      Object.assign(out, { x: 0, y: 3.15 + Math.sin(t * 4) * 0.05, z: 0.1, rx: 0.35, ry: t * 1.6, rz: 0, s: 2.0 });
       break;
   }
   return out;

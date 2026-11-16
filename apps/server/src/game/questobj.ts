@@ -15,9 +15,7 @@ import {
   PF_DEAD,
   questSpot,
   S,
-  SCAN_CD_MS,
-  SCAN_MIN_LEVEL,
-  SCAN_R,
+  type SpiritHit,
   TOUCH_R,
 } from '@dtl/shared';
 import { QUEST, t } from '@dtl/content';
@@ -58,7 +56,6 @@ function openObjectives(p: PlayerEnt, type: ObjectiveDef['type']): ObjectiveDef[
 
 export class QuestObjSystem {
   private convoys = new Map<string, Map<string, Convoy>>();
-  private scanAt = new Map<string, number>();
   private stepAt = 0;
 
   constructor(private h: QuestObjHost) {}
@@ -140,27 +137,18 @@ export class QuestObjSystem {
     p.client.send(S.ESCORT, msg);
   }
 
-  /** Lệnh `scan`: thần thức quét quanh mình, trúng điểm đáng chú ý của mục tiêu `scan` đang làm thì tính. */
-  scan(p: PlayerEnt): void {
-    const now = this.h.now();
-    if (now - (this.scanAt.get(p.sid) ?? 0) < SCAN_CD_MS) return;
-    this.scanAt.set(p.sid, now);
-    if ((p.s.fl & PF_DEAD) !== 0) return this.h.warn(p, 'sys.dead');
-    if (p.char.level < SCAN_MIN_LEVEL) return this.h.warn(p, 'sys.scan_locked');
+  /** Thần thức (E2-E) vừa quét xong: điểm đáng chú ý trong bản quét tính cho mục tiêu `scan` đang làm. Server là nguồn duy nhất của bản quét. */
+  onSpiritScan(p: PlayerEnt, hits: readonly SpiritHit[]): void {
     const lv = this.h.level();
-    let hit = 0;
     for (const o of openObjectives(p, 'scan')) {
       const spot = questSpot(lv, o.target);
-      if (!spot || Math.hypot(p.move.x - spot.x, p.move.z - spot.z) > SCAN_R) continue;
-      hit++;
+      if (!spot || !hits.some((h) => h.k === 'poi' && h.n === spot.id)) continue;
       this.h.questEvent(p, 'scan', spot.id, 1);
       this.h.sys(p, 'sys.scan_ok', { name: t(spot.nameKey) }, 'good');
     }
-    if (!hit) this.h.sys(p, 'sys.scan_none', undefined, 'info');
   }
 
   drop(p: PlayerEnt): void {
     this.convoys.delete(p.sid);
-    this.scanAt.delete(p.sid);
   }
 }

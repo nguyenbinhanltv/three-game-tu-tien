@@ -5,6 +5,8 @@ import {
   artifactPassive,
   artifactQiNeed,
   ARTIFACT_MAX_LEVEL,
+  BONDED_ARTIFACT_ID,
+  bondedLevel,
   buffMag,
   clampArtifactLevel,
   PILL_BUFF_KINDS,
@@ -51,6 +53,13 @@ export function sanitizeArtifactMeta(meta: ArtifactMeta): void {
 export function equippedArtifact(equip: Equipment): ArtifactDef | undefined {
   const id = equip.artifact?.id;
   return id ? ARTIFACT.get(id) : undefined;
+}
+
+/** Nội tại bản mệnh pháp bảo (Ngưng Đan Lô, E2-E): tỉ lệ khí huyết tối đa cộng thêm theo cấp của chủ; 0 khi chưa Kết Đan. */
+export function bondedHpPassive(playerLevel: number): number {
+  const lv = bondedLevel(playerLevel);
+  const def = ARTIFACT.get(BONDED_ARTIFACT_ID);
+  return lv > 0 && def ? artifactPassive(def, lv) : 0;
 }
 
 export function progressOf(meta: ArtifactMeta, id: string): ArtifactProgress {

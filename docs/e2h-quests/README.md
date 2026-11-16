@@ -10,7 +10,7 @@ Phụ: `s2_ho_tong` (escort, Hứa lão), `s2_cu_tho` (Hoàng Sa Thảo, Tố T�
 ## Mục tiêu do server chấm (`apps/server/src/game/questobj.ts`, `shared/src/questobj.ts`)
 
 - `touch`: đứng trong `TOUCH_R` (5 m), không bay, cạnh điểm `target` (id `pois` hoặc `spots` của level). Chấm mỗi 250 ms.
-- `scan`: lệnh `C.SCAN` (phím T). Server kiểm cảnh giới ≥ Kết Đan (cấp 20), hồi 3 s, điểm trong `SCAN_R` (45 m).
+- `scan`: dùng thần thức E2-E (giữ phím V, từ Kết Đan, hồi 20 s); khi bản quét xong, `SpiritSystem.onScanned` → `QuestObjSystem.onSpiritScan` tính các điểm đáng chú ý nằm trong bản quét.
 - `escort`: người đồng hành của riêng người nhận (không phải thực thể room), đi theo `escorts[].path` khi người nhận cách ≤ 14 m, đứng đợi khi xa, về đầu đường khi bị bỏ > 90 m; client chỉ nhận `S.ESCORT` để vẽ.
 - `q2_phuc_mach` dùng `dungeon` với `target: 'phuc_mach_quat'`: **E2-C chỉ cần gọi `questEvent(p, 'dungeon', 'phuc_mach_quat', 1)`** khi người chơi vào Phục Mạch Quật (Kiếm Trủng không tính). Chưa có phó bản thì thử bằng `/gm qev dungeon phuc_mach_quat`.
 - Lệnh GM mới: `/gm qdone <id|chuong2>`, `/gm qev <loại> [đích|-] [n]`.

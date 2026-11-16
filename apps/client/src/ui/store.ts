@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView } from '@dtl/shared';
+import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView, SpiritHit } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio';
 
 export interface TargetInfo {
@@ -137,6 +137,25 @@ export interface TeleState {
   cdUntil: number;
 }
 
+/** Thần thức của mình (S.SPIRIT_STATE). Thời gian đổi sang đồng hồ `performance.now()` của client. */
+export interface SpiritState {
+  open: boolean;
+  /** Quét xong lúc này (0 = không đang quét). */
+  chUntil: number;
+  cdUntil: number;
+  r: number;
+}
+
+/** Kết quả quét gần nhất (S.SPIRIT_SCAN): hiện tới `until` (performance.now). */
+export interface SpiritScan {
+  x: number;
+  z: number;
+  r: number;
+  at: number;
+  until: number;
+  hits: SpiritHit[];
+}
+
 export type Panel = null | 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party';
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
@@ -216,6 +235,9 @@ export interface UIState {
   /** Tổ đội của mình (P3-9); null = không có. */
   party: PartyMsg | null;
   tele: TeleState;
+  spirit: SpiritState;
+  /** Kết quả quét thần thức đang hiện (E2-E); null = không. */
+  spiritScan: SpiritScan | null;
   /** Điểm đánh dấu mình và đồng đội đang thấy (S.MARK). */
   marks: MarkInfo[];
   /** Lời mời tổ đội/tỉ thí đang chờ; `until` theo đồng hồ client (ms). */
@@ -292,6 +314,8 @@ export const useUI = create<UIState>(() => ({
   ultCard: null,
   party: null,
   tele: { open: [], cast: null, cdUntil: 0 },
+  spirit: { open: false, chUntil: 0, cdUntil: 0, r: 60 },
+  spiritScan: null,
   marks: [],
   invites: [],
   duel: null,
