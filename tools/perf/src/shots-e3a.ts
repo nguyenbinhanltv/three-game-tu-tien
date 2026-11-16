@@ -165,6 +165,17 @@ async function main(): Promise<void> {
       log.walkedOnFloor = await page.evaluate(() => (window as unknown as G).__game!.renderPos.y);
     }
 
+    // Thang mây: đứng ở chân thang trên sàn mây nhìn lên mép đảo.
+    const ramp = bridges.find((b) => b.id === 'thang_phu_dao_cac');
+    if (ramp && want('thang-may')) {
+      const dx = ramp.bx - ramp.ax;
+      const dz = ramp.bz - ramp.az;
+      const L = Math.hypot(dx, dz);
+      await gotoXZ(page, ramp.ax + (dx / L) * 4, ramp.az + (dz / L) * 4);
+      await cam(page, { yaw: Math.PI + Math.atan2(dx, dz), pitch: 0.05, dist: 16 });
+      await snap('thang-may');
+    }
+
     // Đảo giả: trước và sau khi quét thần thức (giữ V ~3 s).
     const fk = fakes[0];
     if (fk && want('dao-gia')) {

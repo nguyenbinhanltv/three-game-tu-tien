@@ -1,6 +1,6 @@
 // E3-A/E3-N: Vân Hải Phù Đảo đạt bộ kiểm level, đúng số liệu thiết kế (5 vùng cấp 20–23, 12 tinh anh), địa hình đảo nổi nhất quán với dữ liệu.
 import { describe, expect, it } from 'vitest';
-import { polyArea, TELE_FREE, TELE_PADS, terrainOf } from '@dtl/shared';
+import { polyArea, stepMove, TELE_FREE, TELE_PADS, terrainOf, type MoveState } from '@dtl/shared';
 import { campCoverage, COVER_BY_LEVEL } from './coverage';
 import { LEVELS } from './index';
 import { checkLevel } from './levelcheck';
@@ -43,7 +43,7 @@ describe('van_hai', () => {
     const isl = d.islands!;
     const near = (x: number, z: number) => isl.findIndex((i) => Math.hypot(i.x - x, i.z - z) <= i.r + 1);
     const adj = new Map<number, Set<number>>();
-    for (const b of d.bridges!) {
+    for (const b of d.bridges!.filter((x) => !x.id.startsWith('thang_'))) {
       const a = near(b.ax, b.az);
       const c = near(b.bx, b.bz);
       expect(a).toBeGreaterThanOrEqual(0);
@@ -55,6 +55,34 @@ describe('van_hai', () => {
     const q = [0];
     while (q.length) for (const n of adj.get(q.pop()!) ?? []) if (!seen.has(n)) (seen.add(n), q.push(n));
     for (let i = 0; i <= 5; i++) expect(seen.has(i)).toBe(true); // hub + năm vùng
+  });
+
+  it('thang mây: mỗi đảo vùng và hub một thang, đáy ở sàn mây, đỉnh ở mặt đảo, đủ thoải để đi bộ', () => {
+    const d = tr.def;
+    const ramps = d.bridges!.filter((b) => b.id.startsWith('thang_'));
+    expect(ramps).toHaveLength(6);
+    for (const r of ramps) {
+      expect(r.ay).toBe(d.voidFloor);
+      expect(tr.heightAt(r.ax, r.az)).toBeCloseTo(d.voidFloor!, 1);
+      expect(tr.heightAt(r.bx, r.bz)).toBeGreaterThan(d.voidFloor! + 40);
+      const run = Math.hypot(r.bx - r.ax, r.bz - r.az);
+      expect((r.by - r.ay) / run).toBeLessThan(1); // 0,35 m mỗi bước ngang: dốc < 1 thì không vướng MAX_STEP_UP
+    }
+  });
+
+  it('đi bộ từ sàn mây lên đảo bằng thang mây (stepMove thật), còn vách đảo thì không leo được', () => {
+    const d = tr.def;
+    for (const r of d.bridges!.filter((b) => b.id.startsWith('thang_'))) {
+      const len = Math.hypot(r.bx - r.ax, r.bz - r.az);
+      const ux = (r.bx - r.ax) / len;
+      const uz = (r.bz - r.az) / len;
+      const s: MoveState = { x: r.ax, y: d.voidFloor!, z: r.az, vy: 0, grounded: true, flying: false };
+      // hướng tiến = (-sin yaw, -cos yaw) khi mz = 1
+      const yaw = Math.atan2(-ux, -uz);
+      for (let i = 0; i < Math.ceil(len / 0.35) + 20; i++) stepMove(s, { s: i, mx: 0, mz: 1, yaw, f: 0 }, { canFly: false, frozen: false, speedMul: 1, terrain: tr });
+      expect(s.y, r.id).toBeGreaterThan(r.by - 3);
+      expect(s.grounded).toBe(true);
+    }
   });
 
   it('đảo giả không có mặt đứng: tâm mỗi đảo giả là sàn mây', () => {

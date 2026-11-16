@@ -15,7 +15,7 @@ const C = 1024;
 const SEED = Number(process.env.SEED ?? 20261117);
 const HALF = 860;
 const FLOOR = 60; // sàn mây (m): đi bộ được, rơi xuống đây không chết
-const EDGE = 34; // dải chuyển tiếp mép đảo (dốc leo được từ sàn mây)
+const EDGE = 12; // dải mép đảo: vách dốc đứng bo tròn (không leo được từ sàn mây; lên lại bằng thang mây `thang_*` hoặc ngự kiếm)
 
 function rng(seed) {
   let s = seed >>> 0;
@@ -314,6 +314,38 @@ for (const c of camps) {
 
 // ---- tài nguyên: linh thảo trên đảo nhỏ (đi bằng ngự kiếm) ----
 const nodes = SMALL.map((s) => ({ item: 'itm_linh_thao', x: W(s.off[0]), z: W(s.off[1]), radius: Math.round(s.r * 0.5), count: 4, respawn: 60 }));
+
+// ---- thang mây (Thăng Vân Đài): mỗi đảo vùng và hub một bậc dốc từ sàn mây lên mép đảo (vì mép đảo là vách đứng) ----
+{
+  const RUN = 79;
+  const lim = HALF - 24;
+  const segDist = (px, pz, ax, az, bx, bz) => {
+    const dx = bx - ax;
+    const dz = bz - az;
+    const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz)));
+    return Math.hypot(ax + dx * t - px, az + dz * t - pz);
+  };
+  const obstacles = [...camps.map((c) => [c.x - C, c.z - C]), ...PADS.map((p) => p.off), ...POIS.map((p) => p.off), ...eliteAt.map((e) => [e.x, e.z])];
+  for (const I of [HUB, ...ZONES]) {
+    let best = null;
+    for (let a = 0; a < 360; a += 15) {
+      const th = deg(a);
+      const dir = [Math.cos(th), Math.sin(th)];
+      const E = [I.off[0] + dir[0] * (I.r - 6), I.off[1] + dir[1] * (I.r - 6)];
+      const S = [I.off[0] + dir[0] * (I.r + 10 + RUN), I.off[1] + dir[1] * (I.r + 10 + RUN)];
+      if (Math.abs(S[0]) > lim || Math.abs(S[1]) > lim) continue;
+      let ok = true;
+      for (const O of [HUB, ...ZONES, ...SMALL])
+        if (O !== I && segDist(O.off[0], O.off[1], S[0], S[1], E[0], E[1]) < O.r + EDGE + 14) ok = false;
+      for (const b of bridges) if (Math.min(segDist(b.ax - C, b.az - C, S[0], S[1], E[0], E[1]), segDist(b.bx - C, b.bz - C, S[0], S[1], E[0], E[1])) < 30) ok = false;
+      if (!ok) continue;
+      const score = Math.min(...obstacles.map((o) => Math.hypot(o[0] - E[0], o[1] - E[1])));
+      if (!best || score > best.score) best = { E, S, score };
+    }
+    if (!best) throw new Error('không đặt được thang mây cho ' + I.id);
+    bridges.push({ id: 'thang_' + I.id, ax: W(best.S[0]), az: W(best.S[1]), ay: FLOOR, bx: W(best.E[0]), bz: W(best.E[1]), by: I.y, halfW: 2.6, sag: 0 });
+  }
+}
 
 // ---- địa hình ----
 const features = [

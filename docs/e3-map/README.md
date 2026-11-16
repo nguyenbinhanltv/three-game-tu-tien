@@ -22,7 +22,7 @@ Gói E3-A (bản đồ) kèm E3-N (địa hình đảo nổi) của E-3 Nguyên 
 
 ## Bố cục
 
-Tọa độ so với Phù Đảo Các (+x đông, +z nam). Mỗi đảo là một vùng (đa giác = mặt đảo phẳng); đảo vùng bán kính 207 m, hub 85 m, dải sườn 34 m (đi bộ lên được từ sàn mây).
+Tọa độ so với Phù Đảo Các (+x đông, +z nam). Mỗi đảo là một vùng (đa giác = mặt đảo phẳng); đảo vùng bán kính 207 m, hub 85 m, mép đảo là vách đứng bo tròn dày 12 m (không leo từ sàn mây; lên lại bằng thang mây hoặc ngự kiếm).
 
 | Đảo | Vị trí | Cấp | Tinh anh | Cầu |
 | --- | --- | --- | --- | --- |
@@ -47,10 +47,11 @@ Quái tạm dùng mẫu của Đoạn Mạch (4 quái thường, 3 tinh anh) v�
 
 Một hàm `heightAt` chung (client, server, công cụ) gồm:
 
-- **Đảo** (`islands`): mặt phẳng bán kính `r`, dốc `edge` mét ra sàn mây; các khu `isl_*` thêm nhiễu nhẹ lên mặt đảo.
-- **Sàn mây** (`voidFloor` = 60 m): mọi chỗ ngoài đảo là mặt đứng đi bộ được, thấp hơn mặt đảo ~60 m. **Rơi khỏi đảo hay cầu thì rơi tới sàn mây, không mất máu, không chết** (server không có sát thương rơi; xem `islands.test.ts` và ảnh `roi-khoi-cau`/`san-may`; lần chụp ghi y 119 → 60, máu 1953/1953). Sườn đảo leo lại được.
+- **Đảo** (`islands`): mặt phẳng bán kính `r`, vách `edge` = 12 m xuống sàn mây (bước leo > `MAX_STEP_UP` bị chặn nên không leo vách); các khu `isl_*` thêm nhiễu nhẹ lên mặt đảo. **Thang mây** (`bridges` id `thang_*`, Thăng Vân Đài): mỗi đảo vùng và hub một dốc rộng 5,2 m từ sàn mây lên mép đảo (đáy ở sàn mây, dốc 0,74, bộ sinh chọn hướng xa cụm quái, trận, điểm đáng chú ý, các đảo và cầu); test `vanhai.test.ts` đi bộ lên từng thang bằng `stepMove` thật.
+- **Sàn mây** (`voidFloor` = 60 m): mọi chỗ ngoài đảo là mặt đứng đi bộ được, thấp hơn mặt đảo ~60 m. **Rơi khỏi đảo hay cầu thì rơi tới sàn mây, không mất máu, không chết** (server không có sát thương rơi; xem `islands.test.ts` và ảnh `roi-khoi-cau`/`san-may`; lần chụp ghi y 119 → 60, máu 1953/1953). Lên lại đảo bằng thang mây hoặc ngự kiếm. Sàn mây là mặt mây mềm: màu trắng xám gợn noise (`islandColor`), không cỏ/cây/đá (rải cỏ, cây thủ tục và `scatterVanHai` chỉ ở độ cao ≥ sàn + 40 m), hai lớp sương mờ sát mặt (`SkyIslands.buildFloorMist`).
 - **Cầu xích** (`bridges`): dải rộng 5,2 m, độ cao nội suy giữa hai đầu có võng. `heightAt` có mặt cầu; `Terrain.surfaceAt` bỏ mặt cầu để dựng lưới địa hình (cầu vẽ riêng bằng ván + dây xích, ba InstancedMesh, không có "tường đất" dưới cầu). Mép dải dốc đứng; từ sàn mây không bị "nhấc" lên cầu: ở level đảo nổi (`Terrain.blockRise`), đi bộ không leo được bậc cao hơn `MAX_STEP_UP` = 2,2 m trong một bước (cả client dự đoán và server qua `stepMove`). Vân Lam và các level khác không đổi từng bit.
 - **Đảo giả** (`fakeIslands`): **không vào `heightAt`**, bước lên là rơi về sàn mây. Client vẽ như đảo thật; thần thức (V, Kết Đan) quét qua (trong tầm, còn hiệu lực) thì đảo mờ đi, hiện vòng mép và cột sáng xanh (`SkyIslands.update`); hết hạn quét thì đặc lại. Ảnh `dao-gia-truoc` / `dao-gia-sau-quet`.
+- **Mép đảo (hình)**: lưới địa hình bỏ các ô vách (`CLIFF_SKIP` ở `terrain.ts`, cả lưới mịn và lưới thô); `SkyIslands.buildSkirt` dựng khối đá treo: mép bo tròn, thân thu nhỏ thành mũi đá lởm chởm (nhiễu xác định), rễ cây thòng, hai vành sương ôm chân đảo. Màu mặt đảo (`islandColor`): tông trầm, rêu xám-lục trộn đất nâu và mảng đá, dốc lộ đá; cỏ nhạt đi 70 %. Dùng lại cỏ Vân Lam, bộ texture riêng là việc của E3-I.
 - **AOI**: server tính khoảng cách phẳng (x, z) nên người trên sàn mây dưới đảo vẫn nhận người/quái phía trên cùng tọa độ. Chấp nhận được: 33 bot trong `world-van_hai` cho tick p95 0,7 ms, không lỗi `refId`. Nếu sau này đảo chồng nhau theo chiều dọc, thêm kiểm tra y ở `aoi.ts`.
 - **Camera**: dùng địa hình như mọi level; không thấy camera xuyên đảo trong ảnh chụp (đứng dưới đảo giả thấy đáy đảo bình thường).
 
@@ -94,6 +95,7 @@ Một hàm `heightAt` chung (client, server, công cụ) gồm:
 | Giữa cầu | ![](cau-giua.jpg) |
 | Bước ra mép cầu, đang rơi | ![](roi-khoi-cau.jpg) |
 | Sàn mây sau khi rơi (còn nguyên máu, đi bộ được) | ![](san-may.jpg) |
+| Thang mây (chân thang trên sàn mây nhìn lên) | ![](thang-may.jpg) |
 | Đảo giả khi chưa quét (trông như đảo thật) | ![](dao-gia-truoc.jpg) |
 | Đảo giả sau khi quét thần thức | ![](dao-gia-sau-quet.jpg) |
 
@@ -101,5 +103,5 @@ Một hàm `heightAt` chung (client, server, công cụ) gồm:
 
 - **E3-B**: quái, tinh anh, boss Vân Hải Kình Vương riêng (hiện quái tạm của Đoạn Mạch); `loot.json`.
 - **E3-H**: nhiệm vụ chương 3, NPC Lâm Chiếu Dung ở hub (hiện chỉ `q2_ket_dan` mở trận).
-- **Mỹ thuật bản đồ 3**: texture/cỏ riêng (cỏ Vân Lam vẫn hiện, kể cả trên sàn mây), nhạc `wild_cloud`/`mirror_lake`/`wild_storm`, mood chi tiết, `prop_cau_may` (GLB cầu) nếu muốn thay cầu thủ tục, bậc thang Thăng Vân Đài, hồi sinh nhẹ ở đảo gần nhất khi rơi (hiện rơi xuống sàn mây rồi tự leo sườn đảo).
+- **Mỹ thuật bản đồ 3**: bộ texture mặt đảo riêng (hiện dùng lại cỏ Vân Lam đã nhạt màu, màu đỉnh tông trầm), nhạc `wild_cloud`/`mirror_lake`/`wild_storm`, mood chi tiết, `prop_cau_may` (GLB cầu) nếu muốn thay cầu thủ tục, hồi sinh nhẹ ở đảo gần nhất khi rơi (hiện rơi xuống sàn mây rồi tự leo sườn đảo).
 - Cảnh báo console `Vertex attribute "normal" not found` (5 lần) có từ trước ở các level mở rộng khác (Đoạn Mạch cũng vậy), không do gói này.
