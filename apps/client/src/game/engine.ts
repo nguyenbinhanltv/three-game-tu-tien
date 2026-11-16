@@ -84,6 +84,8 @@ export interface LoginOptions {
  * Level của room theo `InitMsg.room` (E1-B đặt tên room theo level: `world` = Vân Lam, `world-<id>`, `dungeon` = Kiếm Trủng,
  * `dungeon-<id>`); tên lạ thì về Vân Lam.
  */
+/** Room bản đồ thế giới: `world` (Vân Lam) hoặc `world-<id>` (không phải bí cảnh). */
+export const isWorldRoom = (room: string): boolean => room === ROOM_WORLD || room.startsWith('world-');
 export function levelOfRoom(room: string): string {
   if (room === ROOM_WORLD) return 'van_lam';
   if (room === ROOM_DUNGEON) return 'kiem_trung';
@@ -470,9 +472,9 @@ export class Game {
     this.ents = new EntityManager(this.scene, this.sid, levelOfInit(init));
     this.ents.setWarm(this.warmObject);
     this.mapVis?.dispose();
-    this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
-    this.resetSound(init.room === ROOM_WORLD);
-    if (this.beacons) this.beacons.mesh.visible = init.room === ROOM_WORLD;
+    this.mapVis = new MapVis(this.scene, isWorldRoom(init.room) ? levelOfInit(init) : null);
+    this.resetSound(isWorldRoom(init.room));
+    if (this.beacons) this.beacons.mesh.visible = isWorldRoom(init.room);
     this.ents.camera = this.camera;
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
@@ -776,8 +778,8 @@ export class Game {
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, levelOfRoom(get().room));
     this.ents.setWarm(this.warmObject);
-    this.mapVis = new MapVis(this.scene, get().room === ROOM_WORLD);
-    this.resetSound(get().room === ROOM_WORLD);
+    this.mapVis = new MapVis(this.scene, isWorldRoom(get().room) ? levelOfRoom(get().room) : null);
+    this.resetSound(isWorldRoom(get().room));
     this.ents.camera = this.camera;
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
@@ -872,7 +874,7 @@ export class Game {
     const pois = LEVELS[id]?.pois ?? [];
     if (F.beacons && pois.length && params.get('beacons') !== '0') {
       this.beacons = new Beacons(pois.filter((p) => p.beamH).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
-      this.beacons.mesh.visible = get().room === ROOM_WORLD;
+      this.beacons.mesh.visible = isWorldRoom(get().room);
       this.scene.add(this.beacons.mesh);
     }
     this.grass = new Grass();

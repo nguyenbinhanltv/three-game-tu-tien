@@ -716,6 +716,7 @@
   "ui.wm.layer.tele": "Truyền tống",
   "ui.wm.gather": "Điểm thu thập",
   "ui.wm.level_range": "Cấp {a}–{b}",
+  "ui.wm.tele_other": "Truyền tống sang bản đồ khác",
   "ui.wm.tele_open": "Truyền Tống Trận đã mở",
   "ui.wm.tele_locked": "Truyền Tống Trận chưa mở khóa",
   "ui.wm.tele_click": "Bấm để truyền tống tới đây (niệm 3 giây, đứng yên)",
