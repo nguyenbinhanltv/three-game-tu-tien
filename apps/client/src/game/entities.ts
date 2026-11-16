@@ -15,7 +15,7 @@ import { LABELS, type Label } from './labelBatch';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
 import { type AnimState, type CharacterView, type MonsterView, P2E_OFF, type SkillEvent } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
-import { NpcSkins } from './character/npcSkins';
+import { NPC_SKINS, NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
 import { BAR_ALLY, BAR_BOSS, BAR_ENEMY, HeadBars } from './headBars';
 import { HpTrail } from './hpTrail';
@@ -424,6 +424,17 @@ export class EntityManager {
   private localLook: PlayerLook = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
   /** Dựng model NPC (có xương theo id dữ liệu hoặc khối dự phòng). */
   private npcSkins = new NpcSkins();
+
+  /** NPC có `look` (E3-H) dùng model nhân vật nền nhuộm kênh vải; còn lại dùng model NPC riêng. */
+  private npcModel(id: string, robe: string): CharacterView {
+    const look = NPC_SKINS[id]?.look;
+    return look ? this.playerSkins.createNpc(look) : this.npcSkins.create(id, robe);
+  }
+
+  private npcPending(id: string): boolean {
+    const look = NPC_SKINS[id]?.look;
+    return look ? this.playerSkins.npcPending(look.g) : this.npcSkins.pending(id);
+  }
   hasNpcs: boolean;
   private gates: Gate[];
   /** Camera để chọn LOD theo khoảng cách nhìn và cắt mixer ngoài khung nhìn (engine gán). */
@@ -459,8 +470,8 @@ export class EntityManager {
           id: n.id,
           color: n.color,
           yaw: n.yaw,
-          model: this.npcSkins.create(n.id, n.color),
-          skinPending: this.npcSkins.pending(n.id),
+          model: this.npcModel(n.id, n.color),
+          skinPending: this.npcPending(n.id),
           label,
           marker,
           markerY: 0,
@@ -781,9 +792,9 @@ export class EntityManager {
 
     // ----- NPC -----
     for (const n of this.npcs) {
-      if (n.skinPending && !this.npcSkins.pending(n.id)) {
+      if (n.skinPending && !this.npcPending(n.id)) {
         n.skinPending = false;
-        const next = this.npcSkins.create(n.id, n.color);
+        const next = this.npcModel(n.id, n.color);
         if (next.constructor !== n.model.constructor) {
           n.model.root.remove(n.label, n.marker);
           n.model.root.removeFromParent();

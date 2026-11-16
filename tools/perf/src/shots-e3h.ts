@@ -30,7 +30,9 @@ const send = (page: Page, type: string, msg?: unknown) => page.evaluate(([t, m])
 const shot = (page: Page, name: string) => page.screenshot({ path: path.join(OUT, name + '.jpg'), type: 'jpeg', quality: 85 });
 const text = (page: Page, sel: string) => page.evaluate((s) => [...document.querySelectorAll(s)].map((e) => (e as HTMLElement).innerText).join(' | '), sel);
 /** Quay camera về phía +z (NPC đứng phía nam người chơi), để NPC nằm trước mặt. */
-const faceSouth = (page: Page) => page.evaluate(() => { (window as unknown as G).__game!.camYaw = Math.PI; (window as unknown as G).__game!.camDist = 7; (window as unknown as G).__game!.camDistCur = 7; });
+const faceSouth = (page: Page) => page.evaluate(() => { (window as unknown as G).__game!.camYaw = Math.PI; (window as unknown as G).__game!.camDist = 4.2; (window as unknown as G).__game!.camDistCur = 4.2; });
+/** Phù Đảo Các: NPC quay mặt về −z, nên camera đứng phía bắc nhìn về +z để thấy mặt NPC (người chơi đứng lệch sang bên, không che). */
+const faceNpc = (page: Page) => page.evaluate(() => { (window as unknown as G).__game!.camYaw = Math.PI; (window as unknown as G).__game!.camDist = 2.4; (window as unknown as G).__game!.camDistCur = 2.4; });
 const where = (page: Page) => page.evaluate(() => { const g = (window as unknown as G).__game!; return { level: g.view?.level, x: Math.round(g.cur?.x), z: Math.round(g.cur?.z) }; });
 
 async function main(): Promise<void> {
@@ -88,8 +90,8 @@ async function main(): Promise<void> {
     await sleep(4000);
 
     // 3) Lâm Chiếu Dung, Tô Vãn Ngư ở Phù Đảo Các.
-    await gm(page, '/gm tp 1050 1051');
-    await faceSouth(page);
+    await gm(page, '/gm tp 1048 1053.5');
+    await faceNpc(page);
     await sleep(9000);
     await shot(page, '04-phu-dao-cac-npc');
     await talk('lamChieuDung', '05-lam-chieu-dung-hop-thoai');
@@ -103,18 +105,18 @@ async function main(): Promise<void> {
     log.afterTurnin = { tracker: await text(page, '.tracker') };
     await shot(page, '07-lam-chieu-dung-nhiem-vu-tiep');
     await page.keyboard.press('Escape');
-    await gm(page, '/gm tp 1002 1051');
-    await faceSouth(page);
+    await gm(page, '/gm tp 1000 1053.5');
+    await faceNpc(page);
     await sleep(2000);
     await shot(page, '08-to-van-ngu-phu-dao-cac');
 
     // 4) kill bằng sự kiện GM, trả, rồi nhiệm vụ thần thức.
-    await gm(page, '/gm tp 1050 1051');
+    await gm(page, '/gm tp 1048 1053.5');
     await sleep(1200);
     await gm(page, '/gm qev kill mon_van_hac 14');
     await send(page, 'q', { a: 'turnin', id: 'q3_van_hac' });
     await sleep(900);
-    await gm(page, '/gm tp 1002 1051');
+    await gm(page, '/gm tp 1000 1053.5');
     await sleep(1000);
     await send(page, 'q', { a: 'accept', id: 'q3_than_thuc' });
     await sleep(800);
@@ -136,7 +138,7 @@ async function main(): Promise<void> {
     log.scan = { tracker: await text(page, '.tracker') };
 
     // 6) Kính Nguyệt Cung (sự kiện dungeon, chờ E3-M), Kình Vương, Nguyên Anh.
-    await gm(page, '/gm tp 1050 1051');
+    await gm(page, '/gm tp 1048 1053.5');
     await sleep(1200);
     await done('q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van');
     await gm(page, '/gm level 23');

@@ -21,7 +21,7 @@ Phụ: `s3_bich_ngoc` (Bích Ngọc Kim Thiền ×18, Lâm Chiếu Dung), `s3_th
 
 ## Việc để lại
 
-- NPC dùng lại model sẵn có đổi màu (`NPC_SKINS.tint`), chưa có chân dung riêng.
+- NPC Phù Đảo Các dùng model nhân vật nền nữ có texture (`chr_kiem_tu_nu`) qua `PlayerSkins.createNpc` (`NPC_SKINS[id].look`: màu áo + màu viền, nhuộm kênh vải bằng `applyDye`, không tint cả mesh); chưa có chân dung riêng.
 - Thẻ chương 3 chưa có tranh nền (`CARD_ART`), giữ thẻ chữ.
 - Tiến độ `scan`/`kill` chưa có chỉ báo trên bản đồ.
 
