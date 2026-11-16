@@ -985,7 +985,10 @@ export class Game {
           ? this.ground.prepareMask(maskKind).then((c) => (commitMask = c), (e) => console.warn('[level] mặt nạ mặt đất:', e))
           : Promise.resolve(),
       ]);
-      if (this.disposed || seq !== this.levelSeq) return false;
+      if (this.disposed || seq !== this.levelSeq) {
+        swap.t?.dispose(); // bộ texture mới đã nạp nhưng không còn dùng tới: giải phóng, không để rò ~54 MB
+        return false;
+      }
       // 2. gỡ cũ + dựng mới trong cùng một nhịp (không có khung nào thấy cảnh dở).
       const q = QUALITY[get().quality] ?? QUALITY.medium;
       this.unloadLevel();
