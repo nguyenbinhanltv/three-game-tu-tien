@@ -44,3 +44,24 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
 Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, chặn dưới cảnh giới 20, chế bậc 3, bậc 3 không thăng được), `e2g.test.ts` (ba hiệu ứng 4 món), `shared/sets.test.ts` (mã phụ kiện > 9 bộ), `shared/tier.test.ts` (`promoteOpen`, `bottleneckPill`), `client/ui/gear.test.ts` (dòng "Bậc 3", so sánh với đồ bậc 2, chữ hiệu ứng). Chạy lại: `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`, security, `pnpm bots --count 100` + `pnpm ledger:check` (kết quả ở phần cuối).
 
 Ảnh trong game: `pnpm --filter @dtl/perf run shots:e3f --out <thư mục tuyệt đối>` (Thăng Bậc trước/sau, tooltip, chế tạo, luyện đan), `pnpm shots:sets --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20 --out …` (nam/nữ), `pnpm shots:kiem --only kinh-quang-vp` hoặc `--model prop_kiem_kinh_quang` (kiếm).
+
+## Kết quả kiểm (2026-11-16, sau khi hợp nhất main tới #142)
+
+- `pnpm typecheck` sạch; `pnpm content:check` hợp lệ, `icons:check` 169/169; `pnpm sim:progress` không có dòng LỖI (chương 3: 1,30×; bảng đồ bậc 3 ở trên).
+- `pnpm test`: shared 188, content, perf, asset-pipeline đều qua. Chạy `pnpm -r test` một lượt thì máy quá tải làm 12 file server và 2 file client lỗi do hết thời gian `beforeAll` (10 s) hoặc đo CPU; chạy lại riêng: client 2/2 qua, server 31/32 file, còn **một bài flaky có sẵn** `e2g.test.ts` "Mộc Linh Trận kéo dài thêm mocLinhDur" (so 134,1 với 135,5 ở một lần chạy, lần khác qua; E2-G, không đụng tới bởi gói này).
+- Security (`pnpm --filter @dtl/bot-client security`, server dev ở 2641, không `RATE_LIMIT_EXEMPT`): **132 mục, tất cả ĐẠT**.
+- `pnpm bots --count 100 --duration 120` (server có `RATE_LIMIT_EXEMPT=loopback`): 100 bot vào, 0 thất bại, **0 dòng `refId`**, tick p95 2,4–3,2 ms lúc đầu và 7–8 ms ở nửa sau (lúc đó máy đang chạy thêm typecheck/sim và bot đã lên cấp); `pnpm ledger:check`: 100 nhân vật, 1.882 dòng, **sổ cái khớp**.
+- Playtest bằng Chromium (WebGPU, tắt tiếng `?mute=1` + `--mute-audio`, tài khoản thử, cổng 2639/5239, server tự tắt sau khi chụp).
+
+## Ảnh
+
+- UI: `ui-promote-truoc.jpg` (bảng Thăng Bậc, bốn món Liệt Mạch → Kính Quang, phí 2.960), `ui-promote-tooltip-bac2.jpg`, `ui-promote-sau.jpg`, `ui-promote-tooltip-bac3.jpg` (tooltip đạo bào bậc 3 + dòng bộ 1/4 + hiệu ứng 4 món), `ui-forge-bac3.jpg` (tab chế tạo, ba bộ mới), `ui-luyen-dan-bac3.jpg`, `ui-tooltip-so-sanh-bac3.jpg` (tooltip so sánh với đồ bậc 2 đang mặc: chỉ số tăng xanh, mất đỏ, **Lực chiến +116**), `icons-grid.jpg` (27 icon mới).
+- Nhân vật mặc 3 bộ mới, nam và nữ: `set_<bộ>-<m|f>-<truoc|sau|nghieng|chem>.jpg` (cũng chụp lúc chạy và lúc bay: tệp `-chay|-bay` được bỏ khỏi repo cho nhẹ; chạy lại `pnpm shots:sets --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20` để có).
+- Kiếm Kính Quang cầm tay / đeo lưng / chém: `kiem-kinh_quang-*.jpg` (model nữ; lần chụp nam bị ghi đè cùng tên tệp: `--gender m` ra cùng bộ tên).
+
+## Việc để lại
+
+- Tên tệp ảnh kiếm của `shots:kiem` không có hậu tố giới tính (nam và nữ ghi đè nhau): sửa khi cần.
+- Thanh Tâm Đan, Thiên Lôi Hộ Đan, Hồi Mạch Đan bậc 3, linh ngọc cấp 4–6, Anh Ngọc Kính, Phá Ấn Phù/Định Thần Phù: chờ cơ chế của E3-L/M/E4.
+- Nguyên liệu bậc 3 chỉ rơi khi E3-A thêm quái bản đồ 3 và bảng rơi của chúng; trước đó chỉ lấy được bằng GM (`give`).
+- Gắn `item: "itm_duong_anh_dan"` vào `tribulations.json` (`nguyen_anh`) và bật cờ: E3-L.
