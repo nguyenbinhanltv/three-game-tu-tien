@@ -66,6 +66,24 @@ describe('gộp draw call hiệu ứng (K-6)', () => {
     expect(get('aFxK')[0]).toBeCloseTo(0.6);
     const m = new THREE.Matrix4();
     mesh.getMatrixAt(0, m);
-    expect(new THREE.Vector3().setFromMatrixPosition(m).toArray()).toEqual([1, 2, 3]);
+    // Mảnh nằm ở tâm instance (để sắp vật trong suốt theo độ sâu đúng); vị trí thế giới = vị trí mảnh + tịnh tiến instance.
+    const world = new THREE.Vector3().setFromMatrixPosition(m).add(mesh.position);
+    expect(world.toArray()).toEqual([1, 2, 3]);
+    expect(mesh.position.toArray()).toEqual([1, 2, 3]);
+  });
+});
+
+describe('thứ tự vẽ trong suốt', () => {
+  it('mảnh gộp nằm ở tâm các instance, không ở gốc tọa độ', () => {
+    const pool = new FxPool();
+    const b = new FxBatcher(pool);
+    pool.acquire(GEO_A, 'glow', 0xffffff, 1).position.set(2040, 150, 2080);
+    pool.acquire(GEO_A, 'glow', 0xffffff, 1).position.set(2050, 152, 2090);
+    b.flush();
+    const mesh = b.root.children[0] as THREE.InstancedMesh;
+    expect(mesh.position.toArray()).toEqual([2045, 151, 2085]);
+    const m = new THREE.Matrix4();
+    mesh.getMatrixAt(0, m);
+    expect(Math.abs(new THREE.Vector3().setFromMatrixPosition(m).x)).toBeLessThan(10);
   });
 });

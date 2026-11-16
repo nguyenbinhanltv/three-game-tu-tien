@@ -54,7 +54,7 @@ export interface SkillFxActor {
   fl: number;
   lv: number;
   speed: number;
-  model: { bladePoints?(b: THREE.Vector3, t: THREE.Vector3): boolean };
+  model: { bladePoints?(b: THREE.Vector3, t: THREE.Vector3): boolean; performClock?(): { t: number; skill: string } | null };
 }
 
 export interface SkillFxEnv {
@@ -62,6 +62,20 @@ export interface SkillFxEnv {
   mySid(): string;
   myMethod(): string | undefined;
   camera(): THREE.PerspectiveCamera;
+}
+
+/** Bùng nổ hẹn giờ: bắt đầu `BURST_LEAD` trước `hitAt` để đỉnh sáng rơi đúng hitAt (±0,05 s). */
+interface PendingBurst {
+  sid: string;
+  index: number;
+  def: SkillDef;
+  mine: boolean;
+  ult: boolean;
+  color: number;
+  /** Mốc nổ theo đồng hồ animation của model (giây từ lúc bấm) = hitAt − BURST_LEAD. */
+  at: number;
+  /** Dự phòng khi model không có đồng hồ animation: còn bao nhiêu giây (đồng hồ Vfx). */
+  left: number;
 }
 
 interface BladeJob {
@@ -91,9 +105,14 @@ export function othersAllowed(dist: number, live: number): boolean {
 
 export class SkillFx {
   private jobs: BladeJob[] = [];
+  private pending: PendingBurst[] = [];
+  /** Mốc đã nổ theo hẹn giờ (`sid:index`), để sự kiện hit đến sau không nổ lần hai. */
+  private fired = new Set<string>();
   private aura: FxMesh | null = null;
   private combatUntil = 0;
   private clock = 0;
+  /** Nhật ký dev (chỉ khi `import.meta.env.DEV`). */
+  readonly log: { kind: string; skill: string; combo: number; t: number; at: number }[] = [];
 
   constructor(
     private v: Vfx,
@@ -114,8 +133,25 @@ export class SkillFx {
     if (!mine && !othersAllowed(dist, this.v.pool.live)) return;
     const color = tintFor(def, mine, this.env.myMethod());
     const ult = !!def.ult;
+    if (import.meta.env.DEV) {
+      // Nhật ký dev: VFX phát đồng bộ trong cùng lời gọi với sự kiện chiêu (`__game.skillFx.log`).
+      this.log.push({ kind: e.kind, skill: e.skill, combo: e.combo, t: e.t, at: performance.now() });
+      if (this.log.length > 200) this.log.shift();
+    }
     if (e.kind === 'windup') this.onWindup(sid, actor, def, e, mine, ult, color, dist);
-    else if (e.kind === 'hit') this.onHit(actor, def, mine, ult, color);
+    else if (e.kind === 'hit') {
+      // Đã hẹn giờ thì nổ ngay (nếu chưa nổ); không có hẹn giờ (bỏ lỡ windup) thì nổ tại hit.
+      const key = sid + ':' + e.index;
+      if (this.fired.delete(key)) return;
+      const i = this.pending.findIndex((p) => p.sid === sid && p.index === e.index);
+      if (i >= 0) this.pending.splice(i, 1);
+      this.onHit(actor, def, mine, ult, color);
+    } else if (e.kind === 'cancel' || e.kind === 'end') this.dropPending(sid);
+  }
+
+  private dropPending(sid: string): void {
+    this.pending = this.pending.filter((p) => p.sid !== sid);
+    for (const k of this.fired) if (k.startsWith(sid + ':')) this.fired.delete(k);
   }
 
   /** Điểm trước ngực người ra chiêu (gốc của tụ lực và bùng nổ). */
@@ -127,6 +163,9 @@ export class SkillFx {
     const tm = skillTiming(def, e.combo >= 0 ? e.combo : undefined);
     const toHit = tm.hitAt[0] - e.t;
     const caps = capsFor(mine, ult);
+    // Hẹn bùng nổ cho từng mốc trúng: bắt đầu trước hitAt một `BURST_LEAD` để đỉnh sáng khớp hitAt.
+    this.dropPending(sid);
+    tm.hitAt.forEach((h, index) => this.pending.push({ sid, index, def, mine, ult, color, at: h - BURST_LEAD, left: h - e.t - BURST_LEAD }));
     // Vệt kiếm bám mũi kiếm: một cửa sổ cho mỗi mốc trúng (chiêu liên hoàn nhiều mốc có nhiều vệt nối nhau).
     if (a.model.bladePoints && bladeVisible(mine, dist) && def.kind !== 'heal' && def.kind !== 'guard' && def.kind !== 'taunt') {
       for (const h of tm.hitAt) {
@@ -153,7 +192,7 @@ export class SkillFx {
       const ring = this.v.fx(RING_GEO, color, 0.5, 'glow');
       ring.fxColor.multiplyScalar(hdrGain(color, HDR_GATHER));
       ring.rotation.x = -Math.PI / 2;
-      const base = ult ? 2.4 : 1.3;
+      const base = ult ? 1.8 : 0.95;
       this.v.track(
         dur,
         (k) => {
@@ -161,7 +200,7 @@ export class SkillFx {
           if (!act) return;
           ring.position.set(act.x, act.y + 0.12, act.z);
           ring.scale.setScalar(base * (1 - k * 0.8));
-          ring.fxOpacity = 0.5 * Math.min(1, k * 6);
+          ring.fxOpacity = 0.4 * Math.min(1, k * 6);
         },
         () => this.v.drop(ring),
       );
@@ -184,6 +223,7 @@ export class SkillFx {
     const core = this.v.fx(G.ico1, color, 1, 'glow');
     core.fxColor.multiplyScalar(hdrGain(color, HDR_BURST));
     core.position.copy(pos);
+    core.scale.setScalar(size * 0.12);
     // Vòng chấn động: nằm ngang dưới tầm ngực, lớp sáng mờ dần (≤ 0,8), nở trong thời gian tan.
     let ringT = 0;
     let ring: FxMesh | null = null;
@@ -198,7 +238,8 @@ export class SkillFx {
       (_k, dt) => {
         ringT += dt;
         const kb = Math.min(1, ringT / BURST_DUR);
-        core.scale.setScalar(size * 0.5 * (0.6 + kb * 0.9));
+        // Lõi nhỏ (bán kính 0,13–0,31 m ở chiêu thường): chói nhưng không che thân.
+        core.scale.setScalar(size * 0.2 * (0.6 + kb * 0.9));
         core.fxOpacity = Math.max(0, 1 - kb);
         core.fxK = kb;
         if (ring) {
@@ -230,6 +271,26 @@ export class SkillFx {
   update(dt: number): void {
     if (!K6_ON) return;
     this.clock += dt;
+    for (let i = this.pending.length - 1; i >= 0; i--) {
+      const p = this.pending[i];
+      const a0 = this.env.player(p.sid);
+      const clock = a0?.model.performClock?.();
+      if (clock && clock.skill === p.def.id) {
+        if (clock.t < p.at) continue;
+      } else {
+        p.left -= dt;
+        if (p.left > 0) continue;
+      }
+      this.pending.splice(i, 1);
+      this.fired.add(p.sid + ':' + p.index);
+      if (import.meta.env.DEV) {
+        // Độ lệch của bùng nổ so với hitAt theo đồng hồ animation của model (giây; spec: trong ±0,05).
+        const hitAt = p.at + BURST_LEAD;
+        this.log.push({ kind: 'burst', skill: p.def.id, combo: p.index, t: clock && clock.skill === p.def.id ? clock.t - hitAt : NaN, at: performance.now() });
+      }
+      const a = this.env.player(p.sid);
+      if (a && (a.fl & PF_DEAD) === 0) this.onHit(a, p.def, p.mine, p.ult, p.color);
+    }
     const trails = this.v.trails;
     for (let i = this.jobs.length - 1; i >= 0; i--) {
       const j = this.jobs[i];
@@ -276,6 +337,8 @@ export class SkillFx {
   dispose(): void {
     for (const j of this.jobs) if (j.rib) j.rib.sampling = false;
     this.jobs.length = 0;
+    this.pending.length = 0;
+    this.fired.clear();
     if (this.aura) {
       this.v.drop(this.aura);
       this.aura = null;

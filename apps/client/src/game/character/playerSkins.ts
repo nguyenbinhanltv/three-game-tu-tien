@@ -593,7 +593,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     const s = this.sword;
     if (!s || !s.drawn) return false;
     const d = this.glowDims ?? { start: 0.18, len: 0.8 };
-    this.inner.updateWorldMatrix(true, false);
+    // Không gọi updateWorldMatrix ở đây: engine cập nhật ma trận một lần trước khi vẽ (matrixWorldAutoUpdate = false); dùng ma trận khung trước (lệch ≤ 1 khung).
     _bpM.copy(s.boneWorld).multiply(s.glowLocal);
     base.set(0, 0, d.start).applyMatrix4(_bpM).applyMatrix4(this.inner.matrixWorld);
     tip.set(0, 0, d.start + d.len).applyMatrix4(_bpM).applyMatrix4(this.inner.matrixWorld);

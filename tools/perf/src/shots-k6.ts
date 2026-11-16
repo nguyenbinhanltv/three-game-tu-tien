@@ -16,12 +16,19 @@ const opt = (n: string, d: string) => {
 };
 const OUT = path.resolve(opt('--out', 'shots-k6'));
 const GENDERS = opt('--genders', 'm,f').split(',');
-const ONLY = opt('--only', 'kiem,hophap,dansu,vetkiem,vachbao,hotheb').split(',');
+const ONLY = opt('--only', 'kiem,hophap,dansu,vetkiem,combo,vachbao,hotheb').split(',');
 const RENDERER = opt('--renderer', 'webgpu');
 const PORT = Number(process.env.PORT ?? 2675);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
-const SC_DIST = Number(opt('--dist', '4.2'));
-const TILE = Number(opt('--tile', '80'));
+const SC_DIST = Number(opt('--dist', '3.2'));
+/** Thời gian game / thời gian thật (bản dev `?slowmo=`): chụp chậm để khung screencast (~12/s) khớp mốc game. */
+const SLOW0 = Number(opt('--slow', '0.25'));
+let SLOW = SLOW0;
+/** Mỗi ô cách nhau bấy nhiêu ms thời gian game. */
+const TILE = Number(opt('--tile', '50'));
+const TILE_REAL = 80;
+const gs = (ms: number) => ms / SLOW;
+let SHEET: BrowserContext | null = null;
 
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots-k6', command: 'pnpm shots:k6' });
 type G = { __game?: Record<string, any> };
@@ -85,6 +92,11 @@ async function clearIntro(page: Page): Promise<void> {
 }
 
 async function sheet(ctx: BrowserContext, file: string, title: string, shots: { label: string; url: string; mark?: boolean }[], per = 6): Promise<void> {
+  // Ghép ảnh ở context riêng, sau khi mọi kịch bản xong: mở tab trong context game làm khung game co lại (ảnh nửa đen).
+  if (SHEET && ctx !== SHEET) {
+    jobs.push(() => sheet(SHEET!, file, title, shots, per));
+    return;
+  }
   // Ảnh khung đầy đủ từng ô (xem cận, kiểm lóa/che): frames/<tên tờ>/<nhãn>.jpg
   const dir = path.join(path.dirname(file), 'frames', path.basename(file, '.png'));
   fs.mkdirSync(dir, { recursive: true });
@@ -92,12 +104,19 @@ async function sheet(ctx: BrowserContext, file: string, title: string, shots: { 
   const p = await ctx.newPage();
   const rows: (typeof shots)[] = [];
   for (let i = 0; i < shots.length; i += per) rows.push(shots.slice(i, i + per));
-  const cell = Math.min(300, Math.floor(1800 / Math.min(per, shots.length)));
+  // Cắt cận quanh nhân vật (khung game 1100×900, nhân vật ở giữa hơi thấp): vùng 500×440 từ (300, 330).
+  const CW = 500;
+  const CH = 440;
+  const cell = Math.min(360, Math.floor(1800 / Math.min(per, shots.length)));
+  const z = cell / CW;
   const html = `<body style="margin:0;background:#161b21;color:#e7e3d8;font:12px system-ui"><div style="padding:8px 12px;font-size:15px;color:#d8b36a">${title}</div>${rows
     .map(
       (r) =>
         `<div style="display:flex;align-items:flex-start">${r
-          .map((s) => `<figure style="margin:2px;width:${cell}px"><img src="${s.url}" style="display:block;width:${cell}px;${s.mark ? 'outline:3px solid #d85a46' : ''}"><figcaption style="padding:2px 4px">${s.label}</figcaption></figure>`)
+          .map(
+            (s) =>
+              `<figure style="margin:2px;width:${cell}px"><div style="width:${cell}px;height:${Math.round(CH * z)}px;overflow:hidden;${s.mark ? 'outline:3px solid #d85a46' : ''}"><img src="${s.url}" style="display:block;width:${Math.round(1100 * z)}px;margin-left:${-Math.round(300 * z)}px;margin-top:${-Math.round(330 * z)}px"></div><figcaption style="padding:2px 4px">${s.label}</figcaption></figure>`,
+          )
           .join('')}</div>`,
     )
     .join('')}</body>`;
@@ -110,7 +129,7 @@ async function sheet(ctx: BrowserContext, file: string, title: string, shots: { 
 }
 
 /** Chạy `act` (bắt đầu bằng mốc 0 ms) trong khi ghi màn hình, trả các ô cách nhau TILE ms và nhật ký sự kiện chiêu. */
-async function record(ctx: BrowserContext, page: Page, span: number, act: () => Promise<void>): Promise<{ shots: { label: string; url: string; mark?: boolean }[]; events: { ms: number; kind: string; index: number; combo: number; t: number }[] }> {
+async function record(ctx: BrowserContext, page: Page, spanGame: number, act: () => Promise<void>): Promise<{ shots: { label: string; url: string; mark?: boolean }[]; events: { ms: number; kind: string; index: number; combo: number; t: number }[] }> {
   // Ghép tờ ảnh mở tab khác: đưa tab game ra trước, tab nền bị hãm khung và screencast ra ảnh sai cỡ.
   await page.bringToFront();
   await sleep(400);
@@ -127,20 +146,26 @@ async function record(ctx: BrowserContext, page: Page, span: number, act: () => 
   await sleep(300);
   const t0 = await page.evaluate(() => performance.timeOrigin + performance.now());
   const t0p = await page.evaluate(() => performance.now());
+  const span = gs(spanGame);
   await act();
   const elapsed = (await page.evaluate(() => performance.now())) - t0p;
   await sleep(Math.max(0, span - elapsed));
   await cdp.send('Page.stopScreencast');
+  log[`burst-${Date.now()}`] = ((await page.evaluate(`window.__game.skillFx.log.filter((x) => x.kind === 'burst').slice(-6)`)) as { skill: string; t: number }[]).map((x) => `${x.skill}: lõi nổ lệch hitAt ${Math.round(x.t * 1000)} ms`);
   const evs = (await page.evaluate(() => (window as unknown as G).__game!.skillLog as Ev[])) as Ev[];
-  const events = evs.map((x) => ({ ms: Math.round(x.at - t0p), kind: x.e.kind, index: x.e.index, combo: x.e.combo, t: Math.round(x.e.t * 1000) / 1000 }));
+  const events = evs.map((x) => ({ ms: Math.round((x.at - t0p) * SLOW), kind: x.e.kind, index: x.e.index, combo: x.e.combo, t: Math.round(x.e.t * 1000) / 1000 }));
   const hitMs = events.filter((e) => e.kind === 'hit').map((e) => e.ms);
   const shots: { label: string; url: string; mark?: boolean }[] = [];
-  for (let ms = 0; ms <= span; ms += TILE) {
+  const step = SLOW < 1 ? TILE : TILE_REAL;
+  for (let g = 0; g <= spanGame; g += step) {
+    const ms = gs(g);
     const f = frames.reduce<{ at: number; data: string } | null>((b, x) => (!b || Math.abs(x.at - t0 - ms) < Math.abs(b.at - t0 - ms) ? x : b), null);
     if (!f) continue;
     const real = Math.round(f.at - t0);
     if (Math.abs(real - ms) > 90) continue;
-    shots.push({ label: `${real} ms${hitMs.filter((h) => Math.abs(h - real) <= TILE / 2 + 10).length ? ' · hit' : ''}`, url: 'data:image/jpeg;base64,' + f.data, mark: hitMs.some((h) => Math.abs(h - real) <= TILE / 2 + 10) });
+    const game = Math.round(real * SLOW);
+    const isHit = hitMs.some((h) => Math.abs(h - game) <= (SLOW < 1 ? TILE : TILE_REAL) / 2 + 5);
+    shots.push({ label: `${game} ms${isHit ? ' · hit' : ''}`, url: 'data:image/jpeg;base64,' + f.data, mark: isHit });
   }
   return { shots, events };
 }
@@ -149,6 +174,8 @@ const hasWolf = (page: Page) => page.evaluate(() => [...(window as unknown as G)
 
 async function scene(page: Page, wolves = 1): Promise<void> {
   await gm(page, 'killall', 900);
+  // Đồ rơi từ xác sói nằm lại vài giây (viên bát diện trắng gần camera làm ảnh khó đọc): chờ tan.
+  if (wolves > 0) await sleep(9000);
   await gm(page, 'heal', 600);
   await gm(page, 'cd', 600);
   if (wolves > 0) await gm(page, `spawn mon_soi_xam ${wolves}`, 1700);
@@ -165,16 +192,19 @@ async function main(): Promise<void> {
   const browser = await chromium.launch({ channel: 'chrome', headless: true, args: launchArgs }).catch(() => chromium.launch({ headless: true, args: launchArgs }));
   const errors: string[] = [];
   const sheetCtx = await browser.newContext({ viewport: { width: 1800, height: 800 } });
+  SHEET = sheetCtx;
   try {
     for (const g of GENDERS) for (const sc of ONLY) {
       // Mỗi kịch bản một phiên game mới: tab dùng lại cho khung screencast co nhỏ sau lần ghi đầu.
+      // Chỉ cảnh chiêu/vệt kiếm chụp chậm; vạch báo và linh quang chạy thời gian thật.
+      SLOW = ['kiem', 'hophap', 'dansu'].includes(sc) ? SLOW0 : 1;
       const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 }, deviceScaleFactor: 1 });
       await ctx.addInitScript({ content: `localStorage.setItem('dtl.quality','high');localStorage.setItem('dtl.controls','strafe');localStorage.setItem('dtl.look',JSON.stringify({g:'${g}',dye:'attire_sect'}));` });
       const page = await ctx.newPage();
       const name = `K6${g}${String(Date.now() % 10000)}`;
       page.on('pageerror', (e) => errors.push(`${name} pageerror: ${e.message}`));
       page.on('console', (m) => (m.type() === 'error' || (m.type() === 'warning' && /models/.test(m.text()))) && errors.push(`${name}: ${m.text().slice(0, 300)}`));
-      await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${opt('--query', '')}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+      await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${opt('--query', '')}${SLOW < 1 ? '&slowmo=' + SLOW : ''}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
       await page.waitForFunction(() => {
         const w = (window as unknown as G).__game;
         return !!w && w.frames > 30 && !!w.me?.();
@@ -250,13 +280,14 @@ async function main(): Promise<void> {
         await sheet(ctx, out('dansu-don-thuong'), title('Đan sư · đòn thường'), r.shots, 10);
       }
       if (sc === 'vetkiem') {
-        // Cận cảnh vệt kiếm: đòn thường liên hoàn 3 đòn, camera sát (≈3,5 m).
+        // Cận cảnh vệt kiếm, tốc độ thật: 3 đòn thường cách nhau 1 s; mỗi đòn chờ sự kiện hit rồi chụp dồn 4 ảnh (~60 ms một ảnh):
+        // vệt sống 0,22 s sau mẫu cuối (hit + 0,08 s) nên còn thấy ở các ảnh này. Ghi thêm vị trí gốc/mũi kiếm trên màn hình mỗi khung.
         await scene(page);
         await page.evaluate(`(() => {
           const g = window.__game; const out = (window.__k6probe = []);
           function tick() {
             const bl = g.vfx.trails.blades.filter((x) => x.mesh);
-            const rec = { t: Math.round(performance.now()), blades: bl.length, live: g.vfx.pool.live, st: g.vfx.batch.stats() };
+            const rec = { t: Math.round(performance.now()), blades: bl.length, st: g.vfx.batch.stats() };
             if (bl[0]) {
               const P = bl[0].r.pos.array, n = bl[0].r.n; rec.n = n;
               const cam = g.camera; const V = g.ents.players.get(g.sid).model.root.position.constructor;
@@ -268,15 +299,35 @@ async function main(): Promise<void> {
           tick();
         })()`);
         await closeCam(page, 3.5);
+        await page.bringToFront();
+        const shots: { label: string; url: string; mark?: boolean }[] = [];
+        for (let k = 0; k < 3; k++) {
+          await page.evaluate(`window.__game.skillLog.length = 0`);
+          await press(0);
+          const until = Date.now() + 3000;
+          while (Date.now() < until && !(await page.evaluate(`window.__game.skillLog.some((x) => x.e.kind === 'hit')`))) await sleep(5);
+          const t0 = Date.now();
+          for (let i = 0; i < 4; i++) {
+            const buf = await page.screenshot({ type: 'jpeg', quality: 88 });
+            shots.push({ label: `đòn ${k + 1} · hit +${Date.now() - t0} ms`, url: 'data:image/jpeg;base64,' + buf.toString('base64'), mark: i === 0 });
+          }
+          await sleep(900);
+        }
+        await sheet(ctx, out('vet-kiem'), title('Vệt kiếm bám mũi kiếm: 3 đòn thường, 4 ảnh dồn ngay sau khung hit (tốc độ thật)'), shots, 6);
+        log[`${g}-vet-kiem-probe`] = (await page.evaluate(`window.__k6probe.filter((x) => x.blades > 0)`)) as unknown[];
+      }
+      if (sc === 'combo') {
+        // Chuỗi liên hoàn 3 đòn ở tốc độ thật (chụp chậm làm lệch dự đoán so với server khi bấm liên tiếp).
+        await scene(page);
+        await closeCam(page, 3.5);
         const r = await record(ctx, page, 3400, async () => {
           for (let k = 0; k < 3; k++) {
             await press(0);
             await sleep(1000);
           }
         });
-        await sheet(ctx, out('vet-kiem-lien-hoan'), title('Vệt kiếm bám mũi kiếm, liên hoàn 3 đòn'), r.shots, 12);
-        log[`${g}-vet-kiem`] = r.events;
-        log[`${g}-vet-kiem-probe`] = (await page.evaluate(`window.__k6probe.filter((x) => x.blades > 0)`)) as unknown[];
+        await sheet(ctx, out('lien-hoan-3-don'), title('Đòn thường liên hoàn 3 đòn, tốc độ thật (tụ lực, bùng nổ, vệt kiếm)'), r.shots, 12);
+        log[`${g}-combo`] = r.events;
       }
       if (sc === 'vachbao') {
         // Vạch báo của quái: gọi trực tiếp `vfx.hazard` hai vòng cạnh nhau, 3 s báo: trái = quái thường (son đỏ),

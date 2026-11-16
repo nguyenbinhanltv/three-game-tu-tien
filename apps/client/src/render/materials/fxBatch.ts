@@ -26,8 +26,11 @@ interface Bucket {
   geo: THREE.BufferGeometry;
   order: number;
   chunks: Chunk[];
-  used: number;
+  /** Tay cầm của nhóm trong khung này. */
+  list: FxMesh[];
 }
+
+const _m = new THREE.Matrix4();
 
 export class FxBatcher {
   readonly root = new THREE.Group();
@@ -59,46 +62,77 @@ export class FxBatcher {
     return { mesh, c, a, b: bb, k };
   }
 
-  /** Ghi mọi tay cầm đang sống vào các `InstancedMesh`. Gọi một lần mỗi khung, sau khi hiệu ứng đã cập nhật. */
+  /**
+   * Ghi mọi tay cầm đang sống vào các `InstancedMesh`. Gọi một lần mỗi khung, sau khi hiệu ứng đã cập nhật.
+   *
+   * Vị trí mảnh đặt về tâm các instance của nó (ma trận instance trừ phần dịch đó): three sắp vật trong suốt theo
+   * `renderOrder` rồi độ sâu của vị trí object, nên mảnh để ở gốc (0,0,0) trong khi instance ở ~(2048, 2088) bị coi
+   * là cách camera hàng km và luôn vẽ trước biển mây, sân tông môn... (không ghi depth thì các lớp đó đè lên VFX).
+   */
   flush(): void {
-    for (const b of this.buckets.values()) b.used = 0;
+    for (const b of this.buckets.values()) b.list.length = 0;
     for (const h of this.pool.batched) {
       // Độ trong 0 vẫn được ghi: lưới "vẽ ấm" (prewarm) cần được vẽ một lần để biên dịch shader.
       if (!h.visible) continue;
       const key = `${h.fxKind}|${h.geometry.uuid}|${h.renderOrder}`;
       let b = this.buckets.get(key);
       if (!b) {
-        b = { kind: h.fxKind, geo: h.geometry, order: h.renderOrder, chunks: [], used: 0 };
+        b = { kind: h.fxKind, geo: h.geometry, order: h.renderOrder, chunks: [], list: [] };
         this.buckets.set(key, b);
       }
-      const ci = Math.floor(b.used / BATCH_CHUNK);
-      const i = b.used % BATCH_CHUNK;
-      const ch = b.chunks[ci] ?? (b.chunks[ci] = this.makeChunk(b));
-      b.used++;
-      h.updateMatrix();
-      ch.mesh.setMatrixAt(i, h.matrix);
-      const o = i * 4;
-      ch.c[o] = h.fxColor.r;
-      ch.c[o + 1] = h.fxColor.g;
-      ch.c[o + 2] = h.fxColor.b;
-      ch.c[o + 3] = h.fxOpacity;
-      ch.a[o] = h.fxA.x;
-      ch.a[o + 1] = h.fxA.y;
-      ch.a[o + 2] = h.fxA.z;
-      ch.a[o + 3] = h.fxA.w;
-      ch.b[o] = h.fxB.x;
-      ch.b[o + 1] = h.fxB.y;
-      ch.b[o + 2] = h.fxB.z;
-      ch.b[o + 3] = h.fxB.w;
-      ch.k[o] = h.fxK;
+      b.list.push(h);
     }
     for (const b of this.buckets.values()) {
-      for (let ci = 0; ci < b.chunks.length; ci++) {
-        const ch = b.chunks[ci];
-        const n = Math.max(0, Math.min(BATCH_CHUNK, b.used - ci * BATCH_CHUNK));
+      const total = b.list.length;
+      const chunks = Math.max(b.chunks.length, Math.ceil(total / BATCH_CHUNK));
+      for (let ci = 0; ci < chunks; ci++) {
+        const from = ci * BATCH_CHUNK;
+        const n = Math.max(0, Math.min(BATCH_CHUNK, total - from));
+        const ch = b.chunks[ci] ?? (n > 0 ? (b.chunks[ci] = this.makeChunk(b)) : undefined);
+        if (!ch) continue;
         ch.mesh.count = n;
         ch.mesh.visible = n > 0;
         if (n === 0) continue;
+        // Tâm các instance trong mảnh.
+        let cx = 0;
+        let cy = 0;
+        let cz = 0;
+        for (let i = 0; i < n; i++) {
+          const h = b.list[from + i];
+          cx += h.position.x;
+          cy += h.position.y;
+          cz += h.position.z;
+        }
+        cx /= n;
+        cy /= n;
+        cz /= n;
+        ch.mesh.position.set(cx, cy, cz);
+        ch.mesh.updateMatrix();
+        for (let i = 0; i < n; i++) {
+          const h = b.list[from + i];
+          h.updateMatrix();
+          const e = h.matrix.elements;
+          // Dịch về hệ của mảnh: trừ tâm khỏi phần tịnh tiến.
+          _m.copy(h.matrix);
+          _m.elements[12] = e[12] - cx;
+          _m.elements[13] = e[13] - cy;
+          _m.elements[14] = e[14] - cz;
+          ch.mesh.setMatrixAt(i, _m);
+          const o = i * 4;
+          ch.c[o] = h.fxColor.r;
+          ch.c[o + 1] = h.fxColor.g;
+          ch.c[o + 2] = h.fxColor.b;
+          ch.c[o + 3] = h.fxOpacity;
+          ch.a[o] = h.fxA.x;
+          ch.a[o + 1] = h.fxA.y;
+          ch.a[o + 2] = h.fxA.z;
+          ch.a[o + 3] = h.fxA.w;
+          ch.b[o] = h.fxB.x;
+          ch.b[o + 1] = h.fxB.y;
+          ch.b[o + 2] = h.fxB.z;
+          ch.b[o + 3] = h.fxB.w;
+          ch.k[o] = h.fxK;
+        }
         ch.mesh.instanceMatrix.needsUpdate = true;
         const g = ch.mesh.geometry;
         (g.getAttribute(BATCH_ATTR.c) as THREE.BufferAttribute).needsUpdate = true;

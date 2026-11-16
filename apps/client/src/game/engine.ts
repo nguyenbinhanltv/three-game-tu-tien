@@ -189,6 +189,9 @@ export function reqId(): string {
   return Date.now().toString(36) + '-' + (reqCounter++).toString(36) + '-' + Math.floor(Math.random() * 1e6).toString(36);
 }
 
+/** Chỉ bản dev, để chụp ảnh đúng khung: `?slowmo=0.25` chậm thời gian hiển thị (đứng yên, không di chuyển). */
+const SLOWMO = import.meta.env.DEV ? Math.min(1, Math.max(0.05, Number(new URLSearchParams(location.search).get('slowmo')) || 1)) : 1;
+
 export class Game {
   static current: Game | null = null;
   private static client: Client | null = null;
@@ -551,6 +554,7 @@ export class Game {
     room.onMessage(S.DMG, (m: DmgMsg) => this.onDmg(m));
     room.onMessage(S.HAZARD, (m: HazardMsg) => {
       if (import.meta.env.DEV) (this.hazardLog ??= []).push({ k: m.kind, sh: m.sh ?? 'circle', src: m.src ?? '', boss: this.isBossSrc(m.src), t: this.view.monsters.get(m.src ?? '')?.t ?? '' });
+      if (import.meta.env.DEV && this.hazardLog && this.hazardLog.length > 200) this.hazardLog.shift();
       // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
       if (m.sh && this.vfx) {
         if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m, this.isBossSrc(m.src));
@@ -1927,7 +1931,7 @@ export class Game {
     if (this.disposed || this.compiling > 0) return;
     this.renderer.info.reset();
     const now = performance.now();
-    const dt = Math.min(0.1, (now - this.lastT) / 1000);
+    const dt = Math.min(0.1, (now - this.lastT) / 1000) * SLOWMO;
     this.lastT = now;
     this.frames++;
     const me = this.me();

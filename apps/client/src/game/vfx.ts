@@ -9,7 +9,7 @@ import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../render/vfx/ink';
 import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, lootPulse, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
-import { hazardFlash, hazardStyle } from '../render/vfx/phases';
+import { hazardFlash, hazardStyle, maxRadiusFor } from '../render/vfx/phases';
 import { BoltFx } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
 import { Trails } from '../render/vfx/trail';
@@ -185,6 +185,9 @@ export class Vfx {
 
   /** Vụ nổ sáng nhỏ tại một điểm. */
   burst(pos: THREE.Vector3, color: number, size = 1.2, dur = 0.28): void {
+    // Không che quá 25% màn hình (K-6): vòng chấn động tối đa 2,7 × size, nên size bị chặn theo khoảng cách camera.
+    const cam = this.camera as THREE.PerspectiveCamera | null;
+    if (cam?.isPerspectiveCamera) size = Math.max(0.15, Math.min(size, maxRadiusFor(cam.position.distanceTo(pos), cam.fov, cam.aspect) / 2.7));
     // Vỏ cầu fresnel (rìa sáng, giữa trong suốt): quả cầu đặc cộng sáng che kín người/quái trúng đòn.
     const m = this.fx(G.ico1, color, 0.9, 'dome');
     m.position.copy(pos);
