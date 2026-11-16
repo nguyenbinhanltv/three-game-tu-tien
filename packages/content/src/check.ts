@@ -974,13 +974,6 @@ console.log(`Tổng tu vi Ngưng Khí 1 → viên mãn tầng 15: ${total}`);
 }
 console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILLS.length} skill (${METHODS.length} công pháp), ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose, ${APPEARANCE.dyes.length} màu áo`);
 
-if (errors.length) {
-  console.error(`\n${errors.length} lỗi nội dung:`);
-  for (const e of errors) console.error(' - ' + e);
-  process.exit(1);
-}
-console.log('Nội dung hợp lệ.');
-
 // E2-H: điểm phụ (`spots`), người đồng hành (`escorts`) và NPC trạm theo glossary.
 {
   const glossSpots = GLOSSARY.spots as Record<string, string>;
@@ -1037,3 +1030,10 @@ console.log('Nội dung hợp lệ.');
   if (na && (na.giver !== 'npc_lam_chieu_dung' || na.turnin !== 'npc_lam_chieu_dung')) err('q3_nguyen_anh phải giao và trả ở npc_lam_chieu_dung');
   if (na && !na.objectives.some((o) => o.type === 'breakthrough' && o.target === 'nguyen_anh')) err('q3_nguyen_anh phải có mục tiêu breakthrough nguyen_anh');
 }
+
+if (errors.length) {
+  console.error(`\n${errors.length} lỗi nội dung:`);
+  for (const e of errors) console.error(' - ' + e);
+  process.exit(1);
+}
+console.log('Nội dung hợp lệ.');
