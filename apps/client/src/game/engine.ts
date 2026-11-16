@@ -18,7 +18,7 @@ import { buildSources, Soundscape } from './soundscape';
 import { audioSpatialApi } from './soundscapeAudio';
 import { CamFrame, CHAPTER, type ChapterKind, firstTime } from './chapter';
 import { DeathFx } from './deathFx';
-import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, Cutscene, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Vec3, type Waypoint } from './cutscene';
+import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, DAN_CUTSCENE, danTranPath, Cutscene, minBossDist, PHASE_CUTSCENE, phaseShiftPath, SECT_CUTSCENE, type Vec3, type Waypoint } from './cutscene';
 import { LootFly } from './lootFly';
 import { gearLootTier, LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootColor, lootTier } from '../render/vfx/loot';
 import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
@@ -351,7 +351,10 @@ export class Game {
   /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
   private cine = new Cutscene();
   /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
-  private cineKind: 'sect' | 'boss' | 'phase' = 'sect';
+  private cineKind: 'sect' | 'boss' | 'phase' | 'dan' = 'sect';
+  /** Đan Trận đang hiện (E2-D): theo sid chủ kiếp. */
+  private ch2Checked = false;
+  private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
   private cineShakeAt = 0;
   /** Cảnh độ kiếp của mình (P2-B4): 0..1 độ đậm của màu tối/tím toàn cảnh, và cờ đang trong cảnh (ẩn nhãn 3D). */
   private tribMix = 0;
@@ -536,7 +539,7 @@ export class Game {
       if (m.sh && this.vfx) {
         if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m, this.isBossSrc(m.src));
       }
-      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src));
+      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src), m.hot);
       // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
       if (m.src) this.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
       const vol = this.volumeAt(m.x, m.z);
@@ -1846,12 +1849,12 @@ export class Game {
         break;
       case 'ascend':
         // Người khác thấy trụ sáng như cũ; của mình thì quầng + tia nắng mảnh để không phủ trắng khung hình.
-        if (src === this.sid) v.ascendGlow(posSrc);
-        else v.pillar(posSrc, 0xfff2b8, 3.2, 2.4, 40);
+        if (src === this.sid) v.ascendGlow(posSrc, 2.6, m.tb === 'ket_dan');
+        else v.pillar(posSrc, m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8, 3.2, 2.4, 40);
         if (src === this.sid) {
           this.post?.flash(0.3);
           // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
-          window.setTimeout(() => !this.disposed && this.chapter('ascend', false), 1100);
+          window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
         }
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
@@ -1918,7 +1921,36 @@ export class Game {
         if (src === this.sid) set({ castEnd: 0 });
         this.skillPoses.onCastEnd(pSrc?.model);
         break;
+      case 'dantran': {
+        // Đan Trận (E2-D): `pg` < 0 khép vòng, ngược lại cập nhật tiến độ; lần đầu của một vòng thì dựng vòng.
+        const h = this.danVfx.get(src);
+        if (m.pg !== undefined && m.pg < 0) {
+          h?.stop();
+          this.danVfx.delete(src);
+          if (src === this.sid) set({ danPg: -1 });
+          break;
+        }
+        if (!h && m.r) {
+          this.danVfx.set(src, v.danTran(m.x ?? 0, m.z ?? 0, m.r, (m.d ?? 28) + 1, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0));
+          if (src === this.sid) this.danCine(m.x ?? 0, m.z ?? 0);
+        }
+        this.danVfx.get(src)?.set(m.pg ?? 0);
+        if (src === this.sid) set({ danPg: m.pg ?? 0 });
+        break;
+      }
+      case 'dantran_ok': {
+        // Đan thành: một cột đan hỏa lam ngả vàng bốc lên từ giữa vòng, mảnh và trầm (không che nhân vật).
+        _v.set(m.x ?? 0, groundAt(m.x ?? 0, m.z ?? 0) + 0.6, m.z ?? 0);
+        v.burst(_v, 0xffcf8a, 3.2, 0.5);
+        v.pillar(posSrc, 0xffd79a, 1.4, 0.9, 10, 0.1);
+        if (src === this.sid) this.shake.kick(0.5);
+        break;
+      }
       case 'tribstart':
+        // Vòng Đan Trận còn sót của kiếp trước (chết giữa kiếp không có tin khép vòng).
+        this.danVfx.get(src)?.stop();
+        this.danVfx.delete(src);
+        if (src === this.sid) set({ danPg: -1 });
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) {
           this.tribUntil = Date.now() + (m.d ?? 40) * 1000;
@@ -2746,6 +2778,14 @@ export class Game {
         pushToast(t('ui.fly_hint'), 'info');
       }
     }
+    // Chương 2 · Đoạn Mạch: thẻ lần đầu nhân vật này tới (E2-D). Vào bằng room mới nên kiểm ở đây, không ở `enterLevel`.
+    if (!this.ch2Checked && levelId() === 'doan_mach' && get().phase === 'game') {
+      const who = get().char?.name;
+      if (who) {
+        this.ch2Checked = true;
+        if (firstTime(localStorage, 'ch2', who)) window.setTimeout(() => !this.disposed && this.chapter('ch2'), 1200);
+      }
+    }
     if (this.pendingChapter) {
       this.chapter(this.pendingChapter);
       this.pendingChapter = null;
@@ -2779,7 +2819,7 @@ export class Game {
     return get().chapterCards && new URLSearchParams(location.search).get('cine') !== '0';
   }
 
-  private beginBossCine(kind: 'boss' | 'phase', path: readonly Waypoint[], prof: { dur: number; out: number }, info: { name: string; title?: string; text: string }): void {
+  private beginBossCine(kind: 'boss' | 'phase' | 'dan', path: readonly Waypoint[], prof: { dur: number; out: number }, info: { name: string; title?: string; text: string }): void {
     this.cineKind = kind;
     this.cineShakeAt = 0;
     this.cineFocus = null;
@@ -2822,6 +2862,16 @@ export class Game {
       this.shake.kick(0.45);
       if (this.ents.chestOf(id, _v)) this.vfx.burst(_v, 0xffd9a0, 1.0, 0.3);
     });
+  }
+
+  /** Đan Trận mở ra: cắt cảnh ngắn nhìn xuống vòng (giữ HUD, bỏ qua được bằng phím/chuột hoặc khi bị đánh). */
+  private danCine(x: number, z: number): void {
+    if (!this.canBossCine(this.me())) return;
+    const cam = this.camera;
+    const look = _cineEndL.copy(cam.position).add(_cineFwd.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(10));
+    const path = danTranPath({ x: cam.position.x, y: cam.position.y, z: cam.position.z }, { x: look.x, y: look.y, z: look.z }, { x, y: groundAt(x, z), z }, groundAt);
+    postParams.pulseColor.value.set('#ffb070');
+    this.beginBossCine('dan', path, DAN_CUTSCENE, { name: '', text: '' });
   }
 
   /** Chuyển pha (P2-B3): cắt cảnh ngắn, camera lùi nhẹ, rung đất, màu thoáng đổi. Trả false nếu không chiếu (lúc đó dùng câu thoại thường). */
@@ -2909,9 +2959,10 @@ export class Game {
     const k = this.cineKind;
     if (k === 'sect') return;
     const w = on ? this.cine.weight : 0;
-    const prof = k === 'boss' ? BOSS_CUTSCENE : PHASE_CUTSCENE;
+    const prof = k === 'boss' ? BOSS_CUTSCENE : k === 'dan' ? DAN_CUTSCENE : PHASE_CUTSCENE;
     const bell = Math.sin(Math.PI * Math.min(1, this.cine.time / prof.dur));
     if (k === 'boss') postParams.radial.value = 0.75 * bell * w;
+    else if (k === 'dan') postParams.pulse.value = 0.3 * bell * w;
     else {
       postParams.pulse.value = 0.9 * bell * w;
       if (on && this.cineShakeAt === 0 && this.cine.time > 0.55) {
