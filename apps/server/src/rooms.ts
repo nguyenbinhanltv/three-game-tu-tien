@@ -502,10 +502,10 @@ export class WorldRoom extends GameRoom {
         if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) <= TELE_PARTY_R) mates.push(m);
       }
     }
-    tickets.issue(p.char.id, portal.to);
+    tickets.issue(p.char.id, portal.to, null, undefined, opts.dgKey);
     this.sendTransfer(p, portal.to, opts);
     for (const m of mates.slice(0, 4)) {
-      tickets.issue(m.char.id, portal.to);
+      tickets.issue(m.char.id, portal.to, null, undefined, opts.dgKey);
       this.sendTransfer(m, portal.to, opts);
     }
   }
@@ -559,7 +559,14 @@ export class DungeonRoom extends GameRoom {
   /** Chỉ vào được bằng vé cấp ở cổng; gọi thẳng joinOrCreate('dungeon') sẽ bị từ chối. */
   static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     const auth = await GameRoom.onAuth(token, options);
-    if (!tickets.take(auth.charId, (this as unknown as { levelId: string }).levelId)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+    const level = (this as unknown as { levelId: string }).levelId;
+    // Phó bản riêng: vé phải mang khóa nhóm và client phải gửi đúng khóa đó (không khóa/khóa lạ = không vé, vé không bị đốt).
+    if (LEVELS[level]?.dungeon?.private) {
+      const key = (options as { dgKey?: unknown } | null)?.dgKey;
+      const t = tickets.peek(auth.charId, level);
+      if (!t?.dg || typeof key !== 'string' || key !== t.dg) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+    }
+    if (!tickets.take(auth.charId, level)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
     return { ...auth, ticket: true };
   }
 

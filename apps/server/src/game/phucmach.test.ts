@@ -147,9 +147,22 @@ describe('vé và vào room', () => {
     transfer.tickets.issue(a.charId, 'kiem_trung');
     await expect(Dg().onAuth('', { dev: 'pmauth' })).rejects.toThrow(/no_ticket/);
     expect(transfer.tickets.has(a.charId, 'kiem_trung')).toBe(true);
+    transfer.tickets.issue(a.charId, LV, null, undefined, 'k');
+    await expect(Dg().onAuth('', { dev: 'pmauth', dgKey: 'k' })).resolves.toMatchObject({ charId: a.charId });
+    await expect(Dg().onAuth('', { dev: 'pmauth', dgKey: 'k' })).rejects.toThrow(/no_ticket/);
+  });
+
+  it('phó bản riêng: vé đúng level nhưng dgKey thiếu/sai bị no_ticket (vé không bị đốt); đúng khóa thì vào', async () => {
+    const a = await Home().onAuth('', { dev: 'pmkey' });
+    transfer.tickets.issue(a.charId, LV, null, undefined, 'khoa-nhom');
+    await expect(Dg().onAuth('', { dev: 'pmkey' })).rejects.toThrow(/no_ticket/);
+    await expect(Dg().onAuth('', { dev: 'pmkey', dgKey: 'khoa-khac' })).rejects.toThrow(/no_ticket/);
+    await expect(Dg().onAuth('', { dev: 'pmkey', dgKey: 123 })).rejects.toThrow(/no_ticket/);
+    expect(transfer.tickets.has(a.charId, LV)).toBe(true);
+    await expect(Dg().onAuth('', { dev: 'pmkey', dgKey: 'khoa-nhom' })).resolves.toMatchObject({ charId: a.charId });
+    // vé không mang khóa (cấp kiểu cũ) cũng không vào được phó bản riêng
     transfer.tickets.issue(a.charId, LV);
-    await expect(Dg().onAuth('', { dev: 'pmauth' })).resolves.toMatchObject({ charId: a.charId });
-    await expect(Dg().onAuth('', { dev: 'pmauth' })).rejects.toThrow(/no_ticket/);
+    await expect(Dg().onAuth('', { dev: 'pmkey', dgKey: 'khoa-nhom' })).rejects.toThrow(/no_ticket/);
   });
 
   it('cổng Đoạn Mạch: đủ cấp trong tầm mới có vé; đồng đội cùng tổ đội trong tầm được kéo theo cùng khóa room', async () => {
@@ -184,6 +197,8 @@ describe('vé và vào room', () => {
     expect(m.level).toBe(LV);
     expect(typeof m.options.dgKey).toBe('string');
     expect(xfers(near).at(-1)!.options.dgKey).toBe(m.options.dgKey);
+    expect(transfer.tickets.peek(lead.char.id, LV)!.dg).toBe(m.options.dgKey);
+    expect(transfer.tickets.peek(near.char.id, LV)!.dg).toBe(m.options.dgKey);
     // hai lượt vào khác nhau có hai khóa khác nhau (hai room riêng)
     transfer.tickets.clear();
     w.room.onPortal(lead);

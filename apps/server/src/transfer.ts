@@ -13,6 +13,8 @@ export interface Ticket {
   exp: number;
   /** Vé vào room độ kiếp (E1-F): khóa room (mỗi lần độ kiếp một room) và kiếp cần bắt đầu khi tới nơi (thiếu = hộ pháp, chỉ xem và chắn). */
   trib?: { key: string; id?: string };
+  /** Vé vào phó bản riêng (E2-C): khóa room của nhóm; room kiểm khớp với `options.dgKey` client gửi. */
+  dg?: string;
 }
 
 export class TicketBook {
@@ -25,9 +27,10 @@ export class TicketBook {
   ) {}
 
   /** Cấp vé tới `to` (thay vé cũ nếu có). */
-  issue(charId: number, to: string, spawn: { x: number; z: number } | null = null, trib?: Ticket['trib']): Ticket {
+  issue(charId: number, to: string, spawn: { x: number; z: number } | null = null, trib?: Ticket['trib'], dg?: string): Ticket {
     const t: Ticket = { to, spawn: spawn ? { x: spawn.x, z: spawn.z } : null, exp: this.now() + this.ttl };
     if (trib) t.trib = { ...trib };
+    if (dg) t.dg = dg;
     this.tickets.set(charId, t);
     return t;
   }
@@ -46,6 +49,12 @@ export class TicketBook {
     if (t.to !== to) return null;
     this.tickets.delete(charId);
     return t;
+  }
+
+  /** Xem vé tới `to` (chưa hết hạn) mà không tiêu thụ. */
+  peek(charId: number, to: string): Ticket | null {
+    const t = this.tickets.get(charId);
+    return t && t.exp >= this.now() && t.to === to ? t : null;
   }
 
   /** Còn vé (chưa hết hạn) tới `to` không; không tiêu thụ. */
