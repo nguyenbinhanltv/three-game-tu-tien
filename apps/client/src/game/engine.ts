@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg } from '@dtl/shared';
+import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg } from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, thanThongSkill, tierBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
@@ -571,6 +571,7 @@ export class Game {
       });
     });
     room.onMessage(S.MARK, (m: MarkMsg) => set({ marks: m.marks }));
+    room.onMessage(S.ESCORT, (m: EscortMsg) => this.ents?.setEscort(m));
     // Thần thức (E2-E): chỉ hiển thị; server quyết định kết quả quét. Thời gian đổi sang đồng hồ client.
     room.onMessage(S.SPIRIT_STATE, (m: SpiritStateMsg) => {
       const now = performance.now();
