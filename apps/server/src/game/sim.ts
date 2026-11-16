@@ -190,6 +190,7 @@ const POTION_ALLY_RANGE = 12;
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
+import { MonSkills, newRt, type MonSkillRt } from './monskill';
 import { CampSystem, type CampRt } from './camps';
 import { empowerDeadlines, isEmpowered, SkillFlow } from './skillflow';
 import { DuelSystem } from './duel';
@@ -327,6 +328,10 @@ export interface MonEnt {
   /** Chiêu chém vùng: lúc được ra tiếp (0 = chưa hẹn); đang đứng yên khóa hướng tới `windUntil`. */
   sweepAt: number;
   windUntil: number;
+  /** Nguyên tắc quái mở rộng (E1-E, game/monskill.ts). */
+  mx: MonSkillRt;
+  /** Đệ tử do quái `minionOf` gọi: không rơi đồ, không tu vi. */
+  minionOf?: string;
   /** Dấu ấn của người chơi `sid` (Kiếm Ảnh Phân Quang): sát thương của người đó nhân (1 + mul) tới `until`. */
   mark?: { sid: string; until: number; mul: number };
   /** Bị khiêu khích: buộc nhắm người `sid` tới `until` (ms). */
@@ -470,6 +475,28 @@ export class GameSim {
     inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
     inDuel: (p) => this.duel.inDuel(p),
     player: (sid) => this.players.get(sid),
+  });
+
+  /** Nguyên tắc quái mở rộng (E1-E): đường thẳng, lao tới, nhảy đập, chui đất, phản đòn, gọi đệ tử, lộ yếu điểm. */
+  readonly monSkills: MonSkills = new MonSkills({
+    now: () => this.now,
+    mon: (id) => this.monById.get(id),
+    isDead: (m) => m.state === MS_DEAD,
+    groundAt: (x, z) => this.terrain.groundAt(x, z),
+    canStand: (x, z) => this.terrain.heightAt(x, z) > WATER_Y + 0.3 && this.terrain.playDist(x, z) < this.terrain.playWall - 4 && !this.terrain.colliders.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < c.r * c.r),
+    hazard: (g, delay, mul, kind, m, mv) => this.addHazard(g, delay, mul, false, kind, m.id, m.atk, false, 0, mv),
+    damagePlayer: (p, n, src) => this.damagePlayer(p as PlayerEnt, n, src, true),
+    setFlags: (m, low, ce) => this.setMonFlags(m as MonEnt, low, ce),
+    setAttack: (m) => this.setMonState(m as MonEnt, MS_ATTACK),
+    spawnMinion: (def, level, x, z, owner) => {
+      const e = this.spawnMonster(def, level, x, z, null);
+      e.minionOf = owner.id;
+      return e;
+    },
+    removeMinion: (m) => this.removeMonster(m as MonEnt),
+    addPosture: (m, n) => this.addPosture(m as MonEnt, n),
+    minionsAlive: () => this.monsters.reduce((n, o) => n + (o.minionOf && o.state !== MS_DEAD ? 1 : 0), 0),
+    monsterDef: (id) => MONSTER.get(id),
   });
 
   /** Bãi quái theo cụm (M-2): đội hình, tái sinh cả cụm, hồi sinh theo số người trong vùng. */
@@ -1868,6 +1895,7 @@ export class GameSim {
     if (r === 'guarded') return this.sys(p, 'sys.chant_guarded', { boss: monsterName(mon.def.id) }, 'bad');
     if (r !== 'ok') return;
     mon.chant = null;
+    this.monSkills.cancel(mon);
     mon.chantAt = this.now + ch.cd * 1000;
     mon.stunUntil = this.now + (ch.stun + extraStun) * 1000;
     mon.comboAt = 0;
@@ -1904,6 +1932,7 @@ export class GameSim {
     const ps = m.def.posture!;
     m.posture = 0;
     this.syncPosture(m);
+    this.monSkills.cancel(m);
     const ch = m.rules.ai.chant;
     if (m.chant && ch) m.chantAt = this.now + ch.cd * 1000;
     m.chant = null;
@@ -1946,6 +1975,11 @@ export class GameSim {
   }
 
   private setMonFlags(m: MonEnt, mf: number, ce: number): void {
+    // Cờ của chiêu mở rộng (phản đòn, yếu điểm, chui đất) do monskill giữ: ghép vào, không để cờ chú/choáng xóa mất.
+    if (m.mx.bits) {
+      mf |= m.mx.bits;
+      if (!ce) ce = m.mx.ce;
+    }
     if (m.s.mf !== mf) m.s.mf = mf;
     if (m.s.ce !== ce) m.s.ce = ce;
   }
@@ -1980,7 +2014,7 @@ export class GameSim {
     this.addHazard({ x: m.s.x, z: m.s.z, r: c.r }, c.delay, c.mul, false, c.kind, m.id, m.atk);
   }
 
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0): void {
+  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0, dot = false): void {
     if (mon.state === MS_DEAD) return;
     // Bóng tâm ma chỉ bị chủ đánh: người khác (kể cả vùng nổ lan sang) không làm gì được.
     if (mon.owner && p?.sid !== mon.owner) return;
@@ -1988,6 +2022,13 @@ export class GameSim {
       this.emit(S.DMG, { dst: mon.id, n: 0 } satisfies DmgMsg);
       return;
     }
+    // Chiêu mở rộng: chui đất miễn sát thương; phản đòn trả lại người đánh; lộ yếu điểm/giáp nhân sát thương.
+    const mxDmg = this.monSkills.onHit(mon, dmg, p, dot);
+    if (mxDmg < 0) {
+      this.emit(S.DMG, { dst: mon.id, n: 0 } satisfies DmgMsg);
+      return;
+    }
+    dmg = mxDmg;
     const hp = Math.max(0, mon.s.hp - dmg);
     mon.s.hp = hp;
     const msg: DmgMsg = { dst: mon.id, n: dmg };
@@ -2043,6 +2084,11 @@ export class GameSim {
     else if (mon.spawn) mon.respawnAt = this.now + mon.spawn.respawn * 1000;
     else mon.removeAt = this.now + 4000;
     if (this.isTimed(mon)) this.sendBossTimers();
+    if (mon.minionOf) {
+      // Đệ tử do quái gọi: không tu vi, không rơi đồ, không tính nhiệm vụ.
+      mon.threat.clear();
+      return;
+    }
     if (mon.owner) {
       // Bóng tâm ma: không tu vi, không rơi đồ, không tính nhiệm vụ; chỉ báo cho hệ bình cảnh.
       mon.threat.clear();
@@ -2296,6 +2342,7 @@ export class GameSim {
       lastHitAt: 0,
       sweepAt: 0,
       windUntil: 0,
+      mx: newRt(),
     };
     this.monsters.push(m);
     this.monById.set(id, m);
@@ -2383,6 +2430,7 @@ export class GameSim {
 
   /** Hủy chuỗi đòn/niệm chú đang dở và nhả ô cận chiến (bỏ đuổi, chết, hồi sinh). */
   private resetAi(m: MonEnt): void {
+    this.monSkills.reset(m);
     m.chant = null;
     m.chantAt = 0;
     m.stunUntil = 0;
@@ -2553,7 +2601,7 @@ export class GameSim {
       else if (this.now >= m.poison.nextAt) {
         m.poison.nextAt += 1000;
         const owner = this.players.get(m.poison.sid) ?? null;
-        this.damageMonster(m, m.poison.per, owner);
+        this.damageMonster(m, m.poison.per, owner, false, false, false, 0, true);
         if (m.state === MS_DEAD) return;
       }
     }
@@ -2685,6 +2733,7 @@ export class GameSim {
       m.unreachableSince = 0;
     }
     const ai = m.rules.ai;
+    if (!m.windUntil && this.monSkills.tick(m, target, d, reachable, dt)) return;
     if (m.windUntil) {
       // Đang vung chiêu chém vùng: đứng yên, giữ hướng đã khóa cho khớp vùng báo trước.
       if (this.now < m.windUntil) {
@@ -2743,13 +2792,14 @@ export class GameSim {
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
   /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0): void {
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, mv?: HazardMsg['mv']): void {
     const mon = this.monById.get(src) ?? null;
     this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
     // Tia sét có hình theo seed để mọi client thấy cùng một tia (chỉ là lớp hình).
     if (kind === 'lightning') msg.sd = visualSeed();
     if (lock) msg.big = true;
+    if (mv) msg.mv = mv;
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;
@@ -2768,6 +2818,8 @@ export class GameSim {
       this.hazards.splice(i, 1);
       // Quái thả vùng đã chết hoặc đang bỏ đuổi (miễn sát thương) thì vùng không gây sát thương.
       if (h.mon && (h.mon.state === MS_DEAD || h.mon.state === MS_RETURN || !this.monById.has(h.mon.id))) continue;
+      // Vạch chỉ để báo (gọi đệ tử): không sát thương.
+      if (h.dmg <= 0 && !h.pct) continue;
       for (const p of this.players.values()) {
         if (this.isDead(p)) continue;
         // Tia cuối khóa mệnh: chủ kiếp luôn trúng (không né bằng chạy hay bay); người khác chỉ trúng khi đứng trong vòng.

@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
 import { LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
+import { monSkillsOf } from '@dtl/shared';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
 import { TELE_PADS, terrainOf } from '@dtl/shared';
@@ -357,6 +358,96 @@ function checkAi(m: MonsterDef, ai: MonsterAi, attackCd: number, at: string) {
     if (sw.shape === 'rect' && !(sw.w > 0 && sw.w <= 6)) err(`${id}: sweep rect cần w trong (0, 6]`);
     if (sw.shape === 'cone' && !(sw.w > 0 && sw.w <= 75)) err(`${id}: sweep cone cần w (nửa góc, độ) trong (0, 75]`);
   }
+
+  checkMonSkills(m, ai, id);
+}
+
+/** Kiểm nguyên tắc quái mở rộng (E1-E): thời gian báo đủ để né, cd lớn hơn lần dùng, tham số trong khoảng hợp lý. */
+function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
+  const inR = (v: unknown, lo: number, hi: number) => typeof v === 'number' && v >= lo && v <= hi;
+  const mulOk = (v: unknown) => typeof v === 'number' && v > 0 && v <= 3;
+  const kindOk = (c: { kind: string }, k: string) => {
+    if (!KINDS.includes(c.kind)) err(`${id}: ${k}.kind không hợp lệ`);
+  };
+  const { line, charge, leap, burrow, reflect, summon, reveal } = ai;
+  if (line) {
+    kindOk(line, 'line');
+    if (!inR(line.delay, 0.9, 3)) err(`${id}: line.delay phải trong [0,9; 3] giây`);
+    if (!(line.cd > line.delay + 2)) err(`${id}: line.cd phải lớn hơn delay + 2`);
+    if (!mulOk(line.mul)) err(`${id}: line.mul phải trong (0, 3]`);
+    if (!(inR(line.r, 2, 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, 20]`);
+    if (!inR(line.w, 0.5, 6)) err(`${id}: line.w phải trong [0,5; 6] mét`);
+    if (!(line.range > 0 && line.range <= line.r)) err(`${id}: line.range phải trong (0, r]`);
+  }
+  if (charge) {
+    kindOk(charge, 'charge');
+    if (!inR(charge.delay, 0.9, 3)) err(`${id}: charge.delay phải trong [0,9; 3] giây`);
+    if (!(charge.cd > charge.delay + 3)) err(`${id}: charge.cd phải lớn hơn delay + 3`);
+    if (!mulOk(charge.mul)) err(`${id}: charge.mul phải trong (0, 3]`);
+    if (!inR(charge.w, 0.5, 6)) err(`${id}: charge.w phải trong [0,5; 6] mét`);
+    if (!inR(charge.speed, 8, 30)) err(`${id}: charge.speed phải trong [8; 30] m/s`);
+    if (!(inR(charge.min, 2, 20) && charge.range > charge.min && charge.range <= 30)) err(`${id}: charge cần 2 <= min < range <= 30`);
+    if (!(inR(charge.r, 4, 30) && charge.r >= charge.min)) err(`${id}: charge.r phải trong [4; 30] và >= min`);
+  }
+  if (leap) {
+    kindOk(leap, 'leap');
+    if (!inR(leap.delay, 0.8, 3)) err(`${id}: leap.delay phải trong [0,8; 3] giây`);
+    if (!(leap.cd > leap.delay + 2)) err(`${id}: leap.cd phải lớn hơn delay + 2`);
+    if (!mulOk(leap.mul)) err(`${id}: leap.mul phải trong (0, 3]`);
+    if (!inR(leap.r, 1, 8)) err(`${id}: leap.r phải trong [1; 8] mét`);
+    if (!(inR(leap.min, 2, 20) && leap.range > leap.min && leap.range <= 24)) err(`${id}: leap cần 2 <= min < range <= 24`);
+  }
+  if (burrow) {
+    kindOk(burrow, 'burrow');
+    if (!inR(burrow.hide, 1.2, 4)) err(`${id}: burrow.hide phải trong [1,2; 4] giây`);
+    if (!(Number.isInteger(burrow.n) && inR(burrow.n, 1, 4))) err(`${id}: burrow.n phải là số nguyên 1–4`);
+    if (!inR(burrow.r, 1, 8)) err(`${id}: burrow.r phải trong [1; 8] mét`);
+    if (!inR(burrow.spread, 2, 12)) err(`${id}: burrow.spread phải trong [2; 12] mét`);
+    if (!(burrow.range > 0 && burrow.range <= 30)) err(`${id}: burrow.range phải trong (0, 30]`);
+    if (!mulOk(burrow.mul)) err(`${id}: burrow.mul phải trong (0, 3]`);
+    const c = burrow.cone;
+    if (!c) err(`${id}: burrow thiếu cone`);
+    else {
+      if (!inR(c.delay, 1.2, 3)) err(`${id}: burrow.cone.delay phải trong [1,2; 3] giây`);
+      if (!inR(c.r, 4, 20)) err(`${id}: burrow.cone.r phải trong [4; 20] mét`);
+      if (!inR(c.w, 5, 75)) err(`${id}: burrow.cone.w (nửa góc, độ) phải trong [5; 75]`);
+      if (!mulOk(c.mul)) err(`${id}: burrow.cone.mul phải trong (0, 3]`);
+      if (!(burrow.cd > burrow.hide + c.delay + 3)) err(`${id}: burrow.cd phải lớn hơn hide + cone.delay + 3`);
+    }
+  }
+  if (reflect) {
+    if (!inR(reflect.warn, 0.6, 3)) err(`${id}: reflect.warn phải trong [0,6; 3] giây (thấy cờ trước khi phản)`);
+    if (!inR(reflect.dur, 1, 6)) err(`${id}: reflect.dur phải trong [1; 6] giây`);
+    if (!(reflect.ratio > 0 && reflect.ratio <= 1)) err(`${id}: reflect.ratio phải trong (0, 1]`);
+    if (!(reflect.cap > 0 && reflect.cap <= 0.5)) err(`${id}: reflect.cap phải trong (0; 0,5] máu tối đa người đánh`);
+    if (!(reflect.take >= 0 && reflect.take < 1)) err(`${id}: reflect.take phải trong [0, 1)`);
+    if (!(reflect.cd >= reflect.warn + reflect.dur + 3)) err(`${id}: reflect.cd phải >= warn + dur + 3`);
+  }
+  if (summon) {
+    const mm = MONSTER.get(summon.mon);
+    if (!mm) err(`${id}: summon.mon không tồn tại ${summon.mon}`);
+    else {
+      if (mm.boss || mm.elite) err(`${id}: summon.mon phải là quái thường`);
+      if (mm.ai && monSkillsOf(mm.ai).includes('summon')) err(`${id}: đệ tử không được tự gọi đệ tử`);
+      if (mm.id === m.id) err(`${id}: không tự gọi chính mình`);
+    }
+    if (!(Number.isInteger(summon.n) && inR(summon.n, 1, 4))) err(`${id}: summon.n phải là số nguyên 1–4`);
+    if (!(Number.isInteger(summon.max) && inR(summon.max, summon.n, 8))) err(`${id}: summon.max phải là số nguyên trong [n; 8]`);
+    if (!inR(summon.r, 2, 12)) err(`${id}: summon.r phải trong [2; 12] mét`);
+    if (!inR(summon.delay, 1, 4)) err(`${id}: summon.delay phải trong [1; 4] giây`);
+    if (!(summon.cd >= 6)) err(`${id}: summon.cd phải >= 6 giây`);
+  }
+  if (reveal) {
+    if (!inR(reveal.dur, 1, 8)) err(`${id}: reveal.dur phải trong [1; 8] giây`);
+    if (!(reveal.mul > 1 && reveal.mul <= 3)) err(`${id}: reveal.mul phải trong (1, 3]`);
+    if (reveal.guard !== undefined && !(reveal.guard > 0 && reveal.guard <= 1)) err(`${id}: reveal.guard phải trong (0, 1]`);
+    if (reveal.posture !== undefined && !(reveal.posture > 0 && reveal.posture <= 1)) err(`${id}: reveal.posture phải trong (0, 1]`);
+    if (reveal.posture !== undefined && !m.posture) err(`${id}: reveal.posture cần quái có thanh phá thế (posture)`);
+    if (reveal.after) {
+      if (!['charge', 'leap', 'burrow'].includes(reveal.after)) err(`${id}: reveal.after phải là charge, leap hoặc burrow`);
+      else if (!ai[reveal.after]) err(`${id}: reveal.after = ${reveal.after} nhưng quái không có chiêu đó`);
+    } else if (!(reveal.cd >= reveal.dur + 2)) err(`${id}: reveal.cd phải >= dur + 2`);
+  }
 }
 
 function checkLoot(id: string, l: LootDef) {
@@ -406,7 +497,7 @@ for (const m of MONSTERS) {
   if (!m.elite) continue;
   if (m.boss) err(`monster ${m.id}: elite và boss loại trừ nhau`);
   if (!(m.hpMul >= 4)) err(`monster ${m.id}: tinh anh phải có hpMul >= 4`);
-  if (!(m.ai?.caster || m.ai?.slam || m.ai?.sweep || m.ai?.chant)) err(`monster ${m.id}: tinh anh cần một kỹ năng riêng (caster/slam/sweep/chant)`);
+  if (!(m.ai?.caster || m.ai?.slam || m.ai?.sweep || m.ai?.chant || (m.ai && monSkillsOf(m.ai).some((k) => k !== 'reveal')))) err(`monster ${m.id}: tinh anh cần một kỹ năng riêng (caster/slam/sweep/chant/line/charge/leap/burrow/reflect/summon)`);
   needStr(`mon.${m.id}.title`);
 }
 
