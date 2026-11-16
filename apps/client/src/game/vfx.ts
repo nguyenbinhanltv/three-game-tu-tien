@@ -676,7 +676,7 @@ export class Vfx {
         const h = 46 * rise;
         core.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
         core.scale.set(0.8, h, 0.8);
-        core.fxOpacity = 0.3 * fade;
+        core.fxOpacity = (danQuang ? 0.2 : 0.3) * fade;
         ring.position.set(_a.x, _a.y - 1.0, _a.z);
         ring.scale.setScalar(1.2 + k * 7);
         ring.fxOpacity = 0.7 * (1 - k);
@@ -690,7 +690,7 @@ export class Vfx {
           r.m.position.set(_a.x + (r.dir.x * len) / 2, _a.y - 1.1 + (r.dir.y * len) / 2, _a.z + (r.dir.z * len) / 2);
           r.m.quaternion.setFromUnitVectors(_up, r.dir);
           r.m.scale.set(1.1 + k * 1.5, len, 1.1 + k * 1.5);
-          r.m.fxOpacity = 0.2 * fade;
+          r.m.fxOpacity = (danQuang ? 0.11 : 0.2) * fade;
         }
       },
       () => {
@@ -853,15 +853,15 @@ export class Vfx {
         const f = pg / 100;
         m.fxA.x = f;
         m.fxA.z = 0;
-        m.fxOpacity = 0.9 * fade;
+        m.fxOpacity = 0.75 * fade;
         const pulse = 1 + Math.sin(t * 2.4) * 0.06;
         ring.position.set(x, y + 0.25, z);
         ring.scale.setScalar(r * 0.98 * pulse);
         ring.fxOpacity = 0.35 * fade;
-        orb.position.set(x, y + 2.3 + Math.sin(t * 1.7) * 0.12, z);
-        orb.scale.setScalar(0.18 + 0.5 * f);
+        orb.position.set(x, y + 3.1 + Math.sin(t * 1.7) * 0.12, z);
+        orb.scale.setScalar(0.08 + 0.2 * f);
         orb.fxColor.setHex(f >= 1 ? 0xffd79a : 0x7fbfff);
-        orb.fxOpacity = (0.35 + 0.4 * f) * fade;
+        orb.fxOpacity = (0.25 + 0.3 * f) * fade;
       },
       end: () => {
         this.drop(m);

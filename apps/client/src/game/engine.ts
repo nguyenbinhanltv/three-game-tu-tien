@@ -353,6 +353,7 @@ export class Game {
   /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
   private cineKind: 'sect' | 'boss' | 'phase' | 'dan' = 'sect';
   /** Đan Trận đang hiện (E2-D): theo sid chủ kiếp. */
+  private ch2Checked = false;
   private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
   private cineShakeAt = 0;
   /** Cảnh độ kiếp của mình (P2-B4): 0..1 độ đậm của màu tối/tím toàn cảnh, và cờ đang trong cảnh (ẩn nhãn 3D). */
@@ -990,9 +991,6 @@ export class Game {
       this.minimap = renderMinimap(320);
       this.terrain.update(this.cur.x, this.cur.z, 8);
       if (!isWebGPU(this.renderer)) await this.precompile();
-      // Chương 2 · Đoạn Mạch: thẻ chương lần đầu nhân vật này tới (E2-D).
-      const who = get().char?.name;
-      if (id === 'doan_mach' && who && firstTime(localStorage, 'ch2', who)) window.setTimeout(() => !this.disposed && this.chapter('ch2'), 900);
       return true;
     } finally {
       if (seq === this.levelSeq && get().phase === 'loading') set({ phase: prevPhase === 'loading' ? 'game' : prevPhase });
@@ -2759,6 +2757,14 @@ export class Game {
       if (who && firstTime(localStorage, 'fly', who)) {
         this.chapter('fly');
         pushToast(t('ui.fly_hint'), 'info');
+      }
+    }
+    // Chương 2 · Đoạn Mạch: thẻ lần đầu nhân vật này tới (E2-D). Vào bằng room mới nên kiểm ở đây, không ở `enterLevel`.
+    if (!this.ch2Checked && levelId() === 'doan_mach' && get().phase === 'game') {
+      const who = get().char?.name;
+      if (who) {
+        this.ch2Checked = true;
+        if (firstTime(localStorage, 'ch2', who)) window.setTimeout(() => !this.disposed && this.chapter('ch2'), 1200);
       }
     }
     if (this.pendingChapter) {
