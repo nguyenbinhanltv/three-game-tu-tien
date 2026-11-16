@@ -83,3 +83,35 @@ Sửa thêm sau review: `gain` 1,5 → 1,2 (lớp dưới ngà bị cháy trắn
 - `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 0 đến 32 ở chạy/chém giơ tay/ngồi xổm (nam), 0,5 đến 3,5 (nữ), sâu ≤ 4 cm; ảnh game không thấy xuyên mesh. `check/set_than_tang_dan_bao_*.json`.
 - `bench:crowd` sân 50 bot WebGPU high, cùng mặc (ép áo bằng `CROWD_QUERY`), sau khi voan thành lượt blend riêng ở LOD0, hai lần đo: **294 và 272 draw (< 300)**, ~1,0M tam giác, CPU p50/p95 6,8 / 10,4 và 7,0 / 10,7 ms (p95 hơi trên 8 ms), texture 404 MB, heap 260–323 MB, tick p95 1,7–2,2 ms. Trước khi thêm lượt voan: 269 draw, 789k tam giác. Chênh lệch lớn giữa các lần do số bot rơi vào tầm LOD0 (voan chỉ tốn thêm draw ở LOD0); biên so với 300 còn nhỏ ở lần đo xấu (6 draw).
 - Ảnh: `sheet_than_tang_<m|f>.jpg`, `matrix_than_tang_<m|f>.jpg`, `bang_than_tang_<m|f>.jpg` (cùng bố cục Tinh Khuyết; chụp bằng `pnpm shots:outfit --sets set_phuc_mach --query outfit=set_than_tang_dan_bao`).
+
+# Cổ Thành Huyền Giáp (T-6c, Hộ pháp bậc 4)
+
+Mảnh Tripo `chr/set_co_thanh_huyen_giap/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` → `set_co_thanh_huyen_giap_{nam,nu}` (LOD0 12698 tam giác, 18 xương lò xo), `outfits.json` `set_co_thanh`. Bộ vật phẩm `set_co_thanh` cũng chưa có trong `sets.json` (bậc 4 khóa): ảnh ép áo bằng `?outfit=set_co_thanh_huyen_giap`.
+
+Giáp nặng nên cấu hình theo Địa Long: giáp thân thu 0,82 bề ngang, vai `shoulder_span+0.13`, mão nhỏ; bảng màu chính `#262B38` mực đá đêm, phụ `#6F6A5E` đá cổ thành, viền `#BA9A55` vàng cổ, nhấn `#E2BE62` vàng đèn lồng; `gain` 1,3 (1,7 làm cả bộ ngả vàng đồng).
+
+## Skin giáp cứng (sửa sau review: váy giáp và choàng bung thành khối gai khi ra chiêu)
+
+Bản đầu dùng trọng số mặc định cho vải: váy giáp 3 tầng lấy trọng số từ thân nền theo từng đỉnh (tách trái/phải theo hai đùi) cộng 4 xương lò xo, nên khi chém/chạy các tầng giáp giãn thành khối gai sẫm khổng lồ. Nay (`import.outfit.pieces`):
+
+- **Váy giáp (`lop_duoi`)**: `islands: true` (mọi đỉnh của một khối lấy trọng số trung bình, tức bind cứng theo hông/đùi gần nhất, không giãn), `legBlend` 0,9 (hợp nhất trọng số hai chân), `spring: false` (bỏ lò xo, giáp đá không bay như vải).
+- **Giáp thân + choàng (`ao_ngoai`)**: `legBlend` 0,9, `smooth` 4, `armFix` 0,09 (giảm kéo theo xương tay, vì tay áo ngắn), lò xo chỉ 3 xương cho phần xa thân (`minDist` 0,12: choàng sau lưng).
+- Đai giữ 4 xương lò xo cho tua/đèn. Vai và mão cứng như cũ.
+
+Ảnh chụp lại (nam+nữ, đứng/chạy/ngự kiếm/đả tọa/chém/chết, ba công pháp): váy giáp giữ hình trong mọi tư thế, không còn khối gai bung; mép giáp vẫn lởm chởm do hình học Tripo. Khung trắng mờ thoáng thấy ở một chiêu đan sư là hiệu ứng chiêu lúc chụp, không phải vật liệu.
+
+## Ba mảnh không texture (đai, mão, ủng): vật liệu thủ tục
+
+`raw_dai_tua`, `raw_trang_suc_dau`, `raw_ung` là Smart Mesh chưa chạy bước texture (24–39 KB, 0 ảnh). Người dùng quyết dùng hình khối này; pipeline cảnh báo và nướng vật liệu thủ tục (`bake_proc`, xem phần Thần Tàng ở trên) theo concept, cấu hình `import.outfit.proc`:
+
+- Đai: da tối `#2A2824`, khóa cổng/đèn lồng/tháp canh (đồ rời nhỏ) vàng cổ, đồ rời xen kẽ vàng đèn lồng.
+- Mão lỗ châu mai: thép tối `#2B3040`, dải trên (22% chiều cao, chính là hàng lỗ châu mai) và cạnh sắc vàng cổ.
+- Ủng: đá xám `#605D55`, mũi/miệng/đế và cạnh sắc vàng cổ (lượng kim loại giảm `edge` 0,3 sau khi bản đầu ra ủng gần như toàn vàng).
+
+Giới hạn: ba mảnh này nhẵn và đơn sắc hơn ba mảnh có texture (giáp thân, váy giáp, vai giáp có hoa văn cổng thành); đồ treo (đèn lồng) chỉ có vàng, chưa phát sáng riêng.
+
+## Kiểm xuyên mesh và số đo
+
+- `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 4 đến 56 (nam, vai và mão to), 1 đến 19 (nữ), sâu ≤ 4 cm; ảnh game (đứng/chạy/ngự kiếm/đả tọa/chém/chết, ba công pháp) không thấy xuyên mesh đáng kể, sau lưng một kiếm trong vỏ. `check/set_co_thanh_huyen_giap_*.json`.
+- `bench:crowd` sân 50 bot WebGPU high, cùng mặc (ép áo bằng `CROWD_QUERY`), sau khi sửa skin: **275 draw (< 300)**, 841k tam giác, CPU p50/p95/p99 6,4 / 9,4 / 45,7 ms (p95 hơi trên ngưỡng 8 ms; p99 là khung nạp pipeline đầu), texture 404 MB, heap 295 MB, tick p95 1,9 ms.
+- Ảnh: `sheet_co_thanh_<m|f>.jpg`, `matrix_co_thanh_<m|f>.jpg`, `bang_co_thanh_<m|f>.jpg` (cùng bố cục các bộ trước; `pnpm shots:outfit --sets set_dia_giap --query outfit=set_co_thanh_huyen_giap`).
