@@ -59,6 +59,14 @@
           "fit": {
             "wscale": 0.82,
             "bottom": "ankle_z+0.6*(knee_z-ankle_z)"
+          },
+          "legBlend": 0.9,
+          "smooth": 4,
+          "armFix": 0.09,
+          "spring": {
+            "count": 3,
+            "minDist": 0.12,
+            "weight": 0.6
           }
         },
         "vai_giap": {
@@ -71,6 +79,11 @@
             "x": "0.22",
             "top": "head_z+0.17"
           }
+        },
+        "lop_duoi": {
+          "islands": true,
+          "legBlend": 0.9,
+          "spring": false
         }
       }
     }
