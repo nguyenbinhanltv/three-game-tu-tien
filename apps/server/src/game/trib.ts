@@ -38,7 +38,7 @@ export interface GuardCfg {
 
 export interface TribHost {
   now(): number;
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardKind, src: string, atk?: number, lock?: boolean, grp?: number, guard?: GuardCfg): void;
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardKind, src: string, atk?: number, lock?: boolean, grp?: number, guard?: GuardCfg, cut?: { mul: number; max: number }): void;
   nextGrp(): number;
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string): void;
   spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o?: { dyaw?: number; level?: number }): MonEnt | null;
@@ -68,7 +68,7 @@ export class TribSystem {
       tr.fin = true;
       tr.nextAt = Math.max(tr.nextAt, now + f.delay * 1000);
       const guard = f.guardShare ? { share: f.guardShare, max: f.guardMax ?? 2, r: f.guardR ?? 12 } : undefined;
-      this.h.addHazard({ x: p.move.x, z: p.move.z, r: f.r }, f.delay, f.pct, true, 'lightning', p.sid, 0, true, 0, guard);
+      this.h.addHazard({ x: p.move.x, z: p.move.z, r: f.r }, f.delay, f.pct, true, 'lightning', p.sid, 0, true, 0, guard, { mul: f.defMul, max: f.defMaxCut });
       this.h.sys(p, 'sys.trib_final', undefined, 'bad');
     }
     runMechanic(ph.mechanic, 'tick', ctx);

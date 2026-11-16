@@ -133,8 +133,6 @@ import {
   STEP,
   stepMove,
   type SysMsg,
-  TRIB_FINAL,
-  TRIB_PILL_MAX,
   tribDef,
   TRIB_DEFS,
   tribForLevel,
@@ -356,6 +354,8 @@ interface Hazard extends HazardGeom {
   grp?: number;
   /** Tia khóa mệnh có hộ pháp: người đứng trong `r` mét chắn thay `share` sát thương (chia đều, tối đa `max` người). */
   guard?: GuardCfg;
+  /** Giảm sát thương của tia khóa mệnh theo mức buff phòng ngự (`final.defMul`/`defMaxCut` của kiếp). */
+  cut?: { mul: number; max: number };
   /** Nguồn: id quái, hoặc sid người độ kiếp. Thiên kiếp trúng cả người ngoài đứng trong vòng, nhưng không giết họ (xem `tickHazards`). */
   src: string;
 }
@@ -453,7 +453,7 @@ export class GameSim {
   /** Lõi nhịp độ kiếp theo dữ liệu (E1-F, game/trib.ts). */
   private readonly tribSys = new TribSystem({
     now: () => this.now,
-    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard),
+    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut),
     nextGrp: () => this.nextHazardGrp(),
     sys: (p, k, params, type) => this.sys(p, k, params, type),
     spawnShadow: (p, st, o) => this.spawnShadow(p, st, o),
@@ -2754,9 +2754,9 @@ export class GameSim {
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
   /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg): void {
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }): void {
     const mon = this.monById.get(src) ?? null;
-    this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined, guard });
+    this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined, guard, cut });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
     // Tia sét có hình theo seed để mọi client thấy cùng một tia (chỉ là lớp hình).
     if (kind === 'lightning') msg.sd = visualSeed();
@@ -2801,7 +2801,7 @@ export class GameSim {
           h.atk > 0
             ? computeDamage(h.atk, h.dmg, p.char.def, Math.random(), 1).dmg
             : h.pct
-              ? p.char.mhp * h.dmg * (h.lock ? 1 - Math.min(TRIB_FINAL.defMaxCut, buffMag(p.char.meta.buffs, 'def', Date.now()) * TRIB_FINAL.defMul) : 1)
+              ? p.char.mhp * h.dmg * (h.lock ? 1 - Math.min(this.lockCut(h, p).max, buffMag(p.char.meta.buffs, 'def', Date.now()) * this.lockCut(h, p).mul) : 1)
               : Math.max(1, h.dmg - p.char.def * 0.6);
         if (h.mon) {
           // Vùng của quái: trong cửa sổ HAZARD_IFRAME chỉ chịu vùng mạnh nhất (chống dồn đòn).
@@ -2836,6 +2836,13 @@ export class GameSim {
       .filter((o) => o !== owner && !o.trib && !this.isDead(o) && d(o) <= g.r)
       .sort((a, b) => d(a) - d(b))
       .slice(0, g.max);
+  }
+
+  /** Giảm sát thương tia khóa mệnh: theo hazard, thiếu thì theo `final` của kiếp người trúng đang độ. */
+  private lockCut(h: Hazard, p: PlayerEnt): { mul: number; max: number } {
+    if (h.cut) return h.cut;
+    const f = tribDef(p.trib?.id).phases.find((ph) => ph.final)?.final;
+    return f ? { mul: f.defMul, max: f.defMaxCut } : { mul: 0, max: 0 };
   }
 
   private shareToGuards(owner: PlayerEnt, n: number, h: Hazard): number {
@@ -3111,9 +3118,9 @@ export class GameSim {
     if (!def.use) return;
     if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
-    // Độ kiếp: tối đa TRIB_PILL_MAX đan hồi phục (đan độc tích tụ), để không thành cuộc thi uống thuốc.
+    // Độ kiếp: tối đa `pillMax` của kiếp đan hồi phục (đan độc tích tụ), để không thành cuộc thi uống thuốc.
     const healing = !!def.use.hpPct;
-    if (p.trib && healing && p.trib.pills >= TRIB_PILL_MAX) return this.warn(p, 'sys.trib_pill_limit', { n: TRIB_PILL_MAX });
+    if (p.trib && healing && p.trib.pills >= tribDef(p.trib.id).pillMax) return this.warn(p, 'sys.trib_pill_limit', { n: tribDef(p.trib.id).pillMax });
     let taken = null as InvItem | null;
     if (!c.tx('use:' + def.id, idem, (d) => !!(taken = d.removeAt(slot, 1)))) return;
     p.itemCdAt = this.now + def.use.cd * 1000;

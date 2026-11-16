@@ -308,6 +308,27 @@ describe('kiếp mới: cờ enabled, GM và pha chung', () => {
   });
 });
 
+describe('hằng số theo kiếp đọc từ dữ liệu', () => {
+  it('giảm sát thương tia khóa mệnh (cut) lấy từ final của kiếp, không phải hằng Trúc Cơ', () => {
+    const fin = TRIB_DEFS.hoa_than.phases[2].final!;
+    const old = { ...fin };
+    fin.defMul = 7;
+    fin.defMaxCut = 0.33;
+    try {
+      const { sim, join, run } = mkSim();
+      const p = join('cut', 27);
+      sim.beginTribulation(p, tribDef('hoa_than'), false);
+      p.trib!.endAt = sim.now + 25_000;
+      p.trib!.nextAt = sim.now + 60_000;
+      run(p, 0.1);
+      const lock = (sim as unknown as { hazards: { lock?: boolean; cut?: { mul: number; max: number } }[] }).hazards.find((h) => h.lock)!;
+      expect(lock.cut).toEqual({ mul: 7, max: 0.33 });
+    } finally {
+      Object.assign(fin, old);
+    }
+  });
+});
+
 describe('room độ kiếp riêng', () => {
   const Aoi = () => import('../aoi').then((m) => m.Aoi);
 
