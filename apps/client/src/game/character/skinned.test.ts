@@ -125,15 +125,48 @@ describe('sói có xương (mon_soi_xam thật)', () => {
   });
 
   it('12 skin E-0 đều nạp lười theo màn, không vào gói tải đầu, đủ clip trong GLB', () => {
-    expect(E0_PENDING.length).toBeGreaterThanOrEqual(0);
     const e0 = Object.entries(MONSTER_SKINS).filter(([, s]) => ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''));
     expect(e0.length).toBe(12);
+    expect(E0_PENDING.sort()).toEqual(e0.map(([id]) => id).sort()); // chưa có dòng nào trong monsters.json
     for (const [id, s] of e0) {
       expect(s.lazy, id).toBe(true);
       const anims = (MANIFEST.assets[s.asset] as { animations?: string[] }).animations ?? [];
       for (const st of ['idle', 'run', 'attack', 'hit', 'death'] as const) expect(anims, `${id}.${st}`).toContain(s.clips[st]);
     }
   });
+
+  it('12 skin E-0 dựng được SkinnedMonster từ GLB thật (preloadLazy theo màn), có xương, cast → guard, giải phóng sạch', async () => {
+    const disposed: string[] = [];
+    const cache = new AssetCache({ base: '', fetchManifest: async () => MANIFEST, load: async (url) => loadReal(url, disposed) });
+    const skins = new MonsterSkins(cache, false);
+    skins.preload();
+    expect(cache.stats().loaded + cache.stats().loading).toBeLessThanOrEqual(LIVE_SKINS.length); // lazy: preload không kéo skin E-0
+    const e0 = Object.entries(MONSTER_SKINS).filter(([id]) => E0_PENDING.includes(id));
+    const base = MONSTER.get('mon_soi_xam')!;
+    const defs = e0.map(([id]) => ({ ...base, id }));
+    for (const level of new Set(e0.map(([, s]) => s.level!))) skins.preloadLazy(level);
+    for (let i = 0; i < 1500 && defs.some((d) => skins.pending(d)); i++) await new Promise((r) => setTimeout(r, 20));
+    for (const d of defs) {
+      const skin = MONSTER_SKINS[d.id];
+      const m = skins.create(d);
+      expect(m, d.id).toBeInstanceOf(SkinnedMonster);
+      const sm = m as SkinnedMonster;
+      let skeletons = 0;
+      sm.root.traverse((o) => ((o as THREE.SkinnedMesh).skeleton ? skeletons++ : 0));
+      expect(skeletons, `${d.id}: có skeleton`).toBeGreaterThan(0);
+      run(sm, anim({ speed: skin.refSpeed }), 0.3);
+      expect(sm.actionOf(skin.clips.run!)?.isRunning(), `${d.id}: run`).toBe(true);
+      if (skin.clips.cast) {
+        run(sm, anim({ combat: true, casting: true }), 0.4);
+        expect(sm.state, `${d.id}: cast`).toBe('cast');
+        expect(sm.actionOf(skin.clips.cast)?.isRunning(), `${d.id}: ${skin.clips.cast}`).toBe(true);
+        expect(skin.clips.cast).toBe('guard');
+      }
+      sm.dispose();
+    }
+    skins.dispose();
+    expect(cache.stats()).toEqual({ loaded: 0, loading: 0, refs: 0 });
+  }, 120_000);
 
   it('mọi clip khai báo trong bảng đều có trong GLB (đủ idle/run/attack/hit/death)', () => {
     for (const [id, s] of Object.entries(MONSTER_SKINS)) {
