@@ -56,6 +56,8 @@ export const items = sqliteTable(
     plus: integer('plus').notNull().default(0),
     /** Phần đã roll của trang bị (JSON `ItemInst`: phẩm, ilvl, dòng chính/phụ, ngọc, ràng buộc); NULL = đồ cũ/vật phẩm thường. */
     inst: text('inst'),
+    /** Ô khóa (TD-A): 1 = không bán/phân giải/làm nguyên liệu/gộp khi sắp xếp. */
+    locked: integer('locked').notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.charId, t.slot] })],
 );
@@ -110,6 +112,7 @@ CREATE TABLE IF NOT EXISTS items (
   qty INTEGER NOT NULL,
   plus INTEGER NOT NULL DEFAULT 0,
   inst TEXT,
+  locked INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (char_id, slot)
 );
 CREATE TABLE IF NOT EXISTS ledger (
@@ -132,13 +135,14 @@ CREATE INDEX IF NOT EXISTS ledger_char ON ledger (char_id);
 const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ['characters', 'appearance', "TEXT NOT NULL DEFAULT ''"],
   ['items', 'inst', 'TEXT'],
+  ['items', 'locked', 'INTEGER NOT NULL DEFAULT 0'],
   ['characters', 'root', "TEXT NOT NULL DEFAULT ''"],
   ['characters', 'bk', 'INTEGER NOT NULL DEFAULT 0'],
   ['characters', 'tele', "TEXT NOT NULL DEFAULT ''"],
 ];
 
-/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1); 2 = linh căn + bình cảnh (Phase 3-7); 3 = Truyền Tống Trận (M-4); 4 = thang 28 cấp (E1-C: tu vi Trúc Cơ, bình cảnh). */
-export const DATA_VERSION = 4;
+/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1); 2 = linh căn + bình cảnh (Phase 3-7); 3 = Truyền Tống Trận (M-4); 4 = thang 28 cấp (E1-C: tu vi Trúc Cơ, bình cảnh); 5 = túi 120 ô + cột `items.locked` (TD-A; không cần đổi dữ liệu: túi chỉ là các hàng theo ô, đồ cũ ở ô 0–29 giữ nguyên). */
+export const DATA_VERSION = 5;
 
 /**
  * Chuyển trang bị từ 3 ô (weapon/robe/accessory) sang 8 ô: `accessory` đi vào ô đúng loại của mẫu

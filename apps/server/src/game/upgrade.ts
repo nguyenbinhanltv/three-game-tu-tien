@@ -345,6 +345,7 @@ export class UpgradeSystem {
         const def = it ? ITEM.get(it.id) : undefined;
         // Chỉ trang bị trong túi (không đụng đồ đang mặc, nguyên liệu, đan dược).
         if (!it || it.id !== ids[k] || !def || !isEquipSlot(def.kind) || it.n !== 1) return false;
+        if (it.lk) return false;
         const q = it.inst ? it.inst.q : legacyQuality(def.rarity);
         const y = salvageYield(q, it.plus ?? 0, it.inst ? 0 : def.price, ITEM.get(ENHANCE_ORE)?.price ?? 0);
         totalOre += y.ore;
@@ -400,6 +401,7 @@ export class UpgradeSystem {
       if (!cur || cur.id !== it0.id || !cur.inst || cur.n !== 1) return false;
       if (!d.remove(mat, PROMOTE_MAT_COUNT) || !d.spendGold(gold)) return false;
       const next: InvItem = { id: toId, n: 1, inst: promoteInst(ITEM_SYS, slot, cur.inst, to, seededRng(seed)) };
+      if (cur.lk) next.lk = true;
       const plus = promotePlus(cur.plus ?? 0);
       if (plus > 0) next.plus = plus;
       putRef(d, ref, next);
