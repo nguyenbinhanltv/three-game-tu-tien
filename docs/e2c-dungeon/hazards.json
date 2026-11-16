@@ -1,0 +1,92 @@
+{
+  "room": "dungeon-phuc_mach",
+  "dot1-khoi-loi-ph0": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "circle",
+        "r": 3.5
+      }
+    ]
+  },
+  "dot2-ho-ve-ph0": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "rect",
+        "r": 5,
+        "w": 2.5
+      }
+    ]
+  },
+  "dot3-ngo-cong-au-ph0": {
+    "got": false,
+    "hz": []
+  },
+  "dot4-thach-tam-ph0": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "circle",
+        "r": 4.5
+      }
+    ]
+  },
+  "dot4-thach-tam-ph1": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "rect",
+        "r": 10,
+        "w": 3
+      }
+    ]
+  },
+  "dot4-thach-tam-ph2": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "rect",
+        "r": 10,
+        "w": 3
+      }
+    ]
+  },
+  "dot5-thon-mach-ph0": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "circle",
+        "r": 5.5
+      }
+    ]
+  },
+  "dot5-thon-mach-ph1": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "circle",
+        "r": 12
+      }
+    ]
+  },
+  "dot5-thon-mach-ph2": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "circle",
+        "r": 5.5
+      }
+    ]
+  },
+  "dot5-thon-mach-ph3": {
+    "got": true,
+    "hz": [
+      {
+        "sh": "cone",
+        "r": 14,
+        "w": 0.6108652381980153
+      }
+    ]
+  }
+}

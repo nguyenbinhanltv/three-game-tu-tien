@@ -188,12 +188,19 @@ function buildStaticRest(b: GeoBuilder, cx: number): void {
 }
 
 /** Mặt cổng phát sáng (lưới riêng để chạy hiệu ứng). */
-export function buildPortalDisc(x: number = PORTAL_POS.x, z: number = PORTAL_POS.z, color = 0x8fdcff): THREE.Mesh {
+export function buildPortalDisc(x: number = PORTAL_POS.x, z: number = PORTAL_POS.z, color = 0x8fdcff, flat = false): THREE.Mesh {
   const py = heightAt(x, z);
   const m = new THREE.Mesh(
     new THREE.CircleGeometry(2.8, 28),
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false }),
   );
+  if (flat) {
+    // Vòng sáng nằm trên nền (hang): không dựng đứng như cổng ngoài trời.
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(x, py + 0.12, z);
+    m.scale.set(1.5, 1.5, 1);
+    return m;
+  }
   m.position.set(x, py + 3.6, z);
   m.scale.set(1, 1.25, 1);
   return m;

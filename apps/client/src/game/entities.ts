@@ -3,9 +3,10 @@ import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
 import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
-import { DUNGEON_EXIT, locoDirOf, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
+import { locoDirOf, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { groundAt } from './levelCtx';
 import { swordOverride } from './testParams';
+import { gatesOf, type Gate } from './gates';
 import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
 import { bodyRadiusOf, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
@@ -418,6 +419,7 @@ export class EntityManager {
   /** Dựng model NPC (có xương theo id dữ liệu hoặc khối dự phòng). */
   private npcSkins = new NpcSkins();
   hasNpcs: boolean;
+  private gates: Gate[];
   /** Camera để chọn LOD theo khoảng cách nhìn và cắt mixer ngoài khung nhìn (engine gán). */
   camera: THREE.Camera | null = null;
   private lodList: LodEntry[] = [];
@@ -438,6 +440,7 @@ export class EntityManager {
     this.skins.preloadLazy(levelId);
     // `hasNpcs` chỉ còn nghĩa "đây là thế giới Vân Lam" (cổng bí cảnh Kiếm Trủng); NPC dựng ở mọi level theo `NpcDef.level` (E2-H).
     this.hasNpcs = levelId === 'van_lam';
+    this.gates = gatesOf(levelId);
     const here = NPCS.filter((n) => (n.level ?? 'van_lam') === levelId);
     if (here.length) {
       this.npcSkins.preload();
@@ -1099,8 +1102,8 @@ export class EntityManager {
   }
 
   /** Thứ có thể tương tác gần nhất (NPC, cây thuốc, cổng bí cảnh). */
-  nearestInteractable(x: number, y: number, z: number): { kind: 'npc' | 'node' | 'portal'; id: string; dist: number } | null {
-    let best: { kind: 'npc' | 'node' | 'portal'; id: string; dist: number } | null = null;
+  nearestInteractable(x: number, y: number, z: number): { kind: 'npc' | 'node' | 'portal'; id: string; dist: number; to?: string } | null {
+    let best: { kind: 'npc' | 'node' | 'portal'; id: string; dist: number; to?: string } | null = null;
     for (const n of this.npcs) {
       const d = Math.hypot(n.x - x, n.z - z);
       if (d < 7 && (!best || d < best.dist)) best = { kind: 'npc', id: n.id, dist: d };
@@ -1110,9 +1113,10 @@ export class EntityManager {
       const d = Math.hypot(g.position.x - x, g.position.z - z);
       if (d < 4.2 && Math.abs(g.position.y - y) < 5 && (!best || d < best.dist)) best = { kind: 'node', id, dist: d };
     }
-    const gate = this.hasNpcs ? PORTAL_POS : DUNGEON_EXIT;
-    const dg = Math.hypot(gate.x - x, gate.z - z);
-    if (dg < 11 && (!best || dg < best.dist)) best = { kind: 'portal', id: this.hasNpcs ? 'portal' : 'exit', dist: dg };
+    for (const gate of this.gates) {
+      const dg = Math.hypot(gate.x - x, gate.z - z);
+      if (dg < 11 && (!best || dg < best.dist)) best = { kind: 'portal', id: gate.id, dist: dg, to: gate.to };
+    }
     return best;
   }
 

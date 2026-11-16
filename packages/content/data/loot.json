@@ -70,5 +70,11 @@
   "boss_dia_mach_long": { "gold": [600, 900], "src": "boss",
     "drops": [ {"item": "itm_ngung_dan_mach_tinh", "chance": 1, "min": 2, "max": 3}, {"item": "itm_ket_dan_dich", "chance": 0.12, "min": 1, "max": 1}, {"item": "itm_bi_tich_tan_quyen", "chance": 1, "min": 3, "max": 4}, {"item": "itm_tu_khi_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 1, "min": 3, "max": 5}, {"item": "gem_tho_2", "chance": 0.6, "min": 1, "max": 1}, {"item": "gem_tho_1", "chance": 1, "min": 1, "max": 2}, {"item": "itm_tay_luyen_thach", "chance": 0.6, "min": 1, "max": 2}, {"item": "itm_ho_phu", "chance": 0.6, "min": 1, "max": 1} ],
     "equip": [ {"chance": 1, "q": [0, 0, 0, 85, 15]}, {"chance": 0.7, "q": [0, 0, 60, 40, 0]}, {"chance": 0.4, "q": [0, 0, 45, 50, 5]} ] },
+  "boss_thach_tam_khoi_vuong": { "gold": [500, 800], "src": "boss",
+    "drops": [ {"item": "itm_mach_tinh_phien", "chance": 1, "min": 3, "max": 5}, {"item": "itm_ngung_dan_mach_tinh", "chance": 0.5, "min": 1, "max": 2}, {"item": "itm_bi_tich_tan_quyen", "chance": 1, "min": 2, "max": 3}, {"item": "itm_tu_khi_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 1, "min": 2, "max": 4}, {"item": "gem_tho_2", "chance": 0.5, "min": 1, "max": 1}, {"item": "itm_tay_luyen_thach", "chance": 0.5, "min": 1, "max": 1}, {"item": "itm_ho_phu", "chance": 0.4, "min": 1, "max": 1} ],
+    "equip": [ {"chance": 1, "q": [0, 0, 55, 45, 0]}, {"chance": 0.6, "q": [0, 0, 70, 30, 0]} ] },
+  "boss_thon_mach_ngo_cong_vuong": { "gold": [800, 1200], "src": "boss",
+    "drops": [ {"item": "itm_mach_tinh_phien", "chance": 1, "min": 6, "max": 9}, {"item": "itm_ngung_dan_mach_tinh", "chance": 0.8, "min": 2, "max": 3}, {"item": "itm_bi_tich_tan_quyen", "chance": 1, "min": 3, "max": 4}, {"item": "itm_tu_khi_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 1, "min": 3, "max": 5}, {"item": "gem_moc_2", "chance": 0.6, "min": 1, "max": 1}, {"item": "itm_tay_luyen_thach", "chance": 0.6, "min": 1, "max": 2}, {"item": "itm_ho_phu", "chance": 0.6, "min": 1, "max": 1} ],
+    "equip": [ {"chance": 1, "q": [0, 0, 0, 85, 15]}, {"chance": 0.7, "q": [0, 0, 60, 40, 0]}, {"chance": 0.4, "q": [0, 0, 45, 50, 5]} ] },
   "mon_tam_ma": { "gold": [0, 0], "src": "common", "drops": [], "equip": [ {"chance": 0.01, "q": [100, 0, 0, 0, 0]} ] }
 }

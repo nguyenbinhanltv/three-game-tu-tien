@@ -3,7 +3,7 @@
   "glb": [],
   "ground": { "set": "terrain-ochre", "mask": "neutral" },
   "music": ["wild_ochre"],
-  "features": { "sect": false, "portals": false, "lanterns": false, "lake": false, "clouds": false, "grass": true, "trees": "scatter", "beacons": true, "vegetation": false },
+  "features": { "sect": false, "portals": true, "lanterns": false, "lake": false, "clouds": false, "grass": true, "trees": "scatter", "beacons": true, "vegetation": false },
   "minimap": "doan_mach",
   "grassCards": "grass-ochre"
 }
