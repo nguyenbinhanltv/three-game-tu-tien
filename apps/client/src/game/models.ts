@@ -3,6 +3,7 @@ import { bodyClassOf, HIT_FEEL, type MonsterDef } from '@dtl/shared';
 import { col, flat, G, GeoBuilder, mat } from './geo';
 import { createWorldMaterial } from '../render/materials/world';
 import { markBloom } from '../render/post';
+import { createLabel, releaseLabel, type Label } from './labelBatch';
 import { HitReact, type HitOpts } from './hitreact';
 import type { AnimState, CharacterView, MonsterView } from './character/view';
 
@@ -521,37 +522,10 @@ export function buildNode(item: string): THREE.Group {
 
 // ---------- nhãn tên ----------
 
-export function makeLabel(text: string, color = '#ffffff', sub = '', subColor = '#ffd98a'): THREE.Sprite {
-  const cv = document.createElement('canvas');
-  cv.width = 512;
-  cv.height = 128;
-  const g = cv.getContext('2d')!;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.lineJoin = 'round';
-  const draw = (t: string, y: number, font: string, fill: string) => {
-    g.font = font;
-    g.lineWidth = 7;
-    g.strokeStyle = 'rgba(8,12,20,0.85)';
-    g.strokeText(t, 256, y);
-    g.fillStyle = fill;
-    g.fillText(t, 256, y);
-  };
-  if (sub) {
-    draw(sub, 34, '600 30px "Segoe UI", Arial, sans-serif', subColor);
-    draw(text, 88, '700 42px "Segoe UI", Arial, sans-serif', color);
-  } else {
-    draw(text, 72, '700 42px "Segoe UI", Arial, sans-serif', color);
-  }
-  const tex = new THREE.CanvasTexture(cv);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false }));
-  sp.scale.set(3.6, 0.9, 1);
-  sp.renderOrder = 5;
-  return sp;
+export function makeLabel(text: string, color = '#ffffff', sub = '', subColor = '#ffd98a'): Label {
+  return createLabel(text, color, sub, subColor);
 }
 
-export function disposeLabel(sp: THREE.Sprite): void {
-  sp.material.map?.dispose();
-  sp.material.dispose();
+export function disposeLabel(l: Label): void {
+  releaseLabel(l);
 }
