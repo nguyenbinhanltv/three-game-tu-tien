@@ -200,6 +200,46 @@
             }
           }
         },
+        "mon": {
+          "type": "object",
+          "description": "Bộ clip thủ tục quái người (anim_biped_extra.py, E-0): idle/run/attack/death/guard/revive cho rig Mixamo không kèm clip. Xem docs/e0-mon/README.md.",
+          "additionalProperties": false,
+          "properties": {
+            "hand": { "enum": ["L", "R"], "description": "Tay cầm vũ khí chính (mặc định R)." },
+            "attack": { "enum": ["chop", "thrust", "bash", "sweep", "smash"], "description": "Kiểu đòn: chém bổ, đâm giáo, húc khiên, chém ngang, nện hai tay." },
+            "death": { "enum": ["back", "fwd", "crumble"], "description": "Kiểu chết: ngã ngửa, ngã sấp, sụp khuỵu." },
+            "guard": { "type": "boolean", "description": "Thêm clip guard lặp (tay phụ giơ khiên/gương)." },
+            "revive": { "type": "boolean", "description": "Thêm clip revive (đứng dậy, ngược death)." },
+            "idleT": { "type": "number", "exclusiveMinimum": 0, "description": "Chu kỳ idle (giây)." },
+            "run": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "T": { "type": "number", "exclusiveMinimum": 0 },
+                "stride": { "type": "number", "exclusiveMinimum": 0 },
+                "lift": { "type": "number", "minimum": 0 },
+                "lean": { "type": "number" },
+                "swing": { "type": "number" }
+              }
+            }
+          }
+        },
+        "creature": {
+          "type": "object",
+          "description": "Clip thủ tục chim/rết/côn trùng có cánh (anim_creature.py, E-0); vai trò xương khai báo theo tên sau rename_all.",
+          "required": ["kind", "groups"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "enum": ["bird", "chain", "insect"] },
+            "groups": {
+              "type": "object",
+              "description": "body | neck | tail | jaw: danh sách tên xương; wings: danh sách các chuỗi xương cánh.",
+              "additionalProperties": { "type": "array" }
+            },
+            "flap": { "type": "object", "additionalProperties": false, "properties": { "hz": { "type": "number" }, "amp": { "type": "number" } } },
+            "wave": { "type": "object", "additionalProperties": false, "properties": { "len": { "type": "number" }, "amp": { "type": "number" } } }
+          }
+        },
         "post": {
           "type": "string",
           "pattern": "^tools/blender/[a-z0-9_]+\\.py$",
