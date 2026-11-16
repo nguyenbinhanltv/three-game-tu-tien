@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { groundAt, mulberry32, rollEquipDrops, S, type SysMsg, VALLEY } from '@dtl/shared';
+import { groundAt, INV_SIZE, mulberry32, rollEquipDrops, S, type SysMsg, VALLEY } from '@dtl/shared';
 
 // Rơi trang bị (3-2): phân bố theo nguồn, roll ở server, mặc/tháo có idempotency + ledger.
 process.env.DB_FILE = ':memory:';
@@ -131,11 +131,11 @@ describe('rơi và mặc/tháo trong sim', () => {
 
   it('túi đầy: món trang bị bị bỏ, vàng vẫn vào', () => {
     const { sim, c, p } = setup();
-    for (let i = 0; i < 30; i++) c.tx('fill', null, (d) => d.addRolled('itm_moc_kiem', 3, 0));
+    for (let i = 0; i < INV_SIZE; i++) c.tx('fill', null, (d) => d.addRolled('itm_moc_kiem', 3, 0));
     const mon = sim.spawnMonster(content.MONSTER.get('elite_cu_nham_vien')!, 13, X, Z, null);
     const gold0 = c.gold;
     (sim as unknown as WithLoot).rollLoot(p, mon);
-    expect(c.inv.filter(Boolean)).toHaveLength(30);
+    expect(c.inv.filter(Boolean)).toHaveLength(INV_SIZE);
     expect(c.gold).toBeGreaterThan(gold0);
   });
 
@@ -200,7 +200,7 @@ describe('rơi và mặc/tháo trong sim', () => {
     sim.now += 300;
     sim.onEquip(p as never, { slot: i, r: 'req-gggg' });
     expect(c.atk).toBeGreaterThan(atk0);
-    for (let k = 0; k < 30; k++) c.tx('fill', null, (d) => d.addRolled('itm_moc_kiem', 3, 0));
+    for (let k = 0; k < INV_SIZE; k++) c.tx('fill', null, (d) => d.addRolled('itm_moc_kiem', 3, 0));
     sim.now += 300;
     sim.onUnequip(p as never, { slot: 'weapon', r: 'req-hhhh' });
     expect(c.equip.weapon).toBeDefined();

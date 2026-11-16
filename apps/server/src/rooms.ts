@@ -163,6 +163,9 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.EQUIP, (p, m) => this.sim.onEquip(p, m));
     on(C.UNEQUIP, (p, m) => this.sim.onUnequip(p, m));
     on(C.MOVE_ITEM, (p, m) => this.sim.onMoveItem(p, m));
+    on(C.INV_SORT, (p, m) => this.sim.inventory.onSort(p, m));
+    on(C.INV_LOCK, (p, m) => this.sim.inventory.onLock(p, m));
+    on(C.INV_SPLIT, (p, m) => this.sim.inventory.onSplit(p, m));
     on(C.BUY, (p, m) => this.sim.onBuy(p, m));
     on(C.SELL, (p, m) => this.sim.onSell(p, m));
     on(C.CRAFT, (p, m) => this.sim.onCraft(p, m));
@@ -331,6 +334,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         if (cur) {
           cur.client = again;
           cur.connected = true;
+          cur.invSent = undefined; // client mới chưa có túi: tin S.INV kế tiếp phải là ảnh đầy đủ
           cur.char.charDirty = cur.char.invDirty = cur.char.questDirty = true;
         } else {
           // Nhân vật đã bị phiên đăng nhập khác thay thế trong lúc chờ: không để client cũ ở lại nghe lén.
