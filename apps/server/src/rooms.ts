@@ -38,6 +38,8 @@ interface JoinAuth extends AuthResult {
   session: string;
   /** Điểm xuất hiện do vé chỉ định (E1-B); null = vị trí đã lưu / điểm mặc định của room. */
   spawn?: { x: number; z: number } | null;
+  /** Vào bằng vé tới đúng level của room (đã tiêu thụ ở onAuth): nhân vật còn ghi level nguồn, không được dẫn ngược về đó. */
+  ticket?: boolean;
 }
 
 /** Tên room của một level (thế giới hoặc bí cảnh). */
@@ -226,7 +228,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     // Lưu ở bản đồ khác (không phải room này): cấp vé, bảo client sang đúng room. Không dựng người ở đây
     // (savePlayer sẽ ghi đè vị trí đã lưu bằng toạ độ của level này).
     const resume = this.resumeTarget(char);
-    if (resume && resume.level !== this.levelId) {
+    if (!auth.ticket && resume && resume.level !== this.levelId) {
       tickets.issue(char.id, resume.level, resume.spawn);
       client.send(S.TRANSFER, { room: roomNameOf(resume.level), level: resume.level, options: {} } satisfies TransferMsg);
       // Client đúng sẽ tự rời ngay; client cố ở lại (không có người chơi nào trong room) bị ngắt để không chiếm chỗ.
@@ -411,7 +413,7 @@ async function worldAuth(cls: { levelId: string }, token: string, options: unkno
   const auth = await GameRoom.onAuth(token, options);
   const t = tickets.take(auth.charId, cls.levelId);
   if (!t && cls.levelId !== HOME_LEVEL) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
-  return { ...auth, spawn: t?.spawn ?? null };
+  return { ...auth, spawn: t?.spawn ?? null, ticket: !!t };
 }
 
 /** Lớp room cho một bản đồ thế giới (E1-B): `world` cho Vân Lam, `world-<id>` cho level khác. */
@@ -450,7 +452,7 @@ export class DungeonRoom extends GameRoom {
   static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     const auth = await GameRoom.onAuth(token, options);
     if (!tickets.take(auth.charId, (this as unknown as { levelId: string }).levelId)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
-    return auth;
+    return { ...auth, ticket: true };
   }
 
   noLootFor(char: Character): boolean {

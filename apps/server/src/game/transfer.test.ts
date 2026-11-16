@@ -320,6 +320,60 @@ describe('chuyển bản đồ hai chiều', () => {
   });
 });
 
+describe('đến nơi qua onJoin thật', () => {
+  const Aoi = () => import('../aoi').then((m) => m.Aoi);
+
+  /** Dựng room đủ để chạy `GameRoom.onJoin` (không qua Colyseus). */
+  async function joinable(levelId: string, cls: { prototype: object }) {
+    const r = mkRoom(levelId, cls);
+    const room = r.room as unknown as Record<string, unknown>;
+    room.aoi = new (await Aoi())(r.sim);
+    room.clients = { getById: () => undefined };
+    room.markers = { drop() {}, sync() {} };
+    room.clock = { setTimeout: () => undefined };
+    Object.defineProperty(room, 'roomName', { value: levelId });
+    return r;
+  }
+  const client = (name: string) => ({ sessionId: 'sid' + nextAcc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: name }) });
+
+  it('world → world: lưu ở level nguồn rồi vào bằng vé thì đặt ở điểm của vé, không bị dẫn ngược', async () => {
+    const home = mkRoom(HOME_LEVEL, rooms.WorldRoom);
+    const isle = await joinable(ISLE_ID, rooms.defineWorld(ISLE_ID));
+    const p = home.join('qua');
+    // đường đi thật: requestLevel → savePlayer ghi char.room = level nguồn
+    expect(home.room.requestLevel(p, ISLE_ID, { x: 300, z: 300 })).toBe(true);
+    expect(Character.load(p.char.id).room).toBe(HOME_LEVEL);
+    const ticket = transfer.tickets.take(p.char.id, ISLE_ID)!;
+    expect(ticket).not.toBeNull();
+
+    const c = client(p.char.name);
+    const before = sent.length;
+    const auth = { accountId: 1, dev: true, charId: p.char.id, session: 's', spawn: ticket.spawn, ticket: true };
+    (isle.room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, auth);
+    const msgs = sent.slice(before).filter((m) => m.to === p.char.name);
+    expect(msgs.filter((m) => m.type === S.TRANSFER)).toEqual([]);
+    const q = [...isle.sim.players.values()].find((x) => x.char.id === p.char.id)!;
+    expect(q).toBeDefined();
+    expect(q.char.room).toBe(ISLE_ID);
+    expect(Math.hypot(q.move.x - 300, q.move.z - 300)).toBeLessThan(0.5);
+    expect(transfer.tickets.has(p.char.id, HOME_LEVEL)).toBe(false);
+  });
+
+  it('đăng nhập thường vào room không phải level đang lưu (không vé): vẫn được dẫn đúng chỗ', async () => {
+    const home = await joinable(HOME_LEVEL, rooms.WorldRoom);
+    const char = Character.create(nextAcc++, 'dn' + nextAcc);
+    char.room = ISLE_ID;
+    char.save();
+    const c = client(char.name);
+    const before = sent.length;
+    (home.room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, { accountId: 1, dev: true, charId: char.id, session: 's', spawn: null });
+    const x = sent.slice(before).filter((m) => m.to === char.name && m.type === S.TRANSFER).map((m) => m.msg);
+    expect(x).toEqual([{ room: 'world-test_isle', level: ISLE_ID, options: {} }]);
+    expect(transfer.tickets.has(char.id, ISLE_ID)).toBe(true);
+    expect(home.sim.players.size).toBe(0);
+  });
+});
+
 describe('bí cảnh theo dữ liệu', () => {
   it('cổng Vân Lam cấp vé bí cảnh khi đủ cấp và đứng gần cổng; xa hoặc thấp cấp thì không', () => {
     const w = mkRoom(HOME_LEVEL, rooms.WorldRoom);
