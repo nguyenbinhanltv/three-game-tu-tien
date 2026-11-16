@@ -552,6 +552,9 @@ for (const r of RECIPES) {
 }
 for (const n of NPCS) {
   needStr(`npc.${n.id}.name`);
+  const nl = LEVELS[n.level ?? 'van_lam'];
+  if (!nl) err(`npc ${n.id}: level không tồn tại ${n.level}`);
+  else if (!Number.isFinite(terrainOf(nl).groundAt(n.x, n.z))) err(`npc ${n.id}: tọa độ (${n.x}, ${n.z}) ngoài bản đồ ${nl.id}`);
   needStr(`npc.${n.id}.title`);
   needStr(`npc.${n.id}.greet`);
   for (const s of n.sells ?? []) {

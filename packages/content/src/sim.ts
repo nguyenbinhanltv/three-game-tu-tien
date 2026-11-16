@@ -536,7 +536,9 @@ for (const m of MONSTERS_ELITE()) {
   for (const x of t0) if (x < 20 || x > 40) { console.error(`LỖI: ${m.id} TTK không đồ ${x.toFixed(0)}s ngoài 20–40 s`); process.exitCode = 1; }
 }
 function MONSTERS_ELITE(): MonsterDef[] {
-  return [...MONSTER.values()].filter((m) => m.elite);
+  // Chỉ tinh anh của Vân Lam: sim này mô phỏng chặng Ngưng Khí (tinh anh level khác chưa có trong `levelSpawns(van_lam)`).
+  const home = new Set(levelSpawns(LEVELS.van_lam).map((x) => x.mon));
+  return [...MONSTER.values()].filter((m) => m.elite && home.has(m.id));
 }
 
 // ---------- cường hóa và kinh tế linh thạch (3-10) ----------

@@ -61,3 +61,8 @@ export function sameLayout(a: string, b: string): boolean {
   const y = levelAssets(b);
   return JSON.stringify([x.features, x.ground, x.mood]) === JSON.stringify([y.features, y.ground, y.mood]);
 }
+
+/** Khóa i18n tên vùng ở chỗ không thuộc vùng nào: bản đồ mở rộng dùng tên bản đồ (`map.<level>`), Vân Lam theo biome (`ui.zone.<biome>`). */
+export function areaKey(level: string, biome: string): string {
+  return biome === 'wild' && level !== 'van_lam' && level !== 'kiem_trung' ? `map.${level}` : `ui.zone.${biome}`;
+}

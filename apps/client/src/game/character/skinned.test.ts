@@ -127,7 +127,8 @@ describe('sói có xương (mon_soi_xam thật)', () => {
   it('12 skin E-0 đều nạp lười theo màn, không vào gói tải đầu, đủ clip trong GLB', () => {
     const e0 = Object.entries(MONSTER_SKINS).filter(([id, s]) => id.startsWith('mon_') && ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''));
     expect(e0.length).toBe(12);
-    expect(E0_PENDING.sort()).toEqual(e0.map(([id]) => id).sort()); // chưa có dòng nào trong monsters.json
+    // Quái đã có dòng trong monsters.json (E2-A thêm bản tạm của Đoạn Mạch, E2-B hoàn thiện) hoặc còn chờ: đủ 12 skin, không thừa id lạ.
+    expect(E0_PENDING.every((id) => e0.some(([k]) => k === id))).toBe(true);
     for (const [id, s] of e0) {
       expect(s.lazy, id).toBe(true);
       const anims = (MANIFEST.assets[s.asset] as { animations?: string[] }).animations ?? [];
@@ -141,7 +142,7 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     const skins = new MonsterSkins(cache, false);
     skins.preload();
     expect(cache.stats().loaded + cache.stats().loading).toBeLessThanOrEqual(LIVE_SKINS.length); // lazy: preload không kéo skin E-0
-    const e0 = Object.entries(MONSTER_SKINS).filter(([id]) => E0_PENDING.includes(id));
+    const e0 = Object.entries(MONSTER_SKINS).filter(([id, s]) => id.startsWith('mon_') && ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''));
     const base = MONSTER.get('mon_soi_xam')!;
     const defs = e0.map(([id]) => ({ ...base, id }));
     for (const level of new Set(e0.map(([, s]) => s.level!))) skins.preloadLazy(level);

@@ -1,4 +1,4 @@
-import { clampTier, isEquipSlot, majorRealmOf, resolveSkill, type ResolvedSkill } from '@dtl/shared';
+import { clampTier, isEquipSlot, majorRealmOf, registerTerrain, resolveSkill, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
 import type {
   ArtifactDef,
   PillQualityCfg,
@@ -35,9 +35,12 @@ import realmsJson from '../data/realms.json';
 import rootsJson from '../data/roots.json';
 import vanLamJson from '../data/levels/van_lam.json';
 import kiemTrungJson from '../data/levels/kiem_trung.json';
-import doKiepJson from '../data/levels/do_kiep.json';
+import doanMachJson from '../data/levels/doan_mach.json';
+import doanMachTerrainJson from '../data/levels/doan_mach.terrain.json';
 import vanLamAssetsJson from '../data/levels/van_lam.assets.json';
 import kiemTrungAssetsJson from '../data/levels/kiem_trung.assets.json';
+import doanMachAssetsJson from '../data/levels/doan_mach.assets.json';
+import doKiepJson from '../data/levels/do_kiep.json';
 import doKiepAssetsJson from '../data/levels/do_kiep.assets.json';
 import glossaryJson from '../data/glossary.json';
 import viJson from '../data/i18n/vi.json';
@@ -101,12 +104,16 @@ export const REALMS = realmsJson as RealmDef[];
 export const LEVELS: Record<string, LevelDef> = {
   van_lam: vanLamJson as LevelDef,
   kiem_trung: kiemTrungJson as LevelDef,
+  doan_mach: doanMachJson as LevelDef,
   do_kiep: doKiepJson as LevelDef,
 };
+// Địa hình dữ liệu hóa của bản đồ mở rộng (E2-A): đăng ký khi nạp @dtl/content để server, client và công cụ cùng thấy `terrainOf('doan_mach')`.
+registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
 /** Asset client theo level (`levels/<id>.assets.json`, E1-D). */
 export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   van_lam: vanLamAssetsJson as LevelAssets,
   kiem_trung: kiemTrungAssetsJson as LevelAssets,
+  doan_mach: doanMachAssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
 };
 /** Năm linh căn ngũ hành (P3-7). */
