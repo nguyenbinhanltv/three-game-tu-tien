@@ -193,46 +193,6 @@ async function main(): Promise<void> {
         }
         for (let i = 0; i < 5; i++) {
           await shot(`${tag}-death-${i}`);
-          if (sp.n && i === 1 && process.env.PROBE) {
-            // Loại trừ nguồn tấm trắng: ẩn từng nhóm mesh cộng sáng/mực rồi chụp.
-            console.log(
-              'OCTA',
-              JSON.stringify(
-                await page.evaluate(() => {
-                  const g = (window as unknown as G).__game!;
-                  const out: unknown[] = [];
-                  g.scene.traverse((o: any) => {
-                    if (o.isInstancedMesh && o.geometry?.type === 'OctahedronGeometry' && o.visible) {
-                      const a = o.instanceMatrix.array;
-                      for (let i = 0; i < o.count; i++) {
-                        const sx = Math.hypot(a[i * 16], a[i * 16 + 1], a[i * 16 + 2]), sy = Math.hypot(a[i * 16 + 4], a[i * 16 + 5], a[i * 16 + 6]);
-                        out.push([+sx.toFixed(2), +sy.toFixed(2), +a[i * 16 + 13].toFixed(0)]);
-                      }
-                    }
-                  });
-                  return out;
-                }),
-              ),
-            );
-            console.log(
-              'NEAR',
-              JSON.stringify(
-                await page.evaluate(() => {
-                  const g = (window as unknown as G).__game!;
-                  const me = g.me();
-                  const out: unknown[] = [];
-                  const tmp = new (g.scene.position.constructor as any)();
-                  g.scene.traverse((o: any) => {
-                    if (!(o.isMesh || o.isSprite || o.isPoints || o.isLight) || !o.visible) return;
-                    o.getWorldPosition(tmp);
-                    if (Math.hypot(tmp.x - me.x, tmp.z - me.z) > 25 || Math.abs(tmp.y - me.y) > 6) return;
-                    out.push([o.type, o.geometry?.type ?? '', o.material?.type ?? '', o.name, o.material?.transparent ? 'T' : 'O', o.material?.blending, o.renderOrder, +tmp.y.toFixed(1), o.isInstancedMesh ? o.count : 0, o.isLight ? o.intensity : 0]);
-                  });
-                  return out.slice(0, 60);
-                }),
-              ),
-            );
-          }
           await sleep(sp.mon.startsWith('boss_') ? 450 : 350);
         }
       }
