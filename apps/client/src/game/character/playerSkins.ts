@@ -218,6 +218,24 @@ export class PlayerSkins {
     return this.templates.get(id) === 'loading' || this.swords.get(look.w ?? SWORD_MODEL_DEFAULT) === 'loading';
   }
 
+  /** NPC dựng từ model người chơi (E3-H): giống `pending` nhưng theo giới tính của NPC. */
+  npcPending(g: string): boolean {
+    return this.pending({ g, dye: '' });
+  }
+
+  /**
+   * NPC dùng model nhân vật nền (có mặt, tóc, áo thật) nhuộm kênh vải bằng `applyDye` như người chơi: `hex` màu áo, `accent` màu viền/điểm nhấn.
+   * Không nhân màu cả mesh (làm mất mặt, tóc). Chưa nạp xong thì model khối, `npcPending` báo để dựng lại.
+   */
+  createNpc(look: { g: string; hex: string; accent?: string }): CharacterView {
+    const id = modelOf(look.g);
+    const skin = id ? PLAYER_SKINS[id] : undefined;
+    if (id && skin && !this.legacy) this.load(id);
+    const t = id && skin && !this.legacy ? this.templates.get(id) : undefined;
+    if (!id || !skin || !t || typeof t === 'string') return new Humanoid({ robe: look.hex, trim: look.accent ?? look.hex, sword: false });
+    return this.build(id, skin, t, this.material(id, skin, t, `npc:${look.hex}:${look.accent ?? ''}`, look.hex, look.accent));
+  }
+
   /** Các asset mảnh áo của bộ đang mặc (rỗng nếu bộ chưa có áo riêng cho giới này hoặc đang `?models=legacy`/`?outfit=0`). */
   private outfitIds(look: PlayerLook): string[] {
     if (this.legacy || OUTFIT_OFF || !look.set) return [];

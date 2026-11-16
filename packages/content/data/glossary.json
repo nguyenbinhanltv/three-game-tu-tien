@@ -309,7 +309,9 @@
     "npc_to_van_ngu": "Tô Vãn Ngư",
     "npc_hua_lao": "Hứa lão",
     "npc_khieu_han_son": "Khưu Hàn Sơn",
-    "npc_thuong_nhan": "Trần Tam"
+    "npc_thuong_nhan": "Trần Tam",
+    "npc_lam_chieu_dung": "Lâm Chiếu Dung",
+    "npc_to_van_ngu_hai": "Tô Vãn Ngư"
   },
   "factions": {
     "tang_mach_hoi": "Tàng Mạch Hội"
