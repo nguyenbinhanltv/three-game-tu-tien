@@ -45,7 +45,7 @@ Lòng chảo Kiếm Trủng dựng thành sảnh gương treo giữa mây, bằn
 - **Sàn gương giả** (`buildMirrorFloor`): đĩa bám địa hình (+0,08 m), một texture canvas 1024²: đá đen bóng, vân vòng, tấm ghép tỏa tia, vệt phản chiếu hàng cột, quầng trăng. KHÔNG phản chiếu thật (không render lần hai): một draw call.
 - **Khung cung** (`buildPalaceHall`): 20 cột lam bạc có đế, đầu cột và gờ ngang, gương lớn treo giữa các cột (khung bạc + mặt gương), gờ sàn bạc; một lưới màu đỉnh, một draw call, màu giữ tối.
 - Đèn đá: quầng nhỏ màu lạnh không vào bloom, ánh sáng điểm giảm còn 35%; vòng ra màu bạc xanh nằm trên sàn.
-- Màu quái (`palette`): Kính Nguyệt Chân Quân thân thật áo tím thẫm + vàng, bóng giả cyan trong mờ (`ghost` 0,5); Kính Linh lam bạc, Ma Quân tím nhạt, Thạch Quy đá đồng.
+- Màu quái (`palette`): Kính Nguyệt Chân Quân thân thật áo tím thẫm + vàng, bóng giả cùng bảng màu, chỉ hơi trong như ánh gương (`ghost` 0,85), nên chỉ phân biệt được bằng vết ngọc lam hoặc thần thức; Kính Linh lam bạc, Ma Quân tím nhạt, Thạch Quy đá đồng.
 - Prop (`shared/src/props.kinhnguyet.ts`): cổng đình, Kính Hồ Đài, vòng đá trôi, mảnh gương (`prop_anh_ngoc_kinh`), đèn đá.
 - VFX: đĩa gương (`Vfx.mirrorDisc`), cột đố (`mirrorPillar`), vòng màn gương, chớp bóng giả vỡ, vết ngọc lam thể thật (`monFlags.ts`).
 - Ngân sách: 43–59 draw call, 177–275k tam giác, 120 fps ở 1280×720 (WebGPU).

@@ -148,8 +148,9 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_van_hai_kinh_vuong: { asset: 'boss_van_hai_kinh_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 5.9, legs: 'none', tint: '#ffffff', rim: 0.25, lift: 0.25, metalness: 0, lazy: true, level: 'van_hai', moves: SERPENT_MOVES },
   // Kính Nguyệt Chân Quân (Kính Nguyệt Cung): người 3,6 m áo choàng bạc.
   boss_kinh_nguyet_chan_quan: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', palette: { dark: '#2c1840', light: '#f0b860', glow: '#ffd890' }, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
-  // Bóng giả của Kính Nguyệt Chân Quân (E3-M): cùng model, cùng kích thước; chỉ thể thật có vết ngọc lam dưới chân (MF_REAL).
-  mon_kinh_anh_gia: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', palette: { dark: '#16305a', light: '#c8e8ff', glow: '#8fe0ff' }, ghost: 0.5, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
+  // Bóng giả của Kính Nguyệt Chân Quân (E3-M): cùng model, cùng kích thước, cùng bảng màu với thể thật (chỉ hơi trong như ánh gương, ghost 0,85):
+  // phân biệt bằng vết ngọc lam dưới chân thể thật (MF_REAL) hoặc thần thức (MF_SENSED), không bằng màu.
+  mon_kinh_anh_gia: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', palette: { dark: '#2c1840', light: '#f0b860', glow: '#ffd890' }, ghost: 0.85, lazy: true, level: 'kinh_nguyet', moves: BIPED_MOVES },
   // Kính Diện Ma Quân (mini-boss đợt 2 Kính Nguyệt Cung): skin tinh anh E-1b.
   elite_kinh_dien_ma_quan: { ...ELITE_SKINS_NEW.elite_kinh_dien_ma_quan, level: 'kinh_nguyet' },
   // Thiên Khuyết Thủ Linh: tượng thần đá 8 m, kích thước lớn nên bước chậm.
