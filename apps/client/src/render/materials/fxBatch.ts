@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { BATCH_ATTR, type FxKind, type FxMesh, type FxPool, fxBatchMaterial } from './vfx';
 
 /**
- * Gộp draw call của hiệu ứng (K-6, T4). Mọi `FxMesh` sống thuộc các kiểu `glow`/`flat`/`solid`/`slash`/`ink`/`sigil`/`dome`/`inkpool` được gom theo
+ * Gộp draw call của hiệu ứng (K-6, T4). Mọi `FxMesh` sống thuộc các kiểu `glow`/`flat`/`solid`/`slash`/`ink`/`dome`/`inkpool` được gom theo
  * (kiểu, hình, renderOrder) và vẽ bằng `InstancedMesh`: 50 người cùng đánh thì vài chục lưới cùng hình chỉ còn một
  * draw call mỗi nhóm. `renderOrder` nằm trong khóa để lớp mực nền (renderOrder âm) vẫn vẽ trước lớp sáng.
  *

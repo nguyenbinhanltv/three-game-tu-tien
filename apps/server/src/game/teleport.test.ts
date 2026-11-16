@@ -165,7 +165,7 @@ describe('dịch chuyển', () => {
     const s = setup();
     const p = s.join('a');
     p.char.unlockTele('tp_rung');
-    p.trib = { endAt: s.sim.now + 9999, nextAt: 0, n: 0 };
+    p.trib = { endAt: s.sim.now + 9999, nextAt: 0, n: 0, fin: true, pills: 0 };
     s.sim.tele.command(p, { id: 'tp_rung' });
     p.trib = null;
     p.trial = { endAt: s.sim.now + 9999, monId: 'x', x: 0, z: 0 };
@@ -186,7 +186,7 @@ describe('dịch chuyển', () => {
     const p = s.join('a');
     p.char.unlockTele('tp_rung');
     s.sim.tele.command(p, { id: 'tp_rung' });
-    p.trib = { endAt: s.sim.now + 99999, nextAt: 0, n: 0 };
+    p.trib = { endAt: s.sim.now + 99999, nextAt: 0, n: 0, fin: true, pills: 0 };
     s.advance(TELE_CAST_MS + 100);
     expect(farFromPad(p)).toBe(true);
   });

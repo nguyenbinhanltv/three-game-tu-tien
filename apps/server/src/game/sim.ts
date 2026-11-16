@@ -130,6 +130,8 @@ import {
   SKILL_MSG_PER_SEC,
   type SkillDef,
   SPAWN_POINT,
+  canFlyAt,
+  freeFlight,
   type SpawnDef,
   STEP,
   stepMove,
@@ -139,9 +141,16 @@ import {
   TRIB_AIM,
   TRIB_EXTRA,
   TRIB_FIRST_DELAY,
-  TRIB_GAP_END,
-  TRIB_GAP_START,
+  TRIB_FINAL,
+  TRIB_NET,
+  TRIB_PHASE_EXTRA,
+  TRIB_PHASE_GAP,
+  TRIB_PILL_MAX,
+  TRIB_RAIN,
+  tribPhaseAt,
+  buffMag,
   TRIBULATION_FAIL_XP_LOSS,
+  TRUC_CO_FREE_FLY_ALT,
   TRUC_CO_LEVEL,
   vulnerableDamage,
   WATER_Y,
@@ -239,7 +248,10 @@ export interface PlayerEnt {
   hazardWin: { until: number; taken: number };
   meditating: boolean;
   xpAcc: number;
-  trib: { endAt: number; nextAt: number; n: number } | null;
+  /** Giây đả tọa tích lũy chưa báo cho nhiệm vụ `meditate` (dẫn khí nhập thể). */
+  medAcc: number;
+  /** `fin`: đã thả tia cuối (pha 3); `pills`: số đan hồi phục đã dùng trong kiếp này. */
+  trib: { endAt: number; nextAt: number; n: number; fin: boolean; pills: number } | null;
   /** Thử thách tâm ma đang chạy (P3-7): hết giờ `endAt`, bóng `monId`, chỗ bắt đầu (x, z). Xem `game/realm.ts`. */
   trial: { endAt: number; monId: string; x: number; z: number } | null;
   warnAt: number;
@@ -342,6 +354,10 @@ interface Hazard extends HazardGeom {
   atk: number;
   /** Quái thả vùng (null = thiên kiếp). */
   mon: MonEnt | null;
+  /** Tia cuối độ kiếp: khóa mệnh (trúng chủ kiếp dù đứng ngoài vòng), đan phòng ngự giảm sát thương. */
+  lock?: boolean;
+  /** Nhóm vòng cùng một vạch lôi võng: một người chỉ trúng một lần mỗi nhóm trong cùng nhịp nổ. */
+  grp?: number;
   /** Nguồn: id quái, hoặc sid người độ kiếp. Thiên kiếp trúng cả người ngoài đứng trong vòng, nhưng không giết họ (xem `tickHazards`). */
   src: string;
 }
@@ -668,6 +684,7 @@ export class GameSim {
       meditating: false,
       xpAcc: 0,
       trib: null,
+      medAcc: 0,
       trial: null,
       warnAt: 0,
       chatAt: 0,
@@ -852,7 +869,7 @@ export class GameSim {
   }
 
   private canFly(p: PlayerEnt): boolean {
-    return !this.isDead(p) && !p.trib && p.char.level >= FLY_UNLOCK_LEVEL && p.char.mp >= 1;
+    return !this.isDead(p) && !p.trib && canFlyAt(p.char.level, p.char.mp, p.move.x, p.move.y, p.move.z);
   }
 
   private applyInput(p: PlayerEnt, inp: MoveInput): void {
@@ -903,7 +920,7 @@ export class GameSim {
     this.realm.tick(p);
     const dead = this.isDead(p);
     if (!dead) {
-      if (p.move.flying) {
+      if (p.move.flying && !freeFlight(c.level, p.move.x, p.move.y, p.move.z)) {
         c.mp -= FLY_MP_PER_SEC * dt;
         if (c.mp < 0) c.mp = 0;
       }
@@ -913,6 +930,12 @@ export class GameSim {
       if (c.hp < c.mhp && hpRate > 0) c.hp = Math.min(c.mhp, c.hp + c.mhp * hpRate * dt);
       if (c.mp < c.mmp && mpRate > 0) c.mp = Math.min(c.mmp, c.mp + c.mmp * mpRate * dt);
       if (p.meditating) {
+        p.medAcc += dt;
+        if (p.medAcc >= 1) {
+          const k = Math.floor(p.medAcc);
+          p.medAcc -= k;
+          this.questEvent(p, 'meditate', undefined, k);
+        }
         p.xpAcc += meditateXpPerSec(c.level) * dt;
         if (p.xpAcc >= 1) {
           const n = Math.floor(p.xpAcc);
@@ -952,7 +975,9 @@ export class GameSim {
 
   questEvent(p: PlayerEnt, type: Parameters<Character['questEvent']>[0], target: string | undefined, n: number): void {
     const ready = p.char.questEvent(type, target, n);
-    for (const id of ready) this.sys(p, 'sys.quest_ready', { name: t(`quest.${id}.name`) }, 'good');
+    for (const id of ready) {
+      this.sys(p, id === 'q_dan_khi' ? 'sys.dan_khi_ok' : 'sys.quest_ready', { name: t(`quest.${id}.name`) }, 'good');
+    }
   }
 
   // ---------- chiến đấu ----------
@@ -1107,7 +1132,8 @@ export class GameSim {
     const def = skill.dash;
     if (!def) return;
     const c = p.char;
-    if (p.trib || p.trial) return this.warn(p, 'sys.busy');
+    // Độ kiếp vẫn lướt được: lướt là cách băng qua vạch lôi võng (pha 2).
+    if (p.trial) return this.warn(p, 'sys.busy');
     if (this.now - p.flow.lastDashAt < DASH_MIN_GAP_MS) return;
     if ((p.cds.get(skill.id) ?? 0) > this.now) return this.warn(p, 'sys.cooldown');
     if (c.mp < skill.mp) return this.warn(p, 'sys.not_enough_mp');
@@ -2696,12 +2722,13 @@ export class GameSim {
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
   /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0): void {
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0): void {
     const mon = this.monById.get(src) ?? null;
-    this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon });
+    this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
     // Tia sét có hình theo seed để mọi client thấy cùng một tia (chỉ là lớp hình).
     if (kind === 'lightning') msg.sd = visualSeed();
+    if (lock) msg.big = true;
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;
@@ -2710,7 +2737,10 @@ export class GameSim {
     this.emit(S.HAZARD, msg);
   }
 
+  private hazardGrp = 0;
+
   private tickHazards(): void {
+    const hitGrp = new Set<string>();
     for (let i = this.hazards.length - 1; i >= 0; i--) {
       const h = this.hazards[i];
       if (this.now < h.at) continue;
@@ -2719,13 +2749,21 @@ export class GameSim {
       if (h.mon && (h.mon.state === MS_DEAD || h.mon.state === MS_RETURN || !this.monById.has(h.mon.id))) continue;
       for (const p of this.players.values()) {
         if (this.isDead(p)) continue;
-        if (!inHazard(h, p.move.x, p.move.z)) continue;
-        if (p.move.y - groundAt(p.move.x, p.move.z) > 8) continue;
+        // Tia cuối khóa mệnh: chủ kiếp luôn trúng (không né bằng chạy hay bay); người khác chỉ trúng khi đứng trong vòng.
+        // Chỉ khi kiếp còn chạy: chết/hồi sinh/hủy kiếp trước lúc nổ thì tia mất khóa và rơi về kiểm vị trí.
+        const locked = !!h.lock && h.src === p.sid && !!p.trib;
+        if (!locked && !inHazard(h, p.move.x, p.move.z)) continue;
+        if (!locked && p.move.y - groundAt(p.move.x, p.move.z) > 8) continue;
+        if (h.grp) {
+          const key = h.grp + ':' + p.sid;
+          if (hitGrp.has(key)) continue;
+          hitGrp.add(key);
+        }
         let n =
           h.atk > 0
             ? computeDamage(h.atk, h.dmg, p.char.def, Math.random(), 1).dmg
             : h.pct
-              ? p.char.mhp * h.dmg
+              ? p.char.mhp * h.dmg * (h.lock ? 1 - Math.min(TRIB_FINAL.defMaxCut, buffMag(p.char.meta.buffs, 'def', Date.now()) * TRIB_FINAL.defMul) : 1)
               : Math.max(1, h.dmg - p.char.def * 0.6);
         if (h.mon) {
           // Vùng của quái: trong cửa sổ HAZARD_IFRAME chỉ chịu vùng mạnh nhất (chống dồn đòn).
@@ -2860,7 +2898,7 @@ export class GameSim {
     if (c.bk < NGUNG_KHI_MAX) return this.warn(p, 'sys.bk_blocked');
     if (!c.tx('tribulation', null, (d) => d.remove(TRUC_CO_PILL, 1))) return this.warn(p, 'sys.trib_need_pill');
     if (p.meditating) this.setMeditating(p, false);
-    p.trib = { endAt: this.now + TRIBULATION_DURATION * 1000, nextAt: this.now + TRIB_FIRST_DELAY * 1000, n: 0 };
+    p.trib = { endAt: this.now + TRIBULATION_DURATION * 1000, nextAt: this.now + TRIB_FIRST_DELAY * 1000, n: 0, fin: false, pills: 0 };
     this.setFlag(p, PF_TRIBULATION, true);
     this.sysAll('sys.trib_start', { name: c.name }, 'info');
     this.fx({ t: 'tribstart', src: p.sid, d: TRIBULATION_DURATION, sd: visualSeed() });
@@ -2899,17 +2937,44 @@ export class GameSim {
       this.endTribulation(p, true, false);
       return;
     }
+    const elapsed = TRIBULATION_DURATION - (tr.endAt - this.now) / 1000;
+    const phase = tribPhaseAt(elapsed);
+    // Pha 3 mở bằng tia cuối khóa mệnh; trong lúc nó tích tụ trời lặng đi, rồi mưa sét dồn dập.
+    if (phase === 3 && !tr.fin) {
+      tr.fin = true;
+      tr.nextAt = Math.max(tr.nextAt, this.now + TRIB_FINAL.delay * 1000);
+      this.addHazard({ x: p.move.x, z: p.move.z, r: TRIB_FINAL.r }, TRIB_FINAL.delay, TRIB_FINAL.pct, true, 'lightning', p.sid, 0, true);
+      this.sys(p, 'sys.trib_final', undefined, 'bad');
+    }
     if (this.now < tr.nextAt) return;
     tr.n++;
-    const progress = 1 - (tr.endAt - this.now) / (TRIBULATION_DURATION * 1000);
-    tr.nextAt = this.now + (TRIB_GAP_START - progress * (TRIB_GAP_START - TRIB_GAP_END)) * 1000;
+    const rain = phase === 3;
+    tr.nextAt = this.now + (rain ? TRIB_RAIN.gap : TRIB_PHASE_GAP[phase as 1 | 2]) * 1000;
     // Một tia nhắm thẳng vào người độ kiếp, vài tia rơi quanh.
-    this.addHazard({ x: p.move.x, z: p.move.z, r: TRIB_AIM.r }, TRIB_AIM.delay, TRIB_AIM.pct, true, 'lightning', p.sid);
-    const extra = Math.min(TRIB_EXTRA.maxCount, 1 + Math.floor(progress * 3));
+    this.addHazard({ x: p.move.x, z: p.move.z, r: TRIB_AIM.r }, TRIB_AIM.delay, rain ? TRIB_RAIN.aimPct : TRIB_AIM.pct, true, 'lightning', p.sid);
+    const extra = rain ? TRIB_RAIN.count : TRIB_PHASE_EXTRA[phase as 1 | 2];
     for (let i = 0; i < extra; i++) {
       const a = Math.random() * Math.PI * 2;
       const r = TRIB_EXTRA.distMin + Math.random() * (TRIB_EXTRA.distMax - TRIB_EXTRA.distMin);
-      this.addHazard({ x: p.move.x + Math.cos(a) * r, z: p.move.z + Math.sin(a) * r, r: TRIB_EXTRA.r }, TRIB_EXTRA.delayMin + Math.random() * (TRIB_EXTRA.delayMax - TRIB_EXTRA.delayMin), TRIB_EXTRA.pct, true, 'lightning', p.sid);
+      this.addHazard({ x: p.move.x + Math.cos(a) * r, z: p.move.z + Math.sin(a) * r, r: rain ? TRIB_RAIN.r : TRIB_EXTRA.r }, TRIB_EXTRA.delayMin + Math.random() * (TRIB_EXTRA.delayMax - TRIB_EXTRA.delayMin), rain ? TRIB_RAIN.pct : TRIB_EXTRA.pct, true, 'lightning', p.sid);
+    }
+    if (phase === 2 && tr.n % TRIB_NET.every === 0) this.tribNet(p);
+  }
+
+  /** Lôi võng: vạch sét song song (chuỗi vòng sét) cắt qua chỗ người độ kiếp đứng (vạch giữa đè lên họ), hướng ngẫu nhiên. */
+  private tribNet(p: PlayerEnt): void {
+    const yaw = Math.random() * Math.PI;
+    const fx = Math.sin(yaw);
+    const fz = Math.cos(yaw);
+    const halfLines = (TRIB_NET.lines - 1) / 2;
+    const halfCount = (TRIB_NET.count - 1) / 2;
+    for (let i = 0; i < TRIB_NET.lines; i++) {
+      const off = (i - halfLines) * TRIB_NET.gap;
+      const grp = ++this.hazardGrp;
+      for (let j = 0; j < TRIB_NET.count; j++) {
+        const along = (j - halfCount) * TRIB_NET.step;
+        this.addHazard({ x: p.move.x + fz * off + fx * along, z: p.move.z - fx * off + fz * along, r: TRIB_NET.r }, TRIB_NET.delay, TRIB_NET.pct, true, 'lightning', p.sid, 0, false, grp);
+      }
     }
   }
 
@@ -2926,6 +2991,7 @@ export class GameSim {
       c.mp = c.mmp;
       this.sysAll('sys.trib_ok', { name: c.name }, 'good');
       this.fx({ t: 'ascend', src: p.sid });
+      this.sys(p, 'sys.tc_fly_hint', { n: TRUC_CO_FREE_FLY_ALT }, 'info');
       this.questEvent(p, 'breakthrough', undefined, 1);
       this.questEvent(p, 'level', undefined, c.level);
       this.savePlayer(p);
@@ -2951,6 +3017,7 @@ export class GameSim {
     if (this.isDead(p) || p.move.flying || !p.move.grounded || p.casting || p.trib) return this.warn(p, 'sys.busy');
     if (this.now - p.lastCombatAt < 5000) return this.warn(p, 'sys.busy');
     this.setMeditating(p, true);
+    if (p.char.quests.active.q_dan_khi && !p.char.questComplete('q_dan_khi')) this.sys(p, 'sys.dan_khi_start', undefined, 'info');
   }
 
   onGather(p: PlayerEnt, msg: unknown): void {
@@ -2992,9 +3059,13 @@ export class GameSim {
     if (!def.use) return;
     if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
+    // Độ kiếp: tối đa TRIB_PILL_MAX đan hồi phục (đan độc tích tụ), để không thành cuộc thi uống thuốc.
+    const healing = !!def.use.hpPct;
+    if (p.trib && healing && p.trib.pills >= TRIB_PILL_MAX) return this.warn(p, 'sys.trib_pill_limit', { n: TRIB_PILL_MAX });
     let taken = null as InvItem | null;
     if (!c.tx('use:' + def.id, idem, (d) => !!(taken = d.removeAt(slot, 1)))) return;
     p.itemCdAt = this.now + def.use.cd * 1000;
+    if (p.trib && healing) p.trib.pills++;
     // Thanh Mộc Đan Kinh: hồi phục +20%, và đan dược dùng được lên đạo hữu gần (`to` = sid).
     const healMul = passiveOf(c.meta)?.healMul;
     let who = p;

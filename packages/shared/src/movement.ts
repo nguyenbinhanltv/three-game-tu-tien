@@ -1,4 +1,5 @@
 import { COLLIDERS, PLAY_WALL, playDist, SECT, WORLD_MARGIN, WORLD_SIZE } from './level';
+import { FLY_UNLOCK_LEVEL, TRUC_CO_LEVEL } from './formulas';
 import { groundAt } from './terrain';
 
 /** Bước mô phỏng cố định, dùng chung cho dự đoán ở client và xử lý ở server. */
@@ -13,6 +14,19 @@ export const GRAVITY = 24;
 export const FLY_MIN_CLEAR = 1.6;
 export const FLY_MAX_ALT = 520;
 export const PLAYER_RADIUS = 0.5;
+/** Trúc Cơ: ngự kiếm dưới độ cao này (so với mặt đất) không tốn linh lực và bay được cả khi cạn linh lực. */
+export const TRUC_CO_FREE_FLY_ALT = 20;
+
+/** Có được (tiếp tục) ngự kiếm không: đủ cảnh giới và còn linh lực, hoặc Trúc Cơ bay thấp (miễn linh lực). Dùng chung client dự đoán và server. */
+export function canFlyAt(level: number, mp: number, x: number, y: number, z: number): boolean {
+  if (level < FLY_UNLOCK_LEVEL) return false;
+  return mp >= 1 || freeFlight(level, x, y, z);
+}
+
+/** Bay miễn linh lực: từ Trúc Cơ, cách mặt đất không quá `TRUC_CO_FREE_FLY_ALT`. */
+export function freeFlight(level: number, x: number, y: number, z: number): boolean {
+  return level >= TRUC_CO_LEVEL && y - groundAt(x, z) <= TRUC_CO_FREE_FLY_ALT;
+}
 
 export interface MoveState {
   x: number;

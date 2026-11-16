@@ -18,6 +18,7 @@ import {
   type DmgMsg,
   DUNGEON_EXIT,
   FLY_UNLOCK_LEVEL,
+  canFlyAt,
   type FxMsg,
   groundAt,
   AIRBORNE_HEIGHT,
@@ -303,7 +304,7 @@ export class Game {
   /** VFX ba pha theo sự kiện chiêu + vệt kiếm + linh quang hộ thể (K-6). */
   skillFx: SkillFx | null = null;
   /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
-  hazardLog?: { k: string; sh: string; src: string; boss: boolean; t: string }[];
+  hazardLog?: { k: string; sh: string; src: string; boss: boolean; t: string; x?: number; z?: number; r?: number; yaw?: number; w?: number; big?: boolean; px?: number; pz?: number }[];
   dmg!: DamageNumbers;
   lootFly!: LootFly;
   private lootLayer: HTMLDivElement | null = null;
@@ -564,7 +565,7 @@ export class Game {
     room.onMessage(S.FX, (m: FxMsg) => this.onFx(m));
     room.onMessage(S.DMG, (m: DmgMsg) => this.onDmg(m));
     room.onMessage(S.HAZARD, (m: HazardMsg) => {
-      if (import.meta.env.DEV) (this.hazardLog ??= []).push({ k: m.kind, sh: m.sh ?? 'circle', src: m.src ?? '', boss: this.isBossSrc(m.src), t: this.view.monsters.get(m.src ?? '')?.t ?? '' });
+      if (import.meta.env.DEV) (this.hazardLog ??= []).push({ k: m.kind, sh: m.sh ?? 'circle', src: m.src ?? '', boss: this.isBossSrc(m.src), t: this.view.monsters.get(m.src ?? '')?.t ?? '', x: m.x, z: m.z, r: m.r, yaw: m.yaw, w: m.w, big: m.big, px: this.cur.x, pz: this.cur.z });
       if (import.meta.env.DEV && this.hazardLog && this.hazardLog.length > 200) this.hazardLog.shift();
       // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
       if (m.sh && this.vfx) {
@@ -1934,7 +1935,7 @@ export class Game {
   private moveCtx(me: PState): MoveCtx {
     const dead = (me.fl & PF_DEAD) !== 0;
     return {
-      canFly: !dead && (me.fl & PF_TRIBULATION) === 0 && me.lv >= FLY_UNLOCK_LEVEL && me.mp >= 1,
+      canFly: !dead && (me.fl & PF_TRIBULATION) === 0 && canFlyAt(me.lv, me.mp, me.x, me.y, me.z),
       frozen: dead,
       speedMul: 1,
     };
@@ -2220,7 +2221,8 @@ export class Game {
     this.deathVisual(dfx, tx, ty, tz);
     if (this.cine.active) this.runCine(dt);
     this.tribFx(dt);
-    this.ents.tagsHidden = this.cine.active || this.tribScene;
+    // Thẻ chương đang hiện cũng ẩn bảng tên (tiêu đề không đè lên tên nhân vật).
+    this.ents.tagsHidden = this.cine.active || this.tribScene || (get().chapter?.until ?? 0) > Date.now();
     updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
   }
 
@@ -2448,7 +2450,7 @@ export class Game {
       tribEnd: me.fl & PF_TRIBULATION ? Math.max(st.tribEnd, this.tribUntil) : 0,
       castEnd: me.fl & PF_CASTING ? st.castEnd : 0,
     });
-    this.checkChapters(rp.x, rp.z);
+    this.checkChapters(rp.x, rp.z, (me.fl & PF_FLYING) !== 0);
   }
 
   /**
@@ -2546,8 +2548,16 @@ export class Game {
   }
 
   /** Thẻ đang chờ (vào bí cảnh) và lần đầu vào Lạc Kiếm Tông của nhân vật này; gọi mỗi lần đồng bộ HUD. */
-  private checkChapters(x: number, z: number): void {
+  private checkChapters(x: number, z: number, flying = false): void {
     if (!this.started || this.snapToServer) return;
+    // Ngự kiếm lần đầu (G10): thẻ chương + gợi ý lên/xuống; đã xem thì lần sau không hiện.
+    if (flying && get().room === ROOM_WORLD && !this.pendingChapter) {
+      const who = get().char?.name;
+      if (who && firstTime(localStorage, 'fly', who)) {
+        this.chapter('fly');
+        pushToast(t('ui.fly_hint'), 'info');
+      }
+    }
     if (this.pendingChapter) {
       this.chapter(this.pendingChapter);
       this.pendingChapter = null;
