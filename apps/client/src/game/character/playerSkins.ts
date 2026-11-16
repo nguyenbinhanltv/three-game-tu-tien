@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { float, normalView, positionViewDirection, vec3 } from 'three/tsl';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { APPEARANCE, DYE, OUTFITS, SCABBARD_DEFAULT, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
+import { APPEARANCE, DYE, OUTFITS, scabbardOf, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
@@ -190,7 +190,7 @@ export class PlayerSkins {
   private outfits = new Map<string, OutfitTemplate | 'loading' | 'failed'>();
   private outMats = new Map<string, THREE.MeshStandardNodeMaterial>();
   /** Vỏ kiếm đeo lưng dùng chung (nạp lười khi có người mặc áo mô-đun). */
-  private scabbard: ScabbardTemplate | 'loading' | 'failed' | null = null;
+  private scabbards = new Map<string, ScabbardTemplate | 'loading' | 'failed'>();
   /** Lưới nhân vật đã cắt phần áo che (theo hình học gốc) và lưới áo đã đổi chỉ số xương (theo asset áo + LOD). */
   private dressed = new Map<THREE.BufferGeometry, THREE.BufferGeometry | null>();
   private remapped = new Map<string, THREE.BufferGeometry | null>();
@@ -214,7 +214,7 @@ export class PlayerSkins {
     if (this.legacy || !id) return false;
     // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
     const oids = this.outfitIds(look);
-    if (this.templates.get(id) !== 'failed' && (oids.some((o) => this.outfits.get(o) === 'loading') || (oids.length > 0 && this.scabbard === 'loading'))) return true;
+    if (this.templates.get(id) !== 'failed' && (oids.some((o) => this.outfits.get(o) === 'loading') || (oids.length > 0 && this.scabbards.get(scabbardOf(look.w)) === 'loading'))) return true;
     return this.templates.get(id) === 'loading' || this.swords.get(look.w ?? SWORD_MODEL_DEFAULT) === 'loading';
   }
 
@@ -254,7 +254,7 @@ export class PlayerSkins {
     if (t.oldSword && look.w) this.loadSword(look.w);
     // Áo riêng của bộ: có thì thay lưới áo của nhân vật (bỏ phụ kiện thủ tục: áo đã có vai giáp, đai...); chưa nạp xong/lỗi thì giữ đường recolor + phụ kiện.
     const parts = this.outfitIds(look).map((o) => ({ id: o, tpl: this.loadOutfit(o) }));
-    if (parts.length) this.loadScabbard();
+    if (parts.length) this.loadScabbard(scabbardOf(look.w));
     const outfit: Outfit | undefined = parts.length && parts.every((p) => p.tpl) ? { parts: parts as Outfit['parts'] } : undefined;
     return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), outfit ? undefined : look.acc, look.w, false, outfit);
   }
@@ -426,15 +426,15 @@ export class PlayerSkins {
   }
 
   /** Bản sao mesh vỏ kiếm nếu đã nạp (null: chưa nạp hoặc lỗi; kiếm cũ giữ vỏ nướng sẵn). */
-  private scabbardMount(): ScabbardMount | null {
-    const s = this.scabbard;
+  private scabbardMount(asset: string): ScabbardMount | null {
+    const s = this.scabbards.get(asset);
     return s && typeof s === 'object' ? { mesh: s.mesh.clone(), len: s.len } : null;
   }
 
-  private loadScabbard(): void {
-    if (this.scabbard) return;
-    this.scabbard = 'loading';
-    this.cache.acquire(SCABBARD_DEFAULT, { priority: 18 }).then(
+  private loadScabbard(asset: string): void {
+    if (this.scabbards.has(asset)) return;
+    this.scabbards.set(asset, 'loading');
+    this.cache.acquire(asset, { priority: 18 }).then(
       (h) => {
         if (this.disposed) {
           h.release();
@@ -446,20 +446,20 @@ export class PlayerSkins {
         });
         const len = (partExtras(h.scene) as { scabbard?: { len?: number } }).scabbard?.len;
         if (!mesh || !len) {
-          console.warn(`[models] ${SCABBARD_DEFAULT} thiếu số đo vỏ (extras dtl.scabbard), bỏ qua`);
+          console.warn(`[models] ${asset} thiếu số đo vỏ (extras dtl.scabbard), bỏ qua`);
           h.release();
-          this.scabbard = 'failed';
+          this.scabbards.set(asset, 'failed');
           return;
         }
         for (const m of adoptGltfMaterials(h.scene)) {
           m.metalness = 0;
           m.roughness = 0.65;
         }
-        this.scabbard = { mesh, len, release: () => h.release() };
+        this.scabbards.set(asset, { mesh, len, release: () => h.release() });
       },
       (err) => {
-        console.warn(`[models] không nạp được ${SCABBARD_DEFAULT}`, err);
-        if (!this.disposed) this.scabbard = 'failed';
+        console.warn(`[models] không nạp được ${asset}`, err);
+        if (!this.disposed) this.scabbards.set(asset, 'failed');
       },
     );
   }
@@ -525,7 +525,7 @@ export class PlayerSkins {
       t.sword,
       ribbons,
       blade,
-      outfit && blade && !shadow ? this.scabbardMount() : null,
+      outfit && blade && !shadow ? this.scabbardMount(scabbardOf(want)) : null,
     );
     if (t.k3) player.addClips(t.k3.clips, t.k3.map, t.k3.locoRef);
     else t.waiting.push(new WeakRef(player));
@@ -598,8 +598,8 @@ export class PlayerSkins {
     this.swordLoads.clear();
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
-    if (this.scabbard && typeof this.scabbard === 'object') this.scabbard.release();
-    this.scabbard = null;
+    for (const sc of this.scabbards.values()) if (typeof sc === 'object') sc.release();
+    this.scabbards.clear();
     for (const o of this.outfits.values()) if (typeof o === 'object') o.handle.release();
     this.outfits.clear();
     for (const m of this.outMats.values()) m.dispose();

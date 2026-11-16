@@ -1,5 +1,5 @@
 {
-  "$comment": "Áo mặc thật (docs/sets-retarget): id bộ trang bị → các mảnh asset (client nạp `<mảnh>_nam|nu`). Bộ Kết Đan (liet_mach, dia_giap, phuc_mach) là bộ mô-đun T-5 (tools/blender/outfit_build.py, 6 mảnh gộp một lưới); kinh_quang/tinh_khuyet còn bản tạm #119 (retarget_set.py). Bộ chưa có trong sets.json (set_tinh_khuyet, bậc 4 Hóa Thần) chỉ chuẩn bị asset, chưa có vật phẩm.",
+  "$comment": "Áo mặc thật (docs/sets-retarget): id bộ trang bị → các mảnh asset (client nạp `<mảnh>_nam|nu`). Bộ Kết Đan (liet_mach, dia_giap, phuc_mach) và bậc 4 Kiếm tu tinh_khuyet là bộ mô-đun T-5 (tools/blender/outfit_build.py, 6 mảnh gộp một lưới; áo ngoài Phục Mạch là bản dựng lại v02); kinh_quang còn bản tạm #119 (retarget_set.py). Bộ chưa có trong sets.json (set_tinh_khuyet, bậc 4 Hóa Thần) chỉ chuẩn bị asset, chưa có vật phẩm.",
   "set_liet_mach": ["set_liet_mach_kiem_y"],
   "set_dia_giap": ["set_dia_long_ho_giap"],
   "set_phuc_mach": ["set_phuc_mach_dan_bao"],

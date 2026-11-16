@@ -74,3 +74,11 @@ Mọi lần đo dưới 300 draw (lớn nhất 276, trước đó 303). Trước
 | `set_phuc_mach` | 295 | 936k | 6,3 / 8,6 ms | 404 | 302 |
 
 Mỗi người mặc bộ thêm ~2 draw call (lưới bộ mỗi LOD hiển thị + kiếm/vỏ ở LOD0): phần nhân vật ≈ 100 draw call cho 50 người (< 120), nhưng tổng cảnh ở sân chạm trần 300 (nền 202). Tam giác giảm so với nền vì thân nền chỉ còn đầu/tay. `bench:client` (1 người, không mặc bộ): không chỉ số nào xấu hơn 10% so với lần trước, mọi điểm đạt.
+
+## Phục Mạch: áo ngoài dựng lại v02 (T-6a)
+
+Người dùng dựng lại áo ngoài Phục Mạch bằng HD Model + Retopo (`chr/set_phuc_mach_dan_bao/tripo/raw_ao_ngoai_v02.glb`, v01 giữ trong nguồn) cho bớt nhàu. `import.outfit.files` trong meta.json (`{"ao_ngoai": "raw_ao_ngoai_v02.glb"}`, thêm ở `outfit_build.py`) trỏ sang bản v02; không đổi gì khác. Tam giác LOD0 11045 / LOD1 4675 (nam), 4410 (nữ) / LOD2 1657, 1651.
+
+- Số đo hình học (clay, `outfit_check`): v02 gần như v01, không đo được độ nhàu thấp hơn đáng kể (góc nhị diện trung bình 13,3° so với 12,9°; tam giác mảnh 40% so với 41%). Trong game v02 ít rách mép và ít mảnh vải dư hơn ở vạt và tay áo (nam và nữ, `so_sanh_phuc_mach_v01_v02_<m|f>.jpg`: hàng trên v01, hàng dưới v02; cột trước/sau/nghiêng, cùng góc).
+- Ảnh v02: `sheet_phuc_mach_v02_<m|f>.jpg` (đứng, chạy, ngự kiếm, đả tọa, chém, chết), `matrix_phuc_mach_v02_<m|f>.jpg` (chiêu 1–2 của ba công pháp, chết, chém), `bang_phuc_mach_v02_<m|f>.jpg`. Kiểm xuyên mesh: `check/set_phuc_mach_dan_bao_*.json` đã chạy lại với v02. Voan vẫn chưa xuyên sáng (chưa làm).
+- Pipeline có thêm hàng rào: GLB mảnh không có vật liệu/texture sẽ dừng với thông báo rõ (xuất lỗi từ Tripo) thay vì nhập ra mảnh xám trơn.
