@@ -18,6 +18,8 @@ const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.j
 
 const IN_GAME = ['elite_huyet_nha_lang', 'elite_xich_dien_ho', 'elite_cu_nham_vien'];
 
+const DOAN_MACH = ['elite_liet_cot_bao', 'elite_ho_mach_khoi_tuong', 'elite_xich_sa_ngo_cong'];
+
 describe('12 tinh anh Tripo (E-1b)', () => {
   const ids = [...IN_GAME, ...Object.keys(ELITE_SKINS_NEW)];
 
@@ -36,13 +38,16 @@ describe('12 tinh anh Tripo (E-1b)', () => {
     }
   });
 
-  it('ba tinh anh Vân Lam có skin nạp lười theo màn (không vào tải đầu), chín con mới chưa nằm trong bảng skin', () => {
+  it('ba tinh anh Vân Lam có skin nạp lười theo màn (không vào tải đầu), ba con Đoạn Mạch (E2-B) đã gộp vào bảng, sáu con còn lại chưa', () => {
     for (const id of IN_GAME) {
       expect(MONSTER_SKINS[id]?.lazy, id).toBe(true);
       expect(MONSTER_SKINS[id].level, id).toBe('van_lam');
     }
     for (const [id, s] of Object.entries(ELITE_SKINS_NEW)) {
-      expect(MONSTER_SKINS[id], id).toBeUndefined();
+      if (DOAN_MACH.includes(id)) {
+        expect(MONSTER_SKINS[id]?.level, id).toBe('doan_mach');
+        expect(MONSTER_SKINS[id].lazy, id).toBe(true);
+      } else expect(MONSTER_SKINS[id], id).toBeUndefined();
       expect(s.lazy, id).toBe(true);
       for (const clip of Object.values(s.clips)) expect(MANIFEST.assets[s.asset].animations, `${id}: ${clip}`).toContain(clip);
     }

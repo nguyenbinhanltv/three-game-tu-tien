@@ -8,6 +8,7 @@ import { MonsterModel } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { type BossMove, SkinnedMonster } from './skinned';
 import type { ClipMap } from './states';
+import { ELITE_SKINS_NEW } from './eliteSkins';
 import { type BossMoveKind, legacyModelsRequested, type MonsterView } from './view';
 
 /** Quái dùng model có xương: asset, bảng clip, tông màu (nhân vào texture màu, không thêm texture). */
@@ -114,7 +115,10 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // Mọi skin dưới đây `lazy` + `level`: không vào gói tải đầu, chỉ nạp khi vào bản đồ (`preloadLazy(levelId)`) hoặc khi quái xuất hiện.
   // Clip đều thủ tục (tools/blender/anim_biped_extra.py `import.mon`, anim_quadruped.py, anim_creature.py). refSpeed ≈ 0,9 ×
   // naturalSpeed trong báo cáo import (cùng tỉ lệ như các thú trên).
-  // Đoạn Mạch Cổ Cốc (E-2)
+  // Đoạn Mạch Cổ Cốc (E-2). Ba tinh anh (E2-B) lấy skin từ ELITE_SKINS_NEW (trước đó chưa gộp nên trong game vẫn là model khối).
+  elite_liet_cot_bao: { ...ELITE_SKINS_NEW.elite_liet_cot_bao, level: 'doan_mach' },
+  elite_ho_mach_khoi_tuong: { ...ELITE_SKINS_NEW.elite_ho_mach_khoi_tuong, level: 'doan_mach' },
+  elite_xich_sa_ngo_cong: { ...ELITE_SKINS_NEW.elite_xich_sa_ngo_cong, level: 'doan_mach' },
   mon_mach_thuong_ho_ve: { asset: 'mon_mach_thuong_ho_ve', clips: GUARD_CLIPS, refSpeed: 2.2, legs: 'biped', tint: '#ffffff', lazy: true, level: 'doan_mach' },
   mon_khai_mach_khoi_loi: { asset: 'mon_khai_mach_khoi_loi', clips: WOLF_CLIPS, refSpeed: 1.7, legs: 'biped', tint: '#ffffff', lazy: true, level: 'doan_mach' },
   mon_thach_giap_te: { asset: 'mon_thach_giap_te', clips: WOLF_CLIPS, refSpeed: 1.75, legs: 'quad', tint: '#ffffff', lazy: true, level: 'doan_mach' },
@@ -133,7 +137,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // màn (id màn là dự kiến của E-2..E-4, đổi `level` cho khớp LevelDef khi có). refSpeed (m/s ở scale 1, model theo kích thước thật)
   // tính từ sải chân của clip run (docs/boss-import/README.md). Đòn lớn khớp tools/blender/anim_{quadruped,serpent,biped_extra}.py.
   // Địa Mạch Long: rồng đá bốn chân, khe sáng ngọc lam theo máu (viền yêu khí nhẹ).
-  boss_dia_mach_long: { asset: 'boss_dia_mach_long', clips: BOSS_CLIPS, refSpeed: 9.0, legs: 'quad', tint: '#ffffff', rim: 0.3, lazy: true, level: 'doan_mach', moves: QUAD_MOVES },
+  boss_dia_mach_long: { asset: 'boss_dia_mach_long', clips: BOSS_CLIPS, refSpeed: 9.0, legs: 'quad', tint: '#ffffff', rim: 0.12, lift: 0.2, lazy: true, level: 'doan_mach', moves: QUAD_MOVES },
   // Thôn Mạch Ngô Công Vương (Phục Mạch Quật): ngô công 14 m, xương chuỗi, tinh thạch sáng theo accent.
   boss_thon_mach_ngo_cong_vuong: { asset: 'boss_thon_mach_ngo_cong_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 4.6, legs: 'none', tint: '#ffffff', rim: 0.35, lift: 0.2, metalness: 0, lazy: true, level: 'phuc_mach', moves: SERPENT_MOVES },
   // Thạch Tâm Khôi Vương (Phục Mạch Quật): khôi đá 5 m, tim ngọc ở ngực phát sáng.
