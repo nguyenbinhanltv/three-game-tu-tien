@@ -11,7 +11,7 @@ import {
   isPeakLevel,
   peakGated,
   isRootId,
-  PHA_CANH_PILL,
+  bottleneckPill,
   type RootId,
   ROOT_IDS,
   rootChangeCost,
@@ -70,7 +70,8 @@ export function BottleneckBox({ char }: { char: CharView }) {
   const g = Game.current;
   if (!isBottleneckLevel(char.level) || char.bk >= char.level) return null;
   const full = char.xp >= char.xpNeed;
-  const pills = inv.reduce((s, x) => s + (x && x.id === PHA_CANH_PILL ? x.n : 0), 0);
+  const pill = bottleneckPill(char.level);
+  const pills = inv.reduce((s, x) => s + (x && x.id === pill ? x.n : 0), 0);
   const trialing = left > 0;
   if (peakGated(char.level)) {
     return (
@@ -105,7 +106,7 @@ export function BottleneckBox({ char }: { char: CharView }) {
         </Button>
       </div>
       <div className="k-dim">
-        {itemName(PHA_CANH_PILL)}: {t(`item.${PHA_CANH_PILL}.desc`)}
+        {itemName(pill)}: {t(`item.${pill}.desc`)}
       </div>
     </div>
   );

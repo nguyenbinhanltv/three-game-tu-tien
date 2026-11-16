@@ -32,6 +32,7 @@ const SWORDS = MODEL ? [{ id: '', file: MODEL.replace('prop_kiem_', ''), name: '
   { id: 'itm_han_quang_kiem', file: 'han-quang', name: 'Hàn Quang Kiếm' },
   { id: 'itm_hgl_kiem', file: 'han-giao-lan', name: 'Hàn Giao Lân Kiếm' },
   { id: 'itm_tram_ta_kiem', file: 'tram-ta', name: 'Trảm Tà Kiếm' },
+  { id: 'itm_liet_mach_kiem', file: 'liet-mach', name: 'Liệt Mạch Kiếm' },
 ];
 
 const gm = async (page: Page, cmd: string, wait = 1100) => {

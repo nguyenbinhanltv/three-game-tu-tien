@@ -1,0 +1,86 @@
+import { describe, expect, it } from 'vitest';
+import {
+  type ItemSysData,
+  MAX_SOCKETS,
+  mainLine,
+  parseInst,
+  promoteGold,
+  promoteInst,
+  promoteOpen,
+  promotePlus,
+  rollItemInstance,
+  seededRng,
+  socketsFor,
+  TIER_MUL,
+  TIER_OPEN,
+} from './index';
+
+const DATA: ItemSysData = {
+  slots: [{ id: 'robe', weight: 1.2, main: { def: 0.5, hp: 0.5 } }],
+  qualities: [0, 1, 2, 3, 4].map((id) => ({ id: id as 0, color: '#fff', affixes: id, affixFrac: id === 0 ? 0 : 0.2 })),
+  affixes: [
+    { id: 'atk_pct', min: 0.02, max: 0.05, weight: 1 },
+    { id: 'def_pct', min: 0.02, max: 0.05, weight: 1 },
+    { id: 'hp_pct', min: 0.02, max: 0.05, weight: 1 },
+    { id: 'crit_rate', min: 0.02, max: 0.05, weight: 1 },
+  ],
+  params: { skill: [], element: [] },
+};
+
+describe('bậc trang bị', () => {
+  it('hệ số bậc tăng đều và bậc 1 giữ nguyên chỉ số cũ', () => {
+    expect(TIER_MUL[1]).toBe(1);
+    for (let i = 2; i < TIER_MUL.length; i++) expect(TIER_MUL[i]).toBeGreaterThan(TIER_MUL[i - 1]);
+    const a = mainLine(DATA, 'robe', 15, 2, 0.5);
+    const b = mainLine(DATA, 'robe', 15, 2, 0.5, 1);
+    expect(a).toEqual(b);
+    const t2 = mainLine(DATA, 'robe', 15, 2, 0.5, 2);
+    expect(t2.def!).toBeGreaterThan(a.def! * 1.55);
+    expect(t2.def!).toBeLessThan(a.def! * 1.65);
+  });
+
+  it('lỗ khảm: bậc cao thêm lỗ cho đồ từ Huyền phẩm, trần 3, Phàm/Linh không có lỗ', () => {
+    expect(socketsFor(0, 4)).toBe(0);
+    expect(socketsFor(1, 2)).toBe(0);
+    expect(socketsFor(2, 1)).toBe(1);
+    expect(socketsFor(2, 2)).toBe(2);
+    expect(socketsFor(3, 2)).toBe(3);
+    expect(socketsFor(4, 4)).toBe(MAX_SOCKETS);
+  });
+
+  it('roll theo bậc nằm trong trần của parseInst (đọc DB không bác đồ bậc cao)', () => {
+    for (const tier of [1, 2, 3, 4]) {
+      const inst = rollItemInstance(DATA, 'robe', 30, 4, seededRng(7 + tier), tier);
+      expect(parseInst(DATA, 'robe', JSON.parse(JSON.stringify(inst)))).toEqual(inst);
+    }
+  });
+});
+
+describe('Thăng Bậc (hàm thuần)', () => {
+  it('chỉ bậc đã mở mới thăng được; phí = 0,4 × thu nhập giờ chương đích; cường hóa trừ 3 tối thiểu +0', () => {
+    expect(TIER_OPEN).toBe(2);
+    expect(promoteOpen(1)).toBe(true);
+    expect(promoteOpen(2)).toBe(false);
+    expect(promoteGold(2)).toBe(2400);
+    expect(promotePlus(7)).toBe(4);
+    expect(promotePlus(2)).toBe(0);
+    expect(promotePlus(0)).toBe(0);
+  });
+
+  it('giữ phẩm, dòng phụ, ngọc, ràng buộc; chính tính lại; lỗ thêm; ilvl nâng lên đầu chương', () => {
+    const old = rollItemInstance(DATA, 'robe', 13, 3, seededRng(3));
+    old.gems = ['gem_kim_2', ''];
+    old.bound = true;
+    const up = promoteInst(DATA, 'robe', old, 2, seededRng(9));
+    expect(up.q).toBe(old.q);
+    expect(up.affixes).toEqual(old.affixes);
+    expect(up.bound).toBe(true);
+    expect(up.gems).toEqual(['gem_kim_2', '', '']);
+    expect(up.ilvl).toBeGreaterThanOrEqual(17);
+    expect(up.main.def!).toBeGreaterThan(old.main.def! * 1.5);
+    // xác định theo seed
+    expect(promoteInst(DATA, 'robe', old, 2, seededRng(9))).toEqual(up);
+    // không sửa bản gốc
+    expect(old.gems).toEqual(['gem_kim_2', '']);
+  });
+});

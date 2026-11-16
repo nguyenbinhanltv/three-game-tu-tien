@@ -7,7 +7,7 @@ import {
   BOTTLENECK_RETRY_SEC,
   isRootId,
   peakGated,
-  PHA_CANH_PILL,
+  bottleneckPill,
   rootChangeCost,
   shadowStats,
   TRIAL_DURATION,
@@ -91,7 +91,7 @@ export class RealmSystem {
     if (peakGated(c.level)) return h.warn(p, 'sys.bk_not_yet');
     if (h.isDead(p) || p.trib) return h.warn(p, 'sys.bk_not_now');
     if (!this.ready(p)) return h.warn(p, 'sys.bk_not_ready');
-    if (!c.tx('bk:pill', idem, (d) => d.remove(PHA_CANH_PILL, 1))) {
+    if (!c.tx('bk:pill', idem, (d) => d.remove(bottleneckPill(c.level), 1))) {
       if (c.txFail === 'abort') h.warn(p, 'sys.bk_need_pill');
       return;
     }

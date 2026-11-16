@@ -19,6 +19,12 @@ import {
   isEquipSlot,
   MAX_ENHANCE,
   parseGem,
+  PROMOTE_ENHANCE_LOSS,
+  PROMOTE_MAT,
+  PROMOTE_MAT_COUNT,
+  promoteGold,
+  promoteOpen,
+  promotePlus,
   REFINE_ITEM,
   refineCost,
   SALVAGE_MAX_BATCH,
@@ -26,7 +32,7 @@ import {
   WARD_ITEM,
   GEM_MERGE_COUNT,
 } from '@dtl/shared';
-import { ENHANCE_ORE, FORGE, ITEM, itemName, SET, t } from '@dtl/content';
+import { ENHANCE_ORE, FORGE, ITEM, itemName, itemTier, promoteTarget, SET, t } from '@dtl/content';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { Game, reqId } from '../game/engine';
 import { affixText, gearQuality, setLines } from './gear';
@@ -372,7 +378,8 @@ export function ForgeTab({ npcId }: { npcId: string }) {
   const gold = useUI((s) => s.char?.gold ?? 0);
   const equip = useUI((s) => s.equip);
   const g = Game.current;
-  const list = FORGE.filter((f) => f.npc === npcId);
+  const level = useUI((s) => s.char?.level ?? 1);
+  const list = FORGE.filter((f) => f.npc === npcId || f.alsoAt?.includes(npcId));
   const sets = [...new Set(list.map((f) => ITEM.get(f.output)?.set).filter((x): x is string => !!x))];
   return (
     <div className="shop-list" data-testid="forge-tab">
@@ -381,7 +388,7 @@ export function ForgeTab({ npcId }: { npcId: string }) {
       {list.map((f) => {
         const out = ITEM.get(f.output)!;
         const tot = f.q.reduce((a, b) => a + b, 0) || 1;
-        const can = f.inputs.every((i) => count(inv, i.id) >= i.n) && gold >= f.gold;
+        const can = f.inputs.every((i) => count(inv, i.id) >= i.n) && gold >= f.gold && level >= (f.reqLevel ?? 1);
         return (
           <div key={f.id} className="k-card shop-row craft" data-testid={`forge-${f.id}`}>
             <ItemIcon item={{ id: out.id, n: 1 }} small />
@@ -414,6 +421,67 @@ export function ForgeTab({ npcId }: { npcId: string }) {
           ))}
         </div>
       ))}
+    </div>
+  );
+}
+
+// ---------- Thăng Bậc (E2-F) ----------
+
+export function PromoteTab({ npcId }: { npcId: string }) {
+  const equip = useUI((s) => s.equip);
+  const inv = useUI((s) => s.inv);
+  const gold = useUI((s) => s.char?.gold ?? 0);
+  const level = useUI((s) => s.char?.level ?? 1);
+  const g = Game.current;
+  const list = gearEntries(inv, equip).filter((e) => e.item.inst && ITEM.get(e.item.id)?.kind !== 'artifact');
+  return (
+    <div className="shop-list" data-testid="promote-tab">
+      <Divider label={t('ui.upg.tab.promote')} />
+      <div className="k-dim">{t('ui.promote.hint', { n: PROMOTE_ENHANCE_LOSS })}</div>
+      {list.length === 0 && <div className="k-dim">{t('ui.promote.empty')}</div>}
+      {list.map((e) => {
+        const def = ITEM.get(e.item.id)!;
+        const from = itemTier(def.id);
+        const toId = promoteTarget(def.id);
+        const open = promoteOpen(from) && !!toId;
+        const toDef = toId ? ITEM.get(toId) : undefined;
+        const to = from + 1;
+        const mat = PROMOTE_MAT[to];
+        const cost = open && mat ? { mat, n: PROMOTE_MAT_COUNT, gold: promoteGold(to) } : null;
+        const enough = !!cost && count(inv, cost.mat) >= cost.n && gold >= cost.gold && level >= (toDef?.reqLevel ?? 1);
+        const plus = e.item.plus ?? 0;
+        return (
+          <div key={e.key} className="k-card shop-row" data-testid={`promote-${e.key}`}>
+            <ItemIcon item={e.item} small worn={e.worn} />
+            <div className="shop-info">
+              <div className="item-name" data-q={gearQuality(e.item, def)}>
+                {itemName(e.item.id, plus)}
+                {e.worn && <span className="upg-worn"> · {t('ui.upg.worn')}</span>}
+                <span className="k-dim"> · {t('ui.item.tier', { n: from })}</span>
+              </div>
+              {open && toDef && cost ? (
+                <>
+                  <div className="k-dim">
+                    {t('ui.promote.to')}: {itemName(toDef.id, plus > 0 ? promotePlus(plus) : 0)} · {t('ui.item.tier', { n: to })}
+                  </div>
+                  <div className="craft-inputs">
+                    <span className={count(inv, cost.mat) >= cost.n ? 'ok' : 'bad'}>
+                      <ContentIcon def={ITEM.get(cost.mat)} /> {itemName(cost.mat)} {count(inv, cost.mat)}/{cost.n}
+                    </span>
+                    <span className={gold >= cost.gold ? 'ok' : 'bad'}>{t('ui.promote.fee', { n: cost.gold })}</span>
+                    {level < (toDef.reqLevel ?? 1) && <span className="bad">{t('sys.equip_level')}</span>}
+                  </div>
+                </>
+              ) : (
+                <div className="k-dim">{t('ui.promote.locked')}</div>
+              )}
+            </div>
+            <Button variant="primary" disabled={!enough} onClick={() => g?.send(C.UPGRADE, { npc: npcId, op: 'promote', ...e.ref, r: reqId() })}>
+              {t('ui.promote.go')}
+            </Button>
+          </div>
+        );
+      })}
     </div>
   );
 }

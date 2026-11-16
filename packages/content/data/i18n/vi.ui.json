@@ -576,7 +576,7 @@
   "ui.salvage.confirm": "Có món quý hoặc đã cường hóa, bấm lần nữa để xác nhận",
   "ui.item.bind_on_equip": "Ràng buộc khi mặc",
   "ui.npc.tab.forge": "Chế tạo",
-  "ui.forge.title": "Chế tạo bộ Lạc Kiếm Môn Phục",
+  "ui.forge.title": "Chế tạo bộ trang bị",
   "ui.forge.desc": "Thiết lão chế từng món từ nguyên liệu bí cảnh. Phẩm do lò quyết định, có dòng phụ như đồ rơi.",
   "ui.forge.make": "Chế tạo",
   "ui.forge.chance": "Huyền phẩm {a}% · Địa phẩm {b}%",
@@ -751,5 +751,15 @@
   "ui.wm.cooldown": "Truyền Tống hồi sau {t}",
   "ui.wm.row.mon": "Quái:",
   "ui.wm.row.elite": "Tinh anh:",
-  "ui.wm.row.res": "Tài nguyên:"
+  "ui.wm.row.res": "Tài nguyên:",
+  "ui.upg.tab.promote": "Thăng Bậc",
+  "ui.promote.hint": "Đổi món bậc thấp lấy món cùng ô ở bậc cao hơn: giữ phẩm, dòng phụ và ngọc đã khảm; dòng chính tính lại theo bậc mới; cường hóa giảm {n} cấp.",
+  "ui.promote.empty": "Không có món nào thăng được.",
+  "ui.promote.locked": "Bậc kế chưa mở.",
+  "ui.promote.cost": "Cần {n} {mat} và {gold} linh thạch",
+  "ui.promote.go": "Thăng Bậc",
+  "ui.promote.to": "Thành",
+  "ui.item.tier": "Bậc {n}",
+  "ui.npc.tab.promote": "Thăng Bậc",
+  "ui.promote.fee": "Phí Thăng Bậc: {n} linh thạch"
 }

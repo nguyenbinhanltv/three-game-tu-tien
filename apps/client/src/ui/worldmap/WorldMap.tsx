@@ -233,6 +233,7 @@ export function WorldMap() {
       // NPC (dấu nhiệm vụ chỉ khi lớp nhiệm vụ bật).
       if (L.npc || L.quest) {
         for (const n of NPCS) {
+          if ((n.level ?? 'van_lam') !== 'van_lam') continue;
           const c = P(n.x, n.z);
           if (!inView(c)) continue;
           const qm = L.quest ? npcQuestMark(n.id, QUESTS, st.quests, lv) : '';
