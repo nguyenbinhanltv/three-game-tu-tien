@@ -36,6 +36,7 @@
     "shots:k4": "pnpm --filter @dtl/perf run shots:k4 --",
     "shots:k6": "pnpm --filter @dtl/perf run shots:k6 --",
     "shots:e2g": "pnpm --filter @dtl/perf run shots:e2g --",
+    "shots:e2codex": "pnpm --filter @dtl/perf run shots:e2codex --",
     "shots:e1e": "pnpm --filter @dtl/perf run shots:e1e --",
     "shots:k7": "pnpm --filter @dtl/perf run shots:k7 --",
     "shots:e2a": "pnpm --filter @dtl/perf run shots:e2a --",
