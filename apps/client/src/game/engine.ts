@@ -2221,7 +2221,8 @@ export class Game {
     this.deathVisual(dfx, tx, ty, tz);
     if (this.cine.active) this.runCine(dt);
     this.tribFx(dt);
-    this.ents.tagsHidden = this.cine.active || this.tribScene;
+    // Thẻ chương đang hiện cũng ẩn bảng tên (tiêu đề không đè lên tên nhân vật).
+    this.ents.tagsHidden = this.cine.active || this.tribScene || (get().chapter?.until ?? 0) > Date.now();
     updateOcclusion(dt, this.camera.position, _camFocus.set(tx, rp.y + 1.2, tz), rp.y);
   }
 

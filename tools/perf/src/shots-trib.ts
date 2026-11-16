@@ -48,6 +48,17 @@ async function main(): Promise<void> {
   const log: Record<string, unknown> = {};
   try {
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1 });
+    // 2) Ngự kiếm lần đầu ở Ngưng Khí 3: thẻ chương + gợi ý.
+    {
+      const page = await ctx.newPage();
+      page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+      await enter(page, 'Bay' + (Date.now() % 100000), '&realm=3&god=1');
+      await sleep(9000); // chờ hết trụ sáng lên cấp do GM đặt cảnh giới lúc vào
+      await page.keyboard.press('KeyF');
+      await sleep(1200);
+      await page.screenshot({ path: path.join(OUT, '4-nghi-thuc-ngu-kiem.png') });
+      await page.close();
+    }
     // 1) Độ kiếp ba pha.
     {
       const page = await ctx.newPage();
@@ -94,17 +105,6 @@ async function main(): Promise<void> {
         console.log(`[shots-trib] ${file} @ ${((Date.now() - t0) / 1000).toFixed(1)} s`);
       }
       log.hazards = await page.evaluate(() => (window as unknown as G).__game!.hazardLog ?? []);
-      await page.close();
-    }
-    // 2) Ngự kiếm lần đầu ở Ngưng Khí 3: thẻ chương + gợi ý.
-    {
-      const page = await ctx.newPage();
-      page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-      await enter(page, 'Bay' + (Date.now() % 100000), '&realm=3&god=1');
-      await sleep(3000);
-      await page.keyboard.press('KeyF');
-      await sleep(1200);
-      await page.screenshot({ path: path.join(OUT, '4-nghi-thuc-ngu-kiem.png') });
       await page.close();
     }
     await ctx.close();

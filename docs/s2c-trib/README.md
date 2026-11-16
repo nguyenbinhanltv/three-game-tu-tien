@@ -11,3 +11,5 @@
 
 Luật: `packages/shared/src/formulas.ts` (`TRIB_*`), server `tickTribulation`/`tribNet` ở `apps/server/src/game/sim.ts`, test `apps/server/src/game/trib.test.ts`.
 Phát hiện: `sigil` gộp `InstancedMesh` chỉ vẽ ra một pháp trận khi có nhiều cái cùng lúc (dữ liệu instance đúng; `?batch=0` vẽ đủ); đã bỏ `sigil` khỏi `BATCH_KINDS`, nguyên nhân gốc chưa tìm ra.
+
+Ghi chú: cột sáng trắng rộng từng thấy ở thẻ Ngự kiếm là vệt phi kiếm (`trail`) bị camera thẻ hạ thấp góc nhìn phóng to; đã đổi preset camera `fly` về góc trung tính và ẩn bảng tên khi thẻ chương hiện.
