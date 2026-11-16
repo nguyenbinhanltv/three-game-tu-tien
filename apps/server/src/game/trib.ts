@@ -5,7 +5,7 @@
 
 import { PF_DEAD, type FxMsg, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type HazardKind, type TribDef, type TribId, type TribPhaseDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './sim';
-import { runMechanic, type TribMechCtx } from './tribmech';
+import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from './tribmech';
 
 /** Trạng thái một lần độ kiếp của một người (chỉ server giữ; client chỉ nhận cờ PF_TRIBULATION và vùng đã báo). */
 export interface TribState {
@@ -46,12 +46,29 @@ export interface TribHost {
   spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o?: { dyaw?: number; level?: number }): MonEnt | null;
   /** Bóng tâm ma còn sống của `p`. */
   aliveShadows(p: PlayerEnt): number;
+  /** Một bóng tâm ma còn sống của `p` (null nếu không còn). */
+  shadowOf(p: PlayerEnt): MonEnt | null;
   /** Kết thúc kiếp (thành công khi hết giờ). */
   end(p: PlayerEnt, success: boolean): void;
 }
 
 export class TribSystem {
   constructor(private h: TribHost) {}
+
+  /** Xuất khiếu (E3-L): true nếu nguyên anh vừa rời thân. */
+  soul(p: PlayerEnt): boolean {
+    return soulOut(this.h, p);
+  }
+
+  /** Thân đứng yên vì nguyên anh đang rời thân? */
+  soulFrozen(p: PlayerEnt): boolean {
+    return !!p.trib && soulActive(p.trib, this.h.now());
+  }
+
+  /** Va chạm giữa người độ kiếp và Tâm Ma Ảnh của mình (cơ chế `tam_canh`). */
+  noteHit(p: PlayerEnt, kind: 'hurt' | 'hit'): void {
+    tamCanhHit(this.h, p, kind);
+  }
 
   /** Một nhịp 50 ms cho người đang độ kiếp. */
   tick(p: PlayerEnt): void {
@@ -142,7 +159,12 @@ export class TribSystem {
     const cells = g.cols * g.rows;
     const chosen = new Set<number>();
     // Một ô luôn là ô người độ kiếp đang đứng ("lửa nặng nhất ở ô người độ kiếp đứng"), phần còn lại ngẫu nhiên.
-    const here = this.cellAt(tr.anchor, g, p.move.x, p.move.z);
+    let here = this.cellAt(tr.anchor, g, p.move.x, p.move.z);
+    // Nguyên anh đang xuất khiếu (E3-L): đẩy bẫy nặng nhất khỏi ô thân đứng, sang ô kề (thân đứng yên không né được).
+    if (here >= 0 && soulActive(tr, now)) {
+      const col = here % g.cols;
+      here = col + 1 < g.cols ? here + 1 : here - 1;
+    }
     if (here >= 0) chosen.add(here);
     let guard = 0;
     while (chosen.size < Math.min(cells, g.pick) && guard++ < 64) chosen.add(Math.floor(Math.random() * cells));
@@ -153,7 +175,6 @@ export class TribSystem {
       this.h.addHazard(geom, g.warn, g.pct, true, 'fire', p.sid);
       if (g.burn > 0) this.h.addHazard(geom, g.warn + g.burn, g.pct * 0.5, true, 'fire', p.sid);
     }
-    void now;
   }
 
   private cellAt(anchor: { x: number; z: number }, g: { cols: number; rows: number; cell: number }, x: number, z: number): number {

@@ -46,6 +46,7 @@
     "shots:boss": "pnpm --filter @dtl/perf run shots:boss --",
     "shots:trib": "pnpm --filter @dtl/perf run shots:trib --",
     "shots:e2d": "pnpm --filter @dtl/perf run shots:e2d --",
+    "shots:e3l": "pnpm --filter @dtl/perf run shots:e3l --",
     "shots:e2h": "pnpm --filter @dtl/perf run shots:e2h --",
     "shots:e2e": "pnpm --filter @dtl/perf run shots:e2e --",
     "shots:eqicons": "pnpm --filter @dtl/perf run shots:eqicons --",

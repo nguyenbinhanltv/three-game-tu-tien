@@ -545,6 +545,8 @@ function Tribulation() {
   const tribEnd = useUI((s) => s.tribEnd);
   const tribId = useUI((s) => s.tribId);
   const danPg = useUI((s) => s.danPg);
+  const tamCanh = useUI((s) => s.tamCanh);
+  const soulUntil = useUI((s) => s.soulUntil);
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   // Pha, thời lượng và lời nhắc đọc từ `tribulations.json` theo kiếp đang độ (E1-F); Trúc Cơ giữ ba pha của S2-C.
@@ -575,6 +577,16 @@ function Tribulation() {
       {ph.mechanic === 'dan_tran' && danPg >= 0 && (
         <div className="trib-dan" data-testid="dan-bar">
           <ProgressBar cls="dan" value={danPg} max={100} text={t('ui.trib.dan_tran.label', { n: Math.round(danPg) })} />
+        </div>
+      )}
+      {ph.mechanic === 'tam_canh' && tamCanh >= 0 && (
+        <div className="trib-dan trib-tam" data-testid="tam-bar">
+          <ProgressBar cls="tam" value={tamCanh} max={100} text={t('ui.trib.tam_canh.label', { n: Math.round(tamCanh) })} />
+        </div>
+      )}
+      {ph.mechanic === 'xuat_khieu' && (
+        <div className={'trib-soul' + (now < soulUntil ? ' on' : '')} data-testid="soul-hint">
+          {now < soulUntil ? t('ui.trib.xuat_khieu.on', { n: Math.ceil((soulUntil - now) / 1000) }) : t('ui.trib.xuat_khieu.hint')}
         </div>
       )}
       <div className="trib-hint">{t(key + ph.id + (after ? '.hint2' : '.hint'))}</div>

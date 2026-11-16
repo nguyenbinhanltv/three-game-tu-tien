@@ -57,7 +57,7 @@ describe('khối độ kiếp theo dữ liệu', () => {
   });
 
   it('kiếp chưa bật thì không sẵn sàng', () => {
-    const c = { level: 23, bk: 23, xp: 100, xpNeed: 100 };
+    const c = { level: 27, bk: 27, xp: 100, xpNeed: 100 };
     expect(breakInfo(c, []).enabled).toBe(false);
     expect(breakInfo(c, []).ready).toBe(false);
   });

@@ -864,10 +864,23 @@ if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
         if (!dt || !(dt.r > 0 && dt.fill > 0 && dt.drain >= 0 && dt.sweepEvery > 0 && dt.sweepLen > 0 && dt.sweepW > 0 && dt.sweepWarn > 0 && dt.sweepPct > 0 && dt.sweepPct < 1)) err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số danTran`);
         else if (dt.fill > p.end - (d.phases[d.phases.indexOf(p) - 1]?.end ?? 0)) err(`độ kiếp ${id}/${p.id}: fill dài hơn pha, không thể ngưng đan`);
       }
+      if (p.mechanic === 'tia_xich') {
+        const x = p.tiaXich;
+        if (!x || !(x.every > 0 && x.len > 0 && x.w > 0 && x.warn > 0 && x.pct > 0 && x.pct < 1 && x.endR > 0 && x.endPct > 0 && x.endPct < 1)) err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số tiaXich`);
+      }
+      if (p.mechanic === 'xuat_khieu') {
+        const x = p.xuatKhieu;
+        if (!x || !(x.dur > 0 && x.cd >= x.dur) || !p.grid) err(`độ kiếp ${id}/${p.id}: xuat_khieu cần xuatKhieu {dur, cd >= dur} và lưới ô lửa (grid)`);
+      }
+      if (p.mechanic === 'tam_canh') {
+        const x = p.tamCanh;
+        if (!x || !(x.hurt > 0 && x.hit >= 0 && x.skillEvery > 0 && x.skillWarn > 0 && x.skillPow > 0) || !p.shadows) err(`độ kiếp ${id}/${p.id}: tam_canh cần tamCanh {hurt, hit, skillEvery, skillWarn, skillPow} và shadows`);
+      }
     }
   }
   if (!tribForLevel(19)?.enabled) err('độ kiếp Kết Đan (cấp 19) phải đang bật (E2-D)');
-  if (peakGated(19) || !peakGated(23) || !peakGated(27)) err('peakGated: chỉ Kết Đan 23 và Nguyên Anh 27 còn chặn (bình cảnh Trúc Cơ 19 đã mở)');
+  if (peakGated(19) || peakGated(23) || !peakGated(27)) err('peakGated: chỉ Nguyên Anh 27 còn chặn (bình cảnh Trúc Cơ 19 và Kết Đan 23 đã mở)');
+  if (!tribForLevel(23)?.enabled) err('độ kiếp Nguyên Anh (cấp 23) phải đang bật (E3-L)');
   if (TRIB_DEFS.truc_co.room !== 'world' || !TRIB_DEFS.truc_co.enabled) err('độ kiếp truc_co: phải chạy ở room world và đang bật');
 }
 
