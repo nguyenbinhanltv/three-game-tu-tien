@@ -23,9 +23,9 @@ export const WIN_GAP = 12;
 export const WIN_MARGIN = 12;
 
 /** Chiều rộng thiết kế từng cửa sổ (khớp `width` truyền cho PanelWindow). */
-export const WIN_WIDTH: Record<WinId, number> = { bag: 520, char: 440, quests: 460, help: 520, settings: 430, map: 980, method: 600, party: 460 };
+export const WIN_WIDTH: Record<WinId, number> = { bag: 520, char: 560, quests: 460, help: 520, settings: 430, map: 980, method: 600, party: 460 };
 /** Chiều cao ước lượng để canh giữa (cửa sổ cuộn nên không biết trước). */
-export const WIN_HEIGHT: Record<WinId, number> = { bag: 600, char: 640, quests: 520, help: 460, settings: 600, map: 640, method: 600, party: 520 };
+export const WIN_HEIGHT: Record<WinId, number> = { bag: 600, char: 680, quests: 520, help: 460, settings: 600, map: 640, method: 600, party: 520 };
 
 /** Cửa sổ ghép đôi: nhân vật bên trái, túi bên phải. */
 export const PAIR_LEFT: WinId = 'char';
@@ -79,14 +79,21 @@ export function pairLayout(vp: Viewport): { left: { x: number; y: number }; righ
   const x0 = Math.max(WIN_MARGIN / 2, (vp.vw - total) / 2);
   const hl = Math.min(WIN_HEIGHT[PAIR_LEFT], maxHeight(vp));
   const hr = Math.min(WIN_HEIGHT[PAIR_RIGHT], maxHeight(vp));
-  const y = (h: number): number => Math.max(WIN_MARGIN, (vp.vh - BOTTOM_RESERVE - h) / 2);
-  return { left: { x: Math.round(x0), y: Math.round(y(hl)) }, right: { x: Math.round(x0 + wl + WIN_GAP), y: Math.round(y(hr)) } };
+  // Cùng một mép trên cho cả hai bảng (canh theo bảng cao hơn).
+  const y = Math.round(Math.max(WIN_MARGIN, (vp.vh - BOTTOM_RESERVE - Math.max(hl, hr)) / 2));
+  return { left: { x: Math.round(x0), y }, right: { x: Math.round(x0 + wl + WIN_GAP), y } };
 }
 
 export interface OpenResult {
   list: WinState[];
   /** Cửa sổ vừa mở hoặc vừa đưa lên trên. */
   opened: WinState;
+}
+
+/** Xếp lại z về 1..N theo thứ tự hiện tại: z không bao giờ vượt số cửa sổ (tối đa 8), nên không vượt các lớp toast/modal/tooltip. */
+export function normalizeZ(list: readonly WinState[]): WinState[] {
+  const order = [...list].sort((a, b) => a.z - b.z);
+  return list.map((w) => ({ ...w, z: order.findIndex((o) => o.id === w.id) + 1 }));
 }
 
 export function topZ(list: readonly WinState[]): number {
@@ -119,14 +126,15 @@ export function openWindow(list: readonly WinState[], id: WinId, vp: Viewport, s
     }
   }
   next.push(opened);
-  return { list: next, opened };
+  next = normalizeZ(next);
+  return { list: next, opened: next.find((o) => o.id === id)! };
 }
 
 export function focusWindow(list: readonly WinState[], id: WinId): OpenResult {
   const w = list.find((o) => o.id === id);
   if (!w) throw new Error('window not open: ' + id);
-  const opened = w.z === topZ(list) ? w : { ...w, z: topZ(list) + 1 };
-  return { list: list.map((o) => (o.id === id ? opened : o)), opened };
+  const next = w.z === topZ(list) ? [...list] : normalizeZ(list.map((o) => (o.id === id ? { ...o, z: topZ(list) + 1 } : o)));
+  return { list: next, opened: next.find((o) => o.id === id)! };
 }
 
 export function closeWindow(list: readonly WinState[], id: WinId): WinState[] {

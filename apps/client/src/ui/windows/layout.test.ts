@@ -61,4 +61,14 @@ describe('window manager', () => {
     const l = moveWindow(openWindow([], 'bag', vp).list, 'bag', 10, 20, vp);
     expect(l[0]).toMatchObject({ x: 10, y: 20 });
   });
+  it('z không vượt số cửa sổ sau nhiều lần focus (luôn dưới toast/modal/tooltip)', () => {
+    const vp = VPS[1];
+    let l = openWindow([], 'bag', vp).list;
+    l = openWindow(l, 'char', vp).list;
+    l = openWindow(l, 'quests', vp).list;
+    for (let i = 0; i < 200; i++) l = focusWindow(l, i % 2 ? 'bag' : 'char').list;
+    expect(Math.max(...l.map((w) => w.z))).toBeLessThanOrEqual(l.length);
+    expect(new Set(l.map((w) => w.z)).size).toBe(l.length);
+    expect(topWindow(l)?.id).toBe('bag');
+  });
 });

@@ -5,5 +5,7 @@
   {"id": "npc_mieu_cong", "x": 2010, "z": 2381, "yaw": 3.1416, "color": "#8a7d66"},
   {"id": "npc_hai_duoc", "x": 2451, "z": 2016, "yaw": 3.1416, "color": "#6f9a6b"},
   {"id": "npc_tieu_khe", "x": 2414, "z": 2449, "yaw": 3.1416, "color": "#5f8fa0"},
-  {"id": "npc_hua_lao", "x": 1038, "z": 1048, "yaw": 3.1416, "color": "#a8864f", "level": "doan_mach", "sells": ["itm_thiet_tinh", "itm_tay_luyen_thach"], "enhance": true, "recipes": true}
+  {"id": "npc_hua_lao", "x": 1038, "z": 1048, "yaw": 3.1416, "color": "#a8864f", "level": "doan_mach", "sells": ["itm_thiet_tinh", "itm_tay_luyen_thach"], "enhance": true, "recipes": true},
+  {"id": "npc_to_van_ngu", "x": 1010, "z": 1050, "yaw": 3.1416, "color": "#587a96", "level": "doan_mach"},
+  {"id": "npc_khieu_han_son", "x": 752, "z": 962, "yaw": 3.9, "color": "#4a463e", "level": "doan_mach"}
 ]

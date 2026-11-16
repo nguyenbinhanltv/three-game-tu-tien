@@ -48,7 +48,7 @@ function useTipLines(item: InvItem, def: ItemDef, worn?: boolean): TipLine[] {
 }
 
 /** Chú giải vật phẩm (rê chuột / focus): tên theo phẩm, loại, chỉ số, dòng phụ, so sánh, mô tả. */
-function ItemTip({ item, def, worn }: { item: InvItem; def: ItemDef; worn?: boolean }) {
+export function ItemTip({ item, def, worn }: { item: InvItem; def: ItemDef; worn?: boolean }) {
   const lines = useTipLines(item, def, worn);
   return <TipCard title={itemName(def.id, item.plus)} rarity={gearQuality(item, def)} sub={itemSub(item, def)} lines={lines} desc={t(`item.${def.id}.desc`)} />;
 }

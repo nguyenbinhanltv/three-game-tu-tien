@@ -1,7 +1,7 @@
 // Giao thức mạng giữa client và server. Tên message ngắn để tiết kiệm băng thông.
 
 import type { ArtifactMsg } from './artifacts';
-import type { CharView, Equipment, InvSlot, QuestView } from './types';
+import { INV_SIZE, type CharView, type Equipment, type InvSlot, type QuestView } from './types';
 
 export const PROTOCOL_VERSION = 1;
 export const ROOM_WORLD = 'world';
@@ -79,6 +79,12 @@ export const C = {
   RESPAWN: 'resp',
   BREAKTHROUGH: 'brk',
   MOVE_ITEM: 'mv',
+  /** Sắp xếp túi: `{ r }` (xem docs/inventory.md). */
+  INV_SORT: 'isort',
+  /** Khóa/mở khóa một ô: `{ slot, on }`. */
+  INV_LOCK: 'ilock',
+  /** Tách chồng: `{ slot, n, to?, r }`. */
+  INV_SPLIT: 'isplit',
   PORTAL: 'portal',
   /** Chọn/đổi công pháp: `{ method, npc?, r? }`. */
   METHOD: 'mth',
@@ -134,6 +140,8 @@ export const S = {
   TELE: 'tele',
   /** Điểm đánh dấu mình và đồng đội đang thấy (`MarkMsg`). */
   MARK: 'mark',
+  /** Người đồng hành của nhiệm vụ hộ tống (`EscortMsg`); `st: 0` = đã hết (xong/hủy). */
+  ESCORT: 'esc',
   /** Giờ hồi sinh tinh anh và boss của bản đồ (`BossTimerMsg`), gửi lúc vào và mỗi khi một con đổi trạng thái (M-2). */
   BOSS_TIMERS: 'btm',
   /** Trạng thái thần thức của mình (`SpiritStateMsg`). */
@@ -156,9 +164,23 @@ export interface InitMsg {
   session: string;
 }
 
+/**
+ * Cập nhật túi. `inv` = ảnh đầy đủ (INV_SIZE ô); thiếu thì có `d` = danh sách thay đổi `[ô, món|null]` áp lên ảnh cũ.
+ * Dùng `applyInvMsg`. `equip` luôn đầy đủ.
+ */
 export interface InvMsg {
-  inv: InvSlot[];
+  inv?: InvSlot[];
+  d?: [number, InvSlot][];
   equip: Equipment;
+}
+
+/** Áp `InvMsg` lên túi hiện có, trả về mảng mới (không sửa mảng cũ). */
+export function applyInvMsg(prev: readonly InvSlot[], m: InvMsg): InvSlot[] {
+  if (m.inv) return m.inv;
+  const out = prev.slice();
+  while (out.length < INV_SIZE) out.push(null);
+  for (const [i, it] of m.d ?? []) if (Number.isInteger(i) && i >= 0 && i < INV_SIZE) out[i] = it;
+  return out;
 }
 
 export interface SkillMsg {

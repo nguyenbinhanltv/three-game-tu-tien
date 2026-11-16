@@ -3,7 +3,8 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { Humanoid } from '../models';
 import { adoptGltfMaterials, rimLight } from '../../render/materials/world';
-import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
+import { acquireWithHumanLib, HUMAN_K3_LIB, mergeClips, retargetClips } from './animLib';
+import { HUMAN_CLIPS } from './humanClips';
 import { SkinnedCharacter } from './skinned';
 import type { CharState, ClipMap } from './states';
 import { type CharacterView, legacyModelsRequested } from './view';
@@ -12,6 +13,8 @@ import { type CharacterView, legacyModelsRequested } from './view';
 export interface NpcSkin {
   asset: string;
   rates?: Partial<Record<CharState, number>>;
+  /** Nhân màu lên vật liệu (0xRRGGBB) để NPC dùng chung asset không giống hệt nhau (E2-H). */
+  tint?: number;
 }
 
 /** Bộ clip của rig Mixamo từ Tripo (M3-6): idle/run/attack/death từ preset, hit_light thủ tục (anim_biped_extra.py). */
@@ -30,6 +33,12 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
   npc_mieu_cong: { asset: 'chr_npc_thiet_lao' },
   npc_hai_duoc: { asset: 'chr_npc_duoc_su' },
   npc_tieu_khe: { asset: 'chr_npc_chuong_mon' },
+  // E2-H: NPC Hạ Khuyết Trạm và Cựu Mỏ Khu dùng lại model sẵn có, đổi màu (không dựng model mới).
+  npc_hua_lao: { asset: 'chr_npc_thiet_lao', tint: 0xe3c58a },
+  npc_to_van_ngu: { asset: 'chr_npc_duoc_su', tint: 0x6fb4ee },
+  npc_khieu_han_son: { asset: 'chr_npc_chuong_mon', tint: 0xb4ad9c },
+  // Người đồng hành của nhiệm vụ hộ tống (không phải NPC đứng thật, xem `LevelDef.escorts`).
+  npc_thuong_nhan: { asset: 'chr_npc_thiet_lao', tint: 0xb89a6a },
 };
 
 /** Model khối cũ của NPC (dự phòng khi asset chưa nạp/lỗi, và `?models=legacy`). */
@@ -60,6 +69,8 @@ interface Template {
 export class NpcSkins {
   private templates = new Map<string, Template | 'loading' | 'failed'>();
   private disposed = false;
+  /** Vật liệu nhân màu theo NPC (bản sao của vật liệu asset), trả khi `dispose`. */
+  private tinted = new Map<string, THREE.MeshStandardNodeMaterial>();
 
   constructor(
     private cache: AssetCache = assets,
@@ -82,9 +93,10 @@ export class NpcSkins {
     const t = s && !this.legacy ? this.templates.get(s.asset) : undefined;
     if (!s || !t || typeof t === 'string') return legacyNpc(id, robe);
     const scene = cloneSkinned(t.handle.scene);
+    const mat = s.tint === undefined ? t.mat : this.tintedMat(id, t.mat, s.tint);
     scene.traverse((o) => {
       const m = o as THREE.Mesh;
-      if (m.isMesh) m.material = t.mat;
+      if (m.isMesh) m.material = mat;
     });
     const m = new SkinnedCharacter({
       scene,
@@ -103,8 +115,44 @@ export class NpcSkins {
     return m;
   }
 
+  /**
+   * NPC phải đi bộ (người hộ tống): nạp clip `walk` của thư viện K-3 và gắn vào model. Clip `run` của rig này là dáng chạy nước rút
+   * (cúi rạp) nên không dùng để đi; chưa nạp xong thì model đứng yên (idle), không bò.
+   */
+  addWalk(model: CharacterView, id: string): void {
+    const s = NPC_SKINS[id];
+    const t = s ? this.templates.get(s.asset) : undefined;
+    const m = model as SkinnedCharacter;
+    if (!t || typeof t === 'string' || !(m instanceof SkinnedCharacter)) return;
+    this.cache.acquire(HUMAN_K3_LIB, { priority: 30 }).then(
+      (lib) => {
+        try {
+          if (this.disposed) return;
+          const clips = retargetClips(lib.scene, lib.animations.filter((c) => c.name === 'walk'), t.handle.scene);
+          const ref = (HUMAN_CLIPS.walk.refSpeed ?? 0.978) * (3 / (HUMAN_CLIPS.run.refSpeed ?? 3.09));
+          m.addClips(clips, { walk: 'walk' }, { walk: ref });
+        } finally {
+          lib.release();
+        }
+      },
+      (err) => console.warn('[models] không nạp được clip đi bộ cho NPC', err),
+    );
+  }
+
+  private tintedMat(id: string, base: THREE.MeshStandardNodeMaterial, tint: number): THREE.MeshStandardNodeMaterial {
+    let m = this.tinted.get(id);
+    if (!m) {
+      m = base.clone();
+      m.color.multiply(new THREE.Color(tint));
+      this.tinted.set(id, m);
+    }
+    return m;
+  }
+
   dispose(): void {
     this.disposed = true;
+    for (const m of this.tinted.values()) m.dispose();
+    this.tinted.clear();
     for (const t of this.templates.values()) {
       if (typeof t === 'string') continue;
       t.handle.release();

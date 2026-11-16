@@ -1,4 +1,5 @@
-import { type PointerEvent as RPointerEvent, type ReactNode, useRef } from 'react';
+import { type PointerEvent as RPointerEvent, type ReactNode, useEffect, useRef } from 'react';
+import { installNewMarks } from '../bag/dnd';
 import { Bag } from '../bag/Bag';
 import { Character } from '../character/Character';
 import { MethodPanel } from '../MethodPanel';
@@ -65,6 +66,7 @@ function WindowHost({ id, x, y, z, top }: { id: WinId; x: number; y: number; z: 
 
 export function Panels() {
   const windows = useUI((s) => s.windows);
+  useEffect(() => installNewMarks(), []);
   const topZ = windows.reduce((m, w) => Math.max(m, w.z), 0);
   return (
     <>

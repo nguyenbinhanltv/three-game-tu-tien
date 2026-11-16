@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { C, EQUIP_SLOTS, type EquipSlot } from '@dtl/shared';
-import { itemName, realmName, t } from '@dtl/content';
+import { ITEM, itemName, realmName, t } from '@dtl/content';
 import { Game, reqId } from '../../game/engine';
 import { gearQuality, pctText } from '../gear';
 import { Button, ProgressBar } from '../kit';
@@ -8,7 +8,9 @@ import { BottleneckBox } from '../Realm';
 import { closePanel, useUI } from '../store';
 import { ItemDetail, ItemIcon } from '../windows/common';
 import { breakInfo } from './breakthrough';
-import { canDropOn, isBagDrag, parseBagSlot, DND_BAG_SLOT } from './dnd';
+import { dropFromDrag } from '../bag/Bag';
+import { useBagDrag } from '../bag/dnd';
+import { itemKindOk } from '../bag/model';
 import { Preview3D } from './Preview3D';
 import { statRows, type StatId } from './stats';
 
@@ -37,27 +39,24 @@ function Silhouette({ q }: { q: number }) {
 function EquipBoard() {
   const equip = useUI((s) => s.equip);
   const [sel, setSel] = useState<EquipSlot | null>(null);
-  const [over, setOver] = useState<EquipSlot | null>(null);
+  const drag = useBagDrag((d) => d.drag);
   const g = Game.current;
   const best = EQUIP_SLOTS.reduce((m, es) => (equip[es] ? Math.max(m, gearQuality(equip[es]!)) : m), -1);
   const cell = (es: EquipSlot) => (
     <div
       key={es}
-      className={'equip-cell' + (over === es ? ' drop' : '')}
+      className="equip-cell"
       data-slot={es}
+      data-drop={drag ? (itemKindOk((id) => ITEM.get(id), drag.id, es) ? 'ok' : 'no') : undefined}
       onDragOver={(e) => {
-        if (!isBagDrag(e.dataTransfer.types)) return;
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        setOver(es);
+        if (drag && itemKindOk((id) => ITEM.get(id), drag.id, es)) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        }
       }}
-      onDragLeave={() => setOver((o) => (o === es ? null : o))}
       onDrop={(e) => {
-        setOver(null);
-        const idx = parseBagSlot(e.dataTransfer.getData(DND_BAG_SLOT));
-        if (idx === null) return;
         e.preventDefault();
-        if (canDropOn(useUI.getState().inv, idx, es)) g?.send(C.EQUIP, { slot: idx, r: reqId() });
+        dropFromDrag({ kind: 'equip', slot: es }, () => undefined);
       }}
     >
       <ItemIcon item={equip[es]} worn selected={sel === es} onClick={() => setSel(sel === es ? null : es)} />
