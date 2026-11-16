@@ -123,6 +123,24 @@
   --fill: linear-gradient(180deg, #cfe6ff 0%, #6fa8ee 48%, #2f5a9c 100%);
   height: 13px;
 }
+.gauge.tam {
+  --cut: 6px;
+  --fill: linear-gradient(180deg, #e3d6ff 0%, #9a82d6 48%, #4a3a82 100%);
+  height: 13px;
+}
+.trib-soul {
+  margin-top: 6px;
+  padding: 2px 10px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #b9c8e6;
+  border: 1px solid rgba(150, 175, 220, 0.35);
+  background: rgba(20, 26, 44, 0.45);
+}
+.trib-soul.on {
+  color: #e6f0ff;
+  border-color: rgba(190, 215, 255, 0.7);
+}
 .trib-dan {
   margin-top: 6px;
   min-width: 360px;
