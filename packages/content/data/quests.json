@@ -1,5 +1,8 @@
 [
-  { "id": "q_nhap_mon", "giver": "npc_chuong_mon", "turnin": "npc_duoc_su",
+  { "id": "q_dan_khi", "giver": "npc_chuong_mon", "turnin": "npc_chuong_mon",
+    "objectives": [ { "type": "meditate", "count": 8 } ],
+    "rewards": { "xp": 20, "gold": 10 } },
+  { "id": "q_nhap_mon", "giver": "npc_chuong_mon", "turnin": "npc_duoc_su", "requires": "q_dan_khi",
     "objectives": [ { "type": "talk", "target": "npc_duoc_su", "count": 1 } ],
     "rewards": { "xp": 30, "gold": 40, "items": [ { "id": "itm_moc_kiem", "n": 1 }, { "id": "itm_bo_y", "n": 1 } ] } },
   { "id": "q_diet_soi", "giver": "npc_duoc_su", "turnin": "npc_duoc_su", "requires": "q_nhap_mon",

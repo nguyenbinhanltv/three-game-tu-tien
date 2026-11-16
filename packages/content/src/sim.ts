@@ -17,8 +17,14 @@ import {
   TRIB_AIM,
   TRIB_EXTRA,
   TRIB_FIRST_DELAY,
-  TRIB_GAP_END,
-  TRIB_GAP_START,
+  TRIB_FINAL,
+  TRIB_NET,
+  TRIB_PHASE_END,
+  TRIB_PHASE_EXTRA,
+  TRIB_PHASE_GAP,
+  TRIB_PILL_MAX,
+  TRIB_RAIN,
+  tribPhaseAt,
   TRIBULATION_DURATION,
   TRIBULATION_REFUND_AFTER,
   computeDamage,
@@ -514,35 +520,54 @@ for (const [id, lv] of [['itm_thiet_kiem', 4], ['itm_thanh_phong_kiem', 8], ['it
   if (source > shop + 4 * skill3 + 8 * skill5 + enh) { console.error('LỖI: nguồn linh thạch tới tầng 15 vượt mọi chỗ tiêu (lạm phát)'); process.exitCode = 1; }
 }
 
-// ---------- độ kiếp Trúc Cơ (G11, 3-10) ----------
+// ---------- độ kiếp Trúc Cơ (ba pha, G11) ----------
 {
   // Mô phỏng nhịp đợt thiên lôi (cùng hằng số với server): số đợt, số tia, sát thương nếu đứng yên.
   const pl = player(NGUNG_KHI_MAX);
+  const pHitOf = (r: number) => (r * r) / (TRIB_EXTRA.distMax ** 2 - TRIB_EXTRA.distMin ** 2);
   let t = TRIB_FIRST_DELAY;
   let waves = 0;
   let aimed = 0;
-  let extra = 0;
+  let extraN = 0;
+  let aimDmg = 0;
+  let chip = 0; // kỳ vọng sát thương tia rơi quanh với người luôn né tia nhắm thẳng và vạch
+  let nets = 0;
+  let finalAt = -1;
   while (t < TRIBULATION_DURATION) {
-    const progress = t / TRIBULATION_DURATION;
+    const phase = tribPhaseAt(t);
+    if (phase === 3 && finalAt < 0) {
+      finalAt = Math.max(t, TRIB_PHASE_END[1]);
+      t = finalAt + TRIB_FINAL.delay;
+      continue;
+    }
     waves++;
     aimed++;
-    extra += Math.min(TRIB_EXTRA.maxCount, 1 + Math.floor(progress * 3));
-    t += TRIB_GAP_START - progress * (TRIB_GAP_START - TRIB_GAP_END);
+    if (phase === 3) {
+      aimDmg += TRIB_RAIN.aimPct;
+      extraN += TRIB_RAIN.count;
+      chip += TRIB_RAIN.count * TRIB_RAIN.pct * pHitOf(TRIB_RAIN.r);
+      t += TRIB_RAIN.gap;
+    } else {
+      aimDmg += TRIB_AIM.pct;
+      extraN += TRIB_PHASE_EXTRA[phase];
+      chip += TRIB_PHASE_EXTRA[phase] * TRIB_EXTRA.pct * pHitOf(TRIB_EXTRA.r);
+      if (phase === 2 && waves % TRIB_NET.every === 0) nets++;
+      t += TRIB_PHASE_GAP[phase];
+    }
   }
-  // Tia rơi quanh một điểm ngẫu nhiên trong vành 5–14 m: xác suất trúng người đứng yên = diện tích tia / diện tích vành.
-  const pHit = (TRIB_EXTRA.r * TRIB_EXTRA.r) / (TRIB_EXTRA.distMax ** 2 - TRIB_EXTRA.distMin ** 2);
-  const still = aimed * TRIB_AIM.pct + extra * TRIB_EXTRA.pct * pHit;
-  const dodge = extra * TRIB_EXTRA.pct * pHit;
+  const noTools = chip + TRIB_FINAL.pct;
   const shield = 0.35;
   console.log(
     `
-Độ kiếp Trúc Cơ (Ngưng Khí 15, máu ${pl.hp}): ${waves} đợt trong ${TRIBULATION_DURATION} s = ${aimed} tia nhắm thẳng (${pct(TRIB_AIM.pct)} máu, báo trước ${TRIB_AIM.delay} s) + ${extra} tia rơi quanh (${pct(TRIB_EXTRA.pct)}, xác suất trúng người đứng yên ${pct(pHit)}).
+Độ kiếp Trúc Cơ ba pha (Ngưng Khí 15, máu ${pl.hp}): ${waves} đợt trong ${TRIBULATION_DURATION} s (pha 1 đến ${TRIB_PHASE_END[0]} s, pha 2 đến ${TRIB_PHASE_END[1]} s, pha 3 đến hết) = ${aimed} tia nhắm thẳng + ${extraN} tia rơi quanh + ${nets} lần lôi võng (${TRIB_NET.lines} vạch) + 1 tia cuối khóa mệnh ${pct(TRIB_FINAL.pct)} máu lúc ${finalAt.toFixed(0)} s.
 ` +
-      `Đứng yên mất ${pct(still)} máu (chết chắc); chỉ né tia nhắm thẳng và ăn tia rơi quanh theo xác suất mất ${pct(dodge)}, trừ khiên Hộ Thể (${pct(shield)}) còn ${pct(Math.max(0, dodge - shield))}; hoàn Trúc Cơ Đan nếu chết sau ${TRIBULATION_REFUND_AFTER} s.`,
+      `Đứng yên mất ${pct(aimDmg + chip)} máu (chết chắc). Người luôn né tia nhắm và vạch: ăn ${pct(chip)} từ tia rơi quanh + ${pct(TRIB_FINAL.pct)} tia cuối = ${pct(noTools)}; ` +
+      `có Hộ Thể (${pct(shield)}) còn ${pct(Math.max(0, noTools - shield))}; Kim Cương Đan giảm tia cuối ${pct(Math.min(TRIB_FINAL.defMaxCut, 0.15 * TRIB_FINAL.defMul))}. Dùng được tối đa ${TRIB_PILL_MAX} đan hồi phục; hoàn Trúc Cơ Đan nếu chết sau ${TRIBULATION_REFUND_AFTER} s.`,
   );
-  // Phải cần né (đứng yên chết) nhưng người né khá không chết oan: tia nhắm thẳng một mình không quá 30% máu.
-  if (still < 1.2) { console.error('LỖI: độ kiếp đứng yên không chết (quá dễ)'); process.exitCode = 1; }
-  if (dodge > 0.9) { console.error('LỖI: độ kiếp chỉ né tia nhắm vẫn chết gần chắc (quá khó)'); process.exitCode = 1; }
+  // Phải cần chống đỡ (không công cụ nào thì dễ chết) nhưng một lớp chống đỡ là qua được.
+  if (aimDmg + chip < 1.2) { console.error('LỖI: độ kiếp đứng yên không chết (quá dễ)'); process.exitCode = 1; }
+  if (noTools < 1.0) { console.error('LỖI: độ kiếp không cần chống đỡ tia cuối cũng qua (quá dễ)'); process.exitCode = 1; }
+  if (noTools - shield > 0.9) { console.error('LỖI: độ kiếp có Hộ Thể vẫn chết gần chắc (quá khó)'); process.exitCode = 1; }
 }
 
 // ---------- đòn dồn của quái đọc chú ----------

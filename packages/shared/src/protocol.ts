@@ -249,6 +249,8 @@ export interface HazardMsg {
   w?: number;
   /** Seed hình (uint31) của tia sét khi `kind` là `lightning`: mọi client thấy cùng một tia. */
   sd?: number;
+  /** Tia cuối của độ kiếp (khóa mệnh, nổ cực lớn): client rung mạnh hơn. */
+  big?: boolean;
 }
 
 /**

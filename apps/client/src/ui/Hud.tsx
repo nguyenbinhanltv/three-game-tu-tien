@@ -3,7 +3,7 @@ import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { artifactLevelMods, BAR_SIZE, C, CHARGE_MAX, NGUNG_KHI_MAX, TRIBULATION_DURATION, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { artifactLevelMods, BAR_SIZE, C, CHARGE_MAX, NGUNG_KHI_MAX, TRIBULATION_DURATION, TRIB_FINAL, TRIB_PHASE_END, tribPhaseAt, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
 import { ARTIFACT, ITEM, itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
@@ -242,6 +242,8 @@ export function objectiveText(o: ObjectiveDef): string {
       return t('ui.obj.dungeon');
     case 'duel':
       return t('ui.obj.duel');
+    case 'meditate':
+      return t('ui.obj.meditate');
     default:
       return t('ui.obj.breakthrough');
   }
@@ -468,11 +470,26 @@ function Tribulation() {
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   const left = Math.max(0, (tribEnd - now) / 1000);
+  const elapsed = TRIBULATION_DURATION - left;
+  const phase = tribPhaseAt(elapsed);
+  // Ba pha: ba thanh nối nhau, độ dài theo thời lượng từng pha. Pha 3: ba giây đầu là tia cuối, sau đó mưa sét.
+  const starts = [0, TRIB_PHASE_END[0], TRIB_PHASE_END[1]];
+  const hint = phase === 3 && elapsed >= TRIB_PHASE_END[1] + TRIB_FINAL.delay ? 4 : phase;
   return (
     <div className="trib" role="status">
       <div className="trib-title">{t('ui.trib.title')}</div>
-      <ProgressBar cls="kiep" value={TRIBULATION_DURATION - left} max={TRIBULATION_DURATION} text={t('ui.trib.secs', { n: Math.ceil(left) })} segs={4} />
-      <div className="trib-hint">{t('ui.trib.left')}</div>
+      <div className="trib-phases">
+        {[1, 2, 3].map((n) => {
+          const len = TRIB_PHASE_END[n - 1] - starts[n - 1];
+          return (
+            <div key={n} className={'trib-phase' + (n === phase ? ' on' : '')} style={{ flex: len }}>
+              <ProgressBar cls="kiep" value={Math.max(0, Math.min(len, elapsed - starts[n - 1]))} max={len} text={n === phase ? t('ui.trib.secs', { n: Math.ceil(left) }) : undefined} />
+              <div className="trib-phase-name">{t('ui.trib.p' + n)}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="trib-hint">{t('ui.trib.hint' + hint)}</div>
     </div>
   );
 }
