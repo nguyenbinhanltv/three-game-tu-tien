@@ -6,7 +6,7 @@ import type { AffixStat } from './items';
 import { EQUIP_SLOTS, type EquipSlot } from './types';
 
 /** Hiệu ứng combat của bậc cao: server đọc cờ này trong `executeSkill`/`hitMonster`/`damagePlayer`. */
-export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow' | 'hoanh_kiem' | 'kim_chung' | 'moc_linh';
+export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow' | 'hoanh_kiem' | 'kim_chung' | 'moc_linh' | 'nghich_kiem' | 'dich_son' | 'ngung_dan';
 
 export interface SetLine {
   id: AffixStat;
@@ -74,9 +74,15 @@ export interface SetFx {
   kimChungReflect: number;
   /** Mộc Linh Trận (`skl_moc_linh_tran`) kéo dài thêm (phân số thời lượng). */
   mocLinhDur: number;
+  /** Bộ bậc 3 (E3-F). Nghịch Kiếm Chuyển Phong (`skl_nghich_kiem_chuyen_phong`) hoàn phần hồi chiêu (phân số) nếu lướt hạ được mục tiêu. */
+  nghichKiemRefund: number;
+  /** Dịch Sơn Xung (`skl_dich_son_xung`) choáng thêm (giây). */
+  dichSonStun: number;
+  /** Ngưng Đan Hộ Thế (`skl_ngung_dan_ho_the`) khiên mạnh thêm (phân số). */
+  ngungDanBoost: number;
 }
 
-export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0, hoanhKiemPower: 0, hoanhKiemReach: 0, kimChungReflect: 0, mocLinhDur: 0 };
+export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0, hoanhKiemPower: 0, hoanhKiemReach: 0, kimChungReflect: 0, mocLinhDur: 0, nghichKiemRefund: 0, dichSonStun: 0, ngungDanBoost: 0 };
 
 /** Đếm món bộ đang mặc theo `setOf(itemId)`; chỉ tính mỗi món một lần (mỗi ô một món nên tự khác nhau). */
 export function setStatuses(sets: readonly SetDef[], wornIds: readonly string[]): SetStatus[] {
@@ -107,6 +113,9 @@ export function setFxOf(statuses: readonly SetStatus[]): SetFx {
         case 'hoanh_kiem': fx.hoanhKiemPower = Math.max(fx.hoanhKiemPower, t.v ?? 0); fx.hoanhKiemReach = Math.max(fx.hoanhKiemReach, t.w ?? 0); break;
         case 'kim_chung': fx.kimChungReflect = Math.max(fx.kimChungReflect, t.v ?? 0); break;
         case 'moc_linh': fx.mocLinhDur = Math.max(fx.mocLinhDur, t.v ?? 0); break;
+        case 'nghich_kiem': fx.nghichKiemRefund = Math.max(fx.nghichKiemRefund, t.v ?? 0); break;
+        case 'dich_son': fx.dichSonStun = Math.max(fx.dichSonStun, t.v ?? 0); break;
+        case 'ngung_dan': fx.ngungDanBoost = Math.max(fx.ngungDanBoost, t.v ?? 0); break;
       }
     }
   }
@@ -139,18 +148,21 @@ export interface ForgeRecipe {
 const ACC_SLOTS: readonly EquipSlot[] = EQUIP_SLOTS;
 
 /**
- * Mã phụ kiện của người chơi cho client dựng hình: mỗi ô trang bị một ký tự, '0' = không phải đồ bộ, '1'..'9' = thứ tự
+ * Mã phụ kiện của người chơi cho client dựng hình: mỗi ô trang bị một ký tự, '0' = không phải đồ bộ, '1'.. = thứ tự
  * (từ 1) của bộ trong bảng `sets`. Trả '' nếu không mặc món bộ nào (đa số người chơi), để schema không tốn byte.
  * Không phụ thuộc số món, nên một món lẻ cũng hiện phụ kiện của nó.
  */
+/** Số bộ tối đa mã hóa được trong `accessoryCode` (mỗi ký tự = mã ASCII 48 + thứ tự bộ; E3-F vượt mốc 9 chữ số cũ). */
+export const ACC_MAX_SETS = 40;
+
 export function accessoryCode(sets: readonly SetDef[], equip: Partial<Record<EquipSlot, { id: string } | undefined>>): string {
   let any = false;
   let out = '';
   for (const slot of ACC_SLOTS) {
     const id = equip[slot]?.id;
     const i = id ? sets.findIndex((s) => s.pieces.includes(id)) : -1;
-    if (i >= 0 && i < 9) any = true;
-    out += i >= 0 && i < 9 ? String(i + 1) : '0';
+    if (i >= 0 && i < ACC_MAX_SETS) any = true;
+    out += i >= 0 && i < ACC_MAX_SETS ? String.fromCharCode(48 + i + 1) : '0';
   }
   return any ? out : '';
 }

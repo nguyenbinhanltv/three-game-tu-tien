@@ -58,10 +58,12 @@ describe('bậc trang bị', () => {
 
 describe('Thăng Bậc (hàm thuần)', () => {
   it('chỉ bậc đã mở mới thăng được; phí = 0,4 × thu nhập giờ chương đích; cường hóa trừ 3 tối thiểu +0', () => {
-    expect(TIER_OPEN).toBe(2);
+    expect(TIER_OPEN).toBe(3);
     expect(promoteOpen(1)).toBe(true);
-    expect(promoteOpen(2)).toBe(false);
+    expect(promoteOpen(2)).toBe(true);
+    expect(promoteOpen(3)).toBe(false);
     expect(promoteGold(2)).toBe(2400);
+    expect(promoteGold(3)).toBe(2960);
     expect(promotePlus(7)).toBe(4);
     expect(promotePlus(2)).toBe(0);
     expect(promotePlus(0)).toBe(0);
@@ -82,5 +84,16 @@ describe('Thăng Bậc (hàm thuần)', () => {
     expect(promoteInst(DATA, 'robe', old, 2, seededRng(9))).toEqual(up);
     // không sửa bản gốc
     expect(old.gems).toEqual(['gem_kim_2', '']);
+  });
+});
+
+describe('đan phá cảnh theo bậc (E3-F)', () => {
+  it('cấp ≤ 16 đan thường, 17–20 Mạch Phá Cảnh Đan, từ 21 Vân Phá Cảnh Đan', async () => {
+    const { bottleneckPill } = await import('./realm');
+    expect(bottleneckPill(15)).toBe('itm_pha_canh_dan');
+    expect(bottleneckPill(17)).toBe('itm_pha_canh_dan_2');
+    expect(bottleneckPill(19)).toBe('itm_pha_canh_dan_2');
+    expect(bottleneckPill(21)).toBe('itm_pha_canh_dan_3');
+    expect(bottleneckPill(27)).toBe('itm_pha_canh_dan_3');
   });
 });

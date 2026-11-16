@@ -102,10 +102,10 @@ describe('Thăng Bậc', () => {
     expect(t.count(MAT)).toBe(PROMOTE_MAT_COUNT);
   });
 
-  it('bậc kế chưa mở: bậc 2 không thăng được; thiếu cảnh giới đích thì chặn', () => {
-    const t = setup();
-    t.give((d) => (d.addRolled('itm_liet_mach_kiem', 17, 3), d.add(MAT, 40), d.addGold(99999)));
-    t.send('promote', { i: t.slotOf('itm_liet_mach_kiem') });
+  it('bậc kế chưa mở: bậc 3 không thăng được (bậc 4 khóa); thiếu cảnh giới đích thì chặn', () => {
+    const t = setup(20);
+    t.give((d) => (d.addRolled('itm_kinh_quang_kiem', 21, 3), d.add(MAT, 40), d.add(PROMOTE_MAT[3]!, 40), d.add(PROMOTE_MAT[4]!, 40), d.addGold(99999)));
+    t.send('promote', { i: t.slotOf('itm_kinh_quang_kiem') });
     expect(t.warns).toContain('sys.promote_locked');
     const low = setup(15);
     low.give((d) => (d.addRolled('itm_han_quang_kiem', 12, 2), d.add(MAT, 20), d.addGold(GOLD)));
@@ -145,6 +145,68 @@ describe('Thăng Bậc', () => {
     t.send('promote', { w: 'nonsense' });
     expect(t.count(MAT)).toBe(20);
     expect(t.c.gold).toBe(GOLD);
+  });
+});
+
+describe('Thăng Bậc 2 → 3 (E3-F)', () => {
+  const MAT3 = PROMOTE_MAT[3]!;
+  const GOLD3 = promoteGold(3);
+
+  it('bộ bậc 2 → bộ bậc 3 đúng ô và đúng công pháp: giữ phẩm, dòng phụ; cường hóa −3; trừ Kính Hoa Sa + 2.960 linh thạch', () => {
+    expect(GOLD3).toBe(2960);
+    const pairs: [string, string][] = [['itm_lm_dao_bao', 'itm_kq_dao_bao'], ['itm_dg_ho_uyen', 'itm_vk_ho_uyen'], ['itm_pm_gioi_chi', 'itm_ll_gioi_chi']];
+    for (const [from, to] of pairs) {
+      const t = setup(20);
+      t.give((d) => (d.addRolled(from, 17, 3), d.add(MAT3, PROMOTE_MAT_COUNT + 2), d.addGold(GOLD3 + 7)));
+      const s0 = t.slotOf(from);
+      t.c.inv[s0] = { ...t.c.inv[s0]!, plus: 6 };
+      const before = t.c.inv[s0]!.inst!;
+      t.send('promote', { i: s0 });
+      const after = t.c.inv[s0]!;
+      expect(after.id, from).toBe(to);
+      expect(after.plus).toBe(3);
+      expect(after.inst!.q).toBe(3);
+      expect(after.inst!.affixes).toEqual(before.affixes);
+      expect(after.inst!.ilvl).toBeGreaterThanOrEqual(21);
+      expect(after.inst!.gems.length).toBe(Math.min(3, before.gems.length + 1));
+      expect(t.count(MAT3)).toBe(2);
+      expect(t.c.gold).toBe(7);
+      const sums = sqlite.prepare("SELECT ref, SUM(delta) AS n FROM ledger WHERE char_id = ? AND kind = 'item' GROUP BY ref").all(t.c.id) as { ref: string; n: number }[];
+      for (const r of sums) expect(r.n, r.ref).toBe(t.count(r.ref));
+    }
+  });
+
+  it('kiếm bậc 2 → Kính Quang Kiếm (model riêng); chỉ số chính tăng theo hệ số bậc; chặn dưới cảnh giới 20', () => {
+    const low = setup(19);
+    low.give((d) => (d.addRolled('itm_liet_mach_kiem', 17, 2), d.add(MAT3, 20), d.addGold(GOLD3)));
+    low.send('promote', { i: low.slotOf('itm_liet_mach_kiem') });
+    expect(low.warns).toContain('sys.equip_level');
+    expect(low.slotOf('itm_liet_mach_kiem')).toBeGreaterThanOrEqual(0);
+
+    const t = setup(20);
+    t.give((d) => (d.addRolled('itm_liet_mach_kiem', 17, 2), d.add(MAT3, 20), d.addGold(GOLD3)));
+    const s = t.slotOf('itm_liet_mach_kiem');
+    const atk2 = t.c.inv[s]!.inst!.main.atk ?? 0;
+    t.send('promote', { i: s });
+    const out = t.c.inv[s]!;
+    expect(out.id).toBe('itm_kinh_quang_kiem');
+    // Cùng ilvl 17 → 21 và hệ số bậc 1,6 → 2,5: dòng chính phải tăng rõ rệt.
+    expect(out.inst!.main.atk ?? 0).toBeGreaterThan(atk2 * 1.4);
+  });
+
+  it('chế đồ bậc 3 ở Hứa lão hoặc Thiết lão: đòi cảnh giới 20, ra đồ bậc 3 có ≥ 2 lỗ khảm', () => {
+    const mats = (d: Draft) => (d.add('itm_kinh_hoa_sa', 9), d.add('itm_thiet_tinh', 6), d.add('itm_linh_tran', 3), d.addGold(1850));
+    const low = setup(19);
+    low.give(mats);
+    low.send('forge', { id: 'frg_kq_ho_uyen' }, 'frg-dddd', 'npc_hua_lao');
+    expect(low.warns).toContain('sys.craft_level');
+    const t = setup(20);
+    t.give(mats);
+    t.send('forge', { id: 'frg_kq_ho_uyen' }, 'frg-eeee', 'npc_thiet_lao');
+    const it = t.c.inv.find((s) => s?.id === 'itm_kq_ho_uyen');
+    expect(it).toBeTruthy();
+    expect(it!.inst!.gems.length).toBeGreaterThanOrEqual(2);
+    expect(t.c.gold).toBe(0);
   });
 });
 

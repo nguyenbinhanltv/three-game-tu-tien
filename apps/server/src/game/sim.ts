@@ -1328,11 +1328,18 @@ export class GameSim {
     this.fx({ t: blink ? 'blink' : skill.fx, src: p.sid, x: plan.x, y: p.move.y, z: plan.z, d: blink ? 0.4 : 0.3, ...(blink ? { ox: from.x, oz: from.z } : this.fxTag(p, rs)) });
     // Lướt xuyên (Nghịch Kiếm Chuyển Phong): chém mọi quái sát đường lướt.
     if (def.pierce && skill.power > 0) {
+      let killed = false;
       const em = elemDamageMul(c.stats.elemDmg, skill.elem);
       for (const o of this.monsters) {
         if (o.state === MS_DEAD || (o.owner && o.owner !== p.sid)) continue;
-        if (distToSegment(from.x, from.z, plan.x, plan.z, o.s.x, o.s.z) <= def.pierce.r + o.def.scale) this.hitMonster(p, o, rs.power, em, skill.elem);
+        if (distToSegment(from.x, from.z, plan.x, plan.z, o.s.x, o.s.z) <= def.pierce.r + o.def.scale) {
+          this.hitMonster(p, o, rs.power, em, skill.elem);
+          if (o.state === MS_DEAD) killed = true;
+        }
       }
+      // Bộ Kính Quang bậc 3 (4 món): lướt hạ được mục tiêu thì hoàn `nghichKiemRefund` phần hồi chiêu còn lại.
+      const refund = skill.id === 'skl_nghich_kiem_chuyen_phong' ? c.stats.setFx.nghichKiemRefund : 0;
+      if (killed && refund > 0 && rs.cd > 0) p.cds.set(skill.id, this.now + rs.cd * 1000 * (1 - Math.min(1, refund)));
       if (rs.variant?.returnBack) {
         p.move.x = from.x;
         p.move.z = from.z;
@@ -1348,8 +1355,9 @@ export class GameSim {
       }
       this.hitMonster(p, tgt, rs.power * mul, elemDamageMul(c.stats.elemDmg, skill.elem), skill.elem);
       // Húc choáng quái thường (hộ pháp): tinh anh nửa thời gian, boss miễn.
-      const stunSec = rs.variant?.stun ?? skill.stun;
-      if (stunSec && tgt.state !== MS_DEAD) this.stunMonster(p, tgt, stunSec);
+      // Bộ Vân Kình bậc 3 (4 món): Dịch Sơn Xung choáng thêm `dichSonStun` giây.
+      const stunSec = (rs.variant?.stun ?? skill.stun ?? 0) + (skill.id === 'skl_dich_son_xung' ? c.stats.setFx.dichSonStun : 0);
+      if (stunSec > 0 && tgt.state !== MS_DEAD) this.stunMonster(p, tgt, stunSec);
       // Dịch Sơn Xung: đẩy (hoặc kéo) mục tiêu.
       if (def.push && pullOnly) {
         // Kéo cả cụm quanh mục tiêu (4 m) về phía người ra chiêu, mục tiêu chính sát nhất.
@@ -1961,7 +1969,7 @@ export class GameSim {
       case 'shield': {
         const dur = rs.duration ?? 8;
         const give = (o: PlayerEnt) => {
-          o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1) * (o === p && skill.id === 'skl_linh_khi_ho_the' ? 1 + c.stats.setFx.shieldBoost : 1)), until: this.now + dur * 1000 };
+          o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1) * (o === p && skill.id === 'skl_linh_khi_ho_the' ? 1 + c.stats.setFx.shieldBoost : 1) * (skill.id === 'skl_ngung_dan_ho_the' ? 1 + c.stats.setFx.ngungDanBoost : 1)), until: this.now + dur * 1000 };
           this.setFlag(o, PF_SHIELD, true);
         };
         give(p);
