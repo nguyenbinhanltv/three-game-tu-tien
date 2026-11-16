@@ -34,13 +34,15 @@ let VL = T.id === 'van_lam';
 /** Level dùng bảng màu đất son (Đoạn Mạch, E2-I). */
 let OCHRE = T.id === 'doan_mach';
 function heightAt(x: number, z: number): number {
-  return T.heightAt(x, z);
+  return T.surfaceAt(x, z);
 }
 function isVanLam(): boolean {
   return VL;
 }
 
 const C_VOID_ROCK = col(0x6b6a72);
+/** Sàn mây đi bộ được của level đảo nổi (E3-N). */
+const C_CLOUD_FLOOR = col(0xe6eef0);
 const C_OCHRE = col(0xb2a082);
 const C_OCHRE_DRY = col(0xc4b08e);
 const C_OCHRE_RED = col(0x9f8068);
@@ -56,14 +58,41 @@ function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Colo
   if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
 }
 
+const C_ISLE_MOSS = col(0xa7a688);
+const C_ISLE_SOIL = col(0xb5a285);
+const C_ISLE_STONE = col(0xb9b5a8);
+const C_ISLE_DARK = col(0x7c7d6c);
+const C_CLOUD_LIGHT = col(0xc9d4d7);
+const C_CLOUD_SHADE = col(0xa4b2b8);
+/**
+ * Màu level đảo nổi (E3-N, tông trầm theo art bible v3): mặt đảo là rêu xám-lục trộn đất nâu và mảng đá, dốc lộ đá; sàn mây là mặt mây
+ * trắng xám gợn noise (không có cỏ, đá, cây). Vách đảo (cao hơn sàn nhiều) màu đá tối.
+ */
+function islandColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
+  const f = T.def.voidFloor ?? 0;
+  const n = fbm(x * 0.013, z * 0.013, 2, T.def.seed + 300);
+  if (h < f + 6) {
+    const m = fbm(x * 0.02 + 40, z * 0.02 - 17, 3, T.def.seed + 411);
+    out.copy(C_CLOUD_LIGHT).lerp(C_CLOUD_SHADE, Math.max(0, Math.min(1, 0.5 + m * 1.4)) * 0.75);
+    return;
+  }
+  const m = fbm(x * 0.045, z * 0.045, 2, T.def.seed + 512);
+  out.copy(C_ISLE_MOSS).lerp(C_ISLE_SOIL, Math.max(0, Math.min(1, 0.5 + m * 1.6)));
+  out.lerp(C_ISLE_STONE, Math.max(0, Math.min(1, (n + 0.06) * 3.2)) * 0.8);
+  out.multiplyScalar(1.0 + n * 0.3);
+  const slope = 1 - ny;
+  if (slope > 0.1) out.lerp(C_ISLE_DARK, Math.min(1, (slope - 0.1) * 5));
+  if (h < f + 40) out.lerp(C_ISLE_DARK, 0.6);
+}
+
 /** Màu mặt đất của level không phải Vân Lam: cỏ/đá/tuyết theo độ dốc và độ cao, bờ nước ra cát. */
 function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
   const t = T;
+  if (t.def.islands) return islandColor(x, z, h, ny, out);
   const n = fbm(x * 0.013, z * 0.013, 2, t.def.seed + 300);
   out.copy(C_GRASS_WILD).lerp(C_GRASS_DRY, Math.max(0, n) * 0.35).multiplyScalar(0.92 + n * 0.14);
   const slope = 1 - ny;
   if (slope > 0.12) out.lerp(n > 0 ? C_ROCK : C_ROCK_DARK, Math.min(1, (slope - 0.12) * 4.5));
-  if (t.def.islands && h < (t.def.voidFloor ?? 0) + 30) out.lerp(C_VOID_ROCK, 0.8);
   if (h > 250) out.lerp(C_SNOW, Math.min(1, (h - 250) / 60) * (slope < 0.45 ? 1 : 0.4));
   const w = t.def.water;
   if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
@@ -122,6 +151,16 @@ function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
   o[k + 3] = 0;
 }
 
+/** Level đảo nổi: ô lưới có độ chênh cao hơn mức này (m) là vách đảo, không dựng mặt (vách là khối đá treo ở skyIslands.ts). */
+const CLIFF_SKIP = 9;
+function quadSpan(pos: Float32Array, a: number, b: number, c: number, d: number): number {
+  const ya = pos[a * 3 + 1];
+  const yb = pos[b * 3 + 1];
+  const yc = pos[c * 3 + 1];
+  const yd = pos[d * 3 + 1];
+  return Math.max(ya, yb, yc, yd) - Math.min(ya, yb, yc, yd);
+}
+
 function buildTileGeometry(x0: number, z0: number, size: number, res: number, skirt: number): THREE.BufferGeometry {
   const cell = size / res;
   const w = res + 3;
@@ -165,12 +204,14 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
     }
   }
   const idx: number[] = [];
+  const cliff = T.def.islands ? CLIFF_SKIP : Infinity;
   for (let j = 0; j < res; j++) {
     for (let i = 0; i < res; i++) {
       const a = j * n1 + i;
       const b = a + 1;
       const c = a + n1;
       const d = c + 1;
+      if (cliff < Infinity && quadSpan(pos, a, b, c, d) > cliff) continue; // vách đảo: bỏ mặt đứng, `skyIslands.ts` dựng khối đá treo
       idx.push(a, c, b, b, c, d);
     }
   }
@@ -283,6 +324,7 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
       const z = z0 + (j + 0.15 + r2 * 0.7) * cellSize;
       const h = heightAt(x, z);
       if (h < WATER_Y + 1.2 || h > 285) continue;
+      if (T.def.islands && h < (T.def.voidFloor ?? 0) + 40) continue; // không cây/bụi trên sàn mây hay vách
       const wSect = featureWeight(SECT, x, z);
       const wForest = featureWeight(FOREST, x, z);
       const wValley = featureWeight(VALLEY, x, z);
@@ -458,6 +500,7 @@ export class Terrain {
     // Giữ nguyên một buffer chỉ số, chỉ ghi lại nội dung và đổi draw range
     // (thay buffer mới giữa chừng làm WebGPU báo lỗi).
     const idx = this.coarseIndex.array as Uint16Array;
+    const cpos = T.def.islands ? (this.coarse.geometry.attributes.position.array as Float32Array) : null;
     let o = 0;
     for (let j = 0; j < COARSE_N; j++) {
       const tz = (j / per) | 0;
@@ -469,6 +512,7 @@ export class Terrain {
         const b = a + 1;
         const c = a + n1;
         const d = c + 1;
+        if (cpos && quadSpan(cpos, a, b, c, d) > CLIFF_SKIP) continue;
         idx[o++] = a;
         idx[o++] = c;
         idx[o++] = b;

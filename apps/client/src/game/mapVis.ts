@@ -5,9 +5,10 @@
 
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { type MarkInfo, padsOfLevel, type TelePad } from '@dtl/shared';
+import { type MarkInfo, padsOfLevel, type TelePad, terrainOf } from '@dtl/shared';
 import { groundAt } from './levelCtx';
 import { SpiritVis } from './scan';
+import { SkyIslands } from './skyIslands';
 import type { SpiritScan, SpiritState } from '../ui/store';
 
 const PAD_SHOW = 260;
@@ -41,6 +42,7 @@ export class MapVis {
   private lastOpen: readonly string[] | null = null;
   /** Thần thức (E2-E): vòng vận, sóng quét, cột sáng điểm lộ. */
   readonly spirit: SpiritVis;
+  private sky: SkyIslands | null = null;
   private castRing: THREE.Mesh;
   private pulse: THREE.Mesh;
   private pulseAt = -1;
@@ -72,6 +74,11 @@ export class MapVis {
     this.group.name = 'mapVis';
     if (padLevel) for (const pad of padsOfLevel(padLevel)) this.pads.push(this.buildPad(pad));
     this.spirit = new SpiritVis(this.group);
+    // Level đảo nổi (E3-N): cầu xích và đảo giả.
+    if (padLevel) {
+      const tr = terrainOf(padLevel);
+      if (tr.def.bridges?.length || tr.def.fakeIslands?.length) this.sky = new SkyIslands(this.group, tr);
+    }
     this.castRing = new THREE.Mesh(this.geo.cast, this.mat.cast);
     this.castRing.rotation.x = -Math.PI / 2;
     this.castRing.visible = false;
@@ -222,12 +229,19 @@ export class MapVis {
   }
 
   /** Thần thức: gọi mỗi khung cùng `update`. */
+  /** Số đảo giả đang mờ do thần thức (kiểm tra/ảnh chụp). */
+  get skyRevealed(): number {
+    return this.sky?.revealed ?? 0;
+  }
+
   updateSpirit(me: THREE.Vector3, state: SpiritState, scan: SpiritScan | null, now: number): void {
     this.spirit.update(me, state, scan, now);
+    this.sky?.update(scan, now);
   }
 
   dispose(): void {
     this.spirit.dispose();
+    this.sky?.dispose();
     this.group.removeFromParent();
     for (const g of Object.values(this.geo)) g.dispose();
     for (const m of Object.values(this.mat)) m.dispose();
