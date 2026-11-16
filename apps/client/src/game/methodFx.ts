@@ -183,7 +183,7 @@ export function playMethodFx(c: MethodFxCtx): boolean {
         for (let i = 0; i < marks; i++) {
           const f = (i + 0.5) / marks;
           const p = new THREE.Vector3(x0 + ux * len * f, y0 - 0.15, z0 + uz * len * f);
-          after(v, w * 0.15 + f * 0.1, () => v.slashMark(fixed(p), m.v === 'long' ? 0xffffff : color, (m.v === 'long' ? 0.8 : 0.65) * sc, -0.05, 0.2, i === 0 && w === 0, p));
+          after(v, w * 0.15 + f * 0.1, () => v.slashMark(fixed(p), m.v === 'long' ? 0xffffff : color, (m.v === 'long' ? 0.55 : 0.45) * sc, -0.05, 0.2, i === 0 && w === 0, p));
         }
       }
       groundRing(v, x0 + ux * len * 0.5, z0 + uz * len * 0.5, 1.6, color, 0.5);
@@ -256,14 +256,14 @@ export function playMethodFx(c: MethodFxCtx): boolean {
     case 'kimchung': {
       // Kim Chung Trấn: chuông vàng úp quanh thân suốt thời gian giữ thế.
       const end = performance.now() + (m.d ?? 6) * 1000;
-      v.shield(c.src, m.d ?? 6, () => performance.now() < end, color, m.v === 'thorn' ? 1.15 : 1, 0.14);
+      v.shield(c.src, m.d ?? 6, () => performance.now() < end, color, m.v === 'thorn' ? 0.7 : 0.6, 0.09);
       v.pillar(c.src, color, 0.7, 0.4, 3.2, 0.1);
       return true;
     }
     case 'sonnhac': {
       // Sơn Nhạc Hóa Thân: thân ngọc đá phình ra (vòng đất vàng + trụ đá), mỗi lần giậm có vòng chấn động.
       const end = performance.now() + (m.d ?? 10) * 1000;
-      v.shield(c.src, m.d ?? 10, () => performance.now() < end, 0xc9b27a, 1.3, 0.1);
+      v.shield(c.src, m.d ?? 10, () => performance.now() < end, 0xc9b27a, 0.8, 0.07);
       groundRing(v, m.x ?? 0, m.z ?? 0, 2.4, color, 1.2);
       v.pillar(c.src, color, 0.9, 0.5, 4, 0.1);
       return true;
@@ -304,7 +304,7 @@ export function playMethodFx(c: MethodFxCtx): boolean {
     case 'ngungdan': {
       // Ngưng Đan Hộ Thế: quầng đan ngọc bao mỗi người nhận khiên.
       const end = performance.now() + (m.d ?? 10) * 1000;
-      v.shield(c.src, m.d ?? 10, () => performance.now() < end, color, m.v === 'big' ? 1.15 : 1, 0.12);
+      v.shield(c.src, m.d ?? 10, () => performance.now() < end, color, m.v === 'big' ? 0.65 : 0.55, 0.08);
       if (c.src(_a)) groundRing(v, _a.x, _a.z, 1.8, color, 0.9);
       return true;
     }

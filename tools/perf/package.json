@@ -21,6 +21,7 @@
     "shots:k3": "tsx src/shots-k3.ts",
     "shots:k4": "tsx src/shots-k4.ts",
     "shots:k6": "tsx src/shots-k6.ts",
+    "shots:e2g": "tsx src/shots-e2g.ts",
     "shots:k7": "tsx src/shots-k7.ts",
     "shots:boss": "tsx src/shots-boss.ts",
     "shots:trib": "tsx src/shots-trib.ts",
