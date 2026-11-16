@@ -75,6 +75,12 @@ export class SpiritSystem {
     } satisfies SpiritStateMsg);
   }
 
+  /** Lệnh GM `cd`: xóa hồi chiêu thần thức của nhân vật (chụp ảnh/thử nhiều lần liên tiếp). */
+  resetCooldown(p: PlayerEnt): void {
+    cdUntil.delete(p.char.id);
+    this.sendState(p);
+  }
+
   drop(p: PlayerEnt): void {
     this.chans.delete(p.sid);
     this.cmdAt.delete(p.sid);

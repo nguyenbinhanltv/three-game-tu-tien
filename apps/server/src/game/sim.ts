@@ -4118,10 +4118,11 @@ export class GameSim {
         return say('sạc = ' + p.mth.charge);
       }
       case 'cd':
-        // /gm cd: xóa hồi chiêu và GCD (chụp ảnh nhiều chiêu liên tiếp).
+        // /gm cd: xóa hồi chiêu, GCD và hồi thần thức (chụp ảnh nhiều chiêu liên tiếp).
         p.cds.clear();
         p.gcdAt = 0;
         this.sendCd(p);
+        this.spirit.resetCooldown(p);
         return say('đã xóa hồi chiêu');
       case 'variant': {
         // /gm variant <id chiêu> <a|b>: chọn biến thức ngay (không cần cấp 3, ngoài combat, hồi chờ) để chụp ảnh/thử.

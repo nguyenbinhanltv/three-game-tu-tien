@@ -1,7 +1,7 @@
 // pnpm shots:e2h: playtest chuỗi nhiệm vụ chương 2 (E2-H) bằng /gm + ảnh hộp thoại, NPC, thẻ chương, hộ tống, thần thức. GPU thật, tắt tiếng.
 //   tsx src/shots-e2h.ts --out <thư mục tuyệt đối> [--renderer webgpu|webgl2]
 // Đi: Lạc Vân nhận thư → Truyền Tống Trận dm_tp_tram thật (niệm 5 s, đổi room) → thẻ chương 2 → Tô Vãn Ngư, Hứa lão, Khưu Hàn Sơn →
-// chạm Mạch Tinh Trụ (touch) → hộ tống thương nhân (escort) → thần thức phím T (scan). Ghi log tiến độ nhiệm vụ ra e2h-log.json.
+// chạm Mạch Tinh Trụ (touch) → hộ tống thương nhân (escort) → thần thức giữ phím V (scan). Ghi log tiến độ nhiệm vụ ra e2h-log.json.
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2628/5228); luôn ?mute=1 và --mute-audio.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -150,7 +150,7 @@ async function main(): Promise<void> {
     await shot(page, '15-khuu-han-son-hop-thoai');
     await page.keyboard.press('Escape');
 
-    // 8) Thần thức (phím T) từ Kết Đan: s2_thu_nghiem.
+    // 8) Thần thức (giữ V 2,5 s, hồi 20 s; `/gm cd` xóa hồi giữa các điểm) từ Kết Đan: s2_thu_nghiem.
     await gm(page, '/gm level 20');
     await gm(page, '/gm qdone q2_thu_ha_son');
     await gm(page, '/gm tp 1011 1044');
@@ -160,7 +160,10 @@ async function main(): Promise<void> {
     for (const [x, z, n] of [[1279, 1190, 'mach-tinh-tru'], [954, 1514, 'ho-sa-lun'], [586, 940, 'cong-mo']] as const) {
       await gm(page, `/gm tp ${x} ${z}`);
       await sleep(2200);
-      await page.keyboard.press('KeyT');
+      await gm(page, '/gm cd');
+      await page.keyboard.down('KeyV');
+      await sleep(3000);
+      await page.keyboard.up('KeyV');
       await sleep(900);
       await shot(page, `16-than-thuc-${n}`);
       await sleep(3200);
