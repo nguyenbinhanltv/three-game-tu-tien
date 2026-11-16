@@ -43,7 +43,9 @@ export const TRAILS: [number, number][][] = [
 ];
 
 /** Đường mòn tự động cho level không có `TRAILS` riêng: nối tâm các vùng liên tiếp theo cấp (đường đi tu luyện). */
-export function autoTrails(zones: { lvMin: number; poly: [number, number][] }[]): [number, number][][] {
+export function autoTrails(zones: { lvMin: number; poly: [number, number][] }[], hub?: [number, number]): [number, number][][] {
+  // Có trạm trung tâm ngoài mọi vùng (Đoạn Mạch Cổ Cốc): đường mòn tỏa từ trạm tới tâm từng vùng.
+  if (hub) return zones.map((z): [number, number][] => [hub, [z.poly.reduce((a, p) => a + p[0], 0) / z.poly.length, z.poly.reduce((a, p) => a + p[1], 0) / z.poly.length]]);
   const centers = [...zones].sort((a, b) => a.lvMin - b.lvMin).map((z): [number, number] => [z.poly.reduce((a, p) => a + p[0], 0) / z.poly.length, z.poly.reduce((a, p) => a + p[1], 0) / z.poly.length]);
   return centers.slice(1).map((c, i) => [centers[i], c]);
 }
@@ -186,7 +188,8 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   };
   for (const zn of zones) stroke([...zn.poly, zn.poly[0]], 1.5, INK, 0.8, 14, 8);
   // Đường mòn: bezier bậc hai giữa các điểm, nét chấm nâu.
-  for (const tr of levelId === 'van_lam' ? TRAILS : autoTrails(zones)) {
+  const hub: [number, number] | undefined = tr.def.play && !zones.some((z) => inPoly(z.poly, tr.def.play!.cx, tr.def.play!.cz)) ? [tr.def.play.cx, tr.def.play.cz] : undefined;
+  for (const tr of levelId === 'van_lam' ? TRAILS : autoTrails(zones, hub)) {
     const pts: [number, number][] = [];
     for (let s = 0; s + 1 < tr.length; s++) {
       const [a, b] = [tr[s], tr[s + 1]];

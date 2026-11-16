@@ -1,6 +1,7 @@
 // Truyền Tống Trận và điểm đánh dấu (M-4). Hằng số, bảng trận, kiểu tin nhắn dùng chung server và client.
 
 import { PLAY_BOUNDS } from './level';
+import { DOAN_MACH_PADS } from './teleport.doanmach';
 
 export interface TelePad {
   id: string;
@@ -27,10 +28,14 @@ export const TELE_PADS: readonly TelePad[] = [
   { id: 'tp_rung', level: 'van_lam', zone: 'rung_linh_thao', x: 2335, z: 2110 },
   { id: 'tp_vach', level: 'van_lam', zone: 'vach_da_ngoc', x: 2420, z: 1815 },
   { id: 'tp_ho', level: 'van_lam', zone: 'ho_suong_mu', x: 1580, z: 2070 },
+  // Thiên Mạch Đài (E2-A): bệ ở sân Lạc Kiếm Tông, phía bắc Chính điện; truyền tống tới Hạ Khuyết Trạm (Đoạn Mạch Cổ Cốc).
+  { id: 'tp_thien_mach', level: 'van_lam', zone: '', x: 2048, z: 1968 },
+  // Đoạn Mạch Cổ Cốc (tiền tố dm_).
+  ...DOAN_MACH_PADS,
 ];
 
 export const TELE_PAD = new Map(TELE_PADS.map((p) => [p.id, p]));
-/** Trận mở sẵn cho mọi nhân vật. */
+/** Trận mở sẵn cho mọi nhân vật. Đoạn Mạch Cổ Cốc không mở sẵn: vào lần đầu cần mở khóa dm_tp_tram (nhiệm vụ chương 2 của E2-H; thử bằng `/gm tele dm_tp_tram`), tới nơi thì trận tự mở (điểm đến cách trận 3 m < TELE_TOUCH_R). */
 export const TELE_FREE: readonly string[] = ['tp_tong_mon'];
 /** Đứng trong bán kính này (m) của trận thì mở khóa. */
 export const TELE_TOUCH_R = 4;

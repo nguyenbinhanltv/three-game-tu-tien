@@ -13,5 +13,12 @@
   { "id": "u_minh", "level": "van_lam", "x": 2450, "z": 1690, "note": "U Minh Lang, bắc Vách Đá Ngọc" },
   { "id": "ho", "level": "van_lam", "x": 1490, "z": 2230, "note": "Bãi ven hồ phía tây (đường camera 'ho' của pnpm bench:client)" },
   { "id": "boss", "level": "van_lam", "x": 1640, "z": 2285, "note": "Khu boss Hàn Giao: mặt hồ, cách đảo giữa hồ (1640, 2230) khoảng 55m" },
-  { "id": "kt_giua", "level": "kiem_trung", "x": 1520, "z": 1300, "note": "Giữa lòng chảo Kiếm Trủng, chỗ đánh các đợt (chỉ dùng trong room bí cảnh)" }
+  { "id": "kt_giua", "level": "kiem_trung", "x": 1520, "z": 1300, "note": "Giữa lòng chảo Kiếm Trủng, chỗ đánh các đợt (chỉ dùng trong room bí cảnh)" },
+  { "id": "dm_tram", "level": "doan_mach", "x": 1024, "z": 1036, "note": "Hạ Khuyết Trạm, điểm vào Đoạn Mạch Cổ Cốc (cấp 16–19)" },
+  { "id": "dm_sa_thach", "level": "doan_mach", "x": 1279, "z": 1199, "note": "Mạch Tinh Trụ, Sa Thạch Pha (cấp 16–17)" },
+  { "id": "dm_kho_ha", "level": "doan_mach", "x": 1504, "z": 974, "note": "Cầu Đá Gãy, Khô Hà Đạo (cấp 17–18)" },
+  { "id": "dm_hoang_sa", "level": "doan_mach", "x": 954, "z": 1524, "note": "Hố Sa Lún, Hoang Sa Huyệt (cấp 18–19)" },
+  { "id": "dm_cuu_mo", "level": "doan_mach", "x": 584, "z": 944, "note": "Cổng Mỏ Khai Mạch, Cựu Mỏ Khu (cấp 18–19)" },
+  { "id": "dm_tuyet_bich", "level": "doan_mach", "x": 1044, "z": 484, "note": "Vách Đứt Mạch, Đoạn Mạch Tuyệt Bích (cấp 19)" },
+  { "id": "dm_boss", "level": "doan_mach", "x": 1054, "z": 404, "note": "Chỗ Địa Mạch Long (cấp 19)" }
 ]

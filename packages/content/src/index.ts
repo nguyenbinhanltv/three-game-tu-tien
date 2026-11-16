@@ -1,4 +1,4 @@
-import { majorRealmOf, resolveSkill, type ResolvedSkill } from '@dtl/shared';
+import { majorRealmOf, registerTerrain, resolveSkill, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
 import type {
   ArtifactDef,
   PillQualityCfg,
@@ -34,6 +34,8 @@ import realmsJson from '../data/realms.json';
 import rootsJson from '../data/roots.json';
 import vanLamJson from '../data/levels/van_lam.json';
 import kiemTrungJson from '../data/levels/kiem_trung.json';
+import doanMachJson from '../data/levels/doan_mach.json';
+import doanMachTerrainJson from '../data/levels/doan_mach.terrain.json';
 import glossaryJson from '../data/glossary.json';
 import viJson from '../data/i18n/vi.json';
 import viUiJson from '../data/i18n/vi.ui.json';
@@ -96,7 +98,10 @@ export const REALMS = realmsJson as RealmDef[];
 export const LEVELS: Record<string, LevelDef> = {
   van_lam: vanLamJson as LevelDef,
   kiem_trung: kiemTrungJson as LevelDef,
+  doan_mach: doanMachJson as LevelDef,
 };
+// Địa hình dữ liệu hóa của bản đồ mở rộng (E2-A): đăng ký khi nạp @dtl/content để server, client và công cụ cùng thấy `terrainOf('doan_mach')`.
+registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
 /** Năm linh căn ngũ hành (P3-7). */
 export const ROOTS = rootsJson as RootDef[];
 export const GLOSSARY = glossaryJson;
