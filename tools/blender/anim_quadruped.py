@@ -602,27 +602,51 @@ for name in EXTRA:
         fail(f'anim_quadruped: import.extra "{name}" chưa hỗ trợ cho thú bốn chân (slam | sweep | stun)')  # noqa: F821
 
 if 'slam' in EXTRA:
-    # Chồm đứng thẳng trên hai chân sau (đùi sau duỗi dọc, thân ngả ~58°, đuôi chống đất), hai chân trước giơ cao rồi nện xuống:
-    # lúc chạm (1,0 s) thân đổ về phía trước, hai chân trước duỗi thẳng xuống đất, hai chân sau vẫn bám đất.
-    rear = {
-        'leg_fl_0': [(X, -60)], 'leg_fr_0': [(X, -54)], 'leg_fl_1': [(X, 78)], 'leg_fr_1': [(X, 72)],
-        'leg_hl_0': [(X, 34)], 'leg_hr_0': [(X, 34)], 'leg_hl_1': [(X, -26)], 'leg_hr_1': [(X, -26)],
-        'spine_1': [(X, -6)], 'spine_2': [(X, -4)], 'neck': [(X, -22)], 'head': [(X, -14)], 'tail_0': [(X, 24)], 'tail_1': [(X, 12)],
-    }
-    stomp = {
-        'leg_fl_0': [(X, -6)], 'leg_fr_0': [(X, -4)], 'leg_fl_1': [(X, -4)], 'leg_fr_1': [(X, -4)],
-        'leg_hl_0': [(X, 4)], 'leg_hr_0': [(X, 4)], 'leg_hl_1': [(X, 0)], 'leg_hr_1': [(X, 0)],
-        'spine_1': [(X, 6)], 'neck': [(X, 26)], 'head': [(X, 14)], 'tail_0': [(X, -12)],
-    }
-    extra_clips['slam'] = keyed('slam', 1.8, [
-        (0.00, REST_KEY, (0, 0, 0), None, 0.0),
-        (0.22, crouch, (0, 0.04 * LENGTH, -0.05 * HEIGHT), None, 0.0),
-        (0.47, rear, (0, 0.10 * LENGTH, 0.0), None, -58.0),
-        (0.53, rear, (0, 0.08 * LENGTH, 0.0), None, -60.0),
-        (0.556, stomp, (0, -0.12 * LENGTH, 0.0), None, 4.0),
-        (0.75, stomp, (0, -0.12 * LENGTH, 0.0), None, 3.0),
-        (1.00, REST_KEY, (0, 0, 0), None, 0.0),
-    ])
+    if QUAD.get('slam') == 'rear':
+        # Tùy chọn `import.quadruped.slam: "rear"` (Địa Mạch Long, thân rồng dài): chồm đứng thẳng trên hai chân sau (đùi sau duỗi
+        # dọc, thân ngả ~58°, đuôi chống đất), hai chân trước giơ cao rồi nện xuống: lúc chạm (1,0 s) thân đổ về trước, hai chân
+        # sau vẫn bám đất, chân trước chạm đất.
+        rear = {
+            'leg_fl_0': [(X, -60)], 'leg_fr_0': [(X, -54)], 'leg_fl_1': [(X, 78)], 'leg_fr_1': [(X, 72)],
+            'leg_hl_0': [(X, 34)], 'leg_hr_0': [(X, 34)], 'leg_hl_1': [(X, -26)], 'leg_hr_1': [(X, -26)],
+            'spine_1': [(X, -6)], 'spine_2': [(X, -4)], 'neck': [(X, -22)], 'head': [(X, -14)], 'tail_0': [(X, 24)], 'tail_1': [(X, 12)],
+        }
+        stomp = {
+            'leg_fl_0': [(X, -6)], 'leg_fr_0': [(X, -4)], 'leg_fl_1': [(X, -4)], 'leg_fr_1': [(X, -4)],
+            'leg_hl_0': [(X, 4)], 'leg_hr_0': [(X, 4)], 'leg_hl_1': [(X, 0)], 'leg_hr_1': [(X, 0)],
+            'spine_1': [(X, 6)], 'neck': [(X, 26)], 'head': [(X, 14)], 'tail_0': [(X, -12)],
+        }
+        slam_keys = [
+            (0.00, REST_KEY, (0, 0, 0), None, 0.0),
+            (0.22, crouch, (0, 0.04 * LENGTH, -0.05 * HEIGHT), None, 0.0),
+            (0.47, rear, (0, 0.10 * LENGTH, 0.0), None, -58.0),
+            (0.53, rear, (0, 0.08 * LENGTH, 0.0), None, -60.0),
+            (0.556, stomp, (0, -0.12 * LENGTH, 0.0), None, 4.0),
+            (0.75, stomp, (0, -0.12 * LENGTH, 0.0), None, 3.0),
+            (1.00, REST_KEY, (0, 0, 0), None, 0.0),
+        ]
+    else:
+        # Mặc định (Huyết Lang Vương và các thú khác): giữ nguyên dáng cũ, không đổi khi dựng lại.
+        rear = {
+            'leg_fl_0': [(X, -55)], 'leg_fr_0': [(X, -48)], 'leg_fl_1': [(X, 70)], 'leg_fr_1': [(X, 64)],
+            'leg_hl_0': [(X, 18)], 'leg_hr_0': [(X, 18)], 'leg_hl_1': [(X, -12)], 'leg_hr_1': [(X, -12)],
+            'spine_1': [(X, -4)], 'neck': [(X, -18)], 'head': [(X, -12)], 'tail_0': [(X, 20)], 'tail_1': [(X, 10)],
+        }
+        stomp = {
+            'leg_fl_0': [(X, -22)], 'leg_fr_0': [(X, -18)], 'leg_fl_1': [(X, 6)], 'leg_fr_1': [(X, 6)],
+            'leg_hl_0': [(X, -16)], 'leg_hr_0': [(X, -16)], 'leg_hl_1': [(X, 26)], 'leg_hr_1': [(X, 26)],
+            'spine_1': [(X, 5)], 'neck': [(X, 26)], 'head': [(X, 14)], 'tail_0': [(X, -12)],
+        }
+        slam_keys = [
+            (0.00, REST_KEY, (0, 0, 0), None, 0.0),
+            (0.22, crouch, (0, 0.04 * LENGTH, -0.05 * HEIGHT), None, 0.0),
+            (0.47, rear, (0, 0.08 * LENGTH, 0.0), None, -38.0),
+            (0.53, rear, (0, 0.06 * LENGTH, 0.0), None, -40.0),
+            (0.556, stomp, (0, -0.10 * LENGTH, -0.06 * HEIGHT), None, 8.0),
+            (0.75, stomp, (0, -0.10 * LENGTH, -0.06 * HEIGHT), None, 6.0),
+            (1.00, REST_KEY, (0, 0, 0), None, 0.0),
+        ]
+    extra_clips['slam'] = keyed('slam', 1.8, slam_keys)
 
 if 'sweep' in EXTRA:
     draw = merge(crouch, {'neck': [(X, -34), (Z, 26)], 'head': [(X, -14)], 'tail_0': [(X, 14)]})
