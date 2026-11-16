@@ -150,7 +150,7 @@ def generic_layout():
     return out
 
 
-RENAME = wolf_layout() or generic_layout()
+RENAME = QUAD.get('layout') or wolf_layout() or generic_layout()  # layout: bảng tên cũ → vai trò khai trong meta (rig Tripo lạ)
 LAYOUT = 'wolf28' if 'bone_10' in RENAME else 'generic'
 for old in RENAME:
     need(old)

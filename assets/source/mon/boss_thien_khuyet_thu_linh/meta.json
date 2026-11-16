@@ -1,0 +1,56 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_thien_khuyet_thu_linh",
+  "type": "mon",
+  "budgetClass": "boss",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 20000,
+    "texture": 2048
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "boss/boss_thien_khuyet_thu_linh/tripo/rig_v01.glb",
+    "size": {
+      "height": 8
+    },
+    "orient": "thigh",
+    "post": "tools/blender/anim_biped_extra.py",
+    "rigFix": true,
+    "proc": {
+      "stride": 0.1,
+      "lift": 0.04,
+      "runSeconds": 1.3,
+      "idleSeconds": 4
+    },
+    "extra": [
+      "slam",
+      "sweep",
+      "chant",
+      "stun"
+    ]
+  },
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "model": "H3.1",
+      "params": {
+        "face_limit": 20000,
+        "texture_quality": "2K",
+        "pbr": true
+      },
+      "credits": 0,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok"
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max, image-to-3D H3.1, ảnh concept docs/asset-concepts) do người dùng dựng; rig Mixamo Tripo (29 xương, thiếu bàn chân trái → rigFix) + clip thủ tục tools/blender/anim_biped_extra.py (import.proc)",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}
