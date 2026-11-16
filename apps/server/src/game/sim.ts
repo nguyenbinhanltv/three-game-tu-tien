@@ -3,6 +3,10 @@ import type { Client } from 'colyseus';
 import {
   ARTIFACT_MAX_LEVEL,
   artifactLevelMods,
+  BONDED_ARTIFACT_ID,
+  bondedLevel,
+  furnaceHeal,
+  type ArtifactDef,
   artifactQiGain,
   drainMp,
   DRAIN_MAX_TARGETS,
@@ -198,6 +202,7 @@ import { CampSystem, type CampRt } from './camps';
 import { empowerDeadlines, isEmpowered, SkillFlow } from './skillflow';
 import { DuelSystem } from './duel';
 import { TeleportSystem } from './teleport';
+import { SpiritSystem } from './spirit';
 import { parties } from './party';
 import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg, equippedArtifact, feedQi, passiveValue, progressOf, pruneBuffs } from './artifact';
@@ -574,6 +579,20 @@ export class GameSim {
     stopMeditate: (p) => this.setMeditating(p, false),
   });
 
+  /** Thần thức (E2-E, phím V): quét vùng quanh người, server quyết định kết quả. */
+  readonly spirit = new SpiritSystem({
+    now: () => this.now,
+    players: () => this.players.values(),
+    monsters: () => this.monsters,
+    nodes: () => this.nodes.values(),
+    pois: () => this.level.pois ?? [],
+    isMate: (a, b) => parties.matesInRoom(a.char.id, this.host).includes(b),
+    inDuel: (p) => this.duel.inDuel(p),
+    warn: (p, k, params) => this.warn(p, k, params),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    stopMeditate: (p) => this.setMeditating(p, false),
+  });
+
   /** Cường hóa, khảm ngọc, tẩy luyện, phân giải (P3-3). */
   readonly upgrade = new UpgradeSystem({
     now: () => this.now,
@@ -884,6 +903,7 @@ export class GameSim {
     this.camps.tick();
     this.duel.tick();
     this.tele.tick();
+    this.spirit.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -1041,6 +1061,7 @@ export class GameSim {
     if (ups > 0) {
       this.sys(p, 'sys.levelup', { realm: realmName(c.level) }, 'good');
       this.fx({ t: 'levelup', src: p.sid });
+      this.spirit.sendState(p);
       this.questEvent(p, 'level', undefined, c.level);
       console.log(`[level] ${c.name}: ${before} → ${c.level}`);
     }
@@ -1311,22 +1332,49 @@ export class GameSim {
 
   /** Kích hoạt pháp bảo phụ đang đeo. Server quyết định hết: hồi chiêu, linh lực, mục tiêu, hiệu ứng. */
   onArtifact(p: PlayerEnt): void {
+    if (!this.artifactGate(p)) return;
+    const def = equippedArtifact(p.char.equip);
+    if (!def) return this.warn(p, 'sys.art_none');
+    this.fireArtifact(p, def, progressOf(p.char.meta, def.id).lv);
+  }
+
+  /** Bản mệnh pháp bảo Ngưng Đan Lô (E2-E): có từ Kết Đan, không tháo, cấp theo cấp của chủ (không tốn vật phẩm, không đụng túi/ledger). */
+  onBonded(p: PlayerEnt): void {
+    if (!this.artifactGate(p)) return;
+    const lv = bondedLevel(p.char.level);
+    const def = ARTIFACT.get(BONDED_ARTIFACT_ID);
+    if (lv < 1 || !def) return this.warn(p, 'sys.bonded_locked');
+    this.fireArtifact(p, def, lv);
+  }
+
+  /** Giới hạn tần suất và điều kiện chung cho mọi pháp bảo (chết, tỉ thí, độ kiếp/tâm ma). */
+  private artifactGate(p: PlayerEnt): boolean {
     if (this.now - p.skillWindowAt >= 1000) {
       p.skillWindowAt = this.now;
       p.skillCount = 0;
     }
-    if (++p.skillCount > SKILL_MSG_PER_SEC) return;
-    const c = p.char;
-    if (this.isDead(p)) return this.warn(p, 'sys.dead');
-    if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
+    if (++p.skillCount > SKILL_MSG_PER_SEC) return false;
+    if (this.isDead(p)) {
+      this.warn(p, 'sys.dead');
+      return false;
+    }
+    if (this.duel.inDuel(p)) {
+      this.warn(p, 'duel.no_items');
+      return false;
+    }
     // Đang độ kiếp hoặc tâm ma: không dùng pháp bảo (cùng luật với đan/trang bị).
-    if (p.trib || p.trial) return this.warn(p, 'sys.busy');
-    const def = equippedArtifact(c.equip);
-    if (!def) return this.warn(p, 'sys.art_none');
+    if (p.trib || p.trial) {
+      this.warn(p, 'sys.busy');
+      return false;
+    }
+    return true;
+  }
+
+  private fireArtifact(p: PlayerEnt, def: ArtifactDef, lv: number): void {
+    const c = p.char;
     if (this.airborne(p)) return this.warn(p, 'sys.cannot_while_flying');
     if ((p.cds.get(def.skill) ?? 0) > this.now) return this.warn(p, 'sys.cooldown');
     if (c.mp < def.mp) return this.warn(p, 'sys.not_enough_mp');
-    const lv = progressOf(c.meta, def.id).lv;
     const near = this.monstersNear(p.move.x, p.move.z, def.radius);
     const tag: Partial<FxMsg> = { s: def.id, c: def.color, lv };
     switch (def.kind) {
@@ -1381,6 +1429,22 @@ export class GameSim {
         }
         this.fx({ t: 'art', src: p.sid, r: def.radius, d: dur, ...tag });
         this.sys(p, 'sys.art_shield', { n: who.size }, 'good');
+        break;
+      }
+      case 'heal': {
+        // Ngưng Đan Lô: hồi khí huyết cho bản thân và đồng đội trong tầm (đồng đội cần cùng tổ đội, cùng room, còn sống).
+        const who = new Set<PlayerEnt>([p]);
+        for (const o of parties.matesInRoom(c.id, this.host)) {
+          if (o !== p && !this.isDead(o) && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= def.radius) who.add(o);
+        }
+        for (const o of who) {
+          const n = furnaceHeal(def, lv, o.char.mhp);
+          o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
+          this.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
+          this.fx({ t: 'heal', src: o.sid, ...tag });
+        }
+        this.fx({ t: 'art', src: p.sid, r: def.radius, d: 1.4, ...tag });
+        this.sys(p, 'sys.art_heal', { n: who.size }, 'good');
         break;
       }
     }
