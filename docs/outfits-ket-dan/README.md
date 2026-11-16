@@ -37,18 +37,20 @@ Shader (`render/materials/outfit.ts`): nhuộm 3 kênh (`createOutfitMaterial(sr
 
 ## Số đo (`BOT_SET=<bộ> pnpm bench:crowd --bots 50 --scenes san --presets high`, 50 bot cùng mặc bộ, sân tông môn)
 
+Người mặc bộ mô-đun ở LOD0 tốn ~5 draw call (thân, áo, kiếm, vỏ, bóng áo), nên `applyLodBudget` (entities.ts) tính **hai suất LOD0** cho mỗi người mặc bộ (trần `LOD0_MAX` 12 → tối đa 6 người LOD0 có kiếm/vỏ riêng, phần còn lại LOD1 chỉ thân + áo). Cộng với: một lưới bộ mỗi LOD, lưới thân không đổ bóng, bỏ lưới thân ở LOD2.
+
 | | backend | draw | tam giác | CPU p50/p95 | texture MB |
 | --- | --- | --- | --- | --- | --- |
 | không mặc bộ (nền) | WebGPU | 202 | 1057k | 4,6 / 6,3 ms | 374 |
 | | WebGL2 | 205 | 1079k | 4,7 / 6,7 ms | 318 |
-| Liệt Mạch | WebGPU | 284 | 925k | 6,9 / 9,5 ms | 404 |
-| | WebGL2 | 278 | 898k | 6,5 / 9,6 ms | 349 |
-| Địa Long | WebGPU | **303** | 995k | 6,1 / 8,8 ms | 404 |
-| | WebGL2 | 292 | 962k | 5,6 / 7,6 ms | 348 |
-| Phục Mạch | WebGPU | 280 | 876k | 6,0 / 8,8 ms | 404 |
-| | WebGL2 | 275 | 872k | 5,8 / 8,1 ms | 349 |
+| Liệt Mạch | WebGPU | 268 | 789k | 6,8 / 10,1 ms | 404 |
+| | WebGL2 | 259 | 755k | 8,3 / 12,7 ms | 349 |
+| Địa Long (3 lần WebGPU) | WebGPU | 263, 268, 262 (**max 268**) | 785–806k | 8,4–9,7 / 13,5–17,1 ms | 404 |
+| | WebGL2 | 267 | 787k | 9,1 / 18,0 ms | 349 |
+| Phục Mạch | WebGPU | 276 | 807k | 8,8 / 13,5 ms | 404 |
+| | WebGL2 | 267 | 765k | 8,4 / 12,9 ms | 348 |
 
-Số draw dao động theo vị trí bot (mỗi lần chạy bot đứng khác nhau, ±15 draw): Địa Long WebGPU đo 303 một lần, rồi 275 và 279 hai lần chạy lại sau đó; Liệt Mạch và Phục Mạch 275–284. Mọi bộ thường dưới 300 nhưng biên mỏng (~20 draw), nên giữ mục gộp đầu/tay vào atlas áo (một draw mỗi người) làm việc PR sau. Mỗi người mặc bộ thêm ~1,6 draw (lưới bộ + kiếm/vỏ ở LOD0).
+Mọi lần đo dưới 300 draw (lớn nhất 276, trước đó 303). Trước thay đổi này: Địa Long WebGPU dao động 275–303, nên biên cũ chỉ ~20 draw; nay còn ≥ 24 ở lần đo xấu nhất. CPU p50 lần đo này cao hơn đợt trước (6–7 → 8–10 ms) do máy đo bận hơn, chưa đo lại riêng.
 
 ## Chưa làm / giới hạn
 

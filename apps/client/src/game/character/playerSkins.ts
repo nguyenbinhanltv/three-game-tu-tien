@@ -837,6 +837,11 @@ export class SkinnedPlayer extends SkinnedCharacter {
     }
   }
 
+  /** Đang mặc áo bộ mô-đun: mỗi người ở LOD0 tốn ~5 draw call (thân, áo, kiếm, vỏ, bóng áo), nên `applyLodBudget` tính hai suất LOD0. */
+  get dressed(): boolean {
+    return this.hasOutfitMesh();
+  }
+
   private hasOutfitMesh(): boolean {
     let has = false;
     this.scene.traverse((o) => {
