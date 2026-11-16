@@ -2,9 +2,9 @@
 
 Bản 1 · 2026-11-16 · đi kèm `docs/EXPANSION_DESIGN.md`.
 
-**59 asset** người dùng tự dựng trên **Tripo web** (kênh web app trong `docs/tripo-runbook.md`; không dùng credit CLI). Mỗi mục có ảnh concept sinh bằng Codex (`node tools/codex-assets/gen.mjs concepts [id…]`, không tốn credit Tripo), prompt Tripo tiếng Anh theo `docs/art-bible.md` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong `D:/METAGRIT/dtl-asset-source/`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
+**59 asset** người dùng tự dựng trên **Tripo web** (kênh web app trong `docs/tripo-runbook.md`; không dùng credit CLI). Mỗi mục có ảnh concept sinh bằng Codex (`node tools/codex-assets/gen.mjs concepts [id…]`, không tốn credit Tripo), prompt Tripo tiếng Anh theo `docs/art-bible.md` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong `<DTL_ASSET_SOURCE>/`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
 
-Bản HTML xem ảnh + prompt có nút sao chép: `huong-dan-concept-asset.html` (thư mục artifact của phiên). Ảnh gốc PNG (3:2) nằm ở `D:/METAGRIT/dtl-asset-source/2d/concepts/<id>.png` kèm `<id>.prompt.txt` (prompt sinh ảnh); ảnh nén WebP trong repo: `docs/asset-concepts/<id>.webp`.
+Bản HTML xem ảnh + prompt có nút sao chép: `huong-dan-concept-asset.html` (thư mục artifact của phiên). Ảnh gốc PNG (3:2) nằm ở `<DTL_ASSET_SOURCE>/2d/concepts/<id>.png` kèm `<id>.prompt.txt` (prompt sinh ảnh); ảnh nén WebP trong repo: `docs/asset-concepts/<id>.webp`.
 
 ## Cách dùng một mục (quy trình rút gọn)
 
@@ -46,7 +46,7 @@ Giới hạn art bible mục 6 (LOD0 tam giác / texture): quái thường 5–1
 | Tam giác (Polycount LOD0) | 12000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Xương **serpent** theo đốt: xuất GLB tĩnh nằm trục +Z, worker E-2 dựng xương đốt bằng `tools/blender/anim_serpent.py` (không cần rig trên Tripo) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_xich_sa_ngo_cong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_xich_sa_ngo_cong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 12000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -71,7 +71,7 @@ an elite giant red-sand centipede about 6 meters long, segmented armored body of
 | Tam giác (Polycount LOD0) | 14000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_ho_mach_khoi_tuong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_ho_mach_khoi_tuong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 14000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -96,7 +96,7 @@ an elite vein-guardian stone-and-bronze construct about 3 meters tall, broad blo
 | Tam giác (Polycount LOD0) | 12000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_liet_cot_bao/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_liet_cot_bao/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 12000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -121,7 +121,7 @@ an elite cliff leopard king about 2.8 meters long, lean muscular body, sand-ochr
 | Tam giác (Polycount LOD0) | 12000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_loi_van_su_vuong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_loi_van_su_vuong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 12000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -146,7 +146,7 @@ an elite storm-cloud lion king about 3.2 meters long, heavy mane made of dense g
 | Tam giác (Polycount LOD0) | 14000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_kinh_dien_ma_quan/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_kinh_dien_ma_quan/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 14000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -171,7 +171,7 @@ an elite mirror-faced sentinel about 2.6 meters tall, slim humanoid in layered p
 | Tam giác (Polycount LOD0) | 12000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | **Không xương**: bay/lơ lửng bằng transform thủ tục; nếu muốn vỗ cánh, tách cánh thành mesh riêng gắn gốc |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_van_hac_vuong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_van_hac_vuong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 12000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -196,7 +196,7 @@ an elite cloud crane king with a 7 meter wingspan, snow-white feathers shading t
 | Tam giác (Polycount LOD0) | 14000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_cot_kiem_thong_linh/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_cot_kiem_thong_linh/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 14000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -221,7 +221,7 @@ an elite skeletal sword commander about 2.8 meters tall, ivory aged bones, tatte
 | Tam giác (Polycount LOD0) | 12000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_da_minh_loc_vuong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_da_minh_loc_vuong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 12000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -246,7 +246,7 @@ an elite night-glow stag king about 3 meters long, deep indigo-black coat dotted
 | Tam giác (Polycount LOD0) | 14000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_thach_tuong_dai_tuong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_thach_tuong_dai_tuong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 14000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -271,7 +271,7 @@ an elite ancient stone general statue come alive, about 3.4 meters tall, dark bl
 | Tam giác (Polycount LOD0) | 14000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_cu_nham_vien/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_cu_nham_vien/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 14000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -296,7 +296,7 @@ an elite giant stone ape about 3.6 meters tall standing, massive grey granite sl
 | Tam giác (Polycount LOD0) | 12000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_xich_dien_ho/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_xich_dien_ho/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 12000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -321,7 +321,7 @@ an elite crimson flame fox about 1.9 meters long, slender but powerful, vermilio
 | Tam giác (Polycount LOD0) | 12000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/elite_huyet_nha_lang/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/elite_huyet_nha_lang/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 12000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -351,7 +351,7 @@ an elite blood-fanged mountain wolf, about 2.6 meters long, hulking shoulders, d
 | Tam giác (Polycount LOD0) | 20000 |
 | Texture (base color / normal / ORM) | 2048/1024/1024 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/boss/boss_dia_mach_long/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/boss/boss_dia_mach_long/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 20000, quad tắt, GLB; texture mục tiêu base color 2048 / normal 1024 / ORM 1024 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -376,7 +376,7 @@ a massive ground-dragon guardian about 9 meters long, ochre and rust-red rock-pl
 | Tam giác (Polycount LOD0) | 20000 |
 | Texture (base color / normal / ORM) | 2048/1024/1024 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/boss/boss_thach_tam_khoi_vuong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/boss/boss_thach_tam_khoi_vuong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 20000, quad tắt, GLB; texture mục tiêu base color 2048 / normal 1024 / ORM 1024 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -401,7 +401,7 @@ a huge stone-hearted mining golem king about 5 meters tall, bulky body of ochre 
 | Tam giác (Polycount LOD0) | 20000 |
 | Texture (base color / normal / ORM) | 2048/1024/1024 |
 | Xương | Xương **serpent** theo đốt: xuất GLB tĩnh nằm trục +Z, worker E-2 dựng xương đốt bằng `tools/blender/anim_serpent.py` (không cần rig trên Tripo) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/boss/boss_thon_mach_ngo_cong_vuong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/boss/boss_thon_mach_ngo_cong_vuong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 20000, quad tắt, GLB; texture mục tiêu base color 2048 / normal 1024 / ORM 1024 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -426,7 +426,7 @@ a colossal vein-devouring centipede king about 14 meters long, thick segmented a
 | Tam giác (Polycount LOD0) | 20000 |
 | Texture (base color / normal / ORM) | 2048/1024/1024 |
 | Xương | Xương **serpent** theo đốt: xuất GLB tĩnh nằm trục +Z, worker E-2 dựng xương đốt bằng `tools/blender/anim_serpent.py` (không cần rig trên Tripo) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/boss/boss_van_hai_kinh_vuong/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/boss/boss_van_hai_kinh_vuong/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 20000, quad tắt, GLB; texture mục tiêu base color 2048 / normal 1024 / ORM 1024 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -451,7 +451,7 @@ a colossal flying sky whale king about 18 meters long, smooth slate-blue back fa
 | Tam giác (Polycount LOD0) | 20000 |
 | Texture (base color / normal / ORM) | 2048/1024/1024 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/boss/boss_kinh_nguyet_chan_quan/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/boss/boss_kinh_nguyet_chan_quan/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 20000, quad tắt, GLB; texture mục tiêu base color 2048 / normal 1024 / ORM 1024 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -476,7 +476,7 @@ an ancient robed moon-mirror lord about 3.6 meters tall, flowing layered silver-
 | Tam giác (Polycount LOD0) | 20000 |
 | Texture (base color / normal / ORM) | 2048/1024/1024 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/boss/boss_thien_khuyet_thu_linh/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/boss/boss_thien_khuyet_thu_linh/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 20000, quad tắt, GLB; texture mục tiêu base color 2048 / normal 1024 / ORM 1024 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -501,7 +501,7 @@ a colossal temple-guardian statue god about 8 meters tall, dark blue-grey stone 
 | Tam giác (Polycount LOD0) | 20000 |
 | Texture (base color / normal / ORM) | 2048/1024/1024 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/boss/boss_vo_dien_than_quan/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/boss/boss_vo_dien_than_quan/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 20000, quad tắt, GLB; texture mục tiêu base color 2048 / normal 1024 / ORM 1024 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -531,7 +531,7 @@ a towering faceless spirit lord about 4.6 meters tall, an ancient ceremonial arm
 | Tam giác (Polycount LOD0) | 10000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **người**: Tripo rig biped; dùng chung clip `anim_human_base` (retarget theo tên xương, `game/character/animLib.ts`) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_mach_thuong_ho_ve/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_mach_thuong_ho_ve/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 10000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -556,7 +556,7 @@ a mercenary vein-trader guard, human man about 1.75 meters tall, practical rust-
 | Tam giác (Polycount LOD0) | 6000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Xương **serpent** theo đốt: xuất GLB tĩnh nằm trục +Z, worker E-2 dựng xương đốt bằng `tools/blender/anim_serpent.py` (không cần rig trên Tripo) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_ngo_cong_au/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_ngo_cong_au/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 6000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -581,7 +581,7 @@ a juvenile giant centipede about 2.4 meters long, glossy rust-brown segmented bo
 | Tam giác (Polycount LOD0) | 8000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_khai_mach_khoi_loi/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_khai_mach_khoi_loi/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 8000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -606,7 +606,7 @@ a mining puppet construct about 2.2 meters tall, crude humanoid frame of wood an
 | Tam giác (Polycount LOD0) | 8000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_thach_giap_te/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_thach_giap_te/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 8000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -631,7 +631,7 @@ a stone-armored rhinoceros about 2.2 meters long, thick grey-ochre hide with ove
 | Tam giác (Polycount LOD0) | 3000 |
 | Texture (base color / normal / ORM) | 512/512/512 |
 | Xương | **Không xương**: bay/lơ lửng bằng transform thủ tục; nếu muốn vỗ cánh, tách cánh thành mesh riêng gắn gốc |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_bich_ngoc_kim_thien/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_bich_ngoc_kim_thien/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 3000, quad tắt, GLB; texture mục tiêu base color 512 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -656,7 +656,7 @@ a jade cicada about 0.7 meters long, translucent veined pale jade wings, a smoot
 | Tam giác (Polycount LOD0) | 8000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_phu_dao_thach_quy/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_phu_dao_thach_quy/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 8000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -681,7 +681,7 @@ a floating-island stone tortoise about 2.6 meters long, a grey-green rock shell 
 | Tam giác (Polycount LOD0) | 8000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_kinh_linh/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_kinh_linh/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 8000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -706,7 +706,7 @@ a mirror spirit about 2 meters tall, a slender humanoid body made of overlapping
 | Tam giác (Polycount LOD0) | 7000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | **Không xương**: bay/lơ lửng bằng transform thủ tục; nếu muốn vỗ cánh, tách cánh thành mesh riêng gắn gốc |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_van_hac/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_van_hac/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 7000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -731,7 +731,7 @@ a cloud crane about 3.2 meter wingspan, white feathers with pale grey-blue wingt
 | Tam giác (Polycount LOD0) | 9000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_co_thanh_chien_ma/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_co_thanh_chien_ma/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 9000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -756,7 +756,7 @@ an ancient war demon about 2.6 meters tall, broad hunched shoulders, dark grey-v
 | Tam giác (Polycount LOD0) | 9000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **người**: Tripo rig biped; dùng chung clip `anim_human_base` (retarget theo tên xương, `game/character/animLib.ts`) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_cot_ve_kiem_thu/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_cot_ve_kiem_thu/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 9000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -781,7 +781,7 @@ a skeletal sword guard about 1.8 meters tall, aged ivory bones, a tattered dark 
 | Tam giác (Polycount LOD0) | 8000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **quadruped**: Tripo rig quadruped, sau đó `tools/blender/anim_quadruped.py` (thư viện clip chung quái bốn chân) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_da_minh_loc/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_da_minh_loc/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 8000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -806,7 +806,7 @@ a night-glow deer about 2.2 meters long, dark indigo coat with small pale silver
 | Tam giác (Polycount LOD0) | 8000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Có xương, **biped**: Tripo rig biped (spec mixamo), sau đó `tools/blender/anim_biped_extra.py` |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/mon/mon_thach_tuong_vo_si/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/mon/mon_thach_tuong_vo_si/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 8000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -836,7 +836,7 @@ a stone warrior statue come alive about 2.4 meters tall, dark blue-grey carved s
 | Tam giác (Polycount LOD0) | 500 |
 | Texture (base color / normal / ORM) | 512 (atlas 4 bụi) |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_co_hoang_coc/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_co_hoang_coc/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 500, quad tắt, GLB; texture mục tiêu base color 512 (atlas 4 bụi) |
 
 **Prompt Tripo (tiếng Anh):**
@@ -861,7 +861,7 @@ a dry canyon grass clump about 0.7 meters tall, straight and arching blades in w
 | Tam giác (Polycount LOD0) | 500 |
 | Texture (base color / normal / ORM) | 512 (atlas 4 bụi) |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_co_van_hai/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_co_van_hai/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 500, quad tắt, GLB; texture mục tiêu base color 512 (atlas 4 bụi) |
 
 **Prompt Tripo (tiếng Anh):**
@@ -886,7 +886,7 @@ a fluffy sky-island grass clump about 0.6 meters tall, fine soft blades in pale 
 | Tam giác (Polycount LOD0) | 500 |
 | Texture (base color / normal / ORM) | 512 (atlas 4 bụi) |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_co_co_thanh/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_co_co_thanh/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 500, quad tắt, GLB; texture mục tiêu base color 512 (atlas 4 bụi) |
 
 **Prompt Tripo (tiếng Anh):**
@@ -911,7 +911,7 @@ a night ruin grass clump about 0.6 meters tall, dark blue-green blades with soft
 | Tam giác (Polycount LOD0) | 600 |
 | Texture (base color / normal / ORM) | 512 (atlas 4 bụi) |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_co_linh_rung/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_co_linh_rung/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 600, quad tắt, GLB; texture mục tiêu base color 512 (atlas 4 bụi) |
 
 **Prompt Tripo (tiếng Anh):**
@@ -941,7 +941,7 @@ a soft clump of wild forest grass about 0.7 meters tall, many slender arching bl
 | Tam giác (Polycount LOD0) | 5000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_cong_khai_mach/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_cong_khai_mach/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 5000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -966,7 +966,7 @@ a mine entrance gate carved into a cliff about 6 meters tall, a rectangular ston
 | Tam giác (Polycount LOD0) | 5000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_cau_da_gay/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_cau_da_gay/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 5000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -991,7 +991,7 @@ a ruined ancient stone arch bridge section about 14 meters long, weathered pale 
 | Tam giác (Polycount LOD0) | 3000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_mach_tinh_tru/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_mach_tinh_tru/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 3000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1016,7 +1016,7 @@ a cluster of cracked translucent vein-stone crystals about 3.5 meters tall growi
 | Tam giác (Polycount LOD0) | 5000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_cay_goc_kho/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_cay_goc_kho/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 5000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1041,7 +1041,7 @@ a twisted dead canyon tree about 6 meters tall, silver-grey bleached bark with d
 | Tam giác (Polycount LOD0) | 4000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_tru_nham_do/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_tru_nham_do/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 4000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1066,7 +1066,7 @@ a tall weathered sandstone rock pillar about 8 meters tall, warm ochre and rust-
 | Tam giác (Polycount LOD0) | 5000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_phu_dao_dinh/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_phu_dao_dinh/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 5000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1091,7 +1091,7 @@ a small open hexagonal pavilion about 6 meters tall on a stone platform, dark wo
 | Tam giác (Polycount LOD0) | 4000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_cau_may/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_cau_may/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 4000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1116,7 +1116,7 @@ a long hanging chain bridge about 18 meters long, heavy dark iron chains, weathe
 | Tam giác (Polycount LOD0) | 4000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_kinh_ho_dai/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_kinh_ho_dai/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 4000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1141,7 +1141,7 @@ a circular raised stone altar about 6 meters wide holding a perfectly still shal
 | Tam giác (Polycount LOD0) | 3000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_da_troi/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_da_troi/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 3000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1166,7 +1166,7 @@ a floating rock cluster about 8 meters tall, a larger pale grey rock with smalle
 | Tam giác (Polycount LOD0) | 5000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_tung_phu_dao/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_tung_phu_dao/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 5000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1191,7 +1191,7 @@ a wind-sculpted old pine tree about 7 meters tall growing on a small rock, a fla
 | Tam giác (Polycount LOD0) | 4000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_dai_tinh_bai/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_dai_tinh_bai/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 4000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1216,7 +1216,7 @@ an ancient star-worship altar about 8 meters wide, three concentric round stone 
 | Tam giác (Polycount LOD0) | 6000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_cong_thanh_vo/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_cong_thanh_vo/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 6000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1241,7 +1241,7 @@ a ruined ancient city gate about 14 meters tall, a huge dark blue-grey stone gat
 | Tam giác (Polycount LOD0) | 1200 |
 | Texture (base color / normal / ORM) | 512/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_den_long_troi/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_den_long_troi/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 1200, quad tắt, GLB; texture mục tiêu base color 512 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1266,7 +1266,7 @@ a floating sky lantern about 1.2 meters tall, a slim hexagonal frame of dark woo
 | Tam giác (Polycount LOD0) | 3000 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_tru_da_khac_van/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_tru_da_khac_van/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 3000, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1291,7 +1291,7 @@ a tall carved stone pillar about 9 meters tall, a square dark blue-grey granite 
 | Tam giác (Polycount LOD0) | 4500 |
 | Texture (base color / normal / ORM) | 1024/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_tuong_da_vo_si/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_tuong_da_vo_si/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 4500, quad tắt, GLB; texture mục tiêu base color 1024 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1321,7 +1321,7 @@ a colossal broken stone statue head and shoulders about 7 meters tall half sunke
 | Tam giác (Polycount LOD0) | phụ kiện 2000/chi tiết |
 | Texture (base color / normal / ORM) | recolor theo bộ |
 | Xương | Có xương, **người**: Tripo rig biped; dùng chung clip `anim_human_base` (retarget theo tên xương, `game/character/animLib.ts`) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/chr/set_liet_mach_kiem_y/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/chr/set_liet_mach_kiem_y/` (`concept/`, `tripo/`) |
 | Tripo | Không dựng trên Tripo (dùng recolor + phụ kiện thủ tục của hệ 3-4); ảnh chỉ để chốt màu và hình khối. |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1346,7 +1346,7 @@ a sword cultivator outfit concept shown on a plain dummy figure, a long ochre-sa
 | Tam giác (Polycount LOD0) | 3000 |
 | Texture (base color / normal / ORM) | 512/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_ngung_dan_lo/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_ngung_dan_lo/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 3000, quad tắt, GLB; texture mục tiêu base color 512 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1371,7 +1371,7 @@ a small elegant three-legged bronze alchemy cauldron about 40 centimeters tall, 
 | Tam giác (Polycount LOD0) | 2500 |
 | Texture (base color / normal / ORM) | 512/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_kiem_liet_mach/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_kiem_liet_mach/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 2500, quad tắt, GLB; texture mục tiêu base color 512 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1396,7 +1396,7 @@ an ornate straight sword about 1.1 meters long, a pale ochre-gold blade with a t
 | Tam giác (Polycount LOD0) | phụ kiện 2000/chi tiết |
 | Texture (base color / normal / ORM) | recolor theo bộ |
 | Xương | Có xương, **người**: Tripo rig biped; dùng chung clip `anim_human_base` (retarget theo tên xương, `game/character/animLib.ts`) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/chr/set_kinh_quang_kiem_y/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/chr/set_kinh_quang_kiem_y/` (`concept/`, `tripo/`) |
 | Tripo | Không dựng trên Tripo (dùng recolor + phụ kiện thủ tục của hệ 3-4); ảnh chỉ để chốt màu và hình khối. |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1421,7 +1421,7 @@ a sword cultivator outfit concept shown on a plain dummy figure, a long pale sil
 | Tam giác (Polycount LOD0) | 2500 |
 | Texture (base color / normal / ORM) | 512/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_anh_ngoc_kinh/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_anh_ngoc_kinh/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 2500, quad tắt, GLB; texture mục tiêu base color 512 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1446,7 +1446,7 @@ a small round hand-mirror artifact about 35 centimeters wide, a polished pale si
 | Tam giác (Polycount LOD0) | 2500 |
 | Texture (base color / normal / ORM) | 512/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_kiem_kinh_quang/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_kiem_kinh_quang/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 2500, quad tắt, GLB; texture mục tiêu base color 512 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1471,7 +1471,7 @@ an elegant straight sword about 1.15 meters long, a polished pale silver mirror-
 | Tam giác (Polycount LOD0) | phụ kiện 2000/chi tiết |
 | Texture (base color / normal / ORM) | recolor theo bộ |
 | Xương | Có xương, **người**: Tripo rig biped; dùng chung clip `anim_human_base` (retarget theo tên xương, `game/character/animLib.ts`) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/chr/set_tinh_khuyet_kiem_bao/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/chr/set_tinh_khuyet_kiem_bao/` (`concept/`, `tripo/`) |
 | Tripo | Không dựng trên Tripo (dùng recolor + phụ kiện thủ tục của hệ 3-4); ảnh chỉ để chốt màu và hình khối. |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1496,7 +1496,7 @@ a sword cultivator outfit concept shown on a plain dummy figure, a long deep nav
 | Tam giác (Polycount LOD0) | 2000 |
 | Texture (base color / normal / ORM) | 512/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_than_nien_chau/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_than_nien_chau/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 2000, quad tắt, GLB; texture mục tiêu base color 512 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**
@@ -1521,7 +1521,7 @@ a small floating pearl artifact about 25 centimeters in diameter, a luminous pal
 | Tam giác (Polycount LOD0) | 2500 |
 | Texture (base color / normal / ORM) | 512/512/512 |
 | Xương | Không xương (mesh tĩnh) |
-| Thư mục đích | `D:/METAGRIT/dtl-asset-source/prop/prop_kiem_tinh_khuyet/` (`concept/`, `tripo/`) |
+| Thư mục đích | `<DTL_ASSET_SOURCE>/prop/prop_kiem_tinh_khuyet/` (`concept/`, `tripo/`) |
 | Tripo | model H3.1 (v3.1), Texture: Detailed, PBR: bật, Smart Low-poly: bật, Polycount 2500, quad tắt, GLB; texture mục tiêu base color 512 / normal 512 / ORM 512 |
 
 **Prompt Tripo (tiếng Anh):**

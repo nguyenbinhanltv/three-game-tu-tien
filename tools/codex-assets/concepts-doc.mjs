@@ -39,7 +39,7 @@ const TRIPO_SUFFIX = {
 const kind = (c) => (['elite', 'boss', 'mon'].includes(c) ? 'creature' : c);
 const face = (tris) => (/^\d+$/.test(tris) ? Number(tris) : null);
 const dirOf = (a) => (a.dir === 'chr' ? 'chr' : a.dir);
-const dest = (id, a) => `D:/METAGRIT/dtl-asset-source/${dirOf(a)}/${id}/`;
+const dest = (id, a) => `<DTL_ASSET_SOURCE>/${dirOf(a)}/${id}/`;
 const tripoPrompt = (a) => `${a.look}. ${TRIPO_SUFFIX[kind(a.cat)]}.`;
 const tripoParams = (a) => {
   if (a.cat === 'set') return 'Không dựng trên Tripo (dùng recolor + phụ kiện thủ tục của hệ 3-4); ảnh chỉ để chốt màu và hình khối.';
@@ -66,9 +66,9 @@ let md = `# Asset concept cho Tripo (E-0)
 
 Bản 1 · 2026-11-16 · đi kèm \`docs/EXPANSION_DESIGN.md\`.
 
-**${ids.length} asset** người dùng tự dựng trên **Tripo web** (kênh web app trong \`docs/tripo-runbook.md\`; không dùng credit CLI). Mỗi mục có ảnh concept sinh bằng Codex (\`node tools/codex-assets/gen.mjs concepts [id…]\`, không tốn credit Tripo), prompt Tripo tiếng Anh theo \`docs/art-bible.md\` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong \`D:/METAGRIT/dtl-asset-source/\`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
+**${ids.length} asset** người dùng tự dựng trên **Tripo web** (kênh web app trong \`docs/tripo-runbook.md\`; không dùng credit CLI). Mỗi mục có ảnh concept sinh bằng Codex (\`node tools/codex-assets/gen.mjs concepts [id…]\`, không tốn credit Tripo), prompt Tripo tiếng Anh theo \`docs/art-bible.md\` v3 (bán tả thực điện ảnh, sương sớm), số tam giác/texture, xương, tên file và thư mục đích trong \`<DTL_ASSET_SOURCE>/\`, ghi chú pipeline. Thiết kế là gốc của dự án, không chép game/truyện có sẵn.
 
-Bản HTML xem ảnh + prompt có nút sao chép: \`huong-dan-concept-asset.html\` (thư mục artifact của phiên). Ảnh gốc PNG (3:2) nằm ở \`D:/METAGRIT/dtl-asset-source/2d/concepts/<id>.png\` kèm \`<id>.prompt.txt\` (prompt sinh ảnh); ảnh nén WebP trong repo: \`docs/asset-concepts/<id>.webp\`.
+Bản HTML xem ảnh + prompt có nút sao chép: \`huong-dan-concept-asset.html\` (thư mục artifact của phiên). Ảnh gốc PNG (3:2) nằm ở \`<DTL_ASSET_SOURCE>/2d/concepts/<id>.png\` kèm \`<id>.prompt.txt\` (prompt sinh ảnh); ảnh nén WebP trong repo: \`docs/asset-concepts/<id>.webp\`.
 
 ## Cách dùng một mục (quy trình rút gọn)
 

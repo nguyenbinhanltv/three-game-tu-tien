@@ -163,7 +163,7 @@ Công thức: `xpNeed(L) = giờ/cấp × thu nhập tu vi/giờ tại cấp L`,
 | 27 | Nguyên Anh đại viên mãn | 90.450 | 181.000 | **686.000 (8,0 giờ)** |
 | 28 | Hóa Thần sơ kỳ | | 99.999.999 (trần) | |
 
-Ghi chú: cấp 16–18 hiện là `30000 + 20000·(L−16)` (30k/50k/70k, 150k tổng, ~4,3 giờ ở tốc độ trên). Đổi sang 56–62k làm cấp 16 chậm hơn, cấp 18 nhanh hơn, tổng tăng 61%: **người đã ở Trúc Cơ sơ kỳ trước ngày cập nhật được giữ tỉ lệ tu vi** (migration ở E-1). Một nửa thu nhập đến từ quái thường, ~20% từ nhiệm vụ và đả tọa, ~15% từ phó bản, ~15% từ tinh anh/boss; `sim.ts` của `packages/content` phải thêm bốn nguồn này (E-5).
+Ghi chú: cấp 16–18 hiện là `30000 + 20000·(L−16)` (30k/50k/70k, 150k tổng, **~2,5 giờ** ở thu nhập 56–62k/giờ của bảng trên). Đường cong mới **kéo dài Trúc Cơ**, không giữ nguyên: cấp 16–18 thành 177k (~3,0 giờ, +18%) và thêm cấp 19 (65k, ~1,1 giờ), tổng 242k (4,0 giờ), tức **+60% thời gian** so với hiện nay. Đây là chủ ý để Trúc Cơ khớp nhịp 4 giờ đã chốt. Migration (E-1C): người đang ở cấp 16–18 giữ **tỉ lệ** tu vi trong cấp (nhân tu vi hiện có với `xpNeed` mới/cũ), nên không mất tiến độ tương đối nhưng phần còn lại để lên cấp dài hơn; người đã Trúc Cơ hậu kỳ đầy tu vi vẫn đủ điều kiện lên cấp 19. Một nửa thu nhập đến từ quái thường, ~20% từ nhiệm vụ và đả tọa, ~15% từ phó bản, ~15% từ tinh anh/boss; `sim.ts` của `packages/content` phải thêm bốn nguồn này (E-5).
 
 Nhịp theo chặng (4h/6h/8h) kiểm bằng `pnpm sim:progress` mở rộng. Cờ LỖI khi ngoài ±12% (Ngưng Khí hiện ±1 giờ trên 3–4).
 
@@ -760,7 +760,7 @@ Phiên làm việc này không gọi subagent; **chưa có lượt soát độc 
 | # | Câu hỏi | Đề xuất của tôi |
 | --- | --- | --- |
 | 1 | **"Mỗi cảnh giới một bản đồ"**: chương N là chặng kết thúc bằng độ kiếp vào cảnh giới N (cày bản đồ khi còn ở cảnh giới trước, độ kiếp ở cuối chương, cơ chế mới dùng ở chương sau). Hay: bản đồ của cảnh giới N là nơi cày khi đã ở cảnh giới N? | Cách đầu: khớp 4/6/8 giờ và ba độ kiếp, mỗi bản đồ có cơ chế người chơi đã có sẵn khi tới |
-| 2 | **Thang cấp**: Trúc Cơ thêm đại viên mãn (cấp 19), Kết Đan 20–23, Nguyên Anh 24–27, Hóa Thần sơ kỳ 28 là trần tạm; đổi `xpNeed` cấp 16–18 (30k/50k/70k → 56k/59k/62k) | Đồng ý, kèm migration tỉ lệ cho người đang ở Trúc Cơ |
+| 2 | **Thang cấp**: Trúc Cơ thêm đại viên mãn (cấp 19), Kết Đan 20–23, Nguyên Anh 24–27, Hóa Thần sơ kỳ 28 là trần tạm; đổi `xpNeed` cấp 16–18 (30k/50k/70k → 56k/59k/62k), **kéo dài Trúc Cơ ~2,5 giờ → 4,0 giờ (+60%)** | Đồng ý, kèm migration tỉ lệ cho người đang ở Trúc Cơ |
 | 3 | **Diện tích**: ~2 km² (1,5 × 1,4 km) như bạn chốt, nhỏ hơn Vân Lam (vùng chơi 4,8 km²); mật độ 120 quái/km² thay 70 | Giữ 2 km² (đi nhanh hơn, ít chỗ trống); nếu muốn rộng như Vân Lam thì nói, tăng mật độ cụm tương ứng |
 | 4 | **Độ kiếp Nguyên Anh và Hóa Thần ở room riêng**, tổ đội cùng vào (Kết Đan vẫn ở world room): một mình vẫn qua được, hộ pháp chỉ giảm sát thương | Đồng ý; chỉ khác Trúc Cơ ở độ dài và số cơ chế |
 | 5 | **Cơ chế đặc trưng Hóa Thần**: phân thân thần niệm (phím `G`, 20 giây, 90 giây hồi, dùng lại chiêu cuối ở 50%) thay vì lĩnh vực mượn thế | Phân thân thần niệm; lĩnh vực mượn thế để chương Anh Biến |
