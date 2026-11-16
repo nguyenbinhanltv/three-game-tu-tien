@@ -1,9 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { S, SPIRIT_UNLOCK_LEVEL, KET_DAN_LEVEL, NGUYEN_ANH_LEVEL, xpNeed } from '@dtl/shared';
-import { LEVELS, NPC, QUEST } from '@dtl/content';
+import { NPC, QUEST } from '@dtl/content';
 
 // Nhiệm vụ chương 3 (E3-H): chuỗi q3_*, mở trận bằng nhiệm vụ đầu chương, nối Tam Trọng Kiếp, thưởng một lần (tx + ledger).
-// Phần chơi thật ở level Vân Hải chỉ chạy khi PR #148 (E3-A) đã có level `van_hai`.
 process.env.DB_FILE = ':memory:';
 
 let GameSim: typeof import('./sim').GameSim;
@@ -97,12 +96,11 @@ describe('nhận q3_len_may ở Hạ Khuyết Trạm', () => {
     t.char.quests.done.push('q2_ket_dan');
     t.accept('q3_len_may');
     expect(t.char.quests.active.q3_len_may).toBeDefined();
-    // Trận Vân Hải chỉ mở được khi E3-A (#148) có trận vh_tp_hub; chưa có thì id bị bỏ qua, không lỗi.
-    if (LEVELS.van_hai) expect(t.char.teleOpen()).toContain('vh_tp_hub');
+    expect(t.char.teleOpen()).toContain('vh_tp_hub');
   });
 });
 
-describe.skipIf(!LEVELS.van_hai)('chơi chương 3 ở Vân Hải', () => {
+describe('chơi chương 3 ở Vân Hải', () => {
   it('trả q3_len_may ở Lâm Chiếu Dung: thưởng một lần, ghi ledger', () => {
     const t = setup('van_hai', 20);
     t.char.quests.done.push('q2_ket_dan');

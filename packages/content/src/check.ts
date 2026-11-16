@@ -654,14 +654,12 @@ for (const r of RECIPES) {
     for (const m of r.mons) if (MONSTER.has(m) && !LOOT.has(m)) err(`loot.$mats: quái ${m} chưa có bảng rơi`);
   }
 }
-// E3-H: chương 3 viết trước khi bản đồ Vân Hải (E3-A, PR #148) và quái E3-B vào main. TODO: xóa hai tập này khi #148 merge và E3-B có đủ quái;
-// khi đó mọi kiểm tra bên dưới chạy đầy đủ cho chương 3 như chương 2.
-const E3A_PENDING = !LEVELS.van_hai;
+// E3-H: quái Vân Hải chưa có trong monsters.json (E3-B). TODO: xóa tập này khi E3-B merge.
 const E3B_PENDING_MONS = new Set(['mon_van_hac', 'mon_kinh_linh', 'mon_phu_dao_thach_quy', 'mon_bich_ngoc_kim_thien', 'elite_loi_van_su_vuong', 'boss_van_hai_kinh_vuong']);
 for (const n of NPCS) {
   needStr(`npc.${n.id}.name`);
   const nl = LEVELS[n.level ?? 'van_lam'];
-  if (!nl && E3A_PENDING && n.level === 'van_hai') { /* chờ E3-A */ } else if (!nl) err(`npc ${n.id}: level không tồn tại ${n.level}`);
+  if (!nl) err(`npc ${n.id}: level không tồn tại ${n.level}`);
   else if (!Number.isFinite(terrainOf(nl).groundAt(n.x, n.z))) err(`npc ${n.id}: tọa độ (${n.x}, ${n.z}) ngoài bản đồ ${nl.id}`);
   needStr(`npc.${n.id}.title`);
   needStr(`npc.${n.id}.greet`);
@@ -684,11 +682,11 @@ for (const q of QUESTS) {
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target)) err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
   }
   for (const i of q.rewards.items ?? []) needItem(i.id, `quest ${q.id}`);
-  for (const id of q.unlockTele ?? []) if (!TELE_PAD.has(id) && !(E3A_PENDING && id.startsWith('vh_'))) err(`quest ${q.id}: unlockTele ${id} không phải trận`);
+  for (const id of q.unlockTele ?? []) if (!TELE_PAD.has(id)) err(`quest ${q.id}: unlockTele ${id} không phải trận`);
   // E2-H: mục tiêu do server chấm. Mỗi loại phải trỏ tới đúng thứ có trong một level; level của người nhận suy từ NPC giao việc.
   for (const o of q.objectives) {
     if (o.type === 'touch' || o.type === 'scan') {
-      if (!Object.values(LEVELS).some((lv) => questSpot(lv, o.target)) && !(E3A_PENDING && q.id.match(/^[qs]3_/))) err(`quest ${q.id}: ${o.type} ${o.target} không phải poi/spot của level nào`);
+      if (!Object.values(LEVELS).some((lv) => questSpot(lv, o.target))) err(`quest ${q.id}: ${o.type} ${o.target} không phải poi/spot của level nào`);
       if (o.type === 'scan' && (q.minLevel ?? 1) < SPIRIT_UNLOCK_LEVEL) err(`quest ${q.id}: scan cần minLevel ≥ ${SPIRIT_UNLOCK_LEVEL} (thần thức mở từ Kết Đan)`);
     }
     if (o.type === 'dungeon' && o.target) needStr(`dungeon.${o.target}.name`);
@@ -982,7 +980,7 @@ console.log('Nội dung hợp lệ.');
   for (const id of ['npc_to_van_ngu', 'npc_khieu_han_son', 'npc_lam_chieu_dung', 'npc_to_van_ngu_hai']) {
     const n = NPC.get(id);
     if (!n) err(`thiếu NPC ${id}`);
-    else if (!LEVELS[n.level ?? 'van_lam'] && !(E3A_PENDING && n.level === 'van_hai')) err(`npc ${id}: level không tồn tại`);
+    else if (!LEVELS[n.level ?? 'van_lam']) err(`npc ${id}: level không tồn tại`);
   }
   // Chuỗi chương 2: q2_* nối đuôi nhau, không đứt (mỗi nhiệm vụ trừ đầu chương đều `requires` một nhiệm vụ có thật).
   for (const q of QUESTS) if (q.id.startsWith('q2_') && q.id !== 'q2_thu_ha_son' && !q.requires?.startsWith('q2_')) err(`quest ${q.id}: chuỗi chương 2 phải requires một q2_*`);

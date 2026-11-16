@@ -11,9 +11,9 @@ Phụ: `s3_bich_ngoc` (Bích Ngọc Kim Thiền ×18, Lâm Chiếu Dung), `s3_th
 
 - **Tam Trọng Kiếp (#143)**: `q3_nguyen_anh` giữ mục tiêu `breakthrough` đích `nguyen_anh`; `onBreakthrough` đã gọi `questEvent`, test ở `quest3.test.ts`. Ảnh 12 chụp ở nhánh tích hợp khi `q3_nguyen_anh` còn giao ở Lâm Chiếu Dung; nay giữ Khưu Hàn Sơn (xem chuỗi). Phần dẫn vật phẩm `itm_nguyen_anh_dan` (Tố Tâm) giữ nguyên.
 - **E3-M (Kính Nguyệt Cung, session -143)**: chỉ hook. Khi vào phó bản, gọi `questEvent(p, 'dungeon', 'kinh_nguyet_cung', 1)` (giống `phuc_mach_quat`). Chưa có thì thử bằng `/gm qev dungeon kinh_nguyet_cung`. Tên phó bản ở i18n `dungeon.kinh_nguyet_cung.name`. Lời lặp của Kính Nguyệt Chân Quân (mục 1.5 thiết kế) thuộc E3-M; E3-H chỉ nhắc trong lời nhiệm vụ.
-- **E3-B (quái/boss Vân Hải)**: chưa có quái `mon_van_hac`, `mon_kinh_linh`, `mon_phu_dao_thach_quy`, `mon_bich_ngoc_kim_thien`, `elite_loi_van_su_vuong`, `boss_van_hai_kinh_vuong` trong `monsters.json`. Nhiệm vụ trỏ tới đúng id đó (bảng rơi `loot.json` đã có sẵn). `content:check` tạm cho phép các id này vắng (`E3B_PENDING_MONS` trong `check.ts`); tên hiển thị `mon.<id>` đã thêm ở `vi.json`, E3-B giữ hoặc ghi đè khi thêm quái. Thử bằng `/gm qev kill <id> <n>`.
-- **E3-A (#148, bản đồ Vân Hải)**: NPC đặt ở hub (1050,1056) và (1002,1056) theo `places.json` `vh_hub` của #148; `scan` dùng `pois` của #148. `check.ts` có cờ `E3A_PENDING = !LEVELS.van_hai` để main vẫn qua khi chưa có level. **TODO khi #148 merge**: `git merge origin/main`, xóa `E3A_PENDING`/`E3B_PENDING_MONS` (E3-B xong thì xóa tập quái), chạy `content:check` và bỏ `skipIf` trong `quest3.test.ts` (tự chạy khi có level). #148 cũng đặt `unlockTele: ["vh_tp_hub"]` ở `q2_ket_dan`; E3-H mở trận ở `q3_len_may` theo yêu cầu, hai cách không xung đột (mở thừa không hại), nên bỏ ở `q2_ket_dan` cho gọn khi gộp.
-- **Chưa làm (cần sửa `van_hai.json` của #148)**: `s3_do_thuyen` (escort Lâm Chiếu Dung ba chuyến, cần `escorts`) và `s3_guong_nuoc` (touch 4 mảnh gương ở Kính Hồ Đài, cần `spots`). Làm sau khi #148 merge.
+- **E3-B (quái/boss Vân Hải)**: chưa có quái `mon_van_hac`, `mon_kinh_linh`, `mon_phu_dao_thach_quy`, `mon_bich_ngoc_kim_thien`, `elite_loi_van_su_vuong`, `boss_van_hai_kinh_vuong` trong `monsters.json`. Nhiệm vụ trỏ tới đúng id đó (bảng rơi `loot.json` đã có sẵn). `content:check` tạm cho phép các id này vắng (`E3B_PENDING_MONS` trong `check.ts`, còn lại duy nhất); tên hiển thị `mon.<id>` đã thêm ở `vi.json`, E3-B giữ hoặc ghi đè khi thêm quái. Thử bằng `/gm qev kill <id> <n>`.
+- **E3-A (#148, đã merge)**: NPC đặt ở hub (1050,1056) và (1002,1056) theo `places.json` `vh_hub`; `scan` dùng `pois` của Vân Hải; `check.ts` kiểm đầy đủ level, trận, điểm (cờ tạm `E3A_PENDING` đã xóa). `q3_len_may` mở `vh_tp_hub`; `q2_ket_dan` không còn `unlockTele` của #148 (trùng, đã gỡ khi gộp).
+- **Chưa làm (cần thêm `escorts`/`spots` vào `van_hai.json`)**: `s3_do_thuyen` (escort Lâm Chiếu Dung ba chuyến, cần `escorts`) và `s3_guong_nuoc` (touch 4 mảnh gương ở Kính Hồ Đài, cần `spots`). Làm sau khi #148 merge.
 
 ## Số đo
 
@@ -25,4 +25,4 @@ Phụ: `s3_bich_ngoc` (Bích Ngọc Kim Thiền ×18, Lâm Chiếu Dung), `s3_th
 - Thẻ chương 3 chưa có tranh nền (`CARD_ART`), giữ thẻ chữ.
 - Tiến độ `scan`/`kill` chưa có chỉ báo trên bản đồ.
 
-Ảnh: `pnpm --filter @dtl/perf run shots:e3h --out <thư mục tuyệt đối>` (cần level `van_hai` của #148; ảnh trong thư mục này chụp trên nhánh tích hợp main + #148). Log tiến độ: `e3h-log.json`.
+Ảnh: `pnpm --filter @dtl/perf run shots:e3h --out <thư mục tuyệt đối>` (ảnh trong thư mục này chụp trên nhánh tích hợp main + #148 trước khi #148 merge). Log tiến độ: `e3h-log.json`.
