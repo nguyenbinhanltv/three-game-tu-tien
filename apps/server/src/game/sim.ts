@@ -96,6 +96,7 @@ import {
   IN_JUMP,
   type InitMsg,
   INV_SIZE,
+  planSort,
   type InvMsg,
   type InvSlot,
   type LevelDef,
@@ -179,7 +180,7 @@ import {
   type Terrain,
 } from '@dtl/shared';
 import { TribSystem, type GuardCfg, type TribState } from './trib';
-import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, nextMajorRealmName, NPC, QUEST, QUESTS, realmName, RECIPE, SET, SETS, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
+import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, itemTier, methodName, LEVELS, MONSTER, monsterName, nextMajorRealmName, NPC, QUEST, QUESTS, realmName, RECIPE, SET, SETS, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
@@ -188,6 +189,7 @@ import { type Character, isEquipSlot, sameSlot } from './character';
 /** Quá số ô đổi này thì gửi ảnh túi đầy đủ thay vì delta. */
 const INV_DELTA_MAX = 24;
 import type { TestFlags } from '../testflags';
+import { BRANCH_METHOD, findIds, GM_GROUPS, GM_MAX_TIER, hasOutfitAsset, helpLine, isGmBranch, outfitRows, parsePlus, planKit, weaponIds, type GmBranch } from './gmtools';
 import { type Hot, MethodRt, methodOf, passiveOf, resolveFor, setSkillLevel, skillLevelOf, type Trail } from './method';
 
 /** Bí Tịch Tàn Quyển: nguyên liệu nâng cấp chiêu. */
@@ -4126,6 +4128,62 @@ export class GameSim {
     return p.trib ? 'trib: bắt đầu độ kiếp' : def.room === 'tribulation' ? 'trib: đang vào room độ kiếp' : 'trib: không bắt đầu được';
   }
 
+  /** Quái gọi bằng `/gm spawn` (để `spawn clear` dọn). */
+  private readonly gmSpawned = new Set<MonEnt>();
+
+  /** Mặc `n` món đầu của bộ `st` (Địa phẩm), cất đồ cũ vào túi. Dùng cho `/gm set` và `/gm outfit`. */
+  private gmWearSet(p: PlayerEnt, st: { pieces: string[] }, n: number): boolean {
+    const c = p.char;
+    const ok = c.tx('gm:set', null, (d) => {
+      for (const pid of st.pieces.slice(0, n)) {
+        if (!d.addRolled(pid, c.level, 3)) return false;
+        const i = d.inv.findIndex((s) => s?.id === pid && s.inst);
+        const slot = ITEM.get(pid)!.kind as EquipSlot;
+        const old = d.equip[slot];
+        d.equip[slot] = d.inv[i]!;
+        d.inv[i] = old ?? null;
+      }
+      return true;
+    });
+    if (ok) c.recalc();
+    return ok;
+  }
+
+  /**
+   * Roll và mặc trực tiếp từng món (phẩm cao nhất, cường hóa `plus`); món đang mặc ở ô đó bị thu hồi qua sổ cái (-1).
+   * Một transaction: túi đầy hoặc id lạ thì không đổi gì.
+   */
+  private gmEquipPieces(p: PlayerEnt, pieces: { slot: EquipSlot; id: string }[], plus: number): boolean {
+    const c = p.char;
+    const ok = c.tx('gm:kit', null, (d) => {
+      for (const { slot, id } of pieces) {
+        const def = ITEM.get(id);
+        if (!def || def.kind !== slot) return false;
+        const old = d.equip[slot];
+        if (old) {
+          d.bump(old.id, -(old.n || 1));
+          delete d.equip[slot];
+        }
+        const i = d.inv.findIndex((x) => !x);
+        if (i < 0 || !d.addRolled(id, Math.max(c.level, def.reqLevel ?? 1), (QUALITY_COUNT - 1) as Quality)) return false;
+        const it = d.inv[i]!;
+        d.inv[i] = null;
+        d.equip[slot] = plus > 0 ? { ...it, plus } : it;
+      }
+      return true;
+    });
+    if (ok) c.recalc();
+    return ok;
+  }
+
+  private gmGender(p: PlayerEnt, g: 'm' | 'f'): void {
+    const ap = parseAppearance(APPEARANCE, { g, dye: p.char.appearance.dye });
+    if (!ap) return;
+    p.char.setAppearance(ap);
+    p.s.g = ap.g;
+    p.s.dye = ap.dye;
+  }
+
   /** Lệnh GM, chỉ dành cho tài khoản dev khi AUTH_DEV_BYPASS bật. */
   private gm(p: PlayerEnt, a: string[]): void {
     const c = p.char;
@@ -4229,19 +4287,7 @@ export class GameSim {
         const st = SET.get(a[1] ?? '');
         if (!st) return say('set off | ' + SETS.map((x) => x.id).join(' | ') + ' [số món]');
         const n = Math.max(1, Math.min(st.pieces.length, Number(a[2] ?? st.pieces.length) | 0));
-        const ok = c.tx('gm:set', null, (d) => {
-          for (const pid of st.pieces.slice(0, n)) {
-            if (!d.addRolled(pid, c.level, 3)) return false;
-            const i = d.inv.findIndex((s) => s?.id === pid && s.inst);
-            const slot = ITEM.get(pid)!.kind as EquipSlot;
-            const old = d.equip[slot];
-            d.equip[slot] = d.inv[i]!;
-            d.inv[i] = old ?? null;
-          }
-          return true;
-        });
-        if (ok) c.recalc();
-        return say(ok ? `mặc ${n}/${st.pieces.length} món ${st.id}` : 'túi đầy');
+        return say(this.gmWearSet(p, st, n) ? `mặc ${n}/${st.pieces.length} món ${st.id}` : 'túi đầy');
       }
       case 'tp': {
         // `tp x z` hoặc `tp <địa điểm>` (bảng packages/content/data/places.json, cùng bảng với ?at=).
@@ -4255,6 +4301,7 @@ export class GameSim {
           this.teleportTo(p, pl.x, pl.z);
           return say(`tp ${pl.id} (${pl.x}, ${pl.z})`);
         }
+        if (a.length === 1) return say('tp x z | tp ' + this.placeIds().join(' | '));
         const x = Number(a[1]);
         const z = Number(a[2]);
         if (!Number.isFinite(x) || !Number.isFinite(z)) return say('tp x z | tp <địa điểm>');
@@ -4365,22 +4412,177 @@ export class GameSim {
         return say('hạ máu ' + n + ' quái về ' + pct + '%');
       }
       case 'spawn': {
-        // Gọi quái thử ngay cạnh mình (không hồi sinh, tự dọn sau khi chết).
+        // Gọi quái thử ngay trước mặt (không hồi sinh, tự dọn sau khi chết); `spawn clear` dọn hết quái gọi bằng lệnh này.
+        if (a[1] === 'clear') {
+          let n = 0;
+          for (const m of [...this.gmSpawned]) {
+            this.gmSpawned.delete(m);
+            if (this.monsters.includes(m)) (this.removeMonster(m), n++);
+          }
+          return say(t('gm.msg.spawn_clear', { n }));
+        }
         const def = MONSTER.get(a[1] ?? '');
-        if (!def) return say('không có quái ' + (a[1] ?? ''));
-        const n = Math.max(1, Math.min(6, Math.floor(Number(a[2]) || 1)));
+        if (!def) return say(t('gm.msg.no_mon', { id: a[1] ?? '' }));
+        const n = Math.max(1, Math.min(GM_SPAWN_MAX, Math.floor(Number(a[2]) || 1)));
+        const fwd = p.s.yaw;
         for (let i = 0; i < n; i++) {
-          const ang = (i / n) * Math.PI * 2;
-          this.spawnMonster(def, Math.max(1, p.char.level - 1), p.move.x + Math.sin(ang) * 10, p.move.z + Math.cos(ang) * 10, null);
+          // Quạt rộng 150° phía trước, cách 8 m (xếp hai hàng khi đông).
+          const ang = fwd + (n === 1 ? 0 : ((i / (n - 1)) - 0.5) * (Math.PI * 5) / 6);
+          const r = 8 + (i % 2) * 3;
+          this.gmSpawned.add(this.spawnMonster(def, Math.max(1, p.char.level - 1), p.move.x + Math.sin(ang) * r, p.move.z + Math.cos(ang) * r, null));
         }
         return say(`gọi ${n} ${def.id}`);
+      }
+      case 'help': {
+        // /gm help [lệnh]: cú pháp + ví dụ mọi lệnh (chuỗi ở i18n `gm.cmd.*`).
+        if (a[1]) return say(helpLine(a[1]) ?? t('gm.msg.help_none', { c: a[1] }));
+        say(t('gm.help.head'));
+        for (const g of GM_GROUPS) {
+          say(t('gm.group.' + g.id));
+          for (const cmd of g.cmds) say(t('gm.cmd.' + cmd));
+        }
+        return;
+      }
+      case 'skills': {
+        // /gm skills list | max | all: liệt kê chiêu, đặt cấp chiêu tối đa (công pháp đang tu), hoặc mở mọi chiêu của mọi công pháp.
+        const mode = a[1] ?? 'list';
+        if (mode === 'all') {
+          this.gmSetLevel(p, MAX_LEVEL);
+          for (const sk of SKILL.values()) setSkillLevel(c.meta, sk.id, MAX_SKILL_LEVEL);
+          p.mth.dirty = true;
+          c.recalc();
+          return say(t('gm.msg.skills_all', { lv: c.level, n: SKILL.size, locked: [...SKILL.values()].filter((x) => x.locked).length }));
+        }
+        if (mode === 'max') {
+          let n = 0;
+          for (const sk of SKILL.values()) {
+            if (sk.method && sk.method !== c.meta.method) continue;
+            setSkillLevel(c.meta, sk.id, MAX_SKILL_LEVEL);
+            n++;
+          }
+          p.mth.dirty = true;
+          c.recalc();
+          return say(t('gm.msg.skills_max', { n, lv: MAX_SKILL_LEVEL }));
+        }
+        if (mode !== 'list') return say(helpLine('skills')!);
+        const own = [...SKILL.values()].filter((sk) => !sk.method || sk.method === c.meta.method);
+        say(t('gm.msg.skills_head', { m: c.meta.method ? methodName(c.meta.method) : '—', n: own.length }));
+        for (let i = 0; i < own.length; i += 4) {
+          say(own.slice(i, i + 4).map((sk) => `${sk.id} (${sk.unlock}${sk.locked ? ',' + t('gm.msg.locked') : ''})`).join(' · '));
+        }
+        return;
+      }
+      case 'learn': {
+        // /gm learn <id chiêu> [cấp]: chuyển sang công pháp của chiêu, nâng tới cấp mở khóa, đặt cấp chiêu.
+        const sk = SKILL.get(a[1] ?? '');
+        if (!sk) return say(t('gm.msg.no_skill', { id: a[1] ?? '' }));
+        const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, Number(a[2] ?? MAX_SKILL_LEVEL) | 0 || MAX_SKILL_LEVEL));
+        if (sk.method && c.meta.method !== sk.method) {
+          c.meta.method = sk.method;
+          p.mth.reset();
+        }
+        if (c.level < sk.unlock) this.gmSetLevel(p, sk.unlock);
+        setSkillLevel(c.meta, sk.id, lv);
+        p.mth.dirty = true;
+        c.recalc();
+        return say(t('gm.msg.learn', { id: sk.id, name: skillName(sk.id), lv, lock: sk.locked ? t('gm.msg.learn_locked') : '' }));
+      }
+      case 'kit': {
+        // /gm kit <bậc 1-4> <kiem|hophap|dansu> [+N] [m|f]: trọn bộ theo bậc/nhánh, phẩm cao nhất, kèm công pháp và pháp bảo của nhánh.
+        const tier = Number(a[1]);
+        const br = a[2];
+        if (!Number.isInteger(tier) || tier < 1 || tier > GM_MAX_TIER || !isGmBranch(br)) return say(helpLine('kit')!);
+        let plus = 0;
+        let g: 'm' | 'f' | undefined;
+        for (const x of a.slice(3)) {
+          if (x === 'm' || x === 'f') g = x;
+          else {
+            const n = parsePlus(x, MAX_ENHANCE);
+            if (n === null) return say(helpLine('kit')!);
+            plus = n;
+          }
+        }
+        const plan = planKit(tier, br);
+        const need = Math.max(...plan.pieces.map((x) => ITEM.get(x.id)?.reqLevel ?? 1));
+        if (c.level < need) this.gmSetLevel(p, need);
+        c.meta.method = BRANCH_METHOD[br];
+        for (const sk of SKILL.values()) if (!sk.method || sk.method === c.meta.method) setSkillLevel(c.meta, sk.id, MAX_SKILL_LEVEL);
+        p.mth.reset();
+        if (!this.gmEquipPieces(p, plan.pieces, plus)) return say(t('gm.msg.bag_full'));
+        if (g) this.gmGender(p, g);
+        this.gm(p, ['art', KIT_ARTIFACT[br], '5']);
+        c.hp = c.mhp;
+        c.mp = c.mmp;
+        return say(t('gm.msg.kit', { tier: plan.tier, used: plan.used, set: t('set.' + plan.set + '.name'), n: plan.pieces.length, plus, m: methodName(c.meta.method!) }) + (plan.used < plan.tier ? ' ' + t('gm.msg.kit_cap', { used: plan.used }) : ''));
+      }
+      case 'outfit': {
+        // /gm outfit <id bộ|list|off> [m|f]: mặc bộ để xem trang phục (hình áo theo bộ đang mặc).
+        if (!a[1] || a[1] === 'list') {
+          say(t('gm.msg.outfit_head'));
+          for (const r of outfitRows()) say(`${r.id} — ${t('set.' + r.id + '.name')} · ${r.wearable ? t('gm.msg.outfit_ok') : t('gm.msg.outfit_asset')}`);
+          return;
+        }
+        if (a[1] === 'off') return this.gm(p, ['set', 'off']);
+        const st = SET.get(a[1]);
+        if (!st || !st.pieces.length) return say(t(st || hasOutfitAsset(a[1]) ? 'gm.msg.outfit_asset_only' : 'gm.msg.outfit_none', { id: a[1] }));
+        if (a[2] === 'm' || a[2] === 'f') this.gmGender(p, a[2]);
+        return say(this.gmWearSet(p, st, st.pieces.length) ? t('gm.msg.outfit', { id: st.id, name: t('set.' + st.id + '.name'), n: st.pieces.length }) : t('gm.msg.bag_full'));
+      }
+      case 'weapon': {
+        // /gm weapon <id|list> [+N]: lấy và cầm kiếm (phẩm cao nhất), +10 = dạng cuối, vỏ lưng.
+        const ids = weaponIds();
+        if (!a[1] || a[1] === 'list') {
+          say(t('gm.msg.weapon_head'));
+          for (const id of ids) say(`${id} — ${itemName(id)} · ${t('gm.msg.tier', { n: itemTier(id) })} · ${t('gm.msg.req', { n: ITEM.get(id)?.reqLevel ?? 1 })}`);
+          return;
+        }
+        if (!ids.includes(a[1])) return say(t('gm.msg.no_weapon', { id: a[1] }));
+        const plus = a[2] === undefined ? 0 : parsePlus(a[2], MAX_ENHANCE);
+        if (plus === null) return say(helpLine('weapon')!);
+        return say(this.gmEquipPieces(p, [{ slot: 'weapon', id: a[1] }], plus) ? t('gm.msg.weapon', { name: itemName(a[1]), plus }) : t('gm.msg.bag_full'));
+      }
+      case 'find': {
+        // /gm find <từ khóa>: tìm id vật phẩm/chiêu/bộ/quái/công pháp theo tên hoặc id (bỏ dấu cũng được).
+        const hits = findIds(a.slice(1).join(' '), GM_FIND_MAX);
+        if (!hits.length) return say(t('gm.msg.find_none'));
+        for (const h of hits) say(`${t('gm.kind.' + h.kind)}: ${h.id} — ${h.name}`);
+        return;
+      }
+      case 'bag': {
+        // /gm bag clear | sort: dọn túi (bỏ ô khóa) hoặc xếp lại; một transaction, vật phẩm mất đi ghi sổ cái.
+        if (a[1] === 'sort') {
+          const ok = c.tx('gm:bag', null, (d) => {
+            const next = planSort(d.inv, { def: (id) => ITEM.get(id), name: (it) => itemName(it.id) });
+            for (let i = 0; i < INV_SIZE; i++) d.inv[i] = next[i];
+            return true;
+          });
+          return say(ok ? t('gm.msg.bag_sort') : t('gm.msg.bag_fail'));
+        }
+        if (a[1] !== 'clear') return say(helpLine('bag')!);
+        let n = 0;
+        const ok = c.tx('gm:bag', null, (d) => {
+          for (let i = 0; i < d.inv.length; i++) {
+            const it = d.inv[i];
+            if (!it || it.lk) continue;
+            d.bump(it.id, -it.n);
+            d.inv[i] = null;
+            n++;
+          }
+          return true;
+        });
+        return say(ok ? t('gm.msg.bag_clear', { n }) : t('gm.msg.bag_fail'));
       }
       case 'tick':
         return say(`tick p95 ${this.tickP95().toFixed(2)}ms, ${this.players.size} người, ${this.monsters.length} quái`);
       default:
-        return say('level N | realm nk1…tc3 | trib | xp N | gold N | give id n | tp x z | tp <địa điểm> | god [on|off] | heal | die | killall | hurt pct | spawn id [n] | tick | dye id | cd | variant skill a|b | method id [cấp] | set id [n]');
+        return say(t('gm.msg.unknown'));
     }
   }
 }
 
 export const DEFAULT_SPAWN = SPAWN_POINT;
+
+/** Số quái tối đa mỗi lần `/gm spawn`, số kết quả tối đa của `/gm find`, pháp bảo đi kèm `/gm kit` theo nhánh. */
+const GM_SPAWN_MAX = 20;
+const GM_FIND_MAX = 30;
+const KIT_ARTIFACT: Record<GmBranch, string> = { kiem: 'itm_tu_kim_ho_lo', hophap: 'itm_tran_hon_linh', dansu: 'itm_thanh_lien_an' };
