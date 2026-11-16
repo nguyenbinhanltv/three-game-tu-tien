@@ -348,8 +348,11 @@ const nodes = SMALL.map((s) => ({ item: 'itm_linh_thao', x: W(s.off[0]), z: W(s.
 }
 
 // ---- địa hình ----
+// E3-I: nhấp nhô mặt đảo (nhạt dần về rìa) và hồ gương nông của Kính Hồ Đảo (chỗ đặt: tránh cụm, tinh anh, trận, điểm đáng chú ý, đầu cầu).
+const RELIEF = { phu_dao_cac: [1.2, 0.025], tung_dai_dao: [2.4, 0.01], thach_quy_dao: [3.0, 0.014, true], kinh_ho_dao: [0.7, 0.012], loi_van_dao: [3.0, 0.016, true], kinh_ngu_dai: [2.0, 0.008], tieu_dao_1: [0.8, 0.03], tieu_dao_2: [0.8, 0.03], tieu_dao_3: [0.8, 0.03] };
+const PONDS = [{ x: 1239, z: 1572, r: 30, depth: 1 }, { x: 1133, z: 1620, r: 22, depth: 1 }, { x: 1139, z: 1521, r: 18, depth: 1 }];
 const features = [
-  ...[HUB, ...ZONES, ...SMALL].map((i) => ({ id: 'isl_' + i.id, x: W(i.off[0]), z: W(i.off[1]), y: i.y, flatR: i.r, outerR: i.r + EDGE, round: true, detail: i.id.startsWith('tieu') ? 0.4 : 1.1 })),
+  ...[HUB, ...ZONES, ...SMALL].map((i) => ({ id: 'isl_' + i.id, x: W(i.off[0]), z: W(i.off[1]), y: i.y, flatR: i.r, outerR: i.r + EDGE, round: true, detail: i.id.startsWith('tieu') ? 0.4 : 1.1, relief: RELIEF[i.id] ? { amp: RELIEF[i.id][0], freq: RELIEF[i.id][1], ...(RELIEF[i.id][2] ? { crease: true } : {}) } : undefined })),
   ...PADS.map((p) => ({ id: 'pad_' + p.id, x: W(p.off[0]), z: W(p.off[1]), y: (ZONES.find((z) => z.id === p.zone) ?? HUB).y, flatR: 8, outerR: 22, round: true })),
   ...POIS.map((p) => ({ id: 'poi_' + p.id, x: W(p.off[0]), z: W(p.off[1]), y: ZONES.find((z) => z.id === p.zone).y, flatR: 14, outerR: 30, round: true })),
 ];
@@ -364,6 +367,7 @@ const terrain = {
   fakeIslands: FAKE.map(islandDef),
   voidFloor: FLOOR,
   bridges,
+  ponds: PONDS,
   features,
   play: { cx: C, cz: C, half: HALF, wallH: 150 },
   colliders: props.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: Math.round(p.r * 100) / 100 })),

@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { abs, cameraViewMatrix, cos, float, floor, instancedBufferAttribute, int, length, max, min, mix, positionGeometry, sin, smoothstep, step, texture, uniform, uniformArray, uv, vec2, vec3 } from 'three/tsl';
 import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { heightAt, levelTerrain } from './levelCtx';
+import { vanHaiArt } from './vanHaiArt';
 import type { N } from '../render/vfx/common';
 
 /**
@@ -167,6 +168,55 @@ function ochreTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   return true;
 }
 
+
+/**
+ * Cỏ Vân Hải (E3-I): thẻ cỏ (atlas dùng chung với Đoạn Mạch, thẻ `van_hai` là chủ đạo) mọc THÀNH ĐÁM theo nhiễu, mật độ và màu theo bản sắc từng đảo
+ * (`vanHaiArt`): rậm quanh hồ gương và trên Tùng Đài, thưa trên Thạch Quy/Lôi Vân, không mọc trên lối mòn, đá lộ, lòng hồ hay sát mép đảo.
+ */
+function vanHaiTuftAt(x: number, z: number, h: number, slope: number, r: number, out: Float32Array, o: number): boolean {
+  const def = levelTerrain().def;
+  if (slope > 1.8 || h < (def.voidFloor ?? 0) + 40) return false;
+  const art = vanHaiArt(def);
+  const isl = art.islandAt(x, z);
+  if (!isl) return false;
+  const d = Math.hypot(x - isl.x, z - isl.z);
+  if (d > isl.r - 2) return false;
+  const P = isl.pal;
+  const pw = art.pondW(x, z);
+  if (pw > 0.75) return false;
+  if (art.trailW(isl, x, z) > 0.12) return false;
+  const rock = art.rockW(isl, x, z, slope / 1.5);
+  if (rock > 0.6) return false;
+  const c = fbm(x * 0.055 + 3, z * 0.055 - 8, 2, def.seed + 777);
+  const n = fbm(x * 0.02, z * 0.02, 2, def.seed + 313);
+  // đám: nền thưa, lõi đám dày; `grassClump` quyết định độ tương phản giữa đám và nền
+  let dens = P.grassDensity * 1.5 * (1 - P.grassClump + P.grassClump * Math.max(0, Math.min(1.7, c * 2.6 + 0.3)));
+  dens += pw * 0.35; // bờ hồ rậm
+  // ven lối mòn: cụm cỏ dày hơn (rõ nhất ở Phù Đảo Các)
+  const td = art.trailD(isl, x, z);
+  if (td > 2 && td < 8) dens += (isl.kind === 'hub' ? 0.7 : 0.25) * (1 - (td - 2) / 6) * Math.max(0, c * 2 + 0.6);
+  dens *= (1 - rock * 1.4) * (1 - slope / 2.2) * (d > isl.r - 14 ? 0.55 : 1);
+  if (r > dens) return false;
+  if (nearCollider(x, z, 1.2)) return false;
+  const dry = Math.max(0, Math.min(1, 0.2 - n * 1.4 + rock * 0.5));
+  const r2 = hash01(Math.floor(x * 7.3), Math.floor(z * 7.3), 811);
+  const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
+  const card = dry > 0.55 && pick < 0.6 ? 0 : pick < 0.62 ? 2 : pick < 0.9 ? 1 : 0;
+  const bloom = isl.kind === 'hub' && td < 9 && hash01(Math.floor(x * 0.4), Math.floor(z * 0.4), 839) < 0.35;
+  _c.setHex(P.grass).lerp(_g2.setHex(P.grassDry), dry).multiplyScalar((0.82 + r2 * 0.36) * 1.5);
+  if (bloom) _c.lerp(_g2.setHex(0xf3dde6), 0.65); // vài cụm hoa nhạt ven lối
+  out[o] = x;
+  out[o + 1] = h - 0.03;
+  out[o + 2] = z;
+  out[o + 3] = r2 * Math.PI * 2 + card * 10;
+  out[o + 4] = 0.5 + hash01(Math.floor(x * 5.1), Math.floor(z * 5.1), 823) * 0.4 + Math.max(0, c) * 0.4;
+  out[o + 5] = _c.r;
+  out[o + 6] = _c.g;
+  out[o + 7] = _c.b;
+  return true;
+}
+const _g2 = new THREE.Color();
+
 /** Dựng bụi cỏ trong một ô CHUNK×CHUNK (gốc tại cx·CHUNK, cz·CHUNK). Xác định: mọi client thấy cỏ cùng chỗ. */
 export function buildGrassChunk(cx: number, cz: number, spacing: number, style: GrassStyle = 'blades'): Float32Array {
   const x0 = cx * CHUNK;
@@ -189,7 +239,7 @@ export function buildGrassChunk(cx: number, cz: number, spacing: number, style: 
       const x = x0 + (i + 0.1 + hash01(gx, gz, 701) * 0.8) * step;
       const z = z0 + (j + 0.1 + hash01(gx, gz, 709) * 0.8) * step;
       const h = sampleHeight(x0, z0, x, z);
-      if ((style === 'cards' ? ochreTuftAt : grassTuftAt)(x, z, h, _slope, hash01(gx, gz, 719), tmp, k * 8)) k++;
+      if ((style === 'cards' ? (levelTerrain().def.islands ? vanHaiTuftAt : ochreTuftAt) : grassTuftAt)(x, z, h, _slope, hash01(gx, gz, 719), tmp, k * 8)) k++;
     }
   }
   return tmp.slice(0, k * 8);

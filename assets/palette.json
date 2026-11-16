@@ -97,6 +97,35 @@
         "shadowTint": "#0F1F2A", "highlightTint": "#FFB869", "splitBalance": -0.2,
         "blackLift": "#0E1C27", "contrast": 1.08, "saturation": 0.82, "exposure": 1.2
       },
+      "cloud_dawn": {
+        "label": "Vân Hải — bình minh trên mây",
+        "sunColor": "#FFD08A", "sunIntensity": 2.3, "sunElevationDeg": 17,
+        "skyColor": "#BFD8DA", "skyIntensity": 1.0,
+        "fogColor": "#E6ECE6", "fogDensity": 0.0011, "heightFogTop": 72, "heightFogBoost": 2.2,
+        "fogHaze": 0.0024, "fogHazeStart": 40, "rim": 0.5,
+        "shadowTint": "#2D6468", "highlightTint": "#FFD9A0", "splitBalance": 0.15,
+        "shadowAmount": 0.6, "highlightAmount": 0.3, "fogScatter": 0.9,
+        "blackLift": "#14292B", "contrast": 1.07, "saturation": 0.98, "exposure": 1.04
+      },
+      "cloud": {
+        "label": "Vân Hải — ban ngày",
+        "sunColor": "#FFE0A8", "sunIntensity": 3.0, "sunElevationDeg": 34,
+        "skyColor": "#A8CFD6", "skyIntensity": 0.8,
+        "fogColor": "#D6E4E4", "fogDensity": 0.0009, "heightFogTop": 62, "heightFogBoost": 1.8,
+        "fogHaze": 0.002, "fogHazeStart": 55, "rim": 0.45,
+        "shadowTint": "#2A5E64", "highlightTint": "#FFD08C", "splitBalance": 0.05,
+        "shadowAmount": 0.6, "highlightAmount": 0.28, "fogScatter": 0.85,
+        "blackLift": "#0F2427", "contrast": 1.12, "saturation": 1.02, "exposure": 1.0
+      },
+      "cloud_night": {
+        "label": "Vân Hải — trăng bạc",
+        "sunColor": "#B9C9E0", "sunIntensity": 1.5, "sunElevationDeg": 38,
+        "skyColor": "#3E5A78", "skyIntensity": 1.0,
+        "fogColor": "#263A4A", "fogDensity": 0.0012, "heightFogTop": 70, "heightFogBoost": 2.0,
+        "fogHaze": 0.0015, "fogHazeStart": 60, "rim": 0.9,
+        "shadowTint": "#0F2030", "highlightTint": "#D8E4F8", "splitBalance": -0.15,
+        "blackLift": "#0E1C27", "contrast": 1.08, "saturation": 0.85, "exposure": 1.2
+      },
       "ochre_dawn": {
         "label": "Đoạn Mạch — sáng sớm",
         "sunColor": "#F0A56C", "sunIntensity": 1.9, "sunElevationDeg": 12,
