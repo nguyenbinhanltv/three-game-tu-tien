@@ -2976,7 +2976,8 @@ export class GameSim {
       if (!this.host.enterTribulationRoom?.(p, def, force)) this.warn(p, 'sys.trib_not_now');
       return;
     }
-    this.beginTribulation(p, def, !!item && !force);
+    // GM (force) vẫn tiêu vật phẩm nếu đang có, để sổ cái giống đường người chơi thật.
+    this.beginTribulation(p, def, !!item && c.inv.some((it) => it?.id === item));
   }
 
   /** Bắt đầu kiếp `def` cho `p` ngay trong room này. `consume`: tiêu vật phẩm đột phá. false nếu thiếu vật phẩm. */
