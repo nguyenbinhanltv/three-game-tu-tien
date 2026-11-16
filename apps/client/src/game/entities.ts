@@ -4,7 +4,8 @@ import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
 import { DUNGEON_EXIT, locoDirOf, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PORTAL_POS } from '@dtl/shared';
 import { groundAt } from './levelCtx';
-import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, swordModelOf, t } from '@dtl/content';
+import { swordOverride } from './testParams';
+import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
 import { bodyRadiusOf, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type QuestView } from '@dtl/shared';
@@ -80,9 +81,11 @@ export interface WorldView {
   nodes: Map<string, NState>;
 }
 
+const SWORD_FORCED = typeof location === 'undefined' ? null : swordOverride(location.search, SWORD_MODELS);
+
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
-  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: swordModelOf(s.wp) };
+  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp) };
   const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
   return s.sa ? { ...look, acc: s.sa } : look;
 }
