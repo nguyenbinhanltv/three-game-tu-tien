@@ -54,6 +54,11 @@ const FOX_CLIPS: ClipMap = { ...WOLF_CLIPS, walk: 'walk' };
 const BOSS_CLIPS: ClipMap = { ...WOLF_CLIPS, stun: 'stun' };
 const CHANT_BOSS_CLIPS: ClipMap = { ...BOSS_CLIPS, cast: 'chant' };
 /**
+ * Quái có khiên/gương (E-0): clip `guard` lặp (giơ khiên phản đạn, chặn) gắn vào trạng thái `cast` (kênh giữ thế); E-2/E-3/E-4 đổi sang
+ * trạng thái riêng nếu cần. Clip `revive` của Cốt Vệ Kiếm Thủ (hồi sinh một lần) có trong GLB nhưng chưa nối trạng thái nào.
+ */
+const GUARD_CLIPS: ClipMap = { ...WOLF_CLIPS, cast: 'guard' };
+/**
  * Thời điểm chạm (giây trong clip ở 1×) của clip thủ tục: phải khớp tools/blender/anim_quadruped.py (thú bốn chân)
  * và tools/blender/anim_biped_extra.py (người/vượn).
  */
@@ -90,6 +95,12 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   },
   // Thạch Viên: vượn đá hai chân, đòn nện hai tay (clip slash của Tripo đã cắt).
   mon_thach_vien: { asset: 'mon_thach_vien', clips: WOLF_CLIPS, refSpeed: 2.15, legs: 'biped', tint: '#ffffff' },
+  // Tinh anh Vân Lam (E-1b): model Tripo thay model khối, nạp lười theo màn (không vào tải đầu). Kích thước nhập ở scale 1 (sói
+  // 1,5 m, cáo 1,27 m dài, vượn cao 1,8 m), kích thước thật theo `scale` trong monsters.json (hitbox không đổi). refSpeed theo
+  // tỉ lệ 0,796 của naturalSpeed đo trong Blender (cùng cách với sói). Clip thủ tục: tools/blender/anim_quadruped.py, anim_biped_extra.py.
+  elite_huyet_nha_lang: { asset: 'elite_huyet_nha_lang', clips: WOLF_CLIPS, refSpeed: 4.3, legs: 'quad', tint: '#ffffff', rim: 0.3, lazy: true, level: 'van_lam' },
+  elite_xich_dien_ho: { asset: 'elite_xich_dien_ho', clips: WOLF_CLIPS, refSpeed: 2.2, legs: 'quad', tint: '#ffffff', rim: 0.25, lazy: true, level: 'van_lam' },
+  elite_cu_nham_vien: { asset: 'elite_cu_nham_vien', clips: WOLF_CLIPS, refSpeed: 1.8, legs: 'biped', tint: '#ffffff', lazy: true, level: 'van_lam' },
   // Boss Kiếm Trủng (M3-8). Sói chúa: naturalSpeed 3,378 theo cùng tỉ lệ với sói (→ 2,7); hai boss vượn đo chân trụ
   // clip run Tripo ở scale 1.
   boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, legs: 'quad', tint: '#ffffff', rim: 0.35, lazy: true, level: 'kiem_trung', moves: QUAD_MOVES },
@@ -98,6 +109,43 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // Hàn Giao (boss Hồ Sương Mù): giao băng không chân, bộ xương chuỗi 17 đốt + clip thủ tục. refSpeed 2,1 × scale 2,4 ≈ tốc độ 5 m/s
   // của boss (clip trườn 1,0 s/chu kỳ). Viền băng nhạt theo `accent`.
   boss_han_giao: { asset: 'boss_han_giao', clips: CHANT_BOSS_CLIPS, refSpeed: 2.1, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.3, metalness: 0, lazy: true, level: 'van_lam', moves: SERPENT_MOVES },
+
+  // ---- Quái thường của ba bản đồ mở rộng (E-0, docs/e0-mon/README.md) ----
+  // Mọi skin dưới đây `lazy` + `level`: không vào gói tải đầu, chỉ nạp khi vào bản đồ (`preloadLazy(levelId)`) hoặc khi quái xuất hiện.
+  // Clip đều thủ tục (tools/blender/anim_biped_extra.py `import.mon`, anim_quadruped.py, anim_creature.py). refSpeed ≈ 0,9 ×
+  // naturalSpeed trong báo cáo import (cùng tỉ lệ như các thú trên).
+  // Đoạn Mạch Cổ Cốc (E-2)
+  mon_mach_thuong_ho_ve: { asset: 'mon_mach_thuong_ho_ve', clips: GUARD_CLIPS, refSpeed: 2.2, legs: 'biped', tint: '#ffffff', lazy: true, level: 'doan_mach' },
+  mon_khai_mach_khoi_loi: { asset: 'mon_khai_mach_khoi_loi', clips: WOLF_CLIPS, refSpeed: 1.7, legs: 'biped', tint: '#ffffff', lazy: true, level: 'doan_mach' },
+  mon_thach_giap_te: { asset: 'mon_thach_giap_te', clips: WOLF_CLIPS, refSpeed: 1.75, legs: 'quad', tint: '#ffffff', lazy: true, level: 'doan_mach' },
+  mon_ngo_cong_au: { asset: 'mon_ngo_cong_au', clips: WOLF_CLIPS, refSpeed: 7.3, legs: 'none', tint: '#ffffff', lazy: true, level: 'doan_mach' },
+  // Vân Hải Phù Đảo (E-3). Vân Hạc và Kim Thiền bay: client nâng thân theo `fly` của quái (không nằm trong skin).
+  mon_van_hac: { asset: 'mon_van_hac', clips: WOLF_CLIPS, refSpeed: 2.7, legs: 'none', tint: '#ffffff', lazy: true, level: 'van_hai' },
+  mon_kinh_linh: { asset: 'mon_kinh_linh', clips: GUARD_CLIPS, refSpeed: 2.1, legs: 'biped', tint: '#ffffff', rim: 0.25, lazy: true, level: 'van_hai' },
+  mon_phu_dao_thach_quy: { asset: 'mon_phu_dao_thach_quy', clips: WOLF_CLIPS, refSpeed: 3.2, legs: 'quad', tint: '#ffffff', lazy: true, level: 'van_hai' },
+  mon_bich_ngoc_kim_thien: { asset: 'mon_bich_ngoc_kim_thien', clips: WOLF_CLIPS, refSpeed: 2.9, legs: 'none', tint: '#ffffff', lazy: true, level: 'van_hai' },
+  // Thiên Khuyết Cổ Thành (E-4)
+  mon_thach_tuong_vo_si: { asset: 'mon_thach_tuong_vo_si', clips: GUARD_CLIPS, refSpeed: 1.9, legs: 'biped', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
+  mon_da_minh_loc: { asset: 'mon_da_minh_loc', clips: WOLF_CLIPS, refSpeed: 2.9, legs: 'quad', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
+  mon_cot_ve_kiem_thu: { asset: 'mon_cot_ve_kiem_thu', clips: WOLF_CLIPS, refSpeed: 2.1, legs: 'biped', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
+  mon_co_thanh_chien_ma: { asset: 'mon_co_thanh_chien_ma', clips: WOLF_CLIPS, refSpeed: 2.7, legs: 'biped', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
+  // ---- Boss mở rộng (E-2/E-3/E-4): asset đã nhập, chưa có quái trong monsters.json; thêm quái cùng id là chạy. Nạp lười theo
+  // màn (id màn là dự kiến của E-2..E-4, đổi `level` cho khớp LevelDef khi có). refSpeed (m/s ở scale 1, model theo kích thước thật)
+  // tính từ sải chân của clip run (docs/boss-import/README.md). Đòn lớn khớp tools/blender/anim_{quadruped,serpent,biped_extra}.py.
+  // Địa Mạch Long: rồng đá bốn chân, khe sáng ngọc lam theo máu (viền yêu khí nhẹ).
+  boss_dia_mach_long: { asset: 'boss_dia_mach_long', clips: BOSS_CLIPS, refSpeed: 9.0, legs: 'quad', tint: '#ffffff', rim: 0.3, lazy: true, level: 'doan_mach', moves: QUAD_MOVES },
+  // Thôn Mạch Ngô Công Vương (Phục Mạch Quật): ngô công 14 m, xương chuỗi, tinh thạch sáng theo accent.
+  boss_thon_mach_ngo_cong_vuong: { asset: 'boss_thon_mach_ngo_cong_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 4.6, legs: 'none', tint: '#ffffff', rim: 0.35, lift: 0.2, metalness: 0, lazy: true, level: 'phuc_mach', moves: SERPENT_MOVES },
+  // Thạch Tâm Khôi Vương (Phục Mạch Quật): khôi đá 5 m, tim ngọc ở ngực phát sáng.
+  boss_thach_tam_khoi_vuong: { asset: 'boss_thach_tam_khoi_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 2.0, legs: 'biped', tint: '#ffffff', coreGlow: 1.2, lazy: true, level: 'phuc_mach', moves: BIPED_MOVES },
+  // Vân Hải Kình Vương: kình ngư bay 18 m, xương chuỗi kiểu bơi.
+  boss_van_hai_kinh_vuong: { asset: 'boss_van_hai_kinh_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 5.9, legs: 'none', tint: '#ffffff', rim: 0.25, lift: 0.25, metalness: 0, lazy: true, level: 'van_hai', moves: SERPENT_MOVES },
+  // Kính Nguyệt Chân Quân (Kính Nguyệt Cung): người 3,6 m áo choàng bạc.
+  boss_kinh_nguyet_chan_quan: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', rim: 0.3, lift: 0.15, lazy: true, level: 'kinh_nguyet_cung', moves: BIPED_MOVES },
+  // Thiên Khuyết Thủ Linh: tượng thần đá 8 m, kích thước lớn nên bước chậm.
+  boss_thien_khuyet_thu_linh: { asset: 'boss_thien_khuyet_thu_linh', clips: CHANT_BOSS_CLIPS, refSpeed: 2.5, legs: 'biped', tint: '#ffffff', lift: 0.1, lazy: true, level: 'thien_khuyet', moves: BIPED_MOVES },
+  // Vô Diện Thần Quân (Thần Tàng Điện): người 4,6 m sáu tay phụ liền lưới.
+  boss_vo_dien_than_quan: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#ffffff', rim: 0.25, lift: 0.12, lazy: true, level: 'than_tang', moves: BIPED_MOVES },
 };
 
 interface Template {

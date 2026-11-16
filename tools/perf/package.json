@@ -22,9 +22,13 @@
     "shots:k4": "tsx src/shots-k4.ts",
     "shots:k6": "tsx src/shots-k6.ts",
     "shots:k7": "tsx src/shots-k7.ts",
+    "shots:boss": "tsx src/shots-boss.ts",
     "shots:trib": "tsx src/shots-trib.ts",
     "shots:eqicons": "tsx src/shots-eqicons.ts",
     "shots:kiem": "tsx src/shots-kiem.ts",
+    "shots:elite": "tsx src/shots-elite.ts",
+    "shots:elitegame": "tsx src/shots-elite-game.ts",
+    "shots:e0": "tsx src/shots-e0.ts",
     "shots:m4": "tsx src/shots-m4.ts",
     "shots:s2b": "tsx src/shots-s2b.ts"
   },

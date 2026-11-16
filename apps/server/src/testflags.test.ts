@@ -52,7 +52,12 @@ describe('quyền tham số kiểm thử', () => {
     expect(ok('tc')).toBe(16);
     expect(ok('tc3')).toBe(18);
     expect(ok(9)).toBe(9);
-    for (const bad of ['nk16', 'nk0', 'tc4', 'kd1', '19', '0', -1, 1.5, 'a'.repeat(50), { level: 15 }, ['nk15'], '__proto__']) expect(ok(bad), String(bad)).toBe('bad_realm');
+    expect(ok('tc4')).toBe(19);
+    expect(ok('kd1')).toBe(20);
+    expect(ok('na4')).toBe(27);
+    expect(ok('ht')).toBe(28);
+    expect(ok('28')).toBe(28);
+    for (const bad of ['nk16', 'nk0', 'tc5', 'kd5', 'ht2', '29', '0', -1, 1.5, 'a'.repeat(50), { level: 15 }, ['nk15'], '__proto__']) expect(ok(bad), String(bad)).toBe('bad_realm');
     // Sai một tham số thì không áp tham số nào (không bật god một nửa).
     expect(readTestFlags({ god: true, realm: 'nk99' }, true, true).kind).toBe('bad_realm');
   });
@@ -244,7 +249,10 @@ describe('?realm, ?tribulation, /gm realm, /gm trib với nhân vật thật', (
     expect(char.level).toBe(17);
     sim.now += 1000;
     sim.onChat(p, { m: '/gm realm kd1' });
-    expect(char.level).toBe(17);
+    expect(char.level).toBe(20);
+    sim.now += 1000;
+    sim.onChat(p, { m: '/gm realm kd9' });
+    expect(char.level).toBe(20);
     const dg = join(true, 'kiem_trung');
     dg.sim.onChat(dg.p, { m: '/gm trib' });
     expect(dg.p.trib).toBeNull();

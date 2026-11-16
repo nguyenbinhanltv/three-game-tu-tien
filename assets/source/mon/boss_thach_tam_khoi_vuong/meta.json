@@ -1,0 +1,203 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_thach_tam_khoi_vuong",
+  "type": "mon",
+  "budgetClass": "boss",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 20000,
+    "texture": 2048
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "boss/boss_thach_tam_khoi_vuong/tripo/raw_v01.glb",
+    "size": {
+      "height": 5
+    },
+    "orient": "none",
+    "yaw": 0,
+    "post": "tools/blender/anim_biped_extra.py",
+    "autoRig": {
+      "joints": {
+        "Hips": [
+          0,
+          0.15,
+          2.45
+        ],
+        "Spine": [
+          0,
+          0.15,
+          2.95
+        ],
+        "Spine1": [
+          0,
+          0.15,
+          3.45
+        ],
+        "Spine2": [
+          0,
+          0.2,
+          3.95
+        ],
+        "Neck": [
+          0,
+          0.25,
+          4.5
+        ],
+        "Head": [
+          0,
+          0.3,
+          4.62
+        ],
+        "HeadTop": [
+          0,
+          0.3,
+          5.0
+        ],
+        "LeftShoulder": [
+          1.2,
+          0.55,
+          3.9
+        ],
+        "LeftArm": [
+          1.2,
+          0.55,
+          3.9
+        ],
+        "LeftForeArm": [
+          1.7,
+          0.6,
+          3.0
+        ],
+        "LeftHand": [
+          1.75,
+          0.6,
+          2.3
+        ],
+        "LeftHandEnd": [
+          1.75,
+          0.6,
+          1.95
+        ],
+        "LeftUpLeg": [
+          0.55,
+          0.3,
+          2.4
+        ],
+        "LeftLeg": [
+          0.85,
+          0.4,
+          1.3
+        ],
+        "LeftFoot": [
+          0.85,
+          0.5,
+          0.35
+        ],
+        "LeftToeBase": [
+          0.85,
+          0.1,
+          0.12
+        ],
+        "LeftToeEnd": [
+          0.85,
+          -0.15,
+          0.05
+        ],
+        "RightShoulder": [
+          -1.2,
+          0.3,
+          3.9
+        ],
+        "RightArm": [
+          -1.2,
+          0.3,
+          3.9
+        ],
+        "RightForeArm": [
+          -1.5,
+          -0.1,
+          3.45
+        ],
+        "RightHand": [
+          -1.55,
+          -0.33,
+          2.95
+        ],
+        "RightHandEnd": [
+          -1.55,
+          -0.33,
+          2.6
+        ],
+        "RightUpLeg": [
+          -0.55,
+          0.3,
+          2.4
+        ],
+        "RightLeg": [
+          -0.7,
+          0.4,
+          1.3
+        ],
+        "RightFoot": [
+          -0.7,
+          0.5,
+          0.35
+        ],
+        "RightToeBase": [
+          -0.7,
+          0.1,
+          0.12
+        ],
+        "RightToeEnd": [
+          -0.7,
+          -0.15,
+          0.05
+        ]
+      },
+      "hold": {
+        "bone": "RightHand",
+        "region": {
+          "xMax": -1.0,
+          "yMax": 0.12
+        }
+      }
+    },
+    "proc": {
+      "stride": 0.12,
+      "lift": 0.06,
+      "runSeconds": 1.1,
+      "idleSeconds": 3.6,
+      "bob": 0.01
+    },
+    "extra": [
+      "slam",
+      "sweep",
+      "chant",
+      "stun"
+    ]
+  },
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "model": "H3.1",
+      "params": {
+        "face_limit": 20000,
+        "texture_quality": "2K",
+        "pbr": true
+      },
+      "credits": 0,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok"
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max, image-to-3D H3.1, ảnh concept docs/asset-concepts) do người dùng dựng; không có xương Tripo (rig không ra): bộ xương người và trọng số dựng bằng tools/blender/biped_autorig.py; clip thủ tục tools/blender/anim_biped_extra.py (import.proc)",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}

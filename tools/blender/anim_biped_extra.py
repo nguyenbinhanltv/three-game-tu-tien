@@ -48,6 +48,10 @@ from mathutils import Matrix, Quaternion, Vector
 FPS = 30
 X = Vector((1, 0, 0))
 
+# `import.autoRig`: boss Tripo chưa có xương → dựng xương người và trọng số (tools/blender/biped_autorig.py).
+if META.get('import', {}).get('autoRig') and not ARMATURES:  # noqa: F821
+    runpy.run_path(os.path.join(REPO, 'tools/blender/biped_autorig.py'), init_globals=dict(globals()))  # noqa: F821
+
 if len(ARMATURES) != 1:  # noqa: F821
     fail(f'anim_biped_extra cần đúng 1 armature, có {len(ARMATURES)}')  # noqa: F821
 arm = ARMATURES[0]  # noqa: F821
@@ -62,7 +66,7 @@ def clean(name):
 # Bí danh theo hậu tố tên (không phân biệt hoa thường), thử lần lượt: Mixamo (mixamorig:Hips, Spine1, LeftArm...) rồi
 # bộ xương người Tripo xuất kèm clip (Hip, Waist, Spine01, NeckTwist01, L_Upperarm...).
 ALIASES = {
-    'hips': ('hips', 'hip'),
+    'hips': ('hips', 'hip', 'pelvis'),
     'head': ('head',),
     'spine': ('spine', 'waist'),
     'spine1': ('spine1', 'spine01'),
@@ -103,6 +107,36 @@ def bone_like(name):
 
 
 HIPS, HEAD = bone_like('hips'), bone_like('head')
+
+
+def fix_rig():
+    """`import.rigFix` (boss Tripo auto-rig bị cắt xương không trọng số): thêm xương bàn chân còn thiếu, đặt ở cuối cẳng chân
+    chỉ về phía trước (-Y), không trọng số, để IK chân của clip thủ tục có điểm bám. Tên theo kiểu rig (mixamorig_* hoặc L_Foot)."""
+    added = []
+    mixamo = HIPS.name.lower().startswith('mixamorig')
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode='EDIT')
+    eb = arm.data.edit_bones
+    for side, sd in (('Left', 'L'), ('Right', 'R')):
+        calf = suffix_bone(arm.data.bones, side.lower() + 'leg')
+        if calf is None or suffix_bone(arm.data.bones, side.lower() + 'foot') is not None:
+            continue
+        name = (HIPS.name[:-4] + side + 'Foot') if mixamo else f'{sd}_Foot'
+        c = eb[calf.name]
+        b = eb.new(name)
+        b.head = c.tail.copy()
+        b.tail = c.tail + Vector((0, -0.35 * (c.tail - c.head).length, 0))
+        b.parent = c
+        b.use_connect = False
+        added.append(name)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    return added
+
+
+if IMPORT.get('rigFix'):
+    report_fix = fix_rig()
+    HIPS, HEAD = bone_like('hips'), bone_like('head')
+
 MAIN_SPAN = (HEAD.head_local - HIPS.head_local).length
 
 
@@ -121,6 +155,8 @@ def src_span(src):
 
 TC = runpy.run_path(os.path.join(REPO, 'tools/blender/tripo_clips.py'))  # noqa: F821
 report = {'clips': {}}
+if IMPORT.get('rigFix'):
+    report['rigFixAdded'] = report_fix
 if IMPORT.get('sharedAnims') and not IMPORT.get('clips'):
     # Clip dùng chung (anim_human_base, M2-3): GLB nhân vật không mang clip, client retarget theo tên xương.
     report['droppedSourceClips'] = TC['drop_existing_actions'](arm)
@@ -557,7 +593,9 @@ REST = {p.name: p.bone.matrix_local.to_3x3() for p in pb}
 
 
 def pbone(suffix):
-    b = bone_like(suffix)
+    b = suffix_bone(arm.data.bones, suffix) if suffix != 'neck' else (suffix_bone(arm.data.bones, 'neck') or suffix_bone(arm.data.bones, 'spine2'))
+    if b is None:
+        fail(f'anim_biped_extra: rig không có xương *{suffix}')  # noqa: F821
     return b.name
 
 
@@ -605,7 +643,8 @@ def pose_hit(w, base):
     hips.location = base[HIPS.name][1] + M.inverted() @ Vector((0, 0.05 * w, -0.005 * w))
 
 
-if 'hit_light' not in bpy.data.actions and not IMPORT.get('sharedAnims'):
+PROC = IMPORT.get('proc')
+if 'hit_light' not in bpy.data.actions and not IMPORT.get('sharedAnims') and not PROC:
     base = base_pose()
     act = bpy.data.actions.new('hit_light')
     act.use_fake_user = True
@@ -637,11 +676,14 @@ if 'hit_light' not in bpy.data.actions and not IMPORT.get('sharedAnims'):
 # chân để bàn chân giữ nguyên chỗ và hướng như dáng idle (không trượt, không lún đất). Không có ngẫu nhiên.
 
 EXTRA = list(IMPORT.get('extra', []))
+MON = IMPORT.get('mon')  # quái thường E-0 (mục 7): bộ clip thủ tục đầy đủ idle/run/attack/death cho rig Mixamo không có clip Tripo
+if MON:
+    EXTRA.append('__mon')
 for name in EXTRA:
-    if name not in ('slam', 'sweep', 'chant', 'stun', 'combat_idle', 'guard', 'hit_back', 'roar'):
-        fail(f'anim_biped_extra: import.extra "{name}" chưa hỗ trợ (slam | sweep | chant | stun | combat_idle | guard | hit_back | roar)')  # noqa: F821
+    if name not in ('idle', 'run', 'attack', 'death', 'slam', 'sweep', 'chant', 'stun', 'combat_idle', 'guard', 'hit_back', 'roar', '__mon'):
+        fail(f'anim_biped_extra: import.extra "{name}" chưa hỗ trợ (idle | run | attack | death | slam | sweep | chant | stun | combat_idle | guard | hit_back | roar)')  # noqa: F821
 
-if EXTRA:
+if EXTRA or PROC:
     Y_AX, Z_AX = Vector((0, 1, 0)), Vector((0, 0, 1))
     SPINES = [SPINE, SPINE1, SPINE2]
     SIDES = {'L': 1.0, 'R': -1.0}
@@ -716,7 +758,13 @@ if EXTRA:
     def pose_of(k, s, part):
         v = k.get('arms', {}).get(s)
         if v is None:
-            return BASE_DIR[s][part].normalized()
+            base = BASE_DIR[s][part].normalized()
+            r = k.get('arot', {}).get(s)  # (độ quanh X cho cánh tay, độ quanh Z, độ quanh X thêm cho cẳng tay): xoay quanh dáng nghỉ
+            if r is None:
+                return base
+            ax, az, fx = r
+            rx = Matrix.Rotation(math.radians(ax + (fx if part == 'fore' else 0.0)), 3, X)
+            return (Matrix.Rotation(math.radians(az), 3, Vector((0, 0, 1))) @ rx @ base).normalized()
         return Vector(v[0] if part == 'arm' else v[1]).normalized()
 
     def apply_key(k):
@@ -728,6 +776,10 @@ if EXTRA:
         m.translation += Vector(k.get('hips', (0, 0, 0))) * H
         hips.matrix = m
         upd()
+        if k.get('tilt'):  # ngã cả thân quanh đầu xương hông (+ là ngã úp tới trước)
+            rotate_world(HIPS.name, Matrix.Rotation(math.radians(k['tilt']), 3, X))
+        if k.get('hipsRot'):
+            rotate_world(HIPS.name, Matrix.Rotation(math.radians(k['hipsRot']), 3, X))
         for b, deg in zip(SPINES, k.get('spine', (0, 0, 0))):
             if deg:
                 rotate_world(b, Matrix.Rotation(math.radians(deg), 3, X))
@@ -737,10 +789,19 @@ if EXTRA:
             rotate_world(NECK, Matrix.Rotation(math.radians(k['head'] * 0.4), 3, X))
             rotate_world(HEADB, Matrix.Rotation(math.radians(k['head'] * 0.6), 3, X))
         for s, L in LIMB.items():
+            if k.get('armfree'):
+                break  # xác nằm: tay theo thân cứng (không ngắm theo hướng thế giới, tránh xuyên đất)
             aim(L['arm'], L['forearm'], k['dir'][s]['arm'])
             aim(L['forearm'], L['hand'], k['dir'][s]['fore'])
         for s in SIDES:
-            leg_ik(s, k.get('feet', {}).get(s, (0, 0, 0)))
+            if k.get('noik'):
+                th, ca = k.get('legrot', {}).get(s, (0, 0))  # chân không IK (ngã, khuỵu): độ quanh X cho đùi và cẳng chân
+                if th:
+                    rotate_world(LIMB[s]['upleg'], Matrix.Rotation(math.radians(th), 3, X))
+                if ca:
+                    rotate_world(LIMB[s]['leg'], Matrix.Rotation(math.radians(ca), 3, X))
+            else:
+                leg_ik(s, k.get('feet', {}).get(s, (0, 0, 0)))
 
     def resolved(k):
         k = dict(k)
@@ -752,8 +813,13 @@ if EXTRA:
         for key in ('spine', 'hips'):
             va, vb = a.get(key, (0, 0, 0)), b.get(key, (0, 0, 0))
             out[key] = tuple(x * (1 - w) + y * w for x, y in zip(va, vb))
-        for key in ('twist', 'head'):
+        for key in ('twist', 'head', 'hipsRot'):
             out[key] = a.get(key, 0) * (1 - w) + b.get(key, 0) * w
+        out['tilt'] = a.get('tilt', 0) * (1 - w) + b.get('tilt', 0) * w
+        out['noik'] = b.get('noik', False) if w > 0.5 else a.get('noik', False)
+        out['armfree'] = a.get('armfree') if w < 0.5 else b.get('armfree')
+        out['legrot'] = {s: tuple(x * (1 - w) + y * w for x, y in zip(a.get('legrot', {}).get(s, (0, 0)), b.get('legrot', {}).get(s, (0, 0))))
+                         for s in SIDES}
         out['dir'] = {s: {p: nlerp(a['dir'][s][p], b['dir'][s][p], w) for p in ('arm', 'fore')} for s in SIDES}
         out['feet'] = {s: tuple(x * (1 - w) + y * w for x, y in zip(a.get('feet', {}).get(s, (0, 0, 0)), b.get('feet', {}).get(s, (0, 0, 0))))
                        for s in SIDES}
@@ -779,8 +845,20 @@ if EXTRA:
         arm.animation_data.action = None
         add_to_nla(act)
 
-    def keyed_clip(name, seconds, keys):
-        """keys = [(giây, khóa)], nội suy smoothstep, đặt khóa mọi khung."""
+    def lowest_z():
+        dg = bpy.context.evaluated_depsgraph_get()
+        low = 1e9
+        for m in MESHES:  # noqa: F821
+            ev = m.evaluated_get(dg)
+            me = ev.to_mesh()
+            mw = ev.matrix_world
+            low = min(low, min((mw @ v.co).z for v in me.vertices))
+            ev.to_mesh_clear()
+        return low
+
+    def keyed_clip(name, seconds, keys, settle=False):
+        """keys = [(giây, khóa)], nội suy smoothstep, đặt khóa mọi khung. settle: khi thân đang ngã (tilt > 5°) hạ/nâng hông cho
+        điểm thấp nhất của lưới chạm đất (Z = 0), để cái xác không lơ lửng hay lún."""
         keys = [(t, resolved(k)) for t, k in keys]
         act = begin(name)
         n = round(seconds * FPS)
@@ -790,7 +868,16 @@ if EXTRA:
             j = min(i + 1, len(keys) - 1)
             span = keys[j][0] - keys[i][0]
             u = 0.0 if span <= 0 else min(1.0, (t - keys[i][0]) / span)
-            apply_key(mix(keys[i][1], keys[j][1], u * u * (3 - 2 * u)))
+            k = mix(keys[i][1], keys[j][1], u * u * (3 - 2 * u))
+            apply_key(k)
+            if settle and k.get('tilt', 0) > 5:
+                upd()
+                low = lowest_z()
+                if abs(low) > 1e-3:
+                    hm = pb[HIPS.name].matrix.copy()
+                    hm.translation.z -= low
+                    pb[HIPS.name].matrix = hm
+                    upd()
             key_frame(f)
         end(act, n)
         report['clips'][name] = {'seconds': round(n / FPS, 3), 'procedural': True}
@@ -883,6 +970,245 @@ if EXTRA:
         r2 = {'spine': (-12, -14, -10), 'head': -22, 'hips': (0, 0.0, 0.0), 'feet': both(lambda sx: ((sx * -0.07), 0, 0)),
               'arms': both(lambda sx: ((sx * 0.85, 0.0, 0.35), (sx * 0.9, -0.15, 0.25)))}
         keyed_clip('roar', 1.8, [(0.0, REST_K), (0.5, r1), (0.62, r1), (0.95, r2), (1.4, r2), (1.8, REST_K)])
+
+    # ---- E-0: bộ clip quái thường (import.mon, mục 7) ----
+    # Rig Mixamo của Tripo xuất không kèm clip, nên cả idle/run/attack/death/hit_light đều thủ tục. Cánh tay lấy dáng nghỉ của
+    # model (đang cầm kiếm, khiên, giáo...) làm gốc rồi xoay quanh nó (`arot`), nên vũ khí không rời tay. Cấu hình `import.mon`:
+    #   hand      "R" | "L" tay cầm vũ khí chính (mặc định R)
+    #   attack    chop (chém bổ một tay) | thrust (đâm giáo, tiến chân) | bash (húc khiên tay trái) | sweep (chém ngang) | smash (nện hai tay)
+    #   run       { T: chu kỳ giây, stride: sải chân (phần chiều cao), lift: nhấc chân, lean: độ nghiêng thân, swing: độ vung tay }
+    #   death     back (ngã ngửa) | fwd (ngã sấp) | crumble (sụp khuỵu rồi đổ sấp)
+    #   guard     true: thêm clip guard lặp (tay phụ giơ khiên/gương); revive: true thêm clip revive (đứng dậy, ngược death)
+    # Thời điểm chạm đòn (giây trong clip) nằm ở report.clips.attack.impact (xem docs/e0-mon/README.md).
+    if '__mon' in EXTRA:
+        hand = MON.get('hand', 'R')
+        other = 'L' if hand == 'R' else 'R'
+        HV = MON.get('run', {})
+        R_T, R_A = float(HV.get('T', 0.65)), float(HV.get('stride', 0.26))
+        R_LIFT, R_LEAN, R_SW = float(HV.get('lift', 0.09)), float(HV.get('lean', 8)), float(HV.get('swing', 30))
+
+        def ar(**kw):
+            """Bảng arot: ar(R=(ax, az, fx), L=(...))."""
+            return dict(kw)
+
+        def idle_mon(t):
+            a = 2 * math.pi * t
+            br = math.sin(a)
+            return {'spine': (0.8 * br, 0.8 * br, 0.5 * br), 'head': 1.5 * math.sin(a - 0.6), 'twist': 1.2 * math.sin(a * 0.5),
+                    'hips': (0.004 * math.sin(a * 0.5), 0, 0.003 * math.sin(2 * a) - 0.002),
+                    'arot': ar(L=(2.5 * br, 0, 1.5 * br), R=(-2 * br, 0, -1 * br))}
+        looped_clip('idle', float(MON.get('idleT', 2.8)), idle_mon)
+
+        def run_mon(t):
+            a = 2 * math.pi * t
+            feet = {}
+            for s, ph in (('L', 0.0), ('R', math.pi)):
+                dy = -R_A * math.cos(a + ph)
+                dz = R_LIFT * max(0.0, -math.sin(a + ph)) ** 0.8
+                feet[s] = (0.0, dy, dz)
+            wl = 0.3 if hand == 'L' else 1.0
+            wr = 0.3 if hand == 'R' else 1.0
+            c = math.cos(a)
+            return {'spine': (R_LEAN, R_LEAN * 0.8, R_LEAN * 0.5), 'head': -R_LEAN * 0.6, 'twist': 7 * math.sin(a),
+                    'hips': (0.012 * math.sin(a), -0.02, -0.045 + 0.018 * math.cos(2 * a)), 'feet': feet,
+                    'arot': ar(L=(R_SW * c * wl, 0, -10 - 15 * (1 - c) * wl), R=(-R_SW * c * wr, 0, -10 - 15 * (1 + c) * wr))}
+        looped_clip('run', R_T, run_mon)
+        report['clips']['run']['naturalSpeed'] = round(4 * R_A * H / R_T, 3)
+
+        REST0 = {}
+        style = MON.get('attack', 'chop')
+        if style == 'chop':
+            wind = {'spine': (-10, -12, -8), 'twist': -16, 'head': -6, 'hips': (0, 0.03, -0.03),
+                    'arot': ar(**{hand: (-150, -8, -35)})}
+            hit = {'spine': (20, 22, 14), 'twist': 18, 'head': 8, 'hips': (0, -0.06, -0.09), 'feet': {'L': (0, -0.07, 0), 'R': (0, 0.04, 0)},
+                   'arot': ar(**{hand: (-35, 4, -12), other: (10, 0, -10)})}
+            keys = [(0.0, REST0), (0.5, wind), (0.62, hit), (0.95, hit), (1.4, REST0)]
+            impact = 0.62
+        elif style == 'thrust':
+            wind = {'spine': (-6, -8, -5), 'twist': -26, 'head': -3, 'hips': (0, 0.05, -0.05), 'feet': {'L': (0, -0.10, 0), 'R': (0, 0.10, 0)},
+                    'arot': ar(**{hand: (38, -12, -50), other: (-10, 8, -20)})}
+            hit = {'spine': (14, 14, 10), 'twist': 24, 'head': 6, 'hips': (0, -0.16, -0.08), 'feet': {'L': (0, -0.20, 0), 'R': (0, 0.16, 0)},
+                   'arot': ar(**{hand: (-82, 2, 0), other: (-30, 12, -20)})}
+            keys = [(0.0, REST0), (0.6, wind), (0.72, hit), (1.05, hit), (1.55, REST0)]
+            impact = 0.72
+        elif style == 'bash':
+            side = other  # tay khiên
+            wind = {'spine': (-4, -5, -3), 'twist': 14 if side == 'L' else -14, 'hips': (0, 0.04, -0.04), 'feet': {'L': (0, 0.06, 0), 'R': (0, -0.06, 0)},
+                    'arot': ar(**{side: (45, 10, -30), hand: (-10, -6, -15)})}
+            hit = {'spine': (12, 14, 8), 'twist': -16 if side == 'L' else 16, 'head': 4, 'hips': (0, -0.13, -0.05), 'feet': {'L': (0, -0.16, 0), 'R': (0, 0.10, 0)},
+                   'arot': ar(**{side: (-70, 0, -8), hand: (-30, -5, -30)})}
+            keys = [(0.0, REST0), (0.45, wind), (0.55, hit), (0.85, hit), (1.25, REST0)]
+            impact = 0.55
+        elif style == 'sweep':
+            sg = -1 if hand == 'R' else 1
+            wind = {'spine': (-4, -4, -2), 'twist': -24 * sg, 'hips': (0, 0.02, -0.03), 'feet': {'L': (0, 0.05, 0), 'R': (0, -0.05, 0)},
+                    'arot': ar(**{hand: (-78, 72 * sg, -12)})}
+            hit = {'spine': (8, 10, 6), 'twist': 30 * sg, 'head': 4, 'hips': (0, -0.05, -0.07),
+                   'arot': ar(**{hand: (-80, -62 * sg, -10)})}
+            keys = [(0.0, REST0), (0.7, wind), (0.82, hit), (1.15, hit), (1.65, REST0)]
+            impact = 0.82
+        elif style == 'smash':
+            wind = {'spine': (-12, -14, -10), 'head': -8, 'hips': (0, 0.03, 0.0),
+                    'arot': ar(R=(-155, -10, -30), L=(-140, 12, -30))}
+            hit = {'spine': (24, 26, 18), 'head': 8, 'hips': (0, -0.07, -0.15), 'feet': {'L': (0, -0.08, 0), 'R': (0, -0.04, 0)},
+                   'arot': ar(R=(-40, 0, -10), L=(-45, 0, -10))}
+            keys = [(0.0, REST0), (0.65, wind), (0.8, hit), (1.2, hit), (1.8, REST0)]
+            impact = 0.8
+        else:
+            fail(f'anim_biped_extra: import.mon.attack "{style}" chưa hỗ trợ')  # noqa: F821
+        keyed_clip('attack', keys[-1][0], keys)
+        report['clips']['attack']['impact'] = impact
+
+        if MON.get('guard'):
+            def guard_mon(t):
+                a = 2 * math.pi * t
+                br = math.sin(a)
+                return {'spine': (-3 + 0.8 * br, -3, -2), 'head': -4, 'hips': (0, 0.015, -0.03 + 0.003 * math.sin(2 * a)),
+                        'feet': {'L': (0, 0.04, 0), 'R': (0, -0.04, 0)},
+                        'arot': ar(**{other: (-62 + 2 * br, 8 if other == 'L' else -8, -38), hand: (-8, -4, -18)})}
+            looped_clip('guard', 1.4, guard_mon)
+
+        # death: ngã theo kiểu `death`, nằm yên ở khung cuối
+        dk = MON.get('death', 'back')
+        low = -0.48
+        if dk == 'back':
+            d1 = {'noik': True, 'armfree': True, 'spine': (-8, -10, -8), 'head': -14, 'hips': (0, 0.04, -0.03), 'hipsRot': -8,
+                  'arot': ar(L=(15, 40, -10), R=(15, -40, -10))}
+            d2 = {'noik': True, 'armfree': True, 'spine': (-4, -4, -2), 'head': -8, 'hips': (0, 0.10, -0.26), 'hipsRot': -32,
+                  'legrot': {'L': (-40, 55), 'R': (-30, 50)}, 'arot': ar(L=(40, 60, -20), R=(40, -60, -20))}
+            d3 = {'noik': True, 'armfree': True, 'spine': (0, 0, 0), 'head': -4, 'hips': (0, 0.22, low), 'hipsRot': -88,
+                  'legrot': {'L': (-6, 10), 'R': (4, 6)}, 'arot': ar(L=(30, 70, -5), R=(30, -70, -5))}
+        elif dk == 'fwd':
+            d1 = {'noik': True, 'armfree': True, 'spine': (10, 12, 8), 'head': 6, 'hips': (0, -0.03, -0.06), 'hipsRot': 8, 'legrot': {'L': (-10, 20), 'R': (-6, 16)},
+                  'arot': ar(L=(-20, 30, -10), R=(-20, -30, -10))}
+            d2 = {'noik': True, 'armfree': True, 'spine': (6, 6, 4), 'head': 4, 'hips': (0, -0.08, -0.26), 'hipsRot': 30, 'legrot': {'L': (-55, 80), 'R': (-50, 75)},
+                  'arot': ar(L=(-40, 50, -10), R=(-40, -50, -10))}
+            d3 = {'noik': True, 'armfree': True, 'spine': (0, 0, 0), 'head': 0, 'hips': (0, -0.22, low), 'hipsRot': 88,
+                  'legrot': {'L': (10, 6), 'R': (-4, 10)}, 'arot': ar(L=(-60, 40, 0), R=(-60, -40, 0))}
+        else:  # crumble: sụp khuỵu rồi đổ sấp (khôi lỗi, tượng đá)
+            d1 = {'noik': True, 'armfree': True, 'spine': (6, 6, 4), 'head': 6, 'hips': (0, 0, -0.14), 'hipsRot': 0, 'legrot': {'L': (-34, 62), 'R': (-30, 58)},
+                  'arot': ar(L=(-8, 8, -5), R=(-8, -8, -5))}
+            d2 = {'noik': True, 'armfree': True, 'spine': (22, 24, 16), 'head': 14, 'hips': (0, -0.06, -0.30), 'hipsRot': 20, 'legrot': {'L': (-70, 120), 'R': (-64, 112)},
+                  'arot': ar(L=(-30, 12, -10), R=(-30, -12, -10))}
+            d3 = {'noik': True, 'armfree': True, 'spine': (4, 4, 2), 'head': 4, 'hips': (0, -0.20, low), 'hipsRot': 86,
+                  'legrot': {'L': (8, 12), 'R': (-6, 14)}, 'arot': ar(L=(-70, 30, 0), R=(-70, -30, 0))}
+        d0 = {'noik': True, 'armfree': True}
+        keyed_clip('death', 1.7, [(0.0, d0), (0.22, d1), (0.62, d2), (1.15, d3), (1.7, d3)])
+        if MON.get('revive'):
+            keyed_clip('revive', 1.7, [(0.0, d3), (0.5, d3), (1.0, d2), (1.45, d1), (1.7, d0)])
+
+
+
+    # ---- Clip nền thủ tục (tinh anh Tripo chỉ có rig, không kèm clip): idle, run, attack, death ----
+    # Cùng khung `keyed_clip/looped_clip` ở trên. Thời điểm chạm của attack (0,45 s) khớp BIPED_BASIC_IMPACT ở monsterSkins.ts.
+    if 'idle' in EXTRA:
+        def idle(t):
+            a = 2 * math.pi * t
+            br = math.sin(a)
+            return {'spine': (1.5 * br, 1.5 * br, 1.0 * br), 'head': -2 * br, 'twist': 1.5 * math.sin(a + 1),
+                    'hips': (0.004 * math.sin(a), 0, 0.005 * math.sin(2 * a)),
+                    'arms': both(lambda sx: ((sx * (0.2 + 0.02 * br), 0.02, -0.97), (sx * 0.1, -0.3 - 0.03 * br, -0.9)))}
+        looped_clip('idle', 2.4, idle)
+
+    if 'run' in EXTRA:
+        def run(t):
+            a = 2 * math.pi * t
+            feet, arms = {}, {}
+            for s, sx in SIDES.items():
+                ph = a + (0 if s == 'R' else math.pi)
+                feet[s] = (0.0, -0.16 * math.sin(ph), 0.09 * max(0.0, math.cos(ph)))
+                sw = 0.55 * math.sin(ph)  # tay đối nhịp với chân cùng bên
+                arms[s] = ((sx * 0.22, sw, -0.82), (sx * 0.1, -0.55 + 0.25 * sw, -0.35))
+            return {'spine': (9, 9, 6), 'twist': 9 * math.sin(a), 'head': -5, 'feet': feet, 'arms': arms,
+                    'hips': (0.012 * math.sin(a), -0.02, -0.04 + 0.02 * math.cos(2 * a))}
+        looped_clip('run', 0.6, run)
+
+    if 'attack' in EXTRA:
+        # Một vung chém một tay từ sau đầu: thu tay + vặn thân (0,3 s) → chém xuống chéo (chạm 0,45 s) → giữ → về.
+        a_wind = {'spine': (-5, -5, -3), 'twist': -20, 'head': -4, 'hips': (0, 0.02, 0.0),
+                  'arms': {'R': ((-0.3, 0.35, 0.88), (-0.1, 0.45, 0.88)), 'L': ((0.4, -0.2, -0.85), (0.2, -0.6, -0.4))}}
+        a_mid = {'spine': (3, 4, 3), 'twist': -2, 'head': 0, 'hips': (0, -0.02, -0.04),
+                 'arms': {'R': ((-0.12, -0.55, 0.83), (-0.05, -0.85, 0.52)), 'L': ((0.4, -0.2, -0.85), (0.2, -0.6, -0.4))}}
+        a_hit = {'spine': (13, 15, 10), 'twist': 16, 'head': 7, 'hips': (0, -0.07, -0.1),
+                 'arms': {'R': ((-0.08, -0.92, -0.38), (-0.02, -0.75, -0.66)), 'L': ((0.5, -0.1, -0.85), (0.3, -0.4, -0.5))}}
+        keyed_clip('attack', 0.9, [(0.0, REST_K), (0.3, a_wind), (0.4, a_mid), (0.45, a_hit), (0.65, a_hit), (0.9, REST_K)])
+
+    if 'death' in EXTRA:
+        d1 = {'spine': (8, 8, 6), 'head': 14, 'hips': (0, -0.02, -0.12),
+              'arms': both(lambda sx: ((sx * 0.3, -0.2, -0.93), (sx * 0.15, -0.5, -0.85)))}
+        d2 = {'spine': (28, 30, 22), 'head': 28, 'hips': (0, -0.06, -0.30),
+              'arms': both(lambda sx: ((sx * 0.35, -0.35, -0.87), (sx * 0.2, -0.6, -0.78)))}
+        d3 = {'spine': (46, 50, 36), 'head': 38, 'hips': (0, -0.10, -0.40),
+              'arms': both(lambda sx: ((sx * 0.4, -0.5, -0.77), (sx * 0.2, -0.7, -0.68)))}
+        keyed_clip('death', 1.6, [(0.0, REST_K), (0.35, d1), (0.9, d2), (1.3, d3), (1.6, d3)])
+
+    # ---- Clip nền thủ tục cho boss người/khôi (import.proc): idle, run, attack, hit_light, death ----
+    # Dùng chung bộ đặt dáng trên (hướng tay theo vector thế giới, IK chân), không cần clip Tripo hay thư viện. Rig chữ T
+    # (`proc.tpose`) hạ tay xuống thân ở mọi dáng nghỉ; rig tay sẵn buông (khôi đá) giữ hướng tay nghỉ.
+    if PROC:
+        TP = bool(PROC.get('tpose'))
+        STRIDE = float(PROC.get('stride', 0.11))  # sải chân (phần chiều cao)
+        LIFT = float(PROC.get('lift', 0.05))
+        RUN_S = float(PROC.get('runSeconds', 0.9))
+        IDLE_S = float(PROC.get('idleSeconds', 3.2))
+        BOB = float(PROC.get('bob', 0.012))
+
+        def down(sx, swing=0.0, out=0.14, bend=0.0):
+            """Tay buông dọc thân; swing > 0 đưa tay tới trước (-y)."""
+            return ((sx * out, -swing, -0.97), (sx * (out * 0.6), -swing - 0.2 - bend, -0.9))
+
+        def arms_rest(sx, **kw):
+            return down(sx, **kw) if TP else None
+
+        def with_arms(k, fn):
+            if TP:
+                k['arms'] = both(fn)
+            return k
+
+        def idle(t):
+            a = 2 * math.pi * t
+            br = math.sin(a)
+            k = {'spine': (1.2 * br, 1.6 * br, 1.0 * br), 'twist': 1.5 * math.sin(a * 0.5), 'head': 1.5 * math.sin(a - 0.7),
+                 'hips': (0.004 * math.sin(a * 0.5), 0, 0.004 * math.sin(2 * a))}
+            return with_arms(k, lambda sx: down(sx, swing=0.04 * br, out=0.15 + 0.02 * br))
+
+        looped_clip('idle', IDLE_S, idle)
+
+        def run(t):
+            a = 2 * math.pi * t
+            f = lambda ph: (0.0, -STRIDE * math.sin(a + ph), LIFT * max(0.0, math.cos(a + ph)))
+            sw = math.sin(a)
+            k = {'spine': (7, 8, 5), 'twist': 7 * sw, 'head': -4,
+                 'hips': (0.012 * math.sin(a), -0.02, -BOB * 4 + BOB * math.cos(2 * a)),
+                 'feet': {'L': f(0.0), 'R': f(math.pi)}}
+            return with_arms(k, lambda sx: down(sx, swing=0.55 * sw * -sx, out=0.12, bend=0.35))
+
+        looped_clip('run', RUN_S, run)
+
+        # attack: vung tay phải chém xéo (chạm ~0,45 s), gọn hơn sweep để dùng làm đòn thường
+        atk_wind = {'spine': (-6, -6, -4), 'twist': -22, 'head': -4, 'hips': (0, 0.02, -0.01),
+                    'arms': {'R': ((-0.25, 0.4, 0.88), (-0.1, 0.5, 0.86)), 'L': ((0.3, 0.0, -0.95), (0.2, -0.3, -0.9))}}
+        atk_hit = {'spine': (12, 14, 9), 'twist': 16, 'head': 6, 'hips': (0, -0.07, -0.09),
+                   'feet': {'L': (0.0, -0.05, 0.0), 'R': (0.0, 0.07, 0.0)},
+                   'arms': {'R': ((-0.1, -0.88, -0.45), (-0.02, -0.8, -0.6)), 'L': ((0.35, 0.05, -0.93), (0.3, -0.35, -0.88))}}
+        keyed_clip('attack', 1.1, [(0.0, REST_K if not TP else {'arms': both(lambda sx: down(sx))}), (0.32, atk_wind),
+                                   (0.45, atk_hit), (0.65, atk_hit), (1.1, REST_K if not TP else {'arms': both(lambda sx: down(sx))})])
+
+        hl = {'spine': (-8, -9, -6), 'head': -13, 'hips': (0, 0.035, -0.012), 'feet': {'L': (0, 0.03, 0), 'R': (0, 0.0, 0)}}
+        hl0 = {'arms': both(lambda sx: down(sx))} if TP else REST_K
+        hl1 = dict(hl)
+        if TP:
+            hl1['arms'] = both(lambda sx: down(sx, swing=-0.35, out=0.3))
+        keyed_clip('hit_light', 0.36, [(0.0, hl0), (0.1, hl1), (0.36, hl0)])
+
+        # death: loạng choạng → quỵ gối → ngã úp (tilt, bỏ IK chân), nằm yên ở khung cuối
+        d0 = {'arms': both(lambda sx: down(sx))} if TP else REST_K
+        d1 = with_arms({'spine': (-8, -10, -6), 'head': -14, 'hips': (0, 0.04, -0.03)}, lambda sx: down(sx, swing=-0.3, out=0.35))
+        d2 = with_arms({'spine': (16, 18, 12), 'head': 18, 'hips': (0, -0.03, -0.24),
+                        'feet': {'L': (0.0, -0.02, 0.0), 'R': (0.0, 0.05, 0.0)}}, lambda sx: down(sx, swing=0.05, out=0.12))
+        d3 = with_arms({'tilt': 82, 'noik': True, 'spine': (6, 6, 4), 'head': 8, 'hips': (0, -0.34, -0.42)}, lambda sx: down(sx, swing=0.2, out=0.5))
+        d4 = dict(d3)
+        keyed_clip('death', 2.4, [(0.0, d0), (0.22, d1), (0.8, d2), (1.15, d2), (1.75, d3), (2.4, d4)], settle=True)
 
 
 for p in pb:

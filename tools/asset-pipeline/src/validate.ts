@@ -101,7 +101,7 @@ export async function validate(opts: ValidateOptions = {}): Promise<ValidateRepo
   for (const [id, entry] of Object.entries(manifest.assets)) {
     if (opts.only && id !== opts.only) continue;
     report.checked.push(id);
-    if (!ASSET_ID.test(id)) err(id, 'asset id sai quy ước (tiền tố chr_/mon_/boss_/prop_/arch_/fx_/anim_ + snake_case không dấu)');
+    if (!ASSET_ID.test(id)) err(id, 'asset id sai quy ước (tiền tố chr_/mon_/elite_/boss_/prop_/arch_/fx_/anim_ + snake_case không dấu)');
     if (!licensed.has(id)) err(id, `thiếu dòng trong ${rel(opts.licensesFile ?? DEFAULTS.licensesFile)}`);
     const spec = budgets.classes[entry.class];
     if (!spec) {

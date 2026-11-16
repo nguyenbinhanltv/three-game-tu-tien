@@ -154,6 +154,90 @@
         }
       }
     },
+    "boss_dia_mach_long": {
+      "id": "boss_dia_mach_long",
+      "class": "boss",
+      "source": "assets/build/raw/boss_dia_mach_long.glb",
+      "file": "boss_dia_mach_long.bfebbe71b5.glb",
+      "bytes": 2296432,
+      "rawBytes": 2376488,
+      "triangles": 19966,
+      "rawTriangles": 19966,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 33,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_dia_mach_long_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_dia_mach_long_color",
+          "mimeType": "image/jpeg",
+          "width": 1536,
+          "height": 1536,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_dia_mach_long_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19966
+        },
+        {
+          "level": 1,
+          "triangles": 6987,
+          "target": 6988
+        },
+        {
+          "level": 2,
+          "triangles": 2395,
+          "target": 2396
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 4.6472,
+          "height": 4.6307,
+          "depth": 9,
+          "minY": 0
+        },
+        "build": {
+          "width": 4.6472,
+          "height": 4.6307,
+          "depth": 9,
+          "minY": 0
+        }
+      }
+    },
     "boss_han_giao": {
       "id": "boss_han_giao",
       "class": "boss",
@@ -407,6 +491,346 @@
         }
       }
     },
+    "boss_kinh_nguyet_chan_quan": {
+      "id": "boss_kinh_nguyet_chan_quan",
+      "class": "boss",
+      "source": "assets/build/raw/boss_kinh_nguyet_chan_quan.glb",
+      "file": "boss_kinh_nguyet_chan_quan.94ce23fab6.glb",
+      "bytes": 2106812,
+      "rawBytes": 2144340,
+      "triangles": 19143,
+      "rawTriangles": 19143,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 42,
+      "animations": [
+        "attack",
+        "chant",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_kinh_nguyet_chan_quan_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_kinh_nguyet_chan_quan_color",
+          "mimeType": "image/jpeg",
+          "width": 1536,
+          "height": 1536,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_kinh_nguyet_chan_quan_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19143
+        },
+        {
+          "level": 1,
+          "triangles": 6691,
+          "target": 6700
+        },
+        {
+          "level": 2,
+          "triangles": 2287,
+          "target": 2297
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 4.7984,
+          "height": 3.6,
+          "depth": 2.0595,
+          "minY": 0
+        },
+        "build": {
+          "width": 4.7984,
+          "height": 3.6,
+          "depth": 2.0595,
+          "minY": 0
+        }
+      }
+    },
+    "boss_thach_tam_khoi_vuong": {
+      "id": "boss_thach_tam_khoi_vuong",
+      "class": "boss",
+      "source": "assets/build/raw/boss_thach_tam_khoi_vuong.glb",
+      "file": "boss_thach_tam_khoi_vuong.41a4aeaf0d.glb",
+      "bytes": 2036672,
+      "rawBytes": 2100732,
+      "triangles": 19039,
+      "rawTriangles": 19039,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 22,
+      "animations": [
+        "attack",
+        "chant",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_thach_tam_khoi_vuong_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_thach_tam_khoi_vuong_color",
+          "mimeType": "image/jpeg",
+          "width": 1536,
+          "height": 1536,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_thach_tam_khoi_vuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19039
+        },
+        {
+          "level": 1,
+          "triangles": 6664,
+          "target": 6664
+        },
+        {
+          "level": 2,
+          "triangles": 2284,
+          "target": 2285
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 5.6996,
+          "height": 5,
+          "depth": 3.7737,
+          "minY": 0
+        },
+        "build": {
+          "width": 5.6996,
+          "height": 5,
+          "depth": 3.7737,
+          "minY": 0
+        }
+      }
+    },
+    "boss_thien_khuyet_thu_linh": {
+      "id": "boss_thien_khuyet_thu_linh",
+      "class": "boss",
+      "source": "assets/build/raw/boss_thien_khuyet_thu_linh.glb",
+      "file": "boss_thien_khuyet_thu_linh.5c52e97a18.glb",
+      "bytes": 2263464,
+      "rawBytes": 2322652,
+      "triangles": 18906,
+      "rawTriangles": 18906,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 38,
+      "animations": [
+        "attack",
+        "chant",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_thien_khuyet_thu_linh_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_thien_khuyet_thu_linh_color",
+          "mimeType": "image/jpeg",
+          "width": 1536,
+          "height": 1536,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_thien_khuyet_thu_linh_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 18906
+        },
+        {
+          "level": 1,
+          "triangles": 6611,
+          "target": 6617
+        },
+        {
+          "level": 2,
+          "triangles": 2267,
+          "target": 2269
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 5.009,
+          "height": 8,
+          "depth": 4.6404,
+          "minY": 0
+        },
+        "build": {
+          "width": 5.009,
+          "height": 8,
+          "depth": 4.6404,
+          "minY": 0
+        }
+      }
+    },
+    "boss_thon_mach_ngo_cong_vuong": {
+      "id": "boss_thon_mach_ngo_cong_vuong",
+      "class": "boss",
+      "source": "assets/build/raw/boss_thon_mach_ngo_cong_vuong.glb",
+      "file": "boss_thon_mach_ngo_cong_vuong.12150efa95.glb",
+      "bytes": 2177172,
+      "rawBytes": 2343168,
+      "triangles": 19303,
+      "rawTriangles": 19303,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 17,
+      "animations": [
+        "attack",
+        "chant",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_thon_mach_ngo_cong_vuong_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_thon_mach_ngo_cong_vuong_color",
+          "mimeType": "image/jpeg",
+          "width": 1536,
+          "height": 1536,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_thon_mach_ngo_cong_vuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19303
+        },
+        {
+          "level": 1,
+          "triangles": 6755,
+          "target": 6756
+        },
+        {
+          "level": 2,
+          "triangles": 2310,
+          "target": 2316
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 5.746,
+          "height": 8.1014,
+          "depth": 14,
+          "minY": 0
+        },
+        "build": {
+          "width": 5.746,
+          "height": 8.1014,
+          "depth": 14,
+          "minY": 0
+        }
+      }
+    },
     "boss_thu_mo_tuong": {
       "id": "boss_thu_mo_tuong",
       "class": "boss",
@@ -488,6 +912,176 @@
           "width": 2.2327,
           "height": 2.25,
           "depth": 0.9807,
+          "minY": 0
+        }
+      }
+    },
+    "boss_van_hai_kinh_vuong": {
+      "id": "boss_van_hai_kinh_vuong",
+      "class": "boss",
+      "source": "assets/build/raw/boss_van_hai_kinh_vuong.glb",
+      "file": "boss_van_hai_kinh_vuong.e77955c1b2.glb",
+      "bytes": 1790348,
+      "rawBytes": 2015904,
+      "triangles": 19058,
+      "rawTriangles": 19058,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 17,
+      "animations": [
+        "attack",
+        "chant",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_van_hai_kinh_vuong_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_van_hai_kinh_vuong_color",
+          "mimeType": "image/jpeg",
+          "width": 1536,
+          "height": 1536,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_van_hai_kinh_vuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19058
+        },
+        {
+          "level": 1,
+          "triangles": 6670,
+          "target": 6670
+        },
+        {
+          "level": 2,
+          "triangles": 2286,
+          "target": 2287
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 17.9429,
+          "height": 8.4968,
+          "depth": 18,
+          "minY": 0
+        },
+        "build": {
+          "width": 17.9429,
+          "height": 8.4968,
+          "depth": 18,
+          "minY": 0
+        }
+      }
+    },
+    "boss_vo_dien_than_quan": {
+      "id": "boss_vo_dien_than_quan",
+      "class": "boss",
+      "source": "assets/build/raw/boss_vo_dien_than_quan.glb",
+      "file": "boss_vo_dien_than_quan.820f01a86a.glb",
+      "bytes": 2178748,
+      "rawBytes": 2232796,
+      "triangles": 18928,
+      "rawTriangles": 18928,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 49,
+      "animations": [
+        "attack",
+        "chant",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_vo_dien_than_quan_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_vo_dien_than_quan_color",
+          "mimeType": "image/jpeg",
+          "width": 1536,
+          "height": 1536,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_vo_dien_than_quan_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 18928
+        },
+        {
+          "level": 1,
+          "triangles": 6620,
+          "target": 6625
+        },
+        {
+          "level": 2,
+          "triangles": 2270,
+          "target": 2271
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 3.6034,
+          "height": 4.6,
+          "depth": 2.2909,
+          "minY": 0
+        },
+        "build": {
+          "width": 3.6034,
+          "height": 4.6,
+          "depth": 2.2909,
           "minY": 0
         }
       }
@@ -852,6 +1446,1318 @@
         }
       }
     },
+    "elite_cot_kiem_thong_linh": {
+      "id": "elite_cot_kiem_thong_linh",
+      "class": "elite",
+      "source": "assets/build/raw/elite_cot_kiem_thong_linh.glb",
+      "file": "elite_cot_kiem_thong_linh.3eef53c5d8.glb",
+      "bytes": 1279640,
+      "rawBytes": 1351212,
+      "triangles": 11998,
+      "rawTriangles": 13576,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 44,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_cot_kiem_thong_linh_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_cot_kiem_thong_linh_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_cot_kiem_thong_linh_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11998
+        },
+        {
+          "level": 1,
+          "triangles": 4198,
+          "target": 4199
+        },
+        {
+          "level": 2,
+          "triangles": 1412,
+          "target": 1440
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 3.0427,
+          "height": 2.8,
+          "depth": 1.1538,
+          "minY": 0
+        },
+        "build": {
+          "width": 3.0427,
+          "height": 2.7999,
+          "depth": 1.1538,
+          "minY": 0.0001
+        }
+      }
+    },
+    "elite_cu_nham_vien": {
+      "id": "elite_cu_nham_vien",
+      "class": "elite",
+      "source": "assets/build/raw/elite_cu_nham_vien.glb",
+      "file": "elite_cu_nham_vien.85eaddcd35.glb",
+      "bytes": 1372136,
+      "rawBytes": 1435236,
+      "triangles": 12000,
+      "rawTriangles": 13906,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 53,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_cu_nham_vien_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_cu_nham_vien_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_cu_nham_vien_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12000
+        },
+        {
+          "level": 1,
+          "triangles": 4192,
+          "target": 4200
+        },
+        {
+          "level": 2,
+          "triangles": 1440,
+          "target": 1440
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.6664,
+          "height": 1.8,
+          "depth": 0.9338,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.6664,
+          "height": 1.8,
+          "depth": 0.9338,
+          "minY": 0
+        }
+      }
+    },
+    "elite_da_minh_loc_vuong": {
+      "id": "elite_da_minh_loc_vuong",
+      "class": "elite",
+      "source": "assets/build/raw/elite_da_minh_loc_vuong.glb",
+      "file": "elite_da_minh_loc_vuong.1aec97913a.glb",
+      "bytes": 1062796,
+      "rawBytes": 1095168,
+      "triangles": 11342,
+      "rawTriangles": 11342,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 30,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_da_minh_loc_vuong_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_da_minh_loc_vuong_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_da_minh_loc_vuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11342
+        },
+        {
+          "level": 1,
+          "triangles": 3966,
+          "target": 3970
+        },
+        {
+          "level": 2,
+          "triangles": 1352,
+          "target": 1361
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.3756,
+          "height": 3.2871,
+          "depth": 3,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.3756,
+          "height": 3.2871,
+          "depth": 3,
+          "minY": 0
+        }
+      }
+    },
+    "elite_ho_mach_khoi_tuong": {
+      "id": "elite_ho_mach_khoi_tuong",
+      "class": "elite",
+      "source": "assets/build/raw/elite_ho_mach_khoi_tuong.glb",
+      "file": "elite_ho_mach_khoi_tuong.d1c3be47b1.glb",
+      "bytes": 1314764,
+      "rawBytes": 1385244,
+      "triangles": 12000,
+      "rawTriangles": 13110,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 52,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_ho_mach_khoi_tuong_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_ho_mach_khoi_tuong_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_ho_mach_khoi_tuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12000
+        },
+        {
+          "level": 1,
+          "triangles": 4199,
+          "target": 4200
+        },
+        {
+          "level": 2,
+          "triangles": 1439,
+          "target": 1440
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 3.3772,
+          "height": 3,
+          "depth": 2.3635,
+          "minY": 0
+        },
+        "build": {
+          "width": 3.3772,
+          "height": 3,
+          "depth": 2.3635,
+          "minY": 0
+        }
+      }
+    },
+    "elite_huyet_nha_lang": {
+      "id": "elite_huyet_nha_lang",
+      "class": "elite",
+      "source": "assets/build/raw/elite_huyet_nha_lang.glb",
+      "file": "elite_huyet_nha_lang.2e84632110.glb",
+      "bytes": 1071836,
+      "rawBytes": 1088736,
+      "triangles": 11288,
+      "rawTriangles": 11288,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 23,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_huyet_nha_lang_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_huyet_nha_lang_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_huyet_nha_lang_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11288
+        },
+        {
+          "level": 1,
+          "triangles": 3950,
+          "target": 3951
+        },
+        {
+          "level": 2,
+          "triangles": 1352,
+          "target": 1355
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.6887,
+          "height": 0.881,
+          "depth": 1.5,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.6887,
+          "height": 0.881,
+          "depth": 1.5,
+          "minY": 0
+        }
+      }
+    },
+    "elite_kinh_dien_ma_quan": {
+      "id": "elite_kinh_dien_ma_quan",
+      "class": "elite",
+      "source": "assets/build/raw/elite_kinh_dien_ma_quan.glb",
+      "file": "elite_kinh_dien_ma_quan.67cd84126a.glb",
+      "bytes": 1258240,
+      "rawBytes": 1304184,
+      "triangles": 11997,
+      "rawTriangles": 13124,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 52,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_kinh_dien_ma_quan_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_kinh_dien_ma_quan_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_kinh_dien_ma_quan_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11997
+        },
+        {
+          "level": 1,
+          "triangles": 4199,
+          "target": 4199
+        },
+        {
+          "level": 2,
+          "triangles": 1439,
+          "target": 1440
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8659,
+          "height": 2.6,
+          "depth": 0.9821,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.8659,
+          "height": 2.6,
+          "depth": 0.9821,
+          "minY": 0
+        }
+      }
+    },
+    "elite_liet_cot_bao": {
+      "id": "elite_liet_cot_bao",
+      "class": "elite",
+      "source": "assets/build/raw/elite_liet_cot_bao.glb",
+      "file": "elite_liet_cot_bao.6af3ac91cb.glb",
+      "bytes": 1058728,
+      "rawBytes": 1078268,
+      "triangles": 11444,
+      "rawTriangles": 11444,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 20,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_liet_cot_bao_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_liet_cot_bao_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_liet_cot_bao_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11444
+        },
+        {
+          "level": 1,
+          "triangles": 4004,
+          "target": 4005
+        },
+        {
+          "level": 2,
+          "triangles": 1372,
+          "target": 1373
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.172,
+          "height": 1.6994,
+          "depth": 2.8,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.172,
+          "height": 1.6994,
+          "depth": 2.8,
+          "minY": 0
+        }
+      }
+    },
+    "elite_loi_van_su_vuong": {
+      "id": "elite_loi_van_su_vuong",
+      "class": "elite",
+      "source": "assets/build/raw/elite_loi_van_su_vuong.glb",
+      "file": "elite_loi_van_su_vuong.40efdae26c.glb",
+      "bytes": 1002016,
+      "rawBytes": 1102532,
+      "triangles": 11995,
+      "rawTriangles": 13979,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 26,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_loi_van_su_vuong_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_loi_van_su_vuong_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_loi_van_su_vuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11995
+        },
+        {
+          "level": 1,
+          "triangles": 4193,
+          "target": 4198
+        },
+        {
+          "level": 2,
+          "triangles": 1439,
+          "target": 1439
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.4471,
+          "height": 2.0996,
+          "depth": 3.2,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.4471,
+          "height": 2.0996,
+          "depth": 3.2,
+          "minY": 0
+        }
+      }
+    },
+    "elite_thach_tuong_dai_tuong": {
+      "id": "elite_thach_tuong_dai_tuong",
+      "class": "elite",
+      "source": "assets/build/raw/elite_thach_tuong_dai_tuong.glb",
+      "file": "elite_thach_tuong_dai_tuong.38f7d0b8a4.glb",
+      "bytes": 1339672,
+      "rawBytes": 1430244,
+      "triangles": 11997,
+      "rawTriangles": 13888,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 51,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "sweep"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_thach_tuong_dai_tuong_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_thach_tuong_dai_tuong_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_thach_tuong_dai_tuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11997
+        },
+        {
+          "level": 1,
+          "triangles": 4199,
+          "target": 4199
+        },
+        {
+          "level": 2,
+          "triangles": 1439,
+          "target": 1440
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.3464,
+          "height": 3.4,
+          "depth": 1.0919,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.3464,
+          "height": 3.4,
+          "depth": 1.0919,
+          "minY": 0
+        }
+      }
+    },
+    "elite_van_hac_vuong": {
+      "id": "elite_van_hac_vuong",
+      "class": "elite",
+      "source": "assets/build/raw/elite_van_hac_vuong.glb",
+      "file": "elite_van_hac_vuong.009bef7968.glb",
+      "bytes": 995820,
+      "rawBytes": 969412,
+      "triangles": 11625,
+      "rawTriangles": 11625,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 21,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_van_hac_vuong_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_van_hac_vuong_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_van_hac_vuong_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11625
+        },
+        {
+          "level": 1,
+          "triangles": 4063,
+          "target": 4069
+        },
+        {
+          "level": 2,
+          "triangles": 1471,
+          "target": 1395
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 7,
+          "height": 3.8582,
+          "depth": 4.1544,
+          "minY": 0
+        },
+        "build": {
+          "width": 7,
+          "height": 3.8582,
+          "depth": 4.1544,
+          "minY": 0
+        }
+      }
+    },
+    "elite_xich_dien_ho": {
+      "id": "elite_xich_dien_ho",
+      "class": "elite",
+      "source": "assets/build/raw/elite_xich_dien_ho.glb",
+      "file": "elite_xich_dien_ho.e144a3c6f5.glb",
+      "bytes": 1128368,
+      "rawBytes": 1099568,
+      "triangles": 11746,
+      "rawTriangles": 11746,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 47,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_xich_dien_ho_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_xich_dien_ho_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_xich_dien_ho_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11746
+        },
+        {
+          "level": 1,
+          "triangles": 4107,
+          "target": 4111
+        },
+        {
+          "level": 2,
+          "triangles": 1406,
+          "target": 1410
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.4721,
+          "height": 0.8705,
+          "depth": 1.27,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.4721,
+          "height": 0.8705,
+          "depth": 1.27,
+          "minY": 0
+        }
+      }
+    },
+    "elite_xich_sa_ngo_cong": {
+      "id": "elite_xich_sa_ngo_cong",
+      "class": "elite",
+      "source": "assets/build/raw/elite_xich_sa_ngo_cong.glb",
+      "file": "elite_xich_sa_ngo_cong.9e1b311362.glb",
+      "bytes": 986268,
+      "rawBytes": 1080612,
+      "triangles": 11629,
+      "rawTriangles": 11629,
+      "lod0Cap": 12000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 17,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "elite_xich_sa_ngo_cong_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "elite_xich_sa_ngo_cong_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "elite_xich_sa_ngo_cong_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11629
+        },
+        {
+          "level": 1,
+          "triangles": 4070,
+          "target": 4070
+        },
+        {
+          "level": 2,
+          "triangles": 1394,
+          "target": 1395
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.603,
+          "height": 1.6201,
+          "depth": 6,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.603,
+          "height": 1.6201,
+          "depth": 6,
+          "minY": 0
+        }
+      }
+    },
+    "mon_bich_ngoc_kim_thien": {
+      "id": "mon_bich_ngoc_kim_thien",
+      "class": "monster",
+      "source": "assets/build/raw/mon_bich_ngoc_kim_thien.glb",
+      "file": "mon_bich_ngoc_kim_thien.589e052cd0.glb",
+      "bytes": 606688,
+      "rawBytes": 597632,
+      "triangles": 2915,
+      "rawTriangles": 2915,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 24,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_bich_ngoc_kim_thien_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_bich_ngoc_kim_thien_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_bich_ngoc_kim_thien_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2915
+        },
+        {
+          "level": 1,
+          "triangles": 1017,
+          "target": 1020
+        },
+        {
+          "level": 2,
+          "triangles": 346,
+          "target": 350
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.766,
+          "height": 0.4744,
+          "depth": 0.7,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.766,
+          "height": 0.4744,
+          "depth": 0.7,
+          "minY": 0
+        }
+      }
+    },
+    "mon_co_thanh_chien_ma": {
+      "id": "mon_co_thanh_chien_ma",
+      "class": "monster",
+      "source": "assets/build/raw/mon_co_thanh_chien_ma.glb",
+      "file": "mon_co_thanh_chien_ma.8bab565272.glb",
+      "bytes": 1045172,
+      "rawBytes": 1073572,
+      "triangles": 7997,
+      "rawTriangles": 8859,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 51,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_co_thanh_chien_ma_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_co_thanh_chien_ma_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_co_thanh_chien_ma_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7997
+        },
+        {
+          "level": 1,
+          "triangles": 2795,
+          "target": 2799
+        },
+        {
+          "level": 2,
+          "triangles": 955,
+          "target": 960
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.715,
+          "height": 2.6,
+          "depth": 0.9929,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.715,
+          "height": 2.6,
+          "depth": 0.9929,
+          "minY": 0
+        }
+      }
+    },
+    "mon_cot_ve_kiem_thu": {
+      "id": "mon_cot_ve_kiem_thu",
+      "class": "monster",
+      "source": "assets/build/raw/mon_cot_ve_kiem_thu.glb",
+      "file": "mon_cot_ve_kiem_thu.89040c7e03.glb",
+      "bytes": 996104,
+      "rawBytes": 1047864,
+      "triangles": 8000,
+      "rawTriangles": 8877,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 43,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "revive",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_cot_ve_kiem_thu_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_cot_ve_kiem_thu_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_cot_ve_kiem_thu_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 8000
+        },
+        {
+          "level": 1,
+          "triangles": 2796,
+          "target": 2800
+        },
+        {
+          "level": 2,
+          "triangles": 960,
+          "target": 960
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.7965,
+          "height": 1.8,
+          "depth": 0.7861,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.7965,
+          "height": 1.8,
+          "depth": 0.7861,
+          "minY": 0
+        }
+      }
+    },
+    "mon_da_minh_loc": {
+      "id": "mon_da_minh_loc",
+      "class": "monster",
+      "source": "assets/build/raw/mon_da_minh_loc.glb",
+      "file": "mon_da_minh_loc.9b9740fbaa.glb",
+      "bytes": 805064,
+      "rawBytes": 804024,
+      "triangles": 7854,
+      "rawTriangles": 7854,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 23,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_da_minh_loc_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_da_minh_loc_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_da_minh_loc_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7854
+        },
+        {
+          "level": 1,
+          "triangles": 2748,
+          "target": 2749
+        },
+        {
+          "level": 2,
+          "triangles": 942,
+          "target": 942
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.7509,
+          "height": 2.2852,
+          "depth": 2.2,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.7509,
+          "height": 2.2852,
+          "depth": 2.2,
+          "minY": 0
+        }
+      }
+    },
     "mon_hoa_van_ho": {
       "id": "mon_hoa_van_ho",
       "class": "monster",
@@ -934,6 +2840,413 @@
         }
       }
     },
+    "mon_khai_mach_khoi_loi": {
+      "id": "mon_khai_mach_khoi_loi",
+      "class": "monster",
+      "source": "assets/build/raw/mon_khai_mach_khoi_loi.glb",
+      "file": "mon_khai_mach_khoi_loi.0c30db728c.glb",
+      "bytes": 1014808,
+      "rawBytes": 1020296,
+      "triangles": 7912,
+      "rawTriangles": 7912,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 47,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_khai_mach_khoi_loi_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_khai_mach_khoi_loi_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_khai_mach_khoi_loi_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7912
+        },
+        {
+          "level": 1,
+          "triangles": 2762,
+          "target": 2769
+        },
+        {
+          "level": 2,
+          "triangles": 944,
+          "target": 949
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.0575,
+          "height": 2.2,
+          "depth": 1.0252,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.0575,
+          "height": 2.2,
+          "depth": 1.0252,
+          "minY": 0
+        }
+      }
+    },
+    "mon_kinh_linh": {
+      "id": "mon_kinh_linh",
+      "class": "monster",
+      "source": "assets/build/raw/mon_kinh_linh.glb",
+      "file": "mon_kinh_linh.a09bfd365b.glb",
+      "bytes": 955920,
+      "rawBytes": 983672,
+      "triangles": 7603,
+      "rawTriangles": 7603,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 51,
+      "animations": [
+        "attack",
+        "death",
+        "guard",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_kinh_linh_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_kinh_linh_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_kinh_linh_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7603
+        },
+        {
+          "level": 1,
+          "triangles": 2656,
+          "target": 2661
+        },
+        {
+          "level": 2,
+          "triangles": 954,
+          "target": 912
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.0407,
+          "height": 2,
+          "depth": 0.8575,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.0407,
+          "height": 2,
+          "depth": 0.8575,
+          "minY": 0
+        }
+      }
+    },
+    "mon_mach_thuong_ho_ve": {
+      "id": "mon_mach_thuong_ho_ve",
+      "class": "monster",
+      "source": "assets/build/raw/mon_mach_thuong_ho_ve.glb",
+      "file": "mon_mach_thuong_ho_ve.c9524269f8.glb",
+      "bytes": 1000672,
+      "rawBytes": 1069244,
+      "triangles": 8000,
+      "rawTriangles": 9865,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 50,
+      "animations": [
+        "attack",
+        "death",
+        "guard",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_mach_thuong_ho_ve_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_mach_thuong_ho_ve_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_mach_thuong_ho_ve_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 8000
+        },
+        {
+          "level": 1,
+          "triangles": 2800,
+          "target": 2800
+        },
+        {
+          "level": 2,
+          "triangles": 1038,
+          "target": 960
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.8933,
+          "height": 1.75,
+          "depth": 0.8505,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.8933,
+          "height": 1.75,
+          "depth": 0.8505,
+          "minY": 0
+        }
+      }
+    },
+    "mon_ngo_cong_au": {
+      "id": "mon_ngo_cong_au",
+      "class": "monster",
+      "source": "assets/build/raw/mon_ngo_cong_au.glb",
+      "file": "mon_ngo_cong_au.d3ed33bca7.glb",
+      "bytes": 697744,
+      "rawBytes": 674600,
+      "triangles": 5634,
+      "rawTriangles": 5634,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 14,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_ngo_cong_au_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_ngo_cong_au_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_ngo_cong_au_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 5634
+        },
+        {
+          "level": 1,
+          "triangles": 1966,
+          "target": 1972
+        },
+        {
+          "level": 2,
+          "triangles": 674,
+          "target": 676
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.1789,
+          "height": 0.5441,
+          "depth": 2.4,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.1789,
+          "height": 0.5441,
+          "depth": 2.4,
+          "minY": 0
+        }
+      }
+    },
+    "mon_phu_dao_thach_quy": {
+      "id": "mon_phu_dao_thach_quy",
+      "class": "monster",
+      "source": "assets/build/raw/mon_phu_dao_thach_quy.glb",
+      "file": "mon_phu_dao_thach_quy.1889faf929.glb",
+      "bytes": 869592,
+      "rawBytes": 891680,
+      "triangles": 7473,
+      "rawTriangles": 7473,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 29,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_phu_dao_thach_quy_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_phu_dao_thach_quy_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_phu_dao_thach_quy_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7473
+        },
+        {
+          "level": 1,
+          "triangles": 2614,
+          "target": 2616
+        },
+        {
+          "level": 2,
+          "triangles": 896,
+          "target": 897
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.073,
+          "height": 1.7916,
+          "depth": 2.6,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.073,
+          "height": 1.7916,
+          "depth": 2.6,
+          "minY": 0
+        }
+      }
+    },
     "mon_soi_xam": {
       "id": "mon_soi_xam",
       "class": "monster",
@@ -1011,6 +3324,169 @@
           "width": 0.3686,
           "height": 0.9104,
           "depth": 1.5,
+          "minY": 0
+        }
+      }
+    },
+    "mon_thach_giap_te": {
+      "id": "mon_thach_giap_te",
+      "class": "monster",
+      "source": "assets/build/raw/mon_thach_giap_te.glb",
+      "file": "mon_thach_giap_te.b3ccc1e86e.glb",
+      "bytes": 881720,
+      "rawBytes": 881444,
+      "triangles": 7784,
+      "rawTriangles": 7784,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 31,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_thach_giap_te_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_thach_giap_te_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_thach_giap_te_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7784
+        },
+        {
+          "level": 1,
+          "triangles": 2724,
+          "target": 2724
+        },
+        {
+          "level": 2,
+          "triangles": 934,
+          "target": 934
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.249,
+          "height": 1.4059,
+          "depth": 2.2,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.249,
+          "height": 1.4059,
+          "depth": 2.2,
+          "minY": 0
+        }
+      }
+    },
+    "mon_thach_tuong_vo_si": {
+      "id": "mon_thach_tuong_vo_si",
+      "class": "monster",
+      "source": "assets/build/raw/mon_thach_tuong_vo_si.glb",
+      "file": "mon_thach_tuong_vo_si.224a8bd1b5.glb",
+      "bytes": 959572,
+      "rawBytes": 973120,
+      "triangles": 7450,
+      "rawTriangles": 7450,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 40,
+      "animations": [
+        "attack",
+        "death",
+        "guard",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_thach_tuong_vo_si_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_thach_tuong_vo_si_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_thach_tuong_vo_si_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7450
+        },
+        {
+          "level": 1,
+          "triangles": 2607,
+          "target": 2608
+        },
+        {
+          "level": 2,
+          "triangles": 893,
+          "target": 894
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8271,
+          "height": 2.4,
+          "depth": 0.7155,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.8271,
+          "height": 2.4,
+          "depth": 0.7155,
           "minY": 0
         }
       }
@@ -1173,6 +3649,87 @@
           "width": 0.4513,
           "height": 0.79,
           "depth": 1.4,
+          "minY": 0
+        }
+      }
+    },
+    "mon_van_hac": {
+      "id": "mon_van_hac",
+      "class": "monster",
+      "source": "assets/build/raw/mon_van_hac.glb",
+      "file": "mon_van_hac.7b19203258.glb",
+      "bytes": 763340,
+      "rawBytes": 759684,
+      "triangles": 6587,
+      "rawTriangles": 6587,
+      "lod0Cap": 8000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 34,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "mon_van_hac_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_van_hac_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_van_hac_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 6587
+        },
+        {
+          "level": 1,
+          "triangles": 2302,
+          "target": 2305
+        },
+        {
+          "level": 2,
+          "triangles": 786,
+          "target": 790
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 3.2,
+          "height": 1.9795,
+          "depth": 2.1109,
+          "minY": 0
+        },
+        "build": {
+          "width": 3.2,
+          "height": 1.9795,
+          "depth": 2.1109,
           "minY": 0
         }
       }
