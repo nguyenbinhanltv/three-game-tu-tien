@@ -88,6 +88,8 @@ export interface MonsterDef {
    * vạch báo đều theo mặt đất); client nâng model lên, hạ xuống khi lộ yếu điểm (`MF_WEAK`) và khi chết.
    */
   hover?: number;
+  /** Vũng độc khi chết (E3-G). */
+  deathPool?: MonsterDeathPool;
   color: string;
   accent: string;
   hpMul: number;
@@ -179,6 +181,33 @@ export interface MonsterChant {
   stun: number;
   /** Hút mạch (E2-C, Thôn Mạch): trong lúc niệm boss hồi `drain` (tỉ lệ máu tối đa) mỗi giây; ngắt chú thì ngừng. */
   drain?: number;
+  /** Nuốt (E3-G): niệm xong, người đứng trong `pull.range` m (không ngự kiếm) bị kéo về phía boss. */
+  pull?: MonsterPull;
+}
+
+/**
+ * Kéo người chơi (E3-G, Nuốt của Vân Hải Kình Vương): sau khi chú thả, vòng báo bán kính `range` hiện `delay` giây,
+ * rồi mọi người đứng trong vòng (trừ người đang ngự kiếm/lơ lửng: kháng) bị server kéo về phía boss trong `dur` giây
+ * tới cách tâm boss `stop` m. Kéo theo `planDash` nên không qua vách, không rơi khỏi đảo; vùng nổ của chú nổ sau khi kéo xong.
+ */
+export interface MonsterPull {
+  range: number;
+  delay: number;
+  dur: number;
+  stop: number;
+}
+
+/**
+ * Vũng độc khi chết (E3-G, Bích Ngọc Kim Thiền): chỗ quái chết hiện vạch báo bán kính `r` trong `delay` giây,
+ * rồi vũng độc tồn tại `dur` giây; ai đứng trong vũng chịu `mul` × tấn công quái mỗi `tick` giây, ra khỏi vũng là hết.
+ */
+export interface MonsterDeathPool {
+  r: number;
+  delay: number;
+  dur: number;
+  tick: number;
+  mul: number;
+  kind: 'lightning' | 'frost' | 'fire' | 'spirit';
 }
 
 /**
