@@ -177,6 +177,9 @@ export const BOSS_CUTSCENE = { dur: 2.6, out: 0.35 };
 /** Chuyển pha (P2-B3). */
 export const PHASE_CUTSCENE = { dur: 1.9, out: 0.3 };
 
+/** Cắt cảnh Đan Trận mở ra (E2-D): ngắn, giữ HUD, bỏ qua được. */
+export const DAN_CUTSCENE = { dur: 2.0, out: 0.3 };
+
 /** Ngoài khoảng này người chơi không tham chiến nên không bị kéo camera. */
 export const BOSS_CUTSCENE_RANGE = 42;
 
@@ -282,4 +285,20 @@ export function phaseShiftPath(
 /** Khoảng cách ngang tối thiểu camera cảnh giữ với boss để thấy trọn thân trên. */
 export function minBossDist(scale: number): number {
   return 4.5 + 2.2 * scale;
+}
+
+/**
+ * Cắt cảnh Đan Trận mở ra (E2-D): từ camera hiện tại vòng một cung ngắn quanh tâm vòng, nâng cao nhìn xuống thấy trọn vòng trận và
+ * người độ kiếp đứng giữa, rồi trả về camera thường. Điểm giữa nằm trên cung ngắn nhất nên camera không xuyên qua người.
+ */
+export function danTranPath(cam: Vec3, camLook: Vec3, center: Vec3, groundAt: (x: number, z: number) => number): Waypoint[] {
+  const TAU = Math.PI * 2;
+  const camAng = Math.atan2(cam.x - center.x, cam.z - center.z);
+  const at = (ang: number, r: number, rise: number): Waypoint => {
+    const x = center.x + Math.sin(ang) * r;
+    const z = center.z + Math.cos(ang) * r;
+    return { p: v(x, Math.max(groundAt(x, z) + 1.5, center.y + rise), z), look: v(center.x, center.y + 1.3, center.z) };
+  };
+  void TAU;
+  return [{ p: v(cam.x, cam.y, cam.z), look: camLook }, at(camAng + 0.55, 11, 5.2), at(camAng + 1.0, 9.5, 3.4)];
 }

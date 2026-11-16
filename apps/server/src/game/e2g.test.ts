@@ -396,3 +396,49 @@ describe('E2-G: Tâm Ma (quái có chủ) — chiêu vùng chỉ chạm bóng c�
     expect(lost(theirs)).toBe(0);
   });
 });
+
+describe('E2-G: hiệu ứng 4 món của bộ bậc 2 (E2-F) nối vào chiêu', () => {
+  it('Hoành Kiếm: tầm và sát thương thêm theo hoanhKiemReach/Power', () => {
+    const base = setup('lac_kiem_quyet', 16);
+    const b = base.mon(X + 5, Z);
+    const b2 = base.mon(X + 14.6, Z);
+    base.fresh(base.p);
+    base.sim.onSkill(base.p, { id: 'skl_hoanh_kiem_pha_mach', t: b.id });
+    expect(lost(b2)).toBe(0);
+    const set = setup('lac_kiem_quyet', 16);
+    set.p.char.stats.setFx.hoanhKiemReach = 3;
+    set.p.char.stats.setFx.hoanhKiemPower = 0.2;
+    const a = set.mon(X + 5, Z);
+    const a2 = set.mon(X + 14.6, Z);
+    set.fresh(set.p);
+    set.sim.onSkill(set.p, { id: 'skl_hoanh_kiem_pha_mach', t: a.id });
+    expect(lost(a2)).toBeGreaterThan(0);
+    expect(lost(a)).toBeGreaterThan(0);
+  });
+  it('Kim Chung Trấn phản thêm kimChungReflect', () => {
+    const { sim, p, mon, fresh } = setup('bat_dong_kim_than', 18);
+    p.char.stats.setFx.kimChungReflect = 0.1;
+    const m = mon(X + 2, Z);
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_kim_chung_tran' });
+    const before = m.s.hp;
+    sim.damagePlayer(p, 100, m.id);
+    // 70 sát thương sau giảm; phản (20% + 10%) = 21.
+    expect(before - m.s.hp).toBe(21);
+  });
+  it('Mộc Linh Trận kéo dài thêm mocLinhDur: còn hồi ở giây 9 (gốc 8 giây)', () => {
+    const run = (dur: number) => {
+      const { sim, p, fresh, wait } = setup('thanh_moc_dan_kinh', 16);
+      p.char.stats.setFx.mocLinhDur = dur;
+      p.char.hp = Math.floor(p.char.mhp * 0.2);
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_moc_linh_tran' });
+      wait(8200);
+      const h8 = p.char.hp;
+      wait(2000);
+      return p.char.hp - h8;
+    };
+    // Hết 8 giây thì dừng hồi; kéo dài thêm 50% thì còn hồi tiếp (mỗi giây hàng trăm máu).
+    expect(run(0.5)).toBeGreaterThan(run(0) + 100);
+  });
+});

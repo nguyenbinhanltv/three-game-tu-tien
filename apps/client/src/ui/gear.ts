@@ -28,7 +28,7 @@ import {
   pillPotency,
   sealStun,
 } from '@dtl/shared';
-import { ARTIFACT, ITEM, PILL_QUALITY, realmName, SET, SETS, t } from '@dtl/content';
+import { ARTIFACT, ITEM, itemTier, PILL_QUALITY, realmName, SET, SETS, t } from '@dtl/content';
 
 export interface TipLine {
   text: string;
@@ -82,6 +82,7 @@ export function itemSub(item: InvItem, def: ItemDef): string {
   const q = def.kind === 'consumable' && item.plus ? t('ui.pill.q' + clampPillQuality(item.plus)) : t('ui.quality.' + gearQuality(item, def));
   const parts = [q, t('ui.item.kind.' + def.kind)];
   if (item.inst) parts.push(t('ui.item.ilvl', { n: item.inst.ilvl }));
+  if (item.inst && itemTier(def.id) >= 2) parts.push(t('ui.item.tier', { n: itemTier(def.id) }));
   return parts.join(' · ');
 }
 
@@ -155,7 +156,7 @@ export function tierText(tier: SetTier): string {
   for (const l of tier.lines ?? []) parts.push(affixText(l));
   if (tier.fx) {
     const pct = (x: number | undefined) => pctText(x ?? 0);
-    parts.push(t('set.fx.' + (tier.fx as SetFxId), { v: tier.fx === 'crit_slow' ? (tier.v ?? 0) : pct(tier.v), w: pct(tier.w) }));
+    parts.push(t('set.fx.' + (tier.fx as SetFxId), { v: tier.fx === 'crit_slow' ? (tier.v ?? 0) : pct(tier.v), w: tier.fx === 'hoanh_kiem' ? (tier.w ?? 0) : pct(tier.w) }));
   }
   return parts.join('; ');
 }

@@ -8,10 +8,10 @@ import { objectiveText } from './Hud';
 import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './Panels';
 import { Button, Divider, Tabs } from './kit';
 import { RootTab } from './Realm';
-import { EnhanceTab, ForgeTab, GemTab, RefineTab, SalvageTab } from './UpgradeTabs';
+import { EnhanceTab, ForgeTab, GemTab, PromoteTab, RefineTab, SalvageTab } from './UpgradeTabs';
 import { set, useUI } from './store';
 
-type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'gem' | 'refine' | 'salvage' | 'forge' | 'root';
+type Tab = 'talk' | 'shop' | 'craft' | 'enhance' | 'gem' | 'refine' | 'salvage' | 'forge' | 'promote' | 'root';
 
 function QuestTab({ npcId }: { npcId: string }) {
   const quests = useUI((s) => s.quests);
@@ -204,7 +204,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
   const tabs: Tab[] = ['talk'];
   if (npc.sells) tabs.push('shop');
   if (npc.recipes) tabs.push('craft');
-  if (npc.enhance) tabs.push('enhance', 'gem', 'refine', 'salvage', 'forge');
+  if (npc.enhance) tabs.push('enhance', 'gem', 'refine', 'salvage', 'forge', 'promote');
   if (npc.rootChange) tabs.push('root');
   const cur = tabs.includes(tab) ? tab : 'talk';
   return (
@@ -218,6 +218,7 @@ export function NpcDialog({ npcId }: { npcId: string }) {
       {cur === 'refine' && <RefineTab npcId={npcId} />}
       {cur === 'salvage' && <SalvageTab npcId={npcId} />}
       {cur === 'forge' && <ForgeTab npcId={npcId} />}
+      {cur === 'promote' && <PromoteTab npcId={npcId} />}
       {cur === 'root' && <RootTab npcId={npcId} />}
     </Window>
   );

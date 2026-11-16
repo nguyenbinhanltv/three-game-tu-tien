@@ -5,6 +5,8 @@
 import { levelSpawns, type MonsterDef, type Quality, type SkillDef } from '@dtl/shared';
 import {
   BOTTLENECK_LEVELS,
+  promoteGold,
+  TIER_INCOME_HOUR,
   counterMul,
   CRIT_CHANCE,
   enhanceChance,
@@ -56,7 +58,7 @@ import {
   xpNeed,
 } from '@dtl/shared';
 import { lootOf } from './loot';
-import { ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, LEVELS, METHODS, METHOD_SKILLS, MONSTER, QUESTS, realmName, SKILLS } from './index';
+import { ENHANCE_ORE, FORGE, ITEM, ITEM_SYS, ITEMS, LEVELS, METHODS, METHOD_SKILLS, MONSTER, QUESTS, realmName, SKILLS } from './index';
 
 /** Trang bị dự kiến ở mỗi cảnh giới (theo phần thưởng nhiệm vụ). */
 function gear(level: number): { atk: number; def: number; hp: number } {
@@ -479,7 +481,7 @@ function fullSet(level: number, q: Quality) {
     const rng = seededRng(1000 + run);
     const worn = slots.map((sl) => {
       const tpl = templatesFor(ITEMS, sl, level)[0];
-      return { item: { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, level, q, rng) } };
+      return { item: { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, level, q, rng, tpl.tier) } };
     });
     const st = computePlayerStats(level, worn);
     acc.atk += st.atk;
@@ -506,8 +508,12 @@ for (const q of [0, 1, 2, 3, 4] as Quality[]) {
 }
 
 console.log('\nThu nhập kỳ vọng mỗi lần hạ quái (linh thạch): vàng rơi + bán trang bị rơi (giá theo ilvl, phẩm)');
-for (const sp of levelSpawns(LEVELS.van_lam)) {
+const seenIncome = new Set<string>();
+for (const sp of Object.values(LEVELS).filter((l) => l.id === 'van_lam' || l.id === 'doan_mach').flatMap((l) => levelSpawns(l))) {
   const m = MONSTER.get(sp.mon)!;
+  const key = m.id + ':' + Math.round((sp.levelMin + sp.levelMax) / 2);
+  if (seenIncome.has(key)) continue;
+  seenIncome.add(key);
   const lt = lootOf(m.id);
   const lv = Math.round((sp.levelMin + sp.levelMax) / 2);
   const gold = (lt.gold[0] + lt.gold[1]) / 2;
@@ -523,7 +529,8 @@ for (const sp of levelSpawns(LEVELS.van_lam)) {
 }
 console.log('\nTinh anh (người cùng cấp): TTK Kiếm/Hộ/Đan không đồ | bộ Huyền phẩm; máu/s đứng yên (bộ Huyền phẩm), máu mất cả trận (đứng yên, Kiếm tu)');
 for (const m of MONSTERS_ELITE()) {
-  const sp = levelSpawns(LEVELS.van_lam).find((x) => x.mon === m.id)!;
+  const sp = Object.values(LEVELS).flatMap((l) => levelSpawns(l)).find((x) => x.mon === m.id);
+  if (!sp) continue;
   const lv = sp.levelMax;
   const ms = monsterStats(lv, m.hpMul, m.atkMul);
   const set = fullSet(lv, 2);
@@ -534,7 +541,9 @@ for (const m of MONSTERS_ELITE()) {
   for (const x of t0) if (x < 20 || x > 40) { console.error(`LỖI: ${m.id} TTK không đồ ${x.toFixed(0)}s ngoài 20–40 s`); process.exitCode = 1; }
 }
 function MONSTERS_ELITE(): MonsterDef[] {
-  return [...MONSTER.values()].filter((m) => m.elite);
+  // Chỉ tinh anh của Vân Lam: sim này mô phỏng chặng Ngưng Khí (tinh anh level khác chưa có trong `levelSpawns(van_lam)`).
+  const home = new Set(levelSpawns(LEVELS.van_lam).map((x) => x.mon));
+  return [...MONSTER.values()].filter((m) => m.elite && home.has(m.id));
 }
 
 // ---------- cường hóa và kinh tế linh thạch (3-10) ----------
@@ -592,6 +601,23 @@ for (const [id, lv] of [['itm_thiet_kiem', 4], ['itm_thanh_phong_kiem', 8], ['it
   if (f(5, false) / inc > 1.2) { console.error(`LỖI: ${id} +5 tốn ${h(f(5, false))} thu nhập (quá đắt)`); process.exitCode = 1; }
   if (f(9, true) / inc < 2 || f(9, true) / inc > 7) { console.error(`LỖI: ${id} +9 (Hộ Phù) tốn ${h(f(9, true))} thu nhập, ngoài 2–7 giờ`); process.exitCode = 1; }
   if (f(10, true) / inc > 14) { console.error(`LỖI: ${id} +10 (Hộ Phù) tốn ${h(f(10, true))} thu nhập (quá đắt)`); process.exitCode = 1; }
+}
+{
+  // Chương 2 (bậc 2, E2-F): hố tiêu của người cầu toàn so với thu nhập theo thiết kế (`docs/EXPANSION_DESIGN.md` 7.5).
+  // Quái Đoạn Mạch chưa nằm trong sim nên thu nhập lấy theo `TIER_INCOME_HOUR` (6.000/giờ ở cấp 17) × 4 giờ chương, cộng ~20% bán đồ rơi.
+  const income = 4 * TIER_INCOME_HOUR[2] * 1.2;
+  const t2 = ITEMS.filter((i) => i.tier === 2 && !i.set && i.kind !== 'weapon' || i.id === 'itm_liet_mach_kiem');
+  const promote = t2.length * promoteGold(2);
+  const price = (id: string) => Math.max(ITEM.get(id)!.price, ITEM.get(id)!.sell * 3);
+  // Cường hóa +5 cho bốn ô (kiếm, đạo bào, hộ uyển, ủng).
+  const enh = ['itm_liet_mach_kiem', 'itm_mach_van_dao_bao', 'itm_sa_thach_ho_uyen', 'itm_kho_ha_van_ngoa'].reduce((n, id) => n + enhanceExpect(5, price(id), false), 0);
+  const forge = FORGE.filter((f) => f.id.startsWith('frg_lm_')).reduce((n, f) => n + f.gold, 0);
+  const sink = promote + enh + forge;
+  console.log(
+    `
+Chương 2 (bậc 2): thu nhập ~${income.toFixed(0)} (4 giờ) | hố tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${t2.length} ô ${promote} + cường hóa +5 bốn ô ${enh.toFixed(0)} + chế một bộ ${forge} (${(sink / income).toFixed(2)}× thu nhập)`,
+  );
+  if (sink / income < 1 || sink / income > 2.5) { console.error(`LỖI: hố tiêu chương 2 gấp ${(sink / income).toFixed(2)} lần thu nhập, ngoài 1–2,5 (lạm phát hoặc quá đắt)`); process.exitCode = 1; }
 }
 {
   // Nguồn/tiêu tới viên mãn tầng 15 (một mình).
@@ -704,6 +730,7 @@ for (const [id, lv, n] of [
   ['boss_huyet_lang_vuong', 13, 3],
   ['boss_thu_mo_tuong', 15, 3],
   ['boss_han_giao', 15, 4],
+  ['boss_dia_mach_long', 19, 4],
 ] as const) {
   const def = MONSTER.get(id)!;
   const ms = monsterStats(lv, def.hpMul, def.atkMul);

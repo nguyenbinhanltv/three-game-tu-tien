@@ -1,5 +1,5 @@
 import { FOREST, featureWeight, KIEM_TRUNG, LAKE, SECT, VALLEY, WATER_Y } from '@dtl/shared';
-import { heightAt } from './levelCtx';
+import { heightAt, levelId } from './levelCtx';
 import type { Particles } from '../render/vfx/particles';
 
 /**
@@ -37,9 +37,14 @@ const COLOR = {
  * Lượng hạt mỗi giây (preset Vừa) tại vị trí (x, z) với độ cao camera so với đất `above`.
  * Hàm thuần để test: vùng nào ra loại hạt nào.
  */
-export function ambientRates(x: number, z: number, above: number, out?: AmbientRates): AmbientRates {
+export function ambientRates(x: number, z: number, above: number, out?: AmbientRates, level = 'van_lam'): AmbientRates {
   const r = out ?? ({} as AmbientRates);
   for (const k of KINDS) r[k] = 0;
+  // Đoạn Mạch (E2-I): cốc khô, chỉ bụi nắng thưa; không phấn hoa, sương, lá xanh (các khu Vân Lam không có ở đây).
+  if (level === 'doan_mach') {
+    r.mote = 6;
+    return r;
+  }
   const wSect = featureWeight(SECT, x, z);
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
@@ -97,7 +102,7 @@ export class AmbientParticles {
     if (this.sample <= 0) {
       this.sample = 0.25;
       const g = heightAt(cx, cz);
-      ambientRates(cx, cz, cy - g, _rates);
+      ambientRates(cx, cz, cy - g, _rates, levelId());
       for (const k of KINDS) this.rates[k] = _rates[k] * this.scale;
     }
     // Chặn dt lớn (tab bị treo) để không xả cả loạt hạt một lúc.

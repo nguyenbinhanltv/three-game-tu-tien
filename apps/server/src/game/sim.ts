@@ -141,7 +141,6 @@ import {
   bottleneckBlocked,
   buffMag,
   TRUC_CO_FREE_FLY_ALT,
-  TRUC_CO_LEVEL,
   vulnerableDamage,
   WATER_Y,
   xpLevelFactor,
@@ -471,7 +470,9 @@ export class GameSim {
   /** Lõi nhịp độ kiếp theo dữ liệu (E1-F, game/trib.ts). */
   private readonly tribSys = new TribSystem({
     now: () => this.now,
-    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut),
+    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, hot) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, undefined, hot),
+    fx: (m) => this.fx(m),
+    isDead: (p) => this.isDead(p),
     nextGrp: () => this.nextHazardGrp(),
     sys: (p, k, params, type) => this.sys(p, k, params, type),
     spawnShadow: (p, st, o) => this.spawnShadow(p, st, o),
@@ -1397,7 +1398,9 @@ export class GameSim {
   /** Tầm chiêu của người chơi: đan sư xa hơn (nội tại `rangeBonus`), chỉ chiêu đánh. */
   private skillRange(p: PlayerEnt, skill: SkillDef): number {
     const b = passiveOf(p.char.meta)?.rangeBonus ?? 0;
-    return skill.range > 0 && needsTarget(skill) ? skill.range + b : skill.range;
+    // Bộ Lạc Kiếm bậc 2 (4 món, E2-F): Hoành Kiếm Phá Mạch xa thêm `hoanhKiemReach` mét.
+    const set = skill.id === 'skl_hoanh_kiem_pha_mach' ? p.char.stats.setFx.hoanhKiemReach : 0;
+    return skill.range > 0 && needsTarget(skill) ? skill.range + b + set : skill.range;
   }
 
   private inRange(p: PlayerEnt, mon: MonEnt, range: number): boolean {
@@ -1769,7 +1772,9 @@ export class GameSim {
         const mon = this.monById.get(targetId);
         if (!mon) break;
         const def = skill.line ?? { len: 12, width: 3 };
-        const len = def.len * (v?.lenMul ?? 1);
+        const len = def.len * (v?.lenMul ?? 1) + c.stats.setFx.hoanhKiemReach;
+        // Bộ Lạc Kiếm bậc 2 (4 món): sát thương thêm `hoanhKiemPower`.
+        mul *= 1 + c.stats.setFx.hoanhKiemPower;
         const dx = mon.s.x - p.move.x;
         const dz = mon.s.z - p.move.z;
         const dl = Math.hypot(dx, dz) || 1;
@@ -1866,7 +1871,8 @@ export class GameSim {
       }
       case 'guard': {
         p.mth.setGuard(this.now, skill.reduce ?? 0.6, rs.duration ?? 6);
-        const refl = v?.reflect ?? skill.reflect;
+        // Bộ Hộ Pháp bậc 2 (4 món): phản thêm `kimChungReflect`.
+        const refl = (v?.reflect ?? skill.reflect ?? 0) + c.stats.setFx.kimChungReflect;
         if (refl) p.mth.setReflect(this.now, refl, rs.duration ?? 6);
         this.fx({ t: skill.fx, src: p.sid, d: rs.duration ?? 6, ...tag });
         if (v?.guardAlly) {
@@ -1880,12 +1886,14 @@ export class GameSim {
       }
       case 'hot': {
         const r = (skill.allyRadius ?? 10) * (v?.healRadiusMul ?? 1);
-        const sec = rs.duration ?? 6;
+        // Bộ Đan Sư bậc 2 (4 món): Mộc Linh Trận kéo dài thêm `mocLinhDur`, giữ nguyên lượng hồi/độc mỗi giây (tổng tăng theo).
+        const durMul = skill.id === 'skl_moc_linh_tran' ? 1 + c.stats.setFx.mocLinhDur : 1;
+        const sec = (rs.duration ?? 6) * durMul;
         this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, d: sec, ...tag });
         for (const o of this.players.values()) {
           if (!this.canAssist(p, o)) continue;
           if (o !== p && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
-          const total = healAmount(o.char.mhp * rs.power * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
+          const total = healAmount(o.char.mhp * rs.power * durMul * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
           this.addHot(o.sid, total / sec, sec);
           if (v?.selfShield) {
             const amount = Math.round(o.char.mhp * v.selfShield);
@@ -1899,7 +1907,7 @@ export class GameSim {
         if (skill.poison) {
           for (const o of this.monstersNear(p.move.x, p.move.z, skill.poison.r)) {
             if (o.owner && o.owner !== p.sid) continue;
-            o.poison = { sid: p.sid, until: this.now + skill.poison.dur * 1000, nextAt: this.now + 1000, per: Math.max(1, Math.round(c.atk * skill.poison.mul * (v?.poisonMul ?? 1))) };
+            o.poison = { sid: p.sid, until: this.now + skill.poison.dur * durMul * 1000, nextAt: this.now + 1000, per: Math.max(1, Math.round(c.atk * skill.poison.mul * (v?.poisonMul ?? 1))) };
             this.aggroMonster(o, p);
           }
         }
@@ -3002,7 +3010,7 @@ export class GameSim {
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
   /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv']): void {
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false): void {
     const mon = this.monById.get(src) ?? null;
     this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined, guard, cut });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
@@ -3010,6 +3018,7 @@ export class GameSim {
     if (kind === 'lightning') msg.sd = visualSeed();
     if (lock) msg.big = true;
     if (mv) msg.mv = mv;
+    if (hot) msg.hot = true;
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;
@@ -3302,9 +3311,9 @@ export class GameSim {
       c.hp = c.mhp;
       c.mp = c.mmp;
       this.sysAll('sys.trib_ok', { name: c.name, realm: nextMajorRealmName(def.from) }, 'good');
-      this.fx({ t: 'ascend', src: p.sid });
+      this.fx({ t: 'ascend', src: p.sid, tb: def.id });
       if (def.id === 'truc_co') this.sys(p, 'sys.tc_fly_hint', { n: TRUC_CO_FREE_FLY_ALT }, 'info');
-      this.questEvent(p, 'breakthrough', undefined, 1);
+      this.questEvent(p, 'breakthrough', def.id, 1);
       this.questEvent(p, 'level', undefined, c.level);
       this.savePlayer(p);
       console.log(`[trib] ${c.name} đạt ${realmName(c.level)} (kiếp ${def.id})`);
@@ -3721,8 +3730,9 @@ export class GameSim {
       if (!this.nearNpc(p, q.giver)) return this.warn(p, 'sys.too_far');
       c.quests.active[q.id] = q.objectives.map((o) => {
         if (o.type === 'level') return Math.min(o.count, c.level);
-        // Đã độ kiếp trước khi nhận nhiệm vụ thì tính là xong, không thì kẹt vĩnh viễn.
-        if (o.type === 'breakthrough' && c.level >= TRUC_CO_LEVEL) return o.count;
+        // Đã độ kiếp trước khi nhận nhiệm vụ thì tính là xong, không thì kẹt vĩnh viễn. `target` = id kiếp (`ket_dan`...);
+        // không có thì là Trúc Cơ (q_truc_co). So với cấp ĐÍCH của đúng kiếp đó, không phải một mốc chung.
+        if (o.type === 'breakthrough' && c.level >= tribDef(o.target ?? 'truc_co').to) return o.count;
         return 0;
       });
       c.questDirty = true;

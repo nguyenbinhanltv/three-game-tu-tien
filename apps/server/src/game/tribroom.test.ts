@@ -177,12 +177,12 @@ describe('độ kiếp Trúc Cơ qua onBreakthrough (không đổi)', () => {
 });
 
 describe('kiếp mới: cờ enabled, GM và pha chung', () => {
-  it('Kết Đan chưa mở cho người chơi thường (thiếu vật phẩm); GM force bỏ qua', () => {
+  it('Kết Đan mở cho người chơi nhưng cần Kết Đan Dịch (thiếu vật phẩm thì không độ); GM force bỏ qua', () => {
     const { sim, join } = mkSim();
     const p = join('kd', 19);
     sim.onBreakthrough(p);
     expect(p.trib).toBeNull();
-    expect(keys(p)).toContain('sys.trib_locked');
+    expect(keys(p)).toContain('sys.trib_need_pill');
     sim.onBreakthrough(p, true);
     expect(p.trib?.id).toBe('ket_dan');
   });

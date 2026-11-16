@@ -118,6 +118,15 @@
   --fill: linear-gradient(180deg, #efe3ff 0%, #b48cff 48%, #5b3f95 100%);
   height: 15px;
 }
+.gauge.dan {
+  --cut: 6px;
+  --fill: linear-gradient(180deg, #cfe6ff 0%, #6fa8ee 48%, #2f5a9c 100%);
+  height: 13px;
+}
+.trib-dan {
+  margin-top: 6px;
+  min-width: 360px;
+}
 .trib-phases {
   display: flex;
   gap: 5px;

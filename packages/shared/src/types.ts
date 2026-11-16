@@ -36,6 +36,10 @@ export interface ItemDef {
   stats?: StatBlock;
   /** id bộ trang bị (P3-4): món này thuộc bộ nào. Món có `set` không rơi theo bảng chung, chỉ chế tạo hoặc rơi theo `EquipRollDef.set`. */
   set?: string;
+  /** Bậc trang bị 1–4 (E2-F); thiếu = bậc 1. Quyết định hệ số dòng chính (`TIER_MUL`) khi roll và khi Thăng Bậc. */
+  tier?: number;
+  /** Đích Thăng Bậc của món này (cùng ô, bậc kế); thiếu = món thường cùng ô ở bậc kế. */
+  promoteTo?: string;
   use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number; /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit'; pct: number; sec: number } };
 }
 
@@ -639,6 +643,8 @@ export interface LevelAssets {
   };
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
+  /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */
+  grassCards?: string;
 }
 
 /** Điểm đáng chú ý trong một vùng săn (M-5). */

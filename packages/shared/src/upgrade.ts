@@ -2,7 +2,8 @@
 // Hàm thuần và hằng số dùng chung server/client. Mọi xác suất chỉ được roll ở server (client chỉ đọc bảng để hiển thị).
 
 import type { AffixRoll, Element, ItemInst, Quality } from './items';
-import { BIND_QUALITY, ELEMENTS, QUALITY_COUNT } from './items';
+import { BIND_QUALITY, ELEMENTS, QUALITY_COUNT, clampTier, mainLine, MAX_TIER, socketsFor, TIER_OPEN, type ItemSysData } from './items';
+import type { EquipSlot } from './types';
 import type { AffixStat } from './items';
 import { enhanceChance } from './formulas';
 import type { InvItem } from './types';
@@ -144,4 +145,43 @@ export function bindOnEquip(inst: ItemInst): ItemInst {
 
 export function isQuality(v: unknown): v is Quality {
   return Number.isInteger(v) && (v as number) >= 0 && (v as number) < QUALITY_COUNT;
+}
+
+// ---------- Thăng Bậc (E2-F) ----------
+
+/** Nguyên liệu Thăng Bậc theo bậc ĐÍCH (chỉ số 2..4). */
+export const PROMOTE_MAT: readonly (string | null)[] = [null, null, 'itm_mach_tinh_phien', 'itm_kinh_hoa_sa', 'itm_tinh_quang_mac'];
+export const PROMOTE_MAT_COUNT = 20;
+/** Thu nhập ước một giờ ở chương đích (linh thạch, `docs/EXPANSION_DESIGN.md` 7.5); phí Thăng Bậc = 0,4 × số này. */
+export const TIER_INCOME_HOUR: readonly number[] = [0, 0, 6000, 7400, 8800];
+export const PROMOTE_GOLD_FRAC = 0.4;
+/** Thăng Bậc trừ chừng này cấp cường hóa (tối thiểu +0). */
+export const PROMOTE_ENHANCE_LOSS = 3;
+/** Cấp vật phẩm tối thiểu của món sau Thăng Bậc (đầu chương đích). */
+export const TIER_MIN_ILVL: readonly number[] = [1, 1, 17, 21, 25];
+
+/** Món có Thăng Bậc được không: bậc đích đã mở (`TIER_OPEN`). */
+export function promoteOpen(fromTier: number): boolean {
+  const to = clampTier(fromTier) + 1;
+  return to <= MAX_TIER && to <= TIER_OPEN;
+}
+
+export function promoteGold(toTier: number): number {
+  return Math.round(PROMOTE_GOLD_FRAC * (TIER_INCOME_HOUR[clampTier(toTier)] ?? 0));
+}
+
+export function promotePlus(plus: number): number {
+  return Math.max(0, plus - PROMOTE_ENHANCE_LOSS);
+}
+
+/**
+ * Dựng `inst` mới sau Thăng Bậc: giữ phẩm, dòng phụ, ngọc đã khảm và ràng buộc; dòng chính roll lại theo bậc đích
+ * (cấp vật phẩm nâng lên đầu chương nếu thấp hơn); thêm lỗ khảm trống nếu bậc mới có nhiều lỗ hơn.
+ */
+export function promoteInst(data: ItemSysData, slot: EquipSlot, inst: ItemInst, toTier: number, rng: () => number): ItemInst {
+  const tier = clampTier(toTier);
+  const ilvl = Math.max(inst.ilvl, TIER_MIN_ILVL[tier] ?? inst.ilvl);
+  const gems = inst.gems.slice();
+  while (gems.length < socketsFor(inst.q, tier)) gems.push('');
+  return { ...inst, ilvl, main: mainLine(data, slot, ilvl, inst.q, rng(), tier), gems };
 }

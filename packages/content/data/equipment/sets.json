@@ -123,5 +123,99 @@
       "blade": "#7fe9ff"
     },
     "src": "drop"
+  },
+  {
+    "id": "set_liet_mach",
+    "pieces": [
+      "itm_lm_dao_bao",
+      "itm_lm_ho_uyen",
+      "itm_lm_dai_lung",
+      "itm_lm_van_ngoa"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "atk_pct",
+            "v": 0.06
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "hoanh_kiem",
+        "v": 0.2,
+        "w": 4
+      }
+    ],
+    "look": {
+      "hex": "#C9A26A",
+      "trim": "#6B4A2A",
+      "blade": "#9FE0C8"
+    },
+    "src": "forge"
+  },
+  {
+    "id": "set_dia_giap",
+    "pieces": [
+      "itm_dg_dao_bao",
+      "itm_dg_ho_uyen",
+      "itm_dg_dai_lung",
+      "itm_dg_van_ngoa"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "def_pct",
+            "v": 0.09
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "kim_chung",
+        "v": 0.15
+      }
+    ],
+    "look": {
+      "hex": "#6E4A32",
+      "trim": "#C9A04A",
+      "blade": "#FFC95A"
+    },
+    "src": "forge"
+  },
+  {
+    "id": "set_phuc_mach",
+    "pieces": [
+      "itm_pm_dao_bao",
+      "itm_pm_ngoc_boi",
+      "itm_pm_dai_lung",
+      "itm_pm_gioi_chi"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "heal_recv",
+            "v": 0.08
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "moc_linh",
+        "v": 0.25
+      }
+    ],
+    "look": {
+      "hex": "#58724A",
+      "trim": "#CFC08A",
+      "blade": "#7DFFA0"
+    },
+    "src": "forge"
   }
 ]

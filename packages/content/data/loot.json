@@ -1,4 +1,9 @@
 {
+  "$mats": [
+    {"mons": ["mon_thach_giap_te", "mon_khai_mach_khoi_loi", "mon_ngo_cong_au", "mon_mach_thuong_ho_ve"], "drops": [{"item": "itm_mach_tinh_phien", "chance": 0.12, "min": 1, "max": 1}, {"item": "itm_hoang_sa_thao", "chance": 0.1, "min": 1, "max": 1}]},
+    {"mons": ["elite_liet_cot_bao", "elite_ho_mach_khoi_tuong", "elite_xich_sa_ngo_cong"], "drops": [{"item": "itm_mach_tinh_phien", "chance": 1, "min": 2, "max": 3}, {"item": "itm_hoang_sa_thao", "chance": 0.5, "min": 1, "max": 2}, {"item": "itm_ngung_dan_mach_tinh", "chance": 0.2, "min": 1, "max": 1}]},
+    {"mons": ["boss_dia_mach_long"], "drops": [{"item": "itm_mach_tinh_phien", "chance": 1, "min": 6, "max": 9}, {"item": "itm_hoang_sa_thao", "chance": 1, "min": 3, "max": 4}, {"item": "itm_ngung_dan_mach_tinh", "chance": 0.8, "min": 2, "max": 3}]}
+  ],
   "mon_soi_xam": { "gold": [1, 4], "src": "common",
     "drops": [ {"item": "itm_bi_tich_tan_quyen", "chance": 0.03, "min": 1, "max": 1}, {"item": "itm_nanh_soi", "chance": 0.5, "min": 1, "max": 1}, {"item": "itm_linh_thao", "chance": 0.1, "min": 1, "max": 1} ],
     "equip": [ {"chance": 0.04, "q": [70, 30, 0, 0, 0]} ] },
@@ -54,16 +59,16 @@
     "drops": [ {"item": "itm_bi_tich_tan_quyen", "chance": 0.03, "min": 1, "max": 1}, {"item": "itm_yeu_dan", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_thiet_tinh", "chance": 0.2, "min": 1, "max": 1}, {"item": "gem_kim_1", "chance": 0.03, "min": 1, "max": 1} ],
     "equip": [ {"chance": 0.06, "q": [50, 50, 0, 0, 0]} ] },
   "elite_liet_cot_bao": { "gold": [90, 140], "src": "elite",
-    "drops": [ {"item": "itm_bi_tich_tan_quyen", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_yeu_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 0.6, "min": 1, "max": 2}, {"item": "gem_kim_1", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_tay_luyen_thach", "chance": 0.25, "min": 1, "max": 1} ],
+    "drops": [ {"item": "itm_ngung_dan_mach_tinh", "chance": 0.35, "min": 1, "max": 1}, {"item": "itm_bi_tich_tan_quyen", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_yeu_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 0.6, "min": 1, "max": 2}, {"item": "gem_kim_1", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_tay_luyen_thach", "chance": 0.25, "min": 1, "max": 1} ],
     "equip": [ {"chance": 1, "q": [0, 20, 60, 20, 0]}, {"chance": 0.5, "q": [20, 60, 20, 0, 0]} ] },
   "elite_ho_mach_khoi_tuong": { "gold": [90, 140], "src": "elite",
-    "drops": [ {"item": "itm_bi_tich_tan_quyen", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_yeu_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 0.6, "min": 1, "max": 2}, {"item": "gem_tho_1", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_tay_luyen_thach", "chance": 0.25, "min": 1, "max": 1} ],
+    "drops": [ {"item": "itm_ngung_dan_mach_tinh", "chance": 0.35, "min": 1, "max": 1}, {"item": "itm_bi_tich_tan_quyen", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_yeu_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 0.6, "min": 1, "max": 2}, {"item": "gem_tho_1", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_tay_luyen_thach", "chance": 0.25, "min": 1, "max": 1} ],
     "equip": [ {"chance": 1, "q": [0, 20, 60, 20, 0]}, {"chance": 0.5, "q": [20, 60, 20, 0, 0]} ] },
   "elite_xich_sa_ngo_cong": { "gold": [90, 140], "src": "elite",
-    "drops": [ {"item": "itm_bi_tich_tan_quyen", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_yeu_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 0.6, "min": 1, "max": 2}, {"item": "gem_moc_1", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_tay_luyen_thach", "chance": 0.25, "min": 1, "max": 1} ],
+    "drops": [ {"item": "itm_ngung_dan_mach_tinh", "chance": 0.35, "min": 1, "max": 1}, {"item": "itm_bi_tich_tan_quyen", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_yeu_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 0.6, "min": 1, "max": 2}, {"item": "gem_moc_1", "chance": 0.3, "min": 1, "max": 1}, {"item": "itm_tay_luyen_thach", "chance": 0.25, "min": 1, "max": 1} ],
     "equip": [ {"chance": 1, "q": [0, 20, 60, 20, 0]}, {"chance": 0.5, "q": [20, 60, 20, 0, 0]} ] },
   "boss_dia_mach_long": { "gold": [600, 900], "src": "boss",
-    "drops": [ {"item": "itm_bi_tich_tan_quyen", "chance": 1, "min": 3, "max": 4}, {"item": "itm_tu_khi_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 1, "min": 3, "max": 5}, {"item": "gem_tho_2", "chance": 0.6, "min": 1, "max": 1}, {"item": "gem_tho_1", "chance": 1, "min": 1, "max": 2}, {"item": "itm_tay_luyen_thach", "chance": 0.6, "min": 1, "max": 2}, {"item": "itm_ho_phu", "chance": 0.6, "min": 1, "max": 1} ],
+    "drops": [ {"item": "itm_ngung_dan_mach_tinh", "chance": 1, "min": 2, "max": 3}, {"item": "itm_ket_dan_dich", "chance": 0.12, "min": 1, "max": 1}, {"item": "itm_bi_tich_tan_quyen", "chance": 1, "min": 3, "max": 4}, {"item": "itm_tu_khi_dan", "chance": 1, "min": 2, "max": 3}, {"item": "itm_thiet_tinh", "chance": 1, "min": 3, "max": 5}, {"item": "gem_tho_2", "chance": 0.6, "min": 1, "max": 1}, {"item": "gem_tho_1", "chance": 1, "min": 1, "max": 2}, {"item": "itm_tay_luyen_thach", "chance": 0.6, "min": 1, "max": 2}, {"item": "itm_ho_phu", "chance": 0.6, "min": 1, "max": 1} ],
     "equip": [ {"chance": 1, "q": [0, 0, 0, 85, 15]}, {"chance": 0.7, "q": [0, 0, 60, 40, 0]}, {"chance": 0.4, "q": [0, 0, 45, 50, 5]} ] },
   "mon_tam_ma": { "gold": [0, 0], "src": "common", "drops": [], "equip": [ {"chance": 0.01, "q": [100, 0, 0, 0, 0]} ] }
 }

@@ -45,8 +45,8 @@
     "ket_dan": {
       "from": 19,
       "to": 20,
-      "enabled": false,
-      "item": null,
+      "enabled": true,
+      "item": "itm_ket_dan_dich",
       "room": "world",
       "element": "hoa",
       "duration": 55,
@@ -70,11 +70,13 @@
           "extraR": 3.6,
           "extraPct": 0.18,
           "mechanic": "dan_tran",
+          "danTran": { "r": 4, "fill": 20, "drain": 3, "still": 1.2, "sweepEvery": 4.5, "sweepLen": 18, "sweepW": 3, "sweepWarn": 0.9, "sweepPct": 0.26 },
           "shadows": { "every": 7, "count": 3, "levelDelta": 0, "hpFrac": 0.4, "maxAlive": 6 }
         },
         {
           "id": "diet_the_dan_hoa",
           "kind": "lei",
+          "hot": true,
           "end": 55,
           "gap": 0.9,
           "aimPct": 0.16,

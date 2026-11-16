@@ -87,3 +87,7 @@ Chạy với tên pose để chỉ ghi pose cần: `node tools/poses/gen-k5.mjs 
 | hồ | 7,4 | 10,1 | 12,2 | 10,1 |
 
 Cả baseline cũng vượt 8 ms ở 5/6 ô High và dao động 2–3 ms giữa hai lần đo: vượt ngân sách ở preset High là sẵn có trên máy này, không do gói E2-G (không đổi đường vẽ lúc đứng yên).
+
+## Nối hiệu ứng 4 món của bộ bậc 2 (E2-F)
+
+`SetFx.hoanhKiemPower/Reach` (Hoành Kiếm: sát thương thêm, vệt và tầm dài thêm mét), `kimChungReflect` (Kim Chung Trấn: phản cộng thêm) và `mocLinhDur` (Mộc Linh Trận: kéo dài thêm theo tỉ lệ, giữ hồi/độc mỗi giây nên tổng tăng theo) đã nối trong `sim.ts` (test ở `e2g.test.ts`).

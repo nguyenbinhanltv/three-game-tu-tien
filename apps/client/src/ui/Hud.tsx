@@ -186,7 +186,7 @@ function CineView() {
     <div className={'cine' + (cine.kind && cine.kind !== 'sect' ? ' cine-' + cine.kind : '') + (cine.out ? ' out' : '')} key={cine.id} style={{ '--dur': cine.dur + 'ms' } as CSSProperties}>
       <div className="cine-bar cine-top" />
       <div className="cine-bar cine-bot" />
-      {cine.kind === 'boss' || cine.kind === 'phase' ? (
+      {cine.kind === 'dan' ? null : cine.kind === 'boss' || cine.kind === 'phase' ? (
         <div className="cine-name">
           <div className="cine-name-main">{cine.name}</div>
           {cine.title && <div className="cine-name-title">{cine.title}</div>}
@@ -508,6 +508,7 @@ function CastBar() {
 function Tribulation() {
   const tribEnd = useUI((s) => s.tribEnd);
   const tribId = useUI((s) => s.tribId);
+  const danPg = useUI((s) => s.danPg);
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   // Pha, thời lượng và lời nhắc đọc từ `tribulations.json` theo kiếp đang độ (E1-F); Trúc Cơ giữ ba pha của S2-C.
@@ -535,6 +536,11 @@ function Tribulation() {
           );
         })}
       </div>
+      {ph.mechanic === 'dan_tran' && danPg >= 0 && (
+        <div className="trib-dan" data-testid="dan-bar">
+          <ProgressBar cls="dan" value={danPg} max={100} text={t('ui.trib.dan_tran.label', { n: Math.round(danPg) })} />
+        </div>
+      )}
       <div className="trib-hint">{t(key + ph.id + (after ? '.hint2' : '.hint'))}</div>
     </div>
   );
@@ -698,7 +704,7 @@ export function Hud() {
       delete document.body.dataset.cut;
     };
   }, [cut]);
-  const cining = useUI((s) => s.cine !== null && !s.cine.out);
+  const cining = useUI((s) => s.cine !== null && !s.cine.out && s.cine.kind !== 'dan');
   const dueling = useUI((s) => s.duel !== null);
   return (
     <div className={'hud' + (dueling ? ' duel-on' : '') + (hasBoss ? ' with-boss' : '') + (cining ? ' cining' : '')} data-cut={cut}>

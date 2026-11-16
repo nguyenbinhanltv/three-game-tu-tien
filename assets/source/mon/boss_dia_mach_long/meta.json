@@ -20,6 +20,7 @@
     "quadruped": {
       "attack": "bite",
       "fixCrossWeights": true,
+      "slam": "rear",
       "layout": {
         "tripo_spine_0": "spine_0",
         "tripo_spine_1": "spine_1",

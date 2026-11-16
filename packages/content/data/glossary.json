@@ -108,7 +108,26 @@
     "itm_dt_gioi_chi": "Đan Tâm Giới Chỉ",
     "itm_hgl_kiem": "Hàn Giao Lân Kiếm",
     "itm_hgl_dao_bao": "Hàn Giao Lân Đạo Bào",
-    "itm_hgl_gioi_chi": "Hàn Giao Lân Giới Chỉ"
+    "itm_hgl_gioi_chi": "Hàn Giao Lân Giới Chỉ",
+    "itm_liet_mach_kiem": "Liệt Mạch Kiếm",
+    "itm_mach_van_dao_bao": "Mạch Văn Đạo Bào",
+    "itm_sa_thach_ho_uyen": "Sa Thạch Hộ Uyển",
+    "itm_kho_ha_van_ngoa": "Khô Hà Vân Ngoa",
+    "itm_ngan_mach_dai_lung": "Ngân Mạch Đai Lưng",
+    "itm_mach_tinh_ngoc_boi": "Mạch Tinh Ngọc Bội",
+    "itm_hoang_sa_gioi_chi": "Hoàng Sa Giới Chỉ",
+    "itm_lm_dao_bao": "Liệt Mạch Đạo Bào",
+    "itm_lm_ho_uyen": "Liệt Mạch Hộ Uyển",
+    "itm_lm_dai_lung": "Liệt Mạch Đai Lưng",
+    "itm_lm_van_ngoa": "Liệt Mạch Vân Ngoa",
+    "itm_dg_dao_bao": "Địa Long Giáp Bào",
+    "itm_dg_ho_uyen": "Địa Long Hộ Uyển",
+    "itm_dg_dai_lung": "Địa Long Đai Lưng",
+    "itm_dg_van_ngoa": "Địa Long Chiến Ngoa",
+    "itm_pm_dao_bao": "Phục Mạch Đạo Bào",
+    "itm_pm_ngoc_boi": "Phục Mạch Ngọc Bội",
+    "itm_pm_dai_lung": "Phục Mạch Đai Lưng",
+    "itm_pm_gioi_chi": "Phục Mạch Giới Chỉ"
   },
   "upgrade": {
     "gem": "Linh Ngọc",
@@ -124,14 +143,19 @@
     "refine": "tẩy luyện",
     "salvage": "phân giải",
     "bound": "ràng buộc",
-    "enhance": "cường hóa"
+    "enhance": "cường hóa",
+    "promote": "Thăng Bậc",
+    "tier": "bậc"
   },
   "sets": {
     "set_lac_kiem": "Lạc Kiếm Môn Phục",
     "set_huyen_giap": "Huyền Giáp Hộ Pháp",
     "set_dan_tam": "Đan Tâm Y Bát",
     "set_han_giao": "Hàn Giao Lân",
-    "forge": "Chế tạo"
+    "forge": "Chế tạo",
+    "set_liet_mach": "Liệt Mạch Kiếm Y",
+    "set_dia_giap": "Địa Long Hộ Giáp",
+    "set_phuc_mach": "Phục Mạch Đan Bào"
   },
   "party": {
     "name": "Tổ đội",
@@ -152,7 +176,11 @@
   "pills": {
     "itm_kim_cuong_dan": "Kim Cương Đan",
     "itm_bao_huyet_dan": "Bạo Huyết Đan",
-    "itm_manh_luc_dan": "Mãnh Lực Đan"
+    "itm_manh_luc_dan": "Mãnh Lực Đan",
+    "itm_hoi_mach_dan": "Hồi Mạch Đan",
+    "itm_kim_cuong_dan_2": "Mạch Kim Cương Đan",
+    "itm_bao_huyet_dan_2": "Mạch Bạo Huyết Đan",
+    "itm_manh_luc_dan_2": "Mạch Mãnh Lực Đan"
   },
   "pillQualities": [
     "Hạ phẩm",
@@ -218,5 +246,11 @@
     "dm_tp_hoang_sa": "Trận Hoang Sa Huyệt",
     "dm_tp_cuu_mo": "Trận Cựu Mỏ Khu",
     "dm_tp_tuyet_bich": "Trận Đoạn Mạch Tuyệt Bích"
+  },
+  "materials": {
+    "itm_mach_tinh_phien": "Mạch Tinh Phiến",
+    "itm_hoang_sa_thao": "Hoàng Sa Thảo",
+    "itm_ngung_dan_mach_tinh": "Ngưng Đan Mạch Tinh",
+    "itm_pha_canh_dan_2": "Mạch Phá Cảnh Đan"
   }
 }

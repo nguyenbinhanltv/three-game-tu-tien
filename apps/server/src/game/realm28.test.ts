@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { PHA_CANH_PILL, xpNeed } from '@dtl/shared';
+import { bottleneckPill, xpNeed } from '@dtl/shared';
 
 process.env.DB_FILE = ':memory:';
 
@@ -120,14 +120,14 @@ describe('Character: Trúc Cơ → Nguyên Anh', () => {
 });
 
 describe('đại viên mãn chưa có độ kiếp: không vượt bình cảnh', () => {
-  const pills = (c: InstanceType<typeof Character>) => c.inv.reduce((n, s) => n + (s?.id === PHA_CANH_PILL ? s.n : 0), 0);
+  const pills = (c: InstanceType<typeof Character>) => c.inv.reduce((n, s) => n + (s?.id === bottleneckPill(c.level) ? s.n : 0), 0);
   const setup = (level: number, bk: number) => {
     const c = Character.create(700_000 + level * 10 + Math.floor(Math.random() * 9), 'Pk' + level + Date.now() + Math.floor(Math.random() * 1e6), null, null);
     c.level = level;
     c.bk = bk;
     c.xp = xpNeed(level);
     c.recalc();
-    c.tx('t:pill', 'give' + c.id, (d) => d.add(PHA_CANH_PILL, 2));
+    c.tx('t:pill', 'give' + c.id, (d) => d.add(bottleneckPill(level), 2));
     const warns: string[] = [];
     const spawned: unknown[] = [];
     const host = {
@@ -150,7 +150,7 @@ describe('đại viên mãn chưa có độ kiếp: không vượt bình cảnh'
     return { c, rs, p, warns, spawned };
   };
 
-  it.each([19, 23, 27])('cấp %i đầy tu vi: Phá Cảnh Đan không bị tiêu, không dựng tâm ma', (lv) => {
+  it.each([23, 27])('cấp %i đầy tu vi: Phá Cảnh Đan không bị tiêu, không dựng tâm ma', (lv) => {
     const { c, rs, p, warns, spawned } = setup(lv, lv - 2);
     rs.onBottleneck(p as never, { m: 'pill', r: 'k1' });
     rs.onBottleneck(p as never, { m: 'trial' });
@@ -159,6 +159,12 @@ describe('đại viên mãn chưa có độ kiếp: không vượt bình cảnh'
     expect(c.bk).toBe(lv - 2);
     expect(c.level).toBe(lv);
     expect(spawned).toHaveLength(0);
+  });
+
+  it('cấp 19 (Trúc Cơ đại viên mãn) đã mở từ E2-D: không còn bị chặn "chưa mở"', () => {
+    const { rs, p, warns } = setup(19, 17);
+    rs.onBottleneck(p as never, { m: 'pill', r: 'k3' });
+    expect(warns).not.toContain('sys.bk_not_yet');
   });
 
   it('nút trung kỳ (17) vẫn dùng đan được', () => {

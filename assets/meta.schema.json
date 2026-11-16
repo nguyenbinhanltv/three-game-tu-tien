@@ -202,6 +202,14 @@
             "fixCrossWeights": {
               "type": "boolean",
               "description": "Bỏ trọng số của xương chân/đuôi nằm xa đỉnh (> 20% chiều dài thân) rồi chuẩn hóa: sửa auto-rig gán chéo bàn chân trước ↔ chân sau (Huyết Lang Vương)."
+            },
+            "slam": {
+              "enum": ["rear"],
+              "description": "Dáng clip slam (cần import.extra có slam): bỏ trống = dáng cũ (chồm nhẹ, Huyết Lang Vương); rear = đứng thẳng trên hai chân sau rồi nện hai chân trước (Địa Mạch Long)."
+            },
+            "death": {
+              "enum": ["side", "prone"],
+              "description": "Dáng chết: side (mặc định, lăn nghiêng 88° nằm một bên) hoặc prone (quỵ bốn chân nằm sấp, cho thú thân rộng dẹt khi nằm nghiêng: Thạch Giáp Tê)."
             }
           }
         },

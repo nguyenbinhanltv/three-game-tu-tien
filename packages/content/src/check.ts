@@ -4,13 +4,13 @@ import { existsSync } from 'node:fs';
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
-import { LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
-import { LOOT } from './loot';
+import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed, MAX_TIER, TIER_OPEN, TIER_MUL, PROMOTE_MAT, TIER_MIN_ILVL } from '@dtl/shared';
+import { itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { LOOT, LOOT_MATS } from './loot';
 import { monSkillsOf } from '@dtl/shared';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
-import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS } from '@dtl/shared';
+import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, tribForLevel, peakGated } from '@dtl/shared';
 import { TELE_PADS, terrainOf } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
 
@@ -388,7 +388,7 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!inR(line.delay, 0.9, 3)) err(`${id}: line.delay phải trong [0,9; 3] giây`);
     if (!(line.cd > line.delay + 2)) err(`${id}: line.cd phải lớn hơn delay + 2`);
     if (!mulOk(line.mul)) err(`${id}: line.mul phải trong (0, 3]`);
-    if (!(inR(line.r, 2, 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, 20]`);
+    if (!(inR(line.r, 2, m.boss ? 30 : 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, ${m.boss ? 30 : 20}]`);
     if (!inR(line.w, 0.5, 6)) err(`${id}: line.w phải trong [0,5; 6] mét`);
     if (!(line.range > 0 && line.range <= line.r)) err(`${id}: line.range phải trong (0, r]`);
   }
@@ -575,7 +575,7 @@ for (const r of RECIPES) {
 {
   const LOOT_SETS = new Set<string>();
   for (const l of LOOT.values()) for (const r of l.equip ?? []) if (r.set) LOOT_SETS.add(r.set);
-  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow'];
+  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow', 'hoanh_kiem', 'kim_chung', 'moc_linh'];
   const hex = /^#[0-9a-fA-F]{6}$/;
   uniqueIds('set', SETS);
   for (const st of SETS) {
@@ -614,15 +614,50 @@ for (const r of RECIPES) {
     const w = `forge ${f.id}`;
     const out = ITEM.get(f.output);
     if (!out?.set) err(`${w}: thành phẩm phải là món của bộ`);
-    if (!NPC.get(f.npc)?.enhance) err(`${w}: npc phải là thợ (enhance)`);
+    for (const n of [f.npc, ...(f.alsoAt ?? [])]) if (!NPC.get(n)?.enhance) err(`${w}: npc ${n} phải là thợ (enhance)`);
+    if (f.reqLevel !== undefined && f.reqLevel !== (out ? (out.reqLevel ?? 1) : -1)) err(`${w}: reqLevel phải bằng reqLevel của thành phẩm`);
     for (const i of f.inputs) needItem(i.id, w);
     if (f.q.length !== QUALITY_COUNT || f.q.some((x) => !(x >= 0)) || !f.q.some((x) => x > 0)) err(`${w}: q sai`);
     if (f.q[4] > 0 || f.q[3] / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3) err(`${w}: chế tạo không ra Thiên phẩm, Địa phẩm ≤ 30%`);
     if (!(f.ilvl >= 1 && f.ilvl <= 99) || !(f.gold >= 0)) err(`${w}: ilvl/gold sai`);
   }
 }
+// ---- bậc trang bị và Thăng Bậc (E2-F) ----
+{
+  if (!(TIER_MUL.length === MAX_TIER + 1 && TIER_MUL.every((m, i) => i < 2 || m > TIER_MUL[i - 1]))) err('TIER_MUL phải tăng theo bậc');
+  for (let to = 2; to <= TIER_OPEN; to++) {
+    const mat = PROMOTE_MAT[to];
+    if (!mat || !ITEM.has(mat)) err(`bậc ${to}: thiếu nguyên liệu Thăng Bậc ${mat}`);
+    else if (t(`item.${mat}.name`) !== (GLOSSARY.materials as Record<string, string>)[mat]) err(`${mat}: tên lệch glossary.materials`);
+  }
+  for (const it of ITEMS) {
+    if (!isEquipSlot(it.kind) || it.kind === 'artifact') continue;
+    const tier = itemTier(it.id);
+    if (it.tier !== undefined && !(Number.isInteger(it.tier) && it.tier >= 1 && it.tier <= MAX_TIER)) err(`${it.id}: tier ${it.tier} ngoài [1; ${MAX_TIER}]`);
+    if (tier >= 2 && (it.reqLevel ?? 1) < (TIER_MIN_ILVL[tier] ?? 1) - 1) err(`${it.id}: reqLevel ${it.reqLevel} quá thấp cho bậc ${tier}`);
+    if (tier > TIER_OPEN) err(`${it.id}: bậc ${tier} chưa mở (TIER_OPEN = ${TIER_OPEN})`);
+    if (it.promoteTo) {
+      const to = ITEM.get(it.promoteTo);
+      if (!to) err(`${it.id}: promoteTo không tồn tại ${it.promoteTo}`);
+      else if (to.kind !== it.kind || itemTier(to.id) !== tier + 1) err(`${it.id}: promoteTo ${to.id} phải cùng ô và bậc ${tier + 1}`);
+    }
+    // Mọi món bậc thấp hơn bậc cao nhất đang mở đều phải thăng được.
+    if (tier < TIER_OPEN && !promoteTarget(it.id)) err(`${it.id}: không có đích Thăng Bậc`);
+    if (it.set) for (const o of SETS.find((x) => x.id === it.set)?.pieces ?? []) if (itemTier(o) !== tier) err(`bộ ${it.set}: ${o} khác bậc với ${it.id}`);
+  }
+  for (const r of LOOT_MATS) {
+    for (const d of r.drops) {
+      needItem(d.item, 'loot.$mats');
+      if (!(d.chance > 0 && d.chance <= 1 && d.min >= 1 && d.max >= d.min)) err(`loot.$mats ${d.item}: chance/min/max sai`);
+    }
+    for (const m of r.mons) if (MONSTER.has(m) && !LOOT.has(m)) err(`loot.$mats: quái ${m} chưa có bảng rơi`);
+  }
+}
 for (const n of NPCS) {
   needStr(`npc.${n.id}.name`);
+  const nl = LEVELS[n.level ?? 'van_lam'];
+  if (!nl) err(`npc ${n.id}: level không tồn tại ${n.level}`);
+  else if (!Number.isFinite(terrainOf(nl).groundAt(n.x, n.z))) err(`npc ${n.id}: tọa độ (${n.x}, ${n.z}) ngoài bản đồ ${nl.id}`);
   needStr(`npc.${n.id}.title`);
   needStr(`npc.${n.id}.greet`);
   for (const s of n.sells ?? []) {
@@ -641,6 +676,7 @@ for (const q of QUESTS) {
     if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
+    if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target)) err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
   }
   for (const i of q.rewards.items ?? []) needItem(i.id, `quest ${q.id}`);
 }
@@ -685,9 +721,9 @@ for (const lv of Object.values(LEVELS)) {
   const as = LEVEL_ASSETS[lv.id];
   if (!as) err(`level ${lv.id}: thiếu levels/${lv.id}.assets.json`);
   else {
-    const known = ['sect', 'wild', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
+    const known = ['sect', 'wild', 'wild_ochre', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
     for (const m of as.music) if (!known.includes(m)) err(`level ${lv.id}: assets.music không biết bài ${m}`);
-    if (!['default', 'dawn', 'day', 'night'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
+    if (!['default', 'dawn', 'day', 'night', 'ochre'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
     if (as.minimap && !existsSync(new URL(`../../../apps/client/public/map/${as.minimap}.json`, import.meta.url))) err(`level ${lv.id}: thiếu nền minimap public/map/${as.minimap}.json (pnpm minimap:build --level ${lv.id})`);
   }
 }
@@ -779,6 +815,23 @@ if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
     });
     needStr(`ui.trib.${id}.title`);
   }
+  // Kiếp đã bật cho người chơi phải có vật phẩm đột phá thật, chế được, nhặt được; cơ chế `dan_tran` phải có thông số Đan Trận (E2-D).
+  for (const [id, d] of Object.entries(TRIB_DEFS)) {
+    if (d.enabled && d.item) {
+      if (!ITEM.get(d.item)) err(`độ kiếp ${id}: vật phẩm ${d.item} không tồn tại`);
+      if (!RECIPES.some((r) => r.output.id === d.item)) err(`độ kiếp ${id}: ${d.item} không có công thức chế`);
+    }
+    if (d.enabled && !d.item && id !== 'truc_co') err(`độ kiếp ${id}: bật mà chưa có vật phẩm đột phá`);
+    for (const p of d.phases) {
+      if (p.mechanic === 'dan_tran') {
+        const dt = p.danTran;
+        if (!dt || !(dt.r > 0 && dt.fill > 0 && dt.drain >= 0 && dt.sweepEvery > 0 && dt.sweepLen > 0 && dt.sweepW > 0 && dt.sweepWarn > 0 && dt.sweepPct > 0 && dt.sweepPct < 1)) err(`độ kiếp ${id}/${p.id}: thiếu hoặc sai thông số danTran`);
+        else if (dt.fill > p.end - (d.phases[d.phases.indexOf(p) - 1]?.end ?? 0)) err(`độ kiếp ${id}/${p.id}: fill dài hơn pha, không thể ngưng đan`);
+      }
+    }
+  }
+  if (!tribForLevel(19)?.enabled) err('độ kiếp Kết Đan (cấp 19) phải đang bật (E2-D)');
+  if (peakGated(19) || !peakGated(23) || !peakGated(27)) err('peakGated: chỉ Kết Đan 23 và Nguyên Anh 27 còn chặn (bình cảnh Trúc Cơ 19 đã mở)');
   if (TRIB_DEFS.truc_co.room !== 'world' || !TRIB_DEFS.truc_co.enabled) err('độ kiếp truc_co: phải chạy ở room world và đang bật');
 }
 
@@ -812,7 +865,7 @@ for (const it of ITEMS) {
 }
 for (const r of RECIPES) {
   if (r.quality && ITEM.get(r.output.id)?.kind !== 'consumable') err(`${r.id}: chỉ đan (consumable) mới có phẩm chất`);
-  if (r.reqLevel !== undefined && !(r.reqLevel >= 1 && r.reqLevel <= 18)) err(`${r.id}: reqLevel ngoài khoảng`);
+  if (r.reqLevel !== undefined && !(r.reqLevel >= 1 && r.reqLevel <= 28)) err(`${r.id}: reqLevel ngoài khoảng`);
 }
 
 // Điểm đặt tên cho ?at= / `/gm tp <id>` (chỉ server đọc).

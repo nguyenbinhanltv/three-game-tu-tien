@@ -171,6 +171,12 @@ function paletteOf(setId: string): Pal {
       return { cloth: '#23252b', cloth2: '#3a3126', hard: '#33363e', trim, gem: '#b0412f' };
     case 'set_dan_tam':
       return { cloth: hex, cloth2: '#2f5446', hard: '#8c6a3c', trim, gem: '#62b79c' };
+    case 'set_liet_mach':
+      return { cloth: hex, cloth2: '#efe6cf', hard: '#b07a3c', trim, gem: '#5fb89c' };
+    case 'set_dia_giap':
+      return { cloth: '#3b2a1f', cloth2: hex, hard: '#7a5a3c', trim, gem: '#d98a2b' };
+    case 'set_phuc_mach':
+      return { cloth: hex, cloth2: '#34503a', hard: '#9a8a52', trim, gem: '#8fe3b4' };
     default:
       return { cloth: hex, cloth2: '#1d5d6c', hard: '#4aa3b4', trim, gem: '#bfe9f0' };
   }
@@ -458,6 +464,60 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
       belt(c, { h: 0.05, color: c.pal.cloth2, rim: c.pal.trim, buckle: c.pal.trim, gem: c.pal.gem });
       hipCharm(c, { cord: c.pal.trim, item: 'gourd', color: c.pal.hard, accent: c.pal.trim, gain: 0.05 });
     },
+  },
+  // Liệt Mạch Kiếm Y (bậc 2, kiếm tu): cát vàng + ngà, một vai giáp đồng lệch phải, hộ uyển đồng, ủng cao chỉ ngọc lam, ngọc nhỏ ở đai.
+  set_liet_mach: {
+    robe: (c) => {
+      const r = shR(c, -1, 1.3);
+      pauldron(c, -1, { r, facets: 8, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, layers: [{ k: 1, theta: 1.25, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.7, theta: 1.0, lift: 0.26, color: c.pal.hard, kind: 'hard' }] });
+      pauldron(c, 1, { r: shR(c, 1, 1.05), facets: 12, rim: c.pal.hard, rimKind: 'hard', layers: [{ k: 1, theta: 1.2, lift: 0, color: c.pal.cloth2, kind: 'cloth' }] });
+      backTails(c, { w: 0.07, len: 0.38, color: c.pal.cloth2, stripe: c.pal.trim, tip: 'v', gain: 0.07 });
+    },
+    bracer: (c) => {
+      for (const s of [1, -1] as const) bracer(c, s, { len: 0.1, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth2, gem: c.pal.gem });
+    },
+    belt: (c) => {
+      belt(c, { h: 0.058, color: c.pal.trim, rim: c.pal.hard, buckle: c.pal.hard, gem: c.pal.gem });
+      hipCharm(c, { cord: c.pal.trim, item: 'jade', color: c.pal.gem, accent: c.pal.cloth2, gain: 0.05 });
+    },
+    boots: (c) => {
+      for (const s of [1, -1] as const) cuff(c, s, { len: 0.1, kind: 'cloth', color: c.pal.cloth, rim: c.pal.gem, flare: 0.006, plate: c.pal.trim });
+    },
+  },
+  // Địa Long Hộ Giáp (bậc 2, hộ pháp): nâu đất, vảy đá, viền đồng vàng, nặng và rộng.
+  set_dia_giap: {
+    robe: (c) => {
+      for (const s of [1, -1] as const) {
+        const r = shR(c, s, 1.34);
+        pauldron(c, s, { r, facets: 5, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, scales: { color: '#5d4430', tiers: [[0.45, 5, 0.27], [0.82, 8, 0.29], [1.12, 11, 0.3]] }, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.78, theta: 1.0, lift: 0.3, color: c.pal.cloth2, kind: 'hard' }] });
+      }
+      backTails(c, { w: 0.09, len: 0.32, color: c.pal.cloth, stripe: c.pal.trim, tip: 'flat', gain: 0.04 });
+    },
+    bracer: (c) => {
+      for (const s of [1, -1] as const) bracer(c, s, { len: 0.13, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
+    },
+    belt: (c) => {
+      belt(c, { h: 0.08, color: c.pal.cloth, rim: c.pal.trim, buckle: c.pal.trim, gem: c.pal.gem, wide: true });
+    },
+    boots: (c) => {
+      for (const s of [1, -1] as const) cuff(c, s, { len: 0.15, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.014, plate: c.pal.cloth });
+    },
+  },
+  // Phục Mạch Đan Bào (bậc 2, đan sư): xanh rêu, ngà nhạt, ngọc bội, túi thuốc, vòng ngọc ở tay; mềm.
+  set_phuc_mach: {
+    robe: (c) => {
+      for (const s of [1, -1] as const) {
+        const r = shR(c, s, 1.2);
+        pauldron(c, s, { r, facets: 12, rim: c.pal.trim, rimKind: 'hard', layers: [{ k: 1, theta: 1.35, lift: 0, color: c.pal.cloth, kind: 'cloth' }, { k: 0.66, theta: 1.1, lift: 0.18, color: c.pal.cloth2, kind: 'cloth' }] });
+      }
+      backTails(c, { w: 0.08, len: 0.4, color: c.pal.cloth, stripe: c.pal.trim, tip: 'point', gain: 0.075 });
+    },
+    jade: (c) => pendant(c, { cord: c.pal.trim, jade: c.pal.gem, rim: c.pal.hard }),
+    belt: (c) => {
+      belt(c, { h: 0.05, color: c.pal.cloth2, rim: c.pal.trim, buckle: c.pal.hard, gem: c.pal.gem });
+      hipCharm(c, { cord: c.pal.trim, item: 'gourd', color: c.pal.cloth2, accent: c.pal.gem, gain: 0.05 });
+    },
+    ring: (c) => handBand(c, { color: c.pal.hard, gem: c.pal.gem }),
   },
   // Hàn Giao Lân: lam băng, vảy, gai.
   set_han_giao: {

@@ -67,7 +67,7 @@ export function createSky(): THREE.Mesh {
 }
 
 /** Màu đỉnh trời theo preset (không có trong art bible, chọn cho khớp màu sương). */
-const TOP: Record<string, number> = { dawn: 0x7ea6b6, day: 0x4f93bf, night: 0x0b1520 };
+const TOP: Record<string, number> = { dawn: 0x7ea6b6, day: 0x4f93bf, night: 0x0b1520, ochre_dawn: 0x8c8ea0, ochre: 0x6f8fa6, ochre_night: 0x0c1420 };
 
 export function applySkyPreset(name: string, fogColor: number, glowColor: number, sunColor: number): void {
   skyParams.horizon.value.setHex(fogColor);
@@ -75,7 +75,7 @@ export function applySkyPreset(name: string, fogColor: number, glowColor: number
   skyParams.glow.value.setHex(glowColor);
   skyParams.sunColor.value.setHex(sunColor);
   // Đêm: bớt quầng và không mây ti sáng.
-  skyParams.cirrusAmt.value = name === 'night' ? 0.25 : 1;
+  skyParams.cirrusAmt.value = name.endsWith('night') ? 0.25 : 1;
 }
 
 export function setSunDirection(x: number, y: number, z: number): void {

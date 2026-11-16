@@ -17,7 +17,7 @@
 // Gỡ lỗi: chuyển trạng thái được log `[music] ...` khi chạy dev hoặc có `?debug`;
 // `window.__music.log` giữ 50 lần chuyển gần nhất, `__music.state()` xem trạng thái hiện tại.
 import { MS_ATTACK, MS_CHASE, PF_DEAD, PF_MEDITATING, PF_TRIBULATION } from '@dtl/shared';
-import { biomeAt } from './levelCtx';
+import { biomeAt, levelId } from './levelCtx';
 import { hasMusicFile, musicOutput, musicPosition, playAmbient, playMusic, stemSources } from './audio';
 import type { MonVis } from './entities';
 import {
@@ -83,6 +83,7 @@ interface Style {
 const STYLES: Record<MusicTrack, Style> = {
   sect: { root: 293.66, scale: GONG, bpm: 66, density: 0.32, span: 9, gain: 0.5, drone: 0.1, bell: 0.25, sustain: 0.997 },
   wild: { root: 329.63, scale: GONG, bpm: 84, density: 0.42, span: 10, gain: 0.48, drone: 0.08, sustain: 0.996 },
+  wild_ochre: { root: 293.66, scale: GONG, bpm: 68, density: 0.3, span: 9, gain: 0.46, drone: 0.1, sustain: 0.997 },
   forest: { root: 392.0, scale: GONG, bpm: 92, density: 0.4, span: 10, gain: 0.45, drone: 0.06, sustain: 0.995 },
   lake: { root: 261.63, scale: YU, bpm: 60, density: 0.24, span: 8, gain: 0.5, drone: 0.14, sustain: 0.998 },
   dungeon: { root: 220.0, scale: YU, bpm: 58, density: 0.2, span: 7, gain: 0.5, drone: 0.16, bell: 0.15, sustain: 0.997 },
@@ -487,6 +488,7 @@ export class MusicController {
     const inp: MusicInput = {
       dungeon: s.room === 'dungeon',
       biome: biomeAt(s.x, s.z),
+      level: levelId(),
       combat,
       boss,
       tribulation: (s.flags & PF_TRIBULATION) !== 0,

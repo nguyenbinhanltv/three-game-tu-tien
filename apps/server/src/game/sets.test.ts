@@ -47,10 +47,10 @@ function setup() {
 }
 
 describe('dữ liệu bộ', () => {
-  it('bốn bộ, mỗi món trỏ đúng bộ, công thức chế chỉ ra món của bộ Lạc Kiếm', () => {
-    expect(SETS.map((s) => s.id)).toEqual(['set_lac_kiem', 'set_huyen_giap', 'set_dan_tam', 'set_han_giao']);
+  it('bảy bộ, mỗi món trỏ đúng bộ, công thức chế bậc 1 chỉ ra món của bộ Lạc Kiếm', () => {
+    expect(SETS.map((s) => s.id)).toEqual(['set_lac_kiem', 'set_huyen_giap', 'set_dan_tam', 'set_han_giao', 'set_liet_mach', 'set_dia_giap', 'set_phuc_mach']);
     for (const s of SETS) for (const pid of s.pieces) expect(ITEM.get(pid)?.set).toBe(s.id);
-    for (const f of FORGE) expect(ITEM.get(f.output)?.set).toBe('set_lac_kiem');
+    for (const f of FORGE.filter((x) => x.id.startsWith('frg_lk_'))) expect(ITEM.get(f.output)?.set).toBe('set_lac_kiem');
   });
 });
 

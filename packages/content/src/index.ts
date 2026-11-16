@@ -1,4 +1,4 @@
-import { majorRealmOf, registerTerrain, resolveSkill, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
+import { clampTier, isEquipSlot, majorRealmOf, registerTerrain, resolveSkill, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
 import type {
   ArtifactDef,
   PillQualityCfg,
@@ -148,6 +148,20 @@ function index<T extends { id: string }>(list: T[]): Map<string, T> {
 }
 
 export const ITEM = index(ITEMS);
+
+/** Bậc trang bị của món (thiếu = 1). */
+export function itemTier(id: string): number {
+  return clampTier(ITEM.get(id)?.tier);
+}
+
+/** Đích Thăng Bậc của món `id`: `promoteTo` nếu khai báo, không thì món thường cùng ô ở bậc kế. null nếu không có. */
+export function promoteTarget(id: string): string | null {
+  const def = ITEM.get(id);
+  if (!def || !isEquipSlot(def.kind)) return null;
+  if (def.promoteTo) return def.promoteTo;
+  const to = itemTier(id) + 1;
+  return ITEMS.find((i) => i.kind === def.kind && !i.set && itemTier(i.id) === to)?.id ?? null;
+}
 export const MONSTER = index(MONSTERS);
 /** Mọi chiêu: chung + công pháp. */
 export const SKILL = index([...SKILLS, ...METHOD_SKILLS]);
@@ -220,7 +234,7 @@ export function itemName(id: string, plus?: number): string {
 export const SWORD_MODEL_DEFAULT = 'prop_kiem_thanh_phong';
 /** Model theo phẩm (`rarity` 0..4) cho vũ khí chưa khai báo `model`: gần nhất theo phẩm. */
 const SWORD_MODEL_BY_RARITY = ['prop_kiem_thiet', 'prop_kiem_thanh_phong', 'prop_kiem_han_quang', 'prop_kiem_han_giao', 'prop_kiem_tram_ta'];
-/** Kiếm bậc mới (E2: Đoạn Mạch 16–19, Vân Hải 20–23, Cổ Thành 24–27): đã nhập model, chưa gắn vật phẩm (E2-F nối `model` vào items.json). */
+/** Kiếm bậc mới (E2): Liệt Mạch (bậc 2) đã gắn vật phẩm `itm_liet_mach_kiem`; Kính Quang (bậc 3) và Tinh Khuyết (bậc 4) đã nhập model, chờ E3/E4 thêm vật phẩm. */
 export const SWORD_MODELS_TIER = ['prop_kiem_liet_mach', 'prop_kiem_kinh_quang', 'prop_kiem_tinh_khuyet'];
 export const SWORD_MODELS = [...new Set([SWORD_MODEL_DEFAULT, ...SWORD_MODEL_BY_RARITY, ...SWORD_MODELS_TIER])];
 
