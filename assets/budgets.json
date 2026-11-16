@@ -74,7 +74,7 @@
       "bones": 0
     },
     "outfit": {
-      "triangles": { "min": 500, "max": 3000 },
+      "triangles": { "min": 500, "max": 14000 },
       "lods": [{ "ratio": 0.4 }, { "ratio": 0.15 }],
       "texture": { "color": 1024, "data": 512 },
       "bones": 64

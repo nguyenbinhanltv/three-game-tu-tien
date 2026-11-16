@@ -6,6 +6,7 @@ import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials, createWorldMaterial, rimLight } from '../../render/materials/world';
+import { createOutfitMaterial, hasOutfitMask } from '../../render/materials/outfit';
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
 import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
@@ -377,8 +378,12 @@ export class PlayerSkins {
   private outfitMaterial(id: string, tpl: OutfitTemplate): THREE.MeshStandardNodeMaterial {
     let m = this.outMats.get(id);
     if (m) return m;
-    m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, tpl.meshes[0].material as THREE.Material))[0]);
-    m.side = THREE.DoubleSide; // áo là các tấm vỏ mỏng (vạt, tay áo): không cull mặt sau
+    const src = tpl.meshes[0].material as THREE.MeshStandardMaterial;
+    if (hasOutfitMask(src)) m = createOutfitMaterial(src); // bộ mô-đun T-5: nhuộm 3 kênh, vải/kim loại, vân sáng
+    else {
+      m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src))[0]);
+      m.side = THREE.DoubleSide; // bản tạm #119: các tấm vỏ mỏng (vạt, tay áo): không cull mặt sau
+    }
     this.outMats.set(id, m);
     return m;
   }
