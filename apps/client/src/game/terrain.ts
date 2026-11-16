@@ -2,31 +2,15 @@ import * as THREE from 'three/webgpu';
 import { createWorldMaterial } from '../render/materials/world';
 import { applyGroundShader, clearGroundShader, type GroundLevel } from '../render/materials/ground';
 import type { GroundTextures } from './groundTextures';
-import {
-  COLLIDERS,
-  fbm,
-  featureWeight,
-  FOREST,
-  hash01,
-  heightAt,
-  KIEM_TRUNG,
-  LAKE,
-  PORTAL_PAD,
-  SECT,
-  TERRAIN_SEED,
-  VALLEY,
-  WATER_Y,
-  WORLD_SIZE,
-} from '@dtl/shared';
+import { COLLIDERS, fbm, featureWeight, FOREST, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
+import { levelTerrain } from './levelCtx';
 import { col, G, GeoBuilder, mat } from './geo';
 import { withSightFade } from './occlusion';
 import { LEGACY_TREES, nearPropTree } from './propScatter';
 
 const TILE = 256;
-const NT = WORLD_SIZE / TILE;
 const NEAR_R = 3;
 const COARSE_CELL = 32;
-const COARSE_N = WORLD_SIZE / COARSE_CELL;
 const VEG_NEAR_R = 2;
 const VEG_FAR_R = 4;
 
@@ -43,8 +27,34 @@ const C_LAKEBED = col(0x5e7f86);
 const C_TOMB = col(0x5d5a66);
 const _c = new THREE.Color();
 
+/** Địa hình riêng của Vân Lam (và Kiếm Trủng): các khu Vân Lam dùng cho màu, cây, mặt nạ. Level khác dùng màu theo biome. */
+/** Địa hình của Terrain đang dựng (gắn lúc `new Terrain()`): hàm dựng ô gọi thẳng, không qua con trỏ level từng đỉnh. */
+let T = levelTerrain();
+let VL = T.id === 'van_lam';
+function heightAt(x: number, z: number): number {
+  return T.heightAt(x, z);
+}
+function isVanLam(): boolean {
+  return VL;
+}
+
+const C_VOID_ROCK = col(0x6b6a72);
+/** Màu mặt đất của level không phải Vân Lam: cỏ/đá/tuyết theo độ dốc và độ cao, bờ nước ra cát. */
+function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
+  const t = T;
+  const n = fbm(x * 0.013, z * 0.013, 2, t.def.seed + 300);
+  out.copy(C_GRASS_WILD).lerp(C_GRASS_DRY, Math.max(0, n) * 0.35).multiplyScalar(0.92 + n * 0.14);
+  const slope = 1 - ny;
+  if (slope > 0.12) out.lerp(n > 0 ? C_ROCK : C_ROCK_DARK, Math.min(1, (slope - 0.12) * 4.5));
+  if (t.def.islands && h < (t.def.voidFloor ?? 0) + 30) out.lerp(C_VOID_ROCK, 0.8);
+  if (h > 250) out.lerp(C_SNOW, Math.min(1, (h - 250) / 60) * (slope < 0.45 ? 1 : 0.4));
+  const w = t.def.water;
+  if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
+}
+
 /** Màu mặt đất theo vị trí, độ cao và độ dốc. */
 function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
+  if (!isVanLam()) return genericColor(x, z, h, ny, out);
   const wSect = featureWeight(SECT, x, z);
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
@@ -78,6 +88,10 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Trọng số vùng cho shader mặt đất: x rừng, y đất khô, z đất chết Kiếm Trủng, w dự phòng. */
 function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
+  if (!isVanLam()) {
+    o[k] = o[k + 1] = o[k + 2] = o[k + 3] = 0;
+    return;
+  }
   const n = fbm(x * 0.013, z * 0.013, 2, TERRAIN_SEED + 300);
   o[k] = Math.min(1, featureWeight(FOREST, x, z) * 1.4);
   o[k + 1] = Math.max(0, Math.min(1, n * 1.6 + 0.1 - featureWeight(VALLEY, x, z) * 0.6));
@@ -228,6 +242,7 @@ function nearCollider(x: number, z: number, pad: number): boolean {
 }
 
 function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeometry | null {
+  if (!isVanLam()) return null;
   const b = new GeoBuilder();
   const cellSize = 16;
   const cells = TILE / cellSize;
@@ -315,8 +330,16 @@ export class Terrain {
   /** Số ô đã dựng xong (để màn hình loading biết khi nào vào game). */
   ready = false;
 
+  /** Cạnh thế giới của level lúc dựng (m) và số ô/lưới thô theo đó; mỗi level một đối tượng Terrain. */
+  readonly size = levelTerrain().size;
+  private readonly NT = this.size / TILE;
+  private readonly COARSE_N = this.size / COARSE_CELL;
+
   constructor() {
-    const g = buildTileGeometry(0, 0, WORLD_SIZE, COARSE_N, 0);
+    T = levelTerrain();
+    VL = T.id === 'van_lam';
+    const COARSE_N = this.COARSE_N;
+    const g = buildTileGeometry(0, 0, this.size, COARSE_N, 0);
     this.coarseIndex = new THREE.BufferAttribute(new Uint16Array(COARSE_N * COARSE_N * 6), 1);
     g.setIndex(this.coarseIndex);
     this.coarse = new THREE.Mesh(g, this.material);
@@ -353,8 +376,8 @@ export class Terrain {
           if (Math.max(Math.abs(dx), Math.abs(dz)) !== ring) continue;
           const tx = ctx + dx;
           const tz = ctz + dz;
-          if (tx < 0 || tz < 0 || tx >= NT || tz >= NT) continue;
-          const key = tz * NT + tx;
+          if (tx < 0 || tz < 0 || tx >= this.NT || tz >= this.NT) continue;
+          const key = tz * this.NT + tx;
           let t = this.tiles.get(key);
           if (!t) {
             t = { key, tx, tz, res: 0, mesh: null, veg: null, vegFar: null };
@@ -406,6 +429,7 @@ export class Terrain {
   private rebuildCoarseIndex(): void {
     this.coarseDirty = false;
     const per = TILE / COARSE_CELL;
+    const COARSE_N = this.COARSE_N;
     const n1 = COARSE_N + 1;
     // Giữ nguyên một buffer chỉ số, chỉ ghi lại nội dung và đổi draw range
     // (thay buffer mới giữa chừng làm WebGPU báo lỗi).
@@ -415,7 +439,7 @@ export class Terrain {
       const tz = (j / per) | 0;
       for (let i = 0; i < COARSE_N; i++) {
         const tx = (i / per) | 0;
-        const t = this.tiles.get(tz * NT + tx);
+        const t = this.tiles.get(tz * this.NT + tx);
         if (t && t.mesh) continue;
         const a = j * n1 + i;
         const b = a + 1;
@@ -471,7 +495,7 @@ export function renderMinimap(size: number): HTMLCanvasElement {
   cv.width = cv.height = size;
   const g = cv.getContext('2d')!;
   const img = g.createImageData(size, size);
-  const step = WORLD_SIZE / size;
+  const step = levelTerrain().size / size;
   const c = new THREE.Color();
   for (let j = 0; j < size; j++) {
     for (let i = 0; i < size; i++) {
@@ -487,7 +511,8 @@ export function renderMinimap(size: number): HTMLCanvasElement {
       let r = c.r * shade;
       let gg = c.g * shade;
       let bb = c.b * shade;
-      if (h < WATER_Y && featureWeight(LAKE, x, z) > 0) {
+      const wy = levelTerrain().def.water?.y;
+      if (isVanLam() ? h < WATER_Y && featureWeight(LAKE, x, z) > 0 : wy !== undefined && h < wy) {
         r = 0.25;
         gg = 0.5;
         bb = 0.66;

@@ -1,0 +1,8 @@
+{
+  "mood": "default",
+  "glb": ["arch_sect"],
+  "ground": { "set": "terrain", "mask": "manifest" },
+  "music": ["sect", "wild", "forest", "lake"],
+  "features": { "sect": true, "portals": true, "lanterns": true, "lake": true, "clouds": true, "grass": true, "trees": "scatter", "beacons": true, "vegetation": true },
+  "minimap": "van_lam"
+}

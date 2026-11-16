@@ -31,6 +31,7 @@
     "shots:e0": "tsx src/shots-e0.ts",
     "shots:m4": "tsx src/shots-m4.ts",
     "shots:s2b": "tsx src/shots-s2b.ts",
+    "levels": "tsx src/levelswitch.ts",
     "test": "vitest run"
   },
   "dependencies": {

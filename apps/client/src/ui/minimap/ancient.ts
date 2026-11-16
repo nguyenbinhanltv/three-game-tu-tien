@@ -13,7 +13,8 @@ export interface AncientMap {
   mips: HTMLCanvasElement[];
 }
 
-let cur: AncientMap | null = null;
+let cur: (AncientMap & { name: string }) | null = null;
+let curName = '';
 let pending: Promise<void> | null = null;
 let failedAt = 0;
 let attempts = 0;
@@ -22,11 +23,20 @@ const RETRY_MS = 30_000;
 const MAX_ATTEMPTS = 3;
 
 /** Trả bản đồ nếu đã nạp; lần đầu gọi sẽ bắt đầu nạp ngầm (ảnh ~0,5 MB, không chặn khung đầu). */
-export function ancientMap(): AncientMap | null {
+export function ancientMap(name = 'van_lam'): AncientMap | null {
+  // Đổi level (E1-D): bỏ nền level cũ (các canvas mip được GC) và nạp nền mới; `name` rỗng = level chưa có nền (dùng ảnh dự phòng).
+  if (name !== curName) {
+    cur = null;
+    curName = name;
+    attempts = 0;
+    pending = null;
+  }
+  if (!name) return null;
   if (cur || pending || attempts >= MAX_ATTEMPTS) return cur;
   if (attempts > 0 && performance.now() - failedAt < RETRY_MS) return cur;
   attempts++;
-  pending = load()
+  const want = name;
+  pending = load(name, () => want === curName)
     .catch((e) => {
       failedAt = performance.now();
       if (attempts === 1) console.warn('[minimap] không nạp được nền bản đồ cổ, dùng ảnh địa hình dự phòng', e);
@@ -37,18 +47,18 @@ export function ancientMap(): AncientMap | null {
   return cur;
 }
 
-async function load(): Promise<void> {
+async function load(name: string, still: () => boolean): Promise<void> {
   const base = import.meta.env.BASE_URL;
   const [meta, img] = await Promise.all([
-    fetch(`${base}map/van_lam.json`).then((r) => {
-      if (!r.ok) throw new Error(`van_lam.json ${r.status}`);
+    fetch(`${base}map/${name}.json`).then((r) => {
+      if (!r.ok) throw new Error(`${name}.json ${r.status}`);
       return r.json() as Promise<MinimapMeta>;
     }),
     new Promise<HTMLImageElement>((res, rej) => {
       const im = new Image();
       im.onload = () => res(im);
       im.onerror = () => rej(new Error('minimap image'));
-      im.src = `${base}map/van_lam.webp`;
+      im.src = `${base}map/${name}.webp`;
     }),
   ]);
   const mips: HTMLCanvasElement[] = [];
@@ -62,7 +72,7 @@ async function load(): Promise<void> {
     mips.push(cv);
     src = cv;
   }
-  cur = { meta, mips };
+  if (still()) cur = { name, meta, mips };
 }
 
 /** Mức mip hợp với tỉ lệ vẽ: `pxPerM` = số px màn hình (thiết bị) trên một mét thế giới. */

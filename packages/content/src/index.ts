@@ -11,6 +11,7 @@ import type {
   SetDef,
   QualityDef,
   SlotDef,
+  LevelAssets,
   LevelDef,
   MonsterDef,
   NpcDef,
@@ -36,6 +37,9 @@ import vanLamJson from '../data/levels/van_lam.json';
 import kiemTrungJson from '../data/levels/kiem_trung.json';
 import doanMachJson from '../data/levels/doan_mach.json';
 import doanMachTerrainJson from '../data/levels/doan_mach.terrain.json';
+import vanLamAssetsJson from '../data/levels/van_lam.assets.json';
+import kiemTrungAssetsJson from '../data/levels/kiem_trung.assets.json';
+import doanMachAssetsJson from '../data/levels/doan_mach.assets.json';
 import glossaryJson from '../data/glossary.json';
 import viJson from '../data/i18n/vi.json';
 import viUiJson from '../data/i18n/vi.ui.json';
@@ -102,6 +106,12 @@ export const LEVELS: Record<string, LevelDef> = {
 };
 // Địa hình dữ liệu hóa của bản đồ mở rộng (E2-A): đăng ký khi nạp @dtl/content để server, client và công cụ cùng thấy `terrainOf('doan_mach')`.
 registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
+/** Asset client theo level (`levels/<id>.assets.json`, E1-D). */
+export const LEVEL_ASSETS: Record<string, LevelAssets> = {
+  van_lam: vanLamAssetsJson as LevelAssets,
+  kiem_trung: kiemTrungAssetsJson as LevelAssets,
+  doan_mach: doanMachAssetsJson as LevelAssets,
+};
 /** Năm linh căn ngũ hành (P3-7). */
 export const ROOTS = rootsJson as RootDef[];
 export const GLOSSARY = glossaryJson;

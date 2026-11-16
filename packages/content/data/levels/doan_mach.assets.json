@@ -1,0 +1,8 @@
+{
+  "mood": "day",
+  "glb": [],
+  "ground": { "set": "terrain", "mask": "neutral" },
+  "music": ["wild"],
+  "features": { "sect": false, "portals": false, "lanterns": false, "lake": false, "clouds": false, "grass": false, "trees": "none", "beacons": true, "vegetation": false },
+  "minimap": "doan_mach"
+}

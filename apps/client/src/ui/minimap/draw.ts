@@ -1,5 +1,5 @@
 // Vẽ lớp động của minimap lên canvas: nền bản đồ (một drawImage), vùng mục tiêu, biểu tượng, mũi tên mép, mũi tên mình, chữ N.
-import { WORLD_SIZE } from '@dtl/shared';
+import { levelTerrain } from '../../game/levelCtx';
 import { t } from '@dtl/content';
 import type { Game } from '../../game/engine';
 import { type AncientMap, mipFor } from './ancient';
@@ -67,7 +67,7 @@ export function drawMinimap(ctx: CanvasRenderingContext2D, g: Game, frame: Minim
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   if (map) ctx.drawImage(mipFor(map, s * dpr), map.meta.x0, map.meta.z0, map.meta.size, map.meta.size);
-  else if (g.minimap) ctx.drawImage(g.minimap, 0, 0, WORLD_SIZE, WORLD_SIZE);
+  else if (g.minimap) ctx.drawImage(g.minimap, 0, 0, levelTerrain().size, levelTerrain().size);
   ctx.restore();
 
   // 2) vùng mục tiêu nhiệm vụ: tô mờ, viền nét đứt
