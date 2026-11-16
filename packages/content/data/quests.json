@@ -48,6 +48,6 @@
     "objectives": [ { "type": "dungeon", "count": 1 } ],
     "rewards": { "xp": 1600, "gold": 120, "items": [ { "id": "itm_bi_tich_tan_quyen", "n": 1 } ] } },
   { "id": "q2_ket_dan", "giver": "npc_chuong_mon", "turnin": "npc_chuong_mon", "requires": "q_truc_co", "minLevel": 19,
-    "objectives": [ { "type": "breakthrough", "count": 1 } ],
+    "objectives": [ { "type": "breakthrough", "target": "ket_dan", "count": 1 } ],
     "rewards": { "xp": 0, "gold": 3000, "items": [ { "id": "itm_tu_khi_dan", "n": 5 } ] } }
 ]

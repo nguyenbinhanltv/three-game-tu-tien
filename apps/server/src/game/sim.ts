@@ -141,7 +141,6 @@ import {
   bottleneckBlocked,
   buffMag,
   TRUC_CO_FREE_FLY_ALT,
-  TRUC_CO_LEVEL,
   vulnerableDamage,
   WATER_Y,
   xpLevelFactor,
@@ -3108,7 +3107,7 @@ export class GameSim {
       this.sysAll('sys.trib_ok', { name: c.name, realm: nextMajorRealmName(def.from) }, 'good');
       this.fx({ t: 'ascend', src: p.sid, tb: def.id });
       if (def.id === 'truc_co') this.sys(p, 'sys.tc_fly_hint', { n: TRUC_CO_FREE_FLY_ALT }, 'info');
-      this.questEvent(p, 'breakthrough', undefined, 1);
+      this.questEvent(p, 'breakthrough', def.id, 1);
       this.questEvent(p, 'level', undefined, c.level);
       this.savePlayer(p);
       console.log(`[trib] ${c.name} đạt ${realmName(c.level)} (kiếp ${def.id})`);
@@ -3525,8 +3524,9 @@ export class GameSim {
       if (!this.nearNpc(p, q.giver)) return this.warn(p, 'sys.too_far');
       c.quests.active[q.id] = q.objectives.map((o) => {
         if (o.type === 'level') return Math.min(o.count, c.level);
-        // Đã độ kiếp trước khi nhận nhiệm vụ thì tính là xong, không thì kẹt vĩnh viễn.
-        if (o.type === 'breakthrough' && c.level >= TRUC_CO_LEVEL) return o.count;
+        // Đã độ kiếp trước khi nhận nhiệm vụ thì tính là xong, không thì kẹt vĩnh viễn. `target` = id kiếp (`ket_dan`...);
+        // không có thì là Trúc Cơ (q_truc_co). So với cấp ĐÍCH của đúng kiếp đó, không phải một mốc chung.
+        if (o.type === 'breakthrough' && c.level >= tribDef(o.target ?? 'truc_co').to) return o.count;
         return 0;
       });
       c.questDirty = true;

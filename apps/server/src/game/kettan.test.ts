@@ -9,12 +9,14 @@ let GameSim: typeof import('./sim').GameSim;
 let WorldState: typeof import('../state').WorldState;
 let Character: typeof import('./character').Character;
 let stepDanTran: typeof import('./tribmech').stepDanTran;
+let NPC: typeof import('@dtl/content').NPC;
 
 beforeAll(async () => {
   ({ GameSim } = await import('./sim'));
   ({ WorldState } = await import('../state'));
   ({ Character } = await import('./character'));
   ({ stepDanTran } = await import('./tribmech'));
+  ({ NPC } = await import('@dtl/content'));
 });
 
 const X = 2040;
@@ -136,5 +138,48 @@ describe('Đan Hỏa Kiếp: Đan Trận', () => {
     expect(t.p.trib).toBeNull();
     expect(t.char.level).toBe(20);
     expect(t.fx('ascend').length).toBe(1);
+  });
+});
+
+describe('q2_ket_dan: không hoàn thành ngay lúc nhận', () => {
+  it('nhận ở cấp 19 thì tiến độ 0; độ kiếp Kết Đan xong mới 1/1 (Trúc Cơ không tính)', () => {
+    const t = setup();
+    t.char.quests.done.push('q_truc_co');
+    const npc = NPC.get('npc_chuong_mon')!;
+    t.p.move.x = npc.x;
+    t.p.move.z = npc.z;
+    t.sim.onQuest(t.p, { a: 'accept', id: 'q2_ket_dan' });
+    expect(t.char.quests.active.q2_ket_dan).toEqual([0]);
+    expect(t.char.questComplete('q2_ket_dan')).toBe(false);
+    // Kiếp Trúc Cơ (id khác) không tính cho nhiệm vụ này.
+    t.char.questEvent('breakthrough', 'truc_co', 1);
+    expect(t.char.quests.active.q2_ket_dan).toEqual([0]);
+    t.p.move.x = X;
+    t.p.move.z = Z;
+    t.sim.onBreakthrough(t.p);
+    t.run(56);
+    expect(t.char.level).toBe(20);
+    expect(t.char.quests.active.q2_ket_dan).toEqual([1]);
+    expect(t.char.questComplete('q2_ket_dan')).toBe(true);
+  });
+
+  it('nhận khi đã Kết Đan rồi thì tính xong luôn (không kẹt); q_truc_co vẫn dùng mốc Trúc Cơ', () => {
+    const t = setup(false);
+    t.char.level = 20;
+    t.char.recalc();
+    t.char.quests.done.push('q_truc_co');
+    const npc = NPC.get('npc_chuong_mon')!;
+    t.p.move.x = npc.x;
+    t.p.move.z = npc.z;
+    t.sim.onQuest(t.p, { a: 'accept', id: 'q2_ket_dan' });
+    expect(t.char.quests.active.q2_ket_dan).toEqual([1]);
+    const u = setup(false);
+    u.char.level = 16;
+    u.char.recalc();
+    u.char.quests.done.push('q_han_giao');
+    u.p.move.x = npc.x;
+    u.p.move.z = npc.z;
+    u.sim.onQuest(u.p, { a: 'accept', id: 'q_truc_co' });
+    expect(u.char.quests.active.q_truc_co).toEqual([1]);
   });
 });
