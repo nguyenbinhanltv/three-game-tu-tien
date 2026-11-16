@@ -5,7 +5,7 @@
     {"mons": ["boss_dia_mach_long"], "drops": [{"item": "itm_mach_tinh_phien", "chance": 1, "min": 6, "max": 9}, {"item": "itm_hoang_sa_thao", "chance": 1, "min": 3, "max": 4}, {"item": "itm_ngung_dan_mach_tinh", "chance": 0.8, "min": 2, "max": 3}]},
     {"mons": ["mon_van_hac","mon_kinh_linh","mon_phu_dao_thach_quy","mon_bich_ngoc_kim_thien"], "drops": [{"item":"itm_kinh_hoa_sa","chance":0.12,"min":1,"max":1},{"item":"itm_van_hai_lo","chance":0.1,"min":1,"max":1}]},
     {"mons": ["elite_van_hac_vuong","elite_kinh_dien_ma_quan","elite_loi_van_su_vuong"], "drops": [{"item":"itm_kinh_hoa_sa","chance":1,"min":2,"max":3},{"item":"itm_van_hai_lo","chance":0.5,"min":1,"max":2},{"item":"itm_bich_ngoc_nhi","chance":0.3,"min":1,"max":1}]},
-    {"mons": ["boss_van_hai_kinh_vuong","boss_kinh_nguyet_chan_quan"], "drops": [{"item":"itm_kinh_hoa_sa","chance":1,"min":6,"max":9},{"item":"itm_van_hai_lo","chance":1,"min":3,"max":4},{"item":"itm_bich_ngoc_nhi","chance":0.8,"min":2,"max":3},{"item":"itm_duong_anh_dan","chance":0.12,"min":1,"max":1}]}
+    {"mons": ["boss_van_hai_kinh_vuong","boss_kinh_nguyet_chan_quan"], "drops": [{"item":"itm_kinh_hoa_sa","chance":1,"min":6,"max":9},{"item":"itm_van_hai_lo","chance":1,"min":3,"max":4},{"item":"itm_bich_ngoc_nhi","chance":0.8,"min":2,"max":3}]}
   ],
   "mon_soi_xam": { "gold": [1, 4], "src": "common",
     "drops": [ {"item": "itm_bi_tich_tan_quyen", "chance": 0.03, "min": 1, "max": 1}, {"item": "itm_nanh_soi", "chance": 0.5, "min": 1, "max": 1}, {"item": "itm_linh_thao", "chance": 0.1, "min": 1, "max": 1} ],

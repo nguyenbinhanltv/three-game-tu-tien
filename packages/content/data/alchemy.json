@@ -542,30 +542,6 @@
       ],
       "gold": 900,
       "reqLevel": 21
-    },
-    {
-      "id": "rcp_duong_anh_dan",
-      "npc": "npc_duoc_su",
-      "output": {
-        "id": "itm_duong_anh_dan",
-        "n": 1
-      },
-      "inputs": [
-        {
-          "id": "itm_bich_ngoc_nhi",
-          "n": 3
-        },
-        {
-          "id": "itm_van_hai_lo",
-          "n": 10
-        },
-        {
-          "id": "itm_linh_thao",
-          "n": 6
-        }
-      ],
-      "gold": 2400,
-      "reqLevel": 23
     }
   ]
 }

@@ -500,8 +500,6 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 | `itm_van_hai_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_van_hai_lo.png` |
 | `itm_bich_ngoc_nhi` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_bich_ngoc_nhi.png` |
 | `itm_pha_canh_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_pha_canh_dan_3.png` |
-| `itm_duong_anh_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_duong_anh_dan.png` |
 | `itm_kim_cuong_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_kim_cuong_dan_3.png` |
 | `itm_bao_huyet_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_bao_huyet_dan_3.png` |
 | `itm_manh_luc_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_manh_luc_dan_3.png` |
-| `itm_tinh_khuyet_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_tinh_khuyet_kiem.png` |

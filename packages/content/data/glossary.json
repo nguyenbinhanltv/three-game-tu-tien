@@ -146,8 +146,7 @@
     "itm_ll_dao_bao": "Lưu Ly Đạo Bào",
     "itm_ll_ngoc_boi": "Lưu Ly Ngọc Bội",
     "itm_ll_dai_lung": "Lưu Ly Đai Lưng",
-    "itm_ll_gioi_chi": "Lưu Ly Giới Chỉ",
-    "itm_tinh_khuyet_kiem": "Tinh Khuyết Kiếm"
+    "itm_ll_gioi_chi": "Lưu Ly Giới Chỉ"
   },
   "upgrade": {
     "gem": "Linh Ngọc",
@@ -282,8 +281,7 @@
     "itm_kinh_hoa_sa": "Kính Hoa Sa",
     "itm_van_hai_lo": "Vân Hải Lộ",
     "itm_bich_ngoc_nhi": "Bích Ngọc Nhĩ",
-    "itm_pha_canh_dan_3": "Vân Phá Cảnh Đan",
-    "itm_duong_anh_dan": "Dưỡng Anh Đan"
+    "itm_pha_canh_dan_3": "Vân Phá Cảnh Đan"
   },
   "stationNpcs": {
     "npc_to_van_ngu": "Tô Vãn Ngư",

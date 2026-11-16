@@ -981,8 +981,6 @@
   "item.itm_bich_ngoc_nhi.desc": "Nấm ngọc mọc sâu trong đảo mây, hiếm thấy, vị thanh mát. Nguyên liệu luyện Dưỡng Anh Đan, chế trang bị và luyện đan quý bậc ba.",
   "item.itm_pha_canh_dan_3.name": "Vân Phá Cảnh Đan",
   "item.itm_pha_canh_dan_3.desc": "Dùng khi gặp bình cảnh từ Kết Đan tầng 21: dược lực phá tan bình cảnh ngay, không cần qua thử thách tâm ma.",
-  "item.itm_duong_anh_dan.name": "Dưỡng Anh Đan",
-  "item.itm_duong_anh_dan.desc": "Viên đan trắng ngọc ấm như ánh trăng, cần có khi xung kích Nguyên Anh. Sẽ tiêu hao khi độ kiếp.",
   "item.itm_kim_cuong_dan_3.name": "Vân Kim Cương Đan",
   "item.itm_kim_cuong_dan_3.desc": "Tăng phòng ngự 18% trong 10 phút. Phẩm càng cao, hiệu lực càng lớn.",
   "item.itm_bao_huyet_dan_3.name": "Vân Bạo Huyết Đan",
@@ -991,7 +989,5 @@
   "item.itm_manh_luc_dan_3.desc": "Tăng công kích 18% trong 10 phút. Phẩm càng cao, hiệu lực càng lớn.",
   "set.fx.nghich_kiem": "Nghịch Kiếm Chuyển Phong hoàn {v}% hồi chiêu nếu hạ được mục tiêu.",
   "set.fx.dich_son": "Dịch Sơn Xung làm choáng thêm {v} giây.",
-  "set.fx.ngung_dan": "Ngưng Đan Hộ Thế mạnh thêm {v}%.",
-  "item.itm_tinh_khuyet_kiem.name": "Tinh Khuyết Kiếm",
-  "item.itm_tinh_khuyet_kiem.desc": "Pháp kiếm bậc ba hiếm hơn Kính Quang Kiếm, thân kiếm khắc vết khuyết như vầng trăng, ánh bạc lạnh."
+  "set.fx.ngung_dan": "Ngưng Đan Hộ Thế mạnh thêm {v}%."
 }

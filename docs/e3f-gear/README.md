@@ -6,7 +6,7 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
 
 ## Dữ liệu
 
-- **Hai kiếm bậc 3** dùng hai model Tripo đã nhập ở #119: `itm_kinh_quang_kiem` Kính Quang Kiếm (`prop_kiem_kinh_quang`, cấp 20, Linh phẩm) và `itm_tinh_khuyet_kiem` Tinh Khuyết Kiếm (`prop_kiem_tinh_khuyet`, cấp 22, Huyền phẩm, công +12% so Kính Quang; mẫu rơi từ ilvl 22). Kiếm Tinh Khuyết bậc 4 ở thiết kế 7.1 vẫn thuộc E4 (khi đó đổi id/tên).
+- **Kiếm bậc 3**: `itm_kinh_quang_kiem` Kính Quang Kiếm (`prop_kiem_kinh_quang`, cấp 20, Linh phẩm). Model `prop_kiem_tinh_khuyet` thuộc **bậc 4** (cấp 24–27, cùng bộ `set_tinh_khuyet`): chưa tạo món, E-4 làm (đã thử gắn một kiếm bậc 3 cấp 22 rồi gỡ theo quyết định của người dùng).
 - **7 mẫu thường bậc 3** (`templates.json`, `reqLevel` 20, rarity Linh): Kính Quang Kiếm (`model: prop_kiem_kinh_quang`, kiếm Tripo sẵn có từ #119), Kính Vân Đạo Bào, Lưu Ly Hộ Uyển, Phù Vân Ngoa, Ngân Hà Đai Lưng, Kính Tâm Ngọc Bội, Lưu Quang Giới Chỉ. `stats` = bậc 2 × 2,5/1,6; `sell` = bậc 2 × 14.000/9.000 để `enhanceCost` ra giá cơ sở 14.000 cho kiếm (mục 7.3).
 - **3 bộ** (`sets.json`, `setItems.json`; mỗi bộ 4 món, `reqLevel` 20, rarity Huyền, `src: forge`):
 
@@ -19,9 +19,9 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
   Bộ bậc 2 trỏ `promoteTo` sang món cùng ô của bộ bậc 3 (Liệt Mạch → Kính Quang, Địa Long → Vân Kình, Phục Mạch → Lưu Ly). **Lệch thiết kế**: thiết kế ghi 2 món Lưu Ly "+12% khiên đan", nhưng chưa có chỉ số dòng phụ cho khiên, nên dùng `heal_recv` +12%; phần khiên nằm ở hiệu ứng 4 món.
 - **Hook combat** nối ngay (khác E2-F phải chờ E2-G, vì ba chiêu đã có): `SetFx.nghichKiemRefund | dichSonStun | ngungDanBoost` đọc trong `GameSim` (`onDash`, `executeSkill` case `shield`), cùng chỗ với ba hiệu ứng bậc 2. Không đụng chuyển động (E3-K).
 - **Chế tạo** (`forge.json`): 12 công thức `frg_kq_*|vk_*|ll_*` ở Hứa lão + Thiết lão (`alsoAt`), cảnh giới 20, `ilvl` 21, Huyền 80% / Địa 20%; áo cần 14 Kính Hoa Sa + 10 Thiết Tinh + 5 Linh Trần + 1 Bích Ngọc Nhĩ, món khác 9/6/3; phí 2.960 (áo) và 1.850 (món khác).
-- **Nguyên liệu** (`items.json`): Kính Hoa Sa (`PROMOTE_MAT[3]`, đã có sẵn trong `upgrade.ts`), Vân Hải Lộ, Bích Ngọc Nhĩ. Rơi qua lớp `$mats` của `loot.json` cho quái, tinh anh, boss bản đồ 3 theo mục 6.2 (quái thường 12%/10%; tinh anh Kính Hoa Sa 2–3, Vân Hải Lộ 50%, Bích Ngọc Nhĩ 30%; boss thêm Dưỡng Anh Đan 12%). **Quái bản đồ 3 chưa có trong `monsters.json`/`loot.json`** (E3-A): lớp này chỉ có hiệu lực khi quái có bảng rơi, y như E2-F; không có `drops` trong `monsters.json`.
+- **Nguyên liệu** (`items.json`): Kính Hoa Sa (`PROMOTE_MAT[3]`, đã có sẵn trong `upgrade.ts`), Vân Hải Lộ, Bích Ngọc Nhĩ. Rơi qua lớp `$mats` của `loot.json` cho quái, tinh anh, boss bản đồ 3 theo mục 6.2 (quái thường 12%/10%; tinh anh Kính Hoa Sa 2–3, Vân Hải Lộ 50%, Bích Ngọc Nhĩ 30%). **Quái bản đồ 3 chưa có trong `monsters.json`/`loot.json`** (E3-A): lớp này chỉ có hiệu lực khi quái có bảng rơi, y như E2-F; không có `drops` trong `monsters.json`.
 - **Đan** (`alchemy.json`, Tố Tâm, cảnh giới 20): Vân Kim Cương Đan (+18% phòng ngự), Vân Bạo Huyết Đan (+15% bạo kích), Vân Mãnh Lực Đan (+18% công kích), phẩm Hạ/Trung/Thượng như đan cũ. `itm_pha_canh_dan_3` Vân Phá Cảnh Đan (cảnh giới 21): `bottleneckPill(level)` trả đan này từ cấp 21 (kể cả bình cảnh Kết Đan 23 và Nguyên Anh 25/27; hai nút sau vẫn bị `peakGated` chặn đến khi E3-L bật Tam Trọng Kiếp).
-- **Vật phẩm đột phá Nguyên Anh**: **Dưỡng Anh Đan** (`itm_duong_anh_dan`, hiếm; chế ở Tố Tâm cảnh giới 23: 3 Bích Ngọc Nhĩ + 10 Vân Hải Lộ + 6 Linh Thảo, 2.400 linh thạch, không có phẩm; rơi hiếm ở boss bản đồ 3). **`tribulations.json` giữ nguyên** (`nguyen_anh.enabled=false`, `item=null`): E3-L bật cờ và gán `item: "itm_duong_anh_dan"`.
+- **Vật phẩm đột phá Nguyên Anh**: do E3-L (#143) làm: `itm_nguyen_anh_dan` đã gắn vào `tribulations.json`, có `rcp_nguyen_anh_dan`. PR này **không** thêm Dưỡng Anh Đan nữa (đã gỡ `itm_duong_anh_dan`/`rcp_duong_anh_dan`; content:check chỉ cho một vật phẩm mỗi kiếp). Nếu muốn tên hiển thị "Dưỡng Anh Đan" theo thiết kế 7.4, đổi tên `itm_nguyen_anh_dan` sau khi #143 hợp nhất. Bích Ngọc Nhĩ chỉ còn dùng cho chế áo bộ bậc 3, Vân Phá Cảnh Đan.
 - **Chưa làm** (cần cơ chế mới, để E3-L/M): Thanh Tâm Đan (kháng tâm ma), Thiên Lôi Hộ Đan (`tribRes`), Hồi Mạch Đan bậc 3, linh ngọc cấp 4–6, ngọc thần thức, Định Thần Phù, Anh Ngọc Kính (pháp bảo bản mệnh Nguyên Anh).
 
 ## Mã
@@ -32,7 +32,7 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
 
 ## Icon (Codex, không tốn credit)
 
-28 icon mới (`tools/codex-assets/icons.json`, vẽ bằng `node tools/codex-assets/gen.mjs icons <id…>`; PNG nguồn ở `../dtl-asset-source/2d/icons/`), thêm hàng LICENSES, `pnpm icons:build` rồi `pnpm icons:check`: **170/170 có tranh, 0 emoji dự phòng**. Ảnh: `icons-grid.jpg`.
+27 icon mới (`tools/codex-assets/icons.json`, vẽ bằng `node tools/codex-assets/gen.mjs icons <id…>`; PNG nguồn ở `../dtl-asset-source/2d/icons/`), thêm hàng LICENSES, `pnpm icons:build` rồi `pnpm icons:check`: **168/168 có tranh, 0 emoji dự phòng**. Ảnh: `icons-grid.jpg`.
 
 ## Kinh tế và cân bằng (`pnpm sim:progress`)
 
@@ -58,13 +58,12 @@ Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, ch
 
 - UI: `ui-promote-truoc.jpg` (bảng Thăng Bậc, bốn món Liệt Mạch → Kính Quang, phí 2.960), `ui-promote-tooltip-bac2.jpg`, `ui-promote-sau.jpg`, `ui-promote-tooltip-bac3.jpg` (tooltip đạo bào bậc 3 + dòng bộ 1/4 + hiệu ứng 4 món), `ui-forge-bac3.jpg` (tab chế tạo, ba bộ mới), `ui-luyen-dan-bac3.jpg`, `ui-tooltip-so-sanh-bac3.jpg` (tooltip so sánh với đồ bậc 2 đang mặc: chỉ số tăng xanh, mất đỏ, **Lực chiến +116**), `icons-grid.jpg` (28 icon mới).
 - Nhân vật mặc 3 bộ mới, nam và nữ: `set_<bộ>-<m|f>-<truoc|sau|nghieng|chem>.jpg` (cũng chụp lúc chạy và lúc bay: tệp `-chay|-bay` được bỏ khỏi repo cho nhẹ; chạy lại `pnpm shots:sets --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20` để có).
-- Hai kiếm bậc 3 (nam và nữ × đeo lưng / cầm tay / chém): `kiem-kinh_quang-<m|f>-<deo-lung|cam-tay|chem>.jpg`, `kiem-tinh_khuyet-...` (chụp bằng `shots:kiem --model prop_kiem_<id> --gender m|f`, tên tệp nay có hậu tố giới tính).
+- Kiếm Kính Quang bậc 3 (nam và nữ × đeo lưng / cầm tay / chém): `kiem-kinh_quang-<m|f>-<deo-lung|cam-tay|chem>.jpg` (chụp bằng `shots:kiem --model prop_kiem_kinh_quang --gender m|f`).
 
 ## Việc để lại
 
 - Thanh Tâm Đan, Thiên Lôi Hộ Đan, Hồi Mạch Đan bậc 3, linh ngọc cấp 4–6, Anh Ngọc Kính, Phá Ấn Phù/Định Thần Phù: chờ cơ chế của E3-L/M/E4.
 - Nguyên liệu bậc 3 chỉ rơi khi E3-A thêm quái bản đồ 3 và bảng rơi của chúng; trước đó chỉ lấy được bằng GM (`give`).
-- Gắn `item: "itm_duong_anh_dan"` vào `tribulations.json` (`nguyen_anh`) và bật cờ: E3-L.
 
 ## Chỉnh sau soát ảnh (orchestrator)
 
