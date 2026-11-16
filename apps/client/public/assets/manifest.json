@@ -7524,6 +7524,174 @@
         }
       }
     },
+    "set_co_thanh_huyen_giap_nam": {
+      "id": "set_co_thanh_huyen_giap_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_co_thanh_huyen_giap_nam.glb",
+      "file": "set_co_thanh_huyen_giap_nam.a625d9d359.glb",
+      "bytes": 3943040,
+      "rawBytes": 3803076,
+      "triangles": 12698,
+      "rawTriangles": 12698,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 78,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_co_thanh_huyen_giap_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12698
+        },
+        {
+          "level": 1,
+          "triangles": 5078,
+          "target": 5079
+        },
+        {
+          "level": 2,
+          "triangles": 1889,
+          "target": 1905
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8088,
+          "height": 1.6978,
+          "depth": 0.6923,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.8088,
+          "height": 1.6978,
+          "depth": 0.6923,
+          "minY": 0
+        }
+      }
+    },
+    "set_co_thanh_huyen_giap_nu": {
+      "id": "set_co_thanh_huyen_giap_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_co_thanh_huyen_giap_nu.glb",
+      "file": "set_co_thanh_huyen_giap_nu.5b9715ae20.glb",
+      "bytes": 3938216,
+      "rawBytes": 3802660,
+      "triangles": 12698,
+      "rawTriangles": 12698,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 76,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_co_thanh_huyen_giap_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12698
+        },
+        {
+          "level": 1,
+          "triangles": 5078,
+          "target": 5079
+        },
+        {
+          "level": 2,
+          "triangles": 1901,
+          "target": 1905
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.7421,
+          "height": 1.6433,
+          "depth": 0.6872,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.7421,
+          "height": 1.6433,
+          "depth": 0.6872,
+          "minY": 0
+        }
+      }
+    },
     "set_dia_long_ho_giap_nam": {
       "id": "set_dia_long_ho_giap_nam",
       "class": "outfit",

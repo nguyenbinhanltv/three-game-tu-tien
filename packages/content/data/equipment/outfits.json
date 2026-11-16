@@ -5,5 +5,6 @@
   "set_phuc_mach": ["set_phuc_mach_dan_bao"],
   "set_kinh_quang": ["set_kinh_quang_kiem_y"],
   "set_tinh_khuyet": ["set_tinh_khuyet_kiem_bao"],
-  "set_than_tang": ["set_than_tang_dan_bao"]
+  "set_than_tang": ["set_than_tang_dan_bao"],
+  "set_co_thanh": ["set_co_thanh_huyen_giap"]
 }
