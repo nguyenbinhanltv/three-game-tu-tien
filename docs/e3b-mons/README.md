@@ -76,4 +76,4 @@ Mặt đảo vẫn là cỏ Vân Lam nhạt màu (bộ texture riêng thuộc E3
 - Nuốt kéo người chơi, Kim Thiền phun độc khi chết (cần hook server).
 - Kính Linh "mở sườn khi đánh" (chưa có cơ chế).
 - Nhạc `boss_kinh`, texture mặt đảo (E3-I/mỹ thuật bản đồ 3).
-- Nối nhiệm vụ chương 3 (`q3_kinh_vuong`, worker khác) bỏ cờ `E3B_PENDING_MONS` khi gói này vào main.
+- (Xong) cờ `E3B_PENDING_MONS` đã xóa; `q3_nguyen_anh` chuyển sang Lâm Chiếu Dung, `requires q3_kinh_vuong`.

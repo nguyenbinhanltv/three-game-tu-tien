@@ -672,8 +672,6 @@ for (const r of RECIPES) {
     for (const m of r.mons) if (MONSTER.has(m) && !LOOT.has(m)) err(`loot.$mats: quái ${m} chưa có bảng rơi`);
   }
 }
-// E3-H: quái Vân Hải chưa có trong monsters.json (E3-B). TODO: xóa tập này khi E3-B merge.
-const E3B_PENDING_MONS = new Set(['mon_van_hac', 'mon_kinh_linh', 'mon_phu_dao_thach_quy', 'mon_bich_ngoc_kim_thien', 'elite_loi_van_su_vuong', 'boss_van_hai_kinh_vuong']);
 for (const n of NPCS) {
   needStr(`npc.${n.id}.name`);
   const nl = LEVELS[n.level ?? 'van_lam'];
@@ -694,7 +692,7 @@ for (const q of QUESTS) {
   if (!NPC.has(q.turnin)) err(`quest ${q.id}: turnin không tồn tại`);
   if (q.requires && !QUEST.has(q.requires)) err(`quest ${q.id}: requires không tồn tại ${q.requires}`);
   for (const o of q.objectives) {
-    if (o.type === 'kill' && !MONSTER.has(o.target ?? '') && !E3B_PENDING_MONS.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
+    if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target)) err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
