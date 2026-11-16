@@ -164,6 +164,9 @@ async function main(): Promise<void> {
           }
         }
       }
+      // Dời nhân vật đi xa trước khi đóng phiên: avatar của phiên này còn nằm lại trong thế giới một lúc, nếu để nguyên chỗ thì phiên giới tính sau
+      // chụp chồng lên nó (kiếm thứ hai sau lưng, khối áo nằm đất cạnh chân).
+      await gm(page, 'tp 2048 2900', 900);
       await ctx.close();
     }
     if (errors.length) console.log('[shots-outfit] lỗi console:\n' + [...new Set(errors)].join('\n'));
