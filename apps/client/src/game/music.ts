@@ -16,8 +16,9 @@
 //
 // Gỡ lỗi: chuyển trạng thái được log `[music] ...` khi chạy dev hoặc có `?debug`;
 // `window.__music.log` giữ 50 lần chuyển gần nhất, `__music.state()` xem trạng thái hiện tại.
-import { biomeAt, MS_ATTACK, MS_CHASE, PF_DEAD, PF_MEDITATING, PF_TRIBULATION } from '@dtl/shared';
-import { hasMusicFile, musicOutput, musicPosition, playAmbient, playMusic } from './audio';
+import { MS_ATTACK, MS_CHASE, PF_DEAD, PF_MEDITATING, PF_TRIBULATION } from '@dtl/shared';
+import { biomeAt } from './levelCtx';
+import { hasMusicFile, musicOutput, musicPosition, playAmbient, playMusic, stemSources } from './audio';
 import type { MonVis } from './entities';
 import {
   AmbientPicker,
@@ -446,6 +447,22 @@ export class MusicController {
         }),
       };
     }
+  }
+
+  /**
+   * Nạp trước nhạc của level sắp vào (E1-D): bài cũ vẫn phát tới khi đổi level xong, tới lúc đó đạo diễn nhạc đổi bài như thường.
+   * Chỉ stem (lớp giao chiến, ~50 MB giải mã) cần chờ; bài file stream tự tải khi crossfade. Hết `timeoutMs` thì thôi chờ.
+   */
+  preloadLevel(tracks: readonly string[], timeoutMs = 4000): Promise<void> {
+    const zone = tracks.find((t): t is StemZone => isStemZone(t as MusicTrack) && !!stemSources(t));
+    if (!zone || !musicOutput() || this.stems.ready(zone)) return Promise.resolve();
+    return new Promise((res) => {
+      const timer = setTimeout(res, timeoutMs);
+      this.stems.preload(zone, () => {
+        clearTimeout(timer);
+        res();
+      });
+    });
   }
 
   /** Đòn đánh thật giữa mình và quái (`boss` nếu quái đó là boss): vào nhạc chiến đấu ngay. */
