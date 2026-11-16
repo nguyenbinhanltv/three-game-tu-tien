@@ -1,5 +1,5 @@
 // pnpm shots:kiem: ảnh 5 kiếm riêng theo trang bị (prop_kiem_*): đeo lưng, cầm tay, đang chém, trên model nam/nữ.
-//   tsx src/shots-kiem.ts --out <thư mục> [--hand-only] [--gender m|f] [--renderer webgpu|webgl2] [--only id,id] [--glow 0|1|2] [--set set_liet_mach]
+//   tsx src/shots-kiem.ts --out <thư mục> [--equip <id vật phẩm>|<tên>] [--query a=b] [--hand-only] [--gender m|f] [--renderer webgpu|webgl2] [--only id,id] [--glow 0|1|2] [--set set_liet_mach]
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175), tắt tiếng (?mute=1, --mute-audio), một tài khoản thử, dựng cảnh bằng lệnh GM.
 import path from 'node:path';
 import fs from 'node:fs';
@@ -18,6 +18,9 @@ const HAND_ONLY = args.includes('--hand-only');
 const GLOW = Number(opt('--glow', '0'));
 // --model prop_kiem_x: kiếm bậc mới chưa có vật phẩm; client nhận ?sword=<model> (chỉ hình), bỏ bước give/mặc.
 const MODEL = opt('--model', '');
+// --equip "itm_liet_mach_kiem|Liệt Mạch Kiếm": với --model vẫn đưa một vũ khí thật vào tay (để `plus 7|10` ra vân sáng/dạng cuối); --query: tham số URL thêm (vd outfit=<asset áo>).
+const [EQUIP_ID, EQUIP_NAME] = opt('--equip', '').split('|');
+const QUERY = opt('--query', '');
 const ONLY = opt('--only', '').split(',').filter(Boolean);
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
 const PORT = Number(process.env.PORT ?? 2675);
@@ -26,7 +29,7 @@ const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots-kiem', command: 'pnpm shots:kiem' });
 type G = { __game?: Record<string, any> };
 
-const SWORDS = MODEL ? [{ id: '', file: MODEL.replace('prop_kiem_', ''), name: '' }] : [
+const SWORDS = MODEL ? [{ id: EQUIP_ID ?? '', file: MODEL.replace('prop_kiem_', ''), name: EQUIP_NAME ?? '' }] : [
   { id: 'itm_thanh_phong_kiem', file: 'thanh-phong', name: 'Thanh Phong Kiếm' },
   { id: 'itm_thiet_kiem', file: 'thiet', name: 'Thiết Kiếm' },
   { id: 'itm_han_quang_kiem', file: 'han-quang', name: 'Hàn Quang Kiếm' },
@@ -67,7 +70,7 @@ async function main(): Promise<void> {
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
     page.on('console', (m) => (m.type() === 'error' || /models\]|kiếm/i.test(m.text())) && errors.push(m.text().slice(0, 300)));
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}${MODEL ? `&sword=${MODEL}` : ''}`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}${MODEL ? `&sword=${MODEL}` : ''}${QUERY ? '&' + QUERY : ''}`, { waitUntil: 'load' });
     await page.waitForFunction(() => {
       const g = (window as unknown as G).__game;
       return !!g && g.frames > 30 && !!g.me?.();
@@ -94,7 +97,7 @@ async function main(): Promise<void> {
     for (const sw of SWORDS) {
       if (ONLY.length && !ONLY.includes(sw.file)) continue;
       await page.evaluate(() => document.body.classList.remove('nohud'));
-      if (!MODEL) {
+      if (!MODEL || EQUIP_ID) {
         await gm(page, `give ${sw.id} 1`, 1300);
         await page.keyboard.press('KeyB');
         await sleep(500);
