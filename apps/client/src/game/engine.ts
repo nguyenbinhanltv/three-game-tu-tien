@@ -8,6 +8,7 @@ import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
 import { MON_AURA_REFLECT, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
+import { BlankWatch, canFallback, frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from './gpuGuard';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import type { DebugPerf } from '../ui/store';
 import { ColliderViz } from './debugColliders';
@@ -745,8 +746,10 @@ export class Game {
     // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
     // `?gputime=1` (chỉ cho công cụ đo, pnpm bench:crowd): bật timestamp query để đọc thời gian GPU bằng
     // `renderer.resolveTimestampsAsync()`; không ai resolve thì three cảnh báo hết chỗ query, nên đừng bật khi chơi.
-    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: params.get('renderer') === 'webgl2', trackTimestamp: params.get('gputime') === '1' });
+    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: this.pickRenderer(params), trackTimestamp: params.get('gputime') === '1' });
     await this.renderer.init();
+    this.watchGpuDevice();
+    void this.describeGpu();
     // Đổi preset lúc chạy làm pass cảnh đổi giữa có/không MRT bloom: phải tách cache shader theo đích (nodeCacheFix.ts).
     patchNodeCacheKey(this.renderer);
     mark('rendererInit');
@@ -2330,6 +2333,142 @@ export class Game {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
+  /** Chọn backend: xem `rendererChoice` (`?renderer=webgl2` chỉ cho lần nạp này). */
+  private pickRenderer(params: URLSearchParams): boolean {
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(RENDERER_KEY);
+    } catch {
+      /* bỏ qua */
+    }
+    const c = rendererChoice(params.get('renderer'), stored);
+    if (c.storage === 'clear') {
+      try {
+        localStorage.removeItem(RENDERER_KEY);
+      } catch {
+        /* bỏ qua */
+      }
+    }
+    return c.forceWebGL;
+  }
+
+  /** Thông tin adapter WebGPU (hãng, kiến trúc, giới hạn chính) để người dùng chụp gửi; một dòng console khi khởi động. */
+  gpuInfo = '';
+  private async describeGpu(): Promise<void> {
+    if (!isWebGPU(this.renderer)) {
+      this.gpuInfo = 'WebGL2';
+      console.info('[gpu]', this.gpuInfo);
+      return;
+    }
+    try {
+      const be = this.renderer.backend as { device?: GPUDevice; adapter?: GPUAdapter };
+      const ad = be.adapter ?? (await navigator.gpu?.requestAdapter());
+      const i = ad?.info as { vendor?: string; architecture?: string; description?: string; device?: string } | undefined;
+      const lim = be.device?.limits ?? ad?.limits;
+      const parts = [
+        `WebGPU ${i?.vendor ?? '?'} ${i?.architecture ?? ''} ${i?.description || i?.device || ''}`.trim(),
+        lim ? `tex2D ${lim.maxTextureDimension2D} · layers ${lim.maxTextureArrayLayers} · attach ${lim.maxColorAttachmentBytesPerSample}B · uniform ${lim.maxUniformBufferBindingSize}` : '',
+        `features ${be.device?.features?.size ?? ad?.features?.size ?? '?'}`,
+      ];
+      this.gpuInfo = parts.filter(Boolean).join(' · ');
+    } catch (e) {
+      this.gpuInfo = 'WebGPU (không đọc được adapter: ' + String(e) + ')';
+    }
+    console.info('[gpu]', this.gpuInfo);
+  }
+
+  private renderFails = 0;
+  private fellBack = false;
+  /** Lỗi WebGPU gần nhất (tối đa 20): bảng F3 và `__game.gpuErrors`. */
+  gpuErrors: string[] = [];
+  private blankWatch = new BlankWatch();
+  private blankNextAt = 0;
+  private blankProbe: CanvasRenderingContext2D | null = null;
+
+  /**
+   * Khung đen/trơn liên tục (cảnh không vẽ ra gì dù vòng lặp chạy): chỉ WebGPU, 30 s đầu sau khi vào game.
+   * Thu canvas về 24×14 điểm, độ lệch chuẩn độ sáng gần 0 ba lần liên tiếp thì lùi WebGL2.
+   * Chạy ngay sau `post.render()` trong cùng tác vụ, lúc đó canvas WebGPU còn đọc được.
+   */
+  private checkBlankFrame(now: number): void {
+    if (this.fellBack || document.hidden || !isWebGPU(this.renderer)) return;
+    if (this.cine.active || this.deathFx.active || ((this.me()?.fl ?? 0) & PF_DEAD) !== 0) {
+      this.blankWatch.reset();
+      return;
+    }
+    if (!this.blankNextAt) {
+      this.blankNextAt = now + 4000;
+      this.loadedAt = now;
+    }
+    if (now < this.blankNextAt || now > this.loadedAt + 34000) return;
+    this.blankNextAt = now + 1500;
+    if (!this.blankProbe) {
+      const c = document.createElement('canvas');
+      c.width = 24;
+      c.height = 14;
+      this.blankProbe = c.getContext('2d', { willReadFrequently: true });
+    }
+    const x = this.blankProbe;
+    if (!x) return;
+    try {
+      x.drawImage(this.canvas, 0, 0, 24, 14);
+      const d = x.getImageData(0, 0, 24, 14).data;
+      const st = frameStats(d);
+      this.lastBlank = { mean: +st.mean.toFixed(1), sd: +st.sd.toFixed(2) };
+      if (this.blankWatch.push(st, this.lastRender.drawCalls)) {
+        console.error('[gpu] khung trơn liên tục', this.lastBlank, 'lỗi:', this.gpuErrors);
+        this.fallbackToWebGL2('blank-frame');
+      }
+    } catch {
+      /* không đọc được canvas: không kết luận */
+    }
+  }
+  lastBlank: { mean: number; sd: number } | null = null;
+  private loadedAt = performance.now();
+
+  /** WebGPU mất thiết bị (driver reset, tràn VRAM, GPU bị rút): cảnh đen mà vòng lặp vẫn chạy. */
+  private watchGpuDevice(): void {
+    if (!isWebGPU(this.renderer)) return;
+    const dev = (this.renderer.backend as {
+      device?: { lost?: Promise<{ reason?: string; message?: string }>; addEventListener?: (t: string, f: (e: { error?: { message?: string } }) => void) => void };
+    }).device;
+    // Lỗi WebGPU không bắt được (validation, shader/pipeline hỏng): ghi lại để bảng F3 và console cho thấy nguyên nhân.
+    dev?.addEventListener?.('uncapturederror', (e) => {
+      const msg = String(e.error?.message ?? e.error ?? 'unknown').slice(0, 400);
+      this.gpuErrors.push(msg);
+      if (this.gpuErrors.length > 20) this.gpuErrors.shift();
+      console.error('[gpu] uncapturederror:', msg);
+    });
+    void dev?.lost?.then((info) => {
+      if (this.disposed || info?.reason === 'destroyed') return;
+      console.error('[gpu] device lost:', info?.reason, info?.message);
+      this.fallbackToWebGL2('device-lost');
+    });
+  }
+
+  /** Nhớ chọn WebGL2 cho các lần vào sau, báo trên HUD rồi nạp lại trang (WebGPU không dựng lại được trong cùng trang). */
+  private fallbackToWebGL2(why: string): void {
+    if (this.disposed) return;
+    if (!canFallback(isWebGPU(this.renderer), this.fellBack)) {
+      // Đã ở WebGL2 mà vẫn lỗi: nạp lại không giúp gì, chỉ báo một lần.
+      if (!this.fellBack) {
+        this.fellBack = true;
+        console.error('[gpu] lỗi vẽ trên WebGL2:', why);
+        pushToast(t('sys.gpu_failed'), 'bad');
+      }
+      return;
+    }
+    this.fellBack = true;
+    console.warn('[gpu] lùi WebGL2:', why);
+    try {
+      localStorage.setItem(RENDERER_KEY, 'webgl2');
+    } catch {
+      /* bỏ qua */
+    }
+    pushToast(t('sys.gpu_fallback'), 'bad');
+    setTimeout(() => location.reload(), 2500);
+  }
+
   private frame(): void {
     if (this.disposed || this.compiling > 0) return;
     this.renderer.info.reset();
@@ -2440,7 +2579,15 @@ export class Game {
     // Cập nhật ma trận cả cảnh MỘT lần mỗi khung (M3-9): để tự động thì mỗi pass (cảnh chính, bóng) duyệt lại
     // toàn bộ cây, kể cả ~60 xương của mỗi nhân vật có xương.
     this.scene.updateMatrixWorld();
-    this.post!.render();
+    try {
+      this.post!.render();
+      this.renderFails = 0;
+      this.checkBlankFrame(now);
+    } catch (e) {
+      // Vẽ ném lỗi liên tục (thiết bị WebGPU hỏng, shader không biên dịch được): cảnh chỉ còn nền đen dù HUD vẫn chạy.
+      console.error('[render]', e);
+      if (++this.renderFails >= RENDER_FAIL_LIMIT) this.fallbackToWebGL2('render-error');
+    }
     // renderer.info không tự reset (M1-6): lúc này là tổng của MỌI pass trong khung (bóng, cảnh, hậu kỳ).
     const ri = this.renderer.info.render;
     this.lastRender.drawCalls = ri.drawCalls ?? ri.calls;
@@ -3134,6 +3281,7 @@ export class Game {
     const lod = this.ents.lodStats();
     return {
       backend: isWebGPU(this.renderer) ? 'WebGPU' : 'WebGL2',
+      gpu: this.gpuInfo + (this.gpuErrors.length ? ` · LỖI: ${this.gpuErrors[this.gpuErrors.length - 1]}` : '') + (this.lastBlank ? ` · khung sd ${this.lastBlank.sd}` : ''),
       fps,
       cpuMs: this.cpuAvg,
       cpuMaxMs: this.cpuPeak,

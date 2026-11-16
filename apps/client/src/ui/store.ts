@@ -109,6 +109,8 @@ export interface DebugInfo {
 /** Số đo hiệu năng trong bảng F3: trung bình trên khoảng lấy mẫu gần nhất (~100 ms), draw call/tam giác của khung vừa vẽ (mọi pass). */
 export interface DebugPerf {
   backend: string;
+  /** Adapter WebGPU, lỗi GPU gần nhất, số đo khung trơn (chẩn đoán cảnh đen). */
+  gpu: string;
   fps: number;
   /** CPU của `Game.frame()` (ms): trung bình và lớn nhất trong khoảng lấy mẫu. */
   cpuMs: number;
