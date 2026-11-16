@@ -21,7 +21,7 @@ Phụ: `s3_bich_ngoc` (Bích Ngọc Kim Thiền ×18, Lâm Chiếu Dung), `s3_th
 
 ## Việc để lại
 
-- NPC dùng lại model sẵn có đổi màu (`NPC_SKINS.tint`), chưa có chân dung riêng; trong sương Vân Hải trông nhạt (ảnh 04, 08).
+- NPC dùng lại model sẵn có đổi màu (`NPC_SKINS.tint`), chưa có chân dung riêng.
 - Thẻ chương 3 chưa có tranh nền (`CARD_ART`), giữ thẻ chữ.
 - Tiến độ `scan`/`kill` chưa có chỉ báo trên bản đồ.
 

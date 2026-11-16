@@ -38,7 +38,7 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
   npc_to_van_ngu: { asset: 'chr_npc_duoc_su', tint: 0x6fb4ee },
   npc_khieu_han_son: { asset: 'chr_npc_chuong_mon', tint: 0xb4ad9c },
   // E3-H: Phù Đảo Các (Vân Hải) cũng dùng lại model sẵn có, đổi màu.
-  npc_lam_chieu_dung: { asset: 'chr_npc_chuong_mon', tint: 0xe8dcc0 },
+  npc_lam_chieu_dung: { asset: 'chr_npc_chuong_mon', tint: 0xd98a3d },
   npc_to_van_ngu_hai: { asset: 'chr_npc_duoc_su', tint: 0x6fb4ee },
   // Người đồng hành của nhiệm vụ hộ tống (không phải NPC đứng thật, xem `LevelDef.escorts`).
   npc_thuong_nhan: { asset: 'chr_npc_thiet_lao', tint: 0xb89a6a },
