@@ -18,6 +18,7 @@
     "shots:p38": "tsx src/shots-p38.ts",
     "shots:e2f": "tsx src/shots-e2f.ts",
     "shots:e3f": "tsx src/shots-e3f.ts",
+    "shots:gm": "tsx src/shots-gm.ts",
     "shots:tdb": "tsx src/shots-tdb.ts",
     "shots:m5": "tsx src/shots-m5.ts",
     "shots:sets": "tsx src/shots-sets.ts",
