@@ -316,3 +316,26 @@ describe('cường hóa + Hộ Phù', () => {
     expect(t.c.inv[slot]!.plus).toBe(1);
   });
 });
+
+describe('ô khóa (TD-A)', () => {
+  it('phân giải: món khóa bị từ chối, mở khóa thì phân giải được', () => {
+    const t = setup();
+    t.give((d) => d.addRolled(SWORD, 12, 2));
+    const slot = t.c.inv.findIndex((s) => s?.id === SWORD);
+    t.c.tx('lock', null, (d) => ((d.inv[slot]!.lk = true), true));
+    t.send('salvage', { slots: [slot], ids: [SWORD] });
+    expect(t.c.inv[slot]?.id).toBe(SWORD);
+    t.c.tx('unlock', null, (d) => (delete d.inv[slot]!.lk, true));
+    t.send('salvage', { slots: [slot], ids: [SWORD] });
+    expect(t.c.inv.some((s) => s?.id === SWORD)).toBe(false);
+  });
+
+  it('cường hóa: nguyên liệu ở ô khóa không bị trừ (coi như không có)', () => {
+    const t = setup();
+    t.give((d) => (d.addRolled(SWORD, 12, 2), d.addGold(100000), d.inv[50] = { id: 'itm_thiet_tinh', n: 99, lk: true }));
+    const slot = t.c.inv.findIndex((s) => s?.id === SWORD);
+    t.enhance({ i: slot });
+    expect(t.c.inv[slot]!.plus ?? 0).toBe(0);
+    expect(t.c.inv[50]!.n).toBe(99);
+  });
+});

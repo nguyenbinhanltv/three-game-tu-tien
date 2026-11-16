@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { INV_SIZE } from '@dtl/shared';
 
 // DB trong bộ nhớ cho các module kéo theo db.ts.
 process.env.DB_FILE = ':memory:';
@@ -123,9 +124,9 @@ describe('trang bị đã roll: lưu, ledger, idempotency', () => {
     expect(c.tx('t', null, (d) => d.addRolled('itm_linh_thao', 5, 1))).toBe(false);
     expect(c.tx('t', null, (d) => d.addRolled('itm_moc_kiem', 5, 7 as 0))).toBe(false);
     expect(c.tx('t', null, (d) => d.addRolled('itm_khong_co', 5, 1))).toBe(false);
-    for (let i = 0; i < 30; i++) expect(c.tx('fill', null, (d) => d.addRolled('itm_moc_kiem', 3, 0))).toBe(true);
+    for (let i = 0; i < INV_SIZE; i++) expect(c.tx('fill', null, (d) => d.addRolled('itm_moc_kiem', 3, 0))).toBe(true);
     expect(c.tx('t', null, (d) => d.addRolled('itm_moc_kiem', 3, 0))).toBe(false);
-    expect(c.inv.filter(Boolean)).toHaveLength(30);
+    expect(c.inv.filter(Boolean)).toHaveLength(INV_SIZE);
   });
 
   it('dòng chính vô lý trong DB bị bỏ riêng, món vẫn giữ phẩm/ilvl', () => {
