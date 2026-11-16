@@ -4231,9 +4231,9 @@
       "id": "prop_kiem_kinh_quang",
       "class": "weapon",
       "source": "assets/build/raw/prop_kiem_kinh_quang.glb",
-      "file": "prop_kiem_kinh_quang.7a896e39ab.glb",
-      "bytes": 430060,
-      "rawBytes": 474252,
+      "file": "prop_kiem_kinh_quang.c8d1336e9a.glb",
+      "bytes": 429660,
+      "rawBytes": 474256,
       "triangles": 2464,
       "rawTriangles": 2464,
       "lod0Cap": 2500,
@@ -4279,15 +4279,15 @@
       ],
       "dims": {
         "raw": {
-          "width": 0.7824,
-          "height": 1.15,
-          "depth": 0.1758,
+          "width": 0.2521,
+          "height": 1.1499,
+          "depth": 0.0938,
           "minY": 0
         },
         "build": {
-          "width": 0.7824,
-          "height": 1.15,
-          "depth": 0.1758,
+          "width": 0.252,
+          "height": 1.1499,
+          "depth": 0.0938,
           "minY": 0
         }
       }
@@ -4296,9 +4296,9 @@
       "id": "prop_kiem_liet_mach",
       "class": "weapon",
       "source": "assets/build/raw/prop_kiem_liet_mach.glb",
-      "file": "prop_kiem_liet_mach.4e235ea451.glb",
-      "bytes": 392696,
-      "rawBytes": 435776,
+      "file": "prop_kiem_liet_mach.5928b6f245.glb",
+      "bytes": 392220,
+      "rawBytes": 435760,
       "triangles": 2474,
       "rawTriangles": 2474,
       "lod0Cap": 2500,
@@ -4344,15 +4344,15 @@
       ],
       "dims": {
         "raw": {
-          "width": 0.7599,
-          "height": 1.1,
-          "depth": 0.4205,
+          "width": 0.2078,
+          "height": 1.0997,
+          "depth": 0.1317,
           "minY": 0
         },
         "build": {
-          "width": 0.76,
-          "height": 1.1,
-          "depth": 0.4205,
+          "width": 0.2078,
+          "height": 1.0997,
+          "depth": 0.1317,
           "minY": 0
         }
       }
@@ -4491,9 +4491,9 @@
       "id": "prop_kiem_tinh_khuyet",
       "class": "weapon",
       "source": "assets/build/raw/prop_kiem_tinh_khuyet.glb",
-      "file": "prop_kiem_tinh_khuyet.67d9371466.glb",
-      "bytes": 450308,
-      "rawBytes": 496480,
+      "file": "prop_kiem_tinh_khuyet.83e437ae74.glb",
+      "bytes": 449908,
+      "rawBytes": 496484,
       "triangles": 2364,
       "rawTriangles": 2364,
       "lod0Cap": 2500,
@@ -4539,15 +4539,15 @@
       ],
       "dims": {
         "raw": {
-          "width": 0.8497,
+          "width": 0.2471,
           "height": 1.2,
-          "depth": 0.1241,
+          "depth": 0.1044,
           "minY": 0
         },
         "build": {
-          "width": 0.8497,
+          "width": 0.2471,
           "height": 1.2,
-          "depth": 0.1241,
+          "depth": 0.1044,
           "minY": 0
         }
       }

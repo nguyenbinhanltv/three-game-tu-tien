@@ -12,7 +12,7 @@
     "kind": "tripo",
     "source": "prop/prop_kiem_liet_mach/tripo/raw_v01.glb",
     "size": {
-      "longest": 1.1
+      "longest": 0.876
     },
     "orient": "none",
     "post": "tools/blender/orient_sword.py"
