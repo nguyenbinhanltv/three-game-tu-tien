@@ -671,6 +671,15 @@ Nội tại công pháp mở rộng ở mỗi đại cảnh giới (một dòng,
 
 Mỗi gói ghi vùng code. Các gói cùng một mã chạy song song nếu vùng code không chồng (cột "Song song"). Kích thước: S ≈ nửa ngày, M ≈ 1–2 ngày, L ≈ 3–4 ngày công của một worker.
 
+
+### 10.7 Ghi chú triển khai E3-L (2026-11-16)
+
+- **Kiếp bật**: `nguyen_anh` `enabled: true`, `item: itm_nguyen_anh_dan` (chế ở Tố Tâm: 3 `itm_ngung_anh_phach` + 4 `itm_ngung_dan_mach_tinh` + 12 yêu đan + 5000 linh thạch, cấp 23; phách rơi từ 3 boss và 3 tinh anh Đoạn Mạch, các bản đồ E3-M/N thêm nguồn rơi vào `loot.json`). `peakGated`: Kết Đan 23 đã mở, Nguyên Anh 27 vẫn chặn. Nhiệm vụ `q3_nguyen_anh` (giao Khưu Hàn Sơn, chỉ mục tiêu `breakthrough nguyen_anh`; E3-H nối vào chuỗi chương 3). Icon hai vật phẩm mới đang dùng emoji dự phòng (`icons:check`: 142/144).
+- **Room riêng, vé, hộ pháp**: không đổi so với E1-F. Room thế giới chỉ kiểm điều kiện và cấp vé, `TribulationRoom.onAuth` kiểm vé một lần (khóa `tribRoom`), vật phẩm tiêu khi tới sân, hộ pháp chỉ nhận đồng đội cùng tổ đội trong 20 m (#128).
+- **`tia_xich`** (pha 1, `tiaXich` trong dữ liệu): mỗi 3,4 s (co dần còn 70%) hai tia tròn 3,2 m rơi ở hai đầu vạch sét 16×2,6 m đi qua chỗ người độ kiếp đứng (lệch ngang ngẫu nhiên), báo 1,3 s; vạch cùng nhóm `grp` nên đứng trong vạch chỉ trúng một lần.
+- **`xuat_khieu`** (pha 2, `xuatKhieu {dur 6, cd 20}`): **móc tạm cho E3-K**. Lệnh riêng `C.TRIB_SOUL` (`tsoul`) → `GameSim.onTribSoul` → `TribSystem.soul` → `soulOut` (kiểm đúng pha, còn hồi chiêu). Trong 6 s thân đứng yên (`stepMove frozen`), ô lửa nặng nhất của đợt kế bị đẩy sang ô kề; fx `xuatkhieu`/`xuatkhieu_end`, client vẽ bóng nguyên anh (`Vfx.soulOut`), phím X chỉ gửi ý định khi đang ở Tam Trọng Kiếp. Khi E3-K (nguyên anh xuất khiếu thật, phím X chung) vào main: `git merge origin/main`, nối phím/thực thể thật vào `soulOut` (luật kiếp giữ nguyên), bỏ `C.TRIB_SOUL` nếu không cần.
+- **`tam_canh`** (pha 3, `tamCanh`): Tâm Ma Ảnh cấp +2 (một con, máu bằng khí huyết người độ kiếp) mỗi 4 s dùng một trong hai chiêu của người chơi (`tamMaSkills`: chiêu đặc trưng công pháp nếu là chiêu sát thương + một chiêu chung đã mở; chiêu diện rộng thành vòng tại chỗ người độ kiếp, chiêu đơn thành vạch 3 m từ bóng; báo 1,1 s, sát thương theo công của bóng). Tâm cảnh 0..100: bị bóng đánh trúng −5, đánh trúng bóng +1,5, về 0 thì thất bại (`sys.tam_canh_fail`); hạ được bóng thì kiếp thành ngay, kéo tới 65 s cũng thành. Hook ở `sim.damagePlayer`/`damageMonster` chỉ chạy khi `p.trib`. Cân bằng số liệu bản đầu: cần chơi thử (hai con số nên chỉnh trước tiên là `hurt` và `skillEvery`).
+- **Client**: thanh tâm cảnh ở HUD (`ui.trib.tam_canh.label`), gợi ý X + đếm xuất khiếu, cắt cảnh nhìn xuống lúc tâm ma hiện (dùng lại `DAN_CUTSCENE`, màu tím trầm), `ascendGlow` bản Nguyên Anh (lam tím nhạt, mảnh), thẻ chương `ascend_na` (cấp 24). `pnpm shots:e3l`; ảnh: `docs/e3l-trib/`.
 ### 11.1 E-1 Nền kỹ thuật
 
 | Gói | Nội dung | Vùng code | Kích | Song song |
