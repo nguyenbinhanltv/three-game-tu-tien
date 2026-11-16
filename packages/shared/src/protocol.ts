@@ -49,6 +49,14 @@ export const MF_CHANT = 1;
 export const MF_STUN = 2;
 /** Đi cùng MF_STUN khi boss quỵ vì đầy thanh phá thế (thời lượng theo `posture.brk` thay vì `chant.stun`). */
 export const MF_BROKEN = 4;
+/** Quái mở rộng (E1-E): đang phản đòn (`ce` = lúc hết; `warn` đầu chưa phản, xem `reflectActive`). */
+export const MF_REFLECT = 8;
+/** Đang lộ yếu điểm: nhận thêm sát thương tới `ce`. */
+export const MF_WEAK = 16;
+/** Đang chui đất: không bị đánh trúng, client ẩn thân (hiện đốm đất), tới `ce` thì trồi. */
+export const MF_BURROW = 32;
+/** Các cờ do `monskill` quản (sim giữ nguyên khi đổi cờ chú/choáng). */
+export const MF_MX_MASK = MF_REFLECT | MF_WEAK | MF_BURROW;
 
 /** Client → server. */
 export const C = {
@@ -269,6 +277,8 @@ export interface HazardMsg {
   sh?: 'rect' | 'cone';
   yaw?: number;
   w?: number;
+  /** Chiêu mở rộng sinh ra vạch (E1-E), để client chỉnh động tác/âm: line/charge/leap/burrow/cone (nón trồi lên)/summon (không sát thương). */
+  mv?: 'line' | 'charge' | 'leap' | 'burrow' | 'emerge' | 'summon';
   /** Seed hình (uint31) của tia sét khi `kind` là `lightning`: mọi client thấy cùng một tia. */
   sd?: number;
   /** Tia cuối của độ kiếp (khóa mệnh, nổ cực lớn): client rung mạnh hơn. */

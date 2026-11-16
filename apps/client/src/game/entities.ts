@@ -1,3 +1,4 @@
+import { monFlagEdge, monHidden, type MonFlagEdge } from './monFlags';
 import * as THREE from 'three/webgpu';
 import { E4_OFF } from './camZones';
 import { uiScale } from '../ui/uiScale';
@@ -225,6 +226,8 @@ export class MonVis {
   speed = 0;
   lv = -1;
   wasAttack = false;
+  /** Cờ `mf` ở khung trước (E1-E: phát hiện bật/tắt phản đòn, yếu điểm, chui đất). */
+  mf0 = 0;
   /** Độ lệch tách thân đang hiển thị (P2-E2, chỉ trình bày) và bán kính thân. */
   sepX = 0;
   sepZ = 0;
@@ -396,6 +399,8 @@ export class EntityManager {
   onSkillEvent: ((sid: string, e: SkillEvent) => void) | null = null;
   /** Quái đang thấy vừa gục (một lần mỗi lần chết; engine vẽ vết mực M4-14). */
   onMonsterDeath: ((m: MonVis) => void) | null = null;
+  /** Cờ quái mở rộng vừa bật/tắt (E1-E): vẽ vòng phản đòn/yếu điểm, bụi chui đất. */
+  onMonFlags: ((m: MonVis, e: MonFlagEdge) => void) | null = null;
   /** Dựng model quái (model có xương hoặc khối); giữ asset mẫu suốt đời EntityManager. */
   private skins = new MonsterSkins();
   /** Dựng model người chơi (Thanh Phong có xương hoặc khối dự phòng), màu áo theo lựa chọn. */
@@ -661,7 +666,11 @@ export class EntityManager {
       _monAnim.casting = ((s.mf ?? 0) & MF_CHANT) !== 0;
       _monAnim.stunned = ((s.mf ?? 0) & MF_STUN) !== 0;
       v.model.update(dt, _monAnim);
-      v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3);
+      const mf = s.mf ?? 0;
+      const edge = monFlagEdge(v.mf0, mf);
+      v.mf0 = mf;
+      if (edge) this.onMonFlags?.(v, edge);
+      v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3) && !monHidden(mf);
       const vv = v as MonVis & { deadFor?: number };
       // deadFor === 0: khung trước còn sống (mô hình mới dựng của quái đã chết sẵn thì là undefined).
       if (dead && vv.deadFor === 0) this.onMonsterDeath?.(v);
@@ -672,7 +681,7 @@ export class EntityManager {
         const r = v.model.root;
         bars.push(r.position.x, r.position.y + v.barY, r.position.z, v.bar.width, s.hp / Math.max(1, s.mhp), v.bar.trail.value, v.bar.kind, a);
       }
-      if (v.label) v.label.visible = !dead && d2 < 70 * 70 && id !== this.hudBossId;
+      if (v.label) v.label.visible = !dead && !monHidden(mf) && d2 < 70 * 70 && id !== this.hudBossId;
       v.wasAttack = s.st === MS_ATTACK;
     });
     for (const [id, v] of this.monsters) {
