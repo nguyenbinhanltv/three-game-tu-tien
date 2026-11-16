@@ -36,6 +36,8 @@ async function main(): Promise<void> {
       await page.waitForFunction(() => !!(window as unknown as V).__viewer, undefined, { timeout: 60_000 });
       await sleep(2500);
       await page.addStyleTag({ content: '.viewer-panel, .viewer-hud, .panel, aside, header { display: none !important; }' });
+      await page.evaluate(() => window.dispatchEvent(new Event('resize')));
+      await sleep(800);
       const shots: string[] = [];
       const base = await page.evaluate(() => {
         const v = (window as unknown as V).__viewer!;
