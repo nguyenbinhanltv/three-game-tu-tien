@@ -12,7 +12,7 @@ import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type Targe
 import type { DebugPerf } from '../ui/store';
 import { ColliderViz } from './debugColliders';
 import { chapterSting, duck, duckHold, lootChime, playSting, type Sfx, setListener, sfx, unlockAudio } from './audio';
-import { rememberZone } from './bootArt';
+import { rememberLevel, rememberZone } from './bootArt';
 import { FootstepDriver } from './footsteps';
 import { buildSources, Soundscape } from './soundscape';
 import { audioSpatialApi } from './soundscapeAudio';
@@ -980,6 +980,7 @@ export class Game {
     }
     const seq = ++this.levelSeq;
     const prevPhase = get().phase;
+    rememberLevel(id);
     set({ phase: 'loading' });
     try {
       const A = levelAssets(id);
