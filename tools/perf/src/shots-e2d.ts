@@ -31,8 +31,8 @@ const MARKS: [number, string][] = [
   [43.8, '07-pha3-tia-cuoi-bao-truoc'],
   [46.2, '08-pha3-tia-cuoi-no'],
   [50, '09-pha3-mua-set-hoa'],
-  [56.2, '10-thanh-cong-ascend'],
-  [58.6, '11-the-chuong-ket-dan'],
+  [55.8, '10-thanh-cong-ascend'],
+  [57.8, '11-the-chuong-ket-dan'],
 ];
 
 async function enter(page: Page, name: string, q: string): Promise<void> {
@@ -78,7 +78,7 @@ async function main(): Promise<void> {
               g.camDistCur = 26;
             });
             await sleep(120);
-            await page.screenshot({ path: path.join(OUT, `04b-pha2-tia-quet-${++sweepShot}.png`) });
+            await page.screenshot({ path: path.join(OUT, `04b-pha2-tia-quet-${++sweepShot}.jpg`), type: 'jpeg', quality: 85 });
             await page.evaluate(() => {
               const g = (window as unknown as G).__game!;
               g.camPitch = 0.45;
@@ -93,7 +93,7 @@ async function main(): Promise<void> {
         await waitTo(sec - 0.01);
         const wait = t0 + sec * 1000 - Date.now();
         if (wait > 0) await sleep(wait);
-        await page.screenshot({ path: path.join(OUT, file + '.png') });
+        await page.screenshot({ path: path.join(OUT, file + '.jpg'), type: 'jpeg', quality: 85 });
         console.log(`[shots-e2d] ${file} @ ${((Date.now() - t0) / 1000).toFixed(1)} s`);
       }
       log.me = await page.evaluate(() => (window as unknown as G).__game!.me?.()?.lv);
@@ -110,7 +110,7 @@ async function main(): Promise<void> {
       await page.evaluate(() => (window as unknown as G).__game!.send('chat', { m: '/gm tp dm_tram' }));
       await page.waitForSelector('.chapter-card', { timeout: 30_000 });
       await sleep(1300);
-      await page.screenshot({ path: path.join(OUT, '12-the-chuong-2-doan-mach.png') });
+      await page.screenshot({ path: path.join(OUT, '12-the-chuong-2-doan-mach.jpg'), type: 'jpeg', quality: 85 });
       await page.close();
     }
     await ctx.close();
