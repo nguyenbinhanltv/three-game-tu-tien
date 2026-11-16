@@ -10,8 +10,14 @@
     ]
   },
   "dot2-ho-ve-ph0": {
-    "got": false,
-    "hz": []
+    "got": true,
+    "hz": [
+      {
+        "sh": "rect",
+        "r": 5,
+        "w": 2.5
+      }
+    ]
   },
   "dot3-ngo-cong-au-ph0": {
     "got": false,

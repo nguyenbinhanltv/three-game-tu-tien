@@ -24,9 +24,16 @@ Mới trong `DungeonDef`/`WaveDef`: `points`, `at`, `delay`, `title`, `lockAt`, 
 
 Nhiệm vụ `q2_phuc_mach`: chỉ hook; `afterJoin` phát `questEvent('dungeon')` như Kiếm Trủng. Nhiệm vụ chưa có trong `quests.json` (E2-H).
 
-## Mỹ thuật
+## Mỹ thuật (hang mỏ, art bible v3)
 
-Lòng chảo Kiếm Trủng (địa hình Vân Lam, `terrain: van_lam`) đổi mood `ochre_night`, bộ texture mặt đất `terrain-ochre` (E2-I), vòng trụ đá/mạch tinh/gốc khô, đèn đá dọc lối vào và quanh sàn (`shared/src/props.phucmach.ts`). Ảnh: `pnpm shots:e2c --out <thư mục tuyệt đối>`.
+Lòng chảo Kiếm Trủng (địa hình Vân Lam, `terrain: van_lam`) dựng thành hang kín, bằng tài nguyên sẵn có:
+- **Vỏ hang** (`game/caveShell.ts`, `LevelAssets.cave`): nửa quả cầu úp một lưới, màu theo đỉnh, nhiễu dịch đỉnh cho vách gồ ghề và trần sa xuống như thạch nhũ; chỉ chân vách được đèn rọi (nâu ấm, vân tầng đá), lên cao tắt thành đen. Che hết đường chân trời và bầu trời, nên không còn thiên thể nào. Server kéo người chơi về trong bán kính `bound` 90 m (`DungeonDef.bound`).
+- **Ánh sáng**: đèn đá dọc lối vào và quanh sàn có quầng ấm và vũng sáng thật (point light, chỉ WebGPU); tinh thể mạch (`prop_mach_tinh_tru`, PROP_LIB #118) có quầng lam lục riêng, không vào bloom (tránh ô vuông billboard). Cổng ra là vòng sáng ấm mờ nằm trên nền, không còn đĩa vàng dựng đứng (hình bầu dục chói trước kia chính là đĩa cổng ra của Kiếm Trủng, không phải thiên thể).
+- **Hạt**: bỏ bụi sáng và tro xám (trước đây tro của vùng Kiếm Trủng trông như tuyết); thay bằng vài đốm lửa ấm bay lên (`ember`, 2,2/s) và bụi đá nâu mịn rơi thưa (`ash` đổi màu ở level này).
+- Mood `ochre_night`, texture mặt đất `terrain-ochre` (E2-I), vòng trụ đá, gốc khô, đá nằm (`shared/src/props.phucmach.ts`). Chưa có thạch nhũ/cột chống/xe mỏ dạng model (không có asset sẵn; trần nhũ chỉ là hình học vỏ hang).
+- Ngân sách: 41–61 draw call, 217–349k tam giác, 120 fps ở 1280×720 (trước thêm vỏ hang: 55 draw).
+
+Ảnh: `pnpm shots:e2c --out <thư mục tuyệt đối>`.
 
 ## Đo
 
@@ -40,15 +47,16 @@ Lòng chảo Kiếm Trủng (địa hình Vân Lam, `terrain: van_lam`) đổi m
 | --- | --- |
 | Cổng ở Đoạn Mạch | ![](00-cong-doan-mach.jpg) |
 | Vào hầm | ![](01-vao-hang.jpg) |
+| Vách hang và trần tối | ![](01b-vach-hang.jpg) |
 | Đợt 1 khôi lỗi | ![](02-dot1-khoi-loi.jpg) |
 | Đợt 2 hộ vệ + khôi tướng | ![](03-dot2-ho-ve.jpg) |
-| Đợt 3 ngô công ấu (ba điểm) | ![](04-dot3-ngo-cong-au.jpg) |
+| Đợt 3 ngô công ấu (ba điểm trên minimap; rết nhỏ nên khó thấy từ trên cao) | ![](04-dot3-ngo-cong-au.jpg) |
 | Thạch Tâm: vạch đập | ![](05-dot4-thach-tam-leap.jpg) |
 | Thạch Tâm: vạch đường | ![](06-dot4-thach-tam-line.jpg) |
 | Thôn Mạch: slam | ![](07-dot5-thon-mach-slam.jpg) |
 | Thôn Mạch: niệm Thôn Mạch (r 12) | ![](08-dot5-thon-mach-chant.jpg) |
 | Thôn Mạch: slam ở pha 35% | ![](09-dot5-thon-mach-pha2.jpg) |
-| Thôn Mạch: chui đất, vạch quạt 14 m | ![](10-dot5-thon-mach-chui-dat.jpg) |
+| Thôn Mạch: vạch dài 22×3 m (từ 35% máu) | ![](10-dot5-thon-mach-vach-dai.jpg) |
 
 `hazards.json`: vạch báo client ghi được mỗi pha.
 

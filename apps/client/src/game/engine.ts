@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget } from '@dtl/shared';
-import { areaKey, biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
+import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, propsOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget } from '@dtl/shared';
+import { areaKey, biomeAt, groundAt, heightAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, tierBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
@@ -38,6 +38,7 @@ import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { gatesToDraw } from './gates';
+import { buildCaveShell, buildCrystalGlow } from './caveShell';
 import { PropLayer } from './props';
 import { allProps } from './propScatter';
 import { type AssetHandle, assets } from './assets';
@@ -850,7 +851,11 @@ export class Game {
       this.scene.add(this.sectMesh);
     }
     if (F.portals) {
-      this.gateDiscs = gatesToDraw(id).map((g) => buildPortalDisc(g.x, g.z, g.color));
+      this.gateDiscs = gatesToDraw(id).map((g) => {
+        const d = buildPortalDisc(g.x, g.z, g.color, g.flat);
+        d.userData.op = g.opacity ?? 0.55;
+        return d;
+      });
       this.scene.add(...this.gateDiscs);
       for (const disc of this.gateDiscs) markBloom(disc.material as THREE.Material, 0.8);
     }
@@ -862,12 +867,22 @@ export class Game {
     applyGrading(GRADING[mood]);
     setHeightFog(q.heightFog);
     if (F.lanterns) {
-      const halos = createLanternHalos(SECT_LANTERNS);
+      // Vân Lam: đèn lồng tông môn; level khác: đèn đá bày trong `propsOf` (E2-C).
+      const pts = id === 'van_lam' || id === 'kiem_trung' ? SECT_LANTERNS : propsOf(id).filter((p) => p.id === 'prop_den_da').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
+      const halos = createLanternHalos(pts);
       this.scene.add(halos);
       this.levelObjs.push(halos);
-      this.lanterns = new LanternLights(this.scene, SECT_LANTERNS);
+      this.lanterns = new LanternLights(this.scene, pts);
       this.lanterns.setEnabled(q.lights && isWebGPU(this.renderer)); // T6: đèn lồng point light thật chỉ ở WebGPU
       this.lanterns.setIntensityScale(LANTERN_LIGHT[mood] ?? 1);
+    }
+    const cave = levelAssets(id).cave;
+    if (cave) {
+      // Phó bản hang (E2-C): vách + trần tối che chân trời, tinh thể mạch phát sáng lam lục (hai draw call).
+      const shell = buildCaveShell(cave, heightAt(cave.x, cave.z));
+      const glow = buildCrystalGlow(propsOf(id).filter((p) => p.id === 'prop_mach_tinh_tru').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 1.8, z: p.z })));
+      this.scene.add(shell, glow);
+      this.levelObjs.push(shell, glow);
     }
     if (F.sect) void this.loadSectModel(q.shadows);
   }
@@ -2356,7 +2371,7 @@ export class Game {
     }
     for (const disc of this.gateDiscs) {
       disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
-      (disc.material as THREE.MeshBasicMaterial).opacity = 0.55 + Math.sin(now * 0.003) * 0.2;
+      (disc.material as THREE.MeshBasicMaterial).opacity = (disc.userData.op ?? 0.55) + Math.sin(now * 0.003) * (disc.userData.op ? disc.userData.op * 0.35 : 0.2);
     }
     this.tickSkillQueue(now);
     this.tickCombat(now, me);

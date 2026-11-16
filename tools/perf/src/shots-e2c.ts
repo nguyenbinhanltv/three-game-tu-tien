@@ -82,6 +82,10 @@ async function main(): Promise<void> {
     log.room = await page.evaluate(() => (window as unknown as G).__game!.info().room);
     await gm(page, 'god on', 1000);
     await shot('01-vao-hang');
+    await cam(0.14, 10, Math.PI);
+    await sleep(600);
+    await shot('01b-vach-hang');
+    await cam(0.5, 22, 0);
     await gm(page, 'tp 1520 1326', 900);
     await cam(0.5, 22, 0);
     const mons = () => page.evaluate(() => [...(window as unknown as G).__game!.view.monsters.values()].filter((m: any) => m.t && m.st !== 4).map((m: any) => ({ t: m.t, hp: m.hp, mhp: m.mhp })));
@@ -102,17 +106,27 @@ async function main(): Promise<void> {
       ['boss_thon_mach_ngo_cong_vuong', 'dot5-thon-mach', 0.35, ['hurt 60', 'hurt 30', 'hurt 8']],
     ];
     for (const [id, tag, pitch, hurts] of waves) {
-      const ok = await waitMons(id);
+      let ok = await waitMons(id, 25_000);
+      for (let sweep = 0; !ok && sweep < 2; sweep++) {
+        // Còn sót quái ở xa chưa hạ (ngoài tầm 40 m của killall): quét vòng quanh hang rồi chờ tiếp.
+        for (let k = 0; k < 8; k++) {
+          await gm(page, `tp ${Math.round(1520 + Math.cos(k * 0.785) * 40)} ${Math.round(1300 + Math.sin(k * 0.785) * 40)}`, 900);
+          await gm(page, 'killall', 900);
+        }
+        await gm(page, 'tp 1520 1326', 900);
+        ok = await waitMons(id, 20_000);
+      }
       if (!ok) {
-        console.log(`[shots-e2c] ${tag}: không thấy ${id}`);
+        console.log(`[shots-e2c] ${tag}: không thấy ${id}`, JSON.stringify(await page.evaluate(() => [...(window as unknown as G).__game!.view.monsters.values()].map((m: any) => [m.t, m.hp, m.st, Math.round(m.x), Math.round(m.z)]))), JSON.stringify(await page.evaluate(() => { const m = (window as unknown as G).__game!.me(); return [Math.round(m.x), Math.round(m.z)]; })));
         await shot(`${tag}-MISS`);
         break;
       }
       await skipCut();
-      await cam(pitch, id.startsWith('boss') ? 24 : 20, 0);
+      if (id === 'mon_ngo_cong_au') await gm(page, 'tp 1520 1266', 900);
+      await cam(id === 'mon_ngo_cong_au' ? 0.95 : pitch, id.startsWith('boss') ? 24 : id === 'mon_ngo_cong_au' ? 46 : 20, 0);
       await sleep(1500);
       await shot(`${tag}-0`);
-      if (id !== 'mon_khai_mach_khoi_loi') await gm(page, 'tp 1520 1302', 900);
+      if (id !== 'mon_khai_mach_khoi_loi' && id !== 'mon_ngo_cong_au') await gm(page, 'tp 1520 1302', 900);
       const boss = id.startsWith('boss');
       const phases = [''].concat(hurts);
       for (let ph = 0; ph < phases.length; ph++) {
@@ -132,14 +146,11 @@ async function main(): Promise<void> {
         log[`${tag}-ph${ph}`] = { got, hz: await page.evaluate(() => ((window as unknown as G).__game!.hazardLog ?? []).map((h: any) => ({ mv: h.mv, sh: h.sh, r: h.r, w: h.w, delay: h.delay }))) };
       }
       // hạ hết để sang đợt kế
-      await gm(page, 'tp 1520 1290', 900);
       await gm(page, 'hurt 1', 900);
-      for (let round = 0; round < 4 && (await mons()).length; round++) {
-        for (const [x, z] of [[1520, 1290], [1474, 1262], [1566, 1262], [1520, 1234]]) {
-          await gm(page, `tp ${x} ${z}`, 900);
-          await gm(page, 'killall', 900);
-        }
-        console.log(`[shots-e2c] ${tag}: còn ${(await mons()).length} quái sau vòng dọn ${round}`);
+      // Không dịch chuyển đi xa lúc dọn: quái mất mục tiêu sẽ bỏ đuổi và miễn sát thương (evade), killall không hạ được.
+      for (let round = 0; round < 8 && (await mons()).length; round++) {
+        await gm(page, 'killall', 900);
+        console.log(`[shots-e2c] ${tag}: còn ${(await mons()).length} quái sau lần dọn ${round}`);
       }
       await gm(page, 'tp 1520 1326', 900);
       await sleep(500);

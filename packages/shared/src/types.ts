@@ -635,6 +635,8 @@ export interface DungeonDef {
   /** Level thế giới nhận người khi ra, và điểm xuất hiện ở đó. */
   returnLevel: string;
   returnSpawn: { x: number; z: number };
+  /** Bán kính (m) quanh `center` mà người chơi không ra khỏi được (vách hang); bỏ trống = không giới hạn. */
+  bound?: number;
   waves: WaveDef[];
   /** Mỗi lượt vào là một room riêng cho nhóm cùng đi (khóa `dgKey` trong vé); bỏ trống = ghép chung room còn chỗ như Kiếm Trủng. */
   private?: boolean;
@@ -671,6 +673,8 @@ export interface LevelAssets {
     beacons: boolean;
     vegetation: boolean;
   };
+  /** Vỏ hang (E2-C): vách đá + trần tối che chân trời và bầu trời; đèn đá và tinh thể mạch của level được thêm quầng sáng. */
+  cave?: { x: number; z: number; r: number; h: number };
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */

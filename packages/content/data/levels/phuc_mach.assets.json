@@ -12,7 +12,7 @@
   "features": {
     "sect": false,
     "portals": true,
-    "lanterns": false,
+    "lanterns": true,
     "lake": false,
     "clouds": false,
     "grass": false,
@@ -20,5 +20,11 @@
     "beacons": false,
     "vegetation": false
   },
-  "minimap": "van_lam"
+  "minimap": "van_lam",
+  "cave": {
+    "x": 1520,
+    "z": 1300,
+    "r": 94,
+    "h": 46
+  }
 }

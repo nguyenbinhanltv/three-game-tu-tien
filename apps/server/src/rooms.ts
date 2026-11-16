@@ -629,8 +629,25 @@ export class DungeonRoom extends GameRoom {
     }
   }
 
+  /** Vách hang: ai ra quá `bound` mét quanh tâm thì bị kéo về sát vách (server quyết định vị trí). */
+  private clampToBound(): void {
+    const d = this.def;
+    if (!d.bound) return;
+    for (const p of this.sim.players.values()) {
+      const dx = p.move.x - d.center.x;
+      const dz = p.move.z - d.center.z;
+      const dist = Math.hypot(dx, dz);
+      if (dist > d.bound) {
+        const k = (d.bound - 1) / dist;
+        p.move.x = d.center.x + dx * k;
+        p.move.z = d.center.z + dz * k;
+      }
+    }
+  }
+
   private director(): void {
     const now = Date.now();
+    this.clampToBound();
     if (this.clearedAt) {
       if (now >= this.clearedAt + 20000) {
         this.clearedAt = now + 3600_000;

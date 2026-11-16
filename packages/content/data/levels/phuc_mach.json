@@ -14,7 +14,7 @@
     },
     "center": {
       "x": 1520,
-      "z": 1290
+      "z": 1300
     },
     "minLevel": 17,
     "returnLevel": "doan_mach",
@@ -22,6 +22,7 @@
       "x": 584,
       "z": 984
     },
+    "bound": 90,
     "private": true,
     "lockAt": 2,
     "maxRevives": 2,
