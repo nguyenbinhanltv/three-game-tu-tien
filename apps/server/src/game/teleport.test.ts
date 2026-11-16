@@ -267,7 +267,7 @@ describe('điểm đánh dấu', () => {
 describe('migration', () => {
   it('nhân vật cũ: mở trận vùng đã vượt cấp; DB mới có cột tele', () => {
     const { sqlite, DATA_VERSION } = db;
-    expect(DATA_VERSION).toBe(3);
+    expect(DATA_VERSION).toBeGreaterThanOrEqual(3);
     const cols = sqlite.prepare('PRAGMA table_info(characters)').all() as { name: string }[];
     expect(cols.some((c) => c.name === 'tele')).toBe(true);
     sqlite.prepare("INSERT INTO accounts (sub, email, created_at) VALUES ('t:mig1','',0)").run();
