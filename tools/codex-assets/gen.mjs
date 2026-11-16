@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Sinh ảnh 2D bằng Codex (codex exec + công cụ ảnh tích hợp, không Tripo, không API key).
 // Dùng: node tools/codex-assets/gen.mjs <nhóm> [id…] [--jobs 4] [--force]
-// Nhóm: icons | portraits | loading | ui. Ra: <DTL_ASSET_SOURCE>/2d/<nhóm>/<id>.png + <id>.prompt.txt.
+// Nhóm: icons | portraits | loading | ui | concepts (E-0: concept asset cho Tripo, chủ thể là object có `look`). Ra: <DTL_ASSET_SOURCE>/2d/<nhóm>/<id>.png + <id>.prompt.txt.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,6 +50,12 @@ Early morning, warm golden sunlight breaking through thick layered mist, jade-te
 cool teal shadows and warm gold highlights, soft volumetric light. The lower third and the center-left are kept low-detail and darker so UI text can sit on top.
 ${ART} Any figures tiny and in the middle distance.
 ${NO_TEXT} No snow, no purple tint, no UI, no frame border.`,
+  concepts: (s) => `Use case: stylized-concept. ONE single-object 3D game asset concept image for a Chinese fantasy cultivation game, original design, not copied from any existing game, novel or artwork.
+Subject: ${s.look}.
+View: ${s.cat === 'set' ? 'full body, front view, plain neutral dummy figure' : s.cat === 'grass' ? 'a single clump, slight 3/4 angle from above, whole clump visible' : ['elite', 'boss', 'mon'].includes(s.cat) ? 'full body three-quarter side view (front-left), neutral standing pose, whole subject fully inside the frame with 8% margin' : 'three-quarter view slightly from above, whole object fully inside the frame with 8% margin'}.
+Style: semi-realistic cinematic painterly rendering, believable materials with hand-painted detail, clear readable silhouette, large shapes first, restrained fine detail, muted misty-dawn palette (stone greys, bronze #AE8B49, ivory #E6DDCB, dark teal #2B5552, jade #7FE3D0 only as a small accent).
+Render: neutral soft even studio lighting from the front-left, no strong directional shadows, no color cast, plain light grey seamless background (#D8D8D8), no floor scenery, no floor shadow, single subject only. Landscape 3:2.
+No text, letters, calligraphy, watermark, logo, signature, no glow bloom, no particles, no smoke, no fog, no magic effects, no cel shading, no toon outlines, no anime, no chibi, no photograph, no purple tint, no snow, no cropped parts, no second creature, no people unless stated, no harness, no jewelry, no saddle, no ornaments on creatures.`,
   ui: (s) => `Use case: stylized-concept. ONE UI texture asset for a Chinese fantasy cultivation game, flat orthographic view, no perspective.
 Asset: ${s}.
 ${ART} Colors from: ivory #E6DDCB, parchment, dark teal #2B5552, deep navy #22364E, cinnabar #9D392E, bronze #AE8B49, jade #7FE3D0 as a tiny accent.
@@ -57,7 +63,7 @@ ${NO_TEXT}`,
 };
 
 if (!templates[group]) {
-  console.error('Nhóm: icons | portraits | loading | ui');
+  console.error('Nhóm: icons | portraits | loading | ui | concepts');
   process.exit(1);
 }
 const all = read(`${group}.json`);

@@ -8,3 +8,7 @@ Kiểm kê: `audit.md`. Sinh: `node tools/codex-assets/gen.mjs <icons|portraits|
 - Atlas WebP 711 KB (trước: 272 KB), nạp cùng lúc với atlas cũ.
 - Ảnh UI: `bag-icons.png` (túi đồ, linh thạch, linh ngọc, thanh chiêu), `method-panel.png` (công pháp).
 - `build.mjs` ưu tiên `2d/icons/` hơn `icons/`, nhận icon phụ từ `tools/codex-assets/icons.json`, và dùng `icon` làm khóa (K-2 đổi id chiêu nhưng giữ icon cũ nên bản cũ không build được).
+
+## E-0 Concept asset cho Tripo
+
+Nhóm `concepts` (`node tools/codex-assets/gen.mjs concepts [id…]`, chủ thể là object trong `tools/codex-assets/concepts.json`): 59 ảnh concept 3:2 (tinh anh, boss, quái, cỏ, prop môi trường, kiếm/pháp bảo, bộ trang bị bậc mới) cho người dùng dựng trên Tripo web. `node tools/codex-assets/concepts-doc.mjs [--html <file>]` dựng lại `docs/ASSET_CONCEPTS.md` (và bản HTML). Ảnh nén WebP: `docs/asset-concepts/`. Chi tiết: `docs/ASSET_CONCEPTS.md`, thiết kế: `docs/EXPANSION_DESIGN.md`.
