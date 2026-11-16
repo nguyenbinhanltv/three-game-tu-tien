@@ -48,6 +48,7 @@
     "shots:elitegame": "pnpm --filter @dtl/perf run shots:elitegame --",
     "shots:e0": "pnpm --filter @dtl/perf run shots:e0 --",
     "assets:terrain": "pnpm --filter @dtl/asset-pipeline exec tsx src/terrain-textures.ts",
+    "assets:grass-cards": "pnpm --filter @dtl/asset-pipeline exec tsx src/grass-cards.ts",
     "assets:validate": "pnpm --filter @dtl/asset-pipeline run validate",
     "assets:impostor": "pnpm --filter @dtl/asset-pipeline run impostor",
     "audio:build": "node tools/audio/build.mjs",

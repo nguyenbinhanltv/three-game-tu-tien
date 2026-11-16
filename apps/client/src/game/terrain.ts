@@ -31,6 +31,8 @@ const _c = new THREE.Color();
 /** Địa hình của Terrain đang dựng (gắn lúc `new Terrain()`): hàm dựng ô gọi thẳng, không qua con trỏ level từng đỉnh. */
 let T = levelTerrain();
 let VL = T.id === 'van_lam';
+/** Level dùng bảng màu đất son (Đoạn Mạch, E2-I). */
+let OCHRE = T.id === 'doan_mach';
 function heightAt(x: number, z: number): number {
   return T.heightAt(x, z);
 }
@@ -39,6 +41,21 @@ function isVanLam(): boolean {
 }
 
 const C_VOID_ROCK = col(0x6b6a72);
+const C_OCHRE = col(0xb2a082);
+const C_OCHRE_DRY = col(0xc4b08e);
+const C_OCHRE_RED = col(0x9f8068);
+const C_SANDSTONE = col(0xa09078);
+const C_SANDSTONE_DARK = col(0x7d6e5c);
+/** Đất son cốc đứt mạch: ngả vàng đất khô ↔ đỏ gạch theo nhiễu, dốc lộ sa thạch (không tuyết: art bible). */
+function ochreColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
+  const n = fbm(x * 0.013, z * 0.013, 2, T.def.seed + 300);
+  out.copy(C_OCHRE).lerp(n > 0 ? C_OCHRE_DRY : C_OCHRE_RED, Math.min(1, Math.abs(n) * 0.9)).multiplyScalar(0.94 + n * 0.12);
+  const slope = 1 - ny;
+  if (slope > 0.12) out.lerp(n > 0 ? C_SANDSTONE : C_SANDSTONE_DARK, Math.min(1, (slope - 0.12) * 4.5));
+  const w = T.def.water;
+  if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));
+}
+
 /** Màu mặt đất của level không phải Vân Lam: cỏ/đá/tuyết theo độ dốc và độ cao, bờ nước ra cát. */
 function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
   const t = T;
@@ -54,6 +71,7 @@ function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Màu mặt đất theo vị trí, độ cao và độ dốc. */
 function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
+  if (OCHRE) return ochreColor(x, z, h, ny, out);
   if (!isVanLam()) return genericColor(x, z, h, ny, out);
   const wSect = featureWeight(SECT, x, z);
   const wValley = featureWeight(VALLEY, x, z);
@@ -88,6 +106,11 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Trọng số vùng cho shader mặt đất: x rừng, y đất khô, z đất chết Kiếm Trủng, w dự phòng. */
 function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
+  if (OCHRE) {
+    // Một lớp nền duy nhất: ở preset Vừa/Thấp lớp nền chọn cứng theo ngưỡng nên mảng đất/đất nứt hiện thành vệt mép gắt (E2-I); biến thiên màu do màu đỉnh (`ochreColor`) lo.
+    o[k] = o[k + 1] = o[k + 2] = o[k + 3] = 0;
+    return;
+  }
   if (!isVanLam()) {
     o[k] = o[k + 1] = o[k + 2] = o[k + 3] = 0;
     return;
@@ -338,6 +361,7 @@ export class Terrain {
   constructor() {
     T = levelTerrain();
     VL = T.id === 'van_lam';
+    OCHRE = T.id === 'doan_mach';
     const COARSE_N = this.COARSE_N;
     const g = buildTileGeometry(0, 0, this.size, COARSE_N, 0);
     this.coarseIndex = new THREE.BufferAttribute(new Uint16Array(COARSE_N * COARSE_N * 6), 1);

@@ -24,8 +24,25 @@ export const LAYERS = [
   { layer: 'gravel', ph: 'gravelly_sand', author: 'Dario Barresi' },
 ] as const;
 
-const SRC = path.resolve(ROOT, '..', 'dtl-asset-source', 'texture');
-const OUT = path.join(ROOT, 'apps', 'client', 'public', 'terrain');
+/**
+ * Bộ ochre cho Đoạn Mạch Cổ Cốc (E2-I): cùng thứ tự lớp (khớp `GROUND_LAYER`), ra `public/terrain-ochre/`, client nạp lười khi vào level
+ * (`levels/doan_mach.assets.json` `ground.set`), không nằm trong tải đầu. `tint` nhân màu sRGB cho ngả đất son (cốc đứt mạch: cát đỏ nâu, đá sa thạch).
+ * Không có mặt nạ riêng: level dùng mặt nạ `neutral`.
+ */
+export const OCHRE_LAYERS = [
+  { layer: 'grass', ph: 'dry_ground_rocks', author: 'Rob Tuytel', tint: [1.02, 0.96, 0.86] },
+  { layer: 'dirt', ph: 'red_laterite_soil_stones', author: 'Rob Tuytel', tint: [1.6, 1.5, 1.4] },
+  { layer: 'forest', ph: 'gravelly_sand', author: 'Dario Barresi', tint: [0.96, 0.9, 0.8] },
+  { layer: 'rock', ph: 'sandstone_cracks', author: 'Rob Tuytel', tint: [1.04, 0.92, 0.8] },
+  { layer: 'cliff', ph: 'rock_face_03', author: 'Rob Tuytel', tint: [1.04, 0.9, 0.78] },
+  { layer: 'sand', ph: 'aerial_sand', author: 'Rob Tuytel', tint: [1.04, 0.94, 0.8] },
+  { layer: 'paving', ph: 'cobblestone_floor_04', author: 'Rob Tuytel', tint: [1.1, 0.74, 0.58] },
+  { layer: 'gravel', ph: 'gravelly_sand', author: 'Dario Barresi', tint: [1.04, 0.93, 0.8] },
+] as const;
+
+const SRC = process.env.DTL_ASSET_SOURCE ? path.resolve(process.env.DTL_ASSET_SOURCE, 'texture') : path.resolve(ROOT, '..', 'dtl-asset-source', 'texture');
+const SET = process.argv.includes('--set') ? process.argv[process.argv.indexOf('--set') + 1] : 'terrain';
+const OUT = path.join(ROOT, 'apps', 'client', 'public', SET === 'ochre' ? 'terrain-ochre' : 'terrain');
 const SIZE = 1024;
 
 async function fetchBuf(url: string): Promise<Buffer> {
@@ -47,9 +64,12 @@ async function source(ph: string, kind: 'Diffuse' | 'nor_gl' | 'Rough'): Promise
 async function main(): Promise<void> {
   await mkdir(OUT, { recursive: true });
   const manifest: { layer: string; ph: string; a: string; n: string }[] = [];
-  for (const L of LAYERS) {
+  const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] = SET === 'ochre' ? OCHRE_LAYERS : LAYERS;
+  for (const L of layers) {
     const [diff, nor, rough] = await Promise.all([source(L.ph, 'Diffuse'), source(L.ph, 'nor_gl'), source(L.ph, 'Rough')]);
-    const albedo = await sharp(diff).resize(SIZE, SIZE).removeAlpha().webp({ quality: 76 }).toBuffer();
+    let img = sharp(diff).resize(SIZE, SIZE).removeAlpha();
+    if (L.tint) img = img.modulate({ saturation: 0.48, brightness: 1.08 }).linear([...L.tint], [0, 0, 0]);
+    const albedo = await img.webp({ quality: 76 }).toBuffer();
     // Pháp tuyến: R = x, G = y (z dựng lại ở shader), B = độ nhám.
     const nrm = await sharp(nor).resize(SIZE, SIZE).removeAlpha().raw().toBuffer();
     const r = await sharp(rough).resize(SIZE, SIZE).greyscale().raw().toBuffer();
@@ -62,6 +82,10 @@ async function main(): Promise<void> {
     await writeFile(path.join(OUT, entry.n), n);
     manifest.push(entry);
     console.log(`[terrain] ${L.layer} (${L.ph}): a ${(ar.length / 1024) | 0} KB, n ${(n.length / 1024) | 0} KB`);
+  }
+  if (SET === 'ochre') {
+    await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ size: SIZE, layers: manifest }, null, 2) + '\n');
+    return;
   }
   // Mặt nạ vùng (đường mòn, sân lát, cát, nhiễu vĩ mô): tính một lần ở đây (~1 s), client chỉ giải mã PNG.
   const maskRaw = buildMaskData();
