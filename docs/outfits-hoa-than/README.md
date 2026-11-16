@@ -19,7 +19,7 @@ Bộ đầu tiên của bậc 4, dựng từ 6 mảnh Tripo (concept P3, PR #154
 - **Dạng gốc** `prop_kiem_tinh_khuyet` (#119) giữ cho +0 đến +9, vân sáng +7 chạy như mọi kiếm.
 - **Dạng cuối +10** `prop_kiem_tinh_khuyet_cuoi` (`orient_sword.py`, Tripo 3751 → 2500 tam giác theo ngân sách vũ khí): lưỡi tinh thể tím sao, chắn sừng vuốt ngược, nhãn cầu sao ở tâm. `SWORD_FINAL` đổi gốc → cuối khi cường hóa +10 (`swordModelOf(id, glowStage)`). Thử: `?sword=prop_kiem_tinh_khuyet_cuoi`.
 - **Vỏ riêng** `prop_vo_kiem_tinh_khuyet` (`orient_scabbard.py`, 1342 tam giác): vỏ lưng giờ chọn theo kiếm (`SCABBARD_OF`/`scabbardOf` trong `@dtl/content`, `PlayerSkins` giữ một mẫu vỏ mỗi asset); kiếm chưa có vỏ riêng vẫn dùng `SCABBARD_DEFAULT` (vỏ Liệt Mạch). Dùng chung cho cả hai dạng kiếm và cả ba công pháp.
-- Tia linh khí là phần dựng cứng quanh chắn trong lưới Tripo (không phải hạt); phát sáng của lưỡi/nhãn là hào quang cường hóa có sẵn (`swordGlow`), chưa có mặt nạ emissive riêng cho nhãn sao (giới hạn: texture kiếm Tripo giữ màu nguyên).
+- Tia linh khí là phần dựng cứng quanh chắn trong lưới Tripo (không phải hạt). **Hào quang cường hóa (+7 vân sáng, +10 dạng cuối) là tím sao `#9B84F2`**, không phải xanh ngọc của kiếm thấp: `SWORD_GLOW_TINT` trong `@dtl/content` (theo model kiếm, thắng màu theo bộ trang bị), `BladeMount.tint` → `SkinnedPlayer.swordTint`; độ chớp giữ nguyên của `swordGlow` (cùng biên độ, không thêm lóa). Chưa có mặt nạ emissive riêng cho nhãn sao (texture kiếm Tripo giữ màu nguyên).
 
 ## Kiểm xuyên mesh
 
@@ -36,8 +36,12 @@ Draw đạt ngân sách (< 300). CPU p50 8,6 ms hơi quá ngưỡng 8 ms của n
 ## Ảnh
 
 - `sheet_tinh_khuyet_<m|f>.jpg`: đứng trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém, chết. `matrix_tinh_khuyet_<m|f>.jpg`: chiêu 1–2 của 3 công pháp (kiếm tu, hộ pháp, đan sư), chết, chém. `bang_tinh_khuyet_<m|f>.jpg`: bảng nhân vật 3D.
-- `kiem_tinh_khuyet_0_7_10.jpg`: kiếm +0, +7, +10 (hàng trên xuống dưới), cột trái đeo lưng (vỏ riêng), cột phải cầm tay. +0 và +7 chỉ khác vân sáng; +10 đổi sang dạng cuối. Ảnh chụp với một kiếm Liệt Mạch trong tay để có `plus 7|10`, model hiển thị ép bằng `?sword=`.
+- `kiem_tinh_khuyet_0_7_10.jpg`: kiếm +0, +7, +10 (hàng trên xuống dưới), cột trái đeo lưng (một kiếm trong vỏ riêng), cột phải cầm tay. +0 và +7 chỉ khác vân sáng; +10 đổi sang dạng cuối. `kiem_tinh_khuyet_10_nu.jpg`: dạng cuối trên thân nữ. Ảnh chụp với một kiếm Liệt Mạch trong tay để có `plus 7|10`, model hiển thị ép bằng `?sword=`. Hào quang +0 vẫn có vì nhân vật mặc bộ (màu bộ làm sáng vỏ ở bậc tối thiểu 1), không phải lỗi của kiếm.
 - Chụp: `pnpm shots:outfit --out <thư mục tuyệt đối> --genders m,f --sets set_liet_mach --matrix 1 --panel 1 --query outfit=set_tinh_khuyet_kiem_bao`; kiếm: `pnpm shots:kiem --out <thư mục> --model prop_kiem_tinh_khuyet|prop_kiem_tinh_khuyet_cuoi --equip "itm_liet_mach_kiem|Liệt Mạch Kiếm" --query outfit=set_tinh_khuyet_kiem_bao --set set_liet_mach --glow 0|1|2` (`--equip` và `--query` thêm ở PR này).
+
+## Lưu ý ảnh (sửa sau review)
+
+Bản ảnh đầu có hai điểm lạ: (1) một khối gai xanh đen nằm đất cạnh chân nữ ở khung chiêu 1, 2, chém; (2) hai kiếm song song sau lưng nữ ở so sánh Phục Mạch v01. Cả hai **không phải lỗi mảnh áo hay kiếm** mà do trình chụp: avatar nam của phiên trước vẫn đứng nguyên chỗ (2048, 2088) trong thế giới khi phiên nữ vào cùng điểm, nên hai người chồng lên nhau (khối gai = áo nam ở tư thế nằm, kiếm thứ hai = kiếm của người nam). `shots:outfit` nay dời nhân vật đi xa (`tp 2048 2900`) trước khi đóng phiên; chụp lại thì cả hai điểm lạ biến mất và sau lưng chỉ còn một kiếm trong vỏ (cả Tinh Khuyết lẫn Phục Mạch v01/v02, nam và nữ; trường hợp có trang bị kiếm riêng chụp bằng `shots:kiem` cũng một kiếm).
 
 ## Giới hạn
 

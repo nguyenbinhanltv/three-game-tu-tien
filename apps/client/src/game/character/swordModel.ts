@@ -35,6 +35,8 @@ export interface BladeMount {
   mesh: THREE.Mesh;
   info: BladeInfo;
   old: OldSwordSpan;
+  /** Màu hào quang cường hóa riêng của kiếm (hex), ưu tiên hơn màu theo bộ trang bị (`SWORD_GLOW_TINT`). */
+  tint?: string;
 }
 
 /**

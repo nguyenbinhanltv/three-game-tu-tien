@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { float, normalView, positionViewDirection, vec3 } from 'three/tsl';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { APPEARANCE, DYE, OUTFITS, scabbardOf, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
+import { APPEARANCE, DYE, OUTFITS, scabbardOf, SET, SETS, SWORD_GLOW_TINT, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
@@ -329,12 +329,13 @@ export class PlayerSkins {
       const s = this.swords.get(id);
       return typeof s === 'object' ? s : null;
     };
-    const tpl = pick(want ?? SWORD_MODEL_DEFAULT) ?? pick(SWORD_MODEL_DEFAULT);
+    const id = pick(want ?? SWORD_MODEL_DEFAULT) ? (want ?? SWORD_MODEL_DEFAULT) : SWORD_MODEL_DEFAULT;
+    const tpl = pick(id);
     if (!tpl) return null;
     const mesh = tpl.mesh.clone();
     // Bóng tâm ma dùng chung material mờ của bóng; thân kiếm thật dùng chung material của model (không dispose theo bản sao).
     if (shadowMat) mesh.material = shadowMat;
-    return { mesh, info: tpl.info, old: t.oldSword };
+    return { mesh, info: tpl.info, old: t.oldSword, tint: SWORD_GLOW_TINT[id] };
   }
 
   /** Phụ kiện đồ bộ hiển thị theo `acc` (lỗi dựng thì bỏ qua, nhân vật vẫn đẹp bằng áo nhuộm). */
@@ -788,6 +789,8 @@ export class SkinnedPlayer extends SkinnedCharacter {
   private hasScabbard = false;
   private glowDims: { start: number; len: number } | undefined;
   private tintHex = '';
+  /** Màu hào quang riêng của kiếm đang cầm (thắng màu theo bộ); '' = dùng màu bộ/mặc định. */
+  private swordTint = '';
   /** Xương để đặt dải lụa phụ kiện (theo tên chuẩn hóa). */
   private fitBones = new Map<FitBone, THREE.Object3D>();
   /** Động tác rút/tra đang phát: đổi chỗ kiếm khi tới `at` (giây trong clip) hoặc khi động tác bị thay/hủy. */
@@ -819,6 +822,7 @@ export class SkinnedPlayer extends SkinnedCharacter {
     if (this.sword && blade) {
       // Kiếm riêng theo trang bị: mesh không xương bám xương kiếm như vỏ sáng (cùng hệ `inner`).
       this.blade = blade.mesh;
+      this.swordTint = blade.tint ?? '';
       this.bladeLocal = bladeLocal(this.sword.glowLocal, blade.info, blade.old);
       this.glowDims = glowDims(blade.info, blade.old);
       this.bladeHolder.matrixAutoUpdate = false;
@@ -872,7 +876,8 @@ export class SkinnedPlayer extends SkinnedCharacter {
       // Cùng hệ với cây xương (rig nằm ngoài cảnh nhưng trùng hệ của `inner`).
       this.inner.add(this.glow.group);
     }
-    this.glow?.setTint(this.tintHex ? new THREE.Color(this.tintHex).getHex() : null);
+    const tint = this.swordTint || this.tintHex;
+    this.glow?.setTint(tint ? new THREE.Color(tint).getHex() : null);
     this.glow?.setStage(this.lod >= 2 ? 0 : stage);
   }
 
