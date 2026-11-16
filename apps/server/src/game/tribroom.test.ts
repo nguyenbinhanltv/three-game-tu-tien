@@ -489,6 +489,7 @@ describe('room độ kiếp riêng', () => {
   it('tới sân: người độ kiếp bắt đầu kiếp sau độ trễ, hộ pháp nhận lời nhắc; giữa chừng không chuyển được', async () => {
     const arena = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
     const owner = arena.join(mkChar('chu', 23), { trib: { key: 'a', id: 'nguyen_anh' } });
+    owner.char.tx('t', null, (d) => d.add('itm_nguyen_anh_dan', 1));
     const guard = arena.join(mkChar('hophap', 20), { trib: { key: 'a' } });
     expect(owner.trib).toBeNull();
     expect(keys(guard)).toContain('sys.trib_guard');
@@ -505,6 +506,7 @@ describe('room độ kiếp riêng', () => {
   it('kết thúc: sau thời gian nán lại, mọi người (cả hộ pháp, cả người chết) được cấp vé về Vân Lam kèm returnSpawn', async () => {
     const arena = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
     const owner = arena.join(mkChar('chu2', 23), { trib: { key: 'b', id: 'nguyen_anh' } });
+    owner.char.tx('t', null, (d) => d.add('itm_nguyen_anh_dan', 1));
     const guard = arena.join(mkChar('hophap2', 20), { trib: { key: 'b' } });
     arena.runTimers();
     expect(owner.trib).not.toBeNull();
@@ -579,6 +581,7 @@ describe('room độ kiếp riêng', () => {
   it('ngắt kết nối giữa kiếp: mất 15% tu vi (không hoàn), người khác vẫn về đúng lúc; vé còn hạn cho lần vào lại', async () => {
     const arena = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
     const owner = arena.join(mkChar('mat', 23), { trib: { key: 'd', id: 'nguyen_anh' } });
+    owner.char.tx('t', null, (d) => d.add('itm_nguyen_anh_dan', 1));
     const guard = arena.join(mkChar('o', 20), { trib: { key: 'd' } });
     arena.runTimers();
     expect(owner.trib).not.toBeNull();
@@ -606,6 +609,7 @@ describe('room độ kiếp riêng', () => {
     try {
       const arena = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
       const a = arena.join(mkChar('daydu', 23), { trib: { key: 'e', id: 'nguyen_anh' } });
+      a.char.tx('t', null, (d) => d.add('itm_nguyen_anh_dan', 1));
       a.char.tx('t', null, (d) => d.add('itm_truc_co_dan', 1));
       arena.runTimers();
       expect(a.trib).not.toBeNull();
@@ -624,6 +628,7 @@ describe('room độ kiếp riêng', () => {
   it('thành công trong sân: lên Nguyên Anh sơ kỳ (24)', async () => {
     const arena = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
     const owner = arena.join(mkChar('thanh', 23), { trib: { key: 'g', id: 'nguyen_anh' } });
+    owner.char.tx('t', null, (d) => d.add('itm_nguyen_anh_dan', 1));
     arena.runTimers();
     const sim = arena.sim as unknown as { tickTribulation(p: Ent): void; tickHazards(): void; now: number };
     for (let i = 0; i < 65 * 20 + 5 && owner.trib; i++) {

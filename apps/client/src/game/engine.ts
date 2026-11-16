@@ -376,6 +376,8 @@ export class Game {
   /** Đan Trận đang hiện (E2-D): theo sid chủ kiếp. */
   private ch2Checked = false;
   private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
+  /** Nguyên anh xuất khiếu đang hiện (E3-L): theo sid chủ kiếp. */
+  private soulVfx = new Map<string, { stop(): void }>();
   private cineShakeAt = 0;
   /** Cảnh độ kiếp của mình (P2-B4): 0..1 độ đậm của màu tối/tím toàn cảnh, và cờ đang trong cảnh (ẩn nhãn 3D). */
   private tribMix = 0;
@@ -1285,6 +1287,11 @@ export class Game {
       else pushToast(t('ui.method.empty_slot'), 'info');
       return;
     }
+    // Xuất khiếu trong Tam Trọng Kiếp (E3-L, móc tạm: E3-K sẽ nối phím X thật). Chỉ gửi ý định, server kiểm pha, hồi chiêu.
+    if (code === 'KeyX' && !e.shiftKey && this.tribId === 'nguyen_anh' && get().tribEnd > Date.now()) {
+      this.send(C.TRIB_SOUL, {});
+      return;
+    }
     const slot = skillSlot(code);
     if (slot >= 0) {
       if (e.shiftKey) {
@@ -2048,12 +2055,13 @@ export class Game {
         break;
       case 'ascend':
         // Người khác thấy trụ sáng như cũ; của mình thì quầng + tia nắng mảnh để không phủ trắng khung hình.
-        if (src === this.sid) v.ascendGlow(posSrc, 2.6, m.tb === 'ket_dan');
-        else v.pillar(posSrc, m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8, 3.2, 2.4, 40);
+        if (src === this.sid) v.ascendGlow(posSrc, 2.6, m.tb === 'ket_dan', m.tb === 'nguyen_anh');
+        else v.pillar(posSrc, m.tb === 'nguyen_anh' ? 0xd2c4ff : m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8, 3.2, 2.4, 40);
         if (src === this.sid) {
+          set({ tamCanh: -1, soulUntil: 0 });
           this.post?.flash(0.3);
           // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
-          window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+          window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
         }
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
@@ -2074,6 +2082,7 @@ export class Game {
         v.burst(_v, 0x8fffc0, 0.8, 0.35);
         break;
       case 'death':
+        if (src === this.sid) set({ tamCanh: -1, soulUntil: 0 });
         if (e.chestOf(src, _v)) v.burst(_v, 0x8a8f98, 1.6, 0.5);
         break;
       case 'cast':
@@ -2137,6 +2146,53 @@ export class Game {
         if (src === this.sid) set({ danPg: m.pg ?? 0 });
         break;
       }
+      case 'tamcanh': {
+        // Tâm cảnh (E3-L): của chủ kiếp; lần đầu (pg 100) cắt cảnh ngắn nhìn xuống chỗ Tâm Ma Ảnh sắp hiện.
+        if (src !== this.sid) break;
+        const first = (m.pg ?? -1) === 100 && get().tamCanh < 0;
+        set({ tamCanh: m.pg ?? -1 });
+        if (first) {
+          const me = this.me();
+          if (me) this.danCine(this.renderPos.x, this.renderPos.z, '#8a78c8');
+          // Quầng nhận diện bản sao tối màu của Tâm Ma Ảnh (theo dõi quái `mon_tam_ma` đang sống trong tầm nhìn).
+          v.tamMaAura(
+            (out) => {
+              let found = false;
+              this.view.monsters.forEach((mm) => {
+                if (!found && mm.t === 'mon_tam_ma' && mm.hp > 0) {
+                  out.set(mm.x, groundAt(mm.x, mm.z), mm.z);
+                  found = true;
+                }
+              });
+              return found;
+            },
+            () => get().tamCanh >= 0,
+          );
+        }
+        break;
+      }
+      case 'xuatkhieu': {
+        // Nguyên anh rời thân: bóng xanh nhạt lơ lửng trên thân trong `d` giây.
+        this.soulVfx.get(src)?.stop();
+        const until = Date.now() + (m.d ?? 6) * 1000;
+        this.soulVfx.set(src, v.soulOut(posSrc, m.d ?? 6, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0));
+        if (src === this.sid) set({ soulUntil: until });
+        break;
+      }
+      case 'xuatkhieu_end':
+        this.soulVfx.get(src)?.stop();
+        this.soulVfx.delete(src);
+        if (src === this.sid) set({ soulUntil: 0 });
+        break;
+      case 'tamma_cast': {
+        // Tâm Ma Ảnh tụ lực dùng chiêu của người độ kiếp: một nhịp tụ khí tím sẫm ở bóng (vạch báo do vùng nguy hiểm vẽ).
+        const sm = this.view.monsters.get(src);
+        if (sm) {
+          _v.set(sm.x, groundAt(sm.x, sm.z) + 1.2, sm.z);
+          v.burst(_v, 0x8a6fd0, 2.2, 0.4);
+        }
+        break;
+      }
       case 'dantran_ok': {
         // Đan thành: một cột đan hỏa lam ngả vàng bốc lên từ giữa vòng, mảnh và trầm (không che nhân vật).
         _v.set(m.x ?? 0, groundAt(m.x ?? 0, m.z ?? 0) + 0.6, m.z ?? 0);
@@ -2149,7 +2205,9 @@ export class Game {
         // Vòng Đan Trận còn sót của kiếp trước (chết giữa kiếp không có tin khép vòng).
         this.danVfx.get(src)?.stop();
         this.danVfx.delete(src);
-        if (src === this.sid) set({ danPg: -1 });
+        this.soulVfx.get(src)?.stop();
+        this.soulVfx.delete(src);
+        if (src === this.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0 });
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) {
           this.tribUntil = Date.now() + (m.d ?? 40) * 1000;
@@ -3216,12 +3274,12 @@ export class Game {
   }
 
   /** Đan Trận mở ra: cắt cảnh ngắn nhìn xuống vòng (giữ HUD, bỏ qua được bằng phím/chuột hoặc khi bị đánh). */
-  private danCine(x: number, z: number): void {
+  private danCine(x: number, z: number, color = '#ffb070'): void {
     if (!this.canBossCine(this.me())) return;
     const cam = this.camera;
     const look = _cineEndL.copy(cam.position).add(_cineFwd.set(0, 0, -1).applyQuaternion(cam.quaternion).multiplyScalar(10));
     const path = danTranPath({ x: cam.position.x, y: cam.position.y, z: cam.position.z }, { x: look.x, y: look.y, z: look.z }, { x, y: groundAt(x, z), z }, groundAt);
-    postParams.pulseColor.value.set('#ffb070');
+    postParams.pulseColor.value.set(color);
     this.beginBossCine('dan', path, DAN_CUTSCENE, { name: '', text: '' });
   }
 

@@ -80,6 +80,8 @@ export const C = {
   CHAT: 'chat',
   RESPAWN: 'resp',
   BREAKTHROUGH: 'brk',
+  /** Xuất khiếu trong Tam Trọng Kiếp (E3-L, móc tạm cho tới khi E3-K nối phím X thật): không tham số. */
+  TRIB_SOUL: 'tsoul',
   MOVE_ITEM: 'mv',
   /** Sắp xếp túi: `{ r }` (xem docs/inventory.md). */
   INV_SORT: 'isort',

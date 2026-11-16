@@ -499,6 +499,7 @@ export class GameSim {
     sys: (p, k, params, type) => this.sys(p, k, params, type),
     spawnShadow: (p, st, o) => this.spawnShadow(p, st, o),
     aliveShadows: (p) => this.monsters.filter((m) => m.owner === p.sid && m.state !== MS_DEAD).length,
+    shadowOf: (p) => this.monsters.find((m) => m.owner === p.sid && m.state !== MS_DEAD) ?? null,
     end: (p, ok) => this.endTribulation(p, ok, false),
   });
   /** Bình cảnh, tâm ma, linh căn (P3-7). */
@@ -1033,7 +1034,7 @@ export class GameSim {
     const px = p.move.x;
     const pz = p.move.z;
     const ghost = this.soul.ghostOf(p);
-    stepMove(p.move, inp, { canFly, frozen: dead, speedMul: 1, terrain: this.terrain, bound: caveBoundOf(this.level), sky: skyFlightUnlocked(p.char.level), ghost });
+    stepMove(p.move, inp, { canFly, frozen: dead || this.tribSys.soulFrozen(p), speedMul: 1, terrain: this.terrain, bound: caveBoundOf(this.level), sky: skyFlightUnlocked(p.char.level), ghost });
     if (p.move.flying && !wasFlying && !ghost) {
       this.questEvent(p, 'fly', undefined, 1);
     }
@@ -2382,6 +2383,8 @@ export class GameSim {
     if (ke) msg.ke = ke;
     if (p) msg.src = p.sid;
     this.emit(S.DMG, msg);
+    // Tâm cảnh (E3-L): đánh trúng Tâm Ma Ảnh của mình thì hồi.
+    if (p?.trib && dmg > 0 && mon.owner === p.sid) this.tribSys.noteHit(p, 'hit');
     if (p) {
       mon.threat.set(p.sid, (mon.threat.get(p.sid) ?? 0) + dmg);
       if (mon.state === MS_IDLE || (mon.state === MS_RETURN && this.homeDist(mon) < LEASH * 0.7)) {
@@ -2627,6 +2630,8 @@ export class GameSim {
     const msg: DmgMsg = { dst: p.sid, n, src };
     if (hv) msg.hv = true;
     this.emit(S.DMG, msg);
+    // Tâm cảnh (E3-L): bị Tâm Ma Ảnh của chính mình đánh trúng thì giảm.
+    if (p.trib && src && this.monById.get(src)?.owner === p.sid) this.tribSys.noteHit(p, 'hurt');
     if (c.hp <= 0) this.killPlayer(p);
   }
 
@@ -3464,6 +3469,11 @@ export class GameSim {
     m.target = p.sid;
     this.setMonState(m, MS_CHASE);
     return m;
+  }
+
+  /** Xuất khiếu trong Tam Trọng Kiếp (E3-L; E3-K nối phím X thật vào đây). */
+  onTribSoul(p: PlayerEnt): void {
+    if (p.trib) this.tribSys.soul(p);
   }
 
   private tickTribulation(p: PlayerEnt): void {

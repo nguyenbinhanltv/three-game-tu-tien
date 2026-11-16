@@ -214,6 +214,10 @@ export interface UIState {
   tribEnd: number;
   /** Tiến độ ngưng đan 0..100 của Đan Trận (E2-D); -1 = không có vòng. */
   danPg: number;
+  /** Tâm cảnh 0..100 trong pha tâm ma của Tam Trọng Kiếp (E3-L); -1 = không có. */
+  tamCanh: number;
+  /** Mốc (ms) nguyên anh quay về thân khi đang xuất khiếu; 0 = không. */
+  soulUntil: number;
   /** Kiếp đang độ (id trong `tribulations.json`) để HUD đọc pha. */
   tribId: string;
   bossLine: BossLine | null;
@@ -307,6 +311,8 @@ export const useUI = create<UIState>(() => ({
   castTotal: 0,
   tribEnd: 0,
   danPg: -1,
+  tamCanh: -1,
+  soulUntil: 0,
   tribId: 'truc_co',
   bossLine: null,
   chapter: null,
