@@ -39,7 +39,7 @@ Kế hoạch tổng: thân nền nam/nữ + các mảnh rời (áo ngoài, vai/g
 Đầu ra: bộ xương người chơi (+ xương phụ) và lưới mảnh có skin, extras `dtl.springs` (đuôi xương cho client). **LOD**: `optimize.ts`, lớp ngân sách mới `outfit` (500–3000 tam giác LOD0, 2 LOD 40%/15%, texture 1024/512, 64 xương: thân nền 59 + xương phụ); mảnh nhiều thì tổng LOD0 của nhân vật phải ≤ 18k (thân nền + mảnh).
 
 ### Phía client (`game/character/outfit.ts`, `playerSkins.ts`)
-- Mặc bộ (≥ 2 món → `PlayerLook.set`): lưới nhân vật cắt còn tam giác có xương trội thuộc đầu/cổ/tay (hình học cắt dùng chung theo mẫu), thêm một SkinnedMesh mỗi mảnh mỗi LOD gắn vào skeleton người chơi (skinIndex đổi theo tên xương). Da, tóc, mũ, kiếm giữ nguyên.
+- Mặc bộ (≥ 2 món → `PlayerLook.set`): lưới nhân vật cắt còn tam giác có xương trội thuộc đầu/cổ/tay và kiếm nướng sẵn `dtl_sword` (hình học cắt dùng chung theo mẫu), thêm một SkinnedMesh mỗi mảnh mỗi LOD gắn vào skeleton người chơi (skinIndex đổi theo tên xương). Da, tóc, mũ, kiếm giữ nguyên.
 - Xương phụ của mảnh (`dtl_o_*`) được nối vào bộ xương bản sao (`extendSkeleton`), định nghĩa lò xo trộn vào `SpringBones` (cùng hệ M3-10, chỉ chạy ở LOD0 gần).
 - Mảnh chưa nạp xong hoặc lỗi: giữ recolor + phụ kiện cũ (`pending()` báo để entities dựng lại). `?outfit=0` tắt hẳn. Xem trước 3D bảng nhân vật (#141) đi qua cùng `PlayerSkins.create`.
 
@@ -63,5 +63,5 @@ Thêm xương lò xo tay áo + vạt: draw 278, tam giác 601k, CPU p50/p95 10,3
 - Mẫu #119 là tấm vỏ mỏng: mép vạt lởm chởm khi ngự kiếm/chạy; trọng số từ Tripo.
 - `transfer` cho vạt rời xa thân nền cho trọng số nhiễu (mặt gần nhất nhảy giữa chi này sang chi khác): vạt dài nên dùng `rig` hoặc thêm `legBlend`/`smooth`; mảnh bó sát (vai, đai, ủng) ổn.
 - `outfit_check.py` dùng tư thế cực biên chứ không phát clip thật (thư viện clip chung không có skin để Blender nạp thành rig); clip thật kiểm bằng ảnh `--matrix`.
-- LOD1/2 của nhân vật mất vỏ kiếm lưng khi mặc áo (kiếm riêng chỉ ở LOD0).
+- Kiếm nướng sẵn (xương `dtl_sword`) được giữ ở mọi LOD; phần vỏ kiếm gắn lưng (xương spine2) bị ẩn cùng thân.
 - Texture chưa nén KTX2 trên máy dựng này (thiếu `toktx`).

@@ -7,9 +7,12 @@ import { boneKey } from './ikpose';
  * Hàm thuần ở đây (không đụng engine) để test được.
  */
 
-/** Xương (theo `boneKey`) mà phần lưới nhân vật còn hiện khi mặc áo: đầu/tóc, cổ, bàn tay và ngón. */
+/**
+ * Xương (theo `boneKey`) mà phần lưới nhân vật còn hiện khi mặc áo: đầu/tóc, cổ, bàn tay và ngón, cộng kiếm nướng sẵn
+ * (`dtl_sword`: LOD1/2 và LOD0 khi kiếm riêng chưa thay được vẫn dùng kiếm trong lưới). Xương vạt `dtl_hem_*` thì không giữ (vạt áo cũ phải ẩn).
+ */
 export function bodyKeep(key: string): boolean {
-  return key.startsWith('head') || key.startsWith('neck') || key.includes('hand');
+  return key.startsWith('head') || key.startsWith('neck') || key.includes('hand') || key === 'dtl_sword';
 }
 
 /** Tên xương → chỉ số trong skeleton (theo tên nguyên văn, thiếu thì theo `boneKey`). */

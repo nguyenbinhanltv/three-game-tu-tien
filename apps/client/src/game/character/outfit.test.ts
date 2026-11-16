@@ -20,6 +20,8 @@ describe('outfit', () => {
     expect(bodyKeep('head')).toBe(true);
     expect(bodyKeep('neck')).toBe(true);
     expect(bodyKeep('lefthandindex1')).toBe(true);
+    expect(bodyKeep('dtl_sword')).toBe(true);
+    expect(bodyKeep('dtl_hem_fl')).toBe(false);
     expect(bodyKeep('spine2')).toBe(false);
     expect(bodyKeep('leftforearm')).toBe(false);
   });
