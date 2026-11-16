@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { applyInvMsg, C, caveBoundOf, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, propsOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg, PF_SOUL, type SoulStateMsg, SOUL_RANGE, SOUL_SCOUT, skyFlightUnlocked } from '@dtl/shared';
+import { applyInvMsg, C, caveBoundOf, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, propsOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg, PF_SOUL, inSkyBand, type SoulStateMsg, SOUL_RANGE, SOUL_SCOUT, skyFlightUnlocked } from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, heightAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, thanThongSkill, tierBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
@@ -23,7 +23,7 @@ import { BOSS_CUTSCENE, BOSS_CUTSCENE_RANGE, bossIntroPath, DAN_CUTSCENE, danTra
 import { LootFly } from './lootFly';
 import { gearLootTier, LOOT_ARC, LOOT_BOUNCE, LOOT_TIERS, lootColor, lootTier } from '../render/vfx/loot';
 import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
-import { EntityManager, type MonVis, type MState, type PState, type WorldView } from './entities';
+import { EntityManager, type MonVis, type MState, type PlayerVis, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { AmbientParticles } from './ambient';
 import { Grass, GRASS_PUSH_SLOTS, monsterPushRadius, pickPushers, type Pusher } from './grass';
@@ -46,7 +46,7 @@ import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
 import { MapVis } from './mapVis';
-import { SoulVis } from './soulVis';
+import { SoulVis, type SoulScout } from './soulVis';
 import { loadGroundTextures, type GroundTextures } from './groundTextures';
 import type { GroundLevel } from '../render/materials/ground';
 import { telegraph } from './telegraph';
@@ -1872,36 +1872,62 @@ export class Game {
     if (m.t !== 'soul_out' && m.t !== 'soul_in' && m.t !== 'soul_flee' && m.t !== 'blink') return false;
     this.soulLog.push({ t: m.t, src, x: m.x, z: m.z, d: m.d });
     if (this.soulLog.length > 40) this.soulLog.shift();
-    if (!this.soulVis) this.soulVis = new SoulVis(this.scene);
+    const vis = this.ensureSoulVis();
     const now = performance.now();
     const x = m.x ?? 0;
     const z = m.z ?? 0;
     if (m.t === 'blink') {
-      this.soulVis.blink(m.ox ?? x, m.oz ?? z, x, z, now);
+      vis.blink(m.ox ?? x, m.oz ?? z, x, z, now);
     } else if (m.t === 'soul_flee') {
       const p = this.ents?.players.get(src);
       const from = p ? new THREE.Vector3(p.x, p.y, p.z) : new THREE.Vector3(x, m.y ?? 0, z);
-      this.soulVis.flee(from, new THREE.Vector3(x, m.y ?? groundAt(x, z), z), m.d ?? 10, now);
+      vis.flee(from, new THREE.Vector3(x, m.y ?? groundAt(x, z), z), m.d ?? 10, now, src);
     } else {
-      this.soulVis.pulse(x, (m.y ?? groundAt(x, z)) + 0.9, z, now, { r0: 0.5, r1: m.t === 'soul_out' ? 3 : 2, dur: m.d ?? 0.5 });
+      vis.pulse(x, (m.y ?? groundAt(x, z)) + 0.9, z, now, { r0: 0.5, r1: m.t === 'soul_out' ? 3 : 2, dur: m.d ?? 0.5 });
     }
     return true;
   }
 
-  /** Bóng anh của mọi người đang thám thính, thân xác bỏ lại của mình, vòng gió ngự không. */
+  private ensureSoulVis(): SoulVis {
+    this.soulVis ??= new SoulVis(this.scene, (sid, kind) => this.ents?.makeSoul(sid, kind) ?? null);
+    return this.soulVis;
+  }
+
+  private soulBodyYaw = 0;
+  private soulBody = false;
+  private skyRippleAt = 0;
+
+  /** Nguyên anh (bản thu nhỏ) của mọi người đang thám thính, thân xác bỏ lại của mình, gợn linh khí dưới chân khi ngự không. */
   private updateSoulVis(dt: number, me: PState | undefined): void {
     const e = this.ents;
     if (!e) return;
-    const scouts: { sid: string; x: number; y: number; z: number; yaw: number }[] = [];
+    const scouts: SoulScout[] = [];
     for (const [sid, v] of e.players) {
       const fl = v.s.fl;
-      if ((fl & PF_SOUL) !== 0 && (fl & PF_DEAD) === 0) scouts.push({ sid, x: v.x, y: v.y, z: v.z, yaw: v.yaw });
+      if ((fl & PF_SOUL) !== 0 && (fl & PF_DEAD) === 0) scouts.push({ sid, x: v.x, y: v.y, z: v.z, yaw: v.yaw, speed: v.speed });
     }
     const soul = get().soul;
-    if (!this.soulVis && scouts.length === 0) return;
-    if (!this.soulVis) this.soulVis = new SoulVis(this.scene);
     const body = me && (me.fl & PF_SOUL) !== 0 && soul.k === SOUL_SCOUT ? { x: soul.bx, y: soul.by, z: soul.bz } : null;
-    this.soulVis.update(dt, scouts, body, performance.now());
+    // Ngự không: gợn linh khí dưới chân người đang bay không kiếm (tối đa 3 người gần, mỗi 0,8 s).
+    const now = performance.now();
+    const skyers: PlayerVis[] = [];
+    if (now - this.skyRippleAt > 800) {
+      for (const v of e.players.values()) {
+        if (skyers.length >= 3) break;
+        if ((v.s.fl & PF_FLYING) === 0 || (v.s.fl & PF_SOUL) !== 0 || !inSkyBand(v.s.lv, v.y, groundAt(v.x, v.z))) continue;
+        if (Math.hypot(v.x - this.renderPos.x, v.z - this.renderPos.z) > 40) continue;
+        skyers.push(v);
+      }
+    }
+    if (!this.soulVis && scouts.length === 0 && skyers.length === 0) return;
+    const vis = this.ensureSoulVis();
+    if (skyers.length) {
+      this.skyRippleAt = now;
+      for (const v of skyers) vis.skyRipple(v.x, v.y - 0.1, v.z, now);
+    }
+    if (body && !this.soulBody) this.soulBodyYaw = e.players.get(this.sid)?.yaw ?? 0;
+    this.soulBody = !!body;
+    vis.update(dt, scouts, body, now, this.sid, this.soulBodyYaw);
   }
 
   private onFx(m: FxMsg, held = false): void {
@@ -3096,7 +3122,7 @@ export class Game {
   private checkChapters(x: number, z: number, flying = false): void {
     if (!this.started || this.snapToServer) return;
     // Ngự kiếm lần đầu (G10): thẻ chương + gợi ý lên/xuống; đã xem thì lần sau không hiện.
-    if (flying && get().room === ROOM_WORLD && !this.pendingChapter) {
+    if (flying && get().room === ROOM_WORLD && !this.pendingChapter && get().soul.k !== SOUL_SCOUT) {
       const who = get().char?.name;
       if (who && firstTime(localStorage, 'fly', who)) {
         this.chapter('fly');

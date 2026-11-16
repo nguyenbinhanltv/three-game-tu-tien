@@ -15,9 +15,9 @@ Phím: **X** nay là xuất khiếu; bay xuống chỉ còn **Shift** (trước 
 
 ## Hình
 
-- Bóng anh (`game/soulVis.ts`): giọt trắng xanh cộng sáng, độ đục 0,5, cao ~1 m, lơ lửng; thân xác bỏ lại có cột sáng mảnh + vòng chân + vòng giới hạn 60 m (chỉ chủ nhân thấy thân xác; người khác chỉ thấy bóng anh). Chết: bóng anh bay vòng cung về điểm an toàn trong 10 s. Thuấn di: hai vòng đứng ở điểm đi/đến và một vệt nối. Không lóa che nhân vật (art bible v3).
-- Ngự không: pose lặp mới `ngu_khong` (đứng thẳng lơ lửng, không kiếm; `states.ts` trạng thái `sky`, `AnimState.sky`); phi kiếm chỉ hiện khi bay trên 30 m.
-- HUD: ô **X** cạnh thần thức (hồi chiêu, đếm ngược lúc đang xuất khiếu, tooltip kèm hồi chiêu cứu mạng); bảng chết đổi lời khi nguyên anh thoát ra. Icon ô X đang dùng biểu tượng dự phòng (👻), chưa có icon vẽ.
+- Nguyên anh (`game/soulVis.ts`, `PlayerSkins.createSoul`): **bản thu nhỏ (0,56 lần) của chính nhân vật** (cùng model, cùng giới), vật liệu linh thể: cộng sáng, thân ngọc trong mờ, viền fresnel vàng nhạt (đỉnh dưới ngưỡng bloom), pose bay `ngu_khong`, vài hạt linh khí bay lên quanh nguyên anh, **linh tuyến** mảnh võng nhẹ nối về thân xác. Thân xác bỏ lại **ngồi đả tọa**, mờ xám ngọc, kèm cột sáng mảnh + vòng chân + vòng giới hạn 60 m (chỉ chủ nhân thấy thân xác; người khác chỉ thấy nguyên anh). Chết: nguyên anh (cũng là bản thu nhỏ) bay vòng cung về điểm an toàn trong 10 s. Thuấn di: hai vòng đứng ở điểm đi/đến và một vệt nối. Model chưa nạp hoặc `?models=legacy` thì dùng hình giọt nước dự phòng. Tông trầm, không lóa (art bible v3).
+- Ngự không: pose lặp `ngu_khong` (đứng thẳng lơ lửng, không kiếm; `states.ts` trạng thái `sky`, `AnimState.sky`), **gợn linh khí dưới chân** (vòng nở chậm, nhạt, mỗi 0,8 s; tối đa 3 người trong 40 m); phi kiếm chỉ hiện khi bay trên 30 m. Khối đồng ba chân bay cạnh nhân vật trong ảnh là **Ngưng Đan Lô** (bản mệnh pháp bảo của Kết Đan trở lên), không phải lỗi.
+- HUD: ô **X** cạnh thần thức (hồi chiêu, đếm ngược lúc đang xuất khiếu, tooltip kèm hồi chiêu cứu mạng) với icon vẽ bằng Codex (`hud_nguyen_anh`: nguyên anh nhỏ ngồi kiết già trong vầng sáng ngọc; `tools/codex-assets/icons.json`, LICENSES); bảng chết đổi lời khi nguyên anh thoát ra. Xuất khiếu không phát thẻ chương "Ngự kiếm".
 
 ## Kiểm
 
@@ -31,9 +31,9 @@ Phím: **X** nay là xuất khiếu; bay xuống chỉ còn **Shift** (trước 
 | Ảnh | Nội dung |
 | --- | --- |
 | `01`, `02`, `03` | Thanh chiêu trước/sau Nguyên Anh (ô X), tooltip xuất khiếu |
-| `04`, `05` | Ngự không (không kiếm, dưới 30 m), trên 30 m ngự kiếm |
+| `04`, `04b`, `05` | Ngự không (không kiếm, dưới 30 m), gợn linh khí dưới chân, trên 30 m ngự kiếm |
 | `06`, `07` | Thuấn di (vừa dịch, tan) |
-| `08`, `09`, `10`, `11`, `12` | Xuất khiếu: vừa rời thân xác, bay xa (thân xác ở lại, vòng 60 m), nút X, nhập lại, hồi chiêu |
+| `08`, `08b`, `09`, `09b`, `10`, `11`, `12` | Xuất khiếu: cận cảnh nguyên anh (bản thu nhỏ linh thể), vừa rời thân xác, bay xa (thân xác ngồi đả tọa, linh tuyến), cận cảnh, nút X, nhập lại, hồi chiêu |
 | `13`, `14`, `15` | Chết ở Nguyên Anh: nguyên anh thoát ra, bảng đếm ngược, hồi sinh 30% |
 
 `e3k-log.json`: số đo từ lần chụp (khoảng cách thuấn di 12,00 m, vị trí xuất khiếu/nhập lại).
@@ -43,4 +43,3 @@ Phím: **X** nay là xuất khiếu; bay xuống chỉ còn **Shift** (trước 
 - Thân xác lúc xuất khiếu chủ động **không hiện với người khác** (chỉ bóng anh); nếu cần thân xác thật đứng lại thì phải thêm thực thể phụ (E4-K phân thân có thể dùng chung).
 - Môn phong ấn và việc xuyên tường mở cửa (E4-M, `q4_xuat_khieu`) chưa nối: `MoveCtx.ghost` đã xuyên `terrain.colliders`; cổng phong ấn phải là collider (hoặc kiểm riêng) khi làm E4-M.
 - Hồi chiêu cứu mạng/thám thính giữ trong bộ nhớ tiến trình (mất khi khởi động lại server).
-- Icon ô X cần vẽ (`tools/icons`).

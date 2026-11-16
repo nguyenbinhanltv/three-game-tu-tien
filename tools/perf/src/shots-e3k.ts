@@ -96,33 +96,6 @@ async function main(): Promise<void> {
       await page.mouse.move(800, 300);
     }
 
-    // ---------- Ngự không: bay không kiếm dưới 30 m, kiếm hiện lại trên 30 m ----------
-    await page.keyboard.press('KeyF');
-    await sleep(500);
-    await page.keyboard.down('Space');
-    await sleep(1000);
-    await page.keyboard.up('Space');
-    await page.keyboard.down('KeyW');
-    await sleep(1400);
-    log.sky = await pos(page);
-    await cam(page, 0.6, 0.12, 9);
-    await sleep(500);
-    await shot(page, '04-ngu-khong-khong-kiem');
-    await page.keyboard.up('KeyW');
-    await page.keyboard.down('Space');
-    await sleep(3400);
-    await page.keyboard.up('Space');
-    log.high = await pos(page);
-    await cam(page, 0.6, 0.12, 9);
-    await sleep(600);
-    await shot(page, '05-tren-30m-ngu-kiem');
-    await page.keyboard.down('ShiftLeft');
-    await sleep(4200);
-    await page.keyboard.up('ShiftLeft');
-    log.low = await pos(page);
-    await page.keyboard.press('KeyF');
-    await sleep(2500);
-
     // ---------- Thuấn di (Q) ----------
     await gm(page, 'cd');
     await cam(page, 0.9, 0.3, 11);
@@ -142,12 +115,22 @@ async function main(): Promise<void> {
     await cam(page, 0.5, 0.35, 10);
     await page.keyboard.press('KeyX');
     await sleep(500);
-    await shot(page, '08-xuat-khieu-vua-roi-than-xac');
+    await cam(page, 0.5, 0.12, 4.5);
+    await sleep(600);
+    await shot(page, '08-xuat-khieu-nguyen-anh-can-canh');
+    await cam(page, 0.5, 0.35, 10);
+    await sleep(400);
+    await shot(page, '08b-xuat-khieu-vua-roi-than-xac');
     await page.keyboard.down('KeyW');
-    await sleep(2200);
-    await cam(page, 0.5, 0.3, 14);
-    await sleep(300);
+    await sleep(1000);
+    await page.keyboard.up('KeyW');
+    await cam(page, 0.5 + Math.PI / 2, 0.3, 17);
+    await sleep(700);
     await shot(page, '09-nguyen-anh-bay-xa-than-xac-o-lai');
+    await cam(page, 0.5, 0.1, 5);
+    await page.keyboard.down('KeyW');
+    await sleep(1400);
+    await shot(page, '09b-nguyen-anh-can-canh-vat-lieu-linh-the');
     await page.keyboard.up('KeyW');
     log.soulOut = await pos(page);
     await sleep(400);
@@ -158,6 +141,41 @@ async function main(): Promise<void> {
     log.soulIn = await pos(page);
     await shot(page, '12-nut-x-hoi-chieu', { x: 400, y: 740, width: 800, height: 150 });
 
+    await gm(page, 'cd');
+    // ---------- Ngự không: bay không kiếm dưới 30 m, kiếm hiện lại trên 30 m ----------
+    await gm(page, 'tp 2048 2088', 2500);
+    await page.mouse.move(800, 300);
+    await page.keyboard.press('KeyF');
+    await sleep(500);
+    await page.keyboard.down('Space');
+    await sleep(1000);
+    await page.keyboard.up('Space');
+    await page.keyboard.down('KeyW');
+    await sleep(1400);
+    log.sky = await pos(page);
+    await page.keyboard.up('KeyW');
+    await cam(page, 2.5, 0.16, 8);
+    await sleep(900);
+    await shot(page, '04-ngu-khong-khong-kiem');
+    await cam(page, 2.5, 0.55, 6.5);
+    await sleep(900);
+    await shot(page, '04b-ngu-khong-gon-linh-khi-duoi-chan');
+    await page.keyboard.down('KeyW');
+    await page.keyboard.down('Space');
+    await sleep(3400);
+    await page.keyboard.up('Space');
+    log.high = await pos(page);
+    await cam(page, 2.5, 0.14, 8);
+    await sleep(600);
+    await shot(page, '05-tren-30m-ngu-kiem');
+    await page.keyboard.down('ShiftLeft');
+    await sleep(4200);
+    await page.keyboard.up('ShiftLeft');
+    await page.keyboard.up('KeyW');
+    log.low = await pos(page);
+    await gm(page, 'tp 2048 2088', 2500);
+    await page.keyboard.press('KeyF');
+    await sleep(2500);
     // ---------- Chết ở Nguyên Anh: nguyên anh thoát ra ----------
     await gm(page, 'god off');
     await cam(page, 0.4, 0.4, 12);

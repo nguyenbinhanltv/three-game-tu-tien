@@ -414,6 +414,12 @@ export class EntityManager {
   private skins = new MonsterSkins();
   /** Dựng model người chơi (Thanh Phong có xương hoặc khối dự phòng), màu áo theo lựa chọn. */
   private playerSkins = new PlayerSkins();
+  /** Nguyên anh (E3-K): bản thu nhỏ của người chơi `sid` (null nếu chưa có hoặc asset chưa nạp). */
+  makeSoul(sid: string, kind: 'soul' | 'husk'): CharacterView | null {
+    const v = this.players.get(sid);
+    return v ? this.playerSkins.createSoul(v.look, kind) : null;
+  }
+
   /** Ngoại hình của mình: bóng tâm ma dựng theo đây (chỉ người độ mới thấy gần, và là bóng của chính mình). */
   private localLook: PlayerLook = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
   /** Dựng model NPC (có xương theo id dữ liệu hoặc khối dự phòng). */
