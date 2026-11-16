@@ -25,6 +25,7 @@ import {
 } from '@dtl/shared';
 import { LEVELS, MONSTER, NPCS } from './index';
 import { PLACES } from './places';
+import { ensureLevel, FIXTURE_ID } from './fixtures';
 
 const args = process.argv.slice(2);
 const opt = (k: string): string | undefined => {
@@ -36,8 +37,10 @@ const SEED = Number(opt('--seed') ?? 1);
 const abs = (p: string) => path.resolve(process.env.INIT_CWD ?? process.cwd(), p);
 
 const LEVEL_ID = opt('--level') ?? 'van_lam';
-const level = LEVELS[LEVEL_ID];
-if (!level) throw new Error(`map:report: không có level ${LEVEL_ID} (có: ${Object.keys(LEVELS).join(', ')})`);
+const level = ensureLevel(LEVEL_ID);
+if (!level) throw new Error(`map:report: không có level ${LEVEL_ID} (có: ${[...Object.keys(LEVELS), FIXTURE_ID].join(', ')})`);
+/** Mục tông môn/cổng/Kiếm Trủng/NPC chỉ có nghĩa với Vân Lam; level khác lấy tâm vùng chơi làm "tâm". */
+const IS_VL = LEVEL_ID === 'van_lam';
 const terrain = terrainOf(level);
 const { heightAt, groundAt } = terrain;
 const COLLIDERS = terrain.colliders;
@@ -46,6 +49,7 @@ const zones: ZoneDef[] = level.zones ?? [];
 const camps = level.camps ?? [];
 /** Vùng chơi chính của level (M-1), không có ranh thì cả thế giới. */
 const PLAY = terrain.playBounds;
+const HUB = IS_VL ? { x: SECT.x, z: SECT.z } : { x: (PLAY.x0 + PLAY.x1) / 2, z: (PLAY.z0 + PLAY.z1) / 2 };
 const isLand = (x: number, z: number) => groundAt(x, z) > WATER_Y + 0.5 && heightAt(x, z) > WATER_Y + 0.5;
 
 function rng(seed: number) {
@@ -131,7 +135,7 @@ const sectToZone: { zone: string; m: number }[] = [];
 if (zones.length) {
   for (const z of zones) {
     const c = zoneCenter(z);
-    sectToZone.push({ zone: z.id, m: Math.hypot(c[0] - SECT.x, c[1] - SECT.z) });
+    sectToZone.push({ zone: z.id, m: Math.hypot(c[0] - HUB.x, c[1] - HUB.z) });
   }
   for (let i = 0; i < zones.length; i++)
     for (let j = i + 1; j < zones.length; j++) {
@@ -141,13 +145,13 @@ if (zones.length) {
     }
 } else {
   for (const [i, sp] of level.spawns.entries()) {
-    if (kindOf(sp.mon) === 'normal') sectToZone.push({ zone: `spawn${i}_${sp.mon.replace('mon_', '')}`, m: Math.hypot(sp.x - SECT.x, sp.z - SECT.z) });
+    if (kindOf(sp.mon) === 'normal') sectToZone.push({ zone: `spawn${i}_${sp.mon.replace('mon_', '')}`, m: Math.hypot(sp.x - HUB.x, sp.z - HUB.z) });
   }
   const boss = level.spawns.find((s) => kindOf(s.mon) === 'boss');
-  if (boss) sectToZone.push({ zone: 'boss_han_giao', m: Math.hypot(boss.x - SECT.x, boss.z - SECT.z) });
+  if (boss) sectToZone.push({ zone: boss.mon, m: Math.hypot(boss.x - HUB.x, boss.z - HUB.z) });
 }
-const portalM = Math.hypot(PORTAL_POS.x - SECT.x, PORTAL_POS.z - SECT.z);
-const ktM = Math.hypot(KIEM_TRUNG.x - PORTAL_POS.x, KIEM_TRUNG.z - PORTAL_POS.z);
+const portalM = !IS_VL ? NaN : Math.hypot(PORTAL_POS.x - SECT.x, PORTAL_POS.z - SECT.z);
+const ktM = !IS_VL ? NaN : Math.hypot(KIEM_TRUNG.x - PORTAL_POS.x, KIEM_TRUNG.z - PORTAL_POS.z);
 
 // ---- độ phủ: khoảng cách từ điểm đi được tới quái thường gần nhất ----
 function coverage(step: number, inArea: (x: number, z: number) => boolean) {
@@ -210,10 +214,10 @@ function stuckScan(): { checked: number; stuck: [number, number][] } {
   // Điểm quan trọng: tâm bãi, NPC, cổng, điểm hồi sinh, điểm đặt tên.
   const pts: [string, number, number][] = [
     ...camps.map((c): [string, number, number] => ['camp ' + c.id, c.x, c.z]),
-    ...NPCS.map((n): [string, number, number] => ['npc ' + n.id, n.x, n.z]),
-    ['spawn', SPAWN_POINT.x, SPAWN_POINT.z],
-    ['portal', PORTAL_POS.x, PORTAL_POS.z + 9],
-    ...PLACES.filter((p) => p.level === 'van_lam').map((p): [string, number, number] => ['place ' + p.id, p.x, p.z]),
+    ...(IS_VL ? NPCS : []).map((n): [string, number, number] => ['npc ' + n.id, n.x, n.z]),
+    ['spawn', IS_VL ? SPAWN_POINT.x : HUB.x, IS_VL ? SPAWN_POINT.z : HUB.z],
+    ...(IS_VL ? ([['portal', PORTAL_POS.x, PORTAL_POS.z + 9]] as [string, number, number][]) : []),
+    ...PLACES.filter((p) => p.level === LEVEL_ID).map((p): [string, number, number] => ['place ' + p.id, p.x, p.z]),
   ];
   for (const [name, x, z] of pts) {
     if (name.startsWith('camp') || name.startsWith('place')) {
@@ -230,7 +234,7 @@ const stuck = stuckScan();
 const f1 = (n: number) => (Number.isFinite(n) ? n.toFixed(1) : '> 770');
 const pct = (n: number) => (n * 100).toFixed(1) + '%';
 const out: string[] = [];
-out.push(`# Báo cáo bản đồ van_lam (${hasZones ? 'zones + camps' : 'bố cục cũ: điểm sinh quái dạng đĩa'})`);
+out.push(`# Báo cáo bản đồ ${LEVEL_ID} (${hasZones ? 'zones + camps' : 'bố cục cũ: điểm sinh quái dạng đĩa'})`);
 const playW = PLAY.x1 - PLAY.x0;
 const playH = PLAY.z1 - PLAY.z0;
 out.push(`Vùng đo: ${PLAY.x0}..${PLAY.x1} × ${PLAY.z0}..${PLAY.z1} (${(playW / 1000).toFixed(2)} × ${(playH / 1000).toFixed(2)} km = ${((playW * playH) / 1e6).toFixed(2)} km²)`);
@@ -245,8 +249,8 @@ out.push('|---|---|---|---|---|---|');
 for (const r of zoneRows) out.push(`| ${r.id} | ${r.lv} | ${r.areaKm2.toFixed(3)} | ${r.normal} | ${r.elite} | ${f1(r.densityPerKm2)} |`);
 out.push('');
 out.push('## Khoảng cách');
-out.push(`Tông môn → cổng bí cảnh: ${f1(portalM)} m; cổng → tâm Kiếm Trủng: ${f1(ktM)} m`);
-out.push('Tông môn → tâm vùng/điểm sinh: ' + sectToZone.map((s) => `${s.zone} ${Math.round(s.m)} m`).join(', '));
+if (IS_VL) out.push(`Tông môn → cổng bí cảnh: ${f1(portalM)} m; cổng → tâm Kiếm Trủng: ${f1(ktM)} m`);
+out.push(`${IS_VL ? 'Tông môn' : 'Tâm vùng chơi'} → tâm vùng/điểm sinh: ` + sectToZone.map((s) => `${s.zone} ${Math.round(s.m)} m`).join(', '));
 if (gaps.length) {
   out.push('');
   out.push('| vùng A | vùng B | tâm–tâm (m) | mép–mép (m) |');
@@ -328,8 +332,8 @@ if (pngOut) {
   }
   if (!zones.length) for (const sp of level.spawns) if (kindOf(sp.mon) === 'normal') for (let k = 0; k < 90; k++) dot(sp.x + Math.cos((k / 90) * 6.283) * sp.radius, sp.z + Math.sin((k / 90) * 6.283) * sp.radius, 1, [255, 240, 120]);
   for (const m of mons) dot(m.x, m.z, m.kind === 'normal' ? 1 : 3, m.kind === 'normal' ? [250, 250, 250] : m.kind === 'elite' ? [255, 210, 40] : [255, 60, 60], m.kind === 'normal' ? 0.85 : 1);
-  dot(SECT.x, SECT.z, 5, [255, 255, 255]);
-  dot(PORTAL_POS.x, PORTAL_POS.z, 4, [120, 220, 255]);
+  dot(HUB.x, HUB.z, 5, [255, 255, 255]);
+  if (IS_VL) dot(PORTAL_POS.x, PORTAL_POS.z, 4, [120, 220, 255]);
   // PNG tối giản (RGB 8 bit, không lọc).
   const raw = Buffer.alloc((SIZE * 3 + 1) * SIZE);
   for (let j = 0; j < SIZE; j++) {

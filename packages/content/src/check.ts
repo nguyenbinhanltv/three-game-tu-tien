@@ -9,7 +9,8 @@ import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
 import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS } from '@dtl/shared';
-import { propsOf, terrainOf, inPoly, levelSpawns, polyArea, TELE_FREE, TELE_PADS, type ZoneDef } from '@dtl/shared';
+import { TELE_PADS, terrainOf } from '@dtl/shared';
+import { checkLevel } from './levelcheck';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -573,166 +574,32 @@ if (!t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ')) err('cấp tối đa tạm l�
 if (!MONSTER.has('mon_tam_ma')) err('thiếu quái mon_tam_ma (bóng tâm ma của thử thách bình cảnh)');
 if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
 for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);
-for (const lv of Object.values(LEVELS)) {
-  const tr = terrainOf(lv);
-  for (const s of lv.spawns) {
-    if (!MONSTER.has(s.mon)) err(`level ${lv.id}: quái không tồn tại ${s.mon}`);
-    const g = tr.groundAt(s.x, s.z);
-    if (!MONSTER.get(s.mon)?.boss && tr.heightAt(s.x, s.z) < WATER_Y) err(`level ${lv.id}: spawn ${s.mon} nằm dưới nước`);
-    if (!Number.isFinite(g)) err(`level ${lv.id}: spawn ${s.mon} ngoài bản đồ`);
-  }
-  for (const n of lv.nodes) needItem(n.item, `level ${lv.id}`);
-  checkZonesAndCamps(lv);
-}
-
-// Vùng và bãi quái (M-1): camp phải nằm trong vùng đúng cấp, không đè collider, không dưới nước sâu.
-function checkZonesAndCamps(lv: (typeof LEVELS)[string]) {
-  const tr = terrainOf(lv);
-  const PLAY_BOUNDS = tr.playBounds;
-  const MUSIC_ZONES = ['sect', 'wild', 'forest', 'lake', 'dungeon'];
-  const zones = lv.zones ?? [];
-  const camps = lv.camps ?? [];
-  if (!zones.length && !camps.length) return;
-  const where = `level ${lv.id}`;
-  uniqueIds('zone', zones);
-  uniqueIds('camp', camps);
-  const zoneById = new Map<string, ZoneDef>(zones.map((z) => [z.id, z]));
-  for (const z of zones) {
-    needStr(`zone.${z.id}`);
-    if (!/^#[0-9a-fA-F]{6}$/.test(z.color)) err(`zone ${z.id}: color phải dạng #rrggbb`);
-    if (!MUSIC_ZONES.includes(z.music)) err(`zone ${z.id}: music ${z.music} không có (${MUSIC_ZONES.join(', ')})`);
-    if (!(z.lvMin >= 1 && z.lvMin <= z.lvMax && z.lvMax <= 15)) err(`zone ${z.id}: khoảng cấp ${z.lvMin}–${z.lvMax} không hợp lệ`);
-    if (z.poly.length < 3 || polyArea(z.poly) < 1000) err(`zone ${z.id}: đa giác ranh phải ≥ 3 đỉnh, diện tích ≥ 1000 m²`);
-    for (const [x, zz] of z.poly) if (!(x >= PLAY_BOUNDS.x0 && x <= PLAY_BOUNDS.x1 && zz >= PLAY_BOUNDS.z0 && zz <= PLAY_BOUNDS.z1)) err(`zone ${z.id}: đỉnh (${x}, ${zz}) ngoài vùng chơi chính`);
-  }
-  for (const c of camps) {
-    const m = MONSTER.get(c.mon);
-    const zn = zoneById.get(c.zone);
-    if (!m) err(`${where}: camp ${c.id} quái không tồn tại ${c.mon}`);
-    else if (m.boss || m.elite) err(`${where}: camp ${c.id} chỉ dành cho quái thường (tinh anh/boss khai ở spawns)`);
-    if (!zn) {
-      err(`${where}: camp ${c.id} thuộc vùng không có ${c.zone}`);
-      continue;
-    }
-    if (!inPoly(zn.poly, c.x, c.z)) err(`${where}: camp ${c.id} nằm ngoài đa giác vùng ${c.zone}`);
-    if (c.levelMin < zn.lvMin || c.levelMax > zn.lvMax || c.levelMin > c.levelMax) err(`${where}: camp ${c.id} cấp ${c.levelMin}–${c.levelMax} lệch khoảng cấp vùng ${c.zone} (${zn.lvMin}–${zn.lvMax})`);
-    if (!(c.count >= 3 && c.count <= 4)) err(`${where}: camp ${c.id} count ${c.count} phải 3–4`);
-    if (!(c.radius >= 18 && c.radius <= 30)) err(`${where}: camp ${c.id} radius ${c.radius} phải 18–30 m`);
-    if (!(c.respawn > 0)) err(`${where}: camp ${c.id} thiếu respawn`);
-    if (c.ranged) {
-      const r = MONSTER.get(c.ranged);
-      if (!r?.ai?.caster) err(`${where}: camp ${c.id} ranged ${c.ranged} phải là quái có ai.caster`);
-    }
-    if (tr.heightAt(c.x, c.z) < WATER_Y + 0.5) err(`${where}: camp ${c.id} nằm dưới nước`);
-    for (const col of tr.colliders) if ((c.x - col.x) ** 2 + (c.z - col.z) ** 2 < (col.r + 1) ** 2) err(`${where}: camp ${c.id} đè collider (${col.x}, ${col.z})`);
-  }
-  // Tinh anh và boss khai ở spawns: tinh anh phải ở trong vùng hợp cấp, mỗi vùng 2–3 con.
-  const elitePerZone = new Map<string, number>();
-  for (const s of levelSpawns(lv)) {
-    const m = MONSTER.get(s.mon);
-    if (!m?.elite) continue;
-    const zn = zones.find((z) => inPoly(z.poly, s.x, s.z));
-    if (!zn) {
-      err(`${where}: tinh anh ${s.mon} ở (${s.x}, ${s.z}) không thuộc vùng nào`);
-      continue;
-    }
-    if (s.levelMin < zn.lvMin || s.levelMax > zn.lvMax) err(`${where}: tinh anh ${s.mon} cấp ${s.levelMin}–${s.levelMax} lệch vùng ${zn.id} (${zn.lvMin}–${zn.lvMax})`);
-    elitePerZone.set(zn.id, (elitePerZone.get(zn.id) ?? 0) + s.count);
-  }
-  for (const z of zones) {
-    const n = elitePerZone.get(z.id) ?? 0;
-    if (n < 2 || n > 3) err(`zone ${z.id}: ${n} tinh anh (cần 2–3)`);
-  }
-  checkPois(lv, zoneById);
-  const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
-  if (normal < 300 || normal > 380) err(`${where}: ${normal} quái thường theo camps, mục tiêu ~300–360`);
-}
-
-// Điểm đáng chú ý (M-5): mỗi vùng săn đúng một điểm, nằm khe giữa các bãi quái, có prop bày, tên theo glossary,
-// người giao nhiệm vụ dạy hệ thống đứng ở các điểm này.
-function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) {
-  const pois = lv.pois ?? [];
-  const camps = lv.camps ?? [];
-  const tr = terrainOf(lv);
-  const where = `level ${lv.id}`;
-  if (!pois.length) return;
-  uniqueIds('poi', pois);
-  const perZone = new Map<string, number>();
-  const glossPois = GLOSSARY.pois as Record<string, string>;
-  const clearOfCamps = (x: number, z: number, margin: number) => camps.every((c) => Math.hypot(c.x - x, c.z - z) >= c.radius + margin);
-  for (const p of pois) {
-    const w = `${where}: poi ${p.id}`;
-    needStr(`poi.${p.id}.name`);
-    needStr(`poi.${p.id}.desc`);
-    if (t(`poi.${p.id}.name`) !== glossPois[p.id]) err(`${w}: tên lệch glossary.pois`);
-    const zn = zoneById.get(p.zone);
-    if (!zn) {
-      err(`${w}: vùng không có ${p.zone}`);
-      continue;
-    }
-    perZone.set(p.zone, (perZone.get(p.zone) ?? 0) + 1);
-    if (!inPoly(zn.poly, p.x, p.z)) err(`${w}: nằm ngoài vùng ${p.zone}`);
-    if (tr.groundAt(p.x, p.z) < WATER_Y + 1.5) err(`${w}: nằm sát nước`);
-    if (!clearOfCamps(p.x, p.z, 6)) err(`${w}: chồng bãi quái (cần cách mép bãi ≥ 6 m)`);
-    const near = propsOf(lv.id).filter((h) => Math.hypot(h.x - p.x, h.z - p.z) <= 14);
-    if (near.length < 5) err(`${w}: chỉ ${near.length} prop quanh điểm (cần ≥ 5)`);
-    for (const h of near) {
-      if (!clearOfCamps(h.x, h.z, 2)) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè bãi quái`);
-      for (const pad of TELE_PADS) if (Math.hypot(h.x - pad.x, h.z - pad.z) < 4) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè Truyền Tống Trận ${pad.id}`);
-      if ((h.r ?? 0) > 1.5) err(`${w}: prop ${h.id} va chạm r=${h.r} > 1,5 m (không được chặn đường)`);
-    }
-    if (p.beamH !== undefined && !(p.beamH >= 30 && p.beamH <= 120)) err(`${w}: beamH ${p.beamH} ngoài 30–120 m`);
-  }
-  for (const z of zoneById.keys()) if ((perZone.get(z) ?? 0) !== 1) err(`${where}: vùng ${z} cần đúng một poi (có ${perZone.get(z) ?? 0})`);
+// Mọi level (E1-G): bố cục, camp, tinh anh, spawn, trận truyền tống, id quái/prop — xem levelcheck.ts.
+for (const lv of Object.values(LEVELS)) for (const m of checkLevel(lv)) err(m);
+// Vân Lam: NPC giao việc ở các điểm đáng chú ý (M-5), tên theo glossary.poiNpcs.
+{
+  const vl = LEVELS.van_lam;
+  const camps = vl.camps ?? [];
   const glossNpc = GLOSSARY.poiNpcs as Record<string, string>;
+  const clearOfCamps = (x: number, z: number, margin: number) => camps.every((c) => Math.hypot(c.x - x, c.z - z) >= c.radius + margin);
   for (const id of Object.keys(glossNpc)) {
     const n = NPC.get(id);
     if (!n) {
-      err(`${where}: glossary.poiNpcs có ${id} nhưng npcs.json không có`);
+      err(`glossary.poiNpcs có ${id} nhưng npcs.json không có`);
       continue;
     }
     if (t(`npc.${id}.name`) !== glossNpc[id]) err(`npc ${id}: tên lệch glossary.poiNpcs`);
-    if (!pois.some((p) => Math.hypot(p.x - n.x, p.z - n.z) <= 10)) err(`npc ${id}: phải đứng trong 10 m quanh một poi`);
+    if (!(vl.pois ?? []).some((p) => Math.hypot(p.x - n.x, p.z - n.z) <= 10)) err(`npc ${id}: phải đứng trong 10 m quanh một poi`);
     if (!clearOfCamps(n.x, n.z, 4)) err(`npc ${id}: đứng trong bãi quái`);
   }
 }
 
-// ---- Truyền Tống Trận (M-4): mỗi vùng đúng một trận trong vùng, đứng được, không đè collider/nước/bãi quái ----
-{
-  const lv = LEVELS.van_lam;
-  const tr = terrainOf(lv);
-  const PLAY_BOUNDS = tr.playBounds;
-  uniqueIds('trận', [...TELE_PADS]);
-  // E1-B: trận ở level khác Vân Lam có tiền tố level; bản đồ phải có thật và là bản đồ thế giới (E2-A thêm kiểm chi tiết theo level).
-  for (const pad of TELE_PADS) {
-    if (pad.level === 'van_lam') continue;
-    const dest = LEVELS[pad.level];
-    if (!dest || dest.dungeon) err(`trận ${pad.id}: level ${pad.level} không phải bản đồ thế giới`);
-    else {
-      needStr(`tele.${pad.id}`);
-      const b = terrainOf(dest).playBounds;
-      if (pad.x < b.x0 || pad.x > b.x1 || pad.z < b.z0 || pad.z > b.z1) err(`trận ${pad.id}: ngoài vùng chơi của ${pad.level}`);
-    }
-  }
-  for (const z of lv.zones ?? []) if (TELE_PADS.filter((p) => p.zone === z.id).length !== 1) err(`vùng ${z.id}: cần đúng một Truyền Tống Trận`);
-  if (!TELE_PADS.some((p) => TELE_FREE.includes(p.id))) err('cần ít nhất một trận mở sẵn');
-  for (const pad of TELE_PADS.filter((x) => x.level === 'van_lam')) {
-    const w = `trận ${pad.id}`;
-    needStr(`tele.${pad.id}`);
-    if (pad.zone) {
-      const zn = (lv.zones ?? []).find((z) => z.id === pad.zone);
-      if (!zn) err(`${w}: vùng ${pad.zone} không tồn tại`);
-      else if (!inPoly(zn.poly, pad.x, pad.z)) err(`${w}: không nằm trong vùng ${pad.zone}`);
-    }
-    if (pad.x < PLAY_BOUNDS.x0 || pad.x > PLAY_BOUNDS.x1 || pad.z < PLAY_BOUNDS.z0 || pad.z > PLAY_BOUNDS.z1) err(`${w}: ngoài vùng chơi`);
-    for (const col of tr.colliders) if (Math.hypot(pad.x - col.x, pad.z - col.z) < col.r + 4) err(`${w}: đè collider (${col.x}, ${col.z})`);
-    const hAt = tr.heightAt;
-    if (hAt(pad.x, pad.z) < WATER_Y + 1) err(`${w}: dưới nước`);
-    const slope = Math.max(Math.abs(hAt(pad.x + 4, pad.z) - hAt(pad.x, pad.z)), Math.abs(hAt(pad.x, pad.z + 4) - hAt(pad.x, pad.z)));
-    if (slope > 2.6) err(`${w}: dốc ${slope.toFixed(1)} m/4 m, cần chỗ bằng`);
-    for (const c of lv.camps ?? []) if (Math.hypot(pad.x - c.x, pad.z - c.z) < c.radius + 4) err(`${w}: nằm trong bãi quái ${c.id}`);
-    for (const s of lv.spawns) if (Math.hypot(pad.x - s.x, pad.z - s.z) < s.radius + 20) err(`${w}: quá gần điểm sinh ${s.mon}`);
-  }
+// ---- Truyền Tống Trận liên level (E1-B): bản đồ đích phải có thật và là bản đồ thế giới. Kiểm chi tiết từng trận: levelcheck.ts ----
+// TELE_PAD là Map toàn cục theo id (server/character tra không kèm level): id trận phải duy nhất trên mọi level.
+uniqueIds('trận', [...TELE_PADS]);
+for (const pad of TELE_PADS) {
+  const dest = LEVELS[pad.level];
+  if (!dest || dest.dungeon) err(`trận ${pad.id}: level ${pad.level} không phải bản đồ thế giới`);
 }
 
 // ---- Cổng và bí cảnh theo dữ liệu (E1-B) ----

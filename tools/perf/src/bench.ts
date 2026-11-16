@@ -26,6 +26,7 @@ import path from 'node:path';
 import { FOREST, LAKE, SPAWN_POINT } from '@dtl/shared';
 import { chromium, type Browser, type Page } from 'playwright';
 import { createDevServer, ROOT, sleep } from './devserver';
+import { levelPoints, levelQuery, requireLevel } from './levelpoints';
 
 const OUT_DIR = path.join(ROOT, 'bench/results');
 
@@ -42,7 +43,10 @@ const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
 const CHANNEL = opt('--channel', process.env.BENCH_CHANNEL ?? 'chrome');
 const HEADED = args.includes('--headed');
 /** `--query a=b&c=d`: thêm vào URL game (A/B cờ kiểm thử). `--points rung,ho`: chỉ đo các điểm này. */
-const EXTRA_QUERY = opt('--query', '');
+/** `--level <id>`: đo ở level khác Vân Lam (điểm suy từ dữ liệu level, thêm `level=<id>` vào URL; kết quả ghi `level` trong settings). */
+const LEVEL = opt('--level', 'van_lam');
+requireLevel(LEVEL);
+const EXTRA_QUERY = [levelQuery(LEVEL), opt('--query', '')].filter(Boolean).join('&');
 const ONLY_POINTS = opt('--points', '').split(',').filter(Boolean);
 /** devicePixelRatio giả lập; engine lấy min(dpr, pixelRatio của preset) nên dpr 1 làm các preset chỉ khác hậu kỳ/bóng. */
 const DPR = Number(opt('--dpr', '1'));
@@ -50,11 +54,12 @@ const PORT = Number(process.env.PORT ?? 2635);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5135);
 
 /** Đường camera cố định: sân tông môn (chỗ hồi sinh), giữa rừng, bãi ven hồ phía tây (nhìn ra mặt nước khi xoay). */
-const WAYPOINTS = [
+const VAN_LAM_WAYPOINTS = [
   { name: 'san_tong_mon', x: SPAWN_POINT.x, z: SPAWN_POINT.z },
   { name: 'rung', x: FOREST.x, z: FOREST.z },
   { name: 'ho', x: LAKE.x - 185, z: LAKE.z },
 ];
+const WAYPOINTS = LEVEL === 'van_lam' ? VAN_LAM_WAYPOINTS : levelPoints(LEVEL).filter((p) => p.name !== 'trencao').map(({ name, x, z }) => ({ name, x, z }));
 const CAM = { pitch: 0.38, dist: 13 };
 
 /** Ngưỡng desktop trong skill perf-budget. */
@@ -555,7 +560,7 @@ async function main(): Promise<void> {
     git: gitSha,
     browser: `${CHANNEL} ${browser.version()}${HEADED ? '' : ' headless'}`,
     machine: { platform: `${os.platform()} ${os.release()}`, cpu: os.cpus()[0]?.model ?? '', cores: os.cpus().length },
-    settings: { secondsPerPoint: SECONDS, viewport: `${VW}x${VH}`, dpr: DPR, camera: CAM, waypoints: WAYPOINTS, devServer: true },
+    settings: { level: LEVEL, secondsPerPoint: SECONDS, viewport: `${VW}x${VH}`, dpr: DPR, camera: CAM, waypoints: WAYPOINTS, devServer: true },
     budget: BUDGET,
     notes: [
       'cpuMs: thời gian CPU của Game.frame() (gồm ghi lệnh GPU, không gồm thời gian GPU chạy)',
