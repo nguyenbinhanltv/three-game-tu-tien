@@ -229,7 +229,7 @@ export const SWORD = {
     cuoi: {
       name: 'Dạng cuối +10',
       look: 'the final awakened form of a star-sky sword: a long slender double-edged blade (about 1.15 times longer than a normal sword) made of dark star-purple crystal with tiny pale constellation dots and thin branching lines inside along the fuller (solid, opaque dark facets, not transparent), a razor silver edge catching light, a few tiered crystal spikes near the base, a widened crossguard of old gold swept backward like two long curved horns (claw-like, tips curling back toward the grip) with engraved star lines, a stylized star-shaped eye gem (an eight-point star inside an eye outline) at the center of the guard, thin curved filaments of old gold and pale violet metal wrapping around the guard like trailing energy arcs but sculpted solid, a dark leather-wrapped grip with old-gold rings, a faceted old-gold pommel with a small star',
-      tris: '4000',
+      tris: '2500', // lớp ngân sách weapon: tối đa 3000 (assets/budgets.json); cùng mức faceLimit của Kiếm Liệt Mạch
       bones: 'prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng',
       spring: 'Không',
       notes: 'Tinh thể thể hiện bằng khối đặc tối màu có rãnh vân; KHÔNG dùng trong suốt thật. Chấm sao, nhãn cầu sao và tia linh khí tách thành mặt nạ phát sáng để worker điều khiển. Tia linh khí là các sợi kim loại cong dựng cứng quanh chắn (không phải hạt). Dạng gốc (#119) giữ cho +0…+9; dạng cuối thay lúc cường hóa +10. Dùng chung cho Kiếm tu, Hộ pháp, Đan sư.',

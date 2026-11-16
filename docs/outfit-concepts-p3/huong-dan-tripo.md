@@ -85,10 +85,10 @@ Lưu vào: `D:\METAGRIT\dtl-asset-source\prop\prop_kiem_tinh_khuyet\tripo\` (th�
 
 | Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |
 | --- | --- | --- | --- | --- |
-| Dạng cuối +10 | `outfit_kiem_tinh_khuyet_cuoi_v01_front.png` | **HD Model** | ~4.000 | `raw_cuoi_v01.glb` |
+| Dạng cuối +10 | `outfit_kiem_tinh_khuyet_cuoi_v01_front.png` | **HD Model** | ~2.500 | `raw_cuoi_v01.glb` |
 | Vỏ kiếm | `outfit_kiem_tinh_khuyet_vo_v01_front.png` | Smart Mesh | ~1.500 | `raw_vo_v01.glb` |
 
-Kiểm tra riêng cho kiếm: lưỡi thẳng, có độ dày, mũi nhọn; chắn sừng đối xứng hai bên, tia linh khí là sợi kim loại cong dựng cứng quanh chắn; chuôi tròn đều; vỏ kín và vừa dài với lưỡi. Một kiếm dùng chung cho Kiếm tu, Hộ pháp, Đan sư.
+Kiểm tra riêng cho kiếm: lưỡi thẳng, có độ dày, mũi nhọn; chắn sừng đối xứng hai bên, tia linh khí là sợi kim loại cong dựng cứng quanh chắn; chuôi tròn đều; vỏ kín và vừa dài với lưỡi. Một kiếm dùng chung cho Kiếm tu, Hộ pháp, Đan sư. Kiếm thuộc lớp ngân sách `weapon` (≤ 3.000 mặt, `assets/budgets.json`), nên đừng để Tripo ra nhiều hơn số mặt trong bảng.
 
 ## Mẹo
 

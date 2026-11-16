@@ -13,7 +13,7 @@ Gói concept để **bạn dựng từng mảnh trên Tripo web** (image-to-3D),
 | **Tinh Khuyết Kiếm Bào** | Kiếm tu, Kim/Thủy (sao đêm) | 11700 | [bảng thiết kế](tinh_khuyet/tinh_khuyet_sheet.webp) | [Áo ngoài (áo khoác + choàng dài)](tinh_khuyet/tinh_khuyet_ao_ngoai.webp), [Lớp dưới](tinh_khuyet/tinh_khuyet_lop_duoi.webp), [Vai giáp (cặp)](tinh_khuyet/tinh_khuyet_vai_giap.webp), [Đai và tua](tinh_khuyet/tinh_khuyet_dai_tua.webp), [Ủng (cặp)](tinh_khuyet/tinh_khuyet_ung.webp), [Trang sức đầu](tinh_khuyet/tinh_khuyet_trang_suc_dau.webp) |
 | **Cổ Thành Huyền Giáp** | Hộ pháp, Thổ (cổ thành) | 12900 | [bảng thiết kế](co_thanh/co_thanh_sheet.webp) | [Áo ngoài (giáp thân + choàng dài)](co_thanh/co_thanh_ao_ngoai.webp), [Lớp dưới (váy giáp tầng tháp)](co_thanh/co_thanh_lop_duoi.webp), [Vai giáp (cặp)](co_thanh/co_thanh_vai_giap.webp), [Đai và tua](co_thanh/co_thanh_dai_tua.webp), [Ủng (cặp)](co_thanh/co_thanh_ung.webp), [Trang sức đầu](co_thanh/co_thanh_trang_suc_dau.webp) |
 | **Thần Tàng Đan Bào** | Đan sư, Mộc/Thủy (kho tàng, ngọc) | 11800 | [bảng thiết kế](than_tang/than_tang_sheet.webp) | [Áo ngoài (đạo bào + choàng sao)](than_tang/than_tang_ao_ngoai.webp), [Lớp dưới](than_tang/than_tang_lop_duoi.webp), [Vai nhẹ (cặp)](than_tang/than_tang_vai_giap.webp), [Đai, hộp báu và dải lụa](than_tang/than_tang_dai_tua.webp), [Ủng (cặp)](than_tang/than_tang_ung.webp), [Trang sức đầu](than_tang/than_tang_trang_suc_dau.webp) |
-| **Tinh Khuyết Kiếm** | dạng cuối +10 và vỏ, dùng chung ba công pháp | 5500 | – | [Dạng cuối +10](kiem/kiem_tinh_khuyet_cuoi.webp), [Vỏ kiếm](kiem/kiem_tinh_khuyet_vo.webp) |
+| **Tinh Khuyết Kiếm** | dạng cuối +10 và vỏ, dùng chung ba công pháp | 4000 | – | [Dạng cuối +10](kiem/kiem_tinh_khuyet_cuoi.webp), [Vỏ kiếm](kiem/kiem_tinh_khuyet_vo.webp) |
 
 Ô **trang sức đầu** là ô trang bị thứ 9 (ẩn/hiện được), mỗi bộ có một món. Hộ uyển không vẽ riêng (gộp vào áo ngoài nếu cần).
 
@@ -144,7 +144,7 @@ Dạng gốc dùng model #119 có sẵn (`prop_kiem_tinh_khuyet`). Concept này 
 
 | Mảnh | Ảnh | Tam giác | Gắn vào | Ghi chú |
 | --- | --- | --- | --- | --- |
-| Dạng cuối +10 | [`kiem_tinh_khuyet_cuoi`](kiem/kiem_tinh_khuyet_cuoi.webp) | 4000 | prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng | Tinh thể thể hiện bằng khối đặc tối màu có rãnh vân; KHÔNG dùng trong suốt thật. Chấm sao, nhãn cầu sao và tia linh khí tách thành mặt nạ phát sáng để worker điều khiển. Tia linh khí là các sợi kim loại cong dựng cứng quanh chắn (không phải hạt). Dạng gốc (#119) giữ cho +0…+9; dạng cuối thay lúc cường hóa +10. Dùng chung cho Kiếm tu, Hộ pháp, Đan sư. |
+| Dạng cuối +10 | [`kiem_tinh_khuyet_cuoi`](kiem/kiem_tinh_khuyet_cuoi.webp) | 2500 | prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng | Tinh thể thể hiện bằng khối đặc tối màu có rãnh vân; KHÔNG dùng trong suốt thật. Chấm sao, nhãn cầu sao và tia linh khí tách thành mặt nạ phát sáng để worker điều khiển. Tia linh khí là các sợi kim loại cong dựng cứng quanh chắn (không phải hạt). Dạng gốc (#119) giữ cho +0…+9; dạng cuối thay lúc cường hóa +10. Dùng chung cho Kiếm tu, Hộ pháp, Đan sư. |
 | Vỏ kiếm | [`kiem_tinh_khuyet_vo`](kiem/kiem_tinh_khuyet_vo.webp) | 1500 | prop gắn ổ cắm lưng (`dtl_scabbard_back`, tạo bởi T-1/T-2); khi rút kiếm thì vỏ ở lại lưng | Vỏ dài vừa khớp lưỡi dạng gốc (#119), kín hoàn toàn. Cửa vỏ ở ngang vai khi đeo chéo lưng. |
 
 ![Dạng cuối +10](kiem/kiem_tinh_khuyet_cuoi.webp)
