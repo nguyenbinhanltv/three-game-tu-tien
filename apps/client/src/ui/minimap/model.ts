@@ -1,5 +1,5 @@
 // Minimap (M-3): phần logic thuần, không đụng DOM/canvas để test được.
-import type { NpcDef, QuestDef, QuestView, ZoneDef } from '@dtl/shared';
+import type { NpcDef, QuestDef, QuestView, SpiritKind, ZoneDef } from '@dtl/shared';
 import { zoneAt } from '@dtl/shared';
 
 /** Ba mức phóng: số mét hiển thị theo mỗi chiều. */
@@ -10,7 +10,7 @@ export function clampZoom(i: number): number {
   return Math.max(0, Math.min(ZOOM_SPANS.length - 1, Math.round(i)));
 }
 
-export type MarkKind = 'npc' | 'mon' | 'elite' | 'boss' | 'mate' | 'player' | 'node' | 'portal' | 'tele' | 'goal' | 'flag';
+export type MarkKind = 'npc' | 'mon' | 'elite' | 'boss' | 'mate' | 'player' | 'node' | 'portal' | 'tele' | 'goal' | 'flag' | 'scan';
 export type QuestMark = '' | 'give' | 'turn' | 'wait';
 export type Tone = 'gray' | 'white' | 'yellow' | 'red';
 
@@ -38,6 +38,8 @@ export interface Mark {
   radius?: number;
   /** Điểm đánh dấu: của mình (vàng) hay của đồng đội (lam). */
   own?: boolean;
+  /** Dấu thần thức (E2-E): loại điểm lộ ra. */
+  scanKind?: SpiritKind;
   /** Nhấp nháy tới thời điểm này (performance.now, ms). */
   hurtUntil?: number;
 }

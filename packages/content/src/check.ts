@@ -5,10 +5,10 @@ import { existsSync } from 'node:fs';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed, MAX_TIER, TIER_OPEN, TIER_MUL, PROMOTE_MAT, TIER_MIN_ILVL } from '@dtl/shared';
-import { itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { thanThongSkill, itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT, LOOT_MATS } from './loot';
 import { monSkillsOf } from '@dtl/shared';
-import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
+import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, bondedLevel, spiritRadius, SPIRIT_UNLOCK_LEVEL } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
 import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS, tribForLevel, peakGated } from '@dtl/shared';
 import { TELE_PADS, terrainOf } from '@dtl/shared';
@@ -846,9 +846,20 @@ for (const a of ARTIFACTS) {
   if (t(`item.${a.id}.name`) !== (GLOSSARY.artifacts as Record<string, string>)[a.id]) err(`${w}: tên lệch glossary.artifacts`);
   if (!(a.cd > 0) || !(a.radius > 0) || !(a.power > 0)) err(`${w}: cd, radius, power phải > 0`);
   if (a.passive.per * ARTIFACT_MAX_LEVEL > 0.3) err(`${w}: nội tại cấp tối đa quá 30%`);
-  if (!RECIPES.some((r) => r.output.id === a.id)) err(`${w}: không có công thức chế`);
+  if (!a.bonded && !RECIPES.some((r) => r.output.id === a.id)) err(`${w}: không có công thức chế`);
+  if (a.bonded && RECIPES.some((r) => r.output.id === a.id)) err(`${w}: bản mệnh pháp bảo tự có, không có công thức chế`);
 }
-for (const k of ['drain', 'seal', 'shield']) if (!ARTIFACTS.some((a) => a.kind === k)) err(`thiếu pháp bảo loại ${k}`);
+for (const k of ['drain', 'seal', 'shield', 'heal']) if (!ARTIFACTS.some((a) => a.kind === k)) err(`thiếu pháp bảo loại ${k}`);
+// Bản mệnh pháp bảo (E2-E): đúng một cái là Ngưng Đan Lô.
+{
+  const bonded = ARTIFACTS.filter((a) => a.bonded);
+  if (bonded.length !== 1 || bonded[0].id !== BONDED_ARTIFACT_ID) err(`bản mệnh pháp bảo: phải đúng một, id ${BONDED_ARTIFACT_ID}`);
+  if (ITEM.get(BONDED_ARTIFACT_ID)?.reqLevel !== BONDED_UNLOCK_LEVEL) err('Ngưng Đan Lô: reqLevel phải bằng BONDED_UNLOCK_LEVEL');
+  if (bondedLevel(BONDED_UNLOCK_LEVEL - 1) !== 0 || bondedLevel(BONDED_UNLOCK_LEVEL) !== 1 || bondedLevel(999) !== ARTIFACT_MAX_LEVEL) err('bondedLevel: lệch khoảng 0..ARTIFACT_MAX_LEVEL');
+  if (spiritRadius(SPIRIT_UNLOCK_LEVEL) !== 60 || spiritRadius(21) !== 80 || spiritRadius(28) !== 120) err('spiritRadius: phải 60 / 80 / 120 theo thiết kế (Kết Đan sơ/trung, Hóa Thần)');
+  for (const m of METHODS) if (thanThongSkill(m.id)?.unlock !== SPIRIT_UNLOCK_LEVEL) err(`công pháp ${m.id}: thiếu thần thông ô 9 (chiêu mở ở cấp ${SPIRIT_UNLOCK_LEVEL}, không khóa)`);
+  for (const k of ['sys.spirit_locked', 'sys.spirit_cd', 'sys.spirit_busy', 'sys.spirit_start', 'sys.spirit_cancel', 'sys.spirit_moved', 'sys.spirit_done', 'sys.spirit_none', 'sys.bonded_locked', 'ui.spirit.title', 'ui.spirit.desc', 'ui.bonded.title', 'ui.spirit.kind.boss', 'ui.spirit.kind.elite', 'ui.spirit.kind.mon', 'ui.spirit.kind.node', 'ui.spirit.kind.player', 'ui.spirit.kind.poi', 'ui.spirit.scanning']) needStr(k);
+}
 if (new Set(ARTIFACTS.map((a) => a.skill)).size !== ARTIFACTS.length) err('hai pháp bảo dùng chung khóa hồi chiêu');
 for (const k of ['base', 'support', 'potency'] as const) if (PILL_QUALITY[k].length !== PILL_TIERS) err(`alchemy.quality.${k} cần ${PILL_TIERS} phần tử`);
 for (const k of ['base', 'support'] as const) if (Math.abs(PILL_QUALITY[k].reduce((a, b) => a + b, 0) - 1) > 1e-6) err(`alchemy.quality.${k} phải cộng bằng 1`);

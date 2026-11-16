@@ -100,6 +100,10 @@ export const C = {
   TELE: 'tele',
   /** Đặt/xóa điểm đánh dấu (M-4): `MarkCmd`. */
   MARK: 'mark',
+  /** Thần thức (E2-E, phím V): `SpiritCmd`. */
+  SPIRIT: 'spi',
+  /** Kích hoạt bản mệnh pháp bảo Ngưng Đan Lô (E2-E): không tham số. */
+  BONDED: 'bm',
 } as const;
 
 /** Server → client. */
@@ -132,6 +136,10 @@ export const S = {
   MARK: 'mark',
   /** Giờ hồi sinh tinh anh và boss của bản đồ (`BossTimerMsg`), gửi lúc vào và mỗi khi một con đổi trạng thái (M-2). */
   BOSS_TIMERS: 'btm',
+  /** Trạng thái thần thức của mình (`SpiritStateMsg`). */
+  SPIRIT_STATE: 'spis',
+  /** Kết quả một lần quét thần thức (`SpiritScanMsg`). */
+  SPIRIT_SCAN: 'spic',
 } as const;
 
 export interface InitMsg {

@@ -12,6 +12,8 @@ export type Action =
   | 'interact'
   | 'autorun'
   | 'dash'
+  | 'spirit'
+  | 'bonded'
   | 'bag'
   | 'char'
   | 'quests'
@@ -32,12 +34,15 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   KeyE: 'interact',
   KeyR: 'autorun',
   KeyQ: 'dash',
+  // Thần thức (giữ, thả để hủy) và bản mệnh pháp bảo (E2-E).
+  KeyV: 'spirit',
+  KeyT: 'bonded',
   KeyB: 'bag',
   KeyI: 'bag',
   KeyC: 'char',
   KeyL: 'quests',
   KeyJ: 'quests',
-  KeyV: 'method',
+  KeyK: 'method',
   KeyP: 'party',
   KeyM: 'map',
   KeyH: 'help',

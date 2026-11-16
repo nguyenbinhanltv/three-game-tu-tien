@@ -3,8 +3,8 @@ import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { artifactLevelMods, BAR_SIZE, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, tierBar, VARIANTS } from '@dtl/content';
+import { ARTIFACT_MAX_LEVEL, artifactLevelMods, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { ARTIFACT, hasString, ITEM, itemName, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { artifactLines } from './gear';
@@ -334,11 +334,12 @@ function SkillBar() {
   const now = useNow(100);
   if (!char) return null;
   const mdef = method?.method ? METHOD.get(method.method) : undefined;
-  const bar = skillBar(method?.method);
+  const tt = thanThongSkill(method?.method);
+  const bar = [...skillBar(method?.method), ...(tt ? [tt] : [])];
   const charge = method?.charge ?? 0;
   const pas = mdef?.passive;
   const stackKind = pas?.kind === 'kiem_y' || pas?.kind === 'the' ? pas.kind : null;
-  const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE }, (_, i) => bar[i] ?? null);
+  const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE + 1 }, (_, i) => bar[i] ?? null);
   const tier = tierBar(method?.method);
   return (
     <div className="skillbar" style={mdef ? ({ '--mc': '#' + mdef.color } as CSSProperties) : undefined}>
@@ -352,6 +353,9 @@ function SkillBar() {
       )}
       <div className="skill-row">
         {slots.map((sk, i) => {
+          // Ô 9 (thần thông, phím 0): không có công pháp thì không vẽ.
+          if (!sk && i === BAR_SIZE) return null;
+          const keyLabel = i === BAR_SIZE ? '0' : String(i + 1);
           if (!sk) {
             // Ô 7–8 khi chưa chọn công pháp: ô trống, bấm để mở bảng Công pháp.
             return (
@@ -395,7 +399,7 @@ function SkillBar() {
                 className={'skill' + (i === 0 && auto ? ' auto' : '') + (i === queued ? ' queued' : '') + ((empowered[sk.id] ?? 0) > Date.now() ? ' empowered' : '')}
                 data-state={state}
                 data-method={sk.method ? '1' : undefined}
-                aria-label={`${t(`skill.${sk.id}.name`)} (${i + 1})`}
+                aria-label={`${t(`skill.${sk.id}.name`)} (${keyLabel})`}
                 onClick={(e) => {
                   Game.current?.useSkill(i);
                   blurAfterPointer(e);
@@ -404,7 +408,7 @@ function SkillBar() {
                 <span className="skill-icon">
                   <ContentIcon def={sk} />
                 </span>
-                <span className="skill-key">{i + 1}</span>
+                <span className="skill-key">{keyLabel}</span>
                 {charging && (
                   <>
                     <span className="skill-charge" style={{ '--p': Math.min(1, charge / CHARGE_MAX) } as CSSProperties} />
@@ -423,6 +427,8 @@ function SkillBar() {
           );
         })}
         <ArtifactSlot />
+        <BondedSlot />
+        <SpiritSlot />
       </div>
       {tier.length > 0 && (
         <div className="skill-row tier-row" aria-label={t('ui.skill.tier_row')}>
@@ -445,7 +451,7 @@ function SkillBar() {
             ];
             return (
               <Tooltip key={sk.id} content={<TipCard title={t(`skill.${sk.id}.name`)} sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined} lines={lines} desc={t(`skill.${sk.id}.desc`)} />}>
-                <button type="button" className="skill" data-state={state} data-method="1" aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`} onClick={(e) => { Game.current?.useSkill(BAR_SIZE + j); blurAfterPointer(e); }}>
+                <button type="button" className="skill" data-state={state} data-method="1" aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`} onClick={(e) => { Game.current?.useSkill(BAR_SIZE + 1 + j); blurAfterPointer(e); }}>
                   <span className="skill-icon">
                     <ContentIcon def={sk} />
                   </span>
@@ -478,7 +484,7 @@ function SkillBar() {
           <UiIcon id="hud_nhan_vat" fallback="👤" className="inline" /> <span>{t('ui.char')}</span> <kbd>C</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} title={t('ui.method.title')}>
-          <UiIcon id="hud_cong_phap" fallback="☯️" className="inline" /> <span>{t('ui.method.key')}</span> <kbd>V</kbd>
+          <UiIcon id="hud_cong_phap" fallback="☯️" className="inline" /> <span>{t('ui.method.key')}</span> <kbd>K</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('party'); blurAfterPointer(e); }} title={t('ui.party.title')}>
           <UiIcon id="hud_to_doi" fallback="👥" className="inline" /> <span>{t('ui.party.key')}</span> <kbd>P</kbd>
@@ -807,6 +813,94 @@ function ArtifactSlot() {
         </button>
       </Tooltip>
     </>
+  );
+}
+
+/** Bản mệnh pháp bảo Ngưng Đan Lô (E2-E, phím T): có từ Kết Đan, cấp theo cảnh giới. Ẩn khi chưa Kết Đan. */
+function BondedSlot() {
+  const level = useUI((s) => s.char?.level ?? 0);
+  const cds = useUI((s) => s.cds);
+  const mp = useUI((s) => s.mp);
+  const airborne = useUI((s) => s.airborne);
+  const now = useNow(100);
+  const lv = bondedLevel(level);
+  const def = ARTIFACT.get(BONDED_ARTIFACT_ID);
+  const item = ITEM.get(BONDED_ARTIFACT_ID);
+  if (lv < 1 || !def || !item) return null;
+  const mods = artifactLevelMods(lv);
+  const total = Math.max(1, def.cd * mods.cdMul) * 1000;
+  const left = Math.max(0, (cds[def.skill] ?? 0) - now);
+  const noMp = mp < def.mp;
+  const state = airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
+  const lines = [
+    { text: t('ui.bonded.key') },
+    { text: t('ui.bonded.level', { n: lv, max: ARTIFACT_MAX_LEVEL }) },
+    { text: `${t('ui.mp')}: ${def.mp}`, tone: noMp ? ('bad' as const) : undefined },
+    { text: t('ui.skill.cd', { n: Math.round(total / 1000) }) },
+    { text: t(`art.${def.id}.skill.desc`, { n: Math.round(def.power * mods.powerMul * 100), r: def.radius }) },
+    { text: t(`art.passive.${def.passive.kind}`, { n: Math.round(def.passive.per * lv * 100) }), tone: 'good' as const },
+  ];
+  return (
+    <Tooltip content={<TipCard title={itemName(item.id)} sub={t('ui.bonded.title')} lines={lines} desc={t(`item.${item.id}.desc`)} />}>
+      <button type="button" className="skill art-slot" data-state={state} data-method="1" style={{ '--mc': '#' + def.color } as CSSProperties} aria-label={`${itemName(item.id)} (T)`} onClick={(e) => { Game.current?.useBonded(); blurAfterPointer(e); }}>
+        <span className="skill-icon">
+          <ContentIcon def={item} />
+        </span>
+        <span className="skill-key">T</span>
+        <span className="art-lv">{lv}</span>
+        {left > 80 && (
+          <>
+            <span className="skill-sweep" style={{ '--p': Math.min(1, left / total) } as CSSProperties} />
+            {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+          </>
+        )}
+      </button>
+    </Tooltip>
+  );
+}
+
+/** Thần thức (E2-E, phím V giữ): hiện từ Kết Đan; vòng sạc khi đang vận, đồng hồ hồi chiêu sau khi quét. */
+function SpiritSlot() {
+  const level = useUI((s) => s.char?.level ?? 0);
+  const sp = useUI((s) => s.spirit);
+  const mp = useUI((s) => s.mp);
+  const now = performance.now();
+  useNow(100);
+  if (!spiritUnlocked(level)) return null;
+  const channel = sp.chUntil > now;
+  const left = Math.max(0, sp.cdUntil - now);
+  const noMp = mp < SPIRIT_MP;
+  const state = channel ? 'charging' : left > 80 ? 'cd' : noMp ? 'nomp' : 'ready';
+  const lines = [
+    { text: t('ui.spirit.range', { n: sp.r }) },
+    { text: `${t('ui.mp')}: ${SPIRIT_MP}`, tone: noMp ? ('bad' as const) : undefined },
+    { text: t('ui.skill.cd', { n: SPIRIT_CD_MS / 1000 }) },
+  ];
+  return (
+    <Tooltip content={<TipCard title={t('ui.spirit.title')} lines={lines} desc={t('ui.spirit.desc')} />}>
+      <button
+        type="button"
+        className="skill"
+        data-state={state}
+        data-method="1"
+        aria-label={`${t('ui.spirit.title')} (V)`}
+        onPointerDown={(e) => { Game.current?.spiritHold(true); blurAfterPointer(e); }}
+        onPointerUp={() => Game.current?.spiritHold(false)}
+        onPointerLeave={() => Game.current?.spiritHold(false)}
+      >
+        <span className="skill-icon">
+          <span className="content-icon">👁</span>
+        </span>
+        <span className="skill-key">V</span>
+        {channel && <span className="skill-charge" style={{ '--p': 1 - Math.min(1, (sp.chUntil - now) / SPIRIT_CHANNEL_MS) } as CSSProperties} />}
+        {!channel && left > 80 && (
+          <>
+            <span className="skill-sweep" style={{ '--p': Math.min(1, left / SPIRIT_CD_MS) } as CSSProperties} />
+            {left > 1000 && <span className="skill-cd-text">{Math.ceil(left / 1000)}</span>}
+          </>
+        )}
+      </button>
+    </Tooltip>
   );
 }
 
