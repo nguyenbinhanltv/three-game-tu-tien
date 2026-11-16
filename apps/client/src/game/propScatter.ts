@@ -284,16 +284,67 @@ let cache: PropInstance[] | null = null;
 /** Mọi instance prop (điểm nhấn + rải). Tính một lần. */
 export function allProps(level = 'van_lam'): PropInstance[] {
   if (level === 'van_lam' || level === 'kiem_trung') return (cache ??= build());
-  // Bản đồ mở rộng (E2-A): chỉ prop đặt tay của level (`propsOf`), cao độ theo địa hình riêng; chưa rải cây/đá tự động.
+  // Bản đồ mở rộng (E2-A): prop đặt tay của level (`propsOf`), cao độ theo địa hình riêng; Đoạn Mạch (E2-I) thêm đá và cây khô rải tự động.
   let list = levelCache.get(level);
   if (!list) {
     const tr = terrainOf(level);
     list = propsOf(level).map((h) => ({ id: h.id, x: h.x, y: tr.heightAt(h.x, h.z), z: h.z, yaw: h.yaw, s: h.s }));
+    if (level === 'doan_mach') list.push(...scatterDoanMach(list));
     levelCache.set(level, list);
   }
   return list;
 }
 const levelCache = new Map<string, PropInstance[]>();
+
+/**
+ * Đá và cây khô rải ở Đoạn Mạch Cổ Cốc (E2-I): lưới ô 24 m, xác định, chỉ để tô cảnh (không va chạm, như prop rải của Vân Lam).
+ * Dùng lại GLB đã có (đá Vân Lam nhuộm ấm, `prop_cay_goc_kho` của PROP_LIB); tránh tâm cụm quái, tinh anh, trạm, điểm nhấn, điểm hái.
+ */
+const DM_ROCKS = ['prop_da_nam', 'prop_da_dung', 'prop_da_phien'] as const;
+export function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[] {
+  const L = LEVELS.doan_mach;
+  const tr = terrainOf('doan_mach');
+  const clear: Circle[] = [
+    { x: L.spawn?.x ?? 1024, z: L.spawn?.z ?? 1036, r: 46 },
+    ...(L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 6 })),
+    ...L.spawns.filter((sp) => sp.radius > 4).map((sp) => ({ x: sp.x, z: sp.z, r: sp.radius + 4 })),
+    ...(L.pois ?? []).map((p) => ({ x: p.x, z: p.z, r: 12 })),
+    ...L.nodes.map((n) => ({ x: n.x, z: n.z, r: 6 })),
+    ...placed.map((p) => ({ x: p.x, z: p.z, r: 4 })),
+  ];
+  const b = tr.playBounds;
+  const out: PropInstance[] = [];
+  const CELL = 24;
+  for (let gz = Math.floor(b.z0 / CELL); gz < Math.ceil(b.z1 / CELL); gz++) {
+    for (let gx = Math.floor(b.x0 / CELL); gx < Math.ceil(b.x1 / CELL); gx++) {
+      const r0 = hash01(gx, gz, 4711);
+      const x = (gx + 0.12 + hash01(gx, gz, 4723) * 0.76) * CELL;
+      const z = (gz + 0.12 + hash01(gx, gz, 4733) * 0.76) * CELL;
+      if (x < b.x0 + 8 || x > b.x1 - 8 || z < b.z0 + 8 || z > b.z1 - 8) continue;
+      // Đám đá/cây khô theo nhiễu: thưa ở chỗ trống, dày hơn dọc sườn.
+      const n = 0.5 + (hash01(Math.floor(gx / 3), Math.floor(gz / 3), 4751) - 0.5) * 0.9;
+      const rock = r0 < 0.16 * (0.4 + n);
+      const tree = !rock && r0 > 1 - 0.045 * (0.2 + n * 1.3);
+      if (!rock && !tree) continue;
+      const h = tr.heightAt(x, z);
+      const slope = Math.abs(tr.heightAt(x + 3, z) - h) + Math.abs(tr.heightAt(x, z + 3) - h);
+      if (slope > (tree ? 4 : 7)) continue;
+      let bad = false;
+      for (const c of clear) if ((x - c.x) ** 2 + (z - c.z) ** 2 < c.r * c.r) bad = true;
+      for (const c of tr.colliders) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 3) ** 2) bad = true;
+      if (bad) continue;
+      const k = hash01(gx, gz, 4783);
+      const warm = 0.92 + hash01(gx, gz, 4793) * 0.16;
+      if (tree) {
+        out.push({ id: 'prop_cay_goc_kho', x, y: h - 0.1, z, yaw: k * Math.PI * 2, s: 0.8 + hash01(gx, gz, 4799) * 0.45, sy: 0.92 + k * 0.2, tint: [warm * 1.04, warm * 0.96, warm * 0.86] });
+      } else {
+        const id = DM_ROCKS[Math.floor(hash01(gx, gz, 4801) * DM_ROCKS.length)];
+        out.push({ id, x, y: h - 0.1, z, yaw: k * Math.PI * 2, s: 0.7 + hash01(gx, gz, 4799) * 0.9, tint: [warm * 1.12, warm * 0.94, warm * 0.78] });
+      }
+    }
+  }
+  return out;
+}
 
 /** Lưới tra nhanh "gần cây lớn": terrain bỏ cây thủ tục quanh cổ thụ/thông Tripo để không chồng lên nhau. */
 let treeGrid: Map<string, Circle[]> | null = null;

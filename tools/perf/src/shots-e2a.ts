@@ -17,6 +17,7 @@ const OUT = path.resolve(opt('--out', 'shots-e2a'));
 const RENDERER = opt('--renderer', 'webgpu');
 const PRESET = opt('--preset', 'medium');
 const ONLY = opt('--points', '').split(',').filter(Boolean);
+const QUERY = opt('--query', '');
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
 const PORT = Number(process.env.PORT ?? 2675);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
@@ -47,7 +48,7 @@ async function main(): Promise<void> {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
     page.on('console', (m) => (m.type() === 'error' || m.type() === 'warning') && errors.push(m.text().slice(0, 600)));
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=E2A_Shots${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=E2A_Shots${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}${QUERY ? '&' + QUERY : ''}`, { waitUntil: 'load' });
     await page.waitForFunction(() => {
       const g = (window as unknown as G).__game;
       return !!g && g.frames > 30 && !!g.me?.();

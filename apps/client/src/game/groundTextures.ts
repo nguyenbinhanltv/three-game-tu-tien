@@ -10,6 +10,8 @@ export interface GroundTextures {
   normal: THREE.DataArrayTexture;
   /** R đường mòn, G sân lát đá, B cát, A nhiễu vĩ mô (groundMask.ts). */
   mask: THREE.Texture;
+  /** Thư mục bộ texture (`public/<set>/`): `terrain` (Vân Lam), `terrain-ochre` (Đoạn Mạch, E2-I). */
+  set: string;
   /** Loại mặt nạ đang dùng (`manifest`: vẽ riêng cho Vân Lam; `neutral`: phẳng cho level chưa có mặt nạ riêng). */
   maskKind: GroundMaskKind;
   /**
@@ -25,7 +27,8 @@ export type GroundMaskKind = 'manifest' | 'neutral';
 
 interface Manifest {
   size: number;
-  mask: string;
+  /** Bộ không có mặt nạ riêng (ochre) thì để trống: dùng `neutral`. */
+  mask?: string;
   layers: { layer: string; a: string; n: string }[];
 }
 
@@ -46,8 +49,8 @@ interface MaskRec {
 }
 
 /** Mặt nạ vùng: `manifest` = ảnh tính sẵn lúc build; `neutral` = 1 texel (không đường mòn/sân lát/cát, nhiễu vĩ mô trung bình). */
-async function makeMask(base: string, manifest: Manifest, kind: GroundMaskKind): Promise<MaskRec> {
-  if (kind === 'neutral') {
+async function makeMask(base: string, set: string, manifest: Manifest, kind: GroundMaskKind): Promise<MaskRec> {
+  if (kind === 'neutral' || !manifest.mask) {
     const t = new THREE.DataTexture(new Uint8Array([0, 0, 0, 128]), 1, 1, THREE.RGBAFormat);
     t.colorSpace = THREE.NoColorSpace;
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -57,7 +60,7 @@ async function makeMask(base: string, manifest: Manifest, kind: GroundMaskKind):
     return { tex: t, dispose: () => t.dispose() };
   }
   // Mặt nạ tính sẵn lúc build (groundMask.ts). Dùng thẳng ImageBitmap (không qua canvas) để không bị nhân alpha vào RGB.
-  const maskRes = await fetch(`${base}terrain/${manifest.mask}`);
+  const maskRes = await fetch(`${base}${set}/${manifest.mask}`);
   if (!maskRes.ok) throw new Error(`mask: ${maskRes.status}`);
   const maskBmp = await createImageBitmap(await maskRes.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
   const mask = new THREE.Texture(maskBmp);
@@ -97,8 +100,8 @@ function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: bool
  * một (nhường khung hình giữa các lớp) rồi ghép vào 2 texture mảng, nên shader địa hình chỉ tốn 2 slot
  * texture. VRAM: albedo 8 × 1024² × 4 B + mip ≈ 43 MB, pháp tuyến 8 × 512² ≈ 11 MB.
  */
-export async function loadGroundTextures(base: string, signal?: { aborted: boolean }, kind: GroundMaskKind = 'manifest'): Promise<GroundTextures> {
-  const manifest = (await (await fetch(`${base}terrain/manifest.json`)).json()) as Manifest;
+export async function loadGroundTextures(base: string, signal?: { aborted: boolean }, kind: GroundMaskKind = 'manifest', set = 'terrain'): Promise<GroundTextures> {
+  const manifest = (await (await fetch(`${base}${set}/manifest.json`)).json()) as Manifest;
   const size = manifest.size;
   // Pháp tuyến/độ nhám tải ở nửa độ phân giải (chi tiết vi mô mềm hơn chút, đổi lấy ~32 MB VRAM: ngân sách texture 512 MB).
   const nsize = size >> 1;
@@ -108,23 +111,24 @@ export async function loadGroundTextures(base: string, signal?: { aborted: boole
   const normal = new Uint8Array(nLayerBytes * manifest.layers.length);
   for (let i = 0; i < manifest.layers.length; i++) {
     const L = manifest.layers[i];
-    const [a, n] = await Promise.all([decode(`${base}terrain/${L.a}`, size), decode(`${base}terrain/${L.n}`, nsize)]);
+    const [a, n] = await Promise.all([decode(`${base}${set}/${L.a}`, size), decode(`${base}${set}/${L.n}`, nsize)]);
     albedo.set(a, i * layerBytes);
     normal.set(n, i * nLayerBytes);
     if (signal?.aborted) throw new Error('aborted');
     await new Promise((r) => setTimeout(r, 0));
   }
-  let cur = await makeMask(base, manifest, kind);
+  let cur = await makeMask(base, set, manifest, kind);
   const tex = arrayTexture(albedo, size, manifest.layers.length, true);
   const nor = arrayTexture(normal, nsize, manifest.layers.length, false);
   const out: GroundTextures = {
     albedo: tex,
     normal: nor,
+    set,
     mask: cur.tex,
     maskKind: kind,
     async prepareMask(next) {
       if (next === out.maskKind) return () => undefined;
-      const fresh = await makeMask(base, manifest, next);
+      const fresh = await makeMask(base, set, manifest, next);
       return () => {
         cur.dispose();
         cur = fresh;
