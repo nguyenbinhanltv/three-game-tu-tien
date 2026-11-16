@@ -36,7 +36,9 @@ export interface GradingPreset {
   rim?: number;
 }
 
-export type GradingName = 'dawn' | 'day' | 'night';
+export type GradingName = 'dawn' | 'day' | 'night' | 'ochre_dawn' | 'ochre' | 'ochre_night';
+/** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
+export type TimeOfDay = 'dawn' | 'day' | 'night';
 
 type RawPreset = Record<keyof GradingPreset, string | number>;
 const raw = palette.grading as unknown as {
@@ -61,15 +63,25 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   dawn: parse(raw.presets.dawn),
   day: parse(raw.presets.day),
   night: parse(raw.presets.night),
+  ochre_dawn: parse(raw.presets.ochre_dawn),
+  ochre: parse(raw.presets.ochre),
+  ochre_night: parse(raw.presets.ochre_night),
 };
 
+/** Tên mood của level theo thời điểm trong ngày: `ochre` + night → `ochre_night`. */
+export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
+  if (base.startsWith('ochre')) return tod === 'dawn' ? 'ochre_dawn' : tod === 'night' ? 'ochre_night' : 'ochre';
+  return tod;
+}
+
 /** `?mood=dawn|day|night` đổi thời điểm trong ngày khi xem/chụp ảnh (không lưu); mặc định theo palette.json. */
-function moodFromUrl(): GradingName | null {
+function moodFromUrl(): TimeOfDay | null {
   if (typeof location === 'undefined') return null;
   const m = new URLSearchParams(location.search).get('mood');
   return m === 'dawn' || m === 'day' || m === 'night' ? m : null;
 }
-export const GRADING_DEFAULT: GradingName = moodFromUrl() ?? raw.default;
+export const URL_MOOD: TimeOfDay | null = moodFromUrl();
+export const GRADING_DEFAULT: GradingName = URL_MOOD ?? raw.default;
 export const BLOOM = raw.bloom;
 export const VIGNETTE = raw.vignette;
 export const GRAIN = raw.grain;

@@ -739,6 +739,18 @@
         "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
       }
     },
+    "wild_ochre": {
+      "src": [
+        "music/wild_ochre.6697a25e47.webm",
+        "music/wild_ochre.a143a5c06d.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Đoạn Mạch Cổ Cốc",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
     "forest": {
       "src": [
         "music/forest.330a248d8b.webm",

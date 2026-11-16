@@ -31,7 +31,7 @@ import { Beacons } from '../render/beacons';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/world';
-import { GRADING, GRADING_DEFAULT, type GradingName } from '../render/grading';
+import { GRADING, GRADING_DEFAULT, moodVariant, URL_MOOD, type GradingName } from '../render/grading';
 import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
@@ -126,7 +126,7 @@ const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: 
 };
 
 /** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */
-const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8 };
+const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8, ochre_dawn: 1, ochre: 0.6, ochre_night: 1.8 };
 
 /** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */
 const STINGS: Record<string, string> = { levelup: 'sting_levelup', ascend: 'sting_breakthrough', death: 'sting_death' };
@@ -700,7 +700,7 @@ export class Game {
     try {
       const self = this;
       const g0 = levelAssets(levelId()).ground;
-      const tex = await loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } }, g0 ? g0.mask : 'manifest');
+      const tex = await loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } }, g0 ? g0.mask : 'manifest', g0 ? g0.set : 'terrain');
       if (this.disposed) {
         tex.dispose();
         return;
@@ -822,7 +822,9 @@ export class Game {
   /** Mood của level; `?mood=` trên URL thắng (chụp ảnh so sánh). */
   private moodOf(id: string): GradingName {
     const m = levelAssets(id).mood;
-    if (new URLSearchParams(location.search).has('mood') || m === 'default' || !(m in GRADING)) return GRADING_DEFAULT;
+    if (m === 'default' || !(m in GRADING)) return GRADING_DEFAULT;
+    // `?mood=dawn|day|night` thắng; level có bộ mood riêng (ochre) lấy biến thể cùng thời điểm.
+    if (URL_MOOD) return moodVariant(m as GradingName, URL_MOOD);
     return m as GradingName;
   }
 
@@ -880,7 +882,7 @@ export class Game {
       this.beacons.mesh.visible = isWorldRoom(get().room);
       this.scene.add(this.beacons.mesh);
     }
-    this.grass = new Grass();
+    this.grass = new Grass(levelAssets(id).grassCards);
     this.grass.setQuality(get().quality, q.shadows);
     this.grass.mesh.visible = F.grass;
     this.scene.add(this.grass.mesh);
@@ -967,9 +969,19 @@ export class Game {
       for (const glb of A.glb) assets.prefetch(glb, { pos: { x: SECT.x, z: SECT.z } });
       const maskKind = A.ground ? A.ground.mask : null;
       let commitMask: () => void = () => undefined;
+      // E2-I: level dùng bộ texture khác (Đoạn Mạch: ochre) thì nạp bộ mới trước, đổi sau khi gỡ địa hình cũ rồi giải phóng bộ cũ.
+      const newSet = A.ground && this.ground && this.ground.set !== A.ground.set ? A.ground : null;
+      const swap: { t: GroundTextures | null } = { t: null };
+      const self = this;
       await Promise.all([
+        newSet
+          ? loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } }, newSet.mask, newSet.set).then(
+              (t) => (swap.t = t),
+              (e) => console.warn('[level] bộ texture mặt đất:', e),
+            )
+          : Promise.resolve(),
         this.music.preloadLevel(A.music),
-        this.ground && maskKind
+        this.ground && maskKind && !newSet
           ? this.ground.prepareMask(maskKind).then((c) => (commitMask = c), (e) => console.warn('[level] mặt nạ mặt đất:', e))
           : Promise.resolve(),
       ]);
@@ -978,6 +990,10 @@ export class Game {
       const q = QUALITY[get().quality] ?? QUALITY.medium;
       this.unloadLevel();
       commitMask(); // địa hình cũ đã gỡ: giải phóng mặt nạ cũ an toàn
+      if (swap.t) {
+        this.ground?.dispose();
+        this.ground = swap.t;
+      }
       setActiveLevel(id);
       this.buildLevelA(id, q);
       this.buildLevelB(id, q);

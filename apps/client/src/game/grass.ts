@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { abs, cameraViewMatrix, cos, float, instancedBufferAttribute, int, length, max, min, mix, positionGeometry, sin, smoothstep, step, uniform, uniformArray, uv, vec2, vec3 } from 'three/tsl';
+import { abs, cameraViewMatrix, cos, float, floor, instancedBufferAttribute, int, length, max, min, mix, positionGeometry, sin, smoothstep, step, texture, uniform, uniformArray, uv, vec2, vec3 } from 'three/tsl';
 import { COLLIDERS, FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { heightAt } from './levelCtx';
 import type { N } from '../render/vfx/common';
@@ -125,8 +125,47 @@ function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   return true;
 }
 
+/** Kiểu cỏ: bụi lá thủ tục xanh của Vân Lam, hoặc thẻ alpha cỏ khô/bụi gai (Đoạn Mạch, E2-I). */
+export type GrassStyle = 'blades' | 'cards';
+/** Trọng số chọn thẻ trong atlas (`tools/asset-pipeline/src/grass-cards.ts`, thứ tự `CARDS`): hoang_coc, linh_rung, van_hai, gai_sa_thach. */
+const CARD_WEIGHTS = [0.34, 0.26, 0.2, 0.2];
+const C_STRAW = new THREE.Color(0xd8c9a8);
+
+/**
+ * Bụi cỏ khô ở Đoạn Mạch: thưa, thành từng đám theo nhiễu, không mọc trên dốc và chân công trình.
+ * `iRoot.w` mã hóa cả góc xoay lẫn chỉ số thẻ: `angle + 10 · thẻ`.
+ */
+function ochreTuftAt(x: number, z: number, h: number, slope: number, r: number, out: Float32Array, o: number): boolean {
+  if (slope > 1.9) return false;
+  const n = fbm(x * 0.03, z * 0.03, 2, 20261116 + 777);
+  const c = fbm(x * 0.008, z * 0.008, 2, 20261116 + 313);
+  // Đám cỏ thưa: đa số ô trống, vài đám dày; cao nguyên cao thì thưa hơn.
+  let dens = 0.06 + Math.max(0, n + 0.15) * 0.9 + Math.max(0, c) * 0.25;
+  dens *= 1 - slope / 2.4;
+  if (h > 150) dens *= 0.6;
+  if (r > dens) return false;
+  if (nearCollider(x, z, 1.2)) return false;
+  const r2 = hash01(Math.floor(x * 7.3), Math.floor(z * 7.3), 811);
+  const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
+  let card = 0;
+  for (let acc = 0; card < CARD_WEIGHTS.length - 1; card++) {
+    acc += CARD_WEIGHTS[card];
+    if (pick < acc) break;
+  }
+  _c.copy(C_STRAW).multiplyScalar(0.8 + r2 * 0.34);
+  out[o] = x;
+  out[o + 1] = h - 0.03;
+  out[o + 2] = z;
+  out[o + 3] = r2 * Math.PI * 2 + card * 10;
+  out[o + 4] = 0.7 + hash01(Math.floor(x * 5.1), Math.floor(z * 5.1), 823) * 0.5 + Math.max(0, n) * 0.3;
+  out[o + 5] = _c.r;
+  out[o + 6] = _c.g;
+  out[o + 7] = _c.b;
+  return true;
+}
+
 /** Dựng bụi cỏ trong một ô CHUNK×CHUNK (gốc tại cx·CHUNK, cz·CHUNK). Xác định: mọi client thấy cỏ cùng chỗ. */
-export function buildGrassChunk(cx: number, cz: number, spacing: number): Float32Array {
+export function buildGrassChunk(cx: number, cz: number, spacing: number, style: GrassStyle = 'blades'): Float32Array {
   const x0 = cx * CHUNK;
   const z0 = cz * CHUNK;
   // CHUNK là bội của HCELL nên lưới mẫu trùng đỉnh lưới địa hình: chỉ 25 lần heightAt mỗi ô.
@@ -147,7 +186,7 @@ export function buildGrassChunk(cx: number, cz: number, spacing: number): Float3
       const x = x0 + (i + 0.1 + hash01(gx, gz, 701) * 0.8) * step;
       const z = z0 + (j + 0.1 + hash01(gx, gz, 709) * 0.8) * step;
       const h = sampleHeight(x0, z0, x, z);
-      if (grassTuftAt(x, z, h, _slope, hash01(gx, gz, 719), tmp, k * 8)) k++;
+      if ((style === 'cards' ? ochreTuftAt : grassTuftAt)(x, z, h, _slope, hash01(gx, gz, 719), tmp, k * 8)) k++;
     }
   }
   return tmp.slice(0, k * 8);
@@ -188,6 +227,32 @@ export function buildTuftGeometry(): THREE.BufferGeometry {
     uvs.push(0.5, 1);
     nor.push(0, 1, 0);
     idx.push(base, base + 1, base + 2, base + 1, base + 3, base + 2, base + 2, base + 3, base + 4);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(idx);
+  return g;
+}
+
+/** Thẻ cỏ: 3 mặt phẳng đứng cắt chéo (0°, 60°, 120°), rộng 0,9 m cao 0,675 m (đúng tỉ lệ ô atlas 4:3), gốc ở giữa đáy, uv.y = 0 gốc → 1 ngọn. */
+export function buildCardGeometry(): THREE.BufferGeometry {
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const nor: number[] = [];
+  const idx: number[] = [];
+  const W = 0.45;
+  const H = 0.675;
+  for (let q = 0; q < 3; q++) {
+    const a = (q / 3) * Math.PI;
+    const dx = Math.cos(a) * W;
+    const dz = Math.sin(a) * W;
+    const base = pos.length / 3;
+    pos.push(-dx, 0, -dz, dx, 0, dz, -dx, H, -dz, dx, H, dz);
+    uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
+    for (let i = 0; i < 4; i++) nor.push(0, 1, 0);
+    idx.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -289,9 +354,17 @@ export class Grass {
   private t = 0;
   /** Số bụi cỏ đang vẽ (đo đạc). */
   count = 0;
+  readonly style: GrassStyle;
+  /** Kiểu thẻ: true khi atlas đã nạp xong (chưa xong thì không vẽ). */
+  private ready: boolean;
+  private cardTex: THREE.Texture | null = null;
+  private disposed = false;
 
-  constructor() {
-    const tuft = buildTuftGeometry();
+  /** `cardSet`: thư mục atlas thẻ cỏ trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục. */
+  constructor(cardSet?: string) {
+    this.style = cardSet ? 'cards' : 'blades';
+    this.ready = !cardSet;
+    const tuft = this.style === 'cards' ? buildCardGeometry() : buildTuftGeometry();
     this.geo = new THREE.InstancedBufferGeometry();
     for (const k of ['position', 'normal', 'uv']) this.geo.setAttribute(k, tuft.getAttribute(k));
     this.geo.setIndex(tuft.getIndex());
@@ -308,21 +381,25 @@ export class Grass {
 
     this.material = new THREE.MeshStandardNodeMaterial({ roughness: 0.9, metalness: 0, side: THREE.DoubleSide });
     this.material.name = 'env-grass';
-    this.buildShader();
+    if (cardSet) void this.loadCards(cardSet);
+    else this.buildShader();
     this.mesh = new THREE.Mesh(this.geo, this.material);
     this.mesh.name = 'env-grass';
     this.mesh.castShadow = false;
     this.mesh.visible = false;
   }
 
-  private buildShader(): void {
+  private buildShader(atlas?: THREE.Texture, cols = 2, rows = 2): void {
     const p0: N = instancedBufferAttribute(this.a0);
     const p1: N = instancedBufferAttribute(this.a1);
     const root: N = p0.xyz;
     const scale: N = p1.x;
     const lp: N = positionGeometry.mul(scale);
-    const c: N = cos(p0.w);
-    const s: N = sin(p0.w);
+    // Thẻ: `w` = góc + 10 · chỉ số thẻ.
+    const card: N = atlas ? floor(p0.w.div(10)) : float(0);
+    const ang: N = atlas ? p0.w.sub(card.mul(10)) : p0.w;
+    const c: N = cos(ang);
+    const s: N = sin(ang);
     const rp: N = vec3(lp.x.mul(c).sub(lp.z.mul(s)), lp.y, lp.x.mul(s).add(lp.z.mul(c)));
     const h: N = uv().y;
 
@@ -354,8 +431,50 @@ export class Grass {
     this.material.positionNode = root.add(vec3(rp.x.add(off.x), y, rp.z.add(off.y)).mul(fade));
     // Pháp tuyến hướng lên như mặt đất: hai mặt lá sáng như nhau, bụi cỏ hòa vào nền thay vì lấp lánh.
     this.material.normalNode = cameraViewMatrix.transformDirection(vec3(0, 1, 0));
+    if (atlas) {
+      const cell: N = vec2(card.mod(cols), floor(card.div(cols)));
+      const tuv: N = vec2(cell.x.add(uv().x), cell.y.add(float(1).sub(uv().y))).div(vec2(cols, rows));
+      const t: N = texture(atlas, tuv);
+      // Gốc tối (khuất), ngọn sáng; màu thẻ nhân sắc từng bụi.
+      this.material.colorNode = t.rgb.mul(p1.yzw).mul(mix(1.1, 2.6, h));
+      this.material.opacityNode = t.a;
+      this.material.alphaTest = 0.45;
+      return;
+    }
     // Gốc tối (khuất), ngọn sáng.
     this.material.colorNode = p1.yzw.mul(mix(0.42, 1.08, h));
+  }
+
+  /** Nạp atlas thẻ cỏ (WebP RGBA, ~270 KB) rồi mới dựng shader; chưa xong thì lưới ẩn. */
+  private async loadCards(set: string): Promise<void> {
+    try {
+      const base = import.meta.env.BASE_URL;
+      const man = (await (await fetch(`${base}${set}/manifest.json`)).json()) as { atlas: string; cols: number; rows: number };
+      const res = await fetch(`${base}${set}/${man.atlas}`);
+      if (!res.ok) throw new Error(`${man.atlas}: ${res.status}`);
+      const bmp = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+      if (this.disposed) {
+        bmp.close();
+        return;
+      }
+      const t = new THREE.Texture(bmp);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.flipY = false;
+      t.premultiplyAlpha = false;
+      t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+      t.magFilter = THREE.LinearFilter;
+      t.minFilter = THREE.LinearMipmapLinearFilter;
+      t.generateMipmaps = true;
+      t.anisotropy = 4;
+      t.needsUpdate = true;
+      this.cardTex = t;
+      this.buildShader(t, man.cols, man.rows);
+      this.ready = true;
+      this.material.needsUpdate = true;
+      this.mesh.visible = this.geo.instanceCount > 0;
+    } catch (e) {
+      console.warn('[grass] không nạp được thẻ cỏ:', e);
+    }
   }
 
   setQuality(q: string, shadows = false): void {
@@ -423,7 +542,7 @@ export class Grass {
     for (const k of this.want) {
       if (budget <= 0) break;
       if (this.chunks.has(k)) continue;
-      this.chunks.set(k, { data: buildGrassChunk(chunkX(k), chunkZ(k), this.preset.spacing) });
+      this.chunks.set(k, { data: buildGrassChunk(chunkX(k), chunkZ(k), this.preset.spacing, this.style) });
       budget--;
       this.dirty = true;
     }
@@ -467,10 +586,12 @@ export class Grass {
     }
     this.geo.instanceCount = n;
     this.count = n;
-    this.mesh.visible = n > 0;
+    this.mesh.visible = n > 0 && this.ready;
   }
 
   dispose(): void {
+    this.disposed = true;
+    this.cardTex?.dispose();
     this.mesh.removeFromParent();
     this.geo.dispose();
     this.material.dispose();

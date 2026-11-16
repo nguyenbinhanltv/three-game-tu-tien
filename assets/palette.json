@@ -96,6 +96,34 @@
         "fogHaze": 0.0016, "fogHazeStart": 60, "rim": 0.9,
         "shadowTint": "#0F1F2A", "highlightTint": "#FFB869", "splitBalance": -0.2,
         "blackLift": "#0E1C27", "contrast": 1.08, "saturation": 0.82, "exposure": 1.2
+      },
+      "ochre_dawn": {
+        "label": "Đoạn Mạch — sáng sớm",
+        "sunColor": "#F0A56C", "sunIntensity": 1.9, "sunElevationDeg": 12,
+        "skyColor": "#C2A596", "skyIntensity": 0.85,
+        "fogColor": "#D9BFA5", "fogDensity": 0.0019, "heightFogTop": 45, "heightFogBoost": 2.0,
+        "fogHaze": 0.003, "fogHazeStart": 45, "rim": 0.55,
+        "shadowTint": "#35454F", "highlightTint": "#FFC27E", "splitBalance": 0.1,
+        "blackLift": "#1C1815", "contrast": 1.06, "saturation": 0.94, "exposure": 1.0
+      },
+      "ochre": {
+        "label": "Đoạn Mạch — ban ngày",
+        "sunColor": "#F2B77A", "sunIntensity": 2.6, "sunElevationDeg": 30,
+        "skyColor": "#B9A68E", "skyIntensity": 0.7,
+        "fogColor": "#CDB59A", "fogDensity": 0.0015, "heightFogTop": 30, "heightFogBoost": 1.6,
+        "fogHaze": 0.0028, "fogHazeStart": 50, "rim": 0.5,
+        "shadowTint": "#3A4955", "highlightTint": "#FFC27A", "splitBalance": 0.05,
+        "shadowAmount": 0.55, "highlightAmount": 0.25, "fogScatter": 0.8,
+        "blackLift": "#1C1815", "contrast": 1.1, "saturation": 0.8, "exposure": 0.95
+      },
+      "ochre_night": {
+        "label": "Đoạn Mạch — đêm",
+        "sunColor": "#8FA3BF", "sunIntensity": 1.1, "sunElevationDeg": 33,
+        "skyColor": "#3A4658", "skyIntensity": 1.0,
+        "fogColor": "#2A2F3A", "fogDensity": 0.0014, "heightFogTop": 35, "heightFogBoost": 1.8,
+        "fogHaze": 0.0016, "fogHazeStart": 55, "rim": 0.9,
+        "shadowTint": "#101A26", "highlightTint": "#E8A868", "splitBalance": -0.2,
+        "blackLift": "#12161F", "contrast": 1.08, "saturation": 0.8, "exposure": 1.2
       }
     },
     "bloom": { "threshold": 1.0, "strength": 0.35, "radius": 0.5, "maxHdr": 2.5 },

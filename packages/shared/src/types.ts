@@ -500,6 +500,8 @@ export interface LevelAssets {
   };
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
+  /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */
+  grassCards?: string;
 }
 
 /** Điểm đáng chú ý trong một vùng săn (M-5). */
