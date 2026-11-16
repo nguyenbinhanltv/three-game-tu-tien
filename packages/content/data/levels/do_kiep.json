@@ -1,0 +1,16 @@
+{
+  "id": "do_kiep",
+  "terrain": "van_lam",
+  "spawns": [],
+  "nodes": [],
+  "tribulation": true,
+  "dungeon": {
+    "spawn": { "x": 1520, "z": 1352 },
+    "exit": { "x": 1520, "z": 1370 },
+    "center": { "x": 1520, "z": 1300 },
+    "minLevel": 19,
+    "returnLevel": "van_lam",
+    "returnSpawn": { "x": 2048, "z": 1717 },
+    "waves": []
+  }
+}
