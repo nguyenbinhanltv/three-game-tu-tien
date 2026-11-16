@@ -36,8 +36,8 @@ export function idlePose(kind: ArtifactKind, t: number, speed: number, out: ArtP
       Object.assign(out, { x: 0, y: 1.22, z: -0.38, rx: -0.3, ry: 0, rz: 0, s: 1.2 });
       break;
     case 'heal':
-      // Ngưng Đan Lô lơ lửng sau vai phải, nhấp nhô chậm như đang nung.
-      Object.assign(out, { x: -0.42, y: 1.4 + Math.sin(t * 1.7) * 0.04, z: -0.32, rx: 0.08, ry: t * 0.35, rz: sway * 0.5, s: 1.25 });
+      // Ngưng Đan Lô nhỏ, lơ lửng sau lưng hơi cao và lệch vai phải (không che mặt), lắc lư nhẹ.
+      Object.assign(out, { x: -0.3 + Math.sin(t * 1.3) * 0.025, y: 1.48 + Math.sin(t * 1.7) * 0.035, z: -0.46, rx: 0.08 + Math.sin(t * 1.1) * 0.04, ry: t * 0.35, rz: sway * 0.6 + Math.sin(t * 0.9) * 0.05, s: 0.68 });
       break;
   }
   return out;
@@ -58,8 +58,8 @@ export function activePose(kind: ArtifactKind, t: number, out: ArtPose = blank()
       Object.assign(out, { x: 0, y: 3.25 + Math.sin(t * 3) * 0.06, z: 0, rx: 0, ry: t * 1.2, rz: 0, s: 2.1 });
       break;
     case 'heal':
-      // Bay lên trên đầu, nghiêng nắp rót đan khí xuống, xoay chậm.
-      Object.assign(out, { x: 0, y: 3.15 + Math.sin(t * 4) * 0.05, z: 0.1, rx: 0.35, ry: t * 1.6, rz: 0, s: 2.0 });
+      // Vận chiêu: bay ra trước mặt tầm ngực, nghiêng nắp rót đan khí, xoay chậm.
+      Object.assign(out, { x: 0, y: 1.45 + Math.sin(t * 4) * 0.04, z: 1.0, rx: 0.35, ry: t * 1.6, rz: 0, s: 1.1 });
       break;
   }
   return out;

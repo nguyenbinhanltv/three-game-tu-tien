@@ -76,7 +76,7 @@ async function main(): Promise<void> {
       await gm(page, 'tp 2048 2088', 1600);
       const shot = async (file: string) => {
         // Nhân vật luôn ở giữa màn hình (camera bám theo): cắt sát để thấy rõ phụ kiện.
-        await page.screenshot({ path: path.join(OUT, file), clip: { x: VW / 2 - 250, y: VH * 0.34, width: 500, height: 400 } });
+        await page.screenshot({ path: path.join(OUT, file), clip: { x: VW / 2 - 250, y: VH * 0.34, width: 500, height: 440 } });
         console.log(`[shots-sets] ${file}`);
       };
       for (const set of SETS) {

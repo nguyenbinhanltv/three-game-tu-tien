@@ -65,3 +65,8 @@ Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, ch
 - Thanh Tâm Đan, Thiên Lôi Hộ Đan, Hồi Mạch Đan bậc 3, linh ngọc cấp 4–6, Anh Ngọc Kính, Phá Ấn Phù/Định Thần Phù: chờ cơ chế của E3-L/M/E4.
 - Nguyên liệu bậc 3 chỉ rơi khi E3-A thêm quái bản đồ 3 và bảng rơi của chúng; trước đó chỉ lấy được bằng GM (`give`).
 - Gắn `item: "itm_duong_anh_dan"` vào `tribulations.json` (`nguyen_anh`) và bật cờ: E3-L.
+
+## Chỉnh sau soát ảnh (orchestrator)
+
+- **Ủng phụ kiện** (`setAccessories.ts` `cuff`, dùng chung cho mọi bộ có ô ủng): số đo bắp chân chặn ở 0,056 (đo theo xương cẳng chân bị vạt áo kéo to nên ra "cái xô"), ống thon 26% từ cổ ủng xuống mắt cá, cổ loe nhẹ, cao tới quá nửa ống chân (từ 45% xương cẳng chân), vòng viền mảnh, 12 cạnh để giữ ngân sách tam giác (< 3.000 mỗi bộ). Ảnh chụp lại: `set_*-{m,f}-{truoc,nghieng,sau,chem}.jpg` (khung cắt cao thêm 40 px để thấy ủng).
+- **Ngưng Đan Lô** (`artifactVis.ts` `idlePose/activePose('heal')`): cỡ 1,25 → 0,68 (−46%); nghỉ ở sau lưng (z −0,46), cao ngang vai (y 1,48), lệch vai phải (x −0,3), lắc lư và nhấp nhô nhẹ; vận chiêu (T) bay ra trước mặt tầm ngực (z 1,0, cỡ 1,1) thay vì lên trên đầu. Bảng nhân vật 3D vẫn hiện lô nhỏ sau vai: `ui-bang-nhan-vat.jpg`. Test `artifactVis.test.ts` cập nhật.

@@ -109,6 +109,13 @@ async function main(): Promise<void> {
     }
     await sleep(400);
     await shot('tooltip-so-sanh-bac3.png');
+    // Bảng nhân vật (xem trước 3D) với Ngưng Đan Lô đang bay sau vai.
+    await page.mouse.move(5, 5);
+    await page.keyboard.press('b');
+    await sleep(500);
+    await page.keyboard.press('c');
+    await sleep(2500);
+    await shot('bang-nhan-vat.png');
     await gm(page, 'tp 2004 2064', 2200);
     await page.evaluate(() => (window as unknown as G).__game!.openNpc('npc_duoc_su'));
     await sleep(1200);

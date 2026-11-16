@@ -298,23 +298,33 @@ function cuff(c: Ctx, s: 1 | -1, o: { len: number; kind: Kind; color: string; ri
   const f = c.fit.shin[s];
   const bone: FitBone = s === 1 ? 'leftleg' : 'rightleg';
   const h = c.h;
-  const r = f.radius + 0.004 * h + o.flare;
-  const rUp = r;
-  const rDn = r * 0.82;
-  const len = o.len * h;
-  const up = f.axis.clone().negate();
-  const top = f.center.clone().addScaledVector(f.axis, -len / 2);
-  const bot = f.center.clone().addScaledVector(f.axis, len / 2);
+  // Ủng ôm ống chân: số đo bắp chân lấy từ đỉnh xương cẳng chân nhưng chặn trên (đỉnh gắn xương cẳng chân gồm cả vạt áo
+  // nên đo ra to như cái xô), thon dần xuống mắt cá, cổ ủng loe nhẹ, cao tới quá nửa ống chân.
+  const from = c.fit.bones[s === 1 ? 'leftleg' : 'rightleg'].pos;
+  const to = c.fit.bones[s === 1 ? 'leftfoot' : 'rightfoot'].pos;
+  const axis = f.axis;
+  const legLen = to.clone().sub(from).length();
+  const tBot = 0.97;
+  const tTop = Math.max(0.45, tBot - Math.min(0.55, (o.len * 1.9 * h) / legLen));
+  const at = (t: number) => from.clone().lerp(to, t);
+  const rCalf = Math.min(f.radius, 0.056 * h) + 0.003 * h;
+  const rUp = rCalf + o.flare * 0.6;
+  const rDn = rCalf * 0.74;
+  const top = at(tTop);
+  const bot = at(tBot);
+  const len = top.distanceTo(bot);
+  const mid = top.clone().lerp(bot, 0.5);
+  const up = axis.clone().negate();
   const rAt = (t: number) => rUp + (rDn - rUp) * t;
-  add(c, bone, o.kind, put(tubeGeo(rUp, rDn, len, 14), o.color, { pos: f.center, dir: up }));
-  add(c, bone, o.kind, put(tubeGeo(rUp * 1.12, rUp * 0.99, 0.014 * h, 14), o.color, { pos: top.clone().addScaledVector(f.axis, 0.005 * h), dir: up }));
-  add(c, bone, 'hard', put(ringGeo(rUp * 1.12, 0.0045 * h, 14), o.rim, { pos: top.clone().addScaledVector(f.axis, -0.002 * h), dir: f.axis }));
-  add(c, bone, 'hard', put(ringGeo(rDn + 0.0015, 0.0045 * h, 14), o.rim, { pos: bot, dir: f.axis }));
+  add(c, bone, o.kind, put(tubeGeo(rUp, rDn, len, 12), o.color, { pos: mid, dir: up }));
+  add(c, bone, o.kind, put(tubeGeo(rUp * 1.08, rUp * 0.99, 0.012 * h, 12), o.color, { pos: top.clone().addScaledVector(axis, 0.004 * h), dir: up }));
+  add(c, bone, 'hard', put(ringGeo(rUp * 1.08, 0.0035 * h, 12), o.rim, { pos: top.clone().addScaledVector(axis, -0.001 * h), dir: axis }));
+  add(c, bone, 'hard', put(ringGeo(rDn + 0.001, 0.0035 * h, 12), o.rim, { pos: bot, dir: axis }));
   const front = V(0, 0, 1);
-  for (const deg of [-34, 0, 34]) {
-    add(c, bone, 'hard', put(new THREE.OctahedronGeometry(1), o.rim, { pos: around(top.clone().addScaledVector(f.axis, len * 0.24), f.axis, front, rAt(0.24) + 0.002, deg), scale: 0.0045 * h }));
+  for (const deg of [-30, 0, 30]) {
+    add(c, bone, 'hard', put(new THREE.OctahedronGeometry(1), o.rim, { pos: around(top.clone().addScaledVector(axis, len * 0.2), axis, front, rAt(0.2) + 0.001, deg), scale: 0.0036 * h }));
   }
-  add(c, bone, 'hard', put(boxGeo(0.026 * h, len * 0.78, 0.007 * h), o.plate ?? o.rim, { pos: f.center.clone().addScaledVector(front, rAt(0.5) + 0.004 * h), dir: up }));
+  add(c, bone, 'hard', put(boxGeo(0.02 * h, len * 0.72, 0.005 * h), o.plate ?? o.rim, { pos: mid.clone().addScaledVector(front, rAt(0.5) + 0.002 * h), dir: up }));
 }
 
 /** Đai lưng: dải ôm eo + 2 viền + khóa trước. */
