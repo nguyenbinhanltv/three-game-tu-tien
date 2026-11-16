@@ -5344,6 +5344,71 @@
         }
       }
     },
+    "prop_kiem_liet_mach_cuoi": {
+      "id": "prop_kiem_liet_mach_cuoi",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_kiem_liet_mach_cuoi.glb",
+      "file": "prop_kiem_liet_mach_cuoi.be9a875425.glb",
+      "bytes": 467660,
+      "rawBytes": 547528,
+      "triangles": 2500,
+      "rawTriangles": 3730,
+      "lod0Cap": 2500,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_kiem_liet_mach_cuoi_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_liet_mach_cuoi_color",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_liet_mach_cuoi_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 2500
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.3291,
+          "height": 0.95,
+          "depth": 0.1309,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.3291,
+          "height": 0.95,
+          "depth": 0.1309,
+          "minY": 0
+        }
+      }
+    },
     "prop_kiem_thanh_phong": {
       "id": "prop_kiem_thanh_phong",
       "class": "weapon",
@@ -7241,6 +7306,81 @@
           "height": 7.0002,
           "depth": 6.0284,
           "minY": -0.0001
+        }
+      }
+    },
+    "prop_vo_kiem_liet_mach": {
+      "id": "prop_vo_kiem_liet_mach",
+      "class": "prop",
+      "source": "assets/build/raw/prop_vo_kiem_liet_mach.glb",
+      "file": "prop_vo_kiem_liet_mach.aeaafd1219.glb",
+      "bytes": 480144,
+      "rawBytes": 489948,
+      "triangles": 1418,
+      "rawTriangles": 1418,
+      "lod0Cap": 2500,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_vo_kiem_liet_mach_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_vo_kiem_liet_mach_color",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "prop_vo_kiem_liet_mach_orm",
+          "mimeType": "image/jpeg",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 1418
+        },
+        {
+          "level": 1,
+          "triangles": 566,
+          "target": 567
+        },
+        {
+          "level": 2,
+          "triangles": 204,
+          "target": 213
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.1366,
+          "height": 0.7001,
+          "depth": 0.1022,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.1366,
+          "height": 0.7001,
+          "depth": 0.1022,
+          "minY": 0
         }
       }
     },

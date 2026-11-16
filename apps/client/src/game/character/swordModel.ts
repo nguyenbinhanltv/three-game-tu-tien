@@ -56,6 +56,7 @@ export const SWORD_TINT: Record<string, [number, number, number]> = {
   prop_kiem_han_giao: [1.8, 1.65, 1.45],
   prop_kiem_tram_ta: [1.6, 1.45, 1.15],
   prop_kiem_liet_mach: [2.5, 2.2, 1.6],
+  prop_kiem_liet_mach_cuoi: [1.6, 1.4, 1.1],
   prop_kiem_kinh_quang: [1.9, 1.8, 1.65],
   prop_kiem_tinh_khuyet: [1.7, 1.55, 1.4],
 };

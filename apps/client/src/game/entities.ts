@@ -87,7 +87,7 @@ const SWORD_FORCED = typeof location === 'undefined' ? null : swordOverride(loca
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
-  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp) };
+  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp, s.wg ?? 0) };
   const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
   return s.sa ? { ...look, acc: s.sa } : look;
 }

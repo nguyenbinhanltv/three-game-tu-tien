@@ -247,11 +247,20 @@ export const SWORD_MODEL_DEFAULT = 'prop_kiem_thanh_phong';
 /** Model theo phẩm (`rarity` 0..4) cho vũ khí chưa khai báo `model`: gần nhất theo phẩm. */
 const SWORD_MODEL_BY_RARITY = ['prop_kiem_thiet', 'prop_kiem_thanh_phong', 'prop_kiem_han_quang', 'prop_kiem_han_giao', 'prop_kiem_tram_ta'];
 /** Kiếm bậc mới (E2): Liệt Mạch (bậc 2) đã gắn vật phẩm `itm_liet_mach_kiem`; Kính Quang (bậc 3) và Tinh Khuyết (bậc 4) đã nhập model, chờ E3/E4 thêm vật phẩm. */
-export const SWORD_MODELS_TIER = ['prop_kiem_liet_mach', 'prop_kiem_kinh_quang', 'prop_kiem_tinh_khuyet'];
+export const SWORD_MODELS_TIER = ['prop_kiem_liet_mach', 'prop_kiem_kinh_quang', 'prop_kiem_tinh_khuyet', 'prop_kiem_liet_mach_cuoi'];
+/** Dạng cuối khi cường hóa +10 (`glowStage` = 2): model kiếm → model dạng cuối (T-5). Kiếm chưa có dạng cuối giữ model cũ. */
+export const SWORD_FINAL: Record<string, string> = { prop_kiem_liet_mach: 'prop_kiem_liet_mach_cuoi' };
+/** Vỏ kiếm đeo lưng khi mặc áo bộ mô-đun: dùng chung tạm cho mọi kiếm chưa có vỏ riêng. */
+export const SCABBARD_DEFAULT = 'prop_vo_kiem_liet_mach';
 export const SWORD_MODELS = [...new Set([SWORD_MODEL_DEFAULT, ...SWORD_MODEL_BY_RARITY, ...SWORD_MODELS_TIER])];
 
 /** Asset model 3D của kiếm đang cầm: `model` của món nếu có, không thì theo phẩm; id không phải vũ khí → kiếm mặc định. */
-export function swordModelOf(itemId: string | undefined): string {
+export function swordModelOf(itemId: string | undefined, glowStage = 0): string {
+  const base = swordBaseModelOf(itemId);
+  return glowStage >= 2 ? (SWORD_FINAL[base] ?? base) : base;
+}
+
+function swordBaseModelOf(itemId: string | undefined): string {
   const it = itemId ? ITEM.get(itemId) : undefined;
   if (!it || it.kind !== 'weapon') return SWORD_MODEL_DEFAULT;
   return it.model ?? SWORD_MODEL_BY_RARITY[Math.max(0, Math.min(SWORD_MODEL_BY_RARITY.length - 1, it.rarity))];

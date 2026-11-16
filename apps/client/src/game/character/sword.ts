@@ -123,6 +123,15 @@ export class SwordSocket {
     return this.def.glowLocal;
   }
 
+  /** Ma trận thế giới của xương lưng (cha của xương kiếm lúc tra) và chỗ xương kiếm so với nó: gốc để đặt vỏ kiếm trên lưng. */
+  get backWorld(): THREE.Matrix4 {
+    return this.back.matrixWorld;
+  }
+
+  get backLocal(): THREE.Matrix4 {
+    return this.def.backLocal;
+  }
+
   set(inHand: boolean): void {
     if (inHand === this.inHand) return;
     this.inHand = inHand;
