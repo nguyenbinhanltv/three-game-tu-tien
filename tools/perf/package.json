@@ -27,6 +27,7 @@
     "shots:trib": "tsx src/shots-trib.ts",
     "shots:eqicons": "tsx src/shots-eqicons.ts",
     "shots:kiem": "tsx src/shots-kiem.ts",
+    "shots:props": "tsx src/shots-props.ts",
     "shots:elite": "tsx src/shots-elite.ts",
     "shots:elitegame": "tsx src/shots-elite-game.ts",
     "shots:e0": "tsx src/shots-e0.ts",

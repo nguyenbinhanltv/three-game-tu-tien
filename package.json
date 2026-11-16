@@ -42,6 +42,7 @@
     "shots:eqicons": "pnpm --filter @dtl/perf run shots:eqicons --",
     "shots:m4": "pnpm --filter @dtl/perf run shots:m4 --",
     "shots:kiem": "pnpm --filter @dtl/perf run shots:kiem --",
+    "shots:props": "pnpm --filter @dtl/perf run shots:props --",
     "shots:elite": "pnpm --filter @dtl/perf run shots:elite --",
     "shots:elitegame": "pnpm --filter @dtl/perf run shots:elitegame --",
     "shots:e0": "pnpm --filter @dtl/perf run shots:e0 --",
