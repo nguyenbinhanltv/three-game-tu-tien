@@ -48,3 +48,29 @@ Bản ảnh đầu có hai điểm lạ: (1) một khối gai xanh đen nằm đ
 - Áo hơi tối và nhàu ở mép vạt (Tripo), không rực như concept; texture 1K nên hoa văn chòm sao mờ khi gần.
 - Chưa có vật phẩm (xem trên), chưa có icon.
 - Mặt nạ phát sáng riêng cho nhãn sao/chòm sao chưa tách (vân sáng áo chỉ bắt chấm tím sao rất nhỏ).
+
+# Thần Tàng Đan Bào (T-6b, Đan sư bậc 4)
+
+Mảnh Tripo `chr/set_than_tang_dan_bao/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` → `set_than_tang_dan_bao_{nam,nu}` (LOD0 11399 / LOD1 4560 / LOD2 1702 nam, 11401 / 4556 / 1698 nữ; 18 xương lò xo), `outfits.json` `set_than_tang`. Bộ vật phẩm `set_than_tang` cũng chưa có trong `sets.json` (bậc 4 khóa): ảnh ép áo bằng `?outfit=set_than_tang_dan_bao`.
+
+Bảng màu: chính `#212A38` mực đêm xanh, phụ `#DCD2B8` ngà cổ, viền `#BC9C58` vàng cổ, nhấn `#6DB4A0` lục ngọc; `gain` 1,5.
+
+## Mảnh không texture: vật liệu thủ tục
+
+`raw_ung_v01.glb` là GLB Smart Mesh chưa chạy bước texture (32 KB, 0 ảnh, không UV). Người dùng quyết dùng hình khối này, nên `outfit_build.py` **không chặn** mà cảnh báo (`[outfit_build] CẢNH BÁO: ung ... không có texture màu`) và tự dựng vật liệu thủ tục (`bake_proc`):
+
+- UV mới bằng smart project, rồi nướng màu vào ô atlas của mảnh (rasterize theo UV) từ thuộc tính đỉnh: đồ nhỏ rời (khóa, tua, đồ treo) và cạnh sắc là kim loại viền, dải miệng ủng, mũi ủng và đế là kim loại, đồ rời xen kẽ là ngọc nhấn; còn lại là vải/da nền.
+- Thêm nhiễu 3D hai tầng, đường dệt và khắc ngang nhẹ ở vùng kim loại. Màu lấy theo `import.outfit.proc.<mảnh>` (`base`, `metal`, `accent`, `top`, `toe`, `edge`) hoặc bảng màu bộ; tông khớp các mảnh có texture cùng bộ (sRGB mã hóa như texture Tripo, cùng `gain`).
+- Atlas giữ nguyên cấu trúc (màu, mặt nạ 3 kênh, vân sáng), nên shader nhuộm và hiệu năng không đổi.
+- Hàng rào còn lại: GLB không có mesh, hoặc không đúng một mesh, vẫn dừng với thông báo rõ. GLB không vật liệu/không UV (như ủng này) đi đường thủ tục. Khi người dùng xuất lại ủng có texture thì pipeline tự dùng texture, cấu hình `proc` thành thừa.
+- Giới hạn: ủng nhẵn hơn các mảnh có texture (không hoa văn thêu), ngọc nhấn chỉ ở đồ rời nhỏ; chưa có pháp tuyến riêng (dùng phẳng).
+
+## Voan xuyên sáng (alpha-test/dither)
+
+Voan choàng sao nằm chung lưới với đạo bào (Tripo không tách). `import.outfit.alpha = {"ao_ngoai": "veil"}`: pipeline nhận vùng voan theo màu texel (xám-tím sáng, lam ≥ đỏ, lục ≤ lam) và ghi alpha 0,6 vào atlas màu (~23% ô áo ngoài), material glTF đánh dấu `dtl_outfitAlpha`. Client (`createOutfitMaterial`): không blend (khỏi sắp xếp độ sâu, tốn GPU) mà dither theo toạ độ màn hình (nhiễu gradient xen kẽ) + `alphaTest` 0,5: texel alpha a được giữ lại với xác suất a. Chỉ **một** mảnh xuyên sáng cho cả bộ (áo ngoài); dải lụa đai tối màu nên chưa tách (còn dư một suất trong giới hạn 2 mảnh).
+
+## Kiểm xuyên mesh và số đo
+
+- `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 0 đến 32 ở chạy/chém giơ tay/ngồi xổm (nam), 0,5 đến 3,5 (nữ), sâu ≤ 4 cm; ảnh game không thấy xuyên mesh. `check/set_than_tang_dan_bao_*.json`.
+- `bench:crowd` sân 50 bot WebGPU high, cùng mặc (ép áo bằng `CROWD_QUERY`): **269 draw (< 300)**, 789k tam giác, CPU p50/p95/p99 5,7 / 7,8 / 33,8 ms (đạt; p99 là khung nạp pipeline đầu), texture 404 MB, heap 310 MB, tick p95 1,6 ms.
+- Ảnh: `sheet_than_tang_<m|f>.jpg`, `matrix_than_tang_<m|f>.jpg`, `bang_than_tang_<m|f>.jpg` (cùng bố cục Tinh Khuyết; chụp bằng `pnpm shots:outfit --sets set_phuc_mach --query outfit=set_than_tang_dan_bao`).
