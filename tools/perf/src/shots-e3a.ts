@@ -53,7 +53,7 @@ if (process.env.E3I_EXTRA) {
   if (pond) shots.push({ name: 'e3i-ho-guong', x: pond.x - pond.r - 8, z: pond.z, yaw: look(1, 0), pitch: 0.22, dist: 15 });
   const featOf = (id: string) => tr.def.features.find((f) => f.id === id);
   const thach = featOf('isl_thach_quy_dao');
-  if (thach) shots.push({ name: 'e3i-mep-dao', x: thach.x + thach.flatR - 9, z: thach.z, yaw: look(1, 0), pitch: 0.5, dist: 20 });
+  if (thach) shots.push({ name: 'e3i-mep-dao', x: thach.x, z: thach.z + thach.flatR - 9, yaw: look(0, 1), pitch: 0.5, dist: 20 });
   const ngu = featOf('isl_kinh_ngu_dai');
   if (ngu) {
     const a0 = 0.9;
@@ -123,7 +123,7 @@ async function main(): Promise<void> {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
     page.on('console', (m) => (m.type() === 'error' || m.type() === 'warning') && errors.push(m.text().slice(0, 600)));
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=E3A_Shots${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=E3A_Shots${process.env.E3I_QUERY ?? ""}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
     await page.waitForFunction(() => {
       const g = (window as unknown as G).__game;
       return !!g && g.frames > 30 && !!g.me?.();
@@ -138,6 +138,15 @@ async function main(): Promise<void> {
     await sleep(4000);
     log.backend = await page.evaluate(() => (window as unknown as G).__game?.rendererName ?? '?');
     console.log('[shots-e3a] đã vào van_hai, renderer', log.backend);
+    // E3I_HIDE=tên,tên: ẩn đối tượng theo tên trong cảnh (dò xem lớp nào gây lỗi hình), ví dụ cloud-falls,cloud-banks.
+    if (process.env.E3I_HIDE) {
+      await page.evaluate((names) => {
+        const g = (window as unknown as G).__game!;
+        (g.scene as { traverse: (f: (o: { name: string; visible: boolean }) => void) => void }).traverse((o) => {
+          if (names.includes(o.name)) o.visible = false;
+        });
+      }, process.env.E3I_HIDE.split(','));
+    }
     const snap = async (name: string) => {
       await sleep(Number(process.env.SHOT_SETTLE ?? 2500));
       await page.screenshot({ path: path.join(OUT, `${name}.png`) });

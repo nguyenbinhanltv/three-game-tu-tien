@@ -42,7 +42,7 @@ Gói E3-I nâng hình ảnh bản đồ `van_hai` (E3-A/E3-N, PR #148) theo `doc
 | Điểm đáng chú ý Đỉnh Sấm | 105 → 134 | 365k → 497k |
 | Cầu xích | 114 → 147 | 291k → 306k |
 
-Cao nhất sau: **148 draw call** (ngân sách < 300), **497k tam giác** (1–2 triệu). Thêm khoảng +10–30 draw call (prop theo đảo: mỗi loại prop thêm một pool, tầng mây, đá trôi, thác mây, hồ) và vài texture canvas nhỏ (hàng chục KB mỗi cái). Số geometry/texture tăng chậm theo số điểm đã đi qua (nạp lười), không rò. Nhạc thêm 1,8 MB (webm) / 2,1 MB (m4a), chỉ tải khi vào Vân Hải (không nằm trong tải đầu).
+Cao nhất sau: **152 draw call** (ngân sách < 300), **497k tam giác** (1–2 triệu; lần chụp cuối 476k). Bảng trên là lần đo trước vòng sửa review; vòng sửa chỉ đổi màu, cỏ, prop thưa hơn nên số không tăng. Thêm khoảng +10–30 draw call (prop theo đảo: mỗi loại prop thêm một pool, tầng mây, đá trôi, thác mây, hồ) và vài texture canvas nhỏ (hàng chục KB mỗi cái). Số geometry/texture tăng chậm theo số điểm đã đi qua (nạp lười), không rò. Nhạc thêm 1,8 MB (webm) / 2,1 MB (m4a), chỉ tải khi vào Vân Hải (không nằm trong tải đầu).
 
 ## Kiểm chứng
 
@@ -50,6 +50,16 @@ Cao nhất sau: **148 draw call** (ngân sách < 300), **497k tam giác** (1–2
 - Test mới `game/vanHaiArt.test.ts`: bản sắc/bảng màu, lối mòn, hồ lõm, mặt đảo nhấp nhô mà đi được, rìa đảo đúng độ cao, rải prop xác định và đúng bộ prop từng đảo.
 - `pnpm map:report --level van_hai`: 0 chỗ kẹt, độ phủ chuẩn như cũ (p95 64,6 m, max 83,0 m); `islands.test.ts` và `vanhai.test.ts` (leo vách/thang bằng `stepMove` thật) vẫn đạt.
 - Ảnh chụp luôn `?mute=1` và `--mute-audio`, cặp cổng riêng 2797/5397, server tự tắt.
+
+## Vòng sửa sau review ảnh
+
+- Vệt dọc thẳng trên trời (`e3i-mep-dao`): là khe mảnh ở **vách ranh vùng chơi** do luật bỏ ô vách đảo (`CLIFF_SKIP`) cũng bỏ nhầm ô vách ranh; nay ô ở vách ranh vẫn dựng mặt (`terrain.ts` `onPlayWall`). Lỗi có từ E3-A.
+- Dải trắng gợn sóng xuyên mặt đảo (`e3i-toan-canh-dao`): là lối mòn quá rộng, quá sáng, lượn quá nhiều, nhìn từ xa thành "mây". Lối mòn hẹp hơn, lượn ít hơn, tương phản thấp (riêng hub rõ hơn: lối lát đá tới 3 đèn đá, có viền sẫm và ô phiến), không còn dẫn tới chân thang mây.
+- Bậc phẳng cạnh thẳng ở mép (`e3i-mep-dao`): là mép trên của khối đá treo (màu rêu phẳng lệch với mặt đảo) cộng đầu cầu; khối đá treo nay thấp hơn mặt đảo và lấy cùng màu rìa đảo. Góc chụp chuyển sang mép không có cầu.
+- Đốm sương cạnh nhân vật: do hạt `mist` của Vân Hải, đã sửa ở #150 (có sau khi merge `main`); ảnh chụp lại không còn.
+- Hub: nhấp nhô mạnh hơn (biên độ 1,2), lối lát đá tới các đèn đá, cỏ dày hơn ven lối, vài cụm hoa nhạt.
+- Khối đá thô ở Tùng Đài: là gốc đá của một cây tùng sát camera ở tâm đảo; tâm các đảo vùng (r 22 m) nay không rải cây; đá nhỏ flat-shaded thay bằng dương xỉ/tre.
+- Công cụ: `E3I_HIDE=<tên,tên>` ẩn đối tượng theo tên khi chụp, `E3I_QUERY="&props=0"` thêm tham số URL, để dò lớp gây lỗi hình.
 
 ## Ghi chú, giới hạn
 

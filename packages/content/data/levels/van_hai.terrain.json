@@ -265,8 +265,8 @@
       "round": true,
       "detail": 1.1,
       "relief": {
-        "amp": 0.5,
-        "freq": 0.02
+        "amp": 1.2,
+        "freq": 0.025
       }
     },
     {

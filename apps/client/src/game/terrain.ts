@@ -129,7 +129,11 @@ function islandColor(x: number, z: number, h: number, ny: number, out: THREE.Col
   if (slope > 0.1) out.lerp(P.dark, Math.min(1, (slope - 0.1) * 4));
   // lối mòn: đất nén sáng, lẫn sỏi
   const tw = art.trailW(isl, x, z);
-  if (tw > 0) out.lerp(P.trail, tw * 0.88);
+  if (tw > 0) {
+    out.lerp(P.trail, tw * (isl.kind === 'hub' ? 0.92 : 0.45));
+    // Phù Đảo Các: lối lát đá, vân ô phiến (mỗi ô ~1,7 m một sắc độ riêng)
+    if (isl.kind === 'hub') out.multiplyScalar(1 - tw * 0.1 + tw * 0.14 * hash01(Math.floor(x / 1.7), Math.floor(z / 1.7), 77) - 0.22 * tw * (1 - tw) * 4);
+  }
   // bờ hồ gương: đất ẩm sẫm, lòng hồ phù sa
   const pw = art.pondW(x, z);
   if (pw > 0) out.lerp(P.wet, Math.min(1, pw * 1.3) * 0.85);
@@ -209,6 +213,12 @@ function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
 
 /** Level đảo nổi: ô lưới có độ chênh cao hơn mức này (m) là vách đảo, không dựng mặt (vách là khối đá treo ở skyIslands.ts). */
 const CLIFF_SKIP = 9;
+/** Ô nằm ở vách ranh vùng chơi (không phải vách đảo): vẫn dựng mặt, nếu không để lại các khe mảnh như đường kẻ dọc trên trời. */
+function onPlayWall(pos: Float32Array, a: number, d: number): boolean {
+  const cx = (pos[a * 3] + pos[d * 3]) / 2;
+  const cz = (pos[a * 3 + 2] + pos[d * 3 + 2]) / 2;
+  return T.playDist(cx, cz) > T.playWall - 12;
+}
 function quadSpan(pos: Float32Array, a: number, b: number, c: number, d: number): number {
   const ya = pos[a * 3 + 1];
   const yb = pos[b * 3 + 1];
@@ -267,7 +277,7 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
       const b = a + 1;
       const c = a + n1;
       const d = c + 1;
-      if (cliff < Infinity && quadSpan(pos, a, b, c, d) > cliff) continue; // vách đảo: bỏ mặt đứng, `skyIslands.ts` dựng khối đá treo
+      if (cliff < Infinity && quadSpan(pos, a, b, c, d) > cliff && !onPlayWall(pos, a, d)) continue; // vách đảo: bỏ mặt đứng, `skyIslands.ts` dựng khối đá treo
       idx.push(a, c, b, b, c, d);
     }
   }
@@ -577,7 +587,7 @@ export class Terrain {
         const b = a + 1;
         const c = a + n1;
         const d = c + 1;
-        if (cpos && quadSpan(cpos, a, b, c, d) > CLIFF_SKIP) continue;
+        if (cpos && quadSpan(cpos, a, b, c, d) > CLIFF_SKIP && !onPlayWall(cpos, a, d)) continue;
         idx[o++] = a;
         idx[o++] = c;
         idx[o++] = b;

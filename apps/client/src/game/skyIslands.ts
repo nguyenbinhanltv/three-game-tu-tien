@@ -147,7 +147,7 @@ export class SkyIslands {
     const kind: VhKind = vi?.kind ?? 'tieu_dao';
     const SK = SKIRT[kind];
     const prof: [number, number][] = [
-      [r - 4, 0.3], [r + 3, 0.2], [r + 6.5, -1.2], [r + 7.5, -4], [r + 6, -9], [r + 2, -15], [r - 5, -22], [r - 14, -31],
+      [r - 4, -0.02], [r + 3, -0.1], [r + 6.5, -1.2], [r + 7.5, -4], [r + 6, -9], [r + 2, -15], [r - 5, -22], [r - 14, -31],
       [r * 0.78, -41], [r * 0.58, -52], [r * 0.38, -62], [r * 0.2, -72], [r * 0.07, -80], [0.01, -86],
     ];
     // bản sắc dáng đảo: Thạch Quy phình rộng như mai rùa, Kình Ngư thon dài, Lôi Vân nhọn lởm chởm
@@ -156,7 +156,7 @@ export class SkyIslands {
     const col: number[] = [];
     const rock = new THREE.Color();
     const pal = vi?.pal;
-    const A = new THREE.Color(pal ? pal.moss : 0x7a8460); // rêu ở mép
+    const A = new THREE.Color(pal ? pal.moss : 0x7a8460).lerp(new THREE.Color(pal ? pal.soil : 0x7a8460), 0.5).multiplyScalar(1.3 * 0.84); // khớp màu rìa mặt đảo (terrain.ts islandColor)
     const B = new THREE.Color(pal ? pal.stone : 0x8e8a7e).multiplyScalar(0.92); // đá sáng
     const D = new THREE.Color(pal ? pal.dark : 0x4e4b48).multiplyScalar(0.8); // đá tối ở mũi
     const seed = Math.floor(isl.x * 3.1 + isl.z * 1.7);
@@ -177,7 +177,7 @@ export class SkyIslands {
       // vân tầng đá: mỗi lớp ~3 m một sắc độ riêng (xếp lớp trầm tích), lộ rõ ở thân đảo
       const band = hash01(Math.floor(y / 3.1), seed, 61);
       rock.copy(B).lerp(D, depth * 0.9).multiplyScalar((0.86 + n2 * 0.25) * (0.88 + band * 0.26));
-      if (y > -4) rock.lerp(A, Math.min(1, (y + 4) / 4) * 0.8);
+      if (y > -4) rock.lerp(A, Math.min(1, (y + 4) / 4.5));
       col.push(rock.r, rock.g, rock.b);
     }
     lathe.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));

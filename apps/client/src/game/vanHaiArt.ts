@@ -1,6 +1,6 @@
 // Bản sắc từng đảo của Vân Hải Phù Đảo (E3-I): bảng màu đất/đá/rêu, lối mòn, mặt đá lộ, bờ hồ gương. Hàm thuần theo `TerrainDef` (không dùng three):
 // địa hình (màu đỉnh), cỏ, rải prop và skirt đảo cùng đọc từ đây để năm đảo vùng không giống nhau và các lớp khớp nhau (cỏ không mọc trên lối mòn, đá lộ đúng chỗ).
-import { fbm, hash01, smoothstep, type TerrainDef } from '@dtl/shared';
+import { fbm, hash01, propsOf, smoothstep, type TerrainDef } from '@dtl/shared';
 
 /** Màu hex 0xRRGGBB. */
 export interface VhPalette {
@@ -24,7 +24,7 @@ export type VhKind = 'hub' | 'tung_dai_dao' | 'thach_quy_dao' | 'kinh_ho_dao' | 
 
 export const VH_PALETTES: Record<VhKind, VhPalette> = {
   // Phù Đảo Các: sân lát đá nhạt, cỏ cắt gọn ở rìa
-  hub: { moss: 0x9aa384, soil: 0xb7a88a, stone: 0xd2cbb8, dark: 0x80806e, trail: 0xdad2bd, wet: 0x8c9684, grass: 0x95a878, grassDry: 0xb8b48c, grassDensity: 0.16, grassClump: 0.4, rockBias: 0.05 },
+  hub: { moss: 0x8c9c76, soil: 0xaa9d80, stone: 0xc4bfae, dark: 0x70745f, trail: 0xeee8d4, wet: 0x8c9684, grass: 0x8fa874, grassDry: 0xb0b088, grassDensity: 0.3, grassClump: 0.75, rockBias: 0.05 },
   // Tùng Đài: rêu xanh thẫm, đất nâu ẩm, đồi tùng
   tung_dai_dao: { moss: 0x6c8960, soil: 0x8b7858, stone: 0x9a9b8b, dark: 0x465a45, trail: 0xbba985, wet: 0x58705a, grass: 0x7c9a5e, grassDry: 0xa4a872, grassDensity: 0.62, grassClump: 0.7, rockBias: -0.05 },
   // Thạch Quy: đá phiến xám cát lấn cỏ, mảng như mai rùa
@@ -65,6 +65,8 @@ export interface VhArt {
   islandAt(x: number, z: number): VhIsland | null;
   /** Độ phủ lối mòn 0..1 (lõi 1 ở 1,6 m, mờ hết ở 3,4 m). */
   trailW(isl: VhIsland, x: number, z: number): number;
+  /** Khoảng cách tới lối mòn gần nhất (m, tối đa 99). */
+  trailD(isl: VhIsland, x: number, z: number): number;
   /** Độ lộ đá nền 0..1 từ nhiễu + độ dốc `slope` (1 − ny) + bias của đảo. */
   rockW(isl: VhIsland, x: number, z: number, slope: number): number;
   /** Trọng số bờ hồ: 1 trong lòng hồ, giảm tới 0 ở cách mép 7 m; 0 nếu không gần hồ. */
@@ -89,7 +91,7 @@ function wobble(out: number[], ax: number, az: number, bx: number, bz: number, p
   for (let i = 0; i <= n; i++) {
     const t = i / n;
     const taper = Math.sin(Math.PI * t) ** 0.6;
-    const off = (Math.sin(t * len * 0.045 + ph) * 3.4 + Math.sin(t * len * 0.13 + ph * 2) * 1.1) * taper;
+    const off = (Math.sin(t * len * 0.045 + ph) * 2.2 + Math.sin(t * len * 0.13 + ph * 2) * 0.7) * taper;
     out.push(ax + (bx - ax) * t + nx * off, az + (bz - az) * t + nz * off);
   }
 }
@@ -116,7 +118,12 @@ export function vanHaiArt(def: TerrainDef): VhArt {
     const pad = pads.find((p) => inIsle(p.x, p.z) === i);
     const hub = pad ?? { x: i.x, z: i.z };
     for (const p of pois) if (inIsle(p.x, p.z) === i) wobble(pts, hub.x, hub.z, p.x, p.z, ph);
+    if (i.kind === 'hub') {
+      // Phù Đảo Các: lối đá từ tâm tới từng đèn đá
+      for (const p of propsOf('van_hai')) if (p.id === 'prop_den_da' && inIsle(p.x, p.z) === i) wobble(pts, i.x, i.z + 14, p.x, p.z, ph);
+    }
     for (const b of def.bridges ?? []) {
+      if (b.id.startsWith('thang_')) continue; // chân thang mây là vách đảo, không dẫn lối mòn tới đó
       for (const [x, z] of [[b.ax, b.az], [b.bx, b.bz]] as const) {
         if (inIsle(x, z, 22) === i && Math.hypot(x - i.x, z - i.z) > i.r - 30) wobble(pts, hub.x, hub.z, x, z, ph + x * 0.01);
       }
@@ -132,19 +139,23 @@ export function vanHaiArt(def: TerrainDef): VhArt {
       for (const i of islands) if ((x - i.x) ** 2 + (z - i.z) ** 2 < (i.r + edge) ** 2) return i;
       return null;
     },
-    trailW(isl, x, z) {
+    trailD(isl, x, z) {
       const t = isl.trail;
-      let best = 1e9;
+      let best = 99 * 99;
       for (let k = 0; k < t.length; k += 2) {
         const dx = t[k] - x;
         const dz = t[k + 1] - z;
         const d = dx * dx + dz * dz;
         if (d < best) best = d;
       }
-      if (best > 3.4 * 3.4) return 0;
+      return Math.sqrt(best);
+    },
+    trailW(isl, x, z) {
+      const d = art.trailD(isl, x, z);
+      if (d > 4.4) return 0;
       // bờ mép lởm chởm: nhiễu nhẹ làm lối mòn không thành dải đều
       const jag = fbm(x * 0.3, z * 0.3, 2, seed + 905) * 0.7;
-      return smoothstep(3.4, 1.6, Math.sqrt(best) + jag);
+      return smoothstep(4.4, 2.1, d + jag);
     },
     rockW(isl, x, z, slope) {
       const n = fbm(x * 0.028 + 7, z * 0.028 - 3, 3, seed + 640);

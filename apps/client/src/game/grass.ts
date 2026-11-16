@@ -192,6 +192,9 @@ function vanHaiTuftAt(x: number, z: number, h: number, slope: number, r: number,
   // đám: nền thưa, lõi đám dày; `grassClump` quyết định độ tương phản giữa đám và nền
   let dens = P.grassDensity * 1.5 * (1 - P.grassClump + P.grassClump * Math.max(0, Math.min(1.7, c * 2.6 + 0.3)));
   dens += pw * 0.35; // bờ hồ rậm
+  // ven lối mòn: cụm cỏ dày hơn (rõ nhất ở Phù Đảo Các)
+  const td = art.trailD(isl, x, z);
+  if (td > 2 && td < 8) dens += (isl.kind === 'hub' ? 0.7 : 0.25) * (1 - (td - 2) / 6) * Math.max(0, c * 2 + 0.6);
   dens *= (1 - rock * 1.4) * (1 - slope / 2.2) * (d > isl.r - 14 ? 0.55 : 1);
   if (r > dens) return false;
   if (nearCollider(x, z, 1.2)) return false;
@@ -199,7 +202,9 @@ function vanHaiTuftAt(x: number, z: number, h: number, slope: number, r: number,
   const r2 = hash01(Math.floor(x * 7.3), Math.floor(z * 7.3), 811);
   const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
   const card = dry > 0.55 && pick < 0.6 ? 0 : pick < 0.62 ? 2 : pick < 0.9 ? 1 : 0;
+  const bloom = isl.kind === 'hub' && td < 9 && hash01(Math.floor(x * 0.4), Math.floor(z * 0.4), 839) < 0.35;
   _c.setHex(P.grass).lerp(_g2.setHex(P.grassDry), dry).multiplyScalar((0.82 + r2 * 0.36) * 1.5);
+  if (bloom) _c.lerp(_g2.setHex(0xf3dde6), 0.65); // vài cụm hoa nhạt ven lối
   out[o] = x;
   out[o + 1] = h - 0.03;
   out[o + 2] = z;
