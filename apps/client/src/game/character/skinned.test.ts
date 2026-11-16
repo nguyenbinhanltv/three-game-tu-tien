@@ -105,7 +105,7 @@ describe('máy trạng thái', () => {
 });
 
 /** Skin của 12 quái E-0 (docs/e0-mon): chưa có dòng trong monsters.json cho tới khi E-2/E-3/E-4 thêm quái, nên các vòng lặp theo dữ liệu bỏ qua. */
-const E0_PENDING = Object.keys(MONSTER_SKINS).filter((id) => !MONSTER.get(id));
+const E0_PENDING = Object.keys(MONSTER_SKINS).filter((id) => id.startsWith('mon_') && !MONSTER.get(id));
 const LIVE_SKINS = Object.entries(MONSTER_SKINS).filter(([id]) => MONSTER.get(id));
 
 describe('sói có xương (mon_soi_xam thật)', () => {
@@ -125,7 +125,7 @@ describe('sói có xương (mon_soi_xam thật)', () => {
   });
 
   it('12 skin E-0 đều nạp lười theo màn, không vào gói tải đầu, đủ clip trong GLB', () => {
-    const e0 = Object.entries(MONSTER_SKINS).filter(([, s]) => ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''));
+    const e0 = Object.entries(MONSTER_SKINS).filter(([id, s]) => id.startsWith('mon_') && ['doan_mach', 'van_hai', 'thien_khuyet'].includes(s.level ?? ''));
     expect(e0.length).toBe(12);
     expect(E0_PENDING.sort()).toEqual(e0.map(([id]) => id).sort()); // chưa có dòng nào trong monsters.json
     for (const [id, s] of e0) {

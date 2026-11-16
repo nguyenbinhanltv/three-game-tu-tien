@@ -194,6 +194,11 @@
               "enum": ["bite", "gore"],
               "description": "Kiểu đòn: bite (đớp, mặc định: sói, cáo) hoặc gore (cúi đầu lao tới hất nanh: heo rừng)."
             },
+            "layout": {
+              "type": "object",
+              "description": "Bảng đổi tên xương tường minh (tên sau chuẩn hóa → vai trò spine_0..2, neck, head, shoulder_l/r, leg_{f,h}{l,r}_<i>, tail_<i>) cho rig Tripo mà dò tự động không ra (Địa Mạch Long: chân sau treo ở xương trung gian).",
+              "additionalProperties": { "type": "string" }
+            },
             "fixCrossWeights": {
               "type": "boolean",
               "description": "Bỏ trọng số của xương chân/đuôi nằm xa đỉnh (> 20% chiều dài thân) rồi chuẩn hóa: sửa auto-rig gán chéo bàn chân trước ↔ chân sau (Huyết Lang Vương)."
@@ -238,6 +243,45 @@
             },
             "flap": { "type": "object", "additionalProperties": false, "properties": { "hz": { "type": "number" }, "amp": { "type": "number" } } },
             "wave": { "type": "object", "additionalProperties": false, "properties": { "len": { "type": "number" }, "amp": { "type": "number" } } }
+          }
+        },
+        "rigFix": { "type": "boolean", "description": "anim_biped_extra: thêm xương bàn chân còn thiếu (Tripo cắt xương không trọng số) để IK chân chạy được." },
+        "proc": {
+          "type": "object",
+          "description": "anim_biped_extra: sinh clip nền thủ tục idle, run, attack, hit_light, death bằng bộ đặt dáng IK (boss người/khôi, không cần clip Tripo hay thư viện).",
+          "additionalProperties": false,
+          "properties": {
+            "tpose": { "type": "boolean", "description": "Rig nghỉ chữ T: hạ tay xuống thân ở mọi clip." },
+            "stride": { "type": "number", "description": "Sải chân khi chạy (phần chiều cao)." },
+            "lift": { "type": "number", "description": "Độ nhấc chân khi chạy (phần chiều cao)." },
+            "runSeconds": { "type": "number" },
+            "idleSeconds": { "type": "number" },
+            "bob": { "type": "number" }
+          }
+        },
+        "autoRig": {
+          "type": "object",
+          "description": "tools/blender/biped_autorig.py: dựng xương người kiểu Mixamo cho boss chưa có xương. joints = tọa độ khớp (hệ chuẩn); hold = vùng đỉnh gắn cứng vào một xương (vũ khí cầm tay); spread = độ rộng trộn trọng số.",
+          "required": ["joints"],
+          "properties": {
+            "joints": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 } },
+            "hold": { "type": "object" },
+            "spread": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "serpent": {
+          "type": "object",
+          "description": "Tùy chọn của tools/blender/anim_serpent.py (rắn, giao, ngô công, kình ngư). Bỏ khối = Hàn Giao (đường tâm đo tay).",
+          "additionalProperties": false,
+          "properties": {
+            "spine": { "enum": ["auto"], "description": "auto: đường tâm tự đo từ lưới." },
+            "dropRig": { "type": "boolean", "description": "Bỏ rig Tripo kèm theo (không dùng được cho thân dài)." },
+            "bones": { "type": "integer", "minimum": 6, "maximum": 40 },
+            "headFrom": { "type": "number", "minimum": 0.5, "maximum": 0.99, "description": "Tỉ lệ chiều dài đường tâm (từ đuôi) nơi đầu bắt đầu." },
+            "rootAt": { "type": "number", "minimum": 0.1, "maximum": 0.9, "description": "Tỉ lệ chiều dài (từ đuôi) nơi cổ bắt đầu nâng: xương gốc." },
+            "amp": { "type": "number", "minimum": 0.1, "maximum": 1.5, "description": "Nhân mọi góc uốn của clip." },
+            "style": { "enum": ["crawl", "swim"], "description": "swim: lơ lửng, sóng dọc chúi/ngẩng." }
           }
         },
         "post": {

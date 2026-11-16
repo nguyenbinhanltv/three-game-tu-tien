@@ -123,6 +123,23 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_da_minh_loc: { asset: 'mon_da_minh_loc', clips: WOLF_CLIPS, refSpeed: 2.9, legs: 'quad', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
   mon_cot_ve_kiem_thu: { asset: 'mon_cot_ve_kiem_thu', clips: WOLF_CLIPS, refSpeed: 2.1, legs: 'biped', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
   mon_co_thanh_chien_ma: { asset: 'mon_co_thanh_chien_ma', clips: WOLF_CLIPS, refSpeed: 2.7, legs: 'biped', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
+  // ---- Boss mở rộng (E-2/E-3/E-4): asset đã nhập, chưa có quái trong monsters.json; thêm quái cùng id là chạy. Nạp lười theo
+  // màn (id màn là dự kiến của E-2..E-4, đổi `level` cho khớp LevelDef khi có). refSpeed (m/s ở scale 1, model theo kích thước thật)
+  // tính từ sải chân của clip run (docs/boss-import/README.md). Đòn lớn khớp tools/blender/anim_{quadruped,serpent,biped_extra}.py.
+  // Địa Mạch Long: rồng đá bốn chân, khe sáng ngọc lam theo máu (viền yêu khí nhẹ).
+  boss_dia_mach_long: { asset: 'boss_dia_mach_long', clips: BOSS_CLIPS, refSpeed: 9.0, legs: 'quad', tint: '#ffffff', rim: 0.3, lazy: true, level: 'doan_mach', moves: QUAD_MOVES },
+  // Thôn Mạch Ngô Công Vương (Phục Mạch Quật): ngô công 14 m, xương chuỗi, tinh thạch sáng theo accent.
+  boss_thon_mach_ngo_cong_vuong: { asset: 'boss_thon_mach_ngo_cong_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 4.6, legs: 'none', tint: '#ffffff', rim: 0.35, lift: 0.2, metalness: 0, lazy: true, level: 'phuc_mach', moves: SERPENT_MOVES },
+  // Thạch Tâm Khôi Vương (Phục Mạch Quật): khôi đá 5 m, tim ngọc ở ngực phát sáng.
+  boss_thach_tam_khoi_vuong: { asset: 'boss_thach_tam_khoi_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 2.0, legs: 'biped', tint: '#ffffff', coreGlow: 1.2, lazy: true, level: 'phuc_mach', moves: BIPED_MOVES },
+  // Vân Hải Kình Vương: kình ngư bay 18 m, xương chuỗi kiểu bơi.
+  boss_van_hai_kinh_vuong: { asset: 'boss_van_hai_kinh_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 5.9, legs: 'none', tint: '#ffffff', rim: 0.25, lift: 0.25, metalness: 0, lazy: true, level: 'van_hai', moves: SERPENT_MOVES },
+  // Kính Nguyệt Chân Quân (Kính Nguyệt Cung): người 3,6 m áo choàng bạc.
+  boss_kinh_nguyet_chan_quan: { asset: 'boss_kinh_nguyet_chan_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.3, legs: 'biped', tint: '#ffffff', rim: 0.3, lift: 0.15, lazy: true, level: 'kinh_nguyet_cung', moves: BIPED_MOVES },
+  // Thiên Khuyết Thủ Linh: tượng thần đá 8 m, kích thước lớn nên bước chậm.
+  boss_thien_khuyet_thu_linh: { asset: 'boss_thien_khuyet_thu_linh', clips: CHANT_BOSS_CLIPS, refSpeed: 2.5, legs: 'biped', tint: '#ffffff', lift: 0.1, lazy: true, level: 'thien_khuyet', moves: BIPED_MOVES },
+  // Vô Diện Thần Quân (Thần Tàng Điện): người 4,6 m sáu tay phụ liền lưới.
+  boss_vo_dien_than_quan: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#ffffff', rim: 0.25, lift: 0.12, lazy: true, level: 'than_tang', moves: BIPED_MOVES },
 };
 
 interface Template {
