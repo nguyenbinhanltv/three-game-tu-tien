@@ -1,70 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import {
-  biomeAt,
-  C,
-  type BossTimerMsg,
-  type CdMsg,
-  type CharView,
-  type ChatMsg,
-  type DuelMsg,
-  type InviteMsg,
-  type MarkMsg,
-  type PartyMsg,
-  TELE_CAST_MS,
-  TELE_PAD,
-  type TeleMsg,
-  cloneMoveState,
-  type DmgMsg,
-  DUNGEON_EXIT,
-  FLY_UNLOCK_LEVEL,
-  canFlyAt,
-  type FxMsg,
-  groundAt,
-  AIRBORNE_HEIGHT,
-  type HazardMsg,
-  type BoltEndMsg,
-  type BoltMsg,
-  IN_DOWN,
-  IN_FLY,
-  IN_JUMP,
-  IN_UP,
-  type InitMsg,
-  type InvMsg,
-  type MoveCtx,
-  type MoveInput,
-  type MoveState,
-  MF_BROKEN,
-  MF_CHANT,
-  MF_STUN,
-  MS_ATTACK,
-  MS_CHASE,
-  MS_DEAD,
-  PF_CASTING,
-  PF_DEAD,
-  PF_FLYING,
-  PF_MEDITATING,
-  PF_SHIELD,
-  PF_TRIBULATION,
-  tribDef,
-  tribForLevel,
-  phaseRules,
-  PORTAL_POS,
-  type QuestView,
-  SECT,
-  SPAWN_POINT,
-  ROOM_DUNGEON,
-  ROOM_WORLD,
-  S,
-  STEP,
-  stepMove,
-  type SysMsg,
-  type TransferMsg,
-  type MethodMsg,
-  type SkillDef,
-  BAR_SIZE,
-  CHARGE_MAX,
-} from '@dtl/shared';
+import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_WORLD, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX } from '@dtl/shared';
+import { biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
@@ -94,7 +31,7 @@ import { Beacons } from '../render/beacons';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/world';
-import { GRADING, GRADING_DEFAULT } from '../render/grading';
+import { GRADING, GRADING_DEFAULT, type GradingName } from '../render/grading';
 import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
@@ -142,6 +79,20 @@ export interface LoginOptions {
  * server khác 2567 thì phải đặt VITE_SERVER_URL khi build, không thì client nối nhầm vào chính
  * server preview.
  */
+/**
+ * Level của room theo `InitMsg.room` (E1-B đặt tên room theo level: `world` = Vân Lam, `world-<id>`, `dungeon` = Kiếm Trủng,
+ * `dungeon-<id>`); tên lạ thì về Vân Lam.
+ */
+export function levelOfRoom(room: string): string {
+  if (room === ROOM_WORLD) return 'van_lam';
+  if (room === ROOM_DUNGEON) return 'kiem_trung';
+  const id = room.replace(/^(world|dungeon)-/, '');
+  return id !== room && knownLevel(id) ? id : 'van_lam';
+}
+export function levelOfInit(init: InitMsg): string {
+  return levelOfRoom(init.room);
+}
+
 export function serverUrl(): string {
   const env = (import.meta as unknown as { env: Record<string, string | boolean | undefined> }).env;
   if (typeof env.VITE_SERVER_URL === 'string' && env.VITE_SERVER_URL) return env.VITE_SERVER_URL;
@@ -470,6 +421,7 @@ export class Game {
   private music = new MusicController();
 
   constructor(room: Room, init: InitMsg) {
+    this.initLevel = levelOfInit(init);
     this.room = room;
     this.sid = init.sid;
     this.view = visibleView(room.state as unknown as WorldView);
@@ -514,8 +466,9 @@ export class Game {
     this.view = visibleView(room.state as unknown as WorldView);
     this.applyInit(init);
     this.bindRoom(room);
+    void this.enterLevel(levelOfInit(init));
     this.ents?.dispose();
-    this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents = new EntityManager(this.scene, this.sid, levelOfInit(init));
     this.ents.setWarm(this.warmObject);
     this.mapVis?.dispose();
     this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
@@ -742,7 +695,8 @@ export class Game {
     const t0 = performance.now();
     try {
       const self = this;
-      const tex = await loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } });
+      const g0 = levelAssets(levelId()).ground;
+      const tex = await loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } }, g0 ? g0.mask : 'manifest');
       if (this.disposed) {
         tex.dispose();
         return;
@@ -750,7 +704,7 @@ export class Game {
       this.ground = tex;
       this.loadStats.groundLoad = Math.round(performance.now() - t0);
       this.loadStats.groundAt = Math.round(performance.now());
-      this.terrain.setGround(tex, (QUALITY[get().quality] ?? QUALITY.medium).ground);
+      this.applyGround();
     } catch (e) {
       console.warn('[ground] không nạp được texture mặt đất, dùng màu đỉnh:', e);
     }
@@ -800,29 +754,12 @@ export class Game {
 
     this.env = new Environment(this.scene, q.shadows);
     mark('env');
-    this.terrain = new Terrain();
+    setActiveLevel(this.initLevel);
+    set({ level: this.initLevel });
+    this.buildLevelA(this.initLevel, q);
     mark('terrainCoarse');
-    this.terrain.shadows = q.shadows;
     void this.loadGround();
-    this.scene.add(this.terrain.group);
-    this.sectMesh = new THREE.Mesh(buildSect(), this.sectMat);
-    this.sectMesh.castShadow = q.shadows;
-    this.sectMesh.receiveShadow = q.shadows;
-    this.sectMesh.frustumCulled = false;
-    this.scene.add(this.sectMesh);
     mark('sect');
-    this.portalDisc = buildPortalDisc(PORTAL_POS.x, PORTAL_POS.z, 0x8fdcff);
-    this.exitDisc = buildPortalDisc(DUNGEON_EXIT.x, DUNGEON_EXIT.z, 0xffd27a);
-    this.scene.add(this.portalDisc, this.exitDisc);
-    for (const disc of [this.portalDisc, this.exitDisc]) markBloom(disc.material as THREE.Material, 0.8);
-    applyAtmosphere(this.scene, this.env, GRADING[GRADING_DEFAULT], GRADING_DEFAULT);
-    applyGrading(GRADING[GRADING_DEFAULT]);
-    setHeightFog(q.heightFog);
-    this.env.setQuality(get().quality);
-    this.scene.add(createLanternHalos(SECT_LANTERNS));
-    this.lanterns = new LanternLights(this.scene, SECT_LANTERNS);
-    this.lanterns.setEnabled(q.lights && isWebGPU(this.renderer)); // T6: đèn lồng point light thật chỉ ở WebGPU
-    this.lanterns.setIntensityScale(LANTERN_LIGHT[GRADING_DEFAULT] ?? 1);
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
@@ -833,26 +770,12 @@ export class Game {
       camera: () => this.camera as THREE.PerspectiveCamera,
     });
     this.vfx.particles.setQuality(get().quality);
-    // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách. `?props=0` tắt để chụp ảnh trước/sau.
-    if (new URLSearchParams(location.search).get('props') !== '0') {
-      this.props = new PropLayer();
-      this.props.setQuality(get().quality, q.shadows);
-      this.scene.add(this.props.group);
-    }
-    const pois = LEVELS.van_lam.pois ?? [];
-    if (pois.length && new URLSearchParams(location.search).get('beacons') !== '0') {
-      this.beacons = new Beacons(pois.filter((p) => p.beamH).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
-      this.beacons.mesh.visible = get().room === ROOM_WORLD;
-      this.scene.add(this.beacons.mesh);
-    }
-    this.grass = new Grass();
-    this.grass.setQuality(get().quality, q.shadows);
-    this.scene.add(this.grass.mesh);
+    this.buildLevelB(this.initLevel, q);
     this.ambient = new AmbientParticles(this.vfx.particles);
     this.ambient.setQuality(get().quality);
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
-    this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents = new EntityManager(this.scene, this.sid, levelOfRoom(get().room));
     this.ents.setWarm(this.warmObject);
     this.mapVis = new MapVis(this.scene, get().room === ROOM_WORLD);
     this.resetSound(get().room === ROOM_WORLD);
@@ -863,7 +786,6 @@ export class Game {
     mark('minimap');
     this.startedAt = t0;
 
-    this.loadSectModel(q.shadows);
     this.bindInput();
     this.onResize();
     // M6-1, WebGL2: biên dịch trước material của cảnh (trời, địa hình, kiến trúc, VFX ấm sẵn, cổng) song song
@@ -879,12 +801,198 @@ export class Game {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
+
+  // ---------- level (E1-D) ----------
+
+  /** Level đang hiển thị (có thể khác level của room: level thử `thu_nghiem`). */
+  get shownLevel(): string {
+    return levelId();
+  }
+  /** Level của room lúc dựng lần đầu. */
+  private initLevel = 'van_lam';
+  private levelSeq = 0;
+  /** Các lớp đặc thù level (halo đèn…) đã dựng, để `unloadLevel` gỡ đúng. */
+  private levelObjs: THREE.Object3D[] = [];
+  private levelMood: GradingName = GRADING_DEFAULT;
+
+  /** Mood của level; `?mood=` trên URL thắng (chụp ảnh so sánh). */
+  private moodOf(id: string): GradingName {
+    const m = levelAssets(id).mood;
+    if (new URLSearchParams(location.search).has('mood') || m === 'default' || !(m in GRADING)) return GRADING_DEFAULT;
+    return m as GradingName;
+  }
+
+  /** Dựng phần level cần có trước hậu kỳ: địa hình, kiến trúc tông môn, cổng, đèn lồng, môi trường, bầu không khí. */
+  private buildLevelA(id: string, q: (typeof QUALITY)[string]): void {
+    const F = levelAssets(id).features;
+    this.terrain = new Terrain();
+    this.terrain.shadows = q.shadows;
+    this.scene.add(this.terrain.group);
+    this.applyGround();
+    if (F.sect) {
+      this.sectMesh = new THREE.Mesh(buildSect(), this.sectMat);
+      this.sectMesh.castShadow = q.shadows;
+      this.sectMesh.receiveShadow = q.shadows;
+      this.sectMesh.frustumCulled = false;
+      this.scene.add(this.sectMesh);
+    }
+    if (F.portals) {
+      this.portalDisc = buildPortalDisc(PORTAL_POS.x, PORTAL_POS.z, 0x8fdcff);
+      this.exitDisc = buildPortalDisc(DUNGEON_EXIT.x, DUNGEON_EXIT.z, 0xffd27a);
+      this.scene.add(this.portalDisc, this.exitDisc);
+      for (const disc of [this.portalDisc, this.exitDisc]) markBloom(disc.material as THREE.Material, 0.8);
+    }
+    const mood = this.moodOf(id);
+    this.levelMood = mood;
+    this.env.setLevel(terrainOf(id).id, { clouds: F.clouds, lake: F.lake });
+    this.env.setQuality(get().quality);
+    applyAtmosphere(this.scene, this.env, GRADING[mood], mood);
+    applyGrading(GRADING[mood]);
+    setHeightFog(q.heightFog);
+    if (F.lanterns) {
+      const halos = createLanternHalos(SECT_LANTERNS);
+      this.scene.add(halos);
+      this.levelObjs.push(halos);
+      this.lanterns = new LanternLights(this.scene, SECT_LANTERNS);
+      this.lanterns.setEnabled(q.lights && isWebGPU(this.renderer)); // T6: đèn lồng point light thật chỉ ở WebGPU
+      this.lanterns.setIntensityScale(LANTERN_LIGHT[mood] ?? 1);
+    }
+    if (F.sect) void this.loadSectModel(q.shadows);
+  }
+
+  /** Phần dựng sau VFX: cây/prop, cột linh quang, cỏ. */
+  private buildLevelB(id: string, q: (typeof QUALITY)[string]): void {
+    const F = levelAssets(id).features;
+    const params = new URLSearchParams(location.search);
+    // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách. `?props=0` tắt để chụp ảnh trước/sau.
+    if (F.trees === 'scatter' && params.get('props') !== '0') {
+      this.props = new PropLayer();
+      this.props.setQuality(get().quality, q.shadows);
+      this.scene.add(this.props.group);
+    }
+    const pois = LEVELS[id]?.pois ?? [];
+    if (F.beacons && pois.length && params.get('beacons') !== '0') {
+      this.beacons = new Beacons(pois.filter((p) => p.beamH).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
+      this.beacons.mesh.visible = get().room === ROOM_WORLD;
+      this.scene.add(this.beacons.mesh);
+    }
+    this.grass = new Grass();
+    this.grass.setQuality(get().quality, q.shadows);
+    this.grass.mesh.visible = F.grass;
+    this.scene.add(this.grass.mesh);
+  }
+
+  /** Gắn bộ texture mặt đất (nếu đã nạp) vào địa hình hiện tại theo khai báo của level. */
+  private applyGround(): void {
+    if (!this.ground || !this.terrain) return;
+    const g = levelAssets(levelId()).ground;
+    this.terrain.setGround(g ? this.ground : null, (QUALITY[get().quality] ?? QUALITY.medium).ground);
+  }
+
+  /** Gỡ và giải phóng mọi thứ gắn với level hiện tại (địa hình, kiến trúc + GLB, cổng, đèn, cây, cột sáng, cỏ). Không để rò sau nhiều lần đổi. */
+  private unloadLevel(): void {
+    const drop = (o: THREE.Object3D | null | undefined) => o && this.scene.remove(o);
+    if (this.terrain) {
+      drop(this.terrain.group);
+      this.terrain.dispose();
+    }
+    if (this.sectMesh) {
+      drop(this.sectMesh);
+      this.sectMesh.geometry.dispose();
+      this.sectMesh = null;
+    }
+    if (this.sectAsset) {
+      drop(this.sectAsset.handle.scene);
+      this.sectAsset.handle.release();
+      for (const m of this.sectAsset.mats) m.dispose();
+      this.sectAsset = null;
+    }
+    for (const d of [this.portalDisc, this.exitDisc]) {
+      if (!d) continue;
+      drop(d);
+      d.geometry.dispose();
+      (d.material as THREE.Material).dispose();
+    }
+    this.portalDisc = this.exitDisc = null;
+    for (const o of this.levelObjs) {
+      drop(o);
+      const m = o as THREE.Mesh;
+      m.geometry?.dispose();
+      (m.material as THREE.Material | undefined)?.dispose();
+    }
+    this.levelObjs.length = 0;
+    this.lanterns?.dispose();
+    this.lanterns = null;
+    if (this.props) {
+      drop(this.props.group);
+      this.props.dispose();
+      this.props = null;
+    }
+    if (this.beacons) {
+      drop(this.beacons.mesh);
+      this.beacons.dispose();
+      this.beacons = null;
+    }
+    if (this.grass) {
+      drop(this.grass.mesh);
+      this.grass.dispose();
+    }
+  }
+
+  /**
+   * Đổi level đang hiển thị (E1-D): nạp trước asset + nhạc của level mới (màn tải), gỡ level cũ, dựng địa hình/cảnh/mood mới,
+   * nối lại texture mặt đất. Gọi lại với level đang hiển thị thì không làm gì; level chưa khai báo thì bỏ qua. Trả true nếu đã đổi.
+   * Vfx đang chạy tự hết trong vài giây (không gắn vào level); thực thể do `EntityManager` của room quản.
+   */
+  async enterLevel(id: string): Promise<boolean> {
+    if (!this.started || this.disposed || !knownLevel(id) || id === levelId()) return false;
+    const next = levelAssets(id);
+    if (sameLayout(levelId(), id)) {
+      // Cùng địa hình và cùng bố cục (thế giới ↔ bí cảnh Kiếm Trủng): chỉ đổi nhãn level và nạp trước nhạc, không dựng lại.
+      setActiveLevel(id);
+      set({ level: id });
+      void this.music.preloadLevel(next.music);
+      return true;
+    }
+    const seq = ++this.levelSeq;
+    const prevPhase = get().phase;
+    set({ phase: 'loading' });
+    try {
+      const A = levelAssets(id);
+      // 1. nạp trước (bài cũ vẫn phát, level cũ vẫn hiện sau màn tải): GLB cả level, stem nhạc, mặt nạ mặt đất.
+      for (const glb of A.glb) assets.prefetch(glb, { pos: { x: SECT.x, z: SECT.z } });
+      const maskKind = A.ground ? A.ground.mask : null;
+      let commitMask: () => void = () => undefined;
+      await Promise.all([
+        this.music.preloadLevel(A.music),
+        this.ground && maskKind
+          ? this.ground.prepareMask(maskKind).then((c) => (commitMask = c), (e) => console.warn('[level] mặt nạ mặt đất:', e))
+          : Promise.resolve(),
+      ]);
+      if (this.disposed || seq !== this.levelSeq) return false;
+      // 2. gỡ cũ + dựng mới trong cùng một nhịp (không có khung nào thấy cảnh dở).
+      const q = QUALITY[get().quality] ?? QUALITY.medium;
+      this.unloadLevel();
+      commitMask(); // địa hình cũ đã gỡ: giải phóng mặt nạ cũ an toàn
+      setActiveLevel(id);
+      this.buildLevelA(id, q);
+      this.buildLevelB(id, q);
+      set({ level: id });
+      this.minimap = renderMinimap(320);
+      this.terrain.update(this.cur.x, this.cur.z, 8);
+      if (!isWebGPU(this.renderer)) await this.precompile();
+      return true;
+    } finally {
+      if (seq === this.levelSeq && get().phase === 'loading') set({ phase: prevPhase === 'loading' ? 'game' : prevPhase });
+    }
+  }
+
   /** Nạp kiến trúc tông môn dựng bằng Blender (asset `arch_sect` qua AssetCache); lỗi thì giữ bản dựng bằng code. */
   private async loadSectModel(shadows: boolean): Promise<void> {
     try {
       await assets.attach(this.renderer);
       const handle = await assets.acquire('arch_sect', { pos: { x: SECT.x, z: SECT.z } });
-      if (this.disposed) {
+      if (this.disposed || !levelAssets(levelId()).features.sect || this.sectAsset) {
         handle.release();
         return;
       }
@@ -1971,6 +2079,7 @@ export class Game {
       canFly: !dead && (me.fl & PF_TRIBULATION) === 0 && canFlyAt(me.lv, me.mp, me.x, me.y, me.z),
       frozen: dead,
       speedMul: 1,
+      terrain: levelTerrain(),
     };
   }
 
@@ -2925,7 +3034,7 @@ export class Game {
     const cfg = QUALITY[q] ?? QUALITY.medium;
     setHeightFog(cfg.heightFog);
     this.env?.setQuality(q);
-    if (this.ground) this.terrain.setGround(this.ground, cfg.ground);
+    this.applyGround();
     this.lanterns?.setEnabled(cfg.lights && isWebGPU(this.renderer));
     this.vfx?.particles.setQuality(q);
     this.grass?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
@@ -2958,6 +3067,12 @@ export class Game {
     this.terrain?.dispose();
     this.ground?.dispose();
     this.lanterns?.dispose();
+    for (const o of this.levelObjs) {
+      const m = o as THREE.Mesh;
+      m.geometry?.dispose();
+      (m.material as THREE.Material | undefined)?.dispose();
+    }
+    this.levelObjs.length = 0;
     this.grass?.dispose();
     this.mapVis?.dispose();
     this.props?.dispose();
@@ -2984,6 +3099,7 @@ export class Game {
       /* bỏ qua */
     }
     if (Game.current === this) Game.current = null;
+    setActiveLevel('van_lam');
   }
 }
 

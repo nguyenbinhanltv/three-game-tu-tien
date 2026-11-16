@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { abs, cameraViewMatrix, cos, float, instancedBufferAttribute, int, length, max, min, mix, positionGeometry, sin, smoothstep, step, uniform, uniformArray, uv, vec2, vec3 } from 'three/tsl';
-import { COLLIDERS, FOREST, featureWeight, fbm, hash01, heightAt, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
+import { COLLIDERS, FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
+import { heightAt } from './levelCtx';
 import type { N } from '../render/vfx/common';
 
 /**

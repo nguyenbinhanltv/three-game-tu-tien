@@ -3,7 +3,8 @@
 // Dựng từ các nét có sẵn của `Vfx` (kiếm bắn, mưa kiếm, trụ sáng, khiên, pháp trận) nên không thêm loại draw call mới.
 
 import * as THREE from 'three/webgpu';
-import { groundAt, type FxMsg } from '@dtl/shared';
+import { type FxMsg } from '@dtl/shared';
+import { groundAt } from './levelCtx';
 import { SIGIL_CIRCLE } from '../render/vfx/sigil';
 import type { Vfx } from './vfx';
 

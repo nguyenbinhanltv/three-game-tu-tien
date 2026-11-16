@@ -373,6 +373,7 @@
   "ui.debug.spawn_btn": "Gọi",
   "ui.debug.killall": "Hạ quái quanh mình",
   "ui.debug.colliders": "Khung va chạm",
+  "ui.debug.level_test": "Đổi level thử",
   "ui.debug.none": "—",
   "ui.debug.yes": "có",
   "ui.debug.no": "không",

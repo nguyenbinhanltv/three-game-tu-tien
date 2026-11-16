@@ -473,6 +473,35 @@ export interface DungeonDef {
   waves: WaveDef[];
 }
 
+/**
+ * Asset client cần cho một level (`levels/<id>.assets.json`, E1-D). Client nạp khi vào level và giải phóng khi rời;
+ * không nằm trong tải đầu (chỉ level đầu tiên được `prefetch` cùng lúc kết nối).
+ */
+export interface LevelAssets {
+  /** Tên preset grading (`GRADING` ở client); `default` là mặc định của palette. */
+  mood: string;
+  /** Id GLB nạp theo level (đếm tham chiếu ở AssetCache). */
+  glb: string[];
+  /** Bộ texture mặt đất (thư mục `public/<set>/`) + mặt nạ: `manifest` = mặt nạ vẽ riêng cho level trong manifest, `neutral` = phẳng mặc định; false = màu đỉnh. */
+  ground: false | { set: string; mask: 'manifest' | 'neutral' };
+  /** Bài nhạc nạp trước khi tắt bài cũ. */
+  music: string[];
+  /** Các lớp dựng riêng của Vân Lam; level mới tắt hoặc bật theo nhu cầu. */
+  features: {
+    sect: boolean;
+    portals: boolean;
+    lanterns: boolean;
+    lake: boolean;
+    clouds: boolean;
+    grass: boolean;
+    trees: 'scatter' | 'none';
+    beacons: boolean;
+    vegetation: boolean;
+  };
+  /** Tên ảnh minimap trong `public/map/` (không đuôi). */
+  minimap: string;
+}
+
 /** Điểm đáng chú ý trong một vùng săn (M-5). */
 export interface PoiDef {
   id: string;

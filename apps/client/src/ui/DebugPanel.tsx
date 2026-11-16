@@ -104,6 +104,9 @@ function Tools() {
         <Button size="s" pressed={colliders} onClick={() => Game.current?.setDebugColliders(!colliders)}>
           {t('ui.debug.colliders')}
         </Button>
+        <Button size="s" onClick={() => void Game.current?.enterLevel(Game.current.shownLevel === 'thu_nghiem' ? 'van_lam' : 'thu_nghiem')}>
+          {t('ui.debug.level_test')}
+        </Button>
       </div>
       <div className="debug-note">{t('ui.debug.tools_hint')}</div>
     </div>

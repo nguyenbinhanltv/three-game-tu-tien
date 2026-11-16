@@ -1,10 +1,11 @@
+import { existsSync } from 'node:fs';
 // Kiểm tra nội dung game: id trùng, tham chiếu hỏng, thiếu chuỗi hiển thị.
 // Chạy: pnpm content:check
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
-import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
@@ -576,6 +577,18 @@ if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
 for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);
 // Mọi level (E1-G): bố cục, camp, tinh anh, spawn, trận truyền tống, id quái/prop — xem levelcheck.ts.
 for (const lv of Object.values(LEVELS)) for (const m of checkLevel(lv)) err(m);
+// E1-D: mỗi level khai báo asset client (levels/<id>.assets.json): mood hợp lệ, bài nhạc có tên, minimap có nền nếu khai báo.
+for (const lv of Object.values(LEVELS)) {
+  const as = LEVEL_ASSETS[lv.id];
+  if (!as) err(`level ${lv.id}: thiếu levels/${lv.id}.assets.json`);
+  else {
+    const known = ['sect', 'wild', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
+    for (const m of as.music) if (!known.includes(m)) err(`level ${lv.id}: assets.music không biết bài ${m}`);
+    if (!['default', 'dawn', 'day', 'night'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
+    if (as.minimap && !existsSync(new URL(`../../../apps/client/public/map/${as.minimap}.json`, import.meta.url))) err(`level ${lv.id}: thiếu nền minimap public/map/${as.minimap}.json (pnpm minimap:build --level ${lv.id})`);
+  }
+}
+for (const id of Object.keys(LEVEL_ASSETS)) if (!LEVELS[id]) err(`levels/${id}.assets.json không có level tương ứng`);
 // Vân Lam: NPC giao việc ở các điểm đáng chú ý (M-5), tên theo glossary.poiNpcs.
 {
   const vl = LEVELS.van_lam;
