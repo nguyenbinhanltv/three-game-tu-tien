@@ -115,3 +115,28 @@ Giới hạn: ba mảnh này nhẵn và đơn sắc hơn ba mảnh có texture (
 - `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 4 đến 56 (nam, vai và mão to), 1 đến 19 (nữ), sâu ≤ 4 cm; ảnh game (đứng/chạy/ngự kiếm/đả tọa/chém/chết, ba công pháp) không thấy xuyên mesh đáng kể, sau lưng một kiếm trong vỏ. `check/set_co_thanh_huyen_giap_*.json`.
 - `bench:crowd` sân 50 bot WebGPU high, cùng mặc (ép áo bằng `CROWD_QUERY`), sau khi sửa skin: **275 draw (< 300)**, 841k tam giác, CPU p50/p95/p99 6,4 / 9,4 / 45,7 ms (p95 hơi trên ngưỡng 8 ms; p99 là khung nạp pipeline đầu), texture 404 MB, heap 295 MB, tick p95 1,9 ms.
 - Ảnh: `sheet_co_thanh_<m|f>.jpg`, `matrix_co_thanh_<m|f>.jpg`, `bang_co_thanh_<m|f>.jpg` (cùng bố cục các bộ trước; `pnpm shots:outfit --sets set_dia_giap --query outfit=set_co_thanh_huyen_giap`).
+
+# Kính Quang Kiếm Y (T-6d, Kiếm tu bậc 3, bộ cũ nhất thay bản tạm #119)
+
+Mảnh Tripo `chr/set_kinh_quang_kiem_y/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb` (không đụng `raw_v01.glb`/`rig_v01.glb` của #119) → `set_kinh_quang_kiem_y_{nam,nu}` thay hẳn bản tạm retarget (`outfits.json` `set_kinh_quang` đã trỏ sẵn đúng id asset). LOD0 11459 / LOD1 4584 / LOD2 1717 (nam), 11461 / 4584 / 1713 (nữ); 18 xương lò xo. Bộ này **đã có vật phẩm** (`set_kinh_quang`, 4 món trong `sets.json`), nên ảnh chụp mặc thật bằng `/gm set set_kinh_quang`, không ép áo.
+
+Bảng màu (bậc 3): chính `#ECEFF1` trắng bạc, phụ `#5E8FA8` lam gương, viền `#BFC8CF` bạc lạnh, nhấn `#8FD8E8` lam băng; `gain` 1,0.
+
+## Ba mảnh không texture (đai, mão, ủng) và mão thu nhỏ
+
+`raw_dai_tua`, `raw_trang_suc_dau`, `raw_ung` là Smart Mesh chưa texture: vật liệu thủ tục (`import.outfit.proc`): đai lam gương + khóa/tua bạc, mão bạc sáng, ủng lam đậm + mũi/miệng bạc. Mão Tripo là một vòng trụ rộng: bản đầu đặt như quan trên đỉnh trông như mũ cao, nên thu nhỏ (`fit.x` 0,20, đỉnh `head_z+0.11`) cho ôm vành đầu.
+
+## Voan nửa dưới tay áo (theo hình học)
+
+Voan của bộ này cùng màu lụa trắng nên không tách theo màu như Thần Tàng. `import.outfit.alpha = {"ao_ngoai": "sleeve"}` + `veil` (`xmin`, `zlo`, `zhi`, biểu thức theo mốc): trọng số voan mỗi đỉnh = đỉnh ở ngoài thân (|x| > bề ngang eo/2 + 0,10) và trong dải z từ `hip_z−0,25` tới `shoulder_z−0,10` ở tư thế tay thả (làm mềm bằng smoothstep), nướng vào kênh alpha của atlas qua UV (`raster_scalar`), alpha 0,5 ở voan (`veilAlpha`). Client dùng đúng cơ chế hai lượt của Thần Tàng (phần đặc `cutout` + voan blend thật chỉ ở LOD0, không dither); chiếm ~9% ô áo ngoài. Chỉ một mảnh xuyên sáng cho cả bộ.
+
+## Kiểm xuyên mesh và số đo
+
+- `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 1 đến 20 (nam), 1 đến 7 (nữ), sâu ≤ 4 cm; ảnh game (đứng/chạy/ngự kiếm/đả tọa/chém/chết, ba công pháp) không thấy xuyên mesh đáng kể, sau lưng một kiếm trong vỏ. `check/set_kinh_quang_kiem_y_*.json`.
+- `bench:crowd` sân 50 bot WebGPU high, cùng mặc (`BOT_SET=set_kinh_quang`): **288 draw (< 300, biên 12 vì voan thêm draw ở LOD0)**, ~1,03M tam giác, CPU p50/p95/p99 6,6 / 9,7 / 38,6 ms (p95 hơi trên 8 ms), texture 404 MB, heap 320 MB, tick p95 1,9 ms.
+- Ảnh: `sheet_kinh_quang_<m|f>.jpg`, `matrix_kinh_quang_<m|f>.jpg`, `bang_kinh_quang_<m|f>.jpg` (`pnpm shots:outfit --sets set_kinh_quang --matrix 1 --panel 1`).
+
+## Giới hạn
+
+- Giáp vai Tripo dạng cánh mỏng rất sắc và hơi lởm chởm khi nhìn gần; ba mảnh thủ tục nhẵn hơn mảnh có texture; chưa có mặt nạ phản chiếu "gương" thật (vật liệu bạc chỉ là màu + nhám thấp).
+- Nhóm kiếm Kính Quang (+10, vỏ riêng) chưa dựng: chờ người dùng.
