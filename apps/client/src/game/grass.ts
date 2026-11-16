@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { abs, cameraViewMatrix, cos, float, floor, instancedBufferAttribute, int, length, max, min, mix, positionGeometry, sin, smoothstep, step, texture, uniform, uniformArray, uv, vec2, vec3 } from 'three/tsl';
-import { COLLIDERS, FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
-import { heightAt } from './levelCtx';
+import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
+import { heightAt, levelTerrain } from './levelCtx';
 import type { N } from '../render/vfx/common';
 
 /**
@@ -171,7 +171,7 @@ export function buildGrassChunk(cx: number, cz: number, spacing: number, style: 
   // CHUNK là bội của HCELL nên lưới mẫu trùng đỉnh lưới địa hình: chỉ 25 lần heightAt mỗi ô.
   for (let j = 0; j < HN; j++) for (let i = 0; i < HN; i++) _hs[j * HN + i] = heightAt(x0 + i * HCELL, z0 + j * HCELL);
   _cols.length = 0;
-  for (const c of COLLIDERS) {
+  for (const c of levelTerrain().colliders) {
     const pad = c.r + 2;
     if (c.x > x0 - pad && c.x < x0 + CHUNK + pad && c.z > z0 - pad && c.z < z0 + CHUNK + pad) _cols.push(c);
   }
