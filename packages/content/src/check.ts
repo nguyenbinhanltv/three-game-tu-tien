@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
+import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
 import { LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
@@ -559,7 +559,17 @@ for (const m of MONSTERS) if ((m.elite || m.boss) && !m.elem) err(`quái ${m.id}
 needItem(PHA_CANH_PILL, 'Phá Cảnh Đan');
 if (ITEM.get(PHA_CANH_PILL)?.use) err('Phá Cảnh Đan không có `use`: chỉ dùng qua bình cảnh (server)');
 if (!RECIPES.some((r) => r.output.id === PHA_CANH_PILL)) err('thiếu công thức luyện Phá Cảnh Đan');
-if (BOTTLENECK_LEVELS.join() !== '5,10,15') err('bình cảnh phải ở tầng 5, 10, 15');
+if (BOTTLENECK_LEVELS.join() !== '5,10,15,17,19,21,23,25,27') err('bình cảnh phải ở cấp 5, 10, 15, 17, 19, 21, 23, 25, 27');
+// Thang cảnh giới (E1-C): realms.json đủ 1…MAX_LEVEL, tên đúng đại cảnh giới của glossary, xpNeed tăng đều, hệ số cảnh giới tăng.
+if (REALMS.length !== MAX_LEVEL) err(`realms.json phải có ${MAX_LEVEL} cấp (đang ${REALMS.length})`);
+REALMS.forEach((r, i) => {
+  if (r.level !== i + 1) err(`realms.json: cấp thứ ${i + 1} ghi level ${r.level}`);
+  if (r.key !== `realm.${r.level}`) err(`realms.json: cấp ${r.level} key ${r.key}`);
+  const major = GLOSSARY.realms[majorRealmOf(r.level)];
+  if (!t(r.key).startsWith(major)) err(`${r.key}: tên "${t(r.key)}" phải bắt đầu bằng đại cảnh giới "${major}" của glossary`);
+  if (r.level > TRUC_CO_LEVEL && r.level < MAX_LEVEL && xpNeed(r.level) <= xpNeed(r.level - 1) && majorRealmOf(r.level) === majorRealmOf(r.level - 1)) err(`xpNeed(${r.level}) phải lớn hơn cấp trước`);
+});
+if (!t(`realm.${MAX_LEVEL}`).endsWith('sơ kỳ')) err('cấp tối đa tạm là Hóa Thần sơ kỳ');
 if (!MONSTER.has('mon_tam_ma')) err('thiếu quái mon_tam_ma (bóng tâm ma của thử thách bình cảnh)');
 if (!NPCS.some((n) => n.rootChange)) err('không NPC nào đổi linh căn');
 for (const n of NPCS) if (n.rootChange) needStr(`npc.${n.id}.root`);
@@ -703,9 +713,20 @@ function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) 
   const tr = terrainOf(lv);
   const PLAY_BOUNDS = tr.playBounds;
   uniqueIds('trận', [...TELE_PADS]);
+  // E1-B: trận ở level khác Vân Lam có tiền tố level; bản đồ phải có thật và là bản đồ thế giới (E2-A thêm kiểm chi tiết theo level).
+  for (const pad of TELE_PADS) {
+    if (pad.level === 'van_lam') continue;
+    const dest = LEVELS[pad.level];
+    if (!dest || dest.dungeon) err(`trận ${pad.id}: level ${pad.level} không phải bản đồ thế giới`);
+    else {
+      needStr(`tele.${pad.id}`);
+      const b = terrainOf(dest).playBounds;
+      if (pad.x < b.x0 || pad.x > b.x1 || pad.z < b.z0 || pad.z > b.z1) err(`trận ${pad.id}: ngoài vùng chơi của ${pad.level}`);
+    }
+  }
   for (const z of lv.zones ?? []) if (TELE_PADS.filter((p) => p.zone === z.id).length !== 1) err(`vùng ${z.id}: cần đúng một Truyền Tống Trận`);
   if (!TELE_PADS.some((p) => TELE_FREE.includes(p.id))) err('cần ít nhất một trận mở sẵn');
-  for (const pad of TELE_PADS) {
+  for (const pad of TELE_PADS.filter((x) => x.level === 'van_lam')) {
     const w = `trận ${pad.id}`;
     needStr(`tele.${pad.id}`);
     if (pad.zone) {
@@ -723,6 +744,24 @@ function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) 
     for (const s of lv.spawns) if (Math.hypot(pad.x - s.x, pad.z - s.z) < s.radius + 20) err(`${w}: quá gần điểm sinh ${s.mon}`);
   }
 }
+
+// ---- Cổng và bí cảnh theo dữ liệu (E1-B) ----
+for (const lv of Object.values(LEVELS)) {
+  for (const q of lv.portals ?? []) {
+    if (!LEVELS[q.to]?.dungeon) err(`level ${lv.id}: cổng dẫn tới ${q.to} không phải bí cảnh`);
+    if (lv.dungeon) err(`level ${lv.id}: bí cảnh không có cổng vào bí cảnh khác`);
+  }
+  const d = lv.dungeon;
+  if (!d) continue;
+  const w = `bí cảnh ${lv.id}`;
+  const ret = LEVELS[d.returnLevel];
+  if (!ret || ret.dungeon) err(`${w}: returnLevel ${d.returnLevel} không phải bản đồ thế giới`);
+  if (!(ret?.portals ?? []).some((q) => q.to === lv.id)) err(`${w}: ${d.returnLevel} không có cổng dẫn vào`);
+  if (!d.waves.length) err(`${w}: thiếu đợt quái`);
+  for (const wv of d.waves) for (const g of wv.mons) if (!MONSTER.get(g.id)) err(`${w}: quái ${g.id} không tồn tại`);
+  for (const pt of [d.spawn, d.exit, d.center]) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${w}: điểm (${pt.x}, ${pt.z}) ngoài bản đồ`);
+}
+if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
 
 // ---- Pháp bảo phụ và đan (P3-8) ----
 uniqueIds('artifact', ARTIFACTS);
@@ -768,6 +807,10 @@ for (const pl of PLACES) {
 let total = 0;
 for (let l = 1; l <= 15; l++) total += xpNeed(l);
 console.log(`Tổng tu vi Ngưng Khí 1 → viên mãn tầng 15: ${total}`);
+{
+  const span = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => xpNeed(a + i)).reduce((x, y) => x + y, 0);
+  console.log(`Tu vi Trúc Cơ 16–19: ${span(16, 19)}, Kết Đan 20–23: ${span(20, 23)}, Nguyên Anh 24–27: ${span(24, 27)}`);
+}
 console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILLS.length} skill (${METHODS.length} công pháp), ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose, ${APPEARANCE.dyes.length} màu áo`);
 
 if (errors.length) {

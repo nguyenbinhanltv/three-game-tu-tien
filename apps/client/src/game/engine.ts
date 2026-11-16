@@ -79,13 +79,18 @@ export interface LoginOptions {
  * server khác 2567 thì phải đặt VITE_SERVER_URL khi build, không thì client nối nhầm vào chính
  * server preview.
  */
-/** Tên tin server báo level của room (E1-B). */
-export const LEVEL_MSG = 'level';
-
-/** Level của room theo tin INIT: trường `level` nếu server gửi (E1-B), không thì suy từ tên room. */
+/**
+ * Level của room theo `InitMsg.room` (E1-B đặt tên room theo level: `world` = Vân Lam, `world-<id>`, `dungeon` = Kiếm Trủng,
+ * `dungeon-<id>`); tên lạ thì về Vân Lam.
+ */
+export function levelOfRoom(room: string): string {
+  if (room === ROOM_WORLD) return 'van_lam';
+  if (room === ROOM_DUNGEON) return 'kiem_trung';
+  const id = room.replace(/^(world|dungeon)-/, '');
+  return id !== room && knownLevel(id) ? id : 'van_lam';
+}
 export function levelOfInit(init: InitMsg): string {
-  const l = (init as InitMsg & { level?: string }).level;
-  return l && knownLevel(l) ? l : init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung';
+  return levelOfRoom(init.room);
 }
 
 export function serverUrl(): string {
@@ -461,7 +466,7 @@ export class Game {
     this.bindRoom(room);
     void this.enterLevel(levelOfInit(init));
     this.ents?.dispose();
-    this.ents = new EntityManager(this.scene, this.sid, init.room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents = new EntityManager(this.scene, this.sid, levelOfInit(init));
     this.ents.setWarm(this.warmObject);
     this.mapVis?.dispose();
     this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
@@ -578,10 +583,6 @@ export class Game {
       set({ phase: 'error', error: t(m.k) });
     });
     room.onMessage(S.TRANSFER, (m: TransferMsg) => this.transfer(m));
-    // E1-B: server báo level của room (khi vào/chuyển bản đồ); chưa có tin này thì level suy từ tên room (`levelOfInit`).
-    room.onMessage(LEVEL_MSG, (m: { id?: string }) => {
-      if (m?.id) void this.enterLevel(m.id);
-    });
     room.onMessage('*', () => {});
     room.onLeave((code) => {
       if (this.leaving || this.disposed || this.room !== room) return;
@@ -772,7 +773,7 @@ export class Game {
     this.ambient.setQuality(get().quality);
     // Chớp toàn cảnh của thiên lôi (M4-4) đi qua uniform `uFlash` của pass chỉnh màu.
     this.vfx.onFlash = (a) => this.post?.flash(a);
-    this.ents = new EntityManager(this.scene, this.sid, get().room === ROOM_WORLD ? 'van_lam' : 'kiem_trung');
+    this.ents = new EntityManager(this.scene, this.sid, levelOfRoom(get().room));
     this.ents.setWarm(this.warmObject);
     this.mapVis = new MapVis(this.scene, get().room === ROOM_WORLD);
     this.resetSound(get().room === ROOM_WORLD);

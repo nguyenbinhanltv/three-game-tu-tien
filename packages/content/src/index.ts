@@ -1,4 +1,4 @@
-import { resolveSkill, type ResolvedSkill } from '@dtl/shared';
+import { majorRealmOf, resolveSkill, type ResolvedSkill } from '@dtl/shared';
 import type {
   ArtifactDef,
   PillQualityCfg,
@@ -171,6 +171,11 @@ export function hasString(key: string): boolean {
 
 export function realmName(level: number): string {
   return t('realm.' + level);
+}
+
+/** Tên đại cảnh giới kế tiếp (đích của độ kiếp) từ cấp `level`: Ngưng Khí → Trúc Cơ, Trúc Cơ → Kết Đan... Lấy từ bảng thuật ngữ. */
+export function nextMajorRealmName(level: number): string {
+  return GLOSSARY.realms[majorRealmOf(level) + 1] ?? '';
 }
 
 export function itemName(id: string, plus?: number): string {

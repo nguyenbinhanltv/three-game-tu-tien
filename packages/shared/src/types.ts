@@ -362,6 +362,8 @@ export interface NpcDef {
   z: number;
   yaw: number;
   color: string;
+  /** Level đứng của NPC; thiếu = Vân Lam. */
+  level?: string;
   sells?: string[];
   recipes?: boolean;
   enhance?: boolean;
@@ -433,6 +435,40 @@ export interface LevelDef {
   camps?: CampDef[];
   /** Điểm đáng chú ý (M-5): bày prop sẵn có + cột linh quang nhìn từ xa. Tên ở i18n `poi.<id>.name`. */
   pois?: PoiDef[];
+  /** Điểm xuất hiện và hồi sinh của room thế giới (E1-B); thiếu thì dùng `SPAWN_POINT` (chỉ Vân Lam). */
+  spawn?: { x: number; z: number };
+  /** Cổng vào bí cảnh đặt trong level này (E1-B). */
+  portals?: PortalDef[];
+  /** Có mặt = level là bí cảnh (room riêng, vào bằng vé); thiếu = bản đồ thế giới. */
+  dungeon?: DungeonDef;
+}
+
+/** Cổng dẫn từ bản đồ thế giới vào bí cảnh. */
+export interface PortalDef {
+  x: number;
+  z: number;
+  /** Đứng trong bán kính này (m) mới dùng được. */
+  r: number;
+  /** Level bí cảnh đích. */
+  to: string;
+}
+
+export interface WaveDef {
+  mons: { id: string; level: number; n: number }[];
+}
+
+/** Bí cảnh theo dữ liệu (E1-B): điểm vào/ra, tâm trận, đợt quái, nơi về. */
+export interface DungeonDef {
+  spawn: { x: number; z: number };
+  /** Điểm đứng dùng cổng ra (`portal`). */
+  exit: { x: number; z: number };
+  /** Tâm vòng sinh quái của mỗi đợt. */
+  center: { x: number; z: number };
+  minLevel: number;
+  /** Level thế giới nhận người khi ra, và điểm xuất hiện ở đó. */
+  returnLevel: string;
+  returnSpawn: { x: number; z: number };
+  waves: WaveDef[];
 }
 
 /**
