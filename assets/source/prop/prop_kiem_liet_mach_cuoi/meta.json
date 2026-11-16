@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_kiem_liet_mach_cuoi",
+  "type": "prop",
+  "budgetClass": "weapon",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 2500,
+    "texture": 512
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "prop/prop_kiem_liet_mach/tripo/raw_cuoi_v01.glb",
+    "size": {
+      "longest": 0.95
+    },
+    "orient": "none",
+    "post": "tools/blender/orient_sword.py"
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex imagegen",
+      "date": "2026-11-16",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "parentTaskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 2500,
+        "topology": "triangle",
+        "texture": "2K",
+        "pbr": true,
+        "remove_lighting": true
+      },
+      "seed": null,
+      "quote": 0,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-16",
+      "output": "raw_cuoi_v01.glb",
+      "result": "ok",
+      "note": "Dạng cuối +10 của Kiếm Liệt Mạch (concept #147), tạo bằng Tripo web."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (image→3D H3.1) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}

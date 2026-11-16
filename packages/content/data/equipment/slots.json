@@ -6,5 +6,6 @@
   { "id": "belt", "weight": 0.8, "main": { "hp": 0.6, "mp": 0.4 } },
   { "id": "jade", "weight": 0.7, "main": { "mp": 0.8, "hp": 0.2 } },
   { "id": "ring", "weight": 0.6, "main": { "atk": 0.5, "hp": 0.5 } },
-  { "id": "artifact", "weight": 0, "main": {} }
+  { "id": "artifact", "weight": 0, "main": {} },
+  { "id": "head", "weight": 0.5, "drop": false, "main": { "hp": 0.5, "mp": 0.5 } }
 ]

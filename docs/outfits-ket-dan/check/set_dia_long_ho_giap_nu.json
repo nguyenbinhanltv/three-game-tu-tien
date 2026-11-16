@@ -1,0 +1,43 @@
+{
+  "outfit": "apps/client/public/assets/set_dia_long_ho_giap_nu.4587172068.glb",
+  "keep": "head",
+  "tol": 0.02,
+  "poses": {
+    "run": {
+      "maxDepth": 0.0385,
+      "sign": -1,
+      "insideAtWorst": 6,
+      "meanInside": 3.5
+    },
+    "chop": {
+      "maxDepth": 0.0385,
+      "sign": 1,
+      "insideAtWorst": 14,
+      "meanInside": 8.0
+    },
+    "arms_down": {
+      "maxDepth": 0.0295,
+      "sign": -1,
+      "insideAtWorst": 2,
+      "meanInside": 1.0
+    },
+    "crouch": {
+      "maxDepth": 0.0205,
+      "sign": -1,
+      "insideAtWorst": 3,
+      "meanInside": 3.0
+    },
+    "sit": {
+      "maxDepth": 0.029,
+      "sign": -1,
+      "insideAtWorst": 2,
+      "meanInside": 1.0
+    },
+    "fall": {
+      "maxDepth": 0.027,
+      "sign": -1,
+      "insideAtWorst": 1,
+      "meanInside": 0.5
+    }
+  }
+}

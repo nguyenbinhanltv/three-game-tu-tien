@@ -1,5 +1,5 @@
 // pnpm shots:kiem: ảnh 5 kiếm riêng theo trang bị (prop_kiem_*): đeo lưng, cầm tay, đang chém, trên model nam/nữ.
-//   tsx src/shots-kiem.ts --out <thư mục> [--hand-only] [--gender m|f] [--renderer webgpu|webgl2] [--only id,id] [--glow 0|1|2]
+//   tsx src/shots-kiem.ts --out <thư mục> [--hand-only] [--gender m|f] [--renderer webgpu|webgl2] [--only id,id] [--glow 0|1|2] [--set set_liet_mach]
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175), tắt tiếng (?mute=1, --mute-audio), một tài khoản thử, dựng cảnh bằng lệnh GM.
 import path from 'node:path';
 import fs from 'node:fs';
@@ -76,6 +76,7 @@ async function main(): Promise<void> {
     await gm(page, 'level 20');
     await gm(page, 'god on');
     await gm(page, 'tp 2048 2088');
+    if (opt('--set', '')) await gm(page, `set ${opt('--set', '')}`, 2000); // mặc bộ (áo mô-đun + vỏ lưng) khi chụp kiếm
     await page.addStyleTag({ content: 'body.nohud .hud, body.nohud .chat, body.nohud .minimap { visibility: hidden !important; }' });
     const cam = (yaw: number, pitch: number, dist: number) =>
       page.evaluate(([y, p, d]) => {
