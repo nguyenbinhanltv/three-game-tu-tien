@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { LEVELS } from '@dtl/content';
 import { groundAt, S, tribDef, xpNeed, type FxMsg, type HazardMsg } from '@dtl/shared';
 
 // Đan Hỏa Kiếp (E2-D): cơ chế Đan Trận (`dan_tran`), vật phẩm Kết Đan Dịch, thất bại khi ngưng đan không đầy.
@@ -141,14 +142,27 @@ describe('Đan Hỏa Kiếp: Đan Trận', () => {
   });
 });
 
+/** Nhận q2_ket_dan: Khưu Hàn Sơn đứng ở Đoạn Mạch (E2-H) nên tạm đổi level của sim sang đó chỉ trong lúc nhận (kiếp vẫn chạy ở sân thử Vân Lam). */
+function acceptKetDan(t: ReturnType<typeof setup>): void {
+  const npc = NPC.get('npc_khieu_han_son')!;
+  const sim = t.sim as unknown as { level: unknown };
+  const keep = sim.level;
+  const [x, z] = [t.p.move.x, t.p.move.z];
+  sim.level = LEVELS.doan_mach;
+  t.p.move.x = npc.x;
+  t.p.move.z = npc.z;
+  t.char.quests.done.push('q2_dia_mach');
+  t.sim.onQuest(t.p, { a: 'accept', id: 'q2_ket_dan' });
+  sim.level = keep;
+  t.p.move.x = x;
+  t.p.move.z = z;
+}
+
 describe('q2_ket_dan: không hoàn thành ngay lúc nhận', () => {
   it('nhận ở cấp 19 thì tiến độ 0; độ kiếp Kết Đan xong mới 1/1 (Trúc Cơ không tính)', () => {
     const t = setup();
     t.char.quests.done.push('q_truc_co');
-    const npc = NPC.get('npc_chuong_mon')!;
-    t.p.move.x = npc.x;
-    t.p.move.z = npc.z;
-    t.sim.onQuest(t.p, { a: 'accept', id: 'q2_ket_dan' });
+    acceptKetDan(t);
     expect(t.char.quests.active.q2_ket_dan).toEqual([0]);
     expect(t.char.questComplete('q2_ket_dan')).toBe(false);
     // Kiếp Trúc Cơ (id khác) không tính cho nhiệm vụ này.
@@ -168,11 +182,9 @@ describe('q2_ket_dan: không hoàn thành ngay lúc nhận', () => {
     t.char.level = 20;
     t.char.recalc();
     t.char.quests.done.push('q_truc_co');
-    const npc = NPC.get('npc_chuong_mon')!;
-    t.p.move.x = npc.x;
-    t.p.move.z = npc.z;
-    t.sim.onQuest(t.p, { a: 'accept', id: 'q2_ket_dan' });
+    acceptKetDan(t);
     expect(t.char.quests.active.q2_ket_dan).toEqual([1]);
+    const npc = NPC.get('npc_chuong_mon')!;
     const u = setup(false);
     u.char.level = 16;
     u.char.recalc();
