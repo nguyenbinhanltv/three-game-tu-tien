@@ -5,7 +5,7 @@ import { C, sellPrice } from '@dtl/shared';
 import { hasString, ITEM, itemName, METHOD, NPC, PILL_QUALITY, QUESTS, realmName, RECIPES, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { objectiveText } from './Hud';
-import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './Panels';
+import { ItemDetail, ItemIcon, RewardLine, statLines, Window } from './windows/common';
 import { Button, Divider, Tabs } from './kit';
 import { RootTab } from './Realm';
 import { EnhanceTab, ForgeTab, GemTab, PromoteTab, RefineTab, SalvageTab } from './UpgradeTabs';

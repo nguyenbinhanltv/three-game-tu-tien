@@ -13,10 +13,10 @@ import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
 import { DuelBanner, InviteStack, PartyFrame } from './Party';
 import { Minimap } from './minimap/Minimap';
-import { Panels } from './Panels';
+import { Panels } from './windows/Panels';
 import { TrialBanner } from './Realm';
 import { breakGoal } from './breakGoal';
-import { type BossLine, type ChapterCard, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
+import { type BossLine, type ChapterCard, openPanel, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
 
 function PlayerFrame() {
   const char = useUI((s) => s.char);
@@ -51,7 +51,7 @@ function PlayerFrame() {
             className="break-btn"
             title={t(goal.kind === 'trib' ? 'ui.frame.break_trib' : 'ui.frame.break_bk', { n: char.level })}
             onClick={(e) => {
-              set({ panel: 'char' });
+              openPanel('char');
               blurAfterPointer(e);
             }}
           >
@@ -721,7 +721,7 @@ function Corner() {
 export function Hud() {
   const hint = useUI((s) => s.hint);
   const npc = useUI((s) => s.npc);
-  const panel = useUI((s) => s.panel);
+  const panel = useUI((s) => s.windows.length > 0);
   const controls = useUI((s) => s.controls);
   const mouseLook = useUI((s) => s.mouseLook);
   const dead = useUI((s) => (s.flags & PF_DEAD) !== 0);

@@ -713,7 +713,7 @@
 body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   opacity: 0;
 }
-.hud[data-cut='line'] > :is(.right-col, .chat, .hint, .toasts, .k-window),
+.hud[data-cut='line'] > :is(.right-col, .chat, .hint, .toasts, .k-window, .win-host),
 .hud[data-cut='line'] .action-row {
   opacity: 0;
   pointer-events: none;
@@ -914,7 +914,32 @@ body > .k-tip {
   zoom: var(--ui-scale, 1);
 }
 /* Bản đồ lớn (M-4) tự tính tọa độ chuột theo px màn hình nên không phóng bằng zoom; nó vốn rộng 980 px. */
-.hud > .k-window.worldmap {
+.hud > .win-host[data-id='map'] {
   zoom: 1;
   --s: 1;
+}
+
+/* ---------- khung cửa sổ nhiều cái (TD-B, ui/windows/Panels.tsx) ----------
+ * Vị trí `left/top` theo đơn vị thiết kế (bên trong zoom); thanh tiêu đề kéo được. */
+.win-host {
+  --s: var(--ui-scale, 1);
+  position: absolute;
+  display: flex;
+}
+.win-host > .k-window {
+  position: static;
+  transform: none;
+  /* Không để bảng tràn xuống thanh chiêu dù người chơi kéo thấp. */
+  max-height: max(240px, calc(100vh / var(--s) - var(--y, 0px) - 140px));
+}
+.win-host .k-head {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.win-host .k-head button {
+  cursor: pointer;
+}
+.win-host[data-top='1'] .k-head-mark {
+  filter: brightness(1.35);
 }
