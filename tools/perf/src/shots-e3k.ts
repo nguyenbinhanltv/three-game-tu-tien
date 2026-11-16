@@ -124,7 +124,7 @@ async function main(): Promise<void> {
     await page.keyboard.down('KeyW');
     await sleep(1000);
     await page.keyboard.up('KeyW');
-    await cam(page, 0.5 + Math.PI / 2, 0.3, 17);
+    await cam(page, 0.5 - Math.PI / 2, 0.3, 15);
     await sleep(700);
     await shot(page, '09-nguyen-anh-bay-xa-than-xac-o-lai');
     await cam(page, 0.5, 0.1, 5);
