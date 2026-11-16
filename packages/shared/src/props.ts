@@ -108,3 +108,16 @@ export const HAND_PROPS: readonly HandProp[] = [
 
 /** Va chạm của prop điểm nhấn (nối vào COLLIDERS: client và server dùng chung). */
 export const PROP_COLLIDERS = HAND_PROPS.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: p.r as number }));
+
+/** Level dùng chung bố cục prop (Kiếm Trủng nằm trên bản đồ Vân Lam). */
+const PROP_LEVELS: Record<string, readonly HandProp[]> = { van_lam: HAND_PROPS, kiem_trung: HAND_PROPS };
+
+/** Prop điểm nhấn của level (E1-A); level chưa có bố cục thì rỗng. */
+export function propsOf(levelId: string): readonly HandProp[] {
+  return PROP_LEVELS[levelId] ?? [];
+}
+
+/** Va chạm của prop điểm nhấn theo level. */
+export function propCollidersOf(levelId: string): { x: number; z: number; r: number }[] {
+  return levelId in PROP_LEVELS ? PROP_COLLIDERS : [];
+}
