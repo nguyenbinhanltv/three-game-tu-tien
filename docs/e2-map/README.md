@@ -7,7 +7,7 @@ Gói E2-A của E-2 Kết Đan (`docs/EXPANSION_DESIGN.md` mục 4.1, 10.2, 11.2
 | Thứ | Ở đâu |
 | --- | --- |
 | Địa hình dữ liệu hóa (`TerrainDef`) | `packages/content/data/levels/doan_mach.terrain.json`, đăng ký ở `packages/content/src/index.ts` (`registerTerrain`) khi nạp `@dtl/content` |
-| Level: 5 vùng, 60 cụm, 12 tinh anh, boss, 5 điểm đáng chú ý, 3 điểm tài nguyên, điểm vào | `packages/content/data/levels/doan_mach.json` |
+| Level: 5 vùng, 75 cụm, 12 tinh anh, boss, 5 điểm đáng chú ý, 3 điểm tài nguyên, điểm vào | `packages/content/data/levels/doan_mach.json` |
 | Khai báo asset client của level | `packages/content/data/levels/doan_mach.assets.json` (E1-D) |
 | Trận truyền tống `dm_*` (6) và `tp_thien_mach` (Vân Lam) | `packages/shared/src/teleport.doanmach.ts`, `teleport.ts` |
 | Prop bày (48, asset sẵn có) | `packages/shared/src/props.doanmach.ts`, nối vào `propsOf('doan_mach')` |
@@ -21,15 +21,15 @@ Gói E2-A của E-2 Kết Đan (`docs/EXPANSION_DESIGN.md` mục 4.1, 10.2, 11.2
 
 Trạm Hạ Khuyết ở tâm (đĩa 75 m, không quái). Năm vùng tỏa ra như năm nhánh hẻm; biên giữa các vùng uốn lượn. Mỗi vùng có một lòng sông cạn (dải phẳng thấp hơn cao nguyên chừng 50 m) chạy dọc đường giữa vùng, trận truyền tống đứng trên lòng sông; hố boss ở cuối nhánh Đoạn Mạch Tuyệt Bích. Tọa độ so với trạm (+x đông, +z nam):
 
-| Vùng | Cấp | Hướng | Cụm | Quái thường | Tinh anh |
-| --- | --- | --- | --- | --- | --- |
-| Sa Thạch Pha | 16–17 | đông nam | 11 | 39 | Liệt Cốt Báo Vương ×2 |
-| Khô Hà Đạo | 17–18 | đông | 12 | 45 | Hộ Mạch Khôi Tướng ×2 |
-| Hoang Sa Huyệt | 18–19 | nam | 12 | 45 | Xích Sa Ngô Công ×3 |
-| Cựu Mỏ Khu | 18–19 | tây | 15 | 61 | Hộ Mạch Khôi Tướng ×2, Liệt Cốt Báo Vương ×1 |
-| Đoạn Mạch Tuyệt Bích | 19 | bắc | 10 | 38 | Xích Sa Ngô Công ×2; boss Địa Mạch Long (30, −620) |
+| Vùng | Cấp | Hướng | Tinh anh |
+| --- | --- | --- | --- |
+| Sa Thạch Pha | 16–17 | đông nam | Liệt Cốt Báo Vương ×2 |
+| Khô Hà Đạo | 17–18 | đông | Hộ Mạch Khôi Tướng ×2 |
+| Hoang Sa Huyệt | 18–19 | nam | Xích Sa Ngô Công ×3 |
+| Cựu Mỏ Khu | 18–19 | tây | Hộ Mạch Khôi Tướng ×2, Liệt Cốt Báo Vương ×1 |
+| Đoạn Mạch Tuyệt Bích | 19 | bắc | Xích Sa Ngô Công ×2; boss Địa Mạch Long (30, −620) |
 
-Tổng: 60 cụm, 228 quái thường (trong đó 3 quái đánh xa kèm cụm), 12 tinh anh, 1 boss. Vùng săn 1,80 km² → **126,8 quái/km²** (`content:check`: 100–140). Điểm đáng chú ý: Mạch Tinh Trụ, Cầu Đá Gãy, Hố Sa Lún, Cổng Mỏ Khai Mạch, Vách Đứt Mạch (mỗi vùng một, ≥ 5 prop quanh).
+Tổng: 75 cụm, 231 quái thường, 12 tinh anh, 1 boss. Vùng săn 1,80 km² → **128,5 quái/km²** (`content:check`: 100–140). Số cụm mỗi vùng xem `levels/doan_mach.json` (cụm rải đều toàn bản đồ, không theo chỉ tiêu từng vùng). Điểm đáng chú ý: Mạch Tinh Trụ, Cầu Đá Gãy, Hố Sa Lún, Cổng Mỏ Khai Mạch, Vách Đứt Mạch (mỗi vùng một, ≥ 5 prop quanh).
 
 ## Đường đi
 
@@ -41,12 +41,23 @@ Tổng: 60 cụm, 228 quái thường (trong đó 3 quái đánh xa kèm cụm),
 
 | | |
 | --- | --- |
-| Quái thường / tinh anh / boss | 228 / 12 / 1 |
-| Mật độ vùng săn | 126,8 quái/km² (đạt 100–140) |
-| Chỗ kẹt (4889 điểm quét) | **0** |
-| Độ phủ trong vùng săn, ≤ 35 m tới quái gần nhất | **23 %** (p50 59 m, p95 141 m, max 217 m) |
+| Cụm / quái thường / tinh anh / boss | 75 / 231 (cụm 3 con, một phần 4 con; không còn quái đánh xa kèm cụm) / 12 / 1 |
+| Mật độ vùng săn | 128,5 quái/km² (đạt 100–140) |
+| Chỗ kẹt (4991 điểm quét) | **0** |
+| Độ phủ chuẩn mới: khoảng cách tới **mép cụm** gần nhất (lưới 12 m, 12 414 điểm) | 99,2 % ≤ 70 m, p50 32,5 m, **p95 61,4 m, max 84,4 m** |
+| Chuẩn cũ (≤ 35 m tới từng quái, chỉ để so; Vân Lam giữ chuẩn này) | 28,1 % (trước đổi 23,3 %) |
 
-**Độ phủ ≤ 35 m không đạt, và không thể đạt cùng với mật độ 100–140.** Cả hai tính trên cùng đa giác vùng săn: mỗi quái chiếm ≥ 7 150 m² (140/km²) mà phải có điểm nào cũng cách quái ≤ 35 m (đĩa 3 850 m²), mà quái trong cụm lại dồn quanh tâm cụm (bán kính 26–30 m). Với 3,8 quái/cụm trần lý thuyết khoảng 25–30 %; đã dùng cụm lớn nhất (bán kính 26–30 m, 75 % cụm 4 con) và rải đều bằng lấy mẫu "điểm xa nhất" để đạt 23 %. Vân Lam đạt 99,6 % vì vùng săn của nó là các bãi nhỏ, dày hơn nhiều (ngưỡng M-1 tính theo số quái tuyệt đối, không theo mật độ). Cần chọn: (a) hạ ngưỡng độ phủ cho level mở rộng (ví dụ p50 ≤ 60 m), hoặc (b) thu đa giác vùng săn sát bãi quái (khi đó mật độ vượt 140; nâng trần hoặc tăng số quái). Tôi để (a) cho người dùng quyết.
+**Chuẩn độ phủ theo level** (`packages/content/src/coverage.ts`, `COVER_BY_LEVEL`): Vân Lam giữ ≤ 35 m tới quái (đo ở `mapreport.ts`); bản đồ mở rộng đo khoảng cách từ mỗi điểm trong vùng săn tới mép cụm gần nhất (tâm cụm trừ bán kính; đấu trường quanh boss bán kính 60 m không tính). `content:check` (`levelcheck.ts`) cứng: **p95 ≤ 65 m và max ≤ 85 m** cho `doan_mach`; level khác dùng `DEFAULT_COVER` (cùng số). `map:report` in thêm mục này.
+
+**Vì sao max là 84 m chứ chưa phải 70 m:** mật độ 100–140 quái/km² với cụm 3–4 con, bán kính tối đa 30 m, chỉ cho hình học xấp xỉ sau (cùng đa giác vùng săn 1,80 km²):
+
+| Số cụm | Mật độ | Điểm xa nhất tới mép cụm |
+| --- | --- | --- |
+| 75 (bản này) | 128,5 | 84 m (p95 61 m) |
+| 83 | 138,5 | 75 m (p95 58 m) |
+| ≈ 90 | ≈ 150 | ≈ 70 m (vượt trần 140) |
+
+Muốn 100 % điểm ≤ 70 m phải nâng trần mật độ lên ≈ 150 quái/km² hoặc cho cụm 2 con. Bản này chọn 128,5 quái/km² (giữ ~120 theo quyết định) và ghi ngưỡng cứng 85 m; đổi ngưỡng là sửa `COVER_BY_LEVEL`. Cụm được rải bằng lưới lục giác chọn bước/góc tốt nhất, tối ưu vị trí rồi vá điểm xa nhất (`tools/maps/gen-doan-mach.mjs`).
 
 ## Ảnh để duyệt
 
@@ -66,20 +77,11 @@ Tổng: 60 cụm, 228 quái thường (trong đó 3 quái đánh xa kèm cụm),
 | Tinh anh Liệt Cốt Báo Vương | ![](elite-liet-cot-bao-0.jpg) |
 | Boss Địa Mạch Long (toàn thân, cùng người chơi) | ![](boss-dia-mach-long.jpg) |
 
-Trong game mặt đất vẫn là cỏ xanh Vân Lam, chưa có tông đất son "cốc đứt mạch": bộ texture ochre, mood, cỏ/cây riêng là việc của E2-I (mỹ thuật). Ảnh chỉ chứng minh địa hình, bố cục, quái, prop tạm và đường vào. Prop ở điểm đáng chú ý là đá/đèn đá Vân Lam dùng tạm; thay bằng PROP_LIB (#118) theo bảng dưới khi nó merge.
+Trong game mặt đất vẫn là cỏ xanh Vân Lam, chưa có tông đất son "cốc đứt mạch": bộ texture ochre, mood, cỏ/cây riêng là việc của E2-I (mỹ thuật). Ảnh chỉ chứng minh địa hình, bố cục, quái, prop PROP_LIB và đường vào.
 
-## Chỗ để PROP_LIB (#118) và việc kế tiếp
+## Prop (PROP_LIB #118 đã dùng)
 
-Chưa merge nên điểm đáng chú ý dùng prop sẵn có làm chỗ đứng (đá dựng, đá nằm, phiến đá, bia, kiếm gãy, đèn đá, lò đan, lều). Thay khi #118 vào (sửa `POI_KIT` ở bộ sinh, chạy lại):
-
-| Điểm | Prop PROP_LIB |
-| --- | --- |
-| Mạch Tinh Trụ | `prop_mach_tinh_tru` (cột linh quang), `prop_tru_nham_do` quanh |
-| Cầu Đá Gãy | `prop_cau_da_gay` |
-| Hố Sa Lún | `prop_cay_goc_kho`, `prop_da_troi` |
-| Cổng Mỏ Khai Mạch | `prop_cong_khai_mach`, `prop_lau` cho trại |
-| Vách Đứt Mạch | `prop_tru_da_khac_van` |
-| Trạm Hạ Khuyết | `prop_ngung_dan_lo` (đang dùng `prop_lo_dan`) |
+Điểm đáng chú ý dùng prop PROP_LIB của `doan_mach` (`prop_mach_tinh_tru`, `prop_tru_nham_do`, `prop_cau_da_gay`, `prop_cong_khai_mach`, `prop_cay_goc_kho`, `prop_ngung_dan_lo` ở trạm) cộng vài prop Vân Lam làm đệm (đá, đèn đá, bia, kiếm gãy, lều, lò đan). Bán kính va chạm theo `propLib.ts`; `levelcheck` cho prop va chạm ≤ 4,5 m ở level mới (Vân Lam giữ 1,5 m). Client có cấu hình vẽ (`PROP_CFG`) cho 6 id mới. Chưa dùng: `prop_da_troi`, `prop_tru_da_khac_van` (thuộc bản đồ khác).
 
 Để lại cho các gói khác (không nằm trong E2-A):
 

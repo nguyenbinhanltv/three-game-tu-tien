@@ -1,6 +1,7 @@
 // E2-A: Đoạn Mạch Cổ Cốc đạt bộ kiểm level, đúng số liệu thiết kế (60 cụm, 12 tinh anh, 1 boss, 5 vùng cấp 16–19), địa hình đi được.
 import { describe, expect, it } from 'vitest';
 import { polyArea, terrainOf, TELE_PADS, TELE_FREE, WATER_Y } from '@dtl/shared';
+import { campCoverage, COVER_BY_LEVEL } from './coverage';
 import { LEVELS } from './index';
 import { checkLevel } from './levelcheck';
 
@@ -15,7 +16,8 @@ describe('doan_mach', () => {
     expect(zones).toHaveLength(5);
     expect(Math.min(...zones.map((z) => z.lvMin))).toBe(16);
     expect(Math.max(...zones.map((z) => z.lvMax))).toBe(19);
-    expect(camps).toHaveLength(60);
+    expect(camps.length).toBeGreaterThanOrEqual(70);
+    expect(camps.length).toBeLessThanOrEqual(90);
     expect(lv.spawns.filter((s) => s.mon.startsWith('elite_')).reduce((a, s) => a + s.count, 0)).toBe(12);
     expect(lv.spawns.filter((s) => s.mon.startsWith('boss_')).map((s) => s.mon)).toEqual(['boss_dia_mach_long']);
     const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
@@ -24,6 +26,13 @@ describe('doan_mach', () => {
     expect(km2).toBeLessThan(2.2);
     expect(normal / km2).toBeGreaterThanOrEqual(100);
     expect(normal / km2).toBeLessThanOrEqual(140);
+  });
+
+  it('độ phủ cụm đạt chuẩn level (p95 và điểm xa nhất tới mép cụm)', () => {
+    const cv = campCoverage(lv);
+    expect(cv.p95).toBeLessThanOrEqual(COVER_BY_LEVEL.doan_mach.p95);
+    expect(cv.max).toBeLessThanOrEqual(COVER_BY_LEVEL.doan_mach.max);
+    expect(cv.within).toBeGreaterThan(0.98); // ≥ 98 % điểm ≤ 70 m
   });
 
   it('địa hình khô: không nước, mọi chỗ trong vùng chơi cao hơn mặt nước chuẩn', () => {

@@ -23,6 +23,8 @@ const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
 // Boss to: đứng xa hơn (z + 18) và lùi camera để thấy toàn thân cùng người chơi.
 const POINTS = levelPoints('doan_mach')
   .filter((p) => !ONLY.length || ONLY.includes(p.name))
+  // Điểm đáng chú ý: prop lớn nằm đúng tâm điểm, nên đứng lùi 16 m để thấy cả cụm.
+  .map((p) => (p.name.startsWith('poi_') ? { ...p, z: p.z + 16, yaw: 0, pitch: 0.25, dist: 22 } : p))
   .map((p) => (p.name.startsWith('boss_') ? { ...p, z: p.z + 18, yaw: 0, pitch: 0.2, dist: 34 } : p));
 
 type G = { __game?: Record<string, any> };

@@ -97,7 +97,7 @@ for (const z of ZONES) {
 }
 const zoneOfOffset = (x, z) => {
   const r = Math.hypot(x, z);
-  if (r < R_IN + 28 || norm4(x, z) > R_OUT - 30) return null;
+  if (r < R_IN + 8 || norm4(x, z) > R_OUT - 8) return null;
   const a = (Math.atan2(z, x) * 180) / Math.PI;
   for (const zn of ZONES) {
     const a0 = edgeA(zn, r);
@@ -107,7 +107,7 @@ const zoneOfOffset = (x, z) => {
     while (aa >= a0 + 360) aa -= 360;
     if (aa < a1) {
       // cách hai tia biên ≥ 22 m
-      if (r * Math.sin(deg(aa - a0)) < 22 || r * Math.sin(deg(a1 - aa)) < 22) return null;
+      if (r * Math.sin(deg(aa - a0)) < 6 || r * Math.sin(deg(a1 - aa)) < 6) return null;
       return zn;
     }
   }
@@ -129,31 +129,35 @@ const POIS = [
   { id: 'cong_mo', zone: 'cuu_mo_khu', off: [-440, -80] },
   { id: 'vach_dut_mach', zone: 'tuyet_bich', off: [20, -540] },
 ];
-// Prop sẵn có làm chỗ đứng cho đến khi PROP_LIB (#118) vào (xem docs/e2-map/README.md, bảng "Chỗ để PROP_LIB").
+// Prop: PROP_LIB (#118, packages/shared/src/propLib.ts) cho bản đồ doan_mach + vài prop Vân Lam sẵn có làm đệm.
+// Tâm điểm [id, yaw, s] đặt đúng tại điểm; "quanh" rải vòng 6–12 m.
 const POI_KIT = {
-  mach_tinh_tru: ['prop_da_dung', 'prop_da_dung', 'prop_da_nam', 'prop_da_phien', 'prop_da_phien', 'prop_den_da', 'prop_da_nam', 'prop_linh_thao'],
-  cau_da_gay: ['prop_da_phien', 'prop_da_phien', 'prop_kiem_gay', 'prop_da_nam', 'prop_da_dung', 'prop_da_phien', 'prop_den_da', 'prop_duong_xi'],
-  ho_sa_lun: ['prop_da_nam', 'prop_da_nam', 'prop_da_phien', 'prop_duong_xi', 'prop_kiem_gay', 'prop_da_dung', 'prop_da_phien', 'prop_bia_da'],
-  cong_mo: ['prop_lo_dan', 'prop_lau', 'prop_da_dung', 'prop_den_da', 'prop_da_nam', 'prop_da_phien', 'prop_kiem_gay', 'prop_den_da'],
-  vach_dut_mach: ['prop_bia_da', 'prop_da_dung', 'prop_da_dung', 'prop_da_nam', 'prop_kiem_gay', 'prop_da_phien', 'prop_da_phien', 'prop_den_da'],
+  mach_tinh_tru: { center: ['prop_mach_tinh_tru', 0, 1], around: ['prop_tru_nham_do', 'prop_tru_nham_do', 'prop_tru_nham_do', 'prop_da_dung', 'prop_da_nam', 'prop_den_da'] },
+  cau_da_gay: { center: ['prop_cau_da_gay', 0, 1], around: ['prop_tru_nham_do', 'prop_tru_nham_do', 'prop_da_nam', 'prop_kiem_gay', 'prop_cay_goc_kho', 'prop_den_da'] },
+  ho_sa_lun: { center: null, around: ['prop_cay_goc_kho', 'prop_cay_goc_kho', 'prop_cay_goc_kho', 'prop_da_nam', 'prop_da_nam', 'prop_kiem_gay', 'prop_da_phien', 'prop_bia_da'] },
+  cong_mo: { center: ['prop_cong_khai_mach', 0, 1], around: ['prop_lau', 'prop_lau', 'prop_lo_dan', 'prop_den_da', 'prop_den_da', 'prop_da_nam'] },
+  vach_dut_mach: { center: null, around: ['prop_tru_nham_do', 'prop_tru_nham_do', 'prop_tru_nham_do', 'prop_tru_nham_do', 'prop_bia_da', 'prop_kiem_gay', 'prop_da_dung', 'prop_cay_goc_kho'] },
 };
-const COLL_R = { prop_da_dung: 1.2, prop_da_nam: 1.0, prop_bia_da: 0.9, prop_lau: 1.4, prop_lo_dan: 1.0 };
+// Bán kính va chạm: PROP_LIB (cột đá 2,8; cổng mỏ 4,4; mạch tinh 1,6; cây khô 0,9) và Vân Lam sẵn có.
+const COLL_R = { prop_da_dung: 1.2, prop_da_nam: 1.0, prop_bia_da: 0.9, prop_lau: 1.4, prop_lo_dan: 1.0, prop_tru_nham_do: 2.8, prop_cong_khai_mach: 4.4, prop_mach_tinh_tru: 1.6, prop_cay_goc_kho: 0.9 };
 const props = [];
 const addProp = (id, ox, oz, yaw, s = 1) => {
-  const p = { id, x: W(ox), z: W(oz), yaw: Math.round(yaw * 100) / 100, s };
-  if (COLL_R[id]) p.r = COLL_R[id] * s;
+  const p = { id, x: W(ox), z: W(oz), yaw: Math.round(yaw * 100) / 100, s: Math.round(s * 100) / 100 };
+  if (COLL_R[id]) p.r = Math.round(COLL_R[id] * s * 100) / 100;
   props.push(p);
 };
 for (const p of POIS) {
   const kit = POI_KIT[p.id];
-  kit.forEach((id, i) => {
-    const a = (i / kit.length) * Math.PI * 2 + R() * 0.5;
-    const r = 4.5 + R() * 6;
+  if (kit.center) addProp(kit.center[0], p.off[0], p.off[1], kit.center[1], kit.center[2]);
+  const rMin = kit.center ? 9 : 5;
+  kit.around.forEach((id, i) => {
+    const a = (i / kit.around.length) * Math.PI * 2 + R() * 0.5;
+    const r = rMin + R() * 4;
     addProp(id, p.off[0] + Math.cos(a) * r, p.off[1] + Math.sin(a) * r, R() * Math.PI * 2, 0.9 + R() * 0.3);
   });
 }
-// Trạm Hạ Khuyết: đèn, lò đan nhỏ, bia
-addProp('prop_lo_dan', 14, 8, 0.6, 1);
+// Trạm Hạ Khuyết: đèn, Ngưng Đan Lô, lều, bia
+addProp('prop_ngung_dan_lo', 14, 8, 0.6, 1);
 addProp('prop_lau', -16, 10, -0.4, 1);
 addProp('prop_bia_da', 0, 22, 0, 1);
 for (const [x, z] of [[-12, -22], [12, -22], [-22, 14], [22, 14], [0, -8]]) addProp('prop_den_da', x, z, 0, 1);
@@ -172,7 +176,7 @@ const BOSS = { off: [30, -620] };
 // ---- vật cản dùng khi đặt camp ----
 const keep = []; // {x,z,r}: vùng cấm camp (cách tâm camp ≥ r + camp.radius)
 for (const p of PADS) keep.push({ x: p.off[0], z: p.off[1], r: 10 });
-for (const p of POIS) keep.push({ x: p.off[0], z: p.off[1], r: 22 });
+for (const p of POIS) keep.push({ x: p.off[0], z: p.off[1], r: 14 });
 keep.push({ x: 0, z: 0, r: R_IN });
 keep.push({ x: BOSS.off[0], z: BOSS.off[1], r: 45 });
 
@@ -199,17 +203,26 @@ for (const e of ELITES) {
     eliteAt.push({ x: best[0], z: best[1] });
     const lvMax = zn.lv[1];
     spawns.push({ mon: e.mon, x: W(best[0]), z: W(best[1]), radius: 10, count: 1, levelMin: lvMax, levelMax: lvMax, respawn: 240 });
-    keep.push({ x: best[0], z: best[1], r: 28 });
+    keep.push({ x: best[0], z: best[1], r: 10 });
   }
 }
 spawns.push({ mon: 'boss_dia_mach_long', x: W(BOSS.off[0]), z: W(BOSS.off[1]), radius: 6, count: 1, levelMin: 19, levelMax: 19, respawn: 1800 });
 
 // ---- camp ----
+// Chuẩn độ phủ bản đồ mở rộng (coverage.ts): mọi điểm trong vùng săn cách MÉP cụm gần nhất ≤ 70 m. Rải điểm-xa-nhất toàn cục trên lưới 10 m
+// (mỗi bước đặt cụm vào chỗ đang xa mép cụm nào nhất) tới khi mọi điểm ≤ COVER_GOAL; cụm 3 con (một phần 4 con) bán kính 30 để mật độ ~125 quái/km².
+const COVER_GOAL = 62;
+const TARGET_CAMPS = 72;
+const TARGET_DENSITY = 128;
+const polyAreaOf = (poly) => Math.abs(poly.reduce((a, p, i) => { const q = poly[(i + 1) % poly.length]; return a + (p[0] * q[1] - q[0] * p[1]); }, 0)) / 2;
+const MARGIN_RAY = 6;
+const MARGIN_OUT = 8;
+const CAMP_R = 30;
 const MIX = {
   sa_thach_pha: { mons: [['mon_thach_giap_te', 1]], ranged: null },
   kho_ha_dao: { mons: [['mon_thach_giap_te', 0.5], ['mon_khai_mach_khoi_loi', 0.5]], ranged: null },
   hoang_sa_huyet: { mons: [['mon_ngo_cong_au', 0.7], ['mon_thach_giap_te', 0.3]], ranged: null },
-  cuu_mo_khu: { mons: [['mon_khai_mach_khoi_loi', 0.5], ['mon_mach_thuong_ho_ve', 0.5]], ranged: ['mon_ngo_cong_au', 0.3] },
+  cuu_mo_khu: { mons: [['mon_khai_mach_khoi_loi', 0.5], ['mon_mach_thuong_ho_ve', 0.5]], ranged: null },
   tuyet_bich: { mons: [['mon_thach_giap_te', 0.5], ['mon_ngo_cong_au', 0.5]], ranged: null },
 };
 const pick = (list) => {
@@ -219,55 +232,170 @@ const pick = (list) => {
   }
   return list[list.length - 1][0];
 };
-const camps = [];
-for (const zn of ZONES) {
-  const mix = MIX[zn.id];
-  const placed = [];
-  for (let i = 0; i < zn.camps; i++) {
-    const radius = rint(26, 30);
-    let best = null;
-    let bestD = -1;
-    for (let k = 0; k < 600; k++) {
-      const r = R_IN + 40 + R() * (R_OUT - R_IN - 90);
-      const a = edgeA(zn, r) + R() * (edgeB(zn, r) - edgeA(zn, r));
-      const [x, z] = polar(r, a);
-      if (zoneOfOffset(x, z) !== zn) continue;
-      if (keep.some((q) => Math.hypot(q.x - x, q.z - z) < q.r + radius + 6)) continue;
-      // không chồng bãi khác
-      const dmin = Math.min(...camps.map((c) => Math.hypot(c.ox - x, c.oz - z) - c.radius), 9999);
-      if (dmin < radius + 4) continue;
-      const d = Math.min(...placed.map((q) => Math.hypot(q[0] - x, q[1] - z)), 9999);
-      if (d > bestD) {
-        bestD = d;
-        best = [x, z];
-      }
+// điểm cần phủ: lưới 10 m trong các vùng (kể cả dải sát biên không đặt được tâm)
+const need = [];
+const cand = [];
+for (let x = -R_OUT; x <= R_OUT; x += 10)
+  for (let z = -R_OUT; z <= R_OUT; z += 10) {
+    if (norm4(x, z) > R_OUT || Math.hypot(x, z) < R_IN) continue;
+    const a = (Math.atan2(z, x) * 180) / Math.PI;
+    const r = Math.hypot(x, z);
+    let inside = false;
+    for (const zn of ZONES) {
+      let aa = a;
+      const a0 = edgeA(zn, r);
+      while (aa < a0) aa += 360;
+      while (aa >= a0 + 360) aa -= 360;
+      if (aa < edgeB(zn, r)) inside = true;
     }
-    if (!best) continue;
-    placed.push(best);
-    const lv = zn.lv[0] + (zn.lv[1] > zn.lv[0] && Math.hypot(...best) > 380 ? 1 : 0);
-    const camp = {
-      id: `c_${zn.id}_${String(placed.length).padStart(2, '0')}`,
-      zone: zn.id,
-      mon: pick(mix.mons),
-      x: W(best[0]),
-      z: W(best[1]),
-      count: R() < 0.75 ? 4 : 3,
-      radius,
-      levelMin: lv,
-      levelMax: Math.min(zn.lv[1], lv + (zn.lv[1] > lv ? 1 : 0)),
-      respawn: 45,
-      ox: best[0],
-      oz: best[1],
-    };
-    if (mix.ranged && R() < mix.ranged[1]) camp.ranged = mix.ranged[0];
-    camps.push(camp);
+    if (!inside) continue;
+    need.push([x, z, 9999]);
+    const zn = zoneOfOffset(x, z);
+    if (zn && !keep.some((q) => Math.hypot(q.x - x, q.z - z) < q.r + CAMP_R + 6)) cand.push([x, z, zn]);
   }
+const camps = [];
+// Lưới thô 20 m cho đo/tối ưu (nhanh): thưa need/cand còn 1/4.
+const needC = need.filter((q) => Math.round(q[0] / 10) % 2 === 0 && Math.round(q[1] / 10) % 2 === 0);
+const candC = cand.filter((c) => Math.round(c[0] / 10) % 2 === 0 && Math.round(c[1] / 10) % 2 === 0);
+const dEdge = (x, z, c) => Math.max(0, Math.hypot(c.ox - x, c.oz - z) - CAMP_R);
+const worstOf = (list) => {
+  let m = 0;
+  for (const q of needC) {
+    let b = Infinity;
+    for (const c of list) b = Math.min(b, dEdge(q[0], q[1], c));
+    if (b > m) m = b;
+  }
+  return m;
+};
+const mkCamp = (x, z, zn) => {
+  const mix = MIX[zn.id];
+  const lv = zn.lv[0] + (zn.lv[1] > zn.lv[0] && Math.hypot(x, z) > 380 ? 1 : 0);
+  const camp = {
+    id: '',
+    zone: zn.id,
+    mon: pick(mix.mons),
+    x: W(x),
+    z: W(z),
+    count: 3,
+    radius: CAMP_R,
+    levelMin: lv,
+    levelMax: Math.min(zn.lv[1], lv + (zn.lv[1] > lv ? 1 : 0)),
+    respawn: 45,
+    ox: x,
+    oz: z,
+  };
+  if (mix.ranged && R() < mix.ranged[1]) camp.ranged = mix.ranged[0];
+  return camp;
+};
+// Lưới lục giác: tìm bước, góc xoay, độ lệch cho ít cụm nhất mà điểm xa nhất nhỏ nhất; mỗi nút dịch về ứng viên hợp lệ gần nhất.
+function lattice(sp, th, ox, oz) {
+  const out = [];
+  const c = Math.cos(th);
+  const sn = Math.sin(th);
+  for (let i = -12; i <= 12; i++)
+    for (let j = -12; j <= 12; j++) {
+      const lx = (i + (j % 2 ? 0.5 : 0)) * sp + ox;
+      const lz = j * sp * 0.866 + oz;
+      const x = lx * c - lz * sn;
+      const z = lx * sn + lz * c;
+      if (norm4(x, z) > R_OUT + 70) continue;
+      let best = null;
+      let bd = 70;
+      for (const q of candC) {
+        const d = Math.hypot(q[0] - x, q[1] - z);
+        if (d < bd) { bd = d; best = q; }
+      }
+      if (!best || out.some((o) => Math.hypot(o.ox - best[0], o.oz - best[1]) < CAMP_R * 1.3)) continue;
+      out.push(mkCamp(best[0], best[1], best[2]));
+    }
+  return out;
+}
+let bestSet = null;
+let bestScore = Infinity;
+for (let sp = 160; sp <= 215; sp += 5)
+  for (let th = 0; th < 60; th += 10)
+    for (let ox = 0; ox < sp; ox += sp / 4)
+      for (let oz = 0; oz < sp * 0.866; oz += (sp * 0.866) / 4) {
+        const set = lattice(sp, (th * Math.PI) / 180, ox, oz);
+        if (set.length > TARGET_CAMPS) continue;
+        const w = worstOf(set);
+        if (w < bestScore) { bestScore = w; bestSet = set; }
+      }
+camps.push(...bestSet);
+console.log('lưới:', camps.length, 'cụm, điểm xa nhất (lưới thô)', bestScore.toFixed(1), 'm');
+const relocate = () => {
+  for (let i = 0; i < camps.length; i++) {
+    const others = camps.filter((_, j) => j !== i);
+    const om = needC.map((q) => Math.min(...others.map((c) => dEdge(q[0], q[1], c)), 9999));
+    const cost = (x, z) => {
+      let f = 0;
+      for (let k = 0; k < needC.length; k++) {
+        const d = Math.min(om[k], Math.max(0, Math.hypot(needC[k][0] - x, needC[k][1] - z) - CAMP_R));
+        if (d > 40) f += (d - 40) ** 4;
+      }
+      return f;
+    };
+    let best = null;
+    let bf = cost(camps[i].ox, camps[i].oz);
+    for (const [x, z, zn] of candC) {
+      if (Math.hypot(x - camps[i].ox, z - camps[i].oz) > 90) continue;
+      if (others.some((c) => Math.hypot(c.ox - x, c.oz - z) < CAMP_R * 1.3)) continue;
+      const f = cost(x, z);
+      if (f < bf) { bf = f; best = [x, z, zn]; }
+    }
+    if (best) {
+      const nc = mkCamp(best[0], best[1], best[2]);
+      Object.assign(camps[i], { zone: nc.zone, mon: nc.mon, x: nc.x, z: nc.z, ox: nc.ox, oz: nc.oz, levelMin: nc.levelMin, levelMax: nc.levelMax, ranged: nc.ranged });
+      if (!nc.ranged) delete camps[i].ranged;
+    }
+  }
+};
+for (let r = 0; r < 8; r++) relocate();
+// Vá điểm xa nhất (lưới mịn 10 m): thêm cụm tại ứng viên gần nó nhất, tối đa 6 cụm, rồi tối ưu lại.
+const worstFine = () => {
+  let w = null;
+  let m = 0;
+  for (const q of need) {
+    let b = Infinity;
+    for (const c of camps) b = Math.min(b, dEdge(q[0], q[1], c));
+    if (b > m) { m = b; w = q; }
+  }
+  return { w, m };
+};
+for (let k = 0; camps.length < 75; k++) {
+  const { w, m } = worstFine();
+  if (m <= 66) break;
+  let best = null;
+  let bd = Infinity;
+  for (const q of cand) {
+    if (camps.some((c) => Math.hypot(c.ox - q[0], c.oz - q[1]) < CAMP_R * 1.3)) continue;
+    const d = Math.hypot(q[0] - w[0], q[1] - w[1]);
+    if (d < bd) { bd = d; best = q; }
+  }
+  if (!best) break;
+  camps.push(mkCamp(best[0], best[1], best[2]));
+  for (let r = 0; r < 2; r++) relocate();
+}
+console.log('sau tối ưu vị trí:', camps.length, 'cụm, điểm xa nhất (lưới mịn)', worstFine().m.toFixed(1), 'm');
+// Số con: 3 mỗi cụm, thêm con thứ tư cho tới mật độ mục tiêu.
+const areaKm2 = ZONES.reduce((a, z) => a + polyAreaOf(z.poly), 0) / 1e6;
+let total = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
+for (const c of camps) {
+  if (total / areaKm2 >= TARGET_DENSITY) break;
+  c.count = 4;
+  total++;
+}
+// đánh số lại theo vùng
+const zc = new Map();
+for (const c of camps) {
+  const n = (zc.get(c.zone) ?? 0) + 1;
+  zc.set(c.zone, n);
+  c.id = `c_${c.zone}_${String(n).padStart(2, '0')}`;
 }
 for (const c of camps) {
   delete c.ox;
   delete c.oz;
 }
-// camp thuộc cấp: Sa Thạch Pha 16–17 gần trạm 16, xa 17
 
 // ---- tài nguyên (tạm, itm_linh_thao đến khi E2-F có Hoàng Sa Thảo) ----
 const nodes = [

@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inPoly, levelSpawns, MAX_LEVEL, polyArea, propsOf, TELE_FREE, TELE_PADS, terrainOf, WATER_Y, type HandProp, type LevelDef, type TelePad, type ZoneDef } from '@dtl/shared';
+import { campCoverage, COVER_BY_LEVEL, DEFAULT_COVER } from './coverage';
 import { GLOSSARY, hasString, ITEM, MONSTER, t } from './index';
 
 /** Level giữ bố cục M-1 (ngưỡng số quái tuyệt đối). Level khác dùng mật độ. */
@@ -29,6 +30,8 @@ export interface LevelCheckOpts {
   pads?: readonly TelePad[];
   /** Id trận mở sẵn; mặc định `TELE_FREE`. */
   free?: readonly string[];
+  /** Kiểm chuẩn độ phủ cụm (coverage.ts). Mặc định true; level thử nhỏ tắt. */
+  coverage?: boolean;
 }
 
 const assetExists = (kind: 'mon' | 'prop', id: string) => fs.existsSync(path.join(ROOT, 'assets/source', kind, id));
@@ -94,7 +97,7 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
       for (const h of near) {
         if (!clearOfCamps(h.x, h.z, 2)) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè bãi quái`);
         for (const pad of pads) if (Math.hypot(h.x - pad.x, h.z - pad.z) < 4) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè Truyền Tống Trận ${pad.id}`);
-        if ((h.r ?? 0) > 1.5) err(`${w}: prop ${h.id} va chạm r=${h.r} > 1,5 m (không được chặn đường)`);
+        if ((h.r ?? 0) > (legacy ? 1.5 : 4.5)) err(`${w}: prop ${h.id} va chạm r=${h.r} quá lớn (> ${legacy ? 1.5 : 4.5} m, không được chặn đường)`);
       }
       if (p.beamH !== undefined && !(p.beamH >= 30 && p.beamH <= 120)) err(`${w}: beamH ${p.beamH} ngoài 30–120 m`);
     }
@@ -184,6 +187,13 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
       const km2 = zones.reduce((a, z) => a + polyArea(z.poly), 0) / 1e6;
       const density = km2 > 0 ? normal / km2 : 0;
       if (!(density >= DENSITY_MIN && density <= DENSITY_MAX)) err(`${where}: mật độ ${density.toFixed(0)} quái/km² (${normal} quái / ${km2.toFixed(3)} km² vùng săn), cần ${DENSITY_MIN}–${DENSITY_MAX}`);
+    }
+    if (!legacy && camps.length && (opts.coverage ?? true)) {
+      // Chuẩn độ phủ của bản đồ mở rộng (coverage.ts): p95 và điểm xa nhất tới mép cụm gần nhất. Vân Lam giữ chuẩn riêng ở mapreport.
+      const cv = campCoverage(lv);
+      const std = COVER_BY_LEVEL[lv.id] ?? DEFAULT_COVER;
+      if (cv.max > std.max) err(`${where}: độ phủ cụm: điểm (${cv.worst.x}, ${cv.worst.z}) cách mép cụm gần nhất ${cv.max.toFixed(0)} m, cần ≤ ${std.max} m`);
+      if (cv.p95 > std.p95) err(`${where}: độ phủ cụm: p95 ${cv.p95.toFixed(0)} m, cần ≤ ${std.p95} m`);
     }
     checkPois(zoneById);
   }
