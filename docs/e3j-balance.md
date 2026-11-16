@@ -57,17 +57,17 @@ Trước đây sim chỉ có bảng kinh tế chương 3 theo `TIER_INCOME_HOUR`
 
 | Mục | Trước | Sau | Lý do |
 | --- | --- | --- | --- |
-| Giờ chương 3 (Kiếm/Hộ/Đan) | 5,47 / 5,60 / 5,55 giờ (−7…−9%, sát đáy ±12%) | **6,11 / 6,26 / 6,18 giờ** | Quái Vân Hải cho tu vi cao hơn mô hình thiết kế (≈ 255 kill/giờ chứ không thấp hơn); hạ `xpMul` để vào giữa khung |
+| Giờ chương 3 (Kiếm/Hộ/Đan) | 5,47 / 5,60 / 5,55 giờ (−7…−9%, sát đáy ±12%) | **6,13 / 6,28 / 6,21 giờ** | Quái Vân Hải cho tu vi cao hơn mô hình thiết kế (≈ 255 kill/giờ chứ không thấp hơn); hạ `xpMul` để vào giữa khung |
 | `xpMul` quái Vân Hải (thường: Vân Hạc / Kim Thiền / Thạch Quy / Kính Linh; tinh anh: Vân Hạc Vương, Lôi Vân Sư Vương, Kính Diện Ma Quân) | 2,2 / 1,8 / 2,8 / 2,4; 4,0 / 4,0 / 4,5 | **1,95 / 1,6 / 2,45 / 2,1; 3,5 / 3,5 / 4,0** (×0,88) | Đòn bẩy chính (không đổi `xpNeed`, không cần migration) |
 | Tam Trọng Kiếp, tay thường, một mình | 98% (Kiếm tu), 97%, 99% | **85% / 85% / 89%** | Kiếp quá dễ: bản đầu của E3-L ghi "chờ cân bằng" |
 | Tam Trọng Kiếp, tay vụng / giỏi | 67% / 100% | **30% / 99%** | Thang chuẩn như Đan Hỏa Kiếp: vụng ≤ 50%, thường 55–90%, giỏi ≥ 90% |
 | `nguyen_anh` pha lôi | `aimPct` 0,22; `extraPct` 0,2; tia xích 0,15 + đầu 0,16 | 0,30; 0,24; 0,20 + 0,20 | |
 | `nguyen_anh` pha hỏa / tâm ma | lưới `pct` 0,22; `aimPct` 0,12 | 0,26; 0,17 | |
-| Ngưng Anh Phách (cần 3 mỗi đan) | ≈ 2,4 (thiếu, cần 3,1 × 1,3 dư) | **≈ 5,0** (cần 3,5, kể cả làm lại) | Tinh anh Vân Hải 8% → 18%; Kính Diện Ma Quân (định nghĩa ở #149) chưa rơi phách nay rơi 18%; Kính Nguyệt Cung thêm phách 50% |
+| Ngưng Anh Phách (cần 3 mỗi đan) | ≈ 2,4 (thiếu, cần 3,1 × 1,3 dư) | **≈ 4,9** (cần 3,5, kể cả làm lại) | Tinh anh Vân Hải 8% → 18%; Kính Diện Ma Quân (định nghĩa ở #149) chưa rơi phách nay rơi 18%; Kính Nguyệt Cung thêm phách 50% |
 
 ## 4. Kết quả cuối (`pnpm sim:progress`)
 
-Giờ theo thành phần (Kiếm tu 6,11 giờ): quái thường 4,59 · tinh anh 0,25 · đả tọa 0,07 · nhiệm vụ 0,46 · Kính Nguyệt Cung 0,40 · Kình Vương 0,13 · tâm ma 0,04 · chế đan 0,07 · Tam Trọng Kiếp 0,10.
+Giờ theo thành phần (Kiếm tu 6,13 giờ, sau khi merge -148: nhiệm vụ phụ `s3_do_thuyen`, `s3_guong_nuoc` đã tính): quái thường 4,54 · tinh anh 0,25 · đả tọa 0,07 · nhiệm vụ 0,54 · Kính Nguyệt Cung 0,40 · Kình Vương 0,13 · tâm ma 0,04 · chế đan 0,07 · Tam Trọng Kiếp 0,10.
 
 | Cấp | TTK quái (Kiếm/Hộ/Đan) | Mất máu/lần | TTK tinh anh (Kiếm) | Giờ cấp (Kiếm) |
 | --- | --- | --- | --- | --- |
@@ -88,7 +88,7 @@ Kình Vương nhóm 4 hạ trong 81 s; Kính Nguyệt Cung 23,8 phút kể cả 
 
 **Hộ pháp không đổi tỉ lệ qua** (khác Đan Hỏa Kiếp ở #142: 66% → 81%). Lý do là luật hiện có, không phải mô hình: hộ pháp chỉ chắn ở tia khóa mệnh (`final`, `shareToGuards`), mà `nguyen_anh` không có `final` (chỉ pha ba `shadows` do chủ kiếp tự đánh). Nếu muốn hộ pháp có tác dụng ở kiếp này, cần thêm luật mới (ví dụ chắn một phần tia nhắm hoặc ô lửa nặng): để người dùng quyết, chưa làm trong gói này.
 
-**Độ nhạy theo đồ bậc 3** (Kiếm tu): không có món nào 6,63 giờ, đủ bộ phẩm Linh từ cấp 20 là 5,88 giờ; kỳ vọng 6,11. Cả hai mốc cực đều trong ±12% của 6 giờ (5,28–6,72).
+**Độ nhạy theo đồ bậc 3** (Kiếm tu): không có món nào 6,66 giờ, đủ bộ phẩm Linh từ cấp 20 là 5,91 giờ; kkỳ vọng 6,13. Cả hai mốc cực đều trong ±12% của 6 giờ (5,28–6,72).
 
 ## 5. Kinh tế linh thạch (một mình)
 
@@ -98,7 +98,7 @@ Kình Vương nhóm 4 hạ trong 81 s; Kính Nguyệt Cung 23,8 phút kể cả 
 
 Hố tiêu cầu toàn 77.315 = Thăng Bậc 7 ô 20.720 + cường hóa +5 bốn ô 40.073 + chế một bộ 8.510 + Nguyên Anh Đan 5.872 (kể cả làm lại, 5.000 mỗi lần) + Phá Cảnh Đan 340 + đan hồi 1.800 = **1,32× nguồn thu**. Sim báo LỖI nếu ngoài 0,8–2,2×. Giá vật phẩm giữ nguyên (không đổi `price`/`sell`, Thăng Bậc 2.960/ô, giá chế): người cầu toàn thiếu một phần như chương 2 (2,07×), người chơi thường chọn ô nên cân bằng; không có nguồn linh thạch mới nên không lạm phát. Bán đồ rơi chỉ ≈ 4,5% nguồn thu (thiết kế 20%): trang bị rơi từ quái thường phẩm thấp. Nên tăng tỉ lệ rơi trang bị trước khi tăng vàng nếu người thử thấy thiếu.
 
-Nguyên liệu: Ngưng Anh Phách ≈ 5,0 (cần 3 + làm lại ≈ 3,5); các nguyên liệu bậc 3 khác (Kính Hoa Sa, Vân Hải Lộ, Bích Ngọc Nhĩ) giữ nguyên tỉ lệ rơi từ E3-F/E3-B.
+Nguyên liệu: Ngưng Anh Phách ≈ 4,9 (cần 3 + làm lại ≈ 3,5); các nguyên liệu bậc 3 khác (Kính Hoa Sa, Vân Hải Lộ, Bích Ngọc Nhĩ) giữ nguyên tỉ lệ rơi từ E3-F/E3-B.
 
 ## 6. CI
 
@@ -107,9 +107,9 @@ Nguyên liệu: Ngưng Anh Phách ≈ 5,0 (cần 3 + làm lại ≈ 3,5); các n
 ## 7. Việc còn lại / giả định cần người thử
 
 - Mô hình Tam Trọng Kiếp dùng giả định về xác suất trúng của người đứng yên (vạch tia xích ≈ 70%, ô lửa nặng luôn ở ô người độ kiếp, xuất khiếu dùng ngay khi sẵn sàng); số tay nghề (né 60/80/92%) là giả định như E2-J. Cần người chơi thật thử, hai con số nên chỉnh trước tiên là `aimPct` pha lôi và `tamCanh.hurt`.
-- Mô hình chưa tính thời gian di chuyển giữa các đảo (cầu xích) ngoài hệ số `PATH_FACTOR`, nên giờ thật có thể nhỉnh hơn một chút (dự phòng nằm ở phía đáy khung: giữa khung 6,11 so với 6,72).
+- Mô hình chưa tính thời gian di chuyển giữa các đảo (cầu xích) ngoài hệ số `PATH_FACTOR`, nên giờ thật có thể nhỉnh hơn một chút (dự phòng nằm ở phía đáy khung: giữa khung 6,13 so với 6,72).
 - Nhiệm vụ phụ `s3_do_thuyen`, `s3_guong_nuoc` (-148) chưa merge lúc đo: khi merge, `git merge origin/main` rồi chạy lại `pnpm sim:progress` (mỗi nhiệm vụ phụ ≈ 1% giờ).
 
 ## 8. Kiểm chứng
 
-`pnpm typecheck`; `pnpm test` (shared 206, content 36, client 634, server 576, asset-pipeline 17, perf 3, gồm `monzone.test.ts` 10 test); `pnpm content:check` (itemsources khớp `loot.json`); `pnpm sim:progress` không dòng LỖI (`[pace3]` 6,11/6,26/6,18 giờ; chương 2 4,12/4,17/4,03 và Ngưng Khí 1 → 15 không đổi); `pnpm --filter @dtl/bot-client security` 139 ĐẠT, 0 HỎNG (server không bật `RATE_LIMIT_EXEMPT`, DB mới); `pnpm bots --count 100 --duration 120` 100 bot online, tick p95 ≤ 3,3 ms, 0 dòng `refId`; `pnpm ledger:check` khớp (100 nhân vật, 1568 dòng sổ cái). Server riêng ở cổng 2763/5363 (ảnh: 2761/5361), đã tắt.
+`pnpm typecheck`; `pnpm test` (shared 206, content 36, client 634, server 576, asset-pipeline 17, perf 3, gồm `monzone.test.ts` 10 test); `pnpm content:check` (itemsources khớp `loot.json`); `pnpm sim:progress` không dòng LỖI (`[pace3]` 6,13/6,28/6,21 giờ; chương 2 4,12/4,17/4,03 và Ngưng Khí 1 → 15 không đổi); `pnpm --filter @dtl/bot-client security` 139 ĐẠT, 0 HỎNG (server không bật `RATE_LIMIT_EXEMPT`, DB mới); `pnpm bots --count 100 --duration 120` 100 bot online, tick p95 ≤ 3,3 ms, 0 dòng `refId`; `pnpm ledger:check` khớp (100 nhân vật, 1568 dòng sổ cái). Server riêng ở cổng 2763/5363 (ảnh: 2761/5361), đã tắt.
