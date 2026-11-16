@@ -710,12 +710,10 @@ export class Game {
   }
 
   /**
-   * Hàng đợi biên dịch trước skin quái/boss (T5): từng nhóm một, lúc rảnh. Khác `precompile()` (sau màn tải): đây chạy giữa
-   * trận nên KHÔNG chặn `frame()`; mô phỏng, input, thực thể vẫn chạy, chỉ bỏ `post.render()` (màn giữ khung cũ) tới khi
-   * pipeline xong (M6-1: không vẽ khi pipeline WebGPU còn dở). `warmSkipped`/`warmMs`: số khung bỏ vẽ và tổng thời gian biên dịch.
+   * Hàng đợi biên dịch trước skin quái/boss (T5): từng nhóm một, lúc rảnh. Không chặn `frame()` và không bỏ vẽ: nhóm tạm
+   * chỉ nằm trong cảnh lúc phần đồng bộ của `compileAsync` chạy, còn quái thật giữ model khối tới khi biên dịch xong
+   * (`MonsterSkins`), nên không có lệnh vẽ nào dùng pipeline WebGPU còn dở (M6-1). `warmMs`: tổng thời gian biên dịch.
    */
-  private warming = 0;
-  warmSkipped = 0;
   warmMs = 0;
   private warmChain: Promise<void> = Promise.resolve();
   private warmObject = (obj: THREE.Object3D): Promise<void> => {
@@ -724,11 +722,9 @@ export class Game {
       await new Promise<void>((r) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(() => r(), { timeout: 2000 }) : setTimeout(r, 50)));
       if (!this.post || this.disposed) return;
       const t0 = performance.now();
-      this.warming++;
       try {
         await this.post.compileObject(obj);
       } finally {
-        this.warming--;
         this.warmMs += performance.now() - t0;
       }
     };
@@ -2170,8 +2166,7 @@ export class Game {
     // Cập nhật ma trận cả cảnh MỘT lần mỗi khung (M3-9): để tự động thì mỗi pass (cảnh chính, bóng) duyệt lại
     // toàn bộ cây, kể cả ~60 xương của mỗi nhân vật có xương.
     this.scene.updateMatrixWorld();
-    if (this.warming > 0) this.warmSkipped++;
-    else this.post!.render();
+    this.post!.render();
     // renderer.info không tự reset (M1-6): lúc này là tổng của MỌI pass trong khung (bóng, cảnh, hậu kỳ).
     const ri = this.renderer.info.render;
     this.lastRender.drawCalls = ri.drawCalls ?? ri.calls;

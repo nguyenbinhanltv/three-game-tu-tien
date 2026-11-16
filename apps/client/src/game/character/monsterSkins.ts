@@ -115,6 +115,8 @@ export class MonsterSkins {
   private templates = new Map<string, Template | 'loading' | 'failed'>();
   private mats = new Map<string, THREE.MeshStandardNodeMaterial>();
   private disposed = false;
+  /** Template đã nạp nhưng đang biên dịch trước (chưa dùng được, xem `warm`). */
+  private warming = new Map<string, Template>();
   /** Bóng tâm ma (P3-7) là bản sao model người chơi: EntityManager nối vào PlayerSkins (cùng giới/đạo bào của mình). */
   shadow: { create(def: MonsterDef): MonsterView | null; pending(): boolean } | null = null;
   /**
@@ -172,6 +174,7 @@ export class MonsterSkins {
   dispose(): void {
     this.disposed = true;
     for (const t of this.templates.values()) if (typeof t !== 'string') t.handle.release();
+    // Template đang biên dịch: `warmUp(...).finally` thấy `disposed` và tự trả handle.
     this.templates.clear();
     for (const m of this.mats.values()) m.dispose();
     this.mats.clear();
@@ -187,8 +190,18 @@ export class MonsterSkins {
           handle.release();
           return;
         }
-        this.templates.set(id, templateOf(handle));
-        void this.warmUp(id);
+        const tpl = templateOf(handle);
+        if (!this.warm) {
+          this.templates.set(id, tpl);
+          return;
+        }
+        // Giữ 'loading' (quái dùng model khối) tới khi pipeline biên dịch xong: không có mesh thật nào vẽ bằng pipeline còn dở.
+        this.warming.set(id, tpl);
+        void this.warmUp(id, tpl).finally(() => {
+          this.warming.delete(id);
+          if (!this.disposed) this.templates.set(id, tpl);
+          else handle.release();
+        });
       },
       (err) => {
         if (this.disposed) return;
@@ -199,10 +212,9 @@ export class MonsterSkins {
   }
 
   /** Dựng một bản sao tạm cho mỗi loại quái dùng asset `id` (material riêng từng loại), hiện mọi LOD, rồi nhờ renderer biên dịch trước. */
-  private async warmUp(id: string): Promise<void> {
+  private async warmUp(id: string, t: Template): Promise<void> {
     const warm = this.warm;
-    const t = this.templates.get(id);
-    if (!warm || !t || typeof t === 'string') return;
+    if (!warm) return;
     for (const [mid, s] of Object.entries(MONSTER_SKINS)) {
       const def = MONSTER.get(mid);
       if (s.asset !== id || !def || this.disposed) continue;

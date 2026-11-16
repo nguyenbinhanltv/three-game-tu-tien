@@ -309,16 +309,29 @@ export class PostPipeline {
   }
 
   /**
-   * Biên dịch trước một nhóm tạm (T5, skin quái/boss vừa nạp): đưa vào cảnh chính trong lúc biên dịch để dùng đúng
-   * khóa cache (sương, môi trường), rồi gỡ ra. Người gọi giữ `compiling` để không vẽ khi pipeline còn dở.
+   * Biên dịch trước một nhóm tạm (T5, skin quái/boss vừa nạp): đưa vào cảnh chính đúng lúc phần đồng bộ của `compileAsync`
+   * (duyệt cảnh, gửi lệnh biên dịch) chạy, rồi gỡ ra ngay, nên các khung vẽ trong lúc chờ không thấy nhóm tạm. Dùng đúng khóa
+   * cache (sương, môi trường). Người gọi không được vẽ mesh dùng các pipeline này tới khi promise xong.
    */
   async compileObject(obj: THREE.Object3D): Promise<void> {
+    // Chỉ biên dịch nhóm tạm: ẩn tạm mọi con khác của cảnh (trừ đèn, vì số đèn nằm trong khóa cache) trong phần đồng bộ,
+    // để không kích hoạt pipeline bất đồng bộ cho vật khác mà khung vẽ xen giữa sẽ dùng khi còn dở.
+    const hidden: THREE.Object3D[] = [];
+    for (const c of this.scene.children) {
+      if (c.visible && !(c as THREE.Light).isLight) {
+        c.visible = false;
+        hidden.push(c);
+      }
+    }
     this.scene.add(obj);
+    let done: Promise<void>;
     try {
-      await this.compileInScene();
+      done = this.compileInScene();
     } finally {
       this.scene.remove(obj);
+      for (const c of hidden) c.visible = true;
     }
+    await done;
   }
 
   private async compileInScene(): Promise<void> {
