@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BlankWatch, BLANK_STREAK, canFallback, frameStats, isBlankFrame, rendererChoice } from './gpuGuard';
 
 const flat = (r: number, g: number, b: number, n = 100) => Uint8ClampedArray.from(Array.from({ length: n }, () => [r, g, b, 255]).flat());
+const bright = Uint8ClampedArray.from(Array.from({ length: 100 }, () => [230, 235, 240, 255]).flat());
 const mixed = new Uint8ClampedArray([0, 0, 0, 255, 255, 255, 255, 255]);
 
 describe('gpuGuard', () => {
@@ -14,6 +15,16 @@ describe('gpuGuard', () => {
     const s = frameStats(flat(10, 16, 32));
     expect(isBlankFrame(s, 100)).toBe(true);
     expect(isBlankFrame(s, 0)).toBe(false);
+  });
+  it('khung sáng đều (mây, sương) không bị coi là hỏng', () => {
+    expect(isBlankFrame(frameStats(bright), 100)).toBe(false);
+  });
+  it('reset xóa chuỗi', () => {
+    const w = new BlankWatch();
+    const bad = frameStats(flat(0, 0, 0));
+    for (let i = 0; i < BLANK_STREAK - 1; i++) w.push(bad, 50);
+    w.reset();
+    expect(w.push(bad, 50)).toBe(false);
   });
   it('cần đủ số lần trơn liên tiếp, khung tốt đặt lại chuỗi', () => {
     const w = new BlankWatch();

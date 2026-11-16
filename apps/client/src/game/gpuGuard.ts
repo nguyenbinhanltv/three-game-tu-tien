@@ -6,6 +6,8 @@ export const RENDERER_KEY = 'dtl.renderer';
 export const RENDER_FAIL_LIMIT = 30;
 /** Độ lệch chuẩn độ sáng (0–255) dưới mức này coi là khung trơn một màu. */
 export const BLANK_SD = 1.5;
+/** Khung chỉ tính là hỏng khi cũng TỐI (độ sáng trung bình dưới mức này): mây/sương trắng đều không phải lỗi. Nền lỗi của người dùng ≈ 16. */
+export const BLANK_MEAN = 45;
 /** Số lần đo trơn liên tiếp mới kết luận (chống nhấp nháy: chuyển cảnh, cắt cảnh tối). */
 export const BLANK_STREAK = 3;
 
@@ -31,12 +33,16 @@ export function frameStats(rgba: ArrayLike<number>): FrameStats {
 
 /** Khung "hỏng": trơn một màu trong khi cảnh có lệnh vẽ. Không có draw call thì không kết luận gì. */
 export function isBlankFrame(s: FrameStats, drawCalls: number): boolean {
-  return drawCalls > 0 && s.sd < BLANK_SD;
+  return drawCalls > 0 && s.sd < BLANK_SD && s.mean < BLANK_MEAN;
 }
 
 /** Đếm số lần đo trơn liên tiếp. */
 export class BlankWatch {
   private streak = 0;
+  /** Cảnh đang cố ý tối/trơn (cắt cảnh, chết, thẻ chương): bỏ qua và xóa chuỗi. */
+  reset(): void {
+    this.streak = 0;
+  }
   /** true khi đủ `BLANK_STREAK` lần liên tiếp. Khung bình thường đặt lại chuỗi. */
   push(s: FrameStats, drawCalls: number): boolean {
     this.streak = isBlankFrame(s, drawCalls) ? this.streak + 1 : 0;

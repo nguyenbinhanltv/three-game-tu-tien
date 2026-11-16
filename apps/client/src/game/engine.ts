@@ -2392,6 +2392,10 @@ export class Game {
    */
   private checkBlankFrame(now: number): void {
     if (this.fellBack || document.hidden || !isWebGPU(this.renderer)) return;
+    if (this.cine.active || this.deathFx.active || ((this.me()?.fl ?? 0) & PF_DEAD) !== 0) {
+      this.blankWatch.reset();
+      return;
+    }
     if (!this.blankNextAt) {
       this.blankNextAt = now + 4000;
       this.loadedAt = now;
