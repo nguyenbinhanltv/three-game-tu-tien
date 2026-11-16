@@ -121,7 +121,7 @@ for (const s of ALL_SKILLS) {
     if (!p) return err(`skill ${s.id}: thiếu pose ${id} (đòn/giọng của pose ${s.pose})`);
     const hitAt = s.combo ? s.combo.hits[i % hits].hitAt : s.hitAt?.[0];
     if (hitAt !== undefined && p.hit && Math.abs(p.hit[0] - hitAt) > 0.03) err(`skill ${s.id}: hitAt ${hitAt} lệch hit[0] = ${p.hit[0]} của pose ${id}`);
-    if (s.recovery !== undefined && hitAt !== undefined && Math.abs(hitAt + s.recovery - p.duration) > 0.06) err(`skill ${s.id}: hitAt + recovery lệch độ dài pose ${id} (${p.duration}s)`);
+    if (s.recovery !== undefined && hitAt !== undefined && Math.abs((s.combo ? hitAt : (s.hitAt?.[s.hitAt.length - 1] ?? hitAt)) + s.recovery - p.duration) > 0.06) err(`skill ${s.id}: hitAt + recovery lệch độ dài pose ${id} (${p.duration}s)`);
   });
 }
 for (const [from, to] of Object.entries(SKILL_ID_ALIASES)) {
@@ -135,6 +135,18 @@ for (const s of METHOD_SKILLS) {
   if (s.kind === 'guard' && !(s.reduce! > 0 && s.reduce! <= 0.9 && s.duration! > 0)) err(`skill ${s.id}: giữ cần reduce (0–0,9) và duration`);
   if ((s.kind === 'hot' || s.kind === 'revive') && !(s.allyRadius! > 0)) err(`skill ${s.id}: cần allyRadius`);
   if (s.kind === 'hot' && !(s.duration! > 0)) err(`skill ${s.id}: hồi theo thời gian cần duration`);
+}
+// E2-G: tên chiêu bậc 2–3 khớp glossary.skillsTier; chiêu khóa (Nguyên Anh trở lên) không được nằm trong hàng chiêu chơi được.
+for (const [id, name] of Object.entries(GLOSSARY.skillsTier)) {
+  if (!SKILL.has(id)) err(`glossary.skillsTier: ${id} không phải chiêu`);
+  else if (t(`skill.${id}.name`) !== name) err(`chiêu ${id}: tên "${t(`skill.${id}.name`)}" lệch glossary.skillsTier ("${name}")`);
+}
+for (const s of METHOD_SKILLS) {
+  if (s.unlock >= 16 && !(s.id in GLOSSARY.skillsTier)) err(`chiêu bậc cao ${s.id}: thiếu trong glossary.skillsTier`);
+  if (s.unlock >= 24 && !s.locked) err(`chiêu ${s.id}: mở từ cấp ${s.unlock} (Nguyên Anh trở lên) phải có locked: true tới khi làm cơ chế`);
+  if (s.kind === 'line' && !s.line) err(`chiêu ${s.id}: kind line cần trường line`);
+  if (s.kind === 'summon' && !s.summon) err(`chiêu ${s.id}: kind summon cần trường summon`);
+  if (s.kind === 'buff' && !(s.duration! > 0 && s.buff)) err(`chiêu ${s.id}: kind buff cần duration và buff`);
 }
 for (const [id, v] of Object.entries(VARIANTS)) {
   const sk = SKILL.get(id);
@@ -151,7 +163,7 @@ for (const [id, v] of Object.entries(VARIANTS)) {
   needStr(`skill.${id}.var.b.desc`);
   for (const x of [v.a, v.b]) {
     const kindOk =
-      (x.hits || x.pierce || x.cleave || x.trail || x.stunOnInterrupt || x.markBonus || x.markSpread) ? sk.kind === 'damage' || sk.kind === 'aoe' : true;
+      (x.hits || x.pierce || x.cleave || x.trail || x.stunOnInterrupt || x.markBonus || x.markSpread) ? sk.kind === 'damage' || sk.kind === 'aoe' || sk.kind === 'line' || sk.kind === 'buff' : true;
     if (!kindOk) err(`variants ${id}.${x.id}: tham số sát thương trên chiêu ${sk.kind}`);
     if (x.ally && sk.kind !== 'shield') err(`variants ${id}.${x.id}: ally chỉ cho lá chắn`);
     if (x.hot && sk.kind !== 'heal') err(`variants ${id}.${x.id}: hot chỉ cho chiêu hồi tức thì`);

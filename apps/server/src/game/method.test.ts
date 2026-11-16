@@ -81,6 +81,7 @@ function setup(level = 8) {
   const fresh = (e: Ent) => {
     e.gcdAt = 0;
     e.cds.clear();
+    e.flow.lastDashAt = -1e9;
     e.char.mp = e.char.mmp;
     e.lastCombatAt = 0;
   };
@@ -548,6 +549,10 @@ describe('bí tịch: nguồn và luật đổi biến thức (3-6)', () => {
     for (const [id, vars] of Object.entries(VARIANTS)) {
       const sk = SKILL.get(id)!;
       if (sk.method && sk.method !== 'lac_kiem_quyet') continue;
+      // E2-G: chiêu bậc 2–3 mở theo cảnh giới; chiêu còn khóa (Nguyên Anh+) có test riêng ở e2g.test.ts.
+      if (sk.locked) continue;
+      p.char.level = Math.max(12, sk.unlock);
+      p.char.recalc();
       for (const v of ['a', 'b'] as const) {
         p.char.meta.skillLv = { [id]: 3 };
         p.char.meta.skillVar = { [id]: v };

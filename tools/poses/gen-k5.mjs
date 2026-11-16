@@ -382,6 +382,93 @@ for (const [id, g] of Object.entries(GEST)) {
   emit(id, g.skill, SK.get(g.skill).hitAt[0], false, (w, rec) => frames({ w, rec, voice: g.voice, f3, f5, nine: false }));
 }
 
+// ---- E2-G: pose chiêu bậc 2–3 (Lạc Kiếm / Kim Thân / Đan Kinh). Mỗi chiêu một pose, một giọng (của công pháp chiêu). ----
+// Kiểu vung mới: Hoành Kiếm Phá Mạch quét ngang thật rộng từ sau lưng.
+SWINGS.hoanh = {
+  dir: 1,
+  load: { hand: [-0.55, 0.34, -0.16], sword: [-0.85, 0.1, -0.5], edge: [-0.5, 0, 0.85], elbow: [-0.2, -0.7, -0.7], head: -26 },
+  strike: { x: 0.02, dy: 0, sword: [0.7, 0.05, 0.71], edge: [0.71, 0, -0.7], elbow: [-0.6, -0.8, -0.1], head: 24 },
+};
+// Thuấn Di Trảm: thuấn di rồi chém xuống dứt khoát (nhịp rất ngắn).
+SWINGS.thuan = {
+  dir: -1,
+  load: { hand: [-0.3, 0.82, -0.1], sword: [-0.2, 0.7, -0.68], edge: [0.4, 0.5, 0.75], elbow: [-0.8, 0.1, -0.4], head: 12 },
+  strike: { x: -0.1, dy: 0, sword: [0.1, -0.5, 0.86], edge: [0.5, -0.8, 0.2], elbow: [-0.4, -0.9, 0], head: -8 },
+};
+for (const [id, skill, swing, voice] of [
+  ['hoanh_kiem', 'skl_hoanh_kiem_pha_mach', 'hoanh', 'kt'],
+  ['thuan_di_tram', 'skl_thuan_di_tram', 'thuan', 'kt'],
+  ['thien_kiem_hoa_hinh', 'skl_thien_kiem_hoa_hinh', 'van', 'kt'],
+  ['thiet_quyen', 'skl_thiet_quyen_chan_dia', 'd3', 'hp'],
+  ['dan_hoa', 'skl_dan_hoa_phong_tran', 'anh', 'ds'],
+]) {
+  const { f3, f5 } = swingFrames(swing, voice);
+  emit(id, skill, SK.get(skill).hitAt[0], true, (w, rec) => frames({ w, rec, voice, f3, f5, nine: true, arc: voice === 'ds' }));
+}
+
+// Kiếm Vũ Tam Điệp: ba nhát liền trong một GCD (đòn 1 chém ngang, đòn 2 hất ngược, đòn 3 bổ xuống), mốc theo `hitAt` của chiêu.
+{
+  const s = SK.get('skl_kiem_vu_tam_diep');
+  const segs = ['d1', 'd2', 'd3'].map((sw) => swingFrames(sw, 'kt'));
+  const ks = [keyOf(0, GUARD)];
+  s.hitAt.forEach((h, i) => {
+    const { f3, f5 } = segs[i];
+    const prev = i === 0 ? 0 : s.hitAt[i - 1];
+    ks.push(keyOf(r3(prev + (h - prev) * 0.45), f3, 'inOut'));
+    ks.push(keyOf(h - 0.04, { ...f3, hipsPos: add(f3.hipsPos, [0, -0.008, 0]) }, 'linear'));
+    ks.push(keyOf(h, f5, 'quartOut'));
+    // Nhát cuối đi quá đà rồi về thế; hai nhát đầu nối thẳng sang nhát sau.
+    if (i === s.hitAt.length - 1) ks.push(keyOf(h + 0.06, overshoot(f3, f5, VOICES.kt.over), 'out'));
+  });
+  ks.push(keyOf(s.hitAt[s.hitAt.length - 1] + s.recovery, GUARD, 'inOut'));
+  POSES.push({ id: 'kiem_vu', duration: r3(s.hitAt[s.hitAt.length - 1] + s.recovery), loop: false, hit: [r3(s.hitAt[0]), r3(s.hitAt[0] + 0.16)], keys: ks });
+}
+
+// Cử chỉ hai tay (7 khung). `mk` tạo cặp khung (tụ lực → ra chiêu) từ mẫu: ép xuống, nâng lên, mở hai bên, đẩy ra trước, ấn quyết.
+const L0 = { footR: GUARD.footR, footL: GUARD.footL };
+const WIDE = { footR: [-0.27, 0, 0.05], footL: [0.27, 0, -0.05] };
+const SOFT = { footR: [-0.16, 0, 0.12], footL: [0.18, 0, -0.2] };
+const hands = (a, b, y, z, ex = 0.8) => ({ handR: [-a, y, z], handL: [a, y, z], elbowR: [-ex, -0.5, -0.2], elbowL: [ex, -0.5, -0.2], ...b });
+const TPL = {
+  // Ấn hai tay xuống đất.
+  press: (v) => ({ f3: { ...v.pose, spine: [4, 0, 0], head: [8, 0, 0], ...hands(0.1, {}, 0.5, 0.22) }, f5: { ...v.pose, hipsPos: [0, v.pose.hipsPos[1] - 0.04, 0.04], spine: [18, 0, 0], head: [14, 0, 0], ...hands(0.14, {}, 0.1, 0.42, 0.5) } }),
+  // Nâng hai tay lên cao.
+  raise: (v) => ({ f3: { ...v.pose, spine: [10, 0, 0], head: [16, 0, 0], ...hands(0.1, {}, 0.18, 0.3) }, f5: { ...v.pose, spine: [-10, 0, 0], head: [-24, 0, 0], ...hands(0.16, {}, 0.88, 0.18, 0.7) } }),
+  // Khép tay trước ngực rồi mở ra hai bên.
+  open: (v) => ({ f3: { ...v.pose, spine: [6, 0, 0], head: [8, 0, 0], ...hands(0.04, {}, 0.46, 0.24, 1) }, f5: { ...v.pose, spine: [-6, 0, 0], head: [-8, 0, 0], ...hands(0.6, {}, 0.38, 0.12, 0.3) } }),
+  // Gồng khí rồi đẩy hai chưởng ra trước.
+  thrust: (v) => ({ f3: { ...v.pose, spine: [8, 0, 0], head: [6, 0, 0], ...hands(0.1, {}, 0.36, 0.14, 0.9) }, f5: { ...v.pose, hipsPos: [0, v.pose.hipsPos[1] - 0.02, 0.1], spine: [16, 0, 0], head: [-4, 0, 0], ...hands(0.12, {}, 0.4, 0.5, 0.45) } }),
+  // Tay áo vung vòng (đan sư): một tay quét ngang.
+  sweep: (v) => ({ f3: { ...v.pose, hipsRot: [0, -12, 0], spine: [6, -14, 0], head: [10, 0, 0], handR: [-0.3, 0.2, 0.14], elbowR: [-0.7, -0.6, -0.4], handL: [0.06, 0.34, 0.26], elbowL: [0.8, -0.6, -0.2] }, f5: { ...v.pose, hipsRot: [0, 14, 0], spine: [-8, 16, 0], head: [-16, 0, 0], handR: [-0.55, 0.62, 0.3], elbowR: [-1, 0.1, -0.3], handL: [0.06, 0.38, 0.3], elbowL: [0.8, -0.4, -0.2] } }),
+  // Chắp tay cúi đầu rồi dang tay đón.
+  vow: (v) => ({ f3: { ...v.pose, spine: [14, 0, 0], head: [20, 0, 0], ...hands(0.03, {}, 0.38, 0.28, 1) }, f5: { ...v.pose, spine: [-6, 0, 0], head: [-14, 0, 0], ...hands(0.55, {}, 0.6, 0.2, 0.4) } }),
+};
+const VOICE_POSE = {
+  kt: { pose: { hipsPos: [0, -0.15, 0], hipsRot: [0, 0, 0], ...L0, sword: [0, 1, 0.05], edge: [1, 0, 0] } },
+  hp: { pose: { hipsPos: [0, -0.25, 0], hipsRot: [0, 0, 0], ...WIDE, sword: [0, -1, 0.2], edge: [0, 0, 1] } },
+  ds: { pose: { hipsPos: [0, -0.1, 0], hipsRot: [0, 0, 0], ...SOFT, sword: [0, -1, 0.15], edge: [0, 0, 1] } },
+};
+for (const [id, skill, voice, tpl] of [
+  ['kiem_dan', 'skl_kiem_dan_ban_menh', 'kt', 'thrust'],
+  ['phan_anh_kiem_anh', 'skl_phan_anh_kiem_anh', 'kt', 'vow'],
+  ['kim_chung', 'skl_kim_chung_tran', 'hp', 'thrust'],
+  ['son_nhac', 'skl_son_nhac_hoa_than', 'hp', 'raise'],
+  ['anh_thiet_than', 'skl_anh_thiet_than', 'hp', 'open'],
+  ['thuan_di_ho_the', 'skl_thuan_di_ho_the', 'hp', 'press'],
+  ['thien_kim_phap_tuong', 'skl_thien_kim_phap_tuong', 'hp', 'raise'],
+  ['moc_linh', 'skl_moc_linh_tran', 'ds', 'press'],
+  ['duoc_vu', 'skl_duoc_vu', 'ds', 'sweep'],
+  ['ngung_dan', 'skl_ngung_dan_ho_the', 'ds', 'open'],
+  ['anh_duoc_hoa_than', 'skl_anh_duoc_hoa_than', 'ds', 'vow'],
+  ['thuan_di_cuu_vien', 'skl_thuan_di_cuu_vien', 'ds', 'raise'],
+  ['thien_dan_phap_gioi', 'skl_thien_dan_phap_gioi', 'ds', 'raise'],
+]) {
+  const g = TPL[tpl](VOICE_POSE[voice]);
+  const f3 = { ...GUARD, ...g.f3 };
+  const f5 = { ...GUARD, ...g.f5 };
+  emit(id, skill, SK.get(skill).hitAt[0], false, (w, rec) => frames({ w, rec, voice, f3, f5, nine: false }));
+}
+
 /** Một khóa một dòng cho dễ đọc diff. */
 function fmt(p) {
   const head = `{\n  "id": ${JSON.stringify(p.id)},\n  "duration": ${p.duration},\n  "loop": false,\n  "hit": ${JSON.stringify(p.hit)},\n  "keys": [\n`;
