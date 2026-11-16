@@ -111,3 +111,116 @@ export function dist2(ax: number, az: number, bx: number, bz: number): number {
   const dz = az - bz;
   return dx * dx + dz * dz;
 }
+
+// ---- Địa hình dữ liệu hóa (E1-A): mỗi level một TerrainDef; `terrainOf(levelId)` ở terrain.ts dựng hàm từ đây ----
+
+/** Biome tính theo trọng số khu (xem `TerrainDef.biomes`). */
+export type Biome = 'sect' | 'valley' | 'forest' | 'lake' | 'wild' | 'dungeon';
+
+/** Khu đặt vào địa hình: vùng phẳng + chuyển tiếp mượt. Áp theo thứ tự khai báo. */
+export interface TerrainFeature extends Feature {
+  id: string;
+  /** Giữ hình tròn (không méo bằng nhiễu): kiến trúc/đấu trường dựng theo bán kính. */
+  round?: boolean;
+  /** Hệ số nhiễu chi tiết cộng vào độ cao mục tiêu (m). */
+  detail?: number;
+  /** Cộng thêm sống núi nhỏ (vách đá). */
+  ridge?: { amp: number; freq: number; oct: number; seedOff: number };
+  /** Khu là hồ: bãi ven hồ, đảo giữa hồ, kẹp rìa lòng hồ. Cần `water`. */
+  lake?: { islandR: number; islandTop: number; shelfR: number; shelfOut: number; shelfY: number; waterR: number };
+}
+
+export interface NaturalDef {
+  /** Tần số nhiễu nền (1/m). */
+  freq: number;
+  baseOct: number;
+  ridgeOct: number;
+  /** Độ cao nền, biên độ nhiễu nền, biên độ sống núi. */
+  level: number;
+  baseAmp: number;
+  ridgeAmp: number;
+  /** Mặt nạ vùng núi: tần số, số tầng, ngưỡng dưới/trên. */
+  maskFreq: number;
+  maskOct: number;
+  maskLo: number;
+  maskHi: number;
+  /** Ngọn núi lớn dưới chân tâm khu (nếu có): cộng `amp` khi gần, hết ở `r0`, đầy ở `r1`. */
+  hill?: { x: number; z: number; amp: number; r0: number; r1: number };
+  /** Dãy núi quanh rìa thế giới. */
+  edge?: { amp: number; r0: number; r1: number };
+}
+
+export interface IslandDef {
+  x: number;
+  z: number;
+  /** Mặt đảo phẳng trong bán kính này. */
+  r: number;
+  /** Chuyển tiếp ra ngoài thêm chừng này (m). */
+  edge: number;
+  y: number;
+}
+
+export interface TerrainDef {
+  id: string;
+  seed: number;
+  /** Cạnh thế giới (m) và lề không đi vào. */
+  size: number;
+  margin: number;
+  natural: NaturalDef;
+  features: TerrainFeature[];
+  /** Đảo nổi: có thì nền tự nhiên bị thay bằng `voidFloor`, chỉ còn đảo và các khu. */
+  islands?: IslandDef[];
+  /** Độ cao khoảng trống giữa các đảo (m). */
+  voidFloor?: number;
+  /** Mặt nước, độ lội tối đa, đĩa nước của hồ. */
+  water?: { y: number; wade: number; lake?: { x: number; z: number; r: number } };
+  /** Ranh vùng chơi: ô vuông bo tròn quanh tâm, vách dựng lên sau `half - 10`. */
+  play?: { cx: number; cz: number; half: number; wallH: number };
+  /** Biome theo khu, ưu tiên từ trên xuống; mặc định 'wild'. */
+  biomes?: { feature: string; biome: Biome; min: number }[];
+  /** Va chạm tĩnh hình tròn của level. */
+  colliders: CircleCollider[];
+}
+
+/** Địa hình Vân Lam Sơn Mạch (và Kiếm Trủng, cùng một thế giới). Kết quả giống hệt `heightAt` cũ từng bit. */
+export const VAN_LAM_TERRAIN: TerrainDef = {
+  id: 'van_lam',
+  seed: TERRAIN_SEED,
+  size: WORLD_SIZE,
+  margin: WORLD_MARGIN,
+  natural: {
+    freq: 0.0011,
+    baseOct: 5,
+    ridgeOct: 4,
+    level: 78,
+    baseAmp: 56,
+    ridgeAmp: 340,
+    maskFreq: 0.00055,
+    maskOct: 2,
+    maskLo: -0.35,
+    maskHi: 0.3,
+    hill: { x: SECT.x, z: SECT.z, amp: 110, r0: 1100, r1: 150 },
+    edge: { amp: 220, r0: 420, r1: 40 },
+  },
+  features: [
+    { ...VALLEY, id: 'valley', detail: 2.2 },
+    { ...SUOI, id: 'suoi', detail: 3 },
+    { ...FOREST, id: 'forest', detail: 3.5 },
+    { ...VACH, id: 'vach', detail: 6, ridge: { amp: 14, freq: 0.02, oct: 2, seedOff: 31 } },
+    { ...PORTAL_PAD, id: 'portal', round: true },
+    { ...LAKE, id: 'lake', lake: { islandR: ISLAND_R, islandTop: WATER_Y + 4, shelfR: LAKE_SHELF_R, shelfOut: LAKE_SHELF_OUT, shelfY: LAKE_SHELF_Y, waterR: LAKE_WATER_R } },
+    { ...KIEM_TRUNG, id: 'kiem_trung', round: true, detail: 0.6 },
+    { ...SECT, id: 'sect', round: true },
+  ],
+  water: { y: WATER_Y, wade: WADE_DEPTH, lake: { x: LAKE.x, z: LAKE.z, r: LAKE_WATER_R } },
+  play: { cx: SECT.x, cz: SECT.z, half: PLAY_HALF, wallH: 330 },
+  biomes: [
+    { feature: 'sect', biome: 'sect', min: 0.6 },
+    { feature: 'kiem_trung', biome: 'dungeon', min: 0.3 },
+    { feature: 'lake', biome: 'lake', min: 0.3 },
+    { feature: 'forest', biome: 'forest', min: 0.35 },
+    { feature: 'valley', biome: 'valley', min: 0.35 },
+    { feature: 'suoi', biome: 'valley', min: 0.35 },
+  ],
+  colliders: COLLIDERS,
+};
