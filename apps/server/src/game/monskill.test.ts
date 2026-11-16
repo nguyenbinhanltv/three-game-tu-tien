@@ -222,6 +222,17 @@ describe('leap: nhảy đập', () => {
     expect(mon.s.y).toBeGreaterThan(groundAt(mon.s.x, mon.s.z) + 0.2);
   });
 
+  it('bị quỵ giữa lúc bay thì hạ xuống mặt đất, không treo lơ lửng', () => {
+    const { sim, mon, run } = setup(LEAP, { speed: 0 });
+    run(DT);
+    run(850);
+    expect(mon.s.y).toBeGreaterThan(groundAt(mon.s.x, mon.s.z) + 0.2);
+    sim.monSkills.cancel(mon);
+    expect(mon.s.y).toBeCloseTo(groundAt(mon.s.x, mon.s.z));
+    run(500);
+    expect(mon.s.y).toBeCloseTo(groundAt(mon.s.x, mon.s.z));
+  });
+
   it('mục tiêu sát hơn `min` thì không nhảy', () => {
     const { p, run, hazards } = setup(LEAP);
     p.move.z = Z + 1.5;

@@ -393,6 +393,8 @@ export class MonSkills {
   /** Hủy chiêu đang dở (quái bị quỵ/ngắt chú): vạch đã thả vẫn nổ đúng như báo. Chui đất không hủy được. */
   cancel(m: MxMon): void {
     if (!m.mx.act || this.underground(m)) return;
+    // Đang bay giữa chừng: hạ xuống mặt đất tại chỗ, không treo lơ lửng (vòng nổ vẫn ở chỗ đã báo).
+    if (m.mx.act.k === 'leap') m.s.y = this.h.groundAt(m.s.x, m.s.z);
     m.mx.act = null;
     m.windUntil = 0;
   }
