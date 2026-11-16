@@ -9,7 +9,7 @@ import { levelAssets, levelTerrain } from '../../game/levelCtx';
 import { questOverlay } from '../minimap/marks';
 import { difficultyTone, formatCountdown, npcFunction, npcQuestMark } from '../minimap/model';
 import { bossSprite, eliteSprite, flagSprite, mateSprite, nodeSprite, npcSprite, selfSprite, teleSprite } from '../minimap/sprites';
-import { set, useUI } from '../store';
+import { closePanel, set, useUI } from '../store';
 import './worldmap.css';
 import { campSpots, clampView, fitView, type LabelBox, placeLabels, type Layer, LAYERS, type MapView, panBy, parseLayers, pick, screenToWorld, soloSpawns, worldToScreen, zoneInfos, zoomAt } from './model';
 
@@ -326,7 +326,7 @@ export function WorldMap() {
   };
 
   return (
-    <PanelWindow title={t('ui.map')} sub={zone} onClose={() => set({ panel: null })} className="map worldmap" width={980}>
+    <PanelWindow title={t('ui.map')} sub={zone} onClose={() => closePanel('map')} className="map worldmap" width={980}>
       <div className="wm">
         <div className="wm-main">
           <canvas

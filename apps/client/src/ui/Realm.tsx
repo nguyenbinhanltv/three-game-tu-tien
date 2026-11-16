@@ -21,7 +21,7 @@ import { itemName, nextMajorRealmName, realmName, ROOT, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { UiIcon } from './ContentIcon';
 import { Button, Divider } from './kit';
-import { set, useUI } from './store';
+import { closePanel, set, useUI } from './store';
 
 /** Số giây còn lại, đếm xuống từ `sec` (server gửi lúc `char` đổi). 0 = không chạy. */
 function useCountdown(sec: number, key: unknown): number {
@@ -96,7 +96,7 @@ export function BottleneckBox({ char }: { char: CharView }) {
           disabled={!full || wait > 0 || trialing}
           onClick={() => {
             g?.send(C.BOTTLENECK, { m: 'trial' });
-            set({ panel: null });
+            closePanel('char');
           }}
         >
           {wait > 0 ? t('ui.bk.wait', { n: wait }) : `☯ ${t('ui.bk.trial')}`}

@@ -5,7 +5,7 @@ import { METHODS, METHOD, realmName, resolveBarSkill, skillBar, SKILL, t, VARIAN
 import { Game, reqId } from '../game/engine';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { Button, Divider, PanelWindow, Slot, TipCard, Tooltip } from './kit';
-import { set, useUI } from './store';
+import { closePanel, set, useUI } from './store';
 
 const SCROLL = 'itm_bi_tich_tan_quyen';
 
@@ -102,7 +102,7 @@ export function MethodPanel() {
   const bar = skillBar(cur?.id);
   const pickLabel = !cur ? t('ui.method.pick') : shown.id === cur.id ? t('ui.method.current') : t('ui.method.switch', { n: methodSwitchCost(char.level) });
   return (
-    <PanelWindow title={t('ui.method.title')} sub={cur ? t(`method.${cur.id}.name`) : t('ui.method.none')} onClose={() => set({ panel: null })} width={600} className="method">
+    <PanelWindow title={t('ui.method.title')} sub={cur ? t(`method.${cur.id}.name`) : t('ui.method.none')} onClose={() => closePanel('method')} width={600} className="method">
       {!open && <div className="k-card bad">{t('ui.method.locked', { realm: realmName(METHOD_UNLOCK_LEVEL) })}</div>}
       {open && !cur && <div className="k-dim">{t('ui.method.pick_hint')}</div>}
       <div className="mp-cards" role="tablist">
