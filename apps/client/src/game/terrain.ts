@@ -3,7 +3,7 @@ import { createWorldMaterial } from '../render/materials/world';
 import { applyGroundShader, clearGroundShader, type GroundLevel } from '../render/materials/ground';
 import type { GroundTextures } from './groundTextures';
 import { COLLIDERS, fbm, featureWeight, FOREST, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
-import { heightAt, levelTerrain } from './levelCtx';
+import { levelTerrain } from './levelCtx';
 import { col, G, GeoBuilder, mat } from './geo';
 import { withSightFade } from './occlusion';
 import { LEGACY_TREES, nearPropTree } from './propScatter';
@@ -28,14 +28,20 @@ const C_TOMB = col(0x5d5a66);
 const _c = new THREE.Color();
 
 /** Địa hình riêng của Vân Lam (và Kiếm Trủng): các khu Vân Lam dùng cho màu, cây, mặt nạ. Level khác dùng màu theo biome. */
+/** Địa hình của Terrain đang dựng (gắn lúc `new Terrain()`): hàm dựng ô gọi thẳng, không qua con trỏ level từng đỉnh. */
+let T = levelTerrain();
+let VL = T.id === 'van_lam';
+function heightAt(x: number, z: number): number {
+  return T.heightAt(x, z);
+}
 function isVanLam(): boolean {
-  return levelTerrain().id === 'van_lam';
+  return VL;
 }
 
 const C_VOID_ROCK = col(0x6b6a72);
 /** Màu mặt đất của level không phải Vân Lam: cỏ/đá/tuyết theo độ dốc và độ cao, bờ nước ra cát. */
 function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
-  const t = levelTerrain();
+  const t = T;
   const n = fbm(x * 0.013, z * 0.013, 2, t.def.seed + 300);
   out.copy(C_GRASS_WILD).lerp(C_GRASS_DRY, Math.max(0, n) * 0.35).multiplyScalar(0.92 + n * 0.14);
   const slope = 1 - ny;
@@ -330,6 +336,8 @@ export class Terrain {
   private readonly COARSE_N = this.size / COARSE_CELL;
 
   constructor() {
+    T = levelTerrain();
+    VL = T.id === 'van_lam';
     const COARSE_N = this.COARSE_N;
     const g = buildTileGeometry(0, 0, this.size, COARSE_N, 0);
     this.coarseIndex = new THREE.BufferAttribute(new Uint16Array(COARSE_N * COARSE_N * 6), 1);

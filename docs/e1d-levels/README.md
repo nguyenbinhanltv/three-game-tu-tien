@@ -18,3 +18,11 @@ Gói E1-D của mở rộng Kết Đan / Nguyên Anh / Hóa Thần (`docs/EXPANS
 Điểm cần nhớ khi thêm lớp theo level: mọi thứ tạo trong `buildLevelA/B` phải có đường dispose trong `unloadLevel`; mặt nạ/texture đang được cảnh cũ vẽ không được dispose trước khi gỡ cảnh (WebGPU báo `ImageBitmap has been detached`).
 
 Chưa làm (E2 trở đi): tên tin/trường level chốt với E1-B, `levels/<id>.assets.json` cho ba bản đồ mới, mặt nạ mặt đất `manifest` riêng của từng level (hiện level mới dùng `neutral`), tải đầu không đổi (chỉ level đầu được `prefetch`).
+
+## Số đo (2026-11-16, RTX 3060 Ti, Chrome headless tắt tiếng)
+
+**Đổi level 5 vòng** (`pnpm bench:levels --cycles 5`, Vân Lam từ vòng 1 → vòng 5): WebGPU geometry +0, texture +0, đối tượng cảnh +0, heap +1 MB; WebGL2 geometry +0, texture +0, heap +1 MB; 0 lỗi console. Vân Lam 130–137 geometry / 88 texture / 346 đối tượng sau mỗi vòng; level thử 73–79 geometry, 61 texture, 37–39 draw. Đổi sang level thử ~70–250 ms (cache nóng), về Vân Lam ~650–1270 ms (dựng lại tông môn + GLB).
+
+**`bench:client` Vân Lam** (18 điểm): draw ≤ 162, tam giác ≤ 977k, texture ≤ 390 MB, 0 lỗi, mọi ô đạt, CPU p95 3,6–7,2 ms. Đối chứng cùng máy ở commit gốc: draw/tam giác/texture giống hệt, CPU p95 4,1–7,8 ms (WebGPU high ở gốc có 2 ô 9 ms do nhiễu). Lần đầu nhánh này chậm ~1–2 ms p95 ở preset thấp do gọi `levelTerrain().id` cho từng đỉnh khi dựng ô; đã gắn địa hình một lần ở `new Terrain()`.
+
+**`pnpm size`**: tải đầu 2,51 MB / 30 MB (không đổi): level mới chỉ nạp khi `enterLevel`.
