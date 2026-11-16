@@ -75,6 +75,12 @@ export class SoulSystem {
     return this.souls.get(p.sid)?.k === SOUL_DEATH;
   }
 
+  /** Vị trí thân xác khi đang thám thính (để lưu nhân vật); null nếu không. */
+  bodyOf(p: PlayerEnt): { x: number; y: number; z: number } | null {
+    const s = this.souls.size > 0 ? this.souls.get(p.sid) : undefined;
+    return s?.k === SOUL_SCOUT ? { x: s.bx, y: s.by, z: s.bz } : null;
+  }
+
   /** Tham số `MoveCtx.ghost` cho `stepMove` khi đang thám thính. */
   ghostOf(p: PlayerEnt): MoveCtx['ghost'] {
     const s = this.souls.get(p.sid);

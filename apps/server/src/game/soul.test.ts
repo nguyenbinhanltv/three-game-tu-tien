@@ -141,6 +141,23 @@ describe('xuất khiếu thám thính (X)', () => {
   });
 });
 
+describe('lưu nhân vật lúc xuất khiếu', () => {
+  it('savePlayer lưu chỗ thân xác, không phải chỗ nguyên anh', () => {
+    const t = setup();
+    (t.sim as unknown as { opts: { persistPosition: boolean } }).opts.persistPosition = true;
+    t.sim.soul.command(t.p, {});
+    for (let i = 0; i < 30; i++) {
+      t.p.inputs.push({ s: i + 1, mx: 0, mz: 1, yaw: -Math.PI / 2, f: 0 });
+      t.advance(50);
+    }
+    expect(Math.hypot(t.p.move.x - X, t.p.move.z - Z)).toBeGreaterThan(10);
+    t.sim.savePlayer(t.p);
+    expect(t.p.char.x).toBeCloseTo(X);
+    expect(t.p.char.z).toBeCloseTo(Z);
+    expect(t.p.char.y).toBeCloseTo(groundAt(X, Z));
+  });
+});
+
 describe('xuất khiếu cứu mạng khi chết', () => {
   it('chết ở Nguyên Anh: nguyên anh thoát ra, không mất tu vi, hết 10 giây hồi sinh 30% khí huyết ở nơi an toàn', () => {
     const { p, advance, kill, fxs } = setup();

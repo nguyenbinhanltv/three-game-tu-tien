@@ -879,9 +879,11 @@ export class GameSim {
   savePlayer(p: PlayerEnt): void {
     const c = p.char;
     if (this.opts.persistPosition) {
-      c.x = p.move.x;
-      c.y = p.move.y;
-      c.z = p.move.z;
+      // Đang xuất khiếu thám thính: lưu chỗ thân xác, không phải chỗ nguyên anh (có thể trong tường/giữa không).
+      const at = this.soul.bodyOf(p) ?? p.move;
+      c.x = at.x;
+      c.y = at.y;
+      c.z = at.z;
       c.room = this.opts.levelId;
     }
     try {
