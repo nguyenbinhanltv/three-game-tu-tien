@@ -1,0 +1,26 @@
+{
+ "toVanNguDoanMach": {
+  "npcText": "“Đứng đó làm gì. Mạch không tự chảy lại đâu.”\n Phù Đảo Các\nTô Vãn Ngư nói: “Mạch đứt ở Đoạn Mạch không mất. Nó trôi lên cao, thành đảo. Trận Hạ Khuyết Trạm đã nối sang Phù Đảo Các, đảo đầu tiên neo lại. Chủ ở đó tên Lâm Chiếu Dung. Đừng hỏi giá, hỏi đường.” Trận Phù Đảo Các đã mở cho ngươi: niệm Truyền Tống ở bản đồ lớn để lên Vân Hải.\n○ Gặp Lâm Chiếu Dung\nPhần thưởng:\n2200 tu vi\n600 \nNhận nhiệm vụ"
+ },
+ "afterAccept": {
+  "tracker": "Phù Đảo Các\n· Gặp Lâm Chiếu Dung"
+ },
+ "arrive": {
+  "level": "van_hai",
+  "x": 1024,
+  "z": 989
+ },
+ "lamChieuDung": {
+  "npcText": "“Ngươi tới tìm đảo, hay đảo tìm ngươi? Thôi, trả lời sau. Giúp ta trước.”\n Phù Đảo Các\n“Ngươi tới bằng trận hay bằng kiếm? Trận à. Cũng được. Đảo không hỏi người ta đến thế nào, chỉ hỏi ở lại được bao lâu.”\nPhần thưởng:\n2200 tu vi\n600 \nHoàn thành"
+ },
+ "afterTurnin": {
+  "tracker": "Vân Hạc Tha Mạch\n· Hạ Vân Hạc 0/14\nBích Ngọc Kim Thiền\n· Hạ Bích Ngọc Kim Thiền 0/18"
+ },
+ "scan": {
+  "tracker": "Bích Ngọc Kim Thiền\n· Hạ Bích Ngọc Kim Thiền 0/18"
+ },
+ "nguyenAnh": {
+  "tracker": "Bích Ngọc Kim Thiền\n· Hạ Bích Ngọc Kim Thiền 0/18\nTam Trọng Kiếp\n· Độ kiếp thành công"
+ },
+ "errors": []
+}
