@@ -1000,5 +1000,14 @@
   "item.itm_manh_luc_dan_3.desc": "Tăng công kích 18% trong 10 phút. Phẩm càng cao, hiệu lực càng lớn.",
   "set.fx.nghich_kiem": "Nghịch Kiếm Chuyển Phong hoàn {v}% hồi chiêu nếu hạ được mục tiêu.",
   "set.fx.dich_son": "Dịch Sơn Xung làm choáng thêm {v} giây.",
-  "set.fx.ngung_dan": "Ngưng Đan Hộ Thế mạnh thêm {v}%."
+  "set.fx.ngung_dan": "Ngưng Đan Hộ Thế mạnh thêm {v}%.",
+  "sys.soul_locked": "Nguyên anh xuất khiếu mở khi lên Nguyên Anh.",
+  "sys.soul_busy": "Lúc này không thể xuất khiếu.",
+  "sys.soul_combat": "Đang giao chiến, tâm thần bất định, chưa xuất khiếu được.",
+  "sys.soul_cd": "Nguyên anh còn {s} giây mới xuất khiếu lại được.",
+  "sys.soul_out": "Nguyên anh rời khỏi thân xác. Bấm X để nhập lại.",
+  "sys.soul_in": "Nguyên anh nhập lại thân xác.",
+  "sys.soul_time": "Thần niệm cạn, nguyên anh tự nhập lại thân xác.",
+  "sys.soul_escape": "Nguyên anh thoát khiếu cứu mạng! {s} giây nữa sẽ hồi sinh ở nơi an toàn, không mất tu vi.",
+  "sys.respawned_soul": "Nguyên anh nhập lại thân xác ở nơi an toàn."
 }

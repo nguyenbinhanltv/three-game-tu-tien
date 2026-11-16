@@ -1,5 +1,5 @@
 import type * as THREE from 'three/webgpu';
-import { POSE_CAST, POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, type PoseDef } from '@dtl/shared';
+import { POSE_CAST, POSE_FLY, POSE_SKY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, type PoseDef } from '@dtl/shared';
 import { POSES } from '@dtl/content';
 import { bakePose, IkRig, maskClip, poseClipName } from './ikpose';
 import type { ClipMap } from './states';
@@ -77,7 +77,7 @@ export function libraryClips(lib: PoseLibrary): THREE.AnimationClip[] {
 export { poseClipName };
 
 /** Clip nền nướng từ pose: bay đứng trên kiếm, niệm chú (asset người không có clip riêng cho hai trạng thái này). */
-export const POSE_BASE_CLIPS: ClipMap = { fly: poseClipName(POSE_FLY), cast: poseClipName(POSE_CAST) };
+export const POSE_BASE_CLIPS: ClipMap = { fly: poseClipName(POSE_FLY), sky: poseClipName(POSE_SKY), cast: poseClipName(POSE_CAST) };
 
 /**
  * Điểm nối cho model người có xương (M3-5 dựng người chơi): nướng thư viện pose từ bản gốc của asset (tư thế nghỉ,

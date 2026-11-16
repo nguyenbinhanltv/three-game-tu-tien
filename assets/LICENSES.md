@@ -505,3 +505,4 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 | `itm_manh_luc_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_manh_luc_dan_3.png` |
 | `itm_nguyen_anh_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_nguyen_anh_dan.png` |
 | `itm_ngung_anh_phach` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_ngung_anh_phach.png` |
+| `hud_nguyen_anh` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/hud_nguyen_anh.png` |

@@ -239,7 +239,7 @@ export class Humanoid implements CharacterView {
     pose.position.x = this.hit.shake;
 
     if (this.flySword && this.backSword) {
-      const fly = a.flying && !a.dead;
+      const fly = a.flying && !a.sky && !a.dead;
       this.flySword.visible = fly;
       this.backSword.visible = !fly;
     }
