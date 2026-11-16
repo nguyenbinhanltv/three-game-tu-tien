@@ -16,3 +16,14 @@ Dãy khung một lần độ kiếp Kết Đan 55 s (`/gm trib ket_dan`, chạy 
 | `12-the-chuong-2-doan-mach` | — | Thẻ Chương 2 · Đoạn Mạch lần đầu tới |
 
 Kiểm tự động: `apps/server/src/game/kettan.test.ts` (luật thanh, tiêu/hoàn vật phẩm, thất bại khi bỏ vòng, thành công lên cấp 20), `content:check` (kiếp bật phải có vật phẩm + công thức, thông số `danTran`, `peakGated`).
+
+## Tick server (so với `origin/main`, cùng máy, `pnpm bots --count 100 --duration 120`, 2 lượt mỗi bên xen kẽ)
+
+| | tick p95 cuối (2 room, ms) | tick p95 khoảng giữa |
+| --- | --- | --- |
+| main lượt 1 | 7,6 / 7,4 | 4–5 |
+| nhánh E2-D lượt 1 | 5,1 / 5,3 | 3–4 |
+| main lượt 2 | 6,0 / 4,3 | 2–4 |
+| nhánh E2-D lượt 2 | 16,0 / 16,5 (đỉnh cuối, mẫu trước đó 3–9) | 3–8 |
+
+Chênh lệch nằm trong nhiễu của máy (main cũng dao động 4,3–7,6; lần 8–20 ms trước đó là lúc máy bận). Bot ở cấp 1–2 không bao giờ độ kiếp nên `dan_tran`/`TribSystem` không chạy trong phép đo này: mã mới chỉ chạy khi `p.trib` khác null, mỗi nhịp O(1) (một vòng khoảng cách, tối đa một `addHazard`/4,5 s, một `fx` mỗi 0,5 s); `addHazard` chỉ thêm một tham số.
