@@ -86,7 +86,7 @@ function SkillRow({ sk, scrolls, gold, locked, canChange }: { sk: SkillDef; scro
   );
 }
 
-/** Bảng Công pháp (phím V): chọn/đổi công pháp, nội tại, hai chiêu riêng, cấp chiêu và biến thức A/B. */
+/** Bảng Công pháp (phím K): chọn/đổi công pháp, nội tại, hai chiêu riêng, cấp chiêu và biến thức A/B. */
 export function MethodPanel() {
   const char = useUI((s) => s.char);
   const method = useUI((s) => s.method);

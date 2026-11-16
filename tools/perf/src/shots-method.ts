@@ -111,7 +111,7 @@ async function main(): Promise<void> {
       }
       if (want('panel')) {
         await page.evaluate(() => (window as unknown as G).__game!.send('chat', { m: '' }));
-        await page.keyboard.press('KeyV');
+        await page.keyboard.press('KeyK');
         await sleep(900);
         await page.screenshot({ path: path.join(OUT, 'panel-cong-phap-kiem.png') });
         console.log('[shots-method] panel-cong-phap-kiem.png');
@@ -119,7 +119,7 @@ async function main(): Promise<void> {
         await page.getByRole('tab', { name: /Bất Động Kim Thân/ }).click();
         await sleep(500);
         await page.screenshot({ path: path.join(OUT, 'panel-cong-phap-xem-kim.png') });
-        await page.keyboard.press('KeyV');
+        await page.keyboard.press('KeyK');
         await sleep(300);
       }
     }

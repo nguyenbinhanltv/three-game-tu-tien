@@ -837,5 +837,21 @@
   "sys.promoted": "Thăng Bậc xong: {item} thành {to}.",
   "sys.promote_locked": "Bậc này chưa mở, chưa Thăng Bậc được.",
   "sys.promote_none": "Món này không có bậc để thăng.",
-  "sys.promote_mats": "Thiếu nguyên liệu hoặc linh thạch để Thăng Bậc."
+  "sys.promote_mats": "Thiếu nguyên liệu hoặc linh thạch để Thăng Bậc.",
+  "item.itm_ngung_dan_lo.name": "Ngưng Đan Lô",
+  "item.itm_ngung_dan_lo.desc": "Lò đồng ba chân của người đã kết đan, đan hỏa âm ỉ dưới nắp ngọc. Bản mệnh pháp bảo: tự có khi lên Kết Đan, không tháo, lên cấp theo chủ.",
+  "art.itm_ngung_dan_lo.skill": "Ngưng Đan Hồi Nguyên",
+  "art.itm_ngung_dan_lo.skill.desc": "Đan hỏa từ lò tỏa ra, hồi {n}% khí huyết tối đa cho bản thân và đồng đội trong {r} m.",
+  "art.passive.hp": "Khí huyết tối đa +{n}%",
+  "sys.art_heal": "Ngưng Đan Hồi Nguyên: hồi khí huyết cho {n} người.",
+  "sys.bonded_locked": "Bản mệnh pháp bảo mở khi lên Kết Đan.",
+  "sys.spirit_locked": "Thần thức mở khi lên Kết Đan.",
+  "sys.spirit_cd": "Thần thức còn {s} giây mới dùng lại được.",
+  "sys.spirit_busy": "Lúc này không thể vận thần thức.",
+  "sys.spirit_start": "Vận thần thức, giữ yên trong giây lát.",
+  "sys.spirit_cancel": "Thần thức tản đi.",
+  "sys.spirit_moved": "Di chuyển làm thần thức tản đi.",
+  "sys.spirit_done": "Thần thức quét {r} m: {n} dấu vết.",
+  "sys.spirit_none": "Thần thức quét {r} m, không thấy gì đáng chú ý.",
+  "sys.spirit_mp": "Thiếu linh lực để vận thần thức."
 }

@@ -146,6 +146,15 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
     }
   }
 
+  // Thần thức (E2-E): kết quả quét hiện vài giây (server đã lọc, client chỉ vẽ).
+  const scan = get().spiritScan;
+  if (scan && now < scan.until) {
+    scan.hits.forEach((h, i) => {
+      const nm = h.k === 'boss' || h.k === 'elite' || h.k === 'mon' ? monsterName(h.n) : h.k === 'node' ? itemName(h.n) : h.k === 'poi' ? (hasString(`poi.${h.n}.name`) ? t(`poi.${h.n}.name`) : h.n) : h.n;
+      marks.push({ kind: 'scan', scanKind: h.k, id: `scan:${scan.at}:${i}`, x: h.x, z: h.z, label: nm, sub: t(`ui.spirit.kind.${h.k}`) + (h.lv ? ' · ' + t('ui.mm.level', { n: h.lv }) : '') });
+    });
+  }
+
   const q = questOverlay(level, quests, trackPin, px, pz);
   const goals = q.goals;
   const goalPoint = q.goalPoint;

@@ -154,6 +154,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.INPUT, (p, m) => this.sim.onInput(p, m));
     on(C.SKILL, (p, m) => this.sim.onSkill(p, m));
     on(C.ARTIFACT, (p) => this.sim.onArtifact(p));
+    on(C.BONDED, (p) => this.sim.onBonded(p));
+    on(C.SPIRIT, (p, m) => this.sim.spirit.command(p, m));
     on(C.MEDITATE, (p, m) => this.sim.onMeditate(p, m));
     on(C.GATHER, (p, m) => this.sim.onGather(p, m));
     on(C.USE, (p, m) => this.sim.onUse(p, m));
@@ -260,6 +262,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       prev.room.beforeRemove(prev.sid);
       if (oldP) {
         prev.room.sim.tele.drop(oldP);
+        prev.room.sim.spirit.drop(oldP);
         prev.room.markers.drop(oldP);
       }
       prev.room.sim.removePlayer(prev.sid);
@@ -291,6 +294,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     online.set(auth.charId, { room: this, sid: client.sessionId });
     parties.attach(p, this);
     this.sim.tele.sendState(p);
+    this.sim.spirit.sendState(p);
     ensurePartyTick();
     console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
@@ -344,6 +348,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.beforeRemove(sid);
     parties.detach(p);
     this.sim.tele.drop(p);
+    this.sim.spirit.drop(p);
     this.markers.drop(p);
     this.aoi.detach(sid);
     this.sim.removePlayer(sid);
