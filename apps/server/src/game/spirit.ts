@@ -89,8 +89,11 @@ export class SpiritSystem {
   command(p: PlayerEnt, msg: unknown): void {
     const m = (msg ?? {}) as Partial<SpiritCmd>;
     const now = this.h.now();
-    if (now - (this.cmdAt.get(p.sid) ?? 0) < SPIRIT_CMD_GAP_MS) return;
-    this.cmdAt.set(p.sid, now);
+    // Thả phím không bao giờ bị giãn (chạm nhanh vẫn hủy được); chỉ giãn lệnh bắt đầu.
+    if (m.on === true) {
+      if (now - (this.cmdAt.get(p.sid) ?? 0) < SPIRIT_CMD_GAP_MS) return;
+      this.cmdAt.set(p.sid, now);
+    }
     if (m.on !== true) {
       // Thả phím: hủy nếu chưa quét xong (không tốn gì, không hồi chiêu).
       if (this.chans.delete(p.sid)) {

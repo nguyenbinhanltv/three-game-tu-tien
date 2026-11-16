@@ -115,6 +115,15 @@ describe('thần thức', () => {
     expect(scans()).toHaveLength(1);
   });
 
+  it('chạm nhanh: thả phím ngay sau khi giữ (dưới 120 ms) vẫn hủy, không quét, không tốn gì', () => {
+    const { sim, p, advance, scans } = setup();
+    sim.spirit.command(p, { on: true });
+    sim.spirit.command(p, { on: false });
+    advance(SPIRIT_CHANNEL_MS + 400);
+    expect(scans()).toHaveLength(0);
+    expect(Math.abs(p.char.mp - p.char.mmp)).toBeLessThan(1);
+  });
+
   it('thiếu linh lực thì không bắt đầu', () => {
     const { sim, p, advance, scans } = setup();
     p.char.mp = SPIRIT_MP - 1;

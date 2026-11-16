@@ -1462,6 +1462,8 @@ export class Game {
   spiritLog: { r: number; n: number; kinds: Record<string, number>; hits: SpiritScanMsg['hits'] }[] = [];
 
   /** Thần thức (phím V, giữ): chỉ gửi ý định bắt đầu/thả; server giữ 2,5 giây, kiểm điều kiện, quyết định kết quả. */
+  private spiritHeld = false;
+
   spiritHold(on: boolean): void {
     const st = get();
     if (on) {
@@ -1472,7 +1474,12 @@ export class Game {
         return;
       }
       if (st.spirit.chUntil > performance.now()) return;
-    } else if (st.spirit.chUntil <= performance.now()) return;
+      this.spiritHeld = true;
+    } else {
+      // Thả phím: luôn gửi nếu đã gửi lệnh giữ, bất kể server đã báo `chUntil` hay chưa (chạm nhanh trong một RTT).
+      if (!this.spiritHeld) return;
+      this.spiritHeld = false;
+    }
     this.send(C.SPIRIT, { on });
   }
 
