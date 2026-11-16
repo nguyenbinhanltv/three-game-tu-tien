@@ -146,7 +146,8 @@
     "itm_ll_dao_bao": "Lưu Ly Đạo Bào",
     "itm_ll_ngoc_boi": "Lưu Ly Ngọc Bội",
     "itm_ll_dai_lung": "Lưu Ly Đai Lưng",
-    "itm_ll_gioi_chi": "Lưu Ly Giới Chỉ"
+    "itm_ll_gioi_chi": "Lưu Ly Giới Chỉ",
+    "itm_tinh_khuyet_kiem": "Tinh Khuyết Kiếm"
   },
   "upgrade": {
     "gem": "Linh Ngọc",

@@ -109,13 +109,13 @@ async function main(): Promise<void> {
       // Đeo lưng: nhìn từ sau-trái, gần, cho thấy chuôi và bao.
       await cam(Number(opt('--back-yaw', '3.6')), Number(opt('--pitch', '0.12')), Number(opt('--dist', '2.0')));
       await sleep(2800);
-      if (!HAND_ONLY) await shot(`${sw.file}-deo-lung.png`);
+      if (!HAND_ONLY) await shot(`${sw.file}-${GENDER}-deo-lung.png`);
       // Cầm tay: dựng quái, ra chiêu (kiếm vào tay), chụp ở tư thế đứng chờ ngay sau.
       await gm(page, 'spawn mon_soi_xam 1', 900);
       await cam(Number(opt('--hand-yaw', '4.4')), Number(opt('--pitch', '0.12')), Number(opt('--dist', '2.0')) + 0.4);
       await page.evaluate(() => (window as unknown as G).__game!.useSkill(0));
       await sleep(1500);
-      await shot(`${sw.file}-cam-tay.png`);
+      await shot(`${sw.file}-${GENDER}-cam-tay.png`);
       // Đang chém.
       if (HAND_ONLY) {
         await gm(page, 'killall', 900);
@@ -124,7 +124,7 @@ async function main(): Promise<void> {
       for (let k = 0; k < 8; k++) {
         await page.evaluate(() => (window as unknown as G).__game!.useSkill(Math.random() < 0.5 ? 0 : 1));
         await sleep(160);
-        if (k === 3) await shot(`${sw.file}-chem.png`);
+        if (k === 3) await shot(`${sw.file}-${GENDER}-chem.png`);
       }
       await gm(page, 'killall', 900);
       await sleep(1200);

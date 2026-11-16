@@ -504,3 +504,4 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 | `itm_kim_cuong_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_kim_cuong_dan_3.png` |
 | `itm_bao_huyet_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_bao_huyet_dan_3.png` |
 | `itm_manh_luc_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_manh_luc_dan_3.png` |
+| `itm_tinh_khuyet_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_tinh_khuyet_kiem.png` |

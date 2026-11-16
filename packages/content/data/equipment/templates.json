@@ -25,5 +25,6 @@
   {"id":"itm_phu_van_ngoa","kind":"boots","stack":1,"price":0,"sell":2512,"rarity":2,"icon":"itm_phu_van_ngoa","iconFallback":"🥾","reqLevel":20,"tier":3,"stats":{"def":50,"hp":203}},
   {"id":"itm_ngan_ha_dai_lung","kind":"belt","stack":1,"price":0,"sell":2872,"rarity":2,"icon":"itm_ngan_ha_dai_lung","iconFallback":"🎗️","reqLevel":20,"tier":3,"stats":{"hp":406,"mp":188}},
   {"id":"itm_kinh_tam_ngoc_boi","kind":"jade","stack":1,"price":0,"sell":2512,"rarity":2,"icon":"itm_kinh_tam_ngoc_boi","iconFallback":"📿","reqLevel":20,"tier":3,"stats":{"mp":297,"hp":109}},
-  {"id":"itm_luu_quang_gioi_chi","kind":"ring","stack":1,"price":0,"sell":2154,"rarity":2,"icon":"itm_luu_quang_gioi_chi","iconFallback":"💍","reqLevel":20,"tier":3,"stats":{"atk":38,"hp":328}}
+  {"id":"itm_luu_quang_gioi_chi","kind":"ring","stack":1,"price":0,"sell":2154,"rarity":2,"icon":"itm_luu_quang_gioi_chi","iconFallback":"💍","reqLevel":20,"tier":3,"stats":{"atk":38,"hp":328}},
+  {"id":"itm_tinh_khuyet_kiem","kind":"weapon","stack":1,"price":0,"sell":5367,"rarity":3,"icon":"itm_tinh_khuyet_kiem","iconFallback":"🗡️","reqLevel":22,"tier":3,"model":"prop_kiem_tinh_khuyet","stats":{"atk":137}}
 ]

@@ -6,6 +6,7 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
 
 ## Dữ liệu
 
+- **Hai kiếm bậc 3** dùng hai model Tripo đã nhập ở #119: `itm_kinh_quang_kiem` Kính Quang Kiếm (`prop_kiem_kinh_quang`, cấp 20, Linh phẩm) và `itm_tinh_khuyet_kiem` Tinh Khuyết Kiếm (`prop_kiem_tinh_khuyet`, cấp 22, Huyền phẩm, công +12% so Kính Quang; mẫu rơi từ ilvl 22). Kiếm Tinh Khuyết bậc 4 ở thiết kế 7.1 vẫn thuộc E4 (khi đó đổi id/tên).
 - **7 mẫu thường bậc 3** (`templates.json`, `reqLevel` 20, rarity Linh): Kính Quang Kiếm (`model: prop_kiem_kinh_quang`, kiếm Tripo sẵn có từ #119), Kính Vân Đạo Bào, Lưu Ly Hộ Uyển, Phù Vân Ngoa, Ngân Hà Đai Lưng, Kính Tâm Ngọc Bội, Lưu Quang Giới Chỉ. `stats` = bậc 2 × 2,5/1,6; `sell` = bậc 2 × 14.000/9.000 để `enhanceCost` ra giá cơ sở 14.000 cho kiếm (mục 7.3).
 - **3 bộ** (`sets.json`, `setItems.json`; mỗi bộ 4 món, `reqLevel` 20, rarity Huyền, `src: forge`):
 
@@ -31,7 +32,7 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
 
 ## Icon (Codex, không tốn credit)
 
-27 icon mới (`tools/codex-assets/icons.json`, vẽ bằng `node tools/codex-assets/gen.mjs icons <id…>`; PNG nguồn ở `../dtl-asset-source/2d/icons/`), thêm hàng LICENSES, `pnpm icons:build` rồi `pnpm icons:check`: **169/169 có tranh, 0 emoji dự phòng**. Ảnh: `icons-grid.jpg`.
+28 icon mới (`tools/codex-assets/icons.json`, vẽ bằng `node tools/codex-assets/gen.mjs icons <id…>`; PNG nguồn ở `../dtl-asset-source/2d/icons/`), thêm hàng LICENSES, `pnpm icons:build` rồi `pnpm icons:check`: **170/170 có tranh, 0 emoji dự phòng**. Ảnh: `icons-grid.jpg`.
 
 ## Kinh tế và cân bằng (`pnpm sim:progress`)
 
@@ -55,13 +56,12 @@ Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, ch
 
 ## Ảnh
 
-- UI: `ui-promote-truoc.jpg` (bảng Thăng Bậc, bốn món Liệt Mạch → Kính Quang, phí 2.960), `ui-promote-tooltip-bac2.jpg`, `ui-promote-sau.jpg`, `ui-promote-tooltip-bac3.jpg` (tooltip đạo bào bậc 3 + dòng bộ 1/4 + hiệu ứng 4 món), `ui-forge-bac3.jpg` (tab chế tạo, ba bộ mới), `ui-luyen-dan-bac3.jpg`, `ui-tooltip-so-sanh-bac3.jpg` (tooltip so sánh với đồ bậc 2 đang mặc: chỉ số tăng xanh, mất đỏ, **Lực chiến +116**), `icons-grid.jpg` (27 icon mới).
+- UI: `ui-promote-truoc.jpg` (bảng Thăng Bậc, bốn món Liệt Mạch → Kính Quang, phí 2.960), `ui-promote-tooltip-bac2.jpg`, `ui-promote-sau.jpg`, `ui-promote-tooltip-bac3.jpg` (tooltip đạo bào bậc 3 + dòng bộ 1/4 + hiệu ứng 4 món), `ui-forge-bac3.jpg` (tab chế tạo, ba bộ mới), `ui-luyen-dan-bac3.jpg`, `ui-tooltip-so-sanh-bac3.jpg` (tooltip so sánh với đồ bậc 2 đang mặc: chỉ số tăng xanh, mất đỏ, **Lực chiến +116**), `icons-grid.jpg` (28 icon mới).
 - Nhân vật mặc 3 bộ mới, nam và nữ: `set_<bộ>-<m|f>-<truoc|sau|nghieng|chem>.jpg` (cũng chụp lúc chạy và lúc bay: tệp `-chay|-bay` được bỏ khỏi repo cho nhẹ; chạy lại `pnpm shots:sets --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20` để có).
-- Kiếm Kính Quang cầm tay / đeo lưng / chém: `kiem-kinh_quang-*.jpg` (model nữ; lần chụp nam bị ghi đè cùng tên tệp: `--gender m` ra cùng bộ tên).
+- Hai kiếm bậc 3 (nam và nữ × đeo lưng / cầm tay / chém): `kiem-kinh_quang-<m|f>-<deo-lung|cam-tay|chem>.jpg`, `kiem-tinh_khuyet-...` (chụp bằng `shots:kiem --model prop_kiem_<id> --gender m|f`, tên tệp nay có hậu tố giới tính).
 
 ## Việc để lại
 
-- Tên tệp ảnh kiếm của `shots:kiem` không có hậu tố giới tính (nam và nữ ghi đè nhau): sửa khi cần.
 - Thanh Tâm Đan, Thiên Lôi Hộ Đan, Hồi Mạch Đan bậc 3, linh ngọc cấp 4–6, Anh Ngọc Kính, Phá Ấn Phù/Định Thần Phù: chờ cơ chế của E3-L/M/E4.
 - Nguyên liệu bậc 3 chỉ rơi khi E3-A thêm quái bản đồ 3 và bảng rơi của chúng; trước đó chỉ lấy được bằng GM (`give`).
 - Gắn `item: "itm_duong_anh_dan"` vào `tribulations.json` (`nguyen_anh`) và bật cờ: E3-L.

@@ -991,5 +991,7 @@
   "item.itm_manh_luc_dan_3.desc": "Tăng công kích 18% trong 10 phút. Phẩm càng cao, hiệu lực càng lớn.",
   "set.fx.nghich_kiem": "Nghịch Kiếm Chuyển Phong hoàn {v}% hồi chiêu nếu hạ được mục tiêu.",
   "set.fx.dich_son": "Dịch Sơn Xung làm choáng thêm {v} giây.",
-  "set.fx.ngung_dan": "Ngưng Đan Hộ Thế mạnh thêm {v}%."
+  "set.fx.ngung_dan": "Ngưng Đan Hộ Thế mạnh thêm {v}%.",
+  "item.itm_tinh_khuyet_kiem.name": "Tinh Khuyết Kiếm",
+  "item.itm_tinh_khuyet_kiem.desc": "Pháp kiếm bậc ba hiếm hơn Kính Quang Kiếm, thân kiếm khắc vết khuyết như vầng trăng, ánh bạc lạnh."
 }
