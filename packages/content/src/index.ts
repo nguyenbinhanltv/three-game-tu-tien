@@ -190,7 +190,9 @@ export function itemName(id: string, plus?: number): string {
 export const SWORD_MODEL_DEFAULT = 'prop_kiem_thanh_phong';
 /** Model theo phẩm (`rarity` 0..4) cho vũ khí chưa khai báo `model`: gần nhất theo phẩm. */
 const SWORD_MODEL_BY_RARITY = ['prop_kiem_thiet', 'prop_kiem_thanh_phong', 'prop_kiem_han_quang', 'prop_kiem_han_giao', 'prop_kiem_tram_ta'];
-export const SWORD_MODELS = [...new Set([SWORD_MODEL_DEFAULT, ...SWORD_MODEL_BY_RARITY])];
+/** Kiếm bậc mới (E2: Đoạn Mạch 16–19, Vân Hải 20–23, Cổ Thành 24–27): đã nhập model, chưa gắn vật phẩm (E2-F nối `model` vào items.json). */
+export const SWORD_MODELS_TIER = ['prop_kiem_liet_mach', 'prop_kiem_kinh_quang', 'prop_kiem_tinh_khuyet'];
+export const SWORD_MODELS = [...new Set([SWORD_MODEL_DEFAULT, ...SWORD_MODEL_BY_RARITY, ...SWORD_MODELS_TIER])];
 
 /** Asset model 3D của kiếm đang cầm: `model` của món nếu có, không thì theo phẩm; id không phải vũ khí → kiếm mặc định. */
 export function swordModelOf(itemId: string | undefined): string {
