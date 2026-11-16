@@ -24,11 +24,11 @@ function runDrop(inv: readonly InvSlot[], from: number, target: Parameters<typeo
 }
 
 /** Ghi nhận thao tác thả từ DataTransfer/state kéo (dùng chung cho ô và số trang). */
-export function dropFromDrag(target: Parameters<typeof planDrop>[2], onSplit: (s: { slot: number; to: number; max: number }) => void): void {
+export function dropFromDrag(target: Parameters<typeof planDrop>[2], onSplit: (s: { slot: number; to: number; max: number }) => void, shift = false): void {
   const d = useBagDrag.getState().drag;
   endBagDrag();
   if (!d) return;
-  runDrop(useUI.getState().inv, d.slot, target, d.split, onSplit);
+  runDrop(useUI.getState().inv, d.slot, target, d.split || shift, onSplit);
 }
 
 function LockIcon() {
@@ -69,6 +69,8 @@ function BagCell({ slot, item, dim, selected, isNew, onSelect, onSplit }: { slot
     <div
       className="bag-cell"
       data-slot={slot}
+      data-item={item?.id}
+      data-n={item?.n}
       data-dim={dim ? '1' : undefined}
       data-over={over ? '1' : undefined}
       data-locked={item?.lk ? '1' : undefined}
@@ -87,7 +89,7 @@ function BagCell({ slot, item, dim, selected, isNew, onSelect, onSplit }: { slot
       onDrop={(e) => {
         e.preventDefault();
         setOver(false);
-        dropFromDrag({ kind: 'cell', slot }, onSplit);
+        dropFromDrag({ kind: 'cell', slot }, onSplit, e.shiftKey);
       }}
       onClick={onClick}
       onContextMenu={onContext}
@@ -122,7 +124,7 @@ function PageButton({ page, active, count, onPick, onSplit }: { page: number; ac
       onDrop={(e) => {
         e.preventDefault();
         setOver(false);
-        dropFromDrag({ kind: 'page', page }, onSplit);
+        dropFromDrag({ kind: 'page', page }, onSplit, e.shiftKey);
       }}
     >
       {page + 1}

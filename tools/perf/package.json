@@ -16,6 +16,7 @@
     "shots:party": "tsx src/shots-party.ts",
     "shots:p38": "tsx src/shots-p38.ts",
     "shots:e2f": "tsx src/shots-e2f.ts",
+    "shots:tdb": "tsx src/shots-tdb.ts",
     "shots:m5": "tsx src/shots-m5.ts",
     "shots:sets": "tsx src/shots-sets.ts",
     "shots:k1": "tsx src/shots-k1.ts",

@@ -79,8 +79,9 @@ export function pairLayout(vp: Viewport): { left: { x: number; y: number }; righ
   const x0 = Math.max(WIN_MARGIN / 2, (vp.vw - total) / 2);
   const hl = Math.min(WIN_HEIGHT[PAIR_LEFT], maxHeight(vp));
   const hr = Math.min(WIN_HEIGHT[PAIR_RIGHT], maxHeight(vp));
-  const y = (h: number): number => Math.max(WIN_MARGIN, (vp.vh - BOTTOM_RESERVE - h) / 2);
-  return { left: { x: Math.round(x0), y: Math.round(y(hl)) }, right: { x: Math.round(x0 + wl + WIN_GAP), y: Math.round(y(hr)) } };
+  // Cùng một mép trên cho cả hai bảng (canh theo bảng cao hơn).
+  const y = Math.round(Math.max(WIN_MARGIN, (vp.vh - BOTTOM_RESERVE - Math.max(hl, hr)) / 2));
+  return { left: { x: Math.round(x0), y }, right: { x: Math.round(x0 + wl + WIN_GAP), y } };
 }
 
 export interface OpenResult {
