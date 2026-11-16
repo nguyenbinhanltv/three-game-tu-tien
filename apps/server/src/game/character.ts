@@ -146,7 +146,7 @@ export class InvDraft {
     const def = ITEM.get(id);
     if (!def || !isEquipSlot(def.kind) || !Number.isInteger(q) || q < 0 || q >= QUALITY_COUNT) return false;
     const seed = randomInt(0x7fffffff);
-    if (!this.addInstance(id, rollItemInstance(ITEM_SYS, def.kind, ilvl, q, seededRng(seed)))) return false;
+    if (!this.addInstance(id, rollItemInstance(ITEM_SYS, def.kind, ilvl, q, seededRng(seed), def.tier))) return false;
     this.rollSeeds.push(`${seed}:q${q}:il${ilvl}`);
     return true;
   }

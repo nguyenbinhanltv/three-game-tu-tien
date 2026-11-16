@@ -3,7 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { NPCS } from '@dtl/content';
+import { NPCS as ALL_NPCS } from '@dtl/content';
+
+/** NPC dựng ở Vân Lam. NPC của level khác (Hứa lão ở Đoạn Mạch) có model riêng do E2-H nhập. */
+const NPCS = ALL_NPCS.filter((n) => (n.level ?? 'van_lam') === 'van_lam');
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
 import { Humanoid } from '../models';
 import { NPC_SKINS, NpcSkins } from './npcSkins';

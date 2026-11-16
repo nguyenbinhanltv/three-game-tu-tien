@@ -19,6 +19,29 @@ export const QUALITY_MUL: readonly number[] = [1, 1.15, 1.3, 1.5, 1.75];
 export const BIND_QUALITY: Quality = 3;
 /** Số lỗ khảm ngọc theo phẩm (khảm ở `upgrade.ts`). */
 export const SOCKETS_BY_QUALITY: readonly number[] = [0, 0, 1, 2, 2];
+
+// ---------- bậc trang bị (E2-F) ----------
+
+/** Bậc trang bị gắn với chương: 1 Vân Lam, 2 Đoạn Mạch, 3 Vân Hải, 4 Thiên Khuyết (`docs/EXPANSION_DESIGN.md` 7.1). */
+export const MAX_TIER = 4;
+/** Hệ số nhân dòng chính theo bậc (khớp `REALM_MUL` để phần trang bị trong sức mạnh tổng giữ ~30%). Chỉ số 0 không dùng. */
+export const TIER_MUL: readonly number[] = [1, 1, 1.6, 2.5, 3.8];
+/** Bậc cao nhất đang chơi được; bậc trên có dữ liệu nhưng bị khóa (Thăng Bậc từ chối). */
+export const TIER_OPEN = 2;
+/** Số lỗ khảm tối đa của bậc ≥ 3. */
+export const MAX_SOCKETS = 3;
+
+export function clampTier(t: unknown): number {
+  const n = typeof t === 'number' && Number.isFinite(t) ? Math.floor(t) : 1;
+  return Math.max(1, Math.min(MAX_TIER, n));
+}
+
+/** Số lỗ khảm: theo phẩm, mỗi bậc trên 1 thêm một lỗ cho đồ từ Huyền phẩm (tối đa `MAX_SOCKETS`). */
+export function socketsFor(q: Quality, tier = 1): number {
+  const base = SOCKETS_BY_QUALITY[q] ?? 0;
+  if (base <= 0) return 0;
+  return Math.min(MAX_SOCKETS, base + clampTier(tier) - 1);
+}
 /** Độ lệch ngẫu nhiên của dòng chính quanh ngân sách: ±5%. */
 export const MAIN_ROLL_SPREAD = 0.05;
 /** Giá trị dòng phụ tăng theo ilvl tới mức này, trên đó giữ nguyên. */
@@ -219,12 +242,12 @@ export function affixKey(a: AffixRoll): string {
 }
 
 /** Dòng chính của một món theo ngân sách; `rollR` ∈ [0,1) quyết định độ lệch ±5%. */
-export function mainLine(data: ItemSysData, slot: EquipSlot, ilvl: number, q: Quality, rollR: number): Partial<Record<MainStat, number>> {
+export function mainLine(data: ItemSysData, slot: EquipSlot, ilvl: number, q: Quality, rollR: number, tier = 1): Partial<Record<MainStat, number>> {
   const sd = slotDef(data, slot);
   const qd = data.qualities[q];
   const out: Partial<Record<MainStat, number>> = {};
   if (sd.weight <= 0) return out;
-  const pts = budget(ilvl, q, sd.weight) * (1 - qd.affixFrac) * (1 + (rollR * 2 - 1) * MAIN_ROLL_SPREAD);
+  const pts = budget(ilvl, q, sd.weight) * (TIER_MUL[clampTier(tier)] ?? 1) * (1 - qd.affixFrac) * (1 + (rollR * 2 - 1) * MAIN_ROLL_SPREAD);
   for (const st of MAIN_STATS) {
     const share = sd.main[st];
     if (share) out[st] = Math.max(1, Math.round(pts * share * STAT_PER_POINT[st]));
@@ -236,13 +259,13 @@ export function mainLine(data: ItemSysData, slot: EquipSlot, ilvl: number, q: Qu
  * Roll một món trang bị mới. Server gọi với `rng` có seed (ghi seed vào ledger để truy vết).
  * Ô không có chỉ số (pháp bảo phụ) không có dòng phụ.
  */
-export function rollItemInstance(data: ItemSysData, slot: EquipSlot, ilvl: number, q: Quality, rng: () => number): ItemInst {
+export function rollItemInstance(data: ItemSysData, slot: EquipSlot, ilvl: number, q: Quality, rng: () => number, tier = 1): ItemInst {
   const sd = slotDef(data, slot);
   const qd = data.qualities[q];
   const li = clamp(Math.round(ilvl), 1, MAX_ILVL);
-  const main = mainLine(data, slot, li, q, rng());
+  const main = mainLine(data, slot, li, q, rng(), tier);
   const affixes = sd.weight > 0 ? rollAffixes(data, slot, qd.affixes, li, q, rng) : [];
-  return { q, ilvl: li, main, affixes, gems: new Array<string>(sd.weight > 0 ? (SOCKETS_BY_QUALITY[q] ?? 0) : 0).fill(''), bound: false };
+  return { q, ilvl: li, main, affixes, gems: new Array<string>(sd.weight > 0 ? socketsFor(q, tier) : 0).fill(''), bound: false };
 }
 
 /**
@@ -260,7 +283,7 @@ export function parseInst(data: ItemSysData, slot: EquipSlot, raw: unknown): Ite
   const qd = data.qualities[q];
   if (!sd || !qd) return null;
   // Chỉ chặn giá trị vô lý tuyệt đối (không so với công thức hiện hành) để đổi cân bằng sau này không làm bác đồ đã rơi.
-  const cap = budget(MAX_ILVL, (QUALITY_COUNT - 1) as Quality, Math.max(...data.slots.map((x) => x.weight))) * (1 + MAIN_ROLL_SPREAD);
+  const cap = budget(MAX_ILVL, (QUALITY_COUNT - 1) as Quality, Math.max(...data.slots.map((x) => x.weight))) * TIER_MUL[MAX_TIER] * (1 + MAIN_ROLL_SPREAD);
   // Hỏng từng phần thì bỏ đúng phần đó, giữ phẩm, ilvl, ràng buộc và phần còn lại (không đặt lại cả món).
   const main: Partial<Record<MainStat, number>> = {};
   if (sd.weight > 0) {
@@ -285,7 +308,7 @@ export function parseInst(data: ItemSysData, slot: EquipSlot, raw: unknown): Ite
     seen.add(k);
     affixes.push(a.p !== undefined ? { id: a.id, p: a.p, v: a.v } : { id: a.id, v: a.v });
   }
-  const gems = Array.isArray(r.gems) ? r.gems.filter((g): g is string => typeof g === 'string').slice(0, 2) : [];
+  const gems = Array.isArray(r.gems) ? r.gems.filter((g): g is string => typeof g === 'string').slice(0, MAX_SOCKETS) : [];
   return { q, ilvl, main, affixes, gems, bound: !!r.bound };
 }
 

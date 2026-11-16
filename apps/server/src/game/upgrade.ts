@@ -31,6 +31,12 @@ import {
   MAX_ENHANCE,
   parseGem,
   pickQuality,
+  PROMOTE_MAT,
+  PROMOTE_MAT_COUNT,
+  promoteGold,
+  promoteInst,
+  promoteOpen,
+  promotePlus,
   REFINE_ITEM,
   refineCost,
   rollAffixes,
@@ -39,7 +45,7 @@ import {
   seededRng,
   WARD_ITEM,
 } from '@dtl/shared';
-import { ENHANCE_ORE, FORGE_BY_ID, ITEM, ITEM_SYS, NPC, t } from '@dtl/content';
+import { ENHANCE_ORE, FORGE_BY_ID, ITEM, ITEM_SYS, itemTier, NPC, promoteTarget, t } from '@dtl/content';
 import type { InvDraft } from './character';
 import type { PlayerEnt } from './sim';
 
@@ -185,6 +191,7 @@ export class UpgradeSystem {
    *  - 'refine'   { w|i, idx }       tẩy luyện dòng phụ `idx`; các dòng khác khóa
    *  - 'salvage'  { slots: number[] } phân giải các món ở túi thành Thiết Tinh/Linh Trần
    *  - 'forge'    { id }             chế một món của bộ (công thức `forge.json`); phẩm do server roll
+   *  - 'promote'  { w|i }            Thăng Bậc (E2-F): món bậc n → món cùng ô bậc n+1, giữ phẩm/dòng phụ/ngọc
    */
   onUpgrade(p: PlayerEnt, msg: unknown): void {
     const b = this.begin(p, msg);
@@ -202,6 +209,8 @@ export class UpgradeSystem {
         return this.salvage(p, b.m, b.idem);
       case 'forge':
         return this.forge(p, b.m, b.idem);
+      case 'promote':
+        return this.promote(p, b.m, b.idem);
     }
   }
 
@@ -357,6 +366,55 @@ export class UpgradeSystem {
     this.h.fx({ t: 'craft', src: p.sid });
   }
 
+  // ---------- Thăng Bậc (E2-F) ----------
+
+  /**
+   * Thăng Bậc: món bậc n (ở túi hoặc đang mặc) + 20 nguyên liệu bậc n+1 + linh thạch → món đích cùng ô, bậc n+1.
+   * Giữ phẩm, dòng phụ, ngọc đã khảm và ràng buộc; dòng chính roll lại theo bậc mới (seed server, ghi ledger);
+   * cấp cường hóa trừ `PROMOTE_ENHANCE_LOSS`. Client chỉ gửi ô; đích, giá và nguyên liệu do server suy ra.
+   */
+  private promote(p: PlayerEnt, m: Record<string, unknown>, idem: string): void {
+    const ref = parseRef(m as { w?: unknown; i?: unknown });
+    if (!ref) return;
+    const c = p.char;
+    const it0 = getRef(c, ref);
+    const def = it0 ? ITEM.get(it0.id) : undefined;
+    if (!it0 || !def || !isEquipSlot(def.kind) || def.kind === 'artifact' || !isInstance(it0)) return this.h.warn(p, 'sys.upg_bad_target');
+    const from = itemTier(def.id);
+    if (!promoteOpen(from)) return this.h.warn(p, 'sys.promote_locked');
+    const toId = promoteTarget(def.id);
+    const toDef = toId ? ITEM.get(toId) : undefined;
+    if (!toId || !toDef) return this.h.warn(p, 'sys.promote_none');
+    // Đồ đang mặc mà đích đòi cảnh giới cao hơn thì món mặc không hợp lệ: chặn ngay từ đầu.
+    if ((toDef.reqLevel ?? 1) > c.level) return this.h.warn(p, 'sys.equip_level');
+    const to = itemTier(toId);
+    const mat = PROMOTE_MAT[to];
+    const gold = promoteGold(to);
+    if (!mat) return this.h.warn(p, 'sys.promote_locked');
+    if (c.gold < gold) return this.h.warn(p, 'sys.not_enough_gold');
+    const seed = randomInt(0x7fffffff);
+    const slot = def.kind as EquipSlot;
+    const ok = c.tx(`promote:${def.id}->${toId}`, idem, (d) => {
+      const cur = getRef(d, ref);
+      // Món ở ô đó phải đúng món đã đọc (hai lệnh song song: lệnh sau thấy món đã đổi id và bị hủy).
+      if (!cur || cur.id !== it0.id || !cur.inst || cur.n !== 1) return false;
+      if (!d.remove(mat, PROMOTE_MAT_COUNT) || !d.spendGold(gold)) return false;
+      const next: InvItem = { id: toId, n: 1, inst: promoteInst(ITEM_SYS, slot, cur.inst, to, seededRng(seed)) };
+      const plus = promotePlus(cur.plus ?? 0);
+      if (plus > 0) next.plus = plus;
+      putRef(d, ref, next);
+      // Đổi id mẫu: ghi hai dòng ledger (−món cũ, +món mới) để đối soát vật phẩm không lệch.
+      d.bump(cur.id, -1);
+      d.bump(toId, 1);
+      d.rollSeeds.push(`promote:${seed}`);
+      return true;
+    });
+    if (!ok) return this.h.warn(p, 'sys.promote_mats');
+    if ('w' in ref) c.recalc();
+    this.h.sys(p, 'sys.promoted', { item: t(`item.${def.id}.name`), to: t(`item.${toId}.name`) }, 'good');
+    this.h.fx({ t: 'craft', src: p.sid });
+  }
+
   // ---------- chế tạo bộ trang bị (P3-4) ----------
 
   /**
@@ -365,8 +423,9 @@ export class UpgradeSystem {
    */
   private forge(p: PlayerEnt, m: Record<string, unknown>, idem: string): void {
     const rcp = typeof m.id === 'string' ? FORGE_BY_ID.get(m.id) : undefined;
-    if (!rcp || rcp.npc !== m.npc) return;
+    if (!rcp || (rcp.npc !== m.npc && !rcp.alsoAt?.includes(m.npc as string))) return;
     const c = p.char;
+    if (rcp.reqLevel && c.level < rcp.reqLevel) return this.h.warn(p, 'sys.craft_level');
     if (c.gold < rcp.gold) return this.h.warn(p, 'sys.not_enough_gold');
     const seed = randomInt(0x7fffffff);
     const q = pickQuality(rcp.q, seededRng(seed));

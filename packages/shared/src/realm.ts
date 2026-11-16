@@ -63,6 +63,12 @@ export const TRIAL_RADIUS = 45;
 /** Mã tin nhắn chọn đường vượt bình cảnh. */
 export type BottleneckMode = 'trial' | 'pill';
 export const PHA_CANH_PILL = 'itm_pha_canh_dan';
+/** Phá Cảnh Đan bậc hai (E2-F): dùng cho bình cảnh từ Trúc Cơ tầng 17 trở lên. */
+export const PHA_CANH_PILL_2 = 'itm_pha_canh_dan_2';
+/** Đan phá cảnh cần dùng ở bình cảnh tại cấp `level`. */
+export function bottleneckPill(level: number): string {
+  return level >= 17 ? PHA_CANH_PILL_2 : PHA_CANH_PILL;
+}
 
 /**
  * Chỉ số "bóng tâm ma" của người chơi `level` với chỉ số hiện tại (`atk`, `def`, `hp`).
