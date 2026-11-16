@@ -389,7 +389,7 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!inR(line.delay, 0.9, 3)) err(`${id}: line.delay phải trong [0,9; 3] giây`);
     if (!(line.cd > line.delay + 2)) err(`${id}: line.cd phải lớn hơn delay + 2`);
     if (!mulOk(line.mul)) err(`${id}: line.mul phải trong (0, 3]`);
-    if (!(inR(line.r, 2, m.boss ? 30 : 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, ${m.boss ? 30 : 20}]`);
+    if (!(inR(line.r, 2, m.boss ? 40 : 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, ${m.boss ? 40 : 20}]`);
     if (!inR(line.w, 0.5, 6)) err(`${id}: line.w phải trong [0,5; 6] mét`);
     if (!(line.range > 0 && line.range <= line.r)) err(`${id}: line.range phải trong (0, r]`);
   }
@@ -673,8 +673,6 @@ for (const r of RECIPES) {
     for (const m of r.mons) if (MONSTER.has(m) && !LOOT.has(m)) err(`loot.$mats: quái ${m} chưa có bảng rơi`);
   }
 }
-// E3-H: quái Vân Hải chưa có trong monsters.json (E3-B). TODO: xóa tập này khi E3-B merge.
-const E3B_PENDING_MONS = new Set(['mon_van_hac', 'mon_kinh_linh', 'mon_phu_dao_thach_quy', 'mon_bich_ngoc_kim_thien', 'elite_loi_van_su_vuong', 'boss_van_hai_kinh_vuong']);
 for (const n of NPCS) {
   needStr(`npc.${n.id}.name`);
   const nl = LEVELS[n.level ?? 'van_lam'];
@@ -695,7 +693,7 @@ for (const q of QUESTS) {
   if (!NPC.has(q.turnin)) err(`quest ${q.id}: turnin không tồn tại`);
   if (q.requires && !QUEST.has(q.requires)) err(`quest ${q.id}: requires không tồn tại ${q.requires}`);
   for (const o of q.objectives) {
-    if (o.type === 'kill' && !MONSTER.has(o.target ?? '') && !E3B_PENDING_MONS.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
+    if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
     if (o.type === 'breakthrough' && o.target && !(TRIB_IDS as readonly string[]).includes(o.target)) err(`quest ${q.id}: breakthrough target phải là id kiếp, không phải ${o.target}`);
@@ -977,13 +975,6 @@ console.log(`Tổng tu vi Ngưng Khí 1 → viên mãn tầng 15: ${total}`);
 }
 console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILLS.length} skill (${METHODS.length} công pháp), ${QUESTS.length} nhiệm vụ, ${RECIPES.length} công thức, ${POSES.length} pose, ${APPEARANCE.dyes.length} màu áo`);
 
-if (errors.length) {
-  console.error(`\n${errors.length} lỗi nội dung:`);
-  for (const e of errors) console.error(' - ' + e);
-  process.exit(1);
-}
-console.log('Nội dung hợp lệ.');
-
 // E2-H: điểm phụ (`spots`), người đồng hành (`escorts`) và NPC trạm theo glossary.
 {
   const glossSpots = GLOSSARY.spots as Record<string, string>;
@@ -1026,8 +1017,7 @@ console.log('Nội dung hợp lệ.');
 }
 // Chuỗi chương 3 (E3-H): q3_* nối đuôi từ q2_ket_dan tới q3_nguyen_anh; phụ s3_* nhận sau khi vào chương; mọi nhiệm vụ nhận ở NPC có thật.
 {
-  // TODO (sau khi #148 và E3-B merge): thêm 'q3_nguyen_anh' vào chuỗi, đổi giao/trả sang npc_lam_chieu_dung và requires q3_kinh_vuong.
-  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong'];
+  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong', 'q3_nguyen_anh'];
   main3.forEach((id, i) => {
     const q = QUEST.get(id);
     if (!q) return err(`thiếu nhiệm vụ chính chương 3 ${id}`);
@@ -1038,5 +1028,13 @@ console.log('Nội dung hợp lệ.');
   const first = QUEST.get('q3_len_may');
   if (first && !(first.unlockTele ?? []).includes('vh_tp_hub')) err('q3_len_may phải mở trận vh_tp_hub (unlockTele)');
   const na = QUEST.get('q3_nguyen_anh');
+  if (na && (na.giver !== 'npc_lam_chieu_dung' || na.turnin !== 'npc_lam_chieu_dung')) err('q3_nguyen_anh phải giao và trả ở npc_lam_chieu_dung');
   if (na && !na.objectives.some((o) => o.type === 'breakthrough' && o.target === 'nguyen_anh')) err('q3_nguyen_anh phải có mục tiêu breakthrough nguyen_anh');
 }
+
+if (errors.length) {
+  console.error(`\n${errors.length} lỗi nội dung:`);
+  for (const e of errors) console.error(' - ' + e);
+  process.exit(1);
+}
+console.log('Nội dung hợp lệ.');

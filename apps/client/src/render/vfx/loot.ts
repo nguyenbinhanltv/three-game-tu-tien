@@ -116,3 +116,11 @@ export function beamNodes(u: FxUniforms): { color: unknown; opacity: unknown } {
   const opacity = u.opacity.mul(fade).mul(rise).mul(rim).mul(streak.mul(0.5).add(0.5));
   return { color, opacity };
 }
+
+/**
+ * Hệ số mờ của cột sáng/vòng khi có `n` món rơi cùng lúc: 1 món giữ nguyên, càng đông càng mờ (∝ 1/√n) nhưng không dưới 0,3,
+ * để hạ nhiều quái một lượt không thành mảng trắng cháy sáng (art bible mục 5, 8).
+ */
+export function lootCrowd(n: number): number {
+  return n <= 1 ? 1 : Math.max(0.3, 1 / Math.sqrt(n));
+}

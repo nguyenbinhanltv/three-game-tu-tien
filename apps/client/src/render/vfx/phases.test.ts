@@ -139,3 +139,19 @@ describe('mưa kiếm gần camera (G5)', () => {
     expect(rainNearFade(4)).toBeLessThan(1);
   });
 });
+
+import { hazardStack } from './phases';
+describe('vùng báo trước chồng nhau (E3-B)', () => {
+  const h = (x: number, z: number, r = 4) => ({ x, z, r });
+  it('vùng đơn lẻ giữ nguyên; càng nhiều vùng cùng chỗ càng mờ, từ vùng thứ 3 bỏ hiệu ứng nổ', () => {
+    expect(hazardStack([], h(0, 0))).toEqual({ dim: 1, fx: true });
+    expect(hazardStack([h(50, 50)], h(0, 0))).toEqual({ dim: 1, fx: true });
+    const two = hazardStack([h(0, 0)], h(1, 0));
+    expect(two.dim).toBeCloseTo(1 / Math.sqrt(2));
+    expect(two.fx).toBe(true);
+    const four = hazardStack([h(0, 0), h(0, 0), h(1, 0), h(0, 1)], h(0, 0));
+    expect(four.dim).toBeLessThan(0.5);
+    expect(four.dim).toBeGreaterThanOrEqual(0.35);
+    expect(four.fx).toBe(false);
+  });
+});

@@ -136,3 +136,13 @@ describe('flyPoint', () => {
     expect(o.y).toBeLessThan(550);
   });
 });
+
+import { lootCrowd } from './loot';
+describe('lootCrowd (nhiều món rơi cùng lúc, E3-B)', () => {
+  it('1 món giữ nguyên, đông thì mờ dần, không dưới 0,3', () => {
+    expect(lootCrowd(0)).toBe(1);
+    expect(lootCrowd(1)).toBe(1);
+    expect(lootCrowd(4)).toBeCloseTo(0.5);
+    expect(lootCrowd(100)).toBe(0.3);
+  });
+});
