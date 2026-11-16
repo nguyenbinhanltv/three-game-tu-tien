@@ -28,8 +28,9 @@ export function zoneArtId(x: number, z: number): string {
 let last = '';
 /** Gọi trước khi đổi level: màn tải của lần chuyển này hiện ngay tranh của level đích. */
 export function rememberLevel(id: string): void {
-  const art = LEVEL_ART[id];
-  if (!art) return;
+  // Level không có tranh riêng thì về tranh mặc định (Kiếm Trủng theo biome), không giữ tranh của level trước;
+  // `last` cập nhật theo để `rememberZone` ghi lại đúng vùng khi người chơi đã vào thế giới.
+  const art = LEVEL_ART[id] ?? (id === 'kiem_trung' ? 'kiem_trung' : DEFAULT_ZONE);
   last = art;
   try {
     localStorage.setItem(KEY, art);
