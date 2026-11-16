@@ -200,6 +200,8 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `set_dia_long_ho_giap_nu` | Tripo web app (image→3D H3.1, 6 mảnh rời) + Codex (concept #147); gộp bằng tools/blender/outfit_build.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `set_phuc_mach_dan_bao_nam` | Tripo web app (image→3D H3.1, 6 mảnh rời) + Codex (concept #147); gộp bằng tools/blender/outfit_build.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `set_phuc_mach_dan_bao_nu` | Tripo web app (image→3D H3.1, 6 mảnh rời) + Codex (concept #147); gộp bằng tools/blender/outfit_build.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `set_than_tang_dan_bao_nam` | Tripo web app (image→3D H3.1, 6 mảnh rời; ủng không texture dùng vật liệu thủ tục) + Codex (concept P3 #154); gộp bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | web app, không có task id; xem meta.json |
+| `set_than_tang_dan_bao_nu` | Tripo web app (image→3D H3.1, 6 mảnh rời; ủng không texture dùng vật liệu thủ tục) + Codex (concept P3 #154); gộp bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | web app, không có task id; xem meta.json |
 | `set_kinh_quang_kiem_y` | Tripo web app (image→3D H3.1) + Codex (concept); mẫu trưng bày, không thay áo nhân vật | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `set_tinh_khuyet_kiem_bao` | Tripo web app (image→3D H3.1) + Codex (concept); mẫu trưng bày, không thay áo nhân vật | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `prop_phu_dao_dinh` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
