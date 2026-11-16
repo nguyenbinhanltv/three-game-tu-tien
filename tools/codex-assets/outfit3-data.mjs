@@ -220,7 +220,7 @@ export const SWORD = {
   items: {
     cuoi: {
       name: 'Dạng cuối +10',
-      look: 'the final awakened form of a mirror sword: a long slender double-edged blade (about 1.15 times longer than a normal sword) of mirror-polished silver whose flat faces reflect like a mirror, razor edges with a thin cold translucent pale-blue rim glow, a shallow central fuller, a widened crossguard swept upward like a pair of thin wing-shaped feathered plates in dark aged silver-grey metal with engraved cloud-wave lines and a round blue-gem mirror eye at the center, a pale leather-wrapped grip with silver rings, a faceted silver pommel',
+      look: 'the final awakened form of a mirror sword: a SINGLE long slender double-edged blade (about 1.15 times longer than a normal sword), ONE blade tip only, the blade exists ONLY ABOVE the crossguard; below the crossguard there is ONLY a short pale leather-wrapped grip that ends in a faceted silver pommel at the very bottom (NO blade, NO spike, NO second blade below the grip, NOT a double-ended sword). The blade is of mirror-polished silver whose flat faces reflect like a mirror, razor edges with a thin cold translucent pale-blue rim glow, a shallow central fuller, a widened crossguard swept upward like a pair of thin wing-shaped feathered plates in dark aged silver-grey metal with engraved cloud-wave lines and a round blue-gem mirror eye at the center, a short white-wrapped grip with silver rings ending in the pommel, a faceted silver pommel at the bottom end, a white-silver jade-bead tassel hanging from the guard',
       tris: '4000',
       bones: 'prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng',
       spring: 'Không',

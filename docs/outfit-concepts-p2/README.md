@@ -215,7 +215,7 @@ Lưu vào: `D:\METAGRIT\dtl-asset-source\prop\prop_kiem_kinh_quang\tripo\`
 | Dạng cuối +10 | `outfit_kiem_kinh_quang_cuoi_v01_front.png` | **HD Model** | ~4.000 | `raw_cuoi_v01.glb` |
 | Vỏ kiếm | `outfit_kiem_kinh_quang_vo_v01_front.png` | Smart Mesh | ~1.500 | `raw_vo_v01.glb` |
 
-Lưu ý ảnh `_front` của dạng cuối: phần nhọn dưới chuôi là đầu chuôi (pommel), không phải lưỡi thứ hai; nếu Tripo dựng thành lưỡi hai đầu thì dựng lại. Kiểm tra riêng: lưỡi thẳng, có độ dày thật, mũi nhọn; chắn hình cánh dày vừa phải; chuôi tròn đều; vỏ kín và vừa dài với lưỡi. Dạng gốc dùng lại model #119, không dựng.
+Kiểm tra riêng: lưỡi thẳng, có độ dày thật, mũi nhọn; chắn hình cánh dày vừa phải; chuôi tròn đều; vỏ kín và vừa dài với lưỡi. Dạng gốc dùng lại model #119, không dựng.
 
 Prompt tiếng Anh tùy chọn và spec xương từng mảnh: [img/prompts.md](img/prompts.md).
 
