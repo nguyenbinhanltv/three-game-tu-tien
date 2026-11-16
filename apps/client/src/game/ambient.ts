@@ -47,6 +47,13 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
     r.mote = 6;
     return r;
   }
+  // Vân Hải (E3-H): không dùng tỉ lệ hạt của Vân Lam (sương/lá/phấn hoa theo toạ độ Vân Lam). Mảng sương `mist` là billboard 3–5 m, trên đảo hiện
+  // thành tấm phẳng mờ lơ lửng cạnh nhân vật; trên mây chỉ giữ bụi sáng và chút linh khí ngọc.
+  if (level === 'van_hai') {
+    r.mote = 8;
+    r.jade = 2;
+    return r;
+  }
   // Phục Mạch Quật (E2-C): trong hang không có tuyết hay bụi nắng; chỉ vài đốm lửa ấm bay lên và bụi đá mịn rơi thưa.
   // Kính Nguyệt Cung (E3-M): sảnh gương dưới trăng lạnh; bụi bạc lơ lửng và vài đốm ngọc, không tuyết, không lá.
   if (level === 'kinh_nguyet') {
