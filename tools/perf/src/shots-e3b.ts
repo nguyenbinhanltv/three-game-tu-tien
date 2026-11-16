@@ -34,6 +34,8 @@ interface Spec {
   shots?: number;
   /** Quái chỉ bắn đạn (không có vạch báo): chờ ngần này ms rồi chụp. */
   wait?: number;
+  /** Số con gọi cùng lúc (mặc định 1): thử hạ nhiều con một lượt (VFX chết/rơi đồ cộng dồn). */
+  n?: number;
   /** Điểm đặt tên (places.json) để đứng trước khi gọi quái. */
   at: string;
 }
@@ -45,6 +47,7 @@ const SPECS: Spec[] = [
   { mon: 'elite_van_hac_vuong', at: 'vh_kinh_ngu', lv: 23, dist: 14, pitch: 0.3, yaw: Math.PI / 2, stand: true, wait: 3000 },
   { mon: 'elite_kinh_dien_ma_quan', at: 'vh_kinh_ho', lv: 22, dist: 8, pitch: 0.4, stand: true },
   { mon: 'elite_loi_van_su_vuong', at: 'vh_loi_van', lv: 23, dist: 9, pitch: 0.4, stand: true },
+  { mon: 'elite_loi_van_su_vuong', n: 4, at: 'vh_loi_van', lv: 23, dist: 9, pitch: 0.4, stand: true, wait: 4000 },
   { mon: 'boss_van_hai_kinh_vuong', at: 'vh_kinh_ngu', lv: 23, dist: 20, pitch: 0.28, yaw: Math.PI / 2, stand: true, shots: 6 },
   { mon: 'boss_van_hai_kinh_vuong', at: 'vh_kinh_ngu', lv: 23, dist: 20, pitch: 0.28, yaw: Math.PI / 2, stand: true, after: ['hurt 99'], shots: 6, flag: 16 },
   { mon: 'boss_van_hai_kinh_vuong', at: 'vh_kinh_ngu', lv: 23, dist: 22, pitch: 0.28, yaw: Math.PI / 2, stand: true, after: ['hurt 45'], shots: 6 },
@@ -71,7 +74,7 @@ async function main(): Promise<void> {
     const name = `E3B${String(Date.now() % 10000)}`;
     page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
     page.on('console', (m) => m.type() === 'error' && errors.push(m.text().slice(0, 300)));
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}&quiet=1${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}&quiet=1${process.env.EXTRA_QUERY ?? ""}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
     await page.waitForFunction(
       () => {
         const w = (window as unknown as G).__game;
@@ -119,7 +122,7 @@ async function main(): Promise<void> {
       });
     let idx = 0;
     for (const sp of SPECS) {
-      const tag = `${sp.mon}${sp.after ? '-' + sp.after[0].replace(/\s+/g, '') : ''}`;
+      const tag = `${sp.mon}${sp.n ? '-x' + sp.n : ''}${sp.after ? '-' + sp.after[0].replace(/\s+/g, '') : ''}`;
       idx++;
       if (only.length && !only.includes(sp.mon)) continue;
       let seen = false;
@@ -132,7 +135,7 @@ async function main(): Promise<void> {
       await gm(page, 'god on', 400);
       await page.evaluate(() => ((window as unknown as G).__game!.hazardLog = []));
       await cam(sp.pitch, sp.dist, sp.yaw);
-      await gm(page, `spawn ${sp.mon} 1`, 3500);
+      await gm(page, `spawn ${sp.mon} ${sp.n ?? 1}`, 3500);
       for (const c of sp.after ?? []) await gm(page, c, 700);
       const until = Date.now() + (sp.wait ? 0 : 25_000);
       if (sp.wait) {
@@ -190,6 +193,46 @@ async function main(): Promise<void> {
         }
         for (let i = 0; i < 5; i++) {
           await shot(`${tag}-death-${i}`);
+          if (sp.n && i === 1 && process.env.PROBE) {
+            // Loại trừ nguồn tấm trắng: ẩn từng nhóm mesh cộng sáng/mực rồi chụp.
+            console.log(
+              'OCTA',
+              JSON.stringify(
+                await page.evaluate(() => {
+                  const g = (window as unknown as G).__game!;
+                  const out: unknown[] = [];
+                  g.scene.traverse((o: any) => {
+                    if (o.isInstancedMesh && o.geometry?.type === 'OctahedronGeometry' && o.visible) {
+                      const a = o.instanceMatrix.array;
+                      for (let i = 0; i < o.count; i++) {
+                        const sx = Math.hypot(a[i * 16], a[i * 16 + 1], a[i * 16 + 2]), sy = Math.hypot(a[i * 16 + 4], a[i * 16 + 5], a[i * 16 + 6]);
+                        out.push([+sx.toFixed(2), +sy.toFixed(2), +a[i * 16 + 13].toFixed(0)]);
+                      }
+                    }
+                  });
+                  return out;
+                }),
+              ),
+            );
+            console.log(
+              'NEAR',
+              JSON.stringify(
+                await page.evaluate(() => {
+                  const g = (window as unknown as G).__game!;
+                  const me = g.me();
+                  const out: unknown[] = [];
+                  const tmp = new (g.scene.position.constructor as any)();
+                  g.scene.traverse((o: any) => {
+                    if (!(o.isMesh || o.isSprite || o.isPoints || o.isLight) || !o.visible) return;
+                    o.getWorldPosition(tmp);
+                    if (Math.hypot(tmp.x - me.x, tmp.z - me.z) > 25 || Math.abs(tmp.y - me.y) > 6) return;
+                    out.push([o.type, o.geometry?.type ?? '', o.material?.type ?? '', o.name, o.material?.transparent ? 'T' : 'O', o.material?.blending, o.renderOrder, +tmp.y.toFixed(1), o.isInstancedMesh ? o.count : 0, o.isLight ? o.intensity : 0]);
+                  });
+                  return out.slice(0, 60);
+                }),
+              ),
+            );
+          }
           await sleep(sp.mon.startsWith('boss_') ? 450 : 350);
         }
       }

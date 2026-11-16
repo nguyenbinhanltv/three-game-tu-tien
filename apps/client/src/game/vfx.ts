@@ -7,9 +7,9 @@ import { SLASH_GEO, SLASH_INK, slashPhase } from '../render/vfx/slash';
 import { seedOr } from '../render/vfx/common';
 import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '../render/vfx/lightning';
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../render/vfx/ink';
-import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootDuration, lootHop, lootPulse, type LootTier } from '../render/vfx/loot';
+import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootCrowd, lootDuration, lootHop, lootPulse, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
-import { hazardFlash, hazardStyle, maxRadiusFor } from '../render/vfx/phases';
+import { hazardFlash, hazardStack, hazardStyle, maxRadiusFor } from '../render/vfx/phases';
 import { BoltFx } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
 import { Trails } from '../render/vfx/trail';
@@ -62,6 +62,8 @@ export const HAZARD_COLORS: Record<string, number> = {
 };
 
 const RING_GEO = new THREE.RingGeometry(0.82, 1, 48);
+/** Số món rơi đồng thời tối đa còn đủ cột sáng/vòng/lõi (hạ cả bầy một lượt, tránh cộng sáng thành mảng trắng). */
+const LOOT_FX_MAX = 8;
 const TUBE_GEO = new THREE.CylinderGeometry(1, 1, 1, 20, 1, true);
 
 /** Một vết mực đang nằm trên đất (M4-14). */
@@ -103,6 +105,10 @@ export class Vfx {
   readonly batch = new FxBatcher(POOL);
   /** Camera để dấu chém đứng quay mặt về người xem (engine gán). */
   camera: THREE.Camera | null = null;
+  /** Số đồ rơi đang có cột sáng (hạ nhiều quái một lượt): cột, vòng, lõi cộng sáng chồng nhau thành mảng trắng lóa nên mỗi cái mờ theo số lượng (`lootCrowd`). */
+  private lootActive = 0;
+  /** Vùng báo trước hình tròn đang sống (tâm, bán kính): vùng chồng lên nhau thì mờ bớt (`hazardStack`). */
+  private hazards: { x: number; z: number; r: number }[] = [];
   private items: Fx[] = [];
   /** Vệt phi kiếm, linh quang khi cầm kiếm, bụi chân (M4-5). Engine gọi `trails.update` mỗi khung. */
   readonly trails: Trails;
@@ -443,22 +449,25 @@ export class Vfx {
     const size = 1 + tier * 0.18;
     const gem = this.fx(G.octa, col, 0.95);
     gem.visible = false;
+    // Quá `LOOT_FX_MAX` món đang rơi cùng lúc thì món mới chỉ có viên đồ (không cột, vòng, lõi): đỡ cộng sáng chồng thành mảng trắng.
+    const full = this.lootActive >= LOOT_FX_MAX;
     const beam = this.fx(BEAM_GEO, col, 0, 'beam');
     beam.fxA.w = Math.random() * 40;
     beam.position.set(tx, ground - 0.05, tz);
     beam.scale.set(T.radius, T.height, T.radius);
-    const core = T.core ? this.fx(BEAM_GEO, 0xfff6dc, 0, 'beam') : null;
+    const core = T.core && !full ? this.fx(BEAM_GEO, 0xfff6dc, 0, 'beam') : null;
     if (core) {
       core.fxA.w = beam.fxA.w + 11;
       core.position.copy(beam.position);
       core.scale.set(T.radius * 0.4, T.height * 0.75, T.radius * 0.4);
     }
-    const ring = tier > 0 ? this.fx(RING_GEO, col, 0) : null;
+    const ring = tier > 0 && !full ? this.fx(RING_GEO, col, 0) : null;
     if (ring) {
       ring.rotation.x = -Math.PI / 2;
       ring.position.set(tx, ground + 0.08, tz);
     }
     const lift = LOOT_ARC + LOOT_BOUNCE + T.hold;
+    this.lootActive++;
     let t = 0;
     let landed = false;
     let collected = false;
@@ -498,8 +507,8 @@ export class Vfx {
           // Camera sát hay nằm trong cột (nhiều món rơi chồng nhau): mặt cột che kín màn hình thành tấm trắng cháy sáng, nên mờ dần khi lại gần.
           const cam = this.camera;
           const near = cam ? Math.min(1, Math.max(0, (Math.hypot(cam.position.x - tx, cam.position.z - tz) - T.radius * 1.2) / 5)) : 1;
-          const vis = 0.15 + 0.85 * near;
-          beam.fxOpacity = T.alpha * out * lootPulse(tier, bt) * vis;
+          const vis = (0.15 + 0.85 * near) * lootCrowd(this.lootActive);
+          beam.fxOpacity = full ? 0 : T.alpha * out * lootPulse(tier, bt) * vis;
           if (core) {
             core.fxA.x = Math.min(1.1, bt / 0.35);
             core.fxK = beam.fxK;
@@ -510,7 +519,7 @@ export class Vfx {
             const rk = Math.min(1, bt / 0.5);
             const e = 1 - (1 - rk) * (1 - rk);
             ring.scale.setScalar((0.3 + e * 0.7) * (0.8 + tier * 0.45) * (1 + Math.sin(bt * 5) * 0.04));
-            ring.fxOpacity = (0.85 - e * 0.4) * out;
+            ring.fxOpacity = (0.85 - e * 0.4) * out * lootCrowd(this.lootActive);
           }
         }
         if (!collected && tt >= lift) {
@@ -521,6 +530,7 @@ export class Vfx {
         }
       },
       () => {
+        this.lootActive = Math.max(0, this.lootActive - 1);
         this.drop(gem);
         this.drop(beam);
         if (core) this.drop(core);
@@ -1067,19 +1077,25 @@ export class Vfx {
       const a = (i / 6) * Math.PI * 2;
       top = Math.max(top, groundAt(x + Math.cos(a) * r * 0.7, z + Math.sin(a) * r * 0.7));
     }
+    // Nhiều quái cùng đặt vùng lên một chỗ (hạ/kéo cả bầy tinh anh): các lớp cộng sáng chồng nhau thành mảng trắng, nên mờ theo số vùng chồng.
+    const mine = { x, z, r };
+    const stack = hazardStack(this.hazards, mine);
+    this.hazards.push(mine);
     const m = this.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, color, Math.min(top, y + 1.2) + 0.22);
-    if (kind !== 'lightning') m.fxColor.multiplyScalar(style.gain);
+    m.fxColor.multiplyScalar((kind !== 'lightning' ? style.gain : 1) * stack.dim);
     this.add(
       delay,
       (k) => {
         m.fxA.x = k;
-        m.fxA.z = hazardFlash(k, delay);
+        m.fxA.z = hazardFlash(k, delay) * stack.dim;
         m.fxOpacity = Math.min(1, k * 10);
       },
       () => {
+        this.hazards.splice(this.hazards.indexOf(mine), 1);
         this.drop(m);
+        if (!stack.fx) return;
         if (kind === 'lightning') {
-          this.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, flash);
+          this.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, flash * stack.dim);
         } else if (kind !== 'frost') {
           _a.set(x, y + 0.5, z);
           this.burst(_a, color, r * 1.1, 0.45);

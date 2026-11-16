@@ -88,7 +88,7 @@ const SWORD_FORCED = typeof location === 'undefined' ? null : swordOverride(loca
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
-  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp) };
+  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp, s.wg ?? 0) };
   const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
   return s.sa ? { ...look, acc: s.sa } : look;
 }
@@ -979,8 +979,10 @@ export class EntityManager {
         if (e.label.visible && pc && vh > 0 && !E4_OFF) this.fitLabel(e, pc, vw, vh, boxes);
       }
       if (!e.model.setView) continue;
-      const allow = e.local || (e.inView && lod0 < LOD0_MAX);
-      if (allow) lod0++;
+      // Người mặc áo bộ mô-đun nhiều draw call hơn ở LOD0 (thân, áo, kiếm, vỏ, bóng): tính hai suất để cả đám đông ≤ 300 draw.
+      const cost = (e.model as { dressed?: boolean }).dressed ? 2 : 1;
+      const allow = e.local || (e.inView && lod0 + cost <= LOD0_MAX);
+      if (allow) lod0 += cost;
       e.model.setView({ dist: e.local ? 0 : e.d, inView: e.local || e.inView, allowLod0: allow, self: e.local });
     }
   }

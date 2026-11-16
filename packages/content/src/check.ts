@@ -504,7 +504,7 @@ for (const id of LOOT.keys()) if (!MONSTER.has(id)) err(`loot: quái không tồ
 for (const [id, l] of LOOT) checkEquipLoot(id, l);
 // Mọi ô có chỉ số phải có mẫu để rơi ở mọi ilvl >= 1.
 for (const s of ITEM_SYS.slots) {
-  if (s.weight > 0 && templatesFor(ITEMS, s.id, 1).length === 0) err(`ô ${s.id}: thiếu mẫu có reqLevel <= 1 để rơi ở ilvl 1`);
+  if (s.weight > 0 && s.drop !== false && templatesFor(ITEMS, s.id, 1).length === 0) err(`ô ${s.id}: thiếu mẫu có reqLevel <= 1 để rơi ở ilvl 1`);
 }
 // Tinh anh: máu gấp ~4 quái thường cùng loài, có ít nhất một kỹ năng riêng, có tên và biệt hiệu.
 for (const m of MONSTERS) {
@@ -601,7 +601,7 @@ for (const r of RECIPES) {
     const w = `set ${st.id}`;
     needStr(`set.${st.id}.name`);
     if (t(`set.${st.id}.name`) !== (GLOSSARY.sets as Record<string, string>)[st.id]) err(`${w}: tên lệch glossary.sets`);
-    if (st.pieces.length < 3 || st.pieces.length > 4) err(`${w}: bộ gồm 3-4 món`);
+    if (st.pieces.length < 3 || st.pieces.length > 5) err(`${w}: bộ gồm 3-5 món`);
     const slots = new Set<string>();
     for (const pid of st.pieces) {
       const it = ITEM.get(pid);
@@ -661,7 +661,8 @@ for (const r of RECIPES) {
       else if (to.kind !== it.kind || itemTier(to.id) !== tier + 1) err(`${it.id}: promoteTo ${to.id} phải cùng ô và bậc ${tier + 1}`);
     }
     // Mọi món bậc thấp hơn bậc cao nhất đang mở đều phải thăng được.
-    if (tier < TIER_OPEN && !promoteTarget(it.id)) err(`${it.id}: không có đích Thăng Bậc`);
+    // Trang sức đầu (ô 9) chưa có bản bậc 3: chưa thăng bậc được (TODO khi làm mảnh trang sức đầu của bộ bậc 3).
+    if (tier < TIER_OPEN && it.kind !== 'head' && !promoteTarget(it.id)) err(`${it.id}: không có đích Thăng Bậc`);
     if (it.set) for (const o of SETS.find((x) => x.id === it.set)?.pieces ?? []) if (itemTier(o) !== tier) err(`bộ ${it.set}: ${o} khác bậc với ${it.id}`);
   }
   for (const r of LOOT_MATS) {
@@ -750,9 +751,9 @@ for (const lv of Object.values(LEVELS)) {
   const as = LEVEL_ASSETS[lv.id];
   if (!as) err(`level ${lv.id}: thiếu levels/${lv.id}.assets.json`);
   else {
-    const known = ['sect', 'wild', 'wild_ochre', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
+    const known = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
     for (const m of as.music) if (!known.includes(m)) err(`level ${lv.id}: assets.music không biết bài ${m}`);
-    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
+    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night', 'cloud_dawn', 'cloud', 'cloud_night'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
     if (as.minimap && !existsSync(new URL(`../../../apps/client/public/map/${as.minimap}.json`, import.meta.url))) err(`level ${lv.id}: thiếu nền minimap public/map/${as.minimap}.json (pnpm minimap:build --level ${lv.id})`);
   }
 }

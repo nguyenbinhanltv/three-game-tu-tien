@@ -130,7 +130,8 @@
       "itm_lm_dao_bao",
       "itm_lm_ho_uyen",
       "itm_lm_dai_lung",
-      "itm_lm_van_ngoa"
+      "itm_lm_van_ngoa",
+      "itm_lm_trang_suc"
     ],
     "tiers": [
       {
@@ -162,7 +163,8 @@
       "itm_dg_dao_bao",
       "itm_dg_ho_uyen",
       "itm_dg_dai_lung",
-      "itm_dg_van_ngoa"
+      "itm_dg_van_ngoa",
+      "itm_dg_trang_suc"
     ],
     "tiers": [
       {
@@ -193,7 +195,8 @@
       "itm_pm_dao_bao",
       "itm_pm_ngoc_boi",
       "itm_pm_dai_lung",
-      "itm_pm_gioi_chi"
+      "itm_pm_gioi_chi",
+      "itm_pm_trang_suc"
     ],
     "tiers": [
       {

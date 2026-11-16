@@ -1,0 +1,43 @@
+{
+  "outfit": "apps/client/public/assets/set_liet_mach_kiem_y_nam.fd532bcdc6.glb",
+  "keep": "head",
+  "tol": 0.02,
+  "poses": {
+    "run": {
+      "maxDepth": 0.0396,
+      "sign": -1,
+      "insideAtWorst": 14,
+      "meanInside": 13.0
+    },
+    "chop": {
+      "maxDepth": 0.0397,
+      "sign": 1,
+      "insideAtWorst": 16,
+      "meanInside": 18.0
+    },
+    "arms_down": {
+      "maxDepth": 0.0,
+      "sign": -1,
+      "insideAtWorst": 0,
+      "meanInside": 0.0
+    },
+    "crouch": {
+      "maxDepth": 0.0396,
+      "sign": -1,
+      "insideAtWorst": 15,
+      "meanInside": 12.5
+    },
+    "sit": {
+      "maxDepth": 0.0,
+      "sign": -1,
+      "insideAtWorst": 0,
+      "meanInside": 0.0
+    },
+    "fall": {
+      "maxDepth": 0.0396,
+      "sign": 1,
+      "insideAtWorst": 16,
+      "meanInside": 17.0
+    }
+  }
+}

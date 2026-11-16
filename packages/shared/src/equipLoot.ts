@@ -49,7 +49,7 @@ export function templatesFor(items: readonly ItemDef[], slot: EquipSlot, ilvl: n
 
 /** Ô nào có thể rơi: có chỉ số (trọng số ô > 0) và có ít nhất một mẫu. */
 export function droppableSlots(data: ItemSysData, items: readonly ItemDef[]): EquipSlot[] {
-  return data.slots.filter((s) => s.weight > 0 && items.some((i) => i.kind === s.id)).map((s) => s.id);
+  return data.slots.filter((s) => s.weight > 0 && s.drop !== false && items.some((i) => i.kind === s.id)).map((s) => s.id);
 }
 
 /**

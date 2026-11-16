@@ -87,6 +87,8 @@ export interface AffixDef {
 }
 
 export interface SlotDef {
+  /** false: ô chỉ có đồ bộ chế ở lò rèn, không rơi ngẫu nhiên (trang sức đầu, ô 9). Mặc định rơi. */
+  drop?: boolean;
   id: EquipSlot;
   /** Trọng số ô trong công thức ngân sách. 0 = ô không có chỉ số (pháp bảo phụ). */
   weight: number;

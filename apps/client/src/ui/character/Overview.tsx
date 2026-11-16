@@ -14,7 +14,7 @@ import { itemKindOk } from '../bag/model';
 import { Preview3D } from './Preview3D';
 import { statRows, type StatId } from './stats';
 
-const BOARD_LEFT: EquipSlot[] = ['weapon', 'bracer', 'belt', 'ring'];
+const BOARD_LEFT: EquipSlot[] = ['weapon', 'bracer', 'belt', 'ring', 'head'];
 const BOARD_RIGHT: EquipSlot[] = ['robe', 'boots', 'jade', 'artifact'];
 
 /** Hình bóng 2D dự phòng khi xem trước 3D không dùng được. */
@@ -35,7 +35,7 @@ function Silhouette({ q }: { q: number }) {
   );
 }
 
-/** 8 ô trang bị quanh xem trước nhân vật. Thả đồ từ túi lên ô để mặc; chọn ô để xem chi tiết và tháo. */
+/** 9 ô trang bị quanh xem trước nhân vật. Thả đồ từ túi lên ô để mặc; chọn ô để xem chi tiết và tháo. */
 function EquipBoard() {
   const equip = useUI((s) => s.equip);
   const [sel, setSel] = useState<EquipSlot | null>(null);

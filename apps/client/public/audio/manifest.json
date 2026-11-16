@@ -751,6 +751,18 @@
         "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
       }
     },
+    "wild_cloud": {
+      "src": [
+        "music/wild_cloud.b2d321ed1e.webm",
+        "music/wild_cloud.2f0f53d7f9.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Vân Hải Phù Đảo",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
     "forest": {
       "src": [
         "music/forest.330a248d8b.webm",
