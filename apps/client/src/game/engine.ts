@@ -1,11 +1,12 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX } from '@dtl/shared';
+import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX } from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
+import { MON_AURA_REFLECT, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import type { DebugPerf } from '../ui/store';
@@ -484,6 +485,7 @@ export class Game {
     this.pendingChapter = init.room === ROOM_DUNGEON ? 'dungeon' : null;
     this.camFrame.cancel();
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
+    this.ents.onMonFlags = (m, e) => this.monFlagFx(m, e);
     this.snapToServer = true;
     this.dmg?.clear();
     this.offscreen?.clear();
@@ -786,6 +788,7 @@ export class Game {
     this.ents.camera = this.camera;
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
+    this.ents.onMonFlags = (m, e) => this.monFlagFx(m, e);
     this.minimap = renderMinimap(320);
     mark('minimap');
     this.startedAt = t0;
@@ -1570,6 +1573,26 @@ export class Game {
   }
 
   /** Quái đang thấy vừa gục (M4-14): mực văng ra rồi loang thành vết trên đất, tan dần sau vài giây. */
+  /** Cờ quái mở rộng (E1-E) bật/tắt: vòng phản đòn/yếu điểm bám chân quái trong suốt thời gian cờ; bụi khi chui đất/trồi. */
+  private monFlagFx(m: MonVis, e: MonFlagEdge): void {
+    const v = this.vfx;
+    if (!v || Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > 70) return;
+    const id = m.id;
+    const pos = (out: THREE.Vector3) => {
+      const o = this.ents?.monsters.get(id);
+      if (!o) return false;
+      out.set(o.x, o.y, o.z);
+      return true;
+    };
+    const left = Math.max(0.3, ((this.view.monsters.get(id)?.ce ?? 0) - (Date.now() + this.timeOffset)) / 1000);
+    if (e.on & MF_REFLECT) v.castSigil(pos, left, MON_AURA_REFLECT.color, MON_AURA_REFLECT.radius, () => ((this.view.monsters.get(id)?.mf ?? 0) & MF_REFLECT) !== 0);
+    if (e.on & MF_WEAK) v.castSigil(pos, left, MON_AURA_WEAK.color, MON_AURA_WEAK.radius, () => ((this.view.monsters.get(id)?.mf ?? 0) & MF_WEAK) !== 0);
+    if ((e.on | e.off) & MF_BURROW) {
+      _v2.set(m.x, m.y + 0.4, m.z);
+      v.burst(_v2, MON_BURROW_DIRT, Math.min(3, 1 + m.model.height * 0.5), 0.4);
+    }
+  }
+
   private monsterInk(m: MonVis): void {
     const v = this.vfx;
     if (!v || Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > 70) return;

@@ -189,6 +189,120 @@ export interface MonsterAi {
   chant?: MonsterChant;
   slam?: MonsterSlam;
   sweep?: MonsterSweep;
+  /** Nguyên tắc quái mở rộng (E1-E): xem `packages/shared/src/monskill.ts`. Quái thường, tinh anh và boss đều dùng được. */
+  line?: MonsterLine;
+  charge?: MonsterCharge;
+  leap?: MonsterLeap;
+  burrow?: MonsterBurrow;
+  reflect?: MonsterReflect;
+  summon?: MonsterSummon;
+  reveal?: MonsterReveal;
+}
+
+export type MonsterKind = 'lightning' | 'frost' | 'fire' | 'spirit';
+
+/**
+ * Đường thẳng: khi mục tiêu trong `range` mét, quái đứng yên khóa hướng, vạch chữ nhật dài `r` rộng `w` từ chỗ
+ * quái hiện ngay và nổ sau `delay` giây (mọi người đứng trong vạch lúc nổ đều trúng). Hồi `cd` giây.
+ */
+export interface MonsterLine {
+  cd: number;
+  range: number;
+  r: number;
+  w: number;
+  delay: number;
+  mul: number;
+  kind: MonsterKind;
+}
+
+/**
+ * Lao tới: mục tiêu cách trong [`min`, `range`] mét thì quái khóa hướng, vạch chữ nhật dài `r` rộng `w` hiện ngay,
+ * nổ sau `delay` giây (ai đứng trong vạch lúc đó trúng), rồi quái lao hết đường vạch với tốc độ `speed` m/s
+ * (dừng sớm khi gặp vách/nước). Né bằng cách bước ngang ra khỏi vạch.
+ */
+export interface MonsterCharge {
+  cd: number;
+  min: number;
+  range: number;
+  r: number;
+  w: number;
+  delay: number;
+  mul: number;
+  speed: number;
+  kind: MonsterKind;
+}
+
+/**
+ * Nhảy đập: mục tiêu cách trong [`min`, `range`] mét; quái khóa chỗ mục tiêu đang đứng, vạch tròn bán kính `r`
+ * hiện tại chỗ đó, sau `delay` giây quái bay tới (0,35 giây cuối) và đập xuống: ai trong vòng lúc đó trúng.
+ */
+export interface MonsterLeap {
+  cd: number;
+  min: number;
+  range: number;
+  r: number;
+  delay: number;
+  mul: number;
+  kind: MonsterKind;
+}
+
+/**
+ * Chui đất: mục tiêu trong `range` mét thì quái chui xuống `hide` giây (miễn mọi sát thương, không bị chọn trúng),
+ * để lại `n` vạch tròn bán kính `r` quanh mục tiêu (cách `spread` mét), nổ cùng lúc quái trồi ở vạch đầu tiên
+ * rồi đánh vạch quạt `cone` (dài `cone.r`, nửa góc `cone.w` độ) về phía mục tiêu, báo `cone.delay` giây.
+ */
+export interface MonsterBurrow {
+  cd: number;
+  range: number;
+  hide: number;
+  n: number;
+  r: number;
+  spread: number;
+  mul: number;
+  cone: { r: number; w: number; delay: number; mul: number };
+  kind: MonsterKind;
+}
+
+/**
+ * Phản đòn: sau `warn` giây tụ thế (cờ hiện sẵn, chưa phản), trong `dur` giây tiếp theo mỗi đòn người chơi trúng quái
+ * bị phản lại `ratio` sát thương (tối đa `cap` × máu tối đa của người đánh mỗi đòn); quái chỉ nhận `take` sát thương.
+ * Chất độc/dot không bị phản. Hồi `cd` giây tính từ lúc hết phản.
+ */
+export interface MonsterReflect {
+  cd: number;
+  warn: number;
+  dur: number;
+  ratio: number;
+  cap: number;
+  take: number;
+}
+
+/**
+ * Gọi đệ tử: mỗi `cd` giây (đang giao chiến) quái gọi `n` con `mon` ở chỗ cách mình `r` mét, vạch tròn báo trước
+ * `delay` giây (không gây sát thương); không vượt `max` con còn sống cùng lúc. Đệ tử cấp bằng quái gọi,
+ * không rơi đồ, không cho tu vi, mất khi quái chủ chết hoặc bỏ trận.
+ */
+export interface MonsterSummon {
+  cd: number;
+  mon: string;
+  n: number;
+  max: number;
+  r: number;
+  delay: number;
+}
+
+/**
+ * Lộ yếu điểm: mỗi `cd` giây, hoặc ngay sau khi kết thúc chiêu `after` (`charge`/`leap`/`burrow`), quái lộ yếu điểm
+ * `dur` giây: sát thương nhận nhân `mul` (> 1) và lấp thêm phá thế `posture` (0–1) nếu có thanh phá thế.
+ * Ngoài lúc lộ, sát thương nhận nhân `guard` (mặc định 1, < 1 là có giáp).
+ */
+export interface MonsterReveal {
+  cd: number;
+  dur: number;
+  mul: number;
+  guard?: number;
+  after?: 'charge' | 'leap' | 'burrow';
+  posture?: number;
 }
 
 /**
