@@ -86,14 +86,15 @@ export interface DashPlan {
  * Không xuyên vách: bước nào bị đẩy lùi quá nửa quãng dự định thì dừng ở bước trước; đất dốc hơn `DASH_MAX_SLOPE` coi là vách.
  * `stopAt`: dừng trước mục tiêu (khoảng `r` m tính từ tâm).
  */
-export function planDash(start: MoveState, dir: { x: number; z: number }, dist: number, stopAt?: { x: number; z: number; r: number }): DashPlan {
+export function planDash(start: MoveState, dir: { x: number; z: number }, dist: number, stopAt?: { x: number; z: number; r: number }, level?: Pick<MoveCtx, 'terrain' | 'bound'>): DashPlan {
   const s = cloneMoveState(start);
   s.grounded = true;
   s.flying = false;
   s.vy = 0;
   const yaw = Math.atan2(-dir.x, -dir.z);
   const inp: MoveInput = { s: 0, mx: 0, mz: 1, yaw, f: 0 };
-  const ctx: MoveCtx = { canFly: false, frozen: false, speedMul: DASH_SPEED / 7 };
+  // `level`: địa hình và vách hang của level đang đứng, để lướt không xuyên vách (E2-C).
+  const ctx: MoveCtx = { canFly: false, frozen: false, speedMul: DASH_SPEED / 7, terrain: level?.terrain, bound: level?.bound };
   const want = DASH_SPEED * DASH_STEP;
   let moved = 0;
   let blocked = false;

@@ -9,7 +9,7 @@ import type { Particles } from '../render/vfx/particles';
  * đi từ sân tông môn xuống thung lũng hay vào rừng thì hạt đổi dần, không giật.
  */
 
-export type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash';
+export type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash' | 'ember';
 
 /** Số hạt mỗi giây ở preset Vừa, theo loại. */
 export type AmbientRates = Record<AmbientKind, number>;
@@ -17,7 +17,7 @@ export type AmbientRates = Record<AmbientKind, number>;
 /** Hệ số lượng hạt theo preset (Thấp vẫn có ít hạt cho có không khí). */
 export const AMBIENT_SCALE: Record<string, number> = { low: 0.35, medium: 1, high: 1.6 };
 
-const KINDS: AmbientKind[] = ['mote', 'pollen', 'petal', 'leaf', 'mist', 'jade', 'ash'];
+const KINDS: AmbientKind[] = ['mote', 'pollen', 'petal', 'leaf', 'mist', 'jade', 'ash', 'ember'];
 
 /** Màu (sRGB) theo bảng tâm trạng art bible v3 mục 4.1. */
 const COLOR = {
@@ -30,6 +30,8 @@ const COLOR = {
   leafGrass: 0x7ea25a, // leaf_grass
   jade: 0x7fe3d0, // spirit_jade: linh khí
   stone: 0x7d786c, // stone: tro
+  ember: 0xe8843a, // đốm lửa ấm từ đèn đá (phó bản hang)
+  rock: 0x6b5a48, // bụi đá
   sword: 0xcff3ff, // spirit_sword: ánh kiếm gãy
 };
 
@@ -43,6 +45,12 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
   // Đoạn Mạch (E2-I): cốc khô, chỉ bụi nắng thưa; không phấn hoa, sương, lá xanh (các khu Vân Lam không có ở đây).
   if (level === 'doan_mach') {
     r.mote = 6;
+    return r;
+  }
+  // Phục Mạch Quật (E2-C): trong hang không có tuyết hay bụi nắng; chỉ vài đốm lửa ấm bay lên và bụi đá mịn rơi thưa.
+  if (level === 'phuc_mach') {
+    r.ember = 2.2;
+    r.ash = 2.5;
     return r;
   }
   const wSect = featureWeight(SECT, x, z);
@@ -78,8 +86,8 @@ const _rates = {} as AmbientRates;
 
 export class AmbientParticles {
   private scale = AMBIENT_SCALE.medium;
-  private acc: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0 };
-  private rates: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0 };
+  private acc: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0, ember: 0 };
+  private rates: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0, ember: 0 };
   private sample = 0;
   enabled = true;
 
@@ -162,8 +170,18 @@ export class AmbientParticles {
         ps.emit('glow', x, y, z, 0, 0.18 + R() * 0.15, 0, 3 + R() * 2, 0.12, 0.03, COLOR.jade, 0.5);
         break;
       }
+      case 'ember': {
+        // Đốm lửa nhỏ, ấm, bay lên chậm rồi tắt.
+        ps.emit('glow', x, floorY + R() * 2.5, z, (R() - 0.5) * 0.3, 0.35 + R() * 0.3, (R() - 0.5) * 0.3, 2.5 + R() * 2, 0.07, 0.02, COLOR.ember, 0.75);
+        break;
+      }
       case 'ash': {
         const y = floorY + R() * 6;
+        if (levelId() === 'phuc_mach') {
+          // Bụi đá nâu mịn, rơi rất chậm (không trắng như tuyết).
+          ps.emit('dust', x, floorY + 1 + R() * 5, z, (R() - 0.5) * 0.15, -0.06, (R() - 0.5) * 0.15, 5 + R() * 3, 0.05, 0.04, COLOR.rock, 0.5);
+          break;
+        }
         if (R() < 0.06) {
           ps.emit('glow', x, y, z, 0, 0.1, 0, 1.5 + R(), 0.14, 0.03, COLOR.sword, 0.6);
         } else {

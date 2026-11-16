@@ -452,6 +452,8 @@ const terrain = {
 const level = {
   id: 'doan_mach',
   spawn: { x: C, z: C + 12 },
+  // E2-C: cửa Khai Mạch Cổng (prop_cong_khai_mach ở 584,944) dẫn xuống Phục Mạch Quật.
+  portals: [{ x: 584, z: 970, r: 12, to: 'phuc_mach' }],
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
   camps,
