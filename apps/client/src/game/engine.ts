@@ -1071,7 +1071,7 @@ export class Game {
 
   private typing(): boolean {
     const a = document.activeElement;
-    return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA');
+    return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT');
   }
 
   private bindInput(): void {

@@ -1,9 +1,12 @@
 import { type ReactNode, useState } from 'react';
 import { C, EQUIP_SLOTS, type EquipSlot, NGUNG_KHI_MAX } from '@dtl/shared';
-import { itemName, realmName, SETS, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
+import { ITEM, itemName, realmName, SETS, SKILLS, t, TRUC_CO_PILL } from '@dtl/content';
 import { ContentIcon, UiIcon } from '../ContentIcon';
 import { Game, reqId } from '../../game/engine';
 import { gearQuality, setLines, wornIds } from '../gear';
+import { dropFromDrag } from '../bag/Bag';
+import { useBagDrag } from '../bag/dnd';
+import { itemKindOk } from '../bag/model';
 import { Button, Divider, ProgressBar, Slot } from '../kit';
 import { BottleneckBox, RootCard } from '../Realm';
 import { closePanel, useUI } from '../store';
@@ -18,8 +21,23 @@ function EquipBoard() {
   const [sel, setSel] = useState<EquipSlot | null>(null);
   const g = Game.current;
   const best = EQUIP_SLOTS.reduce((m, es) => (equip[es] ? Math.max(m, gearQuality(equip[es]!)) : m), -1);
+  const drag = useBagDrag((d) => d.drag);
   const cell = (es: EquipSlot) => (
-    <div key={es} className="equip-cell">
+    <div
+      key={es}
+      className="equip-cell"
+      data-drop={drag ? (itemKindOk((id) => ITEM.get(id), drag.id, es) ? 'ok' : 'no') : undefined}
+      onDragOver={(e) => {
+        if (drag && itemKindOk((id) => ITEM.get(id), drag.id, es)) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        dropFromDrag({ kind: 'equip', slot: es }, () => undefined);
+      }}
+    >
       <ItemIcon item={equip[es]} worn selected={sel === es} onClick={() => setSel(sel === es ? null : es)} />
       <div className="equip-label">{t('ui.equip.' + es)}</div>
     </div>
