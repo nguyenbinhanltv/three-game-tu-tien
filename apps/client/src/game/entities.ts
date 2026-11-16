@@ -506,8 +506,8 @@ export class EntityManager {
       const label = makeLabel(t(`npc.${m.npc}.name`), '#ffe9a8', t(`npc.${m.npc}.title`), '#e8d6a0');
       const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
       marker.visible = false;
-      e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcSkins.create(m.npc, '#b89a6a'), skinPending: false, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
-      this.npcSkins.addWalk(e.model, m.npc);
+      e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcModel(m.npc, '#b89a6a'), skinPending: false, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
+      if (!NPC_SKINS[m.npc]?.look) this.npcSkins.addWalk(e.model, m.npc);
       this.placeNpc(e);
       this.escorts.set(m.id, e);
     }

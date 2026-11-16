@@ -47,6 +47,7 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
   npc_lam_chieu_dung: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#E6DDCB', accent: '#E0962C' } },
   npc_to_van_ngu_hai: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#3B6584', accent: '#22364E' } },
   // Người đồng hành của nhiệm vụ hộ tống (không phải NPC đứng thật, xem `LevelDef.escorts`).
+  npc_lam_chieu_dung_do: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#E6DDCB', accent: '#E0962C' } },
   npc_thuong_nhan: { asset: 'chr_npc_thiet_lao', tint: 0xb89a6a },
 };
 
