@@ -69,6 +69,36 @@ function today(): string {
 
 installViewPatchFix();
 
+type Corkable = { cork(): void; uncork(): void; destroyed?: boolean };
+
+/**
+ * `ws` gửi mỗi tin bằng một lần cork/uncork riêng, tức một syscall `writev` cho mỗi (tin × client). Với 100 người đánh nhau
+ * chung một chỗ, tick phát hàng trăm tin FX/sát thương mỗi giây tới từng client và phần ghi socket chiếm ~85% thời gian tick.
+ * Cork thêm một lớp ngoài cả tick (cork có đếm lồng nhau) thì các tin của tick dồn thành một lần ghi mỗi client; thứ tự và
+ * nội dung tin không đổi, chỉ trễ tối đa đến hết tick.
+ */
+function corkClients(clients: Iterable<{ ref?: unknown }>): Corkable[] {
+  const out: Corkable[] = [];
+  for (const c of clients) {
+    const sock = (c.ref as { _socket?: Corkable } | undefined)?._socket;
+    if (sock && typeof sock.cork === 'function' && !sock.destroyed) {
+      sock.cork();
+      out.push(sock);
+    }
+  }
+  return out;
+}
+
+function uncorkAll(socks: Corkable[]): void {
+  for (const s of socks) {
+    try {
+      s.uncork();
+    } catch {
+      /* socket đã đóng */
+    }
+  }
+}
+
 export abstract class GameRoom extends Room<WorldState> implements SimHost {
   sim!: GameSim;
   markers!: MarkerSystem;
@@ -84,7 +114,13 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.aoi = new Aoi(this.sim);
     let aoiAt = 0;
     this.setSimulationInterval((dt) => {
-      this.sim.tick(dt);
+      // Gom mọi tin FX/sát thương của tick vào một lần ghi socket mỗi client (xem corkClients).
+      const corked = corkClients(this.clients);
+      try {
+        this.sim.tick(dt);
+      } finally {
+        uncorkAll(corked);
+      }
       if (this.sim.now - aoiAt >= AOI_PERIOD_MS) {
         aoiAt = this.sim.now;
         this.aoi.update((sid) => this.clients.getById(sid)?.view);
