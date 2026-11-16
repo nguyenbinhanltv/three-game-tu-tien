@@ -311,7 +311,8 @@
     "npc_khieu_han_son": "Khưu Hàn Sơn",
     "npc_thuong_nhan": "Trần Tam",
     "npc_lam_chieu_dung": "Lâm Chiếu Dung",
-    "npc_to_van_ngu_hai": "Tô Vãn Ngư"
+    "npc_to_van_ngu_hai": "Tô Vãn Ngư",
+    "npc_lam_chieu_dung_do": "Lâm Chiếu Dung"
   },
   "factions": {
     "tang_mach_hoi": "Tàng Mạch Hội"
@@ -321,6 +322,10 @@
     "kiem_gay_2": "Mảnh kiếm gãy ở Hố Sa Lún",
     "kiem_gay_3": "Mảnh kiếm gãy dưới Vách Đứt Mạch",
     "kiem_gay_4": "Mảnh kiếm gãy ở Sa Thạch Pha",
-    "kiem_gay_5": "Mảnh kiếm gãy gần Cựu Mỏ"
+    "kiem_gay_5": "Mảnh kiếm gãy gần Cựu Mỏ",
+    "guong_nuoc_1": "Mảnh gương nước thứ nhất",
+    "guong_nuoc_2": "Mảnh gương nước thứ hai",
+    "guong_nuoc_3": "Mảnh gương nước thứ ba",
+    "guong_nuoc_4": "Mảnh gương nước thứ tư"
   }
 }

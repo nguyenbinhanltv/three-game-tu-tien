@@ -60,11 +60,11 @@ describe('dữ liệu chương 3', () => {
     for (const q of QUEST.values()) if (/^[qs]3_/.test(q.id)) expect(q.rewards.xp).toBeLessThanOrEqual(xpNeed(Math.max(q.minLevel ?? KET_DAN_LEVEL, KET_DAN_LEVEL)) * 0.2);
   });
 
-  it('mục tiêu dùng loại sẵn có; scan từ Kết Đan; dungeon có tên', () => {
+  it('mục tiêu dùng loại sẵn có (touch/escort cho phụ E3-H2); scan từ Kết Đan; dungeon có tên', () => {
     for (const q of QUEST.values()) {
       if (!/^[qs]3_/.test(q.id)) continue;
       for (const o of q.objectives) {
-        expect(['kill', 'gather', 'talk', 'scan', 'dungeon', 'breakthrough']).toContain(o.type);
+        expect(['kill', 'gather', 'talk', 'scan', 'dungeon', 'breakthrough', 'touch', 'escort']).toContain(o.type);
         if (o.type === 'scan') expect(q.minLevel ?? 1).toBeGreaterThanOrEqual(SPIRIT_UNLOCK_LEVEL);
       }
     }
@@ -72,11 +72,11 @@ describe('dữ liệu chương 3', () => {
     expect(QUEST.get('q3_kinh_vuong')!.objectives[0]).toMatchObject({ type: 'kill', target: 'boss_van_hai_kinh_vuong' });
   });
 
-  it('q3_nguyen_anh vẫn nhận/trả được ở chỗ đến được (Khưu Hàn Sơn, chỉ cần q2_ket_dan) cho tới khi Vân Hải và E3-B vào; q3_len_may mở trận hub', () => {
+  it('q3_nguyen_anh nối sau q3_kinh_vuong, giao/trả ở Lâm Chiếu Dung (Phù Đảo Các, E3-B đã có quái); q3_len_may mở trận hub', () => {
     const na = QUEST.get('q3_nguyen_anh')!;
     expect(na.objectives).toEqual([{ type: 'breakthrough', target: 'nguyen_anh', count: 1 }]);
-    expect([na.giver, na.turnin, na.requires]).toEqual(['npc_khieu_han_son', 'npc_khieu_han_son', 'q2_ket_dan']);
-    expect(NPC.get(na.giver)!.level).toBe('doan_mach');
+    expect([na.giver, na.turnin, na.requires]).toEqual(['npc_lam_chieu_dung', 'npc_lam_chieu_dung', 'q3_kinh_vuong']);
+    expect(NPC.get(na.giver)!.level).toBe('van_hai');
     expect(QUEST.get('q3_len_may')!.unlockTele).toContain('vh_tp_hub');
   });
 
@@ -127,10 +127,10 @@ describe('chơi chương 3 ở Vân Hải', () => {
 });
 
 describe('q3_nguyen_anh (Tam Trọng Kiếp, #143)', () => {
-  it('nhận ở Khưu Hàn Sơn sau q2_ket_dan; độ kiếp Nguyên Anh hoàn thành nhiệm vụ; trả ở Khưu Hàn Sơn', () => {
-    const t = setup('doan_mach', 23);
-    t.char.quests.done.push('q2_ket_dan');
-    t.atNpc('npc_khieu_han_son');
+  it('nhận ở Lâm Chiếu Dung sau q3_kinh_vuong; độ kiếp Nguyên Anh hoàn thành nhiệm vụ; trả ở Lâm Chiếu Dung', () => {
+    const t = setup('van_hai', 23);
+    t.char.quests.done.push('q3_kinh_vuong');
+    t.atNpc('npc_lam_chieu_dung');
     t.accept('q3_nguyen_anh');
     expect(t.char.quests.active.q3_nguyen_anh).toEqual([0]);
     t.sim.questEvent(t.p, 'breakthrough', 'nguyen_anh', 1);

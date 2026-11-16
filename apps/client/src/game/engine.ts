@@ -2816,6 +2816,7 @@ export class Game {
       const st = get();
       this.mapVis.setOpen(st.tele.open);
       this.mapVis.setMarks(st.marks);
+      this.mapVis.setQuests(st.quests);
       this.mapVis.update(rp, st.tele.cast, performance.now(), TELE_CAST_MS);
       this.mapVis.updateSpirit(rp, st.spirit, st.spiritScan, performance.now());
     }
