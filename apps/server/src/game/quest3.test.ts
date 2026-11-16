@@ -41,7 +41,7 @@ function setup(levelId: string, level: number) {
   return { sim, p, char, atNpc, accept, turnin, sys };
 }
 
-const MAIN = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong', 'q3_nguyen_anh'];
+const MAIN = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong'];
 
 describe('dữ liệu chương 3', () => {
   it('9 nhiệm vụ chính nối đuôi từ q2_ket_dan, phụ requires nhiệm vụ chương 3', () => {
@@ -73,8 +73,11 @@ describe('dữ liệu chương 3', () => {
     expect(QUEST.get('q3_kinh_vuong')!.objectives[0]).toMatchObject({ type: 'kill', target: 'boss_van_hai_kinh_vuong' });
   });
 
-  it('q3_nguyen_anh nối Tam Trọng Kiếp (breakthrough nguyen_anh); q3_len_may mở trận hub', () => {
-    expect(QUEST.get('q3_nguyen_anh')!.objectives).toEqual([{ type: 'breakthrough', target: 'nguyen_anh', count: 1 }]);
+  it('q3_nguyen_anh vẫn nhận/trả được ở chỗ đến được (Khưu Hàn Sơn, chỉ cần q2_ket_dan) cho tới khi Vân Hải và E3-B vào; q3_len_may mở trận hub', () => {
+    const na = QUEST.get('q3_nguyen_anh')!;
+    expect(na.objectives).toEqual([{ type: 'breakthrough', target: 'nguyen_anh', count: 1 }]);
+    expect([na.giver, na.turnin, na.requires]).toEqual(['npc_khieu_han_son', 'npc_khieu_han_son', 'q2_ket_dan']);
+    expect(NPC.get(na.giver)!.level).toBe('doan_mach');
     expect(QUEST.get('q3_len_may')!.unlockTele).toContain('vh_tp_hub');
   });
 
@@ -115,17 +118,26 @@ describe.skipIf(!LEVELS.van_hai)('chơi chương 3 ở Vân Hải', () => {
     expect(rows.length).toBeGreaterThan(0);
   });
 
-  it('kill Kình Vương và độ kiếp Nguyên Anh hoàn thành đúng nhiệm vụ', () => {
+  it('kill Kình Vương hoàn thành q3_kinh_vuong', () => {
     const t = setup('van_hai', 23);
     t.char.quests.done.push('q3_kinh_nguyet');
     t.atNpc('npc_lam_chieu_dung');
     t.accept('q3_kinh_vuong');
     t.sim.questEvent(t.p, 'kill', 'boss_van_hai_kinh_vuong', 1);
     expect(t.char.questComplete('q3_kinh_vuong')).toBe(true);
-    t.turnin('q3_kinh_vuong');
+  });
+});
+
+describe('q3_nguyen_anh (Tam Trọng Kiếp, #143)', () => {
+  it('nhận ở Khưu Hàn Sơn sau q2_ket_dan; độ kiếp Nguyên Anh hoàn thành nhiệm vụ; trả ở Khưu Hàn Sơn', () => {
+    const t = setup('doan_mach', 23);
+    t.char.quests.done.push('q2_ket_dan');
+    t.atNpc('npc_khieu_han_son');
     t.accept('q3_nguyen_anh');
     expect(t.char.quests.active.q3_nguyen_anh).toEqual([0]);
     t.sim.questEvent(t.p, 'breakthrough', 'nguyen_anh', 1);
     expect(t.char.questComplete('q3_nguyen_anh')).toBe(true);
+    t.turnin('q3_nguyen_anh');
+    expect(t.char.quests.done).toContain('q3_nguyen_anh');
   });
 });

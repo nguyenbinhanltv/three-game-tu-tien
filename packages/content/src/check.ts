@@ -998,7 +998,8 @@ console.log('Nội dung hợp lệ.');
 }
 // Chuỗi chương 3 (E3-H): q3_* nối đuôi từ q2_ket_dan tới q3_nguyen_anh; phụ s3_* nhận sau khi vào chương; mọi nhiệm vụ nhận ở NPC có thật.
 {
-  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong', 'q3_nguyen_anh'];
+  // TODO (sau khi #148 và E3-B merge): thêm 'q3_nguyen_anh' vào chuỗi, đổi giao/trả sang npc_lam_chieu_dung và requires q3_kinh_vuong.
+  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong'];
   main3.forEach((id, i) => {
     const q = QUEST.get(id);
     if (!q) return err(`thiếu nhiệm vụ chính chương 3 ${id}`);

@@ -111,7 +111,7 @@
   { "id": "q3_kinh_vuong", "giver": "npc_lam_chieu_dung", "turnin": "npc_lam_chieu_dung", "requires": "q3_kinh_nguyet", "minLevel": 23,
     "objectives": [ { "type": "kill", "target": "boss_van_hai_kinh_vuong", "count": 1 } ],
     "rewards": { "xp": 12000, "gold": 2200, "items": [ { "id": "itm_van_hai_lo", "n": 3 } ] } },
-  { "id": "q3_nguyen_anh", "giver": "npc_lam_chieu_dung", "turnin": "npc_lam_chieu_dung", "requires": "q3_kinh_vuong", "minLevel": 23,
+  { "id": "q3_nguyen_anh", "giver": "npc_khieu_han_son", "turnin": "npc_khieu_han_son", "requires": "q2_ket_dan", "minLevel": 23,
     "objectives": [ { "type": "breakthrough", "target": "nguyen_anh", "count": 1 } ],
     "rewards": { "xp": 0, "gold": 6000, "items": [ { "id": "itm_tu_khi_dan", "n": 5 } ] } },
   { "id": "s3_bich_ngoc", "giver": "npc_lam_chieu_dung", "turnin": "npc_lam_chieu_dung", "requires": "q3_len_may", "minLevel": 20,
