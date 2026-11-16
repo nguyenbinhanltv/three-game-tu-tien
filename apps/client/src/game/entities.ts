@@ -484,6 +484,7 @@ export class EntityManager {
       const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
       marker.visible = false;
       e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcSkins.create(m.npc, '#b89a6a'), skinPending: false, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
+      this.npcSkins.addWalk(e.model, m.npc);
       this.placeNpc(e);
       this.escorts.set(m.id, e);
     }
@@ -795,7 +796,7 @@ export class EntityManager {
       let dy = e.yaw - e.model.root.rotation.y;
       dy = Math.atan2(Math.sin(dy), Math.cos(dy));
       e.model.root.rotation.y += dy * Math.min(1, dt * 8);
-      e.model.update(dt, { speed: dt > 0 ? Math.min(6, step / dt) : 0, flying: false, meditating: false, dead: false, casting: false, airborne: false });
+      e.model.update(dt, { speed: step > 1e-3 ? 1.4 : 0, flying: false, meditating: false, dead: false, casting: false, airborne: false });
       e.label.visible = !this.tagsHidden;
     }
 

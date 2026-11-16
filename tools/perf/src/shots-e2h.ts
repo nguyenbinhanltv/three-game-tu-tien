@@ -80,6 +80,7 @@ async function main(): Promise<void> {
     await faceSouth(page);
     await sleep(2500);
     await shot(page, '04-ha-khuyet-tram-npc');
+    if (opt('--stop', '') === '04') return;
     await page.evaluate(() => (window as unknown as G).__game!.interact());
     await sleep(700);
     await shot(page, '05-to-van-ngu-tra-thu');

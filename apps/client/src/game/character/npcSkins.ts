@@ -3,7 +3,8 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { Humanoid } from '../models';
 import { adoptGltfMaterials, rimLight } from '../../render/materials/world';
-import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
+import { acquireWithHumanLib, HUMAN_K3_LIB, mergeClips, retargetClips } from './animLib';
+import { HUMAN_CLIPS } from './humanClips';
 import { SkinnedCharacter } from './skinned';
 import type { CharState, ClipMap } from './states';
 import { type CharacterView, legacyModelsRequested } from './view';
@@ -34,7 +35,7 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
   npc_tieu_khe: { asset: 'chr_npc_chuong_mon' },
   // E2-H: NPC Hạ Khuyết Trạm và Cựu Mỏ Khu dùng lại model sẵn có, đổi màu (không dựng model mới).
   npc_hua_lao: { asset: 'chr_npc_thiet_lao', tint: 0xe3c58a },
-  npc_to_van_ngu: { asset: 'chr_npc_duoc_su', tint: 0xcfe2f0 },
+  npc_to_van_ngu: { asset: 'chr_npc_duoc_su', tint: 0x6fb4ee },
   npc_khieu_han_son: { asset: 'chr_npc_chuong_mon', tint: 0xb4ad9c },
   // Người đồng hành của nhiệm vụ hộ tống (không phải NPC đứng thật, xem `LevelDef.escorts`).
   npc_thuong_nhan: { asset: 'chr_npc_thiet_lao', tint: 0xb89a6a },
@@ -112,6 +113,30 @@ export class NpcSkins {
     const idle = m.actionOf('idle');
     if (idle) idle.time = Math.random() * idle.getClip().duration;
     return m;
+  }
+
+  /**
+   * NPC phải đi bộ (người hộ tống): nạp clip `walk` của thư viện K-3 và gắn vào model. Clip `run` của rig này là dáng chạy nước rút
+   * (cúi rạp) nên không dùng để đi; chưa nạp xong thì model đứng yên (idle), không bò.
+   */
+  addWalk(model: CharacterView, id: string): void {
+    const s = NPC_SKINS[id];
+    const t = s ? this.templates.get(s.asset) : undefined;
+    const m = model as SkinnedCharacter;
+    if (!t || typeof t === 'string' || !(m instanceof SkinnedCharacter)) return;
+    this.cache.acquire(HUMAN_K3_LIB, { priority: 30 }).then(
+      (lib) => {
+        try {
+          if (this.disposed) return;
+          const clips = retargetClips(lib.scene, lib.animations.filter((c) => c.name === 'walk'), t.handle.scene);
+          const ref = (HUMAN_CLIPS.walk.refSpeed ?? 0.978) * (3 / (HUMAN_CLIPS.run.refSpeed ?? 3.09));
+          m.addClips(clips, { walk: 'walk' }, { walk: ref });
+        } finally {
+          lib.release();
+        }
+      },
+      (err) => console.warn('[models] không nạp được clip đi bộ cho NPC', err),
+    );
   }
 
   private tintedMat(id: string, base: THREE.MeshStandardNodeMaterial, tint: number): THREE.MeshStandardNodeMaterial {
