@@ -49,6 +49,7 @@ import {
   computeDamage,
   DEATH_XP_LOSS,
   type DmgMsg,
+  caveBoundOf,
   type DungeonReward,
   EQUIP_SLOTS,
   glowStage,
@@ -991,7 +992,7 @@ export class GameSim {
     const wasFlying = p.move.flying;
     const px = p.move.x;
     const pz = p.move.z;
-    stepMove(p.move, inp, { canFly, frozen: dead, speedMul: 1, terrain: this.terrain });
+    stepMove(p.move, inp, { canFly, frozen: dead, speedMul: 1, terrain: this.terrain, bound: caveBoundOf(this.level) });
     if (p.move.flying && !wasFlying) {
       this.questEvent(p, 'fly', undefined, 1);
     }

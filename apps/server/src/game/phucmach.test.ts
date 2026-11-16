@@ -310,6 +310,42 @@ describe('đợt, điểm sinh, khóa room, thưởng', () => {
   });
 });
 
+describe('vách hang (luật di chuyển dùng chung)', () => {
+  it('stepMove chặn ngay ở bán kính bound (đi và bay), giữ y theo mặt đất; không đẩy khi chưa tới', async () => {
+    const { stepMove, caveBoundOf, STEP, IN_FLY } = await import('@dtl/shared');
+    const lv = DEF();
+    const bound = caveBoundOf(lv)!;
+    expect(bound).toEqual({ x: lv.dungeon!.center.x, z: lv.dungeon!.center.z, r: 90 });
+    expect(caveBoundOf(content.LEVELS.kiem_trung)).toBeUndefined();
+    const terrain = (await import('@dtl/shared')).terrainOf(lv);
+    for (const fly of [false, true]) {
+      const s = { x: bound.x, y: groundAt(bound.x, bound.z), z: bound.z + 89, vy: 0, grounded: true, flying: false };
+      // yaw 0: tiến = -z; yaw π: tiến = +z (ra phía vách nam)
+      for (let i = 0; i < 200; i++) stepMove(s, { mx: 0, mz: 1, yaw: Math.PI, f: fly ? IN_FLY : 0, seq: i } as never, { canFly: fly, frozen: false, speedMul: 1, terrain, bound }, STEP);
+      const d = Math.hypot(s.x - bound.x, s.z - bound.z);
+      expect(d).toBeLessThanOrEqual(bound.r + 1e-6);
+      expect(d).toBeGreaterThan(bound.r - 1);
+      if (!fly) expect(Math.abs(s.y - groundAt(s.x, s.z))).toBeLessThan(0.5);
+    }
+    // trong vòng thì không bị đụng tới
+    const t = { x: bound.x, y: groundAt(bound.x, bound.z), z: bound.z, vy: 0, grounded: true, flying: false };
+    stepMove(t, { mx: 0, mz: 1, yaw: Math.PI, f: 0, seq: 1 } as never, { canFly: false, frozen: false, speedMul: 1, terrain, bound }, STEP);
+    expect(t.z).toBeGreaterThan(bound.z);
+  });
+
+  it('sim server dùng bound của level: người gửi input đi ra ngoài bị chặn ngay trong tick', async () => {
+    const r = await mkRoom(LV, rooms.defineDungeon(LV));
+    const p = prime(r.join(mkChar('pmvach', 19)), 19);
+    const b = DEF().dungeon!;
+    p.move.x = b.center.x;
+    p.move.z = b.center.z + 89;
+    p.move.y = groundAt(p.move.x, p.move.z);
+    const apply = (r.sim as unknown as { applyInput(p: Ent, i: unknown): void }).applyInput.bind(r.sim);
+    for (let i = 0; i < 100; i++) apply(p, { seq: i, mx: 0, mz: 1, yaw: Math.PI, f: 0 });
+    expect(Math.hypot(p.move.x - b.center.x, p.move.z - b.center.z)).toBeLessThanOrEqual(90 + 1e-6);
+  });
+});
+
 describe('giới hạn hồi sinh', () => {
   it('hai lần hồi sinh ở điểm vào; lần thứ ba được hồi sinh rồi bị đưa ra ngoài', async () => {
     const r = await mkRoom(LV, rooms.defineDungeon(LV));
