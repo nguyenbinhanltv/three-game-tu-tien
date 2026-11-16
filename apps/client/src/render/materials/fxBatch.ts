@@ -15,6 +15,8 @@ export const BATCH_CHUNK = 64;
 
 interface Chunk {
   mesh: THREE.InstancedMesh;
+  /** Số lần đã ghi (khung đầu vẽ đủ `BATCH_CHUNK` instance, xem `flush`). */
+  frames: number;
   c: Float32Array;
   a: Float32Array;
   b: Float32Array;
@@ -59,7 +61,7 @@ export class FxBatcher {
     mesh.count = 0;
     mesh.visible = false;
     this.root.add(mesh);
-    return { mesh, c, a, b: bb, k };
+    return { mesh, frames: 0, c, a, b: bb, k };
   }
 
   /**
@@ -90,9 +92,13 @@ export class FxBatcher {
         const n = Math.max(0, Math.min(BATCH_CHUNK, total - from));
         const ch = b.chunks[ci] ?? (n > 0 ? (b.chunks[ci] = this.makeChunk(b)) : undefined);
         if (!ch) continue;
-        ch.mesh.count = n;
+        // three (InstanceNode, WebGPU và WebGL2) dựng UBO ma trận theo `mesh.count` ở lần vẽ ĐẦU của mảnh rồi giữ nguyên: nếu khung đầu
+        // chỉ có 1–2 instance thì về sau instance thứ 3 trở đi đọc ngoài UBO (mất hình, hoặc lẫn ma trận của mảnh khác). Khung đầu
+        // của mảnh vì vậy khai `BATCH_CHUNK` instance (phần chưa ghi là ma trận 0, suy biến, không vẽ ra gì), từ khung sau mới là `n`.
+        ch.mesh.count = ch.frames === 0 ? BATCH_CHUNK : n;
         ch.mesh.visible = n > 0;
         if (n === 0) continue;
+        ch.frames++;
         // Tâm các instance trong mảnh.
         let cx = 0;
         let cy = 0;

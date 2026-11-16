@@ -4,7 +4,7 @@
 // vfx.ts) vẫn phát theo S.FX như cũ, phần này thêm nhịp và vệt kiếm lên trên và chạy theo ngân sách mỗi chiêu.
 
 import * as THREE from 'three/webgpu';
-import { SKILL } from '@dtl/content';
+import { FX_TIMELINE, SKILL } from '@dtl/content';
 import { PF_DEAD, skillTiming } from '@dtl/shared';
 import type { SkillDef } from '@dtl/shared';
 import type { FxMesh } from '../render/materials/vfx';
@@ -27,10 +27,14 @@ import {
 import { OTHERS_FX_DIST, OTHERS_FX_LIVE_MAX } from './fxBudget';
 import { G } from './geo';
 import type { SkillEvent } from './character/view';
+import { FxRunner, type FxRunnerEnv } from './fxTimeline';
 import type { Vfx } from './vfx';
 
 /** `?k6=0` tắt VFX ba pha, vệt kiếm và linh quang hộ thể để so ảnh trước/sau. */
 export const K6_ON = typeof location === 'undefined' || new URLSearchParams(location.search).get('k6') !== '0';
+
+/** `?fxtl=0` tắt dòng thời gian hiệu ứng (VFX-V0): chiêu mẫu về hình cũ để so ảnh trước/sau. */
+export const TL_ON = K6_ON && (typeof location === 'undefined' || new URLSearchParams(location.search).get('fxtl') !== '0');
 
 /** Cấp từ đó có linh quang hộ thể (Trúc Cơ). */
 export const TRUC_CO_LEVEL = 16;
@@ -54,7 +58,7 @@ export interface SkillFxActor {
   fl: number;
   lv: number;
   speed: number;
-  model: { bladePoints?(b: THREE.Vector3, t: THREE.Vector3): boolean; performClock?(): { t: number; skill: string } | null };
+  model: { bladePoints?(b: THREE.Vector3, t: THREE.Vector3): boolean; performClock?(): { t: number; skill: string } | null; hit?: { hitStop(sec: number, delay?: number): void } };
 }
 
 export interface SkillFxEnv {
@@ -62,6 +66,20 @@ export interface SkillFxEnv {
   mySid(): string;
   myMethod(): string | undefined;
   camera(): THREE.PerspectiveCamera;
+  /** Phần của môi trường cho bộ chạy timeline (VFX-V0): mục tiêu, rung, chớp, âm thanh, cài đặt chất lượng. */
+  fx: Omit<FxRunnerEnv, 'camera'>;
+}
+
+/** Chiêu này chạy bằng dòng thời gian hiệu ứng (`data/fx/<id>.json`) thay cho hình cũ không. `?k6=0` tắt hết. */
+export function hasTimeline(skillId: string | undefined): boolean {
+  return TL_ON && !!skillId && FX_TIMELINE.has(skillId);
+}
+
+/** Loại `S.FX` kiểu cũ bị timeline thay thế cho chiêu có timeline (engine bỏ hình cũ). */
+export function replacedFx(kind: string): boolean {
+  if (!TL_ON) return false;
+  for (const tl of FX_TIMELINE.values()) if (tl.replaces?.includes(kind)) return true;
+  return false;
 }
 
 /** Bùng nổ hẹn giờ: bắt đầu `BURST_LEAD` trước `hitAt` để đỉnh sáng rơi đúng hitAt (±0,05 s). */
@@ -111,13 +129,17 @@ export class SkillFx {
   private aura: FxMesh | null = null;
   private combatUntil = 0;
   private clock = 0;
+  /** Bộ chạy dòng thời gian hiệu ứng (VFX-V0). */
+  readonly runner: FxRunner;
   /** Nhật ký dev (chỉ khi `import.meta.env.DEV`). */
   readonly log: { kind: string; skill: string; combo: number; t: number; at: number }[] = [];
 
   constructor(
     private v: Vfx,
     private env: SkillFxEnv,
-  ) {}
+  ) {
+    this.runner = new FxRunner(v, { ...env.fx, camera: () => env.camera() });
+  }
 
   /** Nghe sự kiện chiêu của `sid`. */
   handle(sid: string, e: SkillEvent): void {
@@ -133,6 +155,12 @@ export class SkillFx {
     if (!mine && !othersAllowed(dist, this.v.pool.live)) return;
     const color = tintFor(def, mine, this.env.myMethod());
     const ult = !!def.ult;
+    const tl = TL_ON ? FX_TIMELINE.get(def.id) : undefined;
+    if (tl) {
+      if (e.kind === 'windup') this.runner.start(sid, actor, def, tl, e, mine, dist, this.env.myMethod());
+      else if (e.kind === 'end') this.runner.drop(sid);
+      return;
+    }
     if (import.meta.env.DEV) {
       // Nhật ký dev: VFX phát đồng bộ trong cùng lời gọi với sự kiện chiêu (`__game.skillFx.log`).
       this.log.push({ kind: e.kind, skill: e.skill, combo: e.combo, t: e.t, at: performance.now() });
@@ -311,6 +339,7 @@ export class SkillFx {
       }
       if (j.actor.model.bladePoints?.(_p, _t)) j.rib.push(_p, _t);
     }
+    this.runner.update(dt);
     this.updateAura(dt);
   }
 
@@ -338,6 +367,7 @@ export class SkillFx {
     for (const j of this.jobs) if (j.rib) j.rib.sampling = false;
     this.jobs.length = 0;
     this.pending.length = 0;
+    this.runner.dispose();
     this.fired.clear();
     if (this.aura) {
       this.v.drop(this.aura);

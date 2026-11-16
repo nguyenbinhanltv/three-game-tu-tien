@@ -71,6 +71,8 @@ export function Settings() {
   const fps = useUI((s) => s.fps);
   const controls = useUI((s) => s.controls);
   const camShake = useUI((s) => s.camShake);
+  const fxQ = useUI((s) => s.fxQuality);
+  const hitStop = useUI((s) => s.hitStop);
   const offscreen = useUI((s) => s.offscreen);
   const chapterCards = useUI((s) => s.chapterCards);
   const [mute, setMute] = useState(isMuted());
@@ -89,6 +91,10 @@ export function Settings() {
       <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
       <Divider label={t('ui.settings.cam_shake')} />
       <Segmented label={t('ui.settings.cam_shake')} value={camShake} onChange={(on) => Game.current?.setCamShake(on)} options={onOff} />
+      <Divider label={t('ui.settings.fx_quality')} />
+      <Segmented label={t('ui.settings.fx_quality')} value={fxQ} onChange={(q) => Game.current?.setFxQuality(q)} options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))} />
+      <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
+      <Segmented label={t('ui.settings.hit_stop')} value={hitStop} onChange={(on) => Game.current?.setHitStop(on)} options={onOff} />
       <Divider label={t('ui.settings.offscreen')} />
       <Segmented label={t('ui.settings.offscreen')} value={offscreen} onChange={(on) => Game.current?.setOffscreen(on)} options={onOff} />
       <div className="k-dim">{t('ui.settings.offscreen_hint')}</div>

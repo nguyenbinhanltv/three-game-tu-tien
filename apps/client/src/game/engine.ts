@@ -59,7 +59,9 @@ import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../in
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
-import { SkillFx } from './skillFx';
+import { SkillFx, replacedFx } from './skillFx';
+import { fxQuality, hitStopOn, setFxQuality, setHitStopOn } from './fxSettings';
+import type { FxQuality } from '@dtl/shared';
 import { BOSS_BAR_RANGE, keepMonsterTarget } from './targetRange';
 import type { SkillEvent } from './character/view';
 import { HitQueue, SwingGuard, hitPitch, hitStopOf, layersOf, materialOf, shakeOf, ULT_FOV, ultFovAt, WHOOSH_GAIN, whooshDelay, type HitCtx, type HitSoundLog } from './hitjuice';
@@ -825,6 +827,18 @@ export class Game {
       mySid: () => this.sid,
       myMethod: () => get().method?.method,
       camera: () => this.camera as THREE.PerspectiveCamera,
+      fx: {
+        targetOf: (sid) => this.fxTargetOf(sid),
+        quality: fxQuality,
+        hitStopOn,
+        shake: (level, dir) => this.shake.kick(level, dir),
+        flash: (a) => this.post?.flash(a),
+        sound: (id, gain, sid) => {
+          const pv = this.ents?.players.get(sid);
+          const vol = sid === this.sid ? gain : pv ? this.volumeAt(pv.x, pv.z) * gain * 0.6 : 0;
+          if (vol > 0) sfx(id as Sfx, vol, pv, false);
+        },
+      },
     });
     this.vfx.particles.setQuality(get().quality);
     this.buildLevelB(this.initLevel, q);
@@ -1971,6 +1985,7 @@ export class Game {
     const src = m.src ?? '';
     const dst = m.dst ?? '';
     const pSrc = e.players.get(src);
+    if (src && dst && !held) this.fxDst.set(src, dst);
     if (this.onSoulFx(m, src)) return;
     if (!held) {
       // Động tác chiêu; đòn của mình đang vào thế thì giữ hiệu ứng + tiếng tới đúng lúc ra đòn.
@@ -2011,6 +2026,8 @@ export class Game {
       if (ult) set({ ultCard: { id: ++this.ultCardId, skill: ult.id, color: m.c ?? 'ffffff', until: Date.now() + 600 } });
       return;
     }
+    // Chiêu đã có dòng thời gian hiệu ứng (data/fx/<id>.json): hình do `SkillFx.runner` phát theo sự kiện chiêu, bỏ hình cũ.
+    if (replacedFx(m.t)) return;
     if (m.v) playVariantExtras(mctx, tint(0xbfeaff));
     switch (m.t) {
       case 'sword':
@@ -3610,6 +3627,28 @@ export class Game {
     if (this.controls !== 'mouse') this.releaseLock();
     localStorage.setItem('dtl.controls', this.controls);
     set({ controls: this.controls });
+  }
+
+  /** Đích của chiêu gần nhất của mỗi người ra chiêu (từ S.FX), cho hiệu ứng timeline của người khác. */
+  private fxDst = new Map<string, string>();
+
+  private fxTargetOf(sid: string): { x: number; y: number; z: number; chest: number } | null {
+    const id = sid === this.sid ? this.targetId || this.fxDst.get(sid) : this.fxDst.get(sid);
+    if (!id || !this.ents) return null;
+    const mon = this.ents.monsters.get(id);
+    const ent = mon ?? this.ents.players.get(id);
+    if (!ent) return null;
+    return { x: ent.x, y: ent.y, z: ent.z, chest: mon ? mon.model.height * 0.55 : 1.2 };
+  }
+
+  setFxQuality(q: FxQuality): void {
+    setFxQuality(q);
+    set({ fxQuality: q });
+  }
+
+  setHitStop(on: boolean): void {
+    setHitStopOn(on);
+    set({ hitStop: on });
   }
 
   setCamShake(on: boolean): void {

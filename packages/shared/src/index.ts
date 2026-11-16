@@ -35,3 +35,4 @@ export * from './elements';
 export * from './monskill';
 export * from './tribulation';
 export * from './propLib';
+export * from './fxtimeline';
