@@ -333,6 +333,17 @@ describe('vách hang (luật di chuyển dùng chung)', () => {
     expect(t.z).toBeGreaterThan(bound.z);
   });
 
+  it('lướt (planDash) cũng bị chặn ở bound: không đáp ra ngoài vách', async () => {
+    const { planDash, caveBoundOf, terrainOf } = await import('@dtl/shared');
+    const lv = DEF();
+    const bound = caveBoundOf(lv)!;
+    const start = { x: bound.x, y: groundAt(bound.x, bound.z + 85), z: bound.z + 85, vy: 0, grounded: true, flying: false };
+    const out = planDash(start as never, { x: 0, z: 1 }, 12, undefined, { terrain: terrainOf(lv), bound });
+    expect(Math.hypot(out.x - bound.x, out.z - bound.z)).toBeLessThanOrEqual(bound.r + 1e-6);
+    const free = planDash(start as never, { x: 0, z: 1 }, 12);
+    expect(Math.hypot(free.x - bound.x, free.z - bound.z)).toBeGreaterThan(bound.r);
+  });
+
   it('sim server dùng bound của level: người gửi input đi ra ngoài bị chặn ngay trong tick', async () => {
     const r = await mkRoom(LV, rooms.defineDungeon(LV));
     const p = prime(r.join(mkChar('pmvach', 19)), 19);

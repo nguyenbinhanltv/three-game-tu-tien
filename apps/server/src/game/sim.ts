@@ -1261,7 +1261,7 @@ export class GameSim {
     // Dịch Sơn Xung B (kéo): không lướt, kéo mục tiêu (và quái quanh nó) từ xa về sát người.
     const pullOnly = !!(def.push && rsv?.pull && tgt);
     const close = !!stop && Math.hypot(stop.x - p.move.x, stop.z - p.move.z) <= stop.r + 1;
-    const plan = close || pullOnly ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true } : planDash(p.move, dir, dashDist, stop);
+    const plan = close || pullOnly ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true } : planDash(p.move, dir, dashDist, stop, { terrain: this.terrain, bound: caveBoundOf(this.level) });
     if (plan.dist < 1 && !(close && skill.power > 0) && !pullOnly) return this.warn(p, close ? 'sys.dash_close' : 'sys.dash_blocked');
     const rs = resolveFor(c.meta, skill);
     if (p.meditating) this.setMeditating(p, false);
