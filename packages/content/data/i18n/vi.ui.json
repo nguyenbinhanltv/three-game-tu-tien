@@ -891,5 +891,8 @@
   "ui.soul.locked": "Mở khi lên Nguyên Anh",
   "ui.dead.soul_title": "Nguyên anh xuất khiếu",
   "ui.dead.soul_sub": "Thân xác đã tắt, nguyên anh còn nguyên vẹn",
-  "ui.dead.soul_line": "Nguyên anh đang bay về nơi an toàn, tu vi không mất. Còn {n} giây nữa sẽ nhập lại thân xác."
+  "ui.dead.soul_line": "Nguyên anh đang bay về nơi an toàn, tu vi không mất. Còn {n} giây nữa sẽ nhập lại thân xác.",
+  "ui.chapter.ch3.kicker": "Chương ba",
+  "ui.chapter.ch3.title": "Vân Hải",
+  "ui.chapter.ch3.sub": "Mạch đứt không mất, nó trôi lên cao thành đảo. Biển mây nằm dưới chân, gương trên đảo đã quay về một phía."
 }

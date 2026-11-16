@@ -375,6 +375,7 @@ export class Game {
   private cineKind: 'sect' | 'boss' | 'phase' | 'dan' = 'sect';
   /** Đan Trận đang hiện (E2-D): theo sid chủ kiếp. */
   private ch2Checked = false;
+  private ch3Checked = false;
   private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
   /** Nguyên anh xuất khiếu đang hiện (E3-L): theo sid chủ kiếp. */
   private soulVfx = new Map<string, { stop(): void }>();
@@ -3193,6 +3194,14 @@ export class Game {
       if (who) {
         this.ch2Checked = true;
         if (firstTime(localStorage, 'ch2', who)) window.setTimeout(() => !this.disposed && this.chapter('ch2'), 1200);
+      }
+    }
+    // Chương 3 · Vân Hải (E3-H): cùng cách với chương 2.
+    if (!this.ch3Checked && levelId() === 'van_hai' && get().phase === 'game') {
+      const who = get().char?.name;
+      if (who) {
+        this.ch3Checked = true;
+        if (firstTime(localStorage, 'ch3', who)) window.setTimeout(() => !this.disposed && this.chapter('ch3'), 1200);
       }
     }
     if (this.pendingChapter) {
