@@ -7939,30 +7939,39 @@
       "id": "set_kinh_quang_kiem_y_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_kinh_quang_kiem_y_nam.glb",
-      "file": "set_kinh_quang_kiem_y_nam.b1b7bf982a.glb",
-      "bytes": 462624,
-      "rawBytes": 431272,
-      "triangles": 1665,
-      "rawTriangles": 1665,
-      "lod0Cap": 2000,
+      "file": "set_kinh_quang_kiem_y_nam.937d3133a0.glb",
+      "bytes": 3896656,
+      "rawBytes": 3787880,
+      "triangles": 11459,
+      "rawTriangles": 11459,
+      "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 61,
+      "bones": 74,
       "animations": [],
       "ktx2": false,
       "textures": [
         {
+          "name": "set_kinh_quang_kiem_y_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
           "name": "set_kinh_quang_kiem_y_nam_normal",
           "mimeType": "image/png",
-          "width": 512,
-          "height": 512,
+          "width": 1024,
+          "height": 1024,
           "slots": [
             "normalTexture"
           ]
         },
         {
           "name": "set_kinh_quang_kiem_y_nam_color",
-          "mimeType": "image/jpeg",
+          "mimeType": "image/png",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -7971,9 +7980,9 @@
         },
         {
           "name": "set_kinh_quang_kiem_y_nam_orm",
-          "mimeType": "image/jpeg",
-          "width": 512,
-          "height": 512,
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -7982,31 +7991,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 1665
+          "triangles": 11459
         },
         {
           "level": 1,
-          "triangles": 690,
-          "target": 666
+          "triangles": 4584,
+          "target": 4584
         },
         {
           "level": 2,
-          "triangles": 247,
-          "target": 250
+          "triangles": 1719,
+          "target": 1719
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.2575,
-          "height": 1.5845,
-          "depth": 0.4692,
-          "minY": -0.0137
+          "width": 1.4163,
+          "height": 1.6378,
+          "depth": 0.3515,
+          "minY": 0
         },
         "build": {
-          "width": 2.2575,
-          "height": 1.5845,
-          "depth": 0.4692,
-          "minY": -0.0137
+          "width": 1.4163,
+          "height": 1.6378,
+          "depth": 0.3515,
+          "minY": 0
         }
       }
     },
@@ -8014,30 +8023,39 @@
       "id": "set_kinh_quang_kiem_y_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_kinh_quang_kiem_y_nu.glb",
-      "file": "set_kinh_quang_kiem_y_nu.90835fbea1.glb",
-      "bytes": 461908,
-      "rawBytes": 431020,
-      "triangles": 1665,
-      "rawTriangles": 1665,
-      "lod0Cap": 2000,
+      "file": "set_kinh_quang_kiem_y_nu.c55ad4df18.glb",
+      "bytes": 3895456,
+      "rawBytes": 3788360,
+      "triangles": 11461,
+      "rawTriangles": 11461,
+      "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 59,
+      "bones": 73,
       "animations": [],
       "ktx2": false,
       "textures": [
         {
+          "name": "set_kinh_quang_kiem_y_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
           "name": "set_kinh_quang_kiem_y_nu_normal",
           "mimeType": "image/png",
-          "width": 512,
-          "height": 512,
+          "width": 1024,
+          "height": 1024,
           "slots": [
             "normalTexture"
           ]
         },
         {
           "name": "set_kinh_quang_kiem_y_nu_color",
-          "mimeType": "image/jpeg",
+          "mimeType": "image/png",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8046,9 +8064,9 @@
         },
         {
           "name": "set_kinh_quang_kiem_y_nu_orm",
-          "mimeType": "image/jpeg",
-          "width": 512,
-          "height": 512,
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -8057,31 +8075,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 1665
+          "triangles": 11461
         },
         {
           "level": 1,
-          "triangles": 696,
-          "target": 666
+          "triangles": 4584,
+          "target": 4584
         },
         {
           "level": 2,
-          "triangles": 249,
-          "target": 250
+          "triangles": 1716,
+          "target": 1719
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1444,
-          "height": 1.5257,
-          "depth": 0.5265,
-          "minY": -0.0124
+          "width": 1.3638,
+          "height": 1.5833,
+          "depth": 0.3394,
+          "minY": 0
         },
         "build": {
-          "width": 2.1444,
-          "height": 1.5257,
-          "depth": 0.5265,
-          "minY": -0.0124
+          "width": 1.3638,
+          "height": 1.5833,
+          "depth": 0.3394,
+          "minY": 0
         }
       }
     },
