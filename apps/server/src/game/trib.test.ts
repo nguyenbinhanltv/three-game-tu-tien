@@ -105,6 +105,19 @@ describe('độ kiếp ba pha', () => {
     expect(t.dmg().length).toBe(3);
   });
 
+  it('hết kiếp (chết, hồi sinh ở chỗ khác) trước lúc tia cuối nổ thì không bị khóa mệnh', () => {
+    const t = setup();
+    t.begin(TRIB_PHASE_END[1] + 0.1);
+    t.priv.tickTribulation(t.p);
+    const mhp = t.p.char.mhp;
+    t.p.trib = null; // kiếp đã kết thúc
+    t.p.move.x += 60; // hồi sinh ở tông môn, xa vòng
+    t.priv.hazards.length = 0;
+    t.priv.hazards.push({ x: X, z: Z, r: TRIB_FINAL.r, at: t.sim.now, dmg: TRIB_FINAL.pct, pct: true, atk: 0, mon: null, src: t.p.sid, lock: true } as never);
+    t.priv.tickHazards();
+    expect(t.p.char.hp).toBe(mhp);
+  });
+
   it('tia cuối của người khác: người đứng xem trong vòng không chết, dừng ở 1 khí huyết', () => {
     const t = setup();
     t.begin(TRIB_PHASE_END[1] + 0.1);

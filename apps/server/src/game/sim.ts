@@ -2750,7 +2750,8 @@ export class GameSim {
       for (const p of this.players.values()) {
         if (this.isDead(p)) continue;
         // Tia cuối khóa mệnh: chủ kiếp luôn trúng (không né bằng chạy hay bay); người khác chỉ trúng khi đứng trong vòng.
-        const locked = !!h.lock && h.src === p.sid;
+        // Chỉ khi kiếp còn chạy: chết/hồi sinh/hủy kiếp trước lúc nổ thì tia mất khóa và rơi về kiểm vị trí.
+        const locked = !!h.lock && h.src === p.sid && !!p.trib;
         if (!locked && !inHazard(h, p.move.x, p.move.z)) continue;
         if (!locked && p.move.y - groundAt(p.move.x, p.move.z) > 8) continue;
         if (h.grp) {
