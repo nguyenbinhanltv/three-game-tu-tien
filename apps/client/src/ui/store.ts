@@ -179,6 +179,8 @@ export interface UIState {
   x: number;
   y: number;
   z: number;
+  /** Mình đang ngự kiếm hoặc lơ lửng (khớp luật `airborne()` của server): thanh chiêu xám. */
+  airborne: boolean;
   zone: string;
   fps: number;
   perf: string;
@@ -261,6 +263,7 @@ export const useUI = create<UIState>(() => ({
   x: 0,
   y: 0,
   z: 0,
+  airborne: false,
   zone: '',
   fps: 0,
   perf: '',

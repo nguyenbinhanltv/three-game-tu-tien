@@ -97,6 +97,8 @@ export interface SkillEvent {
   t: number;
   /** Đòn đẩy lùi (đòn cuối chuỗi). */
   kb: boolean;
+  /** Chỉ ở `windup`: số giây (đồng hồ animation) còn lại tới mốc `hitAt` đầu tiên, để lên lịch tiếng vung (K-7). */
+  hitIn?: number;
 }
 
 export interface PerformOpts {

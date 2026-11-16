@@ -1,8 +1,9 @@
 import { Portrait } from './Art';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
+import './tutien.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { artifactLevelMods, AIRBORNE_HEIGHT, BAR_SIZE, C, CHARGE_MAX, groundAt, NGUNG_KHI_MAX, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { artifactLevelMods, BAR_SIZE, C, CHARGE_MAX, NGUNG_KHI_MAX, TRIBULATION_DURATION, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
 import { ARTIFACT, ITEM, itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
@@ -13,7 +14,8 @@ import { NpcDialog } from './NpcDialog';
 import { DuelBanner, InviteStack, PartyFrame } from './Party';
 import { Minimap } from './minimap/Minimap';
 import { Panels } from './Panels';
-import { isStuck, TrialBanner } from './Realm';
+import { TrialBanner } from './Realm';
+import { breakGoal } from './breakGoal';
 import { type BossLine, type ChapterCard, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
 
 function PlayerFrame() {
@@ -22,18 +24,42 @@ function PlayerFrame() {
   const mhp = useUI((s) => s.mhp);
   const mp = useUI((s) => s.mp);
   const mmp = useUI((s) => s.mmp);
+  // Mọi hook phải đứng trước lệnh return sớm (store khởi đầu với char = null).
+  const flags = useUI((s) => s.flags);
   if (!char) return null;
-  const full = (char.level === NGUNG_KHI_MAX && char.xp >= char.xpNeed) || isStuck(char);
+  const goal = breakGoal(char);
+  // Đang độ kiếp thì không mời đột phá nữa.
+  if (flags & PF_TRIBULATION) goal.ready = false;
+  const full = goal.ready || (flags & PF_TRIBULATION) !== 0 || (char.level === NGUNG_KHI_MAX && char.xp >= char.xpNeed);
   return (
-    <div className="frame player-frame">
+    <div className={'frame player-frame' + (goal.ready ? ' can-break' : '')}>
       <div className="frame-head">
         <span className="frame-name">{char.name}</span>
-        <span className="frame-realm">{realmName(char.level)}</span>
+        <span className="frame-realm" data-tier={char.level >= TRUC_CO_LEVEL ? 'tc' : 'nk'}>
+          {realmName(char.level)}
+        </span>
       </div>
-      {isStuck(char) && <div className="frame-bk">{t('ui.bk.badge')}</div>}
       <ProgressBar cls="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} segs={4} trail />
       <ProgressBar cls="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} segs={4} trail />
-      <ProgressBar cls="xp" value={char.xp} max={char.xpNeed} text={full ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`} />
+      <div className="frame-xp-row">
+        <ProgressBar cls="xp" value={char.xp} max={char.xpNeed} text={full ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`} />
+        {goal.ready && (
+          // Chỉ mở bảng Nhân vật ở khối đột phá: bắt đầu độ kiếp tốn Trúc Cơ Đan nên không làm bằng một cú bấm trên HUD.
+          <Button
+            size="s"
+            variant="primary"
+            className="break-btn"
+            title={t(goal.kind === 'trib' ? 'ui.frame.break_trib' : 'ui.frame.break_bk', { n: char.level })}
+            onClick={(e) => {
+              set({ panel: 'char' });
+              blurAfterPointer(e);
+            }}
+          >
+            {t('ui.frame.break')}
+          </Button>
+        )}
+      </div>
+      {!goal.ready && goal.kind && <div className="frame-next">{t(goal.kind === 'trib' ? 'ui.frame.next_trib' : 'ui.frame.next_bk', { n: goal.level })}</div>}
     </div>
   );
 }
@@ -295,13 +321,11 @@ function SkillBar() {
   const mp = useUI((s) => s.mp);
   const queued = useUI((s) => s.queuedSkill);
   const empowered = useUI((s) => s.empowered);
-  const px = useUI((s) => s.x);
-  const py = useUI((s) => s.y);
-  const pz = useUI((s) => s.z);
+  // Một cờ do engine tính sẵn: trước đây đăng ký x/y/z nên cả thanh chiêu dựng lại mỗi lần vị trí đổi.
+  const airborne = useUI((s) => s.airborne);
   const method = useUI((s) => s.method);
   const now = useNow(100);
   if (!char) return null;
-  const airborne = (flags & PF_FLYING) !== 0 || py - groundAt(px, pz) > AIRBORNE_HEIGHT;
   const mdef = method?.method ? METHOD.get(method.method) : undefined;
   const bar = skillBar(method?.method);
   const charge = method?.charge ?? 0;
@@ -401,7 +425,7 @@ function SkillBar() {
           <UiIcon id="hud_ngu_kiem" fallback="🗡️" className="inline" /> <span>{t('ui.fly')}</span> <kbd>F</kbd>
         </Button>
         <Button size="s" data-bag onClick={(e) => { togglePanel('bag'); blurAfterPointer(e); }}>
-          <UiIcon id="hud_tui" fallback="🎒" className="inline" /> <span>{t('ui.bag')}</span> <kbd>B</kbd>
+          <UiIcon id="hud_tui" fallback="🎒" className="inline" /> <span>{t('ui.bag.short')}</span> <kbd>B</kbd>
         </Button>
         <Button size="s" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
           <UiIcon id="hud_nhan_vat" fallback="👤" className="inline" /> <span>{t('ui.char')}</span> <kbd>C</kbd>
@@ -443,10 +467,12 @@ function Tribulation() {
   const tribEnd = useUI((s) => s.tribEnd);
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
+  const left = Math.max(0, (tribEnd - now) / 1000);
   return (
-    <div className="trib">
-      <div className="trib-title">⚡ {t('ui.trib.title')} ⚡</div>
-      <div>{t('ui.trib.left', { n: Math.ceil((tribEnd - now) / 1000) })}</div>
+    <div className="trib" role="status">
+      <div className="trib-title">{t('ui.trib.title')}</div>
+      <ProgressBar cls="kiep" value={TRIBULATION_DURATION - left} max={TRIBULATION_DURATION} text={t('ui.trib.secs', { n: Math.ceil(left) })} segs={4} />
+      <div className="trib-hint">{t('ui.trib.left')}</div>
     </div>
   );
 }
@@ -464,15 +490,22 @@ function TribBars() {
   );
 }
 
+const CHAT_IDLE_MS = 12_000;
+
 function Chat() {
   const log = useUI((s) => s.log);
   const open = useUI((s) => s.chatOpen);
   const [text, setText] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Không gõ và không có dòng mới trong 12 giây thì nhật ký mờ đi (HUD gọn); có dòng mới hoặc mở chat thì hiện lại.
+  const [idle, setIdle] = useState(false);
   useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
+    setIdle(false);
+    const id = window.setTimeout(() => setIdle(true), CHAT_IDLE_MS);
+    return () => window.clearTimeout(id);
   }, [log]);
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -495,7 +528,7 @@ function Chat() {
     inputRef.current?.blur();
   };
   return (
-    <div className={'chat' + (open ? ' open' : '')}>
+    <div className={'chat' + (open ? ' open' : '') + (idle && !open ? ' idle' : '')}>
       <div className="chat-log" ref={listRef}>
         {log.map((l) => (
           <div key={l.id} className={'chat-line ' + l.type}>
@@ -566,6 +599,11 @@ function DeathOverlay() {
   );
 }
 
+/** Gợi ý khóa chuột: hiện 6 giây mỗi lần chuột được thả rồi tự mờ, không nằm lì giữa màn hình che nhân vật. */
+function LockHint() {
+  return <div className="hint lock fading">{t('ui.hint.lock')}</div>;
+}
+
 function Corner() {
   const fps = useUI((s) => s.fps);
   const perf = useUI((s) => s.perf);
@@ -620,7 +658,7 @@ export function Hud() {
       <Tribulation />
       <TrialBanner />
       {mouseLook && <div className="crosshair" />}
-      {controls === 'mouse' && !mouseLook && !npc && !panel && !dead && <div className="hint lock">{t('ui.hint.lock')}</div>}
+      {controls === 'mouse' && !mouseLook && !npc && !panel && !dead && <LockHint />}
       {hint && !npc && <div className="hint">{hint}</div>}
       <CastBar />
       <SkillBar />
@@ -640,10 +678,7 @@ function ArtifactSlot() {
   const art = useUI((s) => s.method?.art);
   const cds = useUI((s) => s.cds);
   const mp = useUI((s) => s.mp);
-  const flags = useUI((s) => s.flags);
-  const py = useUI((s) => s.y);
-  const px = useUI((s) => s.x);
-  const pz = useUI((s) => s.z);
+  const airborne = useUI((s) => s.airborne);
   const now = useNow(100);
   const def = art?.id ? ARTIFACT.get(art.id) : undefined;
   const item = art?.id ? ITEM.get(art.id) : undefined;
@@ -665,7 +700,6 @@ function ArtifactSlot() {
   const mods = artifactLevelMods(art.lv);
   const total = Math.max(1, def.cd * mods.cdMul) * 1000;
   const left = Math.max(0, (cds[def.skill] ?? 0) - now);
-  const airborne = (flags & PF_FLYING) !== 0 || py - groundAt(px, pz) > AIRBORNE_HEIGHT;
   const noMp = mp < def.mp;
   const state = airborne ? 'air' : noMp ? 'nomp' : left > 80 ? 'cd' : 'ready';
   return (

@@ -236,16 +236,22 @@ Kỹ thuật: vùng áo chính có mặt nạ trong texture; material nhân màu
 
 | Thông số | Sáng sớm (`dawn`) | Ban ngày (`day`, mặc định) | Đêm (`night`) |
 | --- | --- | --- | --- |
-| Mặt trời / trăng | `#F6C27E`, cường độ 2,0, cao 14° | `#FFD596`, 3,4, cao 36° | trăng `#9DB4CF`, 0,45, cao 35° |
-| Ánh trời | `#B9CFC8`, 0,9 | `#9CC4C3`, 0,72 | `#1A2938`, 0,5 |
+| Mặt trời / trăng | `#F6C27E`, cường độ 2,0, cao 14° | `#FFD596`, 3,4, cao 36° | trăng `#9DB4CF`, 1,25, cao 35° |
+| Ánh trời | `#B9CFC8`, 0,9 | `#9CC4C3`, 0,72 | `#3B5873`, 1,0 |
 | Sương: màu, mật độ `FogExp2` | `#E4E3D6`, 0,0016 | `#C9DDD8`, 0,0011 | `#22323F`, 0,0013 |
 | Sương theo độ cao: đỉnh lớp, hệ số | 60 m, ×2,5 | 40 m, ×1,8 | 40 m, ×2,0 |
+| Sương xa (`fogHaze`, bắt đầu từ `fogHazeStart`) | 0,0026 từ 50 m | 0,0021 từ 60 m | 0,0016 từ 60 m |
+| Viền sáng nhân vật (`rim`) | 0,55 | 0,45 | 0,9 (sắc trăng) |
 | Sắc bóng (`shadowTint`) | `#2F5B5C` ngọc lam | `#2A5A5E` ngọc lam | `#0F1F2A` lam đêm |
 | Sắc vùng sáng (`highlightTint`) | `#FFD49A` | `#FFC670` | `#FFB869` (đèn lồng) |
-| Nâng đen (`blackLift`) | `#14292B` | `#0F2427` | `#0B1720` |
-| Tương phản / bão hòa / phơi sáng | 1,05 / 1,0 / 1,0 | 1,16 / 1,06 / 1,0 | 1,1 / 0,82 / 0,9 |
+| Nâng đen (`blackLift`) | `#14292B` | `#0F2427` | `#0E1C27` |
+| Tương phản / bão hòa / phơi sáng | 1,05 / 1,0 / 1,0 | 1,16 / 1,06 / 1,0 | 1,08 / 0,82 / 1,2 |
 
 Chỉnh 2026-11-15 (P2 grading): ban ngày hạ ánh trời (0,72) và hạ mặt trời xuống 36° với cường độ 3,3 để có bóng dài, tương phản sáng–tối; mức nhuộm tách tông riêng từng preset (`shadowAmount` 0,6 / `highlightAmount` 0,28 ban ngày; mặc định 0,5 / 0,1); `fogScatter` 0,85: sương phía mặt trời ngả `highlightTint` (nắng vàng xuyên sương), phía đối diện giữ ngọc lam; giảm bão hòa theo độ sâu còn 30%. Đỉnh núi là đá xám phủ rêu và cỏ khô, không có tuyết (mục 8); mặt đất xa hơn khoảng 70 m hòa dần về màu đỉnh lưới để không vân ô vuông; AO tắt dần từ 60 đến 140 m.
+
+Chỉnh 2026-11-16 (PR D): thêm **lớp sương xa** kiểu thủy mặc. Sương cũ là hàm mũ bậc hai nên tới 200–600 m gần như chưa ăn; lớp mới là hàm mũ bậc một tính từ `fogHazeStart` (chỗ thấp dày hơn chỗ cao), làm núi và rừng xa nhạt dần thành lớp, còn tầm chiến đấu (dưới 60 m) không đổi. Thêm **viền sáng** (rim) cho thân người chơi và NPC: fresnel hẹp, sắc nắng của preset (không trắng), mạnh ở phía hướng mặt trời, không vào bloom. Trời độ kiếp đổi từ tím sang lam đêm ngả chàm (`pulseColor` 0,20/0,25/0,40, mức 0,62) để giữ quy tắc tím dưới 5% khung hình; tím chỉ còn ở tia sét và vùng báo.
+
+Chỉnh 2026-11-16 (đêm): preset đêm cũ tối tới mức thân nhân vật gần như mất (chỉ còn bảng tên), trái mục 5.3 ("vẫn đọc được hình bóng nhân vật"). Nâng ánh trăng 0,45 → 1,25, ánh trời đêm `#1A2938` 0,5 → `#3B5873` 1,0, phơi sáng 0,9 → 1,2, viền sáng 0,9. Màu sương, sắc bóng và độ bão hòa giữ nguyên nên tông vẫn là lam đêm trầm, đèn lồng vẫn là điểm ấm.
 
 Sương ban ngày dày hơn mức hiện tại trong `env.ts` (`FogExp2` 0,00068) để có chiều sâu; phải kiểm lại biên tải thế giới và độ dễ đọc mục tiêu tab ở 40–60 m.
 
@@ -267,7 +273,7 @@ Preset Thấp tắt bloom và sương theo độ cao, giữ chỉnh màu (rẻ).
 
 - Một mặt trời duy nhất. Nhân vật luôn có ít nhất một nửa mặt được nắng ở góc camera thường.
 - Bóng đổ từ mặt trời; nhân vật LOD2 tắt bóng đổ, mọi nhân vật và quái có bóng tròn mờ dưới chân.
-- Không rim light trắng gắt. Viền sáng nếu có thì là sắc `air_sun_dawn` và yếu.
+- Không rim light trắng gắt. Viền sáng là sắc nắng của preset (`sunColor`), cường độ theo `rim` trong `palette.json`, cộng qua `emissiveNode` (`rimLight` trong `render/materials/world.ts`).
 - Đêm: chủ yếu là ánh trăng lam và đèn lồng ấm `#FFB869`; vẫn đọc được hình bóng nhân vật.
 
 ### 5.4 Phát sáng
@@ -307,7 +313,7 @@ Số liệu thật lấy ở M0-3 và đo lại ở M3-9.
 
 - VFX dùng nhóm linh quang, cộng sáng, chịu bloom. Kiếm khí `spirit_sword`, hồi phục và đả tọa `spirit_jade`, độ kiếp `spirit_thunder`, chiêu quái biến dị và boss `spirit_demonic`, rơi đồ quý `spirit_gold`.
 - Chất thủy mặc giữ ở VFX: vệt kiếm khí dày giữa thon hai đầu như nét bút; vết mực loang trên đất khi trúng đòn nặng hoặc khi quái chết; sương cuộn quanh chân khi ngự kiếm.
-- UI: nền giấy ngà mờ hoặc lam đêm trong suốt, viền đồng thau mảnh. Thanh khí huyết, linh lực vẽ bằng code. Tiêu đề "Đạp Thiên Lộ" dựng bằng font thư pháp, bố cục và màu tự thiết kế (không theo màn tiêu đề của game demo).
+- UI (chỉnh 2026-11-16): **nền mực bán trong suốt** `#0D1117` ở 80% (`--k-ink-bg`; mực ngả lam đêm, không đen tuyền) cho khung HUD và bảng, giấy ngà cho bảng trang trọng (hồi sinh); **viền kim** `#C8A96E` (`--k-bronze`, là `wood_bronze` nâng sáng cho dễ đọc trên nền mực); **ngọc** `#38BDF8` (`--k-ngoc`) chỉ cho trạng thái đang focus/đang chọn. Tiêu đề, tên và cảnh giới dùng font có chân; chỉ số dùng sans. `spirit_jade` vẫn là màu của hồi phục và dòng chỉ số tốt. HUD thường trực dưới 15% màn hình; UI phóng theo màn hình bằng `--ui-scale` (1 tới 1920×1080, 1,35 ở 2560×1440, trần 2). Thanh khí huyết, linh lực vẽ bằng code. Tiêu đề "Đạp Thiên Lộ" dựng bằng font thư pháp, bố cục và màu tự thiết kế (không theo màn tiêu đề của game demo).
 - Mọi chuỗi hiển thị đi qua i18n; tên lấy từ `packages/content/data/glossary.json`.
 
 ---
@@ -355,4 +361,6 @@ Số liệu thật lấy ở M0-3 và đo lại ở M3-9.
 | --- | --- | --- |
 | 2026-11-14 | 1 | Bản đầu (M0-1): cách điệu 1:6 cel-shaded, palette 32 màu ép texture, material toon 3 bậc, viền mực |
 | 2026-11-14 | 2 | Ghi 7 quyết định người dùng duyệt: Kiếm Linh giữ hình cáo, không dithering, palette và màu áo, hạn mức CLI, nơi lưu nguồn, Tripo v3.1 |
+| 2026-11-16 | 3 | Mục 7: chốt ngôn ngữ UI (nền mực `#0D1117` 80%, viền kim `#C8A96E`, ngọc `#38BDF8`), phóng UI theo màn hình |
+| 2026-11-16 | 3 | Mục 5: lớp sương xa (`fogHaze`), viền sáng nhân vật (`rim`), trời độ kiếp lam đêm thay tím |
 | 2026-11-15 | 3 | **Đổi hướng**: bán tả thực điện ảnh, tỉ lệ 1:7, PBR cách điệu, tông sương sớm (ngọc lam + nắng vàng); bảng màu thành bảng tâm trạng (không ép texture), thay khối `toon` bằng `grading`; người chơi 15–25 nghìn tam giác; chỉnh sắc 6 màu áo |

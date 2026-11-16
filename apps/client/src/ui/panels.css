@@ -720,7 +720,8 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 /* ---------- vừa màn hình nhỏ (≥1100px) ---------- */
 @media (max-width: 1366px) {
   /* Hàng nút dưới thanh chiêu rút còn icon + phím để không đè khung chat. */
-  .action-row .k-btn span {
+  /* Chỉ ẩn chữ nhãn. `.k-btn span` trước đây ẩn luôn lớp bọc `.k-btn-in` và icon nên cả nút co còn 3 px. */
+  .action-row .k-btn-in > span:not(.content-icon) {
     display: none;
   }
 }
@@ -751,7 +752,8 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
     width: 38px;
     height: 38px;
   }
-  .action-row .k-btn span {
+  /* Chỉ ẩn chữ nhãn. `.k-btn span` trước đây ẩn luôn lớp bọc `.k-btn-in` và icon nên cả nút co còn 3 px. */
+  .action-row .k-btn-in > span:not(.content-icon) {
     display: none;
   }
 }
@@ -889,4 +891,21 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 }
 .npc-portrait:not(.ready) {
   display: none;
+}
+
+/* ---------- phóng HUD theo màn hình (ui/uiScale.ts) ----------
+ * Bố cục thiết kế ở 1920×1080; màn lớn hơn thì `--ui-scale` > 1 và từng khối HUD phóng đều bằng `zoom`.
+ * Không phóng: bản đồ nhỏ (tự quản), các lớp phủ cả màn hình dùng vw/vh (cảnh điện ảnh, thẻ chương, lời boss, letterbox).
+ * `zoom` nhân mọi độ dài bên trong, kể cả vw/vh, nên giới hạn theo khung nhìn phải chia lại cho hệ số.
+ */
+.hud > :not(.right-col, .cine, .chapter-card, .boss-line, .trib-bar, .crosshair, .ult-card, .death),
+.hud > .death > .k-panel,
+.right-col > .tracker,
+body > .k-tip {
+  zoom: var(--ui-scale, 1);
+}
+/* Bản đồ lớn (M-4) tự tính tọa độ chuột theo px màn hình nên không phóng bằng zoom; nó vốn rộng 980 px. */
+.hud > .k-window.worldmap {
+  zoom: 1;
+  --s: 1;
 }

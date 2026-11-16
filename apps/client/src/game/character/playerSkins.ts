@@ -4,7 +4,7 @@ import { APPEARANCE, DYE, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
-import { adoptGltfMaterials, createWorldMaterial } from '../../render/materials/world';
+import { adoptGltfMaterials, createWorldMaterial, rimLight } from '../../render/materials/world';
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
 import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
@@ -446,7 +446,7 @@ export class PlayerSkins {
       const mesh = o as THREE.Mesh;
       if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
     });
-    m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined), (x) => applyDye(x, skin.clothRef, hex, accent))[0];
+    m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined), (x) => applyDye(x, skin.clothRef, hex, accent))[0]);
     this.mats.set(key, m);
     return m;
   }
