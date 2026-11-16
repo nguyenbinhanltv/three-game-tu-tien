@@ -98,6 +98,9 @@ const CLOUD_COLOR = 0x2b2840;
 const POOL = new FxPool(96);
 
 /** Hệ hiệu ứng: mỗi hiệu ứng là vài lưới phát sáng sống trong thời gian ngắn. */
+/** Màu vũng độc khi chết (ngọc lục, Bích Ngọc Kim Thiền). */
+const POOL_COLOR = 0x5fe39a;
+
 export class Vfx {
   group = new THREE.Group();
   readonly pool = POOL;
@@ -1064,6 +1067,37 @@ export class Vfx {
       },
     };
     this.items.push(it);
+  }
+
+  /**
+   * Vũng độc khi quái chết (E3-G): vạch báo tròn `delay` giây (như vùng nguy hiểm), rồi vũng ngọc lục nhấp nháy `dur` giây.
+   * Chỉ vẽ: ai đứng trong vũng chịu sát thương nhỏ mỗi nhịp là việc của server.
+   */
+  venomPool(x: number, z: number, r: number, delay: number, dur: number, kind: string): void {
+    this.hazard(x, z, r, delay, kind, undefined, 0, false);
+    const y = groundAt(x, z);
+    let top = y;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      top = Math.max(top, groundAt(x + Math.cos(a) * r * 0.7, z + Math.sin(a) * r * 0.7));
+    }
+    this.add(
+      delay,
+      () => {},
+      () => {
+        const m = this.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, POOL_COLOR, Math.min(top, y + 1.2) + 0.12);
+        m.fxColor.multiplyScalar(0.7);
+        this.add(
+          dur,
+          (k) => {
+            m.fxA.x = 1;
+            m.fxA.z = 0;
+            m.fxOpacity = Math.min(1, k * 8) * Math.min(1, (1 - k) * 5) * (0.55 + 0.15 * Math.sin(k * dur * 5));
+          },
+          () => this.drop(m),
+        );
+      },
+    );
   }
 
   /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
