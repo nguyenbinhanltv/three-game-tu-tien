@@ -186,6 +186,12 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `prop_kiem_kinh_quang` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `prop_kiem_tinh_khuyet` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `set_liet_mach_kiem_y` | Tripo web app (image→3D H3.1) + Codex (concept); mẫu trưng bày, không thay áo nhân vật | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `set_liet_mach_kiem_y_nam` | Tripo web app (image→3D H3.1) + Codex (concept); áo bộ Liệt Mạch chuyển sang bộ xương nhân vật nam bằng tools/blender/retarget_set.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `set_liet_mach_kiem_y_nu` | Tripo web app (image→3D H3.1) + Codex (concept); áo bộ chuyển sang bộ xương nhân vật bằng tools/blender/retarget_set.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `set_kinh_quang_kiem_y_nam` | Tripo web app (image→3D H3.1) + Codex (concept); áo bộ chuyển sang bộ xương nhân vật bằng tools/blender/retarget_set.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `set_kinh_quang_kiem_y_nu` | Tripo web app (image→3D H3.1) + Codex (concept); áo bộ chuyển sang bộ xương nhân vật bằng tools/blender/retarget_set.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `set_tinh_khuyet_kiem_bao_nam` | Tripo web app (image→3D H3.1) + Codex (concept); áo bộ chuyển sang bộ xương nhân vật bằng tools/blender/retarget_set.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `set_tinh_khuyet_kiem_bao_nu` | Tripo web app (image→3D H3.1) + Codex (concept); áo bộ chuyển sang bộ xương nhân vật bằng tools/blender/retarget_set.py | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `set_kinh_quang_kiem_y` | Tripo web app (image→3D H3.1) + Codex (concept); mẫu trưng bày, không thay áo nhân vật | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `set_tinh_khuyet_kiem_bao` | Tripo web app (image→3D H3.1) + Codex (concept); mẫu trưng bày, không thay áo nhân vật | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `prop_phu_dao_dinh` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
