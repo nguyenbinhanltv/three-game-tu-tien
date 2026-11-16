@@ -8,15 +8,15 @@ import {
   C,
   type CharView,
   isBottleneckLevel,
+  isPeakLevel,
   isRootId,
-  NGUNG_KHI_MAX,
   PHA_CANH_PILL,
   type RootId,
   ROOT_IDS,
   rootChangeCost,
   TRIAL_DURATION,
 } from '@dtl/shared';
-import { itemName, ROOT, t } from '@dtl/content';
+import { itemName, nextMajorRealmName, realmName, ROOT, t } from '@dtl/content';
 import { Game, reqId } from '../game/engine';
 import { UiIcon } from './ContentIcon';
 import { Button, Divider } from './kit';
@@ -74,7 +74,7 @@ export function BottleneckBox({ char }: { char: CharView }) {
   return (
     <div className="k-card bk-box" data-testid="bk-box">
       <div className="bk-title">{t('ui.bk.title')}</div>
-      <div className="k-dim">{char.level === NGUNG_KHI_MAX ? t('ui.bk.hint15') : t('ui.bk.hint', { lv: char.level })}</div>
+      <div className="k-dim">{isPeakLevel(char.level) ? t('ui.bk.hint15', { realm: realmName(char.level), to: nextMajorRealmName(char.level) }) : t('ui.bk.hint', { realm: realmName(char.level) })}</div>
       <div className={full ? 'ok' : 'bad'}>
         {full ? '✔' : '✘'} {full ? t('ui.xp_full') : t('ui.bk.xp_not_full')}
       </div>

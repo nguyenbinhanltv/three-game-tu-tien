@@ -8,7 +8,12 @@ import {
   initialBottleneck,
   isRootId,
   levelAfterBottleneck,
+  MAX_LEVEL,
+  monsterStats,
+  PEAK_LEVELS,
   playerBaseStats,
+  realmMul,
+  majorRealmOf,
   rootChangeCost,
   type RootDef,
   shadowStats,
@@ -19,9 +24,10 @@ const hoa: RootDef = { id: 'hoa', elem: 'hoa', elemDmg: 0.08, stat: { atkPct: 0.
 const kim: RootDef = { id: 'kim', elem: 'kim', elemDmg: 0.08, stat: { critRate: 0.05 } };
 
 describe('bình cảnh', () => {
-  it('chỉ ở tầng 5, 10, 15', () => {
-    expect(BOTTLENECK_LEVELS).toEqual([5, 10, 15]);
-    for (let l = 1; l <= 18; l++) expect(bottleneckBlocked(l, 0)).toBe(BOTTLENECK_LEVELS.includes(l));
+  it('ở Ngưng Khí 5/10/15 và hai nút mỗi đại cảnh giới sau đó (17, 19, 21, 23, 25, 27)', () => {
+    expect(BOTTLENECK_LEVELS).toEqual([5, 10, 15, 17, 19, 21, 23, 25, 27]);
+    expect(PEAK_LEVELS).toEqual([15, 19, 23, 27]);
+    for (let l = 1; l <= MAX_LEVEL; l++) expect(bottleneckBlocked(l, 0)).toBe(BOTTLENECK_LEVELS.includes(l));
   });
   it('vượt rồi (bk >= tầng) thì không kẹt nữa', () => {
     expect(bottleneckBlocked(5, 5)).toBe(false);
@@ -35,12 +41,16 @@ describe('bình cảnh', () => {
     expect(bottleneckReady(6, 5, 99999, xpNeed(6))).toBe(false);
   });
   it('nhân vật cũ: các mốc nhỏ hơn cấp hiện tại coi như đã vượt', () => {
-    expect([1, 5, 6, 10, 11, 15, 16, 18].map(initialBottleneck)).toEqual([0, 0, 5, 5, 10, 10, 15, 15]);
+    expect([1, 5, 6, 10, 11, 15, 16, 17, 18, 19, 20, 28].map(initialBottleneck)).toEqual([0, 0, 5, 5, 10, 10, 15, 15, 17, 17, 19, 27]);
   });
   it('vượt tầng 5/10 lên 1 tầng; tầng 15 giữ nguyên (còn độ kiếp)', () => {
     expect(levelAfterBottleneck(5)).toBe(6);
     expect(levelAfterBottleneck(10)).toBe(11);
     expect(levelAfterBottleneck(15)).toBe(15);
+  });
+  it('Trúc Cơ → Nguyên Anh: nút trung kỳ lên 1 cấp, đại viên mãn giữ nguyên (còn độ kiếp)', () => {
+    for (const l of [17, 21, 25]) expect(levelAfterBottleneck(l)).toBe(l + 1);
+    for (const l of [19, 23, 27, MAX_LEVEL]) expect(levelAfterBottleneck(l)).toBe(l);
   });
   it('bóng tâm ma yếu hơn người chơi nhưng không tầm thường', () => {
     for (const lv of [5, 10, 15]) {
@@ -83,15 +93,62 @@ describe('linh căn', () => {
 });
 
 describe('mã cảnh giới kiểm thử', () => {
-  it('nk1…nk15, tc, tc1…tc3 và số cấp', async () => {
+  it('nk1…nk15, tc/kd/na/ht, tc1…tc4 và số cấp', async () => {
     const { parseRealmCode } = await import('./realm');
     expect(parseRealmCode('nk1')).toBe(1);
     expect(parseRealmCode(' NK15 ')).toBe(15);
     expect(parseRealmCode('tc')).toBe(16);
     expect(parseRealmCode('tc1')).toBe(16);
     expect(parseRealmCode('tc3')).toBe(18);
+    expect(parseRealmCode('tc4')).toBe(19);
+    expect(parseRealmCode('kd')).toBe(20);
+    expect(parseRealmCode('kd4')).toBe(23);
+    expect(parseRealmCode('na1')).toBe(24);
+    expect(parseRealmCode('na4')).toBe(27);
+    expect(parseRealmCode('ht')).toBe(28);
     expect(parseRealmCode('7')).toBe(7);
-    expect(parseRealmCode(18)).toBe(18);
-    for (const bad of ['', 'nk0', 'nk16', 'tc0', 'tc4', '19', '0', 'kd', 'nk1x', '1e1', 0, 19, 2.5, NaN, null, undefined, {}, []]) expect(parseRealmCode(bad), String(bad)).toBeNull();
+    expect(parseRealmCode('28')).toBe(28);
+    expect(parseRealmCode(28)).toBe(28);
+    for (const bad of ['', 'nk0', 'nk16', 'tc0', 'tc5', 'kd5', 'na5', 'ht2', 'tc10', '29', '0', 'nk1x', '1e1', 0, 29, 2.5, NaN, null, undefined, {}, []]) expect(parseRealmCode(bad), String(bad)).toBeNull();
+  });
+});
+
+describe('thang 28 cấp (E1-C)', () => {
+  const sum = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => xpNeed(a + i)).reduce((x, y) => x + y, 0);
+  it('xpNeed khớp bảng thiết kế, tích lũy 242k / 439k / 686k', () => {
+    expect(MAX_LEVEL).toBe(28);
+    expect([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27].map(xpNeed)).toEqual([56000, 59000, 62000, 65000, 102500, 107500, 112000, 117000, 162000, 168500, 174500, 181000]);
+    expect(sum(16, 19)).toBe(242_000);
+    expect(sum(20, 23)).toBe(439_000);
+    expect(sum(24, 27)).toBe(686_000);
+    expect(xpNeed(28)).toBe(99_999_999);
+    expect(xpNeed(15)).toBe(90 * 15 * 15);
+  });
+  it('hệ số cảnh giới 1 / 1,6 / 2,5 / 3,8 / 5,5 và đại cảnh giới', () => {
+    expect([1, 15, 16, 19, 20, 23, 24, 27, 28].map(realmMul)).toEqual([1, 1, 1.6, 1.6, 2.5, 2.5, 3.8, 3.8, 5.5]);
+    expect([15, 16, 19, 20, 23, 24, 27, 28].map(majorRealmOf)).toEqual([0, 1, 1, 2, 2, 3, 3, 4]);
+  });
+  it('chỉ số người chơi khớp bảng 2.3', () => {
+    const row = (l: number) => {
+      const b = playerBaseStats(l);
+      return [b.hp, b.mp, b.atk, b.def];
+    };
+    expect(row(16)).toEqual([1008, 464, 120, 43]);
+    expect(row(19)).toEqual([1171, 531, 140, 51]);
+    expect(row(20)).toEqual([1915, 865, 230, 84]);
+    expect(row(23)).toEqual([2170, 970, 261, 96]);
+    expect(row(24)).toEqual([3428, 1528, 413, 151]);
+    expect(row(27)).toEqual([3815, 1687, 461, 169]);
+    expect(row(28)).toEqual([5709, 2519, 690, 254]);
+  });
+  it('quái nhân cùng hệ số: hp/atk nhảy theo cảnh giới, def không đổi, cấp ≤ 15 không đổi', () => {
+    const m15 = monsterStats(15, 1, 1);
+    expect(m15.hp).toBe(60 + 42 * 15);
+    const a = monsterStats(19, 1, 1);
+    const b = monsterStats(20, 1, 1);
+    expect(b.hp / (60 + 42 * 20)).toBeCloseTo(2.5, 2);
+    expect(a.hp / (60 + 42 * 19)).toBeCloseTo(1.6, 2);
+    expect(b.atk / (7 + 3.4 * 20)).toBeCloseTo(2.5, 1);
+    expect(b.def).toBe(Math.round(1 + 1.3 * 20));
   });
 });

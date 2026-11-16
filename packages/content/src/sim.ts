@@ -43,6 +43,10 @@ import {
   monsterXp,
   phaseRules,
   NGUNG_KHI_MAX,
+  TRUC_CO_LEVEL,
+  KET_DAN_LEVEL,
+  NGUYEN_ANH_LEVEL,
+  HOA_THAN_LEVEL,
   MAX_SKILL_LEVEL,
   skillUpgradeCost,
   shadowStats,
@@ -295,6 +299,108 @@ console.log(
     process.exitCode = 1;
   }
 }
+
+// ---------- thang 28 cấp: Trúc Cơ → Nguyên Anh (E1-C, `docs/EXPANSION_DESIGN.md` 2.2) ----------
+{
+  const STAGES = [
+    { name: 'Trúc Cơ', from: TRUC_CO_LEVEL, to: KET_DAN_LEVEL - 1, hours: 4 },
+    { name: 'Kết Đan', from: KET_DAN_LEVEL, to: NGUYEN_ANH_LEVEL - 1, hours: 6 },
+    { name: 'Nguyên Anh', from: NGUYEN_ANH_LEVEL, to: HOA_THAN_LEVEL - 1, hours: 8 },
+  ] as const;
+  /** Dung sai nhịp chặng mới so với 4/6/8 giờ (thiết kế: ±12%). */
+  const TOL = 0.12;
+  const INCOME_TARGETS_PER_HOUR = 400;
+  /** Thu nhập tu vi/giờ theo thiết kế tại cấp L: 400 mục tiêu × (12+7L) × xpMul 1,25 × hệ số chênh cấp 0,9. */
+  const designIncome = (level: number) => INCOME_TARGETS_PER_HOUR * (12 + 7 * level) * 1.25 * 0.9;
+
+  console.log('\nThang 28 cấp (E1-C): tu vi, chỉ số người chơi (hệ số cảnh giới 1,6 / 2,5 / 3,8 / 5,5) và nhịp theo thu nhập của thiết kế');
+  console.log('cảnh giới              xpNeed  tích lũy     hp     mp   atk   def   thu nhập/giờ  giờ/cấp  giờ tích lũy');
+  for (const st of STAGES) {
+    let cum = 0;
+    let hrs = 0;
+    for (let l = st.from; l <= st.to; l++) {
+      const b = playerBaseStats(l);
+      cum += xpNeed(l);
+      const h = xpNeed(l) / designIncome(l);
+      hrs += h;
+      console.log(
+        `${realmName(l).padEnd(22)} ${String(xpNeed(l)).padStart(7)} ${String(cum).padStart(9)} ${String(b.hp).padStart(6)} ${String(b.mp).padStart(6)} ${String(b.atk).padStart(5)} ${String(b.def).padStart(5)} ${designIncome(l).toFixed(0).padStart(12)} ${h.toFixed(2).padStart(8)} ${hrs.toFixed(2).padStart(10)}`,
+      );
+    }
+    if (Math.abs(hrs / st.hours - 1) > TOL) {
+      console.error(`LỖI: chặng ${st.name} ra ${hrs.toFixed(2)} giờ theo thu nhập thiết kế, ngoài ${st.hours} giờ ±${TOL * 100}%`);
+      process.exitCode = 1;
+    }
+  }
+  const hb = playerBaseStats(HOA_THAN_LEVEL);
+  console.log(`${realmName(HOA_THAN_LEVEL).padEnd(22)} ${'(trần tạm)'.padStart(7)} ${' '.padStart(9)} ${String(hb.hp).padStart(6)} ${String(hb.mp).padStart(6)} ${String(hb.atk).padStart(5)} ${String(hb.def).padStart(5)}`);
+  console.log(`Mốc thiết kế: Trúc Cơ 4 giờ, Kết Đan 6 giờ, Nguyên Anh 8 giờ (cờ LỖI nếu ngoài ±${TOL * 100}%).`);
+
+  // Thu nhập tu vi thực của mô phỏng ở cấp 15 (Kiếm tu), so với thu nhập thiết kế cùng cấp: mô hình thiết kế có sát thực không.
+  const sim15 = (xpNeed(NGUNG_KHI_MAX) - (questByLevel.get(NGUNG_KHI_MAX) ?? 0)) / (main.secByLevel[NGUNG_KHI_MAX] / 3600);
+  console.log(`Đối chiếu: thu nhập tu vi mô phỏng ở tầng ${NGUNG_KHI_MAX} (Kiếm tu, quái thường + đả tọa) ≈ ${sim15.toFixed(0)}/giờ, thiết kế đặt ${designIncome(NGUNG_KHI_MAX).toFixed(0)}/giờ.`);
+
+  // TTK và máu mất với quái "cùng khuôn" U Minh Lang đặt ở cấp L (monsterStats đã nhân hệ số cảnh giới): thời gian hạ quái không được sụp.
+  const refDef = MONSTER.get('mon_u_minh_lang')!;
+  console.log('\nTTK quái thường cùng khuôn (u_minh_lang đặt ở cấp L, đã nhân hệ số cảnh giới), theo công pháp (trang bị theo nhiệm vụ chỉ tới cấp 15):');
+  console.log('cảnh giới              TTK Kiếm/Hộ/Đan         mất/lần Kiếm/Hộ/Đan');
+  for (let l = TRUC_CO_LEVEL; l <= HOA_THAN_LEVEL; l++) {
+    const ms = monsterStats(l, refDef.hpMul, refDef.atkMul);
+    const sk = seekModel(refDef.id);
+    const ttks: number[] = [];
+    const losts: number[] = [];
+    for (const id of METHOD_IDS) {
+      const pl = playerM(l, id);
+      const ttk = ms.hp / playerDps(l, pl.atk, ms.def, id, refDef.elem);
+      ttks.push(ttk);
+      losts.push(Math.max(0, monsterDps(refDef, ms.atk, pl.def) * ttk * PULL_FACTOR - selfSustain(l, id) * pl.hp * (ttk + sk.seek)) / pl.hp);
+    }
+    console.log(`${realmName(l).padEnd(22)} ${ttks.map((x) => x.toFixed(1).padStart(5) + 's').join(' ')}   ${losts.map((x) => pct(x).padStart(5)).join(' ')}`);
+    ttks.forEach((x, i) => {
+      if (x < 3.5 || x > 8.5) {
+        console.error(`LỖI: cấp ${l} ${METHOD_NAME[METHOD_IDS[i]]} TTK ${x.toFixed(1)}s ngoài 3,5–8,5 s (hệ số cảnh giới quái lệch người chơi)`);
+        process.exitCode = 1;
+      }
+    });
+  }
+
+  // Giờ theo nguồn tu vi ĐANG CÓ: chỉ quái Vân Lam (cấp ≤ 15, `xpLevelFactor` hạ dần tới 0,1 khi chênh ≥ 8 cấp), nhiệm vụ hiện có,
+  // đả tọa, thử thách tâm ma ở bình cảnh. Chưa có phó bản, tinh anh/boss, quái cấp 16+ của E-2/E-3/E-4, nên chặng mới KHÔNG đạt nhịp
+  // 4/6/8 giờ cho tới khi nội dung đó vào: đây là số liệu thông tin, không phải cờ LỖI.
+  const existing = (id: MethodId) =>
+    STAGES.map((st) => {
+      let sec = 0;
+      let kills = 0;
+      for (let l = st.from; l <= st.to; l++) {
+        const pl = playerM(l, id);
+        const sp = pickSpawn(l);
+        const def = MONSTER.get(sp.mon)!;
+        const mlv = Math.min(sp.levelMax, Math.max(sp.levelMin, l));
+        const ms = monsterStats(mlv, def.hpMul, def.atkMul);
+        const ttk = ms.hp / playerDps(l, pl.atk, ms.def, id, def.elem);
+        const sk = seekModel(def.id);
+        const lost = Math.max(0, monsterDps(def, ms.atk, pl.def) * ttk * PULL_FACTOR - selfSustain(l, id) * pl.hp * (ttk + sk.seek));
+        const rest = lost / (pl.hp * HP_REGEN_MEDITATE);
+        const xpPerKill = monsterXp(mlv, def.xpMul) * xpLevelFactor(l, mlv) + meditateXpPerSec(l) * rest;
+        const k = Math.ceil(Math.max(0, xpNeed(l) - (questByLevel.get(l) ?? 0)) / xpPerKill);
+        kills += k;
+        sec += k * (ttk + sk.seek + rest);
+        if (BOTTLENECK_LEVELS.includes(l)) {
+          const sh = shadowStats(l, pl.atk, pl.def);
+          sec += sh.hp / playerDps(l, pl.atk, sh.def, id) + 20;
+        }
+      }
+      return { hours: sec / 3600, kills };
+    });
+  console.log('\nNhịp theo nguồn tu vi hiện có (chỉ quái Vân Lam cấp ≤ 15 + nhiệm vụ + đả tọa + tâm ma; chưa phó bản, tinh anh/boss, quái cấp 16+):');
+  console.log('chặng         mục tiêu   ' + METHOD_IDS.map((m) => METHOD_NAME[m].padEnd(20)).join(' '));
+  const ex = METHOD_IDS.map((m) => existing(m));
+  STAGES.forEach((st, i) => {
+    console.log(`${st.name.padEnd(13)} ${(st.hours + ' giờ').padEnd(10)} ${ex.map((e) => (e[i].hours.toFixed(1) + ' giờ, ' + e[i].kills + ' giết').padEnd(20)).join(' ')}`);
+  });
+  console.log('Quái Vân Lam (cấp ≤ 15) cho tu vi đủ cho Trúc Cơ (hơi dài hơn 4 giờ vì tu vi hạ dần theo chênh cấp), nhưng từ Kết Đan chênh cấp làm tu vi rơi về 10%: các chặng Kết Đan và Nguyên Anh cần quái, phó bản và boss của E-2/E-3/E-4 (mục 4–6, 11 của thiết kế) mới đạt 4/6/8 giờ.');
+}
+
 console.log('\nThử thách tâm ma (bình cảnh, Kiếm tu):');
 for (const r of main.trialRows) console.log(r);
 console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên, đã nhân kéo cụm; tọa: giây đả tọa hồi lại; tìm: giây tìm quái mỗi lần giết.');

@@ -3,7 +3,7 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { DUNGEON_MIN_LEVEL, initialBottleneck, INV_SIZE, isEquipSlot, isRootId, ROOT_IDS, TELE_FREE, TELE_PADS } from '@dtl/shared';
+import { DUNGEON_MIN_LEVEL, initialBottleneck, INV_SIZE, isEquipSlot, isRootId, ROOT_IDS, TELE_FREE, TELE_PADS, TRUC_CO_LEVEL, xpNeed } from '@dtl/shared';
 import { ITEM, LEVELS } from '@dtl/content';
 import { config } from './config';
 
@@ -137,8 +137,8 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ['characters', 'tele', "TEXT NOT NULL DEFAULT ''"],
 ];
 
-/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1); 2 = linh căn + bình cảnh (Phase 3-7); 3 = Truyền Tống Trận (M-4). */
-export const DATA_VERSION = 3;
+/** Phiên bản dữ liệu (PRAGMA user_version). 1 = trang bị 8 ô (Phase 3-1); 2 = linh căn + bình cảnh (Phase 3-7); 3 = Truyền Tống Trận (M-4); 4 = thang 28 cấp (E1-C: tu vi Trúc Cơ, bình cảnh). */
+export const DATA_VERSION = 4;
 
 /**
  * Chuyển trang bị từ 3 ô (weapon/robe/accessory) sang 8 ô: `accessory` đi vào ô đúng loại của mẫu
@@ -225,6 +225,27 @@ export function migrateTele(sqlite: Database.Database): void {
   }
 }
 
+/** `xpNeed` cũ của cấp Trúc Cơ 16–18 trước E1-C (30k/50k/70k); cấp 18 từng là trần nên tu vi ở đó không bị chặn ở mức này. */
+const legacyTrucCoNeed = (level: number) => 30_000 + (level - TRUC_CO_LEVEL) * 20_000;
+
+/**
+ * E1-C: thang 28 cấp đổi `xpNeed` cấp 16–18 (30k/50k/70k → 56k/59k/62k) và thêm bình cảnh ở Trúc Cơ 17/19.
+ * Nhân vật đang ở cấp 16–18 giữ **tỉ lệ** tiến độ trong cấp (tu vi nhân `xpNeed` mới / cũ, tối đa bằng đầy), nên không mất
+ * tiến độ tương đối; người ở cấp 18 từng không bị chặn (cấp tối đa cũ) nên tu vi thừa bị chặn ở mức đầy và vẫn lên được cấp 19.
+ * `bk` nâng lên bình cảnh đã vượt theo cấp (người ở 18 đã qua nút 17). Không đụng vật phẩm/tiền nên không ghi ledger.
+ * Chỉ chạy một lần nhờ `user_version` (gọi lại sẽ nhân tỉ lệ lần nữa), xem `migrate`.
+ */
+export function migrateTrucCoXp(sqlite: Database.Database): void {
+  const rows = sqlite.prepare('SELECT id, level, xp, bk FROM characters WHERE level >= ? AND level <= 18').all(TRUC_CO_LEVEL) as { id: number; level: number; xp: number; bk: number }[];
+  const upd = sqlite.prepare('UPDATE characters SET xp = ?, bk = ? WHERE id = ?');
+  for (const r of rows) {
+    const oldNeed = legacyTrucCoNeed(r.level);
+    const newNeed = xpNeed(r.level);
+    const xp = Math.min(newNeed, Math.round((Math.max(0, r.xp) * newNeed) / oldNeed));
+    upd.run(xp, Math.max(r.bk, initialBottleneck(r.level)), r.id);
+  }
+}
+
 function levelPast(zones: readonly { id: string; lvMax: number }[], zone: string, level: number): boolean {
   const z = zones.find((x) => x.id === zone);
   return !!z && level > z.lvMax;
@@ -241,6 +262,7 @@ function migrate(sqlite: Database.Database): void {
     if (v < 1) migrateEquipSlots(sqlite);
     if (v < 2) migrateRealm(sqlite);
     if (v < 3) migrateTele(sqlite);
+    if (v < 4) migrateTrucCoXp(sqlite);
     if (v < DATA_VERSION) sqlite.pragma(`user_version = ${DATA_VERSION}`);
   })();
 }

@@ -1,12 +1,26 @@
 // Cảnh giới Phase 3-7: bình cảnh (Ngưng Khí tầng 5/10/15), thử thách tâm ma, linh căn ngũ hành.
 // Hàm thuần dùng chung client (hiển thị) và server (phán định). Bảng linh căn nằm ở packages/content/data/roots.json.
 
-import { MAX_LEVEL, NGUNG_KHI_MAX, TRUC_CO_LEVEL, playerBaseStats } from './formulas';
+import { HOA_THAN_LEVEL, KET_DAN_LEVEL, MAX_LEVEL, NGUNG_KHI_MAX, NGUYEN_ANH_LEVEL, TRUC_CO_LEVEL, playerBaseStats } from './formulas';
 
 // ---------- bình cảnh ----------
 
-/** Các tầng có bình cảnh: đầy tu vi thì kẹt, phải qua thử thách tâm ma hoặc dùng Phá Cảnh Đan. */
-export const BOTTLENECK_LEVELS: readonly number[] = [5, 10, 15];
+/**
+ * Các cấp có bình cảnh: đầy tu vi thì kẹt, phải qua thử thách tâm ma hoặc dùng Phá Cảnh Đan.
+ * Hai nút mỗi đại cảnh giới (`docs/EXPANSION_DESIGN.md` 2.4): trung kỳ → hậu kỳ (Ngưng Khí 5/10, Trúc Cơ 17, Kết Đan 21,
+ * Nguyên Anh 25) và đại viên mãn → độ kiếp (15, 19, 23, 27 = `PEAK_LEVELS`).
+ */
+export const BOTTLENECK_LEVELS: readonly number[] = [5, 10, 15, 17, 19, 21, 23, 25, 27];
+
+/**
+ * Cấp đại viên mãn của mỗi đại cảnh giới (Ngưng Khí 15, Trúc Cơ 19, Kết Đan 23, Nguyên Anh 27): tu vi đầy thì dừng,
+ * không tự lên cấp; muốn sang đại cảnh giới kế phải vượt bình cảnh rồi độ kiếp.
+ */
+export const PEAK_LEVELS: readonly number[] = [15, 19, 23, 27];
+
+export function isPeakLevel(level: number): boolean {
+  return PEAK_LEVELS.includes(level);
+}
 
 export function isBottleneckLevel(level: number): boolean {
   return BOTTLENECK_LEVELS.includes(level);
@@ -57,9 +71,9 @@ export function shadowStats(level: number, atk: number, def: number): { hp: numb
   };
 }
 
-/** Tầng sau khi vượt bình cảnh: ở 5, 10 lên 1 tầng; ở 15 chỉ mở độ kiếp (không đổi tầng). */
+/** Cấp sau khi vượt bình cảnh: ở nút trung kỳ (5, 10, 17, 21, 25) lên 1 cấp; ở đại viên mãn chỉ mở độ kiếp (không đổi cấp). */
 export function levelAfterBottleneck(level: number): number {
-  return level >= NGUNG_KHI_MAX || level >= MAX_LEVEL || level >= TRUC_CO_LEVEL ? level : level + 1;
+  return isPeakLevel(level) || level >= MAX_LEVEL ? level : level + 1;
 }
 
 // ---------- linh căn ngũ hành ----------
@@ -101,18 +115,29 @@ export function rootChangeCost(level: number): number {
 
 // ---------- mã cảnh giới cho công cụ kiểm thử (`?realm=`, `/gm realm`) ----------
 
+const REALM_CODES = [
+  { code: 'nk', from: 1, count: NGUNG_KHI_MAX },
+  { code: 'tc', from: TRUC_CO_LEVEL, count: 4 },
+  { code: 'kd', from: KET_DAN_LEVEL, count: 4 },
+  { code: 'na', from: NGUYEN_ANH_LEVEL, count: 4 },
+  { code: 'ht', from: HOA_THAN_LEVEL, count: 1 },
+] as const;
+
 /**
- * Mã cảnh giới → cấp: `nk1`…`nk15` (Ngưng Khí tầng N), `tc` hoặc `tc1`…`tc3` (Trúc Cơ sơ/trung/hậu kỳ), hoặc số cấp 1…MAX_LEVEL.
+ * Mã cảnh giới → cấp: `nk1`…`nk15` (Ngưng Khí tầng N), `tc`/`kd`/`na` hoặc `tc1`…`tc4` (sơ, trung, hậu kỳ, đại viên mãn;
+ * `kd` Kết Đan, `na` Nguyên Anh), `ht` (Hóa Thần sơ kỳ), hoặc số cấp 1…MAX_LEVEL.
  * Sai định dạng hoặc ngoài khoảng thì trả null. Chỉ dùng cho tài khoản thử; server vẫn tự kiểm quyền.
  */
 export function parseRealmCode(code: unknown): number | null {
   if (typeof code === 'number') return Number.isInteger(code) && code >= 1 && code <= MAX_LEVEL ? code : null;
   if (typeof code !== 'string' || code.length > 8) return null;
-  const m = /^(nk|tc)?(\d{1,2})?$/.exec(code.trim().toLowerCase());
+  const m = /^(nk|tc|kd|na|ht)?(\d{1,2})?$/.exec(code.trim().toLowerCase());
   if (!m || (!m[1] && !m[2])) return null;
+  if (!m[1]) {
+    const n = Number(m[2]);
+    return n >= 1 && n <= MAX_LEVEL ? n : null;
+  }
+  const r = REALM_CODES.find((x) => x.code === m[1])!;
   const n = m[2] === undefined ? 1 : Number(m[2]);
-  const level = m[1] === 'tc' ? TRUC_CO_LEVEL + n - 1 : n;
-  if (m[1] === 'nk' && (n < 1 || n > NGUNG_KHI_MAX)) return null;
-  if (m[1] === 'tc' && n < 1) return null;
-  return level >= 1 && level <= MAX_LEVEL ? level : null;
+  return n >= 1 && n <= r.count ? r.from + n - 1 : null;
 }

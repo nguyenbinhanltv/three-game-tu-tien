@@ -14,7 +14,7 @@ import {
   xpNeed,
   type FxMsg,
 } from '@dtl/shared';
-import { NPC, realmName, t } from '@dtl/content';
+import { nextMajorRealmName, NPC, realmName, t } from '@dtl/content';
 import type { MonEnt, PlayerEnt } from './sim';
 
 /** Phần sim mà hệ bình cảnh cần mượn (sim.ts truyền vào, không import ngược để tránh vòng). */
@@ -103,7 +103,7 @@ export class RealmSystem {
     const from = c.level;
     const lv = c.passBottleneck();
     const top = lv === from;
-    h.sys(p, (byPill ? 'sys.bk_pill_ok' : 'sys.bk_ok') + (top ? '15' : ''), { realm: realmName(lv) }, 'good');
+    h.sys(p, (byPill ? 'sys.bk_pill_ok' : 'sys.bk_ok') + (top ? '15' : ''), { realm: realmName(lv), to: nextMajorRealmName(lv) }, 'good');
     // Chỉ hiệu ứng lên cấp nhẹ: `tribstart`/`ascend` là cảnh điện ảnh độ kiếp, không dùng cho bình cảnh.
     h.fx({ t: 'levelup', src: p.sid });
     if (!top) h.questEvent(p, 'level', undefined, lv);
