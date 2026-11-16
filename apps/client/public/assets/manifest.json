@@ -7528,15 +7528,15 @@
       "id": "set_co_thanh_huyen_giap_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_co_thanh_huyen_giap_nam.glb",
-      "file": "set_co_thanh_huyen_giap_nam.a625d9d359.glb",
-      "bytes": 3943040,
-      "rawBytes": 3803076,
-      "triangles": 12698,
-      "rawTriangles": 12698,
+      "file": "set_co_thanh_huyen_giap_nam.49d3f8c17e.glb",
+      "bytes": 3916676,
+      "rawBytes": 3798488,
+      "triangles": 12702,
+      "rawTriangles": 12702,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 78,
+      "bones": 66,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -7580,28 +7580,28 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 12698
+          "triangles": 12702
         },
         {
           "level": 1,
-          "triangles": 5078,
-          "target": 5079
+          "triangles": 5081,
+          "target": 5081
         },
         {
           "level": 2,
-          "triangles": 1889,
+          "triangles": 1905,
           "target": 1905
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.8088,
+          "width": 1.4823,
           "height": 1.6978,
           "depth": 0.6923,
           "minY": 0
         },
         "build": {
-          "width": 1.8088,
+          "width": 1.4823,
           "height": 1.6978,
           "depth": 0.6923,
           "minY": 0
@@ -7612,15 +7612,15 @@
       "id": "set_co_thanh_huyen_giap_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_co_thanh_huyen_giap_nu.glb",
-      "file": "set_co_thanh_huyen_giap_nu.5b9715ae20.glb",
-      "bytes": 3938216,
-      "rawBytes": 3802660,
-      "triangles": 12698,
-      "rawTriangles": 12698,
+      "file": "set_co_thanh_huyen_giap_nu.69a52ec1a2.glb",
+      "bytes": 3912208,
+      "rawBytes": 3798132,
+      "triangles": 12700,
+      "rawTriangles": 12700,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 76,
+      "bones": 64,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -7664,28 +7664,28 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 12698
+          "triangles": 12700
         },
         {
           "level": 1,
-          "triangles": 5078,
-          "target": 5079
+          "triangles": 5080,
+          "target": 5080
         },
         {
           "level": 2,
-          "triangles": 1901,
+          "triangles": 1896,
           "target": 1905
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.7421,
+          "width": 1.5064,
           "height": 1.6433,
           "depth": 0.6872,
           "minY": 0
         },
         "build": {
-          "width": 1.7421,
+          "width": 1.5064,
           "height": 1.6433,
           "depth": 0.6872,
           "minY": 0

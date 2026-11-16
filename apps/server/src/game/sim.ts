@@ -212,6 +212,7 @@ const POTION_ALLY_RANGE = 12;
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
 import { MonSkills, newRt, type MonSkillRt } from './monskill';
+import { MonZones } from './monzone';
 import { CampSystem, type CampRt } from './camps';
 import { empowerDeadlines, isEmpowered, SkillFlow } from './skillflow';
 import { DuelSystem } from './duel';
@@ -548,6 +549,39 @@ export class GameSim {
     addPosture: (m, n) => this.addPosture(m as MonEnt, n),
     minionsAlive: () => this.monsters.reduce((n, o) => n + (o.minionOf && o.state !== MS_DEAD ? 1 : 0), 0),
     monsterDef: (id) => MONSTER.get(id),
+  });
+
+  /** Nuốt kéo người và vũng độc khi chết (E3-G). */
+  readonly zones: MonZones = new MonZones({
+    now: () => this.now,
+    players: () => this.players.values(),
+    isDead: (p) => this.isDead(p as PlayerEnt),
+    resists: (p) => {
+      const e = p as PlayerEnt;
+      return this.airborne(e) || !!e.trib || this.soul.isScouting(e) || !!this.soul.ghostOf(e);
+    },
+    active: (m) => {
+      const e = m as MonEnt;
+      return e.state !== MS_DEAD && e.state !== MS_RETURN && this.monById.has(e.id) && e.stunUntil <= this.now;
+    },
+    drag: (p, dx, dz, dist) => {
+      const e = p as PlayerEnt;
+      const plan = planDash(e.move, { x: dx, z: dz }, dist, undefined, { terrain: this.terrain, bound: caveBoundOf(this.level) });
+      if (plan.dist <= 0) return 0;
+      if (e.meditating) this.setMeditating(e, false);
+      if (e.casting) this.cancelCast(e);
+      e.move.x = plan.x;
+      e.move.z = plan.z;
+      e.move.y = this.terrain.groundAt(plan.x, plan.z);
+      e.move.vy = 0;
+      e.move.grounded = true;
+      e.inputs.length = 0;
+      return plan.dist;
+    },
+    tooHigh: (p) => p.move.y - this.terrain.groundAt(p.move.x, p.move.z) > 8,
+    telegraph: (x, z, r, delay, kind, src, mv, dur) => this.addHazard({ x, z, r }, delay, 0, false, kind as HazardMsg['kind'], src, 0, false, 0, undefined, undefined, mv, false, dur),
+    poisonHit: (p, atk, mul, src) => this.damagePlayer(p as PlayerEnt, computeDamage(atk, mul, (p as PlayerEnt).char.def, Math.random(), 1).dmg, src, true),
+    notify: (p, key) => this.sys(p as PlayerEnt, key, undefined, key === 'sys.pull_resist' ? 'good' : 'bad'),
   });
 
   /** Bãi quái theo cụm (M-2): đội hình, tái sinh cả cụm, hồi sinh theo số người trong vùng. */
@@ -982,6 +1016,7 @@ export class GameSim {
     for (const p of this.players.values()) this.tickPlayer(p, dt);
     for (let i = this.monsters.length - 1; i >= 0; i--) this.tickMonster(this.monsters[i], dt);
     this.tickHazards();
+    this.zones.tick();
     this.tickBolts();
     this.tickMethods();
     this.camps.tick();
@@ -2398,7 +2433,13 @@ export class GameSim {
     m.chantAt = this.now + c.cd * 1000;
     m.abilityAt = Math.max(m.abilityAt, this.now + (c.delay + 2) * 1000);
     this.setMonFlags(m, 0, 0);
-    this.addHazard({ x: m.s.x, z: m.s.z, r: c.r }, c.delay, c.mul, false, c.kind, m.id, m.atk);
+    // Nuốt (E3-G): vòng kéo báo trước, kéo xong rồi vùng nổ mới nổ (người bị kéo vào đúng chỗ nổ, phải thoát ra kịp).
+    const pull = c.pull;
+    if (pull) {
+      m.abilityAt = Math.max(m.abilityAt, this.now + (pull.delay + pull.dur + c.delay + 2) * 1000);
+      this.zones.startPull(m, pull, c.kind);
+    }
+    this.addHazard({ x: m.s.x, z: m.s.z, r: c.r }, c.delay + (pull ? pull.delay + pull.dur : 0), c.mul, false, c.kind, m.id, m.atk);
   }
 
   damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0, dot = false): void {
@@ -2463,6 +2504,8 @@ export class GameSim {
   }
 
   private killMonster(mon: MonEnt): void {
+    // Vũng độc khi chết (E3-G): đệ tử và bóng tâm ma không để lại.
+    if (!mon.owner && !mon.minionOf) this.zones.onDeath(mon, mon.def.deathPool);
     mon.mark = undefined;
     mon.taunt = undefined;
     mon.state = MS_DEAD;
@@ -3239,7 +3282,7 @@ export class GameSim {
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
   /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false): void {
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false, dur = 0): void {
     const mon = this.monById.get(src) ?? null;
     this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined, guard, cut });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
@@ -3248,6 +3291,7 @@ export class GameSim {
     if (lock) msg.big = true;
     if (mv) msg.mv = mv;
     if (hot) msg.hot = true;
+    if (dur > 0) msg.dur = dur;
     if (g.sh) {
       msg.sh = g.sh;
       msg.yaw = g.yaw ?? 0;

@@ -323,7 +323,9 @@ export interface HazardMsg {
   yaw?: number;
   w?: number;
   /** Chiêu mở rộng sinh ra vạch (E1-E), để client chỉnh động tác/âm: line/charge/leap/burrow/cone (nón trồi lên)/summon (không sát thương). */
-  mv?: 'line' | 'charge' | 'leap' | 'burrow' | 'emerge' | 'summon';
+  mv?: 'line' | 'charge' | 'leap' | 'burrow' | 'emerge' | 'summon' | 'pull' | 'pool';
+  /** Vũng tồn tại bao lâu sau lúc nổ (giây), chỉ khi `mv` là 'pool' (E3-G): ai ở trong chịu sát thương dần. */
+  dur?: number;
   /** Seed hình (uint31) của tia sét khi `kind` là `lightning`: mọi client thấy cùng một tia. */
   sd?: number;
   /** Tia cuối của độ kiếp (khóa mệnh, nổ cực lớn): client rung mạnh hơn. */
