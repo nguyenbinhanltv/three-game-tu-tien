@@ -1,4 +1,6 @@
 import { LEVELS } from '@dtl/content';
+import { scatterVanHai } from './vanHaiScatter';
+export { scatterVanHai };
 import { padsOfLevel, propsOf, terrainOf, COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
 
 /**
@@ -342,52 +344,6 @@ export function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[]
         const id = DM_ROCKS[Math.floor(hash01(gx, gz, 4801) * DM_ROCKS.length)];
         out.push({ id, x, y: h - 0.1, z, yaw: k * Math.PI * 2, s: 0.7 + hash01(gx, gz, 4799) * 0.9, tint: [warm * 1.12, warm * 0.94, warm * 0.78] });
       }
-    }
-  }
-  return out;
-}
-
-/**
- * Tùng và đá trôi rải trên các đảo của Vân Hải (E3-A): lưới ô 22 m, xác định, chỉ để tô cảnh; chỉ trên mặt đảo (không trên sàn mây,
- * không trên đường cầu), tránh tâm cụm quái, tinh anh, trận, điểm đáng chú ý và prop đặt tay.
- */
-export function scatterVanHai(placed: readonly PropInstance[]): PropInstance[] {
-  const L = LEVELS.van_hai;
-  const tr = terrainOf('van_hai');
-  const clear: Circle[] = [
-    { x: L.spawn?.x ?? 1024, z: L.spawn?.z ?? 1036, r: 40 },
-    ...(L.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 6 })),
-    ...L.spawns.filter((sp) => sp.radius > 4).map((sp) => ({ x: sp.x, z: sp.z, r: sp.radius + 4 })),
-    ...(L.pois ?? []).map((p) => ({ x: p.x, z: p.z, r: 14 })),
-    ...L.nodes.map((n) => ({ x: n.x, z: n.z, r: 6 })),
-    ...padsOfLevel('van_hai').map((p) => ({ x: p.x, z: p.z, r: 8 })),
-    ...(tr.def.bridges ?? []).flatMap((b) => [0, 0.5, 1].map((t) => ({ x: b.ax + (b.bx - b.ax) * t, z: b.az + (b.bz - b.az) * t, r: 12 }))),
-    ...placed.map((p) => ({ x: p.x, z: p.z, r: 4 })),
-  ];
-  const floor = tr.def.voidFloor ?? 0;
-  const out: PropInstance[] = [];
-  const CELL = 22;
-  const b = tr.playBounds;
-  for (let gz = Math.floor(b.z0 / CELL); gz < Math.ceil(b.z1 / CELL); gz++) {
-    for (let gx = Math.floor(b.x0 / CELL); gx < Math.ceil(b.x1 / CELL); gx++) {
-      const r0 = hash01(gx, gz, 5711);
-      const x = (gx + 0.12 + hash01(gx, gz, 5723) * 0.76) * CELL;
-      const z = (gz + 0.12 + hash01(gx, gz, 5733) * 0.76) * CELL;
-      const h = tr.heightAt(x, z);
-      if (h < floor + 40) continue; // sàn mây và chân đảo: không rải
-      const tree = r0 < 0.2;
-      const rock = !tree && r0 > 0.93;
-      if (!tree && !rock) continue;
-      // chỉ trên mặt đảo phẳng (không trên dốc rìa)
-      const slope = Math.abs(tr.heightAt(x + 3, z) - h) + Math.abs(tr.heightAt(x, z + 3) - h);
-      if (slope > 3) continue;
-      let bad = false;
-      for (const c of clear) if ((x - c.x) ** 2 + (z - c.z) ** 2 < c.r * c.r) bad = true;
-      for (const c of tr.colliders) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 3) ** 2) bad = true;
-      if (bad) continue;
-      const k = hash01(gx, gz, 5783);
-      if (tree) out.push({ id: 'prop_tung_phu_dao', x, y: h - 0.1, z, yaw: k * Math.PI * 2, s: 0.8 + hash01(gx, gz, 5799) * 0.5 });
-      else out.push({ id: 'prop_da_troi', x, y: h - 0.1, z, yaw: k * Math.PI * 2, s: 0.6 + hash01(gx, gz, 5799) * 0.8 });
     }
   }
   return out;

@@ -234,6 +234,26 @@
       "sag": 0
     }
   ],
+  "ponds": [
+    {
+      "x": 1239,
+      "z": 1572,
+      "r": 30,
+      "depth": 1
+    },
+    {
+      "x": 1133,
+      "z": 1620,
+      "r": 22,
+      "depth": 1
+    },
+    {
+      "x": 1139,
+      "z": 1521,
+      "r": 18,
+      "depth": 1
+    }
+  ],
   "features": [
     {
       "id": "isl_phu_dao_cac",
@@ -243,7 +263,11 @@
       "flatR": 85,
       "outerR": 97,
       "round": true,
-      "detail": 1.1
+      "detail": 1.1,
+      "relief": {
+        "amp": 1.2,
+        "freq": 0.025
+      }
     },
     {
       "id": "isl_tung_dai_dao",
@@ -253,7 +277,11 @@
       "flatR": 207,
       "outerR": 219,
       "round": true,
-      "detail": 1.1
+      "detail": 1.1,
+      "relief": {
+        "amp": 2.4,
+        "freq": 0.01
+      }
     },
     {
       "id": "isl_thach_quy_dao",
@@ -263,7 +291,12 @@
       "flatR": 207,
       "outerR": 219,
       "round": true,
-      "detail": 1.1
+      "detail": 1.1,
+      "relief": {
+        "amp": 3,
+        "freq": 0.014,
+        "crease": true
+      }
     },
     {
       "id": "isl_kinh_ho_dao",
@@ -273,7 +306,11 @@
       "flatR": 207,
       "outerR": 219,
       "round": true,
-      "detail": 1.1
+      "detail": 1.1,
+      "relief": {
+        "amp": 0.7,
+        "freq": 0.012
+      }
     },
     {
       "id": "isl_loi_van_dao",
@@ -283,7 +320,12 @@
       "flatR": 207,
       "outerR": 219,
       "round": true,
-      "detail": 1.1
+      "detail": 1.1,
+      "relief": {
+        "amp": 3,
+        "freq": 0.016,
+        "crease": true
+      }
     },
     {
       "id": "isl_kinh_ngu_dai",
@@ -293,7 +335,11 @@
       "flatR": 207,
       "outerR": 219,
       "round": true,
-      "detail": 1.1
+      "detail": 1.1,
+      "relief": {
+        "amp": 2,
+        "freq": 0.008
+      }
     },
     {
       "id": "isl_tieu_dao_1",
@@ -303,7 +349,11 @@
       "flatR": 40,
       "outerR": 52,
       "round": true,
-      "detail": 0.4
+      "detail": 0.4,
+      "relief": {
+        "amp": 0.8,
+        "freq": 0.03
+      }
     },
     {
       "id": "isl_tieu_dao_2",
@@ -313,7 +363,11 @@
       "flatR": 36,
       "outerR": 48,
       "round": true,
-      "detail": 0.4
+      "detail": 0.4,
+      "relief": {
+        "amp": 0.8,
+        "freq": 0.03
+      }
     },
     {
       "id": "isl_tieu_dao_3",
@@ -323,7 +377,11 @@
       "flatR": 42,
       "outerR": 54,
       "round": true,
-      "detail": 0.4
+      "detail": 0.4,
+      "relief": {
+        "amp": 0.8,
+        "freq": 0.03
+      }
     },
     {
       "id": "pad_vh_tp_hub",
