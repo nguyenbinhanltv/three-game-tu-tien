@@ -594,6 +594,8 @@ for (const lv of Object.values(LEVELS)) for (const m of checkLevel(lv)) err(m);
 }
 
 // ---- Truyền Tống Trận liên level (E1-B): bản đồ đích phải có thật và là bản đồ thế giới. Kiểm chi tiết từng trận: levelcheck.ts ----
+// TELE_PAD là Map toàn cục theo id (server/character tra không kèm level): id trận phải duy nhất trên mọi level.
+uniqueIds('trận', [...TELE_PADS]);
 for (const pad of TELE_PADS) {
   const dest = LEVELS[pad.level];
   if (!dest || dest.dungeon) err(`trận ${pad.id}: level ${pad.level} không phải bản đồ thế giới`);
