@@ -50,3 +50,14 @@ export function inLakeWater(x: number, z: number): boolean {
 export function biomeAt(x: number, z: number): Biome {
   return cur.biomeAt(x, z);
 }
+
+/**
+ * Hai level có thể đổi qua nhau mà không dựng lại cảnh (cùng địa hình và cùng bố cục/mặt đất/mood; nhạc và minimap được phép khác).
+ * Thế giới ↔ bí cảnh Kiếm Trủng là trường hợp chính: room đổi nhưng địa hình, tông môn, cổng, cột sáng giữ nguyên.
+ */
+export function sameLayout(a: string, b: string): boolean {
+  if (terrainOf(a) !== terrainOf(b)) return false;
+  const x = levelAssets(a);
+  const y = levelAssets(b);
+  return JSON.stringify([x.features, x.ground, x.mood]) === JSON.stringify([y.features, y.ground, y.mood]);
+}

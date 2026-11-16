@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
 import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, TRIBULATION_DURATION, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_WORLD, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX } from '@dtl/shared';
-import { biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, setActiveLevel } from './levelCtx';
+import { biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
@@ -944,9 +944,8 @@ export class Game {
    */
   async enterLevel(id: string): Promise<boolean> {
     if (!this.started || this.disposed || !knownLevel(id) || id === levelId()) return false;
-    const cur = levelAssets(levelId());
     const next = levelAssets(id);
-    if (terrainOf(id) === levelTerrain() && JSON.stringify([cur.features, cur.ground, cur.mood]) === JSON.stringify([next.features, next.ground, next.mood])) {
+    if (sameLayout(levelId(), id)) {
       // Cùng địa hình và cùng bố cục (thế giới ↔ bí cảnh Kiếm Trủng): chỉ đổi nhãn level và nạp trước nhạc, không dựng lại.
       setActiveLevel(id);
       set({ level: id });
