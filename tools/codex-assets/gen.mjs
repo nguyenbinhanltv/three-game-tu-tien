@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
 import { build as buildOutfit } from './outfit-data.mjs';
+import { build3 as buildOutfit3 } from './outfit3-data.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
@@ -31,6 +32,7 @@ const NO_TEXT = 'No text, letters, watermark, logo, signature, circular borders,
 const ART = 'Semi-realistic cinematic painterly rendering (Chinese fantasy), muted misty-dawn palette, original design, not copied from any existing game, novel or artwork.';
 
 const templates = {
+  outfit3: (s) => s.prompt, // P2-concept: trang phục Nguyên Anh bậc 3 (outfit3-data.mjs)
   outfit: (s) => s.prompt, // T-3: trang phục Kết Đan (dữ liệu ở outfit-data.mjs)
   icons: (s) => `Use case: stylized-concept. ONE square original cultivation fantasy inventory/ability icon.
 Subject: ${s}.
@@ -65,10 +67,10 @@ ${NO_TEXT}`,
 };
 
 if (!templates[group]) {
-  console.error('Nhóm: icons | portraits | loading | ui | concepts | outfit');
+  console.error('Nhóm: icons | portraits | loading | ui | concepts | outfit | outfit3');
   process.exit(1);
 }
-const all = group === 'outfit' ? buildOutfit() : { ...read(`${group}.json`), ...(fs.existsSync(path.join(here, `${group}.pending.json`)) ? read(`${group}.pending.json`) : {}) }; // *.pending.json: id chưa có trên main, chỉ sinh ảnh (build.mjs không đọc)
+const all = group === 'outfit' ? buildOutfit() : group === 'outfit3' ? buildOutfit3() : { ...read(`${group}.json`), ...(fs.existsSync(path.join(here, `${group}.pending.json`)) ? read(`${group}.pending.json`) : {}) }; // *.pending.json: id chưa có trên main, chỉ sinh ảnh (build.mjs không đọc)
 const todo = (ids.length ? ids : Object.keys(all)).filter((id) => {
   if (!all[id]) throw new Error(`Không có chủ thể: ${id}`);
   return force || !fs.existsSync(path.join(source, '2d', group, `${id}.png`));

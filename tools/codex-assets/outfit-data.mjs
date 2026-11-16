@@ -1,11 +1,11 @@
 // Dữ liệu concept trang phục Kết Đan (T-3). Nguồn duy nhất cho: outfit.json (gen.mjs outfit), docs/outfit-concepts/README.md, trang HTML xem nhanh.
 // Chỉ lấy cảm hứng từ ảnh tham khảo (cấu trúc, tinh thần), không chép dáng, hoa văn, logo hay nhân vật nào.
 
-const ORIGINAL = 'Original design for a Chinese fantasy cultivation game, not copied from any existing game, novel, artwork or character.';
-const STYLE =
+export const ORIGINAL = 'Original design for a Chinese fantasy cultivation game, not copied from any existing game, novel, artwork or character.';
+export const STYLE =
   'Semi-realistic cinematic painterly rendering with hand-painted material detail, believable cloth folds, engraved metal, clear readable silhouette, muted misty-dawn palette overall but the outfit itself is slightly brighter and more eye-catching than the environment.';
-const A = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); // prompt không chứa dấu tiếng Việt (tránh model vẽ chữ)
-const NOTEXT =
+export const A = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); // prompt không chứa dấu tiếng Việt (tránh model vẽ chữ)
+export const NOTEXT =
   'ABSOLUTELY NO text, letters, numbers, Chinese characters, captions, labels, watermark, logo, signature, UI icons with writing. Use only wordless graphic panels. No purple tint, no cel shading, no toon outlines, no anime chibi, no photograph, no glow bloom, no particles, no magic effects.';
 
 export const SETS = {
@@ -240,7 +240,7 @@ export const SWORD = {
   },
 };
 
-const sheetBase = (set, extra) =>
+export const sheetBase = (set, extra) =>
   `Use case: stylized-concept. ONE landscape 3:2 character design sheet for a Chinese fantasy cultivation game, dark slate-grey parchment background with faint ink-wash texture, thin bronze chamfered frames separating wordless panels. ${ORIGINAL}
 Outfit: "${A(set.name)}" (${set.method} set, ${set.element}), design: ${set.silhouette}. Embroidery/pattern motif: ${set.motif}.
 Color channels (use exactly): main ${set.palette[0][1]} ${set.palette[0][2]}, secondary ${set.palette[1][1]} ${set.palette[1][2]}, trim ${set.palette[2][1]} ${set.palette[2][2]}, small glow accent ${set.palette[3][1]} ${set.palette[3][2]}.
@@ -249,6 +249,10 @@ ${STYLE}
 ${NOTEXT} The characters are calm idealized young cultivators (neutral expression, hair tied up in a topknot or simple style), not any real or fictional person.`;
 
 export function build() {
+  return buildFrom(SETS, SWORD);
+}
+
+export function buildFrom(SETS, SWORD) {
   const out = {};
   for (const [sid, set] of Object.entries(SETS)) {
     out[`${sid}_views`] = {
@@ -294,13 +298,13 @@ ${NOTEXT}`,
     }
   }
   for (const [iid, it] of Object.entries(SWORD.items)) {
-    out[`kiem_liet_mach_${iid}`] = {
+    out[`kiem_${SWORD.id ?? 'liet_mach'}_${iid}`] = {
       kind: 'sword',
-      set: 'liet_mach',
+      set: SWORD.id ?? 'liet_mach',
       piece: iid,
-      title: `Kiếm Liệt Mạch: ${it.name}`,
+      title: `${SWORD.short ?? 'Kiếm Liệt Mạch'}: ${it.name}`,
       prompt: `Use case: stylized-concept. ONE landscape 3:2 image of a single fantasy sword-related prop, drawn TWICE as a 3D-modeling reference: left half the whole item shown vertically, tip pointing up (front view, blade face on), right half a three-quarter view of the same item turned about 35 degrees with the hilt/guard or mouth area emphasised and fully visible. ${ORIGINAL}
-The item: ${it.look}. Colors: dark aged bronze #B07A3C and cinnabar #9A4A32, ivory #E6DDCB accents, silver edge, amber glow #E8A33D only in the vein lines and the gem.
+The item: ${it.look}. ${SWORD.colors ?? 'Colors: dark aged bronze #B07A3C and cinnabar #9A4A32, ivory #E6DDCB accents, silver edge, amber glow #E8A33D only in the vein lines and the gem.'}
 Show it ALONE: no hand, no person, no mannequin, no other weapon. Whole item fully inside the frame with 6% margin.
 Render: neutral soft even studio lighting from the front-left, no color cast, plain light grey seamless background (#D8D8D8), no floor, no cast shadow, no glow bloom, no particles, no energy swirl.
 ${STYLE}
