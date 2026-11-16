@@ -22,6 +22,14 @@ export function isPeakLevel(level: number): boolean {
   return PEAK_LEVELS.includes(level);
 }
 
+/**
+ * Đại viên mãn mà độ kiếp chưa có (Trúc Cơ 19, Kết Đan 23, Nguyên Anh 27: E1-F/E2-D): chưa cho vượt bình cảnh,
+ * vì thử thách tâm ma hay Phá Cảnh Đan ở đó chỉ dẫn tới trạng thái không đi tiếp được. Bỏ điều kiện này khi độ kiếp tương ứng vào game.
+ */
+export function peakGated(level: number): boolean {
+  return isPeakLevel(level) && level > NGUNG_KHI_MAX;
+}
+
 export function isBottleneckLevel(level: number): boolean {
   return BOTTLENECK_LEVELS.includes(level);
 }

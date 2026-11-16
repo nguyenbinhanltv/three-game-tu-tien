@@ -98,6 +98,7 @@
   "elem.tho": "Thổ",
   "sys.bk_blocked": "Tu vi đã đầy nhưng gặp bình cảnh. Cần vượt tâm ma hoặc dùng Phá Cảnh Đan mới tiến được.",
   "sys.bk_not_ready": "Chưa tới bình cảnh, hoặc tu vi chưa đầy.",
+  "sys.bk_not_yet": "Con đường độ kiếp phía trước chưa mở. Tu vi đã viên mãn, hãy chờ thiên kiếp giáng xuống ở chương sau.",
   "sys.bk_need_pill": "Cần một viên Phá Cảnh Đan.",
   "sys.bk_not_now": "Chưa thể vượt bình cảnh lúc này.",
   "sys.bk_wait": "Đạo tâm chưa ổn, đợi thêm {n} giây mới thử lại được.",

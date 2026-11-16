@@ -6,6 +6,7 @@ import {
   bottleneckReady,
   BOTTLENECK_RETRY_SEC,
   isRootId,
+  peakGated,
   PHA_CANH_PILL,
   rootChangeCost,
   shadowStats,
@@ -49,7 +50,7 @@ export class RealmSystem {
   /** Có đang kẹt ở bình cảnh với tu vi đầy không (điều kiện để bắt đầu thử thách hoặc dùng đan). */
   private ready(p: PlayerEnt): boolean {
     const c = p.char;
-    return bottleneckReady(c.level, c.bk, c.xp, xpNeed(c.level));
+    return !peakGated(c.level) && bottleneckReady(c.level, c.bk, c.xp, xpNeed(c.level));
   }
 
   /** Lệnh `bk`: `{ m: 'trial' | 'pill', r? }`. */
@@ -64,6 +65,7 @@ export class RealmSystem {
     const h = this.h;
     const c = p.char;
     if (h.inDuel(p)) return h.warn(p, 'duel.busy');
+    if (peakGated(c.level)) return h.warn(p, 'sys.bk_not_yet');
     if (h.isDead(p) || p.trib || p.trial || !h.inWorld() || p.casting || p.move.flying) return h.warn(p, 'sys.bk_not_now');
     if (!this.ready(p)) return h.warn(p, 'sys.bk_not_ready');
     const wait = Math.ceil((c.retryAt - h.now()) / 1000);
@@ -86,6 +88,7 @@ export class RealmSystem {
     const c = p.char;
     const idem = h.idem(p, r);
     if (idem === undefined) return;
+    if (peakGated(c.level)) return h.warn(p, 'sys.bk_not_yet');
     if (h.isDead(p) || p.trib) return h.warn(p, 'sys.bk_not_now');
     if (!this.ready(p)) return h.warn(p, 'sys.bk_not_ready');
     if (!c.tx('bk:pill', idem, (d) => d.remove(PHA_CANH_PILL, 1))) {

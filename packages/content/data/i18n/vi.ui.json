@@ -140,6 +140,7 @@
   "ui.bk.title": "Bình cảnh",
   "ui.bk.hint": "{realm} là bình cảnh: tu vi đầy cũng không tiến thêm được. Vượt tâm ma (một mình, khoảng 2–3 phút) hoặc dùng Phá Cảnh Đan.",
   "ui.bk.hint15": "{realm} là bình cảnh: phải vượt tâm ma hoặc dùng Phá Cảnh Đan trước khi độ kiếp {to}.",
+  "ui.bk.not_yet": "Đại viên mãn: con đường độ kiếp tiếp theo chưa mở, chưa thể vượt bình cảnh.",
   "ui.bk.trial": "Vượt tâm ma",
   "ui.bk.trial_desc": "Đánh bại Tâm Ma Ảnh (bóng của chính mình) trong {n} giây. Thua hay hết giờ không mất tu vi, đợi {w} giây thử lại.",
   "ui.bk.pill": "Dùng Phá Cảnh Đan",

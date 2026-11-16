@@ -3,17 +3,19 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { xpNeed } from '@dtl/shared';
+import { PHA_CANH_PILL, xpNeed } from '@dtl/shared';
 
 process.env.DB_FILE = ':memory:';
 
 let openDb: typeof import('../db').openDb;
 let DATA_VERSION: number;
 let Character: typeof import('./character').Character;
+let RealmSystem: typeof import('./realm').RealmSystem;
 
 beforeAll(async () => {
   ({ openDb, DATA_VERSION } = await import('../db'));
   ({ Character } = await import('./character'));
+  ({ RealmSystem } = await import('./realm'));
 });
 
 const OLD_NEED = (l: number) => 30_000 + (l - 16) * 20_000;
@@ -114,5 +116,56 @@ describe('Character: Trúc Cơ → Nguyên Anh', () => {
     const lo = at(19, 19);
     const hi = at(20, 19);
     expect(hi.mhp).toBeGreaterThan(lo.mhp * 1.5);
+  });
+});
+
+describe('đại viên mãn chưa có độ kiếp: không vượt bình cảnh', () => {
+  const pills = (c: InstanceType<typeof Character>) => c.inv.reduce((n, s) => n + (s?.id === PHA_CANH_PILL ? s.n : 0), 0);
+  const setup = (level: number, bk: number) => {
+    const c = Character.create(700_000 + level * 10 + Math.floor(Math.random() * 9), 'Pk' + level + Date.now() + Math.floor(Math.random() * 1e6), null, null);
+    c.level = level;
+    c.bk = bk;
+    c.xp = xpNeed(level);
+    c.recalc();
+    c.tx('t:pill', 'give' + c.id, (d) => d.add(PHA_CANH_PILL, 2));
+    const warns: string[] = [];
+    const spawned: unknown[] = [];
+    const host = {
+      now: () => Date.now(),
+      inWorld: () => true,
+      isDead: () => false,
+      inDuel: () => false,
+      inCombat: () => false,
+      idem: (_p: unknown, r: unknown) => (typeof r === 'string' ? r : undefined),
+      warn: (_p: unknown, k: string) => void warns.push(k),
+      sys: () => {},
+      fx: () => {},
+      spawnShadow: () => (spawned.push(1), null),
+      stopMeditate: () => {},
+      savePlayer: () => {},
+      questEvent: () => {},
+    };
+    const rs = new RealmSystem(host as never);
+    const p = { char: c, trial: null, trib: null, casting: false, meditating: false, move: { flying: false, x: 0, z: 0 } };
+    return { c, rs, p, warns, spawned };
+  };
+
+  it.each([19, 23, 27])('cấp %i đầy tu vi: Phá Cảnh Đan không bị tiêu, không dựng tâm ma', (lv) => {
+    const { c, rs, p, warns, spawned } = setup(lv, lv - 2);
+    rs.onBottleneck(p as never, { m: 'pill', r: 'k1' });
+    rs.onBottleneck(p as never, { m: 'trial' });
+    expect(warns).toEqual(['sys.bk_not_yet', 'sys.bk_not_yet']);
+    expect(pills(c)).toBe(2);
+    expect(c.bk).toBe(lv - 2);
+    expect(c.level).toBe(lv);
+    expect(spawned).toHaveLength(0);
+  });
+
+  it('nút trung kỳ (17) vẫn dùng đan được', () => {
+    const { c, rs, p, warns } = setup(17, 15);
+    rs.onBottleneck(p as never, { m: 'pill', r: 'k2' });
+    expect(warns).toEqual([]);
+    expect(pills(c)).toBe(1);
+    expect(c.level).toBe(18);
   });
 });

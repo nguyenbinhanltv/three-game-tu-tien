@@ -9,6 +9,7 @@ import {
   type CharView,
   isBottleneckLevel,
   isPeakLevel,
+  peakGated,
   isRootId,
   PHA_CANH_PILL,
   type RootId,
@@ -71,6 +72,14 @@ export function BottleneckBox({ char }: { char: CharView }) {
   const full = char.xp >= char.xpNeed;
   const pills = inv.reduce((s, x) => s + (x && x.id === PHA_CANH_PILL ? x.n : 0), 0);
   const trialing = left > 0;
+  if (peakGated(char.level)) {
+    return (
+      <div className="k-card bk-box" data-testid="bk-box">
+        <div className="bk-title">{t('ui.bk.title')}</div>
+        <div className="k-dim">{t('ui.bk.not_yet')}</div>
+      </div>
+    );
+  }
   return (
     <div className="k-card bk-box" data-testid="bk-box">
       <div className="bk-title">{t('ui.bk.title')}</div>
