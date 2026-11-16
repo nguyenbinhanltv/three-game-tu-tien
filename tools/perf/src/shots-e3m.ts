@@ -98,15 +98,15 @@ async function main(): Promise<void> {
       return false;
     };
 
-    // Bản đồ trả về (tạm Đoạn Mạch, xem docs): tới cổng rồi bấm E.
+    // Vân Hải Phù Đảo: tới cổng cạnh Kính Hồ Đài rồi bấm E.
     await gm(page, 'level 23');
     await gm(page, 'god on', 1200);
     await gm(page, 'tele all');
-    await gm(page, 'tp dm_tram');
-    await page.waitForFunction(() => (window as unknown as G).__game?.shownLevel === 'doan_mach', undefined, { timeout: 90_000, polling: 300 });
+    await gm(page, 'tp vh_kinh_ho');
+    await page.waitForFunction(() => (window as unknown as G).__game?.shownLevel === 'van_hai', undefined, { timeout: 90_000, polling: 300 });
     await sleep(3000);
-    await gm(page, 'tp 1064 1007', 2500);
-    await cam(0.35, 16, Math.PI);
+    await gm(page, 'tp 1168 1556', 2500);
+    await cam(0.3, 20, 0);
     await sleep(800);
     await shot('00-cong');
     await page.keyboard.press('KeyE');

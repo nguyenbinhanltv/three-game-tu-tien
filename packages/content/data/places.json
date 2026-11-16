@@ -21,5 +21,12 @@
   { "id": "dm_hoang_sa", "level": "doan_mach", "x": 954, "z": 1524, "note": "Hố Sa Lún, Hoang Sa Huyệt (cấp 18–19)" },
   { "id": "dm_cuu_mo", "level": "doan_mach", "x": 584, "z": 926, "note": "Cổng Mỏ Khai Mạch, Cựu Mỏ Khu (cấp 18–19)" },
   { "id": "dm_tuyet_bich", "level": "doan_mach", "x": 1044, "z": 484, "note": "Vách Đứt Mạch, Đoạn Mạch Tuyệt Bích (cấp 19)" },
-  { "id": "dm_boss", "level": "doan_mach", "x": 1054, "z": 404, "note": "Chỗ Địa Mạch Long (cấp 19)" }
+  { "id": "dm_boss", "level": "doan_mach", "x": 1054, "z": 404, "note": "Chỗ Địa Mạch Long (cấp 19)" },
+  { "id": "vh_hub", "level": "van_hai", "x": 1024, "z": 1036, "note": "Phù Đảo Các, điểm vào Vân Hải Phù Đảo (cấp 20–23)" },
+  { "id": "vh_tung_dai", "level": "van_hai", "x": 715, "z": 1273, "note": "Đình Phù Đảo, Tùng Đài Đảo (cấp 20–21)" },
+  { "id": "vh_thach_quy", "level": "van_hai", "x": 1362, "z": 1223, "note": "Cầu Xích Mây, Thạch Quy Đảo (cấp 21–22)" },
+  { "id": "vh_kinh_ho", "level": "van_hai", "x": 1158, "z": 1498, "note": "Kính Hồ Đài, Kính Hồ Đảo (cấp 21–22)" },
+  { "id": "vh_loi_van", "level": "van_hai", "x": 1557, "z": 720, "note": "Đỉnh Sấm, Lôi Vân Đảo (cấp 22–23)" },
+  { "id": "vh_kinh_ngu", "level": "van_hai", "x": 701, "z": 571, "note": "Vực Kình Ngư, Kình Ngư Đài (cấp 23)" },
+  { "id": "vh_dao_nho", "level": "van_hai", "x": 904, "z": 784, "note": "Đảo nhỏ hái thuốc, chỉ ngự kiếm tới được" }
 ]

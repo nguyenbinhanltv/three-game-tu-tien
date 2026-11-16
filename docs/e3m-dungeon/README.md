@@ -2,14 +2,9 @@
 
 Gói E3-M (`docs/EXPANSION_DESIGN.md` 5.2, 11.3). Cấp 21+, 4–5 người, 5 đợt, boss Kính Nguyệt Chân Quân. Theo mẫu E2-C (`docs/e2c-dungeon/README.md`). Skin là GLB người dùng đã nhập (#115–#117), prop sẵn có, không Tripo, không model mới.
 
-## Cách vào (TODO khi #148 merge)
+## Cách vào
 
-Thiết kế: cổng ở **Kính Hồ Đảo** của Vân Hải (Kính Hồ Đài, `vh_kinh_ho`). Bản đồ Vân Hải (#148) chưa merge nên **tạm** đặt cổng ở `levels/doan_mach.json` (`portals`: (1064, 1004) → `kinh_nguyet`) và `returnLevel: doan_mach` trong `levels/kinh_nguyet.json`, vì `content:check` bắt buộc bản đồ trả về phải có cổng dẫn vào. Khi #148 merge:
-
-1. `git merge origin/main`.
-2. Thêm `portals` vào `levels/van_hai.json` tại Kính Hồ Đài (1168, 1571, r 12, `to: kinh_nguyet`); bỏ cổng tạm ở `doan_mach.json`.
-3. Đổi `returnLevel` thành `van_hai`, `returnSpawn` thành chỗ cạnh Kính Hồ Đài.
-4. `TERRAIN_ALIAS` đã có `kinh_nguyet: 'van_lam'` (giữ). Test `kinhnguyet.test.ts` đọc `returnLevel` từ dữ liệu nên không cần sửa.
+Vân Hải Phù Đảo (#148): cổng đĩa sáng cạnh **Kính Hồ Đài** (Kính Hồ Đảo, 1168, 1560; `portals` trong `levels/van_hai.json`) → bấm E. Ra (cổng bạc ở điểm vào, hoặc tự đưa ra 20 s sau khi dẹp xong) về Vân Hải tại `returnSpawn` (1168, 1546) cạnh Kính Hồ Đài. Điểm vào cũng tới được bằng `/gm tp vh_kinh_ho`.
 
 Vé một lần kiểm ở `static onAuth` (không vé hoặc sai `dgKey` = `no_ticket`), room `dungeon-kinh_nguyet`, `private: true` (mỗi lượt vào một room riêng, đồng đội cùng tổ trong 30 m được kéo theo), tối đa 2 lần hồi sinh mỗi người.
 
@@ -85,7 +80,7 @@ Lòng chảo Kiếm Trủng dựng thành sảnh gương treo giữa mây, bằn
 
 ## Giới hạn / việc để lại
 
-- Cổng tạm ở Đoạn Mạch (xem trên); chưa có hướng dẫn nhiệm vụ cho tới E3-H.
+- Chưa có hướng dẫn nhiệm vụ cho tới E3-H.
 - Ảnh thần thức soi thể thật không bắt được trong kịch bản: boss đánh trúng làm tản thần thức giữa chừng (cơ chế đã test ở server).
 - Phải chơi với 4 người thật để kiểm 25 phút và độ khó đĩa gương/nguyệt phản.
 - Icon Định Thần Phù là emoji dự phòng (`icons:check` 168/171).

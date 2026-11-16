@@ -17,10 +17,10 @@
       "z": 1300
     },
     "minLevel": 21,
-    "returnLevel": "doan_mach",
+    "returnLevel": "van_hai",
     "returnSpawn": {
-      "x": 1024,
-      "z": 1060
+      "x": 1168,
+      "z": 1546
     },
     "bound": 90,
     "private": true,

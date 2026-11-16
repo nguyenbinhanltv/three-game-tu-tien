@@ -16,6 +16,16 @@ import {
   VAN_LAM_TERRAIN,
 } from './level';
 
+/** Hai đầu cầu giữ phẳng đúng độ cao đảo (m) để mặt cầu gặp mặt đảo liền mạch (không vấp bậc ở vai mép đảo). */
+export const BRIDGE_FLAT_END = 10;
+/** Độ cao mặt cầu tại tham số t (0..1) dọc nhịp: hai đầu phẳng `BRIDGE_FLAT_END` m, giữa nội suy tuyến tính có võng (võng tắt dần về hai đầu). */
+export function bridgeDeckY(b: { ax?: number; az?: number; bx?: number; bz?: number; ay: number; by: number; sag: number }, t: number): number {
+  const len = b.ax !== undefined && b.bx !== undefined ? Math.hypot(b.bx - b.ax, (b.bz ?? 0) - (b.az ?? 0)) : 0;
+  const f = len > 2 * BRIDGE_FLAT_END ? BRIDGE_FLAT_END / len : 0;
+  const u = f > 0 ? Math.max(0, Math.min(1, (t - f) / (1 - 2 * f))) : t;
+  return b.ay + (b.by - b.ay) * u - b.sag * 4 * u * (1 - u);
+}
+
 /** Địa hình đã dựng của một level: hàm thuần, tất định, dùng chung client/server/công cụ. */
 export interface Terrain {
   id: string;
@@ -28,6 +38,8 @@ export interface Terrain {
   /** Vùng chơi chính theo toạ độ thế giới (cả thế giới nếu không có ranh). */
   playBounds: { x0: number; z0: number; x1: number; z1: number };
   heightAt(x: number, z: number): number;
+  /** Như `heightAt` nhưng bỏ mặt cầu (chỉ khác ở level có `bridges`): để dựng lưới địa hình. */
+  surfaceAt(x: number, z: number): number;
   /** Độ cao "đứng được": mặt đất, hoặc mặt nước trừ độ sâu lội trong hồ. */
   groundAt(x: number, z: number): number;
   inWater(x: number, z: number): boolean;
@@ -36,6 +48,8 @@ export interface Terrain {
   featureWeight(f: TerrainFeature, x: number, z: number): number;
   /** Khoảng cách ô vuông bo tròn từ tâm vùng chơi; 0 nếu không có ranh. */
   playDist(x: number, z: number): number;
+  /** Level đảo nổi: bước lên bậc cao đột ngột (thành cầu, vách đảo) bị chặn, không "nhảy" lên được (movement.ts). */
+  blockRise: boolean;
   /** Đẩy (x, z) về trong chân vách, ghi vào `out`. */
   clampPlay(x: number, z: number, out: { x: number; z: number }): { x: number; z: number };
 }
@@ -49,6 +63,7 @@ export function makeTerrain(def: TerrainDef): Terrain {
   const minLandY = water ? water.y + 3 : -Infinity;
   const playWall = play ? play.half - 10 : Infinity;
   const islands = def.islands?.length ? def.islands : undefined;
+  const bridges = def.bridges?.length ? def.bridges : undefined;
 
   /**
    * Khoảng cách tới tâm khu, méo bằng nhiễu thấp tần số (±~20 %, biên độ nhiễu thực ~0,3): mép khu (bãi bằng, bờ hồ) là một hình lồi lõm như
@@ -116,7 +131,26 @@ export function makeTerrain(def: TerrainDef): Terrain {
     return Math.sqrt(Math.sqrt(dx * dx * dx * dx + dz * dz * dz * dz));
   }
 
-  function heightAt(x: number, z: number): number {
+  /** Mặt cầu: gần dải thì độ cao kéo về mặt cầu nếu mặt cầu cao hơn (đầu cầu trùng mặt đảo nên liền mạch). Mép dải dốc đứng nên cầu như bức tường nhìn từ sàn mây. */
+  function withBridges(h: number, x: number, z: number): number {
+    for (const b of bridges!) {
+      const dx = b.bx - b.ax;
+      const dz = b.bz - b.az;
+      const len2 = dx * dx + dz * dz;
+      const t = ((x - b.ax) * dx + (z - b.az) * dz) / len2;
+      if (t < 0 || t > 1) continue;
+      const px = b.ax + dx * t - x;
+      const pz = b.az + dz * t - z;
+      const d2 = px * px + pz * pz;
+      const outer = b.halfW + 0.8;
+      if (d2 >= outer * outer) continue;
+      const deck = bridgeDeckY(b, t);
+      if (deck > h) h = lerp(h, deck, smoothstep(outer, b.halfW, Math.sqrt(d2)));
+    }
+    return h;
+  }
+
+  function heightWith(x: number, z: number, withDeck: boolean): number {
     let h = naturalHeight(x, z);
     const detail = fbm(x * 0.021, z * 0.021, 2, seed + 53);
 
@@ -153,12 +187,22 @@ export function makeTerrain(def: TerrainDef): Terrain {
       }
     }
 
+    if (bridges && withDeck) h = withBridges(h, x, z);
+
     // Ranh vùng chơi: ngay sau chân vách địa hình dựng đứng lên, đi tới đó gặp vách.
     if (play) {
       const dPlay = playDist(x, z);
       if (dPlay > playWall) h += play.wallH * smoothstep(playWall, playWall + 60, dPlay);
     }
     return h;
+  }
+
+  function heightAt(x: number, z: number): number {
+    return heightWith(x, z, true);
+  }
+  /** Độ cao KHÔNG tính mặt cầu: client dựng lưới địa hình từ đây (cầu là mesh riêng, không để thành đất lòi ra dưới cầu). */
+  function surfaceAt(x: number, z: number): number {
+    return bridges ? heightWith(x, z, false) : heightWith(x, z, true);
   }
 
   function inWater(x: number, z: number): boolean {
@@ -203,7 +247,7 @@ export function makeTerrain(def: TerrainDef): Terrain {
     return out;
   }
 
-  return { id: def.id, def, size: def.size, margin: def.margin, colliders: def.colliders, playWall, playBounds, heightAt, groundAt, inWater, biomeAt, featureWeight, playDist, clampPlay };
+  return { id: def.id, def, size: def.size, margin: def.margin, colliders: def.colliders, playWall, playBounds, blockRise: !!islands, heightAt, surfaceAt, groundAt, inWater, biomeAt, featureWeight, playDist, clampPlay };
 }
 
 // ---- Đăng ký theo level ----

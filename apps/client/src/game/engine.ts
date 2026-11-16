@@ -862,6 +862,11 @@ export class Game {
   // ---------- level (E1-D) ----------
 
   /** Level đang hiển thị (có thể khác level của room: level thử `thu_nghiem`). */
+  /** Số đảo giả đang mờ vì thần thức (E3-N, kiểm tra). */
+  skyRevealed(): number {
+    return this.mapVis?.skyRevealed ?? 0;
+  }
+
   get shownLevel(): string {
     return levelId();
   }
