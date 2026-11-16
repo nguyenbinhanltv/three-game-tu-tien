@@ -83,6 +83,11 @@ export interface MonsterDef {
   id: string;
   model: MonsterModel;
   scale: number;
+  /**
+   * Bay lơ lửng (E3-B, chỉ hình): độ cao thân so với mặt đất (m). Server vẫn coi quái đứng trên đất (vị trí, tầm đánh,
+   * vạch báo đều theo mặt đất); client nâng model lên, hạ xuống khi lộ yếu điểm (`MF_WEAK`) và khi chết.
+   */
+  hover?: number;
   color: string;
   accent: string;
   hpMul: number;

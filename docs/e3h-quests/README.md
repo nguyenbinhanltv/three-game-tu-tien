@@ -26,3 +26,6 @@ Phụ: `s3_bich_ngoc` (Bích Ngọc Kim Thiền ×18, Lâm Chiếu Dung), `s3_th
 - Tiến độ `scan`/`kill` chưa có chỉ báo trên bản đồ.
 
 Ảnh: `pnpm --filter @dtl/perf run shots:e3h --out <thư mục tuyệt đối>` (ảnh trong thư mục này chụp trên nhánh tích hợp main + #148 trước khi #148 merge). Log tiến độ: `e3h-log.json`.
+
+
+> Cập nhật E3-B: quái Vân Hải đã có trong `monsters.json`, cờ `E3B_PENDING_MONS` đã xóa; `q3_nguyen_anh` nay `requires q3_kinh_vuong`, giao/trả ở Lâm Chiếu Dung.

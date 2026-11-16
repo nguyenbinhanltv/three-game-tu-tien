@@ -165,11 +165,11 @@ for (let i = 0; i < 5; i++) {
 
 // ---- tinh anh ----
 const ELITES = [
-  { zone: 'tung_dai_dao', mon: 'elite_liet_cot_bao', n: 2 },
-  { zone: 'thach_quy_dao', mon: 'elite_ho_mach_khoi_tuong', n: 3 },
-  { zone: 'kinh_ho_dao', mon: 'elite_xich_sa_ngo_cong', n: 2 },
-  { zone: 'loi_van_dao', mon: 'elite_liet_cot_bao', n: 3 },
-  { zone: 'kinh_ngu_dai', mon: 'elite_ho_mach_khoi_tuong', n: 2 },
+  { zone: 'tung_dai_dao', mons: ['elite_van_hac_vuong', 'elite_van_hac_vuong'] },
+  { zone: 'thach_quy_dao', mons: ['elite_loi_van_su_vuong', 'elite_loi_van_su_vuong', 'elite_loi_van_su_vuong'] },
+  { zone: 'kinh_ho_dao', mons: ['elite_kinh_dien_ma_quan', 'elite_kinh_dien_ma_quan'] },
+  { zone: 'loi_van_dao', mons: ['elite_loi_van_su_vuong', 'elite_loi_van_su_vuong', 'elite_kinh_dien_ma_quan'] },
+  { zone: 'kinh_ngu_dai', mons: ['elite_van_hac_vuong', 'elite_van_hac_vuong'] },
 ];
 const keep = []; // {x,z,r}
 for (const p of PADS) keep.push({ x: p.off[0], z: p.off[1], r: 0 });
@@ -194,7 +194,7 @@ const spawns = [];
 const eliteAt = [];
 for (const e of ELITES) {
   const zn = ZONES.find((z) => z.id === e.zone);
-  for (let i = 0; i < e.n; i++) {
+  for (let i = 0; i < e.mons.length; i++) {
     let best = null;
     let bestD = -1;
     for (let k = 0; k < 500; k++) {
@@ -210,20 +210,21 @@ for (const e of ELITES) {
       }
     }
     eliteAt.push({ x: best[0], z: best[1] });
-    spawns.push({ mon: e.mon, x: W(best[0]), z: W(best[1]), radius: 10, count: 1, levelMin: zn.lv[1], levelMax: zn.lv[1], respawn: 240 });
+    spawns.push({ mon: e.mons[i], x: W(best[0]), z: W(best[1]), radius: 10, count: 1, levelMin: zn.lv[1], levelMax: zn.lv[1], respawn: 240 });
   }
 }
-// Kình Ngư Đài: boss Vân Hải Kình Vương bay quanh biển mây phía trên đảo (E3-B thêm sau); giữ trống tâm đảo làm đấu trường.
+// Kình Ngư Đài: boss Vân Hải Kình Vương (E3-B) bay lơ lửng ở tâm đảo (đấu trường), hồi sinh 30 phút.
+spawns.push({ mon: 'boss_van_hai_kinh_vuong', x: W(ZONES[4].off[0]), z: W(ZONES[4].off[1]), radius: 6, count: 1, levelMin: 23, levelMax: 23, respawn: 1800 });
 keep.push({ x: ZONES[4].off[0], z: ZONES[4].off[1], r: 0 });
 
 // ---- cụm quái ----
 const CAMP_R = 30;
 const MIX = {
-  tung_dai_dao: [['mon_ngo_cong_au', 0.5], ['mon_thach_giap_te', 0.5]],
-  thach_quy_dao: [['mon_thach_giap_te', 0.6], ['mon_mach_thuong_ho_ve', 0.4]],
-  kinh_ho_dao: [['mon_khai_mach_khoi_loi', 0.6], ['mon_mach_thuong_ho_ve', 0.4]],
-  loi_van_dao: [['mon_khai_mach_khoi_loi', 0.5], ['mon_ngo_cong_au', 0.5]],
-  kinh_ngu_dai: [['mon_mach_thuong_ho_ve', 0.5], ['mon_ngo_cong_au', 0.5]],
+  tung_dai_dao: [['mon_van_hac', 0.5], ['mon_bich_ngoc_kim_thien', 0.5]],
+  thach_quy_dao: [['mon_phu_dao_thach_quy', 0.6], ['mon_van_hac', 0.4]],
+  kinh_ho_dao: [['mon_kinh_linh', 1]],
+  loi_van_dao: [['mon_kinh_linh', 0.5], ['mon_van_hac', 0.5]],
+  kinh_ngu_dai: [['mon_van_hac', 0.5], ['mon_bich_ngoc_kim_thien', 0.5]],
 };
 const pick = (list) => {
   let t = R();

@@ -102,7 +102,7 @@ Một hàm `heightAt` chung (client, server, công cụ) gồm:
 
 ## Còn lại / để cho gói khác
 
-- **E3-B**: quái, tinh anh, boss Vân Hải Kình Vương riêng (hiện quái tạm của Đoạn Mạch); `loot.json`.
+- ~~E3-B~~ (xong, `docs/e3b-mons/`): quái, tinh anh, boss Vân Hải Kình Vương riêng, `loot.json`.
 - **E3-H**: nhiệm vụ chương 3, NPC Lâm Chiếu Dung ở hub (hiện chỉ `q2_ket_dan` mở trận).
 - **Mỹ thuật bản đồ 3**: bộ texture mặt đảo riêng (hiện dùng lại cỏ Vân Lam đã nhạt màu, màu đỉnh tông trầm), nhạc `wild_cloud`/`mirror_lake`/`wild_storm`, mood chi tiết, `prop_cau_may` (GLB cầu) nếu muốn thay cầu thủ tục, hồi sinh nhẹ ở đảo gần nhất khi rơi (hiện rơi xuống sàn mây rồi tự leo sườn đảo).
 - Cảnh báo console `Vertex attribute "normal" not found` (5 lần) có từ trước ở các level mở rộng khác (Đoạn Mạch cũng vậy), không do gói này.
