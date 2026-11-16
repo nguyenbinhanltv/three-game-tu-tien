@@ -95,6 +95,12 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   },
   // Thạch Viên: vượn đá hai chân, đòn nện hai tay (clip slash của Tripo đã cắt).
   mon_thach_vien: { asset: 'mon_thach_vien', clips: WOLF_CLIPS, refSpeed: 2.15, legs: 'biped', tint: '#ffffff' },
+  // Tinh anh Vân Lam (E-1b): model Tripo thay model khối, nạp lười theo màn (không vào tải đầu). Kích thước nhập ở scale 1 (sói
+  // 1,5 m, cáo 1,27 m dài, vượn cao 1,8 m), kích thước thật theo `scale` trong monsters.json (hitbox không đổi). refSpeed theo
+  // tỉ lệ 0,796 của naturalSpeed đo trong Blender (cùng cách với sói). Clip thủ tục: tools/blender/anim_quadruped.py, anim_biped_extra.py.
+  elite_huyet_nha_lang: { asset: 'elite_huyet_nha_lang', clips: WOLF_CLIPS, refSpeed: 4.3, legs: 'quad', tint: '#ffffff', rim: 0.3, lazy: true, level: 'van_lam' },
+  elite_xich_dien_ho: { asset: 'elite_xich_dien_ho', clips: WOLF_CLIPS, refSpeed: 2.2, legs: 'quad', tint: '#ffffff', rim: 0.25, lazy: true, level: 'van_lam' },
+  elite_cu_nham_vien: { asset: 'elite_cu_nham_vien', clips: WOLF_CLIPS, refSpeed: 1.8, legs: 'biped', tint: '#ffffff', lazy: true, level: 'van_lam' },
   // Boss Kiếm Trủng (M3-8). Sói chúa: naturalSpeed 3,378 theo cùng tỉ lệ với sói (→ 2,7); hai boss vượn đo chân trụ
   // clip run Tripo ở scale 1.
   boss_huyet_lang_vuong: { asset: 'boss_huyet_lang_vuong', clips: BOSS_CLIPS, refSpeed: 2.7, legs: 'quad', tint: '#ffffff', rim: 0.35, lazy: true, level: 'kiem_trung', moves: QUAD_MOVES },
