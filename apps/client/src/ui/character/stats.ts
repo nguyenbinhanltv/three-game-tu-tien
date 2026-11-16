@@ -1,10 +1,9 @@
 // Bảng thuộc tính (TD-C): mọi chỉ số của `computePlayerStats` (shared), chia nhóm, kèm nguồn từng phần.
 // Không copy công thức: nguồn = hiệu hai lần gọi `computePlayerStats` (thêm dần gốc, trang bị, bộ, linh căn).
 // Phần còn lại giữa số server gửi (CharView) và số tính được là "khác" (đan tăng sức, nội tại công pháp/pháp bảo).
-import { computePlayerStats, ELEMENTS, type Equipment, type PlayerStats } from '@dtl/shared';
+import { combatPower, computePlayerStats, ELEMENTS, type Equipment, type PlayerStats } from '@dtl/shared';
 import { ROOT, SETS } from '@dtl/content';
 import { entries } from '../gear';
-import { combatPower } from './power';
 
 export type StatId = 'atk' | 'critRate' | 'critMul' | 'eliteDmg' | 'def' | 'hp' | 'mp' | 'moveSpeed' | 'lifesteal' | 'healRecv' | 'cdr';
 export type StatGroup = 'attack' | 'defense' | 'recovery';

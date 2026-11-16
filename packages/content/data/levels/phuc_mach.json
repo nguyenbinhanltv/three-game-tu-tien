@@ -1,0 +1,175 @@
+{
+  "id": "phuc_mach",
+  "terrain": "van_lam",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1520,
+      "z": 1352
+    },
+    "exit": {
+      "x": 1520,
+      "z": 1370
+    },
+    "center": {
+      "x": 1520,
+      "z": 1300
+    },
+    "minLevel": 17,
+    "returnLevel": "doan_mach",
+    "returnSpawn": {
+      "x": 584,
+      "z": 984
+    },
+    "bound": 90,
+    "private": true,
+    "lockAt": 2,
+    "maxRevives": 2,
+    "reward": {
+      "xpPct": 0.15,
+      "gold": [
+        1400,
+        2000
+      ],
+      "level": 19,
+      "items": [
+        {
+          "item": "itm_ngung_dan_mach_tinh",
+          "chance": 1,
+          "min": 3,
+          "max": 4
+        },
+        {
+          "item": "itm_mach_tinh_phien",
+          "chance": 1,
+          "min": 6,
+          "max": 9
+        },
+        {
+          "item": "itm_tu_khi_dan",
+          "chance": 1,
+          "min": 2,
+          "max": 3
+        }
+      ],
+      "equip": [
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            60,
+            40,
+            0
+          ],
+          "set": "set_liet_mach"
+        },
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            60,
+            40,
+            0
+          ],
+          "set": "set_dia_giap"
+        },
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            60,
+            40,
+            0
+          ],
+          "set": "set_phuc_mach"
+        }
+      ]
+    },
+    "waves": [
+      {
+        "mons": [
+          {
+            "id": "mon_khai_mach_khoi_loi",
+            "level": 18,
+            "n": 8
+          }
+        ],
+        "delay": 8
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_mach_thuong_ho_ve",
+            "level": 18,
+            "n": 4
+          },
+          {
+            "id": "elite_ho_mach_khoi_tuong",
+            "level": 18,
+            "n": 1
+          }
+        ]
+      },
+      {
+        "points": [
+          {
+            "x": 1474,
+            "z": 1262
+          },
+          {
+            "x": 1566,
+            "z": 1262
+          },
+          {
+            "x": 1520,
+            "z": 1234
+          }
+        ],
+        "mons": [
+          {
+            "id": "mon_ngo_cong_au",
+            "level": 18,
+            "n": 4,
+            "at": 0
+          },
+          {
+            "id": "mon_ngo_cong_au",
+            "level": 18,
+            "n": 3,
+            "at": 1
+          },
+          {
+            "id": "mon_ngo_cong_au",
+            "level": 18,
+            "n": 3,
+            "at": 2
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_thach_tam_khoi_vuong",
+            "level": 18,
+            "n": 1
+          }
+        ],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_thon_mach_ngo_cong_vuong",
+            "level": 19,
+            "n": 1
+          }
+        ],
+        "title": true
+      }
+    ]
+  }
+}

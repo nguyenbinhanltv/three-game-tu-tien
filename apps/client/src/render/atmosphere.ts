@@ -147,7 +147,7 @@ export const haloParams = {
  * Quầng sáng giả (billboard cộng sáng) quanh các đèn: một mesh, một draw call cho mọi đèn.
  * Không đổ sáng thật lên cảnh; mờ dần theo khoảng cách thay cho sương (vì cộng sáng + sương sẽ sáng sai).
  */
-export function createLanternHalos(points: readonly { x: number; y: number; z: number }[], size = 2.4): THREE.Mesh {
+export function createLanternHalos(points: readonly { x: number; y: number; z: number }[], size = 2.4, tint?: THREE.ColorRepresentation): THREE.Mesh {
   const n = points.length;
   const center = new Float32Array(n * 4 * 3);
   const uvs = new Float32Array(n * 4 * 2);
@@ -176,9 +176,12 @@ export function createLanternHalos(points: readonly { x: number; y: number; z: n
   mat.vertexNode = cameraProjectionMatrix.mul(vec4(mv.x.add(off.x), mv.y.add(off.y), mv.z.add(0.6), 1));
   const d = length(uv().sub(0.5)).mul(2);
   const fade = float(1).sub(smoothstep(60, 220, length(mv.xyz)));
-  mat.colorNode = haloParams.color;
-  mat.opacityNode = clamp(float(1).sub(d), 0, 1).pow(2).mul(haloParams.intensity).mul(fade);
-  markBloom(mat, 0.8);
+  const mask = clamp(float(1).sub(d), 0, 1).pow(2).mul(haloParams.intensity).mul(fade);
+  // Quầng có màu riêng (tinh thể): nhân màu với mặt nạ tròn để lớp bloom không để lộ ô vuông của tấm billboard.
+  mat.colorNode = tint === undefined ? haloParams.color : uniform(new THREE.Color(tint)).mul(mask.mul(1.6));
+  mat.opacityNode = mask;
+  // Quầng có màu riêng không vào lớp bloom: bloom ghi màu không nhân alpha nên hiện thành ô vuông quanh billboard.
+  if (tint === undefined) markBloom(mat, 0.8);
 
   const mesh = new THREE.Mesh(geo, mat);
   mesh.name = 'lantern-halos';

@@ -16,6 +16,7 @@ import {
   type ItemDef,
   legacyQuality,
   type PlayerStats,
+  combatPower,
   type RootDef,
   type SetDef,
   type SetFxId,
@@ -31,7 +32,6 @@ import {
   sealStun,
 } from '@dtl/shared';
 import { ARTIFACT, ITEM, itemTier, PILL_QUALITY, realmName, ROOT, SET, SETS, t } from '@dtl/content';
-import { combatPower } from './character/power';
 
 export interface TipLine {
   text: string;
