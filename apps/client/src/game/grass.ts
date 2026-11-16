@@ -95,6 +95,8 @@ function nearCollider(x: number, z: number, pad: number): boolean {
  */
 function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, out: Float32Array, o: number): boolean {
   if (h < WATER_Y + 2.2 || h > 240 || slope > 2.2) return false;
+  const isl = levelTerrain().def;
+  if (isl.islands && h < (isl.voidFloor ?? 0) + 40) return false; // không cỏ trên sàn mây và vách đảo
   if (featureWeight(SECT, x, z) > 0.8 || featureWeight(PORTAL_PAD, x, z) > 0.8 || featureWeight(KIEM_TRUNG, x, z) > 0.12) return false;
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
@@ -113,6 +115,7 @@ function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   _c.copy(C_SUN);
   if (wForest > 0) _c.lerp(C_SHADE, Math.min(1, wForest * 1.2) * 0.75);
   _c.lerp(C_DRY, Math.max(0, Math.min(1, -n * 0.9 + (h > 150 ? 0.35 : 0) + (wLake > 0.3 ? 0.25 : 0))));
+  if (isl.islands) _c.lerp(C_DRY, 0.7); // đảo nổi: cỏ nhạt, tông trầm
   _c.multiplyScalar(0.82 + r2 * 0.3);
   out[o] = x;
   out[o + 1] = h - 0.04;

@@ -1,0 +1,8 @@
+{
+  "mood": "dawn",
+  "glb": [],
+  "ground": false,
+  "music": ["wild"],
+  "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": true, "grass": false, "trees": "scatter", "beacons": true, "vegetation": false },
+  "minimap": "van_hai"
+}
