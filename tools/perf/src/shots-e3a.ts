@@ -70,6 +70,22 @@ async function gotoXZ(page: Page, x: number, z: number): Promise<void> {
     await sleep(300);
   }
 }
+/** Điểm sàn mây xa nhất mọi đảo (kể cả sườn) và cầu/thang trong vùng chơi. */
+function openFloorSpot(): { x: number; z: number } {
+  const dSeg = (px: number, pz: number, b: { ax: number; az: number; bx: number; bz: number }) => {
+    const dx = b.bx - b.ax;
+    const dz = b.bz - b.az;
+    const t = Math.max(0, Math.min(1, ((px - b.ax) * dx + (pz - b.az) * dz) / (dx * dx + dz * dz)));
+    return Math.hypot(b.ax + dx * t - px, b.az + dz * t - pz);
+  };
+  let best = { x: 1024, z: 1024, d: -1 };
+  for (let x = 1024 - 500; x <= 1024 + 500; x += 20)
+    for (let z = 1024 - 500; z <= 1024 + 500; z += 20) {
+      const d = Math.min(...(tr.def.islands ?? []).map((i) => Math.hypot(i.x - x, i.z - z) - i.r), ...bridges.map((b) => dSeg(x, z, b)));
+      if (d > best.d) best = { x, z, d };
+    }
+  return best;
+}
 const want = (n: string) => !ONLY.length || ONLY.includes(n);
 
 async function main(): Promise<void> {
@@ -158,6 +174,11 @@ async function main(): Promise<void> {
       });
       log.fall = { from: y0, after, floor: tr.def.voidFloor };
       console.log('[shots-e3a] rơi:', JSON.stringify(log.fall));
+      await snap('san-may-gam-cau');
+      // Sàn mây: chụp ở chỗ trống (xa mọi đảo và cầu) để thấy nhân vật và mặt sàn rõ, không đứng dưới gầm cầu.
+      const free = openFloorSpot();
+      await gotoXZ(page, free.x, free.z);
+      await cam(page, { yaw: 0.4, pitch: 0.3, dist: 14 });
       await snap('san-may');
       await page.keyboard.down('KeyW');
       await sleep(1500);

@@ -154,7 +154,7 @@ for (const p of POIS) {
   });
 }
 // Phù Đảo Các: đình ở giữa, đèn đá, ảnh ngọc kính, đá trôi quanh mép (không va chạm)
-addProp('prop_phu_dao_dinh', 0, 30, Math.PI, 1.3);
+addProp('prop_phu_dao_dinh', 42, 34, Math.PI, 1.3); // lệch khỏi trục điểm sinh: camera sau lưng người mới vào không kẹt trong mái đình
 for (const [x, z] of [[-14, -24], [14, -24], [-26, 14], [26, 14], [0, -10]]) addProp('prop_den_da', x, z, 0, 1);
 addProp('prop_anh_ngoc_kinh', -10, 20, 0, 1);
 addProp('prop_anh_ngoc_kinh', 12, 22, 0.8, 1);

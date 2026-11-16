@@ -38,7 +38,7 @@ export const VAN_HAI_PROPS: readonly HandProp[] = [
   { id: 'prop_phu_dao_dinh', x: 620, z: 483, yaw: 6.01, s: 0.92 },
   { id: 'prop_den_da', x: 627, z: 479, yaw: 1.54, s: 0.96 },
   { id: 'prop_den_da', x: 631, z: 481, yaw: 5.22, s: 1.07 },
-  { id: 'prop_phu_dao_dinh', x: 1024, z: 1054, yaw: 3.14, s: 1.3 },
+  { id: 'prop_phu_dao_dinh', x: 1066, z: 1058, yaw: 3.14, s: 1.3 },
   { id: 'prop_den_da', x: 1010, z: 1000, yaw: 0, s: 1 },
   { id: 'prop_den_da', x: 1038, z: 1000, yaw: 0, s: 1 },
   { id: 'prop_den_da', x: 998, z: 1038, yaw: 0, s: 1 },

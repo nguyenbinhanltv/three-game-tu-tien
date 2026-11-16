@@ -10,6 +10,8 @@ import type { SpiritScan } from '../ui/store';
 const PLANK = 0.9;
 const RAIL_H = 1.15;
 const POST_EVERY = 6;
+/** Tay vịn chỉ dựng ở chỗ mặt đất dưới thấp hơn mặt cầu chừng này (m). */
+const OVER_VOID = 1.2;
 const FAKE_OPACITY_REVEALED = 0.32;
 const FAKE_FADE_PER_S = 2.2;
 const C_GRASS = new THREE.Color(0x6f9d58);
@@ -39,7 +41,7 @@ export class SkyIslands {
       for (const isl of def.islands) this.buildSkirt(isl, def.voidFloor);
       this.buildFloorMist(def.voidFloor, def.size);
     }
-    if (def.bridges?.length) this.buildBridges(def.bridges);
+    if (def.bridges?.length) this.buildBridges(def.bridges, terrain);
     for (const f of def.fakeIslands ?? []) this.buildFake(f);
     parent.add(this.group);
   }
@@ -49,7 +51,7 @@ export class SkyIslands {
     return o;
   }
 
-  private buildBridges(bridges: BridgeDef[]): void {
+  private buildBridges(bridges: BridgeDef[], terrain: Terrain): void {
     const planks: THREE.Matrix4[] = [];
     const rails: THREE.Matrix4[] = [];
     const posts: THREE.Matrix4[] = [];
@@ -61,6 +63,7 @@ export class SkyIslands {
       const len = Math.hypot(dx, dz);
       const yaw = Math.atan2(dx, dz); // trục z cục bộ của ván chạy dọc cầu
       const n = Math.max(2, Math.round(len / PLANK));
+      const prevOver = [false, false];
       const at = (t: number): [number, number, number] => [b.ax + dx * t, bridgeDeckY(b, t), b.az + dz * t];
       for (let i = 0; i < n; i++) {
         const [x0, y0, z0] = at(i / n);
@@ -78,8 +81,17 @@ export class SkyIslands {
         for (const side of [-1, 1]) {
           const ox = Math.cos(yaw) * (b.halfW + 0.15) * side;
           const oz = -Math.sin(yaw) * (b.halfW + 0.15) * side;
+          // Tay vịn chỉ có ở chỗ mặt cầu nằm trên khoảng không: chỗ đã trên mặt đảo/sàn mây (mặt đất ngang hoặc cao hơn mặt cầu) thì không dựng, để tay vịn
+          // bắt đầu đúng ở mép đảo (đầu thang: ở chỗ thang rời sàn mây) chứ không chạy chéo trên bãi cỏ.
+          const over = (px: number, pz: number, py: number) => terrain.surfaceAt(px, pz) < py - OVER_VOID;
+          if (!over(cx + ox, cz + oz, cy) || !over(x0 + ox, z0 + oz, y0) || !over(x1 + ox, z1 + oz, y1)) {
+            prevOver[side === -1 ? 0 : 1] = false;
+            continue;
+          }
+          const first = !prevOver[side === -1 ? 0 : 1];
+          prevOver[side === -1 ? 0 : 1] = true;
           rails.push(new THREE.Matrix4().compose(new THREE.Vector3(cx + ox, cy + RAIL_H, cz + oz), qr.clone(), new THREE.Vector3(1, segLen * 1.02, 1)));
-          if (i % POST_EVERY === 0 || i === n - 1) {
+          if (first || i % POST_EVERY === 0 || i === n - 1) {
             posts.push(new THREE.Matrix4().compose(new THREE.Vector3(x0 + ox, y0 + RAIL_H / 2, z0 + oz), new THREE.Quaternion(), one));
           }
         }
@@ -107,7 +119,7 @@ export class SkyIslands {
 
   /**
    * Khối đá treo dưới mỗi đảo (vách đảo không dựng bằng lưới địa hình, xem `CLIFF_SKIP` ở terrain.ts): mép bo tròn, thân thu nhỏ dần thành mũi đá
-   * lởm chởm (nhiễu xác định theo vị trí nên không nứt khe), rễ cây thòng xuống, hai vành sương ôm chân đảo.
+   * lởm chởm (nhiễu xác định theo vị trí nên không nứt khe), rễ cây thòng xuống, hai vành sương ôm chân đảo (cao hơn sàn mây ≥ 20 m để không phủ lên người đứng trên sàn).
    */
   private buildSkirt(isl: IslandDef, floor: number): void {
     const r = isl.r;
@@ -174,10 +186,10 @@ export class SkyIslands {
     // sương ôm chân đảo: hai vành mờ ở lưng chừng thân đá
     const ringMat = this.track(new THREE.MeshBasicMaterial({ map: this.mistRing(), transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, color: 0xf2f5f4 }));
     const geo = this.track(new THREE.CircleGeometry(r / 0.7, 48));
-    for (const dy of [-34, -56]) {
+    for (const dy of [-30, -42]) {
       const ring = new THREE.Mesh(geo, ringMat);
       ring.rotation.x = -Math.PI / 2;
-      ring.position.set(isl.x, Math.max(floor + 2, isl.y + dy), isl.z);
+      ring.position.set(isl.x, Math.max(floor + 20, isl.y + dy), isl.z);
       ring.renderOrder = -6;
       ring.frustumCulled = false;
       this.group.add(ring);
@@ -204,7 +216,7 @@ export class SkyIslands {
     return this.mistTex;
   }
 
-  /** Sương dày sát mặt sàn mây: hai mặt phẳng mờ có nhiễu (gợn mây) phủ cả bản đồ, cao hơn sàn 0,7 m và 3,5 m. */
+  /** Sương sát mặt sàn mây: hai mặt phẳng mờ có nhiễu (gợn mây) phủ cả bản đồ, cao hơn sàn 0,25 m và 0,9 m (dưới đầu gối: người chơi quanh 15–20 m phải nhìn rõ nhân vật và mặt sàn). */
   private buildFloorMist(floor: number, size: number): void {
     const N = 256;
     const c = document.createElement('canvas');
@@ -230,8 +242,8 @@ export class SkyIslands {
     const geo = this.track(new THREE.PlaneGeometry(size * 1.15, size * 1.15));
     geo.rotateX(-Math.PI / 2);
     const layers: [number, number, number][] = [
-      [0.7, 0.42, 11],
-      [3.5, 0.3, 7],
+      [0.25, 0.2, 11],
+      [0.9, 0.13, 7],
     ];
     layers.forEach(([dy, op, rep], i) => {
       const t = this.track(base.clone());

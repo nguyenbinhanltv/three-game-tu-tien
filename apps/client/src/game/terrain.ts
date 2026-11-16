@@ -62,8 +62,8 @@ const C_ISLE_MOSS = col(0xa7a688);
 const C_ISLE_SOIL = col(0xb5a285);
 const C_ISLE_STONE = col(0xb9b5a8);
 const C_ISLE_DARK = col(0x7c7d6c);
-const C_CLOUD_LIGHT = col(0xe9eff0);
-const C_CLOUD_SHADE = col(0xc4cfd3);
+const C_CLOUD_LIGHT = col(0xc9d4d7);
+const C_CLOUD_SHADE = col(0xa4b2b8);
 /**
  * Màu level đảo nổi (E3-N, tông trầm theo art bible v3): mặt đảo là rêu xám-lục trộn đất nâu và mảng đá, dốc lộ đá; sàn mây là mặt mây
  * trắng xám gợn noise (không có cỏ, đá, cây). Vách đảo (cao hơn sàn nhiều) màu đá tối.

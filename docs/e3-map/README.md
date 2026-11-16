@@ -48,7 +48,7 @@ Quái tạm dùng mẫu của Đoạn Mạch (4 quái thường, 3 tinh anh) v�
 Một hàm `heightAt` chung (client, server, công cụ) gồm:
 
 - **Đảo** (`islands`): mặt phẳng bán kính `r`, vách `edge` = 12 m xuống sàn mây (không bước được vào chỗ mặt đất dốc hơn `MAX_SLOPE_UP` = 1,5 trừ khi đang đi xuống: tính theo độ lớn gradient của mặt đất nên đi chéo, chạy chậm hay nhảy đều không leo vách); các khu `isl_*` thêm nhiễu nhẹ lên mặt đảo. **Thang mây** (`bridges` id `thang_*`, Thăng Vân Đài): mỗi đảo vùng và hub một dốc rộng 5,2 m từ sàn mây lên mép đảo (đáy ở sàn mây, dốc 0,74, bộ sinh chọn hướng xa cụm quái, trận, điểm đáng chú ý, các đảo và cầu); test `vanhai.test.ts` đi bộ lên từng thang bằng `stepMove` thật.
-- **Sàn mây** (`voidFloor` = 60 m): mọi chỗ ngoài đảo là mặt đứng đi bộ được, thấp hơn mặt đảo ~60 m. **Rơi khỏi đảo hay cầu thì rơi tới sàn mây, không mất máu, không chết** (server không có sát thương rơi; xem `islands.test.ts` và ảnh `roi-khoi-cau`/`san-may`; lần chụp ghi y 119 → 60, máu 1953/1953). Lên lại đảo bằng thang mây hoặc ngự kiếm. Sàn mây là mặt mây mềm: màu trắng xám gợn noise (`islandColor`), không cỏ/cây/đá (rải cỏ, cây thủ tục và `scatterVanHai` chỉ ở độ cao ≥ sàn + 40 m), hai lớp sương mờ sát mặt (`SkyIslands.buildFloorMist`).
+- **Sàn mây** (`voidFloor` = 60 m): mọi chỗ ngoài đảo là mặt đứng đi bộ được, thấp hơn mặt đảo ~60 m. **Rơi khỏi đảo hay cầu thì rơi tới sàn mây, không mất máu, không chết** (server không có sát thương rơi; xem `islands.test.ts` và ảnh `roi-khoi-cau`/`san-may`; lần chụp ghi y 119 → 60, máu 1953/1953). Lên lại đảo bằng thang mây hoặc ngự kiếm. Sàn mây là mặt mây mềm: màu trắng xám gợn noise (`islandColor`), không cỏ/cây/đá (rải cỏ, cây thủ tục và `scatterVanHai` chỉ ở độ cao ≥ sàn + 40 m), hai lớp sương mờ rất nhẹ dưới đầu gối, cao hơn sàn 0,25 m và 0,9 m (`SkyIslands.buildFloorMist`; vành sương ôm chân đảo nằm cao hơn sàn ≥ 20 m nên không phủ lên người đứng trên sàn).
 - **Cầu xích** (`bridges`): dải rộng 5,2 m, độ cao nội suy giữa hai đầu có võng. `heightAt` có mặt cầu; `Terrain.surfaceAt` bỏ mặt cầu để dựng lưới địa hình (cầu vẽ riêng bằng ván + dây xích, ba InstancedMesh, không có "tường đất" dưới cầu). Mép dải dốc đứng; từ sàn mây không bị "nhấc" lên cầu: ở level đảo nổi (`Terrain.blockRise`), không bước được vào chỗ mặt đất dốc hơn `MAX_SLOPE_UP` = 1,5 (độ lớn gradient; thang mây dốc 0,74) trừ khi đang đi xuống, nên đi chéo, chạy chậm hay nhảy đều không leo được thành cầu và vách đảo (cả client dự đoán và server qua `stepMove`). Vân Lam và các level khác không đổi từng bit.
 - **Đảo giả** (`fakeIslands`): **không vào `heightAt`**, bước lên là rơi về sàn mây. Client vẽ như đảo thật; thần thức (V, Kết Đan) quét qua (trong tầm, còn hiệu lực) thì đảo mờ đi, hiện vòng mép và cột sáng xanh (`SkyIslands.update`); hết hạn quét thì đặc lại. Ảnh `dao-gia-truoc` / `dao-gia-sau-quet`.
 - **Mép đảo (hình)**: lưới địa hình bỏ các ô vách (`CLIFF_SKIP` ở `terrain.ts`, cả lưới mịn và lưới thô); `SkyIslands.buildSkirt` dựng khối đá treo: mép bo tròn, thân thu nhỏ thành mũi đá lởm chởm (nhiễu xác định), rễ cây thòng, hai vành sương ôm chân đảo. Màu mặt đảo (`islandColor`): tông trầm, rêu xám-lục trộn đất nâu và mảng đá, dốc lộ đá; cỏ nhạt đi 70 %. Dùng lại cỏ Vân Lam, bộ texture riêng là việc của E3-I.
@@ -80,7 +80,7 @@ Một hàm `heightAt` chung (client, server, công cụ) gồm:
 | Bố cục nhìn từ trên (map:report: đảo, cầu, tinh anh vàng) | ![](layout-topdown.jpg) |
 | Nền minimap | ![](minimap-nen.jpg) |
 | Bản đồ lớn (phím M) | ![](worldmap.jpg) |
-| Phù Đảo Các | ![](hub.jpg) |
+| Phù Đảo Các (điểm vào; đình dời khỏi trục điểm sinh để camera sau lưng không kẹt trong mái đình) | ![](hub.jpg) |
 | Tùng Đài Đảo | ![](zone-tung-dai-dao.jpg) |
 | Thạch Quy Đảo | ![](zone-thach-quy-dao.jpg) |
 | Kính Hồ Đảo | ![](zone-kinh-ho-dao.jpg) |
@@ -94,7 +94,8 @@ Một hàm `heightAt` chung (client, server, công cụ) gồm:
 | Cầu xích, nhìn dọc cầu | ![](cau-xich.jpg) |
 | Giữa cầu | ![](cau-giua.jpg) |
 | Bước ra mép cầu, đang rơi | ![](roi-khoi-cau.jpg) |
-| Sàn mây sau khi rơi (còn nguyên máu, đi bộ được) | ![](san-may.jpg) |
+| Sàn mây (chỗ trống xa mọi đảo và cầu; nhân vật và mặt sàn rõ) | ![](san-may.jpg) |
+| Sàn mây ngay sau khi rơi khỏi cầu (đứng dưới gầm cầu, còn nguyên máu) | ![](san-may-gam-cau.jpg) |
 | Thang mây (chân thang trên sàn mây nhìn lên) | ![](thang-may.jpg) |
 | Đảo giả khi chưa quét (trông như đảo thật) | ![](dao-gia-truoc.jpg) |
 | Đảo giả sau khi quét thần thức | ![](dao-gia-sau-quet.jpg) |
