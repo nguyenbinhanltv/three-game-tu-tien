@@ -48,7 +48,7 @@ Shader (`render/materials/outfit.ts`): nhuộm 3 kênh (`createOutfitMaterial(sr
 | Phục Mạch | WebGPU | 280 | 876k | 6,0 / 8,8 ms | 404 |
 | | WebGL2 | 275 | 872k | 5,8 / 8,1 ms | 349 |
 
-Liệt Mạch và Phục Mạch dưới 300 draw ở cả hai backend; **Địa Long trên WebGPU vẫn 303 (vượt 3 draw)**. Mỗi người mặc bộ thêm ~1,6 draw (lưới bộ + kiếm/vỏ ở LOD0); gộp tiếp cần bake đầu/tay vào atlas áo để còn một draw mỗi người (việc PR sau).
+Số draw dao động theo vị trí bot (mỗi lần chạy bot đứng khác nhau, ±15 draw): Địa Long WebGPU đo 303 một lần, rồi 275 và 279 hai lần chạy lại sau đó; Liệt Mạch và Phục Mạch 275–284. Mọi bộ thường dưới 300 nhưng biên mỏng (~20 draw), nên giữ mục gộp đầu/tay vào atlas áo (một draw mỗi người) làm việc PR sau. Mỗi người mặc bộ thêm ~1,6 draw (lưới bộ + kiếm/vỏ ở LOD0).
 
 ## Chưa làm / giới hạn
 
