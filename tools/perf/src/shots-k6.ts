@@ -350,6 +350,21 @@ async function main(): Promise<void> {
         await sheet(ctx, out('vach-bao-quai'), title('Vạch báo: trái quái thường (son đỏ), phải boss (ma khí); 80 ms cuối nháy'), shots, 5);
         log[`${g}-vach-bao-hazards`] = (await page.evaluate(`window.__game.hazardLog ?? []`)) as unknown[];
       }
+      if (sc === 'dinh') {
+        // Đỉnh núi, biển mây phía sau (kiểm thứ tự vẽ trong suốt của mảnh gộp): vòng báo + vòng chấn động + hạt đứng trước mây.
+        await gm(page, 'tp 2400 1700', 2500);
+        await cam(page, 3.14, 0.18, 7);
+        await page.bringToFront();
+        await page.evaluate(`(() => { const g = window.__game; const x = g.cur.x, z = g.cur.z;
+          const f = [Math.sin(g.camYaw + Math.PI) * 4, Math.cos(g.camYaw + Math.PI) * 4];
+          const P = g.vfx.group.position.constructor;
+          g.vfx.hazard(x + f[0], z + f[1], 2.5, 6, 'fire', undefined, 0, false);
+          g.vfx.pillar((out) => { out.set(x + f[0] + 3, g.cur.y + 1, z + f[1]); return true; }, 0x9fe8ff, 6, 0.8, 6);
+          g.vfx.burst(new P(x + f[0] - 2, g.cur.y + 1.2, z + f[1]), 0xcff3ff, 1.2, 6); })()`);
+        await sleep(2500);
+        const buf = await page.screenshot({ type: 'jpeg', quality: 90 });
+        await sheet(ctx, out('dinh-nui'), title('Đỉnh núi, biển mây phía sau: vòng báo, trụ sáng, vòng nổ vẽ trước mây'), [{ label: 'đỉnh núi (2400, 1700)', url: 'data:image/jpeg;base64,' + buf.toString('base64') }], 1);
+      }
       if (sc === 'hotheb') {
         // Linh quang hộ thể Trúc Cơ: đứng yên ngoài giao chiến ở cấp 16, rồi bước đi thì tắt.
         await scene(page, 0);
