@@ -852,6 +852,8 @@ const DG_ENTRY = 60;
 const DG_FIRST_TRY = 1.8;
 const DG_INTERRUPT_RATE = 0.7;
 /** Phút dẹp phó bản kể cả lỡ tay lần đầu, theo id level (chương 2 dùng cho nhịp giờ). */
+/** Hệ số hiệu suất DPS khi đánh boss gương (giả định chưa kiểm bằng người thật: bóng giả, né đĩa, nguyệt phản). */
+const DG_MIRROR_EFF = 0.55;
 const dgFirstMin = new Map<string, number>();
 console.log('\nPhó bản (nhóm 4 × cấp thấp nhất)   đợt   sạch thuần   kể cả lỡ tay lần đầu   (mục tiêu ~20 phút, thiết kế 5.1)');
 for (const lv of Object.values(LEVELS)) {
@@ -862,6 +864,13 @@ for (const lv of Object.values(LEVELS)) {
   const rows: string[] = [];
   let total = DG_ENTRY;
   d.waves.forEach((w, i) => {
+    // Đợt giải đố ba gương (E3-M): không quái; tốn thời gian đố (đọc thứ tự, chạy ba cột, thường dư vài giây) cộng nghỉ.
+    if (w.puzzle) {
+      const tp = (w.delay ?? 6) + w.puzzle.secs * 0.75 + DG_REGROUP;
+      total += tp;
+      rows.push(`${i + 1}:${tp.toFixed(0)}s`);
+      return;
+    }
     let hp = 0;
     let boss: MonsterDef | undefined;
     let ref = 0;
@@ -878,6 +887,8 @@ for (const lv of Object.values(LEVELS)) {
     const grp = [...Array(2).fill('lac_kiem_quyet'), 'bat_dong_kim_than', 'thanh_moc_dan_kinh'].reduce((s: number, id) => s + playerDps(L, pl.atk, refDef, id as MethodId, w.mons[0] ? MONSTER.get(w.mons[0].id)?.elem : undefined), 0);
     let dps = grp * (boss ? DG_EFF_BOSS : DG_EFF_TRASH);
     if (boss) {
+      // Boss gương (E3-M): ba bóng giả phải tìm/đánh, tránh đĩa gương, Tâm Ma Ảnh chiếm người trong màn: hiệu suất giảm.
+      if (boss.mirror) dps *= DG_MIRROR_EFF;
       const bu = boss.ai?.burrow ?? boss.phases?.map((_, k) => phaseRules(boss!, k + 1).ai.burrow).find(Boolean);
       if (bu) dps *= 1 - bu.hide / bu.cd;
       const ch = boss.ai?.chant;
@@ -894,6 +905,10 @@ for (const lv of Object.values(LEVELS)) {
   });
   const first = (total * DG_FIRST_TRY) / 60;
   dgFirstMin.set(lv.id, first);
+  if (lv.id === 'kinh_nguyet' && (first < 20 || first > 30)) {
+    console.error(`LỖI: Kính Nguyệt Cung ra ${first.toFixed(1)} phút, ngoài khoảng 20–30 phút quanh mục tiêu ~25 phút`);
+    process.exitCode = 1;
+  }
   if (lv.id === 'phuc_mach' && (first < 15 || first > 25)) {
     console.error(`LỖI: Phục Mạch Quật ra ${first.toFixed(1)} phút, ngoài khoảng 15–25 phút quanh mục tiêu ~20 phút`);
     process.exitCode = 1;

@@ -13,7 +13,8 @@
   "mon_mach_thuong_ho_ve"
  ],
  "gem_kim_2": [
-  "boss_kiem_khoi"
+  "boss_kiem_khoi",
+  "boss_kinh_nguyet_chan_quan"
  ],
  "gem_moc_1": [
   "elite_xich_sa_ngo_cong",
@@ -49,26 +50,34 @@
   "boss_han_giao",
   "boss_huyet_lang_vuong",
   "boss_kiem_khoi",
+  "boss_kinh_nguyet_chan_quan",
   "boss_thach_tam_khoi_vuong",
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_mo_tuong",
   "elite_cu_nham_vien",
   "elite_ho_mach_khoi_tuong",
   "elite_huyet_nha_lang",
+  "elite_kinh_dien_ma_quan",
   "elite_liet_cot_bao",
   "elite_xich_dien_ho",
   "elite_xich_sa_ngo_cong",
   "mon_hoa_van_ho",
   "mon_khai_mach_khoi_loi",
   "mon_kiem_linh",
+  "mon_kinh_linh",
   "mon_mach_thuong_ho_ve",
   "mon_ngo_cong_au",
+  "mon_phu_dao_thach_quy",
   "mon_soi_xam",
   "mon_thach_giap_te",
   "mon_thach_vien",
   "mon_thiet_boi_tru",
   "mon_u_minh_lang",
   "mon_yeu_lang"
+ ],
+ "itm_bich_ngoc_nhi": [
+  "boss_kinh_nguyet_chan_quan",
+  "elite_kinh_dien_ma_quan"
  ],
  "itm_han_giao_dan": [
   "boss_han_giao"
@@ -78,6 +87,7 @@
   "boss_han_giao",
   "boss_huyet_lang_vuong",
   "boss_kiem_khoi",
+  "boss_kinh_nguyet_chan_quan",
   "boss_thach_tam_khoi_vuong",
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_mo_tuong"
@@ -107,6 +117,12 @@
   "boss_kiem_khoi",
   "boss_thu_mo_tuong",
   "mon_kiem_linh"
+ ],
+ "itm_kinh_hoa_sa": [
+  "boss_kinh_nguyet_chan_quan",
+  "elite_kinh_dien_ma_quan",
+  "mon_kinh_linh",
+  "mon_phu_dao_thach_quy"
  ],
  "itm_linh_thao": [
   "mon_soi_xam"
@@ -148,6 +164,7 @@
   "boss_han_giao",
   "boss_huyet_lang_vuong",
   "boss_kiem_khoi",
+  "boss_kinh_nguyet_chan_quan",
   "boss_thach_tam_khoi_vuong",
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_mo_tuong",
@@ -161,10 +178,12 @@
  "itm_thiet_tinh": [
   "boss_dia_mach_long",
   "boss_han_giao",
+  "boss_kinh_nguyet_chan_quan",
   "boss_thach_tam_khoi_vuong",
   "boss_thon_mach_ngo_cong_vuong",
   "elite_cu_nham_vien",
   "elite_ho_mach_khoi_tuong",
+  "elite_kinh_dien_ma_quan",
   "elite_liet_cot_bao",
   "elite_xich_sa_ngo_cong",
   "mon_khai_mach_khoi_loi",
@@ -179,23 +198,33 @@
   "boss_han_giao",
   "boss_huyet_lang_vuong",
   "boss_kiem_khoi",
+  "boss_kinh_nguyet_chan_quan",
   "boss_thach_tam_khoi_vuong",
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_mo_tuong",
   "mon_u_minh_lang"
  ],
+ "itm_van_hai_lo": [
+  "boss_kinh_nguyet_chan_quan",
+  "elite_kinh_dien_ma_quan",
+  "mon_kinh_linh",
+  "mon_phu_dao_thach_quy"
+ ],
  "itm_yeu_dan": [
   "elite_cu_nham_vien",
   "elite_ho_mach_khoi_tuong",
   "elite_huyet_nha_lang",
+  "elite_kinh_dien_ma_quan",
   "elite_liet_cot_bao",
   "elite_xich_dien_ho",
   "elite_xich_sa_ngo_cong",
   "mon_hoa_van_ho",
   "mon_khai_mach_khoi_loi",
   "mon_kiem_linh",
+  "mon_kinh_linh",
   "mon_mach_thuong_ho_ve",
   "mon_ngo_cong_au",
+  "mon_phu_dao_thach_quy",
   "mon_thach_giap_te",
   "mon_thach_vien",
   "mon_thiet_boi_tru",
