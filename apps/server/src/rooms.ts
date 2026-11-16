@@ -3,37 +3,48 @@ import { installViewPatchFix } from './viewSerializer';
 import { StateView } from '@colyseus/schema';
 import {
   C,
-  DUNGEON_EXIT,
-  DUNGEON_MIN_LEVEL,
-  DUNGEON_SPAWN,
-  KIEM_TRUNG,
+  HOME_LEVEL,
   MS_DEAD,
   PF_DEAD,
-  PORTAL_POS,
   ROOM_DUNGEON,
   ROOM_WORLD,
   S,
   SPAWN_POINT,
+  TELE_PARTY_R,
+  type DungeonDef,
   type TransferMsg,
+  dungeonRoomName,
   isRootId,
   parseAppearance,
+  terrainOf,
   validName,
+  worldRoomName,
   AOI_PERIOD_MS,
 } from '@dtl/shared';
-import { APPEARANCE, MONSTER, monsterName, realmName } from '@dtl/content';
+import { APPEARANCE, LEVELS, MONSTER, monsterName, realmName } from '@dtl/content';
 import { Aoi } from './aoi';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
 import { Character } from './game/character';
 import { MarkerSystem } from './game/marker';
 import { parties } from './game/party';
-import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions } from './game/sim';
+import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions, type TransferOpts } from './game/sim';
 import { WorldState } from './state';
 import { readTestFlags, testAccess } from './testflags';
+import { tickets } from './transfer';
 
 interface JoinAuth extends AuthResult {
   charId: number;
   session: string;
+  /** Điểm xuất hiện do vé chỉ định (E1-B); null = vị trí đã lưu / điểm mặc định của room. */
+  spawn?: { x: number; z: number } | null;
+  /** Vào bằng vé tới đúng level của room (đã tiêu thụ ở onAuth): nhân vật còn ghi level nguồn, không được dẫn ngược về đó. */
+  ticket?: boolean;
+}
+
+/** Tên room của một level (thế giới hoặc bí cảnh). */
+export function roomNameOf(levelId: string): string {
+  return LEVELS[levelId]?.dungeon ? dungeonRoomName(levelId) : worldRoomName(levelId);
 }
 
 /** Nhân vật đang online ở room nào — để một nhân vật chỉ có mặt ở một nơi. */
@@ -44,16 +55,6 @@ export function onlineCount(): number {
 }
 
 export const activeRooms = new Set<GameRoom>();
-
-/** Vé vào bí cảnh dùng một lần: cấp ở cổng Kiếm Trủng (đã kiểm khoảng cách, cảnh giới, trạng thái). */
-const dungeonTickets = new Map<number, number>();
-const TICKET_TTL = 20_000;
-
-function takeTicket(charId: number): boolean {
-  const exp = dungeonTickets.get(charId);
-  dungeonTickets.delete(charId);
-  return exp !== undefined && exp >= Date.now();
-}
 
 let partyTimer: ReturnType<typeof setInterval> | null = null;
 /** Đẩy trạng thái tổ đội (máu, linh lực) mỗi 500 ms, hết hạn lời mời, dọn người ngoại tuyến. */
@@ -68,6 +69,36 @@ function today(): string {
 }
 
 installViewPatchFix();
+
+type Corkable = { cork(): void; uncork(): void; destroyed?: boolean };
+
+/**
+ * `ws` gửi mỗi tin bằng một lần cork/uncork riêng, tức một syscall `writev` cho mỗi (tin × client). Với 100 người đánh nhau
+ * chung một chỗ, tick phát hàng trăm tin FX/sát thương mỗi giây tới từng client và phần ghi socket chiếm ~85% thời gian tick.
+ * Cork thêm một lớp ngoài cả tick (cork có đếm lồng nhau) thì các tin của tick dồn thành một lần ghi mỗi client; thứ tự và
+ * nội dung tin không đổi, chỉ trễ tối đa đến hết tick.
+ */
+function corkClients(clients: Iterable<{ ref?: unknown }>): Corkable[] {
+  const out: Corkable[] = [];
+  for (const c of clients) {
+    const sock = (c.ref as { _socket?: Corkable } | undefined)?._socket;
+    if (sock && typeof sock.cork === 'function' && !sock.destroyed) {
+      sock.cork();
+      out.push(sock);
+    }
+  }
+  return out;
+}
+
+function uncorkAll(socks: Corkable[]): void {
+  for (const s of socks) {
+    try {
+      s.uncork();
+    } catch {
+      /* socket đã đóng */
+    }
+  }
+}
 
 export abstract class GameRoom extends Room<WorldState> implements SimHost {
   sim!: GameSim;
@@ -84,14 +115,20 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.aoi = new Aoi(this.sim);
     let aoiAt = 0;
     this.setSimulationInterval((dt) => {
-      this.sim.tick(dt);
+      // Gom mọi tin FX/sát thương của tick vào một lần ghi socket mỗi client (xem corkClients).
+      const corked = corkClients(this.clients);
+      try {
+        this.sim.tick(dt);
+      } finally {
+        uncorkAll(corked);
+      }
       if (this.sim.now - aoiAt >= AOI_PERIOD_MS) {
         aoiAt = this.sim.now;
         this.aoi.update((sid) => this.clients.getById(sid)?.view);
       }
     }, 50);
     activeRooms.add(this);
-    this.markers = new MarkerSystem(this, () => this.sim.players.values());
+    this.markers = new MarkerSystem(this, () => this.sim.players.values(), Date.now, terrainOf(this.sim.level).playBounds);
     this.clock.setInterval(() => this.markers.sync(), 1000);
 
     const on = (type: string, handler: (p: PlayerEnt, msg: unknown) => void) => {
@@ -174,8 +211,35 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     return false;
   }
 
-  /** Chỉnh nhân vật trước khi đưa vào thế giới (ví dụ: vị trí khi vừa rời bí cảnh). */
-  prepareChar(_char: Character): void {}
+  /** Level của room này (do lớp con của `defineWorld`/`defineDungeon` đặt). */
+  get levelId(): string {
+    return (this.constructor as unknown as { levelId: string }).levelId;
+  }
+
+  /**
+   * Nhân vật đang lưu ở level khác (đăng nhập lại sau khi thoát giữa bản đồ khác, hoặc giữa bí cảnh): trả đích cần tới,
+   * hoặc null nếu không cần dời. Bí cảnh không giữ người qua lần đăng nhập: về `returnLevel` tại `returnSpawn`.
+   */
+  resumeTarget(char: Character): { level: string; spawn: { x: number; z: number } | null } | null {
+    // Bí cảnh chỉ vào bằng vé (đã kiểm ở onAuth): người vào luôn được đặt ở điểm vào, không dẫn về level đang lưu.
+    if (LEVELS[this.levelId]?.dungeon) return null;
+    const lv = LEVELS[char.room];
+    if (!lv) return null;
+    const d = lv.dungeon;
+    if (d) return { level: d.returnLevel, spawn: d.returnSpawn };
+    return lv.id === this.levelId ? null : { level: lv.id, spawn: null };
+  }
+
+  /** Chỉnh nhân vật trước khi đưa vào (vé chỉ định điểm; vừa rời bí cảnh thì về chỗ `returnSpawn`). */
+  prepareChar(char: Character, spawn: { x: number; z: number } | null = null): void {
+    const back = this.resumeTarget(char);
+    const at = spawn ?? (back && back.level === this.levelId ? back.spawn : null);
+    if (!at) return;
+    char.room = this.levelId;
+    char.x = at.x;
+    char.z = at.z;
+    char.y = 0;
+  }
 
   onJoin(client: Client, options: unknown, auth: JoinAuth): void {
     // Đăng nhập trùng: đá phiên cũ (và lưu) trước khi nạp nhân vật.
@@ -197,7 +261,17 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       }
     }
     const char = Character.load(auth.charId);
-    this.prepareChar(char);
+    // Lưu ở bản đồ khác (không phải room này): cấp vé, bảo client sang đúng room. Không dựng người ở đây
+    // (savePlayer sẽ ghi đè vị trí đã lưu bằng toạ độ của level này).
+    const resume = this.resumeTarget(char);
+    if (!auth.ticket && resume && resume.level !== this.levelId) {
+      tickets.issue(char.id, resume.level, resume.spawn);
+      client.send(S.TRANSFER, { room: roomNameOf(resume.level), level: resume.level, options: {} } satisfies TransferMsg);
+      // Client đúng sẽ tự rời ngay; client cố ở lại (không có người chơi nào trong room) bị ngắt để không chiếm chỗ.
+      this.clock.setTimeout(() => client.leave(), 3000);
+      return;
+    }
+    this.prepareChar(char, auth.spawn ?? null);
     const dev = testAccess(auth.dev, config.devBypass);
     const p = this.sim.addPlayer(client, char, dev, auth.session, this.noLootFor(char));
     // AOI: client mới chỉ thấy mình cho tới lần cập nhật kế (tối đa 200 ms); StateView phải có trước khi gửi state đầy đủ.
@@ -269,9 +343,49 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
 
   beforeRemove(_sid: string): void {}
 
-  protected transfer(p: PlayerEnt, room: string): void {
+  /** Lưu nhân vật rồi bảo client sang room của `level` (vé phải được cấp trước). */
+  protected sendTransfer(p: PlayerEnt, level: string): void {
     this.sim.savePlayer(p);
-    p.client.send(S.TRANSFER, { room, options: {} } satisfies TransferMsg);
+    p.client.send(S.TRANSFER, { room: roomNameOf(level), level, options: {} } satisfies TransferMsg);
+  }
+
+  /**
+   * Chuyển người chơi sang bản đồ thế giới khác (E1-B). Kiểm ở room đi: level đích có thật và là bản đồ thế giới,
+   * người chơi không chết/độ kiếp/tâm ma/tỉ thí/niệm dở (`o.combat`: cả giao chiến); rồi cấp vé một lần (15 s),
+   * lưu ngay, báo client. Người dẫn tổ đội (`o.party`) kéo theo đồng đội cùng room trong tầm nếu họ cũng qua được kiểm.
+   */
+  requestLevel(p: PlayerEnt, level: string, spawn: { x: number; z: number } | null, o: TransferOpts = {}): boolean {
+    const lv = LEVELS[level];
+    if (!lv || lv.dungeon || level === this.levelId) return false;
+    if (spawn && !this.validSpawn(level, spawn)) return false;
+    if (!o.force) {
+      const why = this.sim.leaveBlocker(p, o.combat);
+      if (why) {
+        this.sim.sys(p, why, undefined, 'bad');
+        return false;
+      }
+    }
+    tickets.issue(p.char.id, level, spawn);
+    this.sendTransfer(p, level);
+    if (o.party && parties.partyOf(p.char.id)?.leader === p.char.id) {
+      for (const m of parties.matesInRoom(p.char.id, this)) {
+        if (m === p || m.char.id === p.char.id) continue;
+        if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) > TELE_PARTY_R || this.sim.leaveBlocker(m, o.combat)) continue;
+        tickets.issue(m.char.id, level, spawn);
+        this.sendTransfer(m, level);
+      }
+    }
+    return true;
+  }
+
+  transferLevel(p: PlayerEnt, level: string, spawn: { x: number; z: number } | null, o?: TransferOpts): boolean {
+    return this.requestLevel(p, level, spawn, o);
+  }
+
+  /** Điểm xuất hiện nằm trong vùng chơi của level đích (dữ liệu server; kiểm để phòng bảng sai, không phải đầu vào client). */
+  private validSpawn(level: string, at: { x: number; z: number }): boolean {
+    const b = terrainOf(LEVELS[level]).playBounds;
+    return Number.isFinite(at.x) && Number.isFinite(at.z) && at.x >= b.x0 && at.x <= b.x1 && at.z >= b.z0 && at.z <= b.z1;
   }
 
   onDispose(): void {
@@ -285,66 +399,82 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   }
 }
 
-let worldRooms = 0;
+/** Số room thế giới đã dựng của từng level: kênh đầu tiên sống mãi, kênh thêm tự đóng khi vắng. */
+const worldRooms = new Map<string, number>();
 
+/** Room bản đồ thế giới. Lớp gốc dùng cho Vân Lam; level khác tạo qua `defineWorld`. */
 export class WorldRoom extends GameRoom {
+  static levelId: string = HOME_LEVEL;
+
+  /**
+   * Vào room thế giới: level gốc (Vân Lam) nhận đăng nhập thường; level khác chỉ nhận người có vé tới level đó
+   * (cấp ở room đi, hoặc ngay sau đăng nhập khi nhân vật đang lưu ở đó). Điểm xuất hiện đi theo vé.
+   */
+  static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
+    return worldAuth(this as unknown as { levelId: string }, token, options);
+  }
+
   onCreate(options: unknown): void {
     super.onCreate(options);
-    // Kênh đầu tiên sống mãi (giữ boss thế giới và nhịp hồi sinh); kênh mở thêm tự đóng khi vắng.
-    const extra = worldRooms++ > 0;
+    const n = worldRooms.get(this.levelId) ?? 0;
+    worldRooms.set(this.levelId, n + 1);
+    const extra = n > 0;
     this.autoDispose = extra;
     if (extra) this.sim.delayBosses();
   }
 
   onDispose(): void {
     super.onDispose();
-    worldRooms = Math.max(1, worldRooms - 1);
+    worldRooms.set(this.levelId, Math.max(1, (worldRooms.get(this.levelId) ?? 1) - 1));
   }
 
   simOptions(): SimOptions {
-    return { levelId: 'van_lam', roomName: ROOM_WORLD, spawn: SPAWN_POINT, respawn: SPAWN_POINT, persistPosition: true };
-  }
-
-  prepareChar(char: Character): void {
-    // Vừa rời bí cảnh: xuất hiện trước cổng Kiếm Trủng.
-    if (char.room === 'kiem_trung') {
-      char.room = 'van_lam';
-      char.x = PORTAL_POS.x;
-      char.z = PORTAL_POS.z + 9;
-      char.y = 0;
-    }
+    const spawn = LEVELS[this.levelId].spawn ?? SPAWN_POINT;
+    return { levelId: this.levelId, roomName: worldRoomName(this.levelId), spawn, respawn: spawn, persistPosition: true };
   }
 
   onPortal(p: PlayerEnt): void {
-    const dx = p.move.x - PORTAL_POS.x;
-    const dz = p.move.z - PORTAL_POS.z;
-    if (dx * dx + dz * dz > 14 * 14) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
+    const portal = (LEVELS[this.levelId].portals ?? []).find((q) => (p.move.x - q.x) ** 2 + (p.move.z - q.z) ** 2 <= q.r * q.r);
+    if (!portal) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
+    const d = LEVELS[portal.to]?.dungeon;
+    if (!d) return;
     if ((p.s.fl & PF_DEAD) !== 0 || p.trib || p.trial) return this.sim.sys(p, 'sys.busy', undefined, 'bad');
-    if (p.char.level < DUNGEON_MIN_LEVEL) return this.sim.sys(p, 'sys.dungeon_level', { realm: realmName(DUNGEON_MIN_LEVEL) }, 'bad');
-    dungeonTickets.set(p.char.id, Date.now() + TICKET_TTL);
-    this.transfer(p, ROOM_DUNGEON);
+    if (p.char.level < d.minLevel) return this.sim.sys(p, 'sys.dungeon_level', { realm: realmName(d.minLevel) }, 'bad');
+    tickets.issue(p.char.id, portal.to);
+    this.sendTransfer(p, portal.to);
   }
 }
 
-interface Wave {
-  mons: { id: string; level: number; n: number }[];
+async function worldAuth(cls: { levelId: string }, token: string, options: unknown): Promise<JoinAuth> {
+  const auth = await GameRoom.onAuth(token, options);
+  const t = tickets.take(auth.charId, cls.levelId);
+  if (!t && cls.levelId !== HOME_LEVEL) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+  return { ...auth, spawn: t?.spawn ?? null, ticket: !!t };
 }
 
-const WAVES: Wave[] = [
-  { mons: [{ id: 'mon_kiem_linh', level: 11, n: 6 }] },
-  { mons: [{ id: 'boss_kiem_khoi', level: 12, n: 1 }, { id: 'mon_kiem_linh', level: 11, n: 3 }] },
-  { mons: [{ id: 'boss_huyet_lang_vuong', level: 13, n: 1 }, { id: 'mon_kiem_linh', level: 12, n: 2 }] },
-  { mons: [{ id: 'boss_thu_mo_tuong', level: 15, n: 1 }] },
-];
+/** Lớp room cho một bản đồ thế giới (E1-B): `world` cho Vân Lam, `world-<id>` cho level khác. */
+export function defineWorld(levelId: string): typeof WorldRoom {
+  if (!LEVELS[levelId] || LEVELS[levelId].dungeon) throw new Error(`defineWorld: ${levelId} không phải bản đồ thế giới`);
+  if (levelId === HOME_LEVEL) return WorldRoom;
+  return class extends WorldRoom {
+    static levelId = levelId;
+  };
+}
 
-/** Bí cảnh Kiếm Trủng: mỗi room là một lượt của tối đa 5 người, đánh qua 4 đợt. */
+/** Bí cảnh: mỗi room là một lượt của tối đa 5 người, đánh qua các đợt trong `levels/<id>.json`. */
 export class DungeonRoom extends GameRoom {
+  static levelId: string = 'kiem_trung';
   private wave = 0;
   private nextWaveAt = 0;
   private clearedAt = 0;
 
+  private get def(): DungeonDef {
+    return LEVELS[this.levelId].dungeon!;
+  }
+
   simOptions(): SimOptions {
-    return { levelId: 'kiem_trung', roomName: ROOM_DUNGEON, spawn: DUNGEON_SPAWN, respawn: DUNGEON_SPAWN, persistPosition: false };
+    const d = this.def;
+    return { levelId: this.levelId, roomName: dungeonRoomName(this.levelId), spawn: d.spawn, respawn: d.spawn, persistPosition: false };
   }
 
   onCreate(options: unknown): void {
@@ -354,11 +484,11 @@ export class DungeonRoom extends GameRoom {
     this.clock.setInterval(() => this.director(), 500);
   }
 
-  /** Chỉ vào được bằng vé cấp ở cổng Kiếm Trủng; gọi thẳng joinOrCreate('dungeon') sẽ bị từ chối. */
+  /** Chỉ vào được bằng vé cấp ở cổng; gọi thẳng joinOrCreate('dungeon') sẽ bị từ chối. */
   static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     const auth = await GameRoom.onAuth(token, options);
-    if (!takeTicket(auth.charId)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
-    return auth;
+    if (!tickets.take(auth.charId, (this as unknown as { levelId: string }).levelId)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+    return { ...auth, ticket: true };
   }
 
   noLootFor(char: Character): boolean {
@@ -371,11 +501,17 @@ export class DungeonRoom extends GameRoom {
     if (p.noLoot) this.sim.sys(p, 'sys.dungeon_no_reward', undefined, 'bad');
   }
 
+  /** Về bản đồ thế giới `returnLevel` tại `returnSpawn`, bằng vé (cùng đường với mọi lần chuyển bản đồ). */
+  private leave(p: PlayerEnt): void {
+    const d = this.def;
+    tickets.issue(p.char.id, d.returnLevel, d.returnSpawn);
+    this.sendTransfer(p, d.returnLevel);
+  }
+
   onPortal(p: PlayerEnt): void {
-    const dx = p.move.x - DUNGEON_EXIT.x;
-    const dz = p.move.z - DUNGEON_EXIT.z;
-    if (dx * dx + dz * dz > 14 * 14) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
-    this.transfer(p, ROOM_WORLD);
+    const ex = this.def.exit;
+    if ((p.move.x - ex.x) ** 2 + (p.move.z - ex.z) ** 2 > 14 * 14) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
+    this.leave(p);
   }
 
   onMonsterKilled(m: MonEnt): void {
@@ -394,7 +530,7 @@ export class DungeonRoom extends GameRoom {
     if (this.clearedAt) {
       if (now >= this.clearedAt + 20000) {
         this.clearedAt = now + 3600_000;
-        for (const p of this.sim.players.values()) this.transfer(p, ROOM_WORLD);
+        for (const p of this.sim.players.values()) this.leave(p);
       }
       return;
     }
@@ -404,13 +540,15 @@ export class DungeonRoom extends GameRoom {
     if (now < this.nextWaveAt) return;
     this.nextWaveAt = 0;
     this.wave++;
-    if (this.wave > WAVES.length) {
+    const waves = this.def.waves;
+    if (this.wave > waves.length) {
       this.clearedAt = now;
       this.sim.sysAll('sys.dungeon_clear', undefined, 'good');
       return;
     }
     if (this.wave === 2) this.lock();
-    const w = WAVES[this.wave - 1];
+    const w = waves[this.wave - 1];
+    const c = this.def.center;
     let lead = '';
     let i = 0;
     for (const g of w.mons) {
@@ -420,11 +558,20 @@ export class DungeonRoom extends GameRoom {
       for (let k = 0; k < g.n; k++) {
         const a = (i++ / 7) * Math.PI * 2 + this.wave;
         const r = def.boss ? 14 : 24 + (k % 2) * 8;
-        this.sim.spawnMonster(def, g.level, KIEM_TRUNG.x + Math.cos(a) * r, KIEM_TRUNG.z - 12 + Math.sin(a) * r, null);
+        this.sim.spawnMonster(def, g.level, c.x + Math.cos(a) * r, c.z + Math.sin(a) * r, null);
       }
     }
     this.sim.sysAll('sys.dungeon_wave', { n: this.wave, boss: lead }, 'info');
   }
+}
+
+/** Lớp room cho một bí cảnh (E1-B): `dungeon` cho Kiếm Trủng, `dungeon-<id>` cho bí cảnh khác. */
+export function defineDungeon(levelId: string): typeof DungeonRoom {
+  if (!LEVELS[levelId]?.dungeon) throw new Error(`defineDungeon: ${levelId} không phải bí cảnh`);
+  if (levelId === DungeonRoom.levelId) return DungeonRoom;
+  return class extends DungeonRoom {
+    static levelId = levelId;
+  };
 }
 
 export { ROOM_DUNGEON, ROOM_WORLD };

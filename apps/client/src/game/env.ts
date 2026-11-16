@@ -59,9 +59,30 @@ export class Environment {
 
   /** Mức chi tiết trời/mây/nước theo preset chất lượng ('low' | 'medium' | 'high'). */
   setQuality(preset: string): void {
+    this.preset = preset;
     setSkyQuality(preset);
     this.cloudSea.setQuality(preset);
     this.lake.setQuality(preset);
+  }
+
+  private preset = 'medium';
+  private seaFor = 'van_lam';
+
+  /**
+   * Đổi level (E1-D): biển mây nướng lại theo địa hình mới (dispose bản cũ, reset texture module), hồ chỉ hiện khi level có hồ.
+   * Gọi sau `setActiveLevel`. Cùng địa hình thì không dựng lại.
+   */
+  setLevel(terrainId: string, f: { clouds: boolean; lake: boolean }): void {
+    if (f.clouds && this.seaFor !== terrainId) {
+      this.group.remove(this.cloudSea.group);
+      this.cloudSea.dispose();
+      this.cloudSea = new CloudSea();
+      this.cloudSea.setQuality(this.preset);
+      this.group.add(this.cloudSea.group);
+      this.seaFor = terrainId;
+    }
+    this.cloudSea.group.visible = f.clouds;
+    this.lake.group.visible = f.lake;
   }
 
   update(dt: number, camera: THREE.Camera, focus: THREE.Vector3): void {

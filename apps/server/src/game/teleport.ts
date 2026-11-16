@@ -6,6 +6,7 @@ import {
   S,
   SECT,
   TELE_ARRIVE_OFFSET,
+  TELE_CAST_LEVEL_MS,
   TELE_CAST_MS,
   TELE_CD_MS,
   TELE_CMD_GAP_MS,
@@ -21,8 +22,12 @@ import type { PlayerEnt } from './sim';
 
 export interface TeleHost {
   now(): number;
-  /** Chỉ thế giới chính có trận. */
+  /** Chỉ bản đồ thế giới có trận (bí cảnh thì không). */
   inWorld(): boolean;
+  /** Id level của room này. */
+  level(): string;
+  /** Truyền tống sang level khác (room cấp vé, kiểm điều kiện, báo client đổi room). false = bị chặn. */
+  transfer(p: PlayerEnt, level: string, x: number, z: number): boolean;
   players(): Iterable<PlayerEnt>;
   inCombat(p: PlayerEnt): boolean;
   inDuel(p: PlayerEnt): boolean;
@@ -47,6 +52,7 @@ const STEP_MS = 200;
 /** Hồi chiêu theo nhân vật, sống ở cấp tiến trình để chuyển room không xóa được hồi chiêu. */
 const cdUntil = new Map<number, number>();
 
+// Truyền tống liên level (E1-B): niệm 5 s; sang level khác thì đi qua `transfer` (vé một lần + đổi room), cùng hồi chiêu 30 s.
 export class TeleportSystem {
   private casts = new Map<string, Cast>();
   private cmdAt = new Map<string, number>();
@@ -103,7 +109,8 @@ export class TeleportSystem {
     const left = (cdUntil.get(p.char.id) ?? 0) - now;
     if (left > 0) return this.h.warn(p, 'sys.tele_cd', { s: Math.ceil(left / 1000) });
     this.h.stopMeditate(p);
-    this.casts.set(p.sid, { id: pad.id, until: now + TELE_CAST_MS, x: p.move.x, z: p.move.z, combatAt: p.lastCombatAt });
+    const ms = pad.level === this.h.level() ? TELE_CAST_MS : TELE_CAST_LEVEL_MS;
+    this.casts.set(p.sid, { id: pad.id, until: now + ms, x: p.move.x, z: p.move.z, combatAt: p.lastCombatAt });
     this.h.sys(p, 'sys.tele_start', { n: t(`tele.${pad.id}`) }, 'info');
     this.sendState(p);
   }
@@ -136,7 +143,9 @@ export class TeleportSystem {
 
   /** Đứng sát trận chưa mở thì mở khóa (lần đầu), lưu DB ngay. */
   private touch(p: PlayerEnt): void {
+    const level = this.h.level();
     for (const pad of TELE_PADS) {
+      if (pad.level !== level) continue;
       if (Math.hypot(p.move.x - pad.x, p.move.z - pad.z) > TELE_TOUCH_R) continue;
       if (p.char.unlockTele(pad.id)) {
         this.h.sys(p, 'sys.tele_unlock', { n: t(`tele.${pad.id}`) }, 'good');
@@ -150,12 +159,16 @@ export class TeleportSystem {
     const pad = TELE_PAD.get(c.id);
     if (!pad || !p.char.teleOpen().includes(pad.id)) return this.sendState(p);
     // Đích: lệch vài mét về phía tông môn để không đứng đè lên mô hình trận.
-    let dx = SECT.x - pad.x;
-    let dz = SECT.z - pad.z;
+    const face = pad.face ?? SECT;
+    let dx = face.x - pad.x;
+    let dz = face.z - pad.z;
     const len = Math.hypot(dx, dz) || 1;
     dx /= len;
     dz /= len;
-    if (!this.h.teleportTo(p, pad.x + dx * TELE_ARRIVE_OFFSET, pad.z + dz * TELE_ARRIVE_OFFSET)) return this.sendState(p);
+    const x = pad.x + dx * TELE_ARRIVE_OFFSET;
+    const z = pad.z + dz * TELE_ARRIVE_OFFSET;
+    const ok = pad.level === this.h.level() ? this.h.teleportTo(p, x, z) : this.h.transfer(p, pad.level, x, z);
+    if (!ok) return this.sendState(p);
     cdUntil.set(p.char.id, this.h.now() + TELE_CD_MS);
     this.h.sys(p, 'sys.tele_done', { n: t(`tele.${pad.id}`) }, 'good');
     this.sendState(p);

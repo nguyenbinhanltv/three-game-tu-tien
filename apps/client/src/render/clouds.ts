@@ -16,7 +16,8 @@ import {
   vec3,
   vec4,
 } from 'three/tsl';
-import { FOREST, heightAt, LAKE, VALLEY, WORLD_SIZE } from '@dtl/shared';
+import { FOREST, LAKE, VALLEY } from '@dtl/shared';
+import { heightAt, levelTerrain } from '../game/levelCtx';
 import { getCloudNoise } from './noiseTex';
 import { skyParams } from './sky';
 
@@ -44,6 +45,7 @@ let hMax = 1;
 /** R = độ cao đất (chuẩn hóa theo khoảng min..max), G = hệ số che các khu chơi (0 trong khu, 1 ở ngoài). */
 function getWorldMask(): THREE.DataTexture {
   if (worldTex) return worldTex;
+  const WORLD_SIZE = levelTerrain().size;
   const hs = new Float32Array(GRID * GRID);
   hMin = Infinity;
   hMax = -Infinity;
@@ -57,11 +59,14 @@ function getWorldMask(): THREE.DataTexture {
   }
   const data = new Uint8Array(GRID * GRID * 4);
   // [khu, bắt đầu hòa, hết hòa] theo tỉ lệ outerR: tâm khu hoàn toàn không mây.
-  const zones: [typeof VALLEY, number, number][] = [
-    [VALLEY, 0.3, 0.8],
-    [FOREST, 0.5, 1.0],
-    [LAKE, 0.62, 1.12],
-  ];
+  const zones: [typeof VALLEY, number, number][] =
+    levelTerrain().id === 'van_lam'
+      ? [
+          [VALLEY, 0.3, 0.8],
+          [FOREST, 0.5, 1.0],
+          [LAKE, 0.62, 1.12],
+        ]
+      : [];
   const ss = (a: number, b: number, v: number) => {
     const t = Math.max(0, Math.min(1, (v - a) / (b - a)));
     return t * t * (3 - 2 * t);
@@ -99,6 +104,7 @@ function layerMaterial(layer: (typeof LAYERS)[number]): THREE.MeshBasicNodeMater
   const world = getWorldMask();
   const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.FrontSide });
   const range = Math.max(1, hMax - hMin);
+  const WORLD_SIZE = levelTerrain().size;
   const ly = float(layer.y);
   const shaded = Fn(() => {
     const p = positionWorld.xz;

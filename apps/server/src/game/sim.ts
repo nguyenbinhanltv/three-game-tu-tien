@@ -83,9 +83,7 @@ import {
   HP_REGEN_IDLE,
   HP_REGEN_MEDITATE,
   type HazardGeom,
-  groundAt,
   type HazardMsg,
-  heightAt,
   IN_FLY,
   inHazard,
   isHeavyHit,
@@ -166,6 +164,9 @@ import {
   AOI_OUT,
   zoneAt,
   type BossTimerMsg,
+  HOME_LEVEL,
+  terrainOf,
+  type Terrain,
 } from '@dtl/shared';
 import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
@@ -392,6 +393,20 @@ export interface SimHost {
   broadcastExcept?(type: string, msg: unknown, except: ReadonlySet<string>): void;
   /** Bí cảnh: gọi khi một quái không hồi sinh bị hạ. */
   onMonsterKilled?(m: MonEnt): void;
+  /**
+   * Chuyển người chơi sang bản đồ khác (E1-B): room kiểm điều kiện, cấp vé một lần, lưu nhân vật rồi báo client vào room mới.
+   * Trả false nếu bị chặn (đã báo lý do cho người chơi). Không có (test) thì từ chối.
+   */
+  transferLevel?(p: PlayerEnt, level: string, spawn: { x: number; z: number } | null, o?: TransferOpts): boolean;
+}
+
+export interface TransferOpts {
+  /** Chặn khi đang giao chiến (Truyền Tống). */
+  combat?: boolean;
+  /** Người dẫn tổ đội kéo theo đồng đội cùng room, trong tầm. */
+  party?: boolean;
+  /** Bỏ qua kiểm điều kiện (lệnh GM / tham số kiểm thử của tài khoản thử). */
+  force?: boolean;
 }
 
 export interface SimOptions {
@@ -429,13 +444,15 @@ export class GameSim {
   /** sid người chơi → lần cuối có quái cận chiến phải chờ ở vòng ngoài. */
   private slotWait = new Map<string, number>();
   level: LevelDef;
+  /** Địa hình của level (E1-A); Vân Lam giống hệt `groundAt`/`heightAt` toàn cục. */
+  readonly terrain: Terrain;
   private nextId = 1;
   tickMs = 0;
   tickSamples: number[] = [];
   /** Bình cảnh, tâm ma, linh căn (P3-7). */
   readonly realm = new RealmSystem({
     now: () => this.now,
-    inWorld: () => this.opts.levelId === 'van_lam',
+    inWorld: () => !this.level.dungeon,
     isDead: (p) => this.isDead(p),
     nearNpc: (p, id) => this.nearNpc(p, id),
     idem: (p, r) => this.idem(p, r),
@@ -479,7 +496,8 @@ export class GameSim {
   /** Tỉ thí 1v1 ở võ đài (P3-9). */
   readonly duel = new DuelSystem({
     now: () => this.now,
-    inWorld: () => this.opts.levelId === 'van_lam' && this.opts.roomName === 'world',
+    // Võ đài chỉ có ở Vân Lam (toạ độ đài là hằng số của bản đồ đó).
+    inWorld: () => this.opts.levelId === HOME_LEVEL && !this.level.dungeon,
     players: () => this.players.values(),
     sys: (p, k, params, type) => this.sys(p, k, params, type),
     warn: (p, k, params) => this.warn(p, k, params),
@@ -492,7 +510,9 @@ export class GameSim {
   /** Truyền Tống Trận (M-4): mở khóa, niệm, dịch chuyển. */
   readonly tele = new TeleportSystem({
     now: () => this.now,
-    inWorld: () => this.opts.levelId === 'van_lam' && this.opts.roomName === 'world',
+    inWorld: () => !this.level.dungeon,
+    level: () => this.level.id,
+    transfer: (p, level, x, z) => this.host.transferLevel?.(p, level, { x, z }, { combat: true, party: true }) ?? false,
     players: () => this.players.values(),
     inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
     inDuel: (p) => this.duel.inDuel(p),
@@ -520,6 +540,7 @@ export class GameSim {
     public opts: SimOptions,
   ) {
     this.level = LEVELS[opts.levelId];
+    this.terrain = terrainOf(this.level);
     state.level = opts.levelId;
     // Quái đứng lẻ (tinh anh, boss): từng con hồi sinh riêng. Bãi quái: theo cụm (M-2).
     for (const sp of this.level.spawns) {
@@ -533,7 +554,7 @@ export class GameSim {
         s.t = nd.item;
         s.x = pos.x;
         s.z = pos.z;
-        s.y = groundAt(pos.x, pos.z);
+        s.y = this.terrain.groundAt(pos.x, pos.z);
         s.on = true;
         const id = 'n' + this.nextId++;
         state.nodes.set(id, s);
@@ -550,7 +571,7 @@ export class GameSim {
       const r = Math.sqrt(Math.random()) * radius;
       const x = cx + Math.cos(a) * r;
       const z = cz + Math.sin(a) * r;
-      if (allowWater || heightAt(x, z) > WATER_Y + 0.5) return { x, z };
+      if (allowWater || this.terrain.heightAt(x, z) > WATER_Y + 0.5) return { x, z };
     }
     return { x: cx, z: cz };
   }
@@ -625,7 +646,7 @@ export class GameSim {
 
   private nearNpc(p: PlayerEnt, npcId: string): boolean {
     const n = NPC.get(npcId);
-    if (!n || this.opts.levelId !== 'van_lam') return false;
+    if (!n || (n.level ?? HOME_LEVEL) !== this.level.id) return false;
     const dx = p.move.x - n.x;
     const dz = p.move.z - n.z;
     return dx * dx + dz * dz <= INTERACT_RANGE * INTERACT_RANGE;
@@ -653,7 +674,7 @@ export class GameSim {
       y = 0;
       char.hp = Math.round(char.mhp * 0.5);
     }
-    const g = groundAt(x, z);
+    const g = this.terrain.groundAt(x, z);
     if (!(y >= g)) y = g;
     if (y > g + 3) y = g; // không lưu trạng thái đang bay
     char.room = this.opts.levelId;
@@ -883,7 +904,7 @@ export class GameSim {
     const wasFlying = p.move.flying;
     const px = p.move.x;
     const pz = p.move.z;
-    stepMove(p.move, inp, { canFly, frozen: dead, speedMul: 1 });
+    stepMove(p.move, inp, { canFly, frozen: dead, speedMul: 1, terrain: this.terrain });
     if (p.move.flying && !wasFlying) {
       this.questEvent(p, 'fly', undefined, 1);
     }
@@ -1158,7 +1179,7 @@ export class GameSim {
     p.lastCombatAt = this.now;
     p.move.x = plan.x;
     p.move.z = plan.z;
-    p.move.y = groundAt(plan.x, plan.z);
+    p.move.y = this.terrain.groundAt(plan.x, plan.z);
     p.move.vy = 0;
     p.move.grounded = true;
     p.inputs.length = 0;
@@ -1299,7 +1320,7 @@ export class GameSim {
 
   /** Đang ngự kiếm hoặc lơ lửng cao hơn mặt đất (vừa tắt ngự kiếm, đang rơi): không được ra chiêu. */
   private airborne(p: PlayerEnt): boolean {
-    return p.move.flying || p.move.y - groundAt(p.move.x, p.move.z) > AIRBORNE_HEIGHT;
+    return p.move.flying || p.move.y - this.terrain.groundAt(p.move.x, p.move.z) > AIRBORNE_HEIGHT;
   }
 
   /** Tầm chiêu của người chơi: đan sư xa hơn (nội tại `rangeBonus`), chỉ chiêu đánh. */
@@ -2200,7 +2221,7 @@ export class GameSim {
     if (!this.isDead(p)) return;
     const c = p.char;
     const { x, z } = this.opts.respawn;
-    p.move = { x, y: groundAt(x, z), z, vy: 0, grounded: true, flying: false };
+    p.move = { x, y: this.terrain.groundAt(x, z), z, vy: 0, grounded: true, flying: false };
     p.inputs.length = 0;
     c.hp = Math.round(c.mhp * 0.5);
     c.mp = Math.round(c.mmp * 0.5);
@@ -2227,7 +2248,7 @@ export class GameSim {
     s.t = def.id;
     s.x = x;
     s.z = z;
-    s.y = groundAt(x, z);
+    s.y = this.terrain.groundAt(x, z);
     s.yaw = Math.random() * Math.PI * 2;
     s.hp = st.hp;
     s.mhp = st.hp;
@@ -2293,7 +2314,7 @@ export class GameSim {
     m.homeZ = m.wz = pos.z;
     m.s.x = pos.x;
     m.s.z = pos.z;
-    m.s.y = groundAt(pos.x, pos.z);
+    m.s.y = this.terrain.groundAt(pos.x, pos.z);
     m.s.lv = m.level;
     m.s.mhp = st.hp;
     m.s.hp = st.hp;
@@ -2349,7 +2370,7 @@ export class GameSim {
     const nz = m.s.z + (dz / d) * step;
     m.s.x = nx;
     m.s.z = nz;
-    m.s.y = groundAt(nx, nz);
+    m.s.y = this.terrain.groundAt(nx, nz);
     m.s.yaw = Math.atan2(dx, dz);
     return d - step;
   }
@@ -2508,7 +2529,7 @@ export class GameSim {
     // Mục tiêu đã chạy xa hoặc lên chỗ không với tới: chiêu xịt.
     if (!reachable || d > c.range * 1.4) return;
     const yaw = Math.atan2(target.move.x - m.s.x, target.move.z - m.s.z);
-    if (c.shape === 'bolt') return this.fireBolts(m, c, yaw, boltLift(target.move.y, groundAt(target.move.x, target.move.z)));
+    if (c.shape === 'bolt') return this.fireBolts(m, c, yaw, boltLift(target.move.y, this.terrain.groundAt(target.move.x, target.move.z)));
     let g: HazardGeom;
     if (c.shape === 'circle') g = { x: target.move.x, z: target.move.z, r: c.r };
     else if (c.shape === 'rect') g = { x: m.s.x, z: m.s.z, r: c.r, sh: 'rect', yaw, w: c.w ?? 2 };
@@ -2566,7 +2587,7 @@ export class GameSim {
           const r = 3 + Math.random() * 7;
           const wx = m.homeX + Math.cos(a) * r;
           const wz = m.homeZ + Math.sin(a) * r;
-          if (heightAt(wx, wz) > WATER_Y + 0.3) {
+          if (this.terrain.heightAt(wx, wz) > WATER_Y + 0.3) {
             m.wx = wx;
             m.wz = wz;
           }
@@ -2753,7 +2774,7 @@ export class GameSim {
         // Chỉ khi kiếp còn chạy: chết/hồi sinh/hủy kiếp trước lúc nổ thì tia mất khóa và rơi về kiểm vị trí.
         const locked = !!h.lock && h.src === p.sid && !!p.trib;
         if (!locked && !inHazard(h, p.move.x, p.move.z)) continue;
-        if (!locked && p.move.y - groundAt(p.move.x, p.move.z) > 8) continue;
+        if (!locked && p.move.y - this.terrain.groundAt(p.move.x, p.move.z) > 8) continue;
         if (h.grp) {
           const key = h.grp + ':' + p.sid;
           if (hitGrp.has(key)) continue;
@@ -2891,7 +2912,7 @@ export class GameSim {
   onBreakthrough(p: PlayerEnt): void {
     const c = p.char;
     if (this.duel.inDuel(p)) return this.warn(p, 'duel.busy');
-    if (this.isDead(p) || p.trib || this.opts.levelId !== 'van_lam') return this.warn(p, 'sys.trib_not_now');
+    if (this.isDead(p) || p.trib || this.level.dungeon) return this.warn(p, 'sys.trib_not_now');
     if (c.level !== NGUNG_KHI_MAX) return this.warn(p, c.level > NGUNG_KHI_MAX ? 'sys.max_level' : 'sys.trib_need_xp');
     if (c.xp < xpNeed(c.level)) return this.warn(p, 'sys.trib_need_xp');
     // Bình cảnh tầng 15 phải vượt (tâm ma hoặc Phá Cảnh Đan) trước khi độ kiếp.
@@ -3463,10 +3484,21 @@ export class GameSim {
     return PLACES.filter((pl) => pl.level === this.opts.levelId).map((pl) => pl.id);
   }
 
+  /**
+   * Lý do chưa rời bản đồ được (khóa i18n), '' nếu được (E1-B): không chết, không độ kiếp/tâm ma, không tỉ thí,
+   * không niệm dở hay đang ra chiêu; `combat` thêm điều kiện không giao chiến (Truyền Tống).
+   */
+  leaveBlocker(p: PlayerEnt, combat = false): string {
+    if (this.isDead(p)) return 'sys.tele_dead';
+    if (p.trib || p.trial || this.duel.inDuel(p) || p.casting || p.flow.pending) return 'sys.tele_busy';
+    if (combat && this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000) return 'sys.tele_combat';
+    return '';
+  }
+
   /** Dịch chuyển tức thì (chỉ gọi từ lệnh GM / tham số kiểm thử). Điểm không thuộc level của room thì từ chối. */
   teleportTo(p: PlayerEnt, x: number, z: number, level = this.opts.levelId): boolean {
     if (level !== this.opts.levelId || !Number.isFinite(x) || !Number.isFinite(z)) return false;
-    p.move = { x, y: groundAt(x, z), z, vy: 0, grounded: true, flying: false };
+    p.move = { x, y: this.terrain.groundAt(x, z), z, vy: 0, grounded: true, flying: false };
     p.inputs.length = 0;
     return true;
   }
@@ -3491,7 +3523,8 @@ export class GameSim {
       this.heal(p);
       this.sys(p, 'sys.gm', { m: 'god on' }, 'info');
     }
-    if (f.at && this.teleportTo(p, f.at.x, f.at.z, f.at.level)) this.sys(p, 'sys.gm', { m: `at ${f.at.id}` }, 'info');
+    if (f.at && f.at.level !== this.level.id && !LEVELS[f.at.level]?.dungeon && this.host.transferLevel?.(p, f.at.level, { x: f.at.x, z: f.at.z }, { force: true })) this.sys(p, 'sys.gm', { m: `at ${f.at.id} → ${f.at.level}` }, 'info');
+    else if (f.at && this.teleportTo(p, f.at.x, f.at.z, f.at.level)) this.sys(p, 'sys.gm', { m: `at ${f.at.id}` }, 'info');
     else if (!f.at && f.pos && this.teleportTo(p, f.pos.x, f.pos.z)) this.sys(p, 'sys.gm', { m: `at ${Math.round(f.pos.x)},${Math.round(f.pos.z)}` }, 'info');
     if (f.trib) this.sys(p, 'sys.gm', { m: this.gmTribulation(p) }, 'info');
   }
@@ -3516,7 +3549,7 @@ export class GameSim {
    */
   private gmTribulation(p: PlayerEnt): string {
     const c = p.char;
-    if (this.opts.levelId !== 'van_lam' || this.isDead(p) || p.trib || p.trial || this.duel.inDuel(p)) return 'trib: không độ kiếp được lúc này';
+    if (this.level.dungeon || this.isDead(p) || p.trib || p.trial || this.duel.inDuel(p)) return 'trib: không độ kiếp được lúc này';
     if (c.level !== NGUNG_KHI_MAX) this.gmSetLevel(p, NGUNG_KHI_MAX);
     c.bk = NGUNG_KHI_MAX;
     c.xp = xpNeed(NGUNG_KHI_MAX);
@@ -3647,7 +3680,11 @@ export class GameSim {
         if (a.length === 2) {
           const pl = PLACE.get(a[1]);
           if (!pl) return say('tp ' + this.placeIds().join(' | '));
-          if (!this.teleportTo(p, pl.x, pl.z, pl.level)) return say(`${pl.id} thuộc ${pl.level}, không ở room này`);
+          if (pl.level !== this.level.id) {
+            const ok = !LEVELS[pl.level]?.dungeon && this.host.transferLevel?.(p, pl.level, { x: pl.x, z: pl.z }, { force: true });
+            return say(ok ? `tp ${pl.id} → ${pl.level}` : `${pl.id} thuộc ${pl.level}, không chuyển được`);
+          }
+          this.teleportTo(p, pl.x, pl.z);
           return say(`tp ${pl.id} (${pl.x}, ${pl.z})`);
         }
         const x = Number(a[1]);

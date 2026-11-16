@@ -11,6 +11,7 @@ import type {
   SetDef,
   QualityDef,
   SlotDef,
+  LevelAssets,
   LevelDef,
   MonsterDef,
   NpcDef,
@@ -34,6 +35,8 @@ import realmsJson from '../data/realms.json';
 import rootsJson from '../data/roots.json';
 import vanLamJson from '../data/levels/van_lam.json';
 import kiemTrungJson from '../data/levels/kiem_trung.json';
+import vanLamAssetsJson from '../data/levels/van_lam.assets.json';
+import kiemTrungAssetsJson from '../data/levels/kiem_trung.assets.json';
 import glossaryJson from '../data/glossary.json';
 import viJson from '../data/i18n/vi.json';
 import viUiJson from '../data/i18n/vi.ui.json';
@@ -96,6 +99,11 @@ export const REALMS = realmsJson as RealmDef[];
 export const LEVELS: Record<string, LevelDef> = {
   van_lam: vanLamJson as LevelDef,
   kiem_trung: kiemTrungJson as LevelDef,
+};
+/** Asset client theo level (`levels/<id>.assets.json`, E1-D). */
+export const LEVEL_ASSETS: Record<string, LevelAssets> = {
+  van_lam: vanLamAssetsJson as LevelAssets,
+  kiem_trung: kiemTrungAssetsJson as LevelAssets,
 };
 /** Năm linh căn ngũ hành (P3-7). */
 export const ROOTS = rootsJson as RootDef[];

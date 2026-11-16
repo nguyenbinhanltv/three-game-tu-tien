@@ -1,6 +1,10 @@
 // Đánh thử trong sim server thật (đồng hồ giả, không mạng): người chơi đứng yên, xoay vòng chiêu, đánh `PULL` quái hợp cấp cùng lúc.
 // Đối chiếu số trong `pnpm sim:progress` (TTK và máu mất mỗi lần giết) với luật thật của server (khắc chế, nội tại công pháp, quái, khiên).
-// Chạy: pnpm --filter @dtl/server fight:check [--runs 6] [--levels 4,10,15]
+// Chạy: pnpm --filter @dtl/server fight:check [--runs 6] [--levels 4,10,15,20,28] [--pull 2] [--nogear] [--mon <id>]
+//   Quái chọn từ điểm sinh của MỌI level (E1-G): bãi quái thường có khoảng cấp gần cấp thử nhất. Cấp thử ngoài mọi khoảng cấp của quái hiện có
+//   (Trúc Cơ trở lên khi chưa có bản đồ mở rộng) thì dùng quái gần nhất với cấp quái = cấp thử, đánh dấu `*` (ngoại suy theo hệ số cảnh giới).
+//   --strict: thoát mã 1 nếu TTK trung bình ngoài 3,5–8,5 s (ngưỡng của sim:progress) hoặc có ca chết.
+//   --mon <id>: ép dùng một quái thường (cấp quái = cấp thử), để đo quái mới khi đã có dữ liệu.
 process.env.DB_FILE = ':memory:';
 
 import { CHARGE_MAX, groundAt, METHOD_UNLOCK_LEVEL, MS_DEAD, levelSpawns, type MonsterDef } from '@dtl/shared';
@@ -10,7 +14,8 @@ const arg = (name: string, def: string) => {
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : def;
 };
 const RUNS = Number(arg('runs', '6'));
-const LEVELS = arg('levels', '4,10,15').split(',').map(Number);
+const LEVELS = arg('levels', '4,10,15,20,28').split(',').map(Number);
+const FORCE_MON = arg('mon', '');
 const PULL = Number(arg('pull', '2'));
 const NOGEAR = process.argv.includes('--nogear');
 
@@ -21,6 +26,9 @@ const { GameSim } = await import('../game/sim');
 const { WorldState } = await import('../state');
 const { Character } = await import('../game/character');
 const { ITEM, LEVELS: LV, MONSTER, SKILL, SKILLS, METHOD_SKILLS, METHODS } = await import('@dtl/content');
+const { MAX_LEVEL } = await import('@dtl/shared');
+for (const lv of LEVELS) if (!(lv >= 1 && lv <= MAX_LEVEL)) throw new Error(`--levels: cấp ${lv} ngoài 1–${MAX_LEVEL}`);
+if (FORCE_MON && (!MONSTER.get(FORCE_MON) || MONSTER.get(FORCE_MON)!.boss || MONSTER.get(FORCE_MON)!.elite)) throw new Error(`--mon: ${FORCE_MON} không phải quái thường`);
 type Sim = InstanceType<typeof GameSim>;
 
 const X = 2040;
@@ -40,12 +48,17 @@ function gearFor(level: number): Record<string, string> {
   return { weapon: pick(['itm_moc_kiem', 'itm_thiet_kiem', 'itm_thanh_phong_kiem']), robe: pick(['itm_bo_y', 'itm_dao_bao', 'itm_linh_ti_bao']) };
 }
 
-/** Quái thường hợp cấp: bãi gần cấp nhất (cùng cách chọn của sim.ts). */
-function pickMon(level: number): { def: MonsterDef; mlv: number } {
-  const sp = levelSpawns(LV.van_lam)
+/** Quái thường hợp cấp: bãi gần cấp nhất trong mọi level (cùng cách chọn của sim.ts). `extra`: cấp quái ngoại suy vì cấp thử vượt mọi bãi hiện có. */
+function pickMon(level: number): { def: MonsterDef; mlv: number; extra: boolean } {
+  if (FORCE_MON) return { def: MONSTER.get(FORCE_MON)!, mlv: level, extra: true };
+  const sp = Object.values(LV)
+    .flatMap((l) => levelSpawns(l))
     .filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite)
     .sort((a, b) => Math.abs((a.levelMin + a.levelMax) / 2 - level) - Math.abs((b.levelMin + b.levelMax) / 2 - level))[0];
-  return { def: MONSTER.get(sp.mon)!, mlv: Math.min(sp.levelMax, Math.max(sp.levelMin, level)) };
+  // Ngoài khoảng cấp cao nhất của mọi quái hiện có: ngoại suy cấp quái = cấp thử; còn lại kẹp vào khoảng cấp của bãi.
+  const top = Math.max(...Object.values(LV).flatMap((l) => levelSpawns(l)).filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite).map((s) => s.levelMax));
+  const extra = level > top;
+  return { def: MONSTER.get(sp.mon)!, mlv: extra ? level : Math.min(sp.levelMax, Math.max(sp.levelMin, level)), extra };
 }
 
 interface Result {
@@ -102,15 +115,21 @@ function fightOnce(level: number, method: string | undefined): Result {
 
 console.log(`Đánh thử trong sim server (đứng yên, kéo ${PULL} quái, ${RUNS} lần mỗi ô; TTK và máu mất tính trên mỗi con):`);
 console.log('cấp   quái                     công pháp     TTK     mất/con   chết');
+const STRICT = process.argv.includes('--strict');
+const bad: string[] = [];
 for (const lv of LEVELS) {
   for (const m of [undefined, 'lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh'] as const) {
     if (!m && lv >= METHOD_UNLOCK_LEVEL) continue;
     const rs = Array.from({ length: RUNS }, () => fightOnce(lv, m));
     const avg = (f: (r: Result) => number) => rs.reduce((n, r) => n + f(r), 0) / rs.length;
-    const { def, mlv } = pickMon(lv);
+    const { def, mlv, extra } = pickMon(lv);
+    const ttk = avg((r) => r.ttk);
+    const deaths = rs.filter((r) => r.dead).length;
+    if (ttk < 3.5 || ttk > 8.5 || deaths) bad.push(`cấp ${lv} ${m ?? 'không'}: TTK ${ttk.toFixed(1)} s, chết ${deaths}/${RUNS}`);
     console.log(
-      `${String(lv).padStart(3)}   ${(def.id + ' (' + mlv + ')').padEnd(24)} ${(m ?? 'không').padEnd(18)} ${avg((r) => r.ttk).toFixed(1).padStart(4)}s  ${(avg((r) => r.lost) * 100).toFixed(0).padStart(5)}%   ${rs.filter((r) => r.dead).length}/${RUNS}`,
+      `${String(lv).padStart(3)}   ${(def.id + ' (' + mlv + (extra ? '*' : '') + ')').padEnd(24)} ${(m ?? 'không').padEnd(18)} ${avg((r) => r.ttk).toFixed(1).padStart(4)}s  ${(avg((r) => r.lost) * 100).toFixed(0).padStart(5)}%   ${rs.filter((r) => r.dead).length}/${RUNS}`,
     );
   }
 }
-process.exit(0);
+if (bad.length) console.log('\nNgoài khoảng (TTK 3,5–8,5 s, không chết):\n  ' + bad.join('\n  '));
+process.exit(STRICT && bad.length ? 1 : 0);
