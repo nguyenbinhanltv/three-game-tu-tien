@@ -1023,8 +1023,7 @@ console.log('Nội dung hợp lệ.');
 }
 // Chuỗi chương 3 (E3-H): q3_* nối đuôi từ q2_ket_dan tới q3_nguyen_anh; phụ s3_* nhận sau khi vào chương; mọi nhiệm vụ nhận ở NPC có thật.
 {
-  // TODO (sau khi #148 và E3-B merge): thêm 'q3_nguyen_anh' vào chuỗi, đổi giao/trả sang npc_lam_chieu_dung và requires q3_kinh_vuong.
-  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong'];
+  const main3 = ['q3_len_may', 'q3_van_hac', 'q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van', 'q3_kinh_nguyet', 'q3_kinh_vuong', 'q3_nguyen_anh'];
   main3.forEach((id, i) => {
     const q = QUEST.get(id);
     if (!q) return err(`thiếu nhiệm vụ chính chương 3 ${id}`);
@@ -1035,5 +1034,6 @@ console.log('Nội dung hợp lệ.');
   const first = QUEST.get('q3_len_may');
   if (first && !(first.unlockTele ?? []).includes('vh_tp_hub')) err('q3_len_may phải mở trận vh_tp_hub (unlockTele)');
   const na = QUEST.get('q3_nguyen_anh');
+  if (na && (na.giver !== 'npc_lam_chieu_dung' || na.turnin !== 'npc_lam_chieu_dung')) err('q3_nguyen_anh phải giao và trả ở npc_lam_chieu_dung');
   if (na && !na.objectives.some((o) => o.type === 'breakthrough' && o.target === 'nguyen_anh')) err('q3_nguyen_anh phải có mục tiêu breakthrough nguyen_anh');
 }
