@@ -345,7 +345,8 @@ function checkAi(m: MonsterDef, ai: MonsterAi, attackCd: number, at: string) {
     if (!(ch.delay >= 0.9)) err(`${id}: chant.delay phải >= 0,9 giây`);
     if (!(ch.stun >= 1 && ch.stun <= 6)) err(`${id}: chant.stun phải trong [1; 6] giây`);
     if (!(ch.cd > ch.cast + ch.delay + ch.stun)) err(`${id}: chant.cd phải lớn hơn cast + delay + stun`);
-    if (!(ch.mul > 0 && ch.mul <= 3)) err(`${id}: chant.mul phải trong (0, 3]`);
+    // Trần 5: đòn tự bạo cuối trận của Thôn Mạch (E2-C) cần ~65% máu tối đa người cấp 19.
+    if (!(ch.mul > 0 && ch.mul <= 5)) err(`${id}: chant.mul phải trong (0, 5]`);
     if (!(ch.r > 0 && ch.r <= 20)) err(`${id}: chant.r phải trong (0, 20]`);
   }
   const sl = ai.slam;
@@ -733,7 +734,7 @@ for (const lv of Object.values(LEVELS)) {
   else {
     const known = ['sect', 'wild', 'wild_ochre', 'forest', 'lake', 'dungeon', 'dungeon_boss', 'combat', 'boss', 'tribulation', 'meditate'];
     for (const m of as.music) if (!known.includes(m)) err(`level ${lv.id}: assets.music không biết bài ${m}`);
-    if (!['default', 'dawn', 'day', 'night', 'ochre'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
+    if (!['default', 'dawn', 'day', 'night', 'ochre', 'ochre_night'].includes(as.mood)) err(`level ${lv.id}: assets.mood không hợp lệ: ${as.mood}`);
     if (as.minimap && !existsSync(new URL(`../../../apps/client/public/map/${as.minimap}.json`, import.meta.url))) err(`level ${lv.id}: thiếu nền minimap public/map/${as.minimap}.json (pnpm minimap:build --level ${lv.id})`);
   }
 }
@@ -783,6 +784,31 @@ for (const lv of Object.values(LEVELS)) {
     if (!d.waves.length) err(`${w}: thiếu đợt quái`);
   }
   for (const wv of d.waves) for (const g of wv.mons) if (!MONSTER.get(g.id)) err(`${w}: quái ${g.id} không tồn tại`);
+  d.waves.forEach((wv, i) => {
+    const ww = `${w}, đợt ${i + 1}`;
+    for (const g of wv.mons) {
+      if (g.at !== undefined && !wv.points?.[g.at]) err(`${ww}: quái ${g.id} trỏ điểm sinh ${g.at} không có`);
+      if (!(g.n >= 1)) err(`${ww}: quái ${g.id} số lượng phải >= 1`);
+    }
+    for (const pt of wv.points ?? []) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${ww}: điểm sinh (${pt.x}, ${pt.z}) ngoài bản đồ`);
+    if (wv.title && !hasString(`dungeon.${lv.id}.wave.${i + 1}`)) err(`${ww}: thiếu chuỗi dungeon.${lv.id}.wave.${i + 1}`);
+  });
+  if (!lv.tribulation && !hasString(`dungeon.${lv.id}.name`)) err(`${w}: thiếu chuỗi dungeon.${lv.id}.name`);
+  if (d.maxRevives !== undefined && !(d.maxRevives >= 0)) err(`${w}: maxRevives không hợp lệ`);
+  if (d.lockAt !== undefined && !(d.lockAt >= 1 && d.lockAt <= d.waves.length)) err(`${w}: lockAt ngoài số đợt`);
+  const rw = d.reward;
+  if (rw) {
+    if (!(rw.xpPct > 0 && rw.xpPct <= 0.5)) err(`${w}: thưởng xpPct phải trong (0; 0,5]`);
+    if (!(rw.gold.length === 2 && rw.gold[0] >= 0 && rw.gold[1] >= rw.gold[0])) err(`${w}: thưởng gold phải là [thấp, cao]`);
+    for (const it of rw.items) {
+      if (!ITEM.get(it.item)) err(`${w}: thưởng vật phẩm ${it.item} không tồn tại`);
+      if (!(it.chance > 0 && it.chance <= 1 && it.min >= 1 && it.max >= it.min)) err(`${w}: thưởng ${it.item} chance/min/max không hợp lệ`);
+    }
+    for (const e of rw.equip ?? []) {
+      if (e.set && !SETS.some((x) => x.id === e.set)) err(`${w}: thưởng bộ ${e.set} không tồn tại`);
+      if (e.q.length !== 5 || e.q.reduce((a, b) => a + b, 0) !== 100) err(`${w}: thưởng equip.q phải 5 phần tử tổng 100`);
+    }
+  }
   for (const pt of [d.spawn, d.exit, d.center]) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${w}: điểm (${pt.x}, ${pt.z}) ngoài bản đồ`);
 }
 if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');

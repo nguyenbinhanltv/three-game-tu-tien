@@ -41,6 +41,8 @@ import vanLamAssetsJson from '../data/levels/van_lam.assets.json';
 import kiemTrungAssetsJson from '../data/levels/kiem_trung.assets.json';
 import doanMachAssetsJson from '../data/levels/doan_mach.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
+import phucMachJson from '../data/levels/phuc_mach.json';
+import phucMachAssetsJson from '../data/levels/phuc_mach.assets.json';
 import doKiepAssetsJson from '../data/levels/do_kiep.assets.json';
 import glossaryJson from '../data/glossary.json';
 import viJson from '../data/i18n/vi.json';
@@ -125,6 +127,7 @@ export const LEVELS: Record<string, LevelDef> = {
   kiem_trung: kiemTrungJson as LevelDef,
   doan_mach: doanMachJson as LevelDef,
   do_kiep: doKiepJson as LevelDef,
+  phuc_mach: phucMachJson as LevelDef,
 };
 // Địa hình dữ liệu hóa của bản đồ mở rộng (E2-A): đăng ký khi nạp @dtl/content để server, client và công cụ cùng thấy `terrainOf('doan_mach')`.
 registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
@@ -134,6 +137,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   kiem_trung: kiemTrungAssetsJson as LevelAssets,
   doan_mach: doanMachAssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
+  phuc_mach: phucMachAssetsJson as LevelAssets,
 };
 /** Năm linh căn ngũ hành (P3-7). */
 export const ROOTS = rootsJson as RootDef[];

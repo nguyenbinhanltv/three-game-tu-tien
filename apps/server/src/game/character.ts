@@ -47,6 +47,8 @@ import { type ArtifactMeta, bondedHpPassive, passiveValue, sanitizeArtifactMeta 
 export interface CharMeta extends MethodMeta, ArtifactMeta {
   /** Ngày (YYYY-MM-DD) gần nhất đã nhận thưởng bí cảnh. */
   dungeonDay?: string;
+  /** Như `dungeonDay` nhưng theo từng phó bản (E2-C): level → ngày nhận thưởng gần nhất. */
+  dungeonDays?: Record<string, string>;
 }
 
 /** Bản nháp thay đổi túi đồ/tiền. Chỉ thành thật khi commit trong một transaction. */

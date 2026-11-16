@@ -17,6 +17,7 @@ import {
   tribDef,
   type TribId,
   type DungeonDef,
+  type WaveDef,
   type TransferMsg,
   dungeonRoomName,
   isRootId,
@@ -26,7 +27,7 @@ import {
   worldRoomName,
   AOI_PERIOD_MS,
 } from '@dtl/shared';
-import { APPEARANCE, LEVELS, MONSTER, monsterName, realmName } from '@dtl/content';
+import { APPEARANCE, LEVELS, MONSTER, monsterName, realmName, t } from '@dtl/content';
 import { Aoi } from './aoi';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
@@ -176,7 +177,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.TALK, (p, m) => this.sim.onTalk(p, m));
     on(C.QUEST, (p, m) => this.sim.onQuest(p, m));
     on(C.CHAT, (p, m) => this.sim.onChat(p, m));
-    on(C.RESPAWN, (p) => this.sim.onRespawn(p));
+    on(C.RESPAWN, (p) => this.onRespawn(p));
     on(C.BREAKTHROUGH, (p) => this.sim.onBreakthrough(p));
     on(C.BOTTLENECK, (p, m) => this.sim.onBottleneck(p, m));
     on(C.ROOT, (p, m) => this.sim.onChangeRoot(p, m));
@@ -197,6 +198,10 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   }
 
   onPortal(_p: PlayerEnt): void {}
+  /** Phó bản ghi đè để giới hạn số lần hồi sinh. */
+  onRespawn(p: PlayerEnt): void {
+    this.sim.onRespawn(p);
+  }
   onMonsterKilled(_m: MonEnt): void {}
 
   /**
@@ -488,10 +493,25 @@ export class WorldRoom extends GameRoom {
     if (!portal) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
     const d = LEVELS[portal.to]?.dungeon;
     if (!d) return;
+    const name = t('dungeon.' + portal.to + '.name');
     if ((p.s.fl & PF_DEAD) !== 0 || p.trib || p.trial) return this.sim.sys(p, 'sys.busy', undefined, 'bad');
-    if (p.char.level < d.minLevel) return this.sim.sys(p, 'sys.dungeon_level', { realm: realmName(d.minLevel) }, 'bad');
-    tickets.issue(p.char.id, portal.to);
-    this.sendTransfer(p, portal.to);
+    if (p.char.level < d.minLevel) return this.sim.sys(p, 'sys.dungeon_level', { realm: realmName(d.minLevel), name }, 'bad');
+    // Mỗi lượt vào là một room riêng (khóa `dgKey` chia sẻ cho đồng đội đi cùng); đồng đội cùng tổ đội trong tầm được kéo theo
+    // nếu đủ cấp và rảnh, người khác không lọt vào room này.
+    const opts: Record<string, string> = d.private ? { dgKey: randomUUID() } : {};
+    const mates: PlayerEnt[] = [];
+    if (d.private && parties.partyOf(p.char.id)) {
+      for (const m of parties.matesInRoom(p.char.id, this)) {
+        if (m === p || m.char.id === p.char.id || m.char.level < d.minLevel || this.sim.leaveBlocker(m)) continue;
+        if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) <= TELE_PARTY_R) mates.push(m);
+      }
+    }
+    tickets.issue(p.char.id, portal.to, null, undefined, opts.dgKey);
+    this.sendTransfer(p, portal.to, opts);
+    for (const m of mates.slice(0, 4)) {
+      tickets.issue(m.char.id, portal.to, null, undefined, opts.dgKey);
+      this.sendTransfer(m, portal.to, opts);
+    }
   }
 }
 
@@ -511,15 +531,21 @@ export function defineWorld(levelId: string): typeof WorldRoom {
   };
 }
 
-/** Bí cảnh: mỗi room là một lượt của tối đa 5 người, đánh qua các đợt trong `levels/<id>.json`. */
+/** Bí cảnh: mỗi room là một lượt của tối đa 5 người, đánh qua các đợt trong `levels/<id>.json` (E1-B, E2-C). */
 export class DungeonRoom extends GameRoom {
   static levelId: string = 'kiem_trung';
   private wave = 0;
   private nextWaveAt = 0;
   private clearedAt = 0;
+  /** Số lần hồi sinh đã dùng của từng nhân vật (giới hạn `DungeonDef.maxRevives`). */
+  private revives = new Map<number, number>();
 
   private get def(): DungeonDef {
     return LEVELS[this.levelId].dungeon!;
+  }
+
+  private get dname(): string {
+    return t('dungeon.' + this.levelId + '.name');
   }
 
   simOptions(): SimOptions {
@@ -530,25 +556,43 @@ export class DungeonRoom extends GameRoom {
   onCreate(options: unknown): void {
     super.onCreate(options);
     this.maxClients = 5;
-    this.nextWaveAt = Date.now() + 8000;
+    this.nextWaveAt = Date.now() + (this.def.waves[0]?.delay ?? 8) * 1000;
     this.clock.setInterval(() => this.director(), 500);
   }
 
   /** Chỉ vào được bằng vé cấp ở cổng; gọi thẳng joinOrCreate('dungeon') sẽ bị từ chối. */
   static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     const auth = await GameRoom.onAuth(token, options);
-    if (!tickets.take(auth.charId, (this as unknown as { levelId: string }).levelId)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+    const level = (this as unknown as { levelId: string }).levelId;
+    // Phó bản riêng: vé phải mang khóa nhóm và client phải gửi đúng khóa đó (không khóa/khóa lạ = không vé, vé không bị đốt).
+    if (LEVELS[level]?.dungeon?.private) {
+      const key = (options as { dgKey?: unknown } | null)?.dgKey;
+      const t = tickets.peek(auth.charId, level);
+      if (!t?.dg || typeof key !== 'string' || key !== t.dg) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+    }
+    if (!tickets.take(auth.charId, level)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
     return { ...auth, ticket: true };
   }
 
+  /** Ngày đã dùng lượt thưởng của phó bản này (Kiếm Trủng giữ cột cũ `dungeonDay`). */
+  private usedDay(char: Character): string | undefined {
+    return this.levelId === DungeonRoom.levelId ? char.meta.dungeonDay : char.meta.dungeonDays?.[this.levelId];
+  }
+
+  private markUsed(char: Character): void {
+    if (this.levelId === DungeonRoom.levelId) char.meta.dungeonDay = today();
+    else (char.meta.dungeonDays ??= {})[this.levelId] = today();
+  }
+
   noLootFor(char: Character): boolean {
-    return char.meta.dungeonDay === today();
+    return this.usedDay(char) === today();
   }
 
   afterJoin(p: PlayerEnt): void {
-    this.sim.sys(p, 'sys.dungeon_enter', undefined, 'info');
+    this.sim.sys(p, 'sys.dungeon_enter', { name: this.dname }, 'info');
+    // Hook nhiệm vụ (q2_phuc_mach: mục tiêu `dungeon` ×1): chỉ phát sự kiện, kèm id level để nhiệm vụ lọc được.
     this.sim.questEvent(p, 'dungeon', undefined, 1);
-    if (p.noLoot) this.sim.sys(p, 'sys.dungeon_no_reward', undefined, 'bad');
+    if (p.noLoot) this.sim.sys(p, 'sys.dungeon_no_reward', { name: this.dname }, 'bad');
   }
 
   /** Về bản đồ thế giới `returnLevel` tại `returnSpawn`, bằng vé (cùng đường với mọi lần chuyển bản đồ). */
@@ -564,14 +608,40 @@ export class DungeonRoom extends GameRoom {
     this.leave(p);
   }
 
+  /** Hồi sinh ở điểm vào; tối đa `maxRevives` lần mỗi người, hết lượt thì được hồi sinh rồi bị đưa ra ngoài. */
+  onRespawn(p: PlayerEnt): void {
+    const max = this.def.maxRevives;
+    if (max === undefined || (p.s.fl & PF_DEAD) === 0) return super.onRespawn(p);
+    const used = this.revives.get(p.char.id) ?? 0;
+    super.onRespawn(p);
+    if (used >= max) {
+      this.sim.sys(p, 'sys.dungeon_revive_out', { name: this.dname }, 'bad');
+      return this.leave(p);
+    }
+    this.revives.set(p.char.id, used + 1);
+    this.sim.sys(p, 'sys.dungeon_revive', { n: max - used - 1 }, 'info');
+  }
+
   onMonsterKilled(m: MonEnt): void {
     // Hạ con quái đầu tiên là đã dùng lượt thưởng hôm nay; trong lượt này vẫn nhận đủ.
     void m;
     for (const p of this.sim.players.values()) {
-      if (!p.noLoot && p.char.meta.dungeonDay !== today()) {
-        p.char.meta.dungeonDay = today();
+      if (!p.noLoot && this.usedDay(p.char) !== today()) {
+        this.markUsed(p.char);
         this.sim.savePlayer(p);
       }
+    }
+  }
+
+  /**
+   * Thưởng hoàn thành: người còn trong lượt thưởng hôm nay (chưa `noLoot` khi vào). Khóa idem theo level, nhân vật và ngày
+   * nên dù director chạy lại hay người chơi vào lại cùng ngày cũng không phát hai lần.
+   */
+  private payReward(): void {
+    const r = this.def.reward;
+    if (!r) return;
+    for (const p of this.sim.players.values()) {
+      if (this.sim.grantDungeonReward(p, r, `dungeon:${this.levelId}:${p.char.id}:${today()}`, this.levelId)) this.sim.savePlayer(p);
     }
   }
 
@@ -586,18 +656,22 @@ export class DungeonRoom extends GameRoom {
     }
     if (this.sim.players.size === 0) return;
     if (this.sim.monsters.some((m) => m.state !== MS_DEAD)) return;
-    if (!this.nextWaveAt) this.nextWaveAt = now + 6000;
+    const waves = this.def.waves;
+    if (!this.nextWaveAt) this.nextWaveAt = now + (waves[this.wave]?.delay ?? 6) * 1000;
     if (now < this.nextWaveAt) return;
     this.nextWaveAt = 0;
     this.wave++;
-    const waves = this.def.waves;
     if (this.wave > waves.length) {
       this.clearedAt = now;
-      this.sim.sysAll('sys.dungeon_clear', undefined, 'good');
+      this.sim.sysAll('sys.dungeon_clear', { name: this.dname }, 'good');
+      this.payReward();
       return;
     }
-    if (this.wave === 2) this.lock();
-    const w = waves[this.wave - 1];
+    if (this.wave === (this.def.lockAt ?? 2)) this.lock();
+    this.spawnWave(waves[this.wave - 1]);
+  }
+
+  private spawnWave(w: WaveDef): void {
     const c = this.def.center;
     let lead = '';
     let i = 0;
@@ -605,13 +679,20 @@ export class DungeonRoom extends GameRoom {
       const def = MONSTER.get(g.id);
       if (!def) continue;
       if (!lead || def.boss) lead = monsterName(def.id);
+      const pt = g.at !== undefined ? w.points?.[g.at] : undefined;
       for (let k = 0; k < g.n; k++) {
+        if (pt) {
+          // Điểm sinh riêng (khe tường, cửa hầm): tỏa quanh điểm trong 4 m.
+          const a = (k / Math.max(1, g.n)) * Math.PI * 2;
+          this.sim.spawnMonster(def, g.level, pt.x + Math.cos(a) * 3, pt.z + Math.sin(a) * 3, null);
+          continue;
+        }
         const a = (i++ / 7) * Math.PI * 2 + this.wave;
         const r = def.boss ? 14 : 24 + (k % 2) * 8;
         this.sim.spawnMonster(def, g.level, c.x + Math.cos(a) * r, c.z + Math.sin(a) * r, null);
       }
     }
-    this.sim.sysAll('sys.dungeon_wave', { n: this.wave, boss: lead }, 'info');
+    this.sim.sysAll('sys.dungeon_wave', { n: this.wave, boss: w.title ? t('dungeon.' + this.levelId + '.wave.' + this.wave) : lead }, 'info');
   }
 }
 
