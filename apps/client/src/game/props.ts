@@ -63,6 +63,7 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_da_troi: { range: 420, lod: [60, 140] },
   prop_tung_phu_dao: { range: 520, lod: [45, 110], shadow: true },
   prop_anh_ngoc_kinh: { range: 150, lod: [25, 70], decor: true },
+  prop_tru_da_khac_van: { range: 380, lod: [50, 120] },
 };
 
 const CHUNK = 128;

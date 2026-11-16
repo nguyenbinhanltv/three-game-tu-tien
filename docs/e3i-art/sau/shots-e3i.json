@@ -1,0 +1,187 @@
+{
+  "backend": "?",
+  "perf": {
+    "hub": {
+      "drawCalls": 121,
+      "triangles": 268304,
+      "geometries": 103,
+      "textures": 64,
+      "frameMs": 8.35
+    },
+    "zone-tung_dai_dao": {
+      "drawCalls": 139,
+      "triangles": 359340,
+      "geometries": 127,
+      "textures": 76,
+      "frameMs": 8.34
+    },
+    "zone-thach_quy_dao": {
+      "drawCalls": 129,
+      "triangles": 318550,
+      "geometries": 131,
+      "textures": 82,
+      "frameMs": 8.35
+    },
+    "zone-kinh_ho_dao": {
+      "drawCalls": 144,
+      "triangles": 319636,
+      "geometries": 151,
+      "textures": 94,
+      "frameMs": 8.3
+    },
+    "zone-loi_van_dao": {
+      "drawCalls": 119,
+      "triangles": 418863,
+      "geometries": 149,
+      "textures": 100,
+      "frameMs": 8.34
+    },
+    "zone-kinh_ngu_dai": {
+      "drawCalls": 121,
+      "triangles": 337747,
+      "geometries": 152,
+      "textures": 103,
+      "frameMs": 8.34
+    },
+    "poi-phu_dao_dinh": {
+      "drawCalls": 136,
+      "triangles": 415505,
+      "geometries": 161,
+      "textures": 106,
+      "frameMs": 8.34
+    },
+    "poi-cau_xich_may": {
+      "drawCalls": 148,
+      "triangles": 394383,
+      "geometries": 166,
+      "textures": 109,
+      "frameMs": 8.31
+    },
+    "poi-kinh_ho_dai": {
+      "drawCalls": 148,
+      "triangles": 343088,
+      "geometries": 171,
+      "textures": 118,
+      "frameMs": 8.34
+    },
+    "poi-dinh_sam": {
+      "drawCalls": 134,
+      "triangles": 497543,
+      "geometries": 172,
+      "textures": 118,
+      "frameMs": 8.34
+    },
+    "poi-vuc_kinh_ngu": {
+      "drawCalls": 117,
+      "triangles": 329062,
+      "geometries": 172,
+      "textures": 118,
+      "frameMs": 8.31
+    },
+    "e3i-ho-guong": {
+      "drawCalls": 113,
+      "triangles": 265443,
+      "geometries": 183,
+      "textures": 118,
+      "frameMs": 8.33
+    },
+    "e3i-mep-dao": {
+      "drawCalls": 102,
+      "triangles": 220892,
+      "geometries": 176,
+      "textures": 121,
+      "frameMs": 8.34
+    },
+    "e3i-xuong-kinh": {
+      "drawCalls": 121,
+      "triangles": 319108,
+      "geometries": 191,
+      "textures": 121,
+      "frameMs": 8.34
+    },
+    "e3i-may-sam": {
+      "drawCalls": 127,
+      "triangles": 423577,
+      "geometries": 194,
+      "textures": 121,
+      "frameMs": 8.34
+    },
+    "e3i-tung-dai-rung": {
+      "drawCalls": 135,
+      "triangles": 316693,
+      "geometries": 201,
+      "textures": 121,
+      "frameMs": 8.34
+    },
+    "e3i-toan-canh-dao": {
+      "drawCalls": 131,
+      "triangles": 299130,
+      "geometries": 197,
+      "textures": 121,
+      "frameMs": 8.32
+    },
+    "overview": {
+      "drawCalls": 113,
+      "triangles": 257338,
+      "geometries": 196,
+      "textures": 121,
+      "frameMs": 8.34
+    },
+    "cau-xich": {
+      "drawCalls": 147,
+      "triangles": 304607,
+      "geometries": 211,
+      "textures": 121,
+      "frameMs": 8.33
+    },
+    "cau-giua": {
+      "drawCalls": 133,
+      "triangles": 265874,
+      "geometries": 213,
+      "textures": 121,
+      "frameMs": 8.34
+    },
+    "san-may-gam-cau": {
+      "drawCalls": 126,
+      "triangles": 252196,
+      "geometries": 213,
+      "textures": 121,
+      "frameMs": 8.33
+    },
+    "san-may": {
+      "drawCalls": 148,
+      "triangles": 320028,
+      "geometries": 207,
+      "textures": 121,
+      "frameMs": 8.35
+    },
+    "thang-may": {
+      "drawCalls": 129,
+      "triangles": 249017,
+      "geometries": 201,
+      "textures": 121,
+      "frameMs": 8.34
+    },
+    "dao-gia-truoc": {
+      "drawCalls": 131,
+      "triangles": 265289,
+      "geometries": 207,
+      "textures": 121,
+      "frameMs": 8.34
+    }
+  },
+  "bridgeMid": {
+    "y": 118.9000015258789
+  },
+  "fall": {
+    "from": 118.9000015258789,
+    "after": {
+      "y": 60,
+      "hp": 1953,
+      "mhp": 1953
+    },
+    "floor": 60
+  },
+  "walkedOnFloor": 60,
+  "fakeRevealed": 1
+}

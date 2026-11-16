@@ -1,0 +1,17 @@
+{
+  "backend": "?",
+  "bridgeMid": {
+    "y": 118.9
+  },
+  "fall": {
+    "from": 118.9,
+    "after": {
+      "y": 60,
+      "hp": 1953,
+      "mhp": 1953
+    },
+    "floor": 60
+  },
+  "walkedOnFloor": 60,
+  "fakeRevealed": 1
+}

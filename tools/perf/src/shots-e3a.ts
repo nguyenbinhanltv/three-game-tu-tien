@@ -46,6 +46,28 @@ for (const z of lv.zones ?? []) {
 }
 for (const p of lv.pois ?? []) shots.push({ name: `poi-${p.id}`, x: p.x, z: p.z + 16, yaw: 0, pitch: 0.25, dist: 22 });
 
+// E3-I: ảnh thêm (chỉ có ở bản sau mỹ thuật): hồ gương, mép đảo, xương kình ngư, mây sấm. Bật bằng E3I_EXTRA=1.
+if (process.env.E3I_EXTRA) {
+  const look = (dx: number, dz: number) => Math.PI + Math.atan2(dx, dz); // camYaw nhìn theo hướng (dx, dz)
+  const pond = tr.def.ponds?.[0];
+  if (pond) shots.push({ name: 'e3i-ho-guong', x: pond.x - pond.r - 8, z: pond.z, yaw: look(1, 0), pitch: 0.22, dist: 15 });
+  const featOf = (id: string) => tr.def.features.find((f) => f.id === id);
+  const thach = featOf('isl_thach_quy_dao');
+  if (thach) shots.push({ name: 'e3i-mep-dao', x: thach.x + thach.flatR - 9, z: thach.z, yaw: look(1, 0), pitch: 0.5, dist: 20 });
+  const ngu = featOf('isl_kinh_ngu_dai');
+  if (ngu) {
+    const a0 = 0.9;
+    const bx = ngu.x + Math.cos(a0) * -10 - Math.sin(a0) * 80;
+    const bz = ngu.z + Math.sin(a0) * -10 + Math.cos(a0) * 80;
+    shots.push({ name: 'e3i-xuong-kinh', x: bx + Math.sin(a0) * 34, z: bz - Math.cos(a0) * 34, yaw: look(-Math.sin(a0), Math.cos(a0)), pitch: 0.18, dist: 16 });
+  }
+  const loi = featOf('isl_loi_van_dao');
+  if (loi) shots.push({ name: 'e3i-may-sam', x: loi.x - 60, z: loi.z + 40, yaw: look(1, -0.3), pitch: -0.05, dist: 24 });
+  const tung = featOf('isl_tung_dai_dao');
+  if (tung) shots.push({ name: 'e3i-tung-dai-rung', x: tung.x + 70, z: tung.z - 80, yaw: look(-0.4, 1), pitch: 0.28, dist: 18 });
+  if (featOf('isl_kinh_ho_dao')) shots.push({ name: 'e3i-toan-canh-dao', x: 1084, z: 1516, yaw: 0.6, pitch: 0.7, dist: 330 });
+}
+
 async function gm(page: Page, cmd: string): Promise<void> {
   await page.evaluate((m) => (window as unknown as G).__game!.send('chat', { m }), '/gm ' + cmd);
   await sleep(900);
@@ -119,7 +141,19 @@ async function main(): Promise<void> {
     const snap = async (name: string) => {
       await sleep(Number(process.env.SHOT_SETTLE ?? 2500));
       await page.screenshot({ path: path.join(OUT, `${name}.png`) });
-      console.log(`[shots-e3a] ${name}`);
+      // E3-I: draw call/tam giác/geometry/texture của khung vừa vẽ + thời gian khung (ms) lấy trung bình 30 khung, để so trước/sau khi đổi mỹ thuật.
+      const perf = await page.evaluate(async () => {
+        const g = (window as unknown as G).__game!;
+        const t0 = performance.now();
+        const f0 = g.frames as number;
+        await new Promise((r) => setTimeout(r, 1500));
+        const dt = (performance.now() - t0) / Math.max(1, (g.frames as number) - f0);
+        const i = g.info();
+        return { drawCalls: i.drawCalls, triangles: i.triangles, geometries: i.geometries, textures: i.textures, frameMs: Math.round(dt * 100) / 100 };
+      });
+      (log.perf ??= {} as Record<string, unknown>);
+      (log.perf as Record<string, unknown>)[name] = perf;
+      console.log(`[shots-e3a] ${name} ${JSON.stringify(perf)}`);
     };
 
     for (const s of shots) {

@@ -1,4 +1,6 @@
 import * as THREE from 'three/webgpu';
+import { texture, positionWorld, vertexColor, mix as tmix } from 'three/tsl';
+import { getCloudNoise } from '../render/noiseTex';
 import { createWorldMaterial } from '../render/materials/world';
 import { applyGroundShader, clearGroundShader, type GroundLevel } from '../render/materials/ground';
 import type { GroundTextures } from './groundTextures';
@@ -7,6 +9,7 @@ import { levelTerrain } from './levelCtx';
 import { col, G, GeoBuilder, mat } from './geo';
 import { withSightFade } from './occlusion';
 import { LEGACY_TREES, nearPropTree } from './propScatter';
+import { vanHaiArt, type VhPalette } from './vanHaiArt';
 
 const TILE = 256;
 const NEAR_R = 3;
@@ -64,25 +67,78 @@ const C_ISLE_STONE = col(0xb9b5a8);
 const C_ISLE_DARK = col(0x7c7d6c);
 const C_CLOUD_LIGHT = col(0xc9d4d7);
 const C_CLOUD_SHADE = col(0xa4b2b8);
+const C_CLOUD_DEEP = col(0x8da2b4);
+const C_CLOUD_WARM = col(0xe9e4d6);
 /**
  * Màu level đảo nổi (E3-N, tông trầm theo art bible v3): mặt đảo là rêu xám-lục trộn đất nâu và mảng đá, dốc lộ đá; sàn mây là mặt mây
  * trắng xám gợn noise (không có cỏ, đá, cây). Vách đảo (cao hơn sàn nhiều) màu đá tối.
  */
+const palCache = new Map<VhPalette, Record<'moss' | 'soil' | 'stone' | 'dark' | 'trail' | 'wet', THREE.Color>>();
+function palColors(p: VhPalette) {
+  let c = palCache.get(p);
+  if (!c) {
+    // nâng sáng: kết xuất (sương, grading) hạ màu đỉnh khoảng 40 %, bảng màu viết theo màu "thật" của đất
+    const lift = (h: number) => {
+      const c = col(h).multiplyScalar(1.3);
+      c.r = Math.min(1, c.r);
+      c.g = Math.min(1, c.g);
+      c.b = Math.min(1, c.b);
+      return c;
+    };
+    c = { moss: lift(p.moss), soil: lift(p.soil), stone: lift(p.stone), dark: lift(p.dark), trail: lift(p.trail), wet: lift(p.wet) };
+    palCache.set(p, c);
+  }
+  return c;
+}
 function islandColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
   const f = T.def.voidFloor ?? 0;
   const n = fbm(x * 0.013, z * 0.013, 2, T.def.seed + 300);
   if (h < f + 6) {
     const m = fbm(x * 0.02 + 40, z * 0.02 - 17, 3, T.def.seed + 411);
+    // sàn mây: ba tầng nhiễu (mảng lớn, dải gợn, vân nhỏ) cho chiều sâu, ngả xanh lam ở chỗ trũng và ngà ở chỗ cao
+    const swell = fbm(x * 0.006 - 9, z * 0.006 + 5, 2, T.def.seed + 433);
+    const streak = fbm(x * 0.05 + z * 0.012, z * 0.014 - x * 0.004, 2, T.def.seed + 457);
     out.copy(C_CLOUD_LIGHT).lerp(C_CLOUD_SHADE, Math.max(0, Math.min(1, 0.5 + m * 1.4)) * 0.75);
+    out.lerp(C_CLOUD_DEEP, Math.max(0, Math.min(1, 0.5 - swell * 1.5)) * 0.55);
+    out.lerp(C_CLOUD_WARM, Math.max(0, Math.min(1, streak * 2.2 + 0.1)) * 0.5);
     return;
   }
+  const art = vanHaiArt(T.def);
+  const isl = art.islandAt(x, z);
+  if (!isl || h < f + 40) {
+    // vách đảo (cao hơn sàn nhiều nhưng ngoài mặt đảo): đá tối
+    out.copy(C_ISLE_DARK);
+    return;
+  }
+  const P = palColors(isl.pal);
+  // gốc: rêu ↔ đất theo mảng vừa, đốm rêu sẫm theo mảng lớn
+  const drift = fbm(x * 0.006 + 31, z * 0.006 - 7, 2, T.def.seed + 590);
   const m = fbm(x * 0.045, z * 0.045, 2, T.def.seed + 512);
-  out.copy(C_ISLE_MOSS).lerp(C_ISLE_SOIL, Math.max(0, Math.min(1, 0.5 + m * 1.6)));
-  out.lerp(C_ISLE_STONE, Math.max(0, Math.min(1, (n + 0.06) * 3.2)) * 0.8);
-  out.multiplyScalar(1.0 + n * 0.3);
+  const patch = fbm(x * 0.021 + 13, z * 0.021 - 29, 2, T.def.seed + 530);
+  out.copy(P.moss).lerp(P.soil, Math.max(0, Math.min(1, 0.5 + m * 1.7)));
+  out.lerp(P.dark, Math.max(0, Math.min(1, patch * 2.6 - 0.1)) * 0.5);
+  out.multiplyScalar(1 + drift * 0.3);
+  // đá lộ: theo nhiễu + độ dốc + bias của đảo; vân tầng ngang như phiến đá
   const slope = 1 - ny;
-  if (slope > 0.1) out.lerp(C_ISLE_DARK, Math.min(1, (slope - 0.1) * 5));
-  if (h < f + 40) out.lerp(C_ISLE_DARK, 0.6);
+  const rock = art.rockW(isl, x, z, slope);
+  if (rock > 0.02) {
+    const strata = 0.5 + 0.5 * Math.sin((x * 0.55 + z * 0.35) * 0.7 + n * 5);
+    out.lerp(P.stone, rock * 0.9);
+    out.multiplyScalar(1 - 0.12 * rock * strata);
+  }
+  if (slope > 0.1) out.lerp(P.dark, Math.min(1, (slope - 0.1) * 4));
+  // lối mòn: đất nén sáng, lẫn sỏi
+  const tw = art.trailW(isl, x, z);
+  if (tw > 0) out.lerp(P.trail, tw * 0.88);
+  // bờ hồ gương: đất ẩm sẫm, lòng hồ phù sa
+  const pw = art.pondW(x, z);
+  if (pw > 0) out.lerp(P.wet, Math.min(1, pw * 1.3) * 0.85);
+  // sỏi/đốm mịn và sáng tối theo nhiễu
+  const fine = fbm(x * 0.19, z * 0.19, 2, T.def.seed + 700);
+  out.multiplyScalar(0.96 + n * 0.22 + fine * 0.16);
+  // rìa đảo ngả tối (đá treo và rễ bên dưới đổ bóng lên mép)
+  const d = Math.hypot(x - isl.x, z - isl.z);
+  if (d > isl.r - 14) out.multiplyScalar(1 - 0.16 * Math.min(1, (d - (isl.r - 14)) / 16));
 }
 
 /** Màu mặt đất của level không phải Vân Lam: cỏ/đá/tuyết theo độ dốc và độ cao, bờ nước ra cát. */
@@ -408,6 +464,15 @@ export class Terrain {
     const g = buildTileGeometry(0, 0, this.size, COARSE_N, 0);
     this.coarseIndex = new THREE.BufferAttribute(new Uint16Array(COARSE_N * COARSE_N * 6), 1);
     g.setIndex(this.coarseIndex);
+    if (T.def.islands) {
+      // Đảo nổi (E3-I): màu đỉnh chỉ có độ phân giải ~4 m nên mặt đảo trông phẳng như thảm; nhân thêm hai tầng nhiễu theo tọa độ thế giới (mảng ~40 m và vân ~6 m,
+      // từ texture nhiễu dùng chung của trời/mây) cho đất có đốm, vệt sáng tối. Chỉ vài phép lấy mẫu mỗi điểm ảnh.
+      const nz = getCloudNoise();
+      const big = texture(nz, positionWorld.xz.mul(1 / 71));
+      const mid = texture(nz, positionWorld.xz.mul(1 / 9.7));
+      const fine = texture(nz, positionWorld.xz.mul(1 / 2.3));
+      this.material.colorNode = vertexColor().mul(tmix(0.86, 1.16, big.g).mul(tmix(0.9, 1.1, mid.b)).mul(tmix(0.94, 1.06, fine.b)));
+    }
     this.coarse = new THREE.Mesh(g, this.material);
     this.coarse.frustumCulled = false;
     this.coarse.receiveShadow = false;

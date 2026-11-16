@@ -1,8 +1,9 @@
 {
-  "mood": "dawn",
+  "mood": "cloud_dawn",
   "glb": [],
   "ground": false,
-  "music": ["wild"],
-  "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": true, "grass": false, "trees": "scatter", "beacons": true, "vegetation": false },
+  "music": ["wild_cloud"],
+  "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": true, "grass": true, "trees": "scatter", "beacons": true, "vegetation": false },
+  "grassCards": "grass-ochre",
   "minimap": "van_hai"
 }

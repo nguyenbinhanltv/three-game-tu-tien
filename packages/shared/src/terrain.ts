@@ -64,6 +64,7 @@ export function makeTerrain(def: TerrainDef): Terrain {
   const playWall = play ? play.half - 10 : Infinity;
   const islands = def.islands?.length ? def.islands : undefined;
   const bridges = def.bridges?.length ? def.bridges : undefined;
+  const ponds = def.ponds?.length ? def.ponds : undefined;
 
   /**
    * Khoảng cách tới tâm khu, méo bằng nhiễu thấp tần số (±~20 %, biên độ nhiễu thực ~0,3): mép khu (bãi bằng, bờ hồ) là một hình lồi lõm như
@@ -181,9 +182,27 @@ export function makeTerrain(def: TerrainDef): Terrain {
       const w = featureWeight(f, x, z);
       if (w > 0) {
         let target = f.y + detail * (f.detail ?? 0);
+        const rl = f.relief;
+        if (rl) {
+          // Đảo nổi (E3-I): gò đồi nhấp nhô, nhạt dần về rìa đảo để đầu cầu/thang/vách giữ nguyên độ cao.
+          const fade = smoothstep(f.flatR - 6, f.flatR - 6 - Math.min(40, f.flatR * 0.3), Math.hypot(x - f.x, z - f.z));
+          if (fade > 0) {
+            let v = fbm(x * rl.freq, z * rl.freq, 3, seed + 131);
+            if (rl.crease) v = 0.35 - Math.abs(v) * 1.6;
+            target += rl.amp * fade * v * 1.4;
+          }
+        }
         const rg = f.ridge;
         if (rg) target += ridged(x * rg.freq, z * rg.freq, rg.oct, seed + rg.seedOff) * rg.amp;
         h = lerp(h, target, w);
+      }
+    }
+
+    if (ponds) {
+      for (const p of ponds) {
+        const dx = x - p.x;
+        const dz = z - p.z;
+        if (dx * dx + dz * dz < p.r * p.r) h -= p.depth * smoothstep(p.r, p.r * 0.45, Math.sqrt(dx * dx + dz * dz));
       }
     }
 

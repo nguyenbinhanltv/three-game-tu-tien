@@ -126,6 +126,11 @@ export interface TerrainFeature extends Feature {
   detail?: number;
   /** Cộng thêm sống núi nhỏ (vách đá). */
   ridge?: { amp: number; freq: number; oct: number; seedOff: number };
+  /**
+   * Nhấp nhô mặt khu tròn (E3-I, đảo nổi): biên độ `amp` (m), tần số `freq` (1/m), `crease` = nếp gấp (gò đá nhọn thay vì đồi tròn). Về 0 ở rìa
+   * (6–46 m trong mép) nên đầu cầu, thang và vách vẫn ở đúng `y`.
+   */
+  relief?: { amp: number; freq: number; crease?: boolean };
   /** Khu là hồ: bãi ven hồ, đảo giữa hồ, kẹp rìa lòng hồ. Cần `water`. */
   lake?: { islandR: number; islandTop: number; shelfR: number; shelfOut: number; shelfY: number; waterR: number };
 }
@@ -189,6 +194,8 @@ export interface TerrainDef {
   voidFloor?: number;
   /** Cầu xích nối các đảo (E3-N). */
   bridges?: BridgeDef[];
+  /** Hồ gương nông trên đảo (E3-I): lòng chảo lõm `depth` m, đi bộ được (không phải `water`), client vẽ mặt nước phẳng. */
+  ponds?: { x: number; z: number; r: number; depth: number }[];
   /** Đảo giả (E3-N): chỉ để vẽ, KHÔNG vào `heightAt` (bước lên là rơi xuống sàn mây); thần thức làm chúng mờ đi. */
   fakeIslands?: IslandDef[];
   /** Mặt nước, độ lội tối đa, đĩa nước của hồ. */
