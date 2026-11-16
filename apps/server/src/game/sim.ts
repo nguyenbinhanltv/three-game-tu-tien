@@ -116,7 +116,6 @@ import {
   MP_REGEN_COMBAT,
   MP_REGEN_IDLE,
   MP_REGEN_MEDITATE,
-  NGUNG_KHI_MAX,
   PF_CASTING,
   PF_DEAD,
   PF_FLYING,
@@ -164,7 +163,7 @@ import {
   type Terrain,
 } from '@dtl/shared';
 import { TribSystem, type GuardCfg, type TribState } from './trib';
-import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, nextMajorRealmName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, TRUC_CO_PILL, METHOD, VARIANTS, skillName } from '@dtl/content';
+import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS, itemName, LEVELS, MONSTER, monsterName, nextMajorRealmName, NPC, QUEST, realmName, RECIPE, SET, SETS, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
