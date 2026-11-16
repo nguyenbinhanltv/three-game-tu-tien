@@ -1,0 +1,72 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "elite_xich_dien_ho",
+  "type": "mon",
+  "budgetClass": "elite",
+  "itemId": null,
+  "status": "in_game",
+  "budget": {
+    "faceLimit": 12000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "mon/elite_xich_dien_ho/tripo/rig_v01.glb",
+    "size": {
+      "depth": 1.27
+    },
+    "yaw": 90,
+    "quadruped": {
+      "attack": "bite"
+    },
+    "post": "tools/blender/anim_quadruped.py"
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-16",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {},
+      "seed": null,
+      "quote": null,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Người dùng dựng trên Tripo web từ ảnh concept docs/asset-concepts/elite_xich_dien_ho.webp. 11746 tam giác."
+    },
+    {
+      "step": "rig",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "quadruped",
+      "params": {},
+      "seed": null,
+      "quote": null,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-16",
+      "output": "tripo/rig_v01.glb",
+      "result": "ok",
+      "note": "Rig Tripo quadruped; clip thủ tục idle/run/attack/hit_light/death (anim_quadruped.py)."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max) image-to-3D + Codex (concept); clip thủ tục tools/blender/",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}
