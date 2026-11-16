@@ -199,7 +199,9 @@ export class SoulVis {
     this.time += dt;
     const live = new Set<string>();
     let lead: { x: number; y: number; z: number } | null = null;
-    for (const s of scouts.slice(0, MAX_FIGS)) {
+    // Nguyên anh của mình luôn được vẽ trước khi cắt theo MAX_FIGS.
+    const ordered = bodySid ? [...scouts].sort((a, b) => Number(b.sid === bodySid) - Number(a.sid === bodySid)) : scouts;
+    for (const s of ordered.slice(0, MAX_FIGS)) {
       live.add(s.sid);
       const bob = Math.sin(this.time * 2.4 + s.x) * 0.06;
       let view = this.views.get(s.sid);
@@ -232,7 +234,7 @@ export class SoulVis {
         g.position.set(s.x, s.y + 0.35 + bob, s.z);
         g.rotation.y = s.yaw;
       }
-      if (body && !lead) lead = { x: s.x, y: s.y + 0.55 + bob, z: s.z };
+      if (body && s.sid === bodySid) lead = { x: s.x, y: s.y + 0.55 + bob, z: s.z };
     }
     for (const [sid, g] of this.figs) {
       if (live.has(sid)) continue;
