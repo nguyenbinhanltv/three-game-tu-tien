@@ -4,6 +4,8 @@ import {
   type Appearance,
   appearanceFromDb,
   bottleneckBlocked,
+  BOTTLENECK_LEVELS,
+  isPeakLevel,
   initialBottleneck,
   isRootId,
   levelAfterBottleneck,
@@ -29,7 +31,6 @@ import {
   isEquipSlot,
   MAX_ENHANCE,
   MAX_LEVEL,
-  NGUNG_KHI_MAX,
   type ObjectiveType,
   playerBaseStats,
   type QuestView,
@@ -304,7 +305,7 @@ export class Character {
     c.room = row.room;
     c.appearance = appearanceFromDb(APPEARANCE, row.appearance, row.name);
     c.root = isRootId(row.root) ? row.root : rootForName(row.name);
-    c.bk = [0, 5, 10, 15].includes(row.bk) ? row.bk : initialBottleneck(row.level);
+    c.bk = row.bk === 0 || BOTTLENECK_LEVELS.includes(row.bk) ? row.bk : initialBottleneck(row.level);
     c.tele = parseTele(row.tele);
     try {
       c.equip = sanitizeEquip(JSON.parse(row.equip));
@@ -487,15 +488,15 @@ export class Character {
     return true;
   }
 
-  /** Cộng tu vi. Trả về số tầng vừa lên (chỉ tự lên trong Ngưng Khí và sau Trúc Cơ). */
+  /** Cộng tu vi. Trả về số cấp vừa lên (tự lên giữa các nút bình cảnh; dừng ở bình cảnh chưa vượt và ở đại viên mãn 15/19/23/27). */
   gainXp(n: number): number {
     if (n <= 0) return 0;
     let ups = 0;
     this.xp += n;
     for (;;) {
       const need = xpNeed(this.level);
-      if (this.level === NGUNG_KHI_MAX || this.level >= MAX_LEVEL || bottleneckBlocked(this.level, this.bk)) {
-        // Viên mãn hoặc kẹt bình cảnh (tầng 5/10/15 chưa vượt): phải độ kiếp / vượt bình cảnh mới lên tiếp,
+      if (isPeakLevel(this.level) || this.level >= MAX_LEVEL || bottleneckBlocked(this.level, this.bk)) {
+        // Viên mãn (15/19/23/27) hoặc kẹt bình cảnh (chưa vượt): phải độ kiếp / vượt bình cảnh mới lên tiếp,
         // tu vi không vượt quá mức đầy.
         if (this.xp > need) this.xp = need;
         break;
@@ -515,8 +516,8 @@ export class Character {
   }
 
   /**
-   * Vượt bình cảnh (thắng tâm ma hoặc dùng Phá Cảnh Đan). Server đã kiểm điều kiện. Tầng 5/10: lên một tầng, tu vi
-   * về 0 (tu vi không tràn qua bình cảnh). Tầng 15: chỉ mở đường độ kiếp, tu vi giữ đầy. Trả về tầng mới.
+   * Vượt bình cảnh (thắng tâm ma hoặc dùng Phá Cảnh Đan). Server đã kiểm điều kiện. Nút trung kỳ (5/10/17/21/25): lên một cấp, tu vi
+   * về 0 (tu vi không tràn qua bình cảnh). Đại viên mãn (15/19/23/27): chỉ mở đường độ kiếp, tu vi giữ đầy. Trả về tầng mới.
    */
   passBottleneck(): number {
     this.bk = this.level;
