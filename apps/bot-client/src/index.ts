@@ -5,6 +5,7 @@
 //   thỉnh thoảng /gm heal để còn máu và linh lực. Không có quái thì đi lại như --crowd.
 // --level N: lúc vào game tự /gm level N (chỉ tài khoản đăng nhập thử có GM) để mở mọi chiêu.
 // --tp: lúc vào game /gm tp tới một chỗ ngẫu nhiên trong vùng --fight/--crowd thay vì đi bộ tới (cần đăng nhập thử).
+// --gm "a;b": sau khi vào game chạy các lệnh /gm này theo thứ tự, chỉ ở room thế giới đầu tiên (vd. "tele all;tp vh_hub" để cả đám bot sang Vân Hải; đăng nhập thử).
 // --dungeon: tới cổng Kiếm Trủng rồi vào bí cảnh (room tối đa 5 người, cần --level ≥ 8); thường đi kèm --fight 1520,1288.
 // Gõ "quit" vào stdin để mọi bot rời room ngay (pnpm bench:crowd kết thúc bot theo cách này).
 // Không có --url thì dùng SERVER_URL hoặc PORT (xem target.ts).
@@ -36,6 +37,7 @@ const FIGHT = point('fight', 25);
 const LEVEL = Number(arg('level', '0'));
 const DUNGEON = process.argv.includes('--dungeon');
 const TP = process.argv.includes('--tp');
+const GM_CMDS = arg('gm', '').split(';').map((c) => c.trim()).filter(Boolean);
 
 /** Chiêu khi --fight: [id, cấp mở, hồi chiêu (giây), cần mục tiêu] theo skills.json; ra chiêu đầu tiên đã hết hồi. */
 const FIGHT_SKILLS: [string, number, number, boolean][] = [
@@ -152,6 +154,12 @@ class Bot {
       setTimeout(() => this.chat(`/gm level ${LEVEL}`), at);
       this.level = LEVEL;
       at += 1000;
+    }
+    if (GM_CMDS.length && roomName === ROOM_WORLD) {
+      for (const c of GM_CMDS) {
+        setTimeout(() => this.chat(`/gm ${c}`), at);
+        at += 1000;
+      }
     }
     if (DUNGEON && roomName === ROOM_WORLD) {
       setTimeout(() => this.chat(`/gm tp ${PORTAL_POS.x} ${PORTAL_POS.z + 4}`), at);

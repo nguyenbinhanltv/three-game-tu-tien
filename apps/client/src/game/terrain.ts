@@ -34,13 +34,15 @@ let VL = T.id === 'van_lam';
 /** Level dùng bảng màu đất son (Đoạn Mạch, E2-I). */
 let OCHRE = T.id === 'doan_mach';
 function heightAt(x: number, z: number): number {
-  return T.heightAt(x, z);
+  return T.surfaceAt(x, z);
 }
 function isVanLam(): boolean {
   return VL;
 }
 
 const C_VOID_ROCK = col(0x6b6a72);
+/** Sàn mây đi bộ được của level đảo nổi (E3-N). */
+const C_CLOUD_FLOOR = col(0xe6eef0);
 const C_OCHRE = col(0xb2a082);
 const C_OCHRE_DRY = col(0xc4b08e);
 const C_OCHRE_RED = col(0x9f8068);
@@ -63,7 +65,12 @@ function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   out.copy(C_GRASS_WILD).lerp(C_GRASS_DRY, Math.max(0, n) * 0.35).multiplyScalar(0.92 + n * 0.14);
   const slope = 1 - ny;
   if (slope > 0.12) out.lerp(n > 0 ? C_ROCK : C_ROCK_DARK, Math.min(1, (slope - 0.12) * 4.5));
-  if (t.def.islands && h < (t.def.voidFloor ?? 0) + 30) out.lerp(C_VOID_ROCK, 0.8);
+  if (t.def.islands) {
+    // Đảo nổi: sàn mây (voidFloor) trắng sương như mây đặc, chân đảo lộ đá trôi, mặt đảo giữ cỏ.
+    const f = t.def.voidFloor ?? 0;
+    out.lerp(C_VOID_ROCK, Math.max(0, Math.min(1, 1 - (h - f - 4) / 26)) * 0.8);
+    out.lerp(C_CLOUD_FLOOR, Math.max(0, Math.min(1, 1 - (h - f) / 3)));
+  }
   if (h > 250) out.lerp(C_SNOW, Math.min(1, (h - 250) / 60) * (slope < 0.45 ? 1 : 0.4));
   const w = t.def.water;
   if (w && h < w.y + 2.2) out.lerp(C_SAND, Math.min(1, (w.y + 2.2 - h) / 1.6));

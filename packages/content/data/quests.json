@@ -85,5 +85,5 @@
     "rewards": { "xp": 2500, "gold": 600 } },
   { "id": "q2_ket_dan", "giver": "npc_khieu_han_son", "turnin": "npc_khieu_han_son", "requires": "q2_dia_mach", "minLevel": 19,
     "objectives": [ { "type": "breakthrough", "target": "ket_dan", "count": 1 } ],
-    "rewards": { "xp": 0, "gold": 3000, "items": [ { "id": "itm_tu_khi_dan", "n": 5 } ] } }
+    "rewards": { "xp": 0, "gold": 3000, "items": [ { "id": "itm_tu_khi_dan", "n": 5 } ] }, "unlockTele": ["vh_tp_hub"] }
 ]

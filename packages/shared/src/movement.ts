@@ -13,6 +13,8 @@ export const GRAVITY = 24;
 export const FLY_MIN_CLEAR = 1.6;
 export const FLY_MAX_ALT = 520;
 export const PLAYER_RADIUS = 0.5;
+/** Level đảo nổi: bậc cao hơn mức này trong một bước (m) thì đi bộ không lên được. */
+export const MAX_STEP_UP = 2.2;
 /** Trúc Cơ: ngự kiếm dưới độ cao này (so với mặt đất) không tốn linh lực và bay được cả khi cạn linh lực. */
 export const TRUC_CO_FREE_FLY_ALT = 20;
 
@@ -103,6 +105,8 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   const dirZ = -cos * mz - sin * mx;
   const speed = (s.flying ? FLY_SPEED : RUN_SPEED) * ctx.speedMul;
 
+  const px = s.x;
+  const pz = s.z;
   s.x += dirX * speed * dt;
   s.z += dirZ * speed * dt;
 
@@ -153,7 +157,14 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     }
   }
 
-  const ground = groundAt(s.x, s.z);
+  let ground = groundAt(s.x, s.z);
+
+  // Level đảo nổi (E3-N): đi bộ không leo được bậc cao đột ngột (thành cầu xích, vách đảo): chặn bước đó.
+  if (terrain.blockRise && !s.flying && s.grounded && ground - s.y > MAX_STEP_UP) {
+    s.x = px;
+    s.z = pz;
+    ground = groundAt(s.x, s.z);
+  }
 
   if (s.flying) {
     let vy = 0;

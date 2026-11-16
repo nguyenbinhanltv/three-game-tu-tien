@@ -198,7 +198,12 @@
     "cau_da_gay": "Cầu Đá Gãy",
     "ho_sa_lun": "Hố Sa Lún",
     "cong_mo": "Cổng Mỏ Khai Mạch",
-    "vach_dut_mach": "Vách Đứt Mạch"
+    "vach_dut_mach": "Vách Đứt Mạch",
+    "phu_dao_dinh": "Đình Phù Đảo",
+    "cau_xich_may": "Cầu Xích Mây",
+    "kinh_ho_dai": "Kính Hồ Đài",
+    "dinh_sam": "Đỉnh Sấm",
+    "vuc_kinh_ngu": "Vực Kình Ngư"
   },
   "poiNpcs": {
     "npc_mieu_cong": "Lão Miếu Công",
@@ -230,14 +235,20 @@
   },
   "maps": {
     "van_lam": "Vân Lam Sơn Mạch",
-    "doan_mach": "Đoạn Mạch Cổ Cốc"
+    "doan_mach": "Đoạn Mạch Cổ Cốc",
+    "van_hai": "Vân Hải Phù Đảo"
   },
   "zones": {
     "sa_thach_pha": "Sa Thạch Pha",
     "kho_ha_dao": "Khô Hà Đạo",
     "hoang_sa_huyet": "Hoang Sa Huyệt",
     "cuu_mo_khu": "Cựu Mỏ Khu",
-    "tuyet_bich": "Đoạn Mạch Tuyệt Bích"
+    "tuyet_bich": "Đoạn Mạch Tuyệt Bích",
+    "tung_dai_dao": "Tùng Đài Đảo",
+    "thach_quy_dao": "Thạch Quy Đảo",
+    "kinh_ho_dao": "Kính Hồ Đảo",
+    "loi_van_dao": "Lôi Vân Đảo",
+    "kinh_ngu_dai": "Kình Ngư Đài"
   },
   "teleports": {
     "tp_thien_mach": "Trận Thiên Mạch Đài",
@@ -246,7 +257,13 @@
     "dm_tp_kho_ha": "Trận Khô Hà Đạo",
     "dm_tp_hoang_sa": "Trận Hoang Sa Huyệt",
     "dm_tp_cuu_mo": "Trận Cựu Mỏ Khu",
-    "dm_tp_tuyet_bich": "Trận Đoạn Mạch Tuyệt Bích"
+    "dm_tp_tuyet_bich": "Trận Đoạn Mạch Tuyệt Bích",
+    "vh_tp_hub": "Trận Phù Đảo Các",
+    "vh_tp_tung_dai": "Trận Tùng Đài Đảo",
+    "vh_tp_thach_quy": "Trận Thạch Quy Đảo",
+    "vh_tp_kinh_ho": "Trận Kính Hồ Đảo",
+    "vh_tp_loi_van": "Trận Lôi Vân Đảo",
+    "vh_tp_kinh_ngu": "Trận Kình Ngư Đài"
   },
   "materials": {
     "itm_mach_tinh_phien": "Mạch Tinh Phiến",

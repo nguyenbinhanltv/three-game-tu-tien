@@ -1,0 +1,410 @@
+{
+  "id": "van_hai",
+  "seed": 20261117,
+  "size": 2048,
+  "margin": 24,
+  "natural": {
+    "freq": 0.002,
+    "baseOct": 1,
+    "ridgeOct": 1,
+    "level": 60,
+    "baseAmp": 0,
+    "ridgeAmp": 0,
+    "maskFreq": 0.001,
+    "maskOct": 1,
+    "maskLo": 0,
+    "maskHi": 1
+  },
+  "islands": [
+    {
+      "x": 1024,
+      "z": 1024,
+      "r": 85,
+      "edge": 34,
+      "y": 124
+    },
+    {
+      "x": 664,
+      "z": 1192,
+      "r": 207,
+      "edge": 34,
+      "y": 126
+    },
+    {
+      "x": 1420,
+      "z": 1132,
+      "r": 207,
+      "edge": 34,
+      "y": 122
+    },
+    {
+      "x": 1084,
+      "z": 1516,
+      "r": 207,
+      "edge": 34,
+      "y": 128
+    },
+    {
+      "x": 1552,
+      "z": 604,
+      "r": 207,
+      "edge": 34,
+      "y": 132
+    },
+    {
+      "x": 568,
+      "z": 568,
+      "r": 207,
+      "edge": 34,
+      "y": 130
+    },
+    {
+      "x": 880,
+      "z": 736,
+      "r": 40,
+      "edge": 34,
+      "y": 136
+    },
+    {
+      "x": 1120,
+      "z": 712,
+      "r": 36,
+      "edge": 34,
+      "y": 140
+    },
+    {
+      "x": 568,
+      "z": 1588,
+      "r": 42,
+      "edge": 34,
+      "y": 134
+    }
+  ],
+  "fakeIslands": [
+    {
+      "x": 1234,
+      "z": 856,
+      "r": 40,
+      "edge": 34,
+      "y": 128
+    },
+    {
+      "x": 328,
+      "z": 1000,
+      "r": 46,
+      "edge": 34,
+      "y": 130
+    },
+    {
+      "x": 1420,
+      "z": 1696,
+      "r": 38,
+      "edge": 34,
+      "y": 126
+    },
+    {
+      "x": 820,
+      "z": 1756,
+      "r": 40,
+      "edge": 34,
+      "y": 132
+    }
+  ],
+  "voidFloor": 60,
+  "bridges": [
+    {
+      "id": "cau_phu_dao_cac_tung_dai_dao",
+      "ax": 952,
+      "az": 1057,
+      "ay": 124,
+      "bx": 846,
+      "bz": 1107,
+      "by": 126,
+      "halfW": 2.6,
+      "sag": 3.7
+    },
+    {
+      "id": "cau_phu_dao_cac_thach_quy_dao",
+      "ax": 1100,
+      "az": 1045,
+      "ay": 124,
+      "bx": 1226,
+      "bz": 1079,
+      "by": 122,
+      "halfW": 2.6,
+      "sag": 4.1
+    },
+    {
+      "id": "cau_phu_dao_cac_kinh_ho_dao",
+      "ax": 1034,
+      "az": 1102,
+      "ay": 124,
+      "bx": 1060,
+      "bz": 1316,
+      "by": 128,
+      "halfW": 2.6,
+      "sag": 5
+    },
+    {
+      "id": "cau_thach_quy_dao_loi_van_dao",
+      "ax": 1469,
+      "az": 937,
+      "ay": 122,
+      "bx": 1503,
+      "bz": 799,
+      "by": 132,
+      "halfW": 2.6,
+      "sag": 4.4
+    },
+    {
+      "id": "cau_tung_dai_dao_kinh_ngu_dai",
+      "ax": 633,
+      "az": 993,
+      "ay": 126,
+      "bx": 599,
+      "bz": 767,
+      "by": 130,
+      "halfW": 2.6,
+      "sag": 5
+    }
+  ],
+  "features": [
+    {
+      "id": "isl_phu_dao_cac",
+      "x": 1024,
+      "z": 1024,
+      "y": 124,
+      "flatR": 85,
+      "outerR": 119,
+      "round": true,
+      "detail": 1.1
+    },
+    {
+      "id": "isl_tung_dai_dao",
+      "x": 664,
+      "z": 1192,
+      "y": 126,
+      "flatR": 207,
+      "outerR": 241,
+      "round": true,
+      "detail": 1.1
+    },
+    {
+      "id": "isl_thach_quy_dao",
+      "x": 1420,
+      "z": 1132,
+      "y": 122,
+      "flatR": 207,
+      "outerR": 241,
+      "round": true,
+      "detail": 1.1
+    },
+    {
+      "id": "isl_kinh_ho_dao",
+      "x": 1084,
+      "z": 1516,
+      "y": 128,
+      "flatR": 207,
+      "outerR": 241,
+      "round": true,
+      "detail": 1.1
+    },
+    {
+      "id": "isl_loi_van_dao",
+      "x": 1552,
+      "z": 604,
+      "y": 132,
+      "flatR": 207,
+      "outerR": 241,
+      "round": true,
+      "detail": 1.1
+    },
+    {
+      "id": "isl_kinh_ngu_dai",
+      "x": 568,
+      "z": 568,
+      "y": 130,
+      "flatR": 207,
+      "outerR": 241,
+      "round": true,
+      "detail": 1.1
+    },
+    {
+      "id": "isl_tieu_dao_1",
+      "x": 880,
+      "z": 736,
+      "y": 136,
+      "flatR": 40,
+      "outerR": 74,
+      "round": true,
+      "detail": 0.4
+    },
+    {
+      "id": "isl_tieu_dao_2",
+      "x": 1120,
+      "z": 712,
+      "y": 140,
+      "flatR": 36,
+      "outerR": 70,
+      "round": true,
+      "detail": 0.4
+    },
+    {
+      "id": "isl_tieu_dao_3",
+      "x": 568,
+      "z": 1588,
+      "y": 134,
+      "flatR": 42,
+      "outerR": 76,
+      "round": true,
+      "detail": 0.4
+    },
+    {
+      "id": "pad_vh_tp_hub",
+      "x": 1024,
+      "z": 986,
+      "y": 124,
+      "flatR": 8,
+      "outerR": 22,
+      "round": true
+    },
+    {
+      "id": "pad_vh_tp_tung_dai",
+      "x": 718,
+      "z": 1167,
+      "y": 126,
+      "flatR": 8,
+      "outerR": 22,
+      "round": true
+    },
+    {
+      "id": "pad_vh_tp_thach_quy",
+      "x": 1362,
+      "z": 1116,
+      "y": 122,
+      "flatR": 8,
+      "outerR": 22,
+      "round": true
+    },
+    {
+      "id": "pad_vh_tp_kinh_ho",
+      "x": 1077,
+      "z": 1456,
+      "y": 128,
+      "flatR": 8,
+      "outerR": 22,
+      "round": true
+    },
+    {
+      "id": "pad_vh_tp_loi_van",
+      "x": 1492,
+      "z": 608,
+      "y": 132,
+      "flatR": 8,
+      "outerR": 22,
+      "round": true
+    },
+    {
+      "id": "pad_vh_tp_kinh_ngu",
+      "x": 578,
+      "z": 627,
+      "y": 130,
+      "flatR": 8,
+      "outerR": 22,
+      "round": true
+    },
+    {
+      "id": "poi_phu_dao_dinh",
+      "x": 655,
+      "z": 1292,
+      "y": 126,
+      "flatR": 14,
+      "outerR": 30,
+      "round": true
+    },
+    {
+      "id": "poi_cau_xich_may",
+      "x": 1428,
+      "z": 1232,
+      "y": 122,
+      "flatR": 14,
+      "outerR": 30,
+      "round": true
+    },
+    {
+      "id": "poi_kinh_ho_dai",
+      "x": 1168,
+      "z": 1571,
+      "y": 128,
+      "flatR": 14,
+      "outerR": 30,
+      "round": true
+    },
+    {
+      "id": "poi_dinh_sam",
+      "x": 1645,
+      "z": 641,
+      "y": 132,
+      "flatR": 14,
+      "outerR": 30,
+      "round": true
+    },
+    {
+      "id": "poi_vuc_kinh_ngu",
+      "x": 625,
+      "z": 486,
+      "y": 130,
+      "flatR": 14,
+      "outerR": 30,
+      "round": true
+    }
+  ],
+  "play": {
+    "cx": 1024,
+    "cz": 1024,
+    "half": 860,
+    "wallH": 150
+  },
+  "colliders": [
+    {
+      "x": 663,
+      "z": 1295,
+      "r": 0.72
+    },
+    {
+      "x": 659,
+      "z": 1299,
+      "r": 0.87
+    },
+    {
+      "x": 649,
+      "z": 1300,
+      "r": 0.74
+    },
+    {
+      "x": 647,
+      "z": 1291,
+      "r": 0.91
+    },
+    {
+      "x": 1419,
+      "z": 1232,
+      "r": 0.83
+    },
+    {
+      "x": 1421,
+      "z": 1227,
+      "r": 0.75
+    },
+    {
+      "x": 1168,
+      "z": 1571,
+      "r": 3.36
+    },
+    {
+      "x": 1651,
+      "z": 637,
+      "r": 0.91
+    }
+  ]
+}
