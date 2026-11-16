@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { APPEARANCE, ITEMS, SWORD_MODELS, swordModelOf } from '@dtl/content';
+import { APPEARANCE, ITEMS, SWORD_MODELS, SWORD_MODELS_TIER, swordModelOf } from '@dtl/content';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
 import { PlayerSkins, SkinnedPlayer } from './playerSkins';
 import { bladeLocal, bladeScale, glowDims } from './swordModel';
@@ -96,7 +96,8 @@ describe('model kiếm theo trang bị', () => {
         const back = box.getCenter(new THREE.Vector3());
         const len = box.getSize(new THREE.Vector3()).length();
         expect(len).toBeGreaterThan(0.7);
-        expect(len).toBeLessThan(1.4);
+        // Kiếm bậc mới dài hơn theo thiết kế (1,1–1,2 m so với 0,95 m), nên trần cao hơn.
+        expect(len).toBeLessThan(SWORD_MODELS_TIER.includes(w) ? 1.75 : 1.4);
         // Rút kiếm: ra chiêu → kiếm vào tay phải, tâm kiếm gần bàn tay.
         m.hitReact({});
         for (let i = 0; i < 120 && !m.swordDrawn; i++) m.update(DT, anim());

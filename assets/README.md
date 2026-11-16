@@ -21,7 +21,7 @@ Nơi chứa dữ liệu nhẹ về asset 3D và cấu hình pipeline. File ngu�
 
 ## Đặt tên
 
-Asset id = tiền tố loại + `snake_case` không dấu, trùng tên thư mục nguồn và tên GLB thô: `chr_` (người chơi, NPC), `mon_` (quái), `boss_`, `prop_` (prop, vũ khí, phi kiếm, đồ rơi), `arch_` (kiến trúc), `fx_`, `anim_` (thư viện animation không mesh, ví dụ `anim_human_base`). Lớp ngân sách suy từ tiền tố; muốn khác (NPC dùng `chr_`, phi kiếm dùng `prop_`, đồ rơi) thì ghi `budgetClass` trong `meta.json`.
+Asset id = tiền tố loại + `snake_case` không dấu, trùng tên thư mục nguồn và tên GLB thô: `chr_` (người chơi, NPC), `mon_` (quái), `boss_`, `prop_` (prop, vũ khí, phi kiếm, đồ rơi), `arch_` (kiến trúc), `fx_`, `anim_` (thư viện animation không mesh, ví dụ `anim_human_base`), `set_` (mẫu bộ trang bị trên ma-nơ-canh, lớp `prop`). Lớp ngân sách suy từ tiền tố; muốn khác (NPC dùng `chr_`, phi kiếm dùng `prop_`, đồ rơi) thì ghi `budgetClass` trong `meta.json`.
 
 ## Lệnh
 

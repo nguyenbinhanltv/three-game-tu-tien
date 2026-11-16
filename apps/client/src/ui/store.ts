@@ -172,6 +172,8 @@ export interface UIState {
   castEnd: number;
   castTotal: number;
   tribEnd: number;
+  /** Kiếp đang độ (id trong `tribulations.json`) để HUD đọc pha. */
+  tribId: string;
   bossLine: BossLine | null;
   chapter: ChapterCard | null;
   cine: CineState | null;
@@ -257,6 +259,7 @@ export const useUI = create<UIState>(() => ({
   castEnd: 0,
   castTotal: 0,
   tribEnd: 0,
+  tribId: 'truc_co',
   bossLine: null,
   chapter: null,
   cine: null,

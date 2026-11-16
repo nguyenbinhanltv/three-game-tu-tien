@@ -16,6 +16,8 @@ const RENDERER = opt('--renderer', 'webgpu');
 const GENDER = opt('--gender', 'm');
 const HAND_ONLY = args.includes('--hand-only');
 const GLOW = Number(opt('--glow', '0'));
+// --model prop_kiem_x: kiếm bậc mới chưa có vật phẩm; client nhận ?sword=<model> (chỉ hình), bỏ bước give/mặc.
+const MODEL = opt('--model', '');
 const ONLY = opt('--only', '').split(',').filter(Boolean);
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
 const PORT = Number(process.env.PORT ?? 2675);
@@ -24,7 +26,7 @@ const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots-kiem', command: 'pnpm shots:kiem' });
 type G = { __game?: Record<string, any> };
 
-const SWORDS = [
+const SWORDS = MODEL ? [{ id: '', file: MODEL.replace('prop_kiem_', ''), name: '' }] : [
   { id: 'itm_thanh_phong_kiem', file: 'thanh-phong', name: 'Thanh Phong Kiếm' },
   { id: 'itm_thiet_kiem', file: 'thiet', name: 'Thiết Kiếm' },
   { id: 'itm_han_quang_kiem', file: 'han-quang', name: 'Hàn Quang Kiếm' },
@@ -63,7 +65,7 @@ async function main(): Promise<void> {
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
     page.on('console', (m) => (m.type() === 'error' || /models\]|kiếm/i.test(m.text())) && errors.push(m.text().slice(0, 300)));
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}${MODEL ? `&sword=${MODEL}` : ''}`, { waitUntil: 'load' });
     await page.waitForFunction(() => {
       const g = (window as unknown as G).__game;
       return !!g && g.frames > 30 && !!g.me?.();
@@ -89,14 +91,16 @@ async function main(): Promise<void> {
     for (const sw of SWORDS) {
       if (ONLY.length && !ONLY.includes(sw.file)) continue;
       await page.evaluate(() => document.body.classList.remove('nohud'));
-      await gm(page, `give ${sw.id} 1`, 1300);
-      await page.keyboard.press('KeyB');
-      await sleep(500);
-      await page.getByRole('button', { name: sw.name }).first().click({ timeout: 8000 });
-      await sleep(300);
-      await page.getByRole('button', { name: /^Trang bị$/ }).first().click({ timeout: 4000 });
-      await sleep(500);
-      await page.keyboard.press('KeyB');
+      if (!MODEL) {
+        await gm(page, `give ${sw.id} 1`, 1300);
+        await page.keyboard.press('KeyB');
+        await sleep(500);
+        await page.getByRole('button', { name: sw.name }).first().click({ timeout: 8000 });
+        await sleep(300);
+        await page.getByRole('button', { name: /^Trang bị$/ }).first().click({ timeout: 4000 });
+        await sleep(500);
+        await page.keyboard.press('KeyB');
+      }
       if (GLOW) await gm(page, `plus ${GLOW === 2 ? 10 : 7}`, 900);
       await gm(page, 'heal', 600);
       await page.evaluate(() => document.body.classList.add('nohud'));

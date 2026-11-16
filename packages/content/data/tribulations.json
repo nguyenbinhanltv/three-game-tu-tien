@@ -1,0 +1,175 @@
+{
+  "_doc": "Ba lần độ kiếp mới + Trúc Cơ (E1-F). Giây tính từ lúc bắt đầu. Pha `kind`: lei (thiên lôi: tia nhắm + tia rơi quanh, tùy chọn lôi võng `net` và tia khóa mệnh `final` mở pha), hoa (lưới ô lửa), tam_ma (bóng tâm ma). `mechanic` là móc cơ chế riêng do server cài ở apps/server/src/game/tribmech.ts (E2-D/E3/E4 hoàn thiện). Trúc Cơ giữ NGUYÊN hằng số cũ của S2-C (có test băm hành vi). Hằng của kiếp mới là bản đầu theo docs/EXPANSION_DESIGN.md mục 3, chờ cân bằng.",
+  "defs": {
+    "truc_co": {
+      "from": 15,
+      "to": 16,
+      "enabled": true,
+      "item": "itm_truc_co_dan",
+      "room": "world",
+      "element": "loi",
+      "duration": 40,
+      "firstDelay": 3,
+      "failXpLoss": 0.15,
+      "refundAfter": 20,
+      "pillMax": 3,
+      "aim": { "r": 4.2, "delay": 1.25 },
+      "extraDelay": { "min": 1.25, "max": 1.85 },
+      "extraDist": { "min": 5, "max": 14 },
+      "phases": [
+        { "id": "loi_van_tu", "kind": "lei", "end": 12, "gap": 3.0, "aimPct": 0.24, "extra": 1, "extraR": 3.6, "extraPct": 0.2 },
+        {
+          "id": "loi_vong",
+          "kind": "lei",
+          "end": 28,
+          "gap": 2.3,
+          "aimPct": 0.24,
+          "extra": 2,
+          "extraR": 3.6,
+          "extraPct": 0.2,
+          "net": { "lines": 3, "count": 7, "r": 2.1, "step": 4, "gap": 7, "delay": 1, "pct": 0.2, "every": 2 }
+        },
+        {
+          "id": "diet_the",
+          "kind": "lei",
+          "end": 40,
+          "gap": 0.9,
+          "aimPct": 0.16,
+          "extra": 2,
+          "extraR": 3.4,
+          "extraPct": 0.1,
+          "final": { "r": 9, "delay": 3, "pct": 0.7, "defMul": 2, "defMaxCut": 0.5 }
+        }
+      ]
+    },
+    "ket_dan": {
+      "from": 19,
+      "to": 20,
+      "enabled": false,
+      "item": null,
+      "room": "world",
+      "element": "hoa",
+      "duration": 55,
+      "firstDelay": 3,
+      "failXpLoss": 0.15,
+      "refundAfter": 28,
+      "pillMax": 3,
+      "aim": { "r": 4.2, "delay": 1.25 },
+      "extraDelay": { "min": 1.25, "max": 1.85 },
+      "extraDist": { "min": 5, "max": 14 },
+      "guard": { "r": 20 },
+      "phases": [
+        { "id": "loi_van_tu", "kind": "lei", "end": 12, "gap": 2.6, "aimPct": 0.24, "extra": 2, "extraR": 3.6, "extraPct": 0.2 },
+        {
+          "id": "ngung_dan",
+          "kind": "lei",
+          "end": 40,
+          "gap": 2.4,
+          "aimPct": 0.2,
+          "extra": 1,
+          "extraR": 3.6,
+          "extraPct": 0.18,
+          "mechanic": "dan_tran",
+          "shadows": { "every": 7, "count": 3, "levelDelta": 0, "hpFrac": 0.4, "maxAlive": 6 }
+        },
+        {
+          "id": "diet_the_dan_hoa",
+          "kind": "lei",
+          "end": 55,
+          "gap": 0.9,
+          "aimPct": 0.16,
+          "extra": 2,
+          "extraR": 3.4,
+          "extraPct": 0.1,
+          "final": { "r": 9, "delay": 3, "pct": 0.7, "defMul": 2, "defMaxCut": 0.5, "guardShare": 0.25, "guardMax": 2, "guardR": 12 }
+        }
+      ]
+    },
+    "nguyen_anh": {
+      "from": 23,
+      "to": 24,
+      "enabled": false,
+      "item": null,
+      "room": "tribulation",
+      "element": "loi",
+      "duration": 65,
+      "firstDelay": 3,
+      "failXpLoss": 0.15,
+      "refundAfter": 30,
+      "pillMax": 3,
+      "aim": { "r": 4.2, "delay": 1.25 },
+      "extraDelay": { "min": 1.2, "max": 1.7 },
+      "extraDist": { "min": 5, "max": 14 },
+      "guard": { "r": 20 },
+      "phases": [
+        { "id": "loi", "kind": "lei", "end": 18, "gap": 2.2, "gapEnd": 1.2, "aimPct": 0.22, "extra": 2, "extraR": 3.6, "extraPct": 0.2, "mechanic": "tia_xich" },
+        {
+          "id": "hoa",
+          "kind": "hoa",
+          "end": 42,
+          "gap": 4,
+          "aimPct": 0,
+          "mechanic": "xuat_khieu",
+          "grid": { "cols": 4, "rows": 4, "cell": 7, "pick": 2, "warn": 1.5, "burn": 3, "pct": 0.22 }
+        },
+        {
+          "id": "tam_ma",
+          "kind": "tam_ma",
+          "end": 65,
+          "gap": 2.2,
+          "aimPct": 0.12,
+          "extra": 1,
+          "extraR": 3.4,
+          "extraPct": 0.1,
+          "mechanic": "tam_canh",
+          "shadows": { "once": true, "count": 1, "levelDelta": 2, "hpFrac": 1, "maxAlive": 1 }
+        }
+      ]
+    },
+    "hoa_than": {
+      "from": 27,
+      "to": 28,
+      "enabled": false,
+      "item": null,
+      "room": "tribulation",
+      "element": "ngu_hanh",
+      "duration": 80,
+      "firstDelay": 3,
+      "failXpLoss": 0.15,
+      "refundAfter": 40,
+      "pillMax": 3,
+      "aim": { "r": 4.2, "delay": 1.25 },
+      "extraDelay": { "min": 1.2, "max": 1.7 },
+      "extraDist": { "min": 5, "max": 14 },
+      "guard": { "r": 20 },
+      "phases": [
+        { "id": "ngu_hanh_loi", "kind": "lei", "end": 25, "gap": 1.8, "aimPct": 0.22, "extra": 2, "extraR": 3.6, "extraPct": 0.2, "mechanic": "ngu_hanh" },
+        {
+          "id": "than_niem",
+          "kind": "lei",
+          "end": 55,
+          "gap": 2.0,
+          "aimPct": 0.2,
+          "extra": 3,
+          "extraR": 3.8,
+          "extraPct": 0.2,
+          "mechanic": "phan_than",
+          "net": { "lines": 3, "count": 7, "r": 2.1, "step": 4, "gap": 7, "delay": 1, "pct": 0.2, "every": 3 }
+        },
+        {
+          "id": "thien_nhan_hop_nhat",
+          "kind": "lei",
+          "end": 80,
+          "gap": 0.9,
+          "aimPct": 0.16,
+          "extra": 2,
+          "extraR": 3.4,
+          "extraPct": 0.1,
+          "mechanic": "phan_than",
+          "shadows": { "once": true, "count": 2, "levelDelta": 0, "hpFrac": 0.4, "maxAlive": 2 },
+          "final": { "r": 11, "delay": 4, "pct": 0.75, "defMul": 2, "defMaxCut": 0.5, "guardShare": 0.25, "guardMax": 2, "guardR": 12 }
+        }
+      ]
+    }
+  }
+}

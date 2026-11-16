@@ -10,7 +10,7 @@
     "$schema": { "type": "string" },
     "id": {
       "type": "string",
-      "pattern": "^(chr|mon|elite|boss|prop|arch|fx|anim)_[a-z0-9]+(_[a-z0-9]+)*$",
+      "pattern": "^(chr|mon|elite|boss|prop|arch|fx|anim|set)_[a-z0-9]+(_[a-z0-9]+)*$",
       "description": "Asset id: tiền tố loại + snake_case không dấu; trùng tên thư mục và tên GLB trong assets/build/raw/."
     },
     "type": { "enum": ["chr", "mon", "prop", "arch", "fx", "anim"], "description": "Thư mục loại trong assets/source/." },

@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`độ kiếp Trúc Cơ: bản chuẩn hành vi > toàn bộ 40 s, hạt giống 1 1`] = `
+{
+  "ended": true,
+  "n": 166,
+  "sha": "6edc74c66b81b6707c0490386308b0c721ab6339",
+  "t": 40050,
+}
+`;
+
+exports[`độ kiếp Trúc Cơ: bản chuẩn hành vi > toàn bộ 40 s, hạt giống 7 1`] = `
+{
+  "ended": true,
+  "n": 166,
+  "sha": "a60c140af734819569805cca246f71173b95ab23",
+  "t": 40050,
+}
+`;
+
+exports[`độ kiếp Trúc Cơ: bản chuẩn hành vi > toàn bộ 40 s, hạt giống 2026 1`] = `
+{
+  "ended": true,
+  "n": 166,
+  "sha": "bfe44e66bea6829ab365263ba729f9c4040b0ec8",
+  "t": 40050,
+}
+`;
