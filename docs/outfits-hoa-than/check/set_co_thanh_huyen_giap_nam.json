@@ -1,0 +1,43 @@
+{
+  "outfit": "apps/client/public/assets/set_co_thanh_huyen_giap_nam.49d3f8c17e.glb",
+  "keep": "head",
+  "tol": 0.02,
+  "poses": {
+    "run": {
+      "maxDepth": 0.0398,
+      "sign": -1,
+      "insideAtWorst": 62,
+      "meanInside": 46.0
+    },
+    "chop": {
+      "maxDepth": 0.0397,
+      "sign": -1,
+      "insideAtWorst": 54,
+      "meanInside": 53.0
+    },
+    "arms_down": {
+      "maxDepth": 0.0396,
+      "sign": 1,
+      "insideAtWorst": 2,
+      "meanInside": 5.0
+    },
+    "crouch": {
+      "maxDepth": 0.0398,
+      "sign": -1,
+      "insideAtWorst": 38,
+      "meanInside": 54.5
+    },
+    "sit": {
+      "maxDepth": 0.0393,
+      "sign": -1,
+      "insideAtWorst": 6,
+      "meanInside": 4.0
+    },
+    "fall": {
+      "maxDepth": 0.0398,
+      "sign": 1,
+      "insideAtWorst": 60,
+      "meanInside": 41.0
+    }
+  }
+}
