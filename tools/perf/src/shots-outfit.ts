@@ -1,5 +1,5 @@
 // pnpm shots:outfit: chụp áo bộ trang bị mặc thật (retarget, docs/sets-retarget): đứng (trước/sau/nghiêng), chạy, ngự kiếm, chém, đả tọa; kiểm xuyên lưới.
-//   tsx src/shots-outfit.ts --out <thư mục> [--renderer webgpu|webgl2] [--sets set_liet_mach,...] [--genders m,f] [--only still|motion] [--query outfit=0]
+//   tsx src/shots-outfit.ts --out <thư mục> [--renderer webgpu|webgl2] [--sets set_liet_mach,...] [--genders m,f] [--only still|motion] [--query outfit=0] [--panel 1] [--matrix 1]
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175), vào game tắt tiếng (?mute=1, --mute-audio) bằng tài khoản thử, mặc bộ bằng lệnh GM `set`.
 import path from 'node:path';
 import fs from 'node:fs';
@@ -143,6 +143,25 @@ async function main(): Promise<void> {
           await shot(`${set}-${g}-chem.jpg`);
           await sleep(900);
           await gm(page, 'killall', 1700);
+          if (opt('--matrix', '') === '1') {
+            // Ma trận clip: chém của 3 công pháp (chiêu 1 và 2, giữa động tác), rồi chết (clip nằm dài: áo dễ lòi nhất).
+            for (const mt of ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh']) {
+              await gm(page, `method ${mt} 15`, 1500);
+              await gm(page, 'spawn mon_soi_xam 1', 1700);
+              for (const slot of [1, 2]) {
+                await cam(page, Math.PI * 0.8, 0.14, DIST);
+                await page.evaluate((n) => (window as unknown as G).__game!.useSkill(n), slot);
+                await sleep(300);
+                await shot(`${set}-${g}-${mt}-${slot}.jpg`);
+                await sleep(1200);
+              }
+              await gm(page, 'killall', 1500);
+            }
+            await cam(page, 0.7, 0.2, DIST);
+            await gm(page, 'die', 1300);
+            await shot(`${set}-${g}-chet.jpg`);
+            await gm(page, 'heal', 800);
+          }
         }
       }
       await ctx.close();

@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { APPEARANCE, DYE, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
+import { APPEARANCE, DYE, OUTFITS, SET, SETS, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
@@ -8,7 +8,7 @@ import { adoptGltfMaterials, createWorldMaterial, rimLight } from '../../render/
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
 import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
-import { dressedIndex, outfitAssetId, remapSkin, withIndex } from './outfit';
+import { dressedIndex, extendSkeleton, outfitAssetId, remapSkin, withIndex } from './outfit';
 import { acquireWithHumanLib, HUMAN_K3_LIB, mergeClips, retargetClips } from './animLib';
 import { HUMAN_CLIPS } from './humanClips';
 import { applyDye } from './dye';
@@ -91,6 +91,13 @@ export const PLAYER_SKINS: Record<string, PlayerSkin> = {
 interface OutfitTemplate {
   handle: AssetHandle;
   meshes: THREE.SkinnedMesh[];
+  /** Xương lò xo của áo (`dtl.springs`: tay áo, vạt), tính từ file áo; đuôi xương trong hệ xương. */
+  springs: SpringDef[];
+}
+
+/** Các mảnh áo đã sẵn sàng của một người mặc (theo thứ tự trong outfits.json). */
+interface Outfit {
+  parts: { id: string; tpl: OutfitTemplate }[];
 }
 
 interface Template {
@@ -189,15 +196,16 @@ export class PlayerSkins {
     const id = modelOf(look.g);
     if (this.legacy || !id) return false;
     // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
-    const outfit = this.outfitId(look);
-    if (outfit && this.templates.get(id) !== 'failed' && this.outfits.get(outfit) === 'loading') return true;
+    if (this.templates.get(id) !== 'failed' && this.outfitIds(look).some((o) => this.outfits.get(o) === 'loading')) return true;
     return this.templates.get(id) === 'loading' || this.swords.get(look.w ?? SWORD_MODEL_DEFAULT) === 'loading';
   }
 
-  /** Asset áo của bộ đang mặc (null nếu bộ chưa có áo riêng cho giới này hoặc đang `?models=legacy`/`?outfit=0`). */
-  private outfitId(look: PlayerLook): string | null {
-    if (this.legacy || OUTFIT_OFF || !look.set) return null;
-    return outfitAssetId(OUTFIT_FORCE ?? SET.get(look.set)?.look.outfit, modelOf(look.g));
+  /** Các asset mảnh áo của bộ đang mặc (rỗng nếu bộ chưa có áo riêng cho giới này hoặc đang `?models=legacy`/`?outfit=0`). */
+  private outfitIds(look: PlayerLook): string[] {
+    if (this.legacy || OUTFIT_OFF || !look.set) return [];
+    const parts = OUTFIT_FORCE ? [OUTFIT_FORCE] : (OUTFITS[look.set] ?? []);
+    const model = modelOf(look.g);
+    return parts.flatMap((p) => outfitAssetId(p, model) ?? []);
   }
 
   create(look: PlayerLook): CharacterView {
@@ -209,9 +217,9 @@ export class PlayerSkins {
     if (!id || !skin || !t || typeof t === 'string') return new Humanoid({ robe: dye.hex, trim: dye.trim, sword: true });
     if (t.oldSword && look.w) this.loadSword(look.w);
     // Áo riêng của bộ: có thì thay lưới áo của nhân vật (bỏ phụ kiện thủ tục: áo đã có vai giáp, đai...); chưa nạp xong/lỗi thì giữ đường recolor + phụ kiện.
-    const oid = this.outfitId(look);
-    const outfit = oid ? this.loadOutfit(oid) : null;
-    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), outfit ? undefined : look.acc, look.w, false, outfit && oid ? { id: oid, tpl: outfit } : undefined);
+    const parts = this.outfitIds(look).map((o) => ({ id: o, tpl: this.loadOutfit(o) }));
+    const outfit: Outfit | undefined = parts.length && parts.every((p) => p.tpl) ? { parts: parts as Outfit['parts'] } : undefined;
+    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), outfit ? undefined : look.acc, look.w, false, outfit);
   }
 
   /** Asset người của `look` chưa nạp xong (bóng tâm ma tạm dùng model khối của quái). */
@@ -275,16 +283,21 @@ export class PlayerSkins {
   }
 
   /**
-   * Mặc áo: lưới nhân vật chỉ còn đầu/cổ/tay (hình học cắt dùng chung theo mẫu), thêm lưới áo cùng LOD gắn vào xương nhân vật
-   * (một draw call mỗi LOD hiển thị). Material áo dùng chung toàn bộ người mặc.
+   * Mặc áo: lưới nhân vật chỉ còn đầu/cổ/tay (hình học cắt dùng chung theo mẫu), thêm các lưới mảnh áo cùng LOD gắn vào xương
+   * nhân vật (một draw call mỗi mảnh mỗi LOD hiển thị). Xương phụ của áo (tay áo, vạt) được nối vào bộ xương bản sao; trả
+   * định nghĩa lò xo của chúng. Material mỗi mảnh dùng chung toàn bộ người mặc.
    */
-  private dress(scene: THREE.Object3D, outfit: { id: string; tpl: OutfitTemplate }): void {
-    const mat = this.outfitMaterial(outfit.id, outfit.tpl);
+  private dress(scene: THREE.Object3D, outfit: Outfit): SpringDef[] {
     const bodies: THREE.SkinnedMesh[] = [];
     scene.traverse((o) => {
       if ((o as THREE.SkinnedMesh).isSkinnedMesh) bodies.push(o as THREE.SkinnedMesh);
     });
+    if (!bodies.length) return [];
+    const springs: SpringDef[] = [];
+    for (const p of outfit.parts) springs.push(...p.tpl.springs);
+    const sk = extendSkeleton(bodies[0].skeleton, outfit.parts.map((p) => p.tpl.meshes[0].skeleton));
     for (const pm of bodies) {
+      if (sk) pm.bind(sk, pm.bindMatrix);
       const lod = typeof pm.userData.lod === 'number' ? pm.userData.lod : 0;
       let cut = this.dressed.get(pm.geometry);
       if (cut === undefined) {
@@ -293,25 +306,28 @@ export class PlayerSkins {
         this.dressed.set(pm.geometry, cut);
       }
       if (cut) pm.geometry = cut;
-      const src = outfit.tpl.meshes.find((m) => (m.userData.lod ?? 0) === lod) ?? outfit.tpl.meshes[outfit.tpl.meshes.length - 1];
-      if (!src || !pm.parent) continue;
-      const rk = `${outfit.id}|${lod}|${pm.skeleton.bones.length}`;
-      let geo = this.remapped.get(rk);
-      if (geo === undefined) {
-        geo = remapSkin(src, pm.skeleton.bones);
-        this.remapped.set(rk, geo);
+      if (!pm.parent) continue;
+      for (const part of outfit.parts) {
+        const src = part.tpl.meshes.find((m) => (m.userData.lod ?? 0) === lod) ?? part.tpl.meshes[part.tpl.meshes.length - 1];
+        const rk = `${part.id}|${lod}|${pm.skeleton.bones.length}`;
+        let geo = this.remapped.get(rk);
+        if (geo === undefined) {
+          geo = remapSkin(src, pm.skeleton.bones);
+          this.remapped.set(rk, geo);
+        }
+        if (!geo) continue;
+        const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl));
+        g.name = `${part.id}_${lod}`;
+        g.userData.lod = lod;
+        g.matrix.copy(pm.matrix);
+        g.matrix.decompose(g.position, g.quaternion, g.scale);
+        g.castShadow = pm.castShadow;
+        g.receiveShadow = pm.receiveShadow;
+        pm.parent.add(g);
+        g.bind(pm.skeleton, pm.bindMatrix);
       }
-      if (!geo) continue;
-      const g = new THREE.SkinnedMesh(geo, mat);
-      g.name = `${outfit.id}_${lod}`;
-      g.userData.lod = lod;
-      g.matrix.copy(pm.matrix);
-      g.matrix.decompose(g.position, g.quaternion, g.scale);
-      g.castShadow = pm.castShadow;
-      g.receiveShadow = pm.receiveShadow;
-      pm.parent.add(g);
-      g.bind(pm.skeleton, pm.bindMatrix);
     }
+    return springs;
   }
 
   private outfitMaterial(id: string, tpl: OutfitTemplate): THREE.MeshStandardNodeMaterial {
@@ -345,7 +361,7 @@ export class PlayerSkins {
           this.outfits.set(id, 'failed');
           return;
         }
-        this.outfits.set(id, { handle: h, meshes });
+        this.outfits.set(id, { handle: h, meshes, springs: springDefs(h.scene, partExtras(h.scene).springs ?? []) });
       },
       (err) => {
         console.warn(`[models] không nạp được áo ${id}, giữ áo recolor + phụ kiện`, err);
@@ -355,13 +371,13 @@ export class PlayerSkins {
     return null;
   }
 
-  private build(id: string, skin: PlayerSkin, t: Template, mat: THREE.MeshStandardNodeMaterial, acc?: string, want?: string, shadow = false, outfit?: { id: string; tpl: OutfitTemplate }): SkinnedPlayer {
+  private build(id: string, skin: PlayerSkin, t: Template, mat: THREE.MeshStandardNodeMaterial, acc?: string, want?: string, shadow = false, outfit?: Outfit): SkinnedPlayer {
     const scene = cloneSkinned(t.handle.scene);
     scene.traverse((o) => {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
-    if (outfit) this.dress(scene, outfit);
+    const outfitSprings = outfit ? this.dress(scene, outfit) : [];
     // Phụ kiện thêm sau khi đã gán material thân (mesh phụ kiện có material riêng).
     const ribbons = this.accessories(id, t, scene, acc);
     const player = new SkinnedPlayer(
@@ -376,7 +392,7 @@ export class PlayerSkins {
         poses: t.poses ?? undefined,
         maxLocoScale: skin.maxLocoScale,
         sink: false,
-        springs: t.springs,
+        springs: outfitSprings.length ? [...t.springs, ...outfitSprings] : t.springs,
         ground: 'biped',
       },
       skin.runSteps,

@@ -33,8 +33,6 @@ export interface SetLook {
   trim: string;
   /** Màu ánh kiếm khi mặc món vũ khí của bộ hoặc đủ bộ. */
   blade: string;
-  /** Áo mặc thật (retarget): tiền tố asset `set_<bộ>` (client thêm `_nam|_nu`). Thiếu hoặc asset lỗi = recolor + phụ kiện. */
-  outfit?: string;
 }
 
 export interface SetDef {

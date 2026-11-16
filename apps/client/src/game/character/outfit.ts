@@ -106,3 +106,48 @@ export function outfitAssetId(outfit: string | undefined, modelId: string | null
   const g = modelId.slice(modelId.lastIndexOf('_') + 1);
   return g ? `${outfit}_${g}` : null;
 }
+
+/**
+ * Bộ xương mở rộng cho nhân vật mặc áo có xương phụ (`dtl_o_*`: tay áo, vạt, choàng): thêm các xương đó (chưa có ở người chơi) làm con
+ * của xương cha cùng tên trong bản sao, đặt theo tư thế nghỉ của file áo, rồi dựng Skeleton mới = xương người chơi + xương phụ
+ * (chỉ số cũ giữ nguyên nên lưới nhân vật chỉ cần bind lại). Trả null nếu không có xương phụ nào.
+ */
+export function extendSkeleton(base: THREE.Skeleton, parts: readonly THREE.Skeleton[]): THREE.Skeleton | null {
+  const { exact, key } = jointIndex(base.bones);
+  const byName = new Map<string, THREE.Bone>(base.bones.map((b) => [b.name, b]));
+  const bones = [...base.bones];
+  const inverses = [...base.boneInverses];
+  const pending: { b: THREE.Bone; inv: THREE.Matrix4 }[] = [];
+  for (const sk of parts) {
+    sk.bones.forEach((b, i) => {
+      if (exact.has(b.name) || key.has(boneKey(b.name)) || pending.some((p) => p.b.name === b.name)) return;
+      pending.push({ b, inv: sk.boneInverses[i] });
+    });
+  }
+  if (!pending.length) return null;
+  // Cha có thể là xương phụ khác: lặp tới khi đặt hết.
+  let left = pending.slice();
+  for (let round = 0; round <= pending.length && left.length; round++) {
+    const next: typeof left = [];
+    for (const p of left) {
+      const pn = p.b.parent && (p.b.parent as THREE.Bone).isBone ? p.b.parent.name : null;
+      const parent = pn ? (byName.get(pn) ?? base.bones[key.get(boneKey(pn)) ?? -1]) : undefined;
+      if (!parent) {
+        next.push(p);
+        continue;
+      }
+      const nb = new THREE.Bone();
+      nb.name = p.b.name;
+      nb.position.copy(p.b.position);
+      nb.quaternion.copy(p.b.quaternion);
+      nb.scale.copy(p.b.scale);
+      parent.add(nb);
+      nb.updateMatrix();
+      byName.set(nb.name, nb);
+      bones.push(nb);
+      inverses.push(p.inv.clone());
+    }
+    left = next;
+  }
+  return new THREE.Skeleton(bones, inverses);
+}

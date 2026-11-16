@@ -298,7 +298,7 @@
         },
         "retarget": {
           "type": "object",
-          "description": "Áo bộ trang bị chuyển sang bộ xương/tỉ lệ nhân vật chơi (script post retarget_set.py): player (id nhân vật), cut (nhóm xương bỏ), clampLen, legBlend, strayHand, strayLeg.",
+          "description": "Mảnh trang phục lên thân nền nhân vật chơi (script post retarget_set.py): xem đầu tools/blender/retarget_set.py và docs/sets-retarget/README.md.",
           "required": ["player"],
           "additionalProperties": false,
           "properties": {
@@ -307,7 +307,33 @@
             "clampLen": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
             "legBlend": { "type": "number" },
             "strayHand": { "type": "number" },
-            "strayLeg": { "type": "number" }
+            "strayLeg": { "type": "number" },
+            "mode": { "enum": ["rig", "transfer", "rigid"] },
+            "bone": { "type": "string" },
+            "anchor": {
+              "type": "object",
+              "required": ["bone"],
+              "additionalProperties": false,
+              "properties": {
+                "bone": { "type": "string" },
+                "offset": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+                "align": { "enum": ["center", "bottom", "top"] }
+              }
+            },
+            "scale": { "type": "number" },
+            "yaw": { "type": "number" },
+            "pad": { "type": "number" },
+            "padRange": { "type": "number" },
+            "padBody": { "enum": ["kept", "all"] },
+            "smooth": { "type": "integer" },
+            "spring": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["kind"],
+                "properties": { "kind": { "enum": ["skirt", "sleeve"] } }
+              }
+            }
           }
         },
         "post": {

@@ -77,7 +77,7 @@
       "triangles": { "min": 500, "max": 3000 },
       "lods": [{ "ratio": 0.4 }, { "ratio": 0.15 }],
       "texture": { "color": 1024, "data": 512 },
-      "bones": 60
+      "bones": 64
     },
     "drop": {
       "triangles": { "min": 300, "max": 1500 },

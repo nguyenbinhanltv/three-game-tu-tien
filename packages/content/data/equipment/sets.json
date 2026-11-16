@@ -152,8 +152,7 @@
     "look": {
       "hex": "#C9A26A",
       "trim": "#6B4A2A",
-      "blade": "#9FE0C8",
-      "outfit": "set_liet_mach_kiem_y"
+      "blade": "#9FE0C8"
     },
     "src": "forge"
   },

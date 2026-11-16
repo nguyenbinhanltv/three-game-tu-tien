@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed, MAX_TIER, TIER_OPEN, TIER_MUL, PROMOTE_MAT, TIER_MIN_ILVL } from '@dtl/shared';
-import { thanThongSkill, itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { thanThongSkill, itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, OUTFITS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT, LOOT_MATS } from './loot';
 import { monSkillsOf } from '@dtl/shared';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, bondedLevel, spiritRadius, SPIRIT_UNLOCK_LEVEL } from '@dtl/shared';
@@ -969,4 +969,13 @@ console.log('Nội dung hợp lệ.');
   }
   // Chuỗi chương 2: q2_* nối đuôi nhau, không đứt (mỗi nhiệm vụ trừ đầu chương đều `requires` một nhiệm vụ có thật).
   for (const q of QUESTS) if (q.id.startsWith('q2_') && q.id !== 'q2_thu_ha_son' && !q.requires?.startsWith('q2_')) err(`quest ${q.id}: chuỗi chương 2 phải requires một q2_*`);
+  // Áo mặc thật: mỗi mảnh có meta nguồn cho cả nam và nữ (bộ chưa có trong sets.json vẫn được chuẩn bị asset).
+  for (const [set, parts] of Object.entries(OUTFITS)) {
+    if (!parts.length) err(`outfits.json: bộ ${set} không có mảnh`);
+    for (const part of parts) {
+      for (const g of ['nam', 'nu']) {
+        if (!fs.existsSync(fileURLToPath(new URL(`../../../assets/source/chr/${part}_${g}/meta.json`, import.meta.url)))) err(`outfits.json: ${set} thiếu assets/source/chr/${part}_${g}/meta.json`);
+      }
+    }
+  }
 }

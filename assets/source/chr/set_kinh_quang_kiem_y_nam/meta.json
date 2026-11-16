@@ -28,7 +28,23 @@
         0.75,
         1.35
       ],
-      "legBlend": 0.5
+      "legBlend": 0.5,
+      "spring": [
+        {
+          "kind": "skirt",
+          "top": 0.84,
+          "full": 0.35,
+          "bottom": 0.1,
+          "weight": 0.5,
+          "radius": 0.14
+        },
+        {
+          "kind": "sleeve",
+          "side": "both",
+          "from": 0.4,
+          "weight": 0.7
+        }
+      ]
     }
   },
   "concept": [
