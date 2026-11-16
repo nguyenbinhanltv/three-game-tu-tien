@@ -22,6 +22,8 @@ export class MarkerSystem {
     private room: object,
     private players: () => Iterable<PlayerEnt>,
     private now: () => number = Date.now,
+    /** Vùng chơi của level (E1-B); mặc định Vân Lam. */
+    private bounds?: { x0: number; z0: number; x1: number; z1: number },
   ) {}
 
   command(p: PlayerEnt, msg: unknown): void {
@@ -30,7 +32,7 @@ export class MarkerSystem {
     if (now - (this.cmdAt.get(p.sid) ?? 0) < MARK_GAP_MS) return;
     this.cmdAt.set(p.sid, now);
     if (m.clear === true) this.marks.delete(p.sid);
-    else if (validMark(m.x, m.z)) this.marks.set(p.sid, { x: Math.round(m.x * 10) / 10, z: Math.round((m.z as number) * 10) / 10, at: now });
+    else if (validMark(m.x, m.z, this.bounds)) this.marks.set(p.sid, { x: Math.round(m.x * 10) / 10, z: Math.round((m.z as number) * 10) / 10, at: now });
     else return;
     this.sync();
   }
