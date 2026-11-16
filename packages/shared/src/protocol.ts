@@ -6,6 +6,10 @@ import type { CharView, Equipment, InvSlot, QuestView } from './types';
 export const PROTOCOL_VERSION = 1;
 export const ROOM_WORLD = 'world';
 export const ROOM_DUNGEON = 'dungeon';
+/** Room độ kiếp riêng (E1-F): mỗi lần độ kiếp Nguyên Anh / Hóa Thần một room, tổ đội vào cùng. */
+export const ROOM_TRIBULATION = 'tribulation';
+/** Level của sân độ kiếp (địa hình dùng chung bồn Kiếm Trủng). */
+export const TRIB_LEVEL = 'do_kiep';
 /** Level gốc: room của nó giữ tên `world` (bot, test, script cũ không đổi); đăng nhập thường vào đây. */
 export const HOME_LEVEL = 'van_lam';
 /** Bí cảnh Kiếm Trủng giữ tên room `dungeon`. */
@@ -231,6 +235,8 @@ export interface FxMsg {
   c?: string;
   /** Đòn thứ mấy (0-based) của chuỗi đánh thường; đòn cuối đẩy lùi. Chỉ là lớp hình. */
   n?: number;
+  /** Kiếp nào (`tribstart`): id trong `tribulations.json`; thiếu = Trúc Cơ. HUD và cảnh điện ảnh đọc pha từ dữ liệu theo id này. */
+  tb?: string;
 }
 
 export interface DmgMsg {

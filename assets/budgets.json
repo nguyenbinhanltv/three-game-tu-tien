@@ -9,7 +9,8 @@
     "prop_": "prop",
     "arch_": "arch",
     "fx_": "fx",
-    "anim_": "anim"
+    "anim_": "anim",
+    "set_": "prop"
   },
   "classes": {
     "player": {

@@ -1,6 +1,6 @@
 import { type MouseEvent as RMouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { biomeAt } from '../../game/levelCtx';
+import { areaKey, biomeAt } from '../../game/levelCtx';
 import { LEVELS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { TipCard, Tooltip } from '../kit';
@@ -58,7 +58,7 @@ export function Minimap() {
   const level = useUI((s) => s.level);
   const zones = LEVELS[level]?.zones;
   const zs = useMemo(() => zoneStatus(room === 'dungeon' ? undefined : zones, rx, rz, myLv), [zones, room, rx, rz, myLv]);
-  const zoneName = zs.zone ? t(`zone.${zs.zone.id}`) : t('ui.zone.' + biomeAt(rx, rz));
+  const zoneName = zs.zone ? t(`zone.${zs.zone.id}`) : t(areaKey(level, biomeAt(rx, rz)));
 
   useEffect(() => {
     localStorage.setItem('dtl.mm.zoom', String(zoom));
@@ -134,7 +134,7 @@ export function Minimap() {
   }, []);
 
   const bump = (d: number) => setZoom((z0) => clampZoom(z0 + d));
-  const zoneLv = zs.zone ? t('ui.mm.zone_lv', { a: zs.zone.lvMin, b: zs.zone.lvMax }) : '';
+  const zoneLv = zs.zone ? zs.zone.lvMin === zs.zone.lvMax ? t('ui.mm.zone_lv1', { a: zs.zone.lvMin }) : t('ui.mm.zone_lv', { a: zs.zone.lvMin, b: zs.zone.lvMax }) : '';
   const tip = hover ? tipOf(hover.mark) : null;
 
   return (

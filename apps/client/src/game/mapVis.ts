@@ -5,7 +5,7 @@
 
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { type MarkInfo, TELE_PADS, type TelePad } from '@dtl/shared';
+import { type MarkInfo, padsOfLevel, type TelePad } from '@dtl/shared';
 import { groundAt } from './levelCtx';
 
 const PAD_SHOW = 260;
@@ -64,9 +64,9 @@ export class MapVis {
     cast: additive(OPEN_COLOR, 1),
   };
 
-  constructor(scene: THREE.Scene, withPads: boolean) {
+  constructor(scene: THREE.Scene, padLevel: string | null) {
     this.group.name = 'mapVis';
-    if (withPads) for (const pad of TELE_PADS) this.pads.push(this.buildPad(pad));
+    if (padLevel) for (const pad of padsOfLevel(padLevel)) this.pads.push(this.buildPad(pad));
     this.castRing = new THREE.Mesh(this.geo.cast, this.mat.cast);
     this.castRing.rotation.x = -Math.PI / 2;
     this.castRing.visible = false;
