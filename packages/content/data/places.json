@@ -14,6 +14,7 @@
   { "id": "ho", "level": "van_lam", "x": 1490, "z": 2230, "note": "Bãi ven hồ phía tây (đường camera 'ho' của pnpm bench:client)" },
   { "id": "boss", "level": "van_lam", "x": 1640, "z": 2285, "note": "Khu boss Hàn Giao: mặt hồ, cách đảo giữa hồ (1640, 2230) khoảng 55m" },
   { "id": "kt_giua", "level": "kiem_trung", "x": 1520, "z": 1300, "note": "Giữa lòng chảo Kiếm Trủng, chỗ đánh các đợt (chỉ dùng trong room bí cảnh)" },
+  { "id": "kn_giua", "level": "kinh_nguyet", "x": 1520, "z": 1300, "note": "Giữa Kính Nguyệt Cung, chỗ đánh các đợt (chỉ dùng trong room phó bản)" },
   { "id": "dm_tram", "level": "doan_mach", "x": 1024, "z": 1036, "note": "Hạ Khuyết Trạm, điểm vào Đoạn Mạch Cổ Cốc (cấp 16–19)" },
   { "id": "dm_sa_thach", "level": "doan_mach", "x": 1279, "z": 1181, "note": "Cạnh Mạch Tinh Trụ, Sa Thạch Pha (cấp 16–17)" },
   { "id": "dm_kho_ha", "level": "doan_mach", "x": 1504, "z": 974, "note": "Cầu Đá Gãy, Khô Hà Đạo (cấp 17–18)" },

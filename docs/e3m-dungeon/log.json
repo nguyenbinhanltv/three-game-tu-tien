@@ -1,0 +1,64 @@
+{
+  "gate": {
+    "discs": [
+      {
+        "n": "",
+        "x": 1168,
+        "y": 132,
+        "z": 1598,
+        "v": true,
+        "inScene": true
+      },
+      {
+        "n": "moon-gate",
+        "x": 1168,
+        "y": 128,
+        "z": 1598,
+        "v": true,
+        "inScene": true
+      }
+    ],
+    "me": [
+      1168,
+      1589
+    ],
+    "yaw": 3.141592653589793
+  },
+  "room": "dungeon-kinh_nguyet",
+  "info": {
+    "backend": "WebGPU",
+    "draw": 56,
+    "tri": 254767
+  },
+  "puzzleSeen": true,
+  "puzzleText": "Vàng → Đỏ → Lam",
+  "boss0": [
+    {
+      "t": "boss_kinh_nguyet_chan_quan",
+      "mf": 64
+    },
+    {
+      "t": "mon_kinh_anh_gia",
+      "mf": 0
+    },
+    {
+      "t": "mon_kinh_anh_gia",
+      "mf": 0
+    },
+    {
+      "t": "mon_kinh_anh_gia",
+      "mf": 0
+    }
+  ],
+  "decoyFound": true,
+  "boss1": [
+    {
+      "t": "boss_kinh_nguyet_chan_quan",
+      "mf": 64
+    },
+    {
+      "t": "mon_kinh_anh_gia",
+      "mf": 0
+    }
+  ]
+}

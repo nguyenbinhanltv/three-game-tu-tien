@@ -15,7 +15,7 @@ const NEW_BOSSES: Record<string, { kind: 'quad' | 'serpent' | 'biped'; level: st
   boss_thon_mach_ngo_cong_vuong: { kind: 'serpent', level: 'phuc_mach' },
   boss_thach_tam_khoi_vuong: { kind: 'biped', level: 'phuc_mach' },
   boss_van_hai_kinh_vuong: { kind: 'serpent', level: 'van_hai' },
-  boss_kinh_nguyet_chan_quan: { kind: 'biped', level: 'kinh_nguyet_cung' },
+  boss_kinh_nguyet_chan_quan: { kind: 'biped', level: 'kinh_nguyet' },
   boss_thien_khuyet_thu_linh: { kind: 'biped', level: 'thien_khuyet' },
   boss_vo_dien_than_quan: { kind: 'biped', level: 'than_tang' },
 };

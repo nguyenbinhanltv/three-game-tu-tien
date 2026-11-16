@@ -48,6 +48,12 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
     return r;
   }
   // Phục Mạch Quật (E2-C): trong hang không có tuyết hay bụi nắng; chỉ vài đốm lửa ấm bay lên và bụi đá mịn rơi thưa.
+  // Kính Nguyệt Cung (E3-M): sảnh gương dưới trăng lạnh; bụi bạc lơ lửng và vài đốm ngọc, không tuyết, không lá.
+  if (level === 'kinh_nguyet') {
+    r.mote = 9;
+    r.jade = 3;
+    return r;
+  }
   if (level === 'phuc_mach') {
     r.ember = 2.2;
     r.ash = 2.5;

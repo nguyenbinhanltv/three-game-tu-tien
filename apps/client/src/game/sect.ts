@@ -1,6 +1,8 @@
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three/webgpu';
 import { DUNGEON_EXIT, heightAt, KIEM_TRUNG, PORTAL_POS, SECT } from '@dtl/shared';
 import { col, G, GeoBuilder, mat } from './geo';
+import { heightAt as levelHeight } from './levelCtx';
 
 const C_STONE = col(0xa9a59b);
 const C_STONE_DARK = col(0x86827a);
@@ -189,7 +191,7 @@ function buildStaticRest(b: GeoBuilder, cx: number): void {
 
 /** Mặt cổng phát sáng (lưới riêng để chạy hiệu ứng). */
 export function buildPortalDisc(x: number = PORTAL_POS.x, z: number = PORTAL_POS.z, color = 0x8fdcff, flat = false): THREE.Mesh {
-  const py = heightAt(x, z);
+  const py = levelHeight(x, z);
   const m = new THREE.Mesh(
     new THREE.CircleGeometry(2.8, 28),
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false }),
@@ -203,5 +205,24 @@ export function buildPortalDisc(x: number = PORTAL_POS.x, z: number = PORTAL_POS
   }
   m.position.set(x, py + 3.6, z);
   m.scale.set(1, 1.25, 1);
+  return m;
+}
+
+/**
+ * Cổng gương nguyệt (E3-M, vào Kính Nguyệt Cung): vành tròn bạc xanh dựng đứng quanh đĩa cổng, hai trụ đá bên cạnh và bệ mỏng,
+ * gộp một lưới (một draw call), màu đặc tối vừa phải để không lóa. Cùng hướng và tâm với `buildPortalDisc` (đĩa nằm trong vành).
+ */
+export function buildMoonGate(x: number, z: number): THREE.Mesh {
+  const py = levelHeight(x, z);
+  const ring = new THREE.TorusGeometry(2.95, 0.3, 12, 44);
+  ring.scale(1, 1.25, 1);
+  ring.translate(0, 3.6, 0);
+  const box = (w: number, h: number, d: number, cx: number, cy: number) => new THREE.BoxGeometry(w, h, d).translate(cx, cy, 0);
+  const parts = [ring, box(0.9, 7.6, 0.9, -4.6, 3.8), box(0.9, 7.6, 0.9, 4.6, 3.8), box(1.3, 0.5, 1.3, -4.6, 7.9), box(1.3, 0.5, 1.3, 4.6, 7.9), box(10.2, 0.3, 1.8, 0, 0.15)];
+  const geo = mergeGeometries(parts.map((g) => (g.index ? g.toNonIndexed() : g)))!;
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x8a9db8, transparent: true, opacity: 0.92, depthWrite: true, fog: false }));
+  m.position.set(x, py, z);
+  m.userData.op = 0.85;
+  m.name = 'moon-gate';
   return m;
 }
