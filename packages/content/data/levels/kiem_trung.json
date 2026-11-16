@@ -1,5 +1,73 @@
 {
   "id": "kiem_trung",
   "spawns": [],
-  "nodes": []
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1520,
+      "z": 1352
+    },
+    "exit": {
+      "x": 1520,
+      "z": 1370
+    },
+    "center": {
+      "x": 1520,
+      "z": 1288
+    },
+    "minLevel": 8,
+    "returnLevel": "van_lam",
+    "returnSpawn": {
+      "x": 2048,
+      "z": 1717
+    },
+    "waves": [
+      {
+        "mons": [
+          {
+            "id": "mon_kiem_linh",
+            "level": 11,
+            "n": 6
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_kiem_khoi",
+            "level": 12,
+            "n": 1
+          },
+          {
+            "id": "mon_kiem_linh",
+            "level": 11,
+            "n": 3
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_huyet_lang_vuong",
+            "level": 13,
+            "n": 1
+          },
+          {
+            "id": "mon_kiem_linh",
+            "level": 12,
+            "n": 2
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_thu_mo_tuong",
+            "level": 15,
+            "n": 1
+          }
+        ]
+      }
+    ]
+  }
 }

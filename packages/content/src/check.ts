@@ -702,9 +702,20 @@ function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) 
   const tr = terrainOf(lv);
   const PLAY_BOUNDS = tr.playBounds;
   uniqueIds('trận', [...TELE_PADS]);
+  // E1-B: trận ở level khác Vân Lam có tiền tố level; bản đồ phải có thật và là bản đồ thế giới (E2-A thêm kiểm chi tiết theo level).
+  for (const pad of TELE_PADS) {
+    if (pad.level === 'van_lam') continue;
+    const dest = LEVELS[pad.level];
+    if (!dest || dest.dungeon) err(`trận ${pad.id}: level ${pad.level} không phải bản đồ thế giới`);
+    else {
+      needStr(`tele.${pad.id}`);
+      const b = terrainOf(dest).playBounds;
+      if (pad.x < b.x0 || pad.x > b.x1 || pad.z < b.z0 || pad.z > b.z1) err(`trận ${pad.id}: ngoài vùng chơi của ${pad.level}`);
+    }
+  }
   for (const z of lv.zones ?? []) if (TELE_PADS.filter((p) => p.zone === z.id).length !== 1) err(`vùng ${z.id}: cần đúng một Truyền Tống Trận`);
   if (!TELE_PADS.some((p) => TELE_FREE.includes(p.id))) err('cần ít nhất một trận mở sẵn');
-  for (const pad of TELE_PADS) {
+  for (const pad of TELE_PADS.filter((x) => x.level === 'van_lam')) {
     const w = `trận ${pad.id}`;
     needStr(`tele.${pad.id}`);
     if (pad.zone) {
@@ -722,6 +733,24 @@ function checkPois(lv: (typeof LEVELS)[string], zoneById: Map<string, ZoneDef>) 
     for (const s of lv.spawns) if (Math.hypot(pad.x - s.x, pad.z - s.z) < s.radius + 20) err(`${w}: quá gần điểm sinh ${s.mon}`);
   }
 }
+
+// ---- Cổng và bí cảnh theo dữ liệu (E1-B) ----
+for (const lv of Object.values(LEVELS)) {
+  for (const q of lv.portals ?? []) {
+    if (!LEVELS[q.to]?.dungeon) err(`level ${lv.id}: cổng dẫn tới ${q.to} không phải bí cảnh`);
+    if (lv.dungeon) err(`level ${lv.id}: bí cảnh không có cổng vào bí cảnh khác`);
+  }
+  const d = lv.dungeon;
+  if (!d) continue;
+  const w = `bí cảnh ${lv.id}`;
+  const ret = LEVELS[d.returnLevel];
+  if (!ret || ret.dungeon) err(`${w}: returnLevel ${d.returnLevel} không phải bản đồ thế giới`);
+  if (!(ret?.portals ?? []).some((q) => q.to === lv.id)) err(`${w}: ${d.returnLevel} không có cổng dẫn vào`);
+  if (!d.waves.length) err(`${w}: thiếu đợt quái`);
+  for (const wv of d.waves) for (const g of wv.mons) if (!MONSTER.get(g.id)) err(`${w}: quái ${g.id} không tồn tại`);
+  for (const pt of [d.spawn, d.exit, d.center]) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${w}: điểm (${pt.x}, ${pt.z}) ngoài bản đồ`);
+}
+if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
 
 // ---- Pháp bảo phụ và đan (P3-8) ----
 uniqueIds('artifact', ARTIFACTS);
