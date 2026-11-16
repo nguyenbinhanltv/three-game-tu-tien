@@ -175,7 +175,9 @@ async function main(): Promise<void> {
       await sleep(600);
       await shot('xem-truoc-xoay.jpg');
     }
-    // Tooltip so sánh: rê vào thanh kiếm cực hiếm trong túi.
+    // Tooltip so sánh: đưa túi lên trên rồi rê vào thanh kiếm cực hiếm.
+    await page.getByRole('heading', { name: /Túi/ }).click({ timeout: 5000 }).catch(() => {});
+    await sleep(300);
     await page.getByRole('button', { name: /Thiết Kiếm.*phẩm/ }).last().hover({ timeout: 5000 }).catch(() => {});
     await sleep(700);
     await shot('tooltip-so-sanh.jpg');
