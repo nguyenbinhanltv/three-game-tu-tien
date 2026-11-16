@@ -24,7 +24,7 @@ export const DEFAULTS = {
   schemaFile: path.join(ROOT, 'assets/meta.schema.json'),
 };
 
-export const ASSET_ID = /^(chr|mon|boss|prop|arch|fx|anim|set)_[a-z0-9]+(_[a-z0-9]+)*$/;
+export const ASSET_ID = /^(chr|mon|elite|boss|prop|arch|fx|anim|set)_[a-z0-9]+(_[a-z0-9]+)*$/;
 
 export interface LodSpec {
   ratio: number;

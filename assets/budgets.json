@@ -4,6 +4,7 @@
   "prefixes": {
     "chr_": "player",
     "mon_": "monster",
+    "elite_": "elite",
     "boss_": "boss",
     "prop_": "prop",
     "arch_": "arch",
@@ -32,6 +33,15 @@
       "lods": [
         { "ratio": 0.35, "maxTriangles": 3000 },
         { "ratio": 0.12, "maxTriangles": 1000 }
+      ],
+      "texture": { "color": 1024, "data": 512 },
+      "bones": 60
+    },
+    "elite": {
+      "triangles": { "min": 10000, "max": 15000 },
+      "lods": [
+        { "ratio": 0.35, "maxTriangles": 5000 },
+        { "ratio": 0.12, "maxTriangles": 1500 }
       ],
       "texture": { "color": 1024, "data": 512 },
       "bones": 60

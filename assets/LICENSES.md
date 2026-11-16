@@ -208,6 +208,18 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `boss_thien_khuyet_thu_linh` | Tripo web app (image-to-3D H3.1 từ concept `docs/asset-concepts`, người dùng dựng); rig Mixamo Tripo (thêm bàn chân trái) + clip thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `boss_vo_dien_than_quan` | Tripo web app (image-to-3D H3.1 từ concept `docs/asset-concepts`, người dùng dựng); rig Mixamo Tripo + clip thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `boss_thu_mo_tuong` | Tripo web app (text-to-3D H3.1 + auto rig biped + preset animation) + Codex (concept); hit_light/slam/sweep/chant/stun thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
+| `elite_huyet_nha_lang` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig quadruped) + Codex (concept); clip thủ tục `tools/blender/anim_quadruped.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_xich_dien_ho` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig quadruped) + Codex (concept); clip thủ tục `tools/blender/anim_quadruped.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_liet_cot_bao` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig quadruped) + Codex (concept); clip thủ tục `tools/blender/anim_quadruped.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_loi_van_su_vuong` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig quadruped) + Codex (concept); clip thủ tục `tools/blender/anim_quadruped.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_da_minh_loc_vuong` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig quadruped) + Codex (concept); clip thủ tục `tools/blender/anim_quadruped.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_cu_nham_vien` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig biped Mixamo) + Codex (concept); clip thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_ho_mach_khoi_tuong` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig biped Mixamo) + Codex (concept); clip thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_kinh_dien_ma_quan` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig biped Mixamo) + Codex (concept); clip thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_cot_kiem_thong_linh` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig biped Mixamo) + Codex (concept); clip thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_thach_tuong_dai_tuong` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig biped Mixamo) + Codex (concept); clip thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_van_hac_vuong` | Tripo web app (image-to-3D H3.1 từ concept Codex + auto rig rig Tripo) + Codex (concept); clip thủ tục `tools/blender/anim_bird.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `elite_xich_sa_ngo_cong` | Tripo web app (image-to-3D H3.1 từ concept Codex) + Codex (concept); clip thủ tục `tools/blender/anim_serpent.py` (không rig Tripo (xương đốt dựng bằng script)) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 
 ## Texture mặt đất (P2-A2)
 

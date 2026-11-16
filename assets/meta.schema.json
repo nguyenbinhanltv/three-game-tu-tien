@@ -10,12 +10,12 @@
     "$schema": { "type": "string" },
     "id": {
       "type": "string",
-      "pattern": "^(chr|mon|boss|prop|arch|fx|anim|set)_[a-z0-9]+(_[a-z0-9]+)*$",
+      "pattern": "^(chr|mon|elite|boss|prop|arch|fx|anim|set)_[a-z0-9]+(_[a-z0-9]+)*$",
       "description": "Asset id: tiền tố loại + snake_case không dấu; trùng tên thư mục và tên GLB trong assets/build/raw/."
     },
     "type": { "enum": ["chr", "mon", "prop", "arch", "fx", "anim"], "description": "Thư mục loại trong assets/source/." },
     "budgetClass": {
-      "enum": ["player", "npc", "monster", "boss", "weapon", "artifact", "prop", "drop", "arch", "fx", "anim"],
+      "enum": ["player", "npc", "monster", "elite", "boss", "weapon", "artifact", "prop", "drop", "arch", "fx", "anim"],
       "description": "Lớp ngân sách trong assets/budgets.json. Bỏ trống thì suy từ tiền tố id (chr_ → player, mon_ → monster…)."
     },
     "itemId": { "type": ["string", "null"], "description": "Id vật phẩm trong packages/content nếu asset là hình của vật phẩm." },
@@ -102,7 +102,7 @@
           "type": "array",
           "uniqueItems": true,
           "description": "Clip boss thủ tục do import.post sinh thêm: slam (nện), sweep (chém/quét vùng), chant (niệm chú, lặp; chỉ người/vượn), stun (choáng/mất thế, lặp). Thời điểm chạm khớp BOSS_MOVES trong apps/client/src/game/character/monsterSkins.ts. K-3 (thư viện clip người): combat_idle (thủ thế cầm kiếm), guard (đỡ đòn), hit_back (trúng từ sau), roar (khiêu khích).",
-          "items": { "enum": ["slam", "sweep", "chant", "stun", "combat_idle", "guard", "hit_back", "roar"] }
+          "items": { "enum": ["idle", "run", "attack", "death", "slam", "sweep", "chant", "stun", "combat_idle", "guard", "hit_back", "roar"] }
         },
         "k3": {
           "type": "object",
@@ -276,6 +276,10 @@
           "additionalProperties": false,
           "properties": {
             "spine": { "enum": ["auto"], "description": "auto: đường tâm tự đo từ lưới." },
+            "auto": { "type": "boolean", "description": "E-1b (ngô công nằm ngang chữ S): đường tâm đo bằng trọng tâm từng lát; dùng bins/headFrac/rootFrac. Khác spine:auto." },
+            "bins": { "type": "integer", "minimum": 6, "maximum": 40 },
+            "headFrac": { "type": "number", "exclusiveMinimum": 0, "maximum": 0.5 },
+            "rootFrac": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
             "dropRig": { "type": "boolean", "description": "Bỏ rig Tripo kèm theo (không dùng được cho thân dài)." },
             "bones": { "type": "integer", "minimum": 6, "maximum": 40 },
             "headFrom": { "type": "number", "minimum": 0.5, "maximum": 0.99, "description": "Tỉ lệ chiều dài đường tâm (từ đuôi) nơi đầu bắt đầu." },
