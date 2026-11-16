@@ -11,6 +11,8 @@ export interface Ticket {
   /** Điểm xuất hiện ở level đích; null = vị trí đã lưu (đăng nhập lại, vào bí cảnh theo điểm của bí cảnh). */
   spawn: { x: number; z: number } | null;
   exp: number;
+  /** Vé vào room độ kiếp (E1-F): khóa room (mỗi lần độ kiếp một room) và kiếp cần bắt đầu khi tới nơi (thiếu = hộ pháp, chỉ xem và chắn). */
+  trib?: { key: string; id?: string };
 }
 
 export class TicketBook {
@@ -23,8 +25,9 @@ export class TicketBook {
   ) {}
 
   /** Cấp vé tới `to` (thay vé cũ nếu có). */
-  issue(charId: number, to: string, spawn: { x: number; z: number } | null = null): Ticket {
+  issue(charId: number, to: string, spawn: { x: number; z: number } | null = null, trib?: Ticket['trib']): Ticket {
     const t: Ticket = { to, spawn: spawn ? { x: spawn.x, z: spawn.z } : null, exp: this.now() + this.ttl };
+    if (trib) t.trib = { ...trib };
     this.tickets.set(charId, t);
     return t;
   }

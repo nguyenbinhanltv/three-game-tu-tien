@@ -3,8 +3,8 @@ import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { artifactLevelMods, BAR_SIZE, C, CHARGE_MAX, NGUNG_KHI_MAX, TRIBULATION_DURATION, TRIB_FINAL, TRIB_PHASE_END, tribPhaseAt, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
-import { ARTIFACT, ITEM, itemName, METHOD, monsterName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
+import { artifactLevelMods, BAR_SIZE, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { ARTIFACT, hasString, ITEM, itemName, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { artifactLines } from './gear';
@@ -166,10 +166,10 @@ function ChapterCardShow({ card }: { card: ChapterCard }) {
       <div className="lb lb-top" />
       <div className="lb lb-bot" />
       <div className="chapter-text">
-        <div className="chapter-kicker">{t(k + '.kicker', { realm: realmName(level) })}</div>
-        <div className="chapter-title">{t(k + '.title', { realm: realmName(level) })}</div>
+        <div className="chapter-kicker">{t(k + '.kicker', { realm: realmName(level), next: nextMajorRealmName(level) })}</div>
+        <div className="chapter-title">{t(k + '.title', { realm: realmName(level), next: nextMajorRealmName(level) })}</div>
         <div className="chapter-rule" />
-        <div className="chapter-sub">{t(k + '.sub', { realm: realmName(level) })}</div>
+        <div className="chapter-sub">{t(k + '.sub', { realm: realmName(level), next: nextMajorRealmName(level) })}</div>
       </div>
     </div>
   );
@@ -467,29 +467,35 @@ function CastBar() {
 
 function Tribulation() {
   const tribEnd = useUI((s) => s.tribEnd);
+  const tribId = useUI((s) => s.tribId);
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
+  // Pha, thời lượng và lời nhắc đọc từ `tribulations.json` theo kiếp đang độ (E1-F); Trúc Cơ giữ ba pha của S2-C.
+  const def = tribDef(tribId);
   const left = Math.max(0, (tribEnd - now) / 1000);
-  const elapsed = TRIBULATION_DURATION - left;
-  const phase = tribPhaseAt(elapsed);
-  // Ba pha: ba thanh nối nhau, độ dài theo thời lượng từng pha. Pha 3: ba giây đầu là tia cuối, sau đó mưa sét.
-  const starts = [0, TRIB_PHASE_END[0], TRIB_PHASE_END[1]];
-  const hint = phase === 3 && elapsed >= TRIB_PHASE_END[1] + TRIB_FINAL.delay ? 4 : phase;
+  const elapsed = def.duration - left;
+  const pi = tribPhaseIndex(def, elapsed);
+  const ph = def.phases[pi];
+  // Pha có tia khóa mệnh: ban đầu tia cuối tích tụ (hint), sau `delay` giây là mưa sét (hint2).
+  const after = !!ph.final && elapsed >= tribPhaseStart(def, pi) + ph.final.delay;
+  const key = 'ui.trib.' + def.id + '.';
+  const title = hasString(key + 'title') ? t(key + 'title') : t('ui.trib.title');
   return (
     <div className="trib" role="status">
-      <div className="trib-title">{t('ui.trib.title')}</div>
+      <div className="trib-title">{title}</div>
       <div className="trib-phases">
-        {[1, 2, 3].map((n) => {
-          const len = TRIB_PHASE_END[n - 1] - starts[n - 1];
+        {def.phases.map((p, i) => {
+          const start = tribPhaseStart(def, i);
+          const len = p.end - start;
           return (
-            <div key={n} className={'trib-phase' + (n === phase ? ' on' : '')} style={{ flex: len }}>
-              <ProgressBar cls="kiep" value={Math.max(0, Math.min(len, elapsed - starts[n - 1]))} max={len} text={n === phase ? t('ui.trib.secs', { n: Math.ceil(left) }) : undefined} />
-              <div className="trib-phase-name">{t('ui.trib.p' + n)}</div>
+            <div key={p.id} className={'trib-phase' + (i === pi ? ' on' : '')} style={{ flex: len }}>
+              <ProgressBar cls="kiep" value={Math.max(0, Math.min(len, elapsed - start))} max={len} text={i === pi ? t('ui.trib.secs', { n: Math.ceil(left) }) : undefined} />
+              <div className="trib-phase-name">{t(key + p.id)}</div>
             </div>
           );
         })}
       </div>
-      <div className="trib-hint">{t('ui.trib.hint' + hint)}</div>
+      <div className="trib-hint">{t(key + ph.id + (after ? '.hint2' : '.hint'))}</div>
     </div>
   );
 }
