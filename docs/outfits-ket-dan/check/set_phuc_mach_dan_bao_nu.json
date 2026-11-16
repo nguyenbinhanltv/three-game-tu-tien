@@ -1,0 +1,43 @@
+{
+  "outfit": "apps/client/public/assets/set_phuc_mach_dan_bao_nu.560a064589.glb",
+  "keep": "head",
+  "tol": 0.02,
+  "poses": {
+    "run": {
+      "maxDepth": 0.1198,
+      "sign": 1,
+      "insideAtWorst": 15,
+      "meanInside": 148.0
+    },
+    "chop": {
+      "maxDepth": 0.1199,
+      "sign": 1,
+      "insideAtWorst": 277,
+      "meanInside": 162.0
+    },
+    "arms_down": {
+      "maxDepth": 0.1191,
+      "sign": 1,
+      "insideAtWorst": 35,
+      "meanInside": 39.5
+    },
+    "crouch": {
+      "maxDepth": 0.115,
+      "sign": 1,
+      "insideAtWorst": 20,
+      "meanInside": 19.0
+    },
+    "sit": {
+      "maxDepth": 0.119,
+      "sign": 1,
+      "insideAtWorst": 29,
+      "meanInside": 33.5
+    },
+    "fall": {
+      "maxDepth": 0.1191,
+      "sign": -1,
+      "insideAtWorst": 23,
+      "meanInside": 16.0
+    }
+  }
+}
