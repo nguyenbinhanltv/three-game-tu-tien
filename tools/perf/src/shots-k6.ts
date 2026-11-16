@@ -29,6 +29,8 @@ const TILE = Number(opt('--tile', '50'));
 const TILE_REAL = 80;
 const gs = (ms: number) => ms / SLOW;
 let SHEET: BrowserContext | null = null;
+const SPOTS: [number, number][] = [[2048, 2088], [2088, 2088], [2008, 2088], [2048, 2128], [2048, 2048], [2088, 2128], [2008, 2128], [2088, 2048]];
+let spotIdx = 0;
 
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots-k6', command: 'pnpm shots:k6' });
 type G = { __game?: Record<string, any> };
@@ -204,7 +206,7 @@ async function main(): Promise<void> {
       const name = `K6${g}${String(Date.now() % 10000)}`;
       page.on('pageerror', (e) => errors.push(`${name} pageerror: ${e.message}`));
       page.on('console', (m) => (m.type() === 'error' || (m.type() === 'warning' && /models/.test(m.text()))) && errors.push(`${name}: ${m.text().slice(0, 300)}`));
-      await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${opt('--query', '')}${SLOW < 1 ? '&slowmo=' + SLOW : ''}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+      await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${opt('--query', '')}&quiet=1${SLOW < 1 ? '&slowmo=' + SLOW : ''}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
       await page.waitForFunction(() => {
         const w = (window as unknown as G).__game;
         return !!w && w.frames > 30 && !!w.me?.();
@@ -215,7 +217,9 @@ async function main(): Promise<void> {
       await gm(page, 'god on', 1600);
       const METHOD = sc === 'hophap' ? 'bat_dong_kim_than' : sc === 'dansu' ? 'thanh_moc_dan_kinh' : 'lac_kiem_quyet';
       await gm(page, `method ${METHOD} 5`, 1200);
-      await gm(page, 'tp 2048 2088', 1600);
+      // Phiên trước còn ở lại thế giới 60 s (allowReconnection): mỗi phiên đứng một chỗ khác (cách 40 m) để không đè lên nhau thành hai nhân vật chồng hình.
+      const spot = SPOTS[spotIdx++ % SPOTS.length];
+      await gm(page, `tp ${spot[0]} ${spot[1]}`, 1600);
       // Chờ thư viện K-3 nạp lười xong (đi lùi/ngang, thủ thế, trúng đòn có hướng, ngã/đứng dậy).
       await page.waitForFunction(() => {
         const g = (window as unknown as G).__game!;
@@ -239,6 +243,7 @@ async function main(): Promise<void> {
       };
       void chargeUlt;
 
+      // Ảnh chụp dùng `?quiet=1`: sói vẫn cắn nhưng không nháy trắng model (hitReact) và không nổ cầu hồng (`bite`), vốn che nhân vật và lẫn vào VFX K-6.
       if (sc === 'kiem') {
         // Kiếm tu: đòn thường, Kiếm Khí Trảm (slot 1), Phi Kiếm Truy Hồn (chiêu công pháp).
         await scene(page);

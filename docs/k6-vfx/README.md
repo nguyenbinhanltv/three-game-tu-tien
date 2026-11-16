@@ -37,3 +37,9 @@ Hạn chế đã biết:
 - Vệt kiếm chỉ dài ~0,2 s nên khó thấy trên ảnh screencast; số liệu kèm theo (`skill-events.json` trong artifact): gốc/mũi kiếm trên màn hình dài ~90 px, quét 40–70 px mỗi cửa sổ.
 - Chiêu tối thượng (ult) chưa chụp: cần sạc đủ `CHARGE_MAX`.
 - Ảnh vạch báo dùng `vfx.hazard` gọi trực tiếp (hazard thật của boss bị thực thể che trong ảnh). `__game.hazardLog` (dev) xác nhận boss được nhận đúng (`boss: true`).
+
+## Ghi chú về ảnh chụp (cập nhật)
+
+- Ảnh chiêu chụp với `?quiet=1` (chỉ bản dev): sói vẫn cắn nhưng không nháy trắng model trúng đòn (`hitReact`) và không nổ cầu hồng (`bite`). Hai hiệu ứng đó có từ trước K-6 (bản `?k6=0&batch=0` cũng có) và che nhân vật; không phải VFX của K-6.
+- Phiên chụp trước còn ở lại thế giới 60 s (`allowReconnection`), nên mỗi phiên đứng một điểm khác nhau (cách 40 m), nếu không hai nhân vật đè lên nhau thành một hình chồng.
+- Cảnh chiêu chụp chậm (`?slowmo=0.25`); vệt kiếm và chuỗi liên hoàn chụp tốc độ thật.

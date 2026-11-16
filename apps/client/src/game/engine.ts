@@ -197,6 +197,9 @@ export function reqId(): string {
 /** Chỉ bản dev, để chụp ảnh đúng khung: `?slowmo=0.25` chậm thời gian hiển thị (đứng yên, không di chuyển). */
 const SLOWMO = import.meta.env.DEV ? Math.min(1, Math.max(0.05, Number(new URLSearchParams(location.search).get('slowmo')) || 1)) : 1;
 
+/** Chỉ bản dev, để chụp ảnh VFX chiêu: `?quiet=1` bỏ nháy trúng đòn và cầu nổ cú cắn trên chính mình (quái vẫn đánh, không đổi luật). */
+const QUIET = import.meta.env.DEV && new URLSearchParams(location.search).get('quiet') === '1';
+
 export class Game {
   static current: Game | null = null;
   private static client: Client | null = null;
@@ -1615,7 +1618,7 @@ export class Game {
         break;
       case 'bite': {
         e.monsters.get(src)?.model.attack();
-        if (e.chestOf(dst, _v)) v.burst(_v, 0xff6a5a, 0.7, 0.2);
+        if (!(QUIET && dst === this.sid) && e.chestOf(dst, _v)) v.burst(_v, 0xff6a5a, 0.7, 0.2);
         break;
       }
       case 'heal':
@@ -1888,7 +1891,7 @@ export class Game {
     if (mine && !m.heal && m.n > 0) this.skipCine(this.cineKind === 'sect' || !!m.hv);
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (m.hv && !m.heal && m.n > 0) this.heavyInk(m.dst, m.src);
-    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops);
+    if (!m.heal && m.n > 0 && !(QUIET && m.dst === this.sid)) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops);
     // Boss đánh nặng (≥ KNOCKDOWN_FRAC máu tối đa) thì người bị đánh ngã rồi đứng dậy; chỉ hình, người chơi vẫn đi lại được và kéo dậy sớm khi di chuyển.
     if (!m.heal && m.hv && m.n > 0 && m.src) {
       const victim = this.ents.players.get(m.dst);
