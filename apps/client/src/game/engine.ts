@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
 import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX } from '@dtl/shared';
-import { biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
+import { areaKey, biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
@@ -37,6 +37,7 @@ import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { PropLayer } from './props';
+import { allProps } from './propScatter';
 import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
@@ -83,6 +84,8 @@ export interface LoginOptions {
  * Level của room theo `InitMsg.room` (E1-B đặt tên room theo level: `world` = Vân Lam, `world-<id>`, `dungeon` = Kiếm Trủng,
  * `dungeon-<id>`); tên lạ thì về Vân Lam.
  */
+/** Room bản đồ thế giới: `world` (Vân Lam) hoặc `world-<id>` (không phải bí cảnh). */
+export const isWorldRoom = (room: string): boolean => room === ROOM_WORLD || room.startsWith('world-');
 export function levelOfRoom(room: string): string {
   if (room === ROOM_WORLD) return 'van_lam';
   if (room === ROOM_DUNGEON) return 'kiem_trung';
@@ -472,9 +475,9 @@ export class Game {
     this.ents = new EntityManager(this.scene, this.sid, levelOfInit(init));
     this.ents.setWarm(this.warmObject);
     this.mapVis?.dispose();
-    this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
-    this.resetSound(init.room === ROOM_WORLD);
-    if (this.beacons) this.beacons.mesh.visible = init.room === ROOM_WORLD;
+    this.mapVis = new MapVis(this.scene, isWorldRoom(init.room) ? levelOfInit(init) : null);
+    this.resetSound(isWorldRoom(init.room));
+    if (this.beacons) this.beacons.mesh.visible = isWorldRoom(init.room);
     this.ents.camera = this.camera;
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
@@ -778,8 +781,8 @@ export class Game {
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, levelOfRoom(get().room));
     this.ents.setWarm(this.warmObject);
-    this.mapVis = new MapVis(this.scene, get().room === ROOM_WORLD);
-    this.resetSound(get().room === ROOM_WORLD);
+    this.mapVis = new MapVis(this.scene, isWorldRoom(get().room) ? levelOfRoom(get().room) : null);
+    this.resetSound(isWorldRoom(get().room));
     this.ents.camera = this.camera;
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
@@ -867,14 +870,14 @@ export class Game {
     const params = new URLSearchParams(location.search);
     // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách. `?props=0` tắt để chụp ảnh trước/sau.
     if (F.trees === 'scatter' && params.get('props') !== '0') {
-      this.props = new PropLayer();
+      this.props = new PropLayer(undefined, allProps(levelId()));
       this.props.setQuality(get().quality, q.shadows);
       this.scene.add(this.props.group);
     }
     const pois = LEVELS[id]?.pois ?? [];
     if (F.beacons && pois.length && params.get('beacons') !== '0') {
       this.beacons = new Beacons(pois.filter((p) => p.beamH).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
-      this.beacons.mesh.visible = get().room === ROOM_WORLD;
+      this.beacons.mesh.visible = isWorldRoom(get().room);
       this.scene.add(this.beacons.mesh);
     }
     this.grass = new Grass();
@@ -2586,7 +2589,7 @@ export class Game {
       y: rp.y,
       z: rp.z,
       airborne: (me.fl & PF_FLYING) !== 0 || rp.y - groundAt(rp.x, rp.z) > AIRBORNE_HEIGHT,
-      zone: t('ui.zone.' + biomeAt(rp.x, rp.z)),
+      zone: t(areaKey(levelId(), biomeAt(rp.x, rp.z))),
       fps: Math.round(st.fps ? st.fps * 0.6 + fps * 0.4 : fps),
       perf,
       autoAttack: this.autoAttack,
