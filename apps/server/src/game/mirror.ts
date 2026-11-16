@@ -144,6 +144,7 @@ export class MirrorSystem {
 
   /** Quái chết: bóng giả nổ vòng. */
   onKill(m: MonEnt): void {
+    if (m.def.mirror) return this.reset(m);
     if (!m.minionOf) return;
     const boss = this.h.monsters().find((o) => o.id === m.minionOf);
     const cfg = boss?.def.mirror?.decoys;
