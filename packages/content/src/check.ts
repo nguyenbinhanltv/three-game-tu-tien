@@ -686,6 +686,7 @@ for (const q of QUESTS) {
       if (!Object.values(LEVELS).some((lv) => questSpot(lv, o.target))) err(`quest ${q.id}: ${o.type} ${o.target} không phải poi/spot của level nào`);
       if (o.type === 'scan' && (q.minLevel ?? 1) < SCAN_MIN_LEVEL) err(`quest ${q.id}: scan cần minLevel ≥ ${SCAN_MIN_LEVEL} (thần thức mở từ Kết Đan)`);
     }
+    if (o.type === 'dungeon' && o.target) needStr(`dungeon.${o.target}.name`);
     if (o.type === 'escort' && !Object.values(LEVELS).some((lv) => lv.escorts?.some((e) => e.id === o.target))) err(`quest ${q.id}: escort ${o.target} không có trong level nào`);
   }
 }

@@ -891,5 +891,6 @@
   "quest.s2_kiem_gay.done": "Cùng một lò rèn. Cùng một trận tranh mạch. Kiếm Trủng chỉ là chỗ chôn, đây mới là chỗ đánh.",
   "quest.s2_thu_nghiem.name": "Thần Thức Lần Đầu",
   "quest.s2_thu_nghiem.desc": "Kết Đan rồi thì thần thức mở. Đứng gần Mạch Tinh Trụ, Hố Sa Lún và Cổng Mỏ Khai Mạch, bấm T để thần thức quét; mỗi nơi quét một lần. Mạch cạn hay còn, thần thức nghe được trước khi mắt thấy.",
-  "quest.s2_thu_nghiem.done": "Nghe thấy chưa. Mạch không kêu, chỉ run. Giữ cái cảm giác ấy mà dùng về sau."
+  "quest.s2_thu_nghiem.done": "Nghe thấy chưa. Mạch không kêu, chỉ run. Giữ cái cảm giác ấy mà dùng về sau.",
+  "dungeon.phuc_mach_quat.name": "Phục Mạch Quật"
 }

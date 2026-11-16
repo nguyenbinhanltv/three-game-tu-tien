@@ -256,7 +256,8 @@ export function objectiveText(o: ObjectiveDef): string {
     case 'enhance':
       return t('ui.obj.enhance', { n: o.count });
     case 'dungeon':
-      return t('ui.obj.dungeon');
+      // Có `target` (Phục Mạch Quật…) thì nêu tên bí cảnh đó; không có thì là Kiếm Trủng như cũ.
+      return o.target ? t('ui.obj.dungeon_named', { name: t(`dungeon.${o.target}.name`) }) : t('ui.obj.dungeon');
     case 'duel':
       return t('ui.obj.duel');
     case 'meditate':

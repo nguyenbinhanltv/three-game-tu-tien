@@ -226,6 +226,16 @@ describe('escort', () => {
     expect(Math.hypot(back.x - def.path[0][0], back.z - def.path[0][1])).toBeLessThan(1);
   });
 
+  it('đứng xa điểm đầu quá ESCORT_LOST_R qua nhiều nhịp: chỉ báo mất dấu tối đa một lần', () => {
+    const t = start();
+    t.at(def.path[0][0] + 1500, def.path[0][1]);
+    for (let i = 0; i < 40; i++) {
+      t.step(250);
+      t.sim.now += 1000;
+    }
+    expect(t.sys().filter((k) => k === 'sys.escort_lost').length).toBe(0);
+  });
+
   it('bỏ nhiệm vụ (hết mục tiêu) thì người đồng hành biến mất', () => {
     const t = start();
     walk(t, 4);

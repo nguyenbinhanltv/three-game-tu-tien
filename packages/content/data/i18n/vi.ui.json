@@ -775,5 +775,6 @@
   "ui.promote.fee": "Phí Thăng Bậc: {n} linh thạch",
   "ui.obj.touch": "Đứng sát {name}",
   "ui.obj.scan": "Dùng thần thức (phím T) gần {name}",
-  "ui.obj.escort": "Hộ tống {name} tới nơi"
+  "ui.obj.escort": "Hộ tống {name} tới nơi",
+  "ui.obj.dungeon_named": "Vào {name}"
 }

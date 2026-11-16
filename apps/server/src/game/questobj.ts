@@ -110,8 +110,9 @@ export class QuestObjSystem {
       let c = m.get(id);
       if (!c) m.set(id, (c = { def, walk: escortStart(def), sent: '' }));
       const dist = Math.hypot(p.move.x - c.walk.x, p.move.z - c.walk.z);
-      if (dist > ESCORT_LOST_R) {
-        // Bỏ rơi quá xa: người đồng hành quay về đầu đường, làm lại.
+      const atStart = c.walk.seg === 0 && Math.hypot(c.walk.x - def.path[0][0], c.walk.z - def.path[0][1]) < 0.5;
+      if (dist > ESCORT_LOST_R && !atStart) {
+        // Bỏ rơi quá xa: người đồng hành quay về đầu đường, làm lại. Đã đứng sẵn ở đầu đường thì không báo lại (tránh spam).
         c.walk = escortStart(def);
         this.h.warn(p, 'sys.escort_lost', { name: t(`npc.${def.npc}.name`) });
       }
