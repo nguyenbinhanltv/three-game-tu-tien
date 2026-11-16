@@ -9,7 +9,7 @@ import { createWorldMaterial, rimLight } from './world';
  * - Nhuộm 3 kênh: màu texel × (1 + Σ mặt nạ_k · (màu nhuộm_k / màu bảng_k − 1)). Không nhuộm thì giữ nguyên (không thêm nút).
  * - Vải và kim loại: vùng viền (B) bóng và kim loại (metalness ≤ 0,6, roughness 0,4); vùng còn lại là vải nhám (0,84).
  * - Vân sáng = emissiveMap × `outfitGlow` (mặc định 1,2, trần HDR của dự án 2,4), cộng viền sáng chung của nhân vật (`rimLight`).
- * Asset cũ (#119, không có mặt nạ) rơi về material glTF + rim.
+ * Asset cũ (#119, ORM thật không phải mặt nạ) rơi về material glTF + rim.
  */
 
 /** Độ sáng vân phát sáng của mọi bộ (sau này theo bậc/cường hóa). */
@@ -23,8 +23,12 @@ export interface OutfitDye {
 
 const lin = (hex: string) => new THREE.Color().setStyle(hex, THREE.SRGBColorSpace);
 
+/**
+ * Chỉ asset dựng bằng `outfit_build.py` có mặt nạ: pipeline ghi extras `dtl_outfitMask` lên material. Không dò theo
+ * `roughnessMap === metalnessMap`: GLTFLoader gán cả hai bằng cùng một texture cho MỌI asset có ORM (kể cả bản tạm #119).
+ */
 export function hasOutfitMask(src: THREE.MeshStandardMaterial): boolean {
-  return !!src.roughnessMap && src.roughnessMap === src.metalnessMap;
+  return src.userData?.dtl_outfitMask === 1 && !!src.roughnessMap && src.roughnessMap === src.metalnessMap;
 }
 
 export function createOutfitMaterial(src: THREE.MeshStandardMaterial, dye?: OutfitDye): THREE.MeshStandardNodeMaterial {

@@ -592,6 +592,7 @@ else:
 # ---------- vật liệu: màu, pháp tuyến, ORM (mặt nạ), emissive ----------
 mat = bpy.data.materials.new(ASSET_ID + '_mat')  # noqa: F821
 mat.use_nodes = True
+mat['dtl_outfitMask'] = 1  # đánh dấu rõ: kênh ORM của material này là mặt nạ nhuộm (client: hasOutfitMask), không phải AO/nhám/kim loại
 nt = mat.node_tree
 for n in list(nt.nodes):
     nt.nodes.remove(n)
