@@ -427,6 +427,8 @@ export class EntityManager {
     if (this.hasNpcs) {
       this.npcSkins.preload();
       for (const n of NPCS) {
+        // NPC của level khác (Hứa lão ở Đoạn Mạch) chưa dựng ở Vân Lam; E2-H bật `hasNpcs` cho level đó.
+        if ((n.level ?? 'van_lam') !== levelId) continue;
         const label = makeLabel(t(`npc.${n.id}.name`), '#ffe9a8', t(`npc.${n.id}.title`), '#e8d6a0');
         const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
         marker.scale.set(0.9, 0.9, 1);

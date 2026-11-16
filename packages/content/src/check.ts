@@ -4,9 +4,9 @@ import { existsSync } from 'node:fs';
 
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed } from '@dtl/shared';
-import { LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
-import { LOOT } from './loot';
+import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SWORD_SWAP, validatePose, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed, MAX_TIER, TIER_OPEN, TIER_MUL, PROMOTE_MAT, TIER_MIN_ILVL } from '@dtl/shared';
+import { itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { LOOT, LOOT_MATS } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
 import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS } from '@dtl/shared';
@@ -472,7 +472,7 @@ for (const r of RECIPES) {
 {
   const LOOT_SETS = new Set<string>();
   for (const l of LOOT.values()) for (const r of l.equip ?? []) if (r.set) LOOT_SETS.add(r.set);
-  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow'];
+  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow', 'hoanh_kiem', 'kim_chung', 'moc_linh'];
   const hex = /^#[0-9a-fA-F]{6}$/;
   uniqueIds('set', SETS);
   for (const st of SETS) {
@@ -511,11 +511,43 @@ for (const r of RECIPES) {
     const w = `forge ${f.id}`;
     const out = ITEM.get(f.output);
     if (!out?.set) err(`${w}: thành phẩm phải là món của bộ`);
-    if (!NPC.get(f.npc)?.enhance) err(`${w}: npc phải là thợ (enhance)`);
+    for (const n of [f.npc, ...(f.alsoAt ?? [])]) if (!NPC.get(n)?.enhance) err(`${w}: npc ${n} phải là thợ (enhance)`);
+    if (f.reqLevel !== undefined && f.reqLevel !== (out ? (out.reqLevel ?? 1) : -1)) err(`${w}: reqLevel phải bằng reqLevel của thành phẩm`);
     for (const i of f.inputs) needItem(i.id, w);
     if (f.q.length !== QUALITY_COUNT || f.q.some((x) => !(x >= 0)) || !f.q.some((x) => x > 0)) err(`${w}: q sai`);
     if (f.q[4] > 0 || f.q[3] / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3) err(`${w}: chế tạo không ra Thiên phẩm, Địa phẩm ≤ 30%`);
     if (!(f.ilvl >= 1 && f.ilvl <= 99) || !(f.gold >= 0)) err(`${w}: ilvl/gold sai`);
+  }
+}
+// ---- bậc trang bị và Thăng Bậc (E2-F) ----
+{
+  if (!(TIER_MUL.length === MAX_TIER + 1 && TIER_MUL.every((m, i) => i < 2 || m > TIER_MUL[i - 1]))) err('TIER_MUL phải tăng theo bậc');
+  for (let to = 2; to <= TIER_OPEN; to++) {
+    const mat = PROMOTE_MAT[to];
+    if (!mat || !ITEM.has(mat)) err(`bậc ${to}: thiếu nguyên liệu Thăng Bậc ${mat}`);
+    else if (t(`item.${mat}.name`) !== (GLOSSARY.materials as Record<string, string>)[mat]) err(`${mat}: tên lệch glossary.materials`);
+  }
+  for (const it of ITEMS) {
+    if (!isEquipSlot(it.kind) || it.kind === 'artifact') continue;
+    const tier = itemTier(it.id);
+    if (it.tier !== undefined && !(Number.isInteger(it.tier) && it.tier >= 1 && it.tier <= MAX_TIER)) err(`${it.id}: tier ${it.tier} ngoài [1; ${MAX_TIER}]`);
+    if (tier >= 2 && (it.reqLevel ?? 1) < (TIER_MIN_ILVL[tier] ?? 1) - 1) err(`${it.id}: reqLevel ${it.reqLevel} quá thấp cho bậc ${tier}`);
+    if (tier > TIER_OPEN) err(`${it.id}: bậc ${tier} chưa mở (TIER_OPEN = ${TIER_OPEN})`);
+    if (it.promoteTo) {
+      const to = ITEM.get(it.promoteTo);
+      if (!to) err(`${it.id}: promoteTo không tồn tại ${it.promoteTo}`);
+      else if (to.kind !== it.kind || itemTier(to.id) !== tier + 1) err(`${it.id}: promoteTo ${to.id} phải cùng ô và bậc ${tier + 1}`);
+    }
+    // Mọi món bậc thấp hơn bậc cao nhất đang mở đều phải thăng được.
+    if (tier < TIER_OPEN && !promoteTarget(it.id)) err(`${it.id}: không có đích Thăng Bậc`);
+    if (it.set) for (const o of SETS.find((x) => x.id === it.set)?.pieces ?? []) if (itemTier(o) !== tier) err(`bộ ${it.set}: ${o} khác bậc với ${it.id}`);
+  }
+  for (const r of LOOT_MATS) {
+    for (const d of r.drops) {
+      needItem(d.item, 'loot.$mats');
+      if (!(d.chance > 0 && d.chance <= 1 && d.min >= 1 && d.max >= d.min)) err(`loot.$mats ${d.item}: chance/min/max sai`);
+    }
+    for (const m of r.mons) if (MONSTER.has(m) && !LOOT.has(m)) err(`loot.$mats: quái ${m} chưa có bảng rơi`);
   }
 }
 for (const n of NPCS) {

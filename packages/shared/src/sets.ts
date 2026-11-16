@@ -6,7 +6,7 @@ import type { AffixStat } from './items';
 import { EQUIP_SLOTS, type EquipSlot } from './types';
 
 /** Hiệu ứng combat của bậc cao: server đọc cờ này trong `executeSkill`/`hitMonster`/`damagePlayer`. */
-export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow';
+export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow' | 'hoanh_kiem' | 'kim_chung' | 'moc_linh';
 
 export interface SetLine {
   id: AffixStat;
@@ -67,9 +67,16 @@ export interface SetFx {
   healShare: number;
   /** Đòn bạo kích làm chậm mục tiêu, số giây. 0 = không. */
   critSlowSec: number;
+  /** Bộ bậc 2 (E2-F). Chiêu đích thuộc E2-G: Hoành Kiếm Phá Mạch (`skl_hoanh_kiem_pha_mach`) tăng sát thương (phân số) và tầm (mét). */
+  hoanhKiemPower: number;
+  hoanhKiemReach: number;
+  /** Kim Chung Trấn (`skl_kim_chung_tran`) phản thêm (phân số). */
+  kimChungReflect: number;
+  /** Mộc Linh Trận (`skl_moc_linh_tran`) kéo dài thêm (phân số thời lượng). */
+  mocLinhDur: number;
 }
 
-export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0 };
+export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0, hoanhKiemPower: 0, hoanhKiemReach: 0, kimChungReflect: 0, mocLinhDur: 0 };
 
 /** Đếm món bộ đang mặc theo `setOf(itemId)`; chỉ tính mỗi món một lần (mỗi ô một món nên tự khác nhau). */
 export function setStatuses(sets: readonly SetDef[], wornIds: readonly string[]): SetStatus[] {
@@ -97,6 +104,9 @@ export function setFxOf(statuses: readonly SetStatus[]): SetFx {
         case 'shield_boost': fx.shieldBoost = Math.max(fx.shieldBoost, t.v ?? 0); fx.shieldReflect = Math.max(fx.shieldReflect, t.w ?? 0); break;
         case 'heal_share': fx.healShare = Math.max(fx.healShare, t.v ?? 0); break;
         case 'crit_slow': fx.critSlowSec = Math.max(fx.critSlowSec, t.v ?? 0); break;
+        case 'hoanh_kiem': fx.hoanhKiemPower = Math.max(fx.hoanhKiemPower, t.v ?? 0); fx.hoanhKiemReach = Math.max(fx.hoanhKiemReach, t.w ?? 0); break;
+        case 'kim_chung': fx.kimChungReflect = Math.max(fx.kimChungReflect, t.v ?? 0); break;
+        case 'moc_linh': fx.mocLinhDur = Math.max(fx.mocLinhDur, t.v ?? 0); break;
       }
     }
   }
@@ -117,6 +127,10 @@ export interface ForgeRecipe {
   q: number[];
   inputs: { id: string; n: number }[];
   gold: number;
+  /** Cảnh giới tối thiểu để chế (đồ bậc 2 trở lên). */
+  reqLevel?: number;
+  /** Thợ khác cũng chế được công thức này (Hứa lão ở Đoạn Mạch, Thiết lão ở tông môn). */
+  alsoAt?: string[];
 }
 
 // ---------- phụ kiện hình dáng (hiển thị) ----------
