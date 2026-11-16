@@ -2820,6 +2820,8 @@ export class Game {
     }
     this.updateSoulVis(dt, me);
     for (const disc of this.gateDiscs) {
+      // Cổng gương nguyệt (vành + trụ đá) đứng yên, không lắc và không nhấp nháy như đĩa cổng.
+      if (disc.name === 'moon-gate') continue;
       disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
       (disc.material as THREE.MeshBasicMaterial).opacity = (disc.userData.op ?? 0.55) + Math.sin(now * 0.003) * (disc.userData.op ? disc.userData.op * 0.35 : 0.2);
     }
