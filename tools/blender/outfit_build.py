@@ -7,6 +7,7 @@
 #   palette   { main, sec, trim, accent } hex: bảng màu 3 kênh + màu vân sáng; mặt nạ nhuộm sinh từ texture màu theo bảng này
 #   fitPose   { armDown: độ } tư thế tay thả của thân nền khi căn (khớp tay áo thả của mảnh; mặc định 70)
 #   gain      nhân sáng texture màu (mặc định 1)
+#   files     { <mảnh>: tên tệp } ghi đè raw_<mảnh>_v01.glb (vd ao_ngoai → raw_ao_ngoai_v02.glb)
 #   atlas     cạnh atlas (mặc định 1024); ô theo `cells` (mặc định xếp sẵn cho 6 mảnh)
 #   pieces    { <mảnh>: { fit:{...}, weights, spring:{count,minDist,weight}, hide:bool } } ghi đè mặc định PIECE_DEFAULTS
 #
@@ -188,7 +189,7 @@ def find_image(socket):
 
 
 def load_piece(name):
-    path = os.path.join(SRC, f'raw_{name}_v01.glb')
+    path = os.path.join(SRC, (CFG.get('files') or {}).get(name, f'raw_{name}_v01.glb'))  # files: ghi đè tên tệp mảnh (vd áo ngoài dựng lại v02)
     if not os.path.isfile(path):
         fail(f'thiếu mảnh {path}')  # noqa: F821
     b0 = set(bpy.data.objects)
@@ -202,10 +203,14 @@ def load_piece(name):
     polys = [tuple(p.vertices) for p in m.data.polygons]
     uvl = m.data.uv_layers.active
     loops = [tuple(uvl.data[li].uv) for p in m.data.polygons for li in p.loop_indices]
+    if not m.data.materials or not m.data.materials[0]:
+        fail(f'{name}: {os.path.basename(path)} không có vật liệu/texture (GLB lỗi), xuất lại từ Tripo rồi chạy lại')  # noqa: F821
     mat = m.data.materials[0]
     bsdf = next(n for n in mat.node_tree.nodes if n.type == 'BSDF_PRINCIPLED')
     color = find_image(bsdf.inputs['Base Color'])
     normal = find_image(bsdf.inputs['Normal'])
+    if color is None:  # xuất từ Tripo chưa có texture (Smart Mesh thiếu bước texture): nhập vào sẽ ra mảnh xám trơn, dừng sớm và báo rõ
+        fail(f'{name}: {os.path.basename(path)} không có texture màu (GLB lỗi/chưa texture), xuất lại từ Tripo rồi chạy lại')  # noqa: F821
     return {'name': name, 'verts': verts, 'polys': polys, 'uv': loops, 'color': color, 'normal': normal, 'objs': ob}
 
 

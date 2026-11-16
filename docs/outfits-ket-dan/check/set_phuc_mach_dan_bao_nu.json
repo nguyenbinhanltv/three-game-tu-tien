@@ -1,5 +1,5 @@
 {
-  "outfit": "apps/client/public/assets/set_phuc_mach_dan_bao_nu.cc5ac50439.glb",
+  "outfit": "apps/client/public/assets/set_phuc_mach_dan_bao_nu.a69ec6a706.glb",
   "keep": "head",
   "tol": 0.02,
   "poses": {
@@ -12,32 +12,32 @@
     "chop": {
       "maxDepth": 0.0382,
       "sign": 1,
-      "insideAtWorst": 14,
-      "meanInside": 9.5
+      "insideAtWorst": 16,
+      "meanInside": 10.5
     },
     "arms_down": {
-      "maxDepth": 0.0284,
+      "maxDepth": 0.0372,
+      "sign": -1,
+      "insideAtWorst": 3,
+      "meanInside": 1.5
+    },
+    "crouch": {
+      "maxDepth": 0.0276,
+      "sign": 1,
+      "insideAtWorst": 4,
+      "meanInside": 2.5
+    },
+    "sit": {
+      "maxDepth": 0.0348,
       "sign": -1,
       "insideAtWorst": 2,
       "meanInside": 1.0
     },
-    "crouch": {
-      "maxDepth": 0.0282,
-      "sign": -1,
-      "insideAtWorst": 4,
-      "meanInside": 4.5
-    },
-    "sit": {
-      "maxDepth": 0.022,
-      "sign": -1,
-      "insideAtWorst": 1,
-      "meanInside": 0.5
-    },
     "fall": {
-      "maxDepth": 0.0282,
-      "sign": 1,
-      "insideAtWorst": 1,
-      "meanInside": 0.5
+      "maxDepth": 0.0,
+      "sign": -1,
+      "insideAtWorst": 0,
+      "meanInside": 0.0
     }
   }
 }

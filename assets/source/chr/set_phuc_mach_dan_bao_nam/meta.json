@@ -29,7 +29,10 @@
       "fitPose": {
         "armDown": 70
       },
-      "atlas": 1024
+      "atlas": 1024,
+      "files": {
+        "ao_ngoai": "raw_ao_ngoai_v02.glb"
+      }
     }
   },
   "concept": [
