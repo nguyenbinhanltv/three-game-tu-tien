@@ -1,43 +1,43 @@
 {
-  "outfit": "apps/client/public/assets/set_phuc_mach_dan_bao_nam.34675e9002.glb",
+  "outfit": "apps/client/public/assets/set_phuc_mach_dan_bao_nam.8b30c61228.glb",
   "keep": "head",
   "tol": 0.02,
   "poses": {
     "run": {
-      "maxDepth": 0.1198,
-      "sign": -1,
-      "insideAtWorst": 352,
-      "meanInside": 289.0
+      "maxDepth": 0.0237,
+      "sign": 1,
+      "insideAtWorst": 8,
+      "meanInside": 7.0
     },
     "chop": {
-      "maxDepth": 0.1199,
+      "maxDepth": 0.0399,
       "sign": -1,
-      "insideAtWorst": 574,
-      "meanInside": 463.0
+      "insideAtWorst": 17,
+      "meanInside": 11.5
     },
     "arms_down": {
-      "maxDepth": 0.1198,
+      "maxDepth": 0.0372,
       "sign": -1,
-      "insideAtWorst": 191,
-      "meanInside": 151.0
+      "insideAtWorst": 1,
+      "meanInside": 0.5
     },
     "crouch": {
-      "maxDepth": 0.1198,
+      "maxDepth": 0.039,
       "sign": -1,
-      "insideAtWorst": 347,
-      "meanInside": 344.5
+      "insideAtWorst": 5,
+      "meanInside": 8.0
     },
     "sit": {
-      "maxDepth": 0.12,
-      "sign": 1,
-      "insideAtWorst": 104,
-      "meanInside": 127.0
+      "maxDepth": 0.036,
+      "sign": -1,
+      "insideAtWorst": 1,
+      "meanInside": 0.5
     },
     "fall": {
-      "maxDepth": 0.1198,
-      "sign": 1,
-      "insideAtWorst": 195,
-      "meanInside": 176.0
+      "maxDepth": 0.0385,
+      "sign": -1,
+      "insideAtWorst": 7,
+      "meanInside": 8.5
     }
   }
 }

@@ -29,7 +29,27 @@
       "fitPose": {
         "armDown": 70
       },
-      "atlas": 1024
+      "atlas": 1024,
+      "pieces": {
+        "ao_ngoai": {
+          "fit": {
+            "wscale": 0.82,
+            "bottom": "ankle_z+0.6*(knee_z-ankle_z)"
+          }
+        },
+        "vai_giap": {
+          "fit": {
+            "x": "shoulder_span+0.13"
+          }
+        },
+        "trang_suc_dau": {
+          "fit": {
+            "x": "0.20",
+            "top": "head_z+0.17"
+          }
+        }
+      },
+      "gain": 1.7
     }
   },
   "concept": [

@@ -6,8 +6,8 @@ import type { ItemInst } from './items';
  * Tám ô trang bị (Phase 3-1): pháp kiếm, đạo bào, hộ uyển, vân ngoa, đai lưng, ngọc bội, giới chỉ, pháp bảo phụ.
  * Loại vật phẩm trang bị trùng tên ô (`ItemKind` ⊃ `EquipSlot`).
  */
-export type EquipSlot = 'weapon' | 'robe' | 'bracer' | 'boots' | 'belt' | 'jade' | 'ring' | 'artifact';
-export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'robe', 'bracer', 'boots', 'belt', 'jade', 'ring', 'artifact'];
+export type EquipSlot = 'weapon' | 'robe' | 'bracer' | 'boots' | 'belt' | 'jade' | 'ring' | 'artifact' | 'head';
+export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'robe', 'bracer', 'boots', 'belt', 'jade', 'ring', 'artifact', 'head'];
 export type ItemKind = 'material' | 'consumable' | EquipSlot;
 
 export interface StatBlock {

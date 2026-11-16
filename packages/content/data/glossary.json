@@ -58,7 +58,8 @@
     "belt": "Đai lưng",
     "jade": "Ngọc bội",
     "ring": "Giới chỉ",
-    "artifact": "Pháp bảo phụ"
+    "artifact": "Pháp bảo phụ",
+    "head": "Trang sức đầu"
   },
   "qualities": [
     "Phàm phẩm",
@@ -119,14 +120,17 @@
     "itm_lm_dao_bao": "Liệt Mạch Đạo Bào",
     "itm_lm_ho_uyen": "Liệt Mạch Hộ Uyển",
     "itm_lm_dai_lung": "Liệt Mạch Đai Lưng",
+    "itm_lm_trang_suc": "Liệt Mạch Phát Quan",
     "itm_lm_van_ngoa": "Liệt Mạch Vân Ngoa",
     "itm_dg_dao_bao": "Địa Long Giáp Bào",
     "itm_dg_ho_uyen": "Địa Long Hộ Uyển",
     "itm_dg_dai_lung": "Địa Long Đai Lưng",
+    "itm_dg_trang_suc": "Địa Long Giác Quan",
     "itm_dg_van_ngoa": "Địa Long Chiến Ngoa",
     "itm_pm_dao_bao": "Phục Mạch Đạo Bào",
     "itm_pm_ngoc_boi": "Phục Mạch Ngọc Bội",
     "itm_pm_dai_lung": "Phục Mạch Đai Lưng",
+    "itm_pm_trang_suc": "Phục Mạch Ngọc Trâm",
     "itm_pm_gioi_chi": "Phục Mạch Giới Chỉ",
     "itm_kinh_quang_kiem": "Kính Quang Kiếm",
     "itm_kinh_van_dao_bao": "Kính Vân Đạo Bào",

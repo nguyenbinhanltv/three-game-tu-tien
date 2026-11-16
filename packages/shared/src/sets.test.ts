@@ -65,8 +65,8 @@ describe('mã phụ kiện hiển thị', () => {
   it('một ký tự mỗi ô; món lẻ cũng có; không đồ bộ thì rỗng', () => {
     expect(accessoryCode([SET, S2], {})).toBe('');
     expect(accessoryCode([SET, S2], { robe: { id: 'zzz' } })).toBe('');
-    expect(accessoryCode([SET, S2], { robe: { id: 'a' }, belt: { id: 'x' } })).toBe('01002000');
-    expect(accessoryCode([SET, S2], { robe: { id: 'a' } })).toBe('01000000');
+    expect(accessoryCode([SET, S2], { robe: { id: 'a' }, belt: { id: 'x' } })).toBe('010020000');
+    expect(accessoryCode([SET, S2], { robe: { id: 'a' } })).toBe('010000000');
   });
   it('quá 9 bộ vẫn mã hóa và giải mã đúng (E3-F có 10 bộ)', () => {
     const many: SetDef[] = Array.from({ length: 12 }, (_, i) => ({ ...SET, id: 'm' + i, pieces: ['p' + i] }));

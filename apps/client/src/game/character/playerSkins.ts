@@ -368,6 +368,7 @@ export class PlayerSkins {
         this.dressed.set(pm.geometry, cut);
       }
       if (cut) pm.geometry = cut;
+      pm.userData.noShadow = true; // lưới thân chỉ còn đầu/tay: bóng do lưới áo lo, khỏi thêm một lượt vẽ bóng
       if (!pm.parent) continue;
       for (const part of outfit.parts) {
         const src = part.tpl.meshes.find((m) => (m.userData.lod ?? 0) === lod) ?? part.tpl.meshes[part.tpl.meshes.length - 1];
@@ -380,6 +381,7 @@ export class PlayerSkins {
         if (!geo) continue;
         const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl));
         g.name = `${part.id}_${lod}`;
+        g.userData.outfit = true;
         g.userData.lod = lod;
         g.matrix.copy(pm.matrix);
         g.matrix.decompose(g.position, g.quaternion, g.scale);
@@ -817,6 +819,14 @@ export class SkinnedPlayer extends SkinnedCharacter {
     }
   }
 
+  private hasOutfitMesh(): boolean {
+    let has = false;
+    this.scene.traverse((o) => {
+      if (o.userData.outfit) has = true;
+    });
+    return has;
+  }
+
   /** Bậc phát sáng của kiếm (0/1/2). Cần model có xương kiếm tách riêng; LOD xa tắt. */
   setWeaponGlow(stage: number): void {
     if (stage === this.glowStage) return;
@@ -885,6 +895,13 @@ export class SkinnedPlayer extends SkinnedCharacter {
     // (onLod chạy trong constructor cha, trước khi trường của lớp này được khởi tạo.)
     if (this.bladeHolder) this.bladeHolder.visible = level < 1;
     if (this.scabbardHolder) this.scabbardHolder.visible = level < 1;
+    // Mặc áo: ≥ LOD2 (xa > 55 m) bỏ nốt lưới thân (chỉ còn đầu/tay, vài điểm ảnh): bớt một draw call mỗi người đứng xa.
+    if (level >= 2 && this.hasOutfitMesh()) {
+      this.scene.traverse((o) => {
+        const m = o as THREE.SkinnedMesh;
+        if (m.isSkinnedMesh && !m.userData.outfit) m.visible = false;
+      });
+    }
   }
 
   /** Đòn không có động tác riêng (clip `attack` của asset); động tác chiêu tự đếm trong `perform`. */

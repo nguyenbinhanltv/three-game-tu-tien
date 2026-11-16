@@ -29,6 +29,12 @@ Shader (`render/materials/outfit.ts`): nhuộm 3 kênh (`createOutfitMaterial(sr
 - **Vỏ lưng**: `prop_vo_kiem_liet_mach` (`orient_scabbard.py`: miệng vỏ Y = 0, đỉnh vỏ +Y), dùng chung tạm cho mọi kiếm (`SCABBARD_DEFAULT`). Khi mặc áo bộ mô-đun và có kiếm riêng, vỏ gắn lưng (hệ xương lưng × chỗ kiếm lúc tra, miệng ở gốc lưỡi, dài hơn lưỡi 3%) và ở lại lưng kể cả khi rút kiếm. Vỏ nướng sẵn trong lưới nhân vật bị ẩn cùng thân khi mặc áo (mặt nạ `dressedIndex`).
 - **Chưa làm (T-1)**: nhân vật không mặc áo bộ vẫn mang vỏ nướng sẵn trong lưới (kiếm "thứ hai" khi rút); LOD1/2 vẫn dùng kiếm nướng sẵn (xương `dtl_sword`).
 
+## Cập nhật đợt sửa (review orchestrator)
+- Đã code, **chưa chụp lại ma trận cuối**: `armFix` (tay áo rộng lấy trọng số theo xương cánh tay, sửa Địa Long méo khi chém), hàn đỉnh + pháp tuyến mượt (hết nhàu như giấy vò), nhân sáng texture Địa Long (`gain`), thu nhỏ giáp/vai/mão Địa Long theo thân (nữ `wscale` 0,72), giảm normal map, `outfit_check --range 0.04`, ảnh kiếm +0/+7/+10 (`kiem_liet_mach_0_7_10.jpg`, hàng trên đeo lưng, hàng dưới cầm tay).
+- **Ô trang bị thứ 9 `head` (Trang sức đầu)**: `EquipSlot` + `slots.json` (`drop: false`: chỉ chế ở lò rèn, không rơi ngẫu nhiên, không đổi cân bằng), 3 món `itm_{lm,dg,pm}_trang_suc` vào bộ Kết Đan (5 món/bộ, hiệu ứng 2/4 món không đổi), công thức lò rèn, i18n/glossary, bảng nhân vật (ô thứ 5 bên trái). Chưa có icon riêng (emoji dự phòng 👑), chưa thăng bậc được, **chưa có công tắc ẩn/hiện** (mão là một phần lưới bộ gộp nên không tách riêng được; cần dựng bản không mão hoặc tách mảnh).
+- Draw call: một lưới bộ mỗi LOD (đã gộp); lưới thân không đổ bóng, bỏ lưới thân ở LOD2. Đo sân 50 người trước khi bỏ bóng thân: 288–296 (< 300). **Chưa đo lại** sau thay đổi cuối.
+- **Việc còn dở**: chụp lại ma trận 6 tổ hợp + đo lại `bench:crowd`, kiểm ảnh Địa Long chém sau `armFix`, rồi xóa dòng "ảnh cũ" này. Voan alpha và atlas 2K lười để PR sau.
+
 ## Chưa làm / giới hạn
 
 - **Ô trang sức đầu (ô 9)**: chưa có ô dữ liệu, server, UI. Tạm: trang sức đầu là một mảnh trong lưới bộ nên hiện cùng áo khi mặc bộ (≥ 2 món). **TODO ô 9**: thêm `EquipSlot` `head`, vật phẩm trang sức đầu mỗi bộ, ẩn/hiện ở UI, ledger khi tạo vật phẩm.

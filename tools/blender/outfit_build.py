@@ -6,6 +6,7 @@
 #   dir       thư mục mảnh: chr/<bộ>/tripo (tương đối DTL_ASSET_SOURCE), tên tệp raw_<mảnh>_v01.glb
 #   palette   { main, sec, trim, accent } hex: bảng màu 3 kênh + màu vân sáng; mặt nạ nhuộm sinh từ texture màu theo bảng này
 #   fitPose   { armDown: độ } tư thế tay thả của thân nền khi căn (khớp tay áo thả của mảnh; mặc định 70)
+#   gain      nhân sáng texture màu (mặc định 1)
 #   atlas     cạnh atlas (mặc định 1024); ô theo `cells` (mặc định xếp sẵn cho 6 mảnh)
 #   pieces    { <mảnh>: { fit:{...}, weights, spring:{count,minDist,weight}, hide:bool } } ghi đè mặc định PIECE_DEFAULTS
 #
@@ -48,7 +49,7 @@ CELLS = CFG.get('cells') or {
 # Mặc định theo mảnh. fit: biểu thức theo mốc; weights: transfer | head; islands: trọng số trung bình theo đảo; spring: xương lò xo tự động.
 PIECE_DEFAULTS = {
     'ao_ngoai': {'fit': {'top': 'neck_z+0.05', 'bottom': 'ankle_z+0.5*(knee_z-ankle_z)', 'cy': 'y_spine1', 'alignZ': 'top'},
-                 'weights': 'transfer', 'legBlend': 0.4, 'spring': {'count': 8, 'minDist': 0.05, 'weight': 0.8}},
+                 'weights': 'transfer', 'armFix': 0.17, 'legBlend': 0.4, 'spring': {'count': 8, 'minDist': 0.05, 'weight': 0.8}},
     'lop_duoi': {'fit': {'top': 'hip_z+0.12', 'bottom': 'ankle_z+0.05', 'cy': 'y_hips', 'alignZ': 'top'},
                  'weights': 'transfer', 'legBlend': 0.5, 'spring': {'count': 4, 'minDist': 0.04, 'weight': 0.6}},
     'vai_giap': {'fit': {'x': 'shoulder_span+0.24', 'cy': 'y_spine2', 'cz': 'shoulder_z+0.03'}, 'weights': 'transfer', 'islands': True},
@@ -246,6 +247,8 @@ def fit(verts, spec):
         sz = ev(spec['z']) / ext.z
     s0 = next(s for s in (sz, sx, sy, 1.0) if s is not None)
     sx, sy, sz = (sx or s0), (sy or s0), (sz or s0)
+    w = float(spec.get('wscale', 1.0))  # thu/phóng bề ngang và bề sâu riêng (giáp phình quá so với thân nữ)
+    sx, sy = sx * w, sy * w
     az = spec.get('alignZ', 'center')
     cx = ev(spec.get('cx', 0.0))
     cy = ev(spec['cy']) if 'cy' in spec else None
@@ -306,6 +309,35 @@ def islands(npoly, polys):
     for v, i in owner.items():
         comp.setdefault(find(i), []).append(v)
     return list(comp.values())
+
+
+def arm_fix(points, infl, radius):
+    """Ống tay áo rộng (giáp Địa Long) bị Tripo/thân nền gán theo sườn thân → khi giơ tay thành "cánh" méo. Đỉnh gần đoạn xương tay hơn thân
+    (trong tư thế tay thả) lấy trọng số theo khoảng cách tới cánh tay trên/cẳng tay cùng bên."""
+    def seg(a, b):
+        return (P.matrix_world @ P.pose.bones[by_key[a]].head, P.matrix_world @ P.pose.bones[by_key[b]].head)
+
+    def dist(p, s):
+        a, b = s
+        ab = b - a
+        t = min(1.0, max(0.0, (p - a).dot(ab) / ab.length_squared))
+        return (p - (a + ab * t)).length
+    spine = [seg('spine', 'spine1'), seg('spine1', 'spine2'), seg('spine2', 'neck')]
+    arms = {}
+    for side in ('left', 'right'):
+        arms[side] = (seg(side + 'arm', side + 'forearm'), seg(side + 'forearm', side + 'hand'))
+    moved = 0
+    for i, p in enumerate(points):
+        side = 'left' if p.x > 0 else 'right'
+        du, df = dist(p, arms[side][0]), dist(p, arms[side][1])
+        da = min(du, df)
+        if da > radius or da >= min(dist(p, s) for s in spine) or p.z > LM['shoulder_z'] + 0.02:
+            continue
+        wu, wf = 1.0 / (du * du + 1e-4), 1.0 / (df * df + 1e-4)
+        t = wu + wf
+        infl[i] = {by_key[side + 'arm']: wu / t, by_key[side + 'forearm']: wf / t}
+        moved += 1
+    return moved
 
 
 def smooth_w(infl, polys, iters):
@@ -384,6 +416,8 @@ for name in ORDER:
         infl = [{hb: 1.0} for _ in pts]
     else:
         infl = transfer(pts)
+        if d.get('armFix'):
+            report_pieces.setdefault('armFix', {})[name] = arm_fix(pts, infl, float(d['armFix']))
         if d.get('legBlend'):
             leg_blend(pts, infl, float(d['legBlend']))
         smooth_w(infl, pc['polys'], int(d.get('smooth', 2)))
@@ -436,6 +470,17 @@ for name in ORDER:
                 par = next(s[1] for s in SPRING if s[0] == n)
                 wb[par] = wb.get(par, 0.0) + x
         rest.append(unpose(p, wb))
+    # Hàn đỉnh trùng vị trí (importer glTF tách đỉnh theo UV/pháp tuyến): pháp tuyến mượt xuyên đường nối, hết vẻ nhàu như giấy vò.
+    canon, remap, vv, ww = {}, [], [], []
+    for i, p in enumerate(rest):
+        k = (round(p.x * 1e4), round(p.y * 1e4), round(p.z * 1e4))
+        if k not in canon:
+            canon[k] = len(vv)
+            vv.append(p)
+            ww.append(infl[i])
+        remap.append(canon[k])
+    rest, infl = vv, ww
+    pc['polys'] = [tuple(remap[i] for i in p) for p in pc['polys']]
     off = len(MERGED['verts'])
     cell = CELLS[name]
     for (u, v) in pc['uv']:
@@ -488,6 +533,9 @@ def lin_hex(hx):
 pal = CFG.get('palette') or {}
 cols = [lin_hex(pal.get(k, '#808080')) for k in ('main', 'sec', 'trim')]
 acc = lin_hex(pal.get('accent', '#E8A33D'))
+GAIN = float(CFG.get('gain', 1.0))  # nâng sáng texture (bộ sẫm như Địa Long)
+if GAIN != 1.0:
+    atlas_c[..., :3] = np.clip(atlas_c[..., :3] * GAIN, 0, 1)
 rgb = atlas_c[..., :3]
 # So sánh theo sRGB gần đúng (căn bậc ~2,2) cho khoảng cách mang tính thị giác
 def sr(a):
@@ -558,6 +606,8 @@ for p in MERGED['polys']:
     for lp in f.loops:
         lp[uvl].uv = MERGED['uv'][k]
         k += 1
+for f in bm.faces:
+    f.smooth = True
 bm.normal_update()
 bm.to_mesh(me)
 bm.free()

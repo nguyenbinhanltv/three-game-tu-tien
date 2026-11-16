@@ -5,7 +5,7 @@
 #
 #   blender --background --factory-startup --python tools/blender/outfit_check.py -- \
 #       --player assets/build/raw/chr_kiem_tu_nam.glb --outfit apps/client/public/assets/<mảnh>.<hash>.glb \
-#       [--poses run,chop,arms_down,crouch,sit,fall] [--keep kept|head|all] [--tol 0.02] [--out bao-cao.json]
+#       [--poses run,chop,arms_down,crouch,sit,fall] [--keep kept|head|all] [--tol 0.02] [--range 0.04] [--out bao-cao.json]
 #
 # Mỗi tư thế là một nhóm góc quay quanh trục thế giới (đổi sang trục xương q = M⁻¹·R·M như anim_biped_extra.py), chạy ở cả hai chiều
 # dấu để khỏi phụ thuộc quy ước trục. Thoát mã 1 nếu độ sâu lớn nhất ở tư thế nào vượt --tol (mét, mặc định 0,02). Không thay ảnh trong game.
@@ -32,7 +32,7 @@ if not (PLAYER and OUTFIT):
 KEEP = arg('--keep', 'kept')
 TOL = float(arg('--tol', '0.02'))
 WANT = [c for c in (arg('--poses', '') or '').split(',') if c]
-RANGE = 0.12
+RANGE = float(arg('--range', '0.04'))  # chỉ tính đỉnh áo chui sâu ≤ ngần này vào thân nền (xa hơn là nhiễu pháp tuyến lưới mỏng)
 
 
 def key(n):

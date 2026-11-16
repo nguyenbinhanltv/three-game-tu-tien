@@ -36,8 +36,8 @@ export function createOutfitMaterial(src: THREE.MeshStandardMaterial, dye?: Outf
     name: src.name,
     map: src.map,
     normalMap: src.normalMap,
-    normalScale: src.normalScale,
-    roughness: 0.84,
+    normalScale: new THREE.Vector2(0.5, 0.5), // pháp tuyến bake của Tripo nhiễu: giữ nếp lớn, giảm hạt
+    roughness: 0.9,
     metalness: 0,
     side: THREE.DoubleSide, // áo là các tấm vỏ mỏng (vạt, tay áo): không cull mặt sau
   });
@@ -56,7 +56,7 @@ export function createOutfitMaterial(src: THREE.MeshStandardMaterial, dye?: Outf
   }
   m.colorNode = vec4(color, materialColor.a);
   m.metalnessNode = mask.z.mul(0.6);
-  m.roughnessNode = mix(float(0.84), float(0.4), mask.z);
+  m.roughnessNode = mix(float(0.9), float(0.45), mask.z);
   rimLight(m);
   const rim = m.emissiveNode as unknown as ReturnType<typeof vec3>;
   m.emissiveNode = src.emissiveMap ? rim.add(texture(src.emissiveMap, uv()).rgb.mul(outfitGlow)) : rim;
