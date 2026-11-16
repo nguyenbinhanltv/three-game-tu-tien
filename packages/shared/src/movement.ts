@@ -1,4 +1,5 @@
 import { FLY_UNLOCK_LEVEL, TRUC_CO_LEVEL } from './formulas';
+import { SKY_ALT, SKY_SPEED_MUL, SOUL_ALT, SOUL_UNLOCK_LEVEL } from './soul';
 import { type Terrain, VAN_LAM } from './terrain';
 
 /** Bước mô phỏng cố định, dùng chung cho dự đoán ở client và xử lý ở server. */
@@ -24,9 +25,11 @@ export function canFlyAt(level: number, mp: number, x: number, y: number, z: num
   return mp >= 1 || freeFlight(level, x, y, z, terrain);
 }
 
-/** Bay miễn linh lực: từ Trúc Cơ, cách mặt đất không quá `TRUC_CO_FREE_FLY_ALT`. */
+/** Bay miễn linh lực: từ Trúc Cơ dưới `TRUC_CO_FREE_FLY_ALT`; từ Nguyên Anh (ngự không, E3-K) dưới `SKY_ALT` so với mặt đất. */
 export function freeFlight(level: number, x: number, y: number, z: number, terrain: Terrain = VAN_LAM): boolean {
-  return level >= TRUC_CO_LEVEL && y - terrain.groundAt(x, z) <= TRUC_CO_FREE_FLY_ALT;
+  if (level < TRUC_CO_LEVEL) return false;
+  const alt = level >= SOUL_UNLOCK_LEVEL ? SKY_ALT : TRUC_CO_FREE_FLY_ALT;
+  return y - terrain.groundAt(x, z) <= alt;
 }
 
 export interface MoveState {
@@ -66,6 +69,13 @@ export interface MoveCtx {
   terrain?: Terrain;
   /** Vách hang của phó bản (E2-C, `DungeonDef.bound`): đẩy ngược về trong vòng tròn này mỗi bước, cả khi bay; client và server cùng truyền. */
   bound?: { x: number; z: number; r: number };
+  /** Từ Nguyên Anh (ngự không): bay trong `SKY_ALT` so với mặt đất thì chậm hơn ngự kiếm `1 - SKY_SPEED_MUL`. */
+  sky?: boolean;
+  /**
+   * Nguyên anh xuất khiếu (E3-K): bay tự do, xuyên kiến trúc (không xuyên vách địa hình/ranh vùng chơi),
+   * không ra xa thân xác `(x,z)` quá `r` và không cao quá `SOUL_ALT` so với mặt đất. Bỏ qua `canFly`.
+   */
+  ghost?: { x: number; z: number; r: number };
 }
 
 /** Vách hang của level (phó bản có `DungeonDef.bound`) để truyền vào `MoveCtx.bound`. */
@@ -86,7 +96,7 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     mz /= len;
   }
 
-  const wantFly = (i.f & IN_FLY) !== 0 && ctx.canFly && !ctx.frozen;
+  const wantFly = (ctx.ghost !== undefined || ((i.f & IN_FLY) !== 0 && ctx.canFly)) && !ctx.frozen;
   if (wantFly && !s.flying) {
     s.flying = true;
     s.grounded = false;
@@ -103,7 +113,8 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   // Hướng tiến = (-sin, -cos); hướng phải = (cos, -sin).
   const dirX = -sin * mz + cos * mx;
   const dirZ = -cos * mz - sin * mx;
-  const speed = (s.flying ? FLY_SPEED : RUN_SPEED) * ctx.speedMul;
+  const sky = s.flying && ctx.sky === true && ctx.ghost === undefined && s.y - groundAt(s.x, s.z) <= SKY_ALT + 0.5;
+  const speed = (s.flying ? FLY_SPEED * (sky ? SKY_SPEED_MUL : 1) : RUN_SPEED) * ctx.speedMul;
 
   const px = s.x;
   const pz = s.z;
@@ -111,7 +122,7 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   s.z += dirZ * speed * dt;
 
   // Va chạm với kiến trúc (chỉ khi ở gần mặt đất).
-  const colliders = terrain.colliders;
+  const colliders = ctx.ghost ? [] : terrain.colliders;
   for (let c = 0; c < colliders.length; c++) {
     const col = colliders[c];
     const dx = s.x - col.x;
@@ -157,6 +168,17 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     }
   }
 
+  const gh = ctx.ghost;
+  if (gh) {
+    const dx = s.x - gh.x;
+    const dz = s.z - gh.z;
+    const d = Math.sqrt(dx * dx + dz * dz);
+    if (d > gh.r) {
+      s.x = gh.x + (dx * gh.r) / d;
+      s.z = gh.z + (dz * gh.r) / d;
+    }
+  }
+
   let ground = groundAt(s.x, s.z);
 
   // Level đảo nổi (E3-N): đi bộ không leo được bậc cao đột ngột (thành cầu xích, vách đảo): chặn bước đó.
@@ -173,6 +195,7 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     s.y += vy * dt;
     if (s.y < ground + FLY_MIN_CLEAR) s.y = ground + FLY_MIN_CLEAR;
     if (s.y > FLY_MAX_ALT) s.y = FLY_MAX_ALT;
+    if (gh && s.y > ground + SOUL_ALT) s.y = ground + SOUL_ALT;
     s.grounded = false;
     return;
   }

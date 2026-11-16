@@ -27,7 +27,7 @@ export const MAX_TIER = 4;
 /** Hệ số nhân dòng chính theo bậc (khớp `REALM_MUL` để phần trang bị trong sức mạnh tổng giữ ~30%). Chỉ số 0 không dùng. */
 export const TIER_MUL: readonly number[] = [1, 1, 1.6, 2.5, 3.8];
 /** Bậc cao nhất đang chơi được; bậc trên có dữ liệu nhưng bị khóa (Thăng Bậc từ chối). */
-export const TIER_OPEN = 2;
+export const TIER_OPEN = 3;
 /** Số lỗ khảm tối đa của bậc ≥ 3. */
 export const MAX_SOCKETS = 3;
 

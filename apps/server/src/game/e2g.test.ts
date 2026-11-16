@@ -454,3 +454,46 @@ describe('E2-G: hiệu ứng 4 món của bộ bậc 2 (E2-F) nối vào chiêu'
     expect(run(0.5)).toBeGreaterThan(run(0) + 100);
   });
 });
+
+describe('E3-F: hiệu ứng 4 món của bộ bậc 3 nối vào chiêu', () => {
+  it('Nghịch Kiếm Chuyển Phong hoàn nghichKiemRefund hồi chiêu khi hạ được mục tiêu, không hạ thì không hoàn', () => {
+    const remain = (refund: number, hp: number) => {
+      const { sim, p, mon, fresh } = setup('lac_kiem_quyet', 22);
+      p.s.yaw = Math.PI / 2;
+      p.char.stats.setFx.nghichKiemRefund = refund;
+      mon(X + 3, Z, hp);
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_nghich_kiem_chuyen_phong' });
+      return (p.cds.get('skl_nghich_kiem_chuyen_phong') ?? 0) - sim.now;
+    };
+    const full = remain(0, 1);
+    expect(full).toBeGreaterThan(1000);
+    expect(remain(0.4, 1)).toBeCloseTo(full * 0.6, -1);
+    expect(remain(0.4, 1_000_000)).toBeCloseTo(full, -1);
+  });
+  it('Dịch Sơn Xung choáng thêm dichSonStun giây (gốc không choáng)', () => {
+    const stunned = (extra: number) => {
+      const { sim, p, mon, fresh } = setup('bat_dong_kim_than', 22);
+      p.s.yaw = Math.PI / 2;
+      p.char.stats.setFx.dichSonStun = extra;
+      const a = mon(X + 6, Z);
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_dich_son_xung', t: a.id });
+      return a.stunUntil - sim.now;
+    };
+    expect(stunned(0)).toBeLessThanOrEqual(0);
+    expect(stunned(0.5)).toBeGreaterThan(0);
+  });
+  it('Ngưng Đan Hộ Thế khiên mạnh thêm ngungDanBoost', () => {
+    const shield = (boost: number) => {
+      const { sim, p, fresh } = setup('thanh_moc_dan_kinh', 20);
+      p.char.stats.setFx.ngungDanBoost = boost;
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_ngung_dan_ho_the' });
+      return p.shield?.amount ?? 0;
+    };
+    const base = shield(0);
+    expect(base).toBeGreaterThan(0);
+    expect(shield(0.05)).toBe(Math.round(base * 1.05));
+  });
+});

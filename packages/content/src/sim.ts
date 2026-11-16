@@ -2,7 +2,7 @@
 // Tính cả máu mất mỗi lần giết (đứng yên, không né vùng) và thời gian đả tọa hồi lại.
 // Chạy: pnpm sim:progress
 
-import { levelSpawns, type MonsterDef, type Quality, type SkillDef } from '@dtl/shared';
+import { combatPower, levelSpawns, TIER_MIN_ILVL, type MonsterDef, type Quality, type SkillDef } from '@dtl/shared';
 import {
   BOTTLENECK_LEVELS,
   promoteGold,
@@ -369,6 +369,44 @@ console.log(
     });
   }
 
+  // E3-F: cùng quái cùng khuôn, người chơi mặc trọn 8 ô đồ thường Huyền phẩm của từng bậc (ilvl đầu chương): TTK, máu mất và lực chiến.
+  console.log('\nTrang bị theo bậc (bộ 7 món thường Huyền phẩm, trung bình 40 lần roll) so với không đồ, quái cùng khuôn ở cấp L:');
+  console.log('cấp  bậc  lực chiến (không đồ → có đồ)  atk    def    hp     TTK Kiếm/Hộ/Đan         mất/lần Kiếm/Hộ/Đan');
+  const gearRows: { level: number; tier: number; power: number }[] = [];
+  for (const [l, tier] of [[13, 1], [17, 2], [19, 2], [21, 3], [23, 3]] as const) {
+    const slots = droppableSlots(ITEM_SYS, ITEMS);
+    const ilvl = TIER_MIN_ILVL[tier] > 1 ? Math.max(TIER_MIN_ILVL[tier], 1) : l;
+    const RUNS = 40;
+    const acc = { atk: 0, def: 0, hp: 0, mp: 0 };
+    for (let run = 0; run < RUNS; run++) {
+      const rng = seededRng(2000 + run);
+      const worn = slots.map((sl) => {
+        const tpl = ITEMS.filter((i) => i.kind === sl && !i.set && (i.tier ?? 1) === tier && (i.reqLevel ?? 1) <= l)[0] ?? templatesFor(ITEMS, sl, l)[0];
+        return { item: { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, Math.min(ilvl, l + 1), 2, rng, tpl.tier) } };
+      });
+      const st = computePlayerStats(l, worn);
+      acc.atk += st.atk; acc.def += st.def; acc.hp += st.hp; acc.mp += st.mp;
+    }
+    const g = { atk: acc.atk / RUNS, def: acc.def / RUNS, hp: acc.hp / RUNS, mp: acc.mp / RUNS };
+    const base = playerBaseStats(l);
+    const p0 = combatPower(base);
+    const p1 = combatPower(g);
+    gearRows.push({ level: l, tier, power: p1 });
+    const ms = monsterStats(l, refDef.hpMul, refDef.atkMul);
+    const sk = seekModel(refDef.id);
+    const ttks = METHOD_IDS.map((id) => ms.hp / playerDps(l, g.atk, ms.def, id, refDef.elem));
+    const losts = METHOD_IDS.map((id, i) => Math.max(0, monsterDps(refDef, ms.atk, g.def) * ttks[i] * PULL_FACTOR - selfSustain(l, id) * g.hp * (ttks[i] + sk.seek)) / g.hp);
+    console.log(`${String(l).padEnd(4)} ${String(tier).padEnd(4)} ${String(p0).padStart(7)} → ${String(p1).padStart(7)} (${(p1 / p0).toFixed(2)}×)   ${g.atk.toFixed(0).padStart(5)} ${g.def.toFixed(0).padStart(6)} ${g.hp.toFixed(0).padStart(6)}  ${ttks.map((x) => x.toFixed(1).padStart(5) + 's').join(' ')}   ${losts.map((x) => pct(x).padStart(5)).join(' ')}`);
+    for (const x of ttks) if (x < 2.5 || x > 8.5) { console.error(`LỖI: cấp ${l} đồ bậc ${tier} TTK ${x.toFixed(1)}s ngoài 2,5–8,5 s`); process.exitCode = 1; }
+    if (p1 / p0 > 3.2 || p1 / p0 < 1.1) { console.error(`LỖI: cấp ${l} đồ bậc ${tier} đổi lực chiến ×${(p1 / p0).toFixed(2)}, ngoài 1,1–3,2`); process.exitCode = 1; }
+  }
+  // Bậc cao phải mạnh hơn bậc thấp ở cùng cấp (cấp 19: bậc 2 vs bậc 3 qua `gearRows` kế nhau; mỗi bậc tăng lực chiến so với bậc trước).
+  for (const t of [2, 3]) {
+    const lo = Math.max(...gearRows.filter((r) => r.tier === t - 1).map((r) => r.power));
+    const hi = Math.min(...gearRows.filter((r) => r.tier === t).map((r) => r.power));
+    if (!(hi > lo)) { console.error(`LỖI: lực chiến đồ bậc ${t} (${hi}) không vượt bậc ${t - 1} (${lo})`); process.exitCode = 1; }
+  }
+
   // Giờ theo nguồn tu vi ĐANG CÓ: chỉ quái Vân Lam (cấp ≤ 15, `xpLevelFactor` hạ dần tới 0,1 khi chênh ≥ 8 cấp), nhiệm vụ hiện có,
   // đả tọa, thử thách tâm ma ở bình cảnh. Chưa có phó bản, tinh anh/boss, quái cấp 16+ của E-2/E-3/E-4, nên chặng mới KHÔNG đạt nhịp
   // 4/6/8 giờ cho tới khi nội dung đó vào: đây là số liệu thông tin, không phải cờ LỖI.
@@ -637,22 +675,25 @@ for (const [id, lv] of [['itm_thiet_kiem', 4], ['itm_thanh_phong_kiem', 8], ['it
   if (f(9, true) / inc < 2 || f(9, true) / inc > 7) { console.error(`LỖI: ${id} +9 (Hộ Phù) tốn ${h(f(9, true))} thu nhập, ngoài 2–7 giờ`); process.exitCode = 1; }
   if (f(10, true) / inc > 14) { console.error(`LỖI: ${id} +10 (Hộ Phù) tốn ${h(f(10, true))} thu nhập (quá đắt)`); process.exitCode = 1; }
 }
-{
-  // Chương 2 (bậc 2, E2-F): hố tiêu của người cầu toàn so với thu nhập theo thiết kế (`docs/EXPANSION_DESIGN.md` 7.5).
-  // Quái Đoạn Mạch chưa nằm trong sim nên thu nhập lấy theo `TIER_INCOME_HOUR` (6.000/giờ ở cấp 17) × 4 giờ chương, cộng ~20% bán đồ rơi.
-  const income = 4 * TIER_INCOME_HOUR[2] * 1.2;
-  const t2 = ITEMS.filter((i) => i.tier === 2 && !i.set && i.kind !== 'weapon' || i.id === 'itm_liet_mach_kiem');
-  const promote = t2.length * promoteGold(2);
+// Chương 2 (bậc 2, E2-F) và chương 3 (bậc 3, E3-F): hố tiêu của người cầu toàn so với thu nhập theo thiết kế (`docs/EXPANSION_DESIGN.md` 7.5).
+// Quái bản đồ 2/3 chưa nằm trong sim nên thu nhập lấy theo `TIER_INCOME_HOUR` (6.000 / 7.400 một giờ) × số giờ chương (4 / 6), cộng ~20% bán đồ rơi.
+for (const [tier, hours, pre, four] of [
+  [2, 4, 'frg_lm_', ['itm_liet_mach_kiem', 'itm_mach_van_dao_bao', 'itm_sa_thach_ho_uyen', 'itm_kho_ha_van_ngoa']],
+  [3, 6, 'frg_kq_', ['itm_kinh_quang_kiem', 'itm_kinh_van_dao_bao', 'itm_luu_ly_ho_uyen', 'itm_phu_van_ngoa']],
+] as const) {
+  const income = hours * TIER_INCOME_HOUR[tier] * 1.2;
+  const plain = ITEMS.filter((i) => i.tier === tier && !i.set);
+  const promote = plain.length * promoteGold(tier);
   const price = (id: string) => Math.max(ITEM.get(id)!.price, ITEM.get(id)!.sell * 3);
   // Cường hóa +5 cho bốn ô (kiếm, đạo bào, hộ uyển, ủng).
-  const enh = ['itm_liet_mach_kiem', 'itm_mach_van_dao_bao', 'itm_sa_thach_ho_uyen', 'itm_kho_ha_van_ngoa'].reduce((n, id) => n + enhanceExpect(5, price(id), false), 0);
-  const forge = FORGE.filter((f) => f.id.startsWith('frg_lm_')).reduce((n, f) => n + f.gold, 0);
+  const enh = four.reduce((n, id) => n + enhanceExpect(5, price(id), false), 0);
+  const forge = FORGE.filter((f) => f.id.startsWith(pre)).reduce((n, f) => n + f.gold, 0);
   const sink = promote + enh + forge;
   console.log(
     `
-Chương 2 (bậc 2): thu nhập ~${income.toFixed(0)} (4 giờ) | hố tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${t2.length} ô ${promote} + cường hóa +5 bốn ô ${enh.toFixed(0)} + chế một bộ ${forge} (${(sink / income).toFixed(2)}× thu nhập)`,
+Chương ${tier} (bậc ${tier}): thu nhập ~${income.toFixed(0)} (${hours} giờ) | hố tiêu cầu toàn ${sink.toFixed(0)} = Thăng Bậc ${plain.length} ô ${promote} + cường hóa +5 bốn ô ${enh.toFixed(0)} + chế một bộ ${forge} (${(sink / income).toFixed(2)}× thu nhập)`,
   );
-  if (sink / income < 1 || sink / income > 2.5) { console.error(`LỖI: hố tiêu chương 2 gấp ${(sink / income).toFixed(2)} lần thu nhập, ngoài 1–2,5 (lạm phát hoặc quá đắt)`); process.exitCode = 1; }
+  if (sink / income < 1 || sink / income > 2.5) { console.error(`LỖI: hố tiêu chương ${tier} gấp ${(sink / income).toFixed(2)} lần thu nhập, ngoài 1–2,5 (lạm phát hoặc quá đắt)`); process.exitCode = 1; }
 }
 {
   // Nguồn/tiêu tới viên mãn tầng 15 (một mình).

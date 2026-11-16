@@ -60,6 +60,7 @@ import poseThienKiemVuJson from '../data/poses/thien_kiem_vu.json';
 import poseHoiNguyenJson from '../data/poses/hoi_nguyen.json';
 import poseLoiDinhJson from '../data/poses/loi_dinh.json';
 import poseNguKiemJson from '../data/poses/ngu_kiem.json';
+import poseNguKhongJson from '../data/poses/ngu_khong.json';
 import poseNiemChuJson from '../data/poses/niem_chu.json';
 import poseTamThienJson from '../data/poses/tam_thien.json';
 import poseRutKiemJson from '../data/poses/rut_kiem.json';
@@ -150,7 +151,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
 export const ROOTS = rootsJson as RootDef[];
 export const GLOSSARY = glossaryJson;
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
-export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNiemChuJson, poseTamThienJson, poseRutKiemJson, poseTraKiemJson, poseKiemAnhJson, poseVanKiemJson, poseTranSonJson, poseKimCuongJson, poseXuanPhongJson, poseHoiThienJson, posePhiKiem2Json, posePhiKiem3Json, posePhiKiemHpJson, posePhiKiem2HpJson, posePhiKiem3HpJson, posePhiKiemDsJson, posePhiKiem2DsJson, posePhiKiem3DsJson, poseKiemKhiTramHpJson, poseKiemKhiTramDsJson, poseHoanhKiemJson, poseThuanDiTramJson, poseThienKiemHoaHinhJson, poseThietQuyenJson, poseDanHoaJson, poseKiemVuJson, poseKiemDanJson, posePhanAnhKiemAnhJson, poseKimChungJson, poseSonNhacJson, poseAnhThietThanJson, poseThuanDiHoTheJson, poseThienKimPhapTuongJson, poseMocLinhJson, poseDuocVuJson, poseNgungDanJson, poseAnhDuocHoaThanJson, poseThuanDiCuuVienJson, poseThienDanPhapGioiJson] as unknown as PoseDef[];
+export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNguKhongJson, poseNiemChuJson, poseTamThienJson, poseRutKiemJson, poseTraKiemJson, poseKiemAnhJson, poseVanKiemJson, poseTranSonJson, poseKimCuongJson, poseXuanPhongJson, poseHoiThienJson, posePhiKiem2Json, posePhiKiem3Json, posePhiKiemHpJson, posePhiKiem2HpJson, posePhiKiem3HpJson, posePhiKiemDsJson, posePhiKiem2DsJson, posePhiKiem3DsJson, poseKiemKhiTramHpJson, poseKiemKhiTramDsJson, poseHoanhKiemJson, poseThuanDiTramJson, poseThienKiemHoaHinhJson, poseThietQuyenJson, poseDanHoaJson, poseKiemVuJson, poseKiemDanJson, posePhanAnhKiemAnhJson, poseKimChungJson, poseSonNhacJson, poseAnhThietThanJson, poseThuanDiHoTheJson, poseThienKimPhapTuongJson, poseMocLinhJson, poseDuocVuJson, poseNgungDanJson, poseAnhDuocHoaThanJson, poseThuanDiCuuVienJson, poseThienDanPhapGioiJson] as unknown as PoseDef[];
 
 function index<T extends { id: string }>(list: T[]): Map<string, T> {
   const m = new Map<string, T>();
