@@ -122,6 +122,10 @@ describe('thần thức', () => {
     advance(SPIRIT_CHANNEL_MS + 400);
     expect(scans()).toHaveLength(0);
     expect(Math.abs(p.char.mp - p.char.mmp)).toBeLessThan(1);
+    // Không bị hồi chiêu: giữ lại ngay vẫn quét được.
+    sim.spirit.command(p, { on: true });
+    advance(SPIRIT_CHANNEL_MS + 400);
+    expect(scans()).toHaveLength(1);
   });
 
   it('thiếu linh lực thì không bắt đầu', () => {
