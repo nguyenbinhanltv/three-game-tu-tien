@@ -140,7 +140,11 @@ export function fxMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
 /** `?batch=0` tắt gộp draw call để so ảnh/số đo trước-sau (mỗi lưới một draw call như cũ). */
 export const BATCHING = typeof location === 'undefined' || new URLSearchParams(location.search).get('batch') !== '0';
 
-export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>(['glow', 'flat', 'solid', 'slash', 'ink', 'sigil', 'dome', 'inkpool']);
+/**
+ * `sigil` KHÔNG gộp (S2-C): nhiều pháp trận cùng lúc (lôi võng độ kiếp có 21 vòng cùng vòng nhắm, hay nhiều vùng báo của boss) khi gộp chỉ vẽ ra
+ * MỘT cái (dữ liệu instance ghi đúng, vẽ thiếu; `?batch=0` vẽ đủ). Nguyên nhân chưa rõ. Giá: thêm chừng 23 draw call trong 1 giây mỗi đợt lôi võng.
+ */
+export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>(['glow', 'flat', 'solid', 'slash', 'ink', 'dome', 'inkpool']);
 
 /** Tên thuộc tính instance: màu + độ trong, `fxA`, `fxB`, (`fxK`, 0, 0, 0). */
 export const BATCH_ATTR = { c: 'aFxC', a: 'aFxA', b: 'aFxB', k: 'aFxK' } as const;

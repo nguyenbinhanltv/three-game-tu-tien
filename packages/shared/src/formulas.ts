@@ -110,13 +110,36 @@ export const TRIBULATION_FAIL_XP_LOSS = 0.15;
 export const TRIBULATION_DURATION = 40;
 /**
  * Thiên lôi độ kiếp (3-10): số liệu một đợt. Tia nhắm thẳng người độ kiếp (báo trước `AIM_DELAY` giây, né bằng cách bước ra khỏi vòng),
- * `1..4` tia rơi quanh. Nhịp giữa hai đợt giảm tuyến tính theo tiến độ.
+ * tia rơi quanh. Nhịp và số tia theo pha (xem `TRIB_PHASE_*` bên dưới).
  */
 export const TRIB_FIRST_DELAY = 3;
-export const TRIB_GAP_START = 2.6;
-export const TRIB_GAP_END = 1.4;
 export const TRIB_AIM = { r: 4.2, delay: 1.25, pct: 0.24 };
 export const TRIB_EXTRA = { r: 3.6, delayMin: 1.25, delayMax: 1.85, pct: 0.2, distMin: 5, distMax: 14, maxCount: 4 };
+/**
+ * Độ kiếp ba pha (S2-C, `GAME_DESIGN_CORE.md` 5.3). Mốc giây tính từ lúc bắt đầu; client suy pha từ đồng hồ (không cần tin riêng).
+ * 1 Lôi vân tụ: thưa, chạy né. 2 Lôi võng: thêm ba vạch sét song song, đọc vạch và bước vào khoảng trống (lướt cũng được).
+ * 3 Diệt thế nhất kích: tia khóa mệnh không né được bằng chạy (chống đỡ bằng hộ thể, khiên, đan, pháp bảo), rồi mưa sét dồn dập.
+ */
+export const TRIB_PHASE_END = [12, 28, TRIBULATION_DURATION] as const;
+export function tribPhaseAt(elapsedSec: number): 1 | 2 | 3 {
+  return elapsedSec < TRIB_PHASE_END[0] ? 1 : elapsedSec < TRIB_PHASE_END[1] ? 2 : 3;
+}
+/** Nhịp hai đợt (giây) theo pha 1 và 2; pha 3 dùng `TRIB_RAIN.gap`. */
+export const TRIB_PHASE_GAP = { 1: 3.0, 2: 2.3 } as const;
+/** Số tia rơi quanh mỗi đợt theo pha (pha 3 dùng `TRIB_RAIN.count`). */
+export const TRIB_PHASE_EXTRA = { 1: 1, 2: 2 } as const;
+/**
+ * Lôi võng (pha 2): `lines` vạch song song, mỗi vạch là chuỗi `count` vòng sét bán kính `r` cách nhau `step` (m) dựng quanh chỗ người độ kiếp đứng
+ * (vạch giữa đè lên họ), các vạch cách nhau `gap`; báo trước `delay` giây, mỗi vòng `pct` khí huyết tối đa (một người chỉ ăn một lần mỗi vạch); cứ `every` đợt thả một lần.
+ * Dùng vòng tròn chứ không dùng hình chữ nhật để đi chung đường vẽ vòng sét đã kiểm.
+ */
+export const TRIB_NET = { lines: 3, count: 7, r: 2.1, step: 4, gap: 7, delay: 1, pct: 0.2, every: 2 };
+/** Tia cuối (đầu pha 3): báo trước `delay` giây quanh người độ kiếp, `pct` khí huyết tối đa, khóa mệnh (đứng đâu cũng trúng). Đan Kim Cương giảm thêm `defMul` lần mức buff phòng ngự. */
+export const TRIB_FINAL = { r: 9, delay: 3, pct: 0.7, defMul: 2, defMaxCut: 0.5 };
+/** Mưa sét sau tia cuối: nhịp dồn, nhẹ hơn mỗi tia. */
+export const TRIB_RAIN = { gap: 0.9, count: 2, pct: 0.1, aimPct: 0.16, r: 3.4 };
+/** Số đan hồi phục dùng được trong một lần độ kiếp (đan độc tích tụ). */
+export const TRIB_PILL_MAX = 3;
 /** Chết sau chừng này giây thì hoàn lại Trúc Cơ Đan (viên đan cần nội đan Hàn Giao, mất trắng là phạt quá nặng). Vẫn mất tu vi. */
 export const TRIBULATION_REFUND_AFTER = 20;
 

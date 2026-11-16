@@ -163,7 +163,7 @@ describe('độ kiếp: hoàn Trúc Cơ Đan', () => {
     const { sim, p } = setup(15);
     p.char.level = 15;
     p.char.recalc();
-    p.trib = { endAt: sim.now + (40 - secs) * 1000, nextAt: sim.now + 1e9, n: 0 };
+    p.trib = { endAt: sim.now + (40 - secs) * 1000, nextAt: sim.now + 1e9, n: 0, fin: true, pills: 0 };
     const have = () => p.char.inv.reduce((n, it) => n + (it && it.id === TRUC_CO_PILL ? it.n : 0), 0);
     const before = have();
     (sim as unknown as { endTribulation(p: Ent, ok: boolean, silent: boolean): void }).endTribulation(p, false, false);
