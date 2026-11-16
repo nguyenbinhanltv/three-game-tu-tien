@@ -29,11 +29,26 @@ Shader (`render/materials/outfit.ts`): nhuộm 3 kênh (`createOutfitMaterial(sr
 - **Vỏ lưng**: `prop_vo_kiem_liet_mach` (`orient_scabbard.py`: miệng vỏ Y = 0, đỉnh vỏ +Y), dùng chung tạm cho mọi kiếm (`SCABBARD_DEFAULT`). Khi mặc áo bộ mô-đun và có kiếm riêng, vỏ gắn lưng (hệ xương lưng × chỗ kiếm lúc tra, miệng ở gốc lưỡi, dài hơn lưỡi 3%) và ở lại lưng kể cả khi rút kiếm. Vỏ nướng sẵn trong lưới nhân vật bị ẩn cùng thân khi mặc áo (mặt nạ `dressedIndex`).
 - **Chưa làm (T-1)**: nhân vật không mặc áo bộ vẫn mang vỏ nướng sẵn trong lưới (kiếm "thứ hai" khi rút); LOD1/2 vẫn dùng kiếm nướng sẵn (xương `dtl_sword`).
 
-## Cập nhật đợt sửa (review orchestrator)
-- Đã code, **chưa chụp lại ma trận cuối**: `armFix` (tay áo rộng lấy trọng số theo xương cánh tay, sửa Địa Long méo khi chém), hàn đỉnh + pháp tuyến mượt (hết nhàu như giấy vò), nhân sáng texture Địa Long (`gain`), thu nhỏ giáp/vai/mão Địa Long theo thân (nữ `wscale` 0,72), giảm normal map, `outfit_check --range 0.04`, ảnh kiếm +0/+7/+10 (`kiem_liet_mach_0_7_10.jpg`, hàng trên đeo lưng, hàng dưới cầm tay).
-- **Ô trang bị thứ 9 `head` (Trang sức đầu)**: `EquipSlot` + `slots.json` (`drop: false`: chỉ chế ở lò rèn, không rơi ngẫu nhiên, không đổi cân bằng), 3 món `itm_{lm,dg,pm}_trang_suc` vào bộ Kết Đan (5 món/bộ, hiệu ứng 2/4 món không đổi), công thức lò rèn, i18n/glossary, bảng nhân vật (ô thứ 5 bên trái). Chưa có icon riêng (emoji dự phòng 👑), chưa thăng bậc được, **chưa có công tắc ẩn/hiện** (mão là một phần lưới bộ gộp nên không tách riêng được; cần dựng bản không mão hoặc tách mảnh).
-- Draw call: một lưới bộ mỗi LOD (đã gộp); lưới thân không đổ bóng, bỏ lưới thân ở LOD2. Đo sân 50 người trước khi bỏ bóng thân: 288–296 (< 300). **Chưa đo lại** sau thay đổi cuối.
-- **Việc còn dở**: chụp lại ma trận 6 tổ hợp + đo lại `bench:crowd`, kiểm ảnh Địa Long chém sau `armFix`, rồi xóa dòng "ảnh cũ" này. Voan alpha và atlas 2K lười để PR sau.
+## Đợt sửa sau review
+- **Địa Long**: `armFix` (tay áo rộng lấy trọng số theo xương cánh tay), thu nhỏ giáp/vai/mão theo thân (nữ `wscale` 0,72), nhân sáng texture (`gain` 1,7). Ảnh chém sau `armFix` (`matrix_dia_long_*`, khung chiêu 1–2): tay áo theo cánh tay, không còn "cánh" dính thân như trước, nhưng giáp vẫn to và nặng khi giơ tay.
+- **Phục Mạch/Liệt Mạch**: hàn đỉnh + pháp tuyến mượt, giảm normal map, vải nhám hơn. Ảnh kiếm +0/+7/+10: `kiem_liet_mach_0_7_10.jpg` (+0 và +7 gần như giống nhau, +10 đổi model).
+- **Ô trang bị thứ 9 `head`**: `EquipSlot` + `slots.json` (`drop: false`: chỉ chế ở lò rèn, không đổi cân bằng), 3 món `itm_{lm,dg,pm}_trang_suc` (5 món/bộ), lò rèn, i18n, bảng nhân vật. Chưa có icon riêng (emoji 👑), chưa thăng bậc, chưa có công tắc ẩn/hiện (mão là một phần lưới bộ gộp).
+- **Draw call**: một lưới bộ mỗi LOD; lưới thân không đổ bóng và bỏ ở LOD2.
+
+## Số đo (`BOT_SET=<bộ> pnpm bench:crowd --bots 50 --scenes san --presets high`, 50 bot cùng mặc bộ, sân tông môn)
+
+| | backend | draw | tam giác | CPU p50/p95 | texture MB |
+| --- | --- | --- | --- | --- | --- |
+| không mặc bộ (nền) | WebGPU | 202 | 1057k | 4,6 / 6,3 ms | 374 |
+| | WebGL2 | 205 | 1079k | 4,7 / 6,7 ms | 318 |
+| Liệt Mạch | WebGPU | 284 | 925k | 6,9 / 9,5 ms | 404 |
+| | WebGL2 | 278 | 898k | 6,5 / 9,6 ms | 349 |
+| Địa Long | WebGPU | **303** | 995k | 6,1 / 8,8 ms | 404 |
+| | WebGL2 | 292 | 962k | 5,6 / 7,6 ms | 348 |
+| Phục Mạch | WebGPU | 280 | 876k | 6,0 / 8,8 ms | 404 |
+| | WebGL2 | 275 | 872k | 5,8 / 8,1 ms | 349 |
+
+Liệt Mạch và Phục Mạch dưới 300 draw ở cả hai backend; **Địa Long trên WebGPU vẫn 303 (vượt 3 draw)**. Mỗi người mặc bộ thêm ~1,6 draw (lưới bộ + kiếm/vỏ ở LOD0); gộp tiếp cần bake đầu/tay vào atlas áo để còn một draw mỗi người (việc PR sau).
 
 ## Chưa làm / giới hạn
 
