@@ -125,7 +125,8 @@ export class MonSkills {
       if (!cfg) continue;
       const ready = rt.next[k];
       if (!ready) {
-        rt.next[k] = now + cfg.cd * 500;
+        // Lần đầu: nửa chu kỳ; lao tới/nhảy đập cần khoảng cách nên dùng sớm (tối đa 1,5 s) trước khi quái áp sát.
+        rt.next[k] = now + (k === 'charge' || k === 'leap' ? Math.min(cfg.cd * 500, 1500) : cfg.cd * 500);
         continue;
       }
       if (now < ready) continue;
