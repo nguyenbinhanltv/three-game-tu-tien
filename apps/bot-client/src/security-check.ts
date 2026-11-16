@@ -874,6 +874,8 @@ async function main() {
     await W(600);
     const q3 = pos();
     check('hủy chiêu bằng lướt dồn dập: vị trí hợp lệ, server sống', Number.isFinite(q3.x) && q3.x > 0 && q3.z > 0 && (await health()));
+    // Dọn sói vừa gọi: chúng không hồi sinh, không tự tan, và đứng ngay sân tông môn nên sẽ đánh người thử ở ca sau (Truyền Tống bị chặn vì "đang giao chiến").
+    await chat('/gm killall');
     // Lướt ra mép bản đồ không ra ngoài.
     await chat('/gm tp 2 2');
     await chat('/gm cd');
@@ -1031,7 +1033,8 @@ async function main() {
     const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - 2048, x[1].z - 2088) - Math.hypot(y[1].x - 2048, y[1].z - 2088))[0];
     if (!wolf) check('dựng được sói để thử giao chiến', false);
     else {
-      await sayT(ta.room, `tp ${wolf[1].x.toFixed(1)} ${(wolf[1].z + 3).toFixed(1)}`);
+      // Đứng cách 20 m: ngoài tầm phát hiện của sói (aggro 12 m) nên nó chưa đánh trước, vẫn trong tầm 26 m của skl_phi_kiem.
+      await sayT(ta.room, `tp ${wolf[1].x.toFixed(1)} ${(wolf[1].z + 20).toFixed(1)}`);
       await W(1500);
       const here = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
       sysA.length = 0;
