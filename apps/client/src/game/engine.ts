@@ -46,7 +46,8 @@ import {
   PF_MEDITATING,
   PF_SHIELD,
   PF_TRIBULATION,
-  TRIBULATION_DURATION,
+  tribDef,
+  tribForLevel,
   phaseRules,
   PORTAL_POS,
   type QuestView,
@@ -211,18 +212,18 @@ export class Game {
   private static session = '';
 
   /** Vào một room bằng mã phiên; nếu phiên hết hạn thì dùng lại thông tin đăng nhập gốc. */
-  private static async join(roomName: string): Promise<Room> {
+  private static async join(roomName: string, extra: Record<string, string> = {}): Promise<Room> {
     if (!Game.client) throw new Error('no client');
     if (Game.session) {
       try {
         // ?god đi theo mỗi lần vào room (bí cảnh, quay về); ?at chỉ áp lần vào đầu tiên.
-        return await Game.client.joinOrCreate(roomName, { session: Game.session, god: readTestParams(location.search).god });
+        return await Game.client.joinOrCreate(roomName, { ...extra, session: Game.session, god: readTestParams(location.search).god });
       } catch (e) {
         if ((e as { code?: number }).code !== 4014) throw e;
         Game.session = '';
       }
     }
-    return Game.client.joinOrCreate(roomName, { ...Game.lastLogin, god: readTestParams(location.search).god });
+    return Game.client.joinOrCreate(roomName, { ...extra, ...Game.lastLogin, god: readTestParams(location.search).god });
   }
 
   /** Đăng nhập và vào thế giới. Lỗi được đưa lên UI qua store. */
@@ -403,6 +404,8 @@ export class Game {
   private deathFx = new DeathFx();
   /** Giờ kết thúc kiếp theo tin `tribstart`, giữ riêng để đồng bộ HUD không xoá nếu tin đến trước cờ trạng thái. */
   private tribUntil = 0;
+  /** Kiếp đang độ (id trong `tribulations.json`): từ tin `tribstart`, hoặc suy từ cấp khi lỡ tin. */
+  private tribId = 'truc_co';
   /** Lúc thấy cờ độ kiếp của mình bật (ms, đồng hồ client); 0 = cờ đang tắt. Dùng để dựng lại HUD khi lỡ tin `tribstart`. */
   private tribFlagAt = 0;
   /** Boss mà cảnh xuất hiện đang nhìn theo (vị trí hiện tại, vì boss đang chạy), và độ cao ngực so với chân. */
@@ -676,7 +679,7 @@ export class Game {
       /* đã rời */
     }
     try {
-      const room = await Game.join(m.room);
+      const room = await Game.join(m.room, m.options);
       await Game.enter(room);
     } catch (e) {
       console.error(e);
@@ -1765,7 +1768,8 @@ export class Game {
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) {
           this.tribUntil = Date.now() + (m.d ?? 40) * 1000;
-          set({ tribEnd: this.tribUntil });
+          this.tribId = m.tb ?? 'truc_co';
+          set({ tribEnd: this.tribUntil, tribId: this.tribId });
           this.chapter('trib');
         }
         break;
@@ -2791,10 +2795,13 @@ export class Game {
     }
     if (!this.tribFlagAt) this.tribFlagAt = now;
     if (this.tribUntil > now || now - this.tribFlagAt < 600 || !this.started) return;
-    this.tribUntil = now + TRIBULATION_DURATION * 1000;
+    // Lỡ tin: kiếp đang độ là kiếp mở ra từ cấp hiện tại (cấp chỉ đổi khi thành công).
+    const def = tribForLevel(me.lv) ?? tribDef('truc_co');
+    this.tribId = def.id;
+    this.tribUntil = now + def.duration * 1000;
     const sid = this.sid;
-    this.vfx.tribulationCloud((out) => this.ents.chestOf(sid, out), TRIBULATION_DURATION, () => ((this.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0);
-    set({ tribEnd: this.tribUntil });
+    this.vfx.tribulationCloud((out) => this.ents.chestOf(sid, out), def.duration, () => ((this.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+    set({ tribEnd: this.tribUntil, tribId: this.tribId });
   }
 
   /** Số liệu cho bảng gỡ lỗi F3 (M1-2). */

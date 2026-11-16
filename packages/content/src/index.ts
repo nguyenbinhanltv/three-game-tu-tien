@@ -34,6 +34,7 @@ import realmsJson from '../data/realms.json';
 import rootsJson from '../data/roots.json';
 import vanLamJson from '../data/levels/van_lam.json';
 import kiemTrungJson from '../data/levels/kiem_trung.json';
+import doKiepJson from '../data/levels/do_kiep.json';
 import glossaryJson from '../data/glossary.json';
 import viJson from '../data/i18n/vi.json';
 import viUiJson from '../data/i18n/vi.ui.json';
@@ -96,6 +97,7 @@ export const REALMS = realmsJson as RealmDef[];
 export const LEVELS: Record<string, LevelDef> = {
   van_lam: vanLamJson as LevelDef,
   kiem_trung: kiemTrungJson as LevelDef,
+  do_kiep: doKiepJson as LevelDef,
 };
 /** Năm linh căn ngũ hành (P3-7). */
 export const ROOTS = rootsJson as RootDef[];

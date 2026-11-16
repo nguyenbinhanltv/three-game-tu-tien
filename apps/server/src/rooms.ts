@@ -7,10 +7,15 @@ import {
   MS_DEAD,
   PF_DEAD,
   ROOM_DUNGEON,
+  ROOM_TRIBULATION,
   ROOM_WORLD,
   S,
   SPAWN_POINT,
   TELE_PARTY_R,
+  TRIB_LEVEL,
+  type TribDef,
+  tribDef,
+  type TribId,
   type DungeonDef,
   type TransferMsg,
   dungeonRoomName,
@@ -31,7 +36,8 @@ import { parties } from './game/party';
 import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions, type TransferOpts } from './game/sim';
 import { WorldState } from './state';
 import { readTestFlags, testAccess } from './testflags';
-import { tickets } from './transfer';
+import { tickets, type Ticket } from './transfer';
+import { randomUUID } from 'node:crypto';
 
 interface JoinAuth extends AuthResult {
   charId: number;
@@ -40,10 +46,13 @@ interface JoinAuth extends AuthResult {
   spawn?: { x: number; z: number } | null;
   /** Vào bằng vé tới đúng level của room (đã tiêu thụ ở onAuth): nhân vật còn ghi level nguồn, không được dẫn ngược về đó. */
   ticket?: boolean;
+  /** Vé vào room độ kiếp: khóa room và kiếp cần bắt đầu (E1-F). */
+  trib?: Ticket['trib'];
 }
 
 /** Tên room của một level (thế giới hoặc bí cảnh). */
 export function roomNameOf(levelId: string): string {
+  if (LEVELS[levelId]?.tribulation) return ROOM_TRIBULATION;
   return LEVELS[levelId]?.dungeon ? dungeonRoomName(levelId) : worldRoomName(levelId);
 }
 
@@ -308,9 +317,41 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   beforeRemove(_sid: string): void {}
 
   /** Lưu nhân vật rồi bảo client sang room của `level` (vé phải được cấp trước). */
-  protected sendTransfer(p: PlayerEnt, level: string): void {
+  protected sendTransfer(p: PlayerEnt, level: string, options: Record<string, string> = {}): void {
     this.sim.savePlayer(p);
-    p.client.send(S.TRANSFER, { room: roomNameOf(level), level, options: {} } satisfies TransferMsg);
+    p.client.send(S.TRANSFER, { room: roomNameOf(level), level, options } satisfies TransferMsg);
+  }
+
+  /**
+   * Độ kiếp ở room riêng (E1-F, Nguyên Anh và Hóa Thần): room này chỉ kiểm điều kiện rồi cấp vé một lần; mỗi lần độ kiếp một room (khóa `tribRoom`).
+   * Đồng đội cùng tổ đội trong tầm (`def.guard.r`) vào cùng làm hộ pháp (vé không mang kiếp: chỉ xem, chắn, diệt tâm ma).
+   * Một mình vẫn độ được. Vật phẩm đột phá bị tiêu khi tới nơi (`GameSim.beginTribulation`), không phải lúc rời.
+   */
+  enterTribulationRoom(p: PlayerEnt, def: TribDef, force: boolean): boolean {
+    if (!force) {
+      const why = this.sim.leaveBlocker(p);
+      if (why) {
+        this.sim.sys(p, why, undefined, 'bad');
+        return false;
+      }
+    }
+    const key = randomUUID();
+    const opts = { tribRoom: key };
+    const mates: PlayerEnt[] = [];
+    if (parties.partyOf(p.char.id)) {
+      const r = def.guard?.r ?? 20;
+      for (const m of parties.matesInRoom(p.char.id, this)) {
+        if (m === p || m.char.id === p.char.id || m.trib || this.sim.leaveBlocker(m)) continue;
+        if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) <= r) mates.push(m);
+      }
+    }
+    tickets.issue(p.char.id, TRIB_LEVEL, null, { key, id: def.id });
+    this.sendTransfer(p, TRIB_LEVEL, opts);
+    for (const m of mates) {
+      tickets.issue(m.char.id, TRIB_LEVEL, null, { key });
+      this.sendTransfer(m, TRIB_LEVEL, opts);
+    }
+    return true;
   }
 
   /**
@@ -538,4 +579,104 @@ export function defineDungeon(levelId: string): typeof DungeonRoom {
   };
 }
 
-export { ROOM_DUNGEON, ROOM_WORLD };
+/**
+ * Room độ kiếp (E1-F): một lần độ kiếp Nguyên Anh / Hóa Thần, tối đa 5 người (người độ kiếp + hộ pháp). Chỉ vào bằng vé có khóa room
+ * (`tribRoom`, xem `enterTribulationRoom`); `filterBy(['tribRoom'])` ở index.ts để mỗi lần độ kiếp có phòng riêng.
+ * Vòng đời: bắt đầu kiếp ngay sau khi người độ kiếp tới nơi; hết mọi kiếp (thành công, chết hay rời) thì sau `LINGER_MS` đưa mọi người về
+ * `returnLevel`; chưa ai bắt đầu kiếp sau `WAIT_MS` cũng đưa về (vé hỏng, mất vật phẩm giữa đường).
+ */
+const tribArrivals = new Map<number, TribId | undefined>();
+
+export class TribulationRoom extends GameRoom {
+  static levelId: string = TRIB_LEVEL;
+  /** Sau khi tới, đợi chừng này (ms) cho client dựng xong cảnh rồi mới bắt đầu kiếp. */
+  static START_DELAY_MS = 3500;
+  static LINGER_MS = 6000;
+  static WAIT_MS = 25_000;
+  private startedAny = false;
+  private idleSince = 0;
+  private createdAt = Date.now();
+  private sentBack = new Map<string, number>();
+
+  private get def(): DungeonDef {
+    return LEVELS[this.levelId].dungeon!;
+  }
+
+  simOptions(): SimOptions {
+    const d = this.def;
+    return { levelId: this.levelId, roomName: ROOM_TRIBULATION, spawn: d.spawn, respawn: d.spawn, persistPosition: false };
+  }
+
+  onCreate(options: unknown): void {
+    super.onCreate(options);
+    this.maxClients = 5;
+    this.clock.setInterval(() => this.director(), 500);
+  }
+
+  static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
+    const auth = await GameRoom.onAuth(token, options);
+    const key = (options as { tribRoom?: unknown } | null)?.tribRoom;
+    const t = tickets.take(auth.charId, TRIB_LEVEL);
+    if (!t?.trib || typeof key !== 'string' || t.trib.key !== key) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+    return { ...auth, ticket: true, spawn: t.spawn, trib: t.trib };
+  }
+
+  /** Lưu id kiếp theo nhân vật để `afterJoin` (không nhận `auth`) biết có phải người độ kiếp không. */
+  onJoin(client: Client, options: unknown, auth: JoinAuth): void {
+    tribArrivals.set(auth.charId, auth.trib?.id ? (auth.trib.id as TribId) : undefined);
+    super.onJoin(client, options, auth);
+  }
+
+  afterJoin(p: PlayerEnt): void {
+    const id = tribArrivals.get(p.char.id);
+    tribArrivals.delete(p.char.id);
+    if (!id) {
+      this.sim.sys(p, 'sys.trib_guard', undefined, 'info');
+      return;
+    }
+    const def = tribDef(id);
+    this.clock.setTimeout(() => {
+      const cur = this.sim.players.get(p.sid);
+      if (!cur || cur.trib) return;
+      if (!this.sim.beginTribulation(cur, def, !!def.item)) this.sendAllBack(true);
+    }, TribulationRoom.START_DELAY_MS);
+  }
+
+  onTribulationEnd(): void {
+    this.startedAny = true;
+  }
+
+  /** Đưa mọi người về nơi cũ (người chết được hồi sinh tại sân trước). */
+  private sendAllBack(all = false): void {
+    const d = this.def;
+    const now = Date.now();
+    for (const p of this.sim.players.values()) {
+      if (!p.connected || (!all && p.trib)) continue;
+      // Đã gửi gần đây mà client chưa rời (mất tin): thử lại sau 8 giây.
+      if (now - (this.sentBack.get(p.sid) ?? 0) < 8000) continue;
+      this.sentBack.set(p.sid, now);
+      if ((p.s.fl & PF_DEAD) !== 0) this.sim.onRespawn(p);
+      tickets.issue(p.char.id, d.returnLevel, d.returnSpawn);
+      this.sendTransfer(p, d.returnLevel);
+    }
+  }
+
+  private director(): void {
+    const now = Date.now();
+    if (this.sim.players.size === 0) return;
+    const active = [...this.sim.players.values()].some((p) => p.trib);
+    if (active) {
+      this.startedAny = true;
+      this.idleSince = 0;
+      return;
+    }
+    if (!this.startedAny) {
+      if (now - this.createdAt > TribulationRoom.WAIT_MS) this.sendAllBack(true);
+      return;
+    }
+    if (!this.idleSince) this.idleSince = now;
+    if (now - this.idleSince >= TribulationRoom.LINGER_MS) this.sendAllBack(true);
+  }
+}
+
+export { ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD };

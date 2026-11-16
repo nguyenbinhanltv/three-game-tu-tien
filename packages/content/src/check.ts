@@ -8,6 +8,7 @@ import { ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, ENHANCE_ORE, APPEARANCE
 import { LOOT } from './loot';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS } from '@dtl/shared';
 import { PLACE_ID, PLACES } from './places';
+import { PEAK_LEVELS, TRIB_DEFS, TRIB_IDS, TRIB_MECHANIC_IDS } from '@dtl/shared';
 import { propsOf, terrainOf, inPoly, levelSpawns, polyArea, TELE_FREE, TELE_PADS, type ZoneDef } from '@dtl/shared';
 
 const errors: string[] = [];
@@ -745,12 +746,58 @@ for (const lv of Object.values(LEVELS)) {
   const w = `bí cảnh ${lv.id}`;
   const ret = LEVELS[d.returnLevel];
   if (!ret || ret.dungeon) err(`${w}: returnLevel ${d.returnLevel} không phải bản đồ thế giới`);
-  if (!(ret?.portals ?? []).some((q) => q.to === lv.id)) err(`${w}: ${d.returnLevel} không có cổng dẫn vào`);
-  if (!d.waves.length) err(`${w}: thiếu đợt quái`);
+  // Sân độ kiếp (E1-F) vào bằng vé của kiếp, không có cổng và không có đợt quái.
+  if (lv.tribulation) {
+    if (d.waves.length) err(`${w}: sân độ kiếp không có đợt quái`);
+  } else {
+    if (!(ret?.portals ?? []).some((q) => q.to === lv.id)) err(`${w}: ${d.returnLevel} không có cổng dẫn vào`);
+    if (!d.waves.length) err(`${w}: thiếu đợt quái`);
+  }
   for (const wv of d.waves) for (const g of wv.mons) if (!MONSTER.get(g.id)) err(`${w}: quái ${g.id} không tồn tại`);
   for (const pt of [d.spawn, d.exit, d.center]) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${w}: điểm (${pt.x}, ${pt.z}) ngoài bản đồ`);
 }
 if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
+
+// ---- Độ kiếp theo dữ liệu (E1-F) ----
+{
+  const peaks = new Set<number>(PEAK_LEVELS);
+  const seenFrom = new Set<number>();
+  for (const id of TRIB_IDS) {
+    const d = TRIB_DEFS[id];
+    const w = `độ kiếp ${id}`;
+    if (!peaks.has(d.from) || d.to !== d.from + 1) err(`${w}: from ${d.from} phải là đại viên mãn và to = from + 1`);
+    if (seenFrom.has(d.from)) err(`${w}: hai kiếp cùng from ${d.from}`);
+    seenFrom.add(d.from);
+    if (d.item !== null && !ITEM.get(d.item)) err(`${w}: vật phẩm đột phá ${d.item} không tồn tại`);
+    if (d.enabled && d.item === null) err(`${w}: bật (enabled) mà chưa có vật phẩm đột phá`);
+    if (d.room !== 'world' && d.room !== 'tribulation') err(`${w}: room phải là world hoặc tribulation`);
+    if (!(d.duration > 0) || !(d.firstDelay >= 0) || !(d.failXpLoss >= 0 && d.failXpLoss <= 0.5) || !(d.pillMax >= 0)) err(`${w}: thời lượng/phạt/đan ngoài khoảng`);
+    if (!d.phases.length) err(`${w}: thiếu pha`);
+    let prev = 0;
+    const ids = new Set<string>();
+    d.phases.forEach((p, i) => {
+      const pw = `${w}, pha ${p.id}`;
+      if (ids.has(p.id)) err(`${pw}: trùng id pha`);
+      ids.add(p.id);
+      if (!(p.end > prev)) err(`${pw}: mốc end phải tăng dần`);
+      prev = p.end;
+      if (i === d.phases.length - 1 && p.end !== d.duration) err(`${pw}: pha cuối phải kết thúc đúng lúc duration (${d.duration})`);
+      if (!(p.gap > 0) || (p.gapEnd !== undefined && !(p.gapEnd > 0))) err(`${pw}: gap phải > 0`);
+      if (p.extra && (p.extraR === undefined || p.extraPct === undefined)) err(`${pw}: có extra thì cần extraR và extraPct`);
+      for (const pct of [p.aimPct, p.extraPct, p.net?.pct, p.final?.pct, p.grid?.pct]) if (pct !== undefined && !(pct >= 0 && pct <= 0.9)) err(`${pw}: phần trăm sát thương ngoài [0, 0,9]`);
+      if (p.kind === 'hoa' && !p.grid) err(`${pw}: pha hoa cần grid`);
+      if (p.grid && p.grid.pick > p.grid.cols * p.grid.rows) err(`${pw}: pick vượt số ô`);
+      if (p.final && p.final.guardShare !== undefined && !(p.final.guardShare >= 0 && p.final.guardShare <= 0.6)) err(`${pw}: guardShare ngoài [0, 0,6]`);
+      if (p.mechanic && !(TRIB_MECHANIC_IDS as readonly string[]).includes(p.mechanic)) err(`${pw}: cơ chế ${p.mechanic} chưa đăng ký`);
+      if (p.shadows && !MONSTER.get('mon_tam_ma')) err(`${pw}: thiếu quái mon_tam_ma`);
+      needStr(`ui.trib.${id}.${p.id}`);
+      needStr(`ui.trib.${id}.${p.id}.hint`);
+      if (p.final) needStr(`ui.trib.${id}.${p.id}.hint2`);
+    });
+    needStr(`ui.trib.${id}.title`);
+  }
+  if (TRIB_DEFS.truc_co.room !== 'world' || !TRIB_DEFS.truc_co.enabled) err('độ kiếp truc_co: phải chạy ở room world và đang bật');
+}
 
 // ---- Pháp bảo phụ và đan (P3-8) ----
 uniqueIds('artifact', ARTIFACTS);
