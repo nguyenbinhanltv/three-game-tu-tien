@@ -1,0 +1,620 @@
+{
+ "burst-1794814254175": [
+  "skl_hoanh_kiem_pha_mach: lõi nổ lệch hitAt -48 ms"
+ ],
+ "m-skl_hoanh_kiem_pha_mach": [
+  {
+   "ms": 2,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 401,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.402
+  },
+  {
+   "ms": 401,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.402
+  },
+  {
+   "ms": 1030,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1.001
+  }
+ ],
+ "burst-1794814274458": [
+  "skl_hoanh_kiem_pha_mach: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -49 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -49 ms"
+ ],
+ "m-skl_kiem_vu_tam_diep": [
+  {
+   "ms": 3,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 202,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.201
+  },
+  {
+   "ms": 503,
+   "kind": "hit",
+   "index": 1,
+   "combo": -1,
+   "t": 0.502
+  },
+  {
+   "ms": 801,
+   "kind": "hit",
+   "index": 2,
+   "combo": -1,
+   "t": 0.8
+  },
+  {
+   "ms": 801,
+   "kind": "recovery",
+   "index": 3,
+   "combo": -1,
+   "t": 0.8
+  },
+  {
+   "ms": 1003,
+   "kind": "end",
+   "index": 3,
+   "combo": -1,
+   "t": 1.002
+  }
+ ],
+ "burst-1794814294739": [
+  "skl_hoanh_kiem_pha_mach: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -49 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -49 ms",
+  "skl_kiem_dan_ban_menh: lõi nổ lệch hitAt -48 ms"
+ ],
+ "m-skl_kiem_dan_ban_menh": [
+  {
+   "ms": 2,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 499,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.501
+  },
+  {
+   "ms": 499,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.501
+  },
+  {
+   "ms": 999,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1
+  }
+ ],
+ "burst-1794814315020": [
+  "skl_hoanh_kiem_pha_mach: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -49 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -49 ms",
+  "skl_kiem_dan_ban_menh: lõi nổ lệch hitAt -48 ms"
+ ],
+ "m-skl_nghich_kiem_chuyen_phong": [],
+ "burst-1794814356522": [
+  "skl_thiet_quyen_chan_dia: lõi nổ lệch hitAt -48 ms"
+ ],
+ "m-skl_thiet_quyen_chan_dia": [
+  {
+   "ms": 2,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 451,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.452
+  },
+  {
+   "ms": 451,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.452
+  },
+  {
+   "ms": 1030,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1.001
+  }
+ ],
+ "burst-1794814376819": [
+  "skl_thiet_quyen_chan_dia: lõi nổ lệch hitAt -48 ms",
+  "skl_kim_chung_tran: lõi nổ lệch hitAt -46 ms"
+ ],
+ "m-skl_kim_chung_tran": [
+  {
+   "ms": 6,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 403,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.401
+  },
+  {
+   "ms": 403,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.401
+  },
+  {
+   "ms": 954,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.952
+  }
+ ],
+ "burst-1794814397134": [
+  "skl_thiet_quyen_chan_dia: lõi nổ lệch hitAt -48 ms",
+  "skl_kim_chung_tran: lõi nổ lệch hitAt -46 ms",
+  "skl_son_nhac_hoa_than: lõi nổ lệch hitAt -49 ms"
+ ],
+ "m-skl_son_nhac_hoa_than": [
+  {
+   "ms": 6,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 745,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.6
+  },
+  {
+   "ms": 745,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.6
+  },
+  {
+   "ms": 1146,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1.001
+  }
+ ],
+ "burst-1794814417490": [
+  "skl_thiet_quyen_chan_dia: lõi nổ lệch hitAt -48 ms",
+  "skl_kim_chung_tran: lõi nổ lệch hitAt -46 ms",
+  "skl_son_nhac_hoa_than: lõi nổ lệch hitAt -49 ms"
+ ],
+ "m-skl_dich_son_xung": [],
+ "burst-1794814458694": [],
+ "m-skl_moc_linh_tran": [],
+ "burst-1794814479054": [],
+ "m-skl_duoc_vu": [],
+ "burst-1794814499380": [],
+ "m-skl_ngung_dan_ho_the": [],
+ "burst-1794814519691": [],
+ "m-skl_dan_hoa_phong_tran": [],
+ "burst-1794814560460": [
+  "skl_hoanh_kiem_pha_mach: lõi nổ lệch hitAt -49 ms"
+ ],
+ "f-skl_hoanh_kiem_pha_mach": [
+  {
+   "ms": 2,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 399,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.4
+  },
+  {
+   "ms": 399,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.4
+  },
+  {
+   "ms": 1030,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1.001
+  }
+ ],
+ "burst-1794814580901": [
+  "skl_hoanh_kiem_pha_mach: lõi nổ lệch hitAt -49 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -50 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms"
+ ],
+ "f-skl_kiem_vu_tam_diep": [
+  {
+   "ms": 3,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 201,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.2
+  },
+  {
+   "ms": 543,
+   "kind": "hit",
+   "index": 1,
+   "combo": -1,
+   "t": 0.502
+  },
+  {
+   "ms": 841,
+   "kind": "hit",
+   "index": 2,
+   "combo": -1,
+   "t": 0.8
+  },
+  {
+   "ms": 841,
+   "kind": "recovery",
+   "index": 3,
+   "combo": -1,
+   "t": 0.8
+  },
+  {
+   "ms": 1042,
+   "kind": "end",
+   "index": 3,
+   "combo": -1,
+   "t": 1.001
+  }
+ ],
+ "burst-1794814601230": [
+  "skl_hoanh_kiem_pha_mach: lõi nổ lệch hitAt -49 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -50 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_dan_ban_menh: lõi nổ lệch hitAt -48 ms"
+ ],
+ "f-skl_kiem_dan_ban_menh": [
+  {
+   "ms": 3,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 502,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.502
+  },
+  {
+   "ms": 502,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.502
+  },
+  {
+   "ms": 1002,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1.002
+  }
+ ],
+ "burst-1794814621867": [
+  "skl_hoanh_kiem_pha_mach: lõi nổ lệch hitAt -49 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -50 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_vu_tam_diep: lõi nổ lệch hitAt -48 ms",
+  "skl_kiem_dan_ban_menh: lõi nổ lệch hitAt -48 ms"
+ ],
+ "f-skl_nghich_kiem_chuyen_phong": [],
+ "burst-1794814666557": [
+  "skl_thiet_quyen_chan_dia: lõi nổ lệch hitAt -48 ms"
+ ],
+ "f-skl_thiet_quyen_chan_dia": [
+  {
+   "ms": 3,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 452,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.451
+  },
+  {
+   "ms": 452,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.451
+  },
+  {
+   "ms": 1034,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1.003
+  }
+ ],
+ "burst-1794814686858": [
+  "skl_thiet_quyen_chan_dia: lõi nổ lệch hitAt -48 ms",
+  "skl_kim_chung_tran: lõi nổ lệch hitAt -48 ms"
+ ],
+ "f-skl_kim_chung_tran": [
+  {
+   "ms": 3,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 401,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.4
+  },
+  {
+   "ms": 401,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.4
+  },
+  {
+   "ms": 952,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.951
+  }
+ ],
+ "burst-1794814707151": [
+  "skl_thiet_quyen_chan_dia: lõi nổ lệch hitAt -48 ms",
+  "skl_kim_chung_tran: lõi nổ lệch hitAt -48 ms",
+  "skl_son_nhac_hoa_than: lõi nổ lệch hitAt -49 ms"
+ ],
+ "f-skl_son_nhac_hoa_than": [
+  {
+   "ms": 7,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 603,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.601
+  },
+  {
+   "ms": 603,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.601
+  },
+  {
+   "ms": 1004,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1.002
+  }
+ ],
+ "burst-1794814727456": [
+  "skl_thiet_quyen_chan_dia: lõi nổ lệch hitAt -48 ms",
+  "skl_kim_chung_tran: lõi nổ lệch hitAt -48 ms",
+  "skl_son_nhac_hoa_than: lõi nổ lệch hitAt -49 ms"
+ ],
+ "f-skl_dich_son_xung": [],
+ "burst-1794814769038": [
+  "skl_moc_linh_tran: lõi nổ lệch hitAt -48 ms"
+ ],
+ "f-skl_moc_linh_tran": [
+  {
+   "ms": 7,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 403,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.4
+  },
+  {
+   "ms": 403,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.4
+  },
+  {
+   "ms": 954,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.952
+  }
+ ],
+ "burst-1794814789373": [
+  "skl_moc_linh_tran: lõi nổ lệch hitAt -48 ms",
+  "skl_duoc_vu: lõi nổ lệch hitAt -49 ms"
+ ],
+ "f-skl_duoc_vu": [
+  {
+   "ms": 4,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 403,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.401
+  },
+  {
+   "ms": 403,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.401
+  },
+  {
+   "ms": 953,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.951
+  }
+ ],
+ "burst-1794814809745": [
+  "skl_moc_linh_tran: lõi nổ lệch hitAt -48 ms",
+  "skl_duoc_vu: lõi nổ lệch hitAt -49 ms",
+  "skl_ngung_dan_ho_the: lõi nổ lệch hitAt -49 ms"
+ ],
+ "f-skl_ngung_dan_ho_the": [
+  {
+   "ms": 5,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 502,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.5
+  },
+  {
+   "ms": 502,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.5
+  },
+  {
+   "ms": 1012,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 1.01
+  }
+ ],
+ "burst-1794814830047": [
+  "skl_moc_linh_tran: lõi nổ lệch hitAt -48 ms",
+  "skl_duoc_vu: lõi nổ lệch hitAt -49 ms",
+  "skl_ngung_dan_ho_the: lõi nổ lệch hitAt -49 ms",
+  "skl_dan_hoa_phong_tran: lõi nổ lệch hitAt -48 ms"
+ ],
+ "f-skl_dan_hoa_phong_tran": [
+  {
+   "ms": 1,
+   "kind": "windup",
+   "index": 0,
+   "combo": -1,
+   "t": 0
+  },
+  {
+   "ms": 351,
+   "kind": "hit",
+   "index": 0,
+   "combo": -1,
+   "t": 0.352
+  },
+  {
+   "ms": 351,
+   "kind": "recovery",
+   "index": 1,
+   "combo": -1,
+   "t": 0.352
+  },
+  {
+   "ms": 901,
+   "kind": "end",
+   "index": 1,
+   "combo": -1,
+   "t": 0.852
+  }
+ ]
+}

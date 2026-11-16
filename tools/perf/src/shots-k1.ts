@@ -1,5 +1,5 @@
 // pnpm shots:k1: dãy ảnh mốc "trước" của 12 chiêu hiện có (K-1) + bảng thời gian.
-//   tsx src/shots-k1.ts --out <thư mục> [--mode viewer|game|table|voices|all] [--model fixture|char] [--only id,id] [--renderer webgpu|webgl2]
+//   tsx src/shots-k1.ts --out <thư mục> [--mode viewer|game|table|voices|all] [--model fixture|char|<id asset, ví dụ chr_kiem_tu_nu>] [--only id,id] [--renderer webgpu|webgl2]
 // - viewer: mở `?show=skill&id=…` (tắt tiếng), dừng ở từng khung khóa, chụp hai góc (chéo, bên) rồi ghép thành một tờ ảnh mỗi chiêu.
 // - game: vào game bằng tài khoản thử, dựng cảnh bằng lệnh GM, bấm chiêu rồi chụp liên tục (mỗi ảnh ghi số ms thật từ lúc bấm).
 // - voices (K-5): ba giọng động tác (kiếm tu / hộ pháp / đan sư) cạnh nhau ở khung 3 (tụ lực) và khung 5 (trúng), hai góc, cho đòn thường 1–3 và Kiếm Khí Trảm.
@@ -74,7 +74,7 @@ async function viewerShots(ctx: BrowserContext, errors: string[]): Promise<void>
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text().slice(0, 300)));
-  const model = MODEL === 'char' ? '&model=char' : '';
+  const model = MODEL === 'fixture' ? '' : `&model=${MODEL}`;
   for (const r of rows) {
     await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&show=skill&id=${r.skill}${model}${rq}`, { waitUntil: 'load' });
     await page.waitForFunction((n) => (window as unknown as G).__viewer?.clipName === n, 'pose_' + r.pose, { timeout: 90_000, polling: 250 });
@@ -119,7 +119,7 @@ async function voiceShots(ctx: BrowserContext, errors: string[]): Promise<void> 
     { skill: 'skl_phi_kiem', hit: 3, name: 'don-thuong-3' },
     { skill: 'skl_kiem_khi_tram', hit: 1, name: 'kiem-khi-tram' },
   ];
-  const model = MODEL === 'char' ? '&model=char' : '';
+  const model = MODEL === 'fixture' ? '' : `&model=${MODEL}`;
   for (const tg of targets) {
     const skill = SKILLS.find((x) => x.id === tg.skill)!;
     const grid: { label: string; url: string; mark?: boolean }[][] = [];

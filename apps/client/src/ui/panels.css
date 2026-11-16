@@ -486,6 +486,15 @@
 .skill-row .k-tip-host {
   display: block;
 }
+/* Hàng chiêu bậc cao (E2-G): nhỏ hơn hàng chính, phím Shift + số. */
+.skill-row.tier-row {
+  gap: 5px;
+  padding: 4px 7px;
+}
+.skill-row.tier-row .skill {
+  width: 42px;
+  height: 42px;
+}
 .skill {
   --cut: 7px;
   --edge: linear-gradient(180deg, var(--k-bronze-hi), var(--k-bronze) 50%, var(--k-bronze-lo));

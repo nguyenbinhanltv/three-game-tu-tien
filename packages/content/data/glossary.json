@@ -204,6 +204,29 @@
     "npc_tieu_khe": "Tiểu Khê",
     "npc_hai_duoc": "Hạ Thảo"
   },
+  "skillsTier": {
+    "skl_hoanh_kiem_pha_mach": "Hoành Kiếm Phá Mạch",
+    "skl_kiem_vu_tam_diep": "Kiếm Vũ Tam Điệp",
+    "skl_kiem_dan_ban_menh": "Kiếm Đan Bản Mệnh",
+    "skl_nghich_kiem_chuyen_phong": "Nghịch Kiếm Chuyển Phong",
+    "skl_phan_anh_kiem_anh": "Phân Anh Kiếm Ảnh",
+    "skl_thuan_di_tram": "Thuấn Di Trảm",
+    "skl_thien_kiem_hoa_hinh": "Thiên Kiếm Hóa Hình",
+    "skl_thiet_quyen_chan_dia": "Thiết Quyền Chấn Địa",
+    "skl_kim_chung_tran": "Kim Chung Trấn",
+    "skl_son_nhac_hoa_than": "Sơn Nhạc Hóa Thân",
+    "skl_dich_son_xung": "Dịch Sơn Xung",
+    "skl_anh_thiet_than": "Anh Thiết Thân",
+    "skl_thuan_di_ho_the": "Thuấn Di Hộ Thế",
+    "skl_thien_kim_phap_tuong": "Thiên Kim Pháp Tướng",
+    "skl_moc_linh_tran": "Mộc Linh Trận",
+    "skl_duoc_vu": "Dược Vũ",
+    "skl_ngung_dan_ho_the": "Ngưng Đan Hộ Thế",
+    "skl_dan_hoa_phong_tran": "Đan Hỏa Phong Tràn",
+    "skl_anh_duoc_hoa_than": "Anh Dược Hóa Thân",
+    "skl_thuan_di_cuu_vien": "Thuấn Di Cứu Viện",
+    "skl_thien_dan_phap_gioi": "Thiên Đan Pháp Giới"
+  },
   "maps": {
     "van_lam": "Vân Lam Sơn Mạch",
     "doan_mach": "Đoạn Mạch Cổ Cốc"

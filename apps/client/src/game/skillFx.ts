@@ -167,7 +167,7 @@ export class SkillFx {
     this.dropPending(sid);
     tm.hitAt.forEach((h, index) => this.pending.push({ sid, index, def, mine, ult, color, at: h - BURST_LEAD, left: h - e.t - BURST_LEAD }));
     // Vệt kiếm bám mũi kiếm: một cửa sổ cho mỗi mốc trúng (chiêu liên hoàn nhiều mốc có nhiều vệt nối nhau).
-    if (a.model.bladePoints && bladeVisible(mine, dist) && def.kind !== 'heal' && def.kind !== 'guard' && def.kind !== 'taunt') {
+    if (a.model.bladePoints && bladeVisible(mine, dist) && def.kind !== 'heal' && def.kind !== 'guard' && def.kind !== 'taunt' && def.kind !== 'buff' && def.kind !== 'summon') {
       for (const h of tm.hitAt) {
         const [s, en] = bladeWindow(h - e.t);
         if (en > 0) this.jobs.push({ sid, actor: a, color, t: 0, start: s, end: en, rib: null });

@@ -5,6 +5,7 @@
 import * as THREE from 'three/webgpu';
 import { type FxMsg } from '@dtl/shared';
 import { groundAt } from './levelCtx';
+import { G } from './geo';
 import { SIGIL_CIRCLE } from '../render/vfx/sigil';
 import type { Vfx } from './vfx';
 
@@ -18,10 +19,25 @@ export const METHOD_COLORS: Record<string, number> = {
   kimcuong: 0xffd27a,
   xuanphong: 0x7dffa0,
   hoithien: 0xa8ffc4,
+  // E2-G: chiêu bậc 2–3 theo màu công pháp (kiếm ngọc lam trắng, hộ pháp vàng, đan sư lục ngọc).
+  hoanhkiem: 0xcff3ff,
+  kiemvu: 0x9fd8ff,
+  kiemdan: 0x7fd8ff,
+  kiemdan_hit: 0x7fd8ff,
+  sonnhac_stomp: 0xffc95a,
+  nghichkiem: 0x9fd8ff,
+  thietquyen: 0xffc95a,
+  kimchung: 0xffd27a,
+  sonnhac: 0xffc95a,
+  dichson: 0xffc95a,
+  moclinh: 0x7dffa0,
+  duocvu: 0xa8ffc4,
+  ngungdan: 0x7fe3d0,
+  danhoa: 0x6fd8ff,
 };
 
 /** Các loại FX công pháp mới (chiêu đặc trưng, tối thượng). */
-export const METHOD_FX = new Set(['kanh', 'vankiem', 'transon', 'kimcuong', 'xuanphong', 'hoithien']);
+export const METHOD_FX = new Set(['kanh', 'vankiem', 'transon', 'kimcuong', 'xuanphong', 'hoithien', 'hoanhkiem', 'kiemvu', 'kiemdan', 'kiemdan_hit', 'sonnhac_stomp', 'nghichkiem', 'thietquyen', 'kimchung', 'sonnhac', 'dichson', 'moclinh', 'duocvu', 'ngungdan', 'danhoa']);
 
 /** Màu hex của FX (chuỗi 6 ký tự từ server), thiếu hoặc hỏng thì dùng `fallback`. */
 export function fxColor(m: FxMsg, fallback: number): number {
@@ -149,8 +165,183 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       if (c.src(_a)) v.burst(_a, color, 1.4, 0.6);
       return true;
     }
+    case 'hoanhkiem': {
+      // Hoành Kiếm Phá Mạch: một đường kiếm khí trắng ngà quét dọc vệt chém, nền đất nứt sáng mờ chạy theo.
+      if (!c.src(_a)) return true;
+      const x0 = _a.x;
+      const z0 = _a.z;
+      const y0 = _a.y;
+      const len = m.r ?? 12;
+      const dx = (m.x ?? x0) - x0;
+      const dz = (m.z ?? z0) - z0;
+      const dl = Math.hypot(dx, dz) || 1;
+      const ux = dx / dl;
+      const uz = dz / dl;
+      const waves = m.v === 'twin' ? 2 : 1;
+      const marks = Math.max(3, Math.min(7, Math.round(len / 2.2)));
+      for (let w = 0; w < waves; w++) {
+        for (let i = 0; i < marks; i++) {
+          const f = (i + 0.5) / marks;
+          const p = new THREE.Vector3(x0 + ux * len * f, y0 - 0.15, z0 + uz * len * f);
+          after(v, w * 0.15 + f * 0.1, () => v.slashMark(fixed(p), m.v === 'long' ? 0xffffff : color, (m.v === 'long' ? 0.55 : 0.45) * sc, -0.05, 0.2, i === 0 && w === 0, p));
+        }
+      }
+      groundRing(v, x0 + ux * len * 0.5, z0 + uz * len * 0.5, 1.6, color, 0.5);
+      return true;
+    }
+    case 'kiemvu': {
+      // Kiếm Vũ Tam Điệp: ba nhịp nháy nhỏ ở ngực người ra chiêu (ba vệt kiếm chồng đã vẽ bởi K-6); nhát cuối có tia dài.
+      if (!c.dst(_a)) return true;
+      const at = _a.clone();
+      v.burst(at, color, 0.7 * sc, 0.2);
+      if (m.v === 'knock') after(v, 0.6, () => groundRing(v, at.x, at.z, 2.4, color, 0.5));
+      return true;
+    }
+    case 'kiemdan_hit': {
+      // Mỗi nhịp kiếm đan đâm: tia nhỏ từ thân tới mục tiêu. (Id riêng để không kích lại động tác niệm của chiêu.)
+      if (c.src(_a)) v.swordShot(_a.clone().add(new THREE.Vector3(0, 0.3, 0)), c.dst, color, 0.6, 0.16, (at) => v.burst(at.clone(), color, 0.5, 0.16));
+      return true;
+    }
+    case 'sonnhac_stomp': {
+      // Mỗi nhịp giậm của Sơn Nhạc Hóa Thân (biến thức B).
+      groundRing(v, m.x ?? 0, m.z ?? 0, m.r ?? 6, color, 0.6);
+      return true;
+    }
+    case 'kiemdan': {
+      // Kiếm Đan Bản Mệnh: kiếm nhỏ ngọc lam quay quanh thân suốt thời gian chiêu; mỗi nhịp đâm có một tia tới mục tiêu.
+      const n = Math.min(2, Math.max(1, Math.round(m.n ?? 1)));
+      const dur = m.d ?? 10;
+      for (let k = 0; k < n; k++) {
+        const blade = v.fx(G.octa, color, 0.9, 'glow');
+        let t = 0;
+        v.track(
+          dur,
+          (_k, dt) => {
+            t += dt;
+            if (!c.src(_a)) return;
+            const a = t * 3.4 + (k * Math.PI * 2) / n;
+            blade.position.set(_a.x + Math.cos(a) * 1.15, _a.y + 0.4 + Math.sin(t * 2 + k) * 0.18, _a.z + Math.sin(a) * 1.15);
+            blade.rotation.y = -a;
+            blade.scale.set(0.09, 0.09, 0.4);
+            blade.fxOpacity = Math.min(1, t * 4, (dur - t) * 3);
+          },
+          () => v.drop(blade),
+        );
+      }
+      return true;
+    }
+    case 'nghichkiem': {
+      // Nghịch Kiếm Chuyển Phong: vệt kiếm quang kéo từ chỗ đứng cũ; tới đích nổ một vòng nhỏ.
+      if (c.src(_a)) {
+        v.slashMark(c.src, color, 0.9 * sc, -0.05, 0.22, false);
+        v.burst(_a, color, 0.9, 0.2);
+      }
+      return true;
+    }
+    case 'thietquyen': {
+      // Thiết Quyền Chấn Địa: vòng chấn động vàng tỏa ra tới mép, bụi đá bắn lên.
+      const x = m.x ?? 0;
+      const z = m.z ?? 0;
+      const r = m.r ?? 6;
+      groundRing(v, x, z, r, color, 0.9);
+      after(v, 0.12, () => groundRing(v, x, z, r * 0.6, color, 0.7));
+      if (m.v === 'slow') after(v, 0.3, () => groundRing(v, x, z, r * 0.9, 0xb89a5a, 3.5));
+      const n = c.mine ? 18 : 8;
+      for (let i = 0; i < n; i++) {
+        const ang = (i / n) * Math.PI * 2;
+        v.particles.emit('dust', x + Math.cos(ang) * 1.2, (m.y ?? 0) + 0.2, z + Math.sin(ang) * 1.2, Math.cos(ang) * 3, 1.6 + Math.random(), Math.sin(ang) * 3, 0.45, 0.15, 0.35, 0xcdb27a, 0.7, 6, 1);
+      }
+      return true;
+    }
+    case 'kimchung': {
+      // Kim Chung Trấn: chuông vàng úp quanh thân suốt thời gian giữ thế.
+      softDome(c, color, m.d ?? 6, m.v === 'thorn' ? 0.7 : 0.6, 0.06);
+      return true;
+    }
+    case 'sonnhac': {
+      // Sơn Nhạc Hóa Thân: thân ngọc đá phình ra (vòng đất vàng + trụ đá), mỗi lần giậm có vòng chấn động.
+      softDome(c, 0xc9b27a, m.d ?? 10, 0.8, 0.05);
+      groundRing(v, m.x ?? 0, m.z ?? 0, 2.4, color, 1.2);
+      return true;
+    }
+    case 'dichson': {
+      // Dịch Sơn Xung: bụi đá cuộn sau lưng, vòng vàng ở chỗ húc.
+      if (c.src(_a)) {
+        v.burst(_a, color, 1.0, 0.22);
+        for (let i = 0; i < (c.mine ? 14 : 6); i++) v.particles.emit('dust', _a.x, _a.y - 0.9, _a.z, (Math.random() - 0.5) * 3, 0.8 + Math.random(), (Math.random() - 0.5) * 3, 0.5, 0.15, 0.4, 0xcdb27a, 0.7, 4, 1);
+      }
+      return true;
+    }
+    case 'moclinh': {
+      // Mộc Linh Trận: vòng lá ngọc dưới đất (hiện suốt thời gian trận), cột sáng nhỏ ở tâm.
+      const x = m.x ?? 0;
+      const z = m.z ?? 0;
+      const r = m.r ?? 8;
+      groundRing(v, x, z, r, color, Math.min(m.d ?? 8, 4));
+      after(v, 4, () => groundRing(v, x, z, r * 0.9, color, 3.5));
+      if (m.v === 'venom') after(v, 0.2, () => groundRing(v, x, z, r * 0.6, 0x9fe05a, 2));
+      return true;
+    }
+    case 'duocvu': {
+      // Dược Vũ: mưa lá ngọc rơi trên vùng hồi.
+      const x = m.x ?? 0;
+      const z = m.z ?? 0;
+      const r = m.r ?? 10;
+      groundRing(v, x, z, r, color, 1.6);
+      const n = c.mine ? 28 : 10;
+      for (let i = 0; i < n; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const rr = Math.sqrt(Math.random()) * r;
+        v.particles.emit('glow', x + Math.cos(ang) * rr, (m.y ?? 0) + 4 + Math.random() * 2, z + Math.sin(ang) * rr, 0, -2.2, 0, 1.6, 0.08, 0.03, color, 0.8, 0, 0);
+      }
+      return true;
+    }
+    case 'ngungdan': {
+      // Ngưng Đan Hộ Thế: quầng đan ngọc bao mỗi người nhận khiên.
+      softDome(c, color, m.d ?? 10, m.v === 'big' ? 0.65 : 0.55, 0.06);
+      if (c.src(_a)) groundRing(v, _a.x, _a.z, 1.8, color, 0.9);
+      return true;
+    }
+    case 'danhoa': {
+      // Đan Hỏa Phong Tràn: cầu lửa lam bay tới mục tiêu rồi nổ vòng lửa.
+      if (!c.src(_a)) return true;
+      const x = m.x ?? 0;
+      const z = m.z ?? 0;
+      const r = m.r ?? 6;
+      v.swordShot(_a.clone(), c.dst, color, 1.1 * sc, 0.28, (at) => {
+        v.burst(at.clone(), color, 1.4, 0.3);
+        groundRing(v, x, z, r, color, 1.1);
+      });
+      return true;
+    }
   }
   return false;
+}
+
+/**
+ * Quầng bao thân của chiêu giữ thế (E2-G): kiểu `dome` (rìa sáng, giữa trong suốt), độ đậm thấp, giữ nguyên nửa giây đầu rồi mờ
+ * còn một phần tư tới hết thời gian chiêu: nhân vật giữ màu gốc, quầng chỉ báo "đang có hiệu lực".
+ */
+function softDome(c: MethodFxCtx, color: number, dur: number, scale: number, alpha: number): void {
+  const m = c.v.fx(G.dome, color, alpha, 'dome');
+  let t = 0;
+  c.v.track(
+    dur,
+    (_k, dt) => {
+      t += dt;
+      if (!c.src(_a)) {
+        m.visible = false;
+        return;
+      }
+      m.visible = true;
+      m.position.copy(_a).setY(_a.y - 0.2);
+      m.scale.set(1.25 * scale, 1.5 * scale, 1.25 * scale);
+      m.rotation.y = t * 1.5;
+      const f = t < 0.5 ? 1 : Math.max(0.25, 1 - (t - 0.5) / 1.0);
+      m.fxOpacity = (alpha / 0.28) * f * (0.92 + Math.sin(t * 5) * 0.08);
+    },
+    () => c.v.drop(m),
+  );
 }
 
 /** Chạy `fn` sau `sec` giây theo đồng hồ của Vfx (dừng cùng Vfx, không để hẹn giờ sót khi đổi room). */
