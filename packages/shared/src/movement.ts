@@ -1,6 +1,5 @@
-import { COLLIDERS, PLAY_WALL, playDist, SECT, WORLD_MARGIN, WORLD_SIZE } from './level';
 import { FLY_UNLOCK_LEVEL, TRUC_CO_LEVEL } from './formulas';
-import { groundAt } from './terrain';
+import { type Terrain, VAN_LAM } from './terrain';
 
 /** Bước mô phỏng cố định, dùng chung cho dự đoán ở client và xử lý ở server. */
 export const STEP = 0.05;
@@ -18,14 +17,14 @@ export const PLAYER_RADIUS = 0.5;
 export const TRUC_CO_FREE_FLY_ALT = 20;
 
 /** Có được (tiếp tục) ngự kiếm không: đủ cảnh giới và còn linh lực, hoặc Trúc Cơ bay thấp (miễn linh lực). Dùng chung client dự đoán và server. */
-export function canFlyAt(level: number, mp: number, x: number, y: number, z: number): boolean {
+export function canFlyAt(level: number, mp: number, x: number, y: number, z: number, terrain: Terrain = VAN_LAM): boolean {
   if (level < FLY_UNLOCK_LEVEL) return false;
-  return mp >= 1 || freeFlight(level, x, y, z);
+  return mp >= 1 || freeFlight(level, x, y, z, terrain);
 }
 
 /** Bay miễn linh lực: từ Trúc Cơ, cách mặt đất không quá `TRUC_CO_FREE_FLY_ALT`. */
-export function freeFlight(level: number, x: number, y: number, z: number): boolean {
-  return level >= TRUC_CO_LEVEL && y - groundAt(x, z) <= TRUC_CO_FREE_FLY_ALT;
+export function freeFlight(level: number, x: number, y: number, z: number, terrain: Terrain = VAN_LAM): boolean {
+  return level >= TRUC_CO_LEVEL && y - terrain.groundAt(x, z) <= TRUC_CO_FREE_FLY_ALT;
 }
 
 export interface MoveState {
@@ -61,10 +60,14 @@ export interface MoveCtx {
   /** Không điều khiển được (đã chết, đang độ kiếp bị khống chế…). */
   frozen: boolean;
   speedMul: number;
+  /** Địa hình của level đang đứng (E1-A); thiếu thì Vân Lam. */
+  terrain?: Terrain;
 }
 
 /** Áp một bước input lên trạng thái di chuyển. Sửa trực tiếp `s`. */
 export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = STEP): void {
+  const terrain = ctx.terrain ?? VAN_LAM;
+  const groundAt = terrain.groundAt;
   let mx = ctx.frozen ? 0 : i.mx;
   let mz = ctx.frozen ? 0 : i.mz;
   const len = Math.sqrt(mx * mx + mz * mz);
@@ -96,8 +99,9 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   s.z += dirZ * speed * dt;
 
   // Va chạm với kiến trúc (chỉ khi ở gần mặt đất).
-  for (let c = 0; c < COLLIDERS.length; c++) {
-    const col = COLLIDERS[c];
+  const colliders = terrain.colliders;
+  for (let c = 0; c < colliders.length; c++) {
+    const col = colliders[c];
     const dx = s.x - col.x;
     const dz = s.z - col.z;
     const rr = col.r + PLAYER_RADIUS;
@@ -112,19 +116,22 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
     }
   }
 
-  const lo = WORLD_MARGIN;
-  const hi = WORLD_SIZE - WORLD_MARGIN;
+  const lo = terrain.margin;
+  const hi = terrain.size - terrain.margin;
   if (s.x < lo) s.x = lo;
   else if (s.x > hi) s.x = hi;
   if (s.z < lo) s.z = lo;
   else if (s.z > hi) s.z = hi;
 
   // Ranh vùng chơi: chân vách, đẩy ngược về trong (cả khi bay).
-  const dPlay = playDist(s.x, s.z);
-  if (dPlay > PLAY_WALL) {
-    const k = PLAY_WALL / dPlay;
-    s.x = SECT.x + (s.x - SECT.x) * k;
-    s.z = SECT.z + (s.z - SECT.z) * k;
+  if (terrain.playWall !== Infinity) {
+    const dPlay = terrain.playDist(s.x, s.z);
+    if (dPlay > terrain.playWall) {
+      const play = terrain.def.play!;
+      const k = terrain.playWall / dPlay;
+      s.x = play.cx + (s.x - play.cx) * k;
+      s.z = play.cz + (s.z - play.cz) * k;
+    }
   }
 
   const ground = groundAt(s.x, s.z);

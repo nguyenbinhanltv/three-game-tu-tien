@@ -158,8 +158,8 @@
       "id": "boss_han_giao",
       "class": "boss",
       "source": "assets/build/raw/boss_han_giao.glb",
-      "file": "boss_han_giao.bbed9587d8.glb",
-      "bytes": 2873524,
+      "file": "boss_han_giao.26daeca61b.glb",
+      "bytes": 2267700,
       "rawBytes": 3066700,
       "triangles": 19526,
       "rawTriangles": 19526,
@@ -192,8 +192,8 @@
         {
           "name": "boss_han_giao_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -243,8 +243,8 @@
       "id": "boss_huyet_lang_vuong",
       "class": "boss",
       "source": "assets/build/raw/boss_huyet_lang_vuong.glb",
-      "file": "boss_huyet_lang_vuong.e6b0c37d22.glb",
-      "bytes": 2562268,
+      "file": "boss_huyet_lang_vuong.4e1da54496.glb",
+      "bytes": 2075660,
       "rawBytes": 2609760,
       "triangles": 19512,
       "rawTriangles": 19512,
@@ -276,8 +276,8 @@
         {
           "name": "boss_huyet_lang_vuong_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -327,8 +327,8 @@
       "id": "boss_kiem_khoi",
       "class": "boss",
       "source": "assets/build/raw/boss_kiem_khoi.glb",
-      "file": "boss_kiem_khoi.831d23ba82.glb",
-      "bytes": 3425436,
+      "file": "boss_kiem_khoi.b4669037d7.glb",
+      "bytes": 2728824,
       "rawBytes": 3846380,
       "triangles": 19768,
       "rawTriangles": 19768,
@@ -360,8 +360,8 @@
         {
           "name": "boss_kiem_khoi_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -411,8 +411,8 @@
       "id": "boss_thu_mo_tuong",
       "class": "boss",
       "source": "assets/build/raw/boss_thu_mo_tuong.glb",
-      "file": "boss_thu_mo_tuong.c2da26b0c8.glb",
-      "bytes": 3369436,
+      "file": "boss_thu_mo_tuong.e4ea1d6ef8.glb",
+      "bytes": 2772780,
       "rawBytes": 3758272,
       "triangles": 19221,
       "rawTriangles": 19221,
@@ -445,8 +445,8 @@
         {
           "name": "boss_thu_mo_tuong_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -2168,8 +2168,8 @@
       "id": "prop_anh_dao",
       "class": "prop",
       "source": "assets/build/raw/prop_anh_dao.glb",
-      "file": "prop_anh_dao.c7ed60e1ba.glb",
-      "bytes": 946020,
+      "file": "prop_anh_dao.bfac797128.glb",
+      "bytes": 465580,
       "rawBytes": 1027136,
       "triangles": 4989,
       "rawTriangles": 5451,
@@ -2183,8 +2183,8 @@
         {
           "name": "prop_anh_dao_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2201,8 +2201,8 @@
         {
           "name": "prop_anh_dao_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -2243,8 +2243,8 @@
       "id": "prop_bia_da",
       "class": "prop",
       "source": "assets/build/raw/prop_bia_da.glb",
-      "file": "prop_bia_da.577bec2f2a.glb",
-      "bytes": 1405276,
+      "file": "prop_bia_da.688b2b9f9f.glb",
+      "bytes": 640564,
       "rawBytes": 1738952,
       "triangles": 4997,
       "rawTriangles": 9718,
@@ -2258,8 +2258,8 @@
         {
           "name": "prop_bia_da_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2276,8 +2276,8 @@
         {
           "name": "prop_bia_da_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -2318,8 +2318,8 @@
       "id": "prop_co_thu",
       "class": "prop",
       "source": "assets/build/raw/prop_co_thu.glb",
-      "file": "prop_co_thu.ea25faae09.glb",
-      "bytes": 904936,
+      "file": "prop_co_thu.418c61bc39.glb",
+      "bytes": 541384,
       "rawBytes": 1783696,
       "triangles": 4963,
       "rawTriangles": 18894,
@@ -2333,8 +2333,8 @@
         {
           "name": "prop_co_thu_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2351,8 +2351,8 @@
         {
           "name": "prop_co_thu_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -2393,8 +2393,8 @@
       "id": "prop_da_dung",
       "class": "prop",
       "source": "assets/build/raw/prop_da_dung.glb",
-      "file": "prop_da_dung.fa4a8f2f76.glb",
-      "bytes": 1571192,
+      "file": "prop_da_dung.077cbd0337.glb",
+      "bytes": 725352,
       "rawBytes": 1896240,
       "triangles": 4999,
       "rawTriangles": 11133,
@@ -2408,8 +2408,8 @@
         {
           "name": "prop_da_dung_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2426,8 +2426,8 @@
         {
           "name": "prop_da_dung_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -2468,8 +2468,8 @@
       "id": "prop_da_nam",
       "class": "prop",
       "source": "assets/build/raw/prop_da_nam.glb",
-      "file": "prop_da_nam.c4533ce197.glb",
-      "bytes": 2293612,
+      "file": "prop_da_nam.b18cdf5b7e.glb",
+      "bytes": 923124,
       "rawBytes": 2447644,
       "triangles": 5000,
       "rawTriangles": 7353,
@@ -2483,8 +2483,8 @@
         {
           "name": "prop_da_nam_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2501,8 +2501,8 @@
         {
           "name": "prop_da_nam_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -2543,8 +2543,8 @@
       "id": "prop_da_phien",
       "class": "prop",
       "source": "assets/build/raw/prop_da_phien.glb",
-      "file": "prop_da_phien.589ae97cf2.glb",
-      "bytes": 1551380,
+      "file": "prop_da_phien.5f78fbe38c.glb",
+      "bytes": 662384,
       "rawBytes": 1716236,
       "triangles": 4999,
       "rawTriangles": 6597,
@@ -2558,8 +2558,8 @@
         {
           "name": "prop_da_phien_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2576,8 +2576,8 @@
         {
           "name": "prop_da_phien_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -2618,8 +2618,8 @@
       "id": "prop_den_da",
       "class": "prop",
       "source": "assets/build/raw/prop_den_da.glb",
-      "file": "prop_den_da.bc410d472f.glb",
-      "bytes": 1211584,
+      "file": "prop_den_da.f9b77b782c.glb",
+      "bytes": 650176,
       "rawBytes": 1526068,
       "triangles": 4999,
       "rawTriangles": 8742,
@@ -2633,8 +2633,8 @@
         {
           "name": "prop_den_da_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2651,8 +2651,8 @@
         {
           "name": "prop_den_da_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -2693,8 +2693,8 @@
       "id": "prop_duong_xi",
       "class": "prop",
       "source": "assets/build/raw/prop_duong_xi.glb",
-      "file": "prop_duong_xi.a3fd61dfe5.glb",
-      "bytes": 919000,
+      "file": "prop_duong_xi.2a77b1cebf.glb",
+      "bytes": 520832,
       "rawBytes": 1301068,
       "triangles": 5000,
       "rawTriangles": 10237,
@@ -2708,8 +2708,8 @@
         {
           "name": "prop_duong_xi_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2726,8 +2726,8 @@
         {
           "name": "prop_duong_xi_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -2768,8 +2768,8 @@
       "id": "prop_kiem_gay",
       "class": "prop",
       "source": "assets/build/raw/prop_kiem_gay.glb",
-      "file": "prop_kiem_gay.99e22c1006.glb",
-      "bytes": 1778520,
+      "file": "prop_kiem_gay.90e2e23f0b.glb",
+      "bytes": 876996,
       "rawBytes": 1936692,
       "triangles": 5000,
       "rawTriangles": 7195,
@@ -2783,8 +2783,8 @@
         {
           "name": "prop_kiem_gay_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -2801,8 +2801,8 @@
         {
           "name": "prop_kiem_gay_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -3168,8 +3168,8 @@
       "id": "prop_lau",
       "class": "prop",
       "source": "assets/build/raw/prop_lau.glb",
-      "file": "prop_lau.625cb72c7f.glb",
-      "bytes": 862408,
+      "file": "prop_lau.74e5b1a113.glb",
+      "bytes": 532616,
       "rawBytes": 1081056,
       "triangles": 5000,
       "rawTriangles": 6952,
@@ -3183,8 +3183,8 @@
         {
           "name": "prop_lau_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -3201,8 +3201,8 @@
         {
           "name": "prop_lau_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -3243,8 +3243,8 @@
       "id": "prop_linh_thao",
       "class": "prop",
       "source": "assets/build/raw/prop_linh_thao.glb",
-      "file": "prop_linh_thao.9f4139774e.glb",
-      "bytes": 949756,
+      "file": "prop_linh_thao.913c235a4f.glb",
+      "bytes": 426900,
       "rawBytes": 1059152,
       "triangles": 1496,
       "rawTriangles": 2897,
@@ -3258,8 +3258,8 @@
         {
           "name": "prop_linh_thao_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -3276,8 +3276,8 @@
         {
           "name": "prop_linh_thao_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -3318,8 +3318,8 @@
       "id": "prop_lo_dan",
       "class": "prop",
       "source": "assets/build/raw/prop_lo_dan.glb",
-      "file": "prop_lo_dan.8de670d6be.glb",
-      "bytes": 1330328,
+      "file": "prop_lo_dan.6619a438fd.glb",
+      "bytes": 592724,
       "rawBytes": 1476032,
       "triangles": 4000,
       "rawTriangles": 5960,
@@ -3333,8 +3333,8 @@
         {
           "name": "prop_lo_dan_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -3351,8 +3351,8 @@
         {
           "name": "prop_lo_dan_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -3393,8 +3393,8 @@
       "id": "prop_lu_huong",
       "class": "prop",
       "source": "assets/build/raw/prop_lu_huong.glb",
-      "file": "prop_lu_huong.378970aa04.glb",
-      "bytes": 1119792,
+      "file": "prop_lu_huong.42ef1183f6.glb",
+      "bytes": 605744,
       "rawBytes": 1709356,
       "triangles": 4999,
       "rawTriangles": 13688,
@@ -3408,8 +3408,8 @@
         {
           "name": "prop_lu_huong_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -3426,8 +3426,8 @@
         {
           "name": "prop_lu_huong_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -3533,8 +3533,8 @@
       "id": "prop_phong_do",
       "class": "prop",
       "source": "assets/build/raw/prop_phong_do.glb",
-      "file": "prop_phong_do.a5b7fac599.glb",
-      "bytes": 833924,
+      "file": "prop_phong_do.3929dae52e.glb",
+      "bytes": 380028,
       "rawBytes": 969228,
       "triangles": 4995,
       "rawTriangles": 7446,
@@ -3548,8 +3548,8 @@
         {
           "name": "prop_phong_do_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -3566,8 +3566,8 @@
         {
           "name": "prop_phong_do_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -3608,8 +3608,8 @@
       "id": "prop_soi_nui",
       "class": "prop",
       "source": "assets/build/raw/prop_soi_nui.glb",
-      "file": "prop_soi_nui.87bcbf0487.glb",
-      "bytes": 1086380,
+      "file": "prop_soi_nui.cfee7ba397.glb",
+      "bytes": 503956,
       "rawBytes": 1292712,
       "triangles": 4983,
       "rawTriangles": 9191,
@@ -3623,8 +3623,8 @@
         {
           "name": "prop_soi_nui_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -3641,8 +3641,8 @@
         {
           "name": "prop_soi_nui_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -3758,8 +3758,8 @@
       "id": "prop_thong_co",
       "class": "prop",
       "source": "assets/build/raw/prop_thong_co.glb",
-      "file": "prop_thong_co.18342bfe51.glb",
-      "bytes": 1150072,
+      "file": "prop_thong_co.5ba506135f.glb",
+      "bytes": 625180,
       "rawBytes": 1904572,
       "triangles": 4999,
       "rawTriangles": 19473,
@@ -3773,8 +3773,8 @@
         {
           "name": "prop_thong_co_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -3791,8 +3791,8 @@
         {
           "name": "prop_thong_co_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -3908,8 +3908,8 @@
       "id": "prop_truc",
       "class": "prop",
       "source": "assets/build/raw/prop_truc.glb",
-      "file": "prop_truc.c371c04670.glb",
-      "bytes": 747284,
+      "file": "prop_truc.aab91f8d3a.glb",
+      "bytes": 463396,
       "rawBytes": 1096608,
       "triangles": 4999,
       "rawTriangles": 9982,
@@ -3923,8 +3923,8 @@
         {
           "name": "prop_truc_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -3941,8 +3941,8 @@
         {
           "name": "prop_truc_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]
@@ -4058,8 +4058,8 @@
       "id": "prop_tuong_canh",
       "class": "prop",
       "source": "assets/build/raw/prop_tuong_canh.glb",
-      "file": "prop_tuong_canh.2ca0926325.glb",
-      "bytes": 528280,
+      "file": "prop_tuong_canh.58c0964e46.glb",
+      "bytes": 308472,
       "rawBytes": 984316,
       "triangles": 4997,
       "rawTriangles": 12517,
@@ -4073,8 +4073,8 @@
         {
           "name": "prop_tuong_canh_normal",
           "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "normalTexture"
           ]
@@ -4091,8 +4091,8 @@
         {
           "name": "prop_tuong_canh_orm",
           "mimeType": "image/jpeg",
-          "width": 1024,
-          "height": 1024,
+          "width": 512,
+          "height": 512,
           "slots": [
             "metallicRoughnessTexture"
           ]

@@ -51,7 +51,7 @@
         { "ratio": 0.35, "maxTriangles": 15000 },
         { "ratio": 0.12, "maxTriangles": 5000 }
       ],
-      "texture": { "color": 2048, "data": 1024 },
+      "texture": { "color": 1536, "data": 1024 },
       "bones": 80
     },
     "weapon": {
@@ -69,7 +69,7 @@
     "prop": {
       "triangles": { "min": 500, "max": 5000 },
       "lods": [{ "ratio": 0.4 }, { "ratio": 0.15 }],
-      "texture": { "color": 1024, "data": 1024 },
+      "texture": { "color": 1024, "data": 512 },
       "bones": 0
     },
     "drop": {

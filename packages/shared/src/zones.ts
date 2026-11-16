@@ -23,6 +23,11 @@ export function zoneAt(zones: readonly ZoneDef[] | undefined, x: number, z: numb
   return zones?.find((zn) => inPoly(zn.poly, x, z));
 }
 
+/** Vùng của level chứa điểm (E1-A: tra theo LevelDef thay vì hằng Vân Lam). */
+export function zoneAtLevel(level: Pick<LevelDef, 'zones'>, x: number, z: number): ZoneDef | undefined {
+  return zoneAt(level.zones, x, z);
+}
+
 /** Một bãi thành các SpawnDef: `count` con thường quanh tâm, cộng một con đánh xa nếu có. */
 export function campSpawns(c: CampDef): SpawnDef[] {
   const base = { x: c.x, z: c.z, radius: c.radius, levelMin: c.levelMin, levelMax: c.levelMax, respawn: c.respawn };
