@@ -495,11 +495,15 @@ export class Vfx {
           const out = tt > lift ? Math.max(0, 1 - (tt - lift) / 0.7) : 1;
           beam.fxA.x = Math.min(1.1, bt / 0.25);
           beam.fxK = Math.min(1, bt / 0.8);
-          beam.fxOpacity = T.alpha * out * lootPulse(tier, bt);
+          // Camera sát hay nằm trong cột (nhiều món rơi chồng nhau): mặt cột che kín màn hình thành tấm trắng cháy sáng, nên mờ dần khi lại gần.
+          const cam = this.camera;
+          const near = cam ? Math.min(1, Math.max(0, (Math.hypot(cam.position.x - tx, cam.position.z - tz) - T.radius * 1.2) / 5)) : 1;
+          const vis = 0.15 + 0.85 * near;
+          beam.fxOpacity = T.alpha * out * lootPulse(tier, bt) * vis;
           if (core) {
             core.fxA.x = Math.min(1.1, bt / 0.35);
             core.fxK = beam.fxK;
-            core.fxOpacity = 0.5 * out;
+            core.fxOpacity = 0.5 * out * vis;
           }
           if (ring) {
             // Loang ra rồi đọng lại thành quầng dưới chân cột, thở nhẹ, tắt cùng cột.

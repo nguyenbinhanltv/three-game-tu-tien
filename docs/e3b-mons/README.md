@@ -71,6 +71,8 @@ Mặt đảo vẫn là cỏ Vân Lam nhạt màu (bộ texture riêng thuộc E3
 
 ## Còn lại
 
+- **Tấm trắng cháy sáng khi hạ nhiều quái cùng lúc** (thấy ở hàng cuối `elite_loi_van_su_vuong.jpg`, khi `/gm killall` hạ 4 quái một lúc và rơi nhiều đồ): một đa giác trắng phẳng rất lớn bên phải màn hình, tái hiện được. Khi chỉ hạ một con thì không có. Chưa xác định nguồn: vòng (`RING_GEO`) và cột sáng (`BEAM_GEO`) của đồ rơi đều tròn, nên nghi một mesh cộng sáng sát camera (cột/lõi bậc cao, hoặc bloom chồng nhiều lớp). Đã thêm làm mờ cột sáng khi camera lại gần (`lootDrop` ở `game/vfx.ts`) nhưng chưa hết tấm trắng. Cần: ghi lại mesh phủ nhiều pixel nhất ở khung đó (duyệt `scene`), rồi hạ cường độ hoặc đổi thành vòng mờ. Không do dữ liệu E3-B (tinh anh khác cũng dùng chung VFX rơi đồ).
+
 - Nuốt kéo người chơi, Kim Thiền phun độc khi chết (cần hook server).
 - Kính Linh "mở sườn khi đánh" (chưa có cơ chế).
 - Nhạc `boss_kinh`, texture mặt đảo (E3-I/mỹ thuật bản đồ 3).
