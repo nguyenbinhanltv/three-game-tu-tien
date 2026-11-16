@@ -122,7 +122,7 @@ function buildPalaceShell(def: CaveDef, groundY: number): THREE.Mesh {
  * Sàn gương giả (E3-M): đĩa phẳng nằm sát mặt đất, vẽ sẵn lên một ảnh canvas: mặt đá đen bóng, vân vòng và tấm ghép tỏa tia, vệt phản chiếu
  * của hàng cột và một quầng trăng mờ lệch tâm. KHÔNG phản chiếu thật (không render lần hai, không SSR), nên một draw call và một texture 1024².
  */
-export function buildMirrorFloor(def: CaveDef, groundY: number): THREE.Mesh {
+export function buildMirrorFloor(def: CaveDef, groundAt: (x: number, z: number) => number): THREE.Mesh {
   const N = 1024;
   const cv = document.createElement('canvas');
   cv.width = N;
@@ -176,9 +176,13 @@ export function buildMirrorFloor(def: CaveDef, groundY: number): THREE.Mesh {
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
-  const geo = new THREE.CircleGeometry(def.r, 96).rotateX(-Math.PI / 2);
+  // Lưới vòng bám sát địa hình (cao hơn mặt đất 0,08 m): sàn không bị mặt đất gồ ghề đâm thủng.
+  const geo = new THREE.RingGeometry(0.01, def.r, 96, 40).rotateX(-Math.PI / 2);
+  const p = geo.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < p.count; i++) p.setY(i, groundAt(def.x + p.getX(i), def.z + p.getZ(i)) + 0.08);
+  geo.computeBoundingSphere();
   const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, fog: false }));
-  mesh.position.set(def.x, groundY + 0.06, def.z);
+  mesh.position.set(def.x, 0, def.z);
   mesh.name = 'mirror-floor';
   mesh.frustumCulled = false;
   mesh.renderOrder = -1;

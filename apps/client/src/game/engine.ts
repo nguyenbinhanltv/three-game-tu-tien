@@ -924,7 +924,7 @@ export class Game {
       this.levelObjs.push(shell, glow);
       if (palace) {
         // Cung gương (E3-M): sàn gương giả phủ lòng chảo (một draw call, không phản chiếu thật).
-        const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt(cave.x, cave.z));
+        const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt);
         this.scene.add(floor);
         this.levelObjs.push(floor);
       }
