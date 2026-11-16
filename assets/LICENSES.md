@@ -158,6 +158,24 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `prop_kiem_han_giao` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `prop_kiem_tram_ta` | Tripo web app (image→3D H3.1) + Codex (concept); xoay đứng và đo chắn/chuôi bằng `tools/blender/orient_sword.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `prop_duong_xi` | Tripo API (image→3D v3.1, CLI) + Codex (concept) | dự án | 2026-11-15 | task `5ef06438-a4c7-4e3c-8050-76dffebe72eb` |
+| `prop_anh_ngoc_kinh` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_cau_da_gay` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_cau_may` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_cay_goc_kho` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_cong_khai_mach` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_cong_thanh_vo` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_da_troi` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_dai_tinh_bai` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_den_long_troi` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_kinh_ho_dai` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_mach_tinh_tru` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_ngung_dan_lo` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_phu_dao_dinh` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_than_nien_chau` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_tru_da_khac_van` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_tru_nham_do` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_tung_phu_dao` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
+| `prop_tuong_da_vo_si` | Tripo web app (image→3D H3.1) + Codex (concept) | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `chr_npc_chuong_mon` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Lạc Vân chân nhân"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_duoc_su` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Tố Tâm"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |
 | `chr_npc_thiet_lao` | Tripo web app (text-to-3D H3.1 + auto rig Mixamo + preset animation) + Codex (concept "Thiết lão"); hit_light thủ tục `tools/blender/anim_biped_extra.py` | dự án | 2026-11-15 | web app, không có task id; xem meta.json |

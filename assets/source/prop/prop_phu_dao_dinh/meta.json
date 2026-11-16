@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_phu_dao_dinh",
+  "type": "prop",
+  "budgetClass": "prop",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 5000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "prop/prop_phu_dao_dinh/tripo/raw_v01.glb",
+    "size": {
+      "height": 6
+    },
+    "orient": "none",
+    "yaw": 0
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex imagegen",
+      "date": "2026-11-16",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "parentTaskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 5000,
+        "topology": "triangle",
+        "texture": "2K",
+        "pbr": true,
+        "remove_lighting": true
+      },
+      "seed": null,
+      "quote": 0,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Dựng trên Tripo web (gói Max). Đình nghỉ chân; bản đồ van_hai (E-2/3/4)."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (image→3D H3.1) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}
