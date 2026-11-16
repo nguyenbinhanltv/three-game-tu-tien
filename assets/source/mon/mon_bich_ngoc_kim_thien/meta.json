@@ -1,0 +1,87 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "mon_bich_ngoc_kim_thien",
+  "type": "mon",
+  "budgetClass": "monster",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 8000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "mon/mon_bich_ngoc_kim_thien/tripo/rig_v01.glb",
+    "size": {
+      "depth": 0.7
+    },
+    "yaw": -90,
+    "post": "tools/blender/anim_creature.py",
+    "creature": {
+      "kind": "insect",
+      "groups": {
+        "body": [
+          "tripo_spine_0",
+          "tripo_spine_1"
+        ],
+        "wings": [
+          [
+            "bone_2",
+            "bone_3",
+            "bone_4",
+            "bone_5"
+          ],
+          [
+            "bone_9",
+            "bone_10",
+            "bone_11",
+            "bone_12"
+          ]
+        ]
+      },
+      "flap": {
+        "hz": 6,
+        "amp": 24
+      }
+    }
+  },
+  "tripo": [
+    {
+      "step": "text_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {},
+      "seed": null,
+      "quote": null,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Web app (người dùng bấm). 2915 tam giác. Prompt: docs/ASSET_CONCEPTS.md mục mon_bich_ngoc_kim_thien."
+    },
+    {
+      "step": "rig",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "insect",
+      "params": {},
+      "seed": null,
+      "quote": null,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-16",
+      "output": "tripo/rig_v01.glb",
+      "result": "ok",
+      "note": "24 xương."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max) text-to-3D + Codex (concept); clip thủ tục tools/blender/",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}
