@@ -15,7 +15,7 @@
     },
     "type": { "enum": ["chr", "mon", "prop", "arch", "fx", "anim"], "description": "Thư mục loại trong assets/source/." },
     "budgetClass": {
-      "enum": ["player", "npc", "monster", "elite", "boss", "weapon", "artifact", "prop", "drop", "arch", "fx", "anim"],
+      "enum": ["player", "npc", "monster", "elite", "boss", "weapon", "artifact", "prop", "outfit", "drop", "arch", "fx", "anim"],
       "description": "Lớp ngân sách trong assets/budgets.json. Bỏ trống thì suy từ tiền tố id (chr_ → player, mon_ → monster…)."
     },
     "itemId": { "type": ["string", "null"], "description": "Id vật phẩm trong packages/content nếu asset là hình của vật phẩm." },
@@ -294,6 +294,46 @@
             "rootAt": { "type": "number", "minimum": 0.1, "maximum": 0.9, "description": "Tỉ lệ chiều dài (từ đuôi) nơi cổ bắt đầu nâng: xương gốc." },
             "amp": { "type": "number", "minimum": 0.1, "maximum": 1.5, "description": "Nhân mọi góc uốn của clip." },
             "style": { "enum": ["crawl", "swim"], "description": "swim: lơ lửng, sóng dọc chúi/ngẩng." }
+          }
+        },
+        "retarget": {
+          "type": "object",
+          "description": "Mảnh trang phục lên thân nền nhân vật chơi (script post retarget_set.py): xem đầu tools/blender/retarget_set.py và docs/sets-retarget/README.md.",
+          "required": ["player"],
+          "additionalProperties": false,
+          "properties": {
+            "player": { "type": "string" },
+            "cut": { "type": "array", "items": { "enum": ["head", "neck", "hand"] } },
+            "clampLen": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+            "legBlend": { "type": "number" },
+            "strayHand": { "type": "number" },
+            "strayLeg": { "type": "number" },
+            "mode": { "enum": ["rig", "transfer", "rigid"] },
+            "bone": { "type": "string" },
+            "anchor": {
+              "type": "object",
+              "required": ["bone"],
+              "additionalProperties": false,
+              "properties": {
+                "bone": { "type": "string" },
+                "offset": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+                "align": { "enum": ["center", "bottom", "top"] }
+              }
+            },
+            "scale": { "type": "number" },
+            "yaw": { "type": "number" },
+            "pad": { "type": "number" },
+            "padRange": { "type": "number" },
+            "padBody": { "enum": ["kept", "all"] },
+            "smooth": { "type": "integer" },
+            "spring": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["kind"],
+                "properties": { "kind": { "enum": ["skirt", "sleeve"] } }
+              }
+            }
           }
         },
         "post": {

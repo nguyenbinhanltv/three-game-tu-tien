@@ -106,6 +106,7 @@ import equipQualitiesJson from '../data/equipment/qualities.json';
 import equipTemplatesJson from '../data/equipment/templates.json';
 import equipAffixesJson from '../data/equipment/affixes.json';
 import equipSetsJson from '../data/equipment/sets.json';
+import outfitsJson from '../data/equipment/outfits.json';
 import equipSetItemsJson from '../data/equipment/setItems.json';
 import forgeJson from '../data/equipment/forge.json';
 
@@ -203,6 +204,8 @@ export const ITEM_SYS: ItemSysData = {
 /** Bộ trang bị (P3-4) và công thức chế ở Thiết lão. */
 export const SETS = equipSetsJson as unknown as SetDef[];
 export const SET = index(SETS);
+/** Áo mặc thật theo bộ trang bị: id bộ → mảnh asset (`<mảnh>_nam|nu`), xem docs/sets-retarget. */
+export const OUTFITS = Object.fromEntries(Object.entries(outfitsJson).filter(([k]) => k !== '$comment')) as Record<string, string[]>;
 export const FORGE = forgeJson as ForgeRecipe[];
 export const FORGE_BY_ID = index(FORGE);
 

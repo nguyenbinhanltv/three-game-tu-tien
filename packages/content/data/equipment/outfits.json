@@ -1,0 +1,6 @@
+{
+  "$comment": "Áo mặc thật (docs/sets-retarget): id bộ trang bị → các mảnh asset (client nạp `<mảnh>_nam|nu`). Mảnh dựng bằng tools/blender/retarget_set.py. Bộ chưa có trong sets.json (set_tinh_khuyet, bậc 4 Hóa Thần) chỉ chuẩn bị asset, chưa có vật phẩm.",
+  "set_liet_mach": ["set_liet_mach_kiem_y"],
+  "set_kinh_quang": ["set_kinh_quang_kiem_y"],
+  "set_tinh_khuyet": ["set_tinh_khuyet_kiem_bao"]
+}
