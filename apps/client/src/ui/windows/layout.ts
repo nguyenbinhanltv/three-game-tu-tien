@@ -90,6 +90,12 @@ export interface OpenResult {
   opened: WinState;
 }
 
+/** Xếp lại z về 1..N theo thứ tự hiện tại: z không bao giờ vượt số cửa sổ (tối đa 8), nên không vượt các lớp toast/modal/tooltip. */
+export function normalizeZ(list: readonly WinState[]): WinState[] {
+  const order = [...list].sort((a, b) => a.z - b.z);
+  return list.map((w) => ({ ...w, z: order.findIndex((o) => o.id === w.id) + 1 }));
+}
+
 export function topZ(list: readonly WinState[]): number {
   return list.reduce((m, w) => Math.max(m, w.z), 0);
 }
@@ -120,14 +126,15 @@ export function openWindow(list: readonly WinState[], id: WinId, vp: Viewport, s
     }
   }
   next.push(opened);
-  return { list: next, opened };
+  next = normalizeZ(next);
+  return { list: next, opened: next.find((o) => o.id === id)! };
 }
 
 export function focusWindow(list: readonly WinState[], id: WinId): OpenResult {
   const w = list.find((o) => o.id === id);
   if (!w) throw new Error('window not open: ' + id);
-  const opened = w.z === topZ(list) ? w : { ...w, z: topZ(list) + 1 };
-  return { list: list.map((o) => (o.id === id ? opened : o)), opened };
+  const next = w.z === topZ(list) ? [...list] : normalizeZ(list.map((o) => (o.id === id ? { ...o, z: topZ(list) + 1 } : o)));
+  return { list: next, opened: next.find((o) => o.id === id)! };
 }
 
 export function closeWindow(list: readonly WinState[], id: WinId): WinState[] {

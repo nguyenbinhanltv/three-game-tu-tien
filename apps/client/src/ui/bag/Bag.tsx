@@ -1,4 +1,5 @@
 import { type DragEvent, type MouseEvent, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { C, INV_PAGE, INV_PAGES, INV_SIZE, isEquipSlot, type InvItem, type InvSlot } from '@dtl/shared';
 import { ITEM, itemName, t } from '@dtl/content';
 import { ContentIcon, UiIcon } from '../ContentIcon';
@@ -144,7 +145,9 @@ function SplitDialog({ split, onClose }: { split: { slot: number; to: number; ma
     setRaw('');
     onClose();
   };
-  return (
+  // Portal ra `.hud`: Modal nằm trong stacking context của `.win-host` sẽ bị cửa sổ z cao hơn đè lên.
+  const host = document.querySelector('.hud');
+  const dlg = (
     <Modal
       open={open}
       title={t('ui.bag.split_title')}
@@ -178,6 +181,7 @@ function SplitDialog({ split, onClose }: { split: { slot: number; to: number; ma
       </label>
     </Modal>
   );
+  return host ? createPortal(dlg, host) : dlg;
 }
 
 export function Bag() {
