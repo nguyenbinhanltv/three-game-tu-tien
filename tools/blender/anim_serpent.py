@@ -31,13 +31,31 @@ EXTRA = list(IMPORT.get('extra', []))
 for _n in EXTRA:
     if _n not in ('slam', 'sweep', 'stun', 'chant'):
         fail(f'anim_serpent: import.extra "{_n}" chưa hỗ trợ (slam | sweep | stun | chant)')  # noqa: F821
+SERP = IMPORT.get('serpent') or {}
+# `import.serpent` (mọi trường tùy chọn; bỏ khối = Hàn Giao, đường tâm đo tay SPINE_RAW):
+#   spine: "auto"  đường tâm tự đo từ lưới (khoảng cách đo trên mặt lưới từ chóp đuôi, lấy trung vị từng lớp), cho model mới;
+#   dropRig: true  bỏ rig Tripo kèm theo (Tripo rig thân dài bằng xương bone_N lộn xộn, không dùng được);
+#   bones (17), headFrom (tỉ lệ chiều dài đường tâm tính từ đuôi, nơi đầu bắt đầu), rootAt (nơi cổ bắt đầu nâng, xương gốc);
+#   amp: hệ số nhân góc uốn của mọi clip (1 = rắn);
+#   style: "swim" (kình ngư bay lượn: sóng dọc chúi/ngẩng là chính) | "crawl" (mặc định).
+if SERP.get('dropRig'):
+    for _a in list(ARMATURES):  # noqa: F821
+        bpy.data.objects.remove(_a, do_unlink=True)
+    for _m in list(MESHES[0].modifiers):  # noqa: F821
+        if _m.type == 'ARMATURE':
+            MESHES[0].modifiers.remove(_m)  # noqa: F821
+    MESHES[0].vertex_groups.clear()  # noqa: F821
+    MESHES[0].parent = None  # noqa: F821
+    ARMATURES.clear()  # noqa: F821
 if len(MESHES) != 1 or ARMATURES:  # noqa: F821
-    fail('anim_serpent cần đúng 1 mesh và chưa có armature (model Tripo chưa rig)')  # noqa: F821
+    fail('anim_serpent cần đúng 1 mesh và chưa có armature (model Tripo chưa rig; hoặc đặt import.serpent.dropRig)')  # noqa: F821
 mesh = MESHES[0]  # noqa: F821
+STYLE = SERP.get('style', 'crawl')
+AMP = float(SERP.get('amp', 1.0))  # nhân mọi góc uốn của clip (thân dẹt, vây rộng như kình ngư: uốn nhỏ để lưới không gập)
 
 # ---------- 1. đường tâm ----------
 
-# (x, z) trong hệ GLB thô: x ∈ [-0.5, 0.5] dọc thân (đầu ở +x), z lên. Đo từ ảnh nghiêng raw_v01.glb.
+# Đường tâm thô của Hàn Giao: (x, z) trong hệ GLB thô, x ∈ [-0.5, 0.5] dọc thân (đầu ở +x), z lên. Đo từ ảnh nghiêng raw_v01.glb.
 SPINE_RAW = [
     (-0.500, 0.016), (-0.329, 0.038), (-0.164, 0.053), (0.000, 0.059), (0.123, 0.061), (0.230, 0.073),
     (0.296, 0.102), (0.329, 0.143), (0.335, 0.200), (0.322, 0.265), (0.329, 0.314), (0.353, 0.345),
@@ -58,6 +76,55 @@ def to_std(x, z):
     return np.array([0.0, Y_MID - x * k, z * k])
 
 
+def auto_spine(k=18):
+    """Đường tâm từ lưới: hàn đỉnh trùng vị trí, Dijkstra theo cạnh từ đỉnh chóp đuôi (Y lớn nhất; đầu ở -Y), chia theo
+    khoảng cách mặt lưới thành k lớp, mỗi lớp lấy trung vị Y/Z (chân, vây lệch ít vì trung vị). Cổ cong chữ S vẫn đúng
+    vì đo theo mặt lưới chứ không theo trục Y."""
+    import heapq
+    me = mesh.data
+    keys = np.round(wv / 1e-4).astype(np.int64)
+    _, first, inv = np.unique(keys, axis=0, return_index=True, return_inverse=True)
+    inv = np.asarray(inv).reshape(-1)
+    n = len(first)
+    adj = [[] for _ in range(n)]
+    for e in me.edges:
+        a, b = int(inv[e.vertices[0]]), int(inv[e.vertices[1]])
+        if a != b:
+            w = float(np.linalg.norm(wv[e.vertices[0]] - wv[e.vertices[1]]))
+            adj[a].append((b, w))
+            adj[b].append((a, w))
+    pos = wv[first]
+    src = int(np.argmax(pos[:, 1]))
+    dist = np.full(n, np.inf)
+    dist[src] = 0.0
+    pq = [(0.0, src)]
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > dist[u]:
+            continue
+        for v, w in adj[u]:
+            nd = d + w
+            if nd < dist[v]:
+                dist[v] = nd
+                heapq.heappush(pq, (nd, v))
+    ok = np.isfinite(dist)
+    # chỉ xét thân: bỏ đỉnh có khoảng cách lớn hơn quãng đường tới mút đầu (chân, râu dài hơn)
+    head_idx = np.where(ok)[0][np.argsort(pos[ok, 1])[: max(8, int(ok.sum() * 0.004))]]
+    dmax = float(np.median(dist[head_idx]))
+    edges = np.linspace(0.0, dmax, k + 1)
+    pts = [np.array([0.0, pos[src, 1], pos[src, 2]])]
+    for i in range(k):
+        sel = ok & (dist >= edges[i]) & (dist < edges[i + 1] + (1e-9 if i == k - 1 else 0))
+        if sel.sum() < 5:
+            continue
+        pts.append(np.array([0.0, float(np.median(pos[sel, 1])), float(np.median(pos[sel, 2]))]))
+    tip = pos[head_idx]
+    pts.append(np.array([0.0, float(tip[:, 1].mean()), float(tip[:, 2].mean())]))
+    # làm mượt nhẹ (trung bình 3 điểm, giữ hai mút)
+    sm = [pts[0]] + [(pts[i - 1] + 2 * pts[i] + pts[i + 1]) / 4 for i in range(1, len(pts) - 1)] + [pts[-1]]
+    return sm
+
+
 def catmull(pts, per=24):
     P = [pts[0]] + list(pts) + [pts[-1]]
     out = []
@@ -70,8 +137,15 @@ def catmull(pts, per=24):
     return np.array(out)
 
 
-SERP = IMPORT.get('serpent') or {}
-if SERP.get('auto'):
+if SERP.get('spine') == 'auto':
+    knots = auto_spine()
+    dense = catmull(knots)
+    seg = np.linalg.norm(np.diff(dense, axis=0), axis=1)
+    arc = np.concatenate([[0.0], np.cumsum(seg)])
+    TOTAL = arc[-1]
+    HEAD_S = float(SERP.get('headFrom', 0.9)) * TOTAL
+    ROOT_S = float(SERP.get('rootAt', 0.6)) * TOTAL
+elif SERP.get('auto'):
     # Đường tâm tự đo từ lưới (ngô công nằm ngang, uốn chữ S trên mặt đất, không có ảnh nghiêng để đo tay như Hàn Giao):
     # chia thân thành `bins` lát theo trục dài Y (đuôi +Y → đầu -Y), lấy trọng tâm từng lát (x, z), kéo hai đầu ra mút.
     # `headFrac`: phần thân ở đầu tính là đầu; `rootFrac`: chỗ xương gốc `body` (0 = đuôi, 1 = mõm).
@@ -87,17 +161,22 @@ if SERP.get('auto'):
     HEAD_FROM = max(1, min(nb - 1, round(nb * (1 - float(SERP.get('headFrac', 0.15))))))
     ROOT_AT = None
     ROOT_PT = knots[max(1, min(nb - 2, round(nb * float(SERP.get('rootFrac', 0.7)))))]
+    dense = catmull(knots)
+    seg = np.linalg.norm(np.diff(dense, axis=0), axis=1)
+    arc = np.concatenate([[0.0], np.cumsum(seg)])
+    TOTAL = arc[-1]
+    HEAD_S = arc[int(np.argmin(np.linalg.norm(dense - knots[HEAD_FROM], axis=1)))]
+    ROOT_S = arc[int(np.argmin(np.linalg.norm(dense - ROOT_PT, axis=1)))]
 else:
     knots = [to_std(x, z) for x, z in SPINE_RAW]
-    ROOT_PT = None
-dense = catmull(knots)
-seg = np.linalg.norm(np.diff(dense, axis=0), axis=1)
-arc = np.concatenate([[0.0], np.cumsum(seg)])
-TOTAL = arc[-1]
-head_knot = knots[HEAD_FROM]
-HEAD_S = arc[int(np.argmin(np.linalg.norm(dense - head_knot, axis=1)))]
-root_pt = ROOT_PT if ROOT_PT is not None else to_std(*ROOT_AT)
-ROOT_S = arc[int(np.argmin(np.linalg.norm(dense - root_pt, axis=1)))]
+    dense = catmull(knots)
+    seg = np.linalg.norm(np.diff(dense, axis=0), axis=1)
+    arc = np.concatenate([[0.0], np.cumsum(seg)])
+    TOTAL = arc[-1]
+    head_knot = knots[HEAD_FROM]
+    HEAD_S = arc[int(np.argmin(np.linalg.norm(dense - head_knot, axis=1)))]
+    root_pt = to_std(*ROOT_AT)
+    ROOT_S = arc[int(np.argmin(np.linalg.norm(dense - root_pt, axis=1)))]
 
 
 def point_at(s):
@@ -106,7 +185,7 @@ def point_at(s):
 
 # ---------- 2. xương ----------
 
-NB = 17  # số xương; xương NB-1 là đầu
+NB = int(SERP.get('bones', 17))  # số xương; xương NB-1 là đầu
 D = HEAD_S / (NB - 1)
 JOINT_S = [i * D for i in range(NB)] + [TOTAL]  # NB + 1 khớp; khớp NB-1 = đầu cổ, khớp NB = mõm
 ROOT = max(0, min(NB - 2, round(ROOT_S / D)))  # xương gốc: đoạn [ROOT*D, (ROOT+1)*D] gần chỗ cổ nâng
@@ -207,6 +286,7 @@ def set_pose(angles, move=(0.0, 0.0, 0.0)):
     tot = []
     for i in range(NB):
         a, b = angles.get(i, (0.0, 0.0))
+        a, b = a * AMP, b * AMP
         tot.append(rot(UP_AXIS[i], b) @ rot(X, a))
     for i in range(NB):
         p = PB[i]
@@ -367,6 +447,10 @@ TAU = 2 * math.pi
 # idle: thở, cổ đung đưa, thân và đuôi uốn lượn chậm (sóng chạy từ gốc ra đuôi)
 def idle(t):
     a = TAU * t
+    if STYLE == 'swim':  # lơ lửng: sóng dọc nhấp nhô chậm, rẽ ngang ít
+        ang = add(wave(a, 8.0, 2.0, 3.0, 4.0, head_amp=1.5, vert_amp=13.0, vert_k=4.4),
+                  pose(neck_pitch=3.0 * math.sin(a), head_pitch=3.0 * math.sin(a - 0.8)))
+        return ang, (0.0, 0.0, 0.02 * LEN * math.sin(a))
     ang = add(wave(a, 26.0, 8.0, 7.0, 5.2, head_amp=3.0, vert_amp=2.0),
               pose(neck_pitch=2.0 * math.sin(a), head_pitch=3.0 * math.sin(a - 0.8)))
     return ang, (0.0, 0.0, 0.0)
@@ -375,6 +459,10 @@ def idle(t):
 # run: trườn, sóng lớn chạy dọc thân, cổ ngẩng hơi chúi tới
 def run(t):
     a = TAU * t
+    if STYLE == 'swim':  # bơi trong không khí: sóng dọc lớn từ thân ra đuôi, đầu dẫn
+        ang = add(wave(a, 12.0, 3.0, 4.0, 6.0, neck_phase=1.6, head_amp=2.0, vert_amp=24.0, vert_k=5.5),
+                  pose(neck_pitch=4.0, head_pitch=-4.0))
+        return ang, (0.0, 0.0, 0.03 * LEN * math.sin(a))
     ang = add(wave(a, 34.0, 15.0, 10.0, 7.5, neck_phase=2.2, head_amp=4.0, vert_amp=4.0),
               pose(neck_pitch=12.0, head_pitch=-6.0, front=4.0 * math.sin(a)))
     return ang, (0.0, 0.0, 0.0)

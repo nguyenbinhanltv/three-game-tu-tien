@@ -48,7 +48,8 @@ async function wolfSkins(disposed: string[] = [], fail = false) {
   });
   const skins = new MonsterSkins(cache, false);
   skins.preload();
-  const ids = Object.keys(MONSTER_SKINS).map((id) => MONSTER.get(id)!);
+  // Skin của boss mở rộng (E-2..E-4) có thể chưa có quái trong monsters.json: bỏ qua, chỉ chờ quái đã có dữ liệu.
+  const ids = Object.keys(MONSTER_SKINS).flatMap((id) => { const d = MONSTER.get(id); return d ? [d] : []; });
   for (let i = 0; i < 200 && ids.some((d) => skins.pending(d)); i++) await new Promise((r) => setTimeout(r, 10));
   return { cache, skins };
 }
@@ -106,7 +107,7 @@ describe('máy trạng thái', () => {
 describe('sói có xương (mon_soi_xam thật)', () => {
   it('quái trong bảng dùng model mới theo scale dữ liệu, quái khác vẫn model khối', async () => {
     const { skins } = await wolfSkins();
-    for (const id of Object.keys(MONSTER_SKINS)) {
+    for (const id of Object.keys(MONSTER_SKINS).filter((k) => MONSTER.get(k))) {
       expect(MONSTER.get(id), id).toBeDefined();
       const m = skins.create(MONSTER.get(id)!);
       expect(m, id).toBeInstanceOf(SkinnedMonster);
@@ -302,7 +303,7 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     expect(skeletons.length).toBeGreaterThanOrEqual(20);
     expect(disposed).toEqual([]); // geometry/texture dùng chung chưa bị đụng
     // Mỗi asset trong bảng giữ đúng một handle mẫu.
-    const assetCount = new Set(Object.values(MONSTER_SKINS).map((s) => s.asset)).size;
+    const assetCount = new Set(Object.entries(MONSTER_SKINS).filter(([id]) => MONSTER.get(id)).map(([, s]) => s.asset)).size;
     expect(cache.stats()).toEqual({ loaded: assetCount, loading: 0, refs: assetCount });
     skins.dispose();
     expect(cache.stats()).toEqual({ loaded: 0, loading: 0, refs: 0 });

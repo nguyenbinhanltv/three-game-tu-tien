@@ -242,7 +242,7 @@ def geometric_layout():
 
 
 REPARENT = {}
-RENAME = wolf_layout()
+RENAME = QUAD.get('layout') or wolf_layout()  # layout: bảng tên cũ → vai trò khai trong meta
 if not RENAME:
     try:
         RENAME = generic_layout()
