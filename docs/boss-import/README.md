@@ -17,7 +17,7 @@ Xem trực tiếp trong game client: `?mute=1&show=boss[&id=<id>]` (chọn boss,
 | `boss_thien_khuyet_thu_linh` | rig Mixamo Tripo 29 xương (thiếu bàn chân trái): `rigFix`; clip thủ tục | cao 8 m | 18906 / 6611 / 2267 | 38 | 2,9 MB |
 | `boss_vo_dien_than_quan` | rig Mixamo Tripo 48 xương; clip thủ tục; sáu tay phụ liền lưới nên nhún theo thân | cao 4,6 m | 18928 / 6620 / 2270 | 49 | 2,7 MB |
 
-Mọi boss: texture màu 2048, normal/ORM 1024, 3 mức LOD (cùng file), ≤ 80 xương, lớp ngân sách `boss`. `pnpm assets:validate` đạt cho cả 7.
+Mọi boss: texture màu 1536 (trần mới của lớp boss sau S2-B), normal/ORM 1024, 3 mức LOD (cùng file), ≤ 80 xương, lớp ngân sách `boss`. `pnpm assets:validate` đạt cho cả 7.
 
 ## Clip (30 khung/giây, đều có trong GLB)
 

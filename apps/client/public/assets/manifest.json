@@ -158,9 +158,9 @@
       "id": "boss_dia_mach_long",
       "class": "boss",
       "source": "assets/build/raw/boss_dia_mach_long.glb",
-      "file": "boss_dia_mach_long.9fb1ea041d.glb",
-      "bytes": 3056408,
-      "rawBytes": 3136460,
+      "file": "boss_dia_mach_long.bfebbe71b5.glb",
+      "bytes": 2296432,
+      "rawBytes": 2376488,
       "triangles": 19966,
       "rawTriangles": 19966,
       "lod0Cap": 20000,
@@ -191,8 +191,8 @@
         {
           "name": "boss_dia_mach_long_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -495,9 +495,9 @@
       "id": "boss_kinh_nguyet_chan_quan",
       "class": "boss",
       "source": "assets/build/raw/boss_kinh_nguyet_chan_quan.glb",
-      "file": "boss_kinh_nguyet_chan_quan.0febbbc735.glb",
-      "bytes": 2719864,
-      "rawBytes": 2757388,
+      "file": "boss_kinh_nguyet_chan_quan.94ce23fab6.glb",
+      "bytes": 2106812,
+      "rawBytes": 2144340,
       "triangles": 19143,
       "rawTriangles": 19143,
       "lod0Cap": 20000,
@@ -529,8 +529,8 @@
         {
           "name": "boss_kinh_nguyet_chan_quan_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -580,9 +580,9 @@
       "id": "boss_thach_tam_khoi_vuong",
       "class": "boss",
       "source": "assets/build/raw/boss_thach_tam_khoi_vuong.glb",
-      "file": "boss_thach_tam_khoi_vuong.4fce5b0f39.glb",
-      "bytes": 2748860,
-      "rawBytes": 2812912,
+      "file": "boss_thach_tam_khoi_vuong.41a4aeaf0d.glb",
+      "bytes": 2036672,
+      "rawBytes": 2100732,
       "triangles": 19039,
       "rawTriangles": 19039,
       "lod0Cap": 20000,
@@ -614,8 +614,8 @@
         {
           "name": "boss_thach_tam_khoi_vuong_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -665,9 +665,9 @@
       "id": "boss_thien_khuyet_thu_linh",
       "class": "boss",
       "source": "assets/build/raw/boss_thien_khuyet_thu_linh.glb",
-      "file": "boss_thien_khuyet_thu_linh.f0563e1f69.glb",
-      "bytes": 3031744,
-      "rawBytes": 3090936,
+      "file": "boss_thien_khuyet_thu_linh.5c52e97a18.glb",
+      "bytes": 2263464,
+      "rawBytes": 2322652,
       "triangles": 18906,
       "rawTriangles": 18906,
       "lod0Cap": 20000,
@@ -699,8 +699,8 @@
         {
           "name": "boss_thien_khuyet_thu_linh_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -750,9 +750,9 @@
       "id": "boss_thon_mach_ngo_cong_vuong",
       "class": "boss",
       "source": "assets/build/raw/boss_thon_mach_ngo_cong_vuong.glb",
-      "file": "boss_thon_mach_ngo_cong_vuong.78f7f4827a.glb",
-      "bytes": 2930116,
-      "rawBytes": 3096108,
+      "file": "boss_thon_mach_ngo_cong_vuong.12150efa95.glb",
+      "bytes": 2177172,
+      "rawBytes": 2343168,
       "triangles": 19303,
       "rawTriangles": 19303,
       "lod0Cap": 20000,
@@ -784,8 +784,8 @@
         {
           "name": "boss_thon_mach_ngo_cong_vuong_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -920,9 +920,9 @@
       "id": "boss_van_hai_kinh_vuong",
       "class": "boss",
       "source": "assets/build/raw/boss_van_hai_kinh_vuong.glb",
-      "file": "boss_van_hai_kinh_vuong.4863033252.glb",
-      "bytes": 2401804,
-      "rawBytes": 2627364,
+      "file": "boss_van_hai_kinh_vuong.e77955c1b2.glb",
+      "bytes": 1790348,
+      "rawBytes": 2015904,
       "triangles": 19058,
       "rawTriangles": 19058,
       "lod0Cap": 20000,
@@ -954,8 +954,8 @@
         {
           "name": "boss_van_hai_kinh_vuong_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
@@ -1005,9 +1005,9 @@
       "id": "boss_vo_dien_than_quan",
       "class": "boss",
       "source": "assets/build/raw/boss_vo_dien_than_quan.glb",
-      "file": "boss_vo_dien_than_quan.72927fd551.glb",
-      "bytes": 2867320,
-      "rawBytes": 2921360,
+      "file": "boss_vo_dien_than_quan.820f01a86a.glb",
+      "bytes": 2178748,
+      "rawBytes": 2232796,
       "triangles": 18928,
       "rawTriangles": 18928,
       "lod0Cap": 20000,
@@ -1039,8 +1039,8 @@
         {
           "name": "boss_vo_dien_than_quan_color",
           "mimeType": "image/jpeg",
-          "width": 2048,
-          "height": 2048,
+          "width": 1536,
+          "height": 1536,
           "slots": [
             "baseColorTexture"
           ]
