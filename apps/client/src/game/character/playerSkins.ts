@@ -6,7 +6,7 @@ import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
 import { adoptGltfMaterials, createWorldMaterial, rimLight } from '../../render/materials/world';
-import { createOutfitMaterial, hasOutfitMask } from '../../render/materials/outfit';
+import { createOutfitMaterial, hasOutfitMask, type OutfitMode } from '../../render/materials/outfit';
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
 import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
@@ -398,7 +398,9 @@ export class PlayerSkins {
           this.remapped.set(rk, geo);
         }
         if (!geo) continue;
-        const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl));
+        // Mảnh có voan (extras dtl_outfitAlpha): LOD0 vẽ hai lượt cùng hình học (phần đặc `cutout` + voan blend thật), LOD xa vẽ voan như vải đặc.
+        const veilPart = lod === 0 && (part.tpl.meshes[0].material as THREE.MeshStandardMaterial).userData?.dtl_outfitAlpha === 1;
+        const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, veilPart ? 'cutout' : 'solid'));
         g.name = `${part.id}_${lod}`;
         g.userData.outfit = true;
         g.userData.lod = lod;
@@ -408,21 +410,35 @@ export class PlayerSkins {
         g.receiveShadow = pm.receiveShadow;
         pm.parent.add(g);
         g.bind(pm.skeleton, pm.bindMatrix);
+        if (veilPart) {
+          const v = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, 'veil'));
+          v.name = `${part.id}_${lod}_veil`;
+          v.userData.outfit = true;
+          v.userData.lod = lod;
+          v.matrix.copy(g.matrix);
+          v.matrix.decompose(v.position, v.quaternion, v.scale);
+          v.castShadow = false; // voan không đổ bóng (phần đặc đã đổ)
+          v.receiveShadow = pm.receiveShadow;
+          v.renderOrder = 2; // sau thân và áo đặc
+          pm.parent.add(v);
+          v.bind(pm.skeleton, pm.bindMatrix);
+        }
       }
     }
     return springs;
   }
 
-  private outfitMaterial(id: string, tpl: OutfitTemplate): THREE.MeshStandardNodeMaterial {
-    let m = this.outMats.get(id);
+  private outfitMaterial(id: string, tpl: OutfitTemplate, mode: OutfitMode = 'solid'): THREE.MeshStandardNodeMaterial {
+    const key = mode === 'solid' ? id : `${id}|${mode}`;
+    let m = this.outMats.get(key);
     if (m) return m;
     const src = tpl.meshes[0].material as THREE.MeshStandardMaterial;
-    if (hasOutfitMask(src)) m = createOutfitMaterial(src); // bộ mô-đun T-5: nhuộm 3 kênh, vải/kim loại, vân sáng
+    if (hasOutfitMask(src)) m = createOutfitMaterial(src, undefined, mode); // bộ mô-đun T-5: nhuộm 3 kênh, vải/kim loại, vân sáng
     else {
       m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src))[0]);
       m.side = THREE.DoubleSide; // bản tạm #119: các tấm vỏ mỏng (vạt, tay áo): không cull mặt sau
     }
-    this.outMats.set(id, m);
+    this.outMats.set(key, m);
     return m;
   }
 

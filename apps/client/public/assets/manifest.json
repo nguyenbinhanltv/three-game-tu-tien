@@ -8328,6 +8328,174 @@
         }
       }
     },
+    "set_than_tang_dan_bao_nam": {
+      "id": "set_than_tang_dan_bao_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_than_tang_dan_bao_nam.glb",
+      "file": "set_than_tang_dan_bao_nam.8cca555c29.glb",
+      "bytes": 4160744,
+      "rawBytes": 4023660,
+      "triangles": 11399,
+      "rawTriangles": 11399,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 77,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_than_tang_dan_bao_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11399
+        },
+        {
+          "level": 1,
+          "triangles": 4560,
+          "target": 4560
+        },
+        {
+          "level": 2,
+          "triangles": 1702,
+          "target": 1710
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.6193,
+          "height": 1.7178,
+          "depth": 0.6188,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.6193,
+          "height": 1.7178,
+          "depth": 0.6188,
+          "minY": 0
+        }
+      }
+    },
+    "set_than_tang_dan_bao_nu": {
+      "id": "set_than_tang_dan_bao_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_than_tang_dan_bao_nu.glb",
+      "file": "set_than_tang_dan_bao_nu.a594837b2f.glb",
+      "bytes": 4153200,
+      "rawBytes": 4023540,
+      "triangles": 11401,
+      "rawTriangles": 11401,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 75,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_than_tang_dan_bao_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11401
+        },
+        {
+          "level": 1,
+          "triangles": 4556,
+          "target": 4560
+        },
+        {
+          "level": 2,
+          "triangles": 1698,
+          "target": 1710
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.5569,
+          "height": 1.6633,
+          "depth": 0.6022,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.5569,
+          "height": 1.6633,
+          "depth": 0.6022,
+          "minY": 0
+        }
+      }
+    },
     "set_tinh_khuyet_kiem_bao": {
       "id": "set_tinh_khuyet_kiem_bao",
       "class": "prop",
