@@ -229,6 +229,8 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     if (resume && resume.level !== this.levelId) {
       tickets.issue(char.id, resume.level, resume.spawn);
       client.send(S.TRANSFER, { room: roomNameOf(resume.level), level: resume.level, options: {} } satisfies TransferMsg);
+      // Client đúng sẽ tự rời ngay; client cố ở lại (không có người chơi nào trong room) bị ngắt để không chiếm chỗ.
+      this.clock.setTimeout(() => client.leave(), 3000);
       return;
     }
     this.prepareChar(char, auth.spawn ?? null);
