@@ -305,6 +305,23 @@ export class PostPipeline {
    * Hậu kỳ (quad chỉnh màu, bloom, FXAA) không có đường biên dịch trước, vẫn dựng ở khung đầu.
    */
   async compileScene(): Promise<void> {
+    await this.compileInScene();
+  }
+
+  /**
+   * Biên dịch trước một nhóm tạm (T5, skin quái/boss vừa nạp): đưa vào cảnh chính trong lúc biên dịch để dùng đúng
+   * khóa cache (sương, môi trường), rồi gỡ ra. Người gọi giữ `compiling` để không vẽ khi pipeline còn dở.
+   */
+  async compileObject(obj: THREE.Object3D): Promise<void> {
+    this.scene.add(obj);
+    try {
+      await this.compileInScene();
+    } finally {
+      this.scene.remove(obj);
+    }
+  }
+
+  private async compileInScene(): Promise<void> {
     const r = this.renderer;
     const root = this.scene;
     const culled: THREE.Object3D[] = [];
