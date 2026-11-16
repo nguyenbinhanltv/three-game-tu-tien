@@ -132,6 +132,9 @@ importers:
       tsx:
         specifier: ^4.20.0
         version: 4.23.15
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.7(@types/node@26.6.6)(tsx@4.23.15)
 
   packages/shared:
     devDependencies:
@@ -184,6 +187,9 @@ importers:
 
   tools/perf:
     dependencies:
+      '@dtl/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@dtl/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -200,6 +206,9 @@ importers:
       typescript:
         specifier: ~5.9.3
         version: 5.9.3
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@24.19.2)(tsx@4.23.15)
 
 packages:
 

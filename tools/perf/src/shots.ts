@@ -1,5 +1,7 @@
 // pnpm shots: chụp ảnh màn hình cố định để so trước/sau khi đổi render (P2-A2/A6).
-//   tsx src/shots.ts --out <thư mục> [--renderers webgpu,webgl2] [--presets low,medium,high] [--points a,b] [--size 1280x720]
+//   tsx src/shots.ts --out <thư mục> [--renderers webgpu,webgl2] [--presets low,medium,high] [--points a,b] [--size 1280x720] [--level <id>] [--dry]
+//   --level: level khác Vân Lam dùng điểm suy từ dữ liệu level (tâm vùng, điểm đáng chú ý, boss, tinh anh, toàn cảnh: `levelpoints.ts`) và thêm `level=<id>` vào URL;
+//            tên file ảnh thêm tiền tố level. --dry: chỉ in danh sách điểm rồi thoát (không chạy server/trình duyệt).
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175) với DB tạm, mở game `?mute=1&auto=<tên>`, tắt tiếng
 // (--mute-audio), dịch chuyển bằng `/gm tp` tới 5 điểm (sân tông môn, sơn đạo, rừng, ven hồ, đỉnh núi nhìn biển mây), đặt camera cố định,
 // chờ ô địa hình và (nếu có) texture mặt đất nạp xong rồi chụp `<out>/<renderer>-<preset>-<điểm>.png`.
@@ -8,6 +10,7 @@ import fs from 'node:fs';
 import { FOREST, LAKE, LAKE_WATER_R, SPAWN_POINT } from '@dtl/shared';
 import { chromium, type Page } from 'playwright';
 import { createDevServer, sleep } from './devserver';
+import { levelPoints, levelQuery, requireLevel } from './levelpoints';
 
 const args = process.argv.slice(2);
 const opt = (n: string, d: string) => {
@@ -19,12 +22,14 @@ const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',');
 const PRESETS = opt('--presets', 'low,medium,high').split(',');
 const ONLY = opt('--points', '').split(',').filter(Boolean);
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
-const EXTRA = opt('--query', '');
+const LEVEL = opt('--level', 'van_lam');
+const DRY = args.includes('--dry');
+const EXTRA = [levelQuery(LEVEL), opt('--query', '')].filter(Boolean).join('&');
 const PORT = Number(process.env.PORT ?? 2675);
 const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
 
 /** yaw: hướng camera (rad); pitch/dist: góc nhìn và khoảng cách. */
-const POINTS = [
+const VAN_LAM_POINTS = [
   { name: 'san', x: SPAWN_POINT.x, z: SPAWN_POINT.z, yaw: 0.0, pitch: 0.3, dist: 16 },
   { name: 'sondao', x: 2048, z: 2330, yaw: 3.14, pitch: 0.3, dist: 14 },
   { name: 'dao', x: 2048, z: 2150, yaw: 3.14, pitch: 0.28, dist: 14 },
@@ -41,7 +46,9 @@ const POINTS = [
   { name: 'ranh', x: 2048 + 1070, z: 2300, yaw: -1.57, pitch: 0.2, dist: 14 },
   { name: 'trencao', x: 2200, z: 2250, yaw: 0, pitch: 1.2, dist: 700 },
   { name: 'dinh', x: 2400, z: 1700, yaw: 3.14, pitch: 0.4, dist: 16 },
-].filter((p) => !ONLY.length || ONLY.includes(p.name));
+];
+requireLevel(LEVEL);
+const POINTS = (LEVEL === 'van_lam' ? VAN_LAM_POINTS : levelPoints(LEVEL)).filter((p) => !ONLY.length || ONLY.includes(p.name));
 
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'shots', command: 'pnpm shots' });
 type G = { __game?: Record<string, any> };
@@ -52,6 +59,10 @@ async function gm(page: Page, cmd: string): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  if (DRY) {
+    for (const p of POINTS) console.log(`${LEVEL}/${p.name}	${Math.round(p.x)}, ${Math.round(p.z)}`);
+    return;
+  }
   fs.mkdirSync(OUT, { recursive: true });
   await dev.start();
   const launchArgs = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
@@ -95,7 +106,7 @@ async function main(): Promise<void> {
             await sleep(300);
           }
           await sleep(Number(process.env.SHOT_SETTLE ?? 2500));
-          const file = path.join(OUT, `${renderer}-${preset}-${p.name}.png`);
+          const file = path.join(OUT, `${LEVEL === 'van_lam' ? '' : LEVEL + '-'}${renderer}-${preset}-${p.name}.png`);
           await page.screenshot({ path: file });
           console.log(`[shots] ${path.basename(file)}`);
         }

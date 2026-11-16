@@ -8,14 +8,21 @@
   "exports": {
     ".": "./src/index.ts",
     "./loot": "./src/loot.ts",
-    "./places": "./src/places.ts"
+    "./places": "./src/places.ts",
+    "./fixtures": "./src/fixtures.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "check": "tsx src/check.ts",
     "sim": "tsx src/sim.ts",
-    "map:report": "tsx src/mapreport.ts"
+    "map:report": "tsx src/mapreport.ts",
+    "test": "vitest run"
   },
-  "dependencies": { "@dtl/shared": "workspace:*" },
-  "devDependencies": { "tsx": "^4.20.0" }
+  "dependencies": {
+    "@dtl/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0",
+    "vitest": "^3.2.0"
+  }
 }

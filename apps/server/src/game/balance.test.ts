@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { groundAt, S, TRIBULATION_REFUND_AFTER, type DmgMsg } from '@dtl/shared';
+import { computeDamage, groundAt, MAX_LEVEL, monsterStats, playerBaseStats, realmMul, S, TRIBULATION_REFUND_AFTER, xpNeed, type DmgMsg } from '@dtl/shared';
 
 // Cân bằng 3-10: khắc chế ngũ hành (cờ `ke` do server tính), nội tại ba công pháp, hoàn Trúc Cơ Đan khi độ kiếp.
 process.env.DB_FILE = ':memory:';
@@ -172,5 +172,47 @@ describe('độ kiếp: hoàn Trúc Cơ Đan', () => {
   it('chết trước nửa thời gian: không hoàn; từ nửa trở đi: hoàn một viên', () => {
     expect(dieAt(TRIBULATION_REFUND_AFTER - 5)).toBe(0);
     expect(dieAt(TRIBULATION_REFUND_AFTER + 1)).toBe(1);
+  });
+});
+
+// E1-G: thang 28 cấp (Ngưng Khí 1 → Hóa Thần sơ kỳ). Công thức thuần, không cần sim: số đòn hạ một quái thường cùng cấp và phần máu mất
+// mỗi đòn quái phải nằm trong một dải hẹp ở MỌI cấp, kể cả khi vượt cảnh giới (hệ số cảnh giới nhân cả hai phía).
+describe('thang 28 cấp', () => {
+  const rows = Array.from({ length: MAX_LEVEL }, (_, i) => {
+    const level = i + 1;
+    const p = playerBaseStats(level);
+    const m = monsterStats(level, 1, 1);
+    const hit = computeDamage(p.atk, 1, m.def, 0.5, 1).dmg;
+    const taken = computeDamage(m.atk, 1, p.def, 0.5, 1).dmg;
+    return { level, p, m, hitsToKill: m.hp / hit, takenFrac: taken / p.hp };
+  });
+
+  it('MAX_LEVEL là 28 và chỉ số người/quái tăng nghiêm ngặt theo cấp', () => {
+    expect(MAX_LEVEL).toBe(28);
+    for (let i = 1; i < rows.length; i++) {
+      for (const k of ['hp', 'atk', 'def'] as const) {
+        expect(rows[i].p[k], `người ${k} cấp ${rows[i].level}`).toBeGreaterThan(rows[i - 1].p[k]);
+        expect(rows[i].m[k], `quái ${k} cấp ${rows[i].level}`).toBeGreaterThan(rows[i - 1].m[k]);
+      }
+      expect(xpNeed(rows[i].level), `xpNeed cấp ${rows[i].level}`).toBeGreaterThan(0);
+    }
+  });
+
+  it('số đòn hạ quái thường 8–14, máu mất mỗi đòn quái 5–10% ở mọi cấp', () => {
+    for (const r of rows) {
+      expect(r.hitsToKill, `cấp ${r.level}: số đòn hạ quái`).toBeGreaterThanOrEqual(8);
+      expect(r.hitsToKill, `cấp ${r.level}: số đòn hạ quái`).toBeLessThanOrEqual(14);
+      expect(r.takenFrac, `cấp ${r.level}: máu mất mỗi đòn`).toBeGreaterThanOrEqual(0.05);
+      expect(r.takenFrac, `cấp ${r.level}: máu mất mỗi đòn`).toBeLessThanOrEqual(0.1);
+    }
+  });
+
+  it('qua mốc cảnh giới (16, 20, 24, 28) không có bước nhảy độ khó: số đòn hạ quái lệch < 25%', () => {
+    for (const lv of [16, 20, 24, 28]) {
+      expect(realmMul(lv)).toBeGreaterThan(realmMul(lv - 1));
+      const a = rows[lv - 2].hitsToKill;
+      const b = rows[lv - 1].hitsToKill;
+      expect(Math.abs(b / a - 1), `cấp ${lv - 1} → ${lv}`).toBeLessThan(0.25);
+    }
   });
 });
