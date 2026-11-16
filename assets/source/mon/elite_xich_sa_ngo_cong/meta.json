@@ -1,0 +1,60 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "elite_xich_sa_ngo_cong",
+  "type": "mon",
+  "budgetClass": "elite",
+  "itemId": null,
+  "status": "in_game",
+  "budget": {
+    "faceLimit": 12000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "mon/elite_xich_sa_ngo_cong/tripo/raw_v01.glb",
+    "size": {
+      "longest": 6
+    },
+    "orient": "none",
+    "yaw": 90,
+    "serpent": {
+      "auto": true,
+      "bins": 16,
+      "headFrac": 0.15,
+      "rootFrac": 0.7
+    },
+    "post": "tools/blender/anim_serpent.py"
+  },
+  "concept": [
+    {
+      "file": "concept/concept_34_v01.png",
+      "view": "34",
+      "tool": "Codex built-in imagegen",
+      "date": "2026-11-16",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "model": "H3.1",
+      "params": {},
+      "seed": null,
+      "quote": null,
+      "credits": null,
+      "batch": null,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok",
+      "note": "Người dùng dựng trên Tripo web từ ảnh concept docs/asset-concepts/elite_xich_sa_ngo_cong.webp. 11.629 tam giác. Chưa rig trên Tripo: xương đốt dựng bằng anim_serpent.py (serpent.auto)."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max) image-to-3D + Codex (concept); clip thủ tục tools/blender/",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}

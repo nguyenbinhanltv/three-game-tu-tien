@@ -145,6 +145,28 @@ if SERP.get('spine') == 'auto':
     TOTAL = arc[-1]
     HEAD_S = float(SERP.get('headFrom', 0.9)) * TOTAL
     ROOT_S = float(SERP.get('rootAt', 0.6)) * TOTAL
+elif SERP.get('auto'):
+    # Đường tâm tự đo từ lưới (ngô công nằm ngang, uốn chữ S trên mặt đất, không có ảnh nghiêng để đo tay như Hàn Giao):
+    # chia thân thành `bins` lát theo trục dài Y (đuôi +Y → đầu -Y), lấy trọng tâm từng lát (x, z), kéo hai đầu ra mút.
+    # `headFrac`: phần thân ở đầu tính là đầu; `rootFrac`: chỗ xương gốc `body` (0 = đuôi, 1 = mõm).
+    nb = int(SERP.get('bins', 16))
+    edges = np.linspace(wv[:, 1].max(), wv[:, 1].min(), nb + 1)
+    knots = []
+    for k in range(nb):
+        sel = (wv[:, 1] <= edges[k] + 1e-9) & (wv[:, 1] >= edges[k + 1] - 1e-9)
+        c = wv[sel].mean(axis=0) if sel.any() else np.array([0.0, (edges[k] + edges[k + 1]) / 2, wv[:, 2].min()])
+        knots.append(np.array([c[0], (edges[k] + edges[k + 1]) / 2, c[2]]))
+    knots[0][1] = edges[0]
+    knots[-1][1] = edges[-1]
+    HEAD_FROM = max(1, min(nb - 1, round(nb * (1 - float(SERP.get('headFrac', 0.15))))))
+    ROOT_AT = None
+    ROOT_PT = knots[max(1, min(nb - 2, round(nb * float(SERP.get('rootFrac', 0.7)))))]
+    dense = catmull(knots)
+    seg = np.linalg.norm(np.diff(dense, axis=0), axis=1)
+    arc = np.concatenate([[0.0], np.cumsum(seg)])
+    TOTAL = arc[-1]
+    HEAD_S = arc[int(np.argmin(np.linalg.norm(dense - knots[HEAD_FROM], axis=1)))]
+    ROOT_S = arc[int(np.argmin(np.linalg.norm(dense - ROOT_PT, axis=1)))]
 else:
     knots = [to_std(x, z) for x, z in SPINE_RAW]
     dense = catmull(knots)
