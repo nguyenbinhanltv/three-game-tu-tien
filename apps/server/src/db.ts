@@ -220,7 +220,7 @@ export function migrateTele(sqlite: Database.Database): void {
   const rows = sqlite.prepare("SELECT id, level FROM characters WHERE tele = ''").all() as { id: number; level: number }[];
   const upd = sqlite.prepare('UPDATE characters SET tele = ? WHERE id = ?');
   for (const r of rows) {
-    const open = TELE_PADS.filter((p) => (p.zone ? levelPast(zones, p.zone, r.level) : p.id === 'tp_cong' && r.level >= DUNGEON_MIN_LEVEL) && !TELE_FREE.includes(p.id)).map((p) => p.id);
+    const open = TELE_PADS.filter((p) => p.level === 'van_lam' && (p.zone ? levelPast(zones, p.zone, r.level) : p.id === 'tp_cong' && r.level >= DUNGEON_MIN_LEVEL) && !TELE_FREE.includes(p.id)).map((p) => p.id);
     upd.run(JSON.stringify(open), r.id);
   }
 }

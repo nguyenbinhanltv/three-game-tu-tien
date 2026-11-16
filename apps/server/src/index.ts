@@ -7,7 +7,9 @@ import { WebSocketClient, WebSocketTransport } from '@colyseus/ws-transport';
 import { config } from './config';
 import { sqlite } from './db';
 import { installHttpRateLimit } from './ratelimit';
-import { activeRooms, DungeonRoom, onlineCount, ROOM_DUNGEON, ROOM_WORLD, WorldRoom } from './rooms';
+import { dungeonRoomName, worldRoomName } from '@dtl/shared';
+import { LEVELS } from '@dtl/content';
+import { activeRooms, defineDungeon, defineWorld, onlineCount } from './rooms';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -95,8 +97,12 @@ installHttpRateLimit(httpServer, rl, (req) => ({
   ...matchMaker.controller.getCorsHeaders(req),
 }));
 
-gameServer.define(ROOM_WORLD, WorldRoom);
-gameServer.define(ROOM_DUNGEON, DungeonRoom);
+// Mỗi level một loại room (E1-B): bản đồ thế giới `world` (Vân Lam) / `world-<id>`, bí cảnh `dungeon` (Kiếm Trủng) / `dungeon-<id>`.
+// Vào level ngoài Vân Lam và bí cảnh cần vé một lần (xem transfer.ts); client không tự tạo room được (exposedMethods ở trên).
+for (const lv of Object.values(LEVELS)) {
+  if (lv.dungeon) gameServer.define(dungeonRoomName(lv.id), defineDungeon(lv.id));
+  else gameServer.define(worldRoomName(lv.id), defineWorld(lv.id));
+}
 
 await gameServer.listen(config.port);
 console.log(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);

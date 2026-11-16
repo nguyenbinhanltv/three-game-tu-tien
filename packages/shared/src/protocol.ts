@@ -6,6 +6,20 @@ import type { CharView, Equipment, InvSlot, QuestView } from './types';
 export const PROTOCOL_VERSION = 1;
 export const ROOM_WORLD = 'world';
 export const ROOM_DUNGEON = 'dungeon';
+/** Level gốc: room của nó giữ tên `world` (bot, test, script cũ không đổi); đăng nhập thường vào đây. */
+export const HOME_LEVEL = 'van_lam';
+/** Bí cảnh Kiếm Trủng giữ tên room `dungeon`. */
+const LEGACY_DUNGEON_LEVEL = 'kiem_trung';
+
+/** Tên room thế giới của level: `world` cho Vân Lam, `world-<id>` cho level khác (Colyseus chỉ nhận `[A-Za-z0-9_-]` trong tên room, dấu chấm bị cắt). */
+export function worldRoomName(levelId: string): string {
+  return levelId === HOME_LEVEL ? ROOM_WORLD : `${ROOM_WORLD}-${levelId}`;
+}
+
+/** Tên room bí cảnh của level: `dungeon` cho Kiếm Trủng, `dungeon-<id>` cho bí cảnh khác. */
+export function dungeonRoomName(levelId: string): string {
+  return levelId === LEGACY_DUNGEON_LEVEL ? ROOM_DUNGEON : `${ROOM_DUNGEON}-${levelId}`;
+}
 
 // Cờ trạng thái của người chơi (trường `fl` trong state).
 export const PF_FLYING = 1;
@@ -299,7 +313,10 @@ export function fxSeed(rand: () => number = Math.random): number {
 }
 
 export interface TransferMsg {
+  /** Tên room cần vào (client `joinOrCreate(room)`); vé một lần đã nằm ở server. */
   room: string;
+  /** Level đích (E1-B); thiếu = suy từ `room` như trước. */
+  level?: string;
   options: Record<string, string>;
 }
 

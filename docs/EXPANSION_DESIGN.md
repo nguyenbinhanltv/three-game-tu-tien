@@ -637,6 +637,15 @@ Nội tại công pháp mở rộng ở mỗi đại cảnh giới (một dòng,
 - **K-5/K-6**: hộp công cụ pose/VFX đã có; chiêu mới tạo qua `gen-k5.mjs` và `skillFx.ts`.
 - **Asset của người dùng**: chương 2 chạy được với model tạm (đổi màu/tỉ lệ model có sẵn), thay khi có GLB.
 
+### 10.4 Ghi chú triển khai E1-B (2026-11-16)
+
+- **Tên room**: `world` (Vân Lam), `world-<levelId>`, `dungeon` (Kiếm Trủng), `dungeon-<levelId>`. Không dùng dấu chấm như mục 10.2 viết: Colyseus chỉ giữ phần khớp `[A-Za-z0-9_-]+` đầu tiên của tên room, nên `world.doan_mach` bị nhận nhầm thành `world` (đã gặp khi chạy bộ `security`). `worldRoomName`/`dungeonRoomName` ở `shared/protocol.ts`, `defineWorld`/`defineDungeon` ở `rooms.ts`, `index.ts` đăng ký mỗi level trong `LEVELS` một room.
+- **Vé**: `apps/server/src/transfer.ts` (`tickets`, `TicketBook`): một vé mỗi nhân vật, `{to, spawn, exp}`, hết hạn 15 s, `take` xóa vé; vé tới nơi khác không bị đốt. Room đến kiểm trong `static onAuth` (level gốc Vân Lam không cần vé, mọi level khác và bí cảnh bắt buộc); điểm xuất hiện đi theo vé.
+- **Kiểm ở room đi**: `GameSim.leaveBlocker` (chết, độ kiếp, tâm ma, tỉ thí, niệm dở/ra chiêu; thêm giao chiến khi Truyền Tống), `GameRoom.requestLevel` (cấp vé, `savePlayer`, gửi `S.TRANSFER {room, level}`); người dẫn tổ đội kéo đồng đội cùng room trong 30 m (`TELE_PARTY_R`) nếu họ qua được kiểm. Chưa bảo đảm cùng kênh (client vào bằng `joinOrCreate`, chọn kênh còn chỗ đầu tiên).
+- **Đăng nhập lại**: nhân vật lưu ở level khác với room đang vào thì room gửi `S.TRANSFER` ngay trong `onJoin` (kèm vé) và không dựng người; bí cảnh không giữ người qua đăng nhập (về `returnLevel`/`returnSpawn`). Client (E1-D) phải xử lý `S.TRANSFER` đến trước `S.INIT`.
+- **Dữ liệu**: `LevelDef.spawn|portals|dungeon` (`DungeonDef`: spawn, exit, center, minLevel, returnLevel, returnSpawn, waves); `NpcDef.level`; `TelePad.level|face`. Sim dùng `terrainOf(level)` cho độ cao và `stepMove`. Id trận ở level khác Vân Lam có tiền tố level; `characters.tele` không đổi cấu trúc nên không cần migration DB.
+- **Còn lại cho gói sau**: khóa thưởng hằng ngày bí cảnh (`meta.dungeonDay`) đang dùng chung một ngày cho mọi bí cảnh (E2-C); võ đài chỉ ở Vân Lam; `testflags` đọc toạ độ `?at=x,z` theo `WORLD_SIZE` 4096 (kích thước level khác: E1-G/E2-A).
+
 ---
 
 ## 11. Gói việc cho worker
