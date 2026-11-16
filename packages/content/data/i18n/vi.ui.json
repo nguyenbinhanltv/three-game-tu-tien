@@ -363,6 +363,7 @@
   "ui.debug.ents_v": "{players} người · {monsters} quái · {npcs} NPC",
   "ui.debug.lod": "LOD 0/1/2",
   "ui.debug.lod_v": "{lod} · ngoài khung {off}",
+  "ui.debug.gpu": "GPU",
   "ui.debug.vfx": "VFX",
   "ui.debug.vfx_v": "{fx} lưới · {n}/{limit} hạt",
   "ui.debug.tiles": "Ô địa hình",

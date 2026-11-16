@@ -26,6 +26,7 @@
     "assets:build": "pnpm --filter @dtl/asset-pipeline run build",
     "assets:optimize": "pnpm --filter @dtl/asset-pipeline run optimize",
     "shots": "pnpm --filter @dtl/perf run shots --",
+    "check:black": "pnpm --filter @dtl/perf run check:black",
     "shots:method": "pnpm --filter @dtl/perf run shots:method --",
     "shots:party": "pnpm --filter @dtl/perf run shots:party --",
     "shots:p38": "pnpm --filter @dtl/perf run shots:p38 --",
