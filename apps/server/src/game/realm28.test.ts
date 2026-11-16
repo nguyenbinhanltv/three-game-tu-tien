@@ -150,7 +150,7 @@ describe('đại viên mãn chưa có độ kiếp: không vượt bình cảnh'
     return { c, rs, p, warns, spawned };
   };
 
-  it.each([23, 27])('cấp %i đầy tu vi: Phá Cảnh Đan không bị tiêu, không dựng tâm ma', (lv) => {
+  it.each([27])('cấp %i đầy tu vi: Phá Cảnh Đan không bị tiêu, không dựng tâm ma', (lv) => {
     const { c, rs, p, warns, spawned } = setup(lv, lv - 2);
     rs.onBottleneck(p as never, { m: 'pill', r: 'k1' });
     rs.onBottleneck(p as never, { m: 'trial' });

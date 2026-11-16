@@ -127,6 +127,14 @@
   "mon_soi_xam",
   "mon_yeu_lang"
  ],
+ "itm_ngung_anh_phach": [
+  "boss_dia_mach_long",
+  "boss_thach_tam_khoi_vuong",
+  "boss_thon_mach_ngo_cong_vuong",
+  "elite_ho_mach_khoi_tuong",
+  "elite_liet_cot_bao",
+  "elite_xich_sa_ngo_cong"
+ ],
  "itm_ngung_dan_mach_tinh": [
   "boss_dia_mach_long",
   "boss_thach_tam_khoi_vuong",

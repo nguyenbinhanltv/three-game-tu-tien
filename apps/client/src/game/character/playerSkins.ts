@@ -429,9 +429,9 @@ export class PlayerSkins {
       if (!src && mesh.isMesh) src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
     });
     m = adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0];
-    applyPalette(m, { dark: '#0d0916', light: '#4a3566', glow: '#b04bff' });
+    applyPalette(m, { dark: '#0d0916', light: '#5a4080', glow: '#c24a7a' });
     m.transparent = true;
-    m.opacity = 0.78;
+    m.opacity = 0.86;
     m.depthWrite = false;
     this.mats.set(key, m);
     return m;
