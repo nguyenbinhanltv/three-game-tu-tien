@@ -7,6 +7,7 @@
 #   palette   { main, sec, trim, accent } hex: bảng màu 3 kênh + màu vân sáng; mặt nạ nhuộm sinh từ texture màu theo bảng này
 #   fitPose   { armDown: độ } tư thế tay thả của thân nền khi căn (khớp tay áo thả của mảnh; mặc định 70)
 #   gain      nhân sáng texture màu (mặc định 1)
+#   normalFlat kéo pháp tuyến bake về phẳng 0..1 (mặc định 0): áo Tripo nhàu/nứt quá
 #   files     { <mảnh>: tên tệp } ghi đè raw_<mảnh>_v01.glb (vd ao_ngoai → raw_ao_ngoai_v02.glb)
 #   proc      { <mảnh>: { base, metal, accent, top, toe, edge } } vật liệu thủ tục cho mảnh KHÔNG có texture (GLB 0 ảnh): UV tự sinh, nướng vào ô atlas
 #   alpha     { <mảnh>: 'veil' } vùng voan xám-tím nhạt của mảnh có alpha thấp (client dither); veilAlpha (mặc định 0,4) là độ phủ bị trừ
@@ -676,6 +677,12 @@ for name in ORDER:
         atlas_c[y0:y1, x0:x0 + w] = pixels(imgs_color[name], w, h)
     if imgs_normal[name]:
         atlas_n[y0:y1, x0:x0 + w] = pixels(imgs_normal[name], w, h)
+NFLAT = float(CFG.get('normalFlat', 0.0))
+if NFLAT > 0:
+    # Pháp tuyến bake của Tripo nhiễu (nứt, nhàu như giấy vò dưới ánh game): kéo về phẳng theo hệ số (0 = giữ nguyên, 1 = phẳng hoàn toàn).
+    atlas_n[..., 0] = 0.5 + (atlas_n[..., 0] - 0.5) * (1 - NFLAT)
+    atlas_n[..., 1] = 0.5 + (atlas_n[..., 1] - 0.5) * (1 - NFLAT)
+    atlas_n[..., 2] = atlas_n[..., 2] + (1.0 - atlas_n[..., 2]) * NFLAT
 
 
 pal = CFG.get('palette') or {}

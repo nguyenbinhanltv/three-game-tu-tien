@@ -30,7 +30,7 @@
         "armDown": 70
       },
       "atlas": 1024,
-      "gain": 1.5,
+      "gain": 1.2,
       "alpha": {
         "ao_ngoai": "veil"
       },
@@ -43,7 +43,8 @@
           "toe": true,
           "edge": 0.9
         }
-      }
+      },
+      "normalFlat": 0.8
     }
   },
   "concept": [
