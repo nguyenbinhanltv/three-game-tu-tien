@@ -324,7 +324,7 @@ describe('room độ kiếp riêng', () => {
     const timers: (() => void)[] = [];
     room.clock = { setTimeout: (fn: () => void) => timers.push(fn), setInterval: () => undefined };
     Object.defineProperty(room, 'roomName', { value: levelId });
-    Object.assign(room, { startedAny: false, idleSince: 0, createdAt: Date.now(), sentBack: new Map() });
+    Object.assign(room, { startedAny: false, startPending: 0, idleSince: 0, createdAt: Date.now(), sentBack: new Map() });
     const client = (name: string) => ({ sessionId: 'sid' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: name }) });
     const join = (char: InstanceType<typeof Character>, auth: Record<string, unknown> = {}): Ent => {
       const c = client(char.name);
@@ -473,6 +473,39 @@ describe('room độ kiếp riêng', () => {
     now += rooms.TribulationRoom.WAIT_MS + 1;
     arena.room.director();
     expect(transfer.tickets.has(g.char.id, HOME_LEVEL)).toBe(true);
+  });
+
+  it('hộ pháp tới trước, người độ kiếp tới muộn sát WAIT_MS: không bị gửi về, kiếp vẫn bắt đầu; nếu đã bị gửi về thì hẹn giờ không tiêu vật phẩm', async () => {
+    const orig = TRIB_DEFS.nguyen_anh.item;
+    (TRIB_DEFS.nguyen_anh as { item: string | null }).item = 'itm_truc_co_dan';
+    try {
+      const arena = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
+      const t = vi.spyOn(Date, 'now');
+      let now = Date.now();
+      t.mockImplementation(() => now);
+      Object.assign(arena.room, { createdAt: now });
+      const g = arena.join(mkChar('somg', 20), { trib: { key: 'h' } });
+      now += rooms.TribulationRoom.WAIT_MS - 1000;
+      const owner = arena.join(mkChar('muon', 23), { trib: { key: 'h', id: 'nguyen_anh' } });
+      owner.char.tx('t', null, (d) => d.add('itm_truc_co_dan', 1));
+      // quá WAIT_MS trong lúc hẹn giờ bắt đầu còn chờ: không đóng phòng
+      now += 2000;
+      arena.room.director();
+      expect(transfer.tickets.has(owner.char.id, HOME_LEVEL)).toBe(false);
+      expect(transfer.tickets.has(g.char.id, HOME_LEVEL)).toBe(false);
+      arena.runTimers();
+      expect(owner.trib).not.toBeNull();
+      // trường hợp đã bị gửi về trước khi hẹn giờ chạy: bỏ qua, giữ nguyên vật phẩm
+      const arena2 = await mkRoom(TRIB_LEVEL, rooms.TribulationRoom);
+      const o2 = arena2.join(mkChar('muon2', 23), { trib: { key: 'i', id: 'nguyen_anh' } });
+      o2.char.tx('t', null, (d) => d.add('itm_truc_co_dan', 1));
+      (arena2.room as unknown as { sentBack: Map<string, number> }).sentBack.set(o2.sid, now);
+      arena2.runTimers();
+      expect(o2.trib).toBeNull();
+      expect(o2.char.inv.some((it) => it?.id === 'itm_truc_co_dan')).toBe(true);
+    } finally {
+      (TRIB_DEFS.nguyen_anh as { item: string | null }).item = orig;
+    }
   });
 
   it('ngắt kết nối giữa kiếp: mất 15% tu vi (không hoàn), người khác vẫn về đúng lúc; vé còn hạn cho lần vào lại', async () => {

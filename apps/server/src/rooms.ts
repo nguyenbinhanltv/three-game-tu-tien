@@ -594,6 +594,8 @@ export class TribulationRoom extends GameRoom {
   static LINGER_MS = 6000;
   static WAIT_MS = 25_000;
   private startedAny = false;
+  /** Số lần bắt đầu kiếp đã hẹn giờ mà chưa chạy: trong lúc đó không đóng phòng vì quá `WAIT_MS`. */
+  private startPending = 0;
   private idleSince = 0;
   private createdAt = Date.now();
   private sentBack = new Map<string, number>();
@@ -635,9 +637,12 @@ export class TribulationRoom extends GameRoom {
       return;
     }
     const def = tribDef(id);
+    this.startPending++;
     this.clock.setTimeout(() => {
+      this.startPending--;
       const cur = this.sim.players.get(p.sid);
-      if (!cur || cur.trib) return;
+      // Đã bị gửi về (đóng phòng lúc chờ) thì không bắt đầu: kẻo tiêu vật phẩm rồi mất tu vi khi client rời.
+      if (!cur || cur.trib || this.sentBack.has(cur.sid)) return;
       if (!this.sim.beginTribulation(cur, def, !!def.item)) this.sendAllBack(true);
     }, TribulationRoom.START_DELAY_MS);
   }
@@ -671,6 +676,7 @@ export class TribulationRoom extends GameRoom {
       return;
     }
     if (!this.startedAny) {
+      if (this.startPending > 0) return;
       if (now - this.createdAt > TribulationRoom.WAIT_MS) this.sendAllBack(true);
       return;
     }
