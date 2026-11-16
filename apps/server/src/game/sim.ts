@@ -3019,14 +3019,18 @@ export class GameSim {
     }
   }
 
-  /** Hộ pháp chắn thay một phần tia khóa mệnh (E1-F): trả phần đã chuyển đi. Hộ pháp không chết vì kiếp của người khác (dừng ở 1 khí huyết). */
+  /**
+   * Hộ pháp chắn thay một phần tia khóa mệnh (E1-F): trả phần đã chuyển đi. Hộ pháp không chết vì kiếp của người khác (dừng ở 1 khí huyết).
+   * Chỉ người CÙNG TỔ ĐỘI với chủ kiếp mới làm hộ pháp (người lạ đứng gần không bị kéo vào chịu sát thương). Ở room độ kiếp riêng chỉ có người
+   * vào bằng vé (cùng tổ đội), nên cùng luật.
+   */
   private pickGuards(h: Hazard): PlayerEnt[] {
     const g = h.guard!;
     const owner = this.players.get(h.src);
     if (!owner || !owner.trib) return [];
     const d = (o: PlayerEnt) => Math.hypot(o.move.x - owner.move.x, o.move.z - owner.move.z);
     return [...this.players.values()]
-      .filter((o) => o !== owner && !o.trib && !this.isDead(o) && d(o) <= g.r)
+      .filter((o) => o !== owner && !o.trib && !this.isDead(o) && d(o) <= g.r && parties.same(owner.char.id, o.char.id))
       .sort((a, b) => d(a) - d(b))
       .slice(0, g.max);
   }
