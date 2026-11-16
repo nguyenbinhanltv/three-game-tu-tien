@@ -1,4 +1,4 @@
-import { Portrait } from './Art';
+import { Portrait, useArtUrl } from './Art';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
@@ -156,13 +156,18 @@ function ChapterCardView() {
   return card ? <ChapterCardShow card={card} /> : null;
 }
 
+/** Tranh nền mờ sau chữ của thẻ chương (nạp lười, thiếu ảnh thì thẻ như cũ). */
+const CARD_ART: Partial<Record<ChapterCard['kind'], string>> = { ch2: 'chuong_2', ascend_kd: 'ket_dan' };
+
 function ChapterCardShow({ card }: { card: ChapterCard }) {
   const now = useNow(250);
+  const art = useArtUrl('loading', CARD_ART[card.kind]);
   const level = useUI((s) => s.char?.level ?? 1);
   if (now >= card.until) return null;
   const k = 'ui.chapter.' + card.kind;
   return (
     <div className={'chapter-card chapter-' + card.kind} key={card.id} style={{ '--dur': card.dur + 'ms' } as CSSProperties}>
+      {art && <div className="chapter-art" style={{ backgroundImage: `url("${art}")` }} />}
       <div className="lb lb-top" />
       <div className="lb lb-bot" />
       <div className="chapter-text">

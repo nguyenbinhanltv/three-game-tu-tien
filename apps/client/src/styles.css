@@ -1213,6 +1213,26 @@ kbd {
   inset: 0;
   pointer-events: none;
 }
+.chapter-card .chapter-art {
+  position: absolute;
+  inset: 7vh 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 25%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 25%, transparent 100%);
+  animation: chapter-art var(--dur) ease-in-out forwards;
+}
+@keyframes chapter-art {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  18%,
+  76% {
+    opacity: 0.42;
+  }
+}
 .chapter-card .lb {
   position: absolute;
   left: 0;

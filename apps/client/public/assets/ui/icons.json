@@ -3,18 +3,18 @@
   "tileSize": 128,
   "sheets": {
     "hud": {
-      "file": "icons-hud.e264d4dc8f.webp",
-      "sha256": "e264d4dc8ff7396f37787f855ce20b73c4ef8369affafc4b3881e42f81fdb4e4",
-      "bytes": 341896,
+      "file": "icons-hud.35e194ec77.webp",
+      "sha256": "35e194ec7706c1996e55c141e4fcc8935ea3c29130968da889a879bb0834196f",
+      "bytes": 466904,
       "columns": 8,
-      "rows": 8
+      "rows": 11
     },
     "items": {
-      "file": "icons-items.53ae1a89b6.webp",
-      "sha256": "53ae1a89b6ca89f1266e71c3966357e34ce744c9c6e0f3920c24c8666fca0d5d",
-      "bytes": 376390,
+      "file": "icons-items.91dffb3ccb.webp",
+      "sha256": "91dffb3ccbe4d2b3d7251f794ebb5f5dd41d819072eeef48a7f55d470bcf05e2",
+      "bytes": 534978,
       "columns": 8,
-      "rows": 10
+      "rows": 13
     }
   },
   "icons": {
@@ -123,6 +123,153 @@
       "sourceSha256": "ed653ee5240224376442f5863041df1b1bb470d1906cf021b0719eb7230805cc",
       "sourceBytes": 2486498
     },
+    "skl_hoanh_kiem_pha_mach": {
+      "s": "hud",
+      "x": 7,
+      "y": 1,
+      "sourceSha256": "35c709b2c939c1506e5000593870a1106530ff9aeb51047aa9097f3f7218e7b3",
+      "sourceBytes": 2049688
+    },
+    "skl_kiem_vu_tam_diep": {
+      "s": "hud",
+      "x": 0,
+      "y": 2,
+      "sourceSha256": "0e78bb9f0692f43bde529126aa54bfaef1273effff515bc1bae8b4de5fd395d4",
+      "sourceBytes": 2061394
+    },
+    "skl_kiem_dan_ban_menh": {
+      "s": "hud",
+      "x": 1,
+      "y": 2,
+      "sourceSha256": "931854b05f108f35ce1c0e59fddd02f357796a0210552cb1bc013efa4b8efa3f",
+      "sourceBytes": 1931886
+    },
+    "skl_nghich_kiem_chuyen_phong": {
+      "s": "hud",
+      "x": 2,
+      "y": 2,
+      "sourceSha256": "89c2aee370a6eb7d1950d20e495a69a66c30e953fe6baada04ae50b5d34d1dd0",
+      "sourceBytes": 2118822
+    },
+    "skl_phan_anh_kiem_anh": {
+      "s": "hud",
+      "x": 3,
+      "y": 2,
+      "sourceSha256": "4487d0eea69dd02ec300402360f39d23d8dbbc669eea5bb9f7b81f41677d79be",
+      "sourceBytes": 2216549
+    },
+    "skl_thuan_di_tram": {
+      "s": "hud",
+      "x": 4,
+      "y": 2,
+      "sourceSha256": "d1bfe8b357d6682338849abca6af56afccc03e9772de69944596d21bb9787dea",
+      "sourceBytes": 2137017
+    },
+    "skl_thien_kiem_hoa_hinh": {
+      "s": "hud",
+      "x": 5,
+      "y": 2,
+      "sourceSha256": "91b55592e708aa42f0be6f421b60706dd76013ffff71472f6cf9c0e71c1829ff",
+      "sourceBytes": 2054687
+    },
+    "skl_thiet_quyen_chan_dia": {
+      "s": "hud",
+      "x": 6,
+      "y": 2,
+      "sourceSha256": "cc5de7e2e8a0bfc04303ef0570cafc9bde6b662d06ec5a688f1daa90306e207a",
+      "sourceBytes": 2409702
+    },
+    "skl_kim_chung_tran": {
+      "s": "hud",
+      "x": 7,
+      "y": 2,
+      "sourceSha256": "095fcbd96ed0ec411b0ab4fa050d1e1d0e7efc8f0f90c936503e84e6fa44dee9",
+      "sourceBytes": 2195771
+    },
+    "skl_son_nhac_hoa_than": {
+      "s": "hud",
+      "x": 0,
+      "y": 3,
+      "sourceSha256": "61d2177f6bba2203d5c2a8173fbca2abab9a9e10c824663b56b1269f597eab0d",
+      "sourceBytes": 2115677
+    },
+    "skl_dich_son_xung": {
+      "s": "hud",
+      "x": 1,
+      "y": 3,
+      "sourceSha256": "e81b880fc6c11ebcfb3a6b3f2ec224b417a10d97b9f2f4782cda2a85eed0f820",
+      "sourceBytes": 2290019
+    },
+    "skl_anh_thiet_than": {
+      "s": "hud",
+      "x": 2,
+      "y": 3,
+      "sourceSha256": "08a127d774d595c926d65357c5821179c508c2c1d52771fe1cef0f95d0e0acfd",
+      "sourceBytes": 2356920
+    },
+    "skl_thuan_di_ho_the": {
+      "s": "hud",
+      "x": 3,
+      "y": 3,
+      "sourceSha256": "e3fd05ea70b495a89bbf22da354974da8d410725bea8ef349990cc520e892aa6",
+      "sourceBytes": 2176641
+    },
+    "skl_thien_kim_phap_tuong": {
+      "s": "hud",
+      "x": 4,
+      "y": 3,
+      "sourceSha256": "1431f9959ec0f6b352061231d7d7ec087a5765533a2249110d079ffd385bf556",
+      "sourceBytes": 2390974
+    },
+    "skl_moc_linh_tran": {
+      "s": "hud",
+      "x": 5,
+      "y": 3,
+      "sourceSha256": "0659dd2c7df5f2f6651420b43392b59854a2895d2199007b32171a1c33cb5d47",
+      "sourceBytes": 2097158
+    },
+    "skl_duoc_vu": {
+      "s": "hud",
+      "x": 6,
+      "y": 3,
+      "sourceSha256": "f57eaa14272ac2118ad867e80073b21e79396a9f6bbf1fdf5f8ef92138d49480",
+      "sourceBytes": 2060104
+    },
+    "skl_ngung_dan_ho_the": {
+      "s": "hud",
+      "x": 7,
+      "y": 3,
+      "sourceSha256": "0f5118c3b222288e7a9dc31eea3198bafb6f4f0f4dce98c8c7f28e7fd1338278",
+      "sourceBytes": 1971822
+    },
+    "skl_dan_hoa_phong_tran": {
+      "s": "hud",
+      "x": 0,
+      "y": 4,
+      "sourceSha256": "7faf4f5426baa795a35ebca1b5de3a0c1f505d367626c78f3bd9647cc865a69f",
+      "sourceBytes": 2022303
+    },
+    "skl_anh_duoc_hoa_than": {
+      "s": "hud",
+      "x": 1,
+      "y": 4,
+      "sourceSha256": "c6543da17313ff9cbd508fb0a1e61726dada8e0dae23c1aa4208a70f2b15f5d9",
+      "sourceBytes": 2083239
+    },
+    "skl_thuan_di_cuu_vien": {
+      "s": "hud",
+      "x": 2,
+      "y": 4,
+      "sourceSha256": "8bcc65b37a16e96598fda901eff4582086a7e6e55e42c2c05b40b103be4117d4",
+      "sourceBytes": 2020744
+    },
+    "skl_thien_dan_phap_gioi": {
+      "s": "hud",
+      "x": 3,
+      "y": 4,
+      "sourceSha256": "c79093fdca3e1310452ab45f9016cee7cacf13bee08f8349478b8d578ca86b8e",
+      "sourceBytes": 2170216
+    },
     "itm_linh_thao": {
       "s": "items",
       "x": 0,
@@ -179,794 +326,990 @@
       "sourceSha256": "6b682a811383636cd0c153c3425af9ef65e2604210789bf366f663add5e398c9",
       "sourceBytes": 2127504
     },
-    "itm_pha_canh_dan": {
+    "itm_ngung_dan_mach_tinh": {
       "s": "items",
       "x": 0,
+      "y": 1,
+      "sourceSha256": "e3dc8fa038ee5cfc5afd379196b6d24be3bf0ef33abb272fe0fa48fc655cc2ff",
+      "sourceBytes": 2153319
+    },
+    "itm_ket_dan_dich": {
+      "s": "items",
+      "x": 1,
+      "y": 1,
+      "sourceSha256": "9f60fb049165469d5b7f6795cc1f7d7ea916dea1bd0089b70c14510b093ad1fb",
+      "sourceBytes": 1915527
+    },
+    "itm_pha_canh_dan": {
+      "s": "items",
+      "x": 2,
       "y": 1,
       "sourceSha256": "840dd2758a037c04edbf91655f8b55163329725e6d9a454b7aea7d0119614d23",
       "sourceBytes": 2085309
     },
     "itm_hoi_xuan_dan": {
       "s": "items",
-      "x": 1,
+      "x": 3,
       "y": 1,
       "sourceSha256": "39c3fc5854c350b299c4826ec8a0cbe823f062e0ad62e790adbb6292a6415efb",
       "sourceBytes": 2108804
     },
     "itm_hoi_khi_dan": {
       "s": "items",
-      "x": 2,
+      "x": 4,
       "y": 1,
       "sourceSha256": "4304448e6a05915c51b1b5c891285b2f15231de2419ea6ba3065efb5839493bb",
       "sourceBytes": 1952403
     },
     "itm_tu_khi_dan": {
       "s": "items",
-      "x": 3,
+      "x": 5,
       "y": 1,
       "sourceSha256": "2d3717fe4cf83940248c5feb7e80da618bc9871d0a9340fb02d42a45926af419",
       "sourceBytes": 2046143
     },
     "itm_moc_kiem": {
       "s": "items",
-      "x": 4,
+      "x": 6,
       "y": 1,
       "sourceSha256": "dee40cc414eb01c1f85aedbcdc93d0bb7c165279a69cc99f160e3238dc2fb4bd",
       "sourceBytes": 2042885
     },
     "itm_thiet_kiem": {
       "s": "items",
-      "x": 5,
+      "x": 7,
       "y": 1,
       "sourceSha256": "0ffe1fde29fcf3f42ec964b01f92bc95ee1ab5845a89a1c38b1a67b640494d5a",
       "sourceBytes": 1925579
     },
     "itm_thanh_phong_kiem": {
       "s": "items",
-      "x": 6,
-      "y": 1,
+      "x": 0,
+      "y": 2,
       "sourceSha256": "1bf2f1984668a5375cfddb82bec50f4f93782b1dff445feb33c94d7ea4cf96bd",
       "sourceBytes": 1954330
     },
     "itm_han_quang_kiem": {
       "s": "items",
-      "x": 7,
-      "y": 1,
+      "x": 1,
+      "y": 2,
       "sourceSha256": "dcecf4fb5eba2a0234159eb8d0100df6ebcbcf8eaf26b83e4cfb633226cc87f9",
       "sourceBytes": 1888309
     },
     "itm_tram_ta_kiem": {
       "s": "items",
-      "x": 0,
+      "x": 2,
       "y": 2,
       "sourceSha256": "0357337b73e67f2b68a3f35a404a36514c3f8e9f580164dcbc7bd3d09b0b50e4",
       "sourceBytes": 2086134
     },
     "itm_bo_y": {
       "s": "items",
-      "x": 1,
+      "x": 3,
       "y": 2,
       "sourceSha256": "74dbdf0171bfc5e8e70f52139f8927ec0674068fe0d10ad7a56de8e493fa0d84",
       "sourceBytes": 2492993
     },
     "itm_dao_bao": {
       "s": "items",
-      "x": 2,
+      "x": 4,
       "y": 2,
       "sourceSha256": "71cda9b03d9eccf7bf1e9916a4855e94c932db014e376b50a51a9f20f7768f19",
       "sourceBytes": 2484795
     },
     "itm_linh_ti_bao": {
       "s": "items",
-      "x": 3,
+      "x": 5,
       "y": 2,
       "sourceSha256": "20d526e057025414ee94e18fd10b542c1729feae3a6133ca13546574663060e0",
       "sourceBytes": 2085149
     },
     "itm_huyen_van_bao": {
       "s": "items",
-      "x": 4,
+      "x": 6,
       "y": 2,
       "sourceSha256": "5c5ea4a98c025eed2bcb8886b0f2a0b43b0ccc82268098f35bddba72e65eefd8",
       "sourceBytes": 2500591
     },
     "itm_ngoc_boi": {
       "s": "items",
-      "x": 5,
+      "x": 7,
       "y": 2,
       "sourceSha256": "a7052a8e4a6eff6904a7142ade6e91bad849b98df916607ec23f052bab33c1fa",
       "sourceBytes": 1925960
     },
     "itm_huyen_thiet_gioi": {
       "s": "items",
-      "x": 6,
-      "y": 2,
+      "x": 0,
+      "y": 3,
       "sourceSha256": "4a8fd636a69e5b8d32761a1be07631ca692500654de91d6bee3620a8218c7c00",
       "sourceBytes": 2004007
     },
     "itm_han_giao_hoan": {
       "s": "items",
-      "x": 7,
-      "y": 2,
+      "x": 1,
+      "y": 3,
       "sourceSha256": "a9e1b3cf51dd9566391483926c691c2224df2ed871db5f192be691d4326ea047",
       "sourceBytes": 1931308
     },
     "itm_tay_luyen_thach": {
       "s": "items",
-      "x": 0,
+      "x": 2,
       "y": 3,
       "sourceSha256": "4ec8f59ca119f72cce1da54a9e540e98623359eb57abb3ff368e6fa706a31ee8",
       "sourceBytes": 2208962
     },
     "itm_linh_tran": {
       "s": "items",
-      "x": 1,
+      "x": 3,
       "y": 3,
       "sourceSha256": "53d5336a3f520fd508825e8e964be28ba411f08e59632b96cbd5b799e4d5cb73",
       "sourceBytes": 1985782
     },
     "itm_ho_phu": {
       "s": "items",
-      "x": 2,
+      "x": 4,
       "y": 3,
       "sourceSha256": "99b05de00d034306867d7525694e6660e80b6f1faa25f9940a78cf8ab6d2b7b2",
       "sourceBytes": 2259095
     },
     "gem_kim_1": {
       "s": "items",
-      "x": 3,
+      "x": 5,
       "y": 3,
       "sourceSha256": "2dbc6e28a94308e7a2c8a8c25a0ccab894bf0097a1ec1fa4955caef9825af385",
       "sourceBytes": 2215252
     },
     "gem_kim_2": {
       "s": "items",
-      "x": 4,
+      "x": 6,
       "y": 3,
       "sourceSha256": "f1f2224d29dab7e64734c2daac5c9bb5866e6c6cd631ee41141ee0b74ffd97bd",
       "sourceBytes": 2036673
     },
     "gem_kim_3": {
       "s": "items",
-      "x": 5,
+      "x": 7,
       "y": 3,
       "sourceSha256": "48687524ec7eb4d76ee715c80c46e62465903c40364211f9a08f786e7d5788bc",
       "sourceBytes": 2203082
     },
     "gem_moc_1": {
       "s": "items",
-      "x": 6,
-      "y": 3,
+      "x": 0,
+      "y": 4,
       "sourceSha256": "8d4fae729ff3a7a7fa9c005c1b97349e99db2a0bf8b4a2f4c5bd61207f5a1d11",
       "sourceBytes": 2043701
     },
     "gem_moc_2": {
       "s": "items",
-      "x": 7,
-      "y": 3,
+      "x": 1,
+      "y": 4,
       "sourceSha256": "fde3eaf6dd16785d01c5162ab0e18a1e6e99280e9a34ddbd9954f1a99d57c2dc",
       "sourceBytes": 2022164
     },
     "gem_moc_3": {
       "s": "items",
-      "x": 0,
+      "x": 2,
       "y": 4,
       "sourceSha256": "6d7af4f4ee0b2f8a1598b55025c121405e54a884d0d75226bc77bdd892f228cd",
       "sourceBytes": 2175206
     },
     "gem_thuy_1": {
       "s": "items",
-      "x": 1,
+      "x": 3,
       "y": 4,
       "sourceSha256": "2a70938570b3d5abbf24329492a303c299ffb08dc7ed711b2bc4d167ac4ad3a5",
       "sourceBytes": 1903669
     },
     "gem_thuy_2": {
       "s": "items",
-      "x": 2,
+      "x": 4,
       "y": 4,
       "sourceSha256": "4e254d83971ec4f87b9b419fd45153f57851b19af3f9fbfc4b5c3645533f1cdd",
       "sourceBytes": 1921833
     },
     "gem_thuy_3": {
       "s": "items",
-      "x": 3,
+      "x": 5,
       "y": 4,
       "sourceSha256": "94f97974e6186e339085d3f30a739559d4b68162712e8f3696af1d99e5bb18f2",
       "sourceBytes": 2227499
     },
     "gem_hoa_1": {
       "s": "items",
-      "x": 4,
+      "x": 6,
       "y": 4,
       "sourceSha256": "8230f9949c676cebc2c7e9fc5afccf51cd7213dba5ea4742fc0f7da6a0c40788",
       "sourceBytes": 2020586
     },
     "gem_hoa_2": {
       "s": "items",
-      "x": 5,
+      "x": 7,
       "y": 4,
       "sourceSha256": "1f24a9d453edc6269f786045b9e7df5b048c005043eb892e67599afc077826c2",
       "sourceBytes": 1987361
     },
     "gem_hoa_3": {
       "s": "items",
-      "x": 6,
-      "y": 4,
+      "x": 0,
+      "y": 5,
       "sourceSha256": "52493c63f87a7f935d770ad1a2fa4fc7f4154a4f632ccb208cca3369356899c0",
       "sourceBytes": 2040811
     },
     "gem_tho_1": {
       "s": "items",
-      "x": 7,
-      "y": 4,
+      "x": 1,
+      "y": 5,
       "sourceSha256": "f7c021bd2ea33d276d6caa589f48c18fba682335b534da0878c91ef4ece5349c",
       "sourceBytes": 2128599
     },
     "gem_tho_2": {
       "s": "items",
-      "x": 0,
+      "x": 2,
       "y": 5,
       "sourceSha256": "9fa3a30ac32426c6f58a11f8ea7adb4377a4f7100fa93b6dfdf3866afef8ecd4",
       "sourceBytes": 2129344
     },
     "gem_tho_3": {
       "s": "items",
-      "x": 1,
+      "x": 3,
       "y": 5,
       "sourceSha256": "92655d80cdb55afd08db79cd6fa67e202a0757f3621228f729ea78d546d7bb56",
       "sourceBytes": 2048577
     },
+    "itm_mach_tinh_phien": {
+      "s": "items",
+      "x": 4,
+      "y": 5,
+      "sourceSha256": "1b89aeb7b73116cf8224249dc55db15ce5868d65af270c446b44feef99cf0504",
+      "sourceBytes": 2091598
+    },
+    "itm_hoang_sa_thao": {
+      "s": "items",
+      "x": 5,
+      "y": 5,
+      "sourceSha256": "03ba0fcfc6b39c56d379a0a9bfa57354033de14cd1357f9c890f7a0226766411",
+      "sourceBytes": 2206075
+    },
+    "itm_pha_canh_dan_2": {
+      "s": "items",
+      "x": 6,
+      "y": 5,
+      "sourceSha256": "5565ab75dd5525d7e7db82f4a0f870ace68d959c9c3f9d9711a5e98c64cbfc2a",
+      "sourceBytes": 2237191
+    },
     "itm_bi_tich_tan_quyen": {
       "s": "items",
-      "x": 2,
+      "x": 7,
       "y": 5,
       "sourceSha256": "aca7162e01354236b79a0c73b7429f624b2a50f1033fb56bd7c3fb20052f9d68",
       "sourceBytes": 2688879
     },
     "itm_tu_kim_ho_lo": {
       "s": "hud",
-      "x": 7,
-      "y": 1,
+      "x": 4,
+      "y": 4,
       "sourceSha256": "ddd140794be3fa31643b58e1908717c757a19498afb12de0dd5bdfc5afab8d82",
       "sourceBytes": 2308081
     },
     "itm_tran_hon_linh": {
       "s": "hud",
-      "x": 0,
-      "y": 2,
+      "x": 5,
+      "y": 4,
       "sourceSha256": "df4684e35644750e65c790c38c5fc6c8b576c2904567d664ad38de4b7fc4f8b0",
       "sourceBytes": 2347154
     },
     "itm_thanh_lien_an": {
       "s": "hud",
-      "x": 1,
-      "y": 2,
+      "x": 6,
+      "y": 4,
       "sourceSha256": "c1c4ad0c08a47ad725794cd58fd608daffdf1396910e85c0f6b702b69db8d59a",
       "sourceBytes": 2426897
     },
     "itm_kim_cuong_dan": {
       "s": "items",
-      "x": 3,
-      "y": 5,
+      "x": 0,
+      "y": 6,
       "sourceSha256": "5fce01a0dd48b748c11c5c6d1223ef8c2a58c6c2f369335488103113f7b510df",
       "sourceBytes": 1368902
     },
     "itm_bao_huyet_dan": {
       "s": "items",
-      "x": 4,
-      "y": 5,
+      "x": 1,
+      "y": 6,
       "sourceSha256": "8031e78f93fafcbe622eadbf8220176e23c7adb18c39116b1fa45d1598c742ca",
       "sourceBytes": 2272798
     },
     "itm_manh_luc_dan": {
       "s": "items",
-      "x": 5,
-      "y": 5,
+      "x": 2,
+      "y": 6,
       "sourceSha256": "52ec027ace16cc284a3068f36cb60df60b386ecde1ab90ae0bd9e299bd722f27",
       "sourceBytes": 2449916
     },
-    "itm_ho_uyen_vai": {
+    "itm_hoi_mach_dan": {
+      "s": "items",
+      "x": 3,
+      "y": 6,
+      "sourceSha256": "da73161f62b59616fcc093d479d6b731b6a5a2e17a0e2bf4e95bdd283ac34535",
+      "sourceBytes": 2108366
+    },
+    "itm_kim_cuong_dan_2": {
+      "s": "items",
+      "x": 4,
+      "y": 6,
+      "sourceSha256": "349ef7dcc3567970e394bef383c9a1fde246e38a750be2fb9296b1543889fe71",
+      "sourceBytes": 2093670
+    },
+    "itm_bao_huyet_dan_2": {
+      "s": "items",
+      "x": 5,
+      "y": 6,
+      "sourceSha256": "e63c4dd6ef8726bfe67012c3f466e6d562ea6513dc234cdd411b68d3389059ff",
+      "sourceBytes": 1914200
+    },
+    "itm_manh_luc_dan_2": {
       "s": "items",
       "x": 6,
-      "y": 5,
+      "y": 6,
+      "sourceSha256": "c5de69c86cd0da1411ce0b40438697803b6be1d4046a6dbfbbb0a245caecc79b",
+      "sourceBytes": 2051265
+    },
+    "itm_ho_uyen_vai": {
+      "s": "items",
+      "x": 7,
+      "y": 6,
       "sourceSha256": "c4d5beab058d6c6368c3dc3fb08b8a87b649b2e9fa9190cccf45c76ad1c611a5",
       "sourceBytes": 2394998
     },
     "itm_ho_uyen_da": {
       "s": "items",
-      "x": 7,
-      "y": 5,
+      "x": 0,
+      "y": 7,
       "sourceSha256": "36a692ed265581c18f6a1d2e42be1c628a47c08ceb814328f143d4636e64cd1d",
       "sourceBytes": 2092494
     },
     "itm_ho_uyen_thiet": {
       "s": "items",
-      "x": 0,
-      "y": 6,
+      "x": 1,
+      "y": 7,
       "sourceSha256": "676995e1865f26a0444ae9791e50ebf9d1cdad891b44f03780b650643198e50f",
       "sourceBytes": 2053687
     },
     "itm_van_ngoa_vai": {
       "s": "items",
-      "x": 1,
-      "y": 6,
+      "x": 2,
+      "y": 7,
       "sourceSha256": "32cff145317f18f51ad13e0ddc5d014c6a673528d5eaae7e8dd71e91f8c2e29b",
       "sourceBytes": 2268621
     },
     "itm_van_ngoa_da": {
       "s": "items",
-      "x": 2,
-      "y": 6,
+      "x": 3,
+      "y": 7,
       "sourceSha256": "36f4d23b466244b81bbe53eacd4aab6375e39fad4b212ae4df72b7e4afd7cac1",
       "sourceBytes": 2033198
     },
     "itm_van_ngoa_van": {
       "s": "items",
-      "x": 3,
-      "y": 6,
+      "x": 4,
+      "y": 7,
       "sourceSha256": "f92f6859ff735c5cc2f49ffea222d7f4e54d36f4ce614adef7f30e8ea3026437",
       "sourceBytes": 2324038
     },
     "itm_dai_lung_vai": {
       "s": "items",
-      "x": 4,
-      "y": 6,
+      "x": 5,
+      "y": 7,
       "sourceSha256": "9ed9aedfcf2db9dc9e7b6ccd361ea19b6c5996ed46e2b2068b46729677f5fa04",
       "sourceBytes": 2313736
     },
     "itm_dai_lung_da": {
       "s": "items",
-      "x": 5,
-      "y": 6,
+      "x": 6,
+      "y": 7,
       "sourceSha256": "7b71c0fb73162e8a3830190a61f8505f7a7ec2a4b9dbac054a43b5a0c82c7cb1",
       "sourceBytes": 1983227
     },
     "itm_dai_lung_ngoc": {
       "s": "items",
-      "x": 6,
-      "y": 6,
+      "x": 7,
+      "y": 7,
       "sourceSha256": "cf6ceaba8bc6ae174f4bd464d9b9bb0bc1a24551d5b817088ca073c410b5ad83",
       "sourceBytes": 2336626
     },
     "itm_ngoc_boi_moc": {
       "s": "items",
-      "x": 7,
-      "y": 6,
+      "x": 0,
+      "y": 8,
       "sourceSha256": "6f53e6c5e54813c2598bbf436a88553d16930daeee9d80429055a2f8be87f4bb",
       "sourceBytes": 1910063
     },
     "itm_ngoc_boi_thanh": {
       "s": "items",
-      "x": 0,
-      "y": 7,
+      "x": 1,
+      "y": 8,
       "sourceSha256": "68bef8b91d3ce61d711c221893d22018ddb8c29941372f3c81feee01af41ad41",
       "sourceBytes": 2009602
     },
     "itm_ngoc_boi_linh": {
       "s": "items",
-      "x": 1,
-      "y": 7,
+      "x": 2,
+      "y": 8,
       "sourceSha256": "69d6680928d4c2036c137670a55e76fff31a39dc3bfc25730fab626214447bdb",
       "sourceBytes": 1852532
     },
     "itm_gioi_chi_dong": {
       "s": "items",
-      "x": 2,
-      "y": 7,
+      "x": 3,
+      "y": 8,
       "sourceSha256": "8cadb3496fbeae4566fd82ae591aa1ff3a6c5482149a7930f2a3e74173efcaad",
       "sourceBytes": 1960214
+    },
+    "itm_liet_mach_kiem": {
+      "s": "items",
+      "x": 4,
+      "y": 8,
+      "sourceSha256": "96b6f2c16b1c6f0f7afe1161c2e35c04874905a3f10016033350751cb54b8c49",
+      "sourceBytes": 2014837
+    },
+    "itm_mach_van_dao_bao": {
+      "s": "items",
+      "x": 5,
+      "y": 8,
+      "sourceSha256": "5a8a2ede5a3b49daf5362a52a84d335859bb45092b663bc62755f5fa17ed1fb0",
+      "sourceBytes": 2409948
+    },
+    "itm_sa_thach_ho_uyen": {
+      "s": "items",
+      "x": 6,
+      "y": 8,
+      "sourceSha256": "9ae16b398af3e346d649b7e3fec620f8dd2fc4c29e7ae1a6f7f1c5e212a8d6db",
+      "sourceBytes": 2230997
+    },
+    "itm_kho_ha_van_ngoa": {
+      "s": "items",
+      "x": 7,
+      "y": 8,
+      "sourceSha256": "0f4904d9047422cd110a6d6436a5472ae363d03442876b253d195ee19d590cd4",
+      "sourceBytes": 2246153
+    },
+    "itm_ngan_mach_dai_lung": {
+      "s": "items",
+      "x": 0,
+      "y": 9,
+      "sourceSha256": "2a27283378eed986e4f9ba2484b4f01c65c01d30e8c09735c112e56cf0d32a79",
+      "sourceBytes": 2048150
+    },
+    "itm_mach_tinh_ngoc_boi": {
+      "s": "items",
+      "x": 1,
+      "y": 9,
+      "sourceSha256": "e0446d3ff67adccb20ad647fefcdc38acf0589c5fea31b570a2ce194b7c10b19",
+      "sourceBytes": 2081675
+    },
+    "itm_hoang_sa_gioi_chi": {
+      "s": "items",
+      "x": 2,
+      "y": 9,
+      "sourceSha256": "ac332a73be4a8630818b7ac8980139954fa24cc07a3ef6a4b0d6934842c05455",
+      "sourceBytes": 1978228
     },
     "itm_lk_dao_bao": {
       "s": "items",
       "x": 3,
-      "y": 7,
+      "y": 9,
       "sourceSha256": "bfd524cf482ee6e6ee62fa3c48aa5c874d07d7505b72e47fbc00575ea937834d",
       "sourceBytes": 2439978
     },
     "itm_lk_ho_uyen": {
       "s": "items",
       "x": 4,
-      "y": 7,
+      "y": 9,
       "sourceSha256": "3e2ee355131886cbe2e30b8ef982f4db5cdce907359ab609b10ec5f771de3c36",
       "sourceBytes": 2330381
     },
     "itm_lk_dai_lung": {
       "s": "items",
       "x": 5,
-      "y": 7,
+      "y": 9,
       "sourceSha256": "463dabedfed8cf56a8723eaab225d7df2a4529523f09ef1192aaef6faa063dc1",
       "sourceBytes": 2334164
     },
     "itm_lk_van_ngoa": {
       "s": "items",
       "x": 6,
-      "y": 7,
+      "y": 9,
       "sourceSha256": "036188e336068112b20b116fd90c659fa84595c2e3c15a61cee50e51de5509ca",
       "sourceBytes": 2018908
     },
     "itm_hg_dao_bao": {
       "s": "items",
       "x": 7,
-      "y": 7,
+      "y": 9,
       "sourceSha256": "757e8210a61bd273e4350c274d588be014f98b2980afefeec693d7025fd39b91",
       "sourceBytes": 2323669
     },
     "itm_hg_ho_uyen": {
       "s": "items",
       "x": 0,
-      "y": 8,
+      "y": 10,
       "sourceSha256": "047612311e076707464ddb20afce55a1bee1d1793747c3cd11dcf7e57e6ebf19",
       "sourceBytes": 2026046
     },
     "itm_hg_dai_lung": {
       "s": "items",
       "x": 1,
-      "y": 8,
+      "y": 10,
       "sourceSha256": "338b77508cebc34f31cd1445c8172a60347ef1bdb7eb84102953e131b62c1185",
       "sourceBytes": 2156402
     },
     "itm_hg_van_ngoa": {
       "s": "items",
       "x": 2,
-      "y": 8,
+      "y": 10,
       "sourceSha256": "470f5e5a029b5b92c803e7ae675cb261dc4549221250ade47c46fefd6b91d027",
       "sourceBytes": 2056624
     },
     "itm_dt_dao_bao": {
       "s": "items",
       "x": 3,
-      "y": 8,
+      "y": 10,
       "sourceSha256": "8291538648d81bbf0685bd869fdbea58392de19c0d953d0f7eda4896d0fcb2ac",
       "sourceBytes": 2521766
     },
     "itm_dt_ngoc_boi": {
       "s": "items",
       "x": 4,
-      "y": 8,
+      "y": 10,
       "sourceSha256": "0c47dadf9e6dc8968628e89bb1af7a58a3cac6cd509d79491eaa360b860f4cf9",
       "sourceBytes": 2111931
     },
     "itm_dt_dai_lung": {
       "s": "items",
       "x": 5,
-      "y": 8,
+      "y": 10,
       "sourceSha256": "bfdb03ee1feb19e27ffa9e6849246c8e1ed5017ffa9f0837045986f62f830f2f",
       "sourceBytes": 2296051
     },
     "itm_dt_gioi_chi": {
       "s": "items",
       "x": 6,
-      "y": 8,
+      "y": 10,
       "sourceSha256": "37ab776115c2cb6ddc29ad176cc1cbfb10e27e4cbfab9169f4d41f66661e3318",
       "sourceBytes": 1812707
     },
     "itm_hgl_kiem": {
       "s": "items",
       "x": 7,
-      "y": 8,
+      "y": 10,
       "sourceSha256": "0ea43e5f2f03e2f01a43fe54422286f1e1d00e94b59c9c10c560ff6528e75b5f",
       "sourceBytes": 1955468
     },
     "itm_hgl_dao_bao": {
       "s": "items",
       "x": 0,
-      "y": 9,
+      "y": 11,
       "sourceSha256": "19624fef0e0a3310e50eb02ef790ae7897d5540b9ec33ea3612f3a5659a6d7d4",
       "sourceBytes": 2560178
     },
     "itm_hgl_gioi_chi": {
       "s": "items",
       "x": 1,
-      "y": 9,
+      "y": 11,
       "sourceSha256": "ab86efc3227f7db62de8f18c0caef4b981961ee3af8d2d2fbaddaaa58602c6e5",
       "sourceBytes": 2051629
     },
+    "itm_lm_dao_bao": {
+      "s": "items",
+      "x": 2,
+      "y": 11,
+      "sourceSha256": "e17c7e14c0af314aca2391321c562bd2f50661674ee5ec839e715eebbcd8acaf",
+      "sourceBytes": 2674222
+    },
+    "itm_lm_ho_uyen": {
+      "s": "items",
+      "x": 3,
+      "y": 11,
+      "sourceSha256": "c7bcc96325b6a2be4337b7465e741a39e0adfcfb7c707af2b494d0efe08d1f43",
+      "sourceBytes": 2112762
+    },
+    "itm_lm_dai_lung": {
+      "s": "items",
+      "x": 4,
+      "y": 11,
+      "sourceSha256": "d32f048497996ceb3a595361c8addf9ef72b9d8a3a61660d29810a4bbde1d2f3",
+      "sourceBytes": 1915861
+    },
+    "itm_lm_van_ngoa": {
+      "s": "items",
+      "x": 5,
+      "y": 11,
+      "sourceSha256": "fa7dd010069a1e0a3c622813175877726e454d860ba8944a69512ea5f1431f0d",
+      "sourceBytes": 2153230
+    },
+    "itm_dg_dao_bao": {
+      "s": "items",
+      "x": 6,
+      "y": 11,
+      "sourceSha256": "bafd1a2b26800d7bc17aa67ebe9f2070e26c846ec6b1fbc35b7f3fac641e21af",
+      "sourceBytes": 2535125
+    },
+    "itm_dg_ho_uyen": {
+      "s": "items",
+      "x": 7,
+      "y": 11,
+      "sourceSha256": "de03421c1420aa715b4428e53f9ad61a92b04964bca94f6595130dd08d4a8f7a",
+      "sourceBytes": 2037800
+    },
+    "itm_dg_dai_lung": {
+      "s": "items",
+      "x": 0,
+      "y": 12,
+      "sourceSha256": "c669267c8d8ff4f92c30574c062f1dd160663d8c2c8187d8e76c26709720cf90",
+      "sourceBytes": 1965066
+    },
+    "itm_dg_van_ngoa": {
+      "s": "items",
+      "x": 1,
+      "y": 12,
+      "sourceSha256": "fcafc636b2d1a133a7b0340b7daa1375f868367e7f8976ec89d70f4d83bafe76",
+      "sourceBytes": 2209835
+    },
+    "itm_pm_dao_bao": {
+      "s": "items",
+      "x": 2,
+      "y": 12,
+      "sourceSha256": "fc2335f954eb159fdd9db8c50308d2314578814cf10465f7c15ba347769da316",
+      "sourceBytes": 2362350
+    },
+    "itm_pm_ngoc_boi": {
+      "s": "items",
+      "x": 3,
+      "y": 12,
+      "sourceSha256": "5b30357ff4661aa42a1988aa96fccc883fd5415a2b5fd2380facd5155af2038e",
+      "sourceBytes": 2068474
+    },
+    "itm_pm_dai_lung": {
+      "s": "items",
+      "x": 4,
+      "y": 12,
+      "sourceSha256": "59ef73b3e2accb7fd54072f9f4069febb3f35f411718142cd793892091326858",
+      "sourceBytes": 2342723
+    },
+    "itm_pm_gioi_chi": {
+      "s": "items",
+      "x": 5,
+      "y": 12,
+      "sourceSha256": "b0e1d4a33f4769e6fcad1af372adc9f6a59bbb512688fdc29a8395154caea74a",
+      "sourceBytes": 2003491
+    },
     "var_phi_kiem_a": {
       "s": "hud",
-      "x": 2,
-      "y": 2,
+      "x": 7,
+      "y": 4,
       "sourceSha256": "d3869e808d4e01b4b35aafce3374c4bca5b87d423bfbc1afcdaa5e8886184a44",
       "sourceBytes": 1883796
     },
     "var_phi_kiem_b": {
       "s": "hud",
-      "x": 3,
-      "y": 2,
+      "x": 0,
+      "y": 5,
       "sourceSha256": "64578de7bcf59a842618204d04028f81d7c07e13f4a7fce09f8a53ded2ea673d",
       "sourceBytes": 2117888
     },
     "var_kiem_khi_tram_a": {
       "s": "hud",
-      "x": 4,
-      "y": 2,
+      "x": 1,
+      "y": 5,
       "sourceSha256": "6a5526a3ac6fe6f29c4575b8c6017d6edbc713f49c9c38e8111c8ca6dfcfa489",
       "sourceBytes": 2005392
     },
     "var_kiem_khi_tram_b": {
       "s": "hud",
-      "x": 5,
-      "y": 2,
+      "x": 2,
+      "y": 5,
       "sourceSha256": "f99784e6fa31956f62b8c13264f7276c2472fef785fcaa007f12d2a451187887",
       "sourceBytes": 1980147
     },
     "var_linh_khi_ho_the_a": {
       "s": "hud",
-      "x": 6,
-      "y": 2,
+      "x": 3,
+      "y": 5,
       "sourceSha256": "4c0310418f772b21cb38368ca44fba9daefb05c35664f0c3bc59d3f7a02e56a5",
       "sourceBytes": 1939653
     },
     "var_linh_khi_ho_the_b": {
       "s": "hud",
-      "x": 7,
-      "y": 2,
+      "x": 4,
+      "y": 5,
       "sourceSha256": "22db6afd2734e386de2e6add53008c200e5ee988d4d3e82d034927d0f805365c",
       "sourceBytes": 2045769
     },
     "var_thien_kiem_vu_a": {
       "s": "hud",
-      "x": 0,
-      "y": 3,
+      "x": 5,
+      "y": 5,
       "sourceSha256": "d726e3667281f2d8d5bcce9c16fe25e6c834b817e4f7a68a5e542a139ad868dd",
       "sourceBytes": 2062116
     },
     "var_thien_kiem_vu_b": {
       "s": "hud",
-      "x": 1,
-      "y": 3,
+      "x": 6,
+      "y": 5,
       "sourceSha256": "1344512b9eb7bf7056f863ee1e3a6d553b2a6e986a607dfdecaae552dae17586",
       "sourceBytes": 1984469
     },
     "var_hoi_nguyen_thuat_a": {
       "s": "hud",
-      "x": 2,
-      "y": 3,
+      "x": 7,
+      "y": 5,
       "sourceSha256": "bbc92fb79b38a7e04993928eed7c2be24797c293759f0054e2a3502588e35e50",
       "sourceBytes": 2014135
     },
     "var_hoi_nguyen_thuat_b": {
       "s": "hud",
-      "x": 3,
-      "y": 3,
+      "x": 0,
+      "y": 6,
       "sourceSha256": "d21fead6d92a667fdbb35723a5a3422c88be419bedabe9369ba4f09ac12e6442",
       "sourceBytes": 1914886
     },
     "var_loi_dinh_nhat_kiem_a": {
       "s": "hud",
-      "x": 4,
-      "y": 3,
+      "x": 1,
+      "y": 6,
       "sourceSha256": "57573caaac52023349ea2a3eed4d2a153bddf8783d647590176e2c34efdfecae",
       "sourceBytes": 2053433
     },
     "var_loi_dinh_nhat_kiem_b": {
       "s": "hud",
-      "x": 5,
-      "y": 3,
+      "x": 2,
+      "y": 6,
       "sourceSha256": "61cdd1ad47946c18347935a3bc9694c2535d71d268d80d36c6b1411db0ac102a",
       "sourceBytes": 2007310
     },
     "var_phi_kiem_truy_hon_a": {
       "s": "hud",
-      "x": 6,
-      "y": 3,
+      "x": 3,
+      "y": 6,
       "sourceSha256": "af31a82f4410f2f5336633c8649a49f5d7ea2b0050d7587d1e092b19fc632a86",
       "sourceBytes": 1982802
     },
     "var_phi_kiem_truy_hon_b": {
       "s": "hud",
-      "x": 7,
-      "y": 3,
+      "x": 4,
+      "y": 6,
       "sourceSha256": "64b2b4133402dd05e8a10a75f450590b966885023b988e810f33b36cf9f43625",
       "sourceBytes": 2054323
     },
     "var_tran_son_an_a": {
       "s": "hud",
-      "x": 0,
-      "y": 4,
+      "x": 5,
+      "y": 6,
       "sourceSha256": "a022b60bc4619aeb6afc7360f7961c5f12d8bf45e97ece1016dc23d413b028cd",
       "sourceBytes": 2302289
     },
     "var_tran_son_an_b": {
       "s": "hud",
-      "x": 1,
-      "y": 4,
+      "x": 6,
+      "y": 6,
       "sourceSha256": "97d498293f3161ae2865e7de00d75cce293a9dd5bb362379e18548d1a4c50add",
       "sourceBytes": 2150788
     },
     "var_hoi_xuan_quyet_a": {
       "s": "hud",
-      "x": 2,
-      "y": 4,
+      "x": 7,
+      "y": 6,
       "sourceSha256": "7a7d6308f10a4f9426807ead6cae70fd7a418a106193e102f19979f6324835a8",
       "sourceBytes": 2052836
     },
     "var_hoi_xuan_quyet_b": {
       "s": "hud",
-      "x": 3,
-      "y": 4,
+      "x": 0,
+      "y": 7,
       "sourceSha256": "a5af7adb4b6a60e157e34e2f4cbd0d5e1d341c576fcd7272d7e78ba760c15d56",
       "sourceBytes": 2041998
     },
     "met_lac_kiem_quyet": {
       "s": "hud",
-      "x": 4,
-      "y": 4,
+      "x": 1,
+      "y": 7,
       "sourceSha256": "b70421f49cf126f6200a8e70e8d0933ab2ec2df1542b21a959298806f5cd6634",
       "sourceBytes": 2338159
     },
     "met_bat_dong_kim_than": {
       "s": "hud",
-      "x": 5,
-      "y": 4,
+      "x": 2,
+      "y": 7,
       "sourceSha256": "233c1084afcc127e9e498f56233978084f17b89df49b3ae9aed109dff1f7d1e4",
       "sourceBytes": 2366838
     },
     "met_thanh_moc_dan_kinh": {
       "s": "hud",
-      "x": 6,
-      "y": 4,
+      "x": 3,
+      "y": 7,
       "sourceSha256": "f5ee1a6e787a658b9d56de5a1b6236c8d9c940ce057530ac3928c9a36d135edd",
       "sourceBytes": 2139478
     },
     "root_kim": {
       "s": "hud",
-      "x": 7,
-      "y": 4,
+      "x": 4,
+      "y": 7,
       "sourceSha256": "457c27b15adba5f3200b60e4a5241853f4e1c2b2c0af700857332cc4e30e95d0",
       "sourceBytes": 2213986
     },
     "root_moc": {
       "s": "hud",
-      "x": 0,
-      "y": 5,
+      "x": 5,
+      "y": 7,
       "sourceSha256": "c404839a378d134186adf7549ec3d517bbf67d92886977718f2f3c938008c9ea",
       "sourceBytes": 1998576
     },
     "root_thuy": {
       "s": "hud",
-      "x": 1,
-      "y": 5,
+      "x": 6,
+      "y": 7,
       "sourceSha256": "a2ec8c8fe24b7b7e1148f1dd93bbf4256c039ccb46ae1169b717321e5dac951c",
       "sourceBytes": 1992255
     },
     "root_hoa": {
       "s": "hud",
-      "x": 2,
-      "y": 5,
+      "x": 7,
+      "y": 7,
       "sourceSha256": "7059630dc4640e7f933b68f006f730f9d2a589f2c109b771380e04ce0ce2f735",
       "sourceBytes": 1977371
     },
     "root_tho": {
       "s": "hud",
-      "x": 3,
-      "y": 5,
+      "x": 0,
+      "y": 8,
       "sourceSha256": "1f74714cacffd9a4dc3ca4e046391b0c2c1726bd85b0a7b255426840e6f7a27f",
       "sourceBytes": 2365504
     },
     "role_kiem": {
       "s": "hud",
-      "x": 4,
-      "y": 5,
+      "x": 1,
+      "y": 8,
       "sourceSha256": "795c9155eb7a5645e451ea39d4eb4d233e7413d7cefcc6b56450d4bd66683576",
       "sourceBytes": 1941811
     },
     "role_tank": {
       "s": "hud",
-      "x": 5,
-      "y": 5,
+      "x": 2,
+      "y": 8,
       "sourceSha256": "ade161bed9943f6f762efb99dccd4edab9be965c782229a09bff1e54e1dd9b49",
       "sourceBytes": 2453051
     },
     "role_ho_tro": {
       "s": "hud",
-      "x": 6,
-      "y": 5,
+      "x": 3,
+      "y": 8,
       "sourceSha256": "37315fa73812134382a36cfd051ad8fe92e35159f7dc24cef7e83ce36860da74",
       "sourceBytes": 1928008
     },
     "buff_def": {
       "s": "hud",
-      "x": 7,
-      "y": 5,
+      "x": 4,
+      "y": 8,
       "sourceSha256": "58b8aff187dfcbc6160ed319130bbb7e24fb0fb8db091629292af207e606104a",
       "sourceBytes": 1972190
     },
     "buff_crit": {
       "s": "hud",
-      "x": 0,
-      "y": 6,
+      "x": 5,
+      "y": 8,
       "sourceSha256": "0d3867775299e693e835612097116ccab72286d50f552fd60f894f80e9f6d20c",
       "sourceBytes": 2083742
     },
     "buff_atk": {
       "s": "hud",
-      "x": 1,
-      "y": 6,
+      "x": 6,
+      "y": 8,
       "sourceSha256": "d4a6c3ee8397c56061dc7faf823b184b7530491b75a646cd0bacc77d37d00a02",
       "sourceBytes": 2159665
     },
     "cur_linh_thach": {
       "s": "hud",
-      "x": 2,
-      "y": 6,
+      "x": 7,
+      "y": 8,
       "sourceSha256": "8b5f76d0a59a3de8d3947e813b0b9f1d98c566f0e3bec02c8b0d51f4a336a3c8",
       "sourceBytes": 2089616
     },
     "hud_thien": {
       "s": "hud",
-      "x": 3,
-      "y": 6,
+      "x": 0,
+      "y": 9,
       "sourceSha256": "b1735fac4a127e8e354f8d80a0d75659971273a79d147c62c6a39d8651d18768",
       "sourceBytes": 2168416
     },
     "hud_ngu_kiem": {
       "s": "hud",
-      "x": 4,
-      "y": 6,
+      "x": 1,
+      "y": 9,
       "sourceSha256": "c2ee83c51a293ab22fd7b63ec0d177a3367d31d2e24ad10e9d5d6f0143361963",
       "sourceBytes": 1980609
     },
     "hud_tui": {
       "s": "hud",
-      "x": 5,
-      "y": 6,
+      "x": 2,
+      "y": 9,
       "sourceSha256": "8b286394239fb2fa6cdff70a1bceea67fab73c372453d115a78357388b720c6f",
       "sourceBytes": 2310056
     },
     "hud_nhan_vat": {
       "s": "hud",
-      "x": 6,
-      "y": 6,
+      "x": 3,
+      "y": 9,
       "sourceSha256": "68f77bf45fa5c72d28a59ff748d621ee207e30cf21c53fd1cf46b19aac9be2a7",
       "sourceBytes": 2224268
     },
     "hud_cong_phap": {
       "s": "hud",
-      "x": 7,
-      "y": 6,
+      "x": 4,
+      "y": 9,
       "sourceSha256": "bc336f5ad039921e7a548bebe2ca4187975af3546ecf189e176b4800c1de17d0",
       "sourceBytes": 2127633
     },
     "hud_to_doi": {
       "s": "hud",
-      "x": 0,
-      "y": 7,
+      "x": 5,
+      "y": 9,
       "sourceSha256": "964141c896715881370141b4cfdaed67b5f5521c0fc54173fcf4999b061c08be",
       "sourceBytes": 2296080
     },
     "hud_nhiem_vu": {
       "s": "hud",
-      "x": 1,
-      "y": 7,
+      "x": 6,
+      "y": 9,
       "sourceSha256": "8a1117bb6016c96ecec116e0cdece8cae6e5232a66168fc0d7c3253e4bcc5d7e",
       "sourceBytes": 2257021
     },
     "hud_tro_giup": {
       "s": "hud",
-      "x": 2,
-      "y": 7,
+      "x": 7,
+      "y": 9,
       "sourceSha256": "8374c5563fc75e4f52aede178dc628177e785e1048db63b35ae9c088cdce847e",
       "sourceBytes": 1836870
     },
     "hud_cai_dat": {
       "s": "hud",
-      "x": 3,
-      "y": 7,
+      "x": 0,
+      "y": 10,
       "sourceSha256": "5423b512c6785614bb85f27e390bcd2ba719dc85662eb3536af82e33c3767ef2",
       "sourceBytes": 2214780
     },
     "mark_nhan": {
       "s": "hud",
-      "x": 4,
-      "y": 7,
+      "x": 1,
+      "y": 10,
       "sourceSha256": "6c57b7ffce8ad92141bae20d078cef0806bd120e62840322d4b0a3e7bdce43e8",
       "sourceBytes": 2084439
     },
     "mark_xong": {
       "s": "hud",
-      "x": 5,
-      "y": 7,
+      "x": 2,
+      "y": 10,
       "sourceSha256": "6ecdaf0ccf1b406746d836bd91a322ec50c039633b6d3a2107b34182617d00dd",
       "sourceBytes": 2063194
     }

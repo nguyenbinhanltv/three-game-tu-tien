@@ -66,7 +66,7 @@ if (!templates[group]) {
   console.error('Nhóm: icons | portraits | loading | ui | concepts');
   process.exit(1);
 }
-const all = read(`${group}.json`);
+const all = { ...read(`${group}.json`), ...(fs.existsSync(path.join(here, `${group}.pending.json`)) ? read(`${group}.pending.json`) : {}) }; // *.pending.json: id chưa có trên main, chỉ sinh ảnh (build.mjs không đọc)
 const todo = (ids.length ? ids : Object.keys(all)).filter((id) => {
   if (!all[id]) throw new Error(`Không có chủ thể: ${id}`);
   return force || !fs.existsSync(path.join(source, '2d', group, `${id}.png`));
