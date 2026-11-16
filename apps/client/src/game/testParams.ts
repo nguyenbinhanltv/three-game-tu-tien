@@ -67,3 +67,9 @@ export function isBossViewer(search: string): boolean {
 export function isSkillViewer(search: string): boolean {
   return new URLSearchParams(search).get('show')?.trim().toLowerCase() === 'skill';
 }
+
+/** `?sword=<id asset kiếm>`: chỉ hình, mọi người chơi hiện kiếm này (xem kiếm bậc mới khi chưa có trang bị gắn model). Id lạ → null. */
+export function swordOverride(search: string, valid: readonly string[]): string | null {
+  const v = new URLSearchParams(search).get('sword')?.trim().toLowerCase();
+  return v && ID.test(v) && valid.includes(v) ? v : null;
+}

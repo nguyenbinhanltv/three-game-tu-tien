@@ -5,7 +5,7 @@ import { LEVELS } from './index';
 import { checkLevel, type LevelCheckOpts } from './levelcheck';
 
 const base = (): LevelDef => structuredClone(ensureLevel(FIXTURE_ID)!);
-const OPTS: LevelCheckOpts = { strings: false, assets: false, pads: FIXTURE_PADS, free: FIXTURE_FREE, props: FIXTURE_PROPS };
+const OPTS: LevelCheckOpts = { strings: false, assets: false, pads: FIXTURE_PADS, free: FIXTURE_FREE, props: FIXTURE_PROPS, coverage: false };
 const run = (lv: LevelDef, o: LevelCheckOpts = {}) => checkLevel(lv, { ...OPTS, ...o });
 
 describe('checkLevel: mọi level', () => {
@@ -66,5 +66,12 @@ describe('checkLevel: bắt lỗi trên level thử', () => {
     lv.camps![0].mon = 'mon_yeu_lang'; // dùng chung model sói, chưa có asset riêng
     expect(run(lv, { assets: true }).join('\n')).toMatch(/camp tn_a1 quái mon_yeu_lang chưa có asset nguồn/);
     expect(run(lv, { assets: true, props: [{ id: 'prop_khong_co', x: 450, z: 400, yaw: 0, s: 1 }] }).join('\n')).toMatch(/prop prop_khong_co chưa có asset nguồn/);
+  });
+});
+
+describe('checkLevel: độ phủ cụm (bản đồ mở rộng)', () => {
+  it('bắt vùng săn có điểm quá xa mép cụm gần nhất', () => {
+    const errs = run(base(), { coverage: true });
+    expect(errs.some((e) => e.includes('độ phủ cụm'))).toBe(true);
   });
 });

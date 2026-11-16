@@ -466,6 +466,8 @@ export interface LevelDef {
   portals?: PortalDef[];
   /** Có mặt = level là bí cảnh (room riêng, vào bằng vé); thiếu = bản đồ thế giới. */
   dungeon?: DungeonDef;
+  /** Room độ kiếp riêng (E1-F): có `dungeon` (điểm vào, nơi về) nhưng không có đợt quái; room tên `tribulation`, mỗi lần độ kiếp một room. */
+  tribulation?: boolean;
 }
 
 /** Cổng dẫn từ bản đồ thế giới vào bí cảnh. */

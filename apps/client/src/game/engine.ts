@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, TRIBULATION_DURATION, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_WORLD, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget } from '@dtl/shared';
-import { biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
+import { C, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, type TeleMsg, cloneMoveState, type DmgMsg, DUNGEON_EXIT, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_CHANT, MF_STUN, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, PORTAL_POS, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget } from '@dtl/shared';
+import { areaKey, biomeAt, groundAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, tierBar, SKILL, SKILLS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
@@ -37,6 +37,7 @@ import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
 import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { PropLayer } from './props';
+import { allProps } from './propScatter';
 import { type AssetHandle, assets } from './assets';
 import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
@@ -83,9 +84,12 @@ export interface LoginOptions {
  * Level của room theo `InitMsg.room` (E1-B đặt tên room theo level: `world` = Vân Lam, `world-<id>`, `dungeon` = Kiếm Trủng,
  * `dungeon-<id>`); tên lạ thì về Vân Lam.
  */
+/** Room bản đồ thế giới: `world` (Vân Lam) hoặc `world-<id>` (không phải bí cảnh). */
+export const isWorldRoom = (room: string): boolean => room === ROOM_WORLD || room.startsWith('world-');
 export function levelOfRoom(room: string): string {
   if (room === ROOM_WORLD) return 'van_lam';
   if (room === ROOM_DUNGEON) return 'kiem_trung';
+  if (room === ROOM_TRIBULATION) return TRIB_LEVEL; // sân độ kiếp (E1-F)
   const id = room.replace(/^(world|dungeon)-/, '');
   return id !== room && knownLevel(id) ? id : 'van_lam';
 }
@@ -163,18 +167,18 @@ export class Game {
   private static session = '';
 
   /** Vào một room bằng mã phiên; nếu phiên hết hạn thì dùng lại thông tin đăng nhập gốc. */
-  private static async join(roomName: string): Promise<Room> {
+  private static async join(roomName: string, extra: Record<string, string> = {}): Promise<Room> {
     if (!Game.client) throw new Error('no client');
     if (Game.session) {
       try {
         // ?god đi theo mỗi lần vào room (bí cảnh, quay về); ?at chỉ áp lần vào đầu tiên.
-        return await Game.client.joinOrCreate(roomName, { session: Game.session, god: readTestParams(location.search).god });
+        return await Game.client.joinOrCreate(roomName, { ...extra, session: Game.session, god: readTestParams(location.search).god });
       } catch (e) {
         if ((e as { code?: number }).code !== 4014) throw e;
         Game.session = '';
       }
     }
-    return Game.client.joinOrCreate(roomName, { ...Game.lastLogin, god: readTestParams(location.search).god });
+    return Game.client.joinOrCreate(roomName, { ...extra, ...Game.lastLogin, god: readTestParams(location.search).god });
   }
 
   /** Đăng nhập và vào thế giới. Lỗi được đưa lên UI qua store. */
@@ -355,6 +359,8 @@ export class Game {
   private deathFx = new DeathFx();
   /** Giờ kết thúc kiếp theo tin `tribstart`, giữ riêng để đồng bộ HUD không xoá nếu tin đến trước cờ trạng thái. */
   private tribUntil = 0;
+  /** Kiếp đang độ (id trong `tribulations.json`): từ tin `tribstart`, hoặc suy từ cấp khi lỡ tin. */
+  private tribId = 'truc_co';
   /** Lúc thấy cờ độ kiếp của mình bật (ms, đồng hồ client); 0 = cờ đang tắt. Dùng để dựng lại HUD khi lỡ tin `tribstart`. */
   private tribFlagAt = 0;
   /** Boss mà cảnh xuất hiện đang nhìn theo (vị trí hiện tại, vì boss đang chạy), và độ cao ngực so với chân. */
@@ -469,9 +475,9 @@ export class Game {
     this.ents = new EntityManager(this.scene, this.sid, levelOfInit(init));
     this.ents.setWarm(this.warmObject);
     this.mapVis?.dispose();
-    this.mapVis = new MapVis(this.scene, init.room === ROOM_WORLD);
-    this.resetSound(init.room === ROOM_WORLD);
-    if (this.beacons) this.beacons.mesh.visible = init.room === ROOM_WORLD;
+    this.mapVis = new MapVis(this.scene, isWorldRoom(init.room) ? levelOfInit(init) : null);
+    this.resetSound(isWorldRoom(init.room));
+    if (this.beacons) this.beacons.mesh.visible = isWorldRoom(init.room);
     this.ents.camera = this.camera;
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     // Vào bí cảnh: thẻ chương hiện khi nhân vật đã có trong room mới (khung đầu tiên sau khi bắt kịp server).
@@ -630,7 +636,7 @@ export class Game {
       /* đã rời */
     }
     try {
-      const room = await Game.join(m.room);
+      const room = await Game.join(m.room, m.options);
       await Game.enter(room);
     } catch (e) {
       console.error(e);
@@ -775,8 +781,8 @@ export class Game {
     this.vfx.onFlash = (a) => this.post?.flash(a);
     this.ents = new EntityManager(this.scene, this.sid, levelOfRoom(get().room));
     this.ents.setWarm(this.warmObject);
-    this.mapVis = new MapVis(this.scene, get().room === ROOM_WORLD);
-    this.resetSound(get().room === ROOM_WORLD);
+    this.mapVis = new MapVis(this.scene, isWorldRoom(get().room) ? levelOfRoom(get().room) : null);
+    this.resetSound(isWorldRoom(get().room));
     this.ents.camera = this.camera;
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => this.monsterInk(m);
@@ -864,14 +870,14 @@ export class Game {
     const params = new URLSearchParams(location.search);
     // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách. `?props=0` tắt để chụp ảnh trước/sau.
     if (F.trees === 'scatter' && params.get('props') !== '0') {
-      this.props = new PropLayer();
+      this.props = new PropLayer(undefined, allProps(levelId()));
       this.props.setQuality(get().quality, q.shadows);
       this.scene.add(this.props.group);
     }
     const pois = LEVELS[id]?.pois ?? [];
     if (F.beacons && pois.length && params.get('beacons') !== '0') {
       this.beacons = new Beacons(pois.filter((p) => p.beamH).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
-      this.beacons.mesh.visible = get().room === ROOM_WORLD;
+      this.beacons.mesh.visible = isWorldRoom(get().room);
       this.scene.add(this.beacons.mesh);
     }
     this.grass = new Grass();
@@ -1881,7 +1887,8 @@ export class Game {
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) {
           this.tribUntil = Date.now() + (m.d ?? 40) * 1000;
-          set({ tribEnd: this.tribUntil });
+          this.tribId = m.tb ?? 'truc_co';
+          set({ tribEnd: this.tribUntil, tribId: this.tribId });
           this.chapter('trib');
         }
         break;
@@ -2589,7 +2596,7 @@ export class Game {
       y: rp.y,
       z: rp.z,
       airborne: (me.fl & PF_FLYING) !== 0 || rp.y - groundAt(rp.x, rp.z) > AIRBORNE_HEIGHT,
-      zone: t('ui.zone.' + biomeAt(rp.x, rp.z)),
+      zone: t(areaKey(levelId(), biomeAt(rp.x, rp.z))),
       fps: Math.round(st.fps ? st.fps * 0.6 + fps * 0.4 : fps),
       perf,
       autoAttack: this.autoAttack,
@@ -2908,10 +2915,13 @@ export class Game {
     }
     if (!this.tribFlagAt) this.tribFlagAt = now;
     if (this.tribUntil > now || now - this.tribFlagAt < 600 || !this.started) return;
-    this.tribUntil = now + TRIBULATION_DURATION * 1000;
+    // Lỡ tin: kiếp đang độ là kiếp mở ra từ cấp hiện tại (cấp chỉ đổi khi thành công).
+    const def = tribForLevel(me.lv) ?? tribDef('truc_co');
+    this.tribId = def.id;
+    this.tribUntil = now + def.duration * 1000;
     const sid = this.sid;
-    this.vfx.tribulationCloud((out) => this.ents.chestOf(sid, out), TRIBULATION_DURATION, () => ((this.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0);
-    set({ tribEnd: this.tribUntil });
+    this.vfx.tribulationCloud((out) => this.ents.chestOf(sid, out), def.duration, () => ((this.view.players.get(sid)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+    set({ tribEnd: this.tribUntil, tribId: this.tribId });
   }
 
   /** Số liệu cho bảng gỡ lỗi F3 (M1-2). */

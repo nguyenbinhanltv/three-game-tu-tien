@@ -24,6 +24,7 @@ import {
   type ZoneDef,
 } from '@dtl/shared';
 import { LEVELS, MONSTER, NPCS } from './index';
+import { campCoverage, COVER_BY_LEVEL, COVER_EDGE_MAX, DEFAULT_COVER } from './coverage';
 import { PLACES } from './places';
 import { ensureLevel, FIXTURE_ID } from './fixtures';
 
@@ -260,6 +261,10 @@ if (gaps.length) {
 out.push('');
 out.push('## Độ phủ: khoảng cách tới quái thường gần nhất (mục tiêu ≤ 35 m)');
 out.push(`Trong vùng săn (${covHunt.points} điểm, lưới 12 m): ≤35 m ${pct(covHunt.within35)}, p50 ${f1(covHunt.p50)} m, p95 ${f1(covHunt.p95)} m, max ${f1(covHunt.max)} m`);
+if (!IS_VL && camps.length) {
+  const cc = campCoverage(level);
+  out.push(`Chuẩn bản đồ mở rộng: khoảng cách tới MÉP cụm gần nhất trong vùng săn (${cc.points} điểm, lưới 12 m): ≤${COVER_EDGE_MAX} m ${pct(cc.within)}, p50 ${f1(cc.p50)} m, p95 ${f1(cc.p95)} m, max ${f1(cc.max)} m; chuẩn level p95 ≤ ${(COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).p95}, max ≤ ${(COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).max} ${cc.p95 <= (COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).p95 && cc.max <= (COVER_BY_LEVEL[LEVEL_ID] ?? DEFAULT_COVER).max ? '(ĐẠT)' : '(KHÔNG ĐẠT)'}`);
+}
 out.push(`Cả vùng chơi, chỗ đi được (${covAll.points} điểm, lưới 24 m): ≤35 m ${pct(covAll.within35)}, p50 ${f1(covAll.p50)} m, p95 ${f1(covAll.p95)} m, max ${f1(covAll.max)} m`);
 out.push('');
 out.push('## Chỗ kẹt (đẩy 8 hướng theo stepMove, 2 s mỗi hướng, cần thoát ≥ 6 m)');

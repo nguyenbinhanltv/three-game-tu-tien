@@ -32,6 +32,25 @@ def verts():
 
 
 P = verts()
+
+# Kiếm dựng từ concept chéo (liet_mach, kinh_quang, tinh_khuyet) nằm nghiêng trong mặt phẳng ảnh (có khi cả Z):
+# căn trục chính (PCA) về +X, trục nhỏ nhất (bề dày lưỡi) về Y trước khi đo. Kiếm đã nằm ngang (nghiêng < 2°) giữ nguyên.
+_c = P - P.mean(axis=0)
+_w, _v = np.linalg.eigh(_c.T @ _c)
+_e1, _e3 = _v[:, 2], _v[:, 0]
+_tilt = float(np.degrees(np.arccos(min(1.0, abs(_e1[0])))))
+_thick = float(np.degrees(np.arccos(min(1.0, abs(_e3[1])))))
+if _tilt > 2.0 or _thick > 2.0:
+    # Quy ước Tripo của script này: chiều dài X, bề rộng lưỡi Z, bề dày Y (Blender). e1→X, e3 (nhỏ nhất)→Y, Z = X × Y.
+    _e2 = np.cross(_e1, _e3)
+    _R = np.array([_e1, _e3, _e2])  # hàng = trục mới
+    _M = Matrix(((_R[0][0], _R[0][1], _R[0][2], 0), (_R[1][0], _R[1][1], _R[1][2], 0), (_R[2][0], _R[2][1], _R[2][2], 0), (0, 0, 0, 1)))
+    for o in objs:
+        o.matrix_world = _M @ o.matrix_world
+    bpy.context.view_layer.update()
+    print(f'[orient_sword] căn trục chính: nghiêng {_tilt:.1f}°, bề dày lệch {_thick:.1f}°')
+    P = verts()
+
 x = P[:, 0]
 L = x.max() - x.min()
 if L <= 0:
