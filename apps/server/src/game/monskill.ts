@@ -71,6 +71,9 @@ export interface MxMon {
   attackAt: number;
   windUntil: number;
   comboAt: number;
+  /** Đang niệm chú (boss) hoặc đọc chú (quái đánh xa): không mở chiêu mới, để vùng chú nổ đúng chỗ đã báo. */
+  chant: unknown;
+  cast: unknown;
   rules: { ai: MonsterAi };
   mx: MonSkillRt;
   /** Là đệ tử của quái này (id). */
@@ -119,7 +122,7 @@ export class MonSkills {
       return true;
     }
     const ai = m.rules.ai;
-    if (m.comboAt || !reachable) return false;
+    if (m.comboAt || m.chant || m.cast || !reachable) return false;
     for (const k of MON_SKILLS) {
       const cfg = ai[k];
       if (!cfg) continue;

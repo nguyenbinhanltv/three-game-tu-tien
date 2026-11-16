@@ -410,3 +410,26 @@ describe('reveal: lộ yếu điểm', () => {
     expect(mon.s.hp).toBe(a - 200);
   });
 });
+
+describe('chant/cast đang chạy thì không mở chiêu mới', () => {
+  const LEAP: MonsterAi = { leap: { cd: 8, min: 3, range: 14, r: 3, delay: 1, mul: 1, kind: 'fire' } };
+
+  it('boss đang niệm chú không nhảy; hết chú thì nhảy', () => {
+    const { mon, run, hazards } = setup(LEAP);
+    mon.chant = { startAt: T0, endAt: T0 + 5000 };
+    run(1000);
+    expect(hazards()).toHaveLength(0);
+    expect(mon.mx.act).toBeNull();
+    mon.chant = null;
+    run(DT * 2);
+    expect(hazards().some((h) => h.mv === 'leap')).toBe(true);
+  });
+
+  it('quái đang đọc chú đánh xa cũng không mở chiêu', () => {
+    const { mon, run, hazards } = setup({ ...LEAP, burrow: { cd: 14, range: 20, hide: 2, n: 1, r: 2, spread: 4, mul: 1, cone: { r: 10, w: 20, delay: 1.5, mul: 1 }, kind: 'fire' } });
+    mon.cast = { endAt: T0 + 5000 };
+    run(800);
+    expect(hazards()).toHaveLength(0);
+    expect(mon.s.mf & MF_BURROW).toBe(0);
+  });
+});
