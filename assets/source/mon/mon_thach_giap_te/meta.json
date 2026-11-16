@@ -17,7 +17,8 @@
     },
     "yaw": 90,
     "quadruped": {
-      "attack": "gore"
+      "attack": "gore",
+      "death": "prone"
     },
     "post": "tools/blender/anim_quadruped.py"
   },
