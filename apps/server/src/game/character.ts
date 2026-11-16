@@ -75,9 +75,10 @@ export class InvDraft {
     this.itemDelta.set(id, (this.itemDelta.get(id) ?? 0) + n);
   }
 
+  /** Số lượng dùng được (không tính ô khóa: ô khóa không làm nguyên liệu). */
   count(id: string): number {
     let n = 0;
-    for (const s of this.inv) if (s && s.id === id) n += s.n;
+    for (const s of this.inv) if (s && s.id === id && !s.lk) n += s.n;
     return n;
   }
 
@@ -92,7 +93,7 @@ export class InvDraft {
     const def = ITEM.get(id);
     if (!def) return 0;
     let room = this.freeSlots() * def.stack;
-    if (def.stack > 1) for (const s of this.inv) if (s && s.id === id && (s.plus ?? 0) === plus) room += def.stack - s.n;
+    if (def.stack > 1) for (const s of this.inv) if (s && !s.lk && s.id === id && (s.plus ?? 0) === plus) room += def.stack - s.n;
     return room;
   }
 
@@ -105,7 +106,7 @@ export class InvDraft {
     if (def.stack > 1) {
       for (const s of this.inv) {
         if (left <= 0) break;
-        if (s && s.id === id && (s.plus ?? 0) === plus && s.n < def.stack) {
+        if (s && !s.lk && s.id === id && (s.plus ?? 0) === plus && s.n < def.stack) {
           const put = Math.min(left, def.stack - s.n);
           s.n += put;
           left -= put;
@@ -157,7 +158,7 @@ export class InvDraft {
     let left = n;
     for (let i = this.inv.length - 1; i >= 0 && left > 0; i--) {
       const s = this.inv[i];
-      if (s && s.id === id) {
+      if (s && s.id === id && !s.lk) {
         const take = Math.min(left, s.n);
         s.n -= take;
         left -= take;
@@ -193,9 +194,9 @@ export class InvDraft {
   }
 }
 
-function sameSlot(a: InvSlot, b: InvSlot): boolean {
+export function sameSlot(a: InvSlot, b: InvSlot): boolean {
   if (!a || !b) return a === b;
-  return a.id === b.id && a.n === b.n && (a.plus ?? 0) === (b.plus ?? 0) && JSON.stringify(a.inst ?? null) === JSON.stringify(b.inst ?? null);
+  return a.id === b.id && a.n === b.n && (a.plus ?? 0) === (b.plus ?? 0) && !a.lk === !b.lk && JSON.stringify(a.inst ?? null) === JSON.stringify(b.inst ?? null);
 }
 
 /** Đọc cột `tele`: mảng JSON id trận; '' hoặc hỏng thì rỗng, id lạ bị bỏ. */
@@ -324,6 +325,7 @@ export class Character {
         if (r.plus > 0) it.plus = r.plus;
         const inst = parseStoredInst(r.itemId, r.inst);
         if (inst) it.inst = inst;
+        if (r.locked) it.lk = true;
         c.inv[r.slot] = it;
       }
     }
@@ -456,8 +458,8 @@ export class Character {
           if (b) {
             const inst = b.inst ? JSON.stringify(b.inst) : null;
             tx.insert(items)
-              .values({ charId: this.id, slot: i, itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst })
-              .onConflictDoUpdate({ target: [items.charId, items.slot], set: { itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst } })
+              .values({ charId: this.id, slot: i, itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst, locked: b.lk ? 1 : 0 })
+              .onConflictDoUpdate({ target: [items.charId, items.slot], set: { itemId: b.id, qty: b.n, plus: b.plus ?? 0, inst, locked: b.lk ? 1 : 0 } })
               .run();
           } else {
             tx.delete(items).where(and(eq(items.charId, this.id), eq(items.slot, i))).run();

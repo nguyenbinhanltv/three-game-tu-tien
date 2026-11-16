@@ -38,6 +38,8 @@ export interface ItemDef {
   set?: string;
   /** Bậc trang bị 1–4 (E2-F); thiếu = bậc 1. Quyết định hệ số dòng chính (`TIER_MUL`) khi roll và khi Thăng Bậc. */
   tier?: number;
+  /** Vật phẩm nhiệm vụ (TD-A): `itemCategory` trả 'quest'. */
+  quest?: boolean;
   /** Đích Thăng Bậc của món này (cùng ô, bậc kế); thiếu = món thường cùng ô ở bậc kế. */
   promoteTo?: string;
   use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number; /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit'; pct: number; sec: number } };
@@ -680,9 +682,15 @@ export interface InvItem {
   plus?: number;
   /** Chỉ có ở trang bị đã roll (xem `items.ts`). Thiếu = đồ cũ chỉ số cố định theo mẫu. */
   inst?: ItemInst;
+  /** Ô đang khóa (TD-A): không bán, không phân giải, không làm nguyên liệu, không bị gộp khi sắp xếp. Chỉ có ở túi. */
+  lk?: true;
 }
 export type InvSlot = InvItem | null;
-export const INV_SIZE = 30;
+/** Số ô mỗi trang túi (client chia trang). */
+export const INV_PAGE = 30;
+/** Số trang túi; mở sẵn hết, không có lệnh mở trang. */
+export const INV_PAGES = 4;
+export const INV_SIZE = INV_PAGE * INV_PAGES;
 
 export type Equipment = Partial<Record<EquipSlot, InvItem>>;
 

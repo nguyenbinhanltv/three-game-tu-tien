@@ -94,6 +94,8 @@ import {
   IN_JUMP,
   type InitMsg,
   INV_SIZE,
+  type InvMsg,
+  type InvSlot,
   type LevelDef,
   levelSpawns,
   meditateXpPerSec,
@@ -174,7 +176,10 @@ import { ARTIFACT, PILL_QUALITY, APPEARANCE, ENHANCE_ORE, ITEM, ITEM_SYS, ITEMS,
 import { lootOf } from '@dtl/content/loot';
 import { PLACE, PLACES } from '@dtl/content/places';
 import { MonS, NodeS, PlayerS, type WorldState } from '../state';
-import { type Character, isEquipSlot } from './character';
+import { type Character, isEquipSlot, sameSlot } from './character';
+
+/** Quá số ô đổi này thì gửi ảnh túi đầy đủ thay vì delta. */
+const INV_DELTA_MAX = 24;
 import type { TestFlags } from '../testflags';
 import { type Hot, MethodRt, methodOf, passiveOf, resolveFor, setSkillLevel, skillLevelOf, type Trail } from './method';
 
@@ -204,6 +209,7 @@ import { DuelSystem } from './duel';
 import { TeleportSystem } from './teleport';
 import { SpiritSystem } from './spirit';
 import { parties } from './party';
+import { InventorySystem } from './inventory';
 import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg, equippedArtifact, feedQi, passiveValue, progressOf, pruneBuffs } from './artifact';
 
@@ -247,6 +253,8 @@ export interface PlayerEnt {
   itemCdAt: number;
   /** Mặc/tháo đồ: tối thiểu 200 ms giữa hai lần (mỗi lần là một giao dịch DB + dòng ledger). */
   equipCdAt: number;
+  /** Ảnh túi client đang có (để gửi delta `S.INV`). */
+  invSent?: InvSlot[];
   casting: { skill: SkillDef; target: string; endAt: number } | null;
   /** Đòn chờ `hitAt`, chuỗi đánh thường, cửa sổ cường hóa, lướt (K-2). */
   flow: SkillFlow;
@@ -593,6 +601,14 @@ export class GameSim {
     stopMeditate: (p) => this.setMeditating(p, false),
   });
 
+  /** Sắp xếp, khóa ô, tách chồng (TD-A). */
+  readonly inventory = new InventorySystem({
+    now: () => this.now,
+    isDead: (p) => this.isDead(p),
+    idem: (p, r) => this.idem(p, r),
+    warn: (p, k, params) => this.warn(p, k, params),
+  });
+
   /** Cường hóa, khảm ngọc, tẩy luyện, phân giải (P3-3). */
   readonly upgrade = new UpgradeSystem({
     now: () => this.now,
@@ -915,7 +931,7 @@ export class GameSim {
       }
       if (c.invDirty) {
         c.invDirty = false;
-        p.client.send(S.INV, { inv: c.inv, equip: c.equip });
+        p.client.send(S.INV, this.invMsg(p));
       }
       if (c.questDirty) {
         c.questDirty = false;
@@ -3304,14 +3320,14 @@ export class GameSim {
     if (bottleneckBlocked(c.level, c.bk)) return this.warn(p, 'sys.bk_blocked');
     if (!def.enabled && !force) return this.warn(p, 'sys.trib_locked');
     const item = def.item;
-    if (item && !force && !c.inv.some((it) => it?.id === item)) return this.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
+    if (item && !force && !c.inv.some((it) => it?.id === item && !it.lk)) return this.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
     if (def.room === 'tribulation') {
       // Room riêng: room thế giới chỉ kiểm điều kiện rồi cấp vé; vật phẩm bị tiêu khi vào tới nơi (beginTribulation).
       if (!this.host.enterTribulationRoom?.(p, def, force)) this.warn(p, 'sys.trib_not_now');
       return;
     }
     // GM (force) vẫn tiêu vật phẩm nếu đang có, để sổ cái giống đường người chơi thật.
-    this.beginTribulation(p, def, !!item && c.inv.some((it) => it?.id === item));
+    this.beginTribulation(p, def, !!item && c.inv.some((it) => it?.id === item && !it.lk));
   }
 
   /** Bắt đầu kiếp `def` cho `p` ngay trong room này. `consume`: tiêu vật phẩm đột phá. false nếu thiếu vật phẩm. */
@@ -3426,6 +3442,20 @@ export class GameSim {
 
   // ---------- vật phẩm ----------
 
+  /**
+   * Tin S.INV: gửi phần thay đổi (`d`) so với lần gửi trước khi ít ô đổi, còn lại gửi ảnh đầy đủ (lần đầu, hoặc đổi > INV_DELTA_MAX ô như sắp xếp).
+   * `invSent` là ảnh client đang có (các tin S.INV trước; chưa có thì tin đầu tiên là ảnh đầy đủ).
+   */
+  private invMsg(p: PlayerEnt): InvMsg {
+    const c = p.char;
+    const prev = p.invSent;
+    p.invSent = c.inv.slice();
+    if (!prev) return { inv: c.inv, equip: c.equip };
+    const d: [number, InvSlot][] = [];
+    for (let i = 0; i < INV_SIZE; i++) if (!sameSlot(prev[i] ?? null, c.inv[i] ?? null)) d.push([i, c.inv[i] ?? null]);
+    return d.length > INV_DELTA_MAX ? { inv: c.inv, equip: c.equip } : { d, equip: c.equip };
+  }
+
   private idem(p: PlayerEnt, r: unknown): string | null | undefined {
     if (typeof r !== 'string' || r.length < 4 || r.length > 40) return undefined;
     return `${p.char.id}:${r}`;
@@ -3501,6 +3531,7 @@ export class GameSim {
       // Bản nháp là bản sao của túi hiện tại; kiểm lại để món ở ô đó không đổi giữa lúc đọc và lúc ghi.
       if (!cur || cur.id !== it.id) return false;
       const next: InvItem = { ...cur };
+      delete next.lk; // khóa chỉ có ở túi
       // Địa/Thiên phẩm ràng buộc khi mặc (không giao dịch được nữa).
       if (next.inst && next.inst.q >= BIND_QUALITY && !next.inst.bound) next.inst = { ...next.inst, bound: true };
       d.equip[es] = next;
@@ -3551,7 +3582,7 @@ export class GameSim {
       const sb = d.inv[b];
       if (!sa) return false;
       const def = ITEM.get(sa.id);
-      if (sb && def && sb.id === sa.id && (sb.plus ?? 0) === (sa.plus ?? 0) && def.stack > 1) {
+      if (sb && def && sb.id === sa.id && (sb.plus ?? 0) === (sa.plus ?? 0) && def.stack > 1 && !sa.lk && !sb.lk) {
         const put = Math.min(sa.n, def.stack - sb.n);
         if (put <= 0) {
           d.inv[a] = sb;
@@ -3602,10 +3633,11 @@ export class GameSim {
     const it = p.char.inv[slot];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def || it.n < n || def.sell <= 0) return;
+    if (it.lk) return this.warn(p, 'sys.item_locked');
     if (it.inst?.bound) return this.warn(p, 'sys.item_bound');
     const gold = sellPrice(it, def) * n;
     const ok = p.char.tx('sell:' + def.id, idem, (d) => {
-      if (!d.removeAt(slot, n)) return false;
+      if (d.inv[slot]?.lk || !d.removeAt(slot, n)) return false;
       d.addGold(gold);
       return true;
     });
