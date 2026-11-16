@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { abs, dot, float, min, normalize, normalView, positionLocal, positionView, pow, sin, uniform, vec3 } from 'three/tsl';
+import { abs, attribute, dot, float, min, normalize, normalView, positionView, pow, sin, uniform, uv, vec3 } from 'three/tsl';
 import { markBloom } from '../post';
 import type { FxUniforms } from '../vfx/common';
 import { inkNodes } from '../vfx/ink';
@@ -72,7 +72,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   dome: (u) => {
     // Fresnel: 1 ở rìa (nhìn lướt), ~0 ở giữa (nhìn thẳng). Vân phù văn: dải ngang mờ chạy theo độ cao.
     const fres = pow(float(1).sub(abs(dot(normalize(normalView), normalize(positionView.negate())))), 2.6);
-    const runes = sin(positionLocal.y.mul(14)).mul(0.5).add(0.5).mul(0.06);
+    const runes = sin(uv().y.mul(28)).mul(0.5).add(0.5).mul(0.06);
     const a = min(fres.mul(2.2).add(runes).add(0.012), 1);
     return { color: min(u.color.mul(1.0), u.maxHdr), opacity: u.opacity.mul(a) };
   },
@@ -132,9 +132,57 @@ export function fxMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
   return m;
 }
 
+/**
+ * Các kiểu gộp thành `InstancedMesh` (K-6, T4): mọi lưới cùng (kiểu, hình, renderOrder) vẽ trong một draw call.
+ * `FxMesh` của các kiểu này chỉ là "tay cầm" (vị trí, màu, độ trong...), không nằm trong cảnh; `FxBatcher`
+ * (fxBatch.ts) ghi tay cầm vào thuộc tính theo instance mỗi khung.
+ */
+/** `?batch=0` tắt gộp draw call để so ảnh/số đo trước-sau (mỗi lưới một draw call như cũ). */
+export const BATCHING = typeof location === 'undefined' || new URLSearchParams(location.search).get('batch') !== '0';
+
+export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>(['glow', 'flat', 'solid', 'slash', 'ink', 'sigil', 'dome', 'inkpool']);
+
+/** Tên thuộc tính instance: màu + độ trong, `fxA`, `fxB`, (`fxK`, 0, 0, 0). */
+export const BATCH_ATTR = { c: 'aFxC', a: 'aFxA', b: 'aFxB', k: 'aFxK' } as const;
+
+const batchNodes = (() => {
+  const c = attribute(BATCH_ATTR.c, 'vec4');
+  const a = attribute(BATCH_ATTR.a, 'vec4');
+  const b = attribute(BATCH_ATTR.b, 'vec4');
+  const k = attribute(BATCH_ATTR.k, 'vec4');
+  const U: FxUniforms = { color: c.xyz, opacity: c.w, k: k.x, a, b, maxHdr: FX_MAX_HDR };
+  return U;
+})();
+
+const batchMaterials = new Map<FxKind, THREE.MeshBasicNodeMaterial>();
+
+/** Bản instanced của material một kiểu gộp được: cùng shader, đọc uniform từ thuộc tính theo instance. */
+export function fxBatchMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
+  let m = batchMaterials.get(kind);
+  if (m) return m;
+  const s = SPEC[kind];
+  m = new THREE.MeshBasicNodeMaterial({ transparent: true, blending: s.blending, depthWrite: false, side: THREE.DoubleSide, fog: s.fog });
+  m.forceSinglePass = true;
+  const custom = BUILDERS[kind]?.(batchNodes);
+  if (custom) {
+    m.colorNode = custom.color as THREE.Node;
+    m.opacityNode = custom.opacity as THREE.Node;
+  } else {
+    const hot = float(1).sub(batchNodes.k).pow(2).mul(0.25).add(1);
+    m.colorNode = min(batchNodes.color.mul(s.boost).mul(hot), FX_MAX_HDR);
+    m.opacityNode = batchNodes.opacity;
+  }
+  m.name = `fx-${kind}-i`;
+  if (s.bloom > 0) markBloom(m, s.bloom);
+  batchMaterials.set(kind, m);
+  return m;
+}
+
 /** Pool lưới hiệu ứng. Lưới trả về pool giữ material dùng chung; chỉ geometry được gán lại. */
 export class FxPool {
   private free: FxMesh[] = [];
+  /** Tay cầm đang sống của các kiểu gộp (`BATCH_KINDS`): `FxBatcher` đọc tập này mỗi khung. */
+  readonly batched = new Set<FxMesh>();
   /** Số lưới đã tạo (để kiểm: đứng yên sau khi pool đã ấm). */
   created = 0;
 
@@ -154,9 +202,11 @@ export class FxPool {
     const m = this.free.pop() ?? this.make();
     m.geometry = geo;
     if (m.fxKind !== kind) {
-      m.material = fxMaterial(kind);
+      // Kiểu gộp: tay cầm không vẽ riêng nên không cần material (tránh dựng shader thừa).
+      if (!BATCHING || !BATCH_KINDS.has(kind)) m.material = fxMaterial(kind);
       m.fxKind = kind;
     }
+    if (BATCHING && BATCH_KINDS.has(kind)) this.batched.add(m);
     m.fxColor.setHex(color);
     m.fxOpacity = opacity;
     m.fxK = 1;
@@ -172,6 +222,7 @@ export class FxPool {
 
   release(m: FxMesh): void {
     m.removeFromParent();
+    this.batched.delete(m);
     this.free.push(m);
   }
 

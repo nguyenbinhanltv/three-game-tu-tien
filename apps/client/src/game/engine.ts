@@ -114,6 +114,7 @@ import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../in
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
+import { SkillFx } from './skillFx';
 import { BOSS_BAR_RANGE, keepMonsterTarget } from './targetRange';
 import type { SkillEvent } from './character/view';
 import { HitQueue, SwingGuard, hitPitch, hitStopOf, layersOf, materialOf, shakeOf, ULT_FOV, ultFovAt, WHOOSH_GAIN, whooshDelay, type HitCtx, type HitSoundLog } from './hitjuice';
@@ -192,6 +193,12 @@ let reqCounter = 0;
 export function reqId(): string {
   return Date.now().toString(36) + '-' + (reqCounter++).toString(36) + '-' + Math.floor(Math.random() * 1e6).toString(36);
 }
+
+/** Chỉ bản dev, để chụp ảnh đúng khung: `?slowmo=0.25` chậm thời gian hiển thị (đứng yên, không di chuyển). */
+const SLOWMO = import.meta.env.DEV ? Math.min(1, Math.max(0.05, Number(new URLSearchParams(location.search).get('slowmo')) || 1)) : 1;
+
+/** Chỉ bản dev, để chụp ảnh VFX chiêu: `?quiet=1` bỏ nháy trúng đòn và cầu nổ cú cắn trên chính mình (quái vẫn đánh, không đổi luật). */
+const QUIET = import.meta.env.DEV && new URLSearchParams(location.search).get('quiet') === '1';
 
 export class Game {
   static current: Game | null = null;
@@ -293,6 +300,10 @@ export class Game {
   private pushPool: Pusher[] = [];
   ents!: EntityManager;
   vfx!: Vfx;
+  /** VFX ba pha theo sự kiện chiêu + vệt kiếm + linh quang hộ thể (K-6). */
+  skillFx: SkillFx | null = null;
+  /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
+  hazardLog?: { k: string; sh: string; src: string; boss: boolean; t: string }[];
   dmg!: DamageNumbers;
   lootFly!: LootFly;
   private lootLayer: HTMLDivElement | null = null;
@@ -422,6 +433,7 @@ export class Game {
   private emitSkillEvent(sid: string, e: SkillEvent): void {
     this.onSwingEvent(sid, e);
     for (const fn of this.skillListeners) fn(sid, e);
+    this.skillFx?.handle(sid, e);
     if (import.meta.env.DEV) {
       this.skillLog.push({ sid, e, at: performance.now() });
       if (this.skillLog.length > 200) this.skillLog.shift();
@@ -552,11 +564,13 @@ export class Game {
     room.onMessage(S.FX, (m: FxMsg) => this.onFx(m));
     room.onMessage(S.DMG, (m: DmgMsg) => this.onDmg(m));
     room.onMessage(S.HAZARD, (m: HazardMsg) => {
+      if (import.meta.env.DEV) (this.hazardLog ??= []).push({ k: m.kind, sh: m.sh ?? 'circle', src: m.src ?? '', boss: this.isBossSrc(m.src), t: this.view.monsters.get(m.src ?? '')?.t ?? '' });
+      if (import.meta.env.DEV && this.hazardLog && this.hazardLog.length > 200) this.hazardLog.shift();
       // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
       if (m.sh && this.vfx) {
-        if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m);
+        if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m, this.isBossSrc(m.src));
       }
-      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m));
+      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src));
       // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
       if (m.src) this.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
       const vol = this.volumeAt(m.x, m.z);
@@ -782,6 +796,12 @@ export class Game {
     this.post = new PostPipeline(this.renderer, this.scene, this.camera, q);
     this.vfx = new Vfx(this.scene);
     this.vfx.camera = this.camera;
+    this.skillFx = new SkillFx(this.vfx, {
+      player: (sid) => this.ents?.players.get(sid),
+      mySid: () => this.sid,
+      myMethod: () => get().method?.method,
+      camera: () => this.camera as THREE.PerspectiveCamera,
+    });
     this.vfx.particles.setQuality(get().quality);
     // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách. `?props=0` tắt để chụp ảnh trước/sau.
     if (new URLSearchParams(location.search).get('props') !== '0') {
@@ -1598,7 +1618,7 @@ export class Game {
         break;
       case 'bite': {
         e.monsters.get(src)?.model.attack();
-        if (e.chestOf(dst, _v)) v.burst(_v, 0xff6a5a, 0.7, 0.2);
+        if (!(QUIET && dst === this.sid) && e.chestOf(dst, _v)) v.burst(_v, 0xff6a5a, 0.7, 0.2);
         break;
       }
       case 'heal':
@@ -1720,6 +1740,12 @@ export class Game {
         }
         break;
     }
+  }
+
+  /** Vùng báo do boss thả (màu ma khí) hay quái thường (son đỏ). */
+  private isBossSrc(src: string | undefined): boolean {
+    const t = src ? this.view.monsters.get(src)?.t : undefined;
+    return !!t && !!MONSTER.get(t)?.boss;
   }
 
   /**
@@ -1865,7 +1891,7 @@ export class Game {
     if (mine && !m.heal && m.n > 0) this.skipCine(this.cineKind === 'sect' || !!m.hv);
     if (mine && !m.heal && m.n > 0) this.post?.hit(m.n / Math.max(1, this.me()?.mhp ?? 1), !!m.crit || !!m.hv);
     if (m.hv && !m.heal && m.n > 0) this.heavyInk(m.dst, m.src);
-    if (!m.heal && m.n > 0) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops);
+    if (!m.heal && m.n > 0 && !(QUIET && m.dst === this.sid)) this.ents.hitReact(m.dst, m.src, !!m.crit, m.src && this.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops);
     // Boss đánh nặng (≥ KNOCKDOWN_FRAC máu tối đa) thì người bị đánh ngã rồi đứng dậy; chỉ hình, người chơi vẫn đi lại được và kéo dậy sớm khi di chuyển.
     if (!m.heal && m.hv && m.n > 0 && m.src) {
       const victim = this.ents.players.get(m.dst);
@@ -2006,7 +2032,7 @@ export class Game {
     if (this.disposed || this.compiling > 0) return;
     this.renderer.info.reset();
     const now = performance.now();
-    const dt = Math.min(0.1, (now - this.lastT) / 1000);
+    const dt = Math.min(0.1, (now - this.lastT) / 1000) * SLOWMO;
     this.lastT = now;
     this.frames++;
     // Sát thương chờ khung `hit` mà quá hạn (hoạt ảnh bị hủy, model khối cũ): phát luôn, theo đồng hồ game.
@@ -2086,6 +2112,7 @@ export class Game {
       this.ents.updateQuestMarkers(get().quests, myLevel);
     }
     if (me) this.vfx.trails.update(dt, this.ents.players, this.sid, this.camera);
+    this.skillFx?.update(dt);
     if (me) this.updateGrass(dt, rp);
     this.vfx.update(dt);
     this.post?.update(dt);
@@ -2879,6 +2906,8 @@ export class Game {
     duckHold('npc', 0);
     duckHold('cine', 0);
     this.ents?.dispose();
+    this.skillFx?.dispose();
+    this.skillFx = null;
     this.vfx?.dispose();
     this.terrain?.dispose();
     this.ground?.dispose();

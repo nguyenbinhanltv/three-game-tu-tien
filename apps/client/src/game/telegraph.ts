@@ -1,7 +1,8 @@
 import * as THREE from 'three/webgpu';
 import { groundAt, type HazardMsg } from '@dtl/shared';
 import { SIGIL_CONE, SIGIL_RECT } from '../render/vfx/sigil';
-import { HAZARD_COLORS, type Vfx } from './vfx';
+import { hazardFlash, hazardStyle } from '../render/vfx/phases';
+import type { Vfx } from './vfx';
 
 /**
  * Vùng báo trước hình chữ nhật/quạt (đòn của quái đánh xa). Chỉ vẽ; ai trúng do server phán định
@@ -14,9 +15,10 @@ import { HAZARD_COLORS, type Vfx } from './vfx';
 
 const _p = new THREE.Vector3();
 
-export function telegraph(v: Vfx, m: HazardMsg): void {
+export function telegraph(v: Vfx, m: HazardMsg, boss = false): void {
   if (!m.sh || !(m.r > 0) || !(m.delay > 0)) return;
-  const light = HAZARD_COLORS[m.kind] ?? HAZARD_COLORS.frost;
+  const style = hazardStyle(m.kind, boss);
+  const light = style.color;
   const yaw = m.yaw ?? 0;
   const fx = Math.sin(yaw);
   const fz = Math.cos(yaw);
@@ -28,11 +30,13 @@ export function telegraph(v: Vfx, m: HazardMsg): void {
   const rect = m.sh === 'rect';
   const w = rect ? (m.w ?? 2) : Math.min(Math.PI * 0.45, Math.max(0.05, m.w ?? Math.PI / 6));
   const s = v.sigil(rect ? SIGIL_RECT : SIGIL_CONE, m.x, m.z, yaw, m.r, w, light, y);
+  s.fxColor.multiplyScalar(style.gain);
 
   v.track(
     m.delay,
     (k) => {
       s.fxA.x = k;
+      s.fxA.z = hazardFlash(k, m.delay);
       s.fxOpacity = Math.min(1, k * 10);
     },
     () => {

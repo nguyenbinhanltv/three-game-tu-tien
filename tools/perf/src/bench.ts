@@ -361,7 +361,7 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})("high");` });
   const name = `Swap_${renderer === 'webgpu' ? 'gpu' : 'gl'}`;
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${process.env.BENCH_QUERY ?? ''}`;
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
     await page.waitForFunction(() => {

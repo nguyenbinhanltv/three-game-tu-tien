@@ -53,6 +53,8 @@ export interface CharacterView {
   dashFrom?(fromX: number, fromZ: number, dur: number): void;
   /** Bị hất ngã rồi đứng dậy (K-4). */
   knockdown?(): void;
+  /** Đồng hồ animation chiêu đang phát (K-6): bùng nổ VFX hẹn theo đồng hồ này để khớp hitAt kể cả khi hit-stop. */
+  performClock?(): { t: number; skill: string } | null;
   /** Nghe sự kiện chiêu (K-4). */
   onSkillEvent?: ((e: SkillEvent) => void) | null;
   /** Đang phát (hoặc đang chờ phát) động tác `pose`. */
@@ -77,6 +79,8 @@ export interface CharacterView {
   readonly steps?: number;
   readonly attacks?: number;
   readonly hasSword?: boolean;
+  /** Gốc và mũi lưỡi kiếm (thế giới) nếu kiếm đang cầm tay (K-6). */
+  bladePoints?(base: THREE.Vector3, tip: THREE.Vector3): boolean;
   readonly grounded?: boolean;
 }
 
