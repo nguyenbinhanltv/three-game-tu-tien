@@ -653,11 +653,11 @@ export class Vfx {
    * Đột phá thành công (P2-B4): quầng vàng ấm tỏa từ người, một ống sáng mảnh và chùm tia nắng xòe lên như mây kiếp
    * vừa tách. Mảnh và cộng sáng để giữ màu cảnh (khác `pillar` bọc kín trước camera). 1 + 1 + 5 lưới trong ~2,6 giây.
    */
-  ascendGlow(pos: PosFn, dur = 2.6, danQuang = false): void {
-    const core = this.fx(TUBE_GEO, danQuang ? 0xffcf8a : 0xffe6a0, 0.3, 'flat');
-    const ring = this.fx(RING_GEO, danQuang ? 0x8fcfff : 0xffd98a, 0.7);
+  ascendGlow(pos: PosFn, dur = 2.6, danQuang = false, nguyenAnh = false): void {
+    const core = this.fx(TUBE_GEO, nguyenAnh ? 0xcdbcff : danQuang ? 0xffcf8a : 0xffe6a0, 0.3, 'flat');
+    const ring = this.fx(RING_GEO, nguyenAnh ? 0x9fc8ff : danQuang ? 0x8fcfff : 0xffd98a, 0.7);
     // Kết Đan: thêm một vành đan quang vàng ấm nở chậm hơn vành lam (vẫn cộng sáng, mảnh).
-    const ring2 = danQuang ? this.fx(RING_GEO, 0xffd98a, 0.5) : null;
+    const ring2 = danQuang || nguyenAnh ? this.fx(RING_GEO, nguyenAnh ? 0xd9ccff : 0xffd98a, 0.5) : null;
     if (ring2) ring2.rotation.x = -Math.PI / 2;
     ring.rotation.x = -Math.PI / 2;
     const rays: { m: FxMesh; dir: THREE.Vector3 }[] = [];
@@ -665,7 +665,7 @@ export class Vfx {
       const phi = (i / 5) * Math.PI * 2 + 0.4;
       const th = 0.16 + (i % 2) * 0.12;
       const dir = new THREE.Vector3(Math.sin(th) * Math.cos(phi), Math.cos(th), Math.sin(th) * Math.sin(phi));
-      rays.push({ m: this.fx(TUBE_GEO, 0xffe2a0, 0.2, 'glow'), dir });
+      rays.push({ m: this.fx(TUBE_GEO, nguyenAnh ? 0xcfc6ee : 0xffe2a0, 0.2, 'glow'), dir });
     }
     this.add(
       dur,
@@ -675,22 +675,22 @@ export class Vfx {
         const fade = Math.pow(1 - k, 1.5);
         const h = 46 * rise;
         core.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
-        core.scale.set(0.8, h, 0.8);
-        core.fxOpacity = (danQuang ? 0.2 : 0.3) * fade;
+        core.scale.set(nguyenAnh ? 0.35 : 0.8, h, nguyenAnh ? 0.35 : 0.8);
+        core.fxOpacity = (nguyenAnh ? 0.07 : danQuang ? 0.2 : 0.3) * (nguyenAnh ? Math.pow(1 - k, 2.4) : fade);
         ring.position.set(_a.x, _a.y - 1.0, _a.z);
-        ring.scale.setScalar(1.2 + k * 7);
-        ring.fxOpacity = 0.7 * (1 - k);
+        ring.scale.setScalar(nguyenAnh ? 1.0 + k * 3.6 : 1.2 + k * 7);
+        ring.fxOpacity = (nguyenAnh ? 0.2 : 0.7) * (1 - k);
         if (ring2) {
           ring2.position.set(_a.x, _a.y - 0.4 + k * 2.2, _a.z);
-          ring2.scale.setScalar(0.8 + k * 4.2);
-          ring2.fxOpacity = 0.5 * Math.pow(1 - k, 1.3);
+          ring2.scale.setScalar(nguyenAnh ? 0.7 + k * 2.4 : 0.8 + k * 4.2);
+          ring2.fxOpacity = (nguyenAnh ? 0.14 : 0.5) * Math.pow(1 - k, 1.3);
         }
         for (const r of rays) {
           const len = 55 * rise;
           r.m.position.set(_a.x + (r.dir.x * len) / 2, _a.y - 1.1 + (r.dir.y * len) / 2, _a.z + (r.dir.z * len) / 2);
           r.m.quaternion.setFromUnitVectors(_up, r.dir);
-          r.m.scale.set(1.1 + k * 1.5, len, 1.1 + k * 1.5);
-          r.m.fxOpacity = (danQuang ? 0.11 : 0.2) * fade;
+          r.m.scale.set(nguyenAnh ? 0.45 + k * 0.5 : 1.1 + k * 1.5, len, nguyenAnh ? 0.45 + k * 0.5 : 1.1 + k * 1.5);
+          r.m.fxOpacity = (nguyenAnh ? 0.035 : danQuang ? 0.11 : 0.2) * (nguyenAnh ? Math.pow(1 - k, 2.4) : fade);
         }
       },
       () => {
@@ -878,6 +878,98 @@ export class Vfx {
         stopping = true;
       },
     };
+  }
+
+  /**
+   * Nguyên anh xuất khiếu (E3-L): một bóng người nhỏ xanh nhạt trong suốt lơ lửng phía trên thân, nối với thân bằng một sợi sáng mảnh.
+   * Tông trầm, mờ, cộng sáng thấp để không che nhân vật. Tự khép khi `on()` sai hoặc hết `dur`; `stop()` khép sớm.
+   */
+  soulOut(pos: PosFn, dur: number, on: () => boolean): { stop(): void } {
+    const body = this.fx(G.ico1, 0x9fcfff, 0.3);
+    const head = this.fx(G.ico1, 0xc6e2ff, 0.4);
+    const cord = this.fx(TUBE_GEO, 0x8fb8f0, 0.16, 'flat');
+    let t = 0;
+    let fade = 0;
+    let stopping = false;
+    const it = {
+      t: 0,
+      dur: dur + 1,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const live = !stopping && t < dur && on();
+        fade = live ? Math.min(1, fade + dt * 4) : Math.max(0, fade - dt * 3);
+        if (!live && fade <= 0) it.t = it.dur;
+        if (!pos(_a)) return;
+        const bob = Math.sin(t * 2.2) * 0.12;
+        const hy = _a.y + 2.6 + bob;
+        body.position.set(_a.x, hy, _a.z);
+        body.scale.set(0.28, 0.5, 0.2);
+        body.fxOpacity = 0.3 * fade;
+        head.position.set(_a.x, hy + 0.6, _a.z);
+        head.scale.setScalar(0.17);
+        head.fxOpacity = 0.4 * fade;
+        const len = Math.max(0.1, hy - _a.y - 0.4);
+        cord.position.set(_a.x, _a.y + 0.4 + len / 2, _a.z);
+        cord.scale.set(0.05, len, 0.05);
+        cord.fxOpacity = 0.16 * fade;
+      },
+      end: () => {
+        this.drop(body);
+        this.drop(head);
+        this.drop(cord);
+      },
+    };
+    this.items.push(it);
+    return {
+      stop: () => {
+        stopping = true;
+      },
+    };
+  }
+
+  /**
+   * Quầng nhận diện Tâm Ma Ảnh (E3-L): vành tím dưới chân bóng + vành đỏ sẫm nở nhịp + một sợi khói tím mảnh bốc lên theo dáng bóng,
+   * để thấy rõ bản sao tối màu của người chơi ngay cả khi nhìn từ xa/trên cao. Tông trầm, mảnh, mờ dần ở mép; không lóa.
+   * `at(out)` trả vị trí chân bóng (false = chưa có); tự khép khi `on()` sai.
+   */
+  tamMaAura(at: (out: THREE.Vector3) => boolean, on: () => boolean): void {
+    const ring = this.fx(RING_GEO, 0x9a5fd8, 0.3);
+    const ring2 = this.fx(RING_GEO, 0xc2485a, 0.2);
+    const wisp = this.fx(TUBE_GEO, 0x7b55b8, 0.1, 'flat');
+    ring.rotation.x = -Math.PI / 2;
+    ring2.rotation.x = -Math.PI / 2;
+    let t = 0;
+    let fade = 0;
+    const it = {
+      t: 0,
+      dur: 120,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const live = on();
+        fade = live ? Math.min(1, fade + dt * 2.5) : Math.max(0, fade - dt * 3);
+        if (!live && fade <= 0) it.t = it.dur;
+        if (!at(_a)) {
+          ring.fxOpacity = ring2.fxOpacity = wisp.fxOpacity = 0;
+          return;
+        }
+        ring.position.set(_a.x, _a.y + 0.12, _a.z);
+        ring.scale.setScalar(1.5);
+        ring.fxOpacity = 0.3 * fade;
+        const p = (t * 0.8) % 1;
+        ring2.position.set(_a.x, _a.y + 0.14, _a.z);
+        ring2.scale.setScalar(1.2 + p * 1.4);
+        ring2.fxOpacity = 0.2 * (1 - p) * fade;
+        wisp.position.set(_a.x, _a.y + 1.5, _a.z);
+        wisp.scale.set(0.12, 3, 0.12);
+        wisp.fxOpacity = 0.045 * fade;
+      },
+      end: () => {
+        this.drop(ring);
+        this.drop(ring2);
+        this.drop(wisp);
+      },
+    };
+    this.items.push(it);
   }
 
   /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
