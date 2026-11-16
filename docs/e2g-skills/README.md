@@ -50,7 +50,8 @@ Tất cả dùng luật K-2 sẵn có (`windup`/`hitAt`/`recovery`, áp sát th�
 6. **Sơn Nhạc Hóa Thân**: "thân phóng 1,3×" mới là quầng ngọc đá (`dome`) + trụ, chưa phóng to model.
 7. **Chỗ đặt chiêu**: ô 9–10 chính thức là việc của E2-E. Tạm thời 4 chiêu chơi được của công pháp đang tu nằm ở **hàng chiêu bậc cao** (Shift+1…4), chỉ số ≥ `BAR_SIZE` trong `Game.bar()`; 8 ô chính và phím 9 (pháp bảo) không đổi.
 8. **Pose chiêu lướt** (Nghịch Kiếm, Dịch Sơn): như các chiêu lướt hiện có, không có pose riêng; hình lướt do client dựng (K-4 `dashFrom`) và VFX riêng.
-9. **Icon**: 21 chiêu dùng emoji dự phòng (`iconFallback`), chưa có tranh trong atlas (`pnpm icons:check` báo 92/113).
+9. **Dịch Sơn Xung B** không lướt: kéo mục tiêu (và quái trong 4 m quanh nó) từ xa về sát người (tối đa 6 m).
+10. **Icon**: 21 chiêu dùng emoji dự phòng (`iconFallback`), chưa có tranh trong atlas (`pnpm icons:check` báo 92/113).
 
 ## VFX (K-6)
 
@@ -74,3 +75,15 @@ Chạy với tên pose để chỉ ghi pose cần: `node tools/poses/gen-k5.mjs 
 
 - `game/<nam|nu>-<chiêu>.jpg`: trong game, mỗi ô 50 ms (chụp chậm ×0,25), viền đỏ = khung `hit`; 12 chiêu × nam (Thanh Phong) và nữ (Lam Chi). `game/skill-events.json`: nhật ký sự kiện chiêu.
 - `pose-nam/`, `pose-nu/`: dãy khung khóa từng pose (viewer, hai góc: chéo và bên) cho 10 chiêu có pose riêng chơi được.
+
+## Đo CPU (bench:client, cùng máy, cùng phiên)
+
+`main` (3e6013f) và PR chạy lần lượt trên cùng máy (RTX 3060 Ti). Cột High, CPU p95 (ms):
+
+| Điểm | WebGPU main | WebGPU PR | WebGL2 main | WebGL2 PR |
+| --- | --- | --- | --- | --- |
+| sân tông môn | 8,7 | 8,4 | 11,4 | 8,4 |
+| rừng | 9,4 | 9,9 | 9,0 | 10,5 |
+| hồ | 7,4 | 10,1 | 12,2 | 10,1 |
+
+Cả baseline cũng vượt 8 ms ở 5/6 ô High và dao động 2–3 ms giữa hai lần đo: vượt ngân sách ở preset High là sẵn có trên máy này, không do gói E2-G (không đổi đường vẽ lúc đứng yên).
