@@ -1046,5 +1046,11 @@
   "quest.s3_bich_ngoc.done": "Yên rồi. Yên quá cũng lạ. Ta quen tiếng ồn.",
   "quest.s3_thu_ban_ve.name": "Bản Vẽ Đảo",
   "quest.s3_thu_ban_ve.desc": "Tô Vãn Ngư cần ba bản vẽ đảo, vẽ bằng thần thức chứ không bằng mực. Giữ V ở Đỉnh Sấm, Kình Ngư Đài và Đình Phù Đảo, mỗi nơi quét một lần.",
-  "quest.s3_thu_ban_ve.done": "Đủ rồi. Ta vẽ lại bằng mực. Thần thức quên nhanh, mực thì lâu hơn."
+  "quest.s3_thu_ban_ve.done": "Đủ rồi. Ta vẽ lại bằng mực. Thần thức quên nhanh, mực thì lâu hơn.",
+  "mon.mon_van_hac": "Vân Hạc",
+  "mon.mon_kinh_linh": "Kính Linh",
+  "mon.mon_phu_dao_thach_quy": "Phù Đảo Thạch Quy",
+  "mon.mon_bich_ngoc_kim_thien": "Bích Ngọc Kim Thiền",
+  "mon.elite_loi_van_su_vuong": "Lôi Vân Sư Vương",
+  "mon.boss_van_hai_kinh_vuong": "Vân Hải Kình Vương"
 }

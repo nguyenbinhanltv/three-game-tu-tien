@@ -88,7 +88,7 @@ async function main(): Promise<void> {
     await sleep(4000);
 
     // 3) Lâm Chiếu Dung, Tô Vãn Ngư ở Phù Đảo Các.
-    await gm(page, '/gm tp 1050 1048');
+    await gm(page, '/gm tp 1050 1051');
     await faceSouth(page);
     await sleep(2500);
     await shot(page, '04-phu-dao-cac-npc');
@@ -103,18 +103,18 @@ async function main(): Promise<void> {
     log.afterTurnin = { tracker: await text(page, '.tracker') };
     await shot(page, '07-lam-chieu-dung-nhiem-vu-tiep');
     await page.keyboard.press('Escape');
-    await gm(page, '/gm tp 1002 1048');
+    await gm(page, '/gm tp 1002 1051');
     await faceSouth(page);
     await sleep(2000);
     await shot(page, '08-to-van-ngu-phu-dao-cac');
 
     // 4) kill bằng sự kiện GM, trả, rồi nhiệm vụ thần thức.
-    await gm(page, '/gm tp 1050 1048');
+    await gm(page, '/gm tp 1050 1051');
     await sleep(1200);
     await gm(page, '/gm qev kill mon_van_hac 14');
     await send(page, 'q', { a: 'turnin', id: 'q3_van_hac' });
     await sleep(900);
-    await gm(page, '/gm tp 1002 1048');
+    await gm(page, '/gm tp 1002 1051');
     await sleep(1000);
     await send(page, 'q', { a: 'accept', id: 'q3_than_thuc' });
     await sleep(800);
@@ -136,7 +136,7 @@ async function main(): Promise<void> {
     log.scan = { tracker: await text(page, '.tracker') };
 
     // 6) Kính Nguyệt Cung (sự kiện dungeon, chờ E3-M), Kình Vương, Nguyên Anh.
-    await gm(page, '/gm tp 1050 1048');
+    await gm(page, '/gm tp 1050 1051');
     await sleep(1200);
     await done('q3_than_thuc', 'q3_kinh_linh', 'q3_thach_quy', 'q3_loi_van');
     await gm(page, '/gm level 23');
