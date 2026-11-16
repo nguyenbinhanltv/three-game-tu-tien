@@ -105,9 +105,13 @@ async function main(): Promise<void> {
     await gm(page, 'tp vh_kinh_ho');
     await page.waitForFunction(() => (window as unknown as G).__game?.shownLevel === 'van_hai', undefined, { timeout: 90_000, polling: 300 });
     await sleep(3000);
-    await gm(page, 'tp 1168 1556', 2500);
-    await cam(0.3, 20, 0);
+    await gm(page, 'tp 1168 1589', 2500);
+    await cam(0.16, 11, Math.PI);
     await sleep(800);
+    log.gate = await page.evaluate(() => {
+      const g = (window as unknown as G).__game!;
+      return { discs: g.gateDiscs.map((d: any) => ({ n: d.name, x: Math.round(d.position.x), y: Math.round(d.position.y), z: Math.round(d.position.z), v: d.visible, inScene: !!d.parent })), me: [Math.round(g.me().x), Math.round(g.me().z)], yaw: g.camYaw };
+    });
     await shot('00-cong');
     await page.keyboard.press('KeyE');
     await page.waitForFunction(() => (window as unknown as G).__game?.shownLevel === 'kinh_nguyet', undefined, { timeout: 90_000, polling: 300 });

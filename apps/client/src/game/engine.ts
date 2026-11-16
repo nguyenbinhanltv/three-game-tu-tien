@@ -37,7 +37,7 @@ import { GRADING, GRADING_DEFAULT, moodVariant, URL_MOOD, type GradingName } fro
 import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
-import { buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
+import { buildMoonGate, buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
 import { gatesToDraw } from './gates';
 import { buildCaveShell, buildCrystalGlow, buildMirrorFloor, buildPalaceHall } from './caveShell';
 import { PropLayer } from './props';
@@ -900,14 +900,16 @@ export class Game {
       this.sectMesh.frustumCulled = false;
       this.scene.add(this.sectMesh);
     }
-    if (F.portals) {
+    if (F.portals || (LEVELS[id]?.portals?.length ?? 0) > 0) {
       this.gateDiscs = gatesToDraw(id).map((g) => {
         const d = buildPortalDisc(g.x, g.z, g.color, g.flat);
         d.userData.op = g.opacity ?? 0.55;
         return d;
       });
+      // Cổng vào Kính Nguyệt Cung: thêm vành gương nguyệt quanh đĩa để thấy rõ cổng.
+      for (const g of gatesToDraw(id)) if (g.id === 'portal' && g.to === 'kinh_nguyet') this.gateDiscs.push(buildMoonGate(g.x, g.z));
       this.scene.add(...this.gateDiscs);
-      for (const disc of this.gateDiscs) markBloom(disc.material as THREE.Material, 0.8);
+      for (const disc of this.gateDiscs) if (disc.name !== 'moon-gate') markBloom(disc.material as THREE.Material, 0.8);
       // Cung gương: vòng ra nằm trên sàn gương (cao hơn 0,08 m của sàn), không bị sàn cắt thành bán nguyệt.
       if (levelAssets(id).palace) for (const disc of this.gateDiscs) disc.position.y += 0.2;
     }

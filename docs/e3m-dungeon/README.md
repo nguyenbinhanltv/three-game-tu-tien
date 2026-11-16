@@ -4,7 +4,7 @@ Gói E3-M (`docs/EXPANSION_DESIGN.md` 5.2, 11.3). Cấp 21+, 4–5 người, 5 �
 
 ## Cách vào
 
-Vân Hải Phù Đảo (#148): cổng đĩa sáng cạnh **Kính Hồ Đài** (Kính Hồ Đảo, 1168, 1560; `portals` trong `levels/van_hai.json`) → bấm E. Ra (cổng bạc ở điểm vào, hoặc tự đưa ra 20 s sau khi dẹp xong) về Vân Hải tại `returnSpawn` (1168, 1546) cạnh Kính Hồ Đài. Điểm vào cũng tới được bằng `/gm tp vh_kinh_ho`.
+Vân Hải Phù Đảo (#148): cổng đĩa sáng cạnh **Kính Hồ Đài** (Kính Hồ Đảo, vòm đá tại 1168, 1598, cách đài 27 m; `portals` trong `levels/van_hai.json`) → bấm E. Ra (cổng bạc ở điểm vào, hoặc tự đưa ra 20 s sau khi dẹp xong) về Vân Hải tại `returnSpawn` (1168, 1584) trước cổng. Điểm vào cũng tới được bằng `/gm tp vh_kinh_ho`.
 
 Vé một lần kiểm ở `static onAuth` (không vé hoặc sai `dgKey` = `no_ticket`), room `dungeon-kinh_nguyet`, `private: true` (mỗi lượt vào một room riêng, đồng đội cùng tổ trong 30 m được kéo theo), tối đa 2 lần hồi sinh mỗi người.
 
