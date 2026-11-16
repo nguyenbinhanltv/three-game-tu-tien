@@ -33,6 +33,7 @@ import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TI
 import { config } from './config';
 import { Character } from './game/character';
 import { MarkerSystem } from './game/marker';
+import { MirrorPuzzle } from './game/mirrorpuzzle';
 import { parties } from './game/party';
 import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions, type TransferOpts } from './game/sim';
 import { WorldState } from './state';
@@ -656,6 +657,10 @@ export class DungeonRoom extends GameRoom {
       return;
     }
     if (this.sim.players.size === 0) return;
+    if (this.puzzle?.active) {
+      this.puzzle.tick();
+      return;
+    }
     if (this.sim.monsters.some((m) => m.state !== MS_DEAD)) return;
     const waves = this.def.waves;
     if (!this.nextWaveAt) this.nextWaveAt = now + (waves[this.wave]?.delay ?? 6) * 1000;
@@ -672,8 +677,39 @@ export class DungeonRoom extends GameRoom {
     this.spawnWave(waves[this.wave - 1]);
   }
 
+  /** Đợt giải đố ba gương đang chạy (E3-M). */
+  private puzzle: MirrorPuzzle | null = null;
+
+  private startPuzzle(w: WaveDef): void {
+    const pz = w.puzzle!;
+    const c = this.def.center;
+    this.puzzle = new MirrorPuzzle(pz, {
+      now: () => Date.now(),
+      players: () => [...this.sim.players.values()].map((p) => ({ sid: p.sid, x: p.move.x, z: p.move.z, dead: (p.s.fl & PF_DEAD) !== 0 })),
+      spawnWrong: (g) => {
+        const def = MONSTER.get(g.mon);
+        if (!def) return;
+        for (let k = 0; k < g.n; k++) {
+          const a = (k / g.n) * Math.PI * 2;
+          this.sim.spawnMonster(def, g.level, c.x + Math.cos(a) * 18, c.z + Math.sin(a) * 18, null);
+        }
+      },
+      fx: (m) => this.sim.fx(m),
+      say: (k, params, type) => this.sim.sysAll(k, params, type),
+      colorName: (i) => t('mirror.color.' + i),
+      solved: (cut) => {
+        this.sim.bossDmgMul = 1 - cut;
+      },
+    });
+    this.puzzle.start();
+  }
+
   private spawnWave(w: WaveDef): void {
     const c = this.def.center;
+    if (w.puzzle) {
+      this.sim.sysAll('sys.dungeon_wave', { n: this.wave, boss: t('dungeon.' + this.levelId + '.wave.' + this.wave) }, 'info');
+      return this.startPuzzle(w);
+    }
     let lead = '';
     let i = 0;
     for (const g of w.mons) {

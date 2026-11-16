@@ -2,8 +2,9 @@
 // Phẩm đan lưu ở trường `plus` của ô túi (0 Hạ, 1 Trung, 2 Thượng); đan không có trang bị nên không lẫn với cường hóa.
 
 export const PILL_TIERS = 3;
-export type PillBuffKind = 'atk' | 'def' | 'crit';
-export const PILL_BUFF_KINDS: PillBuffKind[] = ['atk', 'def', 'crit'];
+/** `ward` (E3-M): Định Thần Phù, giảm sát thương "gương" của Kính Nguyệt Cung (không phải chỉ số). */
+export type PillBuffKind = 'atk' | 'def' | 'crit' | 'ward';
+export const PILL_BUFF_KINDS: PillBuffKind[] = ['atk', 'def', 'crit', 'ward'];
 
 export interface PillBuff {
   kind: PillBuffKind;

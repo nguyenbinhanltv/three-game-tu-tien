@@ -56,7 +56,11 @@ export const MF_WEAK = 16;
 /** Đang chui đất: không bị đánh trúng, client ẩn thân (hiện đốm đất), tới `ce` thì trồi. */
 export const MF_BURROW = 32;
 /** Các cờ do `monskill` quản (sim giữ nguyên khi đổi cờ chú/choáng). */
-export const MF_MX_MASK = MF_REFLECT | MF_WEAK | MF_BURROW;
+/** Thể thật của Kính Nguyệt Chân Quân (E3-M): vết ngọc lam dưới chân, bóng giả không có. */
+export const MF_REAL = 64;
+/** Thần thức soi ra thể thật: sáng vàng tới `ce`. */
+export const MF_SENSED = 128;
+export const MF_MX_MASK = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED;
 
 /** Client → server. */
 export const C = {

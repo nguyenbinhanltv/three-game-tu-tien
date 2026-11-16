@@ -1,0 +1,178 @@
+{
+  "id": "kinh_nguyet",
+  "terrain": "van_lam",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1520,
+      "z": 1352
+    },
+    "exit": {
+      "x": 1520,
+      "z": 1370
+    },
+    "center": {
+      "x": 1520,
+      "z": 1300
+    },
+    "minLevel": 21,
+    "returnLevel": "doan_mach",
+    "returnSpawn": {
+      "x": 1024,
+      "z": 1060
+    },
+    "bound": 90,
+    "private": true,
+    "lockAt": 2,
+    "maxRevives": 2,
+    "reward": {
+      "xpPct": 0.15,
+      "gold": [
+        2200,
+        3000
+      ],
+      "level": 23,
+      "items": [
+        {
+          "item": "itm_kinh_hoa_sa",
+          "chance": 1,
+          "min": 4,
+          "max": 6
+        },
+        {
+          "item": "itm_van_hai_lo",
+          "chance": 1,
+          "min": 5,
+          "max": 8
+        },
+        {
+          "item": "itm_bich_ngoc_nhi",
+          "chance": 0.7,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "itm_dinh_than_phu",
+          "chance": 0.6,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "itm_tu_khi_dan",
+          "chance": 1,
+          "min": 2,
+          "max": 3
+        }
+      ],
+      "equip": [
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            40,
+            50,
+            10
+          ],
+          "set": "set_kinh_quang"
+        },
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            40,
+            50,
+            10
+          ],
+          "set": "set_van_kinh"
+        },
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            40,
+            50,
+            10
+          ],
+          "set": "set_luu_ly"
+        }
+      ]
+    },
+    "waves": [
+      {
+        "mons": [
+          {
+            "id": "mon_kinh_linh",
+            "level": 21,
+            "n": 8
+          }
+        ],
+        "delay": 8
+      },
+      {
+        "mons": [
+          {
+            "id": "elite_kinh_dien_ma_quan",
+            "level": 22,
+            "n": 1
+          }
+        ],
+        "title": true
+      },
+      {
+        "puzzle": {
+          "points": [
+            {
+              "x": 1490,
+              "z": 1270
+            },
+            {
+              "x": 1550,
+              "z": 1270
+            },
+            {
+              "x": 1520,
+              "z": 1236
+            }
+          ],
+          "secs": 20,
+          "wrong": {
+            "mon": "mon_kinh_linh",
+            "level": 21,
+            "n": 3
+          },
+          "bossCut": 0.08
+        },
+        "mons": [],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_kinh_linh",
+            "level": 21,
+            "n": 6
+          },
+          {
+            "id": "mon_phu_dao_thach_quy",
+            "level": 22,
+            "n": 2
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_kinh_nguyet_chan_quan",
+            "level": 23,
+            "n": 1
+          }
+        ],
+        "title": true
+      }
+    ]
+  }
+}

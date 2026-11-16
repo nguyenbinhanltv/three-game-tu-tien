@@ -880,5 +880,6 @@
   "ui.attr.desc.lifesteal": "Hồi khí huyết theo phần sát thương gây ra.",
   "ui.attr.desc.healRecv": "Tăng lượng hồi phục nhận được.",
   "ui.attr.desc.cdr": "Rút ngắn thời gian hồi chiêu.",
-  "ui.attr.desc.elements": "Sát thương thêm và kháng theo từng hệ; hệ khắc chế gây thêm sát thương."
+  "ui.attr.desc.elements": "Sát thương thêm và kháng theo từng hệ; hệ khắc chế gây thêm sát thương.",
+  "ui.pill.buff.ward": "giảm sát thương gương"
 }
