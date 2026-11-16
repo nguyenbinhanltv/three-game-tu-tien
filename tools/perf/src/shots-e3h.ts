@@ -90,7 +90,7 @@ async function main(): Promise<void> {
     // 3) Lâm Chiếu Dung, Tô Vãn Ngư ở Phù Đảo Các.
     await gm(page, '/gm tp 1050 1051');
     await faceSouth(page);
-    await sleep(2500);
+    await sleep(9000);
     await shot(page, '04-phu-dao-cac-npc');
     await talk('lamChieuDung', '05-lam-chieu-dung-hop-thoai');
     await send(page, 'q', { a: 'turnin', id: 'q3_len_may' });
