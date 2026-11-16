@@ -45,8 +45,8 @@ export const FIXTURE_LEVEL: LevelDef = {
 
 /** Truyền Tống Trận của fixture: mỗi vùng một trận, cộng một trận mở sẵn ở rìa. */
 export const FIXTURE_PADS: TelePad[] = [
-  { id: 'tn_tp_a', zone: 'tn_a', x: 300, z: 330 },
-  { id: 'tn_tp_b', zone: 'tn_b', x: 560, z: 330 },
+  { id: 'tn_tp_a', level: FIXTURE_ID, zone: 'tn_a', x: 300, z: 330 },
+  { id: 'tn_tp_b', level: FIXTURE_ID, zone: 'tn_b', x: 560, z: 330 },
 ];
 export const FIXTURE_FREE = ['tn_tp_a'];
 /** Prop thử (đủ để test "camp không đè prop"). */

@@ -25,13 +25,11 @@ export interface LevelCheckOpts {
   assets?: boolean;
   /** Prop bày của level; mặc định `propsOf(level.id)`. */
   props?: readonly HandProp[];
-  /** Trận truyền tống của level (đã lọc); mặc định lọc `TELE_PADS` theo trường `level` (thiếu = van_lam). */
+  /** Trận truyền tống của level (đã lọc); mặc định lọc `TELE_PADS` theo trường `level`. */
   pads?: readonly TelePad[];
   /** Id trận mở sẵn; mặc định `TELE_FREE`. */
   free?: readonly string[];
 }
-
-type PadWithLevel = TelePad & { level?: string };
 
 const assetExists = (kind: 'mon' | 'prop', id: string) => fs.existsSync(path.join(ROOT, 'assets/source', kind, id));
 
@@ -46,7 +44,7 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
   const B = tr.playBounds;
   const inPlay = (x: number, z: number) => x >= B.x0 && x <= B.x1 && z >= B.z0 && z <= B.z1;
   const props = opts.props ?? propsOf(lv.id);
-  const pads = opts.pads ?? TELE_PADS.filter((p) => ((p as PadWithLevel).level ?? 'van_lam') === lv.id);
+  const pads = opts.pads ?? TELE_PADS.filter((p) => p.level === lv.id);
   const free = opts.free ?? TELE_FREE;
   const zones = lv.zones ?? [];
   const camps = lv.camps ?? [];
@@ -194,7 +192,8 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
   if (pads.length) {
     dupIds('trận', [...pads]);
     for (const z of zones) if (pads.filter((p) => p.zone === z.id).length !== 1) err(`${where}: vùng ${z.id} cần đúng một Truyền Tống Trận`);
-    if (!pads.some((p) => free.includes(p.id))) err(`${where}: cần ít nhất một trận mở sẵn`);
+    // Trận mở sẵn: bắt buộc ở bản đồ gốc (Vân Lam) và khi truyền `free`; level mở rộng mở khóa bằng cách chạm trận.
+    if ((legacy || opts.free) && !pads.some((p) => free.includes(p.id))) err(`${where}: cần ít nhất một trận mở sẵn`);
     for (const pad of pads) {
       const w = `${where}: trận ${pad.id}`;
       needStr(`tele.${pad.id}`);
