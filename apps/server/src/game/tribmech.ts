@@ -2,7 +2,7 @@
 // `TribSystem` gọi `enter`/`tick`/`exit` của cơ chế đó. Các cơ chế dưới đây là CHỖ TRỐNG có chủ: chưa làm gì ngoài ghi log một lần,
 // để E2-D (Kết Đan), E3 (Nguyên Anh), E4 (Hóa Thần) cài thật bằng `registerMechanic` mà không phải đụng lõi.
 //
-//   dan_tran    Kết Đan, pha Ngưng đan: vòng Đan Trận 4 m, thanh ngưng đan 0→100 trong 20 s khi đứng yên trong vòng, ra khỏi vòng tụt 3%/s.
+//   dan_tran    Kết Đan, pha Ngưng đan: vòng Đan Trận 4 m, thanh ngưng đan 0→100 trong 14 s (E2-J) khi đứng yên trong vòng, ra khỏi vòng tụt 3%/s.
 //   tia_xich    Nguyên Anh, pha Lôi: tia xích nối giữa hai tia.
 //   xuat_khieu  Nguyên Anh, pha Hỏa: phím X cho nguyên anh rời thân 6 s (hồi 20 s), thân đứng yên chịu lửa, nguyên anh không chịu lửa.
 //   tam_canh    Nguyên Anh, pha Tâm ma: thanh tâm cảnh (giảm khi bị đánh trúng, hồi khi đánh trúng); Tâm Ma Ảnh dùng 2 chiêu của người chơi.
@@ -11,7 +11,8 @@
 //
 // Quy ước: trạng thái của cơ chế nằm ở `tr.mech[<id>]` (chỉ server giữ). Mọi lệnh phím (X, G) phải qua `GameSim.rateOk` và kiểm trạng thái kiếp ở server.
 
-import { PF_DEAD, TRIB_MECHANIC_IDS, type TribDef, type TribPhaseDef } from '@dtl/shared';
+import { METHOD, SKILL } from '@dtl/content';
+import { PF_DEAD, TRIB_MECHANIC_IDS, tribDef, type TribDef, type TribPhaseDef } from '@dtl/shared';
 import type { PlayerEnt } from './sim';
 import type { TribHost, TribState } from './trib';
 
@@ -47,7 +48,7 @@ export function hasMechanic(id: string): boolean {
 }
 
 for (const id of TRIB_MECHANIC_IDS) {
-  if (id === 'dan_tran') continue; // đã cài thật ở dưới (E2-D)
+  if (id === 'dan_tran' || id === 'tia_xich' || id === 'xuat_khieu' || id === 'tam_canh') continue; // đã cài thật ở dưới (E2-D, E3-L)
   registerMechanic(id, {
     enter(c) {
       if (warned.has(id)) return;
@@ -148,6 +149,192 @@ registerMechanic('dan_tran', {
     }
   },
 });
+
+
+// ---------- tia_xich (E3-L): tia xích nối giữa hai tia ----------
+
+/** Mỗi `every` giây hai tia rơi ở hai đầu một vạch sét đi qua chỗ người độ kiếp đứng (lệch ngang ngẫu nhiên), vạch nối hai tia báo `warn` giây rồi nổ. */
+registerMechanic('tia_xich', {
+  enter(c) {
+    (c.tr.mech ??= {}).tia_xich = { at: c.now + 1500 };
+  },
+  tick(c) {
+    const cfg = c.phase.tiaXich;
+    const st = c.tr.mech?.tia_xich as { at: number } | undefined;
+    if (!cfg || !st || c.now < st.at || (c.p.s.fl & PF_DEAD) !== 0) return;
+    // Nhịp dày dần: chu kỳ co từ `every` xuống còn 70% về cuối pha.
+    const phaseStart = c.phaseIdx > 0 ? c.def.phases[c.phaseIdx - 1].end : 0;
+    const k = Math.min(1, Math.max(0, (c.elapsed - phaseStart) / Math.max(1, c.phase.end - phaseStart)));
+    st.at = c.now + cfg.every * (1 - 0.3 * k) * 1000;
+    const yaw = Math.random() * Math.PI;
+    const fx = Math.sin(yaw);
+    const fz = Math.cos(yaw);
+    const off = (Math.random() - 0.5) * 5;
+    const cx = c.p.move.x + fz * off;
+    const cz = c.p.move.z - fx * off;
+    const half = cfg.len / 2;
+    const ax = cx - fx * half;
+    const az = cz - fz * half;
+    const bx = cx + fx * half;
+    const bz = cz + fz * half;
+    const h = c.host;
+    h.addHazard({ x: ax, z: az, r: cfg.endR }, cfg.warn, cfg.endPct, true, 'lightning', c.p.sid, 0, false, 0, undefined, undefined, c.phase.hot);
+    h.addHazard({ x: bx, z: bz, r: cfg.endR }, cfg.warn, cfg.endPct, true, 'lightning', c.p.sid, 0, false, 0, undefined, undefined, c.phase.hot);
+    h.addHazard({ x: ax, z: az, r: cfg.len, sh: 'rect', yaw, w: cfg.w }, cfg.warn, cfg.pct, true, 'lightning', c.p.sid, 0, false, h.nextGrp(), undefined, undefined, c.phase.hot);
+  },
+});
+
+// ---------- xuat_khieu (E3-L): nguyên anh rời thân (móc tạm cho tới khi E3-K nối phím X và thực thể nguyên anh thật) ----------
+
+/** Trạng thái xuất khiếu trong `tr.mech.xuat_khieu` (chỉ server giữ). */
+export interface SoulState {
+  /** Mốc nguyên anh quay về thân (ms); 0 = đang ở trong thân. */
+  until: number;
+  /** Mốc dùng lại được (ms). */
+  cdUntil: number;
+}
+
+/** Nguyên anh đang rời thân? Thân khi đó đứng yên, lửa nặng nhất không rơi vào ô thân đứng. */
+export function soulActive(tr: { mech?: Record<string, unknown> }, now: number): boolean {
+  const st = tr.mech?.xuat_khieu as SoulState | undefined;
+  return !!st && now < st.until;
+}
+
+/**
+ * Người độ kiếp bấm xuất khiếu. Chỉ hợp lệ trong pha có cơ chế `xuat_khieu` của chính kiếp mình, đang sống, chưa hồi chiêu.
+ * Trả true khi nguyên anh rời thân. (E3-K: nối phím X và thực thể nguyên anh vào hàm này; luật trong kiếp giữ nguyên.)
+ */
+export function soulOut(host: TribHost, p: PlayerEnt): boolean {
+  const tr = p.trib;
+  if (!tr || (p.s.fl & PF_DEAD) !== 0) return false;
+  const def = tribDef(tr.id);
+  const ph = def.phases[tr.pi ?? -1];
+  const cfg = ph?.xuatKhieu;
+  const st = tr.mech?.xuat_khieu as SoulState | undefined;
+  const now = host.now();
+  if (!cfg || ph.mechanic !== 'xuat_khieu' || !st || now < st.cdUntil || now < st.until) return false;
+  st.until = now + cfg.dur * 1000;
+  st.cdUntil = now + cfg.cd * 1000;
+  host.fx({ t: 'xuatkhieu', src: p.sid, x: p.move.x, z: p.move.z, d: cfg.dur });
+  host.sys(p, 'sys.xuat_khieu', { n: cfg.dur }, 'info');
+  return true;
+}
+
+registerMechanic('xuat_khieu', {
+  enter(c) {
+    (c.tr.mech ??= {}).xuat_khieu = { until: 0, cdUntil: 0 } satisfies SoulState;
+  },
+  tick(c) {
+    const st = c.tr.mech?.xuat_khieu as SoulState | undefined;
+    if (st && st.until > 0 && c.now >= st.until) {
+      st.until = 0;
+      c.host.fx({ t: 'xuatkhieu_end', src: c.p.sid });
+    }
+  },
+  exit(c) {
+    const st = c.tr.mech?.xuat_khieu as SoulState | undefined;
+    if (st && st.until > 0) c.host.fx({ t: 'xuatkhieu_end', src: c.p.sid });
+    delete c.tr.mech?.xuat_khieu;
+  },
+});
+
+// ---------- tam_canh (E3-L): thanh tâm cảnh + Tâm Ma Ảnh dùng chiêu của người độ kiếp ----------
+
+export interface TamCanhState {
+  /** Tâm cảnh 0..100. */
+  tc: number;
+  /** Mốc bóng ra chiêu kế (ms) và lượt chiêu (xoay giữa hai chiêu). */
+  castAt: number;
+  turn: number;
+  /** Bóng đã hiện ít nhất một lần (để biết "bóng bị hạ" khác "chưa tới"). */
+  seen: boolean;
+  sendAt: number;
+  /** Bóng bị hạ trước giờ hết kiếp. */
+  beaten: boolean;
+}
+
+/** Hai chiêu của người chơi mà Tâm Ma Ảnh dùng: chiêu đặc trưng của công pháp (nếu là chiêu sát thương) và một chiêu diện rộng/đòn nặng đã mở. */
+export function tamMaSkills(method: string | undefined, level: number): string[] {
+  const ok = (id: string | undefined) => {
+    const s = id ? SKILL.get(id) : undefined;
+    return s && !s.locked && s.unlock <= level && (s.kind === 'damage' || s.kind === 'aoe') ? s.id : undefined;
+  };
+  const out: string[] = [];
+  const sig = ok(method ? METHOD.get(method)?.sig : undefined);
+  if (sig) out.push(sig);
+  for (const id of ['skl_thien_kiem_vu', 'skl_kiem_khi_tram', 'skl_loi_dinh_nhat_kiem', 'skl_phi_kiem']) {
+    const k = ok(id);
+    if (k && !out.includes(k)) out.push(k);
+    if (out.length >= 2) break;
+  }
+  return out;
+}
+
+registerMechanic('tam_canh', {
+  enter(c) {
+    const cfg = c.phase.tamCanh;
+    if (!cfg) return;
+    (c.tr.mech ??= {}).tam_canh = { tc: 100, castAt: c.now + 3500, turn: 0, seen: false, sendAt: 0, beaten: false } satisfies TamCanhState;
+    c.host.fx({ t: 'tamcanh', src: c.p.sid, pg: 100 });
+    c.host.sys(c.p, 'sys.tam_canh_start', undefined, 'info');
+  },
+  tick(c) {
+    const cfg = c.phase.tamCanh;
+    const st = c.tr.mech?.tam_canh as TamCanhState | undefined;
+    if (!cfg || !st || (c.p.s.fl & PF_DEAD) !== 0) return;
+    const sh = c.host.shadowOf(c.p);
+    if (sh) st.seen = true;
+    else if (st.seen && !st.beaten) {
+      // Tâm Ma Ảnh đã bị hạ: tâm ma tan, kiếp thành ngay.
+      st.beaten = true;
+      c.host.sys(c.p, 'sys.tam_canh_win', undefined, 'good');
+      c.host.end(c.p, true);
+      return;
+    }
+    if (sh && c.now >= st.castAt) {
+      st.castAt = c.now + cfg.skillEvery * 1000;
+      const ids = tamMaSkills(c.p.char.meta.method, c.p.char.level);
+      const id = ids[st.turn++ % Math.max(1, ids.length)];
+      const sk = id ? SKILL.get(id) : undefined;
+      if (sk) {
+        const dx = c.p.move.x - sh.s.x;
+        const dz = c.p.move.z - sh.s.z;
+        const dist = Math.hypot(dx, dz) || 1;
+        const pow = cfg.skillPow * Math.max(1, sk.power);
+        if (sk.kind === 'aoe') {
+          c.host.addHazard({ x: c.p.move.x, z: c.p.move.z, r: Math.min(10, sk.radius ?? 6) }, cfg.skillWarn, pow, false, 'spirit', sh.id, sh.atk);
+        } else {
+          const len = Math.min(18, dist + 4);
+          c.host.addHazard({ x: sh.s.x, z: sh.s.z, r: len, sh: 'rect', yaw: Math.atan2(dx, dz), w: 3 }, cfg.skillWarn, pow, false, 'spirit', sh.id, sh.atk);
+        }
+        c.host.fx({ t: 'tamma_cast', src: sh.id, s: sk.id, x: c.p.move.x, z: c.p.move.z, d: cfg.skillWarn });
+      }
+    }
+    if (c.now >= st.sendAt) {
+      st.sendAt = c.now + 500;
+      c.host.fx({ t: 'tamcanh', src: c.p.sid, pg: Math.round(st.tc) });
+    }
+  },
+  exit(c) {
+    c.host.fx({ t: 'tamcanh', src: c.p.sid, pg: -1 });
+    delete c.tr.mech?.tam_canh;
+  },
+});
+
+/** Va chạm trong pha tâm ma: `hurt` = Tâm Ma Ảnh đánh trúng người độ kiếp (tâm cảnh giảm), `hit` = người độ kiếp đánh trúng bóng (hồi). Về 0 thì thất bại. */
+export function tamCanhHit(host: TribHost, p: PlayerEnt, kind: 'hurt' | 'hit'): void {
+  const tr = p.trib;
+  const st = tr?.mech?.tam_canh as TamCanhState | undefined;
+  if (!tr || !st || st.beaten) return;
+  const cfg = tribDef(tr.id).phases[tr.pi ?? -1]?.tamCanh;
+  if (!cfg) return;
+  st.tc = Math.max(0, Math.min(100, st.tc + (kind === 'hurt' ? -cfg.hurt : cfg.hit)));
+  if (st.tc <= 0 && (p.s.fl & PF_DEAD) === 0) {
+    host.fx({ t: 'tamcanh', src: p.sid, pg: 0 });
+    host.sys(p, 'sys.tam_canh_fail', undefined, 'bad');
+    host.end(p, false);
+  }
+}
 
 export function runMechanic(id: string | undefined, hook: keyof TribMechanic, c: TribMechCtx): void {
   if (!id) return;

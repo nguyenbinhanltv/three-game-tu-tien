@@ -72,6 +72,33 @@ export interface TribDanTran {
   sweepPct: number;
 }
 
+/** Tia xích (Nguyên Anh, cơ chế `tia_xich`): hai tia nối nhau bằng một vạch sét đi qua chỗ người độ kiếp đứng. */
+export interface TribTiaXich {
+  /** Chu kỳ (giây), chiều dài vạch (m), bề rộng (m), thời gian báo (s), % khí huyết tối đa của vạch; hai đầu là tia tròn bán kính `endR`, `endPct`. */
+  every: number;
+  len: number;
+  w: number;
+  warn: number;
+  pct: number;
+  endR: number;
+  endPct: number;
+}
+
+/** Xuất khiếu (Nguyên Anh, cơ chế `xuat_khieu`): nguyên anh rời thân `dur` giây, hồi `cd` giây; thân đứng yên, lửa nặng nhất bị đẩy sang ô kề. */
+export interface TribXuatKhieu {
+  dur: number;
+  cd: number;
+}
+
+/** Tâm cảnh (Nguyên Anh, cơ chế `tam_canh`): thanh 0..100; bị Tâm Ma Ảnh đánh trúng thì giảm `hurt`, đánh trúng nó thì hồi `hit`; về 0 là thất bại. Bóng ra chiêu của người độ kiếp mỗi `skillEvery` giây (báo `skillWarn`, hệ số `skillPow`). */
+export interface TribTamCanh {
+  hurt: number;
+  hit: number;
+  skillEvery: number;
+  skillWarn: number;
+  skillPow: number;
+}
+
 export interface TribPhaseDef {
   id: string;
   kind: TribPhaseKind;
@@ -91,6 +118,9 @@ export interface TribPhaseDef {
   shadows?: TribShadows;
   /** Cơ chế Đan Trận (chỉ dùng khi `mechanic` = `dan_tran`). */
   danTran?: TribDanTran;
+  tiaXich?: TribTiaXich;
+  xuatKhieu?: TribXuatKhieu;
+  tamCanh?: TribTamCanh;
   /** Thiên lôi pha này nhuốm lửa (lôi hỏa): client đổi màu tia (HDR vẫn dưới trần). Chỉ là lớp hình. */
   hot?: boolean;
   /** Móc cơ chế riêng (tribmech.ts). */

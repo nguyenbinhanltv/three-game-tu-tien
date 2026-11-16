@@ -45,7 +45,12 @@ function gearFor(level: number): Record<string, string> {
     }
     return best;
   };
-  return { weapon: pick(['itm_moc_kiem', 'itm_thiet_kiem', 'itm_thanh_phong_kiem']), robe: pick(['itm_bo_y', 'itm_dao_bao', 'itm_linh_ti_bao']) };
+  const g: Record<string, string> = { weapon: pick(['itm_moc_kiem', 'itm_thiet_kiem', 'itm_thanh_phong_kiem']), robe: pick(['itm_bo_y', 'itm_dao_bao', 'itm_linh_ti_bao']) };
+  // Chương 2 (E2-J): đồ bậc 2 về dần (rơi từ quái/tinh anh/phó bản, chế ở Hứa lão): cấp 17 kiếm, 18 thêm đạo bào, 19 thêm hộ uyển.
+  if (level >= 17) g.weapon = 'itm_liet_mach_kiem';
+  if (level >= 18) g.robe = 'itm_mach_van_dao_bao';
+  if (level >= 19) g.bracer = 'itm_sa_thach_ho_uyen';
+  return g;
 }
 
 /** Quái thường hợp cấp: bãi gần cấp nhất trong mọi level (cùng cách chọn của sim.ts). `extra`: cấp quái ngoại suy vì cấp thử vượt mọi bãi hiện có. */
