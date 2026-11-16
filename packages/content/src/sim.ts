@@ -506,8 +506,12 @@ for (const q of [0, 1, 2, 3, 4] as Quality[]) {
 }
 
 console.log('\nThu nhập kỳ vọng mỗi lần hạ quái (linh thạch): vàng rơi + bán trang bị rơi (giá theo ilvl, phẩm)');
-for (const sp of levelSpawns(LEVELS.van_lam)) {
+const seenIncome = new Set<string>();
+for (const sp of Object.values(LEVELS).filter((l) => l.id === 'van_lam' || l.id === 'doan_mach').flatMap((l) => levelSpawns(l))) {
   const m = MONSTER.get(sp.mon)!;
+  const key = m.id + ':' + Math.round((sp.levelMin + sp.levelMax) / 2);
+  if (seenIncome.has(key)) continue;
+  seenIncome.add(key);
   const lt = lootOf(m.id);
   const lv = Math.round((sp.levelMin + sp.levelMax) / 2);
   const gold = (lt.gold[0] + lt.gold[1]) / 2;
@@ -523,7 +527,8 @@ for (const sp of levelSpawns(LEVELS.van_lam)) {
 }
 console.log('\nTinh anh (người cùng cấp): TTK Kiếm/Hộ/Đan không đồ | bộ Huyền phẩm; máu/s đứng yên (bộ Huyền phẩm), máu mất cả trận (đứng yên, Kiếm tu)');
 for (const m of MONSTERS_ELITE()) {
-  const sp = levelSpawns(LEVELS.van_lam).find((x) => x.mon === m.id)!;
+  const sp = Object.values(LEVELS).flatMap((l) => levelSpawns(l)).find((x) => x.mon === m.id);
+  if (!sp) continue;
   const lv = sp.levelMax;
   const ms = monsterStats(lv, m.hpMul, m.atkMul);
   const set = fullSet(lv, 2);
@@ -704,6 +709,7 @@ for (const [id, lv, n] of [
   ['boss_huyet_lang_vuong', 13, 3],
   ['boss_thu_mo_tuong', 15, 3],
   ['boss_han_giao', 15, 4],
+  ['boss_dia_mach_long', 19, 4],
 ] as const) {
   const def = MONSTER.get(id)!;
   const ms = monsterStats(lv, def.hpMul, def.atkMul);

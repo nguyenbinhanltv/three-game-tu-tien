@@ -563,19 +563,31 @@ n_hit = keyed('hit_light', 0.4, [
     (0.30, hit, (0, 0.05 * LENGTH, -0.02 * HEIGHT), None),
     (1.00, REST_KEY, (0, 0, 0), None),
 ])
-# Lệch ngang của thân khi nằm hẳn (đo ở dáng cuối) → bù dần theo góc đổ để xác nằm đúng chỗ đứng.
-grounded(limp, (0, 0, LIE), (Y, -88))
-bpy.context.view_layer.update()
-_dg = bpy.context.evaluated_depsgraph_get()
-_xs = [(m.evaluated_get(_dg).matrix_world @ v.co).x for m in MESHES for v in m.evaluated_get(_dg).to_mesh().vertices]  # noqa: F821
-DEATH_DX = -(min(_xs) + max(_xs)) / 2
-n_death = keyed('death', 1.4, [
-    (0.00, REST_KEY, (0, 0, 0), None),
-    (0.25, buckle, (0, 0, -0.15 * HEIGHT), (Y, -10)),
-    (0.55, merge(buckle, {'neck': [(X, 10)]}), (0, 0, -0.08 * HEIGHT + 0.4 * LIE), (Y, -55)),
-    (0.85, limp, (0, 0, LIE), (Y, -88)),
-    (1.00, limp, (0, 0, LIE), (Y, -88)),
-], settle=lambda roll: (DEATH_DX * min(1.0, abs(roll) / 88), 0.0))
+DEATH = QUAD.get('death', 'side')
+DEATH_DX = 0.0
+if DEATH == 'prone':
+    # Thú thân rộng, dẹt khi lăn nghiêng (tê giáp): quỵ bốn chân rồi nằm sấp, hơi nghiêng 10°, đầu gục xuống đất.
+    prone = merge(buckle, {'neck': [(X, 32)], 'head': [(X, 18)], 'leg_hl_1': [(X, 25)], 'leg_hr_1': [(X, 25)], 'tail_0': [(X, -20)]})
+    n_death = keyed('death', 1.4, [
+        (0.00, REST_KEY, (0, 0, 0), None),
+        (0.30, buckle, (0, 0, -0.14 * HEIGHT), (Y, -4)),
+        (0.70, prone, (0, 0, -0.30 * HEIGHT), (Y, -10)),
+        (1.00, prone, (0, 0, -0.30 * HEIGHT), (Y, -10)),
+    ])
+else:
+    # Lệch ngang của thân khi nằm hẳn (đo ở dáng cuối) → bù dần theo góc đổ để xác nằm đúng chỗ đứng.
+    grounded(limp, (0, 0, LIE), (Y, -88))
+    bpy.context.view_layer.update()
+    _dg = bpy.context.evaluated_depsgraph_get()
+    _xs = [(m.evaluated_get(_dg).matrix_world @ v.co).x for m in MESHES for v in m.evaluated_get(_dg).to_mesh().vertices]  # noqa: F821
+    DEATH_DX = -(min(_xs) + max(_xs)) / 2
+    n_death = keyed('death', 1.4, [
+        (0.00, REST_KEY, (0, 0, 0), None),
+        (0.25, buckle, (0, 0, -0.15 * HEIGHT), (Y, -10)),
+        (0.55, merge(buckle, {'neck': [(X, 10)]}), (0, 0, -0.08 * HEIGHT + 0.4 * LIE), (Y, -55)),
+        (0.85, limp, (0, 0, LIE), (Y, -88)),
+        (1.00, limp, (0, 0, LIE), (Y, -88)),
+    ], settle=lambda roll: (DEATH_DX * min(1.0, abs(roll) / 88), 0.0))
 
 # ---------- 3b. clip boss (tùy chọn, import.extra) ----------
 # Đòn lớn đọc được từ xa: client (monsterSkins.ts, QUAD_MOVES) phát clip sao cho khung chạm đất rơi đúng lúc vùng báo
@@ -590,23 +602,25 @@ for name in EXTRA:
         fail(f'anim_quadruped: import.extra "{name}" chưa hỗ trợ cho thú bốn chân (slam | sweep | stun)')  # noqa: F821
 
 if 'slam' in EXTRA:
+    # Chồm đứng thẳng trên hai chân sau (đùi sau duỗi dọc, thân ngả ~58°, đuôi chống đất), hai chân trước giơ cao rồi nện xuống:
+    # lúc chạm (1,0 s) thân đổ về phía trước, hai chân trước duỗi thẳng xuống đất, hai chân sau vẫn bám đất.
     rear = {
-        'leg_fl_0': [(X, -55)], 'leg_fr_0': [(X, -48)], 'leg_fl_1': [(X, 70)], 'leg_fr_1': [(X, 64)],
-        'leg_hl_0': [(X, 18)], 'leg_hr_0': [(X, 18)], 'leg_hl_1': [(X, -12)], 'leg_hr_1': [(X, -12)],
-        'spine_1': [(X, -4)], 'neck': [(X, -18)], 'head': [(X, -12)], 'tail_0': [(X, 20)], 'tail_1': [(X, 10)],
+        'leg_fl_0': [(X, -60)], 'leg_fr_0': [(X, -54)], 'leg_fl_1': [(X, 78)], 'leg_fr_1': [(X, 72)],
+        'leg_hl_0': [(X, 34)], 'leg_hr_0': [(X, 34)], 'leg_hl_1': [(X, -26)], 'leg_hr_1': [(X, -26)],
+        'spine_1': [(X, -6)], 'spine_2': [(X, -4)], 'neck': [(X, -22)], 'head': [(X, -14)], 'tail_0': [(X, 24)], 'tail_1': [(X, 12)],
     }
     stomp = {
-        'leg_fl_0': [(X, -22)], 'leg_fr_0': [(X, -18)], 'leg_fl_1': [(X, 6)], 'leg_fr_1': [(X, 6)],
-        'leg_hl_0': [(X, -16)], 'leg_hr_0': [(X, -16)], 'leg_hl_1': [(X, 26)], 'leg_hr_1': [(X, 26)],
-        'spine_1': [(X, 5)], 'neck': [(X, 26)], 'head': [(X, 14)], 'tail_0': [(X, -12)],
+        'leg_fl_0': [(X, -6)], 'leg_fr_0': [(X, -4)], 'leg_fl_1': [(X, -4)], 'leg_fr_1': [(X, -4)],
+        'leg_hl_0': [(X, 4)], 'leg_hr_0': [(X, 4)], 'leg_hl_1': [(X, 0)], 'leg_hr_1': [(X, 0)],
+        'spine_1': [(X, 6)], 'neck': [(X, 26)], 'head': [(X, 14)], 'tail_0': [(X, -12)],
     }
     extra_clips['slam'] = keyed('slam', 1.8, [
         (0.00, REST_KEY, (0, 0, 0), None, 0.0),
         (0.22, crouch, (0, 0.04 * LENGTH, -0.05 * HEIGHT), None, 0.0),
-        (0.47, rear, (0, 0.08 * LENGTH, 0.0), None, -38.0),
-        (0.53, rear, (0, 0.06 * LENGTH, 0.0), None, -40.0),
-        (0.556, stomp, (0, -0.10 * LENGTH, -0.06 * HEIGHT), None, 8.0),
-        (0.75, stomp, (0, -0.10 * LENGTH, -0.06 * HEIGHT), None, 6.0),
+        (0.47, rear, (0, 0.10 * LENGTH, 0.0), None, -58.0),
+        (0.53, rear, (0, 0.08 * LENGTH, 0.0), None, -60.0),
+        (0.556, stomp, (0, -0.12 * LENGTH, 0.0), None, 4.0),
+        (0.75, stomp, (0, -0.12 * LENGTH, 0.0), None, 3.0),
         (1.00, REST_KEY, (0, 0, 0), None, 0.0),
     ])
 

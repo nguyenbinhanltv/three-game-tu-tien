@@ -376,7 +376,7 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!inR(line.delay, 0.9, 3)) err(`${id}: line.delay phải trong [0,9; 3] giây`);
     if (!(line.cd > line.delay + 2)) err(`${id}: line.cd phải lớn hơn delay + 2`);
     if (!mulOk(line.mul)) err(`${id}: line.mul phải trong (0, 3]`);
-    if (!(inR(line.r, 2, 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, 20]`);
+    if (!(inR(line.r, 2, m.boss ? 30 : 20) && line.r > m.attackRange)) err(`${id}: line.r phải trong (attackRange, ${m.boss ? 30 : 20}]`);
     if (!inR(line.w, 0.5, 6)) err(`${id}: line.w phải trong [0,5; 6] mét`);
     if (!(line.range > 0 && line.range <= line.r)) err(`${id}: line.range phải trong (0, r]`);
   }

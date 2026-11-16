@@ -24,6 +24,7 @@
     "shots:e1e": "tsx src/shots-e1e.ts",
     "shots:k7": "tsx src/shots-k7.ts",
     "shots:e2a": "tsx src/shots-e2a.ts",
+    "shots:e2b": "tsx src/shots-e2b.ts",
     "shots:boss": "tsx src/shots-boss.ts",
     "shots:trib": "tsx src/shots-trib.ts",
     "shots:eqicons": "tsx src/shots-eqicons.ts",
