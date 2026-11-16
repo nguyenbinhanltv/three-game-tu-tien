@@ -28,9 +28,9 @@ export const CHAPTER: Record<ChapterKind, ChapterPreset> = {
   /** Đột phá thành công: ngẩng lên trời quang sau mây kiếp. */
   ascend: { card: 3000, dist: 1.15, pitch: -0.04, cam: 3 },
   /** Kết Đan: như đột phá thường nhưng kéo lùi hơn để thấy vòng đan quang quanh người. */
-  ascend_kd: { card: 3200, dist: 1.3, pitch: -0.02, cam: 3.2 },
+  ascend_kd: { card: 3000, dist: 1.3, pitch: -0.02, cam: 3 },
   /** Chương 2 · Đoạn Mạch: lần đầu tới Đoạn Mạch Cổ Cốc. */
-  ch2: { card: 3200, dist: 1.25, pitch: 0.08, cam: 2.6 },
+  ch2: { card: 3000, dist: 1.25, pitch: 0.08, cam: 2.6 },
 };
 
 const EASE_IN = 0.7;
