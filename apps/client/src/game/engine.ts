@@ -8,6 +8,7 @@ import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
 import { MON_AURA_REFLECT, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from './methodFx';
+import { BlankWatch, canFallback, frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from './gpuGuard';
 import { type BossInfo, type DebugInfo, get, pushLog, pushToast, set, type TargetCast, type TargetInfo, togglePanel, useUI } from '../ui/store';
 import type { DebugPerf } from '../ui/store';
 import { ColliderViz } from './debugColliders';
@@ -106,21 +107,6 @@ export function serverUrl(): string {
     return `ws://${hostname}:${env.VITE_DEV_SERVER_PORT || '2567'}`;
   }
   return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}`;
-}
-
-const RENDERER_KEY = 'dtl.renderer';
-const RENDER_FAIL_LIMIT = 30;
-
-/** `?renderer=webgl2` ép WebGL2 và nhớ lại; `?renderer=auto` xóa lựa chọn nhớ. */
-function wantWebGL2(params: URLSearchParams): boolean {
-  const q = params.get('renderer');
-  try {
-    if (q === 'auto') localStorage.removeItem(RENDERER_KEY);
-    else if (q === 'webgl2') localStorage.setItem(RENDERER_KEY, 'webgl2');
-    return q === 'webgl2' || (q !== 'auto' && localStorage.getItem(RENDERER_KEY) === 'webgl2');
-  } catch {
-    return q === 'webgl2';
-  }
 }
 
 function isWebGPU(r: THREE.WebGPURenderer): boolean {
@@ -760,9 +746,10 @@ export class Game {
     // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
     // `?gputime=1` (chỉ cho công cụ đo, pnpm bench:crowd): bật timestamp query để đọc thời gian GPU bằng
     // `renderer.resolveTimestampsAsync()`; không ai resolve thì three cảnh báo hết chỗ query, nên đừng bật khi chơi.
-    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: wantWebGL2(params), trackTimestamp: params.get('gputime') === '1' });
+    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: this.pickRenderer(params), trackTimestamp: params.get('gputime') === '1' });
     await this.renderer.init();
     this.watchGpuDevice();
+    void this.describeGpu();
     // Đổi preset lúc chạy làm pass cảnh đổi giữa có/không MRT bloom: phải tách cache shader theo đích (nodeCacheFix.ts).
     patchNodeCacheKey(this.renderer);
     mark('rendererInit');
@@ -2346,11 +2333,55 @@ export class Game {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
+  /** Chọn backend: xem `rendererChoice` (`?renderer=webgl2` chỉ cho lần nạp này). */
+  private pickRenderer(params: URLSearchParams): boolean {
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(RENDERER_KEY);
+    } catch {
+      /* bỏ qua */
+    }
+    const c = rendererChoice(params.get('renderer'), stored);
+    if (c.storage === 'clear') {
+      try {
+        localStorage.removeItem(RENDERER_KEY);
+      } catch {
+        /* bỏ qua */
+      }
+    }
+    return c.forceWebGL;
+  }
+
+  /** Thông tin adapter WebGPU (hãng, kiến trúc, giới hạn chính) để người dùng chụp gửi; một dòng console khi khởi động. */
+  gpuInfo = '';
+  private async describeGpu(): Promise<void> {
+    if (!isWebGPU(this.renderer)) {
+      this.gpuInfo = 'WebGL2';
+      console.info('[gpu]', this.gpuInfo);
+      return;
+    }
+    try {
+      const be = this.renderer.backend as { device?: GPUDevice; adapter?: GPUAdapter };
+      const ad = be.adapter ?? (await navigator.gpu?.requestAdapter());
+      const i = ad?.info as { vendor?: string; architecture?: string; description?: string; device?: string } | undefined;
+      const lim = be.device?.limits ?? ad?.limits;
+      const parts = [
+        `WebGPU ${i?.vendor ?? '?'} ${i?.architecture ?? ''} ${i?.description || i?.device || ''}`.trim(),
+        lim ? `tex2D ${lim.maxTextureDimension2D} · layers ${lim.maxTextureArrayLayers} · attach ${lim.maxColorAttachmentBytesPerSample}B · uniform ${lim.maxUniformBufferBindingSize}` : '',
+        `features ${be.device?.features?.size ?? ad?.features?.size ?? '?'}`,
+      ];
+      this.gpuInfo = parts.filter(Boolean).join(' · ');
+    } catch (e) {
+      this.gpuInfo = 'WebGPU (không đọc được adapter: ' + String(e) + ')';
+    }
+    console.info('[gpu]', this.gpuInfo);
+  }
+
   private renderFails = 0;
   private fellBack = false;
   /** Lỗi WebGPU gần nhất (tối đa 20): bảng F3 và `__game.gpuErrors`. */
   gpuErrors: string[] = [];
-  private blankChecks = 0;
+  private blankWatch = new BlankWatch();
   private blankNextAt = 0;
   private blankProbe: CanvasRenderingContext2D | null = null;
 
@@ -2378,19 +2409,9 @@ export class Game {
     try {
       x.drawImage(this.canvas, 0, 0, 24, 14);
       const d = x.getImageData(0, 0, 24, 14).data;
-      let sum = 0;
-      let sq = 0;
-      const n = d.length / 4;
-      for (let i = 0; i < d.length; i += 4) {
-        const l = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
-        sum += l;
-        sq += l * l;
-      }
-      const mean = sum / n;
-      const sd = Math.sqrt(Math.max(0, sq / n - mean * mean));
-      this.lastBlank = { mean: +mean.toFixed(1), sd: +sd.toFixed(2) };
-      this.blankChecks = sd < 1.5 ? this.blankChecks + 1 : 0;
-      if (this.blankChecks >= 3) {
+      const st = frameStats(d);
+      this.lastBlank = { mean: +st.mean.toFixed(1), sd: +st.sd.toFixed(2) };
+      if (this.blankWatch.push(st, this.lastRender.drawCalls)) {
         console.error('[gpu] khung trơn liên tục', this.lastBlank, 'lỗi:', this.gpuErrors);
         this.fallbackToWebGL2('blank-frame');
       }
@@ -2423,7 +2444,16 @@ export class Game {
 
   /** Nhớ chọn WebGL2 cho các lần vào sau, báo trên HUD rồi nạp lại trang (WebGPU không dựng lại được trong cùng trang). */
   private fallbackToWebGL2(why: string): void {
-    if (this.fellBack || this.disposed) return;
+    if (this.disposed) return;
+    if (!canFallback(isWebGPU(this.renderer), this.fellBack)) {
+      // Đã ở WebGL2 mà vẫn lỗi: nạp lại không giúp gì, chỉ báo một lần.
+      if (!this.fellBack) {
+        this.fellBack = true;
+        console.error('[gpu] lỗi vẽ trên WebGL2:', why);
+        pushToast(t('sys.gpu_failed'), 'bad');
+      }
+      return;
+    }
     this.fellBack = true;
     console.warn('[gpu] lùi WebGL2:', why);
     try {
@@ -3247,6 +3277,7 @@ export class Game {
     const lod = this.ents.lodStats();
     return {
       backend: isWebGPU(this.renderer) ? 'WebGPU' : 'WebGL2',
+      gpu: this.gpuInfo + (this.gpuErrors.length ? ` · LỖI: ${this.gpuErrors[this.gpuErrors.length - 1]}` : '') + (this.lastBlank ? ` · khung sd ${this.lastBlank.sd}` : ''),
       fps,
       cpuMs: this.cpuAvg,
       cpuMaxMs: this.cpuPeak,
