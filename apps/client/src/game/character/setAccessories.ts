@@ -177,6 +177,12 @@ function paletteOf(setId: string): Pal {
       return { cloth: '#3b2a1f', cloth2: hex, hard: '#7a5a3c', trim, gem: '#d98a2b' };
     case 'set_phuc_mach':
       return { cloth: hex, cloth2: '#34503a', hard: '#9a8a52', trim, gem: '#8fe3b4' };
+    case 'set_kinh_quang':
+      return { cloth: hex, cloth2: '#f1f5fb', hard: '#a9bbd2', trim, gem: '#9fe6ff' };
+    case 'set_van_kinh':
+      return { cloth: '#3e4a59', cloth2: hex, hard: '#97a6b8', trim, gem: '#8fc8ff' };
+    case 'set_luu_ly':
+      return { cloth: hex, cloth2: '#e8f1e4', hard: '#8fd3c8', trim, gem: '#7df5e0' };
     default:
       return { cloth: hex, cloth2: '#1d5d6c', hard: '#4aa3b4', trim, gem: '#bfe9f0' };
   }
@@ -292,23 +298,33 @@ function cuff(c: Ctx, s: 1 | -1, o: { len: number; kind: Kind; color: string; ri
   const f = c.fit.shin[s];
   const bone: FitBone = s === 1 ? 'leftleg' : 'rightleg';
   const h = c.h;
-  const r = f.radius + 0.004 * h + o.flare;
-  const rUp = r;
-  const rDn = r * 0.82;
-  const len = o.len * h;
-  const up = f.axis.clone().negate();
-  const top = f.center.clone().addScaledVector(f.axis, -len / 2);
-  const bot = f.center.clone().addScaledVector(f.axis, len / 2);
+  // Ủng ôm ống chân: số đo bắp chân lấy từ đỉnh xương cẳng chân nhưng chặn trên (đỉnh gắn xương cẳng chân gồm cả vạt áo
+  // nên đo ra to như cái xô), thon dần xuống mắt cá, cổ ủng loe nhẹ, cao tới quá nửa ống chân.
+  const from = c.fit.bones[s === 1 ? 'leftleg' : 'rightleg'].pos;
+  const to = c.fit.bones[s === 1 ? 'leftfoot' : 'rightfoot'].pos;
+  const axis = f.axis;
+  const legLen = to.clone().sub(from).length();
+  const tBot = 0.97;
+  const tTop = Math.max(0.45, tBot - Math.min(0.55, (o.len * 1.9 * h) / legLen));
+  const at = (t: number) => from.clone().lerp(to, t);
+  const rCalf = Math.min(f.radius, 0.056 * h) + 0.003 * h;
+  const rUp = rCalf + o.flare * 0.6;
+  const rDn = rCalf * 0.74;
+  const top = at(tTop);
+  const bot = at(tBot);
+  const len = top.distanceTo(bot);
+  const mid = top.clone().lerp(bot, 0.5);
+  const up = axis.clone().negate();
   const rAt = (t: number) => rUp + (rDn - rUp) * t;
-  add(c, bone, o.kind, put(tubeGeo(rUp, rDn, len, 14), o.color, { pos: f.center, dir: up }));
-  add(c, bone, o.kind, put(tubeGeo(rUp * 1.12, rUp * 0.99, 0.014 * h, 14), o.color, { pos: top.clone().addScaledVector(f.axis, 0.005 * h), dir: up }));
-  add(c, bone, 'hard', put(ringGeo(rUp * 1.12, 0.0045 * h, 14), o.rim, { pos: top.clone().addScaledVector(f.axis, -0.002 * h), dir: f.axis }));
-  add(c, bone, 'hard', put(ringGeo(rDn + 0.0015, 0.0045 * h, 14), o.rim, { pos: bot, dir: f.axis }));
+  add(c, bone, o.kind, put(tubeGeo(rUp, rDn, len, 12), o.color, { pos: mid, dir: up }));
+  add(c, bone, o.kind, put(tubeGeo(rUp * 1.08, rUp * 0.99, 0.012 * h, 12), o.color, { pos: top.clone().addScaledVector(axis, 0.004 * h), dir: up }));
+  add(c, bone, 'hard', put(ringGeo(rUp * 1.08, 0.0035 * h, 12), o.rim, { pos: top.clone().addScaledVector(axis, -0.001 * h), dir: axis }));
+  add(c, bone, 'hard', put(ringGeo(rDn + 0.001, 0.0035 * h, 12), o.rim, { pos: bot, dir: axis }));
   const front = V(0, 0, 1);
-  for (const deg of [-34, 0, 34]) {
-    add(c, bone, 'hard', put(new THREE.OctahedronGeometry(1), o.rim, { pos: around(top.clone().addScaledVector(f.axis, len * 0.24), f.axis, front, rAt(0.24) + 0.002, deg), scale: 0.0045 * h }));
+  for (const deg of [-30, 0, 30]) {
+    add(c, bone, 'hard', put(new THREE.OctahedronGeometry(1), o.rim, { pos: around(top.clone().addScaledVector(axis, len * 0.2), axis, front, rAt(0.2) + 0.001, deg), scale: 0.0036 * h }));
   }
-  add(c, bone, 'hard', put(boxGeo(0.026 * h, len * 0.78, 0.007 * h), o.plate ?? o.rim, { pos: f.center.clone().addScaledVector(front, rAt(0.5) + 0.004 * h), dir: up }));
+  add(c, bone, 'hard', put(boxGeo(0.02 * h, len * 0.72, 0.005 * h), o.plate ?? o.rim, { pos: mid.clone().addScaledVector(front, rAt(0.5) + 0.002 * h), dir: up }));
 }
 
 /** Đai lưng: dải ôm eo + 2 viền + khóa trước. */
@@ -516,6 +532,58 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     belt: (c) => {
       belt(c, { h: 0.05, color: c.pal.cloth2, rim: c.pal.trim, buckle: c.pal.hard, gem: c.pal.gem });
       hipCharm(c, { cord: c.pal.trim, item: 'gourd', color: c.pal.cloth2, accent: c.pal.gem, gain: 0.05 });
+    },
+    ring: (c) => handBand(c, { color: c.pal.hard, gem: c.pal.gem }),
+  },
+  // Kính Quang Kiếm Y (bậc 3, kiếm tu): bạc trắng như mặt gương, vai tròn bóng, mảnh gương nhỏ ở đai, ủng bạc.
+  set_kinh_quang: {
+    robe: (c) => {
+      for (const s of [1, -1] as const) {
+        pauldron(c, s, { r: shR(c, s, s < 0 ? 1.28 : 1.1), facets: 10, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.66, theta: 1.05, lift: 0.22, color: c.pal.cloth2, kind: 'hard' }] });
+      }
+      backTails(c, { w: 0.065, len: 0.44, color: c.pal.cloth2, stripe: c.pal.trim, tip: 'v', gain: 0.08 });
+    },
+    bracer: (c) => {
+      for (const s of [1, -1] as const) bracer(c, s, { len: 0.11, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth2, gem: c.pal.gem });
+    },
+    belt: (c) => {
+      belt(c, { h: 0.056, color: c.pal.hard, rim: c.pal.trim, buckle: c.pal.cloth2, gem: c.pal.gem });
+      hipCharm(c, { cord: c.pal.trim, item: 'jade', color: c.pal.cloth2, accent: c.pal.gem, gain: 0.05 });
+    },
+    boots: (c) => {
+      for (const s of [1, -1] as const) cuff(c, s, { len: 0.12, kind: 'hard', color: c.pal.hard, rim: c.pal.gem, flare: 0.008, plate: c.pal.cloth2 });
+    },
+  },
+  // Vân Kình Thiết Giáp (bậc 3, hộ pháp): xám thép lam, vai ba lớp đội mây, đai thiết bản rộng, ủng thiết.
+  set_van_kinh: {
+    robe: (c) => {
+      for (const s of [1, -1] as const) {
+        pauldron(c, s, { r: shR(c, s, 1.38), facets: 6, rim: c.pal.trim, rimKind: 'hard', stud: c.pal.gem, scales: { color: '#56667a', tiers: [[0.45, 6, 0.27], [0.82, 9, 0.29], [1.12, 12, 0.3]] }, layers: [{ k: 1, theta: 1.3, lift: 0, color: c.pal.hard, kind: 'hard' }, { k: 0.8, theta: 1.0, lift: 0.3, color: c.pal.cloth2, kind: 'hard' }, { k: 0.5, theta: 0.8, lift: 0.52, color: c.pal.trim, kind: 'hard' }] });
+      }
+      backTails(c, { w: 0.095, len: 0.34, color: c.pal.cloth, stripe: c.pal.trim, tip: 'flat', gain: 0.04 });
+    },
+    bracer: (c) => {
+      for (const s of [1, -1] as const) bracer(c, s, { len: 0.14, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, plate: c.pal.cloth, gem: c.pal.gem });
+    },
+    belt: (c) => {
+      belt(c, { h: 0.085, color: c.pal.cloth, rim: c.pal.trim, buckle: c.pal.hard, gem: c.pal.gem, wide: true });
+    },
+    boots: (c) => {
+      for (const s of [1, -1] as const) cuff(c, s, { len: 0.16, kind: 'hard', color: c.pal.hard, rim: c.pal.trim, flare: 0.016, plate: c.pal.cloth });
+    },
+  },
+  // Lưu Ly Đan Y (bậc 3, đan sư): xanh ngọc, ngà, ngọc bội giọt nước, bình thuốc lưu ly ở đai, vòng ngọc ở tay; mềm.
+  set_luu_ly: {
+    robe: (c) => {
+      for (const s of [1, -1] as const) {
+        pauldron(c, s, { r: shR(c, s, 1.22), facets: 12, rim: c.pal.trim, rimKind: 'hard', layers: [{ k: 1, theta: 1.38, lift: 0, color: c.pal.cloth, kind: 'cloth' }, { k: 0.68, theta: 1.12, lift: 0.2, color: c.pal.cloth2, kind: 'cloth' }] });
+      }
+      backTails(c, { w: 0.085, len: 0.44, color: c.pal.cloth, stripe: c.pal.trim, tip: 'point', gain: 0.08 });
+    },
+    jade: (c) => pendant(c, { cord: c.pal.trim, jade: c.pal.gem, rim: c.pal.hard }),
+    belt: (c) => {
+      belt(c, { h: 0.05, color: c.pal.cloth2, rim: c.pal.trim, buckle: c.pal.hard, gem: c.pal.gem });
+      hipCharm(c, { cord: c.pal.trim, item: 'gourd', color: c.pal.gem, accent: c.pal.cloth2, gain: 0.05 });
     },
     ring: (c) => handBand(c, { color: c.pal.hard, gem: c.pal.gem }),
   },

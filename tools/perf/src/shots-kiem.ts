@@ -33,6 +33,7 @@ const SWORDS = MODEL ? [{ id: '', file: MODEL.replace('prop_kiem_', ''), name: '
   { id: 'itm_hgl_kiem', file: 'han-giao-lan', name: 'Hàn Giao Lân Kiếm' },
   { id: 'itm_tram_ta_kiem', file: 'tram-ta', name: 'Trảm Tà Kiếm' },
   { id: 'itm_liet_mach_kiem', file: 'liet-mach', name: 'Liệt Mạch Kiếm' },
+  { id: 'itm_kinh_quang_kiem', file: 'kinh-quang-vp', name: 'Kính Quang Kiếm' },
 ];
 
 const gm = async (page: Page, cmd: string, wait = 1100) => {
@@ -72,7 +73,7 @@ async function main(): Promise<void> {
       return !!g && g.frames > 30 && !!g.me?.();
     }, undefined, { timeout: 120_000, polling: 250 });
     await clearIntro(page);
-    await gm(page, 'level 15');
+    await gm(page, 'level 20');
     await gm(page, 'god on');
     await gm(page, 'tp 2048 2088');
     await page.addStyleTag({ content: 'body.nohud .hud, body.nohud .chat, body.nohud .minimap { visibility: hidden !important; }' });
@@ -108,13 +109,13 @@ async function main(): Promise<void> {
       // Đeo lưng: nhìn từ sau-trái, gần, cho thấy chuôi và bao.
       await cam(Number(opt('--back-yaw', '3.6')), Number(opt('--pitch', '0.12')), Number(opt('--dist', '2.0')));
       await sleep(2800);
-      if (!HAND_ONLY) await shot(`${sw.file}-deo-lung.png`);
+      if (!HAND_ONLY) await shot(`${sw.file}-${GENDER}-deo-lung.png`);
       // Cầm tay: dựng quái, ra chiêu (kiếm vào tay), chụp ở tư thế đứng chờ ngay sau.
       await gm(page, 'spawn mon_soi_xam 1', 900);
       await cam(Number(opt('--hand-yaw', '4.4')), Number(opt('--pitch', '0.12')), Number(opt('--dist', '2.0')) + 0.4);
       await page.evaluate(() => (window as unknown as G).__game!.useSkill(0));
       await sleep(1500);
-      await shot(`${sw.file}-cam-tay.png`);
+      await shot(`${sw.file}-${GENDER}-cam-tay.png`);
       // Đang chém.
       if (HAND_ONLY) {
         await gm(page, 'killall', 900);
@@ -123,7 +124,7 @@ async function main(): Promise<void> {
       for (let k = 0; k < 8; k++) {
         await page.evaluate(() => (window as unknown as G).__game!.useSkill(Math.random() < 0.5 ? 0 : 1));
         await sleep(160);
-        if (k === 3) await shot(`${sw.file}-chem.png`);
+        if (k === 3) await shot(`${sw.file}-${GENDER}-chem.png`);
       }
       await gm(page, 'killall', 900);
       await sleep(1200);

@@ -169,7 +169,7 @@ export function tierText(tier: SetTier): string {
   for (const l of tier.lines ?? []) parts.push(affixText(l));
   if (tier.fx) {
     const pct = (x: number | undefined) => pctText(x ?? 0);
-    parts.push(t('set.fx.' + (tier.fx as SetFxId), { v: tier.fx === 'crit_slow' ? (tier.v ?? 0) : pct(tier.v), w: tier.fx === 'hoanh_kiem' ? (tier.w ?? 0) : pct(tier.w) }));
+    parts.push(t('set.fx.' + (tier.fx as SetFxId), { v: tier.fx === 'crit_slow' ? (tier.v ?? 0) : tier.fx === 'dich_son' ? String(tier.v ?? 0).replace('.', ',') : pct(tier.v), w: tier.fx === 'hoanh_kiem' ? (tier.w ?? 0) : pct(tier.w) }));
   }
   return parts.join('; ');
 }
