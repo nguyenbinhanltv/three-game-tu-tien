@@ -943,7 +943,7 @@ export class GameSim {
         c.charDirty = false;
         p.client.send(S.CHAR, c.view());
       }
-      if (c.invDirty) {
+      if (c.invDirty && p.connected) {
         c.invDirty = false;
         p.client.send(S.INV, this.invMsg(p));
       }

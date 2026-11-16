@@ -329,6 +329,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         if (cur) {
           cur.client = again;
           cur.connected = true;
+          cur.invSent = undefined; // client mới chưa có túi: tin S.INV kế tiếp phải là ảnh đầy đủ
           cur.char.charDirty = cur.char.invDirty = cur.char.questDirty = true;
         } else {
           // Nhân vật đã bị phiên đăng nhập khác thay thế trong lúc chờ: không để client cũ ở lại nghe lén.

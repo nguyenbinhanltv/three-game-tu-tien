@@ -266,6 +266,30 @@ describe('gửi túi theo delta', () => {
   });
 });
 
+describe('kết nối lại', () => {
+  it('đổi túi lúc mất kết nối rồi nối lại: tin S.INV kế tiếp là ảnh đầy đủ khớp server', () => {
+    const t = setup();
+    t.give((d) => (d.inv[9] = { id: PILL, n: 1 }));
+    t.sim.tick(50);
+    t.give((d) => (d.inv[10] = { id: ORE, n: 2 }));
+    t.sim.tick(50);
+    expect(t.invMsgs().at(-1)!.d).toBeDefined();
+    t.p.connected = false;
+    t.give((d) => (d.inv[11] = { id: ORE, n: 5 }));
+    const n = t.invMsgs().length;
+    t.sim.tick(50);
+    expect(t.invMsgs().length).toBe(n); // không gửi vào socket chết
+    // giống GameRoom.onLeave sau allowReconnection
+    t.p.connected = true;
+    t.p.invSent = undefined;
+    t.char.invDirty = true;
+    t.sim.tick(50);
+    const m = t.invMsgs().at(-1)!;
+    expect(m.inv?.length).toBe(INV_SIZE);
+    expect(JSON.parse(JSON.stringify(applyInvMsg([], m)))).toEqual(JSON.parse(JSON.stringify(t.char.inv)));
+  });
+});
+
 describe('migration DB v4 → v5', () => {
   it('thêm cột locked, giữ đồ ở ô 0–29, ô khóa mặc định mở', () => {
     expect(DATA_VERSION).toBe(5);
