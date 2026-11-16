@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_van_hai_kinh_vuong",
+  "type": "mon",
+  "budgetClass": "boss",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 20000,
+    "texture": 2048
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "boss/boss_van_hai_kinh_vuong/tripo/raw_v01.glb",
+    "size": {
+      "depth": 18
+    },
+    "orient": "none",
+    "yaw": 90,
+    "post": "tools/blender/anim_serpent.py",
+    "serpent": {
+      "spine": "auto",
+      "dropRig": true,
+      "bones": 17,
+      "headFrom": 0.9,
+      "rootAt": 0.5,
+      "style": "swim",
+      "amp": 0.45
+    },
+    "extra": [
+      "slam",
+      "sweep",
+      "stun",
+      "chant"
+    ]
+  },
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "model": "H3.1",
+      "params": {
+        "face_limit": 20000,
+        "texture_quality": "2K",
+        "pbr": true
+      },
+      "credits": 0,
+      "date": "2026-11-16",
+      "output": "tripo/raw_v01.glb",
+      "result": "ok"
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (gói Max, image-to-3D H3.1, ảnh concept docs/asset-concepts) do người dùng dựng; bỏ rig Tripo; bộ xương chuỗi 17 đốt và clip thủ tục tools/blender/anim_serpent.py (kiểu bơi)",
+    "owner": "dự án",
+    "date": "2026-11-16"
+  }
+}

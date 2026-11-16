@@ -4,7 +4,7 @@ import { type FrameInfo, HUMAN_HEIGHT, type LoadedInfo, ViewerScene } from './sc
 import { fmtBytes } from './stats';
 import { poseClipName } from '../game/character/ikpose';
 import { assetBaseUrl, type Manifest } from '../game/assets';
-import { isSkillViewer, SHOW_ALIASES, showAssetId } from '../game/testParams';
+import { isBossViewer, isSkillViewer, SHOW_ALIASES, showAssetId } from '../game/testParams';
 import { SkillPanel } from './SkillPanel';
 import { skillForId } from './skillTiming';
 
@@ -33,6 +33,9 @@ export function AssetViewer() {
   const [speed, setSpeed] = useState(1);
   const [skillId, setSkillId] = useState('');
   const skillMode = isSkillViewer(location.search);
+  const bossMode = isBossViewer(location.search);
+  const [bossIds, setBossIds] = useState<string[]>([]);
+  const [bossId, setBossId] = useState('');
   const [opts, setOpts] = useState({ human: true, wire: false, skeleton: false });
 
   const load = useCallback(async (job: () => Promise<LoadedInfo>, name: string) => {
@@ -64,6 +67,24 @@ export function AssetViewer() {
         (window as unknown as { __viewer: ViewerScene }).__viewer = v;
         const params = new URLSearchParams(location.search);
         const file = params.get('file');
+        if (bossMode) {
+          // ?show=boss[&id=<id>]: danh sách mọi boss trong manifest, chọn để xem model + clip.
+          void (async () => {
+            const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });
+            if (!res.ok) throw new Error(`HTTP ${res.status} manifest.json`);
+            const man = (await res.json()) as Manifest;
+            const ids = Object.keys(man.assets).filter((k) => k.startsWith('boss_')).sort();
+            if (!alive) return;
+            setBossIds(ids);
+            const want = params.get('id');
+            const id = want && ids.includes(want) ? want : ids[0];
+            if (!id) return;
+            setBossId(id);
+            v.setHuman(true);
+            await load(() => v.loadUrl(assetBaseUrl() + man.assets[id].file), id);
+          })().catch((e) => setError(t('viewer.err.load', { name: 'boss', msg: e instanceof Error ? e.message : String(e) })));
+          return;
+        }
         if (skillMode) {
           // ?show=skill&id=<chiêu|pose>[&model=char]: rig mẫu (hoặc model người chơi thật) chạy pose của chiêu.
           const id = skillForId(params.get('id') ?? '')?.id ?? 'skl_phi_kiem';
@@ -145,6 +166,19 @@ export function AssetViewer() {
     if (k === 'skeleton') viewer?.setSkeleton(on);
   };
 
+  const pickBoss = (id: string) => {
+    if (!viewer) return;
+    setBossId(id);
+    const u = new URL(location.href);
+    u.searchParams.set('id', id);
+    history.replaceState(null, '', u);
+    void load(async () => {
+      const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });
+      const man = (await res.json()) as Manifest;
+      return viewer.loadUrl(assetBaseUrl() + man.assets[id].file);
+    }, id);
+  };
+
   const s = info?.stats;
   const pickSkill = (id: string) => {
     setSkillId(id);
@@ -171,6 +205,19 @@ export function AssetViewer() {
         <p className="viewer-hint">{t('viewer.drop_hint')}</p>
         {status && <p className="viewer-status">{status}</p>}
         {error && <p className="viewer-error">{error}</p>}
+
+        {bossMode && bossIds.length > 0 && (
+          <label className="viewer-boss">
+            {t('viewer.boss.pick')}{' '}
+            <select value={bossId} onChange={(e) => pickBoss(e.target.value)}>
+              {bossIds.map((id) => (
+                <option key={id} value={id}>
+                  {id}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         {skillMode && viewer && info && skillId && (
           <SkillPanel viewer={viewer} skillId={skillId} onPick={pickSkill} clips={info.clips.map((c) => c.name)} />

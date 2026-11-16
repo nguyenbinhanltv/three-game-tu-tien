@@ -3,6 +3,7 @@
 //   ?god            bất tử: vẫn nhận đòn, không mất máu
 //   ?at=<địa điểm>  vào game ở điểm đặt tên (bảng địa điểm trong packages/content, chỉ server đọc), như `/gm tp <địa điểm>`
 //   ?show=char      alias của trang xem asset cho model người chơi (?show=<id asset> cho asset khác)
+//   ?show=boss[&id=<id boss>]  trang xem boss: chọn boss, phát clip idle/run/đánh/chiêu/chết (nạp từ manifest)
 //   ?show=skill&id=<id chiêu|id pose>[&model=char]  trang xem chiêu (K-1): phát/dừng, chậm, đầu dò số, khung xương
 
 //   ?at=x,z         vào game ở tọa độ (mét), gửi thành `pos: [x, z]`
@@ -52,9 +53,14 @@ export function debugAllowed(search: string, dev: boolean): boolean {
 export function showAssetId(search: string): string | null {
   const v = new URLSearchParams(search).get('show')?.trim().toLowerCase();
   if (!v) return null;
-  if (v === 'skill') return null;
+  if (v === 'skill' || v === 'boss') return null;
   const id = SHOW_ALIASES[v] ?? v;
   return ID.test(id) ? id : null;
+}
+
+/** `?show=boss[&id=<id asset boss>]` → trang xem boss: chọn từng boss trong manifest, xem clip. */
+export function isBossViewer(search: string): boolean {
+  return new URLSearchParams(search).get('show')?.trim().toLowerCase() === 'boss';
 }
 
 /** `?show=skill` → trang xem chiêu (K-1), không phải asset. */
