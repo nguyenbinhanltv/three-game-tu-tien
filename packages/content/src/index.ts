@@ -43,6 +43,7 @@ import doanMachAssetsJson from '../data/levels/doan_mach.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
 import doKiepAssetsJson from '../data/levels/do_kiep.assets.json';
 import glossaryJson from '../data/glossary.json';
+import itemSourcesJson from '../data/itemsources.json';
 import viJson from '../data/i18n/vi.json';
 import viUiJson from '../data/i18n/vi.ui.json';
 import poseKiemThuJson from '../data/poses/kiem_thu.json';
@@ -146,6 +147,9 @@ function index<T extends { id: string }>(list: T[]): Map<string, T> {
   for (const e of list) m.set(e.id, e);
   return m;
 }
+
+/** Nguồn rơi (id vật phẩm → id quái), sinh từ loot.json, không có tỉ lệ (xem sources.ts). */
+export const ITEM_SOURCES = itemSourcesJson as Record<string, string[]>;
 
 export const ITEM = index(ITEMS);
 

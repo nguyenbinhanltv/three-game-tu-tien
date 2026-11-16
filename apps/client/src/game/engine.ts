@@ -60,6 +60,7 @@ import { BOSS_BAR_RANGE, keepMonsterTarget } from './targetRange';
 import type { SkillEvent } from './character/view';
 import { HitQueue, SwingGuard, hitPitch, hitStopOf, layersOf, materialOf, shakeOf, ULT_FOV, ultFovAt, WHOOSH_GAIN, whooshDelay, type HitCtx, type HitSoundLog } from './hitjuice';
 import { debugAllowed, readTestParams } from './testParams';
+import { CharPreview } from './charPreview';
 
 export interface LoginOptions {
   token?: string;
@@ -259,6 +260,21 @@ export class Game {
   private pushSelf: Pusher = { x: 0, y: 0, z: 0, r: 1.6 };
   private pushPool: Pusher[] = [];
   ents!: EntityManager;
+  private charPreview: CharPreview | null = null;
+
+  /** Xem trước nhân vật 3D của bảng nhân vật (TD-C): tạo lười, vẽ trong khung game khi có canvas gắn vào. */
+  get preview(): CharPreview {
+    return (this.charPreview ??= new CharPreview({
+      renderer: this.renderer,
+      build: () => this.ents.previewBuild(),
+      lookKey: () => this.ents.previewKey(),
+      flipRead: !isWebGPU(this.renderer),
+      weaponGlow: () => {
+        const plus = get().equip.weapon?.plus ?? 0;
+        return plus >= 10 ? 2 : plus >= 7 ? 1 : 0;
+      },
+    }));
+  }
   vfx!: Vfx;
   /** VFX ba pha theo sự kiện chiêu + vệt kiếm + linh quang hộ thể (K-6). */
   skillFx: SkillFx | null = null;
@@ -2445,6 +2461,8 @@ export class Game {
     const ri = this.renderer.info.render;
     this.lastRender.drawCalls = ri.drawCalls ?? ri.calls;
     this.lastRender.triangles = ri.triangles;
+    // Xem trước nhân vật (bảng mở): vẽ sau khi đã chốt số đo của cảnh chính để draw call của nó không lẫn vào.
+    this.charPreview?.tick(dt);
     this.dmg.update(dt, this.camera, window.innerWidth, window.innerHeight, this.ents.labelBoxes);
     this.lootFly.update(dt);
     if (me && this.started) this.offscreen.update(this.camera, window.innerWidth, window.innerHeight, rp);
@@ -3239,6 +3257,7 @@ export class Game {
     duckHold('boss', 0);
     duckHold('npc', 0);
     duckHold('cine', 0);
+    this.charPreview?.dispose();
     this.ents?.dispose();
     this.skillFx?.dispose();
     this.skillFx = null;

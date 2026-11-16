@@ -41,7 +41,8 @@
     "shots:m4": "tsx src/shots-m4.ts",
     "shots:s2b": "tsx src/shots-s2b.ts",
     "levels": "tsx src/levelswitch.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "shots:tdc": "tsx src/shots-tdc.ts"
   },
   "dependencies": {
     "@dtl/shared": "workspace:*",

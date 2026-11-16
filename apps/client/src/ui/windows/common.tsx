@@ -5,6 +5,7 @@ import { ContentIcon, UiIcon } from '../ContentIcon';
 import { artifactLines, compareLines, gearQuality, itemLines, itemSub, pillLines, setLinesForItem, type TipLine } from '../gear';
 import { type PanelTone, PanelWindow, Slot, TipCard, Tooltip } from '../kit';
 import { useUI } from '../store';
+import { belowLevel, itemHints, itemSources, itemUses } from '../itemInfo';
 
 export function statLines(def: ItemDef, plus = 0): string[] {
   const out: string[] = [];
@@ -29,14 +30,20 @@ export function ItemIcon({ item, onClick, selected, small, worn }: { item: InvIt
 /** Dòng chỉ số + so sánh với món đang mặc (chỉ khi món này chưa mặc và là trang bị). */
 function useTipLines(item: InvItem, def: ItemDef, worn?: boolean): TipLine[] {
   const level = useUI((s) => s.char?.level ?? 1);
+  const root = useUI((s) => s.char?.root ?? '');
   const equip = useUI((s) => s.equip);
   const art = useUI((s) => s.method?.art);
   const lines = itemLines(item, def);
   lines.push(...pillLines(item, def), ...artifactLines(def, art));
-  if (!worn && isEquipSlot(def.kind)) lines.push(...compareLines(level, equip, item, def));
+  const compared = !worn && isEquipSlot(def.kind);
+  if (compared) lines.push(...compareLines(level, equip, item, def, root));
+  else if (belowLevel(level, def)) lines.push({ text: t('ui.item.req', { realm: realmName(def.reqLevel!) }), tone: 'bad' });
   lines.push(...setLinesForItem(item, equip));
   if (item.inst?.bound) lines.push({ text: t('ui.item.bound'), tone: 'dim' });
   else if (item.inst && bindsOnEquip(item.inst.q)) lines.push({ text: t('ui.item.bind_on_equip'), tone: 'dim' });
+  // TD-C: gợi ý hành động, nguồn, công dụng (suy từ dữ liệu; không hiện cho món đang mặc).
+  lines.push(...itemHints(item, def, equip, level, !worn));
+  if (!worn) lines.push(...itemSources(def.id).map((l) => ({ ...l, tone: 'dim' as const })), ...itemUses(def.id).map((l) => ({ ...l, tone: 'dim' as const })));
   return lines;
 }
 
