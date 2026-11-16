@@ -578,6 +578,7 @@ export class GameSim {
       e.inputs.length = 0;
       return plan.dist;
     },
+    tooHigh: (p) => p.move.y - this.terrain.groundAt(p.move.x, p.move.z) > 8,
     telegraph: (x, z, r, delay, kind, src, mv, dur) => this.addHazard({ x, z, r }, delay, 0, false, kind as HazardMsg['kind'], src, 0, false, 0, undefined, undefined, mv, false, dur),
     poisonHit: (p, atk, mul, src) => this.damagePlayer(p as PlayerEnt, computeDamage(atk, mul, (p as PlayerEnt).char.def, Math.random(), 1).dmg, src, true),
     notify: (p, key) => this.sys(p as PlayerEnt, key, undefined, key === 'sys.pull_resist' ? 'good' : 'bad'),

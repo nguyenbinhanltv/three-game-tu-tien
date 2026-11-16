@@ -31,6 +31,8 @@ export interface MonZoneHost {
   drag(p: ZonePlayer, dx: number, dz: number, dist: number): number;
   /** Vạch báo (không sát thương) gửi client. */
   telegraph(x: number, z: number, r: number, delay: number, kind: string, src: string, mv: 'pull' | 'pool', dur?: number): void;
+  /** Người ở quá cao so với mặt đất (ngự kiếm bay cao): vùng nổ và vũng độc không với tới (cùng luật `tickHazards`, > 8 m). */
+  tooHigh(p: ZonePlayer): boolean;
   /** Sát thương vũng độc (đã tính phòng thủ). */
   poisonHit(p: ZonePlayer, atk: number, mul: number, src: string): void;
   /** Báo người bị kéo/kháng. */
@@ -124,7 +126,7 @@ export class MonZones {
       if (now < po.nextAt) continue;
       po.nextAt += po.cfg.tick * 1000;
       for (const p of this.h.players()) {
-        if (this.h.isDead(p) || !inPool(po.x, po.z, po.r, p.move.x, p.move.z)) continue;
+        if (this.h.isDead(p) || !inPool(po.x, po.z, po.r, p.move.x, p.move.z) || this.h.tooHigh(p)) continue;
         this.h.poisonHit(p, po.atk, po.cfg.mul, po.src);
       }
     }

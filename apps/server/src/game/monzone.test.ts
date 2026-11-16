@@ -159,6 +159,7 @@ describe('Nuốt: kéo người chơi', () => {
         pl.move.z -= d;
         return d;
       },
+      tooHigh: () => false,
       telegraph: () => {},
       poisonHit: () => {},
       notify: () => {},
@@ -215,6 +216,18 @@ describe('Bích Ngọc Kim Thiền: vũng độc khi chết', () => {
     run(3000);
     expect(p.char.hp).toBe(end);
     expect(sim.zones.poolCount).toBe(0);
+  });
+
+  it('người ngự kiếm bay cao (> 8 m) phía trên vũng không ăn độc', () => {
+    const { sim, mon, addPlayer, run } = setup('mon_bich_ngoc_kim_thien', 21);
+    const d = mon.def.deathPool!;
+    const high = addPlayer(0.3, 0.3, true);
+    high.move.y += 12;
+    const low = addPlayer(-0.3, -0.3);
+    sim.damageMonster(mon, 1e12, null);
+    run((d.delay + d.tick * 3) * 1000 + 200);
+    expect(high.char.hp).toBe(100000);
+    expect(low.char.hp).toBeLessThan(100000);
   });
 
   it('quái không có deathPool chết thì không để vũng; trần vũng cùng lúc', () => {
