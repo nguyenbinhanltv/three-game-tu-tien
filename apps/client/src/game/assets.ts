@@ -132,9 +132,112 @@ export function localLibsManager(extra: Record<string, string> = {}): THREE.Load
   return manager;
 }
 
-/** KTX2Loader dùng transcoder cục bộ; cần `detectSupportAsync(renderer)` trước khi parse texture. */
-export function createKtx2Loader(manager = localLibsManager()): KTX2Loader {
-  return new KTX2Loader(manager).setTranscoderPath('/libs/');
+type Ktx2Config = Record<'astcSupported' | 'astcHDRSupported' | 'etc1Supported' | 'etc2Supported' | 'dxtSupported' | 'bptcSupported' | 'pvrtcSupported', boolean>;
+type Ktx2Internals = { workerConfig: Ktx2Config | null; _createTexture(buffer: ArrayBuffer, config?: object): Promise<THREE.Texture> };
+
+/** Tệp KTX2 mã hóa UASTC (pipeline dùng cho normal map): vkFormat 0 (Basis) và supercompression khác BasisLZ (1 = ETC1S). */
+export function isUastcKtx2(buffer: ArrayBuffer): boolean {
+  if (buffer.byteLength < 48) return false;
+  const v = new DataView(buffer);
+  return v.getUint32(12, true) === 0 && v.getUint32(44, true) !== 1;
+}
+
+/**
+ * three trả texture RGBA8 đã giải mã dưới dạng `CompressedTexture` (định dạng RGBA, mip rời). Backend WebGPU r178 xử lý mọi
+ * `CompressedTexture` như texture nén khối và lỗi khi tra kích thước khối của RGBA, nên đổi sang `DataTexture` thường:
+ * giữ mức 0, để GPU sinh mip (normal map không cần mip tính sẵn).
+ */
+function plainDataTexture(src: THREE.Texture): THREE.Texture {
+  const level0 = (src as THREE.CompressedTexture).mipmaps?.[0] as { data: Uint8Array; width: number; height: number } | undefined;
+  if (!(src as THREE.CompressedTexture).isCompressedTexture || src.format !== THREE.RGBAFormat || !level0) return src;
+  const tex = new THREE.DataTexture(level0.data, level0.width, level0.height, THREE.RGBAFormat, THREE.UnsignedByteType);
+  tex.colorSpace = src.colorSpace;
+  tex.premultiplyAlpha = src.premultiplyAlpha;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.needsUpdate = true;
+  src.dispose();
+  return tex;
+}
+
+/**
+ * KTX2Loader của game. Pipeline nén normal map bằng UASTC, mọi thứ khác bằng ETC1S (tools/asset-pipeline/src/ktx.ts).
+ * UASTC chỉ giữ được chất lượng khi GPU nhận ASTC hoặc BC7; nếu không, three chuyển mã xuống BC1/ETC (5-6 bit mỗi kênh),
+ * vỡ khối thấy rõ trên pháp tuyến. Backend WebGPU của three r178 không tạo được texture BC7 (chỉ BC1–3, ETC2, ASTC), nên trên
+ * WebGPU desktop normal map đi qua `plain`: loader phụ tắt hết định dạng nén, giải ra RGBA8 kèm mip có sẵn trong tệp.
+ * Texture ETC1S (màu, ORM, emissive) vẫn nén (BC1/BC3 trên WebGPU, BC7 trên WebGL2). Khi three hỗ trợ BC7 trên WebGPU thì bỏ nhánh này.
+ */
+export class GameKtx2Loader extends KTX2Loader {
+  private plain: KTX2Loader | null = null;
+
+  constructor(private libs: THREE.LoadingManager) {
+    super(libs);
+  }
+
+  /** Gọi sau `detectSupportAsync`: quyết định normal map (UASTC) nén hay giải ra RGBA8. */
+  configure(): void {
+    const cfg = (this as unknown as Ktx2Internals).workerConfig;
+    const keepsQuality = !!cfg && (cfg.astcSupported || cfg.bptcSupported);
+    if (keepsQuality || this.plain) return;
+    // three cảnh báo "Multiple active KTX2 loaders" mỗi khi có loader thứ hai. Ở đây loader phụ là chủ ý (2 worker, chỉ cho normal map),
+    // nên chặn riêng lời cảnh báo đó trong lúc tạo để console của game không nhiễu.
+    const warn = console.warn;
+    console.warn = (...a: unknown[]) => {
+      if (!String(a[0]).includes('Multiple active KTX2 loaders')) warn(...a);
+    };
+    let plain: KTX2Loader;
+    try {
+      plain = new KTX2Loader(this.libs).setTranscoderPath('/libs/').setWorkerLimit(2);
+    } finally {
+      console.warn = warn;
+    }
+    (plain as unknown as Ktx2Internals).workerConfig = {
+      astcSupported: false,
+      astcHDRSupported: false,
+      etc1Supported: false,
+      etc2Supported: false,
+      dxtSupported: false,
+      bptcSupported: false,
+      pvrtcSupported: false,
+    };
+    this.plain = plain;
+  }
+
+  /** true khi normal map đang giải ra RGBA8 (F3/bench đọc để giải thích số bộ nhớ texture). */
+  get uastcUncompressed(): boolean {
+    return this.plain !== null;
+  }
+
+  // Ghi đè phương thức nội bộ của three (r178): điểm duy nhất mọi tệp KTX2 đi qua, cả khi nạp qua GLTFLoader.
+  async _createTexture(buffer: ArrayBuffer, config: object = {}): Promise<THREE.Texture> {
+    const target = this.plain && isUastcKtx2(buffer) ? this.plain : null;
+    if (target) return plainDataTexture(await (target as unknown as Ktx2Internals)._createTexture(buffer, config));
+    return (KTX2Loader.prototype as unknown as Ktx2Internals)._createTexture.call(this, buffer, config);
+  }
+
+  dispose(): this {
+    this.plain?.dispose();
+    this.plain = null;
+    super.dispose();
+    return this;
+  }
+}
+
+/** KTX2Loader dùng transcoder cục bộ; cần `detectKtx2Support(ktx2, renderer)` trước khi parse texture. */
+export function createKtx2Loader(manager = localLibsManager()): GameKtx2Loader {
+  return new GameKtx2Loader(manager).setTranscoderPath('/libs/') as GameKtx2Loader;
+}
+
+/**
+ * Dò định dạng nén GPU hỗ trợ (gọi một lần cho mỗi renderer, trước khi parse texture KTX2) rồi chọn đường cho normal map.
+ * Kết quả trên desktop: WebGL2 → BC7 cho mọi texture; WebGPU → BC1/BC3 cho màu/ORM, RGBA8 cho normal map.
+ * Máy không có định dạng nén nào thì three tự giải mọi thứ ra RGBA8, nên asset vẫn nạp được.
+ */
+export async function detectKtx2Support(ktx2: KTX2Loader, renderer: THREE.WebGPURenderer): Promise<KTX2Loader> {
+  await ktx2.detectSupportAsync(renderer);
+  if (ktx2 instanceof GameKtx2Loader) ktx2.configure();
+  return ktx2;
 }
 
 /** GLTFLoader có Meshopt + KTX2 (cấu hình chung cho game và trang xem asset). */
@@ -201,7 +304,7 @@ export class AssetCache {
   async attach(renderer: THREE.WebGPURenderer): Promise<void> {
     if (this.opts.load) return;
     if (!this.ktx2) this.ktx2 = createKtx2Loader();
-    await this.ktx2.detectSupportAsync(renderer);
+    await detectKtx2Support(this.ktx2, renderer);
   }
 
   getManifest(): Promise<Manifest> {

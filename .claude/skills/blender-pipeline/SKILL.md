@@ -9,7 +9,7 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 > - **Có**: `tools/blender/run.mjs` (danh sách job → GLB thô `assets/build/raw/<id>.glb`, bỏ qua job khi GLB thô mới hơn script), `build_sect.py` (kiến trúc tông môn → `arch_sect`), `build_fixture_rig.py` (GLB có xương cho test), `find-blender.mjs` (dò Blender qua `BLENDER`, PATH, thư mục cài mặc định). `tools/asset-pipeline`: `optimize.ts`, `validate.ts`, `ktx.ts`, `config.ts`, test vitest. Client nạp theo manifest qua `AssetCache` (`apps/client/src/game/assets.ts`). Chi tiết lệnh và bố cục: `assets/README.md`.
 > - **Có từ M2-2**: `import_tripo.py` chuẩn hóa GLB Tripo (hướng theo xương đùi hoặc `yaw`, scale theo `size` trong meta, gốc ở đáy, áp transform, tên theo id, socket, hạ texture); `run.mjs` tự tạo job cho meta.json có khối `import`; `optimize.ts` hạ LOD0 về `budget.faceLimit` (chỉ asset có khối `import`) hoặc ngân sách lớp. Chi tiết: `assets/README.md` mục Nhập Tripo.
 > - **Có từ M2-3/M3**: `export_anim_lib.py` (thư viện clip `anim_human_base`), `anim_biped_extra.py`/`anim_quadruped.py`/`anim_serpent.py`/`tripo_clips.py` (clip thủ tục cho người, quái, boss, rắn), `bake_impostor.py` (atlas cây xa, `pnpm assets:impostor`), `recolor_phi_kiem.py`; client chọn LOD theo camera (`LOD0_MAX` trong `entities.ts`, LOD theo từng cây trong `props.ts`). Asset trong game: người chơi nam/nữ, 3 NPC, quái có xương, 4 boss, 5 loài cây, ~20 prop, `arch_sect`, `anim_human_base` (xem `manifest.json`).
-> - **Chưa có**: `export.py` theo collection `EXPORT_`, `export_level.py`, ảnh xem trước tự động `assets/build/previews/`. Máy dev có thể chưa cài KTX-Software (`toktx`); khi đó texture giữ PNG/JPEG và `validate` cảnh báo.
+> - **Chưa có**: `export.py` theo collection `EXPORT_`, `export_level.py`, ảnh xem trước tự động `assets/build/previews/`. `toktx` (KTX-Software 4.4.2) là bắt buộc để build: thiếu thì `assets:build` dừng với lỗi (cách cài ở `assets/README.md`, mục "Cài toktx").
 > - Máy đang dùng Blender 5.3. Tọa độ trong script là tọa độ game quanh tâm sân tông môn; vị trí công trình phải khớp `COLLIDERS` trong `packages/shared/src/level.ts`.
 
 ## Chạy Blender
@@ -29,7 +29,7 @@ description: Chạy Blender ở chế độ nền bằng script Python (bpy) đ�
 ## Các bước pipeline
 
 1. **Sinh GLB thô**: thêm job `{ id, script }` vào `jobs` trong `tools/blender/run.mjs`; script bpy nhận đường dẫn output sau `--` và xuất GLB vào `assets/build/raw/<id>.glb`. Custom properties trên object/Empty ra `extras` của glTF (three.js đọc thành `userData`). Asset từ Tripo: thêm khối `import` (`kind`, `source`, `size`, `yaw`, `sockets`) vào `meta.json`, `run.mjs` gọi `import_tripo.py`.
-2. **Tối ưu** (`tools/asset-pipeline/src/optimize.ts`, `@gltf-transform`): dedup, prune (giữ xương, socket, extras), weld, resample animation; texture sang KTX2 bằng `toktx` (ETC1S cho màu/ORM, UASTC cho normal, hạ cạnh theo ngân sách lớp); LOD bằng `simplify` theo `assets/budgets.json`; reorder, quantize (**chỉ mesh không có xương**), nén `EXT_meshopt_compression`.
+2. **Tối ưu** (`tools/asset-pipeline/src/optimize.ts`, `@gltf-transform`): dedup, prune (giữ xương, socket, extras), weld, resample animation; texture sang KTX2 bằng `toktx` (normal UASTC + RDO, màu ETC1S q192, ORM ETC1S q128, hạ cạnh theo ngân sách lớp; `ktx.ts` `encodeArgs`); LOD bằng `simplify` theo `assets/budgets.json`; reorder, quantize (**chỉ mesh không có xương**), nén `EXT_meshopt_compression`.
 3. **Đóng gói**: tên `<id>.<hash10>.glb` vào `apps/client/public/assets/`, cập nhật `apps/client/public/assets/manifest.json` (file, byte, tam giác từng LOD, texture, xương, clip, kích thước raw/build), xóa bản hash cũ của asset đó.
 4. **Kiểm tra** (`tools/asset-pipeline/src/validate.ts`): exit 1 khi có lỗi (id sai quy ước, hash lệch, vượt ngân sách tam giác/texture/xương, thiếu LOD, mesh có xương bị quantize, LOD mất skin, thiếu dòng `assets/LICENSES.md`, `meta.json` sai schema, chiều cao raw/build lệch quá 1%). Danh sách đầy đủ trong `assets/README.md`.
 5. **Xem bằng mắt**: `pnpm dev` rồi mở `?mute=1&viewer=asset&file=/assets/<id>.<hash>.glb` (người chuẩn 1,7m, số tam giác, draw call, clip), rồi gọi subagent `asset-validator`.
@@ -45,7 +45,7 @@ pnpm --filter @dtl/asset-pipeline test
 ```
 
 - **Không có Blender**: bước 1 bị bỏ qua có cảnh báo, bước tối ưu vẫn chạy với GLB thô đang có.
-- **Không có `toktx`** (KTX-Software 4.x; dò `TOKTX`, PATH, rồi thư mục cài mặc định `Program Files/KTX-Software/bin`): texture giữ PNG/JPEG và có cảnh báo, `validate` vẫn kiểm cạnh texture. Muốn KTX2 thật thì cài KTX-Software rồi chạy lại với `--force`.
+- **Không có `toktx`** (KTX-Software 4.4.2; dò `TOKTX`, PATH, thư mục cài mặc định `Program Files/KTX-Software/bin`, rồi bản di động `<dtl-asset-source>/tools/KTX-Software/bin`): `assets:build`/`assets:optimize` dừng với lỗi và in cách cài, vì mọi asset đã commit dùng KTX2 và build thiếu `toktx` sẽ làm manifest lẫn hai định dạng. `--no-ktx` chỉ để thử. Client gọi `detectKtx2Support(ktx2, renderer)` (không gọi thẳng `detectSupportAsync`): `GameKtx2Loader` giải normal map UASTC ra RGBA8 trên WebGPU vì backend WebGPU của three r178 không có BC7.
 - Commit cả GLB có hash lẫn `manifest.json` (nguồn lớn nằm ngoài repo). `assets/build/` không commit.
 
 ## Client nạp asset

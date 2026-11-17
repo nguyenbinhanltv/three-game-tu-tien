@@ -244,8 +244,8 @@
         "bytes": 38542,
         "sourceSha256": "a8ea21959030b150fa271a6eb8901b8c7a5ead34d39d2da5ce5e11859c9465c4"
       },
-      "npc_khuu_han_son": {
-        "file": "portraits/npc_khuu_han_son.3ba2d26675.webp",
+      "npc_khieu_han_son": {
+        "file": "portraits/npc_khieu_han_son.3ba2d26675.webp",
         "w": 480,
         "h": 640,
         "bytes": 31540,

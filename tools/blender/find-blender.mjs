@@ -41,10 +41,20 @@ export function runBlender(blender, script, args, opts = {}) {
  * @returns {string | null}
  */
 export function findAssetSource(root) {
+  return assetSourceCandidates(root)[0] ?? null;
+}
+
+/**
+ * Mọi thư mục nguồn asset đang tồn tại, theo thứ tự ưu tiên của `findAssetSource`. Worktree thường có một bản `../dtl-asset-source`
+ * chỉ chứa texture, còn bản đầy đủ nằm cạnh checkout chính: công cụ đặt trong thư mục nguồn (toktx di động) phải dò cả hai.
+ * @param {string} root gốc repo (hoặc worktree)
+ * @returns {string[]}
+ */
+export function assetSourceCandidates(root) {
   const candidates = [];
   if (process.env.DTL_ASSET_SOURCE) candidates.push(path.resolve(root, process.env.DTL_ASSET_SOURCE));
   candidates.push(path.resolve(root, '..', 'dtl-asset-source'));
   const git = spawnSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root, encoding: 'utf8' });
   if (git.status === 0 && git.stdout.trim()) candidates.push(path.resolve(git.stdout.trim(), '..', '..', 'dtl-asset-source'));
-  return candidates.find((d) => fs.existsSync(d) && fs.statSync(d).isDirectory()) ?? null;
+  return [...new Set(candidates)].filter((d) => fs.existsSync(d) && fs.statSync(d).isDirectory());
 }

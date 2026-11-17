@@ -327,7 +327,7 @@ async function checkAssets(page: Page): Promise<Assets> {
     }
     const ktx2 = A.createKtx2Loader();
     try {
-      await ktx2.detectSupportAsync(g.renderer);
+      await A.detectKtx2Support(ktx2, g.renderer);
       out.ktx2Config = { ...ktx2.workerConfig };
       for (const s of samples) {
         const bin = Uint8Array.from(atob(s.b64), (c) => c.charCodeAt(0));

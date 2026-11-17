@@ -3,9 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../assets';
 import { HUMAN_ANIM_LIB, HUMAN_K3_LIB, retargetClips } from './animLib';
 import { clipNamesOf, HUMAN_CLIPS } from './humanClips';
+import { nodeGltfLoader } from '../gltfTestLoader';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
@@ -15,8 +16,7 @@ const cache = new AssetCache({
   fetchManifest: async () => MANIFEST,
   load: async (url) => {
     const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
-    const loader = createGltfLoader(createKtx2Loader());
-    loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+    const loader = nodeGltfLoader();
     return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
   },
 });

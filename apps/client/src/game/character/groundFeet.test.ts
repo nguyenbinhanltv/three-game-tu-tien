@@ -5,10 +5,11 @@ import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { describe, expect, it } from 'vitest';
 import { groundAt } from '@dtl/shared';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../assets';
 import { withPoses } from './poseLib';
 import { SkinnedCharacter } from './skinned';
 import type { AnimState } from './view';
+import { nodeGltfLoader } from '../gltfTestLoader';
 
 // Chân bám đất (P2-E3) trên model thật: Thanh Phong (hai chân), sói (bốn chân, nghiêng thân), Thạch Viên (vượn hai chân).
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
@@ -22,8 +23,7 @@ async function load(id: string) {
     fetchManifest: async () => MANIFEST,
     load: async (url) => {
       const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
-      const loader = createGltfLoader(createKtx2Loader());
-      loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+      const loader = nodeGltfLoader();
       return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
     },
   });

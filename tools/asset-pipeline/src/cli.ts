@@ -15,7 +15,13 @@ const t0 = performance.now();
 const secs = () => ((performance.now() - t0) / 1000).toFixed(1);
 
 async function runOptimize(): Promise<boolean> {
-  const report = await optimize(parseArgs(args));
+  let report;
+  try {
+    report = await optimize(parseArgs(args));
+  } catch (e) {
+    console.error(`[optimize] LỖI: ${e instanceof Error ? e.message : String(e)}`);
+    return false;
+  }
   for (const f of report.failed) console.error(`[optimize] LỖI ${f.id}: ${f.error}`);
   console.log(
     `[optimize] ${report.built.length} build, ${report.cached.length} dùng cache, ${report.failed.length} lỗi, ${report.warnings.length} cảnh báo — ${secs()}s`,

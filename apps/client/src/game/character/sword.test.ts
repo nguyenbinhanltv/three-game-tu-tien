@@ -6,11 +6,12 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { describe, expect, it, vi } from 'vitest';
 import { APPEARANCE, SKILLS } from '@dtl/content';
 import { POSE_SWORD_SWAP } from '@dtl/shared';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../assets';
 import { PlayerSkins, SHEATHE_AFTER, SkinnedPlayer } from './playerSkins';
 import { SKIRT_SPRING, SpringBones, springDefs } from './spring';
 import { partExtras } from './sword';
 import type { AnimState } from './view';
+import { nodeGltfLoader } from '../gltfTestLoader';
 
 // M3-2 (rút/tra kiếm) và M3-10 (lò xo vạt áo) trên model thật Thanh Phong.
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
@@ -25,8 +26,7 @@ function cache() {
     fetchManifest: async () => MANIFEST,
     load: async (url) => {
       const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
-      const loader = createGltfLoader(createKtx2Loader());
-      loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+      const loader = nodeGltfLoader();
       return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
     },
   });
