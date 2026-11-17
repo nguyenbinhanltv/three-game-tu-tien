@@ -1,8 +1,0 @@
-{"tag":"base-all","runs":5,"p50Median":5.8,"p95Median":8.2,"p95All":[9,8.1,8.2,9.7,7.7],"drawMedian":180}
-{"tag":"skip-bone-matrix","runs":5,"p50Median":6.6,"p95Median":9.5,"p95All":[9.8,9.5,11.3,8.5,7.5],"drawMedian":178}
-{"tag":"ab-before","runs":2,"p50Median":5.8,"p95Median":8.4,"p95All":[8.4,8],"drawMedian":189}
-{"tag":"ab-after","runs":2,"p50Median":5.9,"p95Median":8.6,"p95All":[7.9,8.6],"drawMedian":190}
-{"tag":"ab-before","runs":2,"p50Median":6.2,"p95Median":8.8,"p95All":[8.8,7.7],"drawMedian":195}
-{"tag":"ab-after","runs":2,"p50Median":7.1,"p95Median":11.2,"p95All":[11.2,7.2],"drawMedian":174}
-{"tag":"ab-before","runs":2,"p50Median":6.2,"p95Median":8.6,"p95All":[7.2,8.6],"drawMedian":205}
-{"tag":"ab-after","runs":2,"p50Median":5.4,"p95Median":8,"p95All":[8,7.3],"drawMedian":189}
