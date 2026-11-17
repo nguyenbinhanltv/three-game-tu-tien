@@ -33,7 +33,7 @@
 :root[data-ngj='1'] .ngj-card .login-hint,
 :root[data-ngj='1'] .ngj-card .look-name,
 :root[data-ngj='1'] .ngj-card .look-key { color: var(--ngj-ink-dim); }
-:root[data-ngj='1'] .ngj-card .login-error { color: #a8372c; }
+:root[data-ngj='1'] .ngj-card .login-error { color: #8f2a21; }
 
 /* nút chính: vàng sơn, góc vát, như NgjButton primary */
 :root[data-ngj='1'] .ngj-card .btn.primary {

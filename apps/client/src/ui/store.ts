@@ -3,7 +3,7 @@ import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, Ma
 import { duckHold, sfx } from '../game/audio';
 import { fxQuality, hitStopOn } from '../game/fxSettings';
 import { uiScale } from './uiScale';
-import { closeWindow, focusWindow, loadSavedPos, moveWindow, openWindow, savePos, topWindow, type Viewport, type WinId, type WinState } from './windows/layout';
+import { closeWindow, fitWindows, focusWindow, loadSavedPos, moveWindow, openWindow, savePos, topWindow, type Viewport, type WinId, type WinState } from './windows/layout';
 
 export interface TargetInfo {
   id: string;
@@ -442,6 +442,20 @@ export function panelScale(p: Panel): number {
 function viewportFor(p: Panel): Viewport {
   const k = panelScale(p);
   return { vw: window.innerWidth / k, vh: window.innerHeight / k };
+}
+
+// Đổi cỡ cửa sổ trình duyệt: co các bảng đang mở vào khung nhìn mới (UI-5, 1366×768 không bị tràn mép).
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', () => {
+    // Chờ `--ui-scale` cập nhật xong (uiScale.ts cũng nghe resize) rồi mới tính lại.
+    requestAnimationFrame(() =>
+      useUI.setState((s) => {
+        if (!s.windows.length) return s;
+        const next = fitWindows(s.windows, viewportFor);
+        return next === s.windows ? s : { windows: next };
+      }),
+    );
+  });
 }
 
 // Mở/đóng bảng hay hội thoại NPC (bằng phím, nút hay nút đóng): tiếng giở/gấp sách.
