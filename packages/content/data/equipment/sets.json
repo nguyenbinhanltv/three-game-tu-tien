@@ -409,5 +409,101 @@
       "blade": "#8FE8B8"
     },
     "src": "forge"
+  },
+  {
+    "id": "set_tran_khich",
+    "pieces": [
+      "itm_tkh_dao_bao",
+      "itm_tkh_ho_uyen",
+      "itm_tkh_dai_lung",
+      "itm_tkh_van_ngoa",
+      "itm_tkh_trang_suc"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "atk_pct",
+            "v": 0.1
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "thuan_tram",
+        "v": 0.3
+      }
+    ],
+    "look": {
+      "hex": "#1B1E26",
+      "trim": "#5FC8C0",
+      "blade": "#7FE0D8"
+    },
+    "src": "forge"
+  },
+  {
+    "id": "set_tan_thiet",
+    "pieces": [
+      "itm_tth_dao_bao",
+      "itm_tth_ho_uyen",
+      "itm_tth_dai_lung",
+      "itm_tth_van_ngoa",
+      "itm_tth_trang_suc"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "def_pct",
+            "v": 0.08
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "thuan_ho",
+        "v": 0.3
+      }
+    ],
+    "look": {
+      "hex": "#23262B",
+      "trim": "#5FC8C0",
+      "blade": "#8FD8D0"
+    },
+    "src": "forge"
+  },
+  {
+    "id": "set_tinh_dan_bao",
+    "pieces": [
+      "itm_tqd_dao_bao",
+      "itm_tqd_ngoc_boi",
+      "itm_tqd_dai_lung",
+      "itm_tqd_gioi_chi",
+      "itm_tqd_trang_suc"
+    ],
+    "tiers": [
+      {
+        "n": 2,
+        "lines": [
+          {
+            "id": "heal_recv",
+            "v": 0.12
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "fx": "cuu_vien",
+        "v": 0.15
+      }
+    ],
+    "look": {
+      "hex": "#34383A",
+      "trim": "#6FD3CB",
+      "blade": "#A8F0E4"
+    },
+    "src": "forge"
   }
 ]

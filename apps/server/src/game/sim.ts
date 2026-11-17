@@ -1956,7 +1956,11 @@ export class GameSim {
       case 'damage': {
         const mon = this.monById.get(targetId);
         if (!mon) break;
-        if (skill.blink) this.blinkNear(p, mon.s.x, mon.s.z, skill.blink.stop + mon.def.scale);
+        if (skill.blink) {
+          this.blinkNear(p, mon.s.x, mon.s.z, skill.blink.stop + mon.def.scale);
+          // Bộ Trấn Khích bậc 5 (4 món): Thuấn Di Trảm gây thêm `thuanTramPower` sát thương.
+          mul *= 1 + c.stats.setFx.thuanTramPower;
+        }
         const extra: Partial<FxMsg> = { ...tag };
         const behind = v?.pierce ? this.pierceTarget(p, mon) : null;
         if (behind) {
@@ -2114,7 +2118,7 @@ export class GameSim {
         const blinkTo = skill.blinkAlly ? this.nearestAlly(p, skill.blinkAlly.range) : null;
         if (blinkTo) this.blinkNear(p, blinkTo.move.x, blinkTo.move.z, 1.8);
         const give = (o: PlayerEnt) => {
-          o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1) * (o === p && skill.id === 'skl_linh_khi_ho_the' ? 1 + c.stats.setFx.shieldBoost : 1) * (skill.id === 'skl_ngung_dan_ho_the' ? 1 + c.stats.setFx.ngungDanBoost : 1)), until: this.now + dur * 1000 };
+          o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1) * (o === p && skill.id === 'skl_linh_khi_ho_the' ? 1 + c.stats.setFx.shieldBoost : 1) * (skill.id === 'skl_ngung_dan_ho_the' ? 1 + c.stats.setFx.ngungDanBoost : 1) * (skill.id === 'skl_thuan_di_ho_the' ? 1 + c.stats.setFx.thuanHoBoost : 1)), until: this.now + dur * 1000 };
           this.setFlag(o, PF_SHIELD, true);
         };
         give(p);
@@ -2237,7 +2241,7 @@ export class GameSim {
         if (dead && skill.blinkAlly) this.blinkNear(p, dead.move.x, dead.move.z, 1.8);
         this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, ...tag });
         for (const dead of [dead2].filter((x): x is PlayerEnt => !!x)) {
-          dead.char.hp = Math.max(1, Math.round(dead.char.mhp * rs.power));
+          dead.char.hp = Math.max(1, Math.round(dead.char.mhp * (rs.power + (skill.id === 'skl_thuan_di_cuu_vien' ? c.stats.setFx.cuuVienBoost : 0))));
           dead.s.fl = 0;
           dead.lastCombatAt = this.now;
           dead.hazardWin = { until: 0, taken: 0 };
@@ -2245,7 +2249,7 @@ export class GameSim {
           this.fx({ t: 'respawn', src: dead.sid, v: 'revive' });
         }
         if (dead) {
-          dead.char.hp = Math.max(1, Math.round(dead.char.mhp * rs.power));
+          dead.char.hp = Math.max(1, Math.round(dead.char.mhp * (rs.power + (skill.id === 'skl_thuan_di_cuu_vien' ? c.stats.setFx.cuuVienBoost : 0))));
           dead.s.fl = 0;
           dead.lastCombatAt = this.now;
           dead.hazardWin = { until: 0, taken: 0 };

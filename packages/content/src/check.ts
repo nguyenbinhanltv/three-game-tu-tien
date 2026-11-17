@@ -147,7 +147,6 @@ for (const [id, name] of Object.entries(GLOSSARY.skillsTier)) {
 }
 for (const s of METHOD_SKILLS) {
   if (s.unlock >= 16 && !(s.id in GLOSSARY.skillsTier)) err(`chiêu bậc cao ${s.id}: thiếu trong glossary.skillsTier`);
-  if (s.unlock >= 24 && !s.locked) err(`chiêu ${s.id}: mở từ cấp ${s.unlock} (Nguyên Anh trở lên) phải có locked: true tới khi làm cơ chế`);
   if (s.kind === 'line' && !s.line) err(`chiêu ${s.id}: kind line cần trường line`);
   if (s.kind === 'summon' && !s.summon) err(`chiêu ${s.id}: kind summon cần trường summon`);
   if (s.kind === 'buff' && !(s.duration! > 0 && s.buff)) err(`chiêu ${s.id}: kind buff cần duration và buff`);
@@ -631,7 +630,7 @@ for (const r of RECIPES) {
 {
   const LOOT_SETS = new Set<string>();
   for (const l of LOOT.values()) for (const r of l.equip ?? []) if (r.set) LOOT_SETS.add(r.set);
-  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow', 'hoanh_kiem', 'kim_chung', 'moc_linh', 'nghich_kiem', 'dich_son', 'ngung_dan', 'phan_anh', 'anh_thiet', 'anh_duoc'];
+  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow', 'hoanh_kiem', 'kim_chung', 'moc_linh', 'nghich_kiem', 'dich_son', 'ngung_dan', 'phan_anh', 'anh_thiet', 'anh_duoc', 'thuan_tram', 'thuan_ho', 'cuu_vien'];
   const hex = /^#[0-9a-fA-F]{6}$/;
   uniqueIds('set', SETS);
   for (const st of SETS) {

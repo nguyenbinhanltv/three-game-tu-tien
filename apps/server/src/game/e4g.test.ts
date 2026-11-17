@@ -266,3 +266,45 @@ describe('E4-G: biến thức cấp 28 (chiêu do E4-K đưa vào ô 10)', () =>
     }
   });
 });
+
+describe('E4-F: hiệu ứng 4 món bộ bậc 5 nối vào chiêu 26', () => {
+  it('Thuấn Di Trảm gây thêm thuanTramPower', () => {
+    const dmg = (boost: number) => {
+      const { sim, p, mon, fresh } = setup('lac_kiem_quyet', 28);
+      p.char.stats.setFx.thuanTramPower = boost;
+      const m = mon(X + 8, Z);
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_thuan_di_tram', t: m.id });
+      return lost(m);
+    };
+    expect(dmg(0.3)).toBeGreaterThan(dmg(0) * 1.15);
+  });
+
+  it('Thuấn Di Hộ Thế: khiên dày thêm thuanHoBoost', () => {
+    const shield = (boost: number) => {
+      const { sim, p, join, fresh } = setup('bat_dong_kim_than', 28);
+      const mate = join('b');
+      mate.move.x = X + 10;
+      p.char.stats.setFx.thuanHoBoost = boost;
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_thuan_di_ho_the' });
+      return p.shield?.amount ?? 0;
+    };
+    expect(shield(0.3)).toBe(Math.round(shield(0) * 1.3));
+  });
+
+  it('Thuấn Di Cứu Viện: người được cứu sống lại với thêm cuuVienBoost khí huyết', () => {
+    const hp = (boost: number) => {
+      const { sim, p, join, fresh } = setup('thanh_moc_dan_kinh', 28);
+      const a = join('b');
+      a.move.x = X + 10;
+      a.char.hp = 0;
+      a.s.fl |= PF_DEAD;
+      p.char.stats.setFx.cuuVienBoost = boost;
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_thuan_di_cuu_vien' });
+      return a.char.hp / a.char.mhp;
+    };
+    expect(hp(0.15) - hp(0)).toBeCloseTo(0.15, 1);
+  });
+});
