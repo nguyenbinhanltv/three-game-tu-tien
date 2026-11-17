@@ -377,14 +377,22 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     ledgerBalanced(char);
   });
 
-  it('kit: tham số sai không đổi gì; bậc 4 lùi về bậc cao nhất có vật phẩm', () => {
+  it('kit: tham số sai không đổi gì; bậc 4 dùng bộ bậc 4 (Tinh Khuyết Kiếm chung)', () => {
     const { char, run } = join(true);
     for (const bad of ['kit', 'kit 0 kiem', 'kit 5 kiem', 'kit 2 xyz', 'kit 2 kiem +abc']) {
       expect(run(bad), bad).toContain('/gm kit');
       expect(char.equip.weapon, bad).toBeUndefined();
     }
-    expect(run('kit 4 dansu')).toContain('cao nhất');
-    expect(char.equip.weapon?.id).toBe('itm_kinh_quang_kiem');
+    expect(run('kit 4 dansu')).not.toContain('cao nhất');
+    expect(char.equip.weapon?.id).toBe('itm_tinh_khuyet_kiem');
+    expect(char.equip.robe?.id).toBe('itm_tt_dao_bao');
+    expect(char.equip.head?.id).toBe('itm_tt_trang_suc');
+    run('kit 4 kiem');
+    expect(char.equip.weapon?.id).toBe('itm_tinh_khuyet_kiem');
+    expect(char.equip.robe?.id).toBe('itm_tk_dao_bao');
+    run('kit 4 hophap');
+    expect(char.equip.weapon?.id).toBe('itm_tinh_khuyet_kiem');
+    expect(char.equip.robe?.id).toBe('itm_ct_dao_bao');
     ledgerBalanced(char);
   });
 
@@ -404,7 +412,8 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     const list = run('outfit list');
     expect(list).toContain('set_liet_mach');
     expect(list).toContain('set_tinh_khuyet');
-    expect(run('outfit set_tinh_khuyet')).toContain('chưa có vật phẩm');
+    expect(run('outfit set_tinh_khuyet')).toContain('Đã mặc');
+    expect(p.s.sk).toBe('set_tinh_khuyet');
     expect(run('outfit khong_co')).toContain('khong_co');
     expect(run('outfit set_liet_mach f')).toContain('Đã mặc');
     expect(p.s.sk).toBe('set_liet_mach');
