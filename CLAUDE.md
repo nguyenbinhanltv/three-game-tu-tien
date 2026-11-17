@@ -185,7 +185,7 @@ Khác với spec ban đầu (chấp nhận, ghi lại để không làm lệch t
 Skill trong `.claude/skills/`, subagent trong `.claude/agents/`. Dùng skill tương ứng trước khi làm việc trong khu vực đó:
 
 - `threejs-client`: code render, streaming thế giới, input, UI trên canvas
-- `tsl-shaders-vfx`: shader TSL, hiệu ứng skill, vết mực, mây, độ kiếp, grading
+- `tsl-shaders-vfx`: shader TSL, VFX chiêu theo timeline JSON (phong cách, ngân sách, cách thêm hiệu ứng, checklist kiểm), vết mực, mây, độ kiếp, grading
 - `procedural-assets`: sinh địa hình, cây, đá, kiến trúc bằng code hoặc bpy
 - `blender-pipeline`: script Blender headless, xuất GLB, tối ưu, kiểm tra asset
 - `colyseus-server`: rooms, schema, xác thực input, AOI, lưu DB
@@ -195,4 +195,4 @@ Skill trong `.claude/skills/`, subagent trong `.claude/agents/`. Dùng skill tư
 - `guizang-game-skill` (bên ngoài, AGPL-3.0, tiếng Trung): chỉ để tham khảo khi làm cảm giác đòn đánh, animation IK, VFX, camera, lỗi input. Viết cho game offline một file HTML nên khi xung đột thì quy ước dự án thắng (WebGPU/TSL, server quyết định, i18n, ngân sách). Không chép code từ repo gốc
 - MCP `blender` (`.mcp.json`, `uvx mcp-for-blender`): điều khiển Blender đang mở để xem và thử dựng. Pipeline chính vẫn là script headless `tools/blender/` (xem `blender-pipeline`)
 
-Subagent: `netcode-reviewer`, `perf-auditor`, `asset-validator`, `lore-keeper`.
+Subagent: `netcode-reviewer`, `perf-auditor`, `asset-validator`, `lore-keeper`, `vfx-reviewer` (soát PR VFX: độ đọc, chống lóa, phong cách, pool, dọn sạch, ngân sách).
