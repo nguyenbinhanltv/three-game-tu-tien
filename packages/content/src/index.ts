@@ -1,4 +1,4 @@
-import { clampTier, isEquipSlot, majorRealmOf, registerTerrain, resolveSkill, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
+import { clampTier, isEquipSlot, majorRealmOf, registerTerrain, resolveSkill, type FxTimeline, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
 import type {
   ArtifactDef,
   PillQualityCfg,
@@ -55,6 +55,8 @@ import viJson from '../data/i18n/vi.json';
 import viUiJson from '../data/i18n/vi.ui.json';
 import poseKiemThuJson from '../data/poses/kiem_thu.json';
 import poseChemNgangJson from '../data/poses/chem_ngang.json';
+import fxKiemKhiTramJson from '../data/fx/skl_kiem_khi_tram.json';
+import fxPhiKiemJson from '../data/fx/skl_phi_kiem.json';
 import posePhiKiemJson from '../data/poses/phi_kiem.json';
 import poseKiemKhiTramJson from '../data/poses/kiem_khi_tram.json';
 import poseHoTheJson from '../data/poses/ho_the.json';
@@ -190,6 +192,9 @@ export const RECIPE = index(RECIPES);
 export const NPC = index(NPCS);
 export const QUEST = index(QUESTS);
 export const POSE = index(POSES);
+/** Dòng thời gian hiệu ứng theo chiêu (VFX-V0): `data/fx/<id chiêu>.json`. Chiêu không có thì dùng đường hiệu ứng cũ. */
+export const FX_TIMELINES = [fxKiemKhiTramJson, fxPhiKiemJson] as unknown as FxTimeline[];
+export const FX_TIMELINE = new Map(FX_TIMELINES.map((f) => [f.skill, f]));
 export const ROOT = index(ROOTS);
 export const ARTIFACT = index(ARTIFACTS);
 

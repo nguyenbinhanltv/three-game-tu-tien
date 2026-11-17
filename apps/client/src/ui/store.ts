@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView, SpiritHit } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio';
+import { fxQuality, hitStopOn } from '../game/fxSettings';
 import { uiScale } from './uiScale';
 import { closeWindow, focusWindow, loadSavedPos, moveWindow, openWindow, savePos, topWindow, type Viewport, type WinId, type WinState } from './windows/layout';
 
@@ -240,6 +241,9 @@ export interface UIState {
   chatOpen: boolean;
   quality: string;
   camShake: boolean;
+  /** Chất lượng hiệu ứng chiêu và khựng hình (VFX-V0). */
+  fxQuality: 'low' | 'medium' | 'high';
+  hitStop: boolean;
   /** Thẻ chương (C2) bật/tắt trong Cài đặt. */
   chapterCards: boolean;
   /** Chỉ báo ngoài màn hình (M4-15) bật/tắt trong Cài đặt. */
@@ -332,6 +336,8 @@ export const useUI = create<UIState>(() => ({
   chatOpen: false,
   quality: localStorage.getItem('dtl.quality') ?? 'medium',
   camShake: localStorage.getItem('dtl.camShake') !== '0',
+  fxQuality: fxQuality(),
+  hitStop: hitStopOn(),
   offscreen: localStorage.getItem('dtl.offscreen') !== '0',
   chapterCards: localStorage.getItem('dtl.chapterCards') !== '0',
   trackQuest: localStorage.getItem('dtl.trackQuest') ?? '',

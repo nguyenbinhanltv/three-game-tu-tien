@@ -138,7 +138,7 @@ export class Vfx {
     // Vẽ ấm các material mới (mưa kiếm, tia sét, mây kiếp, vệt kiếm) vài khung lúc đang tải: biên dịch
     // shader trước, lần dùng đầu không bị khựng. Độ trong 0, cỡ 0: không thấy gì.
     RAIN.prewarm();
-    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome', 'glow', 'flat', 'solid', 'slash', 'ink', 'sigil'] as const) {
+    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome', 'glow', 'flat', 'solid', 'slash', 'ink', 'sigil', 'toon', 'crystal', 'burst', 'decal'] as const) {
       const m = this.fx(G.ico1, 0xffffff, 0, kind);
       m.scale.setScalar(1e-3);
       this.add(0.15, () => {}, () => this.drop(m));
