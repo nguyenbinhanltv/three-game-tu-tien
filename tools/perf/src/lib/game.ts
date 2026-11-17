@@ -24,6 +24,8 @@ export interface OpenOpts {
   seenIntro?: boolean;
   /** Ẩn lớp UI trước khi chụp: `hud` (cả HUD lẫn chat) hoặc `chat`. */
   hide?: 'hud' | 'chat';
+  /** Quay webm của trang vào thư mục này (đóng context mới ghi xong file). */
+  video?: string;
   warnings?: boolean | RegExp;
   errors?: string[];
 }
@@ -38,7 +40,7 @@ export interface GamePage {
 /** Mở context mới, vào game bằng tài khoản thử (tắt tiếng), chờ có nhân vật và bỏ qua cảnh mở đầu. */
 export async function openGame(browser: Browser, o: OpenOpts): Promise<GamePage> {
   const [width, height] = o.viewport ?? [1280, 720];
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: o.dpr ?? 1 });
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: o.dpr ?? 1, ...(o.video ? { recordVideo: { dir: o.video, size: { width, height } } } : {}) });
   const name = `${o.name}${Date.now() % 10000}`.slice(0, 14);
   const store: Record<string, string> = {};
   if (o.quality) store['dtl.quality'] = o.quality;

@@ -48,7 +48,7 @@ export function hasMechanic(id: string): boolean {
 }
 
 for (const id of TRIB_MECHANIC_IDS) {
-  if (id === 'dan_tran' || id === 'tia_xich' || id === 'xuat_khieu' || id === 'tam_canh') continue; // đã cài thật ở dưới (E2-D, E3-L)
+  if (id === 'dan_tran' || id === 'tia_xich' || id === 'xuat_khieu' || id === 'tam_canh' || id === 'ngu_hanh' || id === 'phan_than') continue; // đã cài thật (E2-D, E3-L ở dưới; E4-D ở tribnhan.ts)
   registerMechanic(id, {
     enter(c) {
       if (warned.has(id)) return;

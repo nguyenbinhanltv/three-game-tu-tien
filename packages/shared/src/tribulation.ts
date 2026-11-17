@@ -2,6 +2,8 @@
 // Dữ liệu ở packages/content/data/tribulations.json; hằng số Trúc Cơ cũ (`TRIB_*` trong formulas.ts) suy ra từ đây.
 
 import raw from '../../content/data/tribulations.json';
+import { ELEM_BEATS } from './elements';
+import { ELEMENTS, type Element } from './items';
 
 export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than';
 export type TribPhaseKind = 'lei' | 'hoa' | 'tam_ma';
@@ -99,6 +101,75 @@ export interface TribTamCanh {
   skillPow: number;
 }
 
+/**
+ * Ngũ hành lôi (Hóa Thần, cơ chế `ngu_hanh`): năm trận môn (bán kính `sealR`) trên vòng bán kính `ring` quanh chỗ người độ kiếp đứng lúc vào kiếp
+ * (trận môn `i` ứng hành `ELEMENTS[i]`). Mỗi `every` giây một tia kiếp mang hành kế tiếp (Kim → Mộc → Thủy → Hỏa → Thổ) quét cả sân (bán kính `ring + sealR + pad`),
+ * báo `warn` giây; đứng trong trận môn khắc chế hành đó thì giảm `cut` (cờ `ke` ở DmgMsg).
+ */
+export interface TribNguHanh {
+  ring: number;
+  sealR: number;
+  pad: number;
+  /** Tia đầu tiên sau bao nhiêu giây kể từ đầu pha. */
+  first: number;
+  every: number;
+  warn: number;
+  /** % khí huyết tối đa của tia kiếp. */
+  pct: number;
+  /** Phần giảm khi đứng đúng trận môn (0..1). */
+  cut: number;
+}
+
+/**
+ * Phân thân thần niệm trong kiếp (Hóa Thần, cơ chế `phan_than`; phím G, miễn phí, chỉ trong kiếp): thế thân đứng yên `life` giây ở chỗ người độ kiếp đứng lúc bấm.
+ * Pha Thần niệm: `sweeps` (giây kể từ đầu pha) tia quét dài `sweepLen` × `sweepW`; `pillarAt` cột thiên phạt rơi cùng lúc `pillars` trận môn (không gồm trận môn thứ hai);
+ * `linkAt` mạch nối thiên phạt đánh thẳng người độ kiếp (`linkPct`) trừ khi thế thân hoặc chính thân đứng trong trận môn thứ hai (`LINK_SEAL`).
+ * Pha cuối: thế thân còn sống chắn thay `absorb` tia khóa mệnh.
+ */
+export interface TribPhanThan {
+  life: number;
+  /** Tối đa bao nhiêu thế thân mỗi kiếp. */
+  max: number;
+  sweeps?: number[];
+  sweepLen?: number;
+  sweepW?: number;
+  sweepWarn?: number;
+  sweepPct?: number;
+  pillarAt?: number;
+  pillars?: number;
+  pillarR?: number;
+  pillarWarn?: number;
+  pillarPct?: number;
+  linkAt?: number;
+  linkWarn?: number;
+  linkPct?: number;
+  absorb?: number;
+}
+
+/** Trận môn thứ hai (hành Mộc) gánh mạch nối thiên phạt. */
+export const TRIB_LINK_SEAL = 1;
+
+/** Vị trí trận môn `i` (0..4) quanh tâm `c` với bán kính vòng `ring`. */
+export function tribSealPos(c: { x: number; z: number }, ring: number, i: number): { x: number; z: number } {
+  const a = (i * Math.PI * 2) / ELEMENTS.length;
+  return { x: c.x + Math.sin(a) * ring, z: c.z + Math.cos(a) * ring };
+}
+
+/** Hành khắc chế `e` (hành nào thắng `e`). */
+export function elemCounterOf(e: Element): Element {
+  return ELEMENTS.find((c) => ELEM_BEATS[c] === e) as Element;
+}
+
+/** Chỉ số hành (0..4) của tia kiếp thứ `n` (xoay vòng Kim → Mộc → Thủy → Hỏa → Thổ). */
+export function nguHanhIndex(n: number): number {
+  return ((n % ELEMENTS.length) + ELEMENTS.length) % ELEMENTS.length;
+}
+
+/** Trận môn khắc chế hành `i`: chỉ số trận môn đứng vào để giảm sát thương. */
+export function nguHanhSealFor(i: number): number {
+  return ELEMENTS.indexOf(elemCounterOf(ELEMENTS[nguHanhIndex(i)]));
+}
+
 export interface TribPhaseDef {
   id: string;
   kind: TribPhaseKind;
@@ -121,6 +192,8 @@ export interface TribPhaseDef {
   tiaXich?: TribTiaXich;
   xuatKhieu?: TribXuatKhieu;
   tamCanh?: TribTamCanh;
+  nguHanh?: TribNguHanh;
+  phanThan?: TribPhanThan;
   /** Thiên lôi pha này nhuốm lửa (lôi hỏa): client đổi màu tia (HDR vẫn dưới trần). Chỉ là lớp hình. */
   hot?: boolean;
   /** Móc cơ chế riêng (tribmech.ts). */

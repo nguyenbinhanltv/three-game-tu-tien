@@ -148,11 +148,11 @@ describe('V4: pháp tướng', () => {
 });
 
 describe('V4 phần 2: cảnh lớn theo S.FX', () => {
-  it('đột phá/độ kiếp có ba timeline theo cảnh giới (`when`), mặc định là Trúc Cơ', () => {
+  it('đột phá/độ kiếp có bốn timeline theo cảnh giới (`when`), mặc định là Trúc Cơ', () => {
     for (const kind of ['ascend', 'tribstart']) {
       const all = [...FX_TIMELINE.values()].filter((t) => t.fxKind === kind);
-      expect(all.map((t) => t.when ?? 'truc_co').sort()).toEqual(['ket_dan', 'nguyen_anh', 'truc_co']);
-      expect(new Set(all.map((t) => t.palette)).size).toBe(3);
+      expect(all.map((t) => t.when ?? 'truc_co').sort()).toEqual(['hoa_than', 'ket_dan', 'nguyen_anh', 'truc_co']);
+      expect(new Set(all.map((t) => t.palette)).size).toBe(4);
     }
   });
   it('chớp (burst) < 120 ms và không có chớp toàn cảnh > 0,3 ở mọi cảnh lớn', () => {
