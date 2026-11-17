@@ -48,6 +48,9 @@ export interface MonFxEnv {
 
 export class MonFx {
   private last = new Map<string, number>();
+  /** Phòng quay (dev, `tools/perf shots:vfx`): bỏ FX/đạn/vùng thật từ server để cảnh quay sạch; lời gọi tổng hợp đặt `bypass`. */
+  lab = false;
+  bypass = false;
   /** Nhật ký dev: `__game.monFx.log`. */
   readonly log: { key: string; id: string; at: number }[] = [];
 
@@ -57,6 +60,7 @@ export class MonFx {
   ) {}
 
   private near(x: number, z: number): boolean {
+    if (this.lab && !this.bypass) return false;
     const c = this.env.camera().position;
     return Math.hypot(x - c.x, z - c.z) <= MON_FX_DIST && this.env.live() < OTHERS_FX_LIVE_MAX;
   }
@@ -85,8 +89,18 @@ export class MonFx {
     return { x: m.x, y: m.y, z: m.z, yaw: m.yaw, model: {} };
   }
 
+  private bossOf(m: MonLike | undefined): boolean {
+    return !!m && !!MONSTER.get(m.s.t)?.boss;
+  }
+
+  /** Bảng màu theo hệ của quái; boss dùng bảng ma khí (viền vàng kim, accent đỏ thẫm). */
   private elemOf(m: MonLike): string {
-    return monPaletteKey(MONSTER.get(m.s.t)?.elem);
+    return monPaletteKey(MONSTER.get(m.s.t)?.elem, this.bossOf(m));
+  }
+
+  /** Biến thức `boss` của timeline (sự kiện thêm cho boss). */
+  private variantOf(m: MonLike | undefined): string | undefined {
+    return this.bossOf(m) ? 'boss' : undefined;
   }
 
 
@@ -105,7 +119,7 @@ export class MonFx {
     if (!tl || !this.near(dst.x, dst.z) || !this.gap('strike', m.id, MON_STRIKE_GAP)) return;
     const yaw = Math.atan2(dst.x - m.x, dst.z - m.z);
     const tgt: FxTarget = { x: dst.x, y: dst.y, z: dst.z, chest: 1.1 };
-    this.runner.startAt(tl, { actor: this.actorOf({ ...m, yaw }), palette: this.elemOf(m), tgt, mul: Math.min(2.2, monScale(m.model.height)) });
+    this.runner.startAt(tl, { actor: this.actorOf({ ...m, yaw }), palette: this.elemOf(m), tgt, mul: Math.min(2.2, monScale(m.model.height)), variant: this.variantOf(m) });
     this.note('mon_strike', m.id);
   }
 
@@ -113,7 +127,7 @@ export class MonFx {
   cast(m: MonLike): void {
     const tl = MONFX_ON && this.tl('mon_cast');
     if (!tl || !this.near(m.x, m.z) || !this.gap('cast', m.id, 0.5)) return;
-    this.runner.startAt(tl, { actor: this.actorOf({ ...m, y: m.y }), palette: this.elemOf(m), tgt: null, mul: monScale(m.model.height) });
+    this.runner.startAt(tl, { actor: this.actorOf({ ...m, y: m.y }), palette: this.elemOf(m), tgt: null, mul: monScale(m.model.height), variant: this.variantOf(m) });
     this.note('mon_cast', m.id);
   }
 
@@ -123,7 +137,7 @@ export class MonFx {
     if (!tl || !this.near(m.x, m.z)) return;
     const h = m.model.height;
     const a = this.actorOf({ ...m, y: m.y + h * 0.5 });
-    this.runner.startAt(tl, { actor: { ...a, y: m.y + h * 0.5 }, palette: this.elemOf(m), tgt: null, mul: Math.min(1.5, monScale(h)) });
+    this.runner.startAt(tl, { actor: { ...a, y: m.y + h * 0.5 }, palette: this.elemOf(m), tgt: null, mul: Math.min(this.bossOf(m) ? 2.2 : 1.5, monScale(h)), variant: this.variantOf(m) });
     this.note('mon_death', m.id);
   }
 
@@ -134,11 +148,15 @@ export class MonFx {
 
   /** Vạch báo vùng tròn của quái: triện văn đỏ tồn tại đúng tới lúc nổ. Chỉ khi quái thả vùng (không phải thiên kiếp). */
   warn(h: HazardMsg, src: MonLike | undefined): void {
-    const tl = MONFX_ON && src && !h.sh ? this.tl('mon_warn') : undefined;
-    if (!tl || !src || !(h.r > 0) || !(h.delay > 0) || !this.near(h.x, h.z)) return;
+    if (!MONFX_ON || !src || !(h.r > 0) || !(h.delay > 0) || !this.near(h.x, h.z)) return;
+    const boss = this.bossOf(src);
+    // Vùng tròn: mọi quái; đường/nón: chỉ boss (nhấp nháy dọc vạch, vạch pháp trận cũ vẫn chạy).
+    const key = !h.sh ? 'mon_warn' : boss ? (h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone') : undefined;
+    const tl = key ? this.tl(key) : undefined;
+    if (!tl || !key) return;
     const y = groundAt(h.x, h.z);
-    this.runner.startAt(tl, { actor: { x: h.x, y, z: h.z, yaw: 0, model: {} }, palette: this.hazardPalette(h, src), tgt: null, area: { x: h.x, z: h.z, r: h.r }, mul: hazardMul(h.r, 4), delay: h.delay });
-    this.note('mon_warn', src.id);
+    this.runner.startAt(tl, { actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} }, palette: this.hazardPalette(h, src), tgt: null, area: { x: h.x, z: h.z, r: h.r }, mul: hazardMul(h.r, key === 'mon_warn' ? 4 : 8), delay: h.delay, variant: this.variantOf(src) });
+    this.note(key, src.id);
   }
 
   /** Vùng nổ (đúng lúc hết `delay`). Tròn → gai + vết nứt; chữ nhật → gai nối tiếp; nón → lưỡi liềm quét. */
@@ -148,7 +166,7 @@ export class MonFx {
     const tl = this.tl(key);
     if (!tl || !this.near(h.x, h.z)) return false;
     const y = groundAt(h.x, h.z);
-    this.runner.startAt(tl, { actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} }, palette: this.hazardPalette(h, src), tgt: null, area: { x: h.x, z: h.z, r: h.r }, mul: hazardMul(h.r, key === 'mon_boom_circle' ? 4 : 8) });
+    this.runner.startAt(tl, { actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} }, palette: this.hazardPalette(h, src), tgt: null, area: { x: h.x, z: h.z, r: h.r }, mul: hazardMul(h.r, key === 'mon_boom_circle' ? 4 : 8), variant: this.variantOf(src) });
     this.note(key, src.id);
     return true;
   }

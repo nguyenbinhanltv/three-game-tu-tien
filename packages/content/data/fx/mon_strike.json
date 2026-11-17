@@ -136,5 +136,52 @@
    "alpha": 0.5,
    "tier": 2
   }
- ]
+ ],
+ "variants": {
+  "boss": [
+   {
+    "type": "mesh",
+    "shape": "crescent",
+    "t": -0.06,
+    "dur": 0.26,
+    "at": "target",
+    "rot": [
+     0,
+     0,
+     18
+    ],
+    "scale": [
+     2.2,
+     1.0,
+     2.9
+    ],
+    "scaleTo": [
+     2.6,
+     1.0,
+     3.3
+    ],
+    "sweep": 0.45,
+    "erodeFrom": 0.4,
+    "ragged": 0.95,
+    "tone": "rim",
+    "alpha": 0.9,
+    "seed": 21,
+    "tier": 1
+   },
+   {
+    "type": "particles",
+    "kind": "shard",
+    "t": 0.0,
+    "n": 8,
+    "speed": 4.5,
+    "spread": 0.9,
+    "life": 0.5,
+    "size": 0.14,
+    "at": "target",
+    "tone": "accent",
+    "grav": 8,
+    "tier": 1
+   }
+  ]
+ }
 }

@@ -570,11 +570,14 @@ export class Game {
     room.onMessage(S.FX, (m: FxMsg) => this.onFx(m));
     room.onMessage(S.DMG, (m: DmgMsg) => this.onDmg(m));
     room.onMessage(S.HAZARD, (m: HazardMsg) => {
+      if (this.monFx?.lab) return;
       if (import.meta.env.DEV) (this.hazardLog ??= []).push({ k: m.kind, mv: m.mv, sh: m.sh ?? 'circle', src: m.src ?? '', boss: this.isBossSrc(m.src), t: this.view.monsters.get(m.src ?? '')?.t ?? '', x: m.x, z: m.z, r: m.r, yaw: m.yaw, w: m.w, big: m.big, px: this.cur.x, pz: this.cur.z });
       if (import.meta.env.DEV && this.hazardLog && this.hazardLog.length > 200) this.hazardLog.shift();
       // Vùng chữ nhật/quạt ở xa không ai thấy: bỏ qua (chưa có AOI nên cả kênh nhận).
       if (m.sh && this.vfx) {
         if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m, this.isBossSrc(m.src));
+        // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
+        this.monFx?.warn(m, m.src ? this.ents?.monsters.get(m.src) : undefined);
       }
       else if (m.mv === 'pool') this.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
       else {
@@ -596,6 +599,7 @@ export class Game {
       }, m.delay * 1000);
     });
     room.onMessage(S.BOLT, (m: BoltMsg) => {
+      if (this.monFx?.lab) return;
       // Đạn của quái (D1): chỉ vẽ, server phán định trúng. Bù độ trễ bằng giờ server lúc bắn.
       if (!this.vfx || Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > BOLT_VIEW_DIST) return;
       this.vfx.bolts.spawn(m, boltAge(m, Date.now() + this.timeOffset), HAZARD_COLORS[m.kind] ?? HAZARD_COLORS.fire);

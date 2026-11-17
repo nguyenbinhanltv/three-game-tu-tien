@@ -124,12 +124,16 @@ function parseMon(sk: string): { kind: string; id: string } | null {
 async function monScene(page: Page, id: string): Promise<void> {
   const dbg = async (w: string) => args.includes('--debug') && console.log('[dbg-scene]', w, JSON.stringify(await page.evaluate(() => { const g = (window as unknown as G).__game!; return [g.cur.x, g.cur.z, g.view.monsters.size]; })));
   await dbg('start');
+  await page.evaluate(() => { (window as unknown as G).__game!.monFx.lab = true; });
   await gm(page, 'killall', 900);
   await sleep(8000);
   await gm(page, 'heal', 500);
   await gm(page, 'cd', 500);
+  await gm(page, 'god on', 1200);
   await dbg('pre-spawn');
+  await gm(page, 'god on', 1200);
   await gm(page, `spawn ${id} 1`, 2000);
+  await gm(page, 'god on', 1200);
   await dbg('post-spawn');
   await page.evaluate(() => (window as unknown as G).__game!.clearTarget());
 }
@@ -144,6 +148,7 @@ async function monAct(page: Page, kind: string, slow: number): Promise<void> {
     if (!mon) return;
     const me = g.ents.players.get(g.sid);
     const F = g.monFx;
+    F.bypass = true;
     const yaw = Math.atan2(g.cur.x - mon.x, g.cur.z - mon.z);
     const kindOf = /thuy|han|yeu_lang|hac/.test(mon.s.t) ? 'frost' : 'fire';
     const dx = Math.sin(yaw), dz = Math.cos(yaw);
@@ -152,11 +157,11 @@ async function monAct(page: Page, kind: string, slow: number): Promise<void> {
     const hz = (sh, r, d, extra) => Object.assign({}, at(d), { r, delay: 1.2, kind: kindOf, src: mon.id, sh, yaw: Math.atan2(-dx, -dz), w: sh === 'rect' ? 3 : 0.6 }, extra || {});
     if (k === 'hit') { for (let i = 0; i < 4; i++) setTimeout(() => F.hit(mon), (i * 260) / sl); }
     else if (k === 'strike') { for (let i = 0; i < 2; i++) setTimeout(() => F.strike(mon, me || g.cur), (i * 700) / sl); }
-    else if (k === 'cast') F.cast(mon);
+    else if (k === 'cast' || k === 'chant') F.cast(mon);
     else if (k === 'bolt') { const by = Math.atan2(g.cur.x - mon.x, g.cur.z - mon.z); g.vfx.bolts.spawn({ id: 9001, x: mon.x, z: mon.z, yaw: by, v: 9, r: 0.55, life: 1.4, kind: 'fire', sd: 3, h: 0 }, 0, 0xffa060); F.bolt(kindOf, mon.x, mon.y + 1, mon.z, yaw, false); setTimeout(() => { g.vfx.bolts.end(9001, g.cur.x, g.cur.z, true); F.bolt(kindOf, g.cur.x, g.cur.y + 0.8, g.cur.z, 0, true); }, 1000 / sl); }
     else if (k === 'boom_circle') { const h = hz(undefined, 4.5, 0); F.warn(h, mon); setTimeout(() => F.boom(h, mon), (h.delay * 1000) / sl); }
-    else if (k === 'boom_line') { const h = hz('rect', 10, 3, { mv: 'line' }); setTimeout(() => F.boom(h, mon), 300 / sl); }
-    else if (k === 'boom_cone') { const h = hz('cone', 12, 3); setTimeout(() => F.boom(h, mon), 300 / sl); }
+    else if (k === 'boom_line') { const h = hz('rect', 10, 3, { mv: 'line' }); F.warn(h, mon); setTimeout(() => F.boom(h, mon), (h.delay * 1000) / sl); }
+    else if (k === 'boom_cone') { const h = hz('cone', 12, 3); F.warn(h, mon); setTimeout(() => F.boom(h, mon), (h.delay * 1000) / sl); }
   })()`);
 }
 
@@ -368,11 +373,12 @@ async function main(): Promise<void> {
           // Pháp tướng cần camera xa phía sau: đứng ở chỗ trống giữa sân (không có cột/cổng chắn camera).
           if (PHAP.test(sk)) { if (/kim_cuong|hoi_thien|scene_/.test(sk)) { await gm(page, 'killall', 900); await gm(page, 'tp 2048 2400', 800); await sleep(9500); await gm(page, 'tp 2048 2150', 1500); } else { await gm(page, 'tp 2048 2150', 1500); }  if (!/kim_cuong|hoi_thien|scene_/.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500); }
           if (/van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/.test(sk)) await gm(page, 'charge', 900);
-          await closeCam(page, mon ? Number(opt('--mon-dist', mon.kind === 'boom_circle' ? '13' : mon.kind === 'cast' || mon.kind === 'bolt' ? '15' : '10')) : WIDE.test(sk) ? Number(opt('--wide', '9.5')) : DIST, PHAP.test(sk) ? Math.PI + 0.15 : mon ? 0.3 : 0.9);
+          await closeCam(page, mon ? Number(opt('--mon-dist', mon.kind === 'boom_circle' ? '13' : mon.kind === 'cast' || mon.kind === 'bolt' ? '15' : '10')) : WIDE.test(sk) ? Number(opt('--wide', '9.5')) : DIST, PHAP.test(sk) ? Math.PI + 0.15 : mon ? Number(opt('--mon-yaw', '1.1')) : 0.9);
+          if (mon) await page.evaluate(() => { (window as unknown as G).__game!.camPitch = 0.4; });
           if (WIDE.test(sk)) await page.evaluate((pt) => { (window as unknown as G).__game!.camPitch = pt; }, PHAP.test(sk) ? 0.2 : 0.3);
           if (mon && args.includes('--debug')) console.log('[dbg-cam]', JSON.stringify(await page.evaluate(() => { const g = (window as unknown as G).__game!; return { cam: [g.camera.position.x, g.camera.position.y, g.camera.position.z], cur: [g.cur.x, g.cur.y, g.cur.z, g.cur.yaw], cy: g.camYaw, cd: g.camDist, cdc: g.camDistCur, n: g.view.monsters.size }; })));
           const combo = sk === 'skl_phi_kiem';
-          const span = combo ? 3000 : SPAN[sk] ?? (mon ? (mon.kind === 'boom_circle' ? 2600 : mon.kind === 'death' || mon.kind === 'chant' ? 2400 : 1600) : Number(opt('--span', '1700')));
+          const span = combo ? 3000 : SPAN[sk] ?? (mon ? (mon.kind === 'boom_circle' || mon.kind === 'boom_line' || mon.kind === 'boom_cone' ? 2600 : mon.kind === 'death' || mon.kind === 'chant' ? 2400 : 1600) : Number(opt('--span', '1700')));
           const act = async () => {
             if (mon && mon.kind === 'death') return gm(page, 'killall', 0);
             if (mon) return monAct(page, mon.kind, slow);
