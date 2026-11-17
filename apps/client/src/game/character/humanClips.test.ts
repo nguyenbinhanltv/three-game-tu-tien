@@ -104,7 +104,7 @@ describe('clip chung K-3 (anim_human_base)', () => {
     const k3 = await cache.acquire(HUMAN_K3_LIB);
     const lib = { animations: [...base.animations, ...k3.animations], release: () => (base.release(), k3.release()) };
     for (const [name, info] of Object.entries(HUMAN_CLIPS)) {
-      if (!info.loop || name === 'run') continue; // run: clip M2-3, giữ nguyên (chân đã đo riêng bên dưới)
+      if (!info.loop || info.lib === 'ual' || name === 'run') continue; // run: clip M2-3, giữ nguyên (chân đã đo riêng bên dưới)
       const clip = lib.animations.find((c) => c.name === name)!;
       let worst = 0;
       for (const t of clip.tracks) {

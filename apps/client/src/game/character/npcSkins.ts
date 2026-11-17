@@ -3,7 +3,9 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { Humanoid } from '../models';
 import { adoptGltfMaterials, rimLight } from '../../render/materials/world';
-import { acquireWithHumanLib, HUMAN_K3_LIB, mergeClips, retargetClips } from './animLib';
+import { acquireWithHumanLib, HUMAN_K3_LIB, HUMAN_UAL_LIB, mergeClips, retargetClips } from './animLib';
+import { UAL_NPC_IDLES } from './humanClips';
+import { UAL_ENABLED } from './ualClips';
 import { HUMAN_CLIPS } from './humanClips';
 import { SkinnedCharacter } from './skinned';
 import type { CharState, ClipMap } from './states';
@@ -70,6 +72,11 @@ interface Template {
   height: number;
   bounds: THREE.Sphere;
   mat: THREE.MeshStandardNodeMaterial;
+  /** Clip idle phụ của UAL (khoanh tay, nói chuyện...) đã retarget sang asset này; null = chưa nạp xong. */
+  ual: THREE.AnimationClip[] | null;
+  /** Đã bắt đầu nạp UAL cho mẫu này; NPC dựng trong lúc chờ nằm ở `ualWait`. */
+  ualLoading: boolean;
+  ualWait: WeakRef<SkinnedCharacter>[];
 }
 
 /**
@@ -122,7 +129,51 @@ export class NpcSkins {
     // Lệch pha idle để các NPC không thở cùng nhịp.
     const idle = m.actionOf('idle');
     if (idle) idle.time = Math.random() * idle.getClip().duration;
+    this.attachIdles(t, m);
     return m;
+  }
+
+  /**
+   * Idle đa dạng cho NPC (UAL): nạp lười thư viện UAL một lần cho mỗi asset, retarget từng clip một lượt `setTimeout`, rồi gắn cho mọi
+   * NPC cùng asset (đã dựng và dựng sau). Lỗi thì NPC giữ idle cũ.
+   */
+  private attachIdles(t: Template, m: SkinnedCharacter): void {
+    const give = (c: SkinnedCharacter, clips: THREE.AnimationClip[]) => {
+      c.addClips(clips, {});
+      c.setIdleVariants(UAL_NPC_IDLES);
+    };
+    if (!UAL_ENABLED) return;
+    if (t.ual) return give(m, t.ual);
+    t.ualWait.push(new WeakRef(m));
+    if (t.ualLoading) return;
+    t.ualLoading = true;
+    setTimeout(() => {
+      if (this.disposed) return;
+      this.cache.acquire(HUMAN_UAL_LIB, { priority: 30 }).then(
+        (lib) => {
+          const out: THREE.AnimationClip[] = [];
+          const todo = lib.animations.filter((c) => UAL_NPC_IDLES.includes(c.name));
+          const step = () => {
+            if (this.disposed) return lib.release();
+            const c = todo.shift();
+            if (c) {
+              out.push(...retargetClips(lib.scene, [c], t.handle.scene));
+              setTimeout(step, 0);
+              return;
+            }
+            lib.release();
+            t.ual = out;
+            for (const w of t.ualWait) {
+              const c2 = w.deref();
+              if (c2) give(c2, out);
+            }
+            t.ualWait = [];
+          };
+          step();
+        },
+        (err) => console.warn('[models] không nạp được clip UAL cho NPC', err),
+      );
+    }, 2500);
   }
 
   /**
@@ -218,5 +269,5 @@ function templateOf(handle: AssetHandle, lib: AssetHandle): Template {
   const bounds = new THREE.Sphere(new THREE.Vector3(0, height * 0.5, 0), height * 1.15);
   const mat = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src ?? undefined))[0]);
   const clips = mergeClips(handle.animations, retargetClips(lib.scene, lib.animations, handle.scene));
-  return { handle, lib, clips, height, bounds, mat };
+  return { handle, lib, clips, height, bounds, mat, ual: null, ualLoading: false, ualWait: [] };
 }
