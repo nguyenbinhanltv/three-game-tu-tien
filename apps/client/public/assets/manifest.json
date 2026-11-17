@@ -1450,9 +1450,9 @@
       "id": "chr_v2_hb_nam",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_hb_nam.glb",
-      "file": "chr_v2_hb_nam.282c4ecce4.glb",
-      "bytes": 589312,
-      "rawBytes": 637168,
+      "file": "chr_v2_hb_nam.216fb12edc.glb",
+      "bytes": 607692,
+      "rawBytes": 661828,
       "triangles": 9343,
       "rawTriangles": 9343,
       "lod0Cap": 10000,
@@ -1507,9 +1507,9 @@
       "id": "chr_v2_hb_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_hb_nu.glb",
-      "file": "chr_v2_hb_nu.948b3cfc97.glb",
-      "bytes": 588492,
-      "rawBytes": 646848,
+      "file": "chr_v2_hb_nu.bfdc61533e.glb",
+      "bytes": 606720,
+      "rawBytes": 673948,
       "triangles": 9366,
       "rawTriangles": 9366,
       "lod0Cap": 10000,
@@ -1564,9 +1564,9 @@
       "id": "chr_v2_nam",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nam.glb",
-      "file": "chr_v2_nam.724f6da3c3.glb",
-      "bytes": 594460,
-      "rawBytes": 642916,
+      "file": "chr_v2_nam.8827bd00b0.glb",
+      "bytes": 600156,
+      "rawBytes": 649644,
       "triangles": 9319,
       "rawTriangles": 9319,
       "lod0Cap": 10000,
@@ -1621,9 +1621,9 @@
       "id": "chr_v2_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nu.glb",
-      "file": "chr_v2_nu.02596fc98e.glb",
-      "bytes": 591584,
-      "rawBytes": 649964,
+      "file": "chr_v2_nu.57946090ac.glb",
+      "bytes": 601576,
+      "rawBytes": 663532,
       "triangles": 9383,
       "rawTriangles": 9383,
       "lod0Cap": 10000,
@@ -8232,11 +8232,11 @@
       "id": "set_de_tu_v2_nam",
       "class": "outfit_v2",
       "source": "assets/build/raw/set_de_tu_v2_nam.glb",
-      "file": "set_de_tu_v2_nam.edf5060e56.glb",
-      "bytes": 211828,
-      "rawBytes": 244316,
-      "triangles": 5177,
-      "rawTriangles": 5177,
+      "file": "set_de_tu_v2_nam.2d4cbe03dc.glb",
+      "bytes": 239300,
+      "rawBytes": 372900,
+      "triangles": 6910,
+      "rawTriangles": 6910,
       "lod0Cap": 9000,
       "skinned": true,
       "quantized": false,
@@ -8247,8 +8247,8 @@
         {
           "name": "set_de_tu_v2_nam_color",
           "mimeType": "image/webp",
-          "width": 64,
-          "height": 64,
+          "width": 512,
+          "height": 512,
           "slots": [
             "baseColorTexture"
           ]
@@ -8257,31 +8257,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 5177
+          "triangles": 6910
         },
         {
           "level": 1,
-          "triangles": 2071,
-          "target": 2071
+          "triangles": 2763,
+          "target": 2764
         },
         {
           "level": 2,
-          "triangles": 777,
-          "target": 777
+          "triangles": 1036,
+          "target": 1037
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.502,
-          "height": 1.5513,
-          "depth": 0.4827,
-          "minY": -0.0139
+          "width": 1.6138,
+          "height": 1.5603,
+          "depth": 0.5733,
+          "minY": -0.0129
         },
         "build": {
-          "width": 1.502,
-          "height": 1.5513,
-          "depth": 0.4827,
-          "minY": -0.0139
+          "width": 1.6138,
+          "height": 1.5603,
+          "depth": 0.5733,
+          "minY": -0.0129
         }
       }
     },
@@ -8289,11 +8289,11 @@
       "id": "set_de_tu_v2_nu",
       "class": "outfit_v2",
       "source": "assets/build/raw/set_de_tu_v2_nu.glb",
-      "file": "set_de_tu_v2_nu.77d77282f4.glb",
-      "bytes": 195924,
-      "rawBytes": 219864,
-      "triangles": 4822,
-      "rawTriangles": 4822,
+      "file": "set_de_tu_v2_nu.f5668fc386.glb",
+      "bytes": 230960,
+      "rawBytes": 362388,
+      "triangles": 6577,
+      "rawTriangles": 6577,
       "lod0Cap": 9000,
       "skinned": true,
       "quantized": false,
@@ -8304,8 +8304,8 @@
         {
           "name": "set_de_tu_v2_nu_color",
           "mimeType": "image/webp",
-          "width": 64,
-          "height": 64,
+          "width": 512,
+          "height": 512,
           "slots": [
             "baseColorTexture"
           ]
@@ -8314,31 +8314,31 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 4822
+          "triangles": 6577
         },
         {
           "level": 1,
-          "triangles": 1929,
-          "target": 1929
+          "triangles": 2629,
+          "target": 2631
         },
         {
           "level": 2,
-          "triangles": 723,
-          "target": 723
+          "triangles": 986,
+          "target": 987
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.3034,
-          "height": 1.4622,
-          "depth": 0.4642,
-          "minY": -0.014
+          "width": 1.4178,
+          "height": 1.4712,
+          "depth": 0.5302,
+          "minY": -0.013
         },
         "build": {
-          "width": 1.3034,
-          "height": 1.4622,
-          "depth": 0.4642,
-          "minY": -0.014
+          "width": 1.4178,
+          "height": 1.4712,
+          "depth": 0.5302,
+          "minY": -0.013
         }
       }
     },
