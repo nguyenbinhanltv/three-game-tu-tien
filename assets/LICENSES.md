@@ -531,3 +531,18 @@ Sinh bởi công cụ tạo ảnh tích hợp Codex cho dự án Đạp Thiên L
 | `itm_nguyen_anh_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_nguyen_anh_dan.png` |
 | `itm_ngung_anh_phach` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/itm_ngung_anh_phach.png` |
 | `hud_nguyen_anh` | Sinh bởi Codex cho dự án | dự án | 2026-11-16 | `2d/icons/hud_nguyen_anh.png` |
+
+## Nhân vật nền v2 (CHR-PROTO, 2026-11-17)
+
+Bản thử, không thay nhân vật trong game (`?chr=v2`, docs/chr-v2). Thân và tay: **MakeHuman** qua addon **MPFB2** (<https://github.com/makehumancommunity/mpfb2>, bản 2.0.18). Dùng riêng phần **lưới cơ sở, target hình thể (macro Á Đông), bộ xương Mixamo và trọng số kèm theo MPFB** (thư mục `src/mpfb/data/`), toàn bộ phát hành **CC0 1.0** (`LICENSE.ASSETS.md` của MPFB; mã Python của MPFB là GPL nhưng chỉ chạy như công cụ, không đóng gói vào game). Không dùng asset pack tải riêng (quần áo, tóc, da của MakeHuman Community). Da và đồ lót vẽ thủ tục bằng `tools/blender/chr_base_v2.py`. **Đầu và tóc** do người dùng dựng trên Tripo web app (image→3D H3.1) từ concept sinh bằng Codex (`tools/codex-assets/chr-base-gen.mjs`), gộp vào thân bằng `tools/blender/chr_v2_head.py`. Bốn áo (hai bộ × nam, nữ) dựng lại trên thân này dùng nguồn Tripo của hai bộ Liệt Mạch và Kính Quang như dòng của chúng ở trên.
+
+| ID | Nguồn | Giấy phép | Ngày | Chi tiết |
+| --- | --- | --- | --- | --- |
+| `chr_v2_nam` | MakeHuman base mesh + target + rig/trọng số Mixamo qua MPFB2 (CC0-1.0); đầu + tóc Tripo web app (người dùng dựng) từ concept Codex; gộp bằng tools/blender/chr_v2_head.py | dự án + CC0-1.0 | 2026-11-17 | xem meta.json |
+| `chr_v2_nu` | MakeHuman base mesh + target + rig/trọng số Mixamo qua MPFB2 (CC0-1.0); đầu + tóc Tripo web app (người dùng dựng) từ concept Codex; gộp bằng tools/blender/chr_v2_head.py | dự án + CC0-1.0 | 2026-11-17 | xem meta.json |
+| `chr_v2_hb_nam` | MakeHuman base mesh + target + rig/trọng số Mixamo qua MPFB2 (CC0-1.0); đầu + tóc Tripo web app (người dùng dựng) từ concept Codex; gộp bằng tools/blender/chr_v2_head.py | dự án + CC0-1.0 | 2026-11-17 | xem meta.json |
+| `chr_v2_hb_nu` | MakeHuman base mesh + target + rig/trọng số Mixamo qua MPFB2 (CC0-1.0); đầu + tóc Tripo web app (người dùng dựng) từ concept Codex; gộp bằng tools/blender/chr_v2_head.py | dự án + CC0-1.0 | 2026-11-17 | xem meta.json |
+| `set_liet_mach_kiem_y_v2_nam` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
+| `set_liet_mach_kiem_y_v2_nu` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
+| `set_kinh_quang_kiem_y_v2_nam` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
+| `set_kinh_quang_kiem_y_v2_nu` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |

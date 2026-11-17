@@ -23,6 +23,7 @@
     "shots:m5": "tsx src/shots-m5.ts",
     "shots:sets": "tsx src/shots-sets.ts",
     "shots:outfit": "tsx src/shots-outfit.ts",
+    "shots:chrv2": "tsx src/shots-chrv2.ts",
     "shots:k1": "tsx src/shots-k1.ts",
     "shots:k3": "tsx src/shots-k3.ts",
     "shots:k4": "tsx src/shots-k4.ts",
