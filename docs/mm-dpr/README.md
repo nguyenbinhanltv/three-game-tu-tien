@@ -6,7 +6,7 @@ Sửa: `.right-col > .minimap-wrap` phóng theo `--ui-scale`; buffer canvas = DP
 | Cỡ | trước (buffer / hiển thị CSS) | sau |
 | --- | --- | --- |
 | 1080p | 176 / 176 | 176 / 176 |
-| 1440p (x1,35) | 176 / 176 | 240 / 238 |
+| 1440p (x1,35) | 176 / 176 | 220 / 238 |
 | 4K (x2) | 176 / 176 | 352 / 352 |
 | 1080p @2x | 352 / 176 | 352 / 176 |
 
