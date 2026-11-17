@@ -19,3 +19,11 @@ Chỉ cảnh rừng vượt 8 ms. Profile cảnh rừng (6,2 s mẫu): `Game.fra
 - Draw call tối đa: trước 198/212/189, sau 180/192/177 (giảm ~8%).
 
 Kết luận trung thực: nhiễu giữa các lượt (±1,5 ms, phụ thuộc tick server và số quái/VFX lúc đó) lớn hơn tác dụng, nên chưa chứng minh được p95 < 8 ms ổn định. Việc còn lại để ăn chắc: giảm số đối tượng vẽ (gộp skin quái LOD2, gộp pool prop theo vật liệu) và chia nhỏ cập nhật uniform theo đối tượng của three; cần phiên riêng với bench lặp nhiều lượt hơn (`--seconds 20`, 5+ lượt).
+
+## Vòng 2: đo lặp và thử giảm chi phí (không đạt)
+
+Công cụ: `pnpm --filter @dtl/perf crowd:repeat --runs N` (chạy `bench:crowd` N lượt, in trung vị p95; mặc định 50 bot, cảnh rừng, WebGPU Vừa, 12 s). Camera đã xác định (xoay đều), phần ngẫu nhiên là hành vi bot/quái; tick server dao động 3,4–6,2 ms giữa các lượt nên p95 nhiễu theo.
+
+- Nền (đã có impostor culling), 5 lượt: p95 = 9,0 / 8,1 / 8,2 / 9,7 / 7,7, **trung vị 8,2**, p50 5,8, draw ~180.
+- Thử: bỏ thật cả cây xương ngoài khung khỏi `scene.updateMatrixWorld` (code cũ đặt `matrixWorldAutoUpdate = false` ở `inner` nhưng three 0.178 vẫn nhân ma trận con cháu vì `force` truyền từ gốc). Đo xen kẽ 6 lượt mỗi bên: trước 8,4 / 8 / 8,8 / 7,7 / 7,2 / 8,6 (trung vị 8,2), sau 7,9 / 8,6 / 11,2 / 7,2 / 8 / 7,3 (trung vị 7,95). Không khác biệt ngoài nhiễu, **đã hoàn lại** (không đáng rủi ro).
+- Profile cảnh rừng: mã game tự nó chỉ ~11% khung (entities, footsteps, vfx, skinned đều dưới 1,5%); phần lớn là nội bộ three theo từng đối tượng vẽ (`updateForRender/updateBinding`, `draw`, `_projectObject`) và mixer. Vi tối ưu mã game không đủ kéo p95 xuống dưới 8 ms; cần giảm số đối tượng vẽ rõ rệt (>20%: gộp skin quái LOD2, gộp pool prop theo vật liệu, hạ LOD0 quái/người) và có thể đổi hình.
