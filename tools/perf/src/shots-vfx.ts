@@ -114,6 +114,7 @@ async function monScene(page: Page, id: string): Promise<void> {
   await sleep(8000);
   await gm(page, 'heal', 500);
   await gm(page, 'cd', 500);
+  await gm(page, 'god on', 1200);
   await dbg('pre-spawn');
   await gm(page, `spawn ${id} 1`, 2000);
   await dbg('post-spawn');
@@ -138,11 +139,11 @@ async function monAct(page: Page, kind: string, slow: number): Promise<void> {
     const hz = (sh, r, d, extra) => Object.assign({}, at(d), { r, delay: 1.2, kind: kindOf, src: mon.id, sh, yaw: Math.atan2(-dx, -dz), w: sh === 'rect' ? 3 : 0.6 }, extra || {});
     if (k === 'hit') { for (let i = 0; i < 4; i++) setTimeout(() => F.hit(mon), (i * 260) / sl); }
     else if (k === 'strike') { for (let i = 0; i < 2; i++) setTimeout(() => F.strike(mon, me || g.cur), (i * 700) / sl); }
-    else if (k === 'cast') F.cast(mon);
+    else if (k === 'cast' || k === 'chant') F.cast(mon);
     else if (k === 'bolt') { F.bolt(kindOf, mon.x, mon.y + 1, mon.z, yaw, false); setTimeout(() => F.bolt(kindOf, g.cur.x, g.cur.y + 0.8, g.cur.z, 0, true), 700 / sl); }
     else if (k === 'boom_circle') { const h = hz(undefined, 4.5, 0); F.warn(h, mon); setTimeout(() => F.boom(h, mon), (h.delay * 1000) / sl); }
-    else if (k === 'boom_line') { const h = hz('rect', 10, 3, { mv: 'line' }); setTimeout(() => F.boom(h, mon), 300 / sl); }
-    else if (k === 'boom_cone') { const h = hz('cone', 12, 3); setTimeout(() => F.boom(h, mon), 300 / sl); }
+    else if (k === 'boom_line') { const h = hz('rect', 10, 3, { mv: 'line' }); F.warn(h, mon); setTimeout(() => F.boom(h, mon), (h.delay * 1000) / sl); }
+    else if (k === 'boom_cone') { const h = hz('cone', 12, 3); F.warn(h, mon); setTimeout(() => F.boom(h, mon), (h.delay * 1000) / sl); }
   })()`);
 }
 
@@ -353,7 +354,7 @@ async function main(): Promise<void> {
           if (WIDE.test(sk)) await page.evaluate((pt) => { (window as unknown as G).__game!.camPitch = pt; }, PHAP.test(sk) ? 0.2 : 0.3);
           if (mon && args.includes('--debug')) console.log('[dbg-cam]', JSON.stringify(await page.evaluate(() => { const g = (window as unknown as G).__game!; return { cam: [g.camera.position.x, g.camera.position.y, g.camera.position.z], cur: [g.cur.x, g.cur.y, g.cur.z, g.cur.yaw], cy: g.camYaw, cd: g.camDist, cdc: g.camDistCur, n: g.view.monsters.size }; })));
           const combo = sk === 'skl_phi_kiem';
-          const span = combo ? 3000 : SPAN[sk] ?? (mon ? (mon.kind === 'boom_circle' ? 2600 : mon.kind === 'death' || mon.kind === 'chant' ? 2400 : 1600) : Number(opt('--span', '1700')));
+          const span = combo ? 3000 : SPAN[sk] ?? (mon ? (mon.kind === 'boom_circle' || mon.kind === 'boom_line' || mon.kind === 'boom_cone' ? 2600 : mon.kind === 'death' || mon.kind === 'chant' ? 2400 : 1600) : Number(opt('--span', '1700')));
           const act = async () => {
             if (mon && mon.kind === 'death') return gm(page, 'killall', 0);
             if (mon) return monAct(page, mon.kind, slow);

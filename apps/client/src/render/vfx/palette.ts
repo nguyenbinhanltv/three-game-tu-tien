@@ -34,6 +34,12 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   mon_boss: { core: 0x2a0410, body: 0xd01f3c, rim: 0xffd7a0, accent: 0xffc23a, shadow: 0x0d0206 },
 };
 
+// Boss: cùng thân theo hệ, viền vàng kim ấm + accent đỏ thẫm + bóng gần đen cho tương phản cao (`mon_boss_<hệ>`).
+for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho', 'neutral']) {
+  const b = FX_PALETTE['mon_' + e];
+  FX_PALETTE['mon_boss_' + e] = { core: b.core, body: b.body, rim: 0xffe9b0, accent: 0xff1f3d, shadow: 0x0a0204 };
+}
+
 export const FX_PALETTE_DEFAULT = FX_PALETTE.lac_kiem_quyet;
 
 /** Bảng màu theo id công pháp (không biết thì kiếm tu). Khớp chuỗi con để chịu được id công pháp khác tên nhánh. */
@@ -47,8 +53,9 @@ export function paletteOf(method: string | undefined): FxPalette {
 }
 
 /** Bảng màu FX quái theo ngũ hành (`MonsterDef.elem`); boss dùng bảng ma khí riêng ở tầng accent, thân vẫn theo hệ ở `monPaletteKey`. */
-export function monPaletteKey(elem: string | undefined): string {
-  return elem && FX_PALETTE['mon_' + elem] ? 'mon_' + elem : 'mon_neutral';
+export function monPaletteKey(elem: string | undefined, boss = false): string {
+  const k = elem && FX_PALETTE['mon_' + elem] ? elem : 'neutral';
+  return (boss ? 'mon_boss_' : 'mon_') + k;
 }
 
 export function toneOf(p: FxPalette, tone: FxTone | undefined): number {

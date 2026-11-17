@@ -67,6 +67,8 @@ import fx_mon_death from '../data/fx/mon_death.json';
 import fx_mon_hit from '../data/fx/mon_hit.json';
 import fx_mon_strike from '../data/fx/mon_strike.json';
 import fx_mon_warn from '../data/fx/mon_warn.json';
+import fx_mon_warn_cone from '../data/fx/mon_warn_cone.json';
+import fx_mon_warn_line from '../data/fx/mon_warn_line.json';
 import fx_skl_anh_duoc_hoa_than from '../data/fx/skl_anh_duoc_hoa_than.json';
 import fx_skl_anh_thiet_than from '../data/fx/skl_anh_thiet_than.json';
 import fx_skl_dan_hoa_phong_tran from '../data/fx/skl_dan_hoa_phong_tran.json';
@@ -241,7 +243,7 @@ export const POSE = index(POSES);
 export const FX_TIMELINES = [fxKiemKhiTramJson, fxPhiKiemJson, fx_skl_anh_duoc_hoa_than, fx_skl_anh_thiet_than, fx_skl_dan_hoa_phong_tran, fx_skl_dich_son_xung, fx_skl_duoc_vu, fx_skl_hoanh_kiem_pha_mach, fx_skl_hoi_nguyen_thuat, fx_skl_hoi_thien_dan_lo, fx_skl_hoi_xuan_quyet, fx_skl_kiem_anh_bo, fx_skl_kiem_dan_ban_menh, fx_skl_kiem_vu_tam_diep, fx_skl_kim_chung_tran, fx_skl_kim_cuong_bat_hoai, fx_skl_linh_khi_ho_the, fx_skl_loi_dinh_nhat_kiem, fx_skl_luu_huong_bo, fx_skl_moc_linh_tran, fx_skl_nghich_kiem_chuyen_phong, fx_skl_ngung_dan_ho_the, fx_skl_phan_anh_kiem_anh, fx_skl_phi_kiem_truy_hon, fx_skl_son_nhac_hoa_than, fx_skl_thien_dan_phap_gioi, fx_skl_thien_kiem_hoa_hinh, fx_skl_thien_kiem_vu, fx_skl_thien_kim_phap_tuong, fx_skl_thiet_bich_xung, fx_skl_thiet_quyen_chan_dia, fx_skl_thuan_di_cuu_vien, fx_skl_thuan_di_ho_the, fx_skl_thuan_di_tram, fx_skl_tran_son_an, fx_skl_van_kiem_quy_tong] as unknown as FxTimeline[];
 export const FX_TIMELINE = new Map(FX_TIMELINES.map((f) => [f.skill, f]));
 /** Dòng thời gian hiệu ứng của quái/tinh anh/boss (VFX-V5): `data/fx/mon_*.json`, khóa theo loại sự kiện (mon_hit, mon_strike, mon_boom_circle...). Màu theo ngũ hành lúc chạy. */
-export const MON_FX_TIMELINES = [fx_mon_bolt_impact, fx_mon_bolt_muzzle, fx_mon_boom_circle, fx_mon_boom_cone, fx_mon_boom_line, fx_mon_cast, fx_mon_death, fx_mon_hit, fx_mon_strike, fx_mon_warn] as unknown as FxTimeline[];
+export const MON_FX_TIMELINES = [fx_mon_bolt_impact, fx_mon_bolt_muzzle, fx_mon_boom_circle, fx_mon_boom_cone, fx_mon_boom_line, fx_mon_cast, fx_mon_death, fx_mon_hit, fx_mon_strike, fx_mon_warn_cone, fx_mon_warn_line, fx_mon_warn] as unknown as FxTimeline[];
 export const MON_FX = new Map(MON_FX_TIMELINES.map((f) => [f.skill, f]));
 export const ROOT = index(ROOTS);
 export const ARTIFACT = index(ARTIFACTS);

@@ -1,0 +1,116 @@
+{
+ "skill": "mon_warn_cone",
+ "palette": "mon_neutral",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "crescent",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "scale": [
+    8.0,
+    1.0,
+    8.0
+   ],
+   "scaleTo": [
+    8.4,
+    1.0,
+    8.4
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.5,
+   "ragged": 0.8,
+   "tone": "accent",
+   "alpha": 0.75,
+   "seed": 34,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "crescent",
+   "t": 0.45,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "scale": [
+    8.0,
+    1.0,
+    8.0
+   ],
+   "scaleTo": [
+    8.4,
+    1.0,
+    8.4
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.5,
+   "ragged": 0.8,
+   "tone": "rim",
+   "alpha": 0.75,
+   "seed": 35,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "crescent",
+   "t": 0.9,
+   "dur": 0.5,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "scale": [
+    8.0,
+    1.0,
+    8.0
+   ],
+   "scaleTo": [
+    8.4,
+    1.0,
+    8.4
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.5,
+   "ragged": 0.8,
+   "tone": "accent",
+   "alpha": 0.75,
+   "seed": 36,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 18,
+   "speed": 2.0,
+   "spread": 0.5,
+   "life": 1.1,
+   "size": 0.1,
+   "at": "area",
+   "offset": [
+    0,
+    0.3,
+    4.0
+   ],
+   "tone": "rim",
+   "inward": true,
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}
