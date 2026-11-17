@@ -399,7 +399,7 @@ const GEST = {
   },
 };
 /** VFX-V2: cường điệu cử chỉ của các chiêu cơ bản Kiếm tu (thân/hông/đầu lệch khỏi thế thủ nhiều hơn `k` lần; tay giữ nguyên để không vượt tầm). */
-const AMP = { loi_dinh: 1.35, ho_the: 1.5, hoi_nguyen: 1.3 };
+const AMP = { loi_dinh: 1.35, ho_the: 1.5, hoi_nguyen: 1.3, tran_son: 1.0, kim_cuong: 1.0, xuan_phong: 1.4, hoi_thien: 1.15 };
 function amplify(f, k) {
   const o = { ...f };
   o.hipsPos = [f.hipsPos[0], GUARD.hipsPos[1] + (f.hipsPos[1] - GUARD.hipsPos[1]) * k, f.hipsPos[2]];

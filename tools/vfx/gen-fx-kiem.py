@@ -1,4 +1,4 @@
-# Sinh các file packages/content/data/fx/<chiêu>.json của Kiếm tu (VFX-V2). JSON vẫn sửa tay được; script chỉ giữ công thức cho nhất quán.
+# Sinh các file packages/content/data/fx/<chiêu>.json của Kiếm tu (VFX-V2), Hộ pháp và Đan sư (VFX-V3, recipes_c.py). JSON vẫn sửa tay được; script chỉ giữ công thức cho nhất quán.
 #   python tools/vfx/gen-fx-kiem.py [id chiêu ...]
 import json
 import math
@@ -150,7 +150,11 @@ R['skl_loi_dinh_nhat_kiem'] = lambda: {
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import recipes_b  # noqa: E402
 
+import recipes_c  # noqa: E402
+
 recipes_b.register(R, dict(mesh=mesh, parts=parts, decal=decal, stop=stop, shake=shake, flash=flash, ring_spikes=ring_spikes))
+
+recipes_c.register(R, dict(mesh=mesh, parts=parts, decal=decal, stop=stop, shake=shake, flash=flash, ring_spikes=ring_spikes))
 
 if __name__ == '__main__':
     want = sys.argv[1:] or list(R)

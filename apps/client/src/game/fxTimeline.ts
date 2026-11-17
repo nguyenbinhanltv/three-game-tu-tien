@@ -303,7 +303,7 @@ export class FxRunner {
       _a.subVectors(end, start);
       if (_a.lengthSq() > 1e-4) baseQ.setFromUnitVectors(AXIS_Z, _a.normalize());
     } else baseQ.setFromAxisAngle(UP, yaw);
-    const rotQ = new THREE.Quaternion().setFromEuler(_e.set((ev.rot?.[0] ?? 0) * DEG, (ev.rot?.[1] ?? 0) * DEG, (ev.rot?.[2] ?? 0) * DEG, 'XYZ'));
+    const rotQ = new THREE.Quaternion().setFromEuler(_e.set((ev.rot?.[0] ?? 0) * DEG, (ev.rot?.[1] ?? 0) * DEG, (ev.rot?.[2] ?? 0) * DEG, 'YXZ'));
     baseQ.multiply(rotQ);
 
     const main = this.v.fx(geo, color, alpha, kind);
