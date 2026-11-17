@@ -325,6 +325,7 @@
             "cut": { "type": "array", "items": { "enum": ["head", "neck", "hand"] } },
             "clampLen": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
             "legBlend": { "type": "number" },
+            "rigidRoot": { "type": "boolean", "description": "mode rig: xương gốc (hông) chỉ dời, không xoay theo thân nền (skin toàn thân có đuôi/vạt gắn hông)." },
             "strayHand": { "type": "number" },
             "strayLeg": { "type": "number" },
             "mode": { "enum": ["rig", "transfer", "rigid"] },

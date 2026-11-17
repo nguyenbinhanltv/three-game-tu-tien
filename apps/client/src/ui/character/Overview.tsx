@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { C, EQUIP_SLOTS, type EquipSlot } from '@dtl/shared';
+import { C, EQUIP_SLOTS, type WearSlot } from '@dtl/shared';
 import { ITEM, itemName, realmName, t } from '@dtl/content';
 import { Game, reqId } from '../../game/engine';
 import { gearQuality, pctText } from '../gear';
@@ -14,8 +14,9 @@ import { itemKindOk } from '../bag/model';
 import { Preview3D } from './Preview3D';
 import { statRows, type StatId } from './stats';
 
-const BOARD_LEFT: EquipSlot[] = ['weapon', 'bracer', 'belt', 'ring', 'head'];
-const BOARD_RIGHT: EquipSlot[] = ['robe', 'boots', 'jade', 'artifact'];
+const BOARD_LEFT: WearSlot[] = ['weapon', 'bracer', 'belt', 'ring', 'head'];
+/** Ô thứ 10 `skin` là ô ngoại hình: đổi hình toàn thân, không có chỉ số. */
+const BOARD_RIGHT: WearSlot[] = ['robe', 'boots', 'jade', 'artifact', 'skin'];
 
 /** Hình bóng 2D dự phòng khi xem trước 3D không dùng được. */
 function Silhouette({ q }: { q: number }) {
@@ -35,14 +36,14 @@ function Silhouette({ q }: { q: number }) {
   );
 }
 
-/** 9 ô trang bị quanh xem trước nhân vật. Thả đồ từ túi lên ô để mặc; chọn ô để xem chi tiết và tháo. */
+/** 9 ô trang bị + ô skin quanh xem trước nhân vật. Thả đồ từ túi lên ô để mặc; chọn ô để xem chi tiết và tháo. */
 function EquipBoard() {
   const equip = useUI((s) => s.equip);
-  const [sel, setSel] = useState<EquipSlot | null>(null);
+  const [sel, setSel] = useState<WearSlot | null>(null);
   const drag = useBagDrag((d) => d.drag);
   const g = Game.current;
   const best = EQUIP_SLOTS.reduce((m, es) => (equip[es] ? Math.max(m, gearQuality(equip[es]!)) : m), -1);
-  const cell = (es: EquipSlot) => (
+  const cell = (es: WearSlot) => (
     <div
       key={es}
       className="equip-cell"

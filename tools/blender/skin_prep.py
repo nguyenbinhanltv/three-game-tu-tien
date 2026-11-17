@@ -348,6 +348,51 @@ if unweighted > len(low.data.vertices) * 0.02:
             groups[bi].add([vi], float(W[vi, bi]), 'REPLACE')
 log(f'trọng số: {REPORT["weights"]}')
 
+# Trọng số lạc: tượng đứng buông tay nên bàn tay chạm (dính liền) hông/đuôi, bone heat lan theo bề mặt sang cả phần đó.
+# Khi dang tay ra tư thế chữ T phần "lạc" bị kéo theo thành màng. Hai bước:
+#   a. đỉnh cách đoạn xương tay xa hơn `stray[<loại xương>]` thì bỏ ảnh hưởng của xương đó; mất hết thì gán xương không-phải-tay gần nhất;
+#   b. xóa mặt bắc cầu: có đỉnh trội theo cẳng tay/bàn tay và đỉnh trội theo hông/chân.
+STRAY = {k: v for k, v in (CFG.get('stray') or {}).items() if not k.startswith('$')}
+if STRAY:
+    me = low.data
+    P = np.array([v.co[:] for v in me.vertices])
+    A = np.array([HEAD[n][:] for n, _, _ in TREE])
+    B = np.array([J[t][:] for _, _, t in TREE])
+    AB = B - A
+    tt = np.clip(np.einsum('vbk,bk->vb', P[:, None, :] - A[None], AB) / np.maximum((AB * AB).sum(1), 1e-9), 0, 1)
+    D = np.linalg.norm(P[:, None, :] - (A[None] + tt[..., None] * AB[None]), axis=2)  # đỉnh × xương
+    kind = [n.replace('Left', '').replace('Right', '') for n, _, _ in TREE]
+    limit = np.array([STRAY.get(k, 1e9) for k in kind])
+    is_arm = np.array([k in ('Shoulder', 'Arm', 'ForeArm', 'Hand') for k in kind])
+    gidx = {low.vertex_groups[PREFIX + n].index: i for i, (n, _, _) in enumerate(TREE)}
+    groups = [low.vertex_groups[PREFIX + n] for n, _, _ in TREE]
+    fixed = 0
+    for v in me.vertices:
+        drop = [g.group for g in v.groups if g.group in gidx and D[v.index, gidx[g.group]] > limit[gidx[g.group]]]
+        if not drop:
+            continue
+        kept = sum(g.weight for g in v.groups if g.group not in drop)
+        for gi in drop:
+            groups[gidx[gi]].remove([v.index])
+        if kept < 0.05:
+            d = np.where(is_arm, 1e9, D[v.index])
+            groups[int(np.argmin(d))].add([v.index], 1.0, 'REPLACE')
+        fixed += 1
+    dom = np.full(len(me.vertices), -1)
+    for v in me.vertices:
+        best = max(((g.weight, gidx[g.group]) for g in v.groups if g.group in gidx), default=(0, -1))
+        dom[v.index] = best[1]
+    fore = np.array([k in ('ForeArm', 'Hand') for k in kind])
+    lower = np.array([k in ('Hips', 'UpLeg', 'Leg', 'Foot', 'ToeBase') for k in kind])
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bridge = [f for f in bm.faces if any(dom[v.index] >= 0 and fore[dom[v.index]] for v in f.verts) and any(dom[v.index] >= 0 and lower[dom[v.index]] for v in f.verts)]
+    bmesh.ops.delete(bm, geom=bridge, context='FACES')
+    bm.to_mesh(me)
+    bm.free()
+    REPORT['stray'] = {'vertsFixed': fixed, 'bridgeFaces': len(bridge)}
+    log(f'trọng số lạc: {REPORT["stray"]}')
+
 # Vùng ép theo xương: đuôi/tóc/sừng không có xương riêng. `w` chạy 0→1 trong dải `blend` tính từ mép hộp theo trục `axis`.
 vg = {g.name: g for g in low.vertex_groups}
 zone_stats = {}

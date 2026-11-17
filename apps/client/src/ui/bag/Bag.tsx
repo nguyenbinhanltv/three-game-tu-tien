@@ -1,6 +1,6 @@
 import { type DragEvent, type MouseEvent, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { C, INV_PAGE, INV_PAGES, INV_SIZE, isEquipSlot, type InvItem, type InvSlot } from '@dtl/shared';
+import { C, INV_PAGE, INV_PAGES, INV_SIZE, isWearSlot, type InvItem, type InvSlot } from '@dtl/shared';
 import { ITEM, itemName, t } from '@dtl/content';
 import { ContentIcon, UiIcon } from '../ContentIcon';
 import { Game, reqId } from '../../game/engine';
@@ -63,7 +63,7 @@ function BagCell({ slot, item, dim, selected, isNew, onSelect, onSplit }: { slot
     e.preventDefault();
     if (!item || !def) return;
     if (def.kind === 'consumable') g?.send(C.USE, { slot, r: reqId() });
-    else if (isEquipSlot(def.kind)) g?.send(C.EQUIP, { slot, r: reqId() });
+    else if (isWearSlot(def.kind)) g?.send(C.EQUIP, { slot, r: reqId() });
   };
   const body = item && def ? <Slot icon={<ContentIcon def={def} />} rarity={gearQuality(item, def)} count={item.n} plus={def.kind === 'consumable' ? undefined : item.plus} selected={selected} size="m" label={itemName(def.id, item.plus)} /> : <Slot empty size="m" />;
   return (
@@ -252,7 +252,7 @@ export function Bag() {
               {t('ui.item.use')}
             </Button>
           )}
-          {isEquipSlot(selDef.kind) && (
+          {isWearSlot(selDef.kind) && (
             <Button size="s" variant="primary" onClick={() => g?.send(C.EQUIP, { slot: sel, r: reqId() })}>
               {t('ui.item.equip')}
             </Button>

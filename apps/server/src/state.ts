@@ -35,6 +35,8 @@ export class PlayerS extends Schema {
   @view() @type('string') sk = '';
   /** Mã phụ kiện hình dáng của đồ bộ (mỗi ô một ký tự, xem `accessoryCode`), '' = không. Chỉ để hiển thị. */
   @view() @type('string') sa = '';
+  /** id vật phẩm skin đang mặc ở ô ngoại hình (ô thứ 10), '' = không. Chỉ để hiển thị: skin không có chỉ số. */
+  @view() @type('string') sn = '';
   /** id pháp bảo phụ đang đeo (P3-8), '' = không. Chỉ để hiển thị. */
   @view() @type('string') art = '';
   /** id công pháp đang tu (chọn giọng động tác của chiêu, K-5), '' = chưa chọn. Chỉ để hiển thị. */

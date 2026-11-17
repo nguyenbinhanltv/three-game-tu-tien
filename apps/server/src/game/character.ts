@@ -15,7 +15,9 @@ import {
   STAT_CAPS,
   type CharView,
   computePlayerStats,
+  COSMETIC_SLOTS,
   EQUIP_SLOTS,
+  WEAR_SLOTS,
   type Equipment,
   type InvItem,
   type InvSlot,
@@ -66,7 +68,8 @@ export class InvDraft {
   constructor(c: Character) {
     this.inv = c.inv.map((s) => (s ? { ...s } : null));
     this.equip = {};
-    for (const k of EQUIP_SLOTS) {
+    // Cả ô ngoại hình (skin): bản nháp ghi đè toàn bộ cột `equip`, bỏ sót là mất món đang mặc.
+    for (const k of WEAR_SLOTS) {
       const e = c.equip[k];
       if (e) this.equip[k] = { ...e };
     }
@@ -548,7 +551,7 @@ export class Character {
 
   equipCount(id: string): number {
     let n = 0;
-    for (const k of EQUIP_SLOTS) if (this.equip[k]?.id === id) n++;
+    for (const k of WEAR_SLOTS) if (this.equip[k]?.id === id) n++;
     return n;
   }
 
@@ -623,6 +626,12 @@ function sanitizeEquip(raw: unknown): Equipment {
     if (inst) it.inst = inst;
     else if (e.inst) console.warn('[load] inst trang bị bị bác, về chỉ số mẫu:', e.id, k);
     out[k] = it;
+  }
+  // Ô ngoại hình: chỉ giữ món còn tồn tại và đúng loại; không có plus/inst (skin không có chỉ số).
+  for (const k of COSMETIC_SLOTS) {
+    const e = (raw as Record<string, InvItem | undefined>)[k];
+    if (e && typeof e.id === 'string' && ITEM.get(e.id)?.kind === k) out[k] = { id: e.id, n: 1 };
+    else if (e) console.warn('[load] bỏ món ở ô ngoại hình không hợp lệ:', e?.id, k);
   }
   return out;
 }

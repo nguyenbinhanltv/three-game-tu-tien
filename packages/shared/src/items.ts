@@ -6,7 +6,7 @@ import { clamp, lerp, mulberry32 } from './noise';
 import { enhanceMul, type BaseStats, playerBaseStats, CRIT_CHANCE, CRIT_MULT } from './formulas';
 import type { EquipSlot, InvItem, StatBlock } from './types';
 import type { RootDef } from './realm';
-import { EQUIP_SLOTS } from './types';
+import { COSMETIC_SLOTS, EQUIP_SLOTS, WEAR_SLOTS, type CosmeticSlot, type WearSlot } from './types';
 import { gemAffixes } from './upgrade';
 import { NO_SET_FX, setFxOf, setStatuses, type SetDef, type SetFx, type SetStatus } from './sets';
 
@@ -429,4 +429,14 @@ export function computePlayerStats(level: number, equipped: EquippedEntry[], roo
 
 export function isEquipSlot(v: unknown): v is EquipSlot {
   return typeof v === 'string' && (EQUIP_SLOTS as string[]).includes(v);
+}
+
+/** Ô ngoại hình (skin): mặc được nhưng không có chỉ số, không nâng cấp. */
+export function isCosmeticSlot(v: unknown): v is CosmeticSlot {
+  return typeof v === 'string' && (COSMETIC_SLOTS as string[]).includes(v);
+}
+
+/** Ô mặc được lên người: ô trang bị có chỉ số hoặc ô ngoại hình. */
+export function isWearSlot(v: unknown): v is WearSlot {
+  return typeof v === 'string' && (WEAR_SLOTS as string[]).includes(v);
 }

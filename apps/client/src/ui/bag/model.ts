@@ -2,7 +2,7 @@
  * Logic thuần của túi đồ (TD-B): lọc hiển thị, chia trang, quyết định khi thả. Không đụng store hay mạng,
  * để test được. Tab và ô tìm CHỈ lọc hiển thị; vị trí thật chỉ đổi bằng MOVE/INV_SORT qua server.
  */
-import { INV_PAGE, INV_PAGES, INV_SIZE, isEquipSlot, itemCategory, type EquipSlot, type InvItem, type InvSlot, type ItemCategory, type ItemDef } from '@dtl/shared';
+import { INV_PAGE, INV_PAGES, INV_SIZE, isWearSlot, itemCategory, type WearSlot, type InvItem, type InvSlot, type ItemCategory, type ItemDef } from '@dtl/shared';
 
 export type BagTab = 'all' | ItemCategory;
 export const BAG_TABS: readonly BagTab[] = ['all', 'gear', 'pill', 'material', 'quest', 'other'];
@@ -71,7 +71,7 @@ export function firstEmptyIn(inv: readonly InvSlot[], page: number): number {
   return -1;
 }
 
-export type DropTarget = { kind: 'cell'; slot: number } | { kind: 'page'; page: number } | { kind: 'equip'; slot: EquipSlot };
+export type DropTarget = { kind: 'cell'; slot: number } | { kind: 'page'; page: number } | { kind: 'equip'; slot: WearSlot };
 
 export type DropCmd =
   | { cmd: 'move'; a: number; b: number }
@@ -89,7 +89,7 @@ export function planDrop(inv: readonly InvSlot[], from: number, target: DropTarg
   if (!src) return { cmd: 'none' };
   if (target.kind === 'equip') {
     const def = defOf(src.id);
-    return def && isEquipSlot(def.kind) && def.kind === target.slot ? { cmd: 'equip', slot: from } : { cmd: 'none', why: 'kind' };
+    return def && isWearSlot(def.kind) && def.kind === target.slot ? { cmd: 'equip', slot: from } : { cmd: 'none', why: 'kind' };
   }
   const to = target.kind === 'cell' ? target.slot : firstEmptyIn(inv, target.page);
   if (to < 0) return { cmd: 'none', why: 'full' };
@@ -123,7 +123,7 @@ export function diffNew(prev: readonly InvSlot[], next: readonly InvSlot[], mark
 }
 
 /** Món `id` mặc được vào ô trang bị `slot` không (để tô sáng ô thả). */
-export function itemKindOk(defOf: (id: string) => ItemDef | undefined, id: string, slot: EquipSlot): boolean {
+export function itemKindOk(defOf: (id: string) => ItemDef | undefined, id: string, slot: WearSlot): boolean {
   const def = defOf(id);
-  return !!def && isEquipSlot(def.kind) && def.kind === slot;
+  return !!def && isWearSlot(def.kind) && def.kind === slot;
 }

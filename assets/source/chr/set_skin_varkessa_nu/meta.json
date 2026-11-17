@@ -22,7 +22,8 @@
       "player": "chr_kiem_tu_nu",
       "mode": "rig",
       "cut": [],
-      "legBlend": 0
+      "legBlend": 0,
+      "rigidRoot": true
     }
   },
   "license": {

@@ -30,14 +30,22 @@ export function jointIndex(bones: readonly { name: string }[]): { exact: Map<str
  * Chỉ số tam giác của lưới nhân vật sau khi bỏ phần áo che: giữ tam giác mà cả ba đỉnh có xương trội thuộc `bodyKeep`.
  * Trả null nếu lưới không có skin hoặc không bỏ được gì (khỏi tạo hình học mới).
  */
-export function dressedIndex(mesh: THREE.SkinnedMesh): THREE.TypedArray | null {
+/**
+ * Skin toàn thân (ô ngoại hình): lưới skin che hết thân nền kể cả đầu và tay; chỉ giữ kiếm nướng sẵn (`dtl_sword`) cho LOD xa
+ * và lúc kiếm riêng chưa nạp.
+ */
+export function skinKeep(key: string): boolean {
+  return key === 'dtl_sword';
+}
+
+export function dressedIndex(mesh: THREE.SkinnedMesh, keep: (key: string) => boolean = bodyKeep): THREE.TypedArray | null {
   const g = mesh.geometry;
   const si = g.getAttribute('skinIndex');
   const sw = g.getAttribute('skinWeight');
   const idx = g.index?.array;
   if (!si || !sw || !idx) return null;
   const bones = mesh.skeleton.bones;
-  const keepJoint = bones.map((b) => bodyKeep(boneKey(b.name)));
+  const keepJoint = bones.map((b) => keep(boneKey(b.name)));
   const keepVertex = new Uint8Array(si.count);
   for (let i = 0; i < si.count; i++) {
     let best = -1;
