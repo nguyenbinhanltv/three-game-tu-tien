@@ -1237,8 +1237,7 @@
   "gm.msg.tier": "bậc {n}",
   "gm.msg.req": "cấp {n}",
   "gm.msg.weapon": "Đã cầm {name} +{plus}.",
-  "gm.msg.find_none": "Không thấy gì khớp (cần ít nhất 2 ký tự)."
-,
+  "gm.msg.find_none": "Không thấy gì khớp (cần ít nhất 2 ký tự).",
   "item.itm_tk_dao_bao.name": "Tinh Khuyết Kiếm Bào",
   "item.itm_tk_dao_bao.desc": "Kiếm bào mực đêm thêu sao tím, viền vàng cổ, vạt xẻ dài, thuộc Tinh Khuyết Kiếm Bào.",
   "item.itm_tk_ho_uyen.name": "Tinh Khuyết Kiếm Uyển",
