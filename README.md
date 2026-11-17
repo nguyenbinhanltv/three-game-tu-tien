@@ -55,7 +55,8 @@ Mở http://localhost:5173, nhập một đạo hiệu (2–14 ký tự) rồi b
 | `pnpm build` | Build client vào `apps/client/dist` |
 | `pnpm start` | Chạy server; nếu đã build thì server phục vụ luôn client ở cổng 2567 |
 | `pnpm typecheck` | Kiểm tra kiểu toàn bộ |
-| `pnpm test` | Test đơn vị (công thức, địa hình, di chuyển) |
+| `pnpm test` | Test đơn vị của mọi gói (vitest); CI chạy lệnh này trên mỗi PR vào `main` |
+| `pnpm test:slow` | Test chậm chạy ffmpeg thật (`audio:test`, vài phút); chạy khi đổi `tools/audio`. `pnpm test:all` chạy cả hai |
 | `pnpm content:check` | Kiểm tra dữ liệu game: id trùng, tham chiếu hỏng, thiếu chuỗi |
 | `pnpm sim:progress` | Ước tính thời gian lên từng cảnh giới |
 | `pnpm bots --count 100 --duration 120` | Bot headless để test tải |

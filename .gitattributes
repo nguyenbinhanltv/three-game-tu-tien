@@ -1,0 +1,40 @@
+# Mọi file văn bản lưu LF trong repo và trong bản checkout (kể cả Windows),
+# để test/snapshot và công cụ sinh file không làm đổi kiểu xuống dòng.
+* text=auto eol=lf
+
+# Script Windows cần CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Nhị phân: không chuyển đổi xuống dòng, không diff dạng văn bản.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.avif binary
+*.ico binary
+*.ktx2 binary
+*.glb binary
+*.bin binary
+*.blend binary
+*.fbx binary
+*.webm binary
+*.mp4 binary
+*.m4a binary
+*.mp3 binary
+*.ogg binary
+*.opus binary
+*.wav binary
+*.mid binary
+*.sf2 binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.db binary
+*.zip binary
+*.pdf binary
+
+# File sinh tự động: gộp lại trong diff của GitHub.
+pnpm-lock.yaml linguist-generated=true

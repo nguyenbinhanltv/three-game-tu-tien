@@ -2,20 +2,44 @@
 //  - sim không báo LỖI nào (mọi ngưỡng cân bằng của sim đạt, kể cả Đan Hỏa Kiếp, kinh tế, TTK);
 //  - dòng `[pace2]`: Trúc Cơ (cấp 16) → độ kiếp Kết Đan cho cả ba công pháp nằm trong 4 giờ ±12%;
 //  - nhịp Ngưng Khí 1 → 15 vẫn 3–4 giờ (không bị chương 2 làm lệch).
-import { spawnSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
+/** Hạn cho một lần chạy sim: ~1 phút lúc máy rảnh, hơn 4 phút khi nhiều worker khác đang chiếm CPU. */
+const SIM_TIMEOUT = 600_000;
+
 describe('nhịp chương 2 + 3 (sim:progress)', () => {
-  const run = spawnSync(process.execPath, ['--import', 'tsx', 'src/sim.ts'], { cwd: root, encoding: 'utf8', timeout: 240_000, maxBuffer: 64 * 1024 * 1024 });
-  const out = run.stdout ?? '';
+  const run: { error?: Error; status: number | null; stderr: string } = { status: null, stderr: '' };
+  let out = '';
+
+  // Chạy không chặn vòng lặp sự kiện (không dùng spawnSync) để tiến trình test vẫn trả lời vitest trong lúc chờ.
+  beforeAll(
+    () =>
+      new Promise<void>((resolve) => {
+        const child = execFile(
+          process.execPath,
+          ['--import', 'tsx', 'src/sim.ts'],
+          { cwd: root, encoding: 'utf8', timeout: SIM_TIMEOUT, maxBuffer: 64 * 1024 * 1024 },
+          (error, stdout, stderr) => {
+            // Mã thoát khác 0 để phép thử `status` báo; chỉ coi là lỗi chạy khi không khởi động được hoặc hết hạn.
+            if (error && (child.exitCode === null || error.killed)) run.error = error;
+            run.status = child.exitCode;
+            run.stderr = stderr ?? '';
+            out = stdout ?? '';
+            resolve();
+          },
+        );
+      }),
+    SIM_TIMEOUT + 30_000,
+  );
 
   it('sim chạy hết, không có dòng LỖI', () => {
     expect(run.error).toBeUndefined();
-    expect(run.stderr ?? '').not.toMatch(/LỖI/);
+    expect(run.stderr).not.toMatch(/LỖI/);
     expect(run.status).toBe(0);
   });
 
@@ -49,4 +73,4 @@ describe('nhịp chương 2 + 3 (sim:progress)', () => {
       expect(v).toBeLessThanOrEqual(4);
     }
   });
-}, 300_000);
+});
