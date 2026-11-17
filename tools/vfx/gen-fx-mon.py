@@ -60,15 +60,15 @@ BOSS['mon_warn'] = [
 BOSS['mon_boom_circle'] = [
     mesh('burst', 0.0, 0.16, at='area', offset=[0, 0.8, 0], scale=4.2, billboard=True, sweep=0.0, tone='accent', tier=0),
     mesh('ripple', 0.1, 0.6, at='area', scale=0.1, scaleTo=1.3, fit='area', sweep=0.4, erodeFrom=0.4, ragged=0.9, tone='rim', alpha=0.85, seed=14, tier=0),
-    mesh('kite', 0.0, 0.6, at='area', offset=[0, 0, 0], rot=[-90, 0, 0], scale=[0.7, 0.7, 6.5], sweep=0.2, erodeFrom=0.45, tone='rim', alpha=0.8, seed=15, tier=1),
+    mesh('kite', 0.0, 0.6, at='area', offset=[0, 0, 0], rot=[-90, 0, 0], scale=[0.5, 0.5, 4.0], sweep=0.2, erodeFrom=0.45, tone='rim', alpha=0.6, seed=15, tier=1),
     decal('crack', 0.04, 6.5, 2.8, at='area', grow=0.16, tone='core', alpha=0.9, yaw=40, tier=1),
     parts('shard', 0.0, 26, 6.5, 0.9, 0.7, 0.16, at='area', offset=[0, 0.3, 0], tone='rim', grav=9, tier=1),
-] + ring(12, 4.4, lambda i, x, z: mesh('spike', round(0.05 + 0.012 * i, 3), 0.75, at='area', offset=[x, 0, z], rot=[-90 if i % 2 == 0 else -75, 0, 0], scale=round(0.75 + 0.12 * (i % 3), 2), sweep=0.2, erodeFrom=0.55, tone='rim' if i % 2 else 'body', seed=80 + i, tier=1 if i % 2 else 0))
+] + ring(6, 3.4, lambda i, x, z: mesh('spike', round(0.05 + 0.02 * i, 3), 0.75, at='area', offset=[x, 0, z], rot=[-90 if i % 2 == 0 else -78, 0, 0], scale=round(0.4 + 0.06 * (i % 2), 2), sweep=0.2, erodeFrom=0.55, tone='body', seed=80 + i, tier=1 if i % 2 else 0))
 
 BOSS['mon_boom_line'] = [
-    mesh('kite', 0.2, 0.6, at='area', offset=[0, 0, 8.0], rot=[-90, 0, 0], scale=[0.6, 0.6, 5.5], sweep=0.2, erodeFrom=0.45, tone='rim', alpha=0.8, seed=16, tier=1),
+    mesh('kite', 0.2, 0.6, at='area', offset=[0, 0, 8.0], rot=[-90, 0, 0], scale=[0.45, 0.45, 3.5], sweep=0.2, erodeFrom=0.45, tone='rim', alpha=0.6, seed=16, tier=1),
     decal('crack', 0.1, 4.6, 2.4, at='area', offset=[0, 0, 8.0], grow=0.2, tone='core', alpha=0.9, tier=1),
-] + [mesh('spike', round(0.06 + 0.04 * i, 3), 0.75, at='area', offset=[1.3 if i % 2 else -1.3, 0, round(1.2 + i * 1.0, 2)], rot=[-85, 0, 0], scale=round(0.9 + 0.04 * i, 2), sweep=0.2, erodeFrom=0.55, tone='rim', seed=100 + i, tier=0 if i % 2 else 1) for i in range(8)]
+] + [mesh('spike', round(0.06 + 0.06 * i, 3), 0.75, at='area', offset=[1.2 if i % 2 else -1.2, 0, round(1.6 + i * 1.8, 2)], rot=[-85, 0, 0], scale=0.4, sweep=0.2, erodeFrom=0.55, tone='body', seed=100 + i, tier=0) for i in range(4)]
 
 BOSS['mon_boom_cone'] = [
     mesh('crescent', 0.08, 0.34, at='area', offset=[0, 0.35, 0], scale=[11.0, 1.0, 11.0], sweep=0.45, erodeFrom=0.35, ragged=0.85, tone='rim', alpha=0.8, seed=17, tier=1),
@@ -101,7 +101,7 @@ BOSS['mon_death'] = [
     parts('petal', 0.1, 40, 2.6, 0.9, 2.0, 0.22, at='self', tone='rim', grav=-0.7, tier=0),
     parts('dust', 0.0, 60, 2.6, 0.9, 1.8, 0.4, at='self', tone='body', grav=-1.6, tier=1),
     parts('shard', 0.0, 30, 4.5, 0.9, 1.0, 0.22, at='self', tone='accent', grav=7, tier=1),
-] + ring(10, 2.4, lambda i, x, z: mesh('spike', round(0.08 + 0.02 * i, 3), 0.8, at='self', offset=[x, -1.0, z], rot=[-90 if i % 2 else -75, 0, 0], scale=0.9, sweep=0.2, erodeFrom=0.5, tone='rim' if i % 2 else 'body', seed=120 + i, tier=1))
+] + ring(6, 2.4, lambda i, x, z: mesh('spike', round(0.08 + 0.02 * i, 3), 0.8, at='self', offset=[x, -1.0, z], rot=[-90 if i % 2 else -78, 0, 0], scale=0.45, sweep=0.2, erodeFrom=0.5, tone='body', seed=120 + i, tier=1))
 
 
 # 1) Quái bị đánh: chớp nhỏ + tia + mảnh tinh thể theo hệ (rẻ: người chơi đánh liên tục).
@@ -149,7 +149,7 @@ circle = [
     parts('dust', 0.0, 26, 3.0, 0.9, 0.55, 0.22, at='area', offset=[0, 0.2, 0], tone='core', grav=3, tier=1),
     parts('shard', 0.0, 14, 5.0, 0.9, 0.6, 0.12, at='area', offset=[0, 0.3, 0], tone='body', grav=9, tier=0),
 ]
-circle += ring(8, 3.0, lambda i, x, z: mesh('spike', round(0.02 + 0.015 * i, 3), 0.7, at='area', offset=[x, 0, z], rot=[-90 if i % 2 == 0 else -78, 0, 0], scale=round(0.55 + 0.1 * (i % 3), 2), sweep=0.2, erodeFrom=0.55, tone='body', seed=20 + i, tier=0 if i % 2 == 0 else 1))
+circle += ring(8, 3.0, lambda i, x, z: mesh('spike', round(0.02 + 0.015 * i, 3), 0.7, at='area', offset=[x, 0, z], rot=[-90 if i % 2 == 0 else -78, 0, 0], scale=round(0.3 + 0.05 * (i % 3), 2), sweep=0.2, erodeFrom=0.55, tone='body', seed=20 + i, tier=0 if i % 2 == 0 else 1))
 write('mon_boom_circle', circle)
 
 # 6) Nổ vùng chữ nhật (đường): gai tinh thể trồi nối tiếp dọc trục (như ảnh tham khảo 08) + vệt nứt; actor.yaw = hướng vạch, area = gốc. mul = r/8.
@@ -160,7 +160,7 @@ line = [
 ]
 for i in range(8):
     z = round(0.8 + i * 1.0, 2)
-    line.append(mesh('spike', round(0.03 + 0.04 * i, 3), 0.7, at='area', offset=[0.35 if i % 2 else -0.35, 0, z], rot=[-90 if i % 2 == 0 else -80, 0, 0], scale=round(0.55 + 0.05 * i, 2), sweep=0.2, erodeFrom=0.55, tone='body', seed=40 + i, tier=0 if i % 2 == 0 else 1))
+    line.append(mesh('spike', round(0.03 + 0.04 * i, 3), 0.7, at='area', offset=[0.35 if i % 2 else -0.35, 0, z], rot=[-90 if i % 2 == 0 else -80, 0, 0], scale=round(0.3 + 0.03 * i, 2), sweep=0.2, erodeFrom=0.55, tone='body', seed=40 + i, tier=0 if i % 2 == 0 else 1))
     line.append(parts('dust', round(0.03 + 0.04 * i, 3), 3, 1.8, 0.8, 0.5, 0.18, at='area', offset=[0, 0.2, z], tone='core', grav=2, tier=1))
 write('mon_boom_line', line)
 

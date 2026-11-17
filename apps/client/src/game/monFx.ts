@@ -48,6 +48,9 @@ export interface MonFxEnv {
 
 export class MonFx {
   private last = new Map<string, number>();
+  /** Phòng quay (dev, `tools/perf shots:vfx`): bỏ FX/đạn/vùng thật từ server để cảnh quay sạch; lời gọi tổng hợp đặt `bypass`. */
+  lab = false;
+  bypass = false;
   /** Nhật ký dev: `__game.monFx.log`. */
   readonly log: { key: string; id: string; at: number }[] = [];
 
@@ -57,6 +60,7 @@ export class MonFx {
   ) {}
 
   private near(x: number, z: number): boolean {
+    if (this.lab && !this.bypass) return false;
     const c = this.env.camera().position;
     return Math.hypot(x - c.x, z - c.z) <= MON_FX_DIST && this.env.live() < OTHERS_FX_LIVE_MAX;
   }
