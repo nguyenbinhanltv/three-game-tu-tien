@@ -1,0 +1,31 @@
+{
+ "skill": "mon_bolt_muzzle",
+ "palette": "mon_neutral",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.14,
+   "at": "ahead",
+   "scale": 0.9,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 8,
+   "speed": 4.0,
+   "spread": 0.5,
+   "life": 0.3,
+   "size": 0.08,
+   "at": "ahead",
+   "tone": "body",
+   "tier": 0
+  }
+ ]
+}

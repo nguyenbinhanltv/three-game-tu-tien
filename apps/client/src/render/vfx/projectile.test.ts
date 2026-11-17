@@ -66,7 +66,7 @@ describe('đạn đánh xa phía client (D1)', () => {
     const fx = new BoltFx(h);
     fx.spawn(msg(1), 0.2, 0xffa060);
     expect(fx.count).toBe(1);
-    expect(group.children).toHaveLength(3); // lõi, quầng, vòng bóng
+    expect(group.children).toHaveLength(4); // lõi, thân, quầng, vòng bóng
     fx.update(0.3);
     const core = group.children[0];
     expect(core.position.x).toBeCloseTo(VALLEY.x);

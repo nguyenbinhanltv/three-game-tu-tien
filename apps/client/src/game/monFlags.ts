@@ -1,4 +1,4 @@
-import { MF_BURROW, MF_REAL, MF_REFLECT, MF_SENSED, MF_WEAK } from '@dtl/shared';
+import { MF_BURROW, MF_CHANT, MF_REAL, MF_REFLECT, MF_SENSED, MF_WEAK } from '@dtl/shared';
 
 /**
  * Cờ quái mở rộng (E1-E) → hình. Chỉ là lớp trình bày: server giữ trạng thái và phán định (`mf`/`ce` của MonS).
@@ -11,9 +11,9 @@ export interface MonFlagEdge {
   off: number;
 }
 
-/** Cờ vừa bật/tắt giữa hai khung (chỉ xét ba cờ mở rộng); null nếu không đổi. */
+/** Cờ vừa bật/tắt giữa hai khung (ba cờ mở rộng + cờ niệm chú, V5); null nếu không đổi. */
 export function monFlagEdge(prev: number, cur: number): MonFlagEdge | null {
-  const mask = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED;
+  const mask = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED | MF_CHANT;
   const a = prev & mask;
   const b = cur & mask;
   if (a === b) return null;
