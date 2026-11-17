@@ -943,3 +943,13 @@ body > .k-tip {
 .win-host[data-top='1'] .k-head-mark {
   filter: brightness(1.35);
 }
+.credits-list {
+  list-style: none;
+  padding-left: 0;
+}
+.credits-list li {
+  margin-bottom: 8px;
+}
+.credits-title {
+  font-weight: 600;
+}

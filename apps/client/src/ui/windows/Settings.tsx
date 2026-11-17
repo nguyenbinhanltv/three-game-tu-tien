@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { t } from '@dtl/content';
-import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio';
+import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio';
 import { Game } from '../../game/engine';
 import { Button, Divider, PanelWindow, Segmented, Slider } from '../kit';
 import { setReduceMotion, useReduceMotion } from '../ngj';
-import { closePanel, set, useUI } from '../store';
+import { closePanel, openPanel, set, useUI } from '../store';
 
 /** Thanh trượt âm lượng cho master và từng bus; thả tay thì phát thử một âm trên bus đó. */
 function VolumeSlider({ k }: { k: VolumeKey }) {
@@ -28,42 +28,6 @@ function VolumeSlider({ k }: { k: VolumeKey }) {
       }}
       onCommit={preview}
     />
-  );
-}
-
-/** Ghi nguồn nhạc theo manifest (nhạc tự soạn CC0 + soundfont; nếu sau này có nhạc Suno thì kèm link bắt buộc). */
-function MusicCredits() {
-  const [list, setList] = useState<(MusicCredit & { id: string })[] | null>(null);
-  useEffect(() => {
-    let alive = true;
-    void musicCredits().then((l) => alive && setList(l));
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return (
-    <>
-      <Divider label={t('ui.settings.credits')} />
-      {list && list.length > 0 ? (
-        <ul className="credits">
-          {list.map((c) => (
-            <li key={c.id}>
-              {t('ui.settings.credits.line', { title: c.title ?? c.id, by: c.by ?? '?', license: c.license ?? '?' })}
-              {c.url && (
-                <>
-                  {' '}
-                  <a href={c.url} target="_blank" rel="noreferrer noopener">
-                    {t('ui.settings.credits.link')}
-                  </a>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="k-dim">{t('ui.settings.credits.procedural')}</div>
-      )}
-    </>
   );
 }
 
@@ -122,7 +86,10 @@ export function Settings() {
       {VOLUME_KEYS.map((k) => (
         <VolumeSlider key={k} k={k} />
       ))}
-      <MusicCredits />
+      <Divider label={t('ui.settings.credits')} />
+      <div>
+        <Button onClick={() => openPanel('credits')}>{t('ui.settings.credits_open')}</Button>
+      </div>
       <div>
         <Button
           onClick={() => {
