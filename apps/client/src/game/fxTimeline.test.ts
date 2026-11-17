@@ -92,6 +92,36 @@ describe('biến thức theo chiêu', () => {
   });
 });
 
+describe('V3: Hộ pháp + Đan sư', () => {
+  const HP = ['skl_tran_son_an', 'skl_kim_cuong_bat_hoai', 'skl_thiet_quyen_chan_dia', 'skl_kim_chung_tran', 'skl_son_nhac_hoa_than', 'skl_anh_thiet_than', 'skl_thuan_di_ho_the', 'skl_thien_kim_phap_tuong', 'skl_thiet_bich_xung', 'skl_dich_son_xung'];
+  const DS = ['skl_hoi_xuan_quyet', 'skl_hoi_thien_dan_lo', 'skl_moc_linh_tran', 'skl_duoc_vu', 'skl_ngung_dan_ho_the', 'skl_dan_hoa_phong_tran', 'skl_anh_duoc_hoa_than', 'skl_thuan_di_cuu_vien', 'skl_thien_dan_phap_gioi', 'skl_luu_huong_bo'];
+  it('đủ 20 chiêu có timeline, chiêu khác nhau rõ', () => {
+    const sig = [...HP, ...DS].map((id) => {
+      expect(FX_TIMELINE.has(id), id).toBe(true);
+      return JSON.stringify(fxEventsFor(FX_TIMELINE.get(id)!, -1).map((e) => [e.type, (e as { shape?: string }).shape, e.t]));
+    });
+    expect(new Set(sig).size).toBe(sig.length);
+  });
+  it('bảng màu theo nhánh: hổ phách (Hộ pháp), ngọc lục (Đan sư)', () => {
+    expect(paletteOf(SKILL.get('skl_tran_son_an')!.method)).toEqual(paletteOf('bat_dong_kim_than'));
+    expect(paletteOf(SKILL.get('skl_hoi_xuan_quyet')!.method)).toEqual(paletteOf('thanh_moc_dan_kinh'));
+    expect(paletteOf('bat_dong_kim_than').body).not.toBe(paletteOf('thanh_moc_dan_kinh').body);
+  });
+  it('chiêu lướt: hai công pháp cùng `dash` nhưng không giẫm nhau', () => {
+    const keys = ['skl_kiem_anh_bo', 'skl_thiet_bich_xung', 'skl_luu_huong_bo'].map((id) => FX_TIMELINE.get(id)!).map((tl) => `${tl.fxKind}:${tl.method}`);
+    expect(new Set(keys).size).toBe(3);
+  });
+  it('chớp va chạm (burst) < 120 ms và hitstop 40–80 ms ở mọi chiêu', () => {
+    for (const id of [...HP, ...DS]) {
+      const tl = FX_TIMELINE.get(id)!;
+      for (const e of [...tl.events, ...Object.values(tl.variants ?? {}).flat()]) {
+        if (e.type === 'mesh' && e.shape === 'burst') expect(e.dur, id).toBeLessThanOrEqual(0.12);
+        if (e.type === 'hitstop') expect(e.ms, id).toBeLessThanOrEqual(80);
+      }
+    }
+  });
+});
+
 describe('hủy động tác', () => {
   it('hủy trước mốc trúng thì bỏ đòn; sau mốc trúng thì giữ phần đuôi', () => {
     expect(cancelDropsCast(0.1, 0.28)).toBe(true);
