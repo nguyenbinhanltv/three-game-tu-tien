@@ -153,6 +153,8 @@ export interface FxBoltEvent extends FxBase {
   at?: FxAnchor;
   offset?: [number, number, number];
   scale?: number;
+  /** Hệ số bề rộng riêng của thân sét (hào quang/vòng chạm đất không đổi), (0, 6]. */
+  thick?: number;
   tone?: FxTone;
   seed?: number;
 }
@@ -266,6 +268,7 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);
       if (e.type === 'camera' && !(e.pull >= 0 && e.pull <= 0.4 && e.dur > 0 && e.dur <= 4)) errs.push(`${p}: camera pull=${e.pull} dur=${e.dur} ngoài (0–0,4, ≤ 4 s)`);
       if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 4))) errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 4]`);
+      if (e.type === 'bolt' && !(e.thick === undefined || (e.thick > 0 && e.thick <= 6))) errs.push(`${p}: bolt thick=${e.thick} ngoài (0, 6]`);
       if (e.type === 'particles' && !(e.n > 0 && e.n <= 400)) errs.push(`${p}: hạt n=${e.n} ngoài (0, 400]`);
     }
   }

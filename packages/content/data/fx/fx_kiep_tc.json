@@ -157,6 +157,29 @@
    "tier": 0
   },
   {
+   "type": "flash",
+   "t": 0.97,
+   "amount": 0.15,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.95,
+   "r": 0.9,
+   "dur": 3.0,
+   "at": "self",
+   "offset": [
+    0,
+    -1.15,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.9,
+   "tier": 0
+  },
+  {
    "type": "bolt",
    "t": 0.1,
    "at": "self",
@@ -165,19 +188,20 @@
     -1.15,
     0
    ],
-   "scale": 1.2,
+   "scale": 1.0,
    "tone": "body",
    "seed": 30,
-   "tier": 0
+   "tier": 0,
+   "thick": 4.5
   },
   {
    "type": "bolt",
-   "t": 0.32,
+   "t": 0.5,
    "at": "self",
    "offset": [
-    4.4,
+    1.4,
     -1.15,
-    0.5
+    0.6
    ],
    "scale": 0.9,
    "tone": "accent",
@@ -186,17 +210,18 @@
   },
   {
    "type": "bolt",
-   "t": 0.54,
+   "t": 0.95,
    "at": "self",
    "offset": [
-    -4.0,
+    0,
     -1.15,
-    1.6
+    0
    ],
-   "scale": 0.9,
+   "scale": 1.0,
    "tone": "body",
    "seed": 32,
-   "tier": 0
+   "tier": 0,
+   "thick": 4.5
   }
  ]
 }

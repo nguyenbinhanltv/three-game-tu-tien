@@ -8,8 +8,11 @@ def register(R, H):
     def cam(t, pull, dur):
         return {'type': 'camera', 't': t, 'pull': pull, 'dur': dur}
 
-    def bolt(t, at, off, scale, tone, seed, tier=0):
-        return {'type': 'bolt', 't': t, 'at': at, 'offset': off, 'scale': scale, 'tone': tone, 'seed': seed, 'tier': tier}
+    def bolt(t, at, off, scale, tone, seed, tier=0, thick=1):
+        e = {'type': 'bolt', 't': t, 'at': at, 'offset': off, 'scale': scale, 'tone': tone, 'seed': seed, 'tier': tier}
+        if thick != 1:
+            e['thick'] = thick
+        return e
 
     # ---------- Đột phá cảnh giới ----------
     def dotpha(tid, pal, when, r, col_h, halo):
@@ -17,8 +20,8 @@ def register(R, H):
             ev = [
                 decal('rune', -0.2, r, 3.2, at='self', offset=[0, -1.15, 0], grow=0.5, tone='core', alpha=0.95, tier=0),
                 decal('rune', -0.1, r * 0.7, 3.0, at='self', offset=[0, -1.15, 0], grow=0.6, tone='body', alpha=0.6, yaw=17, tier=1),
-                mesh('ripple', 0.0, 1.3, at='self', offset=[0, -1.1, 0], scale=0.3, scaleTo=r * 0.75, sweep=0.4, erodeFrom=0.45, ragged=0.5, tone='core', alpha=0.9, seed=2, tier=0),
-                mesh('ripple', 0.12, 1.1, at='self', offset=[0, -1.0, 0], scale=0.3, scaleTo=r * 0.55, sweep=0.4, erodeFrom=0.45, tone='rim', alpha=0.75, seed=3, tier=1),
+                mesh('ripple', 0.0, 1.3, at='self', offset=[0, -1.1, 0], scale=0.3, scaleTo=min(r * 0.75, 5.5), sweep=0.4, erodeFrom=0.45, ragged=0.5, tone='core', alpha=0.9, seed=2, tier=0),
+                mesh('ripple', 0.12, 1.1, at='self', offset=[0, -1.0, 0], scale=0.3, scaleTo=min(r * 0.55, 4.5), sweep=0.4, erodeFrom=0.45, tone='rim', alpha=0.75, seed=3, tier=1),
                 # Cột sáng có lõi sẫm: hai dải xoắn ngược chiều (lõi sẫm + thân sáng) dựng quanh người.
                 mesh('helix', 0.0, 2.8, at='self', offset=[0, -1.1, 0], rot=[-90, 0, 0], scale=[1.6, 1.6, col_h], sweep=0.3, erodeFrom=0.6, spin=260, follow=True, tone='core', alpha=0.9, seed=4, tier=0),
                 mesh('helix', 0.05, 2.7, at='self', offset=[0, -1.1, 0], rot=[-90, 0, 0], scale=[2.2, 2.2, col_h * 0.85], sweep=0.3, erodeFrom=0.6, spin=-200, follow=True, tone='body', alpha=0.85, seed=5, tier=0),
@@ -61,9 +64,14 @@ def register(R, H):
             ev += [decal('scorch', 0.1, r * 0.4, 5.0, at='self', offset=[0, -1.15, 0], grow=0.1, tone='core', alpha=0.9, tier=0),
                    flash(0.12, 0.2, tier=0),
                    mesh('burst', 0.12, 0.11, at='self', scale=2.4, billboard=True, sweep=0.0, tone='rim', tier=0)]
-            offs = [[0, -1.15, 0], [r * 0.55, -1.15, 0.5], [-r * 0.5, -1.15, r * 0.2], [r * 0.2, -1.15, -r * 0.5]]
-            for i in range(nbolt):
-                ev.append(bolt(round(0.1 + 0.22 * i, 3), 'self', [round(v, 2) for v in offs[i]], 1.2 if i == 0 else 0.9, 'body' if i % 2 == 0 else 'accent', 30 + i, 0))
+            # Hai tia DÀY (lõi trắng gấp ~4 lần cũ) đánh thẳng người ở 0,1 s và 0,95 s (kèm chớp + cháy), hai tia mảnh gần chân ở 0,5 s và 1,4 s: nhịp sét ~1,8 s.
+            ev += [flash(0.97, 0.15, tier=0),
+                   decal('scorch', 0.95, 0.9, 3.0, at='self', offset=[0, -1.15, 0], grow=0.1, tone='core', alpha=0.9, tier=0)]
+            offs = [[0, -1.15, 0], [1.4, -1.15, 0.6], [0, -1.15, 0], [-1.2, -1.15, -0.8]]
+            ts = [0.1, 0.5, 0.95, 1.4]
+            for i in range(min(nbolt, 4)):
+                big = i % 2 == 0
+                ev.append(bolt(ts[i], 'self', offs[i], 1.0 if big else 0.9, 'body' if big else 'accent', 30 + i, 0, thick=4.5 if big else 1))
             tl = {'skill': tid, 'trigger': 'fx', 'fxKind': 'tribstart', 'palette': pal, 'events': ev}
             if when:
                 tl['when'] = when

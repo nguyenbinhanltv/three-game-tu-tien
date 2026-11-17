@@ -54,7 +54,7 @@
     0
    ],
    "scale": 0.3,
-   "scaleTo": 6.75,
+   "scaleTo": 5.5,
    "sweep": 0.4,
    "erodeFrom": 0.45,
    "ragged": 0.5,
@@ -75,7 +75,7 @@
     0
    ],
    "scale": 0.3,
-   "scaleTo": 4.95,
+   "scaleTo": 4.5,
    "sweep": 0.4,
    "erodeFrom": 0.45,
    "tone": "rim",
