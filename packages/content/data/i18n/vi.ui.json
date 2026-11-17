@@ -1060,5 +1060,6 @@
   "ui.credits.mod.shape": "chỉnh hình thể",
   "ui.credits.mod.trim": "cắt, ghép sprite, cân âm lượng",
   "ui.credits.mod.subset": "cắt font (subset)",
-  "ui.credits.mod.render": "dùng để render nhạc tự soạn"
+  "ui.credits.mod.render": "dùng để render nhạc tự soạn",
+  "ui.obj.clone": "Hóa một phân thân thần niệm (phím G)"
 }

@@ -1430,5 +1430,8 @@
   "sys.clone_out": "Thần niệm hóa hình: phân thân theo ngươi {n} giây.",
   "sys.clone_end": "Phân thân thần niệm tan vào thần hải.",
   "sys.clone_broken": "Phân thân gánh đòn thay ngươi đã vỡ tan.",
-  "sys.clone_recall": "Ngươi thu phân thân về."
+  "sys.clone_recall": "Ngươi thu phân thân về.",
+  "quest.s4_thu_niem.name": "Thử Thần Niệm",
+  "quest.s4_thu_niem.desc": "Ngươi đã hóa thần. Mặc Chiếu muốn xem thần niệm của ngươi có đứng vững được một mình không: hóa một phân thân rồi để nó đứng cạnh ngươi.",
+  "quest.s4_thu_niem.done": "Một bóng đứng được cạnh người thật, ấy là thần niệm đã thành hình. Đừng vội mừng: đường phía trước còn dài."
 }

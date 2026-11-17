@@ -773,6 +773,7 @@ export class GameSim {
     },
     heal: (p, n) => this.healPlayer(p, n),
     canAssist: (owner, o) => this.canAssist(owner, o),
+    onCreated: (p) => this.questEvent(p, 'clone', undefined, 1),
     spendMp: (p, n) => {
       if (p.char.mp < n) return false;
       p.char.mp -= n;

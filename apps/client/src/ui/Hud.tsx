@@ -284,6 +284,8 @@ export function objectiveText(o: ObjectiveDef): string {
       return o.target ? t('ui.obj.dungeon_named', { name: t(`dungeon.${o.target}.name`) }) : t('ui.obj.dungeon');
     case 'duel':
       return t('ui.obj.duel');
+    case 'clone':
+      return t('ui.obj.clone');
     case 'meditate':
       return t('ui.obj.meditate');
     case 'touch':
@@ -334,7 +336,7 @@ function QuestTracker() {
               const ok = cur >= o.count;
               // Nhiệm vụ không theo dõi chỉ hiện mục tiêu chưa xong đầu tiên cho gọn.
               if (id !== tracked && (ok || q.objectives.findIndex((x, j) => (prog[j] ?? 0) < x.count) !== i)) return null;
-              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' || o.type === 'enhance' || o.type === 'dungeon' || o.type === 'duel' || o.type === 'touch' || o.type === 'scan' || o.type === 'escort' ? '' : ` ${cur}/${o.count}`;
+              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' || o.type === 'enhance' || o.type === 'dungeon' || o.type === 'duel' || o.type === 'clone' || o.type === 'touch' || o.type === 'scan' || o.type === 'escort' ? '' : ` ${cur}/${o.count}`;
               return (
                 <div key={i} className={'tracker-obj' + (ok ? ' ok' : '')}>
                   {ok ? '✔ ' : '· '}

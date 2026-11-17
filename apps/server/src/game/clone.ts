@@ -59,6 +59,8 @@ export interface CloneHost {
   canAssist(owner: PlayerEnt, o: PlayerEnt): boolean;
   /** Trừ `n` linh lực nếu đủ. */
   spendMp(p: PlayerEnt, n: number): boolean;
+  /** Báo nhiệm vụ: chủ vừa hóa phân thân (mục tiêu `clone`). */
+  onCreated(p: PlayerEnt): void;
 }
 
 interface Clone {
@@ -171,6 +173,7 @@ export class CloneSystem {
     this.h.fx({ t: 'clone_out', src: p.sid, x: c.x, y: this.h.groundAt(c.x, c.z), z: c.z, d: CLONE_LIFE_MS / 1000, s: METHOD.get(method)?.role ?? 'dps' });
     this.h.sys(p, 'sys.clone_out', { n: CLONE_LIFE_MS / 1000 }, 'info');
     this.sendState(p);
+    this.h.onCreated(p);
   }
 
   private end(p: PlayerEnt, c: Clone, why: 'time' | 'recall' | 'drop' | 'broken'): void {

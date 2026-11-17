@@ -557,7 +557,7 @@ export interface SkillDef {
  * nằm trong bán kính quét; cần Kết Đan), `escort` (đưa người đồng hành `target` = id `escorts` của level tới nơi). Cả ba do server quyết định.
  * `enhance` (M-5): món trang bị đạt +count (lấy mức cao nhất, như `level`); `dungeon`: vào Kiếm Trủng; `duel`: hoàn tất một trận tỉ thí.
  */
-export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough' | 'enhance' | 'dungeon' | 'duel' | 'meditate' | 'scan' | 'escort' | 'touch';
+export type ObjectiveType = 'kill' | 'gather' | 'craft' | 'level' | 'talk' | 'fly' | 'breakthrough' | 'enhance' | 'dungeon' | 'duel' | 'meditate' | 'scan' | 'escort' | 'touch' | 'clone';
 
 export interface ObjectiveDef {
   type: ObjectiveType;
