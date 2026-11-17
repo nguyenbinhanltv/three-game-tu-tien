@@ -22,6 +22,16 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   thanh_moc_dan_kinh: { core: 0x06301f, body: 0x23b374, rim: 0x9fe9bd, accent: 0xe4452f, shadow: 0x071c13 },
   // Lôi: tím và trắng.
   loi: { core: 0x3a1670, body: 0x9a63ff, rim: 0xf5eeff, accent: 0xffe27a, shadow: 0x1a0c33 },
+  // ---- Quái (V5): bảng "nguy hiểm", tách khỏi bảng "của ta". Lõi rất sẫm, thân bão hòa theo ngũ hành, viền sáng ấm, điểm nhấn đỏ son/đỏ thẫm
+  // để vạch báo và đòn của quái luôn đọc ra là mối nguy (không lẫn với lam ngọc/lục/hổ phách của người chơi).
+  mon_kim: { core: 0x141b2b, body: 0x7f98bd, rim: 0xf4f9ff, accent: 0xff4a3a, shadow: 0x080b12 },
+  mon_moc: { core: 0x10260f, body: 0x6fbf3a, rim: 0xdff7a8, accent: 0xff4a3a, shadow: 0x08130a },
+  mon_thuy: { core: 0x0a2a55, body: 0x3a8cf0, rim: 0xd6f1ff, accent: 0xff4a3a, shadow: 0x06142b },
+  mon_hoa: { core: 0x4a0d0a, body: 0xff6a1f, rim: 0xffe3a8, accent: 0xff2b2b, shadow: 0x1f0605 },
+  mon_tho: { core: 0x3a2308, body: 0xc98a2e, rim: 0xffe7b0, accent: 0xff4a3a, shadow: 0x1a1004 },
+  mon_neutral: { core: 0x2a1030, body: 0xa04ad8, rim: 0xf3e2ff, accent: 0xff4a3a, shadow: 0x12061a },
+  // Boss: đỏ thẫm ma khí, viền vàng kim cho tương phản cao.
+  mon_boss: { core: 0x2a0410, body: 0xd01f3c, rim: 0xffd7a0, accent: 0xffc23a, shadow: 0x0d0206 },
 };
 
 export const FX_PALETTE_DEFAULT = FX_PALETTE.lac_kiem_quyet;
@@ -34,6 +44,11 @@ export function paletteOf(method: string | undefined): FxPalette {
   if (/dan_su|dansu|moc_dan/.test(method)) return FX_PALETTE.thanh_moc_dan_kinh;
   if (/loi/.test(method)) return FX_PALETTE.loi;
   return FX_PALETTE_DEFAULT;
+}
+
+/** Bảng màu FX quái theo ngũ hành (`MonsterDef.elem`); boss dùng bảng ma khí riêng ở tầng accent, thân vẫn theo hệ ở `monPaletteKey`. */
+export function monPaletteKey(elem: string | undefined): string {
+  return elem && FX_PALETTE['mon_' + elem] ? 'mon_' + elem : 'mon_neutral';
 }
 
 export function toneOf(p: FxPalette, tone: FxTone | undefined): number {

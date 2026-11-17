@@ -89,6 +89,8 @@ export interface FxMeshEvent extends FxBase {
   follow?: boolean;
   /** Nhân kích thước (x, z) với bán kính vùng `r` của chiêu diện rộng (scale thành mét tính theo bán kính). */
   fit?: 'area';
+  /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch (vùng sắp nổ), `dur` trong JSON chỉ là dự phòng. */
+  untilDelay?: boolean;
 }
 
 export interface FxParticleEvent extends FxBase {
@@ -126,6 +128,8 @@ export interface FxDecalEvent extends FxBase {
   alpha?: number;
   /** Góc xoay quanh trục đứng (độ); không có thì theo hướng nhìn + seed. */
   yaw?: number;
+  /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch. */
+  untilDelay?: boolean;
 }
 
 export interface FxTrailEvent extends FxBase {

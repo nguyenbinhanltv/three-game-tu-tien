@@ -99,6 +99,53 @@ async function closeCam(page: Page, dist: number, yawOff = 0.9): Promise<void> {
   await sleep(700);
 }
 
+/** V5: cảnh FX quái. `mon:<loại>[:<id quái>]`: hit | strike | cast | boom_circle | boom_line | boom_cone | bolt | death (kèm mực), phát qua `__game.monFx` (đúng đường client dùng khi nhận tin server). */
+const MON_DEFAULT: Record<string, string> = { hit: 'mon_hoa_van_ho', strike: 'mon_yeu_lang', cast: 'mon_hoa_van_ho', boom_circle: 'elite_cu_nham_vien', boom_line: 'mon_mach_thuong_ho_ve', boom_cone: 'boss_han_giao', bolt: 'mon_hoa_van_ho', death: 'mon_thach_vien', chant: 'boss_han_giao' };
+function parseMon(sk: string): { kind: string; id: string } | null {
+  if (!sk.startsWith('mon:')) return null;
+  const [, kind, id] = sk.split(':');
+  return { kind, id: id ?? MON_DEFAULT[kind] ?? 'mon_soi_xam' };
+}
+
+async function monScene(page: Page, id: string): Promise<void> {
+  const dbg = async (w: string) => args.includes('--debug') && console.log('[dbg-scene]', w, JSON.stringify(await page.evaluate(() => { const g = (window as unknown as G).__game!; return [g.cur.x, g.cur.z, g.view.monsters.size]; })));
+  await dbg('start');
+  await gm(page, 'killall', 900);
+  await sleep(8000);
+  await gm(page, 'heal', 500);
+  await gm(page, 'cd', 500);
+  await dbg('pre-spawn');
+  await gm(page, `spawn ${id} 1`, 2000);
+  await dbg('post-spawn');
+  await page.evaluate(() => (window as unknown as G).__game!.clearTarget());
+}
+
+/** Phát FX quái `kind` lên con quái gần nhất; `slow` để canh nhịp báo trước/nổ theo đồng hồ thật. */
+async function monAct(page: Page, kind: string, slow: number): Promise<void> {
+  // Chuỗi thuần (tsx chèn `__name` vào hàm lồng nhau, trình duyệt không có).
+  await page.evaluate(`(() => {
+    const k = ${JSON.stringify(kind)}, sl = ${slow};
+    const g = window.__game;
+    const mon = [...g.ents.monsters.values()].filter((m) => m.s.hp > 0).sort((a, b) => Math.hypot(a.x - g.cur.x, a.z - g.cur.z) - Math.hypot(b.x - g.cur.x, b.z - g.cur.z))[0];
+    if (!mon) return;
+    const me = g.ents.players.get(g.sid);
+    const F = g.monFx;
+    const yaw = Math.atan2(g.cur.x - mon.x, g.cur.z - mon.z);
+    const kindOf = /thuy|han|yeu_lang|hac/.test(mon.s.t) ? 'frost' : 'fire';
+    const dx = Math.sin(yaw), dz = Math.cos(yaw);
+    // Vùng thử đặt quanh NGƯỜI chơi (không phải quái, vì quái đánh xa đứng ngoài khung): d > 0 = trước người (phía quái), d < 0 = sau người.
+    const at = (d) => ({ x: g.cur.x + dx * d, z: g.cur.z + dz * d });
+    const hz = (sh, r, d, extra) => Object.assign({}, at(d), { r, delay: 1.2, kind: kindOf, src: mon.id, sh, yaw: Math.atan2(-dx, -dz), w: sh === 'rect' ? 3 : 0.6 }, extra || {});
+    if (k === 'hit') { for (let i = 0; i < 4; i++) setTimeout(() => F.hit(mon), (i * 260) / sl); }
+    else if (k === 'strike') { for (let i = 0; i < 2; i++) setTimeout(() => F.strike(mon, me || g.cur), (i * 700) / sl); }
+    else if (k === 'cast') F.cast(mon);
+    else if (k === 'bolt') { F.bolt(kindOf, mon.x, mon.y + 1, mon.z, yaw, false); setTimeout(() => F.bolt(kindOf, g.cur.x, g.cur.y + 0.8, g.cur.z, 0, true), 700 / sl); }
+    else if (k === 'boom_circle') { const h = hz(undefined, 4.5, 0); F.warn(h, mon); setTimeout(() => F.boom(h, mon), (h.delay * 1000) / sl); }
+    else if (k === 'boom_line') { const h = hz('rect', 10, 3, { mv: 'line' }); setTimeout(() => F.boom(h, mon), 300 / sl); }
+    else if (k === 'boom_cone') { const h = hz('cone', 12, 3); setTimeout(() => F.boom(h, mon), 300 / sl); }
+  })()`);
+}
+
 async function clearIntro(page: Page): Promise<void> {
   const until = Date.now() + 40_000;
   while (Date.now() < until) {
@@ -228,9 +275,9 @@ async function main(): Promise<void> {
         await ctx.addInitScript({ content: `localStorage.setItem('dtl.quality','high');localStorage.setItem('dtl.controls','strafe');localStorage.setItem('dtl.look',JSON.stringify({g:'${g}',dye:'attire_sect'}));` });
         const page = await ctx.newPage();
         const name = `V1${g}${pass[0]}${String(Date.now() % 10000)}`;
-        page.on('pageerror', (e) => errors.push(`${name} pageerror: ${e.message}`));
+        page.on('pageerror', (e) => errors.push(`${name} pageerror: ${e.message} ${(e.stack ?? '').slice(0, 600)}`));
         page.on('console', (m) => m.type() === 'error' && errors.push(`${name}: ${m.text().slice(0, 300)}`));
-        await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}&quiet=1&fxq=${FXQ}${opt('--query', '')}${OLD ? '&fxtl=0' : ''}${pass === 'slow' ? '&slowmo=' + SLOW : ''}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+        await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}&quiet=1&fxq=${FXQ}${opt('--query', '')}${OLD ? '&fxtl=0&monfx=0' : ''}${pass === 'slow' ? '&slowmo=' + SLOW : ''}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
         await page.waitForFunction(() => {
           const w = (window as unknown as G).__game;
           return !!w && w.frames > 30 && !!w.me?.();
@@ -296,15 +343,20 @@ async function main(): Promise<void> {
             if (LEVEL >= 16) await gm(page, 'skills max', 1500);
             curMethod = want;
           }
-          await scene(page);
+          const mon = parseMon(sk);
+          if (mon) await monScene(page, mon.id);
+          else await scene(page);
           // Pháp tướng cần camera xa phía sau: đứng ở chỗ trống giữa sân (không có cột/cổng chắn camera).
           if (PHAP.test(sk)) { await gm(page, 'tp 2048 2150', 1500); if (!/kim_cuong|hoi_thien/.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500); else await gm(page, 'killall', 900); }
           if (/van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/.test(sk)) await gm(page, 'charge', 900);
-          await closeCam(page, WIDE.test(sk) ? Number(opt('--wide', '9.5')) : DIST, PHAP.test(sk) ? Math.PI + 0.15 : 0.9);
+          await closeCam(page, mon ? Number(opt('--mon-dist', mon.kind === 'boom_circle' ? '13' : mon.kind === 'cast' || mon.kind === 'bolt' ? '15' : '10')) : WIDE.test(sk) ? Number(opt('--wide', '9.5')) : DIST, PHAP.test(sk) ? Math.PI + 0.15 : mon ? 0.3 : 0.9);
           if (WIDE.test(sk)) await page.evaluate((pt) => { (window as unknown as G).__game!.camPitch = pt; }, PHAP.test(sk) ? 0.2 : 0.3);
+          if (mon && args.includes('--debug')) console.log('[dbg-cam]', JSON.stringify(await page.evaluate(() => { const g = (window as unknown as G).__game!; return { cam: [g.camera.position.x, g.camera.position.y, g.camera.position.z], cur: [g.cur.x, g.cur.y, g.cur.z, g.cur.yaw], cy: g.camYaw, cd: g.camDist, cdc: g.camDistCur, n: g.view.monsters.size }; })));
           const combo = sk === 'skl_phi_kiem';
-          const span = combo ? 3000 : SPAN[sk] ?? Number(opt('--span', '1700'));
+          const span = combo ? 3000 : SPAN[sk] ?? (mon ? (mon.kind === 'boom_circle' ? 2600 : mon.kind === 'death' || mon.kind === 'chant' ? 2400 : 1600) : Number(opt('--span', '1700')));
           const act = async () => {
+            if (mon && mon.kind === 'death') return gm(page, 'killall', 0);
+            if (mon) return monAct(page, mon.kind, slow);
             if (!combo) return press(sk);
             // Combo 3 đòn: bấm theo nhịp game (đồng hồ thật = game / slow), 0,55 s game giữa các đòn.
             for (let k = 0; k < 3; k++) {
@@ -320,8 +372,9 @@ async function main(): Promise<void> {
             const q = (a: number[], f: number) => [...a].sort((x, y) => x - y)[Math.floor((a.length - 1) * f)];
             console.log(`[perf] ${sk} ${pass} ${OLD ? 'cu' : 'moi'}: draw p50/max ${q(p.dc, 0.5)}/${Math.max(...p.dc)}, tam giác p50/max ${q(p.tri, 0.5)}/${Math.max(...p.tri)}, khung ms p50/p95 ${q(p.ms, 0.5).toFixed(1)}/${q(p.ms, 0.95).toFixed(1)}`);
           }
+          if (mon && args.includes('--debug')) console.log('[dbg-mon]', sk, JSON.stringify(await page.evaluate(() => { const g = (window as unknown as G).__game!; return { log: g.monFx.log.map((x: { key: string }) => x.key), rlog: g.skillFx.runner.log.slice(-12).map((x: { skill: string; type: string }) => x.skill + ':' + x.type), live: g.vfx.pool.live }; })));
           if (args.includes('--debug')) console.log('[dbg]', sk, JSON.stringify(await page.evaluate(() => [(window as unknown as { __fxMsgs: string[] }).__fxMsgs, (window as unknown as G).__game!.skillFx.runner.log.map((x: { type: string }) => x.type)])));
-          const tag = `${g === 'm' ? 'nam' : 'nu'}-${sk.replace('skl_', '')}${OLD ? '-cu' : ''}`;
+          const tag = `${g === 'm' ? 'nam' : 'nu'}-${sk.replace('skl_', '').replace(/:/g, '_')}${OLD ? '-cu' : ''}`;
           if (!SHEET_ONLY) {
             const ok = encodeWebm(r.frames, r.t0, path.join(OUT, `${tag}-${pass === 'slow' ? 'cham' : 'that'}.webm`));
             console.log(`[shots-vfx] webm ${tag}-${pass}: ${ok ? 'ok' : 'lỗi'} (${r.frames.length} khung)`);

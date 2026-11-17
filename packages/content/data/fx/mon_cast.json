@@ -1,0 +1,107 @@
+{
+ "skill": "mon_cast",
+ "palette": "mon_neutral",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 2.6,
+   "dur": 1.5,
+   "at": "self",
+   "grow": 0.3,
+   "tone": "accent",
+   "alpha": 1.0,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.1,
+   "r": 1.6,
+   "dur": 1.4,
+   "at": "self",
+   "grow": 0.3,
+   "tone": "body",
+   "alpha": 0.9,
+   "yaw": 30,
+   "tier": 1,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "scale": 0.5,
+   "scaleTo": 2.2,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 2,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.3,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "scale": 0.4,
+   "scaleTo": 1.6,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "ragged": 0.8,
+   "tone": "accent",
+   "alpha": 0.85,
+   "seed": 8,
+   "tier": 1,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 28,
+   "speed": 2.6,
+   "spread": 1.0,
+   "life": 0.8,
+   "size": 0.14,
+   "at": "self",
+   "tone": "rim",
+   "inward": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.1,
+   "n": 14,
+   "speed": 2.2,
+   "spread": 1.0,
+   "life": 0.9,
+   "size": 0.26,
+   "at": "self",
+   "tone": "body",
+   "inward": true,
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}

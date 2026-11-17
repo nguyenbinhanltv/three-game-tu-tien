@@ -1,0 +1,395 @@
+{
+ "skill": "mon_boom_line",
+ "palette": "mon_neutral",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.1,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0.6
+   ],
+   "scale": 1.4,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "crack",
+   "t": 0.04,
+   "r": 4.0,
+   "dur": 2.0,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    4.0
+   ],
+   "grow": 0.18,
+   "tone": "accent",
+   "alpha": 0.9,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.0,
+   "n": 18,
+   "speed": 5.0,
+   "spread": 0.4,
+   "life": 0.6,
+   "size": 0.12,
+   "at": "area",
+   "offset": [
+    0,
+    0.3,
+    1.0
+   ],
+   "tone": "body",
+   "grav": 9,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.03,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    -0.35,
+    0,
+    0.8
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.55,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "seed": 40,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.03,
+   "n": 3,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 0.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    0.8
+   ],
+   "tone": "core",
+   "grav": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.07,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    0.35,
+    0,
+    1.8
+   ],
+   "rot": [
+    -80,
+    0,
+    0
+   ],
+   "scale": 0.6,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "seed": 41,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.07,
+   "n": 3,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 0.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    1.8
+   ],
+   "tone": "core",
+   "grav": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.11,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    -0.35,
+    0,
+    2.8
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.65,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "seed": 42,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.11,
+   "n": 3,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 0.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    2.8
+   ],
+   "tone": "core",
+   "grav": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.15,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    0.35,
+    0,
+    3.8
+   ],
+   "rot": [
+    -80,
+    0,
+    0
+   ],
+   "scale": 0.7,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "seed": 43,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.15,
+   "n": 3,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 0.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    3.8
+   ],
+   "tone": "core",
+   "grav": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.19,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    -0.35,
+    0,
+    4.8
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.75,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "seed": 44,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.19,
+   "n": 3,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 0.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    4.8
+   ],
+   "tone": "core",
+   "grav": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.23,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    0.35,
+    0,
+    5.8
+   ],
+   "rot": [
+    -80,
+    0,
+    0
+   ],
+   "scale": 0.8,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "seed": 45,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.23,
+   "n": 3,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 0.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    5.8
+   ],
+   "tone": "core",
+   "grav": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.27,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    -0.35,
+    0,
+    6.8
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.85,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "seed": 46,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.27,
+   "n": 3,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 0.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    6.8
+   ],
+   "tone": "core",
+   "grav": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.31,
+   "dur": 0.7,
+   "at": "area",
+   "offset": [
+    0.35,
+    0,
+    7.8
+   ],
+   "rot": [
+    -80,
+    0,
+    0
+   ],
+   "scale": 0.9,
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "body",
+   "seed": 47,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.31,
+   "n": 3,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 0.5,
+   "size": 0.18,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    7.8
+   ],
+   "tone": "core",
+   "grav": 2,
+   "tier": 1
+  }
+ ]
+}

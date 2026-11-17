@@ -60,6 +60,7 @@ import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
 import { SkillFx, fxTriggered, replacedFx } from './skillFx';
+import { MonFx, MONFX_ON } from './monFx';
 import { variantFor } from './fxTimeline';
 import { fxQuality, hitStopOn, setFxQuality, setHitStopOn } from './fxSettings';
 import type { FxQuality } from '@dtl/shared';
@@ -285,6 +286,9 @@ export class Game {
   vfx!: Vfx;
   /** VFX ba pha theo sự kiện chiêu + vệt kiếm + linh quang hộ thể (K-6). */
   skillFx: SkillFx | null = null;
+  /** Hiệu ứng quái/tinh anh/boss (V5). */
+  monFx: MonFx | null = null;
+  private boltKinds = new Map<number, string>();
   /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
   hazardLog?: { k: string; mv?: string; sh: string; src: string; boss: boolean; t: string; x?: number; z?: number; r?: number; yaw?: number; w?: number; big?: boolean; px?: number; pz?: number }[];
   dmg!: DamageNumbers;
@@ -573,12 +577,18 @@ export class Game {
         if (Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) < 90) telegraph(this.vfx, m, this.isBossSrc(m.src));
       }
       else if (m.mv === 'pool') this.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
-      else this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src), m.hot);
+      else {
+        const hsrc = m.src ? this.ents?.monsters.get(m.src) : undefined;
+        this.monFx?.warn(m, hsrc);
+        this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src), m.hot, MONFX_ON && !!hsrc && m.mv !== 'pull');
+      }
       // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
       if (m.src) this.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
       // Vòng kéo (Nuốt) và vũng độc không nổ: không âm nện/rung màn hình.
       if (m.mv === 'pull' || m.mv === 'pool') return;
       const vol = this.volumeAt(m.x, m.z);
+      const bsrc = m.src ? this.ents?.monsters.get(m.src) : undefined;
+      if (bsrc) setTimeout(() => (this.disposed ? 0 : this.monFx?.boom(m, this.ents?.monsters.get(m.src ?? '') ?? bsrc)), m.delay * 1000);
       setTimeout(() => {
         sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
         this.shakeForHazard(m);
@@ -588,10 +598,15 @@ export class Game {
       // Đạn của quái (D1): chỉ vẽ, server phán định trúng. Bù độ trễ bằng giờ server lúc bắn.
       if (!this.vfx || Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > BOLT_VIEW_DIST) return;
       this.vfx.bolts.spawn(m, boltAge(m, Date.now() + this.timeOffset), HAZARD_COLORS[m.kind] ?? HAZARD_COLORS.fire);
+      this.monFx?.bolt(m.kind, m.x, groundAt(m.x, m.z), m.z, m.yaw, false);
+      this.boltKinds.set(m.id, m.kind);
+      if (this.boltKinds.size > 64) this.boltKinds.delete(this.boltKinds.keys().next().value as number);
       sfx('sword', this.volumeAt(m.x, m.z) * 0.45, m);
     });
     room.onMessage(S.BOLT_END, (m: BoltEndMsg) => {
       this.vfx?.bolts.end(m.id, m.x, m.z, !!m.hit);
+      this.monFx?.bolt(this.boltKinds.get(m.id) ?? 'fire', m.x, groundAt(m.x, m.z) + 0.8, m.z, 0, true);
+      this.boltKinds.delete(m.id);
       if (m.hit) sfx('impact', m.hit === this.sid ? 0.8 : this.volumeAt(m.x, m.z) * 0.5, m);
     });
     room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, m.c === 'party' ? 'party' : 'chat', m.from));
@@ -860,6 +875,7 @@ export class Game {
         },
       },
     });
+    this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.vfx.particles.setQuality(get().quality);
     this.buildLevelB(this.initLevel, q);
     this.ambient = new AmbientParticles(this.vfx.particles);
@@ -1819,6 +1835,7 @@ export class Game {
     // Thể thật của Kính Nguyệt Chân Quân (E3-M): vết ngọc lam suốt trận; thần thức soi ra thì vòng vàng tới `ce`.
     if (e.on & MF_REAL) v.castSigil(pos, 3600, MON_AURA_REAL.color, MON_AURA_REAL.radius, () => ((this.view.monsters.get(id)?.mf ?? 0) & MF_REAL) !== 0 && (this.view.monsters.get(id)?.hp ?? 0) > 0);
     if (e.on & MF_SENSED) v.castSigil(pos, left, MON_AURA_SENSED.color, MON_AURA_SENSED.radius, () => ((this.view.monsters.get(id)?.mf ?? 0) & MF_SENSED) !== 0);
+    if (e.on & MF_CHANT) this.monFx?.cast(m);
     if ((e.on | e.off) & MF_BURROW) {
       _v2.set(m.x, m.y + 0.4, m.z);
       v.burst(_v2, MON_BURROW_DIRT, Math.min(3, 1 + m.model.height * 0.5), 0.4);
@@ -1829,6 +1846,7 @@ export class Game {
     const v = this.vfx;
     if (!v || Math.hypot(m.x - this.renderPos.x, m.z - this.renderPos.z) > 70) return;
     const h = m.model.height;
+    this.monFx?.death(m);
     const size = Math.min(2.4, Math.max(0.8, h / 1.6));
     _v2.set(m.x, m.y + h * 0.5, m.z);
     v.burst(_v2, 0xdce6df, 0.9 * size, 0.3);
@@ -2484,6 +2502,16 @@ export class Game {
     if (mine && !m.heal && !this.targetId && m.src && this.view.monsters.has(m.src)) this.setTarget(m.src, 'mon');
     const foe = !m.heal && (mine || byMe) ? this.ents.monsters.get((mine ? m.src : m.dst) ?? '') : undefined;
     if (foe) this.music.engage(!!foe.model.def.boss);
+    // FX quái (V5): quái bị đánh → tia/mảnh theo hệ; quái đánh trúng người → vệt chém đỏ.
+    if (!m.heal && m.n > 0) {
+      const dm = this.ents.monsters.get(m.dst);
+      if (dm) this.monFx?.hit(dm);
+      else {
+        const sm = m.src ? this.ents.monsters.get(m.src) : undefined;
+        const dp = sm ? this.ents.players.get(m.dst) : undefined;
+        if (sm && dp) this.monFx?.strike(sm, dp);
+      }
+    }
     if (!mine && !byMe) {
       // Sát thương của người khác: chỉ hiện khi ở gần.
       if (_v.distanceTo(this.renderPos) > 45) return;
@@ -3751,6 +3779,7 @@ export class Game {
     this.ents?.dispose();
     this.skillFx?.dispose();
     this.skillFx = null;
+    this.monFx = null;
     this.vfx?.dispose();
     this.terrain?.dispose();
     this.ground?.dispose();
