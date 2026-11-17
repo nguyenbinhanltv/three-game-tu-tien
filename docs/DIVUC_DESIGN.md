@@ -2,7 +2,7 @@
 
 Bản 1 · 2026-11-18 · nối tiếp `docs/EXPANSION_DESIGN.md` (chương 2–4), cùng khuôn mục. Đi kèm `docs/art-bible.md` (bảng màu, điều cấm) và `assets/LICENSES.md` (ghi công).
 
-Đây là tài liệu **thiết kế**, không đổi code game. Mọi con số là điểm khởi đầu cho `pnpm sim:progress` và `fight:check`; mọi tên mới (đánh dấu †) phải vào `glossary.json` và qua `lore-keeper` trước khi vào i18n (mục 13, 14). Những điều **chưa chốt** gom ở mục 15.
+Đây là tài liệu **thiết kế**, không đổi code game. Mọi con số là điểm khởi đầu cho `pnpm sim:progress` và `fight:check`; mọi tên mới (đánh dấu †) phải vào `glossary.json` và qua `lore-keeper` trước khi vào i18n (mục 13, 14). Mười hai quyết định ở mục 15 đã được người dùng **chốt ngày 2026-11-18** (tất cả theo đề xuất).
 
 Nguồn quyết định (người dùng, 2026-11-18): hướng **A "Dị Vực xâm lấn"**: giữ bản sắc tiên hiệp; phương Tây chỉ xuất hiện như **thế lực từ giới khác** tràn vào Huyền Linh Giới; nối từ kết chương 4 ("mạch chảy trở lại nhưng về hướng bắc, nơi chưa ai đặt chân", `EXPANSION_DESIGN.md` mục 1.2). Asset lấy từ 18 model CC BY 4.0 trong `../dtl-asset-source/assets-online/` (mục 6.4); hai file `jett_valorant…` và `kafka_honkai_star_rail…` **loại hẳn** (nhân vật của Riot/HoYoverse, vi phạm điều cấm 10 của art bible dù trang tải ghi CC BY).
 
@@ -12,7 +12,7 @@ Nguồn quyết định (người dùng, 2026-11-18): hướng **A "Dị Vực x
 
 | | Chương 5 · Bắc Hoang Dị Vực |
 | --- | --- |
-| Chặng | Hóa Thần sơ kỳ → **Anh Biến sơ kỳ** (cấp 28 → 32) *(đề xuất, mục 2)* |
+| Chặng | Hóa Thần sơ kỳ → **Anh Biến sơ kỳ** (cấp 28 → 32) |
 | Thời lượng mục tiêu | 10 giờ (nối nhịp 4 / 6 / 8) |
 | Bản đồ | **Bắc Hoang Tẫn Nguyên**† (~2 km²): nửa nam là hoang nguyên tro lạnh của Huyền Linh Giới, nửa bắc đã bị dị vực nuốt, giữa là **Giới Khích**† (vết nứt giới) |
 | Phó bản | **Luyện Ngục Khích**† (cấp 29+, 6 đợt, boss Tử Quang Dực Chủ) · **Kim Dạ Cung**† (cấp 31+, 6 đợt, boss Kim Dạ Ma Hậu) |
@@ -104,7 +104,7 @@ Không nhân vật dị vực nào nói tên chiêu, không dùng từ phương 
 
 ---
 
-## 2. Thang cảnh giới sau Hóa Thần (đề xuất, chưa chốt)
+## 2. Thang cảnh giới sau Hóa Thần (đã chốt 2026-11-18)
 
 ### 2.1 Cấp
 
@@ -142,7 +142,7 @@ Cấp 28 hiện là trần (`99.999.999`); đổi thành 234.000 không cần mi
 | Hóa Thần trung kỳ (29) | Phân thân thần niệm hồi 90 → 75 s | |
 | Hóa Thần hậu kỳ (30) | **Thần niệm ấn**†: phân thân đứng trên Trấn Giới Bia thì bia sáng gấp đôi tầm (dùng trong bản đồ và kiếp) | Bóng thần niệm rõ hơn một bậc |
 | Hóa Thần đại viên mãn (31) | Đủ điều kiện Thực Nhật Kiếp | |
-| **Anh Biến sơ kỳ (32)** | **Anh biến**† (đề xuất, phím giữ nguyên `X`): nguyên anh xuất khiếu không còn chỉ thám thính, mà **đánh được** trong 12 s (dùng thanh chiêu của chủ ở 60% sát thương, thân xác đứng yên, nguyên anh chết thì chủ về thân còn 30% khí huyết; hồi 120 s) | Nguyên anh hiện rõ mặt người chơi, cỡ 60% thân |
+| **Anh Biến sơ kỳ (32)** | **Anh biến**† (đã chốt, phím giữ nguyên `X`): nguyên anh xuất khiếu không còn chỉ thám thính, mà **đánh được** trong 12 s (dùng thanh chiêu của chủ ở 60% sát thương, thân xác đứng yên, nguyên anh chết thì chủ về thân còn 30% khí huyết; hồi 120 s) | Nguyên anh hiện rõ mặt người chơi, cỡ 60% thân |
 
 Lý do chọn: dùng lại `SoulSystem` (E3-K) và thực thể phụ có chủ của phân thân (E4-K), không cần AI mới. Phương án "lĩnh vực mượn thế trời đất" (đã để dành ở `EXPANSION_DESIGN.md` 2.5) vẫn là lựa chọn thay thế, mục 15.
 
@@ -152,6 +152,12 @@ Lý do chọn: dùng lại `SoulSystem` (E3-K) và thực thể phụ có chủ 
 
 Khung `tribulations.json` + `tribmech.ts` như bốn kiếp trước; kiếp `anh_bien`, `enabled:false` tới khi làm.
 
+**Nơi diễn ra**: room riêng `tribulation` như Nguyên Anh và Hóa Thần (không chạy ở room thế giới `world-bac_hoang`: kiếp có boss và năm bia, không được để người ngoài tổ đội chen vào hay bị quái bản đồ kéo tới). Nhưng **không dùng level `do_kiep` chung**: kiếp này cần bố cục cố định, nên thêm một level kiếp riêng **`do_kiep_bac_hoang`** (`LevelDef.tribulation`, `returnLevel: bac_hoang`): sân tròn dựng lại đỉnh Trấn Giới Đài, khe Giới Khích ở mép bắc, **năm Trấn Giới Bia ở vị trí cố định** (ngũ giác bán kính 16 m quanh tâm sân; tọa độ nằm trong pha 1 của `tribulations.json`, trường `steles`), mood `rift`. Việc kéo theo:
+
+- `tribulations.json` thêm trường **`level`** cho từng kiếp (mặc định `do_kiep`; `anh_bien` ghi `do_kiep_bac_hoang`); `GameRoom.enterTribulationRoom` và `TribulationRoom` đọc level từ kiếp thay vì hằng số; `content:check` kiểm level tồn tại và có `tribulation`.
+- Điều kiện bắt đầu: người độ kiếp đứng trong 12 m quanh tâm Trấn Giới Đài ở `bac_hoang` (về truyện: kiếp diễn ra ngay trên vết nứt); vé và hộ pháp như E1-F.
+- **Bia trong kiếp là thực thể của room kiếp** (trạng thái "đầy 0..5/5" thuộc `TribSystem`, sinh khi kiếp bắt đầu, mất khi room đóng). Chúng **không dùng chung** trạng thái với năm bia 20 phút của room thế giới (mục 4.3): hai hệ khác id, khác vòng đời, khác tin nhắn (`FxMsg` của kiếp so với `S.STELES`). Thắp bia ngoài bản đồ không giúp gì trong kiếp, và ngược lại.
+
 | Pha | Giây | Cơ chế | Móc `mechanic` |
 | --- | --- | --- | --- |
 | 1. Lôi hàn khe | 0–25 | Thiên lôi nhắm người độ kiếp; **mỗi tia rơi trong 4 m quanh một Trấn Giới Bia thì bia đầy thêm 1/5**. Người chơi phải **dẫn sét** tới đủ năm bia (đứng cạnh bia lúc tia rơi, rồi né) | `dan_loi` (mới) |
@@ -160,7 +166,7 @@ Khung `tribulations.json` + `tribmech.ts` như bốn kiếp trước; kiếp `an
 
 Thành công: Anh Biến sơ kỳ (cấp 32), khe khép, thẻ chương `ascend_ab`, kết chương 5. Thất bại: như các kiếp trước (mất 15% tu vi cấp, hoàn vật phẩm nếu qua pha 2). Vật phẩm: **Biến Anh Lộ**† (chế ở Tố Tâm; nguyên liệu rơi từ hai boss phó bản).
 
-Một mình vẫn qua được: ba bia là đủ, Tịnh Quang luôn có mặt. Việc cho `netcode-reviewer`: trạng thái bia và boss kiếp chỉ server giữ; tia "đánh cả boss" đi qua `Hazard` như mọi vùng nổ.
+Một mình vẫn qua được: ba bia là đủ, Tịnh Quang luôn có mặt. Việc cho `netcode-reviewer`: trạng thái bia của kiếp và boss kiếp chỉ server (room kiếp) giữ; tia "đánh cả boss" đi qua `Hazard` như mọi vùng nổ.
 
 ---
 
@@ -176,9 +182,9 @@ Quy ước chung như `EXPANSION_DESIGN.md` mục 4: một `LevelDef` (`levels/b
 | **Tẫn Nguyên**† (đồng tro, bên này) | (+300, +260), r 210 | 28 | Liệt Hỏa Ma Ngưu | Hôi Giác Cự Thú ×2 | **Tắt Mạch Khẩu**† (chỗ mạch ngọc lam chui xuống tro rồi tắt) | `wild_ash` (mới) |
 | **Khô Lộc Lâm**† (rừng chết, bên này) | (−320, +220), r 200 | 28–29 | U Ảnh Cốt Lộc, Liệt Hỏa Ma Ngưu | Triền Bố Châm Bà ×2 | **Mạch Nhãn Tàn**† (ba mắt mạch còn sống, có bướm mạch) | `wild_ash` |
 | **Bậc Khích**† (thềm vết nứt) | (0, −40), r 180 | 29 | U Ảnh Cốt Lộc, Cốt Giác Trọng Kiếm Vệ | Hôi Giác Cự Thú ×1, Huyết Giác Ma Tướng ×1 | **Giới Khích** (khe sáng tím dọc trời, thấy từ trạm); **Tam Thủ Ngục Khuyển** ở (0, −90) | `boss_nguc_khuyen` |
-| **Luyện Ngục Bình**† (bên kia, đồng than hồng) | (+340, −330), r 210 | 29–30 | Cốt Giác Trọng Kiếm Vệ, Liệt Hỏa Ma Ngưu | Huyết Giác Ma Tướng ×2 | Cổng **Luyện Ngục Khích** (phó bản 1); Trấn Giới Bia 1, 2 | `wild_rift` (mới) |
-| **Kim Dạ Ngoại Uyển**† (bên kia, vườn vàng chết) | (−340, −340), r 210 | 30–31 | Cốt Giác Trọng Kiếm Vệ, U Ảnh Cốt Lộc | Triền Bố Châm Bà ×1, Ngục Luyện Cự Khôi ×2 | Cổng **Kim Dạ Cung** (phó bản 2); Trấn Giới Bia 3, 4 | `wild_rift` |
-| **Trấn Giới Đài**† (đỉnh bắc) | (0, −600), r 170 | 31 | Cốt Giác Trọng Kiếm Vệ | Huyết Giác Ma Tướng ×1, Ngục Luyện Cự Khôi ×1 | Trấn Giới Bia 5; **Thủ Khích Đọa Dực** ở (0, −650); sân Thực Nhật Kiếp | `boss_thu_khich` |
+| **Luyện Ngục Bình**† (bên kia, đồng than hồng) | (+340, −330), r 210 | 29–30 | Cốt Giác Trọng Kiếm Vệ, Liệt Hỏa Ma Ngưu | Huyết Giác Ma Tướng ×2 | Cổng **Luyện Ngục Khích** (phó bản 1); Trấn Giới Bia 1, 2; trận `bh_tp_luyen_nguc` | `wild_rift` (mới) |
+| **Kim Dạ Ngoại Uyển**† (bên kia, vườn vàng chết) | (−340, −340), r 210 | 30–31 | Cốt Giác Trọng Kiếm Vệ, U Ảnh Cốt Lộc | Triền Bố Châm Bà ×1, Ngục Luyện Cự Khôi ×2 | Cổng **Kim Dạ Cung** (phó bản 2); Trấn Giới Bia 3, 4; trận `bh_tp_kim_da` | `wild_rift` |
+| **Trấn Giới Đài**† (đỉnh bắc) | (0, −600), r 170 | 31 | Cốt Giác Trọng Kiếm Vệ | Huyết Giác Ma Tướng ×1, Ngục Luyện Cự Khôi ×1 | Trấn Giới Bia 5; **Thủ Khích Đọa Dực** ở (0, −650); tâm đài là **chỗ bắt đầu** Thực Nhật Kiếp (kiếp chạy ở level riêng `do_kiep_bac_hoang`, mục 3) | `boss_thu_khich` |
 
 Cụm: 11 / 11 / 9 / 12 / 12 / 8, vùng nối 5 = 68 cụm ≈ 250 quái thường; 13 tinh anh; 2 boss ngoài trời.
 
@@ -210,7 +216,12 @@ Quy tắc:
 
 ### 4.3 Cơ chế riêng
 
-- **Giới áp**†: trong ba vùng bên kia, linh lực tự hồi −40%, đả tọa không hồi tu vi. Trong 60 m quanh một **Trấn Giới Bia**† đã thắp thì hết giới áp. Bia thắp bằng `touch` (niệm 4 s, bị đánh thì hủy), sáng 20 phút cho cả kênh; cũng là Truyền Tống Trận của vùng (`bh_tp_*`). Server: một hệ số theo vùng trong `sim.ts`, trạng thái bia theo room (không lưu DB).
+- **Giới áp**†: trong ba vùng bên kia, linh lực tự hồi −40%, đả tọa không hồi tu vi. Trong 60 m quanh một **Trấn Giới Bia**† đã thắp thì hết giới áp. Bia thắp bằng `touch` (niệm 4 s, bị đánh thì hủy), sáng 20 phút. Server: một hệ số theo vùng trong `sim.ts`, trạng thái bia theo room (không lưu DB).
+- **Bia và Truyền Tống Trận là hai thứ tách nhau.**
+  - **Trận `bh_tp_*`**: đúng mô hình ba bản đồ trước, **mỗi vùng một trận cố định** (7 trận: `bh_tp_tram` mở sẵn khi nhận `q5_bac_hanh`, `bh_tp_tan_nguyen`, `bh_tp_kho_loc`, `bh_tp_bac_khich`, `bh_tp_luyen_nguc`, `bh_tp_kim_da`, `bh_tp_tran_gioi`), bảng ở `packages/shared/src/teleport.bachoang.ts`. Mở khóa **vĩnh viễn theo nhân vật** khi chạm trong 4 m (`characters.tele`), **luôn dùng được** dù bia sáng hay tắt, giống hệt mọi trận khác. Không sửa `teleport.ts`.
+  - **Bia** (5 cái, chỉ ở ba vùng bắc: Luyện Ngục Bình 2, Kim Dạ Ngoại Uyển 2, Trấn Giới Đài 1): chỉ là cơ chế giới áp. Trạng thái **theo room**, tức **theo kênh**: người ở kênh khác không thấy bia sáng, đổi kênh thì thấy trạng thái của kênh mới; room đóng thì mất. Chạm bia **không** mở khóa trận; mở khóa trận **không** cần thắp bia.
+  - Ở ba vùng bắc, trận đặt cách bia gần nhất 12–18 m (trong vòng 60 m của bia): truyền tống tới lúc bia đang tắt thì người chơi đứng trong giới áp, việc đầu tiên là thắp bia. Ba vùng bên này (Tẫn Nguyên, Khô Lộc Lâm, Bậc Khích) không có bia vì không có giới áp, chỉ có trận.
+  - Nhiệm vụ `touch` Trấn Giới Bia (`q5_qua_khich`, `q5_ngu_bia`) tính theo lần **người chơi tự thắp** (hoặc đứng trong tổ đội của người thắp, trong 20 m), không theo trạng thái bia của kênh, nên bia đang sáng sẵn do người khác thắp vẫn phải chạm lại để tính (chạm bia đang sáng: gia hạn về đủ 20 phút, niệm 4 s như thường).
 - **Tẫn ấn**†: đòn của Đọa Dực và tinh anh dị vực gắn dấu tro (tối đa 5 tầng, mỗi tầng −8% hồi phục nhận vào, 12 s). Gột bằng: đứng trong vòng bia, chiêu hồi của Đan sư (thêm hiệu ứng gột một tầng), hoặc **Tịnh Tẫn Đan**†. Dạy tổ đội cần người gột; chơi đơn thì bám bia.
 - **Bay**: ngự kiếm/ngự không bình thường ở bên này; bên kia trần bay hạ còn 15 m (giới áp), để vách và cổng cung còn nghĩa.
 - **Bướm mạch**† (trang trí, DV-C): đàn bướm chỉ đậu nơi mạch còn sống; ở Bắc Hoang chúng chỉ có quanh Mạch Nhãn Tàn và bia đã thắp. Là dấu chỉ đường không lời.
@@ -368,7 +379,7 @@ Không thêm chiêu thường. Mỗi công pháp một chiêu **cấp 30** (đ�
 
 - **Màn Ghi công** (bắt buộc trước khi asset CC BY đầu tiên vào bản chơi chung): mục 6.3.
 - **Mood theo vùng trong một level**: hiện mood theo level + giờ. Chương 5 cần **trộn mood theo vị trí** (bên này/bên kia vết nứt), nội suy trên 80 m quanh Bậc Khích. Gói DV1-C.
-- **Trạng thái theo room có hạn giờ** (bia đã thắp): cùng kiểu với giờ hồi sinh boss (`S.BOSS_TIMERS`), gửi qua một tin `S.STELES`.
+- **Trạng thái theo room có hạn giờ** (bia đã thắp ở bản đồ): cùng kiểu với giờ hồi sinh boss (`S.BOSS_TIMERS`), gửi qua một tin `S.STELES`; theo kênh, không lưu DB. Tách hẳn khỏi Truyền Tống Trận (mục 4.3) và khỏi bia của Thực Nhật Kiếp (mục 3).
 - **Bướm và sinh vật trang trí**: `game/critters.ts` (DV-C), instanced, không thuộc server.
 
 ---
@@ -376,6 +387,7 @@ Không thêm chiêu thường. Mỗi công pháp một chiêu **cấp 30** (đ�
 ## 10. Ghi chú kỹ thuật
 
 - Không cần nền mới: nhiều level, phó bản theo dữ liệu, kiếp theo dữ liệu, quái mở rộng, `hover`, `mirror.decoys`, `summon`, `drain` đều đã có sau E-1…E-4.
+- Level kiếp theo từng kiếp: trường `level` trong `tribulations.json` (mặc định `do_kiep`), level mới `do_kiep_bac_hoang` (`levels/do_kiep_bac_hoang.json` + `.assets.json`), `enterTribulationRoom`/`TribulationRoom` đọc level từ kiếp (mục 3).
 - Việc mới về server: hệ số giới áp theo vùng, Tẫn ấn (một debuff có tầng, đọc ở `heal`), bia (trạng thái room + `touch`), hai móc kiếp `dan_loi`/`thuc_nhat`, boss "dừng ở 1 máu" (cờ trong `MonsterDef`, không rơi đồ theo đường chết thường mà qua thưởng phó bản).
 - Việc mới về client: mood trộn theo vị trí, khe Giới Khích (một tấm dọc cao 300 m, shader TSL, thấy từ xa), mặt nạ đất ngọc lam quanh bia, bảng màu `rift_*`.
 - Ngân sách: mỗi boss dị vực là một `SkinnedMesh` một vật liệu như boss hiện có; nạp lười theo level. Texture boss 2048² × ~7 con nạp lười ≈ +60 MB GPU lúc đỉnh nếu vào cả hai phó bản trong một phiên: `AssetCache` đã đếm tham chiếu và nhả khi rời level.
@@ -410,9 +422,9 @@ Kích thước như `EXPANSION_DESIGN.md` mục 11 (S ≈ nửa ngày, M ≈ 1�
 
 | Gói | Nội dung | Kích |
 | --- | --- | --- |
-| **DV3-A** | Level Bắc Hoang: địa hình, vùng, cụm, bia, trận, minimap, `map:report` đạt | L |
+| **DV3-A** | Level Bắc Hoang: địa hình, vùng, cụm, vị trí 5 bia, 7 trận `bh_tp_*` (`teleport.bachoang.ts`), minimap, `map:report` đạt | L |
 | **DV3-B** | Quái, tinh anh, hai boss ngoài trời: `monsters.json`, `loot.json`, skin, VFX `mon_*` | L |
-| **DV3-C** | Giới áp, Tẫn ấn, Trấn Giới Bia (server + HUD + mặt nạ đất) | L |
+| **DV3-C** | Giới áp, Tẫn ấn, Trấn Giới Bia của bản đồ (trạng thái theo room/kênh, `S.STELES`; server + HUD + mặt nạ đất). Không đụng `teleport.ts`; không dùng chung trạng thái với bia của kiếp (DV3-L) | L |
 | **DV3-D** | Luyện Ngục Khích + Tử Quang Dực Chủ (boss dừng ở 1 máu, cảnh gột) | L |
 | **DV3-E** | Kim Dạ Cung + Kim Dạ Ma Hậu | L |
 | **DV3-F** | Trang bị bậc 5, nguyên liệu, đan, công thức, icon | L |
@@ -420,7 +432,7 @@ Kích thước như `EXPANSION_DESIGN.md` mục 11 (S ≈ nửa ngày, M ≈ 1�
 | **DV3-H** | Nhiệm vụ chương 5 (12 chính + 4 phụ), NPC, thoại, thẻ chương `ch5` | L |
 | **DV3-I** | Mỹ thuật: kiến trúc dị vực bpy, khe Giới Khích, texture đất tro, nhạc `wild_ash`/`wild_rift`/2 bài boss | L |
 | **DV3-K** | Anh biến (nguyên anh đánh được) | L |
-| **DV3-L** | Thực Nhật Kiếp + Tử Thực Dực Chủ + Tịnh Quang hộ pháp | L |
+| **DV3-L** | Thực Nhật Kiếp + Tử Thực Dực Chủ + Tịnh Quang hộ pháp; level kiếp riêng `do_kiep_bac_hoang` (sân, năm bia cố định, khe, mood `rift`), trường `level` trong `tribulations.json`, bia của kiếp là trạng thái riêng của room kiếp | L |
 | **DV3-J** | Cân bằng: `sim:progress` 10 giờ ±12%, `fight:check`, bot 100, `bench:crowd` Bắc Hoang | M |
 
 Ước tính: DV-1 ~6–8 ngày công; DV-2 ~9–12; DV-3 ~30–36. Tổng **~45–56 ngày công**, chạy được 5–6 worker song song ở DV-3. Mốc chơi thử: sau DV-B (xem một boss), sau DV3-A + DV3-B (đi và đánh), sau DV3-D (phó bản 1), cuối cùng kiếp và cân bằng.
@@ -450,7 +462,7 @@ Như `EXPANSION_DESIGN.md` mục 12 (i18n, glossary, `loot.json`, transaction + 
 
 ## 13. Đề xuất thêm vào glossary (†)
 
-Chưa thêm vào `glossary.json` trong PR này; thêm khi gói tương ứng vào code, sau khi người dùng chốt mục 15.
+Tên đã được người dùng chốt (mục 15, quyết định 11). Chưa thêm vào `glossary.json` trong PR này; thêm khi gói tương ứng vào code, sau lượt soát `lore-keeper` độc lập (mục 14).
 
 | Nhóm | Tên mới |
 | --- | --- |
@@ -480,19 +492,21 @@ Soát theo danh mục năm điểm của `.claude/agents/lore-keeper.md` (thuậ
 
 ---
 
-## 15. Quyết định cần người dùng chọn
+## 15. Quyết định (đã chốt)
 
-| # | Câu hỏi | Đề xuất | Phương án khác |
-| --- | --- | --- | --- |
-| 1 | Thang cấp sau Hóa Thần | Hóa Thần 28–31, **Anh Biến sơ kỳ 32** là trần mới; chương 5 dài **10 giờ** | (b) chương 5 chỉ tới Hóa Thần đại viên mãn (31), không kiếp, Anh Biến để chương 6; (c) 8 giờ |
-| 2 | Số bản đồ | **Một** bản đồ hai nửa (bên này/bên kia vết nứt) + 2 phó bản | Hai bản đồ riêng (Bắc Hoang và Tẫn Giới), mỗi bản đồ một phó bản: thêm ~8–10 ngày công, bên kia "lạ" hơn hẳn |
-| 3 | Ngoại lệ điều cấm 12 art bible cho thực thể Tẫn Giới, giới hạn ở level chương 5 | **Đồng ý**, kèm bảng màu `rift_*` | Không: chỉ dùng thú (chó, bò, hươu, cự thú), bỏ nhóm Đọa Dực mặc giáp |
-| 4 | Giải thích lại động cơ của Huyền Cơ (then cài vết nứt) | **Dùng** | Giữ chương 4 nguyên nghĩa; vết nứt là chuyện mới không liên quan Cựu Thiên Điện |
-| 5 | Tử Quang được gột thành đồng minh Tịnh Quang (dùng model "purified") | **Đồng minh từ giữa chương**, hộ pháp ở kiếp cuối | Chỉ xuất hiện ở cảnh kết; hoặc là NPC bán đồ ở trạm |
-| 6 | Hư Uyên Dực Chủ (Void Nemesis) | **Để dành chương 6** | Làm boss ẩn/khó của chương 5 (raid 8 người) |
-| 7 | Cơ chế Anh Biến | **Anh biến**: nguyên anh xuất khiếu đánh được | Lĩnh vực mượn thế trời đất |
-| 8 | Trang bị bậc 5 | **Có**, hình dáng vẫn tiên hiệp | Hoãn; chương 5 chỉ rơi đồ bậc 4 phẩm cao |
-| 9 | `sword_of_miracle_free.glb` (ngoài danh sách yêu cầu, CC BY) | Dùng làm kiếm của Tẫn Hỏa Kiếm Cơ (không cho người chơi) | Bỏ; hoặc làm kiếm bậc 5 của người chơi |
-| 10 | Nơi hiện ghi công CC BY | **Mục "Ghi công" trong Cài đặt** + `LICENSES.md` | Thêm cả màn tải |
-| 11 | Tên | Như mục 13 (Hán-Việt, người bên này đặt) | Người dùng đổi tên nào thì sửa trước khi vào glossary |
-| 12 | Thứ tự làm | DV-B → DV-C → DV1-B/C/D → DV-2 song song E-4 còn lại → DV-3 | Dừng sau DV-C, chờ E-4 xong hẳn |
+Người dùng đã chốt ngày 2026-11-18: **cả 12 câu theo cột "Đã chọn"**. Cột "Phương án đã loại" giữ lại để biết đã cân nhắc gì.
+
+| # | Câu hỏi | Đã chọn | Phương án đã loại | Trạng thái |
+| --- | --- | --- | --- | --- |
+| 1 | Thang cấp sau Hóa Thần | Hóa Thần 28–31, **Anh Biến sơ kỳ 32** là trần mới; chương 5 dài **10 giờ** | (b) chương 5 chỉ tới Hóa Thần đại viên mãn (31), không kiếp, Anh Biến để chương 6; (c) 8 giờ | **Đã chốt 2026-11-18** |
+| 2 | Số bản đồ | **Một** bản đồ hai nửa (bên này/bên kia vết nứt) + 2 phó bản | Hai bản đồ riêng (Bắc Hoang và Tẫn Giới), mỗi bản đồ một phó bản: thêm ~8–10 ngày công, bên kia "lạ" hơn hẳn | **Đã chốt 2026-11-18** |
+| 3 | Ngoại lệ điều cấm 12 art bible cho thực thể Tẫn Giới, giới hạn ở level chương 5 | **Đồng ý**, kèm bảng màu `rift_*` | Không: chỉ dùng thú (chó, bò, hươu, cự thú), bỏ nhóm Đọa Dực mặc giáp | **Đã chốt 2026-11-18** |
+| 4 | Giải thích lại động cơ của Huyền Cơ (then cài vết nứt) | **Dùng** | Giữ chương 4 nguyên nghĩa; vết nứt là chuyện mới không liên quan Cựu Thiên Điện | **Đã chốt 2026-11-18** |
+| 5 | Tử Quang được gột thành đồng minh Tịnh Quang (dùng model "purified") | **Đồng minh từ giữa chương**, hộ pháp ở kiếp cuối | Chỉ xuất hiện ở cảnh kết; hoặc là NPC bán đồ ở trạm | **Đã chốt 2026-11-18** |
+| 6 | Hư Uyên Dực Chủ (Void Nemesis) | **Để dành chương 6** | Làm boss ẩn/khó của chương 5 (raid 8 người) | **Đã chốt 2026-11-18** |
+| 7 | Cơ chế Anh Biến | **Anh biến**: nguyên anh xuất khiếu đánh được | Lĩnh vực mượn thế trời đất | **Đã chốt 2026-11-18** |
+| 8 | Trang bị bậc 5 | **Có**, hình dáng vẫn tiên hiệp | Hoãn; chương 5 chỉ rơi đồ bậc 4 phẩm cao | **Đã chốt 2026-11-18** |
+| 9 | `sword_of_miracle_free.glb` (ngoài danh sách yêu cầu, CC BY) | Dùng làm kiếm của Tẫn Hỏa Kiếm Cơ (không cho người chơi) | Bỏ; hoặc làm kiếm bậc 5 của người chơi | **Đã chốt 2026-11-18** |
+| 10 | Nơi hiện ghi công CC BY | **Mục "Ghi công" trong Cài đặt** + `LICENSES.md` | Thêm cả màn tải | **Đã chốt 2026-11-18** |
+| 11 | Tên | Như mục 13 (Hán-Việt, người bên này đặt) | Người dùng đổi tên nào thì sửa trước khi vào glossary | **Đã chốt 2026-11-18** |
+| 12 | Thứ tự làm | DV-B → DV-C → DV1-B/C/D → DV-2 song song E-4 còn lại → DV-3 | Dừng sau DV-C, chờ E-4 xong hẳn | **Đã chốt 2026-11-18** |

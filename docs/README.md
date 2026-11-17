@@ -29,7 +29,7 @@ README của các thư mục bị gỡ ảnh có dòng "Ghi chú R-1" ở đầu
 | `art-bible.md` | Nguồn chuẩn về hình ảnh (v3, bán tả thực điện ảnh) |
 | `GAME_DESIGN_CORE.md` | Thiết kế lõi: combat, cảnh giới, độ kiếp |
 | `EXPANSION_DESIGN.md` | Thiết kế mở rộng Kết Đan / Nguyên Anh / Hóa Thần |
-| `DIVUC_DESIGN.md` | Thiết kế chương 5 Bắc Hoang Dị Vực (đề xuất, chờ chốt mục 15) |
+| `DIVUC_DESIGN.md` | Thiết kế chương 5 Bắc Hoang Dị Vực (quyết định mục 15 đã chốt 2026-11-18) |
 | `ASSET_CONCEPTS.md` | Danh sách asset người dùng tự dựng trên Tripo, kèm ảnh concept |
 | `AUDIT_AND_ROADMAP.md` | Soát lỗi và lộ trình Sprint 2 |
 | `tripo-runbook.md` | Quy trình Tripo → Blender → GLB |
