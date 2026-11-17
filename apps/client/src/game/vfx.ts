@@ -9,8 +9,9 @@ import { BoltGeometry, boltPhase, boltShape, type BoltShape, VORTEX_GEO } from '
 import { INK_ALPHA, INK_DEATH, INK_HIT, INK_POOL, inkEvict, inkPhase, type InkTiming } from '../render/vfx/ink';
 import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootCrowd, lootDuration, lootHop, lootPulse, type LootTier } from '../render/vfx/loot';
 import { PARTICLES } from '../render/vfx/particles';
+import { QUAD_XZ, shapeGeometry, shapeKind, type ShapeKey } from '../render/vfx/fxShapes';
 import { hazardFlash, hazardStack, hazardStyle, maxRadiusFor } from '../render/vfx/phases';
-import { BoltFx } from '../render/vfx/projectile';
+import { BoltFx, HALO_GEO, SHADOW_GEO } from '../render/vfx/projectile';
 import { SwordRainFx } from '../render/vfx/swordRain';
 import { Trails } from '../render/vfx/trail';
 import { assets } from './assets';
@@ -138,11 +139,8 @@ export class Vfx {
     // Vẽ ấm các material mới (mưa kiếm, tia sét, mây kiếp, vệt kiếm) vài khung lúc đang tải: biên dịch
     // shader trước, lần dùng đầu không bị khựng. Độ trong 0, cỡ 0: không thấy gì.
     RAIN.prewarm();
-    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome', 'glow', 'flat', 'solid', 'slash', 'ink', 'sigil', 'toon', 'crystal', 'burst', 'decal', 'card'] as const) {
-      const m = this.fx(G.ico1, 0xffffff, 0, kind);
-      m.scale.setScalar(1e-3);
-      this.add(0.15, () => {}, () => this.drop(m));
-    }
+    this.warmKinds();
+    this.warmBatches();
     // Lưới phi kiếm thật cho mưa kiếm: nạp một lần (giữ handle suốt phiên); chưa có thì dùng lưới dự phòng.
     rainModel ??= assets
       .acquire('prop_phi_kiem', { priority: PREFETCH_PRIORITY.vfx })
@@ -152,6 +150,64 @@ export class Vfx {
       .catch((e) => {
         console.warn('[vfx] không nạp được prop_phi_kiem, mưa kiếm dùng lưới dự phòng', e);
       });
+  }
+
+  /** Vẽ ấm một lưới cho mỗi kiểu material (cỡ 0, độ trong 0). */
+  private warmKinds(): void {
+    for (const kind of ['bolt', 'vortex', 'trail', 'beam', 'inkpool', 'dome', 'glow', 'flat', 'solid', 'slash', 'ink', 'sigil', 'toon', 'crystal', 'burst', 'decal', 'card'] as const) {
+      const m = this.fx(G.ico1, 0xffffff, 0, kind);
+      m.scale.setScalar(1e-3);
+      this.add(0.15, () => {}, () => this.drop(m));
+    }
+  }
+
+  /** Vẽ ấm lại sau khi đổi level: môi trường (đèn, sương) mới làm khóa cache shader của mọi lưới đổi, nên nhóm đã ấm ở level cũ phải biên dịch lại. */
+  rewarm(): void {
+    this.warmKinds();
+    this.warmBatches();
+  }
+
+  /**
+   * Vẽ ấm các nhóm gộp THẬT (kiểu × hình × renderOrder), V6: three đặt `uuid` vào khóa cache của mọi InstancedMesh nên mỗi nhóm
+   * dựng lại node và biên dịch shader ở lần vẽ đầu; không làm ấm thì khung đầu của mỗi chiêu mới giữa trận khựng 40–90 ms
+   * (đo ở `bench:crowd`: 9–15 nhóm mới mỗi lượt, `fxBuckets`). Rải ba nhóm mỗi 0,12 s lúc đang tải để không dồn vào một khung.
+   */
+  private warmBatches(): void {
+    // `?vfxwarm=0` tắt (so ảnh/số đo trước-sau).
+    if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('vfxwarm') === '0') return;
+    const list: [FxKind, THREE.BufferGeometry, number][] = [
+      ['glow', G.octa, 0],
+      ['glow', G.sphere, 0],
+      ['glow', RING_GEO, 0],
+      ['flat', RING_GEO, 0],
+      ['dome', G.dome, 0],
+      ['inkpool', SIGIL_GEO, -2],
+      ['decal', QUAD_XZ, -3],
+      ['glow', HALO_GEO, 0],
+      ['flat', SHADOW_GEO, 0],
+      ['solid', G.cone6, 0],
+    ];
+    const shapes: ShapeKey[] = ['crescent', 'spike', 'shard', 'kite', 'ripple', 'burst', 'smoke', 'helix', 'dragon', 'statue', 'card', 'ribbon'];
+    for (const s of shapes) {
+      const kind = shapeKind(s);
+      const order = kind === 'decal' ? -1 : kind === 'crystal' ? 1 : 0;
+      list.push([kind, shapeGeometry(s), order]);
+      if (kind === 'toon') list.push([kind, shapeGeometry(s), -2]);
+    }
+    const seen = new Set<string>();
+    let n = 0;
+    for (const [kind, geo, order] of list) {
+      const key = `${kind}|${geo.uuid}|${order}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const at = 0.2 + Math.floor(n++ / 3) * 0.12;
+      this.add(at, () => {}, () => {
+        const m = this.fx(geo, 0xffffff, 0, kind);
+        m.renderOrder = order;
+        m.scale.setScalar(1e-3);
+        this.add(0.15, () => {}, () => this.drop(m));
+      });
+    }
   }
 
   private add(dur: number, update: (k: number, dt: number) => void, end: () => void): void {
