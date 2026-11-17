@@ -1,0 +1,64 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "set_luu_ly_dan_y_v2_nu",
+  "type": "chr",
+  "budgetClass": "outfit_v2",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 14000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "chr/set_luu_ly_dan_y/tripo/raw_ao_ngoai_v01.glb",
+    "size": {
+      "height": 1
+    },
+    "orient": "none",
+    "yaw": 0,
+    "post": "tools/blender/outfit_build.py",
+    "outfit": {
+      "player": "chr_v2_nu",
+      "dir": "chr/set_luu_ly_dan_y/tripo",
+      "palette": {
+        "main": "#F1F5F6",
+        "sec": "#A9D6E6",
+        "trim": "#D4DEE0",
+        "accent": "#7FD4D8"
+      },
+      "fitPose": {
+        "armDown": 70
+      },
+      "atlas": 1024,
+      "gain": 1.1,
+      "alpha": {
+        "ao_ngoai": "sleeve"
+      },
+      "normalFlat": 0.9,
+      "veilAlpha": 0.58,
+      "veil": {
+        "xmin": "waist_w*0.5+0.10",
+        "zlo": "ankle_z+0.10",
+        "zhi": "shoulder_z-0.10"
+      },
+      "pieces": {
+        "ao_ngoai": {
+          "armFix": 0.35,
+          "smooth": 14,
+          "legBlend": 0.9,
+          "spring": false
+        },
+        "lop_duoi": {
+          "islands": true,
+          "legBlend": 0.9,
+          "spring": false
+        }
+      }
+    }
+  },
+  "license": {
+    "source": "Tripo web app (image→3D H3.1) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-17"
+  }
+}

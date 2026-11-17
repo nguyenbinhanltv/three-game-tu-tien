@@ -2,7 +2,7 @@
   "$schema": "../../../meta.schema.json",
   "id": "set_de_tu_v2_nu",
   "type": "chr",
-  "budgetClass": "outfit",
+  "budgetClass": "outfit_v2",
   "itemId": null,
   "status": "imported",
   "budget": {
