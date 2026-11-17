@@ -106,6 +106,7 @@
 /* họa tiết theo bản đồ: màu qua biến, mỗi bản đồ một bảng màu */
 .ngj-cart { --m-sun: #e8b94f; --m-far: #8fb2aa; --m-near: #4f8a84; --m-line: #2b5f55; }
 .ngj-cart[data-map='doan_mach'] { --m-sun: #efe2b4; --m-far: #c9855a; --m-near: #9a4d33; --m-line: #6f3523; }
+.ngj-cart[data-map='thien_khuyet'] { --m-sun: #f2c47e; --m-far: #3c5f78; --m-near: #1f3d50; --m-line: #123b45; }
 .ngj-cart[data-map='van_hai'] { --m-sun: #f3d27a; --m-far: #cfe2e2; --m-near: #7fb7b0; --m-line: #3e9c8f; }
 .ngj-cart[data-mat='lacquer'] { --m-sun: var(--ngj-gold); --m-far: rgba(201, 164, 92, 0.28); --m-near: rgba(201, 164, 92, 0.5); --m-line: var(--ngj-gold-hi); }
 .ngj-m-sun { fill: var(--m-sun); }

@@ -1,0 +1,23 @@
+{
+  "mood": "night",
+  "glb": [],
+  "ground": {
+    "set": "terrain",
+    "mask": "neutral"
+  },
+  "music": [
+    "wild"
+  ],
+  "features": {
+    "sect": false,
+    "portals": false,
+    "lanterns": true,
+    "lake": false,
+    "clouds": false,
+    "grass": true,
+    "trees": "scatter",
+    "beacons": true,
+    "vegetation": false
+  },
+  "minimap": "thien_khuyet"
+}

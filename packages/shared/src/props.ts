@@ -3,6 +3,7 @@
 // apps/client/src/game/propScatter.ts.
 import { DOAN_MACH_PROPS } from './props.doanmach';
 import { VAN_HAI_PROPS } from './props.vanhai';
+import { THIEN_KHUYET_PROPS } from './props.thienkhuyet';
 import { PHUC_MACH_PROPS } from './props.phucmach';
 import { KINH_NGUYET_PROPS } from './props.kinhnguyet';
 
@@ -114,7 +115,7 @@ export const HAND_PROPS: readonly HandProp[] = [
 export const PROP_COLLIDERS = HAND_PROPS.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: p.r as number }));
 
 /** Level dùng chung bố cục prop (Kiếm Trủng nằm trên bản đồ Vân Lam). */
-const PROP_LEVELS: Record<string, readonly HandProp[]> = { van_lam: HAND_PROPS, kiem_trung: HAND_PROPS, doan_mach: DOAN_MACH_PROPS, van_hai: VAN_HAI_PROPS, phuc_mach: PHUC_MACH_PROPS, kinh_nguyet: KINH_NGUYET_PROPS };
+const PROP_LEVELS: Record<string, readonly HandProp[]> = { van_lam: HAND_PROPS, kiem_trung: HAND_PROPS, doan_mach: DOAN_MACH_PROPS, van_hai: VAN_HAI_PROPS, thien_khuyet: THIEN_KHUYET_PROPS, phuc_mach: PHUC_MACH_PROPS, kinh_nguyet: KINH_NGUYET_PROPS };
 
 /** Prop điểm nhấn của level (E1-A); level chưa có bố cục thì rỗng. */
 export function propsOf(levelId: string): readonly HandProp[] {
@@ -125,6 +126,7 @@ export function propsOf(levelId: string): readonly HandProp[] {
 export function propCollidersOf(levelId: string): { x: number; z: number; r: number }[] {
   if (levelId === 'phuc_mach' || levelId === 'kinh_nguyet') return [];
   if (levelId === 'doan_mach') return DOAN_MACH_PROPS.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: p.r as number }));
+  if (levelId === 'thien_khuyet') return []; // va chạm trụ/cổng/tượng nằm trong terrain.colliders (nhiều vòng mỗi prop)
   if (levelId === 'van_hai') return VAN_HAI_PROPS.filter((p) => p.r).map((p) => ({ x: p.x, z: p.z, r: p.r as number }));
   return levelId in PROP_LEVELS ? PROP_COLLIDERS : [];
 }
