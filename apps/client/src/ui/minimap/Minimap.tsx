@@ -196,7 +196,7 @@ export function Minimap() {
       </div>
       {NGJ ? (
         <div className="minimap-foot ngj-mm-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
-          <Cartouche map={MOTIFS.includes(level as MapMotif) ? (level as MapMotif) : 'van_lam'} material="lacquer" size="s" title={<>{zoneName}{zoneLv && <span className="minimap-foot-lv"> {zoneLv}</span>}</>} />
+          <Cartouche map={MOTIFS.includes(level as MapMotif) ? (level as MapMotif) : 'van_lam'} material="lacquer" size="s" title={<><span className="ngj-mm-name">{zoneName}</span>{zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}</>} />
         </div>
       ) : (
         <div className="minimap-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
