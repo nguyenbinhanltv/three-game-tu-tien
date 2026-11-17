@@ -12,4 +12,4 @@ Sửa: `.right-col > .minimap-wrap` phóng theo `--ui-scale`; buffer canvas = DP
 | 4K (x2) | 176 / 176 | 352 / 352 |
 | 1080p @2x | 352 / 176 | 352 / 176 |
 
-Ảnh: `minimap-truoc|sau-<cỡ>.png`. Chụp lại: `pnpm --filter @dtl/perf shots:minimap --out <thư mục tuyệt đối> --variant truoc|sau`.
+Ảnh: `minimap-truoc|sau-<cỡ>.png`. Chụp lại: `pnpm shots map --out <thư mục tuyệt đối> --variant truoc|sau`.

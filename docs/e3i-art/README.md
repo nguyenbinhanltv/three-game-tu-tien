@@ -4,7 +4,7 @@
 
 Gói E3-I nâng hình ảnh bản đồ `van_hai` (E3-A/E3-N, PR #148) theo `docs/EXPANSION_DESIGN.md` mục 4.2, `docs/ASSET_CONCEPTS.md` và art bible v3 (bán tả thực, bình minh sương, tông trầm, nhân vật rõ trong 20 m). Không dùng Tripo/credit, không thêm ảnh ngoài, không sửa gì trong `dtl-asset-source`. Không đụng quái, boss, nhiệm vụ, phó bản.
 
-Ảnh trước (`truoc/`) và sau (`sau/`) cùng tên, cùng góc với `docs/e3-map/` (cùng script `pnpm shots:e3a`). `sau/e3i-*.webp` là ảnh thêm chỉ có ở bản sau.
+Ảnh trước (`truoc/`) và sau (`sau/`) cùng tên, cùng góc với `docs/e3-map/` (cùng script `pnpm shots points --level van_hai`). `sau/e3i-*.webp` là ảnh thêm chỉ có ở bản sau.
 
 ## Vấn đề → cách sửa
 
@@ -30,7 +30,7 @@ Gói E3-I nâng hình ảnh bản đồ `van_hai` (E3-A/E3-N, PR #148) theo `doc
 
 ## Số đo (perf-budget)
 
-Đo bằng `pnpm shots:e3a` (WebGPU, preset Vừa, 1280×720, `__game.info()` của khung vừa vẽ), cùng điểm đứng. Thời gian khung bị khóa ở ~8,3 ms (vsync 120 Hz) ở cả hai bản nên không phân biệt được; xem fps/ms trên HUD của từng ảnh (đều ~120 fps). `bench:client --level van_hai` **không** dùng được ở gói này: bản hiện tại đo ở Vân Lam (số trước/sau trùng từng con số) và lần chạy có preset Cao bị treo, nên không lấy làm bằng chứng.
+Đo bằng `pnpm shots points --level van_hai` (WebGPU, preset Vừa, 1280×720, `__game.info()` của khung vừa vẽ), cùng điểm đứng. Thời gian khung bị khóa ở ~8,3 ms (vsync 120 Hz) ở cả hai bản nên không phân biệt được; xem fps/ms trên HUD của từng ảnh (đều ~120 fps). `bench:client --level van_hai` **không** dùng được ở gói này: bản hiện tại đo ở Vân Lam (số trước/sau trùng từng con số) và lần chạy có preset Cao bị treo, nên không lấy làm bằng chứng.
 
 | Điểm | Draw call trước → sau | Tam giác trước → sau |
 | --- | --- | --- |
@@ -93,7 +93,7 @@ Trước | Sau, từng cặp:
 | Toàn cảnh | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 | Bản đồ lớn | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 
-Chỉ có ở bản sau (`E3I_EXTRA=1 pnpm shots:e3a --out <thư mục tuyệt đối>`):
+Chỉ có ở bản sau (`pnpm shots points --level van_hai --out <thư mục tuyệt đối>`):
 
 | | |
 | --- | --- |

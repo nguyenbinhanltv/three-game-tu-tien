@@ -12,7 +12,7 @@ Gói E2-I (`docs/EXPANSION_DESIGN.md` 11.2). Chỉ hình/âm, không đụng sim
 | Mood | Ba preset `ochre_dawn` / `ochre` / `ochre_night` (nắng hổ phách, sương bụi, bóng xanh xám, đêm lam); `?mood=dawn|day|night` chọn biến thể cùng thời điểm | `assets/palette.json`, `render/grading.ts` `moodVariant`, `sky.ts`, `atmosphere.ts` |
 | Nhạc | Bài `wild_ochre` tự soạn (D yu, 68 BPM, 40 ô, nhị hồ + đàn tranh, 2:21) cho vùng wild của `doan_mach`; chiến đấu dùng `combat` (không có stem) | `tools/audio/compose/wild_ochre.mjs`, `music.json`, `musicDirector.ts` `regionTrack(…, level)` |
 
-Ảnh: mỗi tệp `*.webp` là **trước (E2-A) | sau, ngày | sau, đêm** (`pnpm shots:e2a --out <thư mục> [--query mood=night]`). `ochre-layers.webp`: 8 lớp mặt đất; `cards-atlas.jpg`: atlas thẻ cỏ.
+Ảnh: mỗi tệp `*.webp` là **trước (E2-A) | sau, ngày | sau, đêm** (`pnpm shots points --level doan_mach --out <thư mục> [--query mood=night]`). `ochre-layers.webp`: 8 lớp mặt đất; `cards-atlas.jpg`: atlas thẻ cỏ.
 
 ## Số đo (Chrome headless, WebGPU, Vừa, 1280×720, sân Đoạn Mạch)
 

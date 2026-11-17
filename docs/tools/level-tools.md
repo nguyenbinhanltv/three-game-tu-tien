@@ -7,12 +7,12 @@ Mọi công cụ nhận `--level <id>` (mặc định `van_lam`). Level thật n
 | --- | --- |
 | `pnpm map:report --level <id> [--png x.png] [--json x.json]` | Diện tích/mật độ vùng, khoảng cách, độ phủ, quét chỗ kẹt. Mục tông môn/cổng/Kiếm Trủng/NPC chỉ in cho Vân Lam; level khác lấy tâm vùng chơi làm tâm. Kết quả Vân Lam không đổi so với trước E1-G. |
 | `pnpm minimap:build --level <id>` | Ghi `apps/client/public/map/<id>.webp` + `.json`. Phủ vùng chơi ± 100 m (hoặc cả thế giới nếu không có ranh); đường mòn tự nối tâm các vùng theo cấp (`autoTrails`). Vân Lam: ảnh giống từng byte. |
-| `pnpm shots --level <id> [--dry]` | Điểm chụp suy từ dữ liệu level (`tools/perf/src/levelpoints.ts`: tâm vùng, điểm đáng chú ý, tinh anh, boss, toàn cảnh), thêm `level=<id>` vào URL, ảnh có tiền tố level. `--dry` chỉ in điểm. |
+| `pnpm shots --level <id> [--dry]` | Điểm chụp suy từ dữ liệu level (`tools/perf/src/lib/levelpoints.ts`: tâm vùng, điểm đáng chú ý, tinh anh, boss, toàn cảnh), vào level bằng `/gm tele all` + `/gm tp <địa điểm đầu của level>` như người chơi (R-5), ảnh có tiền tố level. `--dry` chỉ in điểm. |
 | `pnpm bench:client --level <id>` | Cùng bộ điểm, ghi `level` vào `settings` của kết quả. |
 | `pnpm content:check` | Chạy `checkLevel` (`packages/content/src/levelcheck.ts`) cho **mọi** level trong `LEVELS`. |
 | `pnpm --filter @dtl/server fight:check [--levels 4,15,16,22,28] [--mon <id>] [--strict]` | Chọn quái từ bãi của mọi level; cấp vượt mọi bãi hiện có thì ngoại suy (`*`). `--strict` thoát 1 nếu TTK ngoài 3,5–8,5 s hoặc có ca chết. |
 
-`shots`/`bench:client --level <id>` (khác Vân Lam) cần server và client hiểu tham số `level` (E1-B, E1-D); trước đó URL vẫn mở Vân Lam và chỉ có `/gm tp` tới tọa độ của level. `bench:crowd` còn gắn với Vân Lam.
+`pnpm shots --level <id>` (R-5) sang level bằng lệnh GM nên chụp đúng level. `bench:client --level <id>` vẫn chỉ thêm `level=<id>` vào URL; soát mã ở R-5 không thấy client/server đọc tham số này (`apps/client/src/game/testParams.ts` chỉ có `at`, `realm`, `god`, `tribulation`), nên nhiều khả năng số đo khi đó là ở Vân Lam tại tọa độ của level kia. R-5 giữ nguyên hành vi bench, chưa sửa và chưa đo kiểm chứng điểm này; cách sửa là cho bench gọi `enterLevel` của `tools/perf/src/lib/game.ts`. `bench:crowd` có cảnh ở level khác qua trường `place` của cảnh.
 
 ## `content:check` cho một level
 

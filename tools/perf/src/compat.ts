@@ -27,13 +27,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { SPAWN_POINT } from '@dtl/shared';
 import { chromium, firefox, webkit, type Browser, type BrowserType, type Page } from 'playwright';
-import { createDevServer, ROOT, sleep } from './devserver';
+import { createDevServer, ROOT, sleep } from './lib/devserver';
+import { args, env, opt, ports } from './lib/env';
+import { CHROME_ARGS } from './lib/browser';
+import { gm } from './lib/game';
 
-const args = process.argv.slice(2);
-const opt = (name: string, def: string) => {
-  const i = args.indexOf(name);
-  return i >= 0 && args[i + 1] ? args[i + 1] : def;
-};
 const BROWSERS = opt('--browsers', 'chrome,msedge,firefox,webkit').split(',').filter(Boolean);
 const PRESETS = opt('--presets', 'low,medium,high').split(',').filter(Boolean);
 const SECONDS = Number(opt('--seconds', '4'));
@@ -41,8 +39,7 @@ const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
 const HEADED = args.includes('--headed');
 const WEBGL2_PASS = !args.includes('--no-webgl2');
 const AUDIO_LIVE = !args.includes('--no-audio-live');
-const PORT = Number(process.env.PORT ?? 2645);
-const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5145);
+const { port: PORT, clientPort: CLIENT_PORT } = ports(2645, 5145);
 const ORIGIN = `http://localhost:${CLIENT_PORT}`;
 const FIXTURES = path.join(ROOT, 'tools/perf/fixtures');
 const KTX2_SAMPLES = ['2d_etc1s.ktx2', '2d_uastc.ktx2'];
@@ -51,13 +48,18 @@ const SHOT = { x: SPAWN_POINT.x, z: SPAWN_POINT.z, yaw: 0.6, pitch: 0.32, dist: 
 
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'compat', command: 'pnpm compat' });
 
-type W = { __game?: Record<string, any>; __compat: { rec: boolean; cpu: number[]; t0: number } };
+declare global {
+  interface Window {
+    __compat: { rec: boolean; cpu: number[]; t0: number };
+    __audioLive: { ok: number; fail: number; playing: string[] };
+  }
+}
 
 /** Chạy trước script của game: đặt preset/chế độ điều khiển, bọc `__game.frame` để đo CPU khung. */
 function initScript(o: { preset: string }): void {
   localStorage.setItem('dtl.quality', o.preset);
   localStorage.setItem('dtl.controls', 'mouse');
-  const w = window as unknown as W;
+  const w = window;
   w.__compat = { rec: false, cpu: [], t0: 0 };
   let game: Record<string, any> | undefined;
   Object.defineProperty(window, '__game', {
@@ -193,18 +195,13 @@ type GameRun = {
   fail?: string;
 };
 
-const GM_GAP_MS = 1000;
-async function gm(page: Page, cmd: string): Promise<void> {
-  await page.evaluate((m) => (window as unknown as W).__game!.send('chat', { m }), '/gm ' + cmd);
-  await sleep(GM_GAP_MS);
-}
 
 /** Bơm đủ khung để cảnh vẽ lại khi trình duyệt headless bóp requestAnimationFrame. */
 async function waitFrames(page: Page, n: number, ms: number): Promise<void> {
-  const f0 = await page.evaluate(() => (window as unknown as W).__game!.frames as number);
+  const f0 = await page.evaluate(() => window.__game!.frames as number);
   const until = Date.now() + ms;
   while (Date.now() < until) {
-    const f = await page.evaluate(() => (window as unknown as W).__game!.frames as number);
+    const f = await page.evaluate(() => window.__game!.frames as number);
     if (f - f0 >= n) return;
     await sleep(100);
   }
@@ -227,14 +224,14 @@ async function runGame(browser: Browser, label: string, outDir: string, preset: 
   try {
     await page.goto(`${ORIGIN}/?mute=1&debug=1&cine=0&auto=${name}${forced ? '&renderer=webgl2' : ''}`, { waitUntil: 'load', timeout: 120_000 });
     await page.waitForFunction(() => {
-      const g = (window as unknown as W).__game;
+      const g = window.__game;
       return !!g && g.frames > 30 && !!g.me?.();
     }, undefined, { timeout: 150_000, polling: 250 });
     run.loadMs = Date.now() - t0;
     Object.assign(
       run,
       await page.evaluate(async () => {
-        const g = (window as unknown as W).__game!;
+        const g = window.__game!;
         const be = g.renderer.backend;
         let adapter = '';
         if (be.isWebGPUBackend) {
@@ -252,7 +249,7 @@ async function runGame(browser: Browser, label: string, outDir: string, preset: 
     await gm(page, 'heal');
     // Ảnh: cùng góc camera, chờ ô địa hình/asset nạp xong (vài trăm khung).
     await page.evaluate((s) => {
-      const g = (window as unknown as W).__game!;
+      const g = window.__game!;
       g.camYaw = s.yaw;
       g.camPitch = s.pitch;
       g.camDist = s.dist;
@@ -261,14 +258,14 @@ async function runGame(browser: Browser, label: string, outDir: string, preset: 
     await waitFrames(page, 20, 8000);
     // FPS + CPU khung.
     await page.evaluate(() => {
-      const c = (window as unknown as W).__compat;
+      const c = window.__compat;
       c.cpu = [];
       c.t0 = performance.now();
       c.rec = true;
     });
     await sleep(SECONDS * 1000);
     const perf = await page.evaluate(() => {
-      const w = window as unknown as W;
+      const w = window;
       w.__compat.rec = false;
       const secs = (performance.now() - w.__compat.t0) / 1000;
       const cpu = [...w.__compat.cpu].sort((a, b) => a - b);
@@ -308,7 +305,7 @@ async function checkAssets(page: Page): Promise<Assets> {
   const samples = KTX2_SAMPLES.map((f) => ({ file: f, b64: fs.readFileSync(path.join(FIXTURES, f)).toString('base64') }));
   return page.evaluate(async (samples) => {
     const A = await import(/* @vite-ignore */ '/src/game/assets.ts' as string);
-    const g = (window as unknown as W).__game!;
+    const g = window.__game!;
     const out: Assets = { glb: [], ktx2: [] };
     const cache = new A.AssetCache();
     await cache.attach(g.renderer);
@@ -349,7 +346,7 @@ async function checkAssets(page: Page): Promise<Assets> {
 async function checkInputs(page: Page): Promise<Inputs> {
   const state = () =>
     page.evaluate(() => {
-      const g = (window as unknown as W).__game!;
+      const g = window.__game!;
       return { x: g.cur.x as number, z: g.cur.z as number, target: g.targetId as string, dist: g.camDist as number, yaw: g.camYaw as number };
     });
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur?.());
@@ -372,7 +369,7 @@ async function checkInputs(page: Page): Promise<Inputs> {
   await sleep(400);
   const s3 = await state();
   // Kéo chuột (chế độ strafe: kéo để xoay camera, không pointer lock).
-  await page.evaluate(() => (window as unknown as W).__game!.setControls('strafe'));
+  await page.evaluate(() => window.__game!.setControls('strafe'));
   await page.mouse.move(VW / 2, VH / 2);
   await page.mouse.down();
   for (let i = 1; i <= 10; i++) await page.mouse.move(VW / 2 + i * 15, VH / 2);
@@ -380,7 +377,7 @@ async function checkInputs(page: Page): Promise<Inputs> {
   await sleep(300);
   const s4 = await state();
   // Chế độ chuột: bấm canvas xin pointer lock (headless có thể từ chối; chỉ ghi lại).
-  await page.evaluate(() => (window as unknown as W).__game!.setControls('mouse'));
+  await page.evaluate(() => window.__game!.setControls('mouse'));
   await page.mouse.click(VW / 2, VH / 2);
   await sleep(600);
   const lock = await page.evaluate(() => !!document.pointerLockElement);
@@ -515,14 +512,14 @@ async function runAudioLive(browser: Browser, label: string, blockWebm: boolean)
   try {
     await page.goto(`${ORIGIN}/?auto=A_${label.slice(0, 4)}${blockWebm ? '_m4a' : ''}`, { waitUntil: 'load', timeout: 120_000 });
     await page.waitForFunction(() => {
-      const g = (window as unknown as W).__game;
+      const g = window.__game;
       return !!g && g.frames > 30 && !!g.me?.();
     }, undefined, { timeout: 150_000, polling: 250 });
     // Thao tác đầu tiên mở khóa AudioContext (unlockAudio trong keydown).
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur?.());
     await page.keyboard.press('KeyW');
     await sleep(6000);
-    const r = await page.evaluate(() => (window as unknown as { __audioLive: { ok: number; fail: number; playing: string[] } }).__audioLive);
+    const r = await page.evaluate(() => window.__audioLive);
     out.decodeOk = r.ok;
     out.decodeFail = r.fail;
     out.playing = [...new Set(r.playing)];
@@ -536,9 +533,8 @@ async function runAudioLive(browser: Browser, label: string, blockWebm: boolean)
 }
 
 async function launch(id: string): Promise<{ browser: Browser; type: BrowserType; name: string }> {
-  const chromeArgs = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
-  if (id === 'chrome' || id === 'msedge') return { browser: await chromium.launch({ channel: id, headless: !HEADED, args: chromeArgs }), type: chromium, name: id === 'chrome' ? 'Chrome' : 'Edge' };
-  if (id === 'chromium') return { browser: await chromium.launch({ headless: !HEADED, args: chromeArgs }), type: chromium, name: 'Chromium (Playwright)' };
+  if (id === 'chrome' || id === 'msedge') return { browser: await chromium.launch({ channel: id, headless: !HEADED, args: CHROME_ARGS }), type: chromium, name: id === 'chrome' ? 'Chrome' : 'Edge' };
+  if (id === 'chromium') return { browser: await chromium.launch({ headless: !HEADED, args: CHROME_ARGS }), type: chromium, name: 'Chromium (Playwright)' };
   if (id === 'firefox')
     return { browser: await firefox.launch({ headless: !HEADED, firefoxUserPrefs: { 'media.volume_scale': '0.0' } }), type: firefox, name: 'Firefox (Playwright)' };
   if (id === 'webkit') return { browser: await webkit.launch({ headless: !HEADED }), type: webkit, name: 'WebKit (Playwright, gần đúng Safari)' };

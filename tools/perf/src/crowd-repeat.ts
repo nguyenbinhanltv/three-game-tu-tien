@@ -3,7 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT } from './devserver';
+import { ROOT } from './lib/devserver';
 
 const argv = process.argv.slice(2);
 const take = (n: string, d: string): string => {
@@ -21,7 +21,7 @@ const p95s: number[] = [];
 const p50s: number[] = [];
 const draws: number[] = [];
 for (let i = 0; i < RUNS; i++) {
-  const r = spawnSync('pnpm', ['--filter', '@dtl/perf', 'crowd', ...pass], { encoding: 'utf8', shell: true, env: process.env, timeout: 600_000 });
+  const r = spawnSync('pnpm', ['--filter', '@dtl/perf', 'crowd', ...pass], { encoding: 'utf8', shell: true, timeout: 600_000 });
   const line = (r.stdout ?? '').split('\n').find((l) => /^\S+\s+\d+\s+(WebGPU|WebGL2)/.test(l.trim() ? l : ''));
   if (!line) {
     console.log(`lượt ${i + 1}: không có kết quả`);

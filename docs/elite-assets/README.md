@@ -30,7 +30,7 @@ thật trong game (mét), trừ ba con Vân Lam (nhập ở scale 1, `scale` tro
 | `elite_da_minh_loc_vuong` | Dạ Minh Lộc Vương | Thiên Khuyết (E-4) | quadruped (kiểu đòn `gore`: húc) | dài 3,0 m | 11 342 | 30 | cơ bản |
 | `elite_thach_tuong_dai_tuong` | Thạch Tượng Đại Tướng | Thiên Khuyết (E-4) | biped Mixamo | cao 3,4 m | 11 997 | 51 | + slam sweep stun |
 
-Ảnh duyệt (bốn góc nhìn + lưới idle/run/attack/death) ở phần "Ảnh" cuối trang; chụp lại bằng `pnpm shots:elite --out <thư mục>`.
+Ảnh duyệt (bốn góc nhìn + lưới idle/run/attack/death) ở phần "Ảnh" cuối trang; chụp lại bằng `pnpm shots asset --group elite_ --out <thư mục>`.
 
 ## Việc đã làm trong pipeline
 
@@ -39,7 +39,7 @@ thật trong game (mét), trừ ba con Vân Lam (nhập ở scale 1, `scale` tro
 - **`anim_quadruped.py`**: thêm `geometric_layout()` làm đường lùi khi `generic_layout()` thất bại. Rig quadruped Tripo của các tinh anh lộn xộn (chân mọc từ xương đầu, tên "Limb" gắn nhầm vào đuôi, không có xương đầu riêng, chân 2–6 xương). Bố cục hình học tách cây thành chuỗi xương, phân chân/đuôi/đầu theo vị trí, gắn lại cha của chân/đuôi vào xương cột sống gần nhất (Edit mode, tư thế nghỉ và trọng số không đổi). Sói/heo/cáo cũ vẫn đi đường cũ.
 - **`anim_serpent.py`**: `import.serpent.auto` tự đo đường tâm từ lưới (ngô công nằm ngang, chữ S) thay cho đường tâm đo tay của Hàn Giao; Hàn Giao không đổi.
 - **`anim_bird.py`** (mới): rig chim, cánh hai chuỗi xương, clip lơ lửng/bay/lao/giật/rơi.
-- **`tools/perf/src/shots-elite.ts`** (`pnpm shots:elite --out <thư mục> [--only id,id]`): ảnh duyệt trong trang xem asset (`?show=<id>`), tắt tiếng.
+- **`tools/perf/src/shots-elite.ts`** (`pnpm shots asset --group elite_ --out <thư mục> [--only id,id]`): ảnh duyệt trong trang xem asset (`?show=<id>`), tắt tiếng.
 
 ## Dùng trong game
 
@@ -94,7 +94,7 @@ GPU thật (Chrome, WebGPU), tắt tiếng, chụp trong trang xem asset (`?show
 
 ### Trong game, trước và sau (ba con Vân Lam)
 
-`pnpm shots:elitegame --out <thư mục>`: tài khoản thử bất tử ở bãi hồ, `/gm spawn`; "cũ" là model khối (`?models=legacy`), "mới" là model Tripo. Đứng chờ · đang đánh · vừa chết (rơi đồ).
+`pnpm shots mons --level van_lam --out <thư mục>`: tài khoản thử bất tử ở bãi hồ, `/gm spawn`; "cũ" là model khối (`?models=legacy`), "mới" là model Tripo. Đứng chờ · đang đánh · vừa chết (rơi đồ).
 
 | | Cũ (khối) | Mới (Tripo) |
 | --- | --- | --- |

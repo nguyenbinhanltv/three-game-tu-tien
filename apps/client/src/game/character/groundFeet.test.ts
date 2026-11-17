@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { cpuBudget, fastest } from './cpuBudget';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
@@ -117,10 +118,13 @@ describe('chân bám đất trên dốc', () => {
       for (let t = 0; t < N; t++) for (const c of cs) c.update(1 / 60, anim({ speed: 3 }));
       return (performance.now() - t0) / N;
     };
-    const a = measure(build());
-    const b = measure(build('biped'));
+    // Lấy lần nhanh nhất trong 3 lượt cho mỗi bên: hiệu hai số đo nhỏ rất nhạy với nhiễu (GC, tiến trình khác).
+    const plain = build();
+    const grounded = build('biped');
+    const a = fastest(3, () => measure(plain));
+    const b = fastest(3, () => measure(grounded));
     console.info(`[perf] 12 thể LOD0: ${a.toFixed(3)} ms → ${b.toFixed(3)} ms mỗi khung (thêm ${(b - a).toFixed(3)} ms)`);
-    expect(b - a).toBeLessThan(0.5);
+    expect(b - a).toBeLessThan(cpuBudget(0.5));
   });
 
   it('sói: nghiêng thân theo dốc dọc', async () => {

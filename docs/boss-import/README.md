@@ -6,7 +6,7 @@ Nguồn: `D:/METAGRIT/dtl-asset-source/boss/<id>/tripo/{raw_v01,rig_v01}.glb` (n
 Boss cũ (Hàn Giao, Kiếm Khôi, Huyết Lang Vương, Thủ Mộ Tướng) giữ nguyên, GLB và manifest của chúng không đổi.
 
 Ảnh GPU thật (Chrome WebGPU, tắt tiếng): `docs/boss-import/<id>_turntable.jpg` (trước, bên, sau, chéo) và `<id>_clips.jpg`
-(idle, run, attack, slam, sweep, chant, stun, hit_light, death × 5 khung). Chụp lại: `pnpm shots:boss --out <thư mục> [--only id,id]`.
+(idle, run, attack, slam, sweep, chant, stun, hit_light, death × 5 khung). Chụp lại: `pnpm shots asset --group boss_ --out <thư mục> [--only id,id]`.
 Xem trực tiếp trong game client: `?mute=1&show=boss[&id=<id>]` (chọn boss, chọn clip, khung xương, lưới dây).
 
 | Boss | Cách làm xương | Cỡ trong game | Tam giác LOD0/1/2 | Xương | GLB |

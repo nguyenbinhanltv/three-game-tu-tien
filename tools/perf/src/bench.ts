@@ -24,23 +24,21 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { FOREST, LAKE, SPAWN_POINT } from '@dtl/shared';
-import { chromium, type Browser, type Page } from 'playwright';
-import { createDevServer, ROOT, sleep } from './devserver';
-import { levelPoints, levelQuery, requireLevel } from './levelpoints';
+import type { Browser, Page } from 'playwright';
+import { createDevServer, ROOT, sleep } from './lib/devserver';
+import { args, env, opt, ports } from './lib/env';
+import { launchChrome } from './lib/browser';
+import { gm } from './lib/game';
+import { levelPoints, levelQuery, requireLevel } from './lib/levelpoints';
 
 const OUT_DIR = path.join(ROOT, 'bench/results');
 
 // ---------- tham số ----------
-const args = process.argv.slice(2);
-const opt = (name: string, def: string) => {
-  const i = args.indexOf(name);
-  return i >= 0 && args[i + 1] ? args[i + 1] : def;
-};
 const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',').filter(Boolean) as ('webgpu' | 'webgl2')[];
 const PRESETS = opt('--presets', 'low,medium,high').split(',').filter(Boolean);
 const SECONDS = Number(opt('--seconds', '8'));
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
-const CHANNEL = opt('--channel', process.env.BENCH_CHANNEL ?? 'chrome');
+const CHANNEL = opt('--channel', env('BENCH_CHANNEL', 'chrome'));
 const HEADED = args.includes('--headed');
 /** `--query a=b&c=d`: thêm vào URL game (A/B cờ kiểm thử). `--points rung,ho`: chỉ đo các điểm này. */
 /** `--level <id>`: đo ở level khác Vân Lam (điểm suy từ dữ liệu level, thêm `level=<id>` vào URL; kết quả ghi `level` trong settings). */
@@ -50,8 +48,7 @@ const EXTRA_QUERY = [levelQuery(LEVEL), opt('--query', '')].filter(Boolean).join
 const ONLY_POINTS = opt('--points', '').split(',').filter(Boolean);
 /** devicePixelRatio giả lập; engine lấy min(dpr, pixelRatio của preset) nên dpr 1 làm các preset chỉ khác hậu kỳ/bóng. */
 const DPR = Number(opt('--dpr', '1'));
-const PORT = Number(process.env.PORT ?? 2635);
-const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5135);
+const { port: PORT, clientPort: CLIENT_PORT } = ports(2635, 5135);
 
 /** Đường camera cố định: sân tông môn (chỗ hồi sinh), giữa rừng, bãi ven hồ phía tây (nhìn ra mặt nước khi xoay). */
 const VAN_LAM_WAYPOINTS = [
@@ -72,26 +69,27 @@ const stopServer = dev.stop;
 
 // ---------- đo trong trang ----------
 type FrameRow = [cpuMs: number, drawCalls: number, triangles: number];
-type BenchWindow = {
-  __bench: {
-    rec: boolean;
-    frames: FrameRow[];
-    cam: { t0: number; dur: number; yaw0: number; pitch: number; dist: number } | null;
-    texBytes: () => number;
-    texCount: () => number;
-    texTop: (n: number) => string[];
-    patched: unknown;
-  };
-  __game?: Record<string, any>;
-};
+declare global {
+  interface Window {
+    __bench: {
+      rec: boolean;
+      frames: FrameRow[];
+      cam: { t0: number; dur: number; yaw0: number; pitch: number; dist: number } | null;
+      texBytes: () => number;
+      texCount: () => number;
+      texTop: (n: number) => string[];
+      patched: unknown;
+    };
+  }
+}
 
 /** Chạy trong trang trước mọi script của game: đặt preset, bắt `window.__game` để bọc `frame()` và backend. */
 function initScript(preset: string): void {
   localStorage.setItem('dtl.quality', preset);
-  const w = window as unknown as BenchWindow;
+  const w = window;
   const tex = new Map<object, number>();
   const texDesc = new Map<object, string>();
-  const B: BenchWindow['__bench'] = {
+  const B: Window['__bench'] = {
     rec: false,
     frames: [],
     cam: null,
@@ -211,13 +209,6 @@ type Run = {
   errors: string[];
 };
 
-/** Server bỏ tin chat cách tin trước dưới 800 ms (`Sim.onChat`, `sys.chat_rate`), nên chờ đủ trước lệnh kế tiếp. */
-const GM_GAP_MS = 1000;
-
-async function gm(page: Page, cmd: string): Promise<void> {
-  await page.evaluate((m) => (window as unknown as BenchWindow).__game!.send('chat', { m }), '/gm ' + cmd);
-  await sleep(GM_GAP_MS);
-}
 
 async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: string): Promise<Run> {
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH }, deviceScaleFactor: DPR });
@@ -236,7 +227,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
     await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
     await page.waitForFunction(
       () => {
-        const g = (window as unknown as BenchWindow).__game;
+        const g = window.__game;
         return !!g && g.frames > 30 && !!g.me?.();
       },
       undefined,
@@ -244,7 +235,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
     );
     const loadMs = Date.now() - t0;
     const info = await page.evaluate(async () => {
-      const g = (window as unknown as BenchWindow).__game!;
+      const g = window.__game!;
       const be = g.renderer.backend;
       let adapter = '';
       if (be.isWebGPUBackend) {
@@ -271,7 +262,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
       let arrived = false;
       while (Date.now() < until) {
         const s = await page.evaluate(() => {
-          const g = (window as unknown as BenchWindow).__game!;
+          const g = window.__game!;
           return { tiles: g.terrain.tileCount() as number, x: g.renderPos.x as number, z: g.renderPos.z as number };
         });
         const near = Math.hypot(s.x - wp.x, s.z - wp.z) < 3;
@@ -285,7 +276,7 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
       }
       await page.evaluate(
         ({ dur, cam }) => {
-          const B = (window as unknown as BenchWindow).__bench;
+          const B = window.__bench;
           B.frames = [];
           B.cam = { t0: performance.now(), dur, yaw0: 0, pitch: cam.pitch, dist: cam.dist };
           B.rec = true;
@@ -295,12 +286,12 @@ async function runOne(browser: Browser, renderer: 'webgpu' | 'webgl2', preset: s
       const recStart = Date.now();
       await sleep(SECONDS * 1000);
       const raw = await page.evaluate(() => {
-        const w = window as unknown as BenchWindow;
+        const w = window;
         const B = w.__bench;
         B.rec = false;
         B.cam = null;
         const g = w.__game!;
-        const mem = (performance as any).memory;
+        const mem = performance.memory;
         return {
           frames: B.frames,
           textures: g.renderer.info.memory.textures as number,
@@ -366,17 +357,17 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})("high");` });
   const name = `Swap_${renderer === 'webgpu' ? 'gpu' : 'gl'}`;
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${process.env.BENCH_QUERY ?? ''}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&cine=0&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${env('BENCH_QUERY')}`;
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
     await page.waitForFunction(() => {
-      const g = (window as unknown as BenchWindow).__game;
+      const g = window.__game;
       return !!g && g.frames > 30 && !!g.me?.();
     }, undefined, { timeout: 120_000, polling: 250 });
-    const backend = await page.evaluate(() => ((window as unknown as BenchWindow).__game!.renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2'));
+    const backend = await page.evaluate(() => (window.__game!.renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2'));
     // VFX liên tục: mỗi 150 ms một hiệu ứng quanh nhân vật (đủ loại material có markBloom).
     await page.evaluate(() => {
-      const g = (window as unknown as BenchWindow).__game!;
+      const g = window.__game!;
       let i = 0;
       (window as any).__swapFx = setInterval(() => {
         const p = g.renderPos;
@@ -396,7 +387,7 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
     for (let step = 0; step < n; step++) {
       const preset = order[step % order.length];
       const s = await page.evaluate(async (q) => {
-        const w = window as unknown as BenchWindow;
+        const w = window;
         const g = w.__game!;
         g.setQuality(q);
         await new Promise((r) => setTimeout(r, 600));
@@ -426,13 +417,7 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
 
 async function mainSwitch(n: number): Promise<void> {
   await startServer();
-  const launchArgs = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
-  let browser: Browser;
-  try {
-    browser = await chromium.launch({ channel: CHANNEL === 'chromium' ? undefined : CHANNEL, headless: !HEADED, args: launchArgs });
-  } catch {
-    browser = await chromium.launch({ headless: !HEADED, args: launchArgs });
-  }
+  const browser = await launchChrome({ channel: CHANNEL, headed: HEADED, tag: 'bench' });
   let fail = false;
   try {
     for (const renderer of RENDERERS) {
@@ -512,15 +497,7 @@ function compare(runs: Run[], prevFile: string | null): { worse: string[]; pairs
 async function main(): Promise<void> {
   const started = new Date();
   await startServer();
-  let browser: Browser;
-  const launchArgs = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
-  try {
-    browser = await chromium.launch({ channel: CHANNEL === 'chromium' ? undefined : CHANNEL, headless: !HEADED, args: launchArgs });
-  } catch (e) {
-    if (CHANNEL === 'chromium') throw e;
-    console.warn(`[bench] không mở được channel "${CHANNEL}" (${(e as Error).message.split('\n')[0]}), dùng Chromium của Playwright`);
-    browser = await chromium.launch({ headless: !HEADED, args: launchArgs });
-  }
+  const browser = await launchChrome({ channel: CHANNEL, headed: HEADED, tag: 'bench' });
   const runs: Run[] = [];
   try {
     for (const renderer of RENDERERS) {
