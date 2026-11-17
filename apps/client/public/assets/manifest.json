@@ -7896,8 +7896,8 @@
       "id": "set_co_thanh_huyen_giap_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_co_thanh_huyen_giap_nam.glb",
-      "file": "set_co_thanh_huyen_giap_nam.49d3f8c17e.glb",
-      "bytes": 3916676,
+      "file": "set_co_thanh_huyen_giap_nam.25e3c52347.glb",
+      "bytes": 1542596,
       "rawBytes": 3798488,
       "triangles": 12702,
       "rawTriangles": 12702,
@@ -7910,7 +7910,7 @@
       "textures": [
         {
           "name": "set_co_thanh_huyen_giap_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -7919,7 +7919,7 @@
         },
         {
           "name": "set_co_thanh_huyen_giap_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -7928,7 +7928,7 @@
         },
         {
           "name": "set_co_thanh_huyen_giap_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -7937,7 +7937,7 @@
         },
         {
           "name": "set_co_thanh_huyen_giap_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -7980,8 +7980,8 @@
       "id": "set_co_thanh_huyen_giap_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_co_thanh_huyen_giap_nu.glb",
-      "file": "set_co_thanh_huyen_giap_nu.69a52ec1a2.glb",
-      "bytes": 3912208,
+      "file": "set_co_thanh_huyen_giap_nu.22b06b3280.glb",
+      "bytes": 1538128,
       "rawBytes": 3798132,
       "triangles": 12700,
       "rawTriangles": 12700,
@@ -7994,7 +7994,7 @@
       "textures": [
         {
           "name": "set_co_thanh_huyen_giap_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8003,7 +8003,7 @@
         },
         {
           "name": "set_co_thanh_huyen_giap_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8012,7 +8012,7 @@
         },
         {
           "name": "set_co_thanh_huyen_giap_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8021,7 +8021,7 @@
         },
         {
           "name": "set_co_thanh_huyen_giap_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8346,8 +8346,8 @@
       "id": "set_dia_long_ho_giap_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_dia_long_ho_giap_nam.glb",
-      "file": "set_dia_long_ho_giap_nam.27e1464bfc.glb",
-      "bytes": 4864172,
+      "file": "set_dia_long_ho_giap_nam.aaf3e9244b.glb",
+      "bytes": 1501372,
       "rawBytes": 4709036,
       "triangles": 12197,
       "rawTriangles": 12197,
@@ -8360,7 +8360,7 @@
       "textures": [
         {
           "name": "set_dia_long_ho_giap_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8369,7 +8369,7 @@
         },
         {
           "name": "set_dia_long_ho_giap_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8378,7 +8378,7 @@
         },
         {
           "name": "set_dia_long_ho_giap_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8387,7 +8387,7 @@
         },
         {
           "name": "set_dia_long_ho_giap_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8430,8 +8430,8 @@
       "id": "set_dia_long_ho_giap_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_dia_long_ho_giap_nu.glb",
-      "file": "set_dia_long_ho_giap_nu.24ecb50750.glb",
-      "bytes": 4818448,
+      "file": "set_dia_long_ho_giap_nu.4d0a751f9f.glb",
+      "bytes": 1455648,
       "rawBytes": 4708580,
       "triangles": 12199,
       "rawTriangles": 12199,
@@ -8444,7 +8444,7 @@
       "textures": [
         {
           "name": "set_dia_long_ho_giap_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8453,7 +8453,7 @@
         },
         {
           "name": "set_dia_long_ho_giap_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8462,7 +8462,7 @@
         },
         {
           "name": "set_dia_long_ho_giap_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8471,7 +8471,7 @@
         },
         {
           "name": "set_dia_long_ho_giap_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8757,8 +8757,8 @@
       "id": "set_kinh_quang_kiem_y_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_kinh_quang_kiem_y_nam.glb",
-      "file": "set_kinh_quang_kiem_y_nam.937d3133a0.glb",
-      "bytes": 3896656,
+      "file": "set_kinh_quang_kiem_y_nam.499d13858a.glb",
+      "bytes": 1304036,
       "rawBytes": 3787880,
       "triangles": 11459,
       "rawTriangles": 11459,
@@ -8771,7 +8771,7 @@
       "textures": [
         {
           "name": "set_kinh_quang_kiem_y_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8780,7 +8780,7 @@
         },
         {
           "name": "set_kinh_quang_kiem_y_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8789,7 +8789,7 @@
         },
         {
           "name": "set_kinh_quang_kiem_y_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8798,7 +8798,7 @@
         },
         {
           "name": "set_kinh_quang_kiem_y_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8841,8 +8841,8 @@
       "id": "set_kinh_quang_kiem_y_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_kinh_quang_kiem_y_nu.glb",
-      "file": "set_kinh_quang_kiem_y_nu.c55ad4df18.glb",
-      "bytes": 3895456,
+      "file": "set_kinh_quang_kiem_y_nu.de301c475e.glb",
+      "bytes": 1303276,
       "rawBytes": 3788360,
       "triangles": 11461,
       "rawTriangles": 11461,
@@ -8855,7 +8855,7 @@
       "textures": [
         {
           "name": "set_kinh_quang_kiem_y_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8864,7 +8864,7 @@
         },
         {
           "name": "set_kinh_quang_kiem_y_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8873,7 +8873,7 @@
         },
         {
           "name": "set_kinh_quang_kiem_y_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -8882,7 +8882,7 @@
         },
         {
           "name": "set_kinh_quang_kiem_y_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9168,8 +9168,8 @@
       "id": "set_liet_mach_kiem_y_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_liet_mach_kiem_y_nam.glb",
-      "file": "set_liet_mach_kiem_y_nam.b8882d4570.glb",
-      "bytes": 4098108,
+      "file": "set_liet_mach_kiem_y_nam.99dfe961c1.glb",
+      "bytes": 1248752,
       "rawBytes": 3980552,
       "triangles": 11463,
       "rawTriangles": 11463,
@@ -9182,7 +9182,7 @@
       "textures": [
         {
           "name": "set_liet_mach_kiem_y_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9191,7 +9191,7 @@
         },
         {
           "name": "set_liet_mach_kiem_y_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9200,7 +9200,7 @@
         },
         {
           "name": "set_liet_mach_kiem_y_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9209,7 +9209,7 @@
         },
         {
           "name": "set_liet_mach_kiem_y_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9252,8 +9252,8 @@
       "id": "set_liet_mach_kiem_y_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_liet_mach_kiem_y_nu.glb",
-      "file": "set_liet_mach_kiem_y_nu.786a4911c1.glb",
-      "bytes": 4098120,
+      "file": "set_liet_mach_kiem_y_nu.74da410cd3.glb",
+      "bytes": 1248764,
       "rawBytes": 3981440,
       "triangles": 11465,
       "rawTriangles": 11465,
@@ -9266,7 +9266,7 @@
       "textures": [
         {
           "name": "set_liet_mach_kiem_y_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9275,7 +9275,7 @@
         },
         {
           "name": "set_liet_mach_kiem_y_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9284,7 +9284,7 @@
         },
         {
           "name": "set_liet_mach_kiem_y_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9293,7 +9293,7 @@
         },
         {
           "name": "set_liet_mach_kiem_y_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9504,8 +9504,8 @@
       "id": "set_luu_ly_dan_y_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_luu_ly_dan_y_nam.glb",
-      "file": "set_luu_ly_dan_y_nam.6fc8d8b63b.glb",
-      "bytes": 4150324,
+      "file": "set_luu_ly_dan_y_nam.671185fe14.glb",
+      "bytes": 1074552,
       "rawBytes": 4031948,
       "triangles": 10825,
       "rawTriangles": 10825,
@@ -9518,7 +9518,7 @@
       "textures": [
         {
           "name": "set_luu_ly_dan_y_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9527,7 +9527,7 @@
         },
         {
           "name": "set_luu_ly_dan_y_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9536,7 +9536,7 @@
         },
         {
           "name": "set_luu_ly_dan_y_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9545,7 +9545,7 @@
         },
         {
           "name": "set_luu_ly_dan_y_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9588,8 +9588,8 @@
       "id": "set_luu_ly_dan_y_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_luu_ly_dan_y_nu.glb",
-      "file": "set_luu_ly_dan_y_nu.96caf2ef51.glb",
-      "bytes": 4144956,
+      "file": "set_luu_ly_dan_y_nu.8eea43d7e5.glb",
+      "bytes": 1069872,
       "rawBytes": 4032288,
       "triangles": 10825,
       "rawTriangles": 10825,
@@ -9602,7 +9602,7 @@
       "textures": [
         {
           "name": "set_luu_ly_dan_y_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9611,7 +9611,7 @@
         },
         {
           "name": "set_luu_ly_dan_y_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9620,7 +9620,7 @@
         },
         {
           "name": "set_luu_ly_dan_y_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9629,7 +9629,7 @@
         },
         {
           "name": "set_luu_ly_dan_y_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9840,8 +9840,8 @@
       "id": "set_phuc_mach_dan_bao_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_phuc_mach_dan_bao_nam.glb",
-      "file": "set_phuc_mach_dan_bao_nam.33978d5ac8.glb",
-      "bytes": 4403172,
+      "file": "set_phuc_mach_dan_bao_nam.d76b1d2db4.glb",
+      "bytes": 1238552,
       "rawBytes": 4243308,
       "triangles": 11045,
       "rawTriangles": 11045,
@@ -9854,7 +9854,7 @@
       "textures": [
         {
           "name": "set_phuc_mach_dan_bao_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9863,7 +9863,7 @@
         },
         {
           "name": "set_phuc_mach_dan_bao_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9872,7 +9872,7 @@
         },
         {
           "name": "set_phuc_mach_dan_bao_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9881,7 +9881,7 @@
         },
         {
           "name": "set_phuc_mach_dan_bao_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9924,8 +9924,8 @@
       "id": "set_phuc_mach_dan_bao_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_phuc_mach_dan_bao_nu.glb",
-      "file": "set_phuc_mach_dan_bao_nu.a69ec6a706.glb",
-      "bytes": 4389572,
+      "file": "set_phuc_mach_dan_bao_nu.13d6229a1e.glb",
+      "bytes": 1224952,
       "rawBytes": 4243160,
       "triangles": 11045,
       "rawTriangles": 11045,
@@ -9938,7 +9938,7 @@
       "textures": [
         {
           "name": "set_phuc_mach_dan_bao_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9947,7 +9947,7 @@
         },
         {
           "name": "set_phuc_mach_dan_bao_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9956,7 +9956,7 @@
         },
         {
           "name": "set_phuc_mach_dan_bao_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -9965,7 +9965,7 @@
         },
         {
           "name": "set_phuc_mach_dan_bao_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10176,8 +10176,8 @@
       "id": "set_than_tang_dan_bao_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_than_tang_dan_bao_nam.glb",
-      "file": "set_than_tang_dan_bao_nam.8cca555c29.glb",
-      "bytes": 4160744,
+      "file": "set_than_tang_dan_bao_nam.395dd599f8.glb",
+      "bytes": 1468064,
       "rawBytes": 4023660,
       "triangles": 11399,
       "rawTriangles": 11399,
@@ -10190,7 +10190,7 @@
       "textures": [
         {
           "name": "set_than_tang_dan_bao_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10199,7 +10199,7 @@
         },
         {
           "name": "set_than_tang_dan_bao_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10208,7 +10208,7 @@
         },
         {
           "name": "set_than_tang_dan_bao_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10217,7 +10217,7 @@
         },
         {
           "name": "set_than_tang_dan_bao_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10260,8 +10260,8 @@
       "id": "set_than_tang_dan_bao_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_than_tang_dan_bao_nu.glb",
-      "file": "set_than_tang_dan_bao_nu.a594837b2f.glb",
-      "bytes": 4153200,
+      "file": "set_than_tang_dan_bao_nu.f293a301f2.glb",
+      "bytes": 1460516,
       "rawBytes": 4023540,
       "triangles": 11401,
       "rawTriangles": 11401,
@@ -10274,7 +10274,7 @@
       "textures": [
         {
           "name": "set_than_tang_dan_bao_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10283,7 +10283,7 @@
         },
         {
           "name": "set_than_tang_dan_bao_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10292,7 +10292,7 @@
         },
         {
           "name": "set_than_tang_dan_bao_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10301,7 +10301,7 @@
         },
         {
           "name": "set_than_tang_dan_bao_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10587,8 +10587,8 @@
       "id": "set_tinh_khuyet_kiem_bao_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_tinh_khuyet_kiem_bao_nam.glb",
-      "file": "set_tinh_khuyet_kiem_bao_nam.b3c531933b.glb",
-      "bytes": 4478628,
+      "file": "set_tinh_khuyet_kiem_bao_nam.0d6f493e59.glb",
+      "bytes": 1604884,
       "rawBytes": 4338612,
       "triangles": 11860,
       "rawTriangles": 11860,
@@ -10601,7 +10601,7 @@
       "textures": [
         {
           "name": "set_tinh_khuyet_kiem_bao_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10610,7 +10610,7 @@
         },
         {
           "name": "set_tinh_khuyet_kiem_bao_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10619,7 +10619,7 @@
         },
         {
           "name": "set_tinh_khuyet_kiem_bao_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10628,7 +10628,7 @@
         },
         {
           "name": "set_tinh_khuyet_kiem_bao_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10671,8 +10671,8 @@
       "id": "set_tinh_khuyet_kiem_bao_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_tinh_khuyet_kiem_bao_nu.glb",
-      "file": "set_tinh_khuyet_kiem_bao_nu.1085a24383.glb",
-      "bytes": 4476132,
+      "file": "set_tinh_khuyet_kiem_bao_nu.a02f014885.glb",
+      "bytes": 1602392,
       "rawBytes": 4338328,
       "triangles": 11864,
       "rawTriangles": 11864,
@@ -10685,7 +10685,7 @@
       "textures": [
         {
           "name": "set_tinh_khuyet_kiem_bao_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10694,7 +10694,7 @@
         },
         {
           "name": "set_tinh_khuyet_kiem_bao_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10703,7 +10703,7 @@
         },
         {
           "name": "set_tinh_khuyet_kiem_bao_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10712,7 +10712,7 @@
         },
         {
           "name": "set_tinh_khuyet_kiem_bao_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10923,8 +10923,8 @@
       "id": "set_van_kinh_thiet_giap_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_van_kinh_thiet_giap_nam.glb",
-      "file": "set_van_kinh_thiet_giap_nam.6d67a18175.glb",
-      "bytes": 4836964,
+      "file": "set_van_kinh_thiet_giap_nam.76fef40b93.glb",
+      "bytes": 1438412,
       "rawBytes": 4735280,
       "triangles": 12007,
       "rawTriangles": 12007,
@@ -10937,7 +10937,7 @@
       "textures": [
         {
           "name": "set_van_kinh_thiet_giap_nam_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10946,7 +10946,7 @@
         },
         {
           "name": "set_van_kinh_thiet_giap_nam_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10955,7 +10955,7 @@
         },
         {
           "name": "set_van_kinh_thiet_giap_nam_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -10964,7 +10964,7 @@
         },
         {
           "name": "set_van_kinh_thiet_giap_nam_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -11007,8 +11007,8 @@
       "id": "set_van_kinh_thiet_giap_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_van_kinh_thiet_giap_nu.glb",
-      "file": "set_van_kinh_thiet_giap_nu.abc140fafa.glb",
-      "bytes": 4837192,
+      "file": "set_van_kinh_thiet_giap_nu.218488306d.glb",
+      "bytes": 1438640,
       "rawBytes": 4735348,
       "triangles": 12007,
       "rawTriangles": 12007,
@@ -11021,7 +11021,7 @@
       "textures": [
         {
           "name": "set_van_kinh_thiet_giap_nu_emissive",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -11030,7 +11030,7 @@
         },
         {
           "name": "set_van_kinh_thiet_giap_nu_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -11039,7 +11039,7 @@
         },
         {
           "name": "set_van_kinh_thiet_giap_nu_color",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
@@ -11048,7 +11048,7 @@
         },
         {
           "name": "set_van_kinh_thiet_giap_nu_orm",
-          "mimeType": "image/png",
+          "mimeType": "image/webp",
           "width": 1024,
           "height": 1024,
           "slots": [
