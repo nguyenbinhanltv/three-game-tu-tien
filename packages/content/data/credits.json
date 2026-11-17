@@ -1,0 +1,287 @@
+{
+  "entries": [
+    {
+      "id": "kiem_tan_hoa",
+      "kind": "model",
+      "title": "Sword of Miracle Free",
+      "author": "Art_workshop",
+      "url": "https://sketchfab.com/3d-models/sword-of-miracle-free-a163029fb3d74626bbb1711bd8840c46",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "merge",
+        "decimate",
+        "texture"
+      ],
+      "assets": [
+        "prop_kiem_tan_hoa"
+      ]
+    },
+    {
+      "id": "gorethrax",
+      "kind": "model",
+      "title": "GORETHRAX // The Infernal Three- Headed Hound",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/gorethrax-the-infernal-three-headed-hound-90f3e2338d6f41b8a94f376fbc3db3e4",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig",
+        "anim"
+      ],
+      "assets": [
+        "boss_tam_thu_nguc_khuyen"
+      ]
+    },
+    {
+      "id": "varkessa",
+      "kind": "model",
+      "title": "VARKESSA // The Infernal Emberblade",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/varkessa-the-infernal-emberblade-13c07cff4b884037a08b7463df5bc996",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "cut",
+        "decimate",
+        "bake",
+        "rig",
+        "pose"
+      ],
+      "assets": [
+        "set_skin_varkessa_nam",
+        "set_skin_varkessa_nu"
+      ],
+      "pending": true
+    },
+    {
+      "id": "ual",
+      "kind": "anim",
+      "title": "Universal Animation Library 1 + 2 (Standard)",
+      "author": "Quaternius",
+      "url": "https://quaternius.com",
+      "license": "CC0-1.0",
+      "mods": [
+        "retarget"
+      ],
+      "assets": [
+        "anim_human_ual"
+      ]
+    },
+    {
+      "id": "polyhaven",
+      "kind": "texture",
+      "title": "Poly Haven (leafy_grass, brown_mud_leaves_01, forrest_ground_01, rocky_terrain_02, rock_face, coast_sand_rocks_02, cobblestone_floor_04, gravelly_sand, dry_ground_rocks, red_laterite_soil_stones, sandstone_cracks, rock_face_03, aerial_sand)",
+      "author": "Poly Haven (Charlotte Baglioni, Rob Tuytel, Amal Kumar, Greg Zaal, Dario Barresi…)",
+      "url": "https://polyhaven.com/textures",
+      "license": "CC0-1.0",
+      "mods": [
+        "pack"
+      ]
+    },
+    {
+      "id": "makehuman",
+      "kind": "model",
+      "title": "MakeHuman base mesh + MPFB2 (nhân vật nền v2)",
+      "author": "MakeHuman Community",
+      "url": "https://github.com/makehumancommunity/mpfb2",
+      "license": "CC0-1.0",
+      "mods": [
+        "shape",
+        "rig"
+      ],
+      "assets": [
+        "chr_v2_nam",
+        "chr_v2_nu",
+        "chr_v2_hb_nam",
+        "chr_v2_hb_nu"
+      ]
+    },
+    {
+      "id": "oga_swords",
+      "kind": "sound",
+      "title": "20 Sword Sound Effects (Attacks and Clashes)",
+      "author": "StarNinjas",
+      "url": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_rpg",
+      "kind": "sound",
+      "title": "50 RPG sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/50-rpg-sound-effects",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_interface",
+      "kind": "sound",
+      "title": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_jingles",
+      "kind": "sound",
+      "title": "85 Short music jingles",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/85-short-music-jingles",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_hit75",
+      "kind": "sound",
+      "title": "75 CC0 breaking / falling / hit sfx",
+      "author": "rubberduck",
+      "url": "https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_sfx100",
+      "kind": "sound",
+      "title": "100 CC0 SFX #2",
+      "author": "rubberduck",
+      "url": "https://opengameart.org/content/100-cc0-sfx-2",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_loops30",
+      "kind": "sound",
+      "title": "30 CC0 SFX Loops",
+      "author": "rubberduck",
+      "url": "https://opengameart.org/content/30-cc0-sfx-loops",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_morning",
+      "kind": "sound",
+      "title": "AMB Morning Sounds (Perfect Loop)",
+      "author": "Kresiek The Furry",
+      "url": "https://opengameart.org/content/amb-morning-sounds-perfect-loop",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_crickets",
+      "kind": "sound",
+      "title": "Crickets Ambient Noise - loopable",
+      "author": "Wolfgang_",
+      "url": "https://opengameart.org/content/crickets-ambient-noise-loopable",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_cure",
+      "kind": "sound",
+      "title": "Cure Magic",
+      "author": "Someoneman",
+      "url": "https://opengameart.org/content/cure-magic",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_magic",
+      "kind": "sound",
+      "title": "Magic Spell SFX",
+      "author": "JaggedStone",
+      "url": "https://opengameart.org/content/magic-spell-sfx",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_rain",
+      "kind": "sound",
+      "title": "Rain + Long Thunder",
+      "author": "WuxiaScrub",
+      "url": "https://opengameart.org/content/rain-long-thunder",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_sea",
+      "kind": "sound",
+      "title": "Sea and river wave sounds",
+      "author": "RandomMind",
+      "url": "https://opengameart.org/content/sea-and-river-wave-sounds",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "oga_wind",
+      "kind": "sound",
+      "title": "wind whoosh loop",
+      "author": "SketchMan3",
+      "url": "https://opengameart.org/content/wind-whoosh-loop",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "font_charm",
+      "kind": "font",
+      "title": "Charm Bold",
+      "author": "The Charm Project Authors (Cadson Demak)",
+      "url": "https://fonts.google.com/specimen/Charm",
+      "license": "OFL-1.1",
+      "mods": [
+        "subset"
+      ]
+    },
+    {
+      "id": "font_alegreya",
+      "kind": "font",
+      "title": "Alegreya SC Bold",
+      "author": "The Alegreya Project Authors (Huerta Tipográfica)",
+      "url": "https://fonts.google.com/specimen/Alegreya+SC",
+      "license": "OFL-1.1",
+      "mods": [
+        "subset"
+      ]
+    },
+    {
+      "id": "generaluser",
+      "kind": "music",
+      "title": "GeneralUser GS v2.0.3 (soundfont render nhạc nền tự soạn)",
+      "author": "S. Christian Collins",
+      "url": "https://www.schristiancollins.com/generaluser.php",
+      "license": "GeneralUser-GS-2.0",
+      "mods": [
+        "render"
+      ]
+    }
+  ]
+}

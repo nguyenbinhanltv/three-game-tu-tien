@@ -22,6 +22,7 @@ import type {
   RecipeDef,
   SkillDef,
 } from '@dtl/shared';
+import creditsJson from '../data/credits.json';
 import itemsJson from '../data/items.json';
 import monstersJson from '../data/monsters.json';
 import skillsJson from '../data/skills.json';
@@ -226,6 +227,32 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
 /** Năm linh căn ngũ hành (P3-7). */
 export const ROOTS = rootsJson as RootDef[];
 export const GLOSSARY = glossaryJson;
+
+/** Ghi công asset bên thứ ba (nguồn duy nhất, đối chiếu với assets/LICENSES.md + meta.json bằng content:check). */
+export type CreditKind = 'model' | 'anim' | 'texture' | 'sound' | 'font' | 'music';
+export interface CreditEntry {
+  id: string;
+  kind: CreditKind;
+  title: string;
+  author: string;
+  url: string;
+  /** SPDX, hoặc 'GeneralUser-GS-2.0' cho soundfont. */
+  license: string;
+  /** Mã chỉnh sửa → chuỗi `credits.mod.<mã>`. */
+  mods: string[];
+  /** Id asset trong assets/source/<loại>/<id>/meta.json. */
+  assets?: string[];
+  /** Asset chưa nằm trên main (PR đang mở); check bỏ qua đối chiếu meta/LICENSES. */
+  pending?: boolean;
+}
+export const CREDITS = (creditsJson as { entries: CreditEntry[] }).entries;
+export const CREDIT_KINDS: CreditKind[] = ['model', 'anim', 'texture', 'sound', 'font', 'music'];
+export const CREDIT_LICENSE_URL: Record<string, string> = {
+  'CC-BY-4.0': 'https://creativecommons.org/licenses/by/4.0/',
+  'CC0-1.0': 'https://creativecommons.org/publicdomain/zero/1.0/',
+  'OFL-1.1': 'https://openfontlicense.org/open-font-license-official-text/',
+  'GeneralUser-GS-2.0': 'https://github.com/mrbumpy409/GeneralUser-GS/blob/main/LICENSE.txt',
+};
 /** Key pose cho công cụ tư thế IK (client nướng thành AnimationClip). Thêm tệp mới trong data/poses thì khai báo ở đây. */
 export const POSES = [poseKiemThuJson, poseChemNgangJson, posePhiKiemJson, poseKiemKhiTramJson, poseHoTheJson, poseThienKiemVuJson, poseHoiNguyenJson, poseLoiDinhJson, poseNguKiemJson, poseNguKhongJson, poseNiemChuJson, poseTamThienJson, poseRutKiemJson, poseTraKiemJson, poseKiemAnhJson, poseVanKiemJson, poseTranSonJson, poseKimCuongJson, poseXuanPhongJson, poseHoiThienJson, posePhiKiem2Json, posePhiKiem3Json, posePhiKiemHpJson, posePhiKiem2HpJson, posePhiKiem3HpJson, posePhiKiemDsJson, posePhiKiem2DsJson, posePhiKiem3DsJson, poseKiemKhiTramHpJson, poseKiemKhiTramDsJson, poseHoanhKiemJson, poseThuanDiTramJson, poseThienKiemHoaHinhJson, poseThietQuyenJson, poseDanHoaJson, poseKiemVuJson, poseKiemDanJson, posePhanAnhKiemAnhJson, poseKimChungJson, poseSonNhacJson, poseAnhThietThanJson, poseThuanDiHoTheJson, poseThienKimPhapTuongJson, poseMocLinhJson, poseDuocVuJson, poseNgungDanJson, poseAnhDuocHoaThanJson, poseThuanDiCuuVienJson, poseThienDanPhapGioiJson] as unknown as PoseDef[];
 

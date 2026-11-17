@@ -3,7 +3,7 @@
  * `vw`/`vh` truyền vào đã chia cho hệ số phóng.
  */
 
-export type WinId = 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party';
+export type WinId = 'bag' | 'char' | 'quests' | 'help' | 'settings' | 'map' | 'method' | 'party' | 'credits';
 
 export interface WinState {
   id: WinId;
@@ -23,9 +23,9 @@ export const WIN_GAP = 12;
 export const WIN_MARGIN = 12;
 
 /** Chiều rộng thiết kế từng cửa sổ (khớp `width` truyền cho PanelWindow). */
-export const WIN_WIDTH: Record<WinId, number> = { bag: 520, char: 560, quests: 460, help: 520, settings: 430, map: 980, method: 600, party: 460 };
+export const WIN_WIDTH: Record<WinId, number> = { bag: 520, char: 560, quests: 460, help: 520, settings: 430, map: 980, method: 600, party: 460, credits: 520 };
 /** Chiều cao ước lượng để canh giữa (cửa sổ cuộn nên không biết trước). */
-export const WIN_HEIGHT: Record<WinId, number> = { bag: 600, char: 680, quests: 520, help: 460, settings: 600, map: 640, method: 600, party: 520 };
+export const WIN_HEIGHT: Record<WinId, number> = { bag: 600, char: 680, quests: 520, help: 460, settings: 600, map: 640, method: 600, party: 520, credits: 620 };
 
 /** Cửa sổ ghép đôi: nhân vật bên trái, túi bên phải. */
 export const PAIR_LEFT: WinId = 'char';
