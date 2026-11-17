@@ -9,7 +9,7 @@ const MARGIN = 8;
  * Chú giải: hiện sau 250 ms khi rê chuột, ngay khi focus bàn phím, ẩn khi rời hoặc nhấn Esc. Vẽ `position: fixed` qua portal
  * ra `document.body` (bảng có `filter` và `clip-path` nên tip không thể nằm trong); ưu tiên phía trên, tự lật xuống khi hết chỗ và ép vào trong màn hình.
  */
-export function Tooltip({ content, children }: { content: ReactNode; children: ReactNode }) {
+export function Tooltip({ content, children, tipClass }: { content: ReactNode; children: ReactNode; tipClass?: string }) {
   const id = useId();
   const host = useRef<HTMLSpanElement>(null);
   const tip = useRef<HTMLDivElement>(null);
@@ -62,7 +62,7 @@ export function Tooltip({ content, children }: { content: ReactNode; children: R
       {children}
       {open &&
         createPortal(
-          <div ref={tip} id={id} role="tooltip" className="k-tip" data-show={pos ? 'true' : 'false'} style={{ left: pos?.x ?? 0, top: pos?.y ?? 0 }}>
+          <div ref={tip} id={id} role="tooltip" className={'k-tip' + (tipClass ? ' ' + tipClass : '')} data-show={pos ? 'true' : 'false'} style={{ left: pos?.x ?? 0, top: pos?.y ?? 0 }}>
             <div className="k-tip-edge">
               <div className="k-tip-in">{content}</div>
             </div>
