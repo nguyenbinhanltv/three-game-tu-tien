@@ -39,3 +39,7 @@ Thư mục `chr\set_liet_mach_kiem_y\` (đã có concept và `tripo\` bản cũ:
 ## Sau khi dựng
 
 Báo tên mảnh đã lưu. Claude nhập bằng `tools/blender/outfit_build.py` (meta `outfit.player = chr_v2_nam|nu`, `files` trỏ `raw_*_v02` cho Liệt Mạch), chụp lại ma trận ảnh `pnpm --filter @dtl/perf run shots:chrv2` và so với bản thủ tục.
+
+## Ảnh xem trước
+
+`tan-thu-*.webp`, `lac-kiem-*.webp`, `liet-mach-*.webp` (trước/sau/nghiêng và từng mảnh) trong thư mục này. Ảnh gốc PNG: `../dtl-asset-source/chr/<bộ>/concept/v2_*.png` (bộ: `set_de_tu`, `set_lac_kiem`, `set_liet_mach_kiem_y`).
