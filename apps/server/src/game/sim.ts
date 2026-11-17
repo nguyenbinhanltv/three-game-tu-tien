@@ -2082,7 +2082,7 @@ export class GameSim {
             o.mth.setGuard(this.now, v.guardAlly.reduce, rs.duration ?? 6);
           }
         }
-        // Bộ Cổ Thành bậc 4 (4 món): Anh Thiết Thân chia `anhThietShare` sát thương nhận cho đồng đội trong 10 m (giảm sát thương của họ chừng đó).
+        // Bộ Cổ Thành bậc 4 (4 món): Anh Thiết Thân: đồng đội trong 10 m cũng giảm `anhThietShare` sát thương nhận (người mặc không gánh hộ phần nào).
         const share = skill.id === 'skl_anh_thiet_than' ? c.stats.setFx.anhThietShare : 0;
         if (share > 0) {
           for (const o of this.players.values()) {

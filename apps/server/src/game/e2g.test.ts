@@ -526,7 +526,7 @@ describe('SETS-4: hiệu ứng 4 món của bộ bậc 4 nối vào chiêu', () 
     expect(base).toBeGreaterThan(0);
     expect(healed(0.15)).toBeGreaterThan(base * 1.1);
   });
-  it('Anh Thiết Thân chia anhThietShare sát thương cho đồng đội trong 10 m, ngoài tầm thì không', () => {
+  it('Anh Thiết Thân: đồng đội trong 10 m cũng giảm anhThietShare sát thương nhận, ngoài tầm thì không', () => {
     const run = (share: number, far: boolean) => {
       const { sim, p, fresh, join } = setup('bat_dong_kim_than', 28);
       const mate = join('b');

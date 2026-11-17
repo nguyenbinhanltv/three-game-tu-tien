@@ -1270,6 +1270,6 @@
   "item.itm_co_thanh_phien.name": "Cổ Thành Phiến",
   "item.itm_co_thanh_phien.desc": "Mảnh thiết vỡ từ tường cổ thành, hiếm thấy. Nguyên liệu chế áo bộ bậc bốn. Nguồn tạm: tinh anh và boss Vân Hải.",
   "set.fx.phan_anh": "Phân Anh Kiếm Ảnh gây sát thương gấp đôi (+{v}%).",
-  "set.fx.anh_thiet": "Anh Thiết Thân chia {v}% sát thương nhận cho đồng đội gần.",
+  "set.fx.anh_thiet": "Anh Thiết Thân: đồng đội trong 10 m cũng giảm {v}% sát thương nhận.",
   "set.fx.anh_duoc": "Anh Dược Hóa Thân hồi thêm {v}%."
 }

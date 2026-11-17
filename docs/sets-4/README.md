@@ -9,7 +9,7 @@ Bậc 4 (Thiên Khuyết, `reqLevel` 24, hệ số dòng chính `TIER_MUL[4]` = 
 | Bộ | Món (`itm_*`) | 2 món | 4 món (fx) |
 | --- | --- | --- | --- |
 | `set_tinh_khuyet` Tinh Khuyết Kiếm Bào (Kiếm tu) | `tk_dao_bao`, `tk_ho_uyen`, `tk_dai_lung`, `tk_van_ngoa`, `tk_trang_suc` | +8% công kích | `phan_anh`: Phân Anh Kiếm Ảnh gấp đôi sát thương |
-| `set_co_thanh` Cổ Thành Huyền Giáp (Hộ pháp) | `ct_dao_bao`, `ct_ho_uyen`, `ct_dai_lung`, `ct_van_ngoa`, `ct_trang_suc` | +6% phòng ngự | `anh_thiet`: Anh Thiết Thân chia 20% sát thương cho đồng đội trong 10 m |
+| `set_co_thanh` Cổ Thành Huyền Giáp (Hộ pháp) | `ct_dao_bao`, `ct_ho_uyen`, `ct_dai_lung`, `ct_van_ngoa`, `ct_trang_suc` | +6% phòng ngự | `anh_thiet`: Anh Thiết Thân: đồng đội trong 10 m cũng giảm 20% sát thương nhận (người mặc không gánh hộ) |
 | `set_than_tang` Thần Tàng Đan Bào (Đan sư) | `tt_dao_bao`, `tt_ngoc_boi`, `tt_dai_lung`, `tt_gioi_chi`, `tt_trang_suc` | +10% hồi nhận | `anh_duoc`: Anh Dược Hóa Thân hồi thêm 15% |
 
   **Lệch thiết kế**: thiết kế 7.2 ghi Cổ Thành 2 món "giảm 6% sát thương nhận" nhưng chưa có dòng phụ giảm sát thương, nên dùng `def_pct` +6% (cùng cách E3-F xử lý khiên Lưu Ly).
