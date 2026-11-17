@@ -87,7 +87,9 @@ describe('migration 3 ô → 8 ô', () => {
 });
 
 describe('trang bị đã roll: lưu, ledger, idempotency', () => {
-  const mk = (n: string) => Character.create(900_000 + Math.floor(Math.random() * 90_000), n + Math.floor(Math.random() * 1e6));
+  // Linh căn cố định (Kim không cộng hp/mp/công/thủ): bỏ trống thì `Character.create` roll ngẫu nhiên, hai nhân vật đem so chỉ số
+  // có thể lệch nhau 1 điểm công và test đỏ theo lượt (từng gặp trên CI: `expected 68 to be greater than 68`).
+  const mk = (n: string) => Character.create(900_000 + Math.floor(Math.random() * 90_000), n + Math.floor(Math.random() * 1e6), null, 'kim' as never);
 
   it('roll ghi inst vào DB, ledger có seed, nạp lại giống hệt, chỉ số tính từ inst', () => {
     const c = mk('R');
