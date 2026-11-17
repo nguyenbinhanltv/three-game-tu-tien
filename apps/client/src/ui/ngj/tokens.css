@@ -1,0 +1,61 @@
+/*
+ * Token của bộ giao diện "Ngọc Giản Kim Văn" (UI-1). Một nơi duy nhất: màu, khoảng cách, nét, bóng, chuyển động.
+ * Chỉ dùng biến --ngj-* trong ngj.css. Bộ kit cũ (--k-*) vẫn chạy song song đến UI-3.
+ */
+:root {
+  /* màu gốc (đã chốt ở UI-0) */
+  --ngj-gold: #c9a45c; /* chỉ viền vàng cổ */
+  --ngj-gold-hi: #f0d78e;
+  --ngj-gold-lo: #7a5f2c;
+  --ngj-ivory: #ede3cc; /* giấy ngà */
+  --ngj-ivory-lo: #d9ccae;
+  --ngj-jade: #3e9c8f; /* mây tường vân */
+  --ngj-jade-hi: #7fe3d0;
+  --ngj-jade-lo: #24594f;
+  --ngj-lacquer: #1e1712; /* sơn mài huyền */
+  --ngj-lacquer-hi: #2c2119;
+  --ngj-ink: #2a2118; /* chữ trên giấy */
+  --ngj-ink-dim: #6a5c44;
+  --ngj-crimson: #b9382e;
+  --ngj-crimson-hi: #e4624f;
+
+  /* phẩm chất: viền phát sáng (giữ màu cũ của kit) */
+  --ngj-q0: #8f9a98;
+  --ngj-q1: #7ea25a;
+  --ngj-q2: #5fa7d8;
+  --ngj-q3: #b48cff;
+  --ngj-q4: #f0b840;
+
+  /* nét và khoảng cách */
+  --ngj-line: 1.5px;
+  --ngj-line-thin: 1px;
+  --ngj-gap: 4px;
+  --ngj-s1: 4px;
+  --ngj-s2: 8px;
+  --ngj-s3: 12px;
+  --ngj-s4: 16px;
+  --ngj-s5: 24px;
+  --ngj-radius: 6px;
+  --ngj-cut: 9px; /* góc cắt bát giác của sơn mài */
+
+  /* bóng và ánh sáng */
+  --ngj-glow-gold: 0 0 10px rgba(201, 164, 92, 0.28);
+  --ngj-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --ngj-inset-gold: inset 0 0 0 1px rgba(201, 164, 92, 0.55);
+
+  /* chữ */
+  --ngj-font-title: var(--font-display, 'DTL Display'), var(--serif, Georgia, serif);
+  --ngj-font-body: var(--sans, 'Segoe UI', sans-serif);
+
+  /* chuyển động: 0 khi giảm chuyển động (xem [data-reduce-motion] cuối ngj.css) */
+  --ngj-dur: 0.14s;
+  --ngj-dur-open: 0.25s; /* mở bảng */
+  --ngj-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* chất liệu: texture lặp nhỏ (webp ~2 KB), đặt ở ngj.css qua url() để Vite băm tên */
+}
+
+:root[data-reduce-motion='true'] {
+  --ngj-dur: 0s;
+  --ngj-dur-open: 0s;
+}

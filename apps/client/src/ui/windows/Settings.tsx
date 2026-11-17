@@ -3,6 +3,7 @@ import { t } from '@dtl/content';
 import { getVolume, isMuted, type MusicCredit, musicCredits, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio';
 import { Game } from '../../game/engine';
 import { Button, Divider, PanelWindow, Segmented, Slider } from '../kit';
+import { setReduceMotion, useReduceMotion } from '../ngj';
 import { closePanel, set, useUI } from '../store';
 
 /** Thanh trượt âm lượng cho master và từng bus; thả tay thì phát thử một âm trên bus đó. */
@@ -71,6 +72,7 @@ export function Settings() {
   const fps = useUI((s) => s.fps);
   const controls = useUI((s) => s.controls);
   const camShake = useUI((s) => s.camShake);
+  const reduceMotion = useReduceMotion();
   const fxQ = useUI((s) => s.fxQuality);
   const hitStop = useUI((s) => s.hitStop);
   const offscreen = useUI((s) => s.offscreen);
@@ -101,6 +103,9 @@ export function Settings() {
       <Divider label={t('ui.settings.chapter')} />
       <Segmented label={t('ui.settings.chapter')} value={chapterCards} onChange={(on) => Game.current?.setChapterCards(on)} options={onOff} />
       <div className="k-dim">{t('ui.settings.chapter_hint')}</div>
+      <Divider label={t('ui.settings.reduce_motion')} />
+      <Segmented label={t('ui.settings.reduce_motion')} value={reduceMotion} onChange={setReduceMotion} options={onOff} />
+      <div className="k-dim">{t('ui.settings.reduce_motion_hint')}</div>
       <Divider label={t('ui.settings.sound')} />
       <Segmented
         label={t('ui.settings.sound')}

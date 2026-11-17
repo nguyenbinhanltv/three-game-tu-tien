@@ -524,7 +524,7 @@
     "sell": 1746,
     "rarity": 3,
     "icon": "itm_lm_trang_suc",
-    "iconFallback": "👑",
+    "iconFallback": "sys:head",
     "reqLevel": 16,
     "tier": 2,
     "set": "set_liet_mach"
@@ -537,7 +537,7 @@
     "sell": 1746,
     "rarity": 3,
     "icon": "itm_dg_trang_suc",
-    "iconFallback": "👑",
+    "iconFallback": "sys:head",
     "reqLevel": 16,
     "tier": 2,
     "set": "set_dia_giap"
@@ -550,7 +550,7 @@
     "sell": 1746,
     "rarity": 3,
     "icon": "itm_pm_trang_suc",
-    "iconFallback": "👑",
+    "iconFallback": "sys:head",
     "reqLevel": 16,
     "tier": 2,
     "set": "set_phuc_mach"
