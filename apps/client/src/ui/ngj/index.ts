@@ -6,6 +6,6 @@
 import './tokens.css';
 import './ngj.css';
 
-export { Cartouche, NgjButton, type NgjButtonVariant, NgjPanel, NgjSlot, NgjTipCard, NgjTooltip, OrnateBar, OrnateCorner, type CornerKind, type MapMotif, type Material, type RailTab, type SlotShape, TabRail } from './ngj';
+export { Corners, Cartouche, NgjButton, type NgjButtonVariant, NgjPanel, NgjSlot, NgjTipCard, NgjTooltip, OrnateBar, OrnateCorner, type CornerKind, type MapMotif, type Material, type RailTab, type SlotShape, TabRail } from './ngj';
 export { isSysIcon, SealNumeral, sealGlyphs, SYS_ICON_NAMES, SysIcon, type SysIconName } from './icons';
-export { installMotion, reduceMotion, setReduceMotion, useReduceMotion } from './motion';
+export { installMotion, installNgjHud, ngjHud, reduceMotion, setReduceMotion, useReduceMotion } from './motion';
