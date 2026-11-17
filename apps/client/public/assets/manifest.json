@@ -10367,6 +10367,72 @@
         }
       }
     },
+    "set_skin_varkessa_nu": {
+      "id": "set_skin_varkessa_nu",
+      "class": "skin",
+      "source": "assets/build/raw/set_skin_varkessa_nu.glb",
+      "file": "set_skin_varkessa_nu.546c4b6464.glb",
+      "bytes": 2080040,
+      "rawBytes": 4875560,
+      "triangles": 19908,
+      "rawTriangles": 19908,
+      "lod0Cap": 20000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 57,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_skin_varkessa_nu_normal",
+          "mimeType": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_skin_varkessa_nu_color",
+          "mimeType": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19908
+        },
+        {
+          "level": 1,
+          "triangles": 7885,
+          "target": 7963
+        },
+        {
+          "level": 2,
+          "triangles": 2980,
+          "target": 2986
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.4521,
+          "height": 1.9014,
+          "depth": 0.6916,
+          "minY": -0.1339
+        },
+        "build": {
+          "width": 1.4521,
+          "height": 1.9014,
+          "depth": 0.6916,
+          "minY": -0.1339
+        }
+      }
+    },
     "set_than_tang_dan_bao_nam": {
       "id": "set_than_tang_dan_bao_nam",
       "class": "outfit",

@@ -15,7 +15,7 @@
     },
     "type": { "enum": ["chr", "mon", "prop", "arch", "fx", "anim"], "description": "Thư mục loại trong assets/source/." },
     "budgetClass": {
-      "enum": ["player", "player_v2", "npc", "monster", "elite", "boss", "weapon", "artifact", "prop", "outfit", "outfit_v2", "drop", "arch", "fx", "anim"],
+      "enum": ["player", "player_v2", "npc", "monster", "elite", "boss", "weapon", "artifact", "prop", "outfit", "outfit_v2", "skin", "drop", "arch", "fx", "anim"],
       "description": "Lớp ngân sách trong assets/budgets.json. Bỏ trống thì suy từ tiền tố id (chr_ → player, mon_ → monster…)."
     },
     "itemId": { "type": ["string", "null"], "description": "Id vật phẩm trong packages/content nếu asset là hình của vật phẩm." },
@@ -335,6 +335,7 @@
             "cut": { "type": "array", "items": { "enum": ["head", "neck", "hand"] } },
             "clampLen": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
             "legBlend": { "type": "number" },
+            "rigidRoot": { "type": "boolean", "description": "mode rig: xương gốc (hông) chỉ dời, không xoay theo thân nền (skin toàn thân có đuôi/vạt gắn hông)." },
             "strayHand": { "type": "number" },
             "strayLeg": { "type": "number" },
             "mode": { "enum": ["rig", "transfer", "rigid"] },

@@ -8,7 +8,16 @@ import type { ItemInst } from './items';
  */
 export type EquipSlot = 'weapon' | 'robe' | 'bracer' | 'boots' | 'belt' | 'jade' | 'ring' | 'artifact' | 'head';
 export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'robe', 'bracer', 'boots', 'belt', 'jade', 'ring', 'artifact', 'head'];
-export type ItemKind = 'material' | 'consumable' | EquipSlot;
+/**
+ * Ô ngoại hình (ô thứ 10): chỉ đổi hình toàn thân, KHÔNG cộng chỉ số, không cường hóa/khảm/tẩy luyện/phân giải, không tính bộ.
+ * Cố ý không nằm trong `EQUIP_SLOTS`: mọi chỗ tính chỉ số và nâng cấp duyệt `EQUIP_SLOTS` nên tự bỏ qua ô này.
+ */
+export type CosmeticSlot = 'skin';
+export const COSMETIC_SLOTS: CosmeticSlot[] = ['skin'];
+/** Mọi ô mặc được lên người (có chỉ số + ngoại hình): dùng ở chỗ lưu, đếm vật phẩm, mặc/tháo. */
+export type WearSlot = EquipSlot | CosmeticSlot;
+export const WEAR_SLOTS: WearSlot[] = [...EQUIP_SLOTS, ...COSMETIC_SLOTS];
+export type ItemKind = 'material' | 'consumable' | EquipSlot | CosmeticSlot;
 
 export interface StatBlock {
   atk?: number;
@@ -32,6 +41,10 @@ export interface ItemDef {
   iconFallback?: string;
   /** id asset model 3D của vũ khí (kind weapon); thiếu thì theo phẩm (`swordModelOf`). */
   model?: string;
+  /** Skin (kind skin): mảnh áo phủ toàn thân, client nạp `<skin>_nam|nu` như áo bộ (`OUTFITS`), che hết thân nền. */
+  skin?: string;
+  /** Giới hạn giới tính nhân vật được mặc ('m' | 'f'); thiếu = ai cũng mặc được. Server kiểm khi mặc (`wearableBy`). */
+  gender?: 'm' | 'f';
   reqLevel?: number;
   stats?: StatBlock;
   /** id bộ trang bị (P3-4): món này thuộc bộ nào. Món có `set` không rơi theo bảng chung, chỉ chế tạo hoặc rơi theo `EquipRollDef.set`. */
@@ -835,7 +848,7 @@ export const INV_PAGE = 30;
 export const INV_PAGES = 4;
 export const INV_SIZE = INV_PAGE * INV_PAGES;
 
-export type Equipment = Partial<Record<EquipSlot, InvItem>>;
+export type Equipment = Partial<Record<WearSlot, InvItem>>;
 
 export interface CharView {
   name: string;

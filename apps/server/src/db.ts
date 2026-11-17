@@ -3,7 +3,7 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { DUNGEON_MIN_LEVEL, initialBottleneck, INV_SIZE, isEquipSlot, isRootId, ROOT_IDS, TELE_FREE, TELE_PADS, TRUC_CO_LEVEL, xpNeed } from '@dtl/shared';
+import { DUNGEON_MIN_LEVEL, initialBottleneck, INV_SIZE, isEquipSlot, isRootId, isWearSlot, ROOT_IDS, TELE_FREE, TELE_PADS, TRUC_CO_LEVEL, xpNeed } from '@dtl/shared';
 import { ITEM, LEVELS } from '@dtl/content';
 import { config } from './config';
 
@@ -170,7 +170,7 @@ export function migrateEquipSlots(sqlite: Database.Database): void {
         changed = true;
         continue;
       }
-      if (isEquipSlot(k)) {
+      if (isWearSlot(k)) {
         out[k] = it;
         continue;
       }
