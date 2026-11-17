@@ -1446,27 +1446,27 @@
         }
       }
     },
-    "chr_v2_nam": {
-      "id": "chr_v2_nam",
+    "chr_v2_hb_nam": {
+      "id": "chr_v2_hb_nam",
       "class": "player_v2",
-      "source": "assets/build/raw/chr_v2_nam.glb",
-      "file": "chr_v2_nam.ac8c0868c1.glb",
-      "bytes": 783596,
-      "rawBytes": 779268,
-      "triangles": 7174,
-      "rawTriangles": 7174,
-      "lod0Cap": 8000,
+      "source": "assets/build/raw/chr_v2_hb_nam.glb",
+      "file": "chr_v2_hb_nam.daf876529e.glb",
+      "bytes": 717012,
+      "rawBytes": 654096,
+      "triangles": 9343,
+      "rawTriangles": 9343,
+      "lod0Cap": 10000,
       "skinned": true,
       "quantized": false,
-      "bones": 53,
+      "bones": 57,
       "animations": [],
       "ktx2": false,
       "textures": [
         {
-          "name": "chr_v2_nam_color",
-          "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "name": "chr_v2_hb_nam_color",
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
           "slots": [
             "baseColorTexture"
           ]
@@ -1475,29 +1475,143 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 7174
+          "triangles": 9343
         },
         {
           "level": 1,
-          "triangles": 3586,
-          "target": 3587
+          "triangles": 5132,
+          "target": 5139
         },
         {
           "level": 2,
-          "triangles": 1578,
-          "target": 1578
+          "triangles": 2200,
+          "target": 2200
         }
       ],
       "dims": {
         "raw": {
           "width": 1.862,
-          "height": 1.8055,
+          "height": 1.8044,
+          "depth": 0.4999,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.862,
+          "height": 1.8044,
+          "depth": 0.4999,
+          "minY": 0
+        }
+      }
+    },
+    "chr_v2_hb_nu": {
+      "id": "chr_v2_hb_nu",
+      "class": "player_v2",
+      "source": "assets/build/raw/chr_v2_hb_nu.glb",
+      "file": "chr_v2_hb_nu.da6b40f8c2.glb",
+      "bytes": 723980,
+      "rawBytes": 667488,
+      "triangles": 9366,
+      "rawTriangles": 9366,
+      "lod0Cap": 10000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 57,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "chr_v2_hb_nu_color",
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 9366
+        },
+        {
+          "level": 1,
+          "triangles": 5150,
+          "target": 5151
+        },
+        {
+          "level": 2,
+          "triangles": 2199,
+          "target": 2200
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.5841,
+          "height": 1.7115,
+          "depth": 0.4406,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.5841,
+          "height": 1.7115,
+          "depth": 0.4406,
+          "minY": 0
+        }
+      }
+    },
+    "chr_v2_nam": {
+      "id": "chr_v2_nam",
+      "class": "player_v2",
+      "source": "assets/build/raw/chr_v2_nam.glb",
+      "file": "chr_v2_nam.09e1432cf5.glb",
+      "bytes": 725860,
+      "rawBytes": 661012,
+      "triangles": 9319,
+      "rawTriangles": 9319,
+      "lod0Cap": 10000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 57,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "chr_v2_nam_color",
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 9319
+        },
+        {
+          "level": 1,
+          "triangles": 5125,
+          "target": 5125
+        },
+        {
+          "level": 2,
+          "triangles": 2200,
+          "target": 2200
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.862,
+          "height": 1.8397,
           "depth": 0.4447,
           "minY": 0
         },
         "build": {
           "width": 1.862,
-          "height": 1.8055,
+          "height": 1.8397,
           "depth": 0.4447,
           "minY": 0
         }
@@ -1507,23 +1621,23 @@
       "id": "chr_v2_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nu.glb",
-      "file": "chr_v2_nu.064875289b.glb",
-      "bytes": 797028,
-      "rawBytes": 791884,
-      "triangles": 7132,
-      "rawTriangles": 7132,
-      "lod0Cap": 8000,
+      "file": "chr_v2_nu.ac86fae8e6.glb",
+      "bytes": 723756,
+      "rawBytes": 668632,
+      "triangles": 9383,
+      "rawTriangles": 9383,
+      "lod0Cap": 10000,
       "skinned": true,
       "quantized": false,
-      "bones": 53,
+      "bones": 57,
       "animations": [],
       "ktx2": false,
       "textures": [
         {
           "name": "chr_v2_nu_color",
-          "mimeType": "image/png",
-          "width": 1024,
-          "height": 1024,
+          "mimeType": "image/jpeg",
+          "width": 2048,
+          "height": 2048,
           "slots": [
             "baseColorTexture"
           ]
@@ -1532,30 +1646,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 7132
+          "triangles": 9383
         },
         {
           "level": 1,
-          "triangles": 3566,
-          "target": 3566
+          "triangles": 5160,
+          "target": 5161
         },
         {
           "level": 2,
-          "triangles": 1568,
-          "target": 1569
+          "triangles": 2200,
+          "target": 2200
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.6,
-          "height": 1.6968,
-          "depth": 0.4011,
+          "width": 1.5842,
+          "height": 1.7282,
+          "depth": 0.4318,
           "minY": 0
         },
         "build": {
-          "width": 1.6,
-          "height": 1.6968,
-          "depth": 0.4011,
+          "width": 1.5842,
+          "height": 1.7282,
+          "depth": 0.4318,
           "minY": 0
         }
       }

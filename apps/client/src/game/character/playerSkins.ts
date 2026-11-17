@@ -107,6 +107,24 @@ export const PLAYER_SKINS: Record<string, PlayerSkin> = {
     rates: { idle: 1.3, attack: 1.25 },
     clothRef: '#3B6584',
   },
+  chr_v2_hb_nam: {
+    clips: { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' },
+    poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
+    refSpeed: 3.0,
+    runSteps: 4,
+    maxLocoScale: 1.8,
+    rates: { idle: 1.3, attack: 1.25 },
+    clothRef: '#3B6584',
+  },
+  chr_v2_hb_nu: {
+    clips: { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' },
+    poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
+    refSpeed: 2.9,
+    runSteps: 4,
+    maxLocoScale: 1.8,
+    rates: { idle: 1.3, attack: 1.25 },
+    clothRef: '#3B6584',
+  },
 };
 
 /** Áo bộ trang bị đã nạp (retarget_set.py): các lưới skin theo LOD, dùng chung giữa mọi người mặc. */
@@ -176,12 +194,14 @@ const OUTFIT_Q = typeof location !== 'undefined' ? new URLSearchParams(location.
 const OUTFIT_OFF = OUTFIT_Q === '0';
 /** `?outfit=set_kinh_quang_kiem_y` ép mọi bộ đang mặc dùng áo này (xem áo của bộ chưa có trong dữ liệu, chụp ảnh). */
 const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') === 'v2';
+/** `?chr=v2&hair=b`: kiểu tóc B của nhân vật nền v2 (mặc định kiểu A). */
+const CHR_V2_HAIR = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hair') : null;
 const OUTFIT_FORCE = OUTFIT_Q && OUTFIT_Q !== '0' ? OUTFIT_Q : null;
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
 function modelOf(g: string): string | null {
   // `?chr=v2` (CHR-PROTO): thân nền MakeHuman nam/nữ thay hai model Tripo cũ, chỉ để so sánh; mặc định game không đổi.
-  if (CHR_V2) return g === 'f' ? 'chr_v2_nu' : 'chr_v2_nam';
+  if (CHR_V2) return `chr_v2_${CHR_V2_HAIR === 'b' ? 'hb_' : ''}${g === 'f' ? 'nu' : 'nam'}`;
   const own = APPEARANCE.genders.find((x) => x.id === (g as Gender))?.model;
   return own ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender)?.model ?? null;
 }
