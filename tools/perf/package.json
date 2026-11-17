@@ -39,6 +39,7 @@
     "shots:e3j": "tsx src/shots-e3j.ts",
     "shots:e2c": "tsx src/shots-e2c.ts",
     "shots:e3m": "tsx src/shots-e3m.ts",
+    "shots:gate": "tsx src/shots-gate.ts",
     "shots:boss": "tsx src/shots-boss.ts",
     "shots:trib": "tsx src/shots-trib.ts",
     "shots:e2d": "tsx src/shots-e2d.ts",
