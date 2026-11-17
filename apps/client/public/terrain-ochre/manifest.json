@@ -17,7 +17,7 @@
       "layer": "forest",
       "ph": "gravelly_sand",
       "a": "forest.a.a3a6149535.webp",
-      "n": "forest.n.25abf4ee61.webp"
+      "n": "../terrain/gravel.n.25abf4ee61.webp"
     },
     {
       "layer": "rock",
@@ -41,13 +41,13 @@
       "layer": "paving",
       "ph": "cobblestone_floor_04",
       "a": "paving.a.bc5c54b24e.webp",
-      "n": "paving.n.94821acab5.webp"
+      "n": "../terrain/paving.n.94821acab5.webp"
     },
     {
       "layer": "gravel",
       "ph": "gravelly_sand",
       "a": "gravel.a.d4f328bd9e.webp",
-      "n": "gravel.n.25abf4ee61.webp"
+      "n": "../terrain/gravel.n.25abf4ee61.webp"
     }
   ]
 }
