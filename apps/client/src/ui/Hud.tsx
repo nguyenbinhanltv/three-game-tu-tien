@@ -41,6 +41,8 @@ function PlayerFrame() {
           <Corners />
           <div className="ngj-pf-portrait" aria-hidden="true">
             <SysIcon name="character" size={34} />
+            {/* Chân dung theo giới tính của mình (`player_m|player_f`, tranh Codex); chưa nạp xong thì thấy icon phía sau. */}
+            <Portrait id={'player_' + (Game.current?.view?.players.get(Game.current.sid)?.g === 'f' ? 'f' : 'm')} className="ngj-pf-face" />
             <span className="ngj-pf-seal">
               <SealNumeral n={realmStageOf(char.level)} size={20} />
             </span>

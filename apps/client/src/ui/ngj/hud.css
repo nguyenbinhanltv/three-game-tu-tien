@@ -140,6 +140,11 @@
 }
 :root[data-ngj='1'] .ngj-pf-portrait .ngj-sysicon { color: var(--ngj-gold-hi); }
 .ngj-pf-seal { display: inline-flex; color: var(--ngj-gold-hi); line-height: 1; }
+/* chân dung: phủ kín ô bát giác, lấy phần khuôn mặt; số triện nằm trên dải tối ở đáy */
+:root[data-ngj='1'] .ngj-pf-portrait .ngj-pf-face { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); object-fit: cover; object-position: 50% 24%; clip-path: inherit; opacity: 0; transition: opacity 0.2s; }
+:root[data-ngj='1'] .ngj-pf-portrait .ngj-pf-face.ready { opacity: 1; }
+:root[data-ngj='1'] .ngj-pf-portrait:has(.ngj-pf-face.ready) .ngj-pf-seal { position: absolute; left: 0; right: 0; bottom: 3px; justify-content: center; padding: 2px 0 1px; background: linear-gradient(0deg, rgba(20, 15, 11, 0.9), rgba(20, 15, 11, 0)); z-index: 1; }
+:root[data-ngj='1'] .ngj-pf-portrait:has(.ngj-pf-face.ready) .ngj-sysicon { display: none; }
 :root[data-ngj='1'] .hud .frame-head { margin-bottom: 3px; }
 :root[data-ngj='1'] .ngj-pf .gauge { height: 18px; margin-top: 6px; }
 :root[data-ngj='1'] .ngj-pf .gauge.xp { height: 11px; margin-top: 8px; }
@@ -218,9 +223,10 @@
 :root[data-ngj='1'] .minimap-ctl { left: -4px; bottom: 6px; }
 :root[data-ngj='1'] .minimap-pos { right: 20px; bottom: 4px; }
 :root[data-ngj='1'] .minimap-foot.ngj-mm-foot { background: none; padding: 0; margin-top: 2px; }
-:root[data-ngj='1'] .ngj-mm-foot .ngj-cart { min-width: 0; width: 100%; padding: 0 12px 0 54px; --ngj-c-h: 30px; font-size: 12.5px; }
+:root[data-ngj='1'] .minimap-foot.ngj-mm-foot { width: 238px; margin-left: -48px; }
+:root[data-ngj='1'] .ngj-mm-foot .ngj-cart { min-width: 0; width: 100%; padding: 0 16px 0 74px; --ngj-c-h: 40px; font-size: 16px; }
 :root[data-ngj='1'] .ngj-mm-foot .ngj-cart-title { overflow: hidden; text-overflow: ellipsis; color: var(--ngj-gold-hi); }
-:root[data-ngj='1'] .ngj-mm-foot .minimap-foot-lv { font-size: 10.5px; color: rgba(237, 227, 204, 0.75); }
+:root[data-ngj='1'] .ngj-mm-foot .minimap-foot-lv { font-size: 13px; color: rgba(237, 227, 204, 0.75); }
 :root[data-ngj='1'] .ngj-mm-foot[data-status='low'] .ngj-cart-title, :root[data-ngj='1'] .ngj-mm-foot[data-status='low'] .minimap-foot-lv { color: #9fd9a0; }
 :root[data-ngj='1'] .ngj-mm-foot[data-status='high'] .ngj-cart-title, :root[data-ngj='1'] .ngj-mm-foot[data-status='high'] .minimap-foot-lv { color: var(--ngj-crimson-hi); }
 
