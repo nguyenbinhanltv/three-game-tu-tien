@@ -29,6 +29,7 @@ interface Manifest {
   size: number;
   /** Bộ không có mặt nạ riêng (ochre) thì để trống: dùng `neutral`. */
   mask?: string;
+  /** `a`/`n`: tên file trong thư mục bộ; lớp trùng nội dung với bộ gốc ghi `../terrain/<file>` (X14, không chép hai bản). */
   layers: { layer: string; a: string; n: string }[];
 }
 

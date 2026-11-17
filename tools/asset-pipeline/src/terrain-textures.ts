@@ -5,7 +5,7 @@
 // (R,G = pháp tuyến OpenGL, B = độ nhám). Client ghép các lớp thành 2 texture mảng (game/groundTextures.ts), nên shader
 // chỉ tốn 2 slot texture dù có 8 lớp. Thêm `mask.<hash>.png` (RGBA, groundMask.ts). Ghi `apps/client/public/terrain/manifest.json` (kèm hash nội dung).
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -61,8 +61,30 @@ async function source(ph: string, kind: 'Diffuse' | 'nor_gl' | 'Rough'): Promise
   return buf;
 }
 
+/** Bộ gốc (Vân Lam): bộ khác trỏ sang đây khi một lớp ra đúng cùng nội dung (X14), thay vì chép thêm một bản. */
+const BASE_SET = 'terrain';
+
+/**
+ * Ghi một lớp ra `OUT` và trả tên ghi vào manifest. Nội dung đã có sẵn thì không ghi bản thứ hai: trùng với lớp vừa ghi trong
+ * lần chạy này thì dùng lại tên đó, trùng với file của bộ gốc thì trỏ `../terrain/<file>` (client ghép `<bộ>/<tên>` nên đường dẫn tương đối chạy được).
+ */
+async function emit(layer: string, suffix: 'a' | 'n', buf: Buffer, written: Map<string, string>): Promise<string> {
+  const hash = createHash('sha1').update(buf).digest('hex').slice(0, 10);
+  const key = `${suffix}.${hash}.webp`;
+  const prev = written.get(key);
+  if (prev) return prev;
+  let name = `${layer}.${key}`;
+  const baseDir = path.join(path.dirname(OUT), BASE_SET);
+  const shared = path.basename(OUT) !== BASE_SET && existsSync(baseDir) ? readdirSync(baseDir).find((f) => f.endsWith(`.${key}`)) : undefined;
+  if (shared) name = `../${BASE_SET}/${shared}`;
+  else await writeFile(path.join(OUT, name), buf);
+  written.set(key, name);
+  return name;
+}
+
 async function main(): Promise<void> {
   await mkdir(OUT, { recursive: true });
+  const written = new Map<string, string>();
   const manifest: { layer: string; ph: string; a: string; n: string }[] = [];
   const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] = SET === 'ochre' ? OCHRE_LAYERS : LAYERS;
   for (const L of layers) {
@@ -76,10 +98,7 @@ async function main(): Promise<void> {
     for (let i = 0; i < SIZE * SIZE; i++) nrm[i * 3 + 2] = r[i];
     const n = await sharp(nrm, { raw: { width: SIZE, height: SIZE, channels: 3 } }).webp({ quality: 78 }).toBuffer();
     const ar = albedo;
-    const name = (suffix: string, b: Buffer) => `${L.layer}.${suffix}.${createHash('sha1').update(b).digest('hex').slice(0, 10)}.webp`;
-    const entry = { layer: L.layer, ph: L.ph, a: name('a', ar), n: name('n', n) };
-    await writeFile(path.join(OUT, entry.a), ar);
-    await writeFile(path.join(OUT, entry.n), n);
+    const entry = { layer: L.layer, ph: L.ph, a: await emit(L.layer, 'a', ar, written), n: await emit(L.layer, 'n', n, written) };
     manifest.push(entry);
     console.log(`[terrain] ${L.layer} (${L.ph}): a ${(ar.length / 1024) | 0} KB, n ${(n.length / 1024) | 0} KB`);
   }
