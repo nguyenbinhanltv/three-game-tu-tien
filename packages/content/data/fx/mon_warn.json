@@ -1,0 +1,58 @@
+{
+ "skill": "mon_warn",
+ "palette": "mon_neutral",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0.0,
+   "r": 4.0,
+   "dur": 2.0,
+   "at": "area",
+   "grow": 0.25,
+   "tone": "accent",
+   "alpha": 0.9,
+   "untilDelay": true,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.45,
+   "at": "area",
+   "scale": 0.2,
+   "scaleTo": 1.0,
+   "fit": "area",
+   "sweep": 0.5,
+   "erodeFrom": 0.5,
+   "ragged": 0.8,
+   "tone": "accent",
+   "alpha": 0.8,
+   "seed": 7,
+   "tier": 0,
+   "from": "start"
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 14,
+   "speed": 1.6,
+   "spread": 1.0,
+   "life": 0.9,
+   "size": 0.09,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "tone": "accent",
+   "inward": true,
+   "tier": 1,
+   "from": "start"
+  }
+ ]
+}

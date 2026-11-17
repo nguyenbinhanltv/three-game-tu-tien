@@ -1,0 +1,128 @@
+{
+ "skill": "mon_death",
+ "palette": "mon_neutral",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.16,
+   "at": "self",
+   "scale": 1.5,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "scale": 0.4,
+   "scaleTo": 1.2,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "ragged": 0.8,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 6,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.12,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.6,
+   "sweep": 0.4,
+   "erodeFrom": 0.3,
+   "ragged": 0.9,
+   "tone": "accent",
+   "alpha": 0.75,
+   "seed": 7,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 40,
+   "speed": 1.8,
+   "spread": 0.8,
+   "life": 1.5,
+   "size": 0.34,
+   "at": "self",
+   "tone": "body",
+   "grav": -1.4,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.05,
+   "n": 26,
+   "speed": 2.2,
+   "spread": 0.9,
+   "life": 1.4,
+   "size": 0.12,
+   "at": "self",
+   "tone": "rim",
+   "grav": -1.0,
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0.0,
+   "n": 14,
+   "speed": 3.4,
+   "spread": 0.9,
+   "life": 0.8,
+   "size": 0.16,
+   "at": "self",
+   "tone": "core",
+   "grav": 7,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "petal",
+   "t": 0.05,
+   "n": 18,
+   "speed": 1.8,
+   "spread": 0.9,
+   "life": 1.6,
+   "size": 0.18,
+   "at": "self",
+   "tone": "accent",
+   "grav": -0.6,
+   "tier": 1
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.0,
+   "r": 2.0,
+   "dur": 2.2,
+   "at": "self",
+   "grow": 0.2,
+   "tone": "core",
+   "alpha": 0.55,
+   "tier": 1
+  }
+ ]
+}

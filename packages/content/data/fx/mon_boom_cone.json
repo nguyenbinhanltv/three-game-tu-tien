@@ -1,0 +1,132 @@
+{
+ "skill": "mon_boom_cone",
+ "palette": "mon_neutral",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "crescent",
+   "t": 0.0,
+   "dur": 0.32,
+   "at": "area",
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "scale": [
+    8.0,
+    1.0,
+    8.0
+   ],
+   "sweep": 0.45,
+   "erodeFrom": 0.4,
+   "ragged": 0.6,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 11,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "crescent",
+   "t": 0.03,
+   "dur": 0.3,
+   "at": "area",
+   "offset": [
+    0,
+    0.25,
+    0
+   ],
+   "scale": [
+    6.0,
+    1.0,
+    6.0
+   ],
+   "sweep": 0.45,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "rim",
+   "alpha": 0.85,
+   "seed": 12,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "crescent",
+   "t": 0.05,
+   "dur": 0.28,
+   "at": "area",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "scale": [
+    9.5,
+    1.0,
+    9.5
+   ],
+   "sweep": 0.45,
+   "erodeFrom": 0.35,
+   "ragged": 0.8,
+   "tone": "accent",
+   "alpha": 0.7,
+   "seed": 13,
+   "tier": 2
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.1,
+   "at": "area",
+   "offset": [
+    0,
+    0.6,
+    0.8
+   ],
+   "scale": 1.6,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "smoke",
+   "t": 0.04,
+   "dur": 0.9,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    3.0
+   ],
+   "scale": 3.2,
+   "scaleTo": 5.5,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "tone": "core",
+   "alpha": 0.55,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 22,
+   "speed": 8.0,
+   "spread": 0.35,
+   "life": 0.45,
+   "size": 0.09,
+   "at": "area",
+   "offset": [
+    0,
+    0.5,
+    0.8
+   ],
+   "tone": "rim",
+   "tier": 0
+  }
+ ]
+}
