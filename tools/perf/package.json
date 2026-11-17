@@ -53,6 +53,7 @@
     "shots:ui3": "tsx src/shots-ui3.ts",
     "shots:ui4": "tsx src/shots-ui4.ts",
     "shots:ui5": "tsx src/shots-ui5.ts",
+    "shots:minimap": "tsx src/shots-minimap.ts",
     "shots:e3h2": "tsx src/shots-e3h2.ts",
     "shots:e2e": "tsx src/shots-e2e.ts",
     "shots:e3k": "tsx src/shots-e3k.ts",
