@@ -123,7 +123,9 @@ for side, sx in (('Left', 1.0), ('Right', -1.0)):
         b0 = chain[i]
         bpy.context.view_layer.update()
         cur = (pb[chain[i + 1]].head - pb[chain[i]].head).normalized()
-        q = cur.rotation_difference(Vector((sx, 0, 0)))
+        # Hướng nghỉ đo từ chr_kiem_tu_nam (thư viện clip chung được dựng trên đó): tay trên chúc xuống 10,3°, cẳng tay gập ra trước 21° (-Y).
+        tgt = Vector((sx * math.cos(math.radians(10.3)), 0, -math.sin(math.radians(10.3)))) if i == 0 else Vector((sx * 0.93, -0.363, -0.059)).normalized()
+        q = cur.rotation_difference(tgt)
         h = pb[b0].head.copy()
         r = Matrix.Translation(h) @ q.to_matrix().to_4x4() @ Matrix.Translation(-h)
         pb[b0].matrix = r @ pb[b0].matrix

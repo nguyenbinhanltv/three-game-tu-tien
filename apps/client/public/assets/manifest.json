@@ -1450,9 +1450,9 @@
       "id": "chr_v2_hb_nam",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_hb_nam.glb",
-      "file": "chr_v2_hb_nam.daf876529e.glb",
-      "bytes": 717012,
-      "rawBytes": 654096,
+      "file": "chr_v2_hb_nam.abe19d1e93.glb",
+      "bytes": 707064,
+      "rawBytes": 645512,
       "triangles": 9343,
       "rawTriangles": 9343,
       "lod0Cap": 10000,
@@ -1479,7 +1479,7 @@
         },
         {
           "level": 1,
-          "triangles": 5132,
+          "triangles": 5138,
           "target": 5139
         },
         {
@@ -1490,15 +1490,15 @@
       ],
       "dims": {
         "raw": {
-          "width": 1.862,
+          "width": 1.7944,
           "height": 1.8044,
-          "depth": 0.4999,
+          "depth": 0.5245,
           "minY": 0
         },
         "build": {
-          "width": 1.862,
+          "width": 1.7944,
           "height": 1.8044,
-          "depth": 0.4999,
+          "depth": 0.5245,
           "minY": 0
         }
       }
@@ -1507,9 +1507,9 @@
       "id": "chr_v2_hb_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_hb_nu.glb",
-      "file": "chr_v2_hb_nu.da6b40f8c2.glb",
-      "bytes": 723980,
-      "rawBytes": 667488,
+      "file": "chr_v2_hb_nu.54d93e237e.glb",
+      "bytes": 711728,
+      "rawBytes": 657628,
       "triangles": 9366,
       "rawTriangles": 9366,
       "lod0Cap": 10000,
@@ -1536,26 +1536,26 @@
         },
         {
           "level": 1,
-          "triangles": 5150,
+          "triangles": 5148,
           "target": 5151
         },
         {
           "level": 2,
-          "triangles": 2199,
+          "triangles": 2200,
           "target": 2200
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.5841,
+          "width": 1.5167,
           "height": 1.7115,
-          "depth": 0.4406,
+          "depth": 0.445,
           "minY": 0
         },
         "build": {
-          "width": 1.5841,
+          "width": 1.5167,
           "height": 1.7115,
-          "depth": 0.4406,
+          "depth": 0.445,
           "minY": 0
         }
       }
@@ -1564,9 +1564,9 @@
       "id": "chr_v2_nam",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nam.glb",
-      "file": "chr_v2_nam.09e1432cf5.glb",
-      "bytes": 725860,
-      "rawBytes": 661012,
+      "file": "chr_v2_nam.b41851a095.glb",
+      "bytes": 715076,
+      "rawBytes": 651408,
       "triangles": 9319,
       "rawTriangles": 9319,
       "lod0Cap": 10000,
@@ -1593,7 +1593,7 @@
         },
         {
           "level": 1,
-          "triangles": 5125,
+          "triangles": 5124,
           "target": 5125
         },
         {
@@ -1604,15 +1604,15 @@
       ],
       "dims": {
         "raw": {
-          "width": 1.862,
+          "width": 1.7966,
           "height": 1.8397,
-          "depth": 0.4447,
+          "depth": 0.4768,
           "minY": 0
         },
         "build": {
-          "width": 1.862,
+          "width": 1.7966,
           "height": 1.8397,
-          "depth": 0.4447,
+          "depth": 0.4768,
           "minY": 0
         }
       }
@@ -1621,9 +1621,9 @@
       "id": "chr_v2_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nu.glb",
-      "file": "chr_v2_nu.ac86fae8e6.glb",
-      "bytes": 723756,
-      "rawBytes": 668632,
+      "file": "chr_v2_nu.2449f321a1.glb",
+      "bytes": 714864,
+      "rawBytes": 660056,
       "triangles": 9383,
       "rawTriangles": 9383,
       "lod0Cap": 10000,
@@ -1650,26 +1650,26 @@
         },
         {
           "level": 1,
-          "triangles": 5160,
+          "triangles": 5161,
           "target": 5161
         },
         {
           "level": 2,
-          "triangles": 2200,
+          "triangles": 2199,
           "target": 2200
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.5842,
+          "width": 1.5266,
           "height": 1.7282,
-          "depth": 0.4318,
+          "depth": 0.4132,
           "minY": 0
         },
         "build": {
-          "width": 1.5842,
+          "width": 1.5266,
           "height": 1.7282,
-          "depth": 0.4318,
+          "depth": 0.4132,
           "minY": 0
         }
       }

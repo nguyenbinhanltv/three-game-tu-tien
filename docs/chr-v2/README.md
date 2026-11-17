@@ -35,7 +35,7 @@ pnpm --filter @dtl/asset-pipeline exec tsx src/cli.ts optimize --only <id>
 
 Hai giai đoạn trong Blender 5.3 chạy nền (MPFB2 CC0 ở `chr_base_v2/_src/`):
 
-1. `tools/blender/chr_base_v2.py`: macro Á Đông, rig Mixamo + trọng số MakeHuman, giảm mặt (26,7k → ~6,5k), ép T-pose, vẽ albedo 1K (da, đồ lót, môi...). Đầu/tóc tạm của giai đoạn này sẽ bị bỏ ở bước sau.
+1. `tools/blender/chr_base_v2.py`: macro Á Đông, rig Mixamo + trọng số MakeHuman, giảm mặt (26,7k → ~6,5k), ép T-pose (tay trên chúc xuống 10°, cẳng tay gập ra trước 21°: đo từ `chr_kiem_tu_nam` để clip chung cho ra dáng đứng tay thả tự nhiên như bản cũ), vẽ albedo 1K (da, đồ lót, môi...). Đầu/tóc tạm của giai đoạn này sẽ bị bỏ ở bước sau.
 2. `tools/blender/chr_v2_head.py`:
    - bỏ đầu tạm, cắt thân ở mặt phẳng ngang giữa cổ `Zc`;
    - khớp đầu Tripo (cao 1 m, gồm cổ + vai trên): tỉ lệ theo bề ngang sọ ở lát rộng nhất so với đầu MakeHuman, rồi cắt phần dưới `Zc`;
@@ -43,7 +43,7 @@ Hai giai đoạn trong Blender 5.3 chạy nền (MPFB2 CC0 ở `chr_base_v2/_src
    - **màu da**: trung bình màu texture tại vòng cổ và trung vị vùng má/mũi của đầu Tripo; nhân màu lên các pixel gần màu da cũ của thân (không đụng đồ lót);
    - tóc: tỉ lệ theo bề ngang mũ tóc, gán 100% xương Head; đỉnh tóc buông thấp hơn đầu bị đẩy ra mặt sau/trước thân (lan sang đỉnh kề để cả dải dịch cùng nhau);
    - **xương lò xo** `dtl_o_hair_{l,c,r,bang}`: con của Head, cụm theo x (trái/giữa/phải) cho tóc buông, riêng mái; trọng số tăng dần xuống dưới. `chr_v2_post.py` ghi extras `dtl.springs` sau khi `import_tripo` chuẩn hóa;
-   - **atlas 2048²** (JPEG, một vật liệu): thân (trái trên) | đầu (phải trên) | tóc (trái dưới) | chỗ trống (ô màu kiếm). Tripo chỉ lấy map màu (bỏ normal/ORM để giữ một vật liệu); tóc nén sáng + gần trung tính để nhuộm áo của game (`dye.ts`) không đổi màu tóc theo bộ.
+   - **atlas 2048²** (JPEG, một vật liệu): thân (trái trên) | đầu (phải trên) | tóc (trái dưới) | chỗ trống (ô màu kiếm). Tripo chỉ lấy map màu (bỏ normal/ORM để giữ một vật liệu); tóc nén sáng mạnh + gần trung tính (sẫm hơn bản đầu), tóc ôm đầu sát hơn (`hair_w` 1,08) để nhuộm áo của game (`dye.ts`) không đổi màu tóc theo bộ.
 
 Tham số khớp từng kiểu tóc ở `tools/blender/build-chr-v2.mjs` (`CFG`).
 

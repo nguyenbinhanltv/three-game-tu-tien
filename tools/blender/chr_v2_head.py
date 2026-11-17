@@ -215,7 +215,7 @@ atlas[Q:, :Q] = body_tex
 atlas[Q:, Q:] = head_px
 # Nhuộm áo của game (dye.ts) coi vùng sáng/bão hòa xanh là vải: nén sáng + gần trung tính cho tóc để tóc không đổi màu theo bộ.
 lum = hair_px @ np.array([0.2126, 0.7152, 0.0722], np.float32)
-l2 = np.clip(lum * 0.75, 0.0, 0.26)
+l2 = np.clip(lum * 0.55, 0.0, 0.19)
 hair_px = l2[..., None] * np.array([1.06, 1.0, 0.94], np.float32)
 atlas[:Q, :Q] = hair_px
 rgba = np.concatenate([atlas, np.ones((ATL, ATL, 1), np.float32)], 2)
@@ -238,7 +238,7 @@ body.data.materials.append(mt)
 hvs = verts_np(hair)
 cap = widest(hvs, float(CFG.get('cap_z0', 0.74)), float(CFG.get('cap_z1', 0.92)), 0.01, 0.012)
 hair_top_target = max(v.co.z for v in head.data.vertices) if False else mh[0] + float(CFG.get('cap_up', 0.02))
-hsc = (mh[1] * float(CFG.get('hair_w', 1.16))) / cap[1]
+hsc = (mh[1] * float(CFG.get('hair_w', 1.08))) / cap[1]
 hoff = Vector((-hsc * cap[2] + float(CFG.get('dx', 0)), mh[3] - hsc * cap[3] + float(CFG.get('dy', 0)), hair_top_target - hsc * cap[0] + float(CFG.get('dz', 0))))
 for v in hair.data.vertices:
     v.co = v.co * hsc + hoff
