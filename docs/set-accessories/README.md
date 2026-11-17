@@ -19,7 +19,7 @@ Hiện theo **từng món đã mặc** (một món lẻ cũng hiện, không c�
 - `setAccessories.ts`: dựng hình học theo bộ/ô. Phần cứng gắn cứng vào một xương, gộp thành **một `SkinnedMesh` cho mỗi loại vật liệu** (vải, cứng) dùng chung bộ xương của thân, nên theo xương miễn phí và LOD xa ẩn cùng mesh thân (LOD1 trở đi không vẽ). Không đổ bóng.
 - Dải lụa và tua là mesh riêng (tối đa 2/bộ), lắc quanh trục X ra sau theo vận tốc bằng một lò xo góc (biên độ ≤ 0,36 rad), chỉ ở LOD0 trong khung nhìn. Không dùng xương lò xo của `spring.ts` vì dải lụa nằm ngoài rig của asset.
 - Dựng lại model khi mã `sa` đổi (mặc/tháo đồ hiếm), hình học dựng một lần cho mỗi asset × mã và dùng chung.
-- Ảnh: `pnpm shots:sets --out <thư mục>` (chạy `pnpm dev` ở PORT/CLIENT_PORT, tắt tiếng, mặc bộ bằng `/gm set <id bộ>`).
+- Ảnh: `pnpm shots outfit --out <thư mục>` (chạy `pnpm dev` ở PORT/CLIENT_PORT, tắt tiếng, mặc bộ bằng `/gm set <id bộ>`).
 
 ## Chi tiết hộ uyển, ống ủng, vai giáp
 

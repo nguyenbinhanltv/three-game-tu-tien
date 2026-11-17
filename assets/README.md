@@ -66,6 +66,8 @@ GLB Tripo cao đúng 1 m, gốc ở tâm khối, mặt trước thường nhìn 
 }
 ```
 
+`kind` là `"tripo"` hoặc `"external"` (model nguồn ngoài như Sketchfab, gói CC: cùng bước chuẩn hóa, và `license` phải có `spdx` + `url`; giấy phép cần ghi công thì ghi rõ dòng ghi công ở `assets/LICENSES.md`). Kiếm nguồn ngoài dùng `import.post: tools/blender/ext_sword.py` (ví dụ `prop_kiem_tan_hoa`, xem `docs/kiem-tan-hoa/README.md`).
+
 1. **Hướng**: mặt trước nhìn +Z (client quay model theo `yaw = atan2(vx, vz)`). Có armature với cặp xương đùi trái/phải (`thigh`, `upleg`, `upperleg`… kèm `l/left`, `r/right`) thì tự xoay cho đùi trái về +X (`orient`: `auto` mặc định, `thigh` bắt buộc, `none` tắt). Sau đó cộng `yaw` (độ, quanh +Y). Prop không có xương: đặt `yaw` bằng mắt; Tripo trả mặt trước về +X nên thường là `-90`. Kiểm bằng ảnh render nhìn từ +Z so với concept mặt trước.
 2. **Tỉ lệ**: `size` có đúng một khóa `height` | `width` | `depth` | `longest` (mét, hộp bao ở tư thế nghỉ); scale đều.
 3. **Gốc ở đáy**: tâm X/Z về 0, đáy về Y = 0. Áp transform cho mọi object; khóa location của xương trong clip nhân theo scale của armature nên quãng dịch chuyển giữ đúng mét.

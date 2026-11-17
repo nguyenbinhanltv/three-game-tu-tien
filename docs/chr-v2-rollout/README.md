@@ -29,7 +29,7 @@ CPU p95 vượt 8 ms ở cả hai (đã vượt trước PR này), v2 thêm ~0,6
 
 ## Ảnh trước/sau
 
-Tệp `<tan-thu|lac-kiem|liet-mach>-<nam|nu>-<matcan|matgan|toanthan|chay|chem|datoa>.webp` (trái = `?chr=v1`, phải = v2) và `toc-b-<tan-thu|lac-kiem>-<nam|nu>.webp` (tóc B). Sinh bằng `pnpm --filter @dtl/perf run shots:chrv2 --out <thư mục>`.
+Tệp `<tan-thu|lac-kiem|liet-mach>-<nam|nu>-<matcan|matgan|toanthan|chay|chem|datoa>.webp` (trái = `?chr=v1`, phải = v2) và `toc-b-<tan-thu|lac-kiem>-<nam|nu>.webp` (tóc B). Sinh bằng `pnpm shots chrv2 --out <thư mục>`.
 
 ![](man-tao-nhan-vat-chon-toc.webp)
 ![](tan-thu-nam-toanthan.webp)
@@ -55,7 +55,7 @@ Cùng nhánh xếp chồng (PR này nhắm vào nhánh của PR 1). Chín bộ c
 - **Sửa áo phồng** bằng tham số `wscale` có sẵn của `outfit_build.py` (thu bề ngang/sâu theo thân v2 vai hẹp hơn): Địa Long 0,82 → 0,70, Cổ Thành 0,82 → 0,70, Vân Kính 0,85 → 0,72, Phục Mạch thêm 0,88. Phục Mạch "nhàu" là vân texture của áo gốc, không phải hình học, nên chỉ thu nhỏ.
 - Kiếm và vỏ: kiếm lưng đã nằm trong thân v2 (`chr_v2_post.py`), kiếm riêng theo trang bị và vỏ kiếm theo bộ dùng đường cũ (`swordModel`, `scabbardMount`), không đổi. Trang sức đầu của từng bộ do `outfit_build.py` căn theo xương Head của thân v2; chưa tinh chỉnh riêng theo hai kiểu tóc.
 - **Vạt áo vỡ mảnh khi chạy/chém/đả tọa** (Cổ Thành, Thần Tàng, Phục Mạch, Liệt Mạch; nam và nữ): bỏ xương lò xo của áo ngoài và quần (`spring: false`), trộn trọng số chân tối đa (`legBlend: 1.0`), làm mượt trọng số mạnh hơn (`smooth` 7 áo, 6 quần): vạt đi cùng cả người như một khối, không xé thành mảnh nhọn. Còn vài mảnh nhỏ ở Tripo gốc nhưng dịu hơn nhiều.
-- Chụp ma trận ảnh: chín bộ × nam, nữ × bảy trạng thái (cận mặt, đứng, chạy, đả tọa, chém, bay, chết), tệp `ma-tran-<bộ>-<nam|nu>.webp` (mỗi tệp một dải bảy ô, đã kiểm trong game thật bằng `shots:chrv2`, nay có thêm bay và chết, chết rồi hồi sinh về chỗ chụp).
+- Chụp ma trận ảnh: chín bộ × nam, nữ × bảy trạng thái (cận mặt, đứng, chạy, đả tọa, chém, bay, chết), tệp `ma-tran-<bộ>-<nam|nu>.webp` (mỗi tệp một dải bảy ô, đã kiểm trong game thật bằng `shots chrv2`, nay có thêm bay và chết, chết rồi hồi sinh về chỗ chụp).
 
 ## Dung lượng, tải đầu
 

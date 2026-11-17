@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { cpuBudget } from './cpuBudget';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
@@ -115,7 +116,7 @@ describe('Thanh Phong + động tác chiêu', () => {
     const base = measure(false);
     const withPose = measure(true);
     console.info(`[perf] 12 nhân vật, mỗi khung (mixer + ma trận): chỉ chạy ${base.toFixed(3)}ms, chạy + ra chiêu liên tục ${withPose.toFixed(3)}ms`);
-    expect(withPose).toBeLessThan(4);
+    expect(withPose).toBeLessThan(cpuBudget(4));
     for (const p of ps) p.dispose();
     handle.release();
   });

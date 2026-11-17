@@ -64,7 +64,7 @@ Mọi lần đo dưới 300 draw (lớn nhất 276, trước đó 303). Trước
 
 ## Ảnh
 
-`sheet_<mảnh>_<m|f>.jpg`: 7 khung đứng trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém. `matrix_<bộ>_<m|f>.jpg`: thêm chiêu 1–2 của 3 công pháp và chết. `bang_<bộ>_<m|f>.jpg`: bảng nhân vật 3D. `kiem_*`: kiếm +0/+10 cầm tay và đeo lưng. Chụp: `pnpm shots:outfit --out <thư mục tuyệt đối> --genders m,f --sets set_liet_mach|set_dia_giap|set_phuc_mach --matrix 1 --panel 1 [--query sword=prop_kiem_liet_mach_cuoi]`.
+`sheet_<mảnh>_<m|f>.jpg`: 7 khung đứng trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém. `matrix_<bộ>_<m|f>.jpg`: thêm chiêu 1–2 của 3 công pháp và chết. `bang_<bộ>_<m|f>.jpg`: bảng nhân vật 3D. `kiem_*`: kiếm +0/+10 cầm tay và đeo lưng. Chụp: `pnpm shots outfit --out <thư mục tuyệt đối> --genders m,f --sets set_liet_mach|set_dia_giap|set_phuc_mach --matrix 1 --panel 1 [--query sword=prop_kiem_liet_mach_cuoi]`.
 
 ## Số đo (50 bot cùng mặc bộ, `BOT_SET=<bộ> pnpm bench:crowd --bots 50 --scenes san --renderers webgpu --presets high`)
 

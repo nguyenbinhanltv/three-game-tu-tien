@@ -5,23 +5,18 @@
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2618/5218), tắt tiếng, tự tắt khi xong. Kết quả JSON: bench/results/levels-<ngày>.json.
 import fs from 'node:fs';
 import path from 'node:path';
-import { chromium, type Page } from 'playwright';
-import { createDevServer, ROOT, sleep } from './devserver';
+import type { Page } from 'playwright';
+import { createDevServer, ROOT, sleep } from './lib/devserver';
+import { opt, ports } from './lib/env';
+import { launchChrome } from './lib/browser';
 
-const args = process.argv.slice(2);
-const opt = (n: string, d: string) => {
-  const i = args.indexOf(n);
-  return i >= 0 && args[i + 1] ? args[i + 1] : d;
-};
 const CYCLES = Number(opt('--cycles', '5'));
 const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',');
 const OUT = opt('--out', '');
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
-const PORT = Number(process.env.PORT ?? 2618);
-const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5218);
+const { port: PORT, clientPort: CLIENT_PORT } = ports(2618, 5218);
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'levels', command: 'pnpm bench:levels' });
 
-type G = { __game?: Record<string, any> };
 
 interface Snap {
   step: string;
@@ -40,10 +35,10 @@ async function snap(page: Page, step: string): Promise<Snap> {
   // Cho GC và vài khung ổn định trước khi đo.
   await sleep(6000);
   return page.evaluate(async (step) => {
-    const g = (window as unknown as G).__game!;
+    const g = window.__game!;
     let n = 0;
     g.scene.traverse(() => n++);
-    const gc = (window as unknown as { gc?: () => void }).gc;
+    const gc = window.gc;
     gc?.();
     const t0 = performance.now();
     const f0 = g.frames;
@@ -56,7 +51,7 @@ async function snap(page: Page, step: string): Promise<Snap> {
       geometries: mem.geometries,
       textures: mem.textures,
       sceneObjects: n,
-      heapMB: Math.round(((performance as unknown as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize ?? 0) / 1048576),
+      heapMB: Math.round((performance.memory?.usedJSHeapSize ?? 0) / 1048576),
       cpuMs: Math.round(((performance.now() - t0) / 40) * 100) / 100,
       drawCalls: info.drawCalls,
       triangles: info.triangles,
@@ -66,7 +61,7 @@ async function snap(page: Page, step: string): Promise<Snap> {
 
 async function swap(page: Page, id: string): Promise<number> {
   return page.evaluate(async (id) => {
-    const g = (window as unknown as G).__game!;
+    const g = window.__game!;
     const t0 = performance.now();
     const ok = await g.enterLevel(id);
     if (!ok) throw new Error('enterLevel không đổi: ' + id);
@@ -77,8 +72,7 @@ async function swap(page: Page, id: string): Promise<number> {
 async function main(): Promise<void> {
   if (OUT) fs.mkdirSync(OUT, { recursive: true });
   await dev.start();
-  const launchArgs = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist', '--js-flags=--expose-gc'];
-  const browser = await chromium.launch({ channel: 'chrome', headless: true, args: launchArgs }).catch(() => chromium.launch({ headless: true, args: launchArgs }));
+  const browser = await launchChrome({ args: ['--js-flags=--expose-gc'] });
   const results: Record<string, Snap[]> = {};
   try {
     for (const renderer of RENDERERS) {
@@ -90,7 +84,7 @@ async function main(): Promise<void> {
       page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
       await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=LV_${renderer}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
       await page.waitForFunction(() => {
-        const g = (window as unknown as G).__game;
+        const g = window.__game;
         return !!g && g.frames > 30 && !!g.me?.();
       }, undefined, { timeout: 120_000, polling: 250 });
       await sleep(8000); // texture mặt đất, model nạp lười xong
@@ -101,7 +95,7 @@ async function main(): Promise<void> {
         if (c === 1 && OUT) {
           // Màn tải: giữ lệnh nạp nhạc 1,5 s để chụp được màn tải trong lúc đổi.
           await page.evaluate(() => {
-            const g = (window as unknown as G).__game!;
+            const g = window.__game!;
             const orig = g.music.preloadLevel.bind(g.music);
             g.music.preloadLevel = async (...a: unknown[]) => {
               await new Promise((r) => setTimeout(r, 1500));
@@ -113,21 +107,21 @@ async function main(): Promise<void> {
           await shot('man-tai');
           const ms = await p;
           await page.evaluate(() => {
-            const g = (window as unknown as G).__game!;
+            const g = window.__game!;
             delete g.music.preloadLevel;
           });
           const s = await snap(page, `vòng ${c}: thu_nghiem`);
           s.swapMs = ms;
           snaps.push(s);
           await page.evaluate(() => {
-            const g = (window as unknown as G).__game!;
+            const g = window.__game!;
             g.camPitch = 1.05;
             g.camDist = 160;
           });
           await sleep(800);
           await shot('thu_nghiem');
           await page.evaluate(() => {
-            const g = (window as unknown as G).__game!;
+            const g = window.__game!;
             g.camPitch = 0.38;
             g.camDist = 13;
           });

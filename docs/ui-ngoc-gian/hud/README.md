@@ -24,7 +24,7 @@ Không đổi (có chủ ý): bảng tên trên đầu nhân vật/quái/NPC (v�
 
 ## Ảnh trước/sau
 
-Cùng góc, `?mute=1`, tài khoản thử, 1080p và 1440p: `<cảnh>-truoc-<độ phân giải>.jpg` (HUD cũ) và `<cảnh>-sau-…` (HUD mới). Cảnh: `lac_kiem` (sân Lạc Kiếm Tông, có nhiệm vụ), `doan_mach`, `van_hai`, `boss` (Hàn Giao, mục tiêu đã chọn), `dem` (`?mood=night`). Chụp lại: `pnpm --filter @dtl/perf shots:ui2 --out <thư mục tuyệt đối> [--scenes a,b]`.
+Cùng góc, `?mute=1`, tài khoản thử, 1080p và 1440p: `<cảnh>-truoc-<độ phân giải>.jpg` (HUD cũ) và `<cảnh>-sau-…` (HUD mới). Cảnh: `lac_kiem` (sân Lạc Kiếm Tông, có nhiệm vụ), `doan_mach`, `van_hai`, `boss` (Hàn Giao, mục tiêu đã chọn), `dem` (`?mood=night`). Chụp lại: `pnpm shots ui --part hud --variants truoc,sau --out <thư mục tuyệt đối> [--scenes a,b]`.
 
 ## Đo (1080p, 5 giây mỗi lượt, CDP; `ui2-metrics.json`)
 

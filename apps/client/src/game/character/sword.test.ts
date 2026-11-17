@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { cpuBudget } from './cpuBudget';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
@@ -198,7 +199,7 @@ describe('lò xo vạt áo (M3-10)', () => {
     for (let i = 0; i < N; i++) step(120 + i);
     const ms = (performance.now() - t0) / N;
     console.info(`[M3-10] lò xo 12 thể × 4 xương: ${(ms * 1000).toFixed(1)} µs/khung`);
-    expect(ms).toBeLessThan(0.5);
+    expect(ms).toBeLessThan(cpuBudget(0.5));
     handle.release();
   });
 });
