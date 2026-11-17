@@ -4,6 +4,7 @@ import { areaKey, biomeAt } from '../../game/levelCtx';
 import { LEVELS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { TipCard, Tooltip } from '../kit';
+import { Cartouche, type MapMotif, ngjHud as NGJ } from '../ngj';
 import { togglePanel, useUI } from '../store';
 import { ancientMap } from './ancient';
 import { levelAssets } from '../../game/levelCtx';
@@ -13,6 +14,7 @@ import { clampZoom, screenToWorld, DEFAULT_ZOOM, formatCountdown, type Mark, nea
 import '../minimap.css';
 
 const SIZE = 176;
+const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai'];
 /** Vẽ lại 15 lần/giây: đủ mượt cho chấm di chuyển chậm, và giữ chi phí CPU/khung gần như bằng bản cũ. */
 const FRAME_MS = 1000 / 15;
 
@@ -140,6 +142,7 @@ export function Minimap() {
   return (
     <div className="minimap-wrap">
       <div ref={box} className="minimap" onClick={() => togglePanel('map')}>
+        {NGJ && <span className="ngj-mm-ring" aria-hidden="true" />}
         <canvas
           ref={ref}
           style={{ width: SIZE, height: SIZE }}
@@ -191,10 +194,16 @@ export function Minimap() {
           {rx}, {rz}
         </div>
       </div>
-      <div className="minimap-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
-        <span className="minimap-foot-name">{zoneName}</span>
-        {zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}
-      </div>
+      {NGJ ? (
+        <div className="minimap-foot ngj-mm-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
+          <Cartouche map={MOTIFS.includes(level as MapMotif) ? (level as MapMotif) : 'van_lam'} material="lacquer" size="s" title={<>{zoneName}{zoneLv && <span className="minimap-foot-lv"> {zoneLv}</span>}</>} />
+        </div>
+      ) : (
+        <div className="minimap-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
+          <span className="minimap-foot-name">{zoneName}</span>
+          {zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}
+        </div>
+      )}
       {hover &&
         tip &&
         createPortal(
