@@ -1,0 +1,16 @@
+{
+  "room": "dungeon-than_tang",
+  "info": {
+    "backend": "WebGPU",
+    "draw": 55,
+    "tri": 227433
+  },
+  "barrierMsg": true,
+  "posAfterBarrier": [
+    1520,
+    1243
+  ],
+  "door1": true,
+  "allOpen": true,
+  "bossMsgs": true
+}
