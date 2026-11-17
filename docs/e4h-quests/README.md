@@ -21,7 +21,7 @@ Phụ: `s4_den_troi` (8 đèn trời, `touch`), `s4_ban_khac` (`scan` 5 poi củ
 
 ## Việc sau
 
-- `s4_thu_niem` (thử phân thân thần niệm): chờ E4-K (đang ở `sim.ts`), cần móc sự kiện khi dùng phân thân.
+- `s4_thu_niem` (thử phân thân thần niệm): đã nối ở E4-K (#207): mục tiêu `clone`, `CloneSystem.command` gọi `questEvent(p,'clone')` khi hóa phân thân thành công (`requires q4_hoa_than`, cấp 28).
 - `q4_tra_mach` thiết kế gốc đòi cả tổ đội đứng cùng 10 giây: hiện chỉ `touch` một người (cần loại mục tiêu "giữ chỗ theo tổ đội").
 - Tàn niệm Mặc Chiếu thay Dạ Minh Lộc làm người đồng hành (chưa có model hươu cho `escort`); Dạ Minh Lộc chỉ ở lời nhiệm vụ.
 - Cảnh "Huyền Cơ nói một câu" chưa có hình/âm: lời nằm ở `quest.q4_tra_mach.done`.

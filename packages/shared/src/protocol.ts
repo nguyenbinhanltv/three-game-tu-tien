@@ -122,6 +122,8 @@ export const C = {
   BONDED: 'bm',
   /** Nguyên anh xuất khiếu/nhập lại (E3-K, phím X): `SoulCmd`. */
   SOUL: 'soul',
+  /** Phân thân thần niệm (E4-K, phím G): `CloneCmd`. Trong Thiên Nhân Kiếp là thế thân của kiếp. */
+  CLONE: 'clone',
 } as const;
 
 /** Server → client. */
@@ -162,6 +164,8 @@ export const S = {
   SPIRIT_SCAN: 'spic',
   /** Trạng thái nguyên anh của mình (`SoulStateMsg`, E3-K). */
   SOUL_STATE: 'souls',
+  /** Trạng thái phân thân thần niệm của mình (`CloneStateMsg`, E4-K). */
+  CLONE_STATE: 'clonest',
 } as const;
 
 export interface InitMsg {
