@@ -260,3 +260,36 @@ export function NgjTipCard({ title, rarity = 0, sub, lines }: { title: string; r
     </div>
   );
 }
+
+/* ───────── RingSweep: vòng tròn mảnh quét, vết nứt sáng, hạt vàng (màn đột phá / độ kiếp) ───────── */
+
+const CRACKS = [
+  'M50 50 L46 40 L52 31 L47 20 L50 6',
+  'M50 50 L58 44 L63 34 L72 28 L78 14',
+  'M50 50 L60 54 L71 52 L80 60 L94 58',
+  'M50 50 L54 62 L50 72 L56 82 L52 96',
+  'M50 50 L42 57 L33 56 L24 66 L8 64',
+  'M50 50 L40 46 L30 40 L20 42 L6 32',
+];
+
+/**
+ * Lớp trình diễn khi đột phá / độ kiếp: ba vòng mảnh đồng tâm quét ra, sáu vết nứt sáng vẽ dần từ tâm, hạt vàng bay lên.
+ * Chỉ là hình (không nhận chuột/phím). Tắt hẳn khi bật Giảm chuyển động (xem ngj/screens.css).
+ */
+export function RingSweep() {
+  return (
+    <div className="ngj-sweep" aria-hidden="true">
+      <i className="ngj-sweep-ring r1" />
+      <i className="ngj-sweep-ring r2" />
+      <i className="ngj-sweep-ring r3" />
+      <svg className="ngj-sweep-crack" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+        {CRACKS.map((d, i) => (
+          <path key={i} d={d} pathLength={1} style={{ animationDelay: 0.15 + i * 0.07 + 's' }} />
+        ))}
+      </svg>
+      {Array.from({ length: 16 }, (_, i) => (
+        <b key={i} className="ngj-sweep-mote" style={{ '--a': (i * 360) / 16 + 'deg', '--d': 18 + ((i * 7) % 5) * 5 + 'vmin', animationDelay: 0.25 + (i % 6) * 0.08 + 's' } as React.CSSProperties} />
+      ))}
+    </div>
+  );
+}
