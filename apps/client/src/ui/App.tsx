@@ -6,6 +6,7 @@ import { playMusic, sfx, unlockAudio } from '../game/audio';
 import { TitleBackdrop } from '../game/backdrop';
 import { lastZoneArt, setBootArt } from '../game/bootArt';
 import { applyUiArt } from './Art';
+import { CHR_V2_ON } from '../game/character/playerSkins';
 import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/preload';
 import { Hud } from './Hud';
@@ -105,6 +106,7 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
         ))}
         <span className="look-name">{t(`appearance.dye.${look.dye}`)}</span>
       </div>
+      {CHR_V2_ON && (
       <div className="look-row">
         <span className="look-key">{t('ui.login.hair')}</span>
         {HAIRS.map((h) => (
@@ -118,6 +120,7 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
           </button>
         ))}
       </div>
+      )}
     </div>
   );
 }
