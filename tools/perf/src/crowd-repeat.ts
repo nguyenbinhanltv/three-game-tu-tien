@@ -2,6 +2,8 @@
 // Chạy bench:crowd nhiều lượt liên tiếp và in trung vị / khoảng của CPU p50, p95, draw call: số đo một lượt nhiễu ±1,5 ms.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import path from 'node:path';
+import { ROOT } from './devserver';
 
 const argv = process.argv.slice(2);
 const take = (n: string, d: string): string => {
