@@ -1,6 +1,6 @@
 import { type KeyboardEvent, type ReactNode, useId, useRef } from 'react';
 import { t } from '@dtl/content';
-import { Tooltip } from '../kit';
+import { Tooltip } from '../kit/Tooltip';
 import { SysIcon, type SysIconName } from './icons';
 
 /** Bộ thành phần "Ngọc Giản Kim Văn" (UI-1). Khung SVG/CSS, màu theo token `--ngj-*` (tokens.css), chưa gắn vào HUD/bảng thật. */
