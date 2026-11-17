@@ -60,14 +60,10 @@
             "wscale": 0.7,
             "bottom": "ankle_z+0.6*(knee_z-ankle_z)"
           },
-          "legBlend": 0.9,
-          "smooth": 4,
+          "legBlend": 1.0,
+          "smooth": 7,
           "armFix": 0.09,
-          "spring": {
-            "count": 3,
-            "minDist": 0.12,
-            "weight": 0.6
-          }
+          "spring": false
         },
         "vai_giap": {
           "fit": {
@@ -82,8 +78,9 @@
         },
         "lop_duoi": {
           "islands": true,
-          "legBlend": 0.9,
-          "spring": false
+          "legBlend": 1.0,
+          "spring": false,
+          "smooth": 6
         }
       }
     }

@@ -37,7 +37,15 @@
         "ao_ngoai": {
           "fit": {
             "wscale": 0.88
-          }
+          },
+          "legBlend": 1.0,
+          "smooth": 7,
+          "spring": false
+        },
+        "lop_duoi": {
+          "legBlend": 1.0,
+          "smooth": 6,
+          "spring": false
         }
       }
     }

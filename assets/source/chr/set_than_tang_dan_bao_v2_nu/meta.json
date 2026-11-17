@@ -44,7 +44,19 @@
           "edge": 0.9
         }
       },
-      "normalFlat": 0.8
+      "normalFlat": 0.8,
+      "pieces": {
+        "ao_ngoai": {
+          "legBlend": 1.0,
+          "smooth": 7,
+          "spring": false
+        },
+        "lop_duoi": {
+          "legBlend": 1.0,
+          "smooth": 6,
+          "spring": false
+        }
+      }
     }
   },
   "license": {
