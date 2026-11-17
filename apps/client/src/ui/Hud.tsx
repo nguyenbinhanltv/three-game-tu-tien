@@ -4,7 +4,7 @@ import './panels.css';
 import './tutien.css';
 import './ngj/hud.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, ELEMENTS, elemCounterOf, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
@@ -609,6 +609,8 @@ function Tribulation() {
   const danPg = useUI((s) => s.danPg);
   const tamCanh = useUI((s) => s.tamCanh);
   const soulUntil = useUI((s) => s.soulUntil);
+  const nguHanh = useUI((s) => s.nguHanh);
+  const cloneUntil = useUI((s) => s.cloneUntil);
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   // Pha, thời lượng và lời nhắc đọc từ `tribulations.json` theo kiếp đang độ (E1-F); Trúc Cơ giữ ba pha của S2-C.
@@ -649,6 +651,18 @@ function Tribulation() {
       {ph.mechanic === 'xuat_khieu' && (
         <div className={'trib-soul' + (now < soulUntil ? ' on' : '')} data-testid="soul-hint">
           {now < soulUntil ? t('ui.trib.xuat_khieu.on', { n: Math.ceil((soulUntil - now) / 1000) }) : t('ui.trib.xuat_khieu.hint')}
+        </div>
+      )}
+      {ph.mechanic === 'ngu_hanh' && (
+        <div className="trib-hanh" data-testid="hanh-hint">
+          {nguHanh && now < nguHanh.at + 800
+            ? t('ui.trib.ngu_hanh.now', { e: t('elem.' + ELEMENTS[nguHanh.e]), k: t('elem.' + elemCounterOf(ELEMENTS[nguHanh.e])) })
+            : t('ui.trib.ngu_hanh.wait')}
+        </div>
+      )}
+      {ph.mechanic === 'phan_than' && (
+        <div className={'trib-soul trib-clone' + (now < cloneUntil ? ' on' : '')} data-testid="clone-hint">
+          {now < cloneUntil ? t('ui.trib.phan_than.on', { n: Math.ceil((cloneUntil - now) / 1000) }) : t('ui.trib.phan_than.hint')}
         </div>
       )}
       <div className="trib-hint">{t(key + ph.id + (after ? '.hint2' : '.hint'))}</div>

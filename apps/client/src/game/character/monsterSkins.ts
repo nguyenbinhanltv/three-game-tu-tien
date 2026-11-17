@@ -145,6 +145,9 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // màn (id màn là dự kiến của E-2..E-4, đổi `level` cho khớp LevelDef khi có). refSpeed (m/s ở scale 1, model theo kích thước thật)
   // tính từ sải chân của clip run (docs/boss-import/README.md). Đòn lớn khớp tools/blender/anim_{quadruped,serpent,biped_extra}.py.
   // Địa Mạch Long: rồng đá bốn chân, khe sáng ngọc lam theo máu (viền yêu khí nhẹ).
+  // DV-B (chương 5, thử pipeline): bản điêu khắc CC BY giảm lưới + rig bằng tools/blender/sculpt_rig.py. Chưa đặt vào bản đồ
+  // (không có `level`): chỉ nạp khi xuất hiện (/gm spawn). Lông đen nên nâng sáng nền và viền than hồng để đọc được trong bóng.
+  boss_tam_thu_nguc_khuyen: { asset: 'boss_tam_thu_nguc_khuyen', clips: { ...CHANT_BOSS_CLIPS, walk: 'walk' }, refSpeed: 8.9, legs: 'quad', tint: '#ffffff', rim: 0.3, lift: 0.35, metalness: 0.35, lazy: true, moves: { slam: { clip: 'slam', impact: 1.0 } } },
   boss_dia_mach_long: { asset: 'boss_dia_mach_long', clips: BOSS_CLIPS, refSpeed: 9.0, legs: 'quad', tint: '#ffffff', rim: 0.12, lift: 0.2, lazy: true, level: 'doan_mach', moves: QUAD_MOVES },
   // Thôn Mạch Ngô Công Vương (Phục Mạch Quật): ngô công 14 m, xương chuỗi, tinh thạch sáng theo accent.
   boss_thon_mach_ngo_cong_vuong: { asset: 'boss_thon_mach_ngo_cong_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 4.6, legs: 'none', tint: '#ffffff', rim: 0.35, lift: 0.2, metalness: 0, lazy: true, level: 'phuc_mach', moves: SERPENT_MOVES },

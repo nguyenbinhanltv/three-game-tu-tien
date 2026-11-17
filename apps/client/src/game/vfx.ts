@@ -726,11 +726,13 @@ export class Vfx {
    * Đột phá thành công (P2-B4): quầng vàng ấm tỏa từ người, một ống sáng mảnh và chùm tia nắng xòe lên như mây kiếp
    * vừa tách. Mảnh và cộng sáng để giữ màu cảnh (khác `pillar` bọc kín trước camera). 1 + 1 + 5 lưới trong ~2,6 giây.
    */
-  ascendGlow(pos: PosFn, dur = 2.6, danQuang = false, nguyenAnh = false): void {
-    const core = this.fx(TUBE_GEO, nguyenAnh ? 0xcdbcff : danQuang ? 0xffcf8a : 0xffe6a0, 0.3, 'flat');
-    const ring = this.fx(RING_GEO, nguyenAnh ? 0x9fc8ff : danQuang ? 0x8fcfff : 0xffd98a, 0.7);
+  ascendGlow(pos: PosFn, dur = 2.6, danQuang = false, nguyenAnh = false, hoaThan = false): void {
+    // Hóa Thần (E4-D): cùng nhịp mảnh và mờ như Nguyên Anh nhưng màu vàng sao nhạt (bảng `dotpha_hn`).
+    const soft = nguyenAnh || hoaThan;
+    const core = this.fx(TUBE_GEO, hoaThan ? 0xfff0c0 : nguyenAnh ? 0xcdbcff : danQuang ? 0xffcf8a : 0xffe6a0, 0.3, 'flat');
+    const ring = this.fx(RING_GEO, hoaThan ? 0xffe9a8 : nguyenAnh ? 0x9fc8ff : danQuang ? 0x8fcfff : 0xffd98a, 0.7);
     // Kết Đan: thêm một vành đan quang vàng ấm nở chậm hơn vành lam (vẫn cộng sáng, mảnh).
-    const ring2 = danQuang || nguyenAnh ? this.fx(RING_GEO, nguyenAnh ? 0xd9ccff : 0xffd98a, 0.5) : null;
+    const ring2 = danQuang || soft ? this.fx(RING_GEO, hoaThan ? 0xcfe0ff : nguyenAnh ? 0xd9ccff : 0xffd98a, 0.5) : null;
     if (ring2) ring2.rotation.x = -Math.PI / 2;
     ring.rotation.x = -Math.PI / 2;
     const rays: { m: FxMesh; dir: THREE.Vector3 }[] = [];
@@ -738,7 +740,7 @@ export class Vfx {
       const phi = (i / 5) * Math.PI * 2 + 0.4;
       const th = 0.16 + (i % 2) * 0.12;
       const dir = new THREE.Vector3(Math.sin(th) * Math.cos(phi), Math.cos(th), Math.sin(th) * Math.sin(phi));
-      rays.push({ m: this.fx(TUBE_GEO, nguyenAnh ? 0xcfc6ee : 0xffe2a0, 0.2, 'glow'), dir });
+      rays.push({ m: this.fx(TUBE_GEO, hoaThan ? 0xfff2c8 : nguyenAnh ? 0xcfc6ee : 0xffe2a0, 0.2, 'glow'), dir });
     }
     this.add(
       dur,
@@ -748,22 +750,22 @@ export class Vfx {
         const fade = Math.pow(1 - k, 1.5);
         const h = 46 * rise;
         core.position.set(_a.x, _a.y - 1.1 + h / 2, _a.z);
-        core.scale.set(nguyenAnh ? 0.35 : 0.8, h, nguyenAnh ? 0.35 : 0.8);
-        core.fxOpacity = (nguyenAnh ? 0.07 : danQuang ? 0.2 : 0.3) * (nguyenAnh ? Math.pow(1 - k, 2.4) : fade);
+        core.scale.set(soft ? 0.35 : 0.8, h, soft ? 0.35 : 0.8);
+        core.fxOpacity = (soft ? 0.07 : danQuang ? 0.2 : 0.3) * (soft ? Math.pow(1 - k, 2.4) : fade);
         ring.position.set(_a.x, _a.y - 1.0, _a.z);
-        ring.scale.setScalar(nguyenAnh ? 1.0 + k * 3.6 : 1.2 + k * 7);
-        ring.fxOpacity = (nguyenAnh ? 0.2 : 0.7) * (1 - k);
+        ring.scale.setScalar(soft ? 1.0 + k * 3.6 : 1.2 + k * 7);
+        ring.fxOpacity = (soft ? 0.2 : 0.7) * (1 - k);
         if (ring2) {
           ring2.position.set(_a.x, _a.y - 0.4 + k * 2.2, _a.z);
-          ring2.scale.setScalar(nguyenAnh ? 0.7 + k * 2.4 : 0.8 + k * 4.2);
-          ring2.fxOpacity = (nguyenAnh ? 0.14 : 0.5) * Math.pow(1 - k, 1.3);
+          ring2.scale.setScalar(soft ? 0.7 + k * 2.4 : 0.8 + k * 4.2);
+          ring2.fxOpacity = (soft ? 0.14 : 0.5) * Math.pow(1 - k, 1.3);
         }
         for (const r of rays) {
           const len = 55 * rise;
           r.m.position.set(_a.x + (r.dir.x * len) / 2, _a.y - 1.1 + (r.dir.y * len) / 2, _a.z + (r.dir.z * len) / 2);
           r.m.quaternion.setFromUnitVectors(_up, r.dir);
-          r.m.scale.set(nguyenAnh ? 0.45 + k * 0.5 : 1.1 + k * 1.5, len, nguyenAnh ? 0.45 + k * 0.5 : 1.1 + k * 1.5);
-          r.m.fxOpacity = (nguyenAnh ? 0.035 : danQuang ? 0.11 : 0.2) * (nguyenAnh ? Math.pow(1 - k, 2.4) : fade);
+          r.m.scale.set(soft ? 0.45 + k * 0.5 : 1.1 + k * 1.5, len, soft ? 0.45 + k * 0.5 : 1.1 + k * 1.5);
+          r.m.fxOpacity = (soft ? 0.035 : danQuang ? 0.11 : 0.2) * (soft ? Math.pow(1 - k, 2.4) : fade);
         }
       },
       () => {
@@ -1076,6 +1078,62 @@ export class Vfx {
     return {
       stop: () => {
         stopping = true;
+      },
+    };
+  }
+
+  /**
+   * Thế thân thần niệm (E4-D): bóng người vàng sao nhạt trong suốt đứng yên ở (x, z) trong `dur` giây, vòng sao nhạt dưới chân, vài hạt sao bay lên.
+   * `end(boom)` thu lại (boom = nổ ra một chớp khi gánh đòn). Cộng sáng, mờ, dưới trần HDR.
+   */
+  thanNiem(x: number, z: number, groundY: number, dur: number, on: () => boolean): { stop(boom?: boolean): void } {
+    const body = this.fx(G.ico1, 0xf2dc96, 0.34);
+    const head = this.fx(G.ico1, 0xfff4cf, 0.44);
+    const ring = this.fx(RING_GEO, 0xffe9a8, 0.5);
+    ring.rotation.x = -Math.PI / 2;
+    const motes: FxMesh[] = [];
+    for (let i = 0; i < 6; i++) motes.push(this.fx(G.ico1, i % 2 ? 0xfff4cf : 0xaee0ff, 0.7));
+    let t = 0;
+    let fade = 0;
+    let stopping = false;
+    let boom = false;
+    const it = {
+      t: 0,
+      dur: dur + 2,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const live = !stopping && t < dur && on();
+        fade = live ? Math.min(1, fade + dt * 3) : Math.max(0, fade - dt * 3);
+        if (!live && fade <= 0) it.t = it.dur;
+        const bob = Math.sin(t * 1.8) * 0.06;
+        const y = groundY + 1.1 + bob;
+        body.position.set(x, y, z);
+        body.scale.set(0.34, 0.9, 0.24);
+        body.fxOpacity = 0.3 * fade;
+        head.position.set(x, y + 0.85, z);
+        head.scale.setScalar(0.2);
+        head.fxOpacity = 0.42 * fade;
+        ring.position.set(x, groundY + 0.06, z);
+        ring.scale.setScalar(1.3 + Math.sin(t * 2) * 0.08);
+        ring.fxOpacity = 0.4 * fade;
+        motes.forEach((m, i) => {
+          const k = (t * 0.35 + i / motes.length) % 1;
+          const a = (i / motes.length) * Math.PI * 2 + t * 0.6;
+          m.position.set(x + Math.cos(a) * 0.7, groundY + 0.3 + k * 2.4, z + Math.sin(a) * 0.7);
+          m.scale.setScalar(0.07);
+          m.fxOpacity = 0.6 * fade * (1 - k);
+        });
+      },
+      end: () => {
+        if (boom) this.burst(new THREE.Vector3(x, groundY + 1.2, z), 0xffe9a8, 2.4, 0.5);
+        for (const m of [body, head, ring, ...motes]) this.drop(m);
+      },
+    };
+    this.items.push(it);
+    return {
+      stop: (b = false) => {
+        stopping = true;
+        boom = b;
       },
     };
   }

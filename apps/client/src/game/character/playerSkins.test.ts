@@ -341,7 +341,7 @@ describe('máy trạng thái chiêu (K-4)', () => {
   });
 });
 
-describe('clip K-3 nạp lười (K-4)', () => {
+describe('clip K-3 nạp lười (K-4)', { timeout: 20000 }, () => {
   /** Chờ thư viện K-3 nạp xong cho mọi bản sao dựng từ `s` (K3_DELAY + retarget từng clip). */
   async function withK3() {
     const s = await skins();
@@ -398,6 +398,45 @@ describe('clip K-3 nạp lười (K-4)', () => {
     s.dispose();
   });
 
+  it('UAL thay chết/trúng đòn/ngã/thủ thế; lướt và nhảy dùng clip UAL; nhảy có lấy đà và tiếp đất', async () => {
+    const { s, m } = await withK3();
+    const dur = (n: string) => m.clipLength(n);
+    expect(dur('death')).toBeCloseTo(2.4, 1);
+    expect(dur('knockdown')).toBeCloseTo(0.83, 1);
+    expect(dur('getup')).toBeCloseTo(1.53, 1);
+    expect(dur('combat_idle')).toBeCloseTo(1.67, 1);
+    expect(dur('hit_light')).toBeCloseTo(0.33, 1);
+    // Nhảy: lấy đà → lơ lửng → tiếp đất (đứng yên).
+    run(m, anim(), 0.3);
+    run(m, anim({ airborne: true }), 0.1);
+    expect(m.actionOf('ual_jump_start')?.isRunning()).toBe(true);
+    run(m, anim({ airborne: true }), 1.2);
+    expect(m.actionOf('ual_jump_loop')?.isRunning()).toBe(true);
+    run(m, anim(), 0.1);
+    expect(m.actionOf('ual_jump_land')?.isRunning()).toBe(true);
+    // Lướt: clip lướt UAL co lại vừa thời gian lướt.
+    run(m, anim(), 1);
+    m.dashFrom(m.root.position.x + 3, m.root.position.z, 0.5);
+    run(m, anim({ speed: 8 }), 0.1);
+    expect(m.actionOf('ual_dash')?.isRunning()).toBe(true);
+    m.dispose();
+    s.dispose();
+  });
+
+  it('nhảy rồi ngự kiếm/niệm chú: không chen clip tiếp đất', async () => {
+    const { s, m } = await withK3();
+    run(m, anim({ airborne: true }), 1.2);
+    expect(m.actionOf('ual_jump_loop')?.isRunning()).toBe(true);
+    run(m, anim({ flying: true }), 0.2);
+    expect(m.actionOf('ual_jump_land')?.isRunning() ?? false).toBe(false);
+    expect(m.state).toBe('fly');
+    run(m, anim({ airborne: true }), 0.3);
+    run(m, anim({ casting: true }), 0.1);
+    expect(m.actionOf('ual_jump_land')?.isRunning() ?? false).toBe(false);
+    m.dispose();
+    s.dispose();
+  });
+
   it('ngã → nằm → đứng dậy; đi lại sau khi nằm đủ lâu thì đứng dậy sớm; lúc ngã không giật thêm', async () => {
     const { s, m } = await withK3();
     m.knockdown();
@@ -406,17 +445,18 @@ describe('clip K-3 nạp lười (K-4)', () => {
     m.hitReact({ dirX: 0, dirZ: -1, noStop: true });
     run(m, anim(), 0.1);
     expect(m.actionOf('hit_front_1')?.isRunning() ?? false).toBe(false);
-    // Đi lại khi chưa ngã xong (clip 3,7 s phát 1,5×): chưa dậy.
-    run(m, anim({ speed: 5 }), 1.2);
+    // Đi lại khi chưa ngã xong: chưa dậy. Clip ngã (UAL Hit_Knockback 0,83 s phát 1×; bản K-3 cũ 3,7 s phát 1,5×) cộng 0,35 s nằm.
+    const dur = (m.actionOf('knockdown')?.getClip().duration ?? 3.7) / ((m.actionOf('knockdown')?.getClip().duration ?? 3.7) > 2 ? 1.5 : 1);
+    run(m, anim({ speed: 5 }), dur - 0.2 - 0.35 - 0.1);
     expect(m.actionOf('getup')?.isRunning() ?? false).toBe(false);
     // Ngã xong thì đi lại kéo dậy sớm.
-    run(m, anim({ speed: 5 }), 1.5);
+    run(m, anim({ speed: 5 }), 0.1 + 0.35 + 0.3);
     expect(m.actionOf('getup')?.isRunning()).toBe(true);
     run(m, anim(), 3);
     expect(['combatIdle', 'idle']).toContain(m.state); // đứng dậy về thủ thế (hoặc nghỉ nếu đã hết COMBAT_HOLD)
     // Đứng yên: nằm hết nhịp rồi tự đứng dậy.
     m.knockdown();
-    run(m, anim(), (m.actionOf('knockdown')?.getClip().duration ?? 3.7) / 1.5 + 0.6);
+    run(m, anim(), dur + 0.35 + 0.6);
     expect(m.actionOf('getup')?.isRunning()).toBe(true);
     m.dispose();
     s.dispose();

@@ -395,6 +395,8 @@ export class Game {
   private mirrorPillarVer: number[] = [];
   /** Nguyên anh xuất khiếu đang hiện (E3-L): theo sid chủ kiếp. */
   private soulVfx = new Map<string, { stop(): void }>();
+  /** Thế thân thần niệm của Thiên Nhân Kiếp (E4-D), theo sid chủ kiếp. */
+  private cloneVfx = new Map<string, { stop(boom?: boolean): void }>();
   private cineShakeAt = 0;
   /** Cảnh độ kiếp của mình (P2-B4): 0..1 độ đậm của màu tối/tím toàn cảnh, và cờ đang trong cảnh (ẩn nhãn 3D). */
   private tribMix = 0;
@@ -1403,6 +1405,11 @@ export class Game {
       this.send(C.TRIB_SOUL, {});
       return;
     }
+    // Phân thân thần niệm trong Thiên Nhân Kiếp (E4-D; E4-K nối phím G chung). Chỉ gửi ý định, server kiểm pha, số lần, tần suất.
+    if (code === 'KeyG' && !e.shiftKey && this.tribId === 'hoa_than' && get().tribEnd > Date.now()) {
+      this.send(C.TRIB_CLONE, {});
+      return;
+    }
     const slot = skillSlot(code);
     if (slot >= 0) {
       if (e.shiftKey) {
@@ -2118,7 +2125,15 @@ export class Game {
     }
     // Chiêu đã có dòng thời gian hiệu ứng (data/fx/<id>.json): hình do `SkillFx.runner` phát theo sự kiện chiêu, bỏ hình cũ.
     // Chỉ khi người ra chiêu có model phát sự kiện chiêu (SkinnedCharacter): model khối (`?models=legacy`, nạp lỗi) không có, giữ hình cũ.
-    if (replacedFx(m.t) && typeof pSrc?.model.performClock === 'function') return;
+    if (replacedFx(m.t) && typeof pSrc?.model.performClock === 'function') {
+      // Đột phá của mình: hình do timeline lo, nhưng trạng thái HUD, chớp sáng và thẻ chương vẫn phải chạy (trước đây bị bỏ qua cùng nhánh hình cũ).
+      if (m.t === 'ascend' && src === this.sid) {
+        set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+        this.post?.flash(0.3);
+        window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+      }
+      return;
+    }
     if (m.v) playVariantExtras(mctx, tint(0xbfeaff));
     switch (m.t) {
       case 'sword':
@@ -2190,13 +2205,13 @@ export class Game {
         break;
       case 'ascend':
         // Người khác thấy trụ sáng như cũ; của mình thì quầng + tia nắng mảnh để không phủ trắng khung hình.
-        if (src === this.sid) v.ascendGlow(posSrc, 2.6, m.tb === 'ket_dan', m.tb === 'nguyen_anh');
-        else v.pillar(posSrc, m.tb === 'nguyen_anh' ? 0xd2c4ff : m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8, 3.2, 2.4, 40);
+        if (src === this.sid) v.ascendGlow(posSrc, 2.6, m.tb === 'ket_dan', m.tb === 'nguyen_anh', m.tb === 'hoa_than');
+        else v.pillar(posSrc, m.tb === 'hoa_than' ? 0xffeeb8 : m.tb === 'nguyen_anh' ? 0xd2c4ff : m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8, 3.2, 2.4, 40);
         if (src === this.sid) {
-          set({ tamCanh: -1, soulUntil: 0 });
+          set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
           this.post?.flash(0.3);
           // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
-          window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+          window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
         }
         if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
         break;
@@ -2217,7 +2232,9 @@ export class Game {
         v.burst(_v, 0x8fffc0, 0.8, 0.35);
         break;
       case 'death':
-        if (src === this.sid) set({ tamCanh: -1, soulUntil: 0 });
+        if (src === this.sid) set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+        this.cloneVfx.get(src)?.stop();
+        this.cloneVfx.delete(src);
         if (e.chestOf(src, _v)) v.burst(_v, 0x8a8f98, 1.6, 0.5);
         break;
       case 'cast':
@@ -2319,6 +2336,32 @@ export class Game {
         this.soulVfx.delete(src);
         if (src === this.sid) set({ soulUntil: 0 });
         break;
+      case 'nguhanh': {
+        // Tia kiếp ngũ hành (E4-D): HUD hiện hành đang giáng và trận môn cần đứng; vạch báo do vùng nguy hiểm vẽ.
+        if (src === this.sid) set({ nguHanh: { e: m.n ?? 0, at: Date.now() + (m.d ?? 2) * 1000 } });
+        break;
+      }
+      case 'phanthan': {
+        // Thế thân thần niệm: bóng vàng sao nhạt đứng yên ở chỗ đã tách ra.
+        this.cloneVfx.get(src)?.stop();
+        const cx = m.x ?? 0;
+        const cz = m.z ?? 0;
+        this.cloneVfx.set(src, v.thanNiem(cx, cz, groundAt(cx, cz), m.d ?? 20, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0));
+        if (src === this.sid) set({ cloneUntil: Date.now() + (m.d ?? 20) * 1000 });
+        break;
+      }
+      case 'phanthan_end':
+        // `pg` = 1: thế thân gánh đòn rồi tan (nổ một chớp); ngược lại hết giờ thì mờ dần.
+        this.cloneVfx.get(src)?.stop(m.pg === 1);
+        this.cloneVfx.delete(src);
+        if (src === this.sid) set({ cloneUntil: 0 });
+        break;
+      case 'thienphat':
+        // Mạch nối thiên phạt đánh trúng thân chính (không ai đứng trận môn thứ hai).
+        _v.set(m.x ?? 0, groundAt(m.x ?? 0, m.z ?? 0) + 1, m.z ?? 0);
+        v.burst(_v, 0xfff0b8, 3, 0.4);
+        if (src === this.sid) this.shake.kick(0.6);
+        break;
       case 'mirror_disc': {
         // Đĩa gương (E3-M): tia xoay theo đúng công thức server (góc đầu = sd/1000, báo pg/100 giây); d = 0 là tắt.
         const ver = ++this.mirrorDiscVer;
@@ -2387,7 +2430,9 @@ export class Game {
         this.danVfx.delete(src);
         this.soulVfx.get(src)?.stop();
         this.soulVfx.delete(src);
-        if (src === this.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0 });
+        this.cloneVfx.get(src)?.stop();
+        this.cloneVfx.delete(src);
+        if (src === this.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
         v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
         if (src === this.sid) {
           this.tribUntil = Date.now() + (m.d ?? 40) * 1000;
@@ -2593,7 +2638,8 @@ export class Game {
       }
     }
     const text = m.heal ? `+${m.n}` : m.n === 0 ? t('ui.absorbed') : mine ? `-${m.n}` : `${m.n}${m.crit ? '!' : ''}`;
-    this.dmg.spawn(text, _v, cls);
+    // Đứng đúng trận môn khắc chế (Thiên Nhân Kiếp, cờ `ke` do server tính): chỉ thêm chữ báo.
+    this.dmg.spawn(m.ke === 1 && !m.heal ? `${text} ${t('ui.dmg.ke')}` : text, _v, cls);
   }
 
   // ---------- vòng lặp ----------

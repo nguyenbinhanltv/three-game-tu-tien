@@ -12,7 +12,8 @@ import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type 
 import { boneKey } from './ikpose';
 import { coveredIndex, coverUnion } from './bodyRegions';
 import { dressedIndex, extendSkeleton, outfitAssetId, remapSkin, withIndex } from './outfit';
-import { acquireWithHumanLib, HUMAN_K3_LIB, mergeClips, retargetClips } from './animLib';
+import { acquireWithHumanLib, HUMAN_K3_LIB, HUMAN_UAL_LIB, mergeClips, retargetClips } from './animLib';
+import { UAL_ENABLED, UAL_REPLACE, ualAliases, ualMap } from './ualClips';
 import { HUMAN_CLIPS } from './humanClips';
 import { applyDye } from './dye';
 import { applyPalette } from './monsterSkins';
@@ -189,6 +190,8 @@ interface K3Extra {
   clips: THREE.AnimationClip[];
   map: ClipMap;
   locoRef: Partial<Record<CharState, number>>;
+  /** Tên clip cũ bị clip UAL thay (có khi UAL đã nạp xong). */
+  replace: readonly string[];
 }
 
 /** Trạng thái nền → clip K-3. Đứng thủ thế khi giao chiến, đi bộ chậm, đi lùi/ngang khi nhìn mục tiêu. */
@@ -629,7 +632,7 @@ export class PlayerSkins {
       blade,
       outfit && blade && !shadow ? this.scabbardMount(scabbardOf(want)) : null,
     );
-    if (t.k3) player.addClips(t.k3.clips, t.k3.map, t.k3.locoRef);
+    if (t.k3) player.addClips(t.k3.clips, t.k3.map, t.k3.locoRef, t.k3.replace);
     else t.waiting.push(new WeakRef(player));
     return player;
   }
@@ -641,32 +644,43 @@ export class PlayerSkins {
   private loadK3(id: string, skin: PlayerSkin): void {
     const t = this.templates.get(id);
     if (!t || typeof t === 'string' || t.k3 || this.disposed) return;
+    // UAL (thay chết/trúng đòn/ngã/thủ thế, thêm lướt/nhảy) nạp cùng K-3; lỗi UAL thì chỉ mất phần UAL.
+    const ualP = (UAL_ENABLED ? this.cache.acquire(HUMAN_UAL_LIB, { priority: 40 }) : Promise.resolve(null)).catch((err) => {
+      console.warn('[models] không nạp được thư viện clip UAL, giữ clip cũ', err);
+      return null;
+    });
     this.cache.acquire(HUMAN_K3_LIB, { priority: 40 }).then(
-      (lib) => {
+      async (lib) => {
+        const ual = await ualP;
+        const releaseAll = () => (lib.release(), ual?.release());
         if (this.disposed) {
-          lib.release();
+          releaseAll();
           return;
         }
         const tpl = this.templates.get(id);
         if (!tpl || typeof tpl === 'string') {
-          lib.release();
+          releaseAll();
           return;
         }
         const out: THREE.AnimationClip[] = [];
         const have = new Set(tpl.clips.map((c) => c.name));
-        const todo = lib.animations.filter((c) => !have.has(c.name));
+        const todo: { src: THREE.Object3D; clip: THREE.AnimationClip; ual: boolean }[] = [
+          ...lib.animations.filter((c) => !have.has(c.name)).map((clip) => ({ src: lib.scene, clip, ual: false })),
+          ...(ual?.animations ?? []).map((clip) => ({ src: ual!.scene, clip, ual: true })),
+        ];
         const step = () => {
           if (this.disposed) {
-            lib.release();
+            releaseAll();
             return;
           }
           const c = todo.shift();
           if (c) {
-            out.push(...retargetClips(lib.scene, [c], tpl.handle.scene));
+            const r = retargetClips(c.src, [c.clip], tpl.handle.scene);
+            out.push(...(c.ual ? r.flatMap(ualAliases) : r));
             setTimeout(step, 0);
             return;
           }
-          lib.release();
+          releaseAll();
           // Tốc độ nền của clip K-3 đo trên Thanh Phong; nhân vật khác theo tỉ lệ tốc độ chạy.
           const f = skin.refSpeed / (HUMAN_CLIPS.run.refSpeed ?? 3.09);
           const map: ClipMap = {};
@@ -677,13 +691,18 @@ export class PlayerSkins {
             const ref = HUMAN_CLIPS[clip]?.refSpeed;
             if (ref) locoRef[state] = ref * f;
           }
-          tpl.k3 = { clips: out, map, locoRef };
-          for (const w of tpl.waiting) w.deref()?.addClips(out, map, locoRef);
+          Object.assign(map, ualMap((n) => out.some((x) => x.name === n)));
+          const replace = out.some((x) => x.name.startsWith('ual_')) ? UAL_REPLACE : [];
+          tpl.k3 = { clips: out, map, locoRef, replace };
+          for (const w of tpl.waiting) w.deref()?.addClips(out, map, locoRef, replace);
           tpl.waiting = [];
         };
         step();
       },
-      (err) => console.warn('[models] không nạp được thư viện clip K-3, giữ bộ clip cũ', err),
+      (err) => {
+        void ualP.then((u) => u?.release());
+        console.warn('[models] không nạp được thư viện clip K-3, giữ bộ clip cũ', err);
+      },
     );
   }
 
