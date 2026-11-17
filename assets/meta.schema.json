@@ -15,7 +15,7 @@
     },
     "type": { "enum": ["chr", "mon", "prop", "arch", "fx", "anim"], "description": "Thư mục loại trong assets/source/." },
     "budgetClass": {
-      "enum": ["player", "player_v2", "npc", "monster", "elite", "boss", "weapon", "artifact", "prop", "outfit", "drop", "arch", "fx", "anim"],
+      "enum": ["player", "player_v2", "npc", "monster", "elite", "boss", "weapon", "artifact", "prop", "outfit", "outfit_v2", "drop", "arch", "fx", "anim"],
       "description": "Lớp ngân sách trong assets/budgets.json. Bỏ trống thì suy từ tiền tố id (chr_ → player, mon_ → monster…)."
     },
     "itemId": { "type": ["string", "null"], "description": "Id vật phẩm trong packages/content nếu asset là hình của vật phẩm." },

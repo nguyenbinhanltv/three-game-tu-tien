@@ -22,7 +22,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Document, Logger, type Mesh, type Node } from '@gltf-transform/core';
 import { EXTMeshoptCompression } from '@gltf-transform/extensions';
-import { dedup, prune, quantize, reorder, resample, simplifyPrimitive, weld } from '@gltf-transform/functions';
+import { dedup, prune, quantize, reorder, resample, simplifyPrimitive, textureCompress, weld } from '@gltf-transform/functions';
+import sharp from 'sharp';
 import {
   ASSET_ID,
   DEFAULTS,
@@ -275,6 +276,13 @@ export async function optimizeAsset(
 
   let ktx2 = false;
   if (toktx && doc.getRoot().listTextures().length > 0) ktx2 = compressTexturesKTX2(doc, toktx, spec).converted > 0;
+  else if (spec.webp && doc.getRoot().listTextures().length > 0) {
+    // Thiếu KTX-Software: WebP (three nạp EXT_texture_webp), màu + normal lossy, mặt nạ/emissive lossless.
+    await doc.transform(textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^(baseColor|normal|diffuse)/, quality: 88, effort: 5 }));
+    await doc.transform(textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^emissive/, lossless: true, effort: 5 } as never));
+    // ORM = mặt nạ nhuộm (trọng số mượt, kiểm bằng ảnh game: không đổi màu đáng kể): lossy q93.
+    await doc.transform(textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^(metallicRoughness|occlusion)/, quality: 93, effort: 5 } as never));
+  }
 
   const lods: ManifestLod[] = [{ level: 0, triangles: lod0 }];
   const targets = lod0 > 0 ? lodTargets(lod0, spec) : [];

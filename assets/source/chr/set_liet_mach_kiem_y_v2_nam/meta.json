@@ -2,7 +2,7 @@
   "$schema": "../../../meta.schema.json",
   "id": "set_liet_mach_kiem_y_v2_nam",
   "type": "chr",
-  "budgetClass": "outfit",
+  "budgetClass": "outfit_v2",
   "status": "imported",
   "budget": {
     "faceLimit": 14000,
@@ -29,7 +29,19 @@
       "fitPose": {
         "armDown": 70
       },
-      "atlas": 1024
+      "atlas": 1024,
+      "pieces": {
+        "ao_ngoai": {
+          "legBlend": 1.0,
+          "smooth": 7,
+          "spring": false
+        },
+        "lop_duoi": {
+          "legBlend": 1.0,
+          "smooth": 6,
+          "spring": false
+        }
+      }
     }
   },
   "license": {

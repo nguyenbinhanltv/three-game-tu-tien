@@ -149,6 +149,24 @@ async function main(): Promise<void> {
           await shot(`${tag}-chem.jpg`);
           await sleep(900);
           await gm(page, 'killall', 1700);
+          // Bay (ngự kiếm) rồi chết (nằm dài): hai tư thế dễ lòi áo nhất.
+          await cam(page, 0.6, 0.1, 3.6);
+          await page.evaluate(() => (window as unknown as G).__game!.toggleFly());
+          await sleep(900);
+          await page.keyboard.down('KeyW');
+          await sleep(1300);
+          await shot(`${tag}-bay.jpg`);
+          await page.keyboard.up('KeyW');
+          await page.evaluate(() => (window as unknown as G).__game!.toggleFly());
+          await sleep(1500);
+          await cam(page, 0.7, 0.2, 3.6);
+          await gm(page, 'die', 1300);
+          await shot(`${tag}-chet.jpg`);
+          // Hồi sinh (heal không đứng dậy được) rồi về chỗ chụp.
+          await page.evaluate(() => (window as unknown as G).__game!.send('resp', {}));
+          await sleep(3000);
+          await gm(page, 'god on', 900);
+          await gm(page, `tp ${opt('--at', '2048 2088')}`, 1600);
         }
         await gm(page, 'tp 2048 2900', 900);
         await ctx.close();
