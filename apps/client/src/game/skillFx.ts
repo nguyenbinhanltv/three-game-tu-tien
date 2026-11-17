@@ -83,10 +83,15 @@ export function replacedFx(kind: string): boolean {
 }
 
 /** Timeline kích hoạt theo `S.FX` loại `kind` (đúng công pháp nếu timeline ghi `method`). */
-export function fxTriggered(kind: string, method: string | undefined) {
+export function fxTriggered(kind: string, method: string | undefined, variant?: string) {
   if (!TL_ON) return undefined;
-  for (const tl of FX_TIMELINE.values()) if (tl.trigger === 'fx' && tl.fxKind === kind && (!tl.method || tl.method === method)) return tl;
-  return undefined;
+  let fallback;
+  for (const tl of FX_TIMELINE.values()) {
+    if (tl.trigger !== 'fx' || tl.fxKind !== kind || (tl.method && tl.method !== method)) continue;
+    if (tl.when === undefined) fallback ??= tl;
+    else if (tl.when === variant) return tl;
+  }
+  return fallback;
 }
 
 /** Bùng nổ hẹn giờ: bắt đầu `BURST_LEAD` trước `hitAt` để đỉnh sáng rơi đúng hitAt (±0,05 s). */
