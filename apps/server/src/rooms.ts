@@ -34,6 +34,7 @@ import { config } from './config';
 import { Character } from './game/character';
 import { MarkerSystem } from './game/marker';
 import { MirrorPuzzle } from './game/mirrorpuzzle';
+import { SealSystem } from './game/seal';
 import { parties } from './game/party';
 import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions, type TransferOpts } from './game/sim';
 import { WorldState } from './state';
@@ -570,6 +571,7 @@ export class DungeonRoom extends GameRoom {
     this.maxClients = 5;
     this.nextWaveAt = Date.now() + (this.def.waves[0]?.delay ?? 8) * 1000;
     this.clock.setInterval(() => this.director(), 500);
+    this.clock.setInterval(() => this.seals?.tick(), 250);
   }
 
   /** Chỉ vào được bằng vé cấp ở cổng; gọi thẳng joinOrCreate('dungeon') sẽ bị từ chối. */
@@ -671,7 +673,10 @@ export class DungeonRoom extends GameRoom {
       this.puzzle.tick();
       return;
     }
+    // Đợt phong ấn (E4-C): chưa mở đủ cửa thì không sang đợt sau, dù quái đã hết.
+    if (this.seals && !this.seals.all) return;
     if (this.sim.monsters.some((m) => m.state !== MS_DEAD)) return;
+    if (this.seals) this.endSeals();
     const waves = this.def.waves;
     if (!this.nextWaveAt) this.nextWaveAt = now + (waves[this.wave]?.delay ?? 6) * 1000;
     if (now < this.nextWaveAt) return;
@@ -685,6 +690,45 @@ export class DungeonRoom extends GameRoom {
     }
     if (this.wave === (this.def.lockAt ?? 2)) this.lock();
     this.spawnWave(waves[this.wave - 1]);
+  }
+
+  /** Đợt phong ấn đang chạy (E4-C, Thần Tàng Điện). */
+  private seals: SealSystem | null = null;
+
+  private endSeals(): void {
+    this.seals = null;
+    this.sim.sealHook = null;
+  }
+
+  private startSeals(w: WaveDef): void {
+    const def = w.seals!;
+    const marker = (x: number, z: number, r: number, dur: number, open: boolean) =>
+      this.sim.addHazard({ x, z, r }, 0.2, 0, false, open ? 'frost' : 'fire', '', 0, false, 0, undefined, undefined, 'pool', false, dur);
+    this.seals = new SealSystem(
+      {
+        now: () => Date.now(),
+        players: () => this.sim.players.values(),
+        isDead: (p) => (p.s.fl & PF_DEAD) !== 0,
+        isGhost: (p) => this.sim.soul.isScouting(p),
+        teleport: (p, x, z) => void this.sim.teleportTo(p, x, z),
+        sys: (p, k, params, type) => this.sim.sys(p, k, params, type),
+        sysAll: (k, params, type) => this.sim.sysAll(k, params, type),
+        onOpen: (i) => {
+          const g = def.reinforce;
+          const mon = MONSTER.get(g.mon);
+          const d = def.doors[i];
+          if (!mon) return;
+          for (let k = 0; k < g.n; k++) {
+            const a = (k / Math.max(1, g.n)) * Math.PI * 2;
+            this.sim.spawnMonster(mon, g.level, d.x + Math.cos(a) * 4, d.z + Math.sin(a) * 4, null);
+          }
+        },
+        marker,
+      },
+      def,
+    );
+    this.sim.sealHook = { peek: (p) => this.seals?.peekTalisman(p) ?? -1, open: (i) => this.seals?.unlockDoor(i) };
+    this.sim.sysAll('sys.seal_need', undefined, 'info');
   }
 
   /** Đợt giải đố ba gương đang chạy (E3-M). */
@@ -720,6 +764,7 @@ export class DungeonRoom extends GameRoom {
       this.sim.sysAll('sys.dungeon_wave', { n: this.wave, boss: t('dungeon.' + this.levelId + '.wave.' + this.wave) }, 'info');
       return this.startPuzzle(w);
     }
+    if (w.seals) this.startSeals(w);
     let lead = '';
     let i = 0;
     for (const g of w.mons) {

@@ -163,6 +163,13 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_thien_khuyet_thu_linh: { asset: 'boss_thien_khuyet_thu_linh', clips: CHANT_BOSS_CLIPS, refSpeed: 2.5, legs: 'biped', tint: '#ffffff', lift: 0.1, lazy: true, level: 'thien_khuyet', moves: BIPED_MOVES },
   // Vô Diện Thần Quân (Thần Tàng Điện): người 4,6 m sáu tay phụ liền lưới.
   boss_vo_dien_than_quan: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#ffffff', rim: 0.25, lift: 0.12, lazy: true, level: 'than_tang', moves: BIPED_MOVES },
+  // Quái và tinh anh trong Thần Tàng Điện (E4-C): dùng chung model với quái Thiên Khuyết (id riêng của bí cảnh để không đụng quái ngoài trời).
+  mon_tt_cot_ve: { asset: 'mon_cot_ve_kiem_thu', clips: WOLF_CLIPS, refSpeed: 2.1, legs: 'biped', tint: '#ffffff', lazy: true, level: 'than_tang' },
+  mon_tt_thach_tuong: { asset: 'mon_thach_tuong_vo_si', clips: GUARD_CLIPS, refSpeed: 1.9, legs: 'biped', tint: '#ffffff', lazy: true, level: 'than_tang' },
+  mon_tt_chien_ma: { asset: 'mon_co_thanh_chien_ma', clips: WOLF_CLIPS, refSpeed: 2.7, legs: 'biped', tint: '#ffffff', lazy: true, level: 'than_tang' },
+  elite_tt_cot_kiem: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh, level: 'than_tang' },
+  // Phân thân thần niệm: cùng model với boss, nhạt hơn và nhỏ hơn.
+  mon_tt_phan_than: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#c8c0e0', rim: 0.25, lift: 0.12, lazy: true, level: 'than_tang', moves: BIPED_MOVES },
 };
 
 interface Template {
