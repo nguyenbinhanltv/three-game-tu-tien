@@ -1,0 +1,317 @@
+{
+ "skill": "skl_thuan_di_tram",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": -0.12,
+   "dur": 0.1,
+   "at": "self",
+   "scale": 1.1,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": -0.12,
+   "dur": 0.4,
+   "at": "self",
+   "offset": [
+    0,
+    -1.1,
+    0
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.5,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "tone": "core",
+   "tier": 1,
+   "seed": 2
+  },
+  {
+   "type": "mesh",
+   "shape": "helix",
+   "t": -0.12,
+   "dur": 0.16,
+   "at": "ahead",
+   "offset": [
+    0,
+    0,
+    0.8
+   ],
+   "scale": [
+    0.8,
+    0.8,
+    2.6
+   ],
+   "sweep": 0.1,
+   "erodeFrom": 0.7,
+   "spin": 900,
+   "tone": "body",
+   "move": {
+    "to": "target",
+    "ease": "in"
+   },
+   "tier": 0,
+   "seed": 3
+  },
+  {
+   "type": "mesh",
+   "shape": "crescent",
+   "t": 0.05,
+   "dur": 0.26,
+   "at": "target",
+   "offset": [
+    0,
+    0.9,
+    0
+   ],
+   "rot": [
+    0,
+    0,
+    -84
+   ],
+   "scale": 1.9,
+   "scaleTo": 2.7,
+   "sweep": 0.4,
+   "erodeFrom": 0.5,
+   "ragged": 0.6,
+   "tone": "body",
+   "seed": 4,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "crescent",
+   "t": 0.08,
+   "dur": 0.22,
+   "at": "target",
+   "offset": [
+    0,
+    0.6,
+    0
+   ],
+   "rot": [
+    0,
+    0,
+    -40
+   ],
+   "scale": 1.3,
+   "scaleTo": 2.0,
+   "sweep": 0.4,
+   "erodeFrom": 0.5,
+   "ragged": 0.7,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 5,
+   "tier": 2
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.05,
+   "dur": 0.11,
+   "at": "target",
+   "scale": 1.5,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "body",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.07,
+   "dur": 0.45,
+   "at": "ground",
+   "offset": [
+    1.05,
+    0,
+    0.33
+   ],
+   "rot": [
+    -83,
+    0,
+    0
+   ],
+   "scale": 0.38,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "alpha": 0.97,
+   "seed": 1,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.09,
+   "dur": 0.45,
+   "at": "ground",
+   "offset": [
+    0.24,
+    0,
+    1.07
+   ],
+   "rot": [
+    -69,
+    0,
+    0
+   ],
+   "scale": 0.5,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "alpha": 0.97,
+   "seed": 2,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.11,
+   "dur": 0.45,
+   "at": "ground",
+   "offset": [
+    -0.81,
+    0,
+    0.75
+   ],
+   "rot": [
+    -75,
+    0,
+    0
+   ],
+   "scale": 0.44,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "alpha": 0.97,
+   "seed": 3,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.13,
+   "dur": 0.45,
+   "at": "ground",
+   "offset": [
+    -1.05,
+    0,
+    -0.33
+   ],
+   "rot": [
+    -97,
+    0,
+    0
+   ],
+   "scale": 0.38,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "alpha": 0.97,
+   "seed": 4,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.15,
+   "dur": 0.45,
+   "at": "ground",
+   "offset": [
+    -0.24,
+    0,
+    -1.07
+   ],
+   "rot": [
+    -111,
+    0,
+    0
+   ],
+   "scale": 0.5,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "alpha": 0.97,
+   "seed": 5,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.17,
+   "dur": 0.45,
+   "at": "ground",
+   "offset": [
+    0.81,
+    0,
+    -0.75
+   ],
+   "rot": [
+    -105,
+    0,
+    0
+   ],
+   "scale": 0.44,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "alpha": 0.97,
+   "seed": 6,
+   "tier": 1
+  },
+  {
+   "type": "decal",
+   "tex": "crack",
+   "t": 0.07,
+   "r": 2.6,
+   "dur": 2.2,
+   "at": "ground",
+   "grow": 0.12,
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.05,
+   "n": 30,
+   "speed": 8,
+   "spread": 1,
+   "life": 0.4,
+   "size": 0.06,
+   "at": "target",
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "hitstop",
+   "t": 0.05,
+   "ms": 60
+  },
+  {
+   "type": "shake",
+   "t": 0.05,
+   "level": 0.2
+  }
+ ],
+ "variants": {
+  "blast": [
+   {
+    "type": "mesh",
+    "shape": "ripple",
+    "t": 0.12,
+    "dur": 0.6,
+    "at": "ground",
+    "scale": 0.4,
+    "scaleTo": 3.2,
+    "sweep": 0.4,
+    "tone": "accent",
+    "alpha": 0.8,
+    "tier": 1,
+    "seed": 16
+   }
+  ]
+ }
+}

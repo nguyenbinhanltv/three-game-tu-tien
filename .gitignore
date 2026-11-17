@@ -16,3 +16,6 @@ assets/source/**
 !assets/source/_batches/*.json
 !assets/source/README.md
 tripo-out/
+
+__pycache__/
+*.pyc
