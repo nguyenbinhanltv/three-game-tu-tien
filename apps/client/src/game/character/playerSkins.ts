@@ -201,7 +201,9 @@ const OUTFIT_Q = typeof location !== 'undefined' ? new URLSearchParams(location.
 const OUTFIT_OFF = OUTFIT_Q === '0';
 /** `?outfit=set_kinh_quang_kiem_y` ép mọi bộ đang mặc dùng áo này (xem áo của bộ chưa có trong dữ liệu, chụp ảnh). */
 /** Nhân vật nền v2 (MakeHuman + đầu/tóc Tripo) là mặc định; `?chr=v1` về hai model Tripo cũ để so sánh. */
-const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') !== 'v1'; // không có location (test node): giữ model cũ
+const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') === 'v2'; // v1 (hai model Tripo cũ) là mặc định; `?chr=v2` bật v2. Không có location (test node): v1
+/** Nhân vật nền v2 đang bật (chỉ khi `?chr=v2`): UI chọn kiểu tóc A/B chỉ hiện khi true. */
+export const CHR_V2_ON = CHR_V2;
 /** `?hair=b` ép kiểu tóc B khi không có lựa chọn của người chơi (thử, chụp ảnh). */
 const CHR_V2_HAIR = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hair') : null;
 const OUTFIT_FORCE = OUTFIT_Q && OUTFIT_Q !== '0' ? OUTFIT_Q : null;
@@ -219,7 +221,7 @@ export function starterOutfitId(g: string, hair?: string): string | null {
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
 function modelOf(g: string, hair?: string): string | null {
-  // Nhân vật nền v2 (MakeHuman + đầu/tóc Tripo, `chr_v2_*`) là mặc định; `?chr=v1` về hai model Tripo cũ (`appearance.json`). Kiểu tóc B: `chr_v2_hb_*`.
+  // Mặc định hai model Tripo cũ (`appearance.json`); `?chr=v2` bật nhân vật nền v2 (MakeHuman + đầu/tóc Tripo, `chr_v2_*`; kiểu tóc B: `chr_v2_hb_*`).
   if (CHR_V2) return `chr_v2_${(hair ?? CHR_V2_HAIR) === 'b' ? 'hb_' : ''}${g === 'f' ? 'nu' : 'nam'}`;
   const own = APPEARANCE.genders.find((x) => x.id === (g as Gender))?.model;
   return own ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender)?.model ?? null;
