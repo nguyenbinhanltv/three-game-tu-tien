@@ -34,7 +34,7 @@ Ghi chú: thiết kế gốc ghi "hút khiêu khích" cho hộ pháp; quái vẫ
 
 ## Ô chiêu 10
 
-Ba chiêu cấp 28 trong `methods.json` (`skl_thien_kiem_hoa_hinh`, `skl_thien_kim_phap_tuong`, `skl_thien_dan_phap_gioi`) bỏ `locked`: chơi được ở Hóa Thần, kiểu chiêu (`aoe`/`buff`/`hot`), pose và FX timeline đã có từ E2-G. `thanThong10Skill` (`@dtl/content`) trả chiêu ô 10, không còn nằm trong `tierBar`. Thanh chiêu: `[8 ô chính, ô 9 (phím 0), ô 10 (phím -), hàng bậc cao Shift+số]`, nên **hàng Shift dời từ chỉ số `BAR_SIZE + 1` sang `BAR_SIZE + 2`** (engine, `Hud.tsx`). `content:check` bắt buộc mỗi công pháp có ô 10; chiêu cấp 24/26 vẫn `locked`.
+Ba chiêu cấp 28 trong `methods.json` (`skl_thien_kiem_hoa_hinh`, `skl_thien_kim_phap_tuong`, `skl_thien_dan_phap_gioi`) bỏ `locked`: chơi được ở Hóa Thần, kiểu chiêu (`aoe`/`buff`/`hot`), pose và FX timeline đã có từ E2-G. `thanThong10Skill` (`@dtl/content`) trả chiêu ô 10, không còn nằm trong `tierBar`. Thanh chiêu: `[8 ô chính, ô 9 (phím 0), ô 10 (phím `` ` ``, Backquote), hàng bậc cao Shift+số]`, nên **hàng Shift dời từ chỉ số `BAR_SIZE + 1` sang `BAR_SIZE + 2`** (engine, `Hud.tsx`). `content:check` bắt buộc mỗi công pháp có ô 10; chiêu cấp 24/26 vẫn `locked`.
 
 ## Kiểm
 
