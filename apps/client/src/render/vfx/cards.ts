@@ -5,10 +5,10 @@ import * as THREE from 'three/webgpu';
  * (không dùng ảnh ngoài). Mã hóa cho shader `card` (render/vfx/stylized.ts): kênh R = tầng màu (0 bóng sẫm … 0,5 thân … 1 viền sáng),
  * kênh G = 1 ở phần dùng màu điểm nhấn (vàng / đỏ son), alpha = hình. Một texture mỗi thẻ.
  */
-export type CardId = 'arhat' | 'phoenix';
-export const CARD_INDEX: Record<CardId, number> = { arhat: 0, phoenix: 1 };
+export type CardId = 'arhat' | 'phoenix' | 'ghost';
+export const CARD_INDEX: Record<CardId, number> = { arhat: 0, phoenix: 1, ghost: 2 };
 /** Tỉ lệ rộng/cao của thẻ. */
-export const CARD_ASPECT: Record<CardId, number> = { arhat: 512 / 768, phoenix: 768 / 640 };
+export const CARD_ASPECT: Record<CardId, number> = { arhat: 512 / 768, phoenix: 768 / 640, ghost: 0.5 };
 
 type Ctx = CanvasRenderingContext2D;
 const col = (tier: number, acc = 0) => `rgb(${Math.round(tier * 255)},${Math.round(acc * 255)},0)`;
@@ -217,6 +217,47 @@ function drawPhoenix(g: Ctx): void {
   }
 }
 
+/** Hồn thể / tàn ảnh: bóng người đứng (áo dài, búi tóc, kiếm sau lưng) 256×512 dùng cho xuất khiếu và thuấn di. */
+function drawGhost(g: Ctx): void {
+  const C = 128;
+  // Kiếm sau lưng.
+  line(g, 1, 8, [[C + 40, 120], [C - 36, 330]], 1);
+  line(g, 0.6, 4, [[C + 40, 120], [C - 36, 330]], 1);
+  // Chân + giày.
+  for (const s of [-1, 1]) {
+    fillPath(g, 0.5, 0, () => g.rect(C + s * 26 - 14, 380, 28, 80), 1, 4);
+    fillPath(g, 0.8, 1, () => g.ellipse(C + s * 26, 470, 24, 12, 0, 0, Math.PI * 2), 1, 3);
+  }
+  // Áo dài choàng, vạt xòe, đai lưng (điểm nhấn).
+  fillPath(g, 0.5, 0, () => {
+    g.moveTo(84, 118);
+    g.quadraticCurveTo(C, 104, 172, 118);
+    g.lineTo(196, 392);
+    g.quadraticCurveTo(C, 410, 60, 392);
+    g.closePath();
+  }, 1, 6);
+  fillPath(g, 0.78, 1, () => g.rect(76, 236, 104, 22), 1, 3);
+  line(g, 0.18, 5, [[C, 130], [C - 6, 230], [C, 395]]);
+  line(g, 0.18, 4, [[96, 270], [84, 380]]);
+  line(g, 0.18, 4, [[160, 270], [172, 380]]);
+  // Hai tay buông, tay áo rộng.
+  for (const s of [-1, 1]) {
+    fillPath(g, 0.55, 0, () => {
+      g.moveTo(C + s * 44, 120);
+      g.quadraticCurveTo(C + s * 86, 200, C + s * 70, 330);
+      g.lineTo(C + s * 36, 320);
+      g.quadraticCurveTo(C + s * 40, 220, C + s * 30, 140);
+      g.closePath();
+    }, 1, 5);
+  }
+  // Cổ + đầu + búi tóc.
+  fillPath(g, 0.5, 0, () => g.rect(C - 14, 94, 28, 30), 1, 4);
+  fillPath(g, 0.6, 0, () => g.ellipse(C, 66, 30, 36, 0, 0, Math.PI * 2), 1, 5);
+  fillPath(g, 0.85, 1, () => g.ellipse(C, 32, 16, 14, 0, 0, Math.PI * 2), 1, 3);
+  line(g, 0.12, 4, [[C - 16, 66], [C - 6, 66]]);
+  line(g, 0.12, 4, [[C + 6, 66], [C + 16, 66]]);
+}
+
 const tex = new Map<CardId, THREE.Texture>();
 
 /** Texture của một thẻ (dựng một lần, nạp lười). Không có `document` (test) thì trả texture trống. */
@@ -228,14 +269,15 @@ export function cardTexture(id: CardId): THREE.Texture {
     t = new THREE.DataTexture(new Uint8Array(16), 2, 2);
     t.needsUpdate = true;
   } else {
-    const w = id === 'arhat' ? 512 : 768;
-    const h = id === 'arhat' ? 768 : 640;
+    const w = id === 'arhat' ? 512 : id === 'ghost' ? 256 : 768;
+    const h = id === 'arhat' ? 768 : id === 'ghost' ? 512 : 640;
     const cv = document.createElement('canvas');
     cv.width = w;
     cv.height = h;
     const g = cv.getContext('2d')!;
     g.clearRect(0, 0, w, h);
     if (id === 'arhat') drawArhat(g);
+    else if (id === 'ghost') drawGhost(g);
     else drawPhoenix(g);
     t = new THREE.CanvasTexture(cv);
     t.colorSpace = THREE.NoColorSpace;
