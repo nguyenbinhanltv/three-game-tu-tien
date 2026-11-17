@@ -5706,8 +5706,8 @@
       "id": "prop_kiem_tan_hoa",
       "class": "weapon",
       "source": "assets/build/raw/prop_kiem_tan_hoa.glb",
-      "file": "prop_kiem_tan_hoa.cb886b2702.glb",
-      "bytes": 538432,
+      "file": "prop_kiem_tan_hoa.5128ac5286.glb",
+      "bytes": 229488,
       "rawBytes": 1140880,
       "triangles": 3000,
       "rawTriangles": 25940,
@@ -5716,11 +5716,11 @@
       "quantized": true,
       "bones": 0,
       "animations": [],
-      "ktx2": false,
+      "ktx2": true,
       "textures": [
         {
           "name": "prop_kiem_tan_hoa_normal",
-          "mimeType": "image/png",
+          "mimeType": "image/ktx2",
           "width": 512,
           "height": 512,
           "slots": [
@@ -5729,7 +5729,7 @@
         },
         {
           "name": "prop_kiem_tan_hoa_color",
-          "mimeType": "image/png",
+          "mimeType": "image/ktx2",
           "width": 512,
           "height": 512,
           "slots": [
