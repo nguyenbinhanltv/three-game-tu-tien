@@ -36,5 +36,6 @@ for (let i = 0; i < RUNS; i++) {
 }
 const out = { tag: TAG, runs: p95s.length, p50Median: med(p50s), p95Median: med(p95s), p95All: p95s, drawMedian: med(draws) };
 console.log(JSON.stringify(out));
-fs.mkdirSync('bench/results', { recursive: true });
-fs.appendFileSync('bench/results/crowd-repeat.jsonl', JSON.stringify(out) + '\n');
+const outDir = path.join(ROOT, 'bench/results');
+fs.mkdirSync(outDir, { recursive: true });
+fs.appendFileSync(path.join(outDir, 'crowd-repeat.jsonl'), JSON.stringify(out) + '\n');
