@@ -1,0 +1,180 @@
+{
+ "skill": "skl_thiet_bich_xung",
+ "trigger": "fx",
+ "fxKind": "dash",
+ "method": "bat_dong_kim_than",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.11,
+   "at": "self",
+   "scale": 1.2,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "accent",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "self",
+   "offset": [
+    0,
+    -1.1,
+    0
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.8,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "ragged": 0.7,
+   "tone": "body",
+   "tier": 0,
+   "seed": 2
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "ahead",
+   "offset": [
+    -0.5,
+    -1.15,
+    -0.8
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.5,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "tone": "body",
+   "seed": 10,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.03,
+   "dur": 0.6,
+   "at": "ahead",
+   "offset": [
+    0.5,
+    -1.15,
+    -2.0
+   ],
+   "rot": [
+    -76,
+    0,
+    0
+   ],
+   "scale": 0.46,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "tone": "body",
+   "seed": 11,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.06,
+   "dur": 0.6,
+   "at": "ahead",
+   "offset": [
+    0.0,
+    -1.15,
+    -3.2
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.42,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "tone": "body",
+   "seed": 12,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.09,
+   "dur": 0.6,
+   "at": "ahead",
+   "offset": [
+    -0.5,
+    -1.15,
+    -4.4
+   ],
+   "rot": [
+    -76,
+    0,
+    0
+   ],
+   "scale": 0.38,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "tone": "body",
+   "seed": 13,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "spike",
+   "t": 0.12,
+   "dur": 0.6,
+   "at": "ahead",
+   "offset": [
+    0.5,
+    -1.15,
+    -5.6
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": 0.34,
+   "sweep": 0.2,
+   "erodeFrom": 0.5,
+   "tone": "body",
+   "seed": 14,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0.0,
+   "n": 30,
+   "speed": 3.0,
+   "spread": 0.9,
+   "life": 0.55,
+   "size": 0.22,
+   "at": "self",
+   "tone": "core",
+   "grav": 3,
+   "tier": 1,
+   "offset": [
+    0,
+    -1.0,
+    -0.5
+   ]
+  },
+  {
+   "type": "shake",
+   "t": 0.0,
+   "level": 0.12,
+   "tier": 1
+  }
+ ]
+}
