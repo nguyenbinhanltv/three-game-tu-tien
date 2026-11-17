@@ -17,7 +17,7 @@ Gói E2-A của E-2 Kết Đan (`docs/EXPANSION_DESIGN.md` mục 4.1, 10.2, 11.2
 | Điểm đặt tên `?at=` / `/gm tp` (`dm_tram`, `dm_sa_thach`, `dm_kho_ha`, `dm_hoang_sa`, `dm_cuu_mo`, `dm_tuyet_bich`, `dm_boss`) | `packages/content/data/places.json` |
 | Nền minimap | `apps/client/public/map/doan_mach.{webp,json}` (`pnpm minimap:build --level doan_mach`) |
 | Bộ sinh tất định | `tools/maps/gen-doan-mach.mjs` (sửa số liệu ở đây rồi chạy lại, sinh 5 tệp ở trên), `tools/maps/apply-content-doan-mach.py` (chuỗi + quái tạm, chạy một lần) |
-| Ảnh chụp trong game | `pnpm shots:e2a --out <thư mục>` (`tools/perf/src/shots-e2a.ts`: vào bằng `/gm tp dm_tram`, tới từng điểm, chụp cả bản đồ lớn) |
+| Ảnh chụp trong game | `pnpm shots points --level doan_mach --out <thư mục>` (`tools/perf/src/shots-e2a.ts`: vào bằng `/gm tp dm_tram`, tới từng điểm, chụp cả bản đồ lớn) |
 
 ## Bố cục
 

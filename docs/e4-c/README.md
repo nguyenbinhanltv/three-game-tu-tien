@@ -22,7 +22,7 @@ Theo `docs/EXPANSION_DESIGN.md` mục 5.3 (bí cảnh) và E4-M (cửa phong ấ
 - `netcode-reviewer`: đã sửa (1) bùa mở cửa trước khi tx trừ bùa (nay peek → tx → mở), (2) kẹt cứng khi hết bùa (tự lỏng sau 180 s), (3) một lượt X mở tối đa một cửa, (8) ghost không bị nhắm/không tính vào gom nhóm Phản hồi, (9) phân thân không chết hai lần. Bỏ qua có chủ ý: (4) vùng chặn kiểm mỗi 250 ms (không khai thác được), (6) lẫn `Date.now()`/`sim.now` (cùng khuôn `DungeonRoom` hiện có), (7) tối ưu lọc boss mỗi tick.
 - `pnpm --filter @dtl/bot-client security`: 137 đạt, 1 hỏng (`đang niệm mà ra chiêu đánh quái`, `sys.tele_combat`). **Hỏng y hệt trên `origin/main`** (đã chạy riêng), không do E4-C.
 
-## Ảnh (`pnpm --filter @dtl/perf run shots:e4c --out <thư mục tuyệt đối>`, WebGPU, tắt tiếng)
+## Ảnh (`pnpm shots dungeon --level than_tang --out <thư mục tuyệt đối>`, WebGPU, tắt tiếng)
 
 Repo chỉ giữ 5 ảnh then chốt; bộ đầy đủ (cổng, đợt 1–6, chặn thân xác, xuất khiếu, Phá Ấn Phù, ngũ hành, vòng đá) nằm ở thư mục artifact của phiên và sinh lại bằng lệnh trên.
 

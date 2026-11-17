@@ -1,16 +1,15 @@
 // Kiểm cảnh 3D không đen (lỗi "màn hình đen, HUD vẫn chạy"): mở game đang chạy, chụp, đo độ sáng trung bình vùng giữa màn hình.
 //   tsx src/check-black.ts <webgpu|webgl2> <tên> <cổng client> <ảnh.png> [query thêm, vd at=2048,2088]   (thoát 1 nếu quá tối)
 // Cần server dev đang chạy (PORT/CLIENT_PORT riêng của worktree). Tắt tiếng bằng ?mute=1 và --mute-audio.
-import { chromium } from 'playwright';
+import { gameUrl, launchChrome } from './lib/browser';
 const [, , renderer = 'webgpu', name = 'Repro1', port = '5134', out = 'out.png', extra = ''] = process.argv;
-const args = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
-const b = await chromium.launch({ channel: 'chrome', headless: true, args }).catch(() => chromium.launch({ headless: true, args }));
+const b = await launchChrome();
 const page = await (await b.newContext({ viewport: { width: 1920, height: 1080 } })).newPage();
 page.on('pageerror', (e) => console.log('PAGEERR', e.message.slice(0, 500)));
 page.on('console', (m) => ['error', 'warning'].includes(m.type()) && console.log(m.type().toUpperCase(), m.text().slice(0, 500)));
-await page.goto(`http://localhost:${port}/?mute=1&debug=1&auto=${name}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${extra ? '&' + extra : ''}`);
+await page.goto(gameUrl(Number(port), { debug: 1, auto: name }, { renderer, extra }));
 await new Promise((r) => setTimeout(r, 20000));
-console.log(JSON.stringify(await page.evaluate(() => { const g = (window as any).__game; return g?.info?.(); })));
+console.log(JSON.stringify(await page.evaluate(() => { return window.__game?.info?.(); })));
 console.log(JSON.stringify(await page.evaluate(async () => { const a = await (navigator as any).gpu?.requestAdapter?.(); return a ? { info: a.info && { v: a.info.vendor, a: a.info.architecture, d: a.info.description } } : 'no adapter'; })));
 const buf = await page.screenshot({ path: out });
 const lum = await page.evaluate(async (b64) => {

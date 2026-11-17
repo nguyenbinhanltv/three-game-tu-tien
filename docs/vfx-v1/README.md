@@ -17,7 +17,7 @@ Phong cách đích (đã chốt): stylized vẽ tay "2D trong 3D", ba tầng mà
 | Hạt GPU instanced | hệ có sẵn (`render/vfx/particles.ts`, quỹ đạo tính trong vertex shader, bộ đệm vòng) nên không cần compute; sự kiện `particles` (cả kiểu "tụ khí" bay vào tâm) |
 | Thư viện shader TSL | `render/vfx/stylized.ts`: `ramp3`, `jaggedCut` (mép rách), `dissolve`, `flowNoise`, `fresnelRim`; kiểu `toon`, `crystal`, `burst`, `decal`; bảng màu theo nhánh `render/vfx/palette.ts`; hình nền `render/vfx/fxShapes.ts` |
 | Cài đặt "Chất lượng hiệu ứng" Thấp/Vừa/Cao | `game/fxSettings.ts`, Cài đặt → mỗi sự kiện có `tier`; chiêu người khác hạ một bậc; `?fxq=` ghi đè |
-| Công cụ video | `pnpm shots:vfx --out <thư mục tuyệt đối>`: webm chậm 0,25× và tốc độ thật + dãy khung PNG, nam và nữ, luôn tắt tiếng; `--old` chụp hình cũ |
+| Công cụ video | `pnpm shots vfx --out <thư mục tuyệt đối>`: webm chậm 0,25× và tốc độ thật + dãy khung PNG, nam và nữ, luôn tắt tiếng; `--old` chụp hình cũ |
 
 Thêm chiêu mới = viết một JSON (xem hai file mẫu) + `pnpm content:check` (kiểm ≤ 12 draw, ≤ 1.500 hạt, khựng 40–80 ms, rung ≤ 0,6, chớp ≤ 0,3).
 Sự kiện neo vào `hitAt` của chiêu (`t` giây, âm = trước), nên đổi nhịp chiêu trong `skills.json` thì hiệu ứng đi theo.
@@ -36,7 +36,7 @@ mất hình hoặc lẫn ma trận (vòng ấn to bất thường, gai không hi
 
 ## Số đo
 
-`pnpm shots:vfx --perf` (WebGPU, sân tông môn, một sói; draw call / khung ms trong lúc ra chiêu, cũ → mới):
+`pnpm shots vfx --perf` (WebGPU, sân tông môn, một sói; draw call / khung ms trong lúc ra chiêu, cũ → mới):
 
 | Chiêu | draw p50/max | tam giác max | khung ms p50/p95 |
 | --- | --- | --- | --- |

@@ -59,7 +59,7 @@ Mỗi mảnh áo khai báo vùng che trong `packages/content/data/equipment/outf
 
 ## 4. Ảnh trước/sau (cùng góc, trong game thật, tắt tiếng, WebGPU)
 
-`pnpm --filter @dtl/perf run shots:chrv2 --out <thư mục tuyệt đối>` (cờ `--variant old|v2|v2b`, `--genders m,f`, `--sets none,set_liet_mach,set_kinh_quang`, `--only still`). Tệp: `<than-tran|liet-mach|kinh-quang>-<nam|nu>-<matcan|matgan|banthan|toanthan|chay|chem|datoa|saugan>.webp` (trái = nhân vật cũ, phải = v2 tóc A) và `toc-ab-<bộ>-<giới>-<góc>.webp` (so tóc A với B).
+`pnpm shots chrv2 --out <thư mục tuyệt đối>` (cờ `--variant old|v2|v2b`, `--genders m,f`, `--sets none,set_liet_mach,set_kinh_quang`, `--only still`). Tệp: `<than-tran|liet-mach|kinh-quang>-<nam|nu>-<matcan|matgan|banthan|toanthan|chay|chem|datoa|saugan>.webp` (trái = nhân vật cũ, phải = v2 tóc A) và `toc-ab-<bộ>-<giới>-<góc>.webp` (so tóc A với B).
 
 Cận mặt nam (Liệt Mạch, máy ảnh sát mặt) và thân trần cận mặt nữ:
 
