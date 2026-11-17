@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_kiem_tan_hoa",
+  "type": "prop",
+  "budgetClass": "weapon",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 3000,
+    "texture": 512
+  },
+  "import": {
+    "kind": "external",
+    "source": "prop/prop_kiem_tan_hoa/sketchfab/sword_of_miracle_free.glb",
+    "size": {
+      "longest": 0.82
+    },
+    "orient": "none",
+    "post": "tools/blender/ext_sword.py"
+  },
+  "license": {
+    "source": "Sketchfab: \"Sword of Miracle Free\" của Art_workshop (https://sketchfab.com/art_workshop). Đã sửa: gộp lưới, bỏ ngọc trong suốt, giảm 25.940 → 3.000 tam giác, hạ texture 2048 → 512, bỏ map kim loại",
+    "owner": "Art_workshop",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/sword-of-miracle-free-a163029fb3d74626bbb1711bd8840c46",
+    "spdx": "CC-BY-4.0"
+  }
+}
