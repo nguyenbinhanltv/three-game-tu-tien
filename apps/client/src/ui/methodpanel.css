@@ -293,3 +293,23 @@
   height: 2.4em;
   margin: 0 0 2px;
 }
+
+/* ---------- phân thân thần niệm (E4-K): chip phím G trên thanh chiêu ---------- */
+.clone-chip {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 2px;
+  font-size: 11px;
+  color: var(--k-text-dim, #b8c4bd);
+  text-shadow: 0 1px 2px #000;
+}
+.clone-chip.on {
+  color: #ffe9a8;
+}
+.clone-chip .clone-key {
+  padding: 0 5px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font-weight: 600;
+}

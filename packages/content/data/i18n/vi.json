@@ -1422,5 +1422,16 @@
   "mon.boss_vo_dien_than_quan.say.dead": "Ta chờ lâu quá. Trả đi.",
   "item.itm_pha_an_phu.name": "Phá Ấn Phù",
   "item.itm_pha_an_phu.desc": "Bùa phá phong ấn cổ chế từ Tinh Quang Mặc. Dùng ngay trước cửa phong ấn trong Thần Tàng Điện để mở cửa khi không có người xuất khiếu.",
-  "sys.seal_loosen": "Phong ấn cổ đã mục, một cửa tự lỏng ra."
+  "sys.seal_loosen": "Phong ấn cổ đã mục, một cửa tự lỏng ra.",
+  "sys.clone_locked": "Phân thân thần niệm mở khi lên Hóa Thần.",
+  "sys.clone_busy": "Lúc này không thể tạo phân thân.",
+  "sys.clone_cd": "Phân thân thần niệm còn {s} giây mới tạo lại được.",
+  "sys.clone_mp": "Không đủ linh lực để hóa phân thân.",
+  "sys.clone_out": "Thần niệm hóa hình: phân thân theo ngươi {n} giây.",
+  "sys.clone_end": "Phân thân thần niệm tan vào thần hải.",
+  "sys.clone_broken": "Phân thân gánh đòn thay ngươi đã vỡ tan.",
+  "sys.clone_recall": "Ngươi thu phân thân về.",
+  "quest.s4_thu_niem.name": "Thử Thần Niệm",
+  "quest.s4_thu_niem.desc": "Ngươi đã hóa thần. Mặc Chiếu muốn xem thần niệm của ngươi có đứng vững được một mình không: hóa một phân thân rồi để nó đứng cạnh ngươi.",
+  "quest.s4_thu_niem.done": "Một bóng đứng được cạnh người thật, ấy là thần niệm đã thành hình. Đừng vội mừng: đường phía trước còn dài."
 }
