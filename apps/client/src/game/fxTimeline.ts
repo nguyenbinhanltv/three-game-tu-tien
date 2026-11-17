@@ -39,6 +39,8 @@ export interface FxRunnerEnv {
   hitStopOn(): boolean;
   shake(level: number, dir?: { x: number; z: number }): void;
   flash(amount: number): void;
+  /** Kéo camera ra xa nhẹ (pháp tướng): hệ số khoảng cách thêm và thời lượng (giây). */
+  camPull(pull: number, dur: number): void;
   sound(id: string, gain: number, sid: string): void;
   /** Vùng của chiêu diện rộng gần nhất của `sid` (S.FX x, z, r). */
   areaOf(sid: string): { x: number; z: number; r: number } | null;
@@ -266,6 +268,9 @@ export class FxRunner {
         this.v.lightning(p.x, p.y, p.z, toneOf(c.pal, ev.tone ?? 'rim'), ev.scale ?? 1, ev.seed ?? Math.floor(c.seed * 100 + s.idx), 0);
         break;
       }
+      case 'camera':
+        if (c.mine) this.env.camPull(ev.pull, ev.dur);
+        break;
       case 'flash':
         if (c.mine) this.env.flash(Math.min(0.3, ev.amount));
         break;

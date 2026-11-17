@@ -122,6 +122,26 @@ describe('V3: Hộ pháp + Đan sư', () => {
   });
 });
 
+describe('V4: pháp tướng', () => {
+  it('3 chiêu tối thượng có pháp tướng + kéo camera (≤ 0,4), đúng hình theo nhánh', () => {
+    const want: Record<string, string> = { skl_van_kiem_quy_tong: 'dragon', skl_kim_cuong_bat_hoai: 'statue', skl_hoi_thien_dan_lo: 'kite' };
+    for (const [id, shape] of Object.entries(want)) {
+      const ev = fxEventsFor(FX_TIMELINE.get(id)!, -1);
+      expect(ev.some((e) => e.type === 'mesh' && e.shape === shape), id).toBe(true);
+      const cam = ev.find((e) => e.type === 'camera');
+      expect(cam, id).toBeTruthy();
+      expect((cam as { pull: number }).pull).toBeLessThanOrEqual(0.4);
+    }
+  });
+  it('pháp tướng mọc (sweep) rồi tan (erodeFrom < 1): có dissolve', () => {
+    for (const id of ['skl_van_kiem_quy_tong', 'skl_kim_cuong_bat_hoai']) {
+      const big = fxEventsFor(FX_TIMELINE.get(id)!, -1).filter((e) => e.type === 'mesh' && (e.shape === 'dragon' || e.shape === 'statue'));
+      expect(big.length).toBeGreaterThan(0);
+      for (const e of big) if (e.type === 'mesh') expect(e.erodeFrom ?? 0.5).toBeLessThan(0.9);
+    }
+  });
+});
+
 describe('hủy động tác', () => {
   it('hủy trước mốc trúng thì bỏ đòn; sau mốc trúng thì giữ phần đuôi', () => {
     expect(cancelDropsCast(0.1, 0.28)).toBe(true);

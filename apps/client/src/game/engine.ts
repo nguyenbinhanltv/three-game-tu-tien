@@ -352,6 +352,8 @@ export class Game {
   private ultCardId = 0;
   /** Giây từ lúc kích cận cảnh chiêu tối thượng (K-7); −1 = không đang chạy. */
   private ultCamT = -1;
+  /** Kéo camera ra xa nhẹ của hiệu ứng pháp tướng (theo công tắc "Rung màn hình"). */
+  private fxPull: { amt: number; dur: number; t: number } | null = null;
   /** Động tác chiêu (M3-4): dự đoán khi bấm phím, khớp lúc ra đòn với hiệu ứng. */
   private skillPoses = new SkillPoses();
   private dragging = false;
@@ -837,6 +839,9 @@ export class Game {
         hitStopOn,
         shake: (level, dir) => this.shake.kick(level, dir),
         flash: (a) => this.post?.flash(a),
+        camPull: (pull, dur) => {
+          if (this.shake.enabled) this.fxPull = { amt: pull, dur, t: 0 };
+        },
         areaOf: (sid) => this.fxArea.get(sid) ?? null,
         variantOf: (sid, skillId) => {
           const def = SKILL.get(skillId);
@@ -2952,13 +2957,20 @@ export class Game {
       ultPunch = this.shake.enabled && !this.cine.active ? ultFovAt(this.ultCamT) : 0;
       if (this.ultCamT > ULT_FOV.rise + ULT_FOV.fall) this.ultCamT = -1;
     }
+    let pull = 0;
+    if (this.fxPull) {
+      const f = this.fxPull;
+      f.t += dt;
+      pull = f.amt * Math.min(1, f.t / 0.4) * Math.max(0, Math.min(1, (f.dur - f.t) / 0.6));
+      if (f.t >= f.dur) this.fxPull = null;
+    }
     const wantFov = zc.fov + ultPunch;
     if (Math.abs(this.camera.fov - wantFov) > 0.01) {
       this.camera.fov = wantFov;
       this.camera.updateProjectionMatrix();
     }
     // Khung thẻ chương cộng thêm vào góc của người chơi, không ghi đè camDist/camPitch.
-    const want = Math.min(70, this.camDist * zc.distMul * (flying ? 1.35 : 1) * this.camFrame.distMul * (1 - 0.05 * (ultPunch / ULT_FOV.kick)));
+    const want = Math.min(70, this.camDist * zc.distMul * (flying ? 1.35 : 1) * this.camFrame.distMul * (1 - 0.05 * (ultPunch / ULT_FOV.kick)) * (1 + pull));
     this.camDistCur += (want - this.camDistCur) * Math.min(1, dt * 6);
     const pitch = Math.max(-0.45, Math.min(1.45, this.camPitch + zc.pitchAdd + this.camFrame.pitchAdd));
     const cp = Math.cos(pitch);

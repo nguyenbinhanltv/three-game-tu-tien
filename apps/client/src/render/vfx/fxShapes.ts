@@ -139,6 +139,68 @@ export function helixGeometry(turns = 2.2, radius = 0.22, w = 0.09, segs = 72): 
   return build(pos, uvs, idx);
 }
 
+/**
+ * Pháp tướng rồng: ống thon (đuôi mảnh → đầu to) chạy theo đường xoắn quanh trục đứng `turns` vòng, cao `height`, bán kính xoắn `rad`.
+ * UV: `u` quanh ống, `v` dọc thân 0 (đuôi) → 1 (đầu): shader `crystal` mọc theo v. Pháp tuyến mịn nên viền fresnel chạy dọc thân.
+ */
+export function dragonGeometry(turns = 1.5, height = 7, rad = 3.2, segs = 180, sides = 10): THREE.BufferGeometry {
+  const pts: THREE.Vector3[] = [];
+  for (let i = 0; i <= 40; i++) {
+    const u = i / 40;
+    const a = u * turns * Math.PI * 2;
+    // Bán kính xoắn thu về phía đầu để đầu ngẩng cao trước mặt.
+    const r = rad * (1 - 0.35 * u);
+    pts.push(new THREE.Vector3(Math.sin(a) * r, u * height + Math.sin(u * 9) * 0.3, Math.cos(a) * r));
+  }
+  const curve = new THREE.CatmullRomCurve3(pts);
+  const frames = curve.computeFrenetFrames(segs, false);
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const idx: number[] = [];
+  for (let i = 0; i <= segs; i++) {
+    const v = i / segs;
+    const c = curve.getPointAt(v);
+    const rr = 0.09 + 0.4 * Math.pow(Math.sin(Math.min(1, v * 1.05) * Math.PI * 0.5), 1.4);
+    for (let j = 0; j <= sides; j++) {
+      const a = (j / sides) * Math.PI * 2;
+      const n = frames.normals[i];
+      const b = frames.binormals[i];
+      pos.push(c.x + (n.x * Math.cos(a) + b.x * Math.sin(a)) * rr, c.y + (n.y * Math.cos(a) + b.y * Math.sin(a)) * rr, c.z + (n.z * Math.cos(a) + b.z * Math.sin(a)) * rr);
+      uvs.push(j / sides, v);
+    }
+  }
+  for (let i = 0; i < segs; i++) for (let j = 0; j < sides; j++) {
+    const a = i * (sides + 1) + j;
+    const b = a + sides + 1;
+    idx.push(a, b, a + 1, a + 1, b, b + 1);
+  }
+  return build(pos, uvs, idx);
+}
+
+/** Pháp tướng tượng ngồi: tròn xoay theo hồ sơ (bán kính, độ cao) từ đài sen tới đỉnh đầu; UV `v` theo độ cao để mọc từ dưới lên. */
+export function statueGeometry(): THREE.BufferGeometry {
+  const prof: [number, number][] = [[0, 0], [1.6, 0], [1.8, 0.35], [1.2, 0.8], [0.95, 1.5], [1.2, 2.1], [1.6, 2.7], [1.25, 3.05], [0.55, 3.2], [0.6, 3.4], [0.8, 3.75], [0.55, 4.1], [0, 4.25]];
+  const seg = 28;
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const idx: number[] = [];
+  const top = prof[prof.length - 1][1];
+  prof.forEach(([r, y], i) => {
+    for (let j = 0; j <= seg; j++) {
+      const a = (j / seg) * Math.PI * 2;
+      pos.push(Math.cos(a) * r, y, Math.sin(a) * r);
+      uvs.push(j / seg, y / top);
+    }
+    void i;
+  });
+  for (let i = 0; i < prof.length - 1; i++) for (let j = 0; j < seg; j++) {
+    const a = i * (seg + 1) + j;
+    const b = a + seg + 1;
+    idx.push(a, a + 1, b, a + 1, b + 1, b);
+  }
+  return build(pos, uvs, idx);
+}
+
 const cache = new Map<string, THREE.BufferGeometry>();
 const memo = (k: string, f: () => THREE.BufferGeometry) => {
   let g = cache.get(k);
@@ -167,6 +229,10 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
       return QUAD_XZ;
     case 'helix':
       return memo('helix', () => helixGeometry());
+    case 'dragon':
+      return memo('dragon', () => dragonGeometry());
+    case 'statue':
+      return memo('statue', () => statueGeometry());
     case 'ribbon':
       return memo('ribbon', () => helixGeometry(2.6, 0.22, 0.03, 96));
   }
@@ -174,7 +240,7 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
 
 /** Kiểu material của một hình (theo lớp). */
 export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' {
-  if (s === 'spike' || s === 'shard' || s === 'kite') return 'crystal';
+  if (s === 'spike' || s === 'shard' || s === 'kite' || s === 'dragon' || s === 'statue') return 'crystal';
   if (s === 'burst') return 'burst';
   if (s === 'smoke') return 'decal';
   return 'toon';
