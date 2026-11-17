@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FX_TIMELINE, SKILL } from '@dtl/content';
 import { fxEventsFor, skillTiming, validateFxTimeline } from '@dtl/shared';
 import { paletteOf } from '../render/vfx/palette';
-import { cancelDropsCast, scheduleEvents } from './fxTimeline';
+import { cancelDropsCast, scheduleEvents, variantFor } from './fxTimeline';
 
 describe('FxRunner.scheduleEvents', () => {
   const evs = fxEventsFor(FX_TIMELINE.get('skl_kiem_khi_tram')!, -1);
@@ -76,6 +76,19 @@ describe('V2: biến thức, mốc trúng, kích hoạt theo S.FX', () => {
       return JSON.stringify(fxEventsFor(FX_TIMELINE.get(id)!, -1).map((e) => [e.type, (e as { shape?: string }).shape, e.t]));
     });
     expect(new Set(sig).size).toBe(ids.length);
+  });
+});
+
+describe('biến thức theo chiêu', () => {
+  const vars = { a: { fx: 'long' }, b: { fx: 'twin' } };
+  it('của mình: lấy theo lựa chọn cục bộ của chiêu, không phụ thuộc S.FX của chiêu trước', () => {
+    // Vừa đánh thường (S.FX không có biến thức, hoặc `twin` của chiêu khác), rồi ra Hoành Kiếm đã chọn biến thức a.
+    expect(variantFor({ mine: true, skillId: 'skl_hoanh_kiem_pha_mach', chosen: 'a', variants: vars, lastFx: 'twin' })).toBe('long');
+    expect(variantFor({ mine: true, skillId: 'skl_hoanh_kiem_pha_mach', chosen: undefined, variants: vars, lastFx: 'twin' })).toBeUndefined();
+  });
+  it('của người khác: dùng biến thức S.FX cùng loại hiệu ứng', () => {
+    expect(variantFor({ mine: false, skillId: 'x', lastFx: 'long' })).toBe('long');
+    expect(variantFor({ mine: false, skillId: 'x' })).toBeUndefined();
   });
 });
 

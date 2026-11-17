@@ -43,7 +43,7 @@ export interface FxRunnerEnv {
   /** Vùng của chiêu diện rộng gần nhất của `sid` (S.FX x, z, r). */
   areaOf(sid: string): { x: number; z: number; r: number } | null;
   /** Biến thức (`fx` của SkillVariant) của chiêu gần nhất của `sid`. */
-  variantOf(sid: string): string | undefined;
+  variantOf(sid: string, skillId: string): string | undefined;
 }
 
 interface Queued {
@@ -122,6 +122,16 @@ export function cancelDropsCast(t: number, firstHit: number): boolean {
   return t < firstHit - 1e-3;
 }
 
+/**
+ * Biến thức (`fx` của SkillVariant) đang dùng cho chiêu `skillId` của một người ra chiêu.
+ * Của mình: theo lựa chọn trong trạng thái công pháp cục bộ (khóa theo chiêu; windup dự đoán tới trước S.FX của server nên không được đọc từ S.FX).
+ * Của người khác: biến thức của S.FX gần nhất CÙNG loại hiệu ứng (`fxKind` của chiêu), không lẫn từ chiêu khác.
+ */
+export function variantFor(opts: { mine: boolean; skillId: string; chosen?: 'a' | 'b'; variants?: { a?: { fx?: string }; b?: { fx?: string } }; lastFx?: string }): string | undefined {
+  if (opts.mine) return opts.chosen ? opts.variants?.[opts.chosen]?.fx : undefined;
+  return opts.lastFx;
+}
+
 export class FxRunner {
   private casts = new Map<string, Cast>();
   private jobs: BladeJob[] = [];
@@ -141,7 +151,7 @@ export class FxRunner {
     const tm = skillTiming(def, e.combo >= 0 ? e.combo : undefined);
     const tier = fxTierFor(this.env.quality(), mine);
     const pal = paletteOf(tl.palette ?? def.method ?? (mine ? method : undefined));
-    const events = fxEventsFor(tl, e.combo, this.env.variantOf(sid));
+    const events = fxEventsFor(tl, e.combo, this.env.variantOf(sid, def.id));
     const q = scheduleEvents(events, tm.hitAt, tier).map((s, idx) => ({ ...s, idx, done: false }));
     this.casts.set(sid, { sid, actor, def, mine, tier, pal, q, clock: e.t, seed: ++this.serial * 7.31, dist, firstHit: Math.min(...tm.hitAt) });
     this.pump(this.casts.get(sid)!, e.t);
@@ -152,7 +162,7 @@ export class FxRunner {
     this.drop(sid);
     const tier = fxTierFor(this.env.quality(), mine);
     const pal = paletteOf(tl.palette ?? def?.method ?? (mine ? method : undefined));
-    const events = fxEventsFor(tl, -1, this.env.variantOf(sid));
+    const events = fxEventsFor(tl, -1, this.env.variantOf(sid, def?.id ?? tl.skill));
     const q = scheduleEvents(events, [0], tier).map((s, idx) => ({ ...s, idx, done: false }));
     const cast: Cast = { sid, actor, def: def ?? ({ id: tl.skill } as SkillDef), mine, tier, pal, q, clock: 0, seed: ++this.serial * 7.31, dist, firstHit: Infinity };
     // Không có đồng hồ animation của chiêu: chạy theo dt (đồng hồ dự phòng).
