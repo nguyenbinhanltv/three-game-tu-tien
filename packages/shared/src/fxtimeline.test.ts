@@ -21,6 +21,21 @@ describe('dòng thời gian hiệu ứng', () => {
     expect(fxDrawCount(fxEventsFor(tl, 2))).toBe(6);
   });
 
+  it('tia sét không gộp: mỗi tia một draw + hai nhóm chung; kiểm tầm và số tia', () => {
+    const bolt = (scale?: number) => ({ type: 'bolt' as const, t: 0, scale });
+    expect(fxDrawCount([bolt(), bolt(), bolt()])).toBe(5);
+    expect(fxDrawCount([])).toBe(0);
+    const bad: FxTimeline = { skill: 'a', events: [bolt(3), bolt(0), bolt(), bolt(), bolt()] };
+    const errs = validateFxTimeline(bad, () => true).join(',');
+    expect(errs).toMatch(/bolt scale=3/);
+    expect(errs).toMatch(/bolt scale=0/);
+    expect(errs).toMatch(/5 tia sét > 4/);
+    // 4 tia + 9 nhóm khác vượt 12 draw.
+    const shapes = ['crescent', 'spike', 'kite', 'ripple', 'burst', 'smoke', 'helix'] as const;
+    const over: FxTimeline = { skill: 'a', events: [...shapes.map((s) => ({ type: 'mesh' as const, shape: s, dur: 0.3, t: 0 })), bolt(), bolt(), bolt(), bolt()] };
+    expect(validateFxTimeline(over, () => true).join(',')).toMatch(/draw > 12/);
+  });
+
   it('đếm hạt và chọn sự kiện theo đòn', () => {
     expect(fxParticleCount(tl.events)).toBe(30);
     expect(fxEventsFor(tl, 0)).toHaveLength(6);

@@ -40,6 +40,10 @@ export interface FxRunnerEnv {
   shake(level: number, dir?: { x: number; z: number }): void;
   flash(amount: number): void;
   sound(id: string, gain: number, sid: string): void;
+  /** Vùng của chiêu diện rộng gần nhất của `sid` (S.FX x, z, r). */
+  areaOf(sid: string): { x: number; z: number; r: number } | null;
+  /** Biến thức (`fx` của SkillVariant) của chiêu gần nhất của `sid`. */
+  variantOf(sid: string, skillId: string): string | undefined;
 }
 
 interface Queued {
@@ -102,7 +106,12 @@ export function scheduleEvents(events: readonly FxEvent[], hitAt: readonly numbe
   for (const ev of events) {
     if ((ev.tier ?? 0) > tier) continue;
     if (ev.from === 'start') out.push({ at: ev.t, ev, hit: 0 });
-    else hitAt.forEach((h, i) => out.push({ at: h + ev.t, ev, hit: i }));
+    else {
+      const only = ev.hit === undefined ? null : Array.isArray(ev.hit) ? ev.hit : [ev.hit];
+      hitAt.forEach((h, i) => {
+        if (!only || only.includes(i)) out.push({ at: h + ev.t, ev, hit: i });
+      });
+    }
   }
   out.sort((x, y) => x.at - y.at);
   return out;
@@ -111,6 +120,16 @@ export function scheduleEvents(events: readonly FxEvent[], hitAt: readonly numbe
 /** Hủy ở giây `t` có làm đòn không trúng được không (chưa tới mốc trúng đầu). */
 export function cancelDropsCast(t: number, firstHit: number): boolean {
   return t < firstHit - 1e-3;
+}
+
+/**
+ * Biến thức (`fx` của SkillVariant) đang dùng cho chiêu `skillId` của một người ra chiêu.
+ * Của mình: theo lựa chọn trong trạng thái công pháp cục bộ (khóa theo chiêu; windup dự đoán tới trước S.FX của server nên không được đọc từ S.FX).
+ * Của người khác: biến thức của S.FX gần nhất CÙNG loại hiệu ứng (`fxKind` của chiêu), không lẫn từ chiêu khác.
+ */
+export function variantFor(opts: { mine: boolean; skillId: string; chosen?: 'a' | 'b'; variants?: { a?: { fx?: string }; b?: { fx?: string } }; lastFx?: string }): string | undefined {
+  if (opts.mine) return opts.chosen ? opts.variants?.[opts.chosen]?.fx : undefined;
+  return opts.lastFx;
 }
 
 export class FxRunner {
@@ -132,10 +151,23 @@ export class FxRunner {
     const tm = skillTiming(def, e.combo >= 0 ? e.combo : undefined);
     const tier = fxTierFor(this.env.quality(), mine);
     const pal = paletteOf(tl.palette ?? def.method ?? (mine ? method : undefined));
-    const events = fxEventsFor(tl, e.combo);
+    const events = fxEventsFor(tl, e.combo, this.env.variantOf(sid, def.id));
     const q = scheduleEvents(events, tm.hitAt, tier).map((s, idx) => ({ ...s, idx, done: false }));
     this.casts.set(sid, { sid, actor, def, mine, tier, pal, q, clock: e.t, seed: ++this.serial * 7.31, dist, firstHit: Math.min(...tm.hitAt) });
     this.pump(this.casts.get(sid)!, e.t);
+  }
+
+  /** Chiêu kích hoạt theo `S.FX` (lướt...): mọi sự kiện neo vào lúc nhận (hitAt = 0). */
+  startFx(sid: string, actor: FxCaster, def: SkillDef | undefined, tl: FxTimeline, mine: boolean, dist: number, method: string | undefined): void {
+    this.drop(sid);
+    const tier = fxTierFor(this.env.quality(), mine);
+    const pal = paletteOf(tl.palette ?? def?.method ?? (mine ? method : undefined));
+    const events = fxEventsFor(tl, -1, this.env.variantOf(sid, def?.id ?? tl.skill));
+    const q = scheduleEvents(events, [0], tier).map((s, idx) => ({ ...s, idx, done: false }));
+    const cast: Cast = { sid, actor, def: def ?? ({ id: tl.skill } as SkillDef), mine, tier, pal, q, clock: 0, seed: ++this.serial * 7.31, dist, firstHit: Infinity };
+    // Không có đồng hồ animation của chiêu: chạy theo dt (đồng hồ dự phòng).
+    this.casts.set(sid, cast);
+    this.pump(cast, 0);
   }
 
   /**
@@ -184,7 +216,10 @@ export class FxRunner {
   private anchor(c: Cast, at: FxAnchor, off: readonly number[] | undefined, yaw: number, tgt: FxTarget | null, out: THREE.Vector3, ahead = 1.2): THREE.Vector3 {
     const a = c.actor;
     if (at === 'target') out.set(tgt?.x ?? a.x + Math.sin(yaw) * 5, (tgt?.y ?? a.y) + (tgt?.chest ?? 1.1), tgt?.z ?? a.z + Math.cos(yaw) * 5);
-    else if (at === 'ground') out.set(tgt?.x ?? a.x + Math.sin(yaw) * 5, (tgt?.y ?? a.y) + 0.03, tgt?.z ?? a.z + Math.cos(yaw) * 5);
+    else if (at === 'area' && this.env.areaOf(c.sid)) {
+      const ar = this.env.areaOf(c.sid)!;
+      out.set(ar.x, (tgt?.y ?? a.y) + 0.03, ar.z);
+    } else if (at === 'ground' || at === 'area') out.set(tgt?.x ?? a.x + Math.sin(yaw) * 5, (tgt?.y ?? a.y) + 0.03, tgt?.z ?? a.z + Math.cos(yaw) * 5);
     else if (at === 'ahead') out.set(a.x + Math.sin(yaw) * ahead, a.y + 1.15, a.z + Math.cos(yaw) * ahead);
     else out.set(a.x, a.y + 1.15, a.z);
     if (off) {
@@ -226,6 +261,11 @@ export class FxRunner {
           this.env.shake(ev.level, { x: Math.sin(yaw), z: Math.cos(yaw) });
         }
         break;
+      case 'bolt': {
+        const p = this.anchor(c, ev.at ?? 'ground', ev.offset, this.aim(c, tgt), tgt, _a);
+        this.v.lightning(p.x, p.y, p.z, toneOf(c.pal, ev.tone ?? 'rim'), ev.scale ?? 1, ev.seed ?? Math.floor(c.seed * 100 + s.idx), 0);
+        break;
+      }
       case 'flash':
         if (c.mine) this.env.flash(Math.min(0.3, ev.amount));
         break;
@@ -242,9 +282,14 @@ export class FxRunner {
     const geo = shapeGeometry(ev.shape);
     const kind = shapeKind(ev.shape);
     const start = this.anchor(c, ev.at ?? 'self', ev.offset, yaw, tgt, new THREE.Vector3());
-    const end = ev.move ? this.anchor(c, ev.move.to, ev.offset, yaw, tgt, new THREE.Vector3(), ev.move.ahead ?? 8) : null;
+    const end = ev.move ? this.anchor(c, ev.move.to, ev.move.offset ?? ev.offset, yaw, tgt, new THREE.Vector3(), ev.move.ahead ?? 8) : null;
     const s0 = Array.isArray(ev.scale) ? ev.scale : [ev.scale ?? 1, ev.scale ?? 1, ev.scale ?? 1];
-    const sT = ev.scaleTo === undefined ? s0 : Array.isArray(ev.scaleTo) ? ev.scaleTo : [ev.scaleTo, ev.scaleTo, ev.scaleTo];
+    const sT0 = ev.scaleTo === undefined ? s0 : Array.isArray(ev.scaleTo) ? ev.scaleTo : [ev.scaleTo, ev.scaleTo, ev.scaleTo];
+    // `fit: 'area'`: kích thước theo mét tính bằng bán kính vùng của chiêu (x, z).
+    const fitR = ev.fit === 'area' ? this.env.areaOf(c.sid)?.r ?? 8 : 1;
+    const fitS = (v: number[]) => [v[0] * fitR, v[1], v[2] * fitR];
+    const s0f = fitS(s0);
+    const sT = fitS(sT0);
     const seed = ((ev.seed ?? c.seed + idx * 1.7) % 50) + 0.37;
     const color = toneOf(c.pal, ev.tone);
     const alpha = ev.alpha ?? 0.95;
@@ -274,7 +319,7 @@ export class FxRunner {
     const cam = this.env.camera();
     const place = (m: FxMesh, k: number, grow: number, off: number) => {
       const e = easeOut(k);
-      const lerpS = (i: number) => s0[i] + (sT[i] - s0[i]) * e;
+      const lerpS = (i: number) => s0f[i] + (sT[i] - s0f[i]) * e;
       m.scale.set(lerpS(0) * grow, lerpS(1) * grow, lerpS(2) * grow);
       if (end) {
         const ek = ev.move!.ease === 'in' ? easeIn(k) : ev.move!.ease === 'linear' ? k : easeOut(k);

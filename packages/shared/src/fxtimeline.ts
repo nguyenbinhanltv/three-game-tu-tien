@@ -24,8 +24,8 @@ export type FxShape =
   | 'helix';
 
 /** Bố trí gốc của sự kiện. */
-/** `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
-export type FxAnchor = 'self' | 'target' | 'ahead' | 'ground';
+/** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
+export type FxAnchor = 'self' | 'target' | 'ahead' | 'ground' | 'area';
 
 export interface FxBase {
   /** Giây so với mốc neo (mặc định `hitAt` của mốc trúng đang xét; `from: "start"` thì tính từ lúc bấm chiêu). Có thể âm. */
@@ -36,6 +36,8 @@ export interface FxBase {
    * Chiêu của người khác bị hạ một bậc (xem `fxTierFor`).
    */
   tier?: 0 | 1 | 2;
+  /** Chỉ phát ở mốc trúng thứ mấy (0-based) của chiêu nhiều mốc (Kiếm Vũ Tam Điệp...); không có thì mọi mốc. */
+  hit?: number | number[];
 }
 
 export interface FxMeshEvent extends FxBase {
@@ -66,13 +68,15 @@ export interface FxMeshEvent extends FxBase {
   /** Quay hình mặt về camera (burst, smoke). */
   billboard?: boolean;
   /** Bay từ gốc sang `to` trong `dur` (phi kiếm lao, kiếm khí bay): gốc → đích, đơn vị mét hoặc theo neo. */
-  move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear' };
+  move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear'; /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number] };
   /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */
   spin?: number;
   /** Seed hình (mặc định theo lần phát). */
   seed?: number;
   /** Bám theo mục tiêu/người ra chiêu suốt vòng đời (mặc định cố định tại điểm đặt). */
   follow?: boolean;
+  /** Nhân kích thước (x, z) với bán kính vùng `r` của chiêu diện rộng (scale thành mét tính theo bán kính). */
+  fit?: 'area';
 }
 
 export interface FxParticleEvent extends FxBase {
@@ -131,6 +135,16 @@ export interface FxShakeEvent extends FxBase {
   level: number;
 }
 
+/** Tia sét thiên lôi (hình có sẵn của `Vfx.lightning`), tông theo bảng màu; mảnh, không chớp toàn cảnh. */
+export interface FxBoltEvent extends FxBase {
+  type: 'bolt';
+  at?: FxAnchor;
+  offset?: [number, number, number];
+  scale?: number;
+  tone?: FxTone;
+  seed?: number;
+}
+
 export interface FxFlashEvent extends FxBase {
   type: 'flash';
   /** Độ chớp toàn cảnh 0..0,3 (tắt theo công tắc rung màn hình? không: giới hạn cứng để không lóa). */
@@ -143,7 +157,7 @@ export interface FxSoundEvent extends FxBase {
   gain?: number;
 }
 
-export type FxEvent = FxMeshEvent | FxParticleEvent | FxDecalEvent | FxTrailEvent | FxHitstopEvent | FxShakeEvent | FxFlashEvent | FxSoundEvent;
+export type FxEvent = FxMeshEvent | FxParticleEvent | FxDecalEvent | FxTrailEvent | FxHitstopEvent | FxShakeEvent | FxFlashEvent | FxSoundEvent | FxBoltEvent;
 
 export interface FxTimeline {
   /** id chiêu (khớp `skills.json`/`methods.json`). */
@@ -154,6 +168,15 @@ export interface FxTimeline {
   events: FxEvent[];
   /** Sự kiện thêm theo đòn thứ mấy của chuỗi liên hoàn (khóa "0", "1", "2"). */
   combo?: Record<string, FxEvent[]>;
+  /** Sự kiện thêm theo biến thức đã chọn (`fx` của `SkillVariant`: deep, spread, twin, long...). */
+  variants?: Record<string, FxEvent[]>;
+  /**
+   * `fx`: chiêu không có mốc trúng/động tác riêng (lướt) nên phát khi nhận `S.FX` cùng loại `fxKind` (đúng công pháp `method` nếu có);
+   * mọi sự kiện neo vào lúc nhận (hitAt = 0). Mặc định `skill`: phát theo sự kiện chiêu của model.
+   */
+  trigger?: 'skill' | 'fx';
+  fxKind?: string;
+  method?: string;
   /** `S.FX` kiểu cũ mà timeline này thay thế (engine bỏ hình cũ của kiểu đó cho chiêu này). */
   replaces?: string[];
 }
@@ -164,14 +187,21 @@ export interface FxTimeline {
  */
 export function fxDrawCount(events: readonly FxEvent[]): number {
   const groups = new Set<string>();
+  let bolts = 0;
   for (const e of events) {
     if (e.type === 'mesh') {
       groups.add(e.shape);
       if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix')) groups.add(e.shape + ':shadow');
     } else if (e.type === 'decal') groups.add('decal:' + e.tex);
     else if (e.type === 'trail') groups.add('trail');
+    else if (e.type === 'bolt') bolts++;
   }
-  return groups.size;
+  // Tia sét (`Vfx.lightning`) KHÔNG gộp instanced: mỗi tia một draw call; thêm hai nhóm gộp dùng chung (cầu sáng + vòng chạm đất) cho mọi tia.
+  if (bolts > 0) {
+    groups.add('bolt-glow');
+    groups.add('bolt-ring');
+  }
+  return groups.size + bolts;
 }
 
 /** Tổng số hạt của một tập sự kiện (ngân sách ≤ 1.500/chiêu). */
@@ -182,9 +212,10 @@ export function fxParticleCount(events: readonly FxEvent[]): number {
 }
 
 /** Sự kiện của một mốc trúng thuộc đòn `combo` (không có `combo` thì chỉ sự kiện chung). */
-export function fxEventsFor(tl: FxTimeline, combo: number): FxEvent[] {
+export function fxEventsFor(tl: FxTimeline, combo: number, variant?: string): FxEvent[] {
   const extra = combo >= 0 ? tl.combo?.[String(combo)] : undefined;
-  return extra ? [...tl.events, ...extra] : tl.events;
+  const vr = variant ? tl.variants?.[variant] : undefined;
+  return extra || vr ? [...tl.events, ...(extra ?? []), ...(vr ?? [])] : tl.events;
 }
 
 /** Bậc chất lượng hiệu ứng (cài đặt người chơi): 0 Thấp, 1 Vừa, 2 Cao. */
@@ -203,7 +234,7 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
   const errs: string[] = [];
   const p = `fx ${tl.skill}`;
   if (!skillExists(tl.skill)) errs.push(`${p}: không có chiêu ${tl.skill}`);
-  const all = [tl.events, ...Object.values(tl.combo ?? {})];
+  const all = [tl.events, ...Object.values(tl.combo ?? {}), ...Object.values(tl.variants ?? {})];
   for (const list of all) {
     for (const e of list) {
       if (!Number.isFinite(e.t) || Math.abs(e.t) > 3) errs.push(`${p}: mốc t=${e.t} ngoài [-3, 3]`);
@@ -212,15 +243,25 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'hitstop' && !(e.ms >= 40 && e.ms <= 80)) errs.push(`${p}: hitstop ${e.ms} ms ngoài 40–80`);
       if (e.type === 'shake' && !(e.level >= 0 && e.level <= 0.6)) errs.push(`${p}: rung ${e.level} ngoài 0–0,6`);
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);
+      if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 2))) errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 2]`);
       if (e.type === 'particles' && !(e.n > 0 && e.n <= 400)) errs.push(`${p}: hạt n=${e.n} ngoài (0, 400]`);
     }
   }
   // Ngân sách: mỗi đòn (sự kiện chung + của đòn đó) ≤ 12 draw và ≤ 1.500 hạt.
   const combos = Object.keys(tl.combo ?? {}).length ? Object.keys(tl.combo!).map(Number) : [-1];
+  const vars: (string | undefined)[] = [undefined, ...Object.keys(tl.variants ?? {})];
   for (const c of combos) {
-    const ev = fxEventsFor(tl, c);
-    if (fxDrawCount(ev) > 12) errs.push(`${p}: ${fxDrawCount(ev)} draw > 12 (đòn ${c})`);
-    if (fxParticleCount(ev) > 1500) errs.push(`${p}: ${fxParticleCount(ev)} hạt > 1500 (đòn ${c})`);
+    for (const v of vars) {
+      const ev = fxEventsFor(tl, c, v);
+      if (fxDrawCount(ev) > 12) errs.push(`${p}: ${fxDrawCount(ev)} draw > 12 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
+      if (fxParticleCount(ev) > 1500) errs.push(`${p}: ${fxParticleCount(ev)} hạt > 1500 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
+    }
   }
+  // Tia sét: tối đa 4 tia mỗi đòn (mỗi tia một draw call riêng, không gộp).
+  for (const c of combos) for (const v of vars) {
+    const n = fxEventsFor(tl, c, v).filter((e) => e.type === 'bolt').length;
+    if (n > 4) errs.push(`${p}: ${n} tia sét > 4 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
+  }
+  if (tl.trigger === 'fx' && !tl.fxKind) errs.push(`${p}: trigger fx thiếu fxKind`);
   return errs;
 }
