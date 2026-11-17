@@ -33,7 +33,24 @@ pnpm assets:validate           # kiểm theo manifest; có lỗi thì exit 1 và
 pnpm --filter @dtl/asset-pipeline test   # test pipeline (sect.glb + nhân vật có xương sinh bằng Blender headless)
 ```
 
-Không có Blender: bước sinh GLB thô bị bỏ qua có cảnh báo, bước tối ưu vẫn chạy với file thô đang có. Không có `toktx` (KTX-Software 4.x, dò theo `TOKTX`, PATH, rồi `C:\Program Files\KTX-Software\bin`): texture giữ PNG/JPEG, có cảnh báo; `validate` vẫn kiểm kích thước texture.
+Không có Blender: bước sinh GLB thô bị bỏ qua có cảnh báo, bước tối ưu vẫn chạy với file thô đang có. Không có `toktx`: `assets:build`/`assets:optimize` **dừng với lỗi** và in cách cài (mọi asset đã commit dùng KTX2, build thiếu `toktx` sẽ làm manifest lẫn hai định dạng). Xem mục "Cài toktx" bên dưới; `--no-ktx` chỉ dùng khi cố ý thử không nén.
+
+## Cài toktx (KTX-Software, bắt buộc để build asset)
+
+`toktx` thuộc [KTX-Software](https://github.com/KhronosGroup/KTX-Software/releases) của Khronos (Apache-2.0, miễn phí), bản đang dùng: **4.4.2**. Không phải dependency npm; chỉ máy nào chạy `pnpm assets:build` mới cần. `ktx.ts` dò theo thứ tự:
+
+1. Biến môi trường `TOKTX=<đường dẫn tới toktx>`.
+2. `toktx` trong `PATH`.
+3. Thư mục cài mặc định: `C:\Program Files\KTX-Software\bin\toktx.exe` (Windows), `/usr/local/bin`, `/opt/homebrew/bin`, `/usr/bin`.
+4. Bản di động trong thư mục nguồn asset: `<dtl-asset-source>/tools/KTX-Software/bin/toktx(.exe)` (dò mọi thư mục nguồn: `DTL_ASSET_SOURCE`, `../dtl-asset-source`, và bản cạnh checkout chính khi đang ở worktree).
+
+Cách cài:
+
+- **Windows, có quyền admin**: tải `KTX-Software-4.4.2-Windows-x64.exe` từ trang release, chạy bộ cài với thư mục mặc định.
+- **Windows, không cần admin (cách máy dev đang dùng)**: bộ cài là gói NSIS, giải nén bằng 7-Zip (`7z x KTX-Software-4.4.2-Windows-x64.exe -o<dtl-asset-source>/tools/KTX-Software`) để có `bin/toktx.exe`, `bin/ktx.exe`, `bin/ktx.dll`.
+- **macOS / Linux**: gói `.pkg` / `.deb` cùng trang release.
+
+Kiểm: `toktx --version` in `toktx v4.4.2`. Phiên bản `toktx` nằm trong khóa cache của `optimize.ts`, nên đổi phiên bản là mọi asset được tối ưu lại; giữ đúng 4.4.2 để GLB build ra trùng hash với bản đã commit.
 
 ## Nhập Tripo (`tools/blender/import_tripo.py`)
 
@@ -70,7 +87,7 @@ Năm cây (`prop_co_thu`, `prop_thong_co`, `prop_soi_nui`, `prop_anh_dao`, `prop
 
 1. `dedup` → `prune` (giữ nút lá: xương, socket; giữ extras) → `weld` → `resample` (animation).
 2. **Hạ LOD0 về trần**: với asset có khối `import`, trần là `budget.faceLimit` trong `meta.json` (mức đã xin Tripo), không quá `triangles.max` của lớp; asset khác (gồm job thủ tục tự giảm tam giác như `prop_phi_kiem`) dùng `triangles.max`. Dùng `simplify` của meshoptimizer, nới dần sai số; giữ `JOINTS_0`/`WEIGHTS_0`. Manifest ghi `rawTriangles` và `lod0Cap`.
-3. Texture → KTX2 qua `toktx`: ETC1S cho màu và dữ liệu thường, UASTC cho normal map; hạ cạnh dài về ngân sách lớp.
+3. Texture → KTX2 qua `toktx` (`ktx.ts`, `encodeArgs`): normal map UASTC (chất lượng 2, RDO λ=1, zstd 18), màu sRGB ETC1S q192/c3, dữ liệu tuyến tính khác (ORM) ETC1S q128/c2; sinh sẵn mip; hạ cạnh dài về ngân sách lớp. Texture WebP trong GLB thô được giải mã sang PNG trước. Các texture của một asset nén song song. Client (`GameKtx2Loader`, `apps/client/src/game/assets.ts`): WebGL2 chuyển mã mọi texture sang BC7; trên WebGPU (three r178 không có BC7) màu/ORM thành BC1/BC3, normal map giải ra RGBA8; máy có ASTC dùng ASTC; không có định dạng nén nào thì về RGBA8.
 4. **LOD** bằng `simplify` (meshoptimizer) theo `budgets.json`: đích = min(tỉ lệ × LOD0, trần). LOD nằm **cùng file** với LOD0: mỗi node có mesh sinh thêm node anh em `<tên>_lod<k>` (`extras.lod = k`, three.js đọc thành `userData.lod`), cùng transform, cùng skin, cùng material, nên texture chỉ tải một lần. Thuộc tính đỉnh (`JOINTS_0`/`WEIGHTS_0`, UV, màu) đi theo đỉnh còn lại, nên mesh có xương giữ trọng số. Simplify bị kẹt (cạnh cứng, đường UV) thì nới sai số rồi bật `Permissive`. Client (M2-8/M3-9) hiện một mức theo khoảng cách và ẩn các mức khác.
 5. `reorder` → `quantize` **chỉ với mesh không có xương** → `EXT_meshopt_compression`. Mesh có xương không quantize: nhân vật sẽ co lại khi clip có track scale.
 6. Tên theo hash SHA-256 (10 ký tự), ghi `manifest.json`, xóa bản hash cũ của chính asset đó.
@@ -109,7 +126,6 @@ SFX và âm môi trường không đi qua pipeline GLB mà qua `pnpm audio:build
 - Client chọn LOD theo khoảng cách (M2-9): `AssetCache` (`apps/client/src/game/assets.ts`, M2-8) đã nạp theo manifest nhưng chỉ hiện LOD0. `public/assets/sect.glb` (bản chép GLB thô của job Blender) chỉ còn làm đầu vào cho test pipeline, client không nạp.
 - `rig_human_base.py` (M2-3, đổi tên xương Tripo/mixamo); ảnh xem trước tự động `assets/build/previews/`.
 - `import_tripo.py` mới kiểm nhánh có xương bằng fixture (`build_fixture_rig.py --legs --tripo`); chưa chạy với GLB rig thật của Tripo.
-- Nhánh KTX2 mới kiểm bằng toktx giả trong test (máy dev chưa cài KTX-Software).
 
 ## Texture mặt đất (P2-A2)
 

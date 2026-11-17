@@ -4,7 +4,8 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import { describe, expect, it } from 'vitest';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from './assets';
+import { AssetCache, type Manifest } from './assets';
+import { nodeGltfLoader } from './gltfTestLoader';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../public/assets');
 
@@ -270,9 +271,7 @@ describe('AssetCache', () => {
     const a = m.assets.arch_sect;
     expect(a).toBeDefined();
     const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, a.file));
-    const loader = createGltfLoader(createKtx2Loader());
-    // Node không giải mã được ảnh (JPEG/PNG trong GLB): thay texture bằng Texture rỗng, chỉ kiểm hình học và material.
-    loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+    const loader = nodeGltfLoader();
     const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
     const gltf = await loader.parseAsync(ab, '');
     let tris = 0;

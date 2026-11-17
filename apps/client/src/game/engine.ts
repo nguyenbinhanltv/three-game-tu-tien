@@ -26,6 +26,7 @@ import { BOLT_VIEW_DIST, boltAge } from '../render/vfx/projectile';
 import { EntityManager, type MonVis, type MState, type PlayerVis, type PState, type WorldView } from './entities';
 import { Environment } from './env';
 import { AmbientParticles } from './ambient';
+import { Butterflies, BUTTERFLY_LEVELS } from './butterflies';
 import { Grass, GRASS_PUSH_SLOTS, monsterPushRadius, pickPushers, type Pusher } from './grass';
 import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
@@ -262,6 +263,8 @@ export class Game {
   props: PropLayer | null = null;
   /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. `?beacons=0` tắt để so ảnh. */
   beacons: Beacons | null = null;
+  /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
+  butterflies: Butterflies | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */
   ambient!: AmbientParticles;
   private pushers: Pusher[] = Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
@@ -1044,6 +1047,12 @@ export class Game {
     this.grass.setQuality(get().quality, q.shadows);
     this.grass.mesh.visible = F.grass;
     this.scene.add(this.grass.mesh);
+    const bf = BUTTERFLY_LEVELS[id];
+    if (bf && params.get('bf') !== '0') {
+      this.butterflies = new Butterflies(bf);
+      this.butterflies.setQuality(get().quality);
+      this.scene.add(this.butterflies.mesh);
+    }
   }
 
   /** Gắn bộ texture mặt đất (nếu đã nạp) vào địa hình hiện tại theo khai báo của level. */
@@ -1097,6 +1106,11 @@ export class Game {
       drop(this.beacons.mesh);
       this.beacons.dispose();
       this.beacons = null;
+    }
+    if (this.butterflies) {
+      drop(this.butterflies.mesh);
+      this.butterflies.dispose();
+      this.butterflies = null;
     }
     if (this.grass) {
       drop(this.grass.mesh);
@@ -2967,6 +2981,7 @@ export class Game {
     this.env.update(dt, this.camera, rp);
     this.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
     if (me) this.ambient.update(dt, this.camera.position, rp);
+    if (me) this.butterflies?.update(dt, rp);
     if (this.mapVis && me) {
       const st = get();
       this.mapVis.setOpen(st.tele.open);
@@ -3822,6 +3837,7 @@ export class Game {
     this.grass?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
     this.props?.setQuality(q, cfg.shadows && this.renderer.shadowMap.enabled);
     this.ambient?.setQuality(q);
+    this.butterflies?.setQuality(q);
     if (this.post && !this.post.matches(cfg)) {
       this.post.dispose();
       this.post = new PostPipeline(this.renderer, this.scene, this.camera, cfg);

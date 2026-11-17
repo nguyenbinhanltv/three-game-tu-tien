@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { APPEARANCE } from '@dtl/content';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from './assets';
+import { AssetCache, type Manifest } from './assets';
 import { PlayerSkins, type SkinnedPlayer } from './character/playerSkins';
 import type { EntityManager as EM, PState, WorldView } from './entities';
+import { nodeGltfLoader } from './gltfTestLoader';
 
 // Kiếm riêng theo trang bị đi đúng đường EntityManager: kiếm chưa nạp khi người chơi đổi vũ khí (hoặc vào game lúc mẫu nhân vật
 // còn nạp), nạp xong thì model phải được dựng lại với đúng kiếm (lỗi cũ: `pending` tính trước `create` nên không bao giờ dựng lại).
@@ -27,8 +28,7 @@ const testCache = () =>
     fetchManifest: async () => MANIFEST,
     load: async (url) => {
       const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
-      const loader = createGltfLoader(createKtx2Loader());
-      loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+      const loader = nodeGltfLoader();
       return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
     },
   });

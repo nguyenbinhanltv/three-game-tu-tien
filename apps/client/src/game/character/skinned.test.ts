@@ -21,8 +21,9 @@ const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: fal
 async function loadReal(file: string, disposed: string[]): Promise<GLTF> {
   const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, file));
   const loader = createGltfLoader(createKtx2Loader());
+  // Trùng tên plugin KTX2 của three để thay nó tại chỗ (xem gltfTestLoader.ts): tên khác thì KTX2Loader thật chạy trước và lỗi trong Node.
   loader.register(() => ({
-    name: 'test_stub_texture',
+    name: 'KHR_texture_basisu',
     loadTexture: () => {
       const t = new THREE.Texture();
       t.addEventListener('dispose', () => disposed.push('texture'));

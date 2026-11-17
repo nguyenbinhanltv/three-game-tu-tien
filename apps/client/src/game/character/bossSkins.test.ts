@@ -4,12 +4,13 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { MONSTER } from '@dtl/content';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../assets';
 import { MonsterModel } from '../models';
 import { MONSTER_SKINS, MonsterSkins } from './monsterSkins';
 import { moveTiming, SkinnedMonster } from './skinned';
 import { baseState } from './states';
 import type { AnimState } from './view';
+import { nodeGltfLoader } from '../gltfTestLoader';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
@@ -24,9 +25,7 @@ async function bossSkins(loaded: string[] = []) {
     load: async (url) => {
       loaded.push(url);
       const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
-      const loader = createGltfLoader(createKtx2Loader());
-      // node không giải mã ảnh: thay texture bằng Texture rỗng.
-      loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+      const loader = nodeGltfLoader();
       return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
     },
   });

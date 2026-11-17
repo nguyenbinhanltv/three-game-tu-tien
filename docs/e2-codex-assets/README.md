@@ -32,7 +32,7 @@ Chưa có trên main nên chưa gắn (ảnh đã vẽ, để sẵn): NPC chươ
 ## Việc để lại / cách gắn id mới
 
 - **Icon chờ id**: `tools/codex-assets/icons.pending.json` (`itm_ngung_dan_lo`, `skl_than_thuc_quet`; `gen.mjs` sinh ảnh nhưng `build.mjs` không đọc). Khi E2-E đặt id, đổi khóa cho khớp `icon` của def (PNG ở `2d/icons/`), chuyển mục sang `icons.json`, thêm hàng LICENSES, `pnpm icons:build`.
-- **Chân dung NPC / boss**: ảnh đã đóng gói với khóa `npc_to_van_ngu`, `npc_hua_lao`, `npc_khuu_han_son`, `boss_thon_mach_ngo_cong_vuong`, `boss_thach_tam_khoi_vuong`. Nếu id NPC/quái thật khác, đổi tên khóa trong `portraits.json`, `gen.mjs portraits` không sinh lại (PNG đã có: đổi tên tệp ở `2d/portraits/`), rồi `pack.mjs portraits`.
+- **Chân dung NPC / boss**: ảnh đã đóng gói với khóa `npc_to_van_ngu`, `npc_hua_lao`, `npc_khieu_han_son`, `boss_thon_mach_ngo_cong_vuong`, `boss_thach_tam_khoi_vuong`. Nếu id NPC/quái thật khác, đổi tên khóa trong `portraits.json`, `gen.mjs portraits` không sinh lại (PNG đã có: đổi tên tệp ở `2d/portraits/`), rồi `pack.mjs portraits`.
 - Mảnh bộ phó bản, nguyên liệu tinh anh/boss mới: gắn `icon` + chủ thể vào `icons.json` khi def có trên main; mục `missing.mjs` cho biết còn thiếu gì.
 
 ## Chạy lại
