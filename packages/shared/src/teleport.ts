@@ -3,6 +3,7 @@
 import { PLAY_BOUNDS } from './level';
 import { DOAN_MACH_PADS } from './teleport.doanmach';
 import { VAN_HAI_PADS } from './teleport.vanhai';
+import { THIEN_KHUYET_PADS } from './teleport.thienkhuyet';
 
 export interface TelePad {
   id: string;
@@ -35,6 +36,8 @@ export const TELE_PADS: readonly TelePad[] = [
   ...DOAN_MACH_PADS,
   // Vân Hải Phù Đảo (E3-A, tiền tố vh_).
   ...VAN_HAI_PADS,
+  // Thiên Khuyết Cổ Thành (E4-A, tiền tố tk_).
+  ...THIEN_KHUYET_PADS,
 ];
 
 export const TELE_PAD = new Map(TELE_PADS.map((p) => [p.id, p]));

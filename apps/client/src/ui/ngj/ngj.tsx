@@ -7,7 +7,7 @@ import { SysIcon, type SysIconName } from './icons';
 
 export type Material = 'lacquer' | 'paper';
 export type CornerKind = 'star' | 'moon' | 'sun' | 'plain' | 'cloud';
-export type MapMotif = 'van_lam' | 'doan_mach' | 'van_hai';
+export type MapMotif = 'van_lam' | 'doan_mach' | 'van_hai' | 'thien_khuyet';
 
 /* ───────── góc hoa văn ───────── */
 
@@ -104,6 +104,15 @@ function Motif({ map }: { map: MapMotif }) {
           <circle className="ngj-m-sun" cx="50" cy="12" r="5" />
           <path className="ngj-m-near" d="M8 24h24l-4 8h-5l-3 5-3-5h-5zM40 29h14l-2.4 5h-3l-2 3-2-3h-3z" />
           <path className="ngj-m-line" d="M10 21l5-4 5 4M28 14c2-2 4-2 6 0 2-2 4-2 6 0M0 40c8-3 14 0 22-2s14 1 22-1 14 1 20-1" />
+        </>
+      );
+    case 'thien_khuyet':
+      return (
+        <>
+          <path className="ngj-m-sun" d="M50 8a6 6 0 1 0 0 11 4.6 4.6 0 1 1 0-11z" />
+          <path className="ngj-m-far" d="M0 38V26h6v-3h6v3h6v6h8V20h6v-4h6v4h6v8h8v-5h6v15z" />
+          <path className="ngj-m-near" d="M-2 40V33h10v-4h8v5h12v-3h10v3h14v6z" />
+          <path className="ngj-m-line" d="M24 38v-8M40 38v-10M32 20v6" />
         </>
       );
   }

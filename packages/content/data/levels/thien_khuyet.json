@@ -1,0 +1,1453 @@
+{
+  "id": "thien_khuyet",
+  "spawn": {
+    "x": 1024,
+    "z": 1036
+  },
+  "zones": [
+    {
+      "id": "dai_lo_den_troi",
+      "lvMin": 24,
+      "lvMax": 25,
+      "color": "#3F7F8F",
+      "music": "wild",
+      "poly": [
+        [
+          1351,
+          744
+        ],
+        [
+          1146,
+          1133
+        ],
+        [
+          1125,
+          1139
+        ],
+        [
+          1098,
+          1012
+        ],
+        [
+          1084,
+          979
+        ],
+        [
+          1072,
+          967
+        ],
+        [
+          1051,
+          954
+        ],
+        [
+          1029,
+          949
+        ],
+        [
+          1004,
+          952
+        ],
+        [
+          989,
+          958
+        ],
+        [
+          965,
+          978
+        ],
+        [
+          922,
+          1025
+        ],
+        [
+          768,
+          744
+        ],
+        [
+          685,
+          591
+        ],
+        [
+          700,
+          573
+        ],
+        [
+          1480,
+          487
+        ],
+        [
+          1468,
+          522
+        ]
+      ]
+    },
+    {
+      "id": "lam_sao_vien",
+      "lvMin": 24,
+      "lvMax": 25,
+      "color": "#2F5E88",
+      "music": "wild",
+      "poly": [
+        [
+          899,
+          984
+        ],
+        [
+          967,
+          1108
+        ],
+        [
+          954,
+          1122
+        ],
+        [
+          365,
+          1532
+        ],
+        [
+          334,
+          1521
+        ],
+        [
+          334,
+          984
+        ],
+        [
+          334,
+          376
+        ],
+        [
+          372,
+          373
+        ],
+        [
+          666,
+          569
+        ],
+        [
+          685,
+          592
+        ]
+      ]
+    },
+    {
+      "id": "binh_khi_kho",
+      "lvMin": 25,
+      "lvMax": 26,
+      "color": "#8A6A3E",
+      "music": "wild",
+      "poly": [
+        [
+          1754,
+          934
+        ],
+        [
+          1754,
+          1542
+        ],
+        [
+          1738,
+          1594
+        ],
+        [
+          1620,
+          1592
+        ],
+        [
+          1149,
+          1148
+        ],
+        [
+          1150,
+          1125
+        ],
+        [
+          1251,
+          934
+        ],
+        [
+          1465,
+          528
+        ],
+        [
+          1491,
+          483
+        ],
+        [
+          1718,
+          318
+        ],
+        [
+          1754,
+          326
+        ]
+      ]
+    },
+    {
+      "id": "dien_tien_quang_truong",
+      "lvMin": 26,
+      "lvMax": 27,
+      "color": "#9A8C6A",
+      "music": "wild",
+      "poly": [
+        [
+          1627,
+          384
+        ],
+        [
+          1495,
+          480
+        ],
+        [
+          1443,
+          491
+        ],
+        [
+          720,
+          571
+        ],
+        [
+          673,
+          573
+        ],
+        [
+          389,
+          384
+        ],
+        [
+          334,
+          347
+        ],
+        [
+          334,
+          194
+        ],
+        [
+          398,
+          174
+        ],
+        [
+          680,
+          174
+        ],
+        [
+          1690,
+          174
+        ],
+        [
+          1754,
+          194
+        ],
+        [
+          1754,
+          272
+        ],
+        [
+          1726,
+          312
+        ]
+      ]
+    },
+    {
+      "id": "mo_dao",
+      "lvMin": 24,
+      "lvMax": 26,
+      "color": "#5A4A7A",
+      "music": "wild",
+      "poly": [
+        [
+          1463,
+          1444
+        ],
+        [
+          1609,
+          1581
+        ],
+        [
+          1524,
+          1594
+        ],
+        [
+          1224,
+          1594
+        ],
+        [
+          404,
+          1594
+        ],
+        [
+          334,
+          1578
+        ],
+        [
+          352,
+          1541
+        ],
+        [
+          491,
+          1444
+        ],
+        [
+          964,
+          1115
+        ],
+        [
+          981,
+          1114
+        ],
+        [
+          1139,
+          1141
+        ]
+      ]
+    }
+  ],
+  "pois": [
+    {
+      "id": "hang_tru_khac_van",
+      "zone": "dai_lo_den_troi",
+      "x": 1144,
+      "z": 684,
+      "beamH": 80
+    },
+    {
+      "id": "tinh_bai_dai",
+      "zone": "lam_sao_vien",
+      "x": 614,
+      "z": 954,
+      "beamH": 80
+    },
+    {
+      "id": "kho_giao",
+      "zone": "binh_khi_kho",
+      "x": 1464,
+      "z": 904,
+      "beamH": 80
+    },
+    {
+      "id": "cong_than_tang_dien",
+      "zone": "dien_tien_quang_truong",
+      "x": 1044,
+      "z": 244,
+      "beamH": 80
+    },
+    {
+      "id": "co_thanh_that_lo",
+      "zone": "mo_dao",
+      "x": 964,
+      "z": 1504,
+      "beamH": 80
+    }
+  ],
+  "camps": [
+    {
+      "id": "c_dien_tien_quang_truong_01",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 404,
+      "z": 264,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_02",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 544,
+      "z": 384,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_01",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 404,
+      "z": 604,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_02",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 524,
+      "z": 744,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_03",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 424,
+      "z": 904,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_04",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 524,
+      "z": 1044,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_05",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 424,
+      "z": 1204,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_06",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 424,
+      "z": 1344,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_07",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 364,
+      "z": 1504,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_03",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_kinh_linh",
+      "x": 584,
+      "z": 244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_04",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 684,
+      "z": 424,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_08",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 584,
+      "z": 564,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_09",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 684,
+      "z": 724,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_10",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 604,
+      "z": 884,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_11",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 704,
+      "z": 1044,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_12",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 604,
+      "z": 1184,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_13",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 604,
+      "z": 1284,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_01",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 664,
+      "z": 1524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_05",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_kinh_linh",
+      "x": 764,
+      "z": 244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_06",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_kinh_linh",
+      "x": 844,
+      "z": 404,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_01",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 784,
+      "z": 584,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_02",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 824,
+      "z": 744,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_14",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 784,
+      "z": 904,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_15",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 884,
+      "z": 1064,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_16",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 784,
+      "z": 1204,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_02",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 904,
+      "z": 1344,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_03",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 844,
+      "z": 1524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_07",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_kinh_linh",
+      "x": 944,
+      "z": 244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_08",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1104,
+      "z": 384,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_09",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 984,
+      "z": 524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_03",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1124,
+      "z": 744,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_04",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 944,
+      "z": 864,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_05",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1164,
+      "z": 1064,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_04",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1004,
+      "z": 1204,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_05",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1144,
+      "z": 1324,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_06",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1024,
+      "z": 1564,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_10",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1264,
+      "z": 244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_11",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1284,
+      "z": 404,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_06",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1224,
+      "z": 544,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_07",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1304,
+      "z": 704,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_08",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1244,
+      "z": 884,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_01",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1344,
+      "z": 1044,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_02",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1224,
+      "z": 1184,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_07",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1324,
+      "z": 1344,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_08",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1184,
+      "z": 1504,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_12",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_kinh_linh",
+      "x": 1404,
+      "z": 264,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_13",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1504,
+      "z": 404,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_09",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1404,
+      "z": 544,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_03",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1484,
+      "z": 704,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_04",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1404,
+      "z": 864,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_05",
+      "zone": "binh_khi_kho",
+      "mon": "mon_kinh_linh",
+      "x": 1504,
+      "z": 1024,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_06",
+      "zone": "binh_khi_kho",
+      "mon": "mon_kinh_linh",
+      "x": 1404,
+      "z": 1204,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_07",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1504,
+      "z": 1364,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_09",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1484,
+      "z": 1524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_14",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_kinh_linh",
+      "x": 1664,
+      "z": 264,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_08",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1684,
+      "z": 424,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_09",
+      "zone": "binh_khi_kho",
+      "mon": "mon_kinh_linh",
+      "x": 1704,
+      "z": 604,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_10",
+      "zone": "binh_khi_kho",
+      "mon": "mon_kinh_linh",
+      "x": 1664,
+      "z": 744,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_11",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1684,
+      "z": 904,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_12",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1684,
+      "z": 1064,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_13",
+      "zone": "binh_khi_kho",
+      "mon": "mon_kinh_linh",
+      "x": 1684,
+      "z": 1244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_14",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1684,
+      "z": 1384,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_15",
+      "zone": "binh_khi_kho",
+      "mon": "mon_kinh_linh",
+      "x": 1664,
+      "z": 1504,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_17",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 424,
+      "z": 444,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_15",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1124,
+      "z": 244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_10",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1324,
+      "z": 1504,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_18",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 384,
+      "z": 1064,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_10",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1084,
+      "z": 904,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_11",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 964,
+      "z": 684,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_lam_sao_vien_19",
+      "zone": "lam_sao_vien",
+      "mon": "mon_van_hac",
+      "x": 384,
+      "z": 764,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_11",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1024,
+      "z": 1404,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_12",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 484,
+      "z": 1524,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dai_lo_den_troi_12",
+      "zone": "dai_lo_den_troi",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 1124,
+      "z": 604,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_16",
+      "zone": "binh_khi_kho",
+      "mon": "mon_kinh_linh",
+      "x": 1564,
+      "z": 564,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_16",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1544,
+      "z": 244,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_17",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1544,
+      "z": 864,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_13",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 764,
+      "z": 1384,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 25,
+      "levelMax": 26,
+      "respawn": 45
+    },
+    {
+      "id": "c_mo_dao_14",
+      "zone": "mo_dao",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 584,
+      "z": 1404,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 24,
+      "levelMax": 25,
+      "respawn": 45
+    },
+    {
+      "id": "c_dien_tien_quang_truong_17",
+      "zone": "dien_tien_quang_truong",
+      "mon": "mon_khai_mach_khoi_loi",
+      "x": 994,
+      "z": 354,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 27,
+      "respawn": 45
+    },
+    {
+      "id": "c_binh_khi_kho_18",
+      "zone": "binh_khi_kho",
+      "mon": "mon_mach_thuong_ho_ve",
+      "x": 1544,
+      "z": 1184,
+      "count": 3,
+      "radius": 30,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 45
+    }
+  ],
+  "spawns": [
+    {
+      "mon": "elite_ho_mach_khoi_tuong",
+      "x": 1147,
+      "z": 866,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_ho_mach_khoi_tuong",
+      "x": 878,
+      "z": 585,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_van_hac_vuong",
+      "x": 381,
+      "z": 1461,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_van_hac_vuong",
+      "x": 393,
+      "z": 853,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 25,
+      "levelMax": 25,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_liet_cot_bao",
+      "x": 1689,
+      "z": 1546,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_liet_cot_bao",
+      "x": 1722,
+      "z": 388,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_liet_cot_bao",
+      "x": 1638,
+      "z": 989,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_kinh_dien_ma_quan",
+      "x": 454,
+      "z": 269,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_kinh_dien_ma_quan",
+      "x": 1235,
+      "z": 283,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_kinh_dien_ma_quan",
+      "x": 851,
+      "z": 223,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 27,
+      "levelMax": 27,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_liet_cot_bao",
+      "x": 1049,
+      "z": 1466,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 240
+    },
+    {
+      "mon": "elite_liet_cot_bao",
+      "x": 712,
+      "z": 1491,
+      "radius": 10,
+      "count": 1,
+      "levelMin": 26,
+      "levelMax": 26,
+      "respawn": 240
+    }
+  ],
+  "nodes": [
+    {
+      "item": "itm_linh_thao",
+      "x": 824,
+      "z": 1224,
+      "radius": 60,
+      "count": 5,
+      "respawn": 60
+    },
+    {
+      "item": "itm_linh_thao",
+      "x": 1274,
+      "z": 604,
+      "radius": 60,
+      "count": 5,
+      "respawn": 60
+    },
+    {
+      "item": "itm_linh_thao",
+      "x": 544,
+      "z": 724,
+      "radius": 60,
+      "count": 5,
+      "respawn": 60
+    }
+  ]
+}
