@@ -1,64 +1,127 @@
 ---
 name: tsl-shaders-vfx
-description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ bằng TSL (Three Shading Language) — PBR cách điệu bán tả thực, chỉnh màu điện ảnh tông sương sớm, sương theo độ cao, mây, nước, kiếm khí, linh quang, thiên lôi độ kiếp, bloom. Dùng khi tạo hoặc sửa material, post-processing hay hệ particle.
+description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ bằng TSL (Three Shading Language) — material PBR cách điệu, chỉnh màu sương sớm, VFX chiêu theo timeline JSON (stylized tương phản cao, ba tầng màu), hạt GPU, vạch báo, thiên lôi, bloom, ngân sách và cách kiểm. Dùng khi tạo hoặc sửa material, post-processing, hệ hạt hoặc hiệu ứng của chiêu/quái/boss/độ kiếp.
 ---
 
 # Shader và VFX bằng TSL
 
-> Hiện trạng (M1-6, phong cách bán tả thực điện ảnh theo art bible v3): địa hình, cây, kiến trúc, nhân vật, quái dùng `MeshStandardNodeMaterial` cách điệu (`render/materials/world.ts`, nhám cao, không kim loại). Sương theo khoảng cách + theo độ cao và giảm bão hòa theo độ sâu là một `scene.fogNode` (`render/atmosphere.ts`), thay `FogExp2` của `env.ts`; atmosphere cũng đặt màu mặt trời/ánh trời/vòm trời và vẽ quầng sáng giả quanh đèn đá (1 draw call). Thông số chỉnh màu ở `render/grading.ts` (chép từ khối `grading` của `assets/palette.json`, preset dawn/day/night). Post-processing `render/post.ts`: bloom chọn lọc qua MRT (chỉ material đã `markBloom`, chỉ khi preset có bloom) → ACES → tách tông bóng lạnh/sáng ấm, nâng đen, đường cong S, bão hòa → `uHit` (viền đỏ + quang sai màu khi mình trúng đòn nặng) / `uFlash` → FXAA (Vừa) → vignette → hạt phim + dither. Hiệu ứng (`game/vfx.ts`, `game/telegraph.ts`, từ M1-7) lấy lưới từ `FxPool` trong `render/materials/vfx.ts`: mỗi kiểu (`glow` cộng sáng có bloom, `flat` cộng sáng không bloom cho vùng báo trước, `solid`, `shade`) chỉ có một `MeshBasicNodeMaterial` cho cả game; màu/opacity/tiến độ là uniform theo lưới (`onObjectUpdate`, đọc `fxColor`/`fxOpacity`/`fxK` của `FxMesh`). Phát hiệu ứng không tạo material, không dispose material; đỉnh màu một lớp chặn ở `FX_MAX_HDR` 2,4; material đặt `forceSinglePass` (trong suốt 2 mặt mặc định tốn 2 draw call). Hiệu ứng mới: dùng `vfx.fx(geo, màu, opacity, kind)` và `vfx.drop(m)`, đừng `new MeshBasicMaterial`. Từ M4-1/M4-3 có thêm 3 kiểu có shader riêng (builder trong `render/vfx/`, nhận uniform qua `FxUniforms` để tránh vòng import), tham số riêng đặt vào `fxA`/`fxB` (vec4 theo lưới, pool reset về 0): `slash` (lớp sáng kiếm khí, cộng sáng, bloom) và `ink` (lớp mực nền, hòa trộn thường, có sương) dùng lưới cung `SLASH_GEO` (`render/vfx/slash.ts`: `fxA` = đầu quét, ngưỡng ăn mòn, seed; nhịp lấy từ `slashPhase`); `sigil` (`render/vfx/sigil.ts`: pháp trận/vùng báo trước, một tấm phẳng, mọi chi tiết vẽ trong fragment; `fxA` = tiến độ, hình 0 tròn/1 chữ nhật/2 quạt, _, seed; `fxB` = r, w, cỡ tấm). Dùng qua `vfx.slash` (bay), `vfx.slashMark`/`vfx.slashVertical` (dấu chém đứng quay về camera), `vfx.sigil`, `vfx.castSigil`, `vfx.hazard`, `telegraph()`. Pháp trận dùng hòa trộn thường (không cộng sáng) để có nền mực tối, nhờ vậy vẫn đọc được trên đá/sương sáng. Phù văn là hoa văn nét ngang/dọc sinh theo hash, không thành chữ (art bible 8.11). Nhiễu trong shader là `vnoise`/`hash21` (`render/vfx/common.ts`), chạy như nhau trên WebGPU và WebGL2; chú ý vec2 chỉ có `.x/.y` (gọi `.z` trên vec2 làm hỏng shader WGSL mà TypeScript không bắt được).
->
-> Từ M4-2/M4-4/M4-5:
-> - **Hệ hạt GPU** `render/vfx/particles.ts` (`PARTICLES`, dùng chung qua `vfx.particles`): hai `Sprite` instanced (`glow` cộng sáng có bloom, `dust` hòa trộn thường có sương) = 2 draw call cho mọi hạt. Quỹ đạo tính trong vertex shader từ dữ liệu lúc sinh, CPU chỉ ghi khi `emit`. Bộ đệm vòng theo ngân sách preset (`PARTICLE_BUDGET`: 5.000 Thấp, 12.000 Vừa, 20.000 Cao) nên số hạt sống không thể vượt; engine gọi `particles.setQuality`. Overlay `?debug=1` hiện `sống/ngân sách hạt`.
-> - **Mưa kiếm** `render/vfx/swordRain.ts`: 4 `InstancedMesh` dùng chung (kiếm `prop_phi_kiem` qua AssetCache, vệt sao chổi, vết nứt, vòng chấn động) = 4 draw call bất kể số trận. Tham số theo instance là `InstancedBufferAttribute` vec4 đọc bằng `instancedBufferAttribute()`. **Bẫy three r178**: `InstanceNode` cấp UBO ma trận theo `InstancedMesh.count` lúc dựng node; đừng hạ `count` để ẩn instance (mọi instance sẽ dùng chung một ma trận). Giữ `count` = sức chứa và đặt số vẽ bằng `InstancedBufferGeometry.instanceCount` (`instancedGeometry()`).
-> - **Thiên lôi** `render/vfx/lightning.ts`: hình tia theo seed server (`FxMsg.sd`/`HazardMsg.sd`, `seededRandom`) nên mọi client thấy cùng một tia; dải quay về camera dựng lại mỗi khung trong bộ đệm cấp sẵn (kiểu `bolt`); chớp toàn cảnh qua `vfx.onFlash` → `PostPipeline.flash` (`uFlash`); mây kiếp xoáy là một đĩa vẽ trong fragment (kiểu `vortex`).
-> - **Vệt theo nhân vật** `render/vfx/trail.ts` (`vfx.trails.update` mỗi khung): dải vệt phi kiếm khi ngự kiếm (kiểu `trail`, tối đa 8 dải), linh quang quanh kiếm khi cầm kiếm, bụi mỗi bước chạy, sương dưới chân khi bay. Người khác một nửa số hạt, xa hơn 70 m không sinh.
->
-> Từ M4-6/M4-14:
-> - **Đồ rơi** `render/vfx/loot.ts` + `vfx.lootDrop`/`vfx.goldDrop`: chỉ là lớp hình khi `S.SYS` loại `loot` có `src` (id quái/điểm hái) và `i` (id vật phẩm; không có = vàng); đồ đã vào túi ở server. Viên đồ nảy (`lootHop`), cột sáng kiểu `beam` (ống hở `BEAM_GEO`, `fxA.x` = độ dâng, `fxA.w` = seed) theo 3 bậc `lootTier(rarity)`: sương sớm / linh khí ngọc / kim quang `spirit_gold` (không tím), chuông nhiều bồi âm `lootChime` (`game/lootBell.ts`), icon bay vào nút `[data-bag]` bằng DOM (`game/lootFly.ts`, không thêm draw call). Đồ bậc cao nằm ngoài khung nhìn có chỉ báo M4-15 (`OffKind` `loot`).
-> - **Vết mực** `render/vfx/ink.ts` + `vfx.inkSplat`/`inkStreak`/`inkBurst`: kiểu `inkpool` (hòa trộn thường, có sương) trên `SIGIL_GEO` áp nghiêng theo mặt đất; `fxA` = độ loang, độ tan, độ đậm mép, seed; tan theo nhiễu (`inkPhase`). Tối đa `MAX_INK` 14 vết, vượt thì vết cũ nhất tan nhanh (`inkEvict`). Quái chết: `EntityManager.onMonsterDeath` (chỉ khi thấy quái chuyển sống → chết); đòn nặng (`DmgMsg.hv`): vệt nhỏ kéo dài theo hướng đòn, tối đa một vệt mỗi 0,4 giây mỗi nạn nhân. Màu `INK_POOL` (mực ngả lam ngọc, không đen tuyền).
->
-> Từ Phase 2 (2026-11-15): mặt đất PBR Poly Haven trộn lớp (`render/materials/ground.ts`, `render/groundMask.ts`), nước hồ, biển mây, bầu trời buổi sớm (`render/water.ts`, `clouds.ts`, `sky.ts`), AO, đèn lồng point light thật (`render/lanternLights.ts`), grading nắng vàng ấm xuyên sương + bóng ngọc lam (`render/grading.ts`, `render/post.ts`). Cây/prop Tripo dùng `adoptGltfMaterials` (`render/materials/world.ts`) để lấy texture của asset vào `MeshStandardNodeMaterial`.
->
-> **Quy tắc VFX không lóa/HDR (bất biến)**: mọi lớp cộng sáng bị chặn ở `FX_MAX_HDR` (2,4) trong `render/materials/vfx.ts`, hạt và mưa kiếm dùng cùng trần; bloom chỉ bắt vật phát sáng đã `markBloom`, ngưỡng ~1,0, cường độ thấp, ban ngày tinh tế; hiệu ứng chồng nhau không được làm cháy sáng cả khung hay che mất vùng báo trước/thân kẻ địch; khi pool hiệu ứng đông thì bỏ phần trang trí của người khác (`game/fxBudget.ts`, giữ hiệu ứng của mình, chiêu quái/boss, vùng báo trước). Pháp trận/vùng báo trước hòa trộn thường để đọc được trên nền sáng. Đo bằng `pnpm bench:client` và `pnpm shots` (ảnh trước/sau).
->
-> Các mục dưới đây là hướng làm tiếp; chỗ nào nói cel-shading/thủy mặc là định hướng cũ, theo art bible v3. Chất thủy mặc chỉ còn ở vết mực (`render/vfx/ink.ts`, `deathFx.ts`) và các lớp sương.
+Đọc theo thứ tự: nguyên tắc → phong cách → kiến trúc VFX → thêm hiệu ứng chiêu mới → đặc tả → ngân sách → bẫy → kiểm.
+Chi tiết từng đợt: `docs/vfx-v1/` (nền tảng), `vfx-v2/` (Kiếm tu), `vfx-v3/` (Hộ pháp, Đan sư), `vfx-v4/` (pháp tướng, đột phá, độ kiếp), `vfx-v5/` (quái, boss), `docs/k6-vfx/` (ba pha K-6, gộp draw call).
 
 ## Nguyên tắc
 
-- Viết shader bằng TSL (`three/tsl`) với `NodeMaterial` để một bản chạy được cả WebGPU lẫn WebGL2. Không viết GLSL/WGSL thô trừ khi TSL không làm được.
-- Mỗi material dùng chung đặt trong `apps/client/src/render/materials/`, xuất hàm tạo có tham số, không tạo material mới cho từng mesh.
-- Tham số chỉnh được (màu, cường độ) đưa ra `uniform()` để chỉnh lúc chạy qua panel debug.
+- Viết bằng TSL (`three/tsl`) với `NodeMaterial`, một bản chạy cả WebGPU lẫn WebGL2. Không viết GLSL/WGSL thô.
+- Material dùng chung nằm ở `apps/client/src/render/materials/`. Không tạo material mới cho từng mesh hay từng lần phát.
+- Tham số chỉnh được là `uniform()`.
+- Nhiễu trong shader: `vnoise`/`hash21` ở `render/vfx/common.ts`. vec2 chỉ có `.x/.y`: gọi `.z` làm hỏng WGSL mà TypeScript không bắt được.
 
-## Phong cách nhìn
+## Phong cách
 
-**Nguồn chuẩn: `docs/art-bible.md`** (v3, bán tả thực điện ảnh): mục 3 (vật liệu), mục 5 (ánh sáng và chỉnh màu), mục 8 (điều cấm). Thông số số nằm trong khối `grading` của `assets/palette.json`. Khi skill này và art bible lệch nhau, art bible thắng.
+Hai lớp, đừng trộn.
 
-- Material: PBR cách điệu bằng `MeshStandardNodeMaterial` (base color, normal, roughness/metalness của Tripo). Vải, đá, gỗ có roughness cao; kim loại có metalness. Không có bề mặt bóng như nhựa.
-- **Không dùng cel-shading, toon 3 bậc hay viền mực inverted hull** (art bible mục 0.2 và 8.3). Hướng này đã bị bỏ.
-- Tông sương sớm: vùng sáng ngả vàng ấm, bóng ngả ngọc lam, đen được nâng lên (không đen tuyền). Có 3 preset `dawn` / `day` / `night`; đêm dùng lam trầm cùng đèn lồng ấm, không dùng tông chàm tím.
-- Màu linh quang: linh khí ngọc, kiếm khí trắng xanh, thiên lôi tím trắng, ma khí tím đen, kim quang. Tím chỉ làm điểm nhấn.
-- Núi xa: giảm bão hòa theo độ sâu, hòa vào màu sương ngọc lam. Chất thủy mặc nằm ở các lớp sương và ở VFX mực.
-- Sương theo độ cao (height fog) + fog theo khoảng cách, dày hơn hiện tại (`FogExp2` khoảng 0,0011 ban ngày), che luôn biên tải.
-- Mây: lớp mặt phẳng nhiều tầng hoặc impostor, nhiễu trôi theo thời gian; không dùng volumetric raymarch ở preset Thấp.
+1. **Thế giới** (địa hình, cây, nhân vật, sương, grading): bán tả thực điện ảnh, sương sớm. Nguồn chuẩn `docs/art-bible.md` v3 (mục 3 vật liệu, 5 ánh sáng/chỉnh màu, 8 điều cấm). `MeshStandardNodeMaterial` nhám, không kim loại bóng như nhựa (`render/materials/world.ts`). Sương là `scene.fogNode` ở `render/atmosphere.ts`. Chỉnh màu ở `render/grading.ts`, `render/post.ts`. Không cel-shading, không viền mực inverted hull.
+2. **VFX chiêu** (đã duyệt ở V1): stylized vẽ tay "2D trong 3D", **tương phản cao**.
+   - Ba tầng màu: lõi sẫm, thân, viền sáng. Dưới cùng là lớp bóng sẫm để hiệu ứng đọc được trên nền sáng.
+   - Mép rách (`jaggedCut`), gai tinh thể, lưỡi liềm hai tông, triện văn nét ngang/dọc sinh theo hash (không thành chữ, art bible 8.11).
+   - Hiệu ứng mọc theo đường vung rồi tan bằng `dissolve` có mép sáng. Dư âm ngắn.
+   - Màu theo nhánh ở `render/vfx/palette.ts`: Kiếm tu lam ngọc + trắng, điểm vàng; Hộ pháp hổ phách/vàng kim; Đan sư ngọc lục, điểm đỏ son; sét tím trắng (`loi`).
+   - Bảng "nguy hiểm" của quái tách khỏi bảng "của ta": `mon_<hệ>` và `mon_boss_<hệ>` (accent đỏ son/đỏ thẫm, viền vàng kim cho boss). Người chơi nhìn màu là biết đòn của ai.
+   - Mực loang (`render/vfx/ink.ts`) và sương là phần thủy mặc còn lại.
 
-## VFX skill
+## Kiến trúc VFX
 
-- Particle dùng hệ GPU tự viết `render/vfx/particles.ts` (vertex shader, không compute, chạy như nhau trên WebGPU và WebGL2); không dùng three.quarks.
-- Hiệu ứng chiêu hiện cấu hình trong `packages/content/data/skills.json` (`fx`, `pose`) và code `game/vfx.ts`, `game/methodFx.ts`; thư mục `packages/content/vfx/*.json` là hướng mở rộng, chưa có.
-- Ngân sách: tối đa 20.000 hạt hoạt động trên màn hình ở preset Cao, 5.000 ở Thấp. Hiệu ứng của người khác giảm 50% số hạt.
-- Kiếm khí và phi kiếm: mesh dải (trail) + additive blending + bloom.
-- Thiên lôi độ kiếp: tia sét sinh thủ tục (đường gấp khúc ngẫu nhiên theo seed từ server để mọi người thấy giống nhau), chớp sáng toàn cảnh ngắn, rung camera nhẹ.
+**Pool và material** (`render/materials/vfx.ts`)
+- `FxPool` cấp lưới theo `FxKind`: `glow` (cộng sáng, bloom), `flat` (cộng sáng, không bloom, vùng báo), `solid`, `shade`, `slash`, `ink`, `sigil`, `bolt`, `vortex`, `trail`, `beam`, `dome`, `inkpool`, `toon`, `crystal`, `burst`, `decal`, `card`.
+- Mỗi kiểu một `MeshBasicNodeMaterial` cho cả game. Màu, opacity, tiến độ là uniform theo lưới; tham số riêng vào `fxA`/`fxB` (vec4, pool reset về 0).
+- Phát qua `vfx.fx(geo, màu, opacity, kind)`, trả tay cầm bằng `vfx.drop(m)` (`game/vfx.ts`). Không `new MeshBasicMaterial`.
+- Đỉnh HDR chặn ở `FX_MAX_HDR` = 2,4. Material `forceSinglePass`.
+- Gộp draw call (`render/materials/fxBatch.ts`, `FxBatcher`): lưới cùng hình + lớp thành một `InstancedMesh`. `FxMesh` chỉ là tay cầm; shader không đọc `positionLocal` (three gán lại theo instance), dùng `uv()`. `sigil` không gộp.
 
-## Post-processing
+**Shader stylized** (`render/vfx/stylized.ts`): `ramp3` (ba tầng), `jaggedCut`, `dissolve`, `flowNoise`, `fresnelRim`; builder `toonNodes`, `crystalNodes`, `burstNodes`, `decalNodes` (vết nứt, vòng triện văn, vết cháy, khói), `cardNodes`. Hình nền ở `render/vfx/fxShapes.ts` (`crescentGeometry`, `crystalGeometry`, `rippleGeometry`, `helixGeometry`, `dragonGeometry`, `shapeGeometry`, `shapeKind`).
 
-- Chuỗi theo art bible mục 5.2: sương (khoảng cách + độ cao, giảm bão hòa theo độ sâu) → bloom → tone mapping ACES Filmic → chỉnh màu tách tông (sắc bóng / sắc vùng sáng, nâng đen, tương phản, bão hòa) → vignette → hạt phim + dither.
-- Bloom chỉ bắt vật phát sáng (VFX, phi kiếm, linh quang): ngưỡng khoảng 1,0, cường độ thấp, đỉnh HDR dưới 2,5. Không làm cả cảnh mờ nhòe.
-- Uniform hiệu ứng trúng đòn (`uHit`, `uFlash`) đi trong pass chỉnh màu.
-- Preset Thấp tắt bloom và sương theo độ cao, giữ chỉnh màu. Bỏ SSAO/SSR ở preset Thấp và Vừa.
-- Khi có nhiều pass: đặt `renderer.info.autoReset = false` và reset ở đầu khung, nếu không số draw call/tam giác đo được sẽ sai.
-- **Bẫy three r178 khi đổi preset lúc chạy**: cache shader (`Nodes.nodeBuilderCache`) khóa theo material + môi trường, không theo MRT/số đích. Pass cảnh đổi giữa có MRT bloom (Vừa/Cao) và không MRT (Thấp) thì render object mới lấy nhầm shader của cấu hình kia: WebGPU báo `Attachment state … is not compatible`, WebGL2 im lặng ghi sai draw buffer. `render/nodeCacheFix.ts` (`patchNodeCacheKey`, gọi sau `renderer.init()`) thêm chữ ký đích vào khóa; đừng gỡ. Node `rtt()` không tự giải phóng render target: `PostPipeline.dispose()` phải `renderTarget.dispose()`. Kiểm bằng `pnpm bench:switch`.
+**Timeline theo chiêu** (V0)
+- Mỗi chiêu một `packages/content/data/fx/<id chiêu>.json`. Kiểu và kiểm: `packages/shared/src/fxtimeline.ts` (`FxTimeline`, `validateFxTimeline`, `fxDrawCount`, `fxParticleCount`).
+- Sự kiện: `mesh`, `particles`, `decal`, `trail`, `hitstop`, `shake`, `flash`, `sound`, `bolt`, `camera`. Neo `self|target|ahead|ground|area|origin`.
+- `t` là giây so với `hitAt` (âm = trước); `from: "start"` tính từ lúc bấm. Đổi nhịp chiêu trong `skills.json` thì hiệu ứng đi theo.
+- Mở rộng: `combo` (theo đòn), `variants` (theo biến thức A/B), `hit` (theo mốc trúng), `trigger: "fx"` + `fxKind`/`method`/`when` (chiêu không có động tác: lướt, đột phá, độ kiếp), `replaces` (bỏ hình `S.FX` cũ).
+- Chạy: `FxRunner` ở `game/fxTimeline.ts` (`start`, `startFx`, `startAt` cho quái/cảnh không có chiêu). Gọi từ `game/skillFx.ts`, nghe `Game.onSkillEvent`. Quái: `game/monFx.ts` + `fx/mon_*.json`. Chiêu bậc cao/công pháp: `game/methodFx.ts`.
+- Chất lượng: `game/fxSettings.ts` (`fxQuality`, `particleScale`, khựng hình). Mỗi sự kiện có `tier` 0/1/2 (từ Thấp/Vừa/Cao); chiêu người khác hạ một bậc (`fxTierFor`).
+- Ba pha K-6 (tụ lực → bùng nổ tại `hitAt` → tan): `render/vfx/phases.ts` (`phaseAt`, hằng `HDR_*`, `CAPS_*`, `hazardStyle`). Vệt kiếm bám xương: `render/vfx/bladeTrail.ts`. Đạn quái: `render/vfx/projectile.ts` (`BoltFx`). Tranh thẻ pháp tướng: `render/vfx/cards.ts`.
+- Phần lớn file JSON được **sinh** bằng `python tools/vfx/gen-fx-kiem.py` (công thức `tools/vfx/recipes_b|c|d|e.py`), quái bằng `python tools/vfx/gen-fx-mon.py`. Sửa công thức rồi sinh lại; sửa tay chỉ cho chỉnh nhỏ (lần sinh sau ghi đè).
+
+**Các hệ riêng**
+- Hạt GPU `render/vfx/particles.ts` (`PARTICLES`): hai lớp `glow`/`dust` = 2 draw call. Quỹ đạo tính ở vertex shader; ngân sách `PARTICLE_BUDGET` 5.000/12.000/20.000 (Thấp/Vừa/Cao).
+- Mưa kiếm `swordRain.ts`, thiên lôi `lightning.ts` (hình theo seed server `sd`, mọi client thấy cùng tia; chớp toàn cảnh qua `vfx.onFlash` → `PostPipeline.flash`), vệt theo nhân vật `trail.ts`, đồ rơi `loot.ts`, vết mực `ink.ts`, pháp trận/vạch báo `sigil.ts` + `game/telegraph.ts`, lưỡi kiếm khí `slash.ts`.
+- Vẽ ấm nhóm gộp: `warmKinds`/`warmBatches` trong `game/vfx.ts` biên dịch trước để không khựng giữa trận. `?vfxwarm=0` tắt (chỉ để so số đo).
+- Giảm tải đám đông: `game/fxBudget.ts` (`skipOthersFx`: lưới sống ≥ `OTHERS_FX_LIVE_MAX` hoặc xa hơn `OTHERS_FX_DIST` thì bỏ phần trang trí của người khác; luôn giữ của mình, đòn nhắm mình, chiêu quái/boss, vạch báo).
+- Cờ URL để so trước/sau: `?fxtl=0` (bỏ timeline), `?monfx=0` (bỏ FX quái), `?k6=0` (bỏ ba pha), `?batch=0` (bỏ gộp), `?fxq=low|medium|high`, `?vfxwarm=0`.
+
+## Thêm hiệu ứng cho chiêu mới
+
+1. Chiêu phải có trong `skills.json`/`methods.json` với `hitAt`, `windup`, `recovery`. Chưa có pose thì xem skill `game-content` và `tools/poses/gen-k5.mjs`.
+2. Viết đặc tả một đoạn theo mẫu ở mục dưới. Làm trước khi viết JSON.
+3. Tạo `packages/content/data/fx/<id chiêu>.json`. Chiêu cùng họ thì thêm công thức vào `tools/vfx/recipes_*.py` rồi chạy `python tools/vfx/gen-fx-kiem.py`.
+4. Dựng theo thứ tự: báo trước (nếu có) → tụ lực → bùng nổ tại `t: 0` → dư âm. Gắn `tier` cho phần trang trí (1–2) để preset Thấp chỉ còn phần đọc được.
+5. Chọn `palette` đúng nhánh. Hình mới chưa có thì thêm vào `fxShapes.ts` và `shapeKind`, đừng tạo material.
+6. Với chiêu lướt/đột phá/cảnh: `trigger: "fx"`, `fxKind` khớp `S.FX`, `replaces` bỏ hình cũ.
+7. `pnpm content:check` (≤ 12 draw, ≤ 1.500 hạt mỗi chiêu; khựng 40–80 ms; rung ≤ 0,6; chớp ≤ 0,3; burst < 120 ms; trần decal 8 s).
+8. Quay và xem: mục Kiểm tra.
+9. Cập nhật `docs/vfx-<đợt>/README.md` (ngắn: bản sắc hình, số đo, hạn chế).
+
+Chỉ là lớp hình: ai trúng, sát thương, hồi chiêu vẫn do server quyết định.
+
+## Mẫu đặc tả mỗi hiệu ứng
+
+Viết ngắn, đủ các dòng sau. Thiếu dòng nào thì chưa nên viết shader.
+
+- **Chủ và kích hoạt**: ai phát (mình, người khác, quái, boss, hệ thống), tin hay sự kiện nào kích (`onSkillEvent`, `S.FX`, `S.HAZARD`, `S.BOLT`).
+- **Thời lượng**: từng pha và tổng. Mọi hiệu ứng có mốc kết thúc rõ.
+- **Ý nghĩa gameplay**: người chơi cần đọc gì (né, đã trúng, chiêu thành công, bị ngắt).
+- **Pha tách riêng**: báo trước, trúng, thành công, thất bại, lưu lại. Mỗi pha một hình khác nhau. Báo trước tồn tại đúng tới lúc nổ.
+- **Hình khối ở khoảng cách camera**: nhìn ở 12–16 m (camera mặc định) và 24 m có đọc ra hình không. Hiệu ứng không che thân kẻ địch, vạch báo hay nhân vật mình.
+- **Thứ bậc màu**: lõi / thân / viền / bóng, màu nhánh, màu nguy hiểm riêng cho quái.
+- **Giới hạn sinh**: số lưới, số hạt, trần theo chất lượng, bản của người khác giảm một bậc.
+- **Quy tắc dọn**: hết pha thì `drop` mọi lưới, hạt tự hết, decal có thời hạn; chết, đổi level, hủy chiêu, mất kết nối đều dọn.
+- **Bản giảm chuyển động**: bỏ rung, khựng, chớp, giữ hình tĩnh và vạch báo. Hiện game chỉ có công tắc "Khựng hình" và "Rung màn hình" (`game/fxSettings.ts`, Cài đặt). Công tắc "Giảm chuyển động" (`ui/ngj/motion.ts`) mới áp cho giao diện, **chưa** áp cho VFX trong cảnh. Nối chúng là hướng mở, chưa làm.
+
+## Ngân sách (desktop)
+
+- Tổng game: dưới 300 draw call, CPU dưới 8 ms/khung (skill `perf-budget`). Đo thực tế: VFX chiêu một người 120–150 draw, sân 50 người 140–180.
+- Mỗi chiêu: ≤ 12 draw (đếm theo nhóm gộp), ≤ 1.500 hạt (`content:check`).
+- Hạt sống toàn cảnh: 5.000 / 12.000 / 20.000 (Thấp/Vừa/Cao). Hiệu ứng người khác một nửa hạt; xa hơn 60–70 m không sinh (`monFx`, `trail`).
+- Trần theo chiêu: `CAPS_MINE` 60 hạt/4 lưới, `CAPS_OTHER` 30/2; chiêu tối thượng 400/150 và 150/150.
+- **HDR**: `FX_MAX_HDR` 2,4; đỉnh bùng nổ `HDR_BURST` 2,3. Bloom chỉ bắt vật đã `markBloom`, ngưỡng ~1,0. Hiệu ứng chồng nhau không được cháy sáng cả khung. `maxRadiusFor` giữ hình không chiếm quá 25% màn hình.
+- Mực loang tối đa `MAX_INK` 14. Decal tối đa `DECAL_MAX` 6 cùng lúc.
+- Chớp toàn cảnh < 120 ms; khựng hình ≤ 90 ms (`hitStopOf`, `game/hitjuice.ts`).
+
+## Bẫy three r178 / TSL
+
+- `InstanceNode` dựng UBO ma trận theo `InstancedMesh.count` ở lần vẽ đầu. Đừng hạ `count` để ẩn instance; giữ `count` = sức chứa và đặt số vẽ bằng `instanceCount`. Mảnh gộp khung đầu khai `BATCH_CHUNK` instance, không thì instance thêm sau mất hình.
+- Tham số theo instance dùng `InstancedBufferAttribute` + `instancedBufferAttribute()`. Không dùng `DynamicDrawUsage` (r178 upload lại cả bộ đệm; test `no-dynamic-usage` chặn).
+- Cache shader (`Nodes.nodeBuilderCache`) khóa theo material, không theo MRT. Đổi preset lúc chạy lấy nhầm shader: `render/nodeCacheFix.ts` (`patchNodeCacheKey`) vá. Đừng gỡ. Kiểm bằng `pnpm bench:switch`.
+- `rtt()` không tự giải phóng render target; `PostPipeline.dispose()` phải `renderTarget.dispose()`.
+- Nhiều pass: `renderer.info.autoReset = false`, reset đầu khung, không thì draw call đo sai.
+- Trong suốt 2 mặt tốn 2 draw call: giữ `forceSinglePass`.
+- Kiểu hiệu ứng mới biên dịch lần đầu gây khựng: nhớ cho vào `warmKinds`/`warmBatches`.
+- Hai backend có thể lệch nhẹ về màu texture (WebGPU không có BC7, xem `docs/ktx2/`): so ảnh cả hai.
 
 ## Kiểm tra
 
-- Xem hiệu ứng trên cả WebGPU và WebGL2 (ép bằng query `?renderer=webgl2`).
-- Chạy skill `perf-budget` sau khi thêm hiệu ứng nặng.
+Checklist trước khi báo xong:
+
+- Chồng hiệu ứng: hai ba chiêu liên tiếp không cháy sáng, không che vạch báo hay thân kẻ địch.
+- Nhiều mục tiêu: chiêu vùng trúng 3+ quái, mỗi quái một nhịp trúng đúng.
+- Bấm liên tục: spam chiêu và đòn thường, số lưới sống không tăng mãi (`__game.info()`, bảng F3).
+- Pause/resume: đổi tab, mất kết nối, hiệu ứng không đứng hình rồi bắn một loạt.
+- Chết, hồi sinh, đổi level, ngắt chiêu: không còn lưới, hạt, decal sót lại.
+- Preset Thấp: phần đọc được vẫn còn (báo trước, trúng).
+- Cả WebGPU và WebGL2 (`?renderer=webgl2`), ghi rõ backend (`__game.info().backend`).
+- Người khác ra chiêu: nhẹ hơn, không che.
+- Playtest luôn `?mute=1`.
+
+Lệnh:
+
+- `pnpm shots vfx --out <thư mục tuyệt đối> --skills <id,...>`: webm chậm 0,25× + tốc độ thật và dãy khung, nam/nữ, tắt tiếng. Thêm `--old` (hình cũ), `--perf` (draw call/tam giác/ms), `--crowd 50` (sân đông), `--skills mon:<loại>[:<id quái>]`, `--skills scene_<tên>`. Đặt `--out` ngoài repo hoặc ở artifacts; repo chỉ giữ tối đa 5 ảnh WebP then chốt (`pnpm docs:check`).
+- `pnpm bench:client`, `pnpm bench:crowd`, `pnpm bench:switch` (skill `perf-budget`).
+- `pnpm test` (có `phases.test.ts`, `fxShapes.test.ts`, `fxTimeline.test.ts`, `fxBudget.test.ts`, `fxBatch.test.ts`), `pnpm content:check`.
+- Sau khi sửa VFX: gọi subagent `vfx-reviewer`.
