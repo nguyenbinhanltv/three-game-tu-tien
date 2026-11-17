@@ -24,6 +24,13 @@ const SKILLS = opt('--skills', 'skl_kiem_khi_tram,skl_phi_kiem').split(',');
 const FXQ = opt('--fxq', 'high');
 const OLD = args.includes('--old');
 const PERF = args.includes('--perf');
+/** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
+const WIDE = /thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh/;
+/** Số người giả cùng ra chiêu (đo sân đông) và thời gian đo (giây). */
+const CROWD = Number(opt('--crowd', '0'));
+const CROWD_SECS = Number(opt('--crowd-secs', '15'));
+/** Cấp nhân vật khi chụp (chiêu bậc 2–3 cần ≥ 16–28). */
+const LEVEL = Number(opt('--level', '12'));
 const WEBM_ONLY = args.includes('--webm-only');
 const SHEET_ONLY = args.includes('--sheet-only');
 const FPS = Number(opt('--fps', '24'));
@@ -34,6 +41,8 @@ const DIST = Number(opt('--dist', '7'));
 const SLOW = Number(opt('--slow', '0.25'));
 const TILE = Number(opt('--tile', '40'));
 /** Chỉ lấy ô tới mốc này (ms game): dãy khung gọn hơn. */
+/** Thời lượng ghi riêng của chiêu có niệm. */
+const SPAN: Record<string, number> = { skl_loi_dinh_nhat_kiem: 3300, skl_kiem_vu_tam_diep: 1900, skl_van_kiem_quy_tong: 2200, skl_thien_kiem_hoa_hinh: 2200 };
 const TMAX = Number(opt('--tmax', '1000'));
 const SPOTS: [number, number][] = [[2048, 2088], [2088, 2088], [2008, 2088], [2048, 2128], [2048, 2048], [2088, 2128], [2008, 2128], [2088, 2048]];
 let spotIdx = 0;
@@ -220,9 +229,10 @@ async function main(): Promise<void> {
         }, undefined, { timeout: 120_000, polling: 250 });
         await clearIntro(page);
         await page.addStyleTag({ content: '.hud,.chat{visibility:hidden !important}' });
-        await gm(page, 'level 12', 1600);
+        await gm(page, 'level ' + LEVEL, 1600);
         await gm(page, 'god on', 1600);
         await gm(page, 'method lac_kiem_quyet 5', 1200);
+        if (LEVEL >= 16) await gm(page, 'skills max', 1500);
         const spot = SPOTS[spotIdx++ % SPOTS.length];
         await gm(page, `tp ${spot[0]} ${spot[1]}`, 1600);
         await page.waitForFunction(() => {
@@ -232,15 +242,37 @@ async function main(): Promise<void> {
         }, undefined, { timeout: 60_000, polling: 300 });
         const bar = (id: string) => page.evaluate((i) => (window as unknown as G).__game!.bar().findIndex((s: { id: string }) => s.id === i), id);
         const press = async (id: string) => {
+          if (id === 'skl_kiem_anh_bo' || id === 'skl_nghich_kiem_chuyen_phong') return page.evaluate(() => (window as unknown as G).__game!.useDash());
           const i = id === 'skl_phi_kiem' ? 0 : await bar(id);
-          if (i < 0) throw new Error('không thấy chiêu ' + id);
+          if (i < 0) {
+            // Chiêu còn khóa (chưa có cơ chế Nguyên Anh/Hóa Thần) không nằm trên thanh chiêu: phát thẳng sự kiện windup vào SkillFx để xem hiệu ứng (không có động tác).
+            await page.evaluate((sk) => { const g = (window as unknown as G).__game!; const w = [...g.view.monsters.values()].find((m: { st: number }) => m.st !== 3); if (w) { g.fxArea.set(g.sid, { x: w.x, z: w.z, r: 12 }); g.fxDst.set(g.sid, [...g.view.monsters.entries()].find(([, m]) => m === w)![0]); g.setTarget?.([...g.view.monsters.entries()].find(([, m]) => m === w)![0], 'mon'); } g.skillFx.handle(g.sid, { kind: 'windup', skill: sk, combo: -1, index: 0, t: 0, kb: false }); }, id);
+            return;
+          }
           await page.evaluate((s) => (window as unknown as G).__game!.useSkill(s), i);
         };
+        if (CROWD > 0) {
+          // Sân đông: N người giả (chỉ phía client) cùng ra chiêu Kiếm tu quanh mình, mỗi người cứ ~0,9 s một chiêu; đo draw call, tam giác, khung ms, số lưới FX sống.
+          await scene(page);
+          await closeCam(page, 14);
+          await page.evaluate(`(() => { const g = window.__game; const SK = ${JSON.stringify(SKILLS)}; const R = g.skillFx.runner; const FXT = window.__fxTimelines; const me = g.cur;
+            const fakes = []; for (let i = 0; i < ${CROWD}; i++) { const a = i * 2.399, r = 4 + (i % 7) * 3.3; fakes.push({ sid: 'fake' + i, a: { x: me.x + Math.cos(a) * r, y: me.y, z: me.z + Math.sin(a) * r, yaw: a + Math.PI, model: {} } }); }
+            window.__crowd = { stop: false }; let n = 0; const tick = () => { if (window.__crowd.stop) return; const f = fakes[n++ % fakes.length]; const id = SK[Math.floor(Math.random() * SK.length)]; const tl = FXT.get(id); const def = FXT.skill(id); if (tl && def) R.start(f.sid, f.a, def, tl, { kind: 'windup', skill: id, combo: -1, index: 0, t: 0, kb: false }, false, 20, 'lac_kiem_quyet'); setTimeout(tick, ${Math.round(900 / Math.max(1, CROWD))}); }; tick();
+            const o = (window.__perf = { dc: [], tri: [], ms: [], live: [] }); let last = performance.now(); (function t() { const i = g.info(); const nw = performance.now(); o.dc.push(i.drawCalls); o.tri.push(i.triangles); o.ms.push(nw - last); o.live.push(g.vfx.pool.live); last = nw; requestAnimationFrame(t); })(); })()`);
+          await sleep(CROWD_SECS * 1000);
+          const p = (await page.evaluate(() => { (window as unknown as { __crowd: { stop: boolean } }).__crowd.stop = true; return (window as unknown as { __perf: Record<string, number[]> }).__perf; })) as Record<string, number[]>;
+          const q = (a: number[], f: number) => [...a].sort((x, y) => x - y)[Math.floor((a.length - 1) * f)];
+          console.log(`[crowd] ${CROWD} người, ${SKILLS.length} chiêu, fxq=${FXQ}: draw p50/p95/max ${q(p.dc, 0.5)}/${q(p.dc, 0.95)}/${Math.max(...p.dc)}, tam giác p50/max ${q(p.tri, 0.5)}/${Math.max(...p.tri)}, khung ms p50/p95/p99 ${q(p.ms, 0.5).toFixed(1)}/${q(p.ms, 0.95).toFixed(1)}/${q(p.ms, 0.99).toFixed(1)}, lưới FX sống p50/max ${q(p.live, 0.5)}/${Math.max(...p.live)}`);
+          await ctx.close();
+          continue;
+        }
         for (const sk of SKILLS) {
           await scene(page);
-          await closeCam(page, DIST);
+          if (/van_kiem_quy_tong|thien_kiem_hoa_hinh/.test(sk)) await gm(page, 'charge', 900);
+          await closeCam(page, WIDE.test(sk) ? 9.5 : DIST);
+          if (WIDE.test(sk)) await page.evaluate(() => { (window as unknown as G).__game!.camPitch = 0.3; });
           const combo = sk === 'skl_phi_kiem';
-          const span = combo ? 3000 : 1700;
+          const span = combo ? 3000 : SPAN[sk] ?? Number(opt('--span', '1700'));
           const act = async () => {
             if (!combo) return press(sk);
             // Combo 3 đòn: bấm theo nhịp game (đồng hồ thật = game / slow), 0,55 s game giữa các đòn.
@@ -257,6 +289,7 @@ async function main(): Promise<void> {
             const q = (a: number[], f: number) => [...a].sort((x, y) => x - y)[Math.floor((a.length - 1) * f)];
             console.log(`[perf] ${sk} ${pass} ${OLD ? 'cu' : 'moi'}: draw p50/max ${q(p.dc, 0.5)}/${Math.max(...p.dc)}, tam giác p50/max ${q(p.tri, 0.5)}/${Math.max(...p.tri)}, khung ms p50/p95 ${q(p.ms, 0.5).toFixed(1)}/${q(p.ms, 0.95).toFixed(1)}`);
           }
+          if (args.includes('--debug')) console.log('[dbg]', sk, JSON.stringify(await page.evaluate(() => [(window as unknown as { __fxMsgs: string[] }).__fxMsgs, (window as unknown as G).__game!.skillFx.runner.log.map((x: { type: string }) => x.type)])));
           const tag = `${g === 'm' ? 'nam' : 'nu'}-${sk.replace('skl_', '')}${OLD ? '-cu' : ''}`;
           if (!SHEET_ONLY) {
             const ok = encodeWebm(r.frames, r.t0, path.join(OUT, `${tag}-${pass === 'slow' ? 'cham' : 'that'}.webm`));

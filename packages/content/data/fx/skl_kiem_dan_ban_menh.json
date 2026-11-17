@@ -1,0 +1,168 @@
+{
+ "skill": "skl_kiem_dan_ban_menh",
+ "events": [
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": -0.5,
+   "n": 24,
+   "speed": 1.4,
+   "spread": 1,
+   "life": 0.4,
+   "size": 0.06,
+   "at": "self",
+   "offset": [
+    0,
+    -0.2,
+    0.1
+   ],
+   "inward": true,
+   "tone": "accent",
+   "tier": 1
+  },
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": -0.45,
+   "r": 1.7,
+   "dur": 1.2,
+   "at": "self",
+   "grow": 0.3,
+   "tone": "body",
+   "alpha": 0.85,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.1,
+    0
+   ],
+   "scale": 0.3,
+   "scaleTo": 1.8,
+   "sweep": 0.5,
+   "erodeFrom": 0.4,
+   "tone": "body",
+   "tier": 0,
+   "seed": 3
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.11,
+   "at": "self",
+   "offset": [
+    0,
+    -0.2,
+    0
+   ],
+   "scale": 1.2,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "accent",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "self",
+   "offset": [
+    0.5,
+    -1.0,
+    0.2
+   ],
+   "rot": [
+    -80,
+    0,
+    0
+   ],
+   "scale": [
+    0.3,
+    0.3,
+    0.8
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.7,
+   "tone": "rim",
+   "tier": 0,
+   "seed": 2
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.05,
+   "dur": 0.5,
+   "at": "self",
+   "offset": [
+    -0.5,
+    -1.0,
+    0.2
+   ],
+   "rot": [
+    -80,
+    0,
+    0
+   ],
+   "scale": [
+    0.3,
+    0.3,
+    0.8
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.7,
+   "tone": "body",
+   "tier": 1,
+   "seed": 4
+  },
+  {
+   "type": "mesh",
+   "shape": "helix",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    1.2,
+    1.2,
+    2.2
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.5,
+   "spin": 520,
+   "follow": true,
+   "tone": "accent",
+   "tier": 1,
+   "seed": 7
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 22,
+   "speed": 3.5,
+   "spread": 1,
+   "life": 0.5,
+   "size": 0.05,
+   "at": "self",
+   "tone": "rim",
+   "tier": 0
+  }
+ ]
+}

@@ -398,9 +398,19 @@ const GEST = {
     f5: { hipsPos: [0, -0.08, 0], hipsRot: [0, 0, 0], spine: [-10, 0, 0], head: [-26, 0, 0], handR: [-0.16, 0.86, 0.2], elbowR: [-0.8, 0, -0.1], handL: [0.16, 0.86, 0.2], elbowL: [0.8, 0, -0.1], footR: [-0.14, 0, 0.14], footL: [0.18, 0, -0.34] },
   },
 };
+/** VFX-V2: cường điệu cử chỉ của các chiêu cơ bản Kiếm tu (thân/hông/đầu lệch khỏi thế thủ nhiều hơn `k` lần; tay giữ nguyên để không vượt tầm). */
+const AMP = { loi_dinh: 1.35, ho_the: 1.5, hoi_nguyen: 1.3 };
+function amplify(f, k) {
+  const o = { ...f };
+  o.hipsPos = [f.hipsPos[0], GUARD.hipsPos[1] + (f.hipsPos[1] - GUARD.hipsPos[1]) * k, f.hipsPos[2]];
+  o.spine = [GUARD.spine[0] + (f.spine[0] - GUARD.spine[0]) * k, f.spine[1], f.spine[2]];
+  o.head = [GUARD.head[0] + (f.head[0] - GUARD.head[0]) * k, f.head[1], f.head[2]];
+  return o;
+}
 for (const [id, g] of Object.entries(GEST)) {
-  const f3 = { ...GUARD, ...g.f3 };
-  const f5 = { ...GUARD, ...g.f5 };
+  const k = AMP[id] ?? 1;
+  const f3 = k === 1 ? { ...GUARD, ...g.f3 } : amplify({ ...GUARD, ...g.f3 }, k);
+  const f5 = k === 1 ? { ...GUARD, ...g.f5 } : amplify({ ...GUARD, ...g.f5 }, k);
   emit(id, g.skill, SK.get(g.skill).hitAt[0], false, (w, rec) => frames({ w, rec, voice: g.voice, f3, f5, nine: false }));
 }
 

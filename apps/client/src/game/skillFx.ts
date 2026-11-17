@@ -82,6 +82,13 @@ export function replacedFx(kind: string): boolean {
   return false;
 }
 
+/** Timeline kích hoạt theo `S.FX` loại `kind` (đúng công pháp nếu timeline ghi `method`). */
+export function fxTriggered(kind: string, method: string | undefined) {
+  if (!TL_ON) return undefined;
+  for (const tl of FX_TIMELINE.values()) if (tl.trigger === 'fx' && tl.fxKind === kind && (!tl.method || tl.method === method)) return tl;
+  return undefined;
+}
+
 /** Bùng nổ hẹn giờ: bắt đầu `BURST_LEAD` trước `hitAt` để đỉnh sáng rơi đúng hitAt (±0,05 s). */
 interface PendingBurst {
   sid: string;
@@ -176,6 +183,18 @@ export class SkillFx {
       if (i >= 0) this.pending.splice(i, 1);
       this.onHit(actor, def, mine, ult, color);
     } else if (e.kind === 'cancel' || e.kind === 'end') this.dropPending(sid);
+  }
+
+  /** Phát timeline kích hoạt theo S.FX (lướt...) cho `sid`. */
+  startFromFx(sid: string, tl: import('@dtl/shared').FxTimeline): void {
+    if (!K6_ON) return;
+    const actor = this.env.player(sid);
+    if (!actor) return;
+    const mine = sid === this.env.mySid();
+    const cam = this.env.camera();
+    const dist = Math.hypot(actor.x - cam.position.x, actor.z - cam.position.z);
+    if (!mine && !othersAllowed(dist, this.v.pool.live)) return;
+    this.runner.startFx(sid, actor, SKILL.get(tl.skill), tl, mine, dist, this.env.myMethod());
   }
 
   private dropPending(sid: string): void {
@@ -376,3 +395,6 @@ export class SkillFx {
     }
   }
 }
+
+// Bản dev: công cụ đo sân đông (`pnpm shots:vfx --crowd N`) lấy timeline/chiêu để cho người giả ra chiêu.
+if (import.meta.env.DEV && typeof window !== 'undefined') (window as unknown as { __fxTimelines: unknown }).__fxTimelines = { get: (id: string) => FX_TIMELINE.get(id), skill: (id: string) => SKILL.get(id) };

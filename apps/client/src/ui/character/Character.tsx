@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { realmName, t } from '@dtl/content';
 import { Tabs } from '../kit';
+import { ngjHud, type RailTab, TabRail } from '../ngj';
 import { closePanel, useUI } from '../store';
 import { Window } from '../windows/common';
 import { Attributes } from './Attributes';
@@ -10,6 +11,11 @@ import { charPower } from './stats';
 import './character.css';
 
 type TabId = 'overview' | 'attrs' | 'settrain';
+const RAIL: (Omit<RailTab, 'label'> & { id: TabId })[] = [
+  { id: 'overview', icon: 'character' },
+  { id: 'attrs', icon: 'stone' },
+  { id: 'settrain', icon: 'forge' },
+];
 
 /** Bảng nhân vật (TD-C): ba tab Tổng quan / Thuộc tính / Bộ & tu luyện; tiêu đề có Lực chiến. */
 export function Character() {
@@ -18,6 +24,13 @@ export function Character() {
   const [tab, setTab] = useState<TabId>('overview');
   if (!char) return null;
   const power = charPower(char.level, equip, char.root, char);
+  const body = (
+    <>
+      {tab === 'overview' && <Overview />}
+      {tab === 'attrs' && <Attributes />}
+      {tab === 'settrain' && <SetTrain />}
+    </>
+  );
   return (
     <Window
       title={char.name}
@@ -26,19 +39,26 @@ export function Character() {
       cls="char"
       width={560}
     >
-      <Tabs
-        label={t('ui.char.tabs')}
-        value={tab}
-        onChange={(id) => setTab(id as TabId)}
-        items={[
-          { id: 'overview', label: t('ui.char.tab.overview') },
-          { id: 'attrs', label: t('ui.char.tab.attrs') },
-          { id: 'settrain', label: t('ui.char.tab.settrain') },
-        ]}
-      />
-      {tab === 'overview' && <Overview />}
-      {tab === 'attrs' && <Attributes />}
-      {tab === 'settrain' && <SetTrain />}
+      {ngjHud ? (
+        <div className="ngj-char">
+          <TabRail label={t('ui.char.tabs')} material="paper" value={tab} onChange={(id) => setTab(id as TabId)} items={RAIL.map((r) => ({ ...r, label: t('ui.char.tab.' + r.id) }))} />
+          <div className="ngj-char-body">{body}</div>
+        </div>
+      ) : (
+        <>
+          <Tabs
+            label={t('ui.char.tabs')}
+            value={tab}
+            onChange={(id) => setTab(id as TabId)}
+            items={[
+              { id: 'overview', label: t('ui.char.tab.overview') },
+              { id: 'attrs', label: t('ui.char.tab.attrs') },
+              { id: 'settrain', label: t('ui.char.tab.settrain') },
+            ]}
+          />
+          {body}
+        </>
+      )}
     </Window>
   );
 }
