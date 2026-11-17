@@ -1,5 +1,7 @@
 # UI-0 "Ngọc Giản Kim Văn": bảng phong cách và mockup (cần duyệt ảnh)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/ui-ngoc-gian/<file>`.
+
 Chỉ có **ảnh duyệt**, chưa sửa dòng code client nào. UI-1 trở đi chỉ làm sau khi bạn duyệt. Kế hoạch: mục 3 và 6 của "Kế hoạch trùng tu giao diện".
 
 Ảnh gốc (PNG, ~1672×941, 16:9) ở `D:/METAGRIT/dtl-asset-source/2d/ui-ngoc-gian/` kèm `<id>.prompt.txt`; ở đây là bản WebP nén, mockup đã phóng lên 1920×1080 (cố tình để duyệt bố cục, chưa phải ảnh xuất cuối). Sinh bằng Codex: `node tools/codex-assets/ui-ngoc-gian-gen.mjs [id…] [--jobs 2] [--force]` (không Tripo, không API key). Ảnh tham khảo thương mại của bạn chỉ để học nguyên lý, không đưa vào repo, không đưa vào prompt.
@@ -31,9 +33,9 @@ Phẩm chất vật phẩm giữ màu cũ (lục / lam / tím / vàng) nhưng th
 
 | Mockup | Trước |
 | --- | --- |
-| `mock-hud-lac-kiem` (khung nhân vật, minimap, thanh chiêu 9 ô bát giác, nút hệ thống, theo dõi nhiệm vụ, chat, cartouche tên bản đồ) | `truoc-hud-lac-kiem.jpg` |
-| `mock-hud-van-hai` (thêm thanh boss, cartouche Vân Hải) | (cùng ảnh trước; nền là ảnh chụp Vân Hải `docs/e3i-art/sau/e3i-toan-canh-dao.jpg`) |
-| `mock-bang-nhan-vat` (giấy ngà tường vân, ô trang bị **thoi**, ô trang sức đầu dùng icon trâm, mô hình 3D giữa vòng đồng tâm, chỉ số) | `truoc-bang-nhan-vat.jpg` |
+| `mock-hud-lac-kiem` (khung nhân vật, minimap, thanh chiêu 9 ô bát giác, nút hệ thống, theo dõi nhiệm vụ, chat, cartouche tên bản đồ) | `truoc-hud-lac-kiem.webp` |
+| `mock-hud-van-hai` (thêm thanh boss, cartouche Vân Hải) | (cùng ảnh trước; nền là ảnh chụp Vân Hải `docs/e3i-art/sau/e3i-toan-canh-dao.webp`) |
+| `mock-bang-nhan-vat` (giấy ngà tường vân, ô trang bị **thoi**, ô trang sức đầu dùng icon trâm, mô hình 3D giữa vòng đồng tâm, chỉ số) | `truoc-bang-nhan-vat.webp` |
 | `mock-chon-cong-phap` (băng chuyền thẻ, thẻ chọn phóng to, vòng tròn đồng tâm nền, số triện, thanh số La Mã) | `truoc-chon-cong-phap.jpg` (bảng Công pháp hiện tại) |
 
 ## Kiểm chữ tiếng Việt
@@ -59,3 +61,8 @@ Lưu ý:
 - **Chữ triện**: dùng font triện có giấy phép OFL cắt tập con (chỉ 一–九 và vài chữ cảnh giới, vài KB), qua `tools/fonts/subset.py`; ngoài ra giữ font serif hiện có cho tiêu đề.
 - **Mockup chọn công pháp**: thẻ là CSS 3D nhẹ (`transform: scale + translateZ`), vòng tròn đồng tâm là SVG `<circle>` xoay chậm bằng CSS, tắt khi bật "Giảm chuyển động".
 - **Ngân sách**: tổng asset UI mới < 300 KB WebP + SVG; không đẩy CPU quá 1 ms/khung. Tranh minh họa lớn (màn tải, chọn bản đồ) vẫn là chuyện của UI-4, nạp lười.
+
+## Ảnh then chốt
+
+- [`mock-hud-lac-kiem.webp`](mock-hud-lac-kiem.webp)
+- [`mock-hud-van-hai.webp`](mock-hud-van-hai.webp)

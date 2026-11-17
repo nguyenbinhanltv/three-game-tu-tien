@@ -1,5 +1,7 @@
 # E2 asset 2D Codex (Kết Đan trở đi)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2-codex-assets/<file>`.
+
 Cùng quy trình PR #93–#95 (`docs/codex-assets/`): `node tools/codex-assets/gen.mjs <icons|portraits|loading>` (Codex + công cụ ảnh tích hợp, không Tripo, không API key), nguồn PNG + prompt ở `../dtl-asset-source/2d/<nhóm>/`, đóng gói `pack.mjs`, atlas `pnpm icons:build`. Không đổi logic, chỉ trường `icon` (đã có sẵn) và asset.
 
 ## Kiểm kê trên origin/main (trước khi làm)
@@ -21,11 +23,11 @@ Chưa có trên main nên chưa gắn (ảnh đã vẽ, để sẵn): NPC chươ
 
 ## Đã làm
 
-- **49 icon** (`tools/codex-assets/icons.json`, 128 px/ô vào atlas, thêm hàng LICENSES): hud 467 KB (trước 342), items 535 KB (trước 376). Bảng `hud`/`items` vẫn tách như T7, `items` nạp lười. Ảnh: `icons-grid.jpg` (49 icon + 2 icon chờ ở cuối), `bag-bac2.jpg`, `method-bac2.jpg`.
-- **9 chân dung** (`portraits.json`; 480×640 WebP ~45 KB/ảnh, nạp lười khi khung hiện): gắn tự động theo id quái cho boss Địa Mạch Long và 3 tinh anh Đoạn Mạch (`BossBar`, `TargetFrame`). Ảnh: `portraits-grid.jpg`, `boss-dia-mach-long.jpg`, `elite-ho-mach-khoi-tuong.jpg`.
-- **6 màn tải** (`loading.json`, 1600×900 WebP): `doan_mach` gắn theo level (`bootArt.ts` `LEVEL_ART`, `rememberLevel` ở `Game.enterLevel` nên màn tải của chính lần chuyển level đã hiện tranh đích), `phuc_mach_quat` đã khai trong `LEVEL_ART` chờ level. Ảnh: `loading-grid.jpg`, `loading-doan-mach.jpg`.
-- **Thẻ chương**: `chuong_2` và `ket_dan` làm tranh nền mờ (mặt nạ elip, 42%) sau chữ của thẻ `ch2` / `ascend_kd` (`Hud.tsx` `CARD_ART`, `.chapter-art`); thiếu ảnh thì như cũ. Ảnh: `chapter-ch2.jpg`.
-- Ý tưởng bản đồ sau: `van_hai_phu_dao` (Nguyên Anh), `thien_khuyet_co_thanh` (Hóa Thần) trong `loading-grid.jpg`; đã đóng gói trong `art/loading/`, chưa gắn.
+- **49 icon** (`tools/codex-assets/icons.json`, 128 px/ô vào atlas, thêm hàng LICENSES): hud 467 KB (trước 342), items 535 KB (trước 376). Bảng `hud`/`items` vẫn tách như T7, `items` nạp lười. Ảnh: `icons-grid.webp` (49 icon + 2 icon chờ ở cuối), `bag-bac2.webp`, `method-bac2.jpg`.
+- **9 chân dung** (`portraits.json`; 480×640 WebP ~45 KB/ảnh, nạp lười khi khung hiện): gắn tự động theo id quái cho boss Địa Mạch Long và 3 tinh anh Đoạn Mạch (`BossBar`, `TargetFrame`). Ảnh: `portraits-grid.webp`, `boss-dia-mach-long.jpg`, `elite-ho-mach-khoi-tuong.jpg`.
+- **6 màn tải** (`loading.json`, 1600×900 WebP): `doan_mach` gắn theo level (`bootArt.ts` `LEVEL_ART`, `rememberLevel` ở `Game.enterLevel` nên màn tải của chính lần chuyển level đã hiện tranh đích), `phuc_mach_quat` đã khai trong `LEVEL_ART` chờ level. Ảnh: `loading-grid.webp`, `loading-doan-mach.jpg`.
+- **Thẻ chương**: `chuong_2` và `ket_dan` làm tranh nền mờ (mặt nạ elip, 42%) sau chữ của thẻ `ch2` / `ascend_kd` (`Hud.tsx` `CARD_ART`, `.chapter-art`); thiếu ảnh thì như cũ. Ảnh: `chapter-ch2.webp`.
+- Ý tưởng bản đồ sau: `van_hai_phu_dao` (Nguyên Anh), `thien_khuyet_co_thanh` (Hóa Thần) trong `loading-grid.webp`; đã đóng gói trong `art/loading/`, chưa gắn.
 
 ## Việc để lại / cách gắn id mới
 

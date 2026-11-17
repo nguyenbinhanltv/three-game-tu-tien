@@ -1,5 +1,7 @@
 # E3-F · Trang bị bậc 3, Thăng Bậc 2 → 3, ba bộ Vân Hải, đan bậc 3
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3f-gear/<file>`.
+
 Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 20–23, hệ số dòng chính `TIER_MUL[3]` = 2,5) chơi được: `TIER_OPEN = 3`. Bậc 4 (Thiên Khuyết, cấp 24–27) vẫn khóa cho E4.
 
 > **Lệch chữ so với đề bài.** Đề ghi "bậc 3 (cấp 24–27)". Bảng 7.1 của `docs/EXPANSION_DESIGN.md` đặt bậc 3 = chương 3 Vân Hải, `reqLevel` 20–23, còn cấp 24–27 là bậc 4 (Tinh Khuyết). Gói này theo thiết kế (bậc 3, cấp 20); đồ cấp 24–27 là bậc 4, thuộc E4.
@@ -32,7 +34,7 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
 
 ## Icon (Codex, không tốn credit)
 
-27 icon mới (`tools/codex-assets/icons.json`, vẽ bằng `node tools/codex-assets/gen.mjs icons <id…>`; PNG nguồn ở `../dtl-asset-source/2d/icons/`), thêm hàng LICENSES, `pnpm icons:build` rồi `pnpm icons:check`: **168/168 có tranh, 0 emoji dự phòng**. Ảnh: `icons-grid.jpg`.
+27 icon mới (`tools/codex-assets/icons.json`, vẽ bằng `node tools/codex-assets/gen.mjs icons <id…>`; PNG nguồn ở `../dtl-asset-source/2d/icons/`), thêm hàng LICENSES, `pnpm icons:build` rồi `pnpm icons:check`: **168/168 có tranh, 0 emoji dự phòng**. Ảnh: `icons-grid.webp`.
 
 ## Kinh tế và cân bằng (`pnpm sim:progress`)
 
@@ -56,7 +58,7 @@ Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, ch
 
 ## Ảnh
 
-- UI: `ui-promote-truoc.jpg` (bảng Thăng Bậc, bốn món Liệt Mạch → Kính Quang, phí 2.960), `ui-promote-tooltip-bac2.jpg`, `ui-promote-sau.jpg`, `ui-promote-tooltip-bac3.jpg` (tooltip đạo bào bậc 3 + dòng bộ 1/4 + hiệu ứng 4 món), `ui-forge-bac3.jpg` (tab chế tạo, ba bộ mới), `ui-luyen-dan-bac3.jpg`, `ui-tooltip-so-sanh-bac3.jpg` (tooltip so sánh với đồ bậc 2 đang mặc: chỉ số tăng xanh, mất đỏ, **Lực chiến +116**), `icons-grid.jpg` (28 icon mới).
+- UI: `ui-promote-truoc.jpg` (bảng Thăng Bậc, bốn món Liệt Mạch → Kính Quang, phí 2.960), `ui-promote-tooltip-bac2.jpg`, `ui-promote-sau.webp`, `ui-promote-tooltip-bac3.jpg` (tooltip đạo bào bậc 3 + dòng bộ 1/4 + hiệu ứng 4 món), `ui-forge-bac3.jpg` (tab chế tạo, ba bộ mới), `ui-luyen-dan-bac3.jpg`, `ui-tooltip-so-sanh-bac3.webp` (tooltip so sánh với đồ bậc 2 đang mặc: chỉ số tăng xanh, mất đỏ, **Lực chiến +116**), `icons-grid.webp` (28 icon mới).
 - Nhân vật mặc 3 bộ mới, nam và nữ: `set_<bộ>-<m|f>-<truoc|sau|nghieng|chem>.jpg` (cũng chụp lúc chạy và lúc bay: tệp `-chay|-bay` được bỏ khỏi repo cho nhẹ; chạy lại `pnpm shots:sets --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20` để có).
 - Kiếm Kính Quang bậc 3 (nam và nữ × đeo lưng / cầm tay / chém): `kiem-kinh_quang-<m|f>-<deo-lung|cam-tay|chem>.jpg` (chụp bằng `shots:kiem --model prop_kiem_kinh_quang --gender m|f`).
 
@@ -67,5 +69,9 @@ Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, ch
 
 ## Chỉnh sau soát ảnh (orchestrator)
 
-- **Ủng phụ kiện** (`setAccessories.ts` `cuff`, dùng chung cho mọi bộ có ô ủng): số đo bắp chân chặn ở 0,056 (đo theo xương cẳng chân bị vạt áo kéo to nên ra "cái xô"), ống thon 26% từ cổ ủng xuống mắt cá, cổ loe nhẹ, cao tới quá nửa ống chân (từ 45% xương cẳng chân), vòng viền mảnh, 12 cạnh để giữ ngân sách tam giác (< 3.000 mỗi bộ). Ảnh chụp lại: `set_*-{m,f}-{truoc,nghieng,sau,chem}.jpg` (khung cắt cao thêm 40 px để thấy ủng).
-- **Ngưng Đan Lô** (`artifactVis.ts` `idlePose/activePose('heal')`): cỡ 1,25 → 0,68 (−46%); nghỉ ở sau lưng (z −0,46), cao ngang vai (y 1,48), lệch vai phải (x −0,3), lắc lư và nhấp nhô nhẹ; vận chiêu (T) bay ra trước mặt tầm ngực (z 1,0, cỡ 1,1) thay vì lên trên đầu. Bảng nhân vật 3D vẫn hiện lô nhỏ sau vai: `ui-bang-nhan-vat.jpg`. Test `artifactVis.test.ts` cập nhật.
+- **Ủng phụ kiện** (`setAccessories.ts` `cuff`, dùng chung cho mọi bộ có ô ủng): số đo bắp chân chặn ở 0,056 (đo theo xương cẳng chân bị vạt áo kéo to nên ra "cái xô"), ống thon 26% từ cổ ủng xuống mắt cá, cổ loe nhẹ, cao tới quá nửa ống chân (từ 45% xương cẳng chân), vòng viền mảnh, 12 cạnh để giữ ngân sách tam giác (< 3.000 mỗi bộ). Ảnh chụp lại: `set_*-{m,f}-{truoc,nghieng,sau,chem}.webp` (khung cắt cao thêm 40 px để thấy ủng).
+- **Ngưng Đan Lô** (`artifactVis.ts` `idlePose/activePose('heal')`): cỡ 1,25 → 0,68 (−46%); nghỉ ở sau lưng (z −0,46), cao ngang vai (y 1,48), lệch vai phải (x −0,3), lắc lư và nhấp nhô nhẹ; vận chiêu (T) bay ra trước mặt tầm ngực (z 1,0, cỡ 1,1) thay vì lên trên đầu. Bảng nhân vật 3D vẫn hiện lô nhỏ sau vai: `ui-bang-nhan-vat.webp`. Test `artifactVis.test.ts` cập nhật.
+
+## Ảnh then chốt
+
+- [`set_kinh_quang-m-truoc.webp`](set_kinh_quang-m-truoc.webp)

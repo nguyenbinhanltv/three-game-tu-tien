@@ -1,5 +1,7 @@
 # E1-E: nguyên tắc quái mở rộng
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e1e-monskill/<file>`.
+
 Bảy kiểu chiêu mới cho quái thường, tinh anh và boss, khai báo trong `ai` của `monsters.json` (cũng ghi đè theo pha boss qua `phases[].ai`, `null` để bỏ). Chưa quái nào dùng: E2-B (Địa Mạch Long, Thôn Mạch Ngô Công Vương) và E2-C (Thạch Tâm Khôi Vương) gắn vào bằng dữ liệu.
 
 Mã: kiểu dữ liệu `packages/shared/src/types.ts` (`MonsterLine`…`MonsterReveal`), hàm thuần `packages/shared/src/monskill.ts`, trạng thái và hook `apps/server/src/game/monskill.ts` (`MonSkills`, gắn vào `sim.ts`: `tickMonster`, `damageMonster`, `resetAi`, `breakPosture`, `tryInterrupt`), kiểm `packages/content/src/check.ts` (`checkMonSkills`), client `apps/client/src/game/monFlags.ts` + `Game.monFlagFx`. Test: `apps/server/src/game/monskill.test.ts` (24), `packages/shared/src/monskill.test.ts` (6).
@@ -32,10 +34,10 @@ Mã: kiểu dữ liệu `packages/shared/src/types.ts` (`MonsterLine`…`Monster
 
 | | |
 | --- | --- |
-| ![line](line.jpg) line | ![charge](charge.jpg) charge |
-| ![leap](leap.jpg) leap | ![burrow](burrow-circles.jpg) burrow: ba vòng, quái ẩn |
-| ![cone](burrow-emerge-cone.jpg) burrow: quái trồi, quạt báo | ![reflect](reflect.jpg) reflect: vòng đỏ dưới chân |
-| ![reveal](reveal.jpg) reveal: vòng vàng | ![summon](summon.jpg) summon: vòng báo chỗ đệ tử |
+| ![line](line.webp) line | ![charge](charge.webp) charge |
+| ![leap](leap.webp) leap | ![burrow](burrow-circles.webp) burrow: ba vòng, quái ẩn |
+| burrow: quái trồi, quạt báo | reflect: vòng đỏ dưới chân |
+| reveal: vòng vàng | ![summon](summon.webp) summon: vòng báo chỗ đệ tử |
 
 ## Số đo
 

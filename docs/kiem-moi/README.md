@@ -1,5 +1,7 @@
 # Kiếm riêng theo trang bị (5 model Tripo web)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/kiem-moi/<file>`.
+
 Trước đây mọi pháp kiếm dùng chung kiếm Thanh Phong nướng trong lưới nhân vật. Nay 5 kiếm có model riêng
 (`prop_kiem_*`, lớp ngân sách `weapon`, ≤ 2500–3000 tam giác, texture 512²), cả nam (Thanh Phong) lẫn nữ (Lam Chi).
 

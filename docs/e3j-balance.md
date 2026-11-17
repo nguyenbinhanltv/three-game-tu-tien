@@ -38,11 +38,11 @@ Mọi sát thương vẫn do server phán; client chỉ vẽ. Hàm thuần ở `
 
 | | |
 | --- | --- |
-| Kim Thiền vừa chết: vạch báo vũng độc | ![](e3j-balance/kim_thien-vach-bao.jpg) |
-| Vũng độc (ngọc lục, 6 s) | ![](e3j-balance/kim_thien-vung-doc.jpg) |
-| Kình Vương pha 30%: vòng kéo r 20 (tím) + vùng nổ r 8 | ![](e3j-balance/kinh_vuong-nuot-vach-bao.jpg) |
-| Lúc kéo | ![](e3j-balance/kinh_vuong-nuot-keo.jpg) |
-| Sau khi kéo, chờ nổ | ![](e3j-balance/kinh_vuong-nuot-no.jpg) |
+| Kim Thiền vừa chết: vạch báo vũng độc | ![](e3j-balance/kim_thien-vach-bao.webp) |
+| Vũng độc (ngọc lục, 6 s) | ![](e3j-balance/kim_thien-vung-doc.webp) |
+| Kình Vương pha 30%: vòng kéo r 20 (tím) + vùng nổ r 8 | ![](e3j-balance/kinh_vuong-nuot-vach-bao.webp) |
+| Lúc kéo | ![](e3j-balance/kinh_vuong-nuot-keo.webp) |
+| Sau khi kéo, chờ nổ | ![](e3j-balance/kinh_vuong-nuot-no.webp) |
 
 ## 2. Mô hình nhịp chương 3 trong sim
 

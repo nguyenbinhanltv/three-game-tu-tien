@@ -1,5 +1,7 @@
 # P3-3 Nâng cấp trang bị
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/p3-3/<file>`.
+
 Thiết kế: mục 3.5 và 11 trong "Thiết kế hệ thống thăng tiến nhân vật" (đã duyệt). Phạm vi: cường hóa +10 không vỡ đồ, Hộ Phù, khảm linh ngọc, tẩy luyện dòng phụ, phân giải, ràng buộc, kiếm phát sáng ở +7 và +10.
 
 Tất cả thao tác nâng cấp làm ở Thiết lão (`npc_thiet_lao`, cờ `enhance`), qua bảng Thiết lão trong UI (`apps/client/src/ui/UpgradeTabs.tsx`, dùng `ui/kit`).
@@ -35,4 +37,4 @@ Nguồn: ngọc cấp 1 rơi từ quái (tỉ lệ thấp) và tinh anh; ngọc 
 
 ## Ảnh
 
-Chụp bằng Chrome + GPU thật (RTX 3060 Ti, WebGPU), tắt tiếng: `sword-plus0/7/10.png` (kiếm ở +0, +7, +10), `ui-enhance.png`, `ui-gem.png`, `ui-refine.png`, `ui-salvage.png`.
+Chụp bằng Chrome + GPU thật (RTX 3060 Ti, WebGPU), tắt tiếng: `sword-plus0/7/10.png` (kiếm ở +0, +7, +10), `ui-enhance.webp`, `ui-gem.webp`, `ui-refine.webp`, `ui-salvage.webp`.

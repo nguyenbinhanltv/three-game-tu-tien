@@ -1,5 +1,7 @@
 # Nhập 12 tinh anh Tripo (E-1b)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/elite-assets/<file>`.
+
 2026-11-16 · đi kèm `docs/ASSET_CONCEPTS.md` (ưu tiên 1) và `docs/EXPANSION_DESIGN.md`.
 
 Người dùng dựng 12 tinh anh trên Tripo web (`<DTL_ASSET_SOURCE>/mon/elite_*/tripo/{raw_v01,rig_v01}.glb`). Nhập theo pipeline
@@ -59,67 +61,36 @@ GPU thật (Chrome, WebGPU), tắt tiếng, chụp trong trang xem asset (`?show
 
 ![elite_xich_dien_ho bốn góc](elite_xich_dien_ho-stills.webp)
 
-![elite_xich_dien_ho animation](elite_xich_dien_ho-anim.webp)
 
 ### Cự Nham Viên (`elite_cu_nham_vien`)
 
-![elite_cu_nham_vien bốn góc](elite_cu_nham_vien-stills.webp)
-
-![elite_cu_nham_vien animation](elite_cu_nham_vien-anim.webp)
 
 ### Xích Sa Ngô Công (`elite_xich_sa_ngo_cong`)
 
-![elite_xich_sa_ngo_cong bốn góc](elite_xich_sa_ngo_cong-stills.webp)
-
-![elite_xich_sa_ngo_cong animation](elite_xich_sa_ngo_cong-anim.webp)
 
 ### Hộ Mạch Khôi Tướng (`elite_ho_mach_khoi_tuong`)
 
-![elite_ho_mach_khoi_tuong bốn góc](elite_ho_mach_khoi_tuong-stills.webp)
-
-![elite_ho_mach_khoi_tuong animation](elite_ho_mach_khoi_tuong-anim.webp)
 
 ### Liệt Cốt Báo Vương (`elite_liet_cot_bao`)
 
-![elite_liet_cot_bao bốn góc](elite_liet_cot_bao-stills.webp)
-
-![elite_liet_cot_bao animation](elite_liet_cot_bao-anim.webp)
 
 ### Lôi Vân Sư Vương (`elite_loi_van_su_vuong`)
 
-![elite_loi_van_su_vuong bốn góc](elite_loi_van_su_vuong-stills.webp)
-
-![elite_loi_van_su_vuong animation](elite_loi_van_su_vuong-anim.webp)
 
 ### Kính Diện Ma Quân (`elite_kinh_dien_ma_quan`)
 
-![elite_kinh_dien_ma_quan bốn góc](elite_kinh_dien_ma_quan-stills.webp)
-
-![elite_kinh_dien_ma_quan animation](elite_kinh_dien_ma_quan-anim.webp)
 
 ### Tuyết Vũ Vân Hạc Vương (`elite_van_hac_vuong`)
 
-![elite_van_hac_vuong bốn góc](elite_van_hac_vuong-stills.webp)
-
-![elite_van_hac_vuong animation](elite_van_hac_vuong-anim.webp)
 
 ### Cốt Kiếm Thống Lĩnh (`elite_cot_kiem_thong_linh`)
 
-![elite_cot_kiem_thong_linh bốn góc](elite_cot_kiem_thong_linh-stills.webp)
-
-![elite_cot_kiem_thong_linh animation](elite_cot_kiem_thong_linh-anim.webp)
 
 ### Dạ Minh Lộc Vương (`elite_da_minh_loc_vuong`)
 
-![elite_da_minh_loc_vuong bốn góc](elite_da_minh_loc_vuong-stills.webp)
-
-![elite_da_minh_loc_vuong animation](elite_da_minh_loc_vuong-anim.webp)
 
 ### Thạch Tượng Đại Tướng (`elite_thach_tuong_dai_tuong`)
 
-![elite_thach_tuong_dai_tuong bốn góc](elite_thach_tuong_dai_tuong-stills.webp)
-
-![elite_thach_tuong_dai_tuong animation](elite_thach_tuong_dai_tuong-anim.webp)
 
 ### Trong game, trước và sau (ba con Vân Lam)
 
@@ -127,15 +98,15 @@ GPU thật (Chrome, WebGPU), tắt tiếng, chụp trong trang xem asset (`?show
 
 | | Cũ (khối) | Mới (Tripo) |
 | --- | --- | --- |
-| Huyết Nha Lang · chờ | ![](game-elite_huyet_nha_lang-cu-1-cho.webp) | ![](game-elite_huyet_nha_lang-moi-1-cho.webp) |
+| Huyết Nha Lang · chờ | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 | Huyết Nha Lang · đánh | ![](game-elite_huyet_nha_lang-cu-3-danh.webp) | ![](game-elite_huyet_nha_lang-moi-3-danh.webp) |
-| Huyết Nha Lang · chết | ![](game-elite_huyet_nha_lang-cu-5-chet-b.webp) | ![](game-elite_huyet_nha_lang-moi-5-chet-b.webp) |
-| Xích Diễm Hồ · chờ | ![](game-elite_xich_dien_ho-cu-1-cho.webp) | ![](game-elite_xich_dien_ho-moi-1-cho.webp) |
-| Xích Diễm Hồ · đánh | ![](game-elite_xich_dien_ho-cu-3-danh.webp) | ![](game-elite_xich_dien_ho-moi-3-danh.webp) |
-| Xích Diễm Hồ · chết | ![](game-elite_xich_dien_ho-cu-5-chet-b.webp) | ![](game-elite_xich_dien_ho-moi-5-chet-b.webp) |
-| Cự Nham Viên · chờ | ![](game-elite_cu_nham_vien-cu-1-cho.webp) | ![](game-elite_cu_nham_vien-moi-1-cho.webp) |
-| Cự Nham Viên · đánh | ![](game-elite_cu_nham_vien-cu-3-danh.webp) | ![](game-elite_cu_nham_vien-moi-3-danh.webp) |
-| Cự Nham Viên · chết | ![](game-elite_cu_nham_vien-cu-5-chet-b.webp) | ![](game-elite_cu_nham_vien-moi-5-chet-b.webp) |
+| Huyết Nha Lang · chết | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Xích Diễm Hồ · chờ | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Xích Diễm Hồ · đánh | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Xích Diễm Hồ · chết | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Cự Nham Viên · chờ | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Cự Nham Viên · đánh | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Cự Nham Viên · chết | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 
 ## Số đo
 

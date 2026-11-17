@@ -16,7 +16,7 @@ Chỉ là lớp trình diễn ở client; server không đổi, không đổi s�
 ## Kiểm
 
 - Test: `apps/client/src/game/hitjuice.test.ts` (bảng hit-stop, rung, pitch, lớp âm, FOV, hàng đợi, phím trong lúc khựng), `shake.test.ts` giữ nguyên.
-- `pnpm shots:k7 --out docs/k7-juice` (tắt tiếng, cổng 2603/5203): ảnh dãy khung `combo-3-don.png`, `toi-thuong-can-canh.png`, `boss-giao-chien.png`, nhật ký `k7-log.json`.
+- `pnpm shots:k7 --out docs/k7-juice` (tắt tiếng, cổng 2603/5203): ảnh dãy khung `combo-3-don.webp`, `toi-thuong-can-canh.webp`, `boss-giao-chien.webp`, nhật ký `k7-log.json`.
 - Nhật ký hit → âm (`__sound.hits()`, bản dev, đọc được khi tắt tiếng): trường `synced` = sát thương tới trước khung `hit` nên tiếng xả đúng khung đó. Các lần ghi: độ lệch 0,0–1,2 ms (< 1 khung). Sát thương tới **sau** khung `hit` (trễ mạng, thường 20–230 ms trên máy chạy server cục bộ) phát ngay khi tới, ghi `synced: false`; không thể phát tiếng trúng trước khi biết có trúng.
 - FOV: đo mỗi khung khi tung chiêu tối thượng, đỉnh quan sát 58,0° → 59,35° (+1,36°, lấy mẫu theo khung hình, đỉnh lý thuyết +1,5°).
 - `pnpm bench:client --renderers webgpu,webgl2 --presets medium`: CPU p95 4,1–7,5 ms (< 8 ms), draw call ≤ 135, 0 lỗi console.

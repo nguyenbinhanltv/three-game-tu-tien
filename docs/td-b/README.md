@@ -1,5 +1,7 @@
 # TD-B: khung nhiều cửa sổ và túi đồ mới
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/td-b/<file>`.
+
 Kế hoạch: `ke-hoach-tui-do-nhan-vat.md` mục B. Phần giao thức (INV_SORT/INV_LOCK/INV_SPLIT, 120 ô, `itemCategory`) là gói TD-A.
 
 ## Khung cửa sổ (`apps/client/src/ui/windows/`)
@@ -30,8 +32,16 @@ Hàng 8 ô trang bị không còn trong túi (đã có ở bảng Nhân vật).
 
 ## Kiểm
 
-`pnpm shots:tdb --out <thư mục> [--size 1280x720]` (cần server có TD-A): tự kiểm 20 điều (B+C không chồng, kéo tiêu đề + lưu vị trí, Esc, tab, tìm, sắp xếp, kéo ô/trang/ô trang bị, tách, khóa) và chụp ảnh. Ảnh trong thư mục này: `*-1280x720.jpg`, `*-1920x1080.jpg`.
+`pnpm shots:tdb --out <thư mục> [--size 1280x720]` (cần server có TD-A): tự kiểm 20 điều (B+C không chồng, kéo tiêu đề + lưu vị trí, Esc, tab, tìm, sắp xếp, kéo ô/trang/ô trang bị, tách, khóa) và chụp ảnh. Ảnh trong thư mục này: `*-1280x720.webp`, `*-1920x1080.webp`.
 
 Ghi chú: Chromium headless không bắt đầu kéo khi Shift đã giữ từ lúc nhấn chuột, nên kịch bản nhấn Shift ngay trước khi thả; client đọc Shift cả lúc bắt đầu kéo lẫn lúc thả.
 
 Đo: `pnpm size` 2,68 MB / 30 MB; `pnpm bench:client` đạt cả 18 ô, draw call sân tông môn 92/124/149 (thấp/vừa/cao) như trước (bảng là DOM, không thêm draw call 3D).
+
+## Ảnh then chốt
+
+- [`01-bag-1280x720.webp`](01-bag-1280x720.webp)
+- [`01-bag-1920x1080.webp`](01-bag-1920x1080.webp)
+- [`02-bag-char-1920x1080.webp`](02-bag-char-1920x1080.webp)
+- [`06-tim-kiem-1920x1080.webp`](06-tim-kiem-1920x1080.webp)
+- [`09-keo-tha-o-1920x1080.webp`](09-keo-tha-o-1920x1080.webp)
