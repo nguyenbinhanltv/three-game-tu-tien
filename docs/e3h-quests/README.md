@@ -1,5 +1,7 @@
 # E3-H: nhiệm vụ chương 3 · Vân Hải
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3h-quests/<file>`.
+
 9 nhiệm vụ chính (`q3_*`) + 2 phụ (`s3_*`), NPC Lâm Chiếu Dung và Tô Vãn Ngư (bản Phù Đảo Các, id `npc_to_van_ngu_hai`). Mẫu: E2-H (`docs/e2h-quests/`). Toàn bộ dùng loại mục tiêu sẵn có (`kill`, `gather`, `talk`, `scan`, `dungeon`, `breakthrough`), không thêm mã server mới.
 
 ## Chuỗi

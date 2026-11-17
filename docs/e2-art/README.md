@@ -1,5 +1,7 @@
 # E2-I: mỹ thuật Đoạn Mạch Cổ Cốc
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2-art/<file>`.
+
 Gói E2-I (`docs/EXPANSION_DESIGN.md` 11.2). Chỉ hình/âm, không đụng sim server.
 
 | Hạng mục | Làm gì | Ở đâu |
@@ -10,7 +12,7 @@ Gói E2-I (`docs/EXPANSION_DESIGN.md` 11.2). Chỉ hình/âm, không đụng sim
 | Mood | Ba preset `ochre_dawn` / `ochre` / `ochre_night` (nắng hổ phách, sương bụi, bóng xanh xám, đêm lam); `?mood=dawn|day|night` chọn biến thể cùng thời điểm | `assets/palette.json`, `render/grading.ts` `moodVariant`, `sky.ts`, `atmosphere.ts` |
 | Nhạc | Bài `wild_ochre` tự soạn (D yu, 68 BPM, 40 ô, nhị hồ + đàn tranh, 2:21) cho vùng wild của `doan_mach`; chiến đấu dùng `combat` (không có stem) | `tools/audio/compose/wild_ochre.mjs`, `music.json`, `musicDirector.ts` `regionTrack(…, level)` |
 
-Ảnh: mỗi tệp `*.jpg` là **trước (E2-A) | sau, ngày | sau, đêm** (`pnpm shots:e2a --out <thư mục> [--query mood=night]`). `ochre-layers.jpg`: 8 lớp mặt đất; `cards-atlas.jpg`: atlas thẻ cỏ.
+Ảnh: mỗi tệp `*.webp` là **trước (E2-A) | sau, ngày | sau, đêm** (`pnpm shots:e2a --out <thư mục> [--query mood=night]`). `ochre-layers.webp`: 8 lớp mặt đất; `cards-atlas.jpg`: atlas thẻ cỏ.
 
 ## Số đo (Chrome headless, WebGPU, Vừa, 1280×720, sân Đoạn Mạch)
 
@@ -24,3 +26,10 @@ Gói E2-I (`docs/EXPANSION_DESIGN.md` 11.2). Chỉ hình/âm, không đụng sim
 - `wild_ochre`: chỗ nối vòng lặp 2,3 (các bài khác 0,4–0,6) mới nghe ra nhẹ; chưa tách stem giao chiến, chưa có `cave_lull`/`boss_dia_mach`.
 - Mặt nạ mặt đất `neutral` (chưa có đường mòn/cát riêng); chưa có nước/khe nứt phát sáng.
 - Console có cảnh báo `THREE.TSL: Vertex attribute "normal" not found` (5 lần) **không do PR này**: vẫn còn khi tắt cỏ, prop, cột sáng, gộp VFX, K6 và texture mặt đất; nguồn chưa rõ (chưa so với main).
+
+## Ảnh then chốt
+
+- [`boss-dia-mach-long.webp`](boss-dia-mach-long.webp)
+- [`poi-mach-tinh-tru.webp`](poi-mach-tinh-tru.webp)
+- [`zone-cuu-mo-khu.webp`](zone-cuu-mo-khu.webp)
+- [`zone-sa-thach-pha.webp`](zone-sa-thach-pha.webp)

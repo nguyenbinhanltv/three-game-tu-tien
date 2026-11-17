@@ -1,5 +1,7 @@
 # UI-4: màn đặc trưng kiểu Ngọc Giản
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/ui-ngoc-gian/screens/<file>`.
+
 `?ngj=0` về bản cũ (cùng cờ UI-2/UI-3). Ảnh `<màn>-truoc-*` (cũ) và `<màn>-sau-*` (mới), 1080p/1440p, `?mute=1`; video webm 1280×720 (3 đoạn ~2 MB) chỉ cho bản mới. Chụp lại: `pnpm --filter @dtl/perf shots:ui4 --out <thư mục tuyệt đối> [--scenes dang-nhap,man-tai,bang-chuyen,do-kiep,ban-do] [--variants truoc,sau] [--video 0]`.
 
 | Màn | Thay đổi | Ảnh / video |

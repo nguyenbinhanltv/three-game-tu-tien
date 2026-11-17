@@ -1,5 +1,7 @@
 # CHR-ROLLOUT 1: nhân vật nền v2 (tùy chọn `?chr=v2`; mặc định VẪN là v1)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/chr-v2-rollout/<file>`.
+
 > **Cập nhật (người dùng chọn phương án A):** mặc định giữ **v1** (hai model Tripo cũ); v2 chỉ bật bằng `?chr=v2`. Ảnh xác nhận: `mac-dinh-v1.webp` (trái: không tham số = v1; phải: `?chr=v2`). Phần mã tốt được giữ: chọn tóc A/B (hàng chọn tóc ở màn tạo nhân vật chỉ hiện khi bật v2, server vẫn lưu `hair`), prefetch theo tóc (chỉ khi v2), áo nạp lười, nén WebP. Bộ đạo bào thủ tục (tân thủ, Lạc Kiếm...) chỉ chạy dưới `?chr=v2`, không còn nằm trên đường mặc định.
 
 ![](mac-dinh-v1.webp)
@@ -30,13 +32,8 @@ CPU p95 vượt 8 ms ở cả hai (đã vượt trước PR này), v2 thêm ~0,6
 Tệp `<tan-thu|lac-kiem|liet-mach>-<nam|nu>-<matcan|matgan|toanthan|chay|chem|datoa>.webp` (trái = `?chr=v1`, phải = v2) và `toc-b-<tan-thu|lac-kiem>-<nam|nu>.webp` (tóc B). Sinh bằng `pnpm --filter @dtl/perf run shots:chrv2 --out <thư mục>`.
 
 ![](man-tao-nhan-vat-chon-toc.webp)
-![](tan-thu-nam-matgan.webp)
 ![](tan-thu-nam-toanthan.webp)
-![](tan-thu-nu-toanthan.webp)
-![](lac-kiem-nam-chay.webp)
 ![](lac-kiem-nu-chem.webp)
-![](liet-mach-nam-datoa.webp)
-![](toc-b-tan-thu-nam.webp)
 ![](toc-b-tan-thu-nu.webp)
 
 ## Giới hạn

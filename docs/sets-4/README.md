@@ -1,5 +1,7 @@
 # SETS-4 · Trang bị bậc 4 (Hóa Thần): ba bộ, Tinh Khuyết Kiếm, mở Thăng Bậc 3 → 4
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/sets-4/<file>`.
+
 Bậc 4 (Thiên Khuyết, `reqLevel` 24, hệ số dòng chính `TIER_MUL[4]` = 3,8) chơi được: `TIER_OPEN = 4`. Hình trang phục đã nhập từ #157/#160/#162; PR này thêm vật phẩm và dữ liệu.
 
 ## Dữ liệu

@@ -64,10 +64,10 @@ Một tham số sai (mã cảnh giới lạ, tọa độ ngoài bản đồ) th�
 
 ## Ảnh
 
-![Bảng F3 ở 1280×720](f3-1280.jpg)
+![Bảng F3 ở 1280×720](f3-1280.webp)
 
-![Khung va chạm](f3-khung-va-cham-1280.jpg)
+![Khung va chạm](f3-khung-va-cham-1280.webp)
 
-![Độ kiếp kích từ nút](f3-do-kiep-1280.jpg)
+![Độ kiếp kích từ nút](f3-do-kiep-1280.webp)
 
-![Bảng F3 ở 1920×1080](f3-1920.jpg)
+![Bảng F3 ở 1920×1080](f3-1920.webp)

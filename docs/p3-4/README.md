@@ -23,9 +23,9 @@ Lưu ý: thiết kế ghi cả Huyền Giáp lẫn Đan Tâm rơi ở đợt 4 (
 
 ## Ảnh (WebGPU, GPU thật, tắt tiếng)
 
-- `tab-che-tao.png`: tab Chế tạo.
-- `bang-nhan-vat-bo-lac-kiem.png`, `tooltip-bo-lac-kiem.png`: thẻ bộ và tooltip.
-- `nhan-vat-4-bo.png`: không bộ và bốn bộ mặc đủ.
+- `tab-che-tao.webp`: tab Chế tạo.
+- `bang-nhan-vat-bo-lac-kiem.webp`, `tooltip-bo-lac-kiem.webp`: thẻ bộ và tooltip.
+- `nhan-vat-4-bo.webp`: không bộ và bốn bộ mặc đủ.
 
 ## Kiểm tra
 

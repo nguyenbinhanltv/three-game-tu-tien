@@ -1,5 +1,7 @@
 # P3-9 Tổ đội và tỉ thí
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/p3-9/<file>`.
+
 Server quyết định mọi thứ; client chỉ gửi ý định (`pty`, `duel`) và hiển thị (`pty`, `inv`, `duel`).
 
 ## Tổ đội (tối đa 4 người)

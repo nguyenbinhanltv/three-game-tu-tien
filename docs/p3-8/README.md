@@ -1,5 +1,7 @@
 # P3-8: pháp bảo phụ và đan dược
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/p3-8/<file>`.
+
 Ngày 2026-11-15. Ba pháp bảo dựng trên Tripo web (H3.1, 3000 mặt, texture 2K, PBR), concept Codex. Ảnh chụp bằng GPU thật (WebGPU, tắt tiếng): `pnpm shots:p38 --out docs/p3-8` (cổng `PORT`/`CLIENT_PORT`).
 
 ## Pháp bảo (ô 8 "Pháp bảo phụ", phím 9 hoặc bấm ô)
@@ -33,9 +35,15 @@ Ngày 2026-11-15. Ba pháp bảo dựng trên Tripo web (H3.1, 3000 mặt, textu
 
 | Ảnh | Nội dung |
 |---|---|
-| `ho-lo-deo.jpg`, `ho-lo-tooltip.jpg`, `ho-lo-kich-hoat*.jpg` | Hồ Lô: đeo, ô thanh chiêu + tooltip, kích hoạt |
-| `linh-deo.jpg`, `linh-tooltip.jpg`, `linh-kich-hoat*.jpg` | Trấn Hồn Linh |
-| `an-deo.jpg`, `an-tooltip.jpg`, `an-kich-hoat*.jpg` | Thanh Liên Ấn (khiên) |
-| `luyen-dan-bang.jpg`, `luyen-dan-ket-qua.jpg`, `tui-dan-pham-chat.jpg` | Bảng luyện đan có tỉ lệ phẩm, kết quả, túi đan theo phẩm |
+| `ho-lo-deo.jpg`, `ho-lo-tooltip.jpg`, `ho-lo-kich-hoat*.webp` | Hồ Lô: đeo, ô thanh chiêu + tooltip, kích hoạt |
+| `linh-deo.jpg`, `linh-tooltip.jpg`, `linh-kich-hoat*.webp` | Trấn Hồn Linh |
+| `an-deo.jpg`, `an-tooltip.jpg`, `an-kich-hoat*.webp` | Thanh Liên Ấn (khiên) |
+| `luyen-dan-bang.webp`, `luyen-dan-ket-qua.jpg`, `tui-dan-pham-chat.jpg` | Bảng luyện đan có tỉ lệ phẩm, kết quả, túi đan theo phẩm |
 | `buff-dan-tang-suc.jpg` | Hàng buff đan tăng sức |
-| `luyen-bao-bang.jpg` | Tab "Luyện bảo" ở Thiết lão |
+| `luyen-bao-bang.webp` | Tab "Luyện bảo" ở Thiết lão |
+
+## Ảnh then chốt
+
+- [`an-kich-hoat.webp`](an-kich-hoat.webp)
+- [`ho-lo-kich-hoat.webp`](ho-lo-kich-hoat.webp)
+- [`linh-kich-hoat.webp`](linh-kich-hoat.webp)

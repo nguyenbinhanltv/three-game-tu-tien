@@ -1,5 +1,7 @@
 # K-5 Chiêu IK, ba ngôn ngữ động tác
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/k5-poses/<file>`.
+
 Chỉ là lớp hình ở client. Luật, số, thời gian chiêu (`windup`, `hitAt`, `recovery`, `cancel`, `combo`) **không đổi**; pose chỉ đọc chúng. Spec: `docs/AUDIT_AND_ROADMAP.md` mục 7.1.
 
 ## Cái gì thay đổi
@@ -66,4 +68,9 @@ Các số còn lại của bảng spec (chân bước tới 0,38 m / hai chân r
 
 - `pnpm content:check`: hợp lệ (có kiểm đủ bộ pose và `hitAt` từng đòn).
 - `apps/client/src/game/character/k5poses.test.ts` (83 test): cấu trúc 9/7 khung, mốc thời gian theo dữ liệu chiêu, số đo ba giọng, **kiếm không xuyên thân** (đoạn kiếm cách trục thân ≥ 0,1 m ở mọi khung, lấy mẫu 60 Hz), đủ bộ pose.
-- Ảnh: `giong-don-thuong-1|2|3.png`, `giong-kiem-khi-tram.png` (ba giọng cạnh nhau ở khung 3 và 5, hai góc); `game-<công pháp>/{nam,nu}-combo-3-don.png`, `{nam,nu}-chieu-kiem-khi-tram.png` (cận cảnh 3,4 m, góc 3/4).
+- Ảnh: `giong-don-thuong-1|2|3.png`, `giong-kiem-khi-tram.webp` (ba giọng cạnh nhau ở khung 3 và 5, hai góc); `game-<công pháp>/{nam,nu}-combo-3-don.png`, `{nam,nu}-chieu-kiem-khi-tram.webp` (cận cảnh 3,4 m, góc 3/4).
+
+## Ảnh then chốt
+
+- [`game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp)
+- [`game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp)
