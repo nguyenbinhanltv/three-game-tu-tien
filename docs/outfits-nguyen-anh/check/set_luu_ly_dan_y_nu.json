@@ -1,0 +1,43 @@
+{
+  "outfit": "apps/client/public/assets/set_luu_ly_dan_y_nu.5529f35a2c.glb",
+  "keep": "head",
+  "tol": 0.04,
+  "poses": {
+    "run": {
+      "maxDepth": 0.0382,
+      "sign": -1,
+      "insideAtWorst": 4,
+      "meanInside": 3.5
+    },
+    "chop": {
+      "maxDepth": 0.0387,
+      "sign": -1,
+      "insideAtWorst": 6,
+      "meanInside": 4.0
+    },
+    "arms_down": {
+      "maxDepth": 0.0019,
+      "sign": -1,
+      "insideAtWorst": 2,
+      "meanInside": 1.0
+    },
+    "crouch": {
+      "maxDepth": 0.0271,
+      "sign": 1,
+      "insideAtWorst": 1,
+      "meanInside": 1.5
+    },
+    "sit": {
+      "maxDepth": 0.0021,
+      "sign": -1,
+      "insideAtWorst": 2,
+      "meanInside": 1.0
+    },
+    "fall": {
+      "maxDepth": 0.0386,
+      "sign": 1,
+      "insideAtWorst": 1,
+      "meanInside": 2.0
+    }
+  }
+}

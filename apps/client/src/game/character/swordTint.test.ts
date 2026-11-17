@@ -25,3 +25,15 @@ describe('kiếm Tinh Khuyết', () => {
     }
   });
 });
+
+// Kiếm Kính Quang (bậc 3): dạng cuối +10, vỏ riêng, hào quang lam băng.
+describe('kiếm Kính Quang', () => {
+  it('dạng cuối +10, vỏ riêng dùng chung hai dạng, hào quang lam (lam cao hơn đỏ)', () => {
+    expect(SWORD_FINAL.prop_kiem_kinh_quang).toBe('prop_kiem_kinh_quang_cuoi');
+    expect(SWORD_MODELS).toContain('prop_kiem_kinh_quang_cuoi');
+    expect(scabbardOf('prop_kiem_kinh_quang')).toBe('prop_vo_kiem_kinh_quang');
+    expect(scabbardOf('prop_kiem_kinh_quang_cuoi')).toBe('prop_vo_kiem_kinh_quang');
+    const [r, , b] = [1, 3, 5].map((i) => parseInt(SWORD_GLOW_TINT.prop_kiem_kinh_quang.slice(i, i + 2), 16));
+    expect(b).toBeGreaterThan(r);
+  });
+});
