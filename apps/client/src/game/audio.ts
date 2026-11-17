@@ -37,7 +37,7 @@ import { gongPartials } from './chapter';
 import MIX from './audioMix.json';
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
-type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend';
+type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend' | 'ui_hover';
 /** Âm chỉ có bản file (thiếu file thì im lặng hoặc mượn âm tổng hợp gần nhất theo SYNTH_ALIAS). */
 type FileSfx =
   | 'crit'
@@ -553,6 +553,10 @@ function synth(name: SynthSfx, v: number, out: AudioNode): void {
       noise(o, 0.5, 'bandpass', 600, 2600, 0.3 * v);
       tone(o, 400, 1200, 0.35, 'sine', 0.14 * v);
       break;
+    case 'ui_hover':
+      // Chạm trầm, rất ngắn (tông gỗ/ngọc), không chói khi lướt qua nhiều nút liền.
+      tone(o, 230, 190, 0.06, 'sine', 0.2 * v);
+      break;
     case 'gather':
       noise(o, 0.12, 'highpass', 2500, 5000, 0.2 * v);
       tone(o, 880, 1320, 0.12, 'sine', 0.14 * v, 0.03);
@@ -714,7 +718,7 @@ export function musicRequested(): string | null {
   return music?.want ?? null;
 }
 
-const SYNTH_NAMES = new Set<string>(['sword', 'slash', 'rain', 'thunder', 'hit', 'hurt', 'heal', 'shield', 'levelup', 'loot', 'quest', 'death', 'fly', 'gather', 'ascend']);
+const SYNTH_NAMES = new Set<string>(['sword', 'slash', 'rain', 'thunder', 'hit', 'hurt', 'heal', 'shield', 'levelup', 'loot', 'quest', 'death', 'fly', 'gather', 'ascend', 'ui_hover']);
 
 function emit(name: Sfx, volume: number, at: { x: number; z: number } | undefined, allowPending: boolean, o?: SfxOpts): void {
   const c = ctx!;

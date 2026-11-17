@@ -302,3 +302,11 @@
 :root[data-ngj='1'] .k-tip-sub, :root[data-ngj='1'] .k-tip-desc, :root[data-ngj='1'] .k-tip-line.dim { color: rgba(237, 227, 204, 0.62); }
 :root[data-ngj='1'] .k-tip-line.good { color: var(--ngj-jade-hi); }
 :root[data-ngj='1'] .k-tip-line.bad { color: var(--ngj-crimson-hi); }
+
+/* cửa sổ hẹp (≤ 1500 px, ví dụ 1366×768): thanh chức năng chỉ còn icon + phím để không xuống dòng/đè khung chat */
+.ngj-sysbtn-label { white-space: nowrap; }
+@media (max-width: 1500px) {
+  :root[data-ngj='1'] .ngj-sysbtn-label { display: none; }
+  :root[data-ngj='1'] .ngj-sysbtn { padding-right: 6px; }
+  :root[data-ngj='1'] .hud .chat { width: 300px; }
+}
