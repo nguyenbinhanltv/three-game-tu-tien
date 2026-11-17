@@ -6,7 +6,7 @@ Gói E4-K của `docs/EXPANSION_DESIGN.md` mục 11.3 (cơ chế mục 3.1/3.4).
 
 Thực thể phụ có chủ do **server** giữ hết trạng thái (`apps/server/src/game/clone.ts`, `CloneSystem` gắn `GameSim.clone`); client chỉ gửi ý định `C.CLONE` (`CloneCmd`) và vẽ theo FX `clone_*`.
 
-- Mở ở cấp 28 (`cloneUnlocked`). Tạo tốn 60 linh lực, sống 20 s, hồi 90 s tính từ lúc tạo (theo nhân vật, giữ qua đổi room). Đặt ngay trước mặt chủ (`clonePlace` kẹp điểm chỉ trong 30 m; client hiện chưa gửi điểm chỉ). Bấm G lần nữa thì thu về.
+- Mở ở cấp 28 (`cloneUnlocked`). Tạo tốn 60 linh lực, sống 20 s, hồi 90 s tính từ lúc tạo (theo nhân vật, giữ qua đổi room). Đặt ngay trước mặt chủ (server bỏ qua điểm client gửi vì chưa kiểm tường/vùng cấm; `clonePlace` vẫn kẹp trong 30 m nếu sau này bật). Bấm G lần nữa thì thu về.
 - Đi theo chủ khi chủ ra xa quá 14 m (bước 7 m/s, đứng cách chủ 4 m). Đánh mục tiêu của chủ: quái của chiêu gây sát thương cuối chủ vừa dùng nếu còn trong 24 m quanh phân thân, không thì quái gần phân thân nhất.
 - Sát thương/hồi tính bằng chỉ số của chủ và ghi công cho chủ (kinh nghiệm, rơi đồ), nhưng **không** cộng kiếm ý/thế hay vòng sạc cho chủ. Không đánh người (tỉ thí chặn tạo).
 - Tan khi: hết giờ (có chiêu cuối), thu về, chủ chết, vào độ kiếp, đang tỉ thí, rời/đổi room, hoặc vỡ (hộ pháp gánh hết khí huyết).
@@ -45,7 +45,7 @@ Ba chiêu cấp 28 trong `methods.json` (`skl_thien_kiem_hoa_hinh`, `skl_thien_k
 
 ## Chưa làm / giới hạn
 
-- Điểm đặt phân thân theo con trỏ (server đã nhận `x,z`; client chưa có chọn điểm trên đất cho phím G).
+- Điểm đặt phân thân theo con trỏ (server hiện bỏ qua `x,z`; cần kiểm tường/vùng cấm/tầm nhìn trước khi bật).
 - Phân thân không chắn tia lớn của Thiên Nhân Kiếp, quái không đuổi riêng phân thân.
 - Hình phân thân dùng chung vật liệu linh thể với nguyên anh (cỡ thật); chưa có "bóng thần niệm sau gáy / dải sao trên đạo bào" của bảng trực quan mục 3.1.
 - Tooltip lĩnh vực (`ui.domain.*`) đã có chuỗi nhưng chưa gắn vào bảng nhân vật.

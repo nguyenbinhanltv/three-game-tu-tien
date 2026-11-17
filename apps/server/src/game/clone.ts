@@ -154,8 +154,9 @@ export class CloneSystem {
     const left = (cloneCd.get(p.char.id) ?? 0) - now;
     if (left > 0) return this.h.warn(p, 'sys.clone_cd', { s: Math.ceil(left / 1000) });
     if (!this.h.spendMp(p, CLONE_MP)) return this.h.warn(p, 'sys.clone_mp');
-    const m = (msg ?? {}) as CloneCmd;
-    const at = clonePlace({ x: p.move.x, z: p.move.z, yaw: p.s.yaw }, m);
+    // Điểm client gửi (`CloneCmd.x/z`) cố ý bị bỏ qua: chưa kiểm tường/vùng cấm/tầm nhìn nên luôn đặt ngay trước mặt chủ.
+    void (msg as CloneCmd | undefined);
+    const at = clonePlace({ x: p.move.x, z: p.move.z, yaw: p.s.yaw });
     const method = p.char.meta.method ?? '';
     const moves = (CLONE_MOVES[method] as CloneMethodDef | undefined)?.moves ?? [];
     const mhp = Math.max(1, Math.round(p.char.mhp * CLONE_HP_FRAC));

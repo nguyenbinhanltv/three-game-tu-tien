@@ -105,9 +105,10 @@ describe('tạo và thu phân thân (G)', () => {
     const p = join(28, 'lac_kiem_quyet');
     const mp = p.char.mp;
     sim.onClone(p, { x: X + 500, z: Z });
+    expect(sim.clone.of(p)!.x).not.toBeCloseTo(X + CLONE_PLACE_RANGE);
     expect(sim.clone.has(p)).toBe(true);
     const c = sim.clone.of(p)!;
-    expect(c.x).toBeCloseTo(X + CLONE_PLACE_RANGE);
+    expect(Math.hypot(c.x - X, c.z - Z)).toBeLessThan(CLONE_PLACE_RANGE);
     expect(p.char.mp).toBe(mp - CLONE_MP);
     expect(states().at(-1)).toMatchObject({ open: true });
     expect(states().at(-1)!.left).toBeGreaterThan(CLONE_LIFE_MS - 500);
