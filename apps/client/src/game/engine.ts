@@ -37,7 +37,7 @@ import { GRADING, GRADING_DEFAULT, moodVariant, URL_MOOD, type GradingName } fro
 import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
-import { buildMoonGate, buildPortalDisc, buildSect, SECT_LANTERNS } from './sect';
+import { buildMoonGate, buildPortalDisc, buildSect, moonMirrorTexture, SECT_LANTERNS } from './sect';
 import { gatesToDraw } from './gates';
 import { buildCaveShell, buildCrystalGlow, buildMirrorFloor, buildPalaceHall } from './caveShell';
 import { PropLayer } from './props';
@@ -930,7 +930,14 @@ export class Game {
         this.gateDiscs.push(buildMoonGate(g.x, g.z));
         // Đĩa sáng nằm ngay trước mặt gương (tâm vòm cao 5 m trên nền, lùi 0,3 m ra phía trước).
         const disc = this.gateDiscs.find((d) => d.position.x === g.x && d.position.z === g.z && d.name !== 'moon-gate');
-        if (disc) { disc.position.y -= 3.6; disc.position.y += 5.0; disc.position.z += 0.32; disc.scale.set(0.9, 1.12, 1); disc.userData.still = true; }
+        if (disc) { disc.position.y -= 3.6; disc.position.y += 5.0; disc.position.z += 0.32; disc.scale.set(0.9, 1.12, 1); disc.userData.still = true; disc.userData.op = 0.82; const tex = moonMirrorTexture(); if (tex) { const dm = disc.material as THREE.MeshBasicMaterial; dm.map = tex; dm.color.set(0xffffff); dm.needsUpdate = true; disc.userData.mirrorTex = tex; }
+          // Mặt sau cổng cũng có gương (người chơi vào từ phía nào cũng thấy): đĩa thứ hai dùng chung lưới và vật liệu.
+          const back = new THREE.Mesh(disc.geometry, disc.material);
+          back.position.set(disc.position.x, disc.position.y, disc.position.z - 0.64);
+          back.scale.copy(disc.scale);
+          back.userData.still = true;
+          this.gateDiscs.push(back);
+        }
       }
       this.scene.add(...this.gateDiscs);
       for (const disc of this.gateDiscs) if (disc.name !== 'moon-gate') markBloom(disc.material as THREE.Material, 0.8);
@@ -1024,6 +1031,7 @@ export class Game {
     for (const d of this.gateDiscs) {
       drop(d);
       d.geometry.dispose();
+      (d.userData.mirrorTex as THREE.Texture | undefined)?.dispose();
       (d.material as THREE.Material).dispose();
     }
     this.gateDiscs = [];
@@ -2853,7 +2861,10 @@ export class Game {
       if (disc.name === 'moon-gate') continue;
       // Đĩa của cổng gương nguyệt không lắc: lắc thì mép chui qua gờ gương và bị cắt chiều sâu.
       if (!disc.userData.still) disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
-      (disc.material as THREE.MeshBasicMaterial).opacity = (disc.userData.op ?? 0.55) + Math.sin(now * 0.003) * (disc.userData.op ? disc.userData.op * 0.35 : 0.2);
+      const dmat = disc.material as THREE.MeshBasicMaterial;
+      // Mặt gương nguyệt: độ đục giữ ≥ 0,7, gợn nhẹ và mây phản chiếu trôi chậm (xoay texture).
+      dmat.opacity = (disc.userData.op ?? 0.55) + Math.sin(now * 0.003) * (disc.userData.still ? 0.08 : disc.userData.op ? disc.userData.op * 0.35 : 0.2);
+      if (disc.userData.mirrorTex) (disc.userData.mirrorTex as THREE.Texture).rotation = now * 0.00006;
     }
     this.tickSkillQueue(now);
     this.tickCombat(now, me);
