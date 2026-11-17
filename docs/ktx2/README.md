@@ -14,6 +14,8 @@ Quyết định Q6 của kế hoạch tái cấu trúc: mọi texture trong GLB 
 | `bench:load` WebGL2: vào game / GLB về hết | 7,29 s / 17,71 s | 7,06 s / 16,86 s |
 | Tải đầu (`pnpm size`) | 2,94 MB | 2,94 MB (ngân sách 30 MB) |
 
+Số trong bảng đo trên 146 asset có lúc bắt đầu. Trong lúc làm, `main` thêm `prop_kiem_tan_hoa` (#197, texture PNG); asset này cũng đã nén KTX2 trong cùng PR (538 → 229 KB, cùng file thô, cùng số tam giác và kích thước), nên manifest hiện có **147 asset, 458/458 texture KTX2**.
+
 Hình học, animation và mọi trường manifest ngoài texture của cả 146 asset **giống hệt bản trước** (so từng accessor, ma trận bind, transform node, kênh animation).
 
 Bộ nhớ texture từng asset (WebGPU, MB): `chr_kiem_tu_nam` 16,0 → 6,7; `chr_v2_nam` 21,3 → 2,7; `set_dia_long_ho_giap_nam` 21,3 → 7,3; `boss_han_giao` 22,7 → 7,5; `mon_thiet_boi_tru` 8,0 → 2,2; `prop_co_thu` 8,0 → 2,2.
