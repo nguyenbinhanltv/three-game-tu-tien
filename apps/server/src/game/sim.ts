@@ -845,6 +845,7 @@ export class GameSim {
     s.name = char.name;
     s.g = char.appearance.g;
     s.dye = char.appearance.dye;
+    s.hr = char.appearance.hair ?? '';
     let x = this.opts.spawn.x;
     let z = this.opts.spawn.z;
     let y = 0;
@@ -4232,7 +4233,7 @@ export class GameSim {
   }
 
   private gmGender(p: PlayerEnt, g: 'm' | 'f'): void {
-    const ap = parseAppearance(APPEARANCE, { g, dye: p.char.appearance.dye });
+    const ap = parseAppearance(APPEARANCE, { g, dye: p.char.appearance.dye, hair: p.char.appearance.hair });
     if (!ap) return;
     p.char.setAppearance(ap);
     p.s.g = ap.g;

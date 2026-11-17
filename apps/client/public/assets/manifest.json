@@ -1450,9 +1450,9 @@
       "id": "chr_v2_hb_nam",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_hb_nam.glb",
-      "file": "chr_v2_hb_nam.a54d9820ad.glb",
-      "bytes": 700364,
-      "rawBytes": 637516,
+      "file": "chr_v2_hb_nam.f0d5d3458a.glb",
+      "bytes": 700012,
+      "rawBytes": 637168,
       "triangles": 9343,
       "rawTriangles": 9343,
       "lod0Cap": 10000,
@@ -1507,9 +1507,9 @@
       "id": "chr_v2_hb_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_hb_nu.glb",
-      "file": "chr_v2_hb_nu.675040713a.glb",
-      "bytes": 702028,
-      "rawBytes": 647368,
+      "file": "chr_v2_hb_nu.f576249cc6.glb",
+      "bytes": 701508,
+      "rawBytes": 646848,
       "triangles": 9366,
       "rawTriangles": 9366,
       "lod0Cap": 10000,
@@ -1564,9 +1564,9 @@
       "id": "chr_v2_nam",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nam.glb",
-      "file": "chr_v2_nam.c17e9e92a9.glb",
-      "bytes": 706856,
-      "rawBytes": 643252,
+      "file": "chr_v2_nam.507123b4d1.glb",
+      "bytes": 706520,
+      "rawBytes": 642916,
       "triangles": 9319,
       "rawTriangles": 9319,
       "lod0Cap": 10000,
@@ -1621,9 +1621,9 @@
       "id": "chr_v2_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nu.glb",
-      "file": "chr_v2_nu.7a3e051f67.glb",
-      "bytes": 705800,
-      "rawBytes": 650492,
+      "file": "chr_v2_nu.d1a28a376a.glb",
+      "bytes": 705272,
+      "rawBytes": 649964,
       "triangles": 9383,
       "rawTriangles": 9383,
       "lod0Cap": 10000,
@@ -8057,6 +8057,120 @@
           "height": 1.6433,
           "depth": 0.6872,
           "minY": 0
+        }
+      }
+    },
+    "set_de_tu_v2_nam": {
+      "id": "set_de_tu_v2_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_de_tu_v2_nam.glb",
+      "file": "set_de_tu_v2_nam.515efd02f0.glb",
+      "bytes": 212424,
+      "rawBytes": 244316,
+      "triangles": 5177,
+      "rawTriangles": 5177,
+      "lod0Cap": 9000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 57,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_de_tu_v2_nam_color",
+          "mimeType": "image/png",
+          "width": 64,
+          "height": 64,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 5177
+        },
+        {
+          "level": 1,
+          "triangles": 2071,
+          "target": 2071
+        },
+        {
+          "level": 2,
+          "triangles": 777,
+          "target": 777
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.502,
+          "height": 1.5513,
+          "depth": 0.4827,
+          "minY": -0.0139
+        },
+        "build": {
+          "width": 1.502,
+          "height": 1.5513,
+          "depth": 0.4827,
+          "minY": -0.0139
+        }
+      }
+    },
+    "set_de_tu_v2_nu": {
+      "id": "set_de_tu_v2_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_de_tu_v2_nu.glb",
+      "file": "set_de_tu_v2_nu.6b20e6b79a.glb",
+      "bytes": 196520,
+      "rawBytes": 219864,
+      "triangles": 4822,
+      "rawTriangles": 4822,
+      "lod0Cap": 9000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 57,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_de_tu_v2_nu_color",
+          "mimeType": "image/png",
+          "width": 64,
+          "height": 64,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 4822
+        },
+        {
+          "level": 1,
+          "triangles": 1929,
+          "target": 1929
+        },
+        {
+          "level": 2,
+          "triangles": 723,
+          "target": 723
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.3034,
+          "height": 1.4622,
+          "depth": 0.4642,
+          "minY": -0.014
+        },
+        "build": {
+          "width": 1.3034,
+          "height": 1.4622,
+          "depth": 0.4642,
+          "minY": -0.014
         }
       }
     },

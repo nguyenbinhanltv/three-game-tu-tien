@@ -12,7 +12,7 @@ const opt = (n: string, d: string) => {
   return i >= 0 && args[i + 1] ? args[i + 1] : d;
 };
 const OUT = path.resolve(opt('--out', 'shots-chrv2'));
-const VARIANTS = opt('--variant', 'both') === 'both' ? ['old', 'v2'] : [opt('--variant', 'both')]; // old | v2 (tóc A) | v2b (tóc B)
+const VARIANTS = opt('--variant', 'both') === 'both' ? ['old', 'v2'] : [opt('--variant', 'both')]; // old (?chr=v1) | v2 (mặc định, tóc A) | v2b (tóc B)
 const GENDERS = opt('--genders', 'm,f').split(',');
 const SETS = opt('--sets', 'none,set_liet_mach,set_kinh_quang').split(',');
 const RENDERER = opt('--renderer', 'webgpu');
@@ -74,7 +74,7 @@ async function main(): Promise<void> {
         const name = `Cv${variant[0]}${g}${String(Date.now() % 10000)}`;
         page.on('pageerror', (e) => errors.push(`${name} pageerror: ${e.message}`));
         page.on('console', (m) => (m.type() === 'error' || (m.type() === 'warning' && /models/.test(m.text()))) && errors.push(`${name}: ${m.text().slice(0, 300)}`));
-        await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${variant === 'v2' ? '&chr=v2' : variant === 'v2b' ? '&chr=v2&hair=b' : ''}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
+        await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}${variant === 'old' ? '&chr=v1' : variant === 'v2b' ? '&hair=b' : ''}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
         await page.waitForFunction(
           () => {
             const w = (window as unknown as G).__game;

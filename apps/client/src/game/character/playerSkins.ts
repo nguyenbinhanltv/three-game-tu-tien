@@ -31,6 +31,8 @@ import { type AnimState, type CharacterView, legacyModelsRequested, legacySwords
 export interface PlayerLook {
   g: string;
   dye: string;
+  /** Kiểu tóc nhân vật nền v2 ('a' | 'b'); thiếu = 'a'. */
+  hair?: string;
   /** Bộ trang bị đang quyết định màu áo/ánh kiếm (id trong sets.json; undefined = màu đã chọn). */
   set?: string;
   /** Asset model kiếm đang cầm (prop_kiem_*, `swordModelOf`); thiếu = kiếm mặc định. */
@@ -151,7 +153,12 @@ export interface ScabbardMount {
 /** Các mảnh áo đã sẵn sàng của một người mặc (theo thứ tự trong outfits.json). */
 interface Outfit {
   parts: { id: string; tpl: OutfitTemplate }[];
+  /** Màu đạo bào để nhuộm áo tân thủ (set_de_tu_*: màu vải tham chiếu `#3B6584`). */
+  dye?: { id: string; hex: string };
 }
+
+/** Bộ đồ đệ tử thủ tục của nhân vật nền v2 (tools/blender/chr_v2_starter.py): mặc khi không có bộ nào có áo v2. */
+const STARTER = 'set_de_tu';
 
 interface Template {
   handle: AssetHandle;
@@ -193,15 +200,16 @@ const K3_DELAY = 1500;
 const OUTFIT_Q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('outfit') : null;
 const OUTFIT_OFF = OUTFIT_Q === '0';
 /** `?outfit=set_kinh_quang_kiem_y` ép mọi bộ đang mặc dùng áo này (xem áo của bộ chưa có trong dữ liệu, chụp ảnh). */
-const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') === 'v2';
-/** `?chr=v2&hair=b`: kiểu tóc B của nhân vật nền v2 (mặc định kiểu A). */
+/** Nhân vật nền v2 (MakeHuman + đầu/tóc Tripo) là mặc định; `?chr=v1` về hai model Tripo cũ để so sánh. */
+const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') !== 'v1'; // không có location (test node): giữ model cũ
+/** `?hair=b` ép kiểu tóc B khi không có lựa chọn của người chơi (thử, chụp ảnh). */
 const CHR_V2_HAIR = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hair') : null;
 const OUTFIT_FORCE = OUTFIT_Q && OUTFIT_Q !== '0' ? OUTFIT_Q : null;
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
-function modelOf(g: string): string | null {
+function modelOf(g: string, hair?: string): string | null {
   // `?chr=v2` (CHR-PROTO): thân nền MakeHuman nam/nữ thay hai model Tripo cũ, chỉ để so sánh; mặc định game không đổi.
-  if (CHR_V2) return `chr_v2_${CHR_V2_HAIR === 'b' ? 'hb_' : ''}${g === 'f' ? 'nu' : 'nam'}`;
+  if (CHR_V2) return `chr_v2_${(hair ?? CHR_V2_HAIR) === 'b' ? 'hb_' : ''}${g === 'f' ? 'nu' : 'nam'}`;
   const own = APPEARANCE.genders.find((x) => x.id === (g as Gender))?.model;
   return own ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender)?.model ?? null;
 }
@@ -254,7 +262,7 @@ export class PlayerSkins {
 
   /** Người chơi này sẽ có model mới nhưng asset đang nạp (tạm model khối, nạp xong thì đổi). */
   pending(look: PlayerLook): boolean {
-    const id = modelOf(look.g);
+    const id = modelOf(look.g, look.hair);
     if (this.legacy || !id) return false;
     // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
     const oids = this.outfitIds(look);
@@ -277,20 +285,33 @@ export class PlayerSkins {
     if (id && skin && !this.legacy) this.load(id);
     const t = id && skin && !this.legacy ? this.templates.get(id) : undefined;
     if (!id || !skin || !t || typeof t === 'string') return new Humanoid({ robe: look.hex, trim: look.accent ?? look.hex, sword: false });
-    return this.build(id, skin, t, this.material(id, skin, t, `npc:${look.hex}:${look.accent ?? ''}`, look.hex, look.accent));
+    const mat = this.material(id, skin, t, `npc:${look.hex}:${look.accent ?? ''}`, look.hex, look.accent);
+    if (!CHR_V2) return this.build(id, skin, t, mat);
+    // Nhân vật nền v2 không có áo: mặc bộ đồ đệ tử nhuộm màu NPC; chưa nạp xong thì model khối, `npcPending` báo để dựng lại.
+    const oid = outfitAssetId(STARTER, id);
+    const tpl = oid ? this.loadOutfit(oid) : null;
+    if (!oid || !tpl) return new Humanoid({ robe: look.hex, trim: look.accent ?? look.hex, sword: false });
+    return this.build(id, skin, t, mat, undefined, undefined, false, { parts: [{ id: oid, tpl }], dye: { id: `npc:${look.hex}`, hex: look.hex } });
   }
 
   /** Các asset mảnh áo của bộ đang mặc (rỗng nếu bộ chưa có áo riêng cho giới này hoặc đang `?models=legacy`/`?outfit=0`). */
   private outfitIds(look: PlayerLook): string[] {
-    if (this.legacy || OUTFIT_OFF || !look.set) return [];
+    if (this.legacy || OUTFIT_OFF) return [];
+    const model = modelOf(look.g, look.hair);
+    if (CHR_V2) {
+      // Thân v2 không có áo: bộ chưa có áo dựng cho thân v2 (không khai ở outfit_covers.json) thì mặc bộ đồ đệ tử tân thủ.
+      const own = look.set ? (OUTFIT_FORCE ? [OUTFIT_FORCE] : (OUTFITS[look.set] ?? [])) : [];
+      const parts = own.length && own.every((p) => p in OUTFIT_COVERS) ? own : [STARTER];
+      return parts.flatMap((p) => outfitAssetId(p, model) ?? []);
+    }
+    if (!look.set) return [];
     const parts = OUTFIT_FORCE ? [OUTFIT_FORCE] : (OUTFITS[look.set] ?? []);
-    const model = modelOf(look.g);
     return parts.flatMap((p) => outfitAssetId(p, model) ?? []);
   }
 
   create(look: PlayerLook): CharacterView {
     const dye = dyeOf(look.dye, look.set);
-    const id = modelOf(look.g);
+    const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (id && skin && !this.legacy) this.load(id);
     const t = id && skin && !this.legacy ? this.templates.get(id) : undefined;
@@ -299,7 +320,7 @@ export class PlayerSkins {
     // Áo riêng của bộ: có thì thay lưới áo của nhân vật (bỏ phụ kiện thủ tục: áo đã có vai giáp, đai...); chưa nạp xong/lỗi thì giữ đường recolor + phụ kiện.
     const parts = this.outfitIds(look).map((o) => ({ id: o, tpl: this.loadOutfit(o) }));
     if (parts.length) this.loadScabbard(scabbardOf(look.w));
-    const outfit: Outfit | undefined = parts.length && parts.every((p) => p.tpl) ? { parts: parts as Outfit['parts'] } : undefined;
+    const outfit: Outfit | undefined = parts.length && parts.every((p) => p.tpl) ? { parts: parts as Outfit['parts'], dye: { id: dye.id, hex: dye.hex } } : undefined;
     return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), outfit ? undefined : look.acc, look.w, false, outfit);
   }
 
@@ -313,7 +334,7 @@ export class PlayerSkins {
    * Trả null nếu asset chưa nạp hoặc đang `?models=legacy` (bên gọi dùng model quái dự phòng).
    */
   createShadow(look: PlayerLook, def: MonsterDef): MonsterView | null {
-    const id = modelOf(look.g);
+    const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (!id || !skin || this.legacy) return null;
     this.load(id);
@@ -329,7 +350,7 @@ export class PlayerSkins {
    * Trả null nếu asset chưa nạp hoặc `?models=legacy` (bên gọi dùng hình dự phòng).
    */
   createSoul(look: PlayerLook, kind: 'soul' | 'husk'): CharacterView | null {
-    const id = modelOf(look.g);
+    const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (!id || !skin || this.legacy) return null;
     this.load(id);
@@ -448,7 +469,7 @@ export class PlayerSkins {
         if (!geo) continue;
         // Mảnh có voan (extras dtl_outfitAlpha): LOD0 vẽ hai lượt cùng hình học (phần đặc `cutout` + voan blend thật), LOD xa vẽ voan như vải đặc.
         const veilPart = lod === 0 && (part.tpl.meshes[0].material as THREE.MeshStandardMaterial).userData?.dtl_outfitAlpha === 1;
-        const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, veilPart ? 'cutout' : 'solid'));
+        const g = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, veilPart ? 'cutout' : 'solid', outfit.dye));
         g.name = `${part.id}_${lod}`;
         g.userData.outfit = true;
         g.userData.lod = lod;
@@ -459,7 +480,7 @@ export class PlayerSkins {
         pm.parent.add(g);
         g.bind(pm.skeleton, pm.bindMatrix);
         if (veilPart) {
-          const v = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, 'veil'));
+          const v = new THREE.SkinnedMesh(geo, this.outfitMaterial(part.id, part.tpl, 'veil', outfit.dye));
           v.name = `${part.id}_${lod}_veil`;
           v.userData.outfit = true;
           v.userData.lod = lod;
@@ -476,14 +497,17 @@ export class PlayerSkins {
     return springs;
   }
 
-  private outfitMaterial(id: string, tpl: OutfitTemplate, mode: OutfitMode = 'solid'): THREE.MeshStandardNodeMaterial {
-    const key = mode === 'solid' ? id : `${id}|${mode}`;
+  private outfitMaterial(id: string, tpl: OutfitTemplate, mode: OutfitMode = 'solid', dye?: { id: string; hex: string }): THREE.MeshStandardNodeMaterial {
+    const starter = id.startsWith(STARTER) && !!dye;
+    const base = mode === 'solid' ? id : `${id}|${mode}`;
+    const key = starter ? `${base}|${dye!.id}` : base;
     let m = this.outMats.get(key);
     if (m) return m;
     const src = tpl.meshes[0].material as THREE.MeshStandardMaterial;
     if (hasOutfitMask(src)) m = createOutfitMaterial(src, undefined, mode); // bộ mô-đun T-5: nhuộm 3 kênh, vải/kim loại, vân sáng
     else {
-      m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src))[0]);
+      // Bộ đồ đệ tử tân thủ (màu phẳng): nhuộm vải tham chiếu theo màu đạo bào đã chọn như thân.
+      m = rimLight(adoptGltfMaterials(new THREE.Mesh(undefined, src), starter ? (x) => applyDye(x, '#3B6584', dye!.hex) : undefined)[0]);
       m.side = THREE.DoubleSide; // bản tạm #119: các tấm vỏ mỏng (vạt, tay áo): không cull mặt sau
     }
     this.outMats.set(key, m);

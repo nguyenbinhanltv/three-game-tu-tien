@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { type Appearance, genderEnabled, type Gender, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
+import { type Appearance, genderEnabled, type Gender, HAIRS, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
 import { APPEARANCE, t } from '@dtl/content';
 import { assets } from '../game/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio';
@@ -53,8 +53,9 @@ const LOOK_KEY = 'dtl.look';
 /** Lựa chọn ngoại hình nhớ lần trước (hoặc `?dye=<id>` khi thử); không hợp lệ thì mặc định. */
 function initialLook(): Appearance {
   const def: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
-  const q = new URLSearchParams(window.location.search).get('dye');
-  if (q) return parseAppearance(APPEARANCE, { g: def.g, dye: q }) ?? def;
+  const qs = new URLSearchParams(window.location.search);
+  const q = qs.get('dye');
+  if (q) return parseAppearance(APPEARANCE, { g: def.g, dye: q, ...(qs.get('hair') ? { hair: qs.get('hair') } : {}) }) ?? def;
   try {
     return parseAppearance(APPEARANCE, JSON.parse(localStorage.getItem(LOOK_KEY) ?? 'null')) ?? def;
   } catch {
@@ -103,6 +104,19 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
           />
         ))}
         <span className="look-name">{t(`appearance.dye.${look.dye}`)}</span>
+      </div>
+      <div className="look-row">
+        <span className="look-key">{t('ui.login.hair')}</span>
+        {HAIRS.map((h) => (
+          <button
+            key={h}
+            type="button"
+            className={'look-gender' + ((look.hair ?? 'a') === h ? ' sel' : '')}
+            onClick={() => onChange({ ...look, hair: h })}
+          >
+            <span>{t(`appearance.hair.${look.g}.${h}`)}</span>
+          </button>
+        ))}
       </div>
     </div>
   );

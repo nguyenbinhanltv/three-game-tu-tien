@@ -108,6 +108,14 @@ bm = bmesh.new()
 bm.from_mesh(body.data)
 uvk = bm.loops.layers.uv.active
 kill = [f for f in bm.faces if sum(l[uvk].uv.y for l in f.loops) / len(f.loops) > 0.88]
+# nhãn cầu tạm (dải UV bên trái của atlas cũ): lấy tâm hai mắt để làm sáng mắt trên texture Tripo
+eye_pts = [v.co.copy() for f in kill if sum(l[uvk].uv.x for l in f.loops) / len(f.loops) < 0.25 for v in f.verts]
+EYES = None
+if eye_pts:
+    el = [p_ for p_ in eye_pts if p_.x > 0]
+    er = [p_ for p_ in eye_pts if p_.x < 0]
+    if el and er:
+        EYES = (sum(el, Vector()) / len(el), sum(er, Vector()) / len(er))
 bmesh.ops.delete(bm, geom=kill, context='FACES')
 bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
 Zc = zn + CUT * (zh - zn)
@@ -125,6 +133,10 @@ print('body verts', n_body, 'Zc', Zc)
 # ---------- 2. đầu Tripo ----------
 head, head_px = load_tripo(HEAD_GLB)
 head_px = soften_skin(head_px)
+# Tinh chỉnh mặt (giảm gắt): da ấm hơn một chút, giảm tương phản quanh trung bình
+head_px = np.clip(head_px * np.array([1.035, 1.0, 0.965], np.float32), 0, 1)
+_m = head_px.reshape(-1, 3).mean(0)
+head_px = np.clip(_m + (head_px - _m) * 0.92, 0, 1)
 hv = verts_np(head)
 tw = widest(hv, 0.42, 0.98, 0.01, 0.012)
 s = mh[1] / tw[1]
@@ -147,6 +159,20 @@ for vi, uv in vi_uv.items():
     if c_.y < mh[3] - 0.05 and abs(c_.x) < 0.05 and mh[0] - 0.09 < c_.z < mh[0] + 0.02:
         face_s.append(head_px[min(Q - 1, max(0, int(uv[1] * Q))), min(Q - 1, max(0, int(uv[0] * Q)))])
 face_col = np.median(np.array(face_s), 0) if len(face_s) > 20 else None
+# mắt sáng hơn: làm sáng vùng texel quanh hai mắt (đỉnh đầu Tripo gần vị trí nhãn cầu cũ ở mặt trước)
+if EYES is not None:
+    yy_, xx_ = np.mgrid[0:Q, 0:Q].astype(np.float32)
+    boost = np.zeros((Q, Q), np.float32)
+    for e in EYES:
+        sel = [uv for vi, uv in vi_uv.items() if abs(head.data.vertices[vi].co.x - e.x) < 0.012 and abs(head.data.vertices[vi].co.z - e.z) < 0.012 and head.data.vertices[vi].co.y < mh[3] - 0.03]
+        if len(sel) < 3:
+            continue
+        cu = float(np.mean([u[0] for u in sel])) * Q
+        cv = float(np.mean([u[1] for u in sel])) * Q
+        r = float(CFG.get('eye_r', 26))
+        boost = np.maximum(boost, np.exp(-(((xx_ - cu) ** 2 + (yy_ - cv) ** 2) / (2 * (r * 0.55) ** 2))))
+    lum_ = head_px @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    head_px = np.clip(head_px * (1 + float(CFG.get('eye_gain', 0.22)) * boost[..., None] * np.clip((lum_ - 0.18) / 0.3, 0, 1)[..., None]), 0, 1)
 # cắt phần dưới Zc (vai Tripo) và nối
 bm = bmesh.new()
 bm.from_mesh(head.data)
