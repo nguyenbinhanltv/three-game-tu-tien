@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { float, normalView, positionViewDirection, vec3 } from 'three/tsl';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { APPEARANCE, DYE, OUTFITS, scabbardOf, SET, SETS, SWORD_GLOW_TINT, SWORD_MODEL_DEFAULT } from '@dtl/content';
+import { APPEARANCE, DYE, OUTFIT_COVERS, OUTFITS, scabbardOf, SET, SETS, SWORD_GLOW_TINT, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { buildFlySword, Humanoid } from '../models';
@@ -10,6 +10,7 @@ import { createOutfitMaterial, hasOutfitMask, type OutfitMode } from '../../rend
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
 import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
+import { coveredIndex, coverUnion } from './bodyRegions';
 import { dressedIndex, extendSkeleton, outfitAssetId, remapSkin, withIndex } from './outfit';
 import { acquireWithHumanLib, HUMAN_K3_LIB, mergeClips, retargetClips } from './animLib';
 import { HUMAN_CLIPS } from './humanClips';
@@ -87,6 +88,25 @@ export const PLAYER_SKINS: Record<string, PlayerSkin> = {
     rates: { idle: 1.3, attack: 1.25 },
     clothRef: '#3B6584',
   },
+  /** CHR-PROTO: thân nền MakeHuman (docs/chr-v2), cùng bộ xương Mixamo và thư viện clip chung. */
+  chr_v2_nam: {
+    clips: { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' },
+    poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
+    refSpeed: 3.0,
+    runSteps: 4,
+    maxLocoScale: 1.8,
+    rates: { idle: 1.3, attack: 1.25 },
+    clothRef: '#3B6584',
+  },
+  chr_v2_nu: {
+    clips: { idle: 'idle', run: 'run', attack: 'heavy_chop', hit: 'hit_light', death: 'death' },
+    poses: { jump: 'ngu_kiem', meditate: 'tam_thien' },
+    refSpeed: 2.9,
+    runSteps: 4,
+    maxLocoScale: 1.8,
+    rates: { idle: 1.3, attack: 1.25 },
+    clothRef: '#3B6584',
+  },
 };
 
 /** Áo bộ trang bị đã nạp (retarget_set.py): các lưới skin theo LOD, dùng chung giữa mọi người mặc. */
@@ -155,10 +175,13 @@ const K3_DELAY = 1500;
 const OUTFIT_Q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('outfit') : null;
 const OUTFIT_OFF = OUTFIT_Q === '0';
 /** `?outfit=set_kinh_quang_kiem_y` ép mọi bộ đang mặc dùng áo này (xem áo của bộ chưa có trong dữ liệu, chụp ảnh). */
+const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') === 'v2';
 const OUTFIT_FORCE = OUTFIT_Q && OUTFIT_Q !== '0' ? OUTFIT_Q : null;
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
 function modelOf(g: string): string | null {
+  // `?chr=v2` (CHR-PROTO): thân nền MakeHuman nam/nữ thay hai model Tripo cũ, chỉ để so sánh; mặc định game không đổi.
+  if (CHR_V2) return g === 'f' ? 'chr_v2_nu' : 'chr_v2_nam';
   const own = APPEARANCE.genders.find((x) => x.id === (g as Gender))?.model;
   return own ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender)?.model ?? null;
 }
@@ -193,6 +216,7 @@ export class PlayerSkins {
   private scabbards = new Map<string, ScabbardTemplate | 'loading' | 'failed'>();
   /** Lưới nhân vật đã cắt phần áo che (theo hình học gốc) và lưới áo đã đổi chỉ số xương (theo asset áo + LOD). */
   private dressed = new Map<THREE.BufferGeometry, THREE.BufferGeometry | null>();
+  private dressedV2 = new Map<string, THREE.BufferGeometry | null>();
   private remapped = new Map<string, THREE.BufferGeometry | null>();
 
   constructor(
@@ -380,11 +404,15 @@ export class PlayerSkins {
     for (const pm of bodies) {
       if (sk) pm.bind(sk, pm.bindMatrix);
       const lod = typeof pm.userData.lod === 'number' ? pm.userData.lod : 0;
-      let cut = this.dressed.get(pm.geometry);
+      // Nhân vật nền v2: ẩn theo vùng áo khai báo (`outfit_covers.json`); model cũ: chỉ giữ đầu/cổ/tay.
+      const covered = CHR_V2 ? coverUnion(outfit.parts.map((p) => p.id), OUTFIT_COVERS) : null;
+      const ck = covered ? `${pm.geometry.uuid}|${[...covered].sort().join(',')}` : null;
+      let cut = ck ? this.dressedV2.get(ck) : this.dressed.get(pm.geometry);
       if (cut === undefined) {
-        const idx = dressedIndex(pm);
+        const idx = covered ? coveredIndex(pm, covered) : dressedIndex(pm);
         cut = idx ? withIndex(pm.geometry, idx) : null;
-        this.dressed.set(pm.geometry, cut);
+        if (ck) this.dressedV2.set(ck, cut);
+        else this.dressed.set(pm.geometry, cut);
       }
       if (cut) pm.geometry = cut;
       pm.userData.noShadow = true; // lưới thân chỉ còn đầu/tay: bóng do lưới áo lo, khỏi thêm một lượt vẽ bóng
@@ -623,6 +651,8 @@ export class PlayerSkins {
     this.outMats.clear();
     for (const g of this.dressed.values()) g?.dispose();
     this.dressed.clear();
+    for (const g of this.dressedV2.values()) g?.dispose();
+    this.dressedV2.clear();
     for (const g of this.remapped.values()) g?.dispose();
     this.remapped.clear();
     for (const b of this.accBuilt.values()) disposeAccessories(b);

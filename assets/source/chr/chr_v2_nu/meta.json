@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_v2_nu",
+  "type": "chr",
+  "budgetClass": "player_v2",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 8000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "chr/chr_v2_nu/tripo/rig_v01.glb",
+    "size": {
+      "height": 1.6968
+    },
+    "orient": "thigh",
+    "rigid": [
+      {
+        "kind": "add_sword",
+        "bone": "spine2",
+        "grip": [
+          -0.17,
+          0.0,
+          0.2
+        ],
+        "tip": [
+          0.55,
+          0.15,
+          -0.82
+        ],
+        "length": 0.9,
+        "hilt": 0.2
+      }
+    ],
+    "prune": [
+      "(handindex4|handmiddle4|handpinky4|handring4|handthumb4|toe_end|headtop_end)$"
+    ],
+    "sharedAnims": "anim_human_base",
+    "post": "tools/blender/anim_biped_extra.py"
+  },
+  "license": {
+    "source": "MakeHuman base mesh + targets + rig/weights Mixamo qua MPFB2 (CC0 1.0), vẽ texture thủ tục tools/blender/chr_base_v2.py",
+    "owner": "dự án",
+    "date": "2026-11-17"
+  }
+}

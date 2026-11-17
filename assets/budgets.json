@@ -22,6 +22,15 @@
       "texture": { "color": 1024, "data": 1024 },
       "bones": 60
     },
+    "player_v2": {
+      "triangles": { "min": 4000, "max": 12000 },
+      "lods": [
+        { "ratio": 0.5, "maxTriangles": 3800 },
+        { "ratio": 0.22, "maxTriangles": 1600 }
+      ],
+      "texture": { "color": 1024, "data": 1024 },
+      "bones": 60
+    },
     "npc": {
       "triangles": { "min": 10000, "max": 15000 },
       "lods": [{ "ratio": 0.4, "maxTriangles": 5000 }],
