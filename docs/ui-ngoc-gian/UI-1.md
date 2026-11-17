@@ -17,7 +17,7 @@ Mã nguồn: `apps/client/src/ui/ngj/`. Import `from '../ngj'` (hoặc `./ngj`);
 | `NgjTooltip` + `NgjTipCard` | Dùng lại định vị của `Tooltip` kit (thêm prop `tipClass`) |
 | `SysIcon` | 16 icon nét vàng 24×24 (`meditate sword bag character method party quest map settings mail shop alchemy forge stone head close`) |
 | `SealNumeral` | Chữ triện 1–99 bằng nét SVG (hình xấp xỉ, không dùng font) |
-| `motion.ts` | "Giảm chuyển động": Cài đặt → mục mới, lưu `dtl.reduceMotion`, mặc định theo hệ điều hành, đặt `data-reduce-motion` trên `<html>` |
+| `motion.ts` | "Giảm chuyển động": Cài đặt → mục mới, lưu `dtl.reduceMotion`, mặc định theo hệ điều hành, đặt `data-reduce-motion` trên `<html>`; là nguồn duy nhất: các khối `prefers-reduced-motion` cũ (styles, kit, panels, tutien, methodpanel) đã đổi thành `:root[data-reduce-motion="true"]` |
 
 Chất liệu: `tex/lacquer.webp` (~1 KB) và `tex/paper.webp` (~1 KB), sinh bằng `python tools/ui/ngj-textures.py` (cần Pillow); đều dưới giới hạn 50 KB.
 
