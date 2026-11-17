@@ -1,10 +1,11 @@
 import { type ReactNode } from 'react';
-import { bindsOnEquip, enhanceMul, isEquipSlot, sellPrice, type InvItem, type ItemDef } from '@dtl/shared';
+import { bindsOnEquip, enhanceMul, isEquipSlot, sellPrice, wearableBy, type InvItem, type ItemDef } from '@dtl/shared';
 import { ITEM, itemName, QUEST, realmName, t } from '@dtl/content';
 import { ContentIcon, UiIcon } from '../ContentIcon';
 import { artifactLines, compareLines, gearQuality, itemLines, itemSub, pillLines, setLinesForItem, type TipLine } from '../gear';
 import { type PanelTone, PanelWindow, Slot, TipCard, Tooltip } from '../kit';
 import { useUI } from '../store';
+import { Game } from '../../game/engine';
 import { belowLevel, itemHints, itemSources, itemUses } from '../itemInfo';
 
 export function statLines(def: ItemDef, plus = 0): string[] {
@@ -38,6 +39,8 @@ function useTipLines(item: InvItem, def: ItemDef, worn?: boolean): TipLine[] {
   const compared = !worn && isEquipSlot(def.kind);
   if (compared) lines.push(...compareLines(level, equip, item, def, root));
   else if (belowLevel(level, def)) lines.push({ text: t('ui.item.req', { realm: realmName(def.reqLevel!) }), tone: 'bad' });
+  // Món giới hạn giới tính (skin): luôn ghi rõ, tô đỏ khi nhân vật của mình không mặc được (server cũng từ chối).
+  if (def.gender) lines.push({ text: t('ui.item.gender.' + def.gender), tone: wearableBy(def, Game.current?.myGender() ?? '') ? 'dim' : 'bad' });
   lines.push(...setLinesForItem(item, equip));
   if (item.inst?.bound) lines.push({ text: t('ui.item.bound'), tone: 'dim' });
   else if (item.inst && bindsOnEquip(item.inst.q)) lines.push({ text: t('ui.item.bind_on_equip'), tone: 'dim' });

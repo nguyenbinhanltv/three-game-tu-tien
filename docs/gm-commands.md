@@ -6,7 +6,7 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 
 ## Quy tắc
 
-- Server quyết định. Mọi thay đổi vật phẩm/tiền (`kit`, `outfit`, `set`, `weapon`, `give`, `roll`, `bag`) chạy trong **một transaction** có ghi `ledger` (lý do `gm:kit`, `gm:set`, `gm:bag`, `gm`); `pnpm ledger:check` vẫn khớp. Món đang mặc bị thay được thu hồi bằng dòng ledger -1, không biến mất lặng lẽ.
+- Server quyết định. Mọi thay đổi vật phẩm/tiền (`kit`, `outfit`, `set`, `weapon`, `skin`, `give`, `roll`, `bag`) chạy trong **một transaction** có ghi `ledger` (lý do `gm:kit`, `gm:set`, `gm:bag`, `gm`); `pnpm ledger:check` vẫn khớp. Món đang mặc bị thay được thu hồi bằng dòng ledger -1, không biến mất lặng lẽ.
 - Món GM tạo ra roll ở server (phẩm cao nhất = Thiên, seed ghi vào ledger) như mọi trang bị khác.
 - Test từng lệnh, kể cả tài khoản thường bị từ chối: `apps/server/src/testflags.test.ts` (mục "lệnh GM thử đồ").
 
@@ -61,6 +61,7 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 | Lệnh | Cú pháp, ý nghĩa | Ví dụ |
 | --- | --- | --- |
 | `weapon` | `/gm weapon <id\|list> [+N]` — lấy và cầm kiếm theo id, +10 là dạng cuối có vỏ lưng. | `/gm weapon itm_liet_mach_kiem +10` |
+| `skin` | `/gm skin <id|list|off>` — lấy và mặc skin vào ô ngoại hình (không cộng chỉ số); `off` tháo về túi. | `/gm skin itm_skin_varkessa` |
 
 ### Bản đồ và nhiệm vụ
 

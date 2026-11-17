@@ -11,7 +11,7 @@ import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
 import { type AttachedRibbons, attachAccessories, type AccessoryMaterials, type BuiltAccessories, buildAccessories, disposeAccessories } from './setAccessories';
 import { boneKey } from './ikpose';
 import { coveredIndex, coverUnion } from './bodyRegions';
-import { dressedIndex, extendSkeleton, outfitAssetId, remapSkin, withIndex } from './outfit';
+import { dressedIndex, extendSkeleton, outfitAssetId, remapSkin, skinKeep, withIndex } from './outfit';
 import { acquireWithHumanLib, HUMAN_K3_LIB, HUMAN_UAL_LIB, mergeClips, retargetClips } from './animLib';
 import { UAL_ENABLED, UAL_REPLACE, ualAliases, ualMap } from './ualClips';
 import { HUMAN_CLIPS } from './humanClips';
@@ -40,6 +40,8 @@ export interface PlayerLook {
   w?: string;
   /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`): hiện theo từng món đã mặc, không cần đủ 2 món. */
   acc?: string;
+  /** Skin đang mặc ở ô ngoại hình (`ItemDef.skin`, vd. `set_skin_varkessa`): lưới phủ toàn thân, đè mọi trang phục. */
+  skin?: string;
 }
 
 /** Cấu hình model người chơi có xương theo asset. */
@@ -156,6 +158,8 @@ interface Outfit {
   parts: { id: string; tpl: OutfitTemplate }[];
   /** Màu đạo bào để nhuộm áo tân thủ (set_de_tu_*: màu vải tham chiếu `#3B6584`). */
   dye?: { id: string; hex: string };
+  /** Skin toàn thân: ẩn cả đầu, cổ, tay của thân nền (áo thường vẫn giữ các phần đó). */
+  full?: boolean;
 }
 
 /** Bộ đồ đệ tử thủ tục của nhân vật nền v2 (tools/blender/chr_v2_starter.py): mặc khi không có bộ nào có áo v2. */
@@ -314,6 +318,9 @@ export class PlayerSkins {
   private outfitIds(look: PlayerLook): string[] {
     if (this.legacy || OUTFIT_OFF) return [];
     const model = modelOf(look.g, look.hair);
+    // Skin đè mọi trang phục. Mới dựng cho thân v1 (`<skin>_nam|nu`); thân v2 chưa có nên bỏ qua, mặc trang phục như thường.
+    const skin = this.skinAsset(look);
+    if (skin) return [skin];
     if (CHR_V2) {
       // Thân v2 không có áo: bộ chưa có áo dựng cho thân v2 (không khai ở outfit_covers.json) thì mặc bộ đồ đệ tử tân thủ.
       const own = look.set ? (OUTFIT_FORCE ? [OUTFIT_FORCE] : (OUTFITS[look.set] ?? [])) : [];
@@ -323,6 +330,15 @@ export class PlayerSkins {
     if (!look.set) return [];
     const parts = OUTFIT_FORCE ? [OUTFIT_FORCE] : (OUTFITS[look.set] ?? []);
     return parts.flatMap((p) => outfitAssetId(p, model) ?? []);
+  }
+
+  /**
+   * Asset skin toàn thân của `look` (thân v1: `<skin>_nam|nu`); null = không mặc skin hoặc thân này chưa có bản skin (v2).
+   * Asset nạp lỗi thì `loadOutfit` đánh dấu `failed` và nhân vật về hình thường (không có áo skin, thân nền hiện nguyên).
+   */
+  private skinAsset(look: PlayerLook): string | null {
+    if (!look.skin || CHR_V2 || this.legacy || OUTFIT_OFF) return null;
+    return outfitAssetId(look.skin, modelOf(look.g, look.hair));
   }
 
   create(look: PlayerLook): CharacterView {
@@ -336,7 +352,8 @@ export class PlayerSkins {
     // Áo riêng của bộ: có thì thay lưới áo của nhân vật (bỏ phụ kiện thủ tục: áo đã có vai giáp, đai...); chưa nạp xong/lỗi thì giữ đường recolor + phụ kiện.
     const parts = this.outfitIds(look).map((o) => ({ id: o, tpl: this.loadOutfit(o) }));
     if (parts.length) this.loadScabbard(scabbardOf(look.w));
-    const outfit: Outfit | undefined = parts.length && parts.every((p) => p.tpl) ? { parts: parts as Outfit['parts'], dye: { id: dye.id, hex: dye.hex } } : undefined;
+    const full = !!this.skinAsset(look);
+    const outfit: Outfit | undefined = parts.length && parts.every((p) => p.tpl) ? { parts: parts as Outfit['parts'], dye: { id: dye.id, hex: dye.hex }, full } : undefined;
     return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), outfit && !outfit.parts.every((p) => p.id.startsWith(STARTER)) ? undefined : look.acc, look.w, false, outfit); // đồ tân thủ vẫn mang phụ kiện của bộ (giáp vai, đai...); áo mô-đun đã có sẵn
   }
 
@@ -462,16 +479,19 @@ export class PlayerSkins {
       if (sk) pm.bind(sk, pm.bindMatrix);
       const lod = typeof pm.userData.lod === 'number' ? pm.userData.lod : 0;
       // Nhân vật nền v2: ẩn theo vùng áo khai báo (`outfit_covers.json`); model cũ: chỉ giữ đầu/cổ/tay.
-      const covered = CHR_V2 ? coverUnion(outfit.parts.map((p) => p.id), OUTFIT_COVERS) : null;
-      const ck = covered ? `${pm.geometry.uuid}|${[...covered].sort().join(',')}` : null;
+      const covered = CHR_V2 && !outfit.full ? coverUnion(outfit.parts.map((p) => p.id), OUTFIT_COVERS) : null;
+      // Skin toàn thân dùng chung bộ nhớ đệm theo khóa (uuid|full) với nhân vật v2.
+      const ck = outfit.full ? `${pm.geometry.uuid}|full` : covered ? `${pm.geometry.uuid}|${[...covered].sort().join(',')}` : null;
       let cut = ck ? this.dressedV2.get(ck) : this.dressed.get(pm.geometry);
       if (cut === undefined) {
-        const idx = covered ? coveredIndex(pm, covered) : dressedIndex(pm);
+        const idx = outfit.full ? dressedIndex(pm, skinKeep) : covered ? coveredIndex(pm, covered) : dressedIndex(pm);
         cut = idx ? withIndex(pm.geometry, idx) : null;
         if (ck) this.dressedV2.set(ck, cut);
         else this.dressed.set(pm.geometry, cut);
       }
       if (cut) pm.geometry = cut;
+      // Thân nền không còn tam giác nào (skin che hết, kiếm nướng đã cắt ở LOD0): ẩn hẳn, khỏi tốn một draw call rỗng.
+      if (cut && (cut.index?.count ?? 0) === 0) pm.visible = false;
       pm.userData.noShadow = true; // lưới thân chỉ còn đầu/tay: bóng do lưới áo lo, khỏi thêm một lượt vẽ bóng
       if (!pm.parent) continue;
       for (const part of outfit.parts) {

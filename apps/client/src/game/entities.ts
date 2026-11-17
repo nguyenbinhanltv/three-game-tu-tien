@@ -7,7 +7,7 @@ import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MF_WEA
 import { groundAt } from './levelCtx';
 import { swordOverride } from './testParams';
 import { gatesOf, type Gate } from './gates';
-import { APPEARANCE, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
+import { APPEARANCE, ITEM, SET, MONSTER, monsterName, NPCS, QUESTS, realmName, SWORD_MODELS, swordModelOf, t } from '@dtl/content';
 import { hoverBob, hoverTarget, stepHover } from './hover';
 import { bodyRadiusOf, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
@@ -46,6 +46,8 @@ export interface PState {
   dye?: string;
   /** Kiểu tóc nhân vật nền v2. */
   hr?: string;
+  /** id vật phẩm skin đang mặc (ô ngoại hình); server cũ chưa gửi thì undefined. */
+  sn?: string;
   /** Bộ trang bị đang nhuộm áo/ánh kiếm (id bộ); '' hoặc thiếu = không. */
   sk?: string;
   /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`); '' hoặc thiếu = không. */
@@ -92,7 +94,9 @@ const SWORD_FORCED = typeof location === 'undefined' ? null : swordOverride(loca
 function lookOf(s: PState): PlayerLook {
   const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye, ...(s.hr ? { hair: s.hr } : {}) } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp, s.wg ?? 0) };
   const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
-  return s.sa ? { ...look, acc: s.sa } : look;
+  const skin = s.sn ? ITEM.get(s.sn)?.skin : undefined;
+  const full = s.sa ? { ...look, acc: s.sa } : look;
+  return skin ? { ...full, skin } : full;
 }
 
 function angleLerp(a: number, b: number, k: number): number {
@@ -596,7 +600,7 @@ export class EntityManager {
       v.s = s;
       const look = lookOf(s);
       if (isLocal) this.localLook = look;
-      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.hair !== v.look.hair || look.set !== v.look.set || look.acc !== v.look.acc || look.w !== v.look.w;
+      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.hair !== v.look.hair || look.set !== v.look.set || look.acc !== v.look.acc || look.w !== v.look.w || look.skin !== v.look.skin;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         // `create` trước: nó khởi động việc nạp lười (asset nhân vật, kiếm riêng), rồi mới hỏi còn nạp không để biết có phải dựng lại.
         const next = this.playerSkins.create(look);
@@ -1182,6 +1186,11 @@ export class EntityManager {
     list.sort((a, b) => a.d - b.d);
     const i = list.findIndex((e) => e.id === current);
     return list[(i + 1) % list.length].id;
+  }
+
+  /** Giới tính nhân vật của mình ('m' | 'f') theo trạng thái server; UI dùng để báo món giới hạn giới tính. */
+  localGender(): string {
+    return this.localLook.g;
   }
 
   /** Khóa ngoại hình của mình (xem trước nhân vật 3D, TD-C): đổi khi đổi đồ, giới tính, màu áo, kiếm. */

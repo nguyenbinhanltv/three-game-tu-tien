@@ -17,6 +17,7 @@
 #   cut         nhóm xương bị bỏ khỏi mảnh (da đầu/cổ/tay của ma-nơ-canh): head, neck, hand. Rỗng cho mảnh rời không có da
 #   smooth      số vòng làm mượt trọng số (mode transfer; mặc định 2)
 #   clampLen    giới hạn tỉ lệ dài xương khi kéo giãn mảnh (mode rig), mặc định [0.75, 1.35]
+#   rigidRoot   true: xương gốc (hông) không xoay theo thân nền, chỉ dời (mode rig; cho skin toàn thân có đuôi/vạt gắn hông)
 #   legBlend    0..1: vạt dưới hông trộn trọng số hai chân (chống xuyên chân kia khi chạy); mặc định 0.5, 0 = tắt
 #   strayHand, strayLeg  mét: bỏ ảnh hưởng lạc (vạt áo bị Tripo skin vào ngón tay; chân ở quá xa)
 #   spring      xương phụ: [{kind:"skirt", top, full, bottom, weight, radius, legClear}]  4 xương vạt (như áo gốc)
@@ -35,7 +36,7 @@ import runpy
 
 import bmesh
 import bpy
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Quaternion, Vector
 from mathutils.bvhtree import BVHTree
 
 REPORT = {}
@@ -55,6 +56,7 @@ PAD = float(CFG.get('pad', 0.0))
 PAD_BODY = CFG.get('padBody', 'kept')
 PAD_RANGE = float(CFG.get('padRange', 0.12))  # chỉ xét đỉnh cách thân nền gần hơn thế này (m)
 SMOOTH = int(CFG.get('smooth', 2))
+RIGID_ROOT = bool(CFG.get('rigidRoot', False))
 PARTS = runpy.run_path(os.path.join(REPO, 'tools/blender/biped_parts.py'))  # noqa: F821
 
 
@@ -196,6 +198,10 @@ def solve_rig():
             continue
         ph, pd, pl = P_info[pname]
         q = sd.rotation_difference(pd)
+        # Xương gốc (hông): hướng = trung bình đầu các xương con (cột sống lên, hai đùi xuống) gần như triệt tiêu nên rất nhiễu;
+        # với mảnh có phần lớn gắn vào hông (đuôi, vạt dài của skin toàn thân) thì giữ nguyên hướng, chỉ dời theo đầu xương.
+        if RIGID_ROOT and S_parent.get(sname) is None:
+            q = Quaternion()
         ratio = min(max(pl / sl, LO), HI) if sl > 0.02 and pl > 0.02 else 1.0
         xf[sname] = (sh, sd, ph, q, ratio, pname)
     vg_name = {vg.index: vg.name for vg in G.vertex_groups}

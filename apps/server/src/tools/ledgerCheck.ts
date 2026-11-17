@@ -2,7 +2,7 @@
 // Chạy: pnpm ledger:check  (nên chạy khi server đã tắt, hoặc chấp nhận lệch nhỏ do giao dịch đang diễn ra)
 
 import { sql } from 'drizzle-orm';
-import { EQUIP_SLOTS, type Equipment } from '@dtl/shared';
+import { WEAR_SLOTS, type Equipment } from '@dtl/shared';
 import { characters, db, items, ledger, sqlite } from '../db';
 
 let bad = 0;
@@ -44,7 +44,7 @@ for (const c of chars) {
     bad++;
     console.error(`[trang bị hỏng] ${c.name}`);
   }
-  for (const es of EQUIP_SLOTS) {
+  for (const es of WEAR_SLOTS) {
     const e = equip[es];
     if (e) have.set(e.id, (have.get(e.id) ?? 0) + 1);
   }

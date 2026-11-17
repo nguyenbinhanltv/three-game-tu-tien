@@ -67,6 +67,13 @@ export function weaponIds(): string[] {
     .map((i) => i.id);
 }
 
+/** Skin ngoại hình (vật phẩm kind `skin`), xếp theo id. */
+export function skinIds(): string[] {
+  return ITEMS.filter((i) => i.kind === 'skin')
+    .map((i) => i.id)
+    .sort();
+}
+
 /** Bộ mặc được (có vật phẩm) kèm ghi chú mảnh asset trang phục. */
 export function outfitRows(): { id: string; wearable: boolean; parts: number }[] {
   const ids = new Set<string>([...SETS.map((s) => s.id), ...Object.keys(OUTFITS)]);
@@ -120,7 +127,7 @@ export const GM_GROUPS: readonly { id: string; cmds: readonly string[] }[] = [
   { id: 'char', cmds: ['help', 'level', 'realm', 'trib', 'xp', 'gold', 'god', 'heal', 'die', 'charge', 'cd', 'dye'] },
   { id: 'skill', cmds: ['skills', 'learn', 'method', 'variant'] },
   { id: 'gear', cmds: ['kit', 'roll', 'set', 'plus', 'art', 'give', 'bag'] },
-  { id: 'outfit', cmds: ['outfit'] },
+  { id: 'outfit', cmds: ['outfit', 'skin'] },
   { id: 'weapon', cmds: ['weapon'] },
   { id: 'map', cmds: ['tp', 'tele', 'qdone', 'qev'] },
   { id: 'mon', cmds: ['spawn', 'killall', 'hurt', 'tick'] },

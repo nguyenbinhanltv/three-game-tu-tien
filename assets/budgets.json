@@ -97,6 +97,13 @@
       "bones": 80,
       "webp": true
     },
+    "skin": {
+      "triangles": { "min": 8000, "max": 25000 },
+      "lods": [{ "ratio": 0.4, "maxTriangles": 8000 }, { "ratio": 0.15, "maxTriangles": 3000 }],
+      "texture": { "color": 1024, "data": 1024 },
+      "bones": 80,
+      "webp": true
+    },
     "drop": {
       "triangles": { "min": 300, "max": 1500 },
       "lods": [],
