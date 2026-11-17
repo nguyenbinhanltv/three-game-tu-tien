@@ -28,5 +28,11 @@
   { "id": "vh_kinh_ho", "level": "van_hai", "x": 1158, "z": 1498, "note": "Kính Hồ Đài, Kính Hồ Đảo (cấp 21–22)" },
   { "id": "vh_loi_van", "level": "van_hai", "x": 1557, "z": 720, "note": "Đỉnh Sấm, Lôi Vân Đảo (cấp 22–23)" },
   { "id": "vh_kinh_ngu", "level": "van_hai", "x": 701, "z": 571, "note": "Vực Kình Ngư, Kình Ngư Đài (cấp 23)" },
-  { "id": "vh_dao_nho", "level": "van_hai", "x": 904, "z": 784, "note": "Đảo nhỏ hái thuốc, chỉ ngự kiếm tới được" }
+  { "id": "vh_dao_nho", "level": "van_hai", "x": 904, "z": 784, "note": "Đảo nhỏ hái thuốc, chỉ ngự kiếm tới được" },
+  { "id": "tk_tram", "level": "thien_khuyet", "x": 1024, "z": 1036, "note": "Ngoại Thành Trạm, điểm vào Thiên Khuyết Cổ Thành (cấp 24–27)" },
+  { "id": "tk_dai_lo", "level": "thien_khuyet", "x": 1144, "z": 684, "note": "Hàng Trụ Khắc Vân, Đại Lộ Đèn Trời (cấp 24–25)" },
+  { "id": "tk_lam_sao", "level": "thien_khuyet", "x": 614, "z": 970, "note": "Tinh Bái Đài, Lâm Sao Viên (cấp 24–25)" },
+  { "id": "tk_binh_khi", "level": "thien_khuyet", "x": 1464, "z": 904, "note": "Kho Giáo, Binh Khí Khố (cấp 25–26)" },
+  { "id": "tk_dien_tien", "level": "thien_khuyet", "x": 1044, "z": 270, "note": "Cổng Thần Tàng Điện, Điện Tiền Quảng Trường (cấp 26–27)" },
+  { "id": "tk_mo_dao", "level": "thien_khuyet", "x": 964, "z": 1504, "note": "Cổ Thành Thất Lộ, Mộ Đạo (cấp 24–26); chỗ Thiên Khuyết Thủ Linh sau này" }
 ]

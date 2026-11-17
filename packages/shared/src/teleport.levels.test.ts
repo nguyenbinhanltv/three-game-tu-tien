@@ -12,6 +12,9 @@ describe('padsOfLevel', () => {
     const vh = padsOfLevel('van_hai');
     expect(vh.length).toBeGreaterThanOrEqual(6);
     expect(vh.every((p) => p.level === 'van_hai' && p.id.startsWith('vh_'))).toBe(true);
-    expect(dm.length + vl.length + vh.length).toBe(TELE_PADS.length);
+    const tk = padsOfLevel('thien_khuyet');
+    expect(tk.length).toBeGreaterThanOrEqual(6);
+    expect(tk.every((p) => p.level === 'thien_khuyet' && p.id.startsWith('tk_'))).toBe(true);
+    expect(dm.length + vl.length + vh.length + tk.length).toBe(TELE_PADS.length);
   });
 });

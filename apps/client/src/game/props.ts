@@ -63,7 +63,12 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_da_troi: { range: 420, lod: [60, 140] },
   prop_tung_phu_dao: { range: 520, lod: [45, 110], shadow: true },
   prop_anh_ngoc_kinh: { range: 150, lod: [25, 70], decor: true },
+  // Thiên Khuyết Cổ Thành (PROP_LIB, E4-A)
   prop_tru_da_khac_van: { range: 380, lod: [50, 120] },
+  prop_dai_tinh_bai: { range: 360, lod: [50, 120] },
+  prop_cong_thanh_vo: { range: 520, lod: [60, 150] },
+  prop_tuong_da_vo_si: { range: 420, lod: [60, 140] },
+  prop_den_long_troi: { range: 220, lod: [30, 80], decor: true },
 };
 
 const CHUNK = 128;
