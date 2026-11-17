@@ -32,6 +32,7 @@ import { Aoi } from './aoi';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
 import { Character } from './game/character';
+import { DUNGEON_QUEST_TARGET } from './game/dungeonquest';
 import { MarkerSystem } from './game/marker';
 import { MirrorPuzzle } from './game/mirrorpuzzle';
 import { SealSystem } from './game/seal';
@@ -546,6 +547,7 @@ export function defineWorld(levelId: string): typeof WorldRoom {
 }
 
 /** Bí cảnh: mỗi room là một lượt của tối đa 5 người, đánh qua các đợt trong `levels/<id>.json` (E1-B, E2-C). */
+
 export class DungeonRoom extends GameRoom {
   static levelId: string = 'kiem_trung';
   private wave = 0;
@@ -605,8 +607,9 @@ export class DungeonRoom extends GameRoom {
 
   afterJoin(p: PlayerEnt): void {
     this.sim.sys(p, 'sys.dungeon_enter', { name: this.dname }, 'info');
-    // Hook nhiệm vụ (q2_phuc_mach: mục tiêu `dungeon` ×1): chỉ phát sự kiện, kèm id level để nhiệm vụ lọc được.
-    this.sim.questEvent(p, 'dungeon', undefined, 1);
+    // Hook nhiệm vụ (mục tiêu `dungeon` ×1): phát sự kiện kèm đích của phó bản này để nhiệm vụ có `target` lọc được
+    // (q2_phuc_mach, q3_kinh_nguyet, q4_than_tang). Kiếm Trủng không có đích: chỉ khớp mục tiêu `dungeon` không khai `target`.
+    this.sim.questEvent(p, 'dungeon', DUNGEON_QUEST_TARGET[this.levelId], 1);
     if (p.noLoot) this.sim.sys(p, 'sys.dungeon_no_reward', { name: this.dname }, 'bad');
   }
 
