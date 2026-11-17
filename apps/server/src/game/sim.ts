@@ -785,6 +785,8 @@ export class GameSim {
     players: () => this.players.values(),
     canAssist: (owner, o) => this.canAssist(owner, o),
     heal: (p, n) => this.healPlayer(p, n),
+    isDead: (p) => this.isDead(p),
+    inDuel: (p) => this.duel.inDuel(p),
   });
 
   /** Sắp xếp, khóa ô, tách chồng (TD-A). */

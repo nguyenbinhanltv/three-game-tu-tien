@@ -4,7 +4,7 @@
 //  - Đan sư (support): chủ và đồng đội trong vùng hồi một phần khí huyết mỗi giây (tick).
 // Công thức ở `packages/shared/src/clone.ts`. Chỉ server tính; client chỉ vẽ vòng nhạt dưới chân chủ.
 
-import { DOMAIN_EFFECT, DOMAIN_TICK_MS, domainRadius, domainScale, type MethodRole } from '@dtl/shared';
+import { PF_DEAD, DOMAIN_EFFECT, DOMAIN_TICK_MS, domainRadius, domainScale, type MethodRole } from '@dtl/shared';
 import { METHOD } from '@dtl/content';
 import type { PlayerEnt } from './sim';
 
@@ -13,6 +13,8 @@ export interface DomainHost {
   players(): Iterable<PlayerEnt>;
   canAssist(owner: PlayerEnt, o: PlayerEnt): boolean;
   heal(p: PlayerEnt, n: number): void;
+  isDead(p: PlayerEnt): boolean;
+  inDuel(p: PlayerEnt): boolean;
 }
 
 interface Aura {
@@ -33,9 +35,14 @@ export class DomainSystem {
 
   constructor(private h: DomainHost) {}
 
+  /** Chủ lĩnh vực có đang tác dụng lên người khác không: còn sống, không độ kiếp/thử thách/tỉ thí. */
+  private active(p: PlayerEnt): boolean {
+    return !this.h.isDead(p) && (p.s.fl & PF_DEAD) === 0 && !p.trib && !p.trial && !this.h.inDuel(p);
+  }
+
   /** Bạo kích cộng thêm của chủ nhờ lĩnh vực kiếm tu. */
   critAdd(p: PlayerEnt): number {
-    if (domainRadius(p.char.level) <= 0 || domainRole(p) !== 'dps') return 0;
+    if (domainRadius(p.char.level) <= 0 || domainRole(p) !== 'dps' || !this.active(p)) return 0;
     return DOMAIN_EFFECT.dps.crit * domainScale(p.char.level);
   }
 
@@ -58,7 +65,7 @@ export class DomainSystem {
     const healers: { p: PlayerEnt; r: number; regen: number }[] = [];
     for (const p of this.h.players()) {
       const r = domainRadius(p.char.level);
-      if (r <= 0) continue;
+      if (r <= 0 || !this.active(p)) continue;
       const role = domainRole(p);
       if (role === 'tank') this.tanks.push({ p, r, reduce: DOMAIN_EFFECT.tank.reduce * domainScale(p.char.level) });
       else if (role === 'support') healers.push({ p, r, regen: DOMAIN_EFFECT.support.regen * domainScale(p.char.level) });

@@ -333,6 +333,27 @@ describe('Lĩnh vực', () => {
   });
 });
 
+describe('Lĩnh vực: chủ chết thì hết tác dụng', () => {
+  it('hộ pháp chết không còn giảm sát thương, đan sư chết không còn hồi', () => {
+    const { sim, join, advance } = world();
+    const t = join(28, 'bat_dong_kim_than');
+    const ally = join(28, 'lac_kiem_quyet', 5);
+    const d = join(28, 'thanh_moc_dan_kinh', 8);
+    const far = join(28, 'lac_kiem_quyet', 90);
+    advance(1200);
+    expect(sim.domain.reduce(ally)).toBeGreaterThan(0);
+    sim.damagePlayer(t, t.char.mhp * 50, '');
+    sim.damagePlayer(d, d.char.mhp * 50, '');
+    ally.char.hp = Math.round(ally.char.mhp * 0.4);
+    far.char.hp = ally.char.hp;
+    const h0 = ally.char.hp;
+    advance(3500);
+    expect(sim.domain.reduce(ally)).toBe(0);
+    // Chỉ còn hồi tự nhiên như người đứng xa.
+    expect(ally.char.hp - h0).toBeCloseTo(far.char.hp - h0, 0);
+  });
+});
+
 describe('tải: 50 người cùng gọi phân thân', () => {
   it('tick server vẫn thấp khi 50 phân thân cùng hoạt động giữa đám quái', () => {
     const w = world();
