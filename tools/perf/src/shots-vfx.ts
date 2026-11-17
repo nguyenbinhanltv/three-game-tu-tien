@@ -32,7 +32,8 @@ const METHOD_OF: Record<string, string> = Object.fromEntries([
   ...['skl_luu_huong_bo', 'skl_hoi_xuan_quyet', 'skl_hoi_thien_dan_lo', 'skl_moc_linh_tran', 'skl_duoc_vu', 'skl_ngung_dan_ho_the', 'skl_dan_hoa_phong_tran', 'skl_anh_duoc_hoa_than', 'skl_thuan_di_cuu_vien', 'skl_thien_dan_phap_gioi'].map((k) => [k, DS]),
 ]);
 /** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
-const WIDE = /thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
+const PHAP = /van_kiem_quy_tong|kim_cuong|hoi_thien/;
+const WIDE = /kim_cuong|thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
 /** Số người giả cùng ra chiêu (đo sân đông) và thời gian đo (giây). */
 const CROWD = Number(opt('--crowd', '0'));
 const CROWD_SECS = Number(opt('--crowd-secs', '15'));
@@ -76,8 +77,8 @@ const gm = async (page: Page, cmd: string, wait = 1100) => {
   await sleep(wait);
 };
 
-async function closeCam(page: Page, dist: number): Promise<void> {
-  await page.evaluate((d) => {
+async function closeCam(page: Page, dist: number, yawOff = 0.9): Promise<void> {
+  await page.evaluate(([d, yo]) => {
     const g = (window as unknown as G).__game!;
     let yaw = g.cur.yaw as number;
     let near: { x: number; z: number } | null = null;
@@ -90,11 +91,11 @@ async function closeCam(page: Page, dist: number): Promise<void> {
       }
     }
     if (near) yaw = Math.atan2(near.x - g.cur.x, near.z - g.cur.z);
-    g.camYaw = yaw + 0.9;
+    g.camYaw = yaw + yo;
     g.camPitch = 0.2;
     g.camDist = d;
     g.camDistCur = d;
-  }, dist);
+  }, [dist, yawOff] as const);
   await sleep(700);
 }
 
@@ -273,6 +274,20 @@ async function main(): Promise<void> {
           await ctx.close();
           continue;
         }
+        if (args.includes('--lab3')) {
+          // Phòng thử hình tĩnh: đặt một sự kiện mesh dài 8 s trước mặt rồi chụp ở vài khoảng cách (xem hình pháp tướng).
+          await scene(page);
+          await gm(page, 'killall', 900); await gm(page, 'heal', 600); await gm(page, 'tp 2048 2150', 1800);
+          const ev = JSON.parse(opt('--ev', '{}'));
+          await page.evaluate((e) => { const g = (window as unknown as G).__game!; const cur = g.cur; const R = g.skillFx.runner; const pal = g.__fxlab?.paletteOf ?? undefined; void pal; R.mesh({ sid: g.sid, actor: { x: cur.x, y: cur.y, z: cur.z, yaw: 0, model: {} }, mine: true, tier: 2, pal: { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xf2fdff, accent: 0xf3c860, shadow: 0x08202e }, seed: 3.1, dist: 5 }, e, null, 0); }, ev);
+          for (const [d, pt] of [[10, 0.2], [18, 0.3], [26, 0.3]] as const) {
+            await page.evaluate(([dd, pp]) => { const g = (window as unknown as G).__game!; g.camYaw = Math.PI; g.camPitch = pp; g.camDist = dd; g.camDistCur = dd; }, [d, pt] as const);
+            await sleep(900);
+            await page.screenshot({ path: path.join(OUT, `lab3-${g}-${d}.png`) });
+          }
+          await ctx.close();
+          continue;
+        }
         let curMethod = 'lac_kiem_quyet';
         for (const sk of SKILLS) {
           const want = METHOD_OF[sk] ?? 'lac_kiem_quyet';
@@ -282,9 +297,11 @@ async function main(): Promise<void> {
             curMethod = want;
           }
           await scene(page);
+          // Pháp tướng cần camera xa phía sau: đứng ở chỗ trống giữa sân (không có cột/cổng chắn camera).
+          if (PHAP.test(sk)) { await gm(page, 'tp 2048 2150', 1500); if (!/kim_cuong|hoi_thien/.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500); else await gm(page, 'killall', 900); }
           if (/van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/.test(sk)) await gm(page, 'charge', 900);
-          await closeCam(page, WIDE.test(sk) ? 9.5 : DIST);
-          if (WIDE.test(sk)) await page.evaluate(() => { (window as unknown as G).__game!.camPitch = 0.3; });
+          await closeCam(page, WIDE.test(sk) ? Number(opt('--wide', '9.5')) : DIST, PHAP.test(sk) ? Math.PI + 0.15 : 0.9);
+          if (WIDE.test(sk)) await page.evaluate((pt) => { (window as unknown as G).__game!.camPitch = pt; }, PHAP.test(sk) ? 0.2 : 0.3);
           const combo = sk === 'skl_phi_kiem';
           const span = combo ? 3000 : SPAN[sk] ?? Number(opt('--span', '1700'));
           const act = async () => {

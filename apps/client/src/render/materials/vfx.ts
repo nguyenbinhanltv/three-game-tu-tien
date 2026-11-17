@@ -7,7 +7,7 @@ import { boltNodes, vortexNodes } from '../vfx/lightning';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
-import { burstNodes, crystalNodes, decalNodes, toonNodes } from '../vfx/stylized';
+import { burstNodes, cardNodes, crystalNodes, decalNodes, toonNodes } from '../vfx/stylized';
 import { trailNodes } from '../vfx/trail';
 
 /**
@@ -47,7 +47,7 @@ export const FX_MAX_HDR = 2.4;
  * - `burst`: chớp va chạm + vạch tốc độ tỏa tròn, quay mặt về camera, cộng sáng có bloom (stylized.ts).
  * - `decal`: tấm trên mặt đất: vết nứt phát sáng, vòng triện văn, vết cháy, khói toon (stylized.ts).
  */
-export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail' | 'beam' | 'dome' | 'inkpool' | 'toon' | 'crystal' | 'burst' | 'decal';
+export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail' | 'beam' | 'dome' | 'inkpool' | 'toon' | 'crystal' | 'burst' | 'decal' | 'card';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -67,6 +67,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   crystal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.35, fog: false },
   burst: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
   decal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: true },
+  card: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
 };
 
 const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opacity: unknown }>> = {
@@ -82,6 +83,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   crystal: crystalNodes,
   burst: burstNodes,
   decal: decalNodes,
+  card: cardNodes,
   dome: (u) => {
     // Fresnel: 1 ở rìa (nhìn lướt), ~0 ở giữa (nhìn thẳng). Vân phù văn: dải ngang mờ chạy theo độ cao.
     const fres = pow(float(1).sub(abs(dot(normalize(normalView), normalize(positionView.negate())))), 2.6);
@@ -157,7 +159,7 @@ export const BATCHING = typeof location === 'undefined' || new URLSearchParams(l
  * `sigil` KHÔNG gộp (S2-C): nhiều pháp trận cùng lúc (lôi võng độ kiếp có 21 vòng cùng vòng nhắm, hay nhiều vùng báo của boss) khi gộp chỉ vẽ ra
  * MỘT cái (dữ liệu instance ghi đúng, vẽ thiếu; `?batch=0` vẽ đủ). Nguyên nhân chưa rõ. Giá: thêm chừng 23 draw call trong 1 giây mỗi đợt lôi võng.
  */
-export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>(['glow', 'flat', 'solid', 'slash', 'ink', 'dome', 'inkpool', 'toon', 'crystal', 'burst', 'decal']);
+export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>(['glow', 'flat', 'solid', 'slash', 'ink', 'dome', 'inkpool', 'toon', 'crystal', 'burst', 'decal', 'card']);
 
 /** Tên thuộc tính instance: màu + độ trong, `fxA`, `fxB`, (`fxK`, 0, 0, 0). */
 export const BATCH_ATTR = { c: 'aFxC', a: 'aFxA', b: 'aFxB', k: 'aFxK' } as const;

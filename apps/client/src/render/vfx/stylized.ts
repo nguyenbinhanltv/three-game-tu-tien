@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { abs, atan, clamp, dot, exp, float, floor, fract, length, max, min, mix, normalize, normalView, positionView, pow, select, smoothstep, step, texture, time, uv, vec2, vec3 } from 'three/tsl';
 import { hash21, vnoise, type FxUniforms, type N } from './common';
+import { cardTexture } from './cards';
 
 /**
  * Thư viện shader TSL "vẽ tay, 2D trong 3D" (VFX-V0). Mọi hiệu ứng chiêu mới ghép từ các mảnh này:
@@ -325,4 +326,38 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
   // Smoke tự quản lý mờ bằng `fade` (xói mòn); các kiểu khác mờ theo `fade` trực tiếp.
   const fadeMul = select(step(2.5, kind).greaterThan(0.5), one, one.sub(fade));
   return { color, opacity: U.opacity.mul(a).mul(fadeMul) };
+}
+
+/**
+ * `card`: thẻ pháp tướng vẽ 2D quay mặt về camera (render/vfx/cards.ts). Texture mã hóa R = tầng màu, G = điểm nhấn, A = hình.
+ * Ba tầng màu theo bảng nhánh (lõi sẫm / thân / viền sáng); phần điểm nhấn dùng vàng (La Hán) hoặc đỏ son (Phượng).
+ * `fxA` = (mọc từ dưới lên 0..1,1, tan 0..1,1, seed, thẻ 0 La Hán | 1 Phượng). Mép tan bừng sáng.
+ */
+export function cardNodes(U: FxUniforms): { color: N; opacity: N } {
+  const q = uv();
+  const reveal0 = U.a.x;
+  const erode = U.a.y;
+  const seed = U.a.z;
+  const which = U.a.w;
+  const one = float(1);
+  const body = U.color;
+  const rim = U.b.xyz;
+  const ta = texture(cardTexture('arhat'), q);
+  const tp = texture(cardTexture('phoenix'), q);
+  const t = mix(ta, tp, step(0.5, which));
+  const tier = t.r;
+  const acc = t.g;
+  const accent = mix(vec3(1.0, 0.78, 0.3), vec3(0.92, 0.2, 0.1), step(0.5, which));
+  const base = ramp3(tier, body.mul(body).mul(0.42), body, rim, 0.3, 0.72, 0.05);
+  const accCol = ramp3(tier, accent.mul(0.35), accent, mix(accent, vec3(1, 1, 1), 0.35), 0.3, 0.72, 0.05);
+  const lit = mix(base, accCol, acc);
+  // `uv.y` của PlaneGeometry: 0 ở đáy, 1 ở đỉnh, nên q.y chính là độ cao tính từ đáy thẻ.
+  const fromBottom = q.y;
+  const reveal = one.sub(smoothstep(reveal0.sub(0.08), reveal0, fromBottom));
+  const n = vnoise(q.mul(vec2(9, 12)).add(seed.mul(7)));
+  const e = n.mul(0.7).add(fromBottom.mul(0.3));
+  const alive = dissolve(e, erode, 0.07);
+  const edge = one.sub(smoothstep(erode, erode.add(0.1), e)).mul(step(0.02, erode));
+  const color = min(lit.add(rim.mul(edge.mul(0.9))), U.maxHdr);
+  return { color, opacity: U.opacity.mul(t.a).mul(reveal).mul(alive) };
 }
