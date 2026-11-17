@@ -1,25 +1,25 @@
 {
-  "outfit": "apps/client/public/assets/set_van_kinh_thiet_giap_nam.8d78140962.glb",
+  "outfit": "apps/client/public/assets/set_van_kinh_thiet_giap_nam.6d67a18175.glb",
   "keep": "head",
   "tol": 0.04,
   "poses": {
     "run": {
       "maxDepth": 0.04,
       "sign": 1,
-      "insideAtWorst": 16,
-      "meanInside": 13.0
+      "insideAtWorst": 18,
+      "meanInside": 13.5
     },
     "chop": {
       "maxDepth": 0.04,
       "sign": -1,
-      "insideAtWorst": 53,
-      "meanInside": 55.5
+      "insideAtWorst": 56,
+      "meanInside": 58.5
     },
     "arms_down": {
       "maxDepth": 0.0397,
       "sign": 1,
-      "insideAtWorst": 13,
-      "meanInside": 22.0
+      "insideAtWorst": 12,
+      "meanInside": 21.5
     },
     "crouch": {
       "maxDepth": 0.04,
@@ -30,14 +30,14 @@
     "sit": {
       "maxDepth": 0.0399,
       "sign": 1,
-      "insideAtWorst": 12,
-      "meanInside": 18.0
+      "insideAtWorst": 11,
+      "meanInside": 18.5
     },
     "fall": {
       "maxDepth": 0.04,
       "sign": 1,
-      "insideAtWorst": 18,
-      "meanInside": 11.0
+      "insideAtWorst": 17,
+      "meanInside": 11.5
     }
   }
 }

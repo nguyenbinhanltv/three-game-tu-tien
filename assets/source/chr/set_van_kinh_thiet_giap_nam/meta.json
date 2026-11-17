@@ -37,13 +37,13 @@
             "wscale": 0.85,
             "bottom": "ankle_z+0.6*(knee_z-ankle_z)"
           },
-          "legBlend": 0.9,
-          "smooth": 4,
-          "armFix": 0.09,
+          "legBlend": 0.95,
+          "smooth": 3,
+          "armFix": 0.3,
           "spring": {
-            "count": 3,
-            "minDist": 0.12,
-            "weight": 0.6
+            "count": 2,
+            "minDist": 0.14,
+            "weight": 0.4
           }
         },
         "vai_giap": {

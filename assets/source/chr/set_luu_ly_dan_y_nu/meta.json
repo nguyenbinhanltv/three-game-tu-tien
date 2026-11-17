@@ -32,9 +32,28 @@
       "atlas": 1024,
       "gain": 1.1,
       "alpha": {
-        "ao_ngoai": "veil"
+        "ao_ngoai": "sleeve"
       },
-      "normalFlat": 0.8
+      "normalFlat": 0.9,
+      "veilAlpha": 0.58,
+      "veil": {
+        "xmin": "waist_w*0.5+0.10",
+        "zlo": "ankle_z+0.10",
+        "zhi": "shoulder_z-0.10"
+      },
+      "pieces": {
+        "ao_ngoai": {
+          "armFix": 0.35,
+          "smooth": 14,
+          "legBlend": 0.9,
+          "spring": false
+        },
+        "lop_duoi": {
+          "islands": true,
+          "legBlend": 0.9,
+          "spring": false
+        }
+      }
     }
   },
   "concept": [

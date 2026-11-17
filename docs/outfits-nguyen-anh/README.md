@@ -12,8 +12,8 @@ Hai bộ còn lại của bậc 3, dựng từ 6 mảnh Tripo HD Model (đủ te
 ## Cấu hình (`assets/source/chr/set_<bộ>_{nam,nu}/meta.json`)
 
 - Nguồn: `chr/<bộ>/tripo/raw_{ao_ngoai,lop_duoi,vai_giap,dai_tua,ung,trang_suc_dau}_v01.glb`; cả 6 mảnh mỗi bộ đều có texture nên **không cần vật liệu thủ tục** (`proc`). Không đụng `raw_v01.glb`/`rig_v01.glb`.
-- **Vân Kình** (bài học #162, skin giáp cứng): váy giáp `islands: true`, `legBlend` 0,9, `spring: false`; giáp thân `legBlend` 0,9, `smooth` 4, `armFix` 0,09, lò xo chỉ 3 xương cho choàng sau lưng (`minDist` 0,12); vai `shoulder_span+0.13`; giáp thân thu 0,82→0,85 bề ngang. Chỉ tua/đai có lò xo. Bảng màu: chính `#4A5870`, phụ `#E4E8EC`, viền `#B9C4D0`, nhấn `#6FB4E8`; `gain` 1,2.
-- **Lưu Ly** (bài học #160, voan blend hai lượt): `alpha.ao_ngoai = "veil"` (voan nhận theo màu texel, một mảnh xuyên sáng, còn dư một suất trong giới hạn 2), `normalFlat` 0,8. Client vẽ voan blend thật, `depthWrite` tắt, độ đục ~0,42, chỉ LOD0; LOD1/2 vẽ đặc, không dither chấm. Bảng màu: chính `#F1F5F6`, phụ `#A9D6E6`, viền `#D4DEE0`, nhấn `#7FD4D8`; `gain` 1,1.
+- **Vân Kình** (bài học #162): váy giáp `islands: true`, `legBlend` 0,9, `spring: false`; giáp thân + choàng `legBlend` 0,95, `smooth` 3, **`armFix` 0,30** (là bán kính, không phải cường độ: ống tay trắng phồng rộng cần bán kính lớn để bám xương tay thay vì sườn thân; bản đầu 0,09 làm tay áo xé thành khối nếp gãy sắc khi chém/chạy), lò xo chỉ 2 xương cho choàng sau lưng (`minDist` 0,14); vai `shoulder_span+0.13`. Bảng màu: chính `#4A5870`, phụ `#E4E8EC`, viền `#B9C4D0`, nhấn `#6FB4E8`; `gain` 1,2.
+- **Lưu Ly** (bài học #160): bản đầu dùng `alpha: veil` (nhận voan theo màu texel) nhưng áo toàn màu trắng nhạt nên **cả đạo bào thành trong suốt** (lỗi báo ở review). Nay `alpha.ao_ngoai = "sleeve"` (voan theo hình học: đỉnh ngoài thân `|x| > waist_w/2+0,10`, z từ `ankle_z+0,10` tới `shoulder_z-0,10`, tức tay áo/choàng rũ hai bên), `veilAlpha` 0,58 (độ đục ~0,42), `normalFlat` 0,9; thân, áo trong, váy luôn đục. Client vẽ voan blend hai lượt, `depthWrite` tắt, chỉ LOD0, một mảnh xuyên sáng. Skin: áo ngoài `armFix` 0,35, `smooth` 14, `legBlend` 0,9, không lò xo; váy `islands: true`, `legBlend` 0,9, không lò xo (bản đầu có lò xo và trọng số nhiễu làm áo vỡ mảnh khi ra chiêu). Bảng màu: chính `#F1F5F6`, phụ `#A9D6E6`, viền `#D4DEE0`, nhấn `#7FD4D8`; `gain` 1,1.
 
 ## Kính Quang Kiếm
 
@@ -25,16 +25,16 @@ Hai bộ còn lại của bậc 3, dựng từ 6 mảnh Tripo HD Model (đủ te
 
 ## Kiểm xuyên mesh
 
-`outfit_check.py --keep head --tol 0.04`: số đỉnh xuyên vùng đầu/cổ: Vân Kình nam 11–56 (vai to, chém giơ tay), nữ 0–4; Lưu Ly nam 5–24, nữ 1–4; sâu ≤ 4 cm (trần thử nghiệm). Ảnh game (đứng/chạy/ngự kiếm/đả tọa/chém/chết, ba công pháp, nam+nữ) không thấy xuyên mesh đáng kể. `check/*.json`.
+`outfit_check.py --keep head --tol 0.04`: số đỉnh xuyên vùng đầu/cổ: Vân Kình nam 12–59 (vai to, chém giơ tay), nữ 0–4; Lưu Ly nam 6–22, nữ 1–5; sâu ≤ 4 cm (trần thử nghiệm). Ảnh game (đứng/chạy/ngự kiếm/đả tọa/chém/chết, ba công pháp, nam+nữ) không thấy xuyên mesh đáng kể. `check/*.json`.
 
 ## Số đo (`BOT_SET=<bộ> pnpm bench:crowd --bots 50 --scenes san --renderers webgpu --presets high`, cổng 2837/5437)
 
 | | draw | tam giác | CPU p50/p95/p99 | texture MB | heap MB | tick p95 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 50 bot Vân Kình, sân tông môn | **275** (< 300) | 823k | 6,9 / 10,2 / 47,5 ms | 409 | 302 | 2,3 ms |
-| 50 bot Lưu Ly, sân tông môn | **284** (< 300) | 992k | 9,1 / 14,2 / 57,5 ms | 409 | 238 | 3,9 ms |
+| 50 bot Vân Kình, sân tông môn | **273** (< 300) | 820k | 9,3 / 14,0 / 70 ms | 409 | 272 | 5,3 ms |
+| 50 bot Lưu Ly, sân tông môn | **284** (< 300) | 985k | 10,2 / 15,4 / 60 ms | 409 | 284 | 5,1 ms |
 
-Draw đạt ngân sách. CPU p50 Lưu Ly 9,1 ms hơi quá 8 ms (voan thêm một draw ở LOD0, cùng mức các bộ voan trước; máy đo bận, p99 là khung nạp pipeline đầu).
+Draw đạt ngân sách. CPU p50 9–10 ms trên cả hai bộ ở lần đo lại (máy đo đang bận, lần đo đầu Vân Kình 6,9 ms; p99 là khung nạp pipeline đầu), quá 8 ms, chưa đo lại trên máy rảnh.
 
 ## Ảnh
 
@@ -42,7 +42,7 @@ Draw đạt ngân sách. CPU p50 Lưu Ly 9,1 ms hơi quá 8 ms (voan thêm một
 
 ## Giới hạn
 
-- Vân Kình: tay áo trắng phồng rách mép và hơi nhàu khi chém (hình học Tripo); mép giáp vảy lởm chởm khi nhìn gần.
-- Lưu Ly: voan vỡ thành mảnh nhọn do hình học Tripo, hơi cứng so với concept; chưa tách dải lụa đai thành mảnh xuyên sáng thứ hai.
+- Vân Kình: tay áo trắng vẫn phồng (đúng concept) nhưng nay bám theo tay, ít nếp gãy; mép giáp vảy lởm chởm khi nhìn gần.
+- Lưu Ly: đạo bào đục, nhưng tay áo rộng của Tripo là các dải mỏng rách mép nên khi ra chiêu vẫn thấy mảnh nhọn như lông vũ (hình học nguồn, nữ rõ hơn nam); chưa tách dải lụa đai thành mảnh xuyên sáng thứ hai.
 - GLB chưa nén KTX2 (máy dựng không có `toktx`), giống các bộ trước nên GLB 4–5 MB mỗi mảnh; nén lại khi có KTX-Software.
 - Kiếm Kính Quang chưa có mặt nạ emissive riêng cho ngọc lam.

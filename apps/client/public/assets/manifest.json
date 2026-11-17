@@ -8490,15 +8490,15 @@
       "id": "set_luu_ly_dan_y_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_luu_ly_dan_y_nam.glb",
-      "file": "set_luu_ly_dan_y_nam.5f4f82a33f.glb",
-      "bytes": 4223068,
-      "rawBytes": 4066908,
-      "triangles": 10823,
-      "rawTriangles": 10823,
+      "file": "set_luu_ly_dan_y_nam.6fc8d8b63b.glb",
+      "bytes": 4150324,
+      "rawBytes": 4031948,
+      "triangles": 10825,
+      "rawTriangles": 10825,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 78,
+      "bones": 66,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -8542,28 +8542,28 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 10823
+          "triangles": 10825
         },
         {
           "level": 1,
-          "triangles": 4407,
-          "target": 4329
+          "triangles": 4320,
+          "target": 4330
         },
         {
           "level": 2,
-          "triangles": 1616,
-          "target": 1623
+          "triangles": 1620,
+          "target": 1624
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.6625,
+          "width": 2.0508,
           "height": 1.7178,
           "depth": 0.5126,
           "minY": 0
         },
         "build": {
-          "width": 1.6625,
+          "width": 2.0508,
           "height": 1.7178,
           "depth": 0.5126,
           "minY": 0
@@ -8574,15 +8574,15 @@
       "id": "set_luu_ly_dan_y_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_luu_ly_dan_y_nu.glb",
-      "file": "set_luu_ly_dan_y_nu.5529f35a2c.glb",
-      "bytes": 4212968,
-      "rawBytes": 4066408,
-      "triangles": 10823,
-      "rawTriangles": 10823,
+      "file": "set_luu_ly_dan_y_nu.96caf2ef51.glb",
+      "bytes": 4144956,
+      "rawBytes": 4032288,
+      "triangles": 10825,
+      "rawTriangles": 10825,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 75,
+      "bones": 63,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -8626,28 +8626,28 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 10823
+          "triangles": 10825
         },
         {
           "level": 1,
-          "triangles": 4326,
-          "target": 4329
+          "triangles": 4317,
+          "target": 4330
         },
         {
           "level": 2,
-          "triangles": 1613,
-          "target": 1623
+          "triangles": 1607,
+          "target": 1624
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.9829,
+          "width": 1.9757,
           "height": 1.6633,
           "depth": 0.4988,
           "minY": 0
         },
         "build": {
-          "width": 1.9829,
+          "width": 1.9757,
           "height": 1.6633,
           "depth": 0.4988,
           "minY": 0
@@ -9237,15 +9237,15 @@
       "id": "set_van_kinh_thiet_giap_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_van_kinh_thiet_giap_nam.glb",
-      "file": "set_van_kinh_thiet_giap_nam.8d78140962.glb",
-      "bytes": 4843092,
-      "rawBytes": 4735692,
-      "triangles": 12009,
-      "rawTriangles": 12009,
+      "file": "set_van_kinh_thiet_giap_nam.6d67a18175.glb",
+      "bytes": 4836964,
+      "rawBytes": 4735280,
+      "triangles": 12007,
+      "rawTriangles": 12007,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 68,
+      "bones": 67,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -9289,12 +9289,12 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 12009
+          "triangles": 12007
         },
         {
           "level": 1,
-          "triangles": 4804,
-          "target": 4804
+          "triangles": 4801,
+          "target": 4803
         },
         {
           "level": 2,
@@ -9304,13 +9304,13 @@
       ],
       "dims": {
         "raw": {
-          "width": 1.7638,
+          "width": 1.7654,
           "height": 1.7178,
           "depth": 0.4774,
           "minY": 0
         },
         "build": {
-          "width": 1.7638,
+          "width": 1.7654,
           "height": 1.7178,
           "depth": 0.4774,
           "minY": 0
@@ -9321,15 +9321,15 @@
       "id": "set_van_kinh_thiet_giap_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_van_kinh_thiet_giap_nu.glb",
-      "file": "set_van_kinh_thiet_giap_nu.0d599f22af.glb",
-      "bytes": 4842668,
-      "rawBytes": 4735708,
-      "triangles": 12005,
-      "rawTriangles": 12005,
+      "file": "set_van_kinh_thiet_giap_nu.abc140fafa.glb",
+      "bytes": 4837192,
+      "rawBytes": 4735348,
+      "triangles": 12007,
+      "rawTriangles": 12007,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 67,
+      "bones": 66,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -9373,12 +9373,12 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 12005
+          "triangles": 12007
         },
         {
           "level": 1,
           "triangles": 4802,
-          "target": 4802
+          "target": 4803
         },
         {
           "level": 2,
@@ -9388,13 +9388,13 @@
       ],
       "dims": {
         "raw": {
-          "width": 1.6916,
+          "width": 1.6927,
           "height": 1.6633,
           "depth": 0.4653,
           "minY": 0
         },
         "build": {
-          "width": 1.6916,
+          "width": 1.6927,
           "height": 1.6633,
           "depth": 0.4653,
           "minY": 0
