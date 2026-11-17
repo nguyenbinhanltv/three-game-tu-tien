@@ -14,7 +14,7 @@ Mọi bảng lớn (mọi `PanelWindow`) chuyển sang chất liệu **giấy ng
 
 ## Ảnh trước/sau (1080p và 1440p, `?mute=1`)
 
-`<bảng>-truoc-<độ phân giải>.jpg` (bảng cũ) và `<bảng>-sau-…`: `nhan-vat`, `nhan-vat-thuoc-tinh`, `tui-do`, `cong-phap`, `nhiem-vu`, `to-doi`, `cai-dat`, `tro-giup`, `npc-hoi-thoai`, `cua-hang`, `luyen-dan`, `cuong-hoa`, `thang-bac`. Chụp lại: `pnpm --filter @dtl/perf shots:ui3 --out <thư mục tuyệt đối> [--panels a,b] [--variants truoc,sau]` (tự đưa đồ, vàng, bộ trang bị vào để bảng có nội dung).
+`<bảng>-truoc-<độ phân giải>.jpg` (bảng cũ) và `<bảng>-sau-…`: `nhan-vat`, `nhan-vat-thuoc-tinh`, `tui-do`, `cong-phap`, `nhiem-vu`, `to-doi`, `cai-dat`, `tro-giup`, `npc-hoi-thoai`, `cua-hang`, `luyen-dan`, `cuong-hoa`, `thang-bac`. Chụp lại: `pnpm shots ui --part panels --variants truoc,sau --out <thư mục tuyệt đối> [--panels a,b] [--variants truoc,sau]` (tự đưa đồ, vàng, bộ trang bị vào để bảng có nội dung).
 
 ## Giới hạn
 

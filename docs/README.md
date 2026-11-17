@@ -4,7 +4,7 @@ Tài liệu thiết kế và ghi chú theo từng hạng mục của Đạp Thi�
 
 ## Quy ước ảnh và video (từ R-1, 2026-11-18)
 
-- **Ảnh/video duyệt PR không commit vào repo.** Worker ghi chúng vào thư mục artifact của phiên (`pnpm shots:* --out <thư mục artifact>`) và dẫn trong mô tả PR.
+- **Ảnh/video duyệt PR không commit vào repo.** Worker ghi chúng vào thư mục artifact của phiên (`pnpm shots <kịch bản> --out <thư mục artifact>`) và dẫn trong mô tả PR.
 - Mỗi thư mục `docs/<hạng mục>/` chỉ giữ `README.md` và **tối đa 3–5 ảnh then chốt**: WebP, cạnh dài ≤ 1600 px, ≤ 300 KB mỗi ảnh. Ảnh nào giữ thì README phải nêu tên hoặc liên kết tới.
 - Không PNG trong `docs/`; không file nào trên 400 KB; cả `docs/` dưới 60 MB.
 - Ngoại lệ về số lượng: ảnh concept đang dùng để dựng asset (`asset-concepts/`, `outfit-concepts*/`, `chr-v2-concept/`) và ảnh dẫn chứng của `AUDIT_AND_ROADMAP.md` (`audit/`).

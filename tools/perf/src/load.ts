@@ -24,26 +24,22 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
-import { chromium, type Browser } from 'playwright';
-import { createDevServer, listeningPids, ROOT, sleep } from './devserver';
+import type { Browser } from 'playwright';
+import { createDevServer, listeningPids, ROOT, sleep } from './lib/devserver';
+import { args, env, opt, ports, childEnv } from './lib/env';
+import { launchChrome } from './lib/browser';
 
 const OUT_DIR = path.join(ROOT, 'bench/results');
 
-const args = process.argv.slice(2);
-const opt = (name: string, def: string) => {
-  const i = args.indexOf(name);
-  return i >= 0 && args[i + 1] ? args[i + 1] : def;
-};
 const RUNS = Math.max(1, Number(opt('--runs', '2')));
 const MBPS = Number(opt('--mbps', '20'));
 const LATENCY = Number(opt('--latency', '20'));
 const SCENARIOS = opt('--scenarios', 'login,game').split(',').filter(Boolean);
 const RENDERER = opt('--renderer', 'webgpu');
-const CHANNEL = opt('--channel', process.env.BENCH_CHANNEL ?? 'chrome');
+const CHANNEL = opt('--channel', env('BENCH_CHANNEL', 'chrome'));
 const HEADED = args.includes('--headed');
 const NO_BUILD = args.includes('--no-build');
-const PORT = Number(process.env.PORT ?? 2655);
-const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5155);
+const { port: PORT, clientPort: CLIENT_PORT } = ports(2655, 5155);
 const DIST = path.join(os.tmpdir(), `dtl-load-dist-${PORT}`);
 /** Khung dài hơn ngưỡng này (khoảng giữa hai requestAnimationFrame) tính là khựng. */
 const LONG_MS = 50;
@@ -62,7 +58,7 @@ function build(): void {
     cwd: ROOT,
     stdio: 'inherit',
     shell: process.platform === 'win32',
-    env: { ...process.env, VITE_SERVER_URL: `ws://localhost:${PORT}` },
+    env: { ...childEnv(), VITE_SERVER_URL: `ws://localhost:${PORT}` },
   });
 }
 
@@ -120,21 +116,22 @@ function serveDist(): Promise<http.Server> {
 
 // ---------- đo trong trang ----------
 
-type LoadWindow = {
-  __load: {
-    marks: Record<string, number>;
-    /** [thời điểm bắt đầu khung, độ dài] của các khung > LONG_MS. */
-    long: [number, number][];
-    /** [thời điểm, ms] các lần `Game.frame()` chạy > LONG_MS (khựng nằm trong code game). */
-    longFrameFn: [number, number, Record<string, number>][];
-  };
-  __game?: Record<string, any>;
-};
+declare global {
+  interface Window {
+    __load: {
+      marks: Record<string, number>;
+      /** [thời điểm bắt đầu khung, độ dài] của các khung > LONG_MS. */
+      long: [number, number][];
+      /** [thời điểm, ms] các lần `Game.frame()` chạy > LONG_MS (khựng nằm trong code game). */
+      longFrameFn: [number, number, Record<string, number>][];
+    };
+  }
+}
 
 /** Chạy trước mọi script của trang: theo dõi mốc bằng vòng requestAnimationFrame riêng. */
 function initScript(longMs: number): void {
-  const w = window as unknown as LoadWindow;
-  const L: LoadWindow['__load'] = { marks: {}, long: [], longFrameFn: [] };
+  const w = window;
+  const L: Window['__load'] = { marks: {}, long: [], longFrameFn: [] };
   w.__load = L;
   const mark = (k: string) => {
     if (L.marks[k] === undefined) L.marks[k] = Math.round(performance.now());
@@ -287,7 +284,7 @@ async function readTiming(page: import('playwright').Page) {
       html: Math.round(nav.responseEnd),
       js,
       res: res.map(({ full: _f, ...r }) => r),
-      L: (window as unknown as LoadWindow).__load,
+      L: window.__load,
     };
   });
 }
@@ -298,7 +295,7 @@ async function runLogin(browser: Browser): Promise<LoginRun> {
   const { ctx, page } = await newPage(browser);
   try {
     await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1${rendererQ}`, { waitUntil: 'load', timeout: 120_000 });
-    await page.waitForFunction(() => (window as unknown as LoadWindow).__load.marks.backdropLit !== undefined, undefined, { timeout: 60_000, polling: 100 });
+    await page.waitForFunction(() => window.__load.marks.backdropLit !== undefined, undefined, { timeout: 60_000, polling: 100 });
     await sleep(500);
     const t = await readTiming(page);
     return { fcp: t.fcp, html: t.html, js: t.js, jsRun: t.L.marks.jsRun, loginForm: t.L.marks.loginForm, backdropLit: t.L.marks.backdropLit, longFrames: t.L.long.length };
@@ -310,11 +307,11 @@ async function runLogin(browser: Browser): Promise<LoginRun> {
 async function runGame(browser: Browser, i: number): Promise<GameRun> {
   const { ctx, page, errors } = await newPage(browser);
   const name = `Load_${Date.now().toString(36).slice(-5)}${i}`;
-  const gm = (cmd: string) => page.evaluate((m) => (window as unknown as LoadWindow).__game!.send('chat', { m }), '/gm ' + cmd);
+  const gm = (cmd: string) => page.evaluate((m) => window.__game!.send('chat', { m }), '/gm ' + cmd);
   try {
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&cine=0&auto=${name}${rendererQ}${process.env.LOAD_QUERY ?? ''}`, { waitUntil: 'load', timeout: 120_000 });
-    await page.waitForFunction(() => (window as unknown as LoadWindow).__load.marks.titleGone !== undefined, undefined, { timeout: 120_000, polling: 100 });
-    const backend = await page.evaluate(() => ((window as unknown as LoadWindow).__game!.renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2'));
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&cine=0&auto=${name}${rendererQ}${env('LOAD_QUERY')}`, { waitUntil: 'load', timeout: 120_000 });
+    await page.waitForFunction(() => window.__load.marks.titleGone !== undefined, undefined, { timeout: 120_000, polling: 100 });
+    const backend = await page.evaluate(() => (window.__game!.renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2'));
     // Chờ mọi GLB đang nạp xong (tối đa 30 s) để biết thời điểm và thứ tự về.
     const glbDeadline = Date.now() + 30_000;
     let last = -1;
@@ -325,7 +322,7 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
       await sleep(1500);
     }
     // Lần đầu chiến đấu: 3 sói (2 loài có xương) quanh mình, rồi 6 chiêu lần lượt.
-    const loadStats = await page.evaluate(() => ({ ...(window as unknown as LoadWindow).__game!.loadStats }));
+    const loadStats = await page.evaluate(() => ({ ...window.__game!.loadStats }));
     await gm('level 15');
     await gm('heal');
     await gm('spawn mon_soi_xam 2');
@@ -333,7 +330,7 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
     await sleep(1500);
     for (let s = 0; s < 6; s++) {
       await page.evaluate((slot) => {
-        const g = (window as unknown as LoadWindow).__game!;
+        const g = window.__game!;
         const id = g.ents.nextTarget('', g.renderPos.x, g.renderPos.z);
         if (id) g.setTarget(id, 'mon');
         g.useSkill(slot);
@@ -402,13 +399,7 @@ async function main(): Promise<void> {
   await dev.start();
   const srv = await serveDist();
   console.log(`[load] phục vụ bản build ở http://localhost:${CLIENT_PORT} (gzip), mạng ${MBPS} Mbps / ${LATENCY} ms`);
-  const launchArgs = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
-  let browser: Browser;
-  try {
-    browser = await chromium.launch({ channel: CHANNEL === 'chromium' ? undefined : CHANNEL, headless: !HEADED, args: launchArgs });
-  } catch {
-    browser = await chromium.launch({ headless: !HEADED, args: launchArgs });
-  }
+  const browser = await launchChrome({ channel: CHANNEL, headed: HEADED, tag: 'load' });
   const login: LoginRun[] = [];
   const game: GameRun[] = [];
   try {

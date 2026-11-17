@@ -35,7 +35,7 @@ Lòng chảo Kiếm Trủng (địa hình Vân Lam, `terrain: van_lam`) dựng t
 - Mood `ochre_night`, texture mặt đất `terrain-ochre` (E2-I), vòng trụ đá, gốc khô, đá nằm (`shared/src/props.phucmach.ts`). Chưa có thạch nhũ/cột chống/xe mỏ dạng model (không có asset sẵn; trần nhũ chỉ là hình học vỏ hang).
 - Ngân sách: 41–61 draw call, 217–349k tam giác, 120 fps ở 1280×720 (trước thêm vỏ hang: 55 draw).
 
-Ảnh: `pnpm shots:e2c --out <thư mục tuyệt đối>`.
+Ảnh: `pnpm shots dungeon --level phuc_mach --out <thư mục tuyệt đối>`.
 
 ## Đo
 

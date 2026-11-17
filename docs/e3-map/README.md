@@ -20,7 +20,7 @@ Gói E3-A (bản đồ) kèm E3-N (địa hình đảo nổi) của E-3 Nguyên 
 | Cầu xích + đảo giả (vẽ) | `apps/client/src/game/skyIslands.ts` (nối qua `MapVis`), rải tùng/đá trôi `propScatter.ts` (`scatterVanHai`) |
 | Bộ sinh tất định | `tools/maps/gen-van-hai.mjs` (sửa số liệu ở đây rồi chạy lại: sinh 4 tệp dữ liệu/mã ở trên; ~1 phút vì tối ưu vị trí cụm) |
 | Test | `packages/shared/src/islands.test.ts`, `packages/content/src/vanhai.test.ts`, `apps/server/src/game/vanhai.test.ts` |
-| Ảnh chụp trong game | `pnpm shots:e3a --out <thư mục tuyệt đối>` (`tools/perf/src/shots-e3a.ts`) |
+| Ảnh chụp trong game | `pnpm shots points --level van_hai --out <thư mục tuyệt đối>` (`tools/perf/src/shots-e3a.ts`) |
 
 ## Bố cục
 

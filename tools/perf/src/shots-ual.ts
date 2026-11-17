@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { chromium, type Page } from 'playwright';
-import { createDevServer, sleep } from './devserver';
+import { createDevServer, sleep } from './lib/devserver';
 
 const args = process.argv.slice(2);
 const opt = (n: string, d: string) => {

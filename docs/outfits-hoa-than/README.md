@@ -39,11 +39,11 @@ Draw đạt ngân sách (< 300). CPU p50 8,6 ms hơi quá ngưỡng 8 ms của n
 
 - `sheet_tinh_khuyet_<m|f>.jpg`: đứng trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém, chết. `matrix_tinh_khuyet_<m|f>.jpg`: chiêu 1–2 của 3 công pháp (kiếm tu, hộ pháp, đan sư), chết, chém. `bang_tinh_khuyet_<m|f>.jpg`: bảng nhân vật 3D.
 - `kiem_tinh_khuyet_0_7_10.webp`: kiếm +0, +7, +10 (hàng trên xuống dưới), cột trái đeo lưng (một kiếm trong vỏ riêng), cột phải cầm tay. +0 và +7 chỉ khác vân sáng; +10 đổi sang dạng cuối. `kiem_tinh_khuyet_10_nu.webp`: dạng cuối trên thân nữ. Ảnh chụp với một kiếm Liệt Mạch trong tay để có `plus 7|10`, model hiển thị ép bằng `?sword=`. Hào quang +0 vẫn có vì nhân vật mặc bộ (màu bộ làm sáng vỏ ở bậc tối thiểu 1), không phải lỗi của kiếm.
-- Chụp: `pnpm shots:outfit --out <thư mục tuyệt đối> --genders m,f --sets set_liet_mach --matrix 1 --panel 1 --query outfit=set_tinh_khuyet_kiem_bao`; kiếm: `pnpm shots:kiem --out <thư mục> --model prop_kiem_tinh_khuyet|prop_kiem_tinh_khuyet_cuoi --equip "itm_liet_mach_kiem|Liệt Mạch Kiếm" --query outfit=set_tinh_khuyet_kiem_bao --set set_liet_mach --glow 0|1|2` (`--equip` và `--query` thêm ở PR này).
+- Chụp: `pnpm shots outfit --out <thư mục tuyệt đối> --genders m,f --sets set_liet_mach --matrix 1 --panel 1 --query outfit=set_tinh_khuyet_kiem_bao`; kiếm: `pnpm shots:kiem --out <thư mục> --model prop_kiem_tinh_khuyet|prop_kiem_tinh_khuyet_cuoi --equip "itm_liet_mach_kiem|Liệt Mạch Kiếm" --query outfit=set_tinh_khuyet_kiem_bao --set set_liet_mach --glow 0|1|2` (`--equip` và `--query` thêm ở PR này).
 
 ## Lưu ý ảnh (sửa sau review)
 
-Bản ảnh đầu có hai điểm lạ: (1) một khối gai xanh đen nằm đất cạnh chân nữ ở khung chiêu 1, 2, chém; (2) hai kiếm song song sau lưng nữ ở so sánh Phục Mạch v01. Cả hai **không phải lỗi mảnh áo hay kiếm** mà do trình chụp: avatar nam của phiên trước vẫn đứng nguyên chỗ (2048, 2088) trong thế giới khi phiên nữ vào cùng điểm, nên hai người chồng lên nhau (khối gai = áo nam ở tư thế nằm, kiếm thứ hai = kiếm của người nam). `shots:outfit` nay dời nhân vật đi xa (`tp 2048 2900`) trước khi đóng phiên; chụp lại thì cả hai điểm lạ biến mất và sau lưng chỉ còn một kiếm trong vỏ (cả Tinh Khuyết lẫn Phục Mạch v01/v02, nam và nữ; trường hợp có trang bị kiếm riêng chụp bằng `shots:kiem` cũng một kiếm).
+Bản ảnh đầu có hai điểm lạ: (1) một khối gai xanh đen nằm đất cạnh chân nữ ở khung chiêu 1, 2, chém; (2) hai kiếm song song sau lưng nữ ở so sánh Phục Mạch v01. Cả hai **không phải lỗi mảnh áo hay kiếm** mà do trình chụp: avatar nam của phiên trước vẫn đứng nguyên chỗ (2048, 2088) trong thế giới khi phiên nữ vào cùng điểm, nên hai người chồng lên nhau (khối gai = áo nam ở tư thế nằm, kiếm thứ hai = kiếm của người nam). `shots outfit` nay dời nhân vật đi xa (`tp 2048 2900`) trước khi đóng phiên; chụp lại thì cả hai điểm lạ biến mất và sau lưng chỉ còn một kiếm trong vỏ (cả Tinh Khuyết lẫn Phục Mạch v01/v02, nam và nữ; trường hợp có trang bị kiếm riêng chụp bằng `shots:kiem` cũng một kiếm).
 
 ## Giới hạn
 
@@ -84,7 +84,7 @@ Sửa thêm sau review: `gain` 1,5 → 1,2 (lớp dưới ngà bị cháy trắn
 
 - `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 0 đến 32 ở chạy/chém giơ tay/ngồi xổm (nam), 0,5 đến 3,5 (nữ), sâu ≤ 4 cm; ảnh game không thấy xuyên mesh. `check/set_than_tang_dan_bao_*.json`.
 - `bench:crowd` sân 50 bot WebGPU high, cùng mặc (ép áo bằng `CROWD_QUERY`), sau khi voan thành lượt blend riêng ở LOD0, hai lần đo: **294 và 272 draw (< 300)**, ~1,0M tam giác, CPU p50/p95 6,8 / 10,4 và 7,0 / 10,7 ms (p95 hơi trên 8 ms), texture 404 MB, heap 260–323 MB, tick p95 1,7–2,2 ms. Trước khi thêm lượt voan: 269 draw, 789k tam giác. Chênh lệch lớn giữa các lần do số bot rơi vào tầm LOD0 (voan chỉ tốn thêm draw ở LOD0); biên so với 300 còn nhỏ ở lần đo xấu (6 draw).
-- Ảnh: `sheet_than_tang_<m|f>.jpg`, `matrix_than_tang_<m|f>.jpg`, `bang_than_tang_<m|f>.jpg` (cùng bố cục Tinh Khuyết; chụp bằng `pnpm shots:outfit --sets set_phuc_mach --query outfit=set_than_tang_dan_bao`).
+- Ảnh: `sheet_than_tang_<m|f>.jpg`, `matrix_than_tang_<m|f>.jpg`, `bang_than_tang_<m|f>.jpg` (cùng bố cục Tinh Khuyết; chụp bằng `pnpm shots outfit --sets set_phuc_mach --query outfit=set_than_tang_dan_bao`).
 
 # Cổ Thành Huyền Giáp (T-6c, Hộ pháp bậc 4)
 
@@ -116,7 +116,7 @@ Giới hạn: ba mảnh này nhẵn và đơn sắc hơn ba mảnh có texture (
 
 - `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 4 đến 56 (nam, vai và mão to), 1 đến 19 (nữ), sâu ≤ 4 cm; ảnh game (đứng/chạy/ngự kiếm/đả tọa/chém/chết, ba công pháp) không thấy xuyên mesh đáng kể, sau lưng một kiếm trong vỏ. `check/set_co_thanh_huyen_giap_*.json`.
 - `bench:crowd` sân 50 bot WebGPU high, cùng mặc (ép áo bằng `CROWD_QUERY`), sau khi sửa skin: **275 draw (< 300)**, 841k tam giác, CPU p50/p95/p99 6,4 / 9,4 / 45,7 ms (p95 hơi trên ngưỡng 8 ms; p99 là khung nạp pipeline đầu), texture 404 MB, heap 295 MB, tick p95 1,9 ms.
-- Ảnh: `sheet_co_thanh_<m|f>.jpg`, `matrix_co_thanh_<m|f>.jpg`, `bang_co_thanh_<m|f>.jpg` (cùng bố cục các bộ trước; `pnpm shots:outfit --sets set_dia_giap --query outfit=set_co_thanh_huyen_giap`).
+- Ảnh: `sheet_co_thanh_<m|f>.jpg`, `matrix_co_thanh_<m|f>.jpg`, `bang_co_thanh_<m|f>.jpg` (cùng bố cục các bộ trước; `pnpm shots outfit --sets set_dia_giap --query outfit=set_co_thanh_huyen_giap`).
 
 # Kính Quang Kiếm Y (T-6d, Kiếm tu bậc 3, bộ cũ nhất thay bản tạm #119)
 
@@ -136,7 +136,7 @@ Voan của bộ này cùng màu lụa trắng nên không tách theo màu như T
 
 - `outfit_check.py --keep head`: số đỉnh xuyên vùng đầu/cổ 1 đến 20 (nam), 1 đến 7 (nữ), sâu ≤ 4 cm; ảnh game (đứng/chạy/ngự kiếm/đả tọa/chém/chết, ba công pháp) không thấy xuyên mesh đáng kể, sau lưng một kiếm trong vỏ. `check/set_kinh_quang_kiem_y_*.json`.
 - `bench:crowd` sân 50 bot WebGPU high, cùng mặc (`BOT_SET=set_kinh_quang`): **288 draw (< 300, biên 12 vì voan thêm draw ở LOD0)**, ~1,03M tam giác, CPU p50/p95/p99 6,6 / 9,7 / 38,6 ms (p95 hơi trên 8 ms), texture 404 MB, heap 320 MB, tick p95 1,9 ms.
-- Ảnh: `sheet_kinh_quang_<m|f>.jpg`, `matrix_kinh_quang_<m|f>.jpg`, `bang_kinh_quang_<m|f>.jpg` (`pnpm shots:outfit --sets set_kinh_quang --matrix 1 --panel 1`).
+- Ảnh: `sheet_kinh_quang_<m|f>.jpg`, `matrix_kinh_quang_<m|f>.jpg`, `bang_kinh_quang_<m|f>.jpg` (`pnpm shots outfit --sets set_kinh_quang --matrix 1 --panel 1`).
 
 ## Giới hạn
 

@@ -40,7 +40,7 @@ Draw đạt ngân sách. CPU p50 9–10 ms trên cả hai bộ ở lần đo l�
 
 ## Ảnh
 
-`sheet_<bộ>_<m|f>.jpg` (đứng trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém, chết), `matrix_<bộ>_<m|f>.jpg` (chiêu 1–2 của 3 công pháp, chết, chém), `bang_<bộ>_<m|f>.jpg` (bảng nhân vật 3D); bộ = `van_kinh`, `luu_ly`. Chụp: `pnpm shots:outfit --out <thư mục tuyệt đối> --genders m,f --sets set_van_kinh|set_luu_ly --matrix 1 --panel 1`; kiếm: `pnpm shots:kiem --out <thư mục> --model prop_kiem_kinh_quang|prop_kiem_kinh_quang_cuoi --equip "itm_liet_mach_kiem|Liệt Mạch Kiếm" --set set_kinh_quang --glow 0|1|2`.
+`sheet_<bộ>_<m|f>.jpg` (đứng trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém, chết), `matrix_<bộ>_<m|f>.jpg` (chiêu 1–2 của 3 công pháp, chết, chém), `bang_<bộ>_<m|f>.jpg` (bảng nhân vật 3D); bộ = `van_kinh`, `luu_ly`. Chụp: `pnpm shots outfit --out <thư mục tuyệt đối> --genders m,f --sets set_van_kinh|set_luu_ly --matrix 1 --panel 1`; kiếm: `pnpm shots:kiem --out <thư mục> --model prop_kiem_kinh_quang|prop_kiem_kinh_quang_cuoi --equip "itm_liet_mach_kiem|Liệt Mạch Kiếm" --set set_kinh_quang --glow 0|1|2`.
 
 ## Giới hạn
 
