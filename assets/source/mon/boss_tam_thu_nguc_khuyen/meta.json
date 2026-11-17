@@ -90,7 +90,7 @@
     }
   },
   "import": {
-    "kind": "tripo",
+    "kind": "external",
     "source": "boss/boss_tam_thu_nguc_khuyen/rig/rig_v01.glb",
     "size": {
       "height": 3.4

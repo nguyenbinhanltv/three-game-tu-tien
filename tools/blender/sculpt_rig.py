@@ -1,7 +1,7 @@
 # Biến một bản điêu khắc dày lưới, không xương (GLB tải về, ví dụ model CC BY trên Sketchfab: 0,1–2 triệu tam giác, nhiều
-# mảnh, một vật liệu) thành GLB "như Tripo đã rig": lưới thấp trong ngân sách + texture nướng + bộ xương + trọng số.
+# mảnh, một vật liệu) thành GLB đã rig sẵn sàng nhập: lưới thấp trong ngân sách + texture nướng + bộ xương + trọng số.
 # Kết quả ghi vào thư mục nguồn asset (DTL_ASSET_SOURCE/<loại>/<id>/rig/rig_v01.glb); từ đó đi tiếp đường nhập thường
-# (meta.json `import.kind: "tripo"` → import_tripo.py → import.post anim_*.py → optimize.ts).
+# (meta.json `import.kind: "external"` → import_tripo.py → import.post anim_*.py → optimize.ts).
 #
 # Chạy (tools/blender/run-sculpt.mjs gọi; không mở giao diện, không dùng dịch vụ ngoài):
 #   blender --background --factory-startup --python tools/blender/sculpt_rig.py -- \

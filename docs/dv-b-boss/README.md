@@ -27,7 +27,7 @@ pnpm assets:validate --only boss_tam_thu_nguc_khuyen
 1. **`tools/blender/sculpt_rig.py`** (mới), cấu hình ở khối `sculpt` của `meta.json`:
    - `--stage mesh`: gộp 9 mesh, Decimate (collapse) 979.664 → 36.000 tam giác, bỏ mảnh rời nhỏ, Smart UV Project, nướng Cycles từ lưới gốc sang lưới thấp: base color và ORM bằng pass EMIT (pass DIFFUSE ra màu đen với vật liệu kim loại), normal bằng pass NORMAL (gồm cả normal map gốc). Texture gốc chỉ 1024², nướng ra 2048² rồi `import_tripo.py` hạ về ngân sách lớp boss (màu 1536², dữ liệu 1024²). Map phát sáng tách từ phần đỏ rực của base color (khe nứt, mắt, đuôi lửa: 3,1% điểm ảnh) vì nguồn không có map phát sáng. Màu/ORM/phát sáng lưu JPEG, normal PNG. Kết quả giữ ở `assets/build/sculpt/<id>_low.blend`.
    - `--stage rig`: xoay `yaw` −14,4° (bản điêu khắc đứng chéo), dựng 28 xương theo `sculpt.bones` (tọa độ đọc từ ảnh chiếu trực giao có lưới 0,1), trọng số theo khoảng cách tới đoạn xương (tối đa 4 xương, làm mượt theo cạnh 3 vòng). `sculpt.limit` khai chuỗi hàng xóm để đỉnh đầu trái không ăn cổ giữa, bàn chân trước không ăn chân sau. Không dùng Automatic Weights của Blender (lưới nhiều mảnh xuyên nhau, heat solve hay hỏng).
-   - Xuất `../dtl-asset-source/boss/<id>/rig/rig_v01.glb`: từ đây là một "GLB Tripo đã rig" bình thường.
+   - Xuất `../dtl-asset-source/boss/<id>/rig/rig_v01.glb`: từ đây đi đường nhập `import.kind: "external"` (model nguồn ngoài, cùng bước chuẩn hóa `import_tripo.py`, bắt buộc có `license.spdx` + `license.url`).
 2. **`tools/blender/anim_quadruped.py`** (mở rộng, hành vi của quái cũ không đổi):
    - Rig đã mang tên vai trò (`spine_0`, `leg_fl_0`…) thì bỏ bước đổi tên (`layout: named`).
    - `import.quadruped.heads`: cổ/đầu phụ mượn góc của cổ/đầu chính, nhân hệ số (`z` âm = soi gương), nên mọi clip cũ tự chạy cho cả ba đầu.
@@ -77,5 +77,5 @@ Chiêu dùng trường có sẵn: `sweep` nón 11 m, `chant`, `slam`, `line`. So
 1. Chép GLB vào `../dtl-asset-source/<loại>/<id>/online/source.glb`.
 2. Tạo `meta.json` có khối `sculpt` (`source`, `out`, `faces`, `texture`, `bones: []`), `license` có `spdx`, `owner`, `url`.
 3. `node tools/blender/run-sculpt.mjs <id> --stage mesh`, xem bảng lát cắt in ra và ảnh chiếu, điền `yaw`, `bones`, `limit`.
-4. `--stage rig`, thêm khối `import` (như boss này), `pnpm assets:build --only <id> --no-ktx`, `assets:validate`.
+4. `--stage rig`, thêm khối `import` với `kind: "external"` (như boss này), `pnpm assets:build --only <id> --no-ktx`, `assets:validate`.
 5. Thêm dòng `assets/LICENSES.md`, skin ở `MONSTER_SKINS`.

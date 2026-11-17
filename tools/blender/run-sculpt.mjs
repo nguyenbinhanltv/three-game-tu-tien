@@ -1,6 +1,6 @@
 // Chạy tools/blender/sculpt_rig.py cho một asset có khối `sculpt` trong meta.json: bản điêu khắc dày lưới không xương
 // (DTL_ASSET_SOURCE/<sculpt.source>) → GLB lưới thấp có xương (DTL_ASSET_SOURCE/<sculpt.out>). Sau đó `pnpm assets:build
-// --only <id>` nhập GLB đó như một GLB Tripo đã rig.
+// --only <id>` nhập GLB đó qua `import.kind: "external"` (cùng bước chuẩn hóa import_tripo.py).
 //   node tools/blender/run-sculpt.mjs <id> [--stage mesh|rig|all]
 // `mesh` (giảm lưới + nướng, vài phút) giữ kết quả ở assets/build/sculpt/<id>_low.blend; `rig` chỉ dựng xương + trọng số
 // từ file đó, nên chỉnh khớp trong meta.json rồi chạy lại `--stage rig` là đủ.
