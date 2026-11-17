@@ -22,7 +22,11 @@
 #    bảng ở bước 1.
 # 4. Báo cáo tốc độ tự nhiên (m/s, scale 1) của run/walk khi phát 1× (đo theo chân trụ), để đặt refSpeed ở client.
 # 5. Tùy chọn boss (M3-8): `import.quadruped.fixCrossWeights` sửa trọng số chéo chân của auto-rig (mục 1b);
-#    `import.extra` thêm clip đòn lớn slam/sweep/stun (mục 3b).
+#    `import.extra` thêm clip đòn lớn slam/sweep/stun (mục 3b), `walk` (đi bốn nhịp) và `chant` (gầm, lặp; DV-B).
+# 6. Rig đã mang sẵn tên vai trò (tools/blender/sculpt_rig.py dựng xương cho bản điêu khắc không xương): bỏ bước đổi tên.
+#    `import.quadruped.heads` = { xương phụ: { "as": "neck" | "head", "z": hệ số, "x": hệ số } } cho thú nhiều đầu: xương
+#    phụ không có trong dáng thì lấy góc của xương `as`, nhân hệ số theo trục đứng (z, quay ngang; âm = soi gương) và
+#    các trục còn lại (x). Dáng nào ghi thẳng tên xương phụ thì dùng đúng dáng đó.
 
 import math
 
@@ -242,8 +246,9 @@ def geometric_layout():
 
 
 REPARENT = {}
-RENAME = QUAD.get('layout') or wolf_layout()  # layout: bảng tên cũ → vai trò khai trong meta
-if not RENAME:
+ROLE_NAMED = all(n in bones for n in ('spine_0', 'neck', 'head', 'leg_fl_0', 'leg_fr_0', 'leg_hl_0', 'leg_hr_0'))
+RENAME = {} if ROLE_NAMED else (QUAD.get('layout') or wolf_layout())  # layout: bảng tên cũ → vai trò khai trong meta
+if not RENAME and not ROLE_NAMED:
     try:
         RENAME = generic_layout()
     except SystemExit:
@@ -257,7 +262,7 @@ if REPARENT:
         eb[child].use_connect = False
         eb[child].parent = eb[new_parent]
     bpy.ops.object.mode_set(mode='OBJECT')
-LAYOUT = 'wolf28' if 'bone_10' in RENAME else 'generic'
+LAYOUT = 'named' if ROLE_NAMED else 'wolf28' if 'bone_10' in RENAME else 'generic'
 for old in RENAME:
     need(old)
 for old, new in RENAME.items():
@@ -321,6 +326,21 @@ def rot(axis, deg):
     return Matrix.Rotation(math.radians(deg), 3, axis)
 
 
+HEADS = QUAD.get('heads') or {}
+for _name, _h in HEADS.items():
+    if _name not in bones or _h.get('as') not in ('neck', 'head'):
+        fail(f'anim_quadruped: import.quadruped.heads.{_name} sai (xương không có, hoặc "as" khác neck | head)')  # noqa: F821
+
+
+def spec_of(spec, name):
+    """Góc của một xương trong dáng; xương đầu phụ (HEADS) không có trong dáng thì mượn của cổ/đầu chính."""
+    got = spec.get(name)
+    if got is not None or name not in HEADS:
+        return got or []
+    h = HEADS[name]
+    return [(axis, deg * (h.get('z', 1.0) if abs(axis.z) > 0.5 else h.get('x', 1.0))) for axis, deg in spec.get(h['as'], [])]
+
+
 def set_pose(spec, root_move=(0.0, 0.0, 0.0), root_rot=None, pitch=0.0):
     """spec: {xương: [(trục, độ), ...]} xoay quanh trục thế giới (tính ở tư thế nghỉ, áp theo thứ tự). Thiếu = nghỉ.
     Rig Tripo không có xương gốc (gốc là object armature, nhiều xương không cha), nên chuyển động cả thân
@@ -334,7 +354,7 @@ def set_pose(spec, root_move=(0.0, 0.0, 0.0), root_rot=None, pitch=0.0):
         p.location = (0, 0, 0)
         p.scale = (1, 1, 1)
         R = Matrix.Identity(3)
-        for axis, deg in spec.get(p.name, []):
+        for axis, deg in spec_of(spec, p.name):
             R = rot(axis, deg) @ R
         M = REST[p.name]
         if p.parent is None:
@@ -598,8 +618,8 @@ else:
 EXTRA = list(IMPORT.get('extra', []))
 extra_clips = {}
 for name in EXTRA:
-    if name not in ('slam', 'sweep', 'stun'):
-        fail(f'anim_quadruped: import.extra "{name}" chưa hỗ trợ cho thú bốn chân (slam | sweep | stun)')  # noqa: F821
+    if name not in ('slam', 'sweep', 'stun', 'walk', 'chant'):
+        fail(f'anim_quadruped: import.extra "{name}" chưa hỗ trợ cho thú bốn chân (slam | sweep | stun | walk | chant)')  # noqa: F821
 
 if 'slam' in EXTRA:
     if QUAD.get('slam') == 'rear':
@@ -672,6 +692,53 @@ if 'stun' in EXTRA:
             spec.setdefault(b, []).extend([(X, -12 * TK), (Z, 4 * TK * S(a - 0.4 * j))])
         return spec, (0, 0, -0.15 * HEIGHT + 0.01 * HEIGHT * S(2 * a)), (Y, 4 * S(a))
     extra_clips['stun'] = sampled('stun', 1.6, stun)
+
+if 'walk' in EXTRA:
+    # Đi bốn nhịp (sau trái → trước trái → sau phải → trước phải), 1,1 s lặp: biên độ nhỏ, thân gần như không nhún, đầu gật nhẹ.
+    def walk(t):
+        a = TAU * t
+        spec = merge(
+            gallop_leg(t, 0.00, 'leg_hl_0', 'leg_hl_1', 17, 22, 1), gallop_leg(t, 0.25, 'leg_fl_0', 'leg_fl_1', 19, 30, 1),
+            gallop_leg(t, 0.50, 'leg_hr_0', 'leg_hr_1', 17, 22, 1), gallop_leg(t, 0.75, 'leg_fr_0', 'leg_fr_1', 19, 30, 1),
+            {
+                'leg_hl_2': [(X, -10 * max(0.0, math.cos(a)))], 'leg_hr_2': [(X, -10 * max(0.0, math.cos(a + math.pi)))],
+                'spine_0': [(Z, 2.5 * S(a))], 'spine_1': [(Z, -2.5 * S(a)), (X, 1.2 * S(2 * a))], 'spine_2': [(Z, -1.5 * S(a))],
+                'neck': [(X, 3 + 3 * S(2 * a + 0.6)), (Z, 3 * S(a))], 'head': [(X, -2 * S(2 * a + 0.6))],
+            },
+        )
+        for i, b in enumerate(TAIL):
+            j = i * TK
+            spec[b] = [(X, -2 * TK), (Z, (7 + 2 * j) * TK * S(a - 0.6 * j))]
+        return spec, (0, 0, 0.012 * HEIGHT * S(2 * a - 0.6)), None
+    extra_clips['walk'] = sampled('walk', 1.1, walk, step=1)
+
+if 'chant' in EXTRA:
+    # Gầm (boss niệm chú), 1,6 s lặp: bốn chân choãi ghì đất, ngực hạ, cổ vươn ngửa, đầu rung; thú nhiều đầu thì hai đầu bên
+    # xòe ra hai phía và rung lệch pha. Client gắn vào trạng thái `cast` (CHANT_BOSS_CLIPS), lặp suốt thời gian niệm.
+    brace = {
+        'leg_fl_0': [(X, -10)], 'leg_fr_0': [(X, -10)], 'leg_fl_1': [(X, 6)], 'leg_fr_1': [(X, 6)],
+        'leg_hl_0': [(X, -12)], 'leg_hr_0': [(X, -12)], 'leg_hl_1': [(X, 20)], 'leg_hr_1': [(X, 20)],
+        'spine_1': [(X, 3)], 'spine_2': [(X, -5)],
+    }
+
+    def chant(t):
+        a = TAU * t
+        spec = merge(brace, {
+            'neck': [(X, -24 + 3 * S(a)), (Z, 3 * S(3 * a))], 'head': [(X, -16 + 4 * S(3 * a)), (Z, 4 * S(3 * a + 0.8))],
+            'spine_2': [(X, 1.5 * S(a))],
+        })
+        for i, (name, h) in enumerate(sorted(HEADS.items())):
+            side = 1.0 if bones[name].head_local.x > 0 else -1.0  # +X là bên trái con vật: quay +Z là ngoảnh ra ngoài
+            ph = 1.3 + 1.7 * i
+            if h['as'] == 'neck':
+                spec[name] = [(X, -18 + 3 * S(a + ph)), (Z, side * 16 + 3 * S(3 * a + ph))]
+            else:
+                spec[name] = [(X, -14 + 4 * S(3 * a + ph)), (Z, side * 8 + 4 * S(3 * a + ph + 0.8))]
+        for i, b in enumerate(TAIL):
+            j = i * TK
+            spec[b] = [(X, 14 * TK), (Z, 8 * TK * S(2 * a - 0.5 * j))]
+        return spec, (0, 0.02 * LENGTH, -0.05 * HEIGHT + 0.006 * HEIGHT * S(3 * a)), None
+    extra_clips['chant'] = sampled('chant', 1.6, chant, step=1)
 
 set_pose({})
 bpy.context.scene.render.fps = FPS

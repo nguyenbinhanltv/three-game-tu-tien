@@ -576,6 +576,100 @@
         }
       }
     },
+    "boss_tam_thu_nguc_khuyen": {
+      "id": "boss_tam_thu_nguc_khuyen",
+      "class": "boss",
+      "source": "assets/build/raw/boss_tam_thu_nguc_khuyen.glb",
+      "file": "boss_tam_thu_nguc_khuyen.059ab9d299.glb",
+      "bytes": 4591288,
+      "rawBytes": 4794800,
+      "triangles": 36000,
+      "rawTriangles": 36000,
+      "lod0Cap": 36000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 28,
+      "animations": [
+        "attack",
+        "chant",
+        "death",
+        "hit_light",
+        "idle",
+        "run",
+        "slam",
+        "stun",
+        "walk"
+      ],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "boss_tam_thu_nguc_khuyen_emissive",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "boss_tam_thu_nguc_khuyen_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "boss_tam_thu_nguc_khuyen_color",
+          "mimeType": "image/jpeg",
+          "width": 1536,
+          "height": 1536,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "boss_tam_thu_nguc_khuyen_orm",
+          "mimeType": "image/jpeg",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 36000
+        },
+        {
+          "level": 1,
+          "triangles": 12600,
+          "target": 12600
+        },
+        {
+          "level": 2,
+          "triangles": 4318,
+          "target": 4320
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.5445,
+          "height": 3.4,
+          "depth": 5.4445,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.5445,
+          "height": 3.4,
+          "depth": 5.4445,
+          "minY": 0
+        }
+      }
+    },
     "boss_thach_tam_khoi_vuong": {
       "id": "boss_thach_tam_khoi_vuong",
       "class": "boss",

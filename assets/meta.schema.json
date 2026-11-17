@@ -102,7 +102,7 @@
           "type": "array",
           "uniqueItems": true,
           "description": "Clip boss thủ tục do import.post sinh thêm: slam (nện), sweep (chém/quét vùng), chant (niệm chú, lặp; chỉ người/vượn), stun (choáng/mất thế, lặp). Thời điểm chạm khớp BOSS_MOVES trong apps/client/src/game/character/monsterSkins.ts. K-3 (thư viện clip người): combat_idle (thủ thế cầm kiếm), guard (đỡ đòn), hit_back (trúng từ sau), roar (khiêu khích).",
-          "items": { "enum": ["idle", "run", "attack", "death", "slam", "sweep", "chant", "stun", "combat_idle", "guard", "hit_back", "roar"] }
+          "items": { "enum": ["idle", "run", "attack", "death", "slam", "sweep", "chant", "stun", "combat_idle", "guard", "hit_back", "roar", "walk"] }
         },
         "k3": {
           "type": "object",
@@ -202,6 +202,16 @@
             "fixCrossWeights": {
               "type": "boolean",
               "description": "Bỏ trọng số của xương chân/đuôi nằm xa đỉnh (> 20% chiều dài thân) rồi chuẩn hóa: sửa auto-rig gán chéo bàn chân trước ↔ chân sau (Huyết Lang Vương)."
+            },
+            "heads": {
+              "type": "object",
+              "description": "Thú nhiều đầu (DV-B): xương cổ/đầu phụ → { as: neck | head, z, x }. Xương phụ không có trong dáng thì lấy góc của xương `as`, nhân hệ số theo trục đứng (z, âm = soi gương) và trục khác (x).",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["as"],
+                "additionalProperties": false,
+                "properties": { "as": { "enum": ["neck", "head"] }, "z": { "type": "number" }, "x": { "type": "number" } }
+              }
             },
             "slam": {
               "enum": ["rear"],
@@ -421,6 +431,38 @@
           "result": { "enum": ["ok", "failed", "rejected"] },
           "note": { "type": "string" }
         }
+      }
+    },
+    "sculpt": {
+      "type": "object",
+      "description": "Bản điêu khắc dày lưới không xương (model tải về, ví dụ CC BY) → GLB lưới thấp có xương bằng tools/blender/sculpt_rig.py (node tools/blender/run-sculpt.mjs <id>); kết quả là file import.source. Thú bốn chân (DV-B): import.extra nhận thêm walk (đi bốn nhịp) và chant (gầm, lặp).",
+      "required": ["source", "out"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string", "description": "GLB gốc, tương đối so với DTL_ASSET_SOURCE." },
+        "out": { "type": "string", "description": "GLB đã giảm lưới + rig, tương đối so với DTL_ASSET_SOURCE; trùng import.source." },
+        "yaw": { "type": "number", "description": "Độ, xoay lưới quanh trục đứng trước khi dựng xương (nắn thân dọc theo trục Y)." },
+        "faces": { "type": "integer", "minimum": 1000, "description": "Số tam giác đích của lưới thấp." },
+        "texture": { "enum": [512, 1024, 2048, 4096], "description": "Cạnh texture nướng." },
+        "emissive": {
+          "type": "object",
+          "description": "Tách phần đỏ rực của base color thành map phát sáng.",
+          "additionalProperties": false,
+          "properties": { "min": { "type": "number" }, "gain": { "type": "number" }, "strength": { "type": "number" } }
+        },
+        "bones": {
+          "type": "array",
+          "description": "[tên, cha | null, [x, y, z] đầu, [x, y, z] đuôi], tọa độ Blender sau yaw (Z lên, đầu con vật ở -Y).",
+          "items": { "type": "array", "minItems": 4, "maxItems": 4 }
+        },
+        "limit": {
+          "type": "object",
+          "description": "Chuỗi xương → các chuỗi hàng xóm được phép chia trọng số (chống dính chéo chân/đầu).",
+          "additionalProperties": { "type": "array", "items": { "type": "string" } }
+        },
+        "rigid": { "type": "object", "additionalProperties": { "type": "number" } },
+        "spread": { "type": "number" },
+        "smooth": { "type": "integer", "minimum": 0 }
       }
     },
     "license": {

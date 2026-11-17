@@ -289,9 +289,19 @@ def bake(hi, lo):
     if node_e:
         ll.new(node_e.outputs['Color'], lp.inputs['Emission Color'])
         lp.inputs['Emission Strength'].default_value = float(em.get('strength', 1.4))
-    for img in bpy.data.images:
-        if img.name.startswith(f'{ID}_'):
-            img.pack()
+    # Màu, ORM, phát sáng lưu JPEG (nhỏ hơn PNG 4–6 lần, như GLB Tripo); normal giữ PNG để không vỡ khối ở mép UV.
+    os.makedirs(WORK, exist_ok=True)
+    for img in list(bpy.data.images):
+        if not img.name.startswith(f'{ID}_'):
+            continue
+        jpeg = not img.name.endswith('_normal')
+        img.file_format = 'JPEG' if jpeg else 'PNG'
+        path = os.path.join(WORK, img.name + ('.jpg' if jpeg else '.png'))
+        img.save(filepath=path, quality=92)
+        img.source = 'FILE'
+        img.filepath = path
+        img.reload()
+        img.pack()
 
 
 def slices(obj):
