@@ -219,7 +219,7 @@ export function starterOutfitId(g: string, hair?: string): string | null {
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
 function modelOf(g: string, hair?: string): string | null {
-  // `?chr=v2` (CHR-PROTO): thân nền MakeHuman nam/nữ thay hai model Tripo cũ, chỉ để so sánh; mặc định game không đổi.
+  // Nhân vật nền v2 (MakeHuman + đầu/tóc Tripo, `chr_v2_*`) là mặc định; `?chr=v1` về hai model Tripo cũ (`appearance.json`). Kiểu tóc B: `chr_v2_hb_*`.
   if (CHR_V2) return `chr_v2_${(hair ?? CHR_V2_HAIR) === 'b' ? 'hb_' : ''}${g === 'f' ? 'nu' : 'nam'}`;
   const own = APPEARANCE.genders.find((x) => x.id === (g as Gender))?.model;
   return own ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender)?.model ?? null;
