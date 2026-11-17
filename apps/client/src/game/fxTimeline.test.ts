@@ -36,6 +36,49 @@ describe('FxRunner.scheduleEvents', () => {
   });
 });
 
+describe('V2: biến thức, mốc trúng, kích hoạt theo S.FX', () => {
+  it('biến thức thêm sự kiện riêng', () => {
+    const tl = FX_TIMELINE.get('skl_hoanh_kiem_pha_mach')!;
+    const base = fxEventsFor(tl, -1).length;
+    expect(fxEventsFor(tl, -1, 'long').length).toBeGreaterThan(base);
+    expect(fxEventsFor(tl, -1, 'khong_co').length).toBe(base);
+  });
+
+  it('Kiếm Vũ Tam Điệp: sự kiện gắn `hit` chỉ phát ở mốc trúng của nó', () => {
+    const tl = FX_TIMELINE.get('skl_kiem_vu_tam_diep')!;
+    const hits = [0.2, 0.5, 0.8];
+    const s = scheduleEvents(fxEventsFor(tl, -1), hits, 2);
+    const cres = s.filter((x) => x.ev.type === 'mesh' && x.ev.shape === 'crescent');
+    expect(cres).toHaveLength(3);
+    expect(cres.map((x) => x.hit).sort()).toEqual([0, 1, 2]);
+    // Gai nổ chỉ ở nhát cuối.
+    expect(s.filter((x) => x.ev.type === 'mesh' && x.ev.shape === 'spike').every((x) => x.hit === 2)).toBe(true);
+    // Khựng nhẹ ở nhát 1–2, nặng ở nhát cuối.
+    const stops = s.filter((x) => x.ev.type === 'hitstop').map((x) => [x.hit, (x.ev as { ms: number }).ms]);
+    expect(stops).toEqual(expect.arrayContaining([[0, 40], [1, 40], [2, 70]]));
+  });
+
+  it('chiêu lướt kích hoạt theo S.FX, neo tại 0', () => {
+    for (const id of ['skl_kiem_anh_bo', 'skl_nghich_kiem_chuyen_phong']) {
+      const tl = FX_TIMELINE.get(id)!;
+      expect(tl.trigger).toBe('fx');
+      expect(tl.fxKind).toBeTruthy();
+      const s = scheduleEvents(fxEventsFor(tl, -1), [0], 2);
+      expect(s.length).toBeGreaterThan(0);
+      expect(s.every((x) => x.at >= -1e-9)).toBe(true);
+    }
+  });
+
+  it('mỗi chiêu Kiếm tu có timeline và không trùng hình mẫu (khác nhau rõ)', () => {
+    const ids = ['skl_phi_kiem', 'skl_kiem_khi_tram', 'skl_linh_khi_ho_the', 'skl_thien_kiem_vu', 'skl_hoi_nguyen_thuat', 'skl_loi_dinh_nhat_kiem', 'skl_kiem_anh_bo', 'skl_phi_kiem_truy_hon', 'skl_van_kiem_quy_tong', 'skl_hoanh_kiem_pha_mach', 'skl_kiem_vu_tam_diep', 'skl_kiem_dan_ban_menh', 'skl_nghich_kiem_chuyen_phong', 'skl_phan_anh_kiem_anh', 'skl_thuan_di_tram', 'skl_thien_kiem_hoa_hinh'];
+    const sig = ids.map((id) => {
+      expect(FX_TIMELINE.has(id), id).toBe(true);
+      return JSON.stringify(fxEventsFor(FX_TIMELINE.get(id)!, -1).map((e) => [e.type, (e as { shape?: string }).shape, e.t]));
+    });
+    expect(new Set(sig).size).toBe(ids.length);
+  });
+});
+
 describe('hủy động tác', () => {
   it('hủy trước mốc trúng thì bỏ đòn; sau mốc trúng thì giữ phần đuôi', () => {
     expect(cancelDropsCast(0.1, 0.28)).toBe(true);
