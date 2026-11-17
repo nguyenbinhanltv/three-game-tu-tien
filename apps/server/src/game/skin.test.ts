@@ -166,6 +166,31 @@ describe('ô ngoại hình (skin)', () => {
     });
   });
 
+  describe('nạp nhân vật đang mặc skin sai giới', () => {
+    const setEquip = (id: number, equip: unknown) => sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify(equip), id);
+
+    it('nhân vật nam còn mặc Varkessa trong DB: lúc nạp món về túi, ô skin trống, không mất và không ghi ledger', () => {
+      const { p } = setup(false, 'm');
+      setEquip(p.char.id, { skin: { id: SKIN, n: 1 } });
+      const c = Character.load(p.char.id);
+      expect(c.equip.skin).toBeUndefined();
+      expect(c.inv.filter((x) => x?.id === SKIN)).toEqual([{ id: SKIN, n: 1 }]);
+      expect(ledger(p.char.id).filter((r) => r.reason === 'load:drop')).toHaveLength(0);
+      // Đã ghi lại DB: nạp lần nữa vẫn đúng một món trong túi.
+      const again = Character.load(p.char.id);
+      expect(again.equip.skin).toBeUndefined();
+      expect(again.inv.filter((x) => x?.id === SKIN)).toHaveLength(1);
+    });
+
+    it('nhân vật nữ đang mặc Varkessa: nạp lại vẫn mặc', () => {
+      const { p } = setup(false, 'f');
+      setEquip(p.char.id, { skin: { id: SKIN, n: 1 } });
+      const c = Character.load(p.char.id);
+      expect(c.equip.skin).toEqual({ id: SKIN, n: 1 });
+      expect(c.inv.some((x) => x?.id === SKIN)).toBe(false);
+    });
+  });
+
   describe('DB hỏng: món nằm sai ô không bị lặng lẽ xóa', () => {
     const setEquip = (id: number, equip: unknown) => sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify(equip), id);
     const drops = (id: number) => ledger(id).filter((r) => r.reason === 'load:drop');

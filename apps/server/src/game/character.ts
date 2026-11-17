@@ -31,6 +31,7 @@ import {
   rollItemInstance,
   seededRng,
   isEquipSlot,
+  wearableBy,
   MAX_ENHANCE,
   MAX_LEVEL,
   type ObjectiveType,
@@ -316,7 +317,7 @@ export class Character {
     // Món nằm sai chỗ trong cột `equip` (DB hỏng/sửa tay): `stray` trả về túi, `dropped` (mẫu không còn) ghi sổ cái -1.
     let misplaced: { stray: InvItem[]; dropped: string[] } = { stray: [], dropped: [] };
     try {
-      const clean = sanitizeEquip(JSON.parse(row.equip));
+      const clean = sanitizeEquip(JSON.parse(row.equip), c.appearance.g);
       c.equip = clean.equip;
       misplaced = clean;
       c.quests = JSON.parse(row.quests) as QuestView;
@@ -634,7 +635,7 @@ function parseStoredInst(itemId: string, raw: string | null): ItemInst | null {
  * `stray` = món còn mẫu nhưng sai lớp ô (skin nằm ở ô có chỉ số, hoặc món không phải skin nằm ở ô skin) để trả về túi;
  * `dropped` = id món mà mẫu không còn tồn tại, để ghi sổ cái.
  */
-function sanitizeEquip(raw: unknown): { equip: Equipment; stray: InvItem[]; dropped: string[] } {
+function sanitizeEquip(raw: unknown, gender: string): { equip: Equipment; stray: InvItem[]; dropped: string[] } {
   const out: Equipment = {};
   const stray: InvItem[] = [];
   const dropped: string[] = [];
@@ -667,10 +668,11 @@ function sanitizeEquip(raw: unknown): { equip: Equipment; stray: InvItem[]; drop
     const e = (raw as Record<string, InvItem | undefined>)[k];
     if (!e || typeof e.id !== 'string') continue;
     const def = ITEM.get(e.id);
-    if (def?.kind === k) out[k] = { id: e.id, n: 1 };
+    // Đúng loại nhưng sai giới (vd. nhân vật nam còn mặc skin chỉ cho nữ từ trước khi có giới hạn, hoặc đổi giới tính): cũng trả về túi.
+    if (def?.kind === k && wearableBy(def, gender)) out[k] = { id: e.id, n: 1 };
     else if (def) {
-      // Món khác loại nằm ở ô skin: trả về túi, giữ cấp cường hóa và dòng đã roll nếu là trang bị.
-      console.warn('[load] món không phải skin nằm ở ô ngoại hình, trả về túi:', e.id);
+      // Món khác loại hoặc sai giới nằm ở ô skin: trả về túi, giữ cấp cường hóa và dòng đã roll nếu là trang bị.
+      console.warn('[load] món không hợp lệ ở ô ngoại hình (sai loại hoặc sai giới), trả về túi:', e.id);
       const it: InvItem = { id: e.id, n: 1 };
       if (isEquipSlot(def.kind)) {
         if (e.plus && e.plus > 0) it.plus = Math.min(e.plus | 0, MAX_ENHANCE);
