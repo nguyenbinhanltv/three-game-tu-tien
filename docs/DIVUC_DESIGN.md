@@ -4,7 +4,7 @@ Bản 1 · 2026-11-18 · nối tiếp `docs/EXPANSION_DESIGN.md` (chương 2–4
 
 Đây là tài liệu **thiết kế**, không đổi code game. Mọi con số là điểm khởi đầu cho `pnpm sim:progress` và `fight:check`; mọi tên mới (đánh dấu †) phải vào `glossary.json` và qua `lore-keeper` trước khi vào i18n (mục 13, 14). Mười hai quyết định ở mục 15 đã được người dùng **chốt ngày 2026-11-18** (tất cả theo đề xuất).
 
-Nguồn quyết định (người dùng, 2026-11-18): hướng **A "Dị Vực xâm lấn"**: giữ bản sắc tiên hiệp; phương Tây chỉ xuất hiện như **thế lực từ giới khác** tràn vào Huyền Linh Giới; nối từ kết chương 4 ("mạch chảy trở lại nhưng về hướng bắc, nơi chưa ai đặt chân", `EXPANSION_DESIGN.md` mục 1.2). Asset lấy từ 18 model CC BY 4.0 trong `../dtl-asset-source/assets-online/` (mục 6.4); hai file `jett_valorant…` và `kafka_honkai_star_rail…` **loại hẳn** (nhân vật của Riot/HoYoverse, vi phạm điều cấm 10 của art bible dù trang tải ghi CC BY).
+Nguồn quyết định (người dùng, 2026-11-18): hướng **A "Dị Vực xâm lấn"**: giữ bản sắc tiên hiệp; phương Tây chỉ xuất hiện như **thế lực từ giới khác** tràn vào Huyền Linh Giới; nối từ kết chương 4 ("mạch chảy trở lại nhưng về hướng bắc, nơi chưa ai đặt chân", `EXPANSION_DESIGN.md` mục 1.2). Asset lấy từ 17 model CC BY 4.0 trong `../dtl-asset-source/assets-online/` (mục 6.4); ba file **loại hẳn** dù trang tải ghi CC BY vì là nhân vật của hãng khác (điều cấm 10 của art bible): `jett_valorant…`, `kafka_honkai_star_rail…` (Riot/HoYoverse) và `butterfly_revamp` (không phải con bướm, xem mục 6.4).
 
 ---
 
@@ -351,7 +351,7 @@ Nguồn: `../dtl-asset-source/assets-online/`. Tác giả, giấy phép lấy t�
 | `ravenyth__the_gilded_night_empress` | 1,99M | 6 (Atahan3D) | boss D2 | `boss_kim_da_ma_hau` | boss | hai chân, váy dài |
 | `nyxarion_nemesis__the_violet_eclipse` | 1,97M | 6 (Atahan3D) | boss trong kiếp cuối | `boss_tu_thuc_duc_chu` | boss | hai chân + cánh |
 | `void_nemesis__the_abyssal_angel` | 1,99M | 6 (Atahan3D) | **để dành chương 6**; chương 5 chỉ là bóng ở cảnh kết | (chưa nhập) | | |
-| `butterfly_revamp` | 46k, 136 xương | topomega3 | sinh vật trang trí "bướm mạch" (PR DV-C), mọi bản đồ | `prop_buom_mach` | prop | bỏ xương, vỗ cánh bằng shader |
+| `butterfly_revamp` | 46k, 136 xương | topomega3 | **Loại hẳn, không nhập** (phát hiện ở DV-C): không phải con bướm mà là nhân vật nữ cầm kiếm; tên mesh/xương (`DaoFengBaoBei`, `JingKe`, `Hero`) cho thấy là model tướng "Butterfly" trích từ game thương mại. "Bướm mạch" làm **thủ tục** (`apps/client/src/game/butterflies.ts`, không asset ngoài) | | | |
 | `sword_of_miracle_free` | 26k | Art_workshop | *không nằm trong yêu cầu*; ứng viên kiếm bậc 5 hoặc kiếm của Tẫn Hỏa Kiếm Cơ (mục 15, quyết định 9) | | weapon | |
 | `jett_valorant…`, `kafka_honkai_star_rail…` | | | **Loại hẳn, không nhập** | | | |
 
@@ -380,7 +380,7 @@ Không thêm chiêu thường. Mỗi công pháp một chiêu **cấp 30** (đ�
 - **Màn Ghi công** (bắt buộc trước khi asset CC BY đầu tiên vào bản chơi chung): mục 6.3.
 - **Mood theo vùng trong một level**: hiện mood theo level + giờ. Chương 5 cần **trộn mood theo vị trí** (bên này/bên kia vết nứt), nội suy trên 80 m quanh Bậc Khích. Gói DV1-C.
 - **Trạng thái theo room có hạn giờ** (bia đã thắp ở bản đồ): cùng kiểu với giờ hồi sinh boss (`S.BOSS_TIMERS`), gửi qua một tin `S.STELES`; theo kênh, không lưu DB. Tách hẳn khỏi Truyền Tống Trận (mục 4.3) và khỏi bia của Thực Nhật Kiếp (mục 3).
-- **Bướm và sinh vật trang trí**: `game/critters.ts` (DV-C), instanced, không thuộc server.
+- **Bướm và sinh vật trang trí**: `game/butterflies.ts` (DV-C), thủ tục, instanced, không thuộc server.
 
 ---
 
@@ -404,7 +404,7 @@ Kích thước như `EXPANSION_DESIGN.md` mục 11 (S ≈ nửa ngày, M ≈ 1�
 | --- | --- | --- | --- |
 | **DV-A** | Tài liệu này | `docs/DIVUC_DESIGN.md` | S |
 | **DV-B** | Thử pipeline một boss: Tam Thủ Ngục Khuyển (giảm lưới, nướng, auto-rig, 5 clip, `assets:build --only`, ghi công, boss tạm + `/gm spawn`) | `tools/blender/*`, `assets/source/boss/*`, `assets/LICENSES.md`, `monsters.json`, `loot.json`, `MONSTER_SKINS`, i18n | L |
-| **DV-C** | Bướm mạch: sinh vật trang trí bay, instanced, mọi bản đồ | `apps/client/src/game/critters.ts`, `assets/source/prop/*`, `LEVEL_ASSETS` | M |
+| **DV-C** | Bướm mạch: sinh vật trang trí bay, instanced, thủ tục (không asset ngoài) | `apps/client/src/game/butterflies.ts`, `engine.ts` | M |
 | **DV1-B** | Màn Ghi công + `credits.json` sinh từ `meta.json` | `tools/asset-pipeline`, `apps/client/src/ui/windows/Settings.tsx`, i18n | S |
 | **DV1-C** | Bảng màu `rift_*`, mood `ash_dawn`/`rift`, trộn mood theo vị trí, ngoại lệ art bible | `assets/palette.json`, `render/{atmosphere,grading}.ts`, `docs/art-bible.md` | M |
 | **DV1-D** | Thang cấp 29–32, `xpNeed`, `realmMul` Anh Biến, bình cảnh, `sim:progress` 32 cấp | `packages/shared/src/{formulas,realm}.ts`, `realms.json`, i18n | M |
@@ -444,9 +444,9 @@ Kích thước như `EXPANSION_DESIGN.md` mục 11 (S ≈ nửa ngày, M ≈ 1�
 | Chương 4 chưa đóng (E4-K phân thân, E4-L Thiên Nhân Kiếp, ba chiêu `locked`) | Chương 5 bắt đầu nội dung (DV-3) sau khi E-4 xong; DV-1/DV-2 không phụ thuộc, làm trước được |
 | Auto-rig model người có cánh/váy cho kết quả xấu | DV-B thử con dễ nhất trước; nếu DV2-C/D không đạt, boss người đứng yên bay lơ lửng (`hover`) với clip ít chuyển động chân, hoặc người dùng rig tay một lần trên Mixamo/Blender |
 | Lạc tông | Bốn nguyên tắc mục 0; bảng màu tách; người dùng duyệt ảnh từng PR asset |
-| Giấy phép | Chỉ nhập file có `asset.extras.license = CC-BY-4.0`; ghi công ba nơi (meta, LICENSES, màn Ghi công); hai model nhân vật có bản quyền đã loại; CC BY cho phép sửa và dùng, kể cả sau này game đổi phạm vi |
+| Giấy phép | Nhãn CC BY trên trang tải **chưa đủ**: phải mở file xem tên mesh/xương/vật liệu trước khi nhập (`butterfly_revamp` gắn nhãn CC BY nhưng là model trích từ game khác). Chỉ nhập file có `asset.extras.license = CC-BY-4.0` và nội dung là sáng tác gốc; ghi công ba nơi (meta, LICENSES, màn Ghi công); hai model nhân vật có bản quyền đã loại; CC BY cho phép sửa và dùng, kể cả sau này game đổi phạm vi |
 | Tác giả gỡ model khỏi Sketchfab | Giấy phép CC BY không thu hồi được với bản đã tải; giữ nguyên file gốc + URL nguồn trong `dtl-asset-source` |
-| Tải đầu tăng | Mọi asset chương 5 nạp lười theo level; bướm (dùng ở Vân Lam) phải < 150 KB |
+| Tải đầu tăng | Mọi asset chương 5 nạp lười theo level; bướm là thủ tục, không thêm file tải |
 
 ---
 
