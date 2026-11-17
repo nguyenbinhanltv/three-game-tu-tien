@@ -62,6 +62,11 @@ export function majorRealmOf(level: number): number {
   return level >= HOA_THAN_LEVEL ? 4 : level >= NGUYEN_ANH_LEVEL ? 3 : level >= KET_DAN_LEVEL ? 2 : level >= TRUC_CO_LEVEL ? 1 : 0;
 }
 
+/** Tầng/kỳ trong đại cảnh giới của cấp, tính từ 1 (Ngưng Khí tầng 12 → 12, Kết Đan sơ kỳ → 1). Dùng cho chữ triện ở khung nhân vật. */
+export function realmStageOf(level: number): number {
+  return level - REALM_MUL[majorRealmOf(level)].from + 1;
+}
+
 export interface BaseStats {
   hp: number;
   mp: number;

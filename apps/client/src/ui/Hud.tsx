@@ -4,7 +4,7 @@ import './panels.css';
 import './tutien.css';
 import './ngj/hud.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { majorRealmOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
@@ -20,9 +20,6 @@ import { TrialBanner } from './Realm';
 import { BagWarn } from './BagWarn';
 import { breakGoal } from './breakGoal';
 import { type BossLine, type ChapterCard, openPanel, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
-
-/** Cấp bắt đầu của từng đại cảnh giới (Ngưng Khí, Trúc Cơ, Kết Đan, Nguyên Anh, Hóa Thần): đổi cấp thành số tầng/kỳ cho chữ triện. */
-const REALM_START = [1, 16, 20, 24, 28];
 
 function PlayerFrame() {
   const char = useUI((s) => s.char);
@@ -45,7 +42,7 @@ function PlayerFrame() {
           <div className="ngj-pf-portrait" aria-hidden="true">
             <SysIcon name="character" size={34} />
             <span className="ngj-pf-seal">
-              <SealNumeral n={char.level - REALM_START[majorRealmOf(char.level)] + 1} size={20} />
+              <SealNumeral n={realmStageOf(char.level)} size={20} />
             </span>
           </div>
         </>
