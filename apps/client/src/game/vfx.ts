@@ -374,10 +374,10 @@ export class Vfx {
    * không có seed thì ngẫu nhiên tại chỗ. `flash` > 0: chớp toàn cảnh qua `onFlash` lúc tia ngược
    * bừng (và nhỏ hơn ở lần bừng thứ hai). Thời lượng 0,42 giây như bản cũ.
    */
-  lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1, seed?: number, flash = 0): void {
+  lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1, seed?: number, flash = 0, thick = 1): void {
     const sd = seedOr(seed);
     const bolt = takeBolt();
-    boltShape(sd, 62, 7, scale, bolt.shape);
+    boltShape(sd, 62, 7, scale * thick, bolt.shape);
     const m = this.fx(bolt.geo.geo, color, 1, 'bolt');
     m.fxA.z = (sd % 4000) / 100;
     const glow = this.fx(G.ico1, color, 0.35);

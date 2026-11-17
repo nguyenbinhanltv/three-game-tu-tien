@@ -140,7 +140,9 @@ export class ImpostorLayer {
     im.instanceMatrix = new THREE.InstancedBufferAttribute(mat, 16);
     im.instanceColor = new THREE.InstancedBufferAttribute(col, 3);
     im.matrixAutoUpdate = false;
-    im.frustumCulled = false;
+    // Cắt theo khung nhìn (CPU/draw call của three là chi phí chính khi đông): bounding sphere tính từ đúng các instance.
+    im.computeBoundingSphere();
+    im.frustumCulled = true;
     im.castShadow = false;
     im.receiveShadow = false;
     im.visible = false;
