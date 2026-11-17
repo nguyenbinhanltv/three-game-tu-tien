@@ -42,6 +42,28 @@
 .bag-cell[data-dim='1'] {
   opacity: 0.28;
 }
+/* Món nhân vật của mình không mặc được (giới hạn giới tính): xám + vạch đỏ ở góc. */
+.bag-cell[data-nowear='1'] {
+  position: relative;
+}
+.bag-cell[data-nowear='1'] .k-slot {
+  filter: grayscale(0.85) brightness(0.72);
+}
+.bag-cell[data-nowear='1']::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--k-bad, #c8574a);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+.bag-sel-why {
+  font-size: 12px;
+}
 .bag-cell[data-over='1'] .k-slot {
   outline: 2px solid var(--k-gold, #e6c36a);
   outline-offset: -1px;

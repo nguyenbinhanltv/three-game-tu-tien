@@ -151,7 +151,8 @@ export function diffLines(diffs: StatDiff[]): TipLine[] {
 /** Phần so sánh cho tooltip món trong túi: tiêu đề + các dòng chênh lệch. Rỗng nếu không phải trang bị. */
 export function compareLines(level: number, equip: Equipment, item: InvItem, def: ItemDef, rootId = ''): TipLine[] {
   const slot = def.kind;
-  if (slot === 'material' || slot === 'consumable') return [];
+  // Chỉ ô có chỉ số mới so sánh (skin là ô ngoại hình, không có chỉ số).
+  if (!isEquipSlot(slot)) return [];
   const worn = equip[slot];
   const diffs = diffLines(equipDiff(level, equip, slot, item, ROOT.get(rootId) ?? null));
   const head = worn ? t('ui.cmp.vs', { item: t(`item.${worn.id}.name`) }) : t('ui.cmp.vs_empty');

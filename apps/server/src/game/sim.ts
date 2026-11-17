@@ -52,6 +52,9 @@ import {
   caveBoundOf,
   type DungeonReward,
   EQUIP_SLOTS,
+  isWearSlot,
+  wearableBy,
+  type WearSlot,
   glowStage,
   lookSet,
   accessoryCode,
@@ -189,7 +192,7 @@ import { type Character, isEquipSlot, sameSlot } from './character';
 /** Quá số ô đổi này thì gửi ảnh túi đầy đủ thay vì delta. */
 const INV_DELTA_MAX = 24;
 import type { TestFlags } from '../testflags';
-import { BRANCH_METHOD, findIds, GM_GROUPS, GM_MAX_TIER, hasOutfitAsset, helpLine, isGmBranch, outfitRows, parsePlus, planKit, weaponIds, type GmBranch } from './gmtools';
+import { BRANCH_METHOD, findIds, GM_GROUPS, GM_MAX_TIER, hasOutfitAsset, helpLine, isGmBranch, outfitRows, parsePlus, planKit, skinIds, weaponIds, type GmBranch } from './gmtools';
 import { type Hot, MethodRt, methodOf, passiveOf, resolveFor, setSkillLevel, skillLevelOf, type Trail } from './method';
 
 /** Bí Tịch Tàn Quyển: nguyên liệu nâng cấp chiêu. */
@@ -1029,6 +1032,10 @@ export class GameSim {
     if (s.sk !== sk) s.sk = sk;
     const sa = accessoryCode(SETS, c.equip);
     if (s.sa !== sa) s.sa = sa;
+    // Skin sai giới (đổi giới tính bằng GM sau khi mặc) không được hiển thị; món vẫn nằm ở ô, tháo ra bình thường.
+    const skinId = c.equip.skin?.id ?? '';
+    const sn = skinId && wearableBy(ITEM.get(skinId), c.appearance.g) ? skinId : '';
+    if (s.sn !== sn) s.sn = sn;
     const art = c.equip.artifact?.id ?? '';
     if (s.art !== art) s.art = art;
     const mt = c.meta.method ?? '';
@@ -3746,7 +3753,7 @@ export class GameSim {
     const it = c.inv[slot];
     const def = it ? ITEM.get(it.id) : undefined;
     if (!it || !def) return;
-    if (isEquipSlot(def.kind)) return this.onEquip(p, { slot, r: m.r });
+    if (isWearSlot(def.kind)) return this.onEquip(p, { slot, r: m.r });
     if (!def.use) return;
     if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
@@ -3798,9 +3805,12 @@ export class GameSim {
     const c = p.char;
     const it = c.inv[slot as number];
     const def = it ? ITEM.get(it.id) : undefined;
-    if (!it || !def || !isEquipSlot(def.kind)) return;
+    // Ô có chỉ số hoặc ô ngoại hình (skin): cùng một đường giao dịch. Sở hữu = món đang nằm trong túi của chính người chơi.
+    if (!it || !def || !isWearSlot(def.kind)) return;
     if ((def.reqLevel ?? 1) > c.level) return this.warn(p, 'sys.equip_level');
-    const es = def.kind as EquipSlot;
+    // Món giới hạn giới tính (skin dựng cho một dáng): sai giới thì từ chối, món vẫn nằm trong túi.
+    if (!wearableBy(def, c.appearance.g)) return this.warn(p, 'sys.equip_gender');
+    const es: WearSlot = def.kind;
     // Đổi đồ không sinh/mất vật phẩm nên ledger ghi một dòng 'noop' có khóa idem và lý do (món vào/ra) để truy vết.
     const prev0 = c.equip[es];
     const ok = c.tx(`equip:${es}:${it.id}${prev0 ? '<-' + prev0.id : ''}`, idem, (d) => {
@@ -3825,7 +3835,7 @@ export class GameSim {
   onUnequip(p: PlayerEnt, msg: unknown): void {
     const m = msg as { slot?: unknown; r?: unknown } | null;
     const es = m?.slot;
-    if (!isEquipSlot(es) || this.isDead(p)) return;
+    if (!isWearSlot(es) || this.isDead(p)) return;
     if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     if (p.trial) return this.warn(p, 'sys.busy');
     const idem = this.idem(p, m?.r);
@@ -4665,6 +4675,39 @@ export class GameSim {
         const plus = a[2] === undefined ? 0 : parsePlus(a[2], MAX_ENHANCE);
         if (plus === null) return say(helpLine('weapon')!);
         return say(this.gmEquipPieces(p, [{ slot: 'weapon', id: a[1] }], plus) ? t('gm.msg.weapon', { name: itemName(a[1]), plus }) : t('gm.msg.bag_full'));
+      }
+      case 'skin': {
+        // /gm skin <id|list|off>: lấy (nếu chưa có) và mặc skin vào ô ngoại hình; off = tháo về túi. Skin không có chỉ số.
+        const ids = skinIds();
+        if (!a[1] || a[1] === 'list') {
+          say(t('gm.msg.skin_head'));
+          for (const id of ids) say(`${id} — ${itemName(id)}`);
+          return;
+        }
+        if (a[1] === 'off') {
+          const ok = c.tx('gm:skin', null, (d) => {
+            const i = d.inv.findIndex((x) => !x);
+            if (!d.equip.skin || i < 0) return false;
+            d.inv[i] = { ...d.equip.skin };
+            delete d.equip.skin;
+            return true;
+          });
+          return say(ok ? t('gm.msg.skin_off') : t('gm.msg.skin_none'));
+        }
+        const id = a[1];
+        if (!ids.includes(id)) return say(t('gm.msg.no_skin', { id }));
+        if (!wearableBy(ITEM.get(id), c.appearance.g)) return say(t('sys.equip_gender'));
+        if (c.equip.skin?.id === id) return say(t('gm.msg.skin', { name: itemName(id) }));
+        const ok = c.tx('gm:skin', null, (d) => {
+          // Chưa có trong túi thì thêm một cái (ghi sổ cái), rồi đổi chỗ với skin đang mặc.
+          if (!d.inv.some((x) => x?.id === id) && !d.add(id, 1)) return false;
+          const i = d.inv.findIndex((x) => x?.id === id);
+          const prev = d.equip.skin;
+          d.equip.skin = { id, n: 1 };
+          d.inv[i] = prev ? { ...prev } : null;
+          return true;
+        });
+        return say(ok ? t('gm.msg.skin', { name: itemName(id) }) : t('gm.msg.bag_full'));
       }
       case 'find': {
         // /gm find <từ khóa>: tìm id vật phẩm/chiêu/bộ/quái/công pháp theo tên hoặc id (bỏ dấu cũng được).

@@ -1,6 +1,6 @@
 // Túi đồ (TD-A): phân loại, lực chiến, thuật toán sắp xếp. Dùng chung client và server.
 import { INV_SIZE, type InvItem, type InvSlot, type ItemDef } from './types';
-import { isEquipSlot, legacyQuality, type PlayerStats } from './items';
+import { isWearSlot, legacyQuality, type PlayerStats } from './items';
 
 export type ItemCategory = 'gear' | 'pill' | 'material' | 'quest' | 'other';
 
@@ -11,7 +11,8 @@ export const CATEGORY_ORDER: readonly ItemCategory[] = ['gear', 'pill', 'materia
 export function itemCategory(def: ItemDef | undefined | null): ItemCategory {
   if (!def) return 'other';
   if (def.quest) return 'quest';
-  if (isEquipSlot(def.kind)) return 'gear';
+  // Skin (ô ngoại hình) xếp chung tab trang bị.
+  if (isWearSlot(def.kind)) return 'gear';
   if (def.kind === 'consumable') return 'pill';
   if (def.kind === 'material') return 'material';
   return 'other';

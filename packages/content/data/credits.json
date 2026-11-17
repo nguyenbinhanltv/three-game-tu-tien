@@ -48,10 +48,8 @@
         "pose"
       ],
       "assets": [
-        "set_skin_varkessa_nam",
         "set_skin_varkessa_nu"
-      ],
-      "pending": true
+      ]
     },
     {
       "id": "ual",

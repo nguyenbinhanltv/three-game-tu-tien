@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "set_skin_varkessa_nu",
+  "type": "chr",
+  "budgetClass": "skin",
+  "itemId": "itm_skin_varkessa",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 20000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "external",
+    "source": "chr/skin_varkessa/prep/rig_v01.glb",
+    "size": {
+      "height": 1.86
+    },
+    "orient": "none",
+    "yaw": 0,
+    "post": "tools/blender/retarget_set.py",
+    "retarget": {
+      "player": "chr_kiem_tu_nu",
+      "mode": "rig",
+      "cut": [],
+      "legBlend": 0,
+      "rigidRoot": true
+    }
+  },
+  "license": {
+    "source": "Sketchfab: \"VARKESSA // The Infernal Emberblade\" của Atahan3D (https://sketchfab.com/Atahan3D). Đã sửa: bỏ đại kiếm dính tay, giảm 1.952.526 → 20.000 tam giác, UV mới và nướng lại texture màu + normal, dựng xương Mixamo và trọng số (tools/blender/skin_prep.py, cấu hình tools/blender/skins/varkessa.json), đặt lại tư thế nghỉ theo thân nền (retarget_set.py)",
+    "owner": "Atahan3D",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/varkessa-the-infernal-emberblade-13c07cff4b884037a08b7463df5bc996",
+    "spdx": "CC-BY-4.0"
+  }
+}
