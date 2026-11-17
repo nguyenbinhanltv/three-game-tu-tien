@@ -123,6 +123,13 @@ interface Cell {
 }
 
 const IDENTITY = new THREE.Matrix4();
+const _lq = new THREE.Quaternion();
+const _lx = new THREE.Vector3(1, 0, 0);
+/** Xoay quanh trục đứng theo `yaw`, rồi nghiêng quanh trục ngang cục bộ theo `lean` (cột đổ, tượng nghiêng). */
+function setYawLean(q: THREE.Quaternion, p: { yaw: number; lean?: number }): void {
+  q.setFromAxisAngle(_up, p.yaw);
+  if (p.lean) q.multiply(_lq.setFromAxisAngle(_lx, p.lean));
+}
 
 /**
  * Bản sao hình học với ma trận nút nướng vào đỉnh. Pipeline lượng tử hóa vị trí về int16 chuẩn hóa (KHR_mesh_quantization,
@@ -368,7 +375,7 @@ export class PropLayer {
     ch.mat = new Float32Array(ch.items.length * 16);
     ch.col = new Float32Array(ch.items.length * 3);
     ch.items.forEach((p, i) => {
-      _q.setFromAxisAngle(_up, p.yaw);
+      setYawLean(_q, p);
       _m.compose(_p.set(p.x, p.y, p.z), _q, _s.set(p.s, p.s * (p.sy ?? 1), p.s));
       _m.toArray(ch.mat as Float32Array, i * 16);
       (ch.col as Float32Array).set(p.tint ?? [1, 1, 1], i * 3);
@@ -449,11 +456,17 @@ export class PropLayer {
     // WebGPU không vẽ InstancedMesh chỉ có 1 instance (mat4 đơn trong uniform buffer): nhân đôi thành 2 instance trùng khít.
     const n = Math.max(2, c.items.length);
     const arr = new Float32Array(n * 16);
+    const colArr = new Float32Array(n * 3).fill(1);
+    let tinted = false;
     for (let i = 0; i < n; i++) {
       const p = c.items[Math.min(i, c.items.length - 1)];
-      _q.setFromAxisAngle(_up, p.yaw);
+      setYawLean(_q, p);
       _m.compose(_p.set(p.x, p.y, p.z), _q, _s.set(p.s, p.s, p.s));
       _m.toArray(arr, i * 16);
+      if (p.tint) {
+        tinted = true;
+        colArr.set(p.tint, i * 3);
+      }
     }
     c.matrices = new THREE.InstancedBufferAttribute(arr, 16);
     const shadow = this.shadows && !!PROP_CFG[c.id].shadow;
@@ -462,6 +475,8 @@ export class PropLayer {
         const im = new THREE.InstancedMesh(lm.geometry, lm.material, n);
         // Mỗi InstancedMesh một bản ma trận riêng (vài chục byte): dùng chung một thuộc tính giữa các mesh làm WebGPU vẽ lệch.
         im.instanceMatrix = new THREE.InstancedBufferAttribute(arr.slice(), 16);
+        // Sắc độ theo instance (đá vỡ Thiên Khuyết, E4-I): chỉ ô có prop nhuộm mới tốn thêm 12 byte/instance.
+        if (tinted) im.instanceColor = new THREE.InstancedBufferAttribute(colArr.slice(), 3);
         im.matrixAutoUpdate = false;
         im.castShadow = shadow;
         im.receiveShadow = this.shadows;

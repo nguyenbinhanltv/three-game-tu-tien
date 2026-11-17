@@ -153,6 +153,34 @@
         "fogHaze": 0.0016, "fogHazeStart": 55, "rim": 0.9,
         "shadowTint": "#101A26", "highlightTint": "#E8A868", "splitBalance": -0.2,
         "blackLift": "#12161F", "contrast": 1.08, "saturation": 0.8, "exposure": 1.2
+      },
+      "tk_dawn": {
+        "label": "Thiên Khuyết — rạng đông trên thành cổ",
+        "sunColor": "#F2C58E", "sunIntensity": 1.9, "sunElevationDeg": 11,
+        "skyColor": "#8E9DB4", "skyIntensity": 0.9,
+        "fogColor": "#9AA9B8", "fogDensity": 0.0016, "heightFogTop": 50, "heightFogBoost": 2.0,
+        "fogHaze": 0.0028, "fogHazeStart": 45, "rim": 0.6,
+        "shadowTint": "#1E3F4C", "highlightTint": "#F2C47E", "splitBalance": 0.05,
+        "blackLift": "#17262F", "contrast": 1.08, "saturation": 0.86, "exposure": 1.02
+      },
+      "tk": {
+        "label": "Thiên Khuyết — ban ngày",
+        "sunColor": "#EBD0A4", "sunIntensity": 2.5, "sunElevationDeg": 32,
+        "skyColor": "#8FA4BA", "skyIntensity": 0.75,
+        "fogColor": "#A9B6C2", "fogDensity": 0.0013, "heightFogTop": 40, "heightFogBoost": 1.7,
+        "fogHaze": 0.0024, "fogHazeStart": 55, "rim": 0.5,
+        "shadowTint": "#25444F", "highlightTint": "#F2C47E", "splitBalance": 0.0,
+        "shadowAmount": 0.55, "highlightAmount": 0.25, "fogScatter": 0.8,
+        "blackLift": "#17262F", "contrast": 1.1, "saturation": 0.8, "exposure": 0.97
+      },
+      "tk_night": {
+        "label": "Thiên Khuyết — đêm trăng lam",
+        "sunColor": "#BFCDE0", "sunIntensity": 1.5, "sunElevationDeg": 40,
+        "skyColor": "#3A4E5E", "skyIntensity": 1.0,
+        "fogColor": "#2B3943", "fogDensity": 0.0013, "heightFogTop": 46, "heightFogBoost": 2.0,
+        "fogHaze": 0.0018, "fogHazeStart": 55, "rim": 1.0,
+        "shadowTint": "#16293A", "highlightTint": "#F2C47E", "splitBalance": -0.18,
+        "blackLift": "#1B2D38", "contrast": 1.1, "saturation": 0.72, "exposure": 1.28
       }
     },
     "bloom": { "threshold": 1.0, "strength": 0.35, "radius": 0.5, "maxHdr": 2.5 },

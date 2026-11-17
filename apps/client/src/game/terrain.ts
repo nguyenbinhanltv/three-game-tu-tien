@@ -10,6 +10,7 @@ import { col, G, GeoBuilder, mat } from './geo';
 import { withSightFade } from './occlusion';
 import { LEGACY_TREES, nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
+import { tkGroundColor } from './thienKhuyetArt';
 
 const TILE = 256;
 const NEAR_R = 3;
@@ -36,6 +37,9 @@ let T = levelTerrain();
 let VL = T.id === 'van_lam';
 /** Level dùng bảng màu đất son (Đoạn Mạch, E2-I). */
 let OCHRE = T.id === 'doan_mach';
+/** Level sân đá phiến thành cổ (Thiên Khuyết, E4-I). */
+let SLATE = T.id === 'thien_khuyet';
+const _tk: [number, number, number] = [0, 0, 0];
 function heightAt(x: number, z: number): number {
   return T.surfaceAt(x, z);
 }
@@ -160,6 +164,10 @@ function genericColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Màu mặt đất theo vị trí, độ cao và độ dốc. */
 function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Color): void {
+  if (SLATE) {
+    tkGroundColor(T.def, x, z, ny, _tk);
+    return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
+  }
   if (OCHRE) return ochreColor(x, z, h, ny, out);
   if (!isVanLam()) return genericColor(x, z, h, ny, out);
   const wSect = featureWeight(SECT, x, z);
@@ -195,7 +203,7 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
 
 /** Trọng số vùng cho shader mặt đất: x rừng, y đất khô, z đất chết Kiếm Trủng, w dự phòng. */
 function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
-  if (OCHRE) {
+  if (OCHRE || SLATE) {
     // Một lớp nền duy nhất: ở preset Vừa/Thấp lớp nền chọn cứng theo ngưỡng nên mảng đất/đất nứt hiện thành vệt mép gắt (E2-I); biến thiên màu do màu đỉnh (`ochreColor`) lo.
     o[k] = o[k + 1] = o[k + 2] = o[k + 3] = 0;
     return;
@@ -470,6 +478,7 @@ export class Terrain {
     T = levelTerrain();
     VL = T.id === 'van_lam';
     OCHRE = T.id === 'doan_mach';
+    SLATE = T.id === 'thien_khuyet';
     const COARSE_N = this.COARSE_N;
     const g = buildTileGeometry(0, 0, this.size, COARSE_N, 0);
     this.coarseIndex = new THREE.BufferAttribute(new Uint16Array(COARSE_N * COARSE_N * 6), 1);
