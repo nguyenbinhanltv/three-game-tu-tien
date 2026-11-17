@@ -62,6 +62,7 @@ export const SWORD_TINT: Record<string, [number, number, number]> = {
   prop_kiem_kinh_quang: [1.9, 1.8, 1.65],
   prop_kiem_tinh_khuyet: [1.7, 1.55, 1.4],
   prop_kiem_tinh_khuyet_cuoi: [1.6, 1.45, 1.35],
+  prop_kiem_kinh_quang_cuoi: [1.8, 1.7, 1.6],
 };
 
 const SCALE_MIN = 0.75;
