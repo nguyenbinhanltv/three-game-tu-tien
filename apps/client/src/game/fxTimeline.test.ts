@@ -147,6 +147,28 @@ describe('V4: pháp tướng', () => {
   });
 });
 
+describe('V4 phần 2: cảnh lớn theo S.FX', () => {
+  it('đột phá/độ kiếp có ba timeline theo cảnh giới (`when`), mặc định là Trúc Cơ', () => {
+    for (const kind of ['ascend', 'tribstart']) {
+      const all = [...FX_TIMELINE.values()].filter((t) => t.fxKind === kind);
+      expect(all.map((t) => t.when ?? 'truc_co').sort()).toEqual(['ket_dan', 'nguyen_anh', 'truc_co']);
+      expect(new Set(all.map((t) => t.palette)).size).toBe(3);
+    }
+  });
+  it('chớp (burst) < 120 ms và không có chớp toàn cảnh > 0,3 ở mọi cảnh lớn', () => {
+    for (const tl of FX_TIMELINE.values()) {
+      if (!tl.skill.startsWith('fx_')) continue;
+      for (const e of tl.events) {
+        if (e.type === 'mesh' && e.shape === 'burst') expect(e.dur, tl.skill).toBeLessThanOrEqual(0.12);
+        if (e.type === 'flash') expect(e.amount, tl.skill).toBeLessThanOrEqual(0.3);
+      }
+    }
+  });
+  it('xuất khiếu, thuấn di, ngự kiếm có timeline', () => {
+    for (const id of ['fx_soul_out', 'fx_soul_in', 'fx_blink', 'fx_fly_on']) expect(FX_TIMELINE.has(id), id).toBe(true);
+  });
+});
+
 describe('hủy động tác', () => {
   it('hủy trước mốc trúng thì bỏ đòn; sau mốc trúng thì giữ phần đuôi', () => {
     expect(cancelDropsCast(0.1, 0.28)).toBe(true);
@@ -158,7 +180,7 @@ describe('hủy động tác', () => {
 describe('dữ liệu timeline chiêu mẫu', () => {
   for (const tl of FX_TIMELINE.values()) {
     it(`${tl.skill}: hợp lệ, hitstop 40–80 ms, không phát vượt lõi chớp 120 ms`, () => {
-      expect(validateFxTimeline(tl, (id) => SKILL.has(id))).toEqual([]);
+      expect(validateFxTimeline(tl, (id) => SKILL.has(id) || id.startsWith('fx_'))).toEqual([]);
       const all = [...tl.events, ...Object.values(tl.combo ?? {}).flat()];
       for (const e of all) if (e.type === 'mesh' && e.shape === 'burst') expect(e.dur).toBeLessThanOrEqual(0.12);
     });
