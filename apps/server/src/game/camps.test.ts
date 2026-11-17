@@ -171,14 +171,18 @@ describe('bãi quái theo cụm', () => {
     const rt = sim.camps.camps.find((c) => c.melee.length >= 3)!;
     const p = join(rt.def.x, rt.def.z);
     const [a, ...rest] = rt.melee;
+    // Vị trí sinh trong bãi là ngẫu nhiên (bán kính 18–30 m), có lượt không con nào nằm trong 14 m: đặt tay cho xác định,
+    // một con sát bên (6 m), các con còn lại ngoài tầm (20 m trở ra).
+    rest.forEach((m, i) => {
+      m.s.x = a.s.x + (i === 0 ? 6 : 20 + i * 4);
+      m.s.z = a.s.z;
+    });
     (sim as unknown as { aggroMonster(m: Mon, p: Ent): void }).aggroMonster(a, p);
     expect(a.state).toBe(MS_CHASE);
-    const near = rest.filter((m) => Math.hypot(m.s.x - a.s.x, m.s.z - a.s.z) <= 14);
-    expect(near.length).toBeGreaterThan(0);
-    for (const m of near) {
-      expect(m.state).toBe(MS_CHASE);
-      expect(m.target).toBe(p.sid);
-    }
+    const [near, ...far] = rest;
+    expect(near.state).toBe(MS_CHASE);
+    expect(near.target).toBe(p.sid);
+    for (const m of far) expect(m.state).toBe(MS_IDLE);
   });
 });
 
