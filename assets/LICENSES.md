@@ -542,6 +542,8 @@ Bản thử, không thay nhân vật trong game (`?chr=v2`, docs/chr-v2). Thân 
 | `chr_v2_nu` | MakeHuman base mesh + target + rig/trọng số Mixamo qua MPFB2 (CC0-1.0); đầu + tóc Tripo web app (người dùng dựng) từ concept Codex; gộp bằng tools/blender/chr_v2_head.py | dự án + CC0-1.0 | 2026-11-17 | xem meta.json |
 | `chr_v2_hb_nam` | MakeHuman base mesh + target + rig/trọng số Mixamo qua MPFB2 (CC0-1.0); đầu + tóc Tripo web app (người dùng dựng) từ concept Codex; gộp bằng tools/blender/chr_v2_head.py | dự án + CC0-1.0 | 2026-11-17 | xem meta.json |
 | `chr_v2_hb_nu` | MakeHuman base mesh + target + rig/trọng số Mixamo qua MPFB2 (CC0-1.0); đầu + tóc Tripo web app (người dùng dựng) từ concept Codex; gộp bằng tools/blender/chr_v2_head.py | dự án + CC0-1.0 | 2026-11-17 | xem meta.json |
+| `set_de_tu_v2_nam` | Thủ tục: sao chép vùng lưới thân MakeHuman (CC0 qua MPFB2), tools/blender/chr_v2_starter.py | dự án | 2026-11-17 | xem meta.json |
+| `set_de_tu_v2_nu` | Thủ tục: sao chép vùng lưới thân MakeHuman (CC0 qua MPFB2), tools/blender/chr_v2_starter.py | dự án | 2026-11-17 | xem meta.json |
 | `set_liet_mach_kiem_y_v2_nam` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
 | `set_liet_mach_kiem_y_v2_nu` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
 | `set_kinh_quang_kiem_y_v2_nam` | Tripo web app (image→3D H3.1) + Codex (concept), áo mô-đun dựng lại trên thân v2 bằng tools/blender/outfit_build.py | dự án | 2026-11-17 | xem meta.json |
