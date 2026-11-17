@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SKY, POSE_SWORD_SWAP, validatePose, validateFxTimeline, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed, MAX_TIER, TIER_OPEN, TIER_MUL, PROMOTE_MAT, TIER_MIN_ILVL } from '@dtl/shared';
-import { thanThongSkill, itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, OUTFITS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, FX_TIMELINES, MON_FX_TIMELINES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { CLONE_MOVES, thanThong10Skill, thanThongSkill, itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, OUTFITS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, FX_TIMELINES, MON_FX_TIMELINES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT, LOOT_MATS } from './loot';
 import { monSkillsOf } from '@dtl/shared';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, bondedLevel, spiritRadius, SPIRIT_UNLOCK_LEVEL } from '@dtl/shared';
@@ -147,7 +147,8 @@ for (const [id, name] of Object.entries(GLOSSARY.skillsTier)) {
 }
 for (const s of METHOD_SKILLS) {
   if (s.unlock >= 16 && !(s.id in GLOSSARY.skillsTier)) err(`chiêu bậc cao ${s.id}: thiếu trong glossary.skillsTier`);
-  if (s.unlock >= 24 && !s.locked) err(`chiêu ${s.id}: mở từ cấp ${s.unlock} (Nguyên Anh trở lên) phải có locked: true tới khi làm cơ chế`);
+  if (s.unlock >= 24 && s.unlock !== 28 && !s.locked) err(`chiêu ${s.id}: mở từ cấp ${s.unlock} (Nguyên Anh trở lên) phải có locked: true tới khi làm cơ chế`);
+  if (s.unlock === 28 && s.locked) err(`chiêu ${s.id}: thần thông ô 10 (Hóa Thần, E4-K) phải chơi được`);
   if (s.kind === 'line' && !s.line) err(`chiêu ${s.id}: kind line cần trường line`);
   if (s.kind === 'summon' && !s.summon) err(`chiêu ${s.id}: kind summon cần trường summon`);
   if (s.kind === 'buff' && !(s.duration! > 0 && s.buff)) err(`chiêu ${s.id}: kind buff cần duration và buff`);
@@ -1081,6 +1082,31 @@ console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILL
   const na = QUEST.get('q3_nguyen_anh');
   if (na && (na.giver !== 'npc_lam_chieu_dung' || na.turnin !== 'npc_lam_chieu_dung')) err('q3_nguyen_anh phải giao và trả ở npc_lam_chieu_dung');
   if (na && !na.objectives.some((o) => o.type === 'breakthrough' && o.target === 'nguyen_anh')) err('q3_nguyen_anh phải có mục tiêu breakthrough nguyen_anh');
+}
+
+// Chuỗi chương 4 (E4-H): q4_* nối đuôi từ q3_nguyen_anh tới q4_hoa_than; phụ s4_* nhận sau khi vào chương; mục tiêu chỉ vào điểm/quái có thật.
+{
+  const main4 = ['q4_bac_len', 'q4_thach_tuong', 'q4_da_minh', 'q4_xuat_khieu', 'q4_chien_ma', 'q4_thu_linh', 'q4_than_tang', 'q4_tra_mach', 'q4_hoa_than'];
+  main4.forEach((id, i) => {
+    const q = QUEST.get(id);
+    if (!q) return err(`thiếu nhiệm vụ chính chương 4 ${id}`);
+    const want = i === 0 ? 'q3_nguyen_anh' : main4[i - 1];
+    if (q.requires !== want) err(`quest ${id}: phải requires ${want}`);
+  });
+  for (const q of QUESTS) if (q.id.startsWith('s4_') && !q.requires?.startsWith('q4_')) err(`quest ${q.id}: phụ chương 4 phải requires một q4_*`);
+  const first = QUEST.get('q4_bac_len');
+  if (first && !(first.unlockTele ?? []).includes('tk_tp_tram')) err('q4_bac_len phải mở trận tk_tp_tram (unlockTele)');
+  const hn = QUEST.get('q4_hoa_than');
+  if (hn && !hn.objectives.some((o) => o.type === 'breakthrough' && o.target === 'hoa_than')) err('q4_hoa_than phải có mục tiêu breakthrough hoa_than');
+  const tk = LEVELS.thien_khuyet;
+  for (const q of QUESTS) {
+    if (!q.id.startsWith('q4_') && !q.id.startsWith('s4_')) continue;
+    for (const o of q.objectives) {
+      if ((o.type === 'touch' || o.type === 'scan') && !tk.pois?.some((p) => p.id === o.target) && !tk.spots?.some((p) => p.id === o.target)) err(`quest ${q.id}: điểm ${o.target} không có ở thien_khuyet`);
+      if (o.type === 'escort' && !tk.escorts?.some((e) => e.id === o.target)) err(`quest ${q.id}: escort ${o.target} không có ở thien_khuyet`);
+      if (o.type === 'scan' && !tk.pois?.some((p) => p.id === o.target)) err(`quest ${q.id}: scan ${o.target} phải là poi (spots không hiện trong bản quét)`);
+    }
+  }
 }
 
 // ---- Ghi công (DV1-B): credits.json đối chiếu meta.json + assets/LICENSES.md ----

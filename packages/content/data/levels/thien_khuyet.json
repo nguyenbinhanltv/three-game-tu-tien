@@ -4,6 +4,14 @@
     "x": 1024,
     "z": 1036
   },
+  "portals": [
+    {
+      "x": 1044,
+      "z": 262,
+      "r": 12,
+      "to": "than_tang"
+    }
+  ],
   "zones": [
     {
       "id": "dai_lo_den_troi",
@@ -303,14 +311,6 @@
       ]
     }
   ],
-  "portals": [
-    {
-      "x": 1044,
-      "z": 262,
-      "r": 12,
-      "to": "than_tang"
-    }
-  ],
   "pois": [
     {
       "id": "hang_tru_khac_van",
@@ -346,6 +346,107 @@
       "x": 964,
       "z": 1504,
       "beamH": 80
+    }
+  ],
+  "spots": [
+    {
+      "id": "den_troi_1",
+      "zone": "dai_lo_den_troi",
+      "x": 1036,
+      "z": 864
+    },
+    {
+      "id": "den_troi_2",
+      "zone": "dai_lo_den_troi",
+      "x": 1038,
+      "z": 819
+    },
+    {
+      "id": "den_troi_3",
+      "zone": "dai_lo_den_troi",
+      "x": 1040,
+      "z": 774
+    },
+    {
+      "id": "den_troi_4",
+      "zone": "dai_lo_den_troi",
+      "x": 1041,
+      "z": 729
+    },
+    {
+      "id": "den_troi_5",
+      "zone": "dai_lo_den_troi",
+      "x": 1043,
+      "z": 684
+    },
+    {
+      "id": "den_troi_6",
+      "zone": "dai_lo_den_troi",
+      "x": 1045,
+      "z": 639
+    },
+    {
+      "id": "den_troi_7",
+      "zone": "dai_lo_den_troi",
+      "x": 1047,
+      "z": 594
+    },
+    {
+      "id": "den_troi_8",
+      "zone": "dai_lo_den_troi",
+      "x": 1049,
+      "z": 549
+    },
+    {
+      "id": "phong_an_mon_1",
+      "zone": "lam_sao_vien",
+      "x": 584,
+      "z": 914
+    },
+    {
+      "id": "phong_an_mon_2",
+      "zone": "lam_sao_vien",
+      "x": 644,
+      "z": 914
+    },
+    {
+      "id": "phong_an_mon_3",
+      "zone": "lam_sao_vien",
+      "x": 614,
+      "z": 994
+    }
+  ],
+  "escorts": [
+    {
+      "id": "esc_mac_chieu",
+      "npc": "npc_mac_chieu_do",
+      "speed": 4,
+      "path": [
+        [
+          1010,
+          1044
+        ],
+        [
+          900,
+          1010
+        ],
+        [
+          800,
+          994
+        ],
+        [
+          734,
+          996
+        ],
+        [
+          660,
+          970
+        ],
+        [
+          620,
+          960
+        ]
+      ]
     }
   ],
   "camps": [

@@ -1,9 +1,9 @@
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { applyInvMsg, C, caveBoundOf, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, propsOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_SENSED, MF_REAL, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg, PF_SOUL, inSkyBand, type SoulStateMsg, SOUL_RANGE, SOUL_SCOUT, skyFlightUnlocked } from '@dtl/shared';
+import { applyInvMsg, C, caveBoundOf, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, propsOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_SENSED, MF_REAL, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg, PF_SOUL, inSkyBand, type SoulStateMsg, SOUL_RANGE, SOUL_SCOUT, skyFlightUnlocked, type CloneStateMsg, domainRadius, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, heightAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
-import { FX_TIMELINE, ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, thanThongSkill, tierBar, SKILL, SKILLS, VARIANTS, skillName, t } from '@dtl/content';
+import { FX_TIMELINE, ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, thanThong10Skill, thanThongSkill, tierBar, SKILL, SKILLS, VARIANTS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
@@ -48,6 +48,7 @@ import { prefetchWorldAssets } from './preload';
 import { renderMinimap, Terrain } from './terrain';
 import { MapVis } from './mapVis';
 import { SoulVis, type SoulScout } from './soulVis';
+import { CloneVis } from './cloneVis';
 import { loadGroundTextures, type GroundTextures } from './groundTextures';
 import type { GroundLevel } from '../render/materials/ground';
 import { telegraph } from './telegraph';
@@ -310,6 +311,7 @@ export class Game {
   /** Trận truyền tống, vòng niệm và cột sáng điểm đánh dấu (M-4). */
   private mapVis: MapVis | null = null;
   private soulVis: SoulVis | null = null;
+  private cloneVis: CloneVis | null = null;
   private stage: HTMLElement;
   private canvas!: HTMLCanvasElement;
   /** Đĩa sáng của cổng vào/ra phó bản (E2-C: theo dữ liệu level, xem `gates.ts`). */
@@ -388,6 +390,7 @@ export class Game {
   /** Đan Trận đang hiện (E2-D): theo sid chủ kiếp. */
   private ch2Checked = false;
   private ch3Checked = false;
+  private ch4Checked = false;
   private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
   /** Phiên bản hiệu ứng cung gương (E3-M): tin mới/tin tắt tăng số, hiệu ứng cũ thấy số lệch thì tự tắt. */
   private mirrorDiscVer = 0;
@@ -643,6 +646,11 @@ export class Game {
       const now = performance.now();
       set({ soul: { open: m.open, k: m.k, until: m.left > 0 ? now + m.left : 0, bx: m.bx, by: m.by, bz: m.bz, to: m.to ?? null, cdUntil: m.cd > 0 ? now + m.cd : 0, deathCdUntil: m.dcd > 0 ? now + m.dcd : 0 } });
     });
+    // Phân thân thần niệm (E4-K): chỉ hiển thị; server quyết định.
+    room.onMessage(S.CLONE_STATE, (m: CloneStateMsg) => {
+      const now = performance.now();
+      set({ clone: { open: m.open, until: m.left > 0 ? now + m.left : 0, cdUntil: m.cd > 0 ? now + m.cd : 0 } });
+    });
     room.onMessage(S.SPIRIT_SCAN, (m: SpiritScanMsg) => {
       const now = performance.now();
       set({ spiritScan: { x: m.x, z: m.z, r: m.r, at: now, until: now + m.ttl, hits: m.hits } });
@@ -692,6 +700,7 @@ export class Game {
         this.bindRoom(again);
         this.pending.length = 0;
         this.snapToServer = true;
+        this.cloneVis?.clear();
         pushLog(t('ui.reconnected'), 'good');
         return;
       } catch {
@@ -1064,6 +1073,7 @@ export class Game {
 
   /** Gỡ và giải phóng mọi thứ gắn với level hiện tại (địa hình, kiến trúc + GLB, cổng, đèn, cây, cột sáng, cỏ). Không để rò sau nhiều lần đổi. */
   private unloadLevel(): void {
+    this.cloneVis?.clear();
     const drop = (o: THREE.Object3D | null | undefined) => o && this.scene.remove(o);
     if (this.terrain) {
       drop(this.terrain.group);
@@ -1400,21 +1410,29 @@ export class Game {
       else pushToast(t('ui.method.empty_slot'), 'info');
       return;
     }
+    // Ô chiêu 10, thần thông Hóa Thần (E4-K): phím ` (Backquote; `-` là zoom camera; phím 0 vẫn là ô 9).
+    if (code === 'Backquote' && !e.shiftKey) {
+      if (this.bar().length > BAR_SIZE + 1) this.useSkill(BAR_SIZE + 1);
+      else pushToast(t('ui.method.empty_slot'), 'info');
+      return;
+    }
     // Xuất khiếu trong Tam Trọng Kiếp (E3-L, móc tạm: E3-K sẽ nối phím X thật). Chỉ gửi ý định, server kiểm pha, hồi chiêu.
     if (code === 'KeyX' && !e.shiftKey && this.tribId === 'nguyen_anh' && get().tribEnd > Date.now()) {
       this.send(C.TRIB_SOUL, {});
       return;
     }
-    // Phân thân thần niệm trong Thiên Nhân Kiếp (E4-D; E4-K nối phím G chung). Chỉ gửi ý định, server kiểm pha, số lần, tần suất.
-    if (code === 'KeyG' && !e.shiftKey && this.tribId === 'hoa_than' && get().tribEnd > Date.now()) {
-      this.send(C.TRIB_CLONE, {});
+    // Phím G: trong Thiên Nhân Kiếp là thế thân của kiếp (E4-D), ngoài kiếp là phân thân thần niệm (E4-K, Hóa Thần).
+    // Chỉ gửi ý định; server kiểm cấp, linh lực, hồi chiêu, tần suất, nơi đặt.
+    if (code === 'KeyG' && !e.shiftKey) {
+      if (this.tribId === 'hoa_than' && get().tribEnd > Date.now()) this.send(C.TRIB_CLONE, {});
+      else if ((get().char?.level ?? 0) >= CLONE_UNLOCK_LEVEL) this.send(C.CLONE, {});
       return;
     }
     const slot = skillSlot(code);
     if (slot >= 0) {
       if (e.shiftKey) {
         // Hàng chiêu bậc cao (E2-G): Shift + số, sau ô 9.
-        const tier = BAR_SIZE + 1 + slot;
+        const tier = BAR_SIZE + 2 + slot;
         if (tier < this.bar().length) this.useSkill(tier);
         return;
       }
@@ -1594,11 +1612,12 @@ export class Game {
   }
 
   /** Người chơi bấm chiêu (phím số, nút trên thanh chiêu, bấm lại mục tiêu). */
-  /** Thanh chiêu hiện tại: 6 chiêu chung + 2 chiêu công pháp (ô 1–8), thần thông ô 9 (chỉ số `BAR_SIZE`), rồi hàng bậc cao (Shift+số). */
+  /** Thanh chiêu hiện tại: 6 chiêu chung + 2 chiêu công pháp (ô 1–8), thần thông ô 9 (chỉ số `BAR_SIZE`), ô 10 (`BAR_SIZE + 1`, Hóa Thần), rồi hàng bậc cao (Shift+số). */
   bar(): SkillDef[] {
     const m = get().method?.method;
     const tt = thanThongSkill(m);
-    return [...skillBar(m), ...(tt ? [tt] : []), ...tierBar(m)];
+    const tt10 = thanThong10Skill(m);
+    return [...skillBar(m), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : []), ...tierBar(m)];
   }
 
   useSkill(i: number): void {
@@ -2032,6 +2051,11 @@ export class Game {
     return this.soulVis;
   }
 
+  private ensureCloneVis(): CloneVis {
+    this.cloneVis ??= new CloneVis(this.scene, this.vfx!, this.sid, (sid) => this.ents?.makeSoul(sid, 'soul') ?? null);
+    return this.cloneVis;
+  }
+
   private soulBodyYaw = 0;
   private soulBody = false;
   private skyRippleAt = 0;
@@ -2340,6 +2364,25 @@ export class Game {
         this.soulVfx.get(src)?.stop();
         this.soulVfx.delete(src);
         if (src === this.sid) set({ soulUntil: 0 });
+        break;
+      case 'clone_out': {
+        // Phân thân thần niệm (E4-K): bản sao của chủ ở (x, z), bước theo `clone_mv`, vung tay theo `clone_act`.
+        this.ensureCloneVis().spawn(src, m.x ?? 0, m.z ?? 0, m.d ?? 20, m.s ?? 'dps', pSrc?.yaw ?? 0);
+        break;
+      }
+      case 'clone_mv':
+        this.cloneVis?.move(src, m.x ?? 0, m.z ?? 0);
+        break;
+      case 'clone_act': {
+        const tm = dst ? this.ents?.monsters.get(dst) : undefined;
+        this.cloneVis?.act(src, tm ? tm.x : null, tm ? tm.z : null, m.r ?? 0);
+        break;
+      }
+      case 'clone_hit':
+        this.cloneVis?.hit(src);
+        break;
+      case 'clone_end':
+        this.cloneVis?.end(src, m.pg === 1);
         break;
       case 'nguhanh': {
         // Tia kiếp ngũ hành (E4-D): HUD hiện hành đang giáng và trận môn cần đứng; vạch báo do vùng nguy hiểm vẽ.
@@ -2991,6 +3034,10 @@ export class Game {
       this.mapVis.updateSpirit(rp, st.spirit, st.spiritScan, performance.now());
     }
     this.updateSoulVis(dt, me);
+    // Lĩnh vực (E4-K): vòng nhạt dưới chân mình từ Nguyên Anh trung kỳ.
+    const dr = me ? domainRadius(get().char?.level ?? 0) : 0;
+    if (dr > 0 || this.cloneVis) this.ensureCloneVis().setDomain(dr > 0 && me && (me.fl & PF_DEAD) === 0 ? { x: this.renderPos.x, z: this.renderPos.z, r: dr } : null);
+    this.cloneVis?.update(dt, this.renderPos.x, this.renderPos.z);
     for (const disc of this.gateDiscs) {
       // Cổng gương nguyệt (vành + trụ đá) đứng yên, không lắc và không nhấp nháy như đĩa cổng.
       if (disc.name === 'moon-gate') continue;
@@ -3459,6 +3506,14 @@ export class Game {
         if (firstTime(localStorage, 'ch3', who)) window.setTimeout(() => !this.disposed && this.chapter('ch3'), 1200);
       }
     }
+    // Chương 4 · Thiên Khuyết (E4-H): cùng cách.
+    if (!this.ch4Checked && levelId() === 'thien_khuyet' && get().phase === 'game') {
+      const who = get().char?.name;
+      if (who) {
+        this.ch4Checked = true;
+        if (firstTime(localStorage, 'ch4', who)) window.setTimeout(() => !this.disposed && this.chapter('ch4'), 1200);
+      }
+    }
     if (this.pendingChapter) {
       this.chapter(this.pendingChapter);
       this.pendingChapter = null;
@@ -3878,6 +3933,8 @@ export class Game {
     this.mapVis?.dispose();
     this.soulVis?.dispose();
     this.soulVis = null;
+    this.cloneVis?.dispose();
+    this.cloneVis = null;
     this.props?.dispose();
     this.post?.dispose();
     postParams.ink.value = 0;

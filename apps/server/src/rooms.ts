@@ -32,6 +32,7 @@ import { Aoi } from './aoi';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
 import { Character } from './game/character';
+import { DUNGEON_QUEST_TARGET } from './game/dungeonquest';
 import { MarkerSystem } from './game/marker';
 import { MirrorPuzzle } from './game/mirrorpuzzle';
 import { SealSystem } from './game/seal';
@@ -189,6 +190,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.BREAKTHROUGH, (p) => this.sim.onBreakthrough(p));
     on(C.TRIB_SOUL, (p) => this.sim.onTribSoul(p));
     on(C.TRIB_CLONE, (p) => this.sim.onTribClone(p));
+    on(C.CLONE, (p, m) => this.sim.onClone(p, m));
     on(C.BOTTLENECK, (p, m) => this.sim.onBottleneck(p, m));
     on(C.ROOT, (p, m) => this.sim.onChangeRoot(p, m));
     on(C.PARTY, (p, m) => parties.command(p, m));
@@ -282,6 +284,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         prev.room.sim.tele.drop(oldP);
         prev.room.sim.spirit.drop(oldP);
         prev.room.sim.soul.drop(oldP);
+        prev.room.sim.clone.drop(oldP);
         prev.room.markers.drop(oldP);
       }
       prev.room.sim.removePlayer(prev.sid);
@@ -315,6 +318,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.sim.tele.sendState(p);
     this.sim.spirit.sendState(p);
     this.sim.soul.sendState(p);
+    this.sim.clone.sendState(p);
     ensurePartyTick();
     console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
@@ -371,6 +375,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.sim.tele.drop(p);
     this.sim.spirit.drop(p);
     this.sim.soul.drop(p);
+    this.sim.clone.drop(p);
     this.markers.drop(p);
     this.aoi.detach(sid);
     this.sim.removePlayer(sid);
@@ -382,6 +387,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   /** Lưu nhân vật rồi bảo client sang room của `level` (vé phải được cấp trước). */
   protected sendTransfer(p: PlayerEnt, level: string, options: Record<string, string> = {}): void {
     this.sim.soul.drop(p);
+    this.sim.clone.drop(p);
     this.sim.savePlayer(p);
     p.client.send(S.TRANSFER, { room: roomNameOf(level), level, options } satisfies TransferMsg);
   }
@@ -546,6 +552,7 @@ export function defineWorld(levelId: string): typeof WorldRoom {
 }
 
 /** Bí cảnh: mỗi room là một lượt của tối đa 5 người, đánh qua các đợt trong `levels/<id>.json` (E1-B, E2-C). */
+
 export class DungeonRoom extends GameRoom {
   static levelId: string = 'kiem_trung';
   private wave = 0;
@@ -605,8 +612,9 @@ export class DungeonRoom extends GameRoom {
 
   afterJoin(p: PlayerEnt): void {
     this.sim.sys(p, 'sys.dungeon_enter', { name: this.dname }, 'info');
-    // Hook nhiệm vụ (q2_phuc_mach: mục tiêu `dungeon` ×1): chỉ phát sự kiện, kèm id level để nhiệm vụ lọc được.
-    this.sim.questEvent(p, 'dungeon', undefined, 1);
+    // Hook nhiệm vụ (mục tiêu `dungeon` ×1): phát sự kiện kèm đích của phó bản này để nhiệm vụ có `target` lọc được
+    // (q2_phuc_mach, q3_kinh_nguyet, q4_than_tang). Kiếm Trủng không có đích: chỉ khớp mục tiêu `dungeon` không khai `target`.
+    this.sim.questEvent(p, 'dungeon', DUNGEON_QUEST_TARGET[this.levelId], 1);
     if (p.noLoot) this.sim.sys(p, 'sys.dungeon_no_reward', { name: this.dname }, 'bad');
   }
 
