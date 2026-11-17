@@ -8475,15 +8475,15 @@
       "id": "set_kinh_quang_kiem_y_v2_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_kinh_quang_kiem_y_v2_nam.glb",
-      "file": "set_kinh_quang_kiem_y_v2_nam.00d4eaa41c.glb",
-      "bytes": 3892168,
-      "rawBytes": 3791324,
+      "file": "set_kinh_quang_kiem_y_v2_nam.c48b643b34.glb",
+      "bytes": 3934044,
+      "rawBytes": 3793424,
       "triangles": 11461,
       "rawTriangles": 11461,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 70,
+      "bones": 76,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -8536,21 +8536,21 @@
         },
         {
           "level": 2,
-          "triangles": 1714,
+          "triangles": 1878,
           "target": 1719
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.5123,
-          "height": 1.6691,
-          "depth": 0.3965,
+          "width": 1.6206,
+          "height": 1.6804,
+          "depth": 0.3994,
           "minY": 0
         },
         "build": {
-          "width": 1.5123,
-          "height": 1.6691,
-          "depth": 0.3965,
+          "width": 1.6206,
+          "height": 1.6804,
+          "depth": 0.3994,
           "minY": 0
         }
       }
@@ -8559,15 +8559,15 @@
       "id": "set_kinh_quang_kiem_y_v2_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_kinh_quang_kiem_y_v2_nu.glb",
-      "file": "set_kinh_quang_kiem_y_v2_nu.28c234d269.glb",
-      "bytes": 3884124,
-      "rawBytes": 3788404,
-      "triangles": 11459,
-      "rawTriangles": 11459,
+      "file": "set_kinh_quang_kiem_y_v2_nu.d633f91399.glb",
+      "bytes": 3933248,
+      "rawBytes": 3789612,
+      "triangles": 11457,
+      "rawTriangles": 11457,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 69,
+      "bones": 74,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -8611,30 +8611,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 11459
+          "triangles": 11457
         },
         {
           "level": 1,
           "triangles": 4583,
-          "target": 4584
+          "target": 4583
         },
         {
           "level": 2,
-          "triangles": 1716,
+          "triangles": 1873,
           "target": 1719
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.3899,
-          "height": 1.5947,
-          "depth": 0.3796,
+          "width": 1.4671,
+          "height": 1.5895,
+          "depth": 0.3782,
           "minY": 0
         },
         "build": {
-          "width": 1.3899,
-          "height": 1.5947,
-          "depth": 0.3796,
+          "width": 1.4671,
+          "height": 1.5895,
+          "depth": 0.3782,
           "minY": 0
         }
       }
@@ -8886,15 +8886,15 @@
       "id": "set_liet_mach_kiem_y_v2_nam",
       "class": "outfit",
       "source": "assets/build/raw/set_liet_mach_kiem_y_v2_nam.glb",
-      "file": "set_liet_mach_kiem_y_v2_nam.79c3f144e4.glb",
-      "bytes": 4084868,
-      "rawBytes": 3981080,
-      "triangles": 11463,
-      "rawTriangles": 11463,
+      "file": "set_liet_mach_kiem_y_v2_nam.4523839fe3.glb",
+      "bytes": 4128732,
+      "rawBytes": 3982180,
+      "triangles": 11465,
+      "rawTriangles": 11465,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 71,
+      "bones": 75,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -8938,30 +8938,30 @@
       "lods": [
         {
           "level": 0,
-          "triangles": 11463
+          "triangles": 11465
         },
         {
           "level": 1,
           "triangles": 4585,
-          "target": 4585
+          "target": 4586
         },
         {
           "level": 2,
-          "triangles": 1717,
-          "target": 1719
+          "triangles": 1884,
+          "target": 1720
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.3291,
-          "height": 1.727,
-          "depth": 0.4332,
+          "width": 1.5831,
+          "height": 1.7382,
+          "depth": 0.4362,
           "minY": 0
         },
         "build": {
-          "width": 1.3291,
-          "height": 1.727,
-          "depth": 0.4332,
+          "width": 1.5831,
+          "height": 1.7382,
+          "depth": 0.4362,
           "minY": 0
         }
       }
@@ -8970,15 +8970,15 @@
       "id": "set_liet_mach_kiem_y_v2_nu",
       "class": "outfit",
       "source": "assets/build/raw/set_liet_mach_kiem_y_v2_nu.glb",
-      "file": "set_liet_mach_kiem_y_v2_nu.44f43b5692.glb",
-      "bytes": 4083072,
-      "rawBytes": 3980568,
+      "file": "set_liet_mach_kiem_y_v2_nu.18a50f3e1d.glb",
+      "bytes": 4114372,
+      "rawBytes": 3981040,
       "triangles": 11465,
       "rawTriangles": 11465,
       "lod0Cap": 14000,
       "skinned": true,
       "quantized": false,
-      "bones": 70,
+      "bones": 73,
       "animations": [],
       "ktx2": false,
       "textures": [
@@ -9031,21 +9031,21 @@
         },
         {
           "level": 2,
-          "triangles": 1711,
+          "triangles": 1763,
           "target": 1720
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.2624,
-          "height": 1.6747,
-          "depth": 0.4103,
+          "width": 1.4425,
+          "height": 1.6695,
+          "depth": 0.4088,
           "minY": 0
         },
         "build": {
-          "width": 1.2624,
-          "height": 1.6747,
-          "depth": 0.4103,
+          "width": 1.4425,
+          "height": 1.6695,
+          "depth": 0.4088,
           "minY": 0
         }
       }

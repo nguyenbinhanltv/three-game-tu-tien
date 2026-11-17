@@ -48,6 +48,8 @@ Hai giai đoạn trong Blender 5.3 chạy nền (MPFB2 CC0 ở `chr_base_v2/_src
 
 Tham số khớp từng kiểu tóc ở `tools/blender/build-chr-v2.mjs` (`CFG`).
 
+**Đổi tư thế nghỉ / hình thể thân nền thì phải dựng lại cả bốn áo v2** (`run.mjs --only set_<bộ>_v2_<giới> --force` + `optimize`): `outfit_build.py` bỏ tư thế (unpose) đỉnh áo về tư thế nghỉ của `assets/build/raw/<nhân vật>.glb` lúc dựng, còn lúc chạy áo bind với `boneInverses` của thân; lệch tư thế nghỉ thì tay áo xoay lệch khỏi tay. `outfit_build.py` ánh xạ nhóm trọng số xương lò xo tóc `dtl_o_hair_*` của thân v2 về xương Head (trước đó script văng `StopIteration` nên áo không dựng lại được).
+
 ![thân](than-v2-tam.webp)
 
 ## 3. Ẩn thân bị áo che

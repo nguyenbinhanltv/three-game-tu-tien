@@ -3,6 +3,7 @@
 //   node tools/blender/build-chr-v2.mjs [--only nam|nu] [--style a|b]
 // Nguồn: <DTL_ASSET_SOURCE>/chr/chr_base_v2/tripo/raw_{head,hair}_*_v01.glb. Ra: <nguồn>/chr/<id>/tripo/rig_v01.glb với id
 // chr_v2_<giới> (tóc A) và chr_v2_hb_<giới> (tóc B). Sau đó: `node tools/blender/run.mjs --only <id> --force` + optimize.
+// LƯU Ý: đổi tư thế nghỉ/hình thể thân thì PHẢI dựng lại bốn áo `set_*_v2_*` (run.mjs --force + optimize), nếu không tay áo lệch tay khi chạy.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
