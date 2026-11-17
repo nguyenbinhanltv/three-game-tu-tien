@@ -59,7 +59,7 @@ import { isHeld, isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../in
 import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
-import { SkillFx, replacedFx } from './skillFx';
+import { SkillFx, fxTriggered, replacedFx } from './skillFx';
 import { fxQuality, hitStopOn, setFxQuality, setHitStopOn } from './fxSettings';
 import type { FxQuality } from '@dtl/shared';
 import { BOSS_BAR_RANGE, keepMonsterTarget } from './targetRange';
@@ -836,6 +836,8 @@ export class Game {
         hitStopOn,
         shake: (level, dir) => this.shake.kick(level, dir),
         flash: (a) => this.post?.flash(a),
+        areaOf: (sid) => this.fxArea.get(sid) ?? null,
+        variantOf: (sid) => this.fxVar.get(sid),
         sound: (id, gain, sid) => {
           const pv = this.ents?.players.get(sid);
           const vol = sid === this.sid ? gain : pv ? this.volumeAt(pv.x, pv.z) * gain * 0.6 : 0;
@@ -1989,6 +1991,11 @@ export class Game {
     const dst = m.dst ?? '';
     const pSrc = e.players.get(src);
     if (src && dst && !held) this.fxDst.set(src, dst);
+    if (src && !held) {
+      this.fxVar.set(src, m.v);
+      if (m.x !== undefined && m.z !== undefined) this.fxArea.set(src, { x: m.x, z: m.z, r: m.r ?? 8 });
+      else this.fxArea.delete(src);
+    }
     if (this.onSoulFx(m, src)) return;
     if (!held) {
       // Động tác chiêu; đòn của mình đang vào thế thì giữ hiệu ứng + tiếng tới đúng lúc ra đòn.
@@ -2022,8 +2029,11 @@ export class Game {
     // Màu theo công pháp (chiêu chung đổi màu khi đã chọn công pháp) và hình dạng theo biến thức / cấp chiêu.
     const tint = (d: number) => fxColor(m, d);
     const mctx = { v, m, src: posSrc, dst: posDst, mine: src === this.sid, flash: (a: number) => this.post?.flash(a) };
+    // Timeline kích hoạt theo S.FX (lướt: không có động tác riêng) hoặc đã thay hình cũ của công pháp (chỉ khi model phát sự kiện chiêu).
+    const tlFx = pSrc ? fxTriggered(m.t, this.methodOfPlayer(src)) : undefined;
+    if (tlFx && typeof pSrc?.model.performClock === 'function') this.skillFx?.startFromFx(src, tlFx);
     if (METHOD_FX.has(m.t)) {
-      playMethodFx(mctx);
+      if (!(replacedFx(m.t) && typeof pSrc?.model.performClock === 'function')) playMethodFx(mctx);
       // Chiêu tối thượng của mình: thẻ ngắn 0,6 giây (viền sáng, tên chiêu), không khóa input.
       const ult = src === this.sid ? METHOD_SKILLS.find((s) => s.fx === m.t && s.ult) : undefined;
       if (ult) set({ ultCard: { id: ++this.ultCardId, skill: ult.id, color: m.c ?? 'ffffff', until: Date.now() + 600 } });
@@ -3636,6 +3646,9 @@ export class Game {
 
   /** Đích của chiêu gần nhất của mỗi người ra chiêu (từ S.FX), cho hiệu ứng timeline của người khác. */
   private fxDst = new Map<string, string>();
+  /** Vùng (S.FX x, z, r) và biến thức của chiêu gần nhất của mỗi người ra chiêu, cho timeline hiệu ứng. */
+  private fxArea = new Map<string, { x: number; z: number; r: number }>();
+  private fxVar = new Map<string, string | undefined>();
 
   private fxTargetOf(sid: string): { x: number; y: number; z: number; chest: number } | null {
     const id = sid === this.sid ? this.targetId || this.fxDst.get(sid) : this.fxDst.get(sid);

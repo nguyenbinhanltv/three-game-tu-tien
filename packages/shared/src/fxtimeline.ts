@@ -24,8 +24,8 @@ export type FxShape =
   | 'helix';
 
 /** Bố trí gốc của sự kiện. */
-/** `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
-export type FxAnchor = 'self' | 'target' | 'ahead' | 'ground';
+/** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
+export type FxAnchor = 'self' | 'target' | 'ahead' | 'ground' | 'area';
 
 export interface FxBase {
   /** Giây so với mốc neo (mặc định `hitAt` của mốc trúng đang xét; `from: "start"` thì tính từ lúc bấm chiêu). Có thể âm. */
@@ -36,6 +36,8 @@ export interface FxBase {
    * Chiêu của người khác bị hạ một bậc (xem `fxTierFor`).
    */
   tier?: 0 | 1 | 2;
+  /** Chỉ phát ở mốc trúng thứ mấy (0-based) của chiêu nhiều mốc (Kiếm Vũ Tam Điệp...); không có thì mọi mốc. */
+  hit?: number | number[];
 }
 
 export interface FxMeshEvent extends FxBase {
@@ -66,13 +68,15 @@ export interface FxMeshEvent extends FxBase {
   /** Quay hình mặt về camera (burst, smoke). */
   billboard?: boolean;
   /** Bay từ gốc sang `to` trong `dur` (phi kiếm lao, kiếm khí bay): gốc → đích, đơn vị mét hoặc theo neo. */
-  move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear' };
+  move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear'; /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number] };
   /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */
   spin?: number;
   /** Seed hình (mặc định theo lần phát). */
   seed?: number;
   /** Bám theo mục tiêu/người ra chiêu suốt vòng đời (mặc định cố định tại điểm đặt). */
   follow?: boolean;
+  /** Nhân kích thước (x, z) với bán kính vùng `r` của chiêu diện rộng (scale thành mét tính theo bán kính). */
+  fit?: 'area';
 }
 
 export interface FxParticleEvent extends FxBase {
@@ -154,6 +158,15 @@ export interface FxTimeline {
   events: FxEvent[];
   /** Sự kiện thêm theo đòn thứ mấy của chuỗi liên hoàn (khóa "0", "1", "2"). */
   combo?: Record<string, FxEvent[]>;
+  /** Sự kiện thêm theo biến thức đã chọn (`fx` của `SkillVariant`: deep, spread, twin, long...). */
+  variants?: Record<string, FxEvent[]>;
+  /**
+   * `fx`: chiêu không có mốc trúng/động tác riêng (lướt) nên phát khi nhận `S.FX` cùng loại `fxKind` (đúng công pháp `method` nếu có);
+   * mọi sự kiện neo vào lúc nhận (hitAt = 0). Mặc định `skill`: phát theo sự kiện chiêu của model.
+   */
+  trigger?: 'skill' | 'fx';
+  fxKind?: string;
+  method?: string;
   /** `S.FX` kiểu cũ mà timeline này thay thế (engine bỏ hình cũ của kiểu đó cho chiêu này). */
   replaces?: string[];
 }
@@ -182,9 +195,10 @@ export function fxParticleCount(events: readonly FxEvent[]): number {
 }
 
 /** Sự kiện của một mốc trúng thuộc đòn `combo` (không có `combo` thì chỉ sự kiện chung). */
-export function fxEventsFor(tl: FxTimeline, combo: number): FxEvent[] {
+export function fxEventsFor(tl: FxTimeline, combo: number, variant?: string): FxEvent[] {
   const extra = combo >= 0 ? tl.combo?.[String(combo)] : undefined;
-  return extra ? [...tl.events, ...extra] : tl.events;
+  const vr = variant ? tl.variants?.[variant] : undefined;
+  return extra || vr ? [...tl.events, ...(extra ?? []), ...(vr ?? [])] : tl.events;
 }
 
 /** Bậc chất lượng hiệu ứng (cài đặt người chơi): 0 Thấp, 1 Vừa, 2 Cao. */
@@ -203,7 +217,7 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
   const errs: string[] = [];
   const p = `fx ${tl.skill}`;
   if (!skillExists(tl.skill)) errs.push(`${p}: không có chiêu ${tl.skill}`);
-  const all = [tl.events, ...Object.values(tl.combo ?? {})];
+  const all = [tl.events, ...Object.values(tl.combo ?? {}), ...Object.values(tl.variants ?? {})];
   for (const list of all) {
     for (const e of list) {
       if (!Number.isFinite(e.t) || Math.abs(e.t) > 3) errs.push(`${p}: mốc t=${e.t} ngoài [-3, 3]`);
@@ -217,10 +231,14 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
   }
   // Ngân sách: mỗi đòn (sự kiện chung + của đòn đó) ≤ 12 draw và ≤ 1.500 hạt.
   const combos = Object.keys(tl.combo ?? {}).length ? Object.keys(tl.combo!).map(Number) : [-1];
+  const vars: (string | undefined)[] = [undefined, ...Object.keys(tl.variants ?? {})];
   for (const c of combos) {
-    const ev = fxEventsFor(tl, c);
-    if (fxDrawCount(ev) > 12) errs.push(`${p}: ${fxDrawCount(ev)} draw > 12 (đòn ${c})`);
-    if (fxParticleCount(ev) > 1500) errs.push(`${p}: ${fxParticleCount(ev)} hạt > 1500 (đòn ${c})`);
+    for (const v of vars) {
+      const ev = fxEventsFor(tl, c, v);
+      if (fxDrawCount(ev) > 12) errs.push(`${p}: ${fxDrawCount(ev)} draw > 12 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
+      if (fxParticleCount(ev) > 1500) errs.push(`${p}: ${fxParticleCount(ev)} hạt > 1500 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
+    }
   }
+  if (tl.trigger === 'fx' && !tl.fxKind) errs.push(`${p}: trigger fx thiếu fxKind`);
   return errs;
 }
