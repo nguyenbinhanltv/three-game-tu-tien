@@ -178,7 +178,7 @@ export function screenToWorld(v: View, sx: number, sy: number): { x: number; z: 
   return { x: v.cx + (dx * c + dy * si) / s, z: v.cz + (-dx * si + dy * c) / s };
 }
 
-/** Tỉ lệ điểm ảnh thật của canvas: DPR × hệ số phóng HUD (`--ui-scale`), làm tròn 0,25 để bộ nhớ đệm biểu tượng không phình, trần 4. */
+/** Tỉ lệ điểm ảnh thật của canvas: DPR × hệ số phóng HUD (`--ui-scale`), làm tròn lên 0,25 để bộ nhớ đệm biểu tượng không phình, trần 4. */
 export function backingScale(dpr: number, ui: number): number {
-  return Math.min(4, Math.max(1, Math.round((dpr || 1) * (ui || 1) * 4) / 4));
+  return Math.min(4, Math.max(1, Math.ceil((dpr || 1) * (ui || 1) * 4 - 1e-9) / 4));
 }

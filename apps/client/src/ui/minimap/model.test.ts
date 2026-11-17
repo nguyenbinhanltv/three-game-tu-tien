@@ -107,9 +107,9 @@ describe('screenToWorld', () => {
 });
 
 describe('backingScale', () => {
-  it('nhân DPR với hệ số HUD, làm tròn 0,25, kẹp 1..4', () => {
+  it('nhân DPR với hệ số HUD, làm tròn lên 0,25, kẹp 1..4', () => {
     expect(backingScale(1, 1)).toBe(1);
-    expect(backingScale(1, 1.35)).toBe(1.25);
+    expect(backingScale(1, 1.35)).toBe(1.5);
     expect(backingScale(1.5, 2)).toBe(3);
     expect(backingScale(3, 2)).toBe(4);
     expect(backingScale(0, 0)).toBe(1);
