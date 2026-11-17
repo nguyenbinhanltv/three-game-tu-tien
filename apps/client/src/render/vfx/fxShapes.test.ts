@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { shapeGeometry, shapeKind, type ShapeKey } from './fxShapes';
 
-const SHAPES: ShapeKey[] = ['crescent', 'spike', 'shard', 'kite', 'ripple', 'burst', 'smoke', 'helix'];
+const SHAPES: ShapeKey[] = ['crescent', 'spike', 'shard', 'kite', 'ripple', 'burst', 'smoke', 'helix', 'ribbon'];
 
 describe('lưới FX vẽ tay', () => {
   for (const s of SHAPES) {
