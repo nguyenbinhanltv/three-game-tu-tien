@@ -4,8 +4,8 @@ import './panels.css';
 import './tutien.css';
 import './ngj/hud.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, ELEMENTS, elemCounterOf, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
+import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, CLONE_UNLOCK_LEVEL, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, ELEMENTS, elemCounterOf, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThong10Skill, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { artifactLines } from './gear';
@@ -284,6 +284,8 @@ export function objectiveText(o: ObjectiveDef): string {
       return o.target ? t('ui.obj.dungeon_named', { name: t(`dungeon.${o.target}.name`) }) : t('ui.obj.dungeon');
     case 'duel':
       return t('ui.obj.duel');
+    case 'clone':
+      return t('ui.obj.clone');
     case 'meditate':
       return t('ui.obj.meditate');
     case 'touch':
@@ -334,7 +336,7 @@ function QuestTracker() {
               const ok = cur >= o.count;
               // Nhiệm vụ không theo dõi chỉ hiện mục tiêu chưa xong đầu tiên cho gọn.
               if (id !== tracked && (ok || q.objectives.findIndex((x, j) => (prog[j] ?? 0) < x.count) !== i)) return null;
-              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' || o.type === 'enhance' || o.type === 'dungeon' || o.type === 'duel' || o.type === 'touch' || o.type === 'scan' || o.type === 'escort' ? '' : ` ${cur}/${o.count}`;
+              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' || o.type === 'enhance' || o.type === 'dungeon' || o.type === 'duel' || o.type === 'clone' || o.type === 'touch' || o.type === 'scan' || o.type === 'escort' ? '' : ` ${cur}/${o.count}`;
               return (
                 <div key={i} className={'tracker-obj' + (ok ? ' ok' : '')}>
                   {ok ? '✔ ' : '· '}
@@ -416,11 +418,13 @@ function SkillBar() {
   if (!char) return null;
   const mdef = method?.method ? METHOD.get(method.method) : undefined;
   const tt = thanThongSkill(method?.method);
-  const bar = [...skillBar(method?.method), ...(tt ? [tt] : [])];
+  const tt10 = thanThong10Skill(method?.method);
+  const bar = [...skillBar(method?.method), ...(tt ? [tt] : []), ...(tt10 ? [tt10] : [])];
+  const clone = useUI((s) => s.clone);
   const charge = method?.charge ?? 0;
   const pas = mdef?.passive;
   const stackKind = pas?.kind === 'kiem_y' || pas?.kind === 'the' ? pas.kind : null;
-  const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE + 1 }, (_, i) => bar[i] ?? null);
+  const slots: (SkillDef | null)[] = Array.from({ length: BAR_SIZE + 2 }, (_, i) => bar[i] ?? null);
   const tier = tierBar(method?.method);
   return (
     <div className="skillbar" style={mdef ? ({ '--mc': '#' + mdef.color } as CSSProperties) : undefined}>
@@ -432,12 +436,18 @@ function SkillBar() {
           ))}
         </div>
       )}
+      {char.level >= CLONE_UNLOCK_LEVEL && (
+        <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
+          <span className="clone-key">G</span>
+          {now < clone.until ? t('ui.clone.left', { n: Math.ceil((clone.until - now) / 1000) }) : now < clone.cdUntil ? t('ui.clone.cd', { n: Math.ceil((clone.cdUntil - now) / 1000) }) : t('ui.clone.title')}
+        </div>
+      )}
       <div className="skill-row">
         {NGJ && <Corners />}
         {slots.map((sk, i) => {
-          // Ô 9 (thần thông, phím 0): không có công pháp thì không vẽ.
-          if (!sk && i === BAR_SIZE) return null;
-          const keyLabel = i === BAR_SIZE ? '0' : String(i + 1);
+          // Ô 9 (thần thông, phím 0) và ô 10 (Hóa Thần, phím `): không có công pháp thì không vẽ.
+          if (!sk && i >= BAR_SIZE) return null;
+          const keyLabel = i === BAR_SIZE ? '0' : i === BAR_SIZE + 1 ? '`' : String(i + 1);
           if (!sk) {
             // Ô 7–8 khi chưa chọn công pháp: ô trống, bấm để mở bảng Công pháp.
             return (
@@ -534,7 +544,7 @@ function SkillBar() {
             ];
             return (
               <Tooltip key={sk.id} content={<TipCard title={t(`skill.${sk.id}.name`)} sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined} lines={lines} desc={t(`skill.${sk.id}.desc`)} />}>
-                <button type="button" className="skill" data-state={state} data-method="1" aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`} onClick={(e) => { Game.current?.useSkill(BAR_SIZE + 1 + j); blurAfterPointer(e); }}>
+                <button type="button" className="skill" data-state={state} data-method="1" aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`} onClick={(e) => { Game.current?.useSkill(BAR_SIZE + 2 + j); blurAfterPointer(e); }}>
                   <span className="skill-icon">
                     <ContentIcon def={sk} />
                   </span>

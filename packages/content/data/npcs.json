@@ -9,5 +9,7 @@
   {"id": "npc_to_van_ngu", "x": 1010, "z": 1050, "yaw": 3.1416, "color": "#587a96", "level": "doan_mach"},
   {"id": "npc_khieu_han_son", "x": 752, "z": 962, "yaw": 3.9, "color": "#4a463e", "level": "doan_mach"},
   {"id": "npc_lam_chieu_dung", "x": 1050, "z": 1056, "yaw": 3.1416, "color": "#d8c48a", "level": "van_hai"},
-  {"id": "npc_to_van_ngu_hai", "x": 1002, "z": 1056, "yaw": 3.1416, "color": "#587a96", "level": "van_hai"}
+  {"id": "npc_to_van_ngu_hai", "x": 1002, "z": 1056, "yaw": 3.1416, "color": "#587a96", "level": "van_hai"},
+  {"id": "npc_mac_chieu", "x": 1000, "z": 1044, "yaw": 3.1416, "color": "#6d6a5a", "level": "thien_khuyet"},
+  {"id": "npc_to_van_ngu_tk", "x": 1048, "z": 1044, "yaw": 3.1416, "color": "#587a96", "level": "thien_khuyet"}
 ]

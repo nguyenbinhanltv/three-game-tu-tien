@@ -1,4 +1,4 @@
-import { clampTier, isEquipSlot, majorRealmOf, registerTerrain, resolveSkill, type FxTimeline, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
+import { clampTier, isEquipSlot, majorRealmOf, registerTerrain, resolveSkill, type CloneMethodDef, type FxTimeline, type ResolvedSkill, type TerrainDef } from '@dtl/shared';
 import type {
   ArtifactDef,
   PillQualityCfg,
@@ -29,6 +29,7 @@ import skillsJson from '../data/skills.json';
 import methodsJson from '../data/methods.json';
 import recipesJson from '../data/recipes.json';
 import artifactsJson from '../data/artifacts.json';
+import clonesJson from '../data/clones.json';
 import alchemyJson from '../data/alchemy.json';
 import npcsJson from '../data/npcs.json';
 import questsJson from '../data/quests.json';
@@ -296,6 +297,8 @@ export const MON_FX_TIMELINES = [fx_mon_bolt_impact, fx_mon_bolt_muzzle, fx_mon_
 export const MON_FX = new Map(MON_FX_TIMELINES.map((f) => [f.skill, f]));
 export const ROOT = index(ROOTS);
 export const ARTIFACT = index(ARTIFACTS);
+/** Danh sách chiêu của phân thân thần niệm theo công pháp (E4-K): `data/clones.json`. */
+export const CLONE_MOVES = clonesJson as unknown as Record<string, CloneMethodDef>;
 
 /** Ngoại hình người chơi: giới tính, màu áo (quyết định 6.4b). */
 export const APPEARANCE = appearanceJson as AppearanceData;
@@ -419,9 +422,18 @@ export const TIER_MIN_UNLOCK = 16;
 /** Cấp mở thần thông ô 9 (Kết Đan sơ kỳ, E2-E). */
 export const THAN_THONG_UNLOCK = 20;
 
+/** Cấp mở thần thông ô 10 (Hóa Thần sơ kỳ, E4-K). */
+export const THAN_THONG_10_UNLOCK = 28;
+
+/** Thần thông ô 10 của công pháp (chiêu cấp 28): chỉ số `BAR_SIZE + 1` trong `Game.bar()`, phím `` ` `` (Backquote), ngay sau ô 9. */
+export function thanThong10Skill(methodId: string | undefined): SkillDef | undefined {
+  if (!methodId) return undefined;
+  return METHOD_SKILLS.find((s) => s.method === methodId && s.unlock === THAN_THONG_10_UNLOCK && !s.locked);
+}
+
 /**
  * Thần thông của công pháp (chiêu mở ở Kết Đan sơ kỳ, cấp 20): nằm ở **ô chiêu 9** (chỉ số `BAR_SIZE` trong `Game.bar()`, phím 0).
- * Ô 10 (Hóa Thần) là việc của chương sau. Không có công pháp thì không có thần thông.
+ * Ô 10 (Hóa Thần, cấp 28) là `thanThong10Skill`. Không có công pháp thì không có thần thông.
  */
 export function thanThongSkill(methodId: string | undefined): SkillDef | undefined {
   if (!methodId) return undefined;
@@ -430,13 +442,14 @@ export function thanThongSkill(methodId: string | undefined): SkillDef | undefin
 
 /**
  * Chiêu bậc 2–3 của công pháp (mở theo cảnh giới Trúc Cơ/Kết Đan), xếp theo cảnh giới mở, **trừ thần thông ô 9** (đã ở ô chính).
- * Hàng này nằm sau 9 ô chính (chỉ số ≥ `BAR_SIZE + 1` trong `Game.bar()`), phím Shift+1…
+ * Hàng này nằm sau ô 9 và ô 10 (chỉ số ≥ `BAR_SIZE + 2` trong `Game.bar()`), phím Shift+1…
  * Chiêu còn khóa (Nguyên Anh trở lên, cơ chế chưa làm) không có trong hàng.
  */
 export function tierBar(methodId: string | undefined): SkillDef[] {
   if (!methodId) return [];
   const tt = thanThongSkill(methodId);
-  return METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock >= TIER_MIN_UNLOCK && !s.locked && s !== tt).sort((a, b) => a.unlock - b.unlock);
+  const tt10 = thanThong10Skill(methodId);
+  return METHOD_SKILLS.filter((s) => s.method === methodId && s.unlock >= TIER_MIN_UNLOCK && !s.locked && s !== tt && s !== tt10).sort((a, b) => a.unlock - b.unlock);
 }
 
 /** Chiêu `skill` đã gộp cấp chiêu và biến thức theo trạng thái công pháp server gửi (null = chưa có: cấp 1, không biến thức). */
