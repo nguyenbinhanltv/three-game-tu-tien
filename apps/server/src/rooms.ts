@@ -188,6 +188,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.RESPAWN, (p) => this.onRespawn(p));
     on(C.BREAKTHROUGH, (p) => this.sim.onBreakthrough(p));
     on(C.TRIB_SOUL, (p) => this.sim.onTribSoul(p));
+    on(C.TRIB_CLONE, (p) => this.sim.onTribClone(p));
     on(C.BOTTLENECK, (p, m) => this.sim.onBottleneck(p, m));
     on(C.ROOT, (p, m) => this.sim.onChangeRoot(p, m));
     on(C.PARTY, (p, m) => parties.command(p, m));

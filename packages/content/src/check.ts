@@ -956,7 +956,8 @@ if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
     }
   }
   if (!tribForLevel(19)?.enabled) err('độ kiếp Kết Đan (cấp 19) phải đang bật (E2-D)');
-  if (peakGated(19) || peakGated(23) || !peakGated(27)) err('peakGated: chỉ Nguyên Anh 27 còn chặn (bình cảnh Trúc Cơ 19 và Kết Đan 23 đã mở)');
+  if (peakGated(19) || peakGated(23) || peakGated(27)) err('peakGated: không còn bình cảnh nào bị chặn (Trúc Cơ 19, Kết Đan 23, Nguyên Anh 27 đã mở)');
+  if (!tribForLevel(27)?.enabled) err('độ kiếp Hóa Thần (cấp 27) phải đang bật (E4-D)');
   if (!tribForLevel(23)?.enabled) err('độ kiếp Nguyên Anh (cấp 23) phải đang bật (E3-L)');
   if (TRIB_DEFS.truc_co.room !== 'world' || !TRIB_DEFS.truc_co.enabled) err('độ kiếp truc_co: phải chạy ở room world và đang bật');
 }
