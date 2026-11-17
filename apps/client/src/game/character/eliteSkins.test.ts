@@ -22,6 +22,8 @@ const DOAN_MACH = ['elite_liet_cot_bao', 'elite_ho_mach_khoi_tuong', 'elite_xich
 
 const VAN_HAI = ['elite_van_hac_vuong', 'elite_loi_van_su_vuong'];
 
+const THIEN_KHUYET = ['elite_thach_tuong_dai_tuong', 'elite_da_minh_loc_vuong', 'elite_cot_kiem_thong_linh'];
+
 describe('12 tinh anh Tripo (E-1b)', () => {
   const ids = [...IN_GAME, ...Object.keys(ELITE_SKINS_NEW)];
 
@@ -51,6 +53,10 @@ describe('12 tinh anh Tripo (E-1b)', () => {
         expect(MONSTER_SKINS[id].lazy, id).toBe(true);
       } else if (VAN_HAI.includes(id)) {
         expect(MONSTER_SKINS[id]?.level, id).toBe('van_hai');
+        expect(MONSTER_SKINS[id].lazy, id).toBe(true);
+      } else if (THIEN_KHUYET.includes(id)) {
+        // Thiên Khuyết Cổ Thành (E4-B) đã gộp vào bảng.
+        expect(MONSTER_SKINS[id]?.level, id).toBe('thien_khuyet');
         expect(MONSTER_SKINS[id].lazy, id).toBe(true);
       } else if (id === 'elite_kinh_dien_ma_quan') {
         // Kính Nguyệt Cung (E3-M) đã gộp vào bảng.
