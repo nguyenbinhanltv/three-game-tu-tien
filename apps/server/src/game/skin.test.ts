@@ -191,6 +191,31 @@ describe('ô ngoại hình (skin)', () => {
     });
   });
 
+  it('giao dịch dọn lúc nạp hỏng (lỗi DB): không mất món, cột equip giữ nguyên, lần nạp sau dọn lại được', async () => {
+    const { vi } = await import('vitest');
+    const { db } = await import('../db');
+    const { p } = setup(false, 'm');
+    const raw = JSON.stringify({ skin: { id: SKIN, n: 1 } });
+    sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(raw, p.char.id);
+    const spy = vi.spyOn(db, 'transaction').mockImplementationOnce(() => {
+      throw new Error('giả lập lỗi DB');
+    });
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const c = Character.load(p.char.id);
+    spy.mockRestore();
+    err.mockRestore();
+    // Dọn hỏng: bộ nhớ giữ đúng nội dung DB (món vẫn ở ô), túi không có bản sao.
+    expect(c.equip.skin).toEqual({ id: SKIN, n: 1 });
+    expect(c.inv.some((x) => x?.id === SKIN)).toBe(false);
+    // Một giao dịch thành công sau đó không được ghi đè cột equip thiếu món.
+    expect(c.tx('test:other', null, (d) => d.add('itm_linh_thao', 1))).toBe(true);
+    expect(JSON.parse((sqlite.prepare('SELECT equip FROM characters WHERE id = ?').get(p.char.id) as { equip: string }).equip)).toEqual({ skin: { id: SKIN, n: 1 } });
+    // Lần nạp sau (DB bình thường) dọn được: món về túi, đúng một cái.
+    const again = Character.load(p.char.id);
+    expect(again.equip.skin).toBeUndefined();
+    expect(again.inv.filter((x) => x?.id === SKIN)).toHaveLength(1);
+  });
+
   describe('DB hỏng: món nằm sai ô không bị lặng lẽ xóa', () => {
     const setEquip = (id: number, equip: unknown) => sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify(equip), id);
     const drops = (id: number) => ledger(id).filter((r) => r.reason === 'load:drop');

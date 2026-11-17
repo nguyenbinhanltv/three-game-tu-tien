@@ -316,8 +316,10 @@ export class Character {
     c.tele = parseTele(row.tele);
     // Món nằm sai chỗ trong cột `equip` (DB hỏng/sửa tay): `stray` trả về túi, `dropped` (mẫu không còn) ghi sổ cái -1.
     let misplaced: { stray: InvItem[]; dropped: string[] } = { stray: [], dropped: [] };
+    let rawEquip: Equipment | null = null;
     try {
-      const clean = sanitizeEquip(JSON.parse(row.equip), c.appearance.g);
+      rawEquip = JSON.parse(row.equip) as Equipment;
+      const clean = sanitizeEquip(rawEquip, c.appearance.g);
       c.equip = clean.equip;
       misplaced = clean;
       c.quests = JSON.parse(row.quests) as QuestView;
@@ -339,7 +341,9 @@ export class Character {
         c.inv[r.slot] = it;
       }
     }
-    if (misplaced.stray.length || misplaced.dropped.length) c.settleMisplaced(misplaced.stray, misplaced.dropped);
+    // Giao dịch dọn hỏng (lỗi DB): KHÔNG giữ bản đã dọn trong bộ nhớ, nếu không lần ghi thành công kế tiếp sẽ ghi đè cột `equip`
+    // thiếu món `stray` (mất đồ không có ledger). Giữ nguyên nội dung cột như trong DB; lần nạp sau sẽ thử dọn lại.
+    if ((misplaced.stray.length || misplaced.dropped.length) && !c.settleMisplaced(misplaced.stray, misplaced.dropped) && rawEquip && typeof rawEquip === 'object') c.equip = rawEquip;
     c.recalc();
     if (c.hp > c.mhp) c.hp = c.mhp;
     if (c.mp > c.mmp) c.mp = c.mmp;
@@ -350,7 +354,7 @@ export class Character {
    * Dọn món nằm sai ô lúc nạp, trong MỘT giao dịch để sổ cái luôn khớp: món còn mẫu được trả về ô túi trống (không đổi số lượng
    * nên không cần dòng ledger), hết chỗ hoặc mẫu không còn thì ghi ledger -1 với lý do `load:drop`. Cột `equip` được ghi lại bản đã dọn.
    */
-  private settleMisplaced(stray: InvItem[], dropped: string[]): void {
+  private settleMisplaced(stray: InvItem[], dropped: string[]): boolean {
     const ok = this.tx('load:drop', null, (d) => {
       for (const it of stray) {
         const i = d.inv.findIndex((s) => !s);
@@ -361,6 +365,7 @@ export class Character {
       return true;
     });
     if (!ok) console.error('[load] không dọn được món sai ô của nhân vật', this.id, this.txFail);
+    return ok;
   }
 
   /** Tính lại chỉ số từ cảnh giới + trang bị (8 ô, dòng chính + dòng phụ). */
