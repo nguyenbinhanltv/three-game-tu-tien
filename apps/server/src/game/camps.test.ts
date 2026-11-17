@@ -171,8 +171,8 @@ describe('bãi quái theo cụm', () => {
     const rt = sim.camps.camps.find((c) => c.melee.length >= 3)!;
     const p = join(rt.def.x, rt.def.z);
     const [a, ...rest] = rt.melee;
-    // Vị trí sinh trong bãi là ngẫu nhiên (bán kính 18–30 m), có lượt không con nào nằm trong 14 m: đặt tay cho xác định,
-    // một con sát bên (6 m), các con còn lại ngoài tầm (20 m trở ra).
+    // Vị trí trong bãi theo đội hình (`formationSlots`) cộng lệch ngẫu nhiên ±0,8 m mỗi con, nên có lượt không con nào nằm trong 14 m
+    // (test từng đỏ trên CI vì vậy): đặt tay cho xác định, một con sát bên (6 m), các con còn lại ngoài tầm (20 m trở ra).
     rest.forEach((m, i) => {
       m.s.x = a.s.x + (i === 0 ? 6 : 20 + i * 4);
       m.s.z = a.s.z;
