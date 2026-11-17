@@ -150,7 +150,29 @@
     "itm_ll_dao_bao": "Lưu Ly Đạo Bào",
     "itm_ll_ngoc_boi": "Lưu Ly Ngọc Bội",
     "itm_ll_dai_lung": "Lưu Ly Đai Lưng",
-    "itm_ll_gioi_chi": "Lưu Ly Giới Chỉ"
+    "itm_ll_gioi_chi": "Lưu Ly Giới Chỉ",
+    "itm_tk_dao_bao": "Tinh Khuyết Kiếm Bào",
+    "itm_tk_ho_uyen": "Tinh Khuyết Kiếm Uyển",
+    "itm_tk_dai_lung": "Tinh Khuyết Kiếm Đai",
+    "itm_tk_van_ngoa": "Tinh Khuyết Kiếm Ngoa",
+    "itm_tk_trang_suc": "Tinh Khuyết Phát Quan",
+    "itm_ct_dao_bao": "Cổ Thành Giáp Bào",
+    "itm_ct_ho_uyen": "Cổ Thành Giáp Uyển",
+    "itm_ct_dai_lung": "Cổ Thành Giáp Đai",
+    "itm_ct_van_ngoa": "Cổ Thành Chiến Ngoa",
+    "itm_ct_trang_suc": "Cổ Thành Giác Quan",
+    "itm_tt_dao_bao": "Thần Tàng Đan Bào",
+    "itm_tt_ngoc_boi": "Thần Tàng Đan Bội",
+    "itm_tt_dai_lung": "Thần Tàng Đan Đai",
+    "itm_tt_gioi_chi": "Thần Tàng Đan Giới",
+    "itm_tt_trang_suc": "Thần Tàng Ngọc Trâm",
+    "itm_tinh_khuyet_kiem": "Tinh Khuyết Kiếm",
+    "itm_tinh_khuyet_dao_bao": "Tinh Khuyết Đạo Bào",
+    "itm_co_thanh_ho_uyen": "Cổ Thành Hộ Uyển",
+    "itm_da_hanh_van_ngoa": "Dạ Hành Vân Ngoa",
+    "itm_tinh_van_dai_lung": "Tinh Văn Đai Lưng",
+    "itm_than_tang_ngoc_boi": "Thần Tàng Ngọc Bội",
+    "itm_thu_linh_gioi_chi": "Thủ Linh Giới Chỉ"
   },
   "upgrade": {
     "gem": "Linh Ngọc",
@@ -181,7 +203,10 @@
     "set_phuc_mach": "Phục Mạch Đan Bào",
     "set_kinh_quang": "Kính Quang Kiếm Y",
     "set_van_kinh": "Vân Kình Thiết Giáp",
-    "set_luu_ly": "Lưu Ly Đan Y"
+    "set_luu_ly": "Lưu Ly Đan Y",
+    "set_tinh_khuyet": "Tinh Khuyết Kiếm Bào",
+    "set_co_thanh": "Cổ Thành Huyền Giáp",
+    "set_than_tang": "Thần Tàng Đan Bào"
   },
   "party": {
     "name": "Tổ đội",
@@ -303,7 +328,10 @@
     "itm_kinh_hoa_sa": "Kính Hoa Sa",
     "itm_van_hai_lo": "Vân Hải Lộ",
     "itm_bich_ngoc_nhi": "Bích Ngọc Nhĩ",
-    "itm_pha_canh_dan_3": "Vân Phá Cảnh Đan"
+    "itm_pha_canh_dan_3": "Vân Phá Cảnh Đan",
+    "itm_tinh_quang_mac": "Tinh Quang Mặc",
+    "itm_than_tang_ngoc": "Thần Tàng Ngọc",
+    "itm_co_thanh_phien": "Cổ Thành Phiến"
   },
   "stationNpcs": {
     "npc_to_van_ngu": "Tô Vãn Ngư",

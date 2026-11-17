@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { groundAt, MS_DEAD, S } from '@dtl/shared';
 
 // E2-G: chiêu bậc 2–3 (Lạc Kiếm Quyết / Bất Động Kim Thân / Thanh Mộc Đan Kinh). Server áp sát thương tại hitAt như K-2.
@@ -495,5 +495,49 @@ describe('E3-F: hiệu ứng 4 món của bộ bậc 3 nối vào chiêu', () =>
     const base = shield(0);
     expect(base).toBeGreaterThan(0);
     expect(shield(0.05)).toBe(Math.round(base * 1.05));
+  });
+});
+
+describe('SETS-4: hiệu ứng 4 món của bộ bậc 4 nối vào chiêu', () => {
+  // Hai chiêu Nguyên Anh còn `locked` (chờ E2-G/E3-K bật): mở tạm trong test để kiểm hook, trả lại sau.
+  const unlocked: { locked?: boolean }[] = [];
+  beforeAll(() => {
+    for (const id of ['skl_anh_duoc_hoa_than', 'skl_anh_thiet_than']) {
+      const sk = METHOD_SKILLS.find((x) => x.id === id) as { locked?: boolean };
+      unlocked.push({ locked: sk.locked });
+      sk.locked = false;
+    }
+  });
+  afterAll(() => {
+    ['skl_anh_duoc_hoa_than', 'skl_anh_thiet_than'].forEach((id, i) => ((METHOD_SKILLS.find((x) => x.id === id) as { locked?: boolean }).locked = unlocked[i].locked));
+  });
+  it('Anh Dược Hóa Thân hồi thêm anhDuocBoost', () => {
+    const healed = (boost: number) => {
+      const { sim, p, fresh, wait } = setup('thanh_moc_dan_kinh', 28);
+      p.char.stats.setFx.anhDuocBoost = boost;
+      p.char.hp = Math.floor(p.char.mhp * 0.1);
+      const h0 = p.char.hp;
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_anh_duoc_hoa_than' });
+      wait(4600);
+      return p.char.hp - h0;
+    };
+    const base = healed(0);
+    expect(base).toBeGreaterThan(0);
+    expect(healed(0.15)).toBeGreaterThan(base * 1.1);
+  });
+  it('Anh Thiết Thân: đồng đội trong 10 m cũng giảm anhThietShare sát thương nhận, ngoài tầm thì không', () => {
+    const run = (share: number, far: boolean) => {
+      const { sim, p, fresh, join } = setup('bat_dong_kim_than', 28);
+      const mate = join('b');
+      if (far) mate.move.x = X + 40;
+      p.char.stats.setFx.anhThietShare = share;
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_anh_thiet_than' });
+      return mate.mth.guardUntil > sim.now;
+    };
+    expect(run(0, false)).toBe(false);
+    expect(run(0.2, false)).toBe(true);
+    expect(run(0.2, true)).toBe(false);
   });
 });

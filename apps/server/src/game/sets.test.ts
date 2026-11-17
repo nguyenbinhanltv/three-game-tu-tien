@@ -47,10 +47,23 @@ function setup() {
 }
 
 describe('dữ liệu bộ', () => {
-  it('bảy bộ, mỗi món trỏ đúng bộ, công thức chế bậc 1 chỉ ra món của bộ Lạc Kiếm', () => {
-    expect(SETS.map((s) => s.id)).toEqual(['set_lac_kiem', 'set_huyen_giap', 'set_dan_tam', 'set_han_giao', 'set_liet_mach', 'set_dia_giap', 'set_phuc_mach', 'set_kinh_quang', 'set_van_kinh', 'set_luu_ly']);
+  it('mười ba bộ, mỗi món trỏ đúng bộ, công thức chế bậc 1 chỉ ra món của bộ Lạc Kiếm', () => {
+    expect(SETS.map((s) => s.id)).toEqual(['set_lac_kiem', 'set_huyen_giap', 'set_dan_tam', 'set_han_giao', 'set_liet_mach', 'set_dia_giap', 'set_phuc_mach', 'set_kinh_quang', 'set_van_kinh', 'set_luu_ly', 'set_tinh_khuyet', 'set_co_thanh', 'set_than_tang']);
     for (const s of SETS) for (const pid of s.pieces) expect(ITEM.get(pid)?.set).toBe(s.id);
     for (const f of FORGE.filter((x) => x.id.startsWith('frg_lk_'))) expect(ITEM.get(f.output)?.set).toBe('set_lac_kiem');
+  });
+
+  it('bộ bậc 4: 5 món (gồm trang sức đầu) cùng bậc 4, đủ công thức chế, đồ bậc 3 trỏ promoteTo vào đúng bộ', () => {
+    for (const [id, from] of [['set_tinh_khuyet', 'set_kinh_quang'], ['set_co_thanh', 'set_van_kinh'], ['set_than_tang', 'set_luu_ly']] as const) {
+      const set = SETS.find((x) => x.id === id)!;
+      expect(set.pieces.length, id).toBe(5);
+      expect(set.pieces.map((p) => ITEM.get(p)!.kind), id).toContain('head');
+      for (const pid of set.pieces) {
+        expect(ITEM.get(pid)?.tier, pid).toBe(4);
+        expect(FORGE.some((f) => f.output === pid), pid).toBe(true);
+      }
+      for (const old of SETS.find((x) => x.id === from)!.pieces) expect(ITEM.get(ITEM.get(old)!.promoteTo!)?.set, old).toBe(id);
+    }
   });
 });
 

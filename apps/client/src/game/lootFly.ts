@@ -49,7 +49,7 @@ export class LootFly {
     if (st) {
       Object.assign(el.style, st);
       el.textContent = '';
-    } else el.textContent = fallback;
+    } else el.textContent = fallback.startsWith('sys:') ? '◆' : fallback; // 'sys:<tên>' = icon hệ thống SVG (UI-1), ở đây chỉ cần dấu thoi
     el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%)`;
     this.layer.appendChild(el);
     this.items.push({ el, x0: x, y0: y, t: 0 });

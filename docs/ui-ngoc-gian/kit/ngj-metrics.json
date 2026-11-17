@@ -1,0 +1,18 @@
+{
+  "1080p": {
+    "idleTaskMsPer3s": 9.08,
+    "layoutMs": 0.03,
+    "styleMs": 0.41,
+    "scriptMs": 0.14,
+    "fps": 61,
+    "errors": []
+  },
+  "1440p": {
+    "idleTaskMsPer3s": 13.2,
+    "layoutMs": 0.03,
+    "styleMs": 0.59,
+    "scriptMs": 2.35,
+    "fps": 61,
+    "errors": []
+  }
+}
