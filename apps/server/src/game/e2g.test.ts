@@ -44,7 +44,8 @@ function setup(method: string, level = 22) {
     }
   };
   const join = (name: string): Ent => {
-    const char = Character.create(nextAcc++, name + nextAcc);
+    // Linh căn cố định: mặc định `Character.create` roll ngẫu nhiên, làm chỉ số lệch giữa hai nhân vật đem so trong cùng một phép thử.
+    const char = Character.create(nextAcc++, name + nextAcc, null, 'kim');
     char.level = level;
     char.meta.method = method;
     char.recalc();
@@ -446,6 +447,8 @@ describe('E2-G: hiệu ứng 4 món của bộ bậc 2 (E2-F) nối vào chiêu'
       fresh(p);
       sim.onSkill(p, { id: 'skl_moc_linh_tran' });
       wait(8200);
+      // Hạ máu lại trước khi đo: lượt nào hồi mạnh thì tới giây 8 đã đầy máu, 2 giây kéo dài không còn chỗ để hồi.
+      p.char.hp = Math.floor(p.char.mhp * 0.2);
       const h8 = p.char.hp;
       wait(2000);
       return p.char.hp - h8;
