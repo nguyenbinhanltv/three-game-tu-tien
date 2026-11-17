@@ -1,5 +1,7 @@
 # E2-B: quái, tinh anh, boss Đoạn Mạch Cổ Cốc
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2b-mobs/<file>`.
+
 Gói E2-B (`docs/EXPANSION_DESIGN.md` 6.1, 5.4, 11.2). Dữ liệu thay bản tạm của E2-A, dùng bảy kiểu chiêu của E1-E (`docs/e1e-monskill/`) bằng dữ liệu; skin GLB người dùng đã nhập (#115/#116/#117), không dựng model mới.
 
 ## Chiêu theo dữ liệu (`packages/content/data/monsters.json`)
@@ -26,7 +28,7 @@ Gói E2-B (`docs/EXPANSION_DESIGN.md` 6.1, 5.4, 11.2). Dữ liệu thay bản t�
 
 ## Lỗi hình đã sửa
 
-- **Slam Địa Mạch Long** (`tools/blender/anim_quadruped.py`, clip `slam`): chồm đứng thẳng hai chân sau (thân ngả ~58°, đuôi chống đất), lúc nện hai chân sau vẫn bám đất, chân trước chạm đất (trước đó chân sau hổng khi nện). Ảnh: `boss-slam.jpg` (bên/trước, tại 0,9 s và 1,0 s).
+- **Slam Địa Mạch Long** (`tools/blender/anim_quadruped.py`, clip `slam`): chồm đứng thẳng hai chân sau (thân ngả ~58°, đuôi chống đất), lúc nện hai chân sau vẫn bám đất, chân trước chạm đất (trước đó chân sau hổng khi nện). Ảnh: `boss-slam.webp` (bên/trước, tại 0,9 s và 1,0 s).
 - **Scale boss**: `scale` 0,85 (≈ 7,6 m dài, 3,9 m cao so với người 1,8 m).
 - **Thạch Giáp Tê chết bị bẹp**: lăn nghiêng 88° làm thân rộng dẹt thành khối. Thêm `import.quadruped.death: "prone"` (quỵ bốn chân, nằm sấp). Ảnh: `te-chet.jpg`.
 
@@ -39,19 +41,19 @@ Gói E2-B (`docs/EXPANSION_DESIGN.md` 6.1, 5.4, 11.2). Dữ liệu thay bản t�
 
 | | |
 | --- | --- |
-| Thạch Giáp Tê | ![](mon_thach_giap_te.jpg) |
-| Khai Mạch Khôi Lỗi | ![](mon_khai_mach_khoi_loi.jpg) |
-| Ngô Công Ấu | ![](mon_ngo_cong_au.jpg) |
-| Mạch Thương Hộ Vệ | ![](mon_mach_thuong_ho_ve.jpg) |
-| Liệt Cốt Báo Vương | ![](elite_liet_cot_bao.jpg) |
-| Hộ Mạch Khôi Tướng | ![](elite_ho_mach_khoi_tuong.jpg) |
-| Xích Sa Ngô Công | ![](elite_xich_sa_ngo_cong.jpg) |
-| Địa Mạch Long (pha 1) | ![](boss_dia_mach_long.jpg) |
-| Địa Mạch Long (99% máu, chiêu slam) | ![](boss_dia_mach_long-hurt99.jpg) |
-| Ngô Công Ấu / Xích Sa trong trang xem | ![](view-mon_ngo_cong_au.jpg) ![](view-elite_xich_sa_ngo_cong-stills.png) |
-| Địa Mạch Long (≤ 45% máu) | ![](boss_dia_mach_long-hurt45.jpg) |
-| Địa Mạch Long (≤ 25% máu) | ![](boss_dia_mach_long-hurt25.jpg) |
-| Boss: các clip (`pnpm shots:boss`) | ![](boss-view/boss_dia_mach_long_clips.jpg) |
+| Thạch Giáp Tê | ![](mon_thach_giap_te.webp) |
+| Khai Mạch Khôi Lỗi | _(ảnh đã gỡ)_ |
+| Ngô Công Ấu | _(ảnh đã gỡ)_ |
+| Mạch Thương Hộ Vệ | _(ảnh đã gỡ)_ |
+| Liệt Cốt Báo Vương | ![](elite_liet_cot_bao.webp) |
+| Hộ Mạch Khôi Tướng | _(ảnh đã gỡ)_ |
+| Xích Sa Ngô Công | _(ảnh đã gỡ)_ |
+| Địa Mạch Long (pha 1) | ![](boss_dia_mach_long.webp) |
+| Địa Mạch Long (99% máu, chiêu slam) | _(ảnh đã gỡ)_ |
+| Ngô Công Ấu / Xích Sa trong trang xem | _(ảnh đã gỡ)_ |
+| Địa Mạch Long (≤ 45% máu) | _(ảnh đã gỡ)_ |
+| Địa Mạch Long (≤ 25% máu) | ![](boss_dia_mach_long-hurt25.webp) |
+| Boss: các clip (`pnpm shots:boss`) | _(ảnh đã gỡ)_ |
 
 `hazards.json`: các vạch báo ghi được ở client. Cảnh boss xuất hiện (B2) tự bỏ qua trước khi chụp. Mặt đất vẫn là cỏ Vân Lam (E2-I lo).
 

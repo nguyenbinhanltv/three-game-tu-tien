@@ -1,5 +1,7 @@
 # E2-H: nhiệm vụ chương 2 · Đoạn Mạch
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2h-quests/<file>`.
+
 9 nhiệm vụ chính (`q2_*`) + 4 phụ (`s2_*`), NPC Tô Vãn Ngư, Hứa lão, Khưu Hàn Sơn, loại mục tiêu mới `touch` / `scan` / `escort`.
 
 ## Chuỗi

@@ -1,5 +1,7 @@
 # E2-G: chiêu bậc 2–3 (Lạc Kiếm Quyết, Bất Động Kim Thân, Thanh Mộc Đan Kinh)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2g-skills/<file>`.
+
 Nguồn thiết kế: `docs/EXPANSION_DESIGN.md` mục 8.1–8.3 và 11.2. Gói này thêm **21 chiêu** (mỗi công pháp 7), mỗi chiêu có biến thức A/B.
 Chơi được: **12 chiêu mở ở cấp 16–22 (Trúc Cơ → Kết Đan hậu kỳ)**. Chiêu mở từ cấp 24 trở lên (Nguyên Anh, Hóa Thần: 9 chiêu) chỉ có **dữ liệu + pose + cờ `locked: true`**;
 server từ chối ra chiêu (`sys.skill_locked`), client không đưa lên thanh chiêu. Bỏ cờ khi làm cơ chế tương ứng ở các gói sau.

@@ -1,5 +1,7 @@
 # E3-K: nguyên anh xuất khiếu, ngự không, thuấn di
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3k/<file>`.
+
 Mở ở **Nguyên Anh sơ kỳ (cấp 24)** theo `docs/EXPANSION_DESIGN.md` 2.5 và 11.3. Dùng `/gm level 24` để thử. Server quyết định mọi thứ; client chỉ gửi ý định (phím X, Q) và vẽ.
 
 ## Luật

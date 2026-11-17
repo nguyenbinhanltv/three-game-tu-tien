@@ -1,5 +1,7 @@
 # CHR-PROTO: nhân vật nền v2 (MakeHuman thân + đầu/tóc Tripo) — bản thử
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/chr-v2/<file>`.
+
 **Không thay nhân vật trong game.** Chỉ dựng và so sánh để quyết. Phương án C: thân + tay MakeHuman (CC0), đầu + tóc do người dùng dựng trên Tripo web từ concept ở đây.
 
 Xem thử: thêm `?chr=v2` vào URL game (`?mute=1&auto=<tên>&chr=v2`), `&hair=b` cho tóc kiểu B. Bỏ tham số là về nhân vật cũ. Mặc bộ bằng lệnh GM như thường (`/gm set set_liet_mach`).
@@ -50,7 +52,6 @@ Tham số khớp từng kiểu tóc ở `tools/blender/build-chr-v2.mjs` (`CFG`)
 
 **Đổi tư thế nghỉ / hình thể thân nền thì phải dựng lại cả bốn áo v2** (`run.mjs --only set_<bộ>_v2_<giới> --force` + `optimize`): `outfit_build.py` bỏ tư thế (unpose) đỉnh áo về tư thế nghỉ của `assets/build/raw/<nhân vật>.glb` lúc dựng, còn lúc chạy áo bind với `boneInverses` của thân; lệch tư thế nghỉ thì tay áo xoay lệch khỏi tay. `outfit_build.py` ánh xạ nhóm trọng số xương lò xo tóc `dtl_o_hair_*` của thân v2 về xương Head (trước đó script văng `StopIteration` nên áo không dựng lại được).
 
-![thân](than-v2-tam.webp)
 
 ## 3. Ẩn thân bị áo che
 
@@ -62,39 +63,25 @@ Mỗi mảnh áo khai báo vùng che trong `packages/content/data/equipment/outf
 
 Cận mặt nam (Liệt Mạch, máy ảnh sát mặt) và thân trần cận mặt nữ:
 
-![](liet-mach-nam-matgan.webp)
-![](than-tran-nu-matgan.webp)
 
 Tóc kiểu B (nam: Liệt Mạch; nữ: Kính Quang), cận mặt, toàn thân, sau lưng:
 
-![](toc-b-nam.webp)
-![](toc-b-nu.webp)
 
 Liệt Mạch, nam (cận mặt, toàn thân, chạy, chém, đả tọa):
 
-![](liet-mach-nam-matcan.webp)
 ![](liet-mach-nam-toanthan.webp)
-![](liet-mach-nam-chay.webp)
 ![](liet-mach-nam-chem.webp)
-![](liet-mach-nam-datoa.webp)
 
 Kính Quang, nữ:
 
-![](kinh-quang-nu-matcan.webp)
 ![](kinh-quang-nu-banthan.webp)
-![](kinh-quang-nu-chay.webp)
-![](kinh-quang-nu-chem.webp)
 
 Thân trần (kiểm cổ nối, trọng số, đồ lót):
 
-![](than-tran-nam-banthan.webp)
-![](than-tran-nu-toanthan.webp)
 
 Tóc A so với B:
 
 ![](toc-ab-liet-mach-nam-matcan.webp)
-![](toc-ab-kinh-quang-nu-toanthan.webp)
-![](toc-ab-liet-mach-nam-chem.webp)
 
 ## 5. Số đo
 

@@ -1,5 +1,7 @@
 # Rà UI/UX tu tiên (PR C)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/ui-tutien/<file>`.
+
 Đợt rà theo `docs/AUDIT_AND_ROADMAP.md` mục 4. Không đụng bản đồ nhỏ, bản đồ lớn (M-4) và ảnh nền bảng/màn tải (#95; chất liệu Codex của #95 vẫn phủ lên bảng như cũ).
 
 ## Lỗi đã sửa
@@ -17,7 +19,7 @@ Sửa sau khi soát ảnh và review (2026-11-16):
 
 - `PlayerFrame` gọi `useUI` sau lệnh `return` sớm (vi phạm Rules of Hooks, có thể làm sập HUD khi `char` chuyển từ null sang có): đã đưa hook lên trước.
 - Toast nằm dưới bảng đang mở nên bị che giữa câu: lớp `.toasts` giờ có `z-index: 55` (trên bảng, dưới tooltip), không nhận chuột.
-- Màn tiêu đề ở màn thấp (≤ 800 px): phụ đề "Huyền Linh Giới · Vân Lam Sơn Mạch" chạm mép trên khung đăng nhập. Khung giờ rộng 620 px, cách phụ đề 22 px, cao tối đa bằng phần màn hình còn lại và cuộn bên trong (`man-tieu-de-1280.jpg`).
+- Màn tiêu đề ở màn thấp (≤ 800 px): phụ đề "Huyền Linh Giới · Vân Lam Sơn Mạch" chạm mép trên khung đăng nhập. Khung giờ rộng 620 px, cách phụ đề 22 px, cao tối đa bằng phần màn hình còn lại và cuộn bên trong (`man-tieu-de-1280.webp`).
 
 ## Thêm mới
 
@@ -64,26 +66,16 @@ Script Playwright (Chrome headless có GPU, `?mute=1`, `--mute-audio`) ở ba đ
 
 ## Ảnh
 
-![HUD 1280×720](hud-1280.jpg)
 
-![HUD 1920×1080](hud-1920.jpg)
+![HUD 1920×1080](hud-1920.webp)
 
-![HUD 2560×1440](hud-2560.jpg)
 
-![Túi trữ vật và tooltip, 1280×720](tui-tooltip-1280.jpg)
+![Túi trữ vật và tooltip, 1280×720](tui-tooltip-1280.webp)
 
-![Túi trữ vật và tooltip, 2560×1440](tui-tooltip-2560.jpg)
 
-![Nút Đột Phá mở bảng Nhân vật, toast nằm trên bảng](dot-pha-nhan-vat-1280.jpg)
+![Màn tiêu đề 1280×720](man-tieu-de-1280.webp)
 
-![Màn tiêu đề 1280×720](man-tieu-de-1280.jpg)
+![Chiến đấu: bảng tên, hồi chiêu vòng linh văn](chien-dau-1280.webp)
 
-![Chiến đấu: bảng tên, hồi chiêu vòng linh văn](chien-dau-1280.jpg)
 
-![Bản đồ lớn ở 2560×1440 (không phóng)](ban-do-lon-2560.jpg)
-
-![Boss: chỉ còn thanh HUD, không có bảng tên 3D](boss-1280.jpg)
-
-![Rời xa boss: thanh boss tắt](sau-khi-roi-boss-1280.jpg)
-
-![HUD độ kiếp](do-kiep-1280.jpg)
+![HUD độ kiếp](do-kiep-1280.webp)

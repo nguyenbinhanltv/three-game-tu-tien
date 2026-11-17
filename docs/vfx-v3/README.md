@@ -1,5 +1,7 @@
 # VFX-V3: Hộ pháp (Bất Động Kim Thân) + Đan sư (Thanh Mộc Đan Kinh)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/vfx-v3/<file>`.
+
 20 chiêu, mỗi chiêu một timeline `packages/content/data/fx/<id>.json` sinh bằng `python tools/vfx/gen-fx-kiem.py` (công thức `tools/vfx/recipes_c.py`). Phong cách V1/V2 (lõi sẫm + bóng, ba tầng màu, khựng, dư âm tan nhanh, chớp < 120 ms); màu theo nhánh từ `render/vfx/palette.ts`: Hộ pháp hổ phách/vàng kim, bóng nâu; Đan sư ngọc lục, điểm đỏ son.
 
 **Hộ pháp** (gai đá trồi nối tiếp, ấn nứt đất, chuông vàng): Trấn Sơn Ấn (ấn đóng đất, vòng chấn tới mép bán kính khiêu khích, gai đá vây), Thiết Quyền Chấn Địa (đập đất, nứt, mười gai tỏa tròn, khựng 80 ms), Kim Chung Trấn (ba vòng chuông dâng từ chân lên đầu), Sơn Nhạc Hóa Thân (gai núi ôm thân, nứt đất), Kim Cương Bất Hoại, Ảnh Thiết Thân, Thuấn Di Hộ Thể, Thiên Kim Pháp Tướng (tối thượng), hai chiêu lướt Thiết Bích Xung / Dịch Sơn Xung.

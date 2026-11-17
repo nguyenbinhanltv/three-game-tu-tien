@@ -1,5 +1,7 @@
 # Trang phục mô-đun: pipeline gắn mảnh lên thân nền (T-2)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/sets-retarget/<file>`.
+
 Kế hoạch tổng: thân nền nam/nữ + các mảnh rời (áo ngoài, vai/giáp, đai, ủng, choàng), mỗi nhân vật ≤ 18k tam giác, xương lò xo cho tay áo và vạt, nhuộm 3 kênh. Tài liệu này là phần **công cụ** (T-2) và bản thử đầu tiên: 3 mẫu Tripo #119 (ma-nơ-canh nguyên bộ, ~1.900 tam giác) mặc thật lên nam `chr_kiem_tu_nam` và nữ `chr_kiem_tu_nu`. Mẫu #119 là **bản tạm**: texture không vẽ lại, mảnh mới sẽ thay.
 
 ## Dữ liệu: bộ nào dùng mảnh nào
@@ -45,7 +47,7 @@ Kế hoạch tổng: thân nền nam/nữ + các mảnh rời (áo ngoài, vai/g
 
 ## Kiểm tra
 
-- **Ảnh theo clip trong game**: `pnpm shots:outfit --out <thư mục tuyệt đối> [--genders m,f] [--sets set_liet_mach] [--query outfit=<mảnh>] [--matrix 1] [--panel 1]`. Mỗi lần chụp: trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém; `--matrix 1` thêm chiêu 1-2 của 3 công pháp (lạc kiếm, bất động kim thân, thanh mộc đan kinh) và chết (hơi tối vì màn chết); `--panel 1` chụp bảng nhân vật. Ảnh đã có: `sheet_<mảnh>_<m|f>.jpg` (3 mảnh × 2 giới), `matrix_set_liet_mach_kiem_y_m.jpg`, `truoc_sau_liet_mach_nam.jpg`, `bang_nhan_vat_liet_mach.jpg`.
+- **Ảnh theo clip trong game**: `pnpm shots:outfit --out <thư mục tuyệt đối> [--genders m,f] [--sets set_liet_mach] [--query outfit=<mảnh>] [--matrix 1] [--panel 1]`. Mỗi lần chụp: trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém; `--matrix 1` thêm chiêu 1-2 của 3 công pháp (lạc kiếm, bất động kim thân, thanh mộc đan kinh) và chết (hơi tối vì màn chết); `--panel 1` chụp bảng nhân vật. Ảnh đã có: `sheet_<mảnh>_<m|f>.jpg` (3 mảnh × 2 giới), `matrix_set_liet_mach_kiem_y_m.webp`, `truoc_sau_liet_mach_nam.webp`, `bang_nhan_vat_liet_mach.webp`.
 - **Kiểm số** `tools/blender/outfit_check.py` (Blender nền): đưa thân nền + mảnh vào 6 tư thế cực biên (chạy, chém giơ tay, tay thả, cúi, ngồi, ngã; hai chiều dấu mỗi tư thế) và đếm đỉnh áo **mới** chui vào thân nền còn hiện so với lúc nghỉ, cùng độ sâu lớn nhất. Lệnh: `blender -b --factory-startup --python tools/blender/outfit_check.py -- --player assets/build/raw/chr_kiem_tu_nam.glb --outfit apps/client/public/assets/<mảnh>.<hash>.glb [--keep all] [--tol 0.02] [--out x.json]`. Kết quả 6 mảnh tạm: `check/*.json`. Đọc: số đỉnh mới ≤ ~20 trên ~1.800 và chủ yếu ở ống tay áo chạm bàn tay (độ sâu hiển thị chạm trần `padRange` 12 cm là do tay mảnh, pháp tuyến không ổn định); ảnh trong game không thấy lỗi. Với thân nền mô-đun còn áo lót, chạy `--keep all`.
 
 ## Số đo (50 bot cùng mặc `set_liet_mach`, `BOT_SET=set_liet_mach pnpm bench:crowd --bots 50 --scenes san --renderers webgpu --presets high`)

@@ -1,5 +1,7 @@
 # Trang phục bậc 4 Hóa Thần: Tinh Khuyết Kiếm Bào + kiếm Tinh Khuyết (T-6a)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/outfits-hoa-than/<file>`.
+
 Bộ đầu tiên của bậc 4, dựng từ 6 mảnh Tripo (concept P3, PR #154, `docs/outfit-concepts-p3/`) bằng đúng pipeline T-5 (`tools/blender/outfit_build.py`, xem `docs/outfits-ket-dan/README.md`), thay bản tạm #119 của `set_tinh_khuyet`. Cộng dạng cuối +10 và vỏ riêng của Tinh Khuyết Kiếm.
 
 | Bộ (dữ liệu) | Asset (nam/nữ) | Tam giác LOD0 / LOD1 / LOD2 | Xương lò xo |
@@ -36,7 +38,7 @@ Draw đạt ngân sách (< 300). CPU p50 8,6 ms hơi quá ngưỡng 8 ms của n
 ## Ảnh
 
 - `sheet_tinh_khuyet_<m|f>.jpg`: đứng trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém, chết. `matrix_tinh_khuyet_<m|f>.jpg`: chiêu 1–2 của 3 công pháp (kiếm tu, hộ pháp, đan sư), chết, chém. `bang_tinh_khuyet_<m|f>.jpg`: bảng nhân vật 3D.
-- `kiem_tinh_khuyet_0_7_10.jpg`: kiếm +0, +7, +10 (hàng trên xuống dưới), cột trái đeo lưng (một kiếm trong vỏ riêng), cột phải cầm tay. +0 và +7 chỉ khác vân sáng; +10 đổi sang dạng cuối. `kiem_tinh_khuyet_10_nu.jpg`: dạng cuối trên thân nữ. Ảnh chụp với một kiếm Liệt Mạch trong tay để có `plus 7|10`, model hiển thị ép bằng `?sword=`. Hào quang +0 vẫn có vì nhân vật mặc bộ (màu bộ làm sáng vỏ ở bậc tối thiểu 1), không phải lỗi của kiếm.
+- `kiem_tinh_khuyet_0_7_10.webp`: kiếm +0, +7, +10 (hàng trên xuống dưới), cột trái đeo lưng (một kiếm trong vỏ riêng), cột phải cầm tay. +0 và +7 chỉ khác vân sáng; +10 đổi sang dạng cuối. `kiem_tinh_khuyet_10_nu.webp`: dạng cuối trên thân nữ. Ảnh chụp với một kiếm Liệt Mạch trong tay để có `plus 7|10`, model hiển thị ép bằng `?sword=`. Hào quang +0 vẫn có vì nhân vật mặc bộ (màu bộ làm sáng vỏ ở bậc tối thiểu 1), không phải lỗi của kiếm.
 - Chụp: `pnpm shots:outfit --out <thư mục tuyệt đối> --genders m,f --sets set_liet_mach --matrix 1 --panel 1 --query outfit=set_tinh_khuyet_kiem_bao`; kiếm: `pnpm shots:kiem --out <thư mục> --model prop_kiem_tinh_khuyet|prop_kiem_tinh_khuyet_cuoi --equip "itm_liet_mach_kiem|Liệt Mạch Kiếm" --query outfit=set_tinh_khuyet_kiem_bao --set set_liet_mach --glow 0|1|2` (`--equip` và `--query` thêm ở PR này).
 
 ## Lưu ý ảnh (sửa sau review)

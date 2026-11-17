@@ -1,5 +1,7 @@
 # E3-A + E3-N: Vân Hải Phù Đảo (bản đồ 3, cấp 20–23)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3-map/<file>`.
+
 Gói E3-A (bản đồ) kèm E3-N (địa hình đảo nổi) của E-3 Nguyên Anh (`docs/EXPANSION_DESIGN.md` mục 4.2, 11.3, 11.5). Làm theo mẫu E2-A (`docs/e2-map/README.md`). Không đụng phó bản, độ kiếp, boss (E3-B và các gói sau). Chỉ dùng asset sẵn có (prop PROP_LIB #118, cây/đá), không Tripo.
 
 ## Đã có
@@ -77,28 +79,28 @@ Một hàm `heightAt` chung (client, server, công cụ) gồm:
 
 | | |
 | --- | --- |
-| Bố cục nhìn từ trên (map:report: đảo, cầu, tinh anh vàng) | ![](layout-topdown.jpg) |
-| Nền minimap | ![](minimap-nen.jpg) |
-| Bản đồ lớn (phím M) | ![](worldmap.jpg) |
-| Phù Đảo Các (điểm vào; đình dời khỏi trục điểm sinh để camera sau lưng không kẹt trong mái đình) | ![](hub.jpg) |
-| Tùng Đài Đảo | ![](zone-tung-dai-dao.jpg) |
-| Thạch Quy Đảo | ![](zone-thach-quy-dao.jpg) |
-| Kính Hồ Đảo | ![](zone-kinh-ho-dao.jpg) |
-| Lôi Vân Đảo | ![](zone-loi-van-dao.jpg) |
-| Kình Ngư Đài | ![](zone-kinh-ngu-dai.jpg) |
-| Đình Phù Đảo | ![](poi-phu-dao-dinh.jpg) |
-| Cầu Xích Mây (điểm) | ![](poi-cau-xich-may.jpg) |
-| Kính Hồ Đài | ![](poi-kinh-ho-dai.jpg) |
-| Đỉnh Sấm | ![](poi-dinh-sam.jpg) |
-| Vực Kình Ngư | ![](poi-vuc-kinh-ngu.jpg) |
-| Cầu xích, nhìn dọc cầu | ![](cau-xich.jpg) |
-| Giữa cầu | ![](cau-giua.jpg) |
-| Bước ra mép cầu, đang rơi | ![](roi-khoi-cau.jpg) |
-| Sàn mây (chỗ trống xa mọi đảo và cầu; nhân vật và mặt sàn rõ) | ![](san-may.jpg) |
-| Sàn mây ngay sau khi rơi khỏi cầu (đứng dưới gầm cầu, còn nguyên máu) | ![](san-may-gam-cau.jpg) |
-| Thang mây (chân thang trên sàn mây nhìn lên) | ![](thang-may.jpg) |
-| Đảo giả khi chưa quét (trông như đảo thật) | ![](dao-gia-truoc.jpg) |
-| Đảo giả sau khi quét thần thức | ![](dao-gia-sau-quet.jpg) |
+| Bố cục nhìn từ trên (map:report: đảo, cầu, tinh anh vàng) | ![](layout-topdown.webp) |
+| Nền minimap | _(ảnh đã gỡ)_ |
+| Bản đồ lớn (phím M) | ![](worldmap.webp) |
+| Phù Đảo Các (điểm vào; đình dời khỏi trục điểm sinh để camera sau lưng không kẹt trong mái đình) | ![](hub.webp) |
+| Tùng Đài Đảo | _(ảnh đã gỡ)_ |
+| Thạch Quy Đảo | _(ảnh đã gỡ)_ |
+| Kính Hồ Đảo | ![](zone-kinh-ho-dao.webp) |
+| Lôi Vân Đảo | _(ảnh đã gỡ)_ |
+| Kình Ngư Đài | _(ảnh đã gỡ)_ |
+| Đình Phù Đảo | _(ảnh đã gỡ)_ |
+| Cầu Xích Mây (điểm) | _(ảnh đã gỡ)_ |
+| Kính Hồ Đài | _(ảnh đã gỡ)_ |
+| Đỉnh Sấm | _(ảnh đã gỡ)_ |
+| Vực Kình Ngư | _(ảnh đã gỡ)_ |
+| Cầu xích, nhìn dọc cầu | ![](cau-xich.webp) |
+| Giữa cầu | _(ảnh đã gỡ)_ |
+| Bước ra mép cầu, đang rơi | _(ảnh đã gỡ)_ |
+| Sàn mây (chỗ trống xa mọi đảo và cầu; nhân vật và mặt sàn rõ) | _(ảnh đã gỡ)_ |
+| Sàn mây ngay sau khi rơi khỏi cầu (đứng dưới gầm cầu, còn nguyên máu) | _(ảnh đã gỡ)_ |
+| Thang mây (chân thang trên sàn mây nhìn lên) | _(ảnh đã gỡ)_ |
+| Đảo giả khi chưa quét (trông như đảo thật) | _(ảnh đã gỡ)_ |
+| Đảo giả sau khi quét thần thức | _(ảnh đã gỡ)_ |
 
 ## Còn lại / để cho gói khác
 

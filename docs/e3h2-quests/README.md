@@ -1,5 +1,7 @@
 # E3-H2: hai nhiệm vụ phụ chương 3 còn thiếu · Vân Hải
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3h2-quests/<file>`.
+
 Nối tiếp E3-H (`docs/e3h-quests/`). Cả hai giao và trả ở Lâm Chiếu Dung (Phù Đảo Các), dùng loại mục tiêu có sẵn của E2-H (`escort`, `touch`; server chấm ở `apps/server/src/game/questobj.ts`), không thêm mã server mới.
 
 | Nhiệm vụ | Yêu cầu | Mục tiêu | Thưởng |
