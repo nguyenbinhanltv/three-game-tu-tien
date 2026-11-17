@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_tam_thu_nguc_khuyen",
+  "type": "mon",
+  "budgetClass": "boss",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 36000,
+    "texture": 2048
+  },
+  "sculpt": {
+    "source": "boss/boss_tam_thu_nguc_khuyen/online/source.glb",
+    "out": "boss/boss_tam_thu_nguc_khuyen/rig/rig_v01.glb",
+    "yaw": -14.4,
+    "faces": 36000,
+    "texture": 2048,
+    "emissive": { "min": 0.16, "gain": 3.0, "strength": 1.4 },
+    "bones": []
+  },
+  "license": {
+    "source": "\"GORETHRAX // The Infernal Three- Headed Hound\" của 6 (Atahan3D) trên Sketchfab, CC BY 4.0. Đã chỉnh sửa: giảm lưới 980 nghìn → 36 nghìn tam giác, trải UV và nướng lại texture, dựng xương + trọng số (tools/blender/sculpt_rig.py), clip thủ tục (tools/blender/anim_quadruped.py)",
+    "owner": "6 (https://sketchfab.com/Atahan3D)",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/gorethrax-the-infernal-three-headed-hound-90f3e2338d6f41b8a94f376fbc3db3e4",
+    "spdx": "CC-BY-4.0"
+  }
+}
