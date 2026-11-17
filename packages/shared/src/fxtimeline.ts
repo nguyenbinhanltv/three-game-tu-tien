@@ -23,7 +23,13 @@ export type FxShape =
   /** Dải xoắn quanh một trục (vòng xoắn của phi kiếm). */
   | 'helix'
   /** Dải xoắn mảnh (nét bút lông) cho vòng lụa cỡ lớn quanh một vùng: bề rộng dải chỉ bằng 1/3 `helix` khi phóng to. */
-  | 'ribbon';
+  | 'ribbon'
+  /** Pháp tướng rồng: ống thon cuộn xoắn quanh một trục đứng, đầu ở đỉnh (kiểu `crystal`, mọc từ đuôi lên đầu). */
+  | 'dragon'
+  /** Pháp tướng tượng ngồi (La Hán): thân tròn xoay dựng từ đài sen tới đầu, cao ~4,2 m ở scale 1 (kiểu `crystal`). */
+  | 'statue'
+  /** Thẻ pháp tướng vẽ 2D quay mặt về camera (kiểu `card`); chọn tranh bằng `card`. */
+  | 'card';
 
 /** Bố trí gốc của sự kiện. */
 /** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
@@ -71,6 +77,10 @@ export interface FxMeshEvent extends FxBase {
   billboard?: boolean;
   /** Bay từ gốc sang `to` trong `dur` (phi kiếm lao, kiếm khí bay): gốc → đích, đơn vị mét hoặc theo neo. */
   move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear'; /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number] };
+  /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh). */
+  card?: 'arhat' | 'phoenix';
+  /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
+  keepUp?: boolean;
   /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */
   spin?: number;
   /** Seed hình (mặc định theo lần phát). */
@@ -147,6 +157,13 @@ export interface FxBoltEvent extends FxBase {
   seed?: number;
 }
 
+/** Kéo camera ra xa nhẹ (chỉ của mình): `pull` = hệ số khoảng cách thêm (0..0,4), lên trong 0,4 s, giữ rồi hạ trong 0,6 s cuối của `dur`. */
+export interface FxCameraEvent extends FxBase {
+  type: 'camera';
+  pull: number;
+  dur: number;
+}
+
 export interface FxFlashEvent extends FxBase {
   type: 'flash';
   /** Độ chớp toàn cảnh 0..0,3 (tắt theo công tắc rung màn hình? không: giới hạn cứng để không lóa). */
@@ -159,7 +176,7 @@ export interface FxSoundEvent extends FxBase {
   gain?: number;
 }
 
-export type FxEvent = FxMeshEvent | FxParticleEvent | FxDecalEvent | FxTrailEvent | FxHitstopEvent | FxShakeEvent | FxFlashEvent | FxSoundEvent | FxBoltEvent;
+export type FxEvent = FxMeshEvent | FxParticleEvent | FxDecalEvent | FxTrailEvent | FxHitstopEvent | FxShakeEvent | FxFlashEvent | FxSoundEvent | FxBoltEvent | FxCameraEvent;
 
 export interface FxTimeline {
   /** id chiêu (khớp `skills.json`/`methods.json`). */
@@ -245,6 +262,7 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'hitstop' && !(e.ms >= 40 && e.ms <= 80)) errs.push(`${p}: hitstop ${e.ms} ms ngoài 40–80`);
       if (e.type === 'shake' && !(e.level >= 0 && e.level <= 0.6)) errs.push(`${p}: rung ${e.level} ngoài 0–0,6`);
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);
+      if (e.type === 'camera' && !(e.pull >= 0 && e.pull <= 0.4 && e.dur > 0 && e.dur <= 4)) errs.push(`${p}: camera pull=${e.pull} dur=${e.dur} ngoài (0–0,4, ≤ 4 s)`);
       if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 2))) errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 2]`);
       if (e.type === 'particles' && !(e.n > 0 && e.n <= 400)) errs.push(`${p}: hạt n=${e.n} ngoài (0, 400]`);
     }

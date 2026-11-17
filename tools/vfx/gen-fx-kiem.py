@@ -155,6 +155,9 @@ import recipes_c  # noqa: E402
 recipes_b.register(R, dict(mesh=mesh, parts=parts, decal=decal, stop=stop, shake=shake, flash=flash, ring_spikes=ring_spikes))
 
 recipes_c.register(R, dict(mesh=mesh, parts=parts, decal=decal, stop=stop, shake=shake, flash=flash, ring_spikes=ring_spikes))
+import recipes_d  # noqa: E402
+
+recipes_d.register(R, dict(mesh=mesh, parts=parts, flash=flash))
 
 if __name__ == '__main__':
     want = sys.argv[1:] or list(R)

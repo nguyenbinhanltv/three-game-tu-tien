@@ -39,6 +39,8 @@ export interface FxRunnerEnv {
   hitStopOn(): boolean;
   shake(level: number, dir?: { x: number; z: number }): void;
   flash(amount: number): void;
+  /** Kéo camera ra xa nhẹ (pháp tướng): hệ số khoảng cách thêm và thời lượng (giây). */
+  camPull(pull: number, dur: number): void;
   sound(id: string, gain: number, sid: string): void;
   /** Vùng của chiêu diện rộng gần nhất của `sid` (S.FX x, z, r). */
   areaOf(sid: string): { x: number; z: number; r: number } | null;
@@ -266,6 +268,9 @@ export class FxRunner {
         this.v.lightning(p.x, p.y, p.z, toneOf(c.pal, ev.tone ?? 'rim'), ev.scale ?? 1, ev.seed ?? Math.floor(c.seed * 100 + s.idx), 0);
         break;
       }
+      case 'camera':
+        if (c.mine) this.env.camPull(ev.pull, ev.dur);
+        break;
       case 'flash':
         if (c.mine) this.env.flash(Math.min(0.3, ev.amount));
         break;
@@ -299,7 +304,7 @@ export class FxRunner {
     const spin = (ev.spin ?? 0) * DEG;
     // Hướng thân hình: theo hướng bay nếu có `move` (mũi dài +Z hướng về đích), không thì theo hướng nhìn.
     const baseQ = new THREE.Quaternion();
-    if (end) {
+    if (end && !ev.keepUp) {
       _a.subVectors(end, start);
       if (_a.lengthSq() > 1e-4) baseQ.setFromUnitVectors(AXIS_Z, _a.normalize());
     } else baseQ.setFromAxisAngle(UP, yaw);
@@ -350,6 +355,9 @@ export class FxRunner {
           } else if (kind === 'crystal') {
             m.fxA.x = Math.min(1.2, (k / Math.max(sweep, 1e-3)) * 1.2);
             m.fxA.y = erode;
+          } else if (kind === 'card') {
+            m.fxA.x = Math.min(1.2, (k / Math.max(sweep, 1e-3)) * 1.2);
+            m.fxA.y = erode;
           } else if (kind === 'burst') {
             m.fxA.x = easeOut(Math.min(1, k * 1.2));
             m.fxA.y = Math.min(1, k * k * 1.4);
@@ -378,7 +386,7 @@ export class FxRunner {
   private style(m: FxMesh, pal: FxPalette, ev: FxMeshEvent, kind: string): void {
     _col.setHex(pal.rim);
     m.fxB.set(_col.r, _col.g, _col.b, ev.ragged ?? 0.5);
-    m.fxA.w = kind === 'decal' ? DECAL_SMOKE : 0;
+    m.fxA.w = kind === 'decal' ? DECAL_SMOKE : kind === 'card' ? (ev.card === 'phoenix' ? 1 : 0) : 0;
     m.fxA.z = ev.seed ?? 0;
   }
 
