@@ -13,6 +13,7 @@ import {
   type LevelDef,
   type ObjectiveDef,
   PF_DEAD,
+  PF_SOUL,
   questSpot,
   S,
   type SpiritHit,
@@ -36,6 +37,9 @@ interface Convoy {
   /** Khóa trạng thái đã gửi lần cuối (không gửi lặp). */
   sent: string;
 }
+
+/** Điểm `touch` có tiền tố này chỉ tính khi người chơi đang ở dạng nguyên anh xuất khiếu (cờ `PF_SOUL`). */
+export const SOUL_SPOT_PREFIX = 'phong_an_mon_';
 
 /** Nhịp chấm mục tiêu (ms). */
 const STEP_MS = 250;
@@ -78,7 +82,10 @@ export class QuestObjSystem {
   private touch(p: PlayerEnt, lv: LevelDef): void {
     for (const o of openObjectives(p, 'touch')) {
       const spot = questSpot(lv, o.target);
-      if (spot && Math.hypot(p.move.x - spot.x, p.move.z - spot.z) <= TOUCH_R && !p.move.flying) {
+      // Môn phong ấn (E4-H) chỉ nguyên anh xuất khiếu chạm được (bay là bình thường); điểm khác phải đi bộ.
+      const soulOnly = !!spot && spot.id.startsWith(SOUL_SPOT_PREFIX);
+      const ok = soulOnly ? (p.s.fl & PF_SOUL) !== 0 : !p.move.flying;
+      if (spot && ok && Math.hypot(p.move.x - spot.x, p.move.z - spot.z) <= TOUCH_R) {
         this.h.questEvent(p, 'touch', spot.id, 1);
         this.h.sys(p, 'sys.touch_ok', { name: t(spot.nameKey) }, 'good');
       }

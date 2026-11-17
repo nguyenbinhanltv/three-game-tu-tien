@@ -1083,6 +1083,31 @@ console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILL
   if (na && !na.objectives.some((o) => o.type === 'breakthrough' && o.target === 'nguyen_anh')) err('q3_nguyen_anh phải có mục tiêu breakthrough nguyen_anh');
 }
 
+// Chuỗi chương 4 (E4-H): q4_* nối đuôi từ q3_nguyen_anh tới q4_hoa_than; phụ s4_* nhận sau khi vào chương; mục tiêu chỉ vào điểm/quái có thật.
+{
+  const main4 = ['q4_bac_len', 'q4_thach_tuong', 'q4_da_minh', 'q4_xuat_khieu', 'q4_chien_ma', 'q4_thu_linh', 'q4_than_tang', 'q4_tra_mach', 'q4_hoa_than'];
+  main4.forEach((id, i) => {
+    const q = QUEST.get(id);
+    if (!q) return err(`thiếu nhiệm vụ chính chương 4 ${id}`);
+    const want = i === 0 ? 'q3_nguyen_anh' : main4[i - 1];
+    if (q.requires !== want) err(`quest ${id}: phải requires ${want}`);
+  });
+  for (const q of QUESTS) if (q.id.startsWith('s4_') && !q.requires?.startsWith('q4_')) err(`quest ${q.id}: phụ chương 4 phải requires một q4_*`);
+  const first = QUEST.get('q4_bac_len');
+  if (first && !(first.unlockTele ?? []).includes('tk_tp_tram')) err('q4_bac_len phải mở trận tk_tp_tram (unlockTele)');
+  const hn = QUEST.get('q4_hoa_than');
+  if (hn && !hn.objectives.some((o) => o.type === 'breakthrough' && o.target === 'hoa_than')) err('q4_hoa_than phải có mục tiêu breakthrough hoa_than');
+  const tk = LEVELS.thien_khuyet;
+  for (const q of QUESTS) {
+    if (!q.id.startsWith('q4_') && !q.id.startsWith('s4_')) continue;
+    for (const o of q.objectives) {
+      if ((o.type === 'touch' || o.type === 'scan') && !tk.pois?.some((p) => p.id === o.target) && !tk.spots?.some((p) => p.id === o.target)) err(`quest ${q.id}: điểm ${o.target} không có ở thien_khuyet`);
+      if (o.type === 'escort' && !tk.escorts?.some((e) => e.id === o.target)) err(`quest ${q.id}: escort ${o.target} không có ở thien_khuyet`);
+      if (o.type === 'scan' && !tk.pois?.some((p) => p.id === o.target)) err(`quest ${q.id}: scan ${o.target} phải là poi (spots không hiện trong bản quét)`);
+    }
+  }
+}
+
 // ---- Ghi công (DV1-B): credits.json đối chiếu meta.json + assets/LICENSES.md ----
 {
   const root = fileURLToPath(new URL('../../../assets/', import.meta.url));
