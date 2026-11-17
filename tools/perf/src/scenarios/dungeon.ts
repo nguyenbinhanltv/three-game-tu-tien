@@ -59,6 +59,32 @@ export default {
         await shot(`${tag}-giai-xong`);
         continue;
       }
+      if (wave.seals) {
+        // Đợt phong ấn (E4-C): thân xác bị chặn ở hốc; cửa 1 mở bằng nguyên anh xuất khiếu (X) chạm trận môn, các cửa còn lại bằng Phá Ấn Phù.
+        const [first, ...rest] = wave.seals.doors;
+        await gm(page, `tp ${c.x} ${c.z}`, 900);
+        await cam(page, { pitch: 0.7, dist: 46, yaw: 0 });
+        await shot(`${tag}-phong-an`, 2500);
+        await gm(page, `tp ${first.gx} ${first.gz}`, 1200);
+        await shot(`${tag}-chan-than-xac`);
+        await gm(page, `tp ${first.x} ${first.z + 4}`, 900);
+        await page.keyboard.press('KeyX');
+        await cam(page, { pitch: 0.5, dist: 16, yaw: 0 });
+        await shot(`${tag}-xuat-khieu`, 1500);
+        await gm(page, `tp ${first.gx} ${first.gz}`, 1500);
+        await shot(`${tag}-cua-1-mo`);
+        await page.keyboard.press('KeyX');
+        await gm(page, 'bag clear', 800);
+        await gm(page, `give itm_pha_an_phu ${rest.length + 1}`, 900);
+        for (const [i, d] of rest.entries()) {
+          await gm(page, `tp ${d.x} ${d.z + 4}`, 1200);
+          // Túi đã dọn: bùa nằm ở một trong vài ô đầu; ô trống bị server bỏ qua nên thử lần lượt.
+          for (let slot = 0; slot < 6; slot++, await sleep(250)) await page.evaluate(([sl, r]) => window.__game!.send('use', { slot: sl, r }), [slot, `pap-${i}-${slot}-${Date.now()}`] as const);
+          await shot(`${tag}-cua-${i + 2}-pha-an-phu`, 1500);
+        }
+        log[`${tag}-phong-an`] = { opened: /Ba cửa phong ấn đã mở/.test(await page.evaluate(() => document.body.innerText)) };
+        await gm(page, `tp ${c.x} ${c.z}`, 900);
+      }
       const lead = wave.mons[wave.mons.length - 1].id;
       const boss = lead.startsWith('boss_');
       if (!(await waitMonster(page, lead, 45_000))) {

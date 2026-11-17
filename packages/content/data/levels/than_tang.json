@@ -1,0 +1,222 @@
+{
+  "id": "than_tang",
+  "terrain": "van_lam",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1520,
+      "z": 1352
+    },
+    "exit": {
+      "x": 1520,
+      "z": 1370
+    },
+    "center": {
+      "x": 1520,
+      "z": 1300
+    },
+    "minLevel": 26,
+    "returnLevel": "thien_khuyet",
+    "returnSpawn": {
+      "x": 1044,
+      "z": 272
+    },
+    "bound": 90,
+    "private": true,
+    "lockAt": 2,
+    "maxRevives": 2,
+    "waves": [
+      {
+        "mons": [
+          {
+            "id": "mon_tt_cot_ve",
+            "level": 26,
+            "n": 10
+          }
+        ],
+        "delay": 8
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_tt_thach_tuong",
+            "level": 26,
+            "n": 4
+          },
+          {
+            "id": "mon_tt_chien_ma",
+            "level": 26,
+            "n": 2
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "elite_tt_cot_kiem",
+            "level": 26,
+            "n": 1
+          }
+        ],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_tt_cot_ve",
+            "level": 26,
+            "n": 6
+          }
+        ],
+        "title": true,
+        "seals": {
+          "doors": [
+            {
+              "x": 1477,
+              "z": 1284,
+              "gx": 1458,
+              "gz": 1277
+            },
+            {
+              "x": 1520,
+              "z": 1254,
+              "gx": 1520,
+              "gz": 1234
+            },
+            {
+              "x": 1563,
+              "z": 1284,
+              "gx": 1582,
+              "gz": 1277
+            }
+          ],
+          "touch": 3.5,
+          "phuR": 7,
+          "bar": 8,
+          "reinforce": {
+            "mon": "mon_tt_cot_ve",
+            "level": 26,
+            "n": 4
+          }
+        }
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_tt_thach_tuong",
+            "level": 27,
+            "n": 6
+          },
+          {
+            "id": "mon_tt_cot_ve",
+            "level": 27,
+            "n": 4
+          },
+          {
+            "id": "elite_tt_cot_kiem",
+            "level": 27,
+            "n": 1
+          }
+        ],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_vo_dien_than_quan",
+            "level": 27,
+            "n": 1
+          }
+        ],
+        "title": true
+      }
+    ],
+    "reward": {
+      "xpPct": 0.15,
+      "gold": [
+        3200,
+        4400
+      ],
+      "level": 27,
+      "items": [
+        {
+          "item": "itm_tinh_quang_mac",
+          "chance": 1,
+          "min": 4,
+          "max": 6
+        },
+        {
+          "item": "itm_than_tang_ngoc",
+          "chance": 1,
+          "min": 2,
+          "max": 3
+        },
+        {
+          "item": "itm_co_thanh_phien",
+          "chance": 0.7,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "itm_pha_an_phu",
+          "chance": 0.5,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "itm_tu_khi_dan",
+          "chance": 1,
+          "min": 2,
+          "max": 3
+        }
+      ],
+      "equip": [
+        {
+          "chance": 0.5,
+          "q": [
+            0,
+            0,
+            0,
+            70,
+            30
+          ],
+          "set": "set_tinh_khuyet"
+        },
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_tinh_khuyet"
+        },
+        {
+          "chance": 0.35,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_co_thanh"
+        },
+        {
+          "chance": 0.35,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_than_tang"
+        }
+      ]
+    }
+  }
+}

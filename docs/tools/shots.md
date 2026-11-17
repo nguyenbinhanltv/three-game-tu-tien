@@ -23,7 +23,7 @@ Chung cho mọi kịch bản:
 | `points` | Cảnh cố định theo điểm; Vân Lam có 13 điểm đặt tay (mặc định 5: `san,sondao,rung,ho,dinh`), level khác suy từ dữ liệu (tâm vùng, điểm đáng chú ý, tinh anh, boss, toàn cảnh) | Ảnh trước/sau khi đổi render; duyệt bản đồ mới | `--level`, `--points a,b\|all`, `--renderers`, `--presets`, `--size`, `--query`, `--perf`, `--dry` |
 | `map` | Minimap (cắt riêng) + cả màn hình + bản đồ lớn (phím M) | Sau `pnpm minimap:build`, đổi `zones`, sửa UI bản đồ | `--level`, `--sizes 1080p,1440p,4k`, `--dpr` |
 | `mons` | Từng loại quái của một level, gọi ở đúng bãi của nó: dãy khung vạch báo + chết; boss thêm pha 65% và 25% máu; ghi `hazards.json` | Duyệt quái/tinh anh/boss mới, soát VFX quái | `--level`, `--only id,id`, `--frames` |
-| `dungeon` | Chạy hết một phó bản theo `DungeonDef`: cổng thật, từng đợt, vạch báo + pha boss, đố ba gương, hoàn thành | Phó bản mới hoặc đổi đợt/boss | `--level phuc_mach\|kinh_nguyet\|…` |
+| `dungeon` | Chạy hết một phó bản theo `DungeonDef`: cổng thật, từng đợt, vạch báo + pha boss, đố ba gương, đợt phong ấn, hoàn thành | Phó bản mới hoặc đổi đợt/boss | `--level phuc_mach|kinh_nguyet|than_tang`\|kinh_nguyet\|…` |
 | `asset` | Trang xem asset: tấm xoay 4 hướng + tấm clip (mỗi clip N khung) | Sau khi nhập/sửa model, rig, clip thủ tục | `--ids a,b` hoặc `--group boss_\|elite_\|mon_\|prop_`, `--clips`, `--frames` |
 | `vfx` | Mỗi chiêu hai webm (chậm 0,25× và thật) + tờ dãy khung có mốc hit; cả FX quái (`mon:<loại>`) và cảnh lớn (`scene_*`) | Sửa timeline `data/fx/*.json`, shader VFX, cảm giác đòn | `--skills`, `--genders`, `--fxq`, `--level`, `--old`, `--perf`, `--crowd N` |
 | `outfit` | Bộ trang bị mặc thật (áo + phụ kiện) nam/nữ: đứng 3 hướng, chạy, bay, đả tọa, chém | Thêm/sửa bộ, áo `set_*`, phụ kiện, kiếm | `--sets`, `--kit <bậc> --sets kiem,hophap,dansu`, `--genders`, `--only still\|motion`, `--panel`, `--matrix`, `--query outfit=0` |
@@ -53,11 +53,11 @@ Lưu ý: hàm truyền vào `page.evaluate` không khai báo hàm có tên bên 
 | Lệnh cũ | Nay |
 | --- | --- |
 | `shots` | `shots points` (mặc định) |
-| `shots:e2a`, `shots:e3a`, `shots:e4a` | `shots points --level doan_mach\|van_hai\|thien_khuyet`, bản đồ: `shots map --level …` |
+| `shots:e2a`, `shots:e3a`, `shots:e4a` | `shots points --level doan_mach\|van_hai\|thien_khuyet`, bản đồ: `shots map --level `--level phuc_mach|kinh_nguyet|than_tang` |
 | `shots:minimap`, `shots:m4` (phần ảnh bản đồ) | `shots map` |
-| `shots:e2b`, `shots:e3b`, `shots:e4b`, `shots:elitegame` | `shots mons --level …` |
-| `shots:e2c`, `shots:e3m` | `shots dungeon --level phuc_mach\|kinh_nguyet` |
-| `shots:boss`, `shots:elite`, `shots:props`, `shots:e0` | `shots asset --group …` / `--ids …` |
+| `shots:e2b`, `shots:e3b`, `shots:e4b`, `shots:elitegame` | `shots mons --level `--level phuc_mach|kinh_nguyet|than_tang` |
+| `shots:e2c`, `shots:e3m`, `shots:e4c` | `shots dungeon --level phuc_mach|`--level phuc_mach|kinh_nguyet|than_tang`|than_tang` |\|kinh_nguyet` |
+| `shots:boss`, `shots:elite`, `shots:props`, `shots:e0` | `shots asset --group `--level phuc_mach|kinh_nguyet|than_tang` / `--ids …` |
 | `shots:vfx` | `shots vfx` (bỏ `--lab3`, `--debug`) |
 | `shots:outfit`, `shots:sets` | `shots outfit` |
 | `shots:chrv2` | `shots chrv2` |

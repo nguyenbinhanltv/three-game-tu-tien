@@ -15,7 +15,7 @@ export const MAX_FILE = 400 * 1024;
 export const MAX_TOTAL = 60 * 1024 * 1024;
 const MEDIA = /\.(png|jpe?g|webp|gif|avif|svg|webm|mp4|mov)$/i;
 /** Thư mục của hạng mục đang làm dở lúc R-1 (worker khác giữ): miễn luật PNG/kích thước từng file, vẫn tính vào tổng. Gỡ ở R-2. */
-const EXEMPT = ['docs/e4-c/'];
+const EXEMPT = [];
 /** File md của bên thứ ba, không kiểm liên kết. */
 const SKIP_MD = ['.claude/skills/guizang-game-skill/'];
 
