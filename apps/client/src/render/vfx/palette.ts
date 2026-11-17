@@ -18,8 +18,8 @@ export const FX_PALETTE: Record<string, FxPalette> = {
   lac_kiem_quyet: { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xf2fdff, accent: 0xf3c860, shadow: 0x08202e },
   // Hộ pháp (Thổ): hổ phách và vàng kim, bóng nâu.
   bat_dong_kim_than: { core: 0x5a2d0b, body: 0xe39a2c, rim: 0xfff0c2, accent: 0xffd25a, shadow: 0x2a1708 },
-  // Đan sư (Mộc/Hỏa): ngọc lục và đỏ son.
-  thanh_moc_dan_kinh: { core: 0x0d4a30, body: 0x37c98a, rim: 0xeaffef, accent: 0xe4452f, shadow: 0x0a261a },
+  // Đan sư (Mộc/Hỏa): ngọc lục đậm và đỏ son; viền ngả lục nhạt (không trắng) để không nhạt trên nền sáng.
+  thanh_moc_dan_kinh: { core: 0x06301f, body: 0x23b374, rim: 0x9fe9bd, accent: 0xe4452f, shadow: 0x071c13 },
   // Lôi: tím và trắng.
   loi: { core: 0x3a1670, body: 0x9a63ff, rim: 0xf5eeff, accent: 0xffe27a, shadow: 0x1a0c33 },
 };

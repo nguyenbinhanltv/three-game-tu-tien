@@ -26,8 +26,8 @@
    "dur": 2.8,
    "at": "area",
    "grow": 0.45,
-   "tone": "body",
-   "alpha": 0.7,
+   "tone": "core",
+   "alpha": 0.9,
    "tier": 0
   },
   {

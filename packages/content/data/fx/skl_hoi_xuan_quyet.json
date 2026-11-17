@@ -31,8 +31,8 @@
     0
    ],
    "grow": 0.3,
-   "tone": "body",
-   "alpha": 0.9,
+   "tone": "core",
+   "alpha": 0.95,
    "tier": 0
   },
   {
