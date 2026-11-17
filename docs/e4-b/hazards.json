@@ -1,0 +1,123 @@
+{
+  "mon_thach_tuong_vo_si": [
+    {
+      "sh": "cone",
+      "r": 6,
+      "w": 0.6108652381980153
+    }
+  ],
+  "mon_da_minh_loc": [
+    {
+      "mv": "charge",
+      "sh": "rect",
+      "r": 10,
+      "w": 2
+    }
+  ],
+  "mon_cot_ve_kiem_thu": [],
+  "mon_co_thanh_chien_ma": [
+    {
+      "mv": "line",
+      "sh": "rect",
+      "r": 8,
+      "w": 2.5
+    }
+  ],
+  "elite_thach_tuong_dai_tuong": [
+    {
+      "sh": "cone",
+      "r": 12,
+      "w": 0.5235987755982988
+    },
+    {
+      "mv": "line",
+      "sh": "rect",
+      "r": 14,
+      "w": 3
+    }
+  ],
+  "elite_da_minh_loc_vuong": [
+    {
+      "sh": "circle",
+      "r": 6
+    },
+    {
+      "mv": "charge",
+      "sh": "rect",
+      "r": 14,
+      "w": 2
+    }
+  ],
+  "elite_cot_kiem_thong_linh": [
+    {
+      "mv": "leap",
+      "sh": "circle",
+      "r": 3.5
+    },
+    {
+      "mv": "line",
+      "sh": "rect",
+      "r": 10,
+      "w": 3
+    }
+  ],
+  "boss_thien_khuyet_thu_linh": [
+    {
+      "sh": "circle",
+      "r": 8
+    }
+  ],
+  "boss_thien_khuyet_thu_linh-hurt65": [
+    {
+      "sh": "circle",
+      "r": 8
+    },
+    {
+      "mv": "line",
+      "sh": "rect",
+      "r": 20,
+      "w": 4
+    }
+  ],
+  "boss_thien_khuyet_thu_linh-hurt25": [
+    {
+      "sh": "circle",
+      "r": 8
+    },
+    {
+      "mv": "summon",
+      "sh": "circle",
+      "r": 1.6
+    },
+    {
+      "mv": "summon",
+      "sh": "circle",
+      "r": 1.6
+    },
+    {
+      "sh": "cone",
+      "r": 14,
+      "w": 0.6981317007977318
+    },
+    {
+      "sh": "cone",
+      "r": 6,
+      "w": 0.6108652381980153
+    },
+    {
+      "sh": "circle",
+      "r": 8
+    },
+    {
+      "sh": "cone",
+      "r": 6,
+      "w": 0.6108652381980153
+    },
+    {
+      "mv": "line",
+      "sh": "rect",
+      "r": 20,
+      "w": 4
+    }
+  ]
+}

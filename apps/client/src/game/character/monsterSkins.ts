@@ -137,6 +137,10 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_da_minh_loc: { asset: 'mon_da_minh_loc', clips: WOLF_CLIPS, refSpeed: 2.9, legs: 'quad', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
   mon_cot_ve_kiem_thu: { asset: 'mon_cot_ve_kiem_thu', clips: WOLF_CLIPS, refSpeed: 2.1, legs: 'biped', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
   mon_co_thanh_chien_ma: { asset: 'mon_co_thanh_chien_ma', clips: WOLF_CLIPS, refSpeed: 2.7, legs: 'biped', tint: '#ffffff', lazy: true, level: 'thien_khuyet' },
+  // Tinh anh Thiên Khuyết (E4-B): skin E-1b trong ELITE_SKINS_NEW.
+  elite_thach_tuong_dai_tuong: { ...ELITE_SKINS_NEW.elite_thach_tuong_dai_tuong, level: 'thien_khuyet' },
+  elite_da_minh_loc_vuong: { ...ELITE_SKINS_NEW.elite_da_minh_loc_vuong, level: 'thien_khuyet' },
+  elite_cot_kiem_thong_linh: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh, level: 'thien_khuyet' },
   // ---- Boss mở rộng (E-2/E-3/E-4): asset đã nhập, chưa có quái trong monsters.json; thêm quái cùng id là chạy. Nạp lười theo
   // màn (id màn là dự kiến của E-2..E-4, đổi `level` cho khớp LevelDef khi có). refSpeed (m/s ở scale 1, model theo kích thước thật)
   // tính từ sải chân của clip run (docs/boss-import/README.md). Đòn lớn khớp tools/blender/anim_{quadruped,serpent,biped_extra}.py.

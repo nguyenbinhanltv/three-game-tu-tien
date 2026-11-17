@@ -38,6 +38,7 @@
     "shots:e3a": "tsx src/shots-e3a.ts",
     "shots:e2b": "tsx src/shots-e2b.ts",
     "shots:e3b": "tsx src/shots-e3b.ts",
+    "shots:e4b": "tsx src/shots-e4b.ts",
     "shots:e3j": "tsx src/shots-e3j.ts",
     "shots:e2c": "tsx src/shots-e2c.ts",
     "shots:e3m": "tsx src/shots-e3m.ts",
