@@ -199,16 +199,16 @@ const K3_DELAY = 1500;
 /** `?outfit=0` tắt áo bộ trang bị mặc thật, về đường recolor + phụ kiện thủ tục (so ảnh, số đo). */
 const OUTFIT_Q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('outfit') : null;
 const OUTFIT_OFF = OUTFIT_Q === '0';
-/** `?outfit=set_kinh_quang_kiem_y` ép mọi bộ đang mặc dùng áo này (xem áo của bộ chưa có trong dữ liệu, chụp ảnh). */
-/** Nhân vật nền v2 (MakeHuman + đầu/tóc Tripo) là mặc định; `?chr=v1` về hai model Tripo cũ để so sánh. */
-const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') === 'v2'; // v1 (hai model Tripo cũ) là mặc định; `?chr=v2` bật v2. Không có location (test node): v1
+/** v1 (hai model Tripo cũ) là mặc định; `?chr=v2` bật nhân vật nền v2 (MakeHuman + đầu/tóc Tripo). */
+const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') === 'v2'; // Không có location (test node): v1
 /** Nhân vật nền v2 đang bật (chỉ khi `?chr=v2`): UI chọn kiểu tóc A/B chỉ hiện khi true. */
 export const CHR_V2_ON = CHR_V2;
 /** `?hair=b` ép kiểu tóc B khi không có lựa chọn của người chơi (thử, chụp ảnh). */
 const CHR_V2_HAIR = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hair') : null;
+/** `?outfit=set_kinh_quang_kiem_y` ép mọi bộ đang mặc dùng áo này (xem áo của bộ chưa có trong dữ liệu, chụp ảnh). */
 const OUTFIT_FORCE = OUTFIT_Q && OUTFIT_Q !== '0' ? OUTFIT_Q : null;
 
-/** Id asset model người chơi của giới tính (và kiểu tóc): v2 mặc định, `?chr=v1` model cũ. Dùng cho prefetch lúc vào game. */
+/** Id asset model người chơi của giới tính (và kiểu tóc): v1 mặc định, `?chr=v2` model nền v2. Dùng cho prefetch lúc vào game. */
 export function playerModelId(g: string, hair?: string): string | null {
   return modelOf(g, hair);
 }
