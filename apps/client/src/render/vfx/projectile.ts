@@ -79,6 +79,7 @@ interface Live {
   halo: FxMesh;
   shadow: FxMesh;
   trailAcc: number;
+  body: FxMesh;
 }
 
 const _p = { x: 0, z: 0 };
@@ -87,6 +88,14 @@ const _w = new THREE.Color();
 const WHITE = new THREE.Color(0xffffff);
 
 /** Màu lõi: màu loại đòn pha trắng (nóng, đọc rõ trên nền sương). */
+/** Viền/quầng đỏ thẫm của đạn: giữ sắc màu hệ nhưng đẩy về đỏ và tối hơn để tương phản trên nền sáng. */
+export function rimColor(color: number): number {
+  const r = (color >> 16) & 255;
+  const g = (color >> 8) & 255;
+  const b = color & 255;
+  return (Math.min(255, Math.round(r * 1.0 + 40)) << 16) | (Math.round(g * 0.35) << 8) | Math.round(b * 0.3);
+}
+
 export function coreColor(color: number): number {
   return _w.setHex(color).lerp(WHITE, 0.35).getHex();
 }
@@ -108,7 +117,9 @@ export class BoltFx {
     const h = this.host;
     const look = boltLook(m.kind);
     const core = h.fx(look === 'blade' ? SPIKE_GEO : ORB_GEO, coreColor(color), 0.95, 'glow');
-    const halo = h.fx(HALO_GEO, color, 0.22, 'glow');
+    // Quả cầu ba tầng: lõi trắng nóng, thân màu hệ, quầng/đuôi viền đỏ (V5).
+    const body = h.fx(ORB_GEO, color, 0.7, 'glow');
+    const halo = h.fx(HALO_GEO, rimColor(color), 0.3, 'glow');
     const shadow = h.fx(SHADOW_GEO, color, 0.3, 'flat');
     shadow.rotation.x = -Math.PI / 2;
     const b = this.spare.pop() ?? ({} as Live);
@@ -125,6 +136,7 @@ export class BoltFx {
     b.color = color;
     b.look = look;
     b.core = core;
+    b.body = body;
     b.halo = halo;
     b.shadow = shadow;
     b.trailAcc = 0;
@@ -190,8 +202,14 @@ export class BoltFx {
       halo.position.set(_p.x - fx * r * 1.1, y, _p.z - fz * r * 1.1);
     }
     core.fxOpacity = 0.95 * a;
-    halo.fxOpacity = 0.22 * a;
-    core.fxK = halo.fxK = Math.min(1, b.age * 2);
+    halo.fxOpacity = 0.3 * a;
+    const bd = b.body;
+    bd.position.set(_p.x, y, _p.z);
+    bd.rotation.set(0, b.yaw, 0);
+    if (b.look === 'blade') bd.scale.set(r * 0.5, r * 0.2, r * 2.6);
+    else bd.scale.setScalar(r * 1.0 * pulse);
+    bd.fxOpacity = 0.7 * a;
+    core.fxK = halo.fxK = bd.fxK = Math.min(1, b.age * 2);
     shadow.position.set(_p.x, by - BOLT_HEIGHT - b.lift + 0.06, _p.z);
     shadow.scale.setScalar(r * 1.6);
     shadow.fxOpacity = 0.3 * a;
@@ -211,6 +229,7 @@ export class BoltFx {
     const b = this.live[i];
     const h = this.host;
     h.drop(b.core);
+    h.drop(b.body);
     h.drop(b.halo);
     h.drop(b.shadow);
     this.live[i] = this.live[this.live.length - 1];

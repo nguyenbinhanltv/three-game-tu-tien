@@ -139,7 +139,7 @@ async function monAct(page: Page, kind: string, slow: number): Promise<void> {
     if (k === 'hit') { for (let i = 0; i < 4; i++) setTimeout(() => F.hit(mon), (i * 260) / sl); }
     else if (k === 'strike') { for (let i = 0; i < 2; i++) setTimeout(() => F.strike(mon, me || g.cur), (i * 700) / sl); }
     else if (k === 'cast') F.cast(mon);
-    else if (k === 'bolt') { F.bolt(kindOf, mon.x, mon.y + 1, mon.z, yaw, false); setTimeout(() => F.bolt(kindOf, g.cur.x, g.cur.y + 0.8, g.cur.z, 0, true), 700 / sl); }
+    else if (k === 'bolt') { const by = Math.atan2(g.cur.x - mon.x, g.cur.z - mon.z); g.vfx.bolts.spawn({ id: 9001, x: mon.x, z: mon.z, yaw: by, v: 9, r: 0.55, life: 1.4, kind: 'fire', sd: 3, h: 0 }, 0, 0xffa060); F.bolt(kindOf, mon.x, mon.y + 1, mon.z, yaw, false); setTimeout(() => { g.vfx.bolts.end(9001, g.cur.x, g.cur.z, true); F.bolt(kindOf, g.cur.x, g.cur.y + 0.8, g.cur.z, 0, true); }, 1000 / sl); }
     else if (k === 'boom_circle') { const h = hz(undefined, 4.5, 0); F.warn(h, mon); setTimeout(() => F.boom(h, mon), (h.delay * 1000) / sl); }
     else if (k === 'boom_line') { const h = hz('rect', 10, 3, { mv: 'line' }); setTimeout(() => F.boom(h, mon), 300 / sl); }
     else if (k === 'boom_cone') { const h = hz('cone', 12, 3); setTimeout(() => F.boom(h, mon), 300 / sl); }
