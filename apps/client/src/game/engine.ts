@@ -936,6 +936,7 @@ export class Game {
           back.position.set(disc.position.x, disc.position.y, disc.position.z - 0.64);
           back.scale.copy(disc.scale);
           back.userData.still = true;
+          back.userData.op = disc.userData.op;
           this.gateDiscs.push(back);
         }
       }
