@@ -351,7 +351,8 @@ export function cardNodes(U: FxUniforms): { color: N; opacity: N } {
   const base = ramp3(tier, body.mul(body).mul(0.42), body, rim, 0.3, 0.72, 0.05);
   const accCol = ramp3(tier, accent.mul(0.35), accent, mix(accent, vec3(1, 1, 1), 0.35), 0.3, 0.72, 0.05);
   const lit = mix(base, accCol, acc);
-  const fromBottom = one.sub(q.y);
+  // `uv.y` của PlaneGeometry: 0 ở đáy, 1 ở đỉnh, nên q.y chính là độ cao tính từ đáy thẻ.
+  const fromBottom = q.y;
   const reveal = one.sub(smoothstep(reveal0.sub(0.08), reveal0, fromBottom));
   const n = vnoise(q.mul(vec2(9, 12)).add(seed.mul(7)));
   const e = n.mul(0.7).add(fromBottom.mul(0.3));
