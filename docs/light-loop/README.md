@@ -1,5 +1,7 @@
 # Ánh sáng, bầu không khí và soát core loop (PR D)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/light-loop/<file>`.
+
 Theo `docs/AUDIT_AND_ROADMAP.md` (G1, G3, G4, G13, mục 7.6). Chỉ sửa sương, ánh sáng và hậu kỳ; không đụng VFX chiêu (K-6), animation (K-4), sinh quái/AOI (M-2), số cân bằng (3-10).
 
 ## Ánh sáng và bầu không khí
@@ -24,29 +26,22 @@ Số theo preset (`palette.json`, bảng 5.1 của art bible đã cập nhật):
 
 Ảnh đêm của M-5 cho thấy preset đêm tối tới mức thân nhân vật gần như mất, chỉ còn bảng tên. Đã nâng trong `palette.json` (preset `night`): ánh trăng 0,45 → 1,25, ánh trời đêm `#1A2938` × 0,5 → `#3B5873` × 1,0, phơi sáng 0,9 → 1,2, nâng đen `#0B1720` → `#0E1C27`, viền sáng 0,9. Màu sương, sắc bóng, độ bão hòa giữ nguyên: vẫn lam đêm trầm, đèn lồng vẫn là điểm ấm. Xem bằng `?mood=night`.
 
-![Đêm, rừng: trước | sau](dem-truoc-sau-rung.jpg)
 
-![Đêm, sân: trước | sau](dem-truoc-sau-san.jpg)
+![Đêm, sân: trước | sau](dem-truoc-sau-san.webp)
 
 ### Ảnh trước | sau (`pnpm shots`, WebGPU, Vừa; trái là `main`)
 
-![Hồ](truoc-sau-ho.jpg)
 
-![Trên cao](truoc-sau-tren-cao.jpg)
+![Sân tông môn](truoc-sau-san.webp)
 
-![Sân tông môn](truoc-sau-san.jpg)
-
-![Rừng](truoc-sau-rung.jpg)
+![Rừng](truoc-sau-rung.webp)
 
 Rim tắt | bật, hai góc (ngược nắng, xuôi nắng):
 
-![Rim](rim-tat-bat.jpg)
+![Rim](rim-tat-bat.webp)
 
 Độ kiếp sau khi đổi sắc trời, và cảnh hồ trên WebGL2:
 
-![Độ kiếp](do-kiep-lam-dem.jpg)
-
-![WebGL2](webgl2-ho.jpg)
 
 Sân tông môn vẫn còn phẳng: phần còn lại là chất liệu đá lát và bố cục cảnh (việc asset, ngoài phạm vi PR này).
 
@@ -95,13 +90,8 @@ Kịch bản Playwright hai tab trên server dev, nhân vật mới, **không b�
 
 18/19, 0 lỗi console. Ngoài thiên lôi, không thấy lỗi logic nào khác trong vòng lõi. Chưa soát: luyện đan, cường hóa, bí cảnh, mua bán (đã có test riêng và ảnh ở `docs/p3-*`).
 
-![Đánh sói](loop-danh-soi.jpg)
 
-![Tâm ma](loop-tam-ma.jpg)
-
-![Độ kiếp không god](loop-do-kiep-khong-god.jpg)
-
-![Trúc Cơ](loop-truc-co.jpg)
+![Trúc Cơ](loop-truc-co.webp)
 
 ## Nội suy người chơi khác (30 bot)
 
@@ -118,7 +108,6 @@ Kịch bản Playwright hai tab trên server dev, nhân vật mới, **không b�
 
 Không giật. Tốc độ hiển thị dao động theo nhịp snapshot 20 Hz vì nội suy là trượt về vị trí mới nhất; muốn đều hơn thì nội suy theo bộ đệm thời gian (ghi ở roadmap, không gấp). Không sửa gì ở đây.
 
-![30 bot ở sân](30-bot-san.jpg)
 
 ## Đã chạy
 

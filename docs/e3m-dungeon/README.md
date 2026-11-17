@@ -1,5 +1,7 @@
 # E3-M: Kính Nguyệt Cung (phó bản chương 3)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3m-dungeon/<file>`.
+
 Gói E3-M (`docs/EXPANSION_DESIGN.md` 5.2, 11.3). Cấp 21+, 4–5 người, 5 đợt, boss Kính Nguyệt Chân Quân. Theo mẫu E2-C (`docs/e2c-dungeon/README.md`). Skin là GLB người dùng đã nhập (#115–#117), prop sẵn có, không Tripo, không model mới.
 
 ## Cách vào
@@ -60,23 +62,23 @@ Lòng chảo Kiếm Trủng dựng thành sảnh gương treo giữa mây, bằn
 
 | | |
 | --- | --- |
-| Cổng | ![](00-cong.jpg) |
-| Vào cung | ![](01-vao-cung.jpg) |
-| Vách cung | ![](01b-vach-cung.jpg) |
-| Toàn cảnh sảnh | ![](01c-toan-canh.jpg) |
-| Cột đá và gương lớn treo vách | ![](01d-guong-vach.jpg) |
-| Đợt 1 Kính Linh | ![](02-dot1-kinh-linh.jpg) |
-| Đợt 2 Kính Diện Ma Quân | ![](03-dot2-ma-quan.jpg) |
-| Đợt 3 đố ba gương (cột lam góc trái, thứ tự trong tin hệ thống) | ![](04-dot3-do-ba-guong.jpg) |
-| Chạm cột đúng thứ tự | ![](04b-cham-0.jpg) ![](04b-cham-1.jpg) ![](04b-cham-2.jpg) |
-| Giải xong | ![](04c-giai-xong.jpg) |
-| Đợt 4 Thạch Quy | ![](05-dot4-thach-quy.jpg) |
-| Boss: bốn thân, thể thật có vết lam | ![](06-boss-bon-than.jpg) |
-| Lặp lại | ![](06c-lap-lai.jpg) |
-| Bóng giả vỡ | ![](06d-bong-gia-no.jpg) |
-| Đĩa gương (ba tia xoay) | ![](07-dia-guong-0.jpg) ![](07-dia-guong-2.jpg) ![](07-dia-guong-4.jpg) |
-| Nguyệt phản (Tâm Ma Ảnh) | ![](08-nguyet-phan-1.jpg) ![](08-nguyet-phan-3.jpg) |
-| Hoàn thành | ![](09-hoan-thanh.jpg) |
+| Cổng | ![](00-cong.webp) |
+| Vào cung | _(ảnh đã gỡ)_ |
+| Vách cung | _(ảnh đã gỡ)_ |
+| Toàn cảnh sảnh | ![](01c-toan-canh.webp) |
+| Cột đá và gương lớn treo vách | _(ảnh đã gỡ)_ |
+| Đợt 1 Kính Linh | _(ảnh đã gỡ)_ |
+| Đợt 2 Kính Diện Ma Quân | _(ảnh đã gỡ)_ |
+| Đợt 3 đố ba gương (cột lam góc trái, thứ tự trong tin hệ thống) | ![](04-dot3-do-ba-guong.webp) |
+| Chạm cột đúng thứ tự | _(ảnh đã gỡ)_ |
+| Giải xong | _(ảnh đã gỡ)_ |
+| Đợt 4 Thạch Quy | _(ảnh đã gỡ)_ |
+| Boss: bốn thân, thể thật có vết lam | ![](06-boss-bon-than.webp) |
+| Lặp lại | _(ảnh đã gỡ)_ |
+| Bóng giả vỡ | _(ảnh đã gỡ)_ |
+| Đĩa gương (ba tia xoay) | _(ảnh đã gỡ)_ |
+| Nguyệt phản (Tâm Ma Ảnh) | ![](08-nguyet-phan-1.webp) |
+| Hoàn thành | _(ảnh đã gỡ)_ |
 
 ## Giới hạn / việc để lại
 

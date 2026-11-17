@@ -1,5 +1,7 @@
 # E2-F · Trang bị bậc 2, Thăng Bậc, bộ Kết Đan, đan bậc 2
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2f-gear/<file>`.
+
 Phạm vi: chỉ phần bậc 2 (Đoạn Mạch, cấp 16–19) chơi được; bậc 3–4 có hằng số và khóa (`TIER_OPEN = 2`).
 
 ## Bậc trang bị
@@ -43,4 +45,4 @@ Thu nhập chương 2 ≈ 28.800 (4 giờ × 6.000 × 1,2); hố tiêu cầu to�
 
 ## Ảnh
 
-Thăng Bậc trước/sau: `ui-promote-truoc.jpg`, `ui-promote-sau.jpg`; tooltip: `ui-promote-tooltip-bac1.jpg`, `ui-promote-tooltip-bac2.jpg`; chế tạo `ui-forge-bac2.jpg`; đan `ui-luyen-dan-bac2.jpg`. Nhân vật nam/nữ: `set_<bộ>-<m|f>-<truoc|sau|nghieng|chem>.jpg`. Kiếm: `kiem-liet-mach-*`, `kiem-kinh_quang-*`, `kiem-tinh_khuyet-*`.
+Thăng Bậc trước/sau: `ui-promote-truoc.webp`, `ui-promote-sau.webp`; tooltip: `ui-promote-tooltip-bac1.jpg`, `ui-promote-tooltip-bac2.webp`; chế tạo `ui-forge-bac2.webp`; đan `ui-luyen-dan-bac2.webp`. Nhân vật nam/nữ: `set_<bộ>-<m|f>-<truoc|sau|nghieng|chem>.jpg`. Kiếm: `kiem-liet-mach-*`, `kiem-kinh_quang-*`, `kiem-tinh_khuyet-*`.

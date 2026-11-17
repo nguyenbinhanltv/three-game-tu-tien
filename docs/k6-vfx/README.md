@@ -1,5 +1,7 @@
 # K-6: VFX theo công pháp (2026-11-16)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/k6-vfx/<file>`.
+
 Spec: `docs/AUDIT_AND_ROADMAP.md` mục 7.2. Chỉ là lớp hình, server vẫn quyết định chiêu, mục tiêu, sát thương.
 
 ## Đã làm
@@ -31,7 +33,7 @@ Draw call giảm 21–37 mỗi cảnh, **chưa đạt mục tiêu −40**: cản
 
 ## Ảnh
 
-Ảnh sau (GPU thật, WebGPU, camera 3,5–4,2 m, tắt tiếng): `nam-*.png`; ảnh trước (`?k6=0&batch=0`): `truoc-*.png`. Ô nhỏ chụp bằng CDP screencast (~80 ms/khung), nên khung `hit` đánh dấu theo sự kiện, hình có thể trễ vài khung.
+Ảnh sau (GPU thật, WebGPU, camera 3,5–4,2 m, tắt tiếng): `nam-*.webp`; ảnh trước (`?k6=0&batch=0`): `truoc-*.png`. Ô nhỏ chụp bằng CDP screencast (~80 ms/khung), nên khung `hit` đánh dấu theo sự kiện, hình có thể trễ vài khung.
 
 Hạn chế đã biết:
 - Vệt kiếm chỉ dài ~0,2 s nên khó thấy trên ảnh screencast; số liệu kèm theo (`skill-events.json` trong artifact): gốc/mũi kiếm trên màn hình dài ~90 px, quét 40–70 px mỗi cửa sổ.
@@ -43,3 +45,11 @@ Hạn chế đã biết:
 - Ảnh chiêu chụp với `?quiet=1` (chỉ bản dev): sói vẫn cắn nhưng không nháy trắng model trúng đòn (`hitReact`) và không nổ cầu hồng (`bite`). Hai hiệu ứng đó có từ trước K-6 (bản `?k6=0&batch=0` cũng có) và che nhân vật; không phải VFX của K-6.
 - Phiên chụp trước còn ở lại thế giới 60 s (`allowReconnection`), nên mỗi phiên đứng một điểm khác nhau (cách 40 m), nếu không hai nhân vật đè lên nhau thành một hình chồng.
 - Cảnh chiêu chụp chậm (`?slowmo=0.25`); vệt kiếm và chuỗi liên hoàn chụp tốc độ thật.
+
+## Ảnh then chốt
+
+- [`nam-dansu-hoi-xuan-quyet.webp`](nam-dansu-hoi-xuan-quyet.webp)
+- [`nam-hophap-tran-son-an.webp`](nam-hophap-tran-son-an.webp)
+- [`nam-kiem-kiem-khi-tram.webp`](nam-kiem-kiem-khi-tram.webp)
+- [`nam-linh-quang-ho-the.webp`](nam-linh-quang-ho-the.webp)
+- [`nam-vet-kiem.webp`](nam-vet-kiem.webp)

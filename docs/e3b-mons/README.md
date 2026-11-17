@@ -1,5 +1,7 @@
 # E3-B: quái, tinh anh, boss Vân Hải Phù Đảo
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3b-mons/<file>`.
+
 Gói E3-B (`docs/EXPANSION_DESIGN.md` 6.2, 5.4, 11.2). Thay quái tạm của Đoạn Mạch trên bản đồ E3-A bằng quái riêng; dùng skin GLB người dùng đã nhập (#115–#117), không Tripo, không dựng model mới. Vị trí cụm/tinh anh giữ nguyên của E3-A (chạy lại `node tools/maps/gen-van-hai.mjs`: chỉ đổi loại quái và thêm boss; mật độ, độ phủ, chỗ kẹt không đổi).
 
 > Sau khi merge main (#149 Kính Nguyệt Cung): `mon_kinh_linh`, `mon_phu_dao_thach_quy`, `elite_kinh_dien_ma_quan` đã được #149 định nghĩa trước (dùng chung với phó bản), nên giữ bản của #149 (chiêu và bảng rơi `dungeon` khác bảng chiêu ghi dưới đây cho ba con này, ví dụ Thạch Quy dùng `charge`). Ảnh của ba con này chụp theo bản cũ của gói này.
@@ -51,17 +53,17 @@ Chỉ ở `loot.json` (server). Quái/tinh anh/boss Vân Hải đã nằm trong 
 
 | | |
 | --- | --- |
-| Vân Hạc (Tùng Đài) | ![](mon_van_hac.jpg) |
-| Bích Ngọc Kim Thiền (Tùng Đài) | ![](mon_bich_ngoc_kim_thien.jpg) |
-| Phù Đảo Thạch Quy (Thạch Quy) | ![](mon_phu_dao_thach_quy.jpg) |
-| Kính Linh (Kính Hồ) | ![](mon_kinh_linh.jpg) |
-| Tuyết Vũ Vân Hạc Vương | ![](elite_van_hac_vuong.jpg) |
-| Kính Diện Ma Quân | ![](elite_kinh_dien_ma_quan.jpg) |
-| Lôi Vân Sư Vương | ![](elite_loi_van_su_vuong.jpg) |
-| Kình Vương, pha 1: bay lơ lửng + vạch báo trên sàn; 3 khung cuối: chết (ngã xuống, không méo) | ![](boss_van_hai_kinh_vuong.jpg) |
-| Kình Vương, 99% máu (cửa sổ đánh: hạ thấp) | ![](boss_van_hai_kinh_vuong-hurt99.jpg) |
-| Kình Vương, ≤ 45% | ![](boss_van_hai_kinh_vuong-hurt45.jpg) |
-| Kình Vương, ≤ 25% (Nuốt) | ![](boss_van_hai_kinh_vuong-hurt25.jpg) |
+| Vân Hạc (Tùng Đài) | ![](mon_van_hac.webp) |
+| Bích Ngọc Kim Thiền (Tùng Đài) | _(ảnh đã gỡ)_ |
+| Phù Đảo Thạch Quy (Thạch Quy) | _(ảnh đã gỡ)_ |
+| Kính Linh (Kính Hồ) | ![](mon_kinh_linh.webp) |
+| Tuyết Vũ Vân Hạc Vương | ![](elite_van_hac_vuong.webp) |
+| Kính Diện Ma Quân | _(ảnh đã gỡ)_ |
+| Lôi Vân Sư Vương | _(ảnh đã gỡ)_ |
+| Kình Vương, pha 1: bay lơ lửng + vạch báo trên sàn; 3 khung cuối: chết (ngã xuống, không méo) | ![](boss_van_hai_kinh_vuong.webp) |
+| Kình Vương, 99% máu (cửa sổ đánh: hạ thấp) | _(ảnh đã gỡ)_ |
+| Kình Vương, ≤ 45% | _(ảnh đã gỡ)_ |
+| Kình Vương, ≤ 25% (Nuốt) | ![](boss_van_hai_kinh_vuong-hurt25.webp) |
 
 Mặt đảo vẫn là cỏ Vân Lam nhạt màu (bộ texture riêng thuộc E3-I).
 

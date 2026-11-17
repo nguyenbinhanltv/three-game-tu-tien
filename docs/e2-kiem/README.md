@@ -1,5 +1,7 @@
 # E2 · 3 kiếm bậc mới (Tripo web)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2-kiem/<file>`.
+
 | Asset | Bậc / bản đồ | Dài | LOD0 | `SWORD_TINT` |
 | --- | --- | --- | --- | --- |
 | `prop_kiem_liet_mach` | 2 (L16–19), Đoạn Mạch | 1,1 m | 2474 | 2,5 / 2,2 / 1,6 (lưỡi ngà vàng) |

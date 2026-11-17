@@ -1,5 +1,7 @@
 # Phụ kiện hình dáng cho 4 bộ trang bị
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/set-accessories/<file>`.
+
 Trước đây bộ trang bị (P3-4) chỉ đổi màu áo bằng `applyDye`. Giờ mỗi bộ có thêm phụ kiện **dựng thủ tục lúc chạy** (không Tripo, không file asset mới, không tốn credit), gắn vào xương của cả hai model (Thanh Phong, Lam Chi).
 
 | Bộ | Ô → phụ kiện |

@@ -1,5 +1,7 @@
 # M-5: điểm đáng chú ý trong năm vùng săn
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/m5-poi/<file>`.
+
 Mỗi vùng săn có một điểm bày bằng **prop sẵn có** (không asset mới, không credit Tripo) và một cột linh quang nhìn từ xa. Ba điểm có người giao nhiệm vụ dạy hệ thống. Nền truyện: linh mạch còn sống dưới đất (`docs/GAME_DESIGN_CORE.md` 2.2).
 
 | Vùng | Điểm (`pois` trong `levels/van_lam.json`) | Prop bày | Người giao |

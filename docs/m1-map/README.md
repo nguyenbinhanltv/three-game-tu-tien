@@ -1,5 +1,7 @@
 # M-1: dữ liệu vùng & bố cục bản đồ mới
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/m1-map/<file>`.
+
 Kế hoạch gốc: bước M-1 của "Kế hoạch nâng cấp bản đồ, mật độ quái và minimap" (2026-11-15).
 
 ## Đã làm
@@ -42,8 +44,8 @@ Tải: `pnpm bots --count 100 --duration 120` rồi `pnpm ledger:check`: 100 bot
 
 ## Ảnh
 
-- `truoc-tren-cao.jpg`, `sau-tren-cao.jpg`: nhìn từ trên xuống cùng khung 948…3148 (đỏ/vàng/trắng: boss, tinh anh, quái thường; nét màu: ranh vùng; chấm trắng lớn: tông môn; chấm lam: cổng).
-- `mat-dat-suoi.jpg`, `mat-dat-ho.jpg`, `mat-dat-rung.jpg`, `mat-dat-ranh.jpg`: ảnh mặt đất (WebGPU, preset Cao, Chrome GPU thật): Suối Thanh Khê, bãi hồ phía tây, Rừng Linh Thảo, vách ở ranh vùng chơi.
+- `truoc-tren-cao.webp`, `sau-tren-cao.webp`: nhìn từ trên xuống cùng khung 948…3148 (đỏ/vàng/trắng: boss, tinh anh, quái thường; nét màu: ranh vùng; chấm trắng lớn: tông môn; chấm lam: cổng).
+- `mat-dat-suoi.webp`, `mat-dat-ho.webp`, `mat-dat-rung.webp`, `mat-dat-ranh.jpg`: ảnh mặt đất (WebGPU, preset Cao, Chrome GPU thật): Suối Thanh Khê, bãi hồ phía tây, Rừng Linh Thảo, vách ở ranh vùng chơi.
 
 ## Sửa sau soát (orchestrator)
 

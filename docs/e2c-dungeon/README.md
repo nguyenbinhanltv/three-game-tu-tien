@@ -1,5 +1,7 @@
 # E2-C: Phục Mạch Quật (phó bản chương 2)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2c-dungeon/<file>`.
+
 Gói E2-C (`docs/EXPANSION_DESIGN.md` 5.1, 11.2). Cấp 17+, 4–5 người, 5 đợt, boss Thôn Mạch Ngô Công Vương. Skin GLB người dùng đã nhập (#115/#116/#117), prop sẵn có, không Tripo, không dựng model mới.
 
 ## Cách vào
@@ -45,18 +47,18 @@ Lòng chảo Kiếm Trủng (địa hình Vân Lam, `terrain: van_lam`) dựng t
 
 | | |
 | --- | --- |
-| Cổng ở Đoạn Mạch | ![](00-cong-doan-mach.jpg) |
-| Vào hầm | ![](01-vao-hang.jpg) |
-| Vách hang và trần tối | ![](01b-vach-hang.jpg) |
-| Đợt 1 khôi lỗi | ![](02-dot1-khoi-loi.jpg) |
-| Đợt 2 hộ vệ + khôi tướng | ![](03-dot2-ho-ve.jpg) |
-| Đợt 3 ngô công ấu (ba điểm trên minimap; rết nhỏ nên khó thấy từ trên cao) | ![](04-dot3-ngo-cong-au.jpg) |
-| Thạch Tâm: vạch đập | ![](05-dot4-thach-tam-leap.jpg) |
-| Thạch Tâm: vạch đường | ![](06-dot4-thach-tam-line.jpg) |
-| Thôn Mạch: slam | ![](07-dot5-thon-mach-slam.jpg) |
-| Thôn Mạch: niệm Thôn Mạch (r 12) | ![](08-dot5-thon-mach-chant.jpg) |
-| Thôn Mạch: slam ở pha 35% | ![](09-dot5-thon-mach-pha2.jpg) |
-| Thôn Mạch: vạch dài 22×3 m (từ 35% máu) | ![](10-dot5-thon-mach-vach-dai.jpg) |
+| Cổng ở Đoạn Mạch | ![](00-cong-doan-mach.webp) |
+| Vào hầm | ![](01-vao-hang.webp) |
+| Vách hang và trần tối | _(ảnh đã gỡ)_ |
+| Đợt 1 khôi lỗi | ![](02-dot1-khoi-loi.webp) |
+| Đợt 2 hộ vệ + khôi tướng | _(ảnh đã gỡ)_ |
+| Đợt 3 ngô công ấu (ba điểm trên minimap; rết nhỏ nên khó thấy từ trên cao) | _(ảnh đã gỡ)_ |
+| Thạch Tâm: vạch đập | _(ảnh đã gỡ)_ |
+| Thạch Tâm: vạch đường | ![](06-dot4-thach-tam-line.webp) |
+| Thôn Mạch: slam | _(ảnh đã gỡ)_ |
+| Thôn Mạch: niệm Thôn Mạch (r 12) | ![](08-dot5-thon-mach-chant.webp) |
+| Thôn Mạch: slam ở pha 35% | _(ảnh đã gỡ)_ |
+| Thôn Mạch: vạch dài 22×3 m (từ 35% máu) | _(ảnh đã gỡ)_ |
 
 `hazards.json`: vạch báo client ghi được mỗi pha.
 

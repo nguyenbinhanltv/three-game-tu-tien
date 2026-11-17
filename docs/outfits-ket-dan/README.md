@@ -1,5 +1,7 @@
 # Trang phục Kết Đan mô-đun (T-5)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/outfits-ket-dan/<file>`.
+
 Ba bộ bậc 2 dựng từ 18 mảnh Tripo (concept #147, spec từng mảnh ở `docs/outfit-concepts/README.md`) mặc thật lên nam `chr_kiem_tu_nam` và nữ `chr_kiem_tu_nu`, thay bản tạm #119 của Liệt Mạch; cộng kiếm Liệt Mạch dạng cuối +10 và vỏ kiếm đeo lưng.
 
 | Bộ (dữ liệu) | Asset (nam/nữ) | Tam giác LOD0 / LOD1 / LOD2 | Xương lò xo |
@@ -31,7 +33,7 @@ Shader (`render/materials/outfit.ts`): nhuộm 3 kênh (`createOutfitMaterial(sr
 
 ## Đợt sửa sau review
 - **Địa Long**: `armFix` (tay áo rộng lấy trọng số theo xương cánh tay), thu nhỏ giáp/vai/mão theo thân (nữ `wscale` 0,72), nhân sáng texture (`gain` 1,7). Ảnh chém sau `armFix` (`matrix_dia_long_*`, khung chiêu 1–2): tay áo theo cánh tay, không còn "cánh" dính thân như trước, nhưng giáp vẫn to và nặng khi giơ tay.
-- **Phục Mạch/Liệt Mạch**: hàn đỉnh + pháp tuyến mượt, giảm normal map, vải nhám hơn. Ảnh kiếm +0/+7/+10: `kiem_liet_mach_0_7_10.jpg` (+0 và +7 gần như giống nhau, +10 đổi model).
+- **Phục Mạch/Liệt Mạch**: hàn đỉnh + pháp tuyến mượt, giảm normal map, vải nhám hơn. Ảnh kiếm +0/+7/+10: `kiem_liet_mach_0_7_10.webp` (+0 và +7 gần như giống nhau, +10 đổi model).
 - **Ô trang bị thứ 9 `head`**: `EquipSlot` + `slots.json` (`drop: false`: chỉ chế ở lò rèn, không đổi cân bằng), 3 món `itm_{lm,dg,pm}_trang_suc` (5 món/bộ), lò rèn, i18n, bảng nhân vật. Chưa có icon riêng (emoji 👑), chưa thăng bậc, chưa có công tắc ẩn/hiện (mão là một phần lưới bộ gộp).
 - **Draw call**: một lưới bộ mỗi LOD; lưới thân không đổ bóng và bỏ ở LOD2.
 

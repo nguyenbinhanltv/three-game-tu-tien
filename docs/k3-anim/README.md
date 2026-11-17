@@ -1,5 +1,7 @@
 # K-3: clip chung của thư viện `anim_human_base`
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/k3-anim/<file>`.
+
 Nguồn: 24 clip tải từ thư viện animation Tripo web (`../dtl-asset-source/anim/tripo_lib/anim_<tên>_v01.glb`, 2026-11-16) + clip thủ tục bằng Blender. Dùng chung cho Thanh Phong (nam) và Lam Chi (nữ): cùng bộ xương Mixamo 54 khớp, client retarget theo tên xương (`animLib.ts`). K-3 **chưa nối vào máy trạng thái game** (đó là K-4); bộ cũ `idle, run, attack, hit_light, death` giữ nguyên.
 
 Bảng clip, loại, tốc độ nền: `apps/client/src/game/character/humanClips.ts` (test `humanClips.test.ts` giữ khớp GLB). Số đo từng clip: `clips.json`.

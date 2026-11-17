@@ -1,5 +1,7 @@
 # E3-L · Tam Trọng Kiếp (Nguyên Anh)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3l-trib/<file>`.
+
 Dãy khung một lần độ kiếp Nguyên Anh 65 s (`/gm trib nguyen_anh`, chạy bằng `pnpm shots:e3l --out <thư mục tuyệt đối>`, Chrome GPU thật, tắt tiếng, 1600×900). Kiếp chạy ở room riêng `tribulation` (level `do_kiep`); mốc giây tính từ lúc HUD kiếp hiện. Ghi chú thiết kế/triển khai: `docs/EXPANSION_DESIGN.md` mục 10.7.
 
 | Ảnh | Mốc | Nội dung |
