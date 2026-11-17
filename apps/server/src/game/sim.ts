@@ -4429,7 +4429,7 @@ export class GameSim {
 
       case 'dye': {
         // Thử đổi màu áo lúc đang chơi (người khác thấy qua schema); vẫn kiểm như lúc tạo nhân vật.
-        const ap = parseAppearance(APPEARANCE, { g: c.appearance.g, dye: a[1] });
+        const ap = parseAppearance(APPEARANCE, { g: c.appearance.g, dye: a[1], hair: c.appearance.hair });
         if (!ap) return say('dye ' + APPEARANCE.dyes.map((d) => d.id).join(' | '));
         c.setAppearance(ap);
         p.s.g = ap.g;
