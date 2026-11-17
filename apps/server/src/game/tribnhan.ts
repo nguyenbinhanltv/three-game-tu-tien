@@ -77,8 +77,8 @@ registerMechanic('ngu_hanh', {
     st.at = c.now + cfg.every * 1000;
     const e = ELEMENTS[idx];
     const seal = tribSealPos(st, cfg.ring, nguHanhSealFor(idx));
-    // Tia kiếp quét cả sân; ai đứng trong trận môn khắc chế hành này lúc nổ giảm `cut` (cờ `ke`).
-    c.host.addHazard({ x: st.x, z: st.z, r: cfg.ring + cfg.sealR + cfg.pad }, cfg.warn, cfg.pct, true, ELEM_HAZARD[e], c.p.sid, 0, false, 0, undefined, undefined, false, { seal: { x: seal.x, z: seal.z, r: cfg.sealR, cut: cfg.cut } });
+    // Tia kiếp quét cả sân và luôn trúng chủ kiếp dù đứng ngoài sân (`reach`: rời sân không bỏ qua được cơ chế); ai đứng trong trận môn khắc chế hành này lúc nổ giảm `cut` (cờ `ke`).
+    c.host.addHazard({ x: st.x, z: st.z, r: cfg.ring + cfg.sealR + cfg.pad }, cfg.warn, cfg.pct, true, ELEM_HAZARD[e], c.p.sid, 0, false, 0, undefined, undefined, false, { seal: { x: seal.x, z: seal.z, r: cfg.sealR, cut: cfg.cut }, reach: true });
     c.host.fx({ t: 'nguhanh', src: c.p.sid, n: idx, d: cfg.warn, x: st.x, z: st.z, r: cfg.ring });
   },
 });

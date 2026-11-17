@@ -42,6 +42,8 @@ export interface HazardExtra {
   mv?: HazardMsg['mv'];
   dur?: number;
   seal?: { x: number; z: number; r: number; cut: number };
+  /** Luôn trúng chủ kiếp bất kể vị trí (không né bằng cách rời sân). */
+  reach?: boolean;
 }
 
 export interface TribHost {

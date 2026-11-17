@@ -151,6 +151,22 @@ describe('Thiên Nhân Kiếp: pha 1 ngũ hành lôi', () => {
   });
 });
 
+describe('Thiên Nhân Kiếp: tia ngũ hành luôn trúng chủ kiếp', () => {
+  it('chủ kiếp đứng cách tâm 40 m lúc nổ vẫn nhận đủ pct (không có ke)', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const t = setup();
+    t.p.god = true;
+    t.begin();
+    t.run(5.5, (s) => {
+      if (s >= 1) t.goto({ x: X + 40, z: Z });
+    });
+    vi.restoreAllMocks();
+    const hit = t.dmgs().filter((d) => d.dst === t.p.sid && d.n > 0);
+    expect(hit.some((d) => d.ke === 1)).toBe(false);
+    expect(Math.max(...hit.map((d) => d.n))).toBeGreaterThanOrEqual(Math.round(t.char.mhp * NG.pct) - 1);
+  });
+});
+
 describe('Thiên Nhân Kiếp: pha 2 phân thân thần niệm', () => {
   it('G không dùng được ở pha 1; ở pha 2 tạo thế thân 20 s, không tạo thêm khi còn sống, tối đa 4', () => {
     const t = setup();
