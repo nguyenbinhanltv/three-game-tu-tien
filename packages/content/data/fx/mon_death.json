@@ -124,5 +124,284 @@
    "alpha": 0.55,
    "tier": 1
   }
- ]
+ ],
+ "variants": {
+  "boss": [
+   {
+    "type": "mesh",
+    "shape": "burst",
+    "t": 0.08,
+    "dur": 0.2,
+    "at": "self",
+    "scale": 3.4,
+    "billboard": true,
+    "sweep": 0.0,
+    "tone": "accent",
+    "tier": 0
+   },
+   {
+    "type": "mesh",
+    "shape": "ripple",
+    "t": 0.2,
+    "dur": 0.9,
+    "at": "self",
+    "offset": [
+     0,
+     -1.0,
+     0
+    ],
+    "scale": 0.3,
+    "scaleTo": 3.6,
+    "sweep": 0.4,
+    "erodeFrom": 0.3,
+    "ragged": 0.9,
+    "tone": "rim",
+    "alpha": 0.85,
+    "seed": 18,
+    "tier": 0
+   },
+   {
+    "type": "mesh",
+    "shape": "ripple",
+    "t": 0.4,
+    "dur": 0.9,
+    "at": "self",
+    "offset": [
+     0,
+     -1.0,
+     0
+    ],
+    "scale": 0.3,
+    "scaleTo": 4.4,
+    "sweep": 0.4,
+    "erodeFrom": 0.3,
+    "ragged": 0.9,
+    "tone": "accent",
+    "alpha": 0.7,
+    "seed": 19,
+    "tier": 1
+   },
+   {
+    "type": "mesh",
+    "shape": "kite",
+    "t": 0.1,
+    "dur": 1.2,
+    "at": "self",
+    "offset": [
+     0,
+     -1.0,
+     0
+    ],
+    "rot": [
+     -90,
+     0,
+     0
+    ],
+    "scale": [
+     0.6,
+     0.6,
+     7.0
+    ],
+    "sweep": 0.3,
+    "erodeFrom": 0.4,
+    "tone": "rim",
+    "alpha": 0.7,
+    "seed": 22,
+    "tier": 1
+   },
+   {
+    "type": "decal",
+    "tex": "crack",
+    "t": 0.1,
+    "r": 3.2,
+    "dur": 3.0,
+    "at": "self",
+    "grow": 0.3,
+    "tone": "core",
+    "alpha": 0.9,
+    "yaw": 10,
+    "tier": 1
+   },
+   {
+    "type": "particles",
+    "kind": "petal",
+    "t": 0.1,
+    "n": 40,
+    "speed": 2.6,
+    "spread": 0.9,
+    "life": 2.0,
+    "size": 0.22,
+    "at": "self",
+    "tone": "rim",
+    "grav": -0.7,
+    "tier": 0
+   },
+   {
+    "type": "particles",
+    "kind": "dust",
+    "t": 0.0,
+    "n": 60,
+    "speed": 2.6,
+    "spread": 0.9,
+    "life": 1.8,
+    "size": 0.4,
+    "at": "self",
+    "tone": "body",
+    "grav": -1.6,
+    "tier": 1
+   },
+   {
+    "type": "particles",
+    "kind": "shard",
+    "t": 0.0,
+    "n": 30,
+    "speed": 4.5,
+    "spread": 0.9,
+    "life": 1.0,
+    "size": 0.22,
+    "at": "self",
+    "tone": "accent",
+    "grav": 7,
+    "tier": 1
+   },
+   {
+    "type": "mesh",
+    "shape": "spike",
+    "t": 0.08,
+    "dur": 0.8,
+    "at": "self",
+    "offset": [
+     0.0,
+     -1.0,
+     2.4
+    ],
+    "rot": [
+     -78,
+     0,
+     0
+    ],
+    "scale": 0.45,
+    "sweep": 0.2,
+    "erodeFrom": 0.5,
+    "tone": "body",
+    "seed": 120,
+    "tier": 1
+   },
+   {
+    "type": "mesh",
+    "shape": "spike",
+    "t": 0.1,
+    "dur": 0.8,
+    "at": "self",
+    "offset": [
+     2.08,
+     -1.0,
+     1.2
+    ],
+    "rot": [
+     -90,
+     0,
+     0
+    ],
+    "scale": 0.45,
+    "sweep": 0.2,
+    "erodeFrom": 0.5,
+    "tone": "body",
+    "seed": 121,
+    "tier": 1
+   },
+   {
+    "type": "mesh",
+    "shape": "spike",
+    "t": 0.12,
+    "dur": 0.8,
+    "at": "self",
+    "offset": [
+     2.08,
+     -1.0,
+     -1.2
+    ],
+    "rot": [
+     -78,
+     0,
+     0
+    ],
+    "scale": 0.45,
+    "sweep": 0.2,
+    "erodeFrom": 0.5,
+    "tone": "body",
+    "seed": 122,
+    "tier": 1
+   },
+   {
+    "type": "mesh",
+    "shape": "spike",
+    "t": 0.14,
+    "dur": 0.8,
+    "at": "self",
+    "offset": [
+     0.0,
+     -1.0,
+     -2.4
+    ],
+    "rot": [
+     -90,
+     0,
+     0
+    ],
+    "scale": 0.45,
+    "sweep": 0.2,
+    "erodeFrom": 0.5,
+    "tone": "body",
+    "seed": 123,
+    "tier": 1
+   },
+   {
+    "type": "mesh",
+    "shape": "spike",
+    "t": 0.16,
+    "dur": 0.8,
+    "at": "self",
+    "offset": [
+     -2.08,
+     -1.0,
+     -1.2
+    ],
+    "rot": [
+     -78,
+     0,
+     0
+    ],
+    "scale": 0.45,
+    "sweep": 0.2,
+    "erodeFrom": 0.5,
+    "tone": "body",
+    "seed": 124,
+    "tier": 1
+   },
+   {
+    "type": "mesh",
+    "shape": "spike",
+    "t": 0.18,
+    "dur": 0.8,
+    "at": "self",
+    "offset": [
+     -2.08,
+     -1.0,
+     1.2
+    ],
+    "rot": [
+     -90,
+     0,
+     0
+    ],
+    "scale": 0.45,
+    "sweep": 0.2,
+    "erodeFrom": 0.5,
+    "tone": "body",
+    "seed": 125,
+    "tier": 1
+   }
+  ]
+ }
 }
