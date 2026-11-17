@@ -24,7 +24,6 @@ import {
   clonePlace,
   cloneUnlocked,
   dealsDamage,
-  type CloneCmd,
   type CloneMethodDef,
   type CloneMoveDef,
   type CloneStateMsg,
@@ -42,6 +41,8 @@ export interface CloneHost {
   groundAt(x: number, z: number): number;
   players(): Iterable<PlayerEnt>;
   isDead(p: PlayerEnt): boolean;
+  /** Chủ đang bay/lơ lửng, xuất khiếu hoặc mất kết nối: phân thân không hoạt động (chặn khai thác đánh khi quái không với tới). */
+  idle(p: PlayerEnt): boolean;
   inDuel(p: PlayerEnt): boolean;
   stopMeditate(p: PlayerEnt): void;
   monsterById(id: string): MonEnt | undefined;
@@ -77,6 +78,8 @@ interface Clone {
   next: number[];
   moves: CloneMoveDef[];
   nextTick: number;
+  /** Mốc chiêu của chủ được lặp lại lần kế (theo hồi chiêu gốc, id chiêu → ms). */
+  echoAt: Map<string, number>;
 }
 
 /** Chiêu sát thương cuối của chủ, để phân thân lặp lại. */
@@ -87,6 +90,7 @@ interface LastSkill {
 
 /** Hồi chiêu theo nhân vật, sống ở cấp tiến trình để đổi room không xóa được. */
 const cloneCd = new Map<number, number>();
+let lastPrune = 0;
 
 export class CloneSystem {
   private clones = new Map<string, Clone>();
@@ -138,7 +142,7 @@ export class CloneSystem {
 
   private blocker(p: PlayerEnt): string {
     if (!cloneUnlocked(p.char.level)) return 'sys.clone_locked';
-    if ((p.s.fl & PF_DEAD) !== 0 || p.trib || p.trial || this.h.inDuel(p) || p.casting) return 'sys.clone_busy';
+    if ((p.s.fl & PF_DEAD) !== 0 || p.trib || p.trial || this.h.inDuel(p) || p.casting || this.h.idle(p)) return 'sys.clone_busy';
     return '';
   }
 
@@ -154,13 +158,13 @@ export class CloneSystem {
     const left = (cloneCd.get(p.char.id) ?? 0) - now;
     if (left > 0) return this.h.warn(p, 'sys.clone_cd', { s: Math.ceil(left / 1000) });
     if (!this.h.spendMp(p, CLONE_MP)) return this.h.warn(p, 'sys.clone_mp');
-    // Điểm client gửi (`CloneCmd.x/z`) cố ý bị bỏ qua: chưa kiểm tường/vùng cấm/tầm nhìn nên luôn đặt ngay trước mặt chủ.
-    void (msg as CloneCmd | undefined);
+    // Lệnh không mang tham số: chỗ đặt do server chọn (ngay trước mặt chủ).
+    void msg;
     const at = clonePlace({ x: p.move.x, z: p.move.z, yaw: p.s.yaw });
     const method = p.char.meta.method ?? '';
     const moves = (CLONE_MOVES[method] as CloneMethodDef | undefined)?.moves ?? [];
     const mhp = Math.max(1, Math.round(p.char.mhp * CLONE_HP_FRAC));
-    const c: Clone = { owner: p.sid, method, x: at.x, z: at.z, gx: at.x, gz: at.z, sentGx: at.x, sentGz: at.z, until: now + CLONE_LIFE_MS, hp: mhp, mhp, next: moves.map((mv) => now + (mv.cd ?? 0) * 1000), moves, nextTick: now };
+    const c: Clone = { owner: p.sid, method, x: at.x, z: at.z, gx: at.x, gz: at.z, sentGx: at.x, sentGz: at.z, until: now + CLONE_LIFE_MS, hp: mhp, mhp, next: moves.map((mv) => now + (mv.cd ?? 0) * 1000), moves, nextTick: now, echoAt: new Map() };
     this.clones.set(p.sid, c);
     this.h.stopMeditate(p);
     cloneCd.set(p.char.id, now + CLONE_CD_MS);
@@ -228,15 +232,20 @@ export class CloneSystem {
   }
 
   tick(): void {
-    if (this.clones.size === 0) return;
     const now = this.h.now();
+    // Dọn mục hồi chiêu đã hết hạn (không xóa mục còn hạn: đổi room/đăng nhập lại không được reset hồi chiêu).
+    if (cloneCd.size > 0 && now - lastPrune > 60_000) {
+      lastPrune = now;
+      for (const [id, t] of cloneCd) if (t <= now) cloneCd.delete(id);
+    }
+    if (this.clones.size === 0) return;
     const live = new Set<string>();
     for (const p of this.h.players()) {
       live.add(p.sid);
       const c = this.clones.get(p.sid);
       if (!c || now < c.nextTick) continue;
       c.nextTick = now + CLONE_TICK_MS;
-      if (this.h.isDead(p) || p.trib || p.trial || this.h.inDuel(p)) {
+      if (this.h.isDead(p) || p.trib || p.trial || this.h.inDuel(p) || this.h.idle(p)) {
         this.end(p, c, 'drop');
         continue;
       }
@@ -282,8 +291,12 @@ export class CloneSystem {
       if (mv.kind === 'echo') {
         const last = this.last.get(p.sid);
         const skill = last?.skill ?? this.defaultSkill(c);
-        const tgt = skill ? this.targetOf(c, last) : null;
-        if (skill && tgt) this.strike(p, c, skill, tgt, mv.mul ?? CLONE_POWER_MUL, 0);
+        // Tôn trọng hồi chiêu gốc của chiêu: mỗi chiêu chỉ lặp lại sau `skill.cd` (chiêu cd dài chỉ lặp một lần trong đời phân thân).
+        if (!skill || now < (c.echoAt.get(skill.id) ?? 0)) continue;
+        const tgt = this.targetOf(c, last);
+        if (!tgt) continue;
+        c.echoAt.set(skill.id, now + Math.max(skill.cd, mv.cd ?? 2) * 1000);
+        this.strike(p, c, skill, tgt, mv.mul ?? CLONE_POWER_MUL, 0);
       } else if (mv.kind === 'taunt') {
         const foes = this.h.monstersNear(c.x, c.z, mv.r ?? 12);
         for (const o of foes) this.h.taunt(p, o, mv.sec ?? 4);

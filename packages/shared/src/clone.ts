@@ -10,8 +10,6 @@ export const CLONE_LIFE_MS = 20_000;
 export const CLONE_CD_MS = 90_000;
 /** Linh lực tốn khi tạo. */
 export const CLONE_MP = 60;
-/** Chỉ được đặt phân thân trong tầm này quanh chủ (m). */
-export const CLONE_PLACE_RANGE = 30;
 /** Phân thân chỉ ra chiêu lên mục tiêu trong tầm này quanh nó (m). */
 export const CLONE_REACH = 24;
 /** Chủ đi xa hơn chừng này thì phân thân bước theo (m); đứng cách chủ `CLONE_FOLLOW_GAP`. */
@@ -53,26 +51,13 @@ export function cloneUnlocked(level: number): boolean {
   return level >= CLONE_UNLOCK_LEVEL;
 }
 
-/** Điểm đặt phân thân: điểm client chỉ, kẹp vào `CLONE_PLACE_RANGE` quanh chủ; thiếu điểm thì đứng trước mặt chủ. */
-export function clonePlace(owner: { x: number; z: number; yaw: number }, want?: { x?: unknown; z?: unknown }): { x: number; z: number } {
-  let x = Number(want?.x);
-  let z = Number(want?.z);
-  if (!Number.isFinite(x) || !Number.isFinite(z)) {
-    x = owner.x + Math.sin(owner.yaw) * CLONE_FOLLOW_GAP;
-    z = owner.z + Math.cos(owner.yaw) * CLONE_FOLLOW_GAP;
-  }
-  const dx = x - owner.x;
-  const dz = z - owner.z;
-  const d = Math.hypot(dx, dz);
-  if (d > CLONE_PLACE_RANGE) return { x: owner.x + (dx / d) * CLONE_PLACE_RANGE, z: owner.z + (dz / d) * CLONE_PLACE_RANGE };
-  return { x, z };
+/** Điểm đặt phân thân: ngay trước mặt chủ (server không nhận điểm do client chọn). */
+export function clonePlace(owner: { x: number; z: number; yaw: number }): { x: number; z: number } {
+  return { x: owner.x + Math.sin(owner.yaw) * CLONE_FOLLOW_GAP, z: owner.z + Math.cos(owner.yaw) * CLONE_FOLLOW_GAP };
 }
 
-/** Client → server: tạo/thu phân thân. `x,z` = điểm muốn đặt (tùy chọn). */
-export interface CloneCmd {
-  x?: number;
-  z?: number;
-}
+/** Client → server: tạo/thu phân thân (không tham số; vị trí do server chọn). */
+export type CloneCmd = Record<string, never>;
 
 /** Server → client: trạng thái phân thân của mình. */
 export interface CloneStateMsg {

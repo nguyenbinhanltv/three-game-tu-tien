@@ -23,6 +23,8 @@ Ghi chú: thiết kế gốc ghi "hút khiêu khích" cho hộ pháp; quái vẫ
 
 **Trong Thiên Nhân Kiếp** phím G vẫn là thế thân của kiếp (`C.TRIB_CLONE`, E4-D, `tribnhan.ts`): `GameSim.onClone` chuyển theo `p.trib`. Phân thân thật không tham gia chắn tia lớn 40% (chưa nối; thế thân của kiếp giữ nguyên hành vi, test `hoathan.test.ts` không đổi).
 
+**Chống khai thác**: chủ đang bay/lơ lửng, xuất khiếu hoặc mất kết nối thì không tạo được và phân thân đang có sẽ tan (quái không với tới chủ trong khi phân thân vẫn đánh); có phân thân thì không đả tọa; `echo` tôn trọng hồi chiêu gốc của chiêu (mỗi chiêu lặp lại sau `max(cd chiêu, cd echo)`, chiêu cd 60 s chỉ lặp một lần); hồi chiêu tạo phân thân giữ ở cấp tiến trình và được dọn khi đã hết hạn.
+
 ## Lĩnh vực
 
 `apps/server/src/game/domain.ts` (`DomainSystem`, `GameSim.domain`), công thức `packages/shared/src/clone.ts` (`domainRadius`: 8 m ở cấp 25, 10 m ở 26–27, **20 m ở Hóa Thần**; `domainScale` 1,5 cho lĩnh vực lớn). Thiết kế mục 3.1 chỉ ghi lĩnh vực nhỏ ở Nguyên Anh trung kỳ nhưng chưa có mã nào, nên gói này làm cả hệ:

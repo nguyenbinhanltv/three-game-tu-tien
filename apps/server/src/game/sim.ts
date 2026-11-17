@@ -758,6 +758,7 @@ export class GameSim {
     groundAt: (x, z) => this.terrain.groundAt(x, z),
     isDead: (p) => this.isDead(p),
     inDuel: (p) => this.duel.inDuel(p),
+    idle: (p) => !p.connected || this.airborne(p) || p.move.flying || this.soul.isScouting(p) || !!this.soul.ghostOf(p),
     stopMeditate: (p) => this.setMeditating(p, false),
     monsterById: (id) => this.monById.get(id),
     monstersNear: (x, z, r) => this.monstersNear(x, z, r),
@@ -3777,7 +3778,7 @@ export class GameSim {
   onMeditate(p: PlayerEnt, msg: unknown): void {
     const on = !!(msg as { on?: unknown } | null)?.on;
     if (!on) return this.setMeditating(p, false);
-    if (this.isDead(p) || p.move.flying || !p.move.grounded || p.casting || p.trib) return this.warn(p, 'sys.busy');
+    if (this.isDead(p) || p.move.flying || !p.move.grounded || p.casting || p.trib || this.clone.has(p)) return this.warn(p, 'sys.busy');
     if (this.now - p.lastCombatAt < 5000) return this.warn(p, 'sys.busy');
     this.setMeditating(p, true);
     if (p.char.quests.active.q_dan_khi && !p.char.questComplete('q_dan_khi')) this.sys(p, 'sys.dan_khi_start', undefined, 'info');

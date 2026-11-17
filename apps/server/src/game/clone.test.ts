@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { CLONE_CD_MS, CLONE_LIFE_MS, CLONE_MP, CLONE_PLACE_RANGE, DOMAIN_EFFECT, S, domainRadius, domainScale, groundAt, type CloneStateMsg, type FxMsg } from '@dtl/shared';
+import { CLONE_CD_MS, CLONE_LIFE_MS, CLONE_MP, DOMAIN_EFFECT, S, domainRadius, domainScale, groundAt, type CloneStateMsg, type FxMsg } from '@dtl/shared';
 
 // E4-K: phân thân thần niệm (thực thể phụ có chủ do server giữ), lĩnh vực, ô chiêu 10. Server quyết định hết.
 process.env.DB_FILE = ':memory:';
@@ -104,11 +104,10 @@ describe('tạo và thu phân thân (G)', () => {
     const { sim, join, states, fxs } = world();
     const p = join(28, 'lac_kiem_quyet');
     const mp = p.char.mp;
-    sim.onClone(p, { x: X + 500, z: Z });
-    expect(sim.clone.of(p)!.x).not.toBeCloseTo(X + CLONE_PLACE_RANGE);
+    sim.onClone(p, {});
     expect(sim.clone.has(p)).toBe(true);
     const c = sim.clone.of(p)!;
-    expect(Math.hypot(c.x - X, c.z - Z)).toBeLessThan(CLONE_PLACE_RANGE);
+    expect(Math.hypot(c.x - X, c.z - Z)).toBeLessThan(10);
     expect(p.char.mp).toBe(mp - CLONE_MP);
     expect(states().at(-1)).toMatchObject({ open: true });
     expect(states().at(-1)!.left).toBeGreaterThan(CLONE_LIFE_MS - 500);
@@ -262,7 +261,7 @@ describe('Hộ pháp: phân thân khiêu khích và gánh đòn', () => {
     const { sim, join, mon } = world();
     const p = join(28, 'bat_dong_kim_than');
     const m = mon(X + 60, Z);
-    sim.onClone(p, { x: X, z: Z });
+    sim.onClone(p, {});
     const c0 = sim.clone.of(p)!.hp;
     sim.damagePlayer(p, 300, m.id);
     expect(sim.clone.of(p)!.hp).toBe(c0);
@@ -286,7 +285,7 @@ describe('Đan sư: phân thân hồi đồng đội quanh nó', () => {
     const p = join(28, 'thanh_moc_dan_kinh');
     const near = join(28, 'lac_kiem_quyet', 3);
     const far = join(28, 'lac_kiem_quyet', 90);
-    sim.onClone(p, { x: X, z: Z });
+    sim.onClone(p, {});
     // Lĩnh vực cũng hồi quanh chủ: ghim phân thân bằng cách hạ máu rồi so với bản không có phân thân ở người đứng xa.
     near.char.hp = Math.round(near.char.mhp * 0.3);
     far.char.hp = Math.round(far.char.mhp * 0.3);
@@ -351,6 +350,58 @@ describe('Lĩnh vực: chủ chết thì hết tác dụng', () => {
     expect(sim.domain.reduce(ally)).toBe(0);
     // Chỉ còn hồi tự nhiên như người đứng xa.
     expect(ally.char.hp - h0).toBeCloseTo(far.char.hp - h0, 0);
+  });
+});
+
+describe('chống khai thác', () => {
+  it('chủ ngự kiếm lơ lửng: không tạo được; đang có phân thân mà bay lên thì phân thân tan', () => {
+    const { sim, join, advance } = world();
+    const p = join(28, 'lac_kiem_quyet');
+    p.move.flying = true;
+    p.move.grounded = false;
+    sim.onClone(p, {});
+    expect(sim.clone.has(p)).toBe(false);
+    p.move.flying = false;
+    p.move.grounded = true;
+    advance(600);
+    sim.onClone(p, {});
+    expect(sim.clone.has(p)).toBe(true);
+    // Xuất khiếu (thám thính) giữa lúc có phân thân: phân thân tan.
+    sim.soul.command(p, {});
+    expect(sim.soul.isScouting(p)).toBe(true);
+    advance(600);
+    expect(sim.clone.has(p)).toBe(false);
+  });
+  it('chủ mất kết nối thì phân thân tan; có phân thân thì không đả tọa được', () => {
+    const { sim, join, advance } = world();
+    const p = join(28, 'lac_kiem_quyet');
+    sim.onClone(p, {});
+    sim.onMeditate(p, { on: true });
+    expect(p.meditating).toBeFalsy();
+    p.connected = false;
+    advance(600);
+    expect(sim.clone.has(p)).toBe(false);
+  });
+  it('echo tôn trọng hồi chiêu gốc: chiêu cd 60 s chỉ lặp một lần trong 20 s', () => {
+    const { sim, join, advance, mon } = world();
+    const p = join(28, 'lac_kiem_quyet');
+    const m = mon(X + 8, Z);
+    m.stunUntil = Date.now() + 60_000;
+    sim.onClone(p, {});
+    p.gcdAt = 0;
+    p.cds.clear();
+    sim.onSkill(p, { id: 'skl_thien_kiem_hoa_hinh', t: m.id });
+    advance(300);
+    let n = 0;
+    const o = sim as unknown as { hitMonster: (...a: unknown[]) => void };
+    const orig = o.hitMonster.bind(sim);
+    o.hitMonster = (...a: unknown[]) => {
+      n++;
+      orig(...a);
+    };
+    advance(CLONE_LIFE_MS - 2000);
+    expect(n).toBeLessThanOrEqual(2);
+    expect(n).toBeGreaterThan(0);
   });
 });
 
