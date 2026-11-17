@@ -367,10 +367,31 @@ export function App() {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const b = (e.target as Element | null)?.closest?.('button');
-      if (b && !b.disabled && !b.classList.contains('window-close') && !b.classList.contains('k-close')) sfx('ui_click', 0.7);
+      if (b && !b.disabled && !b.classList.contains('window-close') && !b.classList.contains('k-close')) {
+        // Nút chính (xác nhận: nâng cấp, tu luyện, nhập thế…) có tiếng xác nhận trầm; còn lại là tiếng bấm thường.
+        const primary = b.matches("[data-variant='primary'], .btn.primary");
+        sfx(primary ? 'ui_confirm' : 'ui_click', primary ? 0.6 : 0.7);
+      }
+    };
+    // Lướt chuột qua nút/ô/tab: chạm trầm rất nhẹ (UI-5), mỗi phần tử một lần, cách nhau ≥ 70 ms. Tôn trọng ?mute=1 (đi qua bus ui → master).
+    let lastEl: Element | null = null;
+    let lastAt = 0;
+    const onOver = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      const b = (e.target as Element | null)?.closest?.("button, [role='tab'], .ngj-slot, .k-slot");
+      if (!b || b === lastEl || (b as HTMLButtonElement).disabled) return;
+      lastEl = b;
+      const now = performance.now();
+      if (now - lastAt < 70) return;
+      lastAt = now;
+      sfx('ui_hover', 0.3);
     };
     document.addEventListener('click', onClick, true);
-    return () => document.removeEventListener('click', onClick, true);
+    document.addEventListener('pointerover', onOver, true);
+    return () => {
+      document.removeEventListener('click', onClick, true);
+      document.removeEventListener('pointerover', onOver, true);
+    };
   }, []);
   // Thao tác đầu tiên ở màn tiêu đề (gõ đạo hiệu, bấm nút) mở khóa âm thanh để nhạc chủ đề phát được.
   useEffect(() => {
