@@ -40,20 +40,6 @@
    "tier": 2
   },
   {
-   "type": "bolt",
-   "t": 0.16,
-   "at": "ground",
-   "offset": [
-    -1.5,
-    0,
-    -1.0
-   ],
-   "scale": 0.8,
-   "tone": "body",
-   "seed": 14,
-   "tier": 2
-  },
-  {
    "type": "mesh",
    "shape": "burst",
    "t": 0.0,
@@ -120,19 +106,6 @@
    "tone": "body",
    "alpha": 0.95,
    "tier": 0
-  },
-  {
-   "type": "decal",
-   "tex": "rune",
-   "t": 0.05,
-   "r": 3.4,
-   "dur": 2.2,
-   "at": "ground",
-   "grow": 0.2,
-   "tone": "accent",
-   "alpha": 0.8,
-   "tier": 1,
-   "yaw": 20
   },
   {
    "type": "mesh",

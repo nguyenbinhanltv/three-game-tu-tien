@@ -187,14 +187,21 @@ export interface FxTimeline {
  */
 export function fxDrawCount(events: readonly FxEvent[]): number {
   const groups = new Set<string>();
+  let bolts = 0;
   for (const e of events) {
     if (e.type === 'mesh') {
       groups.add(e.shape);
       if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix')) groups.add(e.shape + ':shadow');
     } else if (e.type === 'decal') groups.add('decal:' + e.tex);
     else if (e.type === 'trail') groups.add('trail');
+    else if (e.type === 'bolt') bolts++;
   }
-  return groups.size;
+  // Tia sét (`Vfx.lightning`) KHÔNG gộp instanced: mỗi tia một draw call; thêm hai nhóm gộp dùng chung (cầu sáng + vòng chạm đất) cho mọi tia.
+  if (bolts > 0) {
+    groups.add('bolt-glow');
+    groups.add('bolt-ring');
+  }
+  return groups.size + bolts;
 }
 
 /** Tổng số hạt của một tập sự kiện (ngân sách ≤ 1.500/chiêu). */
@@ -236,6 +243,7 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'hitstop' && !(e.ms >= 40 && e.ms <= 80)) errs.push(`${p}: hitstop ${e.ms} ms ngoài 40–80`);
       if (e.type === 'shake' && !(e.level >= 0 && e.level <= 0.6)) errs.push(`${p}: rung ${e.level} ngoài 0–0,6`);
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);
+      if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 2))) errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 2]`);
       if (e.type === 'particles' && !(e.n > 0 && e.n <= 400)) errs.push(`${p}: hạt n=${e.n} ngoài (0, 400]`);
     }
   }
@@ -248,6 +256,11 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (fxDrawCount(ev) > 12) errs.push(`${p}: ${fxDrawCount(ev)} draw > 12 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
       if (fxParticleCount(ev) > 1500) errs.push(`${p}: ${fxParticleCount(ev)} hạt > 1500 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
     }
+  }
+  // Tia sét: tối đa 4 tia mỗi đòn (mỗi tia một draw call riêng, không gộp).
+  for (const c of combos) for (const v of vars) {
+    const n = fxEventsFor(tl, c, v).filter((e) => e.type === 'bolt').length;
+    if (n > 4) errs.push(`${p}: ${n} tia sét > 4 (đòn ${c}${v ? ', biến thức ' + v : ''})`);
   }
   if (tl.trigger === 'fx' && !tl.fxKind) errs.push(`${p}: trigger fx thiếu fxKind`);
   return errs;
