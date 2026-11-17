@@ -21,7 +21,9 @@ export type FxShape =
   /** Tấm khói toon phẳng trên mặt đất, nở rồi tan theo nhiễu. */
   | 'smoke'
   /** Dải xoắn quanh một trục (vòng xoắn của phi kiếm). */
-  | 'helix';
+  | 'helix'
+  /** Dải xoắn mảnh (nét bút lông) cho vòng lụa cỡ lớn quanh một vùng: bề rộng dải chỉ bằng 1/3 `helix` khi phóng to. */
+  | 'ribbon';
 
 /** Bố trí gốc của sự kiện. */
 /** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
@@ -191,7 +193,7 @@ export function fxDrawCount(events: readonly FxEvent[]): number {
   for (const e of events) {
     if (e.type === 'mesh') {
       groups.add(e.shape);
-      if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix')) groups.add(e.shape + ':shadow');
+      if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix' || e.shape === 'ribbon')) groups.add(e.shape + ':shadow');
     } else if (e.type === 'decal') groups.add('decal:' + e.tex);
     else if (e.type === 'trail') groups.add('trail');
     else if (e.type === 'bolt') bolts++;

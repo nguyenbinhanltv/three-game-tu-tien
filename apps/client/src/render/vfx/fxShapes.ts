@@ -167,6 +167,8 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
       return QUAD_XZ;
     case 'helix':
       return memo('helix', () => helixGeometry());
+    case 'ribbon':
+      return memo('ribbon', () => helixGeometry(2.6, 0.22, 0.03, 96));
   }
 }
 
