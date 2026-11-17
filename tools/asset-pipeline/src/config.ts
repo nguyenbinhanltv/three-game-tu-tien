@@ -10,7 +10,7 @@ import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 /** Tăng khi đổi bước tối ưu để cache cũ tự mất hiệu lực. */
-export const PIPELINE_VERSION = 2;
+export const PIPELINE_VERSION = 3;
 
 export const DEFAULTS = {
   /** GLB thô: Blender xuất (tools/blender/run.mjs) hoặc import_tripo (M2-2). Không commit. */

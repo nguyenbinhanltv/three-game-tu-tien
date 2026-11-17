@@ -38,7 +38,7 @@ import {
   meshopt,
   rel,
 } from './config.js';
-import { compressTexturesKTX2, findToktx, toktxVersion } from './ktx.js';
+import { TOKTX_HELP, compressTexturesKTX2, findToktx, toktxVersion } from './ktx.js';
 import { type Dims, type TextureInfo, countTriangles, primitiveTriangles, isSkinned, listTextures, lodLevel, maxBones, measureCurrentPose } from './stats.js';
 
 export interface ManifestLod {
@@ -275,7 +275,7 @@ export async function optimizeAsset(
   if (lod0 > cap) warn(`${id}: LOD0 chỉ giảm được còn ${lod0} tam giác (trần ${cap})`);
 
   let ktx2 = false;
-  if (toktx && doc.getRoot().listTextures().length > 0) ktx2 = compressTexturesKTX2(doc, toktx, spec).converted > 0;
+  if (toktx && doc.getRoot().listTextures().length > 0) ktx2 = (await compressTexturesKTX2(doc, toktx, spec)).converted > 0;
   else if (spec.webp && doc.getRoot().listTextures().length > 0) {
     // Thiếu KTX-Software: WebP (three nạp EXT_texture_webp), màu + normal lossy, mặt nạ/emissive lossless.
     await doc.transform(textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^(baseColor|normal|diffuse)/, quality: 88, effort: 5 }));
@@ -335,7 +335,8 @@ export async function optimize(opts: OptimizeOptions = {}): Promise<OptimizeRepo
   const toktx = opts.ktx === false ? null : findToktx();
   const toktxTag = toktx ? toktxVersion(toktx) : null;
   if (opts.ktx !== false && !toktx) {
-    warn('không tìm thấy toktx (KTX-Software), giữ texture PNG/JPEG. Cài KTX-Software 4.x, thêm vào PATH hoặc đặt TOKTX=đường_dẫn.');
+    // Mọi asset đã commit dùng KTX2 (Q6): thiếu toktx mà vẫn build thì manifest lẫn hai định dạng, nên dừng hẳn thay vì cảnh báo.
+    throw new Error(`không tìm thấy toktx (KTX-Software). ${TOKTX_HELP} Chỉ khi cố ý không nén KTX2 mới chạy với --no-ktx.`);
   }
 
   fs.mkdirSync(outDir, { recursive: true });

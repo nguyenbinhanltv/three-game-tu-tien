@@ -2,6 +2,8 @@
 
 Giai đoạn R-3 của kế hoạch tái cấu trúc. Ảnh so sánh nằm ở thư mục artifact của phiên làm việc (không commit, theo quy ước R-1); file này chỉ giữ số đo và kết luận.
 
+> **Cập nhật sau R-3:** Q6 đã quyết bật KTX2 cho toàn bộ asset (`docs/ktx2/README.md`); hai đề xuất X13 đã làm (khóa chân dung đổi thành `npc_khieu_han_son`, `LEVEL_ART` có `van_hai`). Phần dưới là số đo tại thời điểm R-3.
+
 ## Kết quả
 
 | Hạng mục | Trước | Sau |
