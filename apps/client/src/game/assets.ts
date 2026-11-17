@@ -162,6 +162,23 @@ function plainDataTexture(src: THREE.Texture): THREE.Texture {
 }
 
 /**
+ * three cảnh báo "Multiple active KTX2 loaders" trong `KTX2Loader.init()` khi đã có một loader khác hoạt động. `init()` chạy đồng bộ
+ * ở đầu `_createTexture` lần đầu của mỗi loader (không phải trong constructor), nên chặn riêng lời cảnh báo đó trong phần đồng bộ
+ * của lời gọi. Ở game loader phụ là chủ ý (2 worker, chỉ cho normal map trên WebGPU); mọi cảnh báo khác vẫn đi qua.
+ */
+function quietSecondLoader<T>(call: () => T): T {
+  const warn = console.warn;
+  console.warn = (...a: unknown[]) => {
+    if (!String(a[0]).includes('Multiple active KTX2 loaders')) warn(...a);
+  };
+  try {
+    return call();
+  } finally {
+    console.warn = warn;
+  }
+}
+
+/**
  * KTX2Loader của game. Pipeline nén normal map bằng UASTC, mọi thứ khác bằng ETC1S (tools/asset-pipeline/src/ktx.ts).
  * UASTC chỉ giữ được chất lượng khi GPU nhận ASTC hoặc BC7; nếu không, three chuyển mã xuống BC1/ETC (5-6 bit mỗi kênh),
  * vỡ khối thấy rõ trên pháp tuyến. Backend WebGPU của three r178 không tạo được texture BC7 (chỉ BC1–3, ETC2, ASTC), nên trên
@@ -180,18 +197,7 @@ export class GameKtx2Loader extends KTX2Loader {
     const cfg = (this as unknown as Ktx2Internals).workerConfig;
     const keepsQuality = !!cfg && (cfg.astcSupported || cfg.bptcSupported);
     if (keepsQuality || this.plain) return;
-    // three cảnh báo "Multiple active KTX2 loaders" mỗi khi có loader thứ hai. Ở đây loader phụ là chủ ý (2 worker, chỉ cho normal map),
-    // nên chặn riêng lời cảnh báo đó trong lúc tạo để console của game không nhiễu.
-    const warn = console.warn;
-    console.warn = (...a: unknown[]) => {
-      if (!String(a[0]).includes('Multiple active KTX2 loaders')) warn(...a);
-    };
-    let plain: KTX2Loader;
-    try {
-      plain = new KTX2Loader(this.libs).setTranscoderPath('/libs/').setWorkerLimit(2);
-    } finally {
-      console.warn = warn;
-    }
+    const plain = new KTX2Loader(this.libs).setTranscoderPath('/libs/').setWorkerLimit(2);
     (plain as unknown as Ktx2Internals).workerConfig = {
       astcSupported: false,
       astcHDRSupported: false,
@@ -211,9 +217,12 @@ export class GameKtx2Loader extends KTX2Loader {
 
   // Ghi đè phương thức nội bộ của three (r178): điểm duy nhất mọi tệp KTX2 đi qua, cả khi nạp qua GLTFLoader.
   async _createTexture(buffer: ArrayBuffer, config: object = {}): Promise<THREE.Texture> {
-    const target = this.plain && isUastcKtx2(buffer) ? this.plain : null;
-    if (target) return plainDataTexture(await (target as unknown as Ktx2Internals)._createTexture(buffer, config));
-    return (KTX2Loader.prototype as unknown as Ktx2Internals)._createTexture.call(this, buffer, config);
+    const base = (KTX2Loader.prototype as unknown as Ktx2Internals)._createTexture;
+    if (!this.plain) return base.call(this, buffer, config);
+    const plain = isUastcKtx2(buffer) ? (this.plain as unknown as Ktx2Internals) : null;
+    // Có loader phụ thì loader nào `init()` sau sẽ in cảnh báo, nên bọc cả hai đường.
+    if (plain) return plainDataTexture(await quietSecondLoader(() => plain._createTexture(buffer, config)));
+    return quietSecondLoader(() => base.call(this, buffer, config));
   }
 
   dispose(): this {
