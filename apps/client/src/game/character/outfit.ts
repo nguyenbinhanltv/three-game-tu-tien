@@ -107,7 +107,9 @@ export function remapSkin(garment: THREE.SkinnedMesh, target: readonly { name: s
 export function outfitAssetId(outfit: string | undefined, modelId: string | null): string | null {
   if (!outfit || !modelId) return null;
   const g = modelId.slice(modelId.lastIndexOf('_') + 1);
-  return g ? `${outfit}_${g}` : null;
+  if (!g) return null;
+  // Nhân vật nền v2 (CHR-PROTO): áo dựng lại trên thân v2, `<outfit>_v2_<giới>`.
+  return modelId.startsWith('chr_v2_') ? `${outfit}_v2_${g}` : `${outfit}_${g}`;
 }
 
 /**

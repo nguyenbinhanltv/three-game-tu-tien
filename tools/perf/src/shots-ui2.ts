@@ -32,6 +32,7 @@ const SCENES: Scene[] = [
   { id: 'lac_kiem', query: 'realm=nk12&at=tong_mon', gm: ['/gm heal'], quests: { ids: ['q_dan_khi'], at: [2048, 2034], home: [2048, 2088] }, wait: 2500 },
   { id: 'doan_mach', query: 'realm=17&at=dm_tram', gm: ['/gm qdone q_truc_co', '/gm qdone q2_thu_ha_son'], quests: { ids: ['q2_mach_tinh'], at: [1010, 1050], home: [1024, 1036] }, wait: 4000 },
   { id: 'van_hai', query: 'realm=22', gm: ['/gm qdone q_truc_co', '/gm qdone chuong2', '/gm qdone q2_ket_dan', '/gm qdone q3_len_may', '/gm tele vh_tp_hub', '/gm tp vh_hub'], quests: { ids: ['s3_do_thuyen'], at: [1048, 1053.5], home: [1024, 1036] }, wait: 4000 },
+  { id: 'kinh_ho', query: 'realm=20', gm: ['/gm tele vh_tp_hub', '/gm tp vh_hub', '/gm tp 1170 1520'], keys: ['Escape'], wait: 14000 },
   { id: 'boss', query: 'realm=nk15&at=boss', gm: ['/gm tp 1640 2252'], keys: ['Tab', 'Tab'], wait: 6000, cam: { dist: 14, pitch: 0.35 } },
   { id: 'dem', query: 'realm=nk12&at=tong_mon&mood=night', quests: { ids: ['q_dan_khi'], at: [2048, 2034], home: [2048, 2088] }, wait: 2500 },
 ];

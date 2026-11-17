@@ -1,0 +1,5 @@
+{
+  "$comment": "CHR-PROTO (?chr=v2): vùng thân nền bị áo che, ẩn đi khi mặc (xem docs/chr-v2). Khóa là mảnh áo (không hậu tố giới, không _v2). Vùng: head neck chest belly upperArm forearm hand thigh calf foot. Bộ không khai báo thì thân nền không ẩn gì.",
+  "set_liet_mach_kiem_y": ["chest", "belly", "upperArm", "thigh", "calf", "foot"],
+  "set_kinh_quang_kiem_y": ["chest", "belly", "upperArm", "thigh", "calf", "foot"]
+}

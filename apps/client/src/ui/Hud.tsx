@@ -9,7 +9,7 @@ import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextM
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { artifactLines } from './gear';
-import { Corners, ngjHud as NGJ, SealNumeral, SysIcon, type SysIconName } from './ngj';
+import { Corners, ngjHud as NGJ, RingSweep, SealNumeral, SysIcon, type SysIconName } from './ngj';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
@@ -186,6 +186,7 @@ function ChapterCardShow({ card }: { card: ChapterCard }) {
   return (
     <div className={'chapter-card chapter-' + card.kind} key={card.id} style={{ '--dur': card.dur + 'ms' } as CSSProperties}>
       {art && <div className="chapter-art" style={{ backgroundImage: `url("${art}")` }} />}
+      {NGJ && (card.kind === 'trib' || card.kind.startsWith('ascend')) && <RingSweep />}
       <div className="lb lb-top" />
       <div className="lb lb-bot" />
       <div className="chapter-text">

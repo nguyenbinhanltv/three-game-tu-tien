@@ -10,6 +10,8 @@ import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/preload';
 import { Hud } from './Hud';
 import { RootPicker } from './Realm';
+import { Corners, ngjHud as NGJ } from './ngj';
+import { Portrait } from './Art';
 import { get, type Phase, set, useUI } from './store';
 
 const GOOGLE_CLIENT_ID = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_GOOGLE_CLIENT_ID ?? '';
@@ -81,7 +83,8 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
               title={on ? undefined : t('ui.login.gender_soon')}
               onClick={() => onChange({ ...look, g: g.id as Gender })}
             >
-              {t(`appearance.gender.${g.id}`)}
+              {NGJ && <Portrait id={'player_' + g.id} className="look-face" />}
+              <span>{t(`appearance.gender.${g.id}`)}</span>
             </button>
           );
         })}
@@ -158,7 +161,8 @@ function Login() {
   };
 
   return (
-    <div className="ts-card">
+    <div className={'ts-card' + (NGJ ? ' ngj-card' : '')}>
+      {NGJ && <Corners material="paper" />}
       <p className="login-tag">{t('ui.tagline')}</p>
 
         {needName && token ? (
@@ -278,7 +282,8 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
     return () => window.clearInterval(id);
   }, []);
   return (
-    <div className="ts-card ts-loading" role="status" aria-live="polite">
+    <div className={'ts-card ts-loading' + (NGJ ? ' ngj-card' : '')} role="status" aria-live="polite">
+      {NGJ && <Corners material="paper" />}
       <p className="ts-line" key={line}>
         {line}
       </p>
@@ -291,7 +296,8 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
 
 function ErrorPanel({ text }: { text: string }) {
   return (
-    <div className="ts-card">
+    <div className={'ts-card' + (NGJ ? ' ngj-card' : '')}>
+      {NGJ && <Corners material="paper" />}
       <p className="login-error">{text}</p>
       <button
         className="btn primary"
@@ -347,10 +353,31 @@ export function App() {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const b = (e.target as Element | null)?.closest?.('button');
-      if (b && !b.disabled && !b.classList.contains('window-close') && !b.classList.contains('k-close')) sfx('ui_click', 0.7);
+      if (b && !b.disabled && !b.classList.contains('window-close') && !b.classList.contains('k-close')) {
+        // Nút chính (xác nhận: nâng cấp, tu luyện, nhập thế…) có tiếng xác nhận trầm; còn lại là tiếng bấm thường.
+        const primary = b.matches("[data-variant='primary'], .btn.primary");
+        sfx(primary ? 'ui_confirm' : 'ui_click', primary ? 0.6 : 0.7);
+      }
+    };
+    // Lướt chuột qua nút/ô/tab: chạm trầm rất nhẹ (UI-5), mỗi phần tử một lần, cách nhau ≥ 70 ms. Tôn trọng ?mute=1 (đi qua bus ui → master).
+    let lastEl: Element | null = null;
+    let lastAt = 0;
+    const onOver = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      const b = (e.target as Element | null)?.closest?.("button, [role='tab'], .ngj-slot, .k-slot");
+      if (!b || b === lastEl || (b as HTMLButtonElement).disabled) return;
+      lastEl = b;
+      const now = performance.now();
+      if (now - lastAt < 70) return;
+      lastAt = now;
+      sfx('ui_hover', 0.3);
     };
     document.addEventListener('click', onClick, true);
-    return () => document.removeEventListener('click', onClick, true);
+    document.addEventListener('pointerover', onOver, true);
+    return () => {
+      document.removeEventListener('click', onClick, true);
+      document.removeEventListener('pointerover', onOver, true);
+    };
   }, []);
   // Thao tác đầu tiên ở màn tiêu đề (gõ đạo hiệu, bấm nút) mở khóa âm thanh để nhạc chủ đề phát được.
   useEffect(() => {

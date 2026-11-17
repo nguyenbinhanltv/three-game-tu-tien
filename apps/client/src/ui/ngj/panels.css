@@ -8,20 +8,20 @@
 :root[data-ngj='1'] .ngj-win {
   /* chữ và nhấn trên nền giấy */
   --k-text: #2a2118;
-  --k-text-dim: #6a5c44;
+  --k-text-dim: #574a34;
   --k-text-ink: #2a2118;
-  --k-text-ink-dim: #6a5c44;
-  --k-gold: #8a5a10;
+  --k-text-ink-dim: #574a34;
+  --k-gold: #6f4806;
   --k-bronze: #a47f3a;
   --k-bronze-hi: #7a5518;
   --k-bronze-lo: #7a5f2c;
   --k-edge-dim: rgba(122, 95, 44, 0.45);
-  --k-jade: #1f7a6d;
+  --k-jade: #145f53;
   --k-ngoc: #1f7a8f;
-  --k-cinnabar-hi: #a8372c;
-  --k-q1: #4f7f2f;
-  --k-q2: #2f6fa3;
-  --k-q3: #7a4fd0;
+  --k-cinnabar-hi: #8f2a21;
+  --k-q1: #3b6322;
+  --k-q2: #215a8a;
+  --k-q3: #5f35b3;
   --k-q4: #b27b0a;
   /* lòng giếng/ô tối trên giấy: nâu giấy đậm hơn một bậc */
   --k-night-0: #e0d4b6;
@@ -222,42 +222,56 @@
 :root[data-ngj='1'] .ngj-win .k-slot[data-empty='true'] .k-slot-in { background: rgba(255, 250, 235, 0.45); box-shadow: inset 0 0 6px rgba(122, 95, 44, 0.2); }
 
 /* ───────── màu chữ sáng cứng trong CSS cũ → bản đậm hợp nền giấy ───────── */
-:root[data-ngj='1'] .ngj-win { --k-sword: #1c6a88; --k-jade-dark: #1f7a6d; }
+:root[data-ngj='1'] .ngj-win { --k-sword: #145877; --k-jade-dark: #145f53; }
 :root[data-ngj='1'] .ngj-win :is(.skill-item, .upg-row, .shop-row, .recipe-row, .npc-quest, .quest-card) {
   background: rgba(255, 250, 235, 0.55);
   border-color: rgba(164, 127, 58, 0.55);
   box-shadow: inset 0 0 0 2px rgba(255, 250, 235, 0.6);
   color: var(--ngj-ink);
 }
-:root[data-ngj='1'] .ngj-win :is(.k-panel .ok, .quest-obj.ok) { color: #2f7a46; }
-:root[data-ngj='1'] .ngj-win .reward-item[data-q='1'] { color: #4f7f2f; }
-:root[data-ngj='1'] .ngj-win .reward-item[data-q='2'] { color: #2f6fa3; }
-:root[data-ngj='1'] .ngj-win .reward-item[data-q='3'] { color: #7a4fd0; }
-:root[data-ngj='1'] .ngj-win :is(.item-name[data-q='4'], .item-stat.set) { color: #a8700a; text-shadow: none; }
-:root[data-ngj='1'] .ngj-win .craft-chance { color: #6a5c44; }
-:root[data-ngj='1'] .ngj-win .craft-chance[data-support='1'] { color: #2f7a46; }
-:root[data-ngj='1'] .ngj-win .pty-role.dps { color: #1c6a88; }
-:root[data-ngj='1'] .ngj-win .pty-role.tank { color: #a8700a; }
-:root[data-ngj='1'] .ngj-win .pty-role.support { color: #2f7a46; }
+:root[data-ngj='1'] .ngj-win :is(.k-panel .ok, .quest-obj.ok) { color: #22633a; }
+:root[data-ngj='1'] .ngj-win .reward-item[data-q='1'] { color: #3b6322; }
+:root[data-ngj='1'] .ngj-win .reward-item[data-q='2'] { color: #215a8a; }
+:root[data-ngj='1'] .ngj-win .reward-item[data-q='3'] { color: #5f35b3; }
+:root[data-ngj='1'] .ngj-win :is(.item-name[data-q='4'], .item-stat.set) { color: #744b00; text-shadow: none; }
+:root[data-ngj='1'] .ngj-win .craft-chance { color: #574a34; }
+:root[data-ngj='1'] .ngj-win .craft-chance[data-support='1'] { color: #22633a; }
+:root[data-ngj='1'] .ngj-win .pty-role.dps { color: #145877; }
+:root[data-ngj='1'] .ngj-win .pty-role.tank { color: #744b00; }
+:root[data-ngj='1'] .ngj-win .pty-role.support { color: #22633a; }
 :root[data-ngj='1'] .ngj-win .r0 { color: #4a4f52; }
-:root[data-ngj='1'] .ngj-win .r1 { color: #3f7a2c; }
-:root[data-ngj='1'] .ngj-win .r2 { color: #2f6fa3; }
-:root[data-ngj='1'] .ngj-win .r3 { color: #7a4fd0; }
+:root[data-ngj='1'] .ngj-win .r1 { color: #356a22; }
+:root[data-ngj='1'] .ngj-win .r2 { color: #215a8a; }
+:root[data-ngj='1'] .ngj-win .r3 { color: #5f35b3; }
 
 /* biến toàn cục của styles.css (nền tối) → bản hợp nền giấy trong bảng */
-:root[data-ngj='1'] .ngj-win { --gold: #8a5a10; --gold-soft: #7a5518; --text: #2a2118; --muted: #6a5c44; --good: #2f7a46; --bad: #a8372c; --line: rgba(122, 95, 44, 0.45); }
-:root[data-ngj='1'] .ngj-win .item-name[data-q='1'] { color: #4f7f2f; }
-:root[data-ngj='1'] .ngj-win .item-name[data-q='2'] { color: #2f6fa3; }
-:root[data-ngj='1'] .ngj-win .item-name[data-q='3'] { color: #7a4fd0; }
-:root[data-ngj='1'] .ngj-win .item-name[data-q='4'] { color: #a8700a; }
-:root[data-ngj='1'] .ngj-win .item-stat { color: #1c6a88; }
-:root[data-ngj='1'] .ngj-win .item-stat.good { color: #1f7a6d; }
+:root[data-ngj='1'] .ngj-win { --gold: #6f4806; --gold-soft: #7a5518; --text: #2a2118; --muted: #574a34; --good: #22633a; --bad: #8f2a21; --line: rgba(122, 95, 44, 0.45); }
+:root[data-ngj='1'] .ngj-win .item-name[data-q='1'] { color: #3b6322; }
+:root[data-ngj='1'] .ngj-win .item-name[data-q='2'] { color: #215a8a; }
+:root[data-ngj='1'] .ngj-win .item-name[data-q='3'] { color: #5f35b3; }
+:root[data-ngj='1'] .ngj-win .item-name[data-q='4'] { color: #744b00; }
+:root[data-ngj='1'] .ngj-win .item-stat { color: #145877; }
+:root[data-ngj='1'] .ngj-win .item-stat.good { color: #145f53; }
 
 /* bảng Công pháp */
 :root[data-ngj='1'] .ngj-win .mp-skill { background: rgba(255, 250, 235, 0.55); border: 1px solid rgba(164, 127, 58, 0.55); box-shadow: inset 0 0 0 2px rgba(255, 250, 235, 0.6); color: var(--ngj-ink); }
-:root[data-ngj='1'] .ngj-win .mp-passive b { color: color-mix(in srgb, var(--mc, #1c6a88) 45%, #2a2118); }
-:root[data-ngj='1'] .ngj-win .mp-up { color: #2f7a46; }
+:root[data-ngj='1'] .ngj-win .mp-passive b { color: color-mix(in srgb, var(--mc, #145877) 45%, #2a2118); }
+:root[data-ngj='1'] .ngj-win .mp-up { color: #22633a; }
 :root[data-ngj='1'] .ngj-win .mp-card.sel { box-shadow: inset 0 0 0 2px var(--ngj-jade), 0 0 8px rgba(62, 156, 143, 0.35); background: rgba(62, 156, 143, 0.14); }
 
 /* tab ngang gọn hơn để sáu tab của Túi vừa một hàng */
 :root[data-ngj='1'] .ngj-win .k-tab { padding: 8px 8px 9px; font-size: 14px; }
+
+/* ───────── bản đồ lớn (M): danh sách vùng và chip trên giấy ngà ───────── */
+:root[data-ngj='1'] .ngj-win .wm-chip { color: var(--ngj-ink-dim); background: rgba(255, 250, 235, 0.7); border-color: rgba(164, 127, 58, 0.7); }
+:root[data-ngj='1'] .ngj-win .wm-chip[data-on='true'] { color: var(--ngj-ink); background: rgba(62, 156, 143, 0.28); border-color: var(--ngj-jade); }
+:root[data-ngj='1'] .ngj-win .wm-zone { color: var(--ngj-ink); background: rgba(255, 250, 235, 0.55); border-left-color: rgba(164, 127, 58, 0.7); box-shadow: inset 0 0 0 1px rgba(164, 127, 58, 0.25); }
+:root[data-ngj='1'] .ngj-win .wm-zone[data-here='true'] { background: rgba(62, 156, 143, 0.16); border-left-color: var(--ngj-jade); }
+:root[data-ngj='1'] .ngj-win .wm-zone-name { color: #6b4d1c; font-family: var(--k-font-serif); }
+:root[data-ngj='1'] .ngj-win .wm-zone-lv { color: var(--ngj-ink-dim); }
+:root[data-ngj='1'] .ngj-win .wm-zone[data-status='low'] .wm-zone-lv { color: #22633a; }
+:root[data-ngj='1'] .ngj-win .wm-zone[data-status='high'] .wm-zone-lv { color: #8f2a21; }
+:root[data-ngj='1'] .ngj-win .wm-row b { color: #6b4d1c; }
+:root[data-ngj='1'] .ngj-win .wm-tele { color: var(--ngj-ink); background: rgba(62, 156, 143, 0.14); border-color: var(--ngj-jade); }
+:root[data-ngj='1'] .ngj-win .wm-cd { color: var(--ngj-ink-dim); }
+:root[data-ngj='1'] .ngj-win .wm-main { border: 2px solid var(--ngj-gold); box-shadow: 0 0 0 1px rgba(30, 23, 18, 0.45); }

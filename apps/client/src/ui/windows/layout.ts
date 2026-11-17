@@ -171,3 +171,32 @@ export function savePos(id: WinId, x: number, y: number): void {
     /* localStorage đầy hoặc bị chặn: bỏ qua */
   }
 }
+
+/**
+ * Co cửa sổ vào khung nhìn mới (đổi cỡ trình duyệt, đổi `--ui-scale`): giữ cả cửa sổ trong màn hình khi vừa,
+ * không thì dồn sang trái để thấy thanh tiêu đề. Hàm thuần; trả về danh sách cũ nếu không có gì đổi.
+ */
+export function fitWindows(list: readonly WinState[], vpOf: (id: WinId) => Viewport): WinState[] {
+  let changed = false;
+  const out = list.map((w) => {
+    const vp = vpOf(w.id);
+    const width = winWidth(w.id, vp);
+    const x = Math.round(Math.max(Math.min(w.x, vp.vw - width - WIN_MARGIN / 2), WIN_MARGIN / 2));
+    const y = Math.round(Math.min(Math.max(w.y, 0), Math.max(0, vp.vh - BOTTOM_RESERVE - 48)));
+    if (x === w.x && y === w.y) return w;
+    changed = true;
+    return { ...w, x, y };
+  });
+  // Cặp nhân vật + túi đang chồng nhau sau khi co: xếp lại cạnh nhau như lúc mở.
+  const l = out.find((w) => w.id === PAIR_LEFT);
+  const r = out.find((w) => w.id === PAIR_RIGHT);
+  if (l && r) {
+    const vp = vpOf(PAIR_LEFT);
+    if (overlaps(winRect(l, vp), winRect(r, vp))) {
+      const p = pairLayout(vp);
+      changed = true;
+      return out.map((w) => (w.id === PAIR_LEFT ? { ...w, ...p.left } : w.id === PAIR_RIGHT ? { ...w, ...p.right } : w));
+    }
+  }
+  return changed ? out : (list as WinState[]);
+}

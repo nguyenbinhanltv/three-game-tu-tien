@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampPos, closeWindow, focusWindow, moveWindow, openWindow, overlaps, topWindow, type Viewport, type WinState, winRect } from './layout';
+import { clampPos, closeWindow, fitWindows, focusWindow, moveWindow, openWindow, overlaps, topWindow, type Viewport, type WinState, winRect } from './layout';
 
 const VPS: Viewport[] = [
   { vw: 1280, vh: 720 },
@@ -70,5 +70,18 @@ describe('window manager', () => {
     expect(Math.max(...l.map((w) => w.z))).toBeLessThanOrEqual(l.length);
     expect(new Set(l.map((w) => w.z)).size).toBe(l.length);
     expect(topWindow(l)?.id).toBe('bag');
+  });
+});
+
+describe('fitWindows', () => {
+  it('co bảng đang mở vào khung nhỏ hơn, không đổi khi đã vừa', () => {
+    const big = { vw: 1920, vh: 1080 };
+    const small = { vw: 1366, vh: 768 };
+    let l: WinState[] = [];
+    l = openWindow(l, 'char', big).list;
+    l = openWindow(l, 'bag', big).list;
+    const fitted = fitWindows(l, () => small);
+    for (const w of fitted) expect(w.x + winRect(w, small).w).toBeLessThanOrEqual(small.vw);
+    expect(fitWindows(fitted, () => small)).toBe(fitted);
   });
 });

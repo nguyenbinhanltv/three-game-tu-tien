@@ -224,11 +224,12 @@
 :root[data-ngj='1'] .minimap-pos { right: 20px; bottom: 4px; }
 :root[data-ngj='1'] .minimap-foot.ngj-mm-foot { background: none; padding: 0; margin-top: 2px; }
 :root[data-ngj='1'] .minimap-foot.ngj-mm-foot { width: 238px; margin-left: -48px; }
-:root[data-ngj='1'] .ngj-mm-foot .ngj-cart { min-width: 0; width: 100%; padding: 0 16px 0 74px; --ngj-c-h: 40px; font-size: 16px; }
-:root[data-ngj='1'] .ngj-mm-foot .ngj-cart-title { overflow: hidden; text-overflow: ellipsis; color: var(--ngj-gold-hi); }
-:root[data-ngj='1'] .ngj-mm-foot .minimap-foot-lv { font-size: 13px; color: rgba(237, 227, 204, 0.75); }
-:root[data-ngj='1'] .ngj-mm-foot[data-status='low'] .ngj-cart-title, :root[data-ngj='1'] .ngj-mm-foot[data-status='low'] .minimap-foot-lv { color: #9fd9a0; }
-:root[data-ngj='1'] .ngj-mm-foot[data-status='high'] .ngj-cart-title, :root[data-ngj='1'] .ngj-mm-foot[data-status='high'] .minimap-foot-lv { color: var(--ngj-crimson-hi); }
+:root[data-ngj='1'] .ngj-mm-foot .ngj-cart { min-width: 0; width: 100%; height: auto; min-height: 40px; padding: 4px 16px 4px 74px; font-size: 16px; }
+/* giãn theo nội dung: tên vùng một dòng, nhãn cấp (NK21–22) nhỏ hơn ở dòng dưới; không cắt chữ */
+:root[data-ngj='1'] .ngj-mm-foot .ngj-cart-title { display: flex; flex-direction: column; align-items: center; line-height: 1.15; white-space: normal; text-align: center; color: var(--ngj-gold-hi); }
+:root[data-ngj='1'] .ngj-mm-foot .minimap-foot-lv { font-size: 11px; font-weight: 500; letter-spacing: 0.04em; color: rgba(237, 227, 204, 0.8); }
+/* màu chữ giữ vàng/ngà; chỉ nhãn cấp chuyển đỏ khi vùng nguy hiểm vượt cấp người chơi (có chú thích ở title của khung) */
+:root[data-ngj='1'] .ngj-mm-foot[data-status='high'] .minimap-foot-lv { color: var(--ngj-crimson-hi); }
 
 /* ───────── theo dõi nhiệm vụ ───────── */
 :root[data-ngj='1'] .hud .tracker { text-align: left; padding: 8px 12px 9px 14px; opacity: 1; margin-top: 8px; }
@@ -301,3 +302,11 @@
 :root[data-ngj='1'] .k-tip-sub, :root[data-ngj='1'] .k-tip-desc, :root[data-ngj='1'] .k-tip-line.dim { color: rgba(237, 227, 204, 0.62); }
 :root[data-ngj='1'] .k-tip-line.good { color: var(--ngj-jade-hi); }
 :root[data-ngj='1'] .k-tip-line.bad { color: var(--ngj-crimson-hi); }
+
+/* cửa sổ hẹp (≤ 1500 px, ví dụ 1366×768): thanh chức năng chỉ còn icon + phím để không xuống dòng/đè khung chat */
+.ngj-sysbtn-label { white-space: nowrap; }
+@media (max-width: 1500px) {
+  :root[data-ngj='1'] .ngj-sysbtn-label { display: none; }
+  :root[data-ngj='1'] .ngj-sysbtn { padding-right: 6px; }
+  :root[data-ngj='1'] .hud .chat { width: 300px; }
+}
