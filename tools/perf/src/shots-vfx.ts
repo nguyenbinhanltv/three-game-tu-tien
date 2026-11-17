@@ -298,10 +298,10 @@ async function main(): Promise<void> {
           }
           await scene(page);
           // Pháp tướng cần camera xa phía sau: đứng ở chỗ trống giữa sân (không có cột/cổng chắn camera).
-          if (PHAP.test(sk)) { await gm(page, 'tp 2048 2150', 1500); await gm(page, 'spawn mon_soi_xam 1', 1500); }
+          if (PHAP.test(sk)) { await gm(page, 'tp 2048 2150', 1500); if (!/kim_cuong|hoi_thien/.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500); else await gm(page, 'killall', 900); }
           if (/van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/.test(sk)) await gm(page, 'charge', 900);
           await closeCam(page, WIDE.test(sk) ? Number(opt('--wide', '9.5')) : DIST, PHAP.test(sk) ? Math.PI + 0.15 : 0.9);
-          if (WIDE.test(sk)) await page.evaluate((pt) => { (window as unknown as G).__game!.camPitch = pt; }, PHAP.test(sk) ? 0.3 : 0.3);
+          if (WIDE.test(sk)) await page.evaluate((pt) => { (window as unknown as G).__game!.camPitch = pt; }, PHAP.test(sk) ? 0.2 : 0.3);
           const combo = sk === 'skl_phi_kiem';
           const span = combo ? 3000 : SPAN[sk] ?? Number(opt('--span', '1700'));
           const act = async () => {

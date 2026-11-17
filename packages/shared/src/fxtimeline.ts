@@ -27,7 +27,9 @@ export type FxShape =
   /** Pháp tướng rồng: ống thon cuộn xoắn quanh một trục đứng, đầu ở đỉnh (kiểu `crystal`, mọc từ đuôi lên đầu). */
   | 'dragon'
   /** Pháp tướng tượng ngồi (La Hán): thân tròn xoay dựng từ đài sen tới đầu, cao ~4,2 m ở scale 1 (kiểu `crystal`). */
-  | 'statue';
+  | 'statue'
+  /** Thẻ pháp tướng vẽ 2D quay mặt về camera (kiểu `card`); chọn tranh bằng `card`. */
+  | 'card';
 
 /** Bố trí gốc của sự kiện. */
 /** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
@@ -75,6 +77,8 @@ export interface FxMeshEvent extends FxBase {
   billboard?: boolean;
   /** Bay từ gốc sang `to` trong `dur` (phi kiếm lao, kiếm khí bay): gốc → đích, đơn vị mét hoặc theo neo. */
   move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear'; /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number] };
+  /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh). */
+  card?: 'arhat' | 'phoenix';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
   keepUp?: boolean;
   /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */

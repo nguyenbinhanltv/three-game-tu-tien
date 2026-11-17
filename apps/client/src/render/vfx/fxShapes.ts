@@ -293,13 +293,16 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
       return memo('dragon', () => dragonGeometry());
     case 'statue':
       return memo('statue', () => statueGeometry());
+    case 'card':
+      return QUAD_XY;
     case 'ribbon':
       return memo('ribbon', () => helixGeometry(2.6, 0.22, 0.03, 96));
   }
 }
 
 /** Kiểu material của một hình (theo lớp). */
-export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' {
+export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' | 'card' {
+  if (s === 'card') return 'card';
   if (s === 'spike' || s === 'shard' || s === 'kite' || s === 'dragon' || s === 'statue') return 'crystal';
   if (s === 'burst') return 'burst';
   if (s === 'smoke') return 'decal';

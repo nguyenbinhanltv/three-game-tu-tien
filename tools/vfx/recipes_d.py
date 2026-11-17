@@ -36,42 +36,28 @@ def register(R, H):
         ]
 
     def arhat_events():
-        z = 13.0
-        S = 1.75
-        out = [
-            mesh('statue', -0.3, 2.7, at='self', offset=[0, -1.15, z], rot=[0, 180, 0], scale=1.7 * S, sweep=0.35, erodeFrom=0.72, alpha=ALPHA, tone='body', seed=960, tier=0),
-            mesh('ripple', 0.0, 2.4, at='self', offset=[0, 5.2 * S, z + 1.5], rot=[90, 0, 0], scale=3.4 * S, sweep=0.4, erodeFrom=0.72, ragged=0.3, tone='accent', alpha=0.9, seed=961, tier=0),
-            mesh('ripple', 0.1, 2.3, at='self', offset=[0, 5.2 * S, z + 1.6], rot=[90, 0, 0], scale=2.4 * S, sweep=0.4, erodeFrom=0.72, ragged=0.2, tone='rim', alpha=0.8, seed=962, tier=1),
-            mesh('ripple', -0.2, 2.6, at='self', offset=[0, -1.1, z], scale=0.3, scaleTo=4.4, sweep=0.4, erodeFrom=0.7, ragged=0.5, tone='accent', alpha=0.85, seed=963, tier=0),
+        # Thẻ 2D La Hán ngồi kiết già + hào quang (cards.ts), cao ~6,5 m (~3,7 lần người), canh giữa người từ camera sau lưng, dissolve vào/ra.
+        h, d = 6.5, 6.5
+        return [
+            mesh('card', -0.3, 2.7, card='arhat', at='self', offset=[0, h / 2 - 1.15 + 0.4, d], billboard=True, scale=[round(h * 512 / 768 / 2, 2), h / 2, 1], sweep=0.3, erodeFrom=0.72,
+                 alpha=0.92, tone='body', seed=960, tier=0),
+            mesh('ripple', -0.2, 2.6, at='self', offset=[0, -1.1, d], scale=0.3, scaleTo=3.6, sweep=0.4, erodeFrom=0.7, ragged=0.5, tone='accent', alpha=0.85, seed=963, tier=0),
+            parts('spark', 0.0, 70, 2.0, 1, 2.2, 0.09, at='self', offset=[0, h / 2, d], grav=-0.5, tone='accent', tier=0),
+            parts('spark', 0.1, 40, 1.4, 1, 2.0, 0.07, at='self', offset=[0, h / 2, d], grav=-0.3, tone='rim', tier=1),
             camera(-0.2, 0.12, 2.6),
         ]
-        # Hai tay chắp ấn: từ vai chéo vào giữa ngực, bàn tay (kite dựng đứng) chắp trước ngực.
-        for side in (1, -1):
-            out.append(mesh('kite', 0.05, 2.4, at='self', offset=[round(2.4 * S * side, 2), 3.4 * S, z], rot=[18, -90 * side, 0], scale=[5.0, 2.8, 3.3], sweep=0.3, erodeFrom=0.72,
-                            alpha=ALPHA + 0.15, tone='body', seed=964 + side, tier=0))
-        out.append(mesh('kite', 0.1, 2.3, at='self', offset=[0, 2.4 * S, z - 0.8], rot=[-90, 0, 0], scale=[3.8, 3.3, 2.6], sweep=0.3, erodeFrom=0.72, alpha=ALPHA + 0.2, tone='accent', seed=966, tier=0))
-        out.append(mesh('ripple', 0.0, 2.3, at='self', offset=[0, -0.5, z], scale=0.3, scaleTo=2.6, sweep=0.4, erodeFrom=0.72, tone='rim', alpha=0.8, seed=967, tier=1))
-        for i in range(12):
-            phi = i * 30
-            out.append(mesh('spike', round(0.1 + 0.02 * i, 3), 2.2, at='self', offset=[0, 5.2 * S, z + 1.7], rot=[-phi, 90, 0], scale=[0.45, 0.45, round(1.3 + 0.5 * (i % 2), 2)],
-                            sweep=0.3, erodeFrom=0.72, alpha=0.85, tone='accent', seed=970 + i, tier=0 if i % 2 == 0 else 1))
-        return out
 
     def phoenix_events():
-        z = 13.0
-        pv = [0, 6.0, z]
-        out = [
-            mesh('kite', -0.3, 2.6, at='self', offset=[0, 5.5, z], rot=[-90, 0, 0], scale=[7.0, 5.0, 5.5], sweep=0.35, erodeFrom=0.72, alpha=ALPHA + 0.15, tone='body', seed=980, tier=0),
-            mesh('kite', 0.0, 2.4, at='self', offset=[0, 12.4, z - 0.5], rot=[-20, 180, 0], scale=[4.2, 3.6, 3.4], sweep=0.3, erodeFrom=0.72, alpha=ALPHA + 0.2, tone='accent', seed=981, tier=0),
-            *wing(1, 10, -0.1, 'accent', 'body', pv, 3.6, 0),
-            *wing(-1, 10, -0.1, 'accent', 'body', pv, 3.6, 0),
-            *[mesh('kite', round(0.1 + 0.04 * i, 3), 2.3, at='self', offset=[0, 4.2, z], rot=[round(60 + i * 18), 0, 0], scale=[3.0, 1.2, round(5.6 - 0.4 * i, 2)], sweep=0.3, erodeFrom=0.72,
-                      alpha=ALPHA, tone='accent' if i % 2 else 'rim', seed=990 + i, tier=1) for i in range(5)],
-            mesh('ripple', -0.2, 2.6, at='self', offset=[0, -1.1, z], scale=0.3, scaleTo=4.4, sweep=0.4, erodeFrom=0.7, ragged=0.5, tone='body', alpha=0.85, seed=985, tier=0),
-            parts('petal', 0.1, 50, 1.6, 0.8, 2.2, 0.1, at='self', offset=[0, 3.5, z], grav=-0.6, tone='rim', tier=0),
+        # Thẻ 2D Phượng hoàng dang cánh (cánh + đuôi cinnabar/ngọc), rộng ~9,5 m, canh giữa người, dissolve vào/ra, lông vũ rơi.
+        w, hh, d = 9.5, 7.9, 6.5
+        return [
+            mesh('card', -0.3, 2.7, card='phoenix', at='self', offset=[0, hh / 2 - 1.15 + 0.4, d], billboard=True, scale=[w / 2, hh / 2, 1], sweep=0.3, erodeFrom=0.72,
+                 alpha=0.92, tone='body', seed=980, tier=0),
+            mesh('ripple', -0.2, 2.6, at='self', offset=[0, -1.1, d], scale=0.3, scaleTo=3.6, sweep=0.4, erodeFrom=0.7, ragged=0.5, tone='body', alpha=0.85, seed=985, tier=0),
+            parts('petal', 0.0, 70, 1.8, 1, 2.4, 0.11, at='self', offset=[0, hh / 2, d], grav=0.9, tone='accent', tier=0),
+            parts('petal', 0.1, 50, 1.6, 1, 2.2, 0.1, at='self', offset=[0, hh / 2, d], grav=0.8, tone='body', tier=1),
             camera(-0.2, 0.12, 2.6),
         ]
-        return out
 
     for skill, extra in (('skl_van_kiem_quy_tong', dragon_events), ('skl_kim_cuong_bat_hoai', arhat_events), ('skl_hoi_thien_dan_lo', phoenix_events)):
         base = R[skill]

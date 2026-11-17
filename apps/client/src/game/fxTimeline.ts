@@ -355,6 +355,9 @@ export class FxRunner {
           } else if (kind === 'crystal') {
             m.fxA.x = Math.min(1.2, (k / Math.max(sweep, 1e-3)) * 1.2);
             m.fxA.y = erode;
+          } else if (kind === 'card') {
+            m.fxA.x = Math.min(1.2, (k / Math.max(sweep, 1e-3)) * 1.2);
+            m.fxA.y = erode;
           } else if (kind === 'burst') {
             m.fxA.x = easeOut(Math.min(1, k * 1.2));
             m.fxA.y = Math.min(1, k * k * 1.4);
@@ -383,7 +386,7 @@ export class FxRunner {
   private style(m: FxMesh, pal: FxPalette, ev: FxMeshEvent, kind: string): void {
     _col.setHex(pal.rim);
     m.fxB.set(_col.r, _col.g, _col.b, ev.ragged ?? 0.5);
-    m.fxA.w = kind === 'decal' ? DECAL_SMOKE : 0;
+    m.fxA.w = kind === 'decal' ? DECAL_SMOKE : kind === 'card' ? (ev.card === 'phoenix' ? 1 : 0) : 0;
     m.fxA.z = ev.seed ?? 0;
   }
 
