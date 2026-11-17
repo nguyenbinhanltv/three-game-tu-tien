@@ -1,0 +1,263 @@
+/*
+ * Bảng lớn kiểu "Ngọc Giản Kim Văn" (UI-3): chất liệu GIẤY NGÀ TƯỜNG VÂN (viền mây ngọc bích + chỉ vàng, bảng tên theo bản đồ,
+ * góc hoa văn, viền vẽ dần khi mở). Áp cho mọi `PanelWindow` (class `.ngj-win`): Nhân vật, Túi, Công pháp, Nhiệm vụ, Tổ đội,
+ * Cài đặt, Trợ giúp, Hội thoại NPC (cửa hàng, luyện đan, cường hóa, thăng bậc...). Quy tắc nằm dưới `:root[data-ngj='1']`; `?ngj=0` về bảng cũ.
+ * Cách làm: đổi token `--k-*` trong phạm vi `.ngj-win` sang màu hợp nền giấy, rồi vá riêng những chỗ có màu cứng.
+ */
+
+:root[data-ngj='1'] .ngj-win {
+  /* chữ và nhấn trên nền giấy */
+  --k-text: #2a2118;
+  --k-text-dim: #6a5c44;
+  --k-text-ink: #2a2118;
+  --k-text-ink-dim: #6a5c44;
+  --k-gold: #8a5a10;
+  --k-bronze: #a47f3a;
+  --k-bronze-hi: #7a5518;
+  --k-bronze-lo: #7a5f2c;
+  --k-edge-dim: rgba(122, 95, 44, 0.45);
+  --k-jade: #1f7a6d;
+  --k-ngoc: #1f7a8f;
+  --k-cinnabar-hi: #a8372c;
+  --k-q1: #4f7f2f;
+  --k-q2: #2f6fa3;
+  --k-q3: #7a4fd0;
+  --k-q4: #b27b0a;
+  /* lòng giếng/ô tối trên giấy: nâu giấy đậm hơn một bậc */
+  --k-night-0: #e0d4b6;
+  --k-night: #e6dbc0;
+  --k-night-2: #ddd0b0;
+  --k-ink-bg: rgba(232, 220, 192, 0.7);
+  --k-ink-bg-hi: rgba(236, 226, 200, 0.8);
+  /* chừa chỗ cho bảng tên nhô lên trên viền */
+  padding-top: 22px;
+  max-height: calc(100vh / var(--s) - 130px);
+}
+
+/* ───────── khung giấy ngà ───────── */
+:root[data-ngj='1'] .ngj-win .k-panel {
+  --fg: var(--k-text-ink);
+  --fg-dim: var(--k-text-ink-dim);
+  filter: drop-shadow(0 12px 26px rgba(5, 10, 16, 0.5));
+}
+:root[data-ngj='1'] .ngj-win .k-panel-edge {
+  padding: 0;
+  clip-path: none;
+  background: none;
+  border-radius: 13px;
+  border: 3px solid var(--ngj-jade);
+  box-shadow: 0 0 0 1px var(--ngj-gold);
+}
+:root[data-ngj='1'] .ngj-win .k-panel-in {
+  position: relative;
+  clip-path: none;
+  border-radius: 10px;
+  background: url('./tex/paper.webp') var(--ngj-ivory);
+  background-blend-mode: multiply;
+  box-shadow: inset 0 0 0 3px var(--ngj-ivory), inset 0 0 0 4px rgba(201, 164, 92, 0.75);
+}
+/* mây chìm trong nền */
+:root[data-ngj='1'] .ngj-win .k-panel-in::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 16% 92%, rgba(62, 156, 143, 0.12), transparent 42%),
+    radial-gradient(ellipse at 88% 10%, rgba(201, 164, 92, 0.14), transparent 38%);
+}
+:root[data-ngj='1'] .ngj-win .k-panel-in > * { position: relative; }
+:root[data-ngj='1'] .ngj-win .k-panel-in > .ngj-corner { position: absolute; width: 46px; height: 46px; z-index: 3; }
+:root[data-ngj='1'] .ngj-win .ngj-corner[data-pos='tl'] { top: -5px; left: -5px; }
+:root[data-ngj='1'] .ngj-win .ngj-corner[data-pos='tr'] { top: -5px; right: -5px; }
+:root[data-ngj='1'] .ngj-win .ngj-corner[data-pos='bl'] { bottom: -5px; left: -5px; }
+:root[data-ngj='1'] .ngj-win .ngj-corner[data-pos='br'] { bottom: -5px; right: -5px; }
+
+/* ───────── viền vẽ dần khi mở (tắt bằng Giảm chuyển động: --ngj-dur-open = 0) ───────── */
+:root[data-ngj='1'] .ngj-win .ngj-draw { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; overflow: visible; }
+:root[data-ngj='1'] .ngj-win .ngj-draw rect {
+  x: 1px;
+  y: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  fill: none;
+  stroke: var(--ngj-gold-hi);
+  stroke-width: 2.5px;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 4px var(--ngj-gold));
+  animation: ngj-draw var(--ngj-dur-open) var(--ngj-ease) both;
+}
+@keyframes ngj-draw {
+  0% { stroke-dashoffset: 1; opacity: 1; }
+  75% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+:root[data-ngj='1'] .ngj-win .k-panel-edge { animation: ngj-fade var(--ngj-dur-open) var(--ngj-ease) both; }
+@keyframes ngj-fade { from { opacity: 0.35; } to { opacity: 1; } }
+:root[data-reduce-motion='true'] .ngj-win .ngj-draw { display: none; }
+:root[data-reduce-motion='true'] .ngj-win .k-panel-edge { animation: none; }
+
+/* ───────── tiêu đề: bảng tên theo bản đồ nhô lên trên viền ───────── */
+:root[data-ngj='1'] .ngj-win .k-head.ngj-head {
+  flex-direction: column;
+  align-items: center;
+  margin-top: -22px;
+  padding: 0 52px 8px;
+  text-align: center;
+  z-index: 5;
+}
+:root[data-ngj='1'] .ngj-win .k-head.ngj-head::after { left: 18px; right: 18px; bottom: 2px; background: linear-gradient(90deg, transparent, var(--ngj-gold), transparent); opacity: 0.9; }
+:root[data-ngj='1'] .ngj-win .k-head-mark { display: none; }
+:root[data-ngj='1'] .ngj-win .k-head-text { flex: none; max-width: 100%; display: flex; flex-direction: column; align-items: center; }
+:root[data-ngj='1'] .ngj-win .ngj-head .ngj-cart { --ngj-c-h: 46px; min-width: 230px; padding: 0 30px 0 100px; }
+:root[data-ngj='1'] .ngj-win .ngj-head .ngj-cart-title { font-size: 17px; }
+:root[data-ngj='1'] .ngj-win .ngj-head .k-head-title { margin: 0; display: inline; font: 600 17px var(--ngj-font-title); letter-spacing: 0.08em; color: var(--ngj-ink); text-shadow: none; }
+:root[data-ngj='1'] .ngj-win .k-head-sub { margin-top: 6px; font: 400 12.5px var(--ngj-font-title); color: var(--ngj-ink-dim); }
+:root[data-ngj='1'] .ngj-win .k-head-actions { position: absolute; right: 16px; top: 38px; }
+:root[data-ngj='1'] .ngj-win .k-close {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--ngj-gold);
+  border-radius: 50%;
+  background: var(--ngj-ivory);
+  color: var(--ngj-ink);
+  box-shadow: inset 0 0 0 2px var(--ngj-ivory), inset 0 0 0 3px rgba(201, 164, 92, 0.6);
+}
+:root[data-ngj='1'] .ngj-win .k-close:hover { background: #f6eed8; color: #8a2a1e; }
+
+/* ───────── thân và chữ ───────── */
+:root[data-ngj='1'] .ngj-win .k-panel-in { color: var(--ngj-ink); }
+:root[data-ngj='1'] .ngj-win .k-panel-body { padding: 10px 22px 20px; scrollbar-color: rgba(122, 95, 44, 0.55) transparent; }
+:root[data-ngj='1'] .ngj-win .k-divider > span { color: #6b4d1c; font-family: var(--ngj-font-title); }
+:root[data-ngj='1'] .ngj-win .k-divider::before, :root[data-ngj='1'] .ngj-win .k-divider::after { opacity: 0.9; background: linear-gradient(90deg, transparent, var(--ngj-gold)); }
+:root[data-ngj='1'] .ngj-win .k-divider::after { background: linear-gradient(90deg, var(--ngj-gold), transparent); }
+:root[data-ngj='1'] .ngj-win .k-divider i { background: var(--ngj-gold); }
+
+/* ───────── tab ngang ───────── */
+:root[data-ngj='1'] .ngj-win .k-tabs { justify-content: center; flex-wrap: wrap; padding: 0; gap: 4px; }
+:root[data-ngj='1'] .ngj-win .k-tabs::after { background: linear-gradient(90deg, transparent, rgba(164, 127, 58, 0.8), transparent); }
+:root[data-ngj='1'] .ngj-win .k-tab { font: 600 14px var(--ngj-font-title); color: var(--ngj-ink-dim); }
+:root[data-ngj='1'] .ngj-win .k-tab:hover:not(:disabled) { color: var(--ngj-ink); }
+:root[data-ngj='1'] .ngj-win .k-tab[aria-selected='true'] { color: var(--ngj-ink); }
+:root[data-ngj='1'] .ngj-win .k-tab::after { height: 3px; background: linear-gradient(90deg, transparent, var(--ngj-jade) 20%, var(--ngj-jade) 80%, transparent); }
+:root[data-ngj='1'] .ngj-win .k-tab-badge { background: var(--ngj-gold); color: var(--ngj-ink); }
+
+/* ───────── tab dọc của bảng Nhân vật ───────── */
+:root[data-ngj='1'] .ngj-char { display: flex; gap: 22px; align-items: flex-start; }
+:root[data-ngj='1'] .ngj-char > .ngj-rail { flex: none; margin-top: 6px; }
+:root[data-ngj='1'] .ngj-char-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+:root[data-ngj='1'] .ngj-rail[data-mat='paper'] .ngj-rail-tab { width: 76px; }
+
+/* ───────── nút ───────── */
+:root[data-ngj='1'] .ngj-win .k-btn {
+  --edge: linear-gradient(180deg, var(--ngj-gold-hi), var(--ngj-gold) 55%, var(--ngj-gold-lo));
+  --in: linear-gradient(180deg, #f5ecd4, #e4d6b2);
+  --in-fg: var(--ngj-ink);
+  --cut: 8px;
+}
+:root[data-ngj='1'] .ngj-win .k-btn[data-variant='primary'] { --in: linear-gradient(180deg, #f0d78e, #c9a45c 55%, #a47f3a); --in-fg: var(--ngj-ink); }
+:root[data-ngj='1'] .ngj-win .k-btn[data-variant='ghost'] { --edge: transparent; --in: transparent; --in-fg: var(--ngj-ink-dim); }
+:root[data-ngj='1'] .ngj-win .k-btn[data-variant='danger'] { --edge: linear-gradient(180deg, #d9604f, #8a2a1e); --in: linear-gradient(180deg, #c44a3b, #8a2a1e); --in-fg: #fff3ea; }
+:root[data-ngj='1'] .ngj-win .k-btn[data-pressed='true'] { --edge: linear-gradient(180deg, #8fd9cb, var(--ngj-jade) 55%, var(--ngj-jade-lo)); --in: linear-gradient(180deg, rgba(62, 156, 143, 0.42), rgba(62, 156, 143, 0.28)); --in-fg: var(--ngj-ink); }
+:root[data-ngj='1'] .ngj-win .k-btn:focus-visible { --edge: linear-gradient(180deg, #8fd9cb, var(--ngj-jade) 50%, var(--ngj-jade-lo)); }
+:root[data-ngj='1'] .ngj-win .k-btn-in { font-family: var(--ngj-font-title); letter-spacing: 0.04em; }
+
+/* ───────── ô vật phẩm: tròn (mặc định), thoi (ô trang bị); viền phẩm chất phát sáng ───────── */
+:root[data-ngj='1'] .ngj-win .k-slot { clip-path: circle(50% at 50% 50%); padding: 2px; }
+:root[data-ngj='1'] .ngj-win .k-slot-in { clip-path: circle(50% at 50% 50%); }
+:root[data-ngj='1'] .ngj-win .equip-cell .k-slot { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); padding: 0; }
+:root[data-ngj='1'] .ngj-win .equip-cell .k-slot-in { clip-path: polygon(50% 1.5%, 98.5% 50%, 50% 98.5%, 1.5% 50%); inset: 0; }
+:root[data-ngj='1'] .ngj-win .equip-cell .k-slot .content-icon { width: 52%; height: 52%; }
+:root[data-ngj='1'] .ngj-win .k-slot .content-icon { width: 64%; height: 64%; }
+:root[data-ngj='1'] .ngj-win .k-slot[data-empty='true'] { --q: rgba(164, 127, 58, 0.55); }
+:root[data-ngj='1'] .ngj-win .k-slot[data-empty='true'] .k-slot-in { background: rgba(122, 95, 44, 0.16); box-shadow: inset 0 0 8px rgba(122, 95, 44, 0.25); }
+:root[data-ngj='1'] .ngj-win .k-slot-in { background: radial-gradient(circle at 50% 35%, #3b4b4f, #1f2a2e 88%); }
+:root[data-ngj='1'] .ngj-win .k-slot-count { right: 50%; transform: translateX(50%); bottom: 4px; color: #f4f1ea; }
+:root[data-ngj='1'] .ngj-win .k-slot-plus { left: 50%; transform: translateX(-50%); top: 3px; color: #ffe08a; }
+:root[data-ngj='1'] .ngj-win .equip-cell .k-slot-plus { top: 6px; font-size: 10px; }
+:root[data-ngj='1'] .ngj-win .k-tip-host:has(> .k-slot[data-q='1']) { filter: drop-shadow(0 0 3px rgba(126, 162, 90, 0.8)); }
+:root[data-ngj='1'] .ngj-win .k-tip-host:has(> .k-slot[data-q='2']) { filter: drop-shadow(0 0 4px rgba(95, 167, 216, 0.85)); }
+:root[data-ngj='1'] .ngj-win .k-tip-host:has(> .k-slot[data-q='3']) { filter: drop-shadow(0 0 5px rgba(180, 140, 255, 0.9)); }
+:root[data-ngj='1'] .ngj-win .k-tip-host:has(> .k-slot[data-q='4']) { filter: drop-shadow(0 0 6px rgba(240, 184, 64, 0.95)); }
+
+/* ───────── thanh đo trong bảng: nền giếng sáng hơn, chữ trắng giữ nguyên ───────── */
+:root[data-ngj='1'] .ngj-win .gauge { margin-top: 6px; }
+
+/* ───────── ô nhập, chọn, thanh trượt ───────── */
+:root[data-ngj='1'] .ngj-win input[type='text'], :root[data-ngj='1'] .ngj-win input[type='search'], :root[data-ngj='1'] .ngj-win select, :root[data-ngj='1'] .ngj-win textarea {
+  background: rgba(255, 250, 235, 0.7);
+  color: var(--ngj-ink);
+  border: 1px solid var(--ngj-gold);
+  border-radius: 3px;
+}
+:root[data-ngj='1'] .ngj-win input::placeholder { color: rgba(106, 92, 68, 0.7); }
+
+/* ───────── thẻ, hàng, ô trong bảng: nền giấy sáng thay nền tối ───────── */
+:root[data-ngj='1'] .ngj-win :is(.k-card, .pty-row, .mp-card, .mp-var, .mp-detail, .bag-sel, .upg-select, .upg-cell, .pty-invite) {
+  background: rgba(255, 250, 235, 0.55);
+  border-color: rgba(164, 127, 58, 0.55);
+  box-shadow: inset 0 0 0 2px rgba(255, 250, 235, 0.6);
+  color: var(--ngj-ink);
+}
+:root[data-ngj='1'] .ngj-win .k-card.done, :root[data-ngj='1'] .ngj-win .k-card[data-done='true'] { background: rgba(62, 156, 143, 0.12); }
+:root[data-ngj='1'] .ngj-win .bag-page { background: rgba(255, 250, 235, 0.6); border: 1px solid rgba(164, 127, 58, 0.6); color: var(--ngj-ink); }
+:root[data-ngj='1'] .ngj-win .bag-page[data-active='1'] { background: linear-gradient(180deg, rgba(62, 156, 143, 0.35), rgba(62, 156, 143, 0.2)); border-color: var(--ngj-jade); }
+:root[data-ngj='1'] .ngj-win .bag-split input { background: rgba(255, 250, 235, 0.8); color: var(--ngj-ink); }
+:root[data-ngj='1'] .ngj-win .k-panel kbd { background: rgba(164, 127, 58, 0.18); color: var(--ngj-ink); border-color: rgba(164, 127, 58, 0.6); }
+:root[data-ngj='1'] .ngj-win .bk-box { background: rgba(120, 70, 170, 0.1); }
+:root[data-ngj='1'] .ngj-win .pty-mp { background: rgba(122, 95, 44, 0.3); }
+:root[data-ngj='1'] .ngj-win .equip-stage { border: 2px solid var(--ngj-gold); border-radius: 4px; box-shadow: 0 0 0 1px rgba(30, 23, 18, 0.5); }
+
+/* ───────── chữ: serif đọc được, không dùng font hiển thị toàn chữ hoa ───────── */
+:root[data-ngj='1'] .ngj-win .k-tab { font-family: var(--k-font-serif); font-size: 14.5px; letter-spacing: 0.02em; font-weight: 700; }
+:root[data-ngj='1'] .ngj-win .ngj-head .k-head-title, :root[data-ngj='1'] .ngj-win .ngj-head .ngj-cart-title { font-family: var(--k-font-serif); font-size: 18px; font-weight: 700; letter-spacing: 0.03em; }
+:root[data-ngj='1'] .ngj-win .k-head-sub { font-family: var(--k-font-serif); }
+:root[data-ngj='1'] .ngj-win .k-btn-in { font-family: var(--k-font-serif); font-weight: 700; letter-spacing: 0.02em; }
+:root[data-ngj='1'] .ngj-win .k-divider > span { font-family: var(--k-font-serif); }
+
+/* ô trống: vành nhạt, lòng giấy */
+:root[data-ngj='1'] .ngj-win .k-slot[data-empty='true'] { --q: rgba(164, 127, 58, 0.38); }
+:root[data-ngj='1'] .ngj-win .k-slot[data-empty='true'] .k-slot-in { background: rgba(255, 250, 235, 0.45); box-shadow: inset 0 0 6px rgba(122, 95, 44, 0.2); }
+
+/* ───────── màu chữ sáng cứng trong CSS cũ → bản đậm hợp nền giấy ───────── */
+:root[data-ngj='1'] .ngj-win { --k-sword: #1c6a88; --k-jade-dark: #1f7a6d; }
+:root[data-ngj='1'] .ngj-win :is(.skill-item, .upg-row, .shop-row, .recipe-row, .npc-quest, .quest-card) {
+  background: rgba(255, 250, 235, 0.55);
+  border-color: rgba(164, 127, 58, 0.55);
+  box-shadow: inset 0 0 0 2px rgba(255, 250, 235, 0.6);
+  color: var(--ngj-ink);
+}
+:root[data-ngj='1'] .ngj-win :is(.k-panel .ok, .quest-obj.ok) { color: #2f7a46; }
+:root[data-ngj='1'] .ngj-win .reward-item[data-q='1'] { color: #4f7f2f; }
+:root[data-ngj='1'] .ngj-win .reward-item[data-q='2'] { color: #2f6fa3; }
+:root[data-ngj='1'] .ngj-win .reward-item[data-q='3'] { color: #7a4fd0; }
+:root[data-ngj='1'] .ngj-win :is(.item-name[data-q='4'], .item-stat.set) { color: #a8700a; text-shadow: none; }
+:root[data-ngj='1'] .ngj-win .craft-chance { color: #6a5c44; }
+:root[data-ngj='1'] .ngj-win .craft-chance[data-support='1'] { color: #2f7a46; }
+:root[data-ngj='1'] .ngj-win .pty-role.dps { color: #1c6a88; }
+:root[data-ngj='1'] .ngj-win .pty-role.tank { color: #a8700a; }
+:root[data-ngj='1'] .ngj-win .pty-role.support { color: #2f7a46; }
+:root[data-ngj='1'] .ngj-win .r0 { color: #4a4f52; }
+:root[data-ngj='1'] .ngj-win .r1 { color: #3f7a2c; }
+:root[data-ngj='1'] .ngj-win .r2 { color: #2f6fa3; }
+:root[data-ngj='1'] .ngj-win .r3 { color: #7a4fd0; }
+
+/* biến toàn cục của styles.css (nền tối) → bản hợp nền giấy trong bảng */
+:root[data-ngj='1'] .ngj-win { --gold: #8a5a10; --gold-soft: #7a5518; --text: #2a2118; --muted: #6a5c44; --good: #2f7a46; --bad: #a8372c; --line: rgba(122, 95, 44, 0.45); }
+:root[data-ngj='1'] .ngj-win .item-name[data-q='1'] { color: #4f7f2f; }
+:root[data-ngj='1'] .ngj-win .item-name[data-q='2'] { color: #2f6fa3; }
+:root[data-ngj='1'] .ngj-win .item-name[data-q='3'] { color: #7a4fd0; }
+:root[data-ngj='1'] .ngj-win .item-name[data-q='4'] { color: #a8700a; }
+:root[data-ngj='1'] .ngj-win .item-stat { color: #1c6a88; }
+:root[data-ngj='1'] .ngj-win .item-stat.good { color: #1f7a6d; }
+
+/* bảng Công pháp */
+:root[data-ngj='1'] .ngj-win .mp-skill { background: rgba(255, 250, 235, 0.55); border: 1px solid rgba(164, 127, 58, 0.55); box-shadow: inset 0 0 0 2px rgba(255, 250, 235, 0.6); color: var(--ngj-ink); }
+:root[data-ngj='1'] .ngj-win .mp-passive b { color: color-mix(in srgb, var(--mc, #1c6a88) 45%, #2a2118); }
+:root[data-ngj='1'] .ngj-win .mp-up { color: #2f7a46; }
+:root[data-ngj='1'] .ngj-win .mp-card.sel { box-shadow: inset 0 0 0 2px var(--ngj-jade), 0 0 8px rgba(62, 156, 143, 0.35); background: rgba(62, 156, 143, 0.14); }
+
+/* tab ngang gọn hơn để sáu tab của Túi vừa một hàng */
+:root[data-ngj='1'] .ngj-win .k-tab { padding: 8px 8px 9px; font-size: 14px; }

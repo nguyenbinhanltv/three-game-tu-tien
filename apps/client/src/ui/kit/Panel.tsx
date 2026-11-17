@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react';
 import { t } from '@dtl/content';
+import { Cartouche, Corners, type MapMotif } from '../ngj/ngj';
+import { ngjHud } from '../ngj/motion';
+import { useUI } from '../store';
+import '../ngj/tokens.css';
+import '../ngj/panels.css';
 
 export type PanelTone = 'night' | 'paper' | 'stone';
 
@@ -44,14 +49,17 @@ function CloseIcon() {
 }
 
 /** Tiêu đề bảng: mốc thoi, chữ serif giãn cách, đường kẻ đồng thau, nút đóng (nếu có `onClose`). */
-export function Header({ title, sub, onClose, actions, id }: { title: string; sub?: string; onClose?: () => void; actions?: ReactNode; id?: string }) {
+export function Header({ title, sub, onClose, actions, id, plate }: { title: string; sub?: string; onClose?: () => void; actions?: ReactNode; id?: string; plate?: MapMotif }) {
+  const heading = (
+    <h2 className="k-head-title" id={id}>
+      {title}
+    </h2>
+  );
   return (
-    <div className="k-head">
+    <div className={'k-head' + (plate ? ' ngj-head' : '')}>
       <span className="k-head-mark" aria-hidden="true" />
       <div className="k-head-text">
-        <h2 className="k-head-title" id={id}>
-          {title}
-        </h2>
+        {plate ? <Cartouche map={plate} material="paper" title={heading} /> : heading}
         {sub && <div className="k-head-sub">{sub}</div>}
       </div>
       <div className="k-head-actions">
@@ -77,7 +85,12 @@ export function Divider({ label }: { label?: ReactNode }) {
   );
 }
 
-/** Cửa sổ nằm giữa màn hình (Panel + Header + phần thân cuộn). `width` tính bằng px. */
+const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai'];
+
+/**
+ * Cửa sổ nằm giữa màn hình (Panel + Header + phần thân cuộn). `width` tính bằng px.
+ * HUD kiểu Ngọc Giản (UI-3, `?ngj=0` tắt): giấy ngà tường vân, bảng tên theo bản đồ, góc hoa văn, viền vẽ dần khi mở.
+ */
 export function PanelWindow({
   title,
   sub,
@@ -95,10 +108,20 @@ export function PanelWindow({
   className?: string;
   children: ReactNode;
 }) {
+  const level = useUI((s) => s.level);
+  const motif = (MOTIFS.includes(level) ? level : 'van_lam') as MapMotif;
   return (
-    <div className={'k-window' + (className ? ' ' + className : '')} style={{ '--w': width + 'px' } as React.CSSProperties}>
+    <div className={'k-window' + (ngjHud ? ' ngj-win' : '') + (className ? ' ' + className : '')} style={{ '--w': width + 'px' } as React.CSSProperties}>
       <Panel tone={tone} role="dialog" aria-label={title}>
-        <Header title={title} sub={sub} onClose={onClose} />
+        {ngjHud && (
+          <>
+            <Corners material="paper" />
+            <svg className="ngj-draw" aria-hidden="true">
+              <rect pathLength={1} rx="12" ry="12" />
+            </svg>
+          </>
+        )}
+        <Header title={title} sub={sub} onClose={onClose} plate={ngjHud ? motif : undefined} />
         <PanelBody>{children}</PanelBody>
       </Panel>
     </div>
