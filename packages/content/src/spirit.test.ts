@@ -19,8 +19,8 @@ describe('E2-E: thần thức, ô chiêu 9, bản mệnh pháp bảo', () => {
     expect(thanThongSkill(undefined)).toBeUndefined();
   });
 
-  it('hàng bậc cao còn 16, 18, 22 theo thứ tự (không gồm 20)', () => {
-    for (const m of METHODS) expect(tierBar(m.id).map((s) => s.unlock)).toEqual([16, 18, 22]);
+  it('hàng bậc cao còn 16, 18, 22, 24, 26 theo thứ tự (không gồm 20)', () => {
+    for (const m of METHODS) expect(tierBar(m.id).map((s) => s.unlock)).toEqual([16, 18, 22, 24, 26]);
   });
 
   it('Ngưng Đan Lô là bản mệnh, mở ở cấp Kết Đan', () => {

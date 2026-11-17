@@ -489,6 +489,8 @@ export class GameSim {
   private trails: Trail[] = [];
   private summons: Summon[] = [];
   private stomps: Stomp[] = [];
+  /** E4-G: kiếm ảnh đang chạy của Phân Anh Kiếm Ảnh (mỗi người một). */
+  private echoes = new Map<string, { until: number; delay: number; hits: number[]; elem: string }>();
   bolts: Bolt[] = [];
   private nextBoltId = 1;
   /** sid người chơi → id quái đang giữ ô cận chiến của người đó. */
@@ -974,6 +976,7 @@ export class GameSim {
   }
 
   removePlayer(sid: string): void {
+    this.echoes.delete(sid);
     const p = this.players.get(sid);
     if (!p) return;
     if (p.trib) this.endTribulation(p, false, true);
@@ -1285,6 +1288,7 @@ export class GameSim {
     if (c.mp < skill.mp) return this.warn(p, 'sys.not_enough_mp');
     if (skill.ult && p.mth.charge < CHARGE_MAX) return this.warn(p, 'sys.ult_not_ready');
     if (skill.kind === 'revive' && !this.reviveTarget(p, skill.allyRadius ?? 14)) return this.warn(p, 'sys.no_ally_dead');
+    if (skill.blinkAlly && skill.kind !== 'revive' && !this.nearestAlly(p, skill.blinkAlly.range)) return this.warn(p, 'sys.no_ally');
     const rs = resolveFor(c.meta, skill);
     let targetId = '';
     if (needsTarget(skill)) {
@@ -1734,11 +1738,11 @@ export class GameSim {
   }
 
   /** Đạo hữu ngã gần nhất trong `r` mét (không phải mình). */
-  private reviveTarget(p: PlayerEnt, r: number): PlayerEnt | null {
+  private reviveTarget(p: PlayerEnt, r: number, except?: PlayerEnt): PlayerEnt | null {
     let best: PlayerEnt | null = null;
     let bd = r * r;
     for (const o of this.players.values()) {
-      if (o === p || !this.isDead(o)) continue;
+      if (o === p || o === except || !this.isDead(o)) continue;
       const dx = o.move.x - p.move.x;
       const dz = o.move.z - p.move.z;
       const d = dx * dx + dz * dz;
@@ -1952,6 +1956,7 @@ export class GameSim {
       case 'damage': {
         const mon = this.monById.get(targetId);
         if (!mon) break;
+        if (skill.blink) this.blinkNear(p, mon.s.x, mon.s.z, skill.blink.stop + mon.def.scale);
         const extra: Partial<FxMsg> = { ...tag };
         const behind = v?.pierce ? this.pierceTarget(p, mon) : null;
         if (behind) {
@@ -1990,6 +1995,8 @@ export class GameSim {
           this.hitMonster(p, mon, rs.power * mul, elemMul, skill.elem);
         }
         if (behind && v?.pierce) this.hitMonster(p, behind, rs.power * v.pierce * mul, elemMul, skill.elem);
+        // Thuấn Di Trảm A: đòn tức thời hạ được mục tiêu thì hoàn một phần hồi chiêu.
+        if (skill.blink && v?.refund && mon.state === MS_DEAD && rs.cd > 0) p.cds.set(skill.id, this.now + rs.cd * 1000 * (1 - v.refund));
         if (v?.cleave) {
           for (const o of this.monstersNear(mon.s.x, mon.s.z, v.cleave.r, mon)) this.hitMonster(p, o, rs.power * v.cleave.mul * mul, elemMul, skill.elem);
         }
@@ -2018,6 +2025,20 @@ export class GameSim {
           if (stun > 0) this.stunMonster(p, o, stun);
           if (v?.slow && !o.def.boss) o.slow = { until: this.now + v.slow.dur * 1000, mul: v.slow.mul };
           if (burn) o.poison = { sid: p.sid, until: this.now + burn.dur * 1000, nextAt: this.now + 1000, per: burn.per };
+        }
+        // Thiên Kiếm Hóa Hình B: dư chấn đánh lại vùng cũ.
+        if (v?.aftershocks) {
+          const as = v.aftershocks;
+          for (let i = 1; i <= as.n; i++) {
+            this.later(as.gap * i, () => {
+              if (this.players.get(p.sid) !== p || this.isDead(p)) return;
+              for (const o of this.monsters) {
+                if (o.state === MS_DEAD || (o.owner && o.owner !== p.sid)) continue;
+                if ((o.s.x - cx) ** 2 + (o.s.z - cz) ** 2 <= r * r) this.hitMonster(p, o, rs.power * as.mul * mul, elemMul, skill.elem);
+              }
+            });
+          }
+          holdLock = Math.max(holdLock, as.gap * as.n);
         }
         break;
       }
@@ -2061,7 +2082,9 @@ export class GameSim {
       case 'buff': {
         const sec = rs.duration ?? 10;
         const b = skill.buff ?? {};
-        if (b.reduce) p.mth.setGuard(this.now, b.reduce, sec);
+        const reduce = (b.reduce ?? 0) + (v?.buffReduce ?? 0);
+        if (reduce) p.mth.setGuard(this.now, reduce, sec);
+        if (b.echo) this.echoes.set(p.sid, { until: this.now + sec * 1000, delay: v?.echoDelay ?? 0.4, hits: rs.hits.map((h) => h * (1 + c.stats.setFx.phanAnhPower)), elem: skill.elem ?? '' });
         const regen = v?.buffRegen ?? b.regen ?? 0;
         if (regen > 0) this.addHot(p.sid, p.char.mhp * regen, sec);
         const st = v?.buffStomp ?? b.stomp;
@@ -2087,6 +2110,9 @@ export class GameSim {
       }
       case 'shield': {
         const dur = rs.duration ?? 8;
+        // Thuấn Di Hộ Thế: thuấn di tới đồng đội gần nhất rồi phủ khiên cho cả hai.
+        const blinkTo = skill.blinkAlly ? this.nearestAlly(p, skill.blinkAlly.range) : null;
+        if (blinkTo) this.blinkNear(p, blinkTo.move.x, blinkTo.move.z, 1.8);
         const give = (o: PlayerEnt) => {
           o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1) * (o === p && skill.id === 'skl_linh_khi_ho_the' ? 1 + c.stats.setFx.shieldBoost : 1) * (skill.id === 'skl_ngung_dan_ho_the' ? 1 + c.stats.setFx.ngungDanBoost : 1)), until: this.now + dur * 1000 };
           this.setFlag(o, PF_SHIELD, true);
@@ -2100,6 +2126,16 @@ export class GameSim {
             give(o);
             if (v?.regen) this.addHot(o.sid, o.char.mhp * v.regen, dur);
             this.fx({ t: skill.fx, src: o.sid, dst: p.sid, d: dur, ...tag });
+          }
+        }
+        if (blinkTo) {
+          give(blinkTo);
+          this.fx({ t: skill.fx, src: blinkTo.sid, dst: p.sid, d: dur, ...tag });
+        }
+        if (v?.tauntAt) {
+          for (const o of this.monstersNear(p.move.x, p.move.z, v.tauntAt.r)) {
+            o.taunt = { sid: p.sid, until: this.now + v.tauntAt.dur * 1000 * (o.def.boss ? TAUNT_BOSS_MUL : 1) };
+            this.aggroMonster(o, p);
           }
         }
         const ally = v?.ally ? this.nearestAlly(p, v.ally) : null;
@@ -2153,9 +2189,26 @@ export class GameSim {
         const healBoost = skill.id === 'skl_anh_duoc_hoa_than' ? 1 + c.stats.setFx.anhDuocBoost : 1;
         const sec = (rs.duration ?? 6) * durMul;
         this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, d: sec, ...tag });
+        // Anh Dược Hóa Thân: chỉ chữa mình và `allyCount` đồng đội mất nhiều máu nhất (tỉ lệ) trong tầm.
+        const nAlly = skill.allyCount === undefined ? Infinity : (v?.allyCount ?? skill.allyCount);
+        const chosen = new Set<PlayerEnt>();
+        if (nAlly !== Infinity) {
+          const near = [...this.players.values()].filter((o) => o !== p && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= r);
+          near.sort((a, b) => a.char.hp / a.char.mhp - b.char.hp / b.char.mhp);
+          for (const o of near.slice(0, nAlly)) chosen.add(o);
+        }
         for (const o of this.players.values()) {
           if (!this.canAssist(p, o)) continue;
-          if (o !== p && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
+          if (nAlly !== Infinity) {
+            if (o !== p && !chosen.has(o)) continue;
+          } else if (o !== p && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
+          if (v?.partyBuff) {
+            const now = Date.now();
+            o.char.meta.buffs ??= {};
+            o.char.meta.buffs[v.partyBuff.kind] = mergeBuff(o.char.meta.buffs[v.partyBuff.kind], v.partyBuff.pct, now + sec * 1000, now);
+            o.char.recalc();
+            o.mth.dirty = true;
+          }
           const total = healAmount(o.char.mhp * rs.power * durMul * healBoost * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
           this.addHot(o.sid, total / sec, sec);
           if (v?.selfShield) {
@@ -2179,7 +2232,18 @@ export class GameSim {
       case 'revive': {
         const r = skill.allyRadius ?? 14;
         const dead = this.reviveTarget(p, r);
+        // Thuấn Di Cứu Viện: thuấn di tới người ngã (tính khoảng cách từ chỗ cũ) rồi hồi sinh.
+        const dead2 = dead && (v?.reviveN ?? 1) >= 2 ? this.reviveTarget(p, r, dead) : null;
+        if (dead && skill.blinkAlly) this.blinkNear(p, dead.move.x, dead.move.z, 1.8);
         this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, ...tag });
+        for (const dead of [dead2].filter((x): x is PlayerEnt => !!x)) {
+          dead.char.hp = Math.max(1, Math.round(dead.char.mhp * rs.power));
+          dead.s.fl = 0;
+          dead.lastCombatAt = this.now;
+          dead.hazardWin = { until: 0, taken: 0 };
+          this.sys(dead, 'sys.revived', { name: c.name }, 'good');
+          this.fx({ t: 'respawn', src: dead.sid, v: 'revive' });
+        }
         if (dead) {
           dead.char.hp = Math.max(1, Math.round(dead.char.mhp * rs.power));
           dead.s.fl = 0;
@@ -2189,12 +2253,29 @@ export class GameSim {
           this.fx({ t: 'respawn', src: dead.sid, v: 'revive' });
         }
         for (const o of this.players.values()) {
-          if (o === dead || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
+          if (o === dead || o === dead2 || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
           const n = healAmount(o.char.mhp * 0.2, healMul);
           o.char.hp = Math.min(o.char.mhp, o.char.hp + n);
           this.emit(S.DMG, { dst: o.sid, n, heal: true } satisfies DmgMsg);
         }
         break;
+      }
+    }
+    // Phân Anh Kiếm Ảnh: kiếm ảnh lặp lại chiêu có hồi chiêu vừa tung vào mục tiêu chính (không lặp chính nó, không đánh thường).
+    const ec = this.echoes.get(p.sid);
+    if (ec) {
+      if (this.now >= ec.until) this.echoes.delete(p.sid);
+      else if (dealsDamage(skill) && skill.cd > 0 && targetId) {
+        const em = this.monById.get(targetId);
+        if (em) {
+          ec.hits.forEach((f, i) => {
+            this.later(ec.delay + i * 0.25, () => {
+              if (this.players.get(p.sid) !== p || this.isDead(p) || em.state === MS_DEAD) return;
+              this.fx({ t: 'kiemanh', src: p.sid, dst: em.id });
+              this.hitMonster(p, em, rs.power * f * mul, elemMul, ec.elem);
+            });
+          });
+        }
       }
     }
     if (skill.ult && holdLock > 0) {
@@ -2208,6 +2289,30 @@ export class GameSim {
     }
     p.flow.opened.set(skill.id, this.now);
     this.sendCd(p);
+  }
+
+  /**
+   * Thuấn di (E4-G) tới sát điểm (tx, tz), cách `stop` mét. Vẫn lập đường bằng `planDash` nên không xuyên vách/dốc đứng;
+   * đứng nguyên nếu không đi được. Trả khoảng đã dịch.
+   */
+  private blinkNear(p: PlayerEnt, tx: number, tz: number, stop: number): number {
+    const dx = tx - p.move.x;
+    const dz = tz - p.move.z;
+    const d = Math.hypot(dx, dz);
+    if (d <= stop + 0.5) return 0;
+    const dir = { x: dx / d, z: dz / d };
+    const from = { x: p.move.x, z: p.move.z };
+    const plan = planDash(p.move, dir, Math.min(d - stop, 30), { x: tx, z: tz, r: stop }, { terrain: this.terrain, bound: caveBoundOf(this.level) });
+    if (plan.dist < 0.5) return 0;
+    p.move.x = plan.x;
+    p.move.z = plan.z;
+    p.move.y = this.terrain.groundAt(plan.x, plan.z);
+    p.move.vy = 0;
+    p.move.grounded = true;
+    p.inputs.length = 0;
+    p.s.yaw = Math.atan2(dir.x, dir.z);
+    this.fx({ t: 'blink', src: p.sid, x: plan.x, y: p.move.y, z: plan.z, d: 0.35, ox: from.x, oz: from.z });
+    return plan.dist;
   }
 
   /** Chạy `fn` sau `sec` giây (đòn thứ hai trở đi của chiêu nhiều mốc `hitAt`). */

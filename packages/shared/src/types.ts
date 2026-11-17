@@ -547,7 +547,13 @@ export interface SkillDef {
   /** `summon`: `count` kiếm đan, mỗi `every` giây đánh quái gần nhất trong `range` mét; `power` là hệ số mỗi nhịp. */
   summon?: { count: number; every: number; range: number };
   /** `buff`: giảm sát thương nhận `reduce` trong `duration` giây; `stomp` giậm quanh mình mỗi `every` giây; `regen` hồi %/giây. */
-  buff?: { reduce?: number; regen?: number; stomp?: { every: number; r: number; mul: number } };
+  buff?: { reduce?: number; regen?: number; stomp?: { every: number; r: number; mul: number }; /** E4-G: kiếm ảnh lặp lại chiêu gây sát thương ngươi vừa tung (hệ số = `power` × `hits`). */ echo?: boolean };
+  /** E4-G (Thuấn Di Trảm): thuấn di tới sát mục tiêu (cách `stop` mét) rồi mới đánh. */
+  blink?: { stop: number };
+  /** E4-G (Thuấn Di Hộ Thế/Cứu Viện): thuấn di tới đồng đội (hoặc đồng đội ngã) trong `range` mét; không có thì không ra chiêu. */
+  blinkAlly?: { range: number };
+  /** E4-G (Anh Dược Hóa Thân): `hot` chỉ chữa bản thân và tối đa chừng này đồng đội mất nhiều máu nhất. */
+  allyCount?: number;
   /** Hệ số từng nhát khi chiêu đánh nhiều lần trong một lần bấm (nhân `power`); `hitAt[i]` là mốc nhát i. */
   hitsMul?: number[];
 }

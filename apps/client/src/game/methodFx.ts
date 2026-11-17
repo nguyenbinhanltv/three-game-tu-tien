@@ -24,6 +24,7 @@ export const METHOD_COLORS: Record<string, number> = {
   kiemvu: 0x9fd8ff,
   kiemdan: 0x7fd8ff,
   kiemdan_hit: 0x7fd8ff,
+  kiemanh: 0xd8e8ff,
   sonnhac_stomp: 0xffc95a,
   nghichkiem: 0x9fd8ff,
   thietquyen: 0xffc95a,
@@ -37,7 +38,7 @@ export const METHOD_COLORS: Record<string, number> = {
 };
 
 /** Các loại FX công pháp mới (chiêu đặc trưng, tối thượng). */
-export const METHOD_FX = new Set(['kanh', 'vankiem', 'transon', 'kimcuong', 'xuanphong', 'hoithien', 'hoanhkiem', 'kiemvu', 'kiemdan', 'kiemdan_hit', 'sonnhac_stomp', 'nghichkiem', 'thietquyen', 'kimchung', 'sonnhac', 'dichson', 'moclinh', 'duocvu', 'ngungdan', 'danhoa']);
+export const METHOD_FX = new Set(['kanh', 'vankiem', 'transon', 'kimcuong', 'xuanphong', 'hoithien', 'hoanhkiem', 'kiemvu', 'kiemdan', 'kiemdan_hit', 'kiemanh', 'sonnhac_stomp', 'nghichkiem', 'thietquyen', 'kimchung', 'sonnhac', 'dichson', 'moclinh', 'duocvu', 'ngungdan', 'danhoa']);
 
 /** Màu hex của FX (chuỗi 6 ký tự từ server), thiếu hoặc hỏng thì dùng `fallback`. */
 export function fxColor(m: FxMsg, fallback: number): number {
@@ -200,6 +201,11 @@ export function playMethodFx(c: MethodFxCtx): boolean {
     case 'kiemdan_hit': {
       // Mỗi nhịp kiếm đan đâm: tia nhỏ từ thân tới mục tiêu. (Id riêng để không kích lại động tác niệm của chiêu.)
       if (c.src(_a)) v.swordShot(_a.clone().add(new THREE.Vector3(0, 0.3, 0)), c.dst, color, 0.6, 0.16, (at) => v.burst(at.clone(), color, 0.5, 0.16));
+      return true;
+    }
+    case 'kiemanh': {
+      // Phân Anh Kiếm Ảnh (E4-G): mỗi nhịp lặp lại, một tia bạc từ sau lưng người ra chiêu tới mục tiêu.
+      if (c.src(_a)) v.swordShot(_a.clone().add(new THREE.Vector3(0, 0.9, 0)), c.dst, color, 0.8, 0.2, (at) => v.burst(at.clone(), color, 0.6, 0.18));
       return true;
     }
     case 'sonnhac_stomp': {
