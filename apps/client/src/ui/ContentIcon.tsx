@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { isSysIcon, SysIcon } from './ngj/icons';
 
 type IconDef = { icon: string; iconFallback?: string };
 type Sheet = { file: string; columns: number; rows: number };
@@ -98,6 +99,9 @@ export function ContentIcon({ def, className }: { def?: IconDef; className?: str
   const c = def ? cellOf(def.icon) : null;
   if (!c) {
     const fallback = def?.iconFallback ?? (def && !/^(itm_|skl_)/.test(def.icon) ? def.icon : '❔');
+    // 'sys:<tên>' = icon hệ thống nét vàng (UI-1) thay emoji, ví dụ trang sức đầu 'sys:head'.
+    const sys = fallback.startsWith('sys:') ? fallback.slice(4) : '';
+    if (isSysIcon(sys)) return <span className={'content-icon fallback sys' + (className ? ' ' + className : '')} aria-hidden="true"><SysIcon name={sys} size={28} /></span>;
     return <span className={'content-icon fallback' + (className ? ' ' + className : '')} aria-hidden="true">{fallback}</span>;
   }
   return <span className={'content-icon' + (className ? ' ' + className : '')} aria-hidden="true" style={styleOf(c)} />;
