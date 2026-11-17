@@ -183,6 +183,12 @@ function paletteOf(setId: string): Pal {
       return { cloth: '#3e4a59', cloth2: hex, hard: '#97a6b8', trim, gem: '#8fc8ff' };
     case 'set_luu_ly':
       return { cloth: hex, cloth2: '#e8f1e4', hard: '#8fd3c8', trim, gem: '#7df5e0' };
+    case 'set_tinh_khuyet':
+      return { cloth: hex, cloth2: '#3a3f66', hard: '#8a7a52', trim, gem: '#b9a6ff' };
+    case 'set_co_thanh':
+      return { cloth: hex, cloth2: '#3b3a44', hard: '#7d7566', trim, gem: '#f0cf78' };
+    case 'set_than_tang':
+      return { cloth: hex, cloth2: '#3a4a5e', hard: '#9a8d5c', trim, gem: '#9ff0c8' };
     default:
       return { cloth: hex, cloth2: '#1d5d6c', hard: '#4aa3b4', trim, gem: '#bfe9f0' };
   }
@@ -599,6 +605,11 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
     ring: (c) => handBand(c, { color: c.pal.hard, gem: c.pal.gem }),
   },
 };
+
+// Bộ bậc 4 (SETS-4): phụ kiện thủ tục dùng lại hình của bộ bậc 3 cùng nhánh (đổi màu theo `paletteOf`); áo mô-đun T-5/T-6 là hình chính, đây chỉ là đường dự phòng/LOD xa.
+BUILDERS.set_tinh_khuyet = BUILDERS.set_kinh_quang;
+BUILDERS.set_co_thanh = BUILDERS.set_van_kinh;
+BUILDERS.set_than_tang = BUILDERS.set_luu_ly;
 
 /** Ô nào của bộ nào có phụ kiện (cho test và tài liệu). */
 export function accessorySlots(setId: string): EquipSlot[] {

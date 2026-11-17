@@ -6,7 +6,7 @@ import type { AffixStat } from './items';
 import { EQUIP_SLOTS, type EquipSlot } from './types';
 
 /** Hiệu ứng combat của bậc cao: server đọc cờ này trong `executeSkill`/`hitMonster`/`damagePlayer`. */
-export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow' | 'hoanh_kiem' | 'kim_chung' | 'moc_linh' | 'nghich_kiem' | 'dich_son' | 'ngung_dan';
+export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow' | 'hoanh_kiem' | 'kim_chung' | 'moc_linh' | 'nghich_kiem' | 'dich_son' | 'ngung_dan' | 'phan_anh' | 'anh_thiet' | 'anh_duoc';
 
 export interface SetLine {
   id: AffixStat;
@@ -80,9 +80,15 @@ export interface SetFx {
   dichSonStun: number;
   /** Ngưng Đan Hộ Thế (`skl_ngung_dan_ho_the`) khiên mạnh thêm (phân số). */
   ngungDanBoost: number;
+  /** Bộ bậc 4 (SETS-4). Phân Anh Kiếm Ảnh (`skl_phan_anh_kiem_anh`): sát thương kiếm ảnh tăng thêm (phân số; 1 = gấp đôi). Chiêu còn khóa (E2-G), chưa có sát thương kiếm ảnh để nối. */
+  phanAnhPower: number;
+  /** Anh Thiết Thân (`skl_anh_thiet_than`): đồng đội gần cũng giảm chừng này sát thương nhận (phân số). */
+  anhThietShare: number;
+  /** Anh Dược Hóa Thân (`skl_anh_duoc_hoa_than`): hồi thêm (phân số). */
+  anhDuocBoost: number;
 }
 
-export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0, hoanhKiemPower: 0, hoanhKiemReach: 0, kimChungReflect: 0, mocLinhDur: 0, nghichKiemRefund: 0, dichSonStun: 0, ngungDanBoost: 0 };
+export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0, hoanhKiemPower: 0, hoanhKiemReach: 0, kimChungReflect: 0, mocLinhDur: 0, nghichKiemRefund: 0, dichSonStun: 0, ngungDanBoost: 0, phanAnhPower: 0, anhThietShare: 0, anhDuocBoost: 0 };
 
 /** Đếm món bộ đang mặc theo `setOf(itemId)`; chỉ tính mỗi món một lần (mỗi ô một món nên tự khác nhau). */
 export function setStatuses(sets: readonly SetDef[], wornIds: readonly string[]): SetStatus[] {
@@ -116,6 +122,9 @@ export function setFxOf(statuses: readonly SetStatus[]): SetFx {
         case 'nghich_kiem': fx.nghichKiemRefund = Math.max(fx.nghichKiemRefund, t.v ?? 0); break;
         case 'dich_son': fx.dichSonStun = Math.max(fx.dichSonStun, t.v ?? 0); break;
         case 'ngung_dan': fx.ngungDanBoost = Math.max(fx.ngungDanBoost, t.v ?? 0); break;
+        case 'phan_anh': fx.phanAnhPower = Math.max(fx.phanAnhPower, t.v ?? 0); break;
+        case 'anh_thiet': fx.anhThietShare = Math.max(fx.anhThietShare, t.v ?? 0); break;
+        case 'anh_duoc': fx.anhDuocBoost = Math.max(fx.anhDuocBoost, t.v ?? 0); break;
       }
     }
   }

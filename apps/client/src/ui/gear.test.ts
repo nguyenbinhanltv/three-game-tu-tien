@@ -78,4 +78,10 @@ describe('đồ bậc 3 (E3-F)', () => {
     expect(tierText({ n: 4, fx: 'dich_son', v: 0.5 })).toContain('0,5');
     expect(tierText({ n: 4, fx: 'ngung_dan', v: 0.05 })).toContain('5%');
   });
+
+  it('hiệu ứng 4 món của ba bộ bậc 4 có chữ đúng giá trị', () => {
+    expect(tierText({ n: 4, fx: 'phan_anh', v: 1 })).toContain('100%');
+    expect(tierText({ n: 4, fx: 'anh_thiet', v: 0.2 })).toContain('20%');
+    expect(tierText({ n: 4, fx: 'anh_duoc', v: 0.15 })).toContain('15%');
+  });
 });
