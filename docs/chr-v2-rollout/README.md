@@ -1,6 +1,6 @@
 # CHR-ROLLOUT 1: nhân vật nền v2 (tùy chọn `?chr=v2`; mặc định VẪN là v1)
 
-> **Cập nhật (người dùng chọn phương án A):** mặc định giữ **v1** (hai model Tripo cũ); v2 chỉ bật bằng `?chr=v2`. Ảnh xác nhận: `mac-dinh-v1.webp` (trái: không tham số = v1; phải: `?chr=v2`). Phần mã tốt được giữ: chọn tóc A/B (hàng chọn tóc ở màn tạo nhân vật chỉ hiện khi bật v2, server vẫn lưu `hair`), prefetch theo tóc (chỉ khi v2), áo nạp lười, nén WebP. Bộ đạo bào thủ tục (tân thủ, Lạc Kiếm...) chỉ chạy dưới `?chr=v2`, không còn nằm trên đường mặc định. Concept bộ mới vừa thân v2: `docs/chr-v2-rollout/huong-dan-tripo-bo.md`.
+> **Cập nhật (người dùng chọn phương án A):** mặc định giữ **v1** (hai model Tripo cũ); v2 chỉ bật bằng `?chr=v2`. Ảnh xác nhận: `mac-dinh-v1.webp` (trái: không tham số = v1; phải: `?chr=v2`). Phần mã tốt được giữ: chọn tóc A/B (hàng chọn tóc ở màn tạo nhân vật chỉ hiện khi bật v2, server vẫn lưu `hair`), prefetch theo tóc (chỉ khi v2), áo nạp lười, nén WebP. Bộ đạo bào thủ tục (tân thủ, Lạc Kiếm...) chỉ chạy dưới `?chr=v2`, không còn nằm trên đường mặc định.
 
 ![](mac-dinh-v1.webp)
 
