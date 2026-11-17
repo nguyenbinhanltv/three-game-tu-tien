@@ -43,3 +43,12 @@ Báo tên mảnh đã lưu. Claude nhập bằng `tools/blender/outfit_build.py`
 ## Ảnh xem trước
 
 `tan-thu-*.webp`, `lac-kiem-*.webp`, `liet-mach-*.webp` (trước/sau/nghiêng và từng mảnh) trong thư mục này. Ảnh gốc PNG: `../dtl-asset-source/chr/<bộ>/concept/v2_*.png` (bộ: `set_de_tu`, `set_lac_kiem`, `set_liet_mach_kiem_y`).
+
+## Ảnh then chốt
+
+- [`lac-kiem-manh.webp`](lac-kiem-manh.webp)
+- [`lac-kiem-toan-than.webp`](lac-kiem-toan-than.webp)
+- [`liet-mach-manh.webp`](liet-mach-manh.webp)
+- [`liet-mach-toan-than.webp`](liet-mach-toan-than.webp)
+- [`tan-thu-manh.webp`](tan-thu-manh.webp)
+- [`tan-thu-toan-than.webp`](tan-thu-toan-than.webp)

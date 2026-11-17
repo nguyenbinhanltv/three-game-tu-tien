@@ -80,7 +80,8 @@
     "palette:check": "node tools/palette/gen_palette.mjs --check",
     "invite": "pnpm --filter @dtl/server invite",
     "icons:build": "node tools/icons/build.mjs",
-    "icons:check": "node tools/icons/build.mjs --check"
+    "icons:check": "node tools/icons/build.mjs --check",
+    "docs:check": "node tools/docs/check.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

@@ -35,9 +35,9 @@ Lần đầu vẽ 30 lần/giây và selector `x,z` chưa làm tròn nên CPU t�
 
 ## Ảnh
 
-- `zones-x-zoom.png`: Thung Lũng, Rừng Linh Thảo, Bãi Hồ Sương Mù (hàng) × 120 / 250 / 500 m (cột); mũi tên vàng ở mép là mục tiêu nhiệm vụ ngoài tầm (hàng 1) và vòng đỏ là bị quái đánh (hàng 3).
-- `boss-ho.png`: boss Hàn Giao giữa hồ ở ba mức zoom.
-- `tooltip-npc.png`: tooltip NPC. `nut-xoay.png`: nút xoay đang bật. `nen-ban-do-co.png`: toàn bộ nền bản đồ cổ.
+- `zones-x-zoom.webp`: Thung Lũng, Rừng Linh Thảo, Bãi Hồ Sương Mù (hàng) × 120 / 250 / 500 m (cột); mũi tên vàng ở mép là mục tiêu nhiệm vụ ngoài tầm (hàng 1) và vòng đỏ là bị quái đánh (hàng 3).
+- `boss-ho.webp`: boss Hàn Giao giữa hồ ở ba mức zoom.
+- `tooltip-npc.webp`: tooltip NPC. `nut-xoay.webp`: nút xoay đang bật. `nen-ban-do-co.webp`: toàn bộ nền bản đồ cổ.
 - Chụp trên GPU thật (RTX 3060 Ti) bằng Browser panel của Orchestrator, `?mute=1`.
 
 ## Chưa làm

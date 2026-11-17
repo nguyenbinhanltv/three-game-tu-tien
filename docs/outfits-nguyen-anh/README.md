@@ -1,5 +1,7 @@
 # Trang phục bậc 3 Nguyên Anh + Kính Quang Kiếm +10 (T-7)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/outfits-nguyen-anh/<file>`.
+
 Hai bộ còn lại của bậc 3, dựng từ 6 mảnh Tripo HD Model (đủ texture, concept `docs/outfit-concepts-p2/` #155) bằng đúng pipeline T-5/T-6 (`tools/blender/outfit_build.py`, xem `docs/outfits-ket-dan/`, `docs/outfits-hoa-than/`). Kính Quang Kiếm Y (Kiếm tu bậc 3) đã nhập ở T-6d (#163).
 
 | Bộ (dữ liệu) | Asset (nam/nữ) | Tam giác LOD0 / LOD1 / LOD2 | Mô tả |
@@ -21,7 +23,7 @@ Hai bộ còn lại của bậc 3, dựng từ 6 mảnh Tripo HD Model (đủ te
 - **Dạng cuối +10** `prop_kiem_kinh_quang_cuoi` (`orient_sword.py`, 2296 tam giác): lưỡi bạc gương, chắn cánh + ngọc lam. `SWORD_FINAL` đổi gốc → cuối khi cường hóa +10.
 - **Vỏ riêng** `prop_vo_kiem_kinh_quang` (1396 tam giác), dùng chung cho hai dạng kiếm (`SCABBARD_OF`); trên lưng chỉ một kiếm trong vỏ.
 - Hào quang cường hóa lam băng `#8FD8F0` (`SWORD_GLOW_TINT`, `SWORD_TINT` cho dạng cuối); test ở `swordTint.test.ts`.
-- Ảnh `kiem_kinh_quang_0_7_10.jpg` (hàng trên xuống: +0, +7, +10; cột trái đeo lưng, cột phải cầm tay), `kiem_kinh_quang_10_nu.jpg` (+10 trên thân nữ). Chụp với Liệt Mạch Kiếm trong tay để có `plus`, model hiển thị ép bằng `?sword=` (như #157).
+- Ảnh `kiem_kinh_quang_0_7_10.webp` (hàng trên xuống: +0, +7, +10; cột trái đeo lưng, cột phải cầm tay), `kiem_kinh_quang_10_nu.webp` (+10 trên thân nữ). Chụp với Liệt Mạch Kiếm trong tay để có `plus`, model hiển thị ép bằng `?sword=` (như #157).
 
 ## Kiểm xuyên mesh
 

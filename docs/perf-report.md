@@ -142,9 +142,9 @@ Sau đó main có thêm #62 (chỉnh màu) và #64 (hit feel theo hạng thân, 
 
 Ảnh (WebGPU, chụp giữa vòng xoay camera):
 
-![Trận boss Huyết Lang Vương, 100 người, Cao](screenshots/m6-3-01-boss-100-nguoi.jpg)
+![Trận boss Huyết Lang Vương, 100 người, Cao](screenshots/m6-3-01-boss-100-nguoi.webp)
 
-![Sân tông môn, 100 người, Vừa](screenshots/m6-3-02-san-100-nguoi.jpg)
+![Sân tông môn, 100 người, Vừa](screenshots/m6-3-02-san-100-nguoi.webp)
 
 ## Server và mạng
 

@@ -1,5 +1,7 @@
 # E2-A: Đoạn Mạch Cổ Cốc (bản đồ 2, cấp 16–19)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2-map/<file>`.
+
 Gói E2-A của E-2 Kết Đan (`docs/EXPANSION_DESIGN.md` mục 4.1, 10.2, 11.2). Chỉ dữ liệu level, địa hình, trận truyền tống, chuỗi; không đụng sim server hay engine client.
 
 ## Đã có
@@ -63,19 +65,19 @@ Muốn 100 % điểm ≤ 70 m phải nâng trần mật độ lên ≈ 150 quái
 
 | | |
 | --- | --- |
-| Bố cục nhìn từ trên (map:report: địa hình, ranh vùng, bãi quái, tinh anh vàng, boss đỏ) | ![](layout-topdown.jpg) |
-| Nền minimap (đồng mức mực, ranh vùng, đường mòn tỏa từ trạm) | ![](minimap-nen.jpg) |
-| Bản đồ lớn (phím M) | ![](worldmap.jpg) |
-| Sa Thạch Pha | ![](zone-sa-thach-pha.jpg) |
-| Khô Hà Đạo | ![](zone-kho-ha-dao.jpg) |
-| Hoang Sa Huyệt | ![](zone-hoang-sa-huyet.jpg) |
-| Cựu Mỏ Khu | ![](zone-cuu-mo-khu.jpg) |
-| Cầu Đá Gãy | ![](poi-cau-da-gay.jpg) |
-| Mạch Tinh Trụ | ![](poi-mach-tinh-tru.jpg) |
-| Cổng Mỏ Khai Mạch | ![](poi-cong-mo.jpg) |
-| Vách Đứt Mạch | ![](poi-vach-dut-mach.jpg) |
-| Tinh anh Liệt Cốt Báo Vương | ![](elite-liet-cot-bao-0.jpg) |
-| Boss Địa Mạch Long (toàn thân, cùng người chơi) | ![](boss-dia-mach-long.jpg) |
+| Bố cục nhìn từ trên (map:report: địa hình, ranh vùng, bãi quái, tinh anh vàng, boss đỏ) | ![](layout-topdown.webp) |
+| Nền minimap (đồng mức mực, ranh vùng, đường mòn tỏa từ trạm) | _(ảnh đã gỡ)_ |
+| Bản đồ lớn (phím M) | ![](worldmap.webp) |
+| Sa Thạch Pha | ![](zone-sa-thach-pha.webp) |
+| Khô Hà Đạo | _(ảnh đã gỡ)_ |
+| Hoang Sa Huyệt | ![](zone-hoang-sa-huyet.webp) |
+| Cựu Mỏ Khu | _(ảnh đã gỡ)_ |
+| Cầu Đá Gãy | ![](poi-cau-da-gay.webp) |
+| Mạch Tinh Trụ | _(ảnh đã gỡ)_ |
+| Cổng Mỏ Khai Mạch | _(ảnh đã gỡ)_ |
+| Vách Đứt Mạch | _(ảnh đã gỡ)_ |
+| Tinh anh Liệt Cốt Báo Vương | _(ảnh đã gỡ)_ |
+| Boss Địa Mạch Long (toàn thân, cùng người chơi) | _(ảnh đã gỡ)_ |
 
 Trong game mặt đất vẫn là cỏ xanh Vân Lam, chưa có tông đất son "cốc đứt mạch": bộ texture ochre, mood, cỏ/cây riêng là việc của E2-I (mỹ thuật). Ảnh chỉ chứng minh địa hình, bố cục, quái, prop PROP_LIB và đường vào.
 

@@ -135,18 +135,18 @@ Geometry và texture **đứng yên từ vòng 2**. Heap dao động 187–205 M
 
 | # | Phát hiện | Ảnh | Mức | Ai làm |
 | --- | --- | --- | --- | --- |
-| U1 | **Hàng nút hành động co còn 3×3 px ở 1280×720.** `.action-row` đo được 75×3 px, mỗi `.k-btn` 3×3 px: Đả tọa, Ngự kiếm, Túi, Nhân vật, Công pháp, Tổ đội, Nhiệm vụ, Trợ giúp, Cài đặt chỉ còn là chín chấm. Ở 1920×1080 hiện bình thường | `audit/13-hang-nut-3px-1280.png`, so với `audit/10-hud-san-1920.jpg` | **P0** | **PR C** |
-| U2 | **UI không phóng theo màn hình.** Ở 2560×1440 chữ bảng ~12 px, khung nhân vật 270 px; ở 1280×720 bảng Nhân vật cao hơn khung nhìn và bị thanh chiêu đè phần dưới | `audit/12-tui-2560.jpg`, `audit/04-nhan-vat-1280.jpg` | **P0** | **PR C**: hệ số phóng theo chiều cao khung nhìn (720 → 1, 1440 → ~1,6), bảng có chiều cao tối đa và cuộn trong |
-| U3 | **Thanh máu boss kẹt lại.** Chọn Hàn Giao rồi rời đi (dịch chuyển, chết và hồi sinh ở tông môn): thanh boss, chân dung và chỉ báo "448 m" vẫn ở trên màn hình. `bossFor` trả boss đang chọn bất kể khoảng cách; mục tiêu là quái không tự bỏ khi ra xa | `audit/07-thanh-boss-ket-448m.jpg` | **P0** | **PR C** |
+| U1 | **Hàng nút hành động co còn 3×3 px ở 1280×720.** `.action-row` đo được 75×3 px, mỗi `.k-btn` 3×3 px: Đả tọa, Ngự kiếm, Túi, Nhân vật, Công pháp, Tổ đội, Nhiệm vụ, Trợ giúp, Cài đặt chỉ còn là chín chấm. Ở 1920×1080 hiện bình thường | `audit/13-hang-nut-3px-1280.webp`, so với `audit/10-hud-san-1920.webp` | **P0** | **PR C** |
+| U2 | **UI không phóng theo màn hình.** Ở 2560×1440 chữ bảng ~12 px, khung nhân vật 270 px; ở 1280×720 bảng Nhân vật cao hơn khung nhìn và bị thanh chiêu đè phần dưới | `audit/12-tui-2560.webp`, `audit/04-nhan-vat-1280.webp` | **P0** | **PR C**: hệ số phóng theo chiều cao khung nhìn (720 → 1, 1440 → ~1,6), bảng có chiều cao tối đa và cuộn trong |
+| U3 | **Thanh máu boss kẹt lại.** Chọn Hàn Giao rồi rời đi (dịch chuyển, chết và hồi sinh ở tông môn): thanh boss, chân dung và chỉ báo "448 m" vẫn ở trên màn hình. `bossFor` trả boss đang chọn bất kể khoảng cách; mục tiêu là quái không tự bỏ khi ra xa | `audit/07-thanh-boss-ket-448m.webp` | **P0** | **PR C** |
 | U4 | **Bảng tên 3D của boss lộ sau thanh máu boss** (lỗi đã biết): nhãn boss phóng 1,8 lần, khi boss cao và camera thấp thì nhãn nằm đúng vùng thanh boss của HUD | Tái hiện lại trong PR C | **P0** | **PR C**: ẩn nhãn 3D của boss đang có thanh HUD |
-| U5 | **Bảng tên của chính mình** lúc quá nhỏ (dòng cảnh giới không đọc được ở camera xa), lúc quá to (chiếm giữa màn hình khi camera gần). Nhãn quái sát camera to gấp 3 lần chữ HUD | `audit/01-hud-san-1280.jpg`, `audit/06-boss-han-giao-1280.jpg`, `audit/11-canh-ho-1920.jpg` | P1 | **PR C**: dạng `[Ngưng Khí tầng 9]`, kẹp cỡ chữ theo px, mờ dần theo khoảng cách |
-| U6 | **Không có nút Đột Phá trên HUD.** Phải mở bảng Nhân vật, cuộn xuống cuối mới thấy nút độ kiếp; bình cảnh chỉ hiện huy hiệu nhỏ | `audit/04-nhan-vat-1280.jpg` | P1 | **PR C** |
-| U7 | **Số sát thương chưa phân cấp đủ**: thường (trắng 20 px), bạo kích (vàng 28 px + "!"), mình trúng (đỏ). Chưa có "khắc chế"; số của người khác màu cam mờ khó đọc trên cỏ | `audit/05-chien-dau-rung-1280.jpg` | P1 | **PR C** phần hình (cỡ, viền, hoạt ảnh bạo kích). Cờ khắc chế cần server gửi trong `DmgMsg`: ghi vào **3-10** |
-| U8 | **HUD độ kiếp** là một hộp tím có emoji tia sét, khác ngôn ngữ bộ khung; dòng chữ dùng gạch dài | `audit/09-do-kiep-tim-ca-khung.jpg` | P1 | **PR C** |
-| U9 | **Tên chưa thống nhất**: bảng ghi "Túi đồ" (đầu đề yêu cầu "Túi trữ vật", glossary chưa có mục này); `ui.zone.valley` = "Thung lũng Thanh Khê" trong khi vùng là `zone.thung_lung` = "Thung Lũng Thanh Phong" và Thanh Khê là tên con suối | `audit/03-tui-tooltip-1280.jpg` | P1 | **PR C** (i18n + glossary; không đụng code minimap) |
-| U10 | **Phẩm chất**: viền ô theo phẩm có nhưng màu Linh/Huyền/Địa gần nhau ở cỡ ô 48 px; tên phẩm đúng glossary (Phàm/Linh/Huyền/Địa/Thiên phẩm) | `audit/03-tui-tooltip-1280.jpg`, `audit/12-tui-2560.jpg` | P1 | **PR C** |
-| U11 | **Tooltip** không tràn ra ngoài ở 1280 và 2560, nhưng tooltip dài che thanh chiêu và có thể chạm mép dưới | `audit/03-tui-tooltip-1280.jpg` | P1 | **PR C**: kiểm ở 1280×720, 1920×1080, 2560×1440 |
-| U12 | **Bảng F3** chỉ có phím, trạng thái, ping; FPS và draw call nằm ở dòng chữ 11 px góc phải, bị thanh chiêu che ở 1920 | `audit/02-f3-1280.jpg` | P1 | **PR B** |
+| U5 | **Bảng tên của chính mình** lúc quá nhỏ (dòng cảnh giới không đọc được ở camera xa), lúc quá to (chiếm giữa màn hình khi camera gần). Nhãn quái sát camera to gấp 3 lần chữ HUD | `audit/01-hud-san-1280.webp`, `audit/06-boss-han-giao-1280.webp`, `audit/11-canh-ho-1920.webp` | P1 | **PR C**: dạng `[Ngưng Khí tầng 9]`, kẹp cỡ chữ theo px, mờ dần theo khoảng cách |
+| U6 | **Không có nút Đột Phá trên HUD.** Phải mở bảng Nhân vật, cuộn xuống cuối mới thấy nút độ kiếp; bình cảnh chỉ hiện huy hiệu nhỏ | `audit/04-nhan-vat-1280.webp` | P1 | **PR C** |
+| U7 | **Số sát thương chưa phân cấp đủ**: thường (trắng 20 px), bạo kích (vàng 28 px + "!"), mình trúng (đỏ). Chưa có "khắc chế"; số của người khác màu cam mờ khó đọc trên cỏ | `audit/05-chien-dau-rung-1280.webp` | P1 | **PR C** phần hình (cỡ, viền, hoạt ảnh bạo kích). Cờ khắc chế cần server gửi trong `DmgMsg`: ghi vào **3-10** |
+| U8 | **HUD độ kiếp** là một hộp tím có emoji tia sét, khác ngôn ngữ bộ khung; dòng chữ dùng gạch dài | `audit/09-do-kiep-tim-ca-khung.webp` | P1 | **PR C** |
+| U9 | **Tên chưa thống nhất**: bảng ghi "Túi đồ" (đầu đề yêu cầu "Túi trữ vật", glossary chưa có mục này); `ui.zone.valley` = "Thung lũng Thanh Khê" trong khi vùng là `zone.thung_lung` = "Thung Lũng Thanh Phong" và Thanh Khê là tên con suối | `audit/03-tui-tooltip-1280.webp` | P1 | **PR C** (i18n + glossary; không đụng code minimap) |
+| U10 | **Phẩm chất**: viền ô theo phẩm có nhưng màu Linh/Huyền/Địa gần nhau ở cỡ ô 48 px; tên phẩm đúng glossary (Phàm/Linh/Huyền/Địa/Thiên phẩm) | `audit/03-tui-tooltip-1280.webp`, `audit/12-tui-2560.webp` | P1 | **PR C** |
+| U11 | **Tooltip** không tràn ra ngoài ở 1280 và 2560, nhưng tooltip dài che thanh chiêu và có thể chạm mép dưới | `audit/03-tui-tooltip-1280.webp` | P1 | **PR C**: kiểm ở 1280×720, 1920×1080, 2560×1440 |
+| U12 | **Bảng F3** chỉ có phím, trạng thái, ping; FPS và draw call nằm ở dòng chữ 11 px góc phải, bị thanh chiêu che ở 1920 | `audit/02-f3-1280.webp` | P1 | **PR B** |
 | U13 | Gợi ý "Bấm vào màn hình để nhìn bằng chuột" nằm giữa màn hình suốt lúc chưa khóa chuột, che nhân vật | Mọi ảnh | P1 | **PR C**: tự ẩn sau vài giây, dời xuống trên thanh chiêu |
 | U14 | **HUD chiếm ~17% màn hình ở 1280×720** (mục tiêu dưới 15%): khung nhân vật 240×100, bản đồ nhỏ 190×205, thanh chiêu 588×83, chat 320×151 = 160 nghìn px² trên 922 nghìn. Chat là khối lớn nhất mà phần lớn thời gian trống | DOM đo ở 1280 | P1 | **PR C**: chat thu gọn khi không gõ, đo lại sau khi thêm nút Đột Phá |
 
@@ -158,13 +158,13 @@ Không đụng: bản đồ nhỏ, bản đồ lớn (M-4, session -94); ảnh n
 
 | # | Phát hiện | Ảnh | Mức | Ai làm |
 | --- | --- | --- | --- | --- |
-| G1 | **Sân tông môn phẳng và vàng**: đá lát lặp ô, gần như không có bóng đổ đọc được, núi sau điện là hai khối xanh mép cứng, không có lớp sương giữa. Trái với art bible mục 1 ("cảnh có lớp gần, giữa, xa") | `audit/01-hud-san-1280.jpg`, `audit/10-hud-san-1920.jpg` | P1 | **PR D** (sương, ánh sáng, hậu kỳ) |
-| G2 | **Cảnh hồ đã đúng hướng**: núi tan vào sương, nắng xuyên sương. Dùng làm mốc cho các vùng khác | `audit/11-canh-ho-1920.jpg` | Đạt | |
+| G1 | **Sân tông môn phẳng và vàng**: đá lát lặp ô, gần như không có bóng đổ đọc được, núi sau điện là hai khối xanh mép cứng, không có lớp sương giữa. Trái với art bible mục 1 ("cảnh có lớp gần, giữa, xa") | `audit/01-hud-san-1280.webp`, `audit/10-hud-san-1920.webp` | P1 | **PR D** (sương, ánh sáng, hậu kỳ) |
+| G2 | **Cảnh hồ đã đúng hướng**: núi tan vào sương, nắng xuyên sương. Dùng làm mốc cho các vùng khác | `audit/11-canh-ho-1920.webp` | Đạt | _(ảnh đã gỡ)_ |
 | G3 | **Nhân vật chìm vào nền** ở sân và rừng: áo lam trên nền vàng/xanh không có viền sáng tách khối | `audit/01`, `audit/05` | P1 | **PR D**: rim-light yếu sắc `air_sun_dawn` (art bible 5.3: không rim trắng gắt) |
-| G4 | **Độ kiếp nhuộm tím cả khung**: trái art bible mục 1 ("tím dưới 5% khung hình, không làm tông nền") | `audit/09-do-kiep-tim-ca-khung.jpg` | P1 | **PR D**: nền chuyển lam đêm, tím chỉ ở tia sét và vùng báo |
-| G5 | **Mưa kiếm của boss che kín nhân vật** khi camera thấp | `audit/06-boss-han-giao-1280.jpg` | P1 | **K-6** |
+| G4 | **Độ kiếp nhuộm tím cả khung**: trái art bible mục 1 ("tím dưới 5% khung hình, không làm tông nền") | `audit/09-do-kiep-tim-ca-khung.webp` | P1 | **PR D**: nền chuyển lam đêm, tím chỉ ở tia sét và vùng báo |
+| G5 | **Mưa kiếm của boss che kín nhân vật** khi camera thấp | `audit/06-boss-han-giao-1280.webp` | P1 | **K-6** |
 | G6 | **Camera chui vào thân boss** khi đứng sát Hàn Giao | Ảnh chụp lúc soát (không đưa vào repo) | P1 | **K-7** (camera: khoảng cách tối thiểu tới boss khi chiến đấu; đã có `minBossDist` cho cảnh điện ảnh) |
-| G7 | **Cỏ rừng** là bụi nhọn sẫm, thưa và lặp | `audit/05-chien-dau-rung-1280.jpg` | CUT/DEFER | Sau Sprint 2 |
+| G7 | **Cỏ rừng** là bụi nhọn sẫm, thưa và lặp | `audit/05-chien-dau-rung-1280.webp` | CUT/DEFER | Sau Sprint 2 |
 | G8 | **Ba công pháp dùng chung động tác và 6/9 chiêu** | `GAME_DESIGN_CORE.md` mục 6 | P0 về thiết kế | **K-5** (động tác), **K-6** (VFX), **3-10** (số) |
 | G9 | **Quái thường không tạo áp lực** từ tầng 4 | Mục 2.5 | P1 | **3-10** |
 | G10 | **Tuyến tân thủ thiếu nghi thức** (dẫn khí, bay lần đầu, nhắc Trúc Cơ) | `GAME_DESIGN_CORE.md` mục 3 | P1 | PR C (gợi ý UI), Sprint 2 (nhiệm vụ) |

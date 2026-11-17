@@ -1,5 +1,7 @@
 # UI-5: hoàn thiện bộ giao diện Ngọc Giản
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/ui-ngoc-gian/final/<file>`.
+
 Việc cuối của bộ UI-0…5. `?ngj=0` vẫn về giao diện cũ để so ảnh. Ảnh kiểm: `<màn>-truoc|sau-<cỡ>.jpg` (cỡ: 1366x768, 1080p, 1440p, 4k). Chụp lại: `pnpm --filter @dtl/perf shots:ui5 --out <thư mục tuyệt đối> [--scenes kich-thuoc,do-kiep,hoi-sinh] [--variants truoc,sau]`.
 
 ## Đã làm

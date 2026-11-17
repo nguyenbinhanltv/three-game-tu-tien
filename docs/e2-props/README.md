@@ -1,5 +1,7 @@
 # E2 · Thư viện prop 3 bản đồ mở rộng (18 GLB Tripo web)
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2-props/<file>`.
+
 Nguồn: `../dtl-asset-source/prop/<id>/tripo/raw_v01.glb` → `assets/source/prop/<id>/meta.json` → `pnpm assets:build --only <id>` → `apps/client/public/assets/<id>.<hash>.glb`.
 Chưa rải vào bản đồ nào (E2-A/E2-I). Ảnh turntable 4 hướng (trên trái: camera ở +Z nhìn mặt trước; phải; sau; trái): `docs/e2-props/<id>.png`, chụp bằng `pnpm shots:props --out <thư mục> --ids a,b` (trang xem `?show=<id>`, tắt tiếng).
 

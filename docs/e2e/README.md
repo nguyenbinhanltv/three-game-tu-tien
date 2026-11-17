@@ -1,5 +1,7 @@
 # E2-E: Thần thức, ô chiêu 9, Ngưng Đan Lô
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e2e/<file>`.
+
 Thiết kế: `docs/EXPANSION_DESIGN.md` mục 2.5 (mở khóa), 7.1 (pháp bảo), 8 (ô chiêu), 11.2 (gói E2-E). Ảnh chụp bằng `pnpm shots:e2e --out <thư mục tuyệt đối>` (Đoạn Mạch, Kết Đan sơ kỳ, tắt tiếng, GPU thật). Dữ liệu quét thật nằm ở `e2e-log.json`.
 
 ## Thần thức (phím V, giữ)
@@ -34,15 +36,19 @@ Thiết kế: `docs/EXPANSION_DESIGN.md` mục 2.5 (mở khóa), 7.1 (pháp bả
 | Ảnh | Nội dung |
 | --- | --- |
 | `01-thanh-chieu-truoc-ket-dan.jpg` | Thanh chiêu cấp 19: chưa có ô 9, Lô, thần thức |
-| `02-thanh-chieu-ket-dan-o9-lo-than-thuc.jpg` | Cấp 20: ô 9 (phím 0), pháp bảo phụ (9), Lô (T), thần thức (V) |
+| `02-thanh-chieu-ket-dan-o9-lo-than-thuc.webp` | Cấp 20: ô 9 (phím 0), pháp bảo phụ (9), Lô (T), thần thức (V) |
 | `03/04/05-tooltip-*.jpg` | Mô tả ô 9, Ngưng Đan Lô, thần thức |
 | `06-than-thuc-dang-van.jpg` | Đang giữ V: vòng hội tụ, nút V sạc |
-| `07-than-thuc-song-quet.jpg` | Quét xong: sóng nở, thông báo kết quả |
-| `08*-than-thuc-cot-sang-*.jpg`, `09-minimap-co-than-thuc.jpg` | Cột sáng và cờ trên minimap |
+| `07-than-thuc-song-quet.webp` | Quét xong: sóng nở, thông báo kết quả |
+| `08*-than-thuc-cot-sang-*.webp`, `09-minimap-co-than-thuc.webp` | Cột sáng và cờ trên minimap |
 | `10-than-thuc-hoi-chieu.jpg` | Nút V hồi chiêu |
 | `11/12/13-ngung-dan-lo-*.jpg` | Lô vận chiêu (cột đan hỏa mờ, số hồi), rồi treo bên hông |
-| `14-o9-than-thong-phim-0.jpg` | Bấm phím 0 ra thần thông ô 9 |
+| `14-o9-than-thong-phim-0.webp` | Bấm phím 0 ra thần thông ô 9 |
 
 ## Kiểm
 
 `pnpm typecheck`, `pnpm test` (có `spirit.test.ts`, `bonded.test.ts`, `packages/content/src/spirit.test.ts`), `pnpm content:check` (thêm kiểm bản mệnh duy nhất, `bondedLevel`, `spiritRadius`, mỗi công pháp có đúng một thần thông ô 9, chuỗi i18n), `pnpm --filter @dtl/bot-client security` (thêm mục f cho thần thức và Lô), `pnpm bots --count 100` + `pnpm ledger:check`.
+
+## Ảnh then chốt
+
+- [`08-than-thuc-cot-sang-minimap.webp`](08-than-thuc-cot-sang-minimap.webp)

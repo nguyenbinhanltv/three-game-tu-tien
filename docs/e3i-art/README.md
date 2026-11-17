@@ -1,8 +1,10 @@
 # E3-I: mỹ thuật Vân Hải Phù Đảo
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e3i-art/<file>`.
+
 Gói E3-I nâng hình ảnh bản đồ `van_hai` (E3-A/E3-N, PR #148) theo `docs/EXPANSION_DESIGN.md` mục 4.2, `docs/ASSET_CONCEPTS.md` và art bible v3 (bán tả thực, bình minh sương, tông trầm, nhân vật rõ trong 20 m). Không dùng Tripo/credit, không thêm ảnh ngoài, không sửa gì trong `dtl-asset-source`. Không đụng quái, boss, nhiệm vụ, phó bản.
 
-Ảnh trước (`truoc/`) và sau (`sau/`) cùng tên, cùng góc với `docs/e3-map/` (cùng script `pnpm shots:e3a`). `sau/e3i-*.jpg` là ảnh thêm chỉ có ở bản sau.
+Ảnh trước (`truoc/`) và sau (`sau/`) cùng tên, cùng góc với `docs/e3-map/` (cùng script `pnpm shots:e3a`). `sau/e3i-*.webp` là ảnh thêm chỉ có ở bản sau.
 
 ## Vấn đề → cách sửa
 
@@ -77,25 +79,25 @@ Trước | Sau, từng cặp:
 
 | | Trước | Sau |
 | --- | --- | --- |
-| Phù Đảo Các | ![](truoc/hub.jpg) | ![](sau/hub.jpg) |
-| Tùng Đài | ![](truoc/zone-tung-dai-dao.jpg) | ![](sau/zone-tung-dai-dao.jpg) |
-| Thạch Quy | ![](truoc/zone-thach-quy-dao.jpg) | ![](sau/zone-thach-quy-dao.jpg) |
-| Kính Hồ | ![](truoc/zone-kinh-ho-dao.jpg) | ![](sau/zone-kinh-ho-dao.jpg) |
-| Lôi Vân | ![](truoc/zone-loi-van-dao.jpg) | ![](sau/zone-loi-van-dao.jpg) |
-| Kình Ngư | ![](truoc/zone-kinh-ngu-dai.jpg) | ![](sau/zone-kinh-ngu-dai.jpg) |
-| Kính Hồ Đài | ![](truoc/poi-kinh-ho-dai.jpg) | ![](sau/poi-kinh-ho-dai.jpg) |
-| Cầu xích | ![](truoc/cau-xich.jpg) | ![](sau/cau-xich.jpg) |
-| Giữa cầu | ![](truoc/cau-giua.jpg) | ![](sau/cau-giua.jpg) |
-| Sàn mây | ![](truoc/san-may.jpg) | ![](sau/san-may.jpg) |
-| Thang mây | ![](truoc/thang-may.jpg) | ![](sau/thang-may.jpg) |
-| Toàn cảnh | ![](truoc/overview.jpg) | ![](sau/overview.jpg) |
-| Bản đồ lớn | ![](truoc/worldmap.jpg) | ![](sau/worldmap.jpg) |
+| Phù Đảo Các | ![](truoc/hub.webp) | ![](sau/hub.webp) |
+| Tùng Đài | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Thạch Quy | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Kính Hồ | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Lôi Vân | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Kình Ngư | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Kính Hồ Đài | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Cầu xích | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Giữa cầu | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Sàn mây | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Thang mây | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Toàn cảnh | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
+| Bản đồ lớn | _(ảnh đã gỡ)_ | _(ảnh đã gỡ)_ |
 
 Chỉ có ở bản sau (`E3I_EXTRA=1 pnpm shots:e3a --out <thư mục tuyệt đối>`):
 
 | | |
 | --- | --- |
-| Hồ gương Kính Hồ | ![](sau/e3i-ho-guong.jpg) |
-| Xương kình ngư, Kình Ngư Đài | ![](sau/e3i-xuong-kinh.jpg) |
-| Rừng tùng, Tùng Đài (có lối mòn) | ![](sau/e3i-tung-dai-rung.jpg) |
-| Đá phiến sẫm và nhũ đá, Lôi Vân | ![](sau/e3i-may-sam.jpg) |
+| Hồ gương Kính Hồ | ![](sau/e3i-ho-guong.webp) |
+| Xương kình ngư, Kình Ngư Đài | ![](sau/e3i-xuong-kinh.webp) |
+| Rừng tùng, Tùng Đài (có lối mòn) | _(ảnh đã gỡ)_ |
+| Đá phiến sẫm và nhũ đá, Lôi Vân | _(ảnh đã gỡ)_ |

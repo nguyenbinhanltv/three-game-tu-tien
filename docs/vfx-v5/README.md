@@ -1,5 +1,7 @@
 # VFX-V5 (PR 1): hiệu ứng quái thường và tinh anh
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/vfx-v5/<file>`.
+
 Cùng ngôn ngữ V0–V4 (ba tầng màu + bóng sẫm, mép rách, gai tinh thể, triện văn, hạt tan) nhưng bảng màu **"nguy hiểm"** tách khỏi bảng "của ta" của người chơi:
 `mon_<hệ>` ở `render/vfx/palette.ts` (kim: thép lam, mộc: lục, thủy: lam, hỏa: cam đỏ, thổ: hổ phách; mọi hệ có `accent` đỏ son để vạch báo và đòn quái luôn đọc ra là mối nguy). Chỉ hình: ai trúng, sát thương, hồi chiêu vẫn do server (HazardMsg, DmgMsg, BoltMsg không đổi).
 

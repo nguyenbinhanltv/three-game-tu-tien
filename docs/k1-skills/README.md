@@ -1,5 +1,7 @@
 # K-1: khảo sát chiêu và trang xem chiêu (mốc "trước")
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/k1-skills/<file>`.
+
 Kế hoạch gốc: bước K-1 của kế hoạch kỹ năng và animation (2026-11-16). Bước này **không đổi gameplay**: chỉ thêm công cụ xem, ảnh mốc "trước" và bảng thời gian hiện tại, để K-2 (dữ liệu chiêu và server) và K-5 (chiêu IK mới) có số liệu so sánh.
 
 ## Trang xem chiêu

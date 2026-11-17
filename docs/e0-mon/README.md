@@ -1,5 +1,7 @@
 # E-0: 12 quái thường mới cho ba bản đồ mở rộng
 
+> **Ghi chú R-1 (2026-11-18):** ảnh/video duyệt PR của hạng mục này đã gỡ khỏi repo; thư mục chỉ giữ tối đa 5 ảnh then chốt (WebP). Tên file nhắc bên dưới mà không còn trong thư mục là ảnh đã gỡ, xem lại bằng `git show c78b50c6:docs/e0-mon/<file>`.
+
 Nhập 12 model Tripo (người dùng dựng trên web, ưu tiên 3 của `docs/ASSET_CONCEPTS.md`) vào pipeline asset: GLB tối ưu có hash, LOD, clip thủ tục idle/chạy/đánh/trúng đòn/chết, nạp lười theo bản đồ. **Chưa đặt vào bản đồ** và chưa có dòng nào trong `monsters.json` (việc của E-2/E-3/E-4: hp/atk, `ai`, `scale`, hitbox, loot). Quái Vân Lam cũ giữ nguyên.
 
 Nguồn: `<dtl-asset-source>/mon/<id>/tripo/{raw_v01,rig_v01}.glb` (không có file `anim_*` nên mọi clip là thủ tục). Meta: `assets/source/mon/<id>/meta.json` (`import.kind: "tripo"`, nguồn là `rig_v01.glb`).
@@ -46,4 +48,4 @@ Cả 12 skin trong `MONSTER_SKINS` (`apps/client/src/game/character/monsterSkins
 - Vân Hạc: rig chỉ có hai đốt ở cánh trái, ba đốt ở cánh phải nên hai cánh hơi lệch nhau lúc vỗ.
 - Bích Ngọc Kim Thiền / Vân Hạc bay: độ cao lơ lửng do client/server quyết định (clip chỉ nhún nhẹ); mặt đất của skin `legs: 'none'`.
 - Ngô Công Ấu: chỉ 14 xương nên thân uốn thô; chân rết không nhúc nhích riêng.
-- Ảnh duyệt hình (GPU thật, `pnpm shots:e0 --out <thư mục>`): `docs/e0-mon/<id>.jpg` (hàng đầu: trước/bên/sau/chéo; các hàng sau: 5 khung mỗi clip idle, run, attack, hit_light, death, guard, revive) và `docs/e0-mon/so-co-voi-nhan-vat.jpg` (cả 12 quái cạnh Thanh Phong, thang mét thật, dựng bằng Blender Workbench).
+- Ảnh duyệt hình (GPU thật, `pnpm shots:e0 --out <thư mục>`): `docs/e0-mon/<id>.jpg` (hàng đầu: trước/bên/sau/chéo; các hàng sau: 5 khung mỗi clip idle, run, attack, hit_light, death, guard, revive) và `docs/e0-mon/so-co-voi-nhan-vat.webp` (cả 12 quái cạnh Thanh Phong, thang mét thật, dựng bằng Blender Workbench).
