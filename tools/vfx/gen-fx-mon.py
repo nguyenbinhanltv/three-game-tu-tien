@@ -189,8 +189,8 @@ write('mon_bolt_impact', [
 # 9) Quái chết: tan thành hạt (tro bay lên, mảnh tinh thể rơi, cánh linh quang) + gợn + vết cháy; mực có sẵn (`monsterInk`) vẽ thêm. mul theo chiều cao.
 write('mon_death', [
     mesh('burst', 0.0, 0.16, at='self', scale=1.5, billboard=True, sweep=0.0, tone='rim', tier=0),
-    mesh('ripple', 0.0, 0.6, at='self', offset=[0, -1.0, 0], scale=0.5, scaleTo=2.2, sweep=0.4, erodeFrom=0.4, ragged=0.8, tone='body', alpha=0.9, seed=6, tier=0),
-    mesh('ripple', 0.12, 0.7, at='self', offset=[0, -1.0, 0], scale=0.3, scaleTo=3.0, sweep=0.4, erodeFrom=0.3, ragged=0.9, tone='accent', alpha=0.75, seed=7, tier=1),
+    mesh('ripple', 0.0, 0.6, at='self', offset=[0, -1.0, 0], scale=0.4, scaleTo=1.2, sweep=0.4, erodeFrom=0.4, ragged=0.8, tone='body', alpha=0.9, seed=6, tier=0),
+    mesh('ripple', 0.12, 0.7, at='self', offset=[0, -1.0, 0], scale=0.3, scaleTo=1.6, sweep=0.4, erodeFrom=0.3, ragged=0.9, tone='accent', alpha=0.75, seed=7, tier=1),
     parts('dust', 0.0, 40, 1.8, 0.8, 1.5, 0.34, at='self', tone='body', grav=-1.4, tier=0),
     parts('spark', 0.05, 26, 2.2, 0.9, 1.4, 0.12, at='self', tone='rim', grav=-1.0, tier=0),
     parts('shard', 0.0, 14, 3.4, 0.9, 0.8, 0.16, at='self', tone='core', grav=7, tier=1),

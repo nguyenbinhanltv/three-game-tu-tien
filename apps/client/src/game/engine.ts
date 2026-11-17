@@ -580,7 +580,7 @@ export class Game {
       else {
         const hsrc = m.src ? this.ents?.monsters.get(m.src) : undefined;
         this.monFx?.warn(m, hsrc);
-        this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src), m.hot, MONFX_ON && !!hsrc && m.mv !== 'pull');
+        this.vfx?.hazard(m.x, m.z, m.r, m.delay, m.kind, m.sd, this.lightningFlash(m), this.isBossSrc(m.src), m.hot, hsrc ? () => !this.disposed && !!this.monFx?.boom(m, this.ents?.monsters.get(m.src ?? '') ?? hsrc) : undefined);
       }
       // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
       if (m.src) this.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
@@ -588,7 +588,8 @@ export class Game {
       if (m.mv === 'pull' || m.mv === 'pool') return;
       const vol = this.volumeAt(m.x, m.z);
       const bsrc = m.src ? this.ents?.monsters.get(m.src) : undefined;
-      if (bsrc) setTimeout(() => (this.disposed ? 0 : this.monFx?.boom(m, this.ents?.monsters.get(m.src ?? '') ?? bsrc)), m.delay * 1000);
+      // Vùng tròn: `Vfx.hazard` tự gọi `boom` lúc nổ và chỉ bỏ hình cũ khi nó thật sự phát; vùng chữ nhật/nón (telegraph) gọi ở đây.
+      if (bsrc && m.sh) setTimeout(() => (this.disposed ? 0 : this.monFx?.boom(m, this.ents?.monsters.get(m.src ?? '') ?? bsrc)), m.delay * 1000);
       setTimeout(() => {
         sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
         this.shakeForHazard(m);

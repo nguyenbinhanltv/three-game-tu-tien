@@ -1101,7 +1101,7 @@ export class Vfx {
   }
 
   /** Vùng nguy hiểm tròn báo trước trên mặt đất (pháp trận), rồi đánh xuống. */
-  hazard(x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0, boss = false, hot = false, quiet = false): void {
+  hazard(x: number, z: number, r: number, delay: number, kind: string, seed?: number, flash = 0, boss = false, hot = false, quiet?: () => boolean): void {
     const y = groundAt(x, z);
     const style = hazardStyle(kind, boss);
     const color = kind === 'lightning' ? (hot ? HOT_BOLT : (HAZARD_COLORS[kind] ?? style.color)) : style.color;
@@ -1127,8 +1127,9 @@ export class Vfx {
       () => {
         this.hazards.splice(this.hazards.indexOf(mine), 1);
         this.drop(m);
-        // `quiet` (V5): timeline `mon_boom_circle` (game/monFx.ts) đã vẽ chớp/gai/gợn nổ, không vẽ hình cũ chồng lên.
-        if (!stack.fx || quiet) return;
+        // `quiet` (V5): gọi lúc nổ; trả true khi timeline `mon_boom_*` (game/monFx.ts) thật sự đã vẽ nổ thì không vẽ hình cũ chồng lên.
+        if (quiet?.()) return;
+        if (!stack.fx) return;
         if (kind === 'lightning') {
           this.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, flash * stack.dim);
         } else if (kind !== 'frost') {

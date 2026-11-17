@@ -133,7 +133,7 @@ export class MonFx {
     if (!tl || !this.near(m.x, m.z)) return;
     const h = m.model.height;
     const a = this.actorOf({ ...m, y: m.y + h * 0.5 });
-    this.runner.startAt(tl, { actor: { ...a, y: m.y + h * 0.5 }, palette: this.elemOf(m), tgt: null, mul: monScale(h), variant: this.variantOf(m) });
+    this.runner.startAt(tl, { actor: { ...a, y: m.y + h * 0.5 }, palette: this.elemOf(m), tgt: null, mul: Math.min(this.bossOf(m) ? 2.2 : 1.5, monScale(h)), variant: this.variantOf(m) });
     this.note('mon_death', m.id);
   }
 
