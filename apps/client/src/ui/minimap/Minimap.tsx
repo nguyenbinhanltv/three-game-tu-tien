@@ -6,11 +6,12 @@ import { Game } from '../../game/engine';
 import { TipCard, Tooltip } from '../kit';
 import { Cartouche, type MapMotif, ngjHud as NGJ } from '../ngj';
 import { togglePanel, useUI } from '../store';
+import { uiScale } from '../uiScale';
 import { ancientMap } from './ancient';
 import { levelAssets } from '../../game/levelCtx';
 import { drawMinimap, type HitPt } from './draw';
 import { buildFrame } from './marks';
-import { clampZoom, screenToWorld, DEFAULT_ZOOM, formatCountdown, type Mark, nearestIndex, type View, zoneStatus, ZOOM_SPANS } from './model';
+import { backingScale, clampZoom, screenToWorld, DEFAULT_ZOOM, formatCountdown, type Mark, nearestIndex, type View, zoneStatus, ZOOM_SPANS } from './model';
 import '../minimap.css';
 
 const SIZE = 176;
@@ -83,11 +84,18 @@ export function Minimap() {
   }, []);
 
   useEffect(() => {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
     const cv = ref.current!;
-    cv.width = Math.round(SIZE * dpr);
-    cv.height = Math.round(SIZE * dpr);
     const ctx = cv.getContext('2d')!;
+    let dpr = 0;
+    // Đổi cỡ cửa sổ, zoom trình duyệt hay kéo sang màn khác (DPR đổi): cấp lại bộ đệm cho khớp điểm ảnh thật.
+    const fit = () => {
+      const d = backingScale(window.devicePixelRatio, uiScale());
+      if (d === dpr) return;
+      dpr = d;
+      cv.width = Math.round(SIZE * dpr);
+      cv.height = Math.round(SIZE * dpr);
+    };
+    fit();
     let raf = 0;
     let last = 0;
     let span: number = ZOOM_SPANS[zoomRef.current];
@@ -98,6 +106,7 @@ export function Minimap() {
       raf = requestAnimationFrame(tick);
       if (document.hidden || nowT - last < FRAME_MS) return;
       last = nowT;
+      fit();
       const g = Game.current;
       if (!g || !g.view) return;
       const dt = Math.min(0.1, (nowT - prevT) / 1000);
@@ -148,7 +157,9 @@ export function Minimap() {
           style={{ width: SIZE, height: SIZE }}
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
-            mouse.current = { x: e.clientX - r.left, y: e.clientY - r.top, cx: e.clientX, cy: e.clientY };
+            // Canvas nằm trong khối `zoom`: tọa độ chuột lấy theo px màn hình, chia lại ra đơn vị thiết kế.
+            const k = uiScale();
+            mouse.current = { x: (e.clientX - r.left) / k, y: (e.clientY - r.top) / k, cx: e.clientX, cy: e.clientY };
           }}
           onMouseLeave={() => {
             mouse.current = null;
@@ -161,7 +172,8 @@ export function Minimap() {
             const g = Game.current;
             if (!v || !g) return;
             const r = e.currentTarget.getBoundingClientRect();
-            const w = screenToWorld(v, e.clientX - r.left, e.clientY - r.top);
+            const k = uiScale();
+            const w = screenToWorld(v, (e.clientX - r.left) / k, (e.clientY - r.top) / k);
             const own = useUI.getState().marks.find((m) => m.own);
             if (own) {
               const a = Math.hypot(own.x - w.x, own.z - w.z) * (v.size / v.span);
@@ -207,7 +219,7 @@ export function Minimap() {
       {hover &&
         tip &&
         createPortal(
-          <div className="k-tip mm-tip" role="tooltip" data-show="true" style={{ left: Math.min(hover.x + 14, window.innerWidth - 220), top: hover.y + 16 }}>
+          <div className="k-tip mm-tip" role="tooltip" data-show="true" style={{ left: Math.min(hover.x + 14, window.innerWidth - 220 * uiScale()) / uiScale(), top: (hover.y + 16) / uiScale() }}>
             <div className="k-tip-edge">
               <div className="k-tip-in">
                 <TipCard title={tip.title} sub={tip.sub} lines={tip.lines} desc={tip.desc} />
