@@ -124,7 +124,7 @@ describe('V3: Hộ pháp + Đan sư', () => {
 
 describe('V4: pháp tướng', () => {
   it('3 chiêu tối thượng có pháp tướng + kéo camera (≤ 0,4), đúng hình theo nhánh', () => {
-    const want: Record<string, string> = { skl_van_kiem_quy_tong: 'dragon', skl_kim_cuong_bat_hoai: 'statue', skl_hoi_thien_dan_lo: 'kite' };
+    const want: Record<string, string> = { skl_van_kiem_quy_tong: 'dragon', skl_kim_cuong_bat_hoai: 'card', skl_hoi_thien_dan_lo: 'card' };
     for (const [id, shape] of Object.entries(want)) {
       const ev = fxEventsFor(FX_TIMELINE.get(id)!, -1);
       expect(ev.some((e) => e.type === 'mesh' && e.shape === shape), id).toBe(true);
@@ -133,9 +133,14 @@ describe('V4: pháp tướng', () => {
       expect((cam as { pull: number }).pull).toBeLessThanOrEqual(0.4);
     }
   });
+  it('thẻ La Hán / Phượng đúng tranh theo nhánh', () => {
+    const card = (id: string) => (fxEventsFor(FX_TIMELINE.get(id)!, -1).find((e) => e.type === 'mesh' && e.shape === 'card') as { card?: string }).card;
+    expect(card('skl_kim_cuong_bat_hoai')).toBe('arhat');
+    expect(card('skl_hoi_thien_dan_lo')).toBe('phoenix');
+  });
   it('pháp tướng mọc (sweep) rồi tan (erodeFrom < 1): có dissolve', () => {
-    for (const id of ['skl_van_kiem_quy_tong', 'skl_kim_cuong_bat_hoai']) {
-      const big = fxEventsFor(FX_TIMELINE.get(id)!, -1).filter((e) => e.type === 'mesh' && (e.shape === 'dragon' || e.shape === 'statue'));
+    for (const id of ['skl_van_kiem_quy_tong', 'skl_kim_cuong_bat_hoai', 'skl_hoi_thien_dan_lo']) {
+      const big = fxEventsFor(FX_TIMELINE.get(id)!, -1).filter((e) => e.type === 'mesh' && (e.shape === 'dragon' || e.shape === 'card'));
       expect(big.length).toBeGreaterThan(0);
       for (const e of big) if (e.type === 'mesh') expect(e.erodeFrom ?? 0.5).toBeLessThan(0.9);
     }
