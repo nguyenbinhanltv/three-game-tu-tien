@@ -117,10 +117,70 @@ describe('ô ngoại hình (skin)', () => {
     expect(p.char.equip.skin?.id).toBe(SKIN);
   });
 
-  it('dữ liệu hỏng ở ô skin bị bỏ khi nạp (món không phải skin)', () => {
-    const { p } = setup();
-    sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify({ skin: { id: 'itm_moc_kiem', n: 1, plus: 10 } }), p.char.id);
-    expect(Character.load(p.char.id).equip.skin).toBeUndefined();
+  describe('DB hỏng: món nằm sai ô không bị lặng lẽ xóa', () => {
+    const setEquip = (id: number, equip: unknown) => sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify(equip), id);
+    const drops = (id: number) => ledger(id).filter((r) => r.reason === 'load:drop');
+
+    it('món không phải skin ở ô skin: trả về túi (giữ cấp cường hóa), không ghi ledger, nạp lần hai không nhân đôi', () => {
+      const { p } = setup();
+      setEquip(p.char.id, { skin: { id: 'itm_moc_kiem', n: 1, plus: 3 } });
+      const c = Character.load(p.char.id);
+      expect(c.equip.skin).toBeUndefined();
+      expect(c.inv.filter((x) => x?.id === 'itm_moc_kiem')).toEqual([{ id: 'itm_moc_kiem', n: 1, plus: 3 }]);
+      expect(drops(p.char.id)).toHaveLength(0);
+      const again = Character.load(p.char.id);
+      expect(again.inv.filter((x) => x?.id === 'itm_moc_kiem')).toHaveLength(1);
+      expect(again.equip.skin).toBeUndefined();
+    });
+
+    it('skin nằm ở ô có chỉ số: trả về túi, ô đó trống, chỉ số như người không mặc gì', () => {
+      const { p } = setup();
+      // Mốc so sánh: chính nhân vật này nạp từ DB khi chưa mặc gì (cấp trong bộ nhớ của `setup` không được lưu).
+      const clean = Character.load(p.char.id);
+      const bare = { atk: clean.atk, def: clean.def, mhp: clean.mhp };
+      setEquip(p.char.id, { weapon: { id: SKIN, n: 1, plus: 10 }, robe: { id: SKIN, n: 1 } });
+      const c = Character.load(p.char.id);
+      expect(c.equip.weapon).toBeUndefined();
+      expect(c.equip.robe).toBeUndefined();
+      // Skin không có cường hóa: món trả về túi không mang `plus`.
+      expect(c.inv.filter((x) => x?.id === SKIN)).toEqual([
+        { id: SKIN, n: 1 },
+        { id: SKIN, n: 1 },
+      ]);
+      expect({ atk: c.atk, def: c.def, mhp: c.mhp }).toEqual(bare);
+      expect(drops(p.char.id)).toHaveLength(0);
+    });
+
+    it('mẫu không còn tồn tại (ô skin và ô thường): bỏ và ghi ledger -1 lý do load:drop', () => {
+      const { p } = setup();
+      setEquip(p.char.id, { skin: { id: 'itm_khong_con_ton_tai', n: 1 }, ring: { id: 'itm_mau_da_xoa', n: 1 } });
+      const c = Character.load(p.char.id);
+      expect(c.equip.skin).toBeUndefined();
+      expect(c.equip.ring).toBeUndefined();
+      expect(drops(p.char.id).map((r) => [r.kind, r.ref, r.delta]).sort()).toEqual([
+        ['item', 'itm_khong_con_ton_tai', -1],
+        ['item', 'itm_mau_da_xoa', -1],
+      ]);
+      // Lần nạp sau không còn gì để dọn: không ghi thêm dòng nào.
+      Character.load(p.char.id);
+      expect(drops(p.char.id)).toHaveLength(2);
+    });
+
+    it('túi đầy: món sai ô không có chỗ về thì ghi ledger -1 thay vì biến mất không dấu vết', () => {
+      const { p } = setup();
+      expect(
+        p.char.tx('test:fill', null, (d) => {
+          for (let i = 0; i < d.inv.length; i++) d.inv[i] = { id: 'itm_moc_kiem', n: 1 };
+          d.bump('itm_moc_kiem', d.inv.length);
+          return true;
+        }),
+      ).toBe(true);
+      setEquip(p.char.id, { skin: { id: 'itm_thiet_kiem', n: 1 } });
+      const c = Character.load(p.char.id);
+      expect(c.equip.skin).toBeUndefined();
+      expect(c.inv.some((x) => x?.id === 'itm_thiet_kiem')).toBe(false);
+      expect(drops(p.char.id).map((r) => [r.ref, r.delta])).toEqual([['itm_thiet_kiem', -1]]);
+    });
   });
 
   it('/gm skin: tài khoản thử lấy + mặc, off tháo; tài khoản thường bị từ chối', () => {

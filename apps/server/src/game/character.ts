@@ -313,8 +313,12 @@ export class Character {
     c.root = isRootId(row.root) ? row.root : rootForName(row.name);
     c.bk = row.bk === 0 || BOTTLENECK_LEVELS.includes(row.bk) ? row.bk : initialBottleneck(row.level);
     c.tele = parseTele(row.tele);
+    // Món nằm sai chỗ trong cột `equip` (DB hỏng/sửa tay): `stray` trả về túi, `dropped` (mẫu không còn) ghi sổ cái -1.
+    let misplaced: { stray: InvItem[]; dropped: string[] } = { stray: [], dropped: [] };
     try {
-      c.equip = sanitizeEquip(JSON.parse(row.equip));
+      const clean = sanitizeEquip(JSON.parse(row.equip));
+      c.equip = clean.equip;
+      misplaced = clean;
       c.quests = JSON.parse(row.quests) as QuestView;
       c.meta = JSON.parse(row.meta) as CharMeta;
     } catch {
@@ -334,10 +338,28 @@ export class Character {
         c.inv[r.slot] = it;
       }
     }
+    if (misplaced.stray.length || misplaced.dropped.length) c.settleMisplaced(misplaced.stray, misplaced.dropped);
     c.recalc();
     if (c.hp > c.mhp) c.hp = c.mhp;
     if (c.mp > c.mmp) c.mp = c.mmp;
     return c;
+  }
+
+  /**
+   * Dọn món nằm sai ô lúc nạp, trong MỘT giao dịch để sổ cái luôn khớp: món còn mẫu được trả về ô túi trống (không đổi số lượng
+   * nên không cần dòng ledger), hết chỗ hoặc mẫu không còn thì ghi ledger -1 với lý do `load:drop`. Cột `equip` được ghi lại bản đã dọn.
+   */
+  private settleMisplaced(stray: InvItem[], dropped: string[]): void {
+    const ok = this.tx('load:drop', null, (d) => {
+      for (const it of stray) {
+        const i = d.inv.findIndex((s) => !s);
+        if (i >= 0) d.inv[i] = it;
+        else d.bump(it.id, -1);
+      }
+      for (const id of dropped) d.bump(id, -1);
+      return true;
+    });
+    if (!ok) console.error('[load] không dọn được món sai ô của nhân vật', this.id, this.txFail);
   }
 
   /** Tính lại chỉ số từ cảnh giới + trang bị (8 ô, dòng chính + dòng phụ). */
@@ -607,16 +629,29 @@ function parseStoredInst(itemId: string, raw: string | null): ItemInst | null {
   }
 }
 
-/** Đọc JSON trang bị: chỉ giữ ô hợp lệ, mẫu còn tồn tại, đúng loại ô, `inst` đã qua kiểm. */
-function sanitizeEquip(raw: unknown): Equipment {
+/**
+ * Đọc JSON trang bị: chỉ giữ ô hợp lệ, mẫu còn tồn tại, `inst` đã qua kiểm. Món không được ở ô đó không bị lặng lẽ xóa:
+ * `stray` = món còn mẫu nhưng sai lớp ô (skin nằm ở ô có chỉ số, hoặc món không phải skin nằm ở ô skin) để trả về túi;
+ * `dropped` = id món mà mẫu không còn tồn tại, để ghi sổ cái.
+ */
+function sanitizeEquip(raw: unknown): { equip: Equipment; stray: InvItem[]; dropped: string[] } {
   const out: Equipment = {};
-  if (!raw || typeof raw !== 'object') return out;
+  const stray: InvItem[] = [];
+  const dropped: string[] = [];
+  if (!raw || typeof raw !== 'object') return { equip: out, stray, dropped };
   for (const k of EQUIP_SLOTS) {
     const e = (raw as Record<string, InvItem | undefined>)[k];
     if (!e || typeof e.id !== 'string') continue;
     const kind = ITEM.get(e.id)?.kind;
     if (!kind) {
       console.warn('[load] bỏ trang bị có mẫu không còn tồn tại:', e.id);
+      dropped.push(e.id);
+      continue;
+    }
+    // Skin ở ô có chỉ số: không bao giờ hợp lệ (ô đó sẽ vào tính chỉ số, nâng cấp): trả về túi.
+    if (!isEquipSlot(kind)) {
+      console.warn('[load] món không phải trang bị nằm ở ô có chỉ số, trả về túi:', e.id, 'ở', k);
+      stray.push({ id: e.id, n: 1 });
       continue;
     }
     if (kind !== k) console.warn('[load] trang bị lệch ô (giữ nguyên):', e.id, 'ở', k);
@@ -630,10 +665,25 @@ function sanitizeEquip(raw: unknown): Equipment {
   // Ô ngoại hình: chỉ giữ món còn tồn tại và đúng loại; không có plus/inst (skin không có chỉ số).
   for (const k of COSMETIC_SLOTS) {
     const e = (raw as Record<string, InvItem | undefined>)[k];
-    if (e && typeof e.id === 'string' && ITEM.get(e.id)?.kind === k) out[k] = { id: e.id, n: 1 };
-    else if (e) console.warn('[load] bỏ món ở ô ngoại hình không hợp lệ:', e?.id, k);
+    if (!e || typeof e.id !== 'string') continue;
+    const def = ITEM.get(e.id);
+    if (def?.kind === k) out[k] = { id: e.id, n: 1 };
+    else if (def) {
+      // Món khác loại nằm ở ô skin: trả về túi, giữ cấp cường hóa và dòng đã roll nếu là trang bị.
+      console.warn('[load] món không phải skin nằm ở ô ngoại hình, trả về túi:', e.id);
+      const it: InvItem = { id: e.id, n: 1 };
+      if (isEquipSlot(def.kind)) {
+        if (e.plus && e.plus > 0) it.plus = Math.min(e.plus | 0, MAX_ENHANCE);
+        const inst = e.inst ? parseInst(ITEM_SYS, def.kind, e.inst) : null;
+        if (inst) it.inst = inst;
+      }
+      stray.push(it);
+    } else {
+      console.warn('[load] bỏ món ở ô ngoại hình có mẫu không còn tồn tại:', e.id);
+      dropped.push(e.id);
+    }
   }
-  return out;
+  return { equip: out, stray, dropped };
 }
 
 export { isEquipSlot };
