@@ -466,6 +466,8 @@ def transfer(points, hand_to_forearm=True):
                 kk = key(n)
                 if kk == 'dtl_sword':
                     n = by_key['spine2']
+                elif kk.startswith(('dtl_o_hair', 'dtlohair')):
+                    n = by_key['head']  # xương lò xo tóc của thân nền v2 (CHR-PROTO): áo không theo
                 elif hand_to_forearm and 'hand' in kk:
                     side = 'left' if kk.startswith('left') else 'right'
                     n = by_key[side + 'forearm']
