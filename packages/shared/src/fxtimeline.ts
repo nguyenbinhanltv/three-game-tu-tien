@@ -135,6 +135,16 @@ export interface FxShakeEvent extends FxBase {
   level: number;
 }
 
+/** Tia sét thiên lôi (hình có sẵn của `Vfx.lightning`), tông theo bảng màu; mảnh, không chớp toàn cảnh. */
+export interface FxBoltEvent extends FxBase {
+  type: 'bolt';
+  at?: FxAnchor;
+  offset?: [number, number, number];
+  scale?: number;
+  tone?: FxTone;
+  seed?: number;
+}
+
 export interface FxFlashEvent extends FxBase {
   type: 'flash';
   /** Độ chớp toàn cảnh 0..0,3 (tắt theo công tắc rung màn hình? không: giới hạn cứng để không lóa). */
@@ -147,7 +157,7 @@ export interface FxSoundEvent extends FxBase {
   gain?: number;
 }
 
-export type FxEvent = FxMeshEvent | FxParticleEvent | FxDecalEvent | FxTrailEvent | FxHitstopEvent | FxShakeEvent | FxFlashEvent | FxSoundEvent;
+export type FxEvent = FxMeshEvent | FxParticleEvent | FxDecalEvent | FxTrailEvent | FxHitstopEvent | FxShakeEvent | FxFlashEvent | FxSoundEvent | FxBoltEvent;
 
 export interface FxTimeline {
   /** id chiêu (khớp `skills.json`/`methods.json`). */

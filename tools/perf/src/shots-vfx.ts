@@ -24,6 +24,8 @@ const SKILLS = opt('--skills', 'skl_kiem_khi_tram,skl_phi_kiem').split(',');
 const FXQ = opt('--fxq', 'high');
 const OLD = args.includes('--old');
 const PERF = args.includes('--perf');
+/** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
+const WIDE = /thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh/;
 /** Số người giả cùng ra chiêu (đo sân đông) và thời gian đo (giây). */
 const CROWD = Number(opt('--crowd', '0'));
 const CROWD_SECS = Number(opt('--crowd-secs', '15'));
@@ -267,7 +269,8 @@ async function main(): Promise<void> {
         for (const sk of SKILLS) {
           await scene(page);
           if (/van_kiem_quy_tong|thien_kiem_hoa_hinh/.test(sk)) await gm(page, 'charge', 900);
-          await closeCam(page, DIST);
+          await closeCam(page, WIDE.test(sk) ? 9.5 : DIST);
+          if (WIDE.test(sk)) await page.evaluate(() => { (window as unknown as G).__game!.camPitch = 0.3; });
           const combo = sk === 'skl_phi_kiem';
           const span = combo ? 3000 : SPAN[sk] ?? Number(opt('--span', '1700'));
           const act = async () => {

@@ -261,6 +261,11 @@ export class FxRunner {
           this.env.shake(ev.level, { x: Math.sin(yaw), z: Math.cos(yaw) });
         }
         break;
+      case 'bolt': {
+        const p = this.anchor(c, ev.at ?? 'ground', ev.offset, this.aim(c, tgt), tgt, _a);
+        this.v.lightning(p.x, p.y, p.z, toneOf(c.pal, ev.tone ?? 'rim'), ev.scale ?? 1, ev.seed ?? Math.floor(c.seed * 100 + s.idx), 0);
+        break;
+      }
       case 'flash':
         if (c.mine) this.env.flash(Math.min(0.3, ev.amount));
         break;

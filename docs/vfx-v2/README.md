@@ -6,8 +6,8 @@ Cùng phong cách V1 (lõi sẫm + bóng, lưỡi liềm hai tông, tinh thể l
 | --- | --- |
 | Linh Khí Hộ Thể | kiếm trận hộ thân: vòng ấn, xoáy tinh thể, gai vòng quanh chân |
 | Hồi Nguyên Thuật | linh khí dâng như sen, cánh sáng bay lên (thay hình `heal` cũ) |
-| Thiên Kiếm Vũ | tám kiếm tinh thể rơi từ trời xuống vùng chỉ định, mỗi mũi cắm đất nổ gợn (thay mưa kiếm cũ); biến thức rộng/tập trung |
-| Lôi Đình Nhất Kiếm | sét giữ nguyên, thêm vết cháy + nứt đất, gai vàng, khựng 65 ms |
+| Thiên Kiếm Vũ | vòng trận triện văn + nứt đất phủ vùng bán kính 9, 28 kiếm khí tinh thể rơi nghiêng theo nhịp (12 kiếm luôn có, còn lại từ Vừa/Cao), mỗi mũi cắm đất nổ gợn + gai (thay mưa kiếm cũ); biến thức rộng/tập trung |
+| Lôi Đình Nhất Kiếm | tông tím (bảng màu `loi`), sét mảnh nối tiếp (sự kiện `bolt`), vết cháy + nứt đất + lôi văn, gai tím, khựng 65 ms, không chớp toàn cảnh; kích hoạt theo S.FX `thunder` vì chiêu niệm không phát sự kiện windup (thay hình cũ) |
 | Kiếm Ảnh Bộ (lướt) | tàn ảnh sẫm ở chỗ cũ, vệt xoắn kéo dọc đường lướt |
 | Phi Kiếm Truy Hồn | bóng kiếm sẫm lướt trước, bản thể theo sau, dấu ấn tinh thể cắm trên đầu mục tiêu; biến thức sâu/lan |
 | Vạn Kiếm Quy Tông (tối thượng) | mười bốn kiếm trút xuống, hai nhát chém dọc khổng lồ, trụ gai, khựng 80 ms |

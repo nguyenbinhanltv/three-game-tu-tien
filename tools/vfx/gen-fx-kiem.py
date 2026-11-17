@@ -95,25 +95,30 @@ R['skl_hoi_nguyen_thuat'] = lambda: {
 # ---- Thiên Kiếm Vũ: kiếm tinh thể rơi từ trời xuống vùng chỉ định, mỗi mũi cắm đất nổ gợn; thay hẳn mưa kiếm cũ. ----
 def thien_kiem_vu():
     ev = [
-        decal('rune', -0.45, 9.0, 1.6, at='area', grow=0.4, tone='body', alpha=0.55, tier=1),
-        mesh('ripple', -0.05, 0.75, at='area', scale=0.2, scaleTo=1.0, fit='area', sweep=0.45, erodeFrom=0.55, ragged=0.6, tone='body', alpha=0.9, tier=0, seed=2),
-        mesh('ripple', 0.1, 0.6, at='area', scale=0.1, scaleTo=0.55, fit='area', sweep=0.4, erodeFrom=0.5, tone='accent', alpha=0.7, tier=2, seed=6),
+        decal('rune', -0.5, 9.0, 2.0, at='area', grow=0.4, tone='body', alpha=0.95, tier=0),
+        decal('crack', 0.25, 8.5, 2.6, at='area', grow=0.3, tone='body', alpha=0.9, tier=1),
+        mesh('ripple', -0.2, 0.9, at='area', scale=0.2, scaleTo=1.0, fit='area', sweep=0.45, erodeFrom=0.55, ragged=0.6, tone='body', alpha=0.9, tier=0, seed=2),
+        mesh('ripple', 0.1, 0.7, at='area', scale=0.1, scaleTo=0.6, fit='area', sweep=0.4, erodeFrom=0.5, tone='accent', alpha=0.7, tier=2, seed=6),
         shake(0.0, 0.14, tier=1),
         stop(0.0, 50),
     ]
-    rnd = [(-0.55, 0.3), (0.5, -0.6), (0.1, 0.7), (-0.2, -0.3), (0.7, 0.35), (-0.65, -0.55), (0.25, 0.05), (-0.1, 0.55)]
-    for i, (fx_, fz_) in enumerate(rnd):
-        t = round(-0.32 + i * 0.055, 3)
-        dx, dz = round(fx_ * 7, 2), round(fz_ * 7, 2)
-        ev.append(mesh('kite', t, 0.3, at='area', offset=[dx, 11, dz], scale=[0.7, 0.7, 1.9], sweep=0.1, erodeFrom=0.85,
-                       tone='rim' if i % 2 else 'body', move={'to': 'area', 'offset': [dx, 0.4, dz], 'ease': 'in'}, seed=20 + i, tier=0 if i < 4 else 1))
-        ev.append(mesh('ripple', round(t + 0.3, 3), 0.4, at='area', offset=[dx, 0, dz], scale=0.15, scaleTo=0.9, sweep=0.5, erodeFrom=0.4, tone='body', alpha=0.85, tier=1, seed=30 + i))
-        if i % 2 == 0:
-            ev.append(mesh('spike', round(t + 0.3, 3), 0.55, at='area', offset=[dx, 0, dz], rot=[-90, 0, 0], scale=0.32, sweep=0.2, erodeFrom=0.5, tone='body', tier=1, seed=40 + i))
-        ev.append(parts('spark', round(t + 0.3, 3), 10, 4, 1, 0.35, 0.05, at='area', offset=[dx, 0.3, dz], tone='rim', tier=1))
+    # 28 kiếm khí tinh thể rơi nghiêng vào vùng bán kính 9 theo nhịp (12 kiếm đầu luôn có, phần còn lại từ Vừa/Cao), mỗi mũi cắm đất nổ gợn.
+    N = 28
+    for i in range(N):
+        a = i * 2.399
+        rr = 9.0 * math.sqrt((i + 0.5) / N)
+        dx, dz = round(math.cos(a) * rr, 2), round(math.sin(a) * rr, 2)
+        t = round(-0.4 + i * 0.045, 3)
+        tier = 0 if i < 12 else (1 if i < 20 else 2)
+        ev.append(mesh('kite', t, 0.34, at='area', offset=[dx + 3.5, 13, dz - 2.0], scale=[1.1, 1.1, 3.4], sweep=0.1, erodeFrom=0.9, tone='rim' if i % 2 else 'body',
+                       move={'to': 'area', 'offset': [dx, 0.3, dz], 'ease': 'in'}, seed=20 + i, tier=tier))
+        ev.append(mesh('ripple', round(t + 0.34, 3), 0.45, at='area', offset=[dx, 0, dz], scale=0.3, scaleTo=1.1, sweep=0.5, erodeFrom=0.4, tone='body', alpha=0.9, tier=tier, seed=50 + i))
+        if i % 3 == 0:
+            ev.append(mesh('spike', round(t + 0.34, 3), 0.7, at='area', offset=[dx, 0, dz], rot=[-90, 0, 0], scale=0.55, sweep=0.2, erodeFrom=0.5, tone='body', tier=1, seed=80 + i))
+            ev.append(parts('spark', round(t + 0.34, 3), 8, 4, 1, 0.35, 0.06, at='area', offset=[dx, 0.3, dz], tone='rim', tier=1))
     return {'skill': 'skl_thien_kiem_vu', 'replaces': ['rain'], 'events': ev,
             'variants': {
-                'wide': [mesh('ripple', 0.2, 0.7, at='area', scale=0.2, scaleTo=1.1, fit='area', sweep=0.5, tone='rim', alpha=0.6, tier=1, seed=50)],
+                'wide': [mesh('ripple', 0.2, 0.8, at='area', scale=0.2, scaleTo=1.1, fit='area', sweep=0.5, tone='rim', alpha=0.7, tier=1, seed=50)],
                 'focus': [mesh('spike', 0.25, 0.8, at='area', rot=[-90, 0, 0], scale=1.3, sweep=0.2, erodeFrom=0.55, tone='body', tier=0, seed=51),
                           mesh('burst', 0.3, 0.11, at='area', offset=[0, 1.2, 0], scale=2.0, billboard=True, sweep=0.0, tone='rim', tier=0)],
             }}
@@ -123,17 +128,22 @@ R['skl_thien_kiem_vu'] = thien_kiem_vu
 
 # ---- Lôi Đình Nhất Kiếm: sét giữ hình cũ, thêm nứt đất cháy, vòng triện, gai tinh thể điểm vàng. ----
 R['skl_loi_dinh_nhat_kiem'] = lambda: {
-    'skill': 'skl_loi_dinh_nhat_kiem',
+    'skill': 'skl_loi_dinh_nhat_kiem', 'palette': 'loi', 'replaces': ['thunder'], 'trigger': 'fx', 'fxKind': 'thunder',
     'events': [
-        parts('spark', -0.4, 26, 1.8, 1, 0.34, 0.06, at='self', offset=[0, 0.7, 0.2], inward=True, tone='accent', tier=1),
-        mesh('burst', 0.0, 0.12, at='target', scale=2.0, billboard=True, sweep=0.0, tone='accent', tier=0),
-        mesh('ripple', 0.0, 0.5, at='ground', scale=0.4, scaleTo=2.8, sweep=0.35, erodeFrom=0.4, ragged=0.65, tone='accent', alpha=0.9, tier=0, seed=3),
-        mesh('ripple', 0.06, 0.55, at='ground', scale=0.3, scaleTo=2.0, sweep=0.4, erodeFrom=0.45, tone='body', tier=1, seed=9),
-        decal('scorch', 0.0, 3.0, 2.2, at='ground', grow=0.1, tone='core', alpha=0.9, tier=1),
-        decal('crack', 0.02, 3.4, 2.4, at='ground', grow=0.12, tone='accent', alpha=0.95, tier=1),
-        *ring_spikes(5, 1.3, 0.04, 'ground', 0.5, 0.55, tier=1, tilt=20, tone='accent'),
-        parts('spark', 0.0, 34, 8, 1, 0.45, 0.07, at='target', tone='accent', tier=0),
-        parts('shard', 0.02, 12, 5, 0.9, 0.6, 0.1, at='ground', offset=[0, 0.3, 0], tone='core', tier=2),
+        # Sét mảnh nối tiếp, không chớp toàn cảnh; lõi tối (tím sẫm) viền trắng tím.
+        {'type': 'bolt', 't': 0.0, 'at': 'target', 'scale': 0.7, 'tone': 'body', 'seed': 11, 'tier': 0},
+        {'type': 'bolt', 't': 0.05, 'at': 'target', 'scale': 0.9, 'tone': 'body', 'seed': 12, 'tier': 0},
+        {'type': 'bolt', 't': 0.1, 'at': 'ground', 'offset': [1.6, 0, 0.8], 'scale': 0.8, 'tone': 'body', 'seed': 13, 'tier': 2},
+        {'type': 'bolt', 't': 0.16, 'at': 'ground', 'offset': [-1.5, 0, -1.0], 'scale': 0.8, 'tone': 'body', 'seed': 14, 'tier': 2},
+        mesh('burst', 0.0, 0.1, at='target', scale=0.8, billboard=True, sweep=0.0, tone='body', alpha=0.7, tier=0),
+        mesh('ripple', 0.0, 0.28, at='ground', scale=0.4, scaleTo=1.4, sweep=0.4, erodeFrom=0.1, ragged=0.65, tone='core', alpha=0.75, tier=0, seed=3),
+        mesh('ripple', 0.05, 0.3, at='ground', scale=0.3, scaleTo=1.1, sweep=0.4, erodeFrom=0.1, tone='body', alpha=0.6, tier=2, seed=9),
+        decal('scorch', 0.0, 3.0, 2.4, at='ground', grow=0.1, tone='core', alpha=0.95, tier=0),
+        decal('crack', 0.02, 3.6, 2.6, at='ground', grow=0.14, tone='body', alpha=0.95, tier=0),
+        decal('rune', 0.05, 3.4, 2.2, at='ground', grow=0.2, tone='accent', alpha=0.8, tier=1, yaw=20),
+        *ring_spikes(5, 1.3, 0.04, 'ground', 0.5, 0.5, tier=1, tilt=20, tone='body'),
+        parts('spark', 0.0, 30, 8, 1, 0.4, 0.05, at='target', tone='body', tier=0),
+        parts('shard', 0.02, 10, 5, 0.9, 0.6, 0.09, at='ground', offset=[0, 0.3, 0], tone='core', tier=2),
         stop(0.0, 65),
         shake(0.0, 0.3),
     ],
