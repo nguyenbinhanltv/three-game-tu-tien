@@ -43,7 +43,5 @@ jobs:
       - name: content:check
         run: pnpm content:check
 
-      # Script kiểm docs/ thuộc R-1; bỏ qua nếu nhánh chưa có.
       - name: docs:check
-        if: hashFiles('tools/docs/check.mjs') != ''
-        run: node tools/docs/check.mjs
+        run: pnpm docs:check
