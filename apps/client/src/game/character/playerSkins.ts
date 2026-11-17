@@ -332,7 +332,7 @@ export class PlayerSkins {
     const parts = this.outfitIds(look).map((o) => ({ id: o, tpl: this.loadOutfit(o) }));
     if (parts.length) this.loadScabbard(scabbardOf(look.w));
     const outfit: Outfit | undefined = parts.length && parts.every((p) => p.tpl) ? { parts: parts as Outfit['parts'], dye: { id: dye.id, hex: dye.hex } } : undefined;
-    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), outfit ? undefined : look.acc, look.w, false, outfit);
+    return this.build(id, skin, t, this.material(id, skin, t, dye.id, dye.hex, 'accent' in dye ? dye.accent : undefined), outfit && !outfit.parts.every((p) => p.id.startsWith(STARTER)) ? undefined : look.acc, look.w, false, outfit); // đồ tân thủ vẫn mang phụ kiện của bộ (giáp vai, đai...); áo mô-đun đã có sẵn
   }
 
   /** Asset người của `look` chưa nạp xong (bóng tâm ma tạm dùng model khối của quái). */
