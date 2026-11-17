@@ -519,7 +519,8 @@ describe('SETS-4: hiệu ứng 4 món của bộ bậc 4 nối vào chiêu', () 
       const h0 = p.char.hp;
       fresh(p);
       sim.onSkill(p, { id: 'skl_anh_duoc_hoa_than' });
-      wait(4600);
+      // Chỉ đo nửa đầu của hồi dần (4 s): chạy hết thì cả hai bản đều chạm trần đầy máu và không còn so được.
+      wait(2100);
       return p.char.hp - h0;
     };
     const base = healed(0);

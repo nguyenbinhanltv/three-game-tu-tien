@@ -10,7 +10,9 @@
     "build": "pnpm --filter @dtl/client build",
     "start": "pnpm --filter @dtl/server start",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test && pnpm audio:test",
+    "test": "pnpm -r test",
+    "test:slow": "pnpm audio:test",
+    "test:all": "pnpm test && pnpm test:slow",
     "content:check": "pnpm --filter @dtl/content check && pnpm icons:check",
     "sim:progress": "pnpm --filter @dtl/content sim",
     "map:report": "pnpm --filter @dtl/content map:report",
@@ -85,13 +87,6 @@
   "devDependencies": {
     "@types/node": "^24.19.2",
     "concurrently": "^9.1.0",
-    "typescript": "~5.9.2"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "better-sqlite3",
-      "esbuild",
-      "ffmpeg-static"
-    ]
+    "typescript": "~5.9.3"
   }
 }
