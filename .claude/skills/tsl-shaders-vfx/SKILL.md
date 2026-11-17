@@ -64,7 +64,7 @@ Hai lớp, đừng trộn.
 4. Dựng theo thứ tự: báo trước (nếu có) → tụ lực → bùng nổ tại `t: 0` → dư âm. Gắn `tier` cho phần trang trí (1–2) để preset Thấp chỉ còn phần đọc được.
 5. Chọn `palette` đúng nhánh. Hình mới chưa có thì thêm vào `fxShapes.ts` và `shapeKind`, đừng tạo material.
 6. Với chiêu lướt/đột phá/cảnh: `trigger: "fx"`, `fxKind` khớp `S.FX`, `replaces` bỏ hình cũ.
-7. `pnpm content:check` (≤ 12 draw, ≤ 1.500 hạt mỗi chiêu; khựng 40–80 ms; rung ≤ 0,6; chớp ≤ 0,3; burst < 120 ms; trần decal 8 s).
+7. `pnpm content:check` (≤ 12 draw, ≤ 1.500 hạt mỗi chiêu, ≤ 400 hạt mỗi sự kiện; khựng 40–80 ms; rung ≤ 0,6; chớp ≤ 0,3; decal `dur` ≤ 8 s; ≤ 4 tia sét). Burst < 120 ms là quy ước tự kiểm, không có trong check.
 8. Quay và xem: mục Kiểm tra.
 9. Cập nhật `docs/vfx-<đợt>/README.md` (ngắn: bản sắc hình, số đo, hạn chế).
 
