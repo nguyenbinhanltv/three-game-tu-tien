@@ -6,6 +6,7 @@ import { MethodPanel } from '../MethodPanel';
 import { PartyPanel } from '../Party';
 import { focusPanel, movePanel, panelScale, useUI } from '../store';
 import { WorldMap } from '../worldmap/WorldMap';
+import { Credits } from './Credits';
 import { Help } from './Help';
 import type { WinId } from './layout';
 import { Quests } from './Quests';
@@ -29,6 +30,8 @@ function Body({ id }: { id: WinId }): ReactNode {
       return <MethodPanel />;
     case 'party':
       return <PartyPanel />;
+    case 'credits':
+      return <Credits />;
   }
 }
 
