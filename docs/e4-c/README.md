@@ -24,7 +24,17 @@ Theo `docs/EXPANSION_DESIGN.md` mục 5.3 (bí cảnh) và E4-M (cửa phong ấ
 
 ## Ảnh (`pnpm --filter @dtl/perf run shots:e4c --out <thư mục tuyệt đối>`, WebGPU, tắt tiếng)
 
-`00-cong` cổng ở Thiên Khuyết · `01*` vào điện · `02`–`04` đợt 1–3 · `05*` đợt phong ấn (ba cửa, bị chặn, xuất khiếu mở cửa 1, Phá Ấn Phù cửa 2–3, quái kéo tới) · `06` Hóa Hình · `07*` boss + sáu tay · `08*` ngũ hành · `09*` phân thân · `10*` vòng đá · `11` hoàn thành. `log.json`: phòng `dungeon-than_tang`, WebGPU, ~55 draw call, ~227k tam giác, 0 lỗi console.
+Repo chỉ giữ 5 ảnh then chốt; bộ đầy đủ (cổng, đợt 1–6, chặn thân xác, xuất khiếu, Phá Ấn Phù, ngũ hành, vòng đá) nằm ở thư mục artifact của phiên và sinh lại bằng lệnh trên.
+
+| Ảnh | Nội dung |
+| --- | --- |
+| ![Toàn cảnh](01b-toan-canh.jpg) | Toàn cảnh sảnh điện, đợt 1 |
+| ![Cửa phong ấn](05e-cua-2-pha-an-phu.jpg) | Mở cửa phong ấn bằng Phá Ấn Phù |
+| ![Sáu tay](07b-sau-tay-1.jpg) | Vô Diện Thần Quân, sáu vạch nón xoay + ấn ngũ hành |
+| ![Phân thân](09-phan-than-1.jpg) | Pha 2, phân thân thần niệm |
+| ![Hoàn thành](11-hoan-thanh.jpg) | Hạ boss, hoàn thành |
+
+`log.json`: phòng `dungeon-than_tang`, WebGPU, ~55 draw call, ~227k tam giác, 0 lỗi console; cả ba cờ phong ấn (`barrierMsg`, `door1`, `allOpen`) và `bossMsgs` đều true.
 
 ## Để lại / giới hạn
 
