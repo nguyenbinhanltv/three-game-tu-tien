@@ -265,15 +265,15 @@ export const SWORD_MODEL_DEFAULT = 'prop_kiem_thanh_phong';
 /** Model theo phẩm (`rarity` 0..4) cho vũ khí chưa khai báo `model`: gần nhất theo phẩm. */
 const SWORD_MODEL_BY_RARITY = ['prop_kiem_thiet', 'prop_kiem_thanh_phong', 'prop_kiem_han_quang', 'prop_kiem_han_giao', 'prop_kiem_tram_ta'];
 /** Kiếm bậc mới (E2): Liệt Mạch (bậc 2) đã gắn vật phẩm `itm_liet_mach_kiem`; Kính Quang (bậc 3) và Tinh Khuyết (bậc 4) đã nhập model, chờ E3/E4 thêm vật phẩm. */
-export const SWORD_MODELS_TIER = ['prop_kiem_liet_mach', 'prop_kiem_kinh_quang', 'prop_kiem_tinh_khuyet', 'prop_kiem_liet_mach_cuoi', 'prop_kiem_tinh_khuyet_cuoi'];
+export const SWORD_MODELS_TIER = ['prop_kiem_liet_mach', 'prop_kiem_kinh_quang', 'prop_kiem_tinh_khuyet', 'prop_kiem_liet_mach_cuoi', 'prop_kiem_tinh_khuyet_cuoi', 'prop_kiem_kinh_quang_cuoi'];
 /** Dạng cuối khi cường hóa +10 (`glowStage` = 2): model kiếm → model dạng cuối (T-5). Kiếm chưa có dạng cuối giữ model cũ. */
-export const SWORD_FINAL: Record<string, string> = { prop_kiem_liet_mach: 'prop_kiem_liet_mach_cuoi', prop_kiem_tinh_khuyet: 'prop_kiem_tinh_khuyet_cuoi' };
+export const SWORD_FINAL: Record<string, string> = { prop_kiem_liet_mach: 'prop_kiem_liet_mach_cuoi', prop_kiem_tinh_khuyet: 'prop_kiem_tinh_khuyet_cuoi', prop_kiem_kinh_quang: 'prop_kiem_kinh_quang_cuoi' };
 /** Vỏ kiếm đeo lưng khi mặc áo bộ mô-đun: dùng chung tạm cho mọi kiếm chưa có vỏ riêng. */
 export const SCABBARD_DEFAULT = 'prop_vo_kiem_liet_mach';
 /** Vỏ riêng theo model kiếm (cả dạng gốc và dạng cuối dùng chung một vỏ); kiếm không có tên ở đây dùng `SCABBARD_DEFAULT`. */
-export const SCABBARD_OF: Record<string, string> = { prop_kiem_tinh_khuyet: 'prop_vo_kiem_tinh_khuyet', prop_kiem_tinh_khuyet_cuoi: 'prop_vo_kiem_tinh_khuyet' };
-/** Màu hào quang cường hóa theo model kiếm (ưu tiên hơn màu của bộ): Tinh Khuyết là tím sao, không phải xanh ngọc của kiếm thấp. */
-export const SWORD_GLOW_TINT: Record<string, string> = { prop_kiem_tinh_khuyet: '#9B84F2', prop_kiem_tinh_khuyet_cuoi: '#9B84F2' };
+export const SCABBARD_OF: Record<string, string> = { prop_kiem_tinh_khuyet: 'prop_vo_kiem_tinh_khuyet', prop_kiem_tinh_khuyet_cuoi: 'prop_vo_kiem_tinh_khuyet', prop_kiem_kinh_quang: 'prop_vo_kiem_kinh_quang', prop_kiem_kinh_quang_cuoi: 'prop_vo_kiem_kinh_quang' };
+/** Màu hào quang cường hóa theo model kiếm (ưu tiên hơn màu của bộ): Tinh Khuyết là tím sao, Kính Quang là lam băng, không phải xanh ngọc của kiếm thấp. */
+export const SWORD_GLOW_TINT: Record<string, string> = { prop_kiem_tinh_khuyet: '#9B84F2', prop_kiem_tinh_khuyet_cuoi: '#9B84F2', prop_kiem_kinh_quang: '#8FD8F0', prop_kiem_kinh_quang_cuoi: '#8FD8F0' };
 export function scabbardOf(swordModel?: string): string {
   return (swordModel && SCABBARD_OF[swordModel]) || SCABBARD_DEFAULT;
 }

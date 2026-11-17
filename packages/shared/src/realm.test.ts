@@ -14,6 +14,7 @@ import {
   playerBaseStats,
   realmMul,
   majorRealmOf,
+  realmStageOf,
   rootChangeCost,
   type RootDef,
   shadowStats,
@@ -127,6 +128,7 @@ describe('thang 28 cấp (E1-C)', () => {
   it('hệ số cảnh giới 1 / 1,6 / 2,5 / 3,8 / 5,5 và đại cảnh giới', () => {
     expect([1, 15, 16, 19, 20, 23, 24, 27, 28].map(realmMul)).toEqual([1, 1, 1.6, 1.6, 2.5, 2.5, 3.8, 3.8, 5.5]);
     expect([15, 16, 19, 20, 23, 24, 27, 28].map(majorRealmOf)).toEqual([0, 1, 1, 2, 2, 3, 3, 4]);
+    expect([1, 12, 15, 16, 19, 20, 24, 28].map(realmStageOf)).toEqual([1, 12, 15, 1, 4, 1, 1, 1]);
   });
   it('chỉ số người chơi khớp bảng 2.3', () => {
     const row = (l: number) => {

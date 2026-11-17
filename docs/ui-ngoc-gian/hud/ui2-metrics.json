@@ -1,0 +1,152 @@
+{
+  "lac_kiem-truoc": {
+    "framesIn5s": 601,
+    "taskMsPerFrame": 3.638,
+    "scriptMsPerFrame": 3.354,
+    "layoutMsPerFrame": 0.001,
+    "styleMsPerFrame": 0.009,
+    "draw": 114,
+    "tris": 290731,
+    "hud": {
+      "bossBar": false,
+      "tracker": true,
+      "level": "van_lam"
+    },
+    "errors": []
+  },
+  "lac_kiem-sau": {
+    "framesIn5s": 566,
+    "taskMsPerFrame": 4.115,
+    "scriptMsPerFrame": 3.768,
+    "layoutMsPerFrame": 0.003,
+    "styleMsPerFrame": 0.005,
+    "draw": 116,
+    "tris": 311957,
+    "hud": {
+      "bossBar": false,
+      "tracker": true,
+      "level": "van_lam"
+    },
+    "errors": []
+  },
+  "doan_mach-truoc": {
+    "framesIn5s": 601,
+    "taskMsPerFrame": 4.51,
+    "scriptMsPerFrame": 3.762,
+    "layoutMsPerFrame": 0.021,
+    "styleMsPerFrame": 0.071,
+    "draw": 58,
+    "tris": 135161,
+    "hud": {
+      "bossBar": false,
+      "tracker": true,
+      "level": "doan_mach"
+    },
+    "errors": []
+  },
+  "doan_mach-sau": {
+    "framesIn5s": 596,
+    "taskMsPerFrame": 3.962,
+    "scriptMsPerFrame": 3.513,
+    "layoutMsPerFrame": 0.003,
+    "styleMsPerFrame": 0.019,
+    "draw": 58,
+    "tris": 130289,
+    "hud": {
+      "bossBar": false,
+      "tracker": true,
+      "level": "doan_mach"
+    },
+    "errors": []
+  },
+  "van_hai-truoc": {
+    "framesIn5s": 601,
+    "taskMsPerFrame": 3.946,
+    "scriptMsPerFrame": 3.581,
+    "layoutMsPerFrame": 0.002,
+    "styleMsPerFrame": 0.013,
+    "draw": 118,
+    "tris": 263112,
+    "hud": {
+      "bossBar": false,
+      "tracker": true,
+      "level": "van_hai"
+    },
+    "errors": []
+  },
+  "van_hai-sau": {
+    "framesIn5s": 601,
+    "taskMsPerFrame": 3.536,
+    "scriptMsPerFrame": 3.237,
+    "layoutMsPerFrame": 0.001,
+    "styleMsPerFrame": 0.009,
+    "draw": 121,
+    "tris": 287312,
+    "hud": {
+      "bossBar": false,
+      "tracker": true,
+      "level": "van_hai"
+    },
+    "errors": []
+  },
+  "boss-truoc": {
+    "framesIn5s": 601,
+    "taskMsPerFrame": 4.979,
+    "scriptMsPerFrame": 4.11,
+    "layoutMsPerFrame": 0.02,
+    "styleMsPerFrame": 0.111,
+    "draw": 112,
+    "tris": 243417,
+    "hud": {
+      "bossBar": true,
+      "tracker": false,
+      "level": "van_lam"
+    },
+    "errors": []
+  },
+  "boss-sau": {
+    "framesIn5s": 594,
+    "taskMsPerFrame": 5.256,
+    "scriptMsPerFrame": 4.324,
+    "layoutMsPerFrame": 0.006,
+    "styleMsPerFrame": 0.109,
+    "draw": 116,
+    "tris": 265355,
+    "hud": {
+      "bossBar": true,
+      "tracker": false,
+      "level": "van_lam"
+    },
+    "errors": []
+  },
+  "dem-truoc": {
+    "framesIn5s": 601,
+    "taskMsPerFrame": 4.566,
+    "scriptMsPerFrame": 4.179,
+    "layoutMsPerFrame": 0.002,
+    "styleMsPerFrame": 0.012,
+    "draw": 114,
+    "tris": 290629,
+    "hud": {
+      "bossBar": false,
+      "tracker": true,
+      "level": "van_lam"
+    },
+    "errors": []
+  },
+  "dem-sau": {
+    "framesIn5s": 601,
+    "taskMsPerFrame": 4.551,
+    "scriptMsPerFrame": 4.159,
+    "layoutMsPerFrame": 0.002,
+    "styleMsPerFrame": 0.012,
+    "draw": 116,
+    "tris": 311875,
+    "hud": {
+      "bossBar": false,
+      "tracker": true,
+      "level": "van_lam"
+    },
+    "errors": []
+  }
+}

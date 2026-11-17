@@ -43,6 +43,19 @@ const CORNERS: Record<Material, [CornerKind, CornerKind, CornerKind, CornerKind]
   paper: ['cloud', 'cloud', 'cloud', 'cloud'],
 };
 
+/** Bốn góc hoa văn đặt tuyệt đối trong khối cha (HUD sơn mài); cha cần `position: relative`. */
+export function Corners({ material = 'lacquer' }: { material?: Material }) {
+  const k = CORNERS[material];
+  return (
+    <>
+      <OrnateCorner kind={k[0]} pos="tl" />
+      <OrnateCorner kind={k[1]} pos="tr" />
+      <OrnateCorner kind={k[2]} pos="bl" />
+      <OrnateCorner kind={k[3]} pos="br" />
+    </>
+  );
+}
+
 /* ───────── Panel ───────── */
 
 /** Khung bảng: sơn mài huyền (HUD) hoặc giấy ngà tường vân (bảng lớn), bốn góc hoa văn. `corners` = false cho khung nhỏ. */

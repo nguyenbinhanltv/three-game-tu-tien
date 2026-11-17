@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "prop_vo_kiem_kinh_quang",
+  "type": "prop",
+  "budgetClass": "prop",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 2500,
+    "texture": 512
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "prop/prop_kiem_kinh_quang/tripo/raw_vo_v01.glb",
+    "size": {
+      "longest": 0.7
+    },
+    "orient": "none",
+    "post": "tools/blender/orient_scabbard.py"
+  },
+  "concept": [
+    {
+      "file": "concept/outfit_kiem_kinh_quang_vo_v01.png",
+      "view": "34",
+      "tool": "Codex imagegen",
+      "date": "2026-11-17",
+      "chosen": true
+    }
+  ],
+  "tripo": [
+    {
+      "step": "image_to_model",
+      "channel": "web",
+      "version": 1,
+      "taskId": null,
+      "parentTaskId": null,
+      "model": "H3.1",
+      "params": {
+        "polycount": 2500,
+        "topology": "triangle",
+        "texture": "2K",
+        "pbr": true,
+        "remove_lighting": true
+      },
+      "seed": null,
+      "quote": 0,
+      "credits": 0,
+      "batch": null,
+      "date": "2026-11-17",
+      "output": "raw_vo_v01.glb",
+      "result": "ok",
+      "note": "Vỏ kiếm Kính Quang (concept P3 #155), dựng trên Tripo web; vỏ riêng đeo lưng."
+    }
+  ],
+  "license": {
+    "source": "Tripo web app (image→3D H3.1) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-17"
+  }
+}
