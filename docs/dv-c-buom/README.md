@@ -27,7 +27,7 @@ Thay vào đó bướm được **vẽ thủ tục hoàn toàn** (lưới và ho
 | `van_hai` | 0,22 | 2–4 | trắng, lam nhạt, hồng |
 | `thien_khuyet` | 0,12 | 1–3 | lam sao, ngọc; phát sáng nhẹ ban đêm |
 
-Phó bản trong hang/điện và sân độ kiếp không có. Khi có level `bac_hoang` (chương 5): thêm một dòng, và theo thiết kế chỉ cho bướm quanh Mạch Nhãn Tàn và bia đã thắp (cần thêm điều kiện vào `suitable`).
+Phó bản trong hang/điện và sân độ kiếp không có. Khi có level `bac_hoang` (chương 5): thêm một dòng, và theo thiết kế chỉ cho bướm quanh Tàn Mạch Nhãn và bia đã thắp (cần thêm điều kiện vào `suitable`).
 
 ## Số đo (WebGPU, preset Cao, `?mood=day`, một người chơi)
 
