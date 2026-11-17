@@ -459,6 +459,15 @@ const level = {
   portals: [{ x: W(20), z: W(-762), r: 12, to: 'than_tang' }],
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
+  // E4-H: điểm chạm và tuyến hộ tống của nhiệm vụ chương 4 (toạ độ tuyệt đối; offset tính từ tâm thành như trên).
+  spots: [
+    // s4_den_troi: tám đèn lồng trời dọc Đại Lộ Đèn Trời (cạnh trục đại lộ `AV`).
+    ...[-160, -205, -250, -295, -340, -385, -430, -475].map((z, i) => ({ id: `den_troi_${i + 1}`, zone: 'dai_lo_den_troi', x: W(AV(z)[0] + 9), z: W(z) })),
+    // q4_xuat_khieu: ba môn phong ấn quanh Tinh Bái Đài; chỉ nguyên anh xuất khiếu (PF_SOUL) chạm được.
+    ...[[-440, -110], [-380, -110], [-410, -30]].map(([x, z], i) => ({ id: `phong_an_mon_${i + 1}`, zone: 'lam_sao_vien', x: W(x), z: W(z) })),
+  ],
+  // q4_da_minh: tàn niệm Mặc Chiếu đi từ Ngoại Thành Trạm tới Tinh Bái Đài.
+  escorts: [{ id: 'esc_mac_chieu', npc: 'npc_mac_chieu_do', speed: 4, path: [[1010, 1044], [900, 1010], [800, 994], [734, 996], [660, 970], [620, 960]] }],
   camps,
   spawns,
   nodes,
