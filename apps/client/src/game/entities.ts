@@ -44,6 +44,8 @@ export interface PState {
   /** Ngoại hình: giới tính, id màu áo (appearance.json). Server cũ chưa gửi thì undefined. */
   g?: string;
   dye?: string;
+  /** Kiểu tóc nhân vật nền v2. */
+  hr?: string;
   /** Bộ trang bị đang nhuộm áo/ánh kiếm (id bộ); '' hoặc thiếu = không. */
   sk?: string;
   /** Mã phụ kiện hình dáng của đồ bộ (`accessoryCode`); '' hoặc thiếu = không. */
@@ -88,7 +90,7 @@ const SWORD_FORCED = typeof location === 'undefined' ? null : swordOverride(loca
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
-  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp, s.wg ?? 0) };
+  const base = { ...(s.dye ? { g: s.g || APPEARANCE.defaultGender, dye: s.dye, ...(s.hr ? { hair: s.hr } : {}) } : legacyAppearance(APPEARANCE, s.name)), w: SWORD_FORCED ?? swordModelOf(s.wp, s.wg ?? 0) };
   const look: PlayerLook = s.sk && SET.has(s.sk) ? { ...base, set: s.sk } : base;
   return s.sa ? { ...look, acc: s.sa } : look;
 }
@@ -594,7 +596,7 @@ export class EntityManager {
       v.s = s;
       const look = lookOf(s);
       if (isLocal) this.localLook = look;
-      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.set !== v.look.set || look.acc !== v.look.acc || look.w !== v.look.w;
+      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.hair !== v.look.hair || look.set !== v.look.set || look.acc !== v.look.acc || look.w !== v.look.w;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         // `create` trước: nó khởi động việc nạp lười (asset nhân vật, kiếm riêng), rồi mới hỏi còn nạp không để biết có phải dựng lại.
         const next = this.playerSkins.create(look);

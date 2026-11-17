@@ -12,7 +12,7 @@ const opt = (n: string, d: string) => {
   return i >= 0 && args[i + 1] ? args[i + 1] : d;
 };
 const OUT = path.resolve(opt('--out', 'shots-chrv2'));
-const VARIANTS = opt('--variant', 'both') === 'both' ? ['old', 'v2'] : [opt('--variant', 'both')]; // old | v2 (tóc A) | v2b (tóc B)
+const VARIANTS = opt('--variant', 'both') === 'both' ? ['old', 'v2'] : [opt('--variant', 'both')]; // old (mặc định = v1) | v2 (?chr=v2, tóc A) | v2b (tóc B)
 const GENDERS = opt('--genders', 'm,f').split(',');
 const SETS = opt('--sets', 'none,set_liet_mach,set_kinh_quang').split(',');
 const RENDERER = opt('--renderer', 'webgpu');

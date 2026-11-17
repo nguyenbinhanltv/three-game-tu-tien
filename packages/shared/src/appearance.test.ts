@@ -45,4 +45,19 @@ describe('appearance', () => {
     expect(appearanceFromDb(data, '{bad', 'x')).toEqual(legacyAppearance(data, 'x'));
     expect(appearanceFromDb(data, '{"g":"f","dye":"b"}', 'x')).toEqual(legacyAppearance(data, 'x'));
   });
+
+  it('kiểu tóc (hair): chỉ nhận a|b, thiếu thì không có khóa hair', () => {
+    expect(parseAppearance(data, { g: 'm', dye: 'b', hair: 'b' })).toEqual({ g: 'm', dye: 'b', hair: 'b' });
+    expect(parseAppearance(data, { g: 'm', dye: 'b', hair: 'a' })).toEqual({ g: 'm', dye: 'b', hair: 'a' });
+    const noHair = parseAppearance(data, { g: 'm', dye: 'b' });
+    expect(noHair).toEqual({ g: 'm', dye: 'b' });
+    expect(noHair && 'hair' in noHair).toBe(false);
+    for (const bad of ['c', 1, 'toString', null, '', ['a'], {}]) expect(parseAppearance(data, { g: 'm', dye: 'b', hair: bad })).toBeNull();
+  });
+
+  it('appearanceFromDb giữ hair đã lưu, hair hỏng thì lùi về màu theo tên', () => {
+    expect(appearanceFromDb(data, JSON.stringify({ g: 'm', dye: 'b', hair: 'b' }), 'x')).toEqual({ g: 'm', dye: 'b', hair: 'b' });
+    expect(appearanceFromDb(data, JSON.stringify({ g: 'm', dye: 'b' }), 'x')).toEqual({ g: 'm', dye: 'b' });
+    expect(appearanceFromDb(data, JSON.stringify({ g: 'm', dye: 'b', hair: 'zzz' }), 'x')).toEqual(legacyAppearance(data, 'x'));
+  });
 });

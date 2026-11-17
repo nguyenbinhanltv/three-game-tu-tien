@@ -296,6 +296,11 @@
             "style": { "enum": ["crawl", "swim"], "description": "swim: lơ lửng, sóng dọc chúi/ngẩng." }
           }
         },
+        "starter": {
+          "type": "object",
+          "description": "Bộ đồ đệ tử thủ tục cho nhân vật nền v2 (script post chr_v2_starter.py): player (id nhân vật đích), tunic/pants/boots/belt (màu hex).",
+          "required": ["player"]
+        },
         "outfit": {
           "type": "object",
           "description": "Bộ trang phục mô-đun nhiều mảnh Tripo gộp một lưới (script post outfit_build.py): player, dir (thư mục mảnh), palette {main,sec,trim,accent}, fitPose {armDown}, atlas, cells, pieces {<mảnh>: {fit, weights, islands, legBlend, smooth, spring, hide}}. Xem đầu tools/blender/outfit_build.py.",

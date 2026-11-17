@@ -1,8 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SECT, SPAWN_POINT } from '@dtl/shared';
 import type { AcquireOptions, AssetCache } from './assets';
 import { MONSTER_SKINS } from './character/monsterSkins';
 import { PREFETCH_PRIORITY, prefetchWorldAssets } from './preload';
+
+// Nhân vật nền v2 chỉ bật khi có `location` (trình duyệt), nên ở node giả hai hàm chọn id để kiểm preload có chuyển kiểu tóc đã chọn.
+vi.mock('./character/playerSkins', () => ({
+  playerModelId: (g: string, hair?: string) => `chr_v2_${hair === 'b' ? 'hb_' : ''}${g === 'f' ? 'nu' : 'nam'}`,
+  starterOutfitId: (g: string, hair?: string) => `set_de_tu_v2_${g === 'f' ? 'nu' : 'nam'}${hair === 'b' ? '' : ''}`,
+}));
 
 function fakeCache() {
   const calls: [string, AcquireOptions][] = [];
@@ -23,7 +29,7 @@ describe('prefetchWorldAssets (M6-1)', () => {
     prefetchWorldAssets(cache, false);
     expect(viewer).toEqual([[SPAWN_POINT.x, SPAWN_POINT.z]]);
     const ids = calls.map(([id]) => id);
-    expect(ids).toContain('chr_kiem_tu_nam');
+    expect(ids).toContain('chr_v2_nam');
     expect(ids).toContain('anim_human_base'); // thư viện clip chung (M2-3)
     expect(ids).toContain('prop_kiem_thanh_phong'); // kiếm mặc định
     expect(ids).toContain('arch_sect');
@@ -34,9 +40,9 @@ describe('prefetchWorldAssets (M6-1)', () => {
     const monsters = [...new Set(Object.values(MONSTER_SKINS).filter((s) => !s.lazy).map((s) => s.asset))];
     expect(ids.some((id) => id.startsWith('boss_'))).toBe(false);
     const byRank = [...calls].sort((a, b) => rank(a[1], viewer[0]) - rank(b[1], viewer[0])).map(([id]) => id);
-    expect(byRank).toEqual(['chr_kiem_tu_nam', 'anim_human_base', 'prop_kiem_thanh_phong', 'arch_sect', ...monsters, 'prop_phi_kiem']);
+    expect(byRank).toEqual(['chr_v2_nam', 'set_de_tu_v2_nam', 'anim_human_base', 'prop_kiem_thanh_phong', 'arch_sect', ...monsters, 'prop_phi_kiem']);
     expect(calls.find(([id]) => id === 'arch_sect')![1].pos).toEqual({ x: SECT.x, z: SECT.z });
-    expect(calls.find(([id]) => id === 'chr_kiem_tu_nam')![1].priority).toBe(PREFETCH_PRIORITY.player);
+    expect(calls.find(([id]) => id === 'chr_v2_nam')![1].priority).toBe(PREFETCH_PRIORITY.player);
   });
 
   it('?models=legacy thì không tải model nhân vật/quái', () => {
@@ -51,7 +57,26 @@ describe('prefetchWorldAssets theo giới tính', () => {
     const f = fakeCache();
     prefetchWorldAssets(f.cache, false, 'f');
     const ids = f.calls.map(([id]) => id);
-    expect(ids).toContain('chr_kiem_tu_nu');
-    expect(ids).not.toContain('chr_kiem_tu_nam');
+    expect(ids).toContain('chr_v2_nu');
+    expect(ids).not.toContain('chr_v2_nam');
+  });
+});
+
+describe('prefetchWorldAssets theo kiểu tóc đã chọn (CHR-ROLLOUT)', () => {
+  it('tóc B tải chr_v2_hb_*, không tải bản tóc A; đồ tân thủ tải cùng', () => {
+    const f = fakeCache();
+    prefetchWorldAssets(f.cache, false, 'f', 'b');
+    const ids = f.calls.map(([id]) => id);
+    expect(ids).toContain('chr_v2_hb_nu');
+    expect(ids).not.toContain('chr_v2_nu');
+    expect(ids).toContain('set_de_tu_v2_nu');
+  });
+
+  it('không chọn tóc thì tải bản tóc A', () => {
+    const f = fakeCache();
+    prefetchWorldAssets(f.cache, false, 'm');
+    const ids = f.calls.map(([id]) => id);
+    expect(ids).toContain('chr_v2_nam');
+    expect(ids).not.toContain('chr_v2_hb_nam');
   });
 });
