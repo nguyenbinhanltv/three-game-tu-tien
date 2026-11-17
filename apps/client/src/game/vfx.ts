@@ -1128,8 +1128,9 @@ export class Vfx {
         this.hazards.splice(this.hazards.indexOf(mine), 1);
         this.drop(m);
         // `quiet` (V5): gọi lúc nổ; trả true khi timeline `mon_boom_*` (game/monFx.ts) thật sự đã vẽ nổ thì không vẽ hình cũ chồng lên.
-        if (quiet?.()) return;
+        // Vùng chồng lên nhau (`stack.fx` false) không vẽ nổ như cũ (tránh cộng sáng thành mảng trắng); vùng đầu tiên mới dùng timeline mới.
         if (!stack.fx) return;
+        if (quiet?.()) return;
         if (kind === 'lightning') {
           this.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, flash * stack.dim);
         } else if (kind !== 'frost') {
