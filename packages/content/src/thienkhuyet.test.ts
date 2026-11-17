@@ -52,18 +52,18 @@ describe('thien_khuyet', () => {
     expect(min).toBeGreaterThan(WATER_Y + 5);
   });
 
-  it('trận dm_: mỗi vùng một trận, trạm có trận, tiền tố dm_, không mở sẵn cho mọi người', () => {
+  it('trận tk_: mỗi vùng một trận, trạm có trận, tiền tố tk_, không mở sẵn cho mọi người', () => {
     const pads = TELE_PADS.filter((p) => p.level === 'thien_khuyet');
     expect(pads.map((p) => p.id).every((id) => id.startsWith('tk_tp_'))).toBe(true);
     expect(pads.some((p) => p.id === 'tk_tp_tram' && p.zone === '')).toBe(true);
     for (const z of lv.zones ?? []) expect(pads.filter((p) => p.zone === z.id)).toHaveLength(1);
     expect(TELE_FREE.some((id) => id.startsWith('tk_'))).toBe(false);
-      });
+  });
 
   it('điểm vào là trạm, trong vùng chơi', () => {
     const tr = terrainOf(lv);
     const s = lv.spawn as { x: number; z: number };
     expect(Math.hypot(s.x - 1024, s.z - 1024)).toBeLessThan(40);
-    expect(tr.playDist(s.x, s.z)).toBeLessThan(200) // vùng chơi lệch 140 m về phía bắc so với trạm;
+    expect(tr.playDist(s.x, s.z)).toBeLessThan(200); // vùng chơi lệch 140 m về phía bắc so với trạm
   });
 });
