@@ -1,0 +1,18 @@
+{
+  "lac_kiem_quyet": {
+    "moves": [
+      { "id": "kiem_anh", "kind": "echo", "cd": 2, "mul": 0.5 },
+      { "id": "kiem_tan", "kind": "finale", "r": 6, "mul": 1 }
+    ]
+  },
+  "bat_dong_kim_than": {
+    "moves": [
+      { "id": "kim_than_hut", "kind": "taunt", "cd": 3, "r": 12, "sec": 4, "share": 0.6 }
+    ]
+  },
+  "thanh_moc_dan_kinh": {
+    "moves": [
+      { "id": "moc_linh_hoi", "kind": "heal", "cd": 2, "r": 14, "pct": 0.04 }
+    ]
+  }
+}

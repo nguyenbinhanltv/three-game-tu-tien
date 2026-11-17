@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MAX_LEVEL, TRUC_CO_LEVEL, majorRealmOf, poseIdsFor, salvageYield, legacyQuality, allGemIds, gemId, parseGem, WARD_ITEM, REFINE_ITEM, DUST_ITEM, AFFIX_ILVL_CAP, ROOT_IDS, PHA_CANH_PILL, BOTTLENECK_LEVELS, droppableSlots, templatesFor, type EquipSlot, budget, ELEMENTS, EQUIP_SLOTS, GCD, isEquipSlot, QUALITY_COUNT, QUALITY_MUL, rollItemInstance, seededRng, parseInst, STAT_PER_POINT, type LootDef, type MonsterAi, type MonsterDef, phaseRules, POSE_CAST, POSE_FLY, POSE_SKY, POSE_SWORD_SWAP, validatePose, validateFxTimeline, validateSkillPose, validateSkillRules, SKILL_ID_ALIASES, WATER_Y, xpNeed, MAX_TIER, TIER_OPEN, TIER_MUL, PROMOTE_MAT, TIER_MIN_ILVL } from '@dtl/shared';
-import { thanThongSkill, itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, OUTFITS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, FX_TIMELINES, MON_FX_TIMELINES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
+import { CLONE_MOVES, thanThong10Skill, thanThongSkill, itemTier, promoteTarget, LEVEL_ASSETS, ARTIFACTS, ARTIFACT, PILL_QUALITY, FORGE, SETS, OUTFITS, ENHANCE_ORE, APPEARANCE, DYE, GLOSSARY, hasString, ITEM, ITEM_SYS, ITEMS, LEVELS, MONSTER, MONSTERS, NPC, NPCS, POSES, FX_TIMELINES, MON_FX_TIMELINES, QUEST, QUESTS, REALMS, RECIPES, ROOTS, SKILLS, METHODS, METHOD, METHOD_SKILLS, SKILL, VARIANTS, t } from './index';
 import { LOOT, LOOT_MATS } from './loot';
 import { monSkillsOf } from '@dtl/shared';
 import { PILL_TIERS, ARTIFACT_MAX_LEVEL, PILL_BUFF_KINDS, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, bondedLevel, spiritRadius, SPIRIT_UNLOCK_LEVEL } from '@dtl/shared';
@@ -146,7 +146,8 @@ for (const [id, name] of Object.entries(GLOSSARY.skillsTier)) {
 }
 for (const s of METHOD_SKILLS) {
   if (s.unlock >= 16 && !(s.id in GLOSSARY.skillsTier)) err(`chiêu bậc cao ${s.id}: thiếu trong glossary.skillsTier`);
-  if (s.unlock >= 24 && !s.locked) err(`chiêu ${s.id}: mở từ cấp ${s.unlock} (Nguyên Anh trở lên) phải có locked: true tới khi làm cơ chế`);
+  if (s.unlock >= 24 && s.unlock !== 28 && !s.locked) err(`chiêu ${s.id}: mở từ cấp ${s.unlock} (Nguyên Anh trở lên) phải có locked: true tới khi làm cơ chế`);
+  if (s.unlock === 28 && s.locked) err(`chiêu ${s.id}: thần thông ô 10 (Hóa Thần, E4-K) phải chơi được`);
   if (s.kind === 'line' && !s.line) err(`chiêu ${s.id}: kind line cần trường line`);
   if (s.kind === 'summon' && !s.summon) err(`chiêu ${s.id}: kind summon cần trường summon`);
   if (s.kind === 'buff' && !(s.duration! > 0 && s.buff)) err(`chiêu ${s.id}: kind buff cần duration và buff`);

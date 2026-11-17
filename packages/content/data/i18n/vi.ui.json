@@ -1013,5 +1013,17 @@
   "ui.gm.spawn_clear": "Dọn quái gọi",
   "ui.gm.gold": "+100.000 linh thạch",
   "ui.gm.die": "Chết",
-  "ui.gm.cd": "Xóa hồi chiêu"
+  "ui.gm.cd": "Xóa hồi chiêu",
+  "ui.clone.title": "Phân thân thần niệm",
+  "ui.clone.desc": "Bấm G để hóa một phân thân thần niệm ngay trước mặt, sống 20 giây, hồi 90 giây. Phân thân theo ngươi, đánh theo mục tiêu của ngươi; bấm G lần nữa để thu về.",
+  "ui.clone.dps": "Kiếm tu: lặp lại chiêu cuối của ngươi ở 50% sát thương, tan thì chém một đòn cuối.",
+  "ui.clone.tank": "Hộ pháp: hút khiêu khích quái quanh nó và gánh 60% sát thương quái trong vùng đánh ngươi.",
+  "ui.clone.support": "Đan sư: hồi khí huyết cho đồng đội quanh nó.",
+  "ui.clone.left": "Phân thân: {n}s",
+  "ui.clone.cd": "Phân thân hồi {n}s",
+  "ui.clone.locked": "Mở khi lên Hóa Thần",
+  "ui.domain.title": "Lĩnh vực",
+  "ui.domain.dps": "Lĩnh vực {r} m: bạo kích +{n}%",
+  "ui.domain.tank": "Lĩnh vực {r} m: đồng đội trong vùng giảm {n}% sát thương",
+  "ui.domain.support": "Lĩnh vực {r} m: đồng đội trong vùng hồi {n}% khí huyết mỗi giây"
 }

@@ -9,6 +9,7 @@ import { args, flag } from './lib/env';
 import { runScenario, type Scenario } from './lib/scenario';
 import asset from './scenarios/asset';
 import chrv2 from './scenarios/chrv2';
+import clone from './scenarios/clone';
 import dungeon from './scenarios/dungeon';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
@@ -19,7 +20,7 @@ import ual from './scenarios/ual';
 import ui from './scenarios/ui';
 import vfx from './scenarios/vfx';
 
-const SCENARIOS: Scenario[] = [points, map, mons, dungeon, asset, vfx, outfit, chrv2, ui, thiennhan, ual];
+const SCENARIOS: Scenario[] = [points, map, mons, dungeon, asset, vfx, outfit, chrv2, ui, thiennhan, ual, clone];
 
 const name = args[0] && !args[0].startsWith('--') ? args[0] : 'points';
 const sc = SCENARIOS.find((s) => s.name === name);

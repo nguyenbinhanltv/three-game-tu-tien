@@ -189,6 +189,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     on(C.BREAKTHROUGH, (p) => this.sim.onBreakthrough(p));
     on(C.TRIB_SOUL, (p) => this.sim.onTribSoul(p));
     on(C.TRIB_CLONE, (p) => this.sim.onTribClone(p));
+    on(C.CLONE, (p, m) => this.sim.onClone(p, m));
     on(C.BOTTLENECK, (p, m) => this.sim.onBottleneck(p, m));
     on(C.ROOT, (p, m) => this.sim.onChangeRoot(p, m));
     on(C.PARTY, (p, m) => parties.command(p, m));
@@ -282,6 +283,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         prev.room.sim.tele.drop(oldP);
         prev.room.sim.spirit.drop(oldP);
         prev.room.sim.soul.drop(oldP);
+        prev.room.sim.clone.drop(oldP);
         prev.room.markers.drop(oldP);
       }
       prev.room.sim.removePlayer(prev.sid);
@@ -315,6 +317,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.sim.tele.sendState(p);
     this.sim.spirit.sendState(p);
     this.sim.soul.sendState(p);
+    this.sim.clone.sendState(p);
     ensurePartyTick();
     console.log(`[join] ${char.name} vào ${this.roomName} (${this.sim.players.size} người)`);
     this.afterJoin(p);
@@ -371,6 +374,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.sim.tele.drop(p);
     this.sim.spirit.drop(p);
     this.sim.soul.drop(p);
+    this.sim.clone.drop(p);
     this.markers.drop(p);
     this.aoi.detach(sid);
     this.sim.removePlayer(sid);
@@ -382,6 +386,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   /** Lưu nhân vật rồi bảo client sang room của `level` (vé phải được cấp trước). */
   protected sendTransfer(p: PlayerEnt, level: string, options: Record<string, string> = {}): void {
     this.sim.soul.drop(p);
+    this.sim.clone.drop(p);
     this.sim.savePlayer(p);
     p.client.send(S.TRANSFER, { room: roomNameOf(level), level, options } satisfies TransferMsg);
   }
