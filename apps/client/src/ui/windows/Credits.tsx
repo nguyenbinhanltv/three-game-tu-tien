@@ -5,7 +5,7 @@ import { closePanel } from '../store';
 /** Ghi công tài nguyên bên thứ ba: đọc từ `packages/content/data/credits.json` (nguồn duy nhất, `content:check` đối chiếu LICENSES.md). */
 export function Credits() {
   return (
-    <PanelWindow title={t('ui.credits')} onClose={() => closePanel('credits')}>
+    <PanelWindow title={t('ui.credits')} width={520} onClose={() => closePanel('credits')}>
       <div className="k-dim">{t('ui.credits.intro')}</div>
       {CREDIT_KINDS.map((kind) => {
         const list = CREDITS.filter((c) => c.kind === kind);
