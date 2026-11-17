@@ -33,7 +33,7 @@ export type FxShape =
 
 /** Bố trí gốc của sự kiện. */
 /** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
-export type FxAnchor = 'self' | 'target' | 'ahead' | 'ground' | 'area';
+export type FxAnchor = 'self' | 'target' | 'ahead' | 'ground' | 'area' | 'origin';
 
 export interface FxBase {
   /** Giây so với mốc neo (mặc định `hitAt` của mốc trúng đang xét; `from: "start"` thì tính từ lúc bấm chiêu). Có thể âm. */
@@ -78,7 +78,7 @@ export interface FxMeshEvent extends FxBase {
   /** Bay từ gốc sang `to` trong `dur` (phi kiếm lao, kiếm khí bay): gốc → đích, đơn vị mét hoặc theo neo. */
   move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear'; /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number] };
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh). */
-  card?: 'arhat' | 'phoenix';
+  card?: 'arhat' | 'phoenix' | 'ghost';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
   keepUp?: boolean;
   /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */
@@ -265,7 +265,7 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'shake' && !(e.level >= 0 && e.level <= 0.6)) errs.push(`${p}: rung ${e.level} ngoài 0–0,6`);
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);
       if (e.type === 'camera' && !(e.pull >= 0 && e.pull <= 0.4 && e.dur > 0 && e.dur <= 4)) errs.push(`${p}: camera pull=${e.pull} dur=${e.dur} ngoài (0–0,4, ≤ 4 s)`);
-      if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 2))) errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 2]`);
+      if (e.type === 'bolt' && !(e.scale === undefined || (e.scale > 0 && e.scale <= 4))) errs.push(`${p}: bolt scale=${e.scale} ngoài (0, 4]`);
       if (e.type === 'particles' && !(e.n > 0 && e.n <= 400)) errs.push(`${p}: hạt n=${e.n} ngoài (0, 400]`);
     }
   }

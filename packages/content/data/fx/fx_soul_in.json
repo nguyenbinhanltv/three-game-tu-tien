@@ -2,7 +2,7 @@
  "skill": "fx_soul_in",
  "trigger": "fx",
  "fxKind": "soul_in",
- "palette": "dotpha_na",
+ "palette": "than_hanh",
  "events": [
   {
    "type": "particles",
@@ -21,6 +21,40 @@
    ],
    "inward": true,
    "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "card",
+   "t": -0.5,
+   "dur": 0.9,
+   "card": "ghost",
+   "at": "self",
+   "offset": [
+    0,
+    3.2,
+    0
+   ],
+   "billboard": true,
+   "scale": [
+    0.95,
+    1.9,
+    1
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "alpha": 0.7,
+   "tone": "body",
+   "seed": 13,
+   "move": {
+    "to": "self",
+    "offset": [
+     0,
+     0.1,
+     0
+    ],
+    "ease": "in"
+   },
    "tier": 0
   },
   {
@@ -46,10 +80,10 @@
   {
    "type": "mesh",
    "shape": "burst",
-   "t": 0.1,
+   "t": 0.3,
    "dur": 0.1,
    "at": "self",
-   "scale": 1.4,
+   "scale": 1.6,
    "billboard": true,
    "sweep": 0.0,
    "tone": "accent",
@@ -58,7 +92,7 @@
   {
    "type": "mesh",
    "shape": "ripple",
-   "t": 0.12,
+   "t": 0.32,
    "dur": 0.7,
    "at": "self",
    "offset": [
@@ -67,7 +101,7 @@
     0
    ],
    "scale": 0.3,
-   "scaleTo": 2.0,
+   "scaleTo": 2.4,
    "sweep": 0.4,
    "erodeFrom": 0.4,
    "tone": "core",

@@ -52,6 +52,7 @@ const CROWD = Number(opt('--crowd', '0'));
 const CROWD_SECS = Number(opt('--crowd-secs', '15'));
 /** Cấp nhân vật khi chụp (chiêu bậc 2–3 cần ≥ 16–28). */
 const LEVEL = Number(opt('--level', '12'));
+const SHEETED = new Set<string>();
 const WEBM_ONLY = args.includes('--webm-only');
 const SHEET_ONLY = args.includes('--sheet-only');
 const FPS = Number(opt('--fps', '24'));
@@ -125,12 +126,12 @@ async function clearIntro(page: Page): Promise<void> {
   }
 }
 
-async function scene(page: Page): Promise<void> {
+async function scene(page: Page, wolf = true): Promise<void> {
   await gm(page, 'killall', 900);
   await sleep(8000);
   await gm(page, 'heal', 500);
   await gm(page, 'cd', 500);
-  await gm(page, 'spawn mon_soi_xam 1', 1700);
+  if (wolf) await gm(page, 'spawn mon_soi_xam 1', 1700);
   await page.evaluate(() => (window as unknown as G).__game!.clearTarget());
 }
 
@@ -153,6 +154,7 @@ async function record(ctx: BrowserContext, page: Page, slow: number, spanGame: n
   await act();
   const elapsed = (await page.evaluate(() => performance.now())) - t0p;
   await sleep(Math.max(0, spanGame / slow - elapsed));
+  if (args.includes('--debug')) console.log('[rec] khung', frames.length, 'span', spanGame, 'slow', slow);
   await cdp.send('Page.stopScreencast');
   await cdp.detach().catch(() => undefined);
   const evs = (await page.evaluate(() => (window as unknown as G).__game!.skillLog)) as { at: number; e: { kind: string } }[];
@@ -242,7 +244,7 @@ async function main(): Promise<void> {
         const page = await ctx.newPage();
         const name = `V1${g}${pass[0]}${String(Date.now() % 10000)}`;
         page.on('pageerror', (e) => errors.push(`${name} pageerror: ${e.message}`));
-        page.on('console', (m) => m.type() === 'error' && errors.push(`${name}: ${m.text().slice(0, 300)}`));
+        page.on('console', (m) => (m.type() === 'error' || (args.includes('--console') && m.type() === 'warning')) && errors.push(`${name}: ${m.text().slice(0, 400)}`));
         await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1&debug=1&auto=${name}&quiet=1&fxq=${FXQ}${opt('--query', '')}${OLD ? '&fxtl=0' : ''}${pass === 'slow' ? '&slowmo=' + SLOW : ''}${RENDERER === 'webgl2' ? '&renderer=webgl2' : ''}`, { waitUntil: 'load' });
         await page.waitForFunction(() => {
           const w = (window as unknown as G).__game;
@@ -313,9 +315,10 @@ async function main(): Promise<void> {
             if (LEVEL >= 16) await gm(page, 'skills max', 1500);
             curMethod = want;
           }
+          // Cảnh lớn / pháp tướng không cần quái: không sinh sói (xác sói để lại ô đồ rơi nhỏ trên nền).
           await scene(page);
           // Pháp tướng cần camera xa phía sau: đứng ở chỗ trống giữa sân (không có cột/cổng chắn camera).
-          if (PHAP.test(sk)) { await gm(page, 'tp 2048 2150', 1500); if (!/kim_cuong|hoi_thien|scene_/.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500); else await gm(page, 'killall', 900); }
+          if (PHAP.test(sk)) { if (/kim_cuong|hoi_thien|scene_/.test(sk)) { await gm(page, 'killall', 900); await gm(page, 'tp 2048 2400', 800); await sleep(9500); await gm(page, 'tp 2048 2150', 1500); } else { await gm(page, 'tp 2048 2150', 1500); }  if (!/kim_cuong|hoi_thien|scene_/.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500); }
           if (/van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/.test(sk)) await gm(page, 'charge', 900);
           await closeCam(page, WIDE.test(sk) ? Number(opt('--wide', '9.5')) : DIST, PHAP.test(sk) ? Math.PI + 0.15 : 0.9);
           if (WIDE.test(sk)) await page.evaluate((pt) => { (window as unknown as G).__game!.camPitch = pt; }, PHAP.test(sk) ? 0.2 : 0.3);
@@ -343,7 +346,10 @@ async function main(): Promise<void> {
             const ok = encodeWebm(r.frames, r.t0, path.join(OUT, `${tag}-${pass === 'slow' ? 'cham' : 'that'}.webm`));
             console.log(`[shots-vfx] webm ${tag}-${pass}: ${ok ? 'ok' : 'lỗi'} (${r.frames.length} khung)`);
           }
-          if (!WEBM_ONLY && pass === 'slow') {
+          // Sheet lấy từ lượt chậm; nếu lượt chậm không ghi được khung (hiếm, GPU bận) thì lấy từ lượt thật.
+          const slowOk = pass === 'slow' && r.frames.length >= 3;
+          if (slowOk) SHEETED.add(tag);
+          if (!WEBM_ONLY && (slowOk || (pass === 'real' && !SHEETED.has(tag)))) {
             const shots = tiles(r, span, slow);
             jobs.push(() => sheet(sheetCtx, path.join(OUT, `${tag}.png`), `${sk} · ${g === 'm' ? 'Thanh Phong (nam)' : 'Lam Chi (nữ)'}${OLD ? ' · hình cũ' : ''} · mỗi ô ${TILE} ms game, viền đỏ = khung hit`, shots, 8));
           }

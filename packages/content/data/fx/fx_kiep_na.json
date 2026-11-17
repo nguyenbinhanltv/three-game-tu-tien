@@ -8,7 +8,7 @@
    "type": "decal",
    "tex": "rune",
    "t": -0.3,
-   "r": 11.0,
+   "r": 5.5,
    "dur": 6.0,
    "at": "self",
    "offset": [
@@ -18,14 +18,14 @@
    ],
    "grow": 0.6,
    "tone": "core",
-   "alpha": 0.95,
+   "alpha": 0.6,
    "tier": 0
   },
   {
    "type": "decal",
    "tex": "crack",
    "t": 0.0,
-   "r": 9.35,
+   "r": 4.4,
    "dur": 5.5,
    "at": "self",
    "offset": [
@@ -35,14 +35,14 @@
    ],
    "grow": 0.4,
    "tone": "body",
-   "alpha": 0.9,
+   "alpha": 0.6,
    "tier": 0
   },
   {
    "type": "decal",
    "tex": "rune",
    "t": 0.1,
-   "r": 6.050000000000001,
+   "r": 3.3,
    "dur": 5.0,
    "at": "self",
    "offset": [
@@ -52,7 +52,7 @@
    ],
    "grow": 0.5,
    "tone": "accent",
-   "alpha": 0.55,
+   "alpha": 0.35,
    "yaw": 23,
    "tier": 1
   },
@@ -68,264 +68,14 @@
     0
    ],
    "scale": 0.3,
-   "scaleTo": 9.35,
+   "scaleTo": 4.4,
    "sweep": 0.4,
    "erodeFrom": 0.4,
    "ragged": 0.6,
    "tone": "core",
-   "alpha": 0.9,
+   "alpha": 0.45,
    "seed": 2,
    "tier": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "ripple",
-   "t": 0.1,
-   "dur": 1.2,
-   "at": "self",
-   "offset": [
-    0,
-    -1.0,
-    0
-   ],
-   "scale": 0.3,
-   "scaleTo": 6.6,
-   "sweep": 0.4,
-   "erodeFrom": 0.4,
-   "tone": "rim",
-   "alpha": 0.7,
-   "seed": 3,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.05,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    5.78,
-    -1.15,
-    1.79
-   ],
-   "rot": [
-    -85,
-    0,
-    0
-   ],
-   "scale": 0.52,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 1,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.1,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    3.63,
-    -1.15,
-    4.84
-   ],
-   "rot": [
-    -76,
-    0,
-    0
-   ],
-   "scale": 0.7,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 2,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.15,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    0.09,
-    -1.15,
-    6.05
-   ],
-   "rot": [
-    -72,
-    0,
-    0
-   ],
-   "scale": 0.61,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 3,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.2,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    -3.49,
-    -1.15,
-    4.94
-   ],
-   "rot": [
-    -75,
-    0,
-    0
-   ],
-   "scale": 0.52,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 4,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.25,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    -5.73,
-    -1.15,
-    1.95
-   ],
-   "rot": [
-    -84,
-    0,
-    0
-   ],
-   "scale": 0.7,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 5,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.3,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    -5.78,
-    -1.15,
-    -1.79
-   ],
-   "rot": [
-    -95,
-    0,
-    0
-   ],
-   "scale": 0.61,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 6,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.35,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    -3.63,
-    -1.15,
-    -4.84
-   ],
-   "rot": [
-    -104,
-    0,
-    0
-   ],
-   "scale": 0.52,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 7,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.4,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    -0.09,
-    -1.15,
-    -6.05
-   ],
-   "rot": [
-    -108,
-    0,
-    0
-   ],
-   "scale": 0.7,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 8,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.45,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    3.49,
-    -1.15,
-    -4.94
-   ],
-   "rot": [
-    -105,
-    0,
-    0
-   ],
-   "scale": 0.61,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 9,
-   "tier": 1
-  },
-  {
-   "type": "mesh",
-   "shape": "spike",
-   "t": 0.5,
-   "dur": 1.8,
-   "at": "self",
-   "offset": [
-    5.73,
-    -1.15,
-    -1.95
-   ],
-   "rot": [
-    -96,
-    0,
-    0
-   ],
-   "scale": 0.52,
-   "sweep": 0.2,
-   "erodeFrom": 0.5,
-   "alpha": 0.97,
-   "seed": 10,
-   "tier": 1
   },
   {
    "type": "mesh",
@@ -372,60 +122,95 @@
    "dur": 3.0
   },
   {
-   "type": "bolt",
-   "t": 0.15,
-   "at": "ground",
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.1,
+   "r": 4.4,
+   "dur": 5.0,
+   "at": "self",
    "offset": [
-    6.05,
     0,
+    -1.15,
     0
    ],
-   "scale": 1.0,
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.9,
+   "tier": 0
+  },
+  {
+   "type": "flash",
+   "t": 0.12,
+   "amount": 0.2,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.12,
+   "dur": 0.11,
+   "at": "self",
+   "scale": 2.4,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "bolt",
+   "t": 0.1,
+   "at": "self",
+   "offset": [
+    0,
+    -1.15,
+    0
+   ],
+   "scale": 1.2,
    "tone": "body",
    "seed": 30,
    "tier": 0
   },
   {
    "type": "bolt",
-   "t": 0.35,
-   "at": "ground",
+   "t": 0.32,
+   "at": "self",
    "offset": [
-    -5.5,
-    0,
-    2.2
+    6.05,
+    -1.15,
+    0.5
    ],
-   "scale": 1.0,
-   "tone": "rim",
+   "scale": 0.9,
+   "tone": "accent",
    "seed": 31,
    "tier": 0
   },
   {
    "type": "bolt",
-   "t": 0.55,
-   "at": "ground",
+   "t": 0.54,
+   "at": "self",
    "offset": [
-    0,
-    0,
-    6.6
+    -5.5,
+    -1.15,
+    2.2
    ],
-   "scale": 1.0,
+   "scale": 0.9,
    "tone": "body",
    "seed": 32,
-   "tier": 1
+   "tier": 0
   },
   {
    "type": "bolt",
-   "t": 0.75,
-   "at": "ground",
+   "t": 0.76,
+   "at": "self",
    "offset": [
     2.2,
-    0,
+    -1.15,
     -5.5
    ],
-   "scale": 1.0,
-   "tone": "rim",
+   "scale": 0.9,
+   "tone": "accent",
    "seed": 33,
-   "tier": 1
+   "tier": 0
   }
  ],
  "when": "nguyen_anh"

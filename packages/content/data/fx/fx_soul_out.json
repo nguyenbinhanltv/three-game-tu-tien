@@ -2,14 +2,14 @@
  "skill": "fx_soul_out",
  "trigger": "fx",
  "fxKind": "soul_out",
- "palette": "dotpha_na",
+ "palette": "than_hanh",
  "events": [
   {
    "type": "decal",
    "tex": "rune",
    "t": -0.2,
-   "r": 3.2,
-   "dur": 2.2,
+   "r": 3.4,
+   "dur": 2.4,
    "at": "self",
    "offset": [
     0,
@@ -23,6 +23,74 @@
   },
   {
    "type": "mesh",
+   "shape": "card",
+   "t": 0.0,
+   "dur": 1.9,
+   "card": "ghost",
+   "at": "self",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "billboard": true,
+   "scale": [
+    0.95,
+    1.9,
+    1
+   ],
+   "sweep": 0.25,
+   "erodeFrom": 0.6,
+   "alpha": 0.7,
+   "tone": "body",
+   "seed": 11,
+   "move": {
+    "to": "self",
+    "offset": [
+     0,
+     3.2,
+     0
+    ],
+    "ease": "out"
+   },
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "card",
+   "t": 0.12,
+   "dur": 1.5,
+   "card": "ghost",
+   "at": "self",
+   "offset": [
+    0,
+    0.1,
+    0
+   ],
+   "billboard": true,
+   "scale": [
+    0.95,
+    1.9,
+    1
+   ],
+   "sweep": 0.25,
+   "erodeFrom": 0.5,
+   "alpha": 0.35,
+   "tone": "rim",
+   "seed": 12,
+   "move": {
+    "to": "self",
+    "offset": [
+     0,
+     2.0,
+     0
+    ],
+    "ease": "out"
+   },
+   "tier": 1
+  },
+  {
+   "type": "mesh",
    "shape": "ripple",
    "t": 0.0,
    "dur": 0.9,
@@ -33,7 +101,7 @@
     0
    ],
    "scale": 0.3,
-   "scaleTo": 2.6,
+   "scaleTo": 2.8,
    "sweep": 0.4,
    "erodeFrom": 0.45,
    "tone": "body",
@@ -43,47 +111,9 @@
   },
   {
    "type": "mesh",
-   "shape": "kite",
-   "t": 0.0,
-   "dur": 1.1,
-   "at": "self",
-   "offset": [
-    0,
-    0.3,
-    0
-   ],
-   "rot": [
-    -90,
-    0,
-    0
-   ],
-   "scale": [
-    0.7,
-    0.5,
-    1.9
-   ],
-   "sweep": 0.3,
-   "erodeFrom": 0.55,
-   "tone": "rim",
-   "alpha": 0.8,
-   "move": {
-    "to": "self",
-    "offset": [
-     0,
-     3.4,
-     0
-    ],
-    "ease": "out"
-   },
-   "keepUp": true,
-   "seed": 3,
-   "tier": 0
-  },
-  {
-   "type": "mesh",
    "shape": "helix",
    "t": 0.0,
-   "dur": 1.0,
+   "dur": 1.2,
    "at": "self",
    "offset": [
     0,
@@ -96,14 +126,14 @@
     0
    ],
    "scale": [
-    1.4,
-    1.4,
-    4.5
+    1.6,
+    1.6,
+    5.0
    ],
    "sweep": 0.3,
    "erodeFrom": 0.55,
    "spin": 300,
-   "tone": "body",
+   "tone": "accent",
    "alpha": 0.8,
    "seed": 4,
    "tier": 1
@@ -114,21 +144,21 @@
    "t": 0.0,
    "dur": 0.1,
    "at": "self",
-   "scale": 1.4,
+   "scale": 1.6,
    "billboard": true,
    "sweep": 0.0,
-   "tone": "accent",
+   "tone": "rim",
    "tier": 0
   },
   {
    "type": "particles",
    "kind": "spark",
    "t": 0.0,
-   "n": 36,
-   "speed": 2.4,
+   "n": 50,
+   "speed": 2.6,
    "spread": 1,
-   "life": 1.4,
-   "size": 0.07,
+   "life": 1.6,
+   "size": 0.08,
    "at": "self",
    "offset": [
     0,

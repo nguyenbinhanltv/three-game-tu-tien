@@ -843,6 +843,7 @@ export class Game {
           if (this.shake.enabled) this.fxPull = { amt: pull, dur, t: 0 };
         },
         areaOf: (sid) => this.fxArea.get(sid) ?? null,
+        originOf: (sid) => this.fxOrigin.get(sid) ?? null,
         variantOf: (sid, skillId) => {
           const def = SKILL.get(skillId);
           const kind = def?.fx ?? FX_TIMELINE.get(skillId)?.fxKind;
@@ -2028,6 +2029,8 @@ export class Game {
     if (src && dst && !held) this.fxDst.set(src, dst);
     if (src && !held) {
       this.fxVar.set(src + ':' + m.t, m.v ?? m.tb);
+      if (m.ox !== undefined && m.oz !== undefined) this.fxOrigin.set(src, { x: m.ox, z: m.oz });
+      else this.fxOrigin.delete(src);
       if (m.x !== undefined && m.z !== undefined) this.fxArea.set(src, { x: m.x, z: m.z, r: m.r ?? 8 });
       else this.fxArea.delete(src);
     }
@@ -3696,6 +3699,7 @@ export class Game {
   /** Vùng (S.FX x, z, r) và biến thức của chiêu gần nhất của mỗi người ra chiêu, cho timeline hiệu ứng. */
   private fxArea = new Map<string, { x: number; z: number; r: number }>();
   private fxVar = new Map<string, string | undefined>();
+  private fxOrigin = new Map<string, { x: number; z: number }>();
 
   private fxTargetOf(sid: string): { x: number; y: number; z: number; chest: number } | null {
     const id = sid === this.sid ? this.targetId || this.fxDst.get(sid) : this.fxDst.get(sid);
