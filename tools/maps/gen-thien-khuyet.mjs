@@ -148,7 +148,7 @@ const POIS = [
   { id: 'co_thanh_that_lo', zone: 'mo_dao', off: [-60, 480] },
 ];
 for (const p of POIS) if (zoneOfOffset(p.off[0], p.off[1])?.id !== p.zone) throw new Error('poi ngoài vùng: ' + p.id);
-const BOSS = { off: [-60, 480] }; // Thiên Khuyết Thủ Linh (E4-B): đấu trường trống, chưa đặt quái
+const BOSS = { off: [-60, 506] }; // Thiên Khuyết Thủ Linh (E4-B): đứng ở chỗ trống của đấu trường phẳng, cách vòng prop của điểm Cổ Thành Thất Lộ (-60, 480) 26 m
 
 // ---- prop (asset PROP_LIB co_thanh + vài prop Vân Lam sẵn có làm đệm) ----
 const LIB_COLL = {

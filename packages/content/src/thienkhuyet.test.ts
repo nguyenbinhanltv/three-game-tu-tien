@@ -21,7 +21,7 @@ describe('thien_khuyet', () => {
     expect(lv.spawns.filter((s) => s.mon.startsWith('elite_')).reduce((a, s) => a + s.count, 0)).toBe(12);
     const boss = lv.spawns.filter((s) => s.mon.startsWith('boss_')); // Thiên Khuyết Thủ Linh (E4-B)
     expect(boss).toHaveLength(1);
-    expect(boss[0]).toMatchObject({ mon: 'boss_thien_khuyet_thu_linh', x: 964, z: 1504, respawn: 1800 });
+    expect(boss[0]).toMatchObject({ mon: 'boss_thien_khuyet_thu_linh', x: 964, z: 1530, respawn: 1800 });
     const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
     const km2 = zones.reduce((a, z) => a + polyArea(z.poly), 0) / 1e6;
     expect(km2).toBeGreaterThan(1.7);

@@ -38,19 +38,22 @@ interface Spec {
   n?: number;
   /** Điểm đặt tên (places.json) để đứng trước khi gọi quái. */
   at: string;
+  /** Quay camera về phía quái sau khi gọi. */
+  face?: boolean;
+  flip?: boolean;
 }
 // Chụp trong bản đồ thật (E4-A): mỗi quái ở vùng của nó (điểm đặt tên tk_* trong places.json).
 const SPECS: Spec[] = [
-  { mon: 'mon_thach_tuong_vo_si', at: 'tk_dai_lo', lv: 25, dist: 6, pitch: 0.42, stand: true },
+  { mon: 'mon_thach_tuong_vo_si', at: 'tk_dai_lo', lv: 25, dist: 6, pitch: 0.42, stand: true, face: true },
   { mon: 'mon_da_minh_loc', at: 'tk_lam_sao', lv: 24, dist: 9, pitch: 0.42, yaw: Math.PI / 2 },
-  { mon: 'mon_cot_ve_kiem_thu', at: 'tk_mo_dao', lv: 26, dist: 6, pitch: 0.42, stand: true, wait: 4000 },
-  { mon: 'mon_co_thanh_chien_ma', at: 'tk_binh_khi', lv: 27, dist: 6, pitch: 0.42, stand: true },
-  { mon: 'elite_thach_tuong_dai_tuong', at: 'tk_dai_lo', lv: 26, dist: 9, pitch: 0.42, stand: true },
-  { mon: 'elite_da_minh_loc_vuong', at: 'tk_lam_sao', lv: 25, dist: 10, pitch: 0.42, stand: true },
-  { mon: 'elite_cot_kiem_thong_linh', at: 'tk_binh_khi', lv: 27, dist: 6, pitch: 0.42, stand: true },
-  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_mo_dao', lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, shots: 6 },
-  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_mo_dao', lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, after: ['hurt 65'], shots: 6 },
-  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_mo_dao', lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, after: ['hurt 25'], shots: 8 },
+  { mon: 'mon_cot_ve_kiem_thu', at: 'tk_mo_dao', lv: 26, dist: 6, pitch: 0.42, stand: true, face: true, wait: 4000 },
+  { mon: 'mon_co_thanh_chien_ma', at: 'tk_binh_khi', lv: 27, dist: 6, pitch: 0.42, stand: true, face: true },
+  { mon: 'elite_thach_tuong_dai_tuong', at: '1090 600', lv: 26, dist: 9, pitch: 0.42, stand: true, face: true },
+  { mon: 'elite_da_minh_loc_vuong', at: '540 900', lv: 25, dist: 10, pitch: 0.42, stand: true, face: true },
+  { mon: 'elite_cot_kiem_thong_linh', at: '1380 960', lv: 27, dist: 10, pitch: 0.42, stand: true, face: true },
+  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_boss', lv: 27, dist: 24, pitch: 0.42, stand: true, face: true, shots: 6 },
+  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_boss', lv: 27, dist: 24, pitch: 0.42, stand: true, face: true, after: ['hurt 65'], shots: 6 },
+  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_boss', lv: 27, dist: 24, pitch: 0.42, stand: true, face: true, after: ['hurt 25'], shots: 8 },
 ];
 
 const gm = async (page: Page, cmd: string, wait = 1100) => {
@@ -129,13 +132,25 @@ async function main(): Promise<void> {
       for (let attempt = 0; attempt < 3 && !seen; attempt++) {
       await gm(page, `level ${sp.lv}`, 1200);
       await gm(page, 'killall', 800);
-      await gm(page, `tp ${sp.at}`, 1800);
+      await gm(page, `tp ${sp.at}`, 3000);
       await gm(page, 'heal', 400);
+      console.log('[shots-e4b] đứng ở', await page.evaluate(() => { const m = (window as unknown as G).__game!.me(); return `${Math.round(m.x)},${Math.round(m.z)}`; }));
       await gm(page, 'god on', 400);
       await page.evaluate(() => ((window as unknown as G).__game!.hazardLog = []));
       await cam(sp.pitch, sp.dist, sp.yaw);
       await gm(page, `spawn ${sp.mon} ${sp.n ?? 1}`, 3500);
       for (const c of sp.after ?? []) await gm(page, c, 700);
+      if (sp.face) {
+        // Quay camera sau lưng người chơi nhìn về phía quái gần nhất (tránh quái nằm ngoài khung).
+        const yaw = await page.evaluate((id) => {
+          const g = (window as unknown as G).__game!;
+          const me = g.me();
+          let best: any = null;
+          for (const m of g.view.monsters.values()) if (m.t === id && m.st !== 4 && (!best || Math.hypot(m.x - me.x, m.z - me.z) < Math.hypot(best.x - me.x, best.z - me.z))) best = m;
+          return best ? Math.atan2(me.x - best.x, me.z - best.z) : null;
+        }, sp.mon);
+        if (yaw !== null) await cam(sp.pitch, sp.dist, yaw + (sp.flip ? Math.PI : 0));
+      }
       const until = Date.now() + (sp.wait ? 0 : 25_000);
       if (sp.wait) {
         await sleep(sp.wait);

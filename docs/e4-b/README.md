@@ -23,7 +23,7 @@ Gói E4-B (`docs/EXPANSION_DESIGN.md` 6.3, 5.4). Chỉ **dữ liệu quái/rơi 
 
 ## Gán vào bản đồ (E4-A đã merge)
 
-`tools/maps/gen-thien-khuyet.mjs` (`MIX`, `ELITES`, boss) sinh lại `levels/thien_khuyet.json`: thay quái mẫu tạm bằng quái chương 4 (Đại Lộ: Thạch Tượng Võ Sĩ; Lâm Sao: Dạ Minh Lộc; Binh Khí: Chiến Ma + Cốt Vệ; Điện Tiền: Cốt Vệ/Thạch Tượng/Chiến Ma; Mộ Đạo: Cốt Vệ). 12 tinh anh: Đại Lộ 2 Đại Tướng, Lâm Sao 2 Lộc Vương, Binh Khí 3 Thống Lĩnh, Điện Tiền 2 Đại Tướng + 1 Thống Lĩnh, Mộ Đạo 2 Thống Lĩnh. Boss ở (964, 1504) Mộ Đạo, cấp 27, hồi sinh 30 phút. Vị trí cụm không đổi: `map:report --level thien_khuyet` độ phủ chuẩn p95 64,4 m, max 83,3 m (ĐẠT), 0 chỗ kẹt, 240 quái thường (121/km²). Test `thienkhuyet.mobs.test.ts` và `content/thienkhuyet.test.ts` kiểm id quái, số tinh anh, boss.
+`tools/maps/gen-thien-khuyet.mjs` (`MIX`, `ELITES`, boss) sinh lại `levels/thien_khuyet.json`: thay quái mẫu tạm bằng quái chương 4 (Đại Lộ: Thạch Tượng Võ Sĩ; Lâm Sao: Dạ Minh Lộc; Binh Khí: Chiến Ma + Cốt Vệ; Điện Tiền: Cốt Vệ/Thạch Tượng/Chiến Ma; Mộ Đạo: Cốt Vệ). 12 tinh anh: Đại Lộ 2 Đại Tướng, Lâm Sao 2 Lộc Vương, Binh Khí 3 Thống Lĩnh, Điện Tiền 2 Đại Tướng + 1 Thống Lĩnh, Mộ Đạo 2 Thống Lĩnh. Boss ở (964, 1530) Mộ Đạo (dời khỏi vòng prop và cột linh quang của điểm Cổ Thành Thất Lộ ở 964, 1504; chỗ người chơi đứng chụp: place `tk_boss`), cấp 27, hồi sinh 30 phút. Vị trí cụm không đổi: `map:report --level thien_khuyet` độ phủ chuẩn p95 64,4 m, max 83,3 m (ĐẠT), 0 chỗ kẹt, 240 quái thường (121/km²). Test `thienkhuyet.mobs.test.ts` và `content/thienkhuyet.test.ts` kiểm id quái, số tinh anh, boss.
 
 ## Chưa làm
 
@@ -52,3 +52,5 @@ Chụp trong bản đồ Thiên Khuyết thật, mỗi quái ở vùng của nó
 ## Kiểm chứng
 
 `pnpm typecheck`; `pnpm content:check`; test content/client đạt, server 41/41 file đạt khi chạy tuần tự (`vitest --no-file-parallelism`; chạy song song đôi khi trượt ngẫu nhiên các test thời gian); `thienkhuyet.mobs.test.ts` 13 test; `pnpm sim:progress` chương 2–3 không đổi (4,03–4,17 giờ / 6,13–6,28 giờ). Lỗi có sẵn ở `packages/shared/src/fxtimeline.test.ts` (tia sét `bolt scale`) không thuộc gói này. Không sửa `rooms.ts`/`index.ts` nên không chạy lại `security`.
+
+Ghi chú ảnh: cột sáng trắng đục từng che người chơi/quái ở bản trước là **cột linh quang của điểm đáng chú ý** (`render/beacons.ts`, Hàng Trụ Đá Khắc Vân / Cổ Thành Thất Lộ), không phải chiêu của tinh anh; bản mới chụp ở chỗ cách điểm đáng chú ý ≥ 50 m, camera tự quay về phía quái.
