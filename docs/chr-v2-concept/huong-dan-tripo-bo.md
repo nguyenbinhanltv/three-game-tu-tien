@@ -38,7 +38,7 @@ Thư mục `chr\set_liet_mach_kiem_y\` (đã có concept và `tripo\` bản cũ:
 
 ## Sau khi dựng
 
-Báo tên mảnh đã lưu. Claude nhập bằng `tools/blender/outfit_build.py` (meta `outfit.player = chr_v2_nam|nu`, `files` trỏ `raw_*_v02` cho Liệt Mạch), chụp lại ma trận ảnh `pnpm --filter @dtl/perf run shots:chrv2` và so với bản thủ tục.
+Báo tên mảnh đã lưu. Claude nhập bằng `tools/blender/outfit_build.py` (meta `outfit.player = chr_v2_nam|nu`, `files` trỏ `raw_*_v02` cho Liệt Mạch), chụp lại ma trận ảnh `pnpm shots chrv2` và so với bản thủ tục.
 
 ## Ảnh xem trước
 

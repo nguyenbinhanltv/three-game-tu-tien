@@ -31,7 +31,7 @@ Gói E4-B (`docs/EXPANSION_DESIGN.md` 6.3, 5.4). Chỉ **dữ liệu quái/rơi 
 - Quầng sao hai vòng lệch pha (r 12 + r 20) của Thủ Linh: dùng `slam` r 8 và `chant` r 16 (trần `check.ts`). Phản ứng ngũ hành của boss để tùy chọn sau.
 - Boss `hpMul` cần cân lại bằng sim nhóm khi có bảng chương 4.
 
-## Ảnh (`pnpm shots:e4b --out <thư mục tuyệt đối>`, `?mute=1`, `--mute-audio`)
+## Ảnh (`pnpm shots mons --level thien_khuyet --out <thư mục tuyệt đối>`, `?mute=1`, `--mute-audio`)
 
 Chụp trong bản đồ Thiên Khuyết thật, mỗi quái ở vùng của nó (ban đêm).
 

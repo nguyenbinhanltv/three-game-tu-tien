@@ -23,10 +23,10 @@ Cùng phong cách V1 (lõi sẫm + bóng, lưỡi liềm hai tông, tinh thể l
 
 **Khung mở rộng:** biến thức (`variants`), sự kiện theo mốc trúng (`hit`, Kiếm Vũ Tam Điệp), neo vùng `area` + `fit` (bán kính vùng), `move.offset` (rơi từ trời), kích hoạt theo `S.FX` cho chiêu lướt (`trigger: fx`).
 **Animation:** Hộ Thể, Hồi Nguyên, Lôi Đình cường điệu hơn (`AMP` trong `gen-k5.mjs`); các chiêu bậc 2–3 đã có pose riêng từ E2-G (mỗi chiêu một pose), giữ. `hitAt` không đổi.
-**Cách xem chiêu còn khóa** (Phản Ảnh, Thuấn Di, Thiên Kiếm Hóa Hình chưa mở trong game): `pnpm shots:vfx` tự phát thẳng sự kiện vào `SkillFx` (không có động tác); Thuấn Di nữ ít thấy va chạm vì đích giả lập chưa trúng, chỉ là hạn chế của công cụ. Nghịch Kiếm chưa có video riêng (chỉ chạy được ở cấp Nguyên Anh).
+**Cách xem chiêu còn khóa** (Phản Ảnh, Thuấn Di, Thiên Kiếm Hóa Hình chưa mở trong game): `pnpm shots vfx` tự phát thẳng sự kiện vào `SkillFx` (không có động tác); Thuấn Di nữ ít thấy va chạm vì đích giả lập chưa trúng, chỉ là hạn chế của công cụ. Nghịch Kiếm chưa có video riêng (chỉ chạy được ở cấp Nguyên Anh).
 
 ## Sân đông (V6 rút gọn)
-`pnpm shots:vfx --crowd 50 --skills <chiêu,...>`: 50 người giả (client) cùng ra chiêu Kiếm tu, mỗi người ~0,9 s một chiêu, 15 s, WebGPU, Cao:
+`pnpm shots vfx --crowd 50 --skills <chiêu,...>`: 50 người giả (client) cùng ra chiêu Kiếm tu, mỗi người ~0,9 s một chiêu, 15 s, WebGPU, Cao:
 
 | Mức | draw p50/p95/max | tam giác max | khung ms p50/p95/p99 | lưới FX sống max |
 | --- | --- | --- | --- | --- |

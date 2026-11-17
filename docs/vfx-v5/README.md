@@ -23,7 +23,7 @@ Cùng ngôn ngữ V0–V4 (ba tầng màu + bóng sẫm, mép rách, gai tinh th
 
 `Vfx.hazard(..., quiet)`: vùng tròn do quái thả không còn vẽ chớp/gai băng cũ (timeline thay thế).
 
-## Số đo (`pnpm shots:vfx --perf`, WebGPU, sân tông môn, một quái)
+## Số đo (`pnpm shots vfx --perf`, WebGPU, sân tông môn, một quái)
 
 | Cảnh | draw p50/max | tam giác max | khung ms p50/p95 |
 | --- | --- | --- | --- |
@@ -35,7 +35,7 @@ Trong ngân sách (< 300 draw). Đo 50 người + nhiều quái cùng lúc để
 
 ## Ảnh và video
 
-Ảnh dãy khung (nam/nữ, mỗi ô 60 ms game): `anh/`. Video webm chậm 0,25× và tốc độ thật: artifacts của phiên (không nằm trong repo). Quay: `pnpm shots:vfx --out <thư mục tuyệt đối> --skills mon:<loại>[:<id quái>]` với loại ∈ `hit|strike|cast|boom_circle|boom_line|boom_cone|bolt|death` (kèm `--genders m,f --frames --tile 60 --tmax 2600`); gọi qua `__game.monFx` đúng đường client dùng khi nhận tin server (vùng thử đặt quanh người chơi).
+Ảnh dãy khung (nam/nữ, mỗi ô 60 ms game): `anh/`. Video webm chậm 0,25× và tốc độ thật: artifacts của phiên (không nằm trong repo). Quay: `pnpm shots vfx --out <thư mục tuyệt đối> --skills mon:<loại>[:<id quái>]` với loại ∈ `hit|strike|cast|boom_circle|boom_line|boom_cone|bolt|death` (kèm `--genders m,f --frames --tile 60 --tmax 2600`); gọi qua `__game.monFx` đúng đường client dùng khi nhận tin server (vùng thử đặt quanh người chơi).
 
 ## Hạn chế
 
@@ -61,7 +61,7 @@ Biến thức `boss` của cùng các timeline (`variants.boss` trong `mon_*.jso
 
 Boss đã xem: Kiếm Khôi (Vân Lam), Hàn Giao (Vân Lam), Ngô Công Vương (Phục Mạch, niệm hút mạch), Thạch Tâm Khôi Vương (Phục Mạch), Vân Hải Kình Vương (Vân Hải, đường), Huyết Lang Vương (Vân Lam). Kính Nguyệt Chân Quân dùng chung vùng quét (nón) và bảng màu kim; bóng gương giả vẫn do `mirror` của server. Cùng hạ tầng cho cả boss bí cảnh (Kiếm Trủng, Phục Mạch Quật, Kính Nguyệt Cung): vùng nổ đi qua `S.HAZARD` như mọi nơi.
 
-Số đo (`--perf`, một boss, phòng quay sạch): draw p50/max 126–142 / 129–154, tam giác max 393k, khung p50/p95 8,0–8,5 / 10–12,5 ms (trong ngân sách; đo 50 người + nhiều boss để V6). Ảnh dãy khung nam/nữ: `anh-boss/`. Quay: `pnpm shots:vfx --out <thư mục> --mon-dist 24 --skills mon:boom_circle:boss_kiem_khoi,mon:boom_cone:boss_han_giao,mon:chant:boss_thon_mach_ngo_cong_vuong,mon:boom_line:boss_van_hai_kinh_vuong,mon:strike:boss_huyet_lang_vuong,mon:death:boss_kiem_khoi`.
+Số đo (`--perf`, một boss, phòng quay sạch): draw p50/max 126–142 / 129–154, tam giác max 393k, khung p50/p95 8,0–8,5 / 10–12,5 ms (trong ngân sách; đo 50 người + nhiều boss để V6). Ảnh dãy khung nam/nữ: `anh-boss/`. Quay: `pnpm shots vfx --out <thư mục> --mon-dist 24 --skills mon:boom_circle:boss_kiem_khoi,mon:boom_cone:boss_han_giao,mon:chant:boss_thon_mach_ngo_cong_vuong,mon:boom_line:boss_van_hai_kinh_vuong,mon:strike:boss_huyet_lang_vuong,mon:death:boss_kiem_khoi`.
 
 Hạn chế: boss lớn (Ngô Công Vương, Hàn Giao) vượt khung ở camera 16–18 m, cần lùi camera; vạch báo hình chữ nhật/nón mới chỉ nhấp nháy, chưa có triện văn trải đúng hình; boss gục vẫn dùng model gục + mực.
 

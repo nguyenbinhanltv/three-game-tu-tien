@@ -56,7 +56,7 @@ Lòng chảo Kiếm Trủng dựng thành sảnh gương treo giữa mây, bằn
 
 - `pnpm sim:progress`: nhóm 4 × cấp 21, sạch thuần 13,2 phút, kể cả lỡ tay lần đầu **23,8 phút** (mục tiêu ~25; sim báo LỖI nếu ngoài 20–30). Hệ số hiệu suất đánh boss gương `DG_MIRROR_EFF` = 0,55 và thời gian đố (0,75 × 20 s) là giả định chưa kiểm bằng người thật.
 - Test `apps/server/src/game/kinhnguyet.test.ts` (24): dữ liệu đợt, vé/khóa, đố gương, bóng giả/lặp lại/đĩa/nguyệt phản/thần thức, Định Thần Phù, thưởng + ledger.
-- Playtest `pnpm shots:e3m --out <thư mục tuyệt đối>`: vào bằng cổng thật, room `dungeon-kinh_nguyet`, đủ 5 đợt, 0 lỗi console.
+- Playtest `pnpm shots dungeon --level kinh_nguyet --out <thư mục tuyệt đối>`: vào bằng cổng thật, room `dungeon-kinh_nguyet`, đủ 5 đợt, 0 lỗi console.
 
 ## Ảnh
 

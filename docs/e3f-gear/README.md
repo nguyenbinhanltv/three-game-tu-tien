@@ -46,7 +46,7 @@ Theo mẫu E2-F (`docs/e2f-gear/`). Phạm vi: bậc 3 (Vân Hải, `reqLevel` 2
 
 Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, chặn dưới cảnh giới 20, chế bậc 3, bậc 3 không thăng được), `e2g.test.ts` (ba hiệu ứng 4 món), `shared/sets.test.ts` (mã phụ kiện > 9 bộ), `shared/tier.test.ts` (`promoteOpen`, `bottleneckPill`), `client/ui/gear.test.ts` (dòng "Bậc 3", so sánh với đồ bậc 2, chữ hiệu ứng). Chạy lại: `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`, security, `pnpm bots --count 100` + `pnpm ledger:check` (kết quả ở phần cuối).
 
-Ảnh trong game: `pnpm --filter @dtl/perf run shots:e3f --out <thư mục tuyệt đối>` (Thăng Bậc trước/sau, tooltip, chế tạo, luyện đan), `pnpm shots:sets --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20 --out …` (nam/nữ), `pnpm shots:kiem --only kinh-quang-vp` hoặc `--model prop_kiem_kinh_quang` (kiếm).
+Ảnh trong game: `pnpm --filter @dtl/perf run shots:e3f --out <thư mục tuyệt đối>` (Thăng Bậc trước/sau, tooltip, chế tạo, luyện đan), `pnpm shots outfit --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20 --out …` (nam/nữ), `pnpm shots:kiem --only kinh-quang-vp` hoặc `--model prop_kiem_kinh_quang` (kiếm).
 
 ## Kết quả kiểm (2026-11-16, sau khi hợp nhất main tới #142)
 
@@ -59,7 +59,7 @@ Test mới: `promote.test.ts` (Thăng Bậc 2 → 3 cho cả ba bộ, kiếm, ch
 ## Ảnh
 
 - UI: `ui-promote-truoc.jpg` (bảng Thăng Bậc, bốn món Liệt Mạch → Kính Quang, phí 2.960), `ui-promote-tooltip-bac2.jpg`, `ui-promote-sau.webp`, `ui-promote-tooltip-bac3.jpg` (tooltip đạo bào bậc 3 + dòng bộ 1/4 + hiệu ứng 4 món), `ui-forge-bac3.jpg` (tab chế tạo, ba bộ mới), `ui-luyen-dan-bac3.jpg`, `ui-tooltip-so-sanh-bac3.webp` (tooltip so sánh với đồ bậc 2 đang mặc: chỉ số tăng xanh, mất đỏ, **Lực chiến +116**), `icons-grid.webp` (28 icon mới).
-- Nhân vật mặc 3 bộ mới, nam và nữ: `set_<bộ>-<m|f>-<truoc|sau|nghieng|chem>.jpg` (cũng chụp lúc chạy và lúc bay: tệp `-chay|-bay` được bỏ khỏi repo cho nhẹ; chạy lại `pnpm shots:sets --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20` để có).
+- Nhân vật mặc 3 bộ mới, nam và nữ: `set_<bộ>-<m|f>-<truoc|sau|nghieng|chem>.jpg` (cũng chụp lúc chạy và lúc bay: tệp `-chay|-bay` được bỏ khỏi repo cho nhẹ; chạy lại `pnpm shots outfit --sets set_kinh_quang,set_van_kinh,set_luu_ly --level 20` để có).
 - Kiếm Kính Quang bậc 3 (nam và nữ × đeo lưng / cầm tay / chém): `kiem-kinh_quang-<m|f>-<deo-lung|cam-tay|chem>.jpg` (chụp bằng `shots:kiem --model prop_kiem_kinh_quang --gender m|f`).
 
 ## Việc để lại
