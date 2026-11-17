@@ -2111,7 +2111,15 @@ export class Game {
     }
     // Chiêu đã có dòng thời gian hiệu ứng (data/fx/<id>.json): hình do `SkillFx.runner` phát theo sự kiện chiêu, bỏ hình cũ.
     // Chỉ khi người ra chiêu có model phát sự kiện chiêu (SkinnedCharacter): model khối (`?models=legacy`, nạp lỗi) không có, giữ hình cũ.
-    if (replacedFx(m.t) && typeof pSrc?.model.performClock === 'function') return;
+    if (replacedFx(m.t) && typeof pSrc?.model.performClock === 'function') {
+      // Đột phá của mình: hình do timeline lo, nhưng trạng thái HUD, chớp sáng và thẻ chương vẫn phải chạy (trước đây bị bỏ qua cùng nhánh hình cũ).
+      if (m.t === 'ascend' && src === this.sid) {
+        set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+        this.post?.flash(0.3);
+        window.setTimeout(() => !this.disposed && this.chapter(m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+      }
+      return;
+    }
     if (m.v) playVariantExtras(mctx, tint(0xbfeaff));
     switch (m.t) {
       case 'sword':
