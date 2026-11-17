@@ -26,6 +26,8 @@ export interface OpenOpts {
   hide?: 'hud' | 'chat';
   warnings?: boolean | RegExp;
   errors?: string[];
+  /** Thư mục ghi video webm của cả phiên (Playwright `recordVideo`, cùng cỡ khung nhìn); lấy file qua `page.video()` sau khi đóng context. */
+  recordVideo?: string;
 }
 
 export interface GamePage {
@@ -38,7 +40,7 @@ export interface GamePage {
 /** Mở context mới, vào game bằng tài khoản thử (tắt tiếng), chờ có nhân vật và bỏ qua cảnh mở đầu. */
 export async function openGame(browser: Browser, o: OpenOpts): Promise<GamePage> {
   const [width, height] = o.viewport ?? [1280, 720];
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: o.dpr ?? 1 });
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: o.dpr ?? 1, ...(o.recordVideo && { recordVideo: { dir: o.recordVideo, size: { width, height } } }) });
   const name = `${o.name}${Date.now() % 10000}`.slice(0, 14);
   const store: Record<string, string> = {};
   if (o.quality) store['dtl.quality'] = o.quality;

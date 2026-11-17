@@ -597,7 +597,8 @@ export class SkinnedCharacter implements CharacterView {
           this.jumpIntro = true;
           this.base = want;
           this.playShot('jump', 'ual_jump_start', JUMP_START_RATE);
-        } else if (this.base === 'jump' && a.speed <= MOVE_MIN && this.clips.has('ual_jump_land')) {
+        } else if (this.base === 'jump' && (want === 'idle' || want === 'combatIdle') && a.speed <= MOVE_MIN && this.clips.has('ual_jump_land')) {
+          // Chỉ tiếp đất khi trở về đứng trên đất; sang bay/niệm chú... thì vào thẳng trạng thái mới.
           this.base = want;
           this.playShot('jump', 'ual_jump_land', JUMP_LAND_RATE);
         } else this.enterBase(want, FADE_BASE);

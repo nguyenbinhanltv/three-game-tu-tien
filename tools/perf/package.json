@@ -12,7 +12,6 @@
     "crowd": "tsx src/crowd.ts",
     "crowd:repeat": "tsx src/crowd-repeat.ts",
     "shots": "tsx src/shots.ts",
-    "shots:ual": "tsx src/shots-ual.ts",
     "check:black": "tsx src/check-black.ts",
     "levels": "tsx src/levelswitch.ts",
     "test": "vitest run"

@@ -423,6 +423,20 @@ describe('clip K-3 nạp lười (K-4)', { timeout: 20000 }, () => {
     s.dispose();
   });
 
+  it('nhảy rồi ngự kiếm/niệm chú: không chen clip tiếp đất', async () => {
+    const { s, m } = await withK3();
+    run(m, anim({ airborne: true }), 1.2);
+    expect(m.actionOf('ual_jump_loop')?.isRunning()).toBe(true);
+    run(m, anim({ flying: true }), 0.2);
+    expect(m.actionOf('ual_jump_land')?.isRunning() ?? false).toBe(false);
+    expect(m.state).toBe('fly');
+    run(m, anim({ airborne: true }), 0.3);
+    run(m, anim({ casting: true }), 0.1);
+    expect(m.actionOf('ual_jump_land')?.isRunning() ?? false).toBe(false);
+    m.dispose();
+    s.dispose();
+  });
+
   it('ngã → nằm → đứng dậy; đi lại sau khi nằm đủ lâu thì đứng dậy sớm; lúc ngã không giật thêm', async () => {
     const { s, m } = await withK3();
     m.knockdown();
