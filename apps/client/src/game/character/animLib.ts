@@ -10,6 +10,12 @@ export const HUMAN_ANIM_LIB = 'anim_human_base';
  */
 export const HUMAN_K3_LIB = 'anim_human_k3';
 
+/**
+ * Thư viện clip UAL (Quaternius, CC0, 17 clip chọn lọc: chết, trúng đòn, ngã/dậy, lướt, nhảy, thủ thế kiếm, idle NPC), nguồn Z-up
+ * nên `retargetClips` đo độ cao/độ dời hông trong không gian thế giới. Nạp lười cùng lúc với K-3; `preload.ts` không nạp.
+ */
+export const HUMAN_UAL_LIB = 'anim_human_ual';
+
 /** Tần số lấy mẫu clip sau retarget (khung/giây). */
 const RETARGET_FPS = 30;
 const EPS = 1e-5;
@@ -81,7 +87,15 @@ export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE
   const dstRootW = rootParentWorld(target, isRigBone);
   const hipsS = src.index.get('mixamorig_hips');
   const hipsD = dst.index.get('mixamorig_hips');
-  const k = hipsS !== undefined && hipsD !== undefined && src.bones[hipsS].pos.y > 1e-6 ? dst.bones[hipsD].pos.y / src.bones[hipsS].pos.y : 1;
+  // Độ cao hông đo trong không gian thế giới (nguồn Z-up như UAL có root xoay -90° X: trục đứng nằm ở Z cục bộ của hông).
+  const parentW = (set: { bones: BoneInfo[] }, h: number, rootW: THREE.Quaternion) => {
+    const p = set.bones[h].parent;
+    return p >= 0 ? set.bones[p].world : rootW;
+  };
+  const hipHeight = (set: { bones: BoneInfo[] }, h: number, rootW: THREE.Quaternion) => set.bones[h].pos.clone().applyQuaternion(parentW(set, h, rootW)).y;
+  const hS = hipsS !== undefined ? hipHeight(src, hipsS, srcRootW) : 0;
+  const hD = hipsD !== undefined ? hipHeight(dst, hipsD, dstRootW) : 0;
+  const k = hS > 1e-6 && hD > 0 ? hD / hS : 1;
 
   // Xương đích có nguồn tương ứng.
   const map = dst.bones.map((b) => src.index.get(b.name) ?? -1);
@@ -146,9 +160,13 @@ export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE
         const p = posI.evaluate(t) as unknown as ArrayLike<number>;
         const sp = src.bones[hipsS].pos;
         const dp = dst.bones[hipsD].pos;
-        hipPos[f * 3] = dp.x + k * (p[0] - sp.x);
-        hipPos[f * 3 + 1] = dp.y + k * (p[1] - sp.y);
-        hipPos[f * 3 + 2] = dp.z + k * (p[2] - sp.z);
+        // Độ dời hông: nguồn → thế giới (quay thế giới của cha hông nguồn, khung đang diễn) → cha hông đích.
+        const pwS = src.bones[hipsS].parent >= 0 ? srcWorld[src.bones[hipsS].parent] : srcRootW;
+        const pwD = dst.bones[hipsD].parent >= 0 ? dstWorld[dst.bones[hipsD].parent] : dstRootW;
+        const d = new THREE.Vector3(p[0] - sp.x, p[1] - sp.y, p[2] - sp.z).applyQuaternion(pwS).multiplyScalar(k).applyQuaternion(pwD.clone().invert());
+        hipPos[f * 3] = dp.x + d.x;
+        hipPos[f * 3 + 1] = dp.y + d.y;
+        hipPos[f * 3 + 2] = dp.z + d.z;
       }
     }
     const tracks: THREE.KeyframeTrack[] = [];

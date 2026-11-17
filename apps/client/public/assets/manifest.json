@@ -89,6 +89,51 @@
         "build": null
       }
     },
+    "anim_human_ual": {
+      "id": "anim_human_ual",
+      "class": "anim",
+      "source": "assets/build/raw/anim_human_ual.glb",
+      "file": "anim_human_ual.df5b6307d2.glb",
+      "bytes": 794064,
+      "rawBytes": 1057680,
+      "triangles": 0,
+      "rawTriangles": 0,
+      "lod0Cap": 0,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [
+        "ual_block",
+        "ual_combat_idle",
+        "ual_dash",
+        "ual_death",
+        "ual_getup",
+        "ual_hit_chest",
+        "ual_hit_head",
+        "ual_idle_fold",
+        "ual_idle_talk",
+        "ual_interact",
+        "ual_jump_land",
+        "ual_jump_loop",
+        "ual_jump_start",
+        "ual_knockback",
+        "ual_no",
+        "ual_roll",
+        "ual_yes"
+      ],
+      "ktx2": false,
+      "textures": [],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 0
+        }
+      ],
+      "dims": {
+        "raw": null,
+        "build": null
+      }
+    },
     "arch_sect": {
       "id": "arch_sect",
       "class": "arch",

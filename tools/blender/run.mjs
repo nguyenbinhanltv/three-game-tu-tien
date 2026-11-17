@@ -35,6 +35,13 @@ const procedural = [
   { id: 'arch_sect', script: 'tools/blender/build_sect.py', legacy: 'apps/client/public/assets/sect.glb' },
   // Lưới Tripo v02 (task 70d2072c), tô màu theo vùng bằng script vì texture Tripo mất màu (M0-3).
   { id: 'prop_phi_kiem', script: 'tools/blender/recolor_phi_kiem.py', source: 'prop/prop_phi_kiem/tripo/raw_v02.glb' },
+  // Thư viện clip Quaternius UAL1+UAL2 (CC0): `source` = UAL1, `source2` = UAL2 (truyền `--src2`), xem anim_human_ual.py.
+  {
+    id: 'anim_human_ual',
+    script: 'tools/blender/anim_human_ual.py',
+    source: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    source2: 'anim/ual/ual2/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb',
+  },
 ];
 
 /** @typedef {{ id: string, script: string, args: string[], deps: string[], legacy?: string }} Job */
@@ -63,6 +70,15 @@ function proceduralJobs() {
       }
       deps.push(src);
       args.push('--src', src);
+      if (j.source2) {
+        const src2 = path.join(sourceRoot(), j.source2);
+        if (!fs.existsSync(src2)) {
+          console.warn(`[blender] CẢNH BÁO: bỏ qua ${j.id}, thiếu ${src2}`);
+          continue;
+        }
+        deps.push(src2);
+        args.push('--src2', src2);
+      }
     }
     jobs.push({ ...j, args, deps });
   }
