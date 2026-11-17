@@ -2,7 +2,7 @@
   "$schema": "../../../meta.schema.json",
   "id": "set_phuc_mach_dan_bao_v2_nam",
   "type": "chr",
-  "budgetClass": "outfit",
+  "budgetClass": "outfit_v2",
   "status": "imported",
   "budget": {
     "faceLimit": 14000,

@@ -37,6 +37,8 @@ export interface BudgetClass {
   /** Cạnh lớn nhất (px): `color` cho base color/emissive, `data` cho normal/ORM. 0 = không được có texture. */
   texture: { color: number; data: number };
   bones: number;
+  /** Không có toktx thì nén texture sang WebP (EXT_texture_webp): màu và normal lossy q88, ORM near-lossless và emissive lossless (mặt nạ nhuộm phải gần đúng từng điểm ảnh). */
+  webp?: boolean;
 }
 
 const COLOR_SLOTS = new Set(['baseColorTexture', 'emissiveTexture', 'diffuseTexture', 'sheenColorTexture']);
