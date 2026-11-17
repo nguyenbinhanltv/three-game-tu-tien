@@ -451,6 +451,8 @@ const terrain = {
 const level = {
   id: 'thien_khuyet',
   spawn: { x: C, z: C + 12 },
+  // Cổng vào Thần Tàng Điện (E4-C), cách poi cong_than_tang_dien 18 m về phía tâm thành.
+  portals: [{ x: W(20), z: W(-762), r: 12, to: 'than_tang' }],
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
   camps,

@@ -100,7 +100,8 @@
   "boss_van_hai_kinh_vuong",
   "elite_kinh_dien_ma_quan",
   "elite_loi_van_su_vuong",
-  "elite_van_hac_vuong"
+  "elite_van_hac_vuong",
+  "mon_tt_thach_tuong"
  ],
  "itm_han_giao_dan": [
   "boss_han_giao"
@@ -114,7 +115,8 @@
   "boss_thach_tam_khoi_vuong",
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_mo_tuong",
-  "boss_van_hai_kinh_vuong"
+  "boss_van_hai_kinh_vuong",
+  "boss_vo_dien_than_quan"
  ],
  "itm_hoang_sa_thao": [
   "boss_dia_mach_long",
@@ -192,6 +194,9 @@
   "elite_liet_cot_bao",
   "elite_xich_sa_ngo_cong"
  ],
+ "itm_pha_an_phu": [
+  "elite_tt_cot_kiem"
+ ],
  "itm_tay_luyen_thach": [
   "boss_dia_mach_long",
   "boss_han_giao",
@@ -202,6 +207,7 @@
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_mo_tuong",
   "boss_van_hai_kinh_vuong",
+  "boss_vo_dien_than_quan",
   "elite_cu_nham_vien",
   "elite_ho_mach_khoi_tuong",
   "elite_huyet_nha_lang",
@@ -214,6 +220,7 @@
  "itm_than_tang_ngoc": [
   "boss_kinh_nguyet_chan_quan",
   "boss_van_hai_kinh_vuong",
+  "boss_vo_dien_than_quan",
   "elite_kinh_dien_ma_quan",
   "elite_loi_van_su_vuong",
   "elite_van_hac_vuong"
@@ -225,6 +232,7 @@
   "boss_thach_tam_khoi_vuong",
   "boss_thon_mach_ngo_cong_vuong",
   "boss_van_hai_kinh_vuong",
+  "boss_vo_dien_than_quan",
   "elite_cu_nham_vien",
   "elite_ho_mach_khoi_tuong",
   "elite_kinh_dien_ma_quan",
@@ -246,7 +254,9 @@
   "boss_van_hai_kinh_vuong",
   "elite_kinh_dien_ma_quan",
   "elite_loi_van_su_vuong",
-  "elite_van_hac_vuong"
+  "elite_tt_cot_kiem",
+  "elite_van_hac_vuong",
+  "mon_tt_cot_ve"
  ],
  "itm_tu_khi_dan": [
   "boss_dia_mach_long",
@@ -258,6 +268,7 @@
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_mo_tuong",
   "boss_van_hai_kinh_vuong",
+  "boss_vo_dien_than_quan",
   "mon_u_minh_lang"
  ],
  "itm_van_hai_lo": [
@@ -278,6 +289,7 @@
   "elite_kinh_dien_ma_quan",
   "elite_liet_cot_bao",
   "elite_loi_van_su_vuong",
+  "elite_tt_cot_kiem",
   "elite_van_hac_vuong",
   "elite_xich_dien_ho",
   "elite_xich_sa_ngo_cong",
@@ -292,6 +304,9 @@
   "mon_thach_giap_te",
   "mon_thach_vien",
   "mon_thiet_boi_tru",
+  "mon_tt_chien_ma",
+  "mon_tt_cot_ve",
+  "mon_tt_thach_tuong",
   "mon_u_minh_lang",
   "mon_van_hac",
   "mon_yeu_lang"

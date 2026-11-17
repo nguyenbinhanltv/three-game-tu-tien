@@ -303,6 +303,14 @@
       ]
     }
   ],
+  "portals": [
+    {
+      "x": 1044,
+      "z": 262,
+      "r": 12,
+      "to": "than_tang"
+    }
+  ],
   "pois": [
     {
       "id": "hang_tru_khac_van",

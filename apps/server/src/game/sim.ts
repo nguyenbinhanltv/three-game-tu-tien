@@ -220,6 +220,7 @@ import { TeleportSystem } from './teleport';
 import { QuestObjSystem } from './questobj';
 import { SpiritSystem } from './spirit';
 import { MirrorSystem, wardMul } from './mirror';
+import { ThanTangSystem } from './thantang';
 import { SoulSystem } from './soul';
 import { parties } from './party';
 import { InventorySystem } from './inventory';
@@ -685,6 +686,43 @@ export class GameSim {
     groundAt: (x, z) => this.terrain.groundAt(x, z),
   });
 
+  /** Thần Tàng Điện (E4-C): sáu tay, ngũ hành, phân thân, vòng đá của Vô Diện Thần Quân. Chỉ chạy khi room có boss `than`. */
+  readonly than = new ThanTangSystem({
+    now: () => this.now,
+    players: () => this.players.values(),
+    monsters: () => this.monsters,
+    isDead: (p) => this.isDead(p),
+    monsterDef: (id) => MONSTER.get(id),
+    spawnMinion: (def, level, x, z, owner) => {
+      const e = this.spawnMonster(def, level, x, z, null);
+      e.minionOf = owner.id;
+      return e;
+    },
+    telegraph: (g, delay, kind, src) => this.addHazard(g, delay, 0, false, kind, src, 0),
+    marker: (x, z, r, dur, kind) => this.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur),
+    damagePlayer: (p, n, src, hv, ke) => this.damagePlayer(p, n, src, hv, ke),
+    addPosture: (m, n) => this.addPosture(m, n),
+    heal: (m, n) => {
+      m.s.hp = Math.min(m.s.mhp, m.s.hp + n);
+    },
+    kill: (m) => {
+      if (m.state === MS_DEAD) return;
+      m.minionOf = undefined;
+      m.s.hp = 0;
+      m.state = MS_DEAD;
+      m.s.st = MS_DEAD;
+      m.removeAt = this.now + 800;
+    },
+    fx: (m) => this.fx(m),
+    sysAll: (k, params, type) => this.sysAll(k, params, type),
+    groundAt: (x, z) => this.terrain.groundAt(x, z),
+    isGhost: (p) => this.soul.isScouting(p),
+    elemName: (e) => t('elem.' + e),
+  });
+
+  /** Phá Ấn Phù (E4-C): do room phó bản nối vào; trả true nếu mở được một cửa phong ấn. */
+  sealHook: { peek(p: PlayerEnt): number; open(i: number): void } | null = null;
+
   /** Nguyên anh xuất khiếu (E3-K, phím X; cứu mạng khi chết ở Nguyên Anh trở lên). */
   readonly soul = new SoulSystem({
     now: () => this.now,
@@ -1026,6 +1064,7 @@ export class GameSim {
     this.questObj.tick();
     this.spirit.tick();
     this.mirror.tick();
+    this.than.tick();
     this.soul.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
@@ -2528,6 +2567,7 @@ export class GameSim {
     else mon.removeAt = this.now + 4000;
     if (this.isTimed(mon)) this.sendBossTimers();
     this.mirror.onKill(mon);
+    this.than.onKill(mon);
     if (mon.minionOf) {
       // Đệ tử do quái gọi: không tu vi, không rơi đồ, không tính nhiệm vụ.
       mon.threat.clear();
@@ -2683,7 +2723,7 @@ export class GameSim {
     return true;
   }
 
-  damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false): void {
+  damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void {
     if (this.isDead(p) || this.soul.isScouting(p)) return;
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
@@ -2734,6 +2774,7 @@ export class GameSim {
     }
     const msg: DmgMsg = { dst: p.sid, n, src };
     if (hv) msg.hv = true;
+    if (ke) msg.ke = ke;
     this.emit(S.DMG, msg);
     // Tâm cảnh (E3-L): bị Tâm Ma Ảnh của chính mình đánh trúng thì giảm.
     if (p.trib && src && this.monById.get(src)?.owner === p.sid) this.tribSys.noteHit(p, 'hurt');
@@ -3685,12 +3726,16 @@ export class GameSim {
     if (!def.use) return;
     if (this.duel.inDuel(p)) return this.warn(p, 'duel.no_items');
     if (this.now < p.itemCdAt) return this.warn(p, 'sys.item_cd');
+    // Phá Ấn Phù (E4-C): chỉ dùng được khi đứng trước một cửa đóng; cửa chỉ mở SAU KHI tx trừ bùa thành công (idem lặp thì không mở).
+    const sealIdx = def.use.seal ? (this.sealHook?.peek(p) ?? -1) : -1;
+    if (def.use.seal && sealIdx < 0) return this.warn(p, 'sys.seal_need');
     // Độ kiếp: tối đa `pillMax` của kiếp đan hồi phục (đan độc tích tụ), để không thành cuộc thi uống thuốc.
     const healing = !!def.use.hpPct;
     if (p.trib && healing && p.trib.pills >= tribDef(p.trib.id).pillMax) return this.warn(p, 'sys.trib_pill_limit', { n: tribDef(p.trib.id).pillMax });
     let taken = null as InvItem | null;
     if (!c.tx('use:' + def.id, idem, (d) => !!(taken = d.removeAt(slot, 1)))) return;
     p.itemCdAt = this.now + def.use.cd * 1000;
+    if (sealIdx >= 0) this.sealHook?.open(sealIdx);
     if (p.trib && healing) p.trib.pills++;
     // Thanh Mộc Đan Kinh: hồi phục +20%, và đan dược dùng được lên đạo hữu gần (`to` = sid).
     const healMul = passiveOf(c.meta)?.healMul;

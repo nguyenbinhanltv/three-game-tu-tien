@@ -42,7 +42,7 @@ export interface ItemDef {
   quest?: boolean;
   /** Đích Thăng Bậc của món này (cùng ô, bậc kế); thiếu = món thường cùng ô ở bậc kế. */
   promoteTo?: string;
-  use?: { hpPct?: number; mpPct?: number; xp?: number; cd: number; /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } };
+  use?: { /** Phá Ấn Phù (E4-C): mở một cửa phong ấn ở Thần Tàng Điện. */ seal?: boolean; hpPct?: number; mpPct?: number; xp?: number; cd: number; /** Đan tăng sức (P3-8): buff tạm thời. */ buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } };
 }
 
 export type MonsterModel = 'wolf' | 'boar' | 'fox' | 'ape' | 'serpent';
@@ -108,6 +108,8 @@ export interface MonsterDef {
   glass?: boolean;
   /** Cơ chế cung gương của boss (E3-M), xem `MonsterMirror`. */
   mirror?: MonsterMirror;
+  /** Cơ chế Thần Tàng Điện của boss (E4-C), xem `MonsterThan`. */
+  than?: MonsterThan;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
   /** Chỉ boss: các pha sau pha đầu, `hp` giảm dần. */
@@ -128,6 +130,22 @@ export interface MonsterMirror {
   echo?: { phase: number; r: number; delay: number; mul: number; cd: number };
   disc?: { phase: number; beams: number; len: number; w: number; dur: number; warn: number; spin: number; mul: number; cd: number };
   veil?: { phase: number; r: number; dur: number; cd: number; hpMul: number; atkMul: number };
+}
+
+/**
+ * Cơ chế Thần Tàng Điện (E4-C, Vô Diện Thần Quân). `phase` như `MonsterMirror`.
+ * - `hands`: `n` vạch nón (dài `r`, rộng `w` độ) chia đều quanh boss, báo `delay` giây rồi nổ `mul` × công; mỗi lần xoay thêm `turn` độ; hồi `cd` giây.
+ * - `elem`: mỗi `cd` giây chọn một hành, đánh vòng `r` m báo `delay` giây; 5 ấn ngũ hành (mỗi ấn bán kính `sealR`, đặt trên vòng bán kính `ring` quanh boss);
+ *   đứng trên ấn hành khắc chế hành đánh thì giảm `cut` (cờ `ke`).
+ * - `clone`: `n` phân thân (`mon`) quanh `r` m; hạ hết trước `life` giây thì boss mất thế `weak` giây, để sống quá hạn thì hợp lại, boss hồi `heal` × máu tối đa.
+ * - `rings`: `n` vòng đá bán kính `r` xoay quanh sàn (quỹ đạo `orbit`, `spin` độ/giây) trong `dur` giây, chạm trúng `mul` × công; sau đó tia **Phản hồi**
+ *   (rộng `w`, dài `r`, báo `delay`): nếu cả đội đứng trong `gather` m thì sát thương gấp đôi.
+ */
+export interface MonsterThan {
+  hands?: { phase: number; n: number; r: number; w: number; delay: number; turn: number; cd: number; mul: number };
+  elem?: { phase: number; cd: number; r: number; delay: number; mul: number; cut: number; sealR: number; ring: number };
+  clone?: { phase: number; mon: string; n: number; r: number; life: number; heal: number; weak: number; cd: number };
+  rings?: { phase: number; n: number; r: number; orbit: number; dur: number; spin: number; mul: number; cd: number; final: { delay: number; r: number; w: number; mul: number; gather: number } };
 }
 
 /** Đòn đôi: sau một đòn cận chiến, có xác suất đánh thêm một đòn nặng sau `delay` giây (né được nếu ra khỏi tầm). */
@@ -676,6 +694,12 @@ export interface WaveDef {
    * cột theo đúng thứ tự trong `secs` giây. Sai hoặc hết giờ thì `wrong` quái xuất hiện thêm (đố làm lại); đúng thì
    * sát thương boss giảm `bossCut` suốt phó bản.
    */
+  /**
+   * Đợt phong ấn (E4-C, Thần Tàng Điện): mỗi cửa `doors[i]` có chỗ đứng mở bằng Phá Ấn Phù (`x, z`, trong `phuR` m) và trận môn bên trong tường (`gx, gz`);
+   * nguyên anh xuất khiếu chạm trận môn (trong `touch` m) cũng mở cửa. Người bằng xương thịt không vào được vùng trong `bar` m quanh trận môn khi cửa đóng.
+   * Mỗi cửa mở thì `reinforce` quái kéo đến. Mở đủ mọi cửa và hạ hết quái thì sang đợt sau.
+   */
+  seals?: { doors: { x: number; z: number; gx: number; gz: number }[]; touch: number; phuR: number; bar: number; reinforce: { mon: string; level: number; n: number } };
   puzzle?: { points: { x: number; z: number }[]; secs: number; wrong: { mon: string; level: number; n: number }; bossCut: number };
 }
 
