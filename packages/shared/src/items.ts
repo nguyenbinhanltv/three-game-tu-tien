@@ -436,6 +436,11 @@ export function isCosmeticSlot(v: unknown): v is CosmeticSlot {
   return typeof v === 'string' && (COSMETIC_SLOTS as string[]).includes(v);
 }
 
+/** Món có giới hạn giới tính (`ItemDef.gender`) chỉ nhân vật đúng giới mặc được; món không giới hạn thì ai cũng mặc được. */
+export function wearableBy(def: { gender?: string } | undefined | null, gender: string): boolean {
+  return !def?.gender || def.gender === gender;
+}
+
 /** Ô mặc được lên người: ô trang bị có chỉ số hoặc ô ngoại hình. */
 export function isWearSlot(v: unknown): v is WearSlot {
   return typeof v === 'string' && (WEAR_SLOTS as string[]).includes(v);

@@ -53,6 +53,7 @@ import {
   type DungeonReward,
   EQUIP_SLOTS,
   isWearSlot,
+  wearableBy,
   type WearSlot,
   glowStage,
   lookSet,
@@ -1031,7 +1032,9 @@ export class GameSim {
     if (s.sk !== sk) s.sk = sk;
     const sa = accessoryCode(SETS, c.equip);
     if (s.sa !== sa) s.sa = sa;
-    const sn = c.equip.skin?.id ?? '';
+    // Skin sai giới (đổi giới tính bằng GM sau khi mặc) không được hiển thị; món vẫn nằm ở ô, tháo ra bình thường.
+    const skinId = c.equip.skin?.id ?? '';
+    const sn = skinId && wearableBy(ITEM.get(skinId), c.appearance.g) ? skinId : '';
     if (s.sn !== sn) s.sn = sn;
     const art = c.equip.artifact?.id ?? '';
     if (s.art !== art) s.art = art;
@@ -3805,6 +3808,8 @@ export class GameSim {
     // Ô có chỉ số hoặc ô ngoại hình (skin): cùng một đường giao dịch. Sở hữu = món đang nằm trong túi của chính người chơi.
     if (!it || !def || !isWearSlot(def.kind)) return;
     if ((def.reqLevel ?? 1) > c.level) return this.warn(p, 'sys.equip_level');
+    // Món giới hạn giới tính (skin dựng cho một dáng): sai giới thì từ chối, món vẫn nằm trong túi.
+    if (!wearableBy(def, c.appearance.g)) return this.warn(p, 'sys.equip_gender');
     const es: WearSlot = def.kind;
     // Đổi đồ không sinh/mất vật phẩm nên ledger ghi một dòng 'noop' có khóa idem và lý do (món vào/ra) để truy vết.
     const prev0 = c.equip[es];
@@ -4691,6 +4696,7 @@ export class GameSim {
         }
         const id = a[1];
         if (!ids.includes(id)) return say(t('gm.msg.no_skin', { id }));
+        if (!wearableBy(ITEM.get(id), c.appearance.g)) return say(t('sys.equip_gender'));
         if (c.equip.skin?.id === id) return say(t('gm.msg.skin', { name: itemName(id) }));
         const ok = c.tx('gm:skin', null, (d) => {
           // Chưa có trong túi thì thêm một cái (ghi sổ cái), rồi đổi chỗ với skin đang mặc.

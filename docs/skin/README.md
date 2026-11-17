@@ -8,6 +8,7 @@
 
 - `skin` là **ô ngoại hình** (`COSMETIC_SLOTS` trong `packages/shared/src/types.ts`), cố ý **không** nằm trong `EQUIP_SLOTS`. Mọi chỗ tính chỉ số, bộ, cường hóa, khảm, tẩy luyện, phân giải, Thăng Bậc duyệt `EQUIP_SLOTS` hoặc gọi `isEquipSlot` nên tự bỏ qua skin. `WEAR_SLOTS` = ô có chỉ số + ô ngoại hình, dùng ở chỗ lưu, đếm vật phẩm và mặc/tháo (`isWearSlot`).
 - Vật phẩm skin: `kind: "skin"`, không có `stats`, trường `skin` trỏ mảnh áo phủ toàn thân (client nạp `<skin>_nam|nu`).
+- **Giới hạn giới tính**: vật phẩm có `gender: "m" | "f"` chỉ nhân vật đúng giới mặc được (`wearableBy` trong `packages/shared/src/items.ts`). Server từ chối ở `onEquip` và `/gm skin` (báo `sys.equip_gender`, món vẫn ở trong túi); tooltip ghi "Chỉ dành cho nhân vật nữ/nam", tô đỏ khi nhân vật của mình không mặc được. Nếu giới tính đổi sau khi mặc (lệnh GM), `PlayerS.sn` về rỗng nên skin không hiển thị, món vẫn nằm ở ô và tháo ra bình thường. **Varkessa chỉ cho nhân vật nữ** (quyết định người dùng).
 - **Sở hữu** = món nằm trong túi của chính người chơi. Mặc/tháo đi chung đường với trang bị: `C.EQUIP {slot: <ô túi>, r}` và `C.UNEQUIP {slot: "skin", r}` → `GameSim.onEquip/onUnequip` → `Character.tx` (một transaction, khóa idem, ledger ghi dòng `noop` `equip:skin:<id>` / `unequip:skin:<id>`). Cùng các chặn của trang bị: đang chết, tỉ thí, tâm ma, giãn 200 ms.
 - Lưu trong cột `characters.equip` (khóa `skin`), **không thêm cột DB**. `InvDraft`, `sanitizeEquip`, bước migrate trong `db.ts`, `equipCount` và `ledger:check` đều duyệt `WEAR_SLOTS`; thiếu một chỗ là món ở ô skin bị mất ở giao dịch kế tiếp hoặc lệch sổ cái.
 - Hiển thị cho người khác: `PlayerS.sn` (id vật phẩm skin, `@view`). Client suy asset từ `ItemDef.skin`.
@@ -34,13 +35,13 @@ Model nguồn (Sketchfab) là lưới triệu tam giác, không xương, vũ kh�
      tools/blender/skins/varkessa.json <dtl-asset-source> --preview <thư mục ảnh> [--cache <thư mục tạm>] [--stage cut|low|bake|rig]
    ```
 
-2. **`retarget_set.py` chế độ `rig`** qua `pnpm assets:build --only set_skin_<tên>_nam|nu` (meta `import.kind: "external"`, `budgetClass: "skin"`, `retarget.rigidRoot: true`): đặt lại tư thế nghỉ theo từng thân nền, co giãn theo chiều dài xương. `rigidRoot` giữ hướng xương hông (hướng "trung bình xương con" của hông gần bằng 0 nên xoay rất nhiễu, làm đuôi hất ngang).
+2. **`retarget_set.py` chế độ `rig`** qua `pnpm assets:build --only set_skin_<tên>_<nam|nu>` (meta `import.kind: "external"`, `budgetClass: "skin"`, `retarget.rigidRoot: true`): đặt lại tư thế nghỉ theo từng thân nền, co giãn theo chiều dài xương. `rigidRoot` giữ hướng xương hông (hướng "trung bình xương con" của hông gần bằng 0 nên xoay rất nhiễu, làm đuôi hất ngang).
 
 Cần `DTL_ASSET_SOURCE` trỏ tới kho nguồn và GLB thô của thân nền (`node tools/blender/run.mjs --only chr_kiem_tu_nam`, tương tự `_nu`).
 
 ## Varkessa: số đo
 
-| | Nguồn | Trong game (mỗi giới một asset) |
+| | Nguồn | Trong game (`set_skin_varkessa_nu`) |
 | --- | --- | --- |
 | Tam giác | 1.952.526 (17 mảnh, 1 mặt liền) | LOD0 19.908 · LOD1 ~7.890 · LOD2 ~2.970 |
 | Texture | 3 ảnh, 7,5 MB | màu + normal 1024² (WebP) |
@@ -59,7 +60,7 @@ Trong game (WebGPU, preset Cao, sân tông môn, một người mặc): draw cal
 
 - **Tóc và đuôi không có xương riêng**: đuôi cứng theo hông, tóc theo đầu/ngực. Tóc bên trái xuyên vai và tay khi tay buông; đuôi quét xuyên đất khi ngồi/ngã.
 - **Bàn tay không có ngón** (một khối theo xương bàn tay); tay phải còn mẩu chuôi kiếm trong nắm tay sau khi cắt đại kiếm.
-- **Cùng một hình cho nam và nữ**: skin thay cả thân nên nhân vật nam mặc vào cũng là dáng nữ của Varkessa (chỉ khác chiều cao theo bộ xương).
+- **Chỉ có bản cho thân nữ** (`set_skin_varkessa_nu`); bản dựng thử trên thân nam đã gỡ khỏi repo vì skin giới hạn cho nhân vật nữ. Skin dùng chung hai giới sau này cần một asset cho mỗi thân (`<skin>_nam`, `<skin>_nu`).
 - Khớp xương đo bằng tay từ ảnh; chiều sâu khớp bên trái lấy đối xứng bên phải.
 - Trọng số chỉ được soát bằng mắt ở 6 tư thế × 2 giới (đứng, chạy, ngự kiếm, đả tọa, chém, chết), chưa chạy `outfit_check.py` và chưa soát từng clip K-3.
 - Trang phục hở; tên hiển thị "Xích Diễm Ma Cơ" là đề xuất, chưa qua `lore-keeper`.

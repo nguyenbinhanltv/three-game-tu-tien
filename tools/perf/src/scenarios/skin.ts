@@ -11,12 +11,12 @@ import { centerClip, snap } from '../lib/shot';
 export default {
   name: 'skin',
   desc: 'Skin toàn thân (ô ngoại hình) nam/nữ: đứng 3 hướng, chạy, bay, đả tọa, chém, chết; soát trọng số và xuyên lưới',
-  usage: '[--ids itm_skin_varkessa] [--genders m,f] [--set <id bộ đang mặc bên dưới>] [--only still|motion] [--dist 3.6] [--size 1100x900]',
+  usage: '[--ids itm_skin_varkessa] [--genders f|m,f (skin giới hạn giới tính: sai giới thì server từ chối, ảnh ra hình thường)] [--set <id bộ đang mặc bên dưới>] [--only still|motion] [--dist 3.6] [--size 1100x900]',
   async run(r) {
     const [vw, vh] = size('1100x900');
     const dist = num('--dist', 3.6);
     const only = opt('--only', 'all');
-    for (const g of list('--genders', 'm,f')) {
+    for (const g of list('--genders', 'f')) {
       const { ctx, page } = await r.open({ name: `Skin${g}`, viewport: [vw, vh], dpr: 2, quality: 'high', look: { g }, hide: 'hud', warnings: /models/ });
       await gm(page, 'level 20', 1600);
       await gm(page, 'god on', 1600);

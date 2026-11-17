@@ -43,6 +43,8 @@ export interface ItemDef {
   model?: string;
   /** Skin (kind skin): mảnh áo phủ toàn thân, client nạp `<skin>_nam|nu` như áo bộ (`OUTFITS`), che hết thân nền. */
   skin?: string;
+  /** Giới hạn giới tính nhân vật được mặc ('m' | 'f'); thiếu = ai cũng mặc được. Server kiểm khi mặc (`wearableBy`). */
+  gender?: 'm' | 'f';
   reqLevel?: number;
   stats?: StatBlock;
   /** id bộ trang bị (P3-4): món này thuộc bộ nào. Món có `set` không rơi theo bảng chung, chỉ chế tạo hoặc rơi theo `EquipRollDef.set`. */

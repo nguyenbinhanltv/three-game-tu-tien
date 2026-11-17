@@ -1506,6 +1506,11 @@ export class Game {
     this.send(C.MARK, pos ? { x: pos.x, z: pos.z } : { clear: true });
   }
 
+  /** Giới tính nhân vật của mình ('m' | 'f'; '' khi chưa vào game). Chỉ để UI hiển thị, server mới là bên quyết định. */
+  myGender(): string {
+    return this.ents?.localGender() ?? '';
+  }
+
   send(type: string, msg?: unknown): void {
     if (this.leaving) return;
     this.room.send(type, msg);

@@ -1188,6 +1188,11 @@ export class EntityManager {
     return list[(i + 1) % list.length].id;
   }
 
+  /** Giới tính nhân vật của mình ('m' | 'f') theo trạng thái server; UI dùng để báo món giới hạn giới tính. */
+  localGender(): string {
+    return this.localLook.g;
+  }
+
   /** Khóa ngoại hình của mình (xem trước nhân vật 3D, TD-C): đổi khi đổi đồ, giới tính, màu áo, kiếm. */
   previewKey(): string {
     return JSON.stringify(this.localLook);

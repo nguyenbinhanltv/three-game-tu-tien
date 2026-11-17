@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { COSMETIC_SLOTS, EQUIP_SLOTS, groundAt, isEquipSlot, isWearSlot, WEAR_SLOTS } from '@dtl/shared';
+import { COSMETIC_SLOTS, EQUIP_SLOTS, groundAt, isEquipSlot, isWearSlot, wearableBy, WEAR_SLOTS } from '@dtl/shared';
 
 // Ô ngoại hình (skin, ô thứ 10): chỉ đổi hình, không chỉ số; mặc/tháo qua giao dịch có idem + ledger như trang bị.
 process.env.DB_FILE = ':memory:';
@@ -11,13 +11,14 @@ let WorldState: typeof import('../state').WorldState;
 let Character: typeof import('./character').Character;
 let sqlite: typeof import('../db').sqlite;
 let ITEM: typeof import('@dtl/content').ITEM;
+let APPEARANCE: typeof import('@dtl/content').APPEARANCE;
 
 beforeAll(async () => {
   ({ GameSim } = await import('./sim'));
   ({ WorldState } = await import('../state'));
   ({ Character } = await import('./character'));
   ({ sqlite } = await import('../db'));
-  ({ ITEM } = await import('@dtl/content'));
+  ({ ITEM, APPEARANCE } = await import('@dtl/content'));
 });
 
 const SKIN = 'itm_skin_varkessa';
@@ -25,15 +26,16 @@ const X = 2040;
 const Z = 2040;
 let acc = 61_000;
 
-function setup(test = false) {
+/** `g`: giới tính nhân vật thử; skin Varkessa chỉ dành cho nữ nên mặc định là nữ. */
+function setup(test = false, g: 'm' | 'f' = 'f') {
   const said: string[] = [];
   const host = { broadcast: () => undefined, broadcastExcept: () => undefined };
   const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
   // Linh căn cố định để so chỉ số trước/sau không phụ thuộc lượt roll.
-  const char = Character.create(acc++, 'Sk' + acc, null, 'kim' as never);
+  const char = Character.create(acc++, 'Sk' + acc, { g, dye: APPEARANCE.defaultDye }, 'kim' as never);
   char.level = 12;
   char.recalc();
-  const client = { sessionId: 'c' + acc, send: (_type: string, msg: unknown) => said.push(JSON.stringify(msg)) };
+  const client = { sessionId: 'c' + acc, send: (type: string, msg: unknown) => said.push(type + ' ' + JSON.stringify(msg)) };
   const p: Ent = sim.addPlayer(client as never, char, test, 's' + acc);
   p.move.x = X;
   p.move.z = Z;
@@ -115,6 +117,53 @@ describe('ô ngoại hình (skin)', () => {
     p.equipCdAt = 0;
     sim.onUnequip(p, { slot: 'skin', r: 'skin-un-0003' });
     expect(p.char.equip.skin?.id).toBe(SKIN);
+  });
+
+  describe('giới hạn giới tính (Varkessa chỉ cho nhân vật nữ)', () => {
+    it('hàm thuần: món không giới hạn ai cũng mặc được, món có giới hạn chỉ đúng giới', () => {
+      expect(ITEM.get(SKIN)!.gender).toBe('f');
+      expect(wearableBy(ITEM.get(SKIN), 'f')).toBe(true);
+      expect(wearableBy(ITEM.get(SKIN), 'm')).toBe(false);
+      expect(wearableBy(ITEM.get(SKIN), '')).toBe(false);
+      expect(wearableBy(ITEM.get('itm_moc_kiem'), 'm')).toBe(true);
+      expect(wearableBy(undefined, 'm')).toBe(true);
+    });
+
+    it('nhân vật nam: server từ chối mặc, món vẫn nằm trong túi, có báo lý do, không ghi ledger mặc', () => {
+      const { sim, p, said } = setup(false, 'm');
+      p.char.tx('test:give', null, (d) => d.add(SKIN, 1));
+      sim.onEquip(p, { slot: 0, r: 'skin-gd-0001' });
+      expect(p.char.equip.skin).toBeUndefined();
+      expect(p.char.inv[0]).toEqual({ id: SKIN, n: 1 });
+      expect(said.some((m) => m.includes('sys.equip_gender'))).toBe(true);
+      expect(ledger(p.char.id).some((r) => r.reason.startsWith('equip:skin'))).toBe(false);
+      sim.tick(50);
+      expect(p.s.sn).toBe('');
+    });
+
+    it('/gm skin với nhân vật nam (tài khoản thử) cũng bị từ chối, không sinh vật phẩm', () => {
+      const { sim, p } = setup(true, 'm');
+      sim.onChat(p, { m: `/gm skin ${SKIN}` });
+      expect(p.char.equip.skin).toBeUndefined();
+      expect(p.char.inv.some((x) => x?.id === SKIN)).toBe(false);
+      expect(ledger(p.char.id).filter((r) => r.ref === SKIN)).toHaveLength(0);
+    });
+
+    it('đổi giới tính sau khi mặc: skin không còn hiển thị cho người khác, nhưng món vẫn ở ô và tháo ra được', () => {
+      const { sim, p } = setup();
+      p.char.tx('test:give', null, (d) => d.add(SKIN, 1));
+      sim.onEquip(p, { slot: 0, r: 'skin-gd-0002' });
+      sim.tick(50);
+      expect(p.s.sn).toBe(SKIN);
+      p.char.appearance = { ...p.char.appearance, g: 'm' };
+      sim.tick(50);
+      expect(p.s.sn).toBe('');
+      expect(p.char.equip.skin?.id).toBe(SKIN);
+      p.equipCdAt = 0;
+      sim.onUnequip(p, { slot: 'skin', r: 'skin-gd-0003' });
+      expect(p.char.equip.skin).toBeUndefined();
+      expect(p.char.inv.filter((x) => x?.id === SKIN)).toHaveLength(1);
+    });
   });
 
   describe('DB hỏng: món nằm sai ô không bị lặng lẽ xóa', () => {
