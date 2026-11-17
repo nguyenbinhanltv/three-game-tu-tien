@@ -1,0 +1,96 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "set_co_thanh_huyen_giap_v2_nam",
+  "type": "chr",
+  "budgetClass": "outfit",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 14000,
+    "texture": 1024
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "chr/set_co_thanh_huyen_giap/tripo/raw_ao_ngoai_v01.glb",
+    "size": {
+      "height": 1.0
+    },
+    "orient": "none",
+    "yaw": 0,
+    "post": "tools/blender/outfit_build.py",
+    "outfit": {
+      "player": "chr_v2_nam",
+      "dir": "chr/set_co_thanh_huyen_giap/tripo",
+      "palette": {
+        "main": "#262B38",
+        "sec": "#6F6A5E",
+        "trim": "#BA9A55",
+        "accent": "#E2BE62"
+      },
+      "fitPose": {
+        "armDown": 70
+      },
+      "atlas": 1024,
+      "gain": 1.3,
+      "proc": {
+        "dai_tua": {
+          "base": "#2A2824",
+          "metal": "#A98A4A",
+          "accent": "#D9B45A",
+          "edge": 0.5
+        },
+        "trang_suc_dau": {
+          "base": "#2B3040",
+          "metal": "#A98A4A",
+          "accent": "#D9B45A",
+          "top": 0.22,
+          "edge": 0.6
+        },
+        "ung": {
+          "base": "#605D55",
+          "metal": "#A98A4A",
+          "accent": "#D9B45A",
+          "top": 0.06,
+          "toe": true,
+          "edge": 0.3
+        }
+      },
+      "pieces": {
+        "ao_ngoai": {
+          "fit": {
+            "wscale": 0.7,
+            "bottom": "ankle_z+0.6*(knee_z-ankle_z)"
+          },
+          "legBlend": 0.9,
+          "smooth": 4,
+          "armFix": 0.09,
+          "spring": {
+            "count": 3,
+            "minDist": 0.12,
+            "weight": 0.6
+          }
+        },
+        "vai_giap": {
+          "fit": {
+            "x": "shoulder_span+0.13"
+          }
+        },
+        "trang_suc_dau": {
+          "fit": {
+            "x": "0.22",
+            "top": "head_z+0.17"
+          }
+        },
+        "lop_duoi": {
+          "islands": true,
+          "legBlend": 0.9,
+          "spring": false
+        }
+      }
+    }
+  },
+  "license": {
+    "source": "Tripo web app (image→3D H3.1) + Codex (concept)",
+    "owner": "dự án",
+    "date": "2026-11-17"
+  }
+}

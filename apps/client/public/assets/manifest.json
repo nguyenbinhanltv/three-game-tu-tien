@@ -8060,6 +8060,174 @@
         }
       }
     },
+    "set_co_thanh_huyen_giap_v2_nam": {
+      "id": "set_co_thanh_huyen_giap_v2_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_co_thanh_huyen_giap_v2_nam.glb",
+      "file": "set_co_thanh_huyen_giap_v2_nam.a5797c2a4f.glb",
+      "bytes": 3874380,
+      "rawBytes": 3798444,
+      "triangles": 12702,
+      "rawTriangles": 12702,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 64,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_co_thanh_huyen_giap_v2_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_v2_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_v2_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_v2_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12702
+        },
+        {
+          "level": 1,
+          "triangles": 5081,
+          "target": 5081
+        },
+        {
+          "level": 2,
+          "triangles": 1901,
+          "target": 1905
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.0863,
+          "height": 1.7182,
+          "depth": 0.7721,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.0863,
+          "height": 1.7182,
+          "depth": 0.7721,
+          "minY": 0
+        }
+      }
+    },
+    "set_co_thanh_huyen_giap_v2_nu": {
+      "id": "set_co_thanh_huyen_giap_v2_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_co_thanh_huyen_giap_v2_nu.glb",
+      "file": "set_co_thanh_huyen_giap_v2_nu.ab7c83dac0.glb",
+      "bytes": 3878776,
+      "rawBytes": 3798232,
+      "triangles": 12700,
+      "rawTriangles": 12700,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 64,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_co_thanh_huyen_giap_v2_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_v2_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_v2_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_co_thanh_huyen_giap_v2_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12700
+        },
+        {
+          "level": 1,
+          "triangles": 5080,
+          "target": 5080
+        },
+        {
+          "level": 2,
+          "triangles": 1899,
+          "target": 1905
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.6993,
+          "height": 1.6495,
+          "depth": 0.7239,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.6993,
+          "height": 1.6495,
+          "depth": 0.7239,
+          "minY": 0
+        }
+      }
+    },
     "set_de_tu_v2_nam": {
       "id": "set_de_tu_v2_nam",
       "class": "outfit",
@@ -8338,6 +8506,174 @@
           "width": 1.5915,
           "height": 1.6433,
           "depth": 0.3992,
+          "minY": 0
+        }
+      }
+    },
+    "set_dia_long_ho_giap_v2_nam": {
+      "id": "set_dia_long_ho_giap_v2_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_dia_long_ho_giap_v2_nam.glb",
+      "file": "set_dia_long_ho_giap_v2_nam.78e0279454.glb",
+      "bytes": 4846544,
+      "rawBytes": 4709964,
+      "triangles": 12199,
+      "rawTriangles": 12199,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 75,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_dia_long_ho_giap_v2_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_dia_long_ho_giap_v2_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_dia_long_ho_giap_v2_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_dia_long_ho_giap_v2_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12199
+        },
+        {
+          "level": 1,
+          "triangles": 4879,
+          "target": 4880
+        },
+        {
+          "level": 2,
+          "triangles": 2003,
+          "target": 1830
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.7449,
+          "height": 1.7182,
+          "depth": 0.4597,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.7449,
+          "height": 1.7182,
+          "depth": 0.4597,
+          "minY": 0
+        }
+      }
+    },
+    "set_dia_long_ho_giap_v2_nu": {
+      "id": "set_dia_long_ho_giap_v2_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_dia_long_ho_giap_v2_nu.glb",
+      "file": "set_dia_long_ho_giap_v2_nu.5b74adce54.glb",
+      "bytes": 4839616,
+      "rawBytes": 4709576,
+      "triangles": 12195,
+      "rawTriangles": 12195,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 75,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_dia_long_ho_giap_v2_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_dia_long_ho_giap_v2_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_dia_long_ho_giap_v2_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_dia_long_ho_giap_v2_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12195
+        },
+        {
+          "level": 1,
+          "triangles": 4875,
+          "target": 4878
+        },
+        {
+          "level": 2,
+          "triangles": 1980,
+          "target": 1829
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.5225,
+          "height": 1.6495,
+          "depth": 0.4349,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.5225,
+          "height": 1.6495,
+          "depth": 0.4349,
           "minY": 0
         }
       }
@@ -9332,6 +9668,174 @@
         }
       }
     },
+    "set_luu_ly_dan_y_v2_nam": {
+      "id": "set_luu_ly_dan_y_v2_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_luu_ly_dan_y_v2_nam.glb",
+      "file": "set_luu_ly_dan_y_v2_nam.2bb36096fb.glb",
+      "bytes": 4129064,
+      "rawBytes": 4036876,
+      "triangles": 10821,
+      "rawTriangles": 10821,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 64,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_luu_ly_dan_y_v2_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_luu_ly_dan_y_v2_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_luu_ly_dan_y_v2_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_luu_ly_dan_y_v2_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 10821
+        },
+        {
+          "level": 1,
+          "triangles": 4321,
+          "target": 4328
+        },
+        {
+          "level": 2,
+          "triangles": 1620,
+          "target": 1623
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.2377,
+          "height": 1.7382,
+          "depth": 0.5671,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.2377,
+          "height": 1.7382,
+          "depth": 0.5671,
+          "minY": 0
+        }
+      }
+    },
+    "set_luu_ly_dan_y_v2_nu": {
+      "id": "set_luu_ly_dan_y_v2_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_luu_ly_dan_y_v2_nu.glb",
+      "file": "set_luu_ly_dan_y_v2_nu.6e205722c5.glb",
+      "bytes": 4112276,
+      "rawBytes": 4033176,
+      "triangles": 10821,
+      "rawTriangles": 10821,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 64,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_luu_ly_dan_y_v2_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_luu_ly_dan_y_v2_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_luu_ly_dan_y_v2_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_luu_ly_dan_y_v2_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 10821
+        },
+        {
+          "level": 1,
+          "triangles": 4319,
+          "target": 4328
+        },
+        {
+          "level": 2,
+          "triangles": 1601,
+          "target": 1623
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.038,
+          "height": 1.6695,
+          "depth": 0.5282,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.038,
+          "height": 1.6695,
+          "depth": 0.5282,
+          "minY": 0
+        }
+      }
+    },
     "set_phuc_mach_dan_bao_nam": {
       "id": "set_phuc_mach_dan_bao_nam",
       "class": "outfit",
@@ -9500,6 +10004,174 @@
         }
       }
     },
+    "set_phuc_mach_dan_bao_v2_nam": {
+      "id": "set_phuc_mach_dan_bao_v2_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_phuc_mach_dan_bao_v2_nam.glb",
+      "file": "set_phuc_mach_dan_bao_v2_nam.ed966f75cb.glb",
+      "bytes": 4379316,
+      "rawBytes": 4244000,
+      "triangles": 11045,
+      "rawTriangles": 11045,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 75,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_phuc_mach_dan_bao_v2_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_phuc_mach_dan_bao_v2_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_phuc_mach_dan_bao_v2_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_phuc_mach_dan_bao_v2_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11045
+        },
+        {
+          "level": 1,
+          "triangles": 4662,
+          "target": 4418
+        },
+        {
+          "level": 2,
+          "triangles": 1656,
+          "target": 1657
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.5835,
+          "height": 1.7382,
+          "depth": 0.5142,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.5835,
+          "height": 1.7382,
+          "depth": 0.5142,
+          "minY": 0
+        }
+      }
+    },
+    "set_phuc_mach_dan_bao_v2_nu": {
+      "id": "set_phuc_mach_dan_bao_v2_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_phuc_mach_dan_bao_v2_nu.glb",
+      "file": "set_phuc_mach_dan_bao_v2_nu.2358d50cbc.glb",
+      "bytes": 4373132,
+      "rawBytes": 4243684,
+      "triangles": 11045,
+      "rawTriangles": 11045,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 75,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_phuc_mach_dan_bao_v2_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_phuc_mach_dan_bao_v2_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_phuc_mach_dan_bao_v2_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_phuc_mach_dan_bao_v2_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11045
+        },
+        {
+          "level": 1,
+          "triangles": 4596,
+          "target": 4418
+        },
+        {
+          "level": 2,
+          "triangles": 1647,
+          "target": 1657
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.532,
+          "height": 1.6695,
+          "depth": 0.4885,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.532,
+          "height": 1.6695,
+          "depth": 0.4885,
+          "minY": 0
+        }
+      }
+    },
     "set_than_tang_dan_bao_nam": {
       "id": "set_than_tang_dan_bao_nam",
       "class": "outfit",
@@ -9664,6 +10336,174 @@
           "width": 1.5569,
           "height": 1.6633,
           "depth": 0.6022,
+          "minY": 0
+        }
+      }
+    },
+    "set_than_tang_dan_bao_v2_nam": {
+      "id": "set_than_tang_dan_bao_v2_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_than_tang_dan_bao_v2_nam.glb",
+      "file": "set_than_tang_dan_bao_v2_nam.1f0cf5605b.glb",
+      "bytes": 4143220,
+      "rawBytes": 4024608,
+      "triangles": 11403,
+      "rawTriangles": 11403,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 76,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_than_tang_dan_bao_v2_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_v2_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_v2_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_v2_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11403
+        },
+        {
+          "level": 1,
+          "triangles": 4560,
+          "target": 4561
+        },
+        {
+          "level": 2,
+          "triangles": 1690,
+          "target": 1710
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8347,
+          "height": 1.7382,
+          "depth": 0.6847,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.8347,
+          "height": 1.7382,
+          "depth": 0.6847,
+          "minY": 0
+        }
+      }
+    },
+    "set_than_tang_dan_bao_v2_nu": {
+      "id": "set_than_tang_dan_bao_v2_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_than_tang_dan_bao_v2_nu.glb",
+      "file": "set_than_tang_dan_bao_v2_nu.14c44be33d.glb",
+      "bytes": 4138704,
+      "rawBytes": 4024164,
+      "triangles": 11403,
+      "rawTriangles": 11403,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 76,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_than_tang_dan_bao_v2_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_v2_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_v2_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_than_tang_dan_bao_v2_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11403
+        },
+        {
+          "level": 1,
+          "triangles": 4546,
+          "target": 4561
+        },
+        {
+          "level": 2,
+          "triangles": 1698,
+          "target": 1710
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.0381,
+          "height": 1.6695,
+          "depth": 0.6377,
+          "minY": 0
+        },
+        "build": {
+          "width": 2.0381,
+          "height": 1.6695,
+          "depth": 0.6377,
           "minY": 0
         }
       }
@@ -9911,6 +10751,174 @@
         }
       }
     },
+    "set_tinh_khuyet_kiem_bao_v2_nam": {
+      "id": "set_tinh_khuyet_kiem_bao_v2_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_tinh_khuyet_kiem_bao_v2_nam.glb",
+      "file": "set_tinh_khuyet_kiem_bao_v2_nam.9afc7fb8e6.glb",
+      "bytes": 4455244,
+      "rawBytes": 4339276,
+      "triangles": 11866,
+      "rawTriangles": 11866,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 76,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_tinh_khuyet_kiem_bao_v2_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_tinh_khuyet_kiem_bao_v2_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_tinh_khuyet_kiem_bao_v2_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_tinh_khuyet_kiem_bao_v2_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11866
+        },
+        {
+          "level": 1,
+          "triangles": 4737,
+          "target": 4746
+        },
+        {
+          "level": 2,
+          "triangles": 1773,
+          "target": 1780
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.7443,
+          "height": 1.7382,
+          "depth": 0.6498,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.7443,
+          "height": 1.7382,
+          "depth": 0.6498,
+          "minY": 0
+        }
+      }
+    },
+    "set_tinh_khuyet_kiem_bao_v2_nu": {
+      "id": "set_tinh_khuyet_kiem_bao_v2_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_tinh_khuyet_kiem_bao_v2_nu.glb",
+      "file": "set_tinh_khuyet_kiem_bao_v2_nu.4ba3e24b75.glb",
+      "bytes": 4453792,
+      "rawBytes": 4338604,
+      "triangles": 11870,
+      "rawTriangles": 11870,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 75,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_tinh_khuyet_kiem_bao_v2_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_tinh_khuyet_kiem_bao_v2_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_tinh_khuyet_kiem_bao_v2_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_tinh_khuyet_kiem_bao_v2_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 11870
+        },
+        {
+          "level": 1,
+          "triangles": 4742,
+          "target": 4748
+        },
+        {
+          "level": 2,
+          "triangles": 1780,
+          "target": 1781
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.4937,
+          "height": 1.6695,
+          "depth": 0.6052,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.4937,
+          "height": 1.6695,
+          "depth": 0.6052,
+          "minY": 0
+        }
+      }
+    },
     "set_van_kinh_thiet_giap_nam": {
       "id": "set_van_kinh_thiet_giap_nam",
       "class": "outfit",
@@ -10075,6 +11083,174 @@
           "width": 1.6927,
           "height": 1.6633,
           "depth": 0.4653,
+          "minY": 0
+        }
+      }
+    },
+    "set_van_kinh_thiet_giap_v2_nam": {
+      "id": "set_van_kinh_thiet_giap_v2_nam",
+      "class": "outfit",
+      "source": "assets/build/raw/set_van_kinh_thiet_giap_v2_nam.glb",
+      "file": "set_van_kinh_thiet_giap_v2_nam.2c207375c0.glb",
+      "bytes": 4813952,
+      "rawBytes": 4735828,
+      "triangles": 12013,
+      "rawTriangles": 12013,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 66,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_van_kinh_thiet_giap_v2_nam_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_van_kinh_thiet_giap_v2_nam_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_van_kinh_thiet_giap_v2_nam_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_van_kinh_thiet_giap_v2_nam_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12013
+        },
+        {
+          "level": 1,
+          "triangles": 4805,
+          "target": 4805
+        },
+        {
+          "level": 2,
+          "triangles": 1802,
+          "target": 1802
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.9047,
+          "height": 1.7382,
+          "depth": 0.449,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.9047,
+          "height": 1.7382,
+          "depth": 0.449,
+          "minY": 0
+        }
+      }
+    },
+    "set_van_kinh_thiet_giap_v2_nu": {
+      "id": "set_van_kinh_thiet_giap_v2_nu",
+      "class": "outfit",
+      "source": "assets/build/raw/set_van_kinh_thiet_giap_v2_nu.glb",
+      "file": "set_van_kinh_thiet_giap_v2_nu.02961826e5.glb",
+      "bytes": 4812584,
+      "rawBytes": 4735592,
+      "triangles": 12011,
+      "rawTriangles": 12011,
+      "lod0Cap": 14000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 66,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "set_van_kinh_thiet_giap_v2_nu_emissive",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "set_van_kinh_thiet_giap_v2_nu_normal",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "set_van_kinh_thiet_giap_v2_nu_color",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "set_van_kinh_thiet_giap_v2_nu_orm",
+          "mimeType": "image/png",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12011
+        },
+        {
+          "level": 1,
+          "triangles": 4804,
+          "target": 4804
+        },
+        {
+          "level": 2,
+          "triangles": 1802,
+          "target": 1802
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.717,
+          "height": 1.6695,
+          "depth": 0.4174,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.717,
+          "height": 1.6695,
+          "depth": 0.4174,
           "minY": 0
         }
       }
