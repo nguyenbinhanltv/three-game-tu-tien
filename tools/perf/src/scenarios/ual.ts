@@ -31,7 +31,7 @@ export default {
             query: { ...(chr === 'v2' && { chr: 'v2' }), ...(v === 'old' && { ual: 0 }) },
             hide: 'hud',
             warnings: /models/,
-            recordVideo: dir,
+            video: dir,
           });
           await gm(page, 'level 12', 1500);
           await gm(page, 'god on', 1200);

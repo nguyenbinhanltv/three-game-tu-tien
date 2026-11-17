@@ -398,6 +398,10 @@ interface Hazard extends HazardGeom {
   guard?: GuardCfg;
   /** Giảm sát thương của tia khóa mệnh theo mức buff phòng ngự (`final.defMul`/`defMaxCut` của kiếp). */
   cut?: { mul: number; max: number };
+  /** Trận môn khắc chế (Thiên Nhân Kiếp): ai đứng trong vòng này lúc nổ giảm `cut` và nhận cờ `ke`. */
+  seal?: { x: number; z: number; r: number; cut: number };
+  /** Luôn trúng chủ kiếp dù đứng ngoài vòng (không né bằng cách rời sân); người khác vẫn xét vị trí. Khác `lock`: không có giảm sát thương theo đan. */
+  reach?: boolean;
   /** Nguồn: id quái, hoặc sid người độ kiếp. Thiên kiếp trúng cả người ngoài đứng trong vòng, nhưng không giết họ (xem `tickHazards`). */
   src: string;
 }
@@ -497,7 +501,8 @@ export class GameSim {
   /** Lõi nhịp độ kiếp theo dữ liệu (E1-F, game/trib.ts). */
   private readonly tribSys = new TribSystem({
     now: () => this.now,
-    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, hot) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, undefined, hot),
+    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, hot, extra) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, extra?.mv, hot, extra?.dur ?? 0, extra?.seal, extra?.reach),
+    damage: (p, n, ke) => this.damagePlayer(p, n, p.sid, true, ke),
     fx: (m) => this.fx(m),
     isDead: (p) => this.isDead(p),
     nextGrp: () => this.nextHazardGrp(),
@@ -3338,9 +3343,9 @@ export class GameSim {
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
   /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false, dur = 0): void {
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false, dur = 0, seal?: Hazard['seal'], reach = false): void {
     const mon = this.monById.get(src) ?? null;
-    this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined, guard, cut });
+    this.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined, guard, cut, seal, reach: reach || undefined });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
     // Tia sét có hình theo seed để mọi client thấy cùng một tia (chỉ là lớp hình).
     if (kind === 'lightning') msg.sd = visualSeed();
@@ -3379,8 +3384,9 @@ export class GameSim {
         // Tia cuối khóa mệnh: chủ kiếp luôn trúng (không né bằng chạy hay bay); người khác chỉ trúng khi đứng trong vòng.
         // Chỉ khi kiếp còn chạy: chết/hồi sinh/hủy kiếp trước lúc nổ thì tia mất khóa và rơi về kiểm vị trí.
         const locked = !!h.lock && h.src === p.sid && !!p.trib;
-        if (!locked && !inHazard(h, p.move.x, p.move.z)) continue;
-        if (!locked && p.move.y - this.terrain.groundAt(p.move.x, p.move.z) > 8) continue;
+        const reached = !!h.reach && h.src === p.sid && !!p.trib;
+        if (!locked && !reached && !inHazard(h, p.move.x, p.move.z)) continue;
+        if (!locked && !reached && p.move.y - this.terrain.groundAt(p.move.x, p.move.z) > 8) continue;
         if (h.grp) {
           const key = h.grp + ':' + p.sid;
           if (hitGrp.has(key)) continue;
@@ -3409,8 +3415,17 @@ export class GameSim {
           n = Math.min(n, p.char.hp - 1);
           if (n <= 0) continue;
         }
-        if (h.guard && locked) n -= this.shareToGuards(p, n, h);
-        this.damagePlayer(p, n, h.src, true);
+        // Trận môn khắc chế (Thiên Nhân Kiếp, E4-D): đứng trong vòng lúc nổ thì giảm `cut`, báo cờ `ke`.
+        let ke: 1 | undefined;
+        if (h.seal && Math.hypot(p.move.x - h.seal.x, p.move.z - h.seal.z) <= h.seal.r) {
+          n *= 1 - h.seal.cut;
+          ke = 1;
+        }
+        // Tia khóa mệnh: thế thân thần niệm còn sống chắn thay một phần, rồi hộ pháp chắn phần của mình (tính trên sát thương gốc).
+        const full = n;
+        if (locked && h.lock) n -= this.tribSys.cloneAbsorb(p, n);
+        if (h.guard && locked) n -= this.shareToGuards(p, full, h);
+        this.damagePlayer(p, n, h.src, true, ke);
       }
     }
   }
@@ -3626,6 +3641,11 @@ export class GameSim {
   /** Xuất khiếu trong Tam Trọng Kiếp (E3-L; E3-K nối phím X thật vào đây). */
   onTribSoul(p: PlayerEnt): void {
     if (p.trib) this.tribSys.soul(p);
+  }
+
+  /** Phân thân thần niệm trong Thiên Nhân Kiếp (E4-D; E4-K nối phân thân thật cho ngoài kiếp). */
+  onTribClone(p: PlayerEnt): void {
+    if (p.trib) this.tribSys.clone(p);
   }
 
   private tickTribulation(p: PlayerEnt): void {

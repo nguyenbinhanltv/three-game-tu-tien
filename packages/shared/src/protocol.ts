@@ -86,6 +86,8 @@ export const C = {
   BREAKTHROUGH: 'brk',
   /** Xuất khiếu trong Tam Trọng Kiếp (E3-L, móc tạm cho tới khi E3-K nối phím X thật): không tham số. */
   TRIB_SOUL: 'tsoul',
+  /** Phân thân thần niệm trong Thiên Nhân Kiếp (E4-D, phím G): không tham số. */
+  TRIB_CLONE: 'tclone',
   MOVE_ITEM: 'mv',
   /** Sắp xếp túi: `{ r }` (xem docs/inventory.md). */
   INV_SORT: 'isort',

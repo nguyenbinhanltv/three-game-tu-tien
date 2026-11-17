@@ -5747,6 +5747,62 @@
         }
       }
     },
+    "prop_kiem_tan_hoa": {
+      "id": "prop_kiem_tan_hoa",
+      "class": "weapon",
+      "source": "assets/build/raw/prop_kiem_tan_hoa.glb",
+      "file": "prop_kiem_tan_hoa.cb886b2702.glb",
+      "bytes": 538432,
+      "rawBytes": 1140880,
+      "triangles": 3000,
+      "rawTriangles": 25940,
+      "lod0Cap": 3000,
+      "skinned": false,
+      "quantized": true,
+      "bones": 0,
+      "animations": [],
+      "ktx2": false,
+      "textures": [
+        {
+          "name": "prop_kiem_tan_hoa_normal",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "prop_kiem_tan_hoa_color",
+          "mimeType": "image/png",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 3000
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 0.2103,
+          "height": 0.951,
+          "depth": 0.044,
+          "minY": 0
+        },
+        "build": {
+          "width": 0.2101,
+          "height": 0.951,
+          "depth": 0.044,
+          "minY": 0
+        }
+      }
+    },
     "prop_kiem_thanh_phong": {
       "id": "prop_kiem_thanh_phong",
       "class": "weapon",

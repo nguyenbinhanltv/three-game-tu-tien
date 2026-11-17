@@ -97,7 +97,7 @@ function tripoJobs() {
       if (fs.existsSync(file)) metas.push({ file, data: JSON.parse(fs.readFileSync(file, 'utf8')) });
     }
   }
-  const wanted = metas.filter((m) => m.data.import?.kind === 'tripo' && (!only || m.data.id === only));
+  const wanted = metas.filter((m) => ['tripo', 'external'].includes(m.data.import?.kind) && (!only || m.data.id === only));
   if (wanted.length === 0) return [];
   const src = sourceRoot();
   if (!src) {
