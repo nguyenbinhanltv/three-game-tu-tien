@@ -42,6 +42,7 @@ describe('gộp draw call hiệu ứng (K-6)', () => {
     const b = new FxBatcher(pool);
     for (let i = 0; i < BATCH_CHUNK + 5; i++) pool.acquire(GEO_A, 'glow', 0xffffff, 1);
     b.flush();
+    b.flush();
     const meshes = b.root.children as THREE.InstancedMesh[];
     expect(meshes.length).toBe(2);
     expect(meshes.map((m) => m.count).sort((x, y) => x - y)).toEqual([5, BATCH_CHUNK]);
@@ -58,6 +59,9 @@ describe('gộp draw call hiệu ứng (K-6)', () => {
     hidden.visible = false;
     b.flush();
     const mesh = b.root.children[0] as THREE.InstancedMesh;
+    // Khung đầu của mảnh khai đủ BATCH_CHUNK instance (UBO ma trận của three dựng theo số này), từ khung sau mới đúng số tay cầm.
+    expect(mesh.count).toBe(BATCH_CHUNK);
+    b.flush();
     expect(mesh.count).toBe(1);
     const g = mesh.geometry;
     const get = (n: string) => Array.from((g.getAttribute(n) as THREE.BufferAttribute).array.slice(0, 4)).map((v) => +v.toFixed(3));
