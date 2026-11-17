@@ -925,7 +925,13 @@ export class Game {
         return d;
       });
       // Cổng vào Kính Nguyệt Cung: thêm vành gương nguyệt quanh đĩa để thấy rõ cổng.
-      for (const g of gatesToDraw(id)) if (g.id === 'portal' && g.to === 'kinh_nguyet') this.gateDiscs.push(buildMoonGate(g.x, g.z));
+      for (const g of gatesToDraw(id)) {
+        if (g.id !== 'portal' || g.to !== 'kinh_nguyet') continue;
+        this.gateDiscs.push(buildMoonGate(g.x, g.z));
+        // Đĩa sáng nằm ngay trước mặt gương (tâm vòm cao 5 m trên nền, lùi 0,3 m ra phía trước).
+        const disc = this.gateDiscs.find((d) => d.position.x === g.x && d.position.z === g.z && d.name !== 'moon-gate');
+        if (disc) { disc.position.y -= 3.6; disc.position.y += 5.0; disc.position.z += 0.32; disc.scale.set(0.9, 1.12, 1); }
+      }
       this.scene.add(...this.gateDiscs);
       for (const disc of this.gateDiscs) if (disc.name !== 'moon-gate') markBloom(disc.material as THREE.Material, 0.8);
       // Cung gương: vòng ra nằm trên sàn gương (cao hơn 0,08 m của sàn), không bị sàn cắt thành bán nguyệt.

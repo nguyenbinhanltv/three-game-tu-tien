@@ -209,18 +209,43 @@ export function buildPortalDisc(x: number = PORTAL_POS.x, z: number = PORTAL_POS
 }
 
 /**
- * Cổng gương nguyệt (E3-M, vào Kính Nguyệt Cung): vành tròn bạc xanh dựng đứng quanh đĩa cổng, hai trụ đá bên cạnh và bệ mỏng,
- * gộp một lưới (một draw call), màu đặc tối vừa phải để không lóa. Cùng hướng và tâm với `buildPortalDisc` (đĩa nằm trong vành).
+ * Cổng gương nguyệt (E3-M, vào Kính Nguyệt Cung): có khối nhìn rõ từ mọi hướng, không còn là mấy tấm mỏng.
+ * Bệ đá ba bậc, hai trụ bạc lam dày có đế và chóp, vòm torus dày, mặt gương là đĩa dày có viền sáng (hai lớp: viền bạc + lõi tối).
+ * Gộp một lưới (một draw call, ~1,5k tam giác) với màu đỉnh; `fog: false` để đọc được từ 60–100 m qua sương, viền sáng nhẹ không lóa.
+ * Cùng hướng và tâm với `buildPortalDisc` (đĩa cổng nằm trước mặt gương, mở về +z).
  */
 export function buildMoonGate(x: number, z: number): THREE.Mesh {
   const py = levelHeight(x, z);
-  const ring = new THREE.TorusGeometry(2.95, 0.3, 12, 44);
-  ring.scale(1, 1.25, 1);
-  ring.translate(0, 3.6, 0);
-  const box = (w: number, h: number, d: number, cx: number, cy: number) => new THREE.BoxGeometry(w, h, d).translate(cx, cy, 0);
-  const parts = [ring, box(0.9, 7.6, 0.9, -4.6, 3.8), box(0.9, 7.6, 0.9, 4.6, 3.8), box(1.3, 0.5, 1.3, -4.6, 7.9), box(1.3, 0.5, 1.3, 4.6, 7.9), box(10.2, 0.3, 1.8, 0, 0.15)];
-  const geo = mergeGeometries(parts.map((g) => (g.index ? g.toNonIndexed() : g)))!;
-  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x8a9db8, transparent: true, opacity: 0.92, depthWrite: true, fog: false }));
+  const paint = (g: THREE.BufferGeometry, color: number): THREE.BufferGeometry => {
+    const n = g.index ? g.toNonIndexed() : g;
+    const c = new THREE.Color(color);
+    const arr = new Float32Array(n.attributes.position.count * 3);
+    for (let i = 0; i < arr.length; i += 3) { arr[i] = c.r; arr[i + 1] = c.g; arr[i + 2] = c.b; }
+    n.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+    n.deleteAttribute('uv');
+    return n;
+  };
+  const SILVER = 0x6a84aa, STONE = 0x4a566e, DARK = 0x323c52, RIM = 0xbcd6f5, MIRROR = 0x1d2e4e;
+  const box = (w: number, h: number, d: number, cx: number, cy: number, cz: number, col: number) => paint(new THREE.BoxGeometry(w, h, d).translate(cx, cy, cz), col);
+  const parts: THREE.BufferGeometry[] = [
+    // Bệ tam cấp
+    box(13, 0.4, 5.6, 0, 0.2, 0, DARK), box(11, 0.4, 4.4, 0, 0.6, 0, STONE), box(9.2, 0.4, 3.2, 0, 1.0, 0, DARK),
+  ];
+  for (const sx of [-1, 1]) {
+    const cx = sx * 4.4;
+    parts.push(box(1.9, 0.6, 1.9, cx, 1.5, 0, STONE), box(1.3, 7.2, 1.3, cx, 5.4, 0, SILVER), box(1.7, 0.5, 1.7, cx, 9.2, 0, STONE), paint(new THREE.ConeGeometry(0.95, 1.2, 4).rotateY(Math.PI / 4).translate(cx, 10.05, 0), SILVER));
+  }
+  // Vòm: torus dày + vòng viền sáng mỏng nằm trong lòng vòm
+  const arch = new THREE.TorusGeometry(3.0, 0.55, 14, 40); arch.scale(1, 1.25, 1); arch.translate(0, 5.0, 0);
+  const rim = new THREE.TorusGeometry(2.55, 0.12, 8, 40); rim.scale(1, 1.25, 1); rim.translate(0, 5.0, 0.28);
+  parts.push(paint(arch, SILVER), paint(rim, RIM));
+  // Mặt gương: đĩa dày (trụ ngắn xoay hướng +z) có gờ nổi
+  const mir = new THREE.CylinderGeometry(2.55, 2.55, 0.5, 36).rotateX(Math.PI / 2); mir.scale(1, 1.25, 1); mir.translate(0, 5.0, 0);
+  parts.push(paint(mir, MIRROR));
+  const lip = new THREE.TorusGeometry(2.45, 0.18, 8, 36); lip.scale(1, 1.25, 1); lip.translate(0, 5.0, 0.27);
+  parts.push(paint(lip, STONE));
+  const geo = mergeGeometries(parts)!;
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }));
   m.position.set(x, py, z);
   m.userData.op = 0.85;
   m.name = 'moon-gate';
