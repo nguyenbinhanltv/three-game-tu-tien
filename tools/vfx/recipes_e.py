@@ -46,6 +46,8 @@ def register(R, H):
     R['fx_dotpha_tc'] = dotpha('fx_dotpha_tc', 'dotpha_tc', None, 7.0, 14.0, 0)
     R['fx_dotpha_kd'] = dotpha('fx_dotpha_kd', 'dotpha_kd', 'ket_dan', 9.0, 18.0, 2.0)
     R['fx_dotpha_na'] = dotpha('fx_dotpha_na', 'dotpha_na', 'nguyen_anh', 11.0, 22.0, 2.6)
+    # Hóa Thần (E4-D): vàng sao nhạt (bảng dotpha_hn), vòng trận lớn hơn một chút, vầng hào quang sau gáy.
+    R['fx_dotpha_hn'] = dotpha('fx_dotpha_hn', 'dotpha_hn', 'hoa_than', 12.0, 24.0, 3.0)
 
     # ---------- Độ kiếp: khởi vòng trận lôi văn + sét mảnh nối tiếp (mây kiếp cũ giữ nguyên) ----------
     def kiep(tid, pal, when, r, nbolt):
@@ -81,6 +83,7 @@ def register(R, H):
     R['fx_kiep_tc'] = kiep('fx_kiep_tc', 'loi', None, 8.0, 3)
     R['fx_kiep_kd'] = kiep('fx_kiep_kd', 'dotpha_kd', 'ket_dan', 9.0, 4)
     R['fx_kiep_na'] = kiep('fx_kiep_na', 'dotpha_na', 'nguyen_anh', 11.0, 4)
+    R['fx_kiep_hn'] = kiep('fx_kiep_hn', 'dotpha_hn', 'hoa_than', 12.0, 4)
 
     # ---------- Nguyên anh xuất khiếu / nhập thể: hồn thể bán trong suốt (bản sao nhân vật màu lam) tách ra bay lên / hạ xuống nhập thể ----------
     R['fx_soul_out'] = lambda: {

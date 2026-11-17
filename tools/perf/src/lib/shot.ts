@@ -55,7 +55,7 @@ export async function sheet(ctx: BrowserContext, file: string, rows: SheetRow[],
       .join('') +
     `</body>`;
   const p = await ctx.newPage();
-  await p.setViewportSize({ width: Math.max(...rows.map((r) => r.cells.length), 1) * (cell + 4) + 8, height: 600 });
+  await p.setViewportSize({ width: Math.max(...rows.map((r) => r.cells.length), 1) * (cell + 4) + 8, height: 100 });
   await p.setContent(html);
   await p.waitForFunction(() => [...document.images].every((i) => i.complete && i.naturalWidth > 0));
   fs.mkdirSync(path.dirname(file), { recursive: true });

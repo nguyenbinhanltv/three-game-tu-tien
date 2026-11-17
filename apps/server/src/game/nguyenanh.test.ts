@@ -70,7 +70,7 @@ describe('Tam Trọng Kiếp: dữ liệu và cổng', () => {
     expect(tribDef('nguyen_anh').room).toBe('tribulation');
     expect(tribDef('nguyen_anh').duration).toBe(65);
     expect(peakGated(23)).toBe(false);
-    expect(peakGated(27)).toBe(true);
+    expect(peakGated(27)).toBe(false); // E4-D: Thiên Nhân Kiếp đã bật
   });
 
   it('thiếu Ngưng Anh Đan thì không độ kiếp; kiếp chạy ở room riêng nên room thế giới chỉ cấp vé', () => {

@@ -8,5 +8,6 @@
   { "id": "rcp_pha_canh_dan", "npc": "npc_duoc_su", "output": { "id": "itm_pha_canh_dan", "n": 1 }, "inputs": [ { "id": "itm_linh_thao", "n": 6 }, { "id": "itm_yeu_dan", "n": 4 } ], "gold": 150 },
   { "id": "rcp_bi_tich", "npc": "npc_duoc_su", "output": { "id": "itm_bi_tich_tan_quyen", "n": 1 }, "inputs": [ { "id": "itm_yeu_dan", "n": 8 }, { "id": "itm_thiet_tinh", "n": 2 } ], "gold": 120 },
   { "id": "rcp_dinh_than_phu", "npc": "npc_duoc_su", "output": { "id": "itm_dinh_than_phu", "n": 2 }, "inputs": [ { "id": "itm_kinh_hoa_sa", "n": 2 }, { "id": "itm_linh_thao", "n": 2 } ], "gold": 120, "reqLevel": 21 },
+  { "id": "rcp_hoa_than_lo", "npc": "npc_duoc_su", "output": { "id": "itm_hoa_than_lo", "n": 1 }, "inputs": [ { "id": "itm_than_tang_ngoc", "n": 3 }, { "id": "itm_tinh_quang_mac", "n": 5 }, { "id": "itm_co_thanh_phien", "n": 2 }, { "id": "itm_yeu_dan", "n": 16 } ], "gold": 8000, "reqLevel": 27 },
   { "id": "rcp_pha_an_phu", "npc": "npc_duoc_su", "output": { "id": "itm_pha_an_phu", "n": 1 }, "inputs": [ { "id": "itm_tinh_quang_mac", "n": 3 }, { "id": "itm_yeu_dan", "n": 4 } ], "gold": 300, "reqLevel": 26 }
 ]
