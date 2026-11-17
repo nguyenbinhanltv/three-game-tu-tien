@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "set_de_tu_v2_nu",
+  "type": "chr",
+  "budgetClass": "outfit",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 9000,
+    "texture": 64
+  },
+  "import": {
+    "kind": "tripo",
+    "source": "chr/chr_v2_nu/tripo/rig_v01.glb",
+    "size": {
+      "height": 1.0
+    },
+    "orient": "none",
+    "yaw": 0,
+    "post": "tools/blender/chr_v2_starter.py",
+    "starter": {
+      "player": "chr_v2_nu"
+    }
+  },
+  "license": {
+    "source": "Thủ tục: sao chép vùng lưới thân MakeHuman (CC0 qua MPFB2) đẩy theo pháp tuyến, tools/blender/chr_v2_starter.py",
+    "owner": "dự án",
+    "date": "2026-11-17"
+  }
+}

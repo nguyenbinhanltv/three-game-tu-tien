@@ -4,11 +4,18 @@
 
 export type Gender = 'm' | 'f';
 
+/** Kiểu tóc nhân vật nền v2 (chọn khi tạo nhân vật, lưu như màu áo). Thiếu = 'a'. */
+export type HairId = 'a' | 'b';
+export const HAIRS: readonly HairId[] = ['a', 'b'];
+export const isHairId = (v: unknown): v is HairId => v === 'a' || v === 'b';
+
 /** Lựa chọn ngoại hình đã kiểm (lưu trong cột `characters.appearance` dạng JSON). */
 export interface Appearance {
   g: Gender;
   /** id màu áo trong `appearance.json` (trùng id màu trong assets/palette.json). */
   dye: string;
+  /** Kiểu tóc (nhân vật nền v2); bỏ trống = 'a'. */
+  hair?: HairId;
 }
 
 export interface DyeDef {
@@ -65,10 +72,11 @@ export function genderEnabled(data: AppearanceData, g: unknown): g is Gender {
  */
 export function parseAppearance(data: AppearanceData, raw: unknown): Appearance | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-  const o = raw as { g?: unknown; dye?: unknown };
+  const o = raw as { g?: unknown; dye?: unknown; hair?: unknown };
   if (!genderEnabled(data, o.g)) return null;
   if (typeof o.dye !== 'string' || !data.dyes.some((d) => d.id === o.dye)) return null;
-  return { g: o.g, dye: o.dye };
+  if (o.hair !== undefined && !isHairId(o.hair)) return null;
+  return o.hair === undefined ? { g: o.g, dye: o.dye } : { g: o.g, dye: o.dye, hair: o.hair };
 }
 
 /** Đọc cột DB: hỏng hoặc trống thì dùng màu theo tên. */
