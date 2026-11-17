@@ -12,7 +12,8 @@
 - Lưu trong cột `characters.equip` (khóa `skin`), **không thêm cột DB**. `InvDraft`, `sanitizeEquip`, bước migrate trong `db.ts`, `equipCount` và `ledger:check` đều duyệt `WEAR_SLOTS`; thiếu một chỗ là món ở ô skin bị mất ở giao dịch kế tiếp hoặc lệch sổ cái.
 - Hiển thị cho người khác: `PlayerS.sn` (id vật phẩm skin, `@view`). Client suy asset từ `ItemDef.skin`.
 - Thử: `/gm skin <id|list|off>` (chỉ tài khoản thử; lấy món nếu chưa có rồi mặc, một transaction + ledger), hoặc `/gm give itm_skin_varkessa` rồi mặc từ túi.
-- Test: `apps/server/src/game/skin.test.ts` (mặc/tháo, chỉ số không đổi, khóa idem, không sở hữu thì không mặc được, còn nguyên sau khi nạp lại, dữ liệu hỏng bị bỏ, GM chỉ cho tài khoản thử).
+- DB hỏng (món nằm sai ô trong cột `equip`) không bị lặng lẽ xóa lúc nạp nhân vật (`sanitizeEquip` + `settleMisplaced` trong `character.ts`): skin ở ô có chỉ số và món không phải skin ở ô skin được trả về túi; mẫu không còn tồn tại hoặc túi đầy thì ghi ledger -1 lý do `load:drop`, tất cả trong một transaction.
+- Test: `apps/server/src/game/skin.test.ts` (mặc/tháo, chỉ số không đổi, khóa idem, không sở hữu thì không mặc được, còn nguyên sau khi nạp lại, bốn trường hợp DB hỏng, GM chỉ cho tài khoản thử).
 - **Chưa có tủ đồ ngoại hình (transmog)** trong game nên không có gì để nối; khi làm transmog thì skin là lớp trên cùng (đè cả kết quả transmog).
 
 ## Client
