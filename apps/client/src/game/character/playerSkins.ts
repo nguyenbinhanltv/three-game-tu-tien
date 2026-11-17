@@ -206,6 +206,17 @@ const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.s
 const CHR_V2_HAIR = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hair') : null;
 const OUTFIT_FORCE = OUTFIT_Q && OUTFIT_Q !== '0' ? OUTFIT_Q : null;
 
+/** Id asset model người chơi của giới tính (và kiểu tóc): v2 mặc định, `?chr=v1` model cũ. Dùng cho prefetch lúc vào game. */
+export function playerModelId(g: string, hair?: string): string | null {
+  return modelOf(g, hair);
+}
+
+/** Id asset bộ đồ đệ tử tân thủ của model v2 (null nếu đang dùng model cũ). */
+export function starterOutfitId(g: string, hair?: string): string | null {
+  const m = CHR_V2 ? modelOf(g, hair) : null;
+  return m ? outfitAssetId(STARTER, m) : null;
+}
+
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
 function modelOf(g: string, hair?: string): string | null {
   // `?chr=v2` (CHR-PROTO): thân nền MakeHuman nam/nữ thay hai model Tripo cũ, chỉ để so sánh; mặc định game không đổi.
