@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { QuestDef, QuestView } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
-import { clampZoom, difficultyTone, edgeClamp, formatCountdown, nearestIndex, npcFunction, npcQuestMark, project, zoneStatus, ZOOM_SPANS } from './model';
+import { backingScale, clampZoom, difficultyTone, edgeClamp, formatCountdown, nearestIndex, npcFunction, npcQuestMark, project, zoneStatus, ZOOM_SPANS } from './model';
 
 const qd = (o: Partial<QuestDef> & { id: string }): QuestDef => ({ giver: 'a', turnin: 'a', objectives: [{ type: 'kill', target: 'm', count: 2 }], rewards: { xp: 1, gold: 1 }, ...o }) as QuestDef;
 const none: QuestView = { active: {}, done: [] };
@@ -103,5 +103,15 @@ describe('screenToWorld', () => {
       expect(w.x).toBeCloseTo(2055, 4);
       expect(w.z).toBeCloseTo(2040, 4);
     }
+  });
+});
+
+describe('backingScale', () => {
+  it('nhân DPR với hệ số HUD, làm tròn 0,25, kẹp 1..4', () => {
+    expect(backingScale(1, 1)).toBe(1);
+    expect(backingScale(1, 1.35)).toBe(1.25);
+    expect(backingScale(1.5, 2)).toBe(3);
+    expect(backingScale(3, 2)).toBe(4);
+    expect(backingScale(0, 0)).toBe(1);
   });
 });
