@@ -10,6 +10,7 @@ let GameSim: typeof import('./sim').GameSim;
 let WorldState: typeof import('../state').WorldState;
 let Character: typeof import('./character').Character;
 let MONSTER: typeof import('@dtl/content').MONSTER;
+let SKILL: typeof import('@dtl/content').SKILL;
 let CLONE_MOVES: typeof import('@dtl/content').CLONE_MOVES;
 let METHOD_SKILLS: typeof import('@dtl/content').METHOD_SKILLS;
 let thanThong10Skill: typeof import('@dtl/content').thanThong10Skill;
@@ -19,7 +20,7 @@ beforeAll(async () => {
   ({ GameSim } = await import('./sim'));
   ({ WorldState } = await import('../state'));
   ({ Character } = await import('./character'));
-  ({ MONSTER, CLONE_MOVES, METHOD_SKILLS, thanThong10Skill, tierBar } = await import('@dtl/content'));
+  ({ MONSTER, SKILL, CLONE_MOVES, METHOD_SKILLS, thanThong10Skill, tierBar } = await import('@dtl/content'));
 });
 
 afterEach(() => vi.useRealTimers());
@@ -382,26 +383,27 @@ describe('chống khai thác', () => {
     advance(600);
     expect(sim.clone.has(p)).toBe(false);
   });
-  it('echo tôn trọng hồi chiêu gốc: chiêu cd 60 s chỉ lặp một lần trong 20 s', () => {
-    const { sim, join, advance, mon } = world();
-    const p = join(28, 'lac_kiem_quyet');
-    const m = mon(X + 8, Z);
-    m.stunUntil = Date.now() + 60_000;
-    sim.onClone(p, {});
-    p.gcdAt = 0;
-    p.cds.clear();
-    sim.onSkill(p, { id: 'skl_thien_kiem_hoa_hinh', t: m.id });
-    advance(300);
-    let n = 0;
-    const o = sim as unknown as { hitMonster: (...a: unknown[]) => void };
-    const orig = o.hitMonster.bind(sim);
-    o.hitMonster = (...a: unknown[]) => {
-      n++;
-      orig(...a);
+  it('echo tôn trọng hồi chiêu gốc: chiêu cd 60 s lặp đúng một lần trong 20 s, chiêu cd ngắn lặp nhiều lần', () => {
+    const run = (id: string, fxId: string) => {
+      const { sim, join, advance, mon, fxs } = world();
+      const p = join(28, 'lac_kiem_quyet');
+      const m = mon(X + 8, Z);
+      m.stunUntil = Date.now() + 60_000;
+      p.gcdAt = 0;
+      p.cds.clear();
+      sim.onSkill(p, { id, t: m.id });
+      advance(900);
+      sim.onClone(p, {});
+      advance(CLONE_LIFE_MS - 2500);
+      return fxs().filter((f) => f.t === 'clone_act' && f.s === fxId).length;
     };
-    advance(CLONE_LIFE_MS - 2000);
-    expect(n).toBeLessThanOrEqual(2);
-    expect(n).toBeGreaterThan(0);
+    const longSk = SKILL.get('skl_thien_kiem_hoa_hinh')!;
+    const shortSk = SKILL.get('skl_phi_kiem')!;
+    expect(longSk.cd).toBeGreaterThanOrEqual(60);
+    expect(shortSk.cd).toBeLessThan(5);
+    expect(run(longSk.id, longSk.fx)).toBe(1);
+    // Spy đếm được: chiêu cd ngắn lặp ≥ 3 lần trong ~17 s.
+    expect(run(shortSk.id, shortSk.fx)).toBeGreaterThanOrEqual(3);
   });
 });
 
