@@ -358,7 +358,10 @@
     "npc_thuong_nhan": "Trần Tam",
     "npc_lam_chieu_dung": "Lâm Chiếu Dung",
     "npc_to_van_ngu_hai": "Tô Vãn Ngư",
-    "npc_lam_chieu_dung_do": "Lâm Chiếu Dung"
+    "npc_lam_chieu_dung_do": "Lâm Chiếu Dung",
+    "npc_mac_chieu": "Mặc Chiếu",
+    "npc_to_van_ngu_tk": "Tô Vãn Ngư",
+    "npc_mac_chieu_do": "Mặc Chiếu"
   },
   "factions": {
     "tang_mach_hoi": "Tàng Mạch Hội"
@@ -372,6 +375,17 @@
     "guong_nuoc_1": "Mảnh gương nước thứ nhất",
     "guong_nuoc_2": "Mảnh gương nước thứ hai",
     "guong_nuoc_3": "Mảnh gương nước thứ ba",
-    "guong_nuoc_4": "Mảnh gương nước thứ tư"
+    "guong_nuoc_4": "Mảnh gương nước thứ tư",
+    "den_troi_1": "Đèn trời thứ nhất",
+    "den_troi_2": "Đèn trời thứ hai",
+    "den_troi_3": "Đèn trời thứ ba",
+    "den_troi_4": "Đèn trời thứ tư",
+    "den_troi_5": "Đèn trời thứ năm",
+    "den_troi_6": "Đèn trời thứ sáu",
+    "den_troi_7": "Đèn trời thứ bảy",
+    "den_troi_8": "Đèn trời thứ tám",
+    "phong_an_mon_1": "Môn phong ấn thứ nhất",
+    "phong_an_mon_2": "Môn phong ấn thứ hai",
+    "phong_an_mon_3": "Môn phong ấn thứ ba"
   }
 }

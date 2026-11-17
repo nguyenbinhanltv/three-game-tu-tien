@@ -50,6 +50,10 @@ export const NPC_SKINS: Record<string, NpcSkin> = {
   npc_to_van_ngu_hai: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#3B6584', accent: '#22364E' } },
   // Người đồng hành của nhiệm vụ hộ tống (không phải NPC đứng thật, xem `LevelDef.escorts`).
   npc_lam_chieu_dung_do: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#E6DDCB', accent: '#E0962C' } },
+  // E4-H: Ngoại Thành Trạm (Thiên Khuyết). Mặc Chiếu: tàn niệm thủ điện, áo xám tro; Tô Vãn Ngư bản Thiên Khuyết dùng lại bộ lam của tông.
+  npc_mac_chieu: { asset: 'chr_npc_chuong_mon', tint: 0x8a8678 },
+  npc_to_van_ngu_tk: { asset: 'chr_kiem_tu_nu', look: { g: 'f', hex: '#3B6584', accent: '#22364E' } },
+  npc_mac_chieu_do: { asset: 'chr_npc_chuong_mon', tint: 0x8a8678 },
   npc_thuong_nhan: { asset: 'chr_npc_thiet_lao', tint: 0xb89a6a },
 };
 
