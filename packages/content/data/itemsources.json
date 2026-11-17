@@ -1,5 +1,6 @@
 {
  "gem_hoa_1": [
+  "boss_tam_thu_nguc_khuyen",
   "elite_huyet_nha_lang",
   "elite_loi_van_su_vuong",
   "mon_co_thanh_chien_ma",
@@ -264,6 +265,7 @@
   "boss_dia_mach_long",
   "boss_han_giao",
   "boss_kinh_nguyet_chan_quan",
+  "boss_tam_thu_nguc_khuyen",
   "boss_thach_tam_khoi_vuong",
   "boss_thien_khuyet_thu_linh",
   "boss_thon_mach_ngo_cong_vuong",
@@ -310,6 +312,7 @@
   "boss_huyet_lang_vuong",
   "boss_kiem_khoi",
   "boss_kinh_nguyet_chan_quan",
+  "boss_tam_thu_nguc_khuyen",
   "boss_thach_tam_khoi_vuong",
   "boss_thien_khuyet_thu_linh",
   "boss_thon_mach_ngo_cong_vuong",
