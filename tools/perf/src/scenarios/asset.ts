@@ -20,22 +20,24 @@ function assetIds(): string[] {
 export default {
   name: 'asset',
   desc: 'Tấm xoay 4 hướng + tấm clip của asset trong trang xem (duyệt model/rig/clip sau khi nhập)',
-  usage: '[--ids a,b | --group boss_|elite_|mon_|prop_] [--clips idle,run,attack,death] [--frames 5]',
+  usage: '[--ids a,b | --group boss_|elite_|mon_|prop_] [--clips idle,run,attack,death] [--frames 5] [--zoom 1.35]',
   async run(r) {
     const frames = num('--frames', 5);
+    // Trang xem đặt camera cho vật cao ≥ 1 m; vật nhỏ (kiếm, pháp bảo) dùng --zoom < 1 để kéo camera lại gần.
+    const zoom = num('--zoom', 1.35);
     const want = list('--clips', '');
     const ctx = await r.browser.newContext({ viewport: { width: 640, height: 640 }, deviceScaleFactor: 1 });
     const page = await ctx.newPage();
     watchErrors(page, { into: r.errors });
     const shot = () => page.screenshot({ type: 'jpeg', quality: 86 });
-    /** Đặt góc nhìn rồi lùi camera ra 1,35× để chiêu vung rộng không tràn khung. */
+    /** Đặt góc nhìn rồi nhân khoảng cách camera với `zoom` (mặc định lùi 1,35× để chiêu vung rộng không tràn khung). */
     const view = async (v: string) => {
-      await page.evaluate((name) => {
+      await page.evaluate(([name, k]) => {
         const w = window.__viewer!;
         w.setView(name);
-        w.camera.position.sub(w.controls.target).multiplyScalar(1.35).add(w.controls.target);
+        w.camera.position.sub(w.controls.target).multiplyScalar(k).add(w.controls.target);
         w.controls.update();
-      }, v);
+      }, [v, zoom] as const);
       await sleep(350);
     };
     for (const id of assetIds()) {
