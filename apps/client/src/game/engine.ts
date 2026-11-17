@@ -699,6 +699,7 @@ export class Game {
         this.bindRoom(again);
         this.pending.length = 0;
         this.snapToServer = true;
+        this.cloneVis?.clear();
         pushLog(t('ui.reconnected'), 'good');
         return;
       } catch {
@@ -1071,6 +1072,7 @@ export class Game {
 
   /** Gỡ và giải phóng mọi thứ gắn với level hiện tại (địa hình, kiến trúc + GLB, cổng, đèn, cây, cột sáng, cỏ). Không để rò sau nhiều lần đổi. */
   private unloadLevel(): void {
+    this.cloneVis?.clear();
     const drop = (o: THREE.Object3D | null | undefined) => o && this.scene.remove(o);
     if (this.terrain) {
       drop(this.terrain.group);
@@ -2049,7 +2051,7 @@ export class Game {
   }
 
   private ensureCloneVis(): CloneVis {
-    this.cloneVis ??= new CloneVis(this.scene, (sid) => this.ents?.makeSoul(sid, 'soul') ?? null);
+    this.cloneVis ??= new CloneVis(this.scene, this.vfx!, this.sid, (sid) => this.ents?.makeSoul(sid, 'soul') ?? null);
     return this.cloneVis;
   }
 
@@ -3034,7 +3036,7 @@ export class Game {
     // Lĩnh vực (E4-K): vòng nhạt dưới chân mình từ Nguyên Anh trung kỳ.
     const dr = me ? domainRadius(get().char?.level ?? 0) : 0;
     if (dr > 0 || this.cloneVis) this.ensureCloneVis().setDomain(dr > 0 && me && (me.fl & PF_DEAD) === 0 ? { x: this.renderPos.x, z: this.renderPos.z, r: dr } : null);
-    this.cloneVis?.update(dt);
+    this.cloneVis?.update(dt, this.renderPos.x, this.renderPos.z);
     for (const disc of this.gateDiscs) {
       // Cổng gương nguyệt (vành + trụ đá) đứng yên, không lắc và không nhấp nháy như đĩa cổng.
       if (disc.name === 'moon-gate') continue;

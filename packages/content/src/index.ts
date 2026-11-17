@@ -422,19 +422,19 @@ export const TIER_MIN_UNLOCK = 16;
 /** Cấp mở thần thông ô 9 (Kết Đan sơ kỳ, E2-E). */
 export const THAN_THONG_UNLOCK = 20;
 
-/**
- * Thần thông của công pháp (chiêu mở ở Kết Đan sơ kỳ, cấp 20): nằm ở **ô chiêu 9** (chỉ số `BAR_SIZE` trong `Game.bar()`, phím 0).
- * Ô 10 (Hóa Thần) là việc của chương sau. Không có công pháp thì không có thần thông.
- */
 /** Cấp mở thần thông ô 10 (Hóa Thần sơ kỳ, E4-K). */
 export const THAN_THONG_10_UNLOCK = 28;
 
-/** Thần thông ô 10 của công pháp (chiêu cấp 28): phím `-`, ngay sau ô 9. */
+/** Thần thông ô 10 của công pháp (chiêu cấp 28): chỉ số `BAR_SIZE + 1` trong `Game.bar()`, phím `` ` `` (Backquote), ngay sau ô 9. */
 export function thanThong10Skill(methodId: string | undefined): SkillDef | undefined {
   if (!methodId) return undefined;
   return METHOD_SKILLS.find((s) => s.method === methodId && s.unlock === THAN_THONG_10_UNLOCK && !s.locked);
 }
 
+/**
+ * Thần thông của công pháp (chiêu mở ở Kết Đan sơ kỳ, cấp 20): nằm ở **ô chiêu 9** (chỉ số `BAR_SIZE` trong `Game.bar()`, phím 0).
+ * Ô 10 (Hóa Thần, cấp 28) là `thanThong10Skill`. Không có công pháp thì không có thần thông.
+ */
 export function thanThongSkill(methodId: string | undefined): SkillDef | undefined {
   if (!methodId) return undefined;
   return METHOD_SKILLS.find((s) => s.method === methodId && s.unlock === THAN_THONG_UNLOCK && !s.locked);
@@ -442,7 +442,7 @@ export function thanThongSkill(methodId: string | undefined): SkillDef | undefin
 
 /**
  * Chiêu bậc 2–3 của công pháp (mở theo cảnh giới Trúc Cơ/Kết Đan), xếp theo cảnh giới mở, **trừ thần thông ô 9** (đã ở ô chính).
- * Hàng này nằm sau 9 ô chính (chỉ số ≥ `BAR_SIZE + 1` trong `Game.bar()`), phím Shift+1…
+ * Hàng này nằm sau ô 9 và ô 10 (chỉ số ≥ `BAR_SIZE + 2` trong `Game.bar()`), phím Shift+1…
  * Chiêu còn khóa (Nguyên Anh trở lên, cơ chế chưa làm) không có trong hàng.
  */
 export function tierBar(methodId: string | undefined): SkillDef[] {
