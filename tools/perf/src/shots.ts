@@ -15,10 +15,12 @@ import mons from './scenarios/mons';
 import outfit from './scenarios/outfit';
 import points from './scenarios/points';
 import skin from './scenarios/skin';
+import thiennhan from './scenarios/thiennhan';
+import ual from './scenarios/ual';
 import ui from './scenarios/ui';
 import vfx from './scenarios/vfx';
 
-const SCENARIOS: Scenario[] = [points, map, mons, dungeon, asset, vfx, outfit, skin, chrv2, ui];
+const SCENARIOS: Scenario[] = [points, map, mons, dungeon, asset, vfx, outfit, skin, chrv2, ui, thiennhan, ual];
 
 const name = args[0] && !args[0].startsWith('--') ? args[0] : 'points';
 const sc = SCENARIOS.find((s) => s.name === name);

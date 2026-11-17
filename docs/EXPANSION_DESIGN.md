@@ -665,6 +665,10 @@ Nội tại công pháp mở rộng ở mỗi đại cảnh giới (một dòng,
 - **Client**: `FxMsg` `dantran` (vòng + tiến độ `pg`, -1 = khép) và `dantran_ok`; HUD thêm thanh "Ngưng đan"; cắt cảnh nhìn xuống vòng (`DAN_CUTSCENE`, `danTranPath`, giữ HUD, bỏ qua được); thiên lôi pha 3 nhuốm lửa (`TribPhaseDef.hot` → `HazardMsg.hot`, cam dưới trần HDR); `ascend` mang `tb` nên Kết Đan có vành đan quang vàng + thẻ `ascend_kd`; thẻ `ch2` (Chương 2 · Đoạn Mạch) lần đầu tới Đoạn Mạch. Ảnh: `docs/e2d-trib/` (`pnpm shots:e2d --out <thư mục tuyệt đối>`).
 - **Còn lại**: cân bằng số đã xong ở E2-J (sweep 22% mỗi 5,5 s, 14 s ngưng đan; xem `docs/e2j-balance.md`); icon hai vật phẩm; nối nhiệm vụ vào chuỗi E2-H.
 
+### 10.8 Ghi chú triển khai E4-D/E4-L (2026-11-18)
+
+- **Thiên Nhân Kiếp bật**: `hoa_than` `enabled: true`, `item: itm_hoa_than_lo` (Hóa Thần Lộ: chế ở Tố Tâm, rơi hiếm 1% ở Thần Tàng Điện); `peakGated` không còn chặn cấp nào. Cơ chế `ngu_hanh` (năm trận môn, tia kiếp xoay hành, cờ `ke` qua `Hazard.seal`) và `phan_than` (phím G, thế thân, tia quét, cột thiên phạt, mạch nối, chắn 40% tia lớn) ở `apps/server/src/game/tribnhan.ts`. Thế thân chỉ là móc của kiếp (`C.TRIB_CLONE`); phân thân thần niệm thật là E4-K. Chi tiết, số, giới hạn: `docs/e4-d/README.md`.
+
 ---
 
 ## 11. Gói việc cho worker

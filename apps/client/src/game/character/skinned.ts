@@ -118,6 +118,13 @@ const LUNGE_MAX = 1.5;
 const KNOCK_LIE = 0.35;
 /** Tốc độ phát clip ngã (3,7 s ở 1×: loạng choạng 1,2 s rồi mới ngã) và đứng dậy (1,6 s): nhanh hơn để không bắt người chơi nằm quá lâu. */
 const KNOCK_RATE = 1.5;
+/** Clip ngã dài hơn mức này (giây) mới phát nhanh `KNOCK_RATE`; clip ngắn (UAL Hit_Knockback 0,83 s) phát 1×. */
+const KNOCK_LONG = 2;
+/** Tốc độ phát clip tiếp đất (UAL) và nhịp nhảy: lấy đà phát 1,5×, tiếp đất 2,2× (≈0,6 s) và bị ngắt khi đi lại. */
+const JUMP_START_RATE = 1.5;
+const JUMP_LAND_RATE = 2.2;
+/** Khoảng cách giữa hai lần idle xen kẽ của NPC (giây). */
+const IDLE_GAP: [number, number] = [6, 14];
 const GETUP_RATE = 1.3;
 /** Clip lướt hiển thị: phát nhanh clip chạy. */
 const DASH_RATE = 2.2;
@@ -223,6 +230,9 @@ export class SkinnedCharacter implements CharacterView {
   /** Đòn trúng chờ (khớp lúc đạn bay tới, cùng trễ với chớp sáng). */
   private pendingHit = -1;
   private dead = false;
+  private jumpIntro = false;
+  private idleVariants: string[] = [];
+  private idleWait = 0;
   /** Đã chết bao lâu (giây): sau `SINK_AFTER` xác chìm dần xuống đất (giống model khối). */
   private deadT = 0;
   private acc = 0;
@@ -387,7 +397,12 @@ export class SkinnedCharacter implements CharacterView {
     if (this.dead) return;
     this.dashOff = { fx: fromX, fz: fromZ, t: 0, dur: Math.max(0.1, dur) };
     this.cancelRecovery('dash');
-    if (!this.perf || this.perf.cancel < 1) this.playShot('dash', undefined, DASH_RATE, dur);
+    if (!this.perf || this.perf.cancel < 1) {
+      // Clip lướt UAL (dài ~1,6 s) co lại cho vừa thời gian lướt; clip chạy cũ phát nhanh cố định.
+      const clip = clipFor('dash', this.map, this.hasClip);
+      const len = clip ? this.clips.get(clip)?.duration ?? 0 : 0;
+      this.playShot('dash', undefined, clip?.startsWith('ual_') && len > 0 ? Math.min(3, Math.max(1, len / Math.max(0.1, dur))) : DASH_RATE, dur);
+    }
   }
 
   /** Bị hất ngã rồi đứng dậy (K-3 `knockdown` → `getup`). Thiếu clip thì bỏ qua. */
@@ -395,17 +410,44 @@ export class SkinnedCharacter implements CharacterView {
     if (this.dead || !this.clips.has('knockdown')) return;
     this.stopPerform();
     this.pendingPerform = null;
-    this.playShot('hit', 'knockdown', KNOCK_RATE, undefined, this.clips.has('getup') ? 'getup' : undefined, true);
+    const long = (this.clips.get('knockdown')?.duration ?? 0) > KNOCK_LONG;
+    this.playShot('hit', 'knockdown', long ? KNOCK_RATE : 1, undefined, this.clips.has('getup') ? 'getup' : undefined, true);
+  }
+
+  /** NPC: xen các clip idle phụ (khoanh tay, nói chuyện, gật/lắc đầu...) vào lúc đứng nghỉ, cách nhau vài giây, lệch pha mỗi NPC. */
+  setIdleVariants(names: readonly string[]): void {
+    this.idleVariants = names.filter((n) => this.clips.has(n));
+    this.idleWait = IDLE_GAP[0] + Math.random() * (IDLE_GAP[1] - IDLE_GAP[0]);
+  }
+
+  private updateIdleVariants(dt: number, want: CharState): void {
+    if (!this.idleVariants.length) return;
+    if (want !== 'idle' || this.shot || this.perf || this.dead) return;
+    this.idleWait -= dt;
+    if (this.idleWait > 0) return;
+    this.idleWait = IDLE_GAP[0] + Math.random() * (IDLE_GAP[1] - IDLE_GAP[0]);
+    this.playShot('idle', this.idleVariants[Math.floor(Math.random() * this.idleVariants.length)], 1);
   }
 
   /** Thêm clip nạp lười (thư viện K-3) và nối vào bảng clip: trạng thái nền được chọn lại ở khung kế. */
-  addClips(clips: readonly THREE.AnimationClip[], map: ClipMap, locoRef: Partial<Record<CharState, number>> = {}): void {
-    for (const c of clips) if (!this.clips.has(c.name)) this.clips.set(c.name, c);
+  addClips(clips: readonly THREE.AnimationClip[], map: ClipMap, locoRef: Partial<Record<CharState, number>> = {}, replace: readonly string[] = [], reselect = true): void {
+    for (const c of clips) {
+      if (this.clips.has(c.name) && !replace.includes(c.name)) continue;
+      // Thay clip cũ cùng tên (UAL thay death, hit_light, knockdown...): bỏ action đã lưu để lần phát sau dùng clip mới.
+      const old = this.actions.get(c.name);
+      if (old) {
+        // Action đang chạy thì để mixer tự tắt dần; chỉ gỡ khỏi bảng để lần phát sau dựng action từ clip mới.
+        if (this.current !== old && this.shot?.action !== old) this.mixer.uncacheAction(old.getClip(), this.rig);
+        this.actions.delete(c.name);
+      }
+      this.clips.set(c.name, c);
+    }
     this.map = { ...this.map, ...map };
     for (const [k, v] of Object.entries(locoRef) as [CharState, number][]) this.locoRef[k] = v * this.scaleS;
     this.dirHits = this.clips.has('hit_back') && this.clips.has('hit_l') && this.clips.has('hit_r') && this.clips.has('hit_front_1');
-    // Chọn lại nền (đứng/chạy dùng clip mới) mà không đụng đòn đang phát.
-    if (!this.dead) this.base = null;
+    // Chọn lại nền (đứng/chạy dùng clip mới) mà không đụng đòn đang phát. `reselect = false`: chỉ thêm clip phụ (idle xen kẽ của NPC),
+    // giữ nền đang chạy để không tua idle về 0 và mất lệch pha.
+    if (reselect && !this.dead) this.base = null;
   }
 
   private emit(p: Perform, kind: SkillEvent['kind'], index: number): void {
@@ -466,6 +508,11 @@ export class SkinnedCharacter implements CharacterView {
   /** Action của một clip theo tên (null nếu chưa từng phát). */
   actionOf(clip: string): THREE.AnimationAction | null {
     return this.actions.get(clip) ?? null;
+  }
+
+  /** Độ dài (giây) clip theo tên trong bảng clip của model, 0 nếu không có. */
+  clipLength(clip: string): number {
+    return this.clips.get(clip)?.duration ?? 0;
   }
 
   get lod(): number {
@@ -543,7 +590,21 @@ export class SkinnedCharacter implements CharacterView {
           }
         }
       }
-      if (!this.shot && want !== this.base) this.enterBase(want, FADE_BASE);
+      if (want !== 'jump') this.jumpIntro = false;
+      if (this.shot?.state === 'jump' && a.speed > MOVE_MIN) this.shot.left = Math.min(this.shot.left, FADE_OUT_SHOT);
+      if (!this.shot && want !== this.base) {
+        if (want === 'jump' && !this.jumpIntro && this.clips.has('ual_jump_start')) {
+          // Lấy đà rồi mới lơ lửng (clip UAL NinjaJump_Start); sau đó `base` được chọn lại thành `jump`.
+          this.jumpIntro = true;
+          this.base = want;
+          this.playShot('jump', 'ual_jump_start', JUMP_START_RATE);
+        } else if (this.base === 'jump' && (want === 'idle' || want === 'combatIdle') && a.speed <= MOVE_MIN && this.clips.has('ual_jump_land')) {
+          // Chỉ tiếp đất khi trở về đứng trên đất; sang bay/niệm chú... thì vào thẳng trạng thái mới.
+          this.base = want;
+          this.playShot('jump', 'ual_jump_land', JUMP_LAND_RATE);
+        } else this.enterBase(want, FADE_BASE);
+      }
+      this.updateIdleVariants(dt, want);
       if (!this.shot && this.current) {
         if (LOCO_STATES.has(want)) this.current.timeScale = Math.min(want === 'walk' || want === 'run' ? this.maxLoco : 2.2, locomotionScale(a.speed, this.locoRef[want] ?? this.refSpeed));
         else if (want === 'combatIdle' && clipFor('combatIdle', this.map, this.hasClip) === this.map.idle) this.current.timeScale = COMBAT_IDLE_RATE * (this.rates.idle ?? 1);

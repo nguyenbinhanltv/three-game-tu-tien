@@ -6,9 +6,13 @@ import type { CharState } from './states';
  * (lệch hướng, độ khép vòng, tốc độ nền, độ trượt chân). Máy trạng thái game (K-4) dùng bảng này; test `humanClips.test.ts` giữ bảng
  * khớp GLB. K-3 chưa nối các clip này vào game, trừ bộ cũ (idle, run, attack, hit_light, death).
  */
+export type HumanLib = 'base' | 'k3' | 'ual';
+
 export interface HumanClipInfo {
-  /** Thư viện chứa clip: `base` = anim_human_base (nạp cùng nhân vật), `k3` = anim_human_k3 (nạp lười). */
-  lib: 'base' | 'k3';
+  /** Thư viện chứa clip: `base` = anim_human_base (nạp cùng nhân vật), `k3` = anim_human_k3, `ual` = anim_human_ual (nạp lười). */
+  lib: HumanLib;
+  /** Clip UAL còn được đặt thêm dưới các tên này, đè clip cùng tên của thư viện cũ (death, hit_light, knockdown...). */
+  as?: readonly string[];
   /** Clip lặp khít (khung cuối ≡ khung đầu). */
   loop: boolean;
   /** Việc của clip. */
@@ -59,9 +63,32 @@ export const HUMAN_CLIPS: Record<string, HumanClipInfo> = {
   kick_1: { lib: 'k3', loop: false, role: 'đá thẳng đẩy lùi' },
   kick_2: { lib: 'k3', loop: false, role: 'đá biến thể' },
   roar: { lib: 'k3', loop: false, role: 'khiêu khích: kéo tay vào hông, ưỡn ngực dang tay (thủ tục IK)' },
+  // UAL (Quaternius CC0, anim_human_ual): clip chọn lọc, tại chỗ (hông ghim ngang). `as` = tên clip cũ bị thay.
+  ual_death: { lib: 'ual', loop: false, role: 'chết ngã ngửa (Death01)', as: ['death'] },
+  ual_hit_chest: { lib: 'ual', loop: false, role: 'trúng ngực (Hit_Chest)', as: ['hit_light', 'hit_front_1'] },
+  ual_hit_head: { lib: 'ual', loop: false, role: 'trúng đầu (Hit_Head)', as: ['hit_front_2'] },
+  ual_knockback: { lib: 'ual', loop: false, role: 'bị hất ngã (Hit_Knockback)', as: ['knockdown'] },
+  ual_getup: { lib: 'ual', loop: false, role: 'đứng dậy từ nằm (LayToIdle)', as: ['getup'] },
+  ual_dash: { lib: 'ual', loop: false, role: 'lướt kiếm (Sword_Dash): lướt Q', state: 'dash' },
+  ual_roll: { lib: 'ual', loop: false, role: 'lộn né (Roll)' },
+  ual_block: { lib: 'ual', loop: false, role: 'đỡ kiếm (Sword_Block)' },
+  ual_jump_start: { lib: 'ual', loop: false, role: 'nhảy: lấy đà (NinjaJump_Start)' },
+  ual_jump_loop: { lib: 'ual', loop: true, role: 'nhảy: lơ lửng (NinjaJump_Idle_Loop)', state: 'jump' },
+  ual_jump_land: { lib: 'ual', loop: false, role: 'nhảy: tiếp đất (NinjaJump_Land)' },
+  ual_combat_idle: { lib: 'ual', loop: true, role: 'thủ thế cầm kiếm (Sword_Idle)', as: ['combat_idle'] },
+  ual_idle_fold: { lib: 'ual', loop: true, role: 'NPC khoanh tay (Idle_FoldArms_Loop)' },
+  ual_idle_talk: { lib: 'ual', loop: true, role: 'NPC nói chuyện (Idle_Talking_Loop)' },
+  ual_interact: { lib: 'ual', loop: false, role: 'NPC tương tác (Interact)' },
+  ual_yes: { lib: 'ual', loop: false, role: 'gật đầu (Yes)' },
+  ual_no: { lib: 'ual', loop: true, role: 'lắc đầu (Idle_No_Loop)' },
 };
+
+/** Trạng thái nền của người chơi → clip UAL (thêm vào `ClipMap` khi thư viện UAL đã nạp). */
+export const UAL_STATES: Partial<Record<CharState, string>> = { jump: 'ual_jump_loop', dash: 'ual_dash' };
+/** Clip UAL NPC dùng xen vào idle cho đa dạng. */
+export const UAL_NPC_IDLES: readonly string[] = ['ual_idle_fold', 'ual_idle_talk', 'ual_interact', 'ual_yes', 'ual_no'];
 
 /** Tên clip của thư viện, theo bảng. */
 export const HUMAN_CLIP_NAMES = Object.keys(HUMAN_CLIPS);
 /** Tên clip của một thư viện. */
-export const clipNamesOf = (lib: 'base' | 'k3'): string[] => HUMAN_CLIP_NAMES.filter((n) => HUMAN_CLIPS[n].lib === lib);
+export const clipNamesOf = (lib: HumanLib): string[] => HUMAN_CLIP_NAMES.filter((n) => HUMAN_CLIPS[n].lib === lib);
