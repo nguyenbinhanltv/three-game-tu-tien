@@ -139,7 +139,7 @@ export class NpcSkins {
    */
   private attachIdles(t: Template, m: SkinnedCharacter): void {
     const give = (c: SkinnedCharacter, clips: THREE.AnimationClip[]) => {
-      c.addClips(clips, {});
+      c.addClips(clips, {}, {}, [], false);
       c.setIdleVariants(UAL_NPC_IDLES);
     };
     if (!UAL_ENABLED) return;

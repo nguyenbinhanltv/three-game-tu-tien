@@ -430,7 +430,7 @@ export class SkinnedCharacter implements CharacterView {
   }
 
   /** Thêm clip nạp lười (thư viện K-3) và nối vào bảng clip: trạng thái nền được chọn lại ở khung kế. */
-  addClips(clips: readonly THREE.AnimationClip[], map: ClipMap, locoRef: Partial<Record<CharState, number>> = {}, replace: readonly string[] = []): void {
+  addClips(clips: readonly THREE.AnimationClip[], map: ClipMap, locoRef: Partial<Record<CharState, number>> = {}, replace: readonly string[] = [], reselect = true): void {
     for (const c of clips) {
       if (this.clips.has(c.name) && !replace.includes(c.name)) continue;
       // Thay clip cũ cùng tên (UAL thay death, hit_light, knockdown...): bỏ action đã lưu để lần phát sau dùng clip mới.
@@ -445,8 +445,9 @@ export class SkinnedCharacter implements CharacterView {
     this.map = { ...this.map, ...map };
     for (const [k, v] of Object.entries(locoRef) as [CharState, number][]) this.locoRef[k] = v * this.scaleS;
     this.dirHits = this.clips.has('hit_back') && this.clips.has('hit_l') && this.clips.has('hit_r') && this.clips.has('hit_front_1');
-    // Chọn lại nền (đứng/chạy dùng clip mới) mà không đụng đòn đang phát.
-    if (!this.dead) this.base = null;
+    // Chọn lại nền (đứng/chạy dùng clip mới) mà không đụng đòn đang phát. `reselect = false`: chỉ thêm clip phụ (idle xen kẽ của NPC),
+    // giữ nền đang chạy để không tua idle về 0 và mất lệch pha.
+    if (reselect && !this.dead) this.base = null;
   }
 
   private emit(p: Perform, kind: SkillEvent['kind'], index: number): void {
