@@ -21,6 +21,7 @@ SEX = argv[0] if argv else 'nam'
 OUT = argv[1] if len(argv) > 1 else os.path.join(os.environ.get('TEMP', '.'), 'chr_v2')
 TRIS = int(argv[argv.index('--tris') + 1]) if '--tris' in argv else 6500
 SAVE_BLEND = '--blend' in argv
+ARM_DOWN = float(argv[argv.index('--arm-down') + 1]) if '--arm-down' in argv else 9.0
 os.makedirs(OUT, exist_ok=True)
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
@@ -125,6 +126,11 @@ for side, sx in (('Left', 1.0), ('Right', -1.0)):
         cur = (pb[chain[i + 1]].head - pb[chain[i]].head).normalized()
         # Hướng nghỉ đo từ chr_kiem_tu_nam (thư viện clip chung được dựng trên đó): tay trên chúc xuống 10,3°, cẳng tay gập ra trước 21° (-Y).
         tgt = Vector((sx * math.cos(math.radians(10.3)), 0, -math.sin(math.radians(10.3)))) if i == 0 else Vector((sx * 0.93, -0.363, -0.059)).normalized()
+        # Thân MakeHuman vai rộng, tay dài hơn: hạ thêm ARM_DOWN° để tay buông sát thân (clip chung xoay quanh tư thế nghỉ nên mọi clip lệch cùng một góc).
+        hx, hy = tgt.x, tgt.y
+        hl = math.hypot(hx, hy)
+        ang = math.asin(max(-1.0, min(1.0, -tgt.z))) + math.radians(ARM_DOWN)
+        tgt = Vector((hx / hl * math.cos(ang), hy / hl * math.cos(ang), -math.sin(ang)))
         q = cur.rotation_difference(tgt)
         h = pb[b0].head.copy()
         r = Matrix.Translation(h) @ q.to_matrix().to_4x4() @ Matrix.Translation(-h)

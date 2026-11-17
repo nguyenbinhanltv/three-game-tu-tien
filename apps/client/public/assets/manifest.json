@@ -1450,9 +1450,9 @@
       "id": "chr_v2_hb_nam",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_hb_nam.glb",
-      "file": "chr_v2_hb_nam.abe19d1e93.glb",
-      "bytes": 707064,
-      "rawBytes": 645512,
+      "file": "chr_v2_hb_nam.a54d9820ad.glb",
+      "bytes": 700364,
+      "rawBytes": 637516,
       "triangles": 9343,
       "rawTriangles": 9343,
       "lod0Cap": 10000,
@@ -1484,21 +1484,21 @@
         },
         {
           "level": 2,
-          "triangles": 2200,
+          "triangles": 2199,
           "target": 2200
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.7944,
+          "width": 1.7398,
           "height": 1.8044,
-          "depth": 0.5245,
+          "depth": 0.5216,
           "minY": 0
         },
         "build": {
-          "width": 1.7944,
+          "width": 1.7398,
           "height": 1.8044,
-          "depth": 0.5245,
+          "depth": 0.5216,
           "minY": 0
         }
       }
@@ -1507,9 +1507,9 @@
       "id": "chr_v2_hb_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_hb_nu.glb",
-      "file": "chr_v2_hb_nu.54d93e237e.glb",
-      "bytes": 711728,
-      "rawBytes": 657628,
+      "file": "chr_v2_hb_nu.675040713a.glb",
+      "bytes": 702028,
+      "rawBytes": 647368,
       "triangles": 9366,
       "rawTriangles": 9366,
       "lod0Cap": 10000,
@@ -1536,7 +1536,7 @@
         },
         {
           "level": 1,
-          "triangles": 5148,
+          "triangles": 5149,
           "target": 5151
         },
         {
@@ -1547,15 +1547,15 @@
       ],
       "dims": {
         "raw": {
-          "width": 1.5167,
+          "width": 1.4702,
           "height": 1.7115,
-          "depth": 0.445,
+          "depth": 0.4436,
           "minY": 0
         },
         "build": {
-          "width": 1.5167,
+          "width": 1.4702,
           "height": 1.7115,
-          "depth": 0.445,
+          "depth": 0.4436,
           "minY": 0
         }
       }
@@ -1564,9 +1564,9 @@
       "id": "chr_v2_nam",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nam.glb",
-      "file": "chr_v2_nam.b41851a095.glb",
-      "bytes": 715076,
-      "rawBytes": 651408,
+      "file": "chr_v2_nam.c17e9e92a9.glb",
+      "bytes": 706856,
+      "rawBytes": 643252,
       "triangles": 9319,
       "rawTriangles": 9319,
       "lod0Cap": 10000,
@@ -1593,26 +1593,26 @@
         },
         {
           "level": 1,
-          "triangles": 5124,
+          "triangles": 5125,
           "target": 5125
         },
         {
           "level": 2,
-          "triangles": 2200,
+          "triangles": 2199,
           "target": 2200
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.7966,
+          "width": 1.742,
           "height": 1.8397,
-          "depth": 0.4768,
+          "depth": 0.4739,
           "minY": 0
         },
         "build": {
-          "width": 1.7966,
+          "width": 1.742,
           "height": 1.8397,
-          "depth": 0.4768,
+          "depth": 0.4739,
           "minY": 0
         }
       }
@@ -1621,9 +1621,9 @@
       "id": "chr_v2_nu",
       "class": "player_v2",
       "source": "assets/build/raw/chr_v2_nu.glb",
-      "file": "chr_v2_nu.2449f321a1.glb",
-      "bytes": 714864,
-      "rawBytes": 660056,
+      "file": "chr_v2_nu.7a3e051f67.glb",
+      "bytes": 705800,
+      "rawBytes": 650492,
       "triangles": 9383,
       "rawTriangles": 9383,
       "lod0Cap": 10000,
@@ -1650,26 +1650,26 @@
         },
         {
           "level": 1,
-          "triangles": 5161,
+          "triangles": 5158,
           "target": 5161
         },
         {
           "level": 2,
-          "triangles": 2199,
+          "triangles": 2200,
           "target": 2200
         }
       ],
       "dims": {
         "raw": {
-          "width": 1.5266,
+          "width": 1.4797,
           "height": 1.7282,
-          "depth": 0.4132,
+          "depth": 0.4102,
           "minY": 0
         },
         "build": {
-          "width": 1.5266,
+          "width": 1.4797,
           "height": 1.7282,
-          "depth": 0.4132,
+          "depth": 0.4102,
           "minY": 0
         }
       }

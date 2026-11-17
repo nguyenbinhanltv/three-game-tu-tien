@@ -63,6 +63,16 @@ def load_tripo(path):
     return ob, px
 
 
+def soften_skin(px):
+    """Giảm vệt bóng bake trong texture da (sáng chói) và độ cam: nén sáng phía trên trung vị, giảm bão hòa nhẹ."""
+    lum = px @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    med = float(np.median(lum[lum > 0.15]))
+    l2 = np.where(lum > med, med + (lum - med) * 0.45, lum)
+    out = px * (l2 / np.maximum(lum, 1e-4))[..., None]
+    g = out.mean(-1, keepdims=True)
+    return np.clip(g + (out - g) * 0.86, 0, 1)
+
+
 def verts_np(ob):
     return np.array([v.co[:] for v in ob.data.vertices], np.float32)
 
@@ -114,6 +124,7 @@ print('body verts', n_body, 'Zc', Zc)
 
 # ---------- 2. đầu Tripo ----------
 head, head_px = load_tripo(HEAD_GLB)
+head_px = soften_skin(head_px)
 hv = verts_np(head)
 tw = widest(hv, 0.42, 0.98, 0.01, 0.012)
 s = mh[1] / tw[1]
@@ -151,7 +162,7 @@ for f in bm.faces:
         l[uvk].uv = (0.5 + u * 0.5, 0.5 + v * 0.5)
 neck_col = np.mean(np.array(ring), 0) if ring else OLD_SKIN
 if face_col is not None:
-    neck_col = 0.5 * neck_col + 0.5 * face_col
+    neck_col = 0.8 * neck_col + 0.2 * face_col
 print('neck colour (vòng cắt)', neck_col, 'old skin', OLD_SKIN, 'samples', len(ring))
 bm.to_mesh(head.data)
 bm.free()
@@ -229,7 +240,7 @@ bsdf = next(n for n in mt.node_tree.nodes if n.type == 'BSDF_PRINCIPLED')
 tx = mt.node_tree.nodes.new('ShaderNodeTexImage')
 tx.image = im
 mt.node_tree.links.new(tx.outputs['Color'], bsdf.inputs['Base Color'])
-bsdf.inputs['Roughness'].default_value = 0.6
+bsdf.inputs['Roughness'].default_value = 0.82
 bsdf.inputs['Metallic'].default_value = 0.0
 body.data.materials.clear()
 body.data.materials.append(mt)

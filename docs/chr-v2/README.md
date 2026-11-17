@@ -35,12 +35,13 @@ pnpm --filter @dtl/asset-pipeline exec tsx src/cli.ts optimize --only <id>
 
 Hai giai đoạn trong Blender 5.3 chạy nền (MPFB2 CC0 ở `chr_base_v2/_src/`):
 
-1. `tools/blender/chr_base_v2.py`: macro Á Đông, rig Mixamo + trọng số MakeHuman, giảm mặt (26,7k → ~6,5k), ép T-pose (tay trên chúc xuống 10°, cẳng tay gập ra trước 21°: đo từ `chr_kiem_tu_nam` để clip chung cho ra dáng đứng tay thả tự nhiên như bản cũ), vẽ albedo 1K (da, đồ lót, môi...). Đầu/tóc tạm của giai đoạn này sẽ bị bỏ ở bước sau.
+1. `tools/blender/chr_base_v2.py`: macro Á Đông, rig Mixamo + trọng số MakeHuman, giảm mặt (26,7k → ~6,5k), ép T-pose (tay trên chúc xuống 10°, cẳng tay gập ra trước 21° đo từ `chr_kiem_tu_nam`, rồi hạ thêm 9° (`--arm-down`) vì thân MakeHuman vai rộng, tay dài: đo trong game, góc xương tay đứng của v2 và nhân vật cũ trùng nhau (~11° so với phương thẳng đứng) nên phải hạ thêm mới buông sát thân; clip chung xoay quanh tư thế nghỉ nên mọi clip lệch cùng góc), vẽ albedo 1K (da, đồ lót, môi...). Đầu/tóc tạm của giai đoạn này sẽ bị bỏ ở bước sau.
 2. `tools/blender/chr_v2_head.py`:
    - bỏ đầu tạm, cắt thân ở mặt phẳng ngang giữa cổ `Zc`;
    - khớp đầu Tripo (cao 1 m, gồm cổ + vai trên): tỉ lệ theo bề ngang sọ ở lát rộng nhất so với đầu MakeHuman, rồi cắt phần dưới `Zc`;
    - **hàn cổ**: `bridge_loops` hai viền cắt (144 cạnh, hai bên khác số đỉnh: 46 thân, 98 đầu), UV mặt nối lấy theo da thân, trọng số cổ chuyển Neck→Head theo độ cao;
-   - **màu da**: trung bình màu texture tại vòng cổ và trung vị vùng má/mũi của đầu Tripo; nhân màu lên các pixel gần màu da cũ của thân (không đụng đồ lót);
+   - **da mặt**: texture Tripo bị nén vệt sáng bake (sáng trên trung vị ×0,45) và giảm bão hòa 14% cho đỡ cam/bóng; độ nhám vật liệu 0,82;
+   - **màu da thân**: 80% màu texture tại vòng cổ + 20% trung vị vùng má/mũi của đầu Tripo (đã làm dịu); nhân màu lên các pixel gần màu da cũ của thân (không đụng đồ lót);
    - tóc: tỉ lệ theo bề ngang mũ tóc, gán 100% xương Head; đỉnh tóc buông thấp hơn đầu bị đẩy ra mặt sau/trước thân (lan sang đỉnh kề để cả dải dịch cùng nhau);
    - **xương lò xo** `dtl_o_hair_{l,c,r,bang}`: con của Head, cụm theo x (trái/giữa/phải) cho tóc buông, riêng mái; trọng số tăng dần xuống dưới. `chr_v2_post.py` ghi extras `dtl.springs` sau khi `import_tripo` chuẩn hóa;
    - **atlas 2048²** (JPEG, một vật liệu): thân (trái trên) | đầu (phải trên) | tóc (trái dưới) | chỗ trống (ô màu kiếm). Tripo chỉ lấy map màu (bỏ normal/ORM để giữ một vật liệu); tóc nén sáng mạnh + gần trung tính (sẫm hơn bản đầu), tóc ôm đầu sát hơn (`hair_w` 1,08) để nhuộm áo của game (`dye.ts`) không đổi màu tóc theo bộ.
@@ -55,7 +56,17 @@ Mỗi mảnh áo khai báo vùng che trong `packages/content/data/equipment/outf
 
 ## 4. Ảnh trước/sau (cùng góc, trong game thật, tắt tiếng, WebGPU)
 
-`pnpm --filter @dtl/perf run shots:chrv2 --out <thư mục tuyệt đối>` (cờ `--variant old|v2|v2b`, `--genders m,f`, `--sets none,set_liet_mach,set_kinh_quang`, `--only still`). Tệp: `<than-tran|liet-mach|kinh-quang>-<nam|nu>-<matcan|banthan|toanthan|chay|chem|datoa>.webp` (trái = nhân vật cũ, phải = v2 tóc A) và `toc-ab-<bộ>-<giới>-<góc>.webp` (so tóc A với B).
+`pnpm --filter @dtl/perf run shots:chrv2 --out <thư mục tuyệt đối>` (cờ `--variant old|v2|v2b`, `--genders m,f`, `--sets none,set_liet_mach,set_kinh_quang`, `--only still`). Tệp: `<than-tran|liet-mach|kinh-quang>-<nam|nu>-<matcan|matgan|banthan|toanthan|chay|chem|datoa|saugan>.webp` (trái = nhân vật cũ, phải = v2 tóc A) và `toc-ab-<bộ>-<giới>-<góc>.webp` (so tóc A với B).
+
+Cận mặt nam (Liệt Mạch, máy ảnh sát mặt) và thân trần cận mặt nữ:
+
+![](liet-mach-nam-matgan.webp)
+![](than-tran-nu-matgan.webp)
+
+Tóc kiểu B (nam: Liệt Mạch; nữ: Kính Quang), cận mặt, toàn thân, sau lưng:
+
+![](toc-b-nam.webp)
+![](toc-b-nu.webp)
 
 Liệt Mạch, nam (cận mặt, toàn thân, chạy, chém, đả tọa):
 

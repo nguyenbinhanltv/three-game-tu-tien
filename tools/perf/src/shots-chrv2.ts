@@ -111,6 +111,12 @@ async function main(): Promise<void> {
           await cam(page, 0, 0.02, 0.9);
           await sleep(1200);
           await shot(`${tag}-matcan.jpg`);
+          await cam(page, 0, 0.0, 0.5);
+          await sleep(1000);
+          await shot(`${tag}-matgan.jpg`);
+          await cam(page, Math.PI, 0.05, 1.5);
+          await sleep(1000);
+          await shot(`${tag}-saugan.jpg`);
           await cam(page, 0, 0.05, 1.9);
           await sleep(1000);
           await shot(`${tag}-banthan.jpg`);
