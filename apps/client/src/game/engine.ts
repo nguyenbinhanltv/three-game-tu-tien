@@ -930,7 +930,7 @@ export class Game {
         this.gateDiscs.push(buildMoonGate(g.x, g.z));
         // Đĩa sáng nằm ngay trước mặt gương (tâm vòm cao 5 m trên nền, lùi 0,3 m ra phía trước).
         const disc = this.gateDiscs.find((d) => d.position.x === g.x && d.position.z === g.z && d.name !== 'moon-gate');
-        if (disc) { disc.position.y -= 3.6; disc.position.y += 5.0; disc.position.z += 0.32; disc.scale.set(0.9, 1.12, 1); }
+        if (disc) { disc.position.y -= 3.6; disc.position.y += 5.0; disc.position.z += 0.32; disc.scale.set(0.9, 1.12, 1); disc.userData.still = true; }
       }
       this.scene.add(...this.gateDiscs);
       for (const disc of this.gateDiscs) if (disc.name !== 'moon-gate') markBloom(disc.material as THREE.Material, 0.8);
@@ -2851,7 +2851,8 @@ export class Game {
     for (const disc of this.gateDiscs) {
       // Cổng gương nguyệt (vành + trụ đá) đứng yên, không lắc và không nhấp nháy như đĩa cổng.
       if (disc.name === 'moon-gate') continue;
-      disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
+      // Đĩa của cổng gương nguyệt không lắc: lắc thì mép chui qua gờ gương và bị cắt chiều sâu.
+      if (!disc.userData.still) disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
       (disc.material as THREE.MeshBasicMaterial).opacity = (disc.userData.op ?? 0.55) + Math.sin(now * 0.003) * (disc.userData.op ? disc.userData.op * 0.35 : 0.2);
     }
     this.tickSkillQueue(now);
