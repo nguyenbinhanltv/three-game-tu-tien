@@ -147,7 +147,7 @@ async function main(): Promise<void> {
         const { ctx, page, errors } = await newPage(browser, name, false);
         await page.goto(base(v, `auto=${name}&god=1&realm=nk12&at=tong_mon`), { waitUntil: 'load' });
         await inGame(page);
-        await sleep(2500);
+        await sleep(6500); // vào thế giới rồi chờ hết khung chuyển cảnh đầu (chụp sớm hơn ~4 s thấy ảnh kép/tách màu của lúc nạp cảnh, không phải do bảng)
         await page.keyboard.press('m');
         await sleep(1500);
         await sizes(page, 'ban-do', v);
