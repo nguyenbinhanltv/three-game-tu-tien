@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { PF_SOUL, TOUCH_R, questSpot } from '@dtl/shared';
 import { LEVELS, NPC, QUEST } from '@dtl/content';
+import { DUNGEON_QUEST_TARGET } from './dungeonquest';
 
 // Nhiệm vụ chương 4 Thiên Khuyết (E4-H): chuỗi q4_*, phụ s4_*, môn phong ấn chỉ nguyên anh xuất khiếu chạm được, phó bản Thần Tàng Điện.
 process.env.DB_FILE = ':memory:';
@@ -110,5 +111,15 @@ describe('phó bản và quái', () => {
     expect(t.char.quests.active.q4_than_tang).toEqual([0]);
     t.sim.questEvent(t.p, 'dungeon', 'than_tang_dien', 1);
     expect(t.char.quests.active.q4_than_tang).toEqual([1]);
+  });
+});
+
+describe('bảng đích phó bản', () => {
+  it('mọi nhiệm vụ dungeon có target đều có trong bảng; mọi khóa là level phó bản có thật', () => {
+    const targets = new Set(Object.values(DUNGEON_QUEST_TARGET));
+    for (const q of QUEST.values()) {
+      for (const o of q.objectives) if (o.type === 'dungeon' && o.target) expect(targets.has(o.target), `${q.id}: ${o.target}`).toBe(true);
+    }
+    for (const lv of Object.keys(DUNGEON_QUEST_TARGET)) expect(LEVELS[lv]?.dungeon, lv).toBeTruthy();
   });
 });

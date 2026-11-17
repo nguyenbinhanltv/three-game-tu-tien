@@ -32,6 +32,7 @@ import { Aoi } from './aoi';
 import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, ERR_NO_TICKET, issueSession, sessionAuth } from './auth';
 import { config } from './config';
 import { Character } from './game/character';
+import { DUNGEON_QUEST_TARGET } from './game/dungeonquest';
 import { MarkerSystem } from './game/marker';
 import { MirrorPuzzle } from './game/mirrorpuzzle';
 import { SealSystem } from './game/seal';
@@ -546,8 +547,6 @@ export function defineWorld(levelId: string): typeof WorldRoom {
 }
 
 /** Bí cảnh: mỗi room là một lượt của tối đa 5 người, đánh qua các đợt trong `levels/<id>.json` (E1-B, E2-C). */
-/** Đích sự kiện nhiệm vụ `dungeon` theo level phó bản (khớp `target` trong quests.json). */
-const DUNGEON_QUEST_TARGET: Record<string, string> = { phuc_mach: 'phuc_mach_quat', kinh_nguyet: 'kinh_nguyet_cung', than_tang: 'than_tang_dien' };
 
 export class DungeonRoom extends GameRoom {
   static levelId: string = 'kiem_trung';
