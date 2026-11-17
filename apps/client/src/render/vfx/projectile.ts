@@ -56,9 +56,9 @@ export function boltAlpha(age: number, life: number): number {
   return Math.min(fadeIn, fadeOut);
 }
 
-const SHADOW_GEO = new THREE.RingGeometry(0.55, 1, 24);
+export const SHADOW_GEO = new THREE.RingGeometry(0.55, 1, 24);
 const ORB_GEO = new THREE.IcosahedronGeometry(1, 1);
-const HALO_GEO = new THREE.SphereGeometry(1, 10, 8);
+export const HALO_GEO = new THREE.SphereGeometry(1, 10, 8);
 /** Lưỡi phi kiếm: bát diện, trục dài là z (scale theo z). */
 const SPIKE_GEO = new THREE.OctahedronGeometry(1, 0);
 

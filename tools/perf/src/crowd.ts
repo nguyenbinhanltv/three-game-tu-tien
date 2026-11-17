@@ -68,7 +68,7 @@ const BUDGET = { drawCalls: 300, triangles: 2_000_000, textureMB: 512, cpuP95Ms:
 const CAM = { pitch: 0.38, dist: 13 };
 
 type Keep = { ids: string[]; min: number; bossIds?: string[] };
-type Scene = { name: string; x: number; z: number; bots: string[]; keep?: Keep; dungeon?: boolean };
+type Scene = { name: string; x: number; z: number; bots: string[]; keep?: Keep; dungeon?: boolean; /** Địa điểm `places.json` ở level khác: client đo mở trận rồi `tp` sang đó trước khi tới tâm cảnh. */ place?: string; room?: string };
 const KT = { x: KIEM_TRUNG.x, z: KIEM_TRUNG.z - 12 };
 const SCENE_DEFS: Record<string, Scene> = {
   san: { name: 'san', x: SPAWN_POINT.x, z: SPAWN_POINT.z, bots: ['--crowd', `${SPAWN_POINT.x},${SPAWN_POINT.z},25`, '--tp'] },
@@ -85,6 +85,16 @@ const SCENE_DEFS: Record<string, Scene> = {
     z: KT.z,
     bots: ['--fight', `${KT.x},${KT.z},30`, '--level', '15', '--tp'],
     keep: { ids: ['mon_kiem_linh'], min: 4, bossIds: ['boss_thu_mo_tuong', 'boss_huyet_lang_vuong', 'boss_kiem_khoi'] },
+  },
+  // V6: Vân Hải (level van_hai, Tùng Đài Đảo): bot cấp 23 sang đảo bằng /gm rồi đánh quái bay + boss Kình Vương.
+  vanhai: {
+    name: 'vanhai',
+    x: 715,
+    z: 1273,
+    bots: ['--gm', 'tele all;tp vh_tung_dai', '--fight', '715,1273,30', '--level', '23'],
+    keep: { ids: ['mon_van_hac'], min: 8, bossIds: ['boss_van_hai_kinh_vuong'] },
+    place: 'vh_tung_dai',
+    room: 'world-van_hai',
   },
   dungeon: {
     name: 'dungeon',
@@ -468,6 +478,8 @@ type Point = {
   sceneNodes: string[];
   /** Material/object của pipeline tạo mới trong lúc đo (tối đa 40). */
   newPipelines: string[];
+  /** Mảnh gộp VFX đã tạo (kiểu|hình|renderOrder|mảnh) tính từ lúc vào game: mỗi mảnh biên dịch shader ở lần vẽ đầu. */
+  fxBuckets: string[];
   longFrames: [number, number, Record<string, number>][];
   topTextures: string[];
 };
@@ -556,7 +568,7 @@ async function openClient(browser: Browser, renderer: 'webgpu' | 'webgl2', prese
     if (m.type() === 'error') errors.push(m.text().slice(0, 300));
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)}, ${PORT});` });
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&gputime=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${process.env.CROWD_QUERY ?? ''}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&gputime=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${(process.env.CROWD_QUERY ?? '').includes('fxq=') ? '' : `&fxq=${preset}`}${process.env.CROWD_QUERY ?? ''}`;
   await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
   await waitInGame(page);
   const info = await page.evaluate(async () => {
@@ -590,6 +602,11 @@ async function waitInGame(page: Page, room?: string): Promise<void> {
 
 /** Dịch chuyển tới tâm cảnh và chờ ô địa hình nạp xong (như bench.ts). */
 async function goTo(page: Page, sc: Scene): Promise<boolean> {
+  if (sc.place && sc.room) {
+    await gm(page, 'tele all');
+    await gm(page, `tp ${sc.place}`);
+    await waitInGame(page, sc.room);
+  }
   await gm(page, `tp ${sc.x} ${sc.z}`);
   const until = Date.now() + 20_000;
   const start = Date.now();
@@ -698,6 +715,7 @@ async function measure(page: Page, sc: Scene, nBots: number, renderer: string, b
         });
         return `${c.name || c.type} ${n} node (${auto} auto)`;
       }),
+      fxBuckets: [...(g.vfx.batch.created as string[])],
       long: B.long,
       rx: B.rx,
       tx: B.tx,
@@ -753,6 +771,7 @@ async function measure(page: Page, sc: Scene, nBots: number, renderer: string, b
     pipelines: raw.pipelines,
     programs: raw.programs,
     newPipelines: raw.pipeDesc,
+    fxBuckets: raw.fxBuckets,
     drawBreakdown: Object.entries(raw.probe as Record<string, number>).sort((a, b) => b[1] - a[1]).slice(0, 40),
     sceneNodes: raw.sceneNodes,
     attrUploadKBps: Object.entries(raw.uploads as Record<string, number>)
@@ -892,7 +911,7 @@ async function main(): Promise<void> {
   try {
     for (const name of SCENES) {
       const sc = SCENE_DEFS[name];
-      if (!sc) throw new Error(`không có cảnh "${name}" (san, rung, boss, dungeon)`);
+      if (!sc) throw new Error(`không có cảnh "${name}" (san, rung, boss, vanhai, dungeon)`);
       if (sc.dungeon) {
         points.push(...(await runDungeon(browser, sc, errors)));
         continue;

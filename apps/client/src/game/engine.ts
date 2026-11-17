@@ -1161,6 +1161,7 @@ export class Game {
       set({ level: id });
       this.minimap = renderMinimap(320);
       this.terrain.update(this.cur.x, this.cur.z, 8);
+      this.vfx.rewarm();
       if (!isWebGPU(this.renderer)) await this.precompile();
       return true;
     } finally {
