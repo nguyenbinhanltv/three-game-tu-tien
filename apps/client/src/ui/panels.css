@@ -903,12 +903,13 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
 
 /* ---------- phóng HUD theo màn hình (ui/uiScale.ts) ----------
  * Bố cục thiết kế ở 1920×1080; màn lớn hơn thì `--ui-scale` > 1 và từng khối HUD phóng đều bằng `zoom`.
- * Không phóng: bản đồ nhỏ (tự quản), các lớp phủ cả màn hình dùng vw/vh (cảnh điện ảnh, thẻ chương, lời boss, letterbox).
+ * Không phóng: các lớp phủ cả màn hình dùng vw/vh (cảnh điện ảnh, thẻ chương, lời boss, letterbox).
  * `zoom` nhân mọi độ dài bên trong, kể cả vw/vh, nên giới hạn theo khung nhìn phải chia lại cho hệ số.
  */
 .hud > :not(.right-col, .cine, .chapter-card, .boss-line, .trib-bar, .crosshair, .ult-card, .death),
 .hud > .death > .k-panel,
 .right-col > .tracker,
+.right-col > .minimap-wrap,
 body > .k-tip {
   zoom: var(--ui-scale, 1);
 }
