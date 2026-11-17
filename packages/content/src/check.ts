@@ -581,6 +581,21 @@ for (const m of MONSTERS) {
     }
     if (mi.veil && !(mi.veil.r <= 16 && mi.veil.dur <= 25 && mi.veil.hpMul > 0 && mi.veil.hpMul <= 0.5)) err(`monster ${m.id}: mirror.veil: r ≤ 16, ≤ 25 s, hpMul ∈ (0; 0,5]`);
   }
+  if (m.than) {
+    const th = m.than;
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có than`);
+    const nph = (m.phases?.length ?? 0) + 1;
+    for (const [k, f] of Object.entries(th) as [string, { phase: number } | undefined][]) if (f && !(Number.isInteger(f.phase) && f.phase >= 0 && f.phase < nph)) err(`monster ${m.id}: than.${k}.phase ngoài số pha`);
+    if (th.hands && !(th.hands.n >= 2 && th.hands.n <= 8 && th.hands.delay >= 1.3 && th.hands.w * th.hands.n < 360 - 20 * th.hands.n && th.hands.cd >= 6)) err(`monster ${m.id}: than.hands: 2–8 tay, báo ≥ 1,3 s, khe giữa các tay ≥ 20°, hồi ≥ 6 s`);
+    if (th.elem && !(th.elem.delay >= 1.5 && th.elem.cut > 0 && th.elem.cut <= 0.9 && th.elem.ring + th.elem.sealR <= th.elem.r + 0.5 && th.elem.ring >= th.elem.sealR * 2.2)) err(`monster ${m.id}: than.elem: báo ≥ 1,5 s, ấn nằm trong vòng đánh và không chồng nhau`);
+    if (th.clone) {
+      const cd = MONSTER.get(th.clone.mon);
+      if (!cd) err(`monster ${m.id}: than.clone.mon không tồn tại`);
+      else if (cd.boss || cd.elite || cd.xpMul !== 0) err(`monster ${m.id}: phân thân không phải boss/tinh anh và không cho tu vi (xpMul 0)`);
+      if (!(th.clone.n >= 1 && th.clone.n <= 4 && th.clone.life >= 10 && th.clone.heal <= 0.15)) err(`monster ${m.id}: than.clone: 1–4 con, sống ≥ 10 s, hồi ≤ 15%`);
+    }
+    if (th.rings && !(th.rings.dur <= 15 && th.rings.spin <= 30 && th.rings.final.delay >= 1.5 && th.rings.final.gather >= 6)) err(`monster ${m.id}: than.rings: ≤ 15 s, quay ≤ 30°/s (chạy kịp), Phản hồi báo ≥ 1,5 s`);
+  }
   const ps = m.posture;
   if (ps) {
     if (!m.boss) err(`monster ${m.id}: chỉ boss mới có thanh phá thế`);
@@ -831,6 +846,19 @@ for (const lv of Object.values(LEVELS)) {
       if (!(g.n >= 1)) err(`${ww}: quái ${g.id} số lượng phải >= 1`);
     }
     for (const pt of wv.points ?? []) if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${ww}: điểm sinh (${pt.x}, ${pt.z}) ngoài bản đồ`);
+    if (wv.seals) {
+      const sl = wv.seals;
+      if (sl.doors.length < 1 || sl.doors.length > 5) err(`${ww}: phong ấn cần 1–5 cửa`);
+      for (const d of sl.doors) {
+        for (const [x, z] of [[d.x, d.z], [d.gx, d.gz]] as const) if (!Number.isFinite(terrainOf(lv).groundAt(x, z))) err(`${ww}: cửa phong ấn (${x}, ${z}) ngoài bản đồ`);
+        const c = lv.dungeon!.center;
+        if (Math.hypot(d.gx - c.x, d.gz - c.z) > (lv.dungeon!.bound ?? 90) - 6) err(`${ww}: trận môn (${d.gx}, ${d.gz}) ngoài vòng bí cảnh`);
+        if (Math.hypot(d.x - d.gx, d.z - d.gz) < sl.bar + 2) err(`${ww}: cửa phải cách trận môn ≥ bar + 2 m để chặn không đè lên cửa`);
+      }
+      if (!(sl.touch > 0 && sl.touch <= 6 && sl.phuR >= 4 && sl.bar >= sl.touch + 2)) err(`${ww}: seals touch ≤ 6, phuR ≥ 4, bar ≥ touch + 2`);
+      if (!MONSTER.get(sl.reinforce.mon)) err(`${ww}: quái tiếp viện ${sl.reinforce.mon} không tồn tại`);
+      if (!wv.title) err(`${ww}: đợt phong ấn phải có title`);
+    }
     if (wv.puzzle) {
       const pz = wv.puzzle;
       if (pz.points.length !== 3) err(`${ww}: đố gương cần đúng 3 điểm`);
