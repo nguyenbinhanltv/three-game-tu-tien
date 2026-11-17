@@ -24,8 +24,15 @@ const SKILLS = opt('--skills', 'skl_kiem_khi_tram,skl_phi_kiem').split(',');
 const FXQ = opt('--fxq', 'high');
 const OLD = args.includes('--old');
 const PERF = args.includes('--perf');
+/** Công pháp của từng chiêu (V3: Hộ pháp/Đan sư); chiêu không ghi là Kiếm tu. */
+const HP = 'bat_dong_kim_than';
+const DS = 'thanh_moc_dan_kinh';
+const METHOD_OF: Record<string, string> = Object.fromEntries([
+  ...['skl_thiet_bich_xung', 'skl_tran_son_an', 'skl_kim_cuong_bat_hoai', 'skl_thiet_quyen_chan_dia', 'skl_kim_chung_tran', 'skl_son_nhac_hoa_than', 'skl_dich_son_xung', 'skl_anh_thiet_than', 'skl_thuan_di_ho_the', 'skl_thien_kim_phap_tuong'].map((k) => [k, HP]),
+  ...['skl_luu_huong_bo', 'skl_hoi_xuan_quyet', 'skl_hoi_thien_dan_lo', 'skl_moc_linh_tran', 'skl_duoc_vu', 'skl_ngung_dan_ho_the', 'skl_dan_hoa_phong_tran', 'skl_anh_duoc_hoa_than', 'skl_thuan_di_cuu_vien', 'skl_thien_dan_phap_gioi'].map((k) => [k, DS]),
+]);
 /** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
-const WIDE = /thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh/;
+const WIDE = /thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
 /** Số người giả cùng ra chiêu (đo sân đông) và thời gian đo (giây). */
 const CROWD = Number(opt('--crowd', '0'));
 const CROWD_SECS = Number(opt('--crowd-secs', '15'));
@@ -242,7 +249,7 @@ async function main(): Promise<void> {
         }, undefined, { timeout: 60_000, polling: 300 });
         const bar = (id: string) => page.evaluate((i) => (window as unknown as G).__game!.bar().findIndex((s: { id: string }) => s.id === i), id);
         const press = async (id: string) => {
-          if (id === 'skl_kiem_anh_bo' || id === 'skl_nghich_kiem_chuyen_phong') return page.evaluate(() => (window as unknown as G).__game!.useDash());
+          if (/kiem_anh_bo|nghich_kiem|thiet_bich_xung|luu_huong_bo|dich_son_xung/.test(id)) return page.evaluate(() => (window as unknown as G).__game!.useDash());
           const i = id === 'skl_phi_kiem' ? 0 : await bar(id);
           if (i < 0) {
             // Chiêu còn khóa (chưa có cơ chế Nguyên Anh/Hóa Thần) không nằm trên thanh chiêu: phát thẳng sự kiện windup vào SkillFx để xem hiệu ứng (không có động tác).
@@ -266,9 +273,16 @@ async function main(): Promise<void> {
           await ctx.close();
           continue;
         }
+        let curMethod = 'lac_kiem_quyet';
         for (const sk of SKILLS) {
+          const want = METHOD_OF[sk] ?? 'lac_kiem_quyet';
+          if (want !== curMethod) {
+            await gm(page, `method ${want} 5`, 1500);
+            if (LEVEL >= 16) await gm(page, 'skills max', 1500);
+            curMethod = want;
+          }
           await scene(page);
-          if (/van_kiem_quy_tong|thien_kiem_hoa_hinh/.test(sk)) await gm(page, 'charge', 900);
+          if (/van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/.test(sk)) await gm(page, 'charge', 900);
           await closeCam(page, WIDE.test(sk) ? 9.5 : DIST);
           if (WIDE.test(sk)) await page.evaluate(() => { (window as unknown as G).__game!.camPitch = 0.3; });
           const combo = sk === 'skl_phi_kiem';
