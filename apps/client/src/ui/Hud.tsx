@@ -443,9 +443,9 @@ function SkillBar() {
       <div className="skill-row">
         {NGJ && <Corners />}
         {slots.map((sk, i) => {
-          // Ô 9 (thần thông, phím 0) và ô 10 (Hóa Thần, phím -): không có công pháp thì không vẽ.
+          // Ô 9 (thần thông, phím 0) và ô 10 (Hóa Thần, phím `): không có công pháp thì không vẽ.
           if (!sk && i >= BAR_SIZE) return null;
-          const keyLabel = i === BAR_SIZE ? '0' : i === BAR_SIZE + 1 ? '-' : String(i + 1);
+          const keyLabel = i === BAR_SIZE ? '0' : i === BAR_SIZE + 1 ? '`' : String(i + 1);
           if (!sk) {
             // Ô 7–8 khi chưa chọn công pháp: ô trống, bấm để mở bảng Công pháp.
             return (

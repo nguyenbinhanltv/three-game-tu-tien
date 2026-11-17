@@ -1407,8 +1407,8 @@ export class Game {
       else pushToast(t('ui.method.empty_slot'), 'info');
       return;
     }
-    // Ô chiêu 10, thần thông Hóa Thần (E4-K): phím - (phím 0 vẫn là ô 9).
-    if (code === 'Minus' && !e.shiftKey) {
+    // Ô chiêu 10, thần thông Hóa Thần (E4-K): phím ` (Backquote; `-` là zoom camera; phím 0 vẫn là ô 9).
+    if (code === 'Backquote' && !e.shiftKey) {
       if (this.bar().length > BAR_SIZE + 1) this.useSkill(BAR_SIZE + 1);
       else pushToast(t('ui.method.empty_slot'), 'info');
       return;
