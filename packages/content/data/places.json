@@ -34,5 +34,6 @@
   { "id": "tk_lam_sao", "level": "thien_khuyet", "x": 614, "z": 970, "note": "Tinh Bái Đài, Lâm Sao Viên (cấp 24–25)" },
   { "id": "tk_binh_khi", "level": "thien_khuyet", "x": 1464, "z": 904, "note": "Kho Giáo, Binh Khí Khố (cấp 25–26)" },
   { "id": "tk_dien_tien", "level": "thien_khuyet", "x": 1044, "z": 270, "note": "Cổng Thần Tàng Điện, Điện Tiền Quảng Trường (cấp 26–27)" },
-  { "id": "tk_mo_dao", "level": "thien_khuyet", "x": 964, "z": 1504, "note": "Cổ Thành Thất Lộ, Mộ Đạo (cấp 24–26); chỗ Thiên Khuyết Thủ Linh sau này" }
+  { "id": "tk_mo_dao", "level": "thien_khuyet", "x": 964, "z": 1504, "note": "Cổ Thành Thất Lộ, Mộ Đạo (cấp 24–26)" },
+  { "id": "tk_boss", "level": "thien_khuyet", "x": 990, "z": 1548, "note": "Mộ Đạo, đấu trường trống 30 m phía đông nam Thiên Khuyết Thủ Linh (964, 1530), xa cột linh quang của điểm Cổ Thành Thất Lộ" }
 ]
