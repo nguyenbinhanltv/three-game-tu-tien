@@ -10,7 +10,7 @@ const KEY = 'dtl.lastZone';
 const DEFAULT_ZONE = 'tong_mon';
 
 /** Level riêng có một tranh màn tải chung (E2): bản đồ nào chưa có ảnh thì rơi về logic vùng Vân Lam. */
-export const LEVEL_ART: Record<string, string> = { doan_mach: 'doan_mach', phuc_mach_quat: 'phuc_mach_quat' };
+export const LEVEL_ART: Record<string, string> = { doan_mach: 'doan_mach', phuc_mach_quat: 'phuc_mach_quat', van_hai: 'van_hai_phu_dao' };
 
 /** Id ảnh theo vị trí: khớp tên vùng ở `zone.<id>` của i18n, riêng tông môn/Kiếm Trủng theo biome. */
 export function zoneArtId(x: number, z: number): string {

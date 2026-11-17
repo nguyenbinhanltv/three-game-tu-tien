@@ -3,8 +3,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../assets';
 import { MONSTER_SKINS, MonsterSkins } from './monsterSkins';
+import { nodeGltfLoader } from '../gltfTestLoader';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
@@ -60,8 +61,7 @@ describe('boss mở rộng (asset Tripo nhập E-2/E-3/E-4)', () => {
       load: async (url) => {
         loaded.push(url);
         const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
-        const loader = createGltfLoader(createKtx2Loader());
-        loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+        const loader = nodeGltfLoader();
         return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
       },
     });

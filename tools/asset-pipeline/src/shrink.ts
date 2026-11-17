@@ -33,7 +33,8 @@ for (const entry of Object.values(manifest.assets)) {
     const slots = info?.slots ?? [];
     const limit = textureLimit(spec, slots);
     const img = tex.getImage();
-    if (!img || limit <= 0) continue;
+    // KTX2 đã được toktx hạ cạnh về ngân sách lúc build (ktx.ts), và sharp không đọc được: bỏ qua.
+    if (!img || limit <= 0 || tex.getMimeType() === 'image/ktx2') continue;
     const meta = await sharp(img).metadata();
     const side = Math.max(meta.width ?? 0, meta.height ?? 0);
     if (side <= limit) continue;

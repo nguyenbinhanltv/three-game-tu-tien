@@ -6,7 +6,7 @@ import dracoJsUrl from 'three/addons/libs/draco/draco_wasm_wrapper.js?url';
 import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
 import { POSES } from '@dtl/content';
 import { POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
-import { createGltfLoader, createKtx2Loader, localLibsManager } from '../game/assets';
+import { createGltfLoader, createKtx2Loader, detectKtx2Support, localLibsManager } from '../game/assets';
 import { mergeClips, retargetClips } from '../game/character/animLib';
 import { bakePose, formatProbe, IkRig, poseClipName } from '../game/character/ikpose';
 import { isSkillViewer } from '../game/testParams';
@@ -110,7 +110,7 @@ export class ViewerScene {
     // Decoder/transcoder lấy từ node_modules qua URL do Vite sinh, không chép vào public/.
     const manager = localLibsManager({ 'draco_wasm_wrapper.js': dracoJsUrl, 'draco_decoder.wasm': dracoWasmUrl });
     const ktx2 = createKtx2Loader(manager);
-    await ktx2.detectSupportAsync(r);
+    await detectKtx2Support(ktx2, r);
     const draco = new DRACOLoader(manager).setDecoderPath('/libs/').setDecoderConfig({ type: 'wasm' });
     this.loader = createGltfLoader(ktx2).setDRACOLoader(draco);
 

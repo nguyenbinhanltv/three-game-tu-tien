@@ -5,10 +5,11 @@ import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { APPEARANCE, SKILLS } from '@dtl/content';
 import { performOpts } from '../skillPose';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../assets';
 import { Humanoid } from '../models';
 import { PLAYER_SKINS, PlayerSkins, SkinnedPlayer } from './playerSkins';
 import type { AnimState } from './view';
+import { nodeGltfLoader } from '../gltfTestLoader';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
@@ -22,8 +23,7 @@ async function skins(fail = false, legacy = false) {
     load: async (url) => {
       if (fail) throw new Error('mạng lỗi');
       const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
-      const loader = createGltfLoader(createKtx2Loader());
-      loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+      const loader = nodeGltfLoader();
       return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
     },
   });

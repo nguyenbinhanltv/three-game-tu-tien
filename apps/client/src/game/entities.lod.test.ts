@@ -4,13 +4,14 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { APPEARANCE } from '@dtl/content';
-import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from './assets';
+import { AssetCache, type Manifest } from './assets';
 import { PlayerSkins, type SkinnedPlayer } from './character/playerSkins';
 import { NpcSkins } from './character/npcSkins';
 import { MonsterSkins } from './character/monsterSkins';
 import type { SkinnedCharacter } from './character/skinned';
 import { groundAt, MS_IDLE } from '@dtl/shared';
 import type { EntityManager as EM, PState, WorldView } from './entities';
+import { nodeGltfLoader } from './gltfTestLoader';
 
 // M3-9: LOD theo camera đi qua EntityManager.update thật (không chỉ setView). Node không có canvas: thay bằng canvas giả
 // đủ cho nhãn tên (makeLabel) và dấu nhiệm vụ.
@@ -31,8 +32,7 @@ function testCache(): AssetCache {
     fetchManifest: async () => MANIFEST,
     load: async (url) => {
       const buf = fs.readFileSync(path.join(PUBLIC_ASSETS, url));
-      const loader = createGltfLoader(createKtx2Loader());
-      loader.register(() => ({ name: 'test_stub_texture', loadTexture: () => Promise.resolve(new THREE.Texture()) }));
+      const loader = nodeGltfLoader();
       return loader.parseAsync(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), '');
     },
   });
