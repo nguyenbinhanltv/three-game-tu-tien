@@ -1,5 +1,5 @@
 // pnpm shots:sets: chụp ảnh phụ kiện hình dáng của 4 bộ trang bị (nam + nữ × trước/sau lưng/nghiêng), cộng ảnh đang chạy và đang chém để soát xuyên mesh.
-//   tsx src/shots-sets.ts --out <thư mục> [--renderer webgpu|webgl2] [--sets set_lac_kiem,...] [--level 12] [--genders m,f] [--only still|motion]
+//   tsx src/shots-sets.ts --out <thư mục> [--renderer webgpu|webgl2] [--sets set_lac_kiem,...] [--level 12] [--genders m,f] [--only still|motion] [--kit 4 --sets kiem,hophap,dansu]
 // Tự chạy `pnpm dev` ở PORT/CLIENT_PORT (mặc định 2675/5175), vào game tắt tiếng (?mute=1, --mute-audio) bằng tài khoản thử, mặc bộ bằng lệnh GM `set`.
 import path from 'node:path';
 import fs from 'node:fs';
@@ -16,6 +16,8 @@ const RENDERER = opt('--renderer', 'webgpu');
 const SETS = opt('--sets', 'set_lac_kiem,set_huyen_giap,set_dan_tam,set_han_giao').split(',');
 const GENDERS = opt('--genders', 'm,f').split(',');
 const ONLY = opt('--only', 'all');
+// --kit <bậc>: thay lệnh `set <bộ>` bằng `kit <bậc> <nhánh> <m|f>` (--sets lúc đó là nhánh: kiem,hophap,dansu); mặc cả bộ + kiếm bậc đó như GM-TEST.
+const KIT = opt('--kit', '');
 const DIST = Number(opt('--dist', '3.4'));
 const [VW, VH] = opt('--size', '1100x900').split('x').map(Number);
 const PORT = Number(process.env.PORT ?? 2675);
@@ -84,7 +86,7 @@ async function main(): Promise<void> {
         await cam(page, 0, 0.12, DIST);
         await sleep(800);
         const base = await page.evaluate(() => (window as unknown as G).__game!.info());
-        await gm(page, `set ${set}`, 2200);
+        await gm(page, KIT ? `kit ${KIT} ${set} ${g}` : `set ${set}`, KIT ? 3500 : 2200);
         const worn = await page.evaluate(() => (window as unknown as G).__game!.me?.()?.sa ?? '');
         await cam(page, 0, 0.12, DIST);
         await sleep(800);

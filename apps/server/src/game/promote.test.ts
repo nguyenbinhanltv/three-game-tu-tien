@@ -102,11 +102,25 @@ describe('Thăng Bậc', () => {
     expect(t.count(MAT)).toBe(PROMOTE_MAT_COUNT);
   });
 
-  it('bậc kế chưa mở: bậc 3 không thăng được (bậc 4 khóa); thiếu cảnh giới đích thì chặn', () => {
-    const t = setup(20);
-    t.give((d) => (d.addRolled('itm_kinh_quang_kiem', 21, 3), d.add(MAT, 40), d.add(PROMOTE_MAT[3]!, 40), d.add(PROMOTE_MAT[4]!, 40), d.addGold(99999)));
+  it('bậc 3 → bậc 4 (SETS-4): kiếm và áo bộ thăng đúng đích, trừ 20 Tinh Quang Mặc + phí; bậc 4 không thăng tiếp được', () => {
+    const t = setup(24);
+    const M4 = PROMOTE_MAT[4]!;
+    t.give((d) => (d.addRolled('itm_kinh_quang_kiem', 21, 3), d.addRolled('itm_kq_dao_bao', 21, 3), d.add(M4, PROMOTE_MAT_COUNT * 2 + 1), d.addGold(promoteGold(4) * 2 + 7)));
     t.send('promote', { i: t.slotOf('itm_kinh_quang_kiem') });
+    t.send('promote', { i: t.slotOf('itm_kq_dao_bao') });
+    expect(t.slotOf('itm_tinh_khuyet_kiem')).toBeGreaterThanOrEqual(0);
+    expect(t.slotOf('itm_tk_dao_bao')).toBeGreaterThanOrEqual(0);
+    expect(t.count(M4)).toBe(1);
+    expect(t.c.gold).toBe(7);
+    t.send('promote', { i: t.slotOf('itm_tk_dao_bao') });
     expect(t.warns).toContain('sys.promote_locked');
+  });
+
+  it('thiếu cảnh giới đích thì chặn', () => {
+    const t = setup(20);
+    t.give((d) => (d.addRolled('itm_kinh_quang_kiem', 21, 3), d.add(PROMOTE_MAT[4]!, 40), d.addGold(99999)));
+    t.send('promote', { i: t.slotOf('itm_kinh_quang_kiem') });
+    expect(t.warns).toContain('sys.equip_level');
     const low = setup(15);
     low.give((d) => (d.addRolled('itm_han_quang_kiem', 12, 2), d.add(MAT, 20), d.addGold(GOLD)));
     low.send('promote', { i: low.slotOf('itm_han_quang_kiem') });

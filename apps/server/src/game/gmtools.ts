@@ -14,11 +14,12 @@ export function isGmBranch(v: unknown): v is GmBranch {
 /** Công pháp ứng với nhánh. */
 export const BRANCH_METHOD: Record<GmBranch, string> = { kiem: 'lac_kiem_quyet', hophap: 'bat_dong_kim_than', dansu: 'thanh_moc_dan_kinh' };
 
-/** Bộ trang bị theo bậc (chỉ số 0 = bậc 1) × nhánh (kiem, hophap, dansu). Bậc 4 chưa có vật phẩm: dùng bậc cao nhất có. */
+/** Bộ trang bị theo bậc (chỉ số 0 = bậc 1) × nhánh (kiem, hophap, dansu). Bậc chưa có vật phẩm thì dùng bậc cao nhất có. */
 export const GM_TIER_SETS: readonly (readonly [string, string, string])[] = [
   ['set_lac_kiem', 'set_huyen_giap', 'set_dan_tam'],
   ['set_liet_mach', 'set_dia_giap', 'set_phuc_mach'],
   ['set_kinh_quang', 'set_van_kinh', 'set_luu_ly'],
+  ['set_tinh_khuyet', 'set_co_thanh', 'set_than_tang'],
 ];
 
 export const GM_MAX_TIER = 4;

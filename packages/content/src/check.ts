@@ -614,7 +614,7 @@ for (const r of RECIPES) {
 {
   const LOOT_SETS = new Set<string>();
   for (const l of LOOT.values()) for (const r of l.equip ?? []) if (r.set) LOOT_SETS.add(r.set);
-  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow', 'hoanh_kiem', 'kim_chung', 'moc_linh', 'nghich_kiem', 'dich_son', 'ngung_dan'];
+  const FX = ['phi_kiem_extra', 'shield_boost', 'heal_share', 'crit_slow', 'hoanh_kiem', 'kim_chung', 'moc_linh', 'nghich_kiem', 'dich_son', 'ngung_dan', 'phan_anh', 'anh_thiet', 'anh_duoc'];
   const hex = /^#[0-9a-fA-F]{6}$/;
   uniqueIds('set', SETS);
   for (const st of SETS) {
@@ -681,7 +681,7 @@ for (const r of RECIPES) {
       else if (to.kind !== it.kind || itemTier(to.id) !== tier + 1) err(`${it.id}: promoteTo ${to.id} phải cùng ô và bậc ${tier + 1}`);
     }
     // Mọi món bậc thấp hơn bậc cao nhất đang mở đều phải thăng được.
-    // Trang sức đầu (ô 9) chưa có bản bậc 3: chưa thăng bậc được (TODO khi làm mảnh trang sức đầu của bộ bậc 3).
+    // Trang sức đầu (ô 9) chỉ có ở bậc 2 và 4 (bậc 3 chưa có): chưa thăng bậc được.
     if (tier < TIER_OPEN && it.kind !== 'head' && !promoteTarget(it.id)) err(`${it.id}: không có đích Thăng Bậc`);
     if (it.set) for (const o of SETS.find((x) => x.id === it.set)?.pieces ?? []) if (itemTier(o) !== tier) err(`bộ ${it.set}: ${o} khác bậc với ${it.id}`);
   }

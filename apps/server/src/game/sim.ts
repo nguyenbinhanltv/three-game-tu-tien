@@ -2082,6 +2082,14 @@ export class GameSim {
             o.mth.setGuard(this.now, v.guardAlly.reduce, rs.duration ?? 6);
           }
         }
+        // Bộ Cổ Thành bậc 4 (4 món): Anh Thiết Thân: đồng đội trong 10 m cũng giảm `anhThietShare` sát thương nhận (người mặc không gánh hộ phần nào).
+        const share = skill.id === 'skl_anh_thiet_than' ? c.stats.setFx.anhThietShare : 0;
+        if (share > 0) {
+          for (const o of this.players.values()) {
+            if (o === p || !this.canAssist(p, o) || Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > 10) continue;
+            o.mth.setGuard(this.now, share, rs.duration ?? 6);
+          }
+        }
         if (v?.tauntGuard) p.mth.setGuard(this.now, v.tauntGuard, 3);
         break;
       }
@@ -2089,12 +2097,14 @@ export class GameSim {
         const r = (skill.allyRadius ?? 10) * (v?.healRadiusMul ?? 1);
         // Bộ Đan Sư bậc 2 (4 món): Mộc Linh Trận kéo dài thêm `mocLinhDur`, giữ nguyên lượng hồi/độc mỗi giây (tổng tăng theo).
         const durMul = skill.id === 'skl_moc_linh_tran' ? 1 + c.stats.setFx.mocLinhDur : 1;
+        // Bộ Thần Tàng bậc 4 (4 món): Anh Dược Hóa Thân hồi thêm `anhDuocBoost`.
+        const healBoost = skill.id === 'skl_anh_duoc_hoa_than' ? 1 + c.stats.setFx.anhDuocBoost : 1;
         const sec = (rs.duration ?? 6) * durMul;
         this.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, d: sec, ...tag });
         for (const o of this.players.values()) {
           if (!this.canAssist(p, o)) continue;
           if (o !== p && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
-          const total = healAmount(o.char.mhp * rs.power * durMul * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
+          const total = healAmount(o.char.mhp * rs.power * durMul * healBoost * (o === p ? (v?.selfHealMul ?? 1) : 1), healMul);
           this.addHot(o.sid, total / sec, sec);
           if (v?.selfShield) {
             const amount = Math.round(o.char.mhp * v.selfShield);
