@@ -2,12 +2,14 @@ import { Portrait, useArtUrl } from './Art';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import './panels.css';
 import './tutien.css';
+import './ngj/hud.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
+import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
 import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { artifactLines } from './gear';
+import { Corners, ngjHud as NGJ, SealNumeral, SysIcon, type SysIconName } from './ngj';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
@@ -33,7 +35,20 @@ function PlayerFrame() {
   if (flags & PF_TRIBULATION) goal.ready = false;
   const full = goal.ready || (flags & PF_TRIBULATION) !== 0 || (char.level === NGUNG_KHI_MAX && char.xp >= char.xpNeed);
   return (
-    <div className={'frame player-frame' + (goal.ready ? ' can-break' : '')}>
+    <div className={'frame player-frame' + (goal.ready ? ' can-break' : '') + (NGJ ? ' ngj-pf' : '')}>
+      {NGJ && (
+        <>
+          <Corners />
+          <div className="ngj-pf-portrait" aria-hidden="true">
+            <SysIcon name="character" size={34} />
+            {/* Chân dung theo giới tính của mình (`player_m|player_f`, tranh Codex); chưa nạp xong thì thấy icon phía sau. */}
+            <Portrait id={'player_' + (Game.current?.view?.players.get(Game.current.sid)?.g === 'f' ? 'f' : 'm')} className="ngj-pf-face" />
+            <span className="ngj-pf-seal">
+              <SealNumeral n={realmStageOf(char.level)} size={20} />
+            </span>
+          </div>
+        </>
+      )}
       <div className="frame-head">
         <span className="frame-name">{char.name}</span>
         <span className="frame-realm" data-tier={char.level >= TRUC_CO_LEVEL ? 'tc' : 'nk'}>
@@ -72,6 +87,7 @@ function TargetFrame({ below }: { below: boolean }) {
   if (!target || (target.boss && target.id === bossId)) return null;
   return (
     <div className={'frame target-frame' + (below ? ' below-boss' : '')} data-kind={target.kind}>
+      {NGJ && <Corners />}
       {target.kind !== 'player' && <Portrait id={target.def} className="frame-portrait" />}
       <div className="frame-head">
         <span className="frame-name">{target.name}</span>
@@ -91,6 +107,7 @@ function BossBar() {
   const pct = boss.hp > 0 && boss.mhp > 0 ? Math.max(1, Math.floor((boss.hp / boss.mhp) * 100)) : 0;
   return (
     <div className="boss-bar" key={boss.id}>
+      {NGJ && <Corners />}
       <Portrait id={boss.def} className="boss-portrait" />
       <div className="boss-head">
         <span className="boss-name">{monsterName(boss.def)}</span>
@@ -289,6 +306,15 @@ function QuestTracker() {
   const tracked = trackedQuestId(quests, track);
   return (
     <div className="tracker">
+      {NGJ && (
+        <>
+          <Corners />
+          <div className="ngj-tracker-head">
+            <SysIcon name="quest" size={16} />
+            <span>{t('ui.quests')}</span>
+          </div>
+        </>
+      )}
       {ids.slice(0, 4).map((id) => {
         const q = QUEST.get(id);
         if (!q) return null;
@@ -343,6 +369,35 @@ function blurAfterPointer(e: React.MouseEvent<HTMLElement>): void {
  * chiều kim đồng hồ) kèm số giây, xám khi thiếu linh lực hoặc không ra chiêu được (ngự kiếm/lơ lửng, khớp luật
  * `airborne()` của server), khóa khi chưa đủ cảnh giới. Viền hàng đợi (M1-11) và vòng tự đánh giữ nguyên.
  */
+/** Một nút thanh chức năng kiểu Ngọc Giản: vòng vàng chứa icon nét vàng, nhãn, chip phím. Giữ nguyên hành vi như `Button` cũ. */
+function SysButton({ icon, label, kbd, pressed, onClick, title, bag }: { icon: SysIconName; label?: string; kbd: string; pressed?: boolean; onClick: (e: React.MouseEvent<HTMLElement>) => void; title?: string; bag?: boolean }) {
+  return (
+    <button type="button" className="ngj-sysbtn" aria-pressed={pressed || undefined} title={title} data-bag={bag ? '' : undefined} onClick={onClick}>
+      <span className="ngj-sysbtn-ring">
+        <SysIcon name={icon} size={18} />
+      </span>
+      {label && <span className="ngj-sysbtn-label">{label}</span>}
+      <kbd>{kbd}</kbd>
+    </button>
+  );
+}
+
+function SysRow({ flags, wantFly }: { flags: number; wantFly: boolean }) {
+  return (
+    <div className="action-row ngj-sys">
+      <SysButton icon="meditate" label={t('ui.meditate')} kbd="Z" pressed={(flags & PF_MEDITATING) !== 0} title={t('ui.help.meditate_v')} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} />
+      <SysButton icon="sword" label={t('ui.fly')} kbd="F" pressed={wantFly || (flags & PF_FLYING) !== 0} title={t('ui.help.fly_v')} onClick={(e) => { Game.current?.toggleFly(); blurAfterPointer(e); }} />
+      <SysButton icon="bag" label={t('ui.bag.short')} kbd="B" bag onClick={(e) => { togglePanel('bag'); blurAfterPointer(e); }} />
+      <SysButton icon="character" label={t('ui.char')} kbd="C" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }} />
+      <SysButton icon="method" label={t('ui.method.key')} kbd="K" title={t('ui.method.title')} onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} />
+      <SysButton icon="party" label={t('ui.party.key')} kbd="P" title={t('ui.party.title')} onClick={(e) => { togglePanel('party'); blurAfterPointer(e); }} />
+      <SysButton icon="quest" label={t('ui.quests')} kbd="L" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }} />
+      <SysButton icon="help" kbd="H" title={t('ui.help')} onClick={(e) => { togglePanel('help'); blurAfterPointer(e); }} />
+      <SysButton icon="settings" kbd="O" title={`${t('ui.settings')} (O)`} onClick={(e) => { togglePanel('settings'); blurAfterPointer(e); }} />
+    </div>
+  );
+}
+
 function SkillBar() {
   const char = useUI((s) => s.char);
   const cds = useUI((s) => s.cds);
@@ -377,6 +432,7 @@ function SkillBar() {
         </div>
       )}
       <div className="skill-row">
+        {NGJ && <Corners />}
         {slots.map((sk, i) => {
           // Ô 9 (thần thông, phím 0): không có công pháp thì không vẽ.
           if (!sk && i === BAR_SIZE) return null;
@@ -496,35 +552,39 @@ function SkillBar() {
         </div>
       )}
       <BuffRow />
-      <div className="action-row">
-        <Button size="s" pressed={(flags & PF_MEDITATING) !== 0} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} title={t('ui.help.meditate_v')}>
-          <UiIcon id="hud_thien" fallback="🧘" className="inline" /> <span>{t('ui.meditate')}</span> <kbd>Z</kbd>
-        </Button>
-        <Button size="s" pressed={wantFly || (flags & PF_FLYING) !== 0} onClick={(e) => { Game.current?.toggleFly(); blurAfterPointer(e); }} title={t('ui.help.fly_v')}>
-          <UiIcon id="hud_ngu_kiem" fallback="🗡️" className="inline" /> <span>{t('ui.fly')}</span> <kbd>F</kbd>
-        </Button>
-        <Button size="s" data-bag onClick={(e) => { togglePanel('bag'); blurAfterPointer(e); }}>
-          <UiIcon id="hud_tui" fallback="🎒" className="inline" /> <span>{t('ui.bag.short')}</span> <kbd>B</kbd>
-        </Button>
-        <Button size="s" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
-          <UiIcon id="hud_nhan_vat" fallback="👤" className="inline" /> <span>{t('ui.char')}</span> <kbd>C</kbd>
-        </Button>
-        <Button size="s" onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} title={t('ui.method.title')}>
-          <UiIcon id="hud_cong_phap" fallback="☯️" className="inline" /> <span>{t('ui.method.key')}</span> <kbd>K</kbd>
-        </Button>
-        <Button size="s" onClick={(e) => { togglePanel('party'); blurAfterPointer(e); }} title={t('ui.party.title')}>
-          <UiIcon id="hud_to_doi" fallback="👥" className="inline" /> <span>{t('ui.party.key')}</span> <kbd>P</kbd>
-        </Button>
-        <Button size="s" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }}>
-          <UiIcon id="hud_nhiem_vu" fallback="📜" className="inline" /> <span>{t('ui.quests')}</span> <kbd>L</kbd>
-        </Button>
-        <Button size="s" onClick={(e) => { togglePanel('help'); blurAfterPointer(e); }} title={t('ui.help')}>
-          <UiIcon id="hud_tro_giup" fallback="❔" className="inline" /> <kbd>H</kbd>
-        </Button>
-        <Button size="s" onClick={(e) => { togglePanel('settings'); blurAfterPointer(e); }} title={`${t('ui.settings')} (O)`}>
-          <UiIcon id="hud_cai_dat" fallback="⚙️" className="inline" /> <kbd>O</kbd>
-        </Button>
-      </div>
+      {NGJ ? (
+        <SysRow flags={flags} wantFly={wantFly} />
+      ) : (
+        <div className="action-row">
+          <Button size="s" pressed={(flags & PF_MEDITATING) !== 0} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} title={t('ui.help.meditate_v')}>
+            <UiIcon id="hud_thien" fallback="🧘" className="inline" /> <span>{t('ui.meditate')}</span> <kbd>Z</kbd>
+          </Button>
+          <Button size="s" pressed={wantFly || (flags & PF_FLYING) !== 0} onClick={(e) => { Game.current?.toggleFly(); blurAfterPointer(e); }} title={t('ui.help.fly_v')}>
+            <UiIcon id="hud_ngu_kiem" fallback="🗡️" className="inline" /> <span>{t('ui.fly')}</span> <kbd>F</kbd>
+          </Button>
+          <Button size="s" data-bag onClick={(e) => { togglePanel('bag'); blurAfterPointer(e); }}>
+            <UiIcon id="hud_tui" fallback="🎒" className="inline" /> <span>{t('ui.bag.short')}</span> <kbd>B</kbd>
+          </Button>
+          <Button size="s" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
+            <UiIcon id="hud_nhan_vat" fallback="👤" className="inline" /> <span>{t('ui.char')}</span> <kbd>C</kbd>
+          </Button>
+          <Button size="s" onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} title={t('ui.method.title')}>
+            <UiIcon id="hud_cong_phap" fallback="☯️" className="inline" /> <span>{t('ui.method.key')}</span> <kbd>K</kbd>
+          </Button>
+          <Button size="s" onClick={(e) => { togglePanel('party'); blurAfterPointer(e); }} title={t('ui.party.title')}>
+            <UiIcon id="hud_to_doi" fallback="👥" className="inline" /> <span>{t('ui.party.key')}</span> <kbd>P</kbd>
+          </Button>
+          <Button size="s" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }}>
+            <UiIcon id="hud_nhiem_vu" fallback="📜" className="inline" /> <span>{t('ui.quests')}</span> <kbd>L</kbd>
+          </Button>
+          <Button size="s" onClick={(e) => { togglePanel('help'); blurAfterPointer(e); }} title={t('ui.help')}>
+            <UiIcon id="hud_tro_giup" fallback="❔" className="inline" /> <kbd>H</kbd>
+          </Button>
+          <Button size="s" onClick={(e) => { togglePanel('settings'); blurAfterPointer(e); }} title={`${t('ui.settings')} (O)`}>
+            <UiIcon id="hud_cai_dat" fallback="⚙️" className="inline" /> <kbd>O</kbd>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -647,6 +707,7 @@ function Chat() {
   };
   return (
     <div className={'chat' + (open ? ' open' : '') + (idle && !open ? ' idle' : '')}>
+      {NGJ && <Corners />}
       <div className="chat-log" ref={listRef}>
         {log.map((l) => (
           <div key={l.id} className={'chat-line ' + l.type}>

@@ -46,6 +46,7 @@
     "shots:e2h": "tsx src/shots-e2h.ts",
     "shots:e3h": "tsx src/shots-e3h.ts",
     "shots:ngj": "tsx src/shots-ngj.ts",
+    "shots:ui2": "tsx src/shots-ui2.ts",
     "shots:e3h2": "tsx src/shots-e3h2.ts",
     "shots:e2e": "tsx src/shots-e2e.ts",
     "shots:e3k": "tsx src/shots-e3k.ts",
