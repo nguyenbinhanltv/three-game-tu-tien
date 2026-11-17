@@ -32,8 +32,21 @@ const METHOD_OF: Record<string, string> = Object.fromEntries([
   ...['skl_luu_huong_bo', 'skl_hoi_xuan_quyet', 'skl_hoi_thien_dan_lo', 'skl_moc_linh_tran', 'skl_duoc_vu', 'skl_ngung_dan_ho_the', 'skl_dan_hoa_phong_tran', 'skl_anh_duoc_hoa_than', 'skl_thuan_di_cuu_vien', 'skl_thien_dan_phap_gioi'].map((k) => [k, DS]),
 ]);
 /** Chiêu diện rộng/từ trên cao: lùi camera, ngẩng cao để thấy cả vùng. */
-const PHAP = /van_kiem_quy_tong|kim_cuong|hoi_thien/;
-const WIDE = /kim_cuong|thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
+/** Cảnh lớn quay bằng cách bơm thẳng tin S.FX vào `Game.onFx` (V4 phần 2); `scene_<tên>` → tin. `{sid}` = người chơi. */
+const SCENES: Record<string, Record<string, unknown>> = {
+  scene_dotpha_tc: { t: 'ascend', d: 2.6 },
+  scene_dotpha_kd: { t: 'ascend', tb: 'ket_dan', d: 2.6 },
+  scene_dotpha_na: { t: 'ascend', tb: 'nguyen_anh', d: 2.6 },
+  scene_kiep_tc: { t: 'tribstart', tb: 'truc_co', d: 6 },
+  scene_kiep_kd: { t: 'tribstart', tb: 'ket_dan', d: 6 },
+  scene_kiep_na: { t: 'tribstart', tb: 'nguyen_anh', d: 6 },
+  scene_soul_out: { t: 'soul_out', d: 0.8 },
+  scene_soul_in: { t: 'soul_in', d: 0.6 },
+  scene_blink: { t: 'blink', d: 0.3 },
+};
+const SCENE_RE = /^scene_/;
+const PHAP = /scene_|van_kiem_quy_tong|kim_cuong|hoi_thien/;
+const WIDE = /scene_|kim_cuong|thien_kiem_vu|van_kiem_quy_tong|thien_kiem_hoa_hinh|loi_dinh|phap_tuong|hoi_thien|phap_gioi|tran_son|thiet_quyen|moc_linh|duoc_vu/;
 /** Số người giả cùng ra chiêu (đo sân đông) và thời gian đo (giây). */
 const CROWD = Number(opt('--crowd', '0'));
 const CROWD_SECS = Number(opt('--crowd-secs', '15'));
@@ -250,6 +263,10 @@ async function main(): Promise<void> {
         }, undefined, { timeout: 60_000, polling: 300 });
         const bar = (id: string) => page.evaluate((i) => (window as unknown as G).__game!.bar().findIndex((s: { id: string }) => s.id === i), id);
         const press = async (id: string) => {
+          if (id === 'scene_fly_on') return page.evaluate(() => (window as unknown as G).__game!.toggleFly());
+          if (SCENE_RE.test(id)) {
+            return page.evaluate(([msg]) => { const g = (window as unknown as G).__game!; const cur = g.cur; g.onFx({ ...(msg as object), src: g.sid, x: cur.x + 6, z: cur.z, ox: cur.x - 2, oz: cur.z }); }, [SCENES[id]] as const);
+          }
           if (/kiem_anh_bo|nghich_kiem|thiet_bich_xung|luu_huong_bo|dich_son_xung/.test(id)) return page.evaluate(() => (window as unknown as G).__game!.useDash());
           const i = id === 'skl_phi_kiem' ? 0 : await bar(id);
           if (i < 0) {
@@ -298,7 +315,7 @@ async function main(): Promise<void> {
           }
           await scene(page);
           // Pháp tướng cần camera xa phía sau: đứng ở chỗ trống giữa sân (không có cột/cổng chắn camera).
-          if (PHAP.test(sk)) { await gm(page, 'tp 2048 2150', 1500); if (!/kim_cuong|hoi_thien/.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500); else await gm(page, 'killall', 900); }
+          if (PHAP.test(sk)) { await gm(page, 'tp 2048 2150', 1500); if (!/kim_cuong|hoi_thien|scene_/.test(sk)) await gm(page, 'spawn mon_soi_xam 1', 1500); else await gm(page, 'killall', 900); }
           if (/van_kiem_quy_tong|thien_kiem_hoa_hinh|kim_cuong|anh_thiet|thuan_di_ho_the|phap_tuong|hoi_thien|anh_duoc|thuan_di_cuu_vien|phap_gioi/.test(sk)) await gm(page, 'charge', 900);
           await closeCam(page, WIDE.test(sk) ? Number(opt('--wide', '9.5')) : DIST, PHAP.test(sk) ? Math.PI + 0.15 : 0.9);
           if (WIDE.test(sk)) await page.evaluate((pt) => { (window as unknown as G).__game!.camPitch = pt; }, PHAP.test(sk) ? 0.2 : 0.3);

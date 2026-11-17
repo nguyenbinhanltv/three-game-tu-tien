@@ -193,6 +193,8 @@ export interface FxTimeline {
    * `fx`: chiêu không có mốc trúng/động tác riêng (lướt) nên phát khi nhận `S.FX` cùng loại `fxKind` (đúng công pháp `method` nếu có);
    * mọi sự kiện neo vào lúc nhận (hitAt = 0). Mặc định `skill`: phát theo sự kiện chiêu của model.
    */
+  /** Với `trigger: fx`: chỉ khớp khi biến thức/`tb` của S.FX bằng giá trị này (ba cảnh giới đột phá dùng ba timeline); không có thì khớp mọi giá trị. */
+  when?: string;
   trigger?: 'skill' | 'fx';
   fxKind?: string;
   method?: string;
@@ -258,7 +260,7 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
     for (const e of list) {
       if (!Number.isFinite(e.t) || Math.abs(e.t) > 3) errs.push(`${p}: mốc t=${e.t} ngoài [-3, 3]`);
       if (e.type === 'mesh' && !(e.dur > 0 && e.dur <= 4)) errs.push(`${p}: mesh ${e.shape} dur=${e.dur} ngoài (0, 4]`);
-      if (e.type === 'decal' && !(e.dur > 0 && e.dur <= 4)) errs.push(`${p}: decal dur=${e.dur} ngoài (0, 4]`);
+      if (e.type === 'decal' && !(e.dur > 0 && e.dur <= 8)) errs.push(`${p}: decal dur=${e.dur} ngoài (0, 8]`);
       if (e.type === 'hitstop' && !(e.ms >= 40 && e.ms <= 80)) errs.push(`${p}: hitstop ${e.ms} ms ngoài 40–80`);
       if (e.type === 'shake' && !(e.level >= 0 && e.level <= 0.6)) errs.push(`${p}: rung ${e.level} ngoài 0–0,6`);
       if (e.type === 'flash' && !(e.amount >= 0 && e.amount <= 0.3)) errs.push(`${p}: chớp ${e.amount} ngoài 0–0,3`);

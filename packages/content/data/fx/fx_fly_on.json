@@ -1,0 +1,131 @@
+{
+ "skill": "fx_fly_on",
+ "palette": "than_hanh",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": -0.1,
+   "r": 3.8,
+   "dur": 1.6,
+   "at": "self",
+   "offset": [
+    0,
+    -1.15,
+    0
+   ],
+   "grow": 0.25,
+   "tone": "core",
+   "alpha": 0.95,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.0,
+   "dur": 0.7,
+   "at": "self",
+   "offset": [
+    0,
+    -1.1,
+    0
+   ],
+   "scale": 0.3,
+   "scaleTo": 3.6,
+   "sweep": 0.4,
+   "erodeFrom": 0.4,
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 2,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    3.6
+   ],
+   "sweep": 0.2,
+   "erodeFrom": 0.55,
+   "tone": "rim",
+   "alpha": 0.85,
+   "seed": 3,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "helix",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    2.6,
+    2.6,
+    4.0
+   ],
+   "sweep": 0.3,
+   "erodeFrom": 0.5,
+   "spin": 360,
+   "tone": "accent",
+   "alpha": 0.8,
+   "seed": 4,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0.0,
+   "dur": 0.1,
+   "at": "self",
+   "offset": [
+    0,
+    -0.9,
+    0
+   ],
+   "scale": 1.1,
+   "billboard": true,
+   "sweep": 0.0,
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.0,
+   "n": 26,
+   "speed": 2.2,
+   "spread": 1,
+   "life": 0.8,
+   "size": 0.06,
+   "at": "self",
+   "offset": [
+    0,
+    -1.0,
+    0
+   ],
+   "grav": -1.0,
+   "tone": "rim",
+   "tier": 0
+  }
+ ]
+}

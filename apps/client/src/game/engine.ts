@@ -3,7 +3,7 @@ import { Client, type Room } from 'colyseus.js';
 import { applyInvMsg, C, caveBoundOf, type BossTimerMsg, type CdMsg, type CharView, type ChatMsg, type DuelMsg, type EscortMsg, type InviteMsg, type MarkMsg, type PartyMsg, TELE_CAST_MS, TELE_PAD, terrainOf, propsOf, type TeleMsg, cloneMoveState, type DmgMsg, FLY_UNLOCK_LEVEL, canFlyAt, type FxMsg, AIRBORNE_HEIGHT, type HazardMsg, type BoltEndMsg, type BoltMsg, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type InitMsg, type InvMsg, type MoveCtx, type MoveInput, type MoveState, MF_BROKEN, MF_SENSED, MF_REAL, MF_BURROW, MF_CHANT, MF_REFLECT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_SHIELD, PF_TRIBULATION, tribDef, tribForLevel, phaseRules, type QuestView, SECT, SPAWN_POINT, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, S, STEP, stepMove, type SysMsg, type TransferMsg, type MethodMsg, type SkillDef, BAR_SIZE, CHARGE_MAX, needsTarget, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg, type SpiritStateMsg, PF_SOUL, inSkyBand, type SoulStateMsg, SOUL_RANGE, SOUL_SCOUT, skyFlightUnlocked } from '@dtl/shared';
 import { areaKey, biomeAt, groundAt, heightAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
 import type { Appearance } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, thanThongSkill, tierBar, SKILL, SKILLS, VARIANTS, skillName, t } from '@dtl/content';
+import { FX_TIMELINE, ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, METHOD_SKILLS, MONSTER, monsterName, NPCS, QUEST, realmName, resolveBarSkill, skillBar, thanThongSkill, tierBar, SKILL, SKILLS, VARIANTS, skillName, t } from '@dtl/content';
 import { minimapHooks } from '../ui/minimap/model';
 import { visibleView } from './aoiView';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from './monFlags';
@@ -845,12 +845,13 @@ export class Game {
         areaOf: (sid) => this.fxArea.get(sid) ?? null,
         variantOf: (sid, skillId) => {
           const def = SKILL.get(skillId);
+          const kind = def?.fx ?? FX_TIMELINE.get(skillId)?.fxKind;
           return variantFor({
             mine: sid === this.sid,
             skillId,
             chosen: get().method?.vr[skillId],
             variants: VARIANTS[skillId],
-            lastFx: def ? this.fxVar.get(sid + ':' + def.fx) : undefined,
+            lastFx: kind ? this.fxVar.get(sid + ':' + kind) : undefined,
           });
         },
         sound: (id, gain, sid) => {
@@ -1714,7 +1715,11 @@ export class Game {
       return;
     }
     this.wantFly = !this.wantFly;
-    if (this.wantFly) sfx('fly');
+    if (this.wantFly) {
+      sfx('fly');
+      const tl = FX_TIMELINE.get('fx_fly_on');
+      if (tl && this.sid) this.skillFx?.startFromFx(this.sid, tl);
+    }
     this.flyLostAt = 0;
     set({ wantFly: this.wantFly });
   }
@@ -2022,10 +2027,13 @@ export class Game {
     const pSrc = e.players.get(src);
     if (src && dst && !held) this.fxDst.set(src, dst);
     if (src && !held) {
-      this.fxVar.set(src + ':' + m.t, m.v);
+      this.fxVar.set(src + ':' + m.t, m.v ?? m.tb);
       if (m.x !== undefined && m.z !== undefined) this.fxArea.set(src, { x: m.x, z: m.z, r: m.r ?? 8 });
       else this.fxArea.delete(src);
     }
+    // Timeline theo S.FX cho cảnh lớn (đột phá, độ kiếp, thuấn di, nguyên anh): chạy trước cả đường nguyên anh/thuấn di cũ (không thay, chỉ thêm lớp hình).
+    const tlPre = pSrc && !held ? fxTriggered(m.t, this.methodOfPlayer(src), m.v ?? m.tb) : undefined;
+    if (tlPre && typeof pSrc?.model.performClock === 'function') this.skillFx?.startFromFx(src, tlPre);
     if (this.onSoulFx(m, src)) return;
     if (!held) {
       // Động tác chiêu; đòn của mình đang vào thế thì giữ hiệu ứng + tiếng tới đúng lúc ra đòn.
@@ -2060,8 +2068,6 @@ export class Game {
     const tint = (d: number) => fxColor(m, d);
     const mctx = { v, m, src: posSrc, dst: posDst, mine: src === this.sid, flash: (a: number) => this.post?.flash(a) };
     // Timeline kích hoạt theo S.FX (lướt: không có động tác riêng) hoặc đã thay hình cũ của công pháp (chỉ khi model phát sự kiện chiêu).
-    const tlFx = pSrc ? fxTriggered(m.t, this.methodOfPlayer(src)) : undefined;
-    if (tlFx && typeof pSrc?.model.performClock === 'function') this.skillFx?.startFromFx(src, tlFx);
     if (METHOD_FX.has(m.t)) {
       if (!(replacedFx(m.t) && typeof pSrc?.model.performClock === 'function')) playMethodFx(mctx);
       // Chiêu tối thượng của mình: thẻ ngắn 0,6 giây (viền sáng, tên chiêu), không khóa input.

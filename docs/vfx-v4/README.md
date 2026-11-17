@@ -10,3 +10,11 @@ Hạn chế: Phượng còn mảnh, cánh nhạt (lông kite mỏng), chưa ra d
 Sân 50 người (`--crowd 50`, 4 chiêu tối thượng/AoE): draw p50/max 173/178 (< 300), tam giác max 718k, khung ms p50/p95/p99 8,3/12,2/32,7 (p99 xấu: cần V6), lưới FX sống max 2.634.
 Cascadeur: `cascadeur.md`. Video webm nam/nữ: artifacts `v4/`.
 PR 2 (đột phá, độ kiếp, ngự kiếm/xuất khiếu/thuấn di) làm riêng.
+
+## PR 2: đột phá, độ kiếp, di chuyển
+Chỉ thêm lớp hình, không đổi luật; timeline kích hoạt theo S.FX với id giả `fx_*` (nguồn `tools/vfx/recipes_e.py`): trường `when` chọn timeline theo cảnh giới (`tb`/biến thức), nên ba cảnh giới có ba bảng màu.
+- **Đột phá** (`ascend`): `fx_dotpha_tc` (vàng kim + lam), `_kd` (cam đan), `_na` (tím trắng): vòng triện văn lõi sẫm, sóng gợn, ba dải xoắn (lõi sẫm / thân / viền), vòng gai, hạt bay lên, chớp 100 ms; Kết Đan/Nguyên Anh thêm hai vòng hào quang đứng sau lưng. Thay hình cột sáng cũ.
+- **Độ kiếp** (`tribstart`, Trúc Cơ/Kết Đan/Nguyên Anh): vòng trận lôi văn + nứt đất + gai + sét mảnh nối tiếp (3–4 tia, sự kiện `bolt`); mây kiếp cũ giữ nguyên.
+- **Xuất khiếu** (`soul_out`/`soul_in`), **thuấn di** (`blink`): lớp thêm lên hình `SoulVis` cũ. **Ngự kiếm**: vòng ấn + kiếm hóa quang dưới chân khi bật bay (client dự đoán, `toggleFly`).
+- Hạ tầng: trần decal 8 s, trần chớp vẫn ≤ 0,3, burst < 120 ms (test).
+Hạn chế: ngự kiếm chỉ có hiệu ứng lúc cất cánh (chưa có vệt kiếm khi bay, vệt cũ giữ); cột sáng đột phá còn mảnh trong khung quay; các hiệu ứng nhỏ (thuấn di, ngự kiếm) hơi khiêm tốn ở camera xa. **Chưa vẽ lại tranh La Hán/Phượng bằng Codex image** (hết thời gian), tranh thủ tục hiện tại giữ nguyên. Chưa đo sân 50 người cho PR này (cảnh lớn hiếm, một người chơi mỗi lần).
