@@ -53,9 +53,11 @@ Cùng nhánh xếp chồng (PR này nhắm vào nhánh của PR 1). Chín bộ c
 - Kiếm và vỏ: kiếm lưng đã nằm trong thân v2 (`chr_v2_post.py`), kiếm riêng theo trang bị và vỏ kiếm theo bộ dùng đường cũ (`swordModel`, `scabbardMount`), không đổi. Trang sức đầu của từng bộ do `outfit_build.py` căn theo xương Head của thân v2; chưa tinh chỉnh riêng theo hai kiểu tóc.
 - Chụp ma trận ảnh: chín bộ × nam, nữ × bảy trạng thái (cận mặt, đứng, chạy, đả tọa, chém, bay, chết), tệp `ma-tran-<bộ>-<nam|nu>.webp` (mỗi tệp một dải bảy ô, đã kiểm trong game thật bằng `shots:chrv2`, nay có thêm bay và chết, chết rồi hồi sinh về chỗ chụp).
 
-## Kiểm
+## Dung lượng, tải đầu
 
-typecheck, validate asset 0 lỗi, `content:check`. Mỗi asset áo thêm khoảng 4 MB GLB (như áo cũ): tổng PR thêm khoảng 56 MB vào `apps/client/public/assets/`; chưa nén KTX2 (thiếu `toktx`), nén sẽ giảm nhiều.
+- **Áo chỉ nạp lười khi mặc**: không có `prefetch`/`acquire` hằng nào của `set_*` (đã grep `apps/client/src`); `PlayerSkins.loadOutfit` chỉ chạy khi một người chơi trong tầm nhìn mặc bộ đó (ưu tiên 15). Tải đầu (`preload.ts`) chỉ gồm: model người chơi giới đã chọn (v2 ~0,6 MB; **trước PR này vẫn tải nhầm model cũ 1,7–2,6 MB vì đọc `appearance.json`, đã sửa ở #176**), đồ tân thủ (~0,2 MB), thư viện clip, kiếm mặc định, kiến trúc tông môn.
+- `pnpm size` (tải đầu theo bản build, ngân sách 30 MB): **2,79 MB cả trước (`main`) lẫn sau**, vì công cụ chỉ đếm id viết thẳng trong mã; phần model người chơi nạp theo giới tính nên đo riêng ở trên. Phần GLB người chơi/áo nằm ngoài ngân sách tải đầu (nạp sau khi vào).
+- **Nén**: thiếu KTX-Software nên các lớp `outfit_v2`/`player_v2` (`assets/budgets.json`, `webp: true`) nén texture sang **WebP** (`EXT_texture_webp`, three nạp được): màu và normal lossy q88, ORM (mặt nạ nhuộm) lossy q93, emissive lossless; hình học đã meshopt (mesh có xương không quantize: clip có kênh scale sẽ làm nhân vật co lại). So ảnh trong game trước/sau nén: màu nhuộm không đổi đáng kể. Áo 20 asset: **56 MB → 23,8 MB** (mỗi áo 1,0–1,5 MB, bản nam/nữ riêng), nhân vật v2 4 asset ~2,3 MB. Khi có `toktx`, `pnpm assets:build` sẽ nén KTX2 thay WebP và nhỏ/nhanh giải mã GPU hơn.
 
 ## Giới hạn
 
