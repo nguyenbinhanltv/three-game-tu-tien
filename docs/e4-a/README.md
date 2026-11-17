@@ -17,7 +17,7 @@ Gói E4-A của E-4 Hóa Thần (`docs/EXPANSION_DESIGN.md` mục 4.3, 11.2, 11.
 | Họa tiết bảng tên vùng cho Cartouche | `ui/ngj/ngj.tsx` (`MapMotif`), `ngj.css` |
 | Bộ sinh tất định | `tools/maps/gen-thien-khuyet.mjs` (~45 s) |
 | Test | `packages/content/src/thienkhuyet.test.ts`, `apps/server/src/game/thienkhuyet.test.ts`, `teleport.levels.test.ts` |
-| Ảnh trong game | `pnpm shots:e4a --out <thư mục tuyệt đối>` (`tools/perf/src/shots-e4a.ts`) |
+| Ảnh trong game | `pnpm shots points --level thien_khuyet --out <thư mục tuyệt đối>` (`tools/perf/src/shots-e4a.ts`) |
 
 Server không phải sửa gì: `index.ts` đăng ký room `world-thien_khuyet` từ `LEVELS`. Không đụng `rooms.ts`, `index.ts`, `auth.ts`, nên không cần chạy lại bộ security.
 

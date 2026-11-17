@@ -49,7 +49,7 @@ Chỉ ở `loot.json` (server). Quái/tinh anh/boss Vân Hải đã nằm trong 
 - **Scale**: 0,55 (≈ 10 m dài so với người 1,8 m; GLB gốc 18 m quá lớn so với đấu trường 207 m).
 - Số đo: `pnpm sim:progress` 4 người cấp 23 hạ trong **81 s** (Địa Mạch Long 82 s; `hpMul` 80 → 62). TTK quái thường (`fight:check --levels 20,23`): Vân Hạc 4–7 s, Kính Linh 5–8 s, Thạch Quy 4–7 s, Kim Thiền 2,6–6 s (bầy, máu thấp theo thiết kế). Tinh anh `hpMul` 7,8–9,5 (design × 1,35 như E2-B).
 
-## Ảnh (`pnpm shots:e3b --out <thư mục tuyệt đối>`, `?mute=1`, `--mute-audio`; 6 khung chiêu + 3 khung chết)
+## Ảnh (`pnpm shots mons --level van_hai --out <thư mục tuyệt đối>`, `?mute=1`, `--mute-audio`; 6 khung chiêu + 3 khung chết)
 
 | | |
 | --- | --- |

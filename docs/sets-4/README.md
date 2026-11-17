@@ -27,7 +27,7 @@ Bậc 4 (Thiên Khuyết, `reqLevel` 24, hệ số dòng chính `TIER_MUL[4]` = 
 ## GM và F3
 
 - `/gm kit 4 <kiem|hophap|dansu> [+N] [m|f]` giờ ra đúng bậc 4 (`GM_TIER_SETS` có hàng thứ 4): Tinh Khuyết Kiếm + 4 món bộ + trang sức đầu + các ô còn lại lấy món thường bậc 4. `/gm outfit set_tinh_khuyet|set_co_thanh|set_than_tang` mặc được. Bảng F3 đã có nút bậc 4, không phải sửa client.
-- `pnpm --filter @dtl/perf run shots:sets --kit 4 --sets kiem,hophap,dansu --level 24 [--only still] --out <thư mục tuyệt đối>` chụp ảnh qua `/gm kit` (cờ `--kit` mới).
+- `pnpm shots outfit --kit 4 --sets kiem,hophap,dansu --level 24 [--only still] --out <thư mục tuyệt đối>` chụp ảnh qua `/gm kit` (cờ `--kit` mới).
 
 ## Kiểm (2026-11-17)
 

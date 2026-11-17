@@ -41,7 +41,7 @@ Thu nhập chương 2 ≈ 28.800 (4 giờ × 6.000 × 1,2); hố tiêu cầu to�
 
 `pnpm typecheck`, `pnpm test` (có `promote.test.ts`, `tier.test.ts`), `content:check`, `sim:progress` pass; security chạy hai lần (một lần dính 1 mục salvage do nhịp cooldown, lần sau 119/119 ĐẠT); 100 bot 0 dòng `refId`, `ledger:check` khớp. Test flaky đã có sẵn: `equipment.test.ts` (roll linh căn ngẫu nhiên), `camps.test.ts` (tải).
 
-`pnpm shots:e2f --out <thư mục>` chụp UI; `pnpm shots:sets --sets set_liet_mach,set_dia_giap,set_phuc_mach`; `pnpm shots:kiem [--only liet-mach | --model prop_kiem_kinh_quang]`.
+`pnpm shots:e2f --out <thư mục>` chụp UI; `pnpm shots outfit --sets set_liet_mach,set_dia_giap,set_phuc_mach`; `pnpm shots:kiem [--only liet-mach | --model prop_kiem_kinh_quang]`.
 
 ## Ảnh
 

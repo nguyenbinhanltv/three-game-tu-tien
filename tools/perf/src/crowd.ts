@@ -36,17 +36,15 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { C, FOREST, KIEM_TRUNG, MS_DEAD, PF_DEAD, PORTAL_POS, SPAWN_POINT } from '@dtl/shared';
-import { chromium, type Browser, type Page } from 'playwright';
-import { createDevServer, killTree, ROOT, sleep } from './devserver';
+import type { Browser, Page } from 'playwright';
+import { createDevServer, killTree, ROOT, sleep } from './lib/devserver';
+import { args, env, opt, ports } from './lib/env';
+import { launchChrome } from './lib/browser';
+import { gm } from './lib/game';
 
 const OUT_DIR = path.join(ROOT, 'bench/results');
 
 // ---------- tham số ----------
-const args = process.argv.slice(2);
-const opt = (name: string, def: string) => {
-  const i = args.indexOf(name);
-  return i >= 0 && args[i + 1] ? args[i + 1] : def;
-};
 const BOTS = opt('--bots', '50,100').split(',').map(Number).filter((n) => n > 0);
 const SCENES = opt('--scenes', 'san,rung,boss,dungeon').split(',').filter(Boolean);
 const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',').filter(Boolean) as ('webgpu' | 'webgl2')[];
@@ -55,14 +53,13 @@ const SECONDS = Number(opt('--seconds', '10'));
 const WARMUP = Number(opt('--warmup', '5'));
 const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
 const DPR = Number(opt('--dpr', '1'));
-const CHANNEL = opt('--channel', process.env.BENCH_CHANNEL ?? 'chrome');
+const CHANNEL = opt('--channel', env('BENCH_CHANNEL', 'chrome'));
 const HEADED = args.includes('--headed');
 /** Ghi CPU profile (CDP) trong lúc đo, lưu .cpuprofile vào bench/results và in hàm tốn self-time nhất. */
 const PROFILE = args.includes('--profile');
 /** Chụp ảnh màn hình giữa vòng xoay camera, lưu vào bench/results. */
 const SCREENSHOT = args.includes('--screenshot');
-const PORT = Number(process.env.PORT ?? 2675);
-const CLIENT_PORT = Number(process.env.CLIENT_PORT ?? 5175);
+const { port: PORT, clientPort: CLIENT_PORT } = ports(2675, 5175);
 
 const BUDGET = { drawCalls: 300, triangles: 2_000_000, textureMB: 512, cpuP95Ms: 8, heapMB: 500, tickP95Ms: 25 };
 const CAM = { pitch: 0.38, dist: 13 };
@@ -178,42 +175,43 @@ async function waitOnline(pred: (h: Health) => boolean, ms: number): Promise<Hea
 
 // ---------- đo trong trang ----------
 type FrameRow = [cpuMs: number, drawCalls: number, triangles: number];
-type CrowdWindow = {
-  __crowd: {
-    rec: boolean;
-    frames: FrameRow[];
-    parts: Record<string, number[]>;
-    gpu: number[];
-    gpuOk: boolean;
-    /** Pipeline/program (shader) tạo mới trong lúc đo: khác 0 nghĩa là có khựng do biên dịch lần đầu. */
-    pipelines: number;
-    programs: number;
-    pipeDesc: string[];
-    /** Đếm draw call một khung theo đích vẽ | loại object | material | tên (đặt `probe = 1` rồi đọc `probeOut`). */
-    probe: number;
-    probeOut: Record<string, number>;
-    /** Byte thuộc tính đẩy lên GPU trong lúc đo, theo thuộc tính. */
-    uploads: Record<string, number>;
-    /** Material/object đang vẽ (gắn vào khóa upload). */
-    drawing: string;
-    /** Khung > 12 ms: [ms, pipeline tạo trong khung, phần ≥ 1 ms]. */
-    long: [number, number, Record<string, number>][];
-    rx: number;
-    tx: number;
-    cam: { t0: number; dur: number; pitch: number; dist: number } | null;
-    texBytes: () => number;
-    texTop: (n: number) => string[];
-  };
-  __game?: Record<string, any>;
-};
+declare global {
+  interface Window {
+    __crowd: {
+      rec: boolean;
+      frames: FrameRow[];
+      parts: Record<string, number[]>;
+      gpu: number[];
+      gpuOk: boolean;
+      /** Pipeline/program (shader) tạo mới trong lúc đo: khác 0 nghĩa là có khựng do biên dịch lần đầu. */
+      pipelines: number;
+      programs: number;
+      pipeDesc: string[];
+      /** Đếm draw call một khung theo đích vẽ | loại object | material | tên (đặt `probe = 1` rồi đọc `probeOut`). */
+      probe: number;
+      probeOut: Record<string, number>;
+      /** Byte thuộc tính đẩy lên GPU trong lúc đo, theo thuộc tính. */
+      uploads: Record<string, number>;
+      /** Material/object đang vẽ (gắn vào khóa upload). */
+      drawing: string;
+      /** Khung > 12 ms: [ms, pipeline tạo trong khung, phần ≥ 1 ms]. */
+      long: [number, number, Record<string, number>][];
+      rx: number;
+      tx: number;
+      cam: { t0: number; dur: number; pitch: number; dist: number } | null;
+      texBytes: () => number;
+      texTop: (n: number) => string[];
+    };
+  }
+}
 
 /** Chạy trong trang trước mọi script: đặt preset, đếm byte WebSocket tới server game, bọc `frame()`, backend và các phần. */
 function initScript(preset: string, port: number): void {
   localStorage.setItem('dtl.quality', preset);
-  const w = window as unknown as CrowdWindow;
+  const w = window;
   const tex = new Map<object, number>();
   const texDesc = new Map<object, string>();
-  const B: CrowdWindow['__crowd'] = {
+  const B: Window['__crowd'] = {
     rec: false,
     frames: [],
     parts: {},
@@ -504,17 +502,12 @@ function topSelf(p: CpuProfile, n: number): [string, number][] {
   return [...acc.entries()].sort((a, b) => b[1] - a[1]).slice(0, n);
 }
 
-const GM_GAP_MS = 1000;
-async function gm(page: Page, cmd: string): Promise<void> {
-  await page.evaluate(([t, m]) => (window as unknown as CrowdWindow).__game!.send(t, { m }), [C.CHAT, '/gm ' + cmd]);
-  await sleep(GM_GAP_MS);
-}
 
 /** Đếm quái/boss còn sống quanh tâm cảnh (theo trạng thái room client nhận). */
 async function aliveNear(page: Page, sc: Scene): Promise<Record<string, number>> {
   return page.evaluate(
     ({ x, z, dead }) => {
-      const g = (window as unknown as CrowdWindow).__game!;
+      const g = window.__game!;
       const out: Record<string, number> = {};
       g.view?.monsters?.forEach((m: { x: number; z: number; st: number; t: string }) => {
         if (m.st !== dead && Math.hypot(m.x - x, m.z - z) < 60) out[m.t] = (out[m.t] ?? 0) + 1;
@@ -545,10 +538,10 @@ async function keeper(page: Page, sc: Scene, stop: { v: boolean }): Promise<void
         healAt = Date.now() + 4000;
         await gm(page, 'heal');
       }
-      const fl = await page.evaluate(() => (window as unknown as CrowdWindow).__game!.me?.()?.fl ?? 0);
+      const fl = await page.evaluate(() => window.__game!.me?.()?.fl ?? 0);
       // Client đo bị hạ: hồi sinh (về điểm hồi sinh) rồi tp lại tâm cảnh.
       if (fl & PF_DEAD) {
-        await page.evaluate((t) => (window as unknown as CrowdWindow).__game!.send(t), C.RESPAWN);
+        await page.evaluate((t) => window.__game!.send(t), C.RESPAWN);
         await sleep(500);
         await gm(page, `tp ${sc.x} ${sc.z}`);
       }
@@ -568,11 +561,11 @@ async function openClient(browser: Browser, renderer: 'webgpu' | 'webgl2', prese
     if (m.type() === 'error') errors.push(m.text().slice(0, 300));
   });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)}, ${PORT});` });
-  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&gputime=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${(process.env.CROWD_QUERY ?? '').includes('fxq=') ? '' : `&fxq=${preset}`}${process.env.CROWD_QUERY ?? ''}`;
+  const url = `http://localhost:${CLIENT_PORT}/?mute=1&debug=1&gputime=1&cine=0&auto=${encodeURIComponent(name)}${renderer === 'webgl2' ? '&renderer=webgl2' : ''}${(env('CROWD_QUERY')).includes('fxq=') ? '' : `&fxq=${preset}`}${env('CROWD_QUERY')}`;
   await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
   await waitInGame(page);
   const info = await page.evaluate(async () => {
-    const g = (window as unknown as CrowdWindow).__game!;
+    const g = window.__game!;
     const be = g.renderer.backend;
     let adapter = '';
     if (be.isWebGPUBackend) {
@@ -592,7 +585,7 @@ async function openClient(browser: Browser, renderer: 'webgpu' | 'webgl2', prese
 async function waitInGame(page: Page, room?: string): Promise<void> {
   await page.waitForFunction(
     (r) => {
-      const g = (window as unknown as CrowdWindow).__game;
+      const g = window.__game;
       return !!g && g.frames > 30 && !!g.me?.() && (!r || g.room?.name === r);
     },
     room,
@@ -615,7 +608,7 @@ async function goTo(page: Page, sc: Scene): Promise<boolean> {
   let arrived = false;
   while (Date.now() < until) {
     const s = await page.evaluate(() => {
-      const g = (window as unknown as CrowdWindow).__game!;
+      const g = window.__game!;
       return { tiles: g.terrain.tileCount() as number, x: g.renderPos.x as number, z: g.renderPos.z as number };
     });
     arrived = Math.hypot(s.x - sc.x, s.z - sc.z) < 4;
@@ -631,10 +624,10 @@ async function goTo(page: Page, sc: Scene): Promise<boolean> {
 
 async function measure(page: Page, sc: Scene, nBots: number, renderer: string, backend: string, preset: string, arrived: boolean): Promise<Point> {
   await sleep(WARMUP * 1000);
-  const roomName = await page.evaluate(() => (window as unknown as CrowdWindow).__game!.room?.name as string);
+  const roomName = await page.evaluate(() => window.__game!.room?.name as string);
   await page.evaluate(
     ({ dur, cam }) => {
-      const B = (window as unknown as CrowdWindow).__crowd;
+      const B = window.__crowd;
       B.frames = [];
       B.parts = {};
       B.gpu = [];
@@ -685,16 +678,16 @@ async function measure(page: Page, sc: Scene, nBots: number, renderer: string, b
     await cdp.detach().catch(() => undefined);
   }
   // Đầu dò draw call ở góc camera cuối vòng (cùng hướng bắt đầu).
-  await page.evaluate(() => ((window as unknown as CrowdWindow).__crowd.probe = 1));
+  await page.evaluate(() => (window.__crowd.probe = 1));
   await sleep(300);
   const raw = await page.evaluate(() => {
-    const w = window as unknown as CrowdWindow;
+    const w = window;
     const B = w.__crowd;
     B.rec = false;
     B.cam = null;
     B.probe = 0;
     const g = w.__game!;
-    const mem = (performance as any).memory;
+    const mem = performance.memory;
     const lod = g.ents.lodStats?.();
     return {
       frames: B.frames,
@@ -832,7 +825,7 @@ async function runDungeon(browser: Browser, sc: Scene, errorsOut: string[]): Pro
     for (const preset of PRESETS) {
       const enter = async (page: Page) => {
         await gm(page, `tp ${PORTAL_POS.x} ${PORTAL_POS.z + 4}`);
-        await page.evaluate((t) => (window as unknown as CrowdWindow).__game!.send(t), C.PORTAL);
+        await page.evaluate((t) => window.__game!.send(t), C.PORTAL);
         await waitInGame(page, 'dungeon');
         const n = await bots.start(4, `dg${renderer === 'webgpu' ? 'a' : 'b'}${preset.slice(0, 1)}`, sc.bots);
         const h = await waitOnline((x) => x.rooms.some((r) => r.name === 'dungeon' && r.players >= 5), 60_000);
@@ -896,15 +889,7 @@ function printTable(points: Point[]): void {
 async function main(): Promise<void> {
   const started = new Date();
   await dev.start();
-  const launchArgs = ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
-  let browser: Browser;
-  try {
-    browser = await chromium.launch({ channel: CHANNEL === 'chromium' ? undefined : CHANNEL, headless: !HEADED, args: launchArgs });
-  } catch (e) {
-    if (CHANNEL === 'chromium') throw e;
-    console.warn(`[crowd] không mở được channel "${CHANNEL}", dùng Chromium của Playwright`);
-    browser = await chromium.launch({ headless: !HEADED, args: launchArgs });
-  }
+  const browser = await launchChrome({ channel: CHANNEL, headed: HEADED, tag: 'crowd' });
   const points: Point[] = [];
   const errors: string[] = [];
   const botLog: string[] = [];

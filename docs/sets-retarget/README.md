@@ -23,7 +23,7 @@ Kế hoạch tổng: thân nền nam/nữ + các mảnh rời (áo ngoài, vai/g
 3. Tạo `assets/source/chr/<mảnh>_<nam|nu>/meta.json` (mẫu: `set_liet_mach_kiem_y_nam`): `budgetClass: "outfit"`, `import.kind: "tripo"`, `source`, `size` (**kích thước thật của mảnh**, mét: `import_tripo` scale theo đó; mảnh không phải cả người thì đo chiều cao mảnh, không để 1,75), `orient` (`thigh` khi có xương đùi, `none` khi không), `post: "tools/blender/retarget_set.py"`, khối `retarget` (bảng dưới). Thêm dòng `assets/LICENSES.md`.
 4. `node tools/blender/run.mjs --only chr_kiem_tu_nam --force` (và `_nu`) để có GLB thô thân nền, rồi `node tools/blender/run.mjs --only <mảnh>_nam` và `pnpm assets:build --only <mảnh>_nam`; `pnpm assets:validate`.
 5. Thêm mảnh vào `outfits.json`; `?outfit=<mảnh>` ép mảnh cho mọi bộ đang mặc (xem thử trước khi có bộ).
-6. Kiểm: `pnpm shots:outfit --out <thư mục tuyệt đối> --matrix 1` (ảnh theo clip) và `outfit_check.py` (số), xem mục Kiểm tra.
+6. Kiểm: `pnpm shots outfit --out <thư mục tuyệt đối> --matrix 1` (ảnh theo clip) và `outfit_check.py` (số), xem mục Kiểm tra.
 
 ### `import.retarget` (tools/blender/retarget_set.py)
 
@@ -47,7 +47,7 @@ Kế hoạch tổng: thân nền nam/nữ + các mảnh rời (áo ngoài, vai/g
 
 ## Kiểm tra
 
-- **Ảnh theo clip trong game**: `pnpm shots:outfit --out <thư mục tuyệt đối> [--genders m,f] [--sets set_liet_mach] [--query outfit=<mảnh>] [--matrix 1] [--panel 1]`. Mỗi lần chụp: trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém; `--matrix 1` thêm chiêu 1-2 của 3 công pháp (lạc kiếm, bất động kim thân, thanh mộc đan kinh) và chết (hơi tối vì màn chết); `--panel 1` chụp bảng nhân vật. Ảnh đã có: `sheet_<mảnh>_<m|f>.jpg` (3 mảnh × 2 giới), `matrix_set_liet_mach_kiem_y_m.webp`, `truoc_sau_liet_mach_nam.webp`, `bang_nhan_vat_liet_mach.webp`.
+- **Ảnh theo clip trong game**: `pnpm shots outfit --out <thư mục tuyệt đối> [--genders m,f] [--sets set_liet_mach] [--query outfit=<mảnh>] [--matrix 1] [--panel 1]`. Mỗi lần chụp: trước/sau/nghiêng, chạy, ngự kiếm, đả tọa, chém; `--matrix 1` thêm chiêu 1-2 của 3 công pháp (lạc kiếm, bất động kim thân, thanh mộc đan kinh) và chết (hơi tối vì màn chết); `--panel 1` chụp bảng nhân vật. Ảnh đã có: `sheet_<mảnh>_<m|f>.jpg` (3 mảnh × 2 giới), `matrix_set_liet_mach_kiem_y_m.webp`, `truoc_sau_liet_mach_nam.webp`, `bang_nhan_vat_liet_mach.webp`.
 - **Kiểm số** `tools/blender/outfit_check.py` (Blender nền): đưa thân nền + mảnh vào 6 tư thế cực biên (chạy, chém giơ tay, tay thả, cúi, ngồi, ngã; hai chiều dấu mỗi tư thế) và đếm đỉnh áo **mới** chui vào thân nền còn hiện so với lúc nghỉ, cùng độ sâu lớn nhất. Lệnh: `blender -b --factory-startup --python tools/blender/outfit_check.py -- --player assets/build/raw/chr_kiem_tu_nam.glb --outfit apps/client/public/assets/<mảnh>.<hash>.glb [--keep all] [--tol 0.02] [--out x.json]`. Kết quả 6 mảnh tạm: `check/*.json`. Đọc: số đỉnh mới ≤ ~20 trên ~1.800 và chủ yếu ở ống tay áo chạm bàn tay (độ sâu hiển thị chạm trần `padRange` 12 cm là do tay mảnh, pháp tuyến không ổn định); ảnh trong game không thấy lỗi. Với thân nền mô-đun còn áo lót, chạy `--keep all`.
 
 ## Số đo (50 bot cùng mặc `set_liet_mach`, `BOT_SET=set_liet_mach pnpm bench:crowd --bots 50 --scenes san --renderers webgpu --presets high`)
