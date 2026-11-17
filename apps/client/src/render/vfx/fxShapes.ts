@@ -140,40 +140,100 @@ export function helixGeometry(turns = 2.2, radius = 0.22, w = 0.09, segs = 72): 
 }
 
 /**
- * Pháp tướng rồng: ống thon (đuôi mảnh → đầu to) chạy theo đường xoắn quanh trục đứng `turns` vòng, cao `height`, bán kính xoắn `rad`.
- * UV: `u` quanh ống, `v` dọc thân 0 (đuôi) → 1 (đầu): shader `crystal` mọc theo v. Pháp tuyến mịn nên viền fresnel chạy dọc thân.
+ * Pháp tướng rồng: thân ống thon (đuôi mảnh → đầu to) chạy theo đường xoắn quanh trục đứng, kèm vây lưng, đầu có sọ + mõm dẹt,
+ * hai sừng cong ra sau (gân vàng), hai râu dài. Cao `height` m ở scale 1, bán kính xoắn `rad`.
+ * UV: `u` quanh ống (sừng u=0,95 để shader vẽ gân vàng), `v` dọc thân 0 (đuôi) → 1 (đầu): shader `crystal` mọc theo v.
  */
-export function dragonGeometry(turns = 1.5, height = 7, rad = 3.2, segs = 180, sides = 10): THREE.BufferGeometry {
+export function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides = 10): THREE.BufferGeometry {
   const pts: THREE.Vector3[] = [];
-  for (let i = 0; i <= 40; i++) {
-    const u = i / 40;
+  for (let i = 0; i <= 48; i++) {
+    const u = i / 48;
     const a = u * turns * Math.PI * 2;
-    // Bán kính xoắn thu về phía đầu để đầu ngẩng cao trước mặt.
-    const r = rad * (1 - 0.35 * u);
-    pts.push(new THREE.Vector3(Math.sin(a) * r, u * height + Math.sin(u * 9) * 0.3, Math.cos(a) * r));
+    const r = rad * (1 - 0.3 * u);
+    pts.push(new THREE.Vector3(Math.sin(a) * r, u * height + Math.sin(u * 9) * 0.5, Math.cos(a) * r));
   }
   const curve = new THREE.CatmullRomCurve3(pts);
   const frames = curve.computeFrenetFrames(segs, false);
   const pos: number[] = [];
   const uvs: number[] = [];
   const idx: number[] = [];
-  for (let i = 0; i <= segs; i++) {
-    const v = i / segs;
-    const c = curve.getPointAt(v);
-    const rr = 0.09 + 0.4 * Math.pow(Math.sin(Math.min(1, v * 1.05) * Math.PI * 0.5), 1.4);
+  const radius = (v: number) => 0.12 + 0.75 * Math.pow(Math.sin(Math.min(1, v * 1.05) * Math.PI * 0.5), 1.4);
+  const ring = (c: THREE.Vector3, n: THREE.Vector3, b: THREE.Vector3, rr: number, flat: number, v: number) => {
     for (let j = 0; j <= sides; j++) {
       const a = (j / sides) * Math.PI * 2;
-      const n = frames.normals[i];
-      const b = frames.binormals[i];
-      pos.push(c.x + (n.x * Math.cos(a) + b.x * Math.sin(a)) * rr, c.y + (n.y * Math.cos(a) + b.y * Math.sin(a)) * rr, c.z + (n.z * Math.cos(a) + b.z * Math.sin(a)) * rr);
+      const ca = Math.cos(a) * rr * flat;
+      const sa = Math.sin(a) * rr;
+      pos.push(c.x + n.x * ca + b.x * sa, c.y + n.y * ca + b.y * sa, c.z + n.z * ca + b.z * sa);
       uvs.push(j / sides, v);
     }
+  };
+  let rings = 0;
+  const joinRings = (from: number, count: number) => {
+    for (let i = 0; i < count - 1; i++) for (let j = 0; j < sides; j++) {
+      const a = (from + i) * (sides + 1) + j;
+      const b = a + sides + 1;
+      idx.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  };
+  for (let i = 0; i <= segs; i++) {
+    const v = i / segs;
+    ring(curve.getPointAt(v), frames.normals[i], frames.binormals[i], radius(v), 1, v);
+    rings++;
   }
-  for (let i = 0; i < segs; i++) for (let j = 0; j < sides; j++) {
-    const a = i * (sides + 1) + j;
-    const b = a + sides + 1;
-    idx.push(a, b, a + 1, a + 1, b, b + 1);
+  joinRings(0, segs + 1);
+  // Đầu: sọ phình rồi mõm dẹt thuôn (kéo dài theo tiếp tuyến cuối).
+  const tEnd = curve.getTangentAt(1).normalize();
+  const nEnd = frames.normals[segs];
+  const bEnd = frames.binormals[segs];
+  const cEnd = curve.getPointAt(1);
+  const headRings: [number, number, number][] = [[0.5, 1.35, 0.9], [1.1, 1.25, 0.75], [1.8, 0.8, 0.5], [2.5, 0.55, 0.42], [2.9, 0.3, 0.35]];
+  const rEnd = radius(1);
+  for (const [d, k, flat] of headRings) {
+    ring(cEnd.clone().addScaledVector(tEnd, d), nEnd, bEnd, rEnd * k, flat, 1);
+    rings++;
   }
+  joinRings(segs, headRings.length + 1);
+  // Vây lưng: tam giác dựng ra phía pháp tuyến, cứ 5 vòng một cái, to dần về đầu.
+  const tri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, va: number[], vb: number[], vc: number[]) => {
+    const base = pos.length / 3;
+    pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+    uvs.push(...va, ...vb, ...vc);
+    idx.push(base, base + 1, base + 2, base, base + 2, base + 1);
+  };
+  const dir = (n: THREE.Vector3, b: THREE.Vector3, k: number) => n.clone().multiplyScalar(Math.cos(k)).addScaledVector(b, Math.sin(k));
+  for (let i = 6; i < segs - 4; i += 5) {
+    const v = i / segs;
+    const c = curve.getPointAt(v);
+    const out = dir(frames.normals[i], frames.binormals[i], 0);
+    const rr = radius(v);
+    const along = curve.getTangentAt(v).normalize();
+    tri(c.clone().addScaledVector(out, rr * 0.9).addScaledVector(along, -rr * 0.5), c.clone().addScaledVector(out, rr * 0.9).addScaledVector(along, rr * 0.5), c.clone().addScaledVector(out, rr * 2.1).addScaledVector(along, -rr * 0.9), [0.5, v], [0.5, v], [0.95, v]);
+  }
+  // Sừng: hai nón cong ra sau và lên, gân vàng.
+  for (const side of [1, -1]) {
+    const root = cEnd.clone().addScaledVector(tEnd, 0.7).addScaledVector(nEnd, rEnd * 1.0).addScaledVector(bEnd, side * rEnd * 0.75);
+    const tip = root.clone().addScaledVector(tEnd, -3.2).addScaledVector(nEnd, 2.4).addScaledVector(bEnd, side * 1.0);
+    const w = rEnd * 0.42;
+    tri(root.clone().addScaledVector(bEnd, -w), root.clone().addScaledVector(bEnd, w), tip, [0.95, 1], [0.95, 1], [0.95, 1]);
+    tri(root.clone().addScaledVector(nEnd, -w), root.clone().addScaledVector(nEnd, w), tip, [0.95, 1], [0.95, 1], [0.95, 1]);
+  }
+  // Râu: hai dải mảnh cong dài từ mõm ra hai bên rồi rủ về sau.
+  for (const side of [1, -1]) {
+    const start = cEnd.clone().addScaledVector(tEnd, 2.4).addScaledVector(nEnd, -rEnd * 0.1);
+    let prev: [THREE.Vector3, THREE.Vector3] | null = null;
+    for (let k = 0; k <= 10; k++) {
+      const f = k / 10;
+      const c = start.clone().addScaledVector(bEnd, side * (1.2 + 2.8 * Math.sin(f * 2.2))).addScaledVector(tEnd, 1.5 - 5 * f).addScaledVector(nEnd, -1.8 * f * f - 0.3 * Math.sin(f * 6));
+      const wd = 0.16 * (1 - f * 0.7);
+      const pair: [THREE.Vector3, THREE.Vector3] = [c.clone().addScaledVector(nEnd, wd), c.clone().addScaledVector(nEnd, -wd)];
+      if (prev) {
+        tri(prev[0], prev[1], pair[0], [0.95, 1], [0.95, 1], [0.95, 1]);
+        tri(prev[1], pair[1], pair[0], [0.95, 1], [0.95, 1], [0.95, 1]);
+      }
+      prev = pair;
+    }
+  }
+  void rings;
   return build(pos, uvs, idx);
 }
 

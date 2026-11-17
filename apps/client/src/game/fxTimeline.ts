@@ -304,7 +304,7 @@ export class FxRunner {
     const spin = (ev.spin ?? 0) * DEG;
     // Hướng thân hình: theo hướng bay nếu có `move` (mũi dài +Z hướng về đích), không thì theo hướng nhìn.
     const baseQ = new THREE.Quaternion();
-    if (end) {
+    if (end && !ev.keepUp) {
       _a.subVectors(end, start);
       if (_a.lengthSq() > 1e-4) baseQ.setFromUnitVectors(AXIS_Z, _a.normalize());
     } else baseQ.setFromAxisAngle(UP, yaw);

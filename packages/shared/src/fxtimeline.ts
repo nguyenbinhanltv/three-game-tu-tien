@@ -75,6 +75,8 @@ export interface FxMeshEvent extends FxBase {
   billboard?: boolean;
   /** Bay từ gốc sang `to` trong `dur` (phi kiếm lao, kiếm khí bay): gốc → đích, đơn vị mét hoặc theo neo. */
   move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear'; /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number] };
+  /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
+  keepUp?: boolean;
   /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */
   spin?: number;
   /** Seed hình (mặc định theo lần phát). */
