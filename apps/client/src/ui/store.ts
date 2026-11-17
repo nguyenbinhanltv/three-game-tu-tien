@@ -219,6 +219,9 @@ export interface UIState {
   tamCanh: number;
   /** Mốc (ms) nguyên anh quay về thân khi đang xuất khiếu; 0 = không. */
   soulUntil: number;
+  /** Thiên Nhân Kiếp (E4-D): tia ngũ hành đang báo (chỉ số hành, mốc nổ) và mốc thế thân thần niệm tan; chỉ là lớp hình. */
+  nguHanh: { e: number; at: number } | null;
+  cloneUntil: number;
   /** Kiếp đang độ (id trong `tribulations.json`) để HUD đọc pha. */
   tribId: string;
   bossLine: BossLine | null;
@@ -317,6 +320,8 @@ export const useUI = create<UIState>(() => ({
   danPg: -1,
   tamCanh: -1,
   soulUntil: 0,
+  nguHanh: null,
+  cloneUntil: 0,
   tribId: 'truc_co',
   bossLine: null,
   chapter: null,

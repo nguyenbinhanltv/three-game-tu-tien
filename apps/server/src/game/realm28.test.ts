@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { bottleneckPill, xpNeed } from '@dtl/shared';
+import { bottleneckPill, peakGated, xpNeed } from '@dtl/shared';
 
 process.env.DB_FILE = ':memory:';
 
@@ -150,15 +150,9 @@ describe('đại viên mãn chưa có độ kiếp: không vượt bình cảnh'
     return { c, rs, p, warns, spawned };
   };
 
-  it.each([27])('cấp %i đầy tu vi: Phá Cảnh Đan không bị tiêu, không dựng tâm ma', (lv) => {
-    const { c, rs, p, warns, spawned } = setup(lv, lv - 2);
-    rs.onBottleneck(p as never, { m: 'pill', r: 'k1' });
-    rs.onBottleneck(p as never, { m: 'trial' });
-    expect(warns).toEqual(['sys.bk_not_yet', 'sys.bk_not_yet']);
-    expect(pills(c)).toBe(2);
-    expect(c.bk).toBe(lv - 2);
-    expect(c.level).toBe(lv);
-    expect(spawned).toHaveLength(0);
+  it('E4-D: mọi cấp đại viên mãn đều có độ kiếp, không còn cấp nào bị chặn bởi peakGated', () => {
+    for (const lv of [15, 19, 23, 27]) expect(peakGated(lv)).toBe(false);
+    expect(setup(27, 25).c.level).toBe(27);
   });
 
   it('cấp 19 (Trúc Cơ đại viên mãn) đã mở từ E2-D: không còn bị chặn "chưa mở"', () => {

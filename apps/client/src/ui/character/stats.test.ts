@@ -56,9 +56,9 @@ describe('khối độ kiếp theo dữ liệu', () => {
     expect(breakInfo({ ...c, bk: 17 }, [{ id: 'itm_ket_dan_dich', n: 1 }]).bkOk).toBe(false);
   });
 
-  it('kiếp chưa bật thì không sẵn sàng', () => {
+  it('Thiên Nhân Kiếp đã bật (E4-D) nhưng thiếu Hóa Thần Lộ thì chưa sẵn sàng', () => {
     const c = { level: 27, bk: 27, xp: 100, xpNeed: 100 };
-    expect(breakInfo(c, []).enabled).toBe(false);
+    expect(breakInfo(c, []).enabled).toBe(true);
     expect(breakInfo(c, []).ready).toBe(false);
   });
 });

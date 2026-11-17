@@ -3,9 +3,10 @@
 // Độ kiếp Trúc Cơ (S2-C) giữ hành vi y hệt bản cũ trong sim.ts: thứ tự gọi Math.random và thứ tự phát vùng không đổi
 // (test băm `trib.golden.test.ts`).
 
-import { PF_DEAD, type FxMsg, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type HazardKind, type TribDef, type TribId, type TribPhaseDef } from '@dtl/shared';
+import { PF_DEAD, type FxMsg, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type HazardKind, type HazardMsg, type TribDef, type TribId, type TribPhaseDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './sim';
 import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from './tribmech';
+import { cloneAbsorb, cloneOut } from './tribnhan';
 
 /** Trạng thái một lần độ kiếp của một người (chỉ server giữ; client chỉ nhận cờ PF_TRIBULATION và vùng đã báo). */
 export interface TribState {
@@ -36,9 +37,18 @@ export interface GuardCfg {
   r: number;
 }
 
+/** Tham số thêm của vùng nguy hiểm: kiểu vạch (`pool` = dấu hiệu), thời gian tồn tại, trận môn khắc chế (người đứng trong đó giảm `cut`, cờ `ke`). */
+export interface HazardExtra {
+  mv?: HazardMsg['mv'];
+  dur?: number;
+  seal?: { x: number; z: number; r: number; cut: number };
+}
+
 export interface TribHost {
   now(): number;
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardKind, src: string, atk?: number, lock?: boolean, grp?: number, guard?: GuardCfg, cut?: { mul: number; max: number }, hot?: boolean): void;
+  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardKind, src: string, atk?: number, lock?: boolean, grp?: number, guard?: GuardCfg, cut?: { mul: number; max: number }, hot?: boolean, extra?: HazardExtra): void;
+  /** Gây sát thương cho `p` (đã tính giảm; `ke` = đứng đúng trận môn khắc chế). */
+  damage(p: PlayerEnt, n: number, ke?: 1 | -1): void;
   fx(m: FxMsg): void;
   isDead(p: PlayerEnt): boolean;
   nextGrp(): number;
@@ -63,6 +73,16 @@ export class TribSystem {
   /** Thân đứng yên vì nguyên anh đang rời thân? */
   soulFrozen(p: PlayerEnt): boolean {
     return !!p.trib && soulActive(p.trib, this.h.now());
+  }
+
+  /** Thế thân thần niệm (G, Thiên Nhân Kiếp): true nếu vừa tạo được. */
+  clone(p: PlayerEnt): boolean {
+    return cloneOut(this.h, p);
+  }
+
+  /** Thế thân chắn thay một phần tia khóa mệnh: trả phần đã chắn (0 nếu không có thế thân). */
+  cloneAbsorb(p: PlayerEnt, n: number): number {
+    return cloneAbsorb(this.h, p, n);
   }
 
   /** Va chạm giữa người độ kiếp và Tâm Ma Ảnh của mình (cơ chế `tam_canh`). */
