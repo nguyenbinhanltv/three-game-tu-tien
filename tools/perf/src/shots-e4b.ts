@@ -39,18 +39,18 @@ interface Spec {
   /** Điểm đặt tên (places.json) để đứng trước khi gọi quái. */
   at: string;
 }
-const AT = 'thung_lung'; // Level Thiên Khuyết thuộc E4-A: tạm dùng thung lũng Vân Lam (đất trống) làm đấu trường.
+// Chụp trong bản đồ thật (E4-A): mỗi quái ở vùng của nó (điểm đặt tên tk_* trong places.json).
 const SPECS: Spec[] = [
-  { mon: 'mon_thach_tuong_vo_si', at: AT, lv: 25, dist: 6, pitch: 0.42, stand: true },
-  { mon: 'mon_da_minh_loc', at: AT, lv: 24, dist: 9, pitch: 0.42, yaw: Math.PI / 2 },
-  { mon: 'mon_cot_ve_kiem_thu', at: AT, lv: 26, dist: 6, pitch: 0.42, stand: true, wait: 4000 },
-  { mon: 'mon_co_thanh_chien_ma', at: AT, lv: 27, dist: 6, pitch: 0.42, stand: true },
-  { mon: 'elite_thach_tuong_dai_tuong', at: AT, lv: 26, dist: 9, pitch: 0.42, stand: true },
-  { mon: 'elite_da_minh_loc_vuong', at: AT, lv: 25, dist: 10, pitch: 0.42, stand: true },
-  { mon: 'elite_cot_kiem_thong_linh', at: AT, lv: 27, dist: 6, pitch: 0.42, stand: true },
-  { mon: 'boss_thien_khuyet_thu_linh', at: AT, lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, shots: 6 },
-  { mon: 'boss_thien_khuyet_thu_linh', at: AT, lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, after: ['hurt 65'], shots: 6 },
-  { mon: 'boss_thien_khuyet_thu_linh', at: AT, lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, after: ['hurt 25'], shots: 8 },
+  { mon: 'mon_thach_tuong_vo_si', at: 'tk_dai_lo', lv: 25, dist: 6, pitch: 0.42, stand: true },
+  { mon: 'mon_da_minh_loc', at: 'tk_lam_sao', lv: 24, dist: 9, pitch: 0.42, yaw: Math.PI / 2 },
+  { mon: 'mon_cot_ve_kiem_thu', at: 'tk_mo_dao', lv: 26, dist: 6, pitch: 0.42, stand: true, wait: 4000 },
+  { mon: 'mon_co_thanh_chien_ma', at: 'tk_binh_khi', lv: 27, dist: 6, pitch: 0.42, stand: true },
+  { mon: 'elite_thach_tuong_dai_tuong', at: 'tk_dai_lo', lv: 26, dist: 9, pitch: 0.42, stand: true },
+  { mon: 'elite_da_minh_loc_vuong', at: 'tk_lam_sao', lv: 25, dist: 10, pitch: 0.42, stand: true },
+  { mon: 'elite_cot_kiem_thong_linh', at: 'tk_binh_khi', lv: 27, dist: 6, pitch: 0.42, stand: true },
+  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_mo_dao', lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, shots: 6 },
+  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_mo_dao', lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, after: ['hurt 65'], shots: 6 },
+  { mon: 'boss_thien_khuyet_thu_linh', at: 'tk_mo_dao', lv: 27, dist: 24, pitch: 0.42, yaw: Math.PI / 2, stand: true, after: ['hurt 25'], shots: 8 },
 ];
 
 const gm = async (page: Page, cmd: string, wait = 1100) => {
@@ -94,7 +94,10 @@ async function main(): Promise<void> {
     await page.addStyleTag({ content: '.chat{visibility:hidden !important}' });
     await gm(page, 'level 27');
     await gm(page, 'god on', 1200);
-    await sleep(1500);
+    await gm(page, 'tele all');
+    await gm(page, 'tp tk_tram');
+    await page.waitForFunction(() => (window as unknown as G).__game?.shownLevel === 'thien_khuyet', undefined, { timeout: 90_000, polling: 300 });
+    await sleep(4000);
     await gm(page, 'god on', 1000);
     const shot = async (label: string) => fs.writeFileSync(path.join(OUT, `${label}.jpg`), await page.screenshot({ type: 'jpeg', quality: 82 }));
     const cam = (pitch: number, dist: number, yaw = Math.PI) =>

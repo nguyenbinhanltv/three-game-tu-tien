@@ -220,11 +220,12 @@ addProp('prop_kiem_gay', 232, -52, 0.9, 1);
 
 // ---- tinh anh (chỗ đứng tạm, xem đầu tệp) ----
 const ELITES = [
-  { zone: 'dai_lo_den_troi', mon: 'elite_ho_mach_khoi_tuong', n: 2 },
-  { zone: 'lam_sao_vien', mon: 'elite_van_hac_vuong', n: 2 },
-  { zone: 'binh_khi_kho', mon: 'elite_liet_cot_bao', n: 3 },
-  { zone: 'dien_tien_quang_truong', mon: 'elite_kinh_dien_ma_quan', n: 3 },
-  { zone: 'mo_dao', mon: 'elite_liet_cot_bao', n: 2 },
+  { zone: 'dai_lo_den_troi', mon: 'elite_thach_tuong_dai_tuong', n: 2 },
+  { zone: 'lam_sao_vien', mon: 'elite_da_minh_loc_vuong', n: 2 },
+  { zone: 'binh_khi_kho', mon: 'elite_cot_kiem_thong_linh', n: 3 },
+  { zone: 'dien_tien_quang_truong', mon: 'elite_thach_tuong_dai_tuong', n: 2 },
+  { zone: 'dien_tien_quang_truong', mon: 'elite_cot_kiem_thong_linh', n: 1 },
+  { zone: 'mo_dao', mon: 'elite_cot_kiem_thong_linh', n: 2 },
 ];
 
 const keep = [];
@@ -259,16 +260,19 @@ for (const e of ELITES) {
   }
 }
 
+// ---- boss ngoài trời Thiên Khuyết Thủ Linh (E4-B) ở Mộ Đạo, hồi sinh 30 phút ----
+spawns.push({ mon: 'boss_thien_khuyet_thu_linh', x: W(BOSS.off[0]), z: W(BOSS.off[1]), radius: 6, count: 1, levelMin: 27, levelMax: 27, respawn: 1800 });
+
 // ---- camp (rải điểm xa nhất như Đoạn Mạch) ----
 const TARGET_CAMPS = 64;
 const TARGET_DENSITY = 120;
 const CAMP_R = 30;
 const MIX = {
-  dai_lo_den_troi: [['mon_khai_mach_khoi_loi', 1]], // Thạch Tượng Võ Sĩ (tạm)
-  lam_sao_vien: [['mon_van_hac', 1]], // Dạ Minh Lộc (tạm)
-  binh_khi_kho: [['mon_mach_thuong_ho_ve', 0.5], ['mon_kinh_linh', 0.5]], // Chiến Ma + Cốt Vệ (tạm)
-  dien_tien_quang_truong: [['mon_khai_mach_khoi_loi', 0.4], ['mon_mach_thuong_ho_ve', 0.3], ['mon_kinh_linh', 0.3]],
-  mo_dao: [['mon_mach_thuong_ho_ve', 1]], // Cốt Vệ Kiếm Thủ (tạm)
+  dai_lo_den_troi: [['mon_thach_tuong_vo_si', 1]],
+  lam_sao_vien: [['mon_da_minh_loc', 1]],
+  binh_khi_kho: [['mon_co_thanh_chien_ma', 0.5], ['mon_cot_ve_kiem_thu', 0.5]],
+  dien_tien_quang_truong: [['mon_cot_ve_kiem_thu', 0.35], ['mon_thach_tuong_vo_si', 0.35], ['mon_co_thanh_chien_ma', 0.3]],
+  mo_dao: [['mon_cot_ve_kiem_thu', 1]],
 };
 const pick = (list) => {
   let t = R();

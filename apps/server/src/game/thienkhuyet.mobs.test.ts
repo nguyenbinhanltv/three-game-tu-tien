@@ -93,6 +93,20 @@ describe('dữ liệu Thiên Khuyết (E4-B)', () => {
     expect(C.MONSTER.get('boss_thien_khuyet_thu_linh')!.boss).toBe(true);
   });
 
+  it('level thien_khuyet chỉ dùng quái chương 4: 12 tinh anh, một boss ở Mộ Đạo hồi sinh 30 phút', () => {
+    const all = [...IDS.common, ...IDS.elite, ...IDS.boss].sort();
+    const spawns = SH.levelSpawns(C.LEVELS.thien_khuyet);
+    expect([...new Set(spawns.map((x) => x.mon))].sort()).toEqual(all);
+    expect(spawns.filter((x) => C.MONSTER.get(x.mon)!.elite)).toHaveLength(12);
+    const boss = spawns.filter((x) => C.MONSTER.get(x.mon)!.boss);
+    expect(boss).toHaveLength(1);
+    expect(boss[0]).toMatchObject({ mon: 'boss_thien_khuyet_thu_linh', levelMin: 27, levelMax: 27, respawn: 1800 });
+    for (const x of spawns) {
+      expect(x.levelMin).toBeGreaterThanOrEqual(24);
+      expect(x.levelMax).toBeLessThanOrEqual(28);
+    }
+  });
+
   it('hành đúng thiết kế (6.3)', () => {
     const el = (id: string) => C.MONSTER.get(id)!.elem;
     expect(el('mon_thach_tuong_vo_si')).toBe('tho');

@@ -1,4 +1,4 @@
-// E4-A: Thiên Khuyết Cổ Thành đạt bộ kiểm level, đúng số liệu thiết kế (5 vùng cấp 24–27, 12 tinh anh, chưa boss), địa hình đi được.
+// E4-A: Thiên Khuyết Cổ Thành đạt bộ kiểm level, đúng số liệu thiết kế (5 vùng cấp 24–27, 12 tinh anh, một boss Thủ Linh ở Mộ Đạo), địa hình đi được.
 import { describe, expect, it } from 'vitest';
 import { polyArea, terrainOf, TELE_PADS, TELE_FREE, WATER_Y } from '@dtl/shared';
 import { campCoverage, COVER_BY_LEVEL } from './coverage';
@@ -19,7 +19,9 @@ describe('thien_khuyet', () => {
     expect(camps.length).toBeGreaterThanOrEqual(60);
     expect(camps.length).toBeLessThanOrEqual(90);
     expect(lv.spawns.filter((s) => s.mon.startsWith('elite_')).reduce((a, s) => a + s.count, 0)).toBe(12);
-    expect(lv.spawns.filter((s) => s.mon.startsWith('boss_'))).toEqual([]); // Thiên Khuyết Thủ Linh: E4-B
+    const boss = lv.spawns.filter((s) => s.mon.startsWith('boss_')); // Thiên Khuyết Thủ Linh (E4-B)
+    expect(boss).toHaveLength(1);
+    expect(boss[0]).toMatchObject({ mon: 'boss_thien_khuyet_thu_linh', x: 964, z: 1504, respawn: 1800 });
     const normal = camps.reduce((a, c) => a + c.count + (c.ranged ? 1 : 0), 0);
     const km2 = zones.reduce((a, z) => a + polyArea(z.poly), 0) / 1e6;
     expect(km2).toBeGreaterThan(1.7);

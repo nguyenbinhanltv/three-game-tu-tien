@@ -21,16 +21,19 @@ Gói E4-B (`docs/EXPANSION_DESIGN.md` 6.3, 5.4). Chỉ **dữ liệu quái/rơi 
 - Skin: ba tinh anh gộp từ `ELITE_SKINS_NEW` vào `MONSTER_SKINS` (`level: 'thien_khuyet'`, nạp lười); bốn quái thường và boss đã có skin từ trước. Quái đều `scale 1` (GLB đã đúng kích thước thật).
 - FX: dùng khung timeline V5 chung (`mon_warn`/`mon_boom_*`/`mon_strike`… theo hệ và loại vùng, bảng màu `mon_<hệ>`/`mon_boss`), không thêm JSON FX mới.
 
-## Chưa làm / việc nối tiếp (chờ E4-A)
+## Gán vào bản đồ (E4-A đã merge)
 
-- **Gán quái vào camps/zones** của `levels/thien_khuyet.json`: TODO cho E4-A hoặc làm sau khi E4-A merge (`git merge origin/main`); id quái và cấp theo bảng 4.3. Test `thienkhuyet.mobs.test.ts` hiện mượn đấu trường phẳng của Vân Hải; khi có level nên thêm test "level chỉ dùng quái chương 4, 12 tinh anh, 1 boss ở Mộ Đạo".
-- Cốt Vệ **hồi sinh một lần sau 6 s** (thiết kế 6.3), Chiến Ma **gầm giảm phòng ngự**, Cốt Kiếm Thống Lĩnh **combo 4 và tia quét kép**: server chưa có kiểu tương ứng nên dùng `combo`/`line` gần nhất (cần hook mới ở `sim.ts`).
-- Quầng sao hai vòng lệch pha 1 s (r 12 + r 20) của Thủ Linh: dùng `slam` r 8 và `chant` r 16 (trần `check.ts`: slam ≤ 8, chant ≤ 20). Phản ứng ngũ hành của boss để tùy chọn sau.
-- Boss `hpMul` cần cân lại bằng sim nhóm khi E4-C/Thần Tàng và bảng chương 4 có.
+`tools/maps/gen-thien-khuyet.mjs` (`MIX`, `ELITES`, boss) sinh lại `levels/thien_khuyet.json`: thay quái mẫu tạm bằng quái chương 4 (Đại Lộ: Thạch Tượng Võ Sĩ; Lâm Sao: Dạ Minh Lộc; Binh Khí: Chiến Ma + Cốt Vệ; Điện Tiền: Cốt Vệ/Thạch Tượng/Chiến Ma; Mộ Đạo: Cốt Vệ). 12 tinh anh: Đại Lộ 2 Đại Tướng, Lâm Sao 2 Lộc Vương, Binh Khí 3 Thống Lĩnh, Điện Tiền 2 Đại Tướng + 1 Thống Lĩnh, Mộ Đạo 2 Thống Lĩnh. Boss ở (964, 1504) Mộ Đạo, cấp 27, hồi sinh 30 phút. Vị trí cụm không đổi: `map:report --level thien_khuyet` độ phủ chuẩn p95 64,4 m, max 83,3 m (ĐẠT), 0 chỗ kẹt, 240 quái thường (121/km²). Test `thienkhuyet.mobs.test.ts` và `content/thienkhuyet.test.ts` kiểm id quái, số tinh anh, boss.
+
+## Chưa làm
+
+- Cốt Vệ **hồi sinh một lần sau 6 s**, Chiến Ma **gầm giảm phòng ngự**, Cốt Kiếm Thống Lĩnh **combo 4 và tia quét kép**: server chưa có kiểu tương ứng nên dùng `combo`/`line` gần nhất.
+- Quầng sao hai vòng lệch pha (r 12 + r 20) của Thủ Linh: dùng `slam` r 8 và `chant` r 16 (trần `check.ts`). Phản ứng ngũ hành của boss để tùy chọn sau.
+- Boss `hpMul` cần cân lại bằng sim nhóm khi có bảng chương 4.
 
 ## Ảnh (`pnpm shots:e4b --out <thư mục tuyệt đối>`, `?mute=1`, `--mute-audio`)
 
-Tạm chụp ở thung lũng Vân Lam (đất trống) vì level Thiên Khuyết thuộc E4-A.
+Chụp trong bản đồ Thiên Khuyết thật, mỗi quái ở vùng của nó (ban đêm).
 
 | | |
 | --- | --- |
