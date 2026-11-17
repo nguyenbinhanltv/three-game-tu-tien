@@ -258,7 +258,12 @@
     "cau_xich_may": "Cầu Xích Mây",
     "kinh_ho_dai": "Kính Hồ Đài",
     "dinh_sam": "Đỉnh Sấm",
-    "vuc_kinh_ngu": "Vực Kình Ngư"
+    "vuc_kinh_ngu": "Vực Kình Ngư",
+    "hang_tru_khac_van": "Hàng Trụ Khắc Vân",
+    "tinh_bai_dai": "Tinh Bái Đài",
+    "kho_giao": "Kho Giáo",
+    "cong_than_tang_dien": "Cổng Thần Tàng Điện",
+    "co_thanh_that_lo": "Cổ Thành Thất Lộ"
   },
   "poiNpcs": {
     "npc_mieu_cong": "Lão Miếu Công",
@@ -291,7 +296,8 @@
   "maps": {
     "van_lam": "Vân Lam Sơn Mạch",
     "doan_mach": "Đoạn Mạch Cổ Cốc",
-    "van_hai": "Vân Hải Phù Đảo"
+    "van_hai": "Vân Hải Phù Đảo",
+    "thien_khuyet": "Thiên Khuyết Cổ Thành"
   },
   "zones": {
     "sa_thach_pha": "Sa Thạch Pha",
@@ -303,7 +309,12 @@
     "thach_quy_dao": "Thạch Quy Đảo",
     "kinh_ho_dao": "Kính Hồ Đảo",
     "loi_van_dao": "Lôi Vân Đảo",
-    "kinh_ngu_dai": "Kình Ngư Đài"
+    "kinh_ngu_dai": "Kình Ngư Đài",
+    "dai_lo_den_troi": "Đại Lộ Đèn Trời",
+    "lam_sao_vien": "Lâm Sao Viên",
+    "binh_khi_kho": "Binh Khí Khố",
+    "dien_tien_quang_truong": "Điện Tiền Quảng Trường",
+    "mo_dao": "Mộ Đạo"
   },
   "teleports": {
     "tp_thien_mach": "Trận Thiên Mạch Đài",
@@ -318,7 +329,13 @@
     "vh_tp_thach_quy": "Trận Thạch Quy Đảo",
     "vh_tp_kinh_ho": "Trận Kính Hồ Đảo",
     "vh_tp_loi_van": "Trận Lôi Vân Đảo",
-    "vh_tp_kinh_ngu": "Trận Kình Ngư Đài"
+    "vh_tp_kinh_ngu": "Trận Kình Ngư Đài",
+    "tk_tp_tram": "Trận Ngoại Thành Trạm",
+    "tk_tp_dai_lo": "Trận Đại Lộ Đèn Trời",
+    "tk_tp_lam_sao": "Trận Lâm Sao Viên",
+    "tk_tp_binh_khi": "Trận Binh Khí Khố",
+    "tk_tp_dien_tien": "Trận Điện Tiền Quảng Trường",
+    "tk_tp_mo_dao": "Trận Mộ Đạo"
   },
   "materials": {
     "itm_mach_tinh_phien": "Mạch Tinh Phiến",

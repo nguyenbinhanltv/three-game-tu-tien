@@ -14,7 +14,7 @@ export interface CoverStd {
   max: number;
 }
 export const DEFAULT_COVER: CoverStd = { p95: 65, max: 85 };
-export const COVER_BY_LEVEL: Record<string, CoverStd> = { doan_mach: { p95: 65, max: 85 }, van_hai: { p95: 65, max: 85 } };
+export const COVER_BY_LEVEL: Record<string, CoverStd> = { doan_mach: { p95: 65, max: 85 }, van_hai: { p95: 65, max: 85 }, thien_khuyet: { p95: 65, max: 85 } };
 export const COVER_STEP = 12;
 
 export interface CampCoverage {
