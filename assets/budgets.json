@@ -22,6 +22,15 @@
       "texture": { "color": 1024, "data": 1024 },
       "bones": 60
     },
+    "player_v3": {
+      "triangles": { "min": 4000, "max": 24000 },
+      "lods": [
+        { "ratio": 0.5, "maxTriangles": 12000 },
+        { "ratio": 0.2, "maxTriangles": 4800 }
+      ],
+      "texture": { "color": 2048, "data": 2048 },
+      "bones": 80
+    },
     "player_v2": {
       "triangles": { "min": 4000, "max": 12000 },
       "lods": [
