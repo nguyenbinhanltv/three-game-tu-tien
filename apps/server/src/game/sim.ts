@@ -701,7 +701,7 @@ export class GameSim {
     telegraph: (g, delay, kind, src) => this.addHazard(g, delay, 0, false, kind, src, 0),
     marker: (x, z, r, dur, kind) => this.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur),
     damagePlayer: (p, n, src, hv, ke) => this.damagePlayer(p, n, src, hv, ke),
-    addPosture: (m, n) => this.addPosture(m, n),
+    stagger: (m, sec) => this.stagger(m, sec),
     heal: (m, n) => {
       m.s.hp = Math.min(m.s.mhp, m.s.hp + n);
     },
@@ -2393,7 +2393,11 @@ export class GameSim {
    * Vùng chém đã thả trước đó vẫn nổ đúng như báo trước (thấy gì thì trúng nấy).
    */
   private breakPosture(m: MonEnt): void {
-    const ps = m.def.posture!;
+    this.stagger(m, m.def.posture!.brk);
+  }
+
+  /** Boss mất thế `sec` giây (cắt chiêu đang dở, choáng + cờ MF_BROKEN). Dùng chung cho phá thế thường và `than.clone.weak` (E4-C); không bị `addPosture` chặn khi đang quỵ. */
+  stagger(m: MonEnt, sec: number): void {
     m.posture = 0;
     this.syncPosture(m);
     this.monSkills.cancel(m);
@@ -2404,9 +2408,9 @@ export class GameSim {
     m.comboAt = 0;
     m.comboTarget = '';
     m.cast = null;
-    m.stunUntil = Math.max(m.stunUntil, this.now + ps.brk * 1000);
+    m.stunUntil = Math.max(m.stunUntil, this.now + sec * 1000);
     this.setMonFlags(m, MF_STUN | MF_BROKEN, m.stunUntil);
-    this.fx({ t: 'break', src: m.id, d: ps.brk });
+    this.fx({ t: 'break', src: m.id, d: sec });
     this.sysAll('sys.posture_broken', { boss: monsterName(m.def.id) }, 'good');
   }
 

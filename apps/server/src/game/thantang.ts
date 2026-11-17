@@ -49,7 +49,8 @@ export interface ThanHost {
   /** Dấu hiệu tồn tại `dur` giây (vòng ấn, vòng đá): không sát thương. */
   marker(x: number, z: number, r: number, dur: number, kind: HazardMsg['kind']): void;
   damagePlayer(p: PlayerEnt, n: number, src: string, hv?: boolean, ke?: 1 | -1): void;
-  addPosture(m: MonEnt, n: number): void;
+  /** Boss mất thế `sec` giây. */
+  stagger(m: MonEnt, sec: number): void;
   heal(m: MonEnt, n: number): void;
   kill(m: MonEnt): void;
   fx(m: FxMsg): void;
@@ -223,7 +224,7 @@ export class ThanTangSystem {
     if (live.length === 0) {
       rt.clones = [];
       rt.cloneNext = now + c.cd * 1000;
-      this.h.addPosture(m, 1);
+      this.h.stagger(m, c.weak);
       this.h.sysAll('sys.tt_clone_ok', undefined, 'good');
     } else if (now >= rt.cloneDeadline) {
       for (const o of live) this.h.kill(o);

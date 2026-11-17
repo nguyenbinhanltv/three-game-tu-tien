@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { groundAt, MS_CHASE, MS_DEAD, PF_DEAD, S, type FxMsg, type TransferMsg } from '@dtl/shared';
+import { groundAt, MF_BROKEN, MS_CHASE, MS_DEAD, PF_DEAD, S, type FxMsg, type TransferMsg } from '@dtl/shared';
 
 // E4-C: Thần Tàng Điện. Dữ liệu đợt, vé, đợt phong ấn (xuất khiếu / Phá Ấn Phù / vùng chặn), Vô Diện Thần Quân
 // (sáu tay, ngũ hành, phân thân, vòng đá + Phản hồi), thưởng một lần mỗi ngày.
@@ -445,6 +445,22 @@ describe('Vô Diện Thần Quân (ThanTangSystem)', () => {
     const together = 1_000_000 - p.char.hp;
     expect(together).toBeGreaterThan(0);
     expect(sim.than.active()).toBe(true);
+  });
+
+  it('hạ hết phân thân: boss mất thế đúng `weak` giây (6 s) kể cả khi đang quỵ vì phá thế thường', async () => {
+    const { r, p, boss, adv, def } = await fight();
+    adv(0);
+    boss.phase = 1;
+    adv(3100);
+    const t0 = (r.sim as unknown as { now: number }).now;
+    // Vừa bị phá thế thường (brk 4 s): addPosture sẽ là no-op, nhưng mất thế của phân thân vẫn phải kéo dài tới `weak`.
+    (r.sim as unknown as { stagger(m: typeof boss, s: number): void }).stagger(boss, def.posture!.brk);
+    expect(boss.stunUntil).toBeCloseTo(t0 + def.posture!.brk * 1000, -2);
+    for (const cl of r.sim.monsters.filter((m) => m.def.id === 'mon_tt_phan_than' && m.state !== MS_DEAD)) r.sim.damageMonster(cl, cl.s.mhp, p);
+    adv(100);
+    expect(keys(p)).toContain('sys.tt_clone_ok');
+    expect(boss.stunUntil).toBeGreaterThanOrEqual(t0 + 100 + def.than!.clone!.weak * 1000 - 50);
+    expect(boss.s.mf & MF_BROKEN).toBeTruthy();
   });
 
   it('boss chết thì phân thân biến mất', async () => {
