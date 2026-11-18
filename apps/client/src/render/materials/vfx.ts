@@ -9,6 +9,7 @@ import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
 import { burstNodes, cardNodes, crystalNodes, decalNodes, toonNodes } from '../vfx/stylized';
 import { trailNodes } from '../vfx/trail';
+import { FLAGS } from '../../game/flags';
 
 /**
  * Material hiệu ứng (VFX) dùng chung, viết bằng TSL.
@@ -156,7 +157,7 @@ export function fxMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
  * (fxBatch.ts) ghi tay cầm vào thuộc tính theo instance mỗi khung.
  */
 /** `?batch=0` tắt gộp draw call để so ảnh/số đo trước-sau (mỗi lưới một draw call như cũ). */
-export const BATCHING = typeof location === 'undefined' || new URLSearchParams(location.search).get('batch') !== '0';
+export const BATCHING = FLAGS.batching;
 
 /**
  * `sigil` KHÔNG gộp (S2-C): nhiều pháp trận cùng lúc (lôi võng độ kiếp có 21 vòng cùng vòng nhắm, hay nhiều vùng báo của boss) khi gộp chỉ vẽ ra
