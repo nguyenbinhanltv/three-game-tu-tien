@@ -92,7 +92,8 @@
    "billboard": true,
    "sweep": 0.0,
    "tone": "body",
-   "tier": 0
+   "tier": 0,
+   "cross": true
   },
   {
    "type": "hitstop",

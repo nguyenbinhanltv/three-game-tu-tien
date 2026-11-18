@@ -3,7 +3,7 @@ import math
 
 
 def register(R, H):
-    mesh, parts, decal, stop, shake, flash, ring_spikes = H['mesh'], H['parts'], H['decal'], H['stop'], H['shake'], H['flash'], H['ring_spikes']
+    mesh, parts, decal, stop, shake, flash, ring_spikes, sound = H['mesh'], H['parts'], H['decal'], H['stop'], H['shake'], H['flash'], H['ring_spikes'], H['sound']
 
     def line_spikes(zs, t0, step, scale, dur, tier=1, tilt=0):
         out = []
@@ -153,6 +153,7 @@ def register(R, H):
             mesh('crescent', 0.03, 0.26, at='self', offset=[0, 0, -0.9], rot=[0, 0, 90], scale=0.9, scaleTo=1.6, sweep=0.4, erodeFrom=0.45, ragged=0.7, tone='core', alpha=0.8, seed=3, tier=1),
             mesh('ripple', 0.0, 0.45, at='self', offset=[0, -1.1, 0], scale=0.3, scaleTo=1.6, sweep=0.4, erodeFrom=0.4, tone='body', tier=1, seed=5),
             mesh('helix', 0.0, 0.3, at='ahead', offset=[0, 0, -2.4], scale=[1.0, 1.0, 5], sweep=0.2, erodeFrom=0.3, spin=-700, tone='accent', alpha=0.8, tier=1, seed=6),
+            mesh('gust', 0.0, 0.5, at='self', offset=[0, 0, -1.8], scale=[1.8, 1.8, 5.5], tone='rim', alpha=0.85, seed=7, tier=1),
             parts('spark', 0.0, 22, 7, 0.4, 0.35, 0.05, at='self', back=True, tone='rim', tier=0),
         ],
         'variants': {'return': [mesh('ripple', 0.3, 0.45, at='self', offset=[0, -1.1, 0], scale=0.3, scaleTo=1.3, sweep=0.4, tone='accent', alpha=0.8, tier=1, seed=15)]},
@@ -213,7 +214,8 @@ def register(R, H):
             shake(0.02, 0.55),
         ],
         'variants': {
-            'freeze': [mesh('ripple', 0.3, 0.9, at='area', scale=0.1, scaleTo=0.9, fit='area', sweep=0.5, tone='core', alpha=0.7, tier=1, seed=20)],
+            'freeze': [mesh('ripple', 0.3, 0.9, at='area', scale=0.1, scaleTo=0.9, fit='area', sweep=0.5, tone='core', alpha=0.7, tier=1, seed=20),
+                       sound(0.04, 'ice_spike', 0.9), sound(0.32, 'ice_hit', 0.8)],
             'echo': [mesh('burst', 0.4, 0.12, at='area', offset=[0, 1.5, 0], scale=2.4, billboard=True, sweep=0.0, tone='accent', tier=0),
                      mesh('ripple', 0.4, 0.8, at='area', scale=0.1, scaleTo=0.8, fit='area', sweep=0.5, tone='accent', alpha=0.7, tier=1, seed=21)],
         },

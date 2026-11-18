@@ -389,7 +389,7 @@ function licenseBlock(spec, used) {
   for (const [id, srcs] of used) {
     const packs = [...new Set(srcs.map((s) => s.pack))];
     // Nguồn: gói + tác giả; Chi tiết: link trang gói + đường dẫn file trong dtl-asset-source/sfx.
-    const source = packs.map((p) => `OpenGameArt: ${spec.packs[p].title} — ${spec.packs[p].author}`).join('; ');
+    const source = packs.map((p) => `${new URL(spec.packs[p].url).hostname.includes('opengameart') ? 'OpenGameArt' : new URL(spec.packs[p].url).hostname}: ${spec.packs[p].title} — ${spec.packs[p].author}`).join('; ');
     const detail = packs
       .map((p) => {
         const P = spec.packs[p];

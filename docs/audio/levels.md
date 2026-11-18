@@ -53,7 +53,7 @@ Chuỗi tín hiệu: nguồn → (panner) → bus → master. Nhạc đi thêm h
 | `death` | sfx | -16.4 | -16.4 |
 | `impact` | sfx | -17.3 | -17.3 |
 | `spellbreak` | sfx | -10.0 | -10.0 |
-| `thunder` | sfx | -16.8 | -16.8 |
+| `thunder` | sfx | -16.6 | -16.6 |
 | `shield` | sfx | -13.5 | -13.5 |
 | `heal` | sfx | -14.1 | -14.1 |
 | `potion` | sfx | -15.0 | -15.0 |
@@ -84,6 +84,10 @@ Chuỗi tín hiệu: nguồn → (panner) → bus → master. Nhạc đi thêm h
 | `enhance` | sfx | -14.8 | -14.8 |
 | `gather` | sfx | -20.5 | -20.5 |
 | `fly` | sfx | -14.3 | -14.3 |
+| `loi_cast` | sfx | -18.6 | -18.6 |
+| `fire_burst` | sfx | -18.5 | -18.5 |
+| `ice_hit` | sfx | -17.4 | -17.4 |
+| `ice_spike` | sfx | -18.1 | -18.1 |
 
 ## Chi tiết nhạc và âm môi trường (tích hợp)
 
@@ -92,6 +96,9 @@ Chuỗi tín hiệu: nguồn → (panner) → bus → master. Nhạc đi thêm h
 | `sect` | music | -16.0 | -25.6 |
 | `combat` | music | -16.0 | -25.6 |
 | `wild` | music | -16.0 | -25.6 |
+| `wild_ochre` | music | -16.0 | -25.6 |
+| `wild_night` | music | -16.0 | -25.6 |
+| `wild_cloud` | music | -16.0 | -25.6 |
 | `forest` | music | -16.0 | -25.6 |
 | `lake` | music | -16.0 | -25.6 |
 | `dungeon` | music | -16.0 | -25.6 |

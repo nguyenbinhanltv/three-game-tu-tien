@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { abs, exp, float, min, mix, pow, smoothstep, time, uv, vec2, vec3 } from 'three/tsl';
+import { abs, clamp, exp, float, max, min, mix, pow, smoothstep, step, time, uv, vec2, vec3 } from 'three/tsl';
 import { PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { groundAt } from '../../game/levelCtx';
 import { vnoise, type FxUniforms } from './common';
@@ -32,7 +32,38 @@ const C_SWORD_DEEP = 0x8fdcff;
 const C_MIST = 0xdce6df; // air_mist
 const C_DUST = 0xb9b29a; // giữa stone_light và leaf_dry
 
-/** Node màu/độ trong cho dải vệt (`fxA.z` = seed). `uv.x`: 0 ở đầu (phi kiếm) → 1 ở đuôi. */
+/**
+ * Vệt kiếm bám mũi kiếm theo kỹ thuật dải vũ khí của EdgeFlux (MIT, assets/LICENSES.md), viết lại bằng TSL:
+ * phần cũ co dần về phía mũi (hình lưỡi liềm), viền cắt phía mũi sáng gắt rồi tắt theo tuổi, thân sáng theo bình phương
+ * độ cao dọc lưỡi (đặc ở mũi, nhạt ở gốc), nhiễu năng lượng cuộn dọc dải, mờ dần theo lũy thừa của tuổi.
+ * `uv.x` = tuổi 0 → 1, `uv.y` = gốc lưỡi 0 → mũi 1.
+ */
+export function bladeTrailNodes(U: FxUniforms) {
+  const st = uv();
+  const age = clamp(st.x, 0, 1);
+  const one = float(1);
+  // Dải phủ 80% lưỡi tính từ mũi xuống.
+  const y = st.y.sub(0.2).div(0.8);
+  const cut = pow(age, 0.8).mul(0.75);
+  const yy = y.sub(cut).div(max(one.sub(cut), 0.001));
+  const inside = smoothstep(0, 0.18, yy).mul(step(0, y));
+  const mask = inside.mul(pow(one.sub(age), 1.6));
+  const edge = exp(one.sub(yy).negate().div(0.1)).mul(smoothstep(1, 0.6, age)).mul(step(0, yy));
+  const n = vnoise(vec2(age.mul(14).sub(time.mul(7)).add(U.a.z), yy.mul(6)));
+  const n2 = vnoise(vec2(age.mul(30).sub(time.mul(11)), yy.mul(13).add(U.a.z)));
+  const body = pow(clamp(yy, 0, 1), 2).mul(1.5).mul(n.mul(n).mul(1.1).add(n2.mul(n2).mul(0.4)).add(0.3));
+  const rim = mix(U.color, vec3(1, 1, 1), 0.75);
+  const col = mix(U.color.mul(0.4), U.color, clamp(body, 0, 1)).mul(body).mul(1.3).add(rim.mul(edge).mul(1.9));
+  return {
+    color: min(col, U.maxHdr),
+    opacity: U.opacity.mul(min(mask.mul(body.mul(0.9).add(edge.mul(1.2))), 1)),
+  };
+}
+
+/**
+ * Node màu/độ trong cho dải vệt (`fxA.z` = seed, `fxA.w` > 0,5: vệt kiếm kiểu EdgeFlux, không thì vệt phi kiếm cũ).
+ * `uv.x`: 0 ở đầu (phi kiếm) → 1 ở đuôi.
+ */
 export function trailNodes(U: FxUniforms) {
   const st = uv();
   const u = st.x;
@@ -43,9 +74,15 @@ export function trailNodes(U: FxUniforms) {
   const flow = vnoise(vec2(u.mul(9).sub(time.mul(6)).add(U.a.z), st.y.mul(3))).mul(0.45).add(0.65);
   const lum = core.mul(tail).mul(flow);
   const c = mix(U.color, vec3(1, 1, 1), core.mul(one.sub(u)).mul(0.5));
-  return {
+  const fly = {
     color: min(c.mul(lum.mul(1.5).add(0.15)), U.maxHdr),
     opacity: U.opacity.mul(min(lum.mul(1.3), 1)).mul(smoothstep(0, 0.04, u)),
+  };
+  const blade = bladeTrailNodes(U);
+  const isBlade = step(0.5, U.a.w);
+  return {
+    color: mix(fly.color, blade.color, isBlade),
+    opacity: mix(fly.opacity, blade.opacity, isBlade),
   };
 }
 
@@ -203,6 +240,8 @@ export class Trails {
     b.r.reset(owner);
     b.mesh = this.src.fx(b.r.geo, color, 0.9, 'trail');
     b.mesh.fxA.z = Math.random() * 40;
+    // Cờ cho `trailNodes`: vệt kiếm (kiểu EdgeFlux) khác vệt phi kiếm. Pool reset fxA về 0 nên phải đặt mỗi lần mở.
+    b.mesh.fxA.w = 1;
     return b.r;
   }
 
