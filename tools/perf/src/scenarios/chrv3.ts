@@ -12,7 +12,7 @@ import { centerClip, snap } from '../lib/shot';
 import type { Scenario } from '../lib/scenario';
 
 /** `v3`/`v3b` = Lạc Kiếm v3b (mặc định của ?chr=v3), `v3a` = bản v3 cũ (`?v3model=a`). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
-const QUERY: Record<string, Record<string, string>> = { v1: {}, v2: { chr: 'v2' }, v3: { chr: 'v3' }, v3b: { chr: 'v3' }, v3a: { chr: 'v3', v3model: 'a' }, v3old: { chr: 'v3', v3model: 'b', k5: '0' }, v3new: { chr: 'v3', k5: '0' }, v3nok5: { chr: 'v3', k5: '0' }, v3raw: { chr: 'v3', v3pal: '0' } };
+const QUERY: Record<string, Record<string, string>> = { v1: {}, v2: { chr: 'v2' }, v3: { chr: 'v3' }, v3b: { chr: 'v3' }, v3a: { chr: 'v3', v3model: 'a' }, v3a0: { chr: 'v3', armfit: '0' }, v3a5: { chr: 'v3', armfit: '5' }, v3new: { chr: 'v3' }, v3nok5: { chr: 'v3', k5: '0' }, v3raw: { chr: 'v3', v3pal: '0' } };
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 
 export default {
@@ -150,7 +150,7 @@ export default {
           await still.ctx.close();
         };
         if (process.argv.includes('--six')) {
-          // So lò xo cũ | mới (v3b | v3b2): từng clip UAL hai góc camera (3/4 sau, ngang), camera sát hông-gối, nhãn tên clip trên khung. So `v3old` (v3b) với
+          // So không chừa tay | chừa tay 16° (v3b2): từng clip UAL hai góc camera (3/4 sau, ngang), camera sát hông-gối, nhãn tên clip trên khung. So `v3old` (v3b) với
           // `v3new` (v3b2); k5=0 để mọi clip là UAL. Mỗi biến thể quay riêng (nhẹ máy) và ghi mốc đầu từng đoạn (đồng hồ trong trang, quy về đuôi video);
           // sau khi quay đủ biến thể thì cắt từng đoạn theo mốc rồi ghép trái/phải: cùng clip, cùng thời điểm dù trang nào đó khựng.
           const [at0, at1] = (process.env.SIX_AT ?? '2048 2088').split(' ');
@@ -171,7 +171,7 @@ export default {
             window.__mark = (n) => window.__marks.push([n, Date.now()]);
             setInterval(() => {
               const m = g.ents.players.get(g.sid).model;
-              d.textContent = '${v === 'v3new' ? 'LÒ XO MỚI' : 'LÒ XO CŨ'} · ' + (m.shot ? m.shot.getClip().name : m.baseName);
+              d.textContent = '${v === 'v3new' ? 'GỘP: 16° + HỆ SỐ BUÔNG' : v === 'v3a5' ? 'MAIN: 5°' : 'KHÔNG BÙ TAY'} · ' + (m.shot ? m.shot.getClip().name : m.baseName);
             }, 100);
           })()`);
           const view = (side: boolean) => cam(page, { yaw: side ? Number(process.env.SIX_YAW_SIDE ?? -1.75) : Number(process.env.SIX_YAW ?? -0.7), pitch: 0.0, dist: 1.7 });
@@ -225,7 +225,7 @@ export default {
             console.log(`[shots:chrv3] ${tag}: ${at.length} mốc, ${elapsed.toFixed(1)} s`);
           }
           fs.rmSync(rec, { recursive: true, force: true });
-          const vs = list('--variants', 'v3old,v3new');
+          const vs = list('--variants', 'v3a0,v3a5,v3new');
           if (v === vs[vs.length - 1]) {
             // Ghép từng đoạn: [video biến thể 1 | video biến thể 2], cắt theo mốc của từng video.
             const tgs = vs.map((x) => `${g === 'm' ? 'nam' : 'nu'}-${x}`);

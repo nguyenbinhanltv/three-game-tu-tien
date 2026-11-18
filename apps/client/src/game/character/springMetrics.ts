@@ -63,6 +63,8 @@ export interface Posed {
 }
 
 export interface MeshInfo {
+  /** Tên xương trội nhất của từng đỉnh. */
+  domBone: string[];
   index: number[];
   regionBase: Region[];
   /** Đỉnh có trọng số lò xo vạt (`dtl_o_skirt*`). */
@@ -92,6 +94,7 @@ export function meshInfo(mesh: THREE.SkinnedMesh): MeshInfo {
   const names = mesh.skeleton.bones.map((b) => b.name);
   const n = si.count;
   const regionBase: Region[] = [];
+  const domBone: string[] = [];
   const skirtW: number[] = [];
   for (let i = 0; i < n; i++) {
     let best = 0;
@@ -107,11 +110,12 @@ export function meshInfo(mesh: THREE.SkinnedMesh): MeshInfo {
       if (nm.startsWith('dtl_o_skirt')) sk += w;
     }
     regionBase.push(regionOf(names[best]));
+    domBone.push(names[best]);
     skirtW.push(sk);
   }
   const ib = g.getIndex();
   const index = ib ? Array.from(ib.array as ArrayLike<number>) : Array.from({ length: n }, (_, i) => i);
-  return { index, regionBase, skirtW };
+  return { domBone, index, regionBase, skirtW };
 }
 
 /** Vùng vạt (cùng cách chọn với cloth_bake.py): dải z 0,17–0,52 chiều cao ngoài viên nang thân (không tính tay, ngực trên), hoặc có trọng số lò xo vạt. */
@@ -215,3 +219,84 @@ export function score(label: string, restPen: number, restCap: boolean[], posed:
 }
 
 export { regionsFor };
+
+/** Chẩn đoán (SPRING_DIAG=1): chồng tay×thân theo xương trội của hai bên + độ cao; đỉnh vào viên nang theo viên nang và vùng vạt/tay/khác. */
+export function diagnose(p: Posed, rest: Posed, info: MeshInfo, regions: Region[], mask: boolean[], height: number): string[] {
+  const out: string[] = [];
+  const top = (m: Map<string, number>, n = 6) => [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([k, v]) => `${k}:${v}`).join(' ');
+  // tay×thân: các đỉnh của tam giác chồng
+  const tris: Record<Region, number[][]> = { arm_l: [], arm_r: [], leg_l: [], leg_r: [], torso: [] };
+  for (let t = 0; t < info.index.length; t += 3) {
+    const f = [info.index[t], info.index[t + 1], info.index[t + 2]];
+    const cnt: Partial<Record<Region, number>> = {};
+    for (const v of f) cnt[regions[v]] = (cnt[regions[v]] ?? 0) + 1;
+    for (const r of Object.keys(cnt) as Region[]) if ((cnt[r] ?? 0) >= 2) tris[r].push(f);
+  }
+  for (const [ra, rb] of [['arm_l', 'torso'], ['arm_r', 'torso']] as [Region, Region][]) {
+    const ba = new Map<string, number>();
+    const bb = new Map<string, number>();
+    const ha: number[] = [];
+    for (const fa of tris[ra]) {
+      const A = fa.map((v) => p.verts[v]);
+      const box = new THREE.Box3().setFromPoints(A).expandByScalar(0.0);
+      for (const fb of tris[rb]) {
+        const B = fb.map((v) => p.verts[v]);
+        if (!box.intersectsBox(new THREE.Box3().setFromPoints(B))) continue;
+        if (fb.some((v) => fa.includes(v))) continue;
+        if (!triTri(A, B)) continue;
+        for (const v of fa) ba.set(info.domBone[v], (ba.get(info.domBone[v]) ?? 0) + 1);
+        for (const v of fb) bb.set(info.domBone[v], (bb.get(info.domBone[v]) ?? 0) + 1);
+        ha.push(A[0].y / height);
+      }
+    }
+    ha.sort((a, b) => a - b);
+    out.push(`${ra}×${rb}: ${ha.length} cặp; xương trội bên tay [${top(ba)}], bên thân [${top(bb)}]; cao (tỉ lệ) ${ha.length ? `${ha[0].toFixed(2)}..${ha[ha.length - 1].toFixed(2)} trung vị ${ha[ha.length >> 1].toFixed(2)}` : '-'}`);
+  }
+  // đỉnh vào viên nang
+  const kc = height / 1.8;
+  const capsDef = capsList();
+  const hits = new Map<string, number>();
+  for (let i = 0; i < p.verts.length; i++) {
+    for (const [a, b, r] of capsDef) {
+      const nowIn = segDist(p.verts[i], p.bones.get(a)!, p.bones.get(b)!) < r * kc * 0.9;
+      const wasIn = segDist(rest.verts[i], rest.bones.get(a)!, rest.bones.get(b)!) < r * kc * 0.9;
+      if (nowIn && !wasIn) {
+        const kind = mask[i] ? 'vạt' : /sleeve|lowerarm|upperarm|hand|clav/.test(info.domBone[i]) ? 'tay/tay áo' : 'khác';
+        hits.set(`${a}→${b} ${kind}`, (hits.get(`${a}→${b} ${kind}`) ?? 0) + 1);
+      }
+    }
+  }
+  out.push('đỉnh vào viên nang: ' + top(hits, 10));
+  return out;
+}
+
+function capsList(): [string, string, number][] {
+  return CAPS;
+}
+
+/**
+ * Chia vùng theo hình học ở tư thế nghỉ (không phụ thuộc trọng số): mỗi đỉnh thuộc vùng của viên nang xương gần nhất (khoảng cách / bán kính).
+ * Cần khi so các asset có trọng số khác nhau: chia theo xương trội thì làm mượt trọng số tự nó đổi tập tam giác "tay"/"thân" và đổi chỉ số.
+ */
+export function geometryRegions(rest: Posed, height: number): Region[] {
+  const kc = height / 1.8;
+  const segs: [string, string, number, Region][] = [
+    ['pelvis', 'spine_01', 0.11, 'torso'], ['spine_01', 'spine_03', 0.13, 'torso'], ['spine_03', 'neck_01', 0.1, 'torso'],
+  ];
+  for (const sd of ['l', 'r']) {
+    segs.push([`upperarm_${sd}`, `lowerarm_${sd}`, 0.05, `arm_${sd}` as Region], [`lowerarm_${sd}`, `hand_${sd}`, 0.04, `arm_${sd}` as Region],
+      [`thigh_${sd}`, `calf_${sd}`, 0.085, `leg_${sd}` as Region], [`calf_${sd}`, `foot_${sd}`, 0.06, `leg_${sd}` as Region]);
+  }
+  return rest.verts.map((v) => {
+    let best: Region = 'torso';
+    let bd = Infinity;
+    for (const [a, b, r, reg] of segs) {
+      const d = segDist(v, rest.bones.get(a)!, rest.bones.get(b)!) / (r * kc);
+      if (d < bd) {
+        bd = d;
+        best = reg;
+      }
+    }
+    return best;
+  });
+}
