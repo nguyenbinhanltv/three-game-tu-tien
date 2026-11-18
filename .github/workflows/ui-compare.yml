@@ -1,0 +1,57 @@
+# So sánh ảnh UI trước/sau (U2-5): chạy tay (workflow_dispatch), KHÔNG chặn PR. Chụp `pnpm shots ui` ở nhánh gốc và nhánh PR trên Chromium
+# phần mềm (WebGL2), ghép cạnh nhau + đo tỉ lệ điểm ảnh lệch bằng tools/ui/compare.mjs, tải lên artifact. Ảnh trên runner dùng GPU phần mềm nên
+# KHÔNG đồng nhất với ảnh duyệt chụp ở máy dev: chỉ dùng để thấy chỗ vỡ bố cục/lệch lớn ở nhiều độ phân giải.
+name: UI compare
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Nhánh/commit gốc'
+        default: main
+      sizes:
+        description: 'Cỡ màn hình (720p,1080p,1440p,4k)'
+        default: '720p,1080p,1440p'
+      only:
+        description: 'Chỉ các id này (bỏ trống = tất cả)'
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: head
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.base }}
+          path: base
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: head/pnpm-lock.yaml
+      - name: Cài dependency (hai bản)
+        run: |
+          (cd head && pnpm install --frozen-lockfile)
+          (cd base && pnpm install --frozen-lockfile)
+      - name: Cài Chromium
+        run: cd head && pnpm --filter @dtl/perf exec playwright install --with-deps chromium
+      - name: Chụp bản gốc
+        run: cd base && pnpm shots ui --renderer webgl2 --sizes "${{ inputs.sizes }}" ${{ inputs.only != '' && format('--only {0}', inputs.only) || '' }} --out "$GITHUB_WORKSPACE/shots/base"
+      - name: Chụp bản PR
+        run: cd head && pnpm shots ui --renderer webgl2 --sizes "${{ inputs.sizes }}" ${{ inputs.only != '' && format('--only {0}', inputs.only) || '' }} --out "$GITHUB_WORKSPACE/shots/head"
+      - name: So sánh
+        run: cd head && node tools/ui/compare.mjs "$GITHUB_WORKSPACE/shots/base" "$GITHUB_WORKSPACE/shots/head" "$GITHUB_WORKSPACE/shots/so-sanh" --min 0.2 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ui-compare
+          path: shots/so-sanh
