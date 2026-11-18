@@ -97,4 +97,18 @@ for id, name, grp, d, f in I:
 sp = '<svg xmlns="http://www.w3.org/2000/svg" style="display:none">' + "".join(f'<symbol id="{id}" viewBox="0 0 48 48">' + (f'<path d="{f}" fill="currentColor" fill-opacity=".22" stroke="none"/>' if f else "") + f'<path d="{d}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>' for id, name, grp, d, f in I) + "</svg>"
 io.open(OUT + "sprite.svg", "w", encoding="utf-8").write(sp)
 json.dump([{"id": i[0], "ten": i[1], "nhom": i[2]} for i in I], io.open(OUT + "danh-muc.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+# Tệp chạy trong game: python tools/icons/v2/sysicons.py <thư mục ra> <đường dẫn sysGlyphs.ts> (đối số 2 tùy chọn).
+if len(sys.argv) > 2:
+    lines = [f"  {id}: [{json.dumps(d)}{', ' + json.dumps(f) if f else ''}]," for id, name, grp, d, f in I]
+    NL = chr(10)
+    head = NL.join(
+        [
+            "/**",
+            " * 75 icon hệ thống nét vàng (U2-I): lưới 48×48, `[nét, vùng tô nhẹ?]`, màu theo `currentColor`.",
+            " * SINH TỪ `tools/icons/v2/sysicons.py` (đối số 2 = đường dẫn tệp này): sửa bản vẽ ở đó rồi chạy lại, không sửa tay.",
+            " */",
+            "export const SYS_GLYPHS: Record<string, readonly [string, string?]> = {",
+        ]
+    )
+    io.open(sys.argv[2], "w", encoding="utf-8", newline=NL).write(head + NL + NL.join(lines) + NL + "};" + NL)
 print(len(I), "icon SVG;", os.path.getsize(OUT + "sprite.svg") // 1024, "KB sprite")

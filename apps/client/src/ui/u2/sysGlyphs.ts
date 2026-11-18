@@ -1,6 +1,6 @@
 /**
  * 75 icon hệ thống nét vàng (U2-I): lưới 48×48, `[nét, vùng tô nhẹ?]`, màu theo `currentColor`.
- * Nguồn: `tools/icons/v2/system-icons.v2.json` (danh mục) + bản vẽ ở `tools/icons/v2/sysicons.py`; sửa bản vẽ thì sinh lại tệp này.
+ * SINH TỪ `tools/icons/v2/sysicons.py` (đối số 2 = đường dẫn tệp này): sửa bản vẽ ở đó rồi chạy lại, không sửa tay.
  */
 export const SYS_GLYPHS: Record<string, readonly [string, string?]> = {
   hud_thien: ['M18 11 A6 6 0 1 0 30 11 A6 6 0 1 0 18 11 M24 17 V29 M12 31 Q24 24 36 31 M12 40 Q24 34 36 40 M14 40 Q24 44 34 40'],
