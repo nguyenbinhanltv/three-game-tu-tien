@@ -17,6 +17,20 @@ export const CHR_V3 = new URLSearchParams(search).get('chr') === 'v3';
 export const V3_LIB = 'anim_ual_native';
 /** Asset theo giới tính (bản thử N-0: nam = thân v2 trên Mannequin, nữ = skin Varkessa). */
 export const V3_MODELS = { m: 'chr_v3_v2_nam', f: 'chr_v3_varkessa_nu' } as const;
+/** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. Varkessa nữ chính là model nữ mặc định. */
+export const V3_SKINS: Readonly<Record<string, string>> = {
+  set_skin_varkessa: 'chr_v3_varkessa_nu',
+  set_skin_duskrella: 'chr_v3_duskrella_nu',
+  set_skin_crimson: 'chr_v3_crimson_nam',
+};
+/** Skin chỉ có bản v3 (v1/v2 không có asset `set_skin_<tên>_<giới>`: bỏ qua, hiện trang phục thường). Varkessa có cả v1. */
+export const V3_ONLY_SKINS: ReadonlySet<string> = new Set(['set_skin_duskrella', 'set_skin_crimson']);
+/** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có). Skin sai giới (server không cho mặc) bị bỏ qua. */
+export function v3AssetOf(g: string, skin?: string): string {
+  const base = g === 'f' ? V3_MODELS.f : V3_MODELS.m;
+  const id = skin ? V3_SKINS[skin] : undefined;
+  return id && id.endsWith(g === 'f' ? '_nu' : '_nam') ? id : base;
+}
 /** Tốc độ chân của Jog_Fwd_Loop (m/s): phát với timeScale = tốc độ thật / số này để chân không trượt. */
 export const JOG_SPEED = 5.36;
 const FADE = 0.16;
@@ -304,25 +318,25 @@ export class MannequinPlayers {
     );
   }
 
-  private get(g: string): MannequinTemplate | null {
-    const id = g === 'f' ? V3_MODELS.f : V3_MODELS.m;
+  private get(g: string, skin?: string): MannequinTemplate | null {
+    const id = v3AssetOf(g, skin);
     this.load(id);
     const t = this.tpl.get(id);
     return t && typeof t !== 'string' ? t : null;
   }
 
-  create(g: string): CharacterView | null {
-    const t = this.get(g);
+  create(g: string, skin?: string): CharacterView | null {
+    const t = this.get(g, skin);
     return t ? new MannequinCharacter(t) : null;
   }
 
-  createShadow(g: string, def: MonsterDef): MonsterView | null {
-    const t = this.get(g);
+  createShadow(g: string, def: MonsterDef, skin?: string): MonsterView | null {
+    const t = this.get(g, skin);
     return t ? (Object.assign(new MannequinCharacter(t, true), { def }) as unknown as MonsterView) : null;
   }
 
-  pending(g: string): boolean {
-    return this.get(g) === null && this.tpl.get(g === 'f' ? V3_MODELS.f : V3_MODELS.m) !== 'failed';
+  pending(g: string, skin?: string): boolean {
+    return this.get(g, skin) === null && this.tpl.get(v3AssetOf(g, skin)) !== 'failed';
   }
 
   dispose(): void {

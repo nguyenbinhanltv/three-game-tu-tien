@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { baseClipOf, JOG_SPEED } from './mannequin';
+import { baseClipOf, JOG_SPEED, V3_MODELS, v3AssetOf } from './mannequin';
 import type { AnimState } from './view';
 
 const st = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
@@ -17,5 +17,21 @@ describe('baseClipOf (v3, clip UAL)', () => {
   });
   it('tốc độ chạy tham chiếu của UAL khớp số đo (5,36 m/s)', () => {
     expect(JOG_SPEED).toBeCloseTo(5.36, 2);
+  });
+});
+
+describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
+  it('không skin: model nữ/nam mặc định', () => {
+    expect(v3AssetOf('f')).toBe(V3_MODELS.f);
+    expect(v3AssetOf('m')).toBe(V3_MODELS.m);
+  });
+  it('skin đúng giới đổi asset', () => {
+    expect(v3AssetOf('f', 'set_skin_duskrella')).toBe('chr_v3_duskrella_nu');
+    expect(v3AssetOf('m', 'set_skin_crimson')).toBe('chr_v3_crimson_nam');
+  });
+  it('skin sai giới hoặc không có bản v3 thì về model mặc định', () => {
+    expect(v3AssetOf('m', 'set_skin_duskrella')).toBe(V3_MODELS.m);
+    expect(v3AssetOf('f', 'set_skin_crimson')).toBe(V3_MODELS.f);
+    expect(v3AssetOf('f', 'set_skin_khong_co')).toBe(V3_MODELS.f);
   });
 });

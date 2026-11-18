@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_v3_duskrella_nu",
+  "type": "chr",
+  "budgetClass": "player_v3",
+  "itemId": "itm_skin_duskrella",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 24000,
+    "texture": 2048
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Sketchfab: \"DUSKRELLA the Ashen Whisper\" của Atahan3D (https://sketchfab.com/Atahan3D). Đã sửa: giảm 489.286 → 20.000 tam giác, UV mới và nướng lại texture màu + normal, dựng xương Mixamo và trọng số, rồi đặt lại tư thế nghỉ theo Mannequin; chuẩn bị bằng tools/blender/skin_prep.py (cấu hình tools/blender/skins/duskrella.json), đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py",
+    "owner": "Atahan3D",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/1df2e0ecd2364312a8d7821e45d180b2",
+    "spdx": "CC-BY-4.0"
+  }
+}
