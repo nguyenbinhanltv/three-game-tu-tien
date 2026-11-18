@@ -315,6 +315,15 @@ if PREVIEW:
         img.save_render(os.path.join(PREVIEW, name))
 render_views('thap', low)
 if STAGE == 'bake':
+    # Không khai `joints` (quái dị vực, DV-2 đợt 2): xuất luôn lưới thấp + texture đã nướng, không xương; `chr_v3.py --auto` dựng xương Mannequin sau.
+    if not CFG.get('joints'):
+        os.makedirs(os.path.dirname(OUT), exist_ok=True)
+        for o in list(bpy.data.objects):
+            if o is not low:
+                bpy.data.objects.remove(o, do_unlink=True)
+        bpy.ops.export_scene.gltf(filepath=OUT, export_format='GLB', export_yup=True, export_skins=False, export_animations=False, export_image_format='AUTO', use_selection=False)
+        REPORT['out'] = OUT
+        REPORT['bytes'] = os.path.getsize(OUT)
     log(json.dumps(REPORT, ensure_ascii=False))
     sys.exit(0)
 

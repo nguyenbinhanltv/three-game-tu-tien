@@ -138,9 +138,9 @@
       "id": "anim_ual_native",
       "class": "anim",
       "source": "assets/build/raw/anim_ual_native.glb",
-      "file": "anim_ual_native.a6a6c73496.glb",
-      "bytes": 2023568,
-      "rawBytes": 2588024,
+      "file": "anim_ual_native.87c5685448.glb",
+      "bytes": 2277904,
+      "rawBytes": 2897252,
       "triangles": 0,
       "rawTriangles": 0,
       "lod0Cap": 0,
@@ -184,7 +184,12 @@
         "NinjaJump_Start",
         "NinjaJump_Idle_Loop",
         "NinjaJump_Land",
-        "Idle_FoldArms_Loop"
+        "Idle_FoldArms_Loop",
+        "Zombie_Idle_Loop",
+        "Zombie_Walk_Fwd_Loop",
+        "Zombie_Scratch",
+        "Idle_Shield_Loop",
+        "Melee_Hook"
       ],
       "ktx2": false,
       "textures": [],
@@ -2076,6 +2081,156 @@
         }
       }
     },
+    "chr_v3_lac_kiem_nam": {
+      "id": "chr_v3_lac_kiem_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_lac_kiem_nam.glb",
+      "file": "chr_v3_lac_kiem_nam.d2905ac64f.glb",
+      "bytes": 3599908,
+      "rawBytes": 3636100,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 84,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11992,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.9249,
+          "height": 1.8381,
+          "depth": 0.444,
+          "minY": 0.0022
+        },
+        "build": {
+          "width": 1.9249,
+          "height": 1.8381,
+          "depth": 0.444,
+          "minY": 0.0022
+        }
+      }
+    },
+    "chr_v3_lac_kiem_nu": {
+      "id": "chr_v3_lac_kiem_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_lac_kiem_nu.glb",
+      "file": "chr_v3_lac_kiem_nu.76df639577.glb",
+      "bytes": 3443560,
+      "rawBytes": 3449180,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 84,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "4860c3ef-c1af-435c-baab-c092de33d892_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "4860c3ef-c1af-435c-baab-c092de33d892_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "4860c3ef-c1af-435c-baab-c092de33d892_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11998,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8646,
+          "height": 1.6973,
+          "depth": 0.3453,
+          "minY": 0.0038
+        },
+        "build": {
+          "width": 1.8646,
+          "height": 1.6973,
+          "depth": 0.3453,
+          "minY": 0.0038
+        }
+      }
+    },
     "chr_v3_noxavyra_nu": {
       "id": "chr_v3_noxavyra_nu",
       "class": "player_v3",
@@ -2538,6 +2693,72 @@
           "height": 3,
           "depth": 2.3635,
           "minY": 0
+        }
+      }
+    },
+    "elite_hoi_giac_cu_thu": {
+      "id": "elite_hoi_giac_cu_thu",
+      "class": "elite_mq",
+      "source": "assets/build/raw/elite_hoi_giac_cu_thu.glb",
+      "file": "elite_hoi_giac_cu_thu.157f532d87.glb",
+      "bytes": 1439264,
+      "rawBytes": 9640980,
+      "triangles": 13999,
+      "rawTriangles": 13999,
+      "lod0Cap": 15000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 68,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dv2_gorthazul_normal",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "dv2_gorthazul_color",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 13999
+        },
+        {
+          "level": 1,
+          "triangles": 4899,
+          "target": 4900
+        },
+        {
+          "level": 2,
+          "triangles": 1678,
+          "target": 1680
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 5.0476,
+          "height": 3.1721,
+          "depth": 1.6962,
+          "minY": -0.006
+        },
+        "build": {
+          "width": 5.0476,
+          "height": 3.1721,
+          "depth": 1.6962,
+          "minY": -0.006
         }
       }
     },
@@ -3520,6 +3741,72 @@
         }
       }
     },
+    "mon_giac_kiem_trong_binh": {
+      "id": "mon_giac_kiem_trong_binh",
+      "class": "monster_mq",
+      "source": "assets/build/raw/mon_giac_kiem_trong_binh.glb",
+      "file": "mon_giac_kiem_trong_binh.c2465e5fd7.glb",
+      "bytes": 1338672,
+      "rawBytes": 11060632,
+      "triangles": 8993,
+      "rawTriangles": 8993,
+      "lod0Cap": 10000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 68,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dv2_maltherion_normal",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "dv2_maltherion_color",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 8993
+        },
+        {
+          "level": 1,
+          "triangles": 3120,
+          "target": 3148
+        },
+        {
+          "level": 2,
+          "triangles": 1078,
+          "target": 1079
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 4.2465,
+          "height": 2.4163,
+          "depth": 1.6901,
+          "minY": 0.0844
+        },
+        "build": {
+          "width": 4.2465,
+          "height": 2.4163,
+          "depth": 1.6901,
+          "minY": 0.0844
+        }
+      }
+    },
     "mon_hoa_van_ho": {
       "id": "mon_hoa_van_ho",
       "class": "monster",
@@ -4177,6 +4464,72 @@
           "height": 0.9104,
           "depth": 1.5,
           "minY": 0
+        }
+      }
+    },
+    "mon_tan_chung": {
+      "id": "mon_tan_chung",
+      "class": "monster_mq",
+      "source": "assets/build/raw/mon_tan_chung.glb",
+      "file": "mon_tan_chung.7de686c30a.glb",
+      "bytes": 1426508,
+      "rawBytes": 11681064,
+      "triangles": 9000,
+      "rawTriangles": 9000,
+      "lod0Cap": 10000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 68,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dv2_bone_golem_normal",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "dv2_bone_golem_color",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 9000
+        },
+        {
+          "level": 1,
+          "triangles": 3116,
+          "target": 3150
+        },
+        {
+          "level": 2,
+          "triangles": 1072,
+          "target": 1080
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 3.5499,
+          "height": 2.2518,
+          "depth": 0.7988,
+          "minY": -0.0512
+        },
+        "build": {
+          "width": 3.5499,
+          "height": 2.2518,
+          "depth": 0.7988,
+          "minY": -0.0512
         }
       }
     },
@@ -12079,156 +12432,6 @@
           "height": 1.6695,
           "depth": 0.4174,
           "minY": 0
-        }
-      }
-    },
-    "chr_v3_lac_kiem_nam": {
-      "id": "chr_v3_lac_kiem_nam",
-      "class": "player_v3",
-      "source": "assets/build/raw/chr_v3_lac_kiem_nam.glb",
-      "file": "chr_v3_lac_kiem_nam.d2905ac64f.glb",
-      "bytes": 3599908,
-      "rawBytes": 3636100,
-      "triangles": 24000,
-      "rawTriangles": 24000,
-      "lod0Cap": 24000,
-      "skinned": true,
-      "quantized": false,
-      "bones": 84,
-      "animations": [],
-      "ktx2": true,
-      "textures": [
-        {
-          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_normal",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "normalTexture"
-          ]
-        },
-        {
-          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_basecolor",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "baseColorTexture"
-          ]
-        },
-        {
-          "name": "503ae7b0-c992-4254-aede-11bfb7fd7719_rm",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "metallicRoughnessTexture"
-          ]
-        }
-      ],
-      "lods": [
-        {
-          "level": 0,
-          "triangles": 24000
-        },
-        {
-          "level": 1,
-          "triangles": 11992,
-          "target": 12000
-        },
-        {
-          "level": 2,
-          "triangles": 4800,
-          "target": 4800
-        }
-      ],
-      "dims": {
-        "raw": {
-          "width": 1.9249,
-          "height": 1.8381,
-          "depth": 0.444,
-          "minY": 0.0022
-        },
-        "build": {
-          "width": 1.9249,
-          "height": 1.8381,
-          "depth": 0.444,
-          "minY": 0.0022
-        }
-      }
-    },
-    "chr_v3_lac_kiem_nu": {
-      "id": "chr_v3_lac_kiem_nu",
-      "class": "player_v3",
-      "source": "assets/build/raw/chr_v3_lac_kiem_nu.glb",
-      "file": "chr_v3_lac_kiem_nu.76df639577.glb",
-      "bytes": 3443560,
-      "rawBytes": 3449180,
-      "triangles": 24000,
-      "rawTriangles": 24000,
-      "lod0Cap": 24000,
-      "skinned": true,
-      "quantized": false,
-      "bones": 84,
-      "animations": [],
-      "ktx2": true,
-      "textures": [
-        {
-          "name": "4860c3ef-c1af-435c-baab-c092de33d892_normal",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "normalTexture"
-          ]
-        },
-        {
-          "name": "4860c3ef-c1af-435c-baab-c092de33d892_basecolor",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "baseColorTexture"
-          ]
-        },
-        {
-          "name": "4860c3ef-c1af-435c-baab-c092de33d892_rm",
-          "mimeType": "image/ktx2",
-          "width": 2048,
-          "height": 2048,
-          "slots": [
-            "metallicRoughnessTexture"
-          ]
-        }
-      ],
-      "lods": [
-        {
-          "level": 0,
-          "triangles": 24000
-        },
-        {
-          "level": 1,
-          "triangles": 11998,
-          "target": 12000
-        },
-        {
-          "level": 2,
-          "triangles": 4800,
-          "target": 4800
-        }
-      ],
-      "dims": {
-        "raw": {
-          "width": 1.8646,
-          "height": 1.6973,
-          "depth": 0.3453,
-          "minY": 0.0038
-        },
-        "build": {
-          "width": 1.8646,
-          "height": 1.6973,
-          "depth": 0.3453,
-          "minY": 0.0038
         }
       }
     }

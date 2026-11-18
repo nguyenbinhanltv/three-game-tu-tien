@@ -473,7 +473,7 @@
     {
       "id": "c_kim_da_ngoai_uyen_02",
       "zone": "kim_da_ngoai_uyen",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 504,
       "z": 444,
       "count": 3,
@@ -485,7 +485,7 @@
     {
       "id": "c_tran_gioi_dai_01",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_tan_chung",
       "x": 764,
       "z": 284,
       "count": 3,
@@ -497,7 +497,7 @@
     {
       "id": "c_kim_da_ngoai_uyen_03",
       "zone": "kim_da_ngoai_uyen",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 604,
       "z": 304,
       "count": 3,
@@ -509,7 +509,7 @@
     {
       "id": "c_kim_da_ngoai_uyen_04",
       "zone": "kim_da_ngoai_uyen",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 604,
       "z": 584,
       "count": 3,
@@ -533,7 +533,7 @@
     {
       "id": "c_kim_da_ngoai_uyen_06",
       "zone": "kim_da_ngoai_uyen",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 504,
       "z": 744,
       "count": 3,
@@ -545,7 +545,7 @@
     {
       "id": "c_tran_gioi_dai_02",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 944,
       "z": 284,
       "count": 3,
@@ -557,7 +557,7 @@
     {
       "id": "c_tran_gioi_dai_03",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 844,
       "z": 424,
       "count": 3,
@@ -593,7 +593,7 @@
     {
       "id": "c_kim_da_ngoai_uyen_09",
       "zone": "kim_da_ngoai_uyen",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 584,
       "z": 904,
       "count": 3,
@@ -629,7 +629,7 @@
     {
       "id": "c_tran_gioi_dai_04",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1104,
       "z": 264,
       "count": 3,
@@ -641,7 +641,7 @@
     {
       "id": "c_tran_gioi_dai_05",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1124,
       "z": 424,
       "count": 3,
@@ -653,7 +653,7 @@
     {
       "id": "c_tran_gioi_dai_06",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 924,
       "z": 584,
       "count": 3,
@@ -665,7 +665,7 @@
     {
       "id": "c_kim_da_ngoai_uyen_10",
       "zone": "kim_da_ngoai_uyen",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 924,
       "z": 724,
       "count": 3,
@@ -749,7 +749,7 @@
     {
       "id": "c_tran_gioi_dai_07",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_tan_chung",
       "x": 1384,
       "z": 264,
       "count": 3,
@@ -761,7 +761,7 @@
     {
       "id": "c_tran_gioi_dai_08",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1244,
       "z": 304,
       "count": 3,
@@ -773,7 +773,7 @@
     {
       "id": "c_xich_tan_binh_01",
       "zone": "xich_tan_binh",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1244,
       "z": 484,
       "count": 3,
@@ -785,7 +785,7 @@
     {
       "id": "c_tran_gioi_dai_09",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1104,
       "z": 604,
       "count": 3,
@@ -797,7 +797,7 @@
     {
       "id": "c_khich_giai_01",
       "zone": "khich_giai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1064,
       "z": 764,
       "count": 3,
@@ -809,7 +809,7 @@
     {
       "id": "c_khich_giai_02",
       "zone": "khich_giai",
-      "mon": "mon_da_minh_loc",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 924,
       "z": 904,
       "count": 3,
@@ -821,7 +821,7 @@
     {
       "id": "c_khich_giai_03",
       "zone": "khich_giai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 944,
       "z": 1184,
       "count": 3,
@@ -929,7 +929,7 @@
     {
       "id": "c_xich_tan_binh_06",
       "zone": "xich_tan_binh",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1304,
       "z": 884,
       "count": 3,
@@ -1229,7 +1229,7 @@
     {
       "id": "c_xich_tan_binh_11",
       "zone": "xich_tan_binh",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1664,
       "z": 404,
       "count": 3,
@@ -1349,7 +1349,7 @@
     {
       "id": "c_khich_giai_05",
       "zone": "khich_giai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1044,
       "z": 1044,
       "count": 3,
@@ -1361,7 +1361,7 @@
     {
       "id": "c_xich_tan_binh_13",
       "zone": "xich_tan_binh",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1684,
       "z": 564,
       "count": 3,
@@ -1397,7 +1397,7 @@
     {
       "id": "c_khich_giai_06",
       "zone": "khich_giai",
-      "mon": "mon_da_minh_loc",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 864,
       "z": 1044,
       "count": 3,
@@ -1409,7 +1409,7 @@
     {
       "id": "c_tran_gioi_dai_10",
       "zone": "tran_gioi_dai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_tan_chung",
       "x": 984,
       "z": 464,
       "count": 3,
@@ -1421,7 +1421,7 @@
     {
       "id": "c_khich_giai_07",
       "zone": "khich_giai",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1224,
       "z": 1044,
       "count": 3,
@@ -1433,7 +1433,7 @@
     {
       "id": "c_xich_tan_binh_14",
       "zone": "xich_tan_binh",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1684,
       "z": 264,
       "count": 3,
@@ -1481,7 +1481,7 @@
     {
       "id": "c_xich_tan_binh_16",
       "zone": "xich_tan_binh",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1384,
       "z": 744,
       "count": 3,
@@ -1493,7 +1493,7 @@
     {
       "id": "c_xich_tan_binh_17",
       "zone": "xich_tan_binh",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1204,
       "z": 764,
       "count": 3,
@@ -1529,7 +1529,7 @@
     {
       "id": "c_xich_tan_binh_18",
       "zone": "xich_tan_binh",
-      "mon": "mon_cot_ve_kiem_thu",
+      "mon": "mon_giac_kiem_trong_binh",
       "x": 1664,
       "z": 884,
       "count": 3,
@@ -1541,7 +1541,7 @@
   ],
   "spawns": [
     {
-      "mon": "elite_cot_kiem_thong_linh",
+      "mon": "elite_hoi_giac_cu_thu",
       "x": 1318,
       "z": 1026,
       "radius": 10,
@@ -1551,7 +1551,7 @@
       "respawn": 240
     },
     {
-      "mon": "elite_cot_kiem_thong_linh",
+      "mon": "elite_hoi_giac_cu_thu",
       "x": 1595,
       "z": 1616,
       "radius": 10,
@@ -1581,7 +1581,7 @@
       "respawn": 240
     },
     {
-      "mon": "elite_cot_kiem_thong_linh",
+      "mon": "elite_hoi_giac_cu_thu",
       "x": 1019,
       "z": 1220,
       "radius": 10,

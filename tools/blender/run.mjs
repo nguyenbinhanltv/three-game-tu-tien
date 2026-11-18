@@ -86,6 +86,30 @@ const procedural = [
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_kings_demon_nu', '--height', '1.8'],
   },
+  // Quái hai chân Dị Vực (DV-2 đợt 2): bản điêu khắc CC BY → `skin_prep.py --stage bake` (cấu hình tools/blender/skins/dv2_*.json) → lưới thấp
+  // không xương `mon/<id>/prep/bake.glb` (thư mục nguồn ngoài repo hoặc thư mục làm việc: `DTL_ASSET_SOURCE=<thư mục>`) → chr_v3.py đặt lên xương Mannequin.
+  // Hai con không chữ A khai mốc `--landmarks` và vùng cứng `--bind` (vũ khí/khiên/áo choàng đi theo một xương).
+  {
+    id: 'mon_tan_chung',
+    script: 'tools/blender/chr_v3.py',
+    source: 'mon/mon_tan_chung/prep/bake.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'mon_tan_chung', '--auto', '--height', '2.2', '--tris', '9000'],
+  },
+  {
+    id: 'mon_giac_kiem_trong_binh',
+    script: 'tools/blender/chr_v3.py',
+    source: 'mon/mon_giac_kiem_trong_binh/prep/bake.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'mon_giac_kiem_trong_binh', '--height', '2.5', '--tris', '9000', '--landmarks', 'repo:tools/blender/skins/dv2_maltherion_landmarks.json', '--bind', 'repo:tools/blender/skins/dv2_maltherion_bind.json'],
+  },
+  {
+    id: 'elite_hoi_giac_cu_thu',
+    script: 'tools/blender/chr_v3.py',
+    source: 'mon/elite_hoi_giac_cu_thu/prep/bake.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'elite_hoi_giac_cu_thu', '--height', '3.0', '--tris', '14000', '--landmarks', 'repo:tools/blender/skins/dv2_gorthazul_landmarks.json', '--bind', 'repo:tools/blender/skins/dv2_gorthazul_bind.json'],
+  },
   // Clip UAL giữ tên xương Mannequin, phát thẳng lên chr_v3_* (không chuyển clip).
   {
     id: 'anim_ual_native',

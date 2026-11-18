@@ -1,0 +1,5 @@
+{ "binds": [
+  { "note": "khiên (tay trái)", "box": { "min": [0.15, -0.78, -0.62], "max": [0.65, -0.25, 0.33] }, "bone": "hand_l" },
+  { "note": "kiếm (tay phải)", "box": { "min": [-0.50, -0.78, -0.98], "max": [0.05, -0.12, -0.15] }, "bone": "hand_r" },
+  { "note": "áo choàng sau lưng: trên theo ngực, dưới theo hông", "box": { "min": [-0.75, 0.28, -0.98], "max": [0.75, 0.75, 0.55] }, "blend": [[0.45, "spine_03"], [-0.1, "pelvis"]] }
+] }

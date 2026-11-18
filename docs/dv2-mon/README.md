@@ -56,3 +56,48 @@ Xem asset: `pnpm shots asset --ids mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc --clip
 - Lông Cốt Lộc và da Ma Ngưu rất tối: skin dùng `lift` 0,25–0,3 và `rim`; chỉnh lại khi có mood `rift` (DV1-C).
 - Cốt Lộc chân rất mảnh (≈ 0,05 m), 9.000 tam giác chỉ vừa đủ; hạ thêm sẽ gãy chân.
 - Skin chưa có `level` nên lần đầu gọi trong phiên có thể thấy model khối vài giây.
+
+---
+
+# DV-2 đợt 2: quái hai chân (Tẫn Chủng Cốt Khôi, Giác Kiếm Trọng Binh, Hôi Giác Cự Thú)
+
+Quái hình người đi đường **xương UE5 Mannequin + clip UAL phát trực tiếp** (cùng pipeline nhân vật v3, `docs/chr-v3/README.md`). Server không đổi. Ảnh, tờ khung clip và video đánh thử ở thư mục artifact của phiên (không commit).
+
+| Quái | Nguồn | Tác giả, giấy phép | Tam giác nguồn → game (LOD0/1/2) | Cao | Lớp ngân sách |
+| --- | --- | --- | --- | --- | --- |
+| `mon_tan_chung` Tẫn Chủng Cốt Khôi (Tẫn chủng do Thủ Khích Dực Chủ gọi) | `bone_golem_-_necromantic_construct.glb` | Pigcraft, CC BY 4.0 | 1,98 triệu → 9.000 / 3.116 / 1.072 | 2,2 m | `monster_mq` |
+| `mon_giac_kiem_trong_binh` Giác Kiếm Trọng Binh (thị vệ Kim Dạ Cung, Tẫn chủng trọng giáp) | `maltherion-the-skullbound-aegis.zip` | Atahan3D, CC BY 4.0 (zip không metadata: tác giả/URL lấy từ trang Sketchfab, ghi ở `assets/LICENSES.md`) | 309 nghìn → 8.993 / 3.120 / 1.078 | 2,5 m | `monster_mq` |
+| `elite_hoi_giac_cu_thu` Hôi Giác Cự Thú | `gorthazul__the_ashhorn_behemoth.glb` | Atahan3D, CC BY 4.0 | 701 nghìn → 13.999 / 4.899 / 1.678 | 3,0 m | `elite_mq` |
+
+GLB nguồn đều có `asset.extras.license` CC-BY-4.0 (bản Maltherion không có extras) và tên mesh/xương mặc định của Sketchfab (`tripo_node_…`, `Object_N`, `output_unwrapped`), không có tên của game khác.
+
+## Đường ống
+1. Giải nén zip vào thư mục tạm riêng; **không ghi** vào `dtl-asset-source`.
+2. `blender -b --factory-startup --python tools/blender/skin_prep.py -- tools/blender/skins/dv2_<tên>.json <thư mục làm việc> --stage bake`: giảm lưới + UV mới + nướng màu/normal. Cấu hình không khai `joints` thì stage `bake` xuất luôn lưới thấp không xương (`<thư mục làm việc>/dv2_<tên>/bake.glb`).
+3. Đặt bản nướng vào `<nguồn>/mon/<id>/prep/bake.glb` (đặt `DTL_ASSET_SOURCE` trỏ thư mục làm việc, kèm bản sao UAL1 ở `anim/ual/ual1/...` làm bộ xương mẫu) rồi `pnpm assets:build --only <id>`: job `chr_v3.py` trong `tools/blender/run.mjs`.
+   - Tẫn Chủng (chữ A): `--auto`.
+   - Trọng Binh và Hôi Giác không ở dáng chữ A: **mốc đo tay** từ ảnh chiếu (`tools/blender/skins/dv2_*_landmarks.json`) và **vùng cứng** `--bind` (mới ở `chr_v3.py`: hộp trong tọa độ lưới nguồn → ép một xương hoặc chuyển dần theo z): rìu Hôi Giác theo tay phải, khiên theo tay trái, kiếm theo tay phải, áo choàng chuyển từ ngực xuống hông.
+4. Lớp ngân sách mới `monster_mq`/`elite_mq` (`assets/budgets.json`): như `monster`/`elite` nhưng 96 xương (Mannequin có 68, lớp cũ giới hạn 60). Cả ba GLB ≈ 1,3–1,4 MB, KTX2.
+
+## Client
+`MonsterSkin.mannequin: true` (`game/character/monsterSkins.ts`): `MonsterSkins` nạp thêm thư viện `anim_ual_native` (một lần, giữ tới `dispose`), chỉnh độ cao hông theo từng lưới (`pelvisScaledClips`, `game/character/mannequinMonster.ts`) rồi dùng `SkinnedMonster` thường với `ClipMap` trỏ tên clip UAL. Không bám địa hình bằng IK (`legs: 'none'`). Bảng clip: nền `MQ_CLIPS` (Idle_Loop, Walk_Loop, Jog_Fwd_Loop, Sword_Attack, Hit_Chest, Death01, Hit_Knockback), Tẫn chủng dáng zombie (`Zombie_Idle_Loop`, `Zombie_Walk_Fwd_Loop`, `Zombie_Scratch`), Trọng Binh thủ khiên (`Idle_Shield_Loop`). Thêm 5 clip vào `anim_ual_native` (`Zombie_*`, `Idle_Shield_Loop`, `Melee_Hook`; thư viện 2,0 → 2,2 MB, chỉ nạp khi cần). Thời điểm chạm của đòn lớn đo bằng tốc độ cổ tay đạt đỉnh (Blender): Sword_Attack 0,33 s, Sword_Regular_C 0,53 s, Zombie_Scratch 0,47 s, Melee_Hook 0,20 s.
+
+Xem clip: `pnpm shots asset --ids mon_tan_chung,mon_giac_kiem_trong_binh,elite_hoi_giac_cu_thu --lib ual --clips Idle_Loop,Jog_Fwd_Loop,Sword_Attack,Hit_Chest,Death01 --out <thư mục tuyệt đối>` (hoặc `?mute=1&show=<id>&lib=ual`). Đánh thử: `pnpm shots divuc --mons mon_tan_chung,mon_giac_kiem_trong_binh,elite_hoi_giac_cu_thu --out <thư mục tuyệt đối>`.
+
+## Dữ liệu
+| Quái | Hành | hp/atk/xp | Chiêu |
+| --- | --- | --- | --- |
+| Tẫn Chủng Cốt Khôi | Mộc | 1,4 / 1,3 / 1,2 | `combo` 35% |
+| Giác Kiếm Trọng Binh | Kim | 1,5 / 1,35 / 1,4 | `combo` 50%, `line` 7 m × 3,5 báo 1,2 s |
+| Hôi Giác Cự Thú (tinh anh) | Thổ | 7,5 / 2,4 / 4 | `leap` 10 m r 5 báo 1,5 s (giậm), `line` 10 m × 4 báo 1,4 s (hất sừng) |
+
+`fight:check --levels 28`: Tẫn chủng TTK 3,7 / 4,5 / 7,2 s (kiếm / hộ pháp / đan sư), Trọng Binh 4,2 / 6,2 / 8,1 s, mất 5–7% máu mỗi con, không ai chết. i18n `mon.<id>` + `.title`, `glossary.divucMonsters`, `loot.json` (Hôi Giác như tinh anh Thiên Khuyết), `credits.json`, `assets/LICENSES.md`.
+
+Bản đồ Bắc Hoang (`node tools/maps/gen-bac-hoang.mjs`, vị trí cụm không đổi, 132 quái/km²): Trọng Binh ở Khích Giai, Xích Tẫn Bình, Kim Dạ Ngoại Uyển, Trấn Giới Đài; Tẫn chủng ở Khích Giai và Trấn Giới Đài (lọt qua miệng khe); Hôi Giác Cự Thú ×2 ở Hàn Hôi Nguyên và ×1 ở Khích Giai.
+
+## Lệch so với thiết kế và giới hạn
+- Thiết kế ghi Hôi Giác `slam`/`sweep`, Trọng Binh `sweep`: `content:check` chỉ cho boss có `slam`/`sweep` nên dùng `leap` + `line` (cùng vạch báo và tầm). Trọng Binh không cộng Tẫn ấn (chưa có cơ chế, DV3-B).
+- Tẫn chủng chưa thành `summon` của Thủ Khích Dực Chủ (chưa có boss đó); đang đặt thẳng vào camp.
+- Áo choàng và khiên Trọng Binh gắn cứng nên xé/lật mạnh ở đòn chém lớn nhất (Sword_Regular_C) và lúc ngã; Hôi Giác Cự Thú: rìu cứng theo tay phải, chùy cuối cán chạm đất trong clip chạy. Thân xuyên giáp ở nhiều khung (số xuyên thân ghi ở log `chr_v3.py`). Xương xoắn/lò xo cho áo choàng chưa làm.
+- Texture nguồn Hôi Giác/Trọng Binh gần như xám đen: skin dùng `lift` 0,3 + `rim` để đọc được trong bóng; chỉnh lại khi duyệt ảnh.
+- Thời điểm chạm là suy từ clip UAL người, không chỉnh theo thân hình quái.
