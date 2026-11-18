@@ -217,7 +217,7 @@
 .u2-frame {
   --c: var(--u-cut-m);
   --qc: var(--u-q0);
-  --sz: 56px;
+  --sz: 64px; /* HUD/túi: icon 78% = 50 px (≥ 48) */
   position: relative;
   display: inline-block;
   width: var(--sz);
@@ -226,8 +226,8 @@
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
   background: var(--qc);
 }
-.u2-frame[data-size='s'] { --sz: 40px; --c: var(--u-cut-s); }
-.u2-frame[data-size='l'] { --sz: 72px; }
+.u2-frame[data-size='s'] { --sz: 44px; --c: var(--u-cut-s); }
+.u2-frame[data-size='l'] { --sz: 80px; }
 .u2-frame[data-q='0'] { --qc: var(--u-q0); }
 .u2-frame[data-q='1'] { --qc: var(--u-q1); }
 .u2-frame[data-q='2'] { --qc: var(--u-q2); }
@@ -257,6 +257,13 @@
   box-shadow: inset var(--u-glow-q) var(--qc);
   overflow: hidden;
 }
+.u2-frame__in > * {
+  /* icon chiếm ~78% khung, căn giữa (ghi đè cỡ theo em của .content-icon cũ) */
+  width: calc(var(--sz) * 0.78);
+  height: calc(var(--sz) * 0.78);
+  font-size: calc(var(--sz) * 0.5);
+}
+.u2-frame__in > .content-icon { border-radius: 0; }
 .u2-frame[data-on='light'] .u2-frame__in { background: var(--u-giay-sau); }
 .u2-frame[data-empty='1'] { --qc: var(--u-gold-lo); opacity: 0.8; }
 .u2-frame[data-empty='1'] .u2-frame__in { background: var(--u-giay-sau); box-shadow: inset 0 2px 4px var(--u-gold-line); }
@@ -294,7 +301,7 @@
   color: var(--u-gold-hi);
   text-shadow: 0 0 3px var(--u-ink-0);
 }
-.u2-slot__lock { position: absolute; inset: 0; display: grid; place-items: center; color: var(--u-chu); background: var(--u-ink-scrim); }
+.u2-slot__lock { --c: var(--u-cut-m); clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); position: absolute; inset: 0; display: grid; place-items: center; color: var(--u-chu); background: var(--u-ink-scrim); }
 .u2-slot__lock svg { width: 40%; height: 40%; }
 
 /* ───────── SkillButton: ô chiêu, hồi chiêu quét vàng ───────── */
