@@ -162,12 +162,6 @@ export function formatCountdown(sec: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-/** Hướng la bàn tới điểm đích (rad theo canvas, 0 = sang phải), dùng cho mũi tên mục tiêu ngoài tầm. */
-function arrowAngle(v: View, x: number, z: number): number {
-  const p = project(v, x, z);
-  return Math.atan2(p.y - v.size / 2, p.x - v.size / 2);
-}
-
 /** Ngược của `project`: toạ độ trên canvas → thế giới. */
 export function screenToWorld(v: View, sx: number, sy: number): { x: number; z: number } {
   const s = v.size / v.span;

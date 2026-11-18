@@ -28,7 +28,7 @@ import path from 'node:path';
 import { SPAWN_POINT } from '@dtl/shared';
 import { chromium, firefox, webkit, type Browser, type BrowserType, type Page } from 'playwright';
 import { createDevServer, ROOT, sleep } from './lib/devserver';
-import { args, env, opt, ports } from './lib/env';
+import { args, opt, ports } from './lib/env';
 import { CHROME_ARGS } from './lib/browser';
 import { gm } from './lib/game';
 

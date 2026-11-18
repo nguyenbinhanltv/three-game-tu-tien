@@ -27,7 +27,7 @@ export function chapter(eng: Game, kind: ChapterKind, sting = true): void {
 }
 
 /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) , người chơi chưa tắt thẻ chương trong Cài đặt và không tắt bằng `?cine=0`. */
-export function canCine(eng: Game, x: number, z: number): boolean {
+export function canCine(_eng: Game, x: number, z: number): boolean {
   return get().chapterCards && FLAGS.cinematics && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
 }
 

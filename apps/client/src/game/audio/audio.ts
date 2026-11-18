@@ -1035,14 +1035,6 @@ export function musicOutput(): { ctx: AudioContext; out: AudioNode } | null {
   return { ctx, out: duckGain };
 }
 
-/** Danh sách ghi nguồn nhạc trong manifest (cho mục credits ở Cài đặt). */
-async function musicCredits(): Promise<(MusicCredit & { id: string })[]> {
-  await loadManifest();
-  return Object.entries(manifest?.music ?? {})
-    .filter(([, e]) => e.credit)
-    .map(([id, e]) => ({ id, ...e.credit }));
-}
-
 /** Trạng thái để gỡ lỗi/kiểm thử. */
 function audioStats() {
   return {

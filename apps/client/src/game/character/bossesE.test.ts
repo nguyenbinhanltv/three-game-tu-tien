@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { AssetCache, type Manifest } from '../core/assets';
 import { MONSTER_SKINS, MonsterSkins } from './monsterSkins';

@@ -9,7 +9,7 @@ import { levelAssets, levelTerrain } from '../../base/levelCtx';
 import { questOverlay } from '../minimap/marks';
 import { difficultyTone, formatCountdown, npcFunction, npcQuestMark } from '../minimap/model';
 import { bossSprite, eliteSprite, flagSprite, mateSprite, nodeSprite, npcSprite, selfSprite, teleSprite } from '../minimap/sprites';
-import { closePanel, set, useUI } from '../store';
+import { closePanel, useUI } from '../store';
 import './worldmap.css';
 import { campSpots, clampView, fitView, type LabelBox, placeLabels, type Layer, LAYERS, type MapView, panBy, parseLayers, pick, screenToWorld, soloSpawns, worldToScreen, zoneInfos, zoomAt } from './model';
 

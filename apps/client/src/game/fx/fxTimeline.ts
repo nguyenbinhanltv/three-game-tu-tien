@@ -107,7 +107,6 @@ interface BladeJob {
 const UP = new THREE.Vector3(0, 1, 0);
 const AXIS_Z = new THREE.Vector3(0, 0, 1);
 const _q = new THREE.Quaternion();
-const _q2 = new THREE.Quaternion();
 const _e = new THREE.Euler();
 const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
@@ -352,7 +351,6 @@ export class FxRunner {
     const alpha = ev.alpha ?? 0.95;
     const sweep = ev.sweep ?? 0.35;
     const erodeFrom = ev.erodeFrom ?? 0.5;
-    const rag = ev.ragged ?? 0.5;
     const spin = (ev.spin ?? 0) * DEG;
     // Hướng thân hình: theo hướng bay nếu có `move` (mũi dài +Z hướng về đích), không thì theo hướng nhìn.
     const baseQ = new THREE.Quaternion();

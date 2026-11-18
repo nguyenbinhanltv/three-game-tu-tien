@@ -1,4 +1,3 @@
-import { type ReactNode } from 'react';
 import { bindsOnEquip, enhanceMul, isEquipSlot, sellPrice, wearableBy, type InvItem, type ItemDef } from '@dtl/shared';
 import { ITEM, itemName, QUEST, realmName, t } from '@dtl/content';
 import { ContentIcon, UiIcon } from '../ContentIcon';

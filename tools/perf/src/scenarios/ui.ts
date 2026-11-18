@@ -65,7 +65,7 @@ async function cpuPerFrame(page: Page): Promise<Record<string, number>> {
   return { framesIn5s: frames, taskMs: per('TaskDuration'), scriptMs: per('ScriptDuration'), layoutMs: per('LayoutDuration'), styleMs: per('RecalcStyleDuration') };
 }
 
-const open = (r: Run, name: string, variant: string, query: Record<string, string | number>) =>
+const open = (r: Run, name: string, _variant: string, query: Record<string, string | number>) =>
   r.open({ name, viewport: [1920, 1080], seenIntro: true, query: { god: 1, ...query, debug: undefined } });
 
 async function hud(r: Run, variants: string[], sizes: string[], only: string[]): Promise<Record<string, unknown>> {
