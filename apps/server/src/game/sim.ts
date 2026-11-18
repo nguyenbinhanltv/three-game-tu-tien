@@ -592,7 +592,6 @@ export class GameSim {
     get tribSys() { return s.tribSys; },
     warn: (p, k, params) => s.warn(p, k, params),
     get zones() { return s.zones; },
-    rollLoot: (p, mon, part) => s.rollLoot(p, mon, part),
   }))(this));
 
   /** Chiêu và công pháp (R-7): xem `game/combat/`. */

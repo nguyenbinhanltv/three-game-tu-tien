@@ -264,7 +264,7 @@ describe('chia tu vi, đồ, nhiệm vụ khi hạ quái', () => {
     m.threat.set(a.sid, m.s.mhp);
     m.threat.set(b.sid, m.s.mhp);
     b.move.x = X + 70;
-    const spy = vi.spyOn(sim as unknown as { rollLoot(p: Ent, m: unknown, part?: string): void }, 'rollLoot');
+    const spy = vi.spyOn((sim as unknown as { monSys: { rollLoot(p: Ent, m: unknown, part?: string): void } }).monSys, 'rollLoot');
     const xb = b.char.xp;
     const xa = a.char.xp;
     m.s.hp = 1;
@@ -287,7 +287,7 @@ describe('chia tu vi, đồ, nhiệm vụ khi hạ quái', () => {
     const { sim, join, team } = setup();
     const [a, b] = [join('a'), join('b')];
     team(a, b);
-    const spy = vi.spyOn(sim as unknown as { rollLoot(p: Ent, m: unknown, part?: string): void }, 'rollLoot');
+    const spy = vi.spyOn((sim as unknown as { monSys: { rollLoot(p: Ent, m: unknown, part?: string): void } }).monSys, 'rollLoot');
     kill(sim, a);
     kill(sim, a);
     const calls = spy.mock.calls.map((c) => `${(c[0] as Ent).char.name === a.char.name ? 'a' : 'b'}:${c[2] ?? 'all'}`);
@@ -302,7 +302,7 @@ describe('chia tu vi, đồ, nhiệm vụ khi hạ quái', () => {
     const [a, b] = [join('a'), join('b')];
     team(a, b);
     parties.command(a, { a: 'loot', m: 'free' });
-    const spy = vi.spyOn(sim as unknown as { rollLoot(p: Ent, m: unknown, part?: string): void }, 'rollLoot');
+    const spy = vi.spyOn((sim as unknown as { monSys: { rollLoot(p: Ent, m: unknown, part?: string): void } }).monSys, 'rollLoot');
     kill(sim, a);
     expect(spy.mock.calls.map((c) => c[2] ?? 'all')).toEqual(['all', 'all']);
   });
