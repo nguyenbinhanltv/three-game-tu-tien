@@ -65,6 +65,8 @@ export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_crimson: 'chr_v3_crimson_nam',
   set_skin_kings_demon: 'chr_v3_kings_demon_nu',
   set_skin_noxavyra: 'chr_v3_noxavyra_nu',
+  set_skin_korvaden: 'chr_v3_korvaden_nam',
+  set_skin_shadow_wolf: 'chr_v3_shadow_wolf_nam',
 };
 /** Skin chỉ có bản v3 (v1/v2 không có asset `set_skin_<tên>_<giới>`: bỏ qua, hiện trang phục thường). Varkessa có cả v1. */
 export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
@@ -72,6 +74,8 @@ export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
   'set_skin_crimson',
   'set_skin_noxavyra',
   'set_skin_kings_demon',
+  'set_skin_shadow_wolf',
+  'set_skin_korvaden',
 ]);
 /**
  * Model v3 theo bộ trang bị đang mặc (`PlayerLook.set`, id trong sets.json): bộ có model riêng dùng `chr_v3_<bộ>_<nam|nu>`.

@@ -2892,6 +2892,72 @@
         }
       }
     },
+    "chr_v3_korvaden_nam": {
+      "id": "chr_v3_korvaden_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_korvaden_nam.glb",
+      "file": "chr_v3_korvaden_nam.50a404ac90.glb",
+      "bytes": 5895728,
+      "rawBytes": 12213552,
+      "triangles": 21988,
+      "rawTriangles": 21988,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 74,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "skin_korvaden_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "skin_korvaden_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 21988
+        },
+        {
+          "level": 1,
+          "triangles": 10993,
+          "target": 10994
+        },
+        {
+          "level": 2,
+          "triangles": 4371,
+          "target": 4398
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.9499,
+          "height": 2.0564,
+          "depth": 1.5108,
+          "minY": -0.0602
+        },
+        "build": {
+          "width": 1.9499,
+          "height": 2.0564,
+          "depth": 1.5108,
+          "minY": -0.0602
+        }
+      }
+    },
     "chr_v3_lac_kiem_nam": {
       "id": "chr_v3_lac_kiem_nam",
       "class": "player_v3",
@@ -3105,6 +3171,72 @@
           "height": 1.7558,
           "depth": 0.3801,
           "minY": 0.0388
+        }
+      }
+    },
+    "chr_v3_shadow_wolf_nam": {
+      "id": "chr_v3_shadow_wolf_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_shadow_wolf_nam.glb",
+      "file": "chr_v3_shadow_wolf_nam.e75224924e.glb",
+      "bytes": 5418964,
+      "rawBytes": 10103332,
+      "triangles": 21928,
+      "rawTriangles": 21928,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 74,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "skin_shadow_wolf_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "skin_shadow_wolf_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 21928
+        },
+        {
+          "level": 1,
+          "triangles": 10964,
+          "target": 10964
+        },
+        {
+          "level": 2,
+          "triangles": 4381,
+          "target": 4386
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.5794,
+          "height": 1.9196,
+          "depth": 0.7224,
+          "minY": -0.0063
+        },
+        "build": {
+          "width": 1.5794,
+          "height": 1.9196,
+          "depth": 0.7224,
+          "minY": -0.0063
         }
       }
     },
