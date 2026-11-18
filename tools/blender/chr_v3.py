@@ -3,7 +3,7 @@
 #
 # Dùng:
 #   blender -b --factory-startup --python tools/blender/chr_v3.py -- <vào.glb> <ra.glb> --id <tên> --template <UAL1_Standard.glb>
-#       [--landmarks <khớp.json>] [--tris 24000] [--sheet <thư mục ảnh>] [--report <file.json>] [--springs <cấu hình.json>]
+#       [--landmarks <khớp.json>] [--tris 24000] [--sheet <thư mục ảnh> [--views]] [--report <file.json>] [--springs <cấu hình.json>]
 #       [--tex 2048] [--scale <hệ số>]
 #
 # Đầu vào có hai kiểu:
@@ -985,8 +985,59 @@ def render_sheet(outdir):
     log(f'tờ khung → {out.filepath_raw}')
 
 
+def render_views(outdir):
+    """Tờ góc nhìn ở tư thế nghỉ: toàn thân trước / 3-4 / bên / sau, cận mặt trước + 3-4, hông trước + sau (soát đối xứng vạt, mặt, tay)."""
+    os.makedirs(outdir, exist_ok=True)
+    sc = bpy.context.scene
+    sc.render.engine = 'BLENDER_WORKBENCH'
+    sc.display.shading.light = 'STUDIO'
+    sc.display.shading.color_type = 'TEXTURE'
+    sc.render.resolution_x, sc.render.resolution_y = 320, 440
+    sc.render.film_transparent = False
+    sc.world = bpy.data.worlds.new('w2')
+    sc.world.color = (0.55, 0.57, 0.6)
+    cam_d = bpy.data.cameras.new('c2')
+    cam_d.type = 'ORTHO'
+    cam = bpy.data.objects.new('c2', cam_d)
+    bpy.context.collection.objects.link(cam)
+    sc.camera = cam
+    for o in LODS[1:]:
+        o.hide_render = True
+    set_pose(None, 0)
+    full = max(2.3, height * 1.28)
+    views = [(0, full, 0.5), (45, full, 0.5), (90, full, 0.5), (180, full, 0.5),
+             (0, height * 0.24, 0.93), (35, height * 0.24, 0.93), (0, height * 0.42, 0.42), (180, height * 0.42, 0.42)]
+    tiles = []
+    for i, (az, scale, zf) in enumerate(views):
+        cam_d.ortho_scale = scale
+        a = math.radians(az)
+        cam.location = (6 * math.sin(a), -6 * math.cos(a), height * zf)
+        cam.rotation_euler = (math.radians(90), 0, a)
+        pth = os.path.join(outdir, f'_v{i}.png')
+        sc.render.filepath = pth
+        bpy.ops.render.render(write_still=True)
+        tiles.append(pth)
+    imgs = [bpy.data.images.load(q) for q in tiles]
+    w, h = imgs[0].size
+    px = np.zeros((h * 2, w * 4, 4), np.float32)
+    for i, im in enumerate(imgs):
+        arr = np.array(im.pixels[:], np.float32).reshape(h, w, 4)
+        r, c = divmod(i, 4)
+        px[(1 - r) * h:(2 - r) * h, c * w:(c + 1) * w] = arr
+    out = bpy.data.images.new('views', w * 4, h * 2, alpha=True)
+    out.pixels = px.ravel().tolist()
+    out.filepath_raw = os.path.join(outdir, f'{ID}-views.png')
+    out.file_format = 'PNG'
+    out.save()
+    for q in tiles:
+        os.remove(q)
+    log(f'tờ góc nhìn → {out.filepath_raw}')
+
+
 if SHEET:
     render_sheet(SHEET)
+    if '--views' in argv:
+        render_views(SHEET)
 
 # ---------- xuất ----------
 # optimize.ts tự sinh LOD từ LOD0 theo ngân sách (--keep-lods để giữ LOD của script này).
