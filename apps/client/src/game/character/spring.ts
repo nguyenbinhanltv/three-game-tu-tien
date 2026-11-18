@@ -22,6 +22,34 @@ export interface SpringParams {
 
 export const SKIRT_SPRING: SpringParams = { stiffness: 150, drag: 6, maxAngle: 42, maxInward: 10 };
 
+/** Viên nang va chạm (hông/đùi/cẳng): đoạn a→b theo hai node (hệ thế giới), bán kính `r` (m). Đầu lò xo bị đẩy ra ngoài. */
+export interface SpringCollider {
+  a: THREE.Object3D;
+  b: THREE.Object3D;
+  r: number;
+}
+
+const _ca = new THREE.Vector3();
+const _cb = new THREE.Vector3();
+const _cd = new THREE.Vector3();
+
+/**
+ * Đẩy điểm `p` ra ngoài viên nang a→b bán kính r (sửa trực tiếp `p`). Trả true nếu có đẩy. `fallback`: hướng đẩy khi p nằm đúng trên trục.
+ */
+export function pushOutCapsule(p: THREE.Vector3, a: THREE.Vector3, b: THREE.Vector3, r: number, fallback: THREE.Vector3): boolean {
+  _cb.subVectors(b, a);
+  const len2 = _cb.lengthSq();
+  const t = len2 > 1e-12 ? Math.min(1, Math.max(0, _cd.subVectors(p, a).dot(_cb) / len2)) : 0;
+  _ca.copy(a).addScaledVector(_cb, t); // điểm gần nhất trên trục
+  _cd.subVectors(p, _ca);
+  const d = _cd.length();
+  if (d >= r) return false;
+  if (d < 1e-6) _cd.copy(fallback);
+  else _cd.divideScalar(d);
+  p.copy(_ca).addScaledVector(_cd, r);
+  return true;
+}
+
 export interface SpringDef {
   bone: string;
   /** Đuôi xương trong hệ cục bộ của xương lúc nghỉ. */
@@ -58,6 +86,8 @@ const _s = new THREE.Vector3();
 const _t = new THREE.Vector3();
 const _axis = new THREE.Vector3();
 const _center = new THREE.Vector3();
+const _cA = new THREE.Vector3();
+const _cB = new THREE.Vector3();
 
 export class SpringBones {
   private bones: Bone[] = [];
@@ -68,6 +98,8 @@ export class SpringBones {
     rig: THREE.Object3D,
     defs: readonly SpringDef[],
     private params: SpringParams = SKIRT_SPRING,
+    /** Viên nang va chạm (chỉ dùng khi xương lò xo và collider cùng hệ thế giới sau `update` của mixer). */
+    private colliders: readonly SpringCollider[] = [],
   ) {
     for (const d of defs) {
       const bone = rig.getObjectByName(d.bone) as THREE.Bone | undefined;
@@ -137,6 +169,19 @@ export class SpringBones {
           if (inward > sinIn) _dir.addScaledVector(_out, inward - sinIn).normalize();
         }
         b.p.copy(_head).addScaledVector(_dir, len);
+        // Va chạm hông/đùi/cẳng: đẩy đầu lò xo ra ngoài viên nang rồi giữ lại độ dài xương (vạt không xuyên chân khi ngồi, bước dài).
+        if (this.colliders.length) {
+          let hit = false;
+          for (const c of this.colliders) {
+            _cA.setFromMatrixPosition(_m.multiplyMatrices(world, c.a.matrixWorld));
+            _cB.setFromMatrixPosition(_m.multiplyMatrices(world, c.b.matrixWorld));
+            if (pushOutCapsule(b.p, _cA, _cB, c.r, _out)) hit = true;
+          }
+          if (hit) {
+            _dir.subVectors(b.p, _head).normalize();
+            b.p.copy(_head).addScaledVector(_dir, len);
+          }
+        }
       }
       // Quay xương: từ hướng nghỉ sang hướng mô phỏng (thế giới), đổi về hệ cục bộ của cha.
       _dir.subVectors(b.p, _head).normalize();
