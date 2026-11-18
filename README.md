@@ -6,7 +6,7 @@ Spec đầy đủ: https://claude.ai/artifact/S6ZYqLfR37PYy8NyccDjJt
 
 ## Chạy ở máy local
 
-Cần Node.js 22 trở lên và pnpm 10.
+Cần Node.js 24 và pnpm 10 (xem `.github/workflows/ci.yml`).
 
 ```bash
 pnpm install
@@ -29,12 +29,14 @@ Mở http://localhost:5173, nhập một đạo hiệu (2–14 ký tự) rồi b
 | Di chuyển | W A S D theo hướng đang nhìn (R: tự chạy) |
 | Camera | Kiểu FPS: bấm vào màn hình để khóa con trỏ, rê chuột là xoay, lăn chuột để zoom; Esc hoặc Alt để thả chuột. Phím thay thế: ← → ↑ ↓ và - =. Cài đặt có thêm kiểu "Chỉ bàn phím" và "Giữ chuột kéo" |
 | Nhảy | Space |
-| Ngự kiếm | F (từ Ngưng Khí tầng 3, tốn linh lực). Khi bay: Space lên, X xuống |
+| Ngự kiếm | F (từ Ngưng Khí tầng 3, tốn linh lực). Khi bay: Space lên, Shift xuống |
 | Chọn mục tiêu | Tab, hoặc đưa tâm ngắm vào quái rồi bấm chuột trái (bấm lần nữa để đánh) |
-| Kỹ năng | 1–6 (phím 1 tự đánh liên tục) |
+| Kỹ năng | 1–8 trên thanh chiêu (phím 1 tự đánh liên tục), 9 pháp bảo phụ, Shift+số cho chiêu bậc cao, Q lướt |
+| Cấp cao | V thần thức (giữ), X nguyên anh xuất khiếu, T Ngưng Đan Lô, G phân thân thần niệm |
 | Trò chuyện với NPC, hái thuốc, vào cổng | E hoặc bấm chuột |
 | Đả tọa | Z |
 | Túi đồ / Nhân vật / Nhiệm vụ / Bản đồ / Hướng dẫn | B / C / L / M / H |
+| Công pháp / Tổ đội / Cài đặt | K / P / O |
 | Chat | Enter |
 
 ## Nội dung MVP

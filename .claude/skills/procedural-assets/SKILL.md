@@ -17,7 +17,7 @@ Cột "Hiện có" ghi đúng chỗ code đang nằm; cột "Hướng tới" là
 
 | Asset | Cách làm | Hiện có | Hướng tới |
 | --- | --- | --- | --- |
-| Địa hình, núi, hồ | Heightmap từ noise (fBm + ridged); độ cao dùng chung client/server qua `heightAt` | `packages/shared/src/terrain.ts` (heightAt), `game/world/terrain.ts` | xói mòn, sinh offline thành tile trong `tools/procgen/terrain/` |
+| Địa hình, núi, hồ | Heightmap từ noise (fBm + ridged); độ cao dùng chung client/server qua `heightAt` | `packages/shared/src/terrain.ts` (heightAt), `game/world/terrain.ts` | xói mòn (chưa làm); địa hình thủ tục sinh trực tiếp từ `heightAt`, level mới dựng bằng `tools/maps/gen-<level>.mjs` |
 | Đá, cây, cỏ, linh thảo | Cây, đá, linh thảo: Tripo (`prop_*`) rải theo khu; cỏ sinh lúc chạy | `game/world/props.ts` + `propScatter.ts` (cây, prop), `game/world/grass.ts`, `game/world/env.ts` | thêm loài/prop mới qua Tripo + `meta.json` |
 | Kiến trúc tông môn | bpy thủ tục: mái cong, cột, lan can, bậc đá, cổng. **Không đi qua Tripo** | `tools/blender/build_sect.py` (job `arch_sect` trong `run.mjs`) | tách thành kit modular `kit_architecture.py` |
 | Phi kiếm, pháp bảo, lò đan | Tripo (`prop_phi_kiem`, `prop_lo_dan`…) + material phát sáng; recolor theo bộ trang bị (`recolor_phi_kiem.py`, `swordGlow.ts`) | `assets/source/prop/` | pháp bảo (Phase 3-8) |
