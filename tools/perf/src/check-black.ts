@@ -2,7 +2,6 @@
 //   tsx src/check-black.ts <webgpu|webgl2> <tên> <cổng client> <ảnh.png> [query thêm, vd at=2048,2088]   (thoát 1 nếu quá tối)
 // Cần server dev đang chạy (PORT/CLIENT_PORT riêng của worktree). Tắt tiếng bằng ?mute=1 và --mute-audio.
 import { gameUrl, launchChrome } from './lib/browser';
-import { at } from '@dtl/shared';
 const [, , renderer = 'webgpu', name = 'Repro1', port = '5134', out = 'out.png', extra = ''] = process.argv;
 const b = await launchChrome();
 const page = await (await b.newContext({ viewport: { width: 1920, height: 1080 } })).newPage();
@@ -37,7 +36,7 @@ const lum = await page.evaluate(async (b64) => {
   x.drawImage(img, 0, 0);
   const d = x.getImageData(img.width * 0.2, img.height * 0.2, img.width * 0.6, img.height * 0.6).data;
   let sum = 0;
-  for (let i = 0; i < d.length; i += 4) sum += 0.2126 * at(d, i) + 0.7152 * at(d, i + 1) + 0.0722 * at(d, i + 2);
+  for (let i = 0; i < d.length; i += 4) sum += 0.2126 * (d[i] ?? 0) + 0.7152 * (d[i + 1] ?? 0) + 0.0722 * (d[i + 2] ?? 0);
   return sum / (d.length / 4);
 }, buf.toString('base64'));
 console.log('luminance', lum.toFixed(1));
