@@ -80,13 +80,22 @@ const isRigBone = (o: THREE.Object3D) => (o as THREE.Bone).isBone;
  * vẫn bám đất và bước đúng tỉ lệ. Xương đích không có trong thư viện (kiếm, vạt áo) giữ tư thế nghỉ; kênh scale bỏ.
  * Lấy mẫu 30 khung/giây; xương đứng yên cả clip chỉ giữ 2 khóa.
  */
-export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE.AnimationClip[], target: THREE.Object3D): THREE.AnimationClip[] {
+export interface RetargetOpts {
+  /** Đổi tên xương đích sang tên khóa của nguồn (`mixamorig_*`), vd. xương Mannequin → Mixamo; trả undefined nếu không có tương ứng. */
+  dstName?: (name: string) => string | undefined;
+  /** Chỉ xuất kênh cho xương đích mà clip nguồn CÓ kênh quay (clip che nửa thân `upper`/`lower`: xương còn lại để trống để chồng được lên clip khác). */
+  trackedOnly?: boolean;
+}
+
+export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE.AnimationClip[], target: THREE.Object3D, opts: RetargetOpts = {}): THREE.AnimationClip[] {
   const src = skeletonOf(libScene, isMixamo);
   const dst = skeletonOf(target, isRigBone);
   const srcRootW = rootParentWorld(libScene, isMixamo);
   const dstRootW = rootParentWorld(target, isRigBone);
   const hipsS = src.index.get('mixamorig_hips');
-  const hipsD = dst.index.get('mixamorig_hips');
+  const dstKey = dst.bones.map((b) => (opts.dstName ? opts.dstName(b.name) : b.name) ?? '');
+  const hipsDi = dstKey.indexOf('mixamorig_hips');
+  const hipsD = hipsDi >= 0 ? hipsDi : undefined;
   // Độ cao hông đo trong không gian thế giới (nguồn Z-up như UAL có root xoay -90° X: trục đứng nằm ở Z cục bộ của hông).
   const parentW = (set: { bones: BoneInfo[] }, h: number, rootW: THREE.Quaternion) => {
     const p = set.bones[h].parent;
@@ -98,7 +107,7 @@ export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE
   const k = hS > 1e-6 && hD > 0 ? hD / hS : 1;
 
   // Xương đích có nguồn tương ứng.
-  const map = dst.bones.map((b) => src.index.get(b.name) ?? -1);
+  const map = dstKey.map((k) => src.index.get(k) ?? -1);
   const srcInv = src.bones.map((b) => b.world.clone().invert());
   const qa = new THREE.Quaternion();
   const delta = new THREE.Quaternion();
@@ -172,6 +181,7 @@ export function retargetClips(libScene: THREE.Object3D, libClips: readonly THREE
     const tracks: THREE.KeyframeTrack[] = [];
     for (let j = 0; j < dst.bones.length; j++) {
       if (map[j] < 0) continue;
+      if (opts.trackedOnly && !rotI.has(map[j])) continue;
       const v = vals[j];
       let still = true;
       for (let f = 1; f <= n && still; f++) for (let c = 0; c < 4; c++) if (Math.abs(v[f * 4 + c] - v[c]) > EPS) still = false;

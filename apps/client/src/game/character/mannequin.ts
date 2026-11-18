@@ -5,7 +5,7 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
-import type { MonsterDef } from '@dtl/shared';
+import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
 import type { AssetCache, AssetHandle } from '../assets';
 import { HitReact, type HitOpts } from '../hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
@@ -14,7 +14,8 @@ import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } f
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applyV3Palette } from './v3Palette';
-import type { AnimState, CharacterView, MonsterView, PerformOpts } from './view';
+import { lowerBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
+import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 
 const search = typeof location === 'undefined' ? '' : location.search;
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
@@ -66,6 +67,8 @@ export function baseClipOf(a: AnimState): string {
 }
 
 export interface MannequinTemplate {
+  /** Pose chiêu K-5 retarget sang model này (null tới khi nguồn pose nạp xong). */
+  bank: MannequinPoseBank | null;
   handle: AssetHandle;
   lib: AssetHandle;
   height: number;
@@ -95,7 +98,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
     clips.set(c.name, cl);
   }
   const height = box.max.y - Math.max(box.min.y, 0);
-  return { handle, lib, height, clips };
+  return { handle, lib, height, bank: null, clips };
 }
 
 const IDENT = new THREE.Matrix4();
@@ -173,6 +176,27 @@ export class MannequinCharacter implements CharacterView {
   private swing = 0;
   private lastPhase = 0;
   private dead = false;
+  /** Động tác chiêu K-5 đang phát (nửa trên chồng lên nền, nửa dưới theo pose khi đứng yên hoặc theo clip chạy khi đang đi). */
+  private perf: {
+    id: string;
+    pose: MqPose;
+    upper: THREE.AnimationAction;
+    lower: THREE.AnimationAction;
+    lowerBase: THREE.AnimationAction | null;
+    t: number;
+    end: number;
+    timing?: PerformOpts['timing'];
+    skill: string;
+    combo: number;
+    fired: number;
+    env: number;
+    recovered?: boolean;
+    /** Đã hủy (phá niệm/lướt/di chuyển): không phát thêm `hit`, tắt dần nhanh. */
+    cancelled?: boolean;
+  } | null = null;
+  private pendingPerform: { id: string; left: number; o: PerformOpts } | null = null;
+  /** Nghe sự kiện chiêu (VFX, âm, rung camera theo `hitAt`), engine gắn vào. */
+  onSkillEvent: ((e: SkillEvent) => void) | null = null;
   private springs: SpringBones | null = null;
   private twists: Twist[] = [];
   private lodLevel = 0;
@@ -265,8 +289,18 @@ export class MannequinCharacter implements CharacterView {
   }
 
   private action(name: string): THREE.AnimationAction | null {
-    const c = this.tpl.clips.get(name);
+    const c = this.tpl.clips.get(name) ?? (name.startsWith('pose_') ? this.tpl.bank?.baseClip(name) : undefined);
     return c ? this.mixer.clipAction(c) : null;
+  }
+
+  /** Clip nền: tư thế K-5 thật cho ngự kiếm, ngự không, niệm chú, đả tọa (nếu pose đã nướng xong), không thì clip UAL. */
+  private baseFor(a: AnimState, fallback: string): string {
+    const bank = this.tpl.bank;
+    if (!bank) return fallback;
+    const want = a.dead ? null : a.meditating ? 'tam_thien' : a.flying || a.sky ? (a.sky ? POSE_SKY : POSE_FLY) : a.casting ? POSE_CAST : null;
+    if (!want) return fallback;
+    const name = poseClipName(want);
+    return bank.baseClip(name) ? name : fallback;
   }
 
   private play(name: string): void {
@@ -289,7 +323,8 @@ export class MannequinCharacter implements CharacterView {
   private blendBases(dt: number): void {
     let gate = 1;
     const sh = this.shot;
-    if (sh) {
+    if (this.perf) gate = 1 - this.perf.env;
+    else if (sh) {
       const ts = Math.max(0.1, Math.abs(sh.timeScale));
       gate = (sh.getClip().duration - sh.time) / ts < FADE * 0.75 ? 1 : 0;
     }
@@ -325,8 +360,159 @@ export class MannequinCharacter implements CharacterView {
     this.oneShot(SWING[this.swing++ % SWING.length], 1.6);
   }
 
-  perform(_pose: string, _o?: PerformOpts): boolean {
-    return false; // chiêu K-5 là pose IK trên xương Mixamo; v3 dùng đòn UAL qua attack()
+  /**
+   * Chiêu K-5 (pose IK nướng trên Mixamo, retarget sang Mannequin). Trả false khi pose chưa sẵn sàng hoặc không có (engine gọi `attack()` dùng
+   * đòn UAL); true khi đã nhận, kể cả bị bỏ qua vì chết/đang bay.
+   */
+  perform(id: string, o: PerformOpts = {}): boolean {
+    const pose = this.tpl.bank?.get(id);
+    if (!pose) return false;
+    if (this.dead || this.perfBlocked()) return true;
+    if (o.delay && o.delay > 0) {
+      this.pendingPerform = { id, left: o.delay, o };
+      return true;
+    }
+    this.startPerform(id, pose, o);
+    return true;
+  }
+
+  private lastAnim: AnimState | null = null;
+  private perfBlocked(): boolean {
+    const a = this.lastAnim;
+    return !!a && (a.dead || a.flying || a.airborne);
+  }
+
+  private startPerform(id: string, pose: MqPose, o: PerformOpts): void {
+    this.abortPerform();
+    const act = (clip: THREE.AnimationClip) => {
+      const x = this.mixer.clipAction(clip);
+      x.setLoop(THREE.LoopOnce, 1);
+      x.clampWhenFinished = true;
+      x.reset();
+      x.time = Math.min(Math.max(0, o.from ?? 0), pose.def.duration);
+      x.setEffectiveWeight(0);
+      x.play();
+      return x;
+    };
+    const tm = o.timing;
+    this.perf = {
+      id, pose, upper: act(pose.upper), lower: act(pose.lower), lowerBase: null, t: o.from ?? 0, end: Math.max(pose.def.duration, tm?.end ?? 0), timing: tm,
+      skill: o.skill ?? '', combo: o.combo ?? -1, fired: 0, env: 0,
+    };
+    const p = this.perf;
+    if (tm) {
+      while (p.fired < tm.hitAt.length && tm.hitAt[p.fired] < p.t) p.fired++;
+      this.emit('windup', 0);
+    }
+    if (this.shot) this.shot.fadeOut(0.05);
+    this.attacks++;
+    this.combatT = COMBAT_HOLD;
+  }
+
+  /** Dừng chiêu đang phát giữa chừng (chiêu mới đè, chết, bay): báo `cancel` nếu còn đòn chưa ra, `end` nếu đã ra hết, để VFX/hàng đợi sát thương dọn đúng. */
+  private abortPerform(): void {
+    const p = this.perf;
+    if (p && !p.cancelled && p.timing) this.emit(p.fired < p.timing.hitAt.length ? 'cancel' : 'end', p.fired);
+    this.stopPerform();
+  }
+
+  private stopPerform(): void {
+    const p = this.perf;
+    if (!p) return;
+    p.upper.stop();
+    p.lower.stop();
+    p.lowerBase?.stop();
+    this.perf = null;
+  }
+
+  private emit(kind: SkillEvent['kind'], index: number): void {
+    const p = this.perf;
+    if (!p) return;
+    const hitIn = kind === 'windup' && p.timing ? Math.max(0, p.timing.hitAt[0] - p.t) : undefined;
+    this.onSkillEvent?.({ kind, skill: p.skill, index, combo: p.combo, t: p.t, kb: !!p.timing?.kb, ...(hitIn !== undefined && { hitIn }) });
+  }
+
+  private updatePerform(dt: number, a: AnimState): void {
+    const q = this.pendingPerform;
+    if (q) {
+      q.left -= dt;
+      if (q.left <= 0) {
+        this.pendingPerform = null;
+        const pose = this.tpl.bank?.get(q.id);
+        if (pose && !this.dead && !this.perfBlocked()) this.startPerform(q.id, pose, q.o);
+      }
+    }
+    const p = this.perf;
+    if (!p) return;
+    if (a.dead || a.flying || a.airborne) {
+      this.abortPerform();
+      return;
+    }
+    p.t += dt;
+    const tm = p.timing;
+    if (tm && !p.cancelled) {
+      while (p.fired < tm.hitAt.length && p.t >= tm.hitAt[p.fired]) this.emit('hit', p.fired++);
+      if (p.fired >= tm.hitAt.length && p.t >= tm.hitAt[tm.hitAt.length - 1] + 1e-3 && p.env > 0 && !p.recovered) {
+        p.recovered = true;
+        this.emit('recovery', tm.hitAt.length);
+      }
+    }
+    if (p.t >= p.end) {
+      if (!p.cancelled) this.emit('end', tm ? tm.hitAt.length : 0);
+      this.stopPerform();
+      return;
+    }
+    // Đường bao: vào nhanh, ra êm ở 0,18 s cuối.
+    p.env = Math.min(1, p.t / 0.06, (p.end - p.t) / 0.18);
+    const moving = a.speed > 0.3;
+    p.upper.setEffectiveWeight(p.env);
+    p.lower.setEffectiveWeight(moving ? 0 : p.env);
+    // Đang đi: chân giữ clip chạy (chỉ kênh nửa dưới của clip nền hiện tại).
+    if (moving && !p.lowerBase && this.base) {
+      const lb = this.mixer.clipAction(lowerBodyOf(this.base.getClip()));
+      lb.setLoop(THREE.LoopRepeat, Infinity);
+      lb.reset();
+      lb.time = this.base.time;
+      lb.timeScale = this.base.timeScale;
+      lb.play();
+      p.lowerBase = lb;
+    }
+    if (p.lowerBase) {
+      p.lowerBase.timeScale = this.base?.timeScale ?? 1;
+      p.lowerBase.setEffectiveWeight(moving ? p.env : 0);
+    }
+  }
+
+  /** Đang phát (hoặc chờ phát) động tác `pose`. */
+  performing(pose: string): boolean {
+    return this.perf?.id === pose || this.pendingPerform?.id === pose;
+  }
+
+  performClock(): { t: number; skill: string } | null {
+    const p = this.perf;
+    return p && p.timing ? { t: p.t, skill: p.skill } : null;
+  }
+
+  cancelPerform(): void {
+    this.pendingPerform = null;
+    const p = this.perf;
+    // Đã ra đòn rồi thì để động tác chạy hết (hiệu ứng đã phóng), như SkinnedCharacter.
+    if (p && !p.cancelled && p.t < (p.pose.def.hit?.[0] ?? 0)) {
+      p.cancelled = true;
+      p.end = Math.min(p.end, p.t + 0.18);
+      this.emit('cancel', p.fired);
+    }
+  }
+
+  /** Di chuyển/lướt hủy phần thu về nếu đã qua mốc hủy trong dữ liệu chiêu (K-4). */
+  cancelRecovery(kind: 'move' | 'dash'): boolean {
+    const p = this.perf;
+    const tm = p?.timing;
+    if (!p || !tm || p.cancelled || !canCancel(tm, p.t, kind)) return false;
+    p.cancelled = true;
+    p.end = Math.min(p.end, p.t + 0.12);
+    this.emit('cancel', p.fired);
+    return true;
   }
 
   knockdown(): void {
@@ -364,8 +550,11 @@ export class MannequinCharacter implements CharacterView {
       this.chain = null;
     }
     this.dead = a.dead;
+    this.lastAnim = a;
+    this.updatePerform(dt, a);
     this.grounded = !(a.flying || a.airborne || a.sky);
-    const name = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
+    const rawName = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
+    const name = this.baseFor(a, rawName);
     this.play(name);
     if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = jogRate(a.speed);
     else if (this.base) this.base.timeScale = 1;
@@ -410,6 +599,7 @@ export class MannequinCharacter implements CharacterView {
     this.disposed = true;
     this.hit.reset();
     this.blade?.removeFromParent();
+    this.stopPerform();
     this.mixer.stopAllAction();
     this.mixer.uncacheRoot(this.rig);
     const sk = new Set<THREE.Skeleton>();
@@ -427,7 +617,39 @@ export class MannequinPlayers {
   private tpl = new Map<string, MannequinTemplate | 'loading' | 'failed'>();
   private swords = new Map<string, SwordTemplate | 'loading' | 'failed'>();
   private disposed = false;
+  /** Nguồn nướng pose K-5 (asset Mixamo), nạp lười khi có template đầu tiên. */
+  private poseSrc: PoseSource | 'loading' | 'failed' | null = null;
+  private poseHandle: AssetHandle | null = null;
   constructor(private cache: AssetCache) {}
+
+  private ensurePoses(): void {
+    if (this.poseSrc) {
+      if (this.poseSrc instanceof PoseSource) for (const t of this.tpl.values()) if (typeof t === 'object' && !t.bank) t.bank = new MannequinPoseBank(this.poseSrc, t.handle.scene);
+      return;
+    }
+    this.poseSrc = 'loading';
+    this.cache.acquire(POSE_SOURCE_ASSET, { priority: 15 }).then(
+      (h) => {
+        if (this.disposed) {
+          h.release();
+          return;
+        }
+        try {
+          this.poseHandle = h;
+          this.poseSrc = new PoseSource(h.scene);
+          this.ensurePoses();
+        } catch (err) {
+          console.warn('[models] không dựng được nguồn pose K-5 cho v3', err);
+          h.release();
+          this.poseSrc = 'failed';
+        }
+      },
+      (err) => {
+        console.warn('[models] không nạp được nguồn pose K-5 cho v3', err);
+        this.poseSrc = 'failed';
+      },
+    );
+  }
 
   private load(id: string): void {
     if (this.tpl.has(id)) return;
@@ -441,6 +663,7 @@ export class MannequinPlayers {
         }
         try {
           this.tpl.set(id, mannequinTemplate(h, lib));
+          this.ensurePoses();
         } catch (err) {
           console.warn(`[models] không dựng được ${id}`, err);
           this.tpl.set(id, 'failed');
@@ -483,6 +706,7 @@ export class MannequinPlayers {
     const id = v3AssetOf(g, skin);
     this.load(id);
     const t = this.tpl.get(id);
+    if (t && typeof t !== 'string') this.ensurePoses();
     return t && typeof t !== 'string' ? t : null;
   }
 
@@ -510,6 +734,8 @@ export class MannequinPlayers {
       t.lib.release();
     }
     this.tpl.clear();
+    this.poseHandle?.release();
+    this.poseHandle = null;
     for (const t of this.swords.values()) if (typeof t === 'object') t.release();
     this.swords.clear();
   }
