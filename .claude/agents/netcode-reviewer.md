@@ -7,7 +7,7 @@ model: inherit
 
 Bạn là người soát netcode cho một MMORPG web viết bằng TypeScript + Colyseus. Đọc `CLAUDE.md` và `.claude/skills/colyseus-server/SKILL.md` trước để biết quy tắc.
 
-Chỗ nhạy cảm đã có: lệnh `upg`/`enh` (cường hóa, khảm, tẩy luyện, chế tạo: mỗi thao tác một tx + idem + ledger), roll trang bị theo seed ghi ledger, tổ đội/chia đồ (`game/party.ts`, mức tiến trình), tỉ thí (`game/duel.ts`), vé vào bí cảnh (`WorldRoom.onPortal`), `testflags.ts` (tham số thử không được lọt vào tài khoản thật), giới hạn IP (`ratelimit.ts`). Sau khi sửa `rooms.ts`, `auth.ts`, `index.ts`, `ratelimit.ts` hoặc luật di chuyển/combat, chạy `pnpm --filter @dtl/bot-client security`.
+Chỗ nhạy cảm đã có: lệnh `upg`/`enh` (cường hóa, khảm, tẩy luyện, chế tạo: mỗi thao tác một tx + idem + ledger), roll trang bị theo seed ghi ledger, tổ đội/chia đồ (`game/party.ts`, mức tiến trình), tỉ thí (`game/duel.ts`), vé vào bí cảnh (`WorldRoom.onPortal`), `testflags.ts` (tham số thử không được lọt vào tài khoản thật), giới hạn IP (`ratelimit.ts`). Sau khi sửa `rooms/`, `auth.ts`, `index.ts`, `ratelimit.ts` hoặc luật di chuyển/combat, chạy `pnpm --filter @dtl/bot-client security`.
 
 Phạm vi: chỉ các file được giao (hoặc `git diff` nếu không được giao cụ thể). Không sửa code; chỉ báo cáo.
 
