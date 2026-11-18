@@ -425,6 +425,14 @@
       "beamH": 80
     }
   ],
+  "portals": [
+    {
+      "x": 1361,
+      "z": 637,
+      "r": 12,
+      "to": "xich_tan_khich"
+    }
+  ],
   "spots": [
     {
       "id": "tran_gioi_bia_1",

@@ -64,7 +64,7 @@ describe('dữ liệu chương 5', () => {
     expect(QUEST.get('q5_bac_hanh')!.minLevel).toBeGreaterThanOrEqual(BH.minLevel!);
   });
   it('nhiệm vụ trỏ tới quái/phó bản/kiếp chưa có đều bị khóa bằng cấp > MAX_LEVEL', () => {
-    for (const id of ['q5_xich_tan', 'q5_tinh_quang', 'q5_thu_khich', 'q5_kim_da', 'q5_ngu_bia', 'q5_anh_bien', 's5_cham_ba', 's5_tieng_ben_kia']) {
+    for (const id of ['q5_tinh_quang', 'q5_thu_khich', 'q5_kim_da', 'q5_ngu_bia', 'q5_anh_bien', 's5_cham_ba', 's5_tieng_ben_kia']) {
       expect(QUEST.get(id)!.minLevel!, id).toBeGreaterThan(MAX_LEVEL);
     }
   });
@@ -82,11 +82,11 @@ describe('nhận và chạm', () => {
     expect(t.char.quests.active.q5_bac_hanh).toBeTruthy();
     expect(t.char.tele).toContain('bh_tp_tram');
   });
-  it('phó bản chờ dữ liệu: không nhận được ở cấp 28', () => {
+  it('phó bản chờ dữ liệu (Kim Dạ Cung): không nhận được ở cấp 28', () => {
     const t = setup(28);
-    t.char.quests.done.push('q5_qua_khich');
-    t.accept('q5_xich_tan');
-    expect(t.char.quests.active.q5_xich_tan).toBeUndefined();
+    t.char.quests.done.push('q5_thu_khich');
+    t.accept('q5_kim_da');
+    expect(t.char.quests.active.q5_kim_da).toBeUndefined();
   });
   it('mạch nhãn: đi bộ sát điểm thì tính', () => {
     const t = setup(28);

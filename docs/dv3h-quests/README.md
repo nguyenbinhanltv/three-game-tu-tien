@@ -13,7 +13,7 @@ Phụ: `s5_dem_xac` (6 điểm `xac_tho_san_*`), `s5_cham_ba`, `s5_buom_mach` (3
 
 | Nhiệm vụ | Chờ |
 | --- | --- |
-| `q5_xich_tan` | phó bản Xích Tẫn Khích (DV3-D): đích `xich_tan_khich` (`PENDING_DUNGEON_TARGET` ở `game/dungeonquest.ts`; khi level có thật chuyển sang `DUNGEON_QUEST_TARGET`, test nhắc) |
+| `q5_xich_tan` | đã nối phó bản Xích Tẫn Khích (#227), `minLevel` 28 |
 | `q5_tinh_quang`, `s5_tieng_ben_kia` | cảnh gột Tịnh Quang của DV3-D (tuyến hộ tống `esc_tinh_quang` đã có ở `bac_hoang.json`) |
 | `q5_thu_khich` | boss `boss_thu_khich_duc_chu` (DV3-B) |
 | `q5_kim_da` | phó bản Kim Dạ Cung (DV3-E), đích `kim_da_cung` |

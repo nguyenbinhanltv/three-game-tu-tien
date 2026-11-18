@@ -1,0 +1,30 @@
+{
+  "mood": "rift",
+  "glb": [],
+  "ground": {
+    "set": "terrain-ochre",
+    "mask": "neutral"
+  },
+  "music": [
+    "dungeon",
+    "dungeon_boss"
+  ],
+  "features": {
+    "sect": false,
+    "portals": true,
+    "lanterns": true,
+    "lake": false,
+    "clouds": false,
+    "grass": false,
+    "trees": "none",
+    "beacons": false,
+    "vegetation": false
+  },
+  "minimap": "van_lam",
+  "cave": {
+    "x": 1520,
+    "z": 1300,
+    "r": 94,
+    "h": 46
+  }
+}

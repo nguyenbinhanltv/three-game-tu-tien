@@ -608,6 +608,15 @@ for (const m of MONSTERS) {
     }
     if (th.rings && !(th.rings.dur <= 15 && th.rings.spin <= 30 && th.rings.final.delay >= 1.5 && th.rings.final.gather >= 6)) err(`monster ${m.id}: than.rings: ≤ 15 s, quay ≤ 30°/s (chạy kịp), Phản hồi báo ≥ 1,5 s`);
   }
+  if (m.rift) {
+    const rf = m.rift;
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có rift`);
+    const nph = (m.phases?.length ?? 0) + 1;
+    if (!(Number.isInteger(rf.phase) && rf.phase >= 0 && rf.phase < nph)) err(`monster ${m.id}: rift.phase ngoài số pha`);
+    if (!(rf.burn >= 1 && rf.burn <= 5 && rf.weak >= 3 && rf.veins.length >= 2)) err(`monster ${m.id}: rift: 1–5 tầng cháy, mất thế ≥ 3 s, ≥ 2 khe`);
+    if (!m.phases?.[rf.phase - 1]?.ai?.chant && !m.ai?.chant) err(`monster ${m.id}: rift cần chú (ai.chant) từ pha ${rf.phase}`);
+    for (const v of rf.veins) if (!(v.r >= 3 && v.r <= 10)) err(`monster ${m.id}: khe mạch r 3–10 m`);
+  }
   const ps = m.posture;
   if (ps) {
     if (!m.boss) err(`monster ${m.id}: chỉ boss mới có thanh phá thế`);
@@ -737,7 +746,7 @@ for (const n of NPCS) {
 // (cấp 29+ chưa mở nên không ai nhận được), để khỏi có nhiệm vụ nhận được mà không bao giờ xong. Gỡ id khỏi bảng khi dữ liệu thật vào.
 const PENDING_OBJ: Record<string, readonly string[]> = {
   kill: ['elite_trien_bo_cham_ba', 'boss_thu_khich_duc_chu', 'elite_huyet_giac_ma_tuong'],
-  dungeon: ['xich_tan_khich', 'kim_da_cung'],
+  dungeon: ['kim_da_cung'],
   breakthrough: ['anh_bien'],
 };
 for (const q of QUESTS) {
@@ -880,6 +889,17 @@ for (const lv of Object.values(LEVELS)) {
       if (!(sl.touch > 0 && sl.touch <= 6 && sl.phuR >= 4 && sl.bar >= sl.touch + 2)) err(`${ww}: seals touch ≤ 6, phuR ≥ 4, bar ≥ touch + 2`);
       if (!MONSTER.get(sl.reinforce.mon)) err(`${ww}: quái tiếp viện ${sl.reinforce.mon} không tồn tại`);
       if (!wv.title) err(`${ww}: đợt phong ấn phải có title`);
+    }
+    if (wv.steles) {
+      const sl = wv.steles;
+      const c = lv.dungeon!.center;
+      if (Math.hypot(sl.x - c.x, sl.z - c.z) > (lv.dungeon!.bound ?? 90) - sl.r - 8) err(`${ww}: bia (${sl.x}, ${sl.z}) ngoài vòng bí cảnh`);
+      if (!(sl.r >= 4 && sl.r <= 12 && sl.secs >= 20 && sl.secs <= 120 && sl.grace >= 3 && sl.press > 0 && sl.press <= 0.05)) err(`${ww}: steles r 4–12, 20–120 s, grace ≥ 3 s, press ∈ (0; 5%]`);
+      for (const g of sl.reinforce) {
+        if (!MONSTER.get(g.mon)) err(`${ww}: quái tiếp viện ${g.mon} không tồn tại`);
+        if (!(g.at >= 0 && g.at < sl.secs && g.n >= 1)) err(`${ww}: tiếp viện phải có at trong [0; secs) và n ≥ 1`);
+      }
+      if (!wv.title) err(`${ww}: đợt giữ bia phải có title`);
     }
     if (wv.puzzle) {
       const pz = wv.puzzle;

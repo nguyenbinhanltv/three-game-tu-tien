@@ -25,6 +25,54 @@ export default {
       for (const v of list('--variants', 'v1,v3')) {
         const tag = `${g === 'm' ? 'nam' : 'nu'}-${v}`;
         const dir = path.join(r.out, `_rec-${tag}`);
+        // Đo trượt chân khi chạy (N-6): trong lúc chạy thẳng, lấy chân đang thấp hơn (chân trụ) và tốc độ ngang của nó so với mặt đất (m/s,
+        // hệ thế giới). Chân trụ không trượt thì ≈ 0. Ghi trung vị, p90 và tốc độ chạy trung bình vào `slide-<tag>.json`.
+        const slide = async () => {
+          const { page, ctx } = await r.open({ name: `V3s${g}${v}`, viewport: [640, 400], quality: 'medium', look: { g }, query: { ...(QUERY[v] ?? {}), ...(process.env.JOG ? { jog: process.env.JOG } : {}) }, hide: 'hud', warnings: /models|chr_v3|clip/ });
+          await gm(page, 'god on', 1000);
+          await gm(page, 'tp 2048 2088', 1500);
+          if (v.startsWith('v3')) await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          await sleep(1500);
+          // Chuỗi JS thuần: tsx chèn `__name` vào hàm đặt tên trong evaluate(() => ...) làm trang lỗi.
+          await page.evaluate(`(() => {
+            const g2 = window.__game;
+            const e = g2.ents.players.get(g2.sid);
+            const rig = e.model.rig;
+            const feet = [rig.getObjectByName('foot_l'), rig.getObjectByName('foot_r')];
+            const V3 = feet[0].position.constructor;
+            const w = { samples: [], speeds: [] };
+            let last = null;
+            const tick = () => {
+              const now = performance.now() / 1000;
+              const pts = feet.map((f) => f.getWorldPosition(new V3()));
+              const root = { x: e.model.root.position.x, z: e.model.root.position.z };
+              if (last && now - last.t > 0.001) {
+                const dt = now - last.t;
+                const i = pts[0].y < pts[1].y ? 0 : 1;
+                w.samples.push(Math.hypot(pts[i].x - last.p[i].x, pts[i].z - last.p[i].z) / dt);
+                w.speeds.push(Math.hypot(root.x - last.root.x, root.z - last.root.z) / dt);
+              }
+              last = { t: now, p: pts, root };
+              window.__slide = w;
+              requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          })()`);
+          await page.keyboard.down('KeyW');
+          await sleep(500);
+          await page.evaluate('(() => { window.__slide.samples.length = 0; window.__slide.speeds.length = 0; })()');
+          await sleep(3500);
+          await page.keyboard.up('KeyW');
+          const res = (await page.evaluate(`(() => {
+            const w = window.__slide;
+            const q = (a, p) => [...a].sort((x, y) => x - y)[Math.floor(a.length * p)] ?? 0;
+            const run = w.speeds.filter((x) => x > 0.5);
+            return { frames: w.samples.length, runSpeedMean: run.reduce((a, b) => a + b, 0) / Math.max(1, run.length), slideMedian: q(w.samples, 0.5), slideP90: q(w.samples, 0.9) };
+          })()`)) as unknown;
+          fs.writeFileSync(path.join(r.out, `slide-${tag}${process.env.JOG ? '-jog' + process.env.JOG : ''}.json`), JSON.stringify(res, null, 1));
+          console.log(`[shots:chrv3] slide ${tag}: ${JSON.stringify(res)}`);
+          await ctx.close();
+        };
         const stills = async () => {
           // Ảnh cận mặt: phiên riêng, camera đặt ngay sau khi vào game (trong phiên quay, nhân vật đã bị `level`/di chuyển nên hướng nhìn lệch).
           const still = await r.open({ name: `V3c${g}${v}`, viewport: [800, 500], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/ });
@@ -51,6 +99,10 @@ export default {
           await snap(still.page, r.out, `${tag}-toanthan-nen.jpg`, { clip: centerClip(800, 500, 360, 460) });
           await still.ctx.close();
         };
+        if (process.argv.includes('--slide')) {
+          await slide();
+          continue;
+        }
         if (process.argv.includes('--stills')) {
           await stills();
           continue;
