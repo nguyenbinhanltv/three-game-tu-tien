@@ -103,10 +103,11 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
     const size = { w: 0, h: 0, dpr: 1, mid: 0 };
     const fit = () => {
       const r = host.getBoundingClientRect();
-      const z = Number.parseFloat(getComputedStyle(host).zoom || '1') || 1;
+      // hệ số zoom THỰC (kể cả zoom của bảng cha, `--ui-scale`): khung nhìn thấy / khung bố cục. getComputedStyle().zoom chỉ trả zoom của chính phần tử.
+      const z = host.clientWidth > 0 ? r.width / host.clientWidth : 1;
       size.dpr = Math.min(2, window.devicePixelRatio || 1);
-      size.w = Math.max(1, Math.round(r.width / z));
-      size.h = Math.max(1, Math.round(r.height / z));
+      size.w = Math.max(1, host.clientWidth);
+      size.h = Math.max(1, host.clientHeight);
       // tâm vùng tranh thực = giữa khoảng trống giữa hai cột ô (cột giữa của lưới), không phải giữa cả lưới
       const sp = host.parentElement?.querySelector('.equip-spacer')?.getBoundingClientRect();
       size.mid = sp && sp.width > 40 ? (sp.left + sp.width / 2 - r.left) / z : size.w / 2;
