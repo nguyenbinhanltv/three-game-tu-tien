@@ -207,7 +207,7 @@ export function runFrame(eng: Game): void {
   }
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
   eng.skillFx?.update(dt);
-  eng.realmAura?.update(dt);
+  if (me) eng.realmAura?.update(dt);
   if (me) updateGrass(eng, dt, rp);
   eng.vfx.update(dt);
   eng.post?.update(dt);

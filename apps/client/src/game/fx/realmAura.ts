@@ -6,12 +6,12 @@
 //   Hóa Thần (xanh đêm-bạc): rim light bạc trên chính nhân vật (emissive fresnel gắn vào vật liệu); pháp tướng là TRANH VẼ TAY của Thiên Giải
 //                         (Kiếm long ngọc / Huyền vũ / Chu tước, atlas `render/vfx/art.ts`, kind `art`) làm billboard lớn sau lưng: mờ nhẹ khi đứng yên,
 //                         BÙNG rõ + phình khi ra chiêu lớn, mờ dần ở viền, gợn sóng sáng; phù văn đạo luật xoay ngang lưng khi đứng yên.
-//   Ảnh Biến (đen-vàng-tím): vũng + sương mực đen-vàng quanh chân, tia sét tím-vàng chạy quanh thân, 4 phân thân = bản sao mesh nhân vật với vật liệu bóng mờ.
+//   Ảnh Biến (đen-vàng-tím): vũng + sương mực đen-vàng quanh chân, tia sét tím-vàng chạy quanh thân, 3 phân thân = bản sao mesh nhân vật với vật liệu bóng mờ.
 // Mọi lưới đi qua `FxPool` kiểu gộp (`crystal`/`solid`/`glow`/`dome`/`decal`/`toon`/`card`: cả đám đông dùng chung vài draw call) và hạt GPU dùng chung
 // (`PARTICLES`, không tốn draw call). Lớp thân dùng hòa trộn thường (đọc được trên nền sáng ban ngày) cộng lớp cộng sáng + bloom.
 import * as THREE from 'three/webgpu';
 import { SKILL } from '@dtl/content';
-import { float, normalView, positionViewDirection, uniform, vec3 } from 'three/tsl';
+import { float, materialEmissive, normalView, positionViewDirection, uniform, vec3 } from 'three/tsl';
 import type { FxQuality } from '@dtl/shared';
 import type { FxKind, FxMesh } from '../../render/materials/vfx';
 import { shapeGeometry, swordFxGeometry, QUAD_XZ } from '../../render/vfx/fxShapes';
@@ -70,7 +70,7 @@ export interface RealmAuraEnv {
 export const OTHERS_MAX = [0, 4, 8] as const;
 /** Độ nhấc người khỏi đất khi Nguyên Anh trở lên (m). */
 export const LIFT = 0.2;
-/** Số phân thân Ảnh Biến (3–5). */
+/** Số phân thân Ảnh Biến (chốt 3). */
 const CLONES = 3;
 
 /** Cùng `renderOrder` với các nhóm gộp đã vẽ ấm ở `Vfx.warmBatches` (nhóm khác thì biên dịch shader ở lần vẽ đầu). */
@@ -113,7 +113,7 @@ function patchRim(mat: THREE.Material): void {
   rimPatched.add(mat);
   const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.4);
   const rim = vec3(uRim).mul(fres);
-  m.emissiveNode = m.emissiveNode ? (m.emissiveNode as unknown as { add(x: unknown): THREE.Node }).add(rim) : rim;
+  m.emissiveNode = ((m.emissiveNode as unknown as { add(x: unknown): THREE.Node } | null) ?? materialEmissive).add(rim);
   m.needsUpdate = true;
 }
 
