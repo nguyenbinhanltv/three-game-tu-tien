@@ -226,7 +226,7 @@ for (const s of ALL_SKILLS) {
   ids.forEach((id, i) => {
     const p = POSE.get(id);
     if (!p) return err(`skill ${s.id}: thiếu pose ${id} (đòn/giọng của pose ${s.pose})`);
-    const hitAt = s.combo ? at(s.combo.hits, i % hits).hitAt : s.hitAt?.[0];
+    const hitAt = s.combo ? s.combo.hits[i % hits]?.hitAt : s.hitAt?.[0];
     if (hitAt !== undefined && p.hit && Math.abs(p.hit[0] - hitAt) > 0.03)
       err(`skill ${s.id}: hitAt ${hitAt} lệch hit[0] = ${p.hit[0]} của pose ${id}`);
     if (
@@ -406,7 +406,7 @@ for (const it of ITEMS) {
     const pool = sys.affixes
       .filter((a) => !a.slots || a.slots.includes(sd.id))
       .reduce((n, a) => n + (a.param ? sys.params[a.param].length : 1), 0);
-    if (pool < at(sys.qualities, QUALITY_COUNT - 1).affixes) err(`slot ${sd.id}: không đủ dòng phụ để roll phẩm cao nhất`);
+    if (pool < (sys.qualities[QUALITY_COUNT - 1]?.affixes ?? 0)) err(`slot ${sd.id}: không đủ dòng phụ để roll phẩm cao nhất`);
   }
   // Mô phỏng nhanh: roll nhiều lần mọi ô × phẩm phải qua parseInst, không vượt ngân sách, số dòng đúng.
   const rng = seededRng(20261115);
@@ -672,7 +672,7 @@ function checkEquipLoot(id: string, l: LootDef) {
     if (pThan > 0 && (l.src !== 'boss' || i !== 0 || pThan > 0.01)) err(`${w}: Thần phẩm chỉ ở boss, bảng đầu, ≤ 1% mỗi lần rơi`);
     if (l.src === 'common' && hi > 1) err(`${w}: quái thường chỉ rơi Phàm/Linh phẩm`);
     if (l.src === 'dungeon' && hi > 3) err(`${w}: bí cảnh thường chỉ rơi tới Địa phẩm`);
-    if (l.src === 'elite' && i === 0 && (hi > 3 || at(r.q, 2) / tot < 0.3)) err(`${w}: tinh anh chủ yếu Huyền phẩm, tối đa Địa phẩm`);
+    if (l.src === 'elite' && i === 0 && (hi > 3 || (r.q[2] ?? 0) / tot < 0.3)) err(`${w}: tinh anh chủ yếu Huyền phẩm, tối đa Địa phẩm`);
     if (l.src === 'boss' && i === 0 && lo < 2) err(`${w}: boss chỉ rơi từ Huyền phẩm`);
   });
   // Quái kiếp (Nhật Thực Dực Chủ) không rơi đồ (`minionOf`), nên không cần bảng rơi trang bị.
@@ -915,7 +915,7 @@ for (const r of RECIPES) {
       err(`${w}: reqLevel phải bằng reqLevel của thành phẩm`);
     for (const i of f.inputs) needItem(i.id, w);
     if (f.q.length < 5 || f.q.length > QUALITY_COUNT || f.q.some((x) => !(x >= 0)) || !f.q.some((x) => x > 0)) err(`${w}: q sai`);
-    if (at(f.q, 4) > 0 || (f.q[5] ?? 0) > 0 || at(f.q, 3) / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3)
+    if ((f.q[4] ?? 0) > 0 || (f.q[5] ?? 0) > 0 || (f.q[3] ?? 0) / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3)
       err(`${w}: chế tạo không ra Thiên/Thần phẩm, Địa phẩm ≤ 30%`);
     if (!(f.ilvl >= 1 && f.ilvl <= 99) || !(f.gold >= 0)) err(`${w}: ilvl/gold sai`);
   }
@@ -1037,7 +1037,7 @@ if (REALMS.length !== MAX_LEVEL) err(`realms.json phải có ${MAX_LEVEL} cấp 
 REALMS.forEach((r, i) => {
   if (r.level !== i + 1) err(`realms.json: cấp thứ ${i + 1} ghi level ${r.level}`);
   if (r.key !== `realm.${r.level}`) err(`realms.json: cấp ${r.level} key ${r.key}`);
-  const major = at(GLOSSARY.realms, majorRealmOf(r.level));
+  const major = GLOSSARY.realms[majorRealmOf(r.level)] ?? '';
   if (!t(r.key).startsWith(major)) err(`${r.key}: tên "${t(r.key)}" phải bắt đầu bằng đại cảnh giới "${major}" của glossary`);
   if (
     r.level > TRUC_CO_LEVEL &&
