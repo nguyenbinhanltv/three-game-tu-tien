@@ -1,7 +1,8 @@
 // Dữ liệu concept trang phục Kết Đan (T-3). Nguồn duy nhất cho: outfit.json (gen.mjs outfit), docs/outfit-concepts/README.md, trang HTML xem nhanh.
 // Chỉ lấy cảm hứng từ ảnh tham khảo (cấu trúc, tinh thần), không chép dáng, hoa văn, logo hay nhân vật nào.
 
-export const ORIGINAL = 'Original design for a Chinese fantasy cultivation game, not copied from any existing game, novel, artwork or character.';
+export const ORIGINAL =
+  'Original design for a Chinese fantasy cultivation game, not copied from any existing game, novel, artwork or character.';
 export const STYLE =
   'Semi-realistic cinematic painterly rendering with hand-painted material detail, believable cloth folds, engraved metal, clear readable silhouette, muted misty-dawn palette overall but the outfit itself is slightly brighter and more eye-catching than the environment.';
 export const A = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); // prompt không chứa dấu tiếng Việt (tránh model vẽ chữ)
@@ -22,18 +23,22 @@ export const SETS = {
       ['Viền (kim loại, vai giáp)', '#B07A3C', 'đồng cũ'],
       ['Nhấn phát sáng (vân mạch)', '#E8A33D', 'hổ phách, chỉ ở vân mạch'],
     ],
-    materials: 'Lụa dày dệt chéo (áo ngoài, sheen nhẹ theo chiều sợi) · vải đay mịn (lớp lót) · da thuộc son (đai, ủng) · đồng cũ chạm khắc, rỉ xanh nhẹ ở khe (vai giáp, khóa đai, mũi ủng) · hổ phách sáng đục (vân mạch trên đai và vai)',
+    materials:
+      'Lụa dày dệt chéo (áo ngoài, sheen nhẹ theo chiều sợi) · vải đay mịn (lớp lót) · da thuộc son (đai, ủng) · đồng cũ chạm khắc, rỉ xanh nhẹ ở khe (vai giáp, khóa đai, mũi ủng) · hổ phách sáng đục (vân mạch trên đai và vai)',
     silhouette:
       'a tall slender swordsman look: a long ivory outer coat with high side slits, narrow and tidy at the torso, long trailing back panel that flares into a swallow-tail hem, wide sleeves with a cinnabar-earth lining visible at the cuffs, sharp angular bronze shoulder armor shaped like cracked cliff strata, a wide bronze-and-leather belt with thin glowing amber vein lines like cracks in rock, a jade-free design (no jade pendant), tall cinnabar leather boots with bronze toe caps, and a slim bronze hair crown with a short upswept amber-stone pin',
-    motif: 'branching crack-vein patterns (fault lines in rock) and layered stratified-stone chevrons, embroidered in darker ivory-gold thread on the coat hem and sleeves',
+    motif:
+      'branching crack-vein patterns (fault lines in rock) and layered stratified-stone chevrons, embroidered in darker ivory-gold thread on the coat hem and sleeves',
     pieces: {
       ao_ngoai: {
         name: 'Áo ngoài',
         look: 'a long ivory outer swordsman coat (dao pao): crossed collar, wide sleeves with cinnabar-earth lining cuffs, high side slits, long back panel ending in a swallow-tail hem, bronze-thread crack-vein embroidery along the hem and sleeve edges, thin cinnabar piping on the collar',
         tris: '5000',
         bones: 'spine1/spine2 (thân), upperarm L/R, forearm L/R, cổ áo gắn neck. Trọng số lấy từ thân nền',
-        spring: 'Tay áo: 2 chuỗi × 3 xương mỗi bên (cổ tay trở ra). Vạt sau: 3 chuỗi × 3 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên',
-        notes: 'Một mảnh liền, mặt ngoài lụa dày KHÔNG xuyên sáng. Phần lót cinnabar là lớp riêng thấy được ở cổ tay và xẻ tà. Mở thân dưới (hở) để lớp dưới thấy bên trong.',
+        spring:
+          'Tay áo: 2 chuỗi × 3 xương mỗi bên (cổ tay trở ra). Vạt sau: 3 chuỗi × 3 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên',
+        notes:
+          'Một mảnh liền, mặt ngoài lụa dày KHÔNG xuyên sáng. Phần lót cinnabar là lớp riêng thấy được ở cổ tay và xẻ tà. Mở thân dưới (hở) để lớp dưới thấy bên trong.',
       },
       lop_duoi: {
         name: 'Lớp dưới',
@@ -49,7 +54,8 @@ export const SETS = {
         tris: '1500',
         bones: 'clavicle/shoulder L và R (cứng, không co giãn); một mảnh có hai nửa đối xứng',
         spring: 'Không. Mảnh cứng',
-        notes: 'Hai nửa đối xứng gửi cùng một ảnh (chỉ cần dựng một bên rồi lật). Vân hổ phách đặt làm vật liệu riêng (mặt nạ phát sáng) để worker bật theo cấp cường hóa.',
+        notes:
+          'Hai nửa đối xứng gửi cùng một ảnh (chỉ cần dựng một bên rồi lật). Vân hổ phách đặt làm vật liệu riêng (mặt nạ phát sáng) để worker bật theo cấp cường hóa.',
       },
       dai_tua: {
         name: 'Đai và tua',
@@ -73,7 +79,8 @@ export const SETS = {
         tris: '700',
         bones: 'head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện)',
         spring: 'Dải ruy băng sau: 1 chuỗi × 3 xương mỗi dải',
-        notes: 'Chỉ có quan, trâm, dải. KHÔNG có đầu, tóc hay mặt: tóc thuộc model nhân vật gốc. Tâm quan đặt ở đỉnh đầu, nhìn từ trên xuống phải gọn trong vòng tròn đường kính ~8 cm.',
+        notes:
+          'Chỉ có quan, trâm, dải. KHÔNG có đầu, tóc hay mặt: tóc thuộc model nhân vật gốc. Tâm quan đặt ở đỉnh đầu, nhìn từ trên xuống phải gọn trong vòng tròn đường kính ~8 cm.',
       },
     },
   },
@@ -90,7 +97,8 @@ export const SETS = {
       ['Viền (kim loại, vảy)', '#B59A55', 'vàng cổ'],
       ['Nhấn phát sáng (khe vảy)', '#D9A441', 'vàng đất, chỉ ở khe vảy'],
     ],
-    materials: 'Vảy đá mài nhám (vai, giáp ngực) · thép đen rèn thủ công (khung giáp) · vàng cổ xỉn chạm khắc (viền vảy, khóa) · vải len dệt dày ngọc bích sẫm (lớp trong, váy) · da thuộc tối (đai, ủng) · đá nhám xám (sừng quan)',
+    materials:
+      'Vảy đá mài nhám (vai, giáp ngực) · thép đen rèn thủ công (khung giáp) · vàng cổ xỉn chạm khắc (viền vảy, khóa) · vải len dệt dày ngọc bích sẫm (lớp trong, váy) · da thuộc tối (đai, ủng) · đá nhám xám (sừng quan)',
     silhouette:
       'a heavy guardian look: huge layered shoulders made of overlapping stone dragon scales, a half-breastplate of dark jade scale armor over a thick dark jade-green tunic, a tiered armored skirt of overlapping scale plates reaching the knees, thick stone-grey bracers, a broad belt with a dragon-head clasp in old gold, heavy stone-grey boots with scale-plated shins, and a helm-crown with two short swept-back stone dragon horns',
     motif: 'overlapping dragon scales and coiled earth-dragon spine ridges, engraved in old gold lines on the dark jade and stone grey',
@@ -101,7 +109,8 @@ export const SETS = {
         tris: '5000',
         bones: 'spine1/spine2 (giáp ngực cứng gắn spine2), upperarm L/R (tay áo ngắn), neck. Trọng số từ thân nền',
         spring: 'Gần như không: 1 chuỗi × 2 xương cho vạt vải dưới giáp ngực. Giáp ngực cứng',
-        notes: 'Giáp ngực là khối cứng, vải tunic bên dưới là phần mềm. Để nửa dưới thân hở cho lớp dưới. Vảy phải là khối nổi thật, không phải họa tiết.',
+        notes:
+          'Giáp ngực là khối cứng, vải tunic bên dưới là phần mềm. Để nửa dưới thân hở cho lớp dưới. Vảy phải là khối nổi thật, không phải họa tiết.',
       },
       lop_duoi: {
         name: 'Lớp dưới (váy giáp)',
@@ -158,7 +167,8 @@ export const SETS = {
       ['Viền (kim loại, trâm)', '#C4CCCA', 'bạc'],
       ['Nhấn (thêu lá thuốc)', '#5FA58A', 'lục thảo, chỉ ở họa tiết thêu'],
     ],
-    materials: 'Lụa mịn bóng nhẹ (áo ngoài) · voan mỏng xuyên sáng (choàng và dải lụa, tối đa 2 mảnh trong suốt cho cả bộ) · vải đay thêu (lớp lót) · bạc chạm khắc (trâm, khóa đai, viền) · hồ lô đan tre phủ sơn (treo đai) · ngọc lục nhạt (hạt tua, lá trâm)',
+    materials:
+      'Lụa mịn bóng nhẹ (áo ngoài) · voan mỏng xuyên sáng (choàng và dải lụa, tối đa 2 mảnh trong suốt cho cả bộ) · vải đay thêu (lớp lót) · bạc chạm khắc (trâm, khóa đai, viền) · hồ lô đan tre phủ sơn (treo đai) · ngọc lục nhạt (hạt tua, lá trâm)',
     silhouette:
       'a graceful alchemist look: a wide ivory robe with very wide sleeves and an inner pale jade-green robe, a long translucent gauze shawl draped over the shoulders and trailing behind, a pale jade sash belt tied with a long silk ribbon, a small woven gourd and herb pouch hanging at the hip, soft slippers-style boots with silver trim, and a leaf-shaped jade-and-silver hairpin; embroidery of medicinal herb leaves on the hem',
     motif: 'embroidered medicinal-herb leaves and vines with tiny seed pods in jade-green thread on the hem, cuffs and shawl border',
@@ -169,7 +179,8 @@ export const SETS = {
         tris: '5000',
         bones: 'spine1/spine2, upperarm L/R, forearm L/R, neck. Voan choàng gắn spine2 và shoulder',
         spring: 'Tay áo rộng: 3 chuỗi × 3 xương mỗi bên. Voan choàng: 2 đuôi × 4 xương. Vạt sau: 2 chuỗi × 3 xương',
-        notes: 'Đây là mảnh XUYÊN SÁNG thứ nhất của bộ (voan). Dựng voan là lớp mỏng riêng; worker dùng alpha-test hoặc dither. Phần đạo bào lụa thì đặc.',
+        notes:
+          'Đây là mảnh XUYÊN SÁNG thứ nhất của bộ (voan). Dựng voan là lớp mỏng riêng; worker dùng alpha-test hoặc dither. Phần đạo bào lụa thì đặc.',
       },
       lop_duoi: {
         name: 'Lớp dưới',
@@ -193,7 +204,8 @@ export const SETS = {
         tris: '1400',
         bones: 'hips/spine (đai cứng). Hồ lô và túi neo ở đai',
         spring: 'Dải lụa: 1 chuỗi × 5 xương. Hồ lô và túi: 2 chuỗi × 3 xương. Tua: 1 chuỗi × 3 xương',
-        notes: 'Đây là mảnh XUYÊN SÁNG thứ hai (dải lụa mỏng) và cũng là mảnh cuối cùng được phép trong suốt cho cả bộ. Hồ lô dựng riêng một phần mesh để dễ gắn xương.',
+        notes:
+          'Đây là mảnh XUYÊN SÁNG thứ hai (dải lụa mỏng) và cũng là mảnh cuối cùng được phép trong suốt cho cả bộ. Hồ lô dựng riêng một phần mesh để dễ gắn xương.',
       },
       ung: {
         name: 'Ủng',
@@ -227,7 +239,8 @@ export const SWORD = {
       tris: '4000',
       bones: 'prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng',
       spring: 'Không',
-      notes: 'Tinh thể thể hiện bằng khối đặc tối màu có rãnh vân; KHÔNG dùng trong suốt thật. Vân hổ phách tách thành mặt nạ phát sáng để worker điều khiển. Dạng gốc (#119) vẫn giữ cho +0…+9; dạng cuối thay lúc cường hóa +10.',
+      notes:
+        'Tinh thể thể hiện bằng khối đặc tối màu có rãnh vân; KHÔNG dùng trong suốt thật. Vân hổ phách tách thành mặt nạ phát sáng để worker điều khiển. Dạng gốc (#119) vẫn giữ cho +0…+9; dạng cuối thay lúc cường hóa +10.',
     },
     vo: {
       name: 'Vỏ kiếm',

@@ -5,7 +5,10 @@ import type { HandProp } from './props';
 const CX = 1520;
 const CZ = 1300;
 const PI = Math.PI;
-const at = (r: number, a: number) => ({ x: Math.round((CX + Math.cos(a) * r) * 100) / 100, z: Math.round((CZ + Math.sin(a) * r) * 100) / 100 });
+const at = (r: number, a: number) => ({
+  x: Math.round((CX + Math.cos(a) * r) * 100) / 100,
+  z: Math.round((CZ + Math.sin(a) * r) * 100) / 100,
+});
 
 export const KINH_NGUYET_PROPS: readonly HandProp[] = (() => {
   const out: HandProp[] = [];
@@ -25,7 +28,8 @@ export const KINH_NGUYET_PROPS: readonly HandProp[] = (() => {
     out.push({ id: 'prop_anh_ngoc_kinh', ...at(18 + ((i * 13) % 34), a), yaw: a * 2, s: 3 + (i % 3) * 0.5 });
   }
   // Đèn đá dọc lối vào và vòng sảnh: ánh lạnh trên nền tối.
-  for (const z of [1318, 1330, 1344, 1358]) out.push({ id: 'prop_den_da', x: 1511, z, yaw: 0, s: 1 }, { id: 'prop_den_da', x: 1529, z, yaw: 0, s: 1 });
+  for (const z of [1318, 1330, 1344, 1358])
+    out.push({ id: 'prop_den_da', x: 1511, z, yaw: 0, s: 1 }, { id: 'prop_den_da', x: 1529, z, yaw: 0, s: 1 });
   for (const a of [0.7, 1.7, 2.7, 3.7, 4.7, 5.7]) out.push({ id: 'prop_den_da', ...at(56, a), yaw: 0, s: 1.1 });
   return out;
 })();

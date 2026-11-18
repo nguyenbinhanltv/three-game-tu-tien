@@ -108,7 +108,16 @@ export interface MarkMsg {
 
 /** Điểm (x, z) hợp lệ để đánh dấu: số hữu hạn nằm trong vùng chơi. */
 export function validMark(x: unknown, z: unknown, b: { x0: number; z0: number; x1: number; z1: number } = PLAY_BOUNDS): x is number {
-  return typeof x === 'number' && typeof z === 'number' && Number.isFinite(x) && Number.isFinite(z) && x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1;
+  return (
+    typeof x === 'number' &&
+    typeof z === 'number' &&
+    Number.isFinite(x) &&
+    Number.isFinite(z) &&
+    x >= b.x0 &&
+    x <= b.x1 &&
+    z >= b.z0 &&
+    z <= b.z1
+  );
 }
 
 /** Trận đứng trên bản đồ của `level` (vẽ mô hình, vẽ lên bản đồ lớn). Trận ở level khác có tọa độ của level đó nên không được vẽ ở đây. */

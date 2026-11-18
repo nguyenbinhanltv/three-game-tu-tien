@@ -262,7 +262,9 @@ export class PostPipeline {
     const inkV = length(fromCenter).mul(1.414).add(inkN.sub(0.5).mul(0.62));
     const inkEdge = float(1.5).sub(postParams.ink.mul(1.75));
     const inkMask = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.1), inkV);
-    const inkRim = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.02), inkV).mul(float(1).sub(smoothstep(inkEdge.add(0.02), inkEdge.add(0.16), inkV)));
+    const inkRim = smoothstep(inkEdge.sub(0.05), inkEdge.add(0.02), inkV).mul(
+      float(1).sub(smoothstep(inkEdge.add(0.02), inkEdge.add(0.16), inkV)),
+    );
     const inkCol = mix(vec3(0.05, 0.055, 0.07), vec3(0.012, 0.014, 0.022), inkRim.add(inkV.mul(0.25)).min(1));
     // Lõi màn mỏng hơn để còn lờ mờ thấy nhân vật; mép dày đặc.
     const inkBody = mix(float(0.72), float(0.95), smoothstep(0.1, 0.85, length(fromCenter).mul(1.414)));
@@ -275,7 +277,11 @@ export class PostPipeline {
       ldrRgb = vec4(fxaa(this.fxaaInput)).rgb;
     }
 
-    const vig = mix(float(1), float(1).sub(postParams.vignette), smoothstep(postParams.vignetteInner, postParams.vignetteOuter, length(fromCenter).mul(1.414)));
+    const vig = mix(
+      float(1),
+      float(1).sub(postParams.vignette),
+      smoothstep(postParams.vignetteInner, postParams.vignetteOuter, length(fromCenter).mul(1.414)),
+    );
     // Hạt phim + dither (±0,5/255) chống vệt bậc ở trời và sương.
     const seed = screenUV.mul(vec2(1973.1, 2711.7)).add(fract(time.mul(0.37)).mul(101.3));
     const noise = fract(sin(seed.x.mul(12.9898).add(seed.y.mul(78.233))).mul(43758.5453)).sub(0.5);

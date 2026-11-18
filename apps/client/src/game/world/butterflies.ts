@@ -1,5 +1,19 @@
 import * as THREE from 'three/webgpu';
-import { abs, cos, float, instancedBufferAttribute, mix, positionGeometry, sin, texture, time, uniform, uniformArray, uv, vec3 } from 'three/tsl';
+import {
+  abs,
+  cos,
+  float,
+  instancedBufferAttribute,
+  mix,
+  positionGeometry,
+  sin,
+  texture,
+  time,
+  uniform,
+  uniformArray,
+  uv,
+  vec3,
+} from 'three/tsl';
 import { beaconParams } from '../../render/atmosphere';
 import { heightAt, inLakeWater, levelTerrain } from '../../base/levelCtx';
 
@@ -159,7 +173,14 @@ function suitable(x: number, z: number): boolean {
  * Các con bướm nên có quanh (fx, fz), gần nhất trước, tối đa `limit`. Xác định theo ô: không phụ thuộc thứ tự gọi hay
  * phiên chơi. `ok` kiểm chỗ hợp lệ (mặc định `suitable`; test truyền hàm riêng). `cache` nhớ kết quả kiểm theo ô.
  */
-export function spotsNear(fx: number, fz: number, cfg: ButterflyLevel, limit: number, ok: (x: number, z: number) => boolean = suitable, cache?: Map<number, boolean>): Spot[] {
+export function spotsNear(
+  fx: number,
+  fz: number,
+  cfg: ButterflyLevel,
+  limit: number,
+  ok: (x: number, z: number) => boolean = suitable,
+  cache?: Map<number, boolean>,
+): Spot[] {
   const cx = Math.floor(fx / CELL);
   const cz = Math.floor(fz / CELL);
   const out: Spot[] = [];
@@ -251,8 +272,13 @@ export class Butterflies {
     // Vỗ: cánh quay quanh trục thân quanh góc dựng ~35° (nhìn ngang vẫn thấy mặt cánh, không thành một vệt mảnh); đầu cánh
     // trễ pha và cong hơn gốc. Thỉnh thoảng lướt (biên độ nhỏ lại).
     const beat = time.mul(P1.w.mul(15)).add(P1.x);
-    const glide = sin(time.mul(0.7).add(P1.x.mul(1.7))).mul(0.5).add(0.5);
-    const ang = sin(beat.sub(d.mul(0.9))).mul(mix(float(1.05), float(0.35), glide.mul(glide))).add(0.62).mul(d.mul(0.35).add(0.75));
+    const glide = sin(time.mul(0.7).add(P1.x.mul(1.7)))
+      .mul(0.5)
+      .add(0.5);
+    const ang = sin(beat.sub(d.mul(0.9)))
+      .mul(mix(float(1.05), float(0.35), glide.mul(glide)))
+      .add(0.62)
+      .mul(d.mul(0.35).add(0.75));
     const size = P1.y.mul(WING);
     const lx = side.mul(d).mul(cos(ang)).mul(size);
     const ly = d.mul(sin(ang)).mul(size);
@@ -371,7 +397,21 @@ export class Butterflies {
     const have = new Set(this.flies.map((f) => f.id));
     for (const w of want) {
       if (have.has(w.id) || this.flies.length >= BUTTERFLY_MAX) continue;
-      this.flies.push({ id: w.id, hx: w.x, hz: w.z, seed: w.seed, fade: 0, leaving: false, ox: 0, oz: 0, x: w.x, y: 0, z: w.z, ground: -1e9, yaw: w.seed * 6.28 });
+      this.flies.push({
+        id: w.id,
+        hx: w.x,
+        hz: w.z,
+        seed: w.seed,
+        fade: 0,
+        leaving: false,
+        ox: 0,
+        oz: 0,
+        x: w.x,
+        y: 0,
+        z: w.z,
+        ground: -1e9,
+        yaw: w.seed * 6.28,
+      });
     }
   }
 

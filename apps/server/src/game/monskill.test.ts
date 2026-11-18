@@ -1,15 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import {
-  groundAt,
-  type HazardMsg,
-  MF_BURROW,
-  MF_REFLECT,
-  MF_WEAK,
-  MS_CHASE,
-  type MonsterAi,
-  S,
-  VALLEY,
-} from '@dtl/shared';
+import { groundAt, type HazardMsg, MF_BURROW, MF_REFLECT, MF_WEAK, MS_CHASE, type MonsterAi, S, VALLEY } from '@dtl/shared';
 
 // Nguyên tắc quái mở rộng (E1-E): server phán định theo vị trí người chơi lúc vạch nổ.
 // DB trong bộ nhớ: sim.ts kéo theo character.ts → db.ts.
@@ -437,7 +427,10 @@ describe('chant/cast đang chạy thì không mở chiêu mới', () => {
   });
 
   it('quái đang đọc chú đánh xa cũng không mở chiêu', () => {
-    const { mon, run, hazards } = setup({ ...LEAP, burrow: { cd: 14, range: 20, hide: 2, n: 1, r: 2, spread: 4, mul: 1, cone: { r: 10, w: 20, delay: 1.5, mul: 1 }, kind: 'fire' } });
+    const { mon, run, hazards } = setup({
+      ...LEAP,
+      burrow: { cd: 14, range: 20, hide: 2, n: 1, r: 2, spread: 4, mul: 1, cone: { r: 10, w: 20, delay: 1.5, mul: 1 }, kind: 'fire' },
+    });
     mon.cast = { endAt: T0 + 5000 };
     run(800);
     expect(hazards()).toHaveLength(0);

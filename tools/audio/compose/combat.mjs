@@ -75,10 +75,12 @@ export default function combat() {
   const riffFor = (b) => ({ Bm: RIFF, G: RIFF_G, A: RIFF_A })[chordAt(b)];
   for (const b of [0, 2, 4, 6, 32, 34, 36, 38]) pipa.phrase(s.bar(b), B3, riffFor(b), { vel: 96, trem: 8 });
   // B: vê nền theo gốc hợp âm (nửa ô)
-  for (let b = 8; b < 16; b++) pipa.phrase(s.bar(b), B3, b % 2 ? '3*:2 2*:2' : '0*:2 r:2', { vel: 70, trem: 8, transpose: ROOT[chordAt(b)] - n('B1') });
+  for (let b = 8; b < 16; b++)
+    pipa.phrase(s.bar(b), B3, b % 2 ? '3*:2 2*:2' : '0*:2 r:2', { vel: 70, trem: 8, transpose: ROOT[chordAt(b)] - n('B1') });
   // D: đàn gảy đối, móc đơn nhảy quãng
   const COUNTER = "5':1/2 3':1/2 4':1/2 2':1/2 3':1/2 1':1/2 2':1/2 0':1/2";
-  for (let b = 24; b < 32; b++) pipa.phrase(s.bar(b), B3, COUNTER, { vel: 74, transpose: chordAt(b) === 'G' ? -4 : chordAt(b) === 'A' ? -2 : 0 });
+  for (let b = 24; b < 32; b++)
+    pipa.phrase(s.bar(b), B3, COUNTER, { vel: 74, transpose: chordAt(b) === 'G' ? -4 : chordAt(b) === 'A' ? -2 : 0 });
 
   // ----- nhị (violin): chủ đề -----
   const THEME = [

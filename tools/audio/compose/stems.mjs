@@ -10,7 +10,13 @@ export const ZONES = {
     bars: 40,
     reverb: { macro: 4, time: 92 },
     scale: ['D4', 'gong'],
-    sections: [['A', 0, 8], ['B', 8, 16], ['C', 16, 24], ['D', 24, 32], ["B'", 32, 40]],
+    sections: [
+      ['A', 0, 8],
+      ['B', 8, 16],
+      ['C', 16, 24],
+      ['D', 24, 32],
+      ["B'", 32, 40],
+    ],
     chords: {
       D: [n('D3'), n('A3'), n('E4'), n('F#4')],
       Bm: [n('B2'), n('F#3'), n('A3'), n('D4')],
@@ -26,7 +32,14 @@ export const ZONES = {
     bars: 48,
     reverb: { macro: 4, time: 84 },
     scale: ['E4', 'gong'],
-    sections: [['A', 0, 8], ['B', 8, 16], ['C', 16, 24], ['D', 24, 32], ['E', 32, 40], ['F', 40, 48]],
+    sections: [
+      ['A', 0, 8],
+      ['B', 8, 16],
+      ['C', 16, 24],
+      ['D', 24, 32],
+      ['E', 32, 40],
+      ['F', 40, 48],
+    ],
     chords: {
       E: [n('E3'), n('B3'), n('F#4'), n('G#4')],
       Cs: [n('C#3'), n('G#3'), n('B3'), n('E4')],
@@ -42,7 +55,12 @@ export const ZONES = {
     bars: 32,
     reverb: { macro: 4, time: 116 },
     scale: ['A3', 'yu'],
-    sections: [['A', 0, 8], ['B', 8, 16], ['C', 16, 24], ['D', 24, 32]],
+    sections: [
+      ['A', 0, 8],
+      ['B', 8, 16],
+      ['C', 16, 24],
+      ['D', 24, 32],
+    ],
     chords: {
       Am: [n('A1'), n('E2'), n('A2'), n('E3')],
       G: [n('G1'), n('D2'), n('G2'), n('D3')],

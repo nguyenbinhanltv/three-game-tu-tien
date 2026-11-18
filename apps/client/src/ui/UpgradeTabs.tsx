@@ -90,7 +90,9 @@ function Mats({ ids }: { ids: string[] }) {
           <ContentIcon def={ITEM.get(id)} /> {count(inv, id)}
         </span>
       ))}
-      <span><UiIcon id="cur_linh_thach" fallback="💠" className="inline" /> {gold}</span>
+      <span>
+        <UiIcon id="cur_linh_thach" fallback="💠" className="inline" /> {gold}
+      </span>
     </div>
   );
 }
@@ -140,7 +142,11 @@ export function EnhanceTab({ npcId }: { npcId: string }) {
                 </div>
               )}
             </div>
-            <Button variant="primary" disabled={maxed || !enough} onClick={() => g?.send(C.ENHANCE, { npc: npcId, ...e.ref, ward: useWard, r: reqId() })}>
+            <Button
+              variant="primary"
+              disabled={maxed || !enough}
+              onClick={() => g?.send(C.ENHANCE, { npc: npcId, ...e.ref, ward: useWard, r: reqId() })}
+            >
               {maxed ? t('ui.enh.max') : t('ui.enh.do')}
             </Button>
           </div>
@@ -197,14 +203,23 @@ export function GemTab({ npcId }: { npcId: string }) {
                   )}
                   {owned.length > 0 && (
                     <>
-                      <select className="upg-select" aria-label={t('ui.gem.choose')} value={sel} onChange={(ev) => setPick({ ...pick, [k]: ev.target.value })}>
+                      <select
+                        className="upg-select"
+                        aria-label={t('ui.gem.choose')}
+                        value={sel}
+                        onChange={(ev) => setPick({ ...pick, [k]: ev.target.value })}
+                      >
                         {owned.map((id) => (
                           <option key={id} value={id}>
                             {t(`item.${id}.name`)} ×{count(inv, id)}
                           </option>
                         ))}
                       </select>
-                      <Button variant="primary" disabled={!sd || gold < gemSocketCost(sd.tier)} onClick={() => send({ op: 'socket', ...e.ref, idx, gem: sel })}>
+                      <Button
+                        variant="primary"
+                        disabled={!sd || gold < gemSocketCost(sd.tier)}
+                        onClick={() => send({ op: 'socket', ...e.ref, idx, gem: sel })}
+                      >
                         {t(gd ? 'ui.gem.replace' : 'ui.gem.socket', { n: sd ? gemSocketCost(sd.tier) : 0 })}
                       </Button>
                     </>
@@ -232,7 +247,9 @@ export function GemTab({ npcId }: { npcId: string }) {
                 {t(`item.${id}.name`)} ×{have}
               </div>
               <div className="craft-inputs">
-                <span className={gold >= cost.gold && dust >= cost.dust ? 'ok' : 'bad'}>{t('ui.gem.merge_cost', { gold: cost.gold, dust: cost.dust })}</span>
+                <span className={gold >= cost.gold && dust >= cost.dust ? 'ok' : 'bad'}>
+                  {t('ui.gem.merge_cost', { gold: cost.gold, dust: cost.dust })}
+                </span>
               </div>
             </div>
             <Button variant="primary" disabled={!can} onClick={() => send({ op: 'merge', gem: id })}>
@@ -272,8 +289,14 @@ export function RefineTab({ npcId }: { npcId: string }) {
               {inst.affixes.map((a, idx) => (
                 <div key={idx} className="upg-socket" data-testid={`affix-${e.key}-${idx}`}>
                   <span className="upg-affix">{affixText(a)}</span>
-                  <span className={'upg-cost ' + (enough ? 'ok' : 'bad')}>{t('ui.refine.cost', { gold: cost.gold, stones: cost.stones, dust: cost.dust })}</span>
-                  <Button variant="primary" disabled={!enough} onClick={() => g?.send(C.UPGRADE, { npc: npcId, op: 'refine', ...e.ref, idx, r: reqId() })}>
+                  <span className={'upg-cost ' + (enough ? 'ok' : 'bad')}>
+                    {t('ui.refine.cost', { gold: cost.gold, stones: cost.stones, dust: cost.dust })}
+                  </span>
+                  <Button
+                    variant="primary"
+                    disabled={!enough}
+                    onClick={() => g?.send(C.UPGRADE, { npc: npcId, op: 'refine', ...e.ref, idx, r: reqId() })}
+                  >
                     {t('ui.refine.do')}
                   </Button>
                 </div>
@@ -313,12 +336,25 @@ export function SalvageTab({ npcId }: { npcId: string }) {
     setConfirm(false);
   };
   const quick = (maxQ: number) => {
-    setSel(new Set(list.filter((e) => 'i' in e.ref && gearQuality(e.item) <= maxQ && !(e.item.plus ?? 0)).map((e) => (e.ref as { i: number }).i).slice(0, SALVAGE_MAX_BATCH)));
+    setSel(
+      new Set(
+        list
+          .filter((e) => 'i' in e.ref && gearQuality(e.item) <= maxQ && !(e.item.plus ?? 0))
+          .map((e) => (e.ref as { i: number }).i)
+          .slice(0, SALVAGE_MAX_BATCH),
+      ),
+    );
     setConfirm(false);
   };
   const run = () => {
     if (risky && !confirm) return setConfirm(true);
-    g?.send(C.UPGRADE, { npc: npcId, op: 'salvage', slots: chosen.map((e) => (e.ref as { i: number }).i), ids: chosen.map((e) => e.item.id), r: reqId() });
+    g?.send(C.UPGRADE, {
+      npc: npcId,
+      op: 'salvage',
+      slots: chosen.map((e) => (e.ref as { i: number }).i),
+      ids: chosen.map((e) => e.item.id),
+      r: reqId(),
+    });
     setSel(new Set());
     setConfirm(false);
   };
@@ -335,7 +371,12 @@ export function SalvageTab({ npcId }: { npcId: string }) {
       <div className="upg-grid">
         {list.map((e) => {
           const i = (e.ref as { i: number }).i;
-          const y = salvageYield(gearQuality(e.item), e.item.plus ?? 0, e.item.inst ? 0 : (ITEM.get(e.item.id)?.price ?? 0), ITEM.get(ENHANCE_ORE)?.price ?? 0);
+          const y = salvageYield(
+            gearQuality(e.item),
+            e.item.plus ?? 0,
+            e.item.inst ? 0 : (ITEM.get(e.item.id)?.price ?? 0),
+            ITEM.get(ENHANCE_ORE)?.price ?? 0,
+          );
           return (
             <div
               key={e.key}
@@ -393,8 +434,13 @@ export function ForgeTab({ npcId }: { npcId: string }) {
           <div key={f.id} className="k-card shop-row craft" data-testid={`forge-${f.id}`}>
             <ItemIcon item={{ id: out.id, n: 1 }} small />
             <div className="shop-info">
-              <div className="item-name" data-q={f.q.findIndex((x) => x > 0)}>{itemName(out.id)}</div>
-              <div className="k-dim">{t('ui.item.kind.' + out.kind)} · {t('ui.forge.chance', { a: Math.round((f.q[2] / tot) * 100), b: Math.round((f.q[3] / tot) * 100) })}</div>
+              <div className="item-name" data-q={f.q.findIndex((x) => x > 0)}>
+                {itemName(out.id)}
+              </div>
+              <div className="k-dim">
+                {t('ui.item.kind.' + out.kind)} ·{' '}
+                {t('ui.forge.chance', { a: Math.round((f.q[2] / tot) * 100), b: Math.round((f.q[3] / tot) * 100) })}
+              </div>
               <div className="craft-inputs">
                 {f.inputs.map((i) => (
                   <span key={i.id} className={count(inv, i.id) >= i.n ? 'ok' : 'bad'}>
@@ -405,7 +451,11 @@ export function ForgeTab({ npcId }: { npcId: string }) {
               </div>
             </div>
             <div className="craft-btns">
-              <Button variant="primary" disabled={!can} onClick={() => g?.send(C.UPGRADE, { npc: npcId, op: 'forge', id: f.id, r: reqId() })}>
+              <Button
+                variant="primary"
+                disabled={!can}
+                onClick={() => g?.send(C.UPGRADE, { npc: npcId, op: 'forge', id: f.id, r: reqId() })}
+              >
                 {t('ui.forge.make')}
               </Button>
             </div>
@@ -476,7 +526,11 @@ export function PromoteTab({ npcId }: { npcId: string }) {
                 <div className="k-dim">{t('ui.promote.locked')}</div>
               )}
             </div>
-            <Button variant="primary" disabled={!enough} onClick={() => g?.send(C.UPGRADE, { npc: npcId, op: 'promote', ...e.ref, r: reqId() })}>
+            <Button
+              variant="primary"
+              disabled={!enough}
+              onClick={() => g?.send(C.UPGRADE, { npc: npcId, op: 'promote', ...e.ref, r: reqId() })}
+            >
               {t('ui.promote.go')}
             </Button>
           </div>

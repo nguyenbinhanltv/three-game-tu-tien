@@ -123,7 +123,10 @@ export function clientIp(headers: http.IncomingHttpHeaders, remote: string | und
     const xff = headers['x-forwarded-for'];
     const s = Array.isArray(xff) ? xff.join(',') : xff;
     if (s) {
-      const parts = s.split(',').map((p) => p.trim()).filter(Boolean);
+      const parts = s
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean);
       const last = parts[parts.length - 1];
       if (last) return ipKey(last);
     }
@@ -139,7 +142,10 @@ export function rateLimitFromEnv(env: NodeJS.ProcessEnv): RateLimitOptions {
   };
   const production = env.NODE_ENV === 'production';
   const exempt = new Set<string>();
-  for (const e of (env.RATE_LIMIT_EXEMPT ?? '').split(',').map((s) => s.trim()).filter(Boolean)) {
+  for (const e of (env.RATE_LIMIT_EXEMPT ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)) {
     if (e === 'loopback') {
       exempt.add('127.0.0.1');
       exempt.add('::1');

@@ -2,7 +2,18 @@
  * Logic thuần của túi đồ (TD-B): lọc hiển thị, chia trang, quyết định khi thả. Không đụng store hay mạng,
  * để test được. Tab và ô tìm CHỈ lọc hiển thị; vị trí thật chỉ đổi bằng MOVE/INV_SORT qua server.
  */
-import { INV_PAGE, INV_PAGES, INV_SIZE, isWearSlot, itemCategory, type WearSlot, type InvItem, type InvSlot, type ItemCategory, type ItemDef } from '@dtl/shared';
+import {
+  INV_PAGE,
+  INV_PAGES,
+  INV_SIZE,
+  isWearSlot,
+  itemCategory,
+  type WearSlot,
+  type InvItem,
+  type InvSlot,
+  type ItemCategory,
+  type ItemDef,
+} from '@dtl/shared';
 
 export type BagTab = 'all' | ItemCategory;
 export const BAG_TABS: readonly BagTab[] = ['all', 'gear', 'pill', 'material', 'quest', 'other'];
@@ -23,17 +34,17 @@ export function isFiltering(f: BagFilter): boolean {
 
 /** Bỏ dấu, hạ chữ thường: "Thanh Phong" khớp "thanh phong" và "thanh phỏng". */
 export function fold(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'd')
-    .toLowerCase()
-    .trim();
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'd').toLowerCase().trim();
 }
 
 /** Ô có khớp bộ lọc không. Ô trống chỉ khớp khi không lọc. `name` là tên hiển thị, `quality` đã tính theo `gearQuality`. */
-export function matchesFilter(item: InvItem | null | undefined, def: ItemDef | undefined, name: string, quality: number, f: BagFilter): boolean {
+export function matchesFilter(
+  item: InvItem | null | undefined,
+  def: ItemDef | undefined,
+  name: string,
+  quality: number,
+  f: BagFilter,
+): boolean {
   if (!isFiltering(f)) return true;
   if (!item || !def) return false;
   if (f.tab !== 'all' && itemCategory(def) !== f.tab) return false;
@@ -84,7 +95,13 @@ type DropCmd =
  * khi đó trả về `split` để client hỏi số lượng. Thả lên số trang → ô trống đầu tiên của trang đó.
  * Thả lên ô trang bị: phải đúng loại ô (`def.kind === slot`), khi đó gửi lệnh mặc.
  */
-export function planDrop(inv: readonly InvSlot[], from: number, target: DropTarget, split: boolean, defOf: (id: string) => ItemDef | undefined): DropCmd {
+export function planDrop(
+  inv: readonly InvSlot[],
+  from: number,
+  target: DropTarget,
+  split: boolean,
+  defOf: (id: string) => ItemDef | undefined,
+): DropCmd {
   const src = inv[from];
   if (!src) return { cmd: 'none' };
   if (target.kind === 'equip') {

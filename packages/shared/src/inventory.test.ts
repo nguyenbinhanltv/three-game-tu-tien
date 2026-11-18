@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { applyInvMsg, combatPower, INV_SIZE, itemCategory, planSort, type InvSlot, type ItemDef } from './index';
 
-const def = (o: Partial<ItemDef> & { id: string }): ItemDef => ({ kind: 'material', stack: 99, price: 0, sell: 1, rarity: 0, icon: o.id, ...o });
+const def = (o: Partial<ItemDef> & { id: string }): ItemDef => ({
+  kind: 'material',
+  stack: 99,
+  price: 0,
+  sell: 1,
+  rarity: 0,
+  icon: o.id,
+  ...o,
+});
 const DEFS: Record<string, ItemDef> = {
   mat: def({ id: 'mat' }),
   pill: def({ id: 'pill', kind: 'consumable' }),
@@ -49,7 +57,13 @@ describe('planSort', () => {
 describe('applyInvMsg', () => {
   it('delta áp lên bản cũ không sửa bản cũ; bỏ chỉ số ngoài phạm vi', () => {
     const prev: InvSlot[] = new Array(INV_SIZE).fill(null);
-    const next = applyInvMsg(prev, { d: [[5, { id: 'mat', n: 1 }], [999, { id: 'x', n: 1 }]], equip: {} });
+    const next = applyInvMsg(prev, {
+      d: [
+        [5, { id: 'mat', n: 1 }],
+        [999, { id: 'x', n: 1 }],
+      ],
+      equip: {},
+    });
     expect(next[5]?.id).toBe('mat');
     expect(prev[5]).toBeNull();
     expect(next.length).toBe(INV_SIZE);

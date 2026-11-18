@@ -12,7 +12,11 @@ import type { Scenario } from '../lib/scenario';
 
 const DUR = 3500;
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
-const QUERY: Record<string, Record<string, string>> = { old: { chr: 'v3', v3anim: '0' }, new: { chr: 'v3' }, noarm: { chr: 'v3', armfit: '0' } };
+const QUERY: Record<string, Record<string, string>> = {
+  old: { chr: 'v3', v3anim: '0' },
+  new: { chr: 'v3' },
+  noarm: { chr: 'v3', armfit: '0' },
+};
 
 // Đo xuyên: đỉnh có xương tay (upperarm/lowerarm/hand) trội nằm trong viên nang thân (pelvis → neck). Chuỗi JS thuần (tsx chèn __name).
 const PEN_INSTALL = `(() => {
@@ -64,13 +68,25 @@ export default {
       for (const v of variants) {
         const tag = `${gname}-${v}`;
         const t0 = Date.now();
-        const { ctx, page } = await r.open({ name: `A${g}${v}`, viewport, quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: path.join(r.out, `_rec-${tag}`) });
+        const { ctx, page } = await r.open({
+          name: `A${g}${v}`,
+          viewport,
+          quality: 'high',
+          look: { g },
+          query: QUERY[v] ?? {},
+          hide: 'hud',
+          warnings: /models|chr_v3|clip/,
+          video: path.join(r.out, `_rec-${tag}`),
+        });
         await gm(page, 'level 12', 1500);
         await gm(page, 'god on', 1200);
         await gm(page, 'set set_lac_kiem', 1200);
         await gm(page, 'killall', 800);
         await gm(page, 'tp 2048 2088', 1500);
-        await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+        await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+          timeout: 60_000,
+          polling: 300,
+        });
         await sleep(3500); // chờ nguồn pose K-5 nướng
         if (pen) await page.evaluate(PEN_INSTALL);
         // Toàn thân ~60% chiều cao khung: camera gần.
@@ -84,7 +100,8 @@ export default {
               if (!d) {
                 d = document.createElement('div');
                 d.id = 'anim-label';
-                d.style.cssText = 'position:fixed;left:12px;top:10px;z-index:99999;padding:6px 12px;background:#000a;color:#fff;font:600 20px sans-serif;border-radius:6px;pointer-events:none';
+                d.style.cssText =
+                  'position:fixed;left:12px;top:10px;z-index:99999;padding:6px 12px;background:#000a;color:#fff;font:600 20px sans-serif;border-radius:6px;pointer-events:none';
                 document.body.appendChild(d);
               }
               d.textContent = `${vt} · ${t}`;
@@ -207,7 +224,9 @@ export default {
           await sleep(500);
         }
         if (pen) {
-          const res = (await page.evaluate(`(() => { const o = {}; for (const [k, v] of Object.entries(window.__pen.byName)) o[k] = { samples: v.n, meanArmVertsInTorso: +(v.sum / v.n).toFixed(2) }; return o; })()`)) as unknown;
+          const res = (await page.evaluate(
+            `(() => { const o = {}; for (const [k, v] of Object.entries(window.__pen.byName)) o[k] = { samples: v.n, meanArmVertsInTorso: +(v.sum / v.n).toFixed(2) }; return o; })()`,
+          )) as unknown;
           fs.writeFileSync(path.join(r.out, `pen-${tag}.json`), JSON.stringify(res, null, 1));
         }
         const vid = page.video();
@@ -232,7 +251,25 @@ export default {
           outs.push(`[h${n}]`);
         });
         parts.push(`${outs.join('')}concat=n=${mo.length}:v=1:a=0[v]`);
-        const res = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', path.join(r.out, `_raw-${gname}-old.webm`), '-i', path.join(r.out, `_raw-${gname}-new.webm`), '-filter_complex', parts.join(';'), '-map', '[v]', '-c:v', 'libvpx', '-b:v', '3M', '-an', path.join(r.out, `${gname}-cu-moi.webm`)]);
+        const res = spawnSync(FFMPEG, [
+          '-y',
+          '-loglevel',
+          'error',
+          '-i',
+          path.join(r.out, `_raw-${gname}-old.webm`),
+          '-i',
+          path.join(r.out, `_raw-${gname}-new.webm`),
+          '-filter_complex',
+          parts.join(';'),
+          '-map',
+          '[v]',
+          '-c:v',
+          'libvpx',
+          '-b:v',
+          '3M',
+          '-an',
+          path.join(r.out, `${gname}-cu-moi.webm`),
+        ]);
         console.log(`[shots:chrv3anim] ghép ${gname}: ${res.status === 0 ? 'ok' : 'lỗi ' + res.stderr}`);
       }
     }

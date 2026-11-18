@@ -131,7 +131,13 @@ const zoneOfOffset = (x, z, margin = 0) => {
   for (const zn of ZONES) if (inPolyOff(zn.off, x, z) && (margin <= 0 || distEdge(zn.off, x, z) >= margin)) return zn;
   return null;
 };
-const polyAreaOf = (poly) => Math.abs(poly.reduce((a, p, i) => { const q = poly[(i + 1) % poly.length]; return a + (p[0] * q[1] - q[0] * p[1]); }, 0)) / 2;
+const polyAreaOf = (poly) =>
+  Math.abs(
+    poly.reduce((a, p, i) => {
+      const q = poly[(i + 1) % poly.length];
+      return a + (p[0] * q[1] - q[0] * p[1]);
+    }, 0),
+  ) / 2;
 for (const z of ZONES) console.log(z.id, 'diện tích', (polyAreaOf(z.off) / 1e6).toFixed(3), 'km²', z.off.length, 'đỉnh');
 
 // ---- trận truyền tống ----
@@ -158,7 +164,14 @@ const STELES = [
 for (const b of STELES) if (zoneOfOffset(b.off[0], b.off[1])?.id !== b.zone) throw new Error('bia ngoài vùng: ' + b.id);
 for (const p of PADS) {
   const bs = STELES.filter((b) => b.zone === p.zone);
-  if (bs.length && !bs.some((b) => { const d = Math.hypot(b.off[0] - p.off[0], b.off[1] - p.off[1]); return d >= 12 && d <= 18; })) throw new Error('trận không cách bia 12–18 m: ' + p.id);
+  if (
+    bs.length &&
+    !bs.some((b) => {
+      const d = Math.hypot(b.off[0] - p.off[0], b.off[1] - p.off[1]);
+      return d >= 12 && d <= 18;
+    })
+  )
+    throw new Error('trận không cách bia 12–18 m: ' + p.id);
 }
 
 // ---- điểm đáng chú ý (mỗi vùng một điểm) ----
@@ -194,7 +207,12 @@ const addProp = (id, ox, oz, yaw, s = 1) => {
   props.push(p);
   const cs = Math.cos(p.yaw);
   const sn = Math.sin(p.yaw);
-  for (const [lx, lz, r] of LIB_COLL[id] ?? []) colliders.push({ x: Math.round((p.x + (lx * cs + lz * sn) * p.s) * 100) / 100, z: Math.round((p.z + (-lx * sn + lz * cs) * p.s) * 100) / 100, r: Math.round(r * p.s * 100) / 100 });
+  for (const [lx, lz, r] of LIB_COLL[id] ?? [])
+    colliders.push({
+      x: Math.round((p.x + (lx * cs + lz * sn) * p.s) * 100) / 100,
+      z: Math.round((p.z + (-lx * sn + lz * cs) * p.s) * 100) / 100,
+      r: Math.round(r * p.s * 100) / 100,
+    });
 };
 const ring = (p, ids, rMin, spread) =>
   ids.forEach((id, i) => {
@@ -209,7 +227,14 @@ const STUMP = 'prop_cay_goc_kho';
 const SWORD = 'prop_kiem_gay';
 const STONE = 'prop_bia_da';
 // Vọng Bắc Trạm: đèn, lò đan, bia tàn niệm
-for (const [x, z] of [[-14, -20], [14, -20], [-26, 14], [26, 14], [0, -50]]) addProp(LAMP, TRAM[0] + x, TRAM[1] + z, 0, 1);
+for (const [x, z] of [
+  [-14, -20],
+  [14, -20],
+  [-26, 14],
+  [26, 14],
+  [0, -50],
+])
+  addProp(LAMP, TRAM[0] + x, TRAM[1] + z, 0, 1);
 addProp('prop_ngung_dan_lo', TRAM[0] + 14, TRAM[1] + 10, 0.6, 1);
 addProp(STONE, TRAM[0] - 16, TRAM[1] + 12, 0.2, 1);
 // hai bên Giới Khích: trụ gãy và kiếm gãy dọc mép khe, đá lộ; xác định theo seed
@@ -233,7 +258,10 @@ for (const p of POIS) ring(p, around[p.id], 5, 5);
 // Trấn Giới Bia: bia đá cao + đèn quanh
 for (const b of STELES) {
   addProp(STONE, b.off[0], b.off[1], R() * 0.4, 1.3);
-  [[-5, 5], [5, 5]].forEach(([dx, dz]) => addProp(LAMP, b.off[0] + dx, b.off[1] + dz, 0, 1));
+  [
+    [-5, 5],
+    [5, 5],
+  ].forEach(([dx, dz]) => addProp(LAMP, b.off[0] + dx, b.off[1] + dz, 0, 1));
 }
 
 // ---- tinh anh (chỗ đứng tạm, xem đầu tệp): 13 con (2/2/2/2/3/2); Hôi Giác Cự Thú (DV-2 đợt 2) ở Hàn Hôi Nguyên và Khích Giai ----
@@ -283,10 +311,46 @@ for (const e of ELITES) {
 }
 
 // ---- boss ngoài trời: Tam Thủ Ngục Khuyển (DV-B) gác miệng nam Giới Khích, hồi sinh 30 phút ----
-spawns.push({ mon: 'boss_tam_thu_nguc_khuyen', x: W(BOSS.off[0]), z: W(BOSS.off[1]), radius: 6, count: 1, levelMin: Math.min(29, LV_CAP), levelMax: Math.min(29, LV_CAP), respawn: 1800 });
-spawns.push({ mon: 'boss_thu_khich_duc_chu', x: W(BOSS2.off[0]), z: W(BOSS2.off[1]), radius: 2, count: 1, levelMin: Math.min(31, LV_CAP), levelMax: Math.min(31, LV_CAP), respawn: 1800 });
-spawns.push({ mon: 'boss_tan_hoa_kiem_co', x: W(BOSS3.off[0]), z: W(BOSS3.off[1]), radius: 6, count: 1, levelMin: Math.min(31, LV_CAP), levelMax: Math.min(31, LV_CAP), respawn: 1800 });
-spawns.push({ mon: 'boss_kim_da_ma_hau', x: W(BOSS4.off[0]), z: W(BOSS4.off[1]), radius: 6, count: 1, levelMin: Math.min(31, LV_CAP), levelMax: Math.min(31, LV_CAP), respawn: 1800 });
+spawns.push({
+  mon: 'boss_tam_thu_nguc_khuyen',
+  x: W(BOSS.off[0]),
+  z: W(BOSS.off[1]),
+  radius: 6,
+  count: 1,
+  levelMin: Math.min(29, LV_CAP),
+  levelMax: Math.min(29, LV_CAP),
+  respawn: 1800,
+});
+spawns.push({
+  mon: 'boss_thu_khich_duc_chu',
+  x: W(BOSS2.off[0]),
+  z: W(BOSS2.off[1]),
+  radius: 2,
+  count: 1,
+  levelMin: Math.min(31, LV_CAP),
+  levelMax: Math.min(31, LV_CAP),
+  respawn: 1800,
+});
+spawns.push({
+  mon: 'boss_tan_hoa_kiem_co',
+  x: W(BOSS3.off[0]),
+  z: W(BOSS3.off[1]),
+  radius: 6,
+  count: 1,
+  levelMin: Math.min(31, LV_CAP),
+  levelMax: Math.min(31, LV_CAP),
+  respawn: 1800,
+});
+spawns.push({
+  mon: 'boss_kim_da_ma_hau',
+  x: W(BOSS4.off[0]),
+  z: W(BOSS4.off[1]),
+  radius: 6,
+  count: 1,
+  levelMin: Math.min(31, LV_CAP),
+  levelMax: Math.min(31, LV_CAP),
+  respawn: 1800,
+});
 
 // ---- camp (rải điểm xa nhất như Đoạn Mạch) ----
 const TARGET_CAMPS = 68;
@@ -295,11 +359,27 @@ const CAMP_R = 30;
 const MIX = {
   // DV-3I: quái Dị Vực đợt 1 (DV-2) thay quái chương 4 đứng tạm; DV-2 đợt 2: Giác Kiếm Trọng Binh thay Cốt Vệ Kiếm Thú, Tẫn chủng lọt qua miệng khe.
   han_hoi_nguyen: [['mon_liet_hoa_ma_nguu', 1]],
-  kho_loc_lam: [['mon_u_anh_cot_loc', 0.6], ['mon_liet_hoa_ma_nguu', 0.4]],
-  khich_giai: [['mon_u_anh_cot_loc', 0.3], ['mon_giac_kiem_trong_binh', 0.4], ['mon_tan_chung', 0.3]],
-  xich_tan_binh: [['mon_liet_hoa_ma_nguu', 0.5], ['mon_giac_kiem_trong_binh', 0.5]],
-  kim_da_ngoai_uyen: [['mon_u_anh_cot_loc', 0.5], ['mon_giac_kiem_trong_binh', 0.5]],
-  tran_gioi_dai: [['mon_giac_kiem_trong_binh', 0.7], ['mon_tan_chung', 0.3]],
+  kho_loc_lam: [
+    ['mon_u_anh_cot_loc', 0.6],
+    ['mon_liet_hoa_ma_nguu', 0.4],
+  ],
+  khich_giai: [
+    ['mon_u_anh_cot_loc', 0.3],
+    ['mon_giac_kiem_trong_binh', 0.4],
+    ['mon_tan_chung', 0.3],
+  ],
+  xich_tan_binh: [
+    ['mon_liet_hoa_ma_nguu', 0.5],
+    ['mon_giac_kiem_trong_binh', 0.5],
+  ],
+  kim_da_ngoai_uyen: [
+    ['mon_u_anh_cot_loc', 0.5],
+    ['mon_giac_kiem_trong_binh', 0.5],
+  ],
+  tran_gioi_dai: [
+    ['mon_giac_kiem_trong_binh', 0.7],
+    ['mon_tan_chung', 0.3],
+  ],
 };
 const pick = (list) => {
   let t = R();
@@ -312,7 +392,13 @@ for (let x = BOX.x0; x <= BOX.x1; x += 10)
   for (let z = BOX.z0; z <= BOX.z1; z += 10) {
     const zn = zoneOfOffset(x, z);
     if (!zn) continue;
-    if (Math.hypot(x - BOSS.off[0], z - BOSS.off[1]) < 38 || Math.hypot(x - BOSS2.off[0], z - BOSS2.off[1]) < 38 || Math.hypot(x - BOSS3.off[0], z - BOSS3.off[1]) < 38 || Math.hypot(x - BOSS4.off[0], z - BOSS4.off[1]) < 38) continue; // đấu trường trống không tính độ phủ
+    if (
+      Math.hypot(x - BOSS.off[0], z - BOSS.off[1]) < 38 ||
+      Math.hypot(x - BOSS2.off[0], z - BOSS2.off[1]) < 38 ||
+      Math.hypot(x - BOSS3.off[0], z - BOSS3.off[1]) < 38 ||
+      Math.hypot(x - BOSS4.off[0], z - BOSS4.off[1]) < 38
+    )
+      continue; // đấu trường trống không tính độ phủ
     need.push([x, z, 9999]);
     if (zoneOfOffset(x, z, 8) === zn && !keep.some((q) => Math.hypot(q.x - x, q.z - z) < q.r + CAMP_R + 6)) cand.push([x, z, zn]);
   }
@@ -330,7 +416,20 @@ const worstOf = (list) => {
 };
 const mkCamp = (x, z, zn) => {
   const lv = zn.lv[0] + (zn.lv[1] > zn.lv[0] && R() < 0.5 ? 1 : 0);
-  return { id: '', zone: zn.id, mon: pick(MIX[zn.id]), x: W(x), z: W(z), count: 3, radius: CAMP_R, levelMin: lv, levelMax: Math.min(zn.lv[1], lv + (zn.lv[1] > lv ? 1 : 0)), respawn: 45, ox: x, oz: z };
+  return {
+    id: '',
+    zone: zn.id,
+    mon: pick(MIX[zn.id]),
+    x: W(x),
+    z: W(z),
+    count: 3,
+    radius: CAMP_R,
+    levelMin: lv,
+    levelMax: Math.min(zn.lv[1], lv + (zn.lv[1] > lv ? 1 : 0)),
+    respawn: 45,
+    ox: x,
+    oz: z,
+  };
 };
 function lattice(sp, th, ox, oz) {
   const out = [];
@@ -398,7 +497,16 @@ const relocate = () => {
     }
     if (best) {
       const nc = mkCamp(best[0], best[1], best[2]);
-      Object.assign(camps[i], { zone: nc.zone, mon: nc.mon, x: nc.x, z: nc.z, ox: nc.ox, oz: nc.oz, levelMin: nc.levelMin, levelMax: nc.levelMax });
+      Object.assign(camps[i], {
+        zone: nc.zone,
+        mon: nc.mon,
+        x: nc.x,
+        z: nc.z,
+        ox: nc.ox,
+        oz: nc.oz,
+        levelMin: nc.levelMin,
+        levelMax: nc.levelMax,
+      });
     }
   }
 };
@@ -470,13 +578,26 @@ feats.push(flat('boss', BOSS.off, Y - 2, 44, 120, { detail: 1.2 }));
 feats.push(flat('boss_thu_khich', BOSS2.off, Y - 4, 44, 120, { detail: 1.2 }));
 feats.push(flat('boss_kiem_co', BOSS3.off, Y - 4, 44, 120, { detail: 1.2 }));
 feats.push(flat('boss_ma_hau', BOSS4.off, Y - 4, 44, 120, { detail: 1.2 }));
-for (let z = RIFT_Z0, i = 0; z >= RIFT_Z1; z -= 30, i++) feats.push(flat(`khe_${i}`, [RX(z), z], Y - 14, 10, 56, { detail: 1.5, relief: { amp: 3, freq: 0.05, crease: true } }));
+for (let z = RIFT_Z0, i = 0; z >= RIFT_Z1; z -= 30, i++)
+  feats.push(flat(`khe_${i}`, [RX(z), z], Y - 14, 10, 56, { detail: 1.5, relief: { amp: 3, freq: 0.05, crease: true } }));
 const terrain = {
   id: 'bac_hoang',
   seed: SEED,
   size: 2048,
   margin: 24,
-  natural: { freq: 0.0016, baseOct: 4, ridgeOct: 3, level: Y, baseAmp: 7, ridgeAmp: 30, maskFreq: 0.0011, maskOct: 2, maskLo: -0.5, maskHi: 0.25, edge: { amp: 120, r0: 300, r1: 20 } },
+  natural: {
+    freq: 0.0016,
+    baseOct: 4,
+    ridgeOct: 3,
+    level: Y,
+    baseAmp: 7,
+    ridgeAmp: 30,
+    maskFreq: 0.0011,
+    maskOct: 2,
+    maskLo: -0.5,
+    maskHi: 0.25,
+    edge: { amp: 120, r0: 300, r1: 20 },
+  },
   features: feats,
   play: { cx: PLAY.cx, cz: PLAY.cz, half: PLAY.half, wallH: 260 },
   colliders,
@@ -497,7 +618,21 @@ const EXTRA_SPOTS = [
 ];
 for (const p of EXTRA_SPOTS) if (zoneOfOffset(p.off[0], p.off[1])?.id !== p.zone) throw new Error('điểm nhiệm vụ ngoài vùng: ' + p.id);
 // Tịnh Quang Dực Sứ đi từ cổng Xích Tẫn Khích về Trấn Giới Đài (q5_tinh_quang).
-const ESCORTS = [{ id: 'esc_tinh_quang', npc: 'npc_tinh_quang_do', speed: 4, path: [[350, -395], [300, -420], [220, -450], [130, -480], [50, -500], [-10, -506]].map(([x, z]) => [W(x), W(z)]) }];
+const ESCORTS = [
+  {
+    id: 'esc_tinh_quang',
+    npc: 'npc_tinh_quang_do',
+    speed: 4,
+    path: [
+      [350, -395],
+      [300, -420],
+      [220, -450],
+      [130, -480],
+      [50, -500],
+      [-10, -506],
+    ].map(([x, z]) => [W(x), W(z)]),
+  },
+];
 
 const level = {
   id: 'bac_hoang',
@@ -534,7 +669,10 @@ ${propLines.join('\n')}
 ];
 `,
 );
-const padLines = PADS.map((p) => `  { id: '${p.id}', level: 'bac_hoang', face: { x: ${C}, z: ${C - 200} }, zone: '${p.zone}', x: ${W(p.off[0])}, z: ${W(p.off[1])} },`);
+const padLines = PADS.map(
+  (p) =>
+    `  { id: '${p.id}', level: 'bac_hoang', face: { x: ${C}, z: ${C - 200} }, zone: '${p.zone}', x: ${W(p.off[0])}, z: ${W(p.off[1])} },`,
+);
 out(
   'packages/shared/src/teleport.bachoang.ts',
   `// Truyền Tống Trận của Bắc Hoang Tẫn Nguyên (DV-1, tiền tố bh_). SINH BẰNG tools/maps/gen-bac-hoang.mjs.
@@ -546,4 +684,6 @@ ${padLines.join('\n')}
 ];
 `,
 );
-console.log(`camps ${camps.length}, quái thường ${camps.reduce((a, c) => a + c.count, 0)} (${(camps.reduce((a, c) => a + c.count, 0) / hunted).toFixed(0)}/km²), tinh anh+boss ${spawns.length}, prop ${props.length}, collider ${colliders.length}`);
+console.log(
+  `camps ${camps.length}, quái thường ${camps.reduce((a, c) => a + c.count, 0)} (${(camps.reduce((a, c) => a + c.count, 0) / hunted).toFixed(0)}/km²), tinh anh+boss ${spawns.length}, prop ${props.length}, collider ${colliders.length}`,
+);

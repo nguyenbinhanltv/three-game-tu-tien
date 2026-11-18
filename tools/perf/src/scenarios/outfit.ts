@@ -10,7 +10,8 @@ import { centerClip, snap } from '../lib/shot';
 export default {
   name: 'outfit',
   desc: 'Bộ trang bị mặc thật (áo + phụ kiện) nam/nữ: đứng 3 hướng, chạy, bay, đả tọa, chém; soát xuyên lưới',
-  usage: '[--sets set_liet_mach,… | --kit <bậc 1-4> --sets kiem,hophap,dansu] [--genders m,f] [--only still|motion] [--level 12] [--dye attire_sect] [--dist 3.4] [--size 1100x900] [--panel] [--matrix]',
+  usage:
+    '[--sets set_liet_mach,… | --kit <bậc 1-4> --sets kiem,hophap,dansu] [--genders m,f] [--only still|motion] [--level 12] [--dye attire_sect] [--dist 3.4] [--size 1100x900] [--panel] [--matrix]',
   async run(r) {
     const [vw, vh] = size('1100x900');
     const dist = num('--dist', 3.4);
@@ -19,7 +20,16 @@ export default {
     const kit = opt('--kit', '');
     const sets = list('--sets', kit ? 'kiem,hophap,dansu' : 'set_liet_mach');
     for (const g of list('--genders', 'm,f')) {
-      const { ctx, page } = await r.open({ name: `Out${g}`, viewport: [vw, vh], dpr: 2, quality: 'high', look: { g, dye: opt('--dye', 'attire_sect') }, extra: opt('--query', ''), hide: 'hud', warnings: /models/ });
+      const { ctx, page } = await r.open({
+        name: `Out${g}`,
+        viewport: [vw, vh],
+        dpr: 2,
+        quality: 'high',
+        look: { g, dye: opt('--dye', 'attire_sect') },
+        extra: opt('--query', ''),
+        hide: 'hud',
+        warnings: /models/,
+      });
       await gm(page, `level ${opt('--level', kit ? '28' : '12')}`, 1600);
       await gm(page, 'god on', 1600);
       await gm(page, 'tp 2048 2088', 1600);
@@ -34,7 +44,9 @@ export default {
         await sleep(800);
         const worn = await info(page);
         const code = await page.evaluate(() => (window.__game!.me()?.sa as string | undefined) ?? '');
-        console.log(`[shots:outfit] ${set} ${g}: mã phụ kiện '${code}'; draw ${bare.drawCalls}→${worn.drawCalls}, tam giác ${bare.triangles}→${worn.triangles}`);
+        console.log(
+          `[shots:outfit] ${set} ${g}: mã phụ kiện '${code}'; draw ${bare.drawCalls}→${worn.drawCalls}, tam giác ${bare.triangles}→${worn.triangles}`,
+        );
         if (flag('--panel')) {
           // Bảng nhân vật (phím C): xem trước 3D phải mặc đúng áo của bộ.
           await hideUi(page, 'none');

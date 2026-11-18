@@ -38,7 +38,29 @@ const METHOD_COLORS: Record<string, number> = {
 };
 
 /** Các loại FX công pháp mới (chiêu đặc trưng, tối thượng). */
-export const METHOD_FX = new Set(['kanh', 'vankiem', 'transon', 'kimcuong', 'xuanphong', 'hoithien', 'hoanhkiem', 'kiemvu', 'kiemdan', 'kiemdan_hit', 'kiemanh', 'sonnhac_stomp', 'nghichkiem', 'thietquyen', 'kimchung', 'sonnhac', 'dichson', 'moclinh', 'duocvu', 'ngungdan', 'danhoa']);
+export const METHOD_FX = new Set([
+  'kanh',
+  'vankiem',
+  'transon',
+  'kimcuong',
+  'xuanphong',
+  'hoithien',
+  'hoanhkiem',
+  'kiemvu',
+  'kiemdan',
+  'kiemdan_hit',
+  'kiemanh',
+  'sonnhac_stomp',
+  'nghichkiem',
+  'thietquyen',
+  'kimchung',
+  'sonnhac',
+  'dichson',
+  'moclinh',
+  'duocvu',
+  'ngungdan',
+  'danhoa',
+]);
 
 /** Màu hex của FX (chuỗi 6 ký tự từ server), thiếu hoặc hỏng thì dùng `fallback`. */
 export function fxColor(m: FxMsg, fallback: number): number {
@@ -76,7 +98,9 @@ interface MethodFxCtx {
   flash: (amount: number) => void;
 }
 
-const fixed = (p: THREE.Vector3): FxPos => (out) => (out.copy(p), true);
+const fixed =
+  (p: THREE.Vector3): FxPos =>
+  (out) => (out.copy(p), true);
 
 /** FX công pháp mới. Trả về true nếu đã xử lý. */
 export function playMethodFx(c: MethodFxCtx): boolean {
@@ -100,7 +124,11 @@ export function playMethodFx(c: MethodFxCtx): boolean {
         if (m.v === 'spread') {
           // Ấn lan: ba tia nhỏ tỏa ra hai bên mục tiêu, như dấu ấn bắn sang quái gần.
           groundRing(v, at.x, at.z, 2.2, color, 0.6);
-          for (const [dx, dz] of [[2.6, 1.2], [-2.4, 1.8], [0.4, -2.8]]) {
+          for (const [dx, dz] of [
+            [2.6, 1.2],
+            [-2.4, 1.8],
+            [0.4, -2.8],
+          ]) {
             const p = at.clone().add(new THREE.Vector3(dx, -0.5, dz));
             v.swordShot(at.clone(), fixed(p), color, 0.6, 0.22, (h) => v.pillar(fixed(h.clone()), color, 0.6, 0.2, 2.2, 0.2));
           }
@@ -184,7 +212,17 @@ export function playMethodFx(c: MethodFxCtx): boolean {
         for (let i = 0; i < marks; i++) {
           const f = (i + 0.5) / marks;
           const p = new THREE.Vector3(x0 + ux * len * f, y0 - 0.15, z0 + uz * len * f);
-          after(v, w * 0.15 + f * 0.1, () => v.slashMark(fixed(p), m.v === 'long' ? 0xffffff : color, (m.v === 'long' ? 0.55 : 0.45) * sc, -0.05, 0.2, i === 0 && w === 0, p));
+          after(v, w * 0.15 + f * 0.1, () =>
+            v.slashMark(
+              fixed(p),
+              m.v === 'long' ? 0xffffff : color,
+              (m.v === 'long' ? 0.55 : 0.45) * sc,
+              -0.05,
+              0.2,
+              i === 0 && w === 0,
+              p,
+            ),
+          );
         }
       }
       groundRing(v, x0 + ux * len * 0.5, z0 + uz * len * 0.5, 1.6, color, 0.5);
@@ -200,12 +238,14 @@ export function playMethodFx(c: MethodFxCtx): boolean {
     }
     case 'kiemdan_hit': {
       // Mỗi nhịp kiếm đan đâm: tia nhỏ từ thân tới mục tiêu. (Id riêng để không kích lại động tác niệm của chiêu.)
-      if (c.src(_a)) v.swordShot(_a.clone().add(new THREE.Vector3(0, 0.3, 0)), c.dst, color, 0.6, 0.16, (at) => v.burst(at.clone(), color, 0.5, 0.16));
+      if (c.src(_a))
+        v.swordShot(_a.clone().add(new THREE.Vector3(0, 0.3, 0)), c.dst, color, 0.6, 0.16, (at) => v.burst(at.clone(), color, 0.5, 0.16));
       return true;
     }
     case 'kiemanh': {
       // Phân Anh Kiếm Ảnh (E4-G): mỗi nhịp lặp lại, một tia bạc từ sau lưng người ra chiêu tới mục tiêu.
-      if (c.src(_a)) v.swordShot(_a.clone().add(new THREE.Vector3(0, 0.9, 0)), c.dst, color, 0.8, 0.2, (at) => v.burst(at.clone(), color, 0.6, 0.18));
+      if (c.src(_a))
+        v.swordShot(_a.clone().add(new THREE.Vector3(0, 0.9, 0)), c.dst, color, 0.8, 0.2, (at) => v.burst(at.clone(), color, 0.6, 0.18));
       return true;
     }
     case 'sonnhac_stomp': {
@@ -255,7 +295,22 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       const n = c.mine ? 18 : 8;
       for (let i = 0; i < n; i++) {
         const ang = (i / n) * Math.PI * 2;
-        v.particles.emit('dust', x + Math.cos(ang) * 1.2, (m.y ?? 0) + 0.2, z + Math.sin(ang) * 1.2, Math.cos(ang) * 3, 1.6 + Math.random(), Math.sin(ang) * 3, 0.45, 0.15, 0.35, 0xcdb27a, 0.7, 6, 1);
+        v.particles.emit(
+          'dust',
+          x + Math.cos(ang) * 1.2,
+          (m.y ?? 0) + 0.2,
+          z + Math.sin(ang) * 1.2,
+          Math.cos(ang) * 3,
+          1.6 + Math.random(),
+          Math.sin(ang) * 3,
+          0.45,
+          0.15,
+          0.35,
+          0xcdb27a,
+          0.7,
+          6,
+          1,
+        );
       }
       return true;
     }
@@ -274,7 +329,23 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       // Dịch Sơn Xung: bụi đá cuộn sau lưng, vòng vàng ở chỗ húc.
       if (c.src(_a)) {
         v.burst(_a, color, 1.0, 0.22);
-        for (let i = 0; i < (c.mine ? 14 : 6); i++) v.particles.emit('dust', _a.x, _a.y - 0.9, _a.z, (Math.random() - 0.5) * 3, 0.8 + Math.random(), (Math.random() - 0.5) * 3, 0.5, 0.15, 0.4, 0xcdb27a, 0.7, 4, 1);
+        for (let i = 0; i < (c.mine ? 14 : 6); i++)
+          v.particles.emit(
+            'dust',
+            _a.x,
+            _a.y - 0.9,
+            _a.z,
+            (Math.random() - 0.5) * 3,
+            0.8 + Math.random(),
+            (Math.random() - 0.5) * 3,
+            0.5,
+            0.15,
+            0.4,
+            0xcdb27a,
+            0.7,
+            4,
+            1,
+          );
       }
       return true;
     }
@@ -298,7 +369,22 @@ export function playMethodFx(c: MethodFxCtx): boolean {
       for (let i = 0; i < n; i++) {
         const ang = Math.random() * Math.PI * 2;
         const rr = Math.sqrt(Math.random()) * r;
-        v.particles.emit('glow', x + Math.cos(ang) * rr, (m.y ?? 0) + 4 + Math.random() * 2, z + Math.sin(ang) * rr, 0, -2.2, 0, 1.6, 0.08, 0.03, color, 0.8, 0, 0);
+        v.particles.emit(
+          'glow',
+          x + Math.cos(ang) * rr,
+          (m.y ?? 0) + 4 + Math.random() * 2,
+          z + Math.sin(ang) * rr,
+          0,
+          -2.2,
+          0,
+          1.6,
+          0.08,
+          0.03,
+          color,
+          0.8,
+          0,
+          0,
+        );
       }
       return true;
     }
@@ -377,7 +463,9 @@ export function playVariantExtras(c: MethodFxCtx, color: number): void {
       // Kiếm xuyên qua mục tiêu, lao tiếp tới quái phía sau (toạ độ do server gửi); chỗ xuyên có tia chớp trắng.
       if (m.x === undefined || m.z === undefined || !c.dst(_a)) break;
       const behind = new THREE.Vector3(m.x, _a.y, m.z);
-      v.swordShot(_a.clone(), fixed(behind), color, 1.1 * sc, 0.2, (at) => v.slashMark(fixed(at.clone()), 0xcff3ff, 0.6, -0.55, 0.22, false, at.clone()));
+      v.swordShot(_a.clone(), fixed(behind), color, 1.1 * sc, 0.2, (at) =>
+        v.slashMark(fixed(at.clone()), 0xcff3ff, 0.6, -0.55, 0.22, false, at.clone()),
+      );
       break;
     }
     case 'slash:stun': {

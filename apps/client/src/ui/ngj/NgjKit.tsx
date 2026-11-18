@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import { realmName, t } from '@dtl/content';
-import { Cartouche, type CornerKind, NgjButton, NgjPanel, NgjSlot, NgjTipCard, NgjTooltip, OrnateBar, OrnateCorner, type RailTab, type SlotShape, TabRail } from './ngj';
+import {
+  Cartouche,
+  type CornerKind,
+  NgjButton,
+  NgjPanel,
+  NgjSlot,
+  NgjTipCard,
+  NgjTooltip,
+  OrnateBar,
+  OrnateCorner,
+  type RailTab,
+  type SlotShape,
+  TabRail,
+} from './ngj';
 import { SealNumeral, SYS_ICON_NAMES, SysIcon } from './icons';
 import { setReduceMotion, useReduceMotion } from './motion';
 
@@ -107,7 +120,15 @@ export function NgjKit() {
                 <span className="ngj-kit-label">{t('ui.ngj.shape.' + s)}</span>
                 <NgjSlot shape={s} empty />
                 {[0, 1, 2, 3, 4].map((q) => (
-                  <NgjSlot key={q} shape={s} rarity={q} icon={item(q % 2 ? 'sword' : 'stone')} label={t('ui.ngj.slot.item')} selected={s === 'diamond' && sel === q} onClick={() => setSel(q)} />
+                  <NgjSlot
+                    key={q}
+                    shape={s}
+                    rarity={q}
+                    icon={item(q % 2 ? 'sword' : 'stone')}
+                    label={t('ui.ngj.slot.item')}
+                    selected={s === 'diamond' && sel === q}
+                    onClick={() => setSel(q)}
+                  />
                 ))}
               </div>
             ))}

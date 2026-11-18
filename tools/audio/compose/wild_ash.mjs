@@ -32,7 +32,12 @@ export default function wildAsh() {
 
   for (let b = 0; b < 36; b += 2) {
     const c = CH[chordAt(b)];
-    wind.chord(s.bar(b), c.slice(1).map((p) => p + 12), 8, 46);
+    wind.chord(
+      s.bar(b),
+      c.slice(1).map((p) => p + 12),
+      8,
+      46,
+    );
     cello.note(s.bar(b), c[0] + 12, 7, 60);
     if (b >= 16 && b < 32) strings.chord(s.bar(b), c.slice(1), 8, 56);
   }

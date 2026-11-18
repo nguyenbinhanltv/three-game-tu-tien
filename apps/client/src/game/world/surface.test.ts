@@ -37,7 +37,8 @@ describe('surfaceAt', () => {
   it('thung lũng bằng phẳng là cỏ; có sườn dốc là đá', () => {
     expect(surfaceAt(VALLEY.x + 40, VALLEY.z + 40)).toBe('grass');
     let rock = 0;
-    for (let x = 400; x < 1200; x += 20) for (let z = 2800; z < 3600; z += 20) if (surfaceAt(x, z) === 'stone' && heightAt(x, z) > WATER_Y) rock++;
+    for (let x = 400; x < 1200; x += 20)
+      for (let z = 2800; z < 3600; z += 20) if (surfaceAt(x, z) === 'stone' && heightAt(x, z) > WATER_Y) rock++;
     expect(rock).toBeGreaterThan(0);
     expect(ROCK_SLOPE).toBeGreaterThan(0.3);
   });

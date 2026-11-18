@@ -107,7 +107,14 @@ export class FootstepDriver {
   private recent: number[] = [];
   private cand: Pending[] = [];
   /** Số bước đã quyết định phát theo chất liệu (kể cả khi tắt tiếng), và số bước bị giới hạn bỏ. */
-  readonly stats = { played: 0, dropped: 0, local: 0, other: 0, by: Object.fromEntries(SURFACES.map((s) => [s, 0])) as Record<Surface, number>, last: null as null | { surface: Surface; local: boolean; x: number; z: number } };
+  readonly stats = {
+    played: 0,
+    dropped: 0,
+    local: 0,
+    other: 0,
+    by: Object.fromEntries(SURFACES.map((s) => [s, 0])) as Record<Surface, number>,
+    last: null as null | { surface: Surface; local: boolean; x: number; z: number },
+  };
   private logged = new Set<string>();
 
   /**
@@ -145,7 +152,14 @@ export class FootstepDriver {
     this.flush(now);
   }
 
-  private tick(key: string, v: { x: number; z: number; speed: number }, walking: boolean, local: boolean, monster: boolean, me: { x: number; z: number }): void {
+  private tick(
+    key: string,
+    v: { x: number; z: number; speed: number },
+    walking: boolean,
+    local: boolean,
+    monster: boolean,
+    me: { x: number; z: number },
+  ): void {
     let c = this.clocks.get(key);
     if (!c) this.clocks.set(key, (c = new StepClock()));
     const d = Math.hypot(v.x - me.x, v.z - me.z);
@@ -154,7 +168,8 @@ export class FootstepDriver {
       c.advance(v.x, v.z, v.speed, false);
       return;
     }
-    if (c.advance(v.x, v.z, v.speed, walking) > 0) this.cand.push({ local, x: v.x, z: v.z, d: local ? 0 : d, monster, surface: surfaceAt(v.x, v.z, this.level) });
+    if (c.advance(v.x, v.z, v.speed, walking) > 0)
+      this.cand.push({ local, x: v.x, z: v.z, d: local ? 0 : d, monster, surface: surfaceAt(v.x, v.z, this.level) });
   }
 
   private flush(now: number): void {

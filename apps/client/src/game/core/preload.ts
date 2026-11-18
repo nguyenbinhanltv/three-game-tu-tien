@@ -32,11 +32,18 @@ export function prefetchManifest(cache: AssetCache = assets): void {
  * lúc CPU dựng thế giới thủ tục. Các nơi dùng (`PlayerSkins`, `MonsterSkins`, `Game.loadSectModel`,
  * `Vfx`) vẫn `acquire` như cũ và nhận bản đã tải. Gọi nhiều lần không sao.
  */
-export function prefetchWorldAssets(cache: AssetCache = assets, legacy = legacyModelsRequested(), gender?: string, hair?: string): string[] {
+export function prefetchWorldAssets(
+  cache: AssetCache = assets,
+  legacy = legacyModelsRequested(),
+  gender?: string,
+  hair?: string,
+): string[] {
   const ids: [string, { pos?: { x: number; z: number }; priority?: number }][] = [];
   if (!legacy) {
     // Chỉ model của giới tính đang chọn (gợi ý từ màn đăng nhập); giới tính kia nạp khi có người chơi đó xuất hiện (PlayerSkins.create).
-    const g = APPEARANCE.genders.find((x) => x.id === gender && genderEnabled(APPEARANCE, x.id)) ?? APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender);
+    const g =
+      APPEARANCE.genders.find((x) => x.id === gender && genderEnabled(APPEARANCE, x.id)) ??
+      APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender);
     const model = g ? playerModelId(g.id, hair) : null; // v2 mặc định (appearance.json còn id model cũ cho `?chr=v1`)
     if (model) ids.push([model, { priority: PREFETCH_PRIORITY.player }]);
     // Đồ đệ tử tân thủ (~200 KB) mặc ngay khi vào: tải cùng nhân vật; các bộ trang bị (~1-1,5 MB mỗi bộ/giới) nạp lười khi mặc.

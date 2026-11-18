@@ -56,23 +56,35 @@ async function card(def: CardDef): Promise<Buffer> {
   // Màu nền: trung bình bốn góc 12×12.
   const bg = [0, 0, 0];
   let n = 0;
-  for (const [x0, y0] of [[0, 0], [W - 12, 0], [0, H - 12], [W - 12, H - 12]]) {
+  for (const [x0, y0] of [
+    [0, 0],
+    [W - 12, 0],
+    [0, H - 12],
+    [W - 12, H - 12],
+  ]) {
     for (let y = y0; y < y0 + 12; y++) for (let x = x0; x < x0 + 12; x++) for (let c = 0; c < 3; c++) bg[c] += at(x, y, c);
     n += 144;
   }
   for (let c = 0; c < 3; c++) bg[c] /= n;
   const rgba = Buffer.alloc(W * H * 4);
-  let minX = W, maxX = 0, minY = H, maxY = 0;
+  let minX = W,
+    maxX = 0,
+    minY = H,
+    maxY = 0;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const r = at(x, y, 0), g = at(x, y, 1), b = at(x, y, 2);
+      const r = at(x, y, 0),
+        g = at(x, y, 1),
+        b = at(x, y, 2);
       // Nền xám có gradient nhẹ: so với nền cục bộ (cùng hàng ở mép trái/phải) rồi lấy chênh lệch lớn nhất theo kênh.
       const d = Math.max(Math.abs(r - bg[0]), Math.abs(g - bg[1]), Math.abs(b - bg[2]));
       // Độ bão hòa cũng góp (lá nhạt gần xám nền vẫn có sắc).
       const sat = Math.max(r, g, b) - Math.min(r, g, b);
       const a = smooth(12, 34, Math.max(d, sat * 1.4));
       const lum = (0.3 * r + 0.59 * g + 0.11 * b) / 255;
-      let R = r / 255, G = g / 255, B = b / 255;
+      let R = r / 255,
+        G = g / 255,
+        B = b / 255;
       R = R + (lum * def.tone[0] - R) * def.recolor;
       G = G + (lum * def.tone[1] - G) * def.recolor;
       B = B + (lum * def.tone[2] - B) * def.recolor;
@@ -106,13 +118,25 @@ async function card(def: CardDef): Promise<Buffer> {
   const ox = (CW - crop.info.width) >> 1;
   const oy = CH - 3 - crop.info.height;
   // Màu trung bình vùng đặc, đổ vào điểm ảnh trong suốt để mipmap không kéo xám/đen vào mép lá.
-  let sr = 0, sg = 0, sb = 0, sn = 0;
+  let sr = 0,
+    sg = 0,
+    sb = 0,
+    sn = 0;
   for (let i = 0; i < crop.info.width * crop.info.height; i++) {
     const a = crop.data[i * 4 + 3];
-    if (a > 200) { sr += crop.data[i * 4]; sg += crop.data[i * 4 + 1]; sb += crop.data[i * 4 + 2]; sn++; }
+    if (a > 200) {
+      sr += crop.data[i * 4];
+      sg += crop.data[i * 4 + 1];
+      sb += crop.data[i * 4 + 2];
+      sn++;
+    }
   }
   const avg = sn ? [sr / sn, sg / sn, sb / sn] : [160, 130, 80];
-  for (let i = 0; i < CW * CH; i++) { cell[i * 4] = avg[0]; cell[i * 4 + 1] = avg[1]; cell[i * 4 + 2] = avg[2]; }
+  for (let i = 0; i < CW * CH; i++) {
+    cell[i * 4] = avg[0];
+    cell[i * 4 + 1] = avg[1];
+    cell[i * 4 + 2] = avg[2];
+  }
   for (let y = 0; y < crop.info.height; y++) {
     for (let x = 0; x < crop.info.width; x++) {
       const s = (y * crop.info.width + x) * 4;
@@ -132,11 +156,16 @@ async function main(): Promise<void> {
     const cy = Math.floor(i / 2) * CH;
     for (let y = 0; y < CH; y++) atlas.set(cell.subarray(y * CW * 4, (y + 1) * CW * 4), ((cy + y) * CW * 2 + cx) * 4);
   }
-  const webp = await sharp(atlas, { raw: { width: CW * 2, height: CH * 2, channels: 4 } }).webp({ quality: 82, alphaQuality: 90 }).toBuffer();
+  const webp = await sharp(atlas, { raw: { width: CW * 2, height: CH * 2, channels: 4 } })
+    .webp({ quality: 82, alphaQuality: 90 })
+    .toBuffer();
   await mkdir(OUT, { recursive: true });
   const name = `cards.${createHash('sha1').update(webp).digest('hex').slice(0, 10)}.webp`;
   await writeFile(path.join(OUT, name), webp);
-  await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ atlas: name, cell: [CW, CH], cols: 2, rows: 2, cards: list.map((c) => c.id) }, null, 2) + '\n');
+  await writeFile(
+    path.join(OUT, 'manifest.json'),
+    JSON.stringify({ atlas: name, cell: [CW, CH], cols: 2, rows: 2, cards: list.map((c) => c.id) }, null, 2) + '\n',
+  );
   console.log(`[grass-cards] ${name}: ${(webp.length / 1024) | 0} KB`);
 }
 

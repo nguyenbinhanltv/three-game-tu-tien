@@ -5,7 +5,20 @@
 //  - Mất tên: ba vòng đá xoay quanh sàn rồi tia Phản hồi (cả đội đứng gần nhau thì sát thương gấp đôi).
 // Cấu hình ở `MonsterDef.than` (monsters.json). Hàm thuần (`handYaws`, `ringPos`, `counterOf`, `gathered`) có test riêng.
 
-import { computeDamage, ELEM_BEATS, inHazard, MS_ATTACK, MS_CHASE, MS_DEAD, PF_DEAD, type Element, type FxMsg, type HazardGeom, type HazardMsg, type MonsterDef } from '@dtl/shared';
+import {
+  computeDamage,
+  ELEM_BEATS,
+  inHazard,
+  MS_ATTACK,
+  MS_CHASE,
+  MS_DEAD,
+  PF_DEAD,
+  type Element,
+  type FxMsg,
+  type HazardGeom,
+  type HazardMsg,
+  type MonsterDef,
+} from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './entities';
 
 export const ELEMS: readonly Element[] = ['kim', 'moc', 'tho', 'thuy', 'hoa'];
@@ -24,7 +37,16 @@ export function handYaws(base: number, n: number, turn: number, turnDeg: number)
 }
 
 /** Vị trí vòng đá `i` (của `n`) quanh (cx, cz) lúc `t` giây sau khi bắt đầu quay. */
-export function ringPos(cx: number, cz: number, orbit: number, i: number, n: number, spinDeg: number, t: number, theta0 = 0): { x: number; z: number } {
+export function ringPos(
+  cx: number,
+  cz: number,
+  orbit: number,
+  i: number,
+  n: number,
+  spinDeg: number,
+  t: number,
+  theta0 = 0,
+): { x: number; z: number } {
   const a = theta0 + (i * Math.PI * 2) / n + (spinDeg * Math.PI * t) / 180;
   return { x: cx + Math.cos(a) * orbit, z: cz + Math.sin(a) * orbit };
 }
@@ -125,7 +147,22 @@ export class ThanTangSystem {
         continue;
       }
       if (!rt) {
-        rt = { started: false, cx: m.s.x, cz: m.s.z, handsNext: 0, handsTurn: 0, elemNext: 0, lastElem: null, sealMarkAt: 0, cloneNext: 0, clones: [], cloneDeadline: 0, ringsNext: 0, rings: null, strikes: [] };
+        rt = {
+          started: false,
+          cx: m.s.x,
+          cz: m.s.z,
+          handsNext: 0,
+          handsTurn: 0,
+          elemNext: 0,
+          lastElem: null,
+          sealMarkAt: 0,
+          cloneNext: 0,
+          clones: [],
+          cloneDeadline: 0,
+          ringsNext: 0,
+          rings: null,
+          strikes: [],
+        };
         this.rt.set(m.id, rt);
       }
       if (!rt.started) {
@@ -279,7 +316,14 @@ export class ThanTangSystem {
       const live = [...this.h.players()].filter((p) => !this.h.isDead(p) && (p.s.fl & PF_DEAD) === 0 && !this.h.isGhost(p));
       const hitters = live.filter((p) => inHazard(s.g, p.move.x, p.move.z) && p.move.y - this.h.groundAt(p.move.x, p.move.z) <= 8);
       let mul = s.mul;
-      if (s.gather !== undefined && gathered(hitters.map((p) => ({ x: p.move.x, z: p.move.z })), s.gather)) mul *= 2;
+      if (
+        s.gather !== undefined &&
+        gathered(
+          hitters.map((p) => ({ x: p.move.x, z: p.move.z })),
+          s.gather,
+        )
+      )
+        mul *= 2;
       for (const p of hitters) {
         let n = computeDamage(m.atk, mul, p.char.def, Math.random(), 1).dmg;
         let ke: 1 | undefined;

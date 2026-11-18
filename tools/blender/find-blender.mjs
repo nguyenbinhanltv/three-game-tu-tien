@@ -12,7 +12,11 @@ export function findBlender() {
   if (probe.status === 0) return 'blender';
   const base = 'C:/Program Files/Blender Foundation';
   if (fs.existsSync(base)) {
-    const versions = fs.readdirSync(base).filter((d) => fs.existsSync(path.join(base, d, 'blender.exe'))).sort().reverse();
+    const versions = fs
+      .readdirSync(base)
+      .filter((d) => fs.existsSync(path.join(base, d, 'blender.exe')))
+      .sort()
+      .reverse();
     if (versions.length) return path.join(base, versions[0], 'blender.exe');
   }
   return null;

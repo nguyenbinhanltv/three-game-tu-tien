@@ -88,7 +88,12 @@ class InstSet {
   warm = 0;
   private static readonly ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 
-  constructor(geo: THREE.BufferGeometry, mat: THREE.Material, readonly cap: number, attr: THREE.InstancedBufferAttribute) {
+  constructor(
+    geo: THREE.BufferGeometry,
+    mat: THREE.Material,
+    readonly cap: number,
+    attr: THREE.InstancedBufferAttribute,
+  ) {
     // `count` giữ bằng sức chứa (xem `instancedGeometry`); số vẽ thật là `geometry.instanceCount`.
     this.mesh = new THREE.InstancedMesh(instancedGeometry(geo), mat, cap);
     this.mesh.frustumCulled = false;
@@ -221,7 +226,9 @@ function swordMaterial(src?: THREE.MeshStandardMaterial): THREE.MeshStandardNode
   // Gần camera thì ngưỡng tan nâng lên: kiếm rỗ dần rồi biến mất thay vì che nhân vật (G5).
   m.opacityNode = step(max(dis, float(1.06).mul(float(1).sub(rainNear()))), n);
   m.alphaTest = 0.5;
-  const burn = float(1).sub(smoothstep(dis, dis.add(0.08), n)).mul(step(0.01, dis));
+  const burn = float(1)
+    .sub(smoothstep(dis, dis.add(0.08), n))
+    .mul(step(0.01, dis));
   const rim = pow(float(1).sub(abs(normalView.z)), 2);
   const spirit = vec3(uRain);
   m.emissiveNode = min(spirit.mul(f.y.mul(rim.mul(1.8).add(0.55)).add(burn.mul(2.2))), FX_MAX_HDR);
@@ -238,7 +245,10 @@ function cometGeometry(): THREE.BufferGeometry {
   a.translate(0, 0.5, 0);
   const b = a.clone();
   b.rotateY(Math.PI / 2);
-  const pos = new Float32Array([...(a.getAttribute('position').array as Float32Array), ...(b.getAttribute('position').array as Float32Array)]);
+  const pos = new Float32Array([
+    ...(a.getAttribute('position').array as Float32Array),
+    ...(b.getAttribute('position').array as Float32Array),
+  ]);
   const uvs = new Float32Array([...(a.getAttribute('uv').array as Float32Array), ...(b.getAttribute('uv').array as Float32Array)]);
   const nor = new Float32Array([...(a.getAttribute('normal').array as Float32Array), ...(b.getAttribute('normal').array as Float32Array)]);
   const ia = Array.from(a.index!.array);
@@ -258,7 +268,13 @@ const COMET_CAP = 48;
 const COMET_ATTR = instAttr(COMET_CAP);
 
 function cometMaterial(): THREE.MeshBasicNodeMaterial {
-  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+  const m = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
   m.forceSinglePass = true;
   const f = instancedBufferAttribute(COMET_ATTR) as N;
   const st = uv();
@@ -267,7 +283,9 @@ function cometMaterial(): THREE.MeshBasicNodeMaterial {
   const core = exp(x.mul(x).mul(-14));
   const tail = pow(float(1).sub(along), 1.8);
   const head = exp(along.mul(along).mul(-220));
-  const streak = vnoise(vec2(st.x.mul(5).add(f.y), along.mul(6).add(time.mul(9)))).mul(0.5).add(0.6);
+  const streak = vnoise(vec2(st.x.mul(5).add(f.y), along.mul(6).add(time.mul(9))))
+    .mul(0.5)
+    .add(0.6);
   const lum = core.mul(tail).mul(streak).add(head.mul(core).mul(1.5));
   m.colorNode = min(mix(vec3(uRain), vec3(1, 1, 1), head.mul(0.6)).mul(lum.mul(1.6)), FX_MAX_HDR);
   m.opacityNode = f.x.mul(min(lum, 1)).mul(rainNear());
@@ -291,7 +309,13 @@ const CRACK_ATTR = instAttr(CRACK_CAP);
 const CRACK_INK = new THREE.Color(0x24262a);
 
 function crackMaterial(): THREE.MeshBasicNodeMaterial {
-  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.NormalBlending, side: THREE.DoubleSide, fog: true });
+  const m = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.NormalBlending,
+    side: THREE.DoubleSide,
+    fog: true,
+  });
   m.forceSinglePass = true;
   const f = instancedBufferAttribute(CRACK_ATTR) as N;
   const k = f.x;
@@ -299,21 +323,38 @@ function crackMaterial(): THREE.MeshBasicNodeMaterial {
   const p = uv().sub(0.5).mul(2);
   const r = length(p);
   const rays = 7;
-  const wob = vnoise(vec2(r.mul(3.5), seed)).sub(0.5).mul(0.7);
-  const ang = atan(p.y, p.x).div(Math.PI * 2).mul(rays).add(seed).add(wob);
+  const wob = vnoise(vec2(r.mul(3.5), seed))
+    .sub(0.5)
+    .mul(0.7);
+  const ang = atan(p.y, p.x)
+    .div(Math.PI * 2)
+    .mul(rays)
+    .add(seed)
+    .add(wob);
   const cell = floor(ang);
   const rayLen = hash21(vec2(cell, seed)).mul(0.5).add(0.45);
-  const dist = abs(fract(ang).sub(0.5)).mul(r).mul((Math.PI * 2) / rays);
-  const w = float(0.05).mul(max(float(1).sub(r.div(rayLen)), 0)).add(0.006);
-  const line = float(1).sub(smoothstep(w.mul(0.45), w, dist)).mul(step(r, rayLen));
+  const dist = abs(fract(ang).sub(0.5))
+    .mul(r)
+    .mul((Math.PI * 2) / rays);
+  const w = float(0.05)
+    .mul(max(float(1).sub(r.div(rayLen)), 0))
+    .add(0.006);
+  const line = float(1)
+    .sub(smoothstep(w.mul(0.45), w, dist))
+    .mul(step(r, rayLen));
   const crater = float(1).sub(smoothstep(0.08, 0.2, r));
   const mask = max(line, crater.mul(0.85));
   // Tan theo nhiễu ở nửa sau.
   const dk = smoothstep(0.45, 1, k).mul(1.1);
   const alive = smoothstep(dk.sub(0.06), dk, vnoise(p.mul(5).add(seed)));
-  const heat = float(1).sub(smoothstep(0, 0.4, k)).mul(float(1).sub(r.mul(0.8)));
+  const heat = float(1)
+    .sub(smoothstep(0, 0.4, k))
+    .mul(float(1).sub(r.mul(0.8)));
   m.colorNode = min(mix(color(CRACK_INK), vec3(uRain).mul(2.2), heat), FX_MAX_HDR);
-  m.opacityNode = f.z.mul(mask).mul(alive).mul(smoothstep(0, 0.04, k));
+  m.opacityNode = f.z
+    .mul(mask)
+    .mul(alive)
+    .mul(smoothstep(0, 0.04, k));
   m.name = 'fx-rain-crack';
   markBloom(m, 0.2);
   return m;
@@ -324,7 +365,13 @@ const SHOCK_CAP = 64;
 const SHOCK_ATTR = instAttr(SHOCK_CAP);
 
 function shockMaterial(): THREE.MeshBasicNodeMaterial {
-  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+  const m = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
   m.forceSinglePass = true;
   const f = instancedBufferAttribute(SHOCK_ATTR) as N;
   const k = f.x;
@@ -334,9 +381,15 @@ function shockMaterial(): THREE.MeshBasicNodeMaterial {
   const d = r.sub(R).div(f.z);
   const ring = exp(d.mul(d).negate());
   // Vòng vỡ theo nhiễu góc cho khỏi giống vòng compa.
-  const brk = vnoise(vec2(atan(p.y, p.x).mul(4).add(f.w), k.mul(3))).mul(0.6).add(0.55);
+  const brk = vnoise(vec2(atan(p.y, p.x).mul(4).add(f.w), k.mul(3)))
+    .mul(0.6)
+    .add(0.55);
   m.colorNode = min(vec3(uRain).mul(1.7), FX_MAX_HDR);
-  m.opacityNode = f.y.mul(ring).mul(brk).mul(pow(float(1).sub(k), 1.4)).mul(step(r, 1));
+  m.opacityNode = f.y
+    .mul(ring)
+    .mul(brk)
+    .mul(pow(float(1).sub(k), 1.4))
+    .mul(step(r, 1));
   m.name = 'fx-rain-shock';
   markBloom(m, 0.45);
   return m;
@@ -382,7 +435,13 @@ const _e = new THREE.Euler();
 const _s = new THREE.Vector3();
 
 /** Vị trí từng thanh kiếm theo seed (dùng chung cho client và kiểm thử: cùng seed thì cùng chỗ). */
-export function rainLayout(seed: number, cx: number, cz: number, r: number, n = RAIN_SWORDS): { x: number; z: number; delay: number; yaw: number; tilt: number; seed: number }[] {
+export function rainLayout(
+  seed: number,
+  cx: number,
+  cz: number,
+  r: number,
+  n = RAIN_SWORDS,
+): { x: number; z: number; delay: number; yaw: number; tilt: number; seed: number }[] {
   const rnd = seededRandom(seed);
   const out = [];
   for (let i = 0; i < n; i++) {
@@ -555,7 +614,22 @@ export class SwordRainFx {
           this.placeSword(d, d.gy - 0.55, dis, glow);
           if (dis > 0 && Math.random() < 0.5 * R.pScale) {
             // Tàn linh quang bay lên từ mép tan.
-            this.particles.emit('glow', d.x + (Math.random() - 0.5) * 0.2, d.gy + Math.random() * SWORD_LEN * 0.8, d.z + (Math.random() - 0.5) * 0.2, 0, 1.2, 0, 0.6, 0.08, 0.02, 0xcff3ff, 0.9, -0.5, 1.5);
+            this.particles.emit(
+              'glow',
+              d.x + (Math.random() - 0.5) * 0.2,
+              d.gy + Math.random() * SWORD_LEN * 0.8,
+              d.z + (Math.random() - 0.5) * 0.2,
+              0,
+              1.2,
+              0,
+              0.6,
+              0.08,
+              0.02,
+              0xcff3ff,
+              0.9,
+              -0.5,
+              1.5,
+            );
           }
         }
       }
@@ -606,19 +680,55 @@ export class SwordRainFx {
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
       const sp = 3 + Math.random() * 5;
-      P.emit('glow', d.x, d.gy + 0.2, d.z, Math.cos(a) * sp, 2 + Math.random() * 4, Math.sin(a) * sp, 0.35 + Math.random() * 0.25, 0.12, 0.03, 0xcff3ff, 1, 14, 2.5);
+      P.emit(
+        'glow',
+        d.x,
+        d.gy + 0.2,
+        d.z,
+        Math.cos(a) * sp,
+        2 + Math.random() * 4,
+        Math.sin(a) * sp,
+        0.35 + Math.random() * 0.25,
+        0.12,
+        0.03,
+        0xcff3ff,
+        1,
+        14,
+        2.5,
+      );
     }
     const nd = Math.round(6 * R.pScale);
     for (let i = 0; i < nd; i++) {
       const a = Math.random() * Math.PI * 2;
       const sp = 1.5 + Math.random() * 2;
-      P.emit('dust', d.x, d.gy + 0.25, d.z, Math.cos(a) * sp, 0.6 + Math.random() * 0.8, Math.sin(a) * sp, 0.9 + Math.random() * 0.5, 0.4, 1.3, 0xbdb6a4, 0.28, -0.2, 2.2);
+      P.emit(
+        'dust',
+        d.x,
+        d.gy + 0.25,
+        d.z,
+        Math.cos(a) * sp,
+        0.6 + Math.random() * 0.8,
+        Math.sin(a) * sp,
+        0.9 + Math.random() * 0.5,
+        0.4,
+        1.3,
+        0xbdb6a4,
+        0.28,
+        -0.2,
+        2.2,
+      );
     }
   }
 
   /** Số instance đang dùng (đo đạc/kiểm thử). */
   stats(): { rains: number; swords: number; comets: number; cracks: number; shocks: number } {
-    return { rains: this.rains.length, swords: this.swords.active, comets: this.comets.active, cracks: this.cracks.active, shocks: this.shocks.active };
+    return {
+      rains: this.rains.length,
+      swords: this.swords.active,
+      comets: this.comets.active,
+      cracks: this.cracks.active,
+      shocks: this.shocks.active,
+    };
   }
 
   /** Bỏ mọi trận đang chạy (đổi room). Lưới và material giữ lại cho lần sau. */

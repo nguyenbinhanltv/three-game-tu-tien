@@ -297,7 +297,14 @@ export function tribulationCloud(v: Vfx, pos: PosFn, dur: number, stillOn: () =>
  * một viên đan nhỏ lơ lửng giữa vòng lớn dần và ngả sang vàng ấm khi đầy. Tông trầm, mảnh, cộng sáng thấp để không che người.
  * Trả tay cầm: `set(pg)` cập nhật tiến độ 0..100, `stop()` khép vòng. Tự khép khi `stillOn()` sai (hết kiếp, chết).
  */
-export function danTran(v: Vfx, x: number, z: number, r: number, dur: number, stillOn: () => boolean): { set(pg: number): void; stop(): void } {
+export function danTran(
+  v: Vfx,
+  x: number,
+  z: number,
+  r: number,
+  dur: number,
+  stillOn: () => boolean,
+): { set(pg: number): void; stop(): void } {
   const y = groundAt(x, z);
   const m = v.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, 0x4f8fd8, y + 0.18);
   const orb = v.fx(G.ico1, 0x7fbfff, 0.5);
@@ -350,7 +357,19 @@ export function danTran(v: Vfx, x: number, z: number, r: number, dur: number, st
  * độ/giây, theo CÙNG công thức server (`discAngle`: góc 0 hướng +z). `warn` giây đầu tia mờ và chưa gây sát thương (vạch tụ dần), sau
  * đó sáng lên; một vành đĩa mờ nằm dưới chân. Cộng sáng thấp, sắc lam bạc để không che nhân vật. Tự tắt khi hết giờ hoặc `stillOn()` sai.
  */
-export function mirrorDisc(v: Vfx, x: number, z: number, len: number, w: number, n: number, theta0: number, spin: number, warn: number, dur: number, stillOn: () => boolean): void {
+export function mirrorDisc(
+  v: Vfx,
+  x: number,
+  z: number,
+  len: number,
+  w: number,
+  n: number,
+  theta0: number,
+  spin: number,
+  warn: number,
+  dur: number,
+  stillOn: () => boolean,
+): void {
   const y = groundAt(x, z) + 0.16;
   const L = sigilLayout(SIGIL_RECT, len, w);
   const beams: FxMesh[] = [];

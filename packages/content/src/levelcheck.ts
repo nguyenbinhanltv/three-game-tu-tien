@@ -6,7 +6,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { inPoly, levelSpawns, MAX_LEVEL, polyArea, propsOf, TELE_FREE, TELE_PADS, terrainOf, WATER_Y, type HandProp, type LevelDef, type TelePad, type ZoneDef } from '@dtl/shared';
+import {
+  inPoly,
+  levelSpawns,
+  MAX_LEVEL,
+  polyArea,
+  propsOf,
+  TELE_FREE,
+  TELE_PADS,
+  terrainOf,
+  WATER_Y,
+  type HandProp,
+  type LevelDef,
+  type TelePad,
+  type ZoneDef,
+} from '@dtl/shared';
 import { campCoverage, COVER_BY_LEVEL, DEFAULT_COVER } from './coverage';
 import { GLOSSARY, hasString, ITEM, MONSTER, t } from './index';
 
@@ -63,7 +77,8 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
       if (!/^[a-z0-9_]+$/.test(e.id)) err(`${where}: ${kind} id không hợp lệ ${e.id}`);
     }
   };
-  const colliderHit = (x: number, z: number, margin: number) => tr.colliders.find((c) => (x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + margin) ** 2);
+  const colliderHit = (x: number, z: number, margin: number) =>
+    tr.colliders.find((c) => (x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + margin) ** 2);
   const propHit = (x: number, z: number, margin: number) => props.find((p) => Math.hypot(p.x - x, p.z - z) < (p.r ?? 0.8) + margin);
   const monAsset = (id: string, ctx: string) => {
     if (!MONSTER.has(id)) return err(`${where}: ${ctx} quái không tồn tại ${id}`);
@@ -96,12 +111,15 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
       if (near.length < 5) err(`${w}: chỉ ${near.length} prop quanh điểm (cần ≥ 5)`);
       for (const h of near) {
         if (!clearOfCamps(h.x, h.z, 2)) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè bãi quái`);
-        for (const pad of pads) if (Math.hypot(h.x - pad.x, h.z - pad.z) < 4) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè Truyền Tống Trận ${pad.id}`);
-        if ((h.r ?? 0) > (legacy ? 1.5 : 4.5)) err(`${w}: prop ${h.id} va chạm r=${h.r} quá lớn (> ${legacy ? 1.5 : 4.5} m, không được chặn đường)`);
+        for (const pad of pads)
+          if (Math.hypot(h.x - pad.x, h.z - pad.z) < 4) err(`${w}: prop ${h.id} (${h.x}, ${h.z}) đè Truyền Tống Trận ${pad.id}`);
+        if ((h.r ?? 0) > (legacy ? 1.5 : 4.5))
+          err(`${w}: prop ${h.id} va chạm r=${h.r} quá lớn (> ${legacy ? 1.5 : 4.5} m, không được chặn đường)`);
       }
       if (p.beamH !== undefined && !(p.beamH >= 30 && p.beamH <= 120)) err(`${w}: beamH ${p.beamH} ngoài 30–120 m`);
     }
-    for (const z of zoneById.keys()) if ((perZone.get(z) ?? 0) !== 1) err(`${where}: vùng ${z} cần đúng một poi (có ${perZone.get(z) ?? 0})`);
+    for (const z of zoneById.keys())
+      if ((perZone.get(z) ?? 0) !== 1) err(`${where}: vùng ${z} cần đúng một poi (có ${perZone.get(z) ?? 0})`);
   };
 
   // ---- quái lẻ (tinh anh/boss) và điểm tài nguyên ----
@@ -111,7 +129,8 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
     if (!Number.isFinite(tr.groundAt(s.x, s.z))) err(`${where}: spawn ${s.mon} ngoài bản đồ`);
     if (!m?.boss && tr.heightAt(s.x, s.z) < WATER_Y && tr.def.water) err(`${where}: spawn ${s.mon} nằm dưới nước`);
     if (!legacy && !inPlay(s.x, s.z)) err(`${where}: spawn ${s.mon} (${s.x}, ${s.z}) ngoài vùng chơi`);
-    if (!legacy && !(s.levelMin >= 1 && s.levelMin <= s.levelMax && s.levelMax <= MAX_LEVEL)) err(`${where}: spawn ${s.mon} cấp ${s.levelMin}–${s.levelMax} không hợp lệ (1–${MAX_LEVEL})`);
+    if (!legacy && !(s.levelMin >= 1 && s.levelMin <= s.levelMax && s.levelMax <= MAX_LEVEL))
+      err(`${where}: spawn ${s.mon} cấp ${s.levelMin}–${s.levelMax} không hợp lệ (1–${MAX_LEVEL})`);
     if (!legacy && !(s.respawn > 0)) err(`${where}: spawn ${s.mon} thiếu respawn`);
     if (colliderHit(s.x, s.z, 0)) err(`${where}: spawn ${s.mon} (${s.x}, ${s.z}) đè collider`);
   }
@@ -136,7 +155,8 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
       needStr(`zone.${z.id}`);
       if (!/^#[0-9a-fA-F]{6}$/.test(z.color)) err(`zone ${z.id}: color phải dạng #rrggbb`);
       if (!MUSIC_ZONES.includes(z.music)) err(`zone ${z.id}: music ${z.music} không có (${MUSIC_ZONES.join(', ')})`);
-      if (!(z.lvMin >= 1 && z.lvMin <= z.lvMax && z.lvMax <= MAX_LEVEL)) err(`zone ${z.id}: khoảng cấp ${z.lvMin}–${z.lvMax} không hợp lệ (1–${MAX_LEVEL})`);
+      if (!(z.lvMin >= 1 && z.lvMin <= z.lvMax && z.lvMax <= MAX_LEVEL))
+        err(`zone ${z.id}: khoảng cấp ${z.lvMin}–${z.lvMax} không hợp lệ (1–${MAX_LEVEL})`);
       if (z.poly.length < 3 || polyArea(z.poly) < 1000) err(`zone ${z.id}: đa giác ranh phải ≥ 3 đỉnh, diện tích ≥ 1000 m²`);
       for (const [x, zz] of z.poly) if (!inPlay(x, zz)) err(`zone ${z.id}: đỉnh (${x}, ${zz}) ngoài vùng chơi chính`);
     }
@@ -150,7 +170,8 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
         continue;
       }
       if (!inPoly(zn.poly, c.x, c.z)) err(`${where}: camp ${c.id} nằm ngoài đa giác vùng ${c.zone}`);
-      if (c.levelMin < zn.lvMin || c.levelMax > zn.lvMax || c.levelMin > c.levelMax) err(`${where}: camp ${c.id} cấp ${c.levelMin}–${c.levelMax} lệch khoảng cấp vùng ${c.zone} (${zn.lvMin}–${zn.lvMax})`);
+      if (c.levelMin < zn.lvMin || c.levelMax > zn.lvMax || c.levelMin > c.levelMax)
+        err(`${where}: camp ${c.id} cấp ${c.levelMin}–${c.levelMax} lệch khoảng cấp vùng ${c.zone} (${zn.lvMin}–${zn.lvMax})`);
       if (!(c.count >= 3 && c.count <= 4)) err(`${where}: camp ${c.id} count ${c.count} phải 3–4`);
       if (!(c.radius >= 18 && c.radius <= 30)) err(`${where}: camp ${c.id} radius ${c.radius} phải 18–30 m`);
       if (!(c.respawn > 0)) err(`${where}: camp ${c.id} thiếu respawn`);
@@ -173,7 +194,8 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
         err(`${where}: tinh anh ${s.mon} ở (${s.x}, ${s.z}) không thuộc vùng nào`);
         continue;
       }
-      if (s.levelMin < zn.lvMin || s.levelMax > zn.lvMax) err(`${where}: tinh anh ${s.mon} cấp ${s.levelMin}–${s.levelMax} lệch vùng ${zn.id} (${zn.lvMin}–${zn.lvMax})`);
+      if (s.levelMin < zn.lvMin || s.levelMax > zn.lvMax)
+        err(`${where}: tinh anh ${s.mon} cấp ${s.levelMin}–${s.levelMax} lệch vùng ${zn.id} (${zn.lvMin}–${zn.lvMax})`);
       elitePerZone.set(zn.id, (elitePerZone.get(zn.id) ?? 0) + s.count);
     }
     for (const z of zones) {
@@ -186,13 +208,17 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
     } else {
       const km2 = zones.reduce((a, z) => a + polyArea(z.poly), 0) / 1e6;
       const density = km2 > 0 ? normal / km2 : 0;
-      if (!(density >= DENSITY_MIN && density <= DENSITY_MAX)) err(`${where}: mật độ ${density.toFixed(0)} quái/km² (${normal} quái / ${km2.toFixed(3)} km² vùng săn), cần ${DENSITY_MIN}–${DENSITY_MAX}`);
+      if (!(density >= DENSITY_MIN && density <= DENSITY_MAX))
+        err(
+          `${where}: mật độ ${density.toFixed(0)} quái/km² (${normal} quái / ${km2.toFixed(3)} km² vùng săn), cần ${DENSITY_MIN}–${DENSITY_MAX}`,
+        );
     }
     if (!legacy && camps.length && (opts.coverage ?? true)) {
       // Chuẩn độ phủ của bản đồ mở rộng (coverage.ts): p95 và điểm xa nhất tới mép cụm gần nhất. Vân Lam giữ chuẩn riêng ở mapreport.
       const cv = campCoverage(lv);
       const std = COVER_BY_LEVEL[lv.id] ?? DEFAULT_COVER;
-      if (cv.max > std.max) err(`${where}: độ phủ cụm: điểm (${cv.worst.x}, ${cv.worst.z}) cách mép cụm gần nhất ${cv.max.toFixed(0)} m, cần ≤ ${std.max} m`);
+      if (cv.max > std.max)
+        err(`${where}: độ phủ cụm: điểm (${cv.worst.x}, ${cv.worst.z}) cách mép cụm gần nhất ${cv.max.toFixed(0)} m, cần ≤ ${std.max} m`);
       if (cv.p95 > std.p95) err(`${where}: độ phủ cụm: p95 ${cv.p95.toFixed(0)} m, cần ≤ ${std.p95} m`);
     }
     checkPois(zoneById);
@@ -201,7 +227,8 @@ export function checkLevel(lv: LevelDef, opts: LevelCheckOpts = {}): string[] {
   // ---- Truyền Tống Trận ----
   if (pads.length) {
     dupIds('trận', [...pads]);
-    for (const z of zones) if (pads.filter((p) => p.zone === z.id).length !== 1) err(`${where}: vùng ${z.id} cần đúng một Truyền Tống Trận`);
+    for (const z of zones)
+      if (pads.filter((p) => p.zone === z.id).length !== 1) err(`${where}: vùng ${z.id} cần đúng một Truyền Tống Trận`);
     // Trận mở sẵn: bắt buộc ở bản đồ gốc (Vân Lam) và khi truyền `free`; level mở rộng mở khóa bằng cách chạm trận.
     if ((legacy || opts.free) && !pads.some((p) => free.includes(p.id))) err(`${where}: cần ít nhất một trận mở sẵn`);
     for (const pad of pads) {

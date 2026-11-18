@@ -123,7 +123,11 @@ export class ImpostorLayer {
       const sy = p.sy ?? 1;
       _q.setFromAxisAngle(_up, p.yaw);
       // Khung bake vuông V, tâm ở nửa chiều cao cây: đáy khung lệch (cao − V)/2 so với gốc cây.
-      _m.compose(_p.set(p.x, p.y + ((sp.height - sp.frame) / 2) * p.s * sy, p.z), _q, _s.set(sp.frame * p.s, sp.frame * p.s * sy, sp.frame * p.s));
+      _m.compose(
+        _p.set(p.x, p.y + ((sp.height - sp.frame) / 2) * p.s * sy, p.z),
+        _q,
+        _s.set(sp.frame * p.s, sp.frame * p.s * sy, sp.frame * p.s),
+      );
       _m.toArray(mat, i * 16);
       const t = p.tint ?? [1, 1, 1];
       col[i * 3] = t[0];

@@ -1,5 +1,21 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { MF_STUN, ANH_BIEN_LEVEL, groundAt, MAX_LEVEL, parseRealmCode, peakGated, S, tribDef, tribForLevel, tribLevelOf, tribRoomNameOf, tribSealPos, xpNeed, type FxMsg, type HazardMsg } from '@dtl/shared';
+import {
+  MF_STUN,
+  ANH_BIEN_LEVEL,
+  groundAt,
+  MAX_LEVEL,
+  parseRealmCode,
+  peakGated,
+  S,
+  tribDef,
+  tribForLevel,
+  tribLevelOf,
+  tribRoomNameOf,
+  tribSealPos,
+  xpNeed,
+  type FxMsg,
+  type HazardMsg,
+} from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 
 // Nhật Thực Kiếp (DV-3K, Anh Biến): dẫn lôi thắp năm Trấn Giới Bia, Nhật Thực Dực Chủ dập bia, tia cuối đánh vào khe khi đủ bia, vật phẩm, lên cấp 32.
@@ -31,7 +47,13 @@ const CTR = LEVELS[tribLevelOf(DEF)].dungeon!.center;
 function setup(withItem = true) {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'ab' + acc);
   char.level = 31;
   char.bk = 31;
@@ -253,7 +275,12 @@ describe('Anh Biến: nạp nhân vật và sổ cái', () => {
     const t = setup();
     t.p.god = true;
     t.begin();
-    const rows = () => sqlite.prepare("SELECT reason, idem, delta FROM ledger WHERE char_id = ? AND reason LIKE 'tribulation%'").all(t.char.id) as { reason: string; idem: string | null; delta: number }[];
+    const rows = () =>
+      sqlite.prepare("SELECT reason, idem, delta FROM ledger WHERE char_id = ? AND reason LIKE 'tribulation%'").all(t.char.id) as {
+        reason: string;
+        idem: string | null;
+        delta: number;
+      }[];
     const spent = rows().filter((r) => r.reason === 'tribulation');
     expect(spent).toHaveLength(1);
     expect(spent[0].idem).toMatch(new RegExp(`^trib:anh_bien:${t.char.id}:`));

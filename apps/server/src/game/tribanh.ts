@@ -57,7 +57,13 @@ export function litCount(st: { lit: readonly boolean[] } | undefined): number {
 }
 
 /** Bia chưa sáng mà điểm `(x, z)` rơi trong `steleR` mét quanh nó, hoặc -1. Hàm thuần để test. */
-export function steleHit(center: { x: number; z: number }, cfg: { ring: number; steleR: number }, lit: readonly boolean[], x: number, z: number): number {
+export function steleHit(
+  center: { x: number; z: number },
+  cfg: { ring: number; steleR: number },
+  lit: readonly boolean[],
+  x: number,
+  z: number,
+): number {
   for (let i = 0; i < STELE_COUNT; i++) {
     if (lit[i]) continue;
     const s = tribSealPos(center, cfg.ring, i);
@@ -103,7 +109,13 @@ registerMechanic('dan_loi', {
     const cfg = c.phase.danLoi;
     if (!cfg) return;
     const ctr = arenaCenter(c.def);
-    const st: DanLoiState = { x: ctr.x, z: ctr.z, lit: new Array<boolean>(STELE_COUNT).fill(false), nextAt: c.now + cfg.first * 1000, bolts: [] };
+    const st: DanLoiState = {
+      x: ctr.x,
+      z: ctr.z,
+      lit: new Array<boolean>(STELE_COUNT).fill(false),
+      nextAt: c.now + cfg.first * 1000,
+      bolts: [],
+    };
     (c.tr.mech ??= {}).dan_loi = st;
     sendSteles(c.host, c.p, st, cfg);
     c.host.sys(c.p, 'sys.dan_loi_start', undefined, 'info');
@@ -135,7 +147,14 @@ registerMechanic('nhat_thuc', {
     const cfg = c.phase.nhatThuc;
     if (!cfg) return;
     const boss = c.host.spawnBoss(c.p, cfg.boss, cfg.dist);
-    const st: NhatThucState = { boss, boltAt: c.now + 2500, bolts: [], smashAt: c.now + 6000, cast: null, shieldAt: c.now + cfg.shieldEvery * 1000 };
+    const st: NhatThucState = {
+      boss,
+      boltAt: c.now + 2500,
+      bolts: [],
+      smashAt: c.now + 6000,
+      cast: null,
+      shieldAt: c.now + cfg.shieldEvery * 1000,
+    };
     (c.tr.mech ??= {}).nhat_thuc = st;
     c.host.sys(c.p, 'sys.nhat_thuc_start', undefined, 'bad');
   },
@@ -159,7 +178,20 @@ registerMechanic('nhat_thuc', {
     if (c.now >= st.boltAt) {
       st.boltAt = c.now + cfg.every * 1000;
       st.bolts.push({ x: c.p.move.x, z: c.p.move.z, at: c.now + cfg.warn * 1000 });
-      h.addHazard({ x: c.p.move.x, z: c.p.move.z, r: cfg.r }, cfg.warn, cfg.pct, true, 'lightning', c.p.sid, 0, false, 0, undefined, undefined, c.phase.hot);
+      h.addHazard(
+        { x: c.p.move.x, z: c.p.move.z, r: cfg.r },
+        cfg.warn,
+        cfg.pct,
+        true,
+        'lightning',
+        c.p.sid,
+        0,
+        false,
+        0,
+        undefined,
+        undefined,
+        c.phase.hot,
+      );
     }
     // Dập bia: chọn lúc niệm, hủy nếu hắn bị ngắt (choáng/mất thế) trước khi chú xong.
     if (st.cast) {

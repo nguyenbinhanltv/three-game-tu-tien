@@ -42,8 +42,20 @@ export default function wild() {
     pad.chord(s.bar(b), c, 8, 56);
     bass.note(s.bar(b), c[0], 4, 70);
     bass.note(s.bar(b) + 4, c[0] + 7, 3.8, 60);
-    if (b >= 16 && b < 24) strings.chord(s.bar(b), c.slice(1).map((p) => p + 12), 8, 54);
-    if (b >= 40) strings.chord(s.bar(b), c.map((p) => p + 12), 8, 58);
+    if (b >= 16 && b < 24)
+      strings.chord(
+        s.bar(b),
+        c.slice(1).map((p) => p + 12),
+        8,
+        54,
+      );
+    if (b >= 40)
+      strings.chord(
+        s.bar(b),
+        c.map((p) => p + 12),
+        8,
+        58,
+      );
   }
 
   // đàn gảy rải: 8 móc đơn, nhảy quãng rộng cho cảm giác trời rộng
@@ -77,16 +89,37 @@ export default function wild() {
     '4:1 3:1 2:1 1:1',
     '2:4',
   ].join(' | ');
-  const THEME_END = ['0:1 1:1/2 2:1/2 4:2', '3:1 2:1 1:2', '2:3/2 3:1/2 4:1 5:1', '4~:3 r:1', '5:1 4:1/2 5:1/2 6:2', '7~:2 6:1 5:1', '4:1 2:1 1:1 -1:1', '0:4'].join(' | ');
+  const THEME_END = [
+    '0:1 1:1/2 2:1/2 4:2',
+    '3:1 2:1 1:2',
+    '2:3/2 3:1/2 4:1 5:1',
+    '4~:3 r:1',
+    '5:1 4:1/2 5:1/2 6:2',
+    '7~:2 6:1 5:1',
+    '4:1 2:1 1:1 -1:1',
+    '0:4',
+  ].join(' | ');
   dizi.phrase(s.bar(8), E, THEME, { vel: 90, vib: 1.5 });
   dizi.phrase(s.bar(32), E, THEME_END, { oct: 1, vel: 84, vib: 1.5 });
 
   // C: dây hát đáp (bè dưới) + sáo cao thưa
-  strings.phrase(s.bar(16), E, ['2:4', '1:2 0:2', '-1:4', '0:2 1:2', '2:2 3:2', '4:4', '3:2 2:2', '1:4'].join(' | '), { vel: 76, legato: 1 });
-  [17, 19, 21, 23].forEach((b) => high.phrase(s.bar(b) + 2, E, "7:1/2 8:1/2 9:1", { oct: 0, vel: 64, vib: 0.9 }));
+  strings.phrase(s.bar(16), E, ['2:4', '1:2 0:2', '-1:4', '0:2 1:2', '2:2 3:2', '4:4', '3:2 2:2', '1:4'].join(' | '), {
+    vel: 76,
+    legato: 1,
+  });
+  [17, 19, 21, 23].forEach((b) => high.phrase(s.bar(b) + 2, E, '7:1/2 8:1/2 9:1', { oct: 0, vel: 64, vib: 0.9 }));
 
   // D: đàn gảy (dàn hạc + koto) dẫn giai điệu màu chủy
-  const DMEL = ['3:1/2 4:1/2 5:1 4:1 3:1', '1:2 3:2', '4:1/2 5:1/2 6:1 5:1 4:1', '5:4', '3:1/2 4:1/2 5:1 6:1 5:1', '4:2 3:2', '1:1 2:1 3:1 4:1', '4*:4'].join(' | ');
+  const DMEL = [
+    '3:1/2 4:1/2 5:1 4:1 3:1',
+    '1:2 3:2',
+    '4:1/2 5:1/2 6:1 5:1 4:1',
+    '5:4',
+    '3:1/2 4:1/2 5:1 6:1 5:1',
+    '4:2 3:2',
+    '1:1 2:1 3:1 4:1',
+    '4*:4',
+  ].join(' | ');
   pipa.phrase(s.bar(24), E, DMEL, { vel: 84, trem: 8 });
   harp.phrase(s.bar(24), E, ['-2:2 0:2', '-1:4', '-2:2 0:2', '-1:4', '-4:2 -2:2', '-1:4', '-1:2 0:2', '-1:4'].join(' | '), { vel: 58 });
 

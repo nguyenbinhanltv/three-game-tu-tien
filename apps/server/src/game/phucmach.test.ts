@@ -59,7 +59,14 @@ function mkChar(name: string, level: number) {
   return char;
 }
 
-type TestRoom = InstanceType<Rooms['GameRoom']> & { director(): void; onRespawn(p: Ent): void; payReward(): void; wave: number; nextWaveAt: number; clearedAt: number };
+type TestRoom = InstanceType<Rooms['GameRoom']> & {
+  director(): void;
+  onRespawn(p: Ent): void;
+  payReward(): void;
+  wave: number;
+  nextWaveAt: number;
+  clearedAt: number;
+};
 
 /** Dựng room (không qua Colyseus) đủ cho onJoin, director, onRespawn, onPortal. */
 async function mkRoom(levelId: string, cls: { prototype: object }) {
@@ -68,7 +75,13 @@ async function mkRoom(levelId: string, cls: { prototype: object }) {
   const lv = content.LEVELS[levelId];
   const spawn = lv.dungeon?.spawn ?? lv.spawn!;
   room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
-  room.sim = new GameSim(new WorldState(), room as never, { levelId, roomName: levelId, spawn, respawn: spawn, persistPosition: !lv.dungeon });
+  room.sim = new GameSim(new WorldState(), room as never, {
+    levelId,
+    roomName: levelId,
+    spawn,
+    respawn: spawn,
+    persistPosition: !lv.dungeon,
+  });
   room.aoi = new Aoi(room.sim);
   room.clients = { getById: () => undefined };
   room.markers = { drop() {}, sync() {} };
@@ -79,7 +92,11 @@ async function mkRoom(levelId: string, cls: { prototype: object }) {
   Object.assign(room, { wave: 0, nextWaveAt: 0, clearedAt: 0, revives: new Map() });
   const join = (char: InstanceType<typeof Character>, auth: Record<string, unknown> = {}): Ent => {
     const c = { sessionId: 'sid' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: char.name }) };
-    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true, ...auth });
+    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(
+      c,
+      {},
+      { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true, ...auth },
+    );
     return [...room.sim.players.values()].find((q) => q.char.id === char.id)!;
   };
   return { room: room as unknown as TestRoom, sim: room.sim, join, locked };
@@ -247,11 +264,16 @@ describe('đợt, điểm sinh, khóa room, thưởng', () => {
     };
     step();
     expect(r.locked.n).toBe(1);
-    expect(alive().map((m) => m.def.id).sort()).toEqual([...Array(4).fill('mon_mach_thuong_ho_ve'), 'elite_ho_mach_khoi_tuong'].sort());
+    expect(
+      alive()
+        .map((m) => m.def.id)
+        .sort(),
+    ).toEqual([...Array(4).fill('mon_mach_thuong_ho_ve'), 'elite_ho_mach_khoi_tuong'].sort());
     step();
     const au = alive();
     expect(au).toHaveLength(10);
-    for (const pt of d.waves[2].points!) expect(au.filter((m) => Math.hypot(m.s.x - pt.x, m.s.z - pt.z) < 4.5).length).toBeGreaterThanOrEqual(3);
+    for (const pt of d.waves[2].points!)
+      expect(au.filter((m) => Math.hypot(m.s.x - pt.x, m.s.z - pt.z) < 4.5).length).toBeGreaterThanOrEqual(3);
     step();
     expect(alive().map((m) => m.def.id)).toEqual(['boss_thach_tam_khoi_vuong']);
     step();
@@ -279,7 +301,11 @@ describe('đợt, điểm sinh, khóa room, thưởng', () => {
     expect(p.char.xp - xp0).toBeGreaterThanOrEqual(Math.round(xpNeed(19) * 0.15) - 1);
     expect(keys(q)).not.toContain('sys.dungeon_reward');
     const idem = `dungeon:${LV}:${p.char.id}:${new Date().toISOString().slice(0, 10)}`;
-    const rows = dbm.db.select().from(dbm.ledger).all().filter((x) => x.idem === idem);
+    const rows = dbm.db
+      .select()
+      .from(dbm.ledger)
+      .all()
+      .filter((x) => x.idem === idem);
     expect(rows).toHaveLength(1);
     // gọi lại (director chạy lại / vào lại cùng ngày) không phát thêm
     const gold1 = p.char.gold;
@@ -321,7 +347,13 @@ describe('vách hang (luật di chuyển dùng chung)', () => {
     for (const fly of [false, true]) {
       const s = { x: bound.x, y: groundAt(bound.x, bound.z), z: bound.z + 89, vy: 0, grounded: true, flying: false };
       // yaw 0: tiến = -z; yaw π: tiến = +z (ra phía vách nam)
-      for (let i = 0; i < 200; i++) stepMove(s, { mx: 0, mz: 1, yaw: Math.PI, f: fly ? IN_FLY : 0, seq: i } as never, { canFly: fly, frozen: false, speedMul: 1, terrain, bound }, STEP);
+      for (let i = 0; i < 200; i++)
+        stepMove(
+          s,
+          { mx: 0, mz: 1, yaw: Math.PI, f: fly ? IN_FLY : 0, seq: i } as never,
+          { canFly: fly, frozen: false, speedMul: 1, terrain, bound },
+          STEP,
+        );
       const d = Math.hypot(s.x - bound.x, s.z - bound.z);
       expect(d).toBeLessThanOrEqual(bound.r + 1e-6);
       expect(d).toBeGreaterThan(bound.r - 1);
@@ -368,7 +400,9 @@ describe('giới hạn hồi sinh', () => {
     die();
     r.room.onRespawn(p);
     expect(p.s.fl & PF_DEAD).toBe(0);
-    const left = sent.filter((s) => s.to === p.char.name && s.type === S.SYS && (s.msg as { k: string }).k === 'sys.dungeon_revive').map((s) => (s.msg as { p: { n: number } }).p.n);
+    const left = sent
+      .filter((s) => s.to === p.char.name && s.type === S.SYS && (s.msg as { k: string }).k === 'sys.dungeon_revive')
+      .map((s) => (s.msg as { p: { n: number } }).p.n);
     expect(left).toEqual([1]);
     die();
     r.room.onRespawn(p);
@@ -395,20 +429,29 @@ describe('giới hạn hồi sinh', () => {
 });
 
 describe('Thôn Mạch Ngô Công Vương', () => {
-  type Private = { tickMonster(m: unknown, dt: number): void; tickHazards(): void; checkPhase(m: unknown): void; tryInterrupt(p: unknown, m: unknown, e?: number): void };
+  type Private = {
+    tickMonster(m: unknown, dt: number): void;
+    tickHazards(): void;
+    checkPhase(m: unknown): void;
+    tryInterrupt(p: unknown, m: unknown, e?: number): void;
+  };
   const T0 = 5_000_000;
   const DT = 50;
 
   function fight(playerHp = 1_000_000, dist = 5) {
     const hz: HazardMsg[] = [];
     const d = DEF().dungeon!;
-    const sim = new GameSim(new WorldState(), { broadcast: (type: string, msg: unknown) => type === S.HAZARD && hz.push(msg as HazardMsg) } as never, {
-      levelId: LV,
-      roomName: LV,
-      spawn: d.spawn,
-      respawn: d.spawn,
-      persistPosition: false,
-    });
+    const sim = new GameSim(
+      new WorldState(),
+      { broadcast: (type: string, msg: unknown) => type === S.HAZARD && hz.push(msg as HazardMsg) } as never,
+      {
+        levelId: LV,
+        roomName: LV,
+        spawn: d.spawn,
+        respawn: d.spawn,
+        persistPosition: false,
+      },
+    );
     const c = d.center;
     const def = content.MONSTER.get('boss_thon_mach_ngo_cong_vuong')!;
     const mon = sim.spawnMonster(def, 19, c.x, c.z, null);

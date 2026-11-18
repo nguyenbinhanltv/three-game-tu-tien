@@ -39,7 +39,13 @@ describe('độ kiếp Trúc Cơ: bản chuẩn hành vi', () => {
       const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
       const X = 2040;
       const Z = 2040;
-      const sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+      const sim = new GameSim(new WorldState(), host as never, {
+        levelId: 'van_lam',
+        roomName: 'test',
+        spawn: { x: X, z: Z },
+        respawn: { x: X, z: Z },
+        persistPosition: false,
+      });
       const char = Character.create(7000 + seed, 'gold' + seed);
       char.level = 15;
       char.recalc();

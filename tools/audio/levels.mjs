@@ -88,7 +88,10 @@ export function rules(r) {
   return [
     { ok: rel >= -11.5 && rel <= -7.5, text: `Nhạc vùng so với đòn đánh: ${f1(rel)} dB (mục tiêu −9,5 dB ± 2, xấp xỉ 1/3 biên độ)` },
     { ok: amb <= music - 3, text: `Âm môi trường so với nhạc: ${f1(amb - music)} dB (phải thấp hơn nhạc ít nhất 3 dB)` },
-    { ok: lowConfirm >= topOther + 0.5, text: `Nhóm xác nhận nổi nhất: yếu nhất ${f1(lowConfirm)} LUFS, SFX khác mạnh nhất ${f1(topOther)} LUFS (cần cao hơn ít nhất 0,5 dB)` },
+    {
+      ok: lowConfirm >= topOther + 0.5,
+      text: `Nhóm xác nhận nổi nhất: yếu nhất ${f1(lowConfirm)} LUFS, SFX khác mạnh nhất ${f1(topOther)} LUFS (cần cao hơn ít nhất 0,5 dB)`,
+    },
     { ok: steps <= combat - 8, text: `Bước chân so với đòn đánh: ${f1(steps - combat)} dB (phải thấp hơn ít nhất 8 dB)` },
   ];
 }
@@ -108,7 +111,13 @@ export function report(r) {
     '',
   );
   L.push('## Mức trộn bus (`apps/client/src/game/audio/audioMix.json`)', '');
-  L.push(table(Object.entries(MIX).map(([b, g]) => [`\`${b}\``, String(g), `${f1(db(g))} dB`]), ['Bus', 'Hệ số', 'dB']), '');
+  L.push(
+    table(
+      Object.entries(MIX).map(([b, g]) => [`\`${b}\``, String(g), `${f1(db(g))} dB`]),
+      ['Bus', 'Hệ số', 'dB'],
+    ),
+    '',
+  );
   L.push(
     'Chuỗi tín hiệu: nguồn → (panner) → bus → master. Nhạc đi thêm hai tầng hạ nhạc: `duck()` ngắn (sấm, đột phá, sting, phá chú) và `duckHold()` giữ lâu (hội thoại NPC, lời boss, thẻ chương); hai tầng nhân với nhau.',
     '',
@@ -118,10 +127,21 @@ export function report(r) {
   L.push('');
   L.push('## Theo bus', '');
   const busRows = [];
-  const row = (label, xs) => busRows.push([label, f1(mean(xs.map((s) => s.lufs))), f1(mean(xs.map((s) => s.eff))), f1(Math.max(...xs.map((s) => s.eff)))]);
-  for (const [g, names] of Object.entries(SFX_GROUPS)) row(`sfx — ${g}`, r.sfx.filter((s) => names.includes(s.name)));
-  row('ui', r.sfx.filter((s) => s.bus === 'ui'));
-  row('music — bài vùng', r.music.filter((m) => !m.stem && !m.sting));
+  const row = (label, xs) =>
+    busRows.push([label, f1(mean(xs.map((s) => s.lufs))), f1(mean(xs.map((s) => s.eff))), f1(Math.max(...xs.map((s) => s.eff)))]);
+  for (const [g, names] of Object.entries(SFX_GROUPS))
+    row(
+      `sfx — ${g}`,
+      r.sfx.filter((s) => names.includes(s.name)),
+    );
+  row(
+    'ui',
+    r.sfx.filter((s) => s.bus === 'ui'),
+  );
+  row(
+    'music — bài vùng',
+    r.music.filter((m) => !m.stem && !m.sting),
+  );
   const stems = r.music.filter((m) => m.stem);
   if (stems.length) row('music — lớp giao chiến (stem)', stems);
   const stings = r.music.filter((m) => m.sting);
@@ -129,9 +149,21 @@ export function report(r) {
   row('ambient', r.ambient);
   L.push(table(busRows, ['Nhóm', 'LUFS file (TB)', 'Hiệu dụng TB (LUFS)', 'Hiệu dụng lớn nhất']), '');
   L.push('## Chi tiết SFX (độ to ngắn hạn lớn nhất, khối 100 ms)', '');
-  L.push(table(r.sfx.map((s) => [`\`${s.name}\``, s.bus, f1(s.lufs), f1(s.eff)]), ['Âm', 'Bus', 'File', 'Hiệu dụng']), '');
+  L.push(
+    table(
+      r.sfx.map((s) => [`\`${s.name}\``, s.bus, f1(s.lufs), f1(s.eff)]),
+      ['Âm', 'Bus', 'File', 'Hiệu dụng'],
+    ),
+    '',
+  );
   L.push('## Chi tiết nhạc và âm môi trường (tích hợp)', '');
-  L.push(table([...r.music, ...r.ambient].map((m) => [`\`${m.id}\``, m.kind, f1(m.lufs), f1(m.eff)]), ['Id', 'Bus', 'File', 'Hiệu dụng']), '');
+  L.push(
+    table(
+      [...r.music, ...r.ambient].map((m) => [`\`${m.id}\``, m.kind, f1(m.lufs), f1(m.eff)]),
+      ['Id', 'Bus', 'File', 'Hiệu dụng'],
+    ),
+    '',
+  );
   L.push(
     '## Cách cân lại',
     '',

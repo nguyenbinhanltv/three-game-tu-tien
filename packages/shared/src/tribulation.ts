@@ -267,10 +267,21 @@ export interface TribDef {
 }
 
 /** Móc cơ chế riêng hợp lệ (server cài ở apps/server/src/game/tribmech.ts; `content:check` kiểm dữ liệu chỉ dùng id trong danh sách này). */
-export const TRIB_MECHANIC_IDS = ['dan_tran', 'tia_xich', 'xuat_khieu', 'tam_canh', 'ngu_hanh', 'phan_than', 'dan_loi', 'nhat_thuc'] as const;
+export const TRIB_MECHANIC_IDS = [
+  'dan_tran',
+  'tia_xich',
+  'xuat_khieu',
+  'tam_canh',
+  'ngu_hanh',
+  'phan_than',
+  'dan_loi',
+  'nhat_thuc',
+] as const;
 
 const defs = (raw as unknown as { defs: Record<string, Omit<TribDef, 'id'>> }).defs;
-export const TRIB_DEFS: Readonly<Record<TribId, TribDef>> = Object.fromEntries(Object.entries(defs).map(([id, d]) => [id, { ...d, id }])) as Record<TribId, TribDef>;
+export const TRIB_DEFS: Readonly<Record<TribId, TribDef>> = Object.fromEntries(
+  Object.entries(defs).map(([id, d]) => [id, { ...d, id }]),
+) as Record<TribId, TribDef>;
 export const TRIB_IDS = Object.keys(TRIB_DEFS) as TribId[];
 
 export function tribDef(id: string | undefined | null): TribDef {

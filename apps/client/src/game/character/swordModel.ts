@@ -98,7 +98,8 @@ export function glowDims(info: BladeInfo, old: OldSwordSpan): { start: number; l
 /** Số đo kiếm trong extras `dtl` của mesh LOD0 (chuỗi JSON do pipeline ghi); undefined nếu thiếu hoặc không hợp lệ. */
 function bladeInfoOf(raw: unknown): BladeInfo | undefined {
   const b = (raw as { blade?: Partial<BladeInfo> } | undefined)?.blade;
-  if (!b || ![b.len, b.grip, b.guard, b.bladeStart].every((v) => typeof v === 'number' && Number.isFinite(v)) || b.len! <= 0) return undefined;
+  if (!b || ![b.len, b.grip, b.guard, b.bladeStart].every((v) => typeof v === 'number' && Number.isFinite(v)) || b.len! <= 0)
+    return undefined;
   return { len: b.len!, grip: b.grip!, guard: b.guard!, bladeStart: b.bladeStart! };
 }
 

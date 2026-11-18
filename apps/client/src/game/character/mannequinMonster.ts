@@ -42,7 +42,11 @@ export const MQ_ZOMBIE_MOVES: Partial<Record<BossMoveKind, BossMove>> = {
  * Clip của thư viện đã chỉnh độ cao hông theo lưới này: kênh vị trí của `pelvis` nhân tỉ lệ độ cao hông lưới / bộ xương mẫu
  * (cùng cách `mannequinTemplate` làm cho nhân vật). Trả bản sao, không sửa clip gốc dùng chung.
  */
-export function pelvisScaledClips(asset: THREE.Object3D, lib: THREE.Object3D, clips: readonly THREE.AnimationClip[]): THREE.AnimationClip[] {
+export function pelvisScaledClips(
+  asset: THREE.Object3D,
+  lib: THREE.Object3D,
+  clips: readonly THREE.AnimationClip[],
+): THREE.AnimationClip[] {
   const a = asset.getObjectByName('pelvis')?.position;
   const b = lib.getObjectByName('pelvis')?.position;
   const k = a && b && b.length() > 1e-6 ? a.length() / b.length() : 1;

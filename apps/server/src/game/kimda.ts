@@ -189,7 +189,8 @@ export class KimDaSystem {
     const alive = sh.state !== MS_DEAD && sh.s.hp > 0;
     if (alive) {
       this.bargainPenalties++;
-      for (const p of this.h.players()) if (!this.h.isDead(p) && !this.h.isGhost(p)) this.h.damagePlayer(p, Math.max(1, Math.round(p.s.mhp * pen)), 'kd_bargain');
+      for (const p of this.h.players())
+        if (!this.h.isDead(p) && !this.h.isGhost(p)) this.h.damagePlayer(p, Math.max(1, Math.round(p.s.mhp * pen)), 'kd_bargain');
       this.h.sysAll('sys.kd_bargain_bad', undefined, 'bad');
       this.h.despawn(sh);
     } else this.h.sysAll('sys.kd_bargain_ok', undefined, 'good');
@@ -225,7 +226,7 @@ export class KimDaSystem {
     if (now >= this.nightNext) {
       const lit = st.map((s, i) => ({ s, i })).filter((o) => o.s.dark <= now);
       if (lit.length > 0) {
-        const pick = lit.find((o) => o.i > (this.nightSmashAt - 1)) ?? lit[0];
+        const pick = lit.find((o) => o.i > this.nightSmashAt - 1) ?? lit[0];
         this.nightSmashAt = pick.i + 1;
         const s = pick.s;
         this.h.smash(m, s.x, s.z, s.r, cfg.warn, cfg.mul);

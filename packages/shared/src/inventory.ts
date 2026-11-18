@@ -25,7 +25,10 @@ export const POWER_W = { atk: 4, def: 3, hp: 0.2, mp: 0.1 } as const;
  * Lực chiến: (công·4 + thủ·3 + khí huyết·0,2 + linh lực·0,1) nhân hệ số phụ
  * (kỳ vọng bạo kích 1 + tỉ lệ·(hệ số−1); giảm hồi chiêu ×0,5; hút máu ×2; hồi phục nhận ×0,3; sát thương tinh anh ×0,3). Làm tròn.
  */
-export function combatPower(s: Pick<PlayerStats, 'hp' | 'mp' | 'atk' | 'def'> & Partial<Pick<PlayerStats, 'critRate' | 'critMul' | 'cdr' | 'lifesteal' | 'healRecv' | 'eliteDmg'>>): number {
+export function combatPower(
+  s: Pick<PlayerStats, 'hp' | 'mp' | 'atk' | 'def'> &
+    Partial<Pick<PlayerStats, 'critRate' | 'critMul' | 'cdr' | 'lifesteal' | 'healRecv' | 'eliteDmg'>>,
+): number {
   const base = s.atk * POWER_W.atk + s.def * POWER_W.def + s.hp * POWER_W.hp + s.mp * POWER_W.mp;
   const crit = 1 + (s.critRate ?? 0) * Math.max(0, (s.critMul ?? 1) - 1);
   const misc = 1 + (s.cdr ?? 0) * 0.5 + (s.lifesteal ?? 0) * 2 + (s.healRecv ?? 0) * 0.3 + (s.eliteDmg ?? 0) * 0.3;
@@ -76,12 +79,27 @@ export function planSort(inv: readonly InvSlot[], ctx: SortCtx): InvSlot[] {
   const rank = new Map<InvItem, { cat: number; q: number; tier: number; lv: number; name: string }>();
   for (const it of items) {
     const def = ctx.def(it.id);
-    rank.set(it, { cat: CATEGORY_ORDER.indexOf(itemCategory(def)), q: qualityOf(it, def), tier: def?.tier ?? 1, lv: def?.reqLevel ?? 0, name: ctx.name(it) });
+    rank.set(it, {
+      cat: CATEGORY_ORDER.indexOf(itemCategory(def)),
+      q: qualityOf(it, def),
+      tier: def?.tier ?? 1,
+      lv: def?.reqLevel ?? 0,
+      name: ctx.name(it),
+    });
   }
   items.sort((a, b) => {
     const x = rank.get(a)!;
     const y = rank.get(b)!;
-    return x.cat - y.cat || y.q - x.q || y.tier - x.tier || y.lv - x.lv || x.name.localeCompare(y.name, 'vi') || (b.plus ?? 0) - (a.plus ?? 0) || b.n - a.n || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    return (
+      x.cat - y.cat ||
+      y.q - x.q ||
+      y.tier - x.tier ||
+      y.lv - x.lv ||
+      x.name.localeCompare(y.name, 'vi') ||
+      (b.plus ?? 0) - (a.plus ?? 0) ||
+      b.n - a.n ||
+      (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+    );
   });
   const out: InvSlot[] = new Array(INV_SIZE).fill(null);
   for (let i = 0; i < items.length && i < INV_SIZE; i++) out[i] = items[i];

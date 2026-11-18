@@ -14,11 +14,23 @@ const ALL = [...SKILLS, ...METHOD_SKILLS].filter((s) => s.pose);
  * Bảng xem chiêu (K-1, `?show=skill&id=…`): chọn chiêu, phát/dừng, chậm, thanh kéo thời gian có mốc khung khóa và khung vung,
  * camera quanh người, khung xương, đầu dò số (tay/chân/mũi kiếm) theo khung đang xem.
  */
-export function SkillPanel({ viewer, skillId, onPick, clips }: { viewer: ViewerScene; skillId: string; onPick: (id: string) => void; clips: string[] }) {
+export function SkillPanel({
+  viewer,
+  skillId,
+  onPick,
+  clips,
+}: {
+  viewer: ViewerScene;
+  skillId: string;
+  onPick: (id: string) => void;
+  clips: string[];
+}) {
   const skill = ALL.find((s) => s.id === skillId) ?? ALL[0];
   // Giọng động tác (K-5) và đòn thứ mấy của chuỗi: `?voice=hp&hit=2` mở thẳng; chỉ chiêu có đủ bộ mới đổi được.
   const q = urlParams();
-  const [voice, setVoice] = useState<PoseVoice>(() => (POSE_VOICES as readonly string[]).includes(q.get('voice') ?? '') ? (q.get('voice') as PoseVoice) : 'kt');
+  const [voice, setVoice] = useState<PoseVoice>(() =>
+    (POSE_VOICES as readonly string[]).includes(q.get('voice') ?? '') ? (q.get('voice') as PoseVoice) : 'kt',
+  );
   const [hit, setHit] = useState(() => Math.max(0, Number(q.get('hit') ?? 1) - 1) || 0);
   const voiced = VOICED_POSES.has(skill.pose!);
   const hits = skill.combo?.hits.length ?? 1;

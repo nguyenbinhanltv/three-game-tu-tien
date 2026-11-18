@@ -80,13 +80,17 @@ export default function sect() {
     '5:3/2 4:1/2 3:1 2:1', // D B A F#
     '3:4', // A (treo, về A)
   ].join(' | ');
-  const THEME_END = ['3:2 4:1 5:1', '4~:3 3:1', '2:3/2 3:1/2 1:2', '0:4', '5:2 6:1 5:1', '4~:3 3:1', "2:1 3:1/2 2:1/2 1:2", '0:2 r:2'].join(' | ');
+  const THEME_END = ['3:2 4:1 5:1', '4~:3 3:1', '2:3/2 3:1/2 1:2', '0:4', '5:2 6:1 5:1', '4~:3 3:1', '2:1 3:1/2 2:1/2 1:2', '0:2 r:2'].join(
+    ' | ',
+  );
   xiao.phrase(s.bar(8), D, THEME, { vel: 84, vib: 1.5, legato: 0.98 });
   xiao.phrase(s.bar(32), D, THEME_END, { vel: 86, vib: 1.5, legato: 0.98 });
   xiao.swell(s.bar(8), s.bar(9), 100, 127);
 
   // ----- phần C: đàn tranh vê chủ đề quãng tám trên, đàn hạc đối -----
-  const THEME_KOTO = ['3:2 4:1 5:1', '4*:3 3:1', '2:3/2 3:1/2 1:2', '0*:4', '3:2 5:1 6:1', '7*:3 6:1', '5:3/2 4:1/2 3:1 2:1', '3*:4'].join(' | ');
+  const THEME_KOTO = ['3:2 4:1 5:1', '4*:3 3:1', '2:3/2 3:1/2 1:2', '0*:4', '3:2 5:1 6:1', '7*:3 6:1', '5:3/2 4:1/2 3:1 2:1', '3*:4'].join(
+    ' | ',
+  );
   koto.phrase(s.bar(16), D, THEME_KOTO, { oct: 1, vel: 80, trem: 8 });
   // Đàn hạc: lướt mở phần C, rồi rải chậm 4 móc đơn mỗi ô.
   for (let i = 0; i < 10; i++) harp.note(s.bar(16) - 0.5 + i * 0.05, Dlow.deg(i + 3), 3, 60 + i * 2, { human: false });

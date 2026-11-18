@@ -92,7 +92,12 @@ describe('Vân Hải Phù Đảo qua Truyền Tống và địa hình đảo', (
     expect(hp).toBeGreaterThan(0);
     // chỗ ngoài mọi đảo là sàn mây: groundAt = voidFloor, đứng được
     let cloud = 0;
-    for (let a = 0; a < 360; a += 10) if (Math.abs(tr.groundAt(1024 + Math.cos((a * Math.PI) / 180) * 160, 1024 + Math.sin((a * Math.PI) / 180) * 160) - tr.def.voidFloor!) < 0.001) cloud++;
+    for (let a = 0; a < 360; a += 10)
+      if (
+        Math.abs(tr.groundAt(1024 + Math.cos((a * Math.PI) / 180) * 160, 1024 + Math.sin((a * Math.PI) / 180) * 160) - tr.def.voidFloor!) <
+        0.001
+      )
+        cloud++;
     expect(cloud).toBeGreaterThan(10);
   });
 });

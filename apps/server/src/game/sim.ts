@@ -1,4 +1,3 @@
-
 import { TickProf } from './tickprof';
 import type { Client } from 'colyseus';
 import {
@@ -65,7 +64,6 @@ import { EconomySystem, type EconomyCtx } from './economy';
 import { TAUNT_BOSS_MUL } from './combat/consts';
 import { resolveFor } from './method';
 
-
 /** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
 const METHOD_SEND_MS = 250;
 import { RealmSystem } from './realm';
@@ -88,7 +86,6 @@ import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg } from './artifact';
 import { log } from '../log';
 
-
 const INTERACT_RANGE = 9;
 
 export class GameSim {
@@ -110,7 +107,8 @@ export class GameSim {
   /** Lõi nhịp độ kiếp theo dữ liệu (E1-F, game/trib.ts). */
   private readonly tribSys = new TribSystem({
     now: () => this.now,
-    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, hot, extra) => this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, extra?.mv, hot, extra?.dur ?? 0, extra?.seal, extra?.reach),
+    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, hot, extra) =>
+      this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, extra?.mv, hot, extra?.dur ?? 0, extra?.seal, extra?.reach),
     damage: (p, n, ke) => this.damagePlayer(p, n, p.sid, true, ke),
     fx: (m) => this.fx(m),
     isDead: (p) => this.isDead(p),
@@ -154,7 +152,10 @@ export class GameSim {
     mon: (id) => this.monById.get(id),
     isDead: (m) => m.state === MS_DEAD,
     groundAt: (x, z) => this.terrain.groundAt(x, z),
-    canStand: (x, z) => this.terrain.heightAt(x, z) > WATER_Y + 0.3 && this.terrain.playDist(x, z) < this.terrain.playWall - 4 && !this.terrain.colliders.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < c.r * c.r),
+    canStand: (x, z) =>
+      this.terrain.heightAt(x, z) > WATER_Y + 0.3 &&
+      this.terrain.playDist(x, z) < this.terrain.playWall - 4 &&
+      !this.terrain.colliders.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < c.r * c.r),
     hazard: (g, delay, mul, kind, m, mv) => this.addHazard(g, delay, mul, false, kind, m.id, m.atk, false, 0, undefined, undefined, mv),
     trail: (m, x, z, yaw, len, cfg, delay) => this.zones.addTrail(m as MonEnt, x, z, yaw, len, cfg, delay),
     damagePlayer: (p, n, src) => this.damagePlayer(p as PlayerEnt, n, src, true),
@@ -199,8 +200,10 @@ export class GameSim {
       return plan.dist;
     },
     tooHigh: (p) => p.move.y - this.terrain.groundAt(p.move.x, p.move.z) > 8,
-    telegraph: (x, z, r, delay, kind, src, mv, dur) => this.addHazard({ x, z, r }, delay, 0, false, kind as HazardMsg['kind'], src, 0, false, 0, undefined, undefined, mv, false, dur),
-    poisonHit: (p, atk, mul, src) => this.damagePlayer(p as PlayerEnt, computeDamage(atk, mul, (p as PlayerEnt).char.def, Math.random(), 1).dmg, src, true),
+    telegraph: (x, z, r, delay, kind, src, mv, dur) =>
+      this.addHazard({ x, z, r }, delay, 0, false, kind as HazardMsg['kind'], src, 0, false, 0, undefined, undefined, mv, false, dur),
+    poisonHit: (p, atk, mul, src) =>
+      this.damagePlayer(p as PlayerEnt, computeDamage(atk, mul, (p as PlayerEnt).char.def, Math.random(), 1).dmg, src, true),
     notify: (p, key) => this.sys(p as PlayerEnt, key, undefined, key === 'sys.pull_resist' ? 'good' : 'bad'),
   });
 
@@ -255,202 +258,364 @@ export class GameSim {
   });
 
   /** Kinh tế và nhiệm vụ (R-7): xem `game/economy/`. */
-  private readonly ecoSys = new EconomySystem(((s: GameSim): EconomyCtx => ({
-    applyPillBuff: (p, def, potency) => s.applyPillBuff(p, def, potency),
-    canAssist: (p, o) => s.canAssist(p, o),
-    get duel() { return s.duel; },
-    emit: (type, payload) => s.emit(type, payload),
-    fx: (m) => s.fx(m),
-    giveXp: (p, n, announce) => s.giveXp(p, n, announce),
-    isDead: (p) => s.isDead(p),
-    nearNpc: (p, npcId) => s.nearNpc(p, npcId),
-    get nodes() { return s.nodes; },
-    get now() { return s.now; },
-    get players() { return s.players; },
-    questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
-    savePlayer: (p) => s.savePlayer(p),
-    get sealHook() { return s.sealHook; },
-    sendCd: (p) => s.sendCd(p),
-    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-    get tele() { return s.tele; },
-    get upgrade() { return s.upgrade; },
-    warn: (p, k, params) => s.warn(p, k, params),
-  }))(this));
+  private readonly ecoSys = new EconomySystem(
+    ((s: GameSim): EconomyCtx => ({
+      applyPillBuff: (p, def, potency) => s.applyPillBuff(p, def, potency),
+      canAssist: (p, o) => s.canAssist(p, o),
+      get duel() {
+        return s.duel;
+      },
+      emit: (type, payload) => s.emit(type, payload),
+      fx: (m) => s.fx(m),
+      giveXp: (p, n, announce) => s.giveXp(p, n, announce),
+      isDead: (p) => s.isDead(p),
+      nearNpc: (p, npcId) => s.nearNpc(p, npcId),
+      get nodes() {
+        return s.nodes;
+      },
+      get now() {
+        return s.now;
+      },
+      get players() {
+        return s.players;
+      },
+      questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
+      savePlayer: (p) => s.savePlayer(p),
+      get sealHook() {
+        return s.sealHook;
+      },
+      sendCd: (p) => s.sendCd(p),
+      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+      get tele() {
+        return s.tele;
+      },
+      get upgrade() {
+        return s.upgrade;
+      },
+      warn: (p, k, params) => s.warn(p, k, params),
+    }))(this),
+  );
 
   /** Quái (R-7): xem `game/monsters/`. */
-  private readonly monSys = new MonsterSystem(((s: GameSim): MonsterCtx => ({
-    addStack: (p, max, decay) => s.addStack(p, max, decay),
-    get bolts() { return s.bolts; },
-    get camps() { return s.camps; },
-    damagePlayer: (p, dmg, src, hv, ke) => s.damagePlayer(p, dmg, src, hv, ke),
-    get domain() { return s.domain; },
-    emit: (type, payload) => s.emit(type, payload),
-    feedArtifact: (p, mon) => s.feedArtifact(p, mon),
-    fx: (m) => s.fx(m),
-    gainCharge: (p, n) => s.gainCharge(p, n),
-    giveXp: (p, n, announce) => s.giveXp(p, n, announce),
-    get gmSys() { return s.gmSys; },
-    get hazards() { return s.hazards; },
-    get host() { return s.host; },
-    isDead: (p) => s.isDead(p),
-    liveStacks: (p) => s.liveStacks(p),
-    lockCut: (h, p) => s.lockCut(h, p),
-    get mirror() { return s.mirror; },
-    get monById() { return s.monById; },
-    get monSkills() { return s.monSkills; },
-    get monsters() { return s.monsters; },
-    get nextId() { return s.nextId; },
-    set nextId(v) { s.nextId = v; },
-    get now() { return s.now; },
-    pickGuards: (h) => s.pickGuards(h),
-    get players() { return s.players; },
-    questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
-    randomPoint: (cx, cz, radius, allowWater) => s.randomPoint(cx, cz, radius, allowWater),
-    get realm() { return s.realm; },
-    shareToGuards: (owner, n, h) => s.shareToGuards(owner, n, h),
-    get soul() { return s.soul; },
-    get state() { return s.state; },
-    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-    sysAll: (k, params, type) => s.sysAll(k, params, type),
-    get terrain() { return s.terrain; },
-    get than() { return s.than; },
-    get tribSys() { return s.tribSys; },
-    warn: (p, k, params) => s.warn(p, k, params),
-    get zones() { return s.zones; },
-  }))(this));
+  private readonly monSys = new MonsterSystem(
+    ((s: GameSim): MonsterCtx => ({
+      addStack: (p, max, decay) => s.addStack(p, max, decay),
+      get bolts() {
+        return s.bolts;
+      },
+      get camps() {
+        return s.camps;
+      },
+      damagePlayer: (p, dmg, src, hv, ke) => s.damagePlayer(p, dmg, src, hv, ke),
+      get domain() {
+        return s.domain;
+      },
+      emit: (type, payload) => s.emit(type, payload),
+      feedArtifact: (p, mon) => s.feedArtifact(p, mon),
+      fx: (m) => s.fx(m),
+      gainCharge: (p, n) => s.gainCharge(p, n),
+      giveXp: (p, n, announce) => s.giveXp(p, n, announce),
+      get gmSys() {
+        return s.gmSys;
+      },
+      get hazards() {
+        return s.hazards;
+      },
+      get host() {
+        return s.host;
+      },
+      isDead: (p) => s.isDead(p),
+      liveStacks: (p) => s.liveStacks(p),
+      lockCut: (h, p) => s.lockCut(h, p),
+      get mirror() {
+        return s.mirror;
+      },
+      get monById() {
+        return s.monById;
+      },
+      get monSkills() {
+        return s.monSkills;
+      },
+      get monsters() {
+        return s.monsters;
+      },
+      get nextId() {
+        return s.nextId;
+      },
+      set nextId(v) {
+        s.nextId = v;
+      },
+      get now() {
+        return s.now;
+      },
+      pickGuards: (h) => s.pickGuards(h),
+      get players() {
+        return s.players;
+      },
+      questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
+      randomPoint: (cx, cz, radius, allowWater) => s.randomPoint(cx, cz, radius, allowWater),
+      get realm() {
+        return s.realm;
+      },
+      shareToGuards: (owner, n, h) => s.shareToGuards(owner, n, h),
+      get soul() {
+        return s.soul;
+      },
+      get state() {
+        return s.state;
+      },
+      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+      sysAll: (k, params, type) => s.sysAll(k, params, type),
+      get terrain() {
+        return s.terrain;
+      },
+      get than() {
+        return s.than;
+      },
+      get tribSys() {
+        return s.tribSys;
+      },
+      warn: (p, k, params) => s.warn(p, k, params),
+      get zones() {
+        return s.zones;
+      },
+    }))(this),
+  );
 
   /** Chiêu và công pháp (R-7): xem `game/combat/`. */
-  private readonly combat = new CombatSystem(((s: GameSim): CombatCtx => ({
-    get clone() { return s.clone; },
-    get duel() { return s.duel; },
-    duelStrike: (p, o, powers, elemMul) => s.duelStrike(p, o, powers, elemMul),
-    emit: (type, payload) => s.emit(type, payload),
-    fx: (m) => s.fx(m),
-    hitMonster: (p, mon, basePower, mul, elem) => s.hitMonster(p, mon, basePower, mul, elem),
-    homeDist: (m) => s.homeDist(m),
-    isDead: (p) => s.isDead(p),
-    get level() { return s.level; },
-    get mirror() { return s.mirror; },
-    get monById() { return s.monById; },
-    get monsters() { return s.monsters; },
-    get now() { return s.now; },
-    get players() { return s.players; },
-    resetAi: (m) => s.resetAi(m),
-    sendCd: (p) => s.sendCd(p),
-    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-    setMeditating: (p, on) => s.setMeditating(p, on),
-    setMonFlags: (m, mf, ce) => s.setMonFlags(m, mf, ce),
-    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-    get terrain() { return s.terrain; },
-    tryInterrupt: (p, mon, extraStun) => s.tryInterrupt(p, mon, extraStun),
-    warn: (p, k, params) => s.warn(p, k, params),
-  }))(this));
+  private readonly combat = new CombatSystem(
+    ((s: GameSim): CombatCtx => ({
+      get clone() {
+        return s.clone;
+      },
+      get duel() {
+        return s.duel;
+      },
+      duelStrike: (p, o, powers, elemMul) => s.duelStrike(p, o, powers, elemMul),
+      emit: (type, payload) => s.emit(type, payload),
+      fx: (m) => s.fx(m),
+      hitMonster: (p, mon, basePower, mul, elem) => s.hitMonster(p, mon, basePower, mul, elem),
+      homeDist: (m) => s.homeDist(m),
+      isDead: (p) => s.isDead(p),
+      get level() {
+        return s.level;
+      },
+      get mirror() {
+        return s.mirror;
+      },
+      get monById() {
+        return s.monById;
+      },
+      get monsters() {
+        return s.monsters;
+      },
+      get now() {
+        return s.now;
+      },
+      get players() {
+        return s.players;
+      },
+      resetAi: (m) => s.resetAi(m),
+      sendCd: (p) => s.sendCd(p),
+      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+      setMeditating: (p, on) => s.setMeditating(p, on),
+      setMonFlags: (m, mf, ce) => s.setMonFlags(m, mf, ce),
+      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+      get terrain() {
+        return s.terrain;
+      },
+      tryInterrupt: (p, mon, extraStun) => s.tryInterrupt(p, mon, extraStun),
+      warn: (p, k, params) => s.warn(p, k, params),
+    }))(this),
+  );
 
   /** Pháp bảo phụ và đan tăng sức (P3-8) (R-7): xem `game/artifacts/`. */
-  private readonly artSys = new ArtifactSystem(((s: GameSim): ArtifactCtx => ({
-    addPosture: (m, n) => s.addPosture(m, n),
-    airborne: (p) => s.airborne(p),
-    canAssist: (p, o) => s.canAssist(p, o),
-    get duel() { return s.duel; },
-    emit: (type, payload) => s.emit(type, payload),
-    fx: (m) => s.fx(m),
-    get host() { return s.host; },
-    isDead: (p) => s.isDead(p),
-    monstersNear: (x, z, r, except) => s.monstersNear(x, z, r, except),
-    get now() { return s.now; },
-    sendCd: (p) => s.sendCd(p),
-    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-    setMonFlags: (m, mf, ce) => s.setMonFlags(m, mf, ce),
-    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-    tryInterrupt: (p, mon, extraStun) => s.tryInterrupt(p, mon, extraStun),
-    warn: (p, k, params) => s.warn(p, k, params),
-  }))(this));
+  private readonly artSys = new ArtifactSystem(
+    ((s: GameSim): ArtifactCtx => ({
+      addPosture: (m, n) => s.addPosture(m, n),
+      airborne: (p) => s.airborne(p),
+      canAssist: (p, o) => s.canAssist(p, o),
+      get duel() {
+        return s.duel;
+      },
+      emit: (type, payload) => s.emit(type, payload),
+      fx: (m) => s.fx(m),
+      get host() {
+        return s.host;
+      },
+      isDead: (p) => s.isDead(p),
+      monstersNear: (x, z, r, except) => s.monstersNear(x, z, r, except),
+      get now() {
+        return s.now;
+      },
+      sendCd: (p) => s.sendCd(p),
+      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+      setMonFlags: (m, mf, ce) => s.setMonFlags(m, mf, ce),
+      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+      tryInterrupt: (p, mon, extraStun) => s.tryInterrupt(p, mon, extraStun),
+      warn: (p, k, params) => s.warn(p, k, params),
+    }))(this),
+  );
 
   /** Chết và hồi sinh của người chơi (R-7) (R-7): xem `game/death/`. */
-  private readonly deathSys = new DeathSystem(((s: GameSim): DeathCtx => ({
-    abortStrike: (p, refund, notify) => s.abortStrike(p, refund, notify),
-    addStack: (p, max, decay) => s.addStack(p, max, decay),
-    get bossDmgMul() { return s.bossDmgMul; },
-    get clone() { return s.clone; },
-    damageMonster: (mon, dmg, p, crit, hv, heavy, ke, dot) => s.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot),
-    get domain() { return s.domain; },
-    get duel() { return s.duel; },
-    emit: (type, payload) => s.emit(type, payload),
-    endTribulation: (p, success, silent) => s.endTribulation(p, success, silent),
-    fx: (m) => s.fx(m),
-    gainCharge: (p, n) => s.gainCharge(p, n),
-    giveXp: (p, n, announce) => s.giveXp(p, n, announce),
-    isDead: (p) => s.isDead(p),
-    get mirror() { return s.mirror; },
-    get monById() { return s.monById; },
-    get now() { return s.now; },
-    get opts() { return s.opts; },
-    get realm() { return s.realm; },
-    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-    setMeditating: (p, on) => s.setMeditating(p, on),
-    get soul() { return s.soul; },
-    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-    get terrain() { return s.terrain; },
-    get tribSys() { return s.tribSys; },
-    warn: (p, k, params) => s.warn(p, k, params),
-  }))(this));
+  private readonly deathSys = new DeathSystem(
+    ((s: GameSim): DeathCtx => ({
+      abortStrike: (p, refund, notify) => s.abortStrike(p, refund, notify),
+      addStack: (p, max, decay) => s.addStack(p, max, decay),
+      get bossDmgMul() {
+        return s.bossDmgMul;
+      },
+      get clone() {
+        return s.clone;
+      },
+      damageMonster: (mon, dmg, p, crit, hv, heavy, ke, dot) => s.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot),
+      get domain() {
+        return s.domain;
+      },
+      get duel() {
+        return s.duel;
+      },
+      emit: (type, payload) => s.emit(type, payload),
+      endTribulation: (p, success, silent) => s.endTribulation(p, success, silent),
+      fx: (m) => s.fx(m),
+      gainCharge: (p, n) => s.gainCharge(p, n),
+      giveXp: (p, n, announce) => s.giveXp(p, n, announce),
+      isDead: (p) => s.isDead(p),
+      get mirror() {
+        return s.mirror;
+      },
+      get monById() {
+        return s.monById;
+      },
+      get now() {
+        return s.now;
+      },
+      get opts() {
+        return s.opts;
+      },
+      get realm() {
+        return s.realm;
+      },
+      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+      setMeditating: (p, on) => s.setMeditating(p, on),
+      get soul() {
+        return s.soul;
+      },
+      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+      get terrain() {
+        return s.terrain;
+      },
+      get tribSys() {
+        return s.tribSys;
+      },
+      warn: (p, k, params) => s.warn(p, k, params),
+    }))(this),
+  );
 
   /** Độ kiếp phía sim (R-7) (R-7): xem `game/tribulation/`. */
-  private readonly tribHub = new TribulationSystem(((s: GameSim): TribulationCtx => ({
-    get clone() { return s.clone; },
-    damageMonster: (mon, dmg, p, crit, hv, heavy, ke, dot) => s.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot),
-    damagePlayer: (p, dmg, src, hv, ke) => s.damagePlayer(p, dmg, src, hv, ke),
-    get domain() { return s.domain; },
-    get duel() { return s.duel; },
-    emit: (type, payload) => s.emit(type, payload),
-    fx: (m) => s.fx(m),
-    get host() { return s.host; },
-    isDead: (p) => s.isDead(p),
-    get level() { return s.level; },
-    get now() { return s.now; },
-    get players() { return s.players; },
-    questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
-    get realm() { return s.realm; },
-    savePlayer: (p) => s.savePlayer(p),
-    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-    setMeditating: (p, on) => s.setMeditating(p, on),
-    setMonState: (m, st) => s.setMonState(m, st),
-    spawnMonster: (def, level, x, z, spawn) => s.spawnMonster(def, level, x, z, spawn),
-    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-    sysAll: (k, params, type) => s.sysAll(k, params, type),
-    get tribSys() { return s.tribSys; },
-    warn: (p, k, params) => s.warn(p, k, params),
-  }))(this));
+  private readonly tribHub = new TribulationSystem(
+    ((s: GameSim): TribulationCtx => ({
+      get clone() {
+        return s.clone;
+      },
+      damageMonster: (mon, dmg, p, crit, hv, heavy, ke, dot) => s.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot),
+      damagePlayer: (p, dmg, src, hv, ke) => s.damagePlayer(p, dmg, src, hv, ke),
+      get domain() {
+        return s.domain;
+      },
+      get duel() {
+        return s.duel;
+      },
+      emit: (type, payload) => s.emit(type, payload),
+      fx: (m) => s.fx(m),
+      get host() {
+        return s.host;
+      },
+      isDead: (p) => s.isDead(p),
+      get level() {
+        return s.level;
+      },
+      get now() {
+        return s.now;
+      },
+      get players() {
+        return s.players;
+      },
+      questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
+      get realm() {
+        return s.realm;
+      },
+      savePlayer: (p) => s.savePlayer(p),
+      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+      setMeditating: (p, on) => s.setMeditating(p, on),
+      setMonState: (m, st) => s.setMonState(m, st),
+      spawnMonster: (def, level, x, z, spawn) => s.spawnMonster(def, level, x, z, spawn),
+      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+      sysAll: (k, params, type) => s.sysAll(k, params, type),
+      get tribSys() {
+        return s.tribSys;
+      },
+      warn: (p, k, params) => s.warn(p, k, params),
+    }))(this),
+  );
 
   /** Vòng đời và tick người chơi (R-7) (R-7): xem `game/players/`. */
-  private readonly plSys = new PlayerSystem(((s: GameSim): PlayerCtx => ({
-    cancelCast: (p) => s.cancelCast(p),
-    get combat() { return s.combat; },
-    get duel() { return s.duel; },
-    endTribulation: (p, success, silent) => s.endTribulation(p, success, silent),
-    finishCast: (p) => s.finishCast(p),
-    giveXp: (p, n, announce) => s.giveXp(p, n, announce),
-    isDead: (p) => s.isDead(p),
-    get level() { return s.level; },
-    get monSys() { return s.monSys; },
-    get now() { return s.now; },
-    get opts() { return s.opts; },
-    get players() { return s.players; },
-    questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
-    get questObj() { return s.questObj; },
-    get realm() { return s.realm; },
-    resolvePending: (p) => s.resolvePending(p),
-    sendCd: (p) => s.sendCd(p),
-    setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-    setMeditating: (p, on) => s.setMeditating(p, on),
-    get soul() { return s.soul; },
-    get state() { return s.state; },
-    sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-    get terrain() { return s.terrain; },
-    tickTribulation: (p) => s.tickTribulation(p),
-    get tribSys() { return s.tribSys; },
-    warn: (p, k, params) => s.warn(p, k, params),
-  }))(this));
+  private readonly plSys = new PlayerSystem(
+    ((s: GameSim): PlayerCtx => ({
+      cancelCast: (p) => s.cancelCast(p),
+      get combat() {
+        return s.combat;
+      },
+      get duel() {
+        return s.duel;
+      },
+      endTribulation: (p, success, silent) => s.endTribulation(p, success, silent),
+      finishCast: (p) => s.finishCast(p),
+      giveXp: (p, n, announce) => s.giveXp(p, n, announce),
+      isDead: (p) => s.isDead(p),
+      get level() {
+        return s.level;
+      },
+      get monSys() {
+        return s.monSys;
+      },
+      get now() {
+        return s.now;
+      },
+      get opts() {
+        return s.opts;
+      },
+      get players() {
+        return s.players;
+      },
+      questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
+      get questObj() {
+        return s.questObj;
+      },
+      get realm() {
+        return s.realm;
+      },
+      resolvePending: (p) => s.resolvePending(p),
+      sendCd: (p) => s.sendCd(p),
+      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
+      setMeditating: (p, on) => s.setMeditating(p, on),
+      get soul() {
+        return s.soul;
+      },
+      get state() {
+        return s.state;
+      },
+      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
+      get terrain() {
+        return s.terrain;
+      },
+      tickTribulation: (p) => s.tickTribulation(p),
+      get tribSys() {
+        return s.tribSys;
+      },
+      warn: (p, k, params) => s.warn(p, k, params),
+    }))(this),
+  );
 
   /** Lệnh GM (R-7): xem `game/gm/`. */
   readonly gmSys = new GmSystem({
@@ -545,7 +710,8 @@ export class GameSim {
       return e;
     },
     telegraph: (g, delay, kind, src) => this.addHazard(g, delay, 0, false, kind, src, 0),
-    marker: (x, z, r, dur, kind) => this.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur),
+    marker: (x, z, r, dur, kind) =>
+      this.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur),
     damagePlayer: (p, n, src, hv, ke) => this.damagePlayer(p, n, src, hv, ke),
     stagger: (m, sec) => this.stagger(m, sec),
     heal: (m, n) => {
@@ -767,15 +933,33 @@ export class GameSim {
 
   // ---------- người chơi vào/ra ----------
 
-  addPlayer(client: Client, char: Character, dev: boolean, session: string, noLoot = false): PlayerEnt { return this.plSys.addPlayer(client, char, dev, session, noLoot); }
-  onInput(p: PlayerEnt, m: unknown): void { return this.plSys.onInput(p, m); }
-  rateOk(p: PlayerEnt): boolean { return this.plSys.rateOk(p); }
-  removePlayer(sid: string): void { return this.plSys.removePlayer(sid); }
-  saveAll(): void { return this.plSys.saveAll(); }
-  savePlayer(p: PlayerEnt): void { return this.plSys.savePlayer(p); }
-  private tickPlayer(p: PlayerEnt, dt: number): void { return this.plSys.tickPlayer(p, dt); }
-  syncPublic(p: PlayerEnt): void { return this.plSys.syncPublic(p); }
-  applyInput(p: PlayerEnt, inp: MoveInput): void { return this.plSys.applyInput(p, inp); }
+  addPlayer(client: Client, char: Character, dev: boolean, session: string, noLoot = false): PlayerEnt {
+    return this.plSys.addPlayer(client, char, dev, session, noLoot);
+  }
+  onInput(p: PlayerEnt, m: unknown): void {
+    return this.plSys.onInput(p, m);
+  }
+  rateOk(p: PlayerEnt): boolean {
+    return this.plSys.rateOk(p);
+  }
+  removePlayer(sid: string): void {
+    return this.plSys.removePlayer(sid);
+  }
+  saveAll(): void {
+    return this.plSys.saveAll();
+  }
+  savePlayer(p: PlayerEnt): void {
+    return this.plSys.savePlayer(p);
+  }
+  private tickPlayer(p: PlayerEnt, dt: number): void {
+    return this.plSys.tickPlayer(p, dt);
+  }
+  syncPublic(p: PlayerEnt): void {
+    return this.plSys.syncPublic(p);
+  }
+  applyInput(p: PlayerEnt, inp: MoveInput): void {
+    return this.plSys.applyInput(p, inp);
+  }
   tick(dtMs: number): void {
     const t0 = performance.now();
     this.now = Date.now();
@@ -829,7 +1013,11 @@ export class GameSim {
       if (p.mth.dirty && this.now - p.mth.sentAt >= METHOD_SEND_MS) {
         p.mth.dirty = false;
         p.mth.sentAt = this.now;
-        p.client.send(S.METHOD, { ...p.mth.toMsg(c.meta, this.now), art: artifactMsg(c.equip, c.meta), buffs: buffsMsg(c.meta, Date.now()) });
+        p.client.send(S.METHOD, {
+          ...p.mth.toMsg(c.meta, this.now),
+          art: artifactMsg(c.equip, c.meta),
+          buffs: buffsMsg(c.meta, Date.now()),
+        });
       }
       if (this.now >= p.saveAt) {
         p.saveAt = this.now + SAVE_INTERVAL;
@@ -891,31 +1079,79 @@ export class GameSim {
     p.client.send(S.CD, m);
   }
 
-  private abortStrike(p: PlayerEnt, refund: boolean, notify = true): void { return this.combat.abortStrike(p, refund, notify); }
-  private addStack(p: PlayerEnt, max: number, decay: number): void { return this.combat.addStack(p, max, decay); }
-  private aggroMonster(mon: MonEnt, p: PlayerEnt, assist = false): void { return this.combat.aggroMonster(mon, p, assist); }
-  private airborne(p: PlayerEnt): boolean { return this.combat.airborne(p); }
-  private canAssist(p: PlayerEnt, o: PlayerEnt): boolean { return this.combat.canAssist(p, o); }
-  private cancelCast(p: PlayerEnt): void { return this.combat.cancelCast(p); }
-  private finishCast(p: PlayerEnt): void { return this.combat.finishCast(p); }
-  private gainCharge(p: PlayerEnt, n: number): void { return this.combat.gainCharge(p, n); }
-  private liveStacks(p: PlayerEnt): number { return this.combat.liveStacks(p); }
-  private monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] { return this.combat.monstersNear(x, z, r, except); }
-  private resolvePending(p: PlayerEnt): void { return this.combat.resolvePending(p); }
-  private tickMethods(): void { return this.combat.tickMethods(); }
-  onSkill(p: PlayerEnt, msg: unknown): void { return this.combat.onSkill(p, msg); }
-  onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void { return this.combat.onDash(p, skill, targetId); }
+  private abortStrike(p: PlayerEnt, refund: boolean, notify = true): void {
+    return this.combat.abortStrike(p, refund, notify);
+  }
+  private addStack(p: PlayerEnt, max: number, decay: number): void {
+    return this.combat.addStack(p, max, decay);
+  }
+  private aggroMonster(mon: MonEnt, p: PlayerEnt, assist = false): void {
+    return this.combat.aggroMonster(mon, p, assist);
+  }
+  private airborne(p: PlayerEnt): boolean {
+    return this.combat.airborne(p);
+  }
+  private canAssist(p: PlayerEnt, o: PlayerEnt): boolean {
+    return this.combat.canAssist(p, o);
+  }
+  private cancelCast(p: PlayerEnt): void {
+    return this.combat.cancelCast(p);
+  }
+  private finishCast(p: PlayerEnt): void {
+    return this.combat.finishCast(p);
+  }
+  private gainCharge(p: PlayerEnt, n: number): void {
+    return this.combat.gainCharge(p, n);
+  }
+  private liveStacks(p: PlayerEnt): number {
+    return this.combat.liveStacks(p);
+  }
+  private monstersNear(x: number, z: number, r: number, except?: MonEnt): MonEnt[] {
+    return this.combat.monstersNear(x, z, r, except);
+  }
+  private resolvePending(p: PlayerEnt): void {
+    return this.combat.resolvePending(p);
+  }
+  private tickMethods(): void {
+    return this.combat.tickMethods();
+  }
+  onSkill(p: PlayerEnt, msg: unknown): void {
+    return this.combat.onSkill(p, msg);
+  }
+  onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void {
+    return this.combat.onDash(p, skill, targetId);
+  }
   // ---------- pháp bảo phụ và đan tăng sức (P3-8) ----------
 
-  private applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void { return this.artSys.applyPillBuff(p, def, potency); }
-  private feedArtifact(p: PlayerEnt, mon: MonEnt): void { return this.artSys.feedArtifact(p, mon); }
-  onArtifact(p: PlayerEnt): void { return this.artSys.onArtifact(p); }
-  onBonded(p: PlayerEnt): void { return this.artSys.onBonded(p); }
+  private applyPillBuff(
+    p: PlayerEnt,
+    def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } },
+    potency: number,
+  ): void {
+    return this.artSys.applyPillBuff(p, def, potency);
+  }
+  private feedArtifact(p: PlayerEnt, mon: MonEnt): void {
+    return this.artSys.feedArtifact(p, mon);
+  }
+  onArtifact(p: PlayerEnt): void {
+    return this.artSys.onArtifact(p);
+  }
+  onBonded(p: PlayerEnt): void {
+    return this.artSys.onBonded(p);
+  }
   /** Đòn đánh lên đối thủ tỉ thí: sát thương giảm (đấu tập), không xuống dưới 1 máu, không cho kiếm ý/sạc, không thưởng gì. */
   private duelStrike(p: PlayerEnt, o: PlayerEnt, powers: number[], elemMul: number): void {
     for (const power of powers) {
       if (this.duel.foeOf(p) !== o) return;
-      const { dmg, crit } = computeDamage(p.char.atk, power * elemMul * DUEL_DAMAGE_MUL, o.char.def, Math.random(), Math.random(), p.char.stats.critRate, p.char.stats.critMul);
+      const { dmg, crit } = computeDamage(
+        p.char.atk,
+        power * elemMul * DUEL_DAMAGE_MUL,
+        o.char.def,
+        Math.random(),
+        Math.random(),
+        p.char.stats.critRate,
+        p.char.stats.critMul,
+      );
       let n = Math.max(1, Math.round(dmg));
       if (this.now < o.mth.guardUntil) n = reduceDamage(n, o.mth.guardReduce);
       if (o.shield) {
@@ -936,15 +1172,59 @@ export class GameSim {
     }
   }
 
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false, dur = 0, seal?: Hazard['seal'], reach = false): void { return this.monSys.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, mv, hot, dur, seal, reach); }
-  private addPosture(m: MonEnt, n: number): void { return this.monSys.addPosture(m, n); }
-  bossTimers(): BossTimerMsg { return this.monSys.bossTimers(); }
-  checkPhase(m: MonEnt): void { return this.monSys.checkPhase(m); }
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0, dot = false): void { return this.monSys.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot); }
-  delayBosses(): void { return this.monSys.delayBosses(); }
-  fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void { return this.monSys.fireBolts(m, c, yaw, lift); }
-  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void { return this.monSys.hitMonster(p, mon, basePower, mul, elem); }
-  private homeDist(m: MonEnt): number { return this.monSys.homeDist(m); }
+  addHazard(
+    g: HazardGeom,
+    delay: number,
+    dmg: number,
+    pct: boolean,
+    kind: HazardMsg['kind'],
+    src: string,
+    atk = 0,
+    lock = false,
+    grp = 0,
+    guard?: GuardCfg,
+    cut?: { mul: number; max: number },
+    mv?: HazardMsg['mv'],
+    hot = false,
+    dur = 0,
+    seal?: Hazard['seal'],
+    reach = false,
+  ): void {
+    return this.monSys.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, mv, hot, dur, seal, reach);
+  }
+  private addPosture(m: MonEnt, n: number): void {
+    return this.monSys.addPosture(m, n);
+  }
+  bossTimers(): BossTimerMsg {
+    return this.monSys.bossTimers();
+  }
+  checkPhase(m: MonEnt): void {
+    return this.monSys.checkPhase(m);
+  }
+  damageMonster(
+    mon: MonEnt,
+    dmg: number,
+    p: PlayerEnt | null,
+    crit = false,
+    hv = false,
+    heavy = hv,
+    ke: 0 | 1 | -1 = 0,
+    dot = false,
+  ): void {
+    return this.monSys.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot);
+  }
+  delayBosses(): void {
+    return this.monSys.delayBosses();
+  }
+  fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void {
+    return this.monSys.fireBolts(m, c, yaw, lift);
+  }
+  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void {
+    return this.monSys.hitMonster(p, mon, basePower, mul, elem);
+  }
+  private homeDist(m: MonEnt): number {
+    return this.monSys.homeDist(m);
+  }
   /** Gột xong (DV-3D, Xích Tẫn Khích): hủy vùng boss đã thả rồi hạ boss qua đường giết chung (cùng tu vi, rơi đồ, nhiệm vụ như bị đánh chết). */
   purifyMonster(mon: MonEnt): void {
     if (mon.state === MS_DEAD) return;
@@ -953,40 +1233,108 @@ export class GameSim {
     this.killMonster(mon);
   }
 
-  private killMonster(mon: MonEnt): void { return this.monSys.killMonster(mon); }
-  nextHazardGrp(): number { return this.monSys.nextHazardGrp(); }
-  releaseChant(m: MonEnt, c: MonsterChant): void { return this.monSys.releaseChant(m, c); }
-  private removeMonster(m: MonEnt): void { return this.monSys.removeMonster(m); }
-  private resetAi(m: MonEnt): void { return this.monSys.resetAi(m); }
-  private respawnMonster(m: MonEnt, at?: { x: number; z: number }): void { return this.monSys.respawnMonster(m, at); }
-  sendBossTimers(p?: PlayerEnt): void { return this.monSys.sendBossTimers(p); }
-  private setMonFlags(m: MonEnt, mf: number, ce: number): void { return this.monSys.setMonFlags(m, mf, ce); }
-  private setMonState(m: MonEnt, st: number): void { return this.monSys.setMonState(m, st); }
-  private spawnFromDef(sp: SpawnDef): MonEnt | null { return this.monSys.spawnFromDef(sp); }
-  spawnMonster(def: MonsterDef, level: number, x: number, z: number, spawn: SpawnDef | null): MonEnt { return this.monSys.spawnMonster(def, level, x, z, spawn); }
-  stagger(m: MonEnt, sec: number): void { return this.monSys.stagger(m, sec); }
-  private tickBolts(): void { return this.monSys.tickBolts(); }
-  private tickHazards(): void { return this.monSys.tickHazards(); }
-  private tickMonster(m: MonEnt, dt: number): void { return this.monSys.tickMonster(m, dt); }
-  private tryInterrupt(p: PlayerEnt, mon: MonEnt, extraStun = 0): void { return this.monSys.tryInterrupt(p, mon, extraStun); }
-  damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void { return this.deathSys.damagePlayer(p, dmg, src, hv, ke); }
-  grantDungeonReward(p: PlayerEnt, r: DungeonReward, key: string, label: string): boolean { return this.deathSys.grantDungeonReward(p, r, key, label); }
-  onRespawn(p: PlayerEnt): void { return this.deathSys.onRespawn(p); }
-  beginTribulation(p: PlayerEnt, def: TribDef, consume: boolean): boolean { return this.tribHub.beginTribulation(p, def, consume); }
-  private cloneHit(p: PlayerEnt, mon: MonEnt, power: number, skill: SkillDef | undefined): void { return this.tribHub.cloneHit(p, mon, power, skill); }
-  private endTribulation(p: PlayerEnt, success: boolean, silent: boolean): void { return this.tribHub.endTribulation(p, success, silent); }
-  private healPlayer(p: PlayerEnt, n: number): void { return this.tribHub.healPlayer(p, n); }
-  private lockCut(h: Hazard, p: PlayerEnt): { mul: number; max: number } { return this.tribHub.lockCut(h, p); }
-  onBottleneck(p: PlayerEnt, msg: unknown): void { return this.tribHub.onBottleneck(p, msg); }
-  onBreakthrough(p: PlayerEnt, force = false): void { return this.tribHub.onBreakthrough(p, force); }
-  onChangeRoot(p: PlayerEnt, msg: unknown): void { return this.tribHub.onChangeRoot(p, msg); }
-  onClone(p: PlayerEnt, msg: unknown): void { return this.tribHub.onClone(p, msg); }
-  onTribClone(p: PlayerEnt): void { return this.tribHub.onTribClone(p); }
-  onTribSoul(p: PlayerEnt): void { return this.tribHub.onTribSoul(p); }
-  private pickGuards(h: Hazard): PlayerEnt[] { return this.tribHub.pickGuards(h); }
-  private shareToGuards(owner: PlayerEnt, n: number, h: Hazard): number { return this.tribHub.shareToGuards(owner, n, h); }
-  spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o: { dyaw?: number; level?: number } = {}): MonEnt | null { return this.tribHub.spawnShadow(p, st, o); }
-  private tickTribulation(p: PlayerEnt): void { return this.tribHub.tickTribulation(p); }
+  private killMonster(mon: MonEnt): void {
+    return this.monSys.killMonster(mon);
+  }
+  nextHazardGrp(): number {
+    return this.monSys.nextHazardGrp();
+  }
+  releaseChant(m: MonEnt, c: MonsterChant): void {
+    return this.monSys.releaseChant(m, c);
+  }
+  private removeMonster(m: MonEnt): void {
+    return this.monSys.removeMonster(m);
+  }
+  private resetAi(m: MonEnt): void {
+    return this.monSys.resetAi(m);
+  }
+  private respawnMonster(m: MonEnt, at?: { x: number; z: number }): void {
+    return this.monSys.respawnMonster(m, at);
+  }
+  sendBossTimers(p?: PlayerEnt): void {
+    return this.monSys.sendBossTimers(p);
+  }
+  private setMonFlags(m: MonEnt, mf: number, ce: number): void {
+    return this.monSys.setMonFlags(m, mf, ce);
+  }
+  private setMonState(m: MonEnt, st: number): void {
+    return this.monSys.setMonState(m, st);
+  }
+  private spawnFromDef(sp: SpawnDef): MonEnt | null {
+    return this.monSys.spawnFromDef(sp);
+  }
+  spawnMonster(def: MonsterDef, level: number, x: number, z: number, spawn: SpawnDef | null): MonEnt {
+    return this.monSys.spawnMonster(def, level, x, z, spawn);
+  }
+  stagger(m: MonEnt, sec: number): void {
+    return this.monSys.stagger(m, sec);
+  }
+  private tickBolts(): void {
+    return this.monSys.tickBolts();
+  }
+  private tickHazards(): void {
+    return this.monSys.tickHazards();
+  }
+  private tickMonster(m: MonEnt, dt: number): void {
+    return this.monSys.tickMonster(m, dt);
+  }
+  private tryInterrupt(p: PlayerEnt, mon: MonEnt, extraStun = 0): void {
+    return this.monSys.tryInterrupt(p, mon, extraStun);
+  }
+  damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void {
+    return this.deathSys.damagePlayer(p, dmg, src, hv, ke);
+  }
+  grantDungeonReward(p: PlayerEnt, r: DungeonReward, key: string, label: string): boolean {
+    return this.deathSys.grantDungeonReward(p, r, key, label);
+  }
+  onRespawn(p: PlayerEnt): void {
+    return this.deathSys.onRespawn(p);
+  }
+  beginTribulation(p: PlayerEnt, def: TribDef, consume: boolean): boolean {
+    return this.tribHub.beginTribulation(p, def, consume);
+  }
+  private cloneHit(p: PlayerEnt, mon: MonEnt, power: number, skill: SkillDef | undefined): void {
+    return this.tribHub.cloneHit(p, mon, power, skill);
+  }
+  private endTribulation(p: PlayerEnt, success: boolean, silent: boolean): void {
+    return this.tribHub.endTribulation(p, success, silent);
+  }
+  private healPlayer(p: PlayerEnt, n: number): void {
+    return this.tribHub.healPlayer(p, n);
+  }
+  private lockCut(h: Hazard, p: PlayerEnt): { mul: number; max: number } {
+    return this.tribHub.lockCut(h, p);
+  }
+  onBottleneck(p: PlayerEnt, msg: unknown): void {
+    return this.tribHub.onBottleneck(p, msg);
+  }
+  onBreakthrough(p: PlayerEnt, force = false): void {
+    return this.tribHub.onBreakthrough(p, force);
+  }
+  onChangeRoot(p: PlayerEnt, msg: unknown): void {
+    return this.tribHub.onChangeRoot(p, msg);
+  }
+  onClone(p: PlayerEnt, msg: unknown): void {
+    return this.tribHub.onClone(p, msg);
+  }
+  onTribClone(p: PlayerEnt): void {
+    return this.tribHub.onTribClone(p);
+  }
+  onTribSoul(p: PlayerEnt): void {
+    return this.tribHub.onTribSoul(p);
+  }
+  private pickGuards(h: Hazard): PlayerEnt[] {
+    return this.tribHub.pickGuards(h);
+  }
+  private shareToGuards(owner: PlayerEnt, n: number, h: Hazard): number {
+    return this.tribHub.shareToGuards(owner, n, h);
+  }
+  spawnShadow(p: PlayerEnt, st: { hp: number; atk: number; def: number }, o: { dyaw?: number; level?: number } = {}): MonEnt | null {
+    return this.tribHub.spawnShadow(p, st, o);
+  }
+  private tickTribulation(p: PlayerEnt): void {
+    return this.tribHub.tickTribulation(p);
+  }
   private setMeditating(p: PlayerEnt, on: boolean): void {
     p.meditating = on;
     this.setFlag(p, PF_MEDITATING, on);
@@ -1001,27 +1349,64 @@ export class GameSim {
     if (p.char.quests.active.q_dan_khi && !p.char.questComplete('q_dan_khi')) this.sys(p, 'sys.dan_khi_start', undefined, 'info');
   }
 
-  private idem(p: PlayerEnt, r: unknown): string | null | undefined { return this.ecoSys.idem(p, r); }
-  private invMsg(p: PlayerEnt): InvMsg { return this.ecoSys.invMsg(p); }
-  onBuy(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onBuy(p, msg); }
-  onCraft(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onCraft(p, msg); }
-  onEnhance(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onEnhance(p, msg); }
-  onEquip(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onEquip(p, msg); }
-  onGather(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onGather(p, msg); }
-  onMethod(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onMethod(p, msg); }
-  onMoveItem(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onMoveItem(p, msg); }
-  onQuest(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onQuest(p, msg); }
-  onSell(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onSell(p, msg); }
-  onSkillUp(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onSkillUp(p, msg); }
-  onSkillVar(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onSkillVar(p, msg); }
-  onTalk(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onTalk(p, msg); }
-  onUnequip(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onUnequip(p, msg); }
-  onUpgrade(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onUpgrade(p, msg); }
-  onUse(p: PlayerEnt, msg: unknown): void { return this.ecoSys.onUse(p, msg); }
+  private idem(p: PlayerEnt, r: unknown): string | null | undefined {
+    return this.ecoSys.idem(p, r);
+  }
+  private invMsg(p: PlayerEnt): InvMsg {
+    return this.ecoSys.invMsg(p);
+  }
+  onBuy(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onBuy(p, msg);
+  }
+  onCraft(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onCraft(p, msg);
+  }
+  onEnhance(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onEnhance(p, msg);
+  }
+  onEquip(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onEquip(p, msg);
+  }
+  onGather(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onGather(p, msg);
+  }
+  onMethod(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onMethod(p, msg);
+  }
+  onMoveItem(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onMoveItem(p, msg);
+  }
+  onQuest(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onQuest(p, msg);
+  }
+  onSell(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onSell(p, msg);
+  }
+  onSkillUp(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onSkillUp(p, msg);
+  }
+  onSkillVar(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onSkillVar(p, msg);
+  }
+  onTalk(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onTalk(p, msg);
+  }
+  onUnequip(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onUnequip(p, msg);
+  }
+  onUpgrade(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onUpgrade(p, msg);
+  }
+  onUse(p: PlayerEnt, msg: unknown): void {
+    return this.ecoSys.onUse(p, msg);
+  }
   onChat(p: PlayerEnt, msg: unknown): void {
     let text = (msg as { m?: unknown } | null)?.m;
     if (typeof text !== 'string') return;
-    text = text.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, CHAT_MAX_LEN);
+    text = text
+      .replace(/[\u0000-\u001f]/g, ' ')
+      .trim()
+      .slice(0, CHAT_MAX_LEN);
     if (!text) return;
     if (this.now - p.chatAt < 800) return this.warn(p, 'sys.chat_rate');
     p.chatAt = this.now;
@@ -1082,13 +1467,18 @@ export class GameSim {
       this.heal(p);
       this.sys(p, 'sys.gm', { m: 'god on' }, 'info');
     }
-    if (f.at && f.at.level !== this.level.id && !LEVELS[f.at.level]?.dungeon && this.host.transferLevel?.(p, f.at.level, { x: f.at.x, z: f.at.z }, { force: true })) this.sys(p, 'sys.gm', { m: `at ${f.at.id} → ${f.at.level}` }, 'info');
+    if (
+      f.at &&
+      f.at.level !== this.level.id &&
+      !LEVELS[f.at.level]?.dungeon &&
+      this.host.transferLevel?.(p, f.at.level, { x: f.at.x, z: f.at.z }, { force: true })
+    )
+      this.sys(p, 'sys.gm', { m: `at ${f.at.id} → ${f.at.level}` }, 'info');
     else if (f.at && this.teleportTo(p, f.at.x, f.at.z, f.at.level)) this.sys(p, 'sys.gm', { m: `at ${f.at.id}` }, 'info');
-    else if (!f.at && f.pos && this.teleportTo(p, f.pos.x, f.pos.z)) this.sys(p, 'sys.gm', { m: `at ${Math.round(f.pos.x)},${Math.round(f.pos.z)}` }, 'info');
+    else if (!f.at && f.pos && this.teleportTo(p, f.pos.x, f.pos.z))
+      this.sys(p, 'sys.gm', { m: `at ${Math.round(f.pos.x)},${Math.round(f.pos.z)}` }, 'info');
     if (f.trib) this.sys(p, 'sys.gm', { m: this.gmSys.tribulation(p) }, 'info');
   }
-
 }
 
 export const DEFAULT_SPAWN = SPAWN_POINT;
-

@@ -1,7 +1,21 @@
 // Công cụ cho lệnh GM thử đồ (GM-TEST): bộ trang bị theo bậc × nhánh, tìm id, danh sách kiếm/bộ.
 // Hàm thuần (không đụng sim/DB) để test được; sim.ts chỉ nối lệnh `/gm kit|outfit|weapon|find|skills|learn|help`.
 import { EQUIP_SLOTS, type EquipSlot } from '@dtl/shared';
-import { itemTier, ITEMS, itemName, METHODS, methodName, MONSTERS, monsterName, OUTFITS, SET, SETS, SKILL, skillName, t } from '@dtl/content';
+import {
+  itemTier,
+  ITEMS,
+  itemName,
+  METHODS,
+  methodName,
+  MONSTERS,
+  monsterName,
+  OUTFITS,
+  SET,
+  SETS,
+  SKILL,
+  skillName,
+  t,
+} from '@dtl/content';
 
 /** Nhánh công pháp của `/gm kit`: kiếm tu (DPS), hộ pháp (tank), đan sư (hỗ trợ). Thứ tự khớp `METHODS`. */
 export const GM_BRANCHES = ['kiem', 'hophap', 'dansu'] as const;
@@ -55,7 +69,13 @@ export function planKit(tier: number, branch: GmBranch): KitPlan {
   for (const slot of EQUIP_SLOTS) {
     if (slot === 'artifact') continue;
     const cand = ITEMS.filter((i) => i.kind === slot && itemTier(i.id) <= used && (!i.set || mine.has(i.set)));
-    cand.sort((x, y) => Number(y.set === set) - Number(x.set === set) || itemTier(y.id) - itemTier(x.id) || (y.reqLevel ?? 0) - (x.reqLevel ?? 0) || (x.id < y.id ? -1 : 1));
+    cand.sort(
+      (x, y) =>
+        Number(y.set === set) - Number(x.set === set) ||
+        itemTier(y.id) - itemTier(x.id) ||
+        (y.reqLevel ?? 0) - (x.reqLevel ?? 0) ||
+        (x.id < y.id ? -1 : 1),
+    );
     if (cand[0]) pieces.push({ slot, id: cand[0].id });
   }
   return { tier: want, used, set, pieces };
@@ -93,13 +113,7 @@ export function parsePlus(v: string | undefined, max: number): number | null {
   return m ? Math.min(max, Number(m[1])) : null;
 }
 
-const fold = (s: string): string =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLowerCase();
+const fold = (s: string): string => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
 
 export interface FindHit {
   kind: 'item' | 'skill' | 'set' | 'mon' | 'method';

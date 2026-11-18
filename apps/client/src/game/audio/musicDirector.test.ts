@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { AmbientPicker, ambientFor, BOSS_EXIT, COMBAT_ENTER, COMBAT_EXIT, ENGAGE_HOLD, isNightHour, isStemZone, MIN_HOLD, MusicDirector, type MusicInput, REGION_DWELL, regionTrack, STEM_MIX, STEM_ZONES } from './musicDirector';
+import {
+  AmbientPicker,
+  ambientFor,
+  BOSS_EXIT,
+  COMBAT_ENTER,
+  COMBAT_EXIT,
+  ENGAGE_HOLD,
+  isNightHour,
+  isStemZone,
+  MIN_HOLD,
+  MusicDirector,
+  type MusicInput,
+  REGION_DWELL,
+  regionTrack,
+  STEM_MIX,
+  STEM_ZONES,
+} from './musicDirector';
 
 const base: MusicInput = { dungeon: false, biome: 'sect', combat: false, boss: false, tribulation: false, meditating: false, dead: false };
 

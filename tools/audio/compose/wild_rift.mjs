@@ -37,7 +37,12 @@ export default function wildRift() {
     organ.chord(s.bar(b), c.slice(1), 8, 58);
     bass.note(s.bar(b), c[0], 7.5, 66);
     if (b >= 16 && b < 32) {
-      strings.chord(s.bar(b), c.slice(1).map((p) => p + 12), 8, 56);
+      strings.chord(
+        s.bar(b),
+        c.slice(1).map((p) => p + 12),
+        8,
+        56,
+      );
       strings.swell(s.bar(b), s.bar(b + 2), 64, 112);
     }
     if (b >= 24 && b < 32) brass.chord(s.bar(b), [c[1] + 12, c[2] + 12], 8, 56);

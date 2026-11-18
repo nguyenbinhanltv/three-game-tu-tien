@@ -10,7 +10,13 @@ describe('levelCtx (E1-D)', () => {
   it('mặc định là Vân Lam, kết quả giống hệt hàm shared', () => {
     setActiveLevel('van_lam');
     expect(levelId()).toBe('van_lam');
-    for (const [x, z] of [[2048, 2088], [1640, 2230], [2450, 1740], [100, 100]]) expect(heightAt(x, z)).toBe(sharedHeight(x, z));
+    for (const [x, z] of [
+      [2048, 2088],
+      [1640, 2230],
+      [2450, 1740],
+      [100, 100],
+    ])
+      expect(heightAt(x, z)).toBe(sharedHeight(x, z));
   });
 
   it('mọi level có LevelDef đều khai báo assets; bí cảnh dùng chung địa hình Vân Lam', () => {

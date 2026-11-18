@@ -1,6 +1,46 @@
 // Chiêu và công pháp của người chơi (R-7): onSkill/onDash, resolveSkill, hồi/hộ thể/triệu hồi, tickMethods.
 // Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `CombatCtx`; mọi sát thương vẫn qua damageMonster/damagePlayer của sim.
-import { addCharge, CHARGE_MAX, type DmgMsg, caveBoundOf, healAmount, stackMul, stacksAlive, type FxMsg, AIRBORNE_HEIGHT, elemDamageMul, GCD, type LevelDef, MF_STUN, MS_CHASE, MS_DEAD, MS_IDLE, MS_RETURN, PF_CASTING, PF_SHIELD, S, SKILL_MSG_PER_SEC, type SkillDef, type SysMsg, BLINK_CD, BLINK_DIST, blinkReplaces, comboNext, dashDir, DASH_MIN_GAP_MS, DASH_MAX_DIST, needsTarget, dealsDamage, DASH_MAX_SLOPE, distToSegment, inLine, hitOffsets, planDash, strikeDelay, type Terrain } from '@dtl/shared';
+import {
+  addCharge,
+  CHARGE_MAX,
+  type DmgMsg,
+  caveBoundOf,
+  healAmount,
+  stackMul,
+  stacksAlive,
+  type FxMsg,
+  AIRBORNE_HEIGHT,
+  elemDamageMul,
+  GCD,
+  type LevelDef,
+  MF_STUN,
+  MS_CHASE,
+  MS_DEAD,
+  MS_IDLE,
+  MS_RETURN,
+  PF_CASTING,
+  PF_SHIELD,
+  S,
+  SKILL_MSG_PER_SEC,
+  type SkillDef,
+  type SysMsg,
+  BLINK_CD,
+  BLINK_DIST,
+  blinkReplaces,
+  comboNext,
+  dashDir,
+  DASH_MIN_GAP_MS,
+  DASH_MAX_DIST,
+  needsTarget,
+  dealsDamage,
+  DASH_MAX_SLOPE,
+  distToSegment,
+  inLine,
+  hitOffsets,
+  planDash,
+  strikeDelay,
+  type Terrain,
+} from '@dtl/shared';
 import { SKILL } from '@dtl/content';
 import { type Hot, methodOf, passiveOf, resolveFor, type Trail } from '../method';
 import { isEmpowered } from '../skillflow';
@@ -89,10 +129,10 @@ export class CombatSystem {
         targetId = foe.sid;
         p.s.yaw = Math.atan2(foe.move.x - p.move.x, foe.move.z - p.move.z);
       } else {
-      if (!mon || mon.state === MS_DEAD) return this.c.warn(p, 'sys.no_target');
-      if (!this.inRange(p, mon, this.skillRange(p, skill))) return this.c.warn(p, 'sys.out_of_range');
-      targetId = mon.id;
-      p.s.yaw = Math.atan2(mon.s.x - p.move.x, mon.s.z - p.move.z);
+        if (!mon || mon.state === MS_DEAD) return this.c.warn(p, 'sys.no_target');
+        if (!this.inRange(p, mon, this.skillRange(p, skill))) return this.c.warn(p, 'sys.out_of_range');
+        targetId = mon.id;
+        p.s.yaw = Math.atan2(mon.s.x - p.move.x, mon.s.z - p.move.z);
       }
     }
     if (p.meditating) this.c.setMeditating(p, false);
@@ -214,7 +254,10 @@ export class CombatSystem {
     // Dịch Sơn Xung B (kéo): không lướt, kéo mục tiêu (và quái quanh nó) từ xa về sát người.
     const pullOnly = !!(def.push && rsv?.pull && tgt);
     const close = !!stop && Math.hypot(stop.x - p.move.x, stop.z - p.move.z) <= stop.r + 1;
-    const plan = close || pullOnly ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true } : planDash(p.move, dir, dashDist, stop, { terrain: this.c.terrain, bound: caveBoundOf(this.c.level) });
+    const plan =
+      close || pullOnly
+        ? { x: p.move.x, z: p.move.z, dist: 0, blocked: true }
+        : planDash(p.move, dir, dashDist, stop, { terrain: this.c.terrain, bound: caveBoundOf(this.c.level) });
     if (plan.dist < 1 && !(close && skill.power > 0) && !pullOnly) return this.c.warn(p, close ? 'sys.dash_close' : 'sys.dash_blocked');
     const rs = resolveFor(c.meta, skill);
     if (p.meditating) this.c.setMeditating(p, false);
@@ -233,7 +276,15 @@ export class CombatSystem {
     p.move.grounded = true;
     p.inputs.length = 0;
     p.s.yaw = Math.atan2(dir.x, dir.z);
-    this.c.fx({ t: blink ? 'blink' : skill.fx, src: p.sid, x: plan.x, y: p.move.y, z: plan.z, d: blink ? 0.4 : 0.3, ...(blink ? { ox: from.x, oz: from.z } : this.fxTag(p, rs)) });
+    this.c.fx({
+      t: blink ? 'blink' : skill.fx,
+      src: p.sid,
+      x: plan.x,
+      y: p.move.y,
+      z: plan.z,
+      d: blink ? 0.4 : 0.3,
+      ...(blink ? { ox: from.x, oz: from.z } : this.fxTag(p, rs)),
+    });
     // Lướt xuyên (Nghịch Kiếm Chuyển Phong): chém mọi quái sát đường lướt.
     if (def.pierce && skill.power > 0) {
       let killed = false;
@@ -276,7 +327,6 @@ export class CombatSystem {
     p.flow.opened.set(skill.id, this.c.now);
     this.c.sendCd(p);
   }
-
 
   /** Đang ngự kiếm hoặc lơ lửng cao hơn mặt đất (vừa tắt ngự kiếm, đang rơi): không được ra chiêu. */
   airborne(p: PlayerEnt): boolean {
@@ -577,7 +627,12 @@ export class CombatSystem {
       const foe = this.c.players.get(targetId);
       if (foe && this.c.duel.foeOf(p) === foe) {
         this.c.fx({ t: skill.fx, src: p.sid, dst: foe.sid, x: foe.move.x, y: foe.move.y, z: foe.move.z, r: rs.radius ?? 0, ...tag });
-        this.c.duelStrike(p, foe, rs.hits.map((h) => h * mul), elemMul);
+        this.c.duelStrike(
+          p,
+          foe,
+          rs.hits.map((h) => h * mul),
+          elemMul,
+        );
       }
       if (skill.ult) {
         p.mth.lockCharge = false;
@@ -592,7 +647,8 @@ export class CombatSystem {
         if (!mon) break;
         if (skill.blink) {
           // Không thuấn di tới bóng/phân thân của người khác hay quái đang bỏ chạy (evade): tránh dịch chuyển miễn phí.
-          if (!(mon.owner && mon.owner !== p.sid) && this.c.now >= mon.evadeUntil) this.blinkNear(p, mon.s.x, mon.s.z, skill.blink.stop + mon.def.scale);
+          if (!(mon.owner && mon.owner !== p.sid) && this.c.now >= mon.evadeUntil)
+            this.blinkNear(p, mon.s.x, mon.s.z, skill.blink.stop + mon.def.scale);
           // Bộ Trấn Khích bậc 5 (4 món): Thuấn Di Trảm gây thêm `thuanTramPower` sát thương.
           mul *= 1 + c.stats.setFx.thuanTramPower;
         }
@@ -602,12 +658,17 @@ export class CombatSystem {
           extra.x = behind.s.x;
           extra.z = behind.s.z;
         }
-        this.c.fx(skill.fx === 'thunder' ? { t: skill.fx, src: p.sid, dst: mon.id, sd: visualSeed(), ...extra } : { t: skill.fx, src: p.sid, dst: mon.id, ...extra });
+        this.c.fx(
+          skill.fx === 'thunder'
+            ? { t: skill.fx, src: p.sid, dst: mon.id, sd: visualSeed(), ...extra }
+            : { t: skill.fx, src: p.sid, dst: mon.id, ...extra },
+        );
         if (skill.mark) {
           const mm = skill.mark.mul + (v?.markBonus ?? 0);
           mon.mark = { sid: p.sid, until: this.c.now + skill.mark.dur * 1000, mul: mm };
           if (v?.markSpread) {
-            for (const o of this.monstersNear(mon.s.x, mon.s.z, 8, mon).slice(0, v.markSpread)) o.mark = { sid: p.sid, until: this.c.now + skill.mark.dur * 1000, mul: mm };
+            for (const o of this.monstersNear(mon.s.x, mon.s.z, 8, mon).slice(0, v.markSpread))
+              o.mark = { sid: p.sid, until: this.c.now + skill.mark.dur * 1000, mul: mm };
           }
         }
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
@@ -637,10 +698,19 @@ export class CombatSystem {
         // Thuấn Di Trảm A: đòn tức thời hạ được mục tiêu thì hoàn một phần hồi chiêu.
         if (skill.blink && v?.refund && mon.state === MS_DEAD && rs.cd > 0) p.cds.set(skill.id, this.c.now + rs.cd * 1000 * (1 - v.refund));
         if (v?.cleave) {
-          for (const o of this.monstersNear(mon.s.x, mon.s.z, v.cleave.r, mon)) this.c.hitMonster(p, o, rs.power * v.cleave.mul * mul, elemMul, skill.elem);
+          for (const o of this.monstersNear(mon.s.x, mon.s.z, v.cleave.r, mon))
+            this.c.hitMonster(p, o, rs.power * v.cleave.mul * mul, elemMul, skill.elem);
         }
         if (v?.trail) {
-          this.trails.push({ owner: p.sid, x: mon.s.x, z: mon.s.z, r: v.trail.r, nextAt: this.c.now + 1000, endAt: this.c.now + v.trail.dur * 1000, power: rs.power * v.trail.mul });
+          this.trails.push({
+            owner: p.sid,
+            x: mon.s.x,
+            z: mon.s.z,
+            r: v.trail.r,
+            nextAt: this.c.now + 1000,
+            endAt: this.c.now + v.trail.dur * 1000,
+            power: rs.power * v.trail.mul,
+          });
         }
         if (skill.interrupt) this.c.tryInterrupt(p, mon, v?.stunOnInterrupt ?? 0);
         break;
@@ -651,7 +721,17 @@ export class CombatSystem {
         const r = rs.radius ?? 8;
         const cx = skill.self || !mon ? p.move.x : mon.s.x;
         const cz = skill.self || !mon ? p.move.z : mon.s.z;
-        this.c.fx({ t: skill.fx, src: p.sid, ...(skill.self || !mon ? {} : { dst: mon.id }), x: cx, y: skill.self || !mon ? p.move.y : mon.s.y, z: cz, r, sd: visualSeed(), ...tag });
+        this.c.fx({
+          t: skill.fx,
+          src: p.sid,
+          ...(skill.self || !mon ? {} : { dst: mon.id }),
+          x: cx,
+          y: skill.self || !mon ? p.move.y : mon.s.y,
+          z: cz,
+          r,
+          sd: visualSeed(),
+          ...tag,
+        });
         const stun = v?.noStun ? 0 : (v?.stun ?? skill.stun ?? 0);
         const burn = skill.burn ? { per: Math.max(1, Math.round(c.atk * skill.burn.mul)), dur: skill.burn.dur * (v?.burnMul ?? 1) } : null;
         for (const o of this.c.monsters) {
@@ -693,9 +773,25 @@ export class CombatSystem {
         const dl = Math.hypot(dx, dz) || 1;
         const ux = dx / dl;
         const uz = dz / dl;
-        this.c.fx({ t: skill.fx, src: p.sid, dst: mon.id, x: p.move.x + ux * len, y: mon.s.y, z: p.move.z + uz * len, r: len, d: def.width, sd: visualSeed(), ...tag });
+        this.c.fx({
+          t: skill.fx,
+          src: p.sid,
+          dst: mon.id,
+          x: p.move.x + ux * len,
+          y: mon.s.y,
+          z: p.move.z + uz * len,
+          r: len,
+          d: def.width,
+          sd: visualSeed(),
+          ...tag,
+        });
         // Chốt danh sách mục tiêu lúc áp (mốc `hitAt`); các đợt sau đánh đúng những con đó nếu còn sống.
-        const hit = this.c.monsters.filter((o) => o.state !== MS_DEAD && !(o.owner && o.owner !== p.sid) && inLine(p.move.x, p.move.z, ux, uz, len, def.width, o.s.x, o.s.z, o.def.scale));
+        const hit = this.c.monsters.filter(
+          (o) =>
+            o.state !== MS_DEAD &&
+            !(o.owner && o.owner !== p.sid) &&
+            inLine(p.move.x, p.move.z, ux, uz, len, def.width, o.s.x, o.s.z, o.def.scale),
+        );
         const offs = hitOffsets(skill, rs.hits.length);
         rs.hits.forEach((h, i) => {
           const run = () => {
@@ -714,7 +810,17 @@ export class CombatSystem {
         const sec = rs.duration ?? 10;
         // Mỗi người một bộ kiếm đan: bộ mới thay bộ cũ.
         this.summons = this.summons.filter((o) => o.sid !== p.sid);
-        this.summons.push({ sid: p.sid, until: this.c.now + sec * 1000, nextAt: this.c.now + sm.every * 1000, every: sm.every, count: v?.count ?? sm.count, range: sm.range, power: rs.power * mul, markFirst: !!v?.markFirst, elem: skill.elem });
+        this.summons.push({
+          sid: p.sid,
+          until: this.c.now + sec * 1000,
+          nextAt: this.c.now + sm.every * 1000,
+          every: sm.every,
+          count: v?.count ?? sm.count,
+          range: sm.range,
+          power: rs.power * mul,
+          markFirst: !!v?.markFirst,
+          elem: skill.elem,
+        });
         this.c.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: sec, n: v?.count ?? sm.count, ...tag });
         break;
       }
@@ -723,12 +829,26 @@ export class CombatSystem {
         const b = skill.buff ?? {};
         const reduce = (b.reduce ?? 0) + (v?.buffReduce ?? 0);
         if (reduce) p.mth.setGuard(this.c.now, reduce, sec);
-        if (b.echo) this.echoes.set(p.sid, { until: this.c.now + sec * 1000, delay: v?.echoDelay ?? 0.4, hits: rs.hits.map((h) => h * (1 + c.stats.setFx.phanAnhPower)), elem: skill.elem ?? '' });
+        if (b.echo)
+          this.echoes.set(p.sid, {
+            until: this.c.now + sec * 1000,
+            delay: v?.echoDelay ?? 0.4,
+            hits: rs.hits.map((h) => h * (1 + c.stats.setFx.phanAnhPower)),
+            elem: skill.elem ?? '',
+          });
         const regen = v?.buffRegen ?? b.regen ?? 0;
         if (regen > 0) this.addHot(p.sid, p.char.mhp * regen, sec);
         const st = v?.buffStomp ?? b.stomp;
         this.stomps = this.stomps.filter((o) => o.sid !== p.sid);
-        if (st) this.stomps.push({ sid: p.sid, until: this.c.now + sec * 1000, nextAt: this.c.now + st.every * 1000, every: st.every, r: st.r, power: st.mul * (rs.power > 0 ? rs.power : 1) });
+        if (st)
+          this.stomps.push({
+            sid: p.sid,
+            until: this.c.now + sec * 1000,
+            nextAt: this.c.now + st.every * 1000,
+            every: st.every,
+            r: st.r,
+            power: st.mul * (rs.power > 0 ? rs.power : 1),
+          });
         this.c.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, d: sec, ...tag });
         break;
       }
@@ -753,7 +873,17 @@ export class CombatSystem {
         const blinkTo = skill.blinkAlly ? this.nearestAlly(p, skill.blinkAlly.range) : null;
         if (blinkTo) this.blinkNear(p, blinkTo.move.x, blinkTo.move.z, 1.8);
         const give = (o: PlayerEnt) => {
-          o.shield = { amount: Math.round(o.char.mhp * rs.power * (v?.amountMul ?? 1) * (o === p && skill.id === 'skl_linh_khi_ho_the' ? 1 + c.stats.setFx.shieldBoost : 1) * (skill.id === 'skl_ngung_dan_ho_the' ? 1 + c.stats.setFx.ngungDanBoost : 1) * (skill.id === 'skl_thuan_di_ho_the' ? 1 + c.stats.setFx.thuanHoBoost : 1)), until: this.c.now + dur * 1000 };
+          o.shield = {
+            amount: Math.round(
+              o.char.mhp *
+                rs.power *
+                (v?.amountMul ?? 1) *
+                (o === p && skill.id === 'skl_linh_khi_ho_the' ? 1 + c.stats.setFx.shieldBoost : 1) *
+                (skill.id === 'skl_ngung_dan_ho_the' ? 1 + c.stats.setFx.ngungDanBoost : 1) *
+                (skill.id === 'skl_thuan_di_ho_the' ? 1 + c.stats.setFx.thuanHoBoost : 1),
+            ),
+            until: this.c.now + dur * 1000,
+          };
           this.c.setFlag(o, PF_SHIELD, true);
         };
         give(p);
@@ -832,7 +962,9 @@ export class CombatSystem {
         const nAlly = skill.allyCount === undefined ? Infinity : (v?.allyCount ?? skill.allyCount);
         const chosen = new Set<PlayerEnt>();
         if (nAlly !== Infinity) {
-          const near = [...this.c.players.values()].filter((o) => o !== p && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= r);
+          const near = [...this.c.players.values()].filter(
+            (o) => o !== p && this.canAssist(p, o) && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) <= r,
+          );
           near.sort((a, b) => a.char.hp / a.char.mhp - b.char.hp / b.char.mhp);
           for (const o of near.slice(0, nAlly)) chosen.add(o);
         }
@@ -844,7 +976,10 @@ export class CombatSystem {
           if (v?.partyBuff) {
             // Buff chiêu tách khỏi buff đan: không merge vào `meta.buffs`, tự hết sau `sec` giây.
             const cur = o.char.skillBuff[v.partyBuff.kind];
-            o.char.skillBuff[v.partyBuff.kind] = { m: Math.max(cur && cur.until > Date.now() ? cur.m : 0, v.partyBuff.pct), until: Date.now() + sec * 1000 };
+            o.char.skillBuff[v.partyBuff.kind] = {
+              m: Math.max(cur && cur.until > Date.now() ? cur.m : 0, v.partyBuff.pct),
+              until: Date.now() + sec * 1000,
+            };
             o.char.recalc();
             o.mth.dirty = true;
           }
@@ -862,7 +997,12 @@ export class CombatSystem {
         if (skill.poison) {
           for (const o of this.monstersNear(p.move.x, p.move.z, skill.poison.r)) {
             if (o.owner && o.owner !== p.sid) continue;
-            o.poison = { sid: p.sid, until: this.c.now + skill.poison.dur * durMul * 1000, nextAt: this.c.now + 1000, per: Math.max(1, Math.round(c.atk * skill.poison.mul * (v?.poisonMul ?? 1))) };
+            o.poison = {
+              sid: p.sid,
+              until: this.c.now + skill.poison.dur * durMul * 1000,
+              nextAt: this.c.now + 1000,
+              per: Math.max(1, Math.round(c.atk * skill.poison.mul * (v?.poisonMul ?? 1))),
+            };
             this.aggroMonster(o, p);
           }
         }
@@ -876,7 +1016,10 @@ export class CombatSystem {
         if (dead && skill.blinkAlly) this.blinkNear(p, dead.move.x, dead.move.z, 1.8);
         this.c.fx({ t: skill.fx, src: p.sid, x: p.move.x, y: p.move.y, z: p.move.z, r, ...tag });
         for (const dead of [dead2].filter((x): x is PlayerEnt => !!x)) {
-          dead.char.hp = Math.max(1, Math.round(dead.char.mhp * (rs.power + (skill.id === 'skl_thuan_di_cuu_vien' ? c.stats.setFx.cuuVienBoost : 0))));
+          dead.char.hp = Math.max(
+            1,
+            Math.round(dead.char.mhp * (rs.power + (skill.id === 'skl_thuan_di_cuu_vien' ? c.stats.setFx.cuuVienBoost : 0))),
+          );
           dead.s.fl = 0;
           dead.lastCombatAt = this.c.now;
           dead.hazardWin = { until: 0, taken: 0 };
@@ -884,7 +1027,10 @@ export class CombatSystem {
           this.c.fx({ t: 'respawn', src: dead.sid, v: 'revive' });
         }
         if (dead) {
-          dead.char.hp = Math.max(1, Math.round(dead.char.mhp * (rs.power + (skill.id === 'skl_thuan_di_cuu_vien' ? c.stats.setFx.cuuVienBoost : 0))));
+          dead.char.hp = Math.max(
+            1,
+            Math.round(dead.char.mhp * (rs.power + (skill.id === 'skl_thuan_di_cuu_vien' ? c.stats.setFx.cuuVienBoost : 0))),
+          );
           dead.s.fl = 0;
           dead.lastCombatAt = this.c.now;
           dead.hazardWin = { until: 0, taken: 0 };
@@ -909,7 +1055,14 @@ export class CombatSystem {
         if (em) {
           ec.hits.forEach((f, i) => {
             this.later(ec.delay + i * 0.25, () => {
-              if (this.c.players.get(p.sid) !== p || this.c.isDead(p) || this.airborne(p) || em.state === MS_DEAD || !this.inRange(p, em, this.skillRange(p, skill))) return;
+              if (
+                this.c.players.get(p.sid) !== p ||
+                this.c.isDead(p) ||
+                this.airborne(p) ||
+                em.state === MS_DEAD ||
+                !this.inRange(p, em, this.skillRange(p, skill))
+              )
+                return;
               this.c.fx({ t: 'kiemanh', src: p.sid, dst: em.id });
               this.c.hitMonster(p, em, rs.power * f * mulBase, elemMul, ec.elem);
             });
@@ -941,7 +1094,13 @@ export class CombatSystem {
     if (d <= stop + 0.5) return 0;
     const dir = { x: dx / d, z: dz / d };
     const from = { x: p.move.x, z: p.move.z };
-    const plan = planDash(p.move, dir, Math.min(d - stop, 30), { x: tx, z: tz, r: stop }, { terrain: this.c.terrain, bound: caveBoundOf(this.c.level) });
+    const plan = planDash(
+      p.move,
+      dir,
+      Math.min(d - stop, 30),
+      { x: tx, z: tz, r: stop },
+      { terrain: this.c.terrain, bound: caveBoundOf(this.c.level) },
+    );
     if (plan.dist < 0.5) return 0;
     p.move.x = plan.x;
     p.move.z = plan.z;
@@ -1025,7 +1184,8 @@ export class CombatSystem {
       while (now >= st.nextAt) {
         st.nextAt += st.every * 1000;
         this.c.fx({ t: 'sonnhac_stomp', src: owner.sid, x: owner.move.x, y: owner.move.y, z: owner.move.z, r: st.r });
-        for (const o of this.monstersNear(owner.move.x, owner.move.z, st.r)) this.c.hitMonster(owner, o, st.power, elemDamageMul(owner.char.stats.elemDmg, 'tho'), 'tho');
+        for (const o of this.monstersNear(owner.move.x, owner.move.z, st.r))
+          this.c.hitMonster(owner, o, st.power, elemDamageMul(owner.char.stats.elemDmg, 'tho'), 'tho');
       }
     }
     for (const p of this.c.players.values()) {
@@ -1053,5 +1213,4 @@ export class CombatSystem {
       }
     }
   }
-
 }

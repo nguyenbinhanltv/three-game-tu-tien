@@ -33,7 +33,11 @@ const CFG = {
 for (const sex of ['nam', 'nu']) {
   if (onlySex && onlySex !== sex) continue;
   const base = path.join(tmp, sex);
-  let r = spawnSync(blender, ['--background', '--factory-startup', '--python', path.join(here, 'chr_base_v2.py'), '--', sex, base, '--blend'], { stdio: 'inherit' });
+  let r = spawnSync(
+    blender,
+    ['--background', '--factory-startup', '--python', path.join(here, 'chr_base_v2.py'), '--', sex, base, '--blend'],
+    { stdio: 'inherit' },
+  );
   if (r.status !== 0) process.exit(r.status ?? 1);
   for (const style of ['a', 'b']) {
     if (onlyStyle && onlyStyle !== style) continue;
@@ -41,7 +45,20 @@ for (const sex of ['nam', 'nu']) {
     const out = path.join(tmp, `${sex}_${style}`);
     r = spawnSync(
       blender,
-      ['--background', '--factory-startup', '--python', path.join(here, 'chr_v2_head.py'), '--', sex, path.join(base, `chr_v2_${sex}.blend`), path.join(tripo, `raw_head_${sex}_v01.glb`), path.join(tripo, `raw_hair_${sex}_${style}_v01.glb`), out, '--cfg', JSON.stringify(CFG[`${sex}/${style}`])],
+      [
+        '--background',
+        '--factory-startup',
+        '--python',
+        path.join(here, 'chr_v2_head.py'),
+        '--',
+        sex,
+        path.join(base, `chr_v2_${sex}.blend`),
+        path.join(tripo, `raw_head_${sex}_v01.glb`),
+        path.join(tripo, `raw_hair_${sex}_${style}_v01.glb`),
+        out,
+        '--cfg',
+        JSON.stringify(CFG[`${sex}/${style}`]),
+      ],
       { stdio: 'inherit' },
     );
     if (r.status !== 0) process.exit(r.status ?? 1);

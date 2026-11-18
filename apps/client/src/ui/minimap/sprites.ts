@@ -251,7 +251,14 @@ export function flagSprite(own: boolean, dpr: number): Sprite {
   });
 }
 
-const SCAN_COLOR: Record<SpiritKind, string> = { boss: '#ff6a4a', elite: '#ffb84a', mon: '#e6dfc8', node: '#7dffa0', player: '#5cb8ff', poi: '#e8c46a' };
+const SCAN_COLOR: Record<SpiritKind, string> = {
+  boss: '#ff6a4a',
+  elite: '#ffb84a',
+  mon: '#e6dfc8',
+  node: '#7dffa0',
+  player: '#5cb8ff',
+  poi: '#e8c46a',
+};
 
 /** Dấu thần thức (E2-E): vòng sáng có chấm giữa, màu theo loại; viền vòng ngoài để phân biệt với biểu tượng thường. */
 export function scanSprite(kind: SpiritKind, dpr: number): Sprite {

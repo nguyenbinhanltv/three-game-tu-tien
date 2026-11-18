@@ -1,6 +1,16 @@
 // Room độ kiếp (R-7, tách từ rooms.ts).
 import { type Client, ServerError } from 'colyseus';
-import { PF_DEAD, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, tribDef, tribRoomNameOf, type TribId, type DungeonDef } from '@dtl/shared';
+import {
+  PF_DEAD,
+  ROOM_DUNGEON,
+  ROOM_TRIBULATION,
+  ROOM_WORLD,
+  TRIB_LEVEL,
+  tribDef,
+  tribRoomNameOf,
+  type TribId,
+  type DungeonDef,
+} from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import type { PlayerEnt, SimOptions } from '../game/entities';

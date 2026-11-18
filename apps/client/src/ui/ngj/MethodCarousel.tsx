@@ -13,8 +13,25 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
  * thẻ hai bên mờ đi, vòng tròn mảnh đồng tâm làm nền, số triện bên trái, thanh số La Mã, cột chi tiết bên phải.
  * Chỉ là lớp chọn: `onPick` gửi cùng ý định như nút ở bảng Công pháp; server vẫn quyết định.
  */
-export function MethodCarousel({ current, canPick, pickLabel, onPick, onClose }: { current?: string; canPick: boolean; pickLabel: (id: string) => string; onPick: (id: string) => void; onClose: () => void }) {
-  const [i, setI] = useState(() => Math.max(0, METHODS.findIndex((m) => m.id === current)));
+export function MethodCarousel({
+  current,
+  canPick,
+  pickLabel,
+  onPick,
+  onClose,
+}: {
+  current?: string;
+  canPick: boolean;
+  pickLabel: (id: string) => string;
+  onPick: (id: string) => void;
+  onClose: () => void;
+}) {
+  const [i, setI] = useState(() =>
+    Math.max(
+      0,
+      METHODS.findIndex((m) => m.id === current),
+    ),
+  );
   const reduce = useReduceMotion();
   const n = METHODS.length;
   const go = (d: number) => setI((x) => (x + d + n) % n);
@@ -36,7 +53,17 @@ export function MethodCarousel({ current, canPick, pickLabel, onPick, onClose }:
   const card = (k: number, pos: 'prev' | 'cur' | 'next') => {
     const mm = METHODS[(i + k + n) % n];
     return (
-      <button key={mm.id + pos} type="button" className="ngj-car-card" data-pos={pos} aria-label={t(`method.${mm.id}.name`)} aria-current={pos === 'cur' || undefined} tabIndex={pos === 'cur' ? 0 : -1} style={{ '--mc': '#' + mm.color } as CSSProperties} onClick={() => (pos === 'prev' ? go(-1) : pos === 'next' ? go(1) : undefined)}>
+      <button
+        key={mm.id + pos}
+        type="button"
+        className="ngj-car-card"
+        data-pos={pos}
+        aria-label={t(`method.${mm.id}.name`)}
+        aria-current={pos === 'cur' || undefined}
+        tabIndex={pos === 'cur' ? 0 : -1}
+        style={{ '--mc': '#' + mm.color } as CSSProperties}
+        onClick={() => (pos === 'prev' ? go(-1) : pos === 'next' ? go(1) : undefined)}
+      >
         <span className="ngj-car-card-emblem">
           <UiIcon id={`met_${mm.id}`} fallback="" className="ngj-car-ico" />
         </span>
@@ -47,7 +74,13 @@ export function MethodCarousel({ current, canPick, pickLabel, onPick, onClose }:
     );
   };
   return createPortal(
-    <div className="ngj-car" data-still={reduce || undefined} role="dialog" aria-label={t('ui.ngj.car.title')} style={{ '--mc': '#' + m.color } as CSSProperties}>
+    <div
+      className="ngj-car"
+      data-still={reduce || undefined}
+      role="dialog"
+      aria-label={t('ui.ngj.car.title')}
+      style={{ '--mc': '#' + m.color } as CSSProperties}
+    >
       <div className="ngj-car-rings" aria-hidden="true">
         <i /> <i /> <i /> <i />
       </div>
@@ -90,7 +123,13 @@ export function MethodCarousel({ current, canPick, pickLabel, onPick, onClose }:
             (sk) =>
               sk && (
                 <div key={sk.id} className="ngj-car-skill">
-                  <NgjSlot shape="octagon" size="s" rarity={sk.ult ? 4 : 1} icon={<ContentIcon def={sk} />} label={t(`skill.${sk.id}.name`)} />
+                  <NgjSlot
+                    shape="octagon"
+                    size="s"
+                    rarity={sk.ult ? 4 : 1}
+                    icon={<ContentIcon def={sk} />}
+                    label={t(`skill.${sk.id}.name`)}
+                  />
                   <span>{t(`skill.${sk.id}.name`)}</span>
                 </div>
               ),

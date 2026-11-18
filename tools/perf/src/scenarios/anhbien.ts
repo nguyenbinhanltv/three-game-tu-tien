@@ -51,7 +51,10 @@ export default {
         const t = T();
         // Pha 1: đứng ở bia kế tiếp tới khi HUD đếm tăng (tia nhắm chỗ đứng lúc bắn), rồi sang bia sau.
         if (t < 24 && k < 4) {
-          const lit = async () => Number(/(\d)\/5/.exec(await page.evaluate(() => document.querySelector('[data-testid=steles-hint]')?.textContent ?? ''))?.[1] ?? 0);
+          const lit = async () =>
+            Number(
+              /(\d)\/5/.exec(await page.evaluate(() => document.querySelector('[data-testid=steles-hint]')?.textContent ?? ''))?.[1] ?? 0,
+            );
           if ((await lit()) > k) {
             k++;
             if (k <= 4) {

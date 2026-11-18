@@ -1,5 +1,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ESCORT_FOLLOW_R, escortAdvance, escortStart, questSpot, S, SPIRIT_UNLOCK_LEVEL, TELE_FREE, TOUCH_R, type EscortMsg } from '@dtl/shared';
+import {
+  ESCORT_FOLLOW_R,
+  escortAdvance,
+  escortStart,
+  questSpot,
+  S,
+  SPIRIT_UNLOCK_LEVEL,
+  TELE_FREE,
+  TOUCH_R,
+  type EscortMsg,
+} from '@dtl/shared';
 import { LEVELS, NPC, QUEST } from '@dtl/content';
 
 // Nhiệm vụ chương 2 (E2-H): chuỗi q2_*, mục tiêu touch/scan/escort do server chấm, mở trận bằng nhiệm vụ, thưởng một lần (tx + ledger).
@@ -21,12 +31,23 @@ const DM = LEVELS.doan_mach;
 function setup(levelId = 'doan_mach', level = 18) {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: () => {} };
-  const sim = new GameSim(new WorldState(), host as never, { levelId, roomName: 'test', spawn: { x: 1024, z: 1036 }, respawn: { x: 1024, z: 1036 }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId,
+    roomName: 'test',
+    spawn: { x: 1024, z: 1036 },
+    respawn: { x: 1024, z: 1036 },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'q2' + acc);
   char.level = level;
   char.recalc();
   char.hp = char.mhp;
-  const p = sim.addPlayer({ sessionId: 's' + acc, send: (type: string, msg: unknown) => sent.push({ type, msg }) } as never, char, true, 's' + acc);
+  const p = sim.addPlayer(
+    { sessionId: 's' + acc, send: (type: string, msg: unknown) => sent.push({ type, msg }) } as never,
+    char,
+    true,
+    's' + acc,
+  );
   sim.now = 1_000_000;
   const at = (x: number, z: number) => {
     p.move.x = x;
@@ -50,7 +71,17 @@ type T = ReturnType<typeof setup>;
 
 describe('dữ liệu chương 2', () => {
   it('9 nhiệm vụ chính nối đuôi và 4 nhiệm vụ phụ', () => {
-    const main = ['q2_thu_ha_son', 'q2_mach_tinh', 'q2_khu_khoi_loi', 'q2_cau_da', 'q2_xich_sa', 'q2_hoi_chu', 'q2_phuc_mach', 'q2_dia_mach', 'q2_ket_dan'];
+    const main = [
+      'q2_thu_ha_son',
+      'q2_mach_tinh',
+      'q2_khu_khoi_loi',
+      'q2_cau_da',
+      'q2_xich_sa',
+      'q2_hoi_chu',
+      'q2_phuc_mach',
+      'q2_dia_mach',
+      'q2_ket_dan',
+    ];
     main.forEach((id, i) => {
       expect(QUEST.has(id), id).toBe(true);
       if (i > 0) expect(QUEST.get(id)!.requires).toBe(main[i - 1]);

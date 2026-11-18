@@ -13,7 +13,15 @@ import { nodeGltfLoader } from '../core/gltfTestLoader';
 // Kiếm riêng theo trang bị: 5 model Tripo web (prop_kiem_*) thay kiếm nướng trong lưới nhân vật, trên model nam và nữ thật.
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 const DT = 1 / 60;
 
 function cache() {
@@ -104,7 +112,9 @@ describe('model kiếm theo trang bị', () => {
         for (let i = 0; i < 30; i++) m.update(DT, anim());
         expect(m.swordDrawn).toBe(true);
         m.root.updateMatrixWorld(true);
-        const near = new THREE.Vector3().setFromMatrixPosition(p.bladeHolder.matrixWorld).distanceTo(new THREE.Vector3().setFromMatrixPosition(hand(m).matrixWorld));
+        const near = new THREE.Vector3()
+          .setFromMatrixPosition(p.bladeHolder.matrixWorld)
+          .distanceTo(new THREE.Vector3().setFromMatrixPosition(hand(m).matrixWorld));
         expect(near, `${g}/${w} tâm chuôi cách bàn tay`).toBeLessThan(0.2);
         expect(back.distanceTo(new THREE.Box3().setFromObject(p.blade!).getCenter(new THREE.Vector3()))).toBeGreaterThan(0.05);
         // Vỏ sáng +10 chạy trên model mới.
@@ -122,10 +132,14 @@ describe('model kiếm theo trang bị', () => {
     const look = { g: 'm', dye: APPEARANCE.defaultDye };
     await ready(s, look);
     const m = s.create(look) as SkinnedPlayer;
-    const tpl = (s as unknown as { templates: Map<string, { oldSword: { minS: number; maxS: number } | null }> }).templates.get('chr_kiem_tu_nam')!;
+    const tpl = (s as unknown as { templates: Map<string, { oldSword: { minS: number; maxS: number } | null }> }).templates.get(
+      'chr_kiem_tu_nam',
+    )!;
     expect(tpl.oldSword).toBeTruthy();
     expect(tpl.oldSword!.maxS - tpl.oldSword!.minS).toBeGreaterThan(0.5);
-    console.info(`[kiếm] kiếm cũ dài ${(tpl.oldSword!.maxS - tpl.oldSword!.minS).toFixed(3)} m, đầu chuôi ${tpl.oldSword!.minS.toFixed(3)}, mũi ${tpl.oldSword!.maxS.toFixed(3)}`);
+    console.info(
+      `[kiếm] kiếm cũ dài ${(tpl.oldSword!.maxS - tpl.oldSword!.minS).toFixed(3)} m, đầu chuôi ${tpl.oldSword!.minS.toFixed(3)}, mũi ${tpl.oldSword!.maxS.toFixed(3)}`,
+    );
     m.dispose();
     s.dispose();
   });

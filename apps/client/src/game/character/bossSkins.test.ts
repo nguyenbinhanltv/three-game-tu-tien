@@ -15,7 +15,15 @@ const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
 const BOSSES = ['boss_huyet_lang_vuong', 'boss_kiem_khoi', 'boss_thu_mo_tuong', 'boss_han_giao'];
 
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 
 async function bossSkins(loaded: string[] = []) {
   const cache = new AssetCache({
@@ -188,7 +196,11 @@ describe('boss có xương (asset thật)', () => {
 
   it('?models=legacy: boss vẫn là model khối, không nạp asset', async () => {
     const loaded: string[] = [];
-    const cache = new AssetCache({ base: '', fetchManifest: async () => MANIFEST, load: async (u) => (loaded.push(u), Promise.reject(new Error('x'))) });
+    const cache = new AssetCache({
+      base: '',
+      fetchManifest: async () => MANIFEST,
+      load: async (u) => (loaded.push(u), Promise.reject(new Error('x'))),
+    });
     const skins = new MonsterSkins(cache, true);
     const def = MONSTER.get('boss_huyet_lang_vuong')!;
     expect(skins.pending(def)).toBe(false);

@@ -150,7 +150,14 @@ export function isQuality(v: unknown): v is Quality {
 // ---------- Thăng Bậc (E2-F) ----------
 
 /** Nguyên liệu Thăng Bậc theo bậc ĐÍCH (chỉ số 2..5). */
-export const PROMOTE_MAT: readonly (string | null)[] = [null, null, 'itm_mach_tinh_phien', 'itm_kinh_hoa_sa', 'itm_tinh_quang_mac', 'itm_tan_giac'];
+export const PROMOTE_MAT: readonly (string | null)[] = [
+  null,
+  null,
+  'itm_mach_tinh_phien',
+  'itm_kinh_hoa_sa',
+  'itm_tinh_quang_mac',
+  'itm_tan_giac',
+];
 export const PROMOTE_MAT_COUNT = 20;
 /** Thu nhập ước một giờ ở chương đích (linh thạch, `docs/EXPANSION_DESIGN.md` 7.5); phí Thăng Bậc = 0,4 × số này. */
 export const TIER_INCOME_HOUR: readonly number[] = [0, 0, 6000, 7400, 8800, 10200];

@@ -47,6 +47,8 @@
     "icons:build": "node tools/icons/build.mjs",
     "icons:check": "node tools/icons/build.mjs --check",
     "lint": "eslint .",
+    "format": "prettier --write \"**/*.{ts,tsx,mjs,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,mjs,css}\"",
     "docs:check": "node tools/docs/check.mjs",
     "docs:paths": "node tools/docs/check-paths.mjs"
   },
@@ -54,6 +56,7 @@
     "@types/node": "^24.19.2",
     "concurrently": "^9.1.0",
     "eslint": "^9.39.5",
+    "prettier": "^3.10.1",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.73.0"
   }

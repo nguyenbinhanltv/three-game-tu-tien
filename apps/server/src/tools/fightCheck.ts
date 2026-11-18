@@ -28,7 +28,8 @@ const { Character } = await import('../game/character');
 const { ITEM, LEVELS: LV, MONSTER, SKILL, SKILLS, METHOD_SKILLS, METHODS } = await import('@dtl/content');
 const { MAX_LEVEL } = await import('@dtl/shared');
 for (const lv of LEVELS) if (!(lv >= 1 && lv <= MAX_LEVEL)) throw new Error(`--levels: cấp ${lv} ngoài 1–${MAX_LEVEL}`);
-if (FORCE_MON && (!MONSTER.get(FORCE_MON) || MONSTER.get(FORCE_MON)!.boss || MONSTER.get(FORCE_MON)!.elite)) throw new Error(`--mon: ${FORCE_MON} không phải quái thường`);
+if (FORCE_MON && (!MONSTER.get(FORCE_MON) || MONSTER.get(FORCE_MON)!.boss || MONSTER.get(FORCE_MON)!.elite))
+  throw new Error(`--mon: ${FORCE_MON} không phải quái thường`);
 type Sim = InstanceType<typeof GameSim>;
 
 const X = 2040;
@@ -45,7 +46,10 @@ function gearFor(level: number): Record<string, string> {
     }
     return best;
   };
-  const g: Record<string, string> = { weapon: pick(['itm_moc_kiem', 'itm_thiet_kiem', 'itm_thanh_phong_kiem']), robe: pick(['itm_bo_y', 'itm_dao_bao', 'itm_linh_ti_bao']) };
+  const g: Record<string, string> = {
+    weapon: pick(['itm_moc_kiem', 'itm_thiet_kiem', 'itm_thanh_phong_kiem']),
+    robe: pick(['itm_bo_y', 'itm_dao_bao', 'itm_linh_ti_bao']),
+  };
   // Chương 2 (E2-J): đồ bậc 2 về dần (rơi từ quái/tinh anh/phó bản, chế ở Hứa lão): cấp 17 kiếm, 18 thêm đạo bào, 19 thêm hộ uyển.
   if (level >= 17) g.weapon = 'itm_liet_mach_kiem';
   if (level >= 18) g.robe = 'itm_mach_van_dao_bao';
@@ -61,7 +65,12 @@ function pickMon(level: number): { def: MonsterDef; mlv: number; extra: boolean 
     .filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite)
     .sort((a, b) => Math.abs((a.levelMin + a.levelMax) / 2 - level) - Math.abs((b.levelMin + b.levelMax) / 2 - level))[0];
   // Ngoài khoảng cấp cao nhất của mọi quái hiện có: ngoại suy cấp quái = cấp thử; còn lại kẹp vào khoảng cấp của bãi.
-  const top = Math.max(...Object.values(LV).flatMap((l) => levelSpawns(l)).filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite).map((s) => s.levelMax));
+  const top = Math.max(
+    ...Object.values(LV)
+      .flatMap((l) => levelSpawns(l))
+      .filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite)
+      .map((s) => s.levelMax),
+  );
   const extra = level > top;
   return { def: MONSTER.get(sp.mon)!, mlv: extra ? level : Math.min(sp.levelMax, Math.max(sp.levelMin, level)), extra };
 }
@@ -74,12 +83,19 @@ interface Result {
 
 function fightOnce(level: number, method: string | undefined): Result {
   const host = { broadcast: () => undefined };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'fight', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'fight',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'f' + acc);
   char.level = level;
   char.root = 'tho';
   if (method && level >= METHOD_UNLOCK_LEVEL) char.meta.method = method;
-  for (const [slot, id] of Object.entries(NOGEAR ? {} : gearFor(level))) if (id) (char.equip as Record<string, unknown>)[slot] = { id, n: 1 };
+  for (const [slot, id] of Object.entries(NOGEAR ? {} : gearFor(level)))
+    if (id) (char.equip as Record<string, unknown>)[slot] = { id, n: 1 };
   char.recalc();
   char.hp = char.mhp;
   char.mp = char.mmp;
@@ -132,7 +148,11 @@ for (const lv of LEVELS) {
     const deaths = rs.filter((r) => r.dead).length;
     if (ttk < 3.5 || ttk > 8.5 || deaths) bad.push(`cấp ${lv} ${m ?? 'không'}: TTK ${ttk.toFixed(1)} s, chết ${deaths}/${RUNS}`);
     console.log(
-      `${String(lv).padStart(3)}   ${(def.id + ' (' + mlv + (extra ? '*' : '') + ')').padEnd(24)} ${(m ?? 'không').padEnd(18)} ${avg((r) => r.ttk).toFixed(1).padStart(4)}s  ${(avg((r) => r.lost) * 100).toFixed(0).padStart(5)}%   ${rs.filter((r) => r.dead).length}/${RUNS}`,
+      `${String(lv).padStart(3)}   ${(def.id + ' (' + mlv + (extra ? '*' : '') + ')').padEnd(24)} ${(m ?? 'không').padEnd(18)} ${avg(
+        (r) => r.ttk,
+      )
+        .toFixed(1)
+        .padStart(4)}s  ${(avg((r) => r.lost) * 100).toFixed(0).padStart(5)}%   ${rs.filter((r) => r.dead).length}/${RUNS}`,
     );
   }
 }

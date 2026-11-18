@@ -16,18 +16,22 @@ export const SETS = {
       ['Viền (kim loại, vai giáp)', '#BFC8CF', 'bạc lạnh'],
       ['Nhấn phát sáng (mép gương)', '#8FD8E8', 'lam băng, chỉ ở mép gương và vân bạc'],
     ],
-    materials: 'Lụa trắng bạc dệt chéo, bóng nhẹ (áo ngoài) · voan mỏng xuyên sáng (nửa dưới tay áo, tối đa 2 mảnh trong suốt cho cả bộ) · vải đay lam gương (lớp lót) · bạc lạnh chạm khắc, đánh bóng như gương (vai giáp, hộ uyển, khóa đai, mũi ủng) · mảnh gương bạc tròn (khóa đai, tâm vai) · ngọc lam nhạt (hạt tua)',
+    materials:
+      'Lụa trắng bạc dệt chéo, bóng nhẹ (áo ngoài) · voan mỏng xuyên sáng (nửa dưới tay áo, tối đa 2 mảnh trong suốt cho cả bộ) · vải đay lam gương (lớp lót) · bạc lạnh chạm khắc, đánh bóng như gương (vai giáp, hộ uyển, khóa đai, mũi ủng) · mảnh gương bạc tròn (khóa đai, tâm vai) · ngọc lam nhạt (hạt tua)',
     silhouette:
       'a tall elegant swordsman look: a long white-silver outer coat with high side slits, narrow at the torso, a long back panel with a swallow-tail hem, wide sleeves whose lower half is a sheer translucent gauze that flows and catches light, a pale mirror-blue inner collar and lining, a leaf-shaped polished silver mirror pauldron on each shoulder, polished silver bracers, a mirror-blue sash belt with a round silver mirror disc clasp and a short tassel with a pale blue bead, tall white boots with silver trim lines, and a slim silver hair crown (guan) with a small mirror disc at the front and a long silver pin',
-    motif: 'faint cloud-sea wave swirls and thin radiating mirror-ray lines, woven tone-on-tone in pale silver-blue on the coat hem and sleeve gauze',
+    motif:
+      'faint cloud-sea wave swirls and thin radiating mirror-ray lines, woven tone-on-tone in pale silver-blue on the coat hem and sleeve gauze',
     pieces: {
       ao_ngoai: {
         name: 'Áo ngoài',
         look: 'a long white-silver outer swordsman coat: crossed high collar with mirror-blue lining visible, narrow torso, high side slits, long back panel ending in a swallow-tail hem, wide sleeves whose lower half is a sheer translucent gauze with a thin silver piping edge, tone-on-tone cloud-wave swirl pattern along the hem',
         tris: '5000',
         bones: 'spine1/spine2 (thân), upperarm L/R, forearm L/R, cổ áo gắn neck. Trọng số lấy từ thân nền',
-        spring: 'Tay áo voan: 2 chuỗi × 4 xương mỗi bên (nửa dưới tay áo). Vạt sau: 3 chuỗi × 3 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên',
-        notes: 'Đây là mảnh XUYÊN SÁNG thứ nhất của bộ: nửa dưới tay áo là lớp voan mỏng riêng (dựng như vải mỏng đặc, worker đổi sang alpha-test hoặc dither). Thân áo lụa đặc. Mở thân dưới (hở) cho lớp dưới thấy bên trong.',
+        spring:
+          'Tay áo voan: 2 chuỗi × 4 xương mỗi bên (nửa dưới tay áo). Vạt sau: 3 chuỗi × 3 xương. Vạt xẻ tà hai bên: 1 chuỗi × 2 xương mỗi bên',
+        notes:
+          'Đây là mảnh XUYÊN SÁNG thứ nhất của bộ: nửa dưới tay áo là lớp voan mỏng riêng (dựng như vải mỏng đặc, worker đổi sang alpha-test hoặc dither). Thân áo lụa đặc. Mở thân dưới (hở) cho lớp dưới thấy bên trong.',
       },
       lop_duoi: {
         name: 'Lớp dưới',
@@ -35,7 +39,8 @@ export const SETS = {
         tris: '2000',
         bones: 'pelvis/hips, thigh L/R, calf L/R. Trọng số từ thân nền',
         spring: 'Vạt dưới trước và sau: 2 chuỗi × 2 xương',
-        notes: 'Quần và vạt trong tối giản để áo ngoài là điểm nhấn. Phủ kín đùi tới bắp chân để cắt vùng ẩn của thân nền. Đặc, không xuyên sáng.',
+        notes:
+          'Quần và vạt trong tối giản để áo ngoài là điểm nhấn. Phủ kín đùi tới bắp chân để cắt vùng ẩn của thân nền. Đặc, không xuyên sáng.',
       },
       vai_giap: {
         name: 'Vai giáp',
@@ -43,7 +48,8 @@ export const SETS = {
         tris: '1500',
         bones: 'clavicle/shoulder L và R (cứng, không co giãn); một mảnh có hai nửa đối xứng',
         spring: 'Không. Mảnh cứng',
-        notes: 'Hai nửa đối xứng, chỉ cần dựng một cặp. Bạc đánh bóng như gương: worker bật phản chiếu giả. Mép lam băng là vật liệu phát sáng riêng.',
+        notes:
+          'Hai nửa đối xứng, chỉ cần dựng một cặp. Bạc đánh bóng như gương: worker bật phản chiếu giả. Mép lam băng là vật liệu phát sáng riêng.',
       },
       dai_tua: {
         name: 'Đai và tua',
@@ -51,7 +57,8 @@ export const SETS = {
         tris: '1300',
         bones: 'đai: hips/spine (cứng, quấn quanh eo). Tua: neo ở đai',
         spring: 'Tua: 2 chuỗi × 4 xương. Dải thắt nút: 1 chuỗi × 3 xương',
-        notes: 'Đai là vòng kín quanh eo, dày ~2 cm để pipeline lồng đệm. Tua và dải để rời mesh gắn xương lò xo. Gương tròn ở khóa là điểm nhận diện của bộ.',
+        notes:
+          'Đai là vòng kín quanh eo, dày ~2 cm để pipeline lồng đệm. Tua và dải để rời mesh gắn xương lò xo. Gương tròn ở khóa là điểm nhận diện của bộ.',
       },
       ung: {
         name: 'Ủng',
@@ -67,7 +74,8 @@ export const SETS = {
         tris: '800',
         bones: 'head (cứng). Ô trang sức đầu là ô trang bị MỚI (thứ 9, có thể ẩn/hiện)',
         spring: 'Dải ruy băng sau: 1 chuỗi × 3 xương mỗi dải',
-        notes: 'Chỉ có quan, trâm, dải. KHÔNG có đầu, tóc hay mặt: tóc thuộc model nhân vật gốc. Gọn trong vòng tròn ~8 cm nhìn từ trên xuống.',
+        notes:
+          'Chỉ có quan, trâm, dải. KHÔNG có đầu, tóc hay mặt: tóc thuộc model nhân vật gốc. Gọn trong vòng tròn ~8 cm nhìn từ trên xuống.',
       },
     },
   },
@@ -84,7 +92,8 @@ export const SETS = {
       ['Viền (kim loại, vảy)', '#B9C2CA', 'bạc lạnh'],
       ['Nhấn phát sáng (khe vảy, sóng)', '#7FC6DC', 'lam sóng, chỉ ở khe vảy'],
     ],
-    materials: 'Thép xanh sương rèn, đánh nhám mờ (giáp ngực, vai, váy giáp) · bạc lạnh chạm sóng mây (viền vảy, khóa) · vải len dệt dày trắng mây (lớp trong) · da thuộc xám xanh (đai, ủng) · vây bạc kình (quan) · khe vảy phát sáng lam sóng',
+    materials:
+      'Thép xanh sương rèn, đánh nhám mờ (giáp ngực, vai, váy giáp) · bạc lạnh chạm sóng mây (viền vảy, khóa) · vải len dệt dày trắng mây (lớp trong) · da thuộc xám xanh (đai, ủng) · vây bạc kình (quan) · khe vảy phát sáng lam sóng',
     silhouette:
       'a heavy guardian look in cold steel: huge layered pauldrons of overlapping steel whale-scale plates swept like rolling wave crests with a whale-fluke tip over each shoulder, a half-breastplate of blue-grey steel scale armor with a central ridge over a thick cloud-white wool tunic, a tiered armored skirt of overlapping plates reaching the knees with a thin silver wave edge, wide steel bracers, a broad belt with a stylized whale-head silver clasp, heavy grey-blue boots with plated shins, and a helm-crown with a swept-back silver whale-fin crest',
     motif: 'overlapping whale scales and rolling cloud-sea wave crests, engraved in thin cold-silver lines on blue-grey steel',
@@ -95,7 +104,8 @@ export const SETS = {
         tris: '5000',
         bones: 'spine1/spine2 (giáp ngực cứng gắn spine2), upperarm L/R (tay áo ngắn), neck. Trọng số từ thân nền',
         spring: 'Gần như không: 1 chuỗi × 2 xương cho vạt vải dưới giáp ngực. Giáp ngực cứng',
-        notes: 'Giáp ngực là khối cứng, vải tunic bên dưới là phần mềm. Để nửa dưới thân hở cho lớp dưới. Vảy phải là khối nổi thật, không phải họa tiết. Đặc hoàn toàn.',
+        notes:
+          'Giáp ngực là khối cứng, vải tunic bên dưới là phần mềm. Để nửa dưới thân hở cho lớp dưới. Vảy phải là khối nổi thật, không phải họa tiết. Đặc hoàn toàn.',
       },
       lop_duoi: {
         name: 'Lớp dưới (váy giáp)',
@@ -152,10 +162,12 @@ export const SETS = {
       ['Viền (kim loại, trâm)', '#C9D0D6', 'bạc'],
       ['Nhấn phát sáng (hạt, mép gương)', '#A6E3E0', 'xanh ngọc băng, chỉ ở hạt lưu ly và mép'],
     ],
-    materials: 'Lụa trắng lưu ly mịn (áo ngoài) · voan mỏng xuyên sáng như thủy tinh (choàng vai và dải lụa, tối đa 2 mảnh trong suốt cho cả bộ) · vải đay thêu (lớp lót) · bạc chạm khắc (trâm, khóa đai, viền) · hồ lô lưu ly thủy tinh lam nhạt (treo đai) · hạt lưu ly (tua, chuỗi)',
+    materials:
+      'Lụa trắng lưu ly mịn (áo ngoài) · voan mỏng xuyên sáng như thủy tinh (choàng vai và dải lụa, tối đa 2 mảnh trong suốt cho cả bộ) · vải đay thêu (lớp lót) · bạc chạm khắc (trâm, khóa đai, viền) · hồ lô lưu ly thủy tinh lam nhạt (treo đai) · hạt lưu ly (tua, chuỗi)',
     silhouette:
       'a graceful alchemist look: a wide white robe with very wide sleeves over a pale glass-blue inner robe, a long translucent glass-like gauze mantle draped over the shoulders with a thin silver border and trailing behind in two tails, a pale blue sash belt with a long translucent silk ribbon, a small glazed glass-blue gourd and a herb pouch hanging from silver cords at the hip, soft ivory ankle boots with silver trim, and a silver hair crown (guan) with a tall hairpin ending in a glass bead and fine hanging chains of tiny glass beads',
-    motif: 'delicate medicinal-herb sprigs and drifting glass-bubble circles, embroidered in pale blue-silver thread on the hem, cuffs and mantle border',
+    motif:
+      'delicate medicinal-herb sprigs and drifting glass-bubble circles, embroidered in pale blue-silver thread on the hem, cuffs and mantle border',
     pieces: {
       ao_ngoai: {
         name: 'Áo ngoài (đạo bào + voan choàng)',
@@ -163,7 +175,8 @@ export const SETS = {
         tris: '5000',
         bones: 'spine1/spine2, upperarm L/R, forearm L/R, neck. Voan choàng gắn spine2 và shoulder',
         spring: 'Tay áo rộng: 3 chuỗi × 3 xương mỗi bên. Voan choàng: 2 đuôi × 4 xương. Vạt sau: 2 chuỗi × 3 xương',
-        notes: 'Đây là mảnh XUYÊN SÁNG thứ nhất của bộ (voan choàng). Dựng voan thành lớp mỏng riêng; worker dùng alpha-test hoặc dither. Phần đạo bào lụa thì đặc.',
+        notes:
+          'Đây là mảnh XUYÊN SÁNG thứ nhất của bộ (voan choàng). Dựng voan thành lớp mỏng riêng; worker dùng alpha-test hoặc dither. Phần đạo bào lụa thì đặc.',
       },
       lop_duoi: {
         name: 'Lớp dưới',
@@ -187,7 +200,8 @@ export const SETS = {
         tris: '1500',
         bones: 'hips/spine (đai cứng). Hồ lô và túi neo ở đai',
         spring: 'Dải lụa: 1 chuỗi × 5 xương. Hồ lô và túi: 2 chuỗi × 3 xương. Tua: 1 chuỗi × 3 xương',
-        notes: 'Đây là mảnh XUYÊN SÁNG thứ hai (dải lụa) và là mảnh cuối cùng được phép trong suốt cho cả bộ. Hồ lô lưu ly dựng đặc màu lam nhạt (worker làm bóng như thủy tinh), phần mesh riêng để gắn xương.',
+        notes:
+          'Đây là mảnh XUYÊN SÁNG thứ hai (dải lụa) và là mảnh cuối cùng được phép trong suốt cho cả bộ. Hồ lô lưu ly dựng đặc màu lam nhạt (worker làm bóng như thủy tinh), phần mesh riêng để gắn xương.',
       },
       ung: {
         name: 'Ủng',
@@ -216,7 +230,8 @@ export const SWORD = {
   dir: 'prop',
   srcId: 'prop_kiem_kinh_quang',
   base: 'Dạng gốc dùng model #119 có sẵn (`prop_kiem_kinh_quang`), giữ nguyên cho +0…+9. Concept này chỉ là dạng cuối +10 và vỏ. Một kiếm chung cho cả ba công pháp (đã chốt 16/11).',
-  colors: 'Colors: mirror-polished silver #BFC8CF blade, dark aged silver-grey metal #5A6670 for the guard, mirror-blue #5E8FA8 accents, white-silver #ECEFF1 cord, cold glow #8FD8E8 only along the blade edge and in the gem.',
+  colors:
+    'Colors: mirror-polished silver #BFC8CF blade, dark aged silver-grey metal #5A6670 for the guard, mirror-blue #5E8FA8 accents, white-silver #ECEFF1 cord, cold glow #8FD8E8 only along the blade edge and in the gem.',
   items: {
     cuoi: {
       name: 'Dạng cuối +10',
@@ -224,7 +239,8 @@ export const SWORD = {
       tris: '4000',
       bones: 'prop gắn bone `dtl_sword` (xương cầm kiếm); điểm gốc tại giữa chuôi, trục dọc theo lưỡi. Phát sáng là vật liệu riêng',
       spring: 'Không',
-      notes: 'Lưỡi bạc gương là khối đặc có độ dày thật, mép xuyên sáng lạnh chỉ là viền mảnh dựng đặc (worker làm phát sáng bằng vật liệu riêng); KHÔNG dùng trong suốt thật. Chắn hình cánh mỏng phải có độ dày. Dạng gốc (#119) vẫn giữ cho +0…+9; dạng cuối thay lúc cường hóa +10.',
+      notes:
+        'Lưỡi bạc gương là khối đặc có độ dày thật, mép xuyên sáng lạnh chỉ là viền mảnh dựng đặc (worker làm phát sáng bằng vật liệu riêng); KHÔNG dùng trong suốt thật. Chắn hình cánh mỏng phải có độ dày. Dạng gốc (#119) vẫn giữ cho +0…+9; dạng cuối thay lúc cường hóa +10.',
     },
     vo: {
       name: 'Vỏ kiếm',

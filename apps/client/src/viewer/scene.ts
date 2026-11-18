@@ -6,7 +6,17 @@ import dracoJsUrl from 'three/addons/libs/draco/draco_wasm_wrapper.js?url';
 import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
 import { POSES } from '@dtl/content';
 import { POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
-import { type HiresApplied, type Manifest, assetBaseUrl, createGltfLoader, createKtx2Loader, detectKtx2Support, localLibsManager, revertHiresApplied, swapHiresTexture } from '../game/core/assets';
+import {
+  type HiresApplied,
+  type Manifest,
+  assetBaseUrl,
+  createGltfLoader,
+  createKtx2Loader,
+  detectKtx2Support,
+  localLibsManager,
+  revertHiresApplied,
+  swapHiresTexture,
+} from '../game/core/assets';
 import { mergeClips, retargetClips } from '../game/character/animLib';
 import { pelvisScaledClips } from '../game/character/mannequinMonster';
 import { bakePose, formatProbe, IkRig, poseClipName } from '../game/character/ikpose';
@@ -167,7 +177,11 @@ export class ViewerScene {
       const r = await fetch(libUrl);
       if (!r.ok) throw new Error(`HTTP ${r.status} ${libUrl}`);
       const libGltf = await this.loader.parseAsync(await r.arrayBuffer(), libUrl.slice(0, libUrl.lastIndexOf('/') + 1));
-      lib = lib.concat(native ? pelvisScaledClips(gltf.scene, libGltf.scene, libGltf.animations) : retargetClips(libGltf.scene, libGltf.animations, gltf.scene));
+      lib = lib.concat(
+        native
+          ? pelvisScaledClips(gltf.scene, libGltf.scene, libGltf.animations)
+          : retargetClips(libGltf.scene, libGltf.animations, gltf.scene),
+      );
     }
     const json = (gltf.parser as unknown as { json: { extensionsUsed?: string[] } }).json;
     // ?pose=…: nướng thêm các key pose IK nếu model có rig người Mixamo.
@@ -313,7 +327,11 @@ export class ViewerScene {
     return clips;
   }
 
-  private show(root: THREE.Object3D, clips: THREE.AnimationClip[], meta: { name: string; fileBytes: number; extensions: string[] }): LoadedInfo {
+  private show(
+    root: THREE.Object3D,
+    clips: THREE.AnimationClip[],
+    meta: { name: string; fileBytes: number; extensions: string[] },
+  ): LoadedInfo {
     this.clear();
     root.traverse((o) => {
       const m = o as THREE.Mesh;

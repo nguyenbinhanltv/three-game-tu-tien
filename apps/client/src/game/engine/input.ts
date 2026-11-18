@@ -132,11 +132,16 @@ export function bindInput(eng: Game): void {
       }
     }),
   );
-  eng.on(c, 'wheel', (e: WheelEvent) => {
-    e.preventDefault();
-    eng.camFrame.cancel();
-    eng.camDist = Math.max(3, Math.min(70, eng.camDist * (e.deltaY > 0 ? 1.12 : 0.89)));
-  }, { passive: false });
+  eng.on(
+    c,
+    'wheel',
+    (e: WheelEvent) => {
+      e.preventDefault();
+      eng.camFrame.cancel();
+      eng.camDist = Math.max(3, Math.min(70, eng.camDist * (e.deltaY > 0 ? 1.12 : 0.89)));
+    },
+    { passive: false },
+  );
 }
 
 export function requestLock(eng: Game): void {
