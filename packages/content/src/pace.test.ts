@@ -65,6 +65,17 @@ describe('nhịp chương 2 + 3 (sim:progress)', () => {
     }
   });
 
+  it('chương 4 (Nguyên Anh → độ kiếp Hóa Thần) ≈ 8 giờ ±12% cho cả ba công pháp (E4-J)', () => {
+    const m = /\[pace4\]([^\n]*)/.exec(out);
+    expect(m).not.toBeNull();
+    const hours = [...m![1].matchAll(/(\w+)=([\d.]+)/g)].filter(([, k]) => k !== 'target' && k !== 'tol').map(([, k, v]) => [k, Number(v)] as const);
+    expect(hours.map(([k]) => k).sort()).toEqual(['bat_dong_kim_than', 'lac_kiem_quyet', 'thanh_moc_dan_kinh']);
+    for (const [k, h] of hours) {
+      expect(h, k).toBeGreaterThanOrEqual(8 * 0.88);
+      expect(h, k).toBeLessThanOrEqual(8 * 1.12);
+    }
+  });
+
   it('Ngưng Khí 1 → 15 vẫn 3–4 giờ cho cả ba công pháp', () => {
     const m = /Kiếm tu ([\d.]+) giờ, Hộ pháp ([\d.]+) giờ, Đan sư ([\d.]+) giờ/.exec(out);
     expect(m).not.toBeNull();
