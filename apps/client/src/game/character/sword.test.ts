@@ -7,12 +7,12 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { describe, expect, it, vi } from 'vitest';
 import { APPEARANCE, SKILLS } from '@dtl/content';
 import { POSE_SWORD_SWAP } from '@dtl/shared';
-import { AssetCache, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../core/assets';
 import { PlayerSkins, SHEATHE_AFTER, SkinnedPlayer } from './playerSkins';
 import { SKIRT_SPRING, SpringBones, springDefs } from './spring';
 import { partExtras } from './sword';
 import type { AnimState } from './view';
-import { nodeGltfLoader } from '../gltfTestLoader';
+import { nodeGltfLoader } from '../core/gltfTestLoader';
 
 // M3-2 (rút/tra kiếm) và M3-10 (lò xo vạt áo) trên model thật Thanh Phong.
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');

@@ -3,11 +3,11 @@ import { t } from '@dtl/content';
 import { type FrameInfo, HUMAN_HEIGHT, type LoadedInfo, ViewerScene } from './scene';
 import { fmtBytes } from './stats';
 import { poseClipName } from '../game/character/ikpose';
-import { assetBaseUrl, type Manifest } from '../game/assets';
-import { isBossViewer, isSkillViewer, SHOW_ALIASES, showAssetId } from '../game/testParams';
+import { assetBaseUrl, type Manifest } from '../game/core/assets';
+import { isBossViewer, isSkillViewer, SHOW_ALIASES, showAssetId } from '../game/core/testParams';
 import { SkillPanel } from './SkillPanel';
 import { skillForId } from './skillTiming';
-import { currentSearch, urlParams } from '../game/flags';
+import { currentSearch, urlParams } from '../base/flags';
 
 const BASE_URL = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
 /** Chỉ nhận đường dẫn tương đối cùng origin tới .glb/.gltf, không có "..". */

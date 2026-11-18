@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView, SpiritHit } from '@dtl/shared';
-import { duckHold, sfx } from '../game/audio';
-import { fxQuality, hitStopOn } from '../game/fxSettings';
+import { duckHold, sfx } from '../game/audio/audio';
+import { fxQuality, hitStopOn } from '../game/fx/fxSettings';
 import { uiScale } from './uiScale';
 import { closeWindow, fitWindows, focusWindow, loadSavedPos, moveWindow, openWindow, savePos, topWindow, type Viewport, type WinId, type WinState } from './windows/layout';
 

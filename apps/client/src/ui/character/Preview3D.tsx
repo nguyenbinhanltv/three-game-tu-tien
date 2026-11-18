@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Game } from '../../game/engine';
-import { PREVIEW_H, PREVIEW_W } from '../../game/charPreview';
+import { PREVIEW_H, PREVIEW_W } from '../../game/camera/charPreview';
 
 /**
  * Xem trước nhân vật 3D (TD-C): canvas 2D nhận điểm ảnh từ render target của engine; chỉ vẽ khi bảng mở (gắn lúc mount,

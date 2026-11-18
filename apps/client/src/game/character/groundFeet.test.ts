@@ -6,11 +6,11 @@ import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { describe, expect, it } from 'vitest';
 import { groundAt } from '@dtl/shared';
-import { AssetCache, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../core/assets';
 import { withPoses } from './poseLib';
 import { SkinnedCharacter } from './skinned';
 import type { AnimState } from './view';
-import { nodeGltfLoader } from '../gltfTestLoader';
+import { nodeGltfLoader } from '../core/gltfTestLoader';
 
 // Chân bám đất (P2-E3) trên model thật: Thanh Phong (hai chân), sói (bốn chân, nghiêng thân), Thạch Viên (vượn hai chân).
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');

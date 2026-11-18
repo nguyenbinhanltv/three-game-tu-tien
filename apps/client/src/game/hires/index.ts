@@ -1,6 +1,6 @@
 import { useUI } from '../../ui/store';
-import { assets } from '../assets';
-import { urlParams } from '../flags';
+import { assets } from '../core/assets';
+import { urlParams } from '../../base/flags';
 import { FrameIdle, type NavInfo } from './policy';
 import { HiresStreamer } from './streamer';
 

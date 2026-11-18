@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three/webgpu';
 import { MONSTER } from '@dtl/content';
-import type { AssetCache, AssetHandle } from '../assets';
+import type { AssetCache, AssetHandle } from '../core/assets';
 import { MonsterSkins } from './monsterSkins';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));

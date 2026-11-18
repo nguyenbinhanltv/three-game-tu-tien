@@ -5,7 +5,7 @@
 //
 // Không phải ghi âm từ trình duyệt: lộ trình, chất liệu mặt đất, nhịp bước, nguồn theo vị trí và lịch chuông do CHÍNH code của game
 // quyết định (route.ts chạy surface.ts, footsteps.ts, soundscape.ts), rồi script này trộn lại bằng công thức giống client:
-// mức bus theo apps/client/src/game/audioMix.json, suy giảm khoảng cách kiểu "inverse" của PannerNode, pan công suất bằng nhau theo hướng camera.
+// mức bus theo apps/client/src/game/audio/audioMix.json, suy giảm khoảng cách kiểu "inverse" của PannerNode, pan công suất bằng nhau theo hướng camera.
 // Gần đúng, đủ để nghe tương quan giữa nhạc / môi trường / bước chân / nguồn vị trí. Tổng mức được nâng lên −20 LUFS cho dễ nghe
 // (tương quan giữa các lớp giữ nguyên); trong game mọi thứ nhỏ hơn theo thanh trượt âm lượng của người chơi.
 
@@ -45,7 +45,7 @@ const crackle = new Float32Array(crackleRaw.buffer, crackleRaw.byteOffset, crack
 // 2) Nguồn âm đã build.
 const AUDIO = path.join(ROOT, 'apps/client/public/audio');
 const man = JSON.parse(fs.readFileSync(path.join(AUDIO, 'manifest.json'), 'utf8'));
-const MIX = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps/client/src/game/audioMix.json'), 'utf8')).bus;
+const MIX = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps/client/src/game/audio/audioMix.json'), 'utf8')).bus;
 const pick = (src) => (Array.isArray(src) ? src.find((s) => s.endsWith('.webm')) ?? src[0] : src);
 const cache = new Map();
 const dec = (rel, ch) => {

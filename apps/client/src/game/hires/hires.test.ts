@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { AssetCache, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../core/assets';
 import { ByteBucket, FrameIdle, type HiresCandidate, hiresPolicy, networkAllows, pickNext } from './policy';
 import { HiresStreamer } from './streamer';
 
