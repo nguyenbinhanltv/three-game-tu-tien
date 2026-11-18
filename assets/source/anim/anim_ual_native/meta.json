@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "anim_ual_native",
+  "type": "anim",
+  "budgetClass": "anim",
+  "itemId": null,
+  "status": "animated",
+  "procedural": {
+    "script": "tools/blender/anim_ual_native.py",
+    "seed": null
+  },
+  "license": {
+    "source": "CC0 Quaternius Universal Animation Library 1 + 2 (Standard), giữ tên xương UE5 Mannequin",
+    "owner": "Quaternius",
+    "date": "2026-11-18",
+    "url": "https://quaternius.com",
+    "spdx": "CC0-1.0"
+  }
+}

@@ -48,7 +48,8 @@
         "pose"
       ],
       "assets": [
-        "set_skin_varkessa_nu"
+        "set_skin_varkessa_nu",
+        "chr_v3_varkessa_nu"
       ]
     },
     {
@@ -62,7 +63,8 @@
         "retarget"
       ],
       "assets": [
-        "anim_human_ual"
+        "anim_human_ual",
+        "anim_ual_native"
       ]
     },
     {
