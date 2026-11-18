@@ -10,6 +10,7 @@ import { installHttpRateLimit } from './ratelimit';
 import { dungeonRoomName, ROOM_TRIBULATION, TRIB_LEVEL, tribRoomNameOf, worldRoomName } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 import { activeRooms, defineDungeon, defineTribulation, defineWorld, onlineCount, TribulationRoom } from './rooms';
+import { maybeCpuProfile } from './game/tickprof';
 import { log } from './log';
 
 const MIME: Record<string, string> = {
@@ -45,6 +46,7 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
       players: r.sim.players.size,
       monsters: r.sim.monsters.length,
       tickP95: Number(r.sim.tickP95().toFixed(2)),
+      ...(r.sim.prof.enabled ? { prof: r.sim.prof.report() } : {}),
     }));
     res.writeHead(200, { 'content-type': 'application/json', 'access-control-allow-origin': '*' });
     res.end(JSON.stringify({ ok: true, online: onlineCount(), rooms }));
@@ -113,6 +115,7 @@ for (const lv of Object.values(LEVELS)) {
 }
 
 await gameServer.listen(config.port);
+void maybeCpuProfile();
 log.info(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
 log.info(
   `[server] giới hạn /matchmake + websocket: ${rl.burst > 0 ? `${rl.burst} dồn, ${rl.perMin}/phút mỗi IP` : 'TẮT'}` +
