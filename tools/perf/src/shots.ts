@@ -21,10 +21,11 @@ import thiennhan from './scenarios/thiennhan';
 import fly from './scenarios/fly';
 import ual from './scenarios/ual';
 import chrv3 from './scenarios/chrv3';
+import skinv3 from './scenarios/skinv3';
 import ui from './scenarios/ui';
 import vfx from './scenarios/vfx';
 
-const SCENARIOS: Scenario[] = [points, map, mons, dungeon, asset, vfx, outfit, skin, chrv2, ui, thiennhan, ual, quest4, clone, fly, chrv3];
+const SCENARIOS: Scenario[] = [points, map, mons, dungeon, asset, vfx, outfit, skin, chrv2, ui, thiennhan, ual, quest4, clone, fly, chrv3, skinv3];
 
 const name = args[0] && !args[0].startsWith('--') ? args[0] : 'points';
 const sc = SCENARIOS.find((s) => s.name === name);

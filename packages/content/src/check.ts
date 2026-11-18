@@ -186,6 +186,12 @@ for (const it of ITEMS) {
   needStr(`item.${it.id}.desc`);
   if (isEquipSlot(it.kind) && it.stack !== 1) err(`item ${it.id}: trang bị phải stack = 1`);
   if (it.price > 0 && it.sell >= it.price) err(`item ${it.id}: giá bán >= giá mua (lỗ hổng kiếm tiền vô hạn)`);
+  if (it.kind === 'skin') {
+    const want = (GLOSSARY.skins as Record<string, string>)[it.id];
+    if (!want) err(`skin ${it.id}: thiếu trong glossary.skins`);
+    else if (t(`item.${it.id}.name`) !== want) err(`skin ${it.id}: tên lệch glossary.skins ("${want}")`);
+    if (!it.gender) err(`skin ${it.id}: thiếu gender (m|f): mỗi skin chỉ có model cho một giới`);
+  }
 }
 // ---- nâng cấp trang bị (Phase 3-3): ngọc, tẩy luyện thạch, linh trần, hộ phù ----
 {
