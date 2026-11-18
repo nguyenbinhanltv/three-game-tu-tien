@@ -1878,6 +1878,138 @@
         }
       }
     },
+    "chr_v3_crimson_nam": {
+      "id": "chr_v3_crimson_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_crimson_nam.glb",
+      "file": "chr_v3_crimson_nam.e4efb940fb.glb",
+      "bytes": 5750500,
+      "rawBytes": 11759796,
+      "triangles": 21994,
+      "rawTriangles": 21994,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 68,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "skin_crimson_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "skin_crimson_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 21994
+        },
+        {
+          "level": 1,
+          "triangles": 10996,
+          "target": 10997
+        },
+        {
+          "level": 2,
+          "triangles": 4399,
+          "target": 4399
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8064,
+          "height": 1.899,
+          "depth": 1.1922,
+          "minY": 0.0062
+        },
+        "build": {
+          "width": 1.8064,
+          "height": 1.899,
+          "depth": 1.1922,
+          "minY": 0.0062
+        }
+      }
+    },
+    "chr_v3_duskrella_nu": {
+      "id": "chr_v3_duskrella_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_duskrella_nu.glb",
+      "file": "chr_v3_duskrella_nu.c1aa354f9b.glb",
+      "bytes": 5258068,
+      "rawBytes": 10896128,
+      "triangles": 19940,
+      "rawTriangles": 19940,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 68,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "skin_duskrella_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "skin_duskrella_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 19940
+        },
+        {
+          "level": 1,
+          "triangles": 9969,
+          "target": 9970
+        },
+        {
+          "level": 2,
+          "triangles": 3972,
+          "target": 3988
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.7251,
+          "height": 1.822,
+          "depth": 0.4872,
+          "minY": -0.008
+        },
+        "build": {
+          "width": 1.7251,
+          "height": 1.822,
+          "depth": 0.4872,
+          "minY": -0.008
+        }
+      }
+    },
     "chr_v3_v2_nam": {
       "id": "chr_v3_v2_nam",
       "class": "player_v3",

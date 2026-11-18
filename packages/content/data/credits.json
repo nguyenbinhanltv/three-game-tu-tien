@@ -53,6 +53,41 @@
       ]
     },
     {
+      "id": "duskrella",
+      "kind": "model",
+      "title": "DUSKRELLA the Ashen Whisper",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/1df2e0ecd2364312a8d7821e45d180b2",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig",
+        "pose"
+      ],
+      "assets": [
+        "chr_v3_duskrella_nu"
+      ]
+    },
+    {
+      "id": "crimson_death_knight",
+      "kind": "model",
+      "title": "Crimson Death Knight - Dual Falchions",
+      "author": "Pigcraft",
+      "url": "https://sketchfab.com/3d-models/crimson-death-knight-dual-falchions-08a29190cc7d458dbaf1085991520ef5",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "cut",
+        "decimate",
+        "bake",
+        "rig",
+        "pose"
+      ],
+      "assets": [
+        "chr_v3_crimson_nam"
+      ]
+    },
+    {
       "id": "ual",
       "kind": "anim",
       "title": "Universal Animation Library 1 + 2 (Standard)",
