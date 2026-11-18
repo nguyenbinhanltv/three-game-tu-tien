@@ -40,6 +40,8 @@ export interface HudOpts {
   questCollapsed?: boolean;
   /** Chat thu thành một dòng 32 px. */
   chatCollapsed?: boolean;
+  /** Kích thước chat người chơi kéo (đơn vị thiết kế); bị kẹp theo `chatLimits`. Bỏ trống = mặc định của chế độ. */
+  chatSize?: { w: number; h: number } | null;
   /** `bar` = thanh ngang giữa dưới (tùy chọn trong Cài đặt). */
   skillLayout?: SkillLayout;
 }
@@ -58,11 +60,13 @@ export function designArea(w: number, h: number, scale: number): { W: number; H:
 
 /** Kích thước từng khối theo chế độ (đơn vị thiết kế). */
 export const SIZES = {
-  standard: { tl: { w: 420, h: 120 }, hubH: 48, hubW: 372, mapW: 236, mapH: 250, questW: 372, questH: 128, chatW: 400, chatH: 180 },
-  compact: { tl: { w: 380, h: 118 }, hubH: 44, hubW: 340, mapW: 204, mapH: 220, questW: 340, questH: 109, chatW: 340, chatH: 120 },
+  standard: { tl: { w: 420, h: 120 }, hubH: 48, hubW: 372, mapW: 236, mapH: 250, questW: 372, questH: 128, chatW: 420, chatH: 240 },
+  compact: { tl: { w: 380, h: 118 }, hubH: 44, hubW: 340, mapW: 204, mapH: 220, questW: 340, questH: 109, chatW: 380, chatH: 190 },
 } as const;
 export const QUEST_COLLAPSED_H = 34;
-export const CHAT_COLLAPSED_H = 32;
+export const CHAT_COLLAPSED_H = 34;
+/** Chat nhỏ nhất người chơi được kéo về (đơn vị thiết kế). */
+export const CHAT_MIN = { w: 320, h: 140 } as const;
 export const BOSS_MAX_W = 760;
 export const BOSS_H = 84;
 
@@ -117,6 +121,20 @@ export function minDesignHeight(mode: Exclude<HudMode, 'touch'>): number {
   return Math.ceil(questBottom + skillBox(0, 0, 'arc').h + SAFE);
 }
 
+/**
+ * Giới hạn kéo giãn chat: bề rộng dừng trước cụm kỹ năng/ô tiện ích (cách 12), chiều cao dừng dưới khung chân dung (cách 12).
+ * Tính trên hộp mặc định để giới hạn không phụ thuộc kích thước hiện tại của chính chat.
+ */
+export function chatLimits(W: number, H: number, mode: Exclude<HudMode, 'touch'>, o: HudOpts = {}): { maxW: number; maxH: number } {
+  const z = SIZES[mode];
+  const skills = skillBox(W, H, o.skillLayout ?? 'arc');
+  const util = utilityBox(skills, o.skillLayout ?? 'arc');
+  const right = Math.min(skills.x, util.w > 0 ? util.x : Infinity);
+  const maxW = Math.max(CHAT_MIN.w, Math.floor(right - 12 - SAFE));
+  const maxH = Math.max(CHAT_MIN.h, Math.floor(H - SAFE - (SAFE + z.tl.h + 12)));
+  return { maxW, maxH };
+}
+
 /** Tất cả hộp vùng PC (standard/compact). Chế độ `touch` trả hộp tối thiểu để U2-6 mở rộng. */
 export function hudBoxes(W: number, H: number, mode: HudMode = 'standard', o: HudOpts = {}): HudBoxes {
   if (mode === 'touch') return touchBoxes(W, H, o);
@@ -131,8 +149,11 @@ export function hudBoxes(W: number, H: number, mode: HudMode = 'standard', o: Hu
     w: z.questW,
     h: o.questCollapsed ? QUEST_COLLAPSED_H : z.questH,
   };
-  const chatH = o.chatCollapsed ? CHAT_COLLAPSED_H : z.chatH;
-  const chat: Box = { x: SAFE, y: H - SAFE - chatH, w: z.chatW, h: chatH };
+  const lim = chatLimits(W, H, mode, o);
+  const want = o.chatSize ?? { w: z.chatW, h: z.chatH };
+  const chatW = Math.max(CHAT_MIN.w, Math.min(lim.maxW, want.w));
+  const chatH = o.chatCollapsed ? CHAT_COLLAPSED_H : Math.max(CHAT_MIN.h, Math.min(lim.maxH, want.h));
+  const chat: Box = { x: SAFE, y: H - SAFE - chatH, w: o.chatCollapsed ? z.chatW : chatW, h: chatH };
   const side = Math.max(tl.w, z.hubW);
   const bossW = Math.max(0, Math.min(BOSS_MAX_W, W - 2 * (SAFE + side) - SAFE));
   const tc: Box = { x: Math.round((W - bossW) / 2), y: SAFE, w: bossW, h: BOSS_H };

@@ -61,7 +61,8 @@ import { ChapterMap } from './chapters/ChapterMap';
 import { JadeRing } from './u2/patterns';
 import './u2/boot/trib.css';
 import { PlayerCard, BossCard, TargetCastBar } from './u2/hud/Frames';
-import { QuestTrack, ChatBox } from './u2/hud/QuestChat';
+import { QuestTrack } from './u2/hud/QuestChat';
+import { ChatBox } from './u2/hud/Chat';
 import { SkillBanner } from './u2/hud/SkillBanner';
 import { SkillCluster } from './u2/hud/SkillCluster';
 import { TouchControls } from './u2/touch/TouchControls';
@@ -400,6 +401,7 @@ export function Hud() {
   const skillLayout = useUI((s) => s.skillLayout);
   const questCollapsed = useUI((s) => s.questCollapsed);
   const chatCollapsed = useUI((s) => s.chatCollapsed);
+  const chatSize = useUI((s) => s.chatSize);
   const mode = useHudMode();
   return (
     <div
@@ -407,7 +409,7 @@ export function Hud() {
       data-cut={cut}
       data-mode={mode}
       data-skills={skillLayout}
-      style={hudVars(mode, { skillLayout, questCollapsed, chatCollapsed })}
+      style={hudVars(mode, { skillLayout, questCollapsed, chatCollapsed, chatSize })}
     >
       <TribBars />
       <PlayerCard />

@@ -4,7 +4,7 @@ import { useTouchMode } from '../../../input/touchMode';
 import {
   BOSS_H,
   BOSS_MAX_W,
-  CHAT_COLLAPSED_H,
+  designArea,
   hudBoxes,
   modeOf,
   QUEST_COLLAPSED_H,
@@ -37,6 +37,9 @@ export function hudVars(mode: HudMode, o: HudOpts = {}): CSSProperties {
   const m = mode;
   const z = SIZES[m];
   const b = hudBoxes(1920, 1080, m, o);
+  // Chat theo kích thước người chơi kéo, kẹp theo vùng thiết kế hiện tại (không đè cụm kỹ năng).
+  const area = designArea(window.innerWidth, window.innerHeight, uiScale());
+  const chat = hudBoxes(area.W, area.H, m, o).chat;
   const v: Record<string, string> = {
     '--h-safe': SAFE + 'px',
     '--h-tl-w': z.tl.w + 'px',
@@ -46,8 +49,8 @@ export function hudVars(mode: HudMode, o: HudOpts = {}): CSSProperties {
     '--h-map-w': z.mapW + 'px',
     '--h-quest-w': z.questW + 'px',
     '--h-quest-h': (o.questCollapsed ? QUEST_COLLAPSED_H : z.questH) + 'px',
-    '--h-chat-w': z.chatW + 'px',
-    '--h-chat-h': (o.chatCollapsed ? CHAT_COLLAPSED_H : z.chatH) + 'px',
+    '--h-chat-w': chat.w + 'px',
+    '--h-chat-h': chat.h + 'px',
     '--h-boss-max': BOSS_MAX_W + 'px',
     '--h-boss-h': BOSS_H + 'px',
     '--h-side': Math.max(z.tl.w, z.hubW) + 'px',
