@@ -581,6 +581,7 @@ function Tribulation() {
   const soulUntil = useUI((s) => s.soulUntil);
   const nguHanh = useUI((s) => s.nguHanh);
   const cloneUntil = useUI((s) => s.cloneUntil);
+  const steles = useUI((s) => s.steles);
   const now = useNow(250);
   if (!tribEnd || now >= tribEnd) return null;
   // Pha, thời lượng và lời nhắc đọc từ `tribulations.json` theo kiếp đang độ (E1-F); Trúc Cơ giữ ba pha của S2-C.
@@ -628,6 +629,11 @@ function Tribulation() {
           {nguHanh && now < nguHanh.at + 800
             ? t('ui.trib.ngu_hanh.now', { e: t('elem.' + ELEMENTS[nguHanh.e]), k: t('elem.' + elemCounterOf(ELEMENTS[nguHanh.e])) })
             : t('ui.trib.ngu_hanh.wait')}
+        </div>
+      )}
+      {steles >= 0 && def.phases.some((q) => q.danLoi) && (
+        <div className="trib-soul trib-steles" data-testid="steles-hint">
+          {t('ui.trib.anh_bien.steles', { lit: [0, 1, 2, 3, 4].filter((i) => steles & (1 << i)).length })}
         </div>
       )}
       {ph.mechanic === 'phan_than' && (

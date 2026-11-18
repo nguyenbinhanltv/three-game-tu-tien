@@ -292,7 +292,7 @@ describe('kết nối lại', () => {
 
 describe('migration DB v4 → v5', () => {
   it('thêm cột locked, giữ đồ ở ô 0–29, ô khóa mặc định mở', () => {
-    expect(DATA_VERSION).toBe(5);
+    expect(DATA_VERSION).toBe(6);
     const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-tda-')), 'v4.db');
     const a = openDb(file);
     a.sqlite.exec('DROP TABLE items; CREATE TABLE items (char_id INTEGER NOT NULL, slot INTEGER NOT NULL, item_id TEXT NOT NULL, qty INTEGER NOT NULL, plus INTEGER NOT NULL DEFAULT 0, inst TEXT, PRIMARY KEY (char_id, slot));');
@@ -302,7 +302,7 @@ describe('migration DB v4 → v5', () => {
     a.sqlite.pragma('user_version = 4');
     a.sqlite.close();
     const b = openDb(file);
-    expect(b.sqlite.pragma('user_version', { simple: true })).toBe(5);
+    expect(b.sqlite.pragma('user_version', { simple: true })).toBe(6);
     const cols = (b.sqlite.prepare('PRAGMA table_info(items)').all() as { name: string }[]).map((c) => c.name);
     expect(cols).toContain('locked');
     const rows = b.sqlite.prepare('SELECT slot, item_id, qty, locked FROM items ORDER BY slot').all();
