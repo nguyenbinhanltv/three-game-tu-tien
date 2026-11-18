@@ -33,6 +33,7 @@ Khác với spec ban đầu (chấp nhận, ghi lại để không làm lệch t
 
 ## Còn mở
 
+- **Bảo mật SEC-2**: hai lỗ đã đóng từ #40 (tỉ lệ rơi chỉ ở server, giới hạn `/matchmake` theo IP); chi tiết ở `commands.md`. Không còn việc mở.
 - **P2-F (phát hành)**: chưa làm.
 - **Safari thật**: `pnpm compat` chỉ chạy WebKit của Playwright; chưa thử trên Safari macOS/iOS thật.
 - **Mời bạn bè**: chưa có Client ID Google thật, chưa chạy đường đăng nhập Google và danh sách mời (`pnpm invite`) trên máy chủ thật; chưa có `apps/admin`.
