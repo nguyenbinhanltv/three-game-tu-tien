@@ -785,7 +785,7 @@ console.log('\nBộ 7 ô cùng phẩm ở Ngưng Khí 15 (so với không đồ)
 const base15 = playerBaseStats(NGUNG_KHI_MAX);
 console.log('phẩm       công kích   phòng ngự   khí huyết   linh lực   bạo kích   sát thương kỳ vọng (x so với không đồ)');
 const dmg0 = base15.atk * (1 + 0.1 * 0.6);
-for (const q of [0, 1, 2, 3, 4] as Quality[]) {
+for (const q of [0, 1, 2, 3, 4, 5] as Quality[]) {
   const f = fullSet(NGUNG_KHI_MAX, q);
   const r = (a: number, b: number) => (a / b).toFixed(2) + 'x';
   console.log(

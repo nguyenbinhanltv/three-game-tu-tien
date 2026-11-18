@@ -10,15 +10,17 @@ import { COSMETIC_SLOTS, EQUIP_SLOTS, WEAR_SLOTS, type CosmeticSlot, type WearSl
 import { gemAffixes } from './upgrade';
 import { NO_SET_FX, setFxOf, setStatuses, type SetDef, type SetFx, type SetStatus } from './sets';
 
-/** 0 Phàm, 1 Linh, 2 Huyền, 3 Địa, 4 Thiên. */
-export type Quality = 0 | 1 | 2 | 3 | 4;
-export const QUALITY_COUNT = 5;
-/** Hệ số ngân sách theo phẩm (thiết kế 3.3). */
-export const QUALITY_MUL: readonly number[] = [1, 1.15, 1.3, 1.5, 1.75];
-/** Từ phẩm này trở lên đồ bị ràng buộc khi mặc (Địa, Thiên). */
+/** 0 Phàm, 1 Linh, 2 Huyền, 3 Địa, 4 Thiên, 5 Thần. */
+export type Quality = 0 | 1 | 2 | 3 | 4 | 5;
+export const QUALITY_COUNT = 6;
+/** Phẩm Thần (bậc 6): chỉ rơi cực hiếm từ boss, không chế tạo được (xem `docs/handbook/gameplay-systems.md`). */
+export const QUALITY_THAN: Quality = 5;
+/** Hệ số ngân sách theo phẩm (thiết kế 3.3; Thần = Thiên × 1,2). */
+export const QUALITY_MUL: readonly number[] = [1, 1.15, 1.3, 1.5, 1.75, 2.1];
+/** Từ phẩm này trở lên đồ bị ràng buộc khi mặc (Địa, Thiên, Thần). */
 export const BIND_QUALITY: Quality = 3;
 /** Số lỗ khảm ngọc theo phẩm (khảm ở `upgrade.ts`). */
-export const SOCKETS_BY_QUALITY: readonly number[] = [0, 0, 1, 2, 2];
+export const SOCKETS_BY_QUALITY: readonly number[] = [0, 0, 1, 2, 2, 3];
 
 // ---------- bậc trang bị (E2-F) ----------
 

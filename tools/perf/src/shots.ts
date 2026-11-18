@@ -24,6 +24,7 @@ import skin from './scenarios/skin';
 import thiennhan from './scenarios/thiennhan';
 import anhbien from './scenarios/anhbien';
 import fly from './scenarios/fly';
+import thanpham from './scenarios/thanpham';
 import ual from './scenarios/ual';
 import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
@@ -46,6 +47,7 @@ const SCENARIOS: Scenario[] = [
   ui,
   thiennhan,
   anhbien,
+  thanpham,
   ual,
   quest4,
   quest5,

@@ -161,7 +161,7 @@ export class GmSystem {
           delete d.equip[slot];
         }
         const i = d.inv.findIndex((x) => !x);
-        if (i < 0 || !d.addRolled(id, Math.max(c.level, def.reqLevel ?? 1), (QUALITY_COUNT - 1) as Quality)) return false;
+        if (i < 0 || !d.addRolled(id, Math.max(c.level, def.reqLevel ?? 1), 4 as Quality)) return false;
         const it = d.inv[i]!;
         d.inv[i] = null;
         d.equip[slot] = plus > 0 ? { ...it, plus } : it;
@@ -207,11 +207,11 @@ export class GmSystem {
         c.tx('gm', null, (d) => (d.addGold(Math.max(1, Number(a[1]) | 0)), true));
         return say('gold = ' + c.gold);
       case 'roll': {
-        // /gm roll <mẫu trang bị> [phẩm 0-4] [ilvl]: roll một món (kiểm thử hệ trang bị 8 ô).
+        // /gm roll <mẫu trang bị> [phẩm 0-5] [ilvl]: roll một món (kiểm thử hệ trang bị 8 ô).
         const q = Math.min(QUALITY_COUNT - 1, Math.max(0, Number(a[2] ?? 0) | 0));
         const il = Math.max(1, Number(a[3] ?? c.level) | 0);
         const ok = c.tx('gm', null, (d) => d.addRolled(a[1], il, q as Quality));
-        return say(ok ? `đã roll ${a[1]} phẩm ${q} ilvl ${il}` : 'roll <mẫu trang bị> [phẩm 0-4] [ilvl]');
+        return say(ok ? `đã roll ${a[1]} phẩm ${q} ilvl ${il}` : 'roll <mẫu trang bị> [phẩm 0-5] [ilvl]');
       }
       case 'plus': {
         // Đặt cấp cường hóa của món đang mặc ở ô `a[2]` (mặc định pháp kiếm) để thử VFX +7/+10 và rớt cấp.

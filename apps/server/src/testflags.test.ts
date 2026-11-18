@@ -384,7 +384,7 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     expect(c3.char.meta.method).toBe(locked.method);
   });
 
-  it('kit bậc 2 kiếm tu +10 nữ: đủ ô, phẩm cao nhất, +10, sổ cái khớp', () => {
+  it('kit bậc 2 kiếm tu +10 nữ: đủ ô, Thiên phẩm, +10, sổ cái khớp', () => {
     const { p, char, run } = join(true);
     expect(run('kit 2 kiem +10 f')).toContain('bậc 2');
     expect(p.s.g).toBe('f');

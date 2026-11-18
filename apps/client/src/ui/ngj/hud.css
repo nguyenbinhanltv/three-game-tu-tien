@@ -722,6 +722,9 @@
 :root:root .k-tip-title[data-q='4'] {
   color: var(--ngj-q4);
 }
+:root:root .k-tip-title[data-q='5'] {
+  color: #ff8fbb;
+}
 :root:root .k-tip-sub,
 :root:root .k-tip-desc,
 :root:root .k-tip-line.dim {

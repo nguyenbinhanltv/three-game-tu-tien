@@ -17,7 +17,7 @@ import {
 
 const DATA: ItemSysData = {
   slots: [{ id: 'robe', weight: 1.2, main: { def: 0.5, hp: 0.5 } }],
-  qualities: [0, 1, 2, 3, 4].map((id) => ({ id: id as 0, color: '#fff', affixes: id, affixFrac: id === 0 ? 0 : 0.2 })),
+  qualities: [0, 1, 2, 3, 4, 5].map((id) => ({ id: id as 0, color: '#fff', affixes: id, affixFrac: id === 0 ? 0 : 0.2 })),
   affixes: [
     { id: 'atk_pct', min: 0.02, max: 0.05, weight: 1 },
     { id: 'def_pct', min: 0.02, max: 0.05, weight: 1 },
@@ -46,6 +46,7 @@ describe('bậc trang bị', () => {
     expect(socketsFor(2, 2)).toBe(2);
     expect(socketsFor(3, 2)).toBe(3);
     expect(socketsFor(4, 4)).toBe(MAX_SOCKETS);
+    expect(socketsFor(5, 1)).toBe(MAX_SOCKETS); // Thần phẩm: 3 lỗ ngay từ bậc 1
   });
 
   it('roll theo bậc nằm trong trần của parseInst (đọc DB không bác đồ bậc cao)', () => {

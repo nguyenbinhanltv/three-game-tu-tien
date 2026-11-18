@@ -653,7 +653,7 @@ export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, thrott
 }
 
 /** Phát chuông đồ rơi (âm tổng hợp, bus giao diện). Tắt tiếng (`?mute=1`) thì im. */
-export function lootChime(tier: 0 | 1 | 2 | 3 | 4, volume = 1): void {
+export function lootChime(tier: 0 | 1 | 2 | 3 | 4 | 5, volume = 1): void {
   if (muted || volume <= 0.02) return;
   const c = ensure();
   if (!c || c.state !== 'running') return;

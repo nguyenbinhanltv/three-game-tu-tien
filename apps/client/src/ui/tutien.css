@@ -259,7 +259,8 @@
 .k-slot[data-q='1'] .k-slot-in,
 .k-slot[data-q='2'] .k-slot-in,
 .k-slot[data-q='3'] .k-slot-in,
-.k-slot[data-q='4'] .k-slot-in {
+.k-slot[data-q='4'] .k-slot-in,
+.k-slot[data-q='5'] .k-slot-in {
   inset: 2px;
 }
 .k-slot[data-q='1'] .k-slot-in {
@@ -290,6 +291,9 @@
 }
 .k-slot[data-q='4'] {
   --qc: var(--k-q4);
+}
+.k-slot[data-q='5'] {
+  --qc: var(--k-q5);
 }
 
 /* ---------- số sát thương (lớp DOM trên cảnh) ----------
