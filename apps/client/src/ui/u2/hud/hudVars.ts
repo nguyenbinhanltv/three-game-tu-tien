@@ -1,5 +1,6 @@
 import { type CSSProperties, useEffect, useState } from 'react';
 import { uiScale } from '../../uiScale';
+import { useTouchMode } from '../../../input/touchMode';
 import {
   BOSS_H,
   BOSS_MAX_W,
@@ -16,13 +17,14 @@ import {
 
 /** Chế độ HUD đang dùng (compact khi hệ số UI < 0,95): đổi khi `ui/uiScale.ts` áp hệ số mới. */
 export function useHudMode(): HudMode {
-  const [mode, setMode] = useState<HudMode>(() => modeOf(uiScale()));
+  const touch = useTouchMode();
+  const [mode, setMode] = useState<HudMode>(() => modeOf(uiScale(), touch));
   useEffect(() => {
-    const on = () => setMode(modeOf(uiScale()));
+    const on = () => setMode(modeOf(uiScale(), touch));
     window.addEventListener('dtl:uiscale', on);
     on();
     return () => window.removeEventListener('dtl:uiscale', on);
-  }, []);
+  }, [touch]);
   return mode;
 }
 
@@ -31,7 +33,8 @@ export function useHudMode(): HudMode {
  * Đơn vị thiết kế (px trước khi nhân `zoom: var(--ui-scale)`).
  */
 export function hudVars(mode: HudMode, o: HudOpts = {}): CSSProperties {
-  const m = mode === 'touch' ? 'standard' : mode;
+  if (mode === 'touch') return {}; // bố cục cảm ứng nằm hết trong `u2/touch/touch.css`
+  const m = mode;
   const z = SIZES[m];
   const b = hudBoxes(1920, 1080, m, o);
   const v: Record<string, string> = {

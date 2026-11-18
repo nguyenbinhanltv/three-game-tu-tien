@@ -33,6 +33,7 @@ import v3sets from './scenarios/v3sets';
 import skinv3 from './scenarios/skinv3';
 import hoatruc from './scenarios/hoatruc';
 import hudplay from './scenarios/hudplay';
+import touch from './scenarios/touch';
 import ui from './scenarios/ui';
 import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
@@ -51,6 +52,7 @@ const SCENARIOS: Scenario[] = [
   ui,
   chat,
   hudplay,
+  touch,
   hoatruc,
   thiennhan,
   anhbien,

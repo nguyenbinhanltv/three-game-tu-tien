@@ -1256,5 +1256,17 @@
   "ui.load.terrain.bac_hoang": "Hoang nguyên tro và vết nứt rực than lần lượt hiện hình…",
   "ui.load.sect.bac_hoang": "Vọng Bắc Trạm leo lét bên bờ khe nứt…",
   "ui.load.minimap.bac_hoang": "Bản đồ Tẫn Nguyên đã vẽ xong…",
+  "ui.settings.touch": "Chế độ cảm ứng",
+  "ui.settings.touch.auto": "Tự động",
+  "ui.settings.touch.on": "Bật",
+  "ui.settings.touch.off": "Tắt",
+  "ui.settings.touch_hint": "Cần ảo bên trái, nút đánh và vòng kỹ năng bên phải; vuốt nửa phải để xoay camera, chụm hai ngón để thu phóng, chạm quái hoặc NPC để chọn. Tự động bật trên máy chỉ có màn hình cảm ứng; nên cầm ngang.",
+  "ui.touch.jump": "Nhảy",
+  "ui.touch.interact": "Tương tác",
+  "ui.touch.target": "Mục tiêu",
+  "ui.touch.rotate": "Xoay ngang màn hình để chơi dễ hơn.",
+  "ui.touch.rotate_close": "Đóng gợi ý",
+  "ui.touch.joystick": "Cần di chuyển",
+  "ui.bag.hint_touch": "Chạm: chọn món (có nút dùng/mặc) · Giữ ngón rồi kéo: đổi chỗ, mặc, chuyển trang",
   "ui.hoatruc.de_tu": "Đồ Đệ Tử"
 }
