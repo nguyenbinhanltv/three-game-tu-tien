@@ -1933,7 +1933,8 @@ function hoaThanRun(id: MethodId, dodge: number, rng: () => number, guards = 0):
     }
     if (pi === 0 && t >= nextSeal) {
       nextSeal += nh.every;
-      avoidable(nh.pct, 0.6);
+      // Server (`tribnhan.ts`): tia `reach` luôn trúng chủ kiếp; đứng đúng trận môn chỉ giảm `cut`.
+      take(mhp * nh.pct * (rng() <= dodge ? 1 - nh.cut : 1));
     }
     if (pi === 1) {
       if (t >= nextNet) {
@@ -1952,7 +1953,8 @@ function hoaThanRun(id: MethodId, dodge: number, rng: () => number, guards = 0):
       }
       if (t >= linkAt) {
         linkAt = Infinity;
-        avoidable(pt.linkPct!, 0.7);
+        // Thân chính đứng chắn vẫn ăn `linkPct × (1 − cut)`; không kịp thì ăn đủ (thế thân chắn trọn không tính, cách nghiêm hơn).
+        take(mhp * pt.linkPct! * (rng() <= dodge ? 1 - nh.cut : 1));
       }
     }
     if (pi === 2 && t >= finalAt && fin) {
