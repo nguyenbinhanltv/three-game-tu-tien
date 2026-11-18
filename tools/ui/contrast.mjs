@@ -42,6 +42,20 @@ add('sơn mài: lục chat (loot)', '#9fd9a0', 1, LAC);
 add('sơn mài: phẩm lục', '#b6dc96', 1, LAC);
 add('sơn mài: phẩm lam', '#9ccdf0', 1, LAC);
 add('sơn mài: phẩm tím', '#cfb3ff', 1, LAC);
+// ── UI Kit 2.0 (U2-1): token ở apps/client/src/ui/u2/tokens.css ──
+const G2 = ['#efe6d0', '#d8cba8'].map(hex); // --u-giay, --u-giay-lo
+const I2 = ['#15110e', '#33281f'].map(hex); // --u-ink-1, --u-ink-3
+add('U2 giấy: chữ mực --u-muc', '#2b2118', 1, G2);
+add('U2 giấy: chữ phụ --u-muc-dim', '#5c4c34', 1, G2);
+add('U2 tối: chữ --u-chu', '#efe6d0', 1, I2);
+add('U2 tối: chữ phụ --u-chu-dim', '#bfae87', 1, I2);
+add('U2 tối: kim --u-gold', '#e2b955', 1, I2);
+add('U2 tối: ngọc --u-ngoc-hi', '#6fd6c1', 1, I2);
+add('U2 tối: son sáng --u-son-hi', '#e8553f', 1, [I2[0]], 3);
+add('U2 tab: chữ trên ngọc tối', '#d9fff5', 1, [hex('#17493f')]);
+add('U2 tab chọn: chữ trên ngọc nhạt', '#08302a', 1, [hex('#5fd0bb')]);
+add('U2 nút son: chữ', '#fff3c6', 1, [hex('#b3261e')]);
+add('U2 tiêu đề cuộn: chữ kim trên ngọc', '#fff6cf', 1, [hex('#2f8f7f')], 3);
 for (const r of rows) console.log(`${r.ok ? 'OK ' : 'LỖI'} ${String(r.ratio).padStart(5)} (≥${r.min})  ${r.name}`);
 const bad = rows.filter((r) => !r.ok);
 console.log(bad.length ? `\n${bad.length} cặp chưa đạt` : '\nTất cả đạt AA');
