@@ -232,3 +232,40 @@ describe('Anh Biến: dữ liệu cũ khi nâng trần', () => {
     expect(xp(3)).toBe(170000);
   });
 });
+
+describe('Anh Biến: nạp nhân vật và sổ cái', () => {
+  it('Character.load kẹp tu vi theo xpNeed(cấp): cấp 28 từng là trần 99.999.999 thì về xpNeed(28), cấp 32 giữ nguyên', () => {
+    const a = Character.create(acc++, 'kepa' + acc);
+    a.level = 28;
+    a.xp = 99_999_999;
+    a.save();
+    expect(Character.load(a.id).xp).toBe(xpNeed(28));
+    const b = Character.create(acc++, 'kepb' + acc);
+    b.level = 32;
+    b.xp = 99_999_999;
+    b.save();
+    expect(Character.load(b.id).xp).toBe(99_999_999);
+    expect(xpNeed(32)).toBe(99_999_999);
+  });
+
+  it('ledger: tiêu Anh Biến Lộ khi vào kiếp và hoàn khi thất bại muộn đều có idem, hoàn không lặp', async () => {
+    const { sqlite } = await import('../db');
+    const t = setup();
+    t.p.god = true;
+    t.begin();
+    const rows = () => sqlite.prepare("SELECT reason, idem, delta FROM ledger WHERE char_id = ? AND reason LIKE 'tribulation%'").all(t.char.id) as { reason: string; idem: string | null; delta: number }[];
+    const spent = rows().filter((r) => r.reason === 'tribulation');
+    expect(spent).toHaveLength(1);
+    expect(spent[0].idem).toMatch(new RegExp(`^trib:anh_bien:${t.char.id}:`));
+    expect(spent[0].delta).toBe(-1);
+    t.run(50);
+    const end = (t.sim as unknown as { endTribulation(p: Ent, ok: boolean, silent: boolean): void }).endTribulation.bind(t.sim);
+    end(t.p, false, false);
+    end(t.p, false, false); // lần hai: không còn kiếp, không hoàn nữa
+    const refunds = rows().filter((r) => r.reason === 'tribulation:refund');
+    expect(refunds).toHaveLength(1);
+    expect(refunds[0].idem).toMatch(new RegExp(`^trib-refund:anh_bien:${t.char.id}:`));
+    expect(refunds[0].delta).toBe(1);
+    expect(t.count()).toBe(1);
+  });
+});
