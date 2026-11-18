@@ -403,6 +403,7 @@ export class Game {
   private mirrorDiscVer = 0;
   private mirrorVeilVer = 0;
   private mirrorPillarVer: number[] = [];
+  private kdSteleVer: number[] = [];
   /** Nguyên anh xuất khiếu đang hiện (E3-L): theo sid chủ kiếp. */
   private soulVfx = new Map<string, { stop(): void }>();
   /** Thế thân thần niệm của Thiên Nhân Kiếp (E4-D), theo sid chủ kiếp. */
@@ -1061,7 +1062,7 @@ export class Game {
       // Vân Lam: đèn lồng tông môn; level khác: đèn đá bày trong `propsOf` (E2-C).
       const pts = id === 'van_lam' || id === 'kiem_trung' ? SECT_LANTERNS : propsOf(id).filter((p) => p.id === 'prop_den_da').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 2.1 * p.s, z: p.z }));
       // Cung gương: quầng đèn nhỏ, màu lạnh, không vào bloom (đèn đá không cháy trắng).
-      const halos = levelAssets(id).palace ? createLanternHalos(pts, 1.3, 0xb8cdee) : createLanternHalos(pts);
+      const halos = levelAssets(id).palace ? createLanternHalos(pts, 1.3, levelAssets(id).palace === 'gilt' ? 0xd8a64a : 0xb8cdee) : createLanternHalos(pts);
       this.scene.add(halos);
       this.levelObjs.push(halos);
       this.lanterns = new LanternLights(this.scene, pts);
@@ -1071,15 +1072,16 @@ export class Game {
     const cave = levelAssets(id).cave;
     if (cave) {
       // Phó bản hang (E2-C): vách + trần tối che chân trời, tinh thể mạch phát sáng lam lục (hai draw call).
-      const palace = !!levelAssets(id).palace;
+      const palaceAsset = levelAssets(id).palace;
+      const palace: false | 'moon' | 'gilt' = palaceAsset ? (palaceAsset === 'gilt' ? 'gilt' : 'moon') : false;
       const shell = buildCaveShell(cave, heightAt(cave.x, cave.z), palace);
       const glow = buildCrystalGlow(propsOf(id).filter((p) => p.id === 'prop_mach_tinh_tru').map((p) => ({ x: p.x, y: heightAt(p.x, p.z) + 1.8, z: p.z })));
       this.scene.add(shell, glow);
       this.levelObjs.push(shell, glow);
       if (palace) {
         // Cung gương (E3-M): sàn gương giả phủ lòng chảo (một draw call, không phản chiếu thật).
-        const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt);
-        const hall = buildPalaceHall(cave, heightAt);
+        const floor = buildMirrorFloor({ ...cave, r: cave.r - 2 }, heightAt, palace);
+        const hall = buildPalaceHall(cave, heightAt, palace);
         this.scene.add(floor, hall);
         this.levelObjs.push(floor, hall);
       }
@@ -2476,7 +2478,15 @@ export class Game {
         const n = m.n ?? 0;
         const ver = (this.mirrorPillarVer[n] = (this.mirrorPillarVer[n] ?? 0) + 1);
         if ((m.d ?? 0) <= 0) break;
-        v.mirrorPillar(m.x ?? 0, m.z ?? 0, [0x5aa8ff, 0xe0584a, 0xe8c15a][n] ?? 0xffffff, m.d ?? 20, m.pg === 1, () => this.mirrorPillarVer[n] === ver);
+        v.mirrorPillar(m.x ?? 0, m.z ?? 0, [0x5aa8ff, 0xe0584a, 0xe8c15a, 0xb078e8][n] ?? 0xffffff, m.d ?? 20, m.pg === 1, () => this.mirrorPillarVer[n] === ver);
+        break;
+      }
+      case 'kd_stele': {
+        // Bia của pha Kim dạ (DV-3E): cột sáng + vòng quanh bia; pg 1 sáng (kim dát), 0 tắt (tím thẫm); d = 0 gỡ. Mỗi lần nhận tin thay hình cũ.
+        const n = m.n ?? 0;
+        const ver = (this.kdSteleVer[n] = (this.kdSteleVer[n] ?? 0) + 1);
+        if ((m.d ?? 0) <= 0) break;
+        v.kdStele(m.x ?? 0, m.z ?? 0, m.r ?? 8, m.d ?? 3, m.pg === 1, () => this.kdSteleVer[n] === ver);
         break;
       }
       case 'mirror_veil': {

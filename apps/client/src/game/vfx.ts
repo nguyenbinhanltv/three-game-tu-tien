@@ -1074,6 +1074,43 @@ export class Vfx {
   }
 
   /**
+   * Bia Kim dạ (DV-3E): vòng kim dát quanh bia (bán kính `r` = ranh vòng sáng trên server) và cột sáng mảnh; `lit` thì vàng sáng, tắt thì tím thẫm
+   * mờ. Tự khép khi hết `dur` giây hoặc `stillOn()` sai (server gửi lại mỗi 2 s nên đổi sáng/tắt thay hình ngay). Cường độ thấp để không che người.
+   */
+  kdStele(x: number, z: number, r: number, dur: number, lit: boolean, stillOn: () => boolean): void {
+    const y = groundAt(x, z);
+    const color = lit ? 0xe0b44a : 0x6a3fa0;
+    const o = lit ? 0.7 : 0.4;
+    const tube = this.fx(TUBE_GEO, color, lit ? 0.4 : 0.18, 'flat');
+    const ring = this.fx(RING_GEO, color, o);
+    ring.rotation.x = -Math.PI / 2;
+    let t = 0;
+    let fade = 0;
+    const it = {
+      t: 0,
+      dur: dur + 1,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const on = t < dur && stillOn();
+        fade = on ? Math.min(1, fade + dt * 3) : Math.max(0, fade - dt * 2);
+        if (!on && fade <= 0) it.t = it.dur;
+        const pulse = 1 + Math.sin(t * 2.4) * 0.05;
+        tube.position.set(x, y + 6, z);
+        tube.scale.set(1.1 * pulse, 12, 1.1 * pulse);
+        tube.fxOpacity = (lit ? 0.4 : 0.18) * fade;
+        ring.position.set(x, y + 0.15, z);
+        ring.scale.setScalar(r * pulse);
+        ring.fxOpacity = o * fade;
+      },
+      end: () => {
+        this.drop(tube);
+        this.drop(ring);
+      },
+    };
+    this.items.push(it);
+  }
+
+  /**
    * Nguyên anh xuất khiếu (E3-L): một bóng người nhỏ xanh nhạt trong suốt lơ lửng phía trên thân, nối với thân bằng một sợi sáng mảnh.
    * Tông trầm, mờ, cộng sáng thấp để không che nhân vật. Tự khép khi `on()` sai hoặc hết `dur`; `stop()` khép sớm.
    */

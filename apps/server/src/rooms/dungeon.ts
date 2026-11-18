@@ -7,6 +7,7 @@ import { Character } from '../game/character';
 import { DUNGEON_QUEST_TARGET } from '../game/dungeonquest';
 import { MirrorPuzzle } from '../game/mirrorpuzzle';
 import { SealSystem } from '../game/seal';
+import { KimDaSystem } from '../game/kimda';
 import { RiftVeins, SteleHold } from '../game/xichtan';
 import type { MonEnt, PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
@@ -210,6 +211,47 @@ export class DungeonRoom extends GameRoom {
   private xichTanTick(): void {
     this.stele?.tick();
     this.veins?.tick();
+    this.kimda?.tick();
+  }
+
+  /** Cơ chế Kim Dạ Cung (DV-3E): dựng khi đợt có quái mang `kd`, giữ tới hết phó bản. */
+  private kimda: KimDaSystem | null = null;
+
+  private startKimDa(): void {
+    const sim = this.sim;
+    const c = this.def.center;
+    const pool = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') => sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
+    this.kimda = new KimDaSystem({
+      now: () => Date.now(),
+      monsters: () => sim.monsters,
+      players: () => sim.players.values(),
+      isDead: (p) => (p.s.fl & PF_DEAD) !== 0,
+      isGhost: (p) => sim.soul.isScouting(p),
+      damagePlayer: (p, n, src) => sim.damagePlayer(p, n, src, true),
+      healMonster: (m, n) => {
+        m.s.hp = Math.min(m.s.mhp, m.s.hp + n);
+      },
+      spawn: (mon, level, x, z, owner) => {
+        const def = MONSTER.get(mon);
+        if (!def) return null;
+        const e = sim.spawnMonster(def, level, x, z, null);
+        e.minionOf = owner.id;
+        return e;
+      },
+      // Gỡ lặng lẽ (cùng cách gỡ bóng giả của gương): không qua đường giết nên không rơi đồ, không tính hạ.
+      despawn: (m) => {
+        if (m.state === MS_DEAD) return;
+        m.s.hp = 0;
+        m.state = MS_DEAD;
+        m.s.st = MS_DEAD;
+        m.removeAt = Date.now() + 500;
+      },
+      marker: pool,
+      smash: (m, x, z, r, delay, mul) => sim.addHazard({ x, z, r }, delay, mul, false, 'spirit', m.id, m.atk),
+      fx: (msg) => sim.fx(msg),
+      center: () => c,
+      sysAll: (k, params, type) => sim.sysAll(k, params, type),
+    });
   }
 
   private startSteles(w: WaveDef): void {
@@ -282,6 +324,7 @@ export class DungeonRoom extends GameRoom {
     if (w.seals) this.startSeals(w);
     if (w.steles) this.startSteles(w);
     if (w.mons.some((g) => MONSTER.get(g.id)?.rift)) this.startVeins();
+    if (!this.kimda && w.mons.some((g) => MONSTER.get(g.id)?.kd)) this.startKimDa();
     let lead = '';
     let i = 0;
     for (const g of w.mons) {
