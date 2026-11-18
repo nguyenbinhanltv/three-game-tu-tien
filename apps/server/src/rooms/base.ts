@@ -115,7 +115,9 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       }
       if (this.sim.now - aoiAt >= AOI_PERIOD_MS) {
         aoiAt = this.sim.now;
+        const a0 = this.sim.prof.enabled ? performance.now() : 0;
         this.aoi.update((sid) => this.clients.getById(sid)?.view);
+        if (a0) this.sim.prof.add('aoi_update', performance.now() - a0);
       }
     }, 50);
     activeRooms.add(this);
