@@ -290,6 +290,7 @@ export class MonsterSkins {
     const t = s && !this.legacy ? this.templates.get(s.asset) : undefined;
     if (!s || !t || typeof t === 'string') return new MonsterModel(def);
     const scene = cloneSkinned(t.handle.scene);
+    assets.trackInstance(s.asset, scene); // vị trí thật của con quái cho thứ tự nạp texture bậc cao (game/hires)
     const mat = this.material(def, s, t);
     scene.traverse((o) => {
       const m = o as THREE.Mesh;

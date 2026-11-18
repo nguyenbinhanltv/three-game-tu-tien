@@ -313,3 +313,33 @@ describe('AssetCache.applyHires với material dẫn xuất (adoptGltfMaterials)
     h.release();
   });
 });
+
+describe('AssetCache.trackInstance: khoảng cách theo bản đang vẽ', () => {
+  it('handle mẫu tách rời không tính; dist theo bản clone gần nhất; bản gỡ khỏi cảnh thì bỏ; đuổi chạy được', async () => {
+    const src = new THREE.MeshStandardMaterial({ map: new THREE.Texture() });
+    src.name = 'm1';
+    const cache = fakeCache(src, new THREE.Texture());
+    cache.setViewer(0, 0);
+    const world = new THREE.Scene();
+    const tpl = await cache.acquire('mon_x'); // bản mẫu: không đưa vào cảnh (như MonsterSkins)
+    const near = tpl.scene.clone(true);
+    const far = tpl.scene.clone(true);
+    near.position.set(6, 0, 0);
+    far.position.set(300, 0, 0);
+    world.add(near, far);
+    world.updateMatrixWorld(true);
+    expect(cache.hiresCandidates()[0].dist).toBe(Infinity); // chưa khai báo: không biết vị trí
+    cache.trackInstance('mon_x', near);
+    cache.trackInstance('mon_x', far);
+    expect(cache.hiresCandidates()[0].dist).toBeCloseTo(6);
+    world.remove(near);
+    expect(cache.hiresCandidates()[0].dist).toBeCloseTo(300);
+    // đuổi: tệp đã áp dụng ở xa (300 m) nhường chỗ cho ứng viên ở 6 m
+    await cache.applyHires(cache.hiresCandidates()[0]);
+    const applied = cache.hiresApplied();
+    expect(applied[0].dist).toBeCloseTo(300);
+    const want = { key: 'k', assetId: 'x', dist: 6, file: 'f', width: 2048, bytes: 1, gpuBytes: MB };
+    expect(planEviction(want, applied, 128 * MB, 128 * MB)).toEqual(['mon_x#hi/mon_x.ktx2']);
+    tpl.release();
+  });
+});

@@ -105,6 +105,8 @@ interface Entry {
   promise: Promise<GLTF>;
   /** Bản sao đang dùng (để biết asset ở gần người xem không). */
   handles: Set<THREE.Object3D>;
+  /** Bản đang vẽ do nơi dùng tự clone từ bản mẫu (quái/nhân vật), khai báo bằng `trackInstance`. */
+  tracked: Set<WeakRef<THREE.Object3D>>;
   /** Texture bậc cao đã thay, theo tệp. */
   hires: Map<string, HiresApplied>;
 }
@@ -429,7 +431,7 @@ export class AssetCache {
   async acquire(id: string, opts: AcquireOptions = {}): Promise<AssetHandle> {
     let e = this.entries.get(id);
     if (!e) {
-      const entry: Entry = { id, refs: 0, gltf: null, promise: null as unknown as Promise<GLTF>, handles: new Set(), hires: new Map() };
+      const entry: Entry = { id, refs: 0, gltf: null, promise: null as unknown as Promise<GLTF>, handles: new Set(), tracked: new Set(), hires: new Map() };
       entry.promise = this.getManifest()
         .then((m) => {
           const a = m.assets[id];
@@ -622,12 +624,39 @@ export class AssetCache {
     e.hires.delete(file);
   }
 
+  /**
+   * Khai báo một bản đang vẽ của asset `id` (nơi dùng tự `clone` từ handle mẫu không nằm trong cảnh: quái, nhân vật), để thứ tự
+   * "gần camera trước" của texture bậc cao dùng đúng vị trí con quái chứ không phải bản mẫu ở gốc tọa độ. Giữ yếu (WeakRef);
+   * bản chưa gắn vào cảnh hoặc đã gỡ thì không tính. Trả hàm bỏ khai báo.
+   */
+  trackInstance(id: string, obj: THREE.Object3D): () => void {
+    const e = this.entries.get(id);
+    if (!e) return () => undefined;
+    const ref = new WeakRef(obj);
+    e.tracked.add(ref);
+    return () => e.tracked.delete(ref);
+  }
+
+  private static inScene(o: THREE.Object3D): boolean {
+    let p: THREE.Object3D | null = o;
+    while (p.parent) p = p.parent;
+    return (p as THREE.Scene).isScene === true;
+  }
+
+  /** Khoảng cách (m, mặt phẳng) từ người xem tới bản gần nhất đang nằm trong cảnh; Infinity nếu không có. */
   private entryDist(e: Entry): number {
     const v = new THREE.Vector3();
     let dist = Infinity;
-    for (const h of e.handles) {
-      h.getWorldPosition(v);
+    const visit = (o: THREE.Object3D) => {
+      if (!AssetCache.inScene(o)) return; // bản mẫu tách rời, bản chưa gắn hoặc đã gỡ
+      o.getWorldPosition(v);
       dist = Math.min(dist, Math.hypot(v.x - this.viewer.x, v.z - this.viewer.z));
+    };
+    for (const h of e.handles) visit(h);
+    for (const ref of e.tracked) {
+      const o = ref.deref();
+      if (o) visit(o);
+      else e.tracked.delete(ref);
     }
     return dist;
   }
