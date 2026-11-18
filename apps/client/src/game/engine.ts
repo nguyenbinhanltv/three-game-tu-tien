@@ -80,7 +80,7 @@ import { debugAllowed, readTestParams } from './testParams';
 import { CharPreview } from './charPreview';
 import { currentSearch, FLAGS } from './flags';
 
-interface LoginOptions {
+export interface LoginOptions {
   token?: string;
   dev?: string;
   name?: string;
@@ -105,8 +105,8 @@ interface LoginOptions {
  * `dungeon-<id>`); tên lạ thì về Vân Lam.
  */
 /** Room bản đồ thế giới: `world` (Vân Lam) hoặc `world-<id>` (không phải bí cảnh). */
-const isWorldRoom = (room: string): boolean => room === ROOM_WORLD || room.startsWith('world-');
-function levelOfRoom(room: string): string {
+export const isWorldRoom = (room: string): boolean => room === ROOM_WORLD || room.startsWith('world-');
+export function levelOfRoom(room: string): string {
   if (room === ROOM_WORLD) return 'van_lam';
   if (room === ROOM_DUNGEON) return 'kiem_trung';
   if (room === ROOM_TRIBULATION) return TRIB_LEVEL; // sân độ kiếp (E1-F)
@@ -117,11 +117,11 @@ function levelOfRoom(room: string): string {
   const id = room.replace(/^(world|dungeon)-/, '');
   return id !== room && knownLevel(id) ? id : 'van_lam';
 }
-function levelOfInit(init: InitMsg): string {
+export function levelOfInit(init: InitMsg): string {
   return levelOfRoom(init.room);
 }
 
-function serverUrl(): string {
+export function serverUrl(): string {
   const env = (import.meta as unknown as { env: Record<string, string | boolean | undefined> }).env;
   if (typeof env.VITE_SERVER_URL === 'string' && env.VITE_SERVER_URL) return env.VITE_SERVER_URL;
   const { protocol, hostname, host, port } = window.location;
@@ -274,7 +274,7 @@ export class Game {
   /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
   grass!: Grass;
   props: PropLayer | null = null;
-  /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. `?beacons=0` tắt để so ảnh. */
+  /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. */
   beacons: Beacons | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
@@ -993,7 +993,7 @@ export class Game {
   private xichRifts: RiftVeil[] = [];
 
   private buildXich(id: string, q: (typeof QUALITY)[string]): void {
-    if (new URLSearchParams(location.search).get('xichart') === '0') return;
+    if (!FLAGS.xichArt) return;
     const T = levelTerrain();
     const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
     for (const p of paths) {
@@ -3738,7 +3738,7 @@ export class Game {
 
   /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) , người chơi chưa tắt thẻ chương trong Cài đặt và không tắt bằng `?cine=0`. */
   private canCine(x: number, z: number): boolean {
-    return get().chapterCards && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
+    return get().chapterCards && FLAGS.cinematics && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
   }
 
   private startCine(): void {
@@ -3754,7 +3754,7 @@ export class Game {
   private canBossCine(me: PState | undefined): boolean {
     if (!me || !this.started || this.cine.active || this.snapToServer) return false;
     if ((me.fl & PF_DEAD) !== 0 || get().phase !== 'game') return false;
-    return get().chapterCards;
+    return get().chapterCards && FLAGS.cinematics;
   }
 
   private beginBossCine(kind: 'boss' | 'phase' | 'dan', path: readonly Waypoint[], prof: { dur: number; out: number }, info: { name: string; title?: string; text: string }): void {

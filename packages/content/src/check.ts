@@ -778,7 +778,7 @@ for (const n of NPCS) {
 // Mục tiêu chương 5 chưa có dữ liệu (DV3-B/D/E/L chưa vào): nhiệm vụ trỏ tới chúng phải khóa bằng minLevel > MAX_LEVEL
 // (cấp 29+ chưa mở nên không ai nhận được), để khỏi có nhiệm vụ nhận được mà không bao giờ xong. Gỡ id khỏi bảng khi dữ liệu thật vào.
 const PENDING_OBJ: Record<string, readonly string[]> = {
-  kill: ['elite_trien_bo_cham_ba'],
+  kill: [] as string[],
 };
 for (const q of QUESTS) {
   needStr(`quest.${q.id}.name`);
