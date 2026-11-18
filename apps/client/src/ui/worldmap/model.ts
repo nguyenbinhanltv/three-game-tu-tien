@@ -1,6 +1,6 @@
 // Bản đồ lớn (M-4): dữ liệu vùng, bộ lọc lớp, phép chiếu kéo/zoom. Phần thuần, không đụng DOM để test được.
 import { inPoly, levelSpawns, type LevelDef, type ZoneDef } from '@dtl/shared';
-import { levelTerrain } from '../../game/levelCtx';
+import { levelTerrain } from '../../base/levelCtx';
 import { MONSTER } from '@dtl/content';
 
 export type Layer = 'npc' | 'quest' | 'mon' | 'gather' | 'tele';

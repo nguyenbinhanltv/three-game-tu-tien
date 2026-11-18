@@ -2,7 +2,7 @@
 import { levelSpawns, type MarkInfo, MS_DEAD, PORTAL_POS, type QuestView } from '@dtl/shared';
 import { hasString, ITEM, itemName, LEVELS, MONSTER, monsterName, NPC, NPCS, QUEST, QUESTS, t } from '@dtl/content';
 import type { Game } from '../../game/engine';
-import { questGoal, trackedQuestId } from '../../game/offscreen';
+import { questGoal, trackedQuestId } from '../../game/entities/offscreen';
 import { get } from '../store';
 import { difficultyTone, type Mark, minimapHooks, npcFunction, npcQuestMark } from './model';
 
