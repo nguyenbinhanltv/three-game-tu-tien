@@ -31,9 +31,12 @@ import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
 import v3sets from './scenarios/v3sets';
 import skinv3 from './scenarios/skinv3';
+import hoatruc from './scenarios/hoatruc';
 import hudplay from './scenarios/hudplay';
+import touch from './scenarios/touch';
 import ui from './scenarios/ui';
 import minimap from './scenarios/minimap';
+import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import xichkhe from './scenarios/xichkhe';
 
@@ -49,7 +52,10 @@ const SCENARIOS: Scenario[] = [
   chrv2,
   ui,
   minimap,
+  chat,
   hudplay,
+  touch,
+  hoatruc,
   thiennhan,
   anhbien,
   thanpham,

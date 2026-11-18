@@ -104,7 +104,7 @@ export function ipKey(raw: string | undefined): string {
   const zone = ip.indexOf('%');
   if (zone >= 0) ip = ip.slice(0, zone);
   const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip);
-  if (mapped) ip = mapped[1];
+  if (mapped) ip = mapped[1] ?? ip;
   const v = net.isIP(ip);
   if (v === 4) return ip;
   if (v === 6) {

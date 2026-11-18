@@ -59,12 +59,15 @@ function applyPatches(this: Ser, clients: Client[]): boolean {
   this.encoder.sharedBuffer[0] = Protocol.ROOM_STATE_PATCH;
   const shared = this.encoder.encode(it);
   if (!this.hasFilters) {
-    while (n--) if (joined(clients[n])) clients[n].raw(shared);
+    while (n--) {
+      const c = clients[n];
+      if (c && joined(c)) c.raw(shared);
+    }
   } else {
     const sharedOffset = it.offset;
     while (n--) {
       const c = clients[n];
-      if (!joined(c)) continue;
+      if (!c || !joined(c)) continue;
       c.raw(c.view ? encodeViewChecked(this.encoder, c.view, sharedOffset) : shared);
     }
   }

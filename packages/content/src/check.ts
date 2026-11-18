@@ -113,6 +113,7 @@ import { TELE_PADS, TELE_PAD, terrainOf, questSpot, inPoly } from '@dtl/shared';
 import { checkLevel } from './levelcheck';
 import { CREDITS, CREDIT_KINDS, CREDIT_LICENSE_URL } from './index';
 
+import { at } from '@dtl/shared';
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
 
@@ -225,7 +226,7 @@ for (const s of ALL_SKILLS) {
   ids.forEach((id, i) => {
     const p = POSE.get(id);
     if (!p) return err(`skill ${s.id}: thiếu pose ${id} (đòn/giọng của pose ${s.pose})`);
-    const hitAt = s.combo ? s.combo.hits[i % hits].hitAt : s.hitAt?.[0];
+    const hitAt = s.combo ? s.combo.hits[i % hits]?.hitAt : s.hitAt?.[0];
     if (hitAt !== undefined && p.hit && Math.abs(p.hit[0] - hitAt) > 0.03)
       err(`skill ${s.id}: hitAt ${hitAt} lệch hit[0] = ${p.hit[0]} của pose ${id}`);
     if (
@@ -382,7 +383,7 @@ for (const it of ITEMS) {
     if (q.affixes !== i) err(`quality ${i}: số dòng phụ phải bằng ${i} (thiết kế 3.2)`);
     if (!(q.affixFrac >= 0 && q.affixFrac < 0.6) || (i === 0) !== (q.affixFrac === 0)) err(`quality ${i}: affixFrac không hợp lệ`);
     if (!/^#[0-9a-fA-F]{6}$/.test(q.color)) err(`quality ${i}: màu không hợp lệ`);
-    if (i > 0 && !(q.affixFrac >= sys.qualities[i - 1].affixFrac)) err(`quality ${i}: affixFrac phải không giảm`);
+    if (i > 0 && !(q.affixFrac >= at(sys.qualities, i - 1).affixFrac)) err(`quality ${i}: affixFrac phải không giảm`);
   });
   if (sys.affixes.length !== 14) err(`${where}: phải có đúng 14 loại dòng phụ (đang ${sys.affixes.length})`);
   const slotIds = new Set<string>(EQUIP_SLOTS);
@@ -405,7 +406,7 @@ for (const it of ITEMS) {
     const pool = sys.affixes
       .filter((a) => !a.slots || a.slots.includes(sd.id))
       .reduce((n, a) => n + (a.param ? sys.params[a.param].length : 1), 0);
-    if (pool < sys.qualities[QUALITY_COUNT - 1].affixes) err(`slot ${sd.id}: không đủ dòng phụ để roll phẩm cao nhất`);
+    if (pool < (sys.qualities[QUALITY_COUNT - 1]?.affixes ?? 0)) err(`slot ${sd.id}: không đủ dòng phụ để roll phẩm cao nhất`);
   }
   // Mô phỏng nhanh: roll nhiều lần mọi ô × phẩm phải qua parseInst, không vượt ngân sách, số dòng đúng.
   const rng = seededRng(20261115);
@@ -671,7 +672,7 @@ function checkEquipLoot(id: string, l: LootDef) {
     if (pThan > 0 && (l.src !== 'boss' || i !== 0 || pThan > 0.01)) err(`${w}: Thần phẩm chỉ ở boss, bảng đầu, ≤ 1% mỗi lần rơi`);
     if (l.src === 'common' && hi > 1) err(`${w}: quái thường chỉ rơi Phàm/Linh phẩm`);
     if (l.src === 'dungeon' && hi > 3) err(`${w}: bí cảnh thường chỉ rơi tới Địa phẩm`);
-    if (l.src === 'elite' && i === 0 && (hi > 3 || r.q[2] / tot < 0.3)) err(`${w}: tinh anh chủ yếu Huyền phẩm, tối đa Địa phẩm`);
+    if (l.src === 'elite' && i === 0 && (hi > 3 || (r.q[2] ?? 0) / tot < 0.3)) err(`${w}: tinh anh chủ yếu Huyền phẩm, tối đa Địa phẩm`);
     if (l.src === 'boss' && i === 0 && lo < 2) err(`${w}: boss chỉ rơi từ Huyền phẩm`);
   });
   // Quái kiếp (Nhật Thực Dực Chủ) không rơi đồ (`minionOf`), nên không cần bảng rơi trang bị.
@@ -885,7 +886,7 @@ for (const r of RECIPES) {
       if (t(`item.${pid}.name`) !== (GLOSSARY.gear as Record<string, string>)[pid]) err(`${w}: tên ${pid} lệch glossary.gear`);
       needStr(`item.${pid}.desc`);
     }
-    if (st.tiers.length !== 2 || st.tiers[0].n !== 2 || !(st.tiers[1].n > 2 && st.tiers[1].n <= st.pieces.length))
+    if (st.tiers.length !== 2 || at(st.tiers, 0).n !== 2 || !(at(st.tiers, 1).n > 2 && at(st.tiers, 1).n <= st.pieces.length))
       err(`${w}: cần bậc 2 món (chỉ số) và một bậc cao ≤ số món`);
     st.tiers.forEach((tr, i) => {
       if (tr.fx && !FX.includes(tr.fx)) err(`${w}: fx lạ ${tr.fx}`);
@@ -914,14 +915,14 @@ for (const r of RECIPES) {
       err(`${w}: reqLevel phải bằng reqLevel của thành phẩm`);
     for (const i of f.inputs) needItem(i.id, w);
     if (f.q.length < 5 || f.q.length > QUALITY_COUNT || f.q.some((x) => !(x >= 0)) || !f.q.some((x) => x > 0)) err(`${w}: q sai`);
-    if (f.q[4] > 0 || (f.q[5] ?? 0) > 0 || f.q[3] / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3)
+    if ((f.q[4] ?? 0) > 0 || (f.q[5] ?? 0) > 0 || (f.q[3] ?? 0) / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3)
       err(`${w}: chế tạo không ra Thiên/Thần phẩm, Địa phẩm ≤ 30%`);
     if (!(f.ilvl >= 1 && f.ilvl <= 99) || !(f.gold >= 0)) err(`${w}: ilvl/gold sai`);
   }
 }
 // ---- bậc trang bị và Thăng Bậc (E2-F) ----
 {
-  if (!(TIER_MUL.length === MAX_TIER + 1 && TIER_MUL.every((m, i) => i < 2 || m > TIER_MUL[i - 1]))) err('TIER_MUL phải tăng theo bậc');
+  if (!(TIER_MUL.length === MAX_TIER + 1 && TIER_MUL.every((m, i) => i < 2 || m > at(TIER_MUL, i - 1)))) err('TIER_MUL phải tăng theo bậc');
   for (let to = 2; to <= TIER_OPEN; to++) {
     const mat = PROMOTE_MAT[to];
     if (!mat || !ITEM.has(mat)) err(`bậc ${to}: thiếu nguyên liệu Thăng Bậc ${mat}`);
@@ -1036,7 +1037,7 @@ if (REALMS.length !== MAX_LEVEL) err(`realms.json phải có ${MAX_LEVEL} cấp 
 REALMS.forEach((r, i) => {
   if (r.level !== i + 1) err(`realms.json: cấp thứ ${i + 1} ghi level ${r.level}`);
   if (r.key !== `realm.${r.level}`) err(`realms.json: cấp ${r.level} key ${r.key}`);
-  const major = GLOSSARY.realms[majorRealmOf(r.level)];
+  const major = GLOSSARY.realms[majorRealmOf(r.level)] ?? '';
   if (!t(r.key).startsWith(major)) err(`${r.key}: tên "${t(r.key)}" phải bắt đầu bằng đại cảnh giới "${major}" của glossary`);
   if (
     r.level > TRUC_CO_LEVEL &&
@@ -1104,7 +1105,7 @@ for (const lv of Object.values(LEVELS)) {
 for (const id of Object.keys(LEVEL_ASSETS)) if (!LEVELS[id]) err(`levels/${id}.assets.json không có level tương ứng`);
 // Vân Lam: NPC giao việc ở các điểm đáng chú ý (M-5), tên theo glossary.poiNpcs.
 {
-  const vl = LEVELS.van_lam;
+  const vl = at(LEVELS, 'van_lam');
   const camps = vl.camps ?? [];
   const glossNpc = GLOSSARY.poiNpcs as Record<string, string>;
   const clearOfCamps = (x: number, z: number, margin: number) => camps.every((c) => Math.hypot(c.x - x, c.z - z) >= c.radius + margin);
@@ -1252,7 +1253,7 @@ for (const lv of Object.values(LEVELS)) {
   const rw = d.reward;
   if (rw) {
     if (!(rw.xpPct > 0 && rw.xpPct <= 0.5)) err(`${w}: thưởng xpPct phải trong (0; 0,5]`);
-    if (!(rw.gold.length === 2 && rw.gold[0] >= 0 && rw.gold[1] >= rw.gold[0])) err(`${w}: thưởng gold phải là [thấp, cao]`);
+    if (!(rw.gold.length === 2 && at(rw.gold, 0) >= 0 && at(rw.gold, 1) >= at(rw.gold, 0))) err(`${w}: thưởng gold phải là [thấp, cao]`);
     for (const it of rw.items) {
       if (!ITEM.get(it.item)) err(`${w}: thưởng vật phẩm ${it.item} không tồn tại`);
       if (!(it.chance > 0 && it.chance <= 1 && it.min >= 1 && it.max >= it.min)) err(`${w}: thưởng ${it.item} chance/min/max không hợp lệ`);
@@ -1265,7 +1266,7 @@ for (const lv of Object.values(LEVELS)) {
   for (const pt of [d.spawn, d.exit, d.center])
     if (!Number.isFinite(terrainOf(lv).groundAt(pt.x, pt.z))) err(`${w}: điểm (${pt.x}, ${pt.z}) ngoài bản đồ`);
 }
-if (!LEVELS.van_lam.spawn) err('van_lam: thiếu spawn');
+if (!at(LEVELS, 'van_lam').spawn) err('van_lam: thiếu spawn');
 
 // ---- Độ kiếp theo dữ liệu (E1-F) ----
 {
@@ -1428,7 +1429,7 @@ for (const k of ['drain', 'seal', 'shield', 'heal']) if (!ARTIFACTS.some((a) => 
 // Bản mệnh pháp bảo (E2-E): đúng một cái là Ngưng Đan Lô.
 {
   const bonded = ARTIFACTS.filter((a) => a.bonded);
-  if (bonded.length !== 1 || bonded[0].id !== BONDED_ARTIFACT_ID) err(`bản mệnh pháp bảo: phải đúng một, id ${BONDED_ARTIFACT_ID}`);
+  if (bonded.length !== 1 || at(bonded, 0).id !== BONDED_ARTIFACT_ID) err(`bản mệnh pháp bảo: phải đúng một, id ${BONDED_ARTIFACT_ID}`);
   if (ITEM.get(BONDED_ARTIFACT_ID)?.reqLevel !== BONDED_UNLOCK_LEVEL) err('Ngưng Đan Lô: reqLevel phải bằng BONDED_UNLOCK_LEVEL');
   if (bondedLevel(BONDED_UNLOCK_LEVEL - 1) !== 0 || bondedLevel(BONDED_UNLOCK_LEVEL) !== 1 || bondedLevel(999) !== ARTIFACT_MAX_LEVEL)
     err('bondedLevel: lệch khoảng 0..ARTIFACT_MAX_LEVEL');
@@ -1465,7 +1466,8 @@ for (const k of ['base', 'support', 'potency'] as const)
   if (PILL_QUALITY[k].length !== PILL_TIERS) err(`alchemy.quality.${k} cần ${PILL_TIERS} phần tử`);
 for (const k of ['base', 'support'] as const)
   if (Math.abs(PILL_QUALITY[k].reduce((a, b) => a + b, 0) - 1) > 1e-6) err(`alchemy.quality.${k} phải cộng bằng 1`);
-if (PILL_QUALITY.potency.some((x, i) => i > 0 && x < PILL_QUALITY.potency[i - 1])) err('alchemy.quality.potency phải không giảm theo phẩm');
+if (PILL_QUALITY.potency.some((x, i) => i > 0 && x < at(PILL_QUALITY.potency, i - 1)))
+  err('alchemy.quality.potency phải không giảm theo phẩm');
 if (PILL_QUALITY.potency.some((x) => x > 1.6)) err('alchemy.quality.potency quá 1,6 (phá nhịp lên cấp)');
 GLOSSARY.pillQualities.forEach((nm, i) => {
   if (t(`ui.pill.q${i}`) !== nm) err(`phẩm đan ${i}: tên lệch glossary.pillQualities`);
@@ -1610,7 +1612,7 @@ console.log(
   const hn = QUEST.get('q4_hoa_than');
   if (hn && !hn.objectives.some((o) => o.type === 'breakthrough' && o.target === 'hoa_than'))
     err('q4_hoa_than phải có mục tiêu breakthrough hoa_than');
-  const tk = LEVELS.thien_khuyet;
+  const tk = at(LEVELS, 'thien_khuyet');
   for (const q of QUESTS) {
     if (!q.id.startsWith('q4_') && !q.id.startsWith('s4_')) continue;
     for (const o of q.objectives) {
@@ -1649,7 +1651,7 @@ console.log(
     if (!q) return err(`thiếu nhiệm vụ chính chương 5 ${id}`);
     const want = i === 0 ? 'q4_hoa_than' : main5[i - 1];
     if (q.requires !== want) err(`quest ${id}: phải requires ${want}`);
-    if (i > 0 && (q.minLevel ?? 1) < (QUEST.get(main5[i - 1])!.minLevel ?? 1)) err(`quest ${id}: minLevel thấp hơn nhiệm vụ trước`);
+    if (i > 0 && (q.minLevel ?? 1) < (QUEST.get(at(main5, i - 1))!.minLevel ?? 1)) err(`quest ${id}: minLevel thấp hơn nhiệm vụ trước`);
   });
   for (const q of QUESTS)
     if (q.id.startsWith('s5_') && !q.requires?.startsWith('q5_')) err(`quest ${q.id}: phụ chương 5 phải requires một q5_*`);
@@ -1665,7 +1667,7 @@ console.log(
       if ((q.minLevel ?? 1) < need) err(`quest ${q.id}: mở trận ${id} (level cần cấp ${need}) nhưng minLevel chỉ ${q.minLevel ?? 1}`);
     }
   }
-  const bh = LEVELS.bac_hoang;
+  const bh = at(LEVELS, 'bac_hoang');
   const known = new Set(['npc_to_van_ngu_tk']);
   for (const q of QUESTS) {
     if (!q.id.startsWith('q5_') && !q.id.startsWith('s5_')) continue;

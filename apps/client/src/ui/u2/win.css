@@ -508,10 +508,6 @@
 :root:root .u2-win .pty-mp {
   background: var(--u-wash-gold);
 }
-:root:root .u2-win .equip-stage {
-  border: 2px solid var(--u-gold);
-  box-shadow: 0 0 0 var(--u-line-1) var(--u-ink-scrim);
-}
 
 /* ───────── màu chữ sáng cứng trong CSS cũ → bản đậm hợp nền giấy (bảng chưa chuyển) ───────── */
 :root:root

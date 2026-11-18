@@ -344,7 +344,7 @@
 :root:root .hud .chat-line.info {
   color: rgba(237, 227, 204, 0.62);
 }
-:root:root .hud .chat-line.chat b {
+:root:root .hud .chat-line.say b {
   color: var(--ngj-gold);
 }
 /* ───────── thông báo (toast) ───────── */

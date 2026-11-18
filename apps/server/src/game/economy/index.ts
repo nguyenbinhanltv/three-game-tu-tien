@@ -246,7 +246,7 @@ export class EconomySystem {
       if (sb && def && sb.id === sa.id && (sb.plus ?? 0) === (sa.plus ?? 0) && def.stack > 1 && !sa.lk && !sb.lk) {
         const put = Math.min(sa.n, def.stack - sb.n);
         if (put <= 0) {
-          d.inv[a] = sb;
+          d.inv[a] = sb ?? null;
           d.inv[b] = sa;
         } else {
           sb.n += put;
@@ -254,7 +254,7 @@ export class EconomySystem {
           if (sa.n <= 0) d.inv[a] = null;
         }
       } else {
-        d.inv[a] = sb;
+        d.inv[a] = sb ?? null;
         d.inv[b] = sa;
       }
       return true;
@@ -338,11 +338,12 @@ export class EconomySystem {
         const rolls: number[] = [];
         for (let i = 0; i < rcp.output.n * n; i++) {
           const q = rollPillQuality(PILL_QUALITY, support, randomInt(1_000_000) / 1_000_000);
-          tiers[q]++;
+          tiers[q] = (tiers[q] ?? 0) + 1;
           rolls.push(q);
         }
         for (let q = 0; q < PILL_TIERS; q++) {
-          if (tiers[q] > 0 && !d.add(rcp.output.id, tiers[q], q)) {
+          const cnt = tiers[q] ?? 0;
+          if (cnt > 0 && !d.add(rcp.output.id, cnt, q)) {
             full = true;
             return false;
           }
@@ -361,8 +362,13 @@ export class EconomySystem {
     }
     if (rcp.quality) {
       for (let q = PILL_TIERS - 1; q >= 0; q--)
-        if (tiers[q] > 0)
-          this.c.sys(p, 'sys.crafted_q', { item: itemName(rcp.output.id), q: t('ui.pill.q' + q), n: tiers[q] }, q > 0 ? 'good' : 'loot');
+        if ((tiers[q] ?? 0) > 0)
+          this.c.sys(
+            p,
+            'sys.crafted_q',
+            { item: itemName(rcp.output.id), q: t('ui.pill.q' + q), n: tiers[q] ?? 0 },
+            q > 0 ? 'good' : 'loot',
+          );
     } else this.c.sys(p, 'sys.crafted', { item: itemName(rcp.output.id), n: rcp.output.n * n }, 'loot');
     this.c.questEvent(p, 'craft', rcp.output.id, rcp.output.n * n);
     this.c.fx({ t: 'craft', src: p.sid });

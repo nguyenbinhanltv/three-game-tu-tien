@@ -6,6 +6,7 @@
  * tự co giãn riêng, không dùng biến này.
  */
 import { minDesignHeight, modeOf } from './u2/hud/layout';
+import { isTouchMode } from '../input/touchMode';
 
 const UI_BASE = { w: 1920, h: 1080 };
 const UI_SCALE_MIN = 0.85;
@@ -56,7 +57,8 @@ export function uiScaleUser(): number {
 }
 
 function apply(): void {
-  current = uiScaleFor(window.innerWidth, window.innerHeight, userMul);
+  // Cảm ứng (U2-6): bố cục theo px thật (nút ≥ 44 px), không phóng theo màn hình; chỉ còn hệ số người dùng.
+  current = isTouchMode() ? userMul : uiScaleFor(window.innerWidth, window.innerHeight, userMul);
   document.documentElement.style.setProperty('--ui-scale', String(current));
   window.dispatchEvent(new CustomEvent('dtl:uiscale', { detail: current }));
 }
@@ -77,5 +79,9 @@ export function installUiScale(): () => void {
   userMul = readUser();
   apply();
   window.addEventListener('resize', apply);
-  return () => window.removeEventListener('resize', apply);
+  window.addEventListener('dtl:touchmode', apply);
+  return () => {
+    window.removeEventListener('resize', apply);
+    window.removeEventListener('dtl:touchmode', apply);
+  };
 }

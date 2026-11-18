@@ -28,6 +28,7 @@ import { campCoverage, COVER_BY_LEVEL, COVER_EDGE_MAX, DEFAULT_COVER } from './c
 import { PLACES } from './places';
 import { ensureLevel, FIXTURE_ID } from './fixtures';
 
+import { at } from '@dtl/shared';
 const args = process.argv.slice(2);
 const opt = (k: string): string | undefined => {
   const i = args.indexOf(k);
@@ -153,9 +154,14 @@ if (zones.length) {
   }
   for (let i = 0; i < zones.length; i++)
     for (let j = i + 1; j < zones.length; j++) {
-      const ca = zoneCenter(zones[i]);
-      const cb = zoneCenter(zones[j]);
-      gaps.push({ a: zones[i].id, b: zones[j].id, centers: Math.hypot(ca[0] - cb[0], ca[1] - cb[1]), edge: polyGap(zones[i], zones[j]) });
+      const ca = zoneCenter(at(zones, i));
+      const cb = zoneCenter(at(zones, j));
+      gaps.push({
+        a: at(zones, i).id,
+        b: at(zones, j).id,
+        centers: Math.hypot(ca[0] - cb[0], ca[1] - cb[1]),
+        edge: polyGap(at(zones, i), at(zones, j)),
+      });
     }
 } else {
   for (const [i, sp] of level.spawns.entries()) {
@@ -332,7 +338,7 @@ const pngOut = opt('--png');
 if (pngOut) {
   const SIZE = Number(opt('--size') ?? 1100);
   const bo = opt('--bounds')?.split(',').map(Number);
-  const b = bo && bo.length === 4 ? { x0: bo[0], z0: bo[1], x1: bo[2], z1: bo[3] } : PLAY;
+  const b = bo && bo.length === 4 ? { x0: bo[0] ?? PLAY.x0, z0: bo[1] ?? PLAY.z0, x1: bo[2] ?? PLAY.x1, z1: bo[3] ?? PLAY.z1 } : PLAY;
   const sx = (b.x1 - b.x0) / SIZE;
   const sz = (b.z1 - b.z0) / SIZE;
   const hs = new Float32Array(SIZE * SIZE);
@@ -341,15 +347,15 @@ if (pngOut) {
   const put = (i: number, j: number, r: number, g: number, bl: number, a = 1) => {
     if (i < 0 || j < 0 || i >= SIZE || j >= SIZE) return;
     const o = (j * SIZE + i) * 3;
-    px[o] = px[o] * (1 - a) + r * a;
-    px[o + 1] = px[o + 1] * (1 - a) + g * a;
-    px[o + 2] = px[o + 2] * (1 - a) + bl * a;
+    px[o] = at(px, o) * (1 - a) + r * a;
+    px[o + 1] = at(px, o + 1) * (1 - a) + g * a;
+    px[o + 2] = at(px, o + 2) * (1 - a) + bl * a;
   };
   for (let j = 0; j < SIZE; j++)
     for (let i = 0; i < SIZE; i++) {
-      const h = hs[j * SIZE + i];
-      const hx = hs[j * SIZE + Math.min(SIZE - 1, i + 1)] - hs[j * SIZE + Math.max(0, i - 1)];
-      const hz = hs[Math.min(SIZE - 1, j + 1) * SIZE + i] - hs[Math.max(0, j - 1) * SIZE + i];
+      const h = at(hs, j * SIZE + i);
+      const hx = at(hs, j * SIZE + Math.min(SIZE - 1, i + 1)) - at(hs, j * SIZE + Math.max(0, i - 1));
+      const hz = at(hs, Math.min(SIZE - 1, j + 1) * SIZE + i) - at(hs, Math.max(0, j - 1) * SIZE + i);
       const shade = Math.max(0.35, Math.min(1.35, 1 + ((-(hx * 0.7) - hz * 0.7) / (sx * 2)) * 0.9));
       let r: number, g: number, bl: number;
       if (h < WATER_Y - 0.5) [r, g, bl] = [70, 120, 150];
@@ -382,8 +388,8 @@ if (pngOut) {
   for (const z of zones) {
     const col = z.color.match(/[0-9a-f]{2}/gi)!.map((h) => parseInt(h, 16)) as [number, number, number];
     for (let k = 0; k < z.poly.length; k++) {
-      const p = z.poly[k];
-      const q = z.poly[(k + 1) % z.poly.length];
+      const p = at(z.poly, k);
+      const q = at(z.poly, (k + 1) % z.poly.length);
       line(p[0], p[1], q[0], q[1], col);
     }
   }
@@ -415,7 +421,7 @@ if (pngOut) {
   });
   const crc = (buf: Buffer) => {
     let c = 0xffffffff;
-    for (const v of buf) c = crcT[(c ^ v) & 255] ^ (c >>> 8);
+    for (const v of buf) c = at(crcT, (c ^ v) & 255) ^ (c >>> 8);
     return (c ^ 0xffffffff) >>> 0;
   };
   const chunk = (type: string, data: Buffer) => {

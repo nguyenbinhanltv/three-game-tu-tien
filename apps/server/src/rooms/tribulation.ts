@@ -10,6 +10,7 @@ import {
   tribRoomNameOf,
   type TribId,
   type DungeonDef,
+  at,
 } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
@@ -48,7 +49,7 @@ export class TribulationRoom extends GameRoom {
   private sentBack = new Map<string, number>();
 
   private get def(): DungeonDef {
-    return LEVELS[this.levelId].dungeon!;
+    return at(LEVELS, this.levelId).dungeon!;
   }
 
   simOptions(): SimOptions {

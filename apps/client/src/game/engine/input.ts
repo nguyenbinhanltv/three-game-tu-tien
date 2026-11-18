@@ -1,13 +1,14 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { C, PF_DEAD, BAR_SIZE, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
 import { t } from '@dtl/content';
-import { closeTopPanel, get, pushToast, set, togglePanel, useUI } from '../../ui/store';
+import { closeTopPanel, get, pushToast, set, setHudPref, togglePanel, useUI } from '../../ui/store';
 import { closeChapters, toggleChapters, useChapters } from '../../ui/chapters/chaptersStore';
 import { unlockAudio } from '../audio/audio';
 import { budgetPixelRatio } from '../../render/post';
 import { isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../../input/bindings';
 import { QUALITY, WEBGL2_MAX_PIXELS, isWebGPU } from './common';
 import { skipCine } from './cine';
+import { bindTouch } from './touch';
 import type { Game } from '../engine';
 
 /**
@@ -60,11 +61,13 @@ export function bindInput(eng: Game): void {
   });
   const c = eng.canvas;
   eng.on(c, 'contextmenu', (e: Event) => e.preventDefault());
+  bindTouch(eng);
   eng.on(c, 'pointerdown', (e: PointerEvent) => {
     unlockAudio();
     skipCine(eng);
     c.focus();
     (document.activeElement as HTMLElement | null)?.blur?.();
+    if (e.pointerType === 'touch') return; // cảm ứng: `engine/touch.ts`
     if (eng.controls === 'mouse') {
       if (!eng.locked) {
         // Bấm vào màn hình để bắt đầu nhìn bằng chuột.
@@ -83,7 +86,7 @@ export function bindInput(eng: Game): void {
     c.setPointerCapture(e.pointerId);
   });
   eng.on(c, 'pointermove', (e: PointerEvent) => {
-    if (!eng.dragging) return;
+    if (e.pointerType === 'touch' || !eng.dragging) return;
     // Mất pointerup (thả chuột ngoài cửa sổ, Alt+Tab): đồng bộ lại theo nút đang giữ thật.
     if (e.buttons === 0) {
       eng.dragging = false;
@@ -101,7 +104,7 @@ export function bindInput(eng: Game): void {
     }
   });
   eng.on(c, 'pointerup', (e: PointerEvent) => {
-    if (!eng.dragging) return;
+    if (e.pointerType === 'touch' || !eng.dragging) return;
     eng.dragging = false;
     try {
       c.releasePointerCapture(e.pointerId);
@@ -291,6 +294,8 @@ export function onKeyDown(eng: Game, e: KeyboardEvent): void {
       togglePanel('settings');
       break;
     case 'chat':
+      // Đang thu gọn thì Enter mở lại hẳn (lưu), không chỉ mở tạm để gõ rồi lại thu.
+      if (get().chatCollapsed) setHudPref('chatCollapsed', false);
       set({ chatOpen: true });
       break;
     case 'cancel':
