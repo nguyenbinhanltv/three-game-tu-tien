@@ -15,6 +15,9 @@ describe('padsOfLevel', () => {
     const tk = padsOfLevel('thien_khuyet');
     expect(tk.length).toBeGreaterThanOrEqual(6);
     expect(tk.every((p) => p.level === 'thien_khuyet' && p.id.startsWith('tk_'))).toBe(true);
-    expect(dm.length + vl.length + vh.length + tk.length).toBe(TELE_PADS.length);
+    const bh = padsOfLevel('bac_hoang');
+    expect(bh).toHaveLength(7);
+    expect(bh.every((p) => p.level === 'bac_hoang' && p.id.startsWith('bh_'))).toBe(true);
+    expect(dm.length + vl.length + vh.length + tk.length + bh.length).toBe(TELE_PADS.length);
   });
 });

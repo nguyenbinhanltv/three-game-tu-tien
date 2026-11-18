@@ -24,6 +24,8 @@
   { "id": "itm_han_quang_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 600, "rarity": 2, "icon": "itm_han_quang_kiem", "model": "prop_kiem_han_quang", "iconFallback": "🗡️", "reqLevel": 12, "stats": { "atk": 38 } },
   { "id": "itm_tram_ta_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 1500, "rarity": 3, "icon": "itm_tram_ta_kiem", "model": "prop_kiem_tram_ta", "iconFallback": "⚔️", "reqLevel": 15, "stats": { "atk": 54, "hp": 80 } },
   { "id": "itm_skin_varkessa", "kind": "skin", "stack": 1, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_skin_varkessa", "iconFallback": "🎭", "reqLevel": 1, "skin": "set_skin_varkessa", "gender": "f" },
+  { "id": "itm_skin_duskrella", "kind": "skin", "stack": 1, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_skin_duskrella", "iconFallback": "🎭", "reqLevel": 1, "skin": "set_skin_duskrella", "gender": "f" },
+  { "id": "itm_skin_crimson_knight", "kind": "skin", "stack": 1, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_skin_crimson_knight", "iconFallback": "🎭", "reqLevel": 1, "skin": "set_skin_crimson", "gender": "m" },
 
   { "id": "itm_bo_y", "kind": "robe", "stack": 1, "price": 30, "sell": 8, "rarity": 0, "icon": "itm_bo_y", "iconFallback": "👘", "reqLevel": 1, "stats": { "def": 3, "hp": 20 } },
   { "id": "itm_dao_bao", "kind": "robe", "stack": 1, "price": 380, "sell": 95, "rarity": 0, "icon": "itm_dao_bao", "iconFallback": "👘", "reqLevel": 5, "stats": { "def": 8, "hp": 70 } },

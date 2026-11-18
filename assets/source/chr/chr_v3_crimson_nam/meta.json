@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_v3_crimson_nam",
+  "type": "chr",
+  "budgetClass": "player_v3",
+  "itemId": "itm_skin_crimson_knight",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 24000,
+    "texture": 2048
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Sketchfab: \"Crimson Death Knight - Dual Falchions\" của Pigcraft (https://sketchfab.com/s8819296). Đã sửa: bỏ hai đao dính tay (giữ mũ kín mặt và áo choàng), giảm 1.923.148 → 22.000 tam giác, UV mới và nướng lại texture màu + normal, dựng xương Mixamo và trọng số, rồi đặt lại tư thế nghỉ theo Mannequin; chuẩn bị bằng tools/blender/skin_prep.py (cấu hình tools/blender/skins/crimson.json), đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py",
+    "owner": "Pigcraft",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/crimson-death-knight-dual-falchions-08a29190cc7d458dbaf1085991520ef5",
+    "spdx": "CC-BY-4.0"
+  }
+}

@@ -1,0 +1,173 @@
+{
+ "$comment": "Cấu hình skin_prep.py cho DUSKRELLA the Ashen Whisper (Atahan3D, CC BY 4.0). Cùng đơn vị/khung với Varkessa (cao ~1,9, gốc giữa thân). Khớp đo từ ảnh chiếu thẳng 600 px/đơn vị (x=(px-600)/600, z=(600-py)/600, y=-(px_canh-600)/600); không có vũ khí nên không cắt.",
+ "id": "skin_duskrella",
+ "source": "D:/claude-tmp/skin2-work/duskrella.glb",
+ "out": "chr/skin_duskrella/prep/rig_v01.glb",
+ "triangles": 20000,
+ "bake": {
+  "size": 2048,
+  "cage": 0.012,
+  "ray": 0.03
+ },
+ "roughness": 0.6,
+ "joints": {
+  "Hips": [
+   0.02,
+   0.02,
+   0.14
+  ],
+  "Spine": [
+   0.01,
+   0.02,
+   0.22
+  ],
+  "Spine1": [
+   0,
+   0.02,
+   0.31
+  ],
+  "Spine2": [
+   -0.02,
+   0,
+   0.41
+  ],
+  "Neck": [
+   -0.08,
+   0,
+   0.56
+  ],
+  "Head": [
+   -0.09,
+   -0.02,
+   0.64
+  ],
+  "HeadTop": [
+   -0.09,
+   -0.03,
+   0.95
+  ],
+  "RightArm": [
+   -0.217,
+   0.1,
+   0.55
+  ],
+  "RightForeArm": [
+   -0.34,
+   0.09,
+   0.31
+  ],
+  "RightHand": [
+   -0.43,
+   -0.02,
+   0.13
+  ],
+  "RightHandEnd": [
+   -0.51,
+   -0.12,
+   -0.03
+  ],
+  "LeftArm": [
+   0.185,
+   0.1,
+   0.55
+  ],
+  "LeftForeArm": [
+   0.35,
+   0.09,
+   0.31
+  ],
+  "LeftHand": [
+   0.425,
+   -0.02,
+   0.13
+  ],
+  "LeftHandEnd": [
+   0.5,
+   -0.12,
+   -0.04
+  ],
+  "RightUpLeg": [
+   -0.09,
+   0.01,
+   0.1
+  ],
+  "RightLeg": [
+   -0.19,
+   -0.06,
+   -0.33
+  ],
+  "RightFoot": [
+   -0.34,
+   -0.03,
+   -0.84
+  ],
+  "RightToeBase": [
+   -0.38,
+   -0.1,
+   -0.92
+  ],
+  "RightToeEnd": [
+   -0.41,
+   -0.17,
+   -0.945
+  ],
+  "LeftUpLeg": [
+   0.1,
+   0.01,
+   0.1
+  ],
+  "LeftLeg": [
+   0.175,
+   -0.06,
+   -0.33
+  ],
+  "LeftFoot": [
+   0.32,
+   -0.03,
+   -0.84
+  ],
+  "LeftToeBase": [
+   0.36,
+   -0.1,
+   -0.92
+  ],
+  "LeftToeEnd": [
+   0.39,
+   -0.17,
+   -0.945
+  ]
+ },
+ "stray": {
+  "Shoulder": 0.2,
+  "Arm": 0.14,
+  "ForeArm": 0.15,
+  "Hand": 0.13
+ },
+ "zones": [
+  {
+   "name": "toc",
+   "box": {
+    "min": [
+     -9,
+     -9,
+     0.64
+    ],
+    "max": [
+     9,
+     9,
+     9
+    ]
+   },
+   "blend": {
+    "axis": 2,
+    "from": 0.62,
+    "width": 0.04
+   },
+   "bones": [
+    {
+     "bone": "Head"
+    }
+   ]
+  }
+ ]
+}

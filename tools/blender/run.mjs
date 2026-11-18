@@ -57,6 +57,20 @@ const procedural = [
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'chr_v3_v2_nam'],
   },
+  {
+    id: 'chr_v3_duskrella_nu',
+    script: 'tools/blender/chr_v3.py',
+    source: 'chr/skin_duskrella/prep/rig_v01.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'chr_v3_duskrella_nu', '--height', '1.8'],
+  },
+  {
+    id: 'chr_v3_crimson_nam',
+    script: 'tools/blender/chr_v3.py',
+    source: 'chr/skin_crimson/prep/rig_v01.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'chr_v3_crimson_nam', '--height', '1.9'],
+  },
   // Clip UAL giữ tên xương Mannequin, phát thẳng lên chr_v3_* (không chuyển clip).
   {
     id: 'anim_ual_native',

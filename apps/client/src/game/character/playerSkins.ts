@@ -26,7 +26,7 @@ import { SwordGlow } from '../swordGlow';
 import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
 import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, type SwordTemplate, swordTemplateOf } from './swordModel';
 import type { CharState, ClipMap } from './states';
-import { CHR_V3, MannequinPlayers } from './mannequin';
+import { CHR_V3, MannequinPlayers, V3_ONLY_SKINS } from './mannequin';
 import { type AnimState, type CharacterView, legacyModelsRequested, legacySwordsRequested, type MonsterView, type PerformOpts } from './view';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
@@ -289,7 +289,7 @@ export class PlayerSkins {
 
   /** Người chơi này sẽ có model mới nhưng asset đang nạp (tạm model khối, nạp xong thì đổi). */
   pending(look: PlayerLook): boolean {
-    if (this.v3 && !this.legacy) return this.v3.pending(look.g);
+    if (this.v3 && !this.legacy) return this.v3.pending(look.g, look.skin);
     const id = modelOf(look.g, look.hair);
     if (this.legacy || !id) return false;
     // Kiếm riêng còn nạp: tạm cầm kiếm mặc định, nạp xong thì entities dựng lại (cùng cơ chế với asset nhân vật).
@@ -346,12 +346,14 @@ export class PlayerSkins {
    */
   private skinAsset(look: PlayerLook): string | null {
     if (!look.skin || CHR_V2 || this.legacy || OUTFIT_OFF) return null;
+    // v3 dựng skin ở MannequinPlayers (asset `chr_v3_*`); skin chỉ có bản v3 thì v1 bỏ qua.
+    if (this.v3 || V3_ONLY_SKINS.has(look.skin)) return null;
     return outfitAssetId(look.skin, modelOf(look.g, look.hair));
   }
 
   create(look: PlayerLook): CharacterView {
     if (this.v3 && !this.legacy) {
-      const v = this.v3.create(look.g);
+      const v = this.v3.create(look.g, look.skin);
       if (v) return v;
     }
     const dye = dyeOf(look.dye, look.set);
@@ -380,7 +382,7 @@ export class PlayerSkins {
    */
   createShadow(look: PlayerLook, def: MonsterDef): MonsterView | null {
     if (this.v3 && !this.legacy) {
-      const v = this.v3.createShadow(look.g, def);
+      const v = this.v3.createShadow(look.g, def, look.skin);
       if (v) return v;
     }
     const id = modelOf(look.g, look.hair);
