@@ -3,6 +3,7 @@ import { App } from './ui/App';
 import './styles.css';
 import { installUiScale } from './ui/uiScale';
 import { installMotion, installNgjHud } from './ui/ngj/motion';
+import { startHires } from './game/hires';
 
 const root = document.getElementById('root')!;
 
@@ -29,4 +30,5 @@ if (q.get('viewer') === 'asset' || q.has('show')) {
   installMotion();
   installNgjHud();
   createRoot(root).render(<App />);
+  startHires();
 }
