@@ -6,12 +6,12 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { describe, expect, it } from 'vitest';
 import { SETS } from '@dtl/content';
 import { accessoryCode, parseAccessoryCode } from '@dtl/shared';
-import { AssetCache, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../core/assets';
 import { acquireWithHumanLib, mergeClips, retargetClips } from './animLib';
 import { type BodyFit, fitBody } from './bodyFit';
 import { accessorySlots, attachAccessories, buildAccessories, createAccessoryMaterials, disposeAccessories } from './setAccessories';
 import { stripPartTracks } from './sword';
-import { nodeGltfLoader } from '../gltfTestLoader';
+import { nodeGltfLoader } from '../core/gltfTestLoader';
 
 // Phụ kiện đồ bộ trên model thật (nam + nữ): số đo thân hợp lý, đủ phụ kiện theo ô, gắn được vào bản sao, không chui vào thân.
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');

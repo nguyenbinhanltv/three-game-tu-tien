@@ -4,11 +4,11 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { APPEARANCE, ITEMS, SWORD_MODELS, SWORD_MODELS_TIER, swordModelOf } from '@dtl/content';
-import { AssetCache, type Manifest } from '../assets';
+import { AssetCache, type Manifest } from '../core/assets';
 import { PlayerSkins, SkinnedPlayer } from './playerSkins';
 import { bladeLocal, bladeScale, glowDims } from './swordModel';
 import type { AnimState } from './view';
-import { nodeGltfLoader } from '../gltfTestLoader';
+import { nodeGltfLoader } from '../core/gltfTestLoader';
 
 // Kiếm riêng theo trang bị: 5 model Tripo web (prop_kiem_*) thay kiếm nướng trong lưới nhân vật, trên model nam và nữ thật.
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');

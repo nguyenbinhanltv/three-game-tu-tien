@@ -3,8 +3,8 @@ import { float, normalView, positionViewDirection, vec3 } from 'three/tsl';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { APPEARANCE, DYE, OUTFIT_COVERS, OUTFITS, scabbardOf, SET, SETS, SWORD_GLOW_TINT, SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { type Gender, type MonsterDef, parseAccessoryCode, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
-import { type AssetCache, type AssetHandle, assets } from '../assets';
-import { buildFlySword, Humanoid } from '../models';
+import { type AssetCache, type AssetHandle, assets } from '../core/assets';
+import { buildFlySword, Humanoid } from '../core/models';
 import { adoptGltfMaterials, createWorldMaterial, rimLight } from '../../render/materials/world';
 import { createOutfitMaterial, hasOutfitMask, type OutfitMode } from '../../render/materials/outfit';
 import { type BodyFit, FIT_BONES, type FitBone, fitBody } from './bodyFit';
@@ -19,16 +19,16 @@ import { applyDye } from './dye';
 import { applyPalette } from './monsterSkins';
 import { poseClipName } from './ikpose';
 import { libraryClips, type PoseLibrary, withPoses } from './poseLib';
-import { type HitOpts } from '../hitreact';
+import { type HitOpts } from '../combat/hitreact';
 import { SkinnedCharacter, type SkinnedOpts } from './skinned';
 import { type SpringDef, springDefs } from './spring';
-import { SwordGlow } from '../swordGlow';
+import { SwordGlow } from '../fx/swordGlow';
 import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSocketDef } from './sword';
 import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, type SwordTemplate, swordTemplateOf } from './swordModel';
 import type { CharState, ClipMap } from './states';
 import { CHR_V3, MannequinPlayers, V3_ONLY_SKINS } from './mannequin';
 import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
-import { FLAGS } from '../flags';
+import { FLAGS } from '../../base/flags';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
 export interface PlayerLook {

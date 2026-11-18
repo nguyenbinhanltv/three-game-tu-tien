@@ -12,7 +12,7 @@ Mọi công cụ nhận `--level <id>` (mặc định `van_lam`). Level thật n
 | `pnpm content:check` | Chạy `checkLevel` (`packages/content/src/levelcheck.ts`) cho **mọi** level trong `LEVELS`. |
 | `pnpm --filter @dtl/server fight:check [--levels 4,15,16,22,28] [--mon <id>] [--strict]` | Chọn quái từ bãi của mọi level; cấp vượt mọi bãi hiện có thì ngoại suy (`*`). `--strict` thoát 1 nếu TTK ngoài 3,5–8,5 s hoặc có ca chết. |
 
-`pnpm shots --level <id>` (R-5) sang level bằng lệnh GM nên chụp đúng level. `bench:client --level <id>` vẫn chỉ thêm `level=<id>` vào URL; soát mã ở R-5 không thấy client/server đọc tham số này (`apps/client/src/game/testParams.ts` chỉ có `at`, `realm`, `god`, `tribulation`), nên nhiều khả năng số đo khi đó là ở Vân Lam tại tọa độ của level kia. R-5 giữ nguyên hành vi bench, chưa sửa và chưa đo kiểm chứng điểm này; cách sửa là cho bench gọi `enterLevel` của `tools/perf/src/lib/game.ts`. `bench:crowd` có cảnh ở level khác qua trường `place` của cảnh.
+`pnpm shots --level <id>` (R-5) sang level bằng lệnh GM nên chụp đúng level. `bench:client --level <id>` vẫn chỉ thêm `level=<id>` vào URL; soát mã ở R-5 không thấy client/server đọc tham số này (`apps/client/src/game/core/testParams.ts` chỉ có `at`, `realm`, `god`, `tribulation`), nên nhiều khả năng số đo khi đó là ở Vân Lam tại tọa độ của level kia. R-5 giữ nguyên hành vi bench, chưa sửa và chưa đo kiểm chứng điểm này; cách sửa là cho bench gọi `enterLevel` của `tools/perf/src/lib/game.ts`. `bench:crowd` có cảnh ở level khác qua trường `place` của cảnh.
 
 ## `content:check` cho một level
 

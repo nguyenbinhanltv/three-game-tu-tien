@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { t } from '@dtl/content';
-import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio';
+import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio/audio';
 import { Game } from '../../game/engine';
 import { Button, Divider, PanelWindow, Segmented, Slider } from '../kit';
 import { setReduceMotion, useReduceMotion } from '../ngj';

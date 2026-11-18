@@ -12,7 +12,7 @@ description: Chạy toàn bộ Đạp Thiên Lộ ở máy local (server Colyseu
 
 Người dùng làm việc cạnh máy chạy thử, tiếng game gây ồn. Mọi lần mở game hoặc trang xem asset để chơi thử, chụp ảnh hay soát bằng mắt đều phải tắt tiếng:
 
-- URL luôn có `mute=1`, ghép với tham số khác bằng `&`: `?mute=1&auto=<tên>`, `?mute=1&dev=1`, `?mute=1&viewer=asset&file=...`. Client đọc tham số này trong `apps/client/src/game/audio.ts` và tắt mọi âm (nhạc, môi trường, SFX) ngay từ đầu.
+- URL luôn có `mute=1`, ghép với tham số khác bằng `&`: `?mute=1&auto=<tên>`, `?mute=1&dev=1`, `?mute=1&viewer=asset&file=...`. Client đọc tham số này trong `apps/client/src/game/audio/audio.ts` và tắt mọi âm (nhạc, môi trường, SFX) ngay từ đầu.
 - Browser panel của Orchestrator (`ao browser open`) cũng dùng URL có `?mute=1`.
 - Tự chạy Chromium/Playwright thì thêm cờ `--mute-audio` (ví dụ `chromium.launch({ args: ['--mute-audio'] })`).
 - Đang có tab của mình phát tiếng thì đóng ngay, hoặc tải lại với `?mute=1`.

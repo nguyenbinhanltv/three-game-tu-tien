@@ -6,16 +6,16 @@ import dracoJsUrl from 'three/addons/libs/draco/draco_wasm_wrapper.js?url';
 import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
 import { POSES } from '@dtl/content';
 import { POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
-import { createGltfLoader, createKtx2Loader, detectKtx2Support, localLibsManager } from '../game/assets';
+import { createGltfLoader, createKtx2Loader, detectKtx2Support, localLibsManager } from '../game/core/assets';
 import { mergeClips, retargetClips } from '../game/character/animLib';
 import { pelvisScaledClips } from '../game/character/mannequinMonster';
 import { bakePose, formatProbe, IkRig, poseClipName } from '../game/character/ikpose';
-import { isSkillViewer } from '../game/testParams';
+import { isSkillViewer } from '../game/core/testParams';
 import { buildFixtureSword, buildMixamoFixture } from '../game/character/mixamoFixture';
 import { partExtras, stripPartTracks, SwordSocket, swordSocketDef } from '../game/character/sword';
 import { BoneLines, makeGrid } from './helpers';
 import { collectStats, type ModelStats } from './stats';
-import { currentSearch, urlParams } from '../game/flags';
+import { currentSearch, urlParams } from '../base/flags';
 
 /** Chiều cao người chuẩn để so tỉ lệ (m). */
 export const HUMAN_HEIGHT = 1.7;

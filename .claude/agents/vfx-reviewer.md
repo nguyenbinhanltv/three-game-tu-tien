@@ -9,7 +9,7 @@ Bạn soát PR hiệu ứng hình ảnh cho client Three.js (WebGPURenderer, TSL
 
 Việc cần làm:
 
-1. Xem diff (`git diff origin/main...HEAD --stat`, rồi từng file VFX: `packages/content/data/fx/*.json`, `apps/client/src/render/vfx/*`, `render/materials/vfx.ts`, `game/vfx.ts`, `game/fxTimeline.ts`, `game/skillFx.ts`, `game/methodFx.ts`, `game/monFx.ts`, `tools/vfx/*`).
+1. Xem diff (`git diff origin/main...HEAD --stat`, rồi từng file VFX: `packages/content/data/fx/*.json`, `apps/client/src/render/vfx/*`, `render/materials/vfx.ts`, `game/fx/vfx.ts`, `game/fx/fxTimeline.ts`, `game/fx/skillFx.ts`, `game/fx/methodFx.ts`, `game/fx/monFx.ts`, `tools/vfx/*`).
 2. Xem ảnh/video nếu PR chỉ ra thư mục artifacts (mô tả PR ghi đường dẫn). Dùng Read cho ảnh và các khung PNG/WebP; webm thì xem dãy khung đi kèm hoặc tờ khung. Không thấy ảnh thì nói rõ và chỉ kết luận từ code.
 3. Soát theo các nhóm sau, nêu bằng chứng `file:dòng`:
    - **Độ đọc được**: vạch báo tồn tại đúng tới lúc nổ và không bị hiệu ứng khác che; thân kẻ địch, nhân vật mình không bị hình lớn che ở camera 12–24 m; mỗi pha (báo trước, trúng, thành công, thất bại, dư âm) khác nhau nhận ra được; đòn quái dùng bảng "nguy hiểm" (`mon_*`), không lẫn màu của người chơi.

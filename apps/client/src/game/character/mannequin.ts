@@ -6,8 +6,8 @@ import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
-import type { AssetCache, AssetHandle } from '../assets';
-import { HitReact, type HitOpts } from '../hitreact';
+import type { AssetCache, AssetHandle } from '../core/assets';
+import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
@@ -16,7 +16,7 @@ import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type Swo
 import { applyV3Palette } from './v3Palette';
 import { lowerBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
-import { FLAGS } from '../flags';
+import { FLAGS } from '../../base/flags';
 
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
 export const CHR_V3 = FLAGS.chr === 'v3';
