@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLUSTER, clusterGeom, designArea, hudBoxes, modeOf, overlaps, skillBox, slotsTouch } from './layout';
+import { CLUSTER, clusterGeom, designArea, hudBoxes, minDesignHeight, modeOf, overlaps, skillBox, slotsTouch } from './layout';
 import { uiScaleFor } from '../../uiScale';
 
 // Độ phân giải PC cần phủ (mục 9.2 kế hoạch). Hệ số tự động lấy từ uiScaleFor (cùng hàm CSS dùng).
@@ -55,6 +55,22 @@ describe('HUD layout: hộp vùng không chồng lấn', () => {
       expect(overlaps(hudBoxes(w, h, 'touch')), `${w}×${h}`).toEqual([]);
     }
   });
+});
+
+describe('HUD layout: hệ số người dùng × độ phân giải', () => {
+  for (const [w, h] of PC) {
+    for (const user of [0.8, 1, 1.2, 1.4]) {
+      for (const layout of ['arc', 'bar'] as const) {
+        it(`${w}×${h} × ${user} ${layout}: không chồng lấn, vùng thiết kế đủ cao`, () => {
+          const s = uiScaleFor(w, h, user);
+          const { W, H } = designArea(w, h, s);
+          const mode = modeOf(s);
+          expect(H).toBeGreaterThanOrEqual(minDesignHeight(mode === 'compact' ? 'compact' : 'standard'));
+          expect(overlaps(hudBoxes(W, H, mode, { skillLayout: layout }))).toEqual([]);
+        });
+      }
+    }
+  }
 });
 
 describe('cụm kỹ năng PC', () => {

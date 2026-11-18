@@ -31,7 +31,7 @@ describe('hệ số phóng UI', () => {
     expect(uiScaleFor(1280, 720)).toBe(0.85);
     expect(uiScaleFor(1366, 768)).toBe(0.85);
     expect(uiScaleFor(1920, 1080, 1.2)).toBe(1.2);
-    expect(uiScaleFor(1920, 1080, 9)).toBe(1.4);
+    expect(uiScaleFor(1920, 1080, 9)).toBe(1.23); // kẹp: vùng thiết kế còn ≥ 878 cao để cụm kỹ năng không đè nhiệm vụ
     expect(uiScaleFor(1920, 1080)).toBe(1);
     expect(uiScaleFor(2560, 1440)).toBe(1.35);
     expect(uiScaleFor(3840, 2160)).toBe(2);

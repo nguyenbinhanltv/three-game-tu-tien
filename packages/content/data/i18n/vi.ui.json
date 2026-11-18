@@ -1161,7 +1161,7 @@
   "ui.hud.collapse": "Thu gọn",
   "ui.chat.title": "Trò chuyện",
   "ui.settings.uiscale": "Cỡ giao diện",
-  "ui.settings.uiscale_hint": "Nhân thêm vào hệ số tự động theo kích thước cửa sổ (0,8–1,4 lần).",
+  "ui.settings.uiscale_hint": "Nhân thêm vào hệ số tự động theo kích thước cửa sổ (0,8–1,4 lần); màn thấp tự giới hạn để HUD không chồng lấn.",
   "ui.settings.uiscale.0.8": "Nhỏ",
   "ui.settings.uiscale.1": "Chuẩn",
   "ui.settings.uiscale.1.2": "Lớn",

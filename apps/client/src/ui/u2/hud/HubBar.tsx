@@ -1,4 +1,3 @@
-import type { MouseEvent } from 'react';
 import { t } from '@dtl/content';
 import { bagLow } from '../../itemInfo';
 import { SysIcon, type SysIconName } from '../../ngj';
@@ -6,11 +5,7 @@ import { Tooltip } from '../../kit';
 import { QUEST } from '@dtl/content';
 import { type Panel, togglePanel, useUI } from '../../store';
 import { IconFrame } from '../Slot';
-
-/** Bấm bằng chuột xong thì bỏ focus để phím số/mũi tên tiếp theo tới game (bàn phím giữ focus). */
-function blurAfterPointer(e: MouseEvent<HTMLElement>): void {
-  if (e.detail > 0) e.currentTarget.blur();
-}
+import { blurAfterPointer } from './common';
 
 interface HubItem {
   id: string;

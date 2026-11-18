@@ -1,4 +1,4 @@
-import { type CSSProperties, type MouseEvent, type ReactNode, useEffect, useState } from 'react';
+import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import { BAR_SIZE, CHARGE_MAX, PF_FLYING, PF_MEDITATING, type SkillDef } from '@dtl/shared';
 import { METHOD, realmName, resolveBarSkill, SKILL, skillBar, t, thanThong10Skill, thanThongSkill, VARIANTS } from '@dtl/content';
 import { Game } from '../../../game/engine';
@@ -8,21 +8,8 @@ import { TipCard, Tooltip } from '../../kit';
 import { togglePanel, useUI } from '../../store';
 import { IconFrame } from '../Slot';
 import { LockMark } from '../patterns';
+import { blurAfterPointer, useNow } from './common';
 import { CLUSTER, clusterGeom, skillBox, type SlotPos } from './layout';
-
-function useNow(ms: number): number {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), ms);
-    return () => clearInterval(id);
-  }, [ms]);
-  return now;
-}
-
-/** Bấm bằng chuột xong thì bỏ focus để phím số/mũi tên tiếp theo tới game (bàn phím giữ focus). */
-function blurAfterPointer(e: MouseEvent<HTMLElement>): void {
-  if (e.detail > 0) e.currentTarget.blur();
-}
 
 /** Nhãn phím của ô thanh chiêu thứ i (khớp `Game.useSkill(i)`): 1–8, ô 9 thần thông = 0, ô 10 = `. */
 export function keyLabelOf(i: number): string {

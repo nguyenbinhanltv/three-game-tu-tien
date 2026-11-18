@@ -107,6 +107,16 @@ export function utilityBox(skills: Box, layout: SkillLayout): Box {
   return { x: skills.x - 8 - UTILITY.w, y: skills.y + skills.h - UTILITY.h, w: UTILITY.w, h: UTILITY.h };
 }
 
+/**
+ * Chiều cao vùng thiết kế tối thiểu để cụm kỹ năng (neo đáy, kiểu cung) không đè khối nhiệm vụ mở của cột phải
+ * (hub → minimap → nhiệm vụ, xếp từ trên xuống). `uiScaleFor` kẹp hệ số để vùng thiết kế không thấp hơn mức này.
+ */
+export function minDesignHeight(mode: Exclude<HudMode, 'touch'>): number {
+  const z = SIZES[mode];
+  const questBottom = SAFE + z.hubH + 12 + z.mapH + 10 + z.questH;
+  return Math.ceil(questBottom + skillBox(0, 0, 'arc').h + SAFE);
+}
+
 /** Tất cả hộp vùng PC (standard/compact). Chế độ `touch` trả hộp tối thiểu để U2-6 mở rộng. */
 export function hudBoxes(W: number, H: number, mode: HudMode = 'standard', o: HudOpts = {}): HudBoxes {
   if (mode === 'touch') return touchBoxes(W, H, o);
