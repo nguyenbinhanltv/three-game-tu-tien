@@ -1,6 +1,6 @@
 # Lệnh GM thử đồ, kỹ năng, trang phục, vũ khí (GM-TEST)
 
-Chỉ **tài khoản thử** (đăng nhập thử khi server bật `AUTH_DEV_BYPASS=1`) dùng được; tài khoản thật bị server bỏ qua im lặng (kiểm ở `GameSim.onChat`, `p.dev`). Gõ trong ô chat (`/gm ...`) hoặc bấm nút ở **bảng F3** (mục "Lệnh GM", tab Nhân vật / Kỹ năng / Trang bị / Trang phục / Vũ khí / Bản đồ / Quái, nút Trợ giúp = `/gm help`). Chuỗi trợ giúp nằm ở i18n `gm.cmd.<lệnh>`; danh sách lệnh theo nhóm ở `apps/server/src/game/gmtools.ts` (`GM_GROUPS`).
+Chỉ **tài khoản thử** (đăng nhập thử khi server bật `AUTH_DEV_BYPASS=1`) dùng được; tài khoản thật bị server bỏ qua im lặng (kiểm ở `GameSim.onChat`, `p.dev`). Gõ trong ô chat (`/gm ...`) hoặc bấm nút ở **bảng F3** (mục "Lệnh GM", tab Nhân vật / Kỹ năng / Trang bị / Trang phục / Vũ khí / Bản đồ / Quái, nút Trợ giúp = `/gm help`). Chuỗi trợ giúp nằm ở i18n `gm.cmd.<lệnh>`; danh sách lệnh theo nhóm ở `apps/server/src/game/gm/tools.ts` (`GM_GROUPS`).
 
 Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug=1&auto=<tên>`).
 
