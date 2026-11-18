@@ -993,7 +993,7 @@ export class Game {
   private xichRifts: RiftVeil[] = [];
 
   private buildXich(id: string, q: (typeof QUALITY)[string]): void {
-    if (new URLSearchParams(location.search).get('xichart') === '0') return;
+    if (!FLAGS.xichArt) return;
     const T = levelTerrain();
     const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
     for (const p of paths) {
