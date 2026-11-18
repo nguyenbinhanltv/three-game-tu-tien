@@ -39,3 +39,8 @@ Ngoại hình hiện tạm dùng hình bậc 4 cùng nhánh qua `setAccessories.
 - Test: shared 214, client 756, server 687 (`--no-file-parallelism --testTimeout 60000`), content 43 qua. Mới: `e4g.test.ts` (13 test), `sets.test.ts`, `promote.test.ts` (4 → 5), `testflags.test.ts` (kit 5), `gear.test.ts`. Đã sửa `method.test.ts` (reset `skillCount` trong `fresh`, vòng thử có thêm chiêu) và `e2g.test.ts` (chiêu khóa).
 - `pnpm sim:progress`: không dòng LỖI, nhịp không đổi (bậc 5 chưa vào nhiệm vụ). `fight:check --levels 24,28 --runs 3`: cấp 24 trong khoảng; cấp 28 đan sư TTK 10,8 s (cấp 28 chưa được cân, giống trước PR: gear cố định theo nhiệm vụ). Chưa có bảng sim cho bậc 5.
 - Không sửa `rooms.ts`/`auth.ts`/`ratelimit.ts`: không chạy bot security.
+
+## Sau soát netcode (#211)
+- Thuấn Di Trảm không thuấn di tới quái có chủ khác (bóng tâm ma, phân thân) hay quái đang `evade`.
+- Đòn trễ (dư chấn, kiếm ảnh) bỏ nếu người ra chiêu đang `airborne`; kiếm ảnh còn kiểm tầm lúc đánh (như `resolvePending`).
+- **Chủ ý:** kiếm ảnh dùng hệ số gốc `mulBase` (trước thưởng riêng của chiêu), nên Trấn Khích 4 món (`thuanTramPower`) và Hoành Kiếm 4 món không nhân thêm vào kiếm ảnh; chỉ `phanAnhPower` tăng kiếm ảnh.

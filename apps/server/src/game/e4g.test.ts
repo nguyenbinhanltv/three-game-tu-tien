@@ -331,3 +331,95 @@ describe('E4-F: hiệu ứng 4 món bộ bậc 5 nối vào chiêu 26', () => {
     expect(hp(0.15) - hp(0)).toBeCloseTo(0.15, 1);
   });
 });
+
+describe('E4-G: soát netcode #211', () => {
+  const rec = (sim: Sim) => {
+    const calls: { power: number }[] = [];
+    const o = sim as unknown as { hitMonster: (...a: unknown[]) => void };
+    const orig = o.hitMonster.bind(sim);
+    o.hitMonster = (...a: unknown[]) => {
+      calls.push({ power: a[2] as number });
+      orig(...a);
+    };
+    return calls;
+  };
+
+  it('Thuấn Di Trảm không thuấn di tới bóng của người khác hay quái đang evade', () => {
+    for (const mark of ['owner', 'evade'] as const) {
+      const { sim, p, mon, fresh } = setup('lac_kiem_quyet', 28);
+      const m = mon(X + 20, Z);
+      if (mark === 'owner') m.owner = 'someone-else';
+      else m.evadeUntil = sim.now + 60_000;
+      fresh(p);
+      sim.onSkill(p, { id: 'skl_thuan_di_tram', t: m.id });
+      expect(p.move.x, mark).toBe(X);
+    }
+  });
+
+  it('dư chấn và kiếm ảnh không đánh khi người ra chiêu đã bay lên', () => {
+    const run = (fly: boolean) => {
+      const a = setup('lac_kiem_quyet', 28);
+      const m = a.mon();
+      a.setVar('skl_thien_kiem_hoa_hinh', 'b');
+      a.fresh(a.p);
+      const calls = rec(a.sim);
+      a.sim.onSkill(a.p, { id: 'skl_thien_kiem_hoa_hinh', t: m.id });
+      if (fly) a.p.move.y += 30;
+      a.wait(2000);
+      return calls.length;
+    };
+    expect(run(false)).toBe(4);
+    expect(run(true)).toBe(1);
+
+    const echo = (fly: boolean) => {
+      const a = setup('lac_kiem_quyet', 28);
+      const m = a.mon();
+      a.fresh(a.p);
+      a.sim.onSkill(a.p, { id: 'skl_phan_anh_kiem_anh' });
+      a.wait(1100);
+      a.fresh(a.p);
+      const calls = rec(a.sim);
+      a.sim.onSkill(a.p, { id: 'skl_hoanh_kiem_pha_mach', t: m.id });
+      if (fly) a.p.move.y += 30;
+      a.wait(1500);
+      return calls.length;
+    };
+    expect(echo(false)).toBe(2);
+    expect(echo(true)).toBe(1);
+  });
+
+  it('kiếm ảnh không đánh khi mục tiêu đã ra ngoài tầm', () => {
+    const a = setup('lac_kiem_quyet', 28);
+    const m = a.mon();
+    a.fresh(a.p);
+    a.sim.onSkill(a.p, { id: 'skl_phan_anh_kiem_anh' });
+    a.wait(1100);
+    a.fresh(a.p);
+    const calls = rec(a.sim);
+    a.sim.onSkill(a.p, { id: 'skl_hoanh_kiem_pha_mach', t: m.id });
+    a.p.move.x = X - 80;
+    a.p.move.y = groundAt(X - 80, Z);
+    a.wait(1500);
+    expect(calls.length).toBe(1);
+  });
+
+  it('kiếm ảnh không nhân thêm thưởng riêng của chiêu (Hoành Kiếm 4 món bậc 2)', () => {
+    const echoPower = (boost: number) => {
+      const a = setup('lac_kiem_quyet', 28);
+      const m = a.mon();
+      a.p.char.stats.setFx.hoanhKiemPower = boost;
+      a.fresh(a.p);
+      a.sim.onSkill(a.p, { id: 'skl_phan_anh_kiem_anh' });
+      a.wait(1100);
+      a.fresh(a.p);
+      const calls = rec(a.sim);
+      a.sim.onSkill(a.p, { id: 'skl_hoanh_kiem_pha_mach', t: m.id });
+      a.wait(1500);
+      return calls.map((c) => c.power);
+    };
+    const [m0, e0] = echoPower(0);
+    const [m1, e1] = echoPower(1);
+    expect(m1).toBeCloseTo(m0 * 2, 5);
+    expect(e1).toBeCloseTo(e0, 5);
+  });
+});

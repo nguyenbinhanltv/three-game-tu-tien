@@ -1988,6 +1988,8 @@ export class GameSim {
       }
     }
     mul *= ctx.mul ?? 1;
+    // Hệ số gốc (trước thưởng riêng của từng chiêu/bộ): kiếm ảnh dùng cái này để không nhân đôi thưởng của bộ trang bị.
+    const mulBase = mul;
     if (needsTarget(skill) && targetId && !this.monById.has(targetId)) {
       const foe = this.players.get(targetId);
       if (foe && this.duel.foeOf(p) === foe) {
@@ -2006,7 +2008,8 @@ export class GameSim {
         const mon = this.monById.get(targetId);
         if (!mon) break;
         if (skill.blink) {
-          this.blinkNear(p, mon.s.x, mon.s.z, skill.blink.stop + mon.def.scale);
+          // Không thuấn di tới bóng/phân thân của người khác hay quái đang bỏ chạy (evade): tránh dịch chuyển miễn phí.
+          if (!(mon.owner && mon.owner !== p.sid) && this.now >= mon.evadeUntil) this.blinkNear(p, mon.s.x, mon.s.z, skill.blink.stop + mon.def.scale);
           // Bộ Trấn Khích bậc 5 (4 món): Thuấn Di Trảm gây thêm `thuanTramPower` sát thương.
           mul *= 1 + c.stats.setFx.thuanTramPower;
         }
@@ -2084,7 +2087,7 @@ export class GameSim {
           const as = v.aftershocks;
           for (let i = 1; i <= as.n; i++) {
             this.later(as.gap * i, () => {
-              if (this.players.get(p.sid) !== p || this.isDead(p)) return;
+              if (this.players.get(p.sid) !== p || this.isDead(p) || this.airborne(p)) return;
               for (const o of this.monsters) {
                 if (o.state === MS_DEAD || (o.owner && o.owner !== p.sid)) continue;
                 if ((o.s.x - cx) ** 2 + (o.s.z - cz) ** 2 <= r * r) this.hitMonster(p, o, rs.power * as.mul * mul, elemMul, skill.elem);
@@ -2323,9 +2326,9 @@ export class GameSim {
         if (em) {
           ec.hits.forEach((f, i) => {
             this.later(ec.delay + i * 0.25, () => {
-              if (this.players.get(p.sid) !== p || this.isDead(p) || em.state === MS_DEAD) return;
+              if (this.players.get(p.sid) !== p || this.isDead(p) || this.airborne(p) || em.state === MS_DEAD || !this.inRange(p, em, this.skillRange(p, skill))) return;
               this.fx({ t: 'kiemanh', src: p.sid, dst: em.id });
-              this.hitMonster(p, em, rs.power * f * mul, elemMul, ec.elem);
+              this.hitMonster(p, em, rs.power * f * mulBase, elemMul, ec.elem);
             });
           });
         }
