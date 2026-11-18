@@ -28,7 +28,6 @@ export type MusicTrack =
   | 'tribulation'
   | 'meditate';
 
-
 export interface MusicInput {
   /** Đang ở room bí cảnh (Kiếm Trủng) thay vì bản đồ thế giới. */
   dungeon: boolean;

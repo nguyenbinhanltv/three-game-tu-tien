@@ -56,7 +56,6 @@ function isVanLam(): boolean {
   return VL;
 }
 
-/** Sàn mây đi bộ được của level đảo nổi (E3-N). */
 const C_OCHRE = col(0xb2a082);
 const C_OCHRE_DRY = col(0xc4b08e);
 const C_OCHRE_RED = col(0x9f8068);

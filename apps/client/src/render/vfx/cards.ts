@@ -6,8 +6,6 @@ import * as THREE from 'three/webgpu';
  * kênh G = 1 ở phần dùng màu điểm nhấn (vàng / đỏ son), alpha = hình. Một texture mỗi thẻ.
  */
 type CardId = 'arhat' | 'phoenix' | 'ghost';
-/** Tỉ lệ rộng/cao của thẻ. */
-
 type Ctx = CanvasRenderingContext2D;
 const col = (tier: number, acc = 0) => `rgb(${Math.round(tier * 255)},${Math.round(acc * 255)},0)`;
 
