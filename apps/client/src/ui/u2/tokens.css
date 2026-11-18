@@ -130,6 +130,7 @@
   --u-dur-open: 250ms;
   --u-dur-ink: 400ms; /* vệt mực quét */
   --u-dur-shimmer: 3.2s; /* lấp lánh bậc Thần (vòng lặp chậm) */
+  --u-dur-breathe: 2.4s; /* quầng sẵn sàng của đòn chính (nhịp thở) */
   --u-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   /* ── Lớp xếp chồng ── */
@@ -153,4 +154,5 @@
   --u-dur-open: 0ms;
   --u-dur-ink: 0ms;
   --u-dur-shimmer: 0s;
+  --u-dur-breathe: 0s;
 }

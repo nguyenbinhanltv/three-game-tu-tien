@@ -124,8 +124,8 @@ async function hud(r: Run, variants: string[], sizes: string[], only: string[]):
       await snapSizes(page, r.out, `hud-${sc.id}-${variant}`, sizes);
       out[`${sc.id}-${variant}`] = {
         ...(await cpuPerFrame(page)),
-        bossBar: await page.locator('.boss-bar').count(),
-        tracker: await page.locator('.tracker').count(),
+        bossBar: await page.locator('.boss-bar, .u2h-tc').count(),
+        tracker: await page.locator('.tracker, .u2h-quest').count(),
       };
       await ctx.close();
     }

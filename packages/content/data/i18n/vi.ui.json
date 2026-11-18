@@ -1153,5 +1153,21 @@
   "ui.u2v.toast.openBad": "Thông báo lỗi",
   "ui.u2v.toast.info": "Đã nhận một vật phẩm",
   "ui.u2v.toast.ok": "Cường hóa thành công",
-  "ui.u2v.toast.bad": "Linh lực không đủ"
+  "ui.u2v.toast.bad": "Linh lực không đủ",
+  "ui.dash": "Lướt",
+  "ui.hub.journey": "Hành trình",
+  "ui.hub.label": "Ngọc đái: các bảng chính",
+  "ui.hud.expand": "Mở rộng",
+  "ui.hud.collapse": "Thu gọn",
+  "ui.chat.title": "Trò chuyện",
+  "ui.settings.uiscale": "Cỡ giao diện",
+  "ui.settings.uiscale_hint": "Nhân thêm vào hệ số tự động theo kích thước cửa sổ (0,8–1,4 lần).",
+  "ui.settings.uiscale.0.8": "Nhỏ",
+  "ui.settings.uiscale.1": "Chuẩn",
+  "ui.settings.uiscale.1.2": "Lớn",
+  "ui.settings.uiscale.1.4": "Rất lớn",
+  "ui.settings.skill_layout": "Bố cục kỹ năng",
+  "ui.settings.skill_layout_hint": "Kiếm Luân: cung góc phải dưới. Thanh ngang: một hàng ở giữa dưới màn hình.",
+  "ui.settings.skill_layout.arc": "Kiếm Luân (cung)",
+  "ui.settings.skill_layout.bar": "Thanh ngang"
 }

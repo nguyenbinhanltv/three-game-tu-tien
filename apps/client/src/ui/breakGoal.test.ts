@@ -27,8 +27,11 @@ describe('mốc đột phá trên khung nhân vật', () => {
 });
 
 describe('hệ số phóng UI', () => {
-  it('1 tới 1920×1080, phóng theo cạnh hẹp hơn, có trần', () => {
-    expect(uiScaleFor(1280, 720)).toBe(1);
+  it('1 tới 1920×1080, sàn 0,85 ở màn nhỏ, phóng theo cạnh hẹp hơn, có trần, hệ số người dùng', () => {
+    expect(uiScaleFor(1280, 720)).toBe(0.85);
+    expect(uiScaleFor(1366, 768)).toBe(0.85);
+    expect(uiScaleFor(1920, 1080, 1.2)).toBe(1.2);
+    expect(uiScaleFor(1920, 1080, 9)).toBe(1.4);
     expect(uiScaleFor(1920, 1080)).toBe(1);
     expect(uiScaleFor(2560, 1440)).toBe(1.35);
     expect(uiScaleFor(3840, 2160)).toBe(2);
