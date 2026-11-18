@@ -75,8 +75,39 @@ export default {
       await snap(page, r.out, out('5-vung-moi-mo'), { wait: 0 });
       await sleep(1500);
       await snap(page, r.out, out('6-vung-moi'), { wait: 0 });
+      // Vùng núi (Vách Đá Ngọc): kiểm núi nét cọ và đường đồng mức.
+      const [mx, mz] = centroid('van_lam', 3);
+      await tp(page, mx, mz);
+      await sleep(1500);
+      await snap(page, r.out, out('7-nui'), { wait: 0 });
       await ctx.close();
     }
+    // Cận cảnh minimap x2 (dpr 2) ở Lạc Kiếm Tông, Hồ Sương Mù và vùng núi, 1080p.
+    const { ctx: c2, page: p2 } = await r.open({
+      name: 'MmX2',
+      viewport: UI_SIZES['1080p'],
+      dpr: 2,
+      seenIntro: true,
+      query: { god: 1, realm: 'nk12', at: 'tong_mon', debug: undefined },
+    });
+    await p2.evaluate(async () => {
+      const url = '/src/ui/minimap/ink.ts';
+      const m = (await import(/* @vite-ignore */ url)) as { inkMap(): unknown };
+      while (!m.inkMap()) await new Promise((res) => setTimeout(res, 100));
+    });
+    const clip = { x: 1560, y: 40, width: 360, height: 400 };
+    await sleep(1500);
+    await snap(p2, r.out, `minimap-${variant}-x2-1-lac-kiem-tong.jpg`, { clip, wait: 300 });
+    for (const [i, name] of [
+      [4, 'ho-suong-mu'],
+      [3, 'nui'],
+    ] as const) {
+      const [zx, zz] = centroid('van_lam', i);
+      await tp(p2, zx, zz);
+      await sleep(1500);
+      await snap(p2, r.out, `minimap-${variant}-x2-${i === 4 ? 2 : 3}-${name}.jpg`, { clip, wait: 0 });
+    }
+    await c2.close();
     writeJson(r.out, `minimap-perf-${variant}.json`, perf);
     console.log('ink perf', JSON.stringify(perf));
   },
