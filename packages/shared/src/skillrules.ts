@@ -39,7 +39,7 @@ export function strikeDelay(s: SkillDef, comboIdx?: number): number {
  */
 export function hitOffsets(s: SkillDef, n: number): number[] {
   const at = s.hitAt && s.hitAt.length ? s.hitAt : [0];
-  const base = at[0];
+  const base = at[0] ?? 0;
   return Array.from({ length: n }, (_, i) => Math.max(0, (at[Math.min(i, at.length - 1)] ?? base) - base));
 }
 
@@ -161,13 +161,16 @@ export function validateSkillRules(s: SkillDef, pose: PoseDef | undefined, ids: 
     if (!hit || !hit.length) errs.push(`${at}: thiếu hitAt`);
     else {
       for (let i = 0; i < hit.length; i++) {
-        if (!(hit[i] >= 0) || (i > 0 && hit[i] < hit[i - 1])) errs.push(`${at}: hitAt phải không âm và tăng dần`);
+        const hi = hit[i] ?? NaN;
+        if (!(hi >= 0) || (i > 0 && hi < (hit[i - 1] ?? 0))) errs.push(`${at}: hitAt phải không âm và tăng dần`);
       }
-      if (pose?.hit && Math.abs(hit[0] - pose.hit[0]) > 0.03)
-        errs.push(`${at}: hitAt[0] = ${hit[0]} lệch hit[0] = ${pose.hit[0]} của pose ${pose.id} (hình và sát thương phải cùng nhịp)`);
-      if (s.windup !== undefined && s.windup > hit[0] + 1e-6) errs.push(`${at}: windup ${s.windup} lớn hơn hitAt[0] ${hit[0]}`);
+      const h0 = hit[0] ?? 0;
+      const poseHit0 = pose?.hit?.[0];
+      if (poseHit0 !== undefined && Math.abs(h0 - poseHit0) > 0.03)
+        errs.push(`${at}: hitAt[0] = ${h0} lệch hit[0] = ${poseHit0} của pose ${pose?.id} (hình và sát thương phải cùng nhịp)`);
+      if (s.windup !== undefined && s.windup > h0 + 1e-6) errs.push(`${at}: windup ${s.windup} lớn hơn hitAt[0] ${h0}`);
       if (s.recovery !== undefined && pose) {
-        const end = hit[hit.length - 1] + s.recovery;
+        const end = (hit[hit.length - 1] ?? 0) + s.recovery;
         if (Math.abs(end - pose.duration) > 0.06)
           errs.push(`${at}: hitAt cuối + recovery = ${end.toFixed(2)} lệch độ dài pose ${pose.duration}`);
         if (ct === 'instant' && end > GCD + 1e-6) errs.push(`${at}: hitAt cuối + recovery = ${end.toFixed(2)} quá GCD ${GCD}`);

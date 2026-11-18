@@ -19,8 +19,9 @@ function pickWeighted(weights: number[], rng: () => number): number {
   if (total <= 0) return -1;
   let r = rng() * total;
   for (let i = 0; i < weights.length; i++) {
-    if (weights[i] <= 0) continue;
-    r -= weights[i];
+    const w = weights[i] ?? 0;
+    if (w <= 0) continue;
+    r -= w;
     if (r < 0) return i;
   }
   return weights.length - 1;
@@ -75,7 +76,8 @@ export function rollEquipDrops(
       const pieces = items.filter((i) => i.set === r.set);
       if (!pieces.length) continue;
       const ilvl = clamp(Math.round(monLevel + (r.ilvlBonus ?? 0) + Math.floor(rng() * 3) - 1), 1, MAX_ILVL);
-      out.push({ id: pieces[Math.floor(rng() * pieces.length)].id, ilvl, q });
+      const piece = pieces[Math.floor(rng() * pieces.length)];
+      if (piece) out.push({ id: piece.id, ilvl, q });
       continue;
     }
     const pool = r.slots ? slots.filter((s) => (r.slots![s] ?? 0) > 0) : slots;
@@ -85,9 +87,12 @@ export function rollEquipDrops(
     );
     if (si < 0) continue;
     const ilvl = clamp(Math.round(monLevel + (r.ilvlBonus ?? 0) + Math.floor(rng() * 3) - 1), 1, MAX_ILVL);
-    const tpls = templatesFor(items, pool[si], ilvl);
+    const slot = pool[si];
+    if (!slot) continue;
+    const tpls = templatesFor(items, slot, ilvl);
     if (!tpls.length) continue;
-    out.push({ id: tpls[Math.floor(rng() * tpls.length)].id, ilvl, q });
+    const tpl = tpls[Math.floor(rng() * tpls.length)];
+    if (tpl) out.push({ id: tpl.id, ilvl, q });
   }
   return out;
 }

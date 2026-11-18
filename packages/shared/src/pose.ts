@@ -100,7 +100,7 @@ export function validatePose(p: PoseDef): string[] {
     e('cần ít nhất một key');
     return errs;
   }
-  if (p.keys[0].t !== 0) e('key đầu phải ở t = 0');
+  if (p.keys[0]?.t !== 0) e('key đầu phải ở t = 0');
 
   const vecFields = ['handR', 'handL', 'elbowR', 'elbowL', 'sword', 'edge', 'footR', 'footL', 'kneeR', 'kneeL', 'spine', 'head'] as const;
   const dirFields = new Set(['elbowR', 'elbowL', 'sword', 'edge', 'kneeR', 'kneeL']);

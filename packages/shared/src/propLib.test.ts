@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import { PROP_LIB, propColliders, propLibEntry, propLibForMap } from './propLib';
 
@@ -14,9 +15,10 @@ describe('propLib', () => {
     const a = propColliders('prop_cong_thanh_vo', 100, 200, 0, 1);
     expect(a[1]).toEqual({ x: 108, z: 200, r: 4.5 });
     const b = propColliders('prop_cong_thanh_vo', 100, 200, Math.PI / 2, 2);
-    expect(b[1].x).toBeCloseTo(100, 6);
-    expect(b[1].z).toBeCloseTo(200 - 16, 6);
-    expect(b[1].r).toBe(9);
+    const b1 = at(b, 1);
+    expect(b1.x).toBeCloseTo(100, 6);
+    expect(b1.z).toBeCloseTo(200 - 16, 6);
+    expect(b1.r).toBe(9);
     expect(propColliders('khong_co', 0, 0)).toEqual([]);
   });
 });

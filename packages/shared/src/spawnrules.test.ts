@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import {
   AOI_BOSS_IN,
@@ -58,14 +59,15 @@ describe('đội hình cụm', () => {
       expect(melee).toHaveLength(n);
       for (const s of melee) expect(Math.hypot(s.x - 100, s.z - 200)).toBeLessThanOrEqual(r);
       for (let i = 0; i < n; i++)
-        for (let j = i + 1; j < n; j++) expect(Math.hypot(melee[i].x - melee[j].x, melee[i].z - melee[j].z)).toBeGreaterThan(3);
+        for (let j = i + 1; j < n; j++)
+          expect(Math.hypot(at(melee, i).x - at(melee, j).x, at(melee, i).z - at(melee, j).z)).toBeGreaterThan(3);
     }
   });
   it('quái đánh xa đứng phía sau, gần tâm hơn vòng; cùng phase thì cùng đội hình', () => {
     const a = formationSlots(0, 0, 25, 3, 1.1, true);
     const b = formationSlots(0, 0, 25, 3, 1.1, true);
     expect(a).toEqual(b);
-    const ring = Math.hypot(a.melee[0].x, a.melee[0].z);
+    const ring = Math.hypot(at(a.melee, 0).x, at(a.melee, 0).z);
     expect(Math.hypot(a.ranged!.x, a.ranged!.z)).toBeLessThan(ring);
   });
 });

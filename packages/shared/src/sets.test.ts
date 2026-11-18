@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import { computePlayerStats, seededRng, type EquippedEntry } from './items';
 import { accessoryCode, lookSet, NO_SET_FX, parseAccessoryCode, setFxOf, setStatuses, type SetDef } from './sets';
@@ -19,10 +20,10 @@ const worn = (...ids: string[]): EquippedEntry[] => ids.map((id) => ({ item: { i
 describe('bộ trang bị', () => {
   it('đếm đúng số món, bậc kích hoạt theo số món, mỗi món một lần', () => {
     expect(setStatuses([SET], ['x'])).toEqual([]);
-    expect(setStatuses([SET], ['a'])[0].active).toEqual([]);
-    expect(setStatuses([SET], ['a', 'b'])[0].active.map((t) => t.n)).toEqual([2]);
-    expect(setStatuses([SET], ['a', 'a', 'b'])[0].n).toBe(2);
-    expect(setStatuses([SET], ['a', 'b', 'c', 'd'])[0].active.map((t) => t.n)).toEqual([2, 4]);
+    expect(at(setStatuses([SET], ['a']), 0).active).toEqual([]);
+    expect(at(setStatuses([SET], ['a', 'b']), 0).active.map((t) => t.n)).toEqual([2]);
+    expect(at(setStatuses([SET], ['a', 'a', 'b']), 0).n).toBe(2);
+    expect(at(setStatuses([SET], ['a', 'b', 'c', 'd']), 0).active.map((t) => t.n)).toEqual([2, 4]);
   });
 
   it('thưởng 2 món cộng vào công kích đúng một lần, 1 món thì không', () => {
@@ -72,9 +73,9 @@ describe('rơi theo bộ', () => {
     for (let i = 0; i < 50; i++) {
       const d = rollEquipDrops([{ chance: 1, q: [0, 0, 1, 1, 0], set: 's1' }], data, items, 15, rng);
       expect(d).toHaveLength(1);
-      expect(['a', 'b']).toContain(d[0].id);
+      expect(['a', 'b']).toContain(at(d, 0).id);
       const g = rollEquipDrops([{ chance: 1, q: [1, 0, 0, 0, 0], slots: { robe: 1 } }], data, items, 15, rng);
-      expect(g[0].id).toBe('plain');
+      expect(at(g, 0).id).toBe('plain');
     }
   });
 });

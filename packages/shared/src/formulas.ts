@@ -1,4 +1,5 @@
 // Công thức chỉ số và cân bằng. Hàm thuần, dùng chung client (hiển thị) và server (tính thật).
+import { at } from './arr';
 import { TRIB_DEFS, type TribFinal, type TribNet } from './tribulation';
 
 export const NGUNG_KHI_MAX = 15;
@@ -44,7 +45,7 @@ const XP_NEED_ADV: readonly number[] = [
 /** Tu vi cần để đầy cảnh giới hiện tại. */
 export function xpNeed(level: number): number {
   if (level >= MAX_LEVEL) return 99_999_999;
-  if (level >= TRUC_CO_LEVEL) return XP_NEED_ADV[level - TRUC_CO_LEVEL];
+  if (level >= TRUC_CO_LEVEL) return at(XP_NEED_ADV, level - TRUC_CO_LEVEL, 'XP_NEED_ADV');
   // 90·L²: tổng Ngưng Khí 1→15 khoảng 112 nghìn tu vi. `pnpm sim:progress` (3-10) mô phỏng cả đi tìm quái theo cụm của M-2,
   // áp lực quái thường và đả tọa, ra 3,2–3,5 giờ tới viên mãn Ngưng Khí 15 cho cả ba công pháp (chưa tính boss, bí cảnh).
   // Mục tiêu đã chốt (2026-11-15): 3–4 giờ; cũ 70·L² cho 2,2 giờ. Sẽ dài thêm khi có thêm nội dung; đổi đường cong
@@ -90,7 +91,7 @@ export function majorRealmOf(level: number): number {
 
 /** Tầng/kỳ trong đại cảnh giới của cấp, tính từ 1 (Ngưng Khí tầng 12 → 12, Kết Đan sơ kỳ → 1). Dùng cho chữ triện ở khung nhân vật. */
 export function realmStageOf(level: number): number {
-  return level - REALM_MUL[majorRealmOf(level)].from + 1;
+  return level - at(REALM_MUL, majorRealmOf(level), 'REALM_MUL').from + 1;
 }
 
 export interface BaseStats {
@@ -183,6 +184,9 @@ export const DEATH_XP_LOSS = 0.05;
 // Độ kiếp (E1-F): số liệu nằm ở packages/content/data/tribulations.json (xem tribulation.ts). Các hằng dưới đây là bí danh cho Trúc Cơ
 // (hành vi S2-C giữ nguyên, có test băm ở apps/server/src/game/trib.golden.test.ts); kiếp khác đọc thẳng `tribDef(id)`.
 const TC = TRIB_DEFS.truc_co;
+const TP1 = at(TC.phases, 0, 'truc_co.phases');
+const TP2 = at(TC.phases, 1, 'truc_co.phases');
+const TP3 = at(TC.phases, 2, 'truc_co.phases');
 export const TRIBULATION_FAIL_XP_LOSS = TC.failXpLoss;
 export const TRIBULATION_DURATION = TC.duration;
 /**
@@ -191,38 +195,38 @@ export const TRIBULATION_DURATION = TC.duration;
  * Mốc giây tính từ lúc bắt đầu; client suy pha từ đồng hồ (không cần tin riêng).
  */
 export const TRIB_FIRST_DELAY = TC.firstDelay;
-export const TRIB_AIM = { r: TC.aim.r, delay: TC.aim.delay, pct: TC.phases[0].aimPct as number };
+export const TRIB_AIM = { r: TC.aim.r, delay: TC.aim.delay, pct: TP1.aimPct as number };
 export const TRIB_EXTRA = {
-  r: TC.phases[0].extraR as number,
+  r: TP1.extraR as number,
   delayMin: TC.extraDelay.min,
   delayMax: TC.extraDelay.max,
-  pct: TC.phases[0].extraPct as number,
+  pct: TP1.extraPct as number,
   distMin: TC.extraDist.min,
   distMax: TC.extraDist.max,
   maxCount: 4,
 };
-export const TRIB_PHASE_END = [TC.phases[0].end, TC.phases[1].end, TC.phases[2].end] as const;
+export const TRIB_PHASE_END = [TP1.end, TP2.end, TP3.end] as const;
 export function tribPhaseAt(elapsedSec: number): 1 | 2 | 3 {
   return elapsedSec < TRIB_PHASE_END[0] ? 1 : elapsedSec < TRIB_PHASE_END[1] ? 2 : 3;
 }
 /** Nhịp hai đợt (giây) theo pha 1 và 2; pha 3 dùng `TRIB_RAIN.gap`. */
-export const TRIB_PHASE_GAP = { 1: TC.phases[0].gap, 2: TC.phases[1].gap } as const;
+export const TRIB_PHASE_GAP = { 1: TP1.gap, 2: TP2.gap } as const;
 /** Số tia rơi quanh mỗi đợt theo pha (pha 3 dùng `TRIB_RAIN.count`). */
-export const TRIB_PHASE_EXTRA = { 1: TC.phases[0].extra as number, 2: TC.phases[1].extra as number } as const;
+export const TRIB_PHASE_EXTRA = { 1: TP1.extra as number, 2: TP2.extra as number } as const;
 /**
  * Lôi võng (pha 2): `lines` vạch song song, mỗi vạch là chuỗi `count` vòng sét bán kính `r` cách nhau `step` (m) dựng quanh chỗ người độ kiếp đứng
  * (vạch giữa đè lên họ), các vạch cách nhau `gap`; báo trước `delay` giây, mỗi vòng `pct` khí huyết tối đa (một người chỉ ăn một lần mỗi vạch); cứ `every` đợt thả một lần.
  */
-export const TRIB_NET = TC.phases[1].net as TribNet;
+export const TRIB_NET = TP2.net as TribNet;
 /** Tia cuối (đầu pha 3): báo trước `delay` giây quanh người độ kiếp, `pct` khí huyết tối đa, khóa mệnh (đứng đâu cũng trúng). Đan Kim Cương giảm thêm `defMul` lần mức buff phòng ngự. */
-export const TRIB_FINAL = TC.phases[2].final as TribFinal;
+export const TRIB_FINAL = TP3.final as TribFinal;
 /** Mưa sét sau tia cuối: nhịp dồn, nhẹ hơn mỗi tia. */
 export const TRIB_RAIN = {
-  gap: TC.phases[2].gap,
-  count: TC.phases[2].extra as number,
-  pct: TC.phases[2].extraPct as number,
-  aimPct: TC.phases[2].aimPct as number,
-  r: TC.phases[2].extraR as number,
+  gap: TP3.gap,
+  count: TP3.extra as number,
+  pct: TP3.extraPct as number,
+  aimPct: TP3.aimPct as number,
+  r: TP3.extraR as number,
 };
 /** Số đan hồi phục dùng được trong một lần độ kiếp (đan độc tích tụ). */
 export const TRIB_PILL_MAX = TC.pillMax;

@@ -1,6 +1,7 @@
 // Nâng cấp trang bị Phase 3-3: cường hóa +10 không vỡ đồ (Hộ Phù), khảm linh ngọc, ghép ngọc, tẩy luyện, phân giải, ràng buộc.
 // Hàm thuần và hằng số dùng chung server/client. Mọi xác suất chỉ được roll ở server (client chỉ đọc bảng để hiển thị).
 
+import { at } from './arr';
 import type { AffixRoll, Element, ItemInst, Quality } from './items';
 import { BIND_QUALITY, ELEMENTS, QUALITY_COUNT, clampTier, mainLine, MAX_TIER, socketsFor, TIER_OPEN, type ItemSysData } from './items';
 import type { EquipSlot } from './types';
@@ -68,7 +69,7 @@ export function parseGem(id: unknown): { elem: Element; tier: number } | null {
   if (typeof id !== 'string') return null;
   const m = /^gem_([a-z]+)_([1-9])$/.exec(id);
   if (!m) return null;
-  const elem = (ELEMENTS as readonly string[]).includes(m[1]) ? (m[1] as Element) : null;
+  const elem = (ELEMENTS as readonly string[]).includes(m[1] ?? '') ? (m[1] as Element) : null;
   const tier = Number(m[2]);
   return elem && tier >= 1 && tier <= GEM_TIERS ? { elem, tier } : null;
 }
@@ -79,8 +80,8 @@ export function gemAffixes(id: string): AffixRoll[] {
   if (!g) return [];
   const main = GEM_STATS[g.elem];
   return [
-    { id: main.stat, v: main.v[g.tier - 1] },
-    { id: 'elem_dmg', p: g.elem, v: GEM_ELEM_DMG[g.tier - 1] },
+    { id: main.stat, v: at(main.v, g.tier - 1, 'GEM_STATS.v') },
+    { id: 'elem_dmg', p: g.elem, v: at(GEM_ELEM_DMG, g.tier - 1, 'GEM_ELEM_DMG') },
   ];
 }
 

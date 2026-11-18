@@ -1,5 +1,6 @@
 // Bảo đảm E1-A giữ Vân Lam bit-for-bit: so `heightAt`/`groundAt`/`biomeAt`/`featureWeight`/`stepMove` mới (TerrainDef) với bản chép
 // nguyên văn của thuật toán cũ (cuối file), và dựng một level giả lập để chứng minh đa level.
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import { fbm, lerp, ridged, smoothstep } from './noise';
 import {
@@ -89,7 +90,8 @@ describe('E1-A: Vân Lam bit-for-bit', () => {
     }
     const s: MoveState = { x: 2048, y: groundAt(2048, 2060), z: 2060, vy: 0, grounded: true, flying: false };
     for (let i = 0; i < 200; i++) stepMove(s, { s: i, mx: 0, mz: 1, yaw: 0, f: 0 }, ctx);
-    expect(Math.hypot(s.x - COLLIDERS[0].x, s.z - COLLIDERS[0].z)).toBeGreaterThanOrEqual(COLLIDERS[0].r + 0.5 - 1e-6);
+    const c0 = at(COLLIDERS, 0);
+    expect(Math.hypot(s.x - c0.x, s.z - c0.z)).toBeGreaterThanOrEqual(c0.r + 0.5 - 1e-6);
   });
 
   it('hằng số cũ vẫn khớp def: lề, kích thước, mặt nước, ranh', () => {
