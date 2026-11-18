@@ -535,7 +535,7 @@ export class SwordRainFx {
 
   update(dt: number): void {
     for (let i = this.rains.length - 1; i >= 0; i--) {
-      const R = this.rains[i];
+      const R = this.rains[i]!;
       R.t += dt;
       if (this.step(R)) {
         this.shocks.release(R.area);

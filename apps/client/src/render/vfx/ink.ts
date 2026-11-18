@@ -50,7 +50,7 @@ export function inkEvict(ages: readonly number[], forced: readonly boolean[], ma
   for (let i = 0; i < ages.length; i++) if (!forced[i]) live++;
   if (live < max) return -1;
   let best = -1;
-  for (let i = 0; i < ages.length; i++) if (!forced[i] && (best < 0 || ages[i] > ages[best])) best = i;
+  for (let i = 0; i < ages.length; i++) if (!forced[i] && (best < 0 || ages[i]! > ages[best]!)) best = i;
   return best;
 }
 

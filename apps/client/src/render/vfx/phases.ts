@@ -37,7 +37,7 @@ export const METHOD_TINT: Record<string, number> = {
   bat_dong_kim_than: 0xffde96, // spirit_gold
   thanh_moc_dan_kinh: 0x7fe3d0, // spirit_jade
 };
-export const DEFAULT_TINT = METHOD_TINT.lac_kiem_quyet;
+export const DEFAULT_TINT = METHOD_TINT.lac_kiem_quyet!;
 
 export function tintOfMethod(method: string | undefined): number {
   return (method && METHOD_TINT[method]) || DEFAULT_TINT;

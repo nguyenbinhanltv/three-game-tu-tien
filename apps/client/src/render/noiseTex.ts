@@ -83,7 +83,7 @@ export function getWaterNormals(): THREE.DataTexture {
   const h = new Float32Array(N * N);
   for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) h[j * N + i] = fbm(i / N, j / N, 8, 4, 97);
   const data = new Uint8Array(N * N * 4);
-  const at = (i: number, j: number) => h[((j + N) % N) * N + ((i + N) % N)];
+  const at = (i: number, j: number) => h[((j + N) % N) * N + ((i + N) % N)]!;
   for (let j = 0; j < N; j++) {
     for (let i = 0; i < N; i++) {
       const dx = (at(i + 1, j) - at(i - 1, j)) * 6;
@@ -91,7 +91,7 @@ export function getWaterNormals(): THREE.DataTexture {
       const k = (j * N + i) * 4;
       data[k] = Math.max(0, Math.min(255, 128 + dx * 127));
       data[k + 1] = Math.max(0, Math.min(255, 128 + dz * 127));
-      data[k + 2] = h[j * N + i] * 255;
+      data[k + 2] = h[j * N + i]! * 255;
       data[k + 3] = 255;
     }
   }

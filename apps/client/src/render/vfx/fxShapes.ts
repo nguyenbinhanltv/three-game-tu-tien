@@ -179,14 +179,14 @@ function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides
   };
   for (let i = 0; i <= segs; i++) {
     const v = i / segs;
-    ring(curve.getPointAt(v), frames.normals[i], frames.binormals[i], radius(v), 1, v);
+    ring(curve.getPointAt(v), frames.normals[i]!, frames.binormals[i]!, radius(v), 1, v);
     rings++;
   }
   joinRings(0, segs + 1);
   // Đầu: sọ phình rồi mõm dẹt thuôn (kéo dài theo tiếp tuyến cuối).
   const tEnd = curve.getTangentAt(1).normalize();
-  const nEnd = frames.normals[segs];
-  const bEnd = frames.binormals[segs];
+  const nEnd = frames.normals[segs]!;
+  const bEnd = frames.binormals[segs]!;
   const cEnd = curve.getPointAt(1);
   const headRings: [number, number, number][] = [
     [0.5, 1.35, 0.9],
@@ -212,7 +212,7 @@ function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides
   for (let i = 6; i < segs - 4; i += 5) {
     const v = i / segs;
     const c = curve.getPointAt(v);
-    const out = dir(frames.normals[i], frames.binormals[i], 0);
+    const out = dir(frames.normals[i]!, frames.binormals[i]!, 0);
     const rr = radius(v);
     const along = curve.getTangentAt(v).normalize();
     tri(
@@ -297,7 +297,7 @@ function statueGeometry(): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const idx: number[] = [];
-  const top = prof[prof.length - 1][1];
+  const top = prof[prof.length - 1]![1];
   prof.forEach(([r, y], i) => {
     for (let j = 0; j <= seg; j++) {
       const a = (j / seg) * Math.PI * 2;

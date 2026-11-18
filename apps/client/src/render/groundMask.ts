@@ -79,8 +79,8 @@ export function distToPaths(x: number, z: number, lines: P[][], max = PATH_RANGE
   let best = Infinity;
   for (const line of lines) {
     for (let i = 0; i < line.length - 1; i++) {
-      const a = line[i];
-      const b = line[i + 1];
+      const a = line[i]!;
+      const b = line[i + 1]!;
       if (x < Math.min(a.x, b.x) - max || x > Math.max(a.x, b.x) + max || z < Math.min(a.z, b.z) - max || z > Math.max(a.z, b.z) + max)
         continue;
       const d = segDist(x, z, a, b);

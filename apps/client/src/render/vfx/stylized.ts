@@ -285,9 +285,9 @@ function drawRuneRing(): THREE.Texture {
       const a = [Math.floor(rnd() * 4), Math.floor(rnd() * 6)];
       const b = [Math.floor(rnd() * 4), Math.floor(rnd() * 6)];
       const kind = rnd();
-      g.moveTo(px(a[0]), py(a[1]));
-      if (kind < 0.55) g.lineTo(px(b[0]), py(b[1]));
-      else g.quadraticCurveTo(px(a[0]) + (rnd() - 0.5) * gw, py(b[1]), px(b[0]), py(b[1]));
+      g.moveTo(px(a[0]!), py(a[1]!));
+      if (kind < 0.55) g.lineTo(px(b[0]!), py(b[1]!));
+      else g.quadraticCurveTo(px(a[0]!) + (rnd() - 0.5) * gw, py(b[1]!), px(b[0]!), py(b[1]!));
     }
     // Một nét dọc trục xương sống cho mọi ký tự, để nhìn ra "chữ".
     g.moveTo(0, py(0));

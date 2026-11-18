@@ -61,7 +61,7 @@ export class LootFly {
     const r = bag?.getBoundingClientRect();
     const lr = this.layer.getBoundingClientRect();
     for (let i = this.items.length - 1; i >= 0; i--) {
-      const it = this.items[i];
+      const it = this.items[i]!;
       it.t += dt;
       const k = Math.min(1, it.t / FLY_DUR);
       if (r && r.width > 0) {
