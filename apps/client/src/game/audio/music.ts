@@ -182,8 +182,8 @@ class Bank {
     let idx = 0;
     let prev = 0;
     for (let i = 0; i < len; i++) {
-      const cur = ring[idx];
-      const next = ring[(idx + 1) % n];
+      const cur = ring[idx]!;
+      const next = ring[(idx + 1) % n]!;
       const v = 0.5 * (cur + next) * sustain;
       ring[idx] = v;
       // Lọc nhẹ thêm một bậc cho đỡ chói.
@@ -193,7 +193,7 @@ class Bank {
     }
     // Tắt dần ở 0,2 giây cuối để không nghe tiếng "tách" khi hết bộ đệm.
     const tail = Math.floor(sr * 0.2);
-    for (let i = 0; i < tail; i++) d[len - 1 - i] *= i / tail;
+    for (let i = 0; i < tail; i++) d[len - 1 - i]! *= i / tail;
     this.plucks.set(key, b);
     return b;
   }
@@ -273,7 +273,7 @@ class Voice {
   private freqOf(deg: number): number {
     const sc = this.s.scale;
     const oct = Math.floor(deg / sc.length);
-    const semi = sc[((deg % sc.length) + sc.length) % sc.length] + 12 * oct;
+    const semi = sc[((deg % sc.length) + sc.length) % sc.length]! + 12 * oct;
     return this.s.root * Math.pow(2, semi / 12);
   }
 

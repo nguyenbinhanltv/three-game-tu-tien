@@ -276,8 +276,8 @@ export function buildPalaceHall(def: CaveDef, groundAt: (x: number, z: number) =
     const cs = [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)];
     const lo = cs.map(([x, z]) => V(x, y0, z, c0));
     const hi = cs.map(([x, z]) => V(x, y1, z, c1));
-    for (let i = 0; i < 4; i++) quad(lo[i], lo[(i + 1) % 4], hi[(i + 1) % 4], hi[i]);
-    quad(hi[0], hi[1], hi[2], hi[3]);
+    for (let i = 0; i < 4; i++) quad(lo[i]!, lo[(i + 1) % 4]!, hi[(i + 1) % 4]!, hi[i]!);
+    quad(hi[0]!, hi[1]!, hi[2]!, hi[3]!);
   };
   const N = 20;
   const R = def.r - 6;
@@ -318,7 +318,7 @@ export function buildPalaceHall(def: CaveDef, groundAt: (x: number, z: number) =
         const v = Math.sin(t) * ry;
         rim.push(V(px + tx * u, gy + cy + v, pz + tz * u, cInner(1, v / ry)));
       }
-      for (let k = 0; k < SEG; k++) idx.push(center, rim[k], rim[(k + 1) % SEG], center, rim[(k + 1) % SEG], rim[k]);
+      for (let k = 0; k < SEG; k++) idx.push(center, rim[k]!, rim[(k + 1) % SEG]!, center, rim[(k + 1) % SEG]!, rim[k]!);
     };
     ring(5.6, 14, 17, 0.4, () => silver); // khung bạc
     // Mặt gương: sáng ở chân (phản sàn), tối dần lên trần; một dải sáng chéo bằng cách lệch màu theo cạnh.
@@ -338,7 +338,7 @@ export function buildPalaceHall(def: CaveDef, groundAt: (x: number, z: number) =
       a0.push(V(x0, groundAt(x0, z0) + 0.16, z0, c));
       a1.push(V(x1, groundAt(x1, z1) + 0.16, z1, c));
     }
-    for (let k = 0; k < SEG; k++) quad(a0[k], a1[k], a1[(k + 1) % SEG], a0[(k + 1) % SEG]);
+    for (let k = 0; k < SEG; k++) quad(a0[k]!, a1[k]!, a1[(k + 1) % SEG]!, a0[(k + 1) % SEG]!);
   };
   band(76, 78.4, silver);
   band(40, 40.7, silverDim);

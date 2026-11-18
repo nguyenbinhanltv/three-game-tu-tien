@@ -106,22 +106,22 @@ export function makeCrackle(sampleRate: number, seed = 7, seconds = 6): Float32A
       // Vi phân bậc một = thông cao: tiếng giòn, không ù.
       const hp = x - prev * 0.6;
       prev = x;
-      out[t0 + i] += hp * amp * Math.exp(-i / tau);
+      out[t0 + i]! += hp * amp * Math.exp(-i / tau);
     }
   }
   // Nén mềm: tiếng nổ lớn nhất không được nhọn hơn nền quá nhiều (crest cao sẽ làm RMS quá thấp khi chuẩn hóa theo đỉnh).
   let pk = 0;
   for (let i = 0; i < n; i++) {
-    out[i] = Math.tanh(out[i] * 2.4);
-    pk = Math.max(pk, Math.abs(out[i]));
+    out[i] = Math.tanh(out[i]! * 2.4);
+    pk = Math.max(pk, Math.abs(out[i]!));
   }
   const g = 0.85 / (pk || 1);
-  for (let i = 0; i < n; i++) out[i] *= g;
+  for (let i = 0; i < n; i++) out[i]! *= g;
   // Vòng lặp liền mạch: trộn đầu/cuối 40 ms.
   const f = Math.floor(sampleRate * 0.04);
   for (let i = 0; i < f; i++) {
     const t = i / f;
-    out[i] = out[i] * t + out[n - f + i] * (1 - t);
+    out[i] = out[i]! * t + out[n - f + i]! * (1 - t);
   }
   return out.subarray(0, n - f);
 }

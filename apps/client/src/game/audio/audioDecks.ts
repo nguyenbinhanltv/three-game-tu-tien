@@ -121,7 +121,7 @@ export class StreamDeck {
 
   /** Bài đang ra tiếng và vị trí phát (giây) trong vòng, để lớp stem nối đúng pha khi tiếp quản. */
   position(): { id: string; time: number } | null {
-    const el = this.ch[this.active].el;
+    const el = this.ch[this.active]!.el;
     return this.playing && el ? { id: this.playing, time: el.currentTime } : null;
   }
 
@@ -170,7 +170,7 @@ export class StreamDeck {
     const t = this.c.currentTime;
     const fade = this.fade;
     // Tắt dần kênh đang phát.
-    const old = this.ch[this.active];
+    const old = this.ch[this.active]!;
     ramp(old.g, 0, t, fade);
     const oldEl = old.el;
     if (oldEl) setTimeout(() => this.release(old, oldEl), fade * 1000 + 100);
@@ -181,7 +181,7 @@ export class StreamDeck {
     }
     // Bật kênh còn lại.
     this.active = 1 - this.active;
-    const ch = this.ch[this.active];
+    const ch = this.ch[this.active]!;
     if (ch.el) this.release(ch, ch.el);
     const el = new Audio();
     el.crossOrigin = 'anonymous';
@@ -195,7 +195,7 @@ export class StreamDeck {
       audioLog.warn('không phát được', urls[tried]);
       tried++;
       if (tried < urls.length) {
-        el.src = urls[tried];
+        el.src = urls[tried]!;
         el.play().catch((err) => audioLog.warn('play() bị từ chối', urls[tried], err));
         return;
       }

@@ -231,7 +231,7 @@ function playable(src: string | string[] | undefined): string[] {
   probe ??= document.createElement('audio');
   return list
     .filter((s) => {
-      const types = MIME[s.split('?')[0].split('.').pop()?.toLowerCase() ?? ''];
+      const types = MIME[s.split('?')[0]!.split('.').pop()?.toLowerCase() ?? ''];
       return !types || types.some((m) => probe!.canPlayType(m) !== '');
     })
     .map((s) => MANIFEST_DIR + s);
@@ -614,7 +614,7 @@ function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: Audi
   let i = Math.floor(Math.random() * vs.length);
   if (vs.length > 1 && i === lastVariant.get(name)) i = (i + 1) % vs.length;
   lastVariant.set(name, i);
-  const va = vs[i];
+  const va = vs[i]!;
   const src = c.createBufferSource();
   src.buffer = va.buf;
   const pitch = e.pitch ?? DEFAULT_PITCH;

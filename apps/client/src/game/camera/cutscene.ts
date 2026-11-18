@@ -73,8 +73,8 @@ function crVec(out: Vec3, a: Vec3, b: Vec3, c: Vec3, d: Vec3, t: number): void {
  */
 export function samplePath(path: readonly Waypoint[], endP: Vec3, endLook: Vec3, u: number, outP: Vec3, outLook: Vec3): void {
   const n = path.length + 1;
-  const P = (i: number): Vec3 => (i >= path.length ? endP : path[i < 0 ? 0 : i].p);
-  const L = (i: number): Vec3 => (i >= path.length ? endLook : path[i < 0 ? 0 : i].look);
+  const P = (i: number): Vec3 => (i >= path.length ? endP : path[i < 0 ? 0 : i]!.p);
+  const L = (i: number): Vec3 => (i >= path.length ? endLook : path[i < 0 ? 0 : i]!.look);
   const f = Math.max(0, Math.min(1, u)) * (n - 1);
   const i = Math.min(n - 2, Math.floor(f));
   const t = f - i;

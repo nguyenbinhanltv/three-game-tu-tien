@@ -769,8 +769,8 @@ export class AssetCache {
     const max = this.opts.concurrency ?? 2;
     while (this.active < max && this.queue.length > 0) {
       let best = 0;
-      for (let i = 1; i < this.queue.length; i++) if (this.rank(this.queue[i]) < this.rank(this.queue[best])) best = i;
-      const job = this.queue.splice(best, 1)[0];
+      for (let i = 1; i < this.queue.length; i++) if (this.rank(this.queue[i]!) < this.rank(this.queue[best]!)) best = i;
+      const job = this.queue.splice(best, 1)[0]!;
       this.active++;
       job.run().finally(() => {
         this.active--;

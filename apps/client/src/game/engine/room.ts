@@ -130,9 +130,9 @@ export function bindRoom(eng: Game, room: Room): void {
   room.onMessage(S.CD, (m: CdMsg) => {
     const off = Date.now() - m.now;
     const cds: Record<string, number> = {};
-    for (const k in m.cds) cds[k] = m.cds[k] + off;
+    for (const k in m.cds) cds[k] = m.cds[k]! + off;
     const empowered: Record<string, number> = {};
-    for (const k in m.em) empowered[k] = m.em[k] + off;
+    for (const k in m.em) empowered[k] = m.em[k]! + off;
     set({ cds, gcdAt: m.gcd + off, empowered });
   });
   room.onMessage(S.METHOD, (m: MethodMsg) => set({ method: m, methodOff: Date.now() - m.now }));
@@ -200,7 +200,7 @@ export function bindRoom(eng: Game, room: Room): void {
     if (eng.monFx?.lab) return;
     // Đạn của quái (D1): chỉ vẽ, server phán định trúng. Bù độ trễ bằng giờ server lúc bắn.
     if (!eng.vfx || Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) > BOLT_VIEW_DIST) return;
-    eng.vfx.bolts.spawn(m, boltAge(m, Date.now() + eng.timeOffset), HAZARD_COLORS[m.kind] ?? HAZARD_COLORS.fire);
+    eng.vfx.bolts.spawn(m, boltAge(m, Date.now() + eng.timeOffset), HAZARD_COLORS[m.kind] ?? HAZARD_COLORS.fire!);
     eng.monFx?.bolt(m.kind, m.x, groundAt(m.x, m.z), m.z, m.yaw, false);
     eng.boltKinds.set(m.id, m.kind);
     if (eng.boltKinds.size > 64) eng.boltKinds.delete(eng.boltKinds.keys().next().value as number);
