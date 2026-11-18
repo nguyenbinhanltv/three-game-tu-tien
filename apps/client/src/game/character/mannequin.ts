@@ -262,6 +262,7 @@ export class MannequinCharacter implements CharacterView {
   private drawn = false;
   /** Đòn nối tiếp sau đòn hiện tại (ngã → đứng dậy). */
   private chain: string | null = null;
+  private frozenMix = new Map<THREE.AnimationAction, number>();
   private swingBase = 0;
   private locoCycles = 1;
   private shadow = false;
@@ -404,6 +405,13 @@ export class MannequinCharacter implements CharacterView {
     this.fadeDur = V3_ANIM ? xfade(this.baseName, name) : FADE;
     // Chạy: kèm clip đi bộ + chạy nhanh, trộn theo tốc độ (companions chia trọng số nền với clip chạy).
     for (const c of this.companions) if (!this.companions.includes(next)) this.weights.set(c, this.weights.get(c) ?? 0);
+    // Rời chạy: chốt hệ số trộn của từng action để lúc mờ dần vẫn nhân đúng (không nhảy tư thế ở khung chuyển).
+    this.frozenMix.clear();
+    if (this.loco && this.base) {
+      this.frozenMix.set(this.base, this.mix.jog);
+      this.frozenMix.set(this.companions[0], this.mix.walk);
+      this.frozenMix.set(this.companions[1], this.mix.sprint);
+    }
     this.companions = [];
     this.loco = V3_ANIM && name === LOCO.jog.clip;
     if (this.loco) {
@@ -452,7 +460,7 @@ export class MannequinCharacter implements CharacterView {
       const target = live ? gate : 0;
       const nw = w < target ? Math.min(target, w + step) : Math.max(target, w - step * 2);
       this.weights.set(a, nw);
-      a.setEffectiveWeight(live ? nw * mixOf(a) : nw);
+      a.setEffectiveWeight(live ? nw * mixOf(a) : nw * (this.frozenMix.get(a) ?? 1));
       if (nw <= 0 && !live) {
         a.stop();
         this.weights.delete(a);
