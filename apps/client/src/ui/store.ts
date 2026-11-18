@@ -96,11 +96,19 @@ export interface TargetCast {
   open: number;
 }
 
+/** Kênh của một dòng chat/log (U2-7b): tab Tất cả hiện mọi kênh. */
+export type ChatChannel = 'world' | 'party' | 'system' | 'combat';
+export type ChatTab = 'all' | ChatChannel;
+export const CHAT_TABS: readonly ChatTab[] = ['all', 'world', 'party', 'system', 'combat'];
+
 interface LogLine {
   id: number;
   text: string;
   type: string;
   from?: string;
+  ch: ChatChannel;
+  /** Vật phẩm nhắc trong dòng (nhặt, nhận thưởng): tên (đã qua i18n) trong `text` được tô màu phẩm và bấm xem chú giải. */
+  item?: { id: string; q?: number };
 }
 
 interface Toast {
@@ -286,6 +294,9 @@ interface UIState {
   /** Theo dõi nhiệm vụ / chat thu gọn (lưu `dtl.questCollapsed`, `dtl.chatCollapsed`). */
   questCollapsed: boolean;
   chatCollapsed: boolean;
+  /** Tab chat đang xem (lưu `dtl.chatTab`) và kích thước người chơi kéo (đơn vị thiết kế, lưu `dtl.chatSize`; null = mặc định theo cỡ màn hình). */
+  chatTab: ChatTab;
+  chatSize: { w: number; h: number } | null;
   /** Chỉ báo ngoài màn hình (M4-15) bật/tắt trong Cài đặt. */
   offscreen: boolean;
   /** Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới đích của nó); '' = nhiệm vụ đầu tiên trong danh sách. */
@@ -391,6 +402,8 @@ export const useUI = create<UIState>(() => ({
   skillLayout: localStorage.getItem('dtl.skillLayout') === 'bar' ? 'bar' : 'arc',
   questCollapsed: localStorage.getItem('dtl.questCollapsed') === '1',
   chatCollapsed: localStorage.getItem('dtl.chatCollapsed') === '1',
+  chatTab: readChatTab(),
+  chatSize: readChatSize(),
   trackQuest: localStorage.getItem('dtl.trackQuest') ?? '',
   controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '')
     ? (localStorage.getItem('dtl.controls') as string)
@@ -421,7 +434,12 @@ let nextId = 1;
 let lastLog = '';
 let lastLogAt = 0;
 
-export function pushLog(text: string, type = 'info', from?: string): void {
+/** Kênh mặc định của một dòng: chat người chơi theo `type`, còn lại là tin hệ thống. */
+export function channelOf(type: string): ChatChannel {
+  return type === 'chat' ? 'world' : type === 'party' ? 'party' : 'system';
+}
+
+export function pushLog(text: string, type = 'info', from?: string, extra?: { ch?: ChatChannel; item?: { id: string; q?: number } }): void {
   // Gộp thông báo hệ thống lặp liên tiếp (ví dụ bấm chiêu khi chưa hồi): cùng nội dung trong 2 giây chỉ ghi một dòng.
   const now = Date.now();
   if (!from && text === lastLog && now - lastLogAt < 2000) return;
@@ -429,7 +447,7 @@ export function pushLog(text: string, type = 'info', from?: string): void {
   lastLogAt = now;
   useUI.setState((s) => {
     const log = s.log.length > 120 ? s.log.slice(-90) : s.log.slice();
-    log.push({ id: nextId++, text, type, from });
+    log.push({ id: nextId++, text, type, from, ch: extra?.ch ?? channelOf(type), item: extra?.item });
     return { log };
   });
 }
@@ -529,6 +547,32 @@ export function setTrackQuest(id: string): void {
 
 export const set = useUI.setState;
 export const get = useUI.getState;
+
+function readChatTab(): ChatTab {
+  const v = localStorage.getItem('dtl.chatTab');
+  return CHAT_TABS.includes(v as ChatTab) ? (v as ChatTab) : 'all';
+}
+function readChatSize(): { w: number; h: number } | null {
+  try {
+    const o = JSON.parse(localStorage.getItem('dtl.chatSize') ?? 'null') as { w?: unknown; h?: unknown } | null;
+    return o && typeof o.w === 'number' && typeof o.h === 'number' ? { w: o.w, h: o.h } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Đổi tab chat và nhớ. */
+export function setChatTab(tab: ChatTab): void {
+  localStorage.setItem('dtl.chatTab', tab);
+  set({ chatTab: tab });
+}
+
+/** Lưu kích thước chat người chơi kéo (null = về mặc định). */
+export function setChatSize(size: { w: number; h: number } | null): void {
+  if (size) localStorage.setItem('dtl.chatSize', JSON.stringify(size));
+  else localStorage.removeItem('dtl.chatSize');
+  set({ chatSize: size });
+}
 
 /** Lưu và áp một tùy chọn bố cục HUD (U2-2). */
 export function setHudPref<K extends 'skillLayout' | 'questCollapsed' | 'chatCollapsed'>(key: K, value: UIState[K]): void {

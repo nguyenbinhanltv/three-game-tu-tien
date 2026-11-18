@@ -27,6 +27,7 @@ import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
 import { get, pushLog, pushToast, set } from '../../ui/store';
+import { sysChannel } from '../../ui/u2/hud/chatChannel';
 import { duck, lootChime, playSting, type Sfx, sfx } from '../audio/audio';
 import { FootstepDriver } from '../audio/footsteps';
 import { buildSources, Soundscape } from '../audio/soundscape';
@@ -1049,7 +1050,7 @@ export function resetSound(eng: Game, world: boolean): void {
 export function onSys(eng: Game, m: SysMsg): void {
   const text = t(m.k, m.p);
   const type = m.t ?? 'info';
-  pushLog(text, type);
+  pushLog(text, type, undefined, { ch: sysChannel(m.k), item: m.i && type === 'loot' ? { id: m.i, q: m.q } : undefined });
   if (type === 'good' || type === 'bad' || type === 'info') pushToast(text, type);
   // Đồ rơi từ quái/điểm hái (M4-6): vật có hình thì chuông ngân lúc chạm đất thay cho tiếng xu.
   const shown = type === 'loot' && !!m.src && showLoot(eng, m.src, m.i, m.q);
