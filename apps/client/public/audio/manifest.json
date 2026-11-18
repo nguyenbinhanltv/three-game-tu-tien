@@ -850,6 +850,30 @@
         "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
       }
     },
+    "wild_ash": {
+      "src": [
+        "music/wild_ash.db2f7c8e11.webm",
+        "music/wild_ash.4d3428b182.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Bắc Hoang — Hàn Hôi",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "wild_rift": {
+      "src": [
+        "music/wild_rift.d40036ea45.webm",
+        "music/wild_rift.e4ef39a5c1.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Bắc Hoang — Bên Kia Vết Nứt",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
     "wild_cloud": {
       "src": [
         "music/wild_cloud.b2d321ed1e.webm",

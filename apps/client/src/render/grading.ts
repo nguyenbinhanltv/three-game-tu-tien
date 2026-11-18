@@ -97,3 +97,23 @@ export const BLOOM = raw.bloom;
 export const VIGNETTE = raw.vignette;
 export const GRAIN = raw.grain;
 export const DEPTH_DESATURATE = raw.depthDesaturate;
+
+export const mixHex = (a: number, b: number, t: number): number => {
+  const ch = (sh: number) => Math.round(((a >> sh) & 255) * (1 - t) + ((b >> sh) & 255) * t);
+  return (ch(16) << 16) | (ch(8) << 8) | ch(0);
+};
+
+/** Trộn hai preset theo `t` 0..1 (số: nội suy tuyến tính; màu: nội suy từng kênh). Mood Bắc Hoang đổi dần quanh Khích Giai (DV-3I). */
+export function mixPreset(a: GradingPreset, b: GradingPreset, t: number): GradingPreset {
+  const out: Record<string, number> = {};
+  const A = a as unknown as Record<string, number>;
+  const B = b as unknown as Record<string, number>;
+  for (const k of Object.keys(A)) {
+    const va = A[k];
+    const vb = B[k] ?? va;
+    // Giá trị >= 0x100 và là màu (khóa kết thúc bằng Color/Tint/Lift hoặc sunColor/skyColor/fogColor) nội suy theo kênh.
+    const isColor = /Color$|Tint$|Lift$/.test(k);
+    out[k] = isColor ? mixHex(va, vb, t) : va + (vb - va) * t;
+  }
+  return out as unknown as GradingPreset;
+}

@@ -96,6 +96,14 @@ const SUN_DISTANCE = 260;
 /** Áp preset chỉnh màu cho đèn, trời, sương. Gọi lại khi đổi thời điểm trong ngày. */
 export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string): void {
   scene.fogNode = atmosphereFog();
+  tuneAtmosphere(scene, env, p, name);
+}
+
+/**
+ * Chỉnh lại thông số bầu không khí (sương, nắng, trời) mà KHÔNG dựng lại `fogNode` (không biên dịch lại shader): dùng khi mood đổi dần theo vị trí
+ * (Bắc Hoang, DV-3I). `skyTop` ghi đè màu đỉnh trời (đã trộn giữa hai mood).
+ */
+export function tuneAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string, skyTop?: number): void {
   fogParams.color.value.setHex(p.fogColor);
   fogParams.density.value = p.fogDensity;
   fogParams.glow.value.setHex(p.highlightTint);
@@ -121,7 +129,7 @@ export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPres
   beaconParams.intensity.value = BEACON_INTENSITY[name] ?? BEACON_INTENSITY.day;
 
   // Vòm trời (render/sky.ts): chân trời trùng màu sương để không lộ mép, quầng nắng theo sắc vùng sáng.
-  applySkyPreset(name, p.fogColor, p.highlightTint, p.sunColor);
+  applySkyPreset(name, p.fogColor, p.highlightTint, p.sunColor, skyTop);
 }
 
 /** Bật/tắt sương theo độ cao (preset Thấp tắt). */
@@ -134,7 +142,7 @@ export function setHeightFog(on: boolean): void {
 const HALO_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 0.9, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 0.9, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 0.9, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.8 };
 
 /** Cột linh quang (M-5, render/beacons.ts): yếu ban ngày, rõ ban đêm. */
-const BEACON_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 1, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 1, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 1, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.9 };
+const BEACON_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 1, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 1, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 1, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.55 };
 export const beaconParams = { intensity: uniform(0.3) };
 
 export const haloParams = {

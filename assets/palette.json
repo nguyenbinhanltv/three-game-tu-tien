@@ -170,13 +170,13 @@
       },
       "rift": {
         "label": "Bắc Hoang — bên kia vết nứt",
-        "sunColor": "#C4602F", "sunIntensity": 1.3, "sunElevationDeg": 7,
-        "skyColor": "#4A3563", "skyIntensity": 0.9,
-        "fogColor": "#6E6A6A", "fogDensity": 0.0019, "heightFogTop": 50, "heightFogBoost": 2.2,
+        "sunColor": "#C4602F", "sunIntensity": 1.7, "sunElevationDeg": 7,
+        "skyColor": "#6E6076", "skyIntensity": 0.9,
+        "fogColor": "#7C7074", "fogDensity": 0.0019, "heightFogTop": 50, "heightFogBoost": 2.2,
         "fogHaze": 0.0026, "fogHazeStart": 40, "rim": 0.7,
-        "shadowTint": "#241634", "highlightTint": "#E08A52", "splitBalance": -0.1,
-        "shadowAmount": 0.65, "highlightAmount": 0.3, "fogScatter": 0.8,
-        "blackLift": "#1A1222", "contrast": 1.12, "saturation": 0.85, "exposure": 1.05
+        "shadowTint": "#3A2F40", "highlightTint": "#E08A52", "splitBalance": -0.1,
+        "shadowAmount": 0.45, "highlightAmount": 0.24, "fogScatter": 0.8,
+        "blackLift": "#221A28", "contrast": 1.12, "saturation": 0.62, "exposure": 1.15
       },
       "ochre_night": {
         "label": "Đoạn Mạch — đêm",

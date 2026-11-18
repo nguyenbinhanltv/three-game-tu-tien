@@ -332,6 +332,7 @@ Số liệu thật lấy ở M0-3 và đo lại ở M3-9.
 10. Nêu tên game, phim, tranh, họa sĩ, studio có thật trong prompt; chép nhân vật hay trang phục nhận diện được của tác phẩm khác (kể cả bộ truyện mà thang cảnh giới tham khảo).
 11. Chữ Hán, chữ Việt hay ký hiệu có nghĩa vẽ trên model hay texture. Triện, bùa dùng hoa văn không đọc được.
 12. Kiểu dáng phương Tây lạc tông: giáp tấm hiệp sĩ, áo choàng trùm đầu kiểu phù thủy, vạc phù thủy, kiếm có chắn chữ thập, quỷ cánh dơi, trang trí gô-tích.
+    - **Ngoại lệ có phạm vi (chốt 2026-11-18, `docs/DIVUC_DESIGN.md` 4.2 và 15.3)**: chỉ thực thể và kiến trúc của Tẫn Giới, chỉ ở level `bac_hoang` và hai phó bản của nó, theo bảng phụ `rift_*` (`assets/palette.json` `riftColors`); không dùng cho Huyền Linh Giới, nhân vật người chơi, VFX chiêu hay UI. Mỹ thuật cảnh: `docs/dv-3i-art/`.
 
 ---
 
