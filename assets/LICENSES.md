@@ -859,6 +859,8 @@ Mỗi icon trong atlas (tên khóa = id icon):
 | `itm_skin_duskrella` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
 | `itm_skin_kings_demon` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
 | `itm_skin_noxavyra` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
+| `itm_skin_shadow_wolf` | Sinh bởi Codex cho dự án | dự án | 2026-11-19 | `2d/icons-v2/sheets/s_skin_tokens_2.png` |
+| `itm_skin_korvaden` | Sinh bởi Codex cho dự án | dự án | 2026-11-19 | `2d/icons-v2/sheets/s_skin_tokens_2.png` |
 | `itm_skin_varkessa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
 | `itm_tan_giac` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_11.png` |
 | `itm_tay_luyen_thach` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_11.png` |

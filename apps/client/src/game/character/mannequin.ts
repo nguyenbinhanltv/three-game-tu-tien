@@ -13,6 +13,7 @@ import { lodLevel, mixerInterval } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
+import { applySkinLook, SKIN_LOOKS } from './skinLook';
 import { applyV3Palette } from './v3Palette';
 import { breathOf, flinchOf, leanOf, locoMix, lookAngles, LOCO, swingRate, turnLagOf, xfade } from './mannequinAnim';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
@@ -160,6 +161,8 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  const look = SKIN_LOOKS[handle.id];
+  if (look) for (const m of mats) applySkinLook(m, look);
   const box = new THREE.Box3().setFromObject(handle.scene);
   // Độ cao hông của nhân vật so với bộ xương mẫu của thư viện: chỉ kênh vị trí của pelvis bị nhân theo tỉ lệ.
   const a = restPos(handle.scene, 'pelvis');

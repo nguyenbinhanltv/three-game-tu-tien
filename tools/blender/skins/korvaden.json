@@ -258,12 +258,12 @@
  },
  "zones": [
   {
-   "name": "ao_choang",
+   "name": "ao_choang_tren",
    "box": {
     "min": [
      -9,
      0.14,
-     -0.2
+     -0.45
     ],
     "max": [
      9,
@@ -278,12 +278,37 @@
    },
    "bones": [
     {
-     "bone": "Spine",
-     "z": -0.1
+     "bone": "Hips",
+     "z": -0.35
     },
     {
      "bone": "Spine2",
      "z": 0.45
+    }
+   ]
+  },
+  {
+   "name": "ao_choang_duoi",
+   "box": {
+    "min": [
+     -9,
+     0.4,
+     -0.95
+    ],
+    "max": [
+     9,
+     9,
+     -0.45
+    ]
+   },
+   "blend": {
+    "axis": 1,
+    "from": 0.38,
+    "width": 0.04
+   },
+   "bones": [
+    {
+     "bone": "Hips"
     }
    ]
   },

@@ -90,6 +90,8 @@ Thế khom chân dạng rộng, hai tay giữ rìu. Quay thân (`yaw -40`), đo 
 
 ### Chung
 - `pnpm shots skinv3 --ids itm_skin_shadow_wolf,itm_skin_korvaden --size 1280x720 --dist 2.8 --out <thư mục tuyệt đối>` (và `1920x1080`): kịch bản nay chụp thêm `-chay`, `-chieu`, `-nhanvat` (bảng Nhân vật, phím C) và có `--dist`.
-- Icon vật phẩm hai skin tạm dùng emoji dự phòng (`iconFallback`), chưa có tranh trong sheet icon; cần sinh tranh mới ở `tools/icons/v2/sheets.v2.json`.
-- Chưa có xương lò xo (áo choàng cả hai skin cứng theo cột sống). Tên hiển thị đang chờ duyệt lore.
+- Icon hai skin: tờ `s_skin_tokens_2` (Codex, cùng họ ấn bài trang phục của bộ U2-I) trong `tools/icons/v2/sheets.v2.json`, cắt bằng `slice_qc.py`, đóng atlas `pnpm icons:build`.
+- Sáng hình: texture nướng của hai skin rất tối nên `skinLook.ts` (`SKIN_LOOKS`, gắn ở `mannequinTemplate`) nâng albedo, kéo kim loại/nhám, nâng sáng nền, viền fresnel nhẹ và phát sáng theo texel bão hòa (mắt sói đỏ, rune lam). Chỉnh số ở bảng đó.
+- Áo choàng Korvaden: nửa dưới nay đi theo Hips (vùng `ao_choang_duoi`, chỉ phía sau y ≥ 0,4 để không kéo cẳng chân sau), hết méo như xếp nếp khi chạy. Vẫn chưa có xương lò xo.
+- Chưa có xương lò xo (áo choàng cả hai skin cứng theo cột sống/hông). Tên hiển thị đang chờ duyệt lore.
 - Kiểm: `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm assets:validate` (0 lỗi), `pnpm lint`, `node tools/docs/check-paths.mjs`.
