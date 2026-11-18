@@ -6,7 +6,7 @@ import dracoJsUrl from 'three/addons/libs/draco/draco_wasm_wrapper.js?url';
 import dracoWasmUrl from 'three/addons/libs/draco/draco_decoder.wasm?url';
 import { POSES } from '@dtl/content';
 import { POSE_FLY, POSE_SWORD_DRAW, POSE_SWORD_SHEATHE, POSE_SWORD_SWAP } from '@dtl/shared';
-import { createGltfLoader, createKtx2Loader, detectKtx2Support, localLibsManager } from '../game/assets';
+import { type HiresApplied, type Manifest, assetBaseUrl, createGltfLoader, createKtx2Loader, detectKtx2Support, localLibsManager, revertHiresApplied, swapHiresTexture } from '../game/assets';
 import { mergeClips, retargetClips } from '../game/character/animLib';
 import { pelvisScaledClips } from '../game/character/mannequinMonster';
 import { bakePose, formatProbe, IkRig, poseClipName } from '../game/character/ikpose';
@@ -50,6 +50,8 @@ export class ViewerScene {
   readonly camera = new THREE.PerspectiveCamera(45, 1, 0.05, 2000);
   private controls!: OrbitControls;
   private loader!: GLTFLoader;
+  private ktx2!: ReturnType<typeof createKtx2Loader>;
+  private hiresApplied: HiresApplied[] = [];
   private sun = new THREE.DirectionalLight(0xfff4e0, 2.2);
   private human = buildHuman();
   private ground = new THREE.Group();
@@ -113,6 +115,7 @@ export class ViewerScene {
     const manager = localLibsManager({ 'draco_wasm_wrapper.js': dracoJsUrl, 'draco_decoder.wasm': dracoWasmUrl });
     const ktx2 = createKtx2Loader(manager);
     await detectKtx2Support(ktx2, r);
+    this.ktx2 = ktx2;
     const draco = new DRACOLoader(manager).setDecoderPath('/libs/').setDecoderConfig({ type: 'wasm' });
     this.loader = createGltfLoader(ktx2).setDRACOLoader(draco);
 
@@ -124,6 +127,25 @@ export class ViewerScene {
   get backend(): string {
     const b = (this.renderer as unknown as { backend?: { isWebGPUBackend?: boolean } }).backend;
     return b?.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
+  }
+
+  /**
+   * Công cụ so ảnh texture tải dần (`pnpm shots hires`): bật/tắt bậc texture cao của asset `id` (mục `hires` trong manifest)
+   * trên model đang xem. Trả số texture đã thay.
+   */
+  async setHires(id: string, on: boolean): Promise<number> {
+    for (const a of this.hiresApplied) revertHiresApplied(a);
+    this.hiresApplied = [];
+    if (!on || !this.model) return 0;
+    const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });
+    const list = ((await res.json()) as Manifest).assets[id]?.hires ?? [];
+    for (const h of list) {
+      const tex = await this.ktx2.loadAsync(assetBaseUrl() + h.file);
+      const a = swapHiresTexture(this.model, h, tex);
+      if (a) this.hiresApplied.push(a);
+      else tex.dispose();
+    }
+    return this.hiresApplied.length;
   }
 
   /** Nạp GLB/GLTF theo URL (cùng origin). Đường dẫn texture ngoài tính theo thư mục của URL. */

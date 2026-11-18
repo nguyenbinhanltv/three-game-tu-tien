@@ -91,7 +91,7 @@ type LoadFn = (url: string, onBytes?: (loaded: number) => void) => Promise<GLTF>
 type FetchFn = (url: string, onBytes: (loaded: number) => void) => Promise<ArrayBuffer>;
 type ParseFn = (data: ArrayBuffer, url: string) => Promise<GLTF>;
 
-interface HiresApplied {
+export interface HiresApplied {
   tex: THREE.Texture;
   gpuBytes: number;
   swaps: { mat: THREE.Material; slot: string; old: THREE.Texture }[];
@@ -276,6 +276,40 @@ export async function detectKtx2Support(ktx2: KTX2Loader, renderer: THREE.WebGPU
 /** GLTFLoader có Meshopt + KTX2 (cấu hình chung cho game và trang xem asset). */
 export function createGltfLoader(ktx2: KTX2Loader): GLTFLoader {
   return new GLTFLoader().setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder);
+}
+
+/** Thay texture bậc cao vào vật liệu cùng tên (`meta.mat`) trong cây `root`; null nếu không có vật liệu/slot nào khớp. */
+export function swapHiresTexture(root: THREE.Object3D, meta: { mat: string; slots: string[]; gpuBytes: number }, tex: THREE.Texture): HiresApplied | null {
+  const swaps: HiresApplied['swaps'] = [];
+  root.traverse((o) => {
+    const mats = (o as THREE.Mesh).material;
+    if (!mats) return;
+    for (const mat of Array.isArray(mats) ? mats : [mats]) {
+      if (mat.name !== meta.mat || swaps.some((s) => s.mat === mat)) continue;
+      for (const slot of meta.slots) {
+        const old = (mat as unknown as Record<string, THREE.Texture | null>)[slot];
+        if (!old || !old.isTexture) continue;
+        tex.colorSpace = old.colorSpace;
+        tex.wrapS = old.wrapS;
+        tex.wrapT = old.wrapT;
+        tex.anisotropy = old.anisotropy;
+        tex.channel = old.channel;
+        (mat as unknown as Record<string, THREE.Texture>)[slot] = tex;
+        swaps.push({ mat, slot, old });
+      }
+      if (swaps.some((s) => s.mat === mat)) mat.needsUpdate = true;
+    }
+  });
+  return swaps.length === 0 ? null : { tex, gpuBytes: meta.gpuBytes, swaps };
+}
+
+/** Trả texture cũ vào vật liệu và dispose texture bậc cao. */
+export function revertHiresApplied(a: HiresApplied): void {
+  for (const s of a.swaps) {
+    (s.mat as unknown as Record<string, THREE.Texture>)[s.slot] = s.old;
+    s.mat.needsUpdate = true;
+  }
+  a.tex.dispose();
 }
 
 /** Dispose geometry, material và texture trong material của một cây object. */
@@ -541,31 +575,12 @@ export class AssetCache {
       tex.dispose();
       return false;
     }
-    const swaps: HiresApplied['swaps'] = [];
-    e.gltf.scene.traverse((o) => {
-      const mats = (o as THREE.Mesh).material;
-      if (!mats) return;
-      for (const mat of Array.isArray(mats) ? mats : [mats]) {
-        if (mat.name !== meta.mat || swaps.some((s) => s.mat === mat)) continue;
-        for (const slot of meta.slots) {
-          const old = (mat as unknown as Record<string, THREE.Texture | null>)[slot];
-          if (!old || !old.isTexture) continue;
-          tex.colorSpace = old.colorSpace;
-          tex.wrapS = old.wrapS;
-          tex.wrapT = old.wrapT;
-          tex.anisotropy = old.anisotropy;
-          tex.channel = old.channel;
-          (mat as unknown as Record<string, THREE.Texture>)[slot] = tex;
-          swaps.push({ mat, slot, old });
-        }
-        if (swaps.some((s) => s.mat === mat)) mat.needsUpdate = true;
-      }
-    });
-    if (swaps.length === 0) {
+    const applied = swapHiresTexture(e.gltf.scene, meta, tex);
+    if (!applied) {
       tex.dispose();
       return false;
     }
-    e.hires.set(c.file, { tex, gpuBytes: meta.gpuBytes, swaps });
+    e.hires.set(c.file, applied);
     return true;
   }
 
@@ -576,13 +591,7 @@ export class AssetCache {
   }
 
   private revertEntryHires(e: Entry): void {
-    for (const a of e.hires.values()) {
-      for (const s of a.swaps) {
-        (s.mat as unknown as Record<string, THREE.Texture>)[s.slot] = s.old;
-        s.mat.needsUpdate = true;
-      }
-      a.tex.dispose();
-    }
+    for (const a of e.hires.values()) revertHiresApplied(a);
     e.hires.clear();
   }
 

@@ -1986,43 +1986,7 @@
           "depth": 0.4409,
           "minY": 0
         }
-      },
-      "hires": [
-        {
-          "mat": "chr_kiem_tu_nam_mat",
-          "slots": [
-            "map"
-          ],
-          "file": "hi/chr_kiem_tu_nam.baseColor.3abe2ea48e.ktx2",
-          "width": 2048,
-          "height": 2048,
-          "bytes": 558178,
-          "gpuBytes": 5592405
-        },
-        {
-          "mat": "chr_kiem_tu_nam_mat",
-          "slots": [
-            "normalMap"
-          ],
-          "file": "hi/chr_kiem_tu_nam.normal.47f2206706.ktx2",
-          "width": 2048,
-          "height": 2048,
-          "bytes": 921221,
-          "gpuBytes": 22369621
-        },
-        {
-          "mat": "chr_kiem_tu_nam_mat",
-          "slots": [
-            "roughnessMap",
-            "metalnessMap"
-          ],
-          "file": "hi/chr_kiem_tu_nam.metallicRoughness.fbf9ebfc40.ktx2",
-          "width": 2048,
-          "height": 2048,
-          "bytes": 393242,
-          "gpuBytes": 5592405
-        }
-      ]
+      }
     },
     "chr_kiem_tu_nu": {
       "id": "chr_kiem_tu_nu",
@@ -2097,43 +2061,7 @@
           "depth": 0.4979,
           "minY": 0
         }
-      },
-      "hires": [
-        {
-          "mat": "chr_kiem_tu_nu_mat",
-          "slots": [
-            "map"
-          ],
-          "file": "hi/chr_kiem_tu_nu.baseColor.e7ef509a0e.ktx2",
-          "width": 2048,
-          "height": 2048,
-          "bytes": 743900,
-          "gpuBytes": 5592405
-        },
-        {
-          "mat": "chr_kiem_tu_nu_mat",
-          "slots": [
-            "normalMap"
-          ],
-          "file": "hi/chr_kiem_tu_nu.normal.b2fdd35742.ktx2",
-          "width": 2048,
-          "height": 2048,
-          "bytes": 1192563,
-          "gpuBytes": 22369621
-        },
-        {
-          "mat": "chr_kiem_tu_nu_mat",
-          "slots": [
-            "roughnessMap",
-            "metalnessMap"
-          ],
-          "file": "hi/chr_kiem_tu_nu.metallicRoughness.ced42212b7.ktx2",
-          "width": 2048,
-          "height": 2048,
-          "bytes": 485238,
-          "gpuBytes": 5592405
-        }
-      ]
+      }
     },
     "chr_npc_chuong_mon": {
       "id": "chr_npc_chuong_mon",

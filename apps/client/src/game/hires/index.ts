@@ -51,10 +51,10 @@ export function startHires(): HiresStreamer | null {
     void streamer?.tick();
     if (streamer?.policy.tier === 0) measure(false);
   }, 500);
-  (window as unknown as { __hires?: typeof hiresInfo }).__hires = hiresInfo;
+  (window as unknown as { __hires?: typeof hiresInfo & { freeze: () => void } }).__hires = Object.assign(() => hiresInfo(), { freeze: () => streamer?.freeze() });
   return streamer;
 }
 
-export function hiresInfo(): { tier: number; loaded: number; memMB: number } {
+function hiresInfo(): { tier: number; loaded: number; memMB: number } {
   return { tier: streamer?.policy.tier ?? 0, loaded: streamer?.loaded ?? 0, memMB: Math.round(assets.hiresMemory() / 1048576) };
 }

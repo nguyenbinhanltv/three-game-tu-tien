@@ -19,8 +19,11 @@ import { encodeArgs, findToktx, fitWithin } from './ktx.js';
 import { imageSize } from './stats.js';
 import type { HiresEntry, Manifest, ManifestEntry } from './optimize.js';
 
-/** Lớp ngân sách được làm bậc cao (nhân vật, quái, tinh anh, boss: thứ người chơi nhìn gần). */
-export const HIRES_CLASSES = new Set(['player', 'player_v2', 'player_v3', 'monster', 'monster_mq', 'elite', 'elite_mq', 'boss', 'boss_mq']);
+/**
+ * Lớp ngân sách được làm bậc cao (quái, tinh anh, boss). KHÔNG gồm nhân vật `player*`: texture nhân vật trong GLB đã bị chỉnh sau khi nhập
+ * (màu/mặt nạ nhuộm) nên không còn là bản thu nhỏ của texture gốc, bậc cao từ nguồn gốc làm lệch màu (đã thấy ở chr_kiem_tu_nam).
+ */
+export const HIRES_CLASSES = new Set(['monster', 'monster_mq', 'elite', 'elite_mq', 'boss', 'boss_mq']);
 /** Trần cạnh texture bậc cao: màu tối đa 4096, dữ liệu (normal/ORM) 2048 (normal giải ra RGBA8 trên WebGPU: 4096² ≈ 85 MB). */
 export const HIRES_MAX_COLOR = 4096;
 export const HIRES_MAX_DATA = 2048;

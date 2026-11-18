@@ -33,6 +33,7 @@ export class HiresStreamer {
   private appliedTier = 0;
   policy: HiresPolicy = hiresPolicy('medium', {});
   loaded = 0;
+  private frozen = false;
 
   constructor(
     private host: HiresHost,
@@ -43,8 +44,17 @@ export class HiresStreamer {
     return (this.deps.now ?? (() => performance.now()))();
   }
 
+  /** Công cụ chụp ảnh so sánh: trả mọi texture về bản GLB và ngừng tải tiếp (cùng khung, trước/sau). */
+  freeze(): void {
+    this.frozen = true;
+    this.host.revertHires();
+    this.skip.clear();
+    this.loaded = 0;
+  }
+
   /** Gọi định kỳ (khoảng 0,5 s). Trả promise của việc tải đang chạy (cho test). */
   tick(): Promise<void> {
+    if (this.frozen) return Promise.resolve();
     const t = this.now();
     const dt = this.lastTick ? Math.min(2, (t - this.lastTick) / 1000) : 0;
     this.lastTick = t;
