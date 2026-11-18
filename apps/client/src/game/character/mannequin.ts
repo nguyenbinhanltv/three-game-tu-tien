@@ -46,6 +46,16 @@ const _a0 = new THREE.Vector3();
 const _a1 = new THREE.Vector3();
 /** Thông số lò xo v2 (sửa được lúc chạy chỉ để quét tham số trong `springMetrics.test.ts`). */
 export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms: true, rMul: 1.3 };
+/** Chỉnh riêng vạt theo bộ (khóa = tiền tố id asset): bộ có vạt dài/rộng hơn Lạc Kiếm cần góc lệch hẹp hơn, gấu cứng hơn, viên nang đùi lớn hơn. */
+export interface SkirtTune {
+  spring?: Partial<SpringParams>;
+  hemStiff?: number;
+  rMul?: number;
+}
+export const SKIRT_TUNE: Record<string, SkirtTune> = {
+  chr_v3_dan_tam_: { rMul: 1.5 },
+};
+const skirtTuneOf = (id: string): SkirtTune | undefined => Object.entries(SKIRT_TUNE).find(([k]) => id.startsWith(k))?.[1];
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
 export const V3_SKIRT_SPRING2: SpringParams = { stiffness: 130, drag: 8, maxAngle: 12, maxInward: 8 };
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
@@ -380,7 +390,7 @@ export class MannequinCharacter implements CharacterView {
       defs.push({
         bone: o.name,
         tailLocal: (child ?? o).position.clone(),
-        ...(this.spring2 && /^dtl_o_skirt_\d+_[1-9]$/.test(o.name) && { stiff: SPRING2.hemStiff }),
+        ...(this.spring2 && /^dtl_o_skirt_\d+_[1-9]$/.test(o.name) && { stiff: skirtTuneOf(tpl.handle.id)?.hemStiff ?? SPRING2.hemStiff }),
       });
     });
     if (this.spring2) {
@@ -392,8 +402,8 @@ export class MannequinCharacter implements CharacterView {
         this.skirtSprings = new SpringBones(
           this.rig,
           skirt,
-          V3_SKIRT_SPRING2,
-          colliderDefs(this.rig, tpl.height, SPRING2.arms, SPRING2.rMul),
+          { ...V3_SKIRT_SPRING2, ...skirtTuneOf(tpl.handle.id)?.spring },
+          colliderDefs(this.rig, tpl.height, SPRING2.arms, skirtTuneOf(tpl.handle.id)?.rMul ?? SPRING2.rMul),
         );
     } else if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING, colliderDefs(this.rig, tpl.height));
     for (const sd of ['l', 'r']) {

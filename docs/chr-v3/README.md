@@ -138,3 +138,7 @@ Người dùng dựng 6 model Tripo theo concept v3 (`dtl-asset-source/chr/set_<
 | Đan Tâm | 4.243/4.554 | 3.435/3.361 | 3.164/2.900 | 2.654/2.535 | 16° |
 
 Video và tờ khung: `pnpm shots v3sets --out <thư mục tuyệt đối>` (nam/nữ × 3 bộ cạnh nhau: đứng, chạy, chém, lăn, ngồi).
+
+### N-9b: sửa vạt Đan Tâm khi chạy
+
+Lỗi (video N-9): vạt áo dài bị kéo căng giữa hai chân như một tấm ván vắt ra sau khi chạy ngang, vạt sau văng ra, mảng tối quanh hông/đùi. Nguyên nhân: vạt liền phủ cả hai chân nên bị trọng số chân kéo; `share` thấp (0,6) làm nặng hơn (thử, bỏ). Sửa: `tools/blender/skins/v3sets/dan_tam.json` `skirt.share` 0,8 → **0,95** (vạt do lò xo/viên nang điều khiển, buông tự do) + viên nang đùi lớn hơn cho riêng bộ này (`SKIRT_TUNE['chr_v3_dan_tam_'] = { rMul: 1.5 }` ở `mannequin.ts`; bảng này cho phép chỉnh `spring`/`hemStiff`/`rMul` theo bộ). Xuyên áo (cặp mặt chồng, 12 tư thế, ARM_FIT 16°) không đổi: nam 3.164 → 3.188, nữ 2.900 → 2.852; đỉnh trong viên nang 16.301 → 15.914 / 19.154 → 19.056. Còn lại: mảng tối nhỏ của lớp lót sau lưng khi chạy ngang. Lưu ý: cache `assets:build` khóa theo file nguồn, đổi JSON cấu hình phải thêm `--force`. Quay: `pnpm shots v3sets --sets dan_tam [--sits chạy,chém]`.
