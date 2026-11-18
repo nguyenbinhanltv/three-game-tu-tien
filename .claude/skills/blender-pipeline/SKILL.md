@@ -75,5 +75,5 @@ Phần dưới là thiết kế, chưa có script nào; vị trí quái/NPC hi�
   - `npc = "<id>"`
   - `portal = "<room_id>"`
   - `zone = "safe" | "no_fly"` (dùng hộp bao của Empty)
-- `tools/blender/export_level.py` xuất ra `packages/content/data/levels/<tên>.json`; server đọc file này, không đọc GLB.
+- Level (`packages/content/data/levels/<tên>.json`) hiện sinh bằng `tools/maps/gen-<level>.mjs` (không còn `export_level.py`); server đọc file JSON này, không đọc GLB.
 - Id quái, NPC phải tồn tại trong `packages/content`; script xuất báo lỗi nếu không tìm thấy.

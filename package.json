@@ -47,7 +47,8 @@
     "icons:build": "node tools/icons/build.mjs",
     "icons:check": "node tools/icons/build.mjs --check",
     "lint": "eslint .",
-    "docs:check": "node tools/docs/check.mjs"
+    "docs:check": "node tools/docs/check.mjs",
+    "docs:paths": "node tools/docs/check-paths.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

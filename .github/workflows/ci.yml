@@ -48,3 +48,6 @@ jobs:
 
       - name: docs:check
         run: pnpm docs:check
+
+      - name: docs:paths (đường dẫn trong CLAUDE.md, handbook, skill)
+        run: pnpm docs:paths
