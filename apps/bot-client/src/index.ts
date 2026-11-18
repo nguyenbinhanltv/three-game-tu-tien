@@ -358,7 +358,7 @@ async function main() {
     const h = await (await fetch(httpUrl)).json();
     console.log('Kết quả cuối:', JSON.stringify(h));
   } catch {
-    /* bỏ qua */
+    /* máy chủ đã tắt hoặc không trả JSON: bot vẫn kết thúc bình thường */
   }
   await Promise.all(bots.map((b) => b.leave()));
   console.log('Xong.');

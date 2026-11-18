@@ -97,7 +97,7 @@ export function bindInput(eng: Game): void {
     try {
       c.releasePointerCapture(e.pointerId);
     } catch {
-      /* bỏ qua */
+      /* con trỏ không còn được giữ (đã nhả hoặc sự kiện cũ) */
     }
     if (eng.dragMoved <= 4 && e.button === 0) onClick(eng, e.clientX, e.clientY);
   });

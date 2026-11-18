@@ -17,6 +17,7 @@ import {
 } from '@dtl/shared';
 import { nextMajorRealmName, NPC, realmName, t } from '@dtl/content';
 import type { MonEnt, PlayerEnt } from './entities';
+import { log } from '../log';
 
 /** Phần sim mà hệ bình cảnh cần mượn (sim.ts truyền vào, không import ngược để tránh vòng). */
 export interface RealmHost {
@@ -80,7 +81,7 @@ export class RealmSystem {
     c.trialEndsAt = p.trial.endAt;
     c.charDirty = true;
     h.sys(p, 'sys.bk_start', { n: TRIAL_DURATION }, 'info');
-    console.log(`[bk] ${c.name} bắt đầu tâm ma ở tầng ${c.level}`);
+    log.info(`[bk] ${c.name} bắt đầu tâm ma ở tầng ${c.level}`);
   }
 
   private usePill(p: PlayerEnt, r: unknown): void {
@@ -111,7 +112,7 @@ export class RealmSystem {
     h.fx({ t: 'levelup', src: p.sid });
     if (!top) h.questEvent(p, 'level', undefined, lv);
     h.savePlayer(p);
-    console.log(`[bk] ${c.name} vượt bình cảnh tầng ${from}${byPill ? ' bằng Phá Cảnh Đan' : ''} → ${lv}`);
+    log.info(`[bk] ${c.name} vượt bình cảnh tầng ${from}${byPill ? ' bằng Phá Cảnh Đan' : ''} → ${lv}`);
   }
 
   // ---------- thử thách tâm ma ----------
@@ -130,7 +131,7 @@ export class RealmSystem {
     const c = p.char;
     c.retryAt = this.h.now() + BOTTLENECK_RETRY_SEC * 1000;
     this.h.sys(p, 'sys.bk_fail_' + key, { n: BOTTLENECK_RETRY_SEC }, 'bad');
-    console.log(`[bk] ${c.name} thua tâm ma (${key})`);
+    log.info(`[bk] ${c.name} thua tâm ma (${key})`);
   }
 
   /** Mỗi tick, cho mỗi người chơi: hết giờ / chết / đi quá xa thì thua. */
