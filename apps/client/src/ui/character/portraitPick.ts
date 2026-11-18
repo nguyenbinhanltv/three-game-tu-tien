@@ -6,13 +6,36 @@
 import { lookSet, setStatuses, type SetDef } from '@dtl/shared';
 
 /** Bộ có tranh riêng (bước 1). Bộ khác chưa có tranh thì rơi về đồ đệ tử. */
-export type OutfitArt = 'lac_kiem' | 'de_tu' | 'liet_mach';
+export type OutfitArt =
+  | 'lac_kiem'
+  | 'de_tu'
+  | 'liet_mach'
+  | 'dia_giap'
+  | 'phuc_mach'
+  | 'kinh_quang'
+  | 'van_kinh'
+  | 'luu_ly'
+  | 'tinh_khuyet'
+  | 'co_thanh'
+  | 'than_tang';
 export type RealmArt = 'nk' | 'tc' | 'kd' | 'na' | 'ht' | 'ab';
 /** Đạo (theo vai trò công pháp): kiếm tu / hộ pháp / đan sư. */
 export type DaoArt = 'kiem' | 'ho_phap' | 'dan_su';
 export type SwordArt = 'thanh_phong' | 'han_quang';
 
-const SET_ART: Record<string, OutfitArt> = { set_lac_kiem: 'lac_kiem', set_liet_mach: 'liet_mach' };
+/** Bộ có tranh riêng: id bộ → tên tranh (apps/client/public/hoa-truc/<tên>_<nam|nu>.webp). Bộ khác rơi về đồ đệ tử. */
+const SET_ART: Record<string, OutfitArt> = {
+  set_lac_kiem: 'lac_kiem',
+  set_liet_mach: 'liet_mach',
+  set_dia_giap: 'dia_giap',
+  set_phuc_mach: 'phuc_mach',
+  set_kinh_quang: 'kinh_quang',
+  set_van_kinh: 'van_kinh',
+  set_luu_ly: 'luu_ly',
+  set_tinh_khuyet: 'tinh_khuyet',
+  set_co_thanh: 'co_thanh',
+  set_than_tang: 'than_tang',
+};
 
 export interface PortraitPick {
   /** Tên tranh nhân vật: `<bộ>_<nam|nu>`. */
