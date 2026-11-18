@@ -42,7 +42,7 @@ Chưa có: `apps/admin`. File nguồn asset lớn nằm ở `../dtl-asset-source
 
 ## Lệnh thường dùng
 
-- Tham số URL của client đọc ở một chỗ: `apps/client/src/game/flags.ts` (bảng `FLAG_DOCS` + `FLAGS` có kiểu; thêm cờ mới ở đó, không dùng `new URLSearchParams(location.search)` nơi khác; R-4a). Đã gỡ `?trees ?outfit ?p2e ?e4 ?swords ?ground ?beacons ?props ?cine ?preview=2d`.
+- Tham số URL của client đọc ở một chỗ: `apps/client/src/game/flags.ts` (bảng `FLAG_DOCS` + `FLAGS` có kiểu; thêm cờ mới ở đó, không dùng `new URLSearchParams(location.search)` nơi khác; R-4a). Đã gỡ `?trees ?outfit ?p2e ?e4 ?swords ?ground ?beacons ?props ?preview=2d` (`?cine=0` vẫn giữ cho công cụ đo).
 - `pnpm dev`: server (2567) + client (5173). Đăng nhập thử bằng đạo hiệu; `?auto=<tên>` tự đăng nhập.
 - Playtest **luôn tắt tiếng**: URL game/viewer có `?mute=1` (ghép tham số khác bằng `&`, ví dụ `?mute=1&auto=<tên>`), kể cả trong `ao browser`; Chromium/Playwright thêm cờ `--mute-audio`. Tab của mình đang phát tiếng thì đóng hoặc tải lại với `?mute=1` (xem skill `playtest`).
 - Nhiều worktree chạy song song: mỗi worktree một cặp cổng riêng, ví dụ `PORT=2597 CLIENT_PORT=5197 pnpm dev` (Git Bash) hoặc `$env:PORT=2597; $env:CLIENT_PORT=5197; pnpm dev` (PowerShell), hoặc ghi `PORT=`/`CLIENT_PORT=` vào `apps/server/.env.local` (gitignore). Client dev tự nối `ws://<host>:$PORT`; `VITE_SERVER_URL` (biến môi trường hoặc `apps/client/.env.local`, không đặt ở file env của server) ghi đè. Bot và security-check đọc `SERVER_URL` hoặc `PORT` (kể cả từ `.env.local`). Kiểm cổng trống trước khi chạy, không dùng hay kill server của worktree khác, tự tắt server của mình khi xong (xem skill `playtest`).
