@@ -28,7 +28,7 @@ function QuestTab({ npcId }: { npcId: string }) {
         <div className="npc-greet">“{t(`npc.${npcId}.greet`)}”</div>
       </div>
       {turnins.map((q) => {
-        const prog = quests.active[q.id];
+        const prog = quests.active[q.id]!;
         const complete = q.objectives.every((o, i) => (prog[i] ?? 0) >= o.count || (o.type === 'talk' && o.target === npcId));
         return (
           <div key={q.id} className={'k-card quest-card' + (complete ? ' ready' : '')}>
@@ -200,7 +200,7 @@ function CraftTab({ npcId }: { npcId: string }) {
               <div className="k-dim">{t(`item.${out.id}.desc`)}</div>
               {r.quality && (
                 <div className="craft-chance" data-support={support ? '1' : undefined}>
-                  {t(support ? 'ui.craft.chance_support' : 'ui.craft.chance', { a: pct(w[0]), b: pct(w[1]), c: pct(w[2]) })}
+                  {t(support ? 'ui.craft.chance_support' : 'ui.craft.chance', { a: pct(w[0]!), b: pct(w[1]!), c: pct(w[2]!) })}
                 </div>
               )}
               {r.reqLevel && <div className={lowLevel ? 'bad' : 'k-dim'}>{t('ui.craft.need_level', { n: realmName(r.reqLevel) })}</div>}

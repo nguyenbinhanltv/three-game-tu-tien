@@ -168,7 +168,7 @@ export function nearestIndex(pts: readonly { x: number; y: number; r: number }[]
   let best = -1;
   let bd = Infinity;
   for (let i = 0; i < pts.length; i++) {
-    const p = pts[i];
+    const p = pts[i]!;
     const d = Math.hypot(p.x - mx, p.y - my) - p.r;
     if (d < maxD && d < bd) {
       bd = d;

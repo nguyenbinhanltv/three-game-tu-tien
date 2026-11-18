@@ -84,12 +84,12 @@ export class AutoQuality {
   /** Gọi mỗi khung: `now` (ms) và thời gian CPU của khung (ms). */
   frame(now: number, cpuMs: number): void {
     const n = this.t.length;
-    if (n > 0 && now - this.t[n - 1] > 1000) this.reset(now);
+    if (n > 0 && now - this.t[n - 1]! > 1000) this.reset(now);
     this.t.push(now);
     this.cpu.push(cpuMs);
     const from = now - this.o.windowMs;
     let drop = 0;
-    while (drop < this.t.length && this.t[drop] < from) drop++;
+    while (drop < this.t.length && this.t[drop]! < from) drop++;
     if (drop > 0) {
       this.t.splice(0, drop);
       this.cpu.splice(0, drop);
@@ -106,10 +106,10 @@ export class AutoQuality {
   /** CPU p95 và fps trong cửa sổ hiện tại; null nếu chưa đủ mẫu (cửa sổ chưa đầy hoặc đang cooldown). */
   stats(now: number): { p95: number; fps: number } | null {
     const n = this.t.length;
-    if (n < 30 || now < this.since || this.t[n - 1] - this.t[0] < this.o.windowMs * 0.9) return null;
+    if (n < 30 || now < this.since || this.t[n - 1]! - this.t[0]! < this.o.windowMs * 0.9) return null;
     const sorted = [...this.cpu].sort((a, b) => a - b);
-    const p95 = sorted[Math.min(n - 1, Math.floor(n * 0.95))];
-    const fps = (n - 1) / ((this.t[n - 1] - this.t[0]) / 1000);
+    const p95 = sorted[Math.min(n - 1, Math.floor(n * 0.95))] ?? 0;
+    const fps = (n - 1) / ((this.t[n - 1]! - this.t[0]!) / 1000);
     return { p95, fps };
   }
 

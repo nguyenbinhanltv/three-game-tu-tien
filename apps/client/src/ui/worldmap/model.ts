@@ -182,7 +182,7 @@ export interface LabelBox {
  */
 export function placeLabels(items: LabelBox[], gap = 2): void {
   for (let i = 0; i < items.length; i++) {
-    const a = items[i];
+    const a = items[i]!;
     for (let guard = 0; guard < items.length + 1; guard++) {
       const hit = items.slice(0, i).find((b) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 && a.y > b.y - b.h - gap && a.y - a.h < b.y + gap);
       if (!hit) break;

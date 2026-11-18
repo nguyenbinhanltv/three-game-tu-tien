@@ -301,8 +301,8 @@ export class ViewerScene {
     if (!this.sword || !this.action) return;
     const name = this.action.getClip().name;
     const t = this.action.time;
-    if (name === poseClipName(POSE_SWORD_DRAW)) this.sword.set(t >= POSE_SWORD_SWAP[POSE_SWORD_DRAW]);
-    else if (name === poseClipName(POSE_SWORD_SHEATHE)) this.sword.set(t < POSE_SWORD_SWAP[POSE_SWORD_SHEATHE]);
+    if (name === poseClipName(POSE_SWORD_DRAW)) this.sword.set(t >= POSE_SWORD_SWAP[POSE_SWORD_DRAW]!);
+    else if (name === poseClipName(POSE_SWORD_SHEATHE)) this.sword.set(t < POSE_SWORD_SWAP[POSE_SWORD_SHEATHE]!);
     else this.sword.set(SWORD_IN_HAND.has(name));
   }
 

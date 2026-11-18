@@ -145,6 +145,7 @@ export function MethodPanel() {
   if (!char) return null;
   const cur = method?.method ? METHOD.get(method.method) : undefined;
   const shown = METHOD.get(view) ?? cur ?? METHODS[0];
+  if (!shown) return null;
   const scrolls = inv.reduce((n, s) => (s?.id === SCROLL ? n + s.n : n), 0);
   const gold = char.gold;
   const open = char.level >= METHOD_UNLOCK_LEVEL;

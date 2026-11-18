@@ -92,7 +92,7 @@ export function Segmented<T extends string | number | boolean>({
           }}
           onKeyDown={(e) =>
             rovingKey(e, options.length, i, (n) => {
-              onChange(options[n].value);
+              onChange(options[n]!.value);
               refs.current[n]?.focus();
             })
           }
@@ -149,7 +149,9 @@ export function Tabs({
           onKeyDown={(e) =>
             rovingKey(e, enabled.length, Math.max(0, enabled.indexOf(i)), (n) => {
               const j = enabled[n];
-              onChange(items[j].id);
+              const target = j === undefined ? undefined : items[j];
+              if (j === undefined || !target) return;
+              onChange(target.id);
               refs.current[j]?.focus();
             })
           }

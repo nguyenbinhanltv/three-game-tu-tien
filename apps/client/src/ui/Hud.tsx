@@ -232,7 +232,7 @@ function Tribulation() {
   const left = Math.max(0, (tribEnd - now) / 1000);
   const elapsed = def.duration - left;
   const pi = tribPhaseIndex(def, elapsed);
-  const ph = def.phases[pi];
+  const ph = def.phases[pi]!;
   // Pha có tia khóa mệnh: ban đầu tia cuối tích tụ (hint), sau `delay` giây là mưa sét (hint2).
   const after = !!ph.final && elapsed >= tribPhaseStart(def, pi) + ph.final.delay;
   const key = 'ui.trib.' + def.id + '.';
@@ -279,7 +279,7 @@ function Tribulation() {
       {ph.mechanic === 'ngu_hanh' && (
         <div className="trib-hanh" data-testid="hanh-hint">
           {nguHanh && now < nguHanh.at + 800
-            ? t('ui.trib.ngu_hanh.now', { e: t('elem.' + ELEMENTS[nguHanh.e]), k: t('elem.' + elemCounterOf(ELEMENTS[nguHanh.e])) })
+            ? t('ui.trib.ngu_hanh.now', { e: t('elem.' + ELEMENTS[nguHanh.e]), k: t('elem.' + elemCounterOf(ELEMENTS[nguHanh.e]!)) })
             : t('ui.trib.ngu_hanh.wait')}
         </div>
       )}
@@ -817,7 +817,7 @@ function BuffRow() {
             }
           >
             <span className="buff-chip">
-              <UiIcon id={BUFF_ICON[kind] ?? 'buff_atk'} fallback={ITEM.get(BUFF_ICON[kind])?.iconFallback ?? '✦'} />
+              <UiIcon id={BUFF_ICON[kind] ?? 'buff_atk'} fallback={ITEM.get(BUFF_ICON[kind]!)?.iconFallback ?? '✦'} />
               <em>{left >= 60 ? t('ui.buff.min', { n: Math.ceil(left / 60) }) : t('ui.buff.sec', { n: left })}</em>
             </span>
           </Tooltip>

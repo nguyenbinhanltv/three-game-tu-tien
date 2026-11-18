@@ -66,7 +66,8 @@ function cellOf(icon: string) {
     void loadSheet(data, cell.s);
     return null;
   }
-  return { cell, sheet: data.sheets[cell.s] };
+  const sheet = data.sheets[cell.s];
+  return sheet ? { cell, sheet } : null;
 }
 
 function styleOf(c: NonNullable<ReturnType<typeof cellOf>>): Record<string, string> {
