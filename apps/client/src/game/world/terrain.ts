@@ -694,29 +694,52 @@ const smooth = (a: number, b: number, x: number): number => {
   return t * t * (3 - 2 * t);
 };
 
-/** Làm mượt hộp (trung bình cửa sổ 2r+1) theo hàng rồi theo cột, tại chỗ; mép giữ nguyên giá trị gần nhất. */
-function boxBlur(a: Float32Array, stride: number, r: number): void {
-  const tmp = new Float32Array(stride);
-  const w = 2 * r + 1;
-  const at = (i: number): number => Math.max(0, Math.min(stride - 1, i));
-  for (let j = 0; j < stride; j++) {
-    const o = j * stride;
-    let sum = 0;
-    for (let k = -r; k <= r; k++) sum += a[o + at(k)]!;
-    for (let i = 0; i < stride; i++) {
-      tmp[i] = sum / w;
-      sum += a[o + at(i + r + 1)]! - a[o + at(i - r)]!;
-    }
-    for (let i = 0; i < stride; i++) a[o + i] = tmp[i]!;
+/**
+ * Làm mượt hộp (trung bình cửa sổ 2r+1) theo hàng rồi theo cột, tại chỗ; mép giữ nguyên giá trị gần nhất.
+ * Chạy chia lát: `step(end)` làm từng hàng/cột cho tới khi hết giờ (`performance.now() >= end`), trả true khi xong cả hai lượt.
+ */
+class BoxBlurJob {
+  private tmp: Float32Array;
+  private k = 0;
+  private cols = false;
+  constructor(
+    private a: Float32Array,
+    private stride: number,
+    private r: number,
+  ) {
+    this.tmp = new Float32Array(stride);
   }
-  for (let i = 0; i < stride; i++) {
-    let sum = 0;
-    for (let k = -r; k <= r; k++) sum += a[at(k) * stride + i]!;
-    for (let j = 0; j < stride; j++) {
-      tmp[j] = sum / w;
-      sum += a[at(j + r + 1) * stride + i]! - a[at(j - r) * stride + i]!;
+  step(end: number): boolean {
+    const { a, stride, r, tmp } = this;
+    const w = 2 * r + 1;
+    const at = (i: number): number => Math.max(0, Math.min(stride - 1, i));
+    while (performance.now() < end) {
+      if (!this.cols) {
+        const o = this.k * stride;
+        let sum = 0;
+        for (let q = -r; q <= r; q++) sum += a[o + at(q)]!;
+        for (let i = 0; i < stride; i++) {
+          tmp[i] = sum / w;
+          sum += a[o + at(i + r + 1)]! - a[o + at(i - r)]!;
+        }
+        for (let i = 0; i < stride; i++) a[o + i] = tmp[i]!;
+      } else {
+        const i = this.k;
+        let sum = 0;
+        for (let q = -r; q <= r; q++) sum += a[at(q) * stride + i]!;
+        for (let j = 0; j < stride; j++) {
+          tmp[j] = sum / w;
+          sum += a[at(j + r + 1) * stride + i]! - a[at(j - r) * stride + i]!;
+        }
+        for (let j = 0; j < stride; j++) a[j * stride + i] = tmp[j]!;
+      }
+      if (++this.k >= stride) {
+        this.k = 0;
+        if (this.cols) return true;
+        this.cols = true;
+      }
     }
-    for (let j = 0; j < stride; j++) a[j * stride + i] = tmp[j]!;
+    return false;
   }
 }
 
@@ -739,9 +762,12 @@ export function createInkMap(n = 1536): InkBuilder {
   const g = cv.getContext('2d')!;
   const img = g.createImageData(n, n);
   let row = 0;
-  let phase: 0 | 1 = 0;
+  /** 0 lấy mẫu độ cao · 1 làm mượt (chia lát) · 2 tô màu · 3 đưa lên canvas theo dải · 4 đường/kiến trúc · 5 rừng theo dải z. */
+  let phase: 0 | 1 | 2 | 3 | 4 | 5 = 0;
+  let jobs: BoxBlurJob[] = [];
   let hMin = Infinity;
   let hMax = -Infinity;
+  const PUT_STRIP = 128;
   const b: InkBuilder = {
     canvas: cv,
     size,
@@ -749,6 +775,7 @@ export function createInkMap(n = 1536): InkBuilder {
     step(budgetMs) {
       if (levelTerrain() !== t0) return false;
       const end = performance.now() + budgetMs;
+      // Mọi phase đều kiểm giờ giữa các hàng/dải nhỏ: không có bước nào chạy liền cả ảnh trong một khung.
       while (!b.done && performance.now() < end) {
         if (phase === 0) {
           // Lấy mẫu độ cao (có viền 1 ô để tính độ dốc) và mặt nạ nước.
@@ -769,16 +796,40 @@ export function createInkMap(n = 1536): InkBuilder {
             row = 0;
             phase = 1;
             // Làm mượt độ cao trước khi tính độ dốc (bỏ gợn nhỏ, còn khối núi) và làm nhòe mặt nạ nước (mép mềm, không răng cưa).
-            for (let k = 0; k < 3; k++) boxBlur(H, stride, 4);
-            for (let k = 0; k < 2; k++) boxBlur(water, n, 2);
+            jobs = [
+              new BoxBlurJob(H, stride, 4),
+              new BoxBlurJob(H, stride, 4),
+              new BoxBlurJob(H, stride, 4),
+              new BoxBlurJob(water, n, 2),
+              new BoxBlurJob(water, n, 2),
+            ];
           }
-        } else {
+        } else if (phase === 1) {
+          if (jobs[0]!.step(end)) jobs.shift();
+          if (!jobs.length) phase = 2;
+        } else if (phase === 2) {
           shadeRow(row);
           if (++row >= n) {
-            g.putImageData(img, 0, 0);
-            overlay();
-            b.done = true;
+            row = 0;
+            phase = 3;
           }
+        } else if (phase === 3) {
+          const h = Math.min(PUT_STRIP, n - row);
+          g.putImageData(img, 0, 0, 0, row, n, h);
+          row += h;
+          if (row >= n) {
+            row = 0;
+            phase = 4;
+          }
+        } else if (phase === 4) {
+          overlayBase();
+          row = 0;
+          if (vl) phase = 5;
+          else b.done = true;
+        } else {
+          // Rừng: từng hàng z (mỗi hàng ~190 mẫu).
+          if (!treeRow(row)) b.done = true;
+          row++;
         }
       }
       return true;
@@ -830,8 +881,8 @@ export function createInkMap(n = 1536): InkBuilder {
     }
   }
 
-  /** Đường mòn, kiến trúc (va chạm tĩnh, Vân Lam), rừng chấm mực: vẽ chồng lên nền đã tô. */
-  function overlay(): void {
+  /** Đường mòn và kiến trúc (va chạm tĩnh, Vân Lam): vẽ chồng lên nền đã tô (vài trăm nét, rất nhẹ). */
+  function overlayBase(): void {
     const k = n / size;
     g.lineCap = 'round';
     g.lineJoin = 'round';
@@ -850,35 +901,38 @@ export function createInkMap(n = 1536): InkBuilder {
       }
       g.stroke();
     }
-    if (vl) {
-      // Kiến trúc: khối mực đặc có viền, to nhỏ theo bán kính va chạm (chính điện, đan phòng, tàng kiếm các, cổng…).
-      g.fillStyle = 'rgba(46, 38, 30, 0.82)';
-      g.strokeStyle = 'rgba(46, 38, 30, 0.95)';
-      g.lineWidth = Math.max(1, 2 * k);
-      for (const c of COLLIDERS) {
-        const r = Math.max(2.2, c.r * k * 1.25);
-        g.beginPath();
-        g.arc(c.x * k, c.z * k, r, 0, Math.PI * 2);
-        g.fill();
-        g.stroke();
-      }
-      // Rừng: chấm mực rải theo mật độ rừng, tránh nước.
-      g.fillStyle = 'rgba(52, 62, 44, 0.62)';
-      const step = 22;
-      for (let z = step / 2; z < size; z += step) {
-        for (let x = step / 2; x < size; x += step) {
-          const w = featureWeight(FOREST, x, z);
-          if (w < 0.45) continue;
-          if (hash01(x, z, 4191) > 0.28 + w * 0.3) continue;
-          const px = (x + (hash01(z, x, 4192) - 0.5) * step) * k;
-          const pz = (z + (hash01(x, z, 4193) - 0.5) * step) * k;
-          if (water[Math.min(n - 1, Math.floor(pz)) * n + Math.min(n - 1, Math.floor(px))]! > 0.4) continue;
-          g.beginPath();
-          g.arc(px, pz, Math.max(0.9, 3.2 * k), 0, Math.PI * 2);
-          g.fill();
-        }
-      }
+    if (!vl) return;
+    // Kiến trúc: khối mực đặc có viền, to nhỏ theo bán kính va chạm (chính điện, đan phòng, tàng kiếm các, cổng…).
+    g.fillStyle = 'rgba(46, 38, 30, 0.82)';
+    g.strokeStyle = 'rgba(46, 38, 30, 0.95)';
+    g.lineWidth = Math.max(1, 2 * k);
+    for (const c of COLLIDERS) {
+      g.beginPath();
+      g.arc(c.x * k, c.z * k, Math.max(2.2, c.r * k * 1.25), 0, Math.PI * 2);
+      g.fill();
+      g.stroke();
     }
+  }
+
+  /** Rừng: một hàng z của lưới mẫu 22 m (chấm mực theo mật độ rừng, tránh nước). Trả false khi hết hàng. */
+  function treeRow(zi: number): boolean {
+    const step = 22;
+    const z = step / 2 + zi * step;
+    if (z >= size) return false;
+    const k = n / size;
+    g.fillStyle = 'rgba(52, 62, 44, 0.62)';
+    for (let x = step / 2; x < size; x += step) {
+      const w = featureWeight(FOREST, x, z);
+      if (w < 0.45) continue;
+      if (hash01(x, z, 4191) > 0.28 + w * 0.3) continue;
+      const px = (x + (hash01(z, x, 4192) - 0.5) * step) * k;
+      const pz = (z + (hash01(x, z, 4193) - 0.5) * step) * k;
+      if (water[Math.min(n - 1, Math.floor(pz)) * n + Math.min(n - 1, Math.floor(px))]! > 0.4) continue;
+      g.beginPath();
+      g.arc(px, pz, Math.max(0.9, 3.2 * k), 0, Math.PI * 2);
+      g.fill();
+    }
+    return true;
   }
   return b;
 }

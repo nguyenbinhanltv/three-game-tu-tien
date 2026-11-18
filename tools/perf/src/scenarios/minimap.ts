@@ -5,7 +5,7 @@ import { list } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { cam, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
-import { snap, UI_SIZES } from '../lib/shot';
+import { snap, UI_SIZES, writeJson } from '../lib/shot';
 
 /** Tâm gần đúng (trung bình đỉnh) của vùng thứ `i` trong level. */
 const centroid = (level: string, i: number): [number, number] => {
@@ -19,6 +19,7 @@ export default {
   usage: '[--variants sau] [--sizes 720p,1080p]',
   async run(r) {
     const variant = list('--variants', 'sau')[0]!;
+    const perf: Record<string, unknown> = {};
     for (const tag of list('--sizes', '720p,1080p')) {
       const vp = UI_SIZES[tag] ?? UI_SIZES['1080p'];
       const { ctx, page } = await r.open({
@@ -34,6 +35,20 @@ export default {
         const url = '/src/ui/minimap/ink.ts';
         const m = (await import(/* @vite-ignore */ url)) as { inkMap(): unknown };
         while (!m.inkMap()) await new Promise((res) => setTimeout(res, 100));
+      });
+      // Đo task dài khi dựng bản đồ thủy mặc ở một bản mô-đun riêng (URL khác nên dựng lại từ đầu): ngân sách CPU < 8 ms/khung, task > 16 ms là giật.
+      perf[tag] = await page.evaluate(async () => {
+        const long: number[] = [];
+        const ob = new PerformanceObserver((l) => l.getEntries().forEach((e) => long.push(Math.round(e.duration))));
+        ob.observe({ entryTypes: ['longtask'] });
+        const url = '/src/ui/minimap/ink.ts?bench=' + Date.now();
+        const m = (await import(/* @vite-ignore */ url)) as { inkMap(): unknown };
+        const t0 = performance.now();
+        while (!m.inkMap()) await new Promise((res) => setTimeout(res, 16));
+        const ms = Math.round(performance.now() - t0);
+        await new Promise((res) => setTimeout(res, 300));
+        ob.disconnect();
+        return { buildMs: ms, longTasks: long.length, over50: long.filter((d) => d > 50).length, maxMs: Math.max(0, ...long) };
       });
       await sleep(1500);
       await snap(page, r.out, out('1-dau'), { wait: 400 });
@@ -62,5 +77,7 @@ export default {
       await snap(page, r.out, out('6-vung-moi'), { wait: 0 });
       await ctx.close();
     }
+    writeJson(r.out, `minimap-perf-${variant}.json`, perf);
+    console.log('ink perf', JSON.stringify(perf));
   },
 } satisfies Scenario;
