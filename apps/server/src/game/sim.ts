@@ -1,4 +1,5 @@
 
+import { TickProf } from './tickprof';
 import type { Client } from 'colyseus';
 import {
   bottleneckReady,
@@ -103,6 +104,8 @@ export class GameSim {
   readonly terrain: Terrain;
   private nextId = 1;
   tickMs = 0;
+  /** Profiler theo hệ (TICK_PROF=1), xem game/tickprof.ts. */
+  readonly prof = new TickProf();
   tickSamples: number[] = [];
   /** Lõi nhịp độ kiếp theo dữ liệu (E1-F, game/trib.ts). */
   private readonly tribSys = new TribSystem({
@@ -777,22 +780,35 @@ export class GameSim {
     const t0 = performance.now();
     this.now = Date.now();
     const dt = Math.min(dtMs, 250) / 1000;
+    const prof = this.prof;
+    prof.begin();
     for (const p of this.players.values()) this.tickPlayer(p, dt);
+    prof.lap('players');
     for (let i = this.monsters.length - 1; i >= 0; i--) this.tickMonster(this.monsters[i], dt);
+    prof.lap('monsters');
     this.tickHazards();
+    prof.lap('hazards');
     this.zones.tick();
+    prof.lap('zones');
     this.tickBolts();
+    prof.lap('bolts');
     this.tickMethods();
+    prof.lap('methods');
     this.camps.tick();
+    prof.lap('camps');
     this.duel.tick();
     this.tele.tick();
     this.questObj.tick();
+    prof.lap('duel_tele_quest');
     this.spirit.tick();
+    prof.lap('spirit');
     this.mirror.tick();
     this.than.tick();
+    prof.lap('mirror_than');
     this.soul.tick();
     this.clone.tick();
     this.domain.tick();
+    prof.lap('soul_clone_domain');
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -820,7 +836,10 @@ export class GameSim {
         this.savePlayer(p);
       }
     }
+    prof.lap('send_save');
+    prof.end();
     const el = performance.now() - t0;
+    prof.add('tick_wall', el);
     this.tickMs = el;
     this.tickSamples.push(el);
     if (this.tickSamples.length > 1200) this.tickSamples.splice(0, 600);
