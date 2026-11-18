@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { baseOf } from '../../base/quality';
 import { CloudSea } from '../../render/clouds';
 import { createSky, setSkyQuality, setSunDirection } from '../../render/sky';
 import { Lake } from '../../render/water';
@@ -60,9 +61,30 @@ export class Environment {
   /** Mức chi tiết trời/mây/nước theo preset chất lượng ('low' | 'medium' | 'high'). */
   setQuality(preset: string): void {
     this.preset = preset;
-    setSkyQuality(preset);
-    this.cloudSea.setQuality(preset);
-    this.lake.setQuality(preset);
+    const base = baseOf(preset);
+    setSkyQuality(base);
+    this.cloudSea.setQuality(base);
+    this.lake.setQuality(base);
+    this.setShadowQuality(preset === 'ultra');
+  }
+
+  /** Bóng Cực cao: bản đồ 4096² phủ ±110 m (Cao: 2048², ±70 m). Đổi lúc chạy: bỏ bản đồ bóng cũ để three dựng lại. */
+  private setShadowQuality(ultra: boolean): void {
+    if (!this.sun.castShadow) return;
+    const size = ultra ? 4096 : 2048;
+    const half = ultra ? 110 : 70;
+    const sh = this.sun.shadow;
+    if (sh.mapSize.x !== size) {
+      sh.mapSize.set(size, size);
+      sh.map?.dispose();
+      sh.map = null;
+    }
+    const cam = sh.camera;
+    cam.left = -half;
+    cam.right = half;
+    cam.top = half;
+    cam.bottom = -half;
+    cam.updateProjectionMatrix();
   }
 
   private preset = 'medium';

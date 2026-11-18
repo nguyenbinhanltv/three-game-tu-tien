@@ -1,3 +1,4 @@
+import { isQuality } from '../base/quality';
 import { create } from 'zustand';
 import type { BossTimerMsg, CharView, DuelMsg, Equipment, InviteMsg, InvSlot, MarkInfo, MethodMsg, PartyMsg, QuestView, SpiritHit } from '@dtl/shared';
 import { duckHold, sfx } from '../game/audio/audio';
@@ -245,6 +246,11 @@ interface UIState {
   wantFly: boolean;
   chatOpen: boolean;
   quality: string;
+  /** Khóa preset: không tự hạ khi nghẽn. */
+  qualityLock: boolean;
+  /** Preset gợi ý theo GPU (null tới khi đọc xong adapter, hoặc khi bằng mức hiện tại). */
+  qualityHint: string | null;
+  qualityHintSeen: boolean;
   camShake: boolean;
   /** Chất lượng hiệu ứng chiêu và khựng hình (VFX-V0). */
   fxQuality: 'low' | 'medium' | 'high';
@@ -344,7 +350,10 @@ export const useUI = create<UIState>(() => ({
   autoAttack: false,
   wantFly: false,
   chatOpen: false,
-  quality: localStorage.getItem('dtl.quality') ?? 'medium',
+  quality: isQuality(localStorage.getItem('dtl.quality')) ? (localStorage.getItem('dtl.quality') as string) : 'medium',
+  qualityLock: localStorage.getItem('dtl.qualityLock') === '1',
+  qualityHint: null,
+  qualityHintSeen: localStorage.getItem('dtl.qualityHintSeen') === '1',
   camShake: localStorage.getItem('dtl.camShake') !== '0',
   fxQuality: fxQuality(),
   hitStop: hitStopOn(),

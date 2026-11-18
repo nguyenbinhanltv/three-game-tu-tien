@@ -208,6 +208,7 @@ declare global {
 /** Chạy trong trang trước mọi script: đặt preset, đếm byte WebSocket tới server game, bọc `frame()`, backend và các phần. */
 function initScript(preset: string, port: number): void {
   localStorage.setItem('dtl.quality', preset);
+  localStorage.setItem('dtl.qualityLock', '1'); // đo đúng preset đã chọn, không để tự hạ làm lệch
   const w = window;
   const tex = new Map<object, number>();
   const texDesc = new Map<object, string>();

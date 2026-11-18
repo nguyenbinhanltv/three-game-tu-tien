@@ -16,7 +16,7 @@ type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash
 type AmbientRates = Record<AmbientKind, number>;
 
 /** Hệ số lượng hạt theo preset (Thấp vẫn có ít hạt cho có không khí). */
-const AMBIENT_SCALE: Record<string, number> = { low: 0.35, medium: 1, high: 1.6 };
+const AMBIENT_SCALE: Record<string, number> = { low: 0.35, medium: 1, high: 1.6, ultra: 2.4 };
 
 const KINDS: AmbientKind[] = ['mote', 'pollen', 'petal', 'leaf', 'mist', 'jade', 'ash', 'ember'];
 

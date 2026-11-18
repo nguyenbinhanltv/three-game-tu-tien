@@ -1,3 +1,4 @@
+import { baseOf } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import { type AssetCache, type AssetHandle, assets } from '../core/assets';
 import { adoptGltfMaterials } from '../../render/materials/world';
@@ -271,7 +272,8 @@ export class PropLayer {
   }
 
   private rangeScale(): number {
-    return this.quality === 'low' ? 0.55 : this.quality === 'high' ? 1.15 : 1;
+    const q = baseOf(this.quality);
+    return q === 'low' ? 0.55 : q === 'high' ? 1.15 : 1;
   }
 
   /** Gọi mỗi khung: chọn ô trong tầm, nạp asset, đặt mức LOD. Việc nặng chạy ~4 lần/giây. */

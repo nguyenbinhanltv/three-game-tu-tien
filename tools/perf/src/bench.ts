@@ -86,6 +86,7 @@ declare global {
 /** Chạy trong trang trước mọi script của game: đặt preset, bắt `window.__game` để bọc `frame()` và backend. */
 function initScript(preset: string): void {
   localStorage.setItem('dtl.quality', preset);
+  localStorage.setItem('dtl.qualityLock', '1'); // đo đúng preset đã chọn, không để tự hạ làm lệch
   const w = window;
   const tex = new Map<object, number>();
   const texDesc = new Map<object, string>();

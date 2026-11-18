@@ -75,6 +75,8 @@ export const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; sh
   low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false, radial: false },
   medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'medium', ao: true, lights: false, radial: true },
   high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'high', ao: true, lights: true, radial: true },
+  // Cực cao: như Cao nhưng trần điểm ảnh 14M, bóng 4096² ±110 m (env.ts), nhiều hạt hơn; WebGL2 vẫn bị `WEBGL2_MAX_PIXELS`.
+  ultra: { pixelRatio: 2, maxPixels: 14e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'high', ao: true, lights: true, radial: true },
 };
 
 /** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */

@@ -1,3 +1,4 @@
+import { baseOf } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import { abs, cameraViewMatrix, cos, float, floor, instancedBufferAttribute, int, length, max, min, mix, positionGeometry, sin, smoothstep, step, texture, uniform, uniformArray, uv, vec2, vec3 } from 'three/tsl';
 import { FOREST, featureWeight, fbm, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
@@ -559,7 +560,7 @@ export class Grass {
   }
 
   setQuality(q: string, shadows = false): void {
-    const next = GRASS_PRESETS[q] ?? GRASS_PRESETS.medium;
+    const next = GRASS_PRESETS[q] ?? GRASS_PRESETS[baseOf(q)];
     this.mesh.receiveShadow = shadows;
     if (next.radius === this.preset.radius && next.spacing === this.preset.spacing) return;
     const respace = next.spacing !== this.preset.spacing;

@@ -14,6 +14,7 @@ import divuc from './scenarios/divuc';
 import dungeon from './scenarios/dungeon';
 import flyover from './scenarios/flyover';
 import hires from './scenarios/hires';
+import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
 import outfit from './scenarios/outfit';
@@ -32,7 +33,7 @@ import ui from './scenarios/ui';
 import vfx from './scenarios/vfx';
 import xichkhe from './scenarios/xichkhe';
 
-const SCENARIOS: Scenario[] = [points, map, mons, dungeon, asset, vfx, outfit, skin, chrv2, ui, thiennhan, anhbien, ual, quest4, quest5, clone, fly, chrv3, chrv3anim, skinv3, divuc, flyover, xichkhe, hires];
+const SCENARIOS: Scenario[] = [points, map, mons, dungeon, asset, vfx, outfit, skin, chrv2, ui, thiennhan, anhbien, ual, quest4, quest5, clone, fly, chrv3, chrv3anim, skinv3, divuc, flyover, xichkhe, hires, quality];
 
 const name = args[0] && !args[0].startsWith('--') ? args[0] : 'points';
 const sc = SCENARIOS.find((s) => s.name === name);
