@@ -439,7 +439,7 @@ export class PlayerSkins {
    * `soul`: trong mờ ánh ngọc, rìa vàng nhạt kiểu fresnel; `husk`: thân xác bỏ lại, xám ngọc mờ hơn nhiều.
    * Trả null nếu asset chưa nạp hoặc `?models=legacy` (bên gọi dùng hình dự phòng).
    */
-  createSoul(look: PlayerLook, kind: 'soul' | 'husk'): CharacterView | null {
+  createSoul(look: PlayerLook, kind: 'soul' | 'husk' | 'shadow'): CharacterView | null {
     const id = modelOf(look.g, look.hair);
     const skin = id ? PLAYER_SKINS[id] : undefined;
     if (!id || !skin || this.legacy) return null;
@@ -449,7 +449,7 @@ export class PlayerSkins {
     return this.build(id, skin, t, this.soulMaterial(id, t, kind), undefined, undefined, true);
   }
 
-  private soulMaterial(id: string, t: Template, kind: 'soul' | 'husk'): THREE.MeshStandardNodeMaterial {
+  private soulMaterial(id: string, t: Template, kind: 'soul' | 'husk' | 'shadow'): THREE.MeshStandardNodeMaterial {
     const key = `${id}/${kind}`;
     let m = this.mats.get(key);
     if (m) return m;
@@ -468,6 +468,13 @@ export class PlayerSkins {
         .add(vec3(0.94, 0.82, 0.5).mul(fres.mul(0.85)));
       m.opacityNode = fres.mul(0.45).add(0.42);
       m.blending = THREE.AdditiveBlending;
+    } else if (kind === 'shadow') {
+      // Phân thân Ảnh Biến (RFX-1): bóng mờ tím sẫm của chính nhân vật, rìa vàng; hòa trộn thường nên đọc được trên nền sáng.
+      applyPalette(m, { dark: '#1c0e38', light: '#5a3aa8', glow: '#e2b84a' });
+      m.emissiveNode = vec3(0.32, 0.18, 0.62)
+        .mul(0.35)
+        .add(vec3(0.95, 0.78, 0.35).mul(fres.mul(0.9)));
+      m.opacityNode = fres.mul(0.3).add(0.34);
     } else {
       applyPalette(m, { dark: '#3a4a46', light: '#b4c7bf', glow: '#6d8a7a' });
       m.opacityNode = fres.mul(0.2).add(0.34);

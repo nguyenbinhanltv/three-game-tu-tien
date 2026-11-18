@@ -7,7 +7,7 @@ import { boltNodes, vortexNodes, windNodes } from '../vfx/lightning';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
-import { burstNodes, cardNodes, crystalNodes, decalNodes, toonNodes } from '../vfx/stylized';
+import { artNodes, burstNodes, cardNodes, crystalNodes, decalNodes, toonNodes } from '../vfx/stylized';
 import { trailNodes } from '../vfx/trail';
 import { FLAGS } from '../../base/flags';
 
@@ -68,6 +68,7 @@ export type FxKind =
   | 'burst'
   | 'decal'
   | 'card'
+  | 'art'
   | 'wind';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
@@ -89,6 +90,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   burst: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
   decal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: true },
   card: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
+  art: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.3, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
 };
 
@@ -106,6 +108,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   burst: burstNodes,
   decal: decalNodes,
   card: cardNodes,
+  art: artNodes,
   wind: windNodes,
   dome: (u) => {
     // Fresnel: 1 ở rìa (nhìn lướt), ~0 ở giữa (nhìn thẳng). Vân phù văn: dải ngang mờ chạy theo độ cao.
@@ -195,6 +198,7 @@ export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>([
   'burst',
   'decal',
   'card',
+  'art',
 ]);
 
 /** Tên thuộc tính instance: màu + độ trong, `fxA`, `fxB`, (`fxK`, 0, 0, 0). */

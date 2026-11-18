@@ -29,6 +29,7 @@ Chung cho mọi kịch bản:
 | `outfit` | Bộ trang bị mặc thật (áo + phụ kiện) nam/nữ: đứng 3 hướng, chạy, bay, đả tọa, chém | Thêm/sửa bộ, áo `set_*`, phụ kiện, kiếm | `--sets`, `--kit <bậc> --sets kiem,hophap,dansu`, `--genders`, `--only still\|motion`, `--panel`, `--matrix` |
 | `skin` | Skin toàn thân (ô ngoại hình) nam/nữ: trước/sau khi mặc, đứng 3 hướng, chạy, bay, đả tọa, chém, chết | Thêm skin mới, sửa `skin_prep.py`/`retarget_set.py` | `--ids`, `--genders`, `--set`, `--only still|motion`, `--dist` |
 | `chrv2` | Nhân vật nền v1/v2/tóc B cùng góc: cận mặt, bán thân, toàn thân, chuyển động, chết; `stats.json` | Dựng lại thân, đầu, tóc, áo v2 | `--variant old\|v2\|v2b\|both`, `--genders`, `--sets`, `--only still` |
+| `realmaura` | Hào quang cảnh giới (Kết Đan → Ảnh Biến) × 3 đạo: 1080p + 720p, dãy khung pháp tướng, video; `--perf` đo draw call tắt/bật | Sửa `game/fx/realmAura*.ts`, thẻ pháp tướng | `--daos`, `--realms`, `--video`, `--perf`, `--others N`, `--only stills\|phantom` |
 | `ui` | HUD ở 5 cảnh + 13 bảng lớn, nhiều cỡ màn hình, CPU của trang mỗi khung (`hud-metrics.json`) | Sửa CSS/thành phần HUD, bảng, `--ui-scale` | `--part hud\|panels`, `--only`, `--variants truoc,sau` (chỉ là nhãn tên ảnh: chạy một lần trên bản trước, một lần trên bản sau để so; HUD cũ `?ngj=0` đã gỡ), `--sizes 720p,1080p,1440p,4k` |
 
 Đo hiệu năng đám đông không phải kịch bản chụp: dùng `pnpm bench:crowd` (xem skill `perf-budget`).
