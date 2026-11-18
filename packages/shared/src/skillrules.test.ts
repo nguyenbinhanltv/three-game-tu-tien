@@ -115,7 +115,7 @@ describe('lướt', () => {
       { x: 0, z: -1 },
     ];
     const best = dirs.map((d) => planDash(state(X, Z), d, 8)).sort((a, b) => b.dist - a.dist)[0];
-    expect(best.dist).toBeGreaterThan(7.5);
+    expect(best?.dist).toBeGreaterThan(7.5);
     expect(pl.dist).toBeLessThanOrEqual(8 + 1e-6);
   });
   it('mép bản đồ: không ra ngoài, dừng sớm', () => {

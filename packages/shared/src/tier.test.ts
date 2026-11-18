@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import {
   type ItemSysData,
@@ -30,7 +31,7 @@ const DATA: ItemSysData = {
 describe('bậc trang bị', () => {
   it('hệ số bậc tăng đều và bậc 1 giữ nguyên chỉ số cũ', () => {
     expect(TIER_MUL[1]).toBe(1);
-    for (let i = 2; i < TIER_MUL.length; i++) expect(TIER_MUL[i]).toBeGreaterThan(TIER_MUL[i - 1]);
+    for (let i = 2; i < TIER_MUL.length; i++) expect(at(TIER_MUL, i)).toBeGreaterThan(at(TIER_MUL, i - 1));
     const a = mainLine(DATA, 'robe', 15, 2, 0.5);
     const b = mainLine(DATA, 'robe', 15, 2, 0.5, 1);
     expect(a).toEqual(b);

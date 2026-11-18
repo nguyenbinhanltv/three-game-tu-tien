@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import { DUEL_ARENA, hasResonance, inArena, nextTurn, partyXpPool, splitXp, xpShareWeight, XP_FAR, XP_NEAR } from './party';
 
@@ -16,7 +17,7 @@ describe('chia tu vi', () => {
     expect(xpShareWeight(XP_FAR + 1)).toBe(0);
     expect(splitXp(100, [1, 0])).toEqual([100, 0]);
     const r = splitXp(100, [1, 0.5]);
-    expect(r[0]).toBeGreaterThan(r[1]);
+    expect(at(r, 0)).toBeGreaterThan(at(r, 1));
   });
   it('đầu vào xấu', () => {
     expect(splitXp(0, [1, 1])).toEqual([0, 0]);
