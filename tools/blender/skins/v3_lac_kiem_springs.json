@@ -41,5 +41,19 @@
     "back": 0.45,
     "pow": 0.7,
     "calf": 0.4
-  }
+  },
+  "limbs": [
+    {
+      "name": "sleeve",
+      "limb": [
+        "lowerarm_l",
+        "lowerarm_r"
+      ],
+      "tMin": 0.3,
+      "minRadius": 0.035,
+      "count": 4,
+      "links": 2,
+      "share": 0.7
+    }
+  ]
 }
