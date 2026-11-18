@@ -11,3 +11,8 @@ export function at<T>(coll: ArrayLike<T> | Readonly<Record<string, T>>, key: num
   if (v === undefined) throw new RangeError(`${what}[${String(key)}] không tồn tại`);
   return v;
 }
+
+/** Giá trị mặc định cho destructuring khi thiếu phần tử là lỗi dữ liệu: `const [a = missing('a')] = list` (chủ yếu dùng trong test). */
+export function missing(what: string): never {
+  throw new RangeError(`thiếu ${what}`);
+}

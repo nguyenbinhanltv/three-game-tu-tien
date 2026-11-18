@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { MS_CHASE, MS_DEAD, MS_RETURN, type FxMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // DV-3E: Kim Dạ Cung. Dữ liệu đợt, hàm thuần, KimDaSystem với host giả (Châm Bà, tinh anh đôi, mặc cả, Kim dạ),
 // và một lượt DungeonRoom thật đi qua sáu đợt (kể cả đố đèn 4 cột).
 process.env.DB_FILE = ':memory:';
@@ -38,7 +39,7 @@ afterEach(() => {
 const sent: { type: string; msg: unknown; to: string }[] = [];
 let acc = 76000;
 const LV = 'kim_da_cung';
-const DEF = () => content.LEVELS[LV];
+const DEF = () => at(content.LEVELS, LV);
 
 describe('dữ liệu Kim Dạ Cung', () => {
   it('sáu đợt đúng thiết kế mục 5.2, vào từ Bắc Hoang, cấp 28 (trần cấp hiện tại)', () => {
@@ -48,18 +49,18 @@ describe('dữ liệu Kim Dạ Cung', () => {
     expect(d.private).toBe(true);
     expect(d.maxRevives).toBe(2);
     expect(d.waves).toHaveLength(6);
-    expect(d.waves[0].mons.map((g) => [g.id, g.n])).toEqual([
+    expect(at(d.waves, 0).mons.map((g) => [g.id, g.n])).toEqual([
       ['mon_giac_kiem_trong_binh', 8],
       ['mon_kd_trien_bo_cham_ba', 2],
     ]);
-    expect(d.waves[1].mons[0]).toMatchObject({ id: 'mon_u_anh_cot_loc', n: 6 });
-    expect(d.waves[2].mons[0]).toMatchObject({ id: 'elite_kd_huyet_giac_ma_tuong', n: 2 });
-    expect(d.waves[3].puzzle!.points).toHaveLength(4);
-    expect(d.waves[4].mons[0].id).toBe('boss_tan_hoa_kiem_co');
-    expect(d.waves[5].mons[0].id).toBe('boss_kim_da_ma_hau');
-    expect(content.LEVELS.bac_hoang.portals).toContainEqual(expect.objectContaining({ to: LV }));
+    expect(at(d.waves, 1).mons[0]).toMatchObject({ id: 'mon_u_anh_cot_loc', n: 6 });
+    expect(at(d.waves, 2).mons[0]).toMatchObject({ id: 'elite_kd_huyet_giac_ma_tuong', n: 2 });
+    expect(at(d.waves, 3).puzzle!.points).toHaveLength(4);
+    expect(at(at(d.waves, 4).mons, 0).id).toBe('boss_tan_hoa_kiem_co');
+    expect(at(at(d.waves, 5).mons, 0).id).toBe('boss_kim_da_ma_hau');
+    expect(at(content.LEVELS, 'bac_hoang').portals).toContainEqual(expect.objectContaining({ to: LV }));
     expect(rooms.roomNameOf(LV)).toBe('dungeon-kim_da_cung');
-    expect(content.LEVEL_ASSETS[LV].palace).toBe('gilt');
+    expect(at(content.LEVEL_ASSETS, LV).palace).toBe('gilt');
   });
 
   it('thưởng: 15% tu vi, Kim Dạ Miện Phiến + Tẫn Giác, mảnh cả ba bộ bậc 5', () => {
@@ -255,7 +256,7 @@ describe('KimDaSystem với host giả', () => {
     boss.chant = { startAt: t.now, endAt: t.now + 3000 };
     adv(0.25);
     expect(log.spawned).toEqual(['bong']);
-    const sh = mons[1];
+    const sh = at(mons, 1);
     expect(sh.s.x).toBeCloseTo(20);
     expect(log.say).toContain('sys.kd_bargain');
     adv(3);
@@ -267,8 +268,8 @@ describe('KimDaSystem với host giả', () => {
     boss.chant = { startAt: t.now + 1, endAt: t.now + 3000 };
     adv(0.25);
     expect(log.spawned).toHaveLength(2);
-    mons[2].state = MS_DEAD;
-    mons[2].s.hp = 0;
+    at(mons, 2).state = MS_DEAD;
+    at(mons, 2).s.hp = 0;
     adv(3);
     expect(log.dmg).toHaveLength(0);
     expect(log.say).toContain('sys.kd_bargain_ok');
@@ -286,20 +287,20 @@ describe('KimDaSystem với host giả', () => {
     const boss = maHau();
     boss.phase = 2;
     const { adv, log, sys, pl } = mk([boss]);
-    pl[0].move = { x: 16, z: 0 };
+    at(pl, 0).move = { x: 16, z: 0 };
     adv(0.25);
     expect(log.say).toContain('sys.kd_night');
     expect(sys.litCount()).toBe(2);
     expect(log.dmg).toHaveLength(0);
     expect(log.fx.filter((f) => f.t === 'kd_stele').map((f) => f.pg)).toEqual([1, 1]);
-    pl[0].move = { x: 0, z: 30 };
+    at(pl, 0).move = { x: 0, z: 30 };
     log.dmg.length = 0;
     adv(1);
     const n = log.dmg.filter((d) => d.src === 'kd_night').reduce((s, d) => s + d.n, 0);
     expect(n).toBeGreaterThanOrEqual(36);
     expect(n).toBeLessThanOrEqual(44);
     // Người đứng bia phải: bia trái trống quá 6 s thì tắt; còn lại người đó vẫn an toàn.
-    pl[0].move = { x: 16, z: 0 };
+    at(pl, 0).move = { x: 16, z: 0 };
     log.dmg.length = 0;
     adv(8);
     // Trong 8 s boss đã dập bia trái (bia đầu tiên còn sáng): bia tắt, người ở bia phải vẫn không mất máu.
@@ -313,7 +314,7 @@ describe('KimDaSystem với host giả', () => {
     const boss = maHau();
     boss.phase = 2;
     const { adv, log, pl } = mk([boss]);
-    pl[0].move = { x: -16, z: 0 };
+    at(pl, 0).move = { x: -16, z: 0 };
     adv(7);
     expect(log.say).not.toContain('sys.kd_stele_out');
     adv(3);
@@ -326,7 +327,7 @@ describe('KimDaSystem với host giả', () => {
     const { adv, log, mons, t } = mk([boss]);
     boss.chant = { startAt: t.now, endAt: t.now + 3000 };
     adv(0.25);
-    const sh = mons[1];
+    const sh = at(mons, 1);
     boss.state = MS_DEAD;
     adv(4);
     expect(sh.state).toBe(MS_DEAD);
@@ -346,7 +347,7 @@ describe('KimDaSystem với host giả', () => {
     boss.phase = 1;
     boss.chant = { startAt: t.now, endAt: t.now + 3000 };
     adv(0.25);
-    const sh = mons[1];
+    const sh = at(mons, 1);
     expect(sh.state).not.toBe(MS_DEAD);
     boss.evadeUntil = t.now + 10000;
     adv(0.25);
@@ -359,7 +360,7 @@ describe('KimDaSystem với host giả', () => {
     const { adv, mons, t } = mk([boss]);
     boss.chant = { startAt: t.now, endAt: t.now + 3000 };
     adv(0.25);
-    expect(mons[1].minionOf).toBe('mh');
+    expect(at(mons, 1).minionOf).toBe('mh');
   });
 
   it('chú của boss bị ngắt giữa chừng: bóng gỡ, không phạt, không phạt lần sau cho chú cũ', () => {
@@ -368,7 +369,7 @@ describe('KimDaSystem với host giả', () => {
     const { adv, log, mons, t } = mk([boss]);
     boss.chant = { startAt: t.now, endAt: t.now + 3000 };
     adv(0.25);
-    const sh = mons[1];
+    const sh = at(mons, 1);
     boss.chant = null;
     boss.stunUntil = t.now + 5000;
     adv(4);
@@ -390,7 +391,7 @@ describe('KimDaSystem với host giả', () => {
     boss.phase = 1;
     boss.chant = { startAt: t.now, endAt: t.now + 3000 };
     adv(0.25);
-    const sh = mons[1];
+    const sh = at(mons, 1);
     boss.state = MS_RETURN;
     adv(0.25);
     expect(sh.state).toBe(MS_DEAD);

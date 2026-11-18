@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { MF_CHANT, MS_DEAD, type MonsterRift } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // DV-3D: Xích Tẫn Khích. Dữ liệu đợt, hàm thuần giữ bia/khe mạch, SteleHold + RiftVeins với host giả,
 // và một lượt DungeonRoom thật đi qua đợt 4 (giữ bia), đợt 6 (khe mạch gột boss).
 process.env.DB_FILE = ':memory:';
@@ -35,7 +36,7 @@ afterEach(() => {
 const sent: { type: string; msg: unknown; to: string }[] = [];
 let acc = 74000;
 const LV = 'xich_tan_khich';
-const DEF = () => content.LEVELS[LV];
+const DEF = () => at(content.LEVELS, LV);
 
 describe('dữ liệu Xích Tẫn Khích', () => {
   it('sáu đợt đúng thiết kế mục 5.1, vào từ Bắc Hoang, cấp 28 (trần cấp hiện tại)', () => {
@@ -45,7 +46,7 @@ describe('dữ liệu Xích Tẫn Khích', () => {
     expect(d.private).toBe(true);
     expect(d.maxRevives).toBe(2);
     expect(d.waves).toHaveLength(6);
-    expect(d.waves.map((w) => w.mons[0].id)).toEqual([
+    expect(d.waves.map((w) => at(w.mons, 0).id)).toEqual([
       'mon_giac_kiem_trong_binh',
       'mon_liet_hoa_ma_nguu',
       'boss_xich_tan_cu_khoi',
@@ -53,10 +54,10 @@ describe('dữ liệu Xích Tẫn Khích', () => {
       'boss_tu_nhan_ma_tuong',
       'boss_tu_quang_duc_chu',
     ]);
-    expect(d.waves[0].mons[0].n).toBe(10);
-    expect(d.waves[1].mons[0].n).toBe(6);
-    expect(d.waves[3].steles!.secs).toBe(60);
-    expect(content.LEVELS.bac_hoang.portals).toContainEqual(expect.objectContaining({ to: LV }));
+    expect(at(at(d.waves, 0).mons, 0).n).toBe(10);
+    expect(at(at(d.waves, 1).mons, 0).n).toBe(6);
+    expect(at(d.waves, 3).steles!.secs).toBe(60);
+    expect(at(content.LEVELS, 'bac_hoang').portals).toContainEqual(expect.objectContaining({ to: LV }));
     expect(rooms.roomNameOf(LV)).toBe('dungeon-xich_tan_khich');
   });
 
@@ -70,7 +71,7 @@ describe('dữ liệu Xích Tẫn Khích', () => {
   it('Tử Quang Dực Chủ: bay 2,5 m, pha 3 niệm chú hút mạch, ba khe mạch ba tầng cháy', () => {
     const b = content.MONSTER.get('boss_tu_quang_duc_chu')!;
     expect(b.hover).toBe(2.5);
-    expect(b.phases![1].ai!.chant!.drain).toBeGreaterThan(0);
+    expect(at(b.phases!, 1).ai!.chant!.drain).toBeGreaterThan(0);
     expect(b.rift).toMatchObject({ phase: 2, burn: 3, weak: 6 });
     expect(b.rift!.veins).toHaveLength(3);
   });
@@ -284,7 +285,7 @@ describe('room thật', () => {
       {},
       { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true },
     );
-    const p = [...room.sim.players.values()][0];
+    const p = at([...room.sim.players.values()], 0);
     return { room: room as unknown as TestRoom, sim: room.sim, p };
   }
 
@@ -337,8 +338,8 @@ describe('room thật', () => {
     expect(sim.hazards.some((h) => h.mon === boss)).toBe(true);
     const rift = boss.def.rift!;
     for (let i = 0; i < 3; i++) {
-      boss.s.x = rift.veins[i].x;
-      boss.s.z = rift.veins[i].z;
+      boss.s.x = at(rift.veins, i).x;
+      boss.s.z = at(rift.veins, i).z;
       boss.chant = { startAt: 100 + i, endAt: 9999 };
       room.veins!.tick();
     }

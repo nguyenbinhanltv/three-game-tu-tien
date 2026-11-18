@@ -15,6 +15,7 @@ import {
   type BossTimerMsg,
 } from '@dtl/shared';
 
+import { at, missing } from '@dtl/shared';
 // M-2: bãi quái theo cụm, hồi sinh theo số người, giờ hồi sinh tinh anh/boss, AOI.
 process.env.DB_FILE = ':memory:';
 
@@ -76,7 +77,7 @@ function setup() {
   return { sim, sent, join, kill };
 }
 
-const level = () => LEVELS['van_lam'];
+const level = () => at(LEVELS, 'van_lam');
 const members = (rt: { melee: Mon[]; ranged?: Mon }) => (rt.ranged ? [...rt.melee, rt.ranged] : rt.melee);
 
 describe('bãi quái theo cụm', () => {
@@ -101,13 +102,14 @@ describe('bãi quái theo cụm', () => {
     for (const rt of sim.camps.camps) {
       const ms = rt.melee;
       for (let i = 0; i < ms.length; i++)
-        for (let j = i + 1; j < ms.length; j++) expect(Math.hypot(ms[i].s.x - ms[j].s.x, ms[i].s.z - ms[j].s.z)).toBeLessThan(23);
+        for (let j = i + 1; j < ms.length; j++)
+          expect(Math.hypot(at(ms, i).s.x - at(ms, j).s.x, at(ms, i).s.z - at(ms, j).s.z)).toBeLessThan(23);
     }
   });
   it('hạ một phần không hẹn tái sinh; hạ hết cụm thì hẹn theo số người (không người: 25 s)', () => {
     const { sim, kill } = setup();
-    const rt = sim.camps.camps[0];
-    const [first, ...rest] = members(rt);
+    const rt = at(sim.camps.camps, 0);
+    const [first = missing('thiếu quái đầu'), ...rest] = members(rt);
     kill(first);
     expect(rt.respawnAt).toBe(0);
     const t0 = sim.now;
@@ -118,7 +120,7 @@ describe('bãi quái theo cụm', () => {
   });
   it('cả cụm tái sinh cùng lúc, đúng đội hình, đầy máu; chưa tới giờ thì chưa', () => {
     const { sim, kill } = setup();
-    const rt = sim.camps.camps[0];
+    const rt = at(sim.camps.camps, 0);
     for (const m of members(rt)) kill(m);
     sim.now = rt.respawnAt - 1;
     sim.camps.tick();
@@ -136,8 +138,8 @@ describe('bãi quái theo cụm', () => {
   });
   it('quái chết không tự hồi sinh lẻ (cụm quản), dù tới giờ riêng', () => {
     const { sim, kill } = setup();
-    const rt = sim.camps.camps[0];
-    const [a, ...rest] = members(rt);
+    const rt = at(sim.camps.camps, 0);
+    const [a = missing('thiếu quái đầu'), ...rest] = members(rt);
     kill(a);
     sim.now += 120_000;
     (sim as unknown as { tickMonster(m: Mon, dt: number): void }).tickMonster(a, 0.05);
@@ -146,7 +148,7 @@ describe('bãi quái theo cụm', () => {
   });
   it('đông người trong vùng: hồi nhanh hơn và cụm đẻ nhiều con hơn (tối đa 1,5 lần); vắng lại thì gỡ con thừa', () => {
     const { sim, join, kill } = setup();
-    const rt = sim.camps.camps[0];
+    const rt = at(sim.camps.camps, 0);
     const crowd: Ent[] = [];
     for (let i = 0; i < 12; i++) crowd.push(join(rt.def.x + i * 0.2, rt.def.z));
     const t0 = sim.now;
@@ -174,7 +176,7 @@ describe('bãi quái theo cụm', () => {
   });
   it('người "ma" (mất kết nối) hay treo máy không được tính vào số người trong vùng', () => {
     const { sim, join, kill } = setup();
-    const rt = sim.camps.camps[0];
+    const rt = at(sim.camps.camps, 0);
     for (let i = 0; i < 12; i++) {
       const p = join(rt.def.x + i * 0.2, rt.def.z);
       if (i % 2 === 0) p.connected = false;
@@ -191,7 +193,7 @@ describe('bãi quái theo cụm', () => {
     const { sim, join } = setup();
     const rt = sim.camps.camps.find((c) => c.melee.length >= 3)!;
     const p = join(rt.def.x, rt.def.z);
-    const [a, ...rest] = rt.melee;
+    const [a = missing('thiếu quái đầu'), ...rest] = rt.melee;
     // Vị trí trong bãi theo đội hình (`formationSlots`) cộng lệch ngẫu nhiên ±0,8 m mỗi con, nên có lượt không con nào nằm trong 14 m
     // (test từng đỏ trên CI vì vậy): đặt tay cho xác định, một con sát bên (6 m), các con còn lại ngoài tầm (20 m trở ra).
     rest.forEach((m, i) => {
@@ -200,7 +202,7 @@ describe('bãi quái theo cụm', () => {
     });
     (sim as unknown as { aggroMonster(m: Mon, p: Ent): void }).aggroMonster(a, p);
     expect(a.state).toBe(MS_CHASE);
-    const [near, ...far] = rest;
+    const [near = missing('thiếu quái gần'), ...far] = rest;
     expect(near.state).toBe(MS_CHASE);
     expect(near.target).toBe(p.sid);
     for (const m of far) expect(m.state).toBe(MS_IDLE);
@@ -247,7 +249,7 @@ describe('giờ hồi sinh tinh anh và boss', () => {
   it('quái trong bãi không có trong danh sách giờ hồi sinh (cụm quản)', () => {
     const { sim, kill } = setup();
     const before = sim.bossTimers().list.length;
-    const rt = sim.camps.camps[0];
+    const rt = at(sim.camps.camps, 0);
     for (const m of members(rt)) kill(m);
     expect(sim.bossTimers().list.length).toBe(before);
   });
@@ -269,7 +271,7 @@ describe('AOI: chỉ đồng bộ quái/người trong tầm', () => {
 
   it('thấy quái trong AOI_IN, giữ tới AOI_OUT (trễ), bỏ khi quá; người xa không thấy', () => {
     const { sim, join } = setup();
-    const rt = sim.camps.camps[0];
+    const rt = at(sim.camps.camps, 0);
     const a = join(rt.def.x, rt.def.z);
     const far = join(rt.def.x + 1500, rt.def.z);
     const views = new Map<string, FakeView>([
@@ -301,28 +303,28 @@ describe('AOI: chỉ đồng bộ quái/người trong tầm', () => {
   });
   it('quái bị gỡ khỏi thế giới thì AOI chỉ quên, không lỗi', () => {
     const { sim, join } = setup();
-    const rt = sim.camps.camps[0];
+    const rt = at(sim.camps.camps, 0);
     const a = join(rt.def.x, rt.def.z);
     const v = new FakeView();
     const aoi = new Aoi(sim);
     aoi.update(() => asView(v));
-    const m = rt.melee[rt.melee.length - 1];
+    const m = at(rt.melee, rt.melee.length - 1);
     (sim as unknown as { removeMonster(m: Mon): void }).removeMonster(m);
     expect(() => aoi.update(() => asView(v))).not.toThrow();
     void a;
   });
   it('tin FX/sát thương ở xa không gửi cho người ngoài tầm (nhưng người có tên trong tin vẫn nhận)', () => {
     const { sim, sent, join } = setup();
-    const rt = sim.camps.camps[0];
+    const rt = at(sim.camps.camps, 0);
     const a = join(rt.def.x, rt.def.z);
     const far = join(rt.def.x + 1500, rt.def.z);
     sent.length = 0;
-    sim.fx({ t: 'sword', src: a.sid, dst: rt.melee[0].id });
+    sim.fx({ t: 'sword', src: a.sid, dst: at(rt.melee, 0).id });
     const m = sent.find((s) => s.type === S.FX)!;
     expect(m.except?.has(far.sid)).toBe(true);
     expect(m.except?.has(a.sid)).toBeFalsy();
     sent.length = 0;
-    sim.fx({ t: 'sword', src: far.sid, dst: rt.melee[0].id });
+    sim.fx({ t: 'sword', src: far.sid, dst: at(rt.melee, 0).id });
     const m2 = sent.find((s) => s.type === S.FX)!;
     expect(m2.except?.has(far.sid)).toBeFalsy();
     expect(AOI_OUT).toBeGreaterThan(AOI_IN);

@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { groundAt, MS_DEAD, S } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E2-G: chiêu bậc 2–3 (Lạc Kiếm Quyết / Bất Động Kim Thân / Thanh Mộc Đan Kinh). Server áp sát thương tại hitAt như K-2.
 process.env.DB_FILE = ':memory:';
 
@@ -523,7 +524,7 @@ describe('SETS-4: hiệu ứng 4 món của bộ bậc 4 nối vào chiêu', () 
   });
   afterAll(() => {
     ['skl_anh_duoc_hoa_than', 'skl_anh_thiet_than'].forEach(
-      (id, i) => ((METHOD_SKILLS.find((x) => x.id === id) as { locked?: boolean }).locked = unlocked[i].locked),
+      (id, i) => ((METHOD_SKILLS.find((x) => x.id === id) as { locked?: boolean }).locked = at(unlocked, i).locked),
     );
   });
   it('Anh Dược Hóa Thân hồi thêm anhDuocBoost', () => {

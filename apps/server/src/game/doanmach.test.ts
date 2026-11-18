@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { HOME_LEVEL, S, TELE_CAST_LEVEL_MS, TELE_PAD, TELE_TOUCH_R, terrainOf, type TransferMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E2-A: Đoạn Mạch Cổ Cốc (level thật) đi qua đường vé + Truyền Tống như E1-B: Vân Lam → dm_tp_tram, tới nơi trận tự mở, trận vùng chưa mở thì từ chối, về bằng trận tông môn.
 process.env.DB_FILE = ':memory:';
 process.env.AUTH_DEV_BYPASS = '1';
@@ -31,7 +32,7 @@ let nextAcc = 41000;
 
 function mkRoom(levelId: string, cls: { prototype: object }) {
   const room = Object.create(cls.prototype) as InstanceType<Rooms['GameRoom']> & { sim: InstanceType<typeof GameSim> };
-  const lv = LEVELS[levelId];
+  const lv = at(LEVELS, levelId);
   const spawn = lv.spawn ?? { x: 2048, z: 2088 };
   room.sim = new GameSim(new WorldState(), room as never, { levelId, roomName: levelId, spawn, respawn: spawn, persistPosition: true });
   const enter = (char: InstanceType<typeof Character>, spawnAt: { x: number; z: number } | null = null): Ent => {

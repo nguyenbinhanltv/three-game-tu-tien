@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { groundAt, MS_DEAD, PF_DEAD } from '@dtl/shared';
 
+import { at, missing } from '@dtl/shared';
 // E4-G: chiêu Nguyên Anh (24/26) và biến thức cấp 28. Dựng sim như e2g.test.ts.
 process.env.DB_FILE = ':memory:';
 
@@ -221,7 +222,7 @@ describe('E4-G: chiêu Nguyên Anh', () => {
       fresh(p);
       sim.onSkill(p, { id: 'skl_anh_duoc_hoa_than' });
       wait(4200);
-      return mates.map((o, i) => o.char.hp - before[i] > o.char.mhp * 0.35);
+      return mates.map((o, i) => o.char.hp - at(before, i) > o.char.mhp * 0.35);
     };
     expect(run()).toEqual([true, false, false]);
     expect(run('a')).toEqual([true, true, false]);
@@ -442,8 +443,8 @@ describe('E4-G: soát netcode #211', () => {
       a.wait(1500);
       return calls.map((c) => c.power);
     };
-    const [m0, e0] = echoPower(0);
-    const [m1, e1] = echoPower(1);
+    const [m0 = missing('thiếu m0'), e0 = missing('thiếu e0')] = echoPower(0);
+    const [m1 = missing('thiếu m1'), e1 = missing('thiếu e1')] = echoPower(1);
     expect(m1).toBeCloseTo(m0 * 2, 5);
     expect(e1).toBeCloseTo(e0, 5);
   });

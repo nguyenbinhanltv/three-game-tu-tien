@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { groundAt, MF_REAL, MF_SENSED, MS_CHASE, MS_DEAD, PF_DEAD, S, xpNeed, type FxMsg, type TransferMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E3-M: Kính Nguyệt Cung. Dữ liệu đợt, vé, đố ba gương, bóng giả/lặp lại/đĩa gương/nguyệt phản của Kính Nguyệt Chân Quân,
 // Định Thần Phù, thưởng một lần mỗi ngày (transaction + idem + ledger).
 process.env.DB_FILE = ':memory:';
@@ -47,7 +48,7 @@ interface Sent {
 const sent: Sent[] = [];
 let acc = 58000;
 const LV = 'kinh_nguyet';
-const DEF = () => content.LEVELS[LV];
+const DEF = () => at(content.LEVELS, LV);
 const keys = (p: Ent) =>
   sent.filter((s) => s.type === S.SYS && (s.to === p.char.name || s.to === '*')).map((s) => (s.msg as { k: string }).k);
 const fxs = (t: string) => sent.filter((s) => s.type === S.FX && (s.msg as FxMsg).t === t).map((s) => s.msg as FxMsg);
@@ -76,7 +77,7 @@ type TestRoom = InstanceType<Rooms['GameRoom']> & {
 async function mkRoom(levelId: string, cls: { prototype: object }) {
   const { Aoi } = await import('../aoi');
   const room = Object.create(cls.prototype) as Record<string, unknown> & { sim: InstanceType<typeof GameSim> };
-  const lv = content.LEVELS[levelId];
+  const lv = at(content.LEVELS, levelId);
   const spawn = lv.dungeon?.spawn ?? lv.spawn!;
   room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
   room.sim = new GameSim(new WorldState(), room as never, {
@@ -119,15 +120,15 @@ describe('dữ liệu Kính Nguyệt Cung', () => {
     const d = DEF().dungeon!;
     expect(d.minLevel).toBe(21);
     expect(d.waves).toHaveLength(5);
-    const tally = (i: number) => d.waves[i].mons.map((m) => `${m.id}×${m.n}`);
+    const tally = (i: number) => at(d.waves, i).mons.map((m) => `${m.id}×${m.n}`);
     expect(tally(0)).toEqual(['mon_kinh_linh×8']);
     expect(tally(1)).toEqual(['elite_kinh_dien_ma_quan×1']);
-    expect(d.waves[2].puzzle!.points).toHaveLength(3);
-    expect(d.waves[2].puzzle!.secs).toBe(20);
-    expect(d.waves[2].puzzle!.bossCut).toBe(0.08);
+    expect(at(d.waves, 2).puzzle!.points).toHaveLength(3);
+    expect(at(d.waves, 2).puzzle!.secs).toBe(20);
+    expect(at(d.waves, 2).puzzle!.bossCut).toBe(0.08);
     expect(tally(3)).toEqual(['mon_kinh_linh×6', 'mon_phu_dao_thach_quy×2']);
     expect(tally(4)).toEqual(['boss_kinh_nguyet_chan_quan×1']);
-    expect(content.LEVELS[d.returnLevel].dungeon).toBeUndefined();
+    expect(at(content.LEVELS, d.returnLevel).dungeon).toBeUndefined();
     expect(rooms.roomNameOf(LV)).toBe('dungeon-kinh_nguyet');
     expect(d.private).toBe(true);
   });
@@ -142,7 +143,7 @@ describe('dữ liệu Kính Nguyệt Cung', () => {
     expect(b.mirror!.disc).toMatchObject({ phase: 1, beams: 3, dur: 8 });
     expect(b.mirror!.veil).toMatchObject({ phase: 2, r: 14 });
     expect(content.MONSTER.get('mon_kinh_anh_gia')!.hpMul).toBeLessThanOrEqual(0.1);
-    expect(DEF().dungeon!.waves[4].mons[0].level).toBe(23);
+    expect(at(at(DEF().dungeon!.waves, 4).mons, 0).level).toBe(23);
   });
 
   it('thưởng: 15% tu vi, Kính Hoa Sa, mảnh cả ba bộ bậc 3', () => {
@@ -202,8 +203,8 @@ describe('đố ba gương (MirrorPuzzle)', () => {
     pz.start();
     const order = () => (pz as unknown as { order: number[] }).order;
     const touch = (i: number) => {
-      pl.x = pts[i].x;
-      pl.z = pts[i].z;
+      pl.x = at(pts, i).x;
+      pl.z = at(pts, i).z;
       pz.tick();
     };
     const away = () => {
@@ -233,7 +234,7 @@ describe('đố ba gương (MirrorPuzzle)', () => {
 
   it('chạm sai rồi đứng yên trên cột: không bị tính chạm mới, chỉ một lần phạt', () => {
     const { pz, log, order, touch } = mk();
-    touch(order()[1]);
+    touch(at(order(), 1));
     expect(log.wrong).toBe(1);
     for (let i = 0; i < 6; i++) pz.tick();
     expect(log.wrong).toBe(1);
@@ -242,7 +243,7 @@ describe('đố ba gương (MirrorPuzzle)', () => {
 
   it('chạm sai thứ tự hoặc hết giờ: quái phạt, đố lại; quá 3 lần thì bỏ đố không thưởng', () => {
     const { pz, log, order, touch, away, wait } = mk();
-    touch(order()[1]);
+    touch(at(order(), 1));
     expect(log.wrong).toBe(1);
     expect(log.say).toContain('sys.mirror_puzzle_bad');
     away();
@@ -276,7 +277,7 @@ describe('vé và vào room', () => {
   it('cổng ở bản đồ trả về: đủ cấp 21 mới có vé, room riêng dungeon-kinh_nguyet', async () => {
     const ret = DEF().dungeon!.returnLevel;
     const w = await mkRoom(ret, rooms.defineWorld(ret));
-    const portal = content.LEVELS[ret].portals!.find((q) => q.to === LV)!;
+    const portal = at(content.LEVELS, ret).portals!.find((q) => q.to === LV)!;
     const hi = prime(w.join(mkChar('knhi', 21), { ticket: false }), 21);
     const lo = prime(w.join(mkChar('knlo', 19), { ticket: false }), 19);
     for (const m of [hi, lo]) {
@@ -333,10 +334,10 @@ describe('đợt trong room: đố gương chặn director', () => {
     r.room.director();
     expect(r.room.wave).toBe(3);
     const pz = (r.room as unknown as { puzzle: { order: number[] } }).puzzle;
-    const pts = DEF().dungeon!.waves[2].puzzle!.points;
+    const pts = at(DEF().dungeon!.waves, 2).puzzle!.points;
     for (const i of pz.order) {
-      p.move.x = pts[i].x;
-      p.move.z = pts[i].z;
+      p.move.x = at(pts, i).x;
+      p.move.z = at(pts, i).z;
       r.room.director();
       p.move.x += 50;
       r.room.director();
@@ -393,14 +394,14 @@ describe('Kính Nguyệt Chân Quân (MirrorSystem)', () => {
     expect(dec).toHaveLength(3);
     for (const d of dec) expect(Math.hypot(d.s.x - boss.s.x, d.s.z - boss.s.z)).toBeCloseTo(12, 0);
     expect(boss.s.mf & MF_REAL).toBe(MF_REAL);
-    expect(dec[0].s.mf & MF_REAL).toBe(0);
-    expect(dec[0].s.mhp).toBeLessThan(boss.s.mhp / 100);
+    expect(at(dec, 0).s.mf & MF_REAL).toBe(0);
+    expect(at(dec, 0).s.mhp).toBeLessThan(boss.s.mhp / 100);
     expect(keys(p)).toContain('sys.mirror_split');
     const before = sim.hazards.length;
-    r.sim.damageMonster(dec[0], dec[0].s.mhp, p);
-    expect(dec[0].state).toBe(MS_DEAD);
+    r.sim.damageMonster(at(dec, 0), at(dec, 0).s.mhp, p);
+    expect(at(dec, 0).state).toBe(MS_DEAD);
     expect(sim.hazards.length).toBe(before + 1);
-    expect(sim.hazards.at(-1)!.src).toBe(dec[0].id);
+    expect(sim.hazards.at(-1)!.src).toBe(at(dec, 0).id);
     expect(fxs('mirror_shatter')).toHaveLength(1);
     expect(decoys(r)).toHaveLength(2);
   });

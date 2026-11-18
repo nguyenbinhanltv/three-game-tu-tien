@@ -15,6 +15,7 @@ import {
   type TransferMsg,
 } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E1-B: room theo level, vé chuyển bản đồ một lần (hết hạn 15 s), chặn khi bận/giao chiến, Truyền Tống liên level hai chiều.
 // Dùng một level thử nhỏ (`test_isle`) đăng ký ngay trong test: chưa có bản đồ thật (E2-A).
 process.env.DB_FILE = ':memory:';
@@ -84,7 +85,7 @@ const sent: Sent[] = [];
 /** Một "room" dựng không qua Colyseus: đủ để gọi `requestLevel`, `prepareChar`, `onPortal` như thật. */
 function mkRoom(levelId: string, cls: { prototype: object }) {
   const room = Object.create(cls.prototype) as InstanceType<Rooms['GameRoom']> & { sim: InstanceType<typeof GameSim> };
-  const lv = LEVELS[levelId];
+  const lv = at(LEVELS, levelId);
   const spawn = lv.dungeon?.spawn ?? lv.spawn ?? { x: 2048, z: 2088 };
   room.sim = new GameSim(new WorldState(), room as never, {
     levelId,
@@ -410,7 +411,7 @@ describe('đến nơi qua onJoin thật', () => {
 describe('bí cảnh theo dữ liệu', () => {
   it('cổng Vân Lam cấp vé bí cảnh khi đủ cấp và đứng gần cổng; xa hoặc thấp cấp thì không', () => {
     const w = mkRoom(HOME_LEVEL, rooms.WorldRoom);
-    const portal = LEVELS[HOME_LEVEL].portals![0];
+    const portal = at(at(LEVELS, HOME_LEVEL).portals!, 0);
     const p = w.join('cong', 8);
     p.move.x = portal.x + 100;
     w.room.onPortal(p);
@@ -430,7 +431,7 @@ describe('bí cảnh theo dữ liệu', () => {
 
   it('cổng ra bí cảnh cấp vé về returnLevel kèm returnSpawn; đăng nhập lại giữa bí cảnh thì về đó', () => {
     const d = mkRoom('kiem_trung', rooms.DungeonRoom);
-    const def = LEVELS.kiem_trung.dungeon!;
+    const def = at(LEVELS, 'kiem_trung').dungeon!;
     const p = d.join('ra');
     p.move.x = def.exit.x;
     p.move.z = def.exit.z;
@@ -466,7 +467,7 @@ describe('bí cảnh theo dữ liệu', () => {
     expect(d.room.resumeTarget(char)).toBeNull();
     const p = d.enter(char);
     expect(p.char.room).toBe('kiem_trung');
-    const sp = LEVELS.kiem_trung.dungeon!.spawn;
+    const sp = at(LEVELS, 'kiem_trung').dungeon!.spawn;
     expect(Math.hypot(p.move.x - sp.x, p.move.z - sp.z)).toBeLessThan(0.5);
   });
 

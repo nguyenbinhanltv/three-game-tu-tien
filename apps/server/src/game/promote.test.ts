@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { PROMOTE_MAT, PROMOTE_MAT_COUNT, promoteGold, TIER_MUL, type FxMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 process.env.DB_FILE = ':memory:';
 
 type Ch = InstanceType<typeof import('./character').Character>;
@@ -66,7 +67,7 @@ describe('Thăng Bậc', () => {
     expect(after.inst!.ilvl).toBeGreaterThanOrEqual(17);
     // dòng chính: hệ số bậc 1,6 trở lên so với cùng cấp bậc 1
     const sum = (m: Record<string, number | undefined>) => Object.values(m).reduce<number>((a, b) => a + (b ?? 0), 0);
-    expect(sum(after.inst!.main)).toBeGreaterThan(sum(before.main) * TIER_MUL[2] * 0.9);
+    expect(sum(after.inst!.main)).toBeGreaterThan(sum(before.main) * at(TIER_MUL, 2) * 0.9);
     expect(t.count(MAT)).toBe(3);
     expect(t.c.gold).toBe(50);
     expect(t.msgs).toContain('sys.promoted');

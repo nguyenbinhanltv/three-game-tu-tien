@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { type HazardMsg, MS_CHASE, S, pullStep } from '@dtl/shared';
 import { MonZones, POOL_MAX, type MonZoneHost, type ZoneMon, type ZonePlayer } from './monzone';
 
+import { at } from '@dtl/shared';
 // E3-G: Nuốt (kéo người chơi) của Vân Hải Kình Vương và vũng độc khi chết của Bích Ngọc Kim Thiền.
 process.env.DB_FILE = ':memory:';
 
@@ -24,7 +25,7 @@ const DT = 50;
 type Private = { tickHazards(): void; releaseChant(m: unknown, c: unknown): void };
 
 function setup(monId: string, lv = 23) {
-  const KN = SH.levelSpawns(C.LEVELS.van_hai).find((s) => s.mon === 'boss_van_hai_kinh_vuong')!;
+  const KN = SH.levelSpawns(at(C.LEVELS, 'van_hai')).find((s) => s.mon === 'boss_van_hai_kinh_vuong')!;
   const X = KN.x;
   const Z = KN.z;
   const sent: { type: string; msg: unknown }[] = [];

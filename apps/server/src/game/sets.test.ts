@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { DUST_ITEM, type FxMsg } from '@dtl/shared';
 import { FORGE, ITEM, SETS } from '@dtl/content';
 
+import { at } from '@dtl/shared';
 process.env.DB_FILE = ':memory:';
 
 type Ch = InstanceType<typeof import('./character').Character>;
@@ -201,7 +202,7 @@ describe('chế tạo bộ ở Thiết lão', () => {
     wear(set.pieces.slice(0, 1));
     expect(t.c.stats.setFx.phiKiemExtra).toBe(0);
     wear(set.pieces.slice(0, 2));
-    expect(t.c.stats.sets[0].n).toBe(2);
+    expect(at(t.c.stats.sets, 0).n).toBe(2);
     expect(t.c.stats.setFx.phiKiemExtra).toBe(0);
     wear(set.pieces);
     expect(t.c.stats.setFx.phiKiemExtra).toBe(0.2);

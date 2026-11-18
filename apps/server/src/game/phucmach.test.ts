@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { groundAt, MS_CHASE, MS_DEAD, PF_DEAD, S, xpNeed, type HazardMsg, type TransferMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E2-C: Phục Mạch Quật. Dữ liệu đợt, vé một lần, room theo dữ liệu (điểm sinh, khóa sau đợt 2, giới hạn hồi sinh), thưởng một lần mỗi
 // ngày bằng transaction + idem + ledger, hút mạch của Thôn Mạch (phá chú ngừng hồi) và tự bạo mạch cuối trận.
 process.env.DB_FILE = ':memory:';
@@ -44,7 +45,7 @@ interface Sent {
 const sent: Sent[] = [];
 let acc = 52000;
 const LV = 'phuc_mach';
-const DEF = () => content.LEVELS[LV];
+const DEF = () => at(content.LEVELS, LV);
 const keys = (p: Ent) => sent.filter((s) => s.type === S.SYS && s.to === p.char.name).map((s) => (s.msg as { k: string }).k);
 const xfers = (p: Ent) => sent.filter((s) => s.type === S.TRANSFER && s.to === p.char.name).map((s) => s.msg as TransferMsg);
 
@@ -72,7 +73,7 @@ type TestRoom = InstanceType<Rooms['GameRoom']> & {
 async function mkRoom(levelId: string, cls: { prototype: object }) {
   const { Aoi } = await import('../aoi');
   const room = Object.create(cls.prototype) as Record<string, unknown> & { sim: InstanceType<typeof GameSim> };
-  const lv = content.LEVELS[levelId];
+  const lv = at(content.LEVELS, levelId);
   const spawn = lv.dungeon?.spawn ?? lv.spawn!;
   room.broadcast = (type: string, msg: unknown) => sent.push({ type, msg, to: '*' });
   room.sim = new GameSim(new WorldState(), room as never, {
@@ -117,15 +118,15 @@ describe('dữ liệu Phục Mạch Quật', () => {
     expect(d.minLevel).toBe(17);
     expect(d.returnLevel).toBe('doan_mach');
     expect(d.waves).toHaveLength(5);
-    const tally = (i: number) => d.waves[i].mons.map((m) => `${m.id}×${m.n}`);
+    const tally = (i: number) => at(d.waves, i).mons.map((m) => `${m.id}×${m.n}`);
     expect(tally(0)).toEqual(['mon_khai_mach_khoi_loi×8']);
     expect(tally(1)).toEqual(['mon_mach_thuong_ho_ve×4', 'elite_ho_mach_khoi_tuong×1']);
-    expect(d.waves[2].mons.reduce((a, m) => a + m.n, 0)).toBe(10);
-    expect(d.waves[2].points).toHaveLength(3);
-    expect(d.waves[3].mons[0].id).toBe('boss_thach_tam_khoi_vuong');
-    expect(d.waves[4].mons[0].id).toBe('boss_thon_mach_ngo_cong_vuong');
+    expect(at(d.waves, 2).mons.reduce((a, m) => a + m.n, 0)).toBe(10);
+    expect(at(d.waves, 2).points).toHaveLength(3);
+    expect(at(at(d.waves, 3).mons, 0).id).toBe('boss_thach_tam_khoi_vuong');
+    expect(at(at(d.waves, 4).mons, 0).id).toBe('boss_thon_mach_ngo_cong_vuong');
     expect(d.maxRevives).toBe(2);
-    expect(content.LEVELS.doan_mach.portals).toContainEqual(expect.objectContaining({ to: LV }));
+    expect(at(content.LEVELS, 'doan_mach').portals).toContainEqual(expect.objectContaining({ to: LV }));
     expect(rooms.roomNameOf(LV)).toBe('dungeon-phuc_mach');
     expect(d.waves.flatMap((w) => w.mons).map((m) => m.level)).toEqual([18, 18, 18, 18, 18, 18, 18, 19]);
   });
@@ -142,13 +143,13 @@ describe('dữ liệu Phục Mạch Quật', () => {
     expect(b.hpMul).toBe(75);
     expect(b.xpMul).toBe(22);
     expect(b.ai!.chant!.drain).toBeGreaterThan(0);
-    expect(b.phases![0].hp).toBe(0.65);
-    expect(b.phases![0].ai!.burrow).toMatchObject({ r: 4, n: 3, cone: { r: 14, delay: 1.5 } });
-    expect(b.phases![0].ai!.summon).toMatchObject({ mon: 'mon_ngo_cong_au', n: 2 });
-    expect(b.phases![1].hp).toBe(0.35);
-    expect(b.phases![1].ai!.line).toMatchObject({ r: 22, w: 3, delay: 1.2 });
-    expect(b.phases![1].speedMul).toBe(1.15);
-    expect(b.phases![2].ai!.chant).toMatchObject({ r: 12 });
+    expect(at(b.phases!, 0).hp).toBe(0.65);
+    expect(at(b.phases!, 0).ai!.burrow).toMatchObject({ r: 4, n: 3, cone: { r: 14, delay: 1.5 } });
+    expect(at(b.phases!, 0).ai!.summon).toMatchObject({ mon: 'mon_ngo_cong_au', n: 2 });
+    expect(at(b.phases!, 1).hp).toBe(0.35);
+    expect(at(b.phases!, 1).ai!.line).toMatchObject({ r: 22, w: 3, delay: 1.2 });
+    expect(at(b.phases!, 1).speedMul).toBe(1.15);
+    expect(at(b.phases!, 2).ai!.chant).toMatchObject({ r: 12 });
     expect(content.MONSTER.get('boss_thach_tam_khoi_vuong')!.ai!.reveal).toBeTruthy();
   });
 });
@@ -184,7 +185,7 @@ describe('vé và vào room', () => {
 
   it('cổng Đoạn Mạch: đủ cấp trong tầm mới có vé; đồng đội cùng tổ đội trong tầm được kéo theo cùng khóa room', async () => {
     const w = await mkRoom('doan_mach', rooms.defineWorld('doan_mach'));
-    const portal = content.LEVELS.doan_mach.portals![0];
+    const portal = at(at(content.LEVELS, 'doan_mach').portals!, 0);
     const lead = prime(w.join(mkChar('pmdan', 19), { ticket: false }), 19);
     const near = prime(w.join(mkChar('pmgan', 18), { ticket: false }), 18);
     const far = prime(w.join(mkChar('pmxa', 18), { ticket: false }), 18);
@@ -272,13 +273,13 @@ describe('đợt, điểm sinh, khóa room, thưởng', () => {
     step();
     const au = alive();
     expect(au).toHaveLength(10);
-    for (const pt of d.waves[2].points!)
+    for (const pt of at(d.waves, 2).points!)
       expect(au.filter((m) => Math.hypot(m.s.x - pt.x, m.s.z - pt.z) < 4.5).length).toBeGreaterThanOrEqual(3);
     step();
     expect(alive().map((m) => m.def.id)).toEqual(['boss_thach_tam_khoi_vuong']);
     step();
     expect(alive().map((m) => m.def.id)).toEqual(['boss_thon_mach_ngo_cong_vuong']);
-    expect(alive()[0].level).toBe(19);
+    expect(at(alive(), 0).level).toBe(19);
     expect(r.locked.n).toBe(1);
   });
 

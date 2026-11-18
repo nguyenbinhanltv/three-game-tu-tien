@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { CHARGE_MAX, groundAt, MS_CHASE, MS_DEAD, PF_DEAD, S, skillUpgradeCost, type MethodMsg } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // Công pháp (Phase 3-5): server quyết định cấp chiêu, biến thức, sạc, khiêu khích, giữ.
 process.env.DB_FILE = ':memory:';
 
@@ -440,7 +441,7 @@ describe('soát netcode: lỗ hổng đã vá', () => {
     const ms = Array.from({ length: 8 }, (_, i) => mon(X + 3 + i * 0.5, Z));
     p.mth.charge = CHARGE_MAX;
     fresh(p);
-    sim.onSkill(p, { id: 'skl_van_kiem_quy_tong', t: ms[0].id });
+    sim.onSkill(p, { id: 'skl_van_kiem_quy_tong', t: at(ms, 0).id });
     expect(p.mth.charge).toBe(0);
     expect(p.mth.lockCharge).toBe(false);
   });

@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { type HazardMsg, MF_REFLECT, MF_WEAK, MS_CHASE, S } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E3-B: quái, tinh anh, boss ngoài trời của Vân Hải Phù Đảo dùng các kiểu chiêu E1-E bằng dữ liệu thật trong monsters.json.
 // Đấu trường Kình Ngư Đài là mặt đảo phẳng; người chơi đứng cách quái `dist` m về phía nam.
 process.env.DB_FILE = ':memory:';
@@ -26,7 +27,7 @@ const DT = 50;
 type Private = { tickMonster(m: unknown, dt: number): void; tickHazards(): void; checkPhase(m: unknown): void };
 
 function setup(id: string, lv: number, dist: number) {
-  const KN = SH.levelSpawns(C.LEVELS.van_hai).find((s) => s.mon === 'boss_van_hai_kinh_vuong')!;
+  const KN = SH.levelSpawns(at(C.LEVELS, 'van_hai')).find((s) => s.mon === 'boss_van_hai_kinh_vuong')!;
   const X = KN.x;
   const Z = KN.z;
   const sent: { type: string; msg: unknown }[] = [];
@@ -87,7 +88,7 @@ describe('dữ liệu Vân Hải', () => {
   ];
 
   it('level chỉ dùng quái riêng của Vân Hải (không còn quái tạm Đoạn Mạch), cấp 20–23, có bảng rơi, không `drops` trong monsters.json', () => {
-    const spawns = SH.levelSpawns(C.LEVELS.van_hai);
+    const spawns = SH.levelSpawns(at(C.LEVELS, 'van_hai'));
     expect([...new Set(spawns.map((s) => s.mon))].sort()).toEqual(ids);
     for (const s of spawns) {
       expect(s.levelMin).toBeGreaterThanOrEqual(20);
@@ -100,7 +101,7 @@ describe('dữ liệu Vân Hải', () => {
   });
 
   it('thiết kế: 12 tinh anh, đúng một boss ở tâm Kình Ngư Đài, hồi sinh 30 phút', () => {
-    const spawns = SH.levelSpawns(C.LEVELS.van_hai);
+    const spawns = SH.levelSpawns(at(C.LEVELS, 'van_hai'));
     expect(spawns.filter((s) => C.MONSTER.get(s.mon)!.elite)).toHaveLength(12);
     const boss = spawns.filter((s) => C.MONSTER.get(s.mon)!.boss);
     expect(boss).toHaveLength(1);

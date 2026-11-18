@@ -3,6 +3,7 @@ import { PF_SOUL, TOUCH_R, questSpot } from '@dtl/shared';
 import { LEVELS, NPC, QUEST } from '@dtl/content';
 import { DUNGEON_QUEST_TARGET, PENDING_DUNGEON_TARGET } from './dungeonquest';
 
+import { at } from '@dtl/shared';
 // Nhiệm vụ chương 4 Thiên Khuyết (E4-H): chuỗi q4_*, phụ s4_*, môn phong ấn chỉ nguyên anh xuất khiếu chạm được, phó bản Thần Tàng Điện.
 process.env.DB_FILE = ':memory:';
 
@@ -16,7 +17,7 @@ beforeAll(async () => {
   ({ Character } = await import('./character'));
 });
 
-const TK = LEVELS.thien_khuyet;
+const TK = at(LEVELS, 'thien_khuyet');
 let acc = 9870;
 
 function setup() {
@@ -88,14 +89,14 @@ describe('chạm điểm', () => {
     const s = questSpot(TK, 'den_troi_1')!;
     t.at(s.x + TOUCH_R + 3, s.z);
     t.step();
-    expect(t.char.quests.active.s4_den_troi[0]).toBe(0);
+    expect(at(t.char.quests.active, 's4_den_troi')[0]).toBe(0);
     t.at(s.x, s.z);
     t.p.move.flying = true;
     t.step();
-    expect(t.char.quests.active.s4_den_troi[0]).toBe(0);
+    expect(at(t.char.quests.active, 's4_den_troi')[0]).toBe(0);
     t.p.move.flying = false;
     t.step();
-    expect(t.char.quests.active.s4_den_troi[0]).toBe(1);
+    expect(at(t.char.quests.active, 's4_den_troi')[0]).toBe(1);
   });
 
   it('môn phong ấn: thân xác đứng sát vẫn không tính, nguyên anh xuất khiếu mới tính', () => {

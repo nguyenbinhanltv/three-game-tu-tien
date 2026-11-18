@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { type HazardMsg, MS_CHASE, S } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // E4-B: quái, tinh anh, boss ngoài trời của Thiên Khuyết Cổ Thành dùng các kiểu chiêu E1-E bằng dữ liệu thật trong monsters.json.
 // Level Thiên Khuyết thuộc E4-A (chưa có ở nhánh này) nên đấu trường mượn mặt đảo phẳng Kình Ngư Đài của Vân Hải; người chơi đứng cách quái `dist` m về phía nam.
 process.env.DB_FILE = ':memory:';
@@ -26,7 +27,7 @@ const DT = 50;
 type Private = { tickMonster(m: unknown, dt: number): void; tickHazards(): void; checkPhase(m: unknown): void };
 
 function setup(id: string, lv: number, dist: number) {
-  const KN = SH.levelSpawns(C.LEVELS.van_hai).find((s) => s.mon === 'boss_van_hai_kinh_vuong')!;
+  const KN = SH.levelSpawns(at(C.LEVELS, 'van_hai')).find((s) => s.mon === 'boss_van_hai_kinh_vuong')!;
   const X = KN.x;
   const Z = KN.z;
   const sent: { type: string; msg: unknown }[] = [];
@@ -95,7 +96,7 @@ describe('dữ liệu Thiên Khuyết (E4-B)', () => {
 
   it('level thien_khuyet chỉ dùng quái chương 4: 12 tinh anh, một boss ở Mộ Đạo hồi sinh 30 phút', () => {
     const all = [...IDS.common, ...IDS.elite, ...IDS.boss].sort();
-    const spawns = SH.levelSpawns(C.LEVELS.thien_khuyet);
+    const spawns = SH.levelSpawns(at(C.LEVELS, 'thien_khuyet'));
     expect([...new Set(spawns.map((x) => x.mon))].sort()).toEqual(all);
     expect(spawns.filter((x) => C.MONSTER.get(x.mon)!.elite)).toHaveLength(12);
     const boss = spawns.filter((x) => C.MONSTER.get(x.mon)!.boss);

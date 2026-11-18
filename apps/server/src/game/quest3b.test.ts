@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { S, TOUCH_R, questSpot, type EscortMsg } from '@dtl/shared';
 import { LEVELS, NPC, QUEST } from '@dtl/content';
 
+import { at } from '@dtl/shared';
 // Nhiệm vụ phụ chương 3 (E3-H2): s3_do_thuyen (hộ tống qua ba đảo) và s3_guong_nuoc (chạm bốn mảnh gương), thưởng một lần (tx + ledger).
 process.env.DB_FILE = ':memory:';
 
@@ -17,7 +18,7 @@ beforeAll(async () => {
   ({ sqlite } = await import('../db'));
 });
 
-const VH = LEVELS.van_hai;
+const VH = at(LEVELS, 'van_hai');
 let acc = 9980;
 
 function setup() {
@@ -121,7 +122,7 @@ describe('s3_do_thuyen', () => {
     t.atNpc('npc_lam_chieu_dung');
     t.accept('s3_do_thuyen');
     expect(t.char.quests.active.s3_do_thuyen).toEqual([0]);
-    for (let i = 0; i < 4 * 600 && t.char.quests.active.s3_do_thuyen[0] === 0; i++) {
+    for (let i = 0; i < 4 * 600 && at(t.char.quests.active, 's3_do_thuyen')[0] === 0; i++) {
       const w = walkOf(t);
       if (w) t.at(w.x + 2, w.z);
       t.step(250);
@@ -147,7 +148,7 @@ describe('s3_do_thuyen', () => {
       if (w) t.at(w.x + 2, w.z);
       t.step(250);
     }
-    t.at(def.path[0][0] + 1500, def.path[0][1]);
+    t.at(at(def.path, 0)[0] + 1500, at(def.path, 0)[1]);
     t.step();
     expect(t.sys()).toContain('sys.escort_lost');
   });

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { bottleneckPill, peakGated, xpNeed } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 process.env.DB_FILE = ':memory:';
 
 let openDb: typeof import('../db').openDb;
@@ -43,16 +44,16 @@ describe('migration tu vi Trúc Cơ (DB v3 → v4)', () => {
     const b = openDb(file);
     expect(b.sqlite.pragma('user_version', { simple: true })).toBe(DATA_VERSION);
     const r = rows(b.sqlite);
-    expect(r.tc16_nuamay.xp).toBe(Math.round((15_000 * xpNeed(16)) / OLD_NEED(16)));
-    expect(r.tc16_nuamay.xp / xpNeed(16)).toBeCloseTo(0.5, 2);
-    expect(r.tc17_day.xp).toBe(xpNeed(17));
-    expect(r.tc17_day.bk).toBe(15); // cấp 17 là nút bình cảnh mới, chưa vượt
-    expect(r.tc18_tran.xp).toBe(xpNeed(18)); // vẫn đủ điều kiện lên cấp 19
-    expect(r.tc18_tran.bk).toBe(17); // đã qua nút 17
-    expect(r.tc18_ba.xp).toBe(Math.round((35_000 * xpNeed(18)) / OLD_NEED(18)));
-    expect(r.tc18_ba.bk).toBe(17);
-    expect(r.nk15_giu.xp).toBe(9_999);
-    expect(r.tc16_moi.xp).toBe(0);
+    expect(at(r, 'tc16_nuamay').xp).toBe(Math.round((15_000 * xpNeed(16)) / OLD_NEED(16)));
+    expect(at(r, 'tc16_nuamay').xp / xpNeed(16)).toBeCloseTo(0.5, 2);
+    expect(at(r, 'tc17_day').xp).toBe(xpNeed(17));
+    expect(at(r, 'tc17_day').bk).toBe(15); // cấp 17 là nút bình cảnh mới, chưa vượt
+    expect(at(r, 'tc18_tran').xp).toBe(xpNeed(18)); // vẫn đủ điều kiện lên cấp 19
+    expect(at(r, 'tc18_tran').bk).toBe(17); // đã qua nút 17
+    expect(at(r, 'tc18_ba').xp).toBe(Math.round((35_000 * xpNeed(18)) / OLD_NEED(18)));
+    expect(at(r, 'tc18_ba').bk).toBe(17);
+    expect(at(r, 'nk15_giu').xp).toBe(9_999);
+    expect(at(r, 'tc16_moi').xp).toBe(0);
     const snap = JSON.stringify(r);
     b.sqlite.close();
 

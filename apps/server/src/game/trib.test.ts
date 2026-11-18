@@ -15,6 +15,7 @@ import {
   type HazardMsg,
 } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 // Độ kiếp ba pha (S2-C): lôi võng, tia cuối khóa mệnh, giới hạn đan, và quyền bay miễn linh lực của Trúc Cơ.
 process.env.DB_FILE = ':memory:';
 
@@ -93,8 +94,8 @@ describe('độ kiếp ba pha', () => {
     t.priv.tickTribulation(t.p);
     const big = t.hazards().filter((h) => h.big);
     expect(big.length).toBe(1);
-    expect(big[0].r).toBe(TRIB_FINAL.r);
-    expect(big[0].delay).toBe(TRIB_FINAL.delay);
+    expect(at(big, 0).r).toBe(TRIB_FINAL.r);
+    expect(at(big, 0).delay).toBe(TRIB_FINAL.delay);
     // Chạy ra ngoài vòng 9 m trong 3 giây, tia vẫn trúng.
     const mhp = t.p.char.mhp;
     t.p.move.x += 40;
