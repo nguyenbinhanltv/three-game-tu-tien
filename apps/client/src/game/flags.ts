@@ -34,6 +34,10 @@ export interface Flags {
   v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
+  /** `?v3anim=0` về hệ animation cũ của v3 (so video trước/sau). */
+  v3Anim: boolean;
+  /** `?armfit=<độ>` ghi đè góc bù dang tay của v3 (null = mặc định theo model). */
+  armFit: number | null;
   /** `?v3pal=0` tắt bảng màu nhuộm v3. */
   v3Palette: boolean;
   /** `?ual=0` tắt clip UAL. */
@@ -77,6 +81,8 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   hair: { scope: 'test', doc: 'ép kiểu tóc' },
   v3model: { scope: 'test', doc: '=a bản Lạc Kiếm v3 cũ' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
+  v3anim: { scope: 'test', doc: '=0 hệ animation v3 cũ' },
+  armfit: { scope: 'test', doc: 'góc bù dang tay v3 (độ)' },
   v3pal: { scope: 'test', doc: '=0 tắt nhuộm v3' },
   ual: { scope: 'test', doc: '=0 tắt clip UAL' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
@@ -132,6 +138,8 @@ export function readFlags(search: string): Flags {
     hair: q.get('hair'),
     v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
+    v3Anim: !off(q.get('v3anim')),
+    armFit: q.get('armfit') === null || Number.isNaN(Number(q.get('armfit'))) ? null : Number(q.get('armfit')),
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
     renderer: q.get('renderer'),
