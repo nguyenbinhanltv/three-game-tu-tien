@@ -1111,13 +1111,13 @@ async function main() {
     await sayT(ta.room, 'tp 2048 2088');
     await sayT(ta.room, 'tele all');
     await sayT(ta.room, 'spawn mon_soi_xam 1');
-    await W(800);
+    await W(300);
     const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - 2048, x[1].z - 2088) - Math.hypot(y[1].x - 2048, y[1].z - 2088))[0];
     if (!wolf) check('dựng được sói để thử giao chiến', false);
     else {
-      // Đứng cách 20 m: ngoài tầm phát hiện của sói (aggro 12 m) nên nó chưa đánh trước, vẫn trong tầm 26 m của skl_phi_kiem.
+      // `/gm spawn` đặt sói cách 8 m (trong tầm phát hiện 12 m) nên nó đã đuổi ngay. Dịch người ra cách 20 m (vẫn trong tầm 26 m của skl_phi_kiem)
+      // rồi niệm liền, không chờ: sói cần ~3 s mới tới nơi, đủ để bắt đầu niệm trước khi bị cắn (bị đánh là vào giao chiến, server từ chối niệm).
       await sayT(ta.room, `tp ${wolf[1].x.toFixed(1)} ${(wolf[1].z + 20).toFixed(1)}`);
-      await W(1500);
       const here = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
       sysA.length = 0;
       ta.room.send(C.TELE, { id: 'tp_ho' });
