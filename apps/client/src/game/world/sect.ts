@@ -228,8 +228,8 @@ export function buildMoonGate(x: number, z: number): THREE.Mesh {
   const paint = (g: THREE.BufferGeometry, color: number, kind: Kind = 'stone'): THREE.BufferGeometry => {
     const n = g.index ? g.toNonIndexed() : g;
     n.computeVertexNormals();
-    const pos = n.attributes.position,
-      nor = n.attributes.normal;
+    const pos = n.attributes.position!,
+      nor = n.attributes.normal!;
     const base = new THREE.Color(color);
     const arr = new Float32Array(pos.count * 3);
     const nv = new THREE.Vector3();
@@ -354,7 +354,7 @@ export function moonMirrorTexture(): THREE.CanvasTexture | null {
   // Mây phản chiếu
   g.filter = 'blur(10px)';
   g.fillStyle = 'rgba(225,238,255,0.35)';
-  for (const [cx, cy, rx, ry] of [
+  for (const [cx, cy, rx, ry] of <[number, number, number, number][]>[
     [90, 80, 60, 14],
     [160, 130, 70, 12],
     [100, 190, 50, 10],

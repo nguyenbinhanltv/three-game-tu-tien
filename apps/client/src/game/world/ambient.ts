@@ -24,7 +24,7 @@ const AMBIENT_SCALE: Record<string, number> = { low: 0.35, medium: 1, high: 1.6,
  * Phần tăng thêm dành cho hạt nhỏ, sắc nét (bụi sáng, phấn hoa, linh khí, cánh đào, lá, tro).
  */
 export function ambientScaleFor(kind: AmbientKind, preset: string): number {
-  const s = AMBIENT_SCALE[preset] ?? AMBIENT_SCALE.medium;
+  const s = AMBIENT_SCALE[preset] ?? AMBIENT_SCALE.medium!;
   if (kind !== 'mist') return s;
   return preset === 'high' || preset === 'ultra' ? 0 : Math.min(s, 1);
 }

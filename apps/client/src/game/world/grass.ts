@@ -89,10 +89,10 @@ function sampleHeight(x0: number, z0: number, x: number, z: number): number {
   const j = Math.min(HN - 2, Math.max(0, Math.floor(v)));
   const fx = u - i;
   const fz = v - j;
-  const a = _hs[j * HN + i];
-  const b = _hs[j * HN + i + 1];
-  const c = _hs[(j + 1) * HN + i];
-  const d = _hs[(j + 1) * HN + i + 1];
+  const a = _hs[j * HN + i]!;
+  const b = _hs[j * HN + i + 1]!;
+  const c = _hs[(j + 1) * HN + i]!;
+  const d = _hs[(j + 1) * HN + i + 1]!;
   let gx: number;
   let gz: number;
   let h: number;
@@ -182,7 +182,7 @@ function ochreTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
   let card = 0;
   for (let acc = 0; card < CARD_WEIGHTS.length - 1; card++) {
-    acc += CARD_WEIGHTS[card];
+    acc += CARD_WEIGHTS[card]!;
     if (pick < acc) break;
   }
   _c.copy(C_STRAW).multiplyScalar(0.8 + r2 * 0.34);
@@ -406,27 +406,27 @@ export interface Pusher {
  */
 export function pickPushers(me: Pusher, others: readonly Pusher[], out: Pusher[], maxDist = 40, count = others.length): void {
   const n = out.length;
-  out[0].x = me.x;
-  out[0].y = me.y;
-  out[0].z = me.z;
-  out[0].r = me.r;
-  for (let i = 1; i < n; i++) out[i].r = 0;
+  out[0]!.x = me.x;
+  out[0]!.y = me.y;
+  out[0]!.z = me.z;
+  out[0]!.r = me.r;
+  for (let i = 1; i < n; i++) out[i]!.r = 0;
   const d2 = _d2;
   for (let i = 1; i < n; i++) d2[i] = Infinity;
   const lim = maxDist * maxDist;
   for (let q = 0; q < count; q++) {
-    const p = others[q];
+    const p = others[q]!;
     const dx = p.x - me.x;
     const dz = p.z - me.z;
     const d = dx * dx + dz * dz;
     if (d > lim || d < 1e-6) continue;
     // Chèn vào danh sách gần nhất (n nhỏ: chèn tuyến tính).
     let i = n - 1;
-    if (d >= d2[i]) continue;
-    while (i > 1 && d2[i - 1] > d) {
-      d2[i] = d2[i - 1];
-      const a = out[i];
-      const b = out[i - 1];
+    if (d >= d2[i]!) continue;
+    while (i > 1 && d2[i - 1]! > d) {
+      d2[i] = d2[i - 1]!;
+      const a = out[i]!;
+      const b = out[i - 1]!;
       a.x = b.x;
       a.y = b.y;
       a.z = b.z;
@@ -434,10 +434,10 @@ export function pickPushers(me: Pusher, others: readonly Pusher[], out: Pusher[]
       i--;
     }
     d2[i] = d;
-    out[i].x = p.x;
-    out[i].y = p.y;
-    out[i].z = p.z;
-    out[i].r = p.r;
+    out[i]!.x = p.x;
+    out[i]!.y = p.y;
+    out[i]!.z = p.z;
+    out[i]!.r = p.r;
   }
 }
 const _d2 = new Float64Array(16);
@@ -463,7 +463,7 @@ export class Grass {
   private readonly uRadius = uniform(30);
   private readonly pushVec = Array.from({ length: GRASS_PUSH_SLOTS }, () => new THREE.Vector4());
   private readonly uPush = uniformArray(this.pushVec, 'vec4');
-  private preset: GrassPreset = GRASS_PRESETS.medium;
+  private preset: GrassPreset = GRASS_PRESETS.medium!;
   /** Level tắt cỏ (`features.grass: false`, vd. Bắc Hoang): lớp cỏ không bao giờ hiện lại dù cập nhật đổi `visible`. */
   private enabled = true;
   private chunks = new Map<number, ChunkRec>();
@@ -599,7 +599,7 @@ export class Grass {
   }
 
   setQuality(q: string, shadows = false): void {
-    const next = GRASS_PRESETS[q] ?? GRASS_PRESETS[baseOf(q)];
+    const next = GRASS_PRESETS[q] ?? GRASS_PRESETS[baseOf(q)]!;
     this.mesh.receiveShadow = shadows;
     if (next.radius === this.preset.radius && next.spacing === this.preset.spacing) return;
     const respace = next.spacing !== this.preset.spacing;
@@ -622,8 +622,8 @@ export class Grass {
     if (R <= 0) return;
     for (let i = 0; i < GRASS_PUSH_SLOTS; i++) {
       const p = pushers[i];
-      if (p) this.pushVec[i].set(p.x, p.y, p.z, p.r);
-      else this.pushVec[i].set(0, -1e4, 0, 0);
+      if (p) this.pushVec[i]!.set(p.x, p.y, p.z, p.r);
+      else this.pushVec[i]!.set(0, -1e4, 0, 0);
     }
     this.uCenter.value.set(center.x, center.y, center.z);
     this.uRadius.value = R;
@@ -688,14 +688,14 @@ export class Grass {
       for (let i = 0; i < m; i++) {
         const s = i * 8;
         const o = (n + i) * 4;
-        A[o] = d[s];
-        A[o + 1] = d[s + 1];
-        A[o + 2] = d[s + 2];
-        A[o + 3] = d[s + 3];
-        B[o] = d[s + 4];
-        B[o + 1] = d[s + 5];
-        B[o + 2] = d[s + 6];
-        B[o + 3] = d[s + 7];
+        A[o] = d[s]!;
+        A[o + 1] = d[s + 1]!;
+        A[o + 2] = d[s + 2]!;
+        A[o + 3] = d[s + 3]!;
+        B[o] = d[s + 4]!;
+        B[o + 1] = d[s + 5]!;
+        B[o + 2] = d[s + 6]!;
+        B[o + 3] = d[s + 7]!;
       }
       n += m;
       if (n >= MAX_INSTANCES) break;

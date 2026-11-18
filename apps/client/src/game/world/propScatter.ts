@@ -56,8 +56,8 @@ interface Circle {
 /** Vùng cấm đặt prop: lõi spawn quái (R30), vòng NPC (≥4 m), spawn người, cổng, đảo Hàn Giao, lõi Kiếm Trủng, node hái. */
 const KEEP_CLEAR: Circle[] = [
   // Tâm mỗi bãi quái (M-1): chừa 5 m để prop không nằm giữa chỗ đứng của cụm.
-  ...(LEVELS.van_lam.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 5 })),
-  ...LEVELS.van_lam.spawns.filter((sp) => sp.radius > 4).map((sp) => ({ x: sp.x, z: sp.z, r: 6 })),
+  ...(LEVELS.van_lam!.camps ?? []).map((c) => ({ x: c.x, z: c.z, r: 5 })),
+  ...LEVELS.van_lam!.spawns.filter((sp) => sp.radius > 4).map((sp) => ({ x: sp.x, z: sp.z, r: 6 })),
   { x: 2048, z: 2030, r: 6 },
   { x: 2004, z: 2064, r: 6 },
   { x: 2092, z: 2064, r: 6 },
@@ -67,7 +67,7 @@ const KEEP_CLEAR: Circle[] = [
   { x: KIEM_TRUNG.x, z: KIEM_TRUNG.z, r: 28 },
   { x: DUNGEON_EXIT.x, z: DUNGEON_EXIT.z - 20, r: 14 },
   // Điểm hái thảo dược.
-  ...LEVELS.van_lam.nodes.map((n) => ({ x: n.x, z: n.z, r: 8 })),
+  ...LEVELS.van_lam!.nodes.map((n) => ({ x: n.x, z: n.z, r: 8 })),
 ];
 
 /** Lối đi: sân tông môn theo trục cổng–điện, sơn đạo dọc x=2048 (rộng 7,5 m, chừa thêm hai bên), đường xuống thung lũng, lối lên cổng bí cảnh. */
@@ -115,7 +115,7 @@ function build(): PropInstance[] {
       let x: number;
       let z: number;
       if (centers.length) {
-        const c = centers[t % centers.length];
+        const c = centers[t % centers.length]!;
         const a = hash01(t, 3, sk) * Math.PI * 2;
         const r = Math.sqrt(hash01(t, 4, sk)) * c.r;
         x = c.x + Math.cos(a) * r;
@@ -283,7 +283,7 @@ function scatterTrees(out: PropInstance[]): void {
         for (const c of COLLIDERS) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + 5) ** 2) bad = true;
         for (const b of big) if ((x - b.x) ** 2 + (z - b.z) ** 2 < (7 * b.s + 5) ** 2) bad = true;
         if (bad) continue;
-        const [s0, s1] = TREE_SCALE[id];
+        const [s0, s1] = TREE_SCALE[id]!;
         const sc = s0 + hash01(gx, gz, 281 + off) * (s1 - s0);
         // Sắc độ nhẹ: sáng/tối và lệch ấm–lạnh vài phần trăm, để rừng không đơn điệu.
         const b = 0.88 + hash01(gx, gz, 293 + off) * 0.2;
@@ -334,10 +334,10 @@ export function allProps(level = 'van_lam'): PropInstance[] {
     if (!l) {
       const tr = terrainOf(level);
       const def = tribDef('anh_bien');
-      const c = LEVELS[level].dungeon!.center;
+      const c = LEVELS[level]!.dungeon!.center;
       l = [...allProps('bac_hoang')];
       for (let i = 0; i < 5; i++) {
-        const s = tribSealPos(c, def.phases[0].danLoi!.ring, i);
+        const s = tribSealPos(c, def.phases[0]!.danLoi!.ring, i);
         l.push({ id: 'prop_bia_da', x: s.x, y: tr.heightAt(s.x, s.z), z: s.z, yaw: Math.atan2(c.x - s.x, c.z - s.z) + Math.PI, s: 1.9 });
       }
       levelCache.set(level, l);
@@ -365,7 +365,7 @@ const levelCache = new Map<string, PropInstance[]>();
  */
 const DM_ROCKS = ['prop_da_nam', 'prop_da_dung', 'prop_da_phien'] as const;
 function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[] {
-  const L = LEVELS.doan_mach;
+  const L = LEVELS.doan_mach!;
   const tr = terrainOf('doan_mach');
   const clear: Circle[] = [
     { x: L.spawn?.x ?? 1024, z: L.spawn?.z ?? 1036, r: 46 },
@@ -410,7 +410,7 @@ function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[] {
           tint: [warm * 1.04, warm * 0.96, warm * 0.86],
         });
       } else {
-        const id = DM_ROCKS[Math.floor(hash01(gx, gz, 4801) * DM_ROCKS.length)];
+        const id = DM_ROCKS[Math.floor(hash01(gx, gz, 4801) * DM_ROCKS.length)]!;
         out.push({
           id,
           x,
@@ -428,7 +428,7 @@ function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[] {
 
 /** Ngữ cảnh rải của Bắc Hoang (DV-3I): vòng cấm quanh trạm, cụm quái, điểm đáng chú ý, điểm hái, prop đặt tay; dùng cho đá/cột đổ và cây chết. */
 export function bhCtx(placed: readonly { x: number; z: number }[]): BhScatterCtx {
-  const L = LEVELS.bac_hoang;
+  const L = LEVELS.bac_hoang!;
   const tr = terrainOf('bac_hoang');
   const clear: Circle[] = [
     { x: L.spawn?.x ?? 1024, z: L.spawn?.z ?? 1036, r: 70 },
@@ -465,7 +465,7 @@ function scatterBh(placed: readonly PropInstance[]): PropInstance[] {
 
 /** Đá vỡ, cột đổ, tượng nghiêng ở Thiên Khuyết (E4-I): vòng cấm như Đoạn Mạch, phần tính ở `thienKhuyetArt.ts`. */
 function scatterTk(placed: readonly PropInstance[]): PropInstance[] {
-  const L = LEVELS.thien_khuyet;
+  const L = LEVELS.thien_khuyet!;
   const tr = terrainOf('thien_khuyet');
   const clear: Circle[] = [
     { x: L.spawn?.x ?? 1024, z: L.spawn?.z ?? 1036, r: 60 },
@@ -520,7 +520,7 @@ export function nearPropTree(x: number, z: number): boolean {
 
 /** Đá dung nham nguội, cột đổ, kiếm gãy trong hẻm Xích Tẫn Khích (DV-3K): phần tính ở `xichArt.ts`; vòng cấm quanh bia, cổng vào/ra, khe mạch, prop đặt tay. */
 function scatterXichProps(placed: readonly PropInstance[]): PropInstance[] {
-  const L = LEVELS[XICH_LEVEL];
+  const L = LEVELS[XICH_LEVEL]!;
   const tr = terrainOf(XICH_LEVEL);
   const d = L.dungeon;
   const clear = [

@@ -1019,7 +1019,7 @@ export function showLoot(eng: Game, src: string, item: string | undefined, q?: n
   );
   if (tier >= 2) {
     pruneRareLoot(eng);
-    const hold = LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[tier].hold + Math.min(slot, 5) * 0.12;
+    const hold = LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[tier]!.hold + Math.min(slot, 5) * 0.12;
     eng.rareLoot.push({ key: src + ':' + item + ':' + now, item, pos: land, until: now + hold * 1000 });
   }
   return true;

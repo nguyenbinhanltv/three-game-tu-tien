@@ -37,7 +37,7 @@ export function vhPick(kind: string, g: number, rock: number, pw: number, near: 
     case 'thach_quy_dao': {
       const field = rock * 0.28 + Math.max(0, g) * 0.12;
       if (r < field)
-        return { id: ROCKS3[Math.floor(k * 2.99)], s: sc(0.45, 1.5) * (g > 0.12 ? 1.3 : 1), sy: 0.8 + k * 0.4, tint: [1.08, 1.0, 0.88] };
+        return { id: ROCKS3[Math.floor(k * 2.99)]!, s: sc(0.45, 1.5) * (g > 0.12 ? 1.3 : 1), sy: 0.8 + k * 0.4, tint: [1.08, 1.0, 0.88] };
       if (r < field + 0.004) return { id: 'prop_tru_da_khac_van', s: sc(0.9, 1.3), tint: [1, 0.97, 0.9] };
       if (r < field + 0.007) return { id: 'prop_bia_da', s: sc(0.9, 1.2), tint: [0.95, 0.93, 0.88] };
       if (r < field + 0.02) return { id: 'prop_tung_phu_dao', s: sc(0.7, 1.1), tint: [0.95, 0.92, 0.78] };
@@ -79,7 +79,7 @@ export function vhPick(kind: string, g: number, rock: number, pw: number, near: 
 }
 
 export function scatterVanHai(placed: readonly PropInstance[]): PropInstance[] {
-  const L = LEVELS.van_hai;
+  const L = LEVELS.van_hai!;
   const tr = terrainOf('van_hai');
   const art = vanHaiArt(tr.def);
   const clear: Circle[] = [

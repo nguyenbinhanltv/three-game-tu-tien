@@ -177,7 +177,7 @@ export function releaseLock(eng: Game): void {
 export function onResize(eng: Game): void {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const q = QUALITY[get().quality] ?? QUALITY.medium;
+  const q = QUALITY[get().quality] ?? QUALITY.medium!;
   // WebGL2 nghẽn GPU ở preset Cao (T6: 25–67 fps ở pixelRatio ~2): hạ ngân sách điểm ảnh xuống bằng preset Vừa.
   const maxPixels = isWebGPU(eng.renderer) ? q.maxPixels : Math.min(q.maxPixels, WEBGL2_MAX_PIXELS);
   eng.renderer.setPixelRatio(budgetPixelRatio(w, h, q.pixelRatio, maxPixels));

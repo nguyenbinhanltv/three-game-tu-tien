@@ -258,15 +258,15 @@ function biomeWeights(x: number, z: number, o: Float32Array, k: number): void {
 const CLIFF_SKIP = 9;
 /** Ô nằm ở vách ranh vùng chơi (không phải vách đảo): vẫn dựng mặt, nếu không để lại các khe mảnh như đường kẻ dọc trên trời. */
 function onPlayWall(pos: Float32Array, a: number, d: number): boolean {
-  const cx = (pos[a * 3] + pos[d * 3]) / 2;
-  const cz = (pos[a * 3 + 2] + pos[d * 3 + 2]) / 2;
+  const cx = (pos[a * 3]! + pos[d * 3]!) / 2;
+  const cz = (pos[a * 3 + 2]! + pos[d * 3 + 2]!) / 2;
   return T.playDist(cx, cz) > T.playWall - 12;
 }
 function quadSpan(pos: Float32Array, a: number, b: number, c: number, d: number): number {
-  const ya = pos[a * 3 + 1];
-  const yb = pos[b * 3 + 1];
-  const yc = pos[c * 3 + 1];
-  const yd = pos[d * 3 + 1];
+  const ya = pos[a * 3 + 1]!;
+  const yb = pos[b * 3 + 1]!;
+  const yc = pos[c * 3 + 1]!;
+  const yd = pos[d * 3 + 1]!;
   return Math.max(ya, yb, yc, yd) - Math.min(ya, yb, yc, yd);
 }
 
@@ -288,10 +288,10 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
   for (let j = 0; j < n1; j++) {
     for (let i = 0; i < n1; i++) {
       const hi = (j + 1) * w + (i + 1);
-      const h = hs[hi];
-      let nx = hs[hi - 1] - hs[hi + 1];
+      const h = hs[hi]!;
+      let nx = hs[hi - 1]! - hs[hi + 1]!;
       let ny = 2 * cell;
-      let nz = hs[hi - w] - hs[hi + w];
+      let nz = hs[hi - w]! - hs[hi + w]!;
       const l = Math.sqrt(nx * nx + ny * ny + nz * nz);
       nx /= l;
       ny /= l;
@@ -332,15 +332,15 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
       for (let k = 0; k < n1; k++) {
         const src = get(k) * 3;
         const dst = sv * 3;
-        pos[dst] = pos[src];
-        pos[dst + 1] = pos[src + 1] - skirt;
-        pos[dst + 2] = pos[src + 2];
-        nor[dst] = nor[src];
-        nor[dst + 1] = nor[src + 1];
-        nor[dst + 2] = nor[src + 2];
-        colr[dst] = colr[src];
-        colr[dst + 1] = colr[src + 1];
-        colr[dst + 2] = colr[src + 2];
+        pos[dst] = pos[src]!;
+        pos[dst + 1] = pos[src + 1]! - skirt;
+        pos[dst + 2] = pos[src + 2]!;
+        nor[dst] = nor[src]!;
+        nor[dst + 1] = nor[src + 1]!;
+        nor[dst + 2] = nor[src + 2]!;
+        colr[dst] = colr[src]!;
+        colr[dst + 1] = colr[src + 1]!;
+        colr[dst + 2] = colr[src + 2]!;
         bio.copyWithin(sv * 4, (src / 3) * 4, (src / 3) * 4 + 4);
         sv++;
       }
@@ -372,7 +372,7 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
 const C_STONE_ROCK = [col(0x8a8782), col(0x76746f), col(0x9a968f)];
 
 function addRock(b: GeoBuilder, x: number, y: number, z: number, s: number, r: number): void {
-  b.add(G.ico0, mat(x, y + 0.3 * s, z, r * 2, r * 6, r, 1.3 * s, 0.9 * s, 1.1 * s), C_STONE_ROCK[(r * 3) | 0]);
+  b.add(G.ico0, mat(x, y + 0.3 * s, z, r * 2, r * 6, r, 1.3 * s, 0.9 * s, 1.1 * s), C_STONE_ROCK[(r * 3) | 0]!);
 }
 
 function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeometry | null {
@@ -576,7 +576,7 @@ export class Terrain {
     // Giữ nguyên một buffer chỉ số, chỉ ghi lại nội dung và đổi draw range
     // (thay buffer mới giữa chừng làm WebGPU báo lỗi).
     const idx = this.coarseIndex.array as Uint16Array;
-    const cpos = T.def.islands ? (this.coarse.geometry.attributes.position.array as Float32Array) : null;
+    const cpos = T.def.islands ? (this.coarse.geometry.attributes.position!.array as Float32Array) : null;
     let o = 0;
     for (let j = 0; j < COARSE_N; j++) {
       const tz = (j / per) | 0;

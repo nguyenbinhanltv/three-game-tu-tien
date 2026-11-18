@@ -35,7 +35,7 @@ import type { Game } from '../engine';
 
 export function pruneRareLoot(eng: Game): void {
   const now = performance.now();
-  for (let i = eng.rareLoot.length - 1; i >= 0; i--) if (eng.rareLoot[i].until < now) eng.rareLoot.splice(i, 1);
+  for (let i = eng.rareLoot.length - 1; i >= 0; i--) if (eng.rareLoot[i]!.until < now) eng.rareLoot.splice(i, 1);
 }
 
 /** Niệm chú/choáng của quái (theo đồng hồ client), nếu quái có chiêu niệm chú. */
@@ -248,7 +248,7 @@ export function offscreenCandidates(eng: Game, target: TargetInfo | null, boss: 
   const rp = eng.renderPos;
   do {
     const def = qid ? QUEST.get(qid) : undefined;
-    const goal = def && questGoal(def, st.quests.active[qid], NPCS);
+    const goal = def && questGoal(def, st.quests.active[qid]!, NPCS);
     if (!goal) break;
     const label = t(`quest.${qid}.name`);
     if (goal.kind === 'npc') {

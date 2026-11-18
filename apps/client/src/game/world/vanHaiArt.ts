@@ -239,8 +239,8 @@ export function vanHaiArt(def: TerrainDef): VhArt {
       const t = isl.trail;
       let best = 99 * 99;
       for (let k = 0; k < t.length; k += 2) {
-        const dx = t[k] - x;
-        const dz = t[k + 1] - z;
+        const dx = t[k]! - x;
+        const dz = t[k + 1]! - z;
         const d = dx * dx + dz * dz;
         if (d < best) best = d;
       }

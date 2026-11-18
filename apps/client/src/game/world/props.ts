@@ -223,7 +223,7 @@ export class PropLayer {
     const trees: PropInstance[] = [];
     for (const p of instances) {
       if (!PROP_CFG[p.id]) continue;
-      if (PROP_CFG[p.id].tree) {
+      if (PROP_CFG[p.id]!.tree) {
         trees.push(p);
         continue;
       }
@@ -303,7 +303,7 @@ export class PropLayer {
     this.shadows = shadows;
     this.acc = 1; // cập nhật ngay khung kế
     for (const c of this.cells)
-      if (c.meshes) for (const lv of c.meshes) for (const m of lv) m.castShadow = shadows && !!PROP_CFG[c.id].shadow;
+      if (c.meshes) for (const lv of c.meshes) for (const m of lv) m.castShadow = shadows && !!PROP_CFG[c.id]!.shadow;
     this.applyPoolShadows();
   }
 
@@ -311,7 +311,7 @@ export class PropLayer {
   private applyPoolShadows(): void {
     for (const [id, levels] of this.pool) {
       levels.forEach((slots, k) => {
-        for (const sl of slots) sl.im.castShadow = this.shadows && !!PROP_CFG[id].shadow && k < 1;
+        for (const sl of slots) sl.im.castShadow = this.shadows && !!PROP_CFG[id]!.shadow && k < 1;
       });
     }
   }
@@ -335,7 +335,7 @@ export class PropLayer {
     const scale = this.rangeScale();
     let vis = 0;
     for (const c of this.cells) {
-      const cfg = PROP_CFG[c.id];
+      const cfg = PROP_CFG[c.id]!;
       const d = Math.max(0, Math.hypot(c.cx - camX, c.cz - camZ) - c.radius);
       const range = cfg.range * scale;
       const off = (cfg.decor && this.quality === 'low') || d > range;
@@ -350,7 +350,7 @@ export class PropLayer {
       const dc = Math.hypot(c.cx - camX, c.cz - camZ);
       const lv = dc < cfg.lod[0] * scale ? 0 : dc < cfg.lod[1] * scale ? 1 : 2;
       this.setLevel(c, Math.min(lv, t.lods.length - 1));
-      if (c.meshes && c.level >= 0) vis += c.meshes[c.level].length;
+      if (c.meshes && c.level >= 0) vis += c.meshes[c.level]!.length;
     }
     if (this.impostors) vis += this.updateTrees(camX, camZ, scale);
     this.visibleMeshes = vis;
@@ -386,14 +386,14 @@ export class PropLayer {
       for (const ch of near) {
         if (!ch.mat) this.bakeTreeChunk(ch);
         for (let i = 0; i < ch.items.length; i++) {
-          const p = ch.items[i];
+          const p = ch.items[i]!;
           const levels = this.poolOf(p.id);
           if (!levels) continue;
-          const cfg = PROP_CFG[p.id];
+          const cfg = PROP_CFG[p.id]!;
           const d = Math.hypot(p.x - camX, p.z - camZ);
           if (d >= start) continue;
           const k = Math.min(d < cfg.lod[0] * scale ? 0 : d < cfg.lod[1] * scale ? 1 : 2, levels.length - 1);
-          for (const sl of levels[k]) {
+          for (const sl of levels[k]!) {
             const n = counts.get(sl) ?? 0;
             if (n >= POOL_CAP) continue;
             sl.mat.set((ch.mat as Float32Array).subarray(i * 16, i * 16 + 16), n * 16);
@@ -441,7 +441,7 @@ export class PropLayer {
     if (have) return have;
     const t = this.templates.get(id);
     if (!t || typeof t === 'string') return null;
-    const shadow = this.shadows && !!PROP_CFG[id].shadow;
+    const shadow = this.shadows && !!PROP_CFG[id]!.shadow;
     // Hình cầu bao rất lớn: ô cây không còn là đơn vị cắt hình, pool luôn nằm quanh camera.
     const sphere = new THREE.Sphere(new THREE.Vector3(2048, 100, 2048), 1e5);
     const levels = t.lods.map((meshes, k) =>
@@ -512,7 +512,7 @@ export class PropLayer {
     const colArr = new Float32Array(n * 3).fill(1);
     let tinted = false;
     for (let i = 0; i < n; i++) {
-      const p = c.items[Math.min(i, c.items.length - 1)];
+      const p = c.items[Math.min(i, c.items.length - 1)]!;
       setYawLean(_q, p);
       _m.compose(_p.set(p.x, p.y, p.z), _q, _s.set(p.s, p.s, p.s));
       _m.toArray(arr, i * 16);
@@ -522,7 +522,7 @@ export class PropLayer {
       }
     }
     c.matrices = new THREE.InstancedBufferAttribute(arr, 16);
-    const shadow = this.shadows && !!PROP_CFG[c.id].shadow;
+    const shadow = this.shadows && !!PROP_CFG[c.id]!.shadow;
     c.meshes = t.lods.map((meshes) =>
       meshes.map((lm) => {
         const im = new THREE.InstancedMesh(lm.geometry, lm.material, n);

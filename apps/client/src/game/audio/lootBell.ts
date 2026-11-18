@@ -56,7 +56,7 @@ export function bellPartials(tier: 0 | 1 | 2 | 3 | 4 | 5): BellPartial[] {
   const out: BellPartial[] = [];
   for (const s of strikes) {
     for (let i = 0; i < s.n; i++) {
-      const r = BELL_RATIOS[i];
+      const r = BELL_RATIOS[i]!;
       out.push({ freq: s.f * r, gain: s.vol / (1 + i * 0.6), dur: s.dur / (0.6 + r * 0.4), delay: s.delay });
     }
   }
