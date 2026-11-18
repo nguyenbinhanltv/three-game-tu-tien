@@ -35,8 +35,19 @@ export const isSpring2 = (assetId: string | undefined): boolean => !!assetId?.st
 export const HEM_STIFF = 1.7;
 /** Hệ số phình viên nang thân khi ngồi/đả tọa: vạt nằm lên trên đùi thay vì lún xuống. */
 export const SIT_COLLIDER_SCALE = 1.3;
+/**
+ * Chừa khoảng cách tay: dạng hai cánh tay ra khỏi thân thêm vài độ (quanh trục trước-sau của thân, trong hệ xương cha nên theo thân khi xoay) sau khi mixer chạy.
+ * Nguyên nhân chính của tay áo rộng đâm vào thân là tay buông sát thân ở chiều cao ngực-vai; chỉnh trọng số/lò xo tay áo không giúp (docs/chr-v3-arm/README.md).
+ * Chỉ áp cho asset lò xo v2 (`chr_v3b2_*`); `?armclear=<độ>` đổi (0 tắt, để so ảnh).
+ */
+export const ARM_CLEAR_DEG = 16;
+/** Hệ số chừa khoảng cách tăng từ 0 (cẳng tay hướng xuống ≤ 0,5) đến 1 (≥ 0,9, tay buông thẳng). */
+const ARM_DOWN_LO = 0.5;
+const ARM_DOWN_HI = 0.9;
+const _a0 = new THREE.Vector3();
+const _a1 = new THREE.Vector3();
 /** Thông số lò xo v2 (sửa được lúc chạy chỉ để quét tham số trong `springMetrics.test.ts`). */
-export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms: true, rMul: 1.3 };
+export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms: true, rMul: 1.3, armDeg: new URLSearchParams(search).has('armclear') ? Number(new URLSearchParams(search).get('armclear')) || 0 : ARM_CLEAR_DEG };
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
 export const V3_SKIRT_SPRING2: SpringParams = { stiffness: 130, drag: 8, maxAngle: 12, maxInward: 8 };
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
@@ -229,6 +240,9 @@ export class MannequinCharacter implements CharacterView {
   private skirtSprings: SpringBones | null = null;
   private colScale = 1;
   private twists: Twist[] = [];
+  /** Hai cánh tay để chừa khoảng cách (xương, trục dạng trong hệ xương cha, dấu theo phía). */
+  private armClear: { bone: THREE.Object3D; elbow: THREE.Object3D; axis: THREE.Vector3; sign: number }[] = [];
+  private armQ = new THREE.Quaternion();
   private lodLevel = 0;
   /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
   private blade: THREE.Mesh | null = null;
@@ -279,6 +293,20 @@ export class MannequinCharacter implements CharacterView {
         const child = this.rig.getObjectByName(`${next}_${sd}`);
         if (!L || !tw || !child) continue;
         this.twists.push({ limb: L, tw, axis: child.position.clone().normalize(), restLimb: L.quaternion.clone(), restTw: tw.quaternion.clone() });
+      }
+    }
+    if (this.spring2 && !shadow) {
+      this.rig.updateMatrixWorld(true);
+      const ul = this.rig.getObjectByName('upperarm_l');
+      const ur = this.rig.getObjectByName('upperarm_r');
+      if (ul?.parent && ur?.parent) {
+        const left = ul.getWorldPosition(new THREE.Vector3()).x > ur.getWorldPosition(new THREE.Vector3()).x ? 1 : -1;
+        for (const [bone, sd, elbowName] of [[ul, 1, 'lowerarm_l'], [ur, -1, 'lowerarm_r']] as const) {
+          const elbow = this.rig.getObjectByName(elbowName);
+          if (!elbow) continue;
+          const pw = bone.parent!.getWorldQuaternion(new THREE.Quaternion());
+          this.armClear.push({ bone, elbow, axis: new THREE.Vector3(0, 0, 1).applyQuaternion(pw.invert()), sign: sd * left });
+        }
       }
     }
     this.scabbard = this.rig.getObjectByName('dtl_scabbard') ?? null;
@@ -607,6 +635,16 @@ export class MannequinCharacter implements CharacterView {
     if (this.interval > 0 && this.acc < this.interval) return;
     this.blendBases(this.acc);
     this.mixer.update(this.acc);
+    if (SPRING2.armDeg) {
+      for (const a of this.armClear) {
+        // Chỉ khi tay buông xuống (hướng vai→khuỷu của khung trước, không cần cập nhật ma trận thêm): tay giơ ra trước/lên không dạng thêm.
+        _a0.setFromMatrixPosition(a.bone.matrixWorld);
+        _a1.setFromMatrixPosition(a.elbow.matrixWorld).sub(_a0);
+        const down = _a1.lengthSq() > 1e-8 ? -_a1.y / _a1.length() : 1;
+        const f = Math.min(1, Math.max(0, (down - ARM_DOWN_LO) / (ARM_DOWN_HI - ARM_DOWN_LO)));
+        if (f > 0) a.bone.quaternion.premultiply(this.armQ.setFromAxisAngle(a.axis, (a.sign * SPRING2.armDeg * f * Math.PI) / 180));
+      }
+    }
     for (const t of this.twists) {
       _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
