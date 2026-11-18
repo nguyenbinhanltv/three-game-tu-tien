@@ -125,6 +125,8 @@ export interface MonsterDef {
   than?: MonsterThan;
   /** Cơ chế khe mạch của boss Xích Tẫn Khích (DV-3D), xem `MonsterRift`. */
   rift?: MonsterRift;
+  /** Cơ chế Kim Dạ Cung (DV-3E), xem `MonsterKimDa`. */
+  kd?: MonsterKimDa;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
   /** Chỉ boss: các pha sau pha đầu, `hp` giảm dần. */
@@ -173,6 +175,20 @@ export interface MonsterRift {
   veins: { x: number; z: number; r: number }[];
   burn: number;
   weak: number;
+}
+
+/**
+ * Cơ chế Kim Dạ Cung (DV-3E); các khối độc lập, quái chỉ khai khối mình dùng.
+ *  - `mend`: Triền Bố Châm Bà, mỗi `cd` giây hồi `pct` khí huyết tối đa cho đồng loại trong `r` mét (hạ nó hoặc làm nó mất thế để cắt).
+ *  - `twin`: tinh anh đôi, một con chết thì con còn lại nổi giận (sát thương ×`mul`, đi nhanh hơn).
+ *  - `bargain` (Ma Hậu, từ pha `phase`): mỗi lần niệm chú có thêm một bóng niệm chú ở phía đối diện sảnh (`mon`, cách tâm `sep` mét); chú xong mà bóng còn sống thì cả đội chịu `pen` × khí huyết tối đa (thay Tẫn ấn 5 tầng).
+ *  - `night` (Ma Hậu, từ pha `phase`): sàn tối, chỉ vòng quanh các bia `steles` là sáng; ngoài vòng mất `press` × khí huyết tối đa mỗi giây. Boss dập luân phiên từng bia (báo `warn` s, mul, bia tắt `dur` s); bia trống quá `grace` s cũng tắt.
+ */
+export interface MonsterKimDa {
+  mend?: { cd: number; r: number; pct: number };
+  twin?: { mul: number };
+  bargain?: { phase: number; mon: string; sep: number; pen: number };
+  night?: { phase: number; steles: { x: number; z: number; r: number }[]; press: number; cd: number; warn: number; mul: number; dur: number; grace: number };
 }
 
 /** Đòn đôi: sau một đòn cận chiến, có xác suất đánh thêm một đòn nặng sau `delay` giây (né được nếu ra khỏi tầm). */
@@ -246,6 +262,19 @@ export interface MonsterPull {
  * Vũng độc khi chết (E3-G, Bích Ngọc Kim Thiền): chỗ quái chết hiện vạch báo bán kính `r` trong `delay` giây,
  * rồi vũng độc tồn tại `dur` giây; ai đứng trong vũng chịu `mul` × tấn công quái mỗi `tick` giây, ra khỏi vũng là hết.
  */
+/**
+ * Vệt để lại trên mặt đất dọc vạch của một đường chém/lao (DV-2 đợt 4: vệt lửa Tẫn Hỏa Kiếm Cơ). Vạch nổ lúc nào thì vệt bắt đầu
+ * lúc đó, kéo dài `dur` giây; mỗi `tick` giây ai đứng trong vệt chịu `mul` × sát thương của quái. Vệt là chuỗi vũng tròn bán kính
+ * `r` đặt đều dọc vạch (server phán định, client chỉ vẽ).
+ */
+export interface MonsterTrail {
+  dur: number;
+  tick: number;
+  mul: number;
+  r: number;
+  kind: 'lightning' | 'frost' | 'fire' | 'spirit';
+}
+
 export interface MonsterDeathPool {
   r: number;
   delay: number;
@@ -298,6 +327,13 @@ export interface MonsterAi {
   reflect?: MonsterReflect;
   summon?: MonsterSummon;
   reveal?: MonsterReveal;
+  /** Neo (DV-2 đợt 4: gốc khe của Thủ Khích Dực Chủ): đứng trong `r` mét quanh chỗ sinh ra thì hồi `pct` khí huyết tối đa mỗi giây; kéo ra xa thì hết. */
+  anchor?: MonsterAnchor;
+}
+
+export interface MonsterAnchor {
+  r: number;
+  pct: number;
 }
 
 export type MonsterKind = 'lightning' | 'frost' | 'fire' | 'spirit';
@@ -307,6 +343,8 @@ export type MonsterKind = 'lightning' | 'frost' | 'fire' | 'spirit';
  * quái hiện ngay và nổ sau `delay` giây (mọi người đứng trong vạch lúc nổ đều trúng). Hồi `cd` giây.
  */
 export interface MonsterLine {
+  /** Vệt lửa để lại trên đường chém sau khi vạch nổ (DV-2 đợt 4): ai đứng trong vệt chịu sát thương dần. */
+  trail?: MonsterTrail;
   cd: number;
   range: number;
   r: number;
@@ -322,6 +360,8 @@ export interface MonsterLine {
  * (dừng sớm khi gặp vách/nước). Né bằng cách bước ngang ra khỏi vạch.
  */
 export interface MonsterCharge {
+  /** Vệt để lại dọc đường lao (xem `MonsterTrail`). */
+  trail?: MonsterTrail;
   cd: number;
   min: number;
   range: number;
@@ -741,7 +781,7 @@ export interface WaveDef {
    * Quái tiếp viện `reinforce[i].mon` kéo tới khi tiến độ đạt `reinforce[i].at` giây (quanh bia, `n` con).
    */
   steles?: { x: number; z: number; r: number; secs: number; grace: number; press: number; reinforce: { at: number; mon: string; level: number; n: number }[] };
-  puzzle?: { points: { x: number; z: number }[]; secs: number; wrong: { mon: string; level: number; n: number }; bossCut: number };
+  puzzle?: { points: { x: number; z: number }[]; msg?: string; secs: number; wrong: { mon: string; level: number; n: number }; bossCut: number };
 }
 
 /** Thưởng khi dẹp xong phó bản, nhận một lần mỗi ngày và mỗi nhân vật (khóa idem `dungeon:<level>:<ngày>`). */
@@ -808,8 +848,8 @@ export interface LevelAssets {
   };
   /** Vỏ hang (E2-C): vách đá + trần tối che chân trời và bầu trời; đèn đá và tinh thể mạch của level được thêm quầng sáng. */
   cave?: { x: number; z: number; r: number; h: number };
-  /** Cung gương (E3-M): vỏ `cave` dựng thành cung điện sáng lạnh, sàn gương phản chiếu giả. */
-  palace?: boolean;
+  /** Phó bản cung điện (E3-M): `true`/`'moon'` cung gương lam bạc, `'gilt'` cung dát vàng Kim Dạ (DV-3E). */
+  palace?: boolean | 'moon' | 'gilt';
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */

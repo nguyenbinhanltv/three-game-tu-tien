@@ -77,7 +77,7 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
     r.jade = 3;
     return r;
   }
-  if (level === 'phuc_mach' || level === 'xich_tan_khich') {
+  if (level === 'phuc_mach' || level === 'xich_tan_khich' || level === 'kim_da_cung') {
     r.ember = 2.2;
     r.ash = 2.5;
     return r;

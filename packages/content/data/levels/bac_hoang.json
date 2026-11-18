@@ -431,6 +431,12 @@
       "z": 637,
       "r": 12,
       "to": "xich_tan_khich"
+    },
+    {
+      "x": 687,
+      "z": 631,
+      "r": 12,
+      "to": "kim_da_cung"
     }
   ],
   "spots": [
@@ -1794,6 +1800,16 @@
       "x": 1024,
       "z": 934,
       "radius": 6,
+      "count": 1,
+      "levelMin": 28,
+      "levelMax": 28,
+      "respawn": 1800
+    },
+    {
+      "mon": "boss_thu_khich_duc_chu",
+      "x": 1024,
+      "z": 374,
+      "radius": 2,
       "count": 1,
       "levelMin": 28,
       "levelMax": 28,

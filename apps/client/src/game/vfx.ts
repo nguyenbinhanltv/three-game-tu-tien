@@ -102,6 +102,8 @@ const POOL = new FxPool(96);
 /** Hệ hiệu ứng: mỗi hiệu ứng là vài lưới phát sáng sống trong thời gian ngắn. */
 /** Màu vũng độc khi chết (ngọc lục, Bích Ngọc Kim Thiền). */
 const POOL_COLOR = 0x5fe39a;
+/** Vệt lửa dọc đường chém (DV-2 đợt 4): cam than hồng, nhấp nháy mạnh; HDR dưới `FX_MAX_HDR`. */
+const TRAIL_COLOR = 0xff7a30;
 
 /** Số vũng sét tối đa cùng lúc. */
 const STRIKE_POOL_MAX = 2;
@@ -1071,6 +1073,43 @@ export class Vfx {
   }
 
   /**
+   * Bia Kim dạ (DV-3E): vòng kim dát quanh bia (bán kính `r` = ranh vòng sáng trên server) và cột sáng mảnh; `lit` thì vàng sáng, tắt thì tím thẫm
+   * mờ. Tự khép khi hết `dur` giây hoặc `stillOn()` sai (server gửi lại mỗi 2 s nên đổi sáng/tắt thay hình ngay). Cường độ thấp để không che người.
+   */
+  kdStele(x: number, z: number, r: number, dur: number, lit: boolean, stillOn: () => boolean): void {
+    const y = groundAt(x, z);
+    const color = lit ? 0xe0b44a : 0x6a3fa0;
+    const o = lit ? 0.7 : 0.4;
+    const tube = this.fx(TUBE_GEO, color, lit ? 0.4 : 0.18, 'flat');
+    const ring = this.fx(RING_GEO, color, o);
+    ring.rotation.x = -Math.PI / 2;
+    let t = 0;
+    let fade = 0;
+    const it = {
+      t: 0,
+      dur: dur + 1,
+      update: (_k: number, dt: number) => {
+        t += dt;
+        const on = t < dur && stillOn();
+        fade = on ? Math.min(1, fade + dt * 3) : Math.max(0, fade - dt * 2);
+        if (!on && fade <= 0) it.t = it.dur;
+        const pulse = 1 + Math.sin(t * 2.4) * 0.05;
+        tube.position.set(x, y + 6, z);
+        tube.scale.set(1.1 * pulse, 12, 1.1 * pulse);
+        tube.fxOpacity = (lit ? 0.4 : 0.18) * fade;
+        ring.position.set(x, y + 0.15, z);
+        ring.scale.setScalar(r * pulse);
+        ring.fxOpacity = o * fade;
+      },
+      end: () => {
+        this.drop(tube);
+        this.drop(ring);
+      },
+    };
+    this.items.push(it);
+  }
+
+  /**
    * Nguyên anh xuất khiếu (E3-L): một bóng người nhỏ xanh nhạt trong suốt lơ lửng phía trên thân, nối với thân bằng một sợi sáng mảnh.
    * Tông trầm, mờ, cộng sáng thấp để không che nhân vật. Tự khép khi `on()` sai hoặc hết `dur`; `stop()` khép sớm.
    */
@@ -1242,6 +1281,39 @@ export class Vfx {
             m.fxA.x = 1;
             m.fxA.z = 0;
             m.fxOpacity = Math.min(1, k * 8) * Math.min(1, (1 - k) * 5) * (0.55 + 0.15 * Math.sin(k * dur * 5));
+          },
+          () => this.drop(m),
+        );
+      },
+    );
+  }
+
+  /**
+   * Vệt lửa (một vũng của chuỗi dọc đường chém, DV-2 đợt 4): hiện lúc vạch nổ, tồn tại `dur` giây rồi tắt dần, nhấp nháy ngọn lửa.
+   * Không có vòng báo riêng (vạch chữ nhật của đường chém đã báo). Chỉ vẽ: ai đứng trong vệt chịu sát thương dần là việc của server.
+   */
+  trailPool(x: number, z: number, r: number, delay: number, dur: number): void {
+    const y = groundAt(x, z);
+    let top = y;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      top = Math.max(top, groundAt(x + Math.cos(a) * r * 0.7, z + Math.sin(a) * r * 0.7));
+    }
+    const ph = x * 1.7 + z * 2.3;
+    this.add(
+      delay,
+      () => {},
+      () => {
+        const m = this.sigil(SIGIL_CIRCLE, x, z, 0, r * 1.05, 0, TRAIL_COLOR, Math.min(top, y + 1.2) + 0.14);
+        m.fxColor.multiplyScalar(0.9);
+        this.add(
+          dur,
+          (k) => {
+            m.fxA.x = 1;
+            m.fxA.z = 0;
+            const flick = 0.7 + 0.3 * Math.sin(k * dur * 9 + ph) * Math.sin(k * dur * 5.3 + ph * 0.6);
+            // Tắt dần ở 1,5 giây cuối để người chơi biết sắp hết.
+            m.fxOpacity = Math.min(1, k * 10) * Math.min(1, (1 - k) * dur / 1.5) * flick * 0.85;
           },
           () => this.drop(m),
         );

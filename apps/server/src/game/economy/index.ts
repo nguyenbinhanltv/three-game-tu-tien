@@ -5,7 +5,10 @@ import { pillPotency, PILL_TIERS, rollPillQuality, COMBAT_REGEN_DELAY, type DmgM
 import { PILL_QUALITY, ITEM, itemName, NPC, QUEST, realmName, RECIPE, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { type Character, isEquipSlot, sameSlot } from '../character';
 import { passiveOf, setSkillLevel, skillLevelOf } from '../method';
-import type { GameSim, PlayerEnt } from '../sim';
+import type { DuelSystem } from '../duel';
+import type { MonEnt, NodeEnt, PlayerEnt } from '../entities';
+import type { TeleportSystem } from '../teleport';
+import type { UpgradeSystem } from '../upgrade';
 
 /** Quá số ô đổi này thì gửi ảnh túi đầy đủ thay vì delta. */
 const INV_DELTA_MAX = 24;
@@ -20,22 +23,22 @@ const GATHER_RANGE = 5;
 export interface EconomyCtx {
   applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void;
   canAssist(p: PlayerEnt, o: PlayerEnt): boolean;
-  readonly duel: GameSim['duel'];
+  readonly duel: DuelSystem;
   emit(type: string, payload: object): void;
   fx(m: FxMsg): void;
   giveXp(p: PlayerEnt, n: number, announce?: boolean): void;
   isDead(p: PlayerEnt): boolean;
   nearNpc(p: PlayerEnt, npcId: string): boolean;
-  readonly nodes: GameSim['nodes'];
-  readonly now: GameSim['now'];
-  readonly players: GameSim['players'];
+  readonly nodes: Map<string, NodeEnt>;
+  readonly now: number;
+  readonly players: Map<string, PlayerEnt>;
   questEvent(p: PlayerEnt, type: Parameters<Character['questEvent']>[0], target: string | undefined, n: number): void;
   savePlayer(p: PlayerEnt): void;
-  readonly sealHook: GameSim['sealHook'];
+  readonly sealHook: { peek(p: PlayerEnt): number; open(i: number): void } | null;
   sendCd(p: PlayerEnt): void;
   sys(p: PlayerEnt, k: string, params?: Record<string, string | number>, type?: string, drop?: Pick<SysMsg, 'i' | 'src' | 'q'>): void;
-  readonly tele: GameSim['tele'];
-  readonly upgrade: GameSim['upgrade'];
+  readonly tele: TeleportSystem;
+  readonly upgrade: UpgradeSystem;
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
 }
 

@@ -22,7 +22,12 @@ export interface PuzzleHost {
 }
 
 export function shuffle3(r: () => number): number[] {
-  const a = [0, 1, 2];
+  return shuffleN(3, r);
+}
+
+/** Xáo thứ tự n điểm (đố gương 3 cột, đố đèn Kim Dạ Cung 4 cột). */
+export function shuffleN(n: number, r: () => number): number[] {
+  const a = Array.from({ length: n }, (_, i) => i);
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(r() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
@@ -37,6 +42,10 @@ export class MirrorPuzzle {
   private fails = 0;
   private on = new Map<string, number>();
   done = false;
+  /** Tiền tố khóa tin hệ thống (`mirror` cho Kính Nguyệt Cung, `kd_lamp` cho hành lang đèn Kim Dạ Cung). */
+  private get msg(): string {
+    return this.def.msg ?? 'mirror';
+  }
 
   constructor(
     private readonly def: Puzzle,
@@ -49,7 +58,7 @@ export class MirrorPuzzle {
   }
 
   private round(): void {
-    this.order = shuffle3(this.rnd);
+    this.order = shuffleN(this.def.points.length, this.rnd);
     this.idx = 0;
     this.until = this.h.now() + this.def.secs * 1000;
     // Ai đang đứng trên một cột lúc bắt đầu vòng mới chỉ được tính chạm khi rời ra rồi chạm lại (tránh một bước sai đốt hết lượt).
@@ -59,7 +68,7 @@ export class MirrorPuzzle {
       if (at >= 0) this.on.set(p.sid, at);
     }
     this.def.points.forEach((p, i) => this.h.fx({ t: 'mirror_pillar', n: i, x: p.x, z: p.z, d: this.def.secs, pg: 0 }));
-    this.h.say('sys.mirror_puzzle', { order: this.order.map((i) => this.h.colorName(i)).join(' → '), s: this.def.secs }, 'info');
+    this.h.say(`sys.${this.msg}_puzzle`, { order: this.order.map((i) => this.h.colorName(i)).join(' → '), s: this.def.secs }, 'info');
   }
 
   private pointAt(p: { x: number; z: number }): number {
@@ -78,7 +87,7 @@ export class MirrorPuzzle {
   tick(): void {
     if (this.done) return;
     const now = this.h.now();
-    if (now >= this.until) return this.fail('sys.mirror_puzzle_time');
+    if (now >= this.until) return this.fail(`sys.${this.msg}_puzzle_time`);
     for (const p of this.h.players()) {
       if (p.dead) continue;
       const at = this.pointAt(p);
@@ -89,7 +98,7 @@ export class MirrorPuzzle {
         continue;
       }
       this.on.set(p.sid, at);
-      if (at !== this.order[this.idx]) return this.fail('sys.mirror_puzzle_bad');
+      if (at !== this.order[this.idx]) return this.fail(`sys.${this.msg}_puzzle_bad`);
       const pt = this.def.points[at];
       this.h.fx({ t: 'mirror_pillar', n: at, x: pt.x, z: pt.z, d: Math.max(1, (this.until - now) / 1000), pg: 1 });
       if (++this.idx >= this.order.length) return this.win();
@@ -100,7 +109,7 @@ export class MirrorPuzzle {
     this.done = true;
     this.def.points.forEach((p, i) => this.h.fx({ t: 'mirror_pillar', n: i, x: p.x, z: p.z, d: 0, pg: 1 }));
     this.h.solved(this.def.bossCut);
-    this.h.say('sys.mirror_puzzle_ok', { n: Math.round(this.def.bossCut * 100) }, 'good');
+    this.h.say(`sys.${this.msg}_puzzle_ok`, { n: Math.round(this.def.bossCut * 100) }, 'good');
   }
 
   private fail(msg: string): void {

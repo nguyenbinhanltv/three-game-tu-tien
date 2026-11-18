@@ -174,7 +174,7 @@ for (const p of POIS) if (zoneOfOffset(p.off[0], p.off[1])?.id !== p.zone) throw
 const BOSS = { off: [0, -90] }; // Tam Thủ Ngục Khuyển gác miệng nam Giới Khích
 const BOSS3 = { off: [-220, -400] }; // DV-2 đợt 3: Tẫn Hỏa Kiếm Cơ (tạm đứng ngoài trời ở Kim Dạ Ngoại Uyển, chờ phó bản Kim Dạ Cung)
 const BOSS4 = { off: [-470, -400] }; // DV-2 đợt 3: Kim Dạ Ma Hậu (như trên)
-const BOSS2 = { off: [0, -650] }; // chỗ để dành cho Thủ Khích Dực Chủ (DV3-D): chưa có quái, chỉ giữ trống đấu trường
+const BOSS2 = { off: [0, -650] }; // gốc Giới Khích, Trấn Giới Đài: Thủ Khích Dực Chủ (DV-2 đợt 4), hồi 1%/s trong 10 m quanh đây (`ai.anchor`)
 
 // ---- Giới Khích: khe chạy nam → bắc dọc trục giữa, hơi lượn (offset x theo z) ----
 const RIFT_Z0 = -190;
@@ -284,6 +284,7 @@ for (const e of ELITES) {
 
 // ---- boss ngoài trời: Tam Thủ Ngục Khuyển (DV-B) gác miệng nam Giới Khích, hồi sinh 30 phút ----
 spawns.push({ mon: 'boss_tam_thu_nguc_khuyen', x: W(BOSS.off[0]), z: W(BOSS.off[1]), radius: 6, count: 1, levelMin: Math.min(29, LV_CAP), levelMax: Math.min(29, LV_CAP), respawn: 1800 });
+spawns.push({ mon: 'boss_thu_khich_duc_chu', x: W(BOSS2.off[0]), z: W(BOSS2.off[1]), radius: 2, count: 1, levelMin: Math.min(31, LV_CAP), levelMax: Math.min(31, LV_CAP), respawn: 1800 });
 spawns.push({ mon: 'boss_tan_hoa_kiem_co', x: W(BOSS3.off[0]), z: W(BOSS3.off[1]), radius: 6, count: 1, levelMin: Math.min(31, LV_CAP), levelMax: Math.min(31, LV_CAP), respawn: 1800 });
 spawns.push({ mon: 'boss_kim_da_ma_hau', x: W(BOSS4.off[0]), z: W(BOSS4.off[1]), radius: 6, count: 1, levelMin: Math.min(31, LV_CAP), levelMax: Math.min(31, LV_CAP), respawn: 1800 });
 
@@ -505,7 +506,11 @@ const level = {
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
   // Cổng vào Xích Tẫn Khích (DV-3D), cách poi cong_xich_tan_khich 18 m về phía tâm bản đồ.
-  portals: [{ x: W(337), z: W(-387), r: 12, to: 'xich_tan_khich' }],
+  portals: [
+    { x: W(337), z: W(-387), r: 12, to: 'xich_tan_khich' },
+    // Cổng vào Kim Dạ Cung (DV-3E), cách poi cong_kim_da_cung 18 m về phía tâm bản đồ.
+    { x: W(-337), z: W(-393), r: 12, to: 'kim_da_cung' },
+  ],
   // Vị trí năm Trấn Giới Bia (cơ chế giới áp/thắp bia là DV3-C; nhiệm vụ `touch` dùng các điểm này).
   spots: [...STELES, ...EXTRA_SPOTS].map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),
   escorts: ESCORTS,

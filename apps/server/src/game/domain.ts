@@ -6,7 +6,7 @@
 
 import { PF_DEAD, DOMAIN_EFFECT, DOMAIN_TICK_MS, domainRadius, domainScale, type MethodRole } from '@dtl/shared';
 import { METHOD } from '@dtl/content';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 export interface DomainHost {
   now(): number;
