@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { groundAt, MS_DEAD, PF_DEAD, S } from '@dtl/shared';
+import { groundAt, MS_DEAD, PF_DEAD } from '@dtl/shared';
 
 // E4-G: chiêu Nguyên Anh (24/26) và biến thức cấp 28. Dựng sim như e2g.test.ts.
 process.env.DB_FILE = ':memory:';

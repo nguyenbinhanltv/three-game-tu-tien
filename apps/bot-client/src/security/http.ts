@@ -1,7 +1,6 @@
 // Bài kiểm tra bảo mật: Request HTTP xấu, matchmake không đăng nhập, ngoại hình lúc tạo nhân vật (R-7, tách từ security-check.ts).
 import { Client, type Room } from 'colyseus.js';
 import { ROOM_WORLD } from '@dtl/shared';
-import path from 'node:path';
 import { HTTP, WS, W, check, health, tag } from './lib';
 
 export async function runHttp(): Promise<void> {

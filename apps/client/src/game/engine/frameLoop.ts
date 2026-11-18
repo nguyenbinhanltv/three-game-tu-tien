@@ -444,7 +444,7 @@ export function reconcile(eng: Game, me: PState): void {
   eng.cur = base;
 }
 
-export function moveCtx(eng: Game, me: PState): MoveCtx {
+export function moveCtx(_eng: Game, me: PState): MoveCtx {
   const dead = (me.fl & PF_DEAD) !== 0;
   const soul = get().soul;
   const scouting = (me.fl & PF_SOUL) !== 0 && soul.k === SOUL_SCOUT && !dead;
@@ -599,7 +599,7 @@ export async function describeGpu(eng: Game): Promise<void> {
 }
 
 /** Chọn backend: xem `rendererChoice` (`?renderer=webgl2` chỉ cho lần nạp này). */
-export function pickRenderer(eng: Game, param: string | null): boolean {
+export function pickRenderer(_eng: Game, param: string | null): boolean {
   let stored: string | null = null;
   try {
     stored = localStorage.getItem(RENDERER_KEY);

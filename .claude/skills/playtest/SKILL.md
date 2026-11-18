@@ -84,3 +84,8 @@ Ghép sau `?mute=1&auto=<tên>`. Chỉ chạy với tài khoản thử (đăng n
 
 - Nói rõ đã kiểm tra gì bằng mắt, gì bằng số đo, gì chưa kiểm tra được (ví dụ: chưa thử Safari, máy không có GPU).
 - Gửi ảnh chụp màn hình nếu thay đổi có phần hình ảnh.
+
+## Cờ URL và log (cập nhật R-9)
+
+- Mọi tham số URL của client khai ở `apps/client/src/base/flags.ts` (`FLAG_DOCS` liệt kê cờ, phạm vi, mô tả); tham số kiểm thử chỉ tài khoản thử xem `docs/handbook/commands.md`. Cờ đã gỡ (`?trees ?outfit ?p2e ?e4 ?swords ?ground ?beacons ?props ?preview=2d ?k6 ?fxtl ?monfx ?ngj`) không còn tác dụng; `?cine=0` vẫn giữ cho công cụ đo.
+- Log server đi qua `apps/server/src/log.ts`: đặt `LOG_LEVEL=debug|info|warn|error|silent` (kể cả trong `apps/server/.env.local`) để lọc.

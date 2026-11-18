@@ -33,7 +33,7 @@ describe('lowerBodyOf', () => {
 });
 
 describe('retargetClips với bảng đổi tên + trackedOnly', () => {
-  const chain = (names: string[], type: 'bone' = 'bone') => {
+  const chain = (names: string[], _type: 'bone' = 'bone') => {
     const root = new THREE.Group();
     let parent: THREE.Object3D = root;
     names.forEach((n, i) => {

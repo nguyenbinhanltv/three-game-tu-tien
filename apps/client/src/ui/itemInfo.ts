@@ -1,7 +1,7 @@
 // Gợi ý vật phẩm (TD-C, mục D): nguồn, công dụng, nhãn "tốt hơn", gợi ý hành động. Mọi thứ suy từ dữ liệu
 // (itemsources.json sinh từ bảng rơi của server, recipes, forge, npcs, sets), không viết tay từng món. Hàm thuần.
 import { type Equipment, type InvItem, type InvSlot, isEquipSlot, type ItemDef, PROMOTE_MAT, TIER_OPEN } from '@dtl/shared';
-import { ENHANCE_ORE, FORGE, ITEM, ITEM_SOURCES, itemName, itemTier, monsterName, NPC, NPCS, promoteTarget, RECIPES, SET, t } from '@dtl/content';
+import { ENHANCE_ORE, FORGE, ITEM, ITEM_SOURCES, itemName, itemTier, monsterName, NPCS, promoteTarget, RECIPES, SET, t } from '@dtl/content';
 import { powerDelta, wornIds } from './gear';
 
 interface InfoLine {
@@ -98,9 +98,4 @@ export const BAG_WARN_AT = 10;
 export function bagLow(inv: readonly InvSlot[]): number | null {
   const n = freeSlots(inv);
   return n <= BAG_WARN_AT ? n : null;
-}
-
-/** Tên NPC (dùng ở UI khác nếu cần). */
-function npcLabel(id: string): string {
-  return NPC.get(id) ? npcName(id) : id;
 }

@@ -3,8 +3,8 @@
 // Độ kiếp Trúc Cơ (S2-C) giữ hành vi y hệt bản cũ trong sim.ts: thứ tự gọi Math.random và thứ tự phát vùng không đổi
 // (test băm `trib.golden.test.ts`).
 
-import { PF_DEAD, type FxMsg, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type HazardKind, type HazardMsg, type TribDef, type TribId, type TribPhaseDef } from '@dtl/shared';
-import type { MonEnt, PlayerEnt } from './entities';
+import { PF_DEAD, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type TribDef, type TribPhaseDef } from '@dtl/shared';
+import type { PlayerEnt } from './entities';
 import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from './tribmech';
 import { cloneAbsorb, cloneOut } from './tribnhan';
 import { riftFinal, tribCleanup } from './tribanh';

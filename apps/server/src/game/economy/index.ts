@@ -6,7 +6,7 @@ import { PILL_QUALITY, ITEM, itemName, NPC, QUEST, realmName, RECIPE, SKILL, t, 
 import { type Character, isEquipSlot, sameSlot } from '../character';
 import { passiveOf, setSkillLevel, skillLevelOf } from '../method';
 import type { DuelSystem } from '../duel';
-import type { MonEnt, NodeEnt, PlayerEnt } from '../entities';
+import type { NodeEnt, PlayerEnt } from '../entities';
 import type { TeleportSystem } from '../teleport';
 import type { UpgradeSystem } from '../upgrade';
 

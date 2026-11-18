@@ -98,7 +98,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   aoi!: Aoi;
   abstract simOptions(options: unknown): SimOptions;
 
-  onCreate(options: unknown): void {
+  override onCreate(options: unknown): void {
     this.maxClients = config.maxClients;
     this.setState(new WorldState());
     this.sim = new GameSim(this.state, this, this.simOptions(options));
@@ -197,7 +197,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
    * Xác thực ở mức class: Colyseus gọi trước khi giữ chỗ hay tạo room,
    * nên request matchmake không có thông tin đăng nhập hợp lệ không dựng được room nào.
    */
-  static async onAuth(_token: string, options: unknown): Promise<JoinAuth> {
+  static override async onAuth(_token: string, options: unknown): Promise<JoinAuth> {
     const auth = await authenticate(options);
     const o = (options ?? {}) as { name?: unknown; dev?: unknown; session?: unknown; ap?: unknown; rt?: unknown };
     let charId = Character.findByAccount(auth.accountId);
@@ -249,7 +249,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     char.y = 0;
   }
 
-  onJoin(client: Client, options: unknown, auth: JoinAuth): void {
+  override onJoin(client: Client, options: unknown, auth: JoinAuth): void {
     // Đăng nhập trùng: đá phiên cũ (và lưu) trước khi nạp nhân vật.
     const prev = online.get(auth.charId);
     if (prev) {
@@ -315,7 +315,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
 
   afterJoin(_p: PlayerEnt): void {}
 
-  async onLeave(client: Client, consented: boolean): Promise<void> {
+  override async onLeave(client: Client, consented: boolean): Promise<void> {
     const p = this.sim.players.get(client.sessionId);
     if (!p) return;
     if (!consented && !p.kicked) {
@@ -448,7 +448,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     return Number.isFinite(at.x) && Number.isFinite(at.z) && at.x >= b.x0 && at.x <= b.x1 && at.z >= b.z0 && at.z <= b.z1;
   }
 
-  onDispose(): void {
+  override onDispose(): void {
     this.sim.saveAll();
     for (const p of this.sim.players.values()) {
       parties.detach(p);

@@ -5,7 +5,6 @@ import { createSky, setSkyQuality, setSunDirection } from '../../render/sky';
 import { Lake } from '../../render/water';
 
 const SKY_HORIZON = 0xcfe0ea;
-const SKY_TOP = 0x2f7fd0;
 
 /** Bầu trời, ánh sáng, mây, mặt hồ. */
 export class Environment {

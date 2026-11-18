@@ -13,7 +13,7 @@ Chi tiết từng đợt: `docs/vfx-v1/` (nền tảng), `vfx-v2/` (Kiếm tu), 
 - Viết bằng TSL (`three/tsl`) với `NodeMaterial`, một bản chạy cả WebGPU lẫn WebGL2. Không viết GLSL/WGSL thô.
 - Material dùng chung nằm ở `apps/client/src/render/materials/`. Không tạo material mới cho từng mesh hay từng lần phát.
 - Tham số chỉnh được là `uniform()`.
-- Nhiễu trong shader: `vnoise`/`hash21` ở `render/vfx/common.ts`. vec2 chỉ có `.x/.y`: gọi `.z` làm hỏng WGSL mà TypeScript không bắt được.
+- Nhiễu trong shader: `vnoise`/`hash21` ở `render/vfx/common.ts`. vec2 chỉ có trường x và y: gọi `.z` làm hỏng WGSL mà TypeScript không bắt được.
 
 ## Phong cách
 

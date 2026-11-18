@@ -252,7 +252,7 @@ function initScript(preset: string, port: number): void {
       this.counted = String(url).includes(':' + port);
       if (this.counted) this.addEventListener('message', (e) => (B.rx += size((e as MessageEvent).data)));
     }
-    send(d: any): void {
+    override send(d: any): void {
       if (this.counted) B.tx += size(d);
       super.send(d);
     }

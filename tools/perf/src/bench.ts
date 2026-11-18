@@ -24,7 +24,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { FOREST, LAKE, SPAWN_POINT } from '@dtl/shared';
-import type { Browser, Page } from 'playwright';
+import type { Browser } from 'playwright';
 import { createDevServer, ROOT, sleep } from './lib/devserver';
 import { args, env, opt, ports } from './lib/env';
 import { launchChrome } from './lib/browser';

@@ -1,11 +1,11 @@
 ---
 name: threejs-client
-description: Quy ước code client Three.js của Đạp Thiên Lộ — renderer WebGPU/WebGL2, ECS, streaming địa hình theo ô, LOD, instancing, camera, input, giải phóng bộ nhớ. Dùng khi viết hoặc sửa bất kỳ code nào trong apps/client liên quan đến render, thế giới 3D, nhân vật, camera hay vòng lặp game.
+description: Quy ước code client Three.js của Đạp Thiên Lộ — renderer WebGPU/WebGL2, streaming địa hình theo ô, LOD, instancing, camera, input, giải phóng bộ nhớ. Dùng khi viết hoặc sửa bất kỳ code nào trong apps/client liên quan đến render, thế giới 3D, nhân vật, camera hay vòng lặp game.
 ---
 
 # Client Three.js
 
-> Hiện trạng (2026-11-15): code nằm trong `apps/client/src/game/` (engine.ts, terrain.ts, entities.ts, models.ts, vfx.ts, env.ts, sect.ts, props.ts, preload.ts, assets.ts, cutscene.ts, camZones.ts, audio.ts…), `game/character/` (`SkinnedCharacter`, `playerSkins`, `npcSkins`, `monsterSkins`, `ikpose`, `animLib`), `render/` (TSL: materials, atmosphere, grading, post, vfx) và `ui/` (React + `ui/kit/`). **Chưa dùng ECS, Rapier, Web Worker, VAT**; thực thể là object thường, va chạm là heightmap + hình tròn của `packages/shared`. Store UI là zustand ở `src/ui/store.ts`. Các mục dưới đây về ECS/VAT/worker/Rapier là hướng mở rộng, không phải thứ đang có; đừng viết như thể chúng tồn tại.
+> Hiện trạng (2026-11-18, sau R-8): `apps/client/src/` chia tầng. `base/` (tầng thấp nhất: `flags.ts` = mọi tham số URL có kiểu, `levelCtx.ts` = level đang hiển thị, `groundTextures.ts`, `testLevel.ts`); `render/` (TSL, vật liệu, VFX; **không import `game/` hay `ui/`**, ESLint ép); `game/{core,world,entities,combat,fx,audio,camera,net,debug}/` theo miền; `game/character/`; `game/engine.ts` (lớp `Game`: trạng thái và API) + `game/engine/*.ts` (phần tách ra, mỗi hàm nhận `eng: Game`: `fxMsgs` xử lý tin FX/sát thương, `frameLoop` vòng khung + camera + dự đoán, `levelLoad` dựng/gỡ level, `input`, `hudSync`, `cine`, `room`; hằng số dùng chung ở `common.ts`); `ui/`. Mới thêm code vào đúng miền, không nối vào `engine.ts`; không file nào quá 1200 dòng, madge 0 vòng. `Game.frame()`/`Game.onFx()` giữ làm phương thức mỏng vì công cụ đo (`bench`, `compat`, `shots vfx`) bọc `__game.frame`/`__game.onFx`.
 > Lưu ý WebGPU: không thay `geometry.index` bằng buffer mới sau khi đã vẽ — ghi đè nội dung buffer cũ và dùng `setDrawRange` (xem `Terrain.rebuildCoarseIndex`).
 
 ## Khởi tạo renderer
@@ -16,10 +16,10 @@ description: Quy ước code client Three.js của Đạp Thiên Lộ — render
 - `renderer.setPixelRatio(Math.min(devicePixelRatio, preset.maxPixelRatio))`, preset Thấp = 1, Vừa = 1.5, Cao = 2.
 - Ghim version `three` trong package.json, nâng cấp có chủ đích (API WebGPU/TSL còn thay đổi giữa các bản).
 
-## Vòng lặp (ECS là hướng mở rộng)
+## Vòng lặp
 
 - Một `renderer.setAnimationLoop(tick)` duy nhất. Thứ tự trong tick: input → gửi lệnh mạng → áp snapshot server + nội suy → dự đoán chuyển động bản thân → hệ thống ECS → camera → render.
-- Hiện tại thực thể là object thường trong `entities.ts` (người, quái, NPC); trạng thái do server gửi, `Object3D` chỉ là lớp hiển thị. ECS (bitecs/koota) trong `packages/shared/ecs` mới là ý định, chưa có.
+- Thực thể là object thường trong `game/entities/entities.ts` (`PlayerVis`/`MonVis` ở `entityVis.ts`; người, quái, NPC); trạng thái do server gửi, `Object3D` chỉ là lớp hiển thị. Không dùng ECS.
 - Không đặt logic game trong `Object3D.userData` hay trong component React.
 
 ## Thế giới và streaming
@@ -48,6 +48,11 @@ description: Quy ước code client Three.js của Đạp Thiên Lộ — render
 
 - UI (túi đồ, nhiệm vụ, chat, bản đồ, nhân vật, Thiết lão, công pháp, tổ đội) là React nằm trên canvas, đọc trạng thái qua store (zustand). Bảng mới dùng bộ khung `ui/kit/` (xem `?mute=1&viewer=ui`), chuỗi qua i18n. Không re-render React mỗi khung; chỉ cập nhật khi trạng thái đổi.
 - Tên và thanh máu trên đầu nhân vật vẽ trong WebGL (sprite/SDF text), không dùng DOM.
+
+## Cờ URL và lint
+
+- Tham số URL chỉ đọc qua `base/flags.ts` (`FLAGS`, `FLAG_DOCS`); không dùng `new URLSearchParams(location.search)` nơi khác. Cờ mới: thêm vào `Flags`, `readFlags`, `FLAG_DOCS` (phạm vi `user|diag|test|viewer`).
+- `pnpm lint` (ESLint): cấm import tương đối xuyên gói, `render/` và `base/` không import `game/`/`ui/`, client không import `@dtl/content/loot`. TypeScript bật `noUnusedLocals`, `noUnusedParameters`, `noImplicitOverride` (tham số cố ý không dùng đặt `_x`).
 
 ## Trước khi xong việc
 

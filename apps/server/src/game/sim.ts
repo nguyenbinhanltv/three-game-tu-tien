@@ -45,7 +45,7 @@ import {
   type Terrain,
 } from '@dtl/shared';
 import { TribSystem, type GuardCfg } from './trib';
-import { LEVELS, MONSTER, monsterName, NPC, QUESTS, realmName, t, METHOD } from '@dtl/content';
+import { LEVELS, MONSTER, monsterName, NPC, realmName, t } from '@dtl/content';
 
 import { PLACES } from '@dtl/content/places';
 import { NodeS, type WorldState } from '../state';
@@ -774,8 +774,8 @@ export class GameSim {
   saveAll(): void { return this.plSys.saveAll(); }
   savePlayer(p: PlayerEnt): void { return this.plSys.savePlayer(p); }
   private tickPlayer(p: PlayerEnt, dt: number): void { return this.plSys.tickPlayer(p, dt); }
-  private syncPublic(p: PlayerEnt): void { return this.plSys.syncPublic(p); }
-  private applyInput(p: PlayerEnt, inp: MoveInput): void { return this.plSys.applyInput(p, inp); }
+  syncPublic(p: PlayerEnt): void { return this.plSys.syncPublic(p); }
+  applyInput(p: PlayerEnt, inp: MoveInput): void { return this.plSys.applyInput(p, inp); }
   tick(dtMs: number): void {
     const t0 = performance.now();
     this.now = Date.now();
@@ -904,7 +904,7 @@ export class GameSim {
   private resolvePending(p: PlayerEnt): void { return this.combat.resolvePending(p); }
   private tickMethods(): void { return this.combat.tickMethods(); }
   onSkill(p: PlayerEnt, msg: unknown): void { return this.combat.onSkill(p, msg); }
-  private onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void { return this.combat.onDash(p, skill, targetId); }
+  onDash(p: PlayerEnt, skill: SkillDef, targetId: string): void { return this.combat.onDash(p, skill, targetId); }
   // ---------- pháp bảo phụ và đan tăng sức (P3-8) ----------
 
   private applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void { return this.artSys.applyPillBuff(p, def, potency); }
@@ -939,10 +939,10 @@ export class GameSim {
   addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false, dur = 0, seal?: Hazard['seal'], reach = false): void { return this.monSys.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, mv, hot, dur, seal, reach); }
   private addPosture(m: MonEnt, n: number): void { return this.monSys.addPosture(m, n); }
   bossTimers(): BossTimerMsg { return this.monSys.bossTimers(); }
-  private checkPhase(m: MonEnt): void { return this.monSys.checkPhase(m); }
+  checkPhase(m: MonEnt): void { return this.monSys.checkPhase(m); }
   damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0, dot = false): void { return this.monSys.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot); }
   delayBosses(): void { return this.monSys.delayBosses(); }
-  private fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void { return this.monSys.fireBolts(m, c, yaw, lift); }
+  fireBolts(m: MonEnt, c: MonsterCaster, yaw: number, lift = 0): void { return this.monSys.fireBolts(m, c, yaw, lift); }
   private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string): void { return this.monSys.hitMonster(p, mon, basePower, mul, elem); }
   private homeDist(m: MonEnt): number { return this.monSys.homeDist(m); }
   /** Gột xong (DV-3D, Xích Tẫn Khích): hủy vùng boss đã thả rồi hạ boss qua đường giết chung (cùng tu vi, rơi đồ, nhiệm vụ như bị đánh chết). */
@@ -955,7 +955,7 @@ export class GameSim {
 
   private killMonster(mon: MonEnt): void { return this.monSys.killMonster(mon); }
   nextHazardGrp(): number { return this.monSys.nextHazardGrp(); }
-  private releaseChant(m: MonEnt, c: MonsterChant): void { return this.monSys.releaseChant(m, c); }
+  releaseChant(m: MonEnt, c: MonsterChant): void { return this.monSys.releaseChant(m, c); }
   private removeMonster(m: MonEnt): void { return this.monSys.removeMonster(m); }
   private resetAi(m: MonEnt): void { return this.monSys.resetAi(m); }
   private respawnMonster(m: MonEnt, at?: { x: number; z: number }): void { return this.monSys.respawnMonster(m, at); }

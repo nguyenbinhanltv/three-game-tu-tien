@@ -24,7 +24,7 @@ packages/content/
   i18n/vi.json       chuỗi hiển thị
 ```
 
-- Chưa có schema zod (`packages/content/schema/` là hướng mở rộng); `pnpm content:check` (`src/check.ts`) kiểm tra bằng code: id trùng, tham chiếu hỏng (quái rơi vật phẩm không tồn tại…). Chạy lệnh này sau mọi thay đổi.
+- Chưa có schema zod (thư mục schema riêng là hướng mở rộng, chưa có); `pnpm content:check` (`src/check.ts`) kiểm tra bằng code: id trùng, tham chiếu hỏng (quái rơi vật phẩm không tồn tại…). Chạy lệnh này sau mọi thay đổi.
 - Id: `snake_case` không dấu, có tiền tố (`mon_soi_xam`, `skl_kiem_khi_tram`, `itm_truc_co_dan`). Không đổi id đã phát hành; đổi tên hiển thị qua i18n.
 
 ## Thang cảnh giới (theo Tiên Nghịch)
