@@ -1111,24 +1111,30 @@ async function main() {
     // c. Giao chiến thật (tự đánh một con sói): bắt đầu niệm rồi ra chiêu thì lượt niệm bị hủy; đang giao chiến thì không bắt đầu niệm được.
     await sayT(ta.room, 'tp 2048 2088');
     await sayT(ta.room, 'tele all');
-    // Bỏ hẳn cuộc đua với sói: `/gm spawn` đặt sói ở p + 8·(sin yaw, cos yaw) và nó đuổi ngay khi thấy người trong tầm 12 m. Chốt yaw, rồi gửi liền
-    // `spawn` và `tp` tới p − 12·(sin yaw, cos yaw) (cách sói 20 m: ngoài tầm 12 m, trong tầm 26 m của skl_phi_kiem). Server xử lý hai lệnh theo thứ tự
-    // nên sói không bao giờ thấy người trong tầm phát hiện và đứng yên tới khi bị đánh; kết quả không phụ thuộc thời gian.
-    ta.room.send(C.INPUT, { s: 5000, mx: 0, mz: 0, yaw: 0, f: 0 });
+    // Không phụ thuộc thời gian: `/gm spawn` đặt sói cách người gọi 8 m và nó đuổi người gọi, nên để tài khoản `tb` gọi sói còn `ta` đứng xa.
+    // `ta` ở A, sói ở W = A + (20, 0) (ngoài tầm aggro 12 m, trong tầm 26 m của skl_phi_kiem); `tb` ở W − 8·(sin yaw, cos yaw) với yaw 0, tức A + (20, −8),
+    // và bất tử nên sói chỉ đuổi `tb` (đi ra xa `ta`). Mỗi tài khoản có giới hạn chat riêng nên không vướng 800 ms giữa hai lệnh.
+    await sayT(tb.room, 'god on');
+    await sayT(tb.room, `tp ${(2048 + 20).toFixed(1)} ${(2088 - 8).toFixed(1)}`);
+    tb.room.send(C.INPUT, { s: 5000, mx: 0, mz: 0, yaw: 0, f: 0 });
     await W(400);
-    const me0 = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z, yaw: mp(ta.room, ta.init.sid).yaw };
-    const fwd = { x: Math.sin(me0.yaw), z: Math.cos(me0.yaw) };
-    ta.room.send(C.CHAT, { m: '/gm spawn mon_soi_xam 1' });
-    ta.room.send(C.CHAT, { m: `/gm tp ${(me0.x - fwd.x * 12).toFixed(1)} ${(me0.z - fwd.z * 12).toFixed(1)}` });
-    await W(900);
+    await sayT(tb.room, 'spawn mon_soi_xam 1');
+    const WX = 2048 + 20;
+    const WZ = 2088;
     const here = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
-    const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - me0.x - fwd.x * 8, x[1].z - me0.z - fwd.z * 8) - Math.hypot(y[1].x - me0.x - fwd.x * 8, y[1].z - me0.z - fwd.z * 8))[0];
+    const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - WX, x[1].z - WZ) - Math.hypot(y[1].x - WX, y[1].z - WZ))[0];
     if (!wolf) check('dựng được sói để thử giao chiến', false);
     else {
       sysA.length = 0;
+      const hp0 = mp(ta.room, ta.init.sid).hp;
       ta.room.send(C.TELE, { id: 'tp_ho' });
       await W(700);
       const casting = !!teleA?.cast;
+      // Điều kiện để lượt niệm bị hủy là do chiêu chứ không phải do sói cắn: đang niệm, khí huyết chưa giảm, sói còn cách ta ~20 m (ngoài tầm aggro 12 m).
+      const hpBefore = mp(ta.room, ta.init.sid).hp;
+      const gap = Math.hypot(wolf[1].x - here.x, wolf[1].z - here.z);
+      const clean = casting && hpBefore >= hp0 && gap > 18 && gap < 26 && !sysA.includes('sys.tele_combat');
+      check('trước khi ra chiêu: đang niệm, chưa bị đánh, sói cách ~20 m (không đua với sói)', clean, `niệm ${casting ? 'có' : 'không'}, cách sói ${gap.toFixed(1)} m, hp ${hpBefore}`);
       ta.room.send(C.SKILL, { id: 'skl_phi_kiem', t: wolf[0] });
       await W(4200);
       const p1 = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
@@ -1141,10 +1147,12 @@ async function main() {
       ta.room.send(C.TELE, { id: 'tp_ho' });
       await W(700);
       check('đang giao chiến: không bắt đầu niệm Truyền Tống', !teleA?.cast && sysA.includes('sys.tele_combat'), `cast ${teleA?.cast ? 'có' : 'không'}, sys ${[...new Set(sysA)].join(',')}`);
-      void here;
     }
     await sayT(ta.room, 'killall');
     await sayT(ta.room, 'heal');
+    await sayT(tb.room, 'killall');
+    await sayT(tb.room, 'tp 2048 2088');
+    await sayT(tb.room, 'god off');
     await W(11000);
     // d. Spam lệnh: server giãn lệnh, không tạo hàng loạt thông báo.
     const t0 = teleMsgs;
