@@ -41,7 +41,7 @@ export function setReduceMotion(on: boolean): void {
   apply();
 }
 
-/** Gọi một lần lúc khởi động (và ở trang ?ui=kit). */
+/** Gọi một lần lúc khởi động (và ở trang ?ui=ngj). */
 export function installMotion(): void {
   apply();
   if (typeof matchMedia === 'function') matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', apply);

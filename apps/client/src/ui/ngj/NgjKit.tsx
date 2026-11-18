@@ -40,7 +40,7 @@ function Sec({ title, children, wide }: { title: string; children: React.ReactNo
 /** Ô mẫu: icon hệ thống nét vàng đóng vai món đồ (kit không tải atlas). */
 const item = (name: Parameters<typeof SysIcon>[0]['name']) => <SysIcon name={name} size={30} />;
 
-/** Trang xem toàn bộ thành phần của bộ giao diện Ngọc Giản Kim Văn (`?ui=kit`): chất liệu, góc, bảng tên, nút, ô, thanh, tab, chú giải, icon, chữ triện. */
+/** Trang xem toàn bộ thành phần của bộ giao diện Ngọc Giản Kim Văn (`?ui=ngj`): chất liệu, góc, bảng tên, nút, ô, thanh, tab, chú giải, icon, chữ triện. */
 export function NgjKit() {
   const [rail, setRail] = useState('character');
   const [sel, setSel] = useState(1);
