@@ -1,5 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { type GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { HiresCandidate } from '../hires/policy';
+import { derivedOf } from '../../render/materials/derived';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -32,6 +34,19 @@ export interface ManifestAsset {
   skinned: boolean;
   ktx2: boolean;
   lods: { level: number; triangles: number }[];
+  /** Bậc texture cao tải nền (Cao/Cực cao), xem `game/hires/`. */
+  hires?: ManifestHires[];
+}
+
+/** Texture bậc cao của một vật liệu (tệp KTX2 rời, `pnpm assets:hires`). */
+export interface ManifestHires {
+  mat: string;
+  slots: string[];
+  file: string;
+  width: number;
+  height: number;
+  bytes: number;
+  gpuBytes: number;
 }
 
 export interface Manifest {
@@ -77,11 +92,23 @@ type LoadFn = (url: string, onBytes?: (loaded: number) => void) => Promise<GLTF>
 type FetchFn = (url: string, onBytes: (loaded: number) => void) => Promise<ArrayBuffer>;
 type ParseFn = (data: ArrayBuffer, url: string) => Promise<GLTF>;
 
+export interface HiresApplied {
+  tex: THREE.Texture;
+  gpuBytes: number;
+  swaps: { mat: THREE.Material; slot: string; old: THREE.Texture }[];
+}
+
 interface Entry {
   id: string;
   refs: number;
   gltf: GLTF | null;
   promise: Promise<GLTF>;
+  /** Bản sao đang dùng (để biết asset ở gần người xem không). */
+  handles: Set<THREE.Object3D>;
+  /** Bản đang vẽ do nơi dùng tự clone từ bản mẫu (quái/nhân vật), khai báo bằng `trackInstance`. */
+  tracked: Set<WeakRef<THREE.Object3D>>;
+  /** Texture bậc cao đã thay, theo tệp. */
+  hires: Map<string, HiresApplied>;
 }
 
 interface Job {
@@ -254,6 +281,56 @@ export function createGltfLoader(ktx2: KTX2Loader): GLTFLoader {
   return new GLTFLoader().setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder);
 }
 
+/** Thay texture bậc cao vào vật liệu cùng tên (`meta.mat`) trong cây `root`; null nếu không có vật liệu/slot nào khớp. */
+export function swapHiresTexture(root: THREE.Object3D, meta: { mat: string; slots: string[]; gpuBytes: number }, tex: THREE.Texture): HiresApplied | null {
+  const swaps: HiresApplied['swaps'] = [];
+  root.traverse((o) => {
+    const mats = (o as THREE.Mesh).material;
+    if (!mats) return;
+    for (const mat of Array.isArray(mats) ? mats : [mats]) {
+      if (mat.name !== meta.mat || swaps.some((s) => s.mat === mat)) continue;
+      for (const slot of meta.slots) {
+        const old = (mat as unknown as Record<string, THREE.Texture | null>)[slot];
+        if (!old || !old.isTexture) continue;
+        tex.colorSpace = old.colorSpace;
+        tex.wrapS = old.wrapS;
+        tex.wrapT = old.wrapT;
+        tex.anisotropy = old.anisotropy;
+        tex.channel = old.channel;
+        (mat as unknown as Record<string, THREE.Texture>)[slot] = tex;
+        // Material dẫn xuất (adoptGltfMaterials chép tham chiếu texture) đang vẽ thay cho material gốc: đổi cả chúng.
+        for (const d of derivedOf(mat)) {
+          const dm = d as unknown as Record<string, THREE.Texture | null>;
+          if (dm[slot] === old) {
+            dm[slot] = tex;
+            d.needsUpdate = true;
+          }
+        }
+        swaps.push({ mat, slot, old });
+      }
+      if (swaps.some((s) => s.mat === mat)) mat.needsUpdate = true;
+    }
+  });
+  return swaps.length === 0 ? null : { tex, gpuBytes: meta.gpuBytes, swaps };
+}
+
+/** Trả texture cũ vào vật liệu và dispose texture bậc cao. */
+export function revertHiresApplied(a: HiresApplied): void {
+  for (const s of a.swaps) {
+    (s.mat as unknown as Record<string, THREE.Texture>)[s.slot] = s.old;
+    s.mat.needsUpdate = true;
+    // Material dẫn xuất (kể cả cái tạo sau khi đã áp dụng, chép texture bậc cao) về texture cũ trước khi dispose.
+    for (const d of derivedOf(s.mat)) {
+      const dm = d as unknown as Record<string, THREE.Texture | null>;
+      if (dm[s.slot] === a.tex) {
+        dm[s.slot] = s.old;
+        d.needsUpdate = true;
+      }
+    }
+  }
+  a.tex.dispose();
+}
+
 /** Dispose geometry, material và texture trong material của một cây object. */
 function disposeObject(root: THREE.Object3D): void {
   const geos = new Set<THREE.BufferGeometry>();
@@ -281,6 +358,9 @@ export class AssetCache {
   private viewer = { x: 0, z: 0 };
   private bytes = new Map<string, AssetProgress>();
   private manifest: Promise<Manifest> | null = null;
+  private manifestValue: Manifest | null = null;
+  /** Tăng mỗi lần `revertHires`: việc tải đang chạy dở thấy epoch đổi thì bỏ kết quả. */
+  private hiresEpoch = 0;
   private ktx2: KTX2Loader | null = null;
   private loader: GLTFLoader | null = null;
   /** Byte GLB đã/đang tải trước theo URL (`prefetch`), `null` nếu lỗi; xóa khi đã parse. */
@@ -299,6 +379,8 @@ export class AssetCache {
       fetchBytes?: FetchFn;
       parse?: ParseFn;
       fetchManifest?: () => Promise<Manifest>;
+      /** Thay được để test: nạp một tệp KTX2 rời (bậc texture cao). */
+      loadTexture?: (url: string) => Promise<THREE.Texture>;
     } = {},
   ) {}
 
@@ -326,10 +408,15 @@ export class AssetCache {
           if (!res.ok) throw new Error(`HTTP ${res.status} manifest.json`);
           return (await res.json()) as Manifest;
         });
-      this.manifest = fetchManifest().catch((e) => {
-        this.manifest = null; // lần sau thử lại
-        throw e;
-      });
+      this.manifest = fetchManifest()
+        .then((m) => {
+          this.manifestValue = m;
+          return m;
+        })
+        .catch((e) => {
+          this.manifest = null; // lần sau thử lại
+          throw e;
+        });
     }
     return this.manifest;
   }
@@ -344,7 +431,7 @@ export class AssetCache {
   async acquire(id: string, opts: AcquireOptions = {}): Promise<AssetHandle> {
     let e = this.entries.get(id);
     if (!e) {
-      const entry: Entry = { id, refs: 0, gltf: null, promise: null as unknown as Promise<GLTF> };
+      const entry: Entry = { id, refs: 0, gltf: null, promise: null as unknown as Promise<GLTF>, handles: new Set(), tracked: new Set(), hires: new Map() };
       entry.promise = this.getManifest()
         .then((m) => {
           const a = m.assets[id];
@@ -462,6 +549,134 @@ export class AssetCache {
     this.loader = null;
   }
 
+  // ---------- Bậc texture cao (tải nền, Cao/Cực cao) ----------
+
+  /** Texture bậc cao chưa thay của các asset đang có bản sao, kèm khoảng cách tới người xem (m). */
+  hiresCandidates(): HiresCandidate[] {
+    const m = this.manifestValue;
+    if (!m) return [];
+    const out: HiresCandidate[] = [];
+    for (const e of this.entries.values()) {
+      const list = m.assets[e.id]?.hires;
+      if (!e.gltf || !list?.length || e.handles.size === 0) continue;
+      const todo = list.filter((h) => !e.hires.has(h.file));
+      if (todo.length === 0) continue;
+      const dist = this.entryDist(e);
+      for (const h of todo) {
+        out.push({ key: `${e.id}#${h.file}`, assetId: e.id, dist, file: h.file, width: h.width, bytes: h.bytes, gpuBytes: h.gpuBytes });
+      }
+    }
+    return out;
+  }
+
+  /** Tổng bộ nhớ GPU thêm của texture bậc cao đang áp dụng (byte). */
+  hiresMemory(): number {
+    let n = 0;
+    for (const e of this.entries.values()) for (const a of e.hires.values()) n += a.gpuBytes;
+    return n;
+  }
+
+  /**
+   * Tải tệp bậc cao và thay vào vật liệu cùng tên của asset. `ok`: đã thay; `stale`: bị hủy giữa chừng (revert/hạ trần/asset bỏ),
+   * thử lại được sau; `none`: không thay được (thiếu vật liệu/slot khớp), đừng thử lại.
+   */
+  async applyHires(c: { assetId: string; file: string; width?: number }, maxSide = Infinity): Promise<'ok' | 'stale' | 'none'> {
+    const e = this.entries.get(c.assetId);
+    const meta = this.manifestValue?.assets[c.assetId]?.hires?.find((h) => h.file === c.file);
+    if (!e?.gltf || !meta) return 'none';
+    if (e.hires.has(c.file)) return 'ok';
+    const url = this.base + c.file;
+    const epoch = this.hiresEpoch;
+    const tex = await (this.opts.loadTexture ? this.opts.loadTexture(url) : this.loadKtxTexture(url));
+    // Đã revert (hạ preset) hoặc asset bỏ đi trong lúc tải: bỏ texture; cạnh vượt trần mới (Cực cao → Cao) cũng bỏ.
+    if (this.entries.get(c.assetId) !== e || !e.gltf || epoch !== this.hiresEpoch || meta.width > maxSide) {
+      tex.dispose();
+      return 'stale';
+    }
+    const applied = swapHiresTexture(e.gltf.scene, meta, tex);
+    if (!applied) {
+      tex.dispose();
+      return 'none';
+    }
+    e.hires.set(c.file, applied);
+    return 'ok';
+  }
+
+  /** Các texture bậc cao đang áp dụng, kèm khoảng cách bản sao gần nhất (cho việc đuổi khi chạm trần bộ nhớ). */
+  hiresApplied(): { key: string; dist: number; gpuBytes: number }[] {
+    const out: { key: string; dist: number; gpuBytes: number }[] = [];
+    for (const e of this.entries.values()) {
+      if (e.hires.size === 0) continue;
+      const dist = this.entryDist(e);
+      for (const [file, a] of e.hires) out.push({ key: `${e.id}#${file}`, dist, gpuBytes: a.gpuBytes });
+    }
+    return out;
+  }
+
+  /** Trả một tệp đã áp dụng (khóa `<asset>#<tệp>`) về texture GLB. */
+  revertHiresFile(key: string): void {
+    const i = key.indexOf('#');
+    const e = this.entries.get(key.slice(0, i));
+    const file = key.slice(i + 1);
+    const a = e?.hires.get(file);
+    if (!e || !a) return;
+    revertHiresApplied(a);
+    e.hires.delete(file);
+  }
+
+  /**
+   * Khai báo một bản đang vẽ của asset `id` (nơi dùng tự `clone` từ handle mẫu không nằm trong cảnh: quái, nhân vật), để thứ tự
+   * "gần camera trước" của texture bậc cao dùng đúng vị trí con quái chứ không phải bản mẫu ở gốc tọa độ. Giữ yếu (WeakRef);
+   * bản chưa gắn vào cảnh hoặc đã gỡ thì không tính. Trả hàm bỏ khai báo.
+   */
+  trackInstance(id: string, obj: THREE.Object3D): () => void {
+    const e = this.entries.get(id);
+    if (!e) return () => undefined;
+    const ref = new WeakRef(obj);
+    e.tracked.add(ref);
+    return () => e.tracked.delete(ref);
+  }
+
+  private static inScene(o: THREE.Object3D): boolean {
+    let p: THREE.Object3D | null = o;
+    while (p.parent) p = p.parent;
+    return (p as THREE.Scene).isScene === true;
+  }
+
+  /** Khoảng cách (m, mặt phẳng) từ người xem tới bản gần nhất đang nằm trong cảnh; Infinity nếu không có. */
+  private entryDist(e: Entry): number {
+    const v = new THREE.Vector3();
+    let dist = Infinity;
+    const visit = (o: THREE.Object3D) => {
+      if (!AssetCache.inScene(o)) return; // bản mẫu tách rời, bản chưa gắn hoặc đã gỡ
+      o.getWorldPosition(v);
+      dist = Math.min(dist, Math.hypot(v.x - this.viewer.x, v.z - this.viewer.z));
+    };
+    for (const h of e.handles) visit(h);
+    for (const ref of e.tracked) {
+      const o = ref.deref();
+      if (o) visit(o);
+      else e.tracked.delete(ref);
+    }
+    return dist;
+  }
+
+  /** Trả mọi texture bậc cao về bản trong GLB (hạ preset, mạng chậm): giải phóng bộ nhớ GPU. */
+  revertHires(): void {
+    this.hiresEpoch++;
+    for (const e of this.entries.values()) this.revertEntryHires(e);
+  }
+
+  private revertEntryHires(e: Entry): void {
+    for (const a of e.hires.values()) revertHiresApplied(a);
+    e.hires.clear();
+  }
+
+  private loadKtxTexture(url: string): Promise<THREE.Texture> {
+    if (!this.ktx2) this.ktx2 = createKtx2Loader();
+    return this.ktx2.loadAsync(url);
+  }
+
   private instance(e: Entry, gltf: GLTF): AssetHandle {
     const src = gltf.scene;
     // Mesh có xương cần SkeletonUtils.clone để bản sao có bộ xương riêng.
@@ -471,6 +686,7 @@ export class AssetCache {
       if (typeof o.userData.lod === 'number' && o.userData.lod > 0) o.visible = false;
     });
     let released = false;
+    e.handles.add(scene);
     return {
       id: e.id,
       scene,
@@ -480,8 +696,10 @@ export class AssetCache {
         released = true;
         scene.removeFromParent();
         e.refs--;
+        e.handles.delete(scene);
         if (e.refs <= 0 && this.entries.get(e.id) === e) {
           this.entries.delete(e.id);
+          this.revertEntryHires(e);
           disposeObject(gltf.scene);
         }
       },

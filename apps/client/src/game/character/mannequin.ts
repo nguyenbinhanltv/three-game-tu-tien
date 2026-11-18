@@ -6,7 +6,7 @@ import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, type MonsterDef } from '@dtl/shared';
-import type { AssetCache, AssetHandle } from '../core/assets';
+import { type AssetCache, type AssetHandle, assets } from '../core/assets';
 import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
@@ -303,6 +303,7 @@ export class MannequinCharacter implements CharacterView {
     this.shadow = shadow;
     this.spring2 = isSpring2(tpl.handle.id);
     this.rig = cloneSkinned(tpl.handle.scene);
+    assets.trackInstance(tpl.handle.id, this.rig); // vị trí thật cho thứ tự nạp texture bậc cao (game/hires)
     const meshes: THREE.Mesh[] = [];
     this.rig.traverse((o) => {
       const m = o as THREE.Mesh;
