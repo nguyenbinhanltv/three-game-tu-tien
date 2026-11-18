@@ -1,7 +1,7 @@
 /**
  * Hệ số phóng UI theo màn hình (U2-2). Bố cục HUD tính theo "vùng thiết kế" = px màn hình / hệ số (ui/u2/hud/layout.ts):
  * 1920×1080 → 1, 1280×720 → 0,85 (vùng 1506×847), 2560×1440 → 1,35, 4K → 2 (trần, vùng vẫn 1920×1080).
- * Người chơi chỉnh bù ở Cài đặt (0,8–1,4×, lưu `dtl.uiScale`); hệ số cuối bị kẹp để vùng thiết kế đủ cao cho HUD không chồng lấn (≈ 878 đơn vị: 1,4× ở 1080p thực tế còn 1,23×). Hệ số cuối ghi vào biến CSS `--ui-scale` trên `<html>`;
+ * Người chơi chỉnh bù ở Cài đặt (0,8–1,4×, lưu `dtl.uiScale`); hệ số cuối bị kẹp để vùng thiết kế đủ cao cho HUD không chồng lấn (≈ 900 đơn vị: 1,4× ở 1080p thực tế còn 1,2×). Hệ số cuối ghi vào biến CSS `--ui-scale` trên `<html>`;
  * các khối HUD dùng `zoom: var(--ui-scale)` (xem `ui/panels.css`, `ui/u2/hud/hud.css`). Bản đồ nhỏ và các lớp cảnh điện ảnh
  * tự co giãn riêng, không dùng biến này.
  */

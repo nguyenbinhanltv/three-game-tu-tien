@@ -1,10 +1,12 @@
 // Vẽ lớp động của minimap lên canvas: nền bản đồ (một drawImage), vùng mục tiêu, biểu tượng, mũi tên mép, mũi tên mình, chữ N.
-import { levelTerrain } from '../../base/levelCtx';
 import { t } from '@dtl/content';
-import type { Game } from '../../game/engine';
 import { type AncientMap, mipFor } from './ancient';
 import type { MinimapFrame } from './marks';
-import { edgeClamp, formatCountdown, type Mark, project, type View } from './model';
+import { edgeClampDisc, formatCountdown, type Mark, project, type View } from './model';
+import type { Fog } from './fog';
+import type { InkMap } from './ink';
+import { pal } from './palette';
+import { drawRim, RIM, type RimLabels, type Sky } from './rim';
 import {
   bossSprite,
   flagSprite,
@@ -81,48 +83,114 @@ function spriteOf(m: Mark, dpr: number): { s: Sprite; dy: number; r: number } {
   }
 }
 
+/** Lớp sương: nền giấy loãng đục đi các vùng đã đi qua bằng mặt nạ (vẽ trên canvas phụ rồi dán lên). */
+let fogCv: HTMLCanvasElement | null = null;
+let mist: CanvasPattern | null = null;
+
+function mistPattern(g: CanvasRenderingContext2D): CanvasPattern {
+  if (mist) return mist;
+  const c = document.createElement('canvas');
+  c.width = c.height = 96;
+  const x = c.getContext('2d')!;
+  const P = pal();
+  x.fillStyle = P.giay;
+  x.fillRect(0, 0, 96, 96);
+  // Mảng sương loãng: vài đốm tròn mờ rải đều (lặp được vì vẽ cả bốn mép).
+  for (let i = 0; i < 14; i++) {
+    const px = (i * 37) % 96;
+    const py = (i * 59) % 96;
+    for (const [ox, oy] of [
+      [0, 0],
+      [96, 0],
+      [-96, 0],
+      [0, 96],
+      [0, -96],
+    ]) {
+      const gr = x.createRadialGradient(px + ox, py + oy, 0, px + ox, py + oy, 26);
+      gr.addColorStop(0, 'rgba(255,255,255,0.35)');
+      gr.addColorStop(1, 'rgba(255,255,255,0)');
+      x.fillStyle = gr;
+      x.fillRect(0, 0, 96, 96);
+    }
+  }
+  mist = g.createPattern(c, 'repeat')!;
+  return mist;
+}
+
 export function drawMinimap(
   ctx: CanvasRenderingContext2D,
-  g: Game,
   frame: MinimapFrame,
   v: View,
   dpr: number,
   now: number,
-  map: AncientMap | null,
+  layers: { ink: InkMap | null; ancient: AncientMap | null; fog: Fog | null; sky: Sky; labels: RimLabels },
   yaw: number,
   hits: HitPt[],
 ): void {
   const size = v.size;
+  const half = size / 2;
+  const inner = half - RIM;
   const s = size / v.span;
+  const P = pal();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.fillStyle = '#2a2218';
-  ctx.fillRect(0, 0, size, size);
+  ctx.clearRect(0, 0, size, size);
 
-  // 1) nền bản đồ: toàn bộ ảnh dựng sẵn qua một phép biến đổi
+  // 1) lòng bản đồ cắt tròn: giấy → thủy mặc (hoặc nền dựng sẵn khi chưa dựng xong) → sương
   ctx.save();
-  ctx.translate(size / 2, size / 2);
+  ctx.beginPath();
+  ctx.arc(half, half, inner, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.fillStyle = P.giay;
+  ctx.fillRect(0, 0, size, size);
+  ctx.save();
+  ctx.translate(half, half);
   ctx.rotate(v.rot);
   ctx.scale(s, s);
   ctx.translate(-v.cx, -v.cz);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  if (map) ctx.drawImage(mipFor(map, s * dpr), map.meta.x0, map.meta.z0, map.meta.size, map.meta.size);
-  else if (g.minimap) ctx.drawImage(g.minimap, 0, 0, levelTerrain().size, levelTerrain().size);
+  const { ink, ancient: map, fog } = layers;
+  if (ink) ctx.drawImage(ink.canvas, 0, 0, ink.size, ink.size);
+  else if (map) ctx.drawImage(mipFor(map, s * dpr), map.meta.x0, map.meta.z0, map.meta.size, map.meta.size);
   ctx.restore();
+  if (fog) {
+    const w = Math.ceil(size * dpr);
+    if (!fogCv || fogCv.width !== w) {
+      fogCv = document.createElement('canvas');
+      fogCv.width = fogCv.height = w;
+    }
+    const f = fogCv.getContext('2d')!;
+    f.setTransform(1, 0, 0, 1, 0, 0);
+    f.globalCompositeOperation = 'source-over';
+    f.clearRect(0, 0, w, w);
+    f.setTransform(dpr, 0, 0, dpr, 0, 0);
+    f.globalAlpha = 0.93;
+    f.fillStyle = mistPattern(f);
+    f.fillRect(0, 0, size, size);
+    f.globalAlpha = 1;
+    f.globalCompositeOperation = 'destination-out';
+    f.translate(half, half);
+    f.rotate(v.rot);
+    f.scale(s, s);
+    f.translate(-v.cx, -v.cz);
+    f.imageSmoothingEnabled = true;
+    f.drawImage(fog.mask, 0, 0, fog.size, fog.size);
+    ctx.drawImage(fogCv, 0, 0, size, size);
+  }
 
   // 2) vùng mục tiêu nhiệm vụ: tô mờ, viền nét đứt
   const pulse = 0.5 + 0.5 * Math.sin(now / 420);
   for (const a of frame.goals) {
     const c = project(v, a.x, a.z, _p);
     const r = a.r * s;
-    if (c.x + r < 0 || c.y + r < 0 || c.x - r > size || c.y - r > size) continue;
+    if (Math.hypot(c.x - half, c.y - half) - r > inner) continue;
     ctx.beginPath();
     ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,196,64,${0.16 + 0.07 * pulse})`;
+    ctx.fillStyle = `rgba(226,185,85,${0.16 + 0.07 * pulse})`;
     ctx.fill();
     ctx.setLineDash([4, 3]);
     ctx.lineWidth = 1.4;
-    ctx.strokeStyle = 'rgba(255,214,90,0.85)';
+    ctx.strokeStyle = P.goldLo;
     ctx.stroke();
     ctx.setLineDash([]);
   }
@@ -135,10 +203,10 @@ export function drawMinimap(
     for (const m of frame.marks) {
       if (ORDER[m.kind] !== pass) continue;
       let c = project(v, m.x, m.z, _p);
-      const outside = c.x < -10 || c.y < -10 || c.x > size + 10 || c.y > size + 10;
+      const outside = Math.hypot(c.x - half, c.y - half) > inner + 6;
       // Điểm đánh dấu nằm ngoài khung: bám mép để luôn biết hướng.
       if (outside && m.kind === 'flag') {
-        const e = edgeClamp(c.x, c.y, size, 12);
+        const e = edgeClampDisc(c.x, c.y, size, RIM + 6);
         c = { x: e.x, y: e.y };
       } else if (outside) continue;
       const { s: sp, dy, r } = spriteOf(m, dpr);
@@ -146,39 +214,30 @@ export function drawMinimap(
         ctx.beginPath();
         ctx.arc(c.x, c.y, r + 3.5, 0, Math.PI * 2);
         ctx.lineWidth = 2;
-        ctx.strokeStyle = '#ff3b30';
+        ctx.strokeStyle = P.sonHi;
         ctx.stroke();
       }
       put(ctx, sp, c.x, c.y, dy);
       if (m.kind === 'boss' && m.dead && m.respawnAt) {
-        ctx.font = '700 9px sans-serif';
+        ctx.font = `700 9px ${P.head}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.lineWidth = 3;
-        ctx.strokeStyle = '#1a120c';
+        ctx.strokeStyle = P.ink1;
         const txt = formatCountdown((m.respawnAt - Date.now()) / 1000);
         ctx.strokeText(txt, c.x, c.y + 12);
-        ctx.fillStyle = '#ffe9b0';
+        ctx.fillStyle = P.goldHi;
         ctx.fillText(txt, c.x, c.y + 12);
       }
       hits.push({ x: c.x, y: c.y, r, mark: m });
     }
 
-  // 4) mục tiêu nhiệm vụ ngoài tầm: mũi tên ở mép
+  // 4) mục tiêu nhiệm vụ ngoài tầm: mũi tên ở mép tròn
   const gp = frame.goalPoint;
   if (gp) {
     const c = project(v, gp.x, gp.z, _p);
-    let e = edgeClamp(c.x, c.y, size, 10);
+    const e = edgeClampDisc(c.x, c.y, size, RIM + 8);
     if (!e.inside) {
-      // Chữ N nằm ở mép phía Bắc: mũi tên trùng chỗ đó thì xoay lệch quanh tâm một chút để cả hai cùng đọc được.
-      const nAng = Math.atan2(-Math.cos(v.rot), Math.sin(v.rot));
-      let d = e.angle - nAng;
-      d = Math.atan2(Math.sin(d), Math.cos(d));
-      if (Math.abs(d) < 0.3) {
-        const a = nAng + (d < 0 ? -0.3 : 0.3);
-        const half = size / 2;
-        e = { ...edgeClamp(half + Math.cos(a) * half * 2, half + Math.sin(a) * half * 2, size, 10), angle: e.angle };
-      }
       ctx.save();
       ctx.translate(e.x, e.y);
       ctx.rotate(e.angle);
@@ -202,38 +261,32 @@ export function drawMinimap(
       ctx.beginPath();
       ctx.arc(c.x, c.y, 8 + 3 * pulse, 0, Math.PI * 2);
       ctx.lineWidth = 1.6;
-      ctx.strokeStyle = `rgba(255,214,90,${0.9 - 0.4 * pulse})`;
+      ctx.strokeStyle = `rgba(226,185,85,${0.9 - 0.4 * pulse})`;
       ctx.stroke();
     }
   }
 
-  // 5) mình: mũi tên hướng camera (xoay theo camera thì luôn hướng lên)
+  // 5) mình ở tâm, luôn hướng lên (bản đồ xoay theo camera)
   ctx.save();
-  ctx.translate(size / 2, size / 2);
+  ctx.translate(half, half);
   if (frame.selfHurt && blink) {
     ctx.beginPath();
     ctx.arc(0, 0, 10, 0, Math.PI * 2);
     ctx.lineWidth = 2;
-    ctx.strokeStyle = '#ff3b30';
+    ctx.strokeStyle = P.sonHi;
     ctx.stroke();
   }
-  ctx.rotate(v.rot === 0 ? -yaw : 0);
   put(ctx, selfSprite(dpr), 0, 0);
   ctx.restore();
-
-  // 6) chữ N ở hướng Bắc
-  const nx = size / 2 + Math.sin(v.rot) * (size / 2 - 12);
-  const ny = size / 2 - Math.cos(v.rot) * (size / 2 - 12);
+  // bóng lõm sát vành trong cho có chiều sâu
   ctx.beginPath();
-  ctx.arc(nx, ny, 8, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(32,22,14,0.82)';
-  ctx.fill();
-  ctx.lineWidth = 1.2;
-  ctx.strokeStyle = '#d9b873';
+  ctx.arc(half, half, inner, 0, Math.PI * 2);
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
   ctx.stroke();
-  ctx.font = '800 10px Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#ffe3a0';
-  ctx.fillText(t('ui.mm.n'), nx, ny + 0.5);
+  ctx.restore();
+
+  // 6) vành la bàn xoay theo camera
+  void yaw;
+  drawRim(ctx, size, dpr, v.rot, layers.sky, layers.labels);
 }

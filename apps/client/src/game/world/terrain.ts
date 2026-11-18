@@ -658,3 +658,160 @@ export function renderMinimap(size: number): HTMLCanvasElement {
   g.putImageData(img, 0, 0);
   return cv;
 }
+
+/** Bộ dựng bản đồ thủy mặc (U2-7): dựng một lần theo từng lát thời gian, không chặn khung. */
+export interface InkBuilder {
+  canvas: HTMLCanvasElement;
+  /** Cạnh phủ (m): ảnh phủ vuông từ (0,0). */
+  size: number;
+  done: boolean;
+  /** Chạy tối đa `budgetMs` ms; false nếu level đã đổi giữa chừng (bỏ bộ dựng này). */
+  step(budgetMs: number): boolean;
+}
+
+const INK_PAPER: [number, number, number] = [239, 230, 208];
+const INK_BLACK: [number, number, number] = [42, 40, 36];
+const INK_JADE_LO: [number, number, number] = [47, 143, 127];
+const INK_JADE_HI: [number, number, number] = [111, 214, 193];
+
+const smooth = (a: number, b: number, x: number): number => {
+  const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+
+/** Làm mượt hộp (trung bình cửa sổ 2r+1) theo hàng rồi theo cột, tại chỗ; mép giữ nguyên giá trị gần nhất. */
+function boxBlur(a: Float32Array, stride: number, r: number): void {
+  const tmp = new Float32Array(stride);
+  const w = 2 * r + 1;
+  const at = (i: number): number => Math.max(0, Math.min(stride - 1, i));
+  for (let j = 0; j < stride; j++) {
+    const o = j * stride;
+    let sum = 0;
+    for (let k = -r; k <= r; k++) sum += a[o + at(k)]!;
+    for (let i = 0; i < stride; i++) {
+      tmp[i] = sum / w;
+      sum += a[o + at(i + r + 1)]! - a[o + at(i - r)]!;
+    }
+    for (let i = 0; i < stride; i++) a[o + i] = tmp[i]!;
+  }
+  for (let i = 0; i < stride; i++) {
+    let sum = 0;
+    for (let k = -r; k <= r; k++) sum += a[at(k) * stride + i]!;
+    for (let j = 0; j < stride; j++) {
+      tmp[j] = sum / w;
+      sum += a[at(j + r + 1) * stride + i]! - a[at(j - r) * stride + i]!;
+    }
+    for (let j = 0; j < stride; j++) a[j * stride + i] = tmp[j]!;
+  }
+}
+
+/**
+ * Núi nét cọ (đổ bóng + gạch xiên ở sườn dốc), đường đồng mức mảnh, sông hồ màu ngọc thanh có viền mực, nền giấy ngà có vân loang.
+ * Mọi thứ sinh từ độ cao địa hình (`surfaceAt`) của level đang dựng nên đúng với thế giới; ảnh `n`×`n` điểm ảnh, dựng chia lát.
+ */
+export function createInkMap(n = 1024): InkBuilder {
+  const t0 = levelTerrain();
+  const size = t0.size;
+  const cell = size / n;
+  const stride = n + 2;
+  const H = new Float32Array(stride * stride);
+  const water = new Uint8Array(n * n);
+  const wy = t0.def.water?.y;
+  const vl = isVanLam();
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = n;
+  const g = cv.getContext('2d')!;
+  const img = g.createImageData(n, n);
+  let row = 0;
+  let phase: 0 | 1 = 0;
+  let hMin = Infinity;
+  let hMax = -Infinity;
+  const b: InkBuilder = {
+    canvas: cv,
+    size,
+    done: false,
+    step(budgetMs) {
+      if (levelTerrain() !== t0) return false;
+      const end = performance.now() + budgetMs;
+      while (!b.done && performance.now() < end) {
+        if (phase === 0) {
+          // Lấy mẫu độ cao (có viền 1 ô để tính độ dốc) và cờ nước.
+          const j = row;
+          const z = (j - 1 + 0.5) * cell;
+          for (let i = 0; i < stride; i++) {
+            const x = (i - 1 + 0.5) * cell;
+            const h = heightAt(x, z);
+            H[j * stride + i] = h;
+            if (i >= 1 && i <= n && j >= 1 && j <= n) {
+              if (h < hMin) hMin = h;
+              if (h > hMax) hMax = h;
+              const w = vl ? h < WATER_Y && featureWeight(LAKE, x, z) > 0 : wy !== undefined && h < wy;
+              water[(j - 1) * n + (i - 1)] = w ? 1 : 0;
+            }
+          }
+          if (++row >= stride) {
+            row = 0;
+            phase = 1;
+            // Làm mượt độ cao trước khi tính độ dốc: bỏ gợn nhỏ để còn khối núi, không ra bản đồ nhiễu.
+            for (let k = 0; k < 3; k++) boxBlur(H, stride, 4);
+          }
+        } else {
+          const j = row;
+          shadeRow(j);
+          if (++row >= n) {
+            g.putImageData(img, 0, 0);
+            b.done = true;
+          }
+        }
+      }
+      return true;
+    },
+  };
+
+  function shadeRow(j: number): void {
+    const range = Math.max(1, hMax - hMin);
+    const waterY = vl ? WATER_Y : (wy ?? -1e9);
+    for (let i = 0; i < n; i++) {
+      const c = (j + 1) * stride + (i + 1);
+      const h = H[c]!;
+      const dx = (H[c + 1]! - H[c - 1]!) / (2 * cell);
+      const dz = (H[c + stride]! - H[c - stride]!) / (2 * cell);
+      const slope = Math.hypot(dx, dz);
+      // Vân loang của giấy: hai sóng sin chồng nhau, biên độ nhỏ.
+      const wash = Math.sin(i * 0.031 + Math.sin(j * 0.017) * 2) * 0.012 + Math.sin(j * 0.043 + i * 0.011) * 0.012;
+      let r = INK_PAPER[0] * (1 + wash);
+      let gg = INK_PAPER[1] * (1 + wash);
+      let bb = INK_PAPER[2] * (1 + wash);
+      const wi = j * n + i;
+      let ink = 0;
+      if (water[wi]) {
+        const d = smooth(0, 7, waterY - h);
+        r = INK_JADE_HI[0] + (INK_JADE_LO[0] - INK_JADE_HI[0]) * d;
+        gg = INK_JADE_HI[1] + (INK_JADE_LO[1] - INK_JADE_HI[1]) * d;
+        bb = INK_JADE_HI[2] + (INK_JADE_LO[2] - INK_JADE_HI[2]) * d;
+        // Bờ nước: viền mực mảnh nếu có ô lân cận là đất.
+        const shore =
+          (i > 0 && !water[wi - 1]) || (i < n - 1 && !water[wi + 1]) || (j > 0 && !water[wi - n]) || (j < n - 1 && !water[wi + n]);
+        if (shore) ink = 0.55;
+      } else {
+        // Thân núi: độ dốc (đã làm mượt) nhuộm vừa phải, đổ bóng hướng Tây Bắc, đồng mức thưa (mỗi 10 m mảnh, mỗi 50 m đậm hơn), cao hơn thì đậm hơn.
+        // Thung lũng thoải vẫn có vân đồng mức để bản đồ không trống.
+        ink = smooth(0.05, 1.0, slope) * 0.34 + Math.max(0, -(dx + dz) * 0.6) * 0.2;
+        // Nét cọ viền chân núi: một dải hẹp ở mức dốc trung bình thành đường mực quanh khối núi.
+        ink += smooth(0.22, 0.34, slope) * (1 - smooth(0.4, 0.52, slope)) * 0.34;
+        const w = Math.max(0.03, (slope * cell) / 10);
+        const f10 = (h / 10) % 1;
+        // Đồng mức chỉ ở nơi thoải: sườn dốc vạch dày đặc hơn một điểm ảnh sẽ thành đốm.
+        if (slope < 0.3 && f10 < Math.min(0.12, w)) ink += (h / 50) % 1 < Math.min(0.12, w / 5) ? 0.2 : 0.09;
+        ink += ((h - hMin) / range) * 0.16;
+      }
+      ink = Math.min(0.85, ink);
+      const o = wi * 4;
+      img.data[o] = r + (INK_BLACK[0] - r) * ink;
+      img.data[o + 1] = gg + (INK_BLACK[1] - gg) * ink;
+      img.data[o + 2] = bb + (INK_BLACK[2] - bb) * ink;
+      img.data[o + 3] = 255;
+    }
+  }
+  return b;
+}

@@ -1,15 +1,16 @@
 import { type MouseEvent as RMouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { areaKey, biomeAt } from '../../base/levelCtx';
+import { areaKey, biomeAt, levelAssets, levelTerrain } from '../../base/levelCtx';
 import { LEVELS, t } from '@dtl/content';
 import { Game } from '../../game/engine';
 import { TipCard, Tooltip } from '../kit';
-import { Cartouche, type MapMotif } from '../ngj';
 import { togglePanel, useUI } from '../store';
 import { uiScale } from '../uiScale';
+import { useHudMode } from '../u2/hud/hudVars';
 import { ancientMap } from './ancient';
-import { levelAssets } from '../../base/levelCtx';
 import { drawMinimap, type HitPt } from './draw';
+import { fogFor } from './fog';
+import { inkMap } from './ink';
 import { buildFrame } from './marks';
 import {
   backingScale,
@@ -23,12 +24,15 @@ import {
   zoneStatus,
   ZOOM_SPANS,
 } from './model';
+import { skyOf } from './rim';
 import '../minimap.css';
 
-const SIZE = 176;
-const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet', 'bac_hoang'];
+/** Đường kính la bàn (đơn vị thiết kế): 212 ở chế độ chuẩn, 180 khi compact (720p). Khớp `SIZES.*.mapW - 24` trong u2/hud/layout.ts. */
+const DISC = { standard: 212, compact: 180 } as const;
 /** Vẽ lại 15 lần/giây: đủ mượt cho chấm di chuyển chậm, và giữ chi phí CPU/khung gần như bằng bản cũ. */
 const FRAME_MS = 1000 / 15;
+/** Vị trí ba hạt ngọc trên vành, độ từ phía trên theo chiều kim đồng hồ (cung trái-dưới): phóng to, thu nhỏ, mở bản đồ lớn. */
+const BEADS = [-98, -114, -130] as const;
 
 function readZoom(): number {
   const n = Number(localStorage.getItem('dtl.mm.zoom'));
@@ -55,19 +59,21 @@ function tipOf(m: Mark): { title: string; sub?: string; desc?: string; lines: { 
   return { title: m.label, sub: m.sub, desc: m.desc, lines };
 }
 
+/**
+ * Minimap "La Bàn Thiên Cơ" (U2-7): vành ngọc + đồng 24 hướng xoay theo camera, lòng thủy mặc dựng từ địa hình, sương phủ vùng chưa đi,
+ * dải lụa tên khu vực (tự mở khi vào vùng mới) kèm tọa độ, ba hạt ngọc ở vành trái-dưới (phóng +, thu −, bản đồ lớn).
+ */
 export function Minimap() {
+  const D = DISC[useHudMode() === 'compact' ? 'compact' : 'standard'];
   const ref = useRef<HTMLCanvasElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const hits = useRef<HitPt[]>([]);
   const viewRef = useRef<View | null>(null);
   const mouse = useRef<{ x: number; y: number; cx: number; cy: number } | null>(null);
   const [zoom, setZoom] = useState(readZoom);
-  const [rotate, setRotate] = useState(() => localStorage.getItem('dtl.mm.rot') === '1');
   const [hover, setHover] = useState<{ mark: Mark; x: number; y: number; key: string } | null>(null);
   const zoomRef = useRef(zoom);
-  const rotRef = useRef(rotate);
   zoomRef.current = zoom;
-  rotRef.current = rotate;
 
   const rx = useUI((s) => Math.round(s.x));
   const rz = useUI((s) => Math.round(s.z));
@@ -81,9 +87,6 @@ export function Minimap() {
   useEffect(() => {
     localStorage.setItem('dtl.mm.zoom', String(zoom));
   }, [zoom]);
-  useEffect(() => {
-    localStorage.setItem('dtl.mm.rot', rotate ? '1' : '0');
-  }, [rotate]);
 
   // Lăn chuột trên minimap đổi mức phóng (listener gốc để chặn cuộn trang).
   useEffect(() => {
@@ -107,8 +110,8 @@ export function Minimap() {
       const d = backingScale(window.devicePixelRatio, uiScale());
       if (d === dpr) return;
       dpr = d;
-      cv.width = Math.round(SIZE * dpr);
-      cv.height = Math.round(SIZE * dpr);
+      cv.width = Math.round(D * dpr);
+      cv.height = Math.round(D * dpr);
     };
     fit();
     let raf = 0;
@@ -117,6 +120,7 @@ export function Minimap() {
     let prevT = performance.now();
     let hoverKey = '';
     let hoverAt = 0;
+    const labels = { n: t('ui.mm.n'), e: t('ui.mm.e'), s: t('ui.mm.s'), w: t('ui.mm.w') };
     const tick = (nowT: number) => {
       raf = requestAnimationFrame(tick);
       if (document.hidden || nowT - last < FRAME_MS) return;
@@ -135,10 +139,22 @@ export function Minimap() {
       const lv = me?.lv ?? st.char?.level ?? 1;
       const order = st.party ? st.party.members.map((m) => m.sid) : [];
       const frame = buildFrame(g, st.quests, st.trackQuest, lv, order, nowT, st.marks);
-      const yaw = g.yaw;
-      const v: View = { cx: g.renderPos.x, cz: g.renderPos.z, span, size: SIZE, rot: rotRef.current ? yaw : 0 };
+      // Bản đồ xoay theo camera (vành la bàn cũng xoay): hướng Bắc lệch `yaw` so với phía trên màn hình.
+      const v: View = { cx: g.renderPos.x, cz: g.renderPos.z, span, size: D, rot: g.yaw };
       viewRef.current = v;
-      drawMinimap(ctx, g, frame, v, dpr, nowT, ancientMap(levelAssets(useUI.getState().level).minimap), yaw, hits.current);
+      const fog = fogFor(st.char?.name ?? '?', st.level, levelTerrain().size);
+      fog.reveal(g.renderPos.x, g.renderPos.z);
+      fog.save(nowT);
+      drawMinimap(
+        ctx,
+        frame,
+        v,
+        dpr,
+        nowT,
+        { ink: inkMap(), ancient: ancientMap(levelAssets(st.level).minimap), fog, sky: skyOf(g.levelMood ?? ''), labels },
+        g.yaw,
+        hits.current,
+      );
       // Tooltip theo con trỏ: chọn lại theo từng khung (biểu tượng đang chuyển động) nhưng chỉ cập nhật React khi nội dung đổi.
       const m = mouse.current;
       if (m) {
@@ -158,8 +174,12 @@ export function Minimap() {
       }
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    return () => {
+      cancelAnimationFrame(raf);
+      const st = useUI.getState();
+      fogFor(st.char?.name ?? '?', st.level, levelTerrain().size).save(0, true);
+    };
+  }, [D]);
 
   const bump = (d: number) => setZoom((z0) => clampZoom(z0 + d));
   const zoneLv = zs.zone
@@ -168,14 +188,18 @@ export function Minimap() {
       : t('ui.mm.zone_lv', { a: zs.zone.lvMin, b: zs.zone.lvMax })
     : '';
   const tip = hover ? tipOf(hover.mark) : null;
+  const R = D / 2;
+  const bead = (deg: number) => {
+    const a = (deg * Math.PI) / 180;
+    return { left: 12 + R + (R + 1) * Math.sin(a) - 11, top: R - (R + 1) * Math.cos(a) - 11 };
+  };
 
   return (
-    <div className="minimap-wrap">
-      <div ref={box} className="minimap" onClick={() => togglePanel('map')}>
-        <span className="ngj-mm-ring" aria-hidden="true" />
+    <div className="mm2" style={{ width: D + 24, height: D + 40 }} data-status={zs.status}>
+      <div ref={box} className="mm2-disc" style={{ width: D, height: D }} onClick={() => togglePanel('map')}>
         <canvas
           ref={ref}
-          style={{ width: SIZE, height: SIZE }}
+          style={{ width: D, height: D }}
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             // Canvas nằm trong khối `zoom`: tọa độ chuột lấy theo px màn hình, chia lại ra đơn vị thiết kế.
@@ -203,65 +227,58 @@ export function Minimap() {
             g.setMark(w);
           }}
         />
-        <div className="minimap-ctl" onClick={(e) => e.stopPropagation()}>
-          <Tooltip content={t('ui.mm.zoom_in')}>
-            <button
-              type="button"
-              className="mm-btn"
-              aria-label={t('ui.mm.zoom_in')}
-              disabled={zoom === 0}
-              onClick={(e) => (blurAfterPointer(e), bump(-1))}
-            >
-              +
-            </button>
-          </Tooltip>
-          <Tooltip content={t('ui.mm.zoom_out')}>
-            <button
-              type="button"
-              className="mm-btn"
-              aria-label={t('ui.mm.zoom_out')}
-              disabled={zoom === ZOOM_SPANS.length - 1}
-              onClick={(e) => (blurAfterPointer(e), bump(1))}
-            >
-              −
-            </button>
-          </Tooltip>
-          <Tooltip content={rotate ? t('ui.mm.rot_on') : t('ui.mm.rot_off')}>
-            <button
-              type="button"
-              className="mm-btn"
-              data-on={rotate}
-              aria-pressed={rotate}
-              aria-label={t('ui.mm.rot')}
-              onClick={(e) => (blurAfterPointer(e), setRotate((r) => !r))}
-            >
-              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-                <path d="M6 1 L9 7 L6 5.6 L3 7 Z" fill="currentColor" />
-                <path d="M10.2 8.6A5 5 0 0 1 1.8 8.6" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-              </svg>
-            </button>
-          </Tooltip>
-        </div>
-        <div className="minimap-pos">
-          {rx}, {rz}
-        </div>
       </div>
+      <Tooltip content={t('ui.mm.zoom_in')}>
+        <button
+          type="button"
+          className="mm2-bead"
+          style={bead(BEADS[0])}
+          aria-label={t('ui.mm.zoom_in')}
+          disabled={zoom === 0}
+          onClick={(e) => (blurAfterPointer(e), bump(-1))}
+        >
+          +
+        </button>
+      </Tooltip>
+      <Tooltip content={t('ui.mm.zoom_out')}>
+        <button
+          type="button"
+          className="mm2-bead"
+          style={bead(BEADS[1])}
+          aria-label={t('ui.mm.zoom_out')}
+          disabled={zoom === ZOOM_SPANS.length - 1}
+          onClick={(e) => (blurAfterPointer(e), bump(1))}
+        >
+          −
+        </button>
+      </Tooltip>
+      <Tooltip content={t('ui.mm.open_map')}>
+        <button
+          type="button"
+          className="mm2-bead"
+          style={bead(BEADS[2])}
+          aria-label={t('ui.mm.open_map')}
+          onClick={(e) => (blurAfterPointer(e), togglePanel('map'))}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+            <circle cx="6" cy="6" r="3" fill="none" stroke="currentColor" strokeWidth="1.3" />
+            <path d="M6 0.8v2.4M6 8.8v2.4M0.8 6h2.4M8.8 6h2.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+        </button>
+      </Tooltip>
       <div
-        className="minimap-foot ngj-mm-foot"
-        data-status={zs.status}
+        className="mm2-ribbon"
+        style={{ top: D - 8 }}
         title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}
       >
-        <Cartouche
-          map={MOTIFS.includes(level as MapMotif) ? (level as MapMotif) : 'van_lam'}
-          material="lacquer"
-          size="s"
-          title={
-            <>
-              <span className="ngj-mm-name">{zoneName}</span>
-              {zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}
-            </>
-          }
-        />
+        {/* key theo tên vùng: vào vùng mới thì dải lụa chạy lại hiệu ứng mở */}
+        <div key={zoneName} className="mm2-band">
+          <span>{zoneName}</span>
+        </div>
+        <div className="mm2-coord">
+          {rx}, {rz}
+          {zoneLv && <em>{zoneLv}</em>}
+        </div>
       </div>
       {hover &&
         tip &&
