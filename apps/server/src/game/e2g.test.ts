@@ -105,14 +105,18 @@ describe('E2-G: dữ liệu chiêu', () => {
     for (const m of ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh']) {
       const mine = tier.filter((s) => s.method === m);
       expect(mine.length, m).toBe(7);
-      for (const s of mine) expect(!!s.locked, s.id).toBe(s.unlock >= 24 && s.unlock !== 28);
+      for (const s of mine) expect(!!s.locked, s.id).toBe(false);
     }
   });
   it('chiêu khóa bị server từ chối', () => {
     const { sim, p, mon, fresh } = setup('lac_kiem_quyet', 28);
     const m = mon();
     fresh(p);
+    const sk = METHOD_SKILLS.find((x) => x.id === 'skl_phan_anh_kiem_anh') as { locked?: boolean };
+    const was = sk.locked;
+    sk.locked = true;
     sim.onSkill(p, { id: 'skl_phan_anh_kiem_anh', t: m.id });
+    sk.locked = was;
     expect(lost(m)).toBe(0);
   });
   it('chưa đủ cấp thì không dùng được', () => {

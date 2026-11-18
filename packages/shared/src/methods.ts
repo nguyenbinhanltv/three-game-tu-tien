@@ -130,6 +130,22 @@ export interface SkillVariant {
   slow?: { dur: number; mul: number };
   /** E2-G: người được hồi (Dược Vũ) nhận thêm khiên bằng tỉ lệ này của máu tối đa. */
   selfShield?: number;
+  /** E4-G: hạ gục mục tiêu thì hoàn lại tỉ lệ này của hồi chiêu (Thuấn Di Trảm A). */
+  refund?: number;
+  /** E4-G: dư chấn sau đòn `aoe`: `n` lần cách nhau `gap` giây, mỗi lần `mul` × sức mạnh. */
+  aftershocks?: { n: number; gap: number; mul: number };
+  /** E4-G: kiếm ảnh ra đòn trễ chừng này giây sau chiêu gốc (Phân Anh A). */
+  echoDelay?: number;
+  /** E4-G: khiêu khích quái trong `r` mét quanh chỗ tới, `dur` giây (Thuấn Di Hộ Thế A). */
+  tauntAt?: { r: number; dur: number };
+  /** E4-G: hồi sinh thêm số người (Thuấn Di Cứu Viện B = 2). */
+  reviveN?: number;
+  /** E4-G: `buff` thêm giảm sát thương (Thiên Kim Pháp Tướng A). */
+  buffReduce?: number;
+  /** E4-G: `hot` tăng công/phòng cho đạo hữu được hồi, theo thời lượng chiêu. */
+  partyBuff?: { kind: 'atk' | 'def'; pct: number };
+  /** E4-G: số đồng đội được chữa (Anh Dược Hóa Thân). */
+  allyCount?: number;
   /** Nhãn hình dạng hiệu ứng cho client. */
   fx: string;
 }
@@ -208,6 +224,10 @@ export function empowerVariant(v: SkillVariant): SkillVariant {
   out.regen = up(v.regen);
   out.buffRegen = up(v.buffRegen);
   out.selfShield = up(v.selfShield);
+  out.refund = up(v.refund) === undefined ? undefined : Math.min(0.9, up(v.refund)!);
+  if (v.aftershocks) out.aftershocks = { ...v.aftershocks, mul: up(v.aftershocks.mul)! };
+  if (v.partyBuff) out.partyBuff = { ...v.partyBuff, pct: Math.min(0.5, up(v.partyBuff.pct)!) };
+  out.buffReduce = v.buffReduce === undefined ? undefined : Math.min(0.5, up(v.buffReduce)!);
   if (v.guardAlly) out.guardAlly = { ...v.guardAlly, reduce: Math.min(0.9, up(v.guardAlly.reduce)!) };
   if (v.buffStomp) out.buffStomp = { ...v.buffStomp, mul: up(v.buffStomp.mul)! };
   out.markBonus = up(v.markBonus);
