@@ -270,6 +270,7 @@ export function onKeyDown(eng: Game, e: KeyboardEvent): void {
       togglePanel('party');
       break;
     case 'map':
+    case 'journey':
       togglePanel('map');
       break;
     case 'help':

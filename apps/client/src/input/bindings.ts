@@ -21,6 +21,7 @@ type Action =
   | 'method'
   | 'party'
   | 'map'
+  | 'journey'
   | 'help'
   | 'settings'
   | 'chat'
@@ -48,6 +49,8 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
   KeyK: 'method',
   KeyP: 'party',
   KeyM: 'map',
+  // Hành trình (hub, U2-2): mở bản đồ chương khi màn đó có (U2-4); tạm mở bản đồ lớn.
+  KeyN: 'journey',
   KeyH: 'help',
   KeyO: 'settings',
   Enter: 'chat',

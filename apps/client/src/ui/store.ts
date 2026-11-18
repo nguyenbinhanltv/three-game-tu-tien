@@ -203,7 +203,7 @@ export interface SpiritScan {
   hits: SpiritHit[];
 }
 
-type Panel = WinId;
+export type Panel = WinId;
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
 interface UIState {
@@ -281,6 +281,11 @@ interface UIState {
   hitStop: boolean;
   /** Thẻ chương (C2) bật/tắt trong Cài đặt. */
   chapterCards: boolean;
+  /** HUD U2-2: kiểu cụm kỹ năng ('arc' cung góc phải dưới | 'bar' thanh ngang giữa dưới), lưu `dtl.skillLayout`. */
+  skillLayout: 'arc' | 'bar';
+  /** Theo dõi nhiệm vụ / chat thu gọn (lưu `dtl.questCollapsed`, `dtl.chatCollapsed`). */
+  questCollapsed: boolean;
+  chatCollapsed: boolean;
   /** Chỉ báo ngoài màn hình (M4-15) bật/tắt trong Cài đặt. */
   offscreen: boolean;
   /** Nhiệm vụ đang theo dõi (chỉ báo ngoài màn hình trỏ tới đích của nó); '' = nhiệm vụ đầu tiên trong danh sách. */
@@ -383,6 +388,9 @@ export const useUI = create<UIState>(() => ({
   hitStop: hitStopOn(),
   offscreen: localStorage.getItem('dtl.offscreen') !== '0',
   chapterCards: localStorage.getItem('dtl.chapterCards') !== '0',
+  skillLayout: localStorage.getItem('dtl.skillLayout') === 'bar' ? 'bar' : 'arc',
+  questCollapsed: localStorage.getItem('dtl.questCollapsed') === '1',
+  chatCollapsed: localStorage.getItem('dtl.chatCollapsed') === '1',
   trackQuest: localStorage.getItem('dtl.trackQuest') ?? '',
   controls: ['turn', 'strafe'].includes(localStorage.getItem('dtl.controls') ?? '')
     ? (localStorage.getItem('dtl.controls') as string)
@@ -521,3 +529,9 @@ export function setTrackQuest(id: string): void {
 
 export const set = useUI.setState;
 export const get = useUI.getState;
+
+/** Lưu và áp một tùy chọn bố cục HUD (U2-2). */
+export function setHudPref<K extends 'skillLayout' | 'questCollapsed' | 'chatCollapsed'>(key: K, value: UIState[K]): void {
+  localStorage.setItem('dtl.' + key, typeof value === 'boolean' ? (value ? '1' : '0') : String(value));
+  set({ [key]: value } as Pick<UIState, K>);
+}

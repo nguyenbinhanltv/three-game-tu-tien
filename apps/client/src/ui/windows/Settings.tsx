@@ -5,7 +5,8 @@ import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS,
 import { Game } from '../../game/engine';
 import { Button, Divider, PanelWindow, Segmented, Slider } from '../kit';
 import { setReduceMotion, useReduceMotion } from '../ngj';
-import { closePanel, openPanel, set, useUI } from '../store';
+import { closePanel, openPanel, set, setHudPref, useUI } from '../store';
+import { setUiScaleUser, uiScaleUser } from '../uiScale';
 
 /** Thanh trượt âm lượng cho master và từng bus; thả tay thì phát thử một âm trên bus đó. */
 function VolumeSlider({ k }: { k: VolumeKey }) {
@@ -46,6 +47,10 @@ export function Settings() {
   const offscreen = useUI((s) => s.offscreen);
   const chapterCards = useUI((s) => s.chapterCards);
   const [mute, setMute] = useState(isMuted());
+  const skillLayout = useUI((s) => s.skillLayout);
+  const [uiMul, setUiMul] = useState(() =>
+    [0.8, 1, 1.2, 1.4].reduce((a, b) => (Math.abs(b - uiScaleUser()) < Math.abs(a - uiScaleUser()) ? b : a)),
+  );
   const onOff = [
     { value: true, label: t('ui.settings.cam_shake_on') },
     { value: false, label: t('ui.settings.cam_shake_off') },
@@ -112,6 +117,25 @@ export function Settings() {
         options={onOff}
       />
       <div className="k-dim">{t('ui.settings.chapter_hint')}</div>
+      <Divider label={t('ui.settings.uiscale')} />
+      <Segmented
+        label={t('ui.settings.uiscale')}
+        value={uiMul}
+        onChange={(m) => {
+          setUiScaleUser(m);
+          setUiMul(m);
+        }}
+        options={[0.8, 1, 1.2, 1.4].map((m) => ({ value: m, label: t('ui.settings.uiscale.' + m) }))}
+      />
+      <div className="k-dim">{t('ui.settings.uiscale_hint')}</div>
+      <Divider label={t('ui.settings.skill_layout')} />
+      <Segmented
+        label={t('ui.settings.skill_layout')}
+        value={skillLayout}
+        onChange={(m) => setHudPref('skillLayout', m)}
+        options={(['arc', 'bar'] as const).map((m) => ({ value: m, label: t('ui.settings.skill_layout.' + m) }))}
+      />
+      <div className="k-dim">{t('ui.settings.skill_layout_hint')}</div>
       <Divider label={t('ui.settings.reduce_motion')} />
       <Segmented label={t('ui.settings.reduce_motion')} value={reduceMotion} onChange={setReduceMotion} options={onOff} />
       <div className="k-dim">{t('ui.settings.reduce_motion_hint')}</div>

@@ -1,0 +1,690 @@
+/*
+ * HUD bốn góc UI Kit 2.0 (U2-2). Chỉ var(--u-*) và var(--h-*) (bố cục, do hudVars.ts ghi từ layout.ts): không hex, không font cứng.
+ * Mỗi vùng là một hộp neo vào góc, đo bằng đơn vị thiết kế; `.hud > …` đã có `zoom: var(--ui-scale)` (ui/panels.css) nên mọi px ở đây
+ * là đơn vị thiết kế. `vw/vh` bên trong zoom bị nhân hệ số, nên W/H thiết kế = 100vw / --ui-scale.
+ */
+.u2hud {
+  --h-W: calc(100vw / var(--ui-scale, 1));
+  --h-H: calc(100vh / var(--ui-scale, 1));
+  font-family: var(--u-font-body);
+  font-feature-settings: var(--u-num);
+}
+.u2h-zone {
+  contain: layout style;
+  position: absolute;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+.u2h-zone *,
+.u2h-zone *::before,
+.u2h-zone *::after {
+  box-sizing: border-box;
+}
+
+/* ───────── thẻ sơn mài tối dùng chung (chân dung, boss, nhiệm vụ, chat) ───────── */
+.u2h-card {
+  --c: var(--u-cut-l);
+  background: var(--u-ink-veil);
+  color: var(--u-chu);
+  clip-path: polygon(
+    var(--c) 0,
+    calc(100% - var(--c)) 0,
+    100% var(--c),
+    100% calc(100% - var(--c)),
+    calc(100% - var(--c)) 100%,
+    var(--c) 100%,
+    0 calc(100% - var(--c)),
+    0 var(--c)
+  );
+  box-shadow: var(--u-sh-hud);
+}
+.u2h-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-2);
+  padding: var(--u-sp-2) var(--u-sp-4) var(--u-sp-1);
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-1);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--u-ngoc-hi);
+}
+.u2h-card-head > span:first-of-type:not(.u2h-count) {
+  flex: none;
+}
+.u2h-fold {
+  appearance: none;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--u-gold);
+  cursor: pointer;
+}
+.u2h-fold svg {
+  width: 12px;
+  height: 12px;
+}
+.u2h-fold:hover {
+  color: var(--u-gold-hi);
+}
+.u2h-count {
+  min-width: 18px;
+  padding: 0 var(--u-sp-1);
+  text-align: center;
+  color: var(--u-son-text);
+  background: var(--u-son);
+}
+
+/* ───────── TL: chân dung + máu / linh lực / tu vi ───────── */
+.u2h-tl {
+  left: var(--h-safe);
+  top: var(--h-safe);
+  width: var(--h-tl-w);
+  height: var(--h-tl-h);
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-3);
+  padding: var(--u-sp-3) var(--u-sp-4) var(--u-sp-3) var(--u-sp-3);
+}
+.u2h-portrait {
+  position: relative;
+  flex: none;
+  width: 84px;
+  height: 84px;
+}
+.u2h-portrait .u2-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+.u2h-face {
+  position: absolute;
+  inset: 9%;
+  width: 82%;
+  height: 82%;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--u-cel-1);
+}
+.u2h-pc-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: var(--u-sp-1);
+}
+.u2h-pc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--u-sp-2);
+}
+.u2h-pc-head .u2-badge {
+  flex: none;
+  white-space: nowrap;
+}
+.u2h-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-5);
+  line-height: var(--u-lh-tight);
+  color: var(--u-gold-text);
+  text-shadow: 0 1px 2px var(--u-ink-0);
+}
+.u2h-xp {
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-2);
+}
+.u2h-xp .u2-bar {
+  flex: 1;
+}
+.u2h-tl.can-break .u2h-portrait::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 2px var(--u-gold);
+  pointer-events: none;
+  animation: u2h-breathe var(--u-dur-breathe) ease-in-out infinite;
+}
+
+/* ───────── TC: thanh boss ───────── */
+.u2h-tc {
+  --w: min(var(--h-boss-max), calc(var(--h-W) - 3 * var(--h-safe) - 2 * var(--h-side)));
+  left: calc(var(--h-W) / 2);
+  top: var(--h-safe);
+  transform: translateX(-50%);
+  width: var(--w);
+  padding: var(--u-sp-2) var(--u-sp-5) var(--u-sp-3);
+  pointer-events: none;
+}
+.u2h-boss-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--u-sp-1);
+}
+.u2h-boss-name {
+  font-family: var(--u-font-display);
+  font-weight: 700;
+  font-size: var(--u-fs-6);
+  line-height: var(--u-lh-tight);
+  background: var(--u-gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.u2h-boss-sub {
+  font-style: italic;
+  font-size: var(--u-fs-2);
+  color: var(--u-chu-dim);
+}
+.u2h-boss-hp {
+  position: relative;
+}
+.u2h-boss-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--u-gold-hi);
+  opacity: 0.8;
+}
+.u2h-tc .gauge {
+  margin-top: var(--u-sp-1);
+}
+
+/* ───────── TR: hub 7 icon → minimap → nhiệm vụ ───────── */
+.u2h-tr {
+  right: var(--h-safe);
+  top: var(--h-safe);
+  width: var(--h-hub-w);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--u-sp-3);
+  pointer-events: none;
+}
+.u2h-tr > * {
+  pointer-events: auto;
+}
+.u2h-tr > .u2h-zone {
+  position: static;
+}
+.u2h-hub {
+  display: flex;
+  gap: var(--u-sp-1);
+  height: var(--h-hub-h);
+}
+.u2h-hubbtn {
+  appearance: none;
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: filter var(--u-dur-fast) var(--u-ease);
+}
+.u2hud .u2h-hubbtn .u2-frame {
+  --qc: var(--u-gold);
+  --sz: var(--h-hub-h);
+  color: var(--u-gold-hi);
+}
+.u2h-hubbtn:hover {
+  filter: brightness(1.2);
+}
+.u2h-hubbtn[aria-pressed='true'] .u2-frame {
+  background: var(--u-gold-hi);
+}
+.u2h-hubbtn svg {
+  width: 22px;
+  height: 22px;
+  color: var(--u-gold-hi);
+}
+.u2h-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  z-index: 2;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--u-font-head);
+  font-weight: 800;
+  font-size: var(--u-fs-1);
+  line-height: 1;
+  color: var(--u-son-text);
+  background: var(--u-son);
+  box-shadow: 0 0 0 1.5px var(--u-ink-0);
+}
+.u2h-badge[data-dot='1'] {
+  min-width: 10px;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+}
+.u2h-tip {
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-2);
+  color: var(--u-gold-text);
+}
+/* minimap: vòng tròn viền kim của lớp Ngọc Giản cũ (ngj/hud.css); nút +/- nằm ngoài vòng nên không được cắt clip-path */
+.hud.u2hud .u2h-tr .minimap-wrap {
+  width: var(--h-map-w);
+}
+.hud.u2hud .u2h-tr .minimap-wrap .minimap {
+  width: var(--h-map-w);
+  height: var(--h-map-w);
+}
+.hud.u2hud .u2h-tr .minimap-wrap .minimap-ctl {
+  left: -30px;
+  bottom: 12px;
+}
+.u2h-quest {
+  width: var(--h-quest-w);
+  min-height: var(--h-quest-h);
+  padding-bottom: var(--u-sp-3);
+}
+.u2h-quest[data-collapsed='1'] {
+  min-height: 0;
+  height: 34px;
+  padding-bottom: 0;
+}
+.u2h-q {
+  padding: 0 var(--u-sp-4);
+  cursor: pointer;
+}
+.u2h-q + .u2h-q {
+  margin-top: var(--u-sp-2);
+}
+.u2h-q-title {
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-3);
+  line-height: var(--u-lh-tight);
+  color: var(--u-gold-text);
+}
+.u2h-q.tracked .u2h-q-title::before {
+  content: '◆ ';
+  color: var(--u-ngoc-hi);
+}
+.u2h-q-obj {
+  font-size: var(--u-fs-2);
+  color: var(--u-chu);
+}
+.u2h-q-obj.ok {
+  color: var(--u-ok);
+}
+.u2h-q-turnin {
+  font-size: var(--u-fs-2);
+  font-style: italic;
+  color: var(--u-gold);
+}
+
+/* ───────── BL: chat thu gọn được ───────── */
+.u2h-chat {
+  left: var(--h-safe);
+  bottom: var(--h-safe);
+  width: var(--h-chat-w);
+  height: var(--h-chat-h);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  transition: opacity var(--u-dur) var(--u-ease);
+}
+.u2h-chat[data-idle='1'] {
+  opacity: 0.6;
+}
+.u2h-chat[data-collapsed='1'] {
+  grid-template-rows: auto;
+  height: 32px;
+}
+.u2h-chat[data-collapsed='1'] .u2h-chat-log,
+.u2h-chat[data-collapsed='1'] .u2h-chat-input {
+  display: none;
+}
+.u2h-chat-last {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--u-font-body);
+  font-size: var(--u-fs-2);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+  color: var(--u-chu);
+}
+.u2h-chat-log {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--u-sp-4);
+  font-size: var(--u-fs-2);
+  line-height: var(--u-lh);
+  scrollbar-width: thin;
+}
+.u2h-chat-input {
+  margin: var(--u-sp-1) var(--u-sp-3) var(--u-sp-3);
+  padding: var(--u-sp-1) var(--u-sp-3);
+  border: 0;
+  border-top: var(--u-line-1) solid var(--u-gold-line);
+  background: none;
+  color: var(--u-chu);
+  font-family: var(--u-font-body);
+  font-style: italic;
+  font-size: var(--u-fs-2);
+  outline: none;
+}
+.u2h-chat-input:focus {
+  border-top-color: var(--u-gold);
+  font-style: normal;
+}
+
+/* ───────── BR: Kiếm Luân (cụm kỹ năng) ───────── */
+.u2h-skills {
+  position: absolute;
+  right: var(--h-safe);
+  bottom: var(--h-safe);
+  width: var(--h-skills-w);
+  height: var(--h-skills-h);
+  pointer-events: none;
+}
+.u2h-skills > * {
+  pointer-events: auto;
+}
+.u2h-cell {
+  position: absolute;
+}
+.u2h-cell .k-tip-host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.u2h-skill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--u-chu);
+}
+.u2hud .u2h-skill .u2-frame {
+  width: 100%;
+  height: 100%;
+  --sz: inherit;
+}
+/* ô trống (chưa chọn công pháp): tối như các ô khác */
+.u2hud .u2h-skill[data-state='empty'] {
+  pointer-events: none;
+}
+.u2hud .u2h-skill[data-state='empty'] .u2-frame {
+  background: none;
+  opacity: 0.45;
+}
+.u2hud .u2h-skill[data-state='empty'] .u2-frame__in {
+  inset: 0;
+  background: none;
+  box-shadow: inset 0 0 0 2px var(--u-gold-lo);
+}
+.u2hud .u2h-skill[data-state='empty'] .u2h-key {
+  display: none;
+}
+/* ô pháp bảo trống (dấu +) lệch khỏi cung: ẩn, trang bị pháp bảo qua bảng Túi/Nhân vật */
+.u2hud .u2h-extras .skill[data-state='empty'],
+.u2hud .u2h-extras .k-tip-host:has(> .skill[data-state='empty']) {
+  display: none;
+}
+/* ô nhỏ Q/F/Z */
+.u2h-quick .u2-frame[data-size='s'] {
+  --c: var(--u-cut-s);
+}
+.u2h-key {
+  position: absolute;
+  right: 5px;
+  top: 3px;
+  z-index: 2;
+  font-family: var(--u-font-head);
+  font-weight: 800;
+  font-size: var(--u-fs-1);
+  line-height: 1;
+  color: var(--u-gold-hi);
+  text-shadow:
+    0 0 3px var(--u-ink-0),
+    0 1px 1px var(--u-ink-0);
+}
+.u2h-skill .u2-skill__cd {
+  --c: var(--u-cut-s);
+}
+.u2h-cdn-s {
+  font-size: var(--u-fs-3);
+}
+.u2h-skill[data-state='nomp'] .u2-frame__in > *,
+.u2h-skill[data-state='air'] .u2-frame__in > * {
+  filter: saturate(0.35) brightness(0.7);
+}
+.u2h-skill[data-state='nomp'] .u2-frame {
+  --qc: var(--u-q2);
+}
+.u2h-skill[data-state='locked'] {
+  opacity: 0.7;
+}
+.u2h-skill[data-state='locked'] .u2-frame__in > * {
+  filter: grayscale(1) brightness(0.55);
+}
+.u2h-skill[data-state='ultready'] .u2-frame {
+  --qc: var(--u-gold-hi);
+}
+.u2h-skill[data-state='ready']:not([data-main]) .u2-frame,
+.u2h-skill[data-state='ultready'] .u2-frame {
+  --qc: var(--u-gold);
+}
+.u2h-skill.queued .u2-frame,
+.u2h-skill.empowered .u2-frame {
+  --qc: var(--u-ngoc-hi);
+}
+.u2h-skill[aria-pressed='true'] .u2-frame {
+  background: var(--u-ngoc-hi);
+}
+/* đòn chính: nút tròn lớn, quầng kim khi sẵn sàng, vòng GCD mảnh, vòng tự đánh */
+.u2h-cell[data-main] .u2-frame,
+.u2h-cell[data-main] .u2-frame__in,
+.u2h-cell[data-main] .u2-skill__cd,
+.u2h-cell[data-main] .u2h-gcd {
+  clip-path: none;
+  border-radius: 50%;
+}
+.u2h-cell[data-main] .u2-frame {
+  --qc: var(--u-gold-lo);
+  background: var(--u-gold);
+}
+.u2h-cell[data-main] .u2-skill__cd {
+  inset: 3px;
+}
+.u2h-cell[data-main] .u2h-skill[data-state='ready']::after {
+  /* quầng kim nhịp thở: chỉ đổi opacity (không vẽ lại, chạy trên compositor) */
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 10px 2px var(--u-gold),
+    inset 0 0 6px var(--u-gold-lo);
+  pointer-events: none;
+  animation: u2h-breathe var(--u-dur-breathe) ease-in-out infinite;
+}
+.u2h-cell[data-main] .u2h-skill.auto .u2-frame {
+  background: var(--u-ngoc-hi);
+}
+.u2h-gcd {
+  position: absolute;
+  inset: -5px;
+  pointer-events: none;
+  --sweep: calc((1 - var(--cd, 0)) * 360deg);
+  background: conic-gradient(from var(--sweep), var(--u-gold-hi) 0 calc(360deg - var(--sweep)), transparent 0);
+  -webkit-mask: radial-gradient(circle, transparent calc(50% - 6px), var(--u-ink-0) calc(50% - 5px));
+  mask: radial-gradient(circle, transparent calc(50% - 6px), var(--u-ink-0) calc(50% - 5px));
+}
+.u2h-cell[data-main] .u2h-key {
+  right: auto;
+  left: 50%;
+  top: auto;
+  bottom: -6px;
+  transform: translateX(-50%);
+}
+/* ô tiện ích bên trái cụm (pháp bảo, đan lô, thần thức, nguyên anh, chiêu bậc cao, buff) */
+.u2h-utility {
+  position: absolute;
+  right: calc(var(--h-skills-w) + 8px);
+  bottom: 0;
+  width: var(--h-util-w);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: var(--u-sp-2);
+  pointer-events: none;
+}
+.u2h-utility > * {
+  pointer-events: auto;
+}
+.u2h-extras {
+  display: flex;
+  gap: var(--u-sp-1);
+}
+.u2h-extras .sep {
+  display: none;
+}
+.u2h-extras .k-tip-host {
+  display: block;
+}
+.u2hud .u2h-tier .skill {
+  width: 48px;
+  height: 48px;
+}
+/* ô tiện ích dùng lớp `.skill` cũ: ép về cùng hình bát giác 56 px của kit */
+.u2hud .u2h-utility .skill {
+  --c: var(--u-cut-m);
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  background: var(--u-gold-lo);
+  clip-path: polygon(
+    var(--c) 0,
+    calc(100% - var(--c)) 0,
+    100% var(--c),
+    100% calc(100% - var(--c)),
+    calc(100% - var(--c)) 100%,
+    var(--c) 100%,
+    0 calc(100% - var(--c)),
+    0 var(--c)
+  );
+  box-shadow: none;
+}
+.u2hud .u2h-utility .skill .skill-icon {
+  inset: 3px;
+  clip-path: inherit;
+  background: var(--u-ink-1);
+}
+.u2hud .u2h-utility .skill .content-icon {
+  width: 78%;
+  height: 78%;
+}
+/* thanh ngang (tùy chọn Cài đặt): một hàng giữa dưới */
+.u2h-skills[data-layout='bar'] {
+  right: auto;
+  left: calc(var(--h-W) / 2);
+  transform: translateX(-50%);
+  width: 640px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--u-sp-2);
+}
+.u2h-skills[data-layout='bar'] .u2h-utility {
+  position: static;
+  width: auto;
+  flex-direction: row;
+  align-items: flex-end;
+}
+.u2h-barrow {
+  display: flex;
+  align-items: center;
+  gap: var(--u-sp-1);
+}
+.u2h-barrow .u2h-cell {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  --sz: 52px;
+}
+.u2h-barrow .u2h-cell[data-main] {
+  width: 64px;
+  height: 64px;
+  --sz: 64px;
+}
+.u2h-quickrow {
+  display: flex;
+  gap: var(--u-sp-1);
+  margin-left: var(--u-sp-3);
+}
+.u2h-quickrow .u2h-cell {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  --sz: 44px;
+}
+
+/* ───────── dải tên chiêu vệt mực (giữa-dưới) ───────── */
+.u2h-banner {
+  left: calc(var(--h-W) / 2);
+  bottom: 230px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: u2h-banner-out var(--u-dur-open) var(--u-ease) 1050ms both;
+}
+
+/* ───────── cắt cảnh, vùng khác trong HUD cũ nằm đúng chỗ ───────── */
+.hud[data-cut='line'] > .u2h-zone:not(.u2h-tc),
+.hud[data-cut='line'] .u2h-skills {
+  opacity: 0;
+  pointer-events: none;
+}
+.hud.u2hud .pty-frame {
+  left: var(--h-safe);
+  top: calc(var(--h-safe) + var(--h-tl-h) + var(--u-sp-3));
+}
+.hud.u2hud .target-frame.below-boss {
+  top: calc(var(--h-safe) + 104px);
+}
+
+@keyframes u2h-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes u2h-banner-out {
+  to {
+    opacity: 0;
+  }
+}
