@@ -606,6 +606,72 @@
         }
       }
     },
+    "boss_kim_da_ma_hau": {
+      "id": "boss_kim_da_ma_hau",
+      "class": "boss_mq",
+      "source": "assets/build/raw/boss_kim_da_ma_hau.glb",
+      "file": "boss_kim_da_ma_hau.efda1caedd.glb",
+      "bytes": 6587032,
+      "rawBytes": 12255784,
+      "triangles": 29999,
+      "rawTriangles": 29999,
+      "lod0Cap": 50000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 74,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dv2_ravenyth_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "dv2_ravenyth_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 29999
+        },
+        {
+          "level": 1,
+          "triangles": 14997,
+          "target": 15000
+        },
+        {
+          "level": 2,
+          "triangles": 5948,
+          "target": 6000
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.2606,
+          "height": 2.6369,
+          "depth": 1.51,
+          "minY": 0.0149
+        },
+        "build": {
+          "width": 2.2606,
+          "height": 2.6369,
+          "depth": 1.51,
+          "minY": 0.0149
+        }
+      }
+    },
     "boss_kinh_nguyet_chan_quan": {
       "id": "boss_kinh_nguyet_chan_quan",
       "class": "boss",
@@ -782,6 +848,72 @@
           "height": 3.4,
           "depth": 5.4445,
           "minY": 0
+        }
+      }
+    },
+    "boss_tan_hoa_kiem_co": {
+      "id": "boss_tan_hoa_kiem_co",
+      "class": "boss_mq",
+      "source": "assets/build/raw/boss_tan_hoa_kiem_co.glb",
+      "file": "boss_tan_hoa_kiem_co.74ac8193f4.glb",
+      "bytes": 6169856,
+      "rawBytes": 13196824,
+      "triangles": 23990,
+      "rawTriangles": 23990,
+      "lod0Cap": 50000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 74,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dv2_protector_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "dv2_protector_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 23990
+        },
+        {
+          "level": 1,
+          "triangles": 11995,
+          "target": 11995
+        },
+        {
+          "level": 2,
+          "triangles": 4788,
+          "target": 4798
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.1275,
+          "height": 2.3988,
+          "depth": 1.2942,
+          "minY": 0.0132
+        },
+        "build": {
+          "width": 2.1275,
+          "height": 2.3988,
+          "depth": 1.2942,
+          "minY": 0.0132
         }
       }
     },

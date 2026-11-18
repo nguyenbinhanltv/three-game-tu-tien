@@ -354,13 +354,15 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     expect(skeletons.length).toBeGreaterThanOrEqual(20);
     expect(disposed).toEqual([]); // geometry/texture dùng chung chưa bị đụng
     // Mỗi asset trong bảng giữ đúng một handle mẫu.
-    const assetCount = new Set(LIVE_SKINS.map(([, s]) => s.asset)).size;
+    // Kiếm rời của quái (DV-2 đợt 3, `weapon`) cũng là một handle mẫu.
+    const assetCount = new Set(LIVE_SKINS.flatMap(([, s]) => (s.weapon ? [s.asset, s.weapon.asset] : [s.asset]))).size;
     // Quái Mannequin (DV-2 đợt 2) giữ thêm một handle: thư viện clip UAL dùng chung.
     const libs = LIVE_SKINS.some(([, s]) => s.mannequin) ? 1 : 0;
     expect(cache.stats()).toEqual({ loaded: assetCount + libs, loading: 0, refs: assetCount + libs });
     skins.dispose();
     expect(cache.stats()).toEqual({ loaded: 0, loading: 0, refs: 0 });
-    expect(disposed.filter((d) => d === 'geometry').length).toBe(3 * assetCount); // 3 mức LOD mỗi asset
+    const weapons = new Set(LIVE_SKINS.flatMap(([, s]) => (s.weapon ? [s.weapon.asset] : []))).size; // kiếm rời: một lưới
+    expect(disposed.filter((d) => d === 'geometry').length).toBe(3 * (assetCount - weapons) + weapons); // 3 mức LOD mỗi asset
     expect(disposed).toContain('texture');
   });
 

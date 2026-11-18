@@ -299,6 +299,41 @@ tree.nodes.active = tex_normal
 log('nướng normal…')
 bpy.ops.object.bake(type='NORMAL')
 
+# `recolor` {hue (độ), sat, val, from: [lo, hi]}: xoay màu của ảnh màu đã nướng (ví dụ ánh sáng xanh của Protector → than hồng của Tẫn Hỏa Kiếm Cơ).
+# Chỉ đổi điểm ảnh có hue trong khoảng `from` (độ, mặc định mọi màu) để da/kim loại trung tính giữ nguyên.
+rc = CFG.get('recolor')
+if rc:
+    px = np.array(img_color.pixels[:], dtype=np.float32).reshape(-1, 4)
+    r, g, b = px[:, 0], px[:, 1], px[:, 2]
+    mx, mn = np.max(px[:, :3], axis=1), np.min(px[:, :3], axis=1)
+    d = mx - mn
+    h = np.zeros_like(mx)
+    nz = d > 1e-6
+    rm, gm = nz & (mx == r), nz & (mx == g) & (mx != r)
+    bm = nz & ~rm & ~gm
+    h[rm] = ((g - b)[rm] / d[rm]) % 6
+    h[gm] = (b - r)[gm] / d[gm] + 2
+    h[bm] = (r - g)[bm] / d[bm] + 4
+    h = h * 60.0
+    s_ = np.where(mx > 1e-6, d / np.maximum(mx, 1e-6), 0.0)
+    lo, hi = rc.get('from', [0, 360])
+    sel = (h >= lo) & (h <= hi) & (s_ > rc.get('minSat', 0.15))
+    h2 = np.where(sel, (h + rc.get('hue', 0)) % 360.0, h)
+    s2 = np.where(sel, np.clip(s_ * rc.get('sat', 1.0), 0, 1), s_)
+    v2 = np.where(sel, np.clip(mx * rc.get('val', 1.0), 0, 1), mx)
+    c = v2 * s2
+    x = c * (1 - np.abs((h2 / 60.0) % 2 - 1))
+    m = v2 - c
+    k = (h2 // 60).astype(int) % 6
+    zero = np.zeros_like(c)
+    rr = np.select([k == 0, k == 1, k == 2, k == 3, k == 4, k == 5], [c, x, zero, zero, x, c])
+    gg = np.select([k == 0, k == 1, k == 2, k == 3, k == 4, k == 5], [x, c, c, x, zero, zero])
+    bb = np.select([k == 0, k == 1, k == 2, k == 3, k == 4, k == 5], [zero, zero, x, c, c, x])
+    px[:, 0], px[:, 1], px[:, 2] = rr + m, gg + m, bb + m
+    img_color.pixels.foreach_set(px.ravel())
+    img_color.update()
+    log(f'đổi màu: {rc}, {int(sel.sum())} điểm ảnh')
+
 tree.links.new(tex_color.outputs['Color'], bsdf.inputs['Base Color'])
 nm = tree.nodes.new('ShaderNodeNormalMap')
 tree.links.new(tex_normal.outputs['Color'], nm.inputs['Color'])

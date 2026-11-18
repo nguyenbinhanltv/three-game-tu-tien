@@ -1,0 +1,11 @@
+{
+ "$comment": "Mốc khớp Tẫn Hỏa Kiếm Cơ (Protector Nemesis, Atahan3D CC BY). Đo từ ảnh chiếu skin_prep (600 px = 1 đơn vị), hệ Blender của lưới nguồn: Z lên, mặt trước -Y, trái nhân vật +X. Tay phải (-X) gập đưa ra trước (nắm kiếm, đã cắt), tay trái buông, chân trái bước trước.",
+ "joints": {
+  "Hips": [0.09, -0.12, 0.14], "Spine": [0.10, -0.14, 0.27], "Spine1": [0.11, -0.17, 0.42], "Spine2": [0.12, -0.20, 0.55],
+  "Neck": [0.15, -0.20, 0.68], "Head": [0.15, -0.20, 0.75], "HeadTop": [0.16, -0.20, 0.93],
+  "LeftArm": [0.30, -0.19, 0.55], "LeftForeArm": [0.50, -0.18, 0.30], "LeftHand": [0.47, -0.20, 0.10], "LeftHandEnd": [0.46, -0.20, 0.04],
+  "RightArm": [-0.09, -0.20, 0.56], "RightForeArm": [-0.19, -0.12, 0.35], "RightHand": [-0.267, -0.37, 0.51], "RightHandEnd": [-0.27, -0.45, 0.55],
+  "LeftUpLeg": [0.20, -0.12, 0.10], "LeftLeg": [0.31, -0.20, -0.20], "LeftFoot": [0.42, -0.24, -0.78], "LeftToeBase": [0.45, -0.36, -0.90], "LeftToeEnd": [0.45, -0.46, -0.93],
+  "RightUpLeg": [0.00, -0.10, 0.10], "RightLeg": [-0.08, -0.12, -0.23], "RightFoot": [-0.09, 0.02, -0.80], "RightToeBase": [-0.10, -0.07, -0.90], "RightToeEnd": [-0.10, -0.13, -0.93]
+ }
+}

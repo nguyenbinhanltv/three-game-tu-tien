@@ -1,0 +1,64 @@
+{
+ "binds": [
+  {
+   "note": "vạt áo choàng phải (-X) theo hông, khỏi kéo dãn khi chân bước",
+   "box": {
+    "min": [
+     -0.8,
+     -0.45,
+     -0.6
+    ],
+    "max": [
+     -0.22,
+     0.5,
+     0.26
+    ]
+   },
+   "bone": "pelvis",
+   "feather": 0.1
+  },
+  {
+   "note": "vạt áo choàng trái (+X)",
+   "box": {
+    "min": [
+     0.56,
+     -0.45,
+     -0.6
+    ],
+    "max": [
+     0.8,
+     0.5,
+     0.2
+    ]
+   },
+   "bone": "pelvis",
+   "feather": 0.1
+  },
+  {
+   "note": "áo choàng sau lưng: trên theo thắt lưng, dưới theo hông",
+   "box": {
+    "min": [
+     -0.3,
+     0.1,
+     -0.95
+    ],
+    "max": [
+     0.55,
+     0.5,
+     0.45
+    ]
+   },
+   "blend": [
+    [
+     0.35,
+     "spine_02"
+    ],
+    [
+     0.1,
+     "pelvis"
+    ]
+   ],
+   "feather": 0.1
+  }
+ ]
+}

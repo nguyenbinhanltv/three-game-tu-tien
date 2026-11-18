@@ -13,7 +13,7 @@ import type { AnimState } from './view';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const IDS = ['mon_tan_chung', 'mon_giac_kiem_trong_binh', 'elite_hoi_giac_cu_thu'];
+const IDS = ['mon_tan_chung', 'mon_giac_kiem_trong_binh', 'elite_hoi_giac_cu_thu', 'boss_tan_hoa_kiem_co', 'boss_kim_da_ma_hau'];
 const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
 
 function cache(): AssetCache {
@@ -72,6 +72,14 @@ describe('quái hai chân Mannequin (DV-2 đợt 2)', () => {
       for (let i = 0; i < 20; i++) sm.update(1 / 60, anim());
       for (let i = 0; i < 60; i++) sm.update(1 / 60, anim({ dead: true }));
       expect(s.moves).toBeTruthy();
+      if (s.weapon) {
+        // Kiếm rời là mesh con của `inner`, mỗi khung chép ma trận xương cổ tay phải (`dtl_sword`).
+        const hand = sm.rig.getObjectByName('dtl_sword');
+        expect(hand, id).toBeTruthy();
+        const blade = sm.root.children[0].children.find((c) => (c as THREE.Mesh).isMesh && !(c as THREE.SkinnedMesh).isSkinnedMesh);
+        expect(blade, id).toBeTruthy();
+        expect(blade!.matrixAutoUpdate).toBe(false);
+      }
       sm.dispose();
     }
     skins.dispose();

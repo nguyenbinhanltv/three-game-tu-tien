@@ -83,6 +83,15 @@
       "texture": { "color": 1024, "data": 512 },
       "bones": 96
     },
+    "boss_mq": {
+      "triangles": { "min": 20000, "max": 50000 },
+      "lods": [
+        { "ratio": 0.5, "maxTriangles": 15000 },
+        { "ratio": 0.2, "maxTriangles": 6000 }
+      ],
+      "texture": { "color": 2048, "data": 2048 },
+      "bones": 96
+    },
     "boss": {
       "triangles": { "min": 20000, "max": 50000 },
       "lods": [
