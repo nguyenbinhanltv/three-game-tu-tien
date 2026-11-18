@@ -77,21 +77,23 @@ function VanPhu() {
 /** Lớp tầng cảnh giới đặt SAU nhân vật: Nguyên Anh + 9 phi kiếm (tầng 2) / pháp tướng kiếm long (tầng 3, kiếm tu). */
 function TierBack({ pick }: { pick: PortraitPick }) {
   if (pick.tier < 2) return null;
+  // Nguyên Anh (24): Nguyên Anh + VÒNG 9 PHI KIẾM xếp đều thành hào quang. Hóa Thần (28): PHÁP TƯỢNG kiếm long ngọc cỡ nửa tranh, bỏ vòng kiếm cho gọn.
+  const phap = pick.tier >= 3 && pick.kiem;
   return (
     <>
-      {pick.tier >= 3 && pick.kiem && (
+      {phap && (
         <div className="hoatruc-phaptuong">
           <img src={url('phap_tuong_kiem_long')} alt="" draggable={false} />
         </div>
       )}
-      {pick.kiem && (
+      {pick.kiem && !phap && (
         <div className="hoatruc-ring">
           {Array.from({ length: 9 }, (_, i) => (
-            <img key={i} src={url('phi_kiem')} alt="" draggable={false} style={{ '--a': i * 40 + 'deg' } as CSSProperties} />
+            <i key={i} className="hoatruc-pk" style={{ '--a': i * 40 + 'deg' } as CSSProperties} />
           ))}
         </div>
       )}
-      <div className="hoatruc-na">
+      <div className="hoatruc-na" data-small={phap ? '1' : undefined}>
         <img src={url('nguyen_anh')} alt="" draggable={false} />
       </div>
     </>

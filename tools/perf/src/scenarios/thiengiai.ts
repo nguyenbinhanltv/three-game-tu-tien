@@ -8,7 +8,7 @@ import { snap } from '../lib/shot';
 export default {
   name: 'thiengiai',
   desc: 'Thiên Giai Hoa Trúc: bộ Liệt Mạch qua tầng Kết Đan/Nguyên Anh/Hóa Thần (kiếm tu); --gender m|f, --video 1',
-  usage: '[--size 1920x1080] [--gender m|f] [--video 1]',
+  usage: '[--size 1920x1080] [--gender m|f] [--video 1] [--only 20|24|28: chỉ một tầng, quay ~9 s để ghép video chia ba màn]',
   async run(r) {
     const [w, h] = opt('--size', '1920x1080').split('x').map(Number) as [number, number];
     const g = opt('--gender', 'm');
@@ -42,6 +42,15 @@ export default {
       [24, '3-nguyen-anh'],
       [28, '4-hoa-than'],
     ];
+    const only = opt('--only', '');
+    if (only) {
+      await gm(page, `level ${only}`, 900);
+      await sleep(1500);
+      for (let i = 0; i < 3; i++) await sweep();
+      await snap(page, r.out, `only-${only}-${tag}.jpg`, { wait: 300 });
+      await page.context().close();
+      return;
+    }
     for (const [lv, name] of tiers) {
       await gm(page, `level ${lv}`, 900);
       await sleep(1800);

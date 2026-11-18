@@ -30,3 +30,11 @@
   font-style: italic;
   font-display: swap;
 }
+/* Thư pháp (tên đạo hiệu ở tầng Hóa Thần của Hoa Trúc): Charm Bold, SIL OFL, đủ Latin + tiếng Việt (tools/fonts/subset.py). */
+@font-face {
+  font-family: 'DTL Thu Phap';
+  src: url('/fonts/dtl-thu-phap.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
