@@ -317,7 +317,7 @@ export class PlayerSkins {
     return this.build(id, skin, t, mat, undefined, undefined, false, { parts: [{ id: oid, tpl }], dye: { id: `npc:${look.hex}`, hex: look.hex } });
   }
 
-  /** Các asset mảnh áo của bộ đang mặc (rỗng nếu bộ chưa có áo riêng cho giới này hoặc đang `?models=legacy`/`?outfit=0`). */
+  /** Các asset mảnh áo của bộ đang mặc (rỗng nếu bộ chưa có áo riêng cho giới này hoặc đang `?models=legacy`). */
   private outfitIds(look: PlayerLook): string[] {
     if (this.legacy) return [];
     const model = modelOf(look.g, look.hair);

@@ -59,6 +59,14 @@ const procedural = [
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', `chr_v3b_lac_kiem_${g}`, '--auto', '--height', g === 'nam' ? '1.84' : '1.70', '--springs', 'repo:tools/blender/skins/v3_lac_kiem_springs.json'],
   })),
+  // Lạc Kiếm Môn Phục v3b2: cùng model Tripo v3b, vạt 12 chuỗi lò xo (v3b giữ nguyên để so); phần còn lại ở client (`mannequin.ts`, cờ theo tiền tố `chr_v3b2`).
+  ...['nam', 'nu'].map((g) => ({
+    id: `chr_v3b2_lac_kiem_${g}`,
+    script: 'tools/blender/chr_v3.py',
+    source: `chr/set_lac_kiem/tripo/raw_v3b_${g}.glb`,
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', `chr_v3b2_lac_kiem_${g}`, '--auto', '--height', g === 'nam' ? '1.84' : '1.70', '--springs', 'repo:tools/blender/skins/v3_lac_kiem_springs2.json'],
+  })),
   {
     id: 'chr_v3_varkessa_nu',
     script: 'tools/blender/chr_v3.py',

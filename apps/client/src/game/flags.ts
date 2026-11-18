@@ -7,7 +7,7 @@
  * Không có `location` (test node): mọi cờ về mặc định.
  */
 
-interface Flags {
+export interface Flags {
   /** `?mute=1` tắt tiếng (playtest luôn dùng). */
   mute: boolean;
   /** `?auto=<đạo hiệu>` tự đăng nhập bằng tài khoản thử. */
@@ -30,8 +30,8 @@ interface Flags {
   chr: 'v2' | 'v3' | null;
   /** `?hair=b` ép kiểu tóc v2. */
   hair: string | null;
-  /** `?v3model=a` về Lạc Kiếm v3 cũ (so ảnh). */
-  v3ModelA: boolean;
+  /** `?v3model=a|b` chọn bản Lạc Kiếm v3/v3b (mặc định v3b2; so ảnh). */
+  v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
   /** `?v3pal=0` tắt bảng màu nhuộm v3. */
@@ -52,11 +52,14 @@ interface Flags {
   music: string | null;
   /** `?ambient=<id>` nghe thử âm môi trường (chỉ dev). */
   ambient: string | null;
+  /** `?cine=0` tắt cảnh mở đầu và cảnh boss/chuyển pha (công cụ đo bench/crowd/load/compat dùng để camera đo không bị cảnh điện ảnh chiếm). */
+  cinematics: boolean;
+  /** `?xichart=0` tắt vết nứt/đèn nhấn riêng của Xích Tẫn Khích (so ảnh). */
+  xichArt: boolean;
   /** `?bhart=0` tắt lớp mỹ thuật riêng Bắc Hoang (so ảnh, chương 5). */
   bhArt: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
-  /** `?ngj=0` về HUD cũ (sẽ gỡ ở R-4c). */
   ngj: boolean;
 }
 
@@ -84,6 +87,8 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   night: { scope: 'diag', doc: '0|1 ép đêm/ngày cho nhạc' },
   music: { scope: 'diag', doc: 'id bài nhạc thử (dev)' },
   ambient: { scope: 'diag', doc: 'id âm môi trường thử (dev)' },
+  cine: { scope: 'diag', doc: '=0 tắt cảnh mở đầu/boss (công cụ đo dùng)' },
+  xichart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Xích Tẫn Khích' },
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   ngj: { scope: 'diag', doc: '=0 HUD cũ (sẽ gỡ R-4c)' },
@@ -127,7 +132,7 @@ export function readFlags(search: string): Flags {
     fxq: q.get('fxq'),
     chr: chr === 'v2' || chr === 'v3' ? chr : null,
     hair: q.get('hair'),
-    v3ModelA: q.get('v3model') === 'a',
+    v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
@@ -139,6 +144,8 @@ export function readFlags(search: string): Flags {
     music: q.get('music'),
     ambient: q.get('ambient'),
     bhArt: !off(q.get('bhart')),
+    xichArt: !off(q.get('xichart')),
+    cinematics: !off(q.get('cine')),
     butterflies: !off(q.get('bf')),
     ngj: !off(q.get('ngj')),
   };
