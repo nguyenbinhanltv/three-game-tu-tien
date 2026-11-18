@@ -50,11 +50,15 @@ export type GradingName =
   | 'tk_dawn'
   | 'tk'
   | 'tk_night'
+  | 'lk_dawn'
+  | 'lk_day'
+  | 'lk_dusk'
+  | 'lk_night'
   | 'ash_dawn'
   | 'rift'
   | 'rift_pit';
 /** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
-type TimeOfDay = 'dawn' | 'day' | 'night';
+export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 
 type RawPreset = Record<keyof GradingPreset, string | number>;
 const raw = palette.grading as unknown as {
@@ -88,6 +92,10 @@ export const GRADING: Record<GradingName, GradingPreset> = {
   tk_dawn: parse(raw.presets.tk_dawn),
   tk: parse(raw.presets.tk),
   tk_night: parse(raw.presets.tk_night),
+  lk_dawn: parse(raw.presets.lk_dawn),
+  lk_day: parse(raw.presets.lk_day),
+  lk_dusk: parse(raw.presets.lk_dusk),
+  lk_night: parse(raw.presets.lk_night),
   ash_dawn: parse(raw.presets.ash_dawn),
   rift: parse(raw.presets.rift),
   rift_pit: parse(raw.presets.rift_pit),
@@ -95,11 +103,15 @@ export const GRADING: Record<GradingName, GradingPreset> = {
 
 /** Tên mood của level theo thời điểm trong ngày: `ochre` + night → `ochre_night`. */
 export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
-  if (base.startsWith('ochre')) return tod === 'dawn' ? 'ochre_dawn' : tod === 'night' ? 'ochre_night' : 'ochre';
-  if (base.startsWith('cloud')) return tod === 'dawn' ? 'cloud_dawn' : tod === 'night' ? 'cloud_night' : 'cloud';
+  // Lạc Kiếm (MAP-1): bộ bốn thời điểm riêng, có hoàng hôn.
+  if (base.startsWith('lk')) return `lk_${tod}` as GradingName;
+  // Level khác chưa có hoàng hôn riêng: lấy sắc bình minh (ấm, nắng thấp).
+  const t: 'dawn' | 'day' | 'night' = tod === 'dusk' ? 'dawn' : tod;
+  if (base.startsWith('ochre')) return t === 'dawn' ? 'ochre_dawn' : t === 'night' ? 'ochre_night' : 'ochre';
+  if (base.startsWith('cloud')) return t === 'dawn' ? 'cloud_dawn' : t === 'night' ? 'cloud_night' : 'cloud';
   if (base === 'ash_dawn' || base === 'rift' || base === 'rift_pit') return base; // Bắc Hoang (DV-1): mood cố định theo nửa bản đồ, không đổi theo giờ
-  if (base.startsWith('tk')) return tod === 'dawn' ? 'tk_dawn' : tod === 'night' ? 'tk_night' : 'tk';
-  return tod;
+  if (base.startsWith('tk')) return t === 'dawn' ? 'tk_dawn' : t === 'night' ? 'tk_night' : 'tk';
+  return t;
 }
 
 /** `?mood=dawn|day|night` đổi thời điểm trong ngày khi xem/chụp ảnh (không lưu); mặc định theo palette.json. */
@@ -107,7 +119,7 @@ function moodFromUrl(): TimeOfDay | null {
   return FLAGS.mood;
 }
 export const URL_MOOD: TimeOfDay | null = moodFromUrl();
-export const GRADING_DEFAULT: GradingName = URL_MOOD ?? raw.default;
+export const GRADING_DEFAULT: GradingName = URL_MOOD ? moodVariant('day', URL_MOOD) : raw.default;
 export const BLOOM = raw.bloom;
 export const VIGNETTE = raw.vignette;
 export const GRAIN = raw.grain;
