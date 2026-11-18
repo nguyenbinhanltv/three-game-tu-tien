@@ -538,8 +538,8 @@ console.log(
 
 // ---------- tu vi từ nhiệm vụ chương 5 (DV3-H) ----------
 {
-  // Cấp 29–32 chưa có trong realms/xpNeed (MAX_LEVEL 28): dùng bảng xpNeed đề xuất của docs/DIVUC_DESIGN.md mục 2.2 (cấp 28→31).
-  const DESIGN_NEED = [234_000, 242_000, 250_000, 257_500];
+  // Chặng Hóa Thần 28→31 theo `xpNeed` thật của shared (docs/DIVUC_DESIGN.md mục 2.2).
+  const DESIGN_NEED = [28, 29, 30, 31].map((l) => xpNeed(l));
   const stageXp = DESIGN_NEED.reduce((a, b) => a + b, 0);
   const mainQ = QUESTS.filter((q) => q.id.startsWith('q5_'));
   const sideQ = QUESTS.filter((q) => q.id.startsWith('s5_'));

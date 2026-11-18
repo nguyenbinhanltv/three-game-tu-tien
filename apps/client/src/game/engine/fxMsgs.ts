@@ -185,9 +185,9 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
   if (replacedFx(m.t) && typeof pSrc?.model.performClock === 'function') {
     // Đột phá của mình: hình do timeline lo, nhưng trạng thái HUD, chớp sáng và thẻ chương vẫn phải chạy (trước đây bị bỏ qua cùng nhánh hình cũ).
     if (m.t === 'ascend' && src === eng.sid) {
-      set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+      set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
       eng.post?.flash(0.3);
-      window.setTimeout(() => !eng.disposed && chapter(eng, m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+      window.setTimeout(() => !eng.disposed && chapter(eng, m.tb === 'anh_bien' ? 'ascend_ab' : m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
     }
     return;
   }
@@ -265,10 +265,10 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if (src === eng.sid) v.ascendGlow(posSrc, 2.6, m.tb === 'ket_dan', m.tb === 'nguyen_anh', m.tb === 'hoa_than');
       else v.pillar(posSrc, m.tb === 'hoa_than' ? 0xffeeb8 : m.tb === 'nguyen_anh' ? 0xd2c4ff : m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8, 3.2, 2.4, 40);
       if (src === eng.sid) {
-        set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+        set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
         eng.post?.flash(0.3);
         // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
-        window.setTimeout(() => !eng.disposed && chapter(eng, m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+        window.setTimeout(() => !eng.disposed && chapter(eng, m.tb === 'anh_bien' ? 'ascend_ab' : m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
       }
       if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
       break;
@@ -289,7 +289,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       v.burst(_v, 0x8fffc0, 0.8, 0.35);
       break;
     case 'death':
-      if (src === eng.sid) set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+      if (src === eng.sid) set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
       eng.cloneVfx.get(src)?.stop();
       eng.cloneVfx.delete(src);
       if (e.chestOf(src, _v)) v.burst(_v, 0x8a8f98, 1.6, 0.5);
@@ -412,6 +412,45 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     case 'clone_end':
       eng.cloneVis?.end(src, m.pg === 1);
       break;
+    case 'steles': {
+      // Năm Trấn Giới Bia của Nhật Thực Kiếp: mỗi tin mang mặt nạ bia sáng; HUD đếm, hình do vfx.steleRing.
+      if (src !== eng.sid) break;
+      if (!eng.stelesVfx) eng.stelesVfx = v.steleRing(m.x ?? 0, m.z ?? 0, m.r ?? 16, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+      eng.stelesVfx.set(m.n ?? 0);
+      // Bia vừa sáng: sét trắng vàng đánh xuống bia, một chớp nở ra (đúng vị trí ngũ giác của server).
+      for (let i = 0; i < 5; i++) {
+        if ((m.n ?? 0) & (1 << i) && !(eng.stelesMask & (1 << i))) {
+          const a = (i * Math.PI * 2) / 5;
+          const bx = (m.x ?? 0) + Math.sin(a) * (m.r ?? 16);
+          const bz = (m.z ?? 0) + Math.cos(a) * (m.r ?? 16);
+          const by = groundAt(bx, bz);
+          v.lightning(bx, by, bz, 0xfff0b0, 1.6, (i + 1) * 7919);
+          _v.set(bx, by + 2, bz);
+          v.burst(_v, 0xffd27a, 3, 0.5);
+          eng.shake.kick(0.4);
+        }
+      }
+      eng.stelesMask = m.n ?? 0;
+      set({ steles: m.n ?? 0 });
+      break;
+    }
+    case 'nt_stun': {
+      // Thiên lôi đánh trúng Nhật Thực Dực Chủ (hắn mất thế): sét to trắng vàng giáng đúng chỗ hắn đứng, chớp nở và rung nhẹ.
+      const bx = m.x ?? 0;
+      const bz = m.z ?? 0;
+      const by = groundAt(bx, bz);
+      v.lightning(bx, by, bz, 0xfff0b0, 2.2, m.sd);
+      _v.set(bx, by + 2.2, bz);
+      v.burst(_v, 0xffe3a8, 4.5, 0.55);
+      eng.post?.flash(0.3);
+      eng.shake.kick(0.5);
+      break;
+    }
+    case 'rift':
+      // Tia cuối của Nhật Thực Kiếp đánh vào khe Giới Khích (đủ bia): khe khép lại.
+      v.riftVein(m.x ?? 0, m.z ?? 0, m.r ?? 11, m.d ?? 4, m.pg === 1);
+      if (src === eng.sid) eng.shake.kick(0.5);
+      break;
     case 'nguhanh': {
       // Tia kiếp ngũ hành (E4-D): HUD hiện hành đang giáng và trận môn cần đứng; vạch báo do vùng nguy hiểm vẽ.
       if (src === eng.sid) set({ nguHanh: { e: m.n ?? 0, at: Date.now() + (m.d ?? 2) * 1000 } });
@@ -514,9 +553,14 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       eng.danVfx.delete(src);
       eng.soulVfx.get(src)?.stop();
       eng.soulVfx.delete(src);
+      if (src === eng.sid) {
+        eng.stelesVfx?.stop();
+        eng.stelesVfx = null;
+        eng.stelesMask = 0;
+      }
       eng.cloneVfx.get(src)?.stop();
       eng.cloneVfx.delete(src);
-      if (src === eng.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0 });
+      if (src === eng.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
       v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
       if (src === eng.sid) {
         eng.tribUntil = Date.now() + (m.d ?? 40) * 1000;

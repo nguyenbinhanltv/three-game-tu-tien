@@ -11,6 +11,8 @@
   { "id": "itm_ngung_dan_mach_tinh", "kind": "material", "stack": 99, "price": 0, "sell": 200, "rarity": 3, "icon": "itm_ngung_dan_mach_tinh", "iconFallback": "💠" },
   { "id": "itm_ket_dan_dich", "kind": "material", "stack": 10, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_ket_dan_dich", "iconFallback": "🧪" },
   { "id": "itm_ngung_anh_phach", "kind": "material", "stack": 99, "price": 0, "sell": 60, "rarity": 4, "icon": "itm_ngung_anh_phach", "iconFallback": "🔮" },
+  { "id": "itm_anh_bien_lo", "kind": "material", "stack": 10, "price": 0, "sell": 0, "rarity": 4, "iconFallback": "🌘" },
+  { "id": "itm_kim_da_mien_phien", "kind": "material", "stack": 99, "price": 0, "sell": 110, "rarity": 4, "iconFallback": "🪙" },
   { "id": "itm_hoa_than_lo", "kind": "material", "stack": 10, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_hoa_than_lo", "iconFallback": "🌟" },
   { "id": "itm_nguyen_anh_dan", "kind": "material", "stack": 10, "price": 0, "sell": 0, "rarity": 4, "icon": "itm_nguyen_anh_dan", "iconFallback": "🧿" },
   { "id": "itm_pha_canh_dan", "kind": "consumable", "stack": 10, "price": 0, "sell": 0, "rarity": 3, "icon": "itm_pha_canh_dan", "iconFallback": "🔆" },

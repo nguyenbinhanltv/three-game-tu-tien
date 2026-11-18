@@ -38,6 +38,10 @@ export function levelOfRoom(room: string): string {
   if (room === ROOM_WORLD) return 'van_lam';
   if (room === ROOM_DUNGEON) return 'kiem_trung';
   if (room === ROOM_TRIBULATION) return TRIB_LEVEL; // sân độ kiếp (E1-F)
+  if (room.startsWith(ROOM_TRIBULATION + '-')) {
+    const tl = room.slice(ROOM_TRIBULATION.length + 1);
+    return knownLevel(tl) ? tl : TRIB_LEVEL; // sân kiếp riêng (Nhật Thực Kiếp)
+  }
   const id = room.replace(/^(world|dungeon)-/, '');
   return id !== room && knownLevel(id) ? id : 'van_lam';
 }

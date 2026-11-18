@@ -5,7 +5,7 @@ import raw from '../../content/data/tribulations.json';
 import { ELEM_BEATS } from './elements';
 import { ELEMENTS, type Element } from './items';
 
-export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than';
+export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than' | 'anh_bien';
 export type TribPhaseKind = 'lei' | 'hoa' | 'tam_ma';
 /** Độ kiếp chạy ngay trong room thế giới hay room riêng (tổ đội vào cùng). */
 export type TribRoomKind = 'world' | 'tribulation';
@@ -31,6 +31,8 @@ export interface TribFinal {
   guardShare?: number;
   guardMax?: number;
   guardR?: number;
+  /** Anh Biến: từng này Trấn Giới Bia sáng trở lên thì tia cuối đánh vào khe (không vào người), dưới đó như tia thường. */
+  gateSteles?: number;
 }
 
 export interface TribGrid {
@@ -170,6 +172,42 @@ export function nguHanhSealFor(i: number): number {
   return ELEMENTS.indexOf(elemCounterOf(ELEMENTS[nguHanhIndex(i)]));
 }
 
+/**
+ * Dẫn lôi (Anh Biến, cơ chế `dan_loi`): năm Trấn Giới Bia (thực thể của kiếp) ở ngũ giác bán kính `ring` quanh tâm sân của level kiếp.
+ * Mỗi `every` giây một tia nhắm chỗ người độ kiếp đang đứng, báo `warn` giây rồi rơi ở đúng chỗ đó; rơi trong `steleR` mét quanh một bia chưa sáng thì bia đó sáng.
+ */
+export interface TribDanLoi {
+  ring: number;
+  steleR: number;
+  first: number;
+  every: number;
+  warn: number;
+  /** % khí huyết tối đa của tia (bán kính `r`). */
+  pct: number;
+  r: number;
+}
+
+/**
+ * Nhật thực (Anh Biến, cơ chế `nhat_thuc`): Nhật Thực Dực Chủ (`boss`, máu lấy từ `hpMul` của `monsters.json`) giáng xuống `dist` mét trước mặt người độ kiếp.
+ * Mỗi `smashEvery` giây hắn nhắm một bia đang sáng, niệm `smashWarn` giây rồi dập (bia tắt, mất tiến độ); ngắt chú (choáng/mất thế) thì hủy.
+ * Thiên lôi vẫn rơi mỗi `every` giây quanh người độ kiếp (`warn`, `r`, `pct`) và đánh cả hắn: hắn đứng trong `r` thì mất thế `stun` giây.
+ * Tịnh Quang đỡ thay một đòn mỗi `shieldEvery` giây.
+ */
+export interface TribNhatThuc {
+  boss: string;
+  dist: number;
+  smashEvery: number;
+  smashWarn: number;
+  smashR: number;
+  smashPct: number;
+  every: number;
+  warn: number;
+  r: number;
+  pct: number;
+  stun: number;
+  shieldEvery: number;
+}
+
 export interface TribPhaseDef {
   id: string;
   kind: TribPhaseKind;
@@ -194,6 +232,8 @@ export interface TribPhaseDef {
   tamCanh?: TribTamCanh;
   nguHanh?: TribNguHanh;
   phanThan?: TribPhanThan;
+  danLoi?: TribDanLoi;
+  nhatThuc?: TribNhatThuc;
   /** Thiên lôi pha này nhuốm lửa (lôi hỏa): client đổi màu tia (HDR vẫn dưới trần). Chỉ là lớp hình. */
   hot?: boolean;
   /** Móc cơ chế riêng (tribmech.ts). */
@@ -222,10 +262,12 @@ export interface TribDef {
   /** Người xem (hộ pháp) được vào trong bán kính này (m). */
   guard?: { r: number };
   phases: TribPhaseDef[];
+  /** Level (bản đồ kiếp) của room kiếp riêng; thiếu = `do_kiep`. */
+  level?: string;
 }
 
 /** Móc cơ chế riêng hợp lệ (server cài ở apps/server/src/game/tribmech.ts; `content:check` kiểm dữ liệu chỉ dùng id trong danh sách này). */
-export const TRIB_MECHANIC_IDS = ['dan_tran', 'tia_xich', 'xuat_khieu', 'tam_canh', 'ngu_hanh', 'phan_than'] as const;
+export const TRIB_MECHANIC_IDS = ['dan_tran', 'tia_xich', 'xuat_khieu', 'tam_canh', 'ngu_hanh', 'phan_than', 'dan_loi', 'nhat_thuc'] as const;
 
 const defs = (raw as unknown as { defs: Record<string, Omit<TribDef, 'id'>> }).defs;
 export const TRIB_DEFS: Readonly<Record<TribId, TribDef>> = Object.fromEntries(Object.entries(defs).map(([id, d]) => [id, { ...d, id }])) as Record<TribId, TribDef>;
@@ -233,6 +275,16 @@ export const TRIB_IDS = Object.keys(TRIB_DEFS) as TribId[];
 
 export function tribDef(id: string | undefined | null): TribDef {
   return TRIB_DEFS[(id ?? 'truc_co') as TribId] ?? TRIB_DEFS.truc_co;
+}
+
+/** Level kiếp của `def` (mặc định `do_kiep`). */
+export function tribLevelOf(def: TribDef): string {
+  return def.level ?? 'do_kiep';
+}
+
+/** Tên room kiếp của level: `tribulation` cho `do_kiep`, `tribulation-<id>` cho level kiếp riêng. */
+export function tribRoomNameOf(level: string): string {
+  return level === 'do_kiep' ? 'tribulation' : `tribulation-${level}`;
 }
 
 /** Kiếp mở ra từ cấp đại viên mãn `level` (15, 19, 23, 27), hoặc null. */

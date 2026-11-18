@@ -304,7 +304,7 @@ export class Character {
     c.accountId = row.accountId;
     c.name = row.name;
     c.level = row.level;
-    c.xp = row.xp;
+    c.xp = Math.min(row.xp, xpNeed(row.level));
     c.gold = row.gold;
     c.hp = row.hp;
     c.mp = row.mp;
