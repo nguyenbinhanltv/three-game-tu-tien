@@ -1,0 +1,199 @@
+{
+  "id": "xich_tan_khich",
+  "terrain": "van_lam",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1520,
+      "z": 1352
+    },
+    "exit": {
+      "x": 1520,
+      "z": 1370
+    },
+    "center": {
+      "x": 1520,
+      "z": 1300
+    },
+    "minLevel": 28,
+    "returnLevel": "bac_hoang",
+    "returnSpawn": {
+      "x": 1356,
+      "z": 644
+    },
+    "bound": 90,
+    "private": true,
+    "lockAt": 2,
+    "maxRevives": 2,
+    "waves": [
+      {
+        "mons": [
+          {
+            "id": "mon_xt_trong_binh",
+            "level": 28,
+            "n": 10
+          }
+        ],
+        "delay": 8
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_liet_hoa_ma_nguu",
+            "level": 28,
+            "n": 6
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_xich_tan_cu_khoi",
+            "level": 28,
+            "n": 1
+          }
+        ],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_u_anh_cot_loc",
+            "level": 28,
+            "n": 4
+          }
+        ],
+        "title": true,
+        "steles": {
+          "x": 1520,
+          "z": 1300,
+          "r": 7,
+          "secs": 60,
+          "grace": 6,
+          "press": 0.03,
+          "reinforce": [
+            {
+              "at": 0,
+              "mon": "mon_u_anh_cot_loc",
+              "level": 28,
+              "n": 2
+            },
+            {
+              "at": 20,
+              "mon": "mon_liet_hoa_ma_nguu",
+              "level": 28,
+              "n": 3
+            },
+            {
+              "at": 40,
+              "mon": "mon_xt_trong_binh",
+              "level": 28,
+              "n": 4
+            }
+          ]
+        }
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_tu_nhan_ma_tuong",
+            "level": 28,
+            "n": 1
+          }
+        ],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_tu_quang_duc_chu",
+            "level": 28,
+            "n": 1
+          }
+        ],
+        "title": true
+      }
+    ],
+    "reward": {
+      "xpPct": 0.15,
+      "gold": [
+        3600,
+        4800
+      ],
+      "level": 28,
+      "items": [
+        {
+          "item": "itm_tan_giac",
+          "chance": 1,
+          "min": 4,
+          "max": 6
+        },
+        {
+          "item": "itm_tinh_vu",
+          "chance": 1,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "itm_tu_khi_dan",
+          "chance": 1,
+          "min": 2,
+          "max": 3
+        },
+        {
+          "item": "itm_yeu_dan",
+          "chance": 1,
+          "min": 3,
+          "max": 5
+        }
+      ],
+      "equip": [
+        {
+          "chance": 0.5,
+          "q": [
+            0,
+            0,
+            0,
+            70,
+            30
+          ],
+          "set": "set_tran_khich"
+        },
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_tran_khich"
+        },
+        {
+          "chance": 0.35,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_tan_thiet"
+        },
+        {
+          "chance": 0.35,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_tinh_dan_bao"
+        }
+      ]
+    }
+  }
+}

@@ -230,11 +230,15 @@
  ],
  "itm_tan_giac": [
   "boss_thien_khuyet_thu_linh",
+  "boss_tu_nhan_ma_tuong",
+  "boss_tu_quang_duc_chu",
   "boss_vo_dien_than_quan",
+  "boss_xich_tan_cu_khoi",
   "elite_cot_kiem_thong_linh",
   "elite_da_minh_loc_vuong",
   "elite_thach_tuong_dai_tuong",
-  "elite_tt_cot_kiem"
+  "elite_tt_cot_kiem",
+  "mon_xt_trong_binh"
  ],
  "itm_tay_luyen_thach": [
   "boss_dia_mach_long",
@@ -320,6 +324,7 @@
  ],
  "itm_tinh_vu": [
   "boss_thien_khuyet_thu_linh",
+  "boss_tu_quang_duc_chu",
   "boss_vo_dien_than_quan",
   "elite_cot_kiem_thong_linh",
   "elite_da_minh_loc_vuong",
@@ -337,8 +342,11 @@
   "boss_thien_khuyet_thu_linh",
   "boss_thon_mach_ngo_cong_vuong",
   "boss_thu_mo_tuong",
+  "boss_tu_nhan_ma_tuong",
+  "boss_tu_quang_duc_chu",
   "boss_van_hai_kinh_vuong",
   "boss_vo_dien_than_quan",
+  "boss_xich_tan_cu_khoi",
   "mon_u_minh_lang"
  ],
  "itm_van_hai_lo": [
@@ -388,6 +396,7 @@
   "mon_u_anh_cot_loc",
   "mon_u_minh_lang",
   "mon_van_hac",
+  "mon_xt_trong_binh",
   "mon_yeu_lang"
  ]
 }

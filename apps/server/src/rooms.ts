@@ -36,6 +36,7 @@ import { DUNGEON_QUEST_TARGET } from './game/dungeonquest';
 import { MarkerSystem } from './game/marker';
 import { MirrorPuzzle } from './game/mirrorpuzzle';
 import { SealSystem } from './game/seal';
+import { RiftVeins, SteleHold } from './game/xichtan';
 import { parties } from './game/party';
 import { GameSim, type MonEnt, type PlayerEnt, type SimHost, type SimOptions, type TransferOpts } from './game/sim';
 import { WorldState } from './state';
@@ -585,6 +586,7 @@ export class DungeonRoom extends GameRoom {
     this.nextWaveAt = Date.now() + (this.def.waves[0]?.delay ?? 8) * 1000;
     this.clock.setInterval(() => this.director(), 500);
     this.clock.setInterval(() => this.seals?.tick(), 250);
+    this.clock.setInterval(() => this.xichTanTick(), 250);
   }
 
   /** Chỉ vào được bằng vé cấp ở cổng; gọi thẳng joinOrCreate('dungeon') sẽ bị từ chối. */
@@ -689,8 +691,11 @@ export class DungeonRoom extends GameRoom {
     }
     // Đợt phong ấn (E4-C): chưa mở đủ cửa thì không sang đợt sau, dù quái đã hết.
     if (this.seals && !this.seals.all) return;
+    // Đợt giữ bia (DV-3D): chưa đủ thời gian giữ thì không sang đợt sau.
+    if (this.stele && !this.stele.complete) return;
     if (this.sim.monsters.some((m) => m.state !== MS_DEAD)) return;
     if (this.seals) this.endSeals();
+    this.stele = null;
     const waves = this.def.waves;
     if (!this.nextWaveAt) this.nextWaveAt = now + (waves[this.wave]?.delay ?? 6) * 1000;
     if (now < this.nextWaveAt) return;
@@ -745,6 +750,54 @@ export class DungeonRoom extends GameRoom {
     this.sim.sysAll('sys.seal_need', undefined, 'info');
   }
 
+  /** Đợt giữ bia (DV-3D, Xích Tẫn Khích) và khe mạch của boss cuối. */
+  private stele: SteleHold | null = null;
+  private veins: RiftVeins | null = null;
+
+  private xichTanTick(): void {
+    this.stele?.tick();
+    this.veins?.tick();
+  }
+
+  private startSteles(w: WaveDef): void {
+    const sim = this.sim;
+    const marker = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') => sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
+    this.stele = new SteleHold(
+      {
+        now: () => Date.now(),
+        players: () => sim.players.values(),
+        isDead: (p) => (p.s.fl & PF_DEAD) !== 0,
+        isGhost: (p) => sim.soul.isScouting(p),
+        damagePlayer: (p, n, src) => sim.damagePlayer(p, n, src, true),
+        marker,
+        spawn: (mon, level, x, z) => {
+          const def = MONSTER.get(mon);
+          if (def) sim.spawnMonster(def, level, x, z, null);
+        },
+        sysAll: (k, params, type) => sim.sysAll(k, params, type),
+      },
+      w.steles!,
+    );
+    sim.sysAll('sys.xt_stele_need', { secs: w.steles!.secs }, 'info');
+  }
+
+  private startVeins(): void {
+    const sim = this.sim;
+    this.veins = new RiftVeins({
+      now: () => Date.now(),
+      monsters: () => sim.monsters,
+      stagger: (m, sec) => sim.stagger(m, sec),
+      purify: (m) => {
+        m.s.hp = 0;
+        m.state = MS_DEAD;
+        m.s.st = MS_DEAD;
+        m.removeAt = Date.now() + 800;
+      },
+      marker: (x, z, r, dur) => sim.addHazard({ x, z, r }, 0.2, 0, false, 'frost', '', 0, false, 0, undefined, undefined, 'pool', false, dur),
+      sysAll: (k, params, type) => sim.sysAll(k, params, type),
+    });
+  }
+
   /** Đợt giải đố ba gương đang chạy (E3-M). */
   private puzzle: MirrorPuzzle | null = null;
 
@@ -779,6 +832,8 @@ export class DungeonRoom extends GameRoom {
       return this.startPuzzle(w);
     }
     if (w.seals) this.startSeals(w);
+    if (w.steles) this.startSteles(w);
+    if (w.mons.some((g) => MONSTER.get(g.id)?.rift)) this.startVeins();
     let lead = '';
     let i = 0;
     for (const g of w.mons) {

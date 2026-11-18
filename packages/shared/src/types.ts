@@ -123,6 +123,8 @@ export interface MonsterDef {
   mirror?: MonsterMirror;
   /** Cơ chế Thần Tàng Điện của boss (E4-C), xem `MonsterThan`. */
   than?: MonsterThan;
+  /** Cơ chế khe mạch của boss Xích Tẫn Khích (DV-3D), xem `MonsterRift`. */
+  rift?: MonsterRift;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
   /** Chỉ boss: các pha sau pha đầu, `hp` giảm dần. */
@@ -159,6 +161,18 @@ export interface MonsterThan {
   elem?: { phase: number; cd: number; r: number; delay: number; mul: number; cut: number; sealR: number; ring: number };
   clone?: { phase: number; mon: string; n: number; r: number; life: number; heal: number; weak: number; cd: number };
   rings?: { phase: number; n: number; r: number; orbit: number; dur: number; spin: number; mul: number; cd: number; final: { delay: number; r: number; w: number; mul: number; gather: number } };
+}
+
+/**
+ * Khe mạch (DV-3D, Tử Quang Dực Chủ). Từ pha `phase` (như `MonsterThan`) trên sàn có các khe mạch ngọc lam `veins` (tâm `x, z`, bán kính `r`).
+ * Boss đang niệm chú (`ai.chant`) mà đứng trên một khe thì chú bị phản lại: boss mất thế `weak` giây và mất một tầng "cháy" (tổng `burn` tầng).
+ * Hết tầng cháy: boss dừng đánh ở 1 máu và được gột (không chết do đòn đánh, không rơi đồ riêng; phó bản tính là hạ xong).
+ */
+export interface MonsterRift {
+  phase: number;
+  veins: { x: number; z: number; r: number }[];
+  burn: number;
+  weak: number;
 }
 
 /** Đòn đôi: sau một đòn cận chiến, có xác suất đánh thêm một đòn nặng sau `delay` giây (né được nếu ra khỏi tầm). */
@@ -721,6 +735,12 @@ export interface WaveDef {
    * Mỗi cửa mở thì `reinforce` quái kéo đến. Mở đủ mọi cửa và hạ hết quái thì sang đợt sau.
    */
   seals?: { doors: { x: number; z: number; gx: number; gz: number }[]; touch: number; phuR: number; bar: number; reinforce: { mon: string; level: number; n: number } };
+  /**
+   * Đợt giữ bia (DV-3D, Xích Tẫn Khích): Trấn Giới Bia ở (`x`, `z`), bán kính `r`. Cần có người còn sống đứng trong vòng đủ `secs` giây (cộng dồn).
+   * Trong lúc trống người quá `grace` giây thì bia tắt: mỗi giây mọi người mất `press` × khí huyết tối đa (giới áp) và tiến độ không tăng.
+   * Quái tiếp viện `reinforce[i].mon` kéo tới khi tiến độ đạt `reinforce[i].at` giây (quanh bia, `n` con).
+   */
+  steles?: { x: number; z: number; r: number; secs: number; grace: number; press: number; reinforce: { at: number; mon: string; level: number; n: number }[] };
   puzzle?: { points: { x: number; z: number }[]; secs: number; wrong: { mon: string; level: number; n: number }; bossCut: number };
 }
 

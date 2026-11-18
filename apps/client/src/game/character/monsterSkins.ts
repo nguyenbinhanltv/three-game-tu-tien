@@ -177,6 +177,11 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   elite_tt_cot_kiem: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh, level: 'than_tang' },
   // Phân thân thần niệm: cùng model với boss, nhạt hơn và nhỏ hơn.
   mon_tt_phan_than: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#c8c0e0', rim: 0.25, lift: 0.12, lazy: true, level: 'than_tang', moves: BIPED_MOVES },
+  // Xích Tẫn Khích (DV-3D): model giữ chỗ dùng lại asset sẵn có, nhuộm theo bảng rift_* (thay bằng model Đọa Dực có cánh ở DV2-C).
+  mon_xt_trong_binh: { asset: 'mon_thach_tuong_vo_si', clips: GUARD_CLIPS, refSpeed: 1.9, legs: 'biped', tint: '#c88878', lazy: true, level: 'xich_tan_khich' },
+  boss_xich_tan_cu_khoi: { asset: 'boss_thach_tam_khoi_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 2.0, legs: 'biped', tint: '#d89080', coreGlow: 1.5, lazy: true, level: 'xich_tan_khich', moves: BIPED_MOVES },
+  boss_tu_nhan_ma_tuong: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh, tint: '#b89098', level: 'xich_tan_khich' },
+  boss_tu_quang_duc_chu: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#b898e8', rim: 0.3, lift: 0.12, lazy: true, level: 'xich_tan_khich', moves: BIPED_MOVES },
 };
 
 interface Template {
