@@ -38,6 +38,11 @@ export const isSpring2 = (assetId: string | undefined): boolean => !!assetId?.st
 export const HEM_STIFF = 1.7;
 /** Hệ số phình viên nang thân khi ngồi/đả tọa: vạt nằm lên trên đùi thay vì lún xuống. */
 export const SIT_COLLIDER_SCALE = 1.3;
+/** Hệ số buông tay tăng từ 0 (cẳng tay hướng xuống ≤ 0,5) đến 1 (≥ 0,9, tay buông thẳng). */
+const ARM_DOWN_LO = 0.5;
+const ARM_DOWN_HI = 0.9;
+const _a0 = new THREE.Vector3();
+const _a1 = new THREE.Vector3();
 /** Thông số lò xo v2 (sửa được lúc chạy chỉ để quét tham số trong `springMetrics.test.ts`). */
 export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms: true, rMul: 1.3 };
 /** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
@@ -121,7 +126,8 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
 }
 
 /** Bù góc dang vai/tay (rad) theo model khi áp clip UAL: tay áo rộng của Tripo bị tay clip ép xuyên; đo/chỉnh bằng `chrv3 --pen`. `?armfit=<độ>` ghi đè. */
-export const ARM_FIT: Record<string, number> = {};
+/** Lạc Kiếm v3b2: tay áo rộng đâm vào thân nên cần dang nhiều hơn mặc định (góc tổng đã đo bằng `springMetrics`, docs/chr-v3-arm/README.md). */
+export const ARM_FIT: Record<string, number> = { chr_v3b2_lac_kiem_nam: (16 * Math.PI) / 180, chr_v3b2_lac_kiem_nu: (16 * Math.PI) / 180 };
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 
 const IDENT = new THREE.Matrix4();
@@ -332,7 +338,7 @@ export class MannequinCharacter implements CharacterView {
         this.twists.push({ limb: L, tw, axis: child.position.clone().normalize(), restLimb: L.quaternion.clone(), restTw: tw.quaternion.clone() });
       }
     }
-    for (const n of ['spine_01', 'spine_02', 'spine_03', 'neck_01', 'head', 'upperarm_l', 'upperarm_r', 'clavicle_l', 'clavicle_r']) this.bones[n] = this.rig.getObjectByName(n) ?? null;
+    for (const n of ['spine_01', 'spine_02', 'spine_03', 'neck_01', 'head', 'upperarm_l', 'upperarm_r', 'lowerarm_l', 'lowerarm_r', 'clavicle_l', 'clavicle_r']) this.bones[n] = this.rig.getObjectByName(n) ?? null;
     {
       const th = this.rig.getObjectByName('thigh_l');
       this.rig.updateMatrixWorld(true);
@@ -843,11 +849,22 @@ export class MannequinCharacter implements CharacterView {
     rotateWorld(b.neck_01 ?? null, rgt, this.lookPitch * 0.3);
     rotateWorld(b.head ?? null, rgt, this.lookPitch * 0.5);
     // Bù dang tay/vai theo model (tay áo rộng không bị tay clip ép xuyên).
+    // Hệ số theo độ buông của tay (hướng vai→khuỷu, 0 khi cách phương thẳng đứng hơn 60°, 1 khi buông thẳng): tay giơ/chém không bị dạng thêm, chỉ tay buông sát thân mới cần chừa.
     if (free && !a.casting && this.armFit) {
       const fit = this.armFit * perfW;
-      rotateWorld(b.upperarm_l ?? null, fwd, fit * this.side);
-      rotateWorld(b.upperarm_r ?? null, fwd, -fit * this.side);
+      rotateWorld(b.upperarm_l ?? null, fwd, fit * this.side * this.armDroop(b.upperarm_l, b.lowerarm_l));
+      rotateWorld(b.upperarm_r ?? null, fwd, -fit * this.side * this.armDroop(b.upperarm_r, b.lowerarm_r));
     }
+  }
+
+  /** Độ buông của một cánh tay, 0..1 (xem ARM_FIT); ma trận thế giới đã cập nhật ở bước trên. */
+  private armDroop(shoulder: THREE.Object3D | null | undefined, elbow: THREE.Object3D | null | undefined): number {
+    if (!shoulder || !elbow) return 1;
+    shoulder.getWorldPosition(_a0);
+    elbow.getWorldPosition(_a1).sub(_a0);
+    const len = _a1.length();
+    if (len < 1e-4) return 1;
+    return Math.min(1, Math.max(0, (-_a1.y / len - ARM_DOWN_LO) / (ARM_DOWN_HI - ARM_DOWN_LO)));
   }
 
   bladePoints(base: THREE.Vector3, tip: THREE.Vector3): boolean {
