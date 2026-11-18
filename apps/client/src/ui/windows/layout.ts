@@ -19,6 +19,10 @@ export interface Viewport {
 
 /** Chừa đáy cho cụm kỹ năng + ô tiện ích (khớp `.k-window` trong kit.css). */
 const BOTTOM_RESERVE = 136;
+/** Màn thấp (< 900 đơn vị cao): cửa sổ ở giữa không chạm cụm kỹ năng (góc phải) hay chat (góc trái) nên chừa ít hơn để bảng cao hơn. */
+const LOW_VH = 900;
+const topReserve = (vp: Viewport): number => (vp.vh < LOW_VH ? 112 : TOP_RESERVE);
+const bottomReserve = (vp: Viewport): number => (vp.vh < LOW_VH ? 84 : BOTTOM_RESERVE);
 /** Chừa đầu cho thẻ người chơi, thanh boss, hub (tiêu đề cuộn của bảng nhô lên nằm trong phần chừa này của chính bảng). Vùng an toàn của cửa sổ = [TOP_RESERVE, vh − BOTTOM_RESERVE]. */
 const TOP_RESERVE = 150;
 const WIN_GAP = 12;
@@ -65,7 +69,7 @@ function winWidth(id: WinId, vp: Viewport): number {
 }
 
 function maxHeight(vp: Viewport): number {
-  return vp.vh - TOP_RESERVE - BOTTOM_RESERVE;
+  return vp.vh - topReserve(vp) - bottomReserve(vp);
 }
 
 export function winRect(w: WinState, vp: Viewport): Rect {
@@ -90,7 +94,7 @@ export function clampPos(id: WinId, x: number, y: number, vp: Viewport): { x: nu
 function defaultPos(id: WinId, vp: Viewport): { x: number; y: number } {
   const w = winWidth(id, vp);
   const h = Math.min(WIN_HEIGHT[id], maxHeight(vp));
-  return clampPos(id, (vp.vw - w) / 2, TOP_RESERVE + Math.max(0, (vp.vh - TOP_RESERVE - BOTTOM_RESERVE - h) / 2), vp);
+  return clampPos(id, (vp.vw - w) / 2, topReserve(vp) + Math.max(0, (vp.vh - topReserve(vp) - bottomReserve(vp) - h) / 2), vp);
 }
 
 /** Hai cửa sổ cạnh nhau, cả cặp nằm giữa màn hình. Màn quá hẹp thì chồng một phần (vẫn thấy cả hai thanh tiêu đề). */
@@ -102,7 +106,7 @@ function pairLayout(vp: Viewport): { left: { x: number; y: number }; right: { x:
   const hl = Math.min(WIN_HEIGHT[PAIR_LEFT], maxHeight(vp));
   const hr = Math.min(WIN_HEIGHT[PAIR_RIGHT], maxHeight(vp));
   // Cùng một mép trên cho cả hai bảng (canh theo bảng cao hơn).
-  const y = Math.round(TOP_RESERVE + Math.max(0, (vp.vh - TOP_RESERVE - BOTTOM_RESERVE - Math.max(hl, hr)) / 2));
+  const y = Math.round(topReserve(vp) + Math.max(0, (vp.vh - topReserve(vp) - bottomReserve(vp) - Math.max(hl, hr)) / 2));
   return { left: { x: Math.round(x0), y }, right: { x: Math.round(x0 + wl + WIN_GAP), y } };
 }
 
@@ -206,7 +210,7 @@ export function fitWindows(list: readonly WinState[], vpOf: (id: WinId) => Viewp
     const vp = vpOf(w.id);
     const width = winWidth(w.id, vp);
     const x = Math.round(Math.max(Math.min(w.x, vp.vw - width - WIN_MARGIN / 2), WIN_MARGIN / 2));
-    const y = Math.round(Math.min(Math.max(w.y, 0), Math.max(0, vp.vh - BOTTOM_RESERVE - 48)));
+    const y = Math.round(Math.min(Math.max(w.y, 0), Math.max(0, vp.vh - bottomReserve(vp) - 48)));
     if (x === w.x && y === w.y) return w;
     changed = true;
     return { ...w, x, y };
