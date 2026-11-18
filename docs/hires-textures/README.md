@@ -9,7 +9,7 @@ nén KTX2 (cùng tham số `encodeArgs`), cỡ = min(2× ngân sách lớp, 4096
 và mục `hires` trong `manifest.json` (`mat`, `slots`, `file`, `width`, `bytes`, `gpuBytes`). Không xóa/đổi nguồn và GLB build.
 `assets:build` ghi lại manifest nên làm mất mục `hires`: chạy lại `assets:hires`.
 
-Kết quả hiện tại: 42 asset (12 boss, 12 tinh anh, 18 quái), +66 MB tệp rời (không vào tải đầu), +739 MB GPU (cộng dồn) nếu nạp hết (client không nạp hết, xem trần dưới).
+**Thu hẹp (sau PR giảm tải):** chỉ texture **màu** của boss và tinh anh (`hiresWanted` ở `tools/asset-pipeline/src/hires.ts`); quái thường, normal và ORM không làm bậc cao (bản trong GLB đủ ở khoảng cách chơi; normal 2048 của boss riêng 19 MB). Kết quả: 24 asset (12 boss, 12 tinh anh), **15 MB** tệp rời (trước: 42 asset, 66 MB), không vào tải đầu. Trần 4096 cho màu vẫn còn trong `hiresSide` nhưng boss/tinh anh hiện đều 2048 (ngân sách lớp ×2); nâng lên 4096 sẽ thêm khoảng +19 MB nên chưa làm.
 
 ## Client (`apps/client/src/game/hires/`)
 - `policy.ts` (thuần, có test): Cao → cạnh ≤ 2048, 1 MB/s, GPU thêm ≤ 128 MB; Cực cao → ≤ 4096, 1,5 MB/s, ≤ 180 MB; `deviceMemory` ≤ 6 → 96 MB, ≤ 4 → tắt;
