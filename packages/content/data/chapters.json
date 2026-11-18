@@ -1,0 +1,268 @@
+{
+  "_doc": "Hành trình theo chương (U2-4): chương → level thế giới, tranh nền (art/loading), khoảng cấp, nhiệm vụ chốt chương, nút bản đồ (thế giới/phó bản/boss/độ kiếp) và vật phẩm nổi bật (chọn tay, KHÔNG phải bảng rơi: loot.json chỉ ở server). x,y là phần trăm trong khung bản đồ. Chuỗi: ui.chapters.*",
+  "chapters": [
+    {
+      "id": "ch1",
+      "level": "van_lam",
+      "art": "tong_mon",
+      "levels": [
+        1,
+        15
+      ],
+      "closeQuest": "q_truc_co",
+      "nodes": [
+        {
+          "id": "ch1_van_lam",
+          "kind": "world",
+          "ref": "van_lam",
+          "x": 18,
+          "y": 62,
+          "minLevel": 1,
+          "tele": "tp_tong_mon"
+        },
+        {
+          "id": "ch1_kiem_trung",
+          "kind": "dungeon",
+          "ref": "kiem_trung",
+          "x": 50,
+          "y": 32,
+          "minLevel": 8
+        },
+        {
+          "id": "ch1_boss_han_giao",
+          "kind": "boss",
+          "ref": "boss_han_giao",
+          "x": 76,
+          "y": 64,
+          "minLevel": 12
+        },
+        {
+          "id": "ch1_truc_co",
+          "kind": "trib",
+          "ref": "truc_co",
+          "x": 86,
+          "y": 28,
+          "minLevel": 15
+        }
+      ],
+      "featured": [
+        "itm_kiem_phach",
+        "itm_truc_co_dan",
+        "itm_han_giao_dan",
+        "itm_linh_thao"
+      ]
+    },
+    {
+      "id": "ch2",
+      "level": "doan_mach",
+      "art": "doan_mach",
+      "levels": [
+        16,
+        19
+      ],
+      "closeQuest": "q2_ket_dan",
+      "nodes": [
+        {
+          "id": "ch2_doan_mach",
+          "kind": "world",
+          "ref": "doan_mach",
+          "x": 18,
+          "y": 62,
+          "minLevel": 16,
+          "tele": "dm_tp_tram"
+        },
+        {
+          "id": "ch2_phuc_mach",
+          "kind": "dungeon",
+          "ref": "phuc_mach",
+          "x": 50,
+          "y": 32,
+          "minLevel": 17
+        },
+        {
+          "id": "ch2_boss_dia_mach_long",
+          "kind": "boss",
+          "ref": "boss_dia_mach_long",
+          "x": 76,
+          "y": 64,
+          "minLevel": 18
+        },
+        {
+          "id": "ch2_ket_dan",
+          "kind": "trib",
+          "ref": "ket_dan",
+          "x": 86,
+          "y": 28,
+          "minLevel": 19
+        }
+      ],
+      "featured": [
+        "itm_ket_dan_dich",
+        "itm_mach_tinh_phien",
+        "itm_kinh_hoa_sa",
+        "itm_kiem_phach"
+      ]
+    },
+    {
+      "id": "ch3",
+      "level": "van_hai",
+      "art": "van_hai_phu_dao",
+      "levels": [
+        20,
+        23
+      ],
+      "closeQuest": "q3_nguyen_anh",
+      "nodes": [
+        {
+          "id": "ch3_van_hai",
+          "kind": "world",
+          "ref": "van_hai",
+          "x": 18,
+          "y": 62,
+          "minLevel": 20,
+          "tele": "vh_tp_hub"
+        },
+        {
+          "id": "ch3_kinh_nguyet",
+          "kind": "dungeon",
+          "ref": "kinh_nguyet",
+          "x": 50,
+          "y": 32,
+          "minLevel": 21
+        },
+        {
+          "id": "ch3_boss_van_hai_kinh_vuong",
+          "kind": "boss",
+          "ref": "boss_van_hai_kinh_vuong",
+          "x": 76,
+          "y": 64,
+          "minLevel": 22
+        },
+        {
+          "id": "ch3_nguyen_anh",
+          "kind": "trib",
+          "ref": "nguyen_anh",
+          "x": 86,
+          "y": 28,
+          "minLevel": 23
+        }
+      ],
+      "featured": [
+        "itm_nguyen_anh_dan",
+        "itm_kinh_hoa_sa",
+        "itm_kiem_phach",
+        "itm_ket_dan_dich"
+      ]
+    },
+    {
+      "id": "ch4",
+      "level": "thien_khuyet",
+      "art": "thien_khuyet_co_thanh",
+      "levels": [
+        24,
+        27
+      ],
+      "closeQuest": "q4_hoa_than",
+      "nodes": [
+        {
+          "id": "ch4_thien_khuyet",
+          "kind": "world",
+          "ref": "thien_khuyet",
+          "x": 18,
+          "y": 62,
+          "minLevel": 24,
+          "tele": "tk_tp_tram"
+        },
+        {
+          "id": "ch4_than_tang",
+          "kind": "dungeon",
+          "ref": "than_tang",
+          "x": 50,
+          "y": 32,
+          "minLevel": 26
+        },
+        {
+          "id": "ch4_boss_thien_khuyet_thu_linh",
+          "kind": "boss",
+          "ref": "boss_thien_khuyet_thu_linh",
+          "x": 76,
+          "y": 64,
+          "minLevel": 25
+        },
+        {
+          "id": "ch4_hoa_than",
+          "kind": "trib",
+          "ref": "hoa_than",
+          "x": 86,
+          "y": 28,
+          "minLevel": 27
+        }
+      ],
+      "featured": [
+        "itm_tinh_quang_mac",
+        "itm_than_tang_ngoc",
+        "itm_co_thanh_phien",
+        "itm_hoa_than_lo"
+      ]
+    },
+    {
+      "id": "ch5",
+      "level": "bac_hoang",
+      "art": "bac_hoang",
+      "levels": [
+        28,
+        31
+      ],
+      "closeQuest": "q5_anh_bien",
+      "nodes": [
+        {
+          "id": "ch5_bac_hoang",
+          "kind": "world",
+          "ref": "bac_hoang",
+          "x": 16,
+          "y": 66,
+          "minLevel": 28,
+          "tele": "bh_tp_tram"
+        },
+        {
+          "id": "ch5_xich_tan_khich",
+          "kind": "dungeon",
+          "ref": "xich_tan_khich",
+          "x": 44,
+          "y": 30,
+          "minLevel": 28
+        },
+        {
+          "id": "ch5_kim_da_cung",
+          "kind": "dungeon",
+          "ref": "kim_da_cung",
+          "x": 66,
+          "y": 22,
+          "minLevel": 28
+        },
+        {
+          "id": "ch5_boss_thu_khich_duc_chu",
+          "kind": "boss",
+          "ref": "boss_thu_khich_duc_chu",
+          "x": 70,
+          "y": 64,
+          "minLevel": 30
+        },
+        {
+          "id": "ch5_anh_bien",
+          "kind": "trib",
+          "ref": "anh_bien",
+          "x": 88,
+          "y": 40,
+          "minLevel": 31
+        }
+      ],
+      "featured": [
+        "itm_tan_giac",
+        "itm_anh_bien_lo",
+        "itm_kim_da_mien_phien",
+        "itm_tinh_vu"
+      ]
+    }
+  ]
+}

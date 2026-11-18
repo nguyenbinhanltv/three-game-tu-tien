@@ -1,5 +1,6 @@
 import { biomeAt, featureWeight, SUOI, VACH } from '@dtl/shared';
 import { loadArtUrl } from '../../ui/Art';
+import { mountBootScene } from '../../ui/u2/boot/bootScene';
 import { levelId } from '../../base/levelCtx';
 
 /**
@@ -7,17 +8,30 @@ import { levelId } from '../../base/levelCtx';
  * (lưu localStorage), lần đầu là Lạc Kiếm Tông. Thiếu ảnh hoặc tải lỗi thì giữ nền sương CSS của #boot.
  */
 const KEY = 'dtl.lastZone';
-const DEFAULT_ZONE = 'tong_mon';
+const DEFAULT_ZONE = 'load_song';
 
 /** Level riêng có một tranh màn tải chung (E2): bản đồ nào chưa có ảnh thì rơi về logic vùng Vân Lam. */
-const LEVEL_ART: Record<string, string> = { doan_mach: 'doan_mach', phuc_mach_quat: 'phuc_mach_quat', van_hai: 'van_hai_phu_dao' };
+const LEVEL_ART: Record<string, string> = {
+  doan_mach: 'doan_mach',
+  phuc_mach_quat: 'phuc_mach_quat',
+  phuc_mach: 'doan_mach',
+  van_hai: 'van_hai_phu_dao',
+  kinh_nguyet: 'van_hai_phu_dao',
+  thien_khuyet: 'thien_khuyet_co_thanh',
+  than_tang: 'thien_khuyet_co_thanh',
+  // Chương 5 dùng tranh mới của chương (cùng tranh với bản đồ chương, `chapters.json`).
+  bac_hoang: 'bac_hoang',
+  xich_tan_khich: 'bac_hoang',
+  kim_da_cung: 'bac_hoang',
+  do_kiep_bac_hoang: 'bac_hoang',
+};
 
 /** Id ảnh theo vị trí: khớp tên vùng ở `zone.<id>` của i18n, riêng tông môn/Kiếm Trủng theo biome. */
 function zoneArtId(x: number, z: number): string {
   const byLevel = LEVEL_ART[levelId()];
   if (byLevel) return byLevel;
   const biome = biomeAt(x, z);
-  if (biome === 'sect') return 'tong_mon';
+  if (biome === 'sect') return DEFAULT_ZONE;
   if (biome === 'dungeon') return 'kiem_trung';
   if (biome === 'lake') return 'ho_suong_mu';
   if (biome === 'forest') return 'rung_linh_thao';
@@ -79,6 +93,8 @@ export async function setBootArt(id: string, mode: 'title' | 'zone'): Promise<vo
     boot.classList.add('art-on');
     boot.classList.toggle('art-zone', mode === 'zone');
     el.classList.add('ready');
+    // Nền sơn thủy nhiều lớp (U2-4): tranh đã giải mã xong thì dựng lớp; `?scene=0` giữ ảnh tĩnh.
+    if (new URLSearchParams(location.search).get('scene') !== '0') void mountBootScene(boot, url, mode);
   };
   if (el.getAttribute('src') === url) return show();
   el.classList.remove('ready');
@@ -91,3 +107,14 @@ export async function setBootArt(id: string, mode: 'title' | 'zone'): Promise<vo
   };
   el.src = url;
 }
+
+/** Vùng chuỗi của tranh màn tải: quyết định phụ đề và các dòng tải theo vùng (Vân Lam là mặc định, không hậu tố). */
+export type LoadRegion = 'van_lam' | 'doan_mach' | 'van_hai' | 'thien_khuyet' | 'bac_hoang';
+const REGION_OF_ART: Record<string, LoadRegion> = {
+  doan_mach: 'doan_mach',
+  phuc_mach_quat: 'doan_mach',
+  van_hai_phu_dao: 'van_hai',
+  thien_khuyet_co_thanh: 'thien_khuyet',
+  bac_hoang: 'bac_hoang',
+};
+export const regionOfArt = (art: string): LoadRegion => REGION_OF_ART[art] ?? 'van_lam';

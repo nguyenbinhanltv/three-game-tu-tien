@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { type Appearance, genderEnabled, type Gender, HAIRS, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
-import { APPEARANCE, t } from '@dtl/content';
+import { APPEARANCE, hasString, t } from '@dtl/content';
 import { assets } from '../game/core/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio/audio';
 import { TitleBackdrop } from '../game/world/backdrop';
-import { lastZoneArt, setBootArt } from '../game/world/bootArt';
+import { lastZoneArt, regionOfArt, setBootArt } from '../game/world/bootArt';
 import { applyUiArt } from './Art';
 import { CHR_V2_ON } from '../game/character/playerSkins';
 import { Game } from '../game/engine';
@@ -179,7 +179,7 @@ function Login() {
   };
 
   return (
-    <div className={'ts-card' + ' ngj-card'}>
+    <div className={'ts-card' + ' ngj-card u2-card'}>
       <Corners material="paper" />
       <p className="login-tag">{t('ui.tagline')}</p>
 
@@ -248,6 +248,11 @@ const STAGES: [stat: string, line: string][] = [
   ['sect', 'ui.load.sect'],
   ['minimap', 'ui.load.minimap'],
 ];
+/** Khóa chuỗi theo vùng của tranh màn tải (`<khóa>.<vùng>`); Vân Lam và vùng thiếu chuỗi dùng khóa gốc. */
+export function regional(key: string): string {
+  const k = `${key}.${regionOfArt(lastZoneArt())}`;
+  return hasString(k) ? k : key;
+}
 /** Phần thanh tiến độ dành cho byte asset (AssetCache theo manifest); còn lại là các mốc dựng thế giới. */
 const ASSET_SHARE = 0.2;
 
@@ -281,11 +286,11 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
         const g = Game.current;
         let steps = 0;
         if (g) {
-          push('ui.load.enter');
+          push(regional('ui.load.enter'));
           steps++;
           for (const [stat, key] of STAGES) {
             if (g.loadStats[stat] === undefined) break;
-            push(key);
+            push(regional(key));
             steps++;
           }
         }
@@ -306,7 +311,7 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
     return () => window.clearInterval(id);
   }, []);
   return (
-    <div className={'ts-card ts-loading' + ' ngj-card'} role="status" aria-live="polite">
+    <div className={'ts-card ts-loading' + ' ngj-card u2-card'} role="status" aria-live="polite">
       <Corners material="paper" />
       <p className="ts-line" key={line}>
         {line}
@@ -351,7 +356,8 @@ function syncBackdrop(phase: Phase): void {
     backdrop?.pause(); // nhường CPU/GPU cho Game đang dựng thế giới; giữ khung cuối
     return;
   }
-  if (!backdrop && !Game.current) {
+  // Có nền sơn thủy U2-4 thì không dựng cảnh 3D tiêu đề (nhẹ hơn, đỡ tranh chấp GPU lúc nạp); `?ts=3d` bật lại cảnh cũ.
+  if (!backdrop && !Game.current && new URLSearchParams(location.search).get('ts') === '3d') {
     const host = boot.querySelector<HTMLElement>('.ts-scene');
     if (!host) return;
     const b = new TitleBackdrop(host, () => boot.classList.add('lit'));
@@ -423,7 +429,7 @@ export function App() {
   useEffect(() => void applyUiArt(), []);
   // Tranh nền: màn tiêu đề ở đăng nhập, tranh vùng cuối cùng lúc nối/nạp (Codex, nạp lười).
   useEffect(() => {
-    if (phase === 'login') void setBootArt('title', 'title');
+    if (phase === 'login') void setBootArt('title_cuon', 'title');
     else if (phase === 'connecting' || phase === 'loading') void setBootArt(lastZoneArt(), 'zone');
   }, [phase]);
   const error = useUI((s) => s.error);
@@ -450,7 +456,7 @@ export function App() {
     <>
       {title && (
         <div className="title-screen">
-          <div className="ts-sub">{t('ui.subtitle')}</div>
+          <div className="ts-sub">{t(phase === 'login' ? 'ui.subtitle' : regional('ui.subtitle'))}</div>
           {phase === 'login' && <Login />}
           {(phase === 'connecting' || phase === 'loading' || phase === 'game') && <LoadingPanel onDone={() => setTitle(false)} />}
           {phase === 'error' && <ErrorPanel text={error} />}

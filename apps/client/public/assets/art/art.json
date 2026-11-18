@@ -31,106 +31,6 @@
         "sourceSha256": "0bf62183cb49d257ad715bc5b0db57250ac3309dd52c4cc1f5effcd844948613"
       }
     },
-    "loading": {
-      "chuong_2": {
-        "file": "loading/chuong_2.d4e612edaa.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 61424,
-        "sourceSha256": "4c82184e9b5e6a54ccb0a4de7fe50eaeb3caa66c672129ed7fc6063191e1019b"
-      },
-      "doan_mach": {
-        "file": "loading/doan_mach.0dccc2bded.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 83564,
-        "sourceSha256": "3291ba0c193ff59acac781746e7ea7779903325bffa571b6ba56fe4d0cf3244e"
-      },
-      "ho_suong_mu": {
-        "file": "loading/ho_suong_mu.1d5d454666.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 72460,
-        "sourceSha256": "8f4abee3f74d337d00825aff3426b0e64c06ddb49b3c697026dcd7eabc9cf2de"
-      },
-      "ket_dan": {
-        "file": "loading/ket_dan.c0bffc957b.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 62332,
-        "sourceSha256": "a6adb6dfb7be40de5cc9abf3e728eeec19a0b3f0f10a970473a01e84ed5099c3"
-      },
-      "kiem_trung": {
-        "file": "loading/kiem_trung.866ec9743c.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 90706,
-        "sourceSha256": "b72a894b485c311eab2bdbf93b37aa0c7b63f32adb1e69c37f7f00bd417af8be"
-      },
-      "phuc_mach_quat": {
-        "file": "loading/phuc_mach_quat.d89da65dac.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 108426,
-        "sourceSha256": "10e55c12e1d978f2134760a2747401ad3cf10a96de318f93723d1d66ba49af03"
-      },
-      "rung_linh_thao": {
-        "file": "loading/rung_linh_thao.316ada573a.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 103262,
-        "sourceSha256": "148f098e0463c4606a296bb3c07d74f5d9e2c2dbd449cc1dfba61ae14e8e1792"
-      },
-      "suoi_thanh_khe": {
-        "file": "loading/suoi_thanh_khe.f81d1ca62c.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 137386,
-        "sourceSha256": "be08fbf077b6b9e923a743346b8f547fc551bd8fe97387a359094108104159ad"
-      },
-      "thien_khuyet_co_thanh": {
-        "file": "loading/thien_khuyet_co_thanh.0be2f85933.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 82364,
-        "sourceSha256": "8619cca66ee4486ef7ad06a2b39c13be970c35ee4a287d6282f539b620b8dcd7"
-      },
-      "thung_lung": {
-        "file": "loading/thung_lung.69a6b8e724.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 76132,
-        "sourceSha256": "7ab22a4253b576a92c6fee36235297a5905ef4b29b5a92963908b9912aa58be0"
-      },
-      "title": {
-        "file": "loading/title.a3204594c9.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 62432,
-        "sourceSha256": "317555a912178019157b3f2379ed3edd572fdc36ff7d2e265f4028ddc9005c79"
-      },
-      "tong_mon": {
-        "file": "loading/tong_mon.d6d38c286d.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 133846,
-        "sourceSha256": "9da7e489c42347803228ddda4244d2233c84a59751824dc8960cb2e9e2ba563a"
-      },
-      "vach_da_ngoc": {
-        "file": "loading/vach_da_ngoc.9f05f8a42e.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 100876,
-        "sourceSha256": "4012dfb636943d539cd20c5ecd5827868f251abd23961236129b6cd578acc84f"
-      },
-      "van_hai_phu_dao": {
-        "file": "loading/van_hai_phu_dao.58424c5c45.webp",
-        "w": 1600,
-        "h": 900,
-        "bytes": 68694,
-        "sourceSha256": "c408c8c69dd5ffc483a40591a160cef524f806dc0dd45d1dcb12bb1130991776"
-      }
-    },
     "portraits": {
       "boss_dia_mach_long": {
         "file": "portraits/boss_dia_mach_long.c5c0e6cd9c.webp",
@@ -278,6 +178,143 @@
         "h": 640,
         "bytes": 32300,
         "sourceSha256": "c45086715b3f4e1fe45b6d6186a9c1a118f30d8f066ba2add0a1eb00f9760e86"
+      }
+    },
+    "loading": {
+      "bac_hoang": {
+        "file": "loading/bac_hoang.0558f70dbe.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 65992,
+        "sourceSha256": "f3f0cedb2464ed1a702edc95595912fa0bed8b56433357256317807b81f06dcb"
+      },
+      "chuong_2": {
+        "file": "loading/chuong_2.d4e612edaa.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 61424,
+        "sourceSha256": "4c82184e9b5e6a54ccb0a4de7fe50eaeb3caa66c672129ed7fc6063191e1019b"
+      },
+      "doan_mach": {
+        "file": "loading/doan_mach.0dccc2bded.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 83564,
+        "sourceSha256": "3291ba0c193ff59acac781746e7ea7779903325bffa571b6ba56fe4d0cf3244e"
+      },
+      "ho_suong_mu": {
+        "file": "loading/ho_suong_mu.1d5d454666.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 72460,
+        "sourceSha256": "8f4abee3f74d337d00825aff3426b0e64c06ddb49b3c697026dcd7eabc9cf2de"
+      },
+      "ket_dan": {
+        "file": "loading/ket_dan.c0bffc957b.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 62332,
+        "sourceSha256": "a6adb6dfb7be40de5cc9abf3e728eeec19a0b3f0f10a970473a01e84ed5099c3"
+      },
+      "kiem_trung": {
+        "file": "loading/kiem_trung.866ec9743c.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 90706,
+        "sourceSha256": "b72a894b485c311eab2bdbf93b37aa0c7b63f32adb1e69c37f7f00bd417af8be"
+      },
+      "load_song": {
+        "file": "loading/load_song.105cfbf4da.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 74748,
+        "sourceSha256": "f10274ff580f2b62171fa35a25620519068712704aa51884af1428c472ae8d7e"
+      },
+      "phuc_mach_quat": {
+        "file": "loading/phuc_mach_quat.d89da65dac.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 108426,
+        "sourceSha256": "10e55c12e1d978f2134760a2747401ad3cf10a96de318f93723d1d66ba49af03"
+      },
+      "rung_linh_thao": {
+        "file": "loading/rung_linh_thao.316ada573a.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 103262,
+        "sourceSha256": "148f098e0463c4606a296bb3c07d74f5d9e2c2dbd449cc1dfba61ae14e8e1792"
+      },
+      "suoi_thanh_khe": {
+        "file": "loading/suoi_thanh_khe.f81d1ca62c.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 137386,
+        "sourceSha256": "be08fbf077b6b9e923a743346b8f547fc551bd8fe97387a359094108104159ad"
+      },
+      "thien_khuyet_co_thanh": {
+        "file": "loading/thien_khuyet_co_thanh.0be2f85933.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 82364,
+        "sourceSha256": "8619cca66ee4486ef7ad06a2b39c13be970c35ee4a287d6282f539b620b8dcd7"
+      },
+      "thung_lung": {
+        "file": "loading/thung_lung.69a6b8e724.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 76132,
+        "sourceSha256": "7ab22a4253b576a92c6fee36235297a5905ef4b29b5a92963908b9912aa58be0"
+      },
+      "title": {
+        "file": "loading/title.a3204594c9.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 62432,
+        "sourceSha256": "317555a912178019157b3f2379ed3edd572fdc36ff7d2e265f4028ddc9005c79"
+      },
+      "title_cuon": {
+        "file": "loading/title_cuon.0d214567f6.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 81286,
+        "sourceSha256": "afae572c43cd5bf82018ecb64f54da161aa2c5d8e4f073423827be6c66f86246"
+      },
+      "tong_mon": {
+        "file": "loading/tong_mon.d6d38c286d.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 133846,
+        "sourceSha256": "9da7e489c42347803228ddda4244d2233c84a59751824dc8960cb2e9e2ba563a"
+      },
+      "vach_da_ngoc": {
+        "file": "loading/vach_da_ngoc.9f05f8a42e.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 100876,
+        "sourceSha256": "4012dfb636943d539cd20c5ecd5827868f251abd23961236129b6cd578acc84f"
+      },
+      "van_hai_phu_dao": {
+        "file": "loading/van_hai_phu_dao.58424c5c45.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 68694,
+        "sourceSha256": "c408c8c69dd5ffc483a40591a160cef524f806dc0dd45d1dcb12bb1130991776"
+      }
+    },
+    "layers": {
+      "canh_tung": {
+        "file": "layers/canh_tung.c13aea91a7.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 24932,
+        "sourceSha256": "ec36ce7e61403b69991f45715c01130f4a6041c45217178ba750a23976ebe1cc"
+      },
+      "suong": {
+        "file": "layers/suong.a0c141495d.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 20936,
+        "sourceSha256": "1b0f662db5da1d527f35c5ad5d7443a907afdbd81b09a429db876df591f27c36"
       }
     }
   }
