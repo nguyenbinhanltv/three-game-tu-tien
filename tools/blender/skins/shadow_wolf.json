@@ -1,0 +1,283 @@
+{
+ "id": "skin_shadow_wolf",
+ "source": "D:/claude-tmp/skin3/src/shadow_wolf_warlord_knight.glb",
+ "out": "chr/skin_shadow_wolf/prep/rig_v01.glb",
+ "yaw": -90,
+ "view": {
+  "scale": 1.2,
+  "center": [
+   0,
+   0,
+   0
+  ]
+ },
+ "triangles": 22000,
+ "bake": {
+  "size": 2048,
+  "cage": 0.012,
+  "ray": 0.03
+ },
+ "roughness": 0.7,
+ "$comment": "Cấu hình skin_prep.py cho Shadow Wolf Warlord Knight (Pigcraft/Tripo, CC BY 4.0). Cao 1,0, gốc giữa thân, nguồn quay mặt +X nên yaw -90. Khớp đo từ ảnh chiếu 1000 px/đơn vị (view.scale 1.2): x=(px-600)/1000, z=(600-py)/1000, y=-(px_canh-600)/1000. Đại kiếm cầm tay trái chéo thân: cắt bằng capsule.",
+ "cut": {
+  "fill": false,
+  "minIsland": 0,
+  "capsules": [
+   {
+    "a": [
+     0.152,
+     0.012,
+     -0.067
+    ],
+    "b": [
+     0.049,
+     -0.074,
+     -0.154
+    ],
+    "r": 0.06
+   },
+   {
+    "a": [
+     0.049,
+     -0.074,
+     -0.154
+    ],
+    "b": [
+     -0.26,
+     -0.33,
+     -0.416
+    ],
+    "r": 0.045
+   },
+   {
+    "a": [
+     0.23,
+     0.03,
+     0.05
+    ],
+    "b": [
+     0.33,
+     0.09,
+     0.13
+    ],
+    "r": 0.03
+   }
+  ],
+  "islands": [
+   {
+    "min": [
+     0.2,
+     -0.3,
+     0.03
+    ],
+    "max": [
+     0.4,
+     0.4,
+     0.2
+    ]
+   },
+   {
+    "min": [
+     0.1,
+     -0.3,
+     -0.2
+    ],
+    "max": [
+     0.26,
+     0.1,
+     0.04
+    ]
+   }
+  ]
+ },
+ "joints": {
+  "Hips": [
+   0,
+   0.06,
+   -0.03
+  ],
+  "Spine": [
+   0,
+   0.06,
+   0.04
+  ],
+  "Spine1": [
+   0,
+   0.05,
+   0.12
+  ],
+  "Spine2": [
+   0,
+   0.04,
+   0.21
+  ],
+  "Neck": [
+   0,
+   0.02,
+   0.31
+  ],
+  "Head": [
+   0,
+   0.0,
+   0.33
+  ],
+  "HeadTop": [
+   0,
+   -0.01,
+   0.495
+  ],
+  "RightArm": [
+   -0.14,
+   0.06,
+   0.27
+  ],
+  "RightForeArm": [
+   -0.185,
+   0.06,
+   0.13
+  ],
+  "RightHand": [
+   -0.205,
+   0.05,
+   0.01
+  ],
+  "RightHandEnd": [
+   -0.2,
+   0.0,
+   -0.075
+  ],
+  "RightUpLeg": [
+   -0.07,
+   0.07,
+   -0.05
+  ],
+  "RightLeg": [
+   -0.14,
+   0.08,
+   -0.25
+  ],
+  "RightFoot": [
+   -0.16,
+   0.12,
+   -0.43
+  ],
+  "RightToeBase": [
+   -0.165,
+   0.03,
+   -0.46
+  ],
+  "RightToeEnd": [
+   -0.165,
+   -0.01,
+   -0.49
+  ],
+  "LeftArm": [
+   0.14,
+   0.06,
+   0.27
+  ],
+  "LeftForeArm": [
+   0.185,
+   0.06,
+   0.13
+  ],
+  "LeftHand": [
+   0.205,
+   0.05,
+   0.01
+  ],
+  "LeftHandEnd": [
+   0.2,
+   0.0,
+   -0.075
+  ],
+  "LeftUpLeg": [
+   0.07,
+   0.07,
+   -0.05
+  ],
+  "LeftLeg": [
+   0.14,
+   0.08,
+   -0.25
+  ],
+  "LeftFoot": [
+   0.16,
+   0.12,
+   -0.43
+  ],
+  "LeftToeBase": [
+   0.165,
+   0.03,
+   -0.46
+  ],
+  "LeftToeEnd": [
+   0.165,
+   -0.01,
+   -0.49
+  ]
+ },
+ "stray": {
+  "Shoulder": 0.1,
+  "Arm": 0.09,
+  "ForeArm": 0.1,
+  "Hand": 0.07
+ },
+ "zones": [
+  {
+   "name": "ao_choang",
+   "box": {
+    "min": [
+     -9,
+     0.12,
+     -0.38
+    ],
+    "max": [
+     9,
+     9,
+     0.34
+    ]
+   },
+   "blend": {
+    "axis": 1,
+    "from": 0.1,
+    "width": 0.03
+   },
+   "bones": [
+    {
+     "bone": "Spine",
+     "z": -0.1
+    },
+    {
+     "bone": "Spine2",
+     "z": 0.25
+    }
+   ]
+  },
+  {
+   "name": "dau_soi",
+   "box": {
+    "min": [
+     -0.15,
+     -9,
+     0.33
+    ],
+    "max": [
+     0.15,
+     0.14,
+     9
+    ]
+   },
+   "blend": {
+    "axis": 2,
+    "from": 0.31,
+    "width": 0.03
+   },
+   "bones": [
+    {
+     "bone": "Head"
+    }
+   ]
+  }
+ ]
+}
