@@ -261,6 +261,46 @@ export function statueGeometry(): THREE.BufferGeometry {
   return build(pos, uvs, idx);
 }
 
+/** Số vệt của một chùm gió. */
+export const GUST_STREAKS = 7;
+
+/**
+ * Chùm đường gió (kỹ thuật `line` của Storm & Wind, viết lại): `GUST_STREAKS` dải mảnh cuộn quanh trục +Z (dài 1, từ -0,5 tới +0,5),
+ * mỗi dải một bán kính, góc xuất phát và độ xoắn riêng, mặt dải tiếp tuyến với mặt trụ nên nhìn ngang vẫn thấy.
+ * UV: `u` dọc đường 0 → 1; `v` = chỉ số vệt (phần nguyên) + ngang dải 0..0,98 (phần lẻ); shader `wind` tách pha theo chỉ số.
+ */
+export function gustGeometry(radius = 0.5, w = 0.045, segs = 16): THREE.BufferGeometry {
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const idx: number[] = [];
+  for (let i = 0; i < GUST_STREAKS; i++) {
+    const h1 = Math.abs(Math.sin(i * 12.9898 + 1.7));
+    const h2 = Math.abs(Math.sin(i * 78.233 + 4.1));
+    const a0 = (i / GUST_STREAKS) * Math.PI * 2 + h1 * 0.5;
+    const turns = (0.35 + h2 * 0.5) * (i % 2 ? 1 : -1);
+    const r0 = radius * (0.55 + 0.45 * h1);
+    const base = pos.length / 3;
+    for (let j = 0; j <= segs; j++) {
+      const u = j / segs;
+      const a = a0 + u * turns * Math.PI * 2;
+      const r = r0 * (0.75 + 0.25 * Math.sin(u * Math.PI));
+      const cx = Math.cos(a) * r;
+      const cy = Math.sin(a) * r;
+      // Tiếp tuyến quanh trục (rộng của dải); thon ở hai đầu.
+      const tw = w * (0.4 + 0.6 * Math.sin(u * Math.PI));
+      const tx = -Math.sin(a) * tw;
+      const ty = Math.cos(a) * tw;
+      pos.push(cx - tx, cy - ty, u - 0.5, cx + tx, cy + ty, u - 0.5);
+      uvs.push(u, i, u, i + 0.98);
+      if (j < segs) {
+        const k = base + j * 2;
+        idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2);
+      }
+    }
+  }
+  return build(pos, uvs, idx);
+}
+
 const cache = new Map<string, THREE.BufferGeometry>();
 const memo = (k: string, f: () => THREE.BufferGeometry) => {
   let g = cache.get(k);
@@ -297,12 +337,15 @@ export function shapeGeometry(s: ShapeKey): THREE.BufferGeometry {
       return QUAD_XY;
     case 'ribbon':
       return memo('ribbon', () => helixGeometry(2.6, 0.22, 0.03, 96));
+    case 'gust':
+      return memo('gust', () => gustGeometry());
   }
 }
 
 /** Kiểu material của một hình (theo lớp). */
-export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' | 'card' {
+export function shapeKind(s: ShapeKey): 'toon' | 'crystal' | 'burst' | 'decal' | 'card' | 'wind' {
   if (s === 'card') return 'card';
+  if (s === 'gust') return 'wind';
   if (s === 'spike' || s === 'shard' || s === 'kite' || s === 'dragon' || s === 'statue') return 'crystal';
   if (s === 'burst') return 'burst';
   if (s === 'smoke') return 'decal';

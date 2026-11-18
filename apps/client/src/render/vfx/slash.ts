@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { float, min, smoothstep, step, time, uv, vec2 } from 'three/tsl';
+import { exp, float, min, mix, smoothstep, step, time, uv, vec2, vec3 } from 'three/tsl';
 import { vnoise, type FxUniforms } from './common';
 
 /**
@@ -12,6 +12,8 @@ import { vnoise, type FxUniforms } from './common';
  *
  * Tham số theo lưới (`fxA`): x = đầu quét 0..1 (phần cung đã hiện), y = ngưỡng ăn mòn 0..1,1
  * (0: còn nguyên, ≥1,05: tan hết), z = seed để mỗi nhát một vân nhiễu.
+ *
+ * Viền cắt sáng gắt theo EdgeFlux (MIT, xem assets/LICENSES.md).
  *
  * Hai lớp, mỗi lớp một material dùng chung:
  * - `slash` (cộng sáng, bloom): thân mờ, viền ngoài sáng, sọc nhiễu cuộn theo chiều quét, mép ăn mòn
@@ -126,9 +128,12 @@ export function slashNodes(U: FxUniforms, ink: boolean) {
   // Mép đang ăn mòn bừng sáng (chỉ khi đã bắt đầu tan).
   const burn = alive.mul(one.sub(smoothstep(erode, erode.add(0.1), e))).mul(step(0.02, erode));
   const hot = one.sub(U.k).pow(2).mul(0.25).add(1);
-  const lum = float(0.6).add(rim.mul(1.5)).add(streak.mul(0.35)).add(burn.mul(1.2)).mul(trail.mul(0.6).add(0.4));
+  // Viền cắt (kỹ thuật EdgeFlux, MIT): sáng gắt sát mép ngoài, tắt theo hàm mũ, chỉ ở phần đầu quét (đuôi không có), mũi nhọn tắt mềm.
+  const cutEdge = exp(one.sub(v).negate().div(0.07)).mul(smoothstep(0.15, 0.9, trail)).mul(ends);
+  const lum = float(0.6).add(rim.mul(1.2)).add(streak.mul(0.35)).add(burn.mul(1.2)).add(cutEdge.mul(1.1)).mul(trail.mul(0.6).add(0.4));
+  const tint = mix(U.color, vec3(1, 1, 1), min(cutEdge.mul(0.7), 0.7));
   return {
-    color: min(U.color.mul(lum).mul(hot), U.maxHdr),
+    color: min(tint.mul(lum).mul(hot), U.maxHdr),
     opacity: U.opacity
       .mul(reveal)
       .mul(alive)

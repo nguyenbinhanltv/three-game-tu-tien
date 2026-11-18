@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FX_MAX_HDR } from '../materials/vfx';
-import { BLADE_LIFE, BLADE_SEG, bladeVisible, bladeWindow, BladeRibbon } from './bladeTrail';
+import { BLADE_LIFE, BLADE_PTS, BLADE_SEG, BLADE_SUB, bladeVisible, bladeWindow, BladeRibbon, catmull } from './bladeTrail';
 import { RAIN_NEAR_CLEAR, RAIN_NEAR_FULL, rainNearFade } from './swordRain';
 import {
   BURST_DUR,
@@ -125,6 +125,47 @@ describe('vệt kiếm', () => {
     }
     expect(r.n).toBe(BLADE_SEG);
     expect(r.step(BLADE_LIFE + 0.01)).toBe(0);
+    expect(r.build()).toBe(0);
+  });
+});
+
+describe('vệt kiếm Catmull-Rom (EdgeFlux)', () => {
+  it('nội suy đi qua hai mẫu giữa và tuyến tính khi các mẫu thẳng hàng', () => {
+    expect(catmull(0, 1, 2, 3, 0)).toBeCloseTo(1);
+    expect(catmull(0, 1, 2, 3, 1)).toBeCloseTo(2);
+    expect(catmull(0, 1, 2, 3, 0.5)).toBeCloseTo(1.5);
+  });
+  it('số điểm vẽ cố định, ghi đủ mẫu thật ở hai đầu, không NaN, u tăng dần theo tuổi', () => {
+    expect(BLADE_PTS).toBe((BLADE_SEG - 1) * BLADE_SUB + 1);
+    const r = new BladeRibbon();
+    r.reset('a');
+    const b = new THREE.Vector3();
+    const t = new THREE.Vector3();
+    // Vung theo cung: 6 mẫu cách nhau 10 ms.
+    for (let i = 0; i < 6; i++) {
+      const a = i * 0.3;
+      r.push(b.set(Math.cos(a), 0, Math.sin(a)), t.set(Math.cos(a) * 2, 0, Math.sin(a) * 2));
+      r.step(0.01);
+    }
+    expect(r.build()).toBe(1);
+    const P = r.geo.getAttribute('position').array as Float32Array;
+    const UV = r.geo.getAttribute('uv').array as Float32Array;
+    expect(P.length).toBe(BLADE_PTS * 6);
+    for (const v of P) expect(Number.isFinite(v)).toBe(true);
+    // Điểm đầu = mẫu mới nhất (a = 1,5), điểm cuối phần có dữ liệu = mẫu cũ nhất (a = 0).
+    expect(P[0]).toBeCloseTo(Math.cos(1.5), 5);
+    const last = (5 * BLADE_SUB) * 6;
+    expect(P[last]).toBeCloseTo(1, 5);
+    let prev = -1;
+    for (let q = 0; q <= 5 * BLADE_SUB; q++) {
+      expect(UV[q * 4]).toBeGreaterThanOrEqual(prev);
+      prev = UV[q * 4];
+    }
+  });
+  it('dưới hai mẫu thì không vẽ', () => {
+    const r = new BladeRibbon();
+    r.reset('a');
+    r.push(new THREE.Vector3(), new THREE.Vector3(0, 1, 0));
     expect(r.build()).toBe(0);
   });
 });

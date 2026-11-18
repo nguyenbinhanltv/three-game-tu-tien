@@ -317,7 +317,11 @@ Tất cả nguồn là **CC0-1.0** (không bắt buộc ghi công; vẫn ghi đ�
 | `sfx_block` | OpenGameArt: 75 CC0 breaking / falling / hit sfx — rubberduck | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx — `oga/75-cc0-breaking-falling-hit-sfx/sfx_breaking_and_falling/`: bfh1_metal_hit_04.ogg, bfh1_metal_hit_05.ogg, bfh1_metal_hit_02.ogg |
 | `sfx_death` | OpenGameArt: 75 CC0 breaking / falling / hit sfx — rubberduck | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx — `oga/75-cc0-breaking-falling-hit-sfx/sfx_breaking_and_falling/`: bfh1_falling_01.ogg, bfh1_falling_04.ogg, bfh1_falling_05.ogg |
 | `sfx_impact` | OpenGameArt: 75 CC0 breaking / falling / hit sfx — rubberduck; OpenGameArt: 100 CC0 SFX #2 — rubberduck | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx — `oga/75-cc0-breaking-falling-hit-sfx/sfx_breaking_and_falling/`: bfh1_rock_breaking_01.ogg, bfh1_rock_breaking_02.ogg, bfh1_rock_breaking_03.ogg, bfh1_hit_02.ogg; https://opengameart.org/content/100-cc0-sfx-2 — `oga/100-cc0-sfx-2/sfx_100_v2/`: sfx100v2_hit_01.ogg, sfx100v2_hit_02.ogg |
-| `sfx_thunder` | OpenGameArt: 100 CC0 SFX #2 — rubberduck; OpenGameArt: Rain + Long Thunder — WuxiaScrub; OpenGameArt: 20 Sword Sound Effects (Attacks and Clashes) — StarNinjas; OpenGameArt: 75 CC0 breaking / falling / hit sfx — rubberduck | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/100-cc0-sfx-2 — `oga/100-cc0-sfx-2/sfx_100_v2/`: sfx100v2_thunder_01.ogg; https://opengameart.org/content/rain-long-thunder — `oga/rain-long-thunder/`: rain-thunder.ogg; https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — `oga/20-sword-sound-effects-attacks-and-clashes/sword_clash_-_starninjas_0/`: sword_clash.1.ogg; https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx — `oga/75-cc0-breaking-falling-hit-sfx/sfx_breaking_and_falling/`: bfh1_rock_breaking_02.ogg |
+| `sfx_thunder` | OpenGameArt: 100 CC0 SFX #2 — rubberduck; OpenGameArt: Rain + Long Thunder — WuxiaScrub; OpenGameArt: 20 Sword Sound Effects (Attacks and Clashes) — StarNinjas; OpenGameArt: 75 CC0 breaking / falling / hit sfx — rubberduck; squigglyfish.itch.io: Godot 4 Elemental Spells VFX + SFX: Free Sampler — SquigglyFish | CC0-1.0 | 2026-11-18 | https://opengameart.org/content/100-cc0-sfx-2 — `oga/100-cc0-sfx-2/sfx_100_v2/`: sfx100v2_thunder_01.ogg; https://opengameart.org/content/rain-long-thunder — `oga/rain-long-thunder/`: rain-thunder.ogg; https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — `oga/20-sword-sound-effects-attacks-and-clashes/sword_clash_-_starninjas_0/`: sword_clash.1.ogg; https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx — `oga/75-cc0-breaking-falling-hit-sfx/sfx_breaking_and_falling/`: bfh1_rock_breaking_02.ogg; https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx — `godot-elemental-sampler/`: lightning_strike_01.wav |
+| `sfx_loi_cast` | squigglyfish.itch.io: Godot 4 Elemental Spells VFX + SFX: Free Sampler — SquigglyFish | CC0-1.0 | 2026-11-18 | https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx — `godot-elemental-sampler/`: lightning_cast_01.wav, lightning_cast_02.wav, lightning_cast_04.wav |
+| `sfx_fire_burst` | squigglyfish.itch.io: Godot 4 Elemental Spells VFX + SFX: Free Sampler — SquigglyFish | CC0-1.0 | 2026-11-18 | https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx — `godot-elemental-sampler/`: fireball_start_01.wav, fireball_stop_01.wav, fireball_start_02.wav, fireball_stop_02.wav |
+| `sfx_ice_hit` | squigglyfish.itch.io: Godot 4 Elemental Spells VFX + SFX: Free Sampler — SquigglyFish | CC0-1.0 | 2026-11-18 | https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx — `godot-elemental-sampler/`: ice_impact_01.wav, ice_impact_03.wav, ice_impact_05.wav |
+| `sfx_ice_spike` | squigglyfish.itch.io: Godot 4 Elemental Spells VFX + SFX: Free Sampler — SquigglyFish | CC0-1.0 | 2026-11-18 | https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx — `godot-elemental-sampler/`: ice_spikes_01.wav, ice_spikes_02.wav, ice_spikes_04.wav |
 | `sfx_trib` | OpenGameArt: Rain + Long Thunder — WuxiaScrub | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/rain-long-thunder — `oga/rain-long-thunder/`: rain-thunder.ogg |
 | `sfx_shield` | OpenGameArt: Magic Spell SFX — JaggedStone | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/magic-spell-sfx — `oga/magic-spell-sfx/`: magical_2.ogg, magical_5.ogg, magical_6_0.ogg |
 | `sfx_heal` | OpenGameArt: Cure Magic — Someoneman | CC0-1.0 | 2026-11-15 | https://opengameart.org/content/cure-magic — `oga/cure-magic/curemagic/`: Cure1.wav, Cure2.wav, Cure3.wav |
@@ -591,3 +595,46 @@ Bản thử, không thay nhân vật trong game (`?chr=v2`, docs/chr-v2). Thân 
 | `chr_v3_varkessa_nu` | Sketchfab: "VARKESSA // The Infernal Emberblade" của **Atahan3D** (https://sketchfab.com/Atahan3D), bản đã sửa của `set_skin_varkessa_nu`, đặt lên bộ xương UE5 Mannequin bằng `tools/blender/chr_v3.py` (bản thử pipeline N-0) | CC-BY-4.0 | 2026-11-18 | **Phải ghi công** (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/): "VARKESSA // The Infernal Emberblade" by Atahan3D, https://sketchfab.com/3d-models/varkessa-the-infernal-emberblade-13c07cff4b884037a08b7463df5bc996. Đã sửa: bỏ đại kiếm dính tay, giảm tam giác, nướng lại texture, dựng xương và trọng số, đổi tư thế nghỉ sang UE5 Mannequin |
 | `chr_v3_duskrella_nu` | Sketchfab: "DUSKRELLA the Ashen Whisper" của **Atahan3D** (https://sketchfab.com/Atahan3D), đã sửa: giảm 489.286 → 20.000 tam giác, nướng lại texture, dựng xương và trọng số (`tools/blender/skin_prep.py`, `skins/duskrella.json`), đặt lên bộ xương UE5 Mannequin bằng `tools/blender/chr_v3.py` | CC-BY-4.0 | 2026-11-18 | **Phải ghi công** (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/): "DUSKRELLA the Ashen Whisper" by Atahan3D, https://sketchfab.com/3d-models/1df2e0ecd2364312a8d7821e45d180b2 . Đã chỉnh sửa (xem cột nguồn) |
 | `chr_v3_crimson_nam` | Sketchfab: "Crimson Death Knight - Dual Falchions" của **Pigcraft** (https://sketchfab.com/s8819296), đã sửa: bỏ hai đao dính tay, giảm 1.923.148 → 22.000 tam giác, nướng lại texture, dựng xương và trọng số (`skin_prep.py`, `skins/crimson.json`), đặt lên bộ xương UE5 Mannequin bằng `chr_v3.py` | CC-BY-4.0 | 2026-11-18 | **Phải ghi công** (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/): "Crimson Death Knight - Dual Falchions" by Pigcraft, https://sketchfab.com/3d-models/crimson-death-knight-dual-falchions-08a29190cc7d458dbaf1085991520ef5 . Đã chỉnh sửa (xem cột nguồn) |
+
+
+## VFX viết lại bằng TSL từ gói bên ngoài (2026-11-18)
+
+Không có file, mesh hay shader nguồn nào của các gói dưới đây nằm trong repo. Shader Godot được **viết lại bằng TSL từ kỹ thuật** (client `apps/client/src/render/vfx/`); riêng âm thanh CC0 được cắt, cân âm lượng rồi đóng sprite (`tools/audio/sounds.json`, gói `elem`; khối giấy phép âm thanh ở trên). Ghi công hiển thị trong game ở Cài đặt → Ghi công (`packages/content/data/credits.json`).
+
+### EdgeFlux Lite (MIT)
+
+Dùng kỹ thuật: dải vũ khí nội suy Catmull-Rom (`bladeTrail.ts`), phần cũ co dần về mũi + viền cắt sáng gắt + nhiễu năng lượng (`trail.ts` `bladeTrailNodes`), viền cắt của kiếm khí (`slash.ts`), vạch chéo va chạm "clash cross" (`stylized.ts` `burstNodes`).
+
+```
+MIT License
+
+Copyright (c) 2026 gennai (https://gennai.itch.io)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+Nguồn: https://gennai.itch.io/edgeflux
+
+### Storm & Wind 3D Free (CC BY 4.0)
+
+Storm & Wind 3D Free by heyheythere - https://heyheythere.itch.io/storm-wind-3d-free - CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Đã chỉnh sửa: viết lại bằng TSL từ kỹ thuật (nhấp nháy tia sét, đốm sáng mũi tia dẫn trong `lightning.ts` `boltNodes`; vũng sáng, tia chớp tỏa và vòng xung kích chỗ sét đánh là decal `strike` trong `stylized.ts`; đường gió `windNodes` + hình `gust` trong `fxShapes.ts`).
+
+### Godot 4 Elemental Spells VFX + SFX: Free Sampler (CC0 1.0)
+
+SquigglyFish, https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx. Chỉ dùng 20 file âm thanh (lửa, băng, sét); không cần ghi công, vẫn ghi để truy nguồn.

@@ -3,7 +3,7 @@ import { abs, attribute, dot, float, min, normalize, normalView, positionView, p
 import { markBloom } from '../post';
 import type { FxUniforms } from '../vfx/common';
 import { inkNodes } from '../vfx/ink';
-import { boltNodes, vortexNodes } from '../vfx/lightning';
+import { boltNodes, vortexNodes, windNodes } from '../vfx/lightning';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
@@ -45,9 +45,10 @@ export const FX_MAX_HDR = 2.4;
  * - `toon`: hình vẽ tay ba tầng màu (lõi/thân/viền) mép rách, hòa trộn thường nên đọc được trên nền sáng; cũng dùng cho lớp bóng sẫm (render/vfx/stylized.ts, VFX-V0).
  * - `crystal`: gai/mũi tinh thể phẳng mặt, ba tông theo hướng sáng, viền fresnel, gân vàng (stylized.ts).
  * - `burst`: chớp va chạm + vạch tốc độ tỏa tròn, quay mặt về camera, cộng sáng có bloom (stylized.ts).
+ * - `wind`: chùm đường gió cuộn quanh một trục, vệt mảnh chạy dọc đường rồi tan, cộng sáng, bloom nhẹ, không gộp (render/vfx/lightning.ts).
  * - `decal`: tấm trên mặt đất: vết nứt phát sáng, vòng triện văn, vết cháy, khói toon (stylized.ts).
  */
-export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail' | 'beam' | 'dome' | 'inkpool' | 'toon' | 'crystal' | 'burst' | 'decal' | 'card';
+export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail' | 'beam' | 'dome' | 'inkpool' | 'toon' | 'crystal' | 'burst' | 'decal' | 'card' | 'wind';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -68,6 +69,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   burst: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
   decal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: true },
   card: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
+  wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
 };
 
 const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opacity: unknown }>> = {
@@ -84,6 +86,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   burst: burstNodes,
   decal: decalNodes,
   card: cardNodes,
+  wind: windNodes,
   dome: (u) => {
     // Fresnel: 1 ở rìa (nhìn lướt), ~0 ở giữa (nhìn thẳng). Vân phù văn: dải ngang mờ chạy theo độ cao.
     const fres = pow(float(1).sub(abs(dot(normalize(normalView), normalize(positionView.negate())))), 2.6);

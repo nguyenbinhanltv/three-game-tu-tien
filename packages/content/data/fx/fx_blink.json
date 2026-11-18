@@ -110,6 +110,26 @@
   },
   {
    "type": "mesh",
+   "shape": "gust",
+   "t": -0.02,
+   "dur": 0.4,
+   "at": "origin",
+   "scale": [
+    1.6,
+    1.6,
+    5.0
+   ],
+   "tone": "rim",
+   "alpha": 0.85,
+   "move": {
+    "to": "self",
+    "ease": "in"
+   },
+   "seed": 26,
+   "tier": 1
+  },
+  {
+   "type": "mesh",
    "shape": "burst",
    "t": 0.28,
    "dur": 0.11,

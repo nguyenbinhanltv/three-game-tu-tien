@@ -351,6 +351,39 @@
       "assets": [
         "mon_u_anh_cot_loc"
       ]
+    },
+    {
+      "id": "godot_elemental_sampler",
+      "kind": "sound",
+      "title": "Godot 4 Elemental Spells VFX + SFX: Free Sampler",
+      "author": "SquigglyFish",
+      "url": "https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx",
+      "license": "CC0-1.0",
+      "mods": [
+        "trim"
+      ]
+    },
+    {
+      "id": "edgeflux_lite",
+      "kind": "vfx",
+      "title": "EdgeFlux Lite",
+      "author": "gennai",
+      "url": "https://gennai.itch.io/edgeflux",
+      "license": "MIT",
+      "mods": [
+        "port"
+      ]
+    },
+    {
+      "id": "storm_wind_3d_free",
+      "kind": "vfx",
+      "title": "Storm & Wind 3D Free",
+      "author": "heyheythere",
+      "url": "https://heyheythere.itch.io/storm-wind-3d-free",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "port"
+      ]
     }
   ]
 }
