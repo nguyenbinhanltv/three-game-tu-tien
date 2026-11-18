@@ -60,6 +60,15 @@ export function setGroundTileBreak(on: boolean): void {
   breakTiling = on;
 }
 
+/**
+ * Vân đá sơn thủy + tuyết chỉ ở đỉnh rất cao (MAP-1): chỉ bật cho Lạc Kiếm/Vân Lam (đã duyệt ảnh); các level khác giữ nguyên
+ * ngưỡng tuyết 252–312 m và không có vân. Terrain bật trước khi dựng shader.
+ */
+let strata = false;
+export function setGroundStrata(on: boolean): void {
+  strata = on;
+}
+
 /** Gắn node shader vào `mat`. Gọi lại khi đổi preset (đổi cấu hình, `needsUpdate`). */
 export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: GroundTextures, level: GroundLevel): void {
   const hi = level === 'high';
@@ -90,7 +99,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   const rockW = max(smoothstep(0.1, 0.26, slope), smoothstep(175, 235, h).mul(0.65)).mul(float(1).sub(pav));
   const cliffW = smoothstep(0.3, 0.46, slope);
   // Tuyết chỉ ở đỉnh rất cao (MAP-1): núi gần không còn phủ trắng phẳng.
-  const snowW = smoothstep(340, 420, h).mul(float(1).sub(smoothstep(0.3, 0.42, slope)));
+  const snowW = (strata ? smoothstep(340, 420, h) : smoothstep(252, 312, h)).mul(float(1).sub(smoothstep(0.3, 0.42, slope)));
   const pathD = mask.r.add(noise2.sub(0.5).mul(0.1));
   const pathW = smoothstep(0.44, 0.54, pathD).mul(float(1).sub(rockW));
   const pathEdge = smoothstep(0.3, 0.46, pathD);
@@ -172,14 +181,16 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   col = mix(col, vc.mul(0.62), smoothstep(0.3, 0.06, ndv).mul(0.55));
   // Vân đá sơn thủy (MAP-1), tính theo điểm ảnh nên không phụ thuộc độ thô của lưới xa: tầng ngang theo độ cao + khe dọc theo
   // nhiễu kéo dài; vách và đá lộ ngả lam nhạt dần theo độ cao. Áp sau khi hòa về màu đỉnh lưới ở xa.
-  const rockish = max(cliffW, rockW.mul(0.7));
-  const band = sin(h.mul(0.13).add(macro.mul(5)).add(noise2.mul(4)))
-    .mul(0.5)
-    .add(0.5);
-  const fissure = texture(tex.mask, vec2(p.x.add(p.y).mul(0.0011), h.mul(0.00018))).a;
-  const strata = float(0.7).add(band.mul(0.5)).sub(float(1).sub(fissure).mul(0.45));
-  col = col.mul(mix(float(1), strata, rockish));
-  col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));
+  if (strata) {
+    const rockish = max(cliffW, rockW.mul(0.7));
+    const band = sin(h.mul(0.13).add(macro.mul(5)).add(noise2.mul(4)))
+      .mul(0.5)
+      .add(0.5);
+    const fissure = texture(tex.mask, vec2(p.x.add(p.y).mul(0.0011), h.mul(0.00018))).a;
+    const strataMul = float(0.7).add(band.mul(0.5)).sub(float(1).sub(fissure).mul(0.45));
+    col = col.mul(mix(float(1), strataMul, rockish));
+    col = mix(col, col.mul(vec3(0.82, 0.94, 1.1)), rockish.mul(smoothstep(140, 300, h)).mul(0.6));
+  }
   mat.vertexColors = false;
   mat.colorNode = col;
 
