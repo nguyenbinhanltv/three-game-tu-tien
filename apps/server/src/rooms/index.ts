@@ -3,3 +3,4 @@ export { activeRooms, GameRoom, onlineCount, roomNameOf } from './base';
 export { defineWorld, WorldRoom } from './world';
 export { defineDungeon, DungeonRoom } from './dungeon';
 export { TribulationRoom } from './tribulation';
+export { ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD } from '@dtl/shared';
