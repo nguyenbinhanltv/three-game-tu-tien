@@ -25,7 +25,7 @@ Spec đầy đủ (Claude Doc): https://claude.ai/artifact/S6ZYqLfR37PYy8NyccDjJ
 packages/shared    địa hình (heightAt), di chuyển (stepMove), công thức, giao thức, kiểu dữ liệu
 packages/content   dữ liệu game JSON trong data/ (key pose IK trong data/poses/), chuỗi tiếng Việt trong data/i18n/, check.ts, sim.ts
 apps/client        Vite + Three.js + React (src/game: engine, terrain, entities, models, vfx; src/ui)
-apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts, game/character.ts, auth.ts, db.ts
+apps/server        Colyseus: rooms.ts (World, Dungeon), game/sim.ts (GameSim, nối các hệ), game/{gm,combat,monsters,economy}/ (tách từ sim.ts ở R-7, mỗi hệ một `*System` + giao diện hẹp `*Ctx`), game/character.ts, auth.ts, db.ts
 apps/bot-client    bot headless để test tải
 tools/blender      build_sect.py (kiến trúc tông môn → GLB), import_tripo.py (chuẩn hóa GLB Tripo), anim_biped_extra/anim_quadruped/anim_serpent/anim_bird/tripo_clips.py + export_anim_lib.py (clip thủ tục, thư viện `anim_human_base`), bake_impostor.py (atlas cây xa), recolor_phi_kiem.py, build_fixture_rig.py (GLB có xương cho test), run.mjs
 tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts, ktx.ts, terrain-textures.ts (texture mặt đất), impostor
