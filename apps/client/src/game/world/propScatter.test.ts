@@ -70,7 +70,7 @@ describe('bố cục prop (P2-A4)', () => {
 
     it('đủ năm loài, mỗi loài có cấu hình cây, atlas impostor và mọi cây có tỉ lệ + sắc độ hữu hạn', () => {
       for (const id of TREE_IDS) {
-        expect(PROP_CFG[id].tree, id).toBe(true);
+        expect(PROP_CFG[id]!.tree, id).toBe(true);
         expect(Object.keys(atlas.species), id).toContain(id);
         expect(count(id), id).toBeGreaterThan(0);
       }

@@ -76,7 +76,7 @@ describe('IK hai đốt', () => {
   });
 
   it('ngoài tầm với thì duỗi thẳng về phía đích', () => {
-    const [, rig] = rigs()[0];
+    const [, rig] = rigs()[0]!;
     rig.apply(base({ handR: [-0.18, 0.45, 1.5] }));
     const p = rig.probe();
     expect(Math.hypot(...p.handRFromShoulder)).toBeCloseTo(ARM, 3);
@@ -84,7 +84,7 @@ describe('IK hai đốt', () => {
   });
 
   it('khuỷu gập về phía pole', () => {
-    const [, rig] = rigs()[0];
+    const [, rig] = rigs()[0]!;
     const elbowY = (pole: PoseVec) => {
       rig.apply(base({ handR: [-0.18, 0.45, 0.35], elbowR: pole }));
       rig.root.updateMatrixWorld(true);
@@ -144,10 +144,10 @@ describe('key pose dữ liệu', () => {
   it('trường thiếu giữ giá trị key trước; clip lặp nối về key đầu', () => {
     const def = POSE.get('kiem_thu')!;
     const keys = resolveKeys(def);
-    expect(keys[1].footR).toEqual(def.keys[0].footR);
-    expect(keys[1].edge).toEqual(def.keys[0].edge);
+    expect(keys[1]!.footR).toEqual(def.keys[0]!.footR);
+    expect(keys[1]!.edge).toEqual(def.keys[0]!.edge);
     const end = samplePose(def, keys, def.duration);
-    expect(dist(end.handR!, def.keys[0].handR!)).toBeLessThan(1e-9);
+    expect(dist(end.handR!, def.keys[0]!.handR!)).toBeLessThan(1e-9);
   });
 
   for (const id of ['kiem_thu', 'chem_ngang']) {

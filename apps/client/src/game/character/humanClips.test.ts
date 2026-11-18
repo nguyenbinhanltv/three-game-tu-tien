@@ -42,7 +42,7 @@ function ankles(target: THREE.Object3D, clip: THREE.AnimationClip, fps = 30): { 
     root.updateMatrixWorld(true);
     feet.forEach((f, j) => {
       f.getWorldPosition(p);
-      out[j].push({ x: p.x, y: p.y, z: p.z });
+      out[j]!.push({ x: p.x, y: p.y, z: p.z });
     });
   }
   return out;
@@ -55,7 +55,7 @@ function stance(trace: { x: number; y: number; z: number }[][], fps = 30): { v: 
   trace.forEach((t, foot) => {
     let cur: number[] = [];
     for (let i = 0; i <= t.length; i++) {
-      if (i < t.length && t[i].y < floor + 0.025) cur.push(i);
+      if (i < t.length && t[i]!.y < floor + 0.025) cur.push(i);
       else {
         if (cur.length >= 3) segs.push({ foot, idx: cur });
         cur = [];
@@ -66,25 +66,25 @@ function stance(trace: { x: number; y: number; z: number }[][], fps = 30): { v: 
     const ts = s.idx.map((i) => i / fps);
     const tm = ts.reduce((a, b) => a + b, 0) / ts.length;
     const den = ts.reduce((a, t) => a + (t - tm) ** 2, 0);
-    const xs = s.idx.map((i) => trace[s.foot][i].x);
-    const zs = s.idx.map((i) => trace[s.foot][i].z);
+    const xs = s.idx.map((i) => trace[s.foot]![i]!.x);
+    const zs = s.idx.map((i) => trace[s.foot]![i]!.z);
     const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
     const mz = zs.reduce((a, b) => a + b, 0) / zs.length;
     return {
       tm,
       mx,
       mz,
-      vx: ts.reduce((a, t, k) => a + (t - tm) * (xs[k] - mx), 0) / den,
-      vz: ts.reduce((a, t, k) => a + (t - tm) * (zs[k] - mz), 0) / den,
+      vx: ts.reduce((a, t, k) => a + (t - tm) * (xs[k]! - mx), 0) / den,
+      vz: ts.reduce((a, t, k) => a + (t - tm) * (zs[k]! - mz), 0) / den,
     };
   });
-  const med = (a: number[]) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
+  const med = (a: number[]) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]!;
   const v: [number, number] = [med(fit.map((f) => f.vx)), med(fit.map((f) => f.vz))];
   let slip = 0;
   segs.forEach((s, k) =>
     s.idx.forEach((i) => {
-      const t = i / fps - fit[k].tm;
-      slip = Math.max(slip, Math.hypot(trace[s.foot][i].x - (fit[k].mx + v[0] * t), trace[s.foot][i].z - (fit[k].mz + v[1] * t)));
+      const t = i / fps - fit[k]!.tm;
+      slip = Math.max(slip, Math.hypot(trace[s.foot]![i]!.x - (fit[k]!.mx + v[0] * t), trace[s.foot]![i]!.z - (fit[k]!.mz + v[1] * t)));
     }),
   );
   return { v, slip, segments: segs.length };
@@ -152,7 +152,7 @@ describe('clip chung K-3 (anim_human_base)', () => {
         const tol = name === 'run' ? 0.15 : 0.1;
         expect(speed / (info.refSpeed! * k), `${id}/${name} tốc độ nền`).toBeGreaterThan(1 - tol);
         expect(speed / (info.refSpeed! * k), `${id}/${name} tốc độ nền`).toBeLessThan(1 + tol);
-        const d = DIR[info.move!];
+        const d = DIR[info.move!]!;
         // Chân trụ trượt về sau so với thân: thân đi theo −v.
         expect(-(st.v[0] * d[0] + st.v[1] * d[1]) / speed, `${id}/${name} hướng`).toBeGreaterThan(0.97);
         expect(st.slip, `${id}/${name} trượt (m)`).toBeLessThan(name === 'run' ? 0.06 : 0.04);
@@ -193,8 +193,8 @@ describe('clip chung K-3 (anim_human_base)', () => {
           ['mixamorig_leftfoot', 'mixamorig_rightfoot'],
           ['mixamorig_head', 'mixamorig_head'],
         ]) {
-          const pl = pos(h.scene, l, t, a);
-          const pr = pos(h.scene, r, t, b);
+          const pl = pos(h.scene, l, t, a!);
+          const pr = pos(h.scene, r, t, b!);
           expect(Math.abs(pl.x + pr.x), `${id} x ${a}@${f}`).toBeLessThan(0.05);
           expect(Math.abs(pl.y - pr.y), `${id} y ${a}@${f}`).toBeLessThan(0.05);
           expect(Math.abs(pl.z - pr.z), `${id} z ${a}@${f}`).toBeLessThan(0.05);

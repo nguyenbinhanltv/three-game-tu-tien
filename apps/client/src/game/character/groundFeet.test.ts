@@ -162,7 +162,7 @@ describe('chân bám đất trên dốc', () => {
     });
     placeAt(c, spot.x, spot.z, spot.uphill);
     for (let t = 0; t < 1; t += 1 / 60) c.update(1 / 60, anim());
-    const inner = c.root.children[0];
+    const inner = c.root.children[0]!;
     // Mặt hướng lên dốc: mũi ngẩng lên (xoay quanh X âm); quay ngược xuống dốc thì cúi.
     expect(inner.rotation.x).toBeLessThan(-0.1);
     placeAt(c, spot.x, spot.z, spot.uphill + Math.PI);

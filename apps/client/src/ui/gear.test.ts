@@ -34,7 +34,7 @@ describe('hiển thị trang bị', () => {
     );
     const lines = itemLines(it, def).map((l) => l.text);
     expect(lines[0]).toMatch(/^Công \+\d+$/);
-    expect(Number(lines[0].match(/\d+/)![0])).toBeGreaterThan(20);
+    expect(Number(lines[0]!.match(/\d+/)![0])).toBeGreaterThan(20);
     expect(lines).toContain('Tỉ lệ bạo kích +2,5%');
     expect(lines).toContain('Sát thương hệ Hỏa +6%');
     expect(lines.some((l) => l.includes('Phi Kiếm') && l.endsWith('+10%'))).toBe(true);
@@ -49,11 +49,11 @@ describe('so sánh với món đang mặc', () => {
 
   it('món mạnh hơn: công kích tăng (xanh), món yếu hơn giảm (đỏ), cùng món không đổi', () => {
     const better = diffLines(equipDiff(12, worn, 'weapon', sword(inst(3, 50))));
-    expect(better[0].tone).toBe('good');
-    expect(better[0].text).toMatch(/^Công kích \d+ → \d+ \(\+20\)$/);
+    expect(better[0]!.tone).toBe('good');
+    expect(better[0]!.text).toMatch(/^Công kích \d+ → \d+ \(\+20\)$/);
     const worse = diffLines(equipDiff(12, worn, 'weapon', sword(inst(0, 10))));
-    expect(worse[0].tone).toBe('bad');
-    expect(worse[0].text).toMatch(/\(-20\)$/);
+    expect(worse[0]!.tone).toBe('bad');
+    expect(worse[0]!.text).toMatch(/\(-20\)$/);
     expect(equipDiff(12, worn, 'weapon', worn.weapon!)).toEqual([]);
   });
 
@@ -66,7 +66,7 @@ describe('so sánh với món đang mặc', () => {
 
   it('ô trống: so với ô trống; chưa đủ cảnh giới thì có dòng đỏ; vật không phải trang bị thì rỗng', () => {
     const lines = compareLines(1, {}, sword(inst(2, 30)), def);
-    expect(lines[0].text).toBe('So với ô đang trống');
+    expect(lines[0]!.text).toBe('So với ô đang trống');
     expect(lines.some((l) => l.tone === 'bad' && l.text.startsWith('Yêu cầu'))).toBe(true);
     expect(compareLines(12, {}, { id: 'itm_linh_thao', n: 1 }, ITEM.get('itm_linh_thao')!)).toEqual([]);
     expect(compareLines(12, worn, worn.weapon!, def).some((l) => l.text === 'Không đổi chỉ số')).toBe(true);
@@ -89,8 +89,8 @@ describe('đồ bậc 3 (E3-F)', () => {
   it('so với kiếm bậc 2 đang mặc: công kích tăng (xanh); đòi cảnh giới 20 nên dưới đó có dòng đỏ', () => {
     const worn: Equipment = { weapon: mk(lm.id, 17, 150) };
     const d = diffLines(equipDiff(20, worn, 'weapon', mk(kq.id, 21, 230)));
-    expect(d[0].tone).toBe('good');
-    expect(d[0].text).toMatch(/^Công kích \d+ → \d+ \(\+80\)$/);
+    expect(d[0]!.tone).toBe('good');
+    expect(d[0]!.text).toMatch(/^Công kích \d+ → \d+ \(\+80\)$/);
     expect(compareLines(19, worn, mk(kq.id, 21, 230), kq).some((l) => l.tone === 'bad' && l.text.startsWith('Yêu cầu'))).toBe(true);
   });
 

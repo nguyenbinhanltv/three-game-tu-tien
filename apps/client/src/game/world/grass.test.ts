@@ -46,7 +46,7 @@ describe('pickPushers', () => {
       ],
       out,
     );
-    expect(out[1].r).toBe(2);
+    expect(out[1]!.r).toBe(2);
     expect(out.slice(2).every((p) => p.r === 0)).toBe(true);
   });
 });
@@ -80,7 +80,7 @@ describe('Grass', () => {
     g.update(0.016, at, p);
     expect(g.count).toBe(0);
     expect(g.mesh.visible).toBe(false);
-    expect(GRASS_PRESETS.low.radius).toBe(0);
+    expect(GRASS_PRESETS.low!.radius).toBe(0);
   });
   it('preset Cao nhiều cỏ hơn Vừa', () => {
     const at = { x: VALLEY.x, y: 42, z: VALLEY.z };
@@ -91,7 +91,7 @@ describe('Grass', () => {
       for (let i = 0; i < 120; i++) g.update(0.016, at, slots(), 4);
       n[q] = g.count;
     }
-    expect(n.high).toBeGreaterThan(n.medium * 1.5);
+    expect(n.high).toBeGreaterThan(n.medium! * 1.5);
   });
   it('hình cầu bao bám mặt đất mỗi khung, kể cả sau khi bay cao rồi đáp trong cùng ô', () => {
     const g = new Grass();

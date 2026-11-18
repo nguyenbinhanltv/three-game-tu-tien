@@ -21,7 +21,7 @@ describe('vanHaiArt (E3-I: bản sắc từng đảo)', () => {
   it('mỗi đảo có lối mòn; lối mòn phủ lõi, ngoài dải thì không', () => {
     for (const i of art.islands.filter((x) => x.r > 80)) expect(i.trail.length).toBeGreaterThan(10);
     const hub = art.islands.find((i) => i.kind === 'hub')!;
-    const [x, z] = [hub.trail[10], hub.trail[11]];
+    const [x, z] = [hub.trail[10]!, hub.trail[11]!];
     expect(art.trailW(hub, x, z)).toBeGreaterThan(0.3);
     expect(art.trailW(hub, hub.x + 70, hub.z - 60)).toBe(0);
   });
@@ -29,7 +29,7 @@ describe('vanHaiArt (E3-I: bản sắc từng đảo)', () => {
   it('hồ gương: lòng hồ lõm so với bờ, trọng số bờ hồ 1 ở tâm và 0 xa hồ', () => {
     const tr = terrainOf('van_hai');
     expect(art.ponds.length).toBeGreaterThan(0);
-    const p = art.ponds[0];
+    const p = art.ponds[0]!;
     expect(art.pondW(p.x, p.z)).toBeCloseTo(1, 3);
     expect(art.pondW(p.x + p.r + 40, p.z)).toBe(0);
     expect(tr.heightAt(p.x + p.r + 2, p.z) - tr.heightAt(p.x, p.z)).toBeGreaterThan(0.5);

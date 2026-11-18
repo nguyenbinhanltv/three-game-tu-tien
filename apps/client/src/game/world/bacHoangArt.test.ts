@@ -20,9 +20,9 @@ const ctx = {
 describe('bacHoangArt (DV-3I)', () => {
   it('đường tâm khe: 14 điểm sắp từ nam lên bắc, cách nhau 30 m', () => {
     expect(path.length).toBe(14);
-    for (let i = 1; i < path.length; i++) expect(path[i].z).toBeLessThan(path[i - 1].z);
-    expect(riftDist(path, path[5].x, path[5].z).d).toBeLessThan(0.01);
-    expect(riftDist(path, path[5].x + 40, path[5].z).d).toBeGreaterThan(30);
+    for (let i = 1; i < path.length; i++) expect(path[i]!.z).toBeLessThan(path[i - 1]!.z);
+    expect(riftDist(path, path[5]!.x, path[5]!.z).d).toBeLessThan(0.01);
+    expect(riftDist(path, path[5]!.x + 40, path[5]!.z).d).toBeGreaterThan(30);
   });
 
   it('mood: nam là 0 (tro sớm), bắc là 1 (bên kia), đơn điệu, chuyển quanh miệng khe', () => {
@@ -92,7 +92,7 @@ describe('bacHoangArt (DV-3I)', () => {
 
   it('hạt môi trường: tro khắp nơi, tàn lửa dày hơn gần khe và bên kia', () => {
     const far = bhAmbient(path, 1500, 1500, def);
-    const near = bhAmbient(path, path[6].x + 20, path[6].z, def);
+    const near = bhAmbient(path, path[6]!.x + 20, path[6]!.z, def);
     expect(far.ash).toBeGreaterThan(0);
     expect(near.ember).toBeGreaterThan(far.ember * 3);
   });

@@ -4,8 +4,8 @@ import { TRI_HIGH, TRI_LOW, ULTRA_RANGE, ULTRA_TRI_CAP, governScale, ultraRangeS
 
 describe('Cực cao: cây/đá/cỏ dày hơn, có điều tiết', () => {
   it('cỏ Cực cao rộng và dày hơn Cao', () => {
-    expect(GRASS_PRESETS.ultra.radius).toBeGreaterThan(GRASS_PRESETS.high.radius);
-    expect(GRASS_PRESETS.ultra.spacing).toBeLessThan(GRASS_PRESETS.high.spacing);
+    expect(GRASS_PRESETS.ultra!.radius).toBeGreaterThan(GRASS_PRESETS.high!.radius);
+    expect(GRASS_PRESETS.ultra!.spacing).toBeLessThan(GRASS_PRESETS.high!.spacing);
   });
   it('tầm cây/đá theo bản đồ: Vân Lam > Vân Hải > Thiên Khuyết > bản đồ khác, luôn ≥ Cao (1,15)', () => {
     const g = 1;

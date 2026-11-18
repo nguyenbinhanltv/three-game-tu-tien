@@ -109,7 +109,7 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
       for (const c of out) {
         for (const t of c.tracks) {
           const [bone, prop] = t.name.split('.');
-          expect(db.has(bone), `${id}/${c.name}/${bone}`).toBe(true);
+          expect(db.has(bone!), `${id}/${c.name}/${bone}`).toBe(true);
           expect(['quaternion', 'position']).toContain(prop);
           if (prop === 'position') expect(bone).toBe('mixamorig_hips');
         }
@@ -118,7 +118,7 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
         const b = src.tracks.find((t) => t.name === 'mixamorig_hips.position')!;
         // Vị trí hông = nghỉ đích + k · (nguồn − nghỉ nguồn): độ cao hông khung 0 theo tỉ lệ chiều cao hông.
         const ry = lb.get('mixamorig_hips')!.position.y;
-        expect(a.values[1]).toBeCloseTo(db.get('mixamorig_hips')!.position.y + hipsRatio * (b.values[1] - ry), 2);
+        expect(a.values[1]).toBeCloseTo(db.get('mixamorig_hips')!.position.y + hipsRatio * (b.values[1]! - ry), 2);
       }
       h.release();
     }
@@ -130,7 +130,7 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
     for (const id of CHARACTERS) {
       const h = await cache.acquire(id);
       const out = retargetClips(lib.scene, lib.animations, h.scene);
-      const rest = footTrace(h.scene, new THREE.AnimationClip('rest', 1, []), 1).low[0];
+      const rest = footTrace(h.scene, new THREE.AnimationClip('rest', 1, []), 1).low[0]!;
       for (const name of ['run', 'idle']) {
         const { low } = footTrace(
           h.scene,
@@ -142,12 +142,12 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
         expect(Math.min(...low) - rest, `${id}/${name} lơ lửng`).toBeLessThan(0.06);
       }
       // Độ cao hông khi idle so với hông ở tư thế nghỉ của chính nhân vật: lệch quá 10% nghĩa là scale hông sai tỉ lệ.
-      const restHips = footTrace(h.scene, new THREE.AnimationClip('rest', 1, []), 1).hipsY[0];
+      const restHips = footTrace(h.scene, new THREE.AnimationClip('rest', 1, []), 1).hipsY[0]!;
       const idleHips = footTrace(
         h.scene,
         out.find((c) => c.name === 'idle')!,
         1,
-      ).hipsY[0];
+      ).hipsY[0]!;
       expect(idleHips / restHips, `${id} độ cao hông`).toBeGreaterThan(0.9);
       expect(idleHips / restHips, `${id} độ cao hông`).toBeLessThan(1.1);
       h.release();
@@ -203,7 +203,7 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
     const shared = [new THREE.AnimationClip('idle', 2, []), new THREE.AnimationClip('run', 1, [])];
     const m = mergeClips([own], shared);
     expect(m.map((c) => c.name)).toEqual(['idle', 'run']);
-    expect(m[0].duration).toBe(1);
+    expect(m[0]!.duration).toBe(1);
   });
 });
 

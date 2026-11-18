@@ -33,7 +33,7 @@ describe('FX quái (V5)', () => {
   });
   it('mọi hệ ngũ hành có bảng màu nguy hiểm riêng, accent đỏ', () => {
     for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho']) expect(FX_PALETTE[monPaletteKey(e)]).toBe(FX_PALETTE['mon_' + e]);
-    for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho']) expect(FX_PALETTE[monPaletteKey(e, true)].accent).toBe(0xff1f3d);
+    for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho']) expect(FX_PALETTE[monPaletteKey(e, true)]!.accent).toBe(0xff1f3d);
     expect(monPaletteKey(undefined)).toBe('mon_neutral');
     expect(monPaletteKey(undefined, true)).toBe('mon_boss_neutral');
     expect(monPaletteKey('khong_co')).toBe('mon_neutral');

@@ -21,13 +21,13 @@ describe('khung va chạm (bảng F3)', () => {
     expect(verts).toBe(28 * 2 + 2);
     for (let v = 0; v < verts - 2; v++) {
       const [x, y, z] = [out[v * 3], out[v * 3 + 1], out[v * 3 + 2]];
-      expect(Math.hypot(x - 10, z - 20)).toBeCloseTo(4, 4);
-      expect(y).toBeCloseTo(x * 0.1 + 0.25, 4);
+      expect(Math.hypot(x! - 10, z! - 20)).toBeCloseTo(4, 4);
+      expect(y).toBeCloseTo(x! * 0.1 + 0.25, 4);
     }
     // Đoạn kề nhau nối liền: đỉnh cuối đoạn k trùng đỉnh đầu đoạn k + 1.
-    expect(out[3]).toBeCloseTo(out[6], 5);
+    expect(out[3]).toBeCloseTo(out[6]!, 5);
     const post = (verts - 2) * 3;
     expect([out[post], out[post + 2], out[post + 3], out[post + 5]]).toEqual([10, 20, 10, 20]);
-    expect(out[post + 4] - out[post + 1]).toBeCloseTo(3, 5);
+    expect(out[post + 4]! - out[post + 1]!).toBeCloseTo(3, 5);
   });
 });

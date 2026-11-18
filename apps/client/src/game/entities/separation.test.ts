@@ -31,7 +31,7 @@ describe('solveSeparation', () => {
     const bs = [p];
     for (let i = 0; i < 8; i++) bs.push(body(Math.cos(i) * 0.5, Math.sin(i) * 0.5, 0.45));
     solveSeparation(bs, bs.length, 8);
-    for (let i = 0; i < bs.length; i++) for (let j = i + 1; j < bs.length; j++) expect(dist(bs[i], bs[j])).toBeGreaterThan(0.75);
+    for (let i = 0; i < bs.length; i++) for (let j = i + 1; j < bs.length; j++) expect(dist(bs[i]!, bs[j]!)).toBeGreaterThan(0.75);
   });
   it('trùng hẳn vẫn tách được và độ lệch bị chặn', () => {
     const a = body(3, 3);

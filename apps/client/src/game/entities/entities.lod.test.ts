@@ -161,7 +161,7 @@ describe('EntityManager: LOD theo camera (M3-9)', () => {
       const t = c.m.actionOf('idle')!.time;
       // Clip idle lặp: t0 có thể sát cuối clip (phụ thuộc thời gian nạp), nên đo phần tiến lên theo modulo độ dài clip.
       const dur = c.m.actionOf('idle')!.getClip().duration;
-      if (c.moves) expect((t - t0[i] + dur) % dur).toBeGreaterThan(0);
+      if (c.moves) expect((t - t0[i]! + dur) % dur).toBeGreaterThan(0);
       else expect(t).toBe(t0[i]);
     });
     em.dispose();

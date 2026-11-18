@@ -96,8 +96,8 @@ describe('minimap model', () => {
   });
 
   it('vùng đứng và trạng thái hợp cấp', () => {
-    const zones = LEVELS.van_lam.zones!;
-    const z = zones[0];
+    const zones = LEVELS.van_lam!.zones!;
+    const z = zones[0]!;
     const cx = z.poly.reduce((a, p) => a + p[0], 0) / z.poly.length;
     const cz = z.poly.reduce((a, p) => a + p[1], 0) / z.poly.length;
     expect(zoneStatus(zones, cx, cz, z.lvMin).status).toBe('ok');

@@ -56,9 +56,9 @@ describe('MusicDirector', () => {
     expect(run(d, 0.4, 5, { biome: 'wild' })).toEqual([]);
     const ch = run(d, 5.1, 8, { biome: 'wild', combat: true });
     expect(ch).toHaveLength(1);
-    expect(ch[0].to).toBe('combat');
-    expect(ch[0].t).toBeCloseTo(5.1 + COMBAT_ENTER, 5);
-    expect(ch[0].fade).toBeLessThan(2);
+    expect(ch[0]!.to).toBe('combat');
+    expect(ch[0]!.t).toBeCloseTo(5.1 + COMBAT_ENTER, 5);
+    expect(ch[0]!.fade).toBeLessThan(2);
   });
 
   it('engage (đòn đánh thật) vào combat ngay', () => {
@@ -83,9 +83,9 @@ describe('MusicDirector', () => {
     // Hết hẳn tín hiệu: về nhạc vùng sau COMBAT_EXIT.
     const out = run(d, 22.1, 40, { biome: 'forest' });
     expect(out).toHaveLength(1);
-    expect(out[0].to).toBe('forest');
-    expect(out[0].t).toBeCloseTo(22 + COMBAT_EXIT, 5);
-    expect(out[0].fade).toBeGreaterThanOrEqual(3);
+    expect(out[0]!.to).toBe('forest');
+    expect(out[0]!.t).toBeCloseTo(22 + COMBAT_EXIT, 5);
+    expect(out[0]!.fade).toBeGreaterThanOrEqual(3);
   });
 
   it('đổi vùng phải ở lại đủ REGION_DWELL; đi dọc ranh giới không đổi bài', () => {
@@ -99,7 +99,7 @@ describe('MusicDirector', () => {
     expect(jitter).toEqual([]);
     const out = run(d, 20.1, 30, { biome: 'lake' });
     expect(out.map((c) => c.to)).toEqual(['lake']);
-    expect(out[0].t).toBeCloseTo(20.1 + REGION_DWELL, 5);
+    expect(out[0]!.t).toBeCloseTo(20.1 + REGION_DWELL, 5);
   });
 
   it('boss ưu tiên hơn combat, và trong bí cảnh là dungeon_boss', () => {
@@ -108,7 +108,7 @@ describe('MusicDirector', () => {
     expect(run(d, 0.1, 1, { boss: true }).map((c) => c.to)).toEqual(['boss']);
     const out = run(d, 1.1, 20, {});
     expect(out.map((c) => c.to)).toEqual(['sect']);
-    expect(out[0].t).toBeCloseTo(1 + BOSS_EXIT, 5);
+    expect(out[0]!.t).toBeCloseTo(1 + BOSS_EXIT, 5);
 
     const g = new MusicDirector();
     g.update(0, { ...base, dungeon: true });
@@ -146,7 +146,7 @@ describe('MusicDirector', () => {
     expect(d.update(0.5, base)).toBeNull();
     const out = run(d, 0.6, 5, {});
     expect(out.map((c) => c.to)).toEqual(['sect']);
-    expect(out[0].t).toBeCloseTo(0.1 + MIN_HOLD, 5);
+    expect(out[0]!.t).toBeCloseTo(0.1 + MIN_HOLD, 5);
   });
 
   it('tử vong thì bỏ combat; đổi room thì nhận vùng mới ngay', () => {

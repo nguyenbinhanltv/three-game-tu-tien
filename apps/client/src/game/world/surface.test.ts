@@ -19,7 +19,7 @@ describe('surfaceAt', () => {
     const shore = shorePoints();
     expect(shore.length).toBeGreaterThanOrEqual(3);
     // Đi xuyên qua điểm bờ theo hướng từ tâm hồ: phải gặp cả cát (phía đất liền) lẫn nước.
-    const p = shore[Math.floor(shore.length / 2)];
+    const p = shore[Math.floor(shore.length / 2)]!;
     const d = Math.hypot(p.x - LAKE.x, p.z - LAKE.z);
     const kinds = new Set<string>();
     for (let k = -6; k <= 14; k++) {

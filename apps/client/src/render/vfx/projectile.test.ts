@@ -68,7 +68,7 @@ describe('đạn đánh xa phía client (D1)', () => {
     expect(fx.count).toBe(1);
     expect(group.children).toHaveLength(4); // lõi, thân, quầng, vòng bóng
     fx.update(0.3);
-    const core = group.children[0];
+    const core = group.children[0]!;
     expect(core.position.x).toBeCloseTo(VALLEY.x);
     expect(core.position.z).toBeCloseTo(VALLEY.z + 5);
     expect(Math.abs(core.position.y - boltY(VALLEY.x, VALLEY.z + 5))).toBeLessThan(0.1);
@@ -82,7 +82,7 @@ describe('đạn đánh xa phía client (D1)', () => {
     fx.spawn(msg(2), 0, 0xffa060);
     fx.end(1, VALLEY.x + 1, VALLEY.z + 2, true);
     expect(bursts).toHaveLength(1);
-    expect(bursts[0].x).toBeCloseTo(VALLEY.x + 1);
+    expect(bursts[0]!.x).toBeCloseTo(VALLEY.x + 1);
     expect(fx.count).toBe(1);
     fx.end(99, 0, 0, false); // id lạ: bỏ qua
     fx.update(2.5);

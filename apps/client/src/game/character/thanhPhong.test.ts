@@ -117,7 +117,7 @@ describe('Thanh Phong + động tác chiêu', () => {
       const frames = 300;
       for (let f = 0; f < frames; f++) {
         for (const [i, p] of ps.entries()) {
-          if (attack && (f + i * 5) % 60 === 0) p.perform(SKILLS[((f / 60 + i) % SKILLS.length) | 0].pose!);
+          if (attack && (f + i * 5) % 60 === 0) p.perform(SKILLS[((f / 60 + i) % SKILLS.length) | 0]!.pose!);
           p.update(1 / 60, a);
         }
         scene.updateMatrixWorld(true);

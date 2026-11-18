@@ -59,11 +59,11 @@ describe('retargetClips với bảng đổi tên + trackedOnly', () => {
     const clip = new THREE.AnimationClip('c', 1, [
       new THREE.QuaternionKeyframeTrack('mixamorig_spine.quaternion', [0, 1], [0, 0, 0, 1, q.x, q.y, q.z, q.w]),
     ]);
-    const all = retargetClips(src, [clip], dst, { dstName: mannequinToMixamo })[0];
+    const all = retargetClips(src, [clip], dst, { dstName: mannequinToMixamo })[0]!;
     expect(all.tracks.map((t) => t.name).sort()).toEqual(['pelvis.quaternion', 'spine_01.quaternion']);
-    const only = retargetClips(src, [clip], dst, { dstName: mannequinToMixamo, trackedOnly: true })[0];
+    const only = retargetClips(src, [clip], dst, { dstName: mannequinToMixamo, trackedOnly: true })[0]!;
     expect(only.tracks.map((t) => t.name)).toEqual(['spine_01.quaternion']);
-    const end = only.tracks[0].values.slice(-4);
-    expect(Math.abs(end[2] - q.z)).toBeLessThan(1e-4); // cùng hệ trục nên xoay giữ nguyên
+    const end = only.tracks[0]!.values.slice(-4);
+    expect(Math.abs(end[2]! - q.z)).toBeLessThan(1e-4); // cùng hệ trục nên xoay giữ nguyên
   });
 });

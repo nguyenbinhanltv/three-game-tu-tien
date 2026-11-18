@@ -91,14 +91,14 @@ describe('vỏ kiếm đeo lưng đi theo ngực trong mọi clip của thư vi�
     const libs = [await cache.acquire(HUMAN_ANIM_LIB), await cache.acquire(HUMAN_K3_LIB)];
     for (const id of ['chr_kiem_tu_nam', 'chr_kiem_tu_nu']) {
       const h = await cache.acquire(id);
-      const idle = retargetClips(libs[0].scene, libs[0].animations, h.scene).find((c) => c.name === 'idle')!;
-      const ref = trace(h.scene, idle).geo[0];
+      const idle = retargetClips(libs[0]!.scene, libs[0]!.animations, h.scene).find((c) => c.name === 'idle')!;
+      const ref = trace(h.scene, idle).geo[0]!;
       const bad: string[] = [];
       for (const lib of libs) {
         for (const clip of retargetClips(lib.scene, lib.animations, h.scene)) {
           const r = trace(h.scene, clip);
           r.geo.forEach((g, i) => {
-            if (r.hipsLean[i] >= 60) return; // thân nằm hoặc đang lộn: vỏ theo thân là đúng
+            if (r.hipsLean[i]! >= 60) return; // thân nằm hoặc đang lộn: vỏ theo thân là đúng
             const d = (g.angleTo(ref) * 180) / Math.PI;
             if (process.env.K3_SWORD_REPORT && d >= 40) console.log('GEO', id, clip.name, (i * 0.1).toFixed(1), Math.round(d));
             if (d >= 40) bad.push(`${id}/${clip.name}@${(i * 0.1).toFixed(1)}s ${Math.round(d)}°`);
@@ -119,7 +119,7 @@ describe('vỏ kiếm đeo lưng đi theo ngực trong mọi clip của thư vi�
         for (const clip of retargetClips(lib.scene, lib.animations, h.scene)) {
           const r = trace(h.scene, clip);
           expect(Math.max(...r.rel), `${id}/${clip.name}`).toBeLessThan(0.5);
-          if (LEAN_MAX[clip.name]) expect(Math.max(...r.chestFromUp), `${id}/${clip.name} cúi`).toBeLessThan(LEAN_MAX[clip.name]);
+          if (LEAN_MAX[clip.name]) expect(Math.max(...r.chestFromUp), `${id}/${clip.name} cúi`).toBeLessThan(LEAN_MAX[clip.name]!);
           if (process.env.K3_SWORD_REPORT) console.log(id, clip.name, r.chestFromUp.map((x) => Math.round(x)).join(' '));
         }
       }

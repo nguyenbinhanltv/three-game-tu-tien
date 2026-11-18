@@ -104,7 +104,7 @@ describe('rút / tra kiếm (M3-2)', () => {
     }
     expect(m.swordDrawn).toBe(true);
     // Đổi đúng lúc tay tới chuôi, không phải ngay khi bị đánh.
-    expect(at).toBeGreaterThanOrEqual(POSE_SWORD_SWAP.rut_kiem - 2 * DT);
+    expect(at).toBeGreaterThanOrEqual(POSE_SWORD_SWAP.rut_kiem! - 2 * DT);
     // Lúc đổi, chuôi trong tay gần chỗ chuôi trên lưng (bàn tay đã tới chuôi): không nhảy xa.
     console.info(
       `[M3-2] rút: chuôi nhảy ${(jump * 100).toFixed(1)} cm lúc đổi socket; chuôi trên lưng ${backGrip.toArray().map((x) => x.toFixed(2))}`,
@@ -135,7 +135,7 @@ describe('rút / tra kiếm (M3-2)', () => {
     run(m, anim(), 0.7);
     expect(m.swordDrawn).toBe(false);
     expect(sword.parent).toBe(spine);
-    for (let i = 0; i < 16; i++) expect(sword.matrix.elements[i]).toBeCloseTo(rest.elements[i], 5);
+    for (let i = 0; i < 16; i++) expect(sword.matrix.elements[i]).toBeCloseTo(rest.elements[i]!, 5);
     m.dispose();
     s.dispose();
   });

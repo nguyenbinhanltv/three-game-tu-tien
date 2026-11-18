@@ -16,7 +16,7 @@ describe('levelCtx (E1-D)', () => {
       [2450, 1740],
       [100, 100],
     ])
-      expect(heightAt(x, z)).toBe(sharedHeight(x, z));
+      expect(heightAt(x!, z!)).toBe(sharedHeight(x!, z!));
   });
 
   it('mọi level có LevelDef đều khai báo assets; bí cảnh dùng chung địa hình Vân Lam', () => {
@@ -44,8 +44,8 @@ describe('levelCtx (E1-D)', () => {
     expect(sameLayout('kiem_trung', 'van_lam')).toBe(true);
     expect(sameLayout('van_lam', TEST_LEVEL)).toBe(false);
     // Hai file assets chỉ được khác nhau ở nhạc (và minimap): thêm khác biệt khác sẽ làm bí cảnh dựng lại cả cảnh mỗi lần vào/ra.
-    const { music: _m1, minimap: _a, ...vl } = LEVEL_ASSETS.van_lam;
-    const { music: _m2, minimap: _b, ...kt } = LEVEL_ASSETS.kiem_trung;
+    const { music: _m1, minimap: _a, ...vl } = LEVEL_ASSETS.van_lam!;
+    const { music: _m2, minimap: _b, ...kt } = LEVEL_ASSETS.kiem_trung!;
     expect(kt).toEqual(vl);
   });
 

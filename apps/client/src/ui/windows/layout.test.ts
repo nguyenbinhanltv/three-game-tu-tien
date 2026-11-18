@@ -20,7 +20,7 @@ const VPS: Viewport[] = [
 
 describe('window manager', () => {
   it('mở độc lập, z tăng dần, cái trên cùng là cái vừa chạm', () => {
-    const vp = VPS[1];
+    const vp = VPS[1]!;
     let l: WinState[] = [];
     l = openWindow(l, 'quests', vp).list;
     l = openWindow(l, 'map', vp).list;
@@ -32,7 +32,7 @@ describe('window manager', () => {
     expect(l.map((w) => w.id)).toEqual(['map']);
   });
   it('mở lại cửa sổ đã mở chỉ đưa lên trên, không nhân đôi', () => {
-    const vp = VPS[1];
+    const vp = VPS[1]!;
     let l = openWindow([], 'bag', vp).list;
     l = openWindow(l, 'char', vp).list;
     l = openWindow(l, 'bag', vp).list;
@@ -60,13 +60,13 @@ describe('window manager', () => {
     });
   }
   it('vị trí đã nhớ được dùng và kẹp trong màn hình', () => {
-    const vp = VPS[0];
+    const vp = VPS[0]!;
     const l = openWindow([], 'help', vp, { x: 99999, y: -50 }).list;
-    expect(l[0].x).toBeLessThanOrEqual(vp.vw - 120);
-    expect(l[0].y).toBe(0);
+    expect(l[0]!.x).toBeLessThanOrEqual(vp.vw - 120);
+    expect(l[0]!.y).toBe(0);
   });
   it('kéo giữ thanh tiêu đề trong màn hình', () => {
-    const vp = VPS[0];
+    const vp = VPS[0]!;
     const c = clampPos('bag', -9999, 9999, vp);
     expect(c.x).toBe(120 - 520);
     expect(c.y).toBe(vp.vh - 48);
@@ -74,7 +74,7 @@ describe('window manager', () => {
     expect(l[0]).toMatchObject({ x: 10, y: 20 });
   });
   it('z không vượt số cửa sổ sau nhiều lần focus (luôn dưới toast/modal/tooltip)', () => {
-    const vp = VPS[1];
+    const vp = VPS[1]!;
     let l = openWindow([], 'bag', vp).list;
     l = openWindow(l, 'char', vp).list;
     l = openWindow(l, 'quests', vp).list;

@@ -28,19 +28,19 @@ describe('bản đồ lớn: bộ lọc', () => {
 });
 
 describe('bản đồ lớn: dữ liệu vùng', () => {
-  const infos = zoneInfos(LEVELS.van_lam);
+  const infos = zoneInfos(LEVELS.van_lam!);
   it('mỗi vùng có quái, danh sách sắp theo cấp, tinh anh nằm trong vùng', () => {
-    expect(infos.length).toBe(LEVELS.van_lam.zones!.length);
+    expect(infos.length).toBe(LEVELS.van_lam!.zones!.length);
     for (const zi of infos) {
       expect(zi.monsters.length).toBeGreaterThan(0);
-      for (let i = 1; i < zi.monsters.length; i++) expect(zi.monsters[i].lvMin).toBeGreaterThanOrEqual(zi.monsters[i - 1].lvMin);
+      for (let i = 1; i < zi.monsters.length; i++) expect(zi.monsters[i]!.lvMin).toBeGreaterThanOrEqual(zi.monsters[i - 1]!.lvMin);
     }
     expect(infos.some((z) => z.elites.length > 0)).toBe(true);
     expect(infos.some((z) => z.resources.length > 0)).toBe(true);
-    for (let i = 1; i < infos.length; i++) expect(infos[i].zone.lvMin).toBeGreaterThanOrEqual(infos[i - 1].zone.lvMin);
+    for (let i = 1; i < infos.length; i++) expect(infos[i]!.zone.lvMin).toBeGreaterThanOrEqual(infos[i - 1]!.zone.lvMin);
   });
   it('boss thế giới nằm trong các điểm sinh lẻ', () => {
-    expect(soloSpawns(LEVELS.van_lam).some((s) => s.boss)).toBe(true);
+    expect(soloSpawns(LEVELS.van_lam!).some((s) => s.boss)).toBe(true);
   });
 });
 
@@ -94,9 +94,9 @@ describe('bản đồ lớn: xếp nhãn', () => {
   it('ba nhãn chồng cùng chỗ thì xếp thành cột, không còn đè', () => {
     const items = [0, 1, 2].map(() => ({ x: 50, y: 200, w: 60, h: 20 }));
     placeLabels(items);
-    for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) expect(items[j].y - items[j].h).toBeLessThan(items[i].y);
+    for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) expect(items[j]!.y - items[j]!.h).toBeLessThan(items[i]!.y);
     expect(new Set(items.map((q) => q.y)).size).toBe(3);
-    expect(items[1].y).toBeLessThanOrEqual(items[0].y - 20);
-    expect(items[2].y).toBeLessThanOrEqual(items[1].y - 20);
+    expect(items[1]!.y).toBeLessThanOrEqual(items[0]!.y - 20);
+    expect(items[2]!.y).toBeLessThanOrEqual(items[1]!.y - 20);
   });
 });

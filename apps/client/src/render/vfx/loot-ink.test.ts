@@ -20,8 +20,8 @@ describe('lootTier (M4-6)', () => {
   });
   it('bậc cao hơn: cột cao hơn, rộng hơn, đậm hơn, nằm lâu hơn; màu khác nhau', () => {
     for (let i = 1; i < 6; i++) {
-      const a = LOOT_TIERS[i - 1];
-      const b = LOOT_TIERS[i];
+      const a = LOOT_TIERS[i - 1]!;
+      const b = LOOT_TIERS[i]!;
       expect(b.height).toBeGreaterThan(a.height);
       // Địa/Thiên phẩm cột hẹp hơn bậc 2 để không chiếm quá 5% khung hình; chỉ bậc 0..2 rộng dần.
       if (i <= 2) expect(b.radius).toBeGreaterThan(a.radius);
@@ -30,7 +30,7 @@ describe('lootTier (M4-6)', () => {
     }
     expect(new Set(LOOT_TIERS.map((t) => t.color)).size).toBe(6);
     // Đồ quý dùng kim quang `spirit_gold` (art bible), không tím.
-    expect(LOOT_TIERS[2].color).toBe(0xffde96);
+    expect(LOOT_TIERS[2]!.color).toBe(0xffde96);
   });
 });
 
@@ -46,8 +46,8 @@ describe('trang bị theo phẩm (3-2)', () => {
     expect(cols[2]).toBe(0x6fb4f0);
   });
   it('Thiên phẩm cao xuyên trời (>= 25 m) và xung nhịp; Địa phẩm giữ cột hẹp (ngân sách khung hình)', () => {
-    expect(LOOT_TIERS[4].height).toBeGreaterThanOrEqual(25);
-    expect(LOOT_TIERS[3].radius).toBeLessThan(0.6);
+    expect(LOOT_TIERS[4]!.height).toBeGreaterThanOrEqual(25);
+    expect(LOOT_TIERS[3]!.radius).toBeLessThan(0.6);
     const vals = Array.from({ length: 40 }, (_, i) => lootPulse(4, i * 0.1));
     expect(Math.max(...vals) - Math.min(...vals)).toBeGreaterThan(0.2);
     expect(lootPulse(3, 1.234)).toBe(1);
@@ -65,7 +65,7 @@ describe('lootHop', () => {
     expect(lootHop(LOOT_ARC + LOOT_BOUNCE + 0.01)).toBe(0);
   });
   it('thời lượng đủ cho nảy + nằm + tan cột', () => {
-    for (const t of [0, 1, 2, 3, 4, 5] as const) expect(lootDuration(t)).toBeGreaterThan(LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[t].hold);
+    for (const t of [0, 1, 2, 3, 4, 5] as const) expect(lootDuration(t)).toBeGreaterThan(LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[t]!.hold);
   });
 });
 
@@ -112,15 +112,15 @@ describe('FxPool với cột sáng và vết mực', () => {
 describe('chuông đồ rơi', () => {
   it('bậc cao: nhiều bồi âm hơn, ngân lâu hơn, chuông trầm hơn', () => {
     const p = [0, 1, 2, 3, 4, 5].map((t) => bellPartials(t as 0 | 1 | 2 | 3 | 4 | 5));
-    expect(p[1].length).toBeGreaterThan(p[0].length);
-    expect(p[2].length).toBeGreaterThan(p[1].length);
-    expect(p[4].length).toBeGreaterThan(p[3].length);
-    expect(p[5].length).toBeGreaterThan(p[4].length);
+    expect(p[1]!.length).toBeGreaterThan(p[0]!.length);
+    expect(p[2]!.length).toBeGreaterThan(p[1]!.length);
+    expect(p[4]!.length).toBeGreaterThan(p[3]!.length);
+    expect(p[5]!.length).toBeGreaterThan(p[4]!.length);
     const longest = p.map((x) => Math.max(...x.map((q) => q.dur)));
-    for (let i = 1; i < 6; i++) expect(longest[i]).toBeGreaterThan(longest[i - 1]);
+    for (let i = 1; i < 6; i++) expect(longest[i]).toBeGreaterThan(longest[i - 1]!);
     // Bồi âm không hài hòa (có tỉ lệ không nguyên) như chuông thật.
-    const base = p[2][1].freq;
-    expect(p[2].some((q) => Math.abs(q.freq / base - Math.round(q.freq / base)) > 0.1)).toBe(true);
+    const base = p[2]![1]!.freq;
+    expect(p[2]!.some((q) => Math.abs(q.freq / base - Math.round(q.freq / base)) > 0.1)).toBe(true);
     for (const x of p) for (const q of x) expect(q.gain).toBeLessThanOrEqual(0.3);
   });
 });

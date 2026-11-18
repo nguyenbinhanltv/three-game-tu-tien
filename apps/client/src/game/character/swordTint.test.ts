@@ -17,11 +17,11 @@ describe('kiếm Tinh Khuyết', () => {
 
   it('hào quang là màu tím (lam và đỏ cao hơn lục), không phải xanh ngọc', () => {
     for (const id of ['prop_kiem_tinh_khuyet', 'prop_kiem_tinh_khuyet_cuoi']) {
-      const hex = SWORD_GLOW_TINT[id];
+      const hex = SWORD_GLOW_TINT[id]!;
       expect(hex).toMatch(/^#[0-9a-f]{6}$/i);
       const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-      expect(b).toBeGreaterThan(g);
-      expect(r).toBeGreaterThan(g);
+      expect(b!).toBeGreaterThan(g!);
+      expect(r!).toBeGreaterThan(g!);
     }
   });
 });
@@ -33,7 +33,7 @@ describe('kiếm Kính Quang', () => {
     expect(SWORD_MODELS).toContain('prop_kiem_kinh_quang_cuoi');
     expect(scabbardOf('prop_kiem_kinh_quang')).toBe('prop_vo_kiem_kinh_quang');
     expect(scabbardOf('prop_kiem_kinh_quang_cuoi')).toBe('prop_vo_kiem_kinh_quang');
-    const [r, , b] = [1, 3, 5].map((i) => parseInt(SWORD_GLOW_TINT.prop_kiem_kinh_quang.slice(i, i + 2), 16));
-    expect(b).toBeGreaterThan(r);
+    const [r, , b] = [1, 3, 5].map((i) => parseInt(SWORD_GLOW_TINT.prop_kiem_kinh_quang!.slice(i, i + 2), 16));
+    expect(b!).toBeGreaterThan(r!);
   });
 });
