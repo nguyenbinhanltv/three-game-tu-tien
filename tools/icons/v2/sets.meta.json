@@ -1,0 +1,18 @@
+{
+ "lac_kiem": {"name": "Lạc Kiếm Môn Phục", "hex": "#E4DEC8", "trim": "#7FA6D6", "blade": "#CFE6FF"},
+ "kinh_quang": {"name": "Kính Quang Kiếm Y", "hex": "#C9D3E0", "trim": "#CFE8FF", "blade": "#7E93B3"},
+ "tinh_khuyet": {"name": "Tinh Khuyết Kiếm Bào", "hex": "#1E2335", "trim": "#D9BC6A", "blade": "#9B84F2"},
+ "than_tang": {"name": "Thần Tàng Đan Bào", "hex": "#232B3D", "trim": "#8FE8B8", "blade": "#C2AA62"},
+ "huyen_giap": {"name": "Huyền Giáp Hộ Pháp", "hex": "#2A2C32", "trim": "#A9873F", "blade": "#d6b45e"},
+ "dan_tam": {"name": "Đan Tâm Y Bát", "hex": "#4D7D68", "trim": "#D8C58A", "blade": "#9be8a8"},
+ "han_giao": {"name": "Hàn Giao Lân", "hex": "#2F8798", "trim": "#C9D8DE", "blade": "#7fe9ff"},
+ "liet_mach": {"name": "Liệt Mạch Kiếm Y", "hex": "#C9A26A", "trim": "#9FE0C8", "blade": "#6B4A2A"},
+ "dia_giap": {"name": "Địa Long Hộ Giáp", "hex": "#6E4A32", "trim": "#C9A04A", "blade": "#FFC95A"},
+ "phuc_mach": {"name": "Phục Mạch Đan Bào", "hex": "#58724A", "trim": "#CFC08A", "blade": "#7DFFA0"},
+ "van_kinh": {"name": "Vân Kình Thiết Giáp", "hex": "#5C6C7E", "trim": "#B8C4D2", "blade": "#8FC8FF"},
+ "luu_ly": {"name": "Lưu Ly Đan Y", "hex": "#3F9C96", "trim": "#E8F1E4", "blade": "#7DF5E0"},
+ "co_thanh": {"name": "Cổ Thành Huyền Giáp", "hex": "#262B38", "trim": "#BA9A55", "blade": "#E2BE62"},
+ "tran_khich": {"name": "Trấn Khích Kiếm Y", "hex": "#1B1E26", "trim": "#5FC8C0", "blade": "#7FE0D8"},
+ "tan_thiet": {"name": "Tẫn Thiết Hộ Giáp", "hex": "#23262B", "trim": "#5FC8C0", "blade": "#8FD8D0"},
+ "tinh_dan_bao": {"name": "Tịnh Quang Đan Bào", "hex": "#34383A", "trim": "#6FD3CB", "blade": "#A8F0E4"}
+}

@@ -4,7 +4,8 @@
   gap: 14px;
   align-items: center;
 }
-.upg-mats .content-icon {
+.upg-mats .content-icon,
+.upg-mats .sys-glyph {
   width: 1.4em;
   height: 1.4em;
 }
@@ -41,7 +42,8 @@
   margin-top: 0;
   align-self: center;
 }
-.upg-gemname .content-icon {
+.upg-gemname .content-icon,
+.upg-gemname .sys-glyph {
   width: 1.3em;
   height: 1.3em;
   vertical-align: -0.2em;

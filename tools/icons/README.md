@@ -12,3 +12,7 @@
 ## Icon trang bị (28 món, P3-1/3-4)
 
 `tools/icons/equipment.mjs` dựng bằng Blender (`render_equipment.py`, bảng chất liệu và màu bộ ở đầu file: vải/da/thiết/ngọc/đồng/vân cho đồ thường; Lạc Kiếm ngà+lam, Huyền Giáp đen+đồng, Đan Tâm ngọc bích+vàng nhạt, Hàn Giao Lân bạc băng+lam ngọc cho đồ bộ), ghép lên nền và khung đồng cùng họ M4-7 rồi ghi PNG 1024 vào `<DTL_ASSET_SOURCE>/icons`. Không dùng Tripo hay dịch vụ ngoài. Chạy `node tools/icons/equipment.mjs [id…]` rồi `pnpm icons:build`. Danh sách lấy từ `data/equipment/templates.json` và `setItems.json` (có trong `defs` của `build.mjs`). Atlas 8×9; ô đã có giữ nguyên chỗ, icon mới lấp ô trống.
+
+## Bộ icon U2-I (2026-11-18)
+
+Atlas hiện tại do `pnpm icons:build` đóng từ **PNG 256 px của bộ U2-I** (`<DTL_ASSET_SOURCE>/2d/icons-v2/png256/`, ưu tiên cao nhất), icon không có viền (khung do `ui/u2` vẽ bằng mã). Cách sinh (tờ 3×2 mỗi lượt Codex), cắt/QC, 75 icon hệ thống SVG và dấu ấn bộ: `tools/icons/v2/README.md`. Icon hệ thống có SVG (`hud_*`, `mark_*`, `cur_*`, `st_*`, `ui_*`, `sys_*`) được `UiIcon` vẽ thẳng từ `ui/u2/sysGlyphs.ts`, không qua atlas.

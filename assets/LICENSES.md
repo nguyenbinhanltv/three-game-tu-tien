@@ -683,3 +683,299 @@ Storm & Wind 3D Free by heyheythere - https://heyheythere.itch.io/storm-wind-3d-
 ### Godot 4 Elemental Spells VFX + SFX: Free Sampler (CC0 1.0)
 
 SquigglyFish, https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx. Chỉ dùng 20 file âm thanh (lửa, băng, sét); không cần ghi công, vẫn ghi để truy nguồn.
+
+## Icon 2D Codex v2 (U2-I, 2026-11-18)
+
+Sinh bằng công cụ ảnh tích hợp Codex (`codex exec`) cho dự án Đạp Thiên Lộ, thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. Mỗi tờ là một lưới 3×2 icon (1536×1024) cắt và căn giữa thành PNG 256 px; atlas WebP 128/64 px ở `apps/client/public/assets/ui/icons-{hud,items}.v2.*.webp`. Nguồn: `<DTL_ASSET_SOURCE>/2d/icons-v2/` (`sheets/` tờ gốc + prompt, `png256/` icon đã cắt). Danh sách tờ và prompt: `tools/icons/sheets.v2.json`.
+
+| Nhóm | Số icon | Nguồn |
+| --- | --- | --- |
+| Trang bị 16 bộ (72 món) | 72 | `2d/icons-v2/sheets/s_set_*.png` |
+| Trang bị mẫu thường, pháp bảo, đan phụ | 42 | `s_extra_01..07.png` |
+| Vật phẩm, nguyên liệu, skin | 69 | `s_item_01..12.png`, `s_reroll_01.png` |
+| Chiêu | 36 | `s_skill_01..06.png` |
+| Linh ngọc, linh căn, vai trò, buff đan, tiền tệ, công pháp | 30 | `s_misc_01..05.png` |
+| Biến thức A/B | 18 | dựng bằng mã từ icon chiêu gốc + chip A/B (không có ảnh riêng) |
+| Icon hệ thống (hub, dấu nhiệm vụ, tiền, buff/debuff, nhãn, hệ thống) | 75 | SVG tự viết, `sprite-system.*.svg`, tác giả dự án, không bên thứ ba |
+
+Mỗi icon trong atlas (tên khóa = id icon):
+
+| Icon | Nguồn tạo | Tác giả | Ngày | Nguồn |
+| --- | --- | --- | --- | --- |
+| `buff_atk` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_05.png` |
+| `buff_crit` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_05.png` |
+| `buff_def` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_04.png` |
+| `cur_linh_thach` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_05.png` |
+| `gem_hoa_1` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_02.png` |
+| `gem_hoa_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_02.png` |
+| `gem_hoa_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_02.png` |
+| `gem_kim_1` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_01.png` |
+| `gem_kim_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_01.png` |
+| `gem_kim_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_01.png` |
+| `gem_moc_1` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_01.png` |
+| `gem_moc_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_01.png` |
+| `gem_moc_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_01.png` |
+| `gem_tho_1` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_reroll_01.png` |
+| `gem_tho_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_03.png` |
+| `gem_tho_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_03.png` |
+| `gem_thuy_1` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_02.png` |
+| `gem_thuy_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_02.png` |
+| `gem_thuy_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_02.png` |
+| `hud_cai_dat` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_cong_phap` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_ngu_kiem` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_nguyen_anh` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_nhan_vat` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_nhiem_vu` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_than_thuc` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_thien` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_to_doi` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_tro_giup` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `hud_tui` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `itm_bac_hoang_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_09.png` |
+| `itm_bao_huyet_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_01.png` |
+| `itm_bao_huyet_dan_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_02.png` |
+| `itm_bao_huyet_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_02.png` |
+| `itm_bi_tich_tan_quyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_01.png` |
+| `itm_bich_ngoc_nhi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_07.png` |
+| `itm_bo_y` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_01.png` |
+| `itm_co_thanh_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_08.png` |
+| `itm_co_thanh_phien` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_08.png` |
+| `itm_ct_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_co_thanh.png` |
+| `itm_ct_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_co_thanh.png` |
+| `itm_ct_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_co_thanh.png` |
+| `itm_ct_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_co_thanh.png` |
+| `itm_ct_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_co_thanh.png` |
+| `itm_da_hanh_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_08.png` |
+| `itm_dai_lung_da` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_03.png` |
+| `itm_dai_lung_ngoc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_03.png` |
+| `itm_dai_lung_vai` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_03.png` |
+| `itm_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_02.png` |
+| `itm_dg_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dia_giap.png` |
+| `itm_dg_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dia_giap.png` |
+| `itm_dg_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dia_giap.png` |
+| `itm_dg_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dia_giap.png` |
+| `itm_dg_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dia_giap.png` |
+| `itm_dinh_than_phu` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_03.png` |
+| `itm_dt_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dan_tam.png` |
+| `itm_dt_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dan_tam.png` |
+| `itm_dt_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dan_tam.png` |
+| `itm_dt_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_dan_tam.png` |
+| `itm_gioi_chi_dong` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_04.png` |
+| `itm_gioi_quang_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_09.png` |
+| `itm_gioi_quang_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_09.png` |
+| `itm_gioi_van_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_10.png` |
+| `itm_han_giao_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_08.png` |
+| `itm_han_giao_hoan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_02.png` |
+| `itm_han_quang_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_01.png` |
+| `itm_hg_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_huyen_giap.png` |
+| `itm_hg_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_huyen_giap.png` |
+| `itm_hg_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_huyen_giap.png` |
+| `itm_hg_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_huyen_giap.png` |
+| `itm_hgl_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_han_giao.png` |
+| `itm_hgl_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_han_giao.png` |
+| `itm_hgl_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_han_giao.png` |
+| `itm_ho_phu` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_08.png` |
+| `itm_ho_uyen_da` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_04.png` |
+| `itm_ho_uyen_thiet` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_04.png` |
+| `itm_ho_uyen_vai` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_04.png` |
+| `itm_hoa_than_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_08.png` |
+| `itm_hoa_than_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_10.png` |
+| `itm_hoang_sa_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_04.png` |
+| `itm_hoang_sa_thao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_08.png` |
+| `itm_hoi_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_03.png` |
+| `itm_hoi_mach_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_02.png` |
+| `itm_hoi_xuan_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_03.png` |
+| `itm_huyen_thiet_gioi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_02.png` |
+| `itm_huyen_van_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_02.png` |
+| `itm_huyet_linh_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_08.png` |
+| `itm_ket_dan_dich` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_09.png` |
+| `itm_kho_ha_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_04.png` |
+| `itm_kiem_phach` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_09.png` |
+| `itm_kim_cuong_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_02.png` |
+| `itm_kim_cuong_dan_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_02.png` |
+| `itm_kim_cuong_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_02.png` |
+| `itm_kim_da_mien` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_09.png` |
+| `itm_kinh_hoa_sa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_09.png` |
+| `itm_kinh_quang_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_05.png` |
+| `itm_kinh_tam_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_05.png` |
+| `itm_kinh_van_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_05.png` |
+| `itm_kq_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_kinh_quang.png` |
+| `itm_kq_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_kinh_quang.png` |
+| `itm_kq_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_kinh_quang.png` |
+| `itm_kq_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_kinh_quang.png` |
+| `itm_liet_mach_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_05.png` |
+| `itm_linh_thao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_09.png` |
+| `itm_linh_ti_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_02.png` |
+| `itm_linh_tran` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_10.png` |
+| `itm_lk_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_lac_kiem.png` |
+| `itm_lk_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_lac_kiem.png` |
+| `itm_lk_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_lac_kiem.png` |
+| `itm_lk_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_lac_kiem.png` |
+| `itm_ll_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_luu_ly.png` |
+| `itm_ll_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_luu_ly.png` |
+| `itm_ll_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_luu_ly.png` |
+| `itm_ll_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_luu_ly.png` |
+| `itm_lm_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_liet_mach.png` |
+| `itm_lm_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_liet_mach.png` |
+| `itm_lm_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_liet_mach.png` |
+| `itm_lm_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_liet_mach.png` |
+| `itm_lm_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_liet_mach.png` |
+| `itm_luu_ly_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_05.png` |
+| `itm_luu_quang_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_05.png` |
+| `itm_mach_tinh_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_06.png` |
+| `itm_mach_tinh_phien` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_10.png` |
+| `itm_mach_van_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_06.png` |
+| `itm_manh_luc_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_03.png` |
+| `itm_manh_luc_dan_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_03.png` |
+| `itm_manh_luc_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_03.png` |
+| `itm_moc_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_01.png` |
+| `itm_nanh_soi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_10.png` |
+| `itm_ngan_ha_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_06.png` |
+| `itm_ngan_mach_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_06.png` |
+| `itm_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_02.png` |
+| `itm_ngoc_boi_linh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_06.png` |
+| `itm_ngoc_boi_moc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_06.png` |
+| `itm_ngoc_boi_thanh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_07.png` |
+| `itm_ngung_anh_phach` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_10.png` |
+| `itm_ngung_dan_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_01.png` |
+| `itm_ngung_dan_mach_tinh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_10.png` |
+| `itm_nguyen_anh_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_10.png` |
+| `itm_nguyen_quang_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_10.png` |
+| `itm_pha_an_phu` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_03.png` |
+| `itm_pha_canh_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_03.png` |
+| `itm_pha_canh_dan_2` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_03.png` |
+| `itm_pha_canh_dan_3` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_04.png` |
+| `itm_phu_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_07.png` |
+| `itm_pm_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_phuc_mach.png` |
+| `itm_pm_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_phuc_mach.png` |
+| `itm_pm_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_phuc_mach.png` |
+| `itm_pm_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_phuc_mach.png` |
+| `itm_pm_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_phuc_mach.png` |
+| `itm_sa_thach_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_07.png` |
+| `itm_skin_crimson_knight` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
+| `itm_skin_duskrella` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
+| `itm_skin_kings_demon` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
+| `itm_skin_noxavyra` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
+| `itm_skin_varkessa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skin_tokens.png` |
+| `itm_tan_giac` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_11.png` |
+| `itm_tay_luyen_thach` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_11.png` |
+| `itm_than_tang_ngoc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_11.png` |
+| `itm_than_tang_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_08.png` |
+| `itm_thanh_lien_an` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_01.png` |
+| `itm_thanh_phong_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_01.png` |
+| `itm_thiet_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_01.png` |
+| `itm_thiet_tinh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_11.png` |
+| `itm_thu_linh_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_08.png` |
+| `itm_tinh_khuyet_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_08.png` |
+| `itm_tinh_khuyet_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons/` |
+| `itm_tinh_quang_mac` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_11.png` |
+| `itm_tinh_van_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_08.png` |
+| `itm_tinh_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_11.png` |
+| `itm_tk_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_khuyet.png` |
+| `itm_tk_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_khuyet.png` |
+| `itm_tk_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_khuyet.png` |
+| `itm_tk_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_khuyet.png` |
+| `itm_tk_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_khuyet.png` |
+| `itm_tkh_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tran_khich.png` |
+| `itm_tkh_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tran_khich.png` |
+| `itm_tkh_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tran_khich.png` |
+| `itm_tkh_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tran_khich.png` |
+| `itm_tkh_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tran_khich.png` |
+| `itm_tqd_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_dan_bao.png` |
+| `itm_tqd_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_dan_bao.png` |
+| `itm_tqd_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_dan_bao.png` |
+| `itm_tqd_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_dan_bao.png` |
+| `itm_tqd_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tinh_dan_bao.png` |
+| `itm_tram_ta_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_01.png` |
+| `itm_tran_gioi_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_09.png` |
+| `itm_tran_hon_linh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_01.png` |
+| `itm_truc_co_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_12.png` |
+| `itm_tt_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_than_tang.png` |
+| `itm_tt_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_than_tang.png` |
+| `itm_tt_gioi_chi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_than_tang.png` |
+| `itm_tt_ngoc_boi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_than_tang.png` |
+| `itm_tt_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_than_tang.png` |
+| `itm_tth_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tan_thiet_v2.png` |
+| `itm_tth_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tan_thiet_v2.png` |
+| `itm_tth_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tan_thiet_v2.png` |
+| `itm_tth_trang_suc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tan_thiet_v2.png` |
+| `itm_tth_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_tan_thiet_v2.png` |
+| `itm_tu_khi_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_04.png` |
+| `itm_tu_kim_ho_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_01.png` |
+| `itm_van_hai_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_12.png` |
+| `itm_van_ngoa_da` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_07.png` |
+| `itm_van_ngoa_vai` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_07.png` |
+| `itm_van_ngoa_van` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_extra_07.png` |
+| `itm_vk_dai_lung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_van_kinh.png` |
+| `itm_vk_dao_bao` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_van_kinh.png` |
+| `itm_vk_ho_uyen` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_van_kinh.png` |
+| `itm_vk_van_ngoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_set_van_kinh.png` |
+| `itm_yeu_dan` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_item_12.png` |
+| `mark_nhan` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `mark_xong` | Dự án | dự án | 2026-11-18 | SVG tự viết `tools/icons/v2/sysicons.py`, rasterize |
+| `met_bat_dong_kim_than` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_05.png` |
+| `met_lac_kiem_quyet` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_05.png` |
+| `met_thanh_moc_dan_kinh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_05.png` |
+| `role_ho_tro` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_04.png` |
+| `role_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_04.png` |
+| `role_tank` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_04.png` |
+| `root_hoa` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_04.png` |
+| `root_kim` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_03.png` |
+| `root_moc` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_03.png` |
+| `root_tho` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_04.png` |
+| `root_thuy` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_misc_03.png` |
+| `skl_anh_duoc_hoa_than` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_05.png` |
+| `skl_anh_thiet_than` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_02.png` |
+| `skl_dan_hoa_phong_tran` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_05.png` |
+| `skl_dich_son_xung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_02.png` |
+| `skl_duoc_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_05.png` |
+| `skl_hoanh_kiem_pha_mach` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_03.png` |
+| `skl_hoi_nguyen_thuat` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_01.png` |
+| `skl_hoi_thien_dan_lo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_05.png` |
+| `skl_kiem_anh_bo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_03.png` |
+| `skl_kiem_anh_phan_quang` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_04.png` |
+| `skl_kiem_dan_ban_menh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_04.png` |
+| `skl_kiem_khi_tram` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_01.png` |
+| `skl_kiem_vu_tam_diep` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_04.png` |
+| `skl_kim_chung_tran` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_02.png` |
+| `skl_kim_cuong_bat_hoai` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_02.png` |
+| `skl_linh_khi_ho_the` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_01.png` |
+| `skl_loi_dinh_nhat_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_01.png` |
+| `skl_luu_huong_bo` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_06.png` |
+| `skl_moc_linh_tran` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_06.png` |
+| `skl_nghich_kiem_chuyen_phong` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_04.png` |
+| `skl_ngung_dan_ho_the` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_06.png` |
+| `skl_phan_anh_kiem_anh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_04.png` |
+| `skl_phi_kiem` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_01.png` |
+| `skl_son_nhac_hoa_than` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_02.png` |
+| `skl_thien_dan_phap_gioi` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_06.png` |
+| `skl_thien_kiem_hoa_hinh` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_04.png` |
+| `skl_thien_kiem_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_01.png` |
+| `skl_thien_kim_phap_tuong` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_02.png` |
+| `skl_thiet_bich_xung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_03.png` |
+| `skl_thiet_quyen_chan_dia` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_03.png` |
+| `skl_thuan_di_cuu_vien` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_06.png` |
+| `skl_thuan_di_ho_the` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_03.png` |
+| `skl_thuan_di_tram` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_05.png` |
+| `skl_tran_son_an` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_03.png` |
+| `skl_van_kiem_quy_tong` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_05.png` |
+| `skl_xuan_phong_hoa_vu` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/icons-v2/sheets/s_skill_06.png` |
+| `var_hoi_nguyen_thuat_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_hoi_nguyen_thuat_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_hoi_xuan_quyet_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_hoi_xuan_quyet_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_kiem_khi_tram_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_kiem_khi_tram_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_linh_khi_ho_the_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_linh_khi_ho_the_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_loi_dinh_nhat_kiem_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_loi_dinh_nhat_kiem_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_phi_kiem_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_phi_kiem_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_phi_kiem_truy_hon_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_phi_kiem_truy_hon_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_thien_kiem_vu_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_thien_kiem_vu_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_tran_son_an_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+| `var_tran_son_an_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |

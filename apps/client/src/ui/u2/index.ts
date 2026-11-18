@@ -12,3 +12,5 @@ export { Slot, IconFrame } from './Slot';
 export { Tooltip, Dialog, Toasts, type ToastItem } from './Overlay';
 export { SkillButton, InkBanner } from './Skill';
 export { CornerCloud, CloudScroll, WaveLine, InkStroke, SonSeal, JadeRing, LockMark, CrossMark } from './patterns';
+export { SysGlyph, isSysGlyph } from './SysGlyph';
+export { SetMark, emblemOf } from './SetMark';

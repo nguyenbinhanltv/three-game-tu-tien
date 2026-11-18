@@ -214,7 +214,8 @@
   align-items: center;
   gap: 4px;
 }
-.reward-item .content-icon {
+.reward-item .content-icon,
+.reward-item .sys-glyph {
   width: 1.5em;
   height: 1.5em;
 }
@@ -255,7 +256,8 @@
   margin-top: 2px;
   font-size: 12px;
 }
-.craft-inputs .content-icon {
+.craft-inputs .content-icon,
+.craft-inputs .sys-glyph {
   width: 1.4em;
   height: 1.4em;
 }
@@ -570,7 +572,8 @@
   place-items: center;
   transition: filter var(--k-dur) var(--k-ease);
 }
-.skill-icon .content-icon {
+.skill-icon .content-icon,
+.skill-icon .sys-glyph {
   width: 44px;
   height: 44px;
 }
@@ -809,7 +812,8 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
     width: 50px;
     height: 50px;
   }
-  .skill-icon .content-icon {
+  .skill-icon .content-icon,
+  .skill-icon .sys-glyph {
     width: 38px;
     height: 38px;
   }
@@ -905,7 +909,8 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   font-size: 11px;
   color: #f2e8cf;
 }
-.buff-chip .content-icon {
+.buff-chip .content-icon,
+.buff-chip .sys-glyph {
   width: 22px;
   height: 22px;
 }
