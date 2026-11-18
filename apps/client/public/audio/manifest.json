@@ -946,6 +946,30 @@
         "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
       }
     },
+    "dungeon_rift": {
+      "src": [
+        "music/dungeon_rift.798f46ef6b.webm",
+        "music/dungeon_rift.07f6500536.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Xích Tẫn Khích — Đáy Hẻm",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
+    "dungeon_rift_boss": {
+      "src": [
+        "music/dungeon_rift_boss.22c319e013.webm",
+        "music/dungeon_rift_boss.882788c421.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Xích Tẫn Khích — Chiến Giới",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
     "tribulation": {
       "src": [
         "music/tribulation.1119f0e8ef.webm",

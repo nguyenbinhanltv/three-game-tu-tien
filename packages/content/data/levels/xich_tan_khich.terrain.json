@@ -1,0 +1,30 @@
+{
+  "id": "xich_tan_khich",
+  "seed": 20261119,
+  "size": 3072,
+  "margin": 24,
+  "natural": {
+    "freq": 0.004,
+    "baseOct": 3,
+    "ridgeOct": 1,
+    "level": 60,
+    "baseAmp": 1.4,
+    "ridgeAmp": 0,
+    "maskFreq": 0.001,
+    "maskOct": 1,
+    "maskLo": 5,
+    "maskHi": 6
+  },
+  "canyon": {
+    "cx": 1520,
+    "cz": 1300,
+    "halfW": 46,
+    "halfL": 82,
+    "wallH": 50,
+    "rise": 15,
+    "wobble": 9,
+    "rib": 9
+  },
+  "features": [],
+  "colliders": []
+}

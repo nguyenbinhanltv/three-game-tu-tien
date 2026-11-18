@@ -101,6 +101,15 @@ describe('MusicDirector', () => {
     expect(g.update(0.5, { ...base, dungeon: true })).toMatchObject({ to: 'dungeon_boss' });
   });
 
+  it('boss trong Xích Tẫn Khích là dungeon_rift_boss (bài riêng của phó bản)', () => {
+    const g = new MusicDirector();
+    const inp = { ...base, dungeon: true, level: 'xich_tan_khich' };
+    g.update(0, inp);
+    expect(g.track).toBe('dungeon_rift');
+    g.engage(0.5, true);
+    expect(g.update(0.5, inp)).toMatchObject({ to: 'dungeon_rift_boss' });
+  });
+
   it('độ kiếp đè mọi thứ, đả tọa chỉ khi không giao tranh', () => {
     const d = new MusicDirector();
     d.update(0, base);
