@@ -140,6 +140,12 @@ for (const s of METHOD_SKILLS) {
   if ((s.kind === 'hot' || s.kind === 'revive') && !(s.allyRadius! > 0)) err(`skill ${s.id}: cần allyRadius`);
   if (s.kind === 'hot' && !(s.duration! > 0)) err(`skill ${s.id}: hồi theo thời gian cần duration`);
 }
+// DV-2: tên quái chương 5 (Dị Vực) khớp glossary.divucMonsters.
+for (const [id, name] of Object.entries(GLOSSARY.divucMonsters)) {
+  if (!MONSTER.has(id)) err(`glossary.divucMonsters: ${id} không phải quái`);
+  else if (t(`mon.${id}`) !== name) err(`quái ${id}: tên "${t(`mon.${id}`)}" lệch glossary.divucMonsters ("${name}")`);
+}
+
 // E2-G: tên chiêu bậc 2–3 khớp glossary.skillsTier; chiêu khóa (Nguyên Anh trở lên) không được nằm trong hàng chiêu chơi được.
 for (const [id, name] of Object.entries(GLOSSARY.skillsTier)) {
   if (!SKILL.has(id)) err(`glossary.skillsTier: ${id} không phải chiêu`);

@@ -387,5 +387,9 @@
     "phong_an_mon_1": "Môn phong ấn thứ nhất",
     "phong_an_mon_2": "Môn phong ấn thứ hai",
     "phong_an_mon_3": "Môn phong ấn thứ ba"
+  },
+  "divucMonsters": {
+    "mon_liet_hoa_ma_nguu": "Liệt Hỏa Ma Ngưu",
+    "mon_u_anh_cot_loc": "U Ảnh Cốt Lộc"
   }
 }

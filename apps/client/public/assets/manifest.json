@@ -3370,6 +3370,96 @@
         }
       }
     },
+    "mon_liet_hoa_ma_nguu": {
+      "id": "mon_liet_hoa_ma_nguu",
+      "class": "monster",
+      "source": "assets/build/raw/mon_liet_hoa_ma_nguu.glb",
+      "file": "mon_liet_hoa_ma_nguu.1818a686e1.glb",
+      "bytes": 1180068,
+      "rawBytes": 1280520,
+      "triangles": 9000,
+      "rawTriangles": 9000,
+      "lod0Cap": 9000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 24,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "mon_liet_hoa_ma_nguu_emissive",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "emissiveTexture"
+          ]
+        },
+        {
+          "name": "mon_liet_hoa_ma_nguu_normal",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_liet_hoa_ma_nguu_color",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_liet_hoa_ma_nguu_orm",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 9000
+        },
+        {
+          "level": 1,
+          "triangles": 3000,
+          "target": 3000
+        },
+        {
+          "level": 2,
+          "triangles": 1000,
+          "target": 1000
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.23,
+          "height": 2,
+          "depth": 3.6256,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.23,
+          "height": 2,
+          "depth": 3.6256,
+          "minY": 0
+        }
+      }
+    },
     "mon_mach_thuong_ho_ve": {
       "id": "mon_mach_thuong_ho_ve",
       "class": "monster",
@@ -4016,6 +4106,87 @@
           "width": 0.4513,
           "height": 0.79,
           "depth": 1.4,
+          "minY": 0
+        }
+      }
+    },
+    "mon_u_anh_cot_loc": {
+      "id": "mon_u_anh_cot_loc",
+      "class": "monster",
+      "source": "assets/build/raw/mon_u_anh_cot_loc.glb",
+      "file": "mon_u_anh_cot_loc.a3e721651e.glb",
+      "bytes": 1222936,
+      "rawBytes": 1425312,
+      "triangles": 9000,
+      "rawTriangles": 9000,
+      "lod0Cap": 9000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 22,
+      "animations": [
+        "attack",
+        "death",
+        "hit_light",
+        "idle",
+        "run"
+      ],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "mon_u_anh_cot_loc_normal",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "mon_u_anh_cot_loc_color",
+          "mimeType": "image/ktx2",
+          "width": 1024,
+          "height": 1024,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "mon_u_anh_cot_loc_orm",
+          "mimeType": "image/ktx2",
+          "width": 512,
+          "height": 512,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 9000
+        },
+        {
+          "level": 1,
+          "triangles": 2994,
+          "target": 3000
+        },
+        {
+          "level": 2,
+          "triangles": 998,
+          "target": 1000
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.2659,
+          "height": 2.6,
+          "depth": 2.2197,
+          "minY": 0
+        },
+        "build": {
+          "width": 1.2659,
+          "height": 2.6,
+          "depth": 2.2197,
           "minY": 0
         }
       }

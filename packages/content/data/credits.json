@@ -280,6 +280,40 @@
       "mods": [
         "render"
       ]
+    },
+    {
+      "id": "flame_bull",
+      "kind": "model",
+      "title": "FLAME BULL // The Infernal Beast",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/flame-bull-the-infernal-beast-0f6ac3ada7e648c7b727ba22c67bb684",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig",
+        "anim"
+      ],
+      "assets": [
+        "mon_liet_hoa_ma_nguu"
+      ]
+    },
+    {
+      "id": "shadow_stag",
+      "kind": "model",
+      "title": "Shadow Stag - Bone-Antlered Dark Fantasy",
+      "author": "Pigcraft",
+      "url": "https://sketchfab.com/3d-models/shadow-stag-bone-antlered-dark-fantasy-607bb5705fcd431bb09faec790fa4692",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig",
+        "anim"
+      ],
+      "assets": [
+        "mon_u_anh_cot_loc"
+      ]
     }
   ]
 }
