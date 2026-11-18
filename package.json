@@ -46,11 +46,14 @@
     "invite": "pnpm --filter @dtl/server invite",
     "icons:build": "node tools/icons/build.mjs",
     "icons:check": "node tools/icons/build.mjs --check",
+    "lint": "eslint .",
     "docs:check": "node tools/docs/check.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
     "concurrently": "^9.1.0",
-    "typescript": "~5.9.3"
+    "eslint": "^9.39.5",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.73.0"
   }
 }
