@@ -543,7 +543,9 @@ function checkEquipLoot(id: string, l: LootDef) {
     if (l.src === 'elite' && i === 0 && (hi > 3 || r.q[2] / tot < 0.3)) err(`${w}: tinh anh chủ yếu Huyền phẩm, tối đa Địa phẩm`);
     if (l.src === 'boss' && i === 0 && lo < 2) err(`${w}: boss chỉ rơi từ Huyền phẩm`);
   });
-  if (l.src === 'boss' && !(rolls[0]?.chance === 1)) err(`loot ${id}: boss phải chắc chắn rơi một món (equip[0].chance = 1)`);
+  // Quái kiếp (Nhật Thực Dực Chủ) không rơi đồ (`minionOf`), nên không cần bảng rơi trang bị.
+  const tribBoss = Object.values(TRIB_DEFS).some((d) => d.phases.some((p) => p.nhatThuc?.boss === id));
+  if (l.src === 'boss' && !tribBoss && !(rolls[0]?.chance === 1)) err(`loot ${id}: boss phải chắc chắn rơi một món (equip[0].chance = 1)`);
 }
 for (const id of LOOT.keys()) if (!MONSTER.has(id)) err(`loot: quái không tồn tại ${id}`);
 for (const [id, l] of LOOT) checkEquipLoot(id, l);

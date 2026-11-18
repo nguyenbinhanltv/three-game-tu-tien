@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { ANH_BIEN_LEVEL, groundAt, MAX_LEVEL, parseRealmCode, peakGated, S, tribDef, tribForLevel, tribLevelOf, tribRoomNameOf, tribSealPos, xpNeed, type FxMsg, type HazardMsg } from '@dtl/shared';
+import { MF_STUN, ANH_BIEN_LEVEL, groundAt, MAX_LEVEL, parseRealmCode, peakGated, S, tribDef, tribForLevel, tribLevelOf, tribRoomNameOf, tribSealPos, xpNeed, type FxMsg, type HazardMsg } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
 
 // Nhật Thực Kiếp (DV-3K, Anh Biến): dẫn lôi thắp năm Trấn Giới Bia, Nhật Thực Dực Chủ dập bia, tia cuối đánh vào khe khi đủ bia, vật phẩm, lên cấp 32.
@@ -165,6 +165,29 @@ describe('Nhật Thực Kiếp: chạy hết một lượt', () => {
     expect(t.bosses().filter((m) => m.state !== 4 && t.sim.monById.has(m.id))).toHaveLength(0);
   });
 
+  it('thiên lôi rơi trúng Nhật Thực Dực Chủ: bật cờ MF_STUN cho client và cắt chú đang niệm', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const t = setup();
+    t.p.god = true;
+    t.begin();
+    t.goto(CTR);
+    t.run(26);
+    const boss = t.bosses()[0];
+    boss.chant = { startAt: 0, endAt: 1e12 };
+    let seen = false;
+    t.run(36, () => {
+      // Giữ hắn sát người độ kiếp (trong tầm tia) và quan sát cờ choáng.
+      if (!seen) {
+        boss.s.x = t.p.move.x;
+        boss.s.z = t.p.move.z;
+      }
+      if (boss.s.mf & MF_STUN) seen = true;
+    });
+    expect(seen).toBe(true);
+    expect(boss.chant).toBeNull();
+    expect(boss.stunUntil).toBeGreaterThan(t.sim.now);
+  });
+
   it('đủ bia: tia cuối đánh vào khe (fx rift), không có tia khóa mệnh vào người; thành công lên cấp 32', () => {
     const t = setup();
     t.p.god = true;
@@ -192,5 +215,20 @@ describe('Nhật Thực Kiếp: chạy hết một lượt', () => {
     t.goto(CTR);
     t.run(91);
     expect(t.fx('rift')).toHaveLength(0);
+  });
+});
+
+describe('Anh Biến: dữ liệu cũ khi nâng trần', () => {
+  it('migrateHoaThanXp kẹp tu vi cấp 28 (từng là trần 99.999.999) về xpNeed(28), không đụng cấp khác', async () => {
+    const { default: Database } = await import('better-sqlite3');
+    const { migrateHoaThanXp } = await import('../db');
+    const db = new Database(':memory:');
+    db.exec('CREATE TABLE characters (id INTEGER PRIMARY KEY, level INTEGER, xp REAL)');
+    db.prepare('INSERT INTO characters VALUES (1, 28, 99999999), (2, 28, 1000), (3, 27, 170000)').run();
+    migrateHoaThanXp(db);
+    const xp = (id: number) => (db.prepare('SELECT xp FROM characters WHERE id = ?').get(id) as { xp: number }).xp;
+    expect(xp(1)).toBe(xpNeed(28));
+    expect(xp(2)).toBe(1000);
+    expect(xp(3)).toBe(170000);
   });
 });

@@ -188,14 +188,13 @@ export interface TribDanLoi {
 }
 
 /**
- * Nhật thực (Anh Biến, cơ chế `nhat_thuc`): Nhật Thực Dực Chủ (`boss`, máu `hpFrac` so với boss ngoài trời) giáng xuống `dist` mét trước mặt người độ kiếp.
+ * Nhật thực (Anh Biến, cơ chế `nhat_thuc`): Nhật Thực Dực Chủ (`boss`, máu lấy từ `hpMul` của `monsters.json`) giáng xuống `dist` mét trước mặt người độ kiếp.
  * Mỗi `smashEvery` giây hắn nhắm một bia đang sáng, niệm `smashWarn` giây rồi dập (bia tắt, mất tiến độ); ngắt chú (choáng/mất thế) thì hủy.
  * Thiên lôi vẫn rơi mỗi `every` giây quanh người độ kiếp (`warn`, `r`, `pct`) và đánh cả hắn: hắn đứng trong `r` thì mất thế `stun` giây.
  * Tịnh Quang đỡ thay một đòn mỗi `shieldEvery` giây.
  */
 export interface TribNhatThuc {
   boss: string;
-  hpFrac: number;
   dist: number;
   smashEvery: number;
   smashWarn: number;

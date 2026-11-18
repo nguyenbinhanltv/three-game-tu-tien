@@ -379,6 +379,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         return false;
       }
     }
+    const level = tribLevelOf(def);
     const key = randomUUID();
     const opts = { tribRoom: key };
     const mates: PlayerEnt[] = [];
@@ -386,10 +387,11 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       const r = def.guard?.r ?? 20;
       for (const m of parties.matesInRoom(p.char.id, this)) {
         if (m === p || m.char.id === p.char.id || m.trib || this.sim.leaveBlocker(m)) continue;
+        // Sân kiếp trả mọi người về `returnLevel`: hộ pháp chưa đủ cấp vào level đó thì không kéo theo (nếu không sẽ bị đưa tới bản đồ quá cấp).
+        if (m.char.level < (LEVELS[LEVELS[level].dungeon?.returnLevel ?? '']?.minLevel ?? 0)) continue;
         if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) <= r) mates.push(m);
       }
     }
-    const level = tribLevelOf(def);
     tickets.issue(p.char.id, level, null, { key, id: def.id });
     this.sendTransfer(p, level, opts);
     for (const m of mates) {

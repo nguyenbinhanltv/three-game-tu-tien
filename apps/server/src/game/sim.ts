@@ -118,9 +118,7 @@ export class GameSim {
     end: (p, ok) => this.endTribulation(p, ok, false),
     spawnBoss: (p, id, dist) => this.tribHub.spawnTribBoss(p, id, dist),
     removeMonster: (m) => this.removeMonster(m),
-    stunMonster: (m, sec) => {
-      m.stunUntil = Math.max(m.stunUntil, this.now + sec * 1000);
-    },
+    stunMonster: (m, sec) => this.monSys.stun(m, sec),
     heal: (p, n) => this.healPlayer(p, n),
   });
   /** Bình cảnh, tâm ma, linh căn (P3-7). */
