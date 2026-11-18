@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { type Appearance, genderEnabled, type Gender, HAIRS, isRootId, parseAppearance, type RootId, validName } from '@dtl/shared';
-import { APPEARANCE, t } from '@dtl/content';
+import { APPEARANCE, hasString, t } from '@dtl/content';
 import { assets } from '../game/core/assets';
 import { playMusic, sfx, unlockAudio } from '../game/audio/audio';
 import { TitleBackdrop } from '../game/world/backdrop';
-import { lastZoneArt, setBootArt } from '../game/world/bootArt';
+import { lastZoneArt, regionOfArt, setBootArt } from '../game/world/bootArt';
 import { applyUiArt } from './Art';
 import { CHR_V2_ON } from '../game/character/playerSkins';
 import { Game } from '../game/engine';
@@ -248,6 +248,11 @@ const STAGES: [stat: string, line: string][] = [
   ['sect', 'ui.load.sect'],
   ['minimap', 'ui.load.minimap'],
 ];
+/** Khóa chuỗi theo vùng của tranh màn tải (`<khóa>.<vùng>`); Vân Lam và vùng thiếu chuỗi dùng khóa gốc. */
+export function regional(key: string): string {
+  const k = `${key}.${regionOfArt(lastZoneArt())}`;
+  return hasString(k) ? k : key;
+}
 /** Phần thanh tiến độ dành cho byte asset (AssetCache theo manifest); còn lại là các mốc dựng thế giới. */
 const ASSET_SHARE = 0.2;
 
@@ -281,11 +286,11 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
         const g = Game.current;
         let steps = 0;
         if (g) {
-          push('ui.load.enter');
+          push(regional('ui.load.enter'));
           steps++;
           for (const [stat, key] of STAGES) {
             if (g.loadStats[stat] === undefined) break;
-            push(key);
+            push(regional(key));
             steps++;
           }
         }
@@ -445,7 +450,7 @@ export function App() {
     <>
       {title && (
         <div className="title-screen">
-          <div className="ts-sub">{t('ui.subtitle')}</div>
+          <div className="ts-sub">{t(phase === 'login' ? 'ui.subtitle' : regional('ui.subtitle'))}</div>
           {phase === 'login' && <Login />}
           {(phase === 'connecting' || phase === 'loading' || phase === 'game') && <LoadingPanel onDone={() => setTitle(false)} />}
           {phase === 'error' && <ErrorPanel text={error} />}

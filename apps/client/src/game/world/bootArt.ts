@@ -107,3 +107,14 @@ export async function setBootArt(id: string, mode: 'title' | 'zone'): Promise<vo
   };
   el.src = url;
 }
+
+/** Vùng chuỗi của tranh màn tải: quyết định phụ đề và các dòng tải theo vùng (Vân Lam là mặc định, không hậu tố). */
+export type LoadRegion = 'van_lam' | 'doan_mach' | 'van_hai' | 'thien_khuyet' | 'bac_hoang';
+const REGION_OF_ART: Record<string, LoadRegion> = {
+  doan_mach: 'doan_mach',
+  phuc_mach_quat: 'doan_mach',
+  van_hai_phu_dao: 'van_hai',
+  thien_khuyet_co_thanh: 'thien_khuyet',
+  bac_hoang: 'bac_hoang',
+};
+export const regionOfArt = (art: string): LoadRegion => REGION_OF_ART[art] ?? 'van_lam';

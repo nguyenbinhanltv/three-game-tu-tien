@@ -68,11 +68,7 @@ function ChapterMapBody() {
   const def = CHAPTERS.find((c) => c.id === ch) ?? defaultChapter(ctx);
   useEffect(() => {
     if (!ch) pickChapter(def.id);
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeChapters();
-    };
-    addEventListener('keydown', onKey);
-    return () => removeEventListener('keydown', onKey);
+    // Esc/N đóng bản đồ do `game/engine/input.ts` xử lý (chặn mọi phím khác của game khi bản đồ mở).
   }, []);
   const art = useArtUrl('loading', def.art);
   const nodes = def.nodes.map((n) => ({ n, st: nodeState(def, n, ctx) }));
