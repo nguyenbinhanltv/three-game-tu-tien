@@ -1,6 +1,8 @@
 // Profiler tick nhẹ theo hệ (PERF-TICK2). Mặc định TẮT (TICK_PROF=1 để bật): khi tắt, `lap` chỉ là một phép so sánh.
 // Dùng: p.begin(); ...làm việc...; p.lap('tên'); ...; p.end(). Mỗi tick ghi mili giây của từng đoạn, /health trả p50/p95/max.
 
+import { log } from '../log';
+
 const ENABLED = process.env.TICK_PROF === '1';
 const KEEP = 1200;
 
@@ -69,11 +71,11 @@ export async function maybeCpuProfile(): Promise<void> {
   await post('Profiler.enable');
   setTimeout(async () => {
     await post('Profiler.start');
-    console.log('[cpuprof] bắt đầu');
+    log.info('[cpuprof] bắt đầu');
     setTimeout(async () => {
       const r = (await post('Profiler.stop')) as { profile: unknown };
       fs.writeFileSync(file, JSON.stringify(r.profile));
-      console.log('[cpuprof] đã ghi', file);
+      log.info('[cpuprof] đã ghi', file);
     }, Number(durS) * 1000);
   }, Number(startS) * 1000);
 }
