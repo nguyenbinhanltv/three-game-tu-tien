@@ -1,0 +1,324 @@
+/*
+ * Hoa Trúc (bước 1): tranh vẽ toàn thân thay khung xem 3D ở bảng Nhân vật. Chỉ var(--u-*): không màu cứng (u2/tokens.test.ts khóa).
+ * Tranh TRÀN HẾT khu trang bị, hai cột ô nổi trên tranh.
+ */
+.equip-board-grid {
+  position: relative;
+  min-height: 560px;
+}
+.equip-board-grid > .equip-col {
+  position: relative;
+  z-index: 2;
+}
+/* cột giữa chỉ giữ chỗ; tranh phủ cả lưới */
+.equip-board-grid > .hoatruc {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.equip-board-grid > .equip-spacer {
+  min-width: 0;
+}
+
+.hoatruc {
+  --qc: var(--u-q0);
+  --qglow: 0;
+  cursor: default;
+  user-select: none;
+}
+.hoatruc[data-q='1'] {
+  --qc: var(--u-q1);
+  --qglow: 0.25;
+}
+.hoatruc[data-q='2'] {
+  --qc: var(--u-q2);
+  --qglow: 0.4;
+}
+.hoatruc[data-q='3'] {
+  --qc: var(--u-q3);
+  --qglow: 0.55;
+}
+.hoatruc[data-q='4'] {
+  --qc: var(--u-q4);
+  --qglow: 0.7;
+}
+.hoatruc[data-q='5'] {
+  --qc: var(--u-q5);
+  --qglow: 0.85;
+}
+.hoatruc-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--u-thanh-1);
+}
+.hoatruc-bg {
+  position: absolute;
+  inset: -3%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+  animation: hoatruc-fade var(--u-dur-open) var(--u-ease) both;
+}
+/* hào quang theo phẩm cao nhất, nằm sau nhân vật */
+.hoatruc-aura {
+  position: absolute;
+  inset: 0;
+  opacity: var(--qglow);
+  background: radial-gradient(ellipse at 50% 56%, color-mix(in srgb, var(--qc) 55%, transparent), transparent 62%);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.hoatruc[data-q='5'] .hoatruc-aura {
+  background: radial-gradient(
+    ellipse at 50% 56%,
+    color-mix(in srgb, var(--u-q5-a) 50%, transparent),
+    color-mix(in srgb, var(--u-q5-c) 25%, transparent) 45%,
+    transparent 66%
+  );
+}
+.hoatruc-char {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 0 0 0);
+}
+.hoatruc-char[data-swap='1'] {
+  animation: hoatruc-reveal 700ms var(--u-ease) both;
+}
+.hoatruc-char canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--u-ink-0) 35%, transparent));
+}
+.hoatruc-miss {
+  position: absolute;
+  inset: 20% 30%;
+  background: var(--u-wash-gold);
+}
+/* kiếm vẽ riêng ghép sau lưng nhân vật, chuôi nhô qua vai phải; đổi kiếm thì lớp này đổi theo */
+.hoatruc-sword {
+  --px: 0px;
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  height: 76%;
+  transform: translateX(calc(-50% + var(--px, 0px))) rotate(215deg);
+  transform-origin: 50% 60%;
+  animation: hoatruc-sword-in 520ms var(--u-ease) both;
+  pointer-events: none;
+}
+.hoatruc-sword img {
+  display: block;
+  height: 100%;
+  width: auto;
+  filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--u-ink-0) 40%, transparent));
+}
+/* sương + hạt linh khí (lớp trước cùng, chuyển ngược chiều với nền) */
+.hoatruc-mist {
+  position: absolute;
+  inset: -4%;
+  pointer-events: none;
+  will-change: transform;
+}
+.hoatruc-fog {
+  position: absolute;
+  left: -20%;
+  width: 140%;
+  height: 34%;
+  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--u-thanh-0) 75%, transparent), transparent 68%);
+  animation: hoatruc-fog 40s linear infinite alternate;
+}
+.hoatruc-fog.f1 {
+  bottom: 4%;
+}
+.hoatruc-fog.f2 {
+  bottom: 24%;
+  opacity: 0.55;
+  animation-duration: 58s;
+  animation-direction: alternate-reverse;
+}
+.hoatruc-mote {
+  position: absolute;
+  bottom: -2%;
+  border-radius: 50%;
+  background: var(--u-ngoc-hi);
+  box-shadow: 0 0 6px 1px var(--u-ngoc-hi);
+  opacity: 0;
+  animation: hoatruc-rise linear infinite;
+}
+.hoatruc-mote[data-gold='1'] {
+  background: var(--u-gold-hi);
+  box-shadow: 0 0 6px 1px var(--u-gold);
+}
+/* vệt mực quét ngang khi đổi bộ */
+.hoatruc-ink {
+  position: absolute;
+  top: 12%;
+  bottom: 12%;
+  left: 0;
+  width: 70%;
+  color: var(--u-ink-0);
+  pointer-events: none;
+  animation: hoatruc-ink 780ms var(--u-ease) both;
+}
+.hoatruc-ink svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* dấu triện tên bộ */
+.hoatruc-seal {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  padding: 4px 14px;
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-2);
+  color: var(--u-son-text);
+  background: var(--u-son);
+  box-shadow: inset 0 0 0 1.5px var(--u-gold);
+  white-space: nowrap;
+  animation: hoatruc-seal 2400ms var(--u-ease) both;
+  z-index: 3;
+  pointer-events: none;
+}
+/* viền theo phẩm; Thần = hồng ngọc chạy dọc khung */
+.hoatruc-rim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  border: var(--u-line-3) solid var(--qc);
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--qc) calc(var(--qglow) * 70%), transparent);
+}
+.hoatruc[data-q='5'] .hoatruc-rim {
+  border: 0;
+  padding: var(--u-line-3);
+  background: conic-gradient(from var(--u-spin, 0deg), var(--u-q5-a), var(--u-q5-b), var(--u-q5-c), var(--u-q5-a));
+  -webkit-mask:
+    linear-gradient(var(--u-ink-0) 0 0) content-box exclude,
+    linear-gradient(var(--u-ink-0) 0 0);
+  mask:
+    linear-gradient(var(--u-ink-0) 0 0) content-box exclude,
+    linear-gradient(var(--u-ink-0) 0 0);
+  animation: u2-spin var(--u-dur-shimmer) linear infinite;
+}
+/* mặc đủ cả bộ: vầng kim dưới chân + lấp lánh quét ngang */
+.hoatruc-full {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 1%;
+  height: 7%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--u-gold) 70%, transparent), transparent 70%);
+  pointer-events: none;
+}
+.hoatruc[data-full='1'] .hoatruc-clip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--u-gold-hi) 40%, transparent) 50%, transparent 60%);
+  background-size: 280% 100%;
+  animation: u2-glint var(--u-dur-shimmer) ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* nhãn ô trang bị trên tranh: nền giấy mờ để đọc được */
+.equip-board-grid .equip-label {
+  padding: 0 4px;
+  background: var(--u-card-hi);
+  color: var(--u-muc);
+}
+
+.hoatruc[data-reduce='1'] .hoatruc-fog,
+.hoatruc[data-reduce='1'] .hoatruc-sword,
+.hoatruc[data-reduce='1'] .hoatruc-bg,
+.hoatruc[data-reduce='1'] .hoatruc-char {
+  animation: none;
+}
+.hoatruc[data-reduce='1'] .hoatruc-mote,
+.hoatruc[data-reduce='1'] .hoatruc-ink {
+  display: none;
+}
+
+@keyframes hoatruc-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes hoatruc-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes hoatruc-sword-in {
+  from {
+    opacity: 0;
+    translate: 0 -24px;
+  }
+}
+@keyframes hoatruc-fog {
+  from {
+    transform: translateX(-4%);
+  }
+  to {
+    transform: translateX(4%);
+  }
+}
+@keyframes hoatruc-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-420px);
+    opacity: 0;
+  }
+}
+@keyframes hoatruc-ink {
+  0% {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(150%);
+    opacity: 0;
+  }
+}
+@keyframes hoatruc-seal {
+  0%,
+  12% {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  22%,
+  80% {
+    opacity: 1;
+    translate: 0 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* màn thấp (720p): bỏ nhãn dưới ô để cột ô thấp lại (tên ô vẫn có ở tooltip), tranh vừa trọn trong phần nhìn thấy của bảng */
+@media (max-height: 800px) {
+  .equip-board-grid {
+    min-height: 0;
+  }
+  .equip-board-grid .equip-label {
+    display: none;
+  }
+}
