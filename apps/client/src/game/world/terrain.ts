@@ -23,6 +23,7 @@ import { LEVELS } from '@dtl/content';
 import { levelTerrain } from '../../base/levelCtx';
 import { col, G, GeoBuilder, mat } from '../core/geo';
 import { withSightFade } from './occlusion';
+import { sectPaving } from '../../render/groundMask';
 import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
@@ -35,6 +36,7 @@ const COARSE_CELL = 32;
 const VEG_NEAR_R = 2;
 const VEG_FAR_R = 4;
 
+const C_GRASS_SECT = col(0x58a65c);
 const C_GRASS_VALLEY = col(0x86b45c);
 const C_GRASS_FOREST = col(0x4f8f4c);
 const C_GRASS_WILD = col(0x6f9d58);
@@ -229,7 +231,10 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
     if (h < WATER_Y - 1) out.lerp(C_LAKEBED, Math.min(1, (WATER_Y - 1 - h) / 5));
   }
   // Sân lát đá của tông môn và bệ cổng bí cảnh.
-  if (wSect > 0.82) out.lerp(C_STONE, Math.min(1, (wSect - 0.82) * 8));
+  // MAP-1: đỉnh núi tông môn phủ cỏ ngọc tươi; chỉ chỗ lát thật (đại lộ, sân, bát quái: `sectPaving`) mới ngả màu đá.
+  if (wSect > 0.5) out.lerp(C_GRASS_SECT, Math.min(0.85, (wSect - 0.5) * 3));
+  const paved = sectPaving(x - SECT.x, z - SECT.z);
+  if (paved > 0) out.lerp(C_STONE, paved);
   if (wPad > 0.9) out.lerp(C_STONE, Math.min(1, (wPad - 0.9) * 10));
   // Đất chết xám tím của Kiếm Trủng.
   const wTomb = featureWeight(KIEM_TRUNG, x, z);

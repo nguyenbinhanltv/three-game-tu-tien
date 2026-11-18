@@ -104,10 +104,12 @@ class KB(bs.Builder):
             PARTS[pid][1](self)
 
     def face(self, pts, color, smooth=False):
+        world = None
         if self.xf:
+            # UV, rêu, AO tính theo toạ độ cục bộ của mảnh (miền UV nhỏ, rêu bám chân từng mảnh); chỉ đỉnh mới đổi sang toạ độ thế giới.
             tx, ty, tz, yaw, sc = self.xf
             c, sn = math.cos(yaw), math.sin(yaw)
-            pts = [((px * c + pz * sn) * sc + tx, py * sc + ty, (-px * sn + pz * c) * sc + tz) for px, py, pz in pts]
+            world = [((px * c + pz * sn) * sc + tx, py * sc + ty, (-px * sn + pz * c) * sc + tz) for px, py, pz in pts]
         if color.mat in ('jade', 'stone') and self.moss_amount > 0:
             low = min(p[1] for p in pts)
             nx, ny, nz = bs.newell(pts)
@@ -119,7 +121,11 @@ class KB(bs.Builder):
             t *= self.moss_amount
             if t > 0.01:
                 color = Paint(tuple(c * (1 - t) + m * t for c, m in zip(color.rgb, MOSS)), color.mat)
+        base = len(self.verts)
         super().face(pts, color, smooth)
+        if world:
+            for i, p in enumerate(world):
+                self.verts[base + i] = bs.P(*p)
 
     def poly(self, pts, interior, color):
         """Đa giác tự quay chiều sao cho pháp tuyến hướng ra xa điểm `interior`."""
@@ -217,6 +223,86 @@ class KB(bs.Builder):
                     self.box(x, yy + 0.3 * s, z, 0.3 * s, 0.2 * s, 0.3 * s, GILD if k == tiers - 1 else TIMBER_D, yaw=yaw)
             yy += 0.32 * s
 
+    def column(self, cx, y0, cz, r, h, color=None):
+        """Cột sơn son trên chân tảng ngọc chạm (ba tầng, đai ngọc lục), đai vàng ở chân và đầu cột."""
+        color = color or VERMILION
+        self.cylinder(cx, y0, cz, r * 2.0, 0.12, JADE_SHADE, 16, r * 1.8, smooth=False)
+        self.cylinder(cx, y0 + 0.12, cz, r * 1.75, 0.34, JADE, 16, r * 1.35)
+        self.cylinder(cx, y0 + 0.46, cz, r * 1.38, 0.06, JADE_GREEN, 16)
+        self.cylinder(cx, y0 + 0.52, cz, r * 1.1, 0.1, GILD, 14)
+        self.cylinder(cx, y0 + 0.62, cz, r, h - 1.25, color, 14, r * 0.92)
+        self.cylinder(cx, y0 + h - 0.62, cz, r * 0.96, 0.12, GILD, 14)
+        self.box(cx, y0 + h - 0.22, cz, r * 2.7, 0.44, r * 2.7, TIMBER_D)
+
+    def ribbon(self, pts, w0, w1, t, color):
+        """Dải gờ mái mượt: chuỗi điểm 3D, rộng w0 → w1, dày t (mặt trên + hai mặt bên), không có bậc."""
+        n = len(pts)
+        rows = []
+        for i, (x, y, z) in enumerate(pts):
+            j0, j1 = max(0, i - 1), min(n - 1, i + 1)
+            dx, dz = pts[j1][0] - pts[j0][0], pts[j1][2] - pts[j0][2]
+            ln = math.hypot(dx, dz) or 1.0
+            sx, sz = -dz / ln, dx / ln
+            w = (w0 + (w1 - w0) * i / max(1, n - 1)) / 2
+            rows.append(((x - sx * w, y + t, z - sz * w), (x + sx * w, y + t, z + sz * w), (x - sx * w * 1.15, y, z - sz * w * 1.15), (x + sx * w * 1.15, y, z + sz * w * 1.15), (x, y - t, z)))
+        for i in range(n - 1):
+            a, b = rows[i], rows[i + 1]
+            mid = ((a[4][0] + b[4][0]) / 2, a[4][1] - 1.0, (a[4][2] + b[4][2]) / 2)
+            self.poly([a[0], a[1], b[1], b[0]], mid, color)  # mặt trên
+            self.poly([a[0], a[2], b[2], b[0]], mid, color)  # bên trái
+            self.poly([a[1], a[3], b[3], b[1]], mid, color)  # bên phải
+
+    def hip_roof(self, cx, y0, cz, w, d, h, overhang=2.2, nu=26, nv=18, lift=1.6):
+        """Mái hip cong lõm (thay bản của build_sect): bờ nóc và bốn bờ dải là dải mượt, góc mái hất cong thật (đầu đao)."""
+        W = w / 2 + overhang
+        D = d / 2 + overhang
+
+        def height(u, v):
+            ex = (1 - abs(u)) * W
+            ez = (1 - abs(v)) * D
+            sdist = max(0.0, min(1.0, min(ex, ez) / D))
+            curve = sdist ** 1.55
+            corner = (abs(u) ** 7) * (abs(v) ** 7)
+            edge = max(abs(u), abs(v)) ** 10
+            return y0 + h * curve + lift * corner + 0.25 * edge
+
+        grid = [[(cx + (-1 + 2 * i / nu) * W, height(-1 + 2 * i / nu, -1 + 2 * j / nv), cz + (-1 + 2 * j / nv) * D) for i in range(nu + 1)] for j in range(nv + 1)]
+        for j in range(nv):
+            for i in range(nu):
+                a, b, c, e = grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i]
+                self.face([a, e, c, b], bs.ROOF, True)
+        rim = [grid[0][i] for i in range(nu + 1)] + [grid[j][nu] for j in range(1, nv + 1)] + [grid[nv][i] for i in range(nu - 1, -1, -1)] + [grid[j][0] for j in range(nv - 1, 0, -1)]
+        n = len(rim)
+        for i in range(n):
+            a, b = rim[i], rim[(i + 1) % n]
+            self.face([a, b, (b[0], b[1] - 0.42, b[2]), (a[0], a[1] - 0.42, a[2])], bs.GOLD)
+        soffit_y = y0 - 0.1
+        self.face([(cx - W, soffit_y, cz - D), (cx + W, soffit_y, cz - D), (cx + W, soffit_y, cz + D), (cx - W, soffit_y, cz + D)], bs.WOOD_DARK)
+        ridge = max(0.0, W - D)
+        top = y0 + h
+        if ridge > 0.5:
+            self.ribbon([(cx - ridge - 0.4 + k * (2 * ridge + 0.8) / 10, top + 0.55, cz) for k in range(11)], 0.9, 0.9, 0.55, bs.ROOF_DARK)
+            for sx in (-1, 1):  # đầu sí vẫy lên
+                self.ribbon([(cx + sx * (ridge + 0.1 + k * 0.1), top + 0.8 + k * k * 0.1, cz) for k in range(6)], 0.7, 0.4, 0.5, bs.GOLD)
+        else:
+            self.cylinder(cx, top, cz, 0.55, 1.2, bs.GOLD, 8, 0.15)
+        # Bốn bờ dải chạy từ nóc xuống góc, rồi hất cong lên ở đầu đao.
+        steps = 20
+        for sx in (-1, 1):
+            for sz in (-1, 1):
+                pts = []
+                for k in range(steps + 1):
+                    t = k / steps
+                    x = cx + sx * (ridge + (W - ridge) * t)
+                    z = cz + sz * D * t
+                    pts.append((x, height(sx * (ridge + (W - ridge) * t) / W, sz * t) + 0.3, z))
+                # đuôi cong: vươn ra ngoài và hất lên
+                ex, ey, ez = pts[-1]
+                for k in range(1, 5):
+                    q = k / 4
+                    pts.append((ex + sx * 0.9 * q, ey + 0.2 + 1.5 * q * q, ez + sz * 0.55 * q))
+                self.ribbon(pts, 0.7, 0.34, 0.42, bs.ROOF_DARK)
+
     def curved_hip(self, cx, y0, cz, w, d, h, overhang=2.4, lift=1.8):
         """Mái hip (build_sect.hip_roof) nhưng ngói lưu ly lục ngọc, bờ dải đậm, diềm vàng."""
         ROOF_SAVE = (bs.ROOF, bs.ROOF_DARK, bs.GOLD)
@@ -233,6 +319,36 @@ class KB(bs.Builder):
             self.round_roof(cx, y0, cz, r, h, sides=sides, rings=9, lift=lift)
         finally:
             bs.ROOF, bs.GOLD = ROOF_SAVE
+
+    def sword_planted(self, cx, cz, y0, length, width, thick=0.0, yaw=0.0):
+        """Kiếm cắm mũi xuống: lưỡi thon có rãnh giữa, tay nắm chạm hình sừng vẫy lên, chuôi quấn vàng, đầu chuôi tròn."""
+        w = width / 2
+        th = thick or max(0.12, width * 0.07)
+        outline = [(0.0, 0.0), (w * 0.8, length * 0.1), (w, length * 0.2), (w, length), (-w, length), (-w, length * 0.2), (-w * 0.8, length * 0.1)]
+        c, sn = math.cos(yaw), math.sin(yaw)
+
+        def at(x, y, z):
+            return (cx + x * c + z * sn, y0 + y, cz - x * sn + z * c)
+
+        mid = at(0, length * 0.5, 0)
+        for zz in (-th, th):
+            self.poly([at(x, y, zz) for x, y in outline], mid, BLADE)
+        for i in range(len(outline)):
+            j = (i + 1) % len(outline)
+            self.poly([at(outline[i][0], outline[i][1], -th), at(outline[j][0], outline[j][1], -th), at(outline[j][0], outline[j][1], th), at(outline[i][0], outline[i][1], th)], mid, BLADE_D)
+        for zz in (-1, 1):  # rãnh giữa: dải thép sẫm chìm
+            self.poly([at(-w * 0.12, length * 0.14, zz * (th + 0.02)), at(w * 0.12, length * 0.14, zz * (th + 0.02)), at(w * 0.12, length * 0.97, zz * (th + 0.02)), at(-w * 0.12, length * 0.97, zz * (th + 0.02))], mid, BLADE_D)
+        gx, gy, gz = at(0, length + 0.15, 0)
+        self.box(gx, gy, gz, width * 2.4, 0.3, th * 3.2, GILD, yaw=yaw)
+        for s in (-1, 1):  # đầu tay nắm vẫy lên
+            ex, ey, ez = at(s * width * 1.15, length + 0.55, 0)
+            self.box(ex, ey, ez, width * 0.35, 0.65, th * 2.6, GILD, yaw=yaw)
+        hx, hy, hz = at(0, length + 0.3 + width * 0.8, 0)
+        self.cylinder(hx, hy - width * 0.8, hz, width * 0.16, width * 1.6, TIMBER_D, 8)
+        for k in range(4):
+            self.cylinder(hx, hy - width * 0.7 + k * width * 0.38, hz, width * 0.19, width * 0.1, GILD, 8)
+        px, py, pz = at(0, length + 0.3 + width * 1.7, 0)
+        self.cylinder(px, py, pz, width * 0.3, width * 0.4, GILD, 8, width * 0.12)
 
     def sword_up(self, cx, cz, y0, length, width=0.5, tilt=0.0, yaw=0.0, color=BLADE, hilt=True):
         """Thanh kiếm cắm đứng mũi xuống (chuôi ở trên): lưỡi thon, sống nổi, tay nắm, chuôi."""

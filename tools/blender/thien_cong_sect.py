@@ -7,6 +7,7 @@
 # Công trình có va chạm phải khớp COLLIDERS ở packages/shared/src/level.ts (chính điện (0,-44) r17, hai đình (±52,4) r8,
 # cự kiếm (0,18) r2,4, trụ cổng (±8,80), hai lầu (±40,-52) r6, tháp (0,-93) r6,5, hai bia (±30,30) r1,2).
 
+import json
 import math
 import os
 import sys
@@ -20,25 +21,50 @@ import thien_cong_kit as kit  # noqa: E402
 from thien_cong_kit import PARTS, new_builder  # noqa: E402
 
 
-def giant_sword(b, x, z, h=10.8):
-    """Cự kiếm đá cắm giữa sân: biểu tượng "Lạc Kiếm" (va chạm r2,4). Dựng như bản cũ nhưng ngọc/thép mới."""
-    b.cylinder(x, 0, z, 3.4, 0.7, kit.JADE_SHADE, 16, smooth=False)
-    b.cylinder(x, 0.7, z, 2.6, 0.5, kit.JADE, 16, 2.3, smooth=False)
-    tilt = 0.07
-    for k in range(10):
-        y = 1.6 + k * 1.05
-        wdt = 1.55 if k > 0 else 1.2
-        px = x - math.sin(tilt) * (y - 1.2)
-        b.box(px, y, z, wdt, 1.06, 0.34, kit.BLADE if k % 2 else kit.BLADE_D)
-        b.box(px, y, z, 0.26, 1.06, 0.5, kit.BLADE_D)
-    gx = x - math.sin(tilt) * h
-    b.box(gx, 12.4, z, 4.4, 0.6, 0.85, kit.GILD)
-    b.box(gx - 1.9, 12.75, z, 0.6, 0.5, 0.9, kit.GILD)
-    b.box(gx + 1.9, 12.75, z, 0.6, 0.5, 0.9, kit.GILD)
-    b.cylinder(gx - 0.12, 12.7, z, 0.3, 2.9, kit.TIMBER_D, 8)
-    for k in range(4):
-        b.cylinder(gx - 0.12, 13.0 + k * 0.6, z, 0.34, 0.14, kit.GILD, 8)
-    b.cylinder(gx - 0.14, 15.6, z, 0.55, 0.7, kit.GILD, 8, 0.3)
+def giant_sword(b, x, z):
+    """Cự kiếm đá cắm giữa sân: biểu tượng "Lạc Kiếm" (va chạm r2,4): đài ngọc hai tầng, thân kiếm thép thon có rãnh, tay nắm vẫy lên."""
+    b.cylinder(x, 0, z, 3.6, 0.5, kit.JADE_SHADE, 20, smooth=False)
+    b.cylinder(x, 0.5, z, 3.0, 0.45, kit.JADE, 20, 2.6, smooth=False)
+    b.cylinder(x, 0.95, z, 2.5, 0.08, kit.JADE_GREEN, 20)
+    b.sword_planted(x, z, 1.1, 11.5, 2.3, yaw=0.0)
+    for k in range(6):  # đá chèn quanh chân kiếm
+        a = k / 6 * math.tau
+        b.box(x + math.cos(a) * 1.9, 1.15, z + math.sin(a) * 1.9, 0.9, 0.55, 0.9, kit.JADE_SHADE, yaw=-a)
+
+
+def sky_data():
+    """Dữ liệu đảo nổi dùng chung với client (levels/van_lam.assets.json, khối lacKiemSky)."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'packages', 'content', 'data', 'levels', 'van_lam.assets.json')
+    with open(path, encoding='utf8') as f:
+        return json.load(f)['lacKiemSky']
+
+
+def build_islands(b):
+    """Công trình trên các đảo nổi (toạ độ tương đối tâm tông môn, y tương đối SECT.y); thân đảo/cầu/thác do client dựng."""
+    P = b.place
+    for isl in sky_data()['islands']:
+        x, z, y, r, kind = isl['x'], isl['z'], isl['y'] + 0.45, isl['r'], isl['kind']
+        if kind == 'kiem_dai':
+            P('dai_tron_kiem', x, y, z, scale=0.95)
+            P('prop_dinh_lu', x, y + 0.7, z, scale=1.3)
+            for k in range(8):
+                a = k / 8 * math.tau
+                P('tru_da_khac_phu', x + math.cos(a) * 16, y + 0.7, z + math.sin(a) * 16, yaw=-a, scale=1.0)
+        elif kind == 'dinh':
+            P('dinh_bat_giac', x, y, z, scale=0.8)
+            for k in range(4):
+                a = k / 4 * math.tau + 0.4
+                P('prop_den_da', x + math.cos(a) * 17, y, z + math.sin(a) * 17)
+            P('prop_chau_cay', x + 14, y, z - 6)
+        elif kind == 'dinh_luc':
+            P('dinh_luc_giac', x, y, z, scale=0.85)
+            P('prop_ban_co', x + 12, y, z + 4)
+        elif kind == 'thap':
+            P('thap_5_tang', x, y, z, scale=0.62)
+        elif kind == 'dien':
+            P('dien_nho', x, y, z, scale=1.15)
+            P('cong_nho', x, y, z + 14, scale=0.9)
+            P('prop_co_phuong', x + 12, y, z + 8)
 
 
 def build_sect():
@@ -105,6 +131,7 @@ def build_sect():
     P('prop_trong_chuong', -60, 0, -14, yaw=math.pi / 2)
     P('prop_dai_sen', 14, 0, 50)
     P('prop_kiem_cam', -14, 0, 50)
+    build_islands(b)
     return b
 
 

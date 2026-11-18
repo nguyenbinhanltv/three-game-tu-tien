@@ -74,7 +74,20 @@ export interface CircleCollider {
   r: number;
 }
 
-/** Va chạm tĩnh của kiến trúc tông môn (xấp xỉ bằng hình tròn). */
+/**
+ * Tường rào ngói hai bên sơn môn (MAP-1, `tuong_rao_ngoi` ×4 + hai trụ cổng phụ ở x = ±40, z = SECT.z + 78): chuỗi vòng r = 0,8
+ * cách nhau ~1,4 m từ x = ±21,4 tới ±37, cộng hai trụ cổng phụ (±37,4 và ±42,6), chừa lối giữa hai trụ cổng phụ.
+ */
+const SECT_WALL: CircleCollider[] = [-1, 1].flatMap((sx) => [
+  ...Array.from({ length: 12 }, (_, k) => ({ x: SECT.x + sx * (21.4 + k * 1.42), z: SECT.z + 78, r: 0.8 })),
+  { x: SECT.x + sx * 37.4, z: SECT.z + 78, r: 0.8 },
+  { x: SECT.x + sx * 42.6, z: SECT.z + 78, r: 0.8 },
+]);
+
+/**
+ * Va chạm tĩnh của kiến trúc tông môn (xấp xỉ bằng hình tròn): chính điện, hai đình, trụ cổng, cự kiếm, hai lầu, tháp Kiếm,
+ * hai bia, tường rào + cổng phụ (`SECT_WALL`), cổng bí cảnh, cự kiếm Kiếm Trủng và prop có va chạm.
+ */
 export const COLLIDERS: CircleCollider[] = [
   { x: 2048, z: 2004, r: 17 }, // Chính điện
   { x: 1996, z: 2052, r: 8 }, // Đan phòng
@@ -87,6 +100,7 @@ export const COLLIDERS: CircleCollider[] = [
   { x: 2048, z: 1955, r: 6.5 }, // Tháp Kiếm bảy tầng
   { x: 2018, z: 2078, r: 1.2 }, // Bia khắc trái
   { x: 2078, z: 2078, r: 1.2 }, // Bia khắc phải
+  ...SECT_WALL, // Tường rào ngói + cổng phụ hai bên sơn môn
   { x: 2048, z: 1700, r: 3.2 }, // Cổng bí cảnh (khối đá)
   { x: 1520, z: 1300, r: 3.4 }, // Cự kiếm giữa Kiếm Trủng
   ...PROP_COLLIDERS, // Prop điểm nhấn có va chạm (cổ thụ, tượng thú, lư hương)

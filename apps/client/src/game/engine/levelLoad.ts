@@ -16,6 +16,8 @@ import { XICH_LEVEL, xichCracks, type XichAccent } from '../world/xichArt';
 import { bhCtx } from '../world/propScatter';
 import { Beacons } from '../../render/beacons';
 import { GodRays } from '../../render/godRays';
+import { LacKiemGarden } from '../world/lacKiemGarden';
+import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { applyGrading, markBloom } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
@@ -322,6 +324,13 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.beacons.mesh.visible = isWorldRoom(get().room);
     eng.scene.add(eng.beacons.mesh);
   }
+  const sky = levelAssets(id).lacKiemSky;
+  if (sky) {
+    eng.lacKiemSky = new LacKiemSkyScene(sky);
+    eng.scene.add(eng.lacKiemSky.group);
+    eng.lacKiemGarden = new LacKiemGarden();
+    eng.scene.add(eng.lacKiemGarden.group);
+  }
   const gr = levelAssets(id).godRays;
   if (gr) {
     eng.godRays = new GodRays(gr);
@@ -394,6 +403,16 @@ export function unloadLevel(eng: Game): void {
     drop(eng.beacons.mesh);
     eng.beacons.dispose();
     eng.beacons = null;
+  }
+  if (eng.lacKiemGarden) {
+    drop(eng.lacKiemGarden.group);
+    eng.lacKiemGarden.dispose();
+    eng.lacKiemGarden = null;
+  }
+  if (eng.lacKiemSky) {
+    drop(eng.lacKiemSky.group);
+    eng.lacKiemSky.dispose();
+    eng.lacKiemSky = null;
   }
   if (eng.godRays) {
     drop(eng.godRays.mesh);
