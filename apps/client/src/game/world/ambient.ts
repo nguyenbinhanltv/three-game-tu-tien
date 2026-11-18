@@ -19,12 +19,14 @@ type AmbientRates = Record<AmbientKind, number>;
 const AMBIENT_SCALE: Record<string, number> = { low: 0.35, medium: 1, high: 1.6, ultra: 2 };
 
 /**
- * Hệ số lượng theo loại hạt. `mist` là mảng billboard 3,5–5,5 m rất mờ: nhân lên ở Cao/Cực cao thành những đốm trắng mờ to, trông như lỗi,
- * nên không bao giờ vượt mức Vừa. Phần tăng thêm dành cho hạt nhỏ, sắc nét (bụi sáng, phấn hoa, linh khí, cánh đào, lá, tro).
+ * Hệ số lượng theo loại hạt. `mist` là mảng billboard 3,5–5,5 m rất mờ: ở Cao/Cực cao (độ phân giải cao, bóng nét) nó lộ ra thành đốm
+ * trắng mờ to, vuông vức, trông như lỗi, nên **tắt** ở hai mức này (sương vẫn có từ sương theo độ cao `heightFog` và biển mây); Vừa/Thấp giữ như cũ.
+ * Phần tăng thêm dành cho hạt nhỏ, sắc nét (bụi sáng, phấn hoa, linh khí, cánh đào, lá, tro).
  */
 export function ambientScaleFor(kind: AmbientKind, preset: string): number {
   const s = AMBIENT_SCALE[preset] ?? AMBIENT_SCALE.medium;
-  return kind === 'mist' ? Math.min(s, 1) : s;
+  if (kind !== 'mist') return s;
+  return preset === 'high' || preset === 'ultra' ? 0 : Math.min(s, 1);
 }
 
 const KINDS: AmbientKind[] = ['mote', 'pollen', 'petal', 'leaf', 'mist', 'jade', 'ash', 'ember'];
