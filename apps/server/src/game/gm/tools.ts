@@ -1,6 +1,6 @@
 // Công cụ cho lệnh GM thử đồ (GM-TEST): bộ trang bị theo bậc × nhánh, tìm id, danh sách kiếm/bộ.
 // Hàm thuần (không đụng sim/DB) để test được; sim.ts chỉ nối lệnh `/gm kit|outfit|weapon|find|skills|learn|help`.
-import { EQUIP_SLOTS, type EquipSlot } from '@dtl/shared';
+import { EQUIP_SLOTS, type EquipSlot, at } from '@dtl/shared';
 import {
   itemTier,
   ITEMS,
@@ -63,8 +63,8 @@ export function planKit(tier: number, branch: GmBranch): KitPlan {
   const want = clampTier(tier);
   const used = Math.min(want, GM_TIER_AVAILABLE);
   const b = GM_BRANCHES.indexOf(branch);
-  const set = GM_TIER_SETS[used - 1][b];
-  const mine = new Set(GM_TIER_SETS.slice(0, used).map((r) => r[b]));
+  const set = at(at(GM_TIER_SETS, used - 1, 'GM_TIER_SETS'), b, 'GM_BRANCHES');
+  const mine = new Set(GM_TIER_SETS.slice(0, used).map((r) => at(r, b, 'GM_BRANCHES')));
   const pieces: KitPiece[] = [];
   for (const slot of EQUIP_SLOTS) {
     if (slot === 'artifact') continue;

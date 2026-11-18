@@ -210,7 +210,7 @@ export class GmSystem {
         // /gm roll <mẫu trang bị> [phẩm 0-5] [ilvl]: roll một món (kiểm thử hệ trang bị 8 ô).
         const q = Math.min(QUALITY_COUNT - 1, Math.max(0, Number(a[2] ?? 0) | 0));
         const il = Math.max(1, Number(a[3] ?? c.level) | 0);
-        const ok = c.tx('gm', null, (d) => d.addRolled(a[1], il, q as Quality));
+        const ok = c.tx('gm', null, (d) => d.addRolled(a[1] ?? '', il, q as Quality));
         return say(ok ? `đã roll ${a[1]} phẩm ${q} ilvl ${il}` : 'roll <mẫu trang bị> [phẩm 0-5] [ilvl]');
       }
       case 'plus': {
@@ -242,7 +242,7 @@ export class GmSystem {
           if (ok) c.recalc();
           return say(ok ? 'đã cất pháp bảo' : 'túi đầy');
         }
-        if (!ARTIFACT.has(a[1])) return say('art ' + [...ARTIFACT.keys()].join(' | ') + ' | off');
+        if (!ARTIFACT.has(a[1] ?? '')) return say('art ' + [...ARTIFACT.keys()].join(' | ') + ' | off');
         const ok = c.tx('gm:art', null, (d) => {
           const prev = d.equip.artifact;
           if (prev) {
@@ -250,20 +250,20 @@ export class GmSystem {
             if (i < 0) return false;
             d.inv[i] = prev;
           }
-          d.equip.artifact = { id: a[1], n: 1 };
-          d.bump(a[1], 1);
+          d.equip.artifact = { id: a[1] ?? '', n: 1 };
+          d.bump(a[1] ?? '', 1);
           return true;
         });
         if (!ok) return say('không đeo được');
         const lv = Math.max(1, Math.min(ARTIFACT_MAX_LEVEL, Number(a[2] ?? 1) | 0));
         c.meta.art ??= {};
-        c.meta.art[a[1]] = { lv, qi: 0 };
+        c.meta.art[a[1] ?? ''] = { lv, qi: 0 };
         c.recalc();
         p.mth.dirty = true;
         return say('art = ' + a[1] + ' cấp ' + lv);
       }
       case 'give': {
-        const ok = c.tx('gm', null, (d) => d.add(a[1], Math.max(1, Number(a[2] ?? 1) | 0)));
+        const ok = c.tx('gm', null, (d) => d.add(a[1] ?? '', Math.max(1, Number(a[2] ?? 1) | 0)));
         return say(ok ? 'đã thêm ' + a[1] : 'không thêm được');
       }
       case 'set': {
@@ -292,7 +292,7 @@ export class GmSystem {
       case 'tp': {
         // `tp x z` hoặc `tp <địa điểm>` (bảng packages/content/data/places.json, cùng bảng với ?at=).
         if (a.length === 2) {
-          const pl = PLACE.get(a[1]);
+          const pl = PLACE.get(a[1] ?? '');
           if (!pl) return say('tp ' + this.c.placeIds().join(' | '));
           if (pl.level !== this.c.level().id) {
             const ok = !LEVELS[pl.level]?.dungeon && this.c.transferLevel(p, pl.level, { x: pl.x, z: pl.z }, { force: true });
@@ -356,7 +356,7 @@ export class GmSystem {
         return say('đã xóa hồi chiêu');
       case 'variant': {
         // /gm variant <id chiêu> <a|b>: chọn biến thức ngay (không cần cấp 3, ngoài combat, hồi chờ) để chụp ảnh/thử.
-        const sk = SKILL.get(a[1]);
+        const sk = SKILL.get(a[1] ?? '');
         if (!sk || !VARIANTS[sk.id] || (a[2] !== 'a' && a[2] !== 'b'))
           return say('variant <skill> a|b — skill: ' + Object.keys(VARIANTS).join(' | '));
         if (skillLevelOf(c.meta, sk.id) < VARIANT_MIN_LEVEL) setSkillLevel(c.meta, sk.id, VARIANT_MIN_LEVEL);
@@ -367,8 +367,8 @@ export class GmSystem {
       }
       case 'method': {
         // /gm method <id> [cấp chiêu]: chọn công pháp ngay (không cần tầng/NPC/linh thạch); cấp chiêu áp cho mọi chiêu mở.
-        if (!METHOD.has(a[1])) return say('method ' + [...METHOD.keys()].join(' | '));
-        c.meta.method = a[1];
+        if (!METHOD.has(a[1] ?? '')) return say('method ' + [...METHOD.keys()].join(' | '));
+        c.meta.method = a[1] ?? '';
         const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, Number(a[2] ?? 1) | 0));
         for (const sk of SKILL.values()) if (!sk.method || sk.method === a[1]) setSkillLevel(c.meta, sk.id, lv);
         p.mth.reset();
@@ -620,7 +620,7 @@ export class GmSystem {
         if (a[1] === 'sort') {
           const ok = c.tx('gm:bag', null, (d) => {
             const next = planSort(d.inv, { def: (id) => ITEM.get(id), name: (it) => itemName(it.id) });
-            for (let i = 0; i < INV_SIZE; i++) d.inv[i] = next[i];
+            for (let i = 0; i < INV_SIZE; i++) d.inv[i] = next[i] ?? null;
             return true;
           });
           return say(ok ? t('gm.msg.bag_sort') : t('gm.msg.bag_fail'));

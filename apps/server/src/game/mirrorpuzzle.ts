@@ -30,7 +30,9 @@ export function shuffleN(n: number, r: () => number): number[] {
   const a = Array.from({ length: n }, (_, i) => i);
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(r() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+    const ai = a[i] ?? 0;
+    a[i] = a[j] ?? 0;
+    a[j] = ai;
   }
   return a;
 }
@@ -100,6 +102,7 @@ export class MirrorPuzzle {
       this.on.set(p.sid, at);
       if (at !== this.order[this.idx]) return this.fail(`sys.${this.msg}_puzzle_bad`);
       const pt = this.def.points[at];
+      if (!pt) continue;
       this.h.fx({ t: 'mirror_pillar', n: at, x: pt.x, z: pt.z, d: Math.max(1, (this.until - now) / 1000), pg: 1 });
       if (++this.idx >= this.order.length) return this.win();
     }

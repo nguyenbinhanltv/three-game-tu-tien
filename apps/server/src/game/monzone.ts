@@ -5,6 +5,7 @@
 
 import { type MonsterDeathPool, type MonsterPull, type MonsterTrail, inPool, pullStep, trailSpots } from '@dtl/shared';
 
+import { at } from '@dtl/shared';
 /** Phần của người chơi mà vùng cần (PlayerEnt thỏa cấu trúc này). */
 export interface ZonePlayer {
   sid: string;
@@ -136,7 +137,7 @@ export class MonZones {
   tick(): void {
     const now = this.h.now();
     for (let i = this.pulls.length - 1; i >= 0; i--) {
-      const pl = this.pulls[i];
+      const pl = at(this.pulls, i);
       if (!this.h.active(pl.mon) || now >= pl.endAt + 100) {
         this.pulls.splice(i, 1);
         continue;
@@ -159,7 +160,7 @@ export class MonZones {
       }
     }
     for (let i = this.pools.length - 1; i >= 0; i--) {
-      const po = this.pools[i];
+      const po = at(this.pools, i);
       if (now >= po.endAt) {
         this.pools.splice(i, 1);
         continue;

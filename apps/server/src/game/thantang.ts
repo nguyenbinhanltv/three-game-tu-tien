@@ -18,6 +18,7 @@ import {
   type HazardGeom,
   type HazardMsg,
   type MonsterDef,
+  at,
 } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from './entities';
 
@@ -232,7 +233,7 @@ export class ThanTangSystem {
     if (now < rt.elemNext) return;
     rt.elemNext = now + c.cd * 1000;
     let e: Element;
-    do e = ELEMS[Math.floor(Math.random() * ELEMS.length)];
+    do e = at(ELEMS, Math.floor(Math.random() * ELEMS.length), 'ELEMS');
     while (e === rt.lastElem);
     rt.lastElem = e;
     const g: HazardGeom = { x: m.s.x, z: m.s.z, r: c.r };
@@ -309,7 +310,7 @@ export class ThanTangSystem {
   /** Nổ các vạch tới giờ: người đứng trong hình lúc nổ mới trúng; ngũ hành xét ấn khắc chế. */
   private fireStrikes(m: MonEnt, rt: BossRt, now: number): void {
     for (let i = rt.strikes.length - 1; i >= 0; i--) {
-      const s = rt.strikes[i];
+      const s = at(rt.strikes, i);
       if (now < s.at) continue;
       rt.strikes.splice(i, 1);
       const c = m.def.than!;

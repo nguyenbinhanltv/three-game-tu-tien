@@ -3,7 +3,17 @@
 // Độ kiếp Trúc Cơ (S2-C) giữ hành vi y hệt bản cũ trong sim.ts: thứ tự gọi Math.random và thứ tự phát vùng không đổi
 // (test băm `trib.golden.test.ts`).
 
-import { PF_DEAD, shadowStats, tribDef, tribGapAt, tribPhaseIndex, type HazardGeom, type TribDef, type TribPhaseDef } from '@dtl/shared';
+import {
+  PF_DEAD,
+  shadowStats,
+  tribDef,
+  tribGapAt,
+  tribPhaseIndex,
+  type HazardGeom,
+  type TribDef,
+  type TribPhaseDef,
+  at,
+} from '@dtl/shared';
 import type { PlayerEnt } from './entities';
 import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from './tribmech';
 import { cloneAbsorb, cloneOut } from './tribnhan';
@@ -53,7 +63,7 @@ export class TribSystem {
     if (now >= tr.endAt) return this.h.end(p, true);
     const elapsed = def.duration - (tr.endAt - now) / 1000;
     const pi = tribPhaseIndex(def, elapsed);
-    const ph = def.phases[pi];
+    const ph = at(def.phases, pi, 'phases');
     const ctx: TribMechCtx = { host: this.h, p, tr, def, phase: ph, phaseIdx: pi, elapsed, now };
     if (tr.pi !== pi) this.changePhase(ctx, def, tr.pi ?? -1);
     // Cơ chế đổi pha có thể kết thúc kiếp (ví dụ ngưng đan không đầy): không phát thêm gì nữa.
@@ -131,7 +141,10 @@ export class TribSystem {
 
   private changePhase(ctx: TribMechCtx, def: TribDef, from: number): void {
     const tr = ctx.tr;
-    if (from >= 0) runMechanic(def.phases[from].mechanic, 'exit', { ...ctx, phase: def.phases[from], phaseIdx: from });
+    if (from >= 0) {
+      const prev = at(def.phases, from, 'phases');
+      runMechanic(prev.mechanic, 'exit', { ...ctx, phase: prev, phaseIdx: from });
+    }
     tr.pi = ctx.phaseIdx;
     tr.shadowAt = ctx.now;
     tr.hoaAt = ctx.now;

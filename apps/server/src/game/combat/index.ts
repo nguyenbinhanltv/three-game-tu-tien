@@ -51,6 +51,7 @@ import { pruneBuffs } from '../artifact';
 import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
 import { LEASH, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
+import { at } from '@dtl/shared';
 /** Phần GameSim mà hệ chiêu cần. */
 export interface CombatCtx {
   readonly clone: CloneSystem;
@@ -160,7 +161,7 @@ export class CombatSystem {
       combo = comboNext(skill.combo, f.comboIdx, f.comboAt, this.c.now);
       f.comboIdx = combo;
       f.comboAt = this.c.now;
-      mul *= skill.combo.hits[combo].power / Math.max(0.01, skill.power);
+      mul *= at(skill.combo.hits, combo, 'combo.hits').power / Math.max(0.01, skill.power);
       // Kiếm tu: đòn cuối chuỗi hoàn lại một phần GCD (đánh nhanh hơn).
       const refund = passiveOf(p.char.meta)?.gcdRefund;
       if (refund && combo === skill.combo.hits.length - 1) p.gcdAt -= refund * 1000;
@@ -674,20 +675,21 @@ export class CombatSystem {
         // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.
         const offs = hitOffsets(skill, rs.hits.length);
         rs.hits.forEach((h, i) => {
+          const off = offs[i] ?? 0;
           const last = i === rs.hits.length - 1;
-          if (offs[i] <= 0) {
+          if (off <= 0) {
             this.c.hitMonster(p, mon, h * mul, elemMul, skill.elem);
             if (last && v?.knock) this.pushMonster(mon, p.move.x, p.move.z, v.knock);
             return;
           }
-          this.later(offs[i], () => {
+          this.later(off, () => {
             // Người ra chiêu phải còn trong room, còn sống, chưa bay lên; quái chưa chết.
             if (this.c.players.get(p.sid) === p && !this.c.isDead(p) && !this.airborne(p) && mon.state !== MS_DEAD) {
               this.c.hitMonster(p, mon, h * mul, elemMul, skill.elem);
               if (last && v?.knock) this.pushMonster(mon, p.move.x, p.move.z, v.knock);
             }
           });
-          holdLock = Math.max(holdLock, offs[i]);
+          holdLock = Math.max(holdLock, off);
         });
         // Bộ Lạc Kiếm Môn Phục (4 món): Phi Kiếm có xác suất bắn thêm một thanh (server roll, không tin client).
         if (skill.id === 'skl_phi_kiem' && c.stats.setFx.phiKiemExtra > 0 && Math.random() < c.stats.setFx.phiKiemExtra) {
@@ -794,14 +796,15 @@ export class CombatSystem {
         );
         const offs = hitOffsets(skill, rs.hits.length);
         rs.hits.forEach((h, i) => {
+          const off = offs[i] ?? 0;
           const run = () => {
             for (const o of hit) if (o.state !== MS_DEAD) this.c.hitMonster(p, o, h * mul, elemMul, skill.elem);
           };
-          if (offs[i] <= 0) return run();
-          this.later(offs[i], () => {
+          if (off <= 0) return run();
+          this.later(off, () => {
             if (this.c.players.get(p.sid) === p && !this.c.isDead(p) && !this.airborne(p)) run();
           });
-          holdLock = Math.max(holdLock, offs[i]);
+          holdLock = Math.max(holdLock, off);
         });
         break;
       }
@@ -1122,12 +1125,11 @@ export class CombatSystem {
   tickMethods(): void {
     const now = this.c.now;
     for (let i = this.delayed.length - 1; i >= 0; i--) {
-      if (now < this.delayed[i].at) continue;
-      const [d] = this.delayed.splice(i, 1);
-      d.fn();
+      if (now < at(this.delayed, i).at) continue;
+      this.delayed.splice(i, 1)[0]?.fn();
     }
     for (let i = this.hots.length - 1; i >= 0; i--) {
-      const h = this.hots[i];
+      const h = at(this.hots, i);
       const o = this.c.players.get(h.sid);
       if (!o || this.c.isDead(o) || now >= h.endAt + 5) {
         this.hots.splice(i, 1);
@@ -1144,7 +1146,7 @@ export class CombatSystem {
       if (h.nextAt > h.endAt) this.hots.splice(i, 1);
     }
     for (let i = this.trails.length - 1; i >= 0; i--) {
-      const tr = this.trails[i];
+      const tr = at(this.trails, i);
       const owner = this.c.players.get(tr.owner);
       if (!owner || now >= tr.endAt + 5) {
         this.trails.splice(i, 1);
@@ -1157,7 +1159,7 @@ export class CombatSystem {
       if (tr.nextAt > tr.endAt) this.trails.splice(i, 1);
     }
     for (let i = this.summons.length - 1; i >= 0; i--) {
-      const sm = this.summons[i];
+      const sm = at(this.summons, i);
       const owner = this.c.players.get(sm.sid);
       if (!owner || this.c.isDead(owner) || now >= sm.until) {
         this.summons.splice(i, 1);
@@ -1175,7 +1177,7 @@ export class CombatSystem {
       }
     }
     for (let i = this.stomps.length - 1; i >= 0; i--) {
-      const st = this.stomps[i];
+      const st = at(this.stomps, i);
       const owner = this.c.players.get(st.sid);
       if (!owner || this.c.isDead(owner) || now >= st.until) {
         this.stomps.splice(i, 1);

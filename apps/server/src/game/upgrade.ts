@@ -49,6 +49,7 @@ import { ENHANCE_ORE, FORGE_BY_ID, ITEM, ITEM_SYS, itemTier, NPC, promoteTarget,
 import type { InvDraft } from './character';
 import type { PlayerEnt } from './entities';
 
+import { at } from '@dtl/shared';
 /** Phần sim mà hệ nâng cấp cần mượn (sim.ts truyền vào). */
 export interface UpgradeHost {
   now(): number;
@@ -254,7 +255,7 @@ export class UpgradeSystem {
   private unsocket(p: PlayerEnt, m: Record<string, unknown>, idem: string): void {
     const tg = this.target(p, m);
     if (!tg) return;
-    const gem0 = tg.it.inst!.gems[tg.idx];
+    const gem0 = tg.it.inst!.gems[tg.idx] ?? '';
     const g = parseGem(gem0);
     if (!g) return this.h.warn(p, 'sys.upg_no_socket');
     const fee = gemRemoveCost(g.tier);
@@ -308,7 +309,7 @@ export class UpgradeSystem {
       const inst = cur?.inst;
       if (!cur || cur.id !== tg.it.id || !inst) return false;
       const now = inst.affixes[tg.idx];
-      if (!now || now.id !== old.id || now.p !== old.p || now.v !== old.v) return false;
+      if (!old || !now || now.id !== old.id || now.p !== old.p || now.v !== old.v) return false;
       if (!d.remove(REFINE_ITEM, cost.stones) || !d.remove(DUST_ITEM, cost.dust) || !d.spendGold(cost.gold)) return false;
       // Roll một dòng mới, không trùng các dòng đang khóa (dòng cũ được phép ra lại).
       const locked = inst.affixes.filter((_, i) => i !== tg.idx);
@@ -345,7 +346,7 @@ export class UpgradeSystem {
       let totalDust = 0;
       const gems: string[] = [];
       for (let k = 0; k < slots.length; k++) {
-        const it = d.inv[slots[k]];
+        const it = d.inv[at(slots, k)];
         const def = it ? ITEM.get(it.id) : undefined;
         // Chỉ trang bị trong túi (không đụng đồ đang mặc, nguyên liệu, đan dược).
         if (!it || it.id !== ids[k] || !def || !isEquipSlot(def.kind) || it.n !== 1) return false;
@@ -355,7 +356,7 @@ export class UpgradeSystem {
         totalOre += y.ore;
         totalDust += y.dust;
         for (const g of it.inst?.gems ?? []) if (g) gems.push(g);
-        if (!d.removeAt(slots[k], 1)) return false;
+        if (!d.removeAt(at(slots, k), 1)) return false;
       }
       // Ngọc đã khảm không mất: trả về túi.
       if (totalOre > 0 && !d.add(ENHANCE_ORE, totalOre)) return false;

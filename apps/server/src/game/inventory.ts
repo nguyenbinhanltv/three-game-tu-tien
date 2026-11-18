@@ -43,7 +43,7 @@ export class InventorySystem {
     const c = p.char;
     c.tx('inv:sort', idem, (d) => {
       const next = planSort(d.inv, { def: (id) => ITEM.get(id), name: (it) => itemName(it.id) });
-      for (let i = 0; i < INV_SIZE; i++) d.inv[i] = next[i];
+      for (let i = 0; i < INV_SIZE; i++) d.inv[i] = next[i] ?? null;
       return true;
     });
   }
