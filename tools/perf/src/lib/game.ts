@@ -6,6 +6,7 @@ import { gameUrl, watchErrors } from './browser';
 import { sleep } from './devserver';
 import type { GameInfo, HazardLog, MonView } from './window';
 
+import { at } from '@dtl/shared';
 export interface OpenOpts {
   clientPort: number;
   /** Đạo hiệu thử (`?auto=`); thêm hậu tố thời gian để mỗi lần chạy là nhân vật mới. */
@@ -185,7 +186,7 @@ export async function clearMonsters(page: Page, rounds = 10): Promise<void> {
     await gm(page, 'killall', 1000);
     const left = await monsters(page);
     if (!left.length) return;
-    if (i >= 2) await gm(page, `tp ${Math.round(left[0].x)} ${Math.round(left[0].z + 6)}`, 900);
+    if (i >= 2) await gm(page, `tp ${Math.round(at(left, 0).x)} ${Math.round(at(left, 0).z + 6)}`, 900);
   }
 }
 

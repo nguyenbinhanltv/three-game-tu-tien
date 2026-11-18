@@ -10,9 +10,10 @@ import { cam, gm, skipCutscene, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 
+import { at } from '@dtl/shared';
 const DEF = tribDef('anh_bien');
-const DL = DEF.phases[0].danLoi!;
-const CTR = LEVELS[tribLevelOf(DEF)].dungeon!.center;
+const DL = at(DEF.phases, 0).danLoi!;
+const CTR = at(LEVELS, tribLevelOf(DEF)).dungeon!.center;
 
 export default {
   name: 'anhbien',

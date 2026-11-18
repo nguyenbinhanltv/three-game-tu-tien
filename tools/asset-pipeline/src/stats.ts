@@ -6,6 +6,7 @@
 import { listTextureSlots } from '@gltf-transform/functions';
 import { Document, ImageUtils, Node, Primitive, type mat4, type vec3, type vec4 } from '@gltf-transform/core';
 
+import { at } from '@dtl/shared';
 export interface Dims {
   width: number;
   height: number;
@@ -129,7 +130,7 @@ function mul(a: ArrayLike<number>, b: ArrayLike<number>): number[] {
   for (let c = 0; c < 4; c++)
     for (let r = 0; r < 4; r++) {
       let s = 0;
-      for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k];
+      for (let k = 0; k < 4; k++) s += at(a, k * 4 + r) * at(b, c * 4 + k);
       o[c * 4 + r] = s;
     }
   return o;
@@ -137,9 +138,9 @@ function mul(a: ArrayLike<number>, b: ArrayLike<number>): number[] {
 
 function apply(m: ArrayLike<number>, p: ArrayLike<number>): [number, number, number] {
   return [
-    m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12],
-    m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13],
-    m[2] * p[0] + m[6] * p[1] + m[10] * p[2] + m[14],
+    at(m, 0) * at(p, 0) + at(m, 4) * at(p, 1) + at(m, 8) * at(p, 2) + at(m, 12),
+    at(m, 1) * at(p, 0) + at(m, 5) * at(p, 1) + at(m, 9) * at(p, 2) + at(m, 13),
+    at(m, 2) * at(p, 0) + at(m, 6) * at(p, 1) + at(m, 10) * at(p, 2) + at(m, 14),
   ];
 }
 
@@ -150,20 +151,20 @@ type TRS = { t: vec3; r: vec4; s: vec3 };
 function sample(times: ArrayLike<number>, values: Float32Array | number[], stride: number, t: number, interp: string): number[] {
   const n = times.length;
   const cubic = interp === 'CUBICSPLINE';
-  const at = (i: number) => {
+  const keyAt = (i: number) => {
     const base = cubic ? (i * 3 + 1) * stride : i * stride;
-    return Array.from({ length: stride }, (_, k) => values[base + k]);
+    return Array.from({ length: stride }, (_, k) => values[base + k] ?? 0);
   };
   if (n === 0) return [];
-  if (t <= times[0]) return at(0);
-  if (t >= times[n - 1]) return at(n - 1);
+  if (t <= at(times, 0)) return keyAt(0);
+  if (t >= at(times, n - 1)) return keyAt(n - 1);
   let i = 0;
-  while (i < n - 2 && times[i + 1] < t) i++;
-  if (interp === 'STEP') return at(i);
-  const a = at(i);
-  const b = at(i + 1);
-  const f = (t - times[i]) / (times[i + 1] - times[i] || 1);
-  const out = a.map((v, k) => v + (b[k] - v) * f);
+  while (i < n - 2 && at(times, i + 1) < t) i++;
+  if (interp === 'STEP') return keyAt(i);
+  const a = keyAt(i);
+  const b = keyAt(i + 1);
+  const f = (t - at(times, i)) / (at(times, i + 1) - at(times, i) || 1);
+  const out = a.map((v, k) => v + (at(b, k) - v) * f);
   if (stride === 4) {
     const len = Math.hypot(...out) || 1;
     return out.map((v) => v / len);
@@ -173,7 +174,7 @@ function sample(times: ArrayLike<number>, values: Float32Array | number[], strid
 
 /** Đặt TRS các node theo animation tại thời điểm t (giây). Trả về hàm khôi phục. */
 function poseAt(doc: Document, animIndex: number, t: number): () => void {
-  const anim = doc.getRoot().listAnimations()[animIndex];
+  const anim = at(doc.getRoot().listAnimations(), animIndex);
   const saved = new Map<Node, TRS>();
   for (const ch of anim.listChannels()) {
     const node = ch.getTargetNode();
@@ -202,7 +203,7 @@ function poseAt(doc: Document, animIndex: number, t: number): () => void {
 function animRange(doc: Document, animIndex: number): [number, number] {
   let lo = Infinity;
   let hi = -Infinity;
-  for (const s of doc.getRoot().listAnimations()[animIndex].listSamplers()) {
+  for (const s of at(doc.getRoot().listAnimations(), animIndex).listSamplers()) {
     const input = s.getInput();
     if (!input || input.getCount() === 0) continue;
     lo = Math.min(lo, input.getScalar(0));
@@ -220,8 +221,9 @@ export function measureCurrentPose(doc: Document, level = 0): Dims | null {
   const w: number[] = [];
   const grow = (v: ArrayLike<number>) => {
     for (let k = 0; k < 3; k++) {
-      if (v[k] < lo[k]) lo[k] = v[k];
-      if (v[k] > hi[k]) hi[k] = v[k];
+      const vk = at(v, k);
+      if (vk < at(lo, k)) lo[k] = vk;
+      if (vk > at(hi, k)) hi[k] = vk;
     }
   };
   for (const node of sceneNodes(doc)) {
@@ -252,11 +254,12 @@ export function measureCurrentPose(doc: Document, level = 0): Dims | null {
           let wsum = 0;
           for (let k = 0; k < 4; k++) {
             if (!w[k]) continue;
-            const q = apply(jointMats[j[k]], p);
-            acc[0] += q[0] * w[k];
-            acc[1] += q[1] * w[k];
-            acc[2] += q[2] * w[k];
-            wsum += w[k];
+            const q = apply(at(jointMats, at(j, k)), p);
+            const wk = at(w, k);
+            acc[0] = (acc[0] ?? 0) + (q[0] ?? 0) * wk;
+            acc[1] = (acc[1] ?? 0) + (q[1] ?? 0) * wk;
+            acc[2] = (acc[2] ?? 0) + (q[2] ?? 0) * wk;
+            wsum += at(w, k);
           }
           grow(wsum > 0 ? acc.map((v) => v / wsum) : apply(world, p));
         } else {
@@ -267,7 +270,7 @@ export function measureCurrentPose(doc: Document, level = 0): Dims | null {
   }
   if (!Number.isFinite(lo[0])) return null;
   const r = (x: number) => Math.round(x * 1e4) / 1e4;
-  return { width: r(hi[0] - lo[0]), height: r(hi[1] - lo[1]), depth: r(hi[2] - lo[2]), minY: r(lo[1]) };
+  return { width: r(at(hi, 0) - at(lo, 0)), height: r(at(hi, 1) - at(lo, 1)), depth: r(at(hi, 2) - at(lo, 2)), minY: r(at(lo, 1)) };
 }
 
 /**

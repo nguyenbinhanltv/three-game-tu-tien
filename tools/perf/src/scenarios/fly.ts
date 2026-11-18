@@ -8,6 +8,7 @@ import { cam, enterLevel, gm, hideUi, skipCutscene } from '../lib/game';
 import { levelPoints, requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
 
+import { at } from '@dtl/shared';
 export default {
   name: 'fly',
   desc: 'Video webm chạy dọc một level qua danh sách điểm (duyệt mỹ thuật bản đồ)',
@@ -49,14 +50,14 @@ export default {
       const b = await pos();
       return Math.atan2(b.z - a.z, b.x - a.x);
     };
-    await gm(page, `tp ${Math.round(route[0].x)} ${Math.round(route[0].z)}`, 1500);
+    await gm(page, `tp ${Math.round(at(route, 0).x)} ${Math.round(at(route, 0).z)}`, 1500);
     const t0 = await heading(0);
     const t1 = await heading(0.5);
     const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
     const k = wrap(t1 - t0) >= 0 ? 1 : -1;
     for (let i = 0; i + 1 < route.length; i++) {
-      const a = route[i];
-      const b = route[i + 1];
+      const a = at(route, i);
+      const b = at(route, i + 1);
       await gm(page, `tp ${Math.round(a.x)} ${Math.round(a.z)}`, 1600);
       const phi = Math.atan2(b.z - a.z, b.x - a.x);
       await cam(page, { yaw: k * wrap(phi - t0), pitch: 0.24, dist: 12 });

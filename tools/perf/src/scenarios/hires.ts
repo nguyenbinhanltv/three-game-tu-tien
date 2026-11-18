@@ -9,6 +9,7 @@ import { sleep } from '../lib/devserver';
 import type { Scenario } from '../lib/scenario';
 import { writeJson } from '../lib/shot';
 
+import { at } from '@dtl/shared';
 type V = {
   setView(v: string): void;
   setHuman(b: boolean): void;
@@ -64,7 +65,7 @@ export default {
       assets: Record<string, { hires?: unknown[] }>;
     };
     const given = list('--ids', 'boss_han_giao,elite_huyet_nha_lang,mon_soi_xam');
-    const ids = given[0] === 'all' ? Object.keys(all.assets).filter((k) => all.assets[k].hires?.length) : given;
+    const ids = given[0] === 'all' ? Object.keys(all.assets).filter((k) => at(all.assets, k).hires?.length) : given;
     const zoom = num('--zoom', 0.8);
     const ctx = await r.browser.newContext({ viewport: { width: 960, height: 960 }, deviceScaleFactor: 1 });
     const page = await ctx.newPage();

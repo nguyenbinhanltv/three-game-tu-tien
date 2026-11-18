@@ -8,6 +8,7 @@ import type { Run, Scenario } from '../lib/scenario';
 import { gameUrl } from '../lib/browser';
 import { snap, snapSizes, UI_SIZES, writeJson } from '../lib/shot';
 
+import { at } from '@dtl/shared';
 interface HudScene {
   id: string;
   query: Record<string, string | number>;
@@ -97,7 +98,7 @@ async function cpuPerFrame(page: Page): Promise<Record<string, number>> {
   await sleep(5000);
   const b = await read();
   const frames = Math.max(1, b.f - a.f);
-  const per = (k: string) => +(((b.m[k] - a.m[k]) * 1000) / frames).toFixed(3);
+  const per = (k: string) => +(((at(b.m, k) - at(a.m, k)) * 1000) / frames).toFixed(3);
   await cdp.detach();
   return {
     framesIn5s: frames,
@@ -191,7 +192,7 @@ async function extra(r: Run, sizes: string[], only: string[]): Promise<void> {
   const want = (id: string) => !only.length || only.includes(id);
   if (want('tieu-de')) {
     for (const tag of sizes) {
-      const [width, height] = UI_SIZES[tag] ?? UI_SIZES['1080p'];
+      const [width, height] = UI_SIZES[tag] ?? at(UI_SIZES, '1080p');
       const ctx = await r.browser.newContext({ viewport: { width, height } });
       const page = await ctx.newPage();
       await page.goto(gameUrl(r.clientPort, {}, { renderer: r.renderer }));

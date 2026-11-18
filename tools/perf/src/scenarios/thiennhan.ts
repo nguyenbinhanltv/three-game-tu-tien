@@ -9,8 +9,9 @@ import { cam, gm, skipCutscene, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 
+import { at } from '@dtl/shared';
 const NAMES: Record<string, string> = { Kim: 'kim', Mộc: 'moc', Thủy: 'thuy', Hỏa: 'hoa', Thổ: 'tho' };
-const NG = tribDef('hoa_than').phases[0].nguHanh!;
+const NG = at(tribDef('hoa_than').phases, 0).nguHanh!;
 
 export default {
   name: 'thiennhan',
@@ -53,8 +54,10 @@ export default {
           const m = /Tia (\S+) giáng: đứng trận môn (\S+)/.exec(txt);
           if (m && txt !== lastEl) {
             lastEl = txt;
-            await goto(seal(ELEMENTS.indexOf(NAMES[m[2]] as (typeof ELEMENTS)[number])));
-            await snap(page, dir, `p1-${String(n++).padStart(2, '0')}-tia-${NAMES[m[1]]}-tran-mon-${NAMES[m[2]]}.jpg`, { wait: 1800 });
+            await goto(seal(ELEMENTS.indexOf(NAMES[at(m, 2)] as (typeof ELEMENTS)[number])));
+            await snap(page, dir, `p1-${String(n++).padStart(2, '0')}-tia-${NAMES[at(m, 1)]}-tran-mon-${NAMES[at(m, 2)]}.jpg`, {
+              wait: 1800,
+            });
           }
         }
         await once('clone1', 26, async () => {

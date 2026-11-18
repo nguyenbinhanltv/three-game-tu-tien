@@ -8,6 +8,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { ROOT } from './config.js';
 
+import { at } from '@dtl/shared';
 const CW = 512;
 const CH = 384;
 const NIGHT = process.argv.includes('--set') && process.argv[process.argv.indexOf('--set') + 1] === 'night';
@@ -52,20 +53,20 @@ async function card(def: CardDef): Promise<Buffer> {
   const file = path.join(ROOT, 'docs', 'asset-concepts', `${def.src}.webp`);
   const { data, info } = await sharp(file).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: W, height: H } = info;
-  const at = (x: number, y: number, c: number) => data[(y * W + x) * 3 + c];
+  const px = (x: number, y: number, c: number) => at(data, (y * W + x) * 3 + c);
   // Màu nền: trung bình bốn góc 12×12.
   const bg = [0, 0, 0];
   let n = 0;
-  for (const [x0, y0] of [
+  for (const [x0, y0] of <[number, number][]>[
     [0, 0],
     [W - 12, 0],
     [0, H - 12],
     [W - 12, H - 12],
   ]) {
-    for (let y = y0; y < y0 + 12; y++) for (let x = x0; x < x0 + 12; x++) for (let c = 0; c < 3; c++) bg[c] += at(x, y, c);
+    for (let y = y0; y < y0 + 12; y++) for (let x = x0; x < x0 + 12; x++) for (let c = 0; c < 3; c++) bg[c] = (bg[c] ?? 0) + px(x, y, c);
     n += 144;
   }
-  for (let c = 0; c < 3; c++) bg[c] /= n;
+  for (let c = 0; c < 3; c++) bg[c] = (bg[c] ?? 0) / n;
   const rgba = Buffer.alloc(W * H * 4);
   let minX = W,
     maxX = 0,
@@ -73,11 +74,11 @@ async function card(def: CardDef): Promise<Buffer> {
     maxY = 0;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const r = at(x, y, 0),
-        g = at(x, y, 1),
-        b = at(x, y, 2);
+      const r = px(x, y, 0),
+        g = px(x, y, 1),
+        b = px(x, y, 2);
       // Nền xám có gradient nhẹ: so với nền cục bộ (cùng hàng ở mép trái/phải) rồi lấy chênh lệch lớn nhất theo kênh.
-      const d = Math.max(Math.abs(r - bg[0]), Math.abs(g - bg[1]), Math.abs(b - bg[2]));
+      const d = Math.max(Math.abs(r - at(bg, 0)), Math.abs(g - at(bg, 1)), Math.abs(b - at(bg, 2)));
       // Độ bão hòa cũng góp (lá nhạt gần xám nền vẫn có sắc).
       const sat = Math.max(r, g, b) - Math.min(r, g, b);
       const a = smooth(12, 34, Math.max(d, sat * 1.4));
@@ -91,9 +92,9 @@ async function card(def: CardDef): Promise<Buffer> {
       // Gỡ viền xám: pha lẫn nền theo (1 − a) được trừ ngược.
       if (a > 0.02 && a < 0.98) {
         const k = (1 - a) * 0.6;
-        R = Math.max(0, (R - (bg[0] / 255) * k) / (1 - k));
-        G = Math.max(0, (G - (bg[1] / 255) * k) / (1 - k));
-        B = Math.max(0, (B - (bg[2] / 255) * k) / (1 - k));
+        R = Math.max(0, (R - (at(bg, 0) / 255) * k) / (1 - k));
+        G = Math.max(0, (G - (at(bg, 1) / 255) * k) / (1 - k));
+        B = Math.max(0, (B - (at(bg, 2) / 255) * k) / (1 - k));
       }
       const o = (y * W + x) * 4;
       rgba[o] = Math.min(255, R * def.mul[0] * 255);
@@ -123,15 +124,15 @@ async function card(def: CardDef): Promise<Buffer> {
     sb = 0,
     sn = 0;
   for (let i = 0; i < crop.info.width * crop.info.height; i++) {
-    const a = crop.data[i * 4 + 3];
+    const a = at(crop.data, i * 4 + 3);
     if (a > 200) {
-      sr += crop.data[i * 4];
-      sg += crop.data[i * 4 + 1];
-      sb += crop.data[i * 4 + 2];
+      sr += at(crop.data, i * 4);
+      sg += at(crop.data, i * 4 + 1);
+      sb += at(crop.data, i * 4 + 2);
       sn++;
     }
   }
-  const avg = sn ? [sr / sn, sg / sn, sb / sn] : [160, 130, 80];
+  const avg: [number, number, number] = sn ? [sr / sn, sg / sn, sb / sn] : [160, 130, 80];
   for (let i = 0; i < CW * CH; i++) {
     cell[i * 4] = avg[0];
     cell[i * 4 + 1] = avg[1];
@@ -151,7 +152,7 @@ async function main(): Promise<void> {
   const atlas = Buffer.alloc(CW * 2 * CH * 2 * 4);
   const list = NIGHT ? CARDS_NIGHT : CARDS;
   for (let i = 0; i < list.length; i++) {
-    const cell = await card(list[i]);
+    const cell = await card(at(list, i));
     const cx = (i % 2) * CW;
     const cy = Math.floor(i / 2) * CH;
     for (let y = 0; y < CH; y++) atlas.set(cell.subarray(y * CW * 4, (y + 1) * CW * 4), ((cy + y) * CW * 2 + cx) * 4);

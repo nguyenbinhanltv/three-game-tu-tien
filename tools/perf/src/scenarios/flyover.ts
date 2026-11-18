@@ -10,6 +10,7 @@ import { requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 
+import { at } from '@dtl/shared';
 export default {
   name: 'flyover',
   desc: 'Bay ngang level theo tuyến (webm + ảnh mốc): ngự kiếm thật từ trận đầu tới trận cuối theo trục bắc',
@@ -20,8 +21,8 @@ export default {
     const pads = padsOfLevel(level)
       .slice()
       .sort((a, b) => b.z - a.z);
-    const from = pads[0];
-    const to = pads[pads.length - 1];
+    const from = at(pads, 0);
+    const to = at(pads, pads.length - 1);
     const secs = Number(opt('--secs', '50'));
     const dir = path.join(r.out, 'video');
     fs.mkdirSync(dir, { recursive: true });

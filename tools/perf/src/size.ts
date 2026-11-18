@@ -19,6 +19,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import zlib from 'node:zlib';
 
+import { at } from '@dtl/shared';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const DIST = path.join(ROOT, 'apps/client/dist');
 const CLIENT_SRC = path.join(ROOT, 'apps/client/src');
@@ -41,7 +42,7 @@ if (flag('--build') || !fs.existsSync(path.join(DIST, 'index.html'))) {
   execSync('pnpm build', { cwd: ROOT, stdio: 'inherit' });
 }
 
-const distFile = (url: string) => path.join(DIST, decodeURIComponent(url.replace(/^\//, '').split(/[?#]/)[0]));
+const distFile = (url: string) => path.join(DIST, decodeURIComponent(at(url.replace(/^\//, '').split(/[?#]/), 0)));
 const TEXT = /\.(js|mjs|css|html|json|svg|wasm)$/i;
 
 /** Byte trên dây: gzip mức 9 cho file văn bản/wasm (CDN nén), nguyên kích thước cho file đã nén sẵn (glb, webm, woff2, webp…). */
@@ -57,19 +58,21 @@ function measure(group: string, rel: string, note?: string): Entry {
 const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
 const boot: Entry[] = [measure('html', '/index.html')];
 const bootUrls = new Set<string>();
-for (const m of html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)) bootUrls.add(m[1]);
-for (const m of html.matchAll(/<link[^>]*\brel="(?:stylesheet|modulepreload)"[^>]*\bhref="([^"]+)"/g)) bootUrls.add(m[1]);
-for (const m of html.matchAll(/<link[^>]*\bhref="([^"]+)"[^>]*\brel="(?:stylesheet|modulepreload)"/g)) bootUrls.add(m[1]);
+for (const m of html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)) bootUrls.add(at(m, 1));
+for (const m of html.matchAll(/<link[^>]*\brel="(?:stylesheet|modulepreload)"[^>]*\bhref="([^"]+)"/g)) bootUrls.add(at(m, 1));
+for (const m of html.matchAll(/<link[^>]*\bhref="([^"]+)"[^>]*\brel="(?:stylesheet|modulepreload)"/g)) bootUrls.add(at(m, 1));
 for (const u of bootUrls) boot.push(measure(u.endsWith('.css') ? 'css' : 'js', u));
 
 // ---------- font ----------
 const fontUrls = new Set<string>();
 const cssText = [html, ...[...bootUrls].filter((u) => u.endsWith('.css')).map((u) => fs.readFileSync(distFile(u), 'utf8'))];
 for (const text of cssText) {
-  for (const m of text.matchAll(/url\(\s*['"]?(\/?fonts\/[^'")]+)['"]?\s*\)/g)) fontUrls.add('/' + m[1].replace(/^\//, ''));
+  for (const m of text.matchAll(/url\(\s*['"]?(\/?fonts\/[^'")]+)['"]?\s*\)/g)) fontUrls.add('/' + at(m, 1).replace(/^\//, ''));
 }
-for (const m of html.matchAll(/<link[^>]*\bas="font"[^>]*\bhref="([^"]+)"|<link[^>]*\bhref="([^"]+)"[^>]*\bas="font"/g))
-  fontUrls.add(m[1] ?? m[2]);
+for (const m of html.matchAll(/<link[^>]*\bas="font"[^>]*\bhref="([^"]+)"|<link[^>]*\bhref="([^"]+)"[^>]*\bas="font"/g)) {
+  const u = m[1] ?? m[2];
+  if (u) fontUrls.add(u);
+}
 for (const u of fontUrls) boot.push(measure('font', u));
 
 // ---------- asset 3D (AssetCache) ----------
@@ -89,9 +92,9 @@ function walk(dir: string, out: string[] = []): string[] {
 const bootAssetIds = new Map<string, string[]>();
 for (const f of walk(CLIENT_SRC)) {
   for (const m of fs.readFileSync(f, 'utf8').matchAll(/\bassets\.acquire\(\s*['"]([\w-]+)['"]/g)) {
-    const list = bootAssetIds.get(m[1]) ?? [];
+    const list = bootAssetIds.get(at(m, 1)) ?? [];
     list.push(path.relative(CLIENT_SRC, f).replace(/\\/g, '/'));
-    bootAssetIds.set(m[1], list);
+    bootAssetIds.set(at(m, 1), list);
   }
 }
 for (const [id, from] of bootAssetIds) {
@@ -127,7 +130,7 @@ if (fs.existsSync(audioPath)) boot.push(measure('audio', '/audio/manifest.json')
 
 const pick = (src: Src, profile: Profile): string => {
   const list = Array.isArray(src) ? src : [src];
-  return list.find((s) => s.endsWith('.' + profile)) ?? list[0];
+  return list.find((s) => s.endsWith('.' + profile)) ?? at(list, 0);
 };
 /** Bài nhạc phát trước khi vào game (apps/client/src/ui/App.tsx): tính vào tải đầu. */
 const PRE_GAME_MUSIC = new Set(['title']);
