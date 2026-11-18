@@ -1,0 +1,53 @@
+{
+  "size": 1024,
+  "layers": [
+    {
+      "layer": "grass",
+      "ph": "monastery_stone_floor",
+      "a": "grass.a.f5fa4a045f.webp",
+      "n": "grass.n.24dff01880.webp"
+    },
+    {
+      "layer": "dirt",
+      "ph": "rock_path",
+      "a": "dirt.a.77d3071275.webp",
+      "n": "dirt.n.356213dba3.webp"
+    },
+    {
+      "layer": "forest",
+      "ph": "mossy_cobblestone",
+      "a": "forest.a.55f1bbae50.webp",
+      "n": "forest.n.3e85352c0e.webp"
+    },
+    {
+      "layer": "rock",
+      "ph": "slate_floor_02",
+      "a": "rock.a.2ee93d951a.webp",
+      "n": "rock.n.83f131eb22.webp"
+    },
+    {
+      "layer": "cliff",
+      "ph": "rock_face_03",
+      "a": "cliff.a.39b9db45a6.webp",
+      "n": "cliff.n.92455df03d.webp"
+    },
+    {
+      "layer": "sand",
+      "ph": "gravelly_sand",
+      "a": "sand.a.25201678bd.webp",
+      "n": "../terrain/gravel.n.25abf4ee61.webp"
+    },
+    {
+      "layer": "paving",
+      "ph": "patterned_slate_tiles",
+      "a": "paving.a.481a36628f.webp",
+      "n": "paving.n.3c66c90db6.webp"
+    },
+    {
+      "layer": "gravel",
+      "ph": "rocky_gravel",
+      "a": "gravel.a.4881b79ca9.webp",
+      "n": "gravel.n.731be2dd7b.webp"
+    }
+  ]
+}
