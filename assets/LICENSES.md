@@ -393,6 +393,11 @@ Font web tự host trong `apps/client/public/fonts/`, subset bằng `tools/fonts
 | --- | --- | --- | --- | --- |
 | `dtl-title.woff2` | Charm Bold, © 2018 The Charm Project Authors (Cadson Demak) | `OFL-1.1` | 2026-11-15 | Tiêu đề thư pháp trên khung hình đầu (chỉ glyph của `ui.title`), biến CSS `--font-title` |
 | `dtl-display.woff2` | Alegreya SC Bold, © 2011 The Alegreya Project Authors (Huerta Tipográfica) | `OFL-1.1` | 2026-11-15 | Tên boss, biển hiệu, phụ đề màn tiêu đề (Latin + tiếng Việt), biến CSS `--font-display` |
+| `dtl-u2-display.woff2` | Grenze Gotisch Bold, © 2020 The Grenze Gotisch Project Authors (Omnibus-Type) | `OFL-1.1` | 2026-11-18 | UI Kit 2.0: chữ trang trí lớn (thẻ chương, tên chiêu, "Đột phá"), biến `--u-font-display` |
+| `dtl-u2-head.woff2` | Texturina (opsz 24, 600–800), © 2020 The Texturina Project Authors (Omnibus-Type) | `OFL-1.1` | 2026-11-18 | UI Kit 2.0: tiêu đề bảng, tab, nút, nhãn, biến `--u-font-head` |
+| `dtl-u2-body.woff2`, `dtl-u2-body-italic.woff2` | Newsreader (opsz 16, 400–600 + nghiêng), © 2020 The Newsreader Project Authors (Production Type) | `OFL-1.1` | 2026-11-18 | UI Kit 2.0: nội dung, số liệu, biến `--u-font-body` |
+
+Ba font U2 do `tools/fonts/subset_u2.py` cắt (Latin + Latin mở rộng + U+1E00–1EFF, ghim trục biến thiên, woff2; tổng 177 KB). Đã đối chiếu từng văn bản OFL: không họ nào khai Reserved Font Name, nên đổi tên tệp `dtl-u2-*` và cắt tập ký tự là hợp lệ; bản quyền + giấy phép giữ trong bảng `name` và `OFL-grenzegotisch|texturina|newsreader.txt` cạnh file.
 
 <!-- music:begin (sinh bởi tools/audio/loop.mjs, đừng sửa tay) -->
 

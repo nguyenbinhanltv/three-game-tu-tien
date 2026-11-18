@@ -7,7 +7,7 @@ import './kit-page.css';
 import '../kit/tokens.css';
 import '../kit/kit.css';
 
-/** Điểm vào trang xem bộ giao diện Ngọc Giản Kim Văn (?ui=kit). Chỉ nạp qua dynamic import từ main.tsx. */
+/** Điểm vào trang xem bộ giao diện Ngọc Giản Kim Văn (?ui=ngj). Chỉ nạp qua dynamic import từ main.tsx. */
 export function mountNgjKit(el: HTMLElement): void {
   installMotion();
   createRoot(el).render(<NgjKit />);

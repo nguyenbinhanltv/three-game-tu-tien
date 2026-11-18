@@ -1,6 +1,6 @@
 # UI-1: nền tảng "Ngọc Giản Kim Văn"
 
-Xem toàn bộ thành phần: `http://localhost:5173/?ui=kit&mute=1` (trang xem, không cần server game). Ảnh: `docs/ui-ngoc-gian/kit/` (`pnpm --filter @dtl/perf shots:ngj --out <thư mục tuyệt đối>`, 1080p và 1440p, đo chi phí khung vào `ngj-metrics.json`).
+Xem toàn bộ thành phần: `http://localhost:5173/?ui=ngj&mute=1` (trang xem, không cần server game). Ảnh: `docs/ui-ngoc-gian/kit/` (`pnpm --filter @dtl/perf shots:ngj --out <thư mục tuyệt đối>`, 1080p và 1440p, đo chi phí khung vào `ngj-metrics.json`).
 
 Mã nguồn: `apps/client/src/ui/ngj/`. Import `from '../ngj'` (hoặc `./ngj`); chưa gắn vào HUD/bảng thật (UI-2, UI-3).
 
