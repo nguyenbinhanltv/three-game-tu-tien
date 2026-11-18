@@ -88,7 +88,7 @@ export class SynthWind {
       this.nodes = [src, lfo1, lfo2];
     }
     ramp(this.g, WIND_GAIN, c.currentTime, fade);
-    if (DEV) audioLog.debug('ambient: gió tổng hợp');
+    if (DEV) audioLog.info('ambient: gió tổng hợp');
   }
 
   stop(fade: number): void {
@@ -209,7 +209,7 @@ export class StreamDeck {
     ch.g.gain.cancelScheduledValues(t);
     ch.g.gain.setValueAtTime(0, t);
     ramp(ch.g, entry.gain ?? 1, t, fade);
-    if (DEV) audioLog.debug(`${this.kind}: ${id} (${url})`);
+    if (DEV) audioLog.info(`${this.kind}: ${id} (${url})`);
     el.play().catch((err) => audioLog.warn('play() bị từ chối', url, err));
   }
 

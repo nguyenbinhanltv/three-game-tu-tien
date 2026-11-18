@@ -1034,7 +1034,7 @@ export function volumeAt(eng: Game, x: number, z: number): number {
 export function resetSound(eng: Game, world: boolean): void {
   eng.scape?.dispose();
   const log = (msg: string) => {
-    if (import.meta.env.DEV) audioLog.debug(`${msg}`);
+    if (import.meta.env.DEV) audioLog.info(`${msg}`);
   };
   eng.steps = new FootstepDriver(world ? 'van_lam' : 'kiem_trung', (name, vol, at) => sfx(name, vol, at, false), log);
   eng.scape = world ? new Soundscape(buildSources(SECT_LANTERNS), audioSpatialApi(), log) : null;

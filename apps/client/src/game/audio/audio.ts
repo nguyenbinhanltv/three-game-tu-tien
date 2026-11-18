@@ -735,7 +735,7 @@ export function playSting(id: string, volume = 1): boolean {
       audioLog.warn('play() sting bị từ chối', id, err);
       release();
     });
-  if (DEV) audioLog.debug(`sting: ${id}`);
+  if (DEV) audioLog.info(`sting: ${id}`);
   return true;
 }
 
