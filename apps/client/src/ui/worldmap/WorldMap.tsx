@@ -176,7 +176,7 @@ export function WorldMap() {
       };
       const boxes = infos.map(zoneBox);
       for (const [i, zi] of infos.entries()) {
-        const bx = boxes[i];
+        const bx = boxes[i]!;
         const cx = (bx.l + bx.r) / 2;
         if (!inView({ x: cx, y: bx.t }, 80)) continue;
         const name = t(`zone.${zi.zone.id}`);

@@ -65,8 +65,8 @@ export function Modal({
           } else if (e.key === 'Tab' && root.current) {
             const list = [...root.current.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((n) => n.offsetParent !== null);
             if (!list.length) return;
-            const first = list[0];
-            const last = list[list.length - 1];
+            const first = list[0]!;
+            const last = list[list.length - 1]!;
             if (e.shiftKey && document.activeElement === first) {
               e.preventDefault();
               last.focus();

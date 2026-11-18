@@ -439,7 +439,7 @@ export function ForgeTab({ npcId }: { npcId: string }) {
               </div>
               <div className="k-dim">
                 {t('ui.item.kind.' + out.kind)} ·{' '}
-                {t('ui.forge.chance', { a: Math.round((f.q[2] / tot) * 100), b: Math.round((f.q[3] / tot) * 100) })}
+                {t('ui.forge.chance', { a: Math.round((f.q[2]! / tot) * 100), b: Math.round((f.q[3]! / tot) * 100) })}
               </div>
               <div className="craft-inputs">
                 {f.inputs.map((i) => (

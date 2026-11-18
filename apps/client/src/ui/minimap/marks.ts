@@ -61,7 +61,7 @@ export function questOverlay(
   let goalPoint: MinimapFrame['goalPoint'] = null;
   const qid = trackedQuestId(quests, trackPin);
   const def = qid ? QUEST.get(qid) : undefined;
-  const goal = def && questGoal(def, quests.active[qid], NPCS);
+  const goal = def && questGoal(def, quests.active[qid]!, NPCS);
   if (def && goal && level === 'van_lam') {
     const label = t(`quest.${qid}.name`);
     if (goal.kind === 'npc') {

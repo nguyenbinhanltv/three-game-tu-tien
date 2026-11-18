@@ -87,7 +87,7 @@ export function AssetViewer() {
             if (!id) return;
             setBossId(id);
             v.setHuman(true);
-            await load(() => v.loadUrl(assetBaseUrl() + man.assets[id].file), id);
+            await load(() => v.loadUrl(assetBaseUrl() + man.assets[id]!.file), id);
           })().catch((e) => setError(t('viewer.err.load', { name: 'boss', msg: e instanceof Error ? e.message : String(e) })));
           return;
         }
@@ -142,9 +142,9 @@ export function AssetViewer() {
             // ?lib=ual: clip UAL phát thẳng lên model Mannequin (quái hai chân Dị Vực, nhân vật v3).
             const libs =
               params.get('lib') === 'ual'
-                ? [`native:${assetBaseUrl()}${man.assets.anim_ual_native.file}`]
+                ? [`native:${assetBaseUrl()}${man.assets.anim_ual_native?.file}`]
                 : params.get('lib')
-                  ? [man.assets.anim_human_base, man.assets.anim_human_k3].filter(Boolean).map((l) => assetBaseUrl() + l.file)
+                  ? [man.assets.anim_human_base, man.assets.anim_human_k3].filter((l) => !!l).map((l) => assetBaseUrl() + l!.file)
                   : [];
             return v.loadUrl(assetBaseUrl() + a.file, libs);
           }, show);
@@ -190,7 +190,7 @@ export function AssetViewer() {
     void load(async () => {
       const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });
       const man = (await res.json()) as Manifest;
-      return viewer.loadUrl(assetBaseUrl() + man.assets[id].file);
+      return viewer.loadUrl(assetBaseUrl() + man.assets[id]!.file);
     }, id);
   };
 

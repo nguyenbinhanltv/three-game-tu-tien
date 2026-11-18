@@ -83,5 +83,5 @@ export function mipFor(m: AncientMap, pxPerM: number): HTMLCanvasElement {
   const srcPerM = m.meta.px / m.meta.size;
   let i = 0;
   while (i + 1 < m.mips.length && srcPerM / 2 ** i / pxPerM >= 1.6) i++;
-  return m.mips[i];
+  return m.mips[i]!;
 }
