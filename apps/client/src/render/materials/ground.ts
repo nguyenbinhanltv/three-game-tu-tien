@@ -44,7 +44,7 @@ type Node = any;
 
 export type GroundLevel = 'low' | 'medium' | 'high';
 
-export const groundParams = {
+const groundParams = {
   /** Độ sáng của albedo texture so với bảng màu cũ. */
   gain: uniform(1.5),
   normalStrength: uniform(0.85),

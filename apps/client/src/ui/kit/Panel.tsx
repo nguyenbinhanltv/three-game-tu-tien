@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { t } from '@dtl/content';
 import { Cartouche, Corners, type MapMotif } from '../ngj/ngj';
-import { ngjHud } from '../ngj/motion';
 import { useUI } from '../store';
 import '../ngj/tokens.css';
 import '../ngj/panels.css';
@@ -89,7 +88,7 @@ const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet', 'ba
 
 /**
  * Cửa sổ nằm giữa màn hình (Panel + Header + phần thân cuộn). `width` tính bằng px.
- * HUD kiểu Ngọc Giản (UI-3, `?ngj=0` tắt): giấy ngà tường vân, bảng tên theo bản đồ, góc hoa văn, viền vẽ dần khi mở.
+ * HUD kiểu Ngọc Giản (UI-3): giấy ngà tường vân, bảng tên theo bản đồ, góc hoa văn, viền vẽ dần khi mở.
  */
 export function PanelWindow({
   title,
@@ -111,17 +110,13 @@ export function PanelWindow({
   const level = useUI((s) => s.level);
   const motif = (MOTIFS.includes(level) ? level : 'van_lam') as MapMotif;
   return (
-    <div className={'k-window' + (ngjHud ? ' ngj-win' : '') + (className ? ' ' + className : '')} style={{ '--w': width + 'px' } as React.CSSProperties}>
+    <div className={'k-window' + ' ngj-win' + (className ? ' ' + className : '')} style={{ '--w': width + 'px' } as React.CSSProperties}>
       <Panel tone={tone} role="dialog" aria-label={title}>
-        {ngjHud && (
-          <>
-            <Corners material="paper" />
-            <svg className="ngj-draw" aria-hidden="true">
-              <rect pathLength={1} rx="12" ry="12" />
-            </svg>
-          </>
-        )}
-        <Header title={title} sub={sub} onClose={onClose} plate={ngjHud ? motif : undefined} />
+        <Corners material="paper" />
+        <svg className="ngj-draw" aria-hidden="true">
+          <rect pathLength={1} rx="12" ry="12" />
+        </svg>
+        <Header title={title} sub={sub} onClose={onClose} plate={motif} />
         <PanelBody>{children}</PanelBody>
       </Panel>
     </div>

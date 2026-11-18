@@ -13,18 +13,18 @@ export const INK_IN = 2.6;
 /** Giây mực rút khi hồi sinh. */
 export const INK_OUT = 1.5;
 /** Giây camera trôi hết tầm. */
-export const DRIFT_TIME = 5;
+const DRIFT_TIME = 5;
 /** Độ phủ mực tại đó bảng hồi sinh bắt đầu hiện. */
 export const PANEL_INK = 0.62;
 /** Độ phủ mực lúc hết (chừa lại một lớp mỏng cho giọng thủy mặc, không đen kịt để còn thấy cảnh). */
-export const INK_MAX = 1;
+const INK_MAX = 1;
 
 function smooth(x: number): number {
   const c = x < 0 ? 0 : x > 1 ? 1 : x;
   return c * c * (3 - 2 * c);
 }
 
-export interface DeathOut {
+interface DeathOut {
   /** Độ phủ mực 0..1 (đã easing). */
   ink: number;
   /** Mức khử bão hòa 0..1. */

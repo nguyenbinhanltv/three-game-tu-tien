@@ -39,7 +39,7 @@ function val(s: PlayerStats, id: StatId): number {
 }
 
 /** Số server gửi (đã gồm buff, nội tại) cho bốn chỉ số phẳng. */
-export interface ServerStats {
+interface ServerStats {
   mhp: number;
   mmp: number;
   atk: number;
@@ -81,7 +81,7 @@ export function charPower(level: number, equip: Equipment, rootId: string, c: Se
   return combatPower({ ...st, hp: c.mhp, mp: c.mmp, atk: c.atk, def: c.def });
 }
 
-export interface ElemRow {
+interface ElemRow {
   elem: (typeof ELEMENTS)[number];
   dmg: number;
   res: number;

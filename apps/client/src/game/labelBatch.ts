@@ -16,7 +16,7 @@ const COLS = 4;
 const ROWS = 8;
 const CAPACITY = 96;
 
-export interface LabelSpec {
+interface LabelSpec {
   text: string;
   color: string;
   sub: string;

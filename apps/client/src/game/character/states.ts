@@ -27,7 +27,7 @@ export type CharState =
 export type ClipMap = Partial<Record<CharState, string>>;
 
 /** Trạng thái lùi khi asset không có clip riêng (null = bỏ qua, giữ clip đang chạy). */
-export const FALLBACK: Record<CharState, CharState | null> = {
+const FALLBACK: Record<CharState, CharState | null> = {
   idle: null,
   combatIdle: 'idle',
   walk: 'run',
@@ -51,7 +51,7 @@ export const FALLBACK: Record<CharState, CharState | null> = {
 /** Dưới tốc độ này coi là đứng yên (m/s, trước scale). */
 export const MOVE_MIN = 0.3;
 /** Từ tốc độ này (× tốc độ tham chiếu của clip chạy) chuyển đi → chạy. */
-export const RUN_FROM = 0.6;
+const RUN_FROM = 0.6;
 
 /** Trạng thái nền theo thứ tự ưu tiên: chết > choáng > thiền > bay > trên không > niệm chú > di chuyển > đứng. */
 export function baseState(a: AnimState, refSpeed: number, combatBias = false): CharState {

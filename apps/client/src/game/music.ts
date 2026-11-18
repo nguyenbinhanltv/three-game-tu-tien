@@ -36,12 +36,13 @@ import {
   type StemZone,
 } from './musicDirector';
 import { StemPlayer } from './stemMusic';
+import { FLAGS } from './flags';
 
-export { MUSIC_TRACKS, type MusicTrack } from './musicDirector';
+export { type MusicTrack } from './musicDirector';
 
 const DEV = (import.meta as unknown as { env: { DEV: boolean } }).env.DEV;
-const DEBUG = DEV || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug'));
-const NIGHT_PARAM = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('night') : null;
+const DEBUG = DEV || FLAGS.debug;
+const NIGHT_PARAM = FLAGS.night;
 
 function isNight(): boolean {
   if (NIGHT_PARAM === '1') return true;
@@ -402,7 +403,7 @@ class Procedural {
 
 // ---------- bộ điều khiển ----------
 
-export interface MusicTick {
+interface MusicTick {
   /** Đã vào game (đang ở màn tải thì chưa phát nhạc vùng). */
   active: boolean;
   /** Tên room hiện tại (`world`/`dungeon`). */

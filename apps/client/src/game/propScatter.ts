@@ -3,7 +3,6 @@ import { scatterVanHai } from './vanHaiScatter';
 import { scatterThienKhuyet } from './thienKhuyetArt';
 import { type BhScatterCtx, riftPath, scatterBacHoang } from './bacHoangArt';
 import { scatterXich, XICH_LEVEL, xichCracks } from './xichArt';
-export { scatterVanHai };
 import { tribDef, tribSealPos, padsOfLevel, propsOf, terrainOf, COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
 
 /**
@@ -184,8 +183,6 @@ const TREE_SCALE: Record<string, [number, number]> = {
   prop_anh_dao: [0.85, 1.2],
   prop_phong_do: [0.85, 1.2],
 };
-/** `?trees=legacy` (hoặc 0) về cây thủ tục cũ của terrain để so ảnh trước/sau. */
-export const LEGACY_TREES = typeof location !== 'undefined' && ['0', 'legacy'].includes(new URLSearchParams(location.search).get('trees') ?? '');
 const TREE_CELL = 24;
 
 /**
@@ -194,7 +191,6 @@ const TREE_CELL = 24;
  * sân tông môn anh đào/thông; rừng Linh Thảo sồi/phong/cổ thụ; thung lũng Thanh Khê sồi/anh đào/thông; hồ sồi/phong/thông.
  */
 function scatterTrees(out: PropInstance[]): void {
-  if (LEGACY_TREES) return;
   const big = out.filter((p) => p.id === 'prop_co_thu' || p.id === 'prop_thong_co');
   const n = WORLD_SIZE / TREE_CELL;
   for (let gz = 0; gz < n; gz++) {
@@ -328,7 +324,7 @@ const levelCache = new Map<string, PropInstance[]>();
  * Dùng lại GLB đã có (đá Vân Lam nhuộm ấm, `prop_cay_goc_kho` của PROP_LIB); tránh tâm cụm quái, tinh anh, trạm, điểm nhấn, điểm hái.
  */
 const DM_ROCKS = ['prop_da_nam', 'prop_da_dung', 'prop_da_phien'] as const;
-export function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[] {
+function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[] {
   const L = LEVELS.doan_mach;
   const tr = terrainOf('doan_mach');
   const clear: Circle[] = [

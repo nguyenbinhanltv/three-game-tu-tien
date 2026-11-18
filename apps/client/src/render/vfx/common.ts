@@ -36,20 +36,8 @@ export const vnoise = Fn(([p]: N[]) => {
   return mix(mix(a, b, w.x), mix(c, d, w.x), w.y);
 });
 
-/**
- * RNG theo seed (mulberry32), trả 0..1. Dùng cho hình có seed từ server (tia sét, vị trí mưa kiếm):
- * cùng seed thì mọi client ra cùng một dãy số, không phụ thuộc thứ tự gọi `Math.random` khác.
- */
-export function seededRandom(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+/** RNG theo seed (mulberry32) cho hình có seed từ server (tia sét, mưa kiếm): dùng chung với `@dtl/shared`. */
+export { mulberry32 as seededRandom } from '@dtl/shared';
 
 /** Seed nhận từ mạng: số nguyên không âm hợp lệ thì dùng, không thì sinh ngẫu nhiên tại chỗ (server cũ). */
 export function seedOr(sd: unknown): number {

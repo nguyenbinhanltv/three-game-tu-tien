@@ -40,7 +40,7 @@ function useCountdown(sec: number, key: unknown): number {
 }
 
 /** Đang kẹt bình cảnh với tu vi đầy (cấp 5/10/15 chưa vượt). */
-export function isStuck(c: CharView): boolean {
+function isStuck(c: CharView): boolean {
   return bottleneckReady(c.level, c.bk, c.xp, c.xpNeed);
 }
 

@@ -27,7 +27,7 @@ export interface BoltHost {
   readonly particles: Particles;
 }
 
-export type BoltLook = 'orb' | 'blade';
+type BoltLook = 'orb' | 'blade';
 
 export function boltLook(kind: string): BoltLook {
   return kind === 'spirit' ? 'blade' : 'orb';
@@ -36,7 +36,7 @@ export function boltLook(kind: string): BoltLook {
 /** Đạn mờ dần trong chừng này giây cuối đời (hết hạn mà không trúng). */
 export const BOLT_FADE = 0.18;
 /** Hạt đuôi mỗi giây mỗi viên. */
-export const BOLT_TRAIL_RATE = 36;
+const BOLT_TRAIL_RATE = 36;
 /** Đạn ở xa hơn chừng này mét so với người chơi thì không vẽ (chưa có AOI nên cả kênh nhận). */
 export const BOLT_VIEW_DIST = 90;
 
@@ -89,7 +89,7 @@ const WHITE = new THREE.Color(0xffffff);
 
 /** Màu lõi: màu loại đòn pha trắng (nóng, đọc rõ trên nền sương). */
 /** Viền/quầng đỏ thẫm của đạn: giữ sắc màu hệ nhưng đẩy về đỏ và tối hơn để tương phản trên nền sáng. */
-export function rimColor(color: number): number {
+function rimColor(color: number): number {
   const r = (color >> 16) & 255;
   const g = (color >> 8) & 255;
   const b = color & 255;

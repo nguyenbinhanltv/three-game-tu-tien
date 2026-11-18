@@ -1,4 +1,5 @@
 import palette from '../../../../assets/palette.json';
+import { FLAGS } from '../game/flags';
 
 /**
  * Thông số ánh sáng, sương và chỉnh màu: đọc thẳng từ khối `grading` của assets/palette.json
@@ -38,7 +39,7 @@ export interface GradingPreset {
 
 export type GradingName = 'dawn' | 'day' | 'night' | 'ochre_dawn' | 'ochre' | 'ochre_night' | 'cloud_dawn' | 'cloud' | 'cloud_night' | 'tk_dawn' | 'tk' | 'tk_night' | 'ash_dawn' | 'rift' | 'rift_pit';
 /** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
-export type TimeOfDay = 'dawn' | 'day' | 'night';
+type TimeOfDay = 'dawn' | 'day' | 'night';
 
 type RawPreset = Record<keyof GradingPreset, string | number>;
 const raw = palette.grading as unknown as {
@@ -88,9 +89,7 @@ export function moodVariant(base: GradingName, tod: TimeOfDay): GradingName {
 
 /** `?mood=dawn|day|night` đổi thời điểm trong ngày khi xem/chụp ảnh (không lưu); mặc định theo palette.json. */
 function moodFromUrl(): TimeOfDay | null {
-  if (typeof location === 'undefined') return null;
-  const m = new URLSearchParams(location.search).get('mood');
-  return m === 'dawn' || m === 'day' || m === 'night' ? m : null;
+  return FLAGS.mood;
 }
 export const URL_MOOD: TimeOfDay | null = moodFromUrl();
 export const GRADING_DEFAULT: GradingName = URL_MOOD ?? raw.default;

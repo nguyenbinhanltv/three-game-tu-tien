@@ -1,6 +1,7 @@
 import type * as THREE from 'three/webgpu';
 import type { LocoDir, MonsterDef, SkillTiming } from '@dtl/shared';
 import type { HitOpts, HitReact } from '../hitreact';
+import { FLAGS, readFlags } from '../flags';
 
 /** Trạng thái hiển thị một nhân vật/quái nhận mỗi khung (chỉ trình bày, suy từ trạng thái server). */
 export interface AnimState {
@@ -121,18 +122,7 @@ export interface MonsterView extends CharacterView {
   readonly def: MonsterDef;
 }
 
-/**
- * `?p2e=0`: tắt tinh chỉnh P2-E (tách thân, chân bám đất, nghiêng thân thú) để chụp so sánh trước/sau hoặc khi nghi lỗi.
- * Đọc một lần lúc nạp trang.
- */
-export const P2E_OFF = typeof location !== 'undefined' && new URLSearchParams(location.search).get('p2e') === '0';
-
 /** `?models=legacy`: luôn dùng model khối (so sánh, hoặc khi model mới lỗi). */
-/** `?swords=legacy`: giữ kiếm nướng trong lưới nhân vật (không dùng 5 model kiếm riêng), để so ảnh/đo A/B. */
-export function legacySwordsRequested(search = typeof location === 'undefined' ? '' : location.search): boolean {
-  return new URLSearchParams(search).get('swords') === 'legacy';
-}
-
-export function legacyModelsRequested(search = typeof location === 'undefined' ? '' : location.search): boolean {
-  return new URLSearchParams(search).get('models') === 'legacy';
+export function legacyModelsRequested(search?: string): boolean {
+  return (search === undefined ? FLAGS : readFlags(search)).legacyModels;
 }

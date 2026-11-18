@@ -54,7 +54,7 @@ Hai lớp, đừng trộn.
 - Mưa kiếm `swordRain.ts`, thiên lôi `lightning.ts` (hình theo seed server `sd`, mọi client thấy cùng tia; chớp toàn cảnh qua `vfx.onFlash` → `PostPipeline.flash`), vệt theo nhân vật `trail.ts`, đồ rơi `loot.ts`, vết mực `ink.ts`, pháp trận/vạch báo `sigil.ts` + `game/telegraph.ts`, lưỡi kiếm khí `slash.ts`.
 - Vẽ ấm nhóm gộp: `warmKinds`/`warmBatches` trong `game/vfx.ts` biên dịch trước để không khựng giữa trận. `?vfxwarm=0` tắt (chỉ để so số đo).
 - Giảm tải đám đông: `game/fxBudget.ts` (`skipOthersFx`: lưới sống ≥ `OTHERS_FX_LIVE_MAX` hoặc xa hơn `OTHERS_FX_DIST` thì bỏ phần trang trí của người khác; luôn giữ của mình, đòn nhắm mình, chiêu quái/boss, vạch báo).
-- Cờ URL để so trước/sau: `?fxtl=0` (bỏ timeline), `?monfx=0` (bỏ FX quái), `?k6=0` (bỏ ba pha), `?batch=0` (bỏ gộp), `?fxq=low|medium|high`, `?vfxwarm=0`.
+- Cờ URL để so trước/sau: `?batch=0` (bỏ gộp), `?fxq=low|medium|high`, `?vfxwarm=0`.
 
 ## Thêm hiệu ứng cho chiêu mới
 
@@ -121,7 +121,7 @@ Checklist trước khi báo xong:
 
 Lệnh:
 
-- `pnpm shots vfx --out <thư mục tuyệt đối> --skills <id,...>`: webm chậm 0,25× + tốc độ thật và dãy khung, nam/nữ, tắt tiếng. Thêm `--old` (hình cũ), `--perf` (draw call/tam giác/ms), `--crowd 50` (sân đông), `--skills mon:<loại>[:<id quái>]`, `--skills scene_<tên>`. Đặt `--out` ngoài repo hoặc ở artifacts; repo chỉ giữ tối đa 5 ảnh WebP then chốt (`pnpm docs:check`).
+- `pnpm shots vfx --out <thư mục tuyệt đối> --skills <id,...>`: webm chậm 0,25× + tốc độ thật và dãy khung, nam/nữ, tắt tiếng. Thêm `--perf` (draw call/tam giác/ms), `--crowd 50` (sân đông), `--skills mon:<loại>[:<id quái>]`, `--skills scene_<tên>`. Đặt `--out` ngoài repo hoặc ở artifacts; repo chỉ giữ tối đa 5 ảnh WebP then chốt (`pnpm docs:check`).
 - `pnpm bench:client`, `pnpm bench:crowd`, `pnpm bench:switch` (skill `perf-budget`).
 - `pnpm test` (có `phases.test.ts`, `fxShapes.test.ts`, `fxTimeline.test.ts`, `fxBudget.test.ts`, `fxBatch.test.ts`), `pnpm content:check`.
 - Sau khi sửa VFX: gọi subagent `vfx-reviewer`.

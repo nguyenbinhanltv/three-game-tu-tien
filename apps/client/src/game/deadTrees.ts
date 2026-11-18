@@ -74,7 +74,7 @@ function branch(b: Builder, from: THREE.Vector3, dir: THREE.Vector3, len: number
 }
 
 /** Thân cây chết cao ~5–8 m: kiểu 0 thẳng gãy ngọn, 1 cong nghiêng nhiều cành, 2 gốc thấp xoắn. */
-export function deadTreeGeometry(kind: number): THREE.BufferGeometry {
+function deadTreeGeometry(kind: number): THREE.BufferGeometry {
   const b = new Builder();
   const base = new THREE.Vector3(0, -0.4, 0);
   if (kind === 0) {

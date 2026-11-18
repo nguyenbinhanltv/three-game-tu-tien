@@ -2,14 +2,14 @@
 // Hàm thuần; server vẫn kiểm lại mọi điều kiện (`onBreakthrough`).
 import { bottleneckBlocked, MAX_LEVEL, TRIB_IDS, TRIB_DEFS, tribForLevel, type InvSlot, type TribDef } from '@dtl/shared';
 
-export interface BreakChar {
+interface BreakChar {
   level: number;
   xp: number;
   xpNeed: number;
   bk: number;
 }
 
-export interface BreakInfo {
+interface BreakInfo {
   /** Kiếp kế tiếp của nhân vật (null nếu đã tới cảnh giới cuối). */
   def: TribDef | null;
   /** Đang đứng ở cấp đại viên mãn của kiếp (`def.from`). */

@@ -1,5 +1,6 @@
 import { useUI } from '../../ui/store';
 import { assets } from '../assets';
+import { urlParams } from '../flags';
 import { FrameIdle, type NavInfo } from './policy';
 import { HiresStreamer } from './streamer';
 
@@ -16,7 +17,7 @@ let streamer: HiresStreamer | null = null;
 /** Khởi động một lần ở trang game (không dùng ở viewer). `?hires=0` tắt (so ảnh, đo). */
 export function startHires(): HiresStreamer | null {
   if (streamer) return streamer;
-  if (new URLSearchParams(location.search).get('hires') === '0') return null;
+  if (urlParams().get('hires') === '0') return null;
   const idle = new FrameIdle();
   let last = performance.now();
   let raf = 0;

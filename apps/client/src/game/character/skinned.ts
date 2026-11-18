@@ -6,7 +6,7 @@ import { IkRig } from './ikpose';
 import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';
 import { type SpringDef, type SpringParams, SpringBones } from './spring';
 import { baseState, type CharState, type ClipMap, clipFor, LOCO_STATES, locomotionScale, MOVE_MIN } from './states';
-import { type AnimState, type BossMoveKind, type CharacterView, type MonsterView, P2E_OFF, type PerformOpts, type SkillEvent } from './view';
+import { type AnimState, type BossMoveKind, type CharacterView, type MonsterView, type PerformOpts, type SkillEvent } from './view';
 
 export interface SkinnedOpts {
   /** Bản sao riêng của asset (có bộ xương riêng). `SkinnedCharacter` sở hữu skeleton của nó. */
@@ -151,7 +151,7 @@ export function mixerInterval(level: number, inView = true, self = false): numbe
 const MIXER_SLACK = 0.0015;
 
 /** Thông tin nhìn của một khung (EntityManager tính theo camera, M3-9). */
-export interface ViewInfo {
+interface ViewInfo {
   /** Khoảng cách tới camera (m). */
   dist: number;
   /** Khung cầu nằm trong frustum camera. */
@@ -300,7 +300,7 @@ export class SkinnedCharacter implements CharacterView {
     this.height = o.height * s;
     this.rawHeight = o.height;
     this.scaleS = s;
-    this.quad = o.ground === 'quad' && !P2E_OFF;
+    this.quad = o.ground === 'quad';
     this.lodDist = o.lodDist ?? [22, 55];
     this.rates = o.rates ?? {};
     this.maxLoco = o.maxLocoScale ?? Infinity;
@@ -343,7 +343,7 @@ export class SkinnedCharacter implements CharacterView {
     }
     if (springDefs?.length) this.springs = new SpringBones(this.rig, springDefs, o.springParams);
     // Phải dựng rig IK khi xương còn ở tư thế gốc (trước mixer).
-    if (o.ground === 'biped' && !P2E_OFF) this.feet = IkRig.from(this.rig);
+    if (o.ground === 'biped') this.feet = IkRig.from(this.rig);
     this.mixer = new THREE.AnimationMixer(this.rig);
     this.hit = new HitReact(meshes);
     this.enterBase('idle', 0);

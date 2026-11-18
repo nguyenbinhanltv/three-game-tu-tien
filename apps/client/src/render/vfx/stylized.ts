@@ -21,28 +21,28 @@ import { cardTexture } from './cards';
  */
 
 /** Ramp ba tầng: `s` 0..1 → lõi dưới `t1`, thân tới `t2`, viền trên `t2`; `soft` là độ mềm mép giữa các tầng. */
-export function ramp3(s: N, core: N, body: N, rim: N, t1 = 0.52, t2 = 0.86, soft = 0.04): N {
+function ramp3(s: N, core: N, body: N, rim: N, t1 = 0.52, t2 = 0.86, soft = 0.04): N {
   return mix(mix(core, body, smoothstep(float(t1).sub(soft), float(t1).add(soft), s)), rim, smoothstep(float(t2).sub(soft), float(t2).add(soft), s));
 }
 
 /** Ngưỡng rách mép theo chiều dài `u`: mép trong của hình bị cắt lởm chởm (0 = mịn). Trả 0..1 (1 = còn). */
-export function jaggedCut(u: N, v: N, seed: N, amount: N): N {
+function jaggedCut(u: N, v: N, seed: N, amount: N): N {
   const th = amount.mul(float(0.14).add(vnoise(vec2(u.mul(17).add(seed.mul(7)), seed)).mul(0.5)));
   return smoothstep(th.sub(0.025), th.add(0.025), v);
 }
 
 /** Mask xói mòn: 1 còn, 0 tan. `e` thường là nhiễu trộn với vị trí (đuôi tan trước); `erode` 0 còn nguyên, ≥ 1,05 tan hết. */
-export function dissolve(e: N, erode: N, width = 0.06): N {
+function dissolve(e: N, erode: N, width = 0.06): N {
   return smoothstep(erode.sub(width), erode, e);
 }
 
 /** Nhiễu giá trị chảy theo `dir` mỗi giây (flow map thủ tục). */
-export function flowNoise(p: N, dir: N, speed = 1): N {
+function flowNoise(p: N, dir: N, speed = 1): N {
   return vnoise(p.add(dir.mul(time).mul(speed)));
 }
 
 /** Viền fresnel 0 (nhìn thẳng) → 1 (lướt). */
-export function fresnelRim(power = 2.4): N {
+function fresnelRim(power = 2.4): N {
   return pow(float(1).sub(abs(dot(normalize(normalView), normalize(positionView.negate())))), power);
 }
 
@@ -160,7 +160,7 @@ export const DECAL_STRIKE = 4;
 
 /** Texture vòng triện văn (canvas thủ tục, nạp lười). */
 let runeTex: THREE.Texture | null = null;
-export function runeTexture(): THREE.Texture {
+function runeTexture(): THREE.Texture {
   if (runeTex) return runeTex;
   const tex = drawRuneRing();
   runeTex = tex;

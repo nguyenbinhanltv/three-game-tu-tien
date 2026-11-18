@@ -99,7 +99,7 @@ export function getWaterNormals(): THREE.DataTexture {
   return normalTex;
 }
 
-export function disposeNoise(): void {
+function disposeNoise(): void {
   cloudTex?.dispose();
   normalTex?.dispose();
   cloudTex = normalTex = null;

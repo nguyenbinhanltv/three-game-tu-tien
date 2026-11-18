@@ -2,12 +2,13 @@ import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
 import './styles.css';
 import { installUiScale } from './ui/uiScale';
-import { installMotion, installNgjHud } from './ui/ngj/motion';
+import { urlParams } from './game/flags';
+import { installMotion } from './ui/ngj/motion';
 import { startHires } from './game/hires';
 
 const root = document.getElementById('root')!;
 
-const q = new URLSearchParams(location.search);
+const q = urlParams();
 if (q.get('viewer') === 'asset' || q.has('show')) {
   // Trang xem asset: nạp động để code viewer không vào bundle game chính. Không cần màn tiêu đề.
   // `?show=char` (M1-10) là alias: mở model người chơi (`?show=<id asset>` cho asset khác trong manifest).
@@ -28,7 +29,6 @@ if (q.get('viewer') === 'asset' || q.has('show')) {
 
   installUiScale();
   installMotion();
-  installNgjHud();
   createRoot(root).render(<App />);
   startHires();
 }

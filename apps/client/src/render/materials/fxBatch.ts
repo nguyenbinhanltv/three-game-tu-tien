@@ -168,4 +168,3 @@ export class FxBatcher {
   }
 }
 
-export type { FxMesh };

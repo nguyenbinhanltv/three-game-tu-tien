@@ -17,17 +17,17 @@ import { createWorldMaterial, rimLight } from './world';
  */
 
 /** Texel atlas có alpha dưới ngưỡng này là voan (pipeline ghi alpha 1 − `veilAlpha` ở vùng voan, 1 ở chỗ đặc). */
-export const VEIL_CUT = 0.95;
+const VEIL_CUT = 0.95;
 /** Độ đục cơ bản của voan khi blend, cộng thêm tối đa ~0,2 ở mép nhìn nghiêng. */
-export const VEIL_OPACITY = 0.42;
+const VEIL_OPACITY = 0.42;
 
 /** `solid`: vải đặc (kể cả voan, dùng ở LOD xa); `cutout`: phần đặc khi có lượt voan; `veil`: chỉ voan, blend. */
 export type OutfitMode = 'solid' | 'cutout' | 'veil';
 
 /** Độ sáng vân phát sáng của mọi bộ (sau này theo bậc/cường hóa). */
-export const outfitGlow = uniform(1.2);
+const outfitGlow = uniform(1.2);
 
-export interface OutfitDye {
+interface OutfitDye {
   /** Bảng màu gốc của bộ (hex sRGB) và màu nhuộm đích theo từng kênh; thiếu kênh = giữ nguyên. */
   palette: { main: string; sec: string; trim: string };
   dye: Partial<{ main: string; sec: string; trim: string }>;

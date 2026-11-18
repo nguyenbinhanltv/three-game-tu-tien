@@ -11,7 +11,7 @@ import { POSE_REF, type PoseDef, type PoseEase, type PoseKey, type PoseVec } fro
  * (GLB Mixamo hay có Armature scale 0,01).
  */
 
-export type Joint =
+type Joint =
   | 'hips'
   | 'spine'
   | 'spine1'
@@ -107,7 +107,7 @@ export interface PoseSample {
 }
 
 /** Kết quả đầu dò: đơn vị m thật (vai) hoặc đơn vị tham chiếu như JSON (hông, chân) để so trực tiếp với dữ liệu. */
-export interface PoseProbe {
+interface PoseProbe {
   /** Cổ tay so với khớp vai cùng bên (m, không gian nhân vật). z > 0: tay trước vai. */
   handRFromShoulder: PoseVec;
   handLFromShoulder: PoseVec;
@@ -552,7 +552,7 @@ function solveLeg(upper: THREE.Bone, mid: THREE.Bone, end: THREE.Bone, target: T
 
 // ---- Nội suy key pose ----
 
-export function ease(kind: PoseEase, u: number): number {
+function ease(kind: PoseEase, u: number): number {
   switch (kind) {
     case 'linear':
       return u;
@@ -677,7 +677,7 @@ export function samplePose(def: PoseDef, keys: Resolved[], t: number): PoseSampl
 
 // ---- Nướng clip ----
 
-export interface BakeOpts {
+interface BakeOpts {
   /** Số khung lấy mẫu mỗi giây (mặc định 30). Thời điểm của key luôn được lấy mẫu chính xác. */
   fps?: number;
   /** Tên clip (mặc định `pose_<id>`). */
@@ -730,7 +730,7 @@ export function bakePose(def: PoseDef, rig: IkRig, o: BakeOpts = {}): THREE.Anim
  * Thân trên = cột sống trở lên (cột sống, cổ, đầu, vai, tay, ngón). Hông và chân là thân dưới. `armR`: chỉ cánh tay
  * phải (cánh tay, cẳng tay, bàn tay, ngón), cho động tác chồng lên cả lúc chạy mà không đè thân/tay trái (rút/tra kiếm).
  */
-export type BodyPart = 'upper' | 'lower' | 'armR';
+type BodyPart = 'upper' | 'lower' | 'armR';
 
 /**
  * Lọc track theo phần thân. Dùng để đè thân trên: phát clip nền (vd. chạy của Tripo) đã lọc `lower` cùng clip

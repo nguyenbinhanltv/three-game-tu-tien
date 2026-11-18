@@ -29,8 +29,8 @@ interface PropCfg {
 }
 
 /** Ô cây cách camera dưới ngưỡng này (m, ở preset Vừa) dùng mesh 3D, xa hơn dùng impostor; impostor bỏ ở `TREE_RANGE`. */
-export const TREE_START = 220;
-export const TREE_RANGE = 1150;
+const TREE_START = 220;
+const TREE_RANGE = 1150;
 
 export const PROP_CFG: Record<string, PropCfg> = {
   prop_co_thu: { range: 520, lod: [55, 125], shadow: true, tree: true },

@@ -10,6 +10,7 @@ import { Environment } from './env';
 import { MODEL_MAT } from './models';
 import { buildSect, SECT_LANTERNS } from './sect';
 import { Terrain } from './terrain';
+import { FLAGS } from './flags';
 
 /**
  * Cảnh nền màn tiêu đề: thế giới thủ tục sẵn có (trời, mây, địa hình, Lạc Kiếm Tông dựng bằng
@@ -50,7 +51,7 @@ export class TitleBackdrop {
   ) {}
 
   async start(): Promise<void> {
-    const forceWebGL = new URLSearchParams(location.search).get('renderer') === 'webgl2';
+    const forceWebGL = FLAGS.renderer === 'webgl2';
     // Khử răng cưa do PostPipeline lo (giống engine), MSAA ở canvas chỉ tốn bộ nhớ.
     const r = new THREE.WebGPURenderer({ antialias: false, forceWebGL });
     await r.init();

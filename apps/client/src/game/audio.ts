@@ -35,6 +35,7 @@
 import { bellPartials } from './lootBell';
 import { gongPartials } from './chapter';
 import MIX from './audioMix.json';
+import { FLAGS } from './flags';
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
 type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend' | 'ui_hover';
@@ -89,7 +90,7 @@ interface SfxEntry {
   bus?: Bus;
   duck?: number;
 }
-export interface MusicCredit {
+interface MusicCredit {
   title?: string;
   by?: string;
   license?: string;
@@ -147,7 +148,7 @@ const DEFAULT_PITCH = 0.05;
 /** Âm có trong manifest nhưng chưa giải mã xong: chờ tối đa chừng này rồi phát, quá thì bỏ. */
 const PENDING_MS = 600;
 
-const urlMute = typeof location !== 'undefined' && new URLSearchParams(location.search).get('mute') === '1';
+const urlMute = FLAGS.mute;
 let muted = urlMute || localStorage.getItem('dtl.mute') === '1';
 const volumes: Record<VolumeKey, number> = { master: 1, music: 1, ambient: 1, sfx: 1, ui: 1 };
 try {
@@ -571,7 +572,7 @@ function synth(name: SynthSfx, v: number, out: AudioNode): void {
 // ---------- phát SFX ----------
 
 /** Tuỳ chọn phát một tiếng (K-7): lên lịch theo đồng hồ AudioContext, pitch riêng cho tiếng đòn. */
-export interface SfxOpts {
+interface SfxOpts {
   /** Trễ (giây) kể từ bây giờ, đặt bằng `src.start(ctx.currentTime + delay)`, không dùng setTimeout. */
   delay?: number;
   /** Hệ số tốc độ phát nhân thêm (đã gồm biến thiên ngẫu nhiên nếu người gọi muốn): thay cho pitch ngẫu nhiên riêng của tiếng. */
@@ -579,7 +580,7 @@ export interface SfxOpts {
 }
 
 /** Nhật ký phát tiếng đòn (bản dev): `__audio.hitLog`. */
-export const sfxLog: { name: string; at: number; delay: number; rate: number; ctxTime: number }[] = [];
+const sfxLog: { name: string; at: number; delay: number; rate: number; ctxTime: number }[] = [];
 
 function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: AudioNode, o?: SfxOpts): void {
   const c = ctx!;
@@ -717,7 +718,7 @@ export function playSting(id: string, volume = 1): boolean {
 }
 
 /** Bài nhạc nền (id manifest) đang được yêu cầu phát, kể cả khi còn chờ mở khóa/manifest. */
-export function musicRequested(): string | null {
+function musicRequested(): string | null {
   if (pending.music) return pending.music[0];
   return music?.want ?? null;
 }
@@ -814,7 +815,7 @@ function applyHolds(): void {
 }
 
 /** Mức hạ giữ lâu hiện tại 0..1 (gỡ lỗi/kiểm thử). */
-export function holdAmount(): number {
+function holdAmount(): number {
   const now = performance.now();
   let a = 0;
   for (const h of holds.values()) if (h.until > now) a = Math.max(a, h.amount);
@@ -1238,7 +1239,7 @@ export function musicOutput(): { ctx: AudioContext; out: AudioNode } | null {
 }
 
 /** Danh sách ghi nguồn nhạc trong manifest (cho mục credits ở Cài đặt). */
-export async function musicCredits(): Promise<(MusicCredit & { id: string })[]> {
+async function musicCredits(): Promise<(MusicCredit & { id: string })[]> {
   await loadManifest();
   return Object.entries(manifest?.music ?? {})
     .filter(([, e]) => e.credit)
@@ -1246,7 +1247,7 @@ export async function musicCredits(): Promise<(MusicCredit & { id: string })[]> 
 }
 
 /** Trạng thái để gỡ lỗi/kiểm thử. */
-export function audioStats() {
+function audioStats() {
   return {
     state: ctx?.state ?? 'none',
     muted,
@@ -1277,7 +1278,6 @@ if (!urlMute && typeof window !== 'undefined') {
 if (DEV && typeof window !== 'undefined') {
   (window as unknown as { __audio?: unknown }).__audio = { hitLog: sfxLog, stats: audioStats, sfx, playMusic, playAmbient, duck, duckHold, holdAmount, setVolume };
   // Nghe thử bài khi làm nội dung: ?music=<id>&ambient=<id> (phát sau thao tác đầu tiên).
-  const q = new URLSearchParams(location.search);
-  if (q.get('music')) playMusic(q.get('music'));
-  if (q.get('ambient')) playAmbient(q.get('ambient'));
+  if (FLAGS.music) playMusic(FLAGS.music);
+  if (FLAGS.ambient) playAmbient(FLAGS.ambient);
 }

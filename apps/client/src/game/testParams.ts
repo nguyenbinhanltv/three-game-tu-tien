@@ -13,7 +13,7 @@
 
 import { parseRealmCode } from '@dtl/shared';
 
-export interface TestJoinOptions {
+interface TestJoinOptions {
   god?: true;
   at?: string;
   pos?: [number, number];

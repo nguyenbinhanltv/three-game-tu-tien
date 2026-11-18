@@ -1,6 +1,6 @@
+import { currentSearch } from './flags';
 import { monFlagEdge, monHidden, type MonFlagEdge } from './monFlags';
 import * as THREE from 'three/webgpu';
-import { E4_OFF } from './camZones';
 import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
 import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
@@ -14,7 +14,7 @@ import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type EscortMsg, type QuestView } from '@dtl/shared';
 import { LABELS, type Label } from './labelBatch';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
-import { type AnimState, type CharacterView, type MonsterView, P2E_OFF, type SkillEvent } from './character/view';
+import { type AnimState, type CharacterView, type MonsterView, type SkillEvent } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
 import { NPC_SKINS, NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
@@ -88,7 +88,7 @@ export interface WorldView {
   nodes: Map<string, NState>;
 }
 
-const SWORD_FORCED = typeof location === 'undefined' ? null : swordOverride(location.search, SWORD_MODELS);
+const SWORD_FORCED = swordOverride(currentSearch(), SWORD_MODELS);
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
@@ -332,7 +332,7 @@ function makeMarker(ch: string, color: string): THREE.Texture {
   return tex;
 }
 
-export type PickResult = { kind: 'mon' | 'npc' | 'node' | 'player'; id: string } | null;
+type PickResult = { kind: 'mon' | 'npc' | 'node' | 'player'; id: string } | null;
 
 const _v = new THREE.Vector3();
 const _frustum = new THREE.Frustum();
@@ -343,7 +343,7 @@ const _sphere = new THREE.Sphere();
  * Số thể có xương tối đa được LOD0 (gần camera nhất, trong khung nhìn). Còn lại tối thiểu LOD1 (7,6k tam giác với
  * Thanh Phong thay vì 19k) và không đổ bóng. 12 × 19k × 2 (cả pass bóng) ≈ 0,46M tam giác.
  */
-export const LOD0_MAX = 12;
+const LOD0_MAX = 12;
 /**
  * Quái chỉ dựng model trong 100 m quanh mình (xóa khi quá 125 m, chừa vùng đệm để không dựng/xóa liên tục ở rìa).
  * Bãi quái dày (M-1: ~1 800 quái/km² vùng săn) nên bán kính 240 m cũ dựng cả trăm model xương không ai thấy qua sương.
@@ -354,7 +354,7 @@ const MON_FAR = 125;
  * Số nhãn tên tối đa (gần camera nhất, trong khung nhìn); mình và mục tiêu luôn có. Mỗi nhãn là một sprite = một draw
  * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
  */
-export const LABEL_MAX = 16;
+const LABEL_MAX = 16;
 /**
  * Rộng tấm nhãn trên màn hình (px, ở hệ số UI 1) được kẹp trong khoảng này (P2-E4); chữ chiếm chừng 62%.
  * Trần 240 để tên không to hơn chữ HUD khi camera sát; sàn 160 để dòng cảnh giới còn đọc được khi camera xa.
@@ -362,21 +362,21 @@ export const LABEL_MAX = 16;
  */
 const LABEL_PX = { min: 160, max: 240 };
 /** Nhãn mờ dần theo khoảng cách tới camera: rõ tới `full` mét, tắt hẳn ở `none` mét (mình và mục tiêu luôn rõ). */
-export const LABEL_FADE = { full: 45, none: 70 };
+const LABEL_FADE = { full: 45, none: 70 };
 
 /** Độ mờ nhãn ở khoảng cách `dist` (m). */
-export function labelOpacity(dist: number, keep: boolean): number {
+function labelOpacity(dist: number, keep: boolean): number {
   if (keep) return 1;
   return Math.max(0, Math.min(1, (LABEL_FADE.none - dist) / (LABEL_FADE.none - LABEL_FADE.full)));
 }
 
 /** Dòng cảnh giới trên bảng tên người chơi: `[Ngưng Khí tầng 9]`. */
-export function realmTag(level: number): string {
+function realmTag(level: number): string {
   return t('ui.nameplate.realm', { realm: realmName(level) });
 }
 
 /** Màu dòng cảnh giới theo đại cảnh giới: Ngưng Khí vải ngà, Trúc Cơ kim quang (art bible mục 4: attire_ivory, spirit_gold). */
-export function realmTagColor(level: number): string {
+function realmTagColor(level: number): string {
   return level >= TRUC_CO_LEVEL ? '#ffde96' : '#e6ddcb';
 }
 
@@ -581,7 +581,7 @@ export class EntityManager {
     const bars = this.bars;
     bars.begin();
     const cam = this.camera as THREE.PerspectiveCamera | null;
-    if (cam && !E4_OFF) bars.setView(cam.position.x, cam.position.y, cam.position.z, cam.fov ?? 55, typeof window === 'undefined' ? 0 : window.innerHeight);
+    if (cam) bars.setView(cam.position.x, cam.position.y, cam.position.z, cam.fov ?? 55, typeof window === 'undefined' ? 0 : window.innerHeight);
 
     // ----- người chơi -----
     view.players.forEach((s, sid) => {
@@ -905,7 +905,6 @@ export class EntityManager {
    * quái tự né. Giải từ vị trí logic mỗi khung rồi làm mượt độ lệch, áp ở khung sau. Vị trí logic không đổi.
    */
   private separate(dt: number, local: { x: number; z: number }): void {
-    if (P2E_OFF) return;
     const bodies = this.sepBodies;
     const mons = this.sepMons;
     let n = 0;
@@ -997,7 +996,7 @@ export class EntityManager {
         const want = e.local || e.target || (e.inView && labels < LABEL_MAX);
         if (want && !e.local && !e.target) labels++;
         e.label.visible = e.labelKeep ? e.label.visible && want : want;
-        if (e.label.visible && pc && vh > 0 && !E4_OFF) this.fitLabel(e, pc, vw, vh, boxes);
+        if (e.label.visible && pc && vh > 0) this.fitLabel(e, pc, vw, vh, boxes);
       }
       if (!e.model.setView) continue;
       // Người mặc áo bộ mô-đun nhiều draw call hơn ở LOD0 (thân, áo, kiếm, vỏ, bóng): tính hai suất để cả đám đông ≤ 300 draw.

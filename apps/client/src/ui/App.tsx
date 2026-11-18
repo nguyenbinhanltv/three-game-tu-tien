@@ -11,13 +11,14 @@ import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/preload';
 import { Hud } from './Hud';
 import { RootPicker } from './Realm';
-import { Corners, ngjHud as NGJ } from './ngj';
+import { Corners } from './ngj';
 import { Portrait } from './Art';
 import { get, type Phase, set, useUI } from './store';
+import { FLAGS, urlParams } from '../game/flags';
 
 const GOOGLE_CLIENT_ID = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_GOOGLE_CLIENT_ID ?? '';
 const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname) || window.location.hostname.endsWith('.localhost');
-const DEV_LOGIN = IS_LOCAL || new URLSearchParams(window.location.search).has('dev');
+const DEV_LOGIN = IS_LOCAL || FLAGS.dev;
 
 interface GoogleId {
   initialize(o: { client_id: string; callback: (r: { credential: string }) => void }): void;
@@ -54,7 +55,7 @@ const LOOK_KEY = 'dtl.look';
 /** Lựa chọn ngoại hình nhớ lần trước (hoặc `?dye=<id>` khi thử); không hợp lệ thì mặc định. */
 function initialLook(): Appearance {
   const def: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
-  const qs = new URLSearchParams(window.location.search);
+  const qs = urlParams();
   const q = qs.get('dye');
   if (q) return parseAppearance(APPEARANCE, { g: def.g, dye: q, ...(qs.get('hair') ? { hair: qs.get('hair') } : {}) }) ?? def;
   try {
@@ -85,7 +86,7 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
               title={on ? undefined : t('ui.login.gender_soon')}
               onClick={() => onChange({ ...look, g: g.id as Gender })}
             >
-              {NGJ && <Portrait id={'player_' + g.id} className="look-face" />}
+              <Portrait id={'player_' + g.id} className="look-face" />
               <span>{t(`appearance.gender.${g.id}`)}</span>
             </button>
           );
@@ -129,7 +130,7 @@ const ROOT_KEY = 'dtl.root';
 
 /** Linh căn chọn lần trước (null = để thiên ý định đoạt). */
 function initialRoot(): RootId | null {
-  const q = new URLSearchParams(window.location.search).get('root');
+  const q = urlParams().get('root');
   if (isRootId(q)) return q;
   try {
     const v = localStorage.getItem(ROOT_KEY);
@@ -168,7 +169,7 @@ function Login() {
   };
   // Tiện cho kiểm thử: ?auto=<đạo hiệu> tự đăng nhập bằng tài khoản thử.
   useEffect(() => {
-    const auto = new URLSearchParams(window.location.search).get('auto');
+    const auto = FLAGS.auto;
     if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim(), ap: initialLook(), rt: initialRoot() ?? undefined });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -178,8 +179,8 @@ function Login() {
   };
 
   return (
-    <div className={'ts-card' + (NGJ ? ' ngj-card' : '')}>
-      {NGJ && <Corners material="paper" />}
+    <div className={'ts-card' + ' ngj-card'}>
+      <Corners material="paper" />
       <p className="login-tag">{t('ui.tagline')}</p>
 
         {needName && token ? (
@@ -299,8 +300,8 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
     return () => window.clearInterval(id);
   }, []);
   return (
-    <div className={'ts-card ts-loading' + (NGJ ? ' ngj-card' : '')} role="status" aria-live="polite">
-      {NGJ && <Corners material="paper" />}
+    <div className={'ts-card ts-loading' + ' ngj-card'} role="status" aria-live="polite">
+      <Corners material="paper" />
       <p className="ts-line" key={line}>
         {line}
       </p>
@@ -313,8 +314,8 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
 
 function ErrorPanel({ text }: { text: string }) {
   return (
-    <div className={'ts-card' + (NGJ ? ' ngj-card' : '')}>
-      {NGJ && <Corners material="paper" />}
+    <div className={'ts-card' + ' ngj-card'}>
+      <Corners material="paper" />
       <p className="login-error">{text}</p>
       <button
         className="btn primary"

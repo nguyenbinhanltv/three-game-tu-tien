@@ -19,6 +19,7 @@ import { assets } from './assets';
 import { PREFETCH_PRIORITY } from './preload';
 import { G } from './geo';
 import type { Box } from './screenFit';
+import { FLAGS } from './flags';
 
 interface Fx {
   t: number;
@@ -182,7 +183,7 @@ export class Vfx {
    */
   private warmBatches(): void {
     // `?vfxwarm=0` tắt (so ảnh/số đo trước-sau).
-    if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('vfxwarm') === '0') return;
+    if (!FLAGS.vfxWarm) return;
     const list: [FxKind, THREE.BufferGeometry, number][] = [
       ['glow', G.octa, 0],
       ['glow', G.sphere, 0],

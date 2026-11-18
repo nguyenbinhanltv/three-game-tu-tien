@@ -6,9 +6,9 @@
 // đêm, Vân Hải, Thiên Khuyết sẽ tự lệch theo grading của chúng như mọi vật khác). `?v3pal=0` tắt để so ảnh.
 import * as THREE from 'three/webgpu';
 import { dot, float, materialColor, max, min, mix, smoothstep, vec3, vec4 } from 'three/tsl';
+import { FLAGS } from '../flags';
 
-const search = typeof location === 'undefined' ? '' : location.search;
-export const V3_PALETTE_ON = new URLSearchParams(search).get('v3pal') !== '0';
+export const V3_PALETTE_ON = FLAGS.v3Palette;
 
 const lin = (hex: string): THREE.Vector3 => {
   const c = new THREE.Color().setStyle(hex, THREE.SRGBColorSpace);
