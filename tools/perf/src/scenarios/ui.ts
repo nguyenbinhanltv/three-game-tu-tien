@@ -36,6 +36,7 @@ const HUD: HudScene[] = [
     id: 'boss',
     query: { realm: 'nk15', at: 'boss' },
     gm: ['tp 1640 2252'],
+    quest: { id: 'q_dan_khi', at: [2048, 2034], home: [1640, 2252] },
     keys: ['Tab', 'Tab'],
     wait: 6000,
     cam: { dist: 14, pitch: 0.35 },

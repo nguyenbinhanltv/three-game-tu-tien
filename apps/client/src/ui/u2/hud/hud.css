@@ -285,19 +285,17 @@
   font-size: var(--u-fs-2);
   color: var(--u-gold-text);
 }
-/* minimap tròn viền kim, vẫn là Minimap cũ bên trong */
+/* minimap: vòng tròn viền kim của lớp Ngọc Giản cũ (ngj/hud.css); nút +/- nằm ngoài vòng nên không được cắt clip-path */
 .hud.u2hud .u2h-tr .minimap-wrap {
   width: var(--h-map-w);
 }
 .hud.u2hud .u2h-tr .minimap-wrap .minimap {
   width: var(--h-map-w);
   height: var(--h-map-w);
-  clip-path: circle(50% at 50% 50%);
-  border-radius: 50%;
-  background: var(--u-gold);
 }
-.hud.u2hud .u2h-tr .minimap-wrap .minimap canvas {
-  border-radius: 50%;
+.hud.u2hud .u2h-tr .minimap-wrap .minimap-ctl {
+  left: -30px;
+  bottom: 12px;
 }
 .u2h-quest {
   width: var(--h-quest-w);
@@ -431,13 +429,25 @@
   --sz: inherit;
 }
 /* ô trống (chưa chọn công pháp): tối như các ô khác */
-.u2hud .u2h-skill[data-state='empty'] .u2-frame__in {
-  background: var(--u-ink-2);
-  box-shadow: none;
+.u2hud .u2h-skill[data-state='empty'] {
+  pointer-events: none;
 }
 .u2hud .u2h-skill[data-state='empty'] .u2-frame {
-  --qc: var(--u-gold-lo);
-  opacity: 0.7;
+  background: none;
+  opacity: 0.45;
+}
+.u2hud .u2h-skill[data-state='empty'] .u2-frame__in {
+  inset: 0;
+  background: none;
+  box-shadow: inset 0 0 0 2px var(--u-gold-lo);
+}
+.u2hud .u2h-skill[data-state='empty'] .u2h-key {
+  display: none;
+}
+/* ô pháp bảo trống (dấu +) lệch khỏi cung: ẩn, trang bị pháp bảo qua bảng Túi/Nhân vật */
+.u2hud .u2h-extras .skill[data-state='empty'],
+.u2hud .u2h-extras .k-tip-host:has(> .skill[data-state='empty']) {
+  display: none;
 }
 /* ô nhỏ Q/F/Z */
 .u2h-quick .u2-frame[data-size='s'] {
