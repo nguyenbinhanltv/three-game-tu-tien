@@ -199,7 +199,7 @@ describe('E4-G: chiêu Nguyên Anh', () => {
       fresh(p);
       sim.onSkill(p, { id: 'skl_anh_duoc_hoa_than' });
       wait(4200);
-      return mates.map((o, i) => o.char.hp - before[i] > o.char.mhp * 0.1);
+      return mates.map((o, i) => o.char.hp - before[i] > o.char.mhp * 0.35);
     };
     expect(run()).toEqual([true, false, false]);
     expect(run('a')).toEqual([true, true, false]);
@@ -277,7 +277,11 @@ describe('E4-F: hiệu ứng 4 món bộ bậc 5 nối vào chiêu 26', () => {
       sim.onSkill(p, { id: 'skl_thuan_di_tram', t: m.id });
       return lost(m);
     };
-    expect(dmg(0.3)).toBeGreaterThan(dmg(0) * 1.15);
+    // Cố định ngẫu nhiên (bạo kích, dao động sát thương) để hai lần đo so được với nhau.
+    const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const [hi, lo] = [dmg(0.3), dmg(0)];
+    rnd.mockRestore();
+    expect(hi).toBeGreaterThan(lo * 1.15);
   });
 
   it('Thuấn Di Hộ Thế: khiên dày thêm thuanHoBoost', () => {

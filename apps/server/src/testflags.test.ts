@@ -347,9 +347,12 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     const c2 = join(true);
     expect(c2.run('learn skl_kiem_khi_tram 3')).toContain('cấp 3');
     expect(c2.run('learn khong_co')).toContain('khong_co');
-    const locked = [...content.SKILL.values()].find((s) => s.locked)!;
+    // E4-G mở hết chiêu: khóa tạm một chiêu để kiểm lệnh `learn` với chiêu còn khóa.
+    const locked = content.SKILL.get('skl_phan_anh_kiem_anh')!;
+    locked.locked = true;
     const c3 = join(true);
     expect(c3.run(`learn ${locked.id}`)).toContain('khóa');
+    locked.locked = false;
     expect(c3.char.level).toBeGreaterThanOrEqual(locked.unlock);
     expect(c3.char.meta.method).toBe(locked.method);
   });

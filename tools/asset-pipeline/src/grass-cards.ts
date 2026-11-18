@@ -10,7 +10,8 @@ import { ROOT } from './config.js';
 
 const CW = 512;
 const CH = 384;
-const OUT = path.join(ROOT, 'apps', 'client', 'public', 'grass-ochre');
+const NIGHT = process.argv.includes('--set') && process.argv[process.argv.indexOf('--set') + 1] === 'night';
+const OUT = path.join(ROOT, 'apps', 'client', 'public', NIGHT ? 'grass-night' : 'grass-ochre');
 
 type RGB = readonly [number, number, number];
 interface CardDef {
@@ -29,6 +30,17 @@ export const CARDS: CardDef[] = [
   { id: 'van_hai', src: 'prop_co_van_hai', recolor: 0.6, tone: [1.0, 0.86, 0.66], mul: [0.98, 0.9, 0.78] },
   /** Bụi gai sa thạch: co_thanh sẫm, ngả nâu ô-liu khô. */
   { id: 'gai_sa_thach', src: 'prop_co_co_thanh', recolor: 0.8, tone: [1.0, 0.86, 0.58], mul: [0.95, 0.9, 0.8] },
+];
+
+/**
+ * Atlas cỏ sao cho Thiên Khuyết (E4-I, `--set night`): thẻ 0 là cỏ cổ thành (xanh lam sẫm, hoa sao) giữ nguyên sắc concept, ba thẻ còn lại ngả lam xỉn để không lộ lặp.
+ * Nguồn: concept do dự án tự làm (không có giấy phép ngoài).
+ */
+const CARDS_NIGHT: CardDef[] = [
+  { id: 'co_thanh', src: 'prop_co_co_thanh', recolor: 0.25, tone: [0.62, 0.9, 1.0], mul: [0.82, 0.92, 1.0] },
+  { id: 'linh_rung', src: 'prop_co_linh_rung', recolor: 0.8, tone: [0.6, 0.92, 0.95], mul: [0.8, 0.92, 1.0] },
+  { id: 'van_hai', src: 'prop_co_van_hai', recolor: 0.75, tone: [0.7, 0.9, 1.0], mul: [0.84, 0.92, 1.0] },
+  { id: 'hoang_coc', src: 'prop_co_hoang_coc', recolor: 0.8, tone: [0.7, 0.88, 0.92], mul: [0.82, 0.9, 0.98] },
 ];
 
 const smooth = (a: number, b: number, x: number) => {
@@ -113,8 +125,9 @@ async function card(def: CardDef): Promise<Buffer> {
 
 async function main(): Promise<void> {
   const atlas = Buffer.alloc(CW * 2 * CH * 2 * 4);
-  for (let i = 0; i < CARDS.length; i++) {
-    const cell = await card(CARDS[i]);
+  const list = NIGHT ? CARDS_NIGHT : CARDS;
+  for (let i = 0; i < list.length; i++) {
+    const cell = await card(list[i]);
     const cx = (i % 2) * CW;
     const cy = Math.floor(i / 2) * CH;
     for (let y = 0; y < CH; y++) atlas.set(cell.subarray(y * CW * 4, (y + 1) * CW * 4), ((cy + y) * CW * 2 + cx) * 4);
@@ -123,7 +136,7 @@ async function main(): Promise<void> {
   await mkdir(OUT, { recursive: true });
   const name = `cards.${createHash('sha1').update(webp).digest('hex').slice(0, 10)}.webp`;
   await writeFile(path.join(OUT, name), webp);
-  await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ atlas: name, cell: [CW, CH], cols: 2, rows: 2, cards: CARDS.map((c) => c.id) }, null, 2) + '\n');
+  await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify({ atlas: name, cell: [CW, CH], cols: 2, rows: 2, cards: list.map((c) => c.id) }, null, 2) + '\n');
   console.log(`[grass-cards] ${name}: ${(webp.length / 1024) | 0} KB`);
 }
 

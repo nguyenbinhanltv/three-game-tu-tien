@@ -270,6 +270,8 @@ export interface UIState {
   tele: TeleState;
   spirit: SpiritState;
   soul: SoulState;
+  /** Phân thân thần niệm (E4-K): mở từ Hóa Thần; mốc tan và mốc tạo lại được (ms đồng hồ client). */
+  clone: { open: boolean; until: number; cdUntil: number };
   /** Kết quả quét thần thức đang hiện (E2-E); null = không. */
   spiritScan: SpiritScan | null;
   /** Điểm đánh dấu mình và đồng đội đang thấy (S.MARK). */
@@ -356,6 +358,7 @@ export const useUI = create<UIState>(() => ({
   tele: { open: [], cast: null, cdUntil: 0 },
   spirit: { open: false, chUntil: 0, cdUntil: 0, r: 60 },
   soul: { open: false, k: 0, until: 0, bx: 0, by: 0, bz: 0, to: null, cdUntil: 0, deathCdUntil: 0 },
+  clone: { open: false, until: 0, cdUntil: 0 },
   spiritScan: null,
   marks: [],
   invites: [],

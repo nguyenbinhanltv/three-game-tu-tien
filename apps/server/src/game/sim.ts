@@ -225,6 +225,8 @@ import { SpiritSystem } from './spirit';
 import { MirrorSystem, wardMul } from './mirror';
 import { ThanTangSystem } from './thantang';
 import { SoulSystem } from './soul';
+import { CloneSystem } from './clone';
+import { DomainSystem } from './domain';
 import { parties } from './party';
 import { InventorySystem } from './inventory';
 import { UpgradeSystem } from './upgrade';
@@ -748,6 +750,49 @@ export class GameSim {
     respawn: (p) => this.onRespawn(p),
   });
 
+  /** Phân thân thần niệm (E4-K, phím G, Hóa Thần). */
+  readonly clone: CloneSystem = new CloneSystem({
+    now: () => this.now,
+    players: () => this.players.values(),
+    warn: (p, k, params) => this.warn(p, k, params),
+    sys: (p, k, params, type) => this.sys(p, k, params, type),
+    fx: (m) => this.fx(m),
+    groundAt: (x, z) => this.terrain.groundAt(x, z),
+    isDead: (p) => this.isDead(p),
+    inDuel: (p) => this.duel.inDuel(p),
+    idle: (p) => !p.connected || this.airborne(p) || p.move.flying || this.soul.isScouting(p) || !!this.soul.ghostOf(p),
+    stopMeditate: (p) => this.setMeditating(p, false),
+    monsterById: (id) => this.monById.get(id),
+    monstersNear: (x, z, r) => this.monstersNear(x, z, r),
+    powers: (p, skill) => {
+      const rs = resolveFor(p.char.meta, skill);
+      return { hits: rs.hits, radius: rs.radius ?? 0 };
+    },
+    hit: (owner, mon, power, skill) => this.cloneHit(owner, mon, power, skill),
+    taunt: (owner, mon, sec) => {
+      mon.taunt = { sid: owner.sid, until: this.now + sec * 1000 * (mon.def.boss ? TAUNT_BOSS_MUL : 1) };
+      this.aggroMonster(mon, owner);
+    },
+    heal: (p, n) => this.healPlayer(p, n),
+    canAssist: (owner, o) => this.canAssist(owner, o),
+    onCreated: (p) => this.questEvent(p, 'clone', undefined, 1),
+    spendMp: (p, n) => {
+      if (p.char.mp < n) return false;
+      p.char.mp -= n;
+      return true;
+    },
+  });
+
+  /** Lĩnh vực (E4-K): bạo kích kiếm tu, giảm sát thương hộ pháp, hồi đan sư. */
+  readonly domain: DomainSystem = new DomainSystem({
+    now: () => this.now,
+    players: () => this.players.values(),
+    canAssist: (owner, o) => this.canAssist(owner, o),
+    heal: (p, n) => this.healPlayer(p, n),
+    isDead: (p) => this.isDead(p),
+    inDuel: (p) => this.duel.inDuel(p),
+  });
+
   /** Sắp xếp, khóa ô, tách chồng (TD-A). */
   readonly inventory = new InventorySystem({
     now: () => this.now,
@@ -1081,6 +1126,8 @@ export class GameSim {
     this.mirror.tick();
     this.than.tick();
     this.soul.tick();
+    this.clone.tick();
+    this.domain.tick();
     for (const n of this.nodes.values()) {
       if (!n.s.on && this.now >= n.respawnAt) n.s.on = true;
     }
@@ -1241,6 +1288,7 @@ export class GameSim {
       this.fx({ t: 'levelup', src: p.sid });
       this.spirit.sendState(p);
       this.soul.sendState(p);
+      this.clone.sendState(p);
       this.questEvent(p, 'level', undefined, c.level);
       console.log(`[level] ${c.name}: ${before} → ${c.level}`);
     }
@@ -1919,6 +1967,7 @@ export class GameSim {
   /** Áp hiệu quả của chiêu (sát thương, hồi, khiên...): tại `hitAt` hoặc ngay khi không có độ trễ. */
   private resolveSkill(p: PlayerEnt, skill: SkillDef, targetId: string, ctx: StrikeCtx = {}): void {
     const c = p.char;
+    this.clone.noteSkill(p, skill, targetId);
     const rs = resolveFor(c.meta, skill);
     const v = rs.variant;
     const pas = passiveOf(c.meta);
@@ -2451,7 +2500,7 @@ export class GameSim {
     const ke = elemCounter(elem, mon.def.elem);
     // Nội tại công pháp (3-10): kiếm tu đủ kiếm ý thì bạo kích cao hơn; hộ pháp đánh cận chiến mạnh hơn.
     const pas0 = passiveOf(p.char.meta);
-    let critRate = p.char.stats.critRate;
+    let critRate = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.domain.critAdd(p));
     if (pas0?.kind === 'kiem_y' && pas0.critAtMax && this.liveStacks(p) >= (pas0.max ?? 5)) critRate = Math.min(STAT_CAPS.critRate, critRate + pas0.critAtMax);
     let meleeMul = 1;
     if (pas0?.melee && Math.hypot(mon.s.x - p.move.x, mon.s.z - p.move.z) <= pas0.melee.r + mon.def.scale) meleeMul += pas0.melee.mul;
@@ -2862,6 +2911,10 @@ export class GameSim {
     }
     if (src && this.bossDmgMul !== 1 && this.monById.get(src)?.def.boss) n = Math.max(1, Math.round(n * this.bossDmgMul));
     if (this.now < p.mth.guardUntil) n = reduceDamage(n, p.mth.guardReduce);
+    // Lĩnh vực hộ pháp (E4-K) giảm sát thương; phân thân hộ pháp gánh một phần sát thương quái ở gần nó.
+    const dRed = this.domain.reduce(p);
+    if (dRed > 0) n = reduceDamage(n, dRed);
+    n = Math.max(1, this.clone.absorb(p, n, src));
     // Kim Chung Trấn (E2-G): phản một phần sát thương (sau khi giảm) về quái đánh mình.
     if (this.now < p.mth.reflectUntil && src) {
       const attacker = this.monById.get(src);
@@ -2908,6 +2961,7 @@ export class GameSim {
 
   private killPlayer(p: PlayerEnt): void {
     this.duel.onGone(p, true);
+    this.clone.drop(p);
     const c = p.char;
     c.hp = 0;
     p.casting = null;
@@ -3713,6 +3767,7 @@ export class GameSim {
   /** Bắt đầu kiếp `def` cho `p` ngay trong room này. `consume`: tiêu vật phẩm đột phá. false nếu thiếu vật phẩm. */
   beginTribulation(p: PlayerEnt, def: TribDef, consume: boolean): boolean {
     const c = p.char;
+    this.clone.drop(p);
     const item = def.item;
     if (consume && item && !c.tx('tribulation', null, (d) => d.remove(item, 1))) {
       this.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
@@ -3759,9 +3814,35 @@ export class GameSim {
     if (p.trib) this.tribSys.soul(p);
   }
 
-  /** Phân thân thần niệm trong Thiên Nhân Kiếp (E4-D; E4-K nối phân thân thật cho ngoài kiếp). */
+  /** Phân thân thần niệm trong Thiên Nhân Kiếp (E4-D): thế thân của kiếp, không phải phân thân của E4-K. */
   onTribClone(p: PlayerEnt): void {
     if (p.trib) this.tribSys.clone(p);
+  }
+
+  /** Phím G (E4-K): trong kiếp là thế thân của kiếp, ngoài kiếp là phân thân thần niệm. */
+  onClone(p: PlayerEnt, msg: unknown): void {
+    if (p.trib) this.tribSys.clone(p);
+    else this.clone.command(p, msg);
+  }
+
+  /** Phân thân đánh quái bằng chỉ số của chủ: không cộng kiếm ý/vòng sạc, không đánh người (tỉ thí). */
+  private cloneHit(p: PlayerEnt, mon: MonEnt, power: number, skill: SkillDef | undefined): void {
+    if (mon.state === MS_DEAD || (mon.owner && mon.owner !== p.sid) || this.now < mon.evadeUntil) return;
+    const elem = skill?.elem;
+    const ke = elemCounter(elem, mon.def.elem);
+    const mk = mon.mark;
+    const pw = mk && mk.sid === p.sid && this.now < mk.until ? power * (1 + mk.mul) : power;
+    const em = elemDamageMul(p.char.stats.elemDmg, elem);
+    const crit0 = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.domain.critAdd(p));
+    const { dmg, crit } = computeDamage(p.char.atk, pw * em * counterMul(ke), mon.defn, Math.random(), Math.random(), crit0, p.char.stats.critMul);
+    this.damageMonster(mon, vulnerableDamage(dmg, this.now < mon.stunUntil), p, crit, false, false, ke);
+  }
+
+  /** Hồi `n` khí huyết (kẹp theo tối đa, tính hồi phục nhận vào) và báo số. */
+  private healPlayer(p: PlayerEnt, n: number): void {
+    const amt = Math.max(1, Math.round(n * (1 + p.char.stats.healRecv)));
+    p.char.hp = Math.min(p.char.mhp, p.char.hp + amt);
+    this.emit(S.DMG, { dst: p.sid, n: amt, heal: true } satisfies DmgMsg);
   }
 
   private tickTribulation(p: PlayerEnt): void {
@@ -3807,7 +3888,7 @@ export class GameSim {
   onMeditate(p: PlayerEnt, msg: unknown): void {
     const on = !!(msg as { on?: unknown } | null)?.on;
     if (!on) return this.setMeditating(p, false);
-    if (this.isDead(p) || p.move.flying || !p.move.grounded || p.casting || p.trib) return this.warn(p, 'sys.busy');
+    if (this.isDead(p) || p.move.flying || !p.move.grounded || p.casting || p.trib || this.clone.has(p)) return this.warn(p, 'sys.busy');
     if (this.now - p.lastCombatAt < 5000) return this.warn(p, 'sys.busy');
     this.setMeditating(p, true);
     if (p.char.quests.active.q_dan_khi && !p.char.questComplete('q_dan_khi')) this.sys(p, 'sys.dan_khi_start', undefined, 'info');
@@ -4593,6 +4674,7 @@ export class GameSim {
         this.sendCd(p);
         this.spirit.resetCooldown(p);
         this.soul.resetCooldown(p);
+        this.clone.resetCooldown(p);
         return say('đã xóa hồi chiêu');
       case 'variant': {
         // /gm variant <id chiêu> <a|b>: chọn biến thức ngay (không cần cấp 3, ngoài combat, hồi chờ) để chụp ảnh/thử.

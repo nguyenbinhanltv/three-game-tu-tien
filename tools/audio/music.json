@@ -12,6 +12,7 @@
     "combat": { "title": "Giao Phong", "compose": true, "loop": true, "maxLen": 90 },
     "wild": { "title": "Vân Lam Sơn Mạch", "compose": true, "loop": true, "maxLen": 180 },
     "wild_ochre": { "title": "Đoạn Mạch Cổ Cốc", "compose": true, "loop": true, "maxLen": 160 },
+    "wild_night": { "title": "Thiên Khuyết Cổ Thành", "compose": true, "loop": true, "maxLen": 170 },
     "wild_cloud": { "title": "Vân Hải Phù Đảo", "compose": true, "loop": true, "maxLen": 160 },
     "forest": { "title": "Rừng Linh Thảo", "compose": true, "loop": true, "maxLen": 150 },
     "lake": { "title": "Hồ Sương Mù", "compose": true, "loop": true, "maxLen": 150 },

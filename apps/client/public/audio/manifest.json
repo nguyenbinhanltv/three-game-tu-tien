@@ -751,6 +751,18 @@
         "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
       }
     },
+    "wild_night": {
+      "src": [
+        "music/wild_night.fe585236d3.webm",
+        "music/wild_night.0fa4b2b00a.m4a"
+      ],
+      "loop": true,
+      "credit": {
+        "title": "Thiên Khuyết Cổ Thành",
+        "by": "Đạp Thiên Lộ (original, CC0/tự soạn)",
+        "license": "CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0)"
+      }
+    },
     "wild_cloud": {
       "src": [
         "music/wild_cloud.b2d321ed1e.webm",

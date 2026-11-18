@@ -162,5 +162,8 @@
     "rewards": { "xp": 4800, "gold": 1600 } },
   { "id": "s4_kiem_thong", "giver": "npc_mac_chieu", "turnin": "npc_mac_chieu", "requires": "q4_da_minh", "minLevel": 25,
     "objectives": [ { "type": "kill", "target": "elite_cot_kiem_thong_linh", "count": 1 } ],
-    "rewards": { "xp": 5000, "gold": 1800, "items": [ { "id": "itm_tay_luyen_thach", "n": 2 } ] } }
+    "rewards": { "xp": 5000, "gold": 1800, "items": [ { "id": "itm_tay_luyen_thach", "n": 2 } ] } },
+  { "id": "s4_thu_niem", "giver": "npc_mac_chieu", "turnin": "npc_mac_chieu", "requires": "q4_hoa_than", "minLevel": 28,
+    "objectives": [ { "type": "clone", "count": 1 } ],
+    "rewards": { "xp": 8000, "gold": 3000, "items": [ { "id": "itm_tay_luyen_thach", "n": 3 } ] } }
 ]
