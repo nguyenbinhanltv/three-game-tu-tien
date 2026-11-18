@@ -12,7 +12,7 @@ import { DECAL_CRACK, DECAL_RUNE, DECAL_SCORCH, DECAL_SMOKE, DECAL_STRIKE } from
 import { bladeVisible } from '../../render/vfx/bladeTrail';
 import type { SkillEvent } from '../character/view';
 import { particleScale } from './fxSettings';
-import { densitySize } from '../render/vfx/particles';
+import { densitySize } from '../../render/vfx/particles';
 import type { Vfx } from './vfx';
 
 export interface FxTarget {
