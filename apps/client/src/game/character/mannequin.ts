@@ -20,14 +20,14 @@ import { FLAGS } from '../flags';
 
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
 export const CHR_V3 = FLAGS.chr === 'v3';
-export const V3_LIB = 'anim_ual_native';
+const V3_LIB = 'anim_ual_native';
 /** Asset theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). */
-export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
+const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
 /** Bản v3b: vạt xẻ hai bên đối xứng (concept v3b), là bản mặc định của `?chr=v3`; `?v3model=a` về bản v3 cũ để so ảnh. */
-export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
+const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
 export const V3_MODELS = FLAGS.v3ModelA ? V3_MODELS_A : V3_MODELS_B;
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
-export const V3_SKINS: Readonly<Record<string, string>> = {
+const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_varkessa: 'chr_v3_varkessa_nu',
   set_skin_duskrella: 'chr_v3_duskrella_nu',
   set_skin_crimson: 'chr_v3_crimson_nam',
@@ -84,7 +84,7 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
   return o ? o.position.clone() : null;
 }
 
-export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
+function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
   if (/^chr_v3b?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   const box = new THREE.Box3().setFromObject(handle.scene);
@@ -108,13 +108,13 @@ const IDENT = new THREE.Matrix4();
 const _tq = new THREE.Quaternion();
 const _tq2 = new THREE.Quaternion();
 /** Lò xo v3 (vạt dài + tóc): cứng vừa, cản nhiều, góc lệch hẹp để vạt không xé/xuyên khi ngồi, lăn, chém (N-4). */
-export const V3_SPRING: SpringParams = { stiffness: 130, drag: 8, maxAngle: 30, maxInward: 8 };
+const V3_SPRING: SpringParams = { stiffness: 130, drag: 8, maxAngle: 30, maxInward: 8 };
 
 /**
  * Viên nang va chạm cho vạt/tay áo (N-6): hông (pelvis → spine_01), đùi (thigh → calf), cẳng (calf → foot), bán kính theo chiều cao.
  * Khi ngồi/đả tọa đùi nằm ngang nên vạt trước bị đẩy lên phủ trên đùi thay vì xuyên xuống.
  */
-export function colliderDefs(rig: THREE.Object3D, height: number): SpringCollider[] {
+function colliderDefs(rig: THREE.Object3D, height: number): SpringCollider[] {
   const k = height / 1.8;
   const spec: [string, string, number][] = [['pelvis', 'spine_01', 0.11]];
   for (const sd of ['l', 'r']) spec.push([`thigh_${sd}`, `calf_${sd}`, 0.085], [`calf_${sd}`, `foot_${sd}`, 0.06]);
@@ -130,7 +130,7 @@ export function colliderDefs(rig: THREE.Object3D, height: number): SpringCollide
 /** Xương twist (chr_v3.py): `<limb>_twist_<l|r>` là con của `<limb>_<l|r>`; trục xoắn = hướng tới xương con chính của limb. */
 const TWIST_NEXT: Record<string, string> = { upperarm: 'lowerarm', lowerarm: 'hand', thigh: 'calf' };
 /** Hệ số xoay ngược của xương twist so với góc xoắn của xương cha (đỉnh gần đầu xương chỉ xoắn ~1/3, gần cuối xoắn đủ). */
-export const TWIST_COUNTER = -0.8;
+const TWIST_COUNTER = -0.8;
 
 interface Twist {
   limb: THREE.Object3D;

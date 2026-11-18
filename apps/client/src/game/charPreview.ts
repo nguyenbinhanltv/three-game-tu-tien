@@ -9,9 +9,9 @@ import type { CharacterView } from './character/view';
 export const PREVIEW_W = 256;
 export const PREVIEW_H = 352;
 /** Khung hình/giây của xem trước. */
-export const PREVIEW_FPS = 30;
+const PREVIEW_FPS = 30;
 /** Quá mức này (ms CPU trung bình mỗi lần vẽ, tính trên cửa sổ `BUDGET_WINDOW` lần) thì lùi về chân dung 2D. */
-export const PREVIEW_BUDGET_MS = 3;
+const PREVIEW_BUDGET_MS = 3;
 const BUDGET_WINDOW = 60;
 const WARMUP = 6;
 /** Tuyến tính → sRGB cho 8 bit: render target không có định dạng sRGB (three không đọc được lại), nên mã hóa lúc chép sang canvas. */
@@ -21,7 +21,7 @@ const SRGB = new Uint8ClampedArray(256).map((_, i) => {
 });
 const IDLE = { speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false } as const;
 
-export interface PreviewHost {
+interface PreviewHost {
   renderer: THREE.WebGPURenderer;
   /** Dựng model theo ngoại hình hiện tại của mình. `key` đổi khi ngoại hình đổi; `pending` = asset còn nạp. */
   build(): { model: CharacterView; key: string; pending: boolean };
@@ -34,7 +34,7 @@ export interface PreviewHost {
 }
 
 /** Số liệu đo lần vẽ gần nhất (cho bench). */
-export interface PreviewStats {
+interface PreviewStats {
   frames: number;
   avgMs: number;
   drawCalls: number;

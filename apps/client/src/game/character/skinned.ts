@@ -151,7 +151,7 @@ export function mixerInterval(level: number, inView = true, self = false): numbe
 const MIXER_SLACK = 0.0015;
 
 /** Thông tin nhìn của một khung (EntityManager tính theo camera, M3-9). */
-export interface ViewInfo {
+interface ViewInfo {
   /** Khoảng cách tới camera (m). */
   dist: number;
   /** Khung cầu nằm trong frustum camera. */

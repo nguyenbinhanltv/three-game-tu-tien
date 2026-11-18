@@ -24,7 +24,7 @@ const RIB_PTS = 24;
 /** Khoảng lấy mẫu lịch sử (giây): dải dài khoảng 0,5 giây đường bay. */
 const RIB_DT = 1 / 48;
 /** Dải vệt sống cùng lúc toàn cảnh (phi kiếm + vệt kiếm), K-6 nâng 8 → 12. */
-export const MAX_RIBBONS = 12;
+const MAX_RIBBONS = 12;
 const NEAR = 70;
 
 const C_SWORD = 0xcff3ff; // spirit_sword
@@ -38,7 +38,7 @@ const C_DUST = 0xb9b29a; // giữa stone_light và leaf_dry
  * độ cao dọc lưỡi (đặc ở mũi, nhạt ở gốc), nhiễu năng lượng cuộn dọc dải, mờ dần theo lũy thừa của tuổi.
  * `uv.x` = tuổi 0 → 1, `uv.y` = gốc lưỡi 0 → mũi 1.
  */
-export function bladeTrailNodes(U: FxUniforms) {
+function bladeTrailNodes(U: FxUniforms) {
   const st = uv();
   const age = clamp(st.x, 0, 1);
   const one = float(1);
@@ -169,7 +169,7 @@ class Ribbon {
 }
 
 /** Nhân vật mà `Trails` đọc (khớp cấu trúc với `PlayerVis` trong game/entities.ts). */
-export interface TrailActor {
+interface TrailActor {
   x: number;
   y: number;
   z: number;
@@ -189,7 +189,7 @@ export interface TrailActor {
 }
 
 /** Nguồn lưới hiệu ứng (Vfx): lấy/trả `FxMesh` từ pool dùng chung. */
-export interface FxSource {
+interface FxSource {
   fx(geo: THREE.BufferGeometry, color: number, opacity: number, kind: FxKind): FxMesh;
   drop(m: FxMesh): void;
 }

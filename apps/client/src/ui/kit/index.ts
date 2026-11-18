@@ -5,9 +5,9 @@
 import './tokens.css';
 import './kit.css';
 
-export { Button, type ButtonVariant, Segmented, Slider, type TabItem, Tabs } from './Controls';
+export { Button, Segmented, Slider, Tabs } from './Controls';
 export { Modal } from './Modal';
 export { Divider, Header, Panel, PanelBody, type PanelTone, PanelWindow } from './Panel';
 export { ProgressBar } from './ProgressBar';
-export { type Rarity, Slot } from './Slot';
+export { Slot } from './Slot';
 export { TipCard, Tooltip } from './Tooltip';

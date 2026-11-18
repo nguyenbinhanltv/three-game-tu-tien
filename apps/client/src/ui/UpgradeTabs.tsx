@@ -41,14 +41,14 @@ import { ItemIcon, statLines } from './windows/common';
 import { useUI } from './store';
 
 /** Món có thể xử lý: đang mặc (`w`) hoặc ở túi (`i`). */
-export interface GearEntry {
+interface GearEntry {
   key: string;
   ref: { w: EquipSlot } | { i: number };
   item: InvItem;
   worn: boolean;
 }
 
-export function gearEntries(inv: (InvItem | null)[], equip: Partial<Record<EquipSlot, InvItem>>): GearEntry[] {
+function gearEntries(inv: (InvItem | null)[], equip: Partial<Record<EquipSlot, InvItem>>): GearEntry[] {
   const out: GearEntry[] = [];
   for (const es of EQUIP_SLOTS) {
     const it = equip[es];

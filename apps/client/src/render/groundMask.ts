@@ -25,7 +25,7 @@ import {
  * Hàm thuần (không đụng GPU) để test được.
  */
 export const MASK_RES = 1024;
-export const PATH_RANGE = 10;
+const PATH_RANGE = 10;
 export const PATH_HALF_WIDTH = 1.7;
 
 interface P {
@@ -112,7 +112,7 @@ export function maskPixel(i: number, j: number, lines: P[][], out: Uint8ClampedA
   out[o + 3] = clamp01(0.5 + fbm(x * 0.012, z * 0.012, 3, TERRAIN_SEED + 700) * 0.9) * 255;
 }
 
-export function buildMaskData(): Uint8ClampedArray {
+function buildMaskData(): Uint8ClampedArray {
   const lines = pathPolylines();
   const data = new Uint8ClampedArray(MASK_RES * MASK_RES * 4);
   for (let j = 0; j < MASK_RES; j++) for (let i = 0; i < MASK_RES; i++) maskPixel(i, j, lines, data, (j * MASK_RES + i) * 4);

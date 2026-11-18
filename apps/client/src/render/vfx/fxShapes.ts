@@ -21,7 +21,7 @@ function build(pos: number[], uvs: number[], idx?: number[]): THREE.BufferGeomet
  * Lưỡi liềm nằm ngang (mặt XZ), mặt lồi hướng +Z, đỉnh ở gốc, bán kính ngoài 1; `u` quét từ mũi này sang mũi kia.
  * Lớn hơn và nhọn hơn `slashGeometry` cũ: dày giữa (0,5 bán kính), hai đầu vuốt như nét bút.
  */
-export function crescentGeometry(arcDeg = 165, width = 0.5, segs = 48): THREE.BufferGeometry {
+function crescentGeometry(arcDeg = 165, width = 0.5, segs = 48): THREE.BufferGeometry {
   const arc = (arcDeg * Math.PI) / 180;
   const rows = 4;
   const pos: number[] = [];
@@ -49,14 +49,14 @@ export function crescentGeometry(arcDeg = 165, width = 0.5, segs = 48): THREE.Bu
 }
 
 /** Tâm hình tròn của lưỡi liềm (đặt tâm cung vào điểm chém): (0, 0, −1) × bán kính. */
-export const CRESCENT_CENTER = new THREE.Vector3(0, 0, -1);
+const CRESCENT_CENTER = new THREE.Vector3(0, 0, -1);
 
 /**
  * Gai/mũi tinh thể: lăng trụ đáy `sides` cạnh nhọn về +Z (hai đầu nếu `back` > 0). Không chỉ mục: mỗi mặt UV riêng
  * (`u` ngang mặt 0..1, `v` 0 đáy → 1 đỉnh) để shader vẽ gân vàng ở mép mặt.
  * Trục dài là +Z; gai trồi từ đất xoay trục này lên +Y bằng `rot` của sự kiện.
  */
-export function crystalGeometry(sides: number, radius: number, front: number, back: number): THREE.BufferGeometry {
+function crystalGeometry(sides: number, radius: number, front: number, back: number): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const ring = (i: number): [number, number] => {
@@ -83,7 +83,7 @@ export function crystalGeometry(sides: number, radius: number, front: number, ba
 }
 
 /** Vòng/đĩa nằm ngang (XZ): `u` quanh vòng, `v` từ trong (0) ra ngoài (1); lỗ giữa `inner`. */
-export function rippleGeometry(inner = 0.55, segs = 56): THREE.BufferGeometry {
+function rippleGeometry(inner = 0.55, segs = 56): THREE.BufferGeometry {
   const rows = 3;
   const pos: number[] = [];
   const uvs: number[] = [];
@@ -109,14 +109,14 @@ export function rippleGeometry(inner = 0.55, segs = 56): THREE.BufferGeometry {
 }
 
 /** Tấm vuông 2×2 tâm ở gốc, UV 0..1: đứng (XY, quay mặt về camera) hoặc nằm (XZ, trên đất). */
-export const QUAD_XY = new THREE.PlaneGeometry(2, 2);
+const QUAD_XY = new THREE.PlaneGeometry(2, 2);
 export const QUAD_XZ = new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
 
 /**
  * Dải xoắn quanh trục +Z dài 1 (u 0 → 1 từ đuôi tới đầu): ruy băng rộng `w` quay `turns` vòng, bán kính thon về hai đầu.
  * Vòng xoắn của phi kiếm (kéo theo sau kiếm). Mặt dải hướng theo bán kính nên nhìn ngang thấy rõ hình sin.
  */
-export function helixGeometry(turns = 2.2, radius = 0.22, w = 0.09, segs = 72): THREE.BufferGeometry {
+function helixGeometry(turns = 2.2, radius = 0.22, w = 0.09, segs = 72): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const idx: number[] = [];
@@ -144,7 +144,7 @@ export function helixGeometry(turns = 2.2, radius = 0.22, w = 0.09, segs = 72): 
  * hai sừng cong ra sau (gân vàng), hai râu dài. Cao `height` m ở scale 1, bán kính xoắn `rad`.
  * UV: `u` quanh ống (sừng u=0,95 để shader vẽ gân vàng), `v` dọc thân 0 (đuôi) → 1 (đầu): shader `crystal` mọc theo v.
  */
-export function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides = 10): THREE.BufferGeometry {
+function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides = 10): THREE.BufferGeometry {
   const pts: THREE.Vector3[] = [];
   for (let i = 0; i <= 48; i++) {
     const u = i / 48;
@@ -238,7 +238,7 @@ export function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200
 }
 
 /** Pháp tướng tượng ngồi: tròn xoay theo hồ sơ (bán kính, độ cao) từ đài sen tới đỉnh đầu; UV `v` theo độ cao để mọc từ dưới lên. */
-export function statueGeometry(): THREE.BufferGeometry {
+function statueGeometry(): THREE.BufferGeometry {
   const prof: [number, number][] = [[0, 0], [1.6, 0], [1.8, 0.35], [1.2, 0.8], [0.95, 1.5], [1.2, 2.1], [1.6, 2.7], [1.25, 3.05], [0.55, 3.2], [0.6, 3.4], [0.8, 3.75], [0.55, 4.1], [0, 4.25]];
   const seg = 28;
   const pos: number[] = [];
@@ -269,7 +269,7 @@ export const GUST_STREAKS = 7;
  * mỗi dải một bán kính, góc xuất phát và độ xoắn riêng, mặt dải tiếp tuyến với mặt trụ nên nhìn ngang vẫn thấy.
  * UV: `u` dọc đường 0 → 1; `v` = chỉ số vệt (phần nguyên) + ngang dải 0..0,98 (phần lẻ); shader `wind` tách pha theo chỉ số.
  */
-export function gustGeometry(radius = 0.5, w = 0.045, segs = 16): THREE.BufferGeometry {
+function gustGeometry(radius = 0.5, w = 0.045, segs = 16): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const idx: number[] = [];

@@ -2,7 +2,6 @@ import { LEVELS } from '@dtl/content';
 import { scatterVanHai } from './vanHaiScatter';
 import { scatterThienKhuyet } from './thienKhuyetArt';
 import { type BhScatterCtx, riftPath, scatterBacHoang } from './bacHoangArt';
-export { scatterVanHai };
 import { padsOfLevel, propsOf, terrainOf, COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
 
 /**
@@ -307,7 +306,7 @@ const levelCache = new Map<string, PropInstance[]>();
  * Dùng lại GLB đã có (đá Vân Lam nhuộm ấm, `prop_cay_goc_kho` của PROP_LIB); tránh tâm cụm quái, tinh anh, trạm, điểm nhấn, điểm hái.
  */
 const DM_ROCKS = ['prop_da_nam', 'prop_da_dung', 'prop_da_phien'] as const;
-export function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[] {
+function scatterDoanMach(placed: readonly PropInstance[]): PropInstance[] {
   const L = LEVELS.doan_mach;
   const tr = terrainOf('doan_mach');
   const clear: Circle[] = [

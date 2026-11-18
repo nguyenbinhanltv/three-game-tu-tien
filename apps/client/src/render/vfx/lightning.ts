@@ -243,7 +243,7 @@ export function boltNodes(U: FxUniforms) {
 }
 
 /** Đĩa phẳng cho mây xoáy (bán kính 1, nằm ngang, mặt nhìn xuống). */
-export function vortexGeometry(): THREE.BufferGeometry {
+function vortexGeometry(): THREE.BufferGeometry {
   const g = new THREE.CircleGeometry(1, 48, 0, Math.PI * 2);
   g.rotateX(Math.PI / 2);
   return g;

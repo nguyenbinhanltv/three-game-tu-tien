@@ -21,7 +21,7 @@ function rovingKey(e: KeyboardEvent, count: number, index: number, go: (i: numbe
   go(next);
 }
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 /**
  * Nút vát. `pressed` dùng cho nút bật/tắt hoặc lựa chọn (aria-pressed). Trạng thái: hover, active,
@@ -94,7 +94,7 @@ export function Segmented<T extends string | number | boolean>({ options, value,
   );
 }
 
-export type TabItem = {
+type TabItem = {
   id: string;
   label: string;
   disabled?: boolean;

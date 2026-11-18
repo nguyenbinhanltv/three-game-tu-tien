@@ -47,7 +47,7 @@ export interface PlayerLook {
 }
 
 /** Cấu hình model người chơi có xương theo asset. */
-export interface PlayerSkin {
+interface PlayerSkin {
   clips: ClipMap;
   /**
    * Trạng thái chưa có clip thật → pose IK (packages/content/data/poses). Bay và niệm chú đã có sẵn từ M3-4
@@ -150,7 +150,7 @@ interface ScabbardTemplate {
 }
 
 /** Vỏ kiếm gắn cho một bản sao: mesh, độ dài model vỏ. */
-export interface ScabbardMount {
+interface ScabbardMount {
   mesh: THREE.Mesh;
   len: number;
 }
@@ -915,7 +915,7 @@ function templateOf(handle: AssetHandle, lib: AssetHandle, skin: PlayerSkin, swo
 /** Rảnh bao lâu (giây: không ra chiêu, không trúng đòn, không niệm chú) thì tra kiếm (M3-2). */
 export const SHEATHE_AFTER = 5;
 /** Còn thủ thế bao lâu (giây) sau lần giao chiến cuối khi đứng yên. */
-export const COMBAT_HOLD = 4;
+const COMBAT_HOLD = 4;
 
 /**
  * Người chơi dùng model có xương: thêm phi kiếm dưới chân khi ngự kiếm và các bộ đếm cho vệt/hạt theo nhân vật

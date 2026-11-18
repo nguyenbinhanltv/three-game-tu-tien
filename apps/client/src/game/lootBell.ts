@@ -2,7 +2,7 @@
  * Bồi âm chuông đồ rơi (M4-6), tách khỏi audio.ts để test được không cần Web Audio.
  */
 
-export interface BellPartial {
+interface BellPartial {
   freq: number;
   gain: number;
   dur: number;

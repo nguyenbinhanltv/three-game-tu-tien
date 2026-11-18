@@ -4,7 +4,7 @@
 import { fbm, hash01, smoothstep, type TerrainDef } from '@dtl/shared';
 
 /** Màu hex 0xRRGGBB, đúng id `rift_*` của palette. */
-export const RIFT = {
+const RIFT = {
   ash: 0x2a2426,
   ashLight: 0x8c8580,
   ember: 0xc4412b,
@@ -118,7 +118,7 @@ export function bhAmbient(path: readonly RiftPt[], x: number, z: number, def: Te
   return { ash: 9 + north * 10, ember: 1.2 + north * 3 + near * 12, mote: 2 };
 }
 
-export interface BhRock {
+interface BhRock {
   id: string;
   x: number;
   z: number;

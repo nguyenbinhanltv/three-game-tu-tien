@@ -18,14 +18,14 @@ export const FADE_MAX = 0.7;
 export const INK_EXTRA = 0.3;
 
 /** Ngân sách mỗi chiêu: hạt và lưới pool sống. */
-export interface FxCaps {
+interface FxCaps {
   particles: number;
   meshes: number;
 }
-export const CAPS_MINE: FxCaps = { particles: 60, meshes: 4 };
-export const CAPS_OTHER: FxCaps = { particles: 30, meshes: 2 };
-export const CAPS_ULT_MINE: FxCaps = { particles: 400, meshes: 150 };
-export const CAPS_ULT_OTHER: FxCaps = { particles: 150, meshes: 150 };
+const CAPS_MINE: FxCaps = { particles: 60, meshes: 4 };
+const CAPS_OTHER: FxCaps = { particles: 30, meshes: 2 };
+const CAPS_ULT_MINE: FxCaps = { particles: 400, meshes: 150 };
+const CAPS_ULT_OTHER: FxCaps = { particles: 150, meshes: 150 };
 
 export function capsFor(mine: boolean, ult: boolean): FxCaps {
   return ult ? (mine ? CAPS_ULT_MINE : CAPS_ULT_OTHER) : mine ? CAPS_MINE : CAPS_OTHER;
@@ -53,7 +53,7 @@ export function hdrGain(hex: number, peak: number): number {
   return m > 1e-4 ? peak / m : 1;
 }
 
-export type Phase = 'gather' | 'burst' | 'fade' | 'done';
+type Phase = 'gather' | 'burst' | 'fade' | 'done';
 
 /** Pha ở thời điểm `t` (giây từ lúc bấm) với chiêu có mốc trúng `hitAt` và thời lượng tan `fade`. */
 export function phaseAt(t: number, hitAt: number, fade = FADE_MAX): Phase {
@@ -87,11 +87,11 @@ export function maxRadiusFor(d: number, fovDeg: number, aspect: number, maxFrac 
 }
 
 /** Màu vạch báo của quái: son đỏ (`wood_cinnabar`) cho quái thường, ma khí (`spirit_demonic`) cho boss; thiên lôi giữ tím sét. */
-export const HAZARD_CINNABAR = 0x9d392e;
-export const HAZARD_DEMONIC = 0x4a2b5e;
-export const HAZARD_LIGHTNING = 0xb48cff;
+const HAZARD_CINNABAR = 0x9d392e;
+const HAZARD_DEMONIC = 0x4a2b5e;
+const HAZARD_LIGHTNING = 0xb48cff;
 /** Nháy sáng ở khoảng này cuối thời gian báo (giây). */
-export const HAZARD_FLASH = 0.08;
+const HAZARD_FLASH = 0.08;
 
 /** Màu và hệ số nhân HDR của vạch báo (màu gốc quá tối nên nâng kênh sáng nhất lên 1,0 như mọi linh quang). */
 export function hazardStyle(kind: string, boss: boolean): { color: number; gain: number } {

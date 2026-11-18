@@ -6,7 +6,7 @@ import { createLanternHalos } from '../render/atmosphere';
  * Một lưới, một draw call, màu theo đỉnh (không texture); bề mặt gồ ghề do nhiễu dịch đỉnh để vách và trần có nhấp nhô như thạch nhũ.
  * Hàm sinh tất định theo (x, z) nên mọi máy cho cùng một hang.
  */
-export interface CaveDef {
+interface CaveDef {
   x: number;
   z: number;
   /** Bán kính vách (m). */
@@ -19,7 +19,7 @@ export interface CaveDef {
  * Bảng màu cung điện: `moon` là cung gương lam bạc (Kính Nguyệt Cung, Thần Tàng Điện); `gilt` là cung dát vàng của triều Kim Dạ
  * (DV-3E, bảng `rift_*`: kim dát `rift_gilt` trên nền đen tím, đèn tím).
  */
-export type PalaceKind = 'moon' | 'gilt';
+type PalaceKind = 'moon' | 'gilt';
 interface PalaceTheme {
   wall: number;
   pillar: number;

@@ -19,7 +19,7 @@ import { heightAt, inLakeWater, levelTerrain } from './levelCtx';
  * `?bf=0` tắt để so ảnh/số đo. Mật độ và bảng màu theo level ở `BUTTERFLY_LEVELS`.
  */
 
-export interface ButterflyLevel {
+interface ButterflyLevel {
   /** Xác suất một ô 8 m có một đàn (0–1). */
   density: number;
   /** Số con mỗi đàn: từ `min` tới `max`. */
@@ -132,7 +132,7 @@ export function butterflyGeometry(): THREE.BufferGeometry {
   return g;
 }
 
-export interface Spot {
+interface Spot {
   /** Khóa ổn định của một con (ô + thứ tự trong đàn). */
   id: number;
   x: number;
@@ -143,7 +143,7 @@ export interface Spot {
 }
 
 /** Chỗ này có hợp cho bướm không: trong vùng chơi, không nước, không dốc đứng, không sàn mây/vách đảo, không đỉnh tuyết. */
-export function suitable(x: number, z: number): boolean {
+function suitable(x: number, z: number): boolean {
   const t = levelTerrain();
   const b = t.playBounds;
   if (x < b.x0 + 8 || x > b.x1 - 8 || z < b.z0 + 8 || z > b.z1 - 8) return false;

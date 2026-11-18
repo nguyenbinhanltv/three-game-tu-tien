@@ -3,7 +3,7 @@
 import { fbm, hash01, smoothstep, type TerrainDef } from '@dtl/shared';
 
 /** Màu hex 0xRRGGBB. */
-export const TK_COLORS = {
+const TK_COLORS = {
   /** Nền sân đá phiến cổ: xám lam đêm. */
   slate: 0x8b949e,
   /** Đá lát sáng hơn (sân, đại lộ). */
@@ -64,7 +64,7 @@ export function tkGrassDensity(def: TerrainDef, x: number, z: number, slope: num
   return d;
 }
 
-export interface TkRubble {
+interface TkRubble {
   id: string;
   x: number;
   z: number;
@@ -79,7 +79,7 @@ export interface TkRubble {
 
 const ROCKS = ['prop_da_nam', 'prop_da_dung', 'prop_da_phien'] as const;
 
-export interface TkScatterCtx {
+interface TkScatterCtx {
   def: TerrainDef;
   bounds: { x0: number; x1: number; z0: number; z1: number };
   heightAt(x: number, z: number): number;

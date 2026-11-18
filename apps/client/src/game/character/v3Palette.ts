@@ -8,14 +8,14 @@ import * as THREE from 'three/webgpu';
 import { dot, float, materialColor, max, min, mix, smoothstep, vec3, vec4 } from 'three/tsl';
 import { FLAGS } from '../flags';
 
-export const V3_PALETTE_ON = FLAGS.v3Palette;
+const V3_PALETTE_ON = FLAGS.v3Palette;
 
 const lin = (hex: string): THREE.Vector3 => {
   const c = new THREE.Color().setStyle(hex, THREE.SRGBColorSpace);
   return new THREE.Vector3(c.r, c.g, c.b);
 };
 /** Màu đích (concept) và màu ngà trung bình của texture (đo) để tính hệ số nhân theo kênh. */
-export const V3_PAL = {
+const V3_PAL = {
   navy: '#27476E',
   armor: '#3B6584',
   armorHi: '#4C86B0',

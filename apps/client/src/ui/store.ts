@@ -52,7 +52,7 @@ export interface ChapterCard {
 }
 
 /** Cảnh mở đầu (P2-B1) đang chạy: HUD ẩn, letterbox dày, một câu thoại. `out` = đang rút letterbox sau khi hết cảnh. */
-export interface CineState {
+interface CineState {
   id: number;
   /** 'sect' (mặc định): cảnh mở đầu. 'boss': boss xuất hiện (tên, danh hiệu, thoại). 'phase': chuyển pha (thoại). */
   kind?: 'sect' | 'boss' | 'phase' | 'dan';
@@ -71,14 +71,14 @@ export interface TargetCast {
   open: number;
 }
 
-export interface LogLine {
+interface LogLine {
   id: number;
   text: string;
   type: string;
   from?: string;
 }
 
-export interface Toast {
+interface Toast {
   id: number;
   text: string;
   type: string;
@@ -136,7 +136,7 @@ export interface DebugPerf {
 }
 
 /** Truyền Tống Trận của mình (S.TELE). `until`/`cdUntil` đã đổi sang đồng hồ `performance.now()` của client. */
-export interface TeleState {
+interface TeleState {
   open: string[];
   cast: { id: string; until: number } | null;
   cdUntil: number;
@@ -144,7 +144,7 @@ export interface TeleState {
 
 /** Thần thức của mình (S.SPIRIT_STATE). Thời gian đổi sang đồng hồ `performance.now()` của client. */
 /** Nguyên anh xuất khiếu (E3-K): thời gian theo đồng hồ client (performance.now). */
-export interface SoulState {
+interface SoulState {
   open: boolean;
   /** 0 không, 1 thám thính, 2 vừa thoát ra khi tử vong. */
   k: 0 | 1 | 2;
@@ -178,10 +178,10 @@ export interface SpiritScan {
   hits: SpiritHit[];
 }
 
-export type Panel = WinId;
+type Panel = WinId;
 export type Phase = 'login' | 'connecting' | 'loading' | 'game' | 'error';
 
-export interface UIState {
+interface UIState {
   phase: Phase;
   error: string;
   needName: boolean;
@@ -409,10 +409,6 @@ export function openPanel(p: Panel): void {
 
 export function closePanel(p: Panel): void {
   useUI.setState((s) => (s.windows.some((w) => w.id === p) ? { windows: closeWindow(s.windows, p) } : s));
-}
-
-export function closeAllPanels(): void {
-  useUI.setState((s) => (s.windows.length ? { windows: [] } : s));
 }
 
 /** Đóng cửa sổ trên cùng (Esc). Trả true nếu có cái để đóng. */

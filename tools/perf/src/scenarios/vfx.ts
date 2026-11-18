@@ -3,7 +3,7 @@
 //   --skills skl_a,skl_b            chiêu người chơi (tự đổi công pháp theo chiêu)
 //   --skills mon:<loại>[:<id quái>]  FX quái V5: hit|strike|cast|chant|boom_circle|boom_line|boom_cone|bolt|death
 //   --skills scene_<tên>            cảnh lớn bơm thẳng tin S.FX (đột phá, độ kiếp, xuất khiếu, thuấn di)
-//   --old: hình cũ (`?fxtl=0&monfx=0`) để làm ảnh trước/sau.  --perf: draw call/tam giác/ms từng chiêu.
+//   --perf: draw call/tam giác/ms từng chiêu.
 //   --crowd N: N người giả cùng ra chiêu trong --crowd-secs giây, chỉ in số đo (ngân sách sân đông).
 import fs from 'node:fs';
 import os from 'node:os';
@@ -60,7 +60,6 @@ const SPOTS: [number, number][] = [[2048, 2088], [2088, 2088], [2008, 2088], [20
 const ALLY_ONLY = /thuan_di_ho_the|thuan_di_cuu_vien/;
 const SKILLS = list('--skills', 'skl_kiem_khi_tram,skl_phi_kiem');
 const FXQ = opt('--fxq', 'high');
-const OLD = flag('--old');
 const PERF = flag('--perf');
 const LEVEL = num('--level', 12);
 const FPS = num('--fps', 24);
@@ -229,8 +228,8 @@ async function crowd(page: Page, n: number): Promise<void> {
 
 export default {
   name: 'vfx',
-  desc: 'VFX từng chiêu/FX quái/cảnh lớn: webm chậm + thật và tờ dãy khung có mốc hit, nam/nữ; --old để so, --crowd N đo sân đông',
-  usage: '[--skills skl_a,mon:hit,scene_kiep_kd] [--genders m,f] [--fxq high|medium|low] [--level 12] [--old] [--perf] [--crowd N] [--webm-only|--sheet-only] [--fps 24] [--tile 40] [--tmax 1000] [--dist 7] [--span 1700] [--query a=b]',
+  desc: 'VFX từng chiêu/FX quái/cảnh lớn: webm chậm + thật và tờ dãy khung có mốc hit, nam/nữ; --crowd N đo sân đông',
+  usage: '[--skills skl_a,mon:hit,scene_kiep_kd] [--genders m,f] [--fxq high|medium|low] [--level 12] [--perf] [--crowd N] [--webm-only|--sheet-only] [--fps 24] [--tile 40] [--tmax 1000] [--dist 7] [--span 1700] [--query a=b]',
   async run(r) {
     const sheetCtx = await r.browser.newContext({ viewport: { width: 1800, height: 800 } });
     const sheets: (() => Promise<void>)[] = [];
@@ -239,7 +238,7 @@ export default {
     for (const g of list('--genders', 'm,f')) {
       for (const pass of ['slow', 'real'] as const) {
         const slow = pass === 'slow' ? SLOW : 1;
-        const { ctx, page } = await r.open({ name: `V${g}${pass[0]}`, viewport: [1100, 900], quality: 'high', look: { g }, hide: 'hud', query: { quiet: 1, fxq: FXQ, fxtl: OLD ? 0 : undefined, monfx: OLD ? 0 : undefined, slowmo: pass === 'slow' ? SLOW : undefined }, extra: opt('--query', '') });
+        const { ctx, page } = await r.open({ name: `V${g}${pass[0]}`, viewport: [1100, 900], quality: 'high', look: { g }, hide: 'hud', query: { quiet: 1, fxq: FXQ, slowmo: pass === 'slow' ? SLOW : undefined }, extra: opt('--query', '') });
         const method = async (id: string) => {
           await gm(page, `method ${id} 5`, 1400);
           if (LEVEL >= 16) await gm(page, 'skills max', 1500);
@@ -287,14 +286,14 @@ export default {
           });
           const gpuErr = await page.evaluate(() => window.__game!.gpuErrors ?? []);
           if (gpuErr.length) console.warn('[shots:vfx] gpuErrors:', JSON.stringify(gpuErr).slice(0, 1500));
-          if (PERF) console.log(`[perf] ${sk} ${pass} ${OLD ? 'cũ' : 'mới'}: ${perfLine((await page.evaluate(() => window.__vfxPerf))!)}`);
-          const tag = `${g === 'm' ? 'nam' : 'nu'}-${sk.replace('skl_', '').replace(/:/g, '_')}${OLD ? '-cu' : ''}`;
+          if (PERF) console.log(`[perf] ${sk} ${pass}: ${perfLine((await page.evaluate(() => window.__vfxPerf))!)}`);
+          const tag = `${g === 'm' ? 'nam' : 'nu'}-${sk.replace('skl_', '').replace(/:/g, '_')}`;
           if (!flag('--sheet-only')) console.log(`[shots:vfx] webm ${tag}-${pass}: ${encodeWebm(rec, path.join(r.out, `${tag}-${pass === 'slow' ? 'cham' : 'that'}.webm`)) ? 'ok' : 'lỗi'} (${rec.frames.length} khung)`);
           // Tờ ảnh lấy từ lượt chậm; lượt chậm không ghi được khung (hiếm, GPU bận) thì lấy từ lượt thật.
           const slowOk = pass === 'slow' && rec.frames.length >= 3;
           if (slowOk) sheeted.add(tag);
           if (!flag('--webm-only') && (slowOk || (pass === 'real' && !sheeted.has(tag)))) {
-            const title = `${sk} · ${g === 'm' ? 'Thanh Phong (nam)' : 'Lam Chi (nữ)'}${OLD ? ' · hình cũ' : ''} · mỗi ô ${TILE} ms game, viền đỏ = khung hit`;
+            const title = `${sk} · ${g === 'm' ? 'Thanh Phong (nam)' : 'Lam Chi (nữ)'} · mỗi ô ${TILE} ms game, viền đỏ = khung hit`;
             sheets.push(() => tileSheet(sheetCtx, path.join(r.out, `${tag}.png`), title, rec, span, slow));
           }
         }

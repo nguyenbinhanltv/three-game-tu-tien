@@ -11,10 +11,10 @@ import { type Surface, surfaceAt, SURFACES } from './surface';
  */
 export const HEAR = 26;
 export const PER_FRAME = 3;
-export const WINDOW_MS = 120;
+const WINDOW_MS = 120;
 export const WINDOW_MAX = 5;
 /** Tốc độ (m/s) dưới mức này coi là đứng yên (nội suy vị trí của người/quái khác luôn có nhiễu nhỏ). */
-export const MOVE_MIN = 0.7;
+const MOVE_MIN = 0.7;
 /** Bước nhảy vị trí (m) trong một khung lớn hơn mức này là dịch chuyển, không tính vào quãng đường. */
 const TELEPORT = 8;
 
@@ -87,7 +87,7 @@ interface MonV {
   speed: number;
   s: { st: number };
 }
-export interface WalkerSource {
+interface WalkerSource {
   players: Map<string, PlayerV & { local?: boolean }>;
   monsters: Map<string, MonV>;
 }

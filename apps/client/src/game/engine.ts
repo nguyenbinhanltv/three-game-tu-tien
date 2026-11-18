@@ -67,7 +67,7 @@ import { KeyState } from '../input/keyboard';
 import { SkillQueue } from '../input/skillQueue';
 import { SkillPoses } from './skillPose';
 import { SkillFx, fxTriggered, replacedFx } from './skillFx';
-import { MonFx, MONFX_ON } from './monFx';
+import { MonFx } from './monFx';
 import { variantFor } from './fxTimeline';
 import { fxQuality, hitStopOn, setFxQuality, setHitStopOn } from './fxSettings';
 import type { FxQuality } from '@dtl/shared';
@@ -78,7 +78,7 @@ import { debugAllowed, readTestParams } from './testParams';
 import { CharPreview } from './charPreview';
 import { currentSearch, FLAGS } from './flags';
 
-export interface LoginOptions {
+interface LoginOptions {
   token?: string;
   dev?: string;
   name?: string;
@@ -103,19 +103,19 @@ export interface LoginOptions {
  * `dungeon-<id>`); tên lạ thì về Vân Lam.
  */
 /** Room bản đồ thế giới: `world` (Vân Lam) hoặc `world-<id>` (không phải bí cảnh). */
-export const isWorldRoom = (room: string): boolean => room === ROOM_WORLD || room.startsWith('world-');
-export function levelOfRoom(room: string): string {
+const isWorldRoom = (room: string): boolean => room === ROOM_WORLD || room.startsWith('world-');
+function levelOfRoom(room: string): string {
   if (room === ROOM_WORLD) return 'van_lam';
   if (room === ROOM_DUNGEON) return 'kiem_trung';
   if (room === ROOM_TRIBULATION) return TRIB_LEVEL; // sân độ kiếp (E1-F)
   const id = room.replace(/^(world|dungeon)-/, '');
   return id !== room && knownLevel(id) ? id : 'van_lam';
 }
-export function levelOfInit(init: InitMsg): string {
+function levelOfInit(init: InitMsg): string {
   return levelOfRoom(init.room);
 }
 
-export function serverUrl(): string {
+function serverUrl(): string {
   const env = (import.meta as unknown as { env: Record<string, string | boolean | undefined> }).env;
   if (typeof env.VITE_SERVER_URL === 'string' && env.VITE_SERVER_URL) return env.VITE_SERVER_URL;
   const { protocol, hostname, host, port } = window.location;

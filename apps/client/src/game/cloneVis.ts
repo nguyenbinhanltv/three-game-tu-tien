@@ -15,7 +15,7 @@ import type { Vfx } from './vfx';
 import type { CharacterView } from './character/view';
 
 /** Dựng bản sao của người chơi `sid` (null nếu asset chưa nạp hoặc model khối: dùng hình dự phòng). */
-export type CloneMaker = (sid: string) => CharacterView | null;
+type CloneMaker = (sid: string) => CharacterView | null;
 
 /** Vai trò → id công pháp để lấy bảng màu nhánh. */
 const ROLE_METHOD: Record<string, string> = { dps: 'lac_kiem_quyet', tank: 'bat_dong_kim_than', support: 'thanh_moc_dan_kinh' };

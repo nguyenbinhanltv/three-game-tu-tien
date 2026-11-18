@@ -12,7 +12,7 @@ import { vnoise } from './vfx/common';
  * Mỗi lớp một draw call (3 tổng), một material TSL, cộng sáng, không ghi độ sâu, bỏ sương (phải thấy xuyên sương). Màu theo `rift_ember`/`rift_violet`
  * (assets/palette.json), đỉnh HDR ≤ 1,6 mỗi kênh. Đứng gần thì mờ đi để không bị bức tường sáng che màn hình.
  */
-export interface RiftVeilPt {
+interface RiftVeilPt {
   x: number;
   z: number;
   y: number;
@@ -23,7 +23,7 @@ export interface RiftVeil {
   dispose(): void;
 }
 
-export const RIFT_VEIL_HEIGHT = 260;
+const RIFT_VEIL_HEIGHT = 260;
 const EMBER = [0.552, 0.054, 0.024] as const; // rift_ember #C4412B → tuyến tính
 const VIOLET = [0.147, 0.05, 0.352] as const; // rift_violet #6B3FA0 → tuyến tính
 
