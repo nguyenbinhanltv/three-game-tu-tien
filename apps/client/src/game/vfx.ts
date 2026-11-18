@@ -1028,12 +1028,12 @@ export class Vfx {
           const target = mask & (1 << i) ? 1 : 0;
           lit[i] += (target - lit[i]) * Math.min(1, dt * 5);
           const k = lit[i];
-          const h = 2.2 + 2.6 * k;
+          const h = 3.5 + 7 * k;
           const pulse = 1 + Math.sin(t * 2.2 + i) * 0.05 * k;
           cols[i].position.set(pos[i].x, pos[i].y + h * 0.5, pos[i].z);
-          cols[i].scale.set(0.22 + 0.16 * k, h * pulse, 0.22 + 0.16 * k);
+          cols[i].scale.set(0.3 + 0.4 * k, h * pulse, 0.3 + 0.4 * k);
           cols[i].fxColor.setHex(k > 0.5 ? 0xffd27a : 0x6a4a9a);
-          cols[i].fxOpacity = (0.25 + 0.4 * k) * fade;
+          cols[i].fxOpacity = (0.18 + 0.55 * k) * fade;
           rings[i].position.set(pos[i].x, pos[i].y + 0.12, pos[i].z);
           rings[i].scale.setScalar(1.6 + 0.4 * Math.sin(t * 2 + i));
           rings[i].fxOpacity = 0.55 * k * fade;

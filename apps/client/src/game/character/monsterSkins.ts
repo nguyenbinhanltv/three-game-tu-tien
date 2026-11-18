@@ -206,7 +206,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // DV-2 đợt 4: Thủ Khích Dực Chủ (Aetherion Nemesis), bốn cánh bằng chuỗi xương; texture tự có màu tím nên không đổi bảng màu, chỉ nâng sáng để đọc ở 12–24 m.
   boss_thu_khich_duc_chu: { asset: 'boss_thu_khich_duc_chu', clips: { ...MQ_CLIPS, cast: 'Idle_Loop' }, refSpeed: 3.6, legs: 'none', tint: '#ffffff', rim: 0.7, lift: 0.5, metalness: 0, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true, wings: true },
   // Anh Biến (Nhật Thực Kiếp): Nhật Thực Dực Chủ dùng lại bốn cánh của Thủ Khích Dực Chủ, nhuốm vàng nhật thực.
-  boss_nhat_thuc_duc_chu: { asset: 'boss_thu_khich_duc_chu', clips: { ...MQ_CLIPS, cast: 'Idle_Loop' }, refSpeed: 3.6, legs: 'none', tint: '#ffd9a0', rim: 0.8, lift: 0.5, metalness: 0, lazy: true, level: 'do_kiep_bac_hoang', moves: MQ_MOVES, mannequin: true, wings: true },
+  boss_nhat_thuc_duc_chu: { asset: 'boss_thu_khich_duc_chu', clips: { ...MQ_CLIPS, cast: 'Idle_Loop' }, refSpeed: 3.6, legs: 'none', tint: '#ffe6b8', rim: 1.4, lift: 0.5, metalness: 0, lazy: true, level: 'do_kiep_bac_hoang', moves: MQ_MOVES, mannequin: true, wings: true },
   boss_kim_da_ma_hau: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.45, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   // Bóng của Ma Hậu (decoy `mirror.decoys`): cùng model, mờ và ngả vàng dát.
   mon_kim_da_bong: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },

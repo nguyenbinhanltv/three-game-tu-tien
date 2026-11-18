@@ -151,6 +151,7 @@ registerMechanic('nhat_thuc', {
     for (const b of st.bolts.filter((x) => c.now >= x.at)) {
       if (boss && Math.hypot(boss.s.x - b.x, boss.s.z - b.z) <= cfg.r + 1) {
         h.stunMonster(boss, cfg.stun);
+        h.fx({ t: 'nt_stun', src: c.p.sid, dst: boss.id, x: boss.s.x, z: boss.s.z, sd: Math.floor(Math.random() * 0x3fffffff) });
         h.sys(c.p, 'sys.nhat_thuc_stun', undefined, 'good');
       }
     }

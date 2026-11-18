@@ -33,7 +33,7 @@ export default {
       }
       await gm(page, 'god on', 900);
       await skipCutscene(page, 10);
-      await cam(page, { pitch: 0.5, dist: 34, yaw: 0 });
+      await cam(page, { pitch: 0.42, dist: 36, yaw: 0.5 });
       for (let i = 0; i < 80 && !(await page.evaluate(() => !!document.querySelector('.trib'))); i++) await sleep(250);
       const t0 = Date.now();
       const T = () => (Date.now() - t0) / 1000;
@@ -49,18 +49,29 @@ export default {
       let k = -1;
       while (T() < 96) {
         const t = T();
-        // Pha 1: tia bắn ở giây 2, 5, 8, …; đứng cạnh bia k lúc tia bắn, rồi ra giữa sân.
-        if (t >= 2 && t < 25) {
-          const kk = Math.floor((t - 2) / 3);
-          const ph = (t - 2) % 3;
-          if (kk > k && kk <= 4 && ph < 0.6) {
-            k = kk;
-            await goto(tribSealPos(CTR, DL.ring, kk));
-            await snap(page, dir, `p1-${String(kk).padStart(2, '0')}-bia-${kk + 1}.jpg`, { wait: 1500 });
-            await goto(CTR);
+        // Pha 1: đứng ở bia kế tiếp tới khi HUD đếm tăng (tia nhắm chỗ đứng lúc bắn), rồi sang bia sau.
+        if (t < 24 && k < 4) {
+          const lit = async () => Number(/(\d)\/5/.exec(await page.evaluate(() => document.querySelector('[data-testid=steles-hint]')?.textContent ?? ''))?.[1] ?? 0);
+          if ((await lit()) > k) {
+            k++;
+            if (k <= 4) {
+              await goto(tribSealPos(CTR, DL.ring, k));
+              await snap(page, dir, `p1-${String(k).padStart(2, '0')}-bia-${k + 1}.jpg`, { wait: 400 });
+            }
+          } else if (k < 0) {
+            k = 0;
+            await goto(tribSealPos(CTR, DL.ring, 0));
           }
         }
         await once('boss', 27, () => snap(page, dir, 'p2-00-nhat-thuc-duc-chu.jpg'));
+        await once('sky', 30, async () => {
+          await goto(CTR);
+          await cam(page, { pitch: 0.12, dist: 30, yaw: 0 });
+          await snap(page, dir, 'p2-sky-nhat-thuc.jpg', { wait: 800 });
+          await cam(page, { pitch: 0.12, dist: 30, yaw: Math.PI });
+          await snap(page, dir, 'p2-sky-nhat-thuc-b.jpg', { wait: 1200 });
+          await cam(page, { pitch: 0.42, dist: 36, yaw: 0.5 });
+        });
         await once('smash', 36, () => snap(page, dir, 'p2-01-dap-bia-bao.jpg'));
         await once('hold', 58, () => snap(page, dir, 'p2-02-bia-giu.jpg'));
         await once('final', 70, () => snap(page, dir, 'p3-00-tia-cuoi-bao.jpg'));

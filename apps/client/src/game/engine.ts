@@ -32,8 +32,9 @@ import { MODEL_MAT } from './models';
 import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } from '../render/atmosphere';
 import { buildRiftVeil, type RiftVeil } from '../render/riftVeil';
 import { skyTopOf } from '../render/sky';
+import { buildEclipseSun, type EclipseSun } from '../render/eclipse';
 import { DeadTrees } from './deadTrees';
-import { deadTreeSpots, riftBlend, riftPath } from './bacHoangArt';
+import { deadTreeSpots, KIEP_BH, riftBlend, riftPath } from './bacHoangArt';
 import { bhCtx } from './propScatter';
 import { Beacons } from '../render/beacons';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
@@ -404,6 +405,7 @@ export class Game {
   private danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
   /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
   private stelesVfx: { set(mask: number): void; stop(): void } | null = null;
+  private stelesMask = 0;
   /** Phiên bản hiệu ứng cung gương (E3-M): tin mới/tin tắt tăng số, hiệu ứng cũ thấy số lệch thì tự tắt. */
   private mirrorDiscVer = 0;
   private mirrorVeilVer = 0;
@@ -978,6 +980,12 @@ export class Game {
     this.scene.add(this.rift.group);
     this.deadTrees = new DeadTrees(deadTreeSpots(bhCtx(propsOf('bac_hoang')), 700), (x, z) => heightAt(x, z));
     this.scene.add(this.deadTrees.group);
+    if (levelId() === KIEP_BH) {
+      // Nhật thực: đĩa đen vành lửa treo trên khe Giới Khích, phía bắc-đông sân (chỗ camera mặc định ngẩng lên thấy được, không dưới khung HUD).
+      const c = LEVELS[KIEP_BH].dungeon!.center;
+      this.eclipseSun = buildEclipseSun(c.x + 60, heightAt(c.x, c.z) + 28, c.z - 120, 15);
+      this.scene.add(this.eclipseSun.group);
+    }
   }
 
   /** Mood Bắc Hoang theo vị trí: 0 ở nửa nam (`ash_dawn`) → 1 ở ba vùng bắc (`rift`), đổi dần quanh Khích Giai. Chỉnh uniform, không biên dịch lại. */
@@ -993,6 +1001,20 @@ export class Game {
     applyGrading(p);
   }
 
+  /** Nhật thực của Nhật Thực Kiếp: từ pha Nhật thực (25 s) trời tối đen có vành lửa; trước đó chỉ là quầng mờ. Ngoài sân kiếp thì tắt. */
+  private eclipse = 0;
+  private eclipseSun: EclipseSun | null = null;
+  private updateEclipse(dt: number): void {
+    const inArena = levelId() === KIEP_BH;
+    const elapsed = this.tribId === 'anh_bien' && this.tribUntil > 0 ? tribDef('anh_bien').duration - (this.tribUntil - Date.now()) / 1000 : -1;
+    const target = !inArena ? 0 : elapsed >= 25 && elapsed < 91 ? 1 : 0.45;
+    if (Math.abs(target - this.eclipse) >= 0.001) {
+      this.eclipse += (target - this.eclipse) * Math.min(1, dt * 1.2);
+      this.eclipseSun?.set(this.eclipse);
+    }
+    if (this.camera) this.eclipseSun?.update(this.camera);
+  }
+
   private disposeBacHoang(): void {
     if (this.rift) {
       this.scene.remove(this.rift.group);
@@ -1004,6 +1026,12 @@ export class Game {
       this.deadTrees.dispose();
       this.deadTrees = null;
     }
+    if (this.eclipseSun) {
+      this.scene.remove(this.eclipseSun.group);
+      this.eclipseSun.dispose();
+      this.eclipseSun = null;
+    }
+    this.eclipse = 0;
     this.riftMood = false;
   }
 
@@ -1091,7 +1119,7 @@ export class Game {
         this.levelObjs.push(floor, hall);
       }
     }
-    if (id === 'bac_hoang') this.buildBacHoang();
+    if (id === 'bac_hoang' || id === KIEP_BH) this.buildBacHoang();
     if (F.sect) void this.loadSectModel(q.shadows);
   }
 
@@ -2451,7 +2479,33 @@ export class Game {
         if (src !== this.sid) break;
         if (!this.stelesVfx) this.stelesVfx = v.steleRing(m.x ?? 0, m.z ?? 0, m.r ?? 16, () => ((this.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0);
         this.stelesVfx.set(m.n ?? 0);
+        // Bia vừa sáng: sét trắng vàng đánh xuống bia, một chớp nở ra (đúng vị trí ngũ giác của server).
+        for (let i = 0; i < 5; i++) {
+          if ((m.n ?? 0) & (1 << i) && !(this.stelesMask & (1 << i))) {
+            const a = (i * Math.PI * 2) / 5;
+            const bx = (m.x ?? 0) + Math.sin(a) * (m.r ?? 16);
+            const bz = (m.z ?? 0) + Math.cos(a) * (m.r ?? 16);
+            const by = groundAt(bx, bz);
+            v.lightning(bx, by, bz, 0xfff0b0, 1.6, (i + 1) * 7919);
+            _v.set(bx, by + 2, bz);
+            v.burst(_v, 0xffd27a, 3, 0.5);
+            this.shake.kick(0.4);
+          }
+        }
+        this.stelesMask = m.n ?? 0;
         set({ steles: m.n ?? 0 });
+        break;
+      }
+      case 'nt_stun': {
+        // Thiên lôi đánh trúng Nhật Thực Dực Chủ (hắn mất thế): sét to trắng vàng giáng đúng chỗ hắn đứng, chớp nở và rung nhẹ.
+        const bx = m.x ?? 0;
+        const bz = m.z ?? 0;
+        const by = groundAt(bx, bz);
+        v.lightning(bx, by, bz, 0xfff0b0, 2.2, m.sd);
+        _v.set(bx, by + 2.2, bz);
+        v.burst(_v, 0xffe3a8, 4.5, 0.55);
+        this.post?.flash(0.3);
+        this.shake.kick(0.5);
         break;
       }
       case 'rift':
@@ -2556,6 +2610,7 @@ export class Game {
         if (src === this.sid) {
           this.stelesVfx?.stop();
           this.stelesVfx = null;
+          this.stelesMask = 0;
         }
         this.cloneVfx.get(src)?.stop();
         this.cloneVfx.delete(src);
@@ -3102,6 +3157,7 @@ export class Game {
     setListener(rp.x, rp.z, this.camYaw);
     this.env.update(dt, this.camera, rp);
     if (this.riftMood) this.updateRiftMood(dt, rp.z);
+    this.updateEclipse(dt);
     this.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
     if (me) this.ambient.update(dt, this.camera.position, rp);
     if (me) this.butterflies?.update(dt, rp);
