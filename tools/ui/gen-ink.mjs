@@ -72,8 +72,15 @@ const VARIANTS = [
   variant({ seed: 53, len: 270, thick: 24, strands: 20, gapFrom: 0.4, tailSpread: 0.25 }),
 ];
 
+const body = VARIANTS.map(
+  (v) => `  '${v}',
+`,
+).join('');
 writeFileSync(
   new URL('../../apps/client/src/ui/u2/inkPaths.ts', import.meta.url),
-  `// Sinh bởi tools/ui/gen-ink.mjs, đừng sửa tay. Vệt mực nét bút lông (viewBox ${W}×${H}), ${VARIANTS.length} biến thể.\nexport const INK_PATHS: readonly string[] = ${JSON.stringify(VARIANTS, null, 2)};\n`,
+  `// Sinh bởi tools/ui/gen-ink.mjs, đừng sửa tay. Vệt mực nét bút lông (viewBox ${W}×${H}), ${VARIANTS.length} biến thể.
+export const INK_PATHS: readonly string[] = [
+${body}];
+`,
 );
 console.log(VARIANTS.map((v) => v.length + ' ký tự').join(', '));
