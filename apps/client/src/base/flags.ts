@@ -24,8 +24,8 @@ export interface Flags {
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
   aura: boolean;
-  /** `?mood=dawn|day|night` đổi thời điểm trong ngày (không lưu). */
-  mood: 'dawn' | 'day' | 'night' | null;
+  /** `?mood=dawn|day|dusk|night` đổi thời điểm trong ngày (không lưu). */
+  mood: 'dawn' | 'day' | 'dusk' | 'night' | null;
   /** `?fxq=low|medium|high` ép chất lượng hiệu ứng (chuỗi thô, nơi dùng kiểm lại). */
   fxq: string | null;
   /** `?chr=v2|v3` nhân vật nền tùy chọn; mặc định v1. */
@@ -81,7 +81,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
-  mood: { scope: 'diag', doc: 'dawn|day|night' },
+  mood: { scope: 'diag', doc: 'dawn|day|dusk|night' },
   fxq: { scope: 'diag', doc: 'low|medium|high' },
   chr: { scope: 'test', doc: 'v2|v3 nhân vật nền tùy chọn' },
   hair: { scope: 'test', doc: 'ép kiểu tóc' },
@@ -140,7 +140,7 @@ export function readFlags(search: string): Flags {
     batching: !off(q.get('batch')),
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
-    mood: mood === 'dawn' || mood === 'day' || mood === 'night' ? mood : null,
+    mood: mood === 'dawn' || mood === 'day' || mood === 'dusk' || mood === 'night' ? mood : null,
     fxq: q.get('fxq'),
     chr: chr === 'v2' || chr === 'v3' ? chr : null,
     hair: q.get('hair'),

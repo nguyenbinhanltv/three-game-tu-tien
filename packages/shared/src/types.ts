@@ -916,6 +916,8 @@ export interface LevelAssets {
   cave?: { x: number; z: number; r: number; h: number };
   /** Phó bản cung điện (E3-M): `true`/`'moon'` cung gương lam bạc, `'gilt'` cung dát vàng Kim Dạ (DV-3E). */
   palace?: boolean | 'moon' | 'gilt';
+  /** Tia sáng xuyên mây (MAP-1, render/godRays.ts): vùng rải tâm (x, z) bán kính `r`, `count` dải. Bỏ trống = không có. */
+  godRays?: { x: number; z: number; r: number; count: number };
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */

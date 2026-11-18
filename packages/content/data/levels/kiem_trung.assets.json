@@ -1,8 +1,9 @@
 {
-  "mood": "default",
+  "mood": "lk_day",
   "glb": ["arch_sect"],
   "ground": { "set": "terrain", "mask": "manifest" },
   "music": ["dungeon", "dungeon_boss"],
   "features": { "sect": true, "portals": true, "lanterns": true, "lake": true, "clouds": true, "grass": true, "trees": "scatter", "beacons": true, "vegetation": true },
+  "godRays": { "x": 2048, "z": 2048, "r": 520, "count": 70 },
   "minimap": "van_lam"
 }

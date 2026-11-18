@@ -58,6 +58,7 @@ import { type RiftVeil } from '../render/riftVeil';
 import { DeadTrees } from './world/deadTrees';
 import { type EclipseSun } from '../render/eclipse';
 import { Beacons } from '../render/beacons';
+import type { GodRays } from '../render/godRays';
 import { PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
@@ -207,6 +208,8 @@ export class Game {
   props: PropLayer | null = null;
   /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. */
   beacons: Beacons | null = null;
+  /** Tia sáng xuyên mây (MAP-1). */
+  godRays: GodRays | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
   /** Hạt môi trường quanh camera (V4), phát vào hệ hạt chung. */

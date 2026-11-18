@@ -15,6 +15,7 @@ import { buildEclipseSun } from '../../render/eclipse';
 import { XICH_LEVEL, xichCracks, type XichAccent } from '../world/xichArt';
 import { bhCtx } from '../world/propScatter';
 import { Beacons } from '../../render/beacons';
+import { GodRays } from '../../render/godRays';
 import { applyGrading, markBloom } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
@@ -321,6 +322,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.beacons.mesh.visible = isWorldRoom(get().room);
     eng.scene.add(eng.beacons.mesh);
   }
+  const gr = levelAssets(id).godRays;
+  if (gr) {
+    eng.godRays = new GodRays(gr);
+    eng.scene.add(eng.godRays.mesh);
+  }
   eng.grass = new Grass(levelAssets(id).grassCards);
   eng.grass.setQuality(get().quality, q.shadows);
   eng.grass.setEnabled(F.grass);
@@ -388,6 +394,11 @@ export function unloadLevel(eng: Game): void {
     drop(eng.beacons.mesh);
     eng.beacons.dispose();
     eng.beacons = null;
+  }
+  if (eng.godRays) {
+    drop(eng.godRays.mesh);
+    eng.godRays.dispose();
+    eng.godRays = null;
   }
   if (eng.butterflies) {
     drop(eng.butterflies.mesh);
