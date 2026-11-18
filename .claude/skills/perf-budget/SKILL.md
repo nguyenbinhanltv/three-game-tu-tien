@@ -40,7 +40,7 @@ Cực cao chỉ dành cho GPU rời + CPU mạnh (WebGPU, `deviceMemory` ≥ 8 G
 | Texture | ≤ 400 MB (đã gồm bậc texture tải nền `game/hires/`, trần 180 MB) |
 | CPU p95 mỗi khung | ≤ 12 ms (cũng là ngưỡng tự hạ) |
 
-Tự hạ (`base/quality.ts` `AutoQuality`, nối ở `engine/frameLoop.ts`): trong cửa sổ 10 s, CPU p95 > 12 ms **hoặc** fps < 40 thì Cực cao → Cao → Vừa (chờ 15 s giữa hai lần, báo bằng toast, lưu `dtl.quality`); khung cách nhau > 1 s (tab ẩn, màn tải) làm cửa sổ bắt đầu lại; `dtl.qualityLock=1` (nút "Khóa mức đồ họa" ở Cài đặt) tắt tự hạ. Bench/shots luôn đặt khóa (`initScript`, `lib/game.ts`) để đo đúng preset. Gợi ý theo GPU (`suggestQuality`, chỉ hiện ở Cài đặt một lần, không tự đổi): GPU rời + RAM/luồng đủ → Cực cao, thiếu → Cao; iGPU/Apple/≤ 4 GB/≤ 4 luồng/WebGL2 → Vừa. Đo: `pnpm bench:client --presets medium,high,ultra`, `pnpm bench:crowd --presets medium,high,ultra`, kiểm đầu-cuối `pnpm shots quality`.
+Tự hạ (`base/quality.ts` `AutoQuality`, nối ở `game/engine/frameLoop.ts`): trong cửa sổ 10 s, CPU p95 > 12 ms **hoặc** fps < 40 thì Cực cao → Cao → Vừa (chờ 15 s giữa hai lần, báo bằng toast, lưu `dtl.quality`); khung cách nhau > 1 s (tab ẩn, màn tải) làm cửa sổ bắt đầu lại; `dtl.qualityLock=1` (nút "Khóa mức đồ họa" ở Cài đặt) tắt tự hạ. Bench/shots luôn đặt khóa (`initScript`, `tools/perf/src/lib/game.ts`) để đo đúng preset. Gợi ý theo GPU (`suggestQuality`, chỉ hiện ở Cài đặt một lần, không tự đổi): GPU rời + RAM/luồng đủ → Cực cao, thiếu → Cao; iGPU/Apple/≤ 4 GB/≤ 4 luồng/WebGL2 → Vừa. Đo: `pnpm bench:client --presets medium,high,ultra`, `pnpm bench:crowd --presets medium,high,ultra`, kiểm đầu-cuối `pnpm shots quality`.
 
 ## Cách đo
 
