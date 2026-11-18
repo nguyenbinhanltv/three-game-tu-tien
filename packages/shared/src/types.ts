@@ -125,6 +125,8 @@ export interface MonsterDef {
   than?: MonsterThan;
   /** Cơ chế khe mạch của boss Xích Tẫn Khích (DV-3D), xem `MonsterRift`. */
   rift?: MonsterRift;
+  /** Cơ chế Kim Dạ Cung (DV-3E), xem `MonsterKimDa`. */
+  kd?: MonsterKimDa;
   /** Hành vi chiến đấu thêm (bỏ trống = cận chiến thường). */
   ai?: MonsterAi;
   /** Chỉ boss: các pha sau pha đầu, `hp` giảm dần. */
@@ -173,6 +175,22 @@ export interface MonsterRift {
   veins: { x: number; z: number; r: number }[];
   burn: number;
   weak: number;
+}
+
+/**
+ * Cơ chế Kim Dạ Cung (DV-3E); các khối độc lập, quái chỉ khai khối mình dùng.
+ *  - `mend`: Triền Bố Châm Bà, mỗi `cd` giây hồi `pct` khí huyết tối đa cho đồng loại trong `r` mét (hạ nó hoặc làm nó mất thế để cắt).
+ *  - `twin`: tinh anh đôi, một con chết thì con còn lại nổi giận (sát thương ×`mul`, đi nhanh hơn).
+ *  - `trail`: Tẫn Hỏa Kiếm Cơ, mỗi đòn lao/chém để lại vệt lửa trên sàn (bán kính `r`, sống `dur` giây, mỗi giây `dps` × khí huyết tối đa người đứng trong), rải cách nhau `step` mét.
+ *  - `bargain` (Ma Hậu, từ pha `phase`): mỗi lần niệm chú có thêm một bóng niệm chú ở phía đối diện sảnh (`mon`, cách tâm `sep` mét); chú xong mà bóng còn sống thì cả đội chịu `pen` × khí huyết tối đa (thay Tẫn ấn 5 tầng).
+ *  - `night` (Ma Hậu, từ pha `phase`): sàn tối, chỉ vòng quanh các bia `steles` là sáng; ngoài vòng mất `press` × khí huyết tối đa mỗi giây. Boss dập luân phiên từng bia (báo `warn` s, mul, bia tắt `dur` s); bia trống quá `grace` s cũng tắt.
+ */
+export interface MonsterKimDa {
+  mend?: { cd: number; r: number; pct: number };
+  twin?: { mul: number };
+  trail?: { r: number; dur: number; step: number; dps: number };
+  bargain?: { phase: number; mon: string; sep: number; pen: number };
+  night?: { phase: number; steles: { x: number; z: number; r: number }[]; press: number; cd: number; warn: number; mul: number; dur: number; grace: number };
 }
 
 /** Đòn đôi: sau một đòn cận chiến, có xác suất đánh thêm một đòn nặng sau `delay` giây (né được nếu ra khỏi tầm). */
@@ -741,7 +759,7 @@ export interface WaveDef {
    * Quái tiếp viện `reinforce[i].mon` kéo tới khi tiến độ đạt `reinforce[i].at` giây (quanh bia, `n` con).
    */
   steles?: { x: number; z: number; r: number; secs: number; grace: number; press: number; reinforce: { at: number; mon: string; level: number; n: number }[] };
-  puzzle?: { points: { x: number; z: number }[]; secs: number; wrong: { mon: string; level: number; n: number }; bossCut: number };
+  puzzle?: { points: { x: number; z: number }[]; msg?: string; secs: number; wrong: { mon: string; level: number; n: number }; bossCut: number };
 }
 
 /** Thưởng khi dẹp xong phó bản, nhận một lần mỗi ngày và mỗi nhân vật (khóa idem `dungeon:<level>:<ngày>`). */
@@ -808,8 +826,8 @@ export interface LevelAssets {
   };
   /** Vỏ hang (E2-C): vách đá + trần tối che chân trời và bầu trời; đèn đá và tinh thể mạch của level được thêm quầng sáng. */
   cave?: { x: number; z: number; r: number; h: number };
-  /** Cung gương (E3-M): vỏ `cave` dựng thành cung điện sáng lạnh, sàn gương phản chiếu giả. */
-  palace?: boolean;
+  /** Phó bản cung điện (E3-M): `true`/`'moon'` cung gương lam bạc, `'gilt'` cung dát vàng Kim Dạ (DV-3E). */
+  palace?: boolean | 'moon' | 'gilt';
   /** Tên ảnh minimap trong `public/map/` (không đuôi). */
   minimap: string;
   /** Thư mục atlas thẻ cỏ alpha trong `public/` (Đoạn Mạch: `grass-ochre`); bỏ trống = bụi lá thủ tục của Vân Lam. */
