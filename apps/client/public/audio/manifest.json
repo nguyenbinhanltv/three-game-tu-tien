@@ -5,8 +5,8 @@
       "sfx/sfx_combat.d6b622e832.m4a"
     ],
     "sfx_magic": [
-      "sfx/sfx_magic.31372552ea.webm",
-      "sfx/sfx_magic.dbe7f2bd96.m4a"
+      "sfx/sfx_magic.75247702b2.webm",
+      "sfx/sfx_magic.3907138d36.m4a"
     ],
     "sfx_ui": [
       "sfx/sfx_ui.6094288bce.webm",
@@ -20,6 +20,13 @@
       "src": [
         "sfx/sfx_world.f73a33315f.webm",
         "sfx/sfx_world.8c21443eba.m4a"
+      ],
+      "lazy": true
+    },
+    "sfx_elem": {
+      "src": [
+        "sfx/sfx_elem.5ceff22e4d.webm",
+        "sfx/sfx_elem.b701a721a8.m4a"
       ],
       "lazy": true
     }
@@ -248,111 +255,26 @@
           "sprite": "sfx_magic",
           "start": 9.399,
           "dur": 3.005
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 12.519,
-          "dur": 3.005
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 15.639,
-          "dur": 1.795
         }
       ],
       "pitch": 0.05,
       "duck": 0.4
     },
-    "loi_cast": {
-      "variants": [
-        {
-          "sprite": "sfx_magic",
-          "start": 17.549,
-          "dur": 0.822
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 18.485,
-          "dur": 0.838
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 19.438,
-          "dur": 0.846
-        }
-      ],
-      "pitch": 0.05
-    },
-    "fire_burst": {
-      "variants": [
-        {
-          "sprite": "sfx_magic",
-          "start": 20.398,
-          "dur": 0.625
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 21.138,
-          "dur": 0.625
-        }
-      ],
-      "pitch": 0.05
-    },
-    "ice_hit": {
-      "variants": [
-        {
-          "sprite": "sfx_magic",
-          "start": 21.878,
-          "dur": 0.652
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 22.644,
-          "dur": 0.676
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 23.435,
-          "dur": 0.713
-        }
-      ],
-      "pitch": 0.05
-    },
-    "ice_spike": {
-      "variants": [
-        {
-          "sprite": "sfx_magic",
-          "start": 24.263,
-          "dur": 1.325
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 25.702,
-          "dur": 1.3259999999999998
-        },
-        {
-          "sprite": "sfx_magic",
-          "start": 27.143,
-          "dur": 1.3299999999999998
-        }
-      ],
-      "pitch": 0.05
-    },
     "shield": {
       "variants": [
         {
           "sprite": "sfx_magic",
-          "start": 28.588,
+          "start": 12.519,
           "dur": 1.3849999999999998
         },
         {
           "sprite": "sfx_magic",
-          "start": 30.088,
+          "start": 14.019,
           "dur": 1.4049999999999998
         },
         {
           "sprite": "sfx_magic",
-          "start": 31.608,
+          "start": 15.539,
           "dur": 1.1159999999999999
         }
       ],
@@ -362,17 +284,17 @@
       "variants": [
         {
           "sprite": "sfx_magic",
-          "start": 32.838,
+          "start": 16.77,
           "dur": 0.888
         },
         {
           "sprite": "sfx_magic",
-          "start": 33.841,
+          "start": 17.772,
           "dur": 0.989
         },
         {
           "sprite": "sfx_magic",
-          "start": 34.944,
+          "start": 18.875,
           "dur": 0.979
         }
       ],
@@ -382,12 +304,12 @@
       "variants": [
         {
           "sprite": "sfx_magic",
-          "start": 36.038,
+          "start": 19.969,
           "dur": 0.963
         },
         {
           "sprite": "sfx_magic",
-          "start": 37.115,
+          "start": 21.046,
           "dur": 1.194
         }
       ],
@@ -397,17 +319,17 @@
       "variants": [
         {
           "sprite": "sfx_magic",
-          "start": 38.424,
+          "start": 22.355,
           "dur": 1.599
         },
         {
           "sprite": "sfx_magic",
-          "start": 40.137,
+          "start": 24.068,
           "dur": 1.605
         },
         {
           "sprite": "sfx_magic",
-          "start": 41.857,
+          "start": 25.788,
           "dur": 1.5459999999999998
         }
       ],
@@ -417,17 +339,17 @@
       "variants": [
         {
           "sprite": "sfx_magic",
-          "start": 43.517,
+          "start": 27.449,
           "dur": 1.605
         },
         {
           "sprite": "sfx_magic",
-          "start": 45.237,
+          "start": 29.169,
           "dur": 1.605
         },
         {
           "sprite": "sfx_magic",
-          "start": 46.957,
+          "start": 30.889,
           "dur": 1.605
         }
       ],
@@ -790,6 +712,81 @@
         }
       ],
       "pitch": 0.04
+    },
+    "loi_cast": {
+      "variants": [
+        {
+          "sprite": "sfx_elem",
+          "start": 0.05,
+          "dur": 0.822
+        },
+        {
+          "sprite": "sfx_elem",
+          "start": 0.986,
+          "dur": 0.838
+        },
+        {
+          "sprite": "sfx_elem",
+          "start": 1.938,
+          "dur": 0.846
+        }
+      ],
+      "pitch": 0.05
+    },
+    "fire_burst": {
+      "variants": [
+        {
+          "sprite": "sfx_elem",
+          "start": 2.899,
+          "dur": 0.625
+        },
+        {
+          "sprite": "sfx_elem",
+          "start": 3.639,
+          "dur": 0.625
+        }
+      ],
+      "pitch": 0.05
+    },
+    "ice_hit": {
+      "variants": [
+        {
+          "sprite": "sfx_elem",
+          "start": 4.379,
+          "dur": 0.652
+        },
+        {
+          "sprite": "sfx_elem",
+          "start": 5.145,
+          "dur": 0.676
+        },
+        {
+          "sprite": "sfx_elem",
+          "start": 5.936,
+          "dur": 0.713
+        }
+      ],
+      "pitch": 0.05
+    },
+    "ice_spike": {
+      "variants": [
+        {
+          "sprite": "sfx_elem",
+          "start": 6.763,
+          "dur": 1.325
+        },
+        {
+          "sprite": "sfx_elem",
+          "start": 8.203,
+          "dur": 1.3259999999999998
+        },
+        {
+          "sprite": "sfx_elem",
+          "start": 9.644,
+          "dur": 1.3299999999999998
+        }
+      ],
+      "pitch": 0.05
     }
   },
   "music": {

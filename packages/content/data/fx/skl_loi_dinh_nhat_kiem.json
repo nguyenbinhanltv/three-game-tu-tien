@@ -108,18 +108,6 @@
    "tier": 0
   },
   {
-   "type": "decal",
-   "tex": "strike",
-   "t": 0.0,
-   "r": 2.8,
-   "dur": 0.7,
-   "at": "ground",
-   "grow": 0.3,
-   "tone": "body",
-   "alpha": 0.9,
-   "tier": 0
-  },
-  {
    "type": "mesh",
    "shape": "spike",
    "t": 0.04,

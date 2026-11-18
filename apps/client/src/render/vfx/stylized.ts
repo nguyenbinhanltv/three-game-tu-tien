@@ -333,7 +333,7 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
   const rays = pow(vnoise(vec2(turn.mul(20), seed.mul(13).add(r.mul(3)))), 4).mul(exp(r.mul(-2.2))).mul(smoothstep(0.02, 0.1, r)).mul(flash).mul(2.4);
   const ring = smoothstep(0.07, 0, abs(r.sub(grow.min(1).mul(0.95)))).mul(one.sub(grow.min(1))).mul(0.9);
   const strikeGlow = clamp(pool.add(rays).add(ring), 0, 1).mul(smoothstep(1, 0.75, r));
-  const strikeCol = min(mix(rim, body, clamp(pool.add(rays.mul(0.5)), 0, 1)).mul(1.8), U.maxHdr);
+  const strikeCol = min(mix(rim, body, clamp(pool.add(rays.mul(0.5)), 0, 1)).mul(1.1), U.maxHdr);
 
   const isStrike = step(3.5, kind);
   const isCrack = step(-0.5, kind).mul(step(kind, 0.5));

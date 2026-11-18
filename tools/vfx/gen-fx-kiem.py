@@ -143,7 +143,6 @@ R['skl_loi_dinh_nhat_kiem'] = lambda: {
         mesh('ripple', 0.05, 0.3, at='ground', scale=0.3, scaleTo=1.1, sweep=0.4, erodeFrom=0.1, tone='body', alpha=0.6, tier=2, seed=9),
         decal('scorch', 0.0, 3.0, 2.4, at='ground', grow=0.1, tone='core', alpha=0.95, tier=0),
         decal('crack', 0.02, 3.6, 2.6, at='ground', grow=0.14, tone='body', alpha=0.95, tier=0),
-        decal('strike', 0.0, 2.8, 0.7, at='ground', grow=0.3, tone='body', alpha=0.9, tier=0),
         *ring_spikes(5, 1.3, 0.04, 'ground', 0.5, 0.5, tier=1, tilt=20, tone='body'),
         parts('spark', 0.0, 30, 8, 1, 0.4, 0.05, at='target', tone='body', tier=0),
         parts('shard', 0.02, 10, 5, 0.9, 0.6, 0.09, at='ground', offset=[0, 0.3, 0], tone='core', tier=2),

@@ -104,7 +104,7 @@ const POOL = new FxPool(96);
 const POOL_COLOR = 0x5fe39a;
 
 /** Số vũng sét tối đa cùng lúc. */
-const STRIKE_POOL_MAX = 6;
+const STRIKE_POOL_MAX = 2;
 
 export class Vfx {
   group = new THREE.Group();
@@ -481,12 +481,12 @@ export class Vfx {
 
   /**
    * Vũng sáng + tia chớp tỏa + vòng xung kích trên đất chỗ sét đánh (decal `strike`, kỹ thuật Storm & Wind CC BY, xem `decalNodes`).
-   * Sống 0,6 s, tối đa `STRIKE_POOL_MAX` cái cùng lúc (quá thì bỏ, tia vẫn vẽ).
+   * Sống 0,6 s, tối đa `STRIKE_POOL_MAX` (2) cái cùng lúc (quá thì bỏ, tia vẫn vẽ).
    */
   private strikePool(x: number, y: number, z: number, color: number, scale: number): void {
     if (this.strikePools >= STRIKE_POOL_MAX) return;
     this.strikePools++;
-    const m = this.fx(QUAD_XZ, color, 0.9, 'decal');
+    const m = this.fx(QUAD_XZ, color, 0.7, 'decal');
     m.fxA.z = (x * 7.13 + z * 3.71) % 40;
     m.fxA.w = DECAL_STRIKE;
     m.fxB.set(1, 0.97, 1, 0);

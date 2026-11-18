@@ -219,9 +219,10 @@ export interface FxTimeline {
 export function fxDrawCount(events: readonly FxEvent[]): number {
   const groups = new Set<string>();
   let bolts = 0;
+  let gusts = 0;
   for (const e of events) {
     if (e.type === 'mesh') {
-      groups.add(e.shape);
+      if (e.shape !== 'gust') groups.add(e.shape);
       if (e.shadow !== false && (e.shape === 'crescent' || e.shape === 'ripple' || e.shape === 'helix' || e.shape === 'ribbon')) groups.add(e.shape + ':shadow');
     } else if (e.type === 'decal') groups.add('decal:' + e.tex);
     else if (e.type === 'trail') groups.add('trail');
@@ -231,8 +232,12 @@ export function fxDrawCount(events: readonly FxEvent[]): number {
   if (bolts > 0) {
     groups.add('bolt-glow');
     groups.add('bolt-ring');
+    // Mỗi tia còn tự sinh vũng sáng (decal `strike`, tối đa 2 cái cùng lúc): cùng nhóm gộp với mọi decal (QUAD_XZ, renderOrder −3), nên chỉ thêm nhóm khi chiêu chưa có decal nào.
+    if (![...groups].some((g) => g.startsWith('decal:'))) groups.add('decal:strike');
   }
-  return groups.size + bolts;
+  // Hình `gust` (kiểu `wind`) KHÔNG gộp instanced: mỗi lưới một draw call.
+  for (const e of events) if (e.type === 'mesh' && e.shape === 'gust') gusts++;
+  return groups.size + bolts + gusts;
 }
 
 /** Tổng số hạt của một tập sự kiện (ngân sách ≤ 1.500/chiêu). */
