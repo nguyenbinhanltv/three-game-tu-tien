@@ -31,6 +31,11 @@ import { loadGroundTextures } from '../../base/groundTextures';
 import { FLAGS } from '../../base/flags';
 import { LANTERN_LIGHT, QUALITY, isWebGPU, isWorldRoom } from './common';
 import type { Game } from '../engine';
+import { logger } from '../../base/log';
+
+const groundLog = logger('ground');
+const assetLog = logger('asset');
+const loadLog = logger('load');
 
 /** Nạp texture mặt đất ngoài đường găng: terrain dùng màu đỉnh tới khi xong rồi mới đổi sang shader PBR. */
 export async function loadGround(eng: Game): Promise<void> {
@@ -57,7 +62,7 @@ export async function loadGround(eng: Game): Promise<void> {
     eng.loadStats.groundAt = Math.round(performance.now());
     applyGround(eng);
   } catch (e) {
-    console.warn('[ground] không nạp được texture mặt đất, dùng màu đỉnh:', e);
+    groundLog.warn('không nạp được texture mặt đất, dùng màu đỉnh:', e);
   }
 }
 
@@ -425,7 +430,7 @@ export async function loadSectModel(eng: Game, shadows: boolean): Promise<void> 
     // (xem `start`). Đã vào game thì dừng vẽ để chờ cũng là khựng, để renderer tự làm.
     if (!eng.started && !isWebGPU(eng.renderer)) await precompile(eng);
   } catch (e) {
-    console.warn('[asset] không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
+    assetLog.warn('không tải được arch_sect, dùng kiến trúc dựng bằng code:', e);
   }
 }
 
@@ -436,7 +441,7 @@ export async function precompile(eng: Game): Promise<void> {
   try {
     await eng.post.compileScene();
   } catch (e) {
-    console.warn('[load] biên dịch trước lỗi, biên dịch khi vẽ:', e);
+    loadLog.warn('biên dịch trước lỗi, biên dịch khi vẽ:', e);
   } finally {
     eng.compiling--;
   }

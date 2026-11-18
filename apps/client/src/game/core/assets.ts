@@ -7,6 +7,9 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import basisJsUrl from 'three/addons/libs/basis/basis_transcoder.js?url';
 import basisWasmUrl from 'three/addons/libs/basis/basis_transcoder.wasm?url';
+import { logger } from '../../base/log';
+
+const assetLog = logger('asset');
 
 /**
  * Nạp asset GLB do pipeline (`tools/asset-pipeline`) sinh ra, theo `public/assets/manifest.json`.
@@ -196,6 +199,7 @@ function plainDataTexture(src: THREE.Texture): THREE.Texture {
  * ở đầu `_createTexture` lần đầu của mỗi loader (không phải trong constructor), nên chặn riêng lời cảnh báo đó trong phần đồng bộ
  * của lời gọi. Ở game loader phụ là chủ ý (2 worker, chỉ cho normal map trên WebGPU); mọi cảnh báo khác vẫn đi qua.
  */
+/* eslint-disable no-console -- vá tạm console.warn để chặn đúng một cảnh báo của three, không phải log của game */
 function quietSecondLoader<T>(call: () => T): T {
   const warn = console.warn;
   console.warn = (...a: unknown[]) => {
@@ -207,6 +211,7 @@ function quietSecondLoader<T>(call: () => T): T {
     console.warn = warn;
   }
 }
+/* eslint-enable no-console */
 
 /**
  * KTX2Loader của game. Pipeline nén normal map bằng UASTC, mọi thứ khác bằng ETC1S (tools/asset-pipeline/src/ktx.ts).
@@ -522,7 +527,7 @@ export class AssetCache {
               return data;
             },
             (e) => {
-              console.warn(`[asset] tải trước ${id} lỗi, sẽ thử lại khi cần:`, e);
+              assetLog.warn(`tải trước ${id} lỗi, sẽ thử lại khi cần:`, e);
               p.loaded = 0;
               return null;
             },
