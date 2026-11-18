@@ -4,7 +4,7 @@
 
 ## E4-G · mở khóa 6 chiêu Nguyên Anh (cấp 24 và 26)
 
-Bỏ `locked` cho Phân Anh Kiếm Ảnh, Thuấn Di Trảm, Anh Thiết Thân, Thuấn Di Hộ Thế, Anh Dược Hóa Thân, Thuấn Di Cứu Viện. Hàng chiêu bậc cao (Shift+số) nay có 5 chiêu mỗi công pháp (16, 18, 22, 24, 26). Ba chiêu cấp 28 (ô 10) do E4-K (#207) mở; PR này chỉ làm sẵn **cơ chế biến thức** của chúng (xem dưới) và vẫn để `locked` trong nhánh này để không đụng dòng của E4-K.
+Bỏ `locked` cho Phân Anh Kiếm Ảnh, Thuấn Di Trảm, Anh Thiết Thân, Thuấn Di Hộ Thế, Anh Dược Hóa Thân, Thuấn Di Cứu Viện. Hàng chiêu bậc cao (Shift+số) nay có 5 chiêu mỗi công pháp (16, 18, 22, 24, 26). Ba chiêu cấp 28 (ô 10) do E4-K (#207) mở; PR này thêm **cơ chế biến thức** cho chúng (xem dưới). Sau khi merge E4-K không còn chiêu nào `locked` (test `e2g`/`testflags` khóa tạm một chiêu để kiểm đường từ chối).
 
 | Chiêu | Cơ chế (server, `sim.ts`) |
 | --- | --- |
@@ -15,7 +15,7 @@ Bỏ `locked` cho Phân Anh Kiếm Ảnh, Thuấn Di Trảm, Anh Thiết Thân, 
 | Anh Dược Hóa Thân | `allyCount`: chữa mình và 1 đồng đội mất nhiều máu nhất trong 10 m (A: 2 người; B: thêm khiên). |
 | Thuấn Di Cứu Viện | `blinkAlly` + `revive`: thuấn di tới người ngã gần nhất rồi hồi sinh (A: 55%; B: `reviveN` 2 người). |
 
-Biến thức cấp 28 (chỉ cơ chế, hiệu lực khi E4-K mở chiêu): Thiên Kiếm Hóa Hình A choáng 1 s, B ba dư chấn 25% (`aftershocks`); Thiên Kim Pháp Tướng A giảm thêm 15% sát thương (`buffReduce`, đổi từ "miễn đẩy lùi" vì người chơi chưa có cơ chế bị đẩy); Thiên Đan Pháp Giới A/B +15% công/phòng cho đạo hữu trong pháp giới (`partyBuff`, dùng buff đan `meta.buffs`, 12 s).
+Biến thức cấp 28: Thiên Kiếm Hóa Hình A choáng 1 s, B ba dư chấn 25% (`aftershocks`); Thiên Kim Pháp Tướng A giảm thêm 15% sát thương (`buffReduce`, đổi từ "miễn đẩy lùi" vì người chơi chưa có cơ chế bị đẩy); Thiên Đan Pháp Giới A/B +15% công/phòng cho đạo hữu trong pháp giới (`partyBuff`, dùng buff đan `meta.buffs`, 12 s).
 
 VFX: cả 9 chiêu đã có timeline `data/fx/<id>.json` (V2/V3), thêm kiểu `kiemanh` (tia bạc mỗi nhịp lặp, `methodFx.ts`). Video: `pnpm shots vfx --level 28 --skills …` ghi webm; hai chiêu cần đồng đội (Hộ Thế, Cứu Viện) chỉ phát dòng thời gian FX (server từ chối khi đứng một mình, có `ALLY_ONLY` trong `vfx.ts`), cơ chế được kiểm bằng `e4g.test.ts`.
 
