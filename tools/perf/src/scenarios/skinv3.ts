@@ -12,7 +12,7 @@ import { snap } from '../lib/shot';
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 /** Skin → giới tính nhân vật mặc được (khớp `gender` trong items.json). */
-const GENDER: Record<string, string> = { itm_skin_varkessa: 'f', itm_skin_duskrella: 'f', itm_skin_crimson_knight: 'm' };
+const GENDER: Record<string, string> = { itm_skin_varkessa: 'f', itm_skin_duskrella: 'f', itm_skin_crimson_knight: 'm', itm_skin_noxavyra: 'f', itm_skin_kings_demon: 'f' };
 
 export default {
   name: 'skinv3',

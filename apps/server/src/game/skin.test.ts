@@ -132,6 +132,8 @@ describe('ô ngoại hình (skin)', () => {
     it.each([
       ['itm_skin_duskrella', 'f', 'm'],
       ['itm_skin_crimson_knight', 'm', 'f'],
+      ['itm_skin_noxavyra', 'f', 'm'],
+      ['itm_skin_kings_demon', 'f', 'm'],
     ] as const)('%s chỉ cho giới %s: đúng giới mặc được (sn đồng bộ), sai giới %s bị từ chối', (id, ok, bad) => {
       expect(ITEM.get(id)!.gender).toBe(ok);
       const good = setup(false, ok);

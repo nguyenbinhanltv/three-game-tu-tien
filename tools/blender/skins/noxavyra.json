@@ -1,0 +1,312 @@
+{
+ "$comment": "Cấu hình skin_prep.py cho Noxavyra the Crimson Twinblade (Atahan3D, CC BY 4.0). Model chuẩn hóa vào hộp ±1 (cao 2,0, gốc ở giữa người: chân z=-1), mặt trước -Y, x trái nhân vật dương. Khớp đo bằng lát cắt lưới (tools: tâm chân/thân theo z). Hai katana là một đường thẳng cán→mũi (kashira (±0.175,0.31,0.14) → mũi (±0.99,-0.385,-0.51)) dính liền nắm tay: cắt bằng hai capsule (cán phía sau nắm tay, tsuba + lưỡi phía ngoài), chừa nắm tay.",
+ "id": "skin_noxavyra",
+ "source": "C:/Users/PC/AppData/Local/Temp/skin3-work/src/noxavyra.glb",
+ "out": "chr/skin_noxavyra/prep/rig_v01.glb",
+ "view": {
+  "scale": 2.2,
+  "center": [
+   0,
+   0,
+   0
+  ]
+ },
+ "triangles": 22000,
+ "bake": {
+  "size": 2048,
+  "cage": 0.006,
+  "ray": 0.015
+ },
+ "roughness": 0.6,
+ "cut": {
+  "minIsland": 400,
+  "capsules": [
+   {
+    "a": [
+     0.165,
+     0.325,
+     0.16
+    ],
+    "b": [
+     0.295,
+     0.205,
+     0.03
+    ],
+    "r": 0.046
+   },
+   {
+    "a": [
+     -0.165,
+     0.325,
+     0.16
+    ],
+    "b": [
+     -0.295,
+     0.205,
+     0.03
+    ],
+    "r": 0.046
+   },
+   {
+    "a": [
+     0.225,
+     0.225,
+     0.075
+    ],
+    "b": [
+     0.262,
+     0.205,
+     0.045
+    ],
+    "r": 0.052
+   },
+   {
+    "a": [
+     -0.225,
+     0.225,
+     0.075
+    ],
+    "b": [
+     -0.262,
+     0.205,
+     0.045
+    ],
+    "r": 0.052
+   }
+  ],
+  "boxes": [
+   {
+    "min": [
+     0.345,
+     -9,
+     -0.7
+    ],
+    "max": [
+     1.1,
+     9,
+     0.1
+    ]
+   },
+   {
+    "min": [
+     0.285,
+     -9,
+     -0.7
+    ],
+    "max": [
+     1.1,
+     9,
+     -0.045
+    ]
+   },
+   {
+    "min": [
+     0.325,
+     -9,
+     -0.7
+    ],
+    "max": [
+     1.1,
+     9,
+     0.02
+    ]
+   },
+   {
+    "min": [
+     -1.1,
+     -9,
+     -0.7
+    ],
+    "max": [
+     -0.345,
+     9,
+     0.1
+    ]
+   },
+   {
+    "min": [
+     -1.1,
+     -9,
+     -0.7
+    ],
+    "max": [
+     -0.285,
+     9,
+     -0.045
+    ]
+   },
+   {
+    "min": [
+     -1.1,
+     -9,
+     -0.7
+    ],
+    "max": [
+     -0.325,
+     9,
+     0.02
+    ]
+   }
+  ]
+ },
+ "joints": {
+  "Hips": [
+   0,
+   0.15,
+   0.03
+  ],
+  "Spine": [
+   0,
+   0.15,
+   0.15
+  ],
+  "Spine1": [
+   0,
+   0.16,
+   0.27
+  ],
+  "Spine2": [
+   0,
+   0.16,
+   0.4
+  ],
+  "Neck": [
+   0,
+   0.15,
+   0.6
+  ],
+  "Head": [
+   0,
+   0.14,
+   0.7
+  ],
+  "HeadTop": [
+   0,
+   0.14,
+   0.93
+  ],
+  "LeftArm": [
+   0.17,
+   0.15,
+   0.55
+  ],
+  "LeftForeArm": [
+   0.25,
+   0.17,
+   0.29
+  ],
+  "LeftHand": [
+   0.3,
+   0.16,
+   0.05
+  ],
+  "LeftHandEnd": [
+   0.32,
+   0.14,
+   -0.03
+  ],
+  "LeftUpLeg": [
+   0.115,
+   0.16,
+   0.01
+  ],
+  "LeftLeg": [
+   0.185,
+   0.215,
+   -0.45
+  ],
+  "LeftFoot": [
+   0.256,
+   0.23,
+   -0.9
+  ],
+  "LeftToeBase": [
+   0.27,
+   0.14,
+   -0.985
+  ],
+  "LeftToeEnd": [
+   0.275,
+   0.09,
+   -0.995
+  ],
+  "RightArm": [
+   -0.17,
+   0.15,
+   0.55
+  ],
+  "RightForeArm": [
+   -0.25,
+   0.17,
+   0.29
+  ],
+  "RightHand": [
+   -0.3,
+   0.16,
+   0.05
+  ],
+  "RightHandEnd": [
+   -0.32,
+   0.14,
+   -0.03
+  ],
+  "RightUpLeg": [
+   -0.115,
+   0.16,
+   0.01
+  ],
+  "RightLeg": [
+   -0.185,
+   0.215,
+   -0.45
+  ],
+  "RightFoot": [
+   -0.256,
+   0.23,
+   -0.9
+  ],
+  "RightToeBase": [
+   -0.27,
+   0.14,
+   -0.985
+  ],
+  "RightToeEnd": [
+   -0.275,
+   0.09,
+   -0.995
+  ]
+ },
+ "stray": {
+  "Shoulder": 0.1,
+  "Arm": 0.09,
+  "ForeArm": 0.1,
+  "Hand": 0.07
+ },
+ "zones": [
+  {
+   "name": "toc",
+   "box": {
+    "min": [
+     -9,
+     -9,
+     0.66
+    ],
+    "max": [
+     9,
+     9,
+     9
+    ]
+   },
+   "blend": {
+    "axis": 2,
+    "from": 0.64,
+    "width": 0.04
+   },
+   "bones": [
+    {
+     "bone": "Head"
+    }
+   ]
+  }
+ ]
+}
