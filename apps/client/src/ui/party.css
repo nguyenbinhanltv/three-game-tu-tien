@@ -11,7 +11,7 @@
 }
 .pty-row {
   padding: 5px 9px 6px;
-  background: linear-gradient(180deg, rgba(26, 41, 56, 0.8), rgba(14, 23, 34, 0.84));
+  background: var(--u-ink-veil);
   border: 1px solid var(--k-edge-dim);
   border-left: 3px solid var(--k-bronze);
 }
@@ -56,31 +56,31 @@
   letter-spacing: 0.03em;
 }
 .pty-role.dps {
-  color: #9fd8ff;
+  color: var(--u-q2);
 }
 .pty-role.tank {
-  color: #ffc95a;
+  color: var(--u-q4);
 }
 .pty-role.support {
-  color: #7dffa0;
+  color: var(--u-ok);
 }
 .pty-mp {
   height: 3px;
   margin-top: 2px;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--u-ink-scrim);
 }
 .pty-mp i {
   display: block;
   height: 100%;
-  background: #4f9bd6;
+  background: var(--u-q2);
 }
 .pty-res {
   align-self: flex-start;
   font-size: 11px;
   padding: 1px 8px;
-  color: #ffe9a8;
+  color: var(--u-gold-text);
   border: 1px solid var(--k-bronze-hi);
-  background: rgba(60, 44, 12, 0.7);
+  background: var(--u-ink-2);
 }
 
 .pty-invites {
@@ -97,7 +97,7 @@
 .pty-invite {
   min-width: 280px;
   padding: 8px 12px;
-  background: linear-gradient(180deg, rgba(26, 41, 56, 0.94), rgba(14, 23, 34, 0.96));
+  background: var(--u-ink-veil);
   border: 1px solid var(--k-bronze);
 }
 .pty-invite[data-kind='duel'] {
@@ -125,7 +125,7 @@
   transform: translateX(-50%);
   text-align: center;
   pointer-events: none;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 2px 8px var(--u-ink-0);
 }
 .duel-banner.fight {
   top: 98px;
@@ -133,22 +133,22 @@
   gap: 10px;
   align-items: center;
   padding: 4px 12px;
-  background: rgba(14, 23, 34, 0.82);
+  background: var(--u-ink-veil);
   border: 1px solid var(--k-cinnabar-hi);
   pointer-events: auto;
 }
 .duel-big {
   font-size: 84px;
   line-height: 1;
-  color: #ffe9a8;
+  color: var(--u-gold-text);
 }
 .duel-result {
   font-size: 56px;
   letter-spacing: 0.2em;
-  color: #ffe9a8;
+  color: var(--u-gold-text);
 }
 .duel-banner[data-res='lose'] .duel-result {
-  color: #c9d3dc;
+  color: var(--u-chu-dim);
 }
 .duel-sub {
   font-size: 15px;
@@ -188,7 +188,7 @@
   margin-top: 8px;
 }
 .chat-line.party {
-  color: #9fe8b5;
+  color: var(--u-ok);
 }
 
 /* Đang tỉ thí: thông báo nổi xếp xuống dưới dải tỉ thí, không đè chữ. */
