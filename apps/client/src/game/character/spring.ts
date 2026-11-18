@@ -86,11 +86,12 @@ const _s = new THREE.Vector3();
 const _t = new THREE.Vector3();
 const _axis = new THREE.Vector3();
 const _center = new THREE.Vector3();
-const _cA = new THREE.Vector3();
-const _cB = new THREE.Vector3();
 
 export class SpringBones {
   private bones: Bone[] = [];
+  /** Hai đầu mỗi viên nang trong hệ thế giới, tính một lần mỗi `update` (không đổi giữa các xương và bước con). */
+  private capA: THREE.Vector3[] = [];
+  private capB: THREE.Vector3[] = [];
   private live = false;
 
   /** `rig`: cây xương của bản sao. Phía "trong" tính theo xương cha (hông) của từng xương lò xo. */
@@ -101,6 +102,10 @@ export class SpringBones {
     /** Viên nang va chạm (chỉ dùng khi xương lò xo và collider cùng hệ thế giới sau `update` của mixer). */
     private colliders: readonly SpringCollider[] = [],
   ) {
+    for (let i = 0; i < colliders.length; i++) {
+      this.capA.push(new THREE.Vector3());
+      this.capB.push(new THREE.Vector3());
+    }
     for (const d of defs) {
       const bone = rig.getObjectByName(d.bone) as THREE.Bone | undefined;
       if (!bone?.isBone || !bone.parent) continue;
@@ -131,6 +136,10 @@ export class SpringBones {
     const h = dt / steps;
     const { stiffness, drag, maxAngle, maxInward } = this.params;
     const keep = Math.exp(-drag * h);
+    for (let i = 0; i < this.colliders.length; i++) {
+      this.capA[i].setFromMatrixPosition(_m.multiplyMatrices(world, this.colliders[i].a.matrixWorld));
+      this.capB[i].setFromMatrixPosition(_m.multiplyMatrices(world, this.colliders[i].b.matrixWorld));
+    }
     const cosMax = Math.cos((maxAngle * Math.PI) / 180);
     const sinIn = Math.sin((maxInward * Math.PI) / 180);
     for (const b of this.bones) {
@@ -172,10 +181,8 @@ export class SpringBones {
         // Va chạm hông/đùi/cẳng: đẩy đầu lò xo ra ngoài viên nang rồi giữ lại độ dài xương (vạt không xuyên chân khi ngồi, bước dài).
         if (this.colliders.length) {
           let hit = false;
-          for (const c of this.colliders) {
-            _cA.setFromMatrixPosition(_m.multiplyMatrices(world, c.a.matrixWorld));
-            _cB.setFromMatrixPosition(_m.multiplyMatrices(world, c.b.matrixWorld));
-            if (pushOutCapsule(b.p, _cA, _cB, c.r, _out)) hit = true;
+          for (let ci = 0; ci < this.colliders.length; ci++) {
+            if (pushOutCapsule(b.p, this.capA[ci], this.capB[ci], this.colliders[ci].r, _out)) hit = true;
           }
           if (hit) {
             _dir.subVectors(b.p, _head).normalize();
