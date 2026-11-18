@@ -2574,6 +2574,306 @@
         }
       }
     },
+    "chr_v3_dan_tam_nam": {
+      "id": "chr_v3_dan_tam_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_dan_tam_nam.glb",
+      "file": "chr_v3_dan_tam_nam.d33bd03ac0.glb",
+      "bytes": 3424136,
+      "rawBytes": 3409120,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 123,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "ancient_chinese_robe_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "ancient_chinese_robe_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ancient_chinese_robe_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11994,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.9806,
+          "height": 1.8409,
+          "depth": 0.3649,
+          "minY": 0.0004
+        },
+        "build": {
+          "width": 1.9806,
+          "height": 1.8409,
+          "depth": 0.3649,
+          "minY": 0.0004
+        }
+      }
+    },
+    "chr_v3_dan_tam_nu": {
+      "id": "chr_v3_dan_tam_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_dan_tam_nu.glb",
+      "file": "chr_v3_dan_tam_nu.8e7d87679f.glb",
+      "bytes": 3367608,
+      "rawBytes": 3269380,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 123,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "female_chinese_clothing_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "female_chinese_clothing_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "female_chinese_clothing_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11994,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8273,
+          "height": 1.6928,
+          "depth": 0.342,
+          "minY": 0.0073
+        },
+        "build": {
+          "width": 1.8273,
+          "height": 1.6928,
+          "depth": 0.342,
+          "minY": 0.0073
+        }
+      }
+    },
+    "chr_v3_de_tu_nam": {
+      "id": "chr_v3_de_tu_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_de_tu_nam.glb",
+      "file": "chr_v3_de_tu_nam.498b7af717.glb",
+      "bytes": 3143584,
+      "rawBytes": 3092216,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 98,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "ancient_chinese_clothing_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "ancient_chinese_clothing_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ancient_chinese_clothing_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 12000,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.9969,
+          "height": 1.837,
+          "depth": 0.3487,
+          "minY": 0.0016
+        },
+        "build": {
+          "width": 1.9969,
+          "height": 1.837,
+          "depth": 0.3487,
+          "minY": 0.0016
+        }
+      }
+    },
+    "chr_v3_de_tu_nu": {
+      "id": "chr_v3_de_tu_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_de_tu_nu.glb",
+      "file": "chr_v3_de_tu_nu.3848db86c1.glb",
+      "bytes": 3208288,
+      "rawBytes": 3111340,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 107,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "female_character_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "female_character_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "female_character_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11992,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8051,
+          "height": 1.6996,
+          "depth": 0.3681,
+          "minY": 0.002
+        },
+        "build": {
+          "width": 1.8051,
+          "height": 1.6996,
+          "depth": 0.3681,
+          "minY": 0.002
+        }
+      }
+    },
     "chr_v3_duskrella_nu": {
       "id": "chr_v3_duskrella_nu",
       "class": "player_v3",
@@ -2637,6 +2937,156 @@
           "height": 1.822,
           "depth": 0.4872,
           "minY": -0.008
+        }
+      }
+    },
+    "chr_v3_huyen_giap_nam": {
+      "id": "chr_v3_huyen_giap_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_huyen_giap_nam.glb",
+      "file": "chr_v3_huyen_giap_nam.06e49e95b1.glb",
+      "bytes": 3696388,
+      "rawBytes": 3926776,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 90,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "warrior_outfit_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "warrior_outfit_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "warrior_outfit_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 11988,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.0599,
+          "height": 1.8608,
+          "depth": 0.3111,
+          "minY": 0.0003
+        },
+        "build": {
+          "width": 2.0599,
+          "height": 1.8608,
+          "depth": 0.3111,
+          "minY": 0.0003
+        }
+      }
+    },
+    "chr_v3_huyen_giap_nu": {
+      "id": "chr_v3_huyen_giap_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_huyen_giap_nu.glb",
+      "file": "chr_v3_huyen_giap_nu.56bb93e8f9.glb",
+      "bytes": 3782052,
+      "rawBytes": 4063060,
+      "triangles": 24000,
+      "rawTriangles": 24000,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 90,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "female_warrior_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "female_warrior_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "female_warrior_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 24000
+        },
+        {
+          "level": 1,
+          "triangles": 12000,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4800,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.9661,
+          "height": 1.7206,
+          "depth": 0.3088,
+          "minY": 0.001
+        },
+        "build": {
+          "width": 1.9661,
+          "height": 1.7206,
+          "depth": 0.3088,
+          "minY": 0.001
         }
       }
     },
