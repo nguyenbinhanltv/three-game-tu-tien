@@ -321,7 +321,7 @@ export class SoulVis {
     }
     this.updateTether(body, lead);
     for (let i = this.pulses.length - 1; i >= 0; i--) {
-      const p = this.pulses[i];
+      const p = this.pulses[i]!;
       const k = (now - p.at) / (p.dur * 1000);
       if (k >= 1) {
         this.drop(p);
@@ -332,7 +332,7 @@ export class SoulVis {
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = p.alpha * (1 - k) ** 1.4;
     }
     for (let i = this.flees.length - 1; i >= 0; i--) {
-      const f = this.flees[i];
+      const f = this.flees[i]!;
       const k = (now - f.at) / (f.dur * 1000);
       if (k >= 1) {
         this.dropFlee(f);
@@ -375,7 +375,7 @@ export class SoulVis {
     }
     if (lead) {
       for (let i = 0; i < MOTES; i++) {
-        const m = this.moteSeed[i];
+        const m = this.moteSeed[i]!;
         const h = (m.h + this.time * m.s * 0.4) % 1;
         const a = m.a + this.time * 0.8;
         this.motePos[i * 3] = lead.x + Math.cos(a) * m.r * (1 - h * 0.4);

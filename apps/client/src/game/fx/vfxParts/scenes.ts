@@ -95,9 +95,9 @@ export function reviveGlow(v: Vfx, pos: PosFn, dur = 2.4): void {
         const a = (i / N) * Math.PI * 2 + k * 5;
         const r = (1.5 - k * 0.9) * (0.75 + (i % 3) * 0.2);
         const y = (0.2 + ((k * 3 + i * 0.37) % 1) * 4.2) * (0.6 + 0.4 * rise);
-        motes[i].position.set(_a.x + Math.cos(a) * r, _a.y - 1.1 + y, _a.z + Math.sin(a) * r);
-        motes[i].scale.setScalar(0.16 * (1 - k * 0.6));
-        motes[i].fxOpacity = 0.9 * fade;
+        motes[i]!.position.set(_a.x + Math.cos(a) * r, _a.y - 1.1 + y, _a.z + Math.sin(a) * r);
+        motes[i]!.scale.setScalar(0.16 * (1 - k * 0.6));
+        motes[i]!.fxOpacity = 0.9 * fade;
       }
     },
     () => {
@@ -390,7 +390,7 @@ export function mirrorDisc(
       const rot = live ? t - warn : 0;
       for (let i = 0; i < beams.length; i++) {
         const yaw = theta0 + (i * Math.PI * 2) / n + (spin * Math.PI * rot) / 180;
-        const m = beams[i];
+        const m = beams[i]!;
         m.position.set(x + Math.sin(yaw) * L.offset, y, z + Math.cos(yaw) * L.offset);
         m.rotation.y = yaw;
         m.fxA.x = live ? 1 : Math.min(1, t / warn);

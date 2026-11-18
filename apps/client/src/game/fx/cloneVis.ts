@@ -43,7 +43,7 @@ interface Fig {
   mine: boolean;
   view: CharacterView | null;
   /** Hình dự phòng (đầu + thân) khi model chưa nạp: lưới của pool, trả khi có model hoặc khi gỡ. */
-  fb: FxMesh[] | null;
+  fb: [FxMesh, FxMesh] | null;
   ring: FxMesh;
   shade: FxMesh;
   x: number;
@@ -291,7 +291,7 @@ export class CloneVis {
       }
     }
     for (let i = this.pulses.length - 1; i >= 0; i--) {
-      const p = this.pulses[i];
+      const p = this.pulses[i]!;
       const k = (this.time - p.at) / p.dur;
       if (k >= 1) {
         this.vfx.drop(p.mesh);

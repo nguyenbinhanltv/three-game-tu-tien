@@ -36,7 +36,7 @@ export const FX_PALETTE: Record<string, FxPalette> = {
 
 // Boss: cùng thân theo hệ, viền vàng kim ấm + accent đỏ thẫm + bóng gần đen cho tương phản cao (`mon_boss_<hệ>`).
 for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho', 'neutral']) {
-  const b = FX_PALETTE['mon_' + e];
+  const b = FX_PALETTE['mon_' + e]!;
   FX_PALETTE['mon_boss_' + e] = { core: b.core, body: b.body, rim: 0xffe9b0, accent: 0xff1f3d, shadow: 0x0a0204 };
 }
 // Cảnh lớn (VFX-V4 phần 2): đột phá theo cảnh giới và độ kiếp.
@@ -47,15 +47,16 @@ FX_PALETTE.dotpha_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 
 FX_PALETTE.dotpha_hn = { core: 0x4a3a12, body: 0xe6cf86, rim: 0xfff8de, accent: 0xaee0ff, shadow: 0x221a08 };
 FX_PALETTE.than_hanh = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0xf3c860, shadow: 0x08202e };
 
-const FX_PALETTE_DEFAULT = FX_PALETTE.lac_kiem_quyet;
+const FX_PALETTE_DEFAULT = FX_PALETTE.lac_kiem_quyet!;
 
 /** Bảng màu theo id công pháp (không biết thì kiếm tu). Khớp chuỗi con để chịu được id công pháp khác tên nhánh. */
 export function paletteOf(method: string | undefined): FxPalette {
   if (!method) return FX_PALETTE_DEFAULT;
-  if (FX_PALETTE[method]) return FX_PALETTE[method];
-  if (/ho_phap|hophap|kim_than/.test(method)) return FX_PALETTE.bat_dong_kim_than;
-  if (/dan_su|dansu|moc_dan/.test(method)) return FX_PALETTE.thanh_moc_dan_kinh;
-  if (/loi/.test(method)) return FX_PALETTE.loi;
+  const hit = FX_PALETTE[method];
+  if (hit) return hit;
+  if (/ho_phap|hophap|kim_than/.test(method)) return FX_PALETTE.bat_dong_kim_than!;
+  if (/dan_su|dansu|moc_dan/.test(method)) return FX_PALETTE.thanh_moc_dan_kinh!;
+  if (/loi/.test(method)) return FX_PALETTE.loi!;
   return FX_PALETTE_DEFAULT;
 }
 

@@ -217,7 +217,7 @@ export class SkillFx {
     dist: number,
   ): void {
     const tm = skillTiming(def, e.combo >= 0 ? e.combo : undefined);
-    const toHit = tm.hitAt[0] - e.t;
+    const toHit = tm.hitAt[0]! - e.t;
     const caps = capsFor(mine, ult);
     // Hẹn bùng nổ cho từng mốc trúng: bắt đầu trước hitAt một `BURST_LEAD` để đỉnh sáng khớp hitAt.
     this.dropPending(sid);
@@ -365,7 +365,7 @@ export class SkillFx {
   update(dt: number): void {
     this.clock += dt;
     for (let i = this.pending.length - 1; i >= 0; i--) {
-      const p = this.pending[i];
+      const p = this.pending[i]!;
       const a0 = this.env.player(p.sid);
       const clock = a0?.model.performClock?.();
       if (clock && clock.skill === p.def.id) {
@@ -392,7 +392,7 @@ export class SkillFx {
     }
     const trails = this.v.trails;
     for (let i = this.jobs.length - 1; i >= 0; i--) {
-      const j = this.jobs[i];
+      const j = this.jobs[i]!;
       j.t += dt;
       if (j.t < j.start) continue;
       const alive = this.env.player(j.sid) === j.actor && (j.actor.fl & PF_DEAD) === 0;

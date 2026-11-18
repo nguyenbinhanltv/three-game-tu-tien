@@ -148,7 +148,7 @@ export class BoltFx {
   end(id: number, x: number, z: number, hit: boolean): void {
     const i = this.live.findIndex((b) => b.id === id);
     if (i < 0) return;
-    const b = this.live[i];
+    const b = this.live[i]!;
     _v.set(x, boltY(x, z, b.lift), z);
     this.host.burst(_v, b.color, hit ? 1.5 : 0.9, hit ? 0.32 : 0.24);
     // Tóe hạt theo hướng bay.
@@ -180,7 +180,7 @@ export class BoltFx {
 
   update(dt: number): void {
     for (let i = this.live.length - 1; i >= 0; i--) {
-      const b = this.live[i];
+      const b = this.live[i]!;
       b.age += dt;
       if (b.age >= b.life) {
         this.remove(i);
@@ -256,13 +256,13 @@ export class BoltFx {
   }
 
   private remove(i: number): void {
-    const b = this.live[i];
+    const b = this.live[i]!;
     const h = this.host;
     h.drop(b.core);
     h.drop(b.body);
     h.drop(b.halo);
     h.drop(b.shadow);
-    this.live[i] = this.live[this.live.length - 1];
+    this.live[i] = this.live[this.live.length - 1]!;
     this.live.pop();
     this.spare.push(b);
   }

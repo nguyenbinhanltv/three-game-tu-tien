@@ -41,9 +41,9 @@ function sheet(
   const idx: number[] = [];
   let acc = 0;
   for (let i = 0; i < pts.length; i++) {
-    if (i) acc += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z);
+    if (i) acc += Math.hypot(pts[i]!.x - pts[i - 1]!.x, pts[i]!.z - pts[i - 1]!.z);
     for (const v of rows) {
-      pos.push(pts[i].x, baseY(i) + v * height, pts[i].z);
+      pos.push(pts[i]!.x, baseY(i) + v * height, pts[i]!.z);
       uvs.push(acc / 50, v);
       edges.push(edge(i, pts.length));
     }
@@ -176,7 +176,7 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
   // Màn dọc: mép tan ở hai đầu khe.
   const fade = (i: number, n: number): number => sstep(0, 1.6, Math.min(i, n - 1 - i));
   add(
-    sheet(path, (i) => path[i].y - 4, H, [0, 0.015, 0.06, 0.16, 0.32, 0.55, 0.8, 1], fade),
+    sheet(path, (i) => path[i]!.y - 4, H, [0, 0.015, 0.06, 0.16, 0.32, 0.55, 0.8, 1], fade),
     veilMaterial(0.8 * k),
     0.45,
     5,
@@ -193,8 +193,8 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
   const RIB_H = 150;
   let vtx = 0;
   for (let i = 0; withRibs && i < path.length; i += 1) {
-    const a = path[Math.max(0, i - 1)];
-    const b = path[Math.min(path.length - 1, i + 1)];
+    const a = path[Math.max(0, i - 1)]!;
+    const b = path[Math.min(path.length - 1, i + 1)]!;
     let tx = b.x - a.x;
     let tz = b.z - a.z;
     const tl = Math.hypot(tx, tz) || 1;
@@ -204,10 +204,10 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
     const nz = tx;
     for (let c = 0; c < COLS; c++) {
       const k = (c / (COLS - 1)) * 2 - 1;
-      const x = path[i].x + nx * k * 32;
-      const z = path[i].z + nz * k * 32;
+      const x = path[i]!.x + nx * k * 32;
+      const z = path[i]!.z + nz * k * 32;
       for (const v of rows) {
-        ribPos.push(x, path[i].y - 4 + v * RIB_H, z);
+        ribPos.push(x, path[i]!.y - 4 + v * RIB_H, z);
         ribUv.push((c / (COLS - 1)) * 1.2 + i * 0.37, v);
         ribEdge.push(1 - Math.pow(Math.abs(k), 1.4));
       }
@@ -239,15 +239,15 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
   for (let i = 0; i + 1 < path.length; i++)
     for (let s = 0; s < STEPS; s++) {
       const t = s / STEPS;
-      const x = path[i].x + (path[i + 1].x - path[i].x) * t;
-      const z = path[i].z + (path[i + 1].z - path[i].z) * t;
-      const tx = path[i + 1].x - path[i].x;
-      const tz = path[i + 1].z - path[i].z;
+      const x = path[i]!.x + (path[i + 1]!.x - path[i]!.x) * t;
+      const z = path[i]!.z + (path[i + 1]!.z - path[i]!.z) * t;
+      const tx = path[i + 1]!.x - path[i]!.x;
+      const tz = path[i + 1]!.z - path[i]!.z;
       const tl = Math.hypot(tx, tz) || 1;
       pts.push({ x, z, nx: -tz / tl, nz: tx / tl });
     }
-  const last = path[path.length - 1];
-  pts.push({ x: last.x, z: last.z, nx: pts[pts.length - 1].nx, nz: pts[pts.length - 1].nz });
+  const last = path[path.length - 1]!;
+  pts.push({ x: last.x, z: last.z, nx: pts[pts.length - 1]!.nx, nz: pts[pts.length - 1]!.nz });
   for (const [qi, q] of pts.entries())
     for (let c = 0; c < FC; c++) {
       const kk = (c / (FC - 1)) * 2 - 1;

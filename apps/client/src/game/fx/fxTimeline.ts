@@ -378,9 +378,9 @@ export class FxRunner {
       const sx = Math.cos(yaw);
       const sz = -Math.sin(yaw);
       const m = c.mul;
-      out.x += (sx * off[0] + Math.sin(yaw) * off[2]) * m;
-      out.y += off[1] * m;
-      out.z += (sz * off[0] + Math.cos(yaw) * off[2]) * m;
+      out.x += (sx * off[0]! + Math.sin(yaw) * off[2]!) * m;
+      out.y += off[1]! * m;
+      out.z += (sz * off[0]! + Math.cos(yaw) * off[2]!) * m;
     }
     return out;
   }
@@ -458,7 +458,7 @@ export class FxRunner {
     // `fit: 'area'`: kích thước theo mét tính bằng bán kính vùng của chiêu (x, z).
     const fitR = ev.fit === 'area' ? (this.areaOf(c)?.r ?? 8) : 1;
     const gm = ev.fit === 'area' ? 1 : c.mul;
-    const fitS = (v: number[]) => [v[0] * fitR * gm, v[1] * gm, v[2] * fitR * gm];
+    const fitS = (v: number[]) => [v[0]! * fitR * gm, v[1]! * gm, v[2]! * fitR * gm];
     const dur = ev.untilDelay && c.delay ? c.delay : ev.dur;
     const s0f = fitS(s0);
     const sT = fitS(sT0);
@@ -492,7 +492,7 @@ export class FxRunner {
     const cam = this.env.camera();
     const place = (m: FxMesh, k: number, grow: number, off: number) => {
       const e = easeOut(k);
-      const lerpS = (i: number) => s0f[i] + (sT[i] - s0f[i]) * e;
+      const lerpS = (i: number) => s0f[i]! + (sT[i]! - s0f[i]!) * e;
       m.scale.set(lerpS(0) * grow, lerpS(1) * grow, lerpS(2) * grow);
       if (end) {
         const ek = ev.move!.ease === 'in' ? easeIn(k) : ev.move!.ease === 'linear' ? k : easeOut(k);
@@ -537,7 +537,7 @@ export class FxRunner {
             m.fxA.y = sstep(erodeFrom, 1, k);
           }
           m.fxK = k;
-          place(m, k, isShade ? 1.08 : 1, isShade ? 0.03 * (s0[0] + 0.5) : 0);
+          place(m, k, isShade ? 1.08 : 1, isShade ? 0.03 * (s0[0]! + 0.5) : 0);
         }
         void head;
       },
@@ -680,7 +680,7 @@ export class FxRunner {
 
   private updateBlades(dt: number): void {
     for (let i = this.jobs.length - 1; i >= 0; i--) {
-      const j = this.jobs[i];
+      const j = this.jobs[i]!;
       j.t += dt;
       if (j.t > j.end || !j.rib) {
         if (j.rib) j.rib.sampling = false;

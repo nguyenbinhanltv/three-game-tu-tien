@@ -192,8 +192,8 @@ class Layer {
   flush(now: number): void {
     const m = this.marks;
     m.push({ t: now, total: this.total });
-    while (m.length > 1 && m[0].t < now - PARTICLE_MAX_LIFE) m.shift();
-    const w = this.total - m[0].total;
+    while (m.length > 1 && m[0]!.t < now - PARTICLE_MAX_LIFE) m.shift();
+    const w = this.total - m[0]!.total;
     if (this.next >= 1024 && this.next > 2 * w + 256) {
       this.hiWrap = Math.max(this.hiWrap, this.next);
       this.hiExpire = now + PARTICLE_MAX_LIFE;
@@ -236,8 +236,8 @@ class Layer {
     const a1 = this.a1.array as Float32Array;
     let n = 0;
     for (let i = 0; i < this.limit; i++) {
-      const t = now - a0[i * 4 + 3];
-      if (t >= 0 && t <= a1[i * 4 + 3]) n++;
+      const t = now - a0[i * 4 + 3]!;
+      if (t >= 0 && t <= a1[i * 4 + 3]!) n++;
     }
     return n;
   }
@@ -251,13 +251,13 @@ export class Particles {
   readonly dust = new Layer(MAX_TOTAL - Math.round(MAX_TOTAL * GLOW_SHARE), false);
   /** Đồng hồ riêng (giây). */
   now = 0;
-  private budget = PARTICLE_BUDGET.medium;
+  private budget = PARTICLE_BUDGET.medium!;
   /** Mật độ hạt chiêu theo preset (`PARTICLE_DENSITY`). */
   density = 1;
 
   /** Ngân sách theo preset (`low`/`medium`/`high`). */
   setQuality(q: string): void {
-    this.budget = PARTICLE_BUDGET[q] ?? PARTICLE_BUDGET.medium;
+    this.budget = PARTICLE_BUDGET[q] ?? PARTICLE_BUDGET.medium!;
     this.density = PARTICLE_DENSITY[q] ?? 1;
     this.glow.setLimit(this.budget * GLOW_SHARE, this.now);
     this.dust.setLimit(this.budget * (1 - GLOW_SHARE), this.now);
