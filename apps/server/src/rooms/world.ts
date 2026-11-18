@@ -1,6 +1,6 @@
 // Room bản đồ thế giới (R-7, tách từ rooms.ts).
-import { Room, ServerError } from 'colyseus';
-import { C, HOME_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, worldRoomName } from '@dtl/shared';
+import { ServerError } from 'colyseus';
+import { HOME_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, worldRoomName } from '@dtl/shared';
 import { LEVELS, realmName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { parties } from '../game/party';
@@ -20,11 +20,11 @@ export class WorldRoom extends GameRoom {
    * Vào room thế giới: level gốc (Vân Lam) nhận đăng nhập thường; level khác chỉ nhận người có vé tới level đó
    * (cấp ở room đi, hoặc ngay sau đăng nhập khi nhân vật đang lưu ở đó). Điểm xuất hiện đi theo vé.
    */
-  static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
+  static override async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     return worldAuth(this as unknown as { levelId: string }, token, options);
   }
 
-  onCreate(options: unknown): void {
+  override onCreate(options: unknown): void {
     super.onCreate(options);
     const n = worldRooms.get(this.levelId) ?? 0;
     worldRooms.set(this.levelId, n + 1);
@@ -33,7 +33,7 @@ export class WorldRoom extends GameRoom {
     if (extra) this.sim.delayBosses();
   }
 
-  onDispose(): void {
+  override onDispose(): void {
     super.onDispose();
     worldRooms.set(this.levelId, Math.max(1, (worldRooms.get(this.levelId) ?? 1) - 1));
   }
@@ -43,7 +43,7 @@ export class WorldRoom extends GameRoom {
     return { levelId: this.levelId, roomName: worldRoomName(this.levelId), spawn, respawn: spawn, persistPosition: true };
   }
 
-  onPortal(p: PlayerEnt): void {
+  override onPortal(p: PlayerEnt): void {
     const portal = (LEVELS[this.levelId].portals ?? []).find((q) => (p.move.x - q.x) ** 2 + (p.move.z - q.z) ** 2 <= q.r * q.r);
     if (!portal) return this.sim.sys(p, 'sys.too_far', undefined, 'bad');
     const d = LEVELS[portal.to]?.dungeon;
@@ -82,7 +82,7 @@ export function defineWorld(levelId: string): typeof WorldRoom {
   if (!LEVELS[levelId] || LEVELS[levelId].dungeon) throw new Error(`defineWorld: ${levelId} không phải bản đồ thế giới`);
   if (levelId === HOME_LEVEL) return WorldRoom;
   return class extends WorldRoom {
-    static levelId = levelId;
+    static override levelId = levelId;
   };
 }
 

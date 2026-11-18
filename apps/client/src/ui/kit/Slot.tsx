@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { t } from '@dtl/content';
 
-type Rarity = 0 | 1 | 2 | 3 | 4;
 
 /**
  * Ô vật phẩm: viền vát theo phẩm chất (0 xám, 1 lục, 2 lam, 3 tím có ánh, 4 vàng kim có ánh), số lượng, cấp cường hóa.

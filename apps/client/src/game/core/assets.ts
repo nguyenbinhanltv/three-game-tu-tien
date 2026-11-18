@@ -225,7 +225,7 @@ export class GameKtx2Loader extends KTX2Loader {
     return quietSecondLoader(() => base.call(this, buffer, config));
   }
 
-  dispose(): this {
+  override dispose(): this {
     this.plain?.dispose();
     this.plain = null;
     super.dispose();

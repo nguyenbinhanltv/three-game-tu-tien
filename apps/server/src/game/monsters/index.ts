@@ -1,8 +1,8 @@
 // Quái (R-7): AI từng tick, hồi sinh, vùng nổ (Hazard), đạn, sát thương/chết/rơi đồ của quái, pha và thế của boss.
 // Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `MonsterCtx`; sát thương lên người vẫn qua damagePlayer của sim.
-import { BOLT_MAX_LIFE, BOLT_MAX_LIVE, boltBlockedAt, boltLift, type BoltEndMsg, boltHits, type BoltMsg, boltXZ, boltYaws, chargeFromDealt, bossPhaseAt, chantInterrupt, nextTurn, PARTY_SHARE_RANGE, RESONANCE_DMG, RESONANCE_XP, splitXp, xpShareWeight, computeDamage, type DmgMsg, rollEquipDrops, type Quality, type FxMsg, elemCounter, STAT_CAPS, counterMul, GCD, hazardHit, type HazardGeom, type HazardMsg, inHazard, isHeavyHit, MF_BROKEN, MF_CHANT, MF_STUN, type MonsterCaster, type MonsterChant, type MonsterDef, type MonsterSweep, monsterStats, monsterXp, phaseRules, postureDecay, postureGain, MS_ATTACK, MS_CHASE, MS_DEAD, MS_IDLE, MS_RETURN, S, type SpawnDef, type SysMsg, buffMag, vulnerableDamage, WATER_Y, xpLevelFactor, type BossTimerMsg } from '@dtl/shared';
+import { BOLT_MAX_LIFE, BOLT_MAX_LIVE, boltBlockedAt, boltLift, type BoltEndMsg, boltHits, type BoltMsg, boltXZ, boltYaws, chargeFromDealt, bossPhaseAt, chantInterrupt, nextTurn, PARTY_SHARE_RANGE, RESONANCE_DMG, RESONANCE_XP, splitXp, xpShareWeight, computeDamage, type DmgMsg, rollEquipDrops, type Quality, type FxMsg, elemCounter, STAT_CAPS, counterMul, hazardHit, type HazardGeom, type HazardMsg, inHazard, isHeavyHit, MF_BROKEN, MF_CHANT, MF_STUN, type MonsterCaster, type MonsterChant, type MonsterDef, type MonsterSweep, monsterStats, monsterXp, phaseRules, postureDecay, postureGain, MS_ATTACK, MS_CHASE, MS_DEAD, MS_IDLE, MS_RETURN, S, type SpawnDef, type SysMsg, buffMag, vulnerableDamage, WATER_Y, xpLevelFactor, type BossTimerMsg } from '@dtl/shared';
 import { type GuardCfg } from '../trib';
-import { ITEM, ITEM_SYS, ITEMS, itemName, MONSTER, monsterName, t } from '@dtl/content';
+import { ITEM_SYS, ITEMS, itemName, MONSTER, monsterName, t } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
 import { MonS } from '../../state';
 import { type Character } from '../character';
@@ -454,7 +454,6 @@ export class MonsterSystem {
         else full = true;
       }
       for (const g of got) {
-        const def = ITEM.get(g.id)!;
         // Kiểm tra trước để một món không vừa không làm hỏng cả bản nháp.
         const room = d.roomFor(g.id);
         if (room >= g.n && d.add(g.id, g.n)) kept.push(g);

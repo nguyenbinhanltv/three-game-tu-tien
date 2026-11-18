@@ -168,7 +168,7 @@ export function disposeBacHoang(eng: Game): void {
 }
 
 /** Mood của level; `?mood=` trên URL thắng (chụp ảnh so sánh). */
-export function moodOf(eng: Game, id: string): GradingName {
+export function moodOf(_eng: Game, id: string): GradingName {
   const m = levelAssets(id).mood;
   if (m === 'default' || !(m in GRADING)) return GRADING_DEFAULT;
   // `?mood=dawn|day|night` thắng; level có bộ mood riêng (ochre) lấy biến thể cùng thời điểm.

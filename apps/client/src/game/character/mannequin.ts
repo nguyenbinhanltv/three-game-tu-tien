@@ -134,8 +134,6 @@ const IDENT = new THREE.Matrix4();
 const _w = new THREE.Quaternion();
 const _pw = new THREE.Quaternion();
 const _ax = new THREE.Vector3();
-const _fwd = new THREE.Vector3(0, 0, 1);
-const _rgt = new THREE.Vector3(1, 0, 0);
 const _up = new THREE.Vector3(0, 1, 0);
 /** Xoay xương quanh trục THẾ GIỚI `axis` một góc `ang` (cộng thêm lên tư thế mixer vừa đặt). Cần ma trận thế giới của cha mới. */
 function rotateWorld(bone: THREE.Object3D | null, axis: THREE.Vector3, ang: number): void {

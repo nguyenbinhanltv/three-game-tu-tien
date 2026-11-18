@@ -646,17 +646,6 @@ export interface AccessoryMaterials {
   hard: THREE.Material;
 }
 
-/** Phụ kiện đang gắn vào một bản sao nhân vật. */
-interface AttachedAccessories {
-  /** Cập nhật lắc dải lụa; gọi sau khi mixer đã cập nhật xương. `speed`: m/s. */
-  update(dt: number, speed: number, boneWorld: (b: FitBone) => THREE.Matrix4 | null): void;
-  /** LOD xa: ẩn dải lụa (mesh cứng ẩn theo LOD0 của thân). */
-  setNear(near: boolean): void;
-  /** Dải lụa cần thêm vào `inner` của nhân vật. */
-  readonly objects: THREE.Object3D[];
-  dispose(): void;
-}
-
 /** Gộp phần cứng theo vật liệu: về hệ cục bộ của mesh thân, gắn cứng vào xương (chỉ số theo `boneIndex`). */
 function mergeByKind(fit: BodyFit, built: BuiltAccessories, boneIndex: Map<string, number>): Partial<Record<Kind, THREE.BufferGeometry>> {
   const toMesh = fit.meshToScene.clone().invert();

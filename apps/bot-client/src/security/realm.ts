@@ -3,8 +3,7 @@ import { type Room } from 'colyseus.js';
 import { C, rootChangeCost, MS_DEAD, S } from '@dtl/shared';
 import { W, check, health, join, type Ctx, type P, type CharV, type M } from './lib';
 
-export async function runRealm(ctx: Ctx): Promise<void> {
-  const { client, mons, gm } = ctx;
+export async function runRealm(_ctx: Ctx): Promise<void> {
   // 15. Bình cảnh, tâm ma, linh căn (P3-7): mọi thứ do server phán định, client chỉ gửi ý định.
   {
     const a = await join('binhcanh1');

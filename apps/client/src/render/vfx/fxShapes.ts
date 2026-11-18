@@ -49,7 +49,6 @@ function crescentGeometry(arcDeg = 165, width = 0.5, segs = 48): THREE.BufferGeo
 }
 
 /** Tâm hình tròn của lưỡi liềm (đặt tâm cung vào điểm chém): (0, 0, −1) × bán kính. */
-const CRESCENT_CENTER = new THREE.Vector3(0, 0, -1);
 
 /**
  * Gai/mũi tinh thể: lăng trụ đáy `sides` cạnh nhọn về +Z (hai đầu nếu `back` > 0). Không chỉ mục: mỗi mặt UV riêng

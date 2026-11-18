@@ -21,7 +21,6 @@ const T_SLEEVE = flat(new THREE.CylinderGeometry(0.065, 0.115, 0.6, 6));
 const T_LEG = flat(new THREE.CylinderGeometry(0.085, 0.07, 0.82, 6));
 
 const C_SKIN = col(0xf0cfa8);
-const C_HAIR = col(0x1c1a22);
 const C_PANTS = col(0x3a3f4a);
 const C_SHOE = col(0x22242a);
 const C_STEEL = col(0xd5e3ec);
