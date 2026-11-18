@@ -8,11 +8,7 @@
   --k-night: #1a2938; /* air_night */
   --k-night-2: #22364e; /* attire_elder */
   --k-night-0: #0e1722; /* lòng thanh, lòng ô: tối hơn air_night một bậc */
-  --k-paper: #e6ddcb; /* attire_ivory */
-  --k-paper-2: #bdb6a4; /* stone_light */
-  --k-stone: #464540; /* stone_dark */
-  --k-stone-2: #7d786c; /* stone */
-  --k-ink: #29292c; /* attire_ink */
+  --k-paper: #e6ddcb; /* attire_ivory */ /* stone_light */ /* stone_dark */ /* stone */ /* attire_ink */
   /* Nền mực bán trong suốt cho khung HUD và bảng: #0D1117 ở 80% (mực ngả lam đêm, không đen tuyền). */
   --k-ink-bg: rgba(13, 17, 23, 0.8);
   --k-ink-bg-hi: rgba(22, 30, 42, 0.86);
@@ -35,8 +31,7 @@
   --k-gold: #ffde96; /* spirit_gold */
   --k-sword: #cff3ff; /* spirit_sword */
   /* Ngọc: viền/điểm nhấn thay cho kim ở trạng thái đang chọn, focus bàn phím. */
-  --k-ngoc: #38bdf8;
-  --k-cinnabar: #9d392e; /* wood_cinnabar */
+  --k-ngoc: #38bdf8; /* wood_cinnabar */
   --k-cinnabar-hi: #d9604f;
 
   /* phẩm chất vật phẩm (rarity 0–3) */
