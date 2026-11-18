@@ -22,12 +22,6 @@
 :root:root .hud .frame {
   position: absolute;
 }
-:root:root .hud .chat {
-  position: absolute;
-  background: none;
-  border: 0;
-  box-shadow: none;
-}
 /* vân sơn mài: texture lặp phủ lên nền trong suốt */
 :root:root .hud :is(.frame, .skill-row, .tracker, .boss-bar)::before,
 :root:root .hud .chat::before {
@@ -41,9 +35,6 @@
   opacity: 0.5;
   border-radius: inherit;
   pointer-events: none;
-}
-:root:root .hud .chat::before {
-  inset: 0 0 auto 0;
 }
 :root:root .hud .frame::after {
   display: none;
@@ -276,92 +267,6 @@
 .k-btn.bag-pulse {
   animation: bag-pulse 0.42s ease-out;
 }
-/* ───────── bản đồ nhỏ: vòng la bàn mảnh + bảng tên theo bản đồ ───────── */
-:root:root .minimap {
-  clip-path: none;
-  border-radius: 50%;
-  padding: 3px;
-  background: linear-gradient(180deg, var(--ngj-gold-hi), var(--ngj-gold-lo));
-  box-shadow:
-    0 0 0 3px rgba(30, 23, 18, 0.88),
-    0 0 0 4px rgba(201, 164, 92, 0.6),
-    0 4px 14px rgba(0, 0, 0, 0.4);
-}
-:root:root .minimap canvas {
-  clip-path: none;
-  border-radius: 50%;
-}
-:root:root .minimap::after {
-  display: none;
-}
-:root:root .ngj-mm-ring {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  border-radius: 50%;
-  pointer-events: none;
-  box-shadow:
-    inset 0 0 0 5px rgba(30, 23, 18, 0.55),
-    inset 0 0 0 6px rgba(201, 164, 92, 0.75),
-    inset 0 0 12px rgba(30, 23, 18, 0.5);
-}
-.ngj-mm-ring {
-  display: none;
-}
-:root:root .mm-btn {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border-color: var(--ngj-gold);
-  color: var(--ngj-gold-hi);
-  background: var(--ngj-hud-bg);
-  box-shadow: 0 0 0 2px rgba(30, 23, 18, 0.8);
-}
-:root:root .minimap-ctl {
-  left: -4px;
-  bottom: 6px;
-}
-:root:root .minimap-pos {
-  right: 20px;
-  bottom: 4px;
-}
-:root:root .minimap-foot.ngj-mm-foot {
-  background: none;
-  padding: 0;
-  margin-top: 2px;
-}
-:root:root .minimap-foot.ngj-mm-foot {
-  width: 238px;
-  margin-left: -48px;
-}
-:root:root .ngj-mm-foot .ngj-cart {
-  min-width: 0;
-  width: 100%;
-  height: auto;
-  min-height: 40px;
-  padding: 4px 16px 4px 74px;
-  font-size: 16px;
-}
-/* giãn theo nội dung: tên vùng một dòng, nhãn cấp (NK21–22) nhỏ hơn ở dòng dưới; không cắt chữ */
-:root:root .ngj-mm-foot .ngj-cart-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.15;
-  white-space: normal;
-  text-align: center;
-  color: var(--ngj-gold-hi);
-}
-:root:root .ngj-mm-foot .minimap-foot-lv {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: rgba(237, 227, 204, 0.8);
-}
-/* màu chữ giữ vàng/ngà; chỉ nhãn cấp chuyển đỏ khi vùng nguy hiểm vượt cấp người chơi (có chú thích ở title của khung) */
-:root:root .ngj-mm-foot[data-status='high'] .minimap-foot-lv {
-  color: var(--ngj-crimson-hi);
-}
 /* ───────── theo dõi nhiệm vụ ───────── */
 :root:root .hud .tracker {
   text-align: left;
@@ -390,49 +295,6 @@
   box-shadow: 0 0 6px var(--ngj-gold);
 }
 /* ───────── chat ───────── */
-:root:root .hud .chat-log {
-  border: 1px solid var(--ngj-gold);
-  border-bottom: 0;
-  border-radius: 3px 3px 0 0;
-  background: var(--ngj-hud-bg-soft);
-  box-shadow:
-    inset 0 0 0 3px rgba(30, 23, 18, 0.78),
-    inset 0 0 0 4px rgba(201, 164, 92, 0.4);
-  padding: 8px 14px;
-  scrollbar-color: rgba(201, 164, 92, 0.5) transparent;
-}
-:root:root .hud .chat.open .chat-log {
-  background: var(--ngj-hud-bg);
-}
-:root:root .hud .chat-input {
-  border: 1px solid var(--ngj-gold);
-  border-radius: 0 0 3px 3px;
-  background: rgba(20, 15, 11, 0.9);
-  color: var(--ngj-ivory);
-  padding: 7px 14px;
-}
-:root:root .hud .chat-input:focus {
-  border-color: var(--ngj-gold-hi);
-  background: rgba(20, 15, 11, 0.97);
-}
-:root:root .hud .chat-line {
-  color: var(--ngj-ivory);
-}
-:root:root .hud .chat-line.good {
-  color: var(--ngj-gold-hi);
-}
-:root:root .hud .chat-line.bad {
-  color: var(--ngj-crimson-hi);
-}
-:root:root .hud .chat-line.loot {
-  color: #9fd9a0;
-}
-:root:root .hud .chat-line.info {
-  color: rgba(237, 227, 204, 0.62);
-}
-:root:root .hud .chat-line.say b {
-  color: var(--ngj-gold);
-}
 /* ───────── thông báo (toast) ───────── */
 :root:root .hud .toast {
   padding: 8px 22px;
@@ -564,8 +426,3 @@
   color: var(--ngj-crimson-hi);
 }
 /* cửa sổ hẹp (≤ 1500 px, ví dụ 1366×768): thanh chức năng chỉ còn icon + phím để không xuống dòng/đè khung chat */
-@media (max-width: 1500px) {
-  :root:root .hud .chat {
-    width: 300px;
-  }
-}

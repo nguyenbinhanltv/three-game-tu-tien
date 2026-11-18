@@ -36,6 +36,7 @@ import thiengiai from './scenarios/thiengiai';
 import hudplay from './scenarios/hudplay';
 import touch from './scenarios/touch';
 import ui from './scenarios/ui';
+import minimap from './scenarios/minimap';
 import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import xichkhe from './scenarios/xichkhe';
@@ -51,6 +52,7 @@ const SCENARIOS: Scenario[] = [
   skin,
   chrv2,
   ui,
+  minimap,
   chat,
   hudplay,
   touch,
