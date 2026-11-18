@@ -262,8 +262,27 @@ describe('E4-G: biến thức cấp 28 (chiêu do E4-K đưa vào ô 10)', () =>
       setVar('skl_thien_dan_phap_gioi', v);
       fresh(p);
       sim.onSkill(p, { id: 'skl_thien_dan_phap_gioi' });
-      expect(mate.char.meta.buffs?.[kind]?.m, v).toBeGreaterThan(0.1);
+      expect(mate.char.skillBuff[kind]?.m, v).toBeGreaterThan(0.1);
+      expect(mate.char.meta.buffs?.[kind], 'không ghi vào buff đan').toBeUndefined();
     }
+  });
+
+  it('Pháp Giới không kéo dài buff đan: đan công thấp 9 phút + Pháp Giới 12 s, hết 12 s về lại mức đan', () => {
+    const { sim, p, join, fresh, setVar, wait } = setup('thanh_moc_dan_kinh', 28);
+    const mate = join('b');
+    const until = Date.now() + 9 * 60_000;
+    mate.char.meta.buffs = { atk: { m: 0.08, until } };
+    mate.char.recalc();
+    const base = mate.char.atk;
+    setVar('skl_thien_dan_phap_gioi', 'a');
+    fresh(p);
+    sim.onSkill(p, { id: 'skl_thien_dan_phap_gioi' });
+    expect(mate.char.atk).toBeGreaterThan(base);
+    expect(mate.char.meta.buffs?.atk).toEqual({ m: 0.08, until });
+    wait(12_500);
+    expect(mate.char.skillBuff.atk).toBeUndefined();
+    expect(mate.char.atk).toBe(base);
+    expect(mate.char.meta.buffs?.atk).toEqual({ m: 0.08, until });
   });
 });
 

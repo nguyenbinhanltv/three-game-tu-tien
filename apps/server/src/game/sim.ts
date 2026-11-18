@@ -2256,9 +2256,9 @@ export class GameSim {
             if (o !== p && !chosen.has(o)) continue;
           } else if (o !== p && Math.hypot(o.move.x - p.move.x, o.move.z - p.move.z) > r) continue;
           if (v?.partyBuff) {
-            const now = Date.now();
-            o.char.meta.buffs ??= {};
-            o.char.meta.buffs[v.partyBuff.kind] = mergeBuff(o.char.meta.buffs[v.partyBuff.kind], v.partyBuff.pct, now + sec * 1000, now);
+            // Buff chiêu tách khỏi buff đan: không merge vào `meta.buffs`, tự hết sau `sec` giây.
+            const cur = o.char.skillBuff[v.partyBuff.kind];
+            o.char.skillBuff[v.partyBuff.kind] = { m: Math.max(cur && cur.until > Date.now() ? cur.m : 0, v.partyBuff.pct), until: Date.now() + sec * 1000 };
             o.char.recalc();
             o.mth.dirty = true;
           }
@@ -2444,7 +2444,11 @@ export class GameSim {
     }
     for (const p of this.players.values()) {
       const m = p.mth;
-      if (pruneBuffs(p.char.meta, Date.now())) {
+      const sbk = p.char.skillBuff;
+      const nowMs = Date.now();
+      let sbExpired = false;
+      for (const k of ['atk', 'def'] as const) if (sbk[k] && sbk[k]!.until <= nowMs) (delete sbk[k], (sbExpired = true));
+      if (pruneBuffs(p.char.meta, nowMs) || sbExpired) {
         p.char.recalc();
         m.dirty = true;
       }
