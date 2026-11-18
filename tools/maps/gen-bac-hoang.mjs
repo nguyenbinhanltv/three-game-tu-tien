@@ -172,6 +172,8 @@ const POIS = [
 ];
 for (const p of POIS) if (zoneOfOffset(p.off[0], p.off[1])?.id !== p.zone) throw new Error('poi ngoài vùng: ' + p.id);
 const BOSS = { off: [0, -90] }; // Tam Thủ Ngục Khuyển gác miệng nam Giới Khích
+const BOSS3 = { off: [-220, -400] }; // DV-2 đợt 3: Tẫn Hỏa Kiếm Cơ (tạm đứng ngoài trời ở Kim Dạ Ngoại Uyển, chờ phó bản Kim Dạ Cung)
+const BOSS4 = { off: [-470, -400] }; // DV-2 đợt 3: Kim Dạ Ma Hậu (như trên)
 const BOSS2 = { off: [0, -650] }; // chỗ để dành cho Thủ Khích Dực Chủ (DV3-D): chưa có quái, chỉ giữ trống đấu trường
 
 // ---- Giới Khích: khe chạy nam → bắc dọc trục giữa, hơi lượn (offset x theo z) ----
@@ -251,6 +253,8 @@ for (const p of POIS) keep.push({ x: p.off[0], z: p.off[1], r: 16 });
 keep.push({ x: TRAM[0], z: TRAM[1], r: R_IN });
 keep.push({ x: BOSS.off[0], z: BOSS.off[1], r: 38 });
 keep.push({ x: BOSS2.off[0], z: BOSS2.off[1], r: 38 });
+keep.push({ x: BOSS3.off[0], z: BOSS3.off[1], r: 38 });
+keep.push({ x: BOSS4.off[0], z: BOSS4.off[1], r: 38 });
 for (const b of STELES) keep.push({ x: b.off[0], z: b.off[1], r: 10 });
 for (let z = RIFT_Z0; z >= RIFT_Z1; z -= 24) keep.push({ x: RX(z), z, r: 16 }); // lòng khe không đặt bãi quái
 
@@ -280,9 +284,11 @@ for (const e of ELITES) {
 
 // ---- boss ngoài trời: Tam Thủ Ngục Khuyển (DV-B) gác miệng nam Giới Khích, hồi sinh 30 phút ----
 spawns.push({ mon: 'boss_tam_thu_nguc_khuyen', x: W(BOSS.off[0]), z: W(BOSS.off[1]), radius: 6, count: 1, levelMin: Math.min(29, LV_CAP), levelMax: Math.min(29, LV_CAP), respawn: 1800 });
+spawns.push({ mon: 'boss_tan_hoa_kiem_co', x: W(BOSS3.off[0]), z: W(BOSS3.off[1]), radius: 6, count: 1, levelMin: Math.min(31, LV_CAP), levelMax: Math.min(31, LV_CAP), respawn: 1800 });
+spawns.push({ mon: 'boss_kim_da_ma_hau', x: W(BOSS4.off[0]), z: W(BOSS4.off[1]), radius: 6, count: 1, levelMin: Math.min(31, LV_CAP), levelMax: Math.min(31, LV_CAP), respawn: 1800 });
 
 // ---- camp (rải điểm xa nhất như Đoạn Mạch) ----
-const TARGET_CAMPS = 66;
+const TARGET_CAMPS = 68;
 const TARGET_DENSITY = 120;
 const CAMP_R = 30;
 const MIX = {
@@ -305,7 +311,7 @@ for (let x = BOX.x0; x <= BOX.x1; x += 10)
   for (let z = BOX.z0; z <= BOX.z1; z += 10) {
     const zn = zoneOfOffset(x, z);
     if (!zn) continue;
-    if (Math.hypot(x - BOSS.off[0], z - BOSS.off[1]) < 38 || Math.hypot(x - BOSS2.off[0], z - BOSS2.off[1]) < 38) continue; // đấu trường trống không tính độ phủ
+    if (Math.hypot(x - BOSS.off[0], z - BOSS.off[1]) < 38 || Math.hypot(x - BOSS2.off[0], z - BOSS2.off[1]) < 38 || Math.hypot(x - BOSS3.off[0], z - BOSS3.off[1]) < 38 || Math.hypot(x - BOSS4.off[0], z - BOSS4.off[1]) < 38) continue; // đấu trường trống không tính độ phủ
     need.push([x, z, 9999]);
     if (zoneOfOffset(x, z, 8) === zn && !keep.some((q) => Math.hypot(q.x - x, q.z - z) < q.r + CAMP_R + 6)) cand.push([x, z, zn]);
   }
@@ -461,6 +467,8 @@ for (const p of POIS) feats.push(flat('poi_' + p.id, p.off, Y, 24, 70));
 for (const b of STELES) feats.push(flat(b.id, b.off, Y, 14, 50));
 feats.push(flat('boss', BOSS.off, Y - 2, 44, 120, { detail: 1.2 }));
 feats.push(flat('boss_thu_khich', BOSS2.off, Y - 4, 44, 120, { detail: 1.2 }));
+feats.push(flat('boss_kiem_co', BOSS3.off, Y - 4, 44, 120, { detail: 1.2 }));
+feats.push(flat('boss_ma_hau', BOSS4.off, Y - 4, 44, 120, { detail: 1.2 }));
 for (let z = RIFT_Z0, i = 0; z >= RIFT_Z1; z -= 30, i++) feats.push(flat(`khe_${i}`, [RX(z), z], Y - 14, 10, 56, { detail: 1.5, relief: { amp: 3, freq: 0.05, crease: true } }));
 const terrain = {
   id: 'bac_hoang',
@@ -473,14 +481,34 @@ const terrain = {
   colliders,
 };
 
+// ---- DV3-H: điểm nhiệm vụ chương 5 (thêm SAU mọi bước dùng R() để không đổi bố cục đã duyệt) ----
+// Mạch nhãn còn sống (touch, s5_buom_mach), xác bạn của Cố Bất Dịch (touch, s5_dem_xac). Mỗi vùng chỉ được một poi nên đây là spots.
+const EXTRA_SPOTS = [
+  { id: 'mach_nhan_1', zone: 'kho_loc_lam', off: [-400, 240] },
+  { id: 'mach_nhan_2', zone: 'kho_loc_lam', off: [-290, 130] },
+  { id: 'mach_nhan_3', zone: 'kho_loc_lam', off: [-370, 300] },
+  { id: 'xac_tho_san_1', zone: 'han_hoi_nguyen', off: [390, 300] },
+  { id: 'xac_tho_san_2', zone: 'han_hoi_nguyen', off: [230, 190] },
+  { id: 'xac_tho_san_3', zone: 'han_hoi_nguyen', off: [330, 140] },
+  { id: 'xac_tho_san_4', zone: 'kho_loc_lam', off: [-440, 200] },
+  { id: 'xac_tho_san_5', zone: 'kho_loc_lam', off: [-210, 220] },
+  { id: 'xac_tho_san_6', zone: 'kho_loc_lam', off: [-320, 330] },
+];
+for (const p of EXTRA_SPOTS) if (zoneOfOffset(p.off[0], p.off[1])?.id !== p.zone) throw new Error('điểm nhiệm vụ ngoài vùng: ' + p.id);
+// Tịnh Quang Dực Sứ đi từ cổng Xích Tẫn Khích về Trấn Giới Đài (q5_tinh_quang).
+const ESCORTS = [{ id: 'esc_tinh_quang', npc: 'npc_tinh_quang_do', speed: 4, path: [[350, -395], [300, -420], [220, -450], [130, -480], [50, -500], [-10, -506]].map(([x, z]) => [W(x), W(z)]) }];
+
 const level = {
   id: 'bac_hoang',
   minLevel: 28, // DIVUC: chương 5 từ Hóa Thần; server kiểm ở requestLevel
   spawn: { x: W(TRAM[0]), z: W(TRAM[1] + 12) },
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),
+  // Cổng vào Xích Tẫn Khích (DV-3D), cách poi cong_xich_tan_khich 18 m về phía tâm bản đồ.
+  portals: [{ x: W(337), z: W(-387), r: 12, to: 'xich_tan_khich' }],
   // Vị trí năm Trấn Giới Bia (cơ chế giới áp/thắp bia là DV3-C; nhiệm vụ `touch` dùng các điểm này).
-  spots: STELES.map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),
+  spots: [...STELES, ...EXTRA_SPOTS].map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),
+  escorts: ESCORTS,
   camps,
   spawns,
   nodes,

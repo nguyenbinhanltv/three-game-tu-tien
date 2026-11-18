@@ -118,6 +118,21 @@ const procedural = [
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'elite_hoi_giac_cu_thu', '--height', '3.0', '--tris', '14000', '--landmarks', 'repo:tools/blender/skins/dv2_gorthazul_landmarks.json', '--bind', 'repo:tools/blender/skins/dv2_gorthazul_bind.json'],
   },
+  // DV-2 đợt 3 (boss hình người): cùng đường ống, bản nướng thấp từ `skin_prep.py --stage bake` (tools/blender/skins/dv2_protector.json, dv2_ravenyth.json).
+  {
+    id: 'boss_tan_hoa_kiem_co',
+    script: 'tools/blender/chr_v3.py',
+    source: 'boss/boss_tan_hoa_kiem_co/prep/bake.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'boss_tan_hoa_kiem_co', '--height', '2.4', '--tris', '30000', '--landmarks', 'repo:tools/blender/skins/dv2_protector_landmarks.json', '--bind', 'repo:tools/blender/skins/dv2_protector_bind.json'],
+  },
+  {
+    id: 'boss_kim_da_ma_hau',
+    script: 'tools/blender/chr_v3.py',
+    source: 'boss/boss_kim_da_ma_hau/prep/bake.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'boss_kim_da_ma_hau', '--height', '2.6', '--tris', '30000', '--landmarks', 'repo:tools/blender/skins/dv2_ravenyth_landmarks.json', '--bind', 'repo:tools/blender/skins/dv2_ravenyth_bind.json'],
+  },
   // Clip UAL giữ tên xương Mannequin, phát thẳng lên chr_v3_* (không chuyển clip).
   {
     id: 'anim_ual_native',

@@ -1057,6 +1057,7 @@
   "ui.credits.mod.decimate": "giảm lưới",
   "ui.credits.mod.texture": "hạ texture",
   "ui.credits.mod.bake": "nướng lại texture",
+  "ui.credits.mod.recolor": "đổi màu ánh sáng",
   "ui.credits.mod.rig": "dựng xương",
   "ui.credits.mod.anim": "làm clip animation",
   "ui.credits.mod.pose": "đặt lại tư thế",
@@ -1067,5 +1068,8 @@
   "ui.credits.mod.port": "viết lại bằng TSL theo kỹ thuật gốc, không dùng mã gốc",
   "ui.credits.mod.subset": "cắt font (subset)",
   "ui.credits.mod.render": "dùng để render nhạc tự soạn",
-  "ui.obj.clone": "Hóa một phân thân thần niệm (phím G)"
+  "ui.obj.clone": "Hóa một phân thân thần niệm (phím G)",
+  "ui.chapter.ch5.kicker": "Chương năm",
+  "ui.chapter.ch5.title": "Bắc Hoang",
+  "ui.chapter.ch5.sub": "Mạch chảy về bắc, nơi đất chưa ai đặt chân. Dưới tro có thứ đang hút."
 }

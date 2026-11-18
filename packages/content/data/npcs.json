@@ -11,5 +11,9 @@
   {"id": "npc_lam_chieu_dung", "x": 1050, "z": 1056, "yaw": 3.1416, "color": "#d8c48a", "level": "van_hai"},
   {"id": "npc_to_van_ngu_hai", "x": 1002, "z": 1056, "yaw": 3.1416, "color": "#587a96", "level": "van_hai"},
   {"id": "npc_mac_chieu", "x": 1000, "z": 1044, "yaw": 3.1416, "color": "#6d6a5a", "level": "thien_khuyet"},
-  {"id": "npc_to_van_ngu_tk", "x": 1048, "z": 1044, "yaw": 3.1416, "color": "#587a96", "level": "thien_khuyet"}
+  {"id": "npc_to_van_ngu_tk", "x": 1048, "z": 1044, "yaw": 3.1416, "color": "#587a96", "level": "thien_khuyet"},
+  {"id": "npc_to_van_ngu_bh", "x": 1000, "z": 1534, "yaw": 3.1416, "color": "#587a96", "level": "bac_hoang"},
+  {"id": "npc_co_bat_dich", "x": 1050, "z": 1534, "yaw": 3.1416, "color": "#6b5d4a", "level": "bac_hoang"},
+  {"id": "npc_mac_chieu_bia", "x": 1024, "z": 1526, "yaw": 3.1416, "color": "#6d6a5a", "level": "bac_hoang"},
+  {"id": "npc_tinh_quang_su", "x": 1000, "z": 520, "yaw": 3.1416, "color": "#cfd6dc", "level": "bac_hoang"}
 ]

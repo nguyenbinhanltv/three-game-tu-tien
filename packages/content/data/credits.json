@@ -437,6 +437,40 @@
       ]
     },
     {
+      "id": "protector_nemesis",
+      "kind": "model",
+      "title": "PROTECTOR NEMESIS // The Fallen Seraph",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/protector-nemesis-the-fallen-seraph-746df03aadb54395874cdb959c36e681",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "cut",
+        "decimate",
+        "bake",
+        "recolor",
+        "rig"
+      ],
+      "assets": [
+        "boss_tan_hoa_kiem_co"
+      ]
+    },
+    {
+      "id": "ravenyth",
+      "kind": "model",
+      "title": "RAVENYTH // The Gilded Night Empress",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/ravenyth-the-gilded-night-empress-706cfa7b57e34536852930ac79facf07",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig"
+      ],
+      "assets": [
+        "boss_kim_da_ma_hau"
+      ]
+    },
+    {
       "id": "godot_elemental_sampler",
       "kind": "sound",
       "title": "Godot 4 Elemental Spells VFX + SFX: Free Sampler",

@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_tan_hoa_kiem_co",
+  "type": "mon",
+  "budgetClass": "boss_mq",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 30000,
+    "texture": 2048
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Sketchfab: \"PROTECTOR NEMESIS // The Fallen Seraph\" của Atahan3D, CC BY 4.0. Đã chỉnh sửa: bỏ đại kiếm dính tay (kiếm Tẫn Hỏa gắn rời, xem prop_kiem_tan_hoa), giảm lưới 855.646 → 24.000 tam giác, UV mới và nướng lại texture, đổi ánh sáng xanh sang than hồng (tools/blender/skin_prep.py --stage bake, cấu hình tools/blender/skins/dv2_protector.json), đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py (clip UAL của Quaternius CC0 phát trực tiếp)",
+    "owner": "6 (https://sketchfab.com/Atahan3D)",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/protector-nemesis-the-fallen-seraph-746df03aadb54395874cdb959c36e681",
+    "spdx": "CC-BY-4.0"
+  }
+}

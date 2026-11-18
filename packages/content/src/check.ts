@@ -608,6 +608,15 @@ for (const m of MONSTERS) {
     }
     if (th.rings && !(th.rings.dur <= 15 && th.rings.spin <= 30 && th.rings.final.delay >= 1.5 && th.rings.final.gather >= 6)) err(`monster ${m.id}: than.rings: ≤ 15 s, quay ≤ 30°/s (chạy kịp), Phản hồi báo ≥ 1,5 s`);
   }
+  if (m.rift) {
+    const rf = m.rift;
+    if (!m.boss) err(`monster ${m.id}: chỉ boss mới có rift`);
+    const nph = (m.phases?.length ?? 0) + 1;
+    if (!(Number.isInteger(rf.phase) && rf.phase >= 0 && rf.phase < nph)) err(`monster ${m.id}: rift.phase ngoài số pha`);
+    if (!(rf.burn >= 1 && rf.burn <= 5 && rf.weak >= 3 && rf.veins.length >= 2)) err(`monster ${m.id}: rift: 1–5 tầng cháy, mất thế ≥ 3 s, ≥ 2 khe`);
+    if (!m.phases?.[rf.phase - 1]?.ai?.chant && !m.ai?.chant) err(`monster ${m.id}: rift cần chú (ai.chant) từ pha ${rf.phase}`);
+    for (const v of rf.veins) if (!(v.r >= 3 && v.r <= 10)) err(`monster ${m.id}: khe mạch r 3–10 m`);
+  }
   const ps = m.posture;
   if (ps) {
     if (!m.boss) err(`monster ${m.id}: chỉ boss mới có thanh phá thế`);
@@ -733,6 +742,13 @@ for (const n of NPCS) {
     if ((ITEM.get(s)?.price ?? 0) <= 0) err(`npc ${n.id}: bán vật phẩm không có giá ${s}`);
   }
 }
+// Mục tiêu chương 5 chưa có dữ liệu (DV3-B/D/E/L chưa vào): nhiệm vụ trỏ tới chúng phải khóa bằng minLevel > MAX_LEVEL
+// (cấp 29+ chưa mở nên không ai nhận được), để khỏi có nhiệm vụ nhận được mà không bao giờ xong. Gỡ id khỏi bảng khi dữ liệu thật vào.
+const PENDING_OBJ: Record<string, readonly string[]> = {
+  kill: ['elite_trien_bo_cham_ba', 'boss_thu_khich_duc_chu', 'elite_huyet_giac_ma_tuong'],
+  dungeon: ['kim_da_cung'],
+  breakthrough: ['anh_bien'],
+};
 for (const q of QUESTS) {
   needStr(`quest.${q.id}.name`);
   needStr(`quest.${q.id}.desc`);
@@ -741,6 +757,9 @@ for (const q of QUESTS) {
   if (!NPC.has(q.turnin)) err(`quest ${q.id}: turnin không tồn tại`);
   if (q.requires && !QUEST.has(q.requires)) err(`quest ${q.id}: requires không tồn tại ${q.requires}`);
   for (const o of q.objectives) {
+    const pend = !!o.target && (PENDING_OBJ[o.type] ?? []).includes(o.target) && !(o.type === 'kill' && MONSTER.has(o.target)) && !(o.type === 'breakthrough' && (TRIB_IDS as readonly string[]).includes(o.target));
+    if (pend && (q.minLevel ?? 1) <= MAX_LEVEL) err(`quest ${q.id}: mục tiêu ${o.type} ${o.target} chưa có dữ liệu, minLevel phải > ${MAX_LEVEL} để khóa`);
+    if (pend) continue;
     if (o.type === 'kill' && !MONSTER.has(o.target ?? '')) err(`quest ${q.id}: quái không tồn tại ${o.target}`);
     if ((o.type === 'gather' || o.type === 'craft') && !ITEM.has(o.target ?? '')) err(`quest ${q.id}: vật phẩm không tồn tại ${o.target}`);
     if (o.type === 'talk' && !NPC.has(o.target ?? '')) err(`quest ${q.id}: npc không tồn tại ${o.target}`);
@@ -870,6 +889,17 @@ for (const lv of Object.values(LEVELS)) {
       if (!(sl.touch > 0 && sl.touch <= 6 && sl.phuR >= 4 && sl.bar >= sl.touch + 2)) err(`${ww}: seals touch ≤ 6, phuR ≥ 4, bar ≥ touch + 2`);
       if (!MONSTER.get(sl.reinforce.mon)) err(`${ww}: quái tiếp viện ${sl.reinforce.mon} không tồn tại`);
       if (!wv.title) err(`${ww}: đợt phong ấn phải có title`);
+    }
+    if (wv.steles) {
+      const sl = wv.steles;
+      const c = lv.dungeon!.center;
+      if (Math.hypot(sl.x - c.x, sl.z - c.z) > (lv.dungeon!.bound ?? 90) - sl.r - 8) err(`${ww}: bia (${sl.x}, ${sl.z}) ngoài vòng bí cảnh`);
+      if (!(sl.r >= 4 && sl.r <= 12 && sl.secs >= 20 && sl.secs <= 120 && sl.grace >= 3 && sl.press > 0 && sl.press <= 0.05)) err(`${ww}: steles r 4–12, 20–120 s, grace ≥ 3 s, press ∈ (0; 5%]`);
+      for (const g of sl.reinforce) {
+        if (!MONSTER.get(g.mon)) err(`${ww}: quái tiếp viện ${g.mon} không tồn tại`);
+        if (!(g.at >= 0 && g.at < sl.secs && g.n >= 1)) err(`${ww}: tiếp viện phải có at trong [0; secs) và n ≥ 1`);
+      }
+      if (!wv.title) err(`${ww}: đợt giữ bia phải có title`);
     }
     if (wv.puzzle) {
       const pz = wv.puzzle;
@@ -1115,6 +1145,42 @@ console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILL
       if ((o.type === 'touch' || o.type === 'scan') && !tk.pois?.some((p) => p.id === o.target) && !tk.spots?.some((p) => p.id === o.target)) err(`quest ${q.id}: điểm ${o.target} không có ở thien_khuyet`);
       if (o.type === 'escort' && !tk.escorts?.some((e) => e.id === o.target)) err(`quest ${q.id}: escort ${o.target} không có ở thien_khuyet`);
       if (o.type === 'scan' && !tk.pois?.some((p) => p.id === o.target)) err(`quest ${q.id}: scan ${o.target} phải là poi (spots không hiện trong bản quét)`);
+    }
+  }
+}
+
+// Chuỗi chương 5 (DV3-H): q5_* nối đuôi từ q4_hoa_than; phụ s5_* requires một q5_*; trận mở bằng nhiệm vụ phải kiểm cấp theo level đích.
+{
+  const main5 = ['q5_bac_hanh', 'q5_tro_lanh', 'q5_then_cai', 'q5_cot_loc', 'q5_nguc_khuyen', 'q5_qua_khich', 'q5_xich_tan', 'q5_tinh_quang', 'q5_thu_khich', 'q5_kim_da', 'q5_ngu_bia', 'q5_anh_bien'];
+  main5.forEach((id, i) => {
+    const q = QUEST.get(id);
+    if (!q) return err(`thiếu nhiệm vụ chính chương 5 ${id}`);
+    const want = i === 0 ? 'q4_hoa_than' : main5[i - 1];
+    if (q.requires !== want) err(`quest ${id}: phải requires ${want}`);
+    if (i > 0 && (q.minLevel ?? 1) < (QUEST.get(main5[i - 1])!.minLevel ?? 1)) err(`quest ${id}: minLevel thấp hơn nhiệm vụ trước`);
+  });
+  for (const q of QUESTS) if (q.id.startsWith('s5_') && !q.requires?.startsWith('q5_')) err(`quest ${q.id}: phụ chương 5 phải requires một q5_*`);
+  const first = QUEST.get('q5_bac_hanh');
+  if (first && !(first.unlockTele ?? []).includes('bh_tp_tram')) err('q5_bac_hanh phải mở trận bh_tp_tram (unlockTele)');
+  const an = QUEST.get('q5_anh_bien');
+  if (an && !an.objectives.some((o) => o.type === 'breakthrough' && o.target === 'anh_bien')) err('q5_anh_bien phải có mục tiêu breakthrough anh_bien');
+  // Server kiểm minLevel của level lúc cấp vé (#213): nhiệm vụ mở trận không được cho nhận sớm hơn cấp vào level đích.
+  for (const q of QUESTS) {
+    for (const id of q.unlockTele ?? []) {
+      const need = LEVELS[TELE_PAD.get(id)?.level ?? '']?.minLevel ?? 1;
+      if ((q.minLevel ?? 1) < need) err(`quest ${q.id}: mở trận ${id} (level cần cấp ${need}) nhưng minLevel chỉ ${q.minLevel ?? 1}`);
+    }
+  }
+  const bh = LEVELS.bac_hoang;
+  const known = new Set(['npc_to_van_ngu_tk']);
+  for (const q of QUESTS) {
+    if (!q.id.startsWith('q5_') && !q.id.startsWith('s5_')) continue;
+    for (const n of [q.giver, q.turnin]) if (!known.has(n) && NPC.get(n)?.level !== 'bac_hoang') err(`quest ${q.id}: NPC ${n} phải đứng ở bac_hoang`);
+    for (const o of q.objectives) {
+      if ((o.type === 'touch' || o.type === 'scan') && !questSpot(bh, o.target)) err(`quest ${q.id}: điểm ${o.target} không có ở bac_hoang`);
+      if (o.type === 'scan' && !bh.pois?.some((p) => p.id === o.target)) err(`quest ${q.id}: scan ${o.target} phải là poi`);
+      if (o.type === 'escort' && !bh.escorts?.some((e) => e.id === o.target)) err(`quest ${q.id}: escort ${o.target} không có ở bac_hoang`);
+      if (o.type === 'kill' && MONSTER.has(o.target ?? '') && ![...(bh.camps ?? []), ...(bh.spawns ?? [])].some((c) => c.mon === o.target)) err(`quest ${q.id}: quái ${o.target} không có trên bản đồ bac_hoang`);
     }
   }
 }

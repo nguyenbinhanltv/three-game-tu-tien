@@ -1,0 +1,192 @@
+{
+ "binds": [
+  {
+   "note": "áo choàng/giáp từ thắt lưng xuống không theo xương tay (tay giơ ra trước không được kéo vạt trước hông thành tấm chéo)",
+   "box": {
+    "min": [
+     -0.8,
+     -0.7,
+     -0.97
+    ],
+    "max": [
+     0.8,
+     0.5,
+     0.24
+    ]
+   },
+   "drop": [
+    "clavicle_l",
+    "clavicle_r",
+    "upperarm_l",
+    "upperarm_r",
+    "lowerarm_l",
+    "lowerarm_r",
+    "hand_l",
+    "hand_r"
+   ]
+  },
+  {
+   "note": "vạt áo choàng phải (-X) từ vai xuống: trên theo ngực, dưới theo hông (tay giơ lên không kéo vạt thành tấm chéo)",
+   "box": {
+    "min": [
+     -0.8,
+     -0.2,
+     -0.6
+    ],
+    "max": [
+     -0.3,
+     0.5,
+     0.5
+    ]
+   },
+   "blend": [
+    [
+     0.45,
+     "spine_03"
+    ],
+    [
+     0.1,
+     "pelvis"
+    ]
+   ],
+   "feather": 0.1
+  },
+  {
+   "note": "vạt áo choàng trái (+X) từ vai xuống: trên theo ngực, dưới theo hông",
+   "box": {
+    "min": [
+     0.57,
+     -0.45,
+     -0.95
+    ],
+    "max": [
+     0.8,
+     0.5,
+     0.5
+    ]
+   },
+   "feather": 0.1,
+   "blend": [
+    [
+     0.45,
+     "spine_03"
+    ],
+    [
+     0.1,
+     "pelvis"
+    ]
+   ]
+  },
+  {
+   "note": "áo choàng sau lưng: trên theo thắt lưng, dưới theo hông",
+   "box": {
+    "min": [
+     -0.3,
+     0.1,
+     -0.95
+    ],
+    "max": [
+     0.55,
+     0.5,
+     0.45
+    ]
+   },
+   "blend": [
+    [
+     0.35,
+     "spine_02"
+    ],
+    [
+     0.1,
+     "pelvis"
+    ]
+   ],
+   "feather": 0.1
+  },
+  {
+   "note": "giáp đùi/đầu gối trước chân trái (+X): theo đùi trái, khỏi bị tay kéo thành tấm chéo",
+   "box": {
+    "min": [
+     0.1,
+     -0.55,
+     -0.36
+    ],
+    "max": [
+     0.62,
+     -0.22,
+     0.16
+    ]
+   },
+   "bone": "thigh_l",
+   "feather": 0.05
+  },
+  {
+   "note": "giáp đùi/đầu gối trước chân phải (-X)",
+   "box": {
+    "min": [
+     -0.32,
+     -0.55,
+     -0.36
+    ],
+    "max": [
+     0.1,
+     -0.22,
+     0.16
+    ]
+   },
+   "bone": "thigh_r",
+   "feather": 0.05
+  },
+  {
+   "note": "giáp vai phải (-X): cứng theo ngực (vai gai lớn không vung thành tấm chéo khi tay giơ)",
+   "box": {
+    "min": [
+     -0.72,
+     -0.45,
+     0.5
+    ],
+    "max": [
+     -0.12,
+     0.3,
+     0.85
+    ]
+   },
+   "bone": "spine_03",
+   "feather": 0.08
+  },
+  {
+   "note": "giáp vai trái (+X)",
+   "box": {
+    "min": [
+     0.34,
+     -0.45,
+     0.5
+    ],
+    "max": [
+     0.8,
+     0.3,
+     0.85
+    ]
+   },
+   "bone": "spine_03",
+   "feather": 0.08
+  },
+  {
+   "note": "cổ áo choàng sau gáy: cứng theo ngực (đầu ngẩng khi niệm chú không kéo thành tấm dựng chéo)",
+   "box": {
+    "min": [
+     -0.8,
+     0.05,
+     0.42
+    ],
+    "max": [
+     0.8,
+     0.5,
+     0.85
+    ]
+   },
+   "bone": "spine_03",
+   "feather": 0.08
+  }
+ ]
+}

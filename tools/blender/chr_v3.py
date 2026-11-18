@@ -54,7 +54,7 @@ SHEET = opt('--sheet')
 REPORT = opt('--report')
 SPRINGS = opt('--springs')
 NO_EXPORT = '--no-export' in argv
-BIND = opt('--bind')  # quái dị vực (DV-2 đợt 2): JSON {binds:[{box:{min,max}, bone|blend:[[z,bone],[z,bone]]}]} ép vùng cứng (vũ khí, khiên, áo choàng) theo một xương, tọa độ lưới NGUỒN
+BIND = opt('--bind')  # quái dị vực (DV-2 đợt 2): JSON {binds:[{box:{min,max}, bone|blend:[[z,bone],[z,bone]]|drop:[xương…]}]} ép vùng cứng (vũ khí, khiên, áo choàng) theo một xương, tọa độ lưới NGUỒN
 AUTO = '--auto' in argv  # đầu vào không xương: tự ước lượng mốc theo tỉ lệ Mannequin + đo lưới (xem estimate_landmarks)
 REP = {'id': ID, 'input': os.path.basename(IN)}
 
@@ -457,6 +457,16 @@ if BIND:
         lo = np.array(bd['box']['min'], float) * SRC_K + np.array([0, 0, SRC_DZ])
         hi = np.array(bd['box']['max'], float) * SRC_K + np.array([0, 0, SRC_DZ])
         inb = np.where(np.all((V >= lo) & (V <= hi), axis=1))[0]
+        if 'drop' in bd:
+            # `drop`: bỏ ảnh hưởng của các xương này lên đỉnh trong hộp (ví dụ vạt áo trước hông không được theo tay), phần còn lại giữ nguyên trọng số.
+            cols = [IDX[b] for b in bd['drop']]
+            for vi in inb:
+                W[vi, cols] = 0.0
+                if W[vi].sum() <= 1e-9:
+                    W[vi, IDX['pelvis']] = 1.0
+                W[vi] /= W[vi].sum()
+            log(f'bind (bỏ xương) {bd.get("note", "drop")}: {len(inb)} đỉnh')
+            continue
         for vi in inb:
             W[vi] = 0.0
             if 'blend' in bd:
