@@ -54,6 +54,7 @@ SHEET = opt('--sheet')
 REPORT = opt('--report')
 SPRINGS = opt('--springs')
 NO_EXPORT = '--no-export' in argv
+BIND = opt('--bind')  # quái dị vực (DV-2 đợt 2): JSON {binds:[{box:{min,max}, bone|blend:[[z,bone],[z,bone]]}]} ép vùng cứng (vũ khí, khiên, áo choàng) theo một xương, tọa độ lưới NGUỒN
 AUTO = '--auto' in argv  # đầu vào không xương: tự ước lượng mốc theo tỉ lệ Mannequin + đo lưới (xem estimate_landmarks)
 REP = {'id': ID, 'input': os.path.basename(IN)}
 
@@ -183,6 +184,8 @@ if HEIGHT:
         LM[key] = (LM[key][0] * k, LM[key][1] * k)
     zmin *= k
 BODY.data.transform(Matrix.Translation((0, 0, -zmin)))
+SRC_K = SCALE * (k if HEIGHT else 1.0)
+SRC_DZ = -zmin
 for key in LM:
     LM[key] = (LM[key][0] - np.array([0, 0, zmin]), LM[key][1] - np.array([0, 0, zmin]))
 
@@ -448,6 +451,38 @@ for it in range(2):
         if adj[vi]:
             Wn[vi] = 0.7 * W[vi] + 0.3 * W[adj[vi]].mean(axis=0)
     W = Wn
+# vùng cứng (--bind): vũ khí/khiên/áo choàng đi theo đúng một xương, không bị kéo giãn theo khoảng cách
+if BIND:
+    for bd in json.load(open(BIND, encoding='utf-8'))['binds']:
+        lo = np.array(bd['box']['min'], float) * SRC_K + np.array([0, 0, SRC_DZ])
+        hi = np.array(bd['box']['max'], float) * SRC_K + np.array([0, 0, SRC_DZ])
+        inb = np.where(np.all((V >= lo) & (V <= hi), axis=1))[0]
+        for vi in inb:
+            W[vi] = 0.0
+            if 'blend' in bd:
+                (z0, b0), (z1, b1) = bd['blend']
+                t = float(np.clip((V[vi, 2] - (z0 * SRC_K + SRC_DZ)) / ((z1 - z0) * SRC_K), 0, 1))
+                W[vi, IDX[b0]] = 1 - t
+                W[vi, IDX[b1]] = t
+            else:
+                W[vi, IDX[bd['bone']]] = 1.0
+        # `feather` (đơn vị lưới nguồn): quanh hộp, trọng số chuyển dần từ xương ép sang trọng số theo khoảng cách (khỏi có tam giác nối đỉnh cứng với đỉnh tự do kéo thành mảng nhọn).
+        ft = float(bd.get('feather', 0)) * SRC_K
+        if ft > 0:
+            d = np.linalg.norm(np.maximum(np.maximum(lo - V, V - hi), 0), axis=1)
+            ring = np.where((d > 0) & (d < ft))[0]
+            for vi in ring:
+                t = 1 - d[vi] / ft
+                tw = np.zeros(W.shape[1])
+                if 'blend' in bd:
+                    (z0, b0), (z1, b1) = bd['blend']
+                    u = float(np.clip((V[vi, 2] - (z0 * SRC_K + SRC_DZ)) / ((z1 - z0) * SRC_K), 0, 1))
+                    tw[IDX[b0]], tw[IDX[b1]] = 1 - u, u
+                else:
+                    tw[IDX[bd['bone']]] = 1.0
+                row = W[vi] / max(W[vi].sum(), 1e-9)
+                W[vi] = t * tw + (1 - t) * row
+        log(f'bind {bd.get("note", bd.get("bone", "blend"))}: {len(inb)} đỉnh')
 # ≤ 4 xương/đỉnh, chuẩn hóa
 for vi in range(NV):
     row = W[vi]

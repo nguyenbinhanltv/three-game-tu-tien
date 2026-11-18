@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "mon_giac_kiem_trong_binh",
+  "type": "mon",
+  "budgetClass": "monster_mq",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 9000,
+    "texture": 1024
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Sketchfab: \"MALTHERION // The Skullbound Aegis\" của Atahan3D, CC BY 4.0. Đã chỉnh sửa: giảm lưới 309.194 → 9.000 tam giác, UV mới và nướng lại texture (tools/blender/skin_prep.py --stage bake, cấu hình tools/blender/skins/dv2_maltherion.json), khiên/kiếm/áo choàng gắn cứng vào xương tay và thân (--bind); đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py (clip UAL của Quaternius CC0 phát trực tiếp)",
+    "owner": "6 (https://sketchfab.com/Atahan3D)",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/85ff03237ee94a0cbfe9770dde440d6c",
+    "spdx": "CC-BY-4.0"
+  }
+}

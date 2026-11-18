@@ -389,6 +389,54 @@
       ]
     },
     {
+      "id": "bone_golem",
+      "kind": "model",
+      "title": "Bone Golem - Necromantic Construct",
+      "author": "Pigcraft",
+      "url": "https://sketchfab.com/3d-models/bone-golem-necromantic-construct-7510de27700c4b199d1d727b9f2f48d6",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig"
+      ],
+      "assets": [
+        "mon_tan_chung"
+      ]
+    },
+    {
+      "id": "maltherion",
+      "kind": "model",
+      "title": "MALTHERION // The Skullbound Aegis",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/85ff03237ee94a0cbfe9770dde440d6c",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig"
+      ],
+      "assets": [
+        "mon_giac_kiem_trong_binh"
+      ]
+    },
+    {
+      "id": "gorthazul",
+      "kind": "model",
+      "title": "GORTHAZUL // The Ashhorn Behemoth",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/gorthazul-the-ashhorn-behemoth-0e2a0f6baad64f51b2aa613112b7fd7c",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig"
+      ],
+      "assets": [
+        "elite_hoi_giac_cu_thu"
+      ]
+    },
+    {
       "id": "godot_elemental_sampler",
       "kind": "sound",
       "title": "Godot 4 Elemental Spells VFX + SFX: Free Sampler",
