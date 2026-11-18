@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { texture, positionWorld, vertexColor, mix as tmix } from 'three/tsl';
 import { getCloudNoise } from '../render/noiseTex';
 import { createWorldMaterial } from '../render/materials/world';
-import { applyGroundShader, clearGroundShader, type GroundLevel } from '../render/materials/ground';
+import { applyGroundShader, clearGroundShader, setGroundTileBreak, type GroundLevel } from '../render/materials/ground';
 import type { GroundTextures } from './groundTextures';
 import { COLLIDERS, fbm, featureWeight, FOREST, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { levelTerrain } from './levelCtx';
@@ -645,6 +645,7 @@ export class Terrain {
 
   /** Bật shader mặt đất PBR khi bộ texture đã nạp; gọi lại khi đổi preset. */
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
+    setGroundTileBreak(XICH);
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);
   }

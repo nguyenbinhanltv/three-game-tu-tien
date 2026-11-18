@@ -43,7 +43,7 @@ describe('xichArt (DV-3K)', () => {
     const clear = [{ x: d.center.x, z: d.center.z, r: 16 }, { x: d.spawn.x, z: d.spawn.z, r: 9 }];
     const a = scatterXich({ def, heightAt: h, clear, cracks });
     const b = scatterXich({ def, heightAt: h, clear, cracks });
-    expect(a.length).toBeGreaterThan(50);
+    expect(a.length).toBeGreaterThan(30);
     expect(a.length).toBeLessThan(900);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
     for (const r of a) {

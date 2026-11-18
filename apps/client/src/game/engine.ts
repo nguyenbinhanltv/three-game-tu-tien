@@ -991,14 +991,23 @@ export class Game {
     // Bia giữ ở tâm: than hồng; ba khe mạch (đúng chỗ khe của boss cuối): ngọc lam, đối màu với than hồng.
     const acc: XichAccent[] = [
       { x: c.x, z: c.z, color: 0xff6a35, k: 1.4 },
-      { x: c.x + 19, z: c.z + 11, color: 0x4fc9d0, k: 0.8 },
-      { x: c.x - 19, z: c.z + 11, color: 0x4fc9d0, k: 0.8 },
-      { x: c.x, z: c.z - 22, color: 0x4fc9d0, k: 0.8 },
+      { x: c.x + 19, z: c.z + 11, color: 0x4fc9d0, k: 1.3 },
+      { x: c.x - 19, z: c.z + 11, color: 0x4fc9d0, k: 1.3 },
+      { x: c.x, z: c.z - 22, color: 0x4fc9d0, k: 1.3 },
     ];
     const pts = acc.map((a) => ({ x: a.x, y: heightAt(a.x, a.z) + 4.5, z: a.z, color: a.color, k: a.k }));
-    const halos = createLanternHalos(pts, 5, 0xff7a45);
-    this.scene.add(halos);
-    this.levelObjs.push(halos);
+    // Quầng giả: bia giữ than hồng; khe mạch ngọc lam lớn hơn, hai tầng (sát đất và lơ lửng) để điểm nhấn lạnh đọc được từ xa.
+    const halos = createLanternHalos(pts.slice(0, 1), 6, 0xff7a45);
+    const jade = acc.slice(1).flatMap((a2) => [1.6, 5.5].map((dy) => ({ x: a2.x, y: heightAt(a2.x, a2.z) + dy, z: a2.z })));
+    const jadeGlow = buildCrystalGlow(jade);
+    // Ngọn lửa than hồng trên các trụ đá dọc chân vách (cách một trụ), thay đèn lồng kiểu Vân Lam.
+    const flames = propsOf(id)
+      .filter((q) => q.id === 'prop_tru_da_khac_van')
+      .filter((_, i) => i % 2 === 0)
+      .map((q) => ({ x: q.x, y: heightAt(q.x, q.z) + 3.4 * q.s, z: q.z }));
+    const flameHalos = createLanternHalos(flames, 3.2, 0xff5a28);
+    this.scene.add(halos, jadeGlow, flameHalos);
+    this.levelObjs.push(halos, jadeGlow, flameHalos);
     this.lanterns = new LanternLights(this.scene, pts, 4, 34);
     this.lanterns.setEnabled(q.lights && isWebGPU(this.renderer));
     this.lanterns.setIntensityScale(LANTERN_LIGHT[this.levelMood] ?? 1);

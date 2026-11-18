@@ -23,7 +23,7 @@ export function xichCracks(def: TerrainDef, groundY: (x: number, z: number) => n
     }
     return out;
   };
-  return [make(-27, 5, 0.052, 0.6, 70), make(27, 5, 0.047, 2.4, 70), make(0, 9, 0.041, 4.1, 56)];
+  return [make(-33, 3.5, 0.052, 0.6, 70), make(33, 3.5, 0.047, 2.4, 70), make(0, 9, 0.041, 4.1, 56)];
 }
 
 /** Khoảng cách ngang tới đường nứt gần nhất (m). */
@@ -58,6 +58,7 @@ export function xichGroundColor(def: TerrainDef, cracks: readonly RiftPt[][], x:
   const rel = xichRel(def, h);
   const slope = 1 - ny;
   let col = hex(RIFT.ash, 1.6 + n * 0.3);
+  // (sàn sáng, vách tối: `col` bên dưới giữ nguyên cho sàn)
   col = lerp3(col, hex(RIFT.ashLight, 0.7 + m * 0.2), Math.min(0.45, Math.max(0, n * 1.2 + 0.2)));
   // Mạng nứt mảnh khắp sàn, đỏ sẫm.
   const web = 1 - Math.min(1, Math.abs(fbm(x * 0.03 + 9, z * 0.03 - 4, 3, def.seed + 612)) * 8);
@@ -80,12 +81,14 @@ export function xichGroundColor(def: TerrainDef, cracks: readonly RiftPt[][], x:
   if (rel > 1.5) {
     // Vách: dải tầng đá theo độ cao (≈ 3 m), xen huyết sậm và dạ tím; sườn dốc lộ đá tối.
     const band = 0.5 + 0.5 * Math.sin(rel * 2.1 + n * 7);
-    const strata = lerp3(hex(RIFT.violetDeep, 1.15), hex(RIFT.blood, 1.2), band);
+    const strata = lerp3(hex(RIFT.violetDeep, 1.5), hex(RIFT.ash, 1.15), band);
     col = lerp3(col, strata, Math.min(1, (rel - 1.5) / 9) * (0.55 + 0.35 * m));
-    if (slope > 0.2) col = lerp3(col, hex(RIFT.ash, 1.2 + band * 0.4), Math.min(0.8, (slope - 0.2) * 3));
+    // Vách tối hẳn so với sàn và trời (tách lớp giá trị), chỉ lộ vân tầng.
+    if (slope > 0.2) col = lerp3(col, hex(RIFT.violetDeep, 1.1 + band * 0.7), Math.min(0.85, (slope - 0.2) * 3));
     // Chân vách ám khói, gờ đỉnh vách ánh than hồng (nắng xiên).
-    col = lerp3(col, hex(RIFT.ash, 0.85), (1 - smoothstep(0, 14, rel)) * 0.3);
-    if (c) col = lerp3(col, hex(RIFT.ember, 0.55), smoothstep(c.wallH - 8, c.wallH, rel) * (1 - smoothstep(c.wallH, c.wallH + 4, rel)) * 0.3);
+    // Viền sáng: chân vách ánh than hồng hắt từ vết nứt (rim thấp), gờ đỉnh vách ánh tím lạnh của trời.
+    col = lerp3(col, hex(RIFT.ember, 1.3 + m * 0.4), (1 - smoothstep(1.5, 9, rel)) * 0.6);
+    if (c) col = lerp3(col, hex(RIFT.violet, 1.9), smoothstep(c.wallH - 7, c.wallH - 1, rel) * (1 - smoothstep(c.wallH - 1, c.wallH + 3, rel)) * 0.7);
   }
   // Cao nguyên: tro bay.
   if (c && rel > c.wallH - 6) col = lerp3(col, hex(RIFT.ashLight, 0.82 + n * 0.16), smoothstep(c.wallH - 6, c.wallH + 4, rel) * 0.7);
@@ -139,9 +142,11 @@ export function scatterXich(ctx: XichScatterCtx): BhRock[] {
       const foot = 1 - smoothstep(0, 16, rel); // 1 ở chân vách
       const onWall = rel > 1.5;
       // Mật độ: chân vách và sườn thấp dày, sàn thưa, tâm trống.
-      const p = onWall ? 0.5 * (1 - smoothstep(6, 26, rel)) : 0.1 + smoothstep(12, 40, Math.abs(x - c.cx)) * 0.35;
+      const p = onWall ? 0.5 * (1 - smoothstep(6, 26, rel)) : 0.1 + smoothstep(30, 44, Math.abs(x - c.cx)) * 0.5;
       if (r0 > p) continue;
       if (dc < 15) continue;
+      // Giữ sàn giữa trống cho camera (tầm xoay ~18 m quanh người chơi): đá sàn chỉ ở dải gần vách.
+      if (!onWall && Math.abs(x - c.cx) < 30) continue;
       if (xichCrackDist(ctx.cracks, x, z) < 4.5) continue;
       let blocked = false;
       for (const k of ctx.clear) if ((x - k.x) ** 2 + (z - k.z) ** 2 < k.r * k.r) blocked = true;
@@ -155,7 +160,7 @@ export function scatterXich(ctx: XichScatterCtx): BhRock[] {
       const pick = hash01(gx, gz, 9151);
       if (!onWall && pick > 0.93) out.push({ id: 'prop_kiem_gay', x, z, yaw: k * Math.PI * 2, s: 1 + k2 * 0.5, lean: 0.25 + k * 0.35, sink: 0.2, tint: [0.8, 0.72, 0.72] });
       else if (foot > 0.35 && pick > 0.78) out.push({ id: 'prop_tru_da_khac_van', x, z, yaw: k * Math.PI * 2, s: 0.8 + k2 * 0.45, lean: 0.8 + k * 0.6, sink: 0.6 + k2 * 0.9, tint });
-      else out.push({ id: ROCKS[Math.floor(pick * 2.99)], x, z, yaw: k * Math.PI * 2, s: 0.8 + k2 * 1.1 + foot * 0.9, lean: (k - 0.5) * 0.3, sink: 0.12 + foot * 0.5, tint });
+      else out.push({ id: ROCKS[Math.floor(pick * 2.99)], x, z, yaw: k * Math.PI * 2, s: 0.7 + k2 * 0.8 + foot * 0.5, lean: (k - 0.5) * 0.3, sink: 0.12 + foot * 0.4, tint });
     }
   }
   return out;
