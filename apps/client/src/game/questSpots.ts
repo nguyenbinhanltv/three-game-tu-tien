@@ -9,7 +9,7 @@ import { groundAt } from './levelCtx';
 
 const SHOW = 220;
 /** Tiền tố id điểm → màu: gương nước (E3-H2) lam, đèn trời (E4-H) hổ phách, môn phong ấn (E4-H) lục bích. */
-const KINDS: Record<string, number> = { guong_nuoc_: 0x4fb0ff, den_troi_: 0xffb347, phong_an_mon_: 0x6fe3b0 };
+const KINDS: Record<string, number> = { guong_nuoc_: 0x4fb0ff, den_troi_: 0xffb347, phong_an_mon_: 0x6fe3b0, xac_tho_san_: 0xd9d2c3, tran_gioi_bia_: 0x7fe0ff, mach_nhan_: 0x57e0c0 };
 
 interface Shard {
   id: string;
