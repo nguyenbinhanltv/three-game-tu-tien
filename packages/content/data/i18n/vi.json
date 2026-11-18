@@ -1595,7 +1595,7 @@
   "item.itm_kim_da_mien.desc": "Mảnh vàng dát vỡ ra từ vương miện Kim Dạ, ngón tay chạm vào còn thấy lạnh. Nguyên liệu chế Anh Biến Lộ (chờ làm kiếp chương 5).",
   "sys.kd_mend": "Triền Bố Châm Bà khâu vết thương cho cả bầy! Hạ nó trước, hoặc đánh nó mất thế để cắt chú.",
   "sys.kd_twin_rage": "Một Huyết Giác Ma Tướng gục xuống, con còn lại phát cuồng!",
-  "sys.kd_lamp_puzzle": "Bốn cột đèn bừng lên: {order}. Chạm đúng thứ tự trong {s} giây!",
+  "sys.kd_lamp_puzzle": "Bốn cột đèn hiện thứ tự: {order}. Chạm đúng thứ tự trong {s} giây!",
   "sys.kd_lamp_puzzle_ok": "Hành lang đèn sáng đủ bốn màu. Sát thương của Kim Dạ Ma Hậu giảm {n}%.",
   "sys.kd_lamp_puzzle_bad": "Sai thứ tự! Đèn tắt, quái từ bóng tối tràn ra.",
   "sys.kd_lamp_puzzle_time": "Hết giờ! Đèn tắt, quái từ bóng tối tràn ra.",
