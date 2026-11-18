@@ -81,8 +81,8 @@ const LOAD_MARGIN = 80;
  * Cực cao: hệ số tầm cây/đá/LOD theo bản đồ (Vân Lam, Vân Hải nhiều cây nên thấy rõ nhất; Thiên Khuyết, Bắc Hoang tối,
  * ít cây nên chỉ nhích hơn Cao để khỏi tốn CPU vô ích). Cao là 1,15.
  */
-export const ULTRA_RANGE: Record<string, number> = { van_lam: 1.6, van_hai: 1.5, thien_khuyet: 1.3 };
-const ULTRA_RANGE_DEFAULT = 1.25;
+export const ULTRA_RANGE: Record<string, number> = { van_lam: 1.3, van_hai: 1.25, thien_khuyet: 1.2 };
+const ULTRA_RANGE_DEFAULT = 1.15;
 /** Trần tam giác Cực cao (ngân sách riêng) và ngưỡng điều tiết: vượt `TRI_HIGH` thì co tầm, dưới `TRI_LOW` thì nở lại. */
 export const ULTRA_TRI_CAP = 2_500_000;
 export const TRI_HIGH = 2_300_000;

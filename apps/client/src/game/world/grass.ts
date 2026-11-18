@@ -57,7 +57,7 @@ export const GRASS_PRESETS: Record<string, GrassPreset> = {
   medium: { radius: 32, spacing: 1.1 },
   high: { radius: 46, spacing: 0.9 },
   // Cực cao: cỏ rộng và dày hơn (tầm 68 m, giãn 0,78 m; ~gấp 2 số bụi của Cao). Ô dựng mỗi khung vẫn theo `budget`, trần instance bên dưới.
-  ultra: { radius: 68, spacing: 0.78 },
+  ultra: { radius: 56, spacing: 0.84 },
 };
 
 /** Trần số instance (ứng với preset Cực cao), cấp phát một lần. */
