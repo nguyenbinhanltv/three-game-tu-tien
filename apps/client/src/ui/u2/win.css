@@ -1,0 +1,612 @@
+/*
+ * Cửa sổ lớn UI Kit 2.0 (U2-3): giấy ngà viền ngọc, tiêu đề cuộn nhô trên viền, góc kim chạm mây, nền sơn thủy mờ ở đáy.
+ * Thay `ngj/panels.css` (UI-3). Áp cho mọi `PanelWindow` (class `.u2-win`): Túi, Nhân vật, Công pháp, Nhiệm vụ, Tổ đội, Cài đặt,
+ * Trợ giúp, Bản đồ lớn, Ghi công, hội thoại NPC (cửa hàng, luyện đan, cường hóa, thăng bậc…).
+ * Chỉ var(--u-*): KHÔNG hex/rgba/font-family cứng (u2/tokens.test.ts khóa). Cách làm: đổi token `--k-*` cục bộ trong `.u2-win`
+ * sang màu hợp nền giấy, vẽ lại khung/tiêu đề/nút/tab/ô, rồi vá những lớp riêng của từng bảng chưa chuyển hẳn (ghi chú "bảng chưa chuyển").
+ */
+
+:root:root .u2-win {
+  /* chữ và nhấn trên nền giấy */
+  --k-text: var(--u-muc);
+  --k-text-dim: var(--u-muc-dim);
+  --k-text-ink: var(--u-muc);
+  --k-text-ink-dim: var(--u-muc-dim);
+  --k-gold: var(--u-gold-ink);
+  --k-bronze: var(--u-gold-lo);
+  --k-bronze-hi: var(--u-gold-ink);
+  --k-bronze-lo: var(--u-gold-lo);
+  --k-edge-dim: var(--u-card-line);
+  --k-jade: var(--u-ngoc-ink);
+  --k-ngoc: var(--u-info-ink);
+  --k-cinnabar-hi: var(--u-bad-ink);
+  --k-q1: var(--u-q1-ink);
+  --k-q2: var(--u-q2-ink);
+  --k-q3: var(--u-q3-ink);
+  --k-q4: var(--u-q4-ink);
+  --k-sword: var(--u-info-ink);
+  --k-jade-dark: var(--u-ngoc-ink);
+  /* lòng giếng/ô tối trên giấy: nâu giấy đậm hơn một bậc */
+  --k-night-0: var(--u-giay-lo);
+  --k-night: var(--u-giay-sau);
+  --k-night-2: var(--u-giay-lo);
+  --k-ink-bg: var(--u-card);
+  --k-ink-bg-hi: var(--u-card-hi);
+  /* biến toàn cục của styles.css (nền tối) → bản hợp nền giấy trong bảng */
+  --gold: var(--u-gold-ink);
+  --gold-soft: var(--u-gold-ink);
+  --text: var(--u-muc);
+  --muted: var(--u-muc-dim);
+  --good: var(--u-ok-ink);
+  --bad: var(--u-bad-ink);
+  --line: var(--u-card-line);
+  /* chữ: Texturina cho tiêu đề/nhãn, Newsreader cho nội dung */
+  --k-font-serif: var(--u-font-head);
+  --k-font-title: var(--u-font-head);
+  --k-font-body: var(--u-font-body);
+  /* chừa chỗ cho tiêu đề cuộn nhô lên trên viền */
+  padding-top: 30px;
+  font-family: var(--u-font-body);
+  font-feature-settings: var(--u-num);
+}
+
+/* ───────── khung giấy ngà viền ngọc ───────── */
+:root:root .u2-win .k-panel {
+  --fg: var(--u-muc);
+  --fg-dim: var(--u-muc-dim);
+  filter: drop-shadow(0 14px 28px var(--u-ink-scrim));
+}
+:root:root .u2-win .k-panel-edge {
+  padding: 0;
+  clip-path: none;
+  background: none;
+  border: var(--u-line-3) solid var(--u-ngoc);
+  box-shadow: 0 0 0 var(--u-line-1) var(--u-gold);
+  animation: u2-win-fade var(--u-dur-open) var(--u-ease) both;
+}
+:root:root .u2-win .k-panel-in {
+  position: relative;
+  clip-path: none;
+  background: var(--u-giay) url('./tex/paper.webp') center / 512px;
+  background-blend-mode: multiply;
+  color: var(--u-muc);
+  box-shadow:
+    inset 0 0 0 4px var(--u-giay),
+    inset 0 0 0 5px var(--u-gold-line);
+  font-family: var(--u-font-body);
+}
+/* nền sơn thủy mờ: tranh phủ nửa dưới, tan dần lên trên, nằm dưới nội dung */
+:root:root .u2-win .k-panel-in::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: multiply;
+  background: url('./tex/sonthuy.webp') center bottom / cover no-repeat;
+  opacity: 0.4;
+  -webkit-mask-image: linear-gradient(180deg, transparent 18%, var(--u-ink-0) 100%);
+  mask-image: linear-gradient(180deg, transparent 18%, var(--u-ink-0) 100%);
+}
+:root:root .u2-win .k-panel-in > * {
+  position: relative;
+}
+@keyframes u2-win-fade {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+:root[data-reduce-motion='true'] .u2-win .k-panel-edge {
+  animation: none;
+}
+
+/* góc kim chạm mây */
+:root:root .u2-win .k-panel-in > .u2-win-corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  color: var(--u-gold);
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 1px 0 var(--u-ink-0));
+}
+.u2-win-corner[data-c='tl'] {
+  left: -9px;
+  top: -9px;
+}
+.u2-win-corner[data-c='tr'] {
+  right: -9px;
+  top: -9px;
+  transform: scaleX(-1);
+}
+.u2-win-corner[data-c='bl'] {
+  left: -9px;
+  bottom: -9px;
+  transform: scaleY(-1);
+}
+.u2-win-corner[data-c='br'] {
+  right: -9px;
+  bottom: -9px;
+  transform: scale(-1, -1);
+}
+
+/* ───────── tiêu đề cuộn nhô trên viền + nút đóng ───────── */
+:root:root .u2-win .k-head.u2-win-head {
+  position: absolute;
+  left: -3px;
+  top: -34px;
+  z-index: 3;
+  padding: 0;
+  gap: 0;
+  align-items: stretch;
+}
+:root:root .u2-win .k-head.u2-win-head::after {
+  display: none;
+}
+:root:root .u2-win .u2-win-head .k-head-title {
+  --c: var(--u-cut-l);
+  margin: 0;
+  min-width: 150px;
+  padding: var(--u-sp-2) calc(var(--u-sp-5) + var(--c)) var(--u-sp-2) var(--u-sp-4);
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-5);
+  line-height: var(--u-lh-tight);
+  letter-spacing: 0;
+  color: var(--u-gold-text);
+  background: linear-gradient(180deg, var(--u-ngoc) 0%, var(--u-ngoc-lo) 100%);
+  clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% 100%, 0 100%);
+  box-shadow: var(--u-emboss);
+  text-shadow: 0 1px 0 var(--u-ink-0);
+  white-space: nowrap;
+}
+:root:root .u2-win .u2-win-head .k-head-actions {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  margin-left: var(--u-sp-2);
+  display: flex;
+  gap: var(--u-sp-2);
+}
+:root:root .u2-win .u2-win-sub {
+  font-family: var(--u-font-head);
+  font-size: var(--u-fs-2);
+  color: var(--u-muc-dim);
+  text-align: center;
+  margin: 0 0 var(--u-sp-1);
+}
+:root:root .u2-win .u2-win-close {
+  position: absolute;
+  right: -14px;
+  top: -14px;
+  z-index: 3;
+}
+
+/* ───────── thân và chữ ───────── */
+:root:root .u2-win .k-panel-body {
+  padding: var(--u-sp-4) var(--u-sp-5) var(--u-sp-5);
+  scrollbar-color: var(--u-scroll) transparent;
+}
+:root:root .u2-win .k-divider > span {
+  color: var(--u-gold-ink);
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-2);
+}
+:root:root .u2-win .k-divider::before,
+:root:root .u2-win .k-divider::after {
+  opacity: 0.9;
+  background: linear-gradient(90deg, transparent, var(--u-gold));
+}
+:root:root .u2-win .k-divider::after {
+  background: linear-gradient(90deg, var(--u-gold), transparent);
+}
+:root:root .u2-win .k-divider i {
+  background: var(--u-gold);
+}
+:root:root .u2-win .k-head-sub {
+  font-family: var(--u-font-head);
+  color: var(--u-muc-dim);
+}
+
+/* ───────── tab hình thang ───────── */
+:root:root .u2-win .k-tabs {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding: 0 var(--u-sp-2);
+  gap: var(--u-sp-1);
+  border-bottom: var(--u-line-3) solid var(--u-ngoc);
+}
+:root:root .u2-win .k-tabs::after {
+  display: none;
+}
+:root:root .u2-win .k-tab {
+  --c: var(--u-cut-m);
+  padding: var(--u-sp-2) calc(var(--u-sp-3) + var(--c));
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-2);
+  letter-spacing: 0;
+  color: var(--u-ngoc-text);
+  background: linear-gradient(180deg, var(--u-ngoc) 0%, var(--u-ngoc-lo) 100%);
+  clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% 100%, 0 100%);
+  transition: filter var(--u-dur-fast) var(--u-ease);
+}
+:root:root .u2-win .k-tab:hover:not(:disabled) {
+  color: var(--u-ngoc-text);
+  filter: brightness(1.15);
+}
+:root:root .u2-win .k-tab[aria-selected='true'] {
+  color: var(--u-ngoc-sel-text);
+  background: var(--u-ngoc-sel);
+  box-shadow: var(--u-emboss);
+}
+:root:root .u2-win .k-tab::after {
+  display: none;
+}
+:root:root .u2-win .k-tab:disabled {
+  color: var(--u-chu-dim);
+  background: var(--u-ink-3);
+}
+:root:root .u2-win .k-tab:focus-visible {
+  outline: var(--u-line-3) solid var(--u-focus);
+  outline-offset: -3px;
+}
+:root:root .u2-win .k-tab-badge {
+  background: var(--u-son);
+  color: var(--u-son-text);
+}
+
+/* ───────── nút: lục giác vát (son = chính, ngọc = phụ) ───────── */
+:root:root .u2-win .k-btn {
+  --edge: var(--u-gold);
+  --in: linear-gradient(180deg, var(--u-ngoc-hi) 0%, var(--u-ngoc) 55%, var(--u-ngoc-lo) 100%);
+  --in-fg: var(--u-ngoc-text);
+  --h: var(--u-cut-m);
+  clip-path: polygon(var(--h) 0, calc(100% - var(--h)) 0, 100% 50%, calc(100% - var(--h)) 100%, var(--h) 100%, 0 50%);
+  padding: var(--u-line-2);
+}
+:root:root .u2-win .k-btn-in {
+  clip-path: polygon(var(--h) 0, calc(100% - var(--h)) 0, 100% 50%, calc(100% - var(--h)) 100%, var(--h) 100%, 0 50%);
+  padding-inline: calc(var(--u-sp-4) + var(--h));
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: var(--u-fs-2);
+  letter-spacing: 0;
+  text-shadow: 0 1px 0 var(--u-ink-0);
+}
+:root:root .u2-win .k-btn[data-size='s'] .k-btn-in {
+  font-size: var(--u-fs-1);
+  padding-inline: calc(var(--u-sp-3) + var(--h));
+}
+:root:root .u2-win .k-btn[data-variant='primary'] {
+  --in: linear-gradient(180deg, var(--u-son-hi) 0%, var(--u-son) 55%, var(--u-son-lo) 100%);
+  --in-fg: var(--u-son-text);
+}
+:root:root .u2-win .k-btn[data-variant='danger'] {
+  --edge: var(--u-son);
+  --in: linear-gradient(180deg, var(--u-son) 0%, var(--u-son-lo) 100%);
+  --in-fg: var(--u-son-text);
+}
+:root:root .u2-win .k-btn[data-variant='ghost'] {
+  --edge: transparent;
+  --in: transparent;
+  --in-fg: var(--u-muc-dim);
+}
+:root:root .u2-win .k-btn[data-variant='ghost'] .k-btn-in {
+  text-shadow: none;
+}
+:root:root .u2-win .k-btn[data-pressed='true'] {
+  --edge: var(--u-gold-hi);
+  --in: var(--u-ngoc-sel);
+  --in-fg: var(--u-ngoc-sel-text);
+}
+:root:root .u2-win .k-btn[data-pressed='true'] .k-btn-in {
+  text-shadow: none;
+}
+:root:root .u2-win .k-btn:focus-visible {
+  --edge: var(--u-focus);
+}
+
+/* ───────── ô vật phẩm: bát giác vát, MỘT hình duy nhất; viền theo phẩm chất ───────── */
+:root:root .u2-win .k-slot {
+  --cut: var(--u-cut-m);
+  padding: var(--u-line-3);
+  clip-path: polygon(
+    var(--cut) 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut)),
+    0 var(--cut)
+  );
+}
+:root:root .u2-win .k-slot[data-size='s'] {
+  --cut: var(--u-cut-s);
+}
+:root:root .u2-win .k-slot[data-q='0'] {
+  --q: var(--u-q0);
+}
+:root:root .u2-win .k-slot[data-q='1'] {
+  --q: var(--u-q1);
+}
+:root:root .u2-win .k-slot[data-q='2'] {
+  --q: var(--u-q2);
+}
+:root:root .u2-win .k-slot[data-q='3'] {
+  --q: var(--u-q3);
+}
+:root:root .u2-win .k-slot[data-q='4'] {
+  --q: var(--u-q4);
+}
+:root:root .u2-win .k-slot[data-q='5'] {
+  --q: conic-gradient(from var(--u-spin, 0deg), var(--u-q5-a), var(--u-q5-b), var(--u-q5-c), var(--u-q5-a));
+  animation: u2-spin var(--u-dur-shimmer) linear infinite;
+}
+:root:root .u2-win .k-slot-in {
+  inset: var(--u-line-3);
+  clip-path: inherit;
+  background: var(--u-ink-1);
+  box-shadow: inset var(--u-glow-q) var(--q-glow, transparent);
+}
+:root:root .u2-win .k-slot[data-q='3'] {
+  --q-glow: var(--u-q3);
+}
+:root:root .u2-win .k-slot[data-q='4'] {
+  --q-glow: var(--u-q4);
+}
+:root:root .u2-win .k-slot[data-q='5'] {
+  --q-glow: var(--u-q5);
+}
+:root:root .u2-win .k-slot .content-icon {
+  width: 78%;
+  height: 78%;
+}
+:root:root .u2-win .k-slot[data-empty='true'] {
+  --q: var(--u-gold-lo);
+  opacity: 0.8;
+}
+:root:root .u2-win .k-slot[data-empty='true'] .k-slot-in {
+  background: var(--u-giay-sau);
+  box-shadow: inset 0 2px 4px var(--u-gold-line);
+}
+:root:root .u2-win .k-slot[aria-pressed='true'] {
+  --q: var(--u-gold-hi);
+}
+:root:root .u2-win .k-slot-count {
+  right: 5px;
+  bottom: 3px;
+  font-family: var(--u-font-head);
+  font-weight: 800;
+  color: var(--u-chu);
+}
+:root:root .u2-win .k-slot-plus {
+  left: 5px;
+  top: 3px;
+  font-family: var(--u-font-head);
+  font-weight: 800;
+  color: var(--u-gold-hi);
+}
+/* ô trang bị: cùng hình bát giác (không còn thoi riêng) */
+:root:root .u2-win .equip-cell .k-slot {
+  clip-path: polygon(
+    var(--cut) 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut)),
+    0 var(--cut)
+  );
+}
+:root:root .u2-win .equip-cell .k-slot .content-icon {
+  width: 78%;
+  height: 78%;
+}
+
+/* ───────── thanh đo trong bảng ───────── */
+:root:root .u2-win .gauge {
+  margin-top: var(--u-sp-1);
+}
+
+/* ───────── ô nhập, chọn, thanh trượt ───────── */
+:root:root .u2-win input[type='text'],
+:root:root .u2-win input[type='search'],
+:root:root .u2-win select,
+:root:root .u2-win textarea {
+  background: var(--u-card-hi);
+  color: var(--u-muc);
+  border: var(--u-line-2) solid var(--u-gold);
+  font-family: var(--u-font-body);
+  font-size: var(--u-fs-2);
+}
+:root:root .u2-win input[type='text']:focus,
+:root:root .u2-win input[type='search']:focus,
+:root:root .u2-win select:focus,
+:root:root .u2-win textarea:focus {
+  outline: var(--u-line-2) solid var(--u-focus);
+  outline-offset: 1px;
+}
+:root:root .u2-win input::placeholder {
+  color: var(--u-muc-dim);
+  font-style: italic;
+}
+:root:root .u2-win .k-range::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, var(--u-ngoc) var(--fill, 50%), var(--u-wash-gold) var(--fill, 50%));
+}
+:root:root .u2-win .k-range::-moz-range-track {
+  background: var(--u-wash-gold);
+}
+:root:root .u2-win .k-range::-moz-range-progress {
+  background: var(--u-ngoc);
+}
+:root:root .u2-win .k-range::-webkit-slider-thumb {
+  border-color: var(--u-ink-0);
+  background: var(--u-gold);
+}
+:root:root .u2-win .k-range::-moz-range-thumb {
+  border-color: var(--u-ink-0);
+  background: var(--u-gold);
+}
+:root:root .u2-win .k-row-val {
+  color: var(--u-gold-ink);
+}
+
+/* ───────── thẻ, hàng, ô trong bảng: nền giấy sáng nổi nhẹ ───────── */
+:root:root
+  .u2-win
+  :is(
+    .k-card,
+    .pty-row,
+    .mp-card,
+    .mp-var,
+    .mp-detail,
+    .bag-sel,
+    .upg-select,
+    .upg-cell,
+    .pty-invite,
+    .skill-item,
+    .upg-row,
+    .shop-row,
+    .recipe-row,
+    .npc-quest,
+    .quest-card,
+    .mp-skill
+  ) {
+  background: var(--u-card);
+  border-color: var(--u-card-line);
+  box-shadow: inset 0 0 0 2px var(--u-card-edge);
+  color: var(--u-muc);
+}
+:root:root .u2-win .k-card.done,
+:root:root .u2-win .k-card[data-done='true'] {
+  background: var(--u-wash-ngoc);
+}
+:root:root .u2-win .bag-page {
+  background: var(--u-card-hi);
+  border: var(--u-line-1) solid var(--u-card-line);
+  color: var(--u-muc);
+}
+:root:root .u2-win .bag-page[data-active='1'] {
+  background: var(--u-wash-ngoc-2);
+  border-color: var(--u-ngoc);
+}
+:root:root .u2-win .k-panel kbd {
+  background: var(--u-wash-gold);
+  color: var(--u-muc);
+  border-color: var(--u-card-line);
+}
+:root:root .u2-win .bk-box {
+  background: var(--u-wash-tim);
+}
+:root:root .u2-win .pty-mp {
+  background: var(--u-wash-gold);
+}
+:root:root .u2-win .equip-stage {
+  border: 2px solid var(--u-gold);
+  box-shadow: 0 0 0 var(--u-line-1) var(--u-ink-scrim);
+}
+
+/* ───────── màu chữ sáng cứng trong CSS cũ → bản đậm hợp nền giấy (bảng chưa chuyển) ───────── */
+:root:root
+  .u2-win
+  :is(.k-panel .ok, .quest-obj.ok, .mp-up, .craft-chance[data-support='1'], .pty-role.support, .wm-zone[data-status='low'] .wm-zone-lv) {
+  color: var(--u-ok-ink);
+}
+:root:root .u2-win :is(.wm-zone[data-status='high'] .wm-zone-lv) {
+  color: var(--u-bad-ink);
+}
+:root:root .u2-win :is(.reward-item[data-q='1'], .item-name[data-q='1']) {
+  color: var(--u-q1-ink);
+}
+:root:root .u2-win :is(.reward-item[data-q='2'], .item-name[data-q='2']) {
+  color: var(--u-q2-ink);
+}
+:root:root .u2-win :is(.reward-item[data-q='3'], .item-name[data-q='3']) {
+  color: var(--u-q3-ink);
+}
+:root:root .u2-win :is(.item-name[data-q='4'], .item-stat.set) {
+  color: var(--u-q4-ink);
+  text-shadow: none;
+}
+:root:root .u2-win .item-name[data-q='5'] {
+  color: var(--u-q5-ink);
+  text-shadow: none;
+}
+:root:root .u2-win :is(.craft-chance, .wm-cd, .wm-zone-lv) {
+  color: var(--u-muc-dim);
+}
+:root:root .u2-win .pty-role.dps {
+  color: var(--u-info-ink);
+}
+:root:root .u2-win .pty-role.tank {
+  color: var(--u-q4-ink);
+}
+:root:root .u2-win .r0 {
+  color: var(--u-q0-ink);
+}
+:root:root .u2-win .r1 {
+  color: var(--u-q1-ink);
+}
+:root:root .u2-win .r2 {
+  color: var(--u-q2-ink);
+}
+:root:root .u2-win .r3 {
+  color: var(--u-q3-ink);
+}
+:root:root .u2-win .item-stat {
+  color: var(--u-info-ink);
+}
+:root:root .u2-win .item-stat.good {
+  color: var(--u-ngoc-ink);
+}
+:root:root .u2-win .mp-passive b {
+  color: color-mix(in srgb, var(--mc, var(--u-info-ink)) 45%, var(--u-muc));
+}
+:root:root .u2-win .mp-card.sel {
+  box-shadow:
+    inset 0 0 0 2px var(--u-ngoc),
+    0 0 8px var(--u-wash-ngoc-2);
+  background: var(--u-wash-ngoc);
+}
+
+/* ───────── bản đồ lớn (M): danh sách vùng và chip trên giấy ngà (bảng chưa chuyển) ───────── */
+:root:root .u2-win .wm-chip {
+  color: var(--u-muc-dim);
+  background: var(--u-card-hi);
+  border-color: var(--u-card-line);
+}
+:root:root .u2-win .wm-chip[data-on='true'] {
+  color: var(--u-muc);
+  background: var(--u-wash-ngoc-2);
+  border-color: var(--u-ngoc);
+}
+:root:root .u2-win .wm-zone {
+  color: var(--u-muc);
+  background: var(--u-card);
+  border-left-color: var(--u-card-line);
+  box-shadow: inset 0 0 0 var(--u-line-1) var(--u-wash-gold);
+}
+:root:root .u2-win .wm-zone[data-here='true'] {
+  background: var(--u-wash-ngoc);
+  border-left-color: var(--u-ngoc);
+}
+:root:root .u2-win .wm-zone-name,
+:root:root .u2-win .wm-row b {
+  color: var(--u-gold-ink);
+  font-family: var(--u-font-head);
+}
+:root:root .u2-win .wm-tele {
+  color: var(--u-muc);
+  background: var(--u-wash-ngoc);
+  border-color: var(--u-ngoc);
+}
+:root:root .u2-win .wm-main {
+  border: 2px solid var(--u-gold);
+}

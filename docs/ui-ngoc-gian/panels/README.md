@@ -7,7 +7,7 @@ Mọi bảng lớn (mọi `PanelWindow`) chuyển sang chất liệu **giấy ng
 ## Cách làm
 
 - `kit/Panel.tsx` `PanelWindow`: thêm lớp `ngj-win`, bốn góc mây ngọc bích (`Corners`), viền vàng **vẽ dần** khi mở (SVG `rect` + `stroke-dashoffset`, 250 ms; **tắt bằng Giảm chuyển động**: `--ngj-dur-open` về 0 và `.ngj-draw` ẩn), và `Header` có bảng tên nét đôi (`Cartouche`) với họa tiết theo bản đồ đang đứng (Vân Lam / Đoạn Mạch / Vân Hải).
-- `ngj/panels.css`: đổi token `--k-*` và biến toàn cục (`--gold`, `--text`, `--good`…) trong phạm vi `.ngj-win` sang màu hợp giấy, rồi vá riêng chỗ có màu cứng (thẻ, hàng, tên vật phẩm theo phẩm, tab, nút, ô nhập, thanh trang túi). Vì mọi bảng dùng chung kit nên một lớp CSS phủ cả Nhân vật, Túi đồ, Công pháp, Nhiệm vụ, Tổ đội, Cài đặt, Trợ giúp và Hội thoại NPC (trò chuyện, cửa hàng, luyện đan, luyện bảo, cường hóa, khảm ngọc, tẩy luyện, phân giải, chế tạo, thăng bậc).
+- `u2/win.css` (thay `ngj/panels.css` từ U2-3a): đổi token `--k-*` và biến toàn cục (`--gold`, `--text`, `--good`…) trong phạm vi `.ngj-win` sang màu hợp giấy, rồi vá riêng chỗ có màu cứng (thẻ, hàng, tên vật phẩm theo phẩm, tab, nút, ô nhập, thanh trang túi). Vì mọi bảng dùng chung kit nên một lớp CSS phủ cả Nhân vật, Túi đồ, Công pháp, Nhiệm vụ, Tổ đội, Cài đặt, Trợ giúp và Hội thoại NPC (trò chuyện, cửa hàng, luyện đan, luyện bảo, cường hóa, khảm ngọc, tẩy luyện, phân giải, chế tạo, thăng bậc).
 - **Nhân vật**: tab dọc `TabRail` giấy ngà ở bên trái (icon nét vàng), ô trang bị **thoi** quanh mô hình 3D, viền phẩm chất phát sáng.
 - **Túi đồ**: ô **tròn**, viền phẩm chất phát sáng, ô trống vành nhạt; thanh trang, ô tìm, sắp xếp giữ nguyên hành vi.
 - Ô vật phẩm giữ lòng tối để icon vẽ màu vẫn nổi trên giấy.

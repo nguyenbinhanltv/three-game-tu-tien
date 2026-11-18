@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react';
 import { t } from '@dtl/content';
-import { Cartouche, Corners, type MapMotif } from '../ngj/ngj';
-import { useUI } from '../store';
+import { Cartouche, type MapMotif } from '../ngj/ngj';
 import '../ngj/tokens.css';
-import '../ngj/panels.css';
+import '../u2/fonts.css';
+import '../u2/tokens.css';
+import '../u2/u2.css';
+import '../u2/win.css';
+import { CornerCloud, CrossMark } from '../u2/patterns';
 
 export type PanelTone = 'night' | 'paper' | 'stone';
 
@@ -98,11 +101,10 @@ export function Divider({ label }: { label?: ReactNode }) {
   );
 }
 
-const MOTIFS: string[] = ['van_lam', 'doan_mach', 'van_hai', 'thien_khuyet', 'bac_hoang'];
-
 /**
- * Cửa sổ nằm giữa màn hình (Panel + Header + phần thân cuộn). `width` tính bằng px.
- * HUD kiểu Ngọc Giản (UI-3): giấy ngà tường vân, bảng tên theo bản đồ, góc hoa văn, viền vẽ dần khi mở.
+ * Cửa sổ nằm giữa màn hình (Panel + tiêu đề cuộn + phần thân cuộn). `width` tính bằng px.
+ * UI Kit 2.0 (U2-3): giấy ngà viền ngọc (u2/win.css), tiêu đề cuộn nhô trên viền (kéo được: `.k-head`), nút đóng son, góc kim chạm mây,
+ * nền sơn thủy mờ. `sub` hiện ngay dưới viền trên; `actions` đứng cạnh tiêu đề.
  */
 export function PanelWindow({
   title,
@@ -111,6 +113,7 @@ export function PanelWindow({
   width = 430,
   tone,
   className,
+  actions,
   children,
 }: {
   title: string;
@@ -119,19 +122,28 @@ export function PanelWindow({
   width?: number;
   tone?: PanelTone;
   className?: string;
+  actions?: ReactNode;
   children: ReactNode;
 }) {
-  const level = useUI((s) => s.level);
-  const motif = (MOTIFS.includes(level) ? level : 'van_lam') as MapMotif;
   return (
-    <div className={'k-window' + ' ngj-win' + (className ? ' ' + className : '')} style={{ '--w': width + 'px' } as React.CSSProperties}>
+    <div className={'k-window u2-win' + (className ? ' ' + className : '')} style={{ '--w': width + 'px' } as React.CSSProperties}>
       <Panel tone={tone} role="dialog" aria-label={title}>
-        <Corners material="paper" />
-        <svg className="ngj-draw" aria-hidden="true">
-          <rect pathLength={1} rx="12" ry="12" />
-        </svg>
-        <Header title={title} sub={sub} onClose={onClose} plate={motif} />
-        <PanelBody>{children}</PanelBody>
+        {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
+          <CornerCloud key={c} className="u2-win-corner" data-c={c} />
+        ))}
+        <div className="k-head u2-win-head">
+          <h2 className="k-head-title">{title}</h2>
+          {actions && <div className="k-head-actions">{actions}</div>}
+        </div>
+        {onClose && (
+          <button type="button" className="u2-close u2-win-close" onClick={onClose} aria-label={t('ui.close')} title={t('ui.close')}>
+            <CrossMark />
+          </button>
+        )}
+        <PanelBody>
+          {sub && <div className="u2-win-sub">{sub}</div>}
+          {children}
+        </PanelBody>
       </Panel>
     </div>
   );

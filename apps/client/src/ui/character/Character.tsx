@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { realmName, t } from '@dtl/content';
-import { type RailTab, TabRail } from '../ngj';
+import { Tabs } from '../kit';
 import { closePanel, useUI } from '../store';
 import { Window } from '../windows/common';
 import { Attributes } from './Attributes';
@@ -10,11 +10,7 @@ import { charPower } from './stats';
 import './character.css';
 
 type TabId = 'overview' | 'attrs' | 'settrain';
-const RAIL: (Omit<RailTab, 'label'> & { id: TabId })[] = [
-  { id: 'overview', icon: 'character' },
-  { id: 'attrs', icon: 'stone' },
-  { id: 'settrain', icon: 'forge' },
-];
+const TABS: TabId[] = ['overview', 'attrs', 'settrain'];
 
 /** Bảng nhân vật (TD-C): ba tab Tổng quan / Thuộc tính / Bộ & tu luyện; tiêu đề có Lực chiến. */
 export function Character() {
@@ -38,16 +34,13 @@ export function Character() {
       cls="char"
       width={560}
     >
-      <div className="ngj-char">
-        <TabRail
-          label={t('ui.char.tabs')}
-          material="paper"
-          value={tab}
-          onChange={(id) => setTab(id as TabId)}
-          items={RAIL.map((r) => ({ ...r, label: t('ui.char.tab.' + r.id) }))}
-        />
-        <div className="ngj-char-body">{body}</div>
-      </div>
+      <Tabs
+        label={t('ui.char.tabs')}
+        value={tab}
+        onChange={(id) => setTab(id as TabId)}
+        items={TABS.map((id) => ({ id, label: t('ui.char.tab.' + id) }))}
+      />
+      <div className="u2-char-body">{body}</div>
     </Window>
   );
 }

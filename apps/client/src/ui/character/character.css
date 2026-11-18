@@ -16,8 +16,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(174, 139, 73, 0.35);
-  background: radial-gradient(ellipse at 50% 38%, rgba(60, 86, 110, 0.55), rgba(10, 18, 28, 0.9) 70%);
+  border: 1px solid var(--u-card-line);
+  background: radial-gradient(ellipse at 50% 38%, var(--u-cel-2), var(--u-cel-0) 70%);
   overflow: hidden;
 }
 .equip-stage .char-preview {
@@ -32,7 +32,7 @@
   cursor: grabbing;
 }
 .equip-cell[data-drop='ok'] .k-slot {
-  outline: 2px solid var(--k-gold, #e0b45c);
+  outline: 2px solid var(--k-gold);
   outline-offset: 1px;
 }
 
@@ -54,12 +54,12 @@
   justify-content: space-between;
   align-items: baseline;
   padding: 5px 4px;
-  border-bottom: 1px solid rgba(174, 139, 73, 0.2);
+  border-bottom: 1px solid var(--u-wash-gold);
   cursor: help;
 }
 .attr-row:hover,
 .attr-row:focus-visible {
-  background: rgba(174, 139, 73, 0.12);
+  background: var(--u-wash-gold);
   outline: none;
 }
 .attr-name {
@@ -81,12 +81,12 @@
   align-items: center;
   gap: 2px;
   padding: 6px 2px;
-  border: 1px solid rgba(174, 139, 73, 0.25);
+  border: 1px solid var(--u-card-line);
   cursor: help;
 }
 .attr-elem.own {
-  border-color: var(--k-gold, #e0b45c);
-  background: rgba(224, 180, 92, 0.1);
+  border-color: var(--k-gold);
+  background: var(--u-wash-gold);
 }
 
 /* Tab Bộ & tu luyện */
@@ -103,7 +103,7 @@
 /* Tooltip: nhãn so sánh lực chiến, nhãn chưa đủ cấp */
 .k-tip-line.bad,
 .item-stat.bad {
-  color: #e06a5a;
+  color: var(--u-bad-ink);
 }
 
 /* Cảnh báo túi sắp đầy trên HUD */
@@ -113,17 +113,17 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 3px 12px;
-  border: 1px solid rgba(224, 180, 92, 0.7);
+  border: 1px solid var(--u-gold);
   border-radius: 999px;
-  background: rgba(30, 22, 10, 0.82);
-  color: #f2d48a;
+  background: var(--u-ink-veil);
+  color: var(--u-gold-text);
   font: 600 13px var(--k-font-serif);
   cursor: pointer;
   pointer-events: auto;
 }
 .hud .bag-warn.full {
-  border-color: rgba(224, 106, 90, 0.85);
-  color: #ff9d8e;
+  border-color: var(--u-son);
+  color: var(--u-son-text);
 }
 
 /* Gọn cho 1280×720: ô trang bị nhỏ lại, thanh khí huyết và linh lực đứng cạnh nhau */
@@ -163,4 +163,10 @@
 .method-card.k-card {
   display: flex;
   flex-direction: row;
+}
+.u2-char-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u-sp-3);
+  min-width: 0;
 }
