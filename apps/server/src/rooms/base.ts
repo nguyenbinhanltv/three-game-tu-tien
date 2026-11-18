@@ -17,6 +17,7 @@ import {
   validName,
   worldRoomName,
   AOI_PERIOD_MS,
+  at,
 } from '@dtl/shared';
 import { APPEARANCE, LEVELS, realmName, t } from '@dtl/content';
 import { Aoi } from '../aoi';
@@ -406,7 +407,7 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
       for (const m of parties.matesInRoom(p.char.id, this)) {
         if (m === p || m.char.id === p.char.id || m.trib || this.sim.leaveBlocker(m)) continue;
         // Sân kiếp trả mọi người về `returnLevel`: hộ pháp chưa đủ cấp vào level đó thì không kéo theo (nếu không sẽ bị đưa tới bản đồ quá cấp).
-        if (m.char.level < (LEVELS[LEVELS[level].dungeon?.returnLevel ?? '']?.minLevel ?? 0)) continue;
+        if (m.char.level < (LEVELS[at(LEVELS, level).dungeon?.returnLevel ?? '']?.minLevel ?? 0)) continue;
         if (Math.hypot(m.move.x - p.move.x, m.move.z - p.move.z) <= r) mates.push(m);
       }
     }
@@ -458,9 +459,9 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
   }
 
   /** Điểm xuất hiện nằm trong vùng chơi của level đích (dữ liệu server; kiểm để phòng bảng sai, không phải đầu vào client). */
-  private validSpawn(level: string, at: { x: number; z: number }): boolean {
-    const b = terrainOf(LEVELS[level]).playBounds;
-    return Number.isFinite(at.x) && Number.isFinite(at.z) && at.x >= b.x0 && at.x <= b.x1 && at.z >= b.z0 && at.z <= b.z1;
+  private validSpawn(level: string, pos: { x: number; z: number }): boolean {
+    const b = terrainOf(at(LEVELS, level)).playBounds;
+    return Number.isFinite(pos.x) && Number.isFinite(pos.z) && pos.x >= b.x0 && pos.x <= b.x1 && pos.z >= b.z0 && pos.z <= b.z1;
   }
 
   override onDispose(): void {

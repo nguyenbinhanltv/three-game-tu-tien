@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { rateLimitFromEnv } from './ratelimit';
 import { log } from './log';
 
+import { at } from '@dtl/shared';
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const SERVER_ROOT = path.resolve(here, '..');
 export const REPO_ROOT = path.resolve(SERVER_ROOT, '..', '..');
@@ -14,7 +15,7 @@ function loadEnvFile(file: string): void {
   for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/.exec(line);
     if (!m || line.trim().startsWith('#')) continue;
-    if (process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+    if (process.env[at(m, 1)] === undefined) process.env[at(m, 1)] = at(m, 2).replace(/^["']|["']$/g, '');
   }
 }
 

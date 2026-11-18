@@ -78,6 +78,7 @@ import {
   SKILLS,
 } from './index';
 
+import { at } from '@dtl/shared';
 /** Trang bị dự kiến ở mỗi cảnh giới (theo phần thưởng nhiệm vụ). */
 function gear(level: number): { atk: number; def: number; hp: number } {
   const pick = (ids: string[]) => {
@@ -146,7 +147,7 @@ function playerDps(level: number, atk: number, monDef: number, id?: MethodId, mo
     // Lướt không ăn GCD.
     if (s.kind !== 'dash') gcdUsed += (gcd + s.cast) / s.cd;
   }
-  const basic = SKILLS[0];
+  const basic = at(SKILLS, 0);
   perSec += (one(basic) / gcd) * Math.max(0, 1 - gcdUsed);
   // Mộc độc đan sư: sát thương theo thời gian mỗi mục tiêu, không giảm theo phòng ngự, phủ `POISON_MOBS` quái trong cụm.
   const hx = m ? METHOD_SKILLS.find((s) => s.id === m.sig && s.poison) : undefined;
@@ -187,8 +188,8 @@ const pct = (x: number) => `${(x * 100).toFixed(0)}%`;
 // ---------- nhịp lên cấp ----------
 
 // Nhịp lên cấp tính trên quái thường: tinh anh (cờ elite) ít gặp, tính riêng ở bảng tinh anh bên dưới.
-const spawns = levelSpawns(LEVELS.van_lam).filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite);
-const CAMPS = (LEVELS.van_lam.camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite);
+const spawns = levelSpawns(at(LEVELS, 'van_lam')).filter((s) => !MONSTER.get(s.mon)?.boss && !MONSTER.get(s.mon)?.elite);
+const CAMPS = (at(LEVELS, 'van_lam').camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite);
 /** Tốc độ chạy bộ (m/s) và hệ số đường vòng khi đi từ cụm này sang cụm khác. */
 const RUN_SPEED = 7;
 const PATH_FACTOR = 1.3;
@@ -238,7 +239,11 @@ for (const q of QUESTS) {
 
 /** Bãi quái người chơi chọn ở cảnh giới `level`: cấp quái gần cấp mình nhất. */
 function pickSpawn(level: number) {
-  return [...spawns].sort((a, b) => Math.abs((a.levelMin + a.levelMax) / 2 - level) - Math.abs((b.levelMin + b.levelMax) / 2 - level))[0];
+  return at(
+    [...spawns].sort((a, b) => Math.abs((a.levelMin + a.levelMax) / 2 - level) - Math.abs((b.levelMin + b.levelMax) / 2 - level)),
+    0,
+    'spawns',
+  );
 }
 
 function timeline(id?: MethodId): Timeline {
@@ -383,7 +388,7 @@ console.log(
   console.log(`Mốc thiết kế: Trúc Cơ 4 giờ, Kết Đan 6 giờ, Nguyên Anh 8 giờ (cờ LỖI nếu ngoài ±${TOL * 100}%).`);
 
   // Thu nhập tu vi thực của mô phỏng ở cấp 15 (Kiếm tu), so với thu nhập thiết kế cùng cấp: mô hình thiết kế có sát thực không.
-  const sim15 = (xpNeed(NGUNG_KHI_MAX) - (questByLevel.get(NGUNG_KHI_MAX) ?? 0)) / (main.secByLevel[NGUNG_KHI_MAX] / 3600);
+  const sim15 = (xpNeed(NGUNG_KHI_MAX) - (questByLevel.get(NGUNG_KHI_MAX) ?? 0)) / (at(main.secByLevel, NGUNG_KHI_MAX) / 3600);
   console.log(
     `Đối chiếu: thu nhập tu vi mô phỏng ở tầng ${NGUNG_KHI_MAX} (Kiếm tu, quái thường + đả tọa) ≈ ${sim15.toFixed(0)}/giờ, thiết kế đặt ${designIncome(NGUNG_KHI_MAX).toFixed(0)}/giờ.`,
   );
@@ -413,7 +418,7 @@ console.log(
     ttks.forEach((x, i) => {
       if (x < 3.5 || x > 8.5) {
         console.error(
-          `LỖI: cấp ${l} ${METHOD_NAME[METHOD_IDS[i]]} TTK ${x.toFixed(1)}s ngoài 3,5–8,5 s (hệ số cảnh giới quái lệch người chơi)`,
+          `LỖI: cấp ${l} ${METHOD_NAME[at(METHOD_IDS, i)]} TTK ${x.toFixed(1)}s ngoài 3,5–8,5 s (hệ số cảnh giới quái lệch người chơi)`,
         );
         process.exitCode = 1;
       }
@@ -432,7 +437,7 @@ console.log(
     [23, 3],
   ] as const) {
     const slots = droppableSlots(ITEM_SYS, ITEMS);
-    const ilvl = TIER_MIN_ILVL[tier] > 1 ? Math.max(TIER_MIN_ILVL[tier], 1) : l;
+    const ilvl = at(TIER_MIN_ILVL, tier) > 1 ? Math.max(at(TIER_MIN_ILVL, tier), 1) : l;
     const RUNS = 40;
     const acc = { atk: 0, def: 0, hp: 0, mp: 0 };
     for (let run = 0; run < RUNS; run++) {
@@ -440,7 +445,7 @@ console.log(
       const worn = slots.map((sl) => {
         const tpl =
           ITEMS.filter((i) => i.kind === sl && !i.set && (i.tier ?? 1) === tier && (i.reqLevel ?? 1) <= l)[0] ??
-          templatesFor(ITEMS, sl, l)[0];
+          at(templatesFor(ITEMS, sl, l), 0, 'templatesFor');
         return { item: { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, Math.min(ilvl, l + 1), 2, rng, tpl.tier) } };
       });
       const st = computePlayerStats(l, worn);
@@ -459,7 +464,8 @@ console.log(
     const ttks = METHOD_IDS.map((id) => ms.hp / playerDps(l, g.atk, ms.def, id, refDef.elem));
     const losts = METHOD_IDS.map(
       (id, i) =>
-        Math.max(0, monsterDps(refDef, ms.atk, g.def) * ttks[i] * PULL_FACTOR - selfSustain(l, id) * g.hp * (ttks[i] + sk.seek)) / g.hp,
+        Math.max(0, monsterDps(refDef, ms.atk, g.def) * at(ttks, i) * PULL_FACTOR - selfSustain(l, id) * g.hp * (at(ttks, i) + sk.seek)) /
+        g.hp,
     );
     console.log(
       `${String(l).padEnd(4)} ${String(tier).padEnd(4)} ${String(p0).padStart(7)} → ${String(p1).padStart(7)} (${(p1 / p0).toFixed(2)}×)   ${g.atk.toFixed(0).padStart(5)} ${g.def.toFixed(0).padStart(6)} ${g.hp.toFixed(0).padStart(6)}  ${ttks.map((x) => x.toFixed(1).padStart(5) + 's').join(' ')}   ${losts.map((x) => pct(x).padStart(5)).join(' ')}`,
@@ -519,7 +525,7 @@ console.log(
   const ex = METHOD_IDS.map((m) => existing(m));
   STAGES.forEach((st, i) => {
     console.log(
-      `${st.name.padEnd(13)} ${(st.hours + ' giờ').padEnd(10)} ${ex.map((e) => (e[i].hours.toFixed(1) + ' giờ, ' + e[i].kills + ' giết').padEnd(20)).join(' ')}`,
+      `${st.name.padEnd(13)} ${(st.hours + ' giờ').padEnd(10)} ${ex.map((e) => (at(e, i).hours.toFixed(1) + ' giờ, ' + at(e, i).kills + ' giết').padEnd(20)).join(' ')}`,
     );
   });
   console.log(
@@ -657,7 +663,7 @@ console.log(
     process.exitCode = 1;
   }
   for (const q of [...mainQ, ...sideQ]) {
-    const need = DESIGN_NEED[Math.min(Math.max((q.minLevel ?? 28) - 28, 0), 3)];
+    const need = at(DESIGN_NEED, Math.min(Math.max((q.minLevel ?? 28) - 28, 0), 3));
     if (q.rewards.xp > need * 0.2) {
       console.error(`LỖI: ${q.id} thưởng ${q.rewards.xp} tu vi, hơn 20% một cấp (${need}): lên cấp quá nhanh bằng nhiệm vụ`);
       process.exitCode = 1;
@@ -703,17 +709,17 @@ for (let level = 1; level <= NGUNG_KHI_MAX; level++) {
   // và không công pháp nào mất quá 45% máu cho một lần giết (không chết vô lý).
   for (const r of pressureRows) {
     for (let i = 0; i < 3; i++) {
-      const who = `tầng ${r.level} ${METHOD_NAME[METHOD_IDS[i]]}`;
-      if (r.ttk[i] < 3.5 || r.ttk[i] > 8.5) {
-        console.error(`LỖI: ${who} TTK ${r.ttk[i].toFixed(1)}s ngoài 3,5–8,5 s`);
+      const who = `tầng ${r.level} ${METHOD_NAME[at(METHOD_IDS, i)]}`;
+      if (at(r.ttk, i) < 3.5 || at(r.ttk, i) > 8.5) {
+        console.error(`LỖI: ${who} TTK ${at(r.ttk, i).toFixed(1)}s ngoài 3,5–8,5 s`);
         process.exitCode = 1;
       }
-      if (r.lost[i] > 0.45) {
-        console.error(`LỖI: ${who} mất ${pct(r.lost[i])} máu mỗi lần giết`);
+      if (at(r.lost, i) > 0.45) {
+        console.error(`LỖI: ${who} mất ${pct(at(r.lost, i))} máu mỗi lần giết`);
         process.exitCode = 1;
       }
-      if (r.level >= 6 && r.lost[i] < [0.08, 0.06, 0][i]) {
-        console.error(`LỖI: ${who} chỉ mất ${pct(r.lost[i])} máu mỗi lần giết (quái thường không tạo áp lực)`);
+      if (r.level >= 6 && at(r.lost, i) < at([0.08, 0.06, 0], i)) {
+        console.error(`LỖI: ${who} chỉ mất ${pct(at(r.lost, i))} máu mỗi lần giết (quái thường không tạo áp lực)`);
         process.exitCode = 1;
       }
     }
@@ -735,7 +741,7 @@ for (let level = 1; level <= NGUNG_KHI_MAX; level++) {
   const c3 = costTo(3);
   const c5 = costTo(MAX_SKILL_LEVEL);
   console.log(`
-Bí Tịch Tàn Quyển (quái thường + nhiệm vụ): tầng 5 ≈ ${scrollAt[5].toFixed(0)}, tầng 10 ≈ ${scrollAt[10].toFixed(0)}, viên mãn tầng 15 ≈ ${scrollAt[15].toFixed(0)} cuộn; linh thạch từ quái ≈ ${goldTotal.toFixed(0)}.`);
+Bí Tịch Tàn Quyển (quái thường + nhiệm vụ): tầng 5 ≈ ${at(scrollAt, 5).toFixed(0)}, tầng 10 ≈ ${at(scrollAt, 10).toFixed(0)}, viên mãn tầng 15 ≈ ${at(scrollAt, 15).toFixed(0)} cuộn; linh thạch từ quái ≈ ${goldTotal.toFixed(0)}.`);
   console.log(
     `Nâng một chiêu: cấp 3 = ${c3.s} cuộn + ${c3.g} linh thạch, cấp 5 = ${c5.s} cuộn + ${c5.g} linh thạch. 4 chiêu chủ lực cấp 3 = ${4 * c3.s} cuộn; 8 chiêu cấp 3 = ${8 * c3.s}; 8 chiêu cấp 5 = ${8 * c5.s}.`,
   );
@@ -743,11 +749,11 @@ Bí Tịch Tàn Quyển (quái thường + nhiệm vụ): tầng 5 ≈ ${scrollA
     'Đổi ở Dược sư (8 yêu đan + 2 thiết tinh + 120 linh thạch mỗi cuộn) là đường bù khi rơi xui; boss, tinh anh và rương bí cảnh cho thêm.',
   );
   // Nhịp: tới viên mãn nên đủ nâng 4 chiêu chủ lực lên cấp 3 (có biến thức), nhưng chưa đủ nâng đủ 8 chiêu lên cấp 5 (mục tiêu hậu kỳ).
-  if (scrollAt[15] < 4 * c3.s) {
+  if (at(scrollAt, 15) < 4 * c3.s) {
     console.error('LỖI: tới tầng 15 chưa đủ cuộn nâng 4 chiêu chủ lực lên cấp 3');
     process.exitCode = 1;
   }
-  if (scrollAt[15] >= 8 * c5.s) {
+  if (at(scrollAt, 15) >= 8 * c5.s) {
     console.error('LỖI: tới tầng 15 đã đủ cuộn nâng mọi chiêu lên cấp 5 (quá dễ)');
     process.exitCode = 1;
   }
@@ -766,7 +772,7 @@ function fullSet(level: number, q: Quality) {
   for (let run = 0; run < RUNS; run++) {
     const rng = seededRng(1000 + run);
     const worn = slots.map((sl) => {
-      const tpl = templatesFor(ITEMS, sl, level)[0];
+      const tpl = at(templatesFor(ITEMS, sl, level), 0);
       return { item: { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, level, q, rng, tpl.tier) } };
     });
     const st = computePlayerStats(level, worn);
@@ -832,7 +838,7 @@ for (const m of MONSTERS_ELITE()) {
   const t1 = METHOD_IDS.map((id) => ms.hp / playerDps(lv, set.atk, ms.def, id, m.elem));
   const inc = monsterDps(m, ms.atk, set.def);
   console.log(
-    `${(m.id + ' (' + lv + ')').padEnd(26)} ${t0.map((x) => x.toFixed(0).padStart(3) + 's').join('/')} | ${t1.map((x) => x.toFixed(0).padStart(3) + 's').join('/')}   ${pct(inc / set.hp).padStart(4)}   cả trận ${pct((inc * t1[0]) / set.hp)}`,
+    `${(m.id + ' (' + lv + ')').padEnd(26)} ${t0.map((x) => x.toFixed(0).padStart(3) + 's').join('/')} | ${t1.map((x) => x.toFixed(0).padStart(3) + 's').join('/')}   ${pct(inc / set.hp).padStart(4)}   cả trận ${pct((inc * at(t1, 0)) / set.hp)}`,
   );
   for (const x of t0)
     if (x < 20 || x > 40) {
@@ -842,7 +848,7 @@ for (const m of MONSTERS_ELITE()) {
 }
 function MONSTERS_ELITE(): MonsterDef[] {
   // Chỉ tinh anh của Vân Lam (chặng Ngưng Khí, không đồ bậc 2); tinh anh Đoạn Mạch kiểm ở khối chương 2 theo đồ bậc 2 kỳ vọng.
-  const home = new Set(levelSpawns(LEVELS.van_lam).map((x) => x.mon));
+  const home = new Set(levelSpawns(at(LEVELS, 'van_lam')).map((x) => x.mon));
   return [...MONSTER.values()].filter((m) => m.elite && home.has(m.id));
 }
 
@@ -861,10 +867,10 @@ function enhanceExpect(target: number, price: number, ward: boolean): number {
       const ok = enhanceChance(p);
       const risk = p >= ENHANCE_RISK_FROM;
       const failTo = risk && !ward ? p - 1 : p;
-      E[p] = c.gold + c.ore * orePrice + (risk && ward ? WARD_VALUE * (1 - ok) : 0) + ok * E[p + 1] + (1 - ok) * E[failTo];
+      E[p] = c.gold + c.ore * orePrice + (risk && ward ? WARD_VALUE * (1 - ok) : 0) + ok * at(E, p + 1) + (1 - ok) * at(E, failTo);
     }
   }
-  return E[0];
+  return at(E, 0);
 }
 
 /** Linh thạch kiếm được mỗi giờ ở cảnh giới `level` (vàng rơi + bán trang bị rơi), theo bãi quái hợp cấp và nhịp của Kiếm tu. */
@@ -883,7 +889,7 @@ function incomePerHour(level: number): number {
   }
   const perKill = (lt.gold[0] + lt.gold[1]) / 2 + gear / N;
   const kills = main.killsByLevel[level] || 1;
-  return perKill * (kills / (main.secByLevel[level] / 3600));
+  return perKill * (kills / (at(main.secByLevel, level) / 3600));
 }
 
 console.log(
@@ -924,7 +930,7 @@ for (const [tier, hours, pre, four] of [
   [2, 4, 'frg_lm_', ['itm_liet_mach_kiem', 'itm_mach_van_dao_bao', 'itm_sa_thach_ho_uyen', 'itm_kho_ha_van_ngoa']],
   [3, 6, 'frg_kq_', ['itm_kinh_quang_kiem', 'itm_kinh_van_dao_bao', 'itm_luu_ly_ho_uyen', 'itm_phu_van_ngoa']],
 ] as const) {
-  const income = hours * TIER_INCOME_HOUR[tier] * 1.2;
+  const income = hours * at(TIER_INCOME_HOUR, tier) * 1.2;
   const plain = ITEMS.filter((i) => i.tier === tier && !i.set);
   const promote = plain.length * promoteGold(tier);
   const price = (id: string) => Math.max(ITEM.get(id)!.price, ITEM.get(id)!.sell * 3);
@@ -956,7 +962,7 @@ Chương ${tier} (bậc ${tier}): thu nhập ~${income.toFixed(0)} (${hours} gi�
     for (let i = 0; i < N; i++)
       for (const d of rollEquipDrops(lt.equip, ITEM_SYS, ITEMS, mlv, rng))
         g += sellPrice({ id: d.id, n: 1, inst: { q: d.q, ilvl: d.ilvl, main: {}, affixes: [], gems: [], bound: false } }, ITEM.get(d.id)!);
-    sold += (g / N) * main.killsByLevel[l];
+    sold += (g / N) * at(main.killsByLevel, l);
   }
   const source = main.goldTotal + quest + sold;
   const shop = 280 + 380 + 900 + 60 * 25; // thiết kiếm, đạo bào, nhẫn Huyền Thiết, ~60 đan hồi
@@ -1157,7 +1163,8 @@ for (const lv of Object.values(LEVELS)) {
         ref = ms.def;
       }
     }
-    const refDef = ref || monsterStats(w.mons[0].level, MONSTER.get(w.mons[0].id)!.hpMul, MONSTER.get(w.mons[0].id)!.atkMul).def;
+    const refDef =
+      ref || monsterStats(at(w.mons, 0).level, MONSTER.get(at(w.mons, 0).id)!.hpMul, MONSTER.get(at(w.mons, 0).id)!.atkMul).def;
     const grp = [...Array(2).fill('lac_kiem_quyet'), 'bat_dong_kim_than', 'thanh_moc_dan_kinh'].reduce(
       (s: number, id) => s + playerDps(L, pl.atk, refDef, id as MethodId, w.mons[0] ? MONSTER.get(w.mons[0].id)?.elem : undefined),
       0,
@@ -1171,7 +1178,7 @@ for (const lv of Object.values(LEVELS)) {
       const ch = boss.ai?.chant;
       if (ch?.drain) {
         // Chú không bị phá hồi `drain × cast` máu tối đa mỗi chu kỳ; bị phá thì boss choáng (nhận thêm sát thương).
-        const ms = monsterStats(w.mons[0].level, boss.hpMul, boss.atkMul);
+        const ms = monsterStats(at(w.mons, 0).level, boss.hpMul, boss.atkMul);
         const healPerSec = ((1 - DG_INTERRUPT_RATE) * ch.drain * ch.cast * ms.hp) / ch.cd;
         dps = dps * (1 + (INTERRUPT_VULN_MUL - 1) * DG_INTERRUPT_RATE * (ch.stun / ch.cd)) - healPerSec;
       }
@@ -1251,7 +1258,7 @@ interface Ch2 {
  * tới `level + 1` (quái cao hơn một cấp vẫn đánh được). Không có thì lấy cụm gần cấp nhất.
  */
 function ch2Camps(level: number) {
-  const all = (LEVELS.doan_mach.camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite && !MONSTER.get(c.mon)?.boss);
+  const all = (at(LEVELS, 'doan_mach').camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite && !MONSTER.get(c.mon)?.boss);
   const hit = all.filter((c) => c.levelMax >= level - 2 && c.levelMin <= level + 1);
   if (hit.length) return hit;
   const d = (c: (typeof all)[number]) => Math.min(Math.abs(c.levelMin - level), Math.abs(c.levelMax - level));
@@ -1313,9 +1320,12 @@ function ch2Timeline(id: MethodId): Ch2 {
     xpKill += meditateXpPerSec(level) * rest;
     const cycle = ttk + seek + rest;
     // Tinh anh gần cấp nhất (17 → Liệt Cốt Báo, 18 → Hổ Mạch Khôi Tướng, 19 → Xích Sa Ngô Công).
-    const eSp = levelSpawns(LEVELS.doan_mach)
-      .filter((s) => MONSTER.get(s.mon)?.elite)
-      .sort((a, b) => Math.abs(a.levelMax - level) - Math.abs(b.levelMax - level))[0];
+    const eSp = at(
+      levelSpawns(at(LEVELS, 'doan_mach'))
+        .filter((s) => MONSTER.get(s.mon)?.elite)
+        .sort((a, b) => Math.abs(a.levelMax - level) - Math.abs(b.levelMax - level)),
+      0,
+    );
     const eDef = MONSTER.get(eSp.mon)!;
     const eLv = Math.min(eSp.levelMax, Math.max(eSp.levelMin, level));
     const eMs = monsterStats(eLv, eDef.hpMul, eDef.atkMul);
@@ -1336,14 +1346,14 @@ function ch2Timeline(id: MethodId): Ch2 {
     let fixedGold = qs.reduce((s, q) => s + (q.rewards.gold ?? 0), 0);
     let danFixed = 0;
     if (level === 18) {
-      const dg = LEVELS.phuc_mach.dungeon!;
+      const dg = at(LEVELS, 'phuc_mach').dungeon!;
       let waveXp = 0;
       for (const w of dg.waves) for (const g of w.mons) waveXp += monsterXp(g.level, MONSTER.get(g.id)!.xpMul) * g.n;
       fixedXp += xpNeed(level) * dg.reward!.xpPct + waveXp * CH2_PARTY_SHARE;
       const dgSec = (dgFirstMin.get('phuc_mach') ?? 18) * 60;
       fixedSec += dgSec;
       parts.dungeon += dgSec;
-      fixedGold += (dg.reward!.gold[0] + dg.reward!.gold[1]) / 2;
+      fixedGold += (at(dg.reward!.gold, 0) + at(dg.reward!.gold, 1)) / 2;
       danFixed += dg
         .reward!.items.filter((i) => i.item === 'itm_ngung_dan_mach_tinh')
         .reduce((s, i) => s + i.chance * ((i.min + i.max) / 2), 0);
@@ -1434,16 +1444,16 @@ function danHoaRun(id: MethodId, dodge: number, guards: number, rng: () => numbe
   const T = td.duration;
   const dt = 0.1;
   const ph = td.phases;
-  const dt2 = ph[1].danTran!;
-  const sh = ph[1].shadows!;
+  const dt2 = at(ph, 1).danTran!;
+  const sh = at(ph, 1).shadows!;
   const base = shadowStats(lv, pl.atk, pl.def);
   const shHp = Math.max(1, Math.round(mhp * sh.hpFrac));
   const shDps = (hit(base.atk, 1, pl.def) / 1.8) * 0.8; // đánh mỗi 1,8 s, ~80% trúng
   const myDps = playerDps(lv, pl.atk, base.def, id);
   let pg = 0;
   let nextWave = td.firstDelay;
-  let nextSweep = ph[0].end + 1.5;
-  let nextShadow = ph[0].end;
+  let nextSweep = at(ph, 0).end + 1.5;
+  let nextShadow = at(ph, 0).end;
   let shadows: number[] = []; // máu còn lại từng bóng
   let busy = 0; // giây còn lại đang né (không đứng yên)
   let finalAt = -1;
@@ -1454,14 +1464,14 @@ function danHoaRun(id: MethodId, dodge: number, guards: number, rng: () => numbe
     hp -= x - s;
   };
   for (let t = 0; t < T; t += dt) {
-    const pi = t < ph[0].end ? 0 : t < ph[1].end ? 1 : 2;
-    const p = ph[pi];
+    const pi = t < at(ph, 0).end ? 0 : t < at(ph, 1).end ? 1 : 2;
+    const p = at(ph, pi);
     busy = Math.max(0, busy - dt);
     pillCd = Math.max(0, pillCd - dt);
     hp = Math.min(mhp, hp + regen * mhp * dt);
     if (hp <= 0) return { ok: false, why: 'chết' };
     // Uống đan khi dưới nửa máu; trước tia cuối khóa mệnh (70%) thì dưỡng lên đầy hơn.
-    const topUp = t >= ph[1].end - 2 && !finalDone && hp < mhp * 0.85;
+    const topUp = t >= at(ph, 1).end - 2 && !finalDone && hp < mhp * 0.85;
     if ((hp < mhp * 0.5 || topUp) && pills > 0 && pillCd <= 0) {
       pills--;
       pillCd = 12;
@@ -1481,7 +1491,7 @@ function danHoaRun(id: MethodId, dodge: number, guards: number, rng: () => numbe
     }
     // Pha ngưng đan: thanh đầy khi đứng yên trong vòng; bóng tâm ma.
     if (pi === 1) {
-      const slackLeft = ph[1].end - t;
+      const slackLeft = at(ph, 1).end - t;
       if (busy <= 0) pg = Math.min(100, pg + (100 / dt2.fill) * dt);
       else pg = Math.max(0, pg - dt2.drain * dt * 0.5);
       if (t >= nextShadow) {
@@ -1490,8 +1500,8 @@ function danHoaRun(id: MethodId, dodge: number, guards: number, rng: () => numbe
         for (let i = 0; i < Math.min(sh.count, room); i++) shadows.push(shHp);
       }
       if (shadows.length) {
-        shadows[0] -= myDps * dt;
-        if (shadows[0] <= 0) shadows.shift();
+        shadows[0] = (shadows[0] ?? 0) - myDps * dt;
+        if (at(shadows, 0) <= 0) shadows.shift();
         take(shadows.length * shDps * dt);
       }
       if (t >= nextSweep) {
@@ -1510,7 +1520,7 @@ function danHoaRun(id: MethodId, dodge: number, guards: number, rng: () => numbe
       if (p.aimPct) {
         if (pi === 1) {
           const need = (100 - pg) / (100 / dt2.fill);
-          const canDodge = ph[1].end - t - TRIB_DODGE_COST >= need;
+          const canDodge = at(ph, 1).end - t - TRIB_DODGE_COST >= need;
           if (canDodge) {
             busy = Math.max(busy, TRIB_DODGE_COST);
             if (rng() > dodge) take(mhp * p.aimPct);
@@ -1519,7 +1529,7 @@ function danHoaRun(id: MethodId, dodge: number, guards: number, rng: () => numbe
       }
       for (let i = 0; i < (p.extra ?? 0); i++) if (rng() < trPHit(p.extraR ?? 3.6, td.extraDist)) take(mhp * (p.extraPct ?? 0.1));
     }
-    if (pi === 1 && t + dt >= ph[1].end && pg < 100) return { ok: false, why: 'ngưng đan thiếu' };
+    if (pi === 1 && t + dt >= at(ph, 1).end && pg < 100) return { ok: false, why: 'ngưng đan thiếu' };
   }
   return hp > 0 ? { ok: true, why: '' } : { ok: false, why: 'chết' };
 }
@@ -1606,10 +1616,10 @@ function danHoaPass(id: MethodId, dodge: number, guards: number, runs = 4000): {
     }
   }
   const hs = METHOD_IDS.map((m) => out.get(m)!.hours);
-  console.log(`[pace2] ${METHOD_IDS.map((m, i) => m + '=' + hs[i].toFixed(2)).join(' ')} target=${CH2_TARGET_H} tol=${CH2_TOL}`);
+  console.log(`[pace2] ${METHOD_IDS.map((m, i) => m + '=' + at(hs, i).toFixed(2)).join(' ')} target=${CH2_TARGET_H} tol=${CH2_TOL}`);
   for (const [i, m] of METHOD_IDS.entries()) {
-    if (Math.abs(hs[i] / CH2_TARGET_H - 1) > CH2_TOL) {
-      console.error(`LỖI: chương 2 ${METHOD_NAME[m]} ra ${hs[i].toFixed(2)} giờ, ngoài ${CH2_TARGET_H} giờ ±${CH2_TOL * 100}%`);
+    if (Math.abs(at(hs, i) / CH2_TARGET_H - 1) > CH2_TOL) {
+      console.error(`LỖI: chương 2 ${METHOD_NAME[m]} ra ${at(hs, i).toFixed(2)} giờ, ngoài ${CH2_TARGET_H} giờ ±${CH2_TOL * 100}%`);
       process.exitCode = 1;
     }
   }
@@ -1655,10 +1665,11 @@ function danHoaPass(id: MethodId, dodge: number, guards: number, runs = 4000): {
   for (const id of METHOD_IDS) {
     const t = out.get(id)!;
     let sold = 0;
-    for (const r of t.rows) sold += r.kills * sellOf(ch2Camps(r.level)[0].mon, r.level) + r.elites * sellOf('elite_liet_cot_bao', r.level);
+    for (const r of t.rows)
+      sold += r.kills * sellOf(at(ch2Camps(r.level), 0).mon, r.level) + r.elites * sellOf('elite_liet_cot_bao', r.level);
     const src = t.gold + sold;
     console.log(
-      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[2] * 1.2}/giờ)`,
+      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${at(TIER_INCOME_HOUR, 2) * 1.2}/giờ)`,
     );
     const r = sink / src;
     if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) {
@@ -1719,7 +1730,7 @@ function fullSetTier(level: number, q: Quality, req: number) {
   for (let run = 0; run < RUNS; run++) {
     const rng = seededRng(2000 + run);
     const worn = slots.map((sl) => {
-      const tpl = templatesFor(ITEMS, sl, req)[0];
+      const tpl = at(templatesFor(ITEMS, sl, req), 0);
       return { item: { id: tpl.id, n: 1, inst: rollItemInstance(ITEM_SYS, sl, level, q, rng, tpl.tier) } };
     });
     const st = computePlayerStats(level, worn);
@@ -1753,7 +1764,7 @@ function ch3Player(level: number, id: MethodId): { atk: number; def: number; hp:
 
 /** Cụm Vân Hải (quái thường) người chơi cấp `level` săn: khoảng cấp từ `level − 2` tới `level + 1` (như chương 2). */
 function ch3Camps(level: number) {
-  const all = (LEVELS.van_hai.camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite && !MONSTER.get(c.mon)?.boss);
+  const all = (at(LEVELS, 'van_hai').camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite && !MONSTER.get(c.mon)?.boss);
   const hit = all.filter((c) => c.levelMax >= level - 2 && c.levelMin <= level + 1);
   if (hit.length) return hit;
   const d = (c: (typeof all)[number]) => Math.min(Math.abs(c.levelMin - level), Math.abs(c.levelMax - level));
@@ -1776,12 +1787,12 @@ function tamTrongRun(id: MethodId, dodge: number, rng: () => number): { ok: bool
   if (!ctx) {
     const pl = ch3Player(lv, id);
     const sh = shadowStats(lv, pl.atk, pl.def);
-    const shHp = Math.max(1, Math.round(pl.hp * ph[2].shadows!.hpFrac));
+    const shHp = Math.max(1, Math.round(pl.hp * at(ph, 2).shadows!.hpFrac));
     ctx = {
       mhp: pl.hp,
       regen: selfSustain(lv, id) * 0.5,
       shKill: shHp / playerDps(lv, pl.atk, sh.def, id),
-      skillDmg: hit(sh.atk, ph[2].tamCanh!.skillPow, pl.def) / pl.hp,
+      skillDmg: hit(sh.atk, at(ph, 2).tamCanh!.skillPow, pl.def) / pl.hp,
     };
     naCtxCache.set(ckey, ctx);
   }
@@ -1792,16 +1803,16 @@ function tamTrongRun(id: MethodId, dodge: number, rng: () => number): { ok: bool
   let shield = TRIB_SHIELD * mhp;
   const T = td.duration;
   const dt = 0.1;
-  const grid = ph[1].grid!;
-  const xk = ph[1].xuatKhieu!;
-  const tc = ph[2].tamCanh!;
-  const tx = ph[0].tiaXich!;
+  const grid = at(ph, 1).grid!;
+  const xk = at(ph, 1).xuatKhieu!;
+  const tc = at(ph, 2).tamCanh!;
+  const tx = at(ph, 0).tiaXich!;
   let nextWave = td.firstDelay;
   let nextXich = 1.5;
-  let nextGrid = ph[0].end;
-  let nextSkill = ph[1].end + tc.skillEvery;
+  let nextGrid = at(ph, 0).end;
+  let nextSkill = at(ph, 1).end + tc.skillEvery;
   let soulUntil = -1;
-  let soulCd = ph[0].end;
+  let soulCd = at(ph, 0).end;
   let heart = 100;
   const take = (x: number) => {
     const s = Math.min(shield, x);
@@ -1809,8 +1820,8 @@ function tamTrongRun(id: MethodId, dodge: number, rng: () => number): { ok: bool
     hp -= x - s;
   };
   for (let t = 0; t < T; t += dt) {
-    const pi = t < ph[0].end ? 0 : t < ph[1].end ? 1 : 2;
-    const p = ph[pi];
+    const pi = t < at(ph, 0).end ? 0 : t < at(ph, 1).end ? 1 : 2;
+    const p = at(ph, pi);
     pillCd = Math.max(0, pillCd - dt);
     hp = Math.min(mhp, hp + regen * mhp * dt);
     if (hp <= 0) return { ok: false, why: 'chết' };
@@ -1820,7 +1831,7 @@ function tamTrongRun(id: MethodId, dodge: number, rng: () => number): { ok: bool
       hp = Math.min(mhp, hp + 0.4 * mhp);
     }
     // Hạ được Tâm Ma Ảnh: kiếp thành ngay.
-    if (pi === 2 && t - ph[1].end >= shKill) return { ok: true, why: '' };
+    if (pi === 2 && t - at(ph, 1).end >= shKill) return { ok: true, why: '' };
     // Tia nhắm + tia rơi quanh theo nhịp co dần của pha.
     if (t >= nextWave) {
       nextWave += tribGapAt(td, pi, t);
@@ -1828,7 +1839,7 @@ function tamTrongRun(id: MethodId, dodge: number, rng: () => number): { ok: bool
       for (let i = 0; i < (p.extra ?? 0); i++) if (rng() < trPHit(p.extraR ?? 3.6, td.extraDist)) take(mhp * (p.extraPct ?? 0.1));
     }
     if (pi === 0 && t >= nextXich) {
-      const k = Math.min(1, t / ph[0].end);
+      const k = Math.min(1, t / at(ph, 0).end);
       nextXich += tx.every * (1 - 0.3 * k);
       // Vạch sét đi qua chỗ đứng (lệch ngang ±2,5 m, rộng 2,6 m: người đứng yên trúng ~70%); hai tia hai đầu chỉ trúng người né sai hướng.
       if (rng() > dodge) {
@@ -1927,9 +1938,12 @@ function ch3Timeline(id: MethodId): Ch3 {
     const rest = lost / (pl.hp * HP_REGEN_MEDITATE);
     xpKill += meditateXpPerSec(level) * rest;
     const cycle = ttk + seek + rest;
-    const eSp = levelSpawns(LEVELS.van_hai)
-      .filter((s) => MONSTER.get(s.mon)?.elite)
-      .sort((a, b) => Math.abs(a.levelMax - level) - Math.abs(b.levelMax - level))[0];
+    const eSp = at(
+      levelSpawns(at(LEVELS, 'van_hai'))
+        .filter((s) => MONSTER.get(s.mon)?.elite)
+        .sort((a, b) => Math.abs(a.levelMax - level) - Math.abs(b.levelMax - level)),
+      0,
+    );
     const eDef = MONSTER.get(eSp.mon)!;
     const eLv = Math.min(eSp.levelMax, Math.max(eSp.levelMin, level));
     const eMs = monsterStats(eLv, eDef.hpMul, eDef.atkMul);
@@ -1954,14 +1968,14 @@ function ch3Timeline(id: MethodId): Ch3 {
     let fixedGold = qs.reduce((s, q) => s + (q.rewards.gold ?? 0), 0);
     let phachFixed = 0;
     if (level === 21) {
-      const dg = LEVELS.kinh_nguyet.dungeon!;
+      const dg = at(LEVELS, 'kinh_nguyet').dungeon!;
       let waveXp = 0;
       for (const w of dg.waves) for (const g of w.mons) waveXp += monsterXp(g.level, MONSTER.get(g.id)!.xpMul) * g.n;
       fixedXp += xpNeed(level) * dg.reward!.xpPct + waveXp * CH2_PARTY_SHARE;
       const dgSec = (dgFirstMin.get('kinh_nguyet') ?? 24) * 60;
       fixedSec += dgSec;
       parts.dungeon += dgSec;
-      fixedGold += (dg.reward!.gold[0] + dg.reward!.gold[1]) / 2;
+      fixedGold += (at(dg.reward!.gold, 0) + at(dg.reward!.gold, 1)) / 2;
       phachFixed += dg
         .reward!.items.filter((i) => i.item === 'itm_ngung_anh_phach')
         .reduce((s, i) => s + i.chance * ((i.min + i.max) / 2), 0);
@@ -2084,10 +2098,10 @@ function ch3Timeline(id: MethodId): Ch3 {
     }
   }
   const hs = METHOD_IDS.map((m) => out.get(m)!.hours);
-  console.log(`[pace3] ${METHOD_IDS.map((m, i) => m + '=' + hs[i].toFixed(2)).join(' ')} target=${CH3_TARGET_H} tol=${CH3_TOL}`);
+  console.log(`[pace3] ${METHOD_IDS.map((m, i) => m + '=' + at(hs, i).toFixed(2)).join(' ')} target=${CH3_TARGET_H} tol=${CH3_TOL}`);
   for (const [i, m] of METHOD_IDS.entries()) {
-    if (Math.abs(hs[i] / CH3_TARGET_H - 1) > CH3_TOL) {
-      console.error(`LỖI: chương 3 ${METHOD_NAME[m]} ra ${hs[i].toFixed(2)} giờ, ngoài ${CH3_TARGET_H} giờ ±${CH3_TOL * 100}%`);
+    if (Math.abs(at(hs, i) / CH3_TARGET_H - 1) > CH3_TOL) {
+      console.error(`LỖI: chương 3 ${METHOD_NAME[m]} ra ${at(hs, i).toFixed(2)} giờ, ngoài ${CH3_TARGET_H} giờ ±${CH3_TOL * 100}%`);
       process.exitCode = 1;
     }
   }
@@ -2133,10 +2147,11 @@ function ch3Timeline(id: MethodId): Ch3 {
   for (const id of METHOD_IDS) {
     const t = out.get(id)!;
     let sold = 0;
-    for (const r of t.rows) sold += r.kills * sellOf(ch3Camps(r.level)[0].mon, r.level) + r.elites * sellOf('elite_van_hac_vuong', r.level);
+    for (const r of t.rows)
+      sold += r.kills * sellOf(at(ch3Camps(r.level), 0).mon, r.level) + r.elites * sellOf('elite_van_hac_vuong', r.level);
     const src = t.gold + sold;
     console.log(
-      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[3] * 1.2}/giờ)`,
+      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${at(TIER_INCOME_HOUR, 3) * 1.2}/giờ)`,
     );
     const r = sink / src;
     if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) {
@@ -2194,7 +2209,7 @@ function ch4Player(level: number, id: MethodId): { atk: number; def: number; hp:
 }
 
 function ch4Camps(level: number) {
-  const all = (LEVELS.thien_khuyet.camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite && !MONSTER.get(c.mon)?.boss);
+  const all = (at(LEVELS, 'thien_khuyet').camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite && !MONSTER.get(c.mon)?.boss);
   const hit = all.filter((c) => c.levelMax >= level - 2 && c.levelMin <= level + 1);
   if (hit.length) return hit;
   const d = (c: (typeof all)[number]) => Math.min(Math.abs(c.levelMin - level), Math.abs(c.levelMax - level));
@@ -2239,20 +2254,20 @@ function hoaThanRun(id: MethodId, dodge: number, rng: () => number, guards = 0):
     if (rng() > dodge && rng() < p) take(mhp * pct);
   };
   let nextWave = td.firstDelay;
-  const nh = ph[0].nguHanh!;
-  const pt = ph[1].phanThan!;
-  const net = ph[1].net!;
+  const nh = at(ph, 0).nguHanh!;
+  const pt = at(ph, 1).phanThan!;
+  const net = at(ph, 1).net!;
   let nextSeal = nh.first;
-  let nextNet = ph[0].end + net.every;
-  const sweeps = pt.sweeps!.map((s) => ph[0].end + s);
-  let pillarAt = ph[0].end + pt.pillarAt!;
-  let linkAt = ph[0].end + pt.linkAt!;
-  const fin = ph[2].final;
+  let nextNet = at(ph, 0).end + net.every;
+  const sweeps = pt.sweeps!.map((s) => at(ph, 0).end + s);
+  let pillarAt = at(ph, 0).end + pt.pillarAt!;
+  let linkAt = at(ph, 0).end + pt.linkAt!;
+  const fin = at(ph, 2).final;
   let finalAt = fin ? td.duration - fin.delay - 6 : Infinity;
   const dt = 0.1;
   for (let t = 0; t < td.duration; t += dt) {
-    const pi = t < ph[0].end ? 0 : t < ph[1].end ? 1 : 2;
-    const p = ph[pi];
+    const pi = t < at(ph, 0).end ? 0 : t < at(ph, 1).end ? 1 : 2;
+    const p = at(ph, pi);
     pillCd = Math.max(0, pillCd - dt);
     hp = Math.min(mhp, hp + regen * mhp * dt);
     if (hp <= 0) return false;
@@ -2277,7 +2292,7 @@ function hoaThanRun(id: MethodId, dodge: number, rng: () => number, guards = 0):
         avoidable(net.pct, 0.5);
       }
       for (let i = 0; i < sweeps.length; i++) {
-        if (t >= sweeps[i]) {
+        if (t >= at(sweeps, i)) {
           sweeps[i] = Infinity;
           avoidable(pt.sweepPct!, 0.8);
         }
@@ -2367,9 +2382,12 @@ function ch4Timeline(id: MethodId): Ch4 {
     const rest = lost / (pl.hp * HP_REGEN_MEDITATE);
     xpKill += meditateXpPerSec(level) * rest;
     const cycle = ttk + seek + rest;
-    const eSp = levelSpawns(LEVELS.thien_khuyet)
-      .filter((s) => MONSTER.get(s.mon)?.elite)
-      .sort((a, b) => Math.abs(a.levelMax - level) - Math.abs(b.levelMax - level))[0];
+    const eSp = at(
+      levelSpawns(at(LEVELS, 'thien_khuyet'))
+        .filter((s) => MONSTER.get(s.mon)?.elite)
+        .sort((a, b) => Math.abs(a.levelMax - level) - Math.abs(b.levelMax - level)),
+      0,
+    );
     const eDef = MONSTER.get(eSp.mon)!;
     const eLv = Math.min(eSp.levelMax, Math.max(eSp.levelMin, level));
     const eMs = monsterStats(eLv, eDef.hpMul, eDef.atkMul);
@@ -2394,14 +2412,14 @@ function ch4Timeline(id: MethodId): Ch4 {
     const fixedMats: Record<string, number> = {};
     for (const q of qs) for (const it of q.rewards.items ?? []) fixedMats[it.id] = (fixedMats[it.id] ?? 0) + it.n;
     if (level === 26) {
-      const dg = LEVELS.than_tang.dungeon!;
+      const dg = at(LEVELS, 'than_tang').dungeon!;
       let waveXp = 0;
       for (const w of dg.waves) for (const g of w.mons) waveXp += monsterXp(g.level, MONSTER.get(g.id)!.xpMul) * g.n;
       fixedXp += xpNeed(level) * dg.reward!.xpPct + waveXp * CH2_PARTY_SHARE;
       const dgSec = (dgFirstMin.get('than_tang') ?? 28) * 60;
       fixedSec += dgSec;
       parts.dungeon += dgSec;
-      fixedGold += (dg.reward!.gold[0] + dg.reward!.gold[1]) / 2;
+      fixedGold += (at(dg.reward!.gold, 0) + at(dg.reward!.gold, 1)) / 2;
       for (const it of dg.reward!.items) fixedMats[it.item] = (fixedMats[it.item] ?? 0) + it.chance * ((it.min + it.max) / 2);
       // Quái trong phó bản (chia nhóm 4: mỗi người nhặt phần mình, tính trọn cho một người như mọi bảng khác của sim).
       for (const w of dg.waves)
@@ -2536,10 +2554,10 @@ function ch4Timeline(id: MethodId): Ch4 {
     }
   }
   const hs = METHOD_IDS.map((m) => out.get(m)!.hours);
-  console.log(`[pace4] ${METHOD_IDS.map((m, i) => m + '=' + hs[i].toFixed(2)).join(' ')} target=${CH4_TARGET_H} tol=${CH4_TOL}`);
+  console.log(`[pace4] ${METHOD_IDS.map((m, i) => m + '=' + at(hs, i).toFixed(2)).join(' ')} target=${CH4_TARGET_H} tol=${CH4_TOL}`);
   for (const [i, m] of METHOD_IDS.entries()) {
-    if (Math.abs(hs[i] / CH4_TARGET_H - 1) > CH4_TOL) {
-      console.error(`LỖI: chương 4 ${METHOD_NAME[m]} ra ${hs[i].toFixed(2)} giờ, ngoài ${CH4_TARGET_H} giờ ±${CH4_TOL * 100}%`);
+    if (Math.abs(at(hs, i) / CH4_TARGET_H - 1) > CH4_TOL) {
+      console.error(`LỖI: chương 4 ${METHOD_NAME[m]} ra ${at(hs, i).toFixed(2)} giờ, ngoài ${CH4_TARGET_H} giờ ±${CH4_TOL * 100}%`);
       process.exitCode = 1;
     }
   }
@@ -2584,10 +2602,10 @@ function ch4Timeline(id: MethodId): Ch4 {
     const t = out.get(id)!;
     let sold = 0;
     for (const r of t.rows)
-      sold += r.kills * sellOf(ch4Camps(r.level)[0].mon, r.level) + r.elites * sellOf('elite_cot_kiem_thong_linh', r.level);
+      sold += r.kills * sellOf(at(ch4Camps(r.level), 0).mon, r.level) + r.elites * sellOf('elite_cot_kiem_thong_linh', r.level);
     const src = t.gold + sold;
     console.log(
-      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${TIER_INCOME_HOUR[4] * 1.2}/giờ)`,
+      `  ${METHOD_NAME[id].padEnd(8)} nguồn ${src.toFixed(0)} = ${t.gold.toFixed(0)} vàng rơi/nhiệm vụ/phó bản/boss + ${sold.toFixed(0)} bán đồ; ${(src / t.hours).toFixed(0)}/giờ (thiết kế ~${at(TIER_INCOME_HOUR, 4) * 1.2}/giờ)`,
     );
     const r = sink / src;
     if (id === 'lac_kiem_quyet' && (r < 0.8 || r > 2.2)) {
@@ -2655,7 +2673,7 @@ function ch5Player(level: number, id: MethodId): { atk: number; def: number; hp:
 }
 
 function ch5Camps(level: number) {
-  const all = (LEVELS.bac_hoang.camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite && !MONSTER.get(c.mon)?.boss);
+  const all = (at(LEVELS, 'bac_hoang').camps ?? []).filter((c) => !MONSTER.get(c.mon)?.elite && !MONSTER.get(c.mon)?.boss);
   const hit = all.filter((c) => c.levelMax >= level - 2 && c.levelMin <= level + 1);
   if (hit.length) return hit;
   const d = (c: (typeof all)[number]) => Math.min(Math.abs(c.levelMin - level), Math.abs(c.levelMax - level));
@@ -2713,9 +2731,12 @@ function ch5Timeline(id: MethodId) {
     const rest = lost / (pl.hp * HP_REGEN_MEDITATE);
     xpKill += meditateXpPerSec(level) * rest;
     const cycle = ttk + seek + rest;
-    const eSp = levelSpawns(LEVELS.bac_hoang)
-      .filter((s) => MONSTER.get(s.mon)?.elite)
-      .sort((a, b) => Math.abs(a.levelMax - level) - Math.abs(b.levelMax - level))[0];
+    const eSp = at(
+      levelSpawns(at(LEVELS, 'bac_hoang'))
+        .filter((s) => MONSTER.get(s.mon)?.elite)
+        .sort((a, b) => Math.abs(a.levelMax - level) - Math.abs(b.levelMax - level)),
+      0,
+    );
     const eDef = MONSTER.get(eSp.mon)!;
     const eLv = Math.min(eSp.levelMax, Math.max(eSp.levelMin, level));
     const eMs = monsterStats(eLv, eDef.hpMul, eDef.atkMul);
@@ -2738,14 +2759,14 @@ function ch5Timeline(id: MethodId) {
     for (const q of qs) for (const it of q.rewards.items ?? []) fixedMats[it.id] = (fixedMats[it.id] ?? 0) + it.n;
     const dgId = CH5_DUNGEONS[level];
     if (dgId) {
-      const dg = LEVELS[dgId].dungeon!;
+      const dg = at(LEVELS, dgId).dungeon!;
       let waveXp = 0;
       for (const w of dg.waves) for (const g of w.mons) waveXp += monsterXp(g.level, MONSTER.get(g.id)!.xpMul) * g.n;
       fixedXp += xpNeed(level) * dg.reward!.xpPct + waveXp * CH2_PARTY_SHARE;
       const dgSec = (dgFirstMin.get(dgId) ?? 28) * 60;
       fixedSec += dgSec;
       parts.dungeon += dgSec;
-      fixedGold += (dg.reward!.gold[0] + dg.reward!.gold[1]) / 2;
+      fixedGold += (at(dg.reward!.gold, 0) + at(dg.reward!.gold, 1)) / 2;
       for (const it of dg.reward!.items) fixedMats[it.item] = (fixedMats[it.item] ?? 0) + it.chance * ((it.min + it.max) / 2);
       for (const w of dg.waves)
         for (const g of w.mons)
@@ -2850,10 +2871,10 @@ function ch5Timeline(id: MethodId) {
     }
   }
   const hs = METHOD_IDS.map((m) => out.get(m)!.hours);
-  console.log(`[pace5] ${METHOD_IDS.map((m, i) => m + '=' + hs[i].toFixed(2)).join(' ')} target=${CH5_TARGET_H} tol=${CH5_TOL}`);
+  console.log(`[pace5] ${METHOD_IDS.map((m, i) => m + '=' + at(hs, i).toFixed(2)).join(' ')} target=${CH5_TARGET_H} tol=${CH5_TOL}`);
   for (const [i, m] of METHOD_IDS.entries()) {
-    if (Math.abs(hs[i] / CH5_TARGET_H - 1) > CH5_TOL) {
-      console.error(`LỖI: chương 5 ${METHOD_NAME[m]} ra ${hs[i].toFixed(2)} giờ, ngoài ${CH5_TARGET_H} giờ ±${CH5_TOL * 100}%`);
+    if (Math.abs(at(hs, i) / CH5_TARGET_H - 1) > CH5_TOL) {
+      console.error(`LỖI: chương 5 ${METHOD_NAME[m]} ra ${at(hs, i).toFixed(2)} giờ, ngoài ${CH5_TARGET_H} giờ ±${CH5_TOL * 100}%`);
       process.exitCode = 1;
     }
   }

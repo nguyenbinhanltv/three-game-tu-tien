@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { IN_FLY, IN_UP, type MoveCtx, type MoveInput, type MoveState, stepMove, terrainOf } from '@dtl/shared';
 import { LEVELS } from './index';
 
+import { at } from '@dtl/shared';
 // DV-3K: hẻm núi của phó bản Xích Tẫn Khích (`TerrainDef.canyon`): chỉ đổi địa hình, không đổi luật đợt quái.
-const dg = LEVELS.xich_tan_khich.dungeon!;
+const dg = at(LEVELS, 'xich_tan_khich').dungeon!;
 const tr = terrainOf('xich_tan_khich');
 const c = tr.def.canyon!;
 const floor = tr.def.natural.level;

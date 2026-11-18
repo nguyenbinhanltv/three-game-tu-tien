@@ -83,6 +83,7 @@ import type { ThanTangSystem } from '../thantang';
 import type { TribSystem } from '../trib';
 import type { MonZones } from '../monzone';
 
+import { at } from '@dtl/shared';
 /** Bộ trang bị (P3-4): hệ số tốc độ của quái bị làm chậm (thường / boss). */
 const SET_SLOW_MUL = 0.5;
 const SET_SLOW_BOSS = 0.8;
@@ -474,7 +475,7 @@ export class MonsterSystem {
       );
       pool.forEach((o, i) => {
         const res = parties.resonance(o) ? 1 + RESONANCE_XP : 1;
-        this.c.giveXp(o, Math.max(1, Math.round(raw[i] * xpLevelFactor(o.char.level, mon.level) * (o.noLoot ? 0.3 : 1) * res)));
+        this.c.giveXp(o, Math.max(1, Math.round((raw[i] ?? 0) * xpLevelFactor(o.char.level, mon.level) * (o.noLoot ? 0.3 : 1) * res)));
         this.c.questEvent(o, 'kill', mon.def.id, 1);
         this.c.feedArtifact(o, mon);
         done.add(o);
@@ -1136,7 +1137,7 @@ export class MonsterSystem {
   tickHazards(): void {
     const hitGrp = new Set<string>();
     for (let i = this.c.hazards.length - 1; i >= 0; i--) {
-      const h = this.c.hazards[i];
+      const h = at(this.c.hazards, i);
       if (this.c.now < h.at) continue;
       this.c.hazards.splice(i, 1);
       // Quái thả vùng đã chết hoặc đang bỏ đuổi (miễn sát thương) thì vùng không gây sát thương.
@@ -1240,6 +1241,7 @@ export class MonsterSystem {
 
   endBolt(i: number, x: number, z: number, hit?: string): void {
     const b = this.c.bolts[i];
+    if (!b) return;
     this.c.bolts.splice(i, 1);
     const msg: BoltEndMsg = { id: b.id, x, z };
     if (hit) msg.hit = hit;
@@ -1248,7 +1250,7 @@ export class MonsterSystem {
 
   tickBolts(): void {
     for (let i = this.c.bolts.length - 1; i >= 0; i--) {
-      const b = this.c.bolts[i];
+      const b = at(this.c.bolts, i);
       const m = b.mon;
       // Quái bắn đã chết, đã bị gỡ, hoặc đang bỏ đuổi (hồi đầy + miễn sát thương): đạn tan, không gây sát thương.
       if (m.state === MS_DEAD || m.state === MS_RETURN || !this.c.monById.has(m.id)) {

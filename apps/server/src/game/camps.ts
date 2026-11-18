@@ -55,12 +55,14 @@ export class CampSystem {
     // Bớt con thừa (đã chết hết nên chỉ cần gỡ khỏi thế giới).
     while (rt.melee.length > n) this.host.remove(rt.melee.pop()!);
     for (let i = 0; i < n; i++) {
-      const at = place(slots.melee[i]);
+      const slot = slots.melee[i];
+      if (!slot) continue;
+      const pos = place(slot);
       const m = rt.melee[i];
       if (m) {
-        if (revive) this.host.revive(m, at.x, at.z);
+        if (revive) this.host.revive(m, pos.x, pos.z);
       } else {
-        const nm = this.host.spawn(rt.def.mon, this.level(rt), at.x, at.z, rt.sp);
+        const nm = this.host.spawn(rt.def.mon, this.level(rt), pos.x, pos.z, rt.sp);
         if (nm) {
           nm.camp = rt;
           rt.melee.push(nm);
