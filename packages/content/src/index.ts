@@ -230,7 +230,7 @@ export const ROOTS = rootsJson as RootDef[];
 export const GLOSSARY = glossaryJson;
 
 /** Ghi công asset bên thứ ba (nguồn duy nhất, đối chiếu với assets/LICENSES.md + meta.json bằng content:check). */
-export type CreditKind = 'model' | 'anim' | 'texture' | 'sound' | 'font' | 'music';
+export type CreditKind = 'model' | 'anim' | 'texture' | 'sound' | 'font' | 'music' | 'vfx';
 export interface CreditEntry {
   id: string;
   kind: CreditKind;
@@ -247,10 +247,11 @@ export interface CreditEntry {
   pending?: boolean;
 }
 export const CREDITS = (creditsJson as { entries: CreditEntry[] }).entries;
-export const CREDIT_KINDS: CreditKind[] = ['model', 'anim', 'texture', 'sound', 'font', 'music'];
+export const CREDIT_KINDS: CreditKind[] = ['model', 'anim', 'texture', 'sound', 'font', 'music', 'vfx'];
 export const CREDIT_LICENSE_URL: Record<string, string> = {
   'CC-BY-4.0': 'https://creativecommons.org/licenses/by/4.0/',
   'CC0-1.0': 'https://creativecommons.org/publicdomain/zero/1.0/',
+  MIT: 'https://opensource.org/license/mit',
   'OFL-1.1': 'https://openfontlicense.org/open-font-license-official-text/',
   'GeneralUser-GS-2.0': 'https://github.com/mrbumpy409/GeneralUser-GS/blob/main/LICENSE.txt',
 };

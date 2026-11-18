@@ -29,7 +29,9 @@ export type FxShape =
   /** Pháp tướng tượng ngồi (La Hán): thân tròn xoay dựng từ đài sen tới đầu, cao ~4,2 m ở scale 1 (kiểu `crystal`). */
   | 'statue'
   /** Thẻ pháp tướng vẽ 2D quay mặt về camera (kiểu `card`); chọn tranh bằng `card`. */
-  | 'card';
+  | 'card'
+  /** Chùm đường gió: bảy vệt mảnh cuộn quanh trục +Z, đầu vệt chạy dọc đường rồi tan (kiểu `wind`, Storm & Wind CC BY). */
+  | 'gust';
 
 /** Bố trí gốc của sự kiện. */
 /** `area`: tâm vùng của chiêu diện rộng (`S.FX` x,z; không có thì như `ground`). `ground`: chân mục tiêu (mặt đất dưới chân); không có mục tiêu thì 5 m trước mặt, ngang chân người ra chiêu. */
@@ -75,6 +77,8 @@ export interface FxMeshEvent extends FxBase {
   ragged?: number;
   /** Quay hình mặt về camera (burst, smoke). */
   billboard?: boolean;
+  /** Hình `burst`: thêm vạch chéo ngang-dọc kiểu tia lửa va chạm (EdgeFlux "clash"), dùng cho đòn kim loại trúng đích. */
+  cross?: boolean;
   /** Bay từ gốc sang `to` trong `dur` (phi kiếm lao, kiếm khí bay): gốc → đích, đơn vị mét hoặc theo neo. */
   move?: { to: FxAnchor; ahead?: number; ease?: 'out' | 'in' | 'linear'; /** Dịch đích (khác `offset` của điểm xuất phát), ví dụ rơi thẳng từ trên cao. */ offset?: [number, number, number] };
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh). */
@@ -117,7 +121,7 @@ export interface FxParticleEvent extends FxBase {
 export interface FxDecalEvent extends FxBase {
   type: 'decal';
   /** `crack` vết nứt phát sáng, `rune` vòng triện văn, `scorch` vết cháy mờ. */
-  tex: 'crack' | 'rune' | 'scorch';
+  tex: 'crack' | 'rune' | 'scorch' | 'strike';
   at?: FxAnchor;
   offset?: [number, number, number];
   r: number;

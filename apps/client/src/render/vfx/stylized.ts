@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { abs, atan, clamp, dot, exp, float, floor, fract, length, max, min, mix, normalize, normalView, positionView, pow, select, smoothstep, step, texture, time, uv, vec2, vec3 } from 'three/tsl';
+import { abs, atan, clamp, cos, dot, exp, float, floor, fract, length, max, min, mix, normalize, normalView, positionView, pow, select, sin, smoothstep, step, texture, time, uv, vec2, vec3 } from 'three/tsl';
 import { hash21, vnoise, type FxUniforms, type N } from './common';
 import { cardTexture } from './cards';
 
@@ -139,8 +139,14 @@ export function burstNodes(U: FxUniforms): { color: N; opacity: N } {
   // Lõi chớp: tròn trắng nóng nhỏ.
   const core = exp(r.mul(r).mul(-9)).mul(one.sub(fade));
   const ring = smoothstep(0.03, 0.0, abs(r.sub(spread.mul(0.62)))).mul(0.6);
-  const col = min(mix(body, rim, clamp(core.add(spoke.mul(0.7)), 0, 1)).mul(float(1).add(core.mul(0.9))), U.maxHdr);
-  const a = clamp(spoke.add(core).add(ring.mul(spoke.add(0.3))), 0, 1).mul(one.sub(fade));
+  // Vạch chéo va chạm (kỹ thuật "clash cross" của EdgeFlux, MIT): vệt ngang dài + vệt dọc ngắn, xoay theo seed; bật bằng `fxA.w` > 0,5.
+  const cs = seed.mul(2.399);
+  const q = vec2(p.x.mul(cos(cs)).add(p.y.mul(sin(cs))), p.y.mul(cos(cs)).sub(p.x.mul(sin(cs))));
+  const hs = exp(abs(q.y).mul(-38)).mul(pow(max(one.sub(abs(q.x)), 0), 1.5));
+  const vs = exp(abs(q.x).mul(-30)).mul(pow(max(one.sub(abs(q.y)), 0), 3)).mul(0.6);
+  const cross = hs.add(vs).mul(step(0.5, U.a.w)).mul(one.sub(smoothstep(0.55, 1, fade))).mul(smoothstep(0, 0.12, spread));
+  const col = min(mix(body, rim, clamp(core.add(spoke.mul(0.7)).add(cross.mul(0.8)), 0, 1)).mul(float(1).add(core.mul(0.9)).add(cross.mul(0.5))), U.maxHdr);
+  const a = clamp(spoke.add(core).add(cross).add(ring.mul(spoke.add(0.3))), 0, 1).mul(one.sub(fade));
   return { color: col, opacity: U.opacity.mul(a) };
 }
 
@@ -149,6 +155,8 @@ export const DECAL_CRACK = 0;
 export const DECAL_RUNE = 1;
 export const DECAL_SCORCH = 2;
 export const DECAL_SMOKE = 3;
+/** Chỗ sét đánh xuống đất: vũng sáng, tia nứt, vòng xung kích (Storm & Wind, CC BY 4.0, xem credits.json). */
+export const DECAL_STRIKE = 4;
 
 /** Texture vòng triện văn (canvas thủ tục, nạp lười). */
 let runeTex: THREE.Texture | null = null;
@@ -318,12 +326,22 @@ export function decalNodes(U: FxUniforms): { color: N; opacity: N } {
   const smokeCol = mix(mix(body, vec3(0.04, 0.09, 0.12), 0.6), mix(body, vec3(0.5, 0.6, 0.66), 0.45), tone);
   const smokeA = smokeMask.mul(smokeLive);
 
+  // Chỗ sét đánh (kỹ thuật `strike` của Storm & Wind, viết lại): vũng sáng gắt ở tâm, tia chớp tỏa (nhiễu theo góc, lũy thừa 4), vòng xung kích mở ra rồi tắt; tắt theo độ nóng `U.k` (decal: 1 → 0).
+  const flash = pow(max(U.k, 0), 1.6);
+  const turn = ang.div(Math.PI * 2).add(0.5);
+  const pool = exp(r.mul(r).mul(-10)).mul(flash);
+  const rays = pow(vnoise(vec2(turn.mul(20), seed.mul(13).add(r.mul(3)))), 4).mul(exp(r.mul(-2.2))).mul(smoothstep(0.02, 0.1, r)).mul(flash).mul(2.4);
+  const ring = smoothstep(0.07, 0, abs(r.sub(grow.min(1).mul(0.95)))).mul(one.sub(grow.min(1))).mul(0.9);
+  const strikeGlow = clamp(pool.add(rays).add(ring), 0, 1).mul(smoothstep(1, 0.75, r));
+  const strikeCol = min(mix(rim, body, clamp(pool.add(rays.mul(0.5)), 0, 1)).mul(1.8), U.maxHdr);
+
+  const isStrike = step(3.5, kind);
   const isCrack = step(-0.5, kind).mul(step(kind, 0.5));
   const isRune = step(0.5, kind).mul(step(kind, 1.5));
   const isScorch = step(1.5, kind).mul(step(kind, 2.5));
-  const color = select(isCrack.greaterThan(0.5), crackCol, select(isRune.greaterThan(0.5), runeCol, select(isScorch.greaterThan(0.5), scorchCol, smokeCol)));
-  const a = select(isCrack.greaterThan(0.5), crackA, select(isRune.greaterThan(0.5), runeA, select(isScorch.greaterThan(0.5), scorchA, smokeA)));
-  // Smoke tự quản lý mờ bằng `fade` (xói mòn); các kiểu khác mờ theo `fade` trực tiếp.
+  const color = select(isStrike.greaterThan(0.5), strikeCol, select(isCrack.greaterThan(0.5), crackCol, select(isRune.greaterThan(0.5), runeCol, select(isScorch.greaterThan(0.5), scorchCol, smokeCol))));
+  const a = select(isStrike.greaterThan(0.5), strikeGlow, select(isCrack.greaterThan(0.5), crackA, select(isRune.greaterThan(0.5), runeA, select(isScorch.greaterThan(0.5), scorchA, smokeA))));
+  // Smoke và strike tự quản lý mờ (xói mòn / theo k); các kiểu khác mờ theo `fade` trực tiếp.
   const fadeMul = select(step(2.5, kind).greaterThan(0.5), one, one.sub(fade));
   return { color, opacity: U.opacity.mul(a).mul(fadeMul) };
 }

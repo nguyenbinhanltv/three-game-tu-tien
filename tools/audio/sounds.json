@@ -15,6 +15,7 @@
     "morning": { "dir": "oga/amb-morning-sounds-perfect-loop", "title": "AMB Morning Sounds (Perfect Loop)", "author": "Kresiek The Furry", "url": "https://opengameart.org/content/amb-morning-sounds-perfect-loop", "license": "CC0-1.0" },
     "river": { "dir": "oga/sea-and-river-wave-sounds", "title": "Sea and river wave sounds", "author": "RandomMind", "url": "https://opengameart.org/content/sea-and-river-wave-sounds", "license": "CC0-1.0" },
     "loops": { "dir": "oga/30-cc0-sfx-loops/sfx_loops", "title": "30 CC0 SFX Loops", "author": "rubberduck", "url": "https://opengameart.org/content/30-cc0-sfx-loops", "license": "CC0-1.0" },
+    "elem": { "dir": "godot-elemental-sampler", "title": "Godot 4 Elemental Spells VFX + SFX: Free Sampler", "author": "SquigglyFish", "url": "https://squigglyfish.itch.io/godot-elemental-spells-vfx-sfx", "license": "CC0-1.0" },
     "storm": { "dir": "oga/rain-long-thunder", "title": "Rain + Long Thunder", "author": "WuxiaScrub", "url": "https://opengameart.org/content/rain-long-thunder", "license": "CC0-1.0" }
   },
   "sprites": {
@@ -90,8 +91,30 @@
       "variants": [
         { "src": "s100:sfx100v2_thunder_01.ogg", "end": 3.0 },
         [{ "src": "storm:rain-thunder.ogg", "start": 21.3, "end": 24.3 }, { "src": "clash:sword_clash.1.ogg", "gain": 0.35, "rate": 0.7 }],
-        [{ "src": "s100:sfx100v2_thunder_01.ogg", "end": 3.0, "rate": 0.85 }, { "src": "bfh:bfh1_rock_breaking_02.ogg", "gain": 0.5 }]
+        [{ "src": "s100:sfx100v2_thunder_01.ogg", "end": 3.0, "rate": 0.85 }, { "src": "bfh:bfh1_rock_breaking_02.ogg", "gain": 0.5 }],
+        [{ "src": "elem:lightning_strike_01.wav" }, { "src": "s100:sfx100v2_thunder_01.ogg", "end": 3.0, "gain": 0.45, "at": 0.05 }],
+        [{ "src": "elem:lightning_strike_03.wav" }, { "src": "storm:rain-thunder.ogg", "start": 21.3, "end": 24.3, "gain": 0.4, "at": 0.08 }],
+        [{ "src": "elem:lightning_strike_05.wav", "rate": 0.95 }, { "src": "bfh:bfh1_rock_breaking_02.ogg", "gain": 0.35 }]
       ]
+    },
+    "loi_cast": {
+      "sprite": "sfx_magic", "desc": "Hồ quang quanh tay rồi phóng ra (Lôi Đình Nhất Kiếm, chiêu Lôi)", "pitch": 0.05, "max": 1.6, "level": -2,
+      "variants": ["elem:lightning_cast_01.wav", "elem:lightning_cast_02.wav", "elem:lightning_cast_04.wav"]
+    },
+    "fire_burst": {
+      "sprite": "sfx_magic", "desc": "Cầu lửa nổ (Đan Hỏa Phong Tràn, chiêu Hỏa)", "pitch": 0.05, "max": 1.8, "level": -2,
+      "variants": [
+        [{ "src": "elem:fireball_start_01.wav" }, { "src": "elem:fireball_stop_01.wav", "at": 0.12 }],
+        [{ "src": "elem:fireball_start_02.wav" }, { "src": "elem:fireball_stop_02.wav", "at": 0.12 }]
+      ]
+    },
+    "ice_hit": {
+      "sprite": "sfx_magic", "desc": "Băng vỡ trúng đích (chiêu Băng, đòn Thủy)", "pitch": 0.05, "max": 1.4, "level": -2,
+      "variants": ["elem:ice_impact_01.wav", "elem:ice_impact_03.wav", "elem:ice_impact_05.wav"]
+    },
+    "ice_spike": {
+      "sprite": "sfx_magic", "desc": "Gai băng trồi khỏi đất (Thiên Kiếm Hóa Hình đóng băng)", "pitch": 0.05, "max": 1.6, "level": -2,
+      "variants": ["elem:ice_spikes_01.wav", "elem:ice_spikes_02.wav", "elem:ice_spikes_04.wav"]
     },
     "trib": {
       "sprite": "sfx_world", "desc": "Bắt đầu độ kiếp: sấm rền", "pitch": 0.02, "max": 5.0, "duck": 0.5,
