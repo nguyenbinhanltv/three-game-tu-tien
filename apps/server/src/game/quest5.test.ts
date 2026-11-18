@@ -66,7 +66,7 @@ describe('dữ liệu chương 5', () => {
   it('mọi nhiệm vụ làm được ở trần cấp: minLevel <= MAX_LEVEL, mục tiêu kill có quái thật (s5_cham_ba nhắm tinh anh ngoài bản đồ)', () => {
     for (const q of ch5()) {
       expect(q.minLevel ?? 1, q.id).toBeLessThanOrEqual(MAX_LEVEL);
-      for (const o of q.objectives) if (o.type === 'kill') expect(MONSTER.get(o.target), `${q.id}/${o.target}`).toBeTruthy();
+      for (const o of q.objectives) if (o.type === 'kill') expect(MONSTER.get(o.target ?? ''), `${q.id}/${o.target}`).toBeTruthy();
     }
   });
 });
