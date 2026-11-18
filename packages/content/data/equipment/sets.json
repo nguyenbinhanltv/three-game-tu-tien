@@ -469,8 +469,8 @@
     ],
     "look": {
       "hex": "#23262B",
-      "trim": "#5FC8C0",
-      "blade": "#8FD8D0"
+      "trim": "#E8743B",
+      "blade": "#FF9B54"
     },
     "src": "forge"
   },

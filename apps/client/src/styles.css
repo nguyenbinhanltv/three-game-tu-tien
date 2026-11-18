@@ -1101,3 +1101,75 @@ kbd {
 .content-icon.inline.fallback:empty {
   display: none;
 }
+
+/* Icon hệ thống nét vàng (SVG, U2-I): kích thước theo font-size, màu theo currentColor của phần tử cha. */
+.sys-glyph {
+  display: inline-block;
+  width: 1.35em;
+  height: 1.35em;
+  flex-shrink: 0;
+  vertical-align: -0.28em;
+  overflow: visible;
+  color: var(--ngj-gold, #c9a45c);
+}
+.sys-glyph__line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sys-glyph__fill {
+  fill: currentColor;
+  fill-opacity: 0.22;
+  stroke: none;
+}
+/* Dấu ấn bộ trang bị (U2-I): huy hiệu tròn góc dưới trái, ẩn khi ô nhỏ hơn 40 px. */
+.content-icon__img {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  border-radius: inherit;
+}
+.content-icon.has-set {
+  position: relative;
+  container-type: size;
+}
+.set-mark {
+  position: absolute;
+  left: 2%;
+  bottom: 2%;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: #0b0908;
+  box-shadow: 0 0 0 1.5px var(--ngj-gold, #c9a45c);
+  display: grid;
+  place-items: center;
+  color: var(--set-c, #f0d78e);
+  pointer-events: none;
+}
+.set-mark svg {
+  width: 76%;
+  height: 76%;
+  overflow: visible;
+}
+.set-mark path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@container (max-width: 39px) {
+  .set-mark {
+    display: none;
+  }
+}
+
+/* Icon họa số U2-I không có viền: nền mực vuông của tranh tan dần ra rìa tròn để không lộ ô vuông trong khung tròn/bát giác. */
+.content-icon:not(.fallback):not(.sys):not(.has-set),
+.content-icon__img {
+  -webkit-mask-image: radial-gradient(closest-side, #000 86%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 86%, transparent 100%);
+}
