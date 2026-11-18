@@ -112,15 +112,21 @@ describe('E4-G: chiêu Nguyên Anh', () => {
       const { sim, p, mon, fresh, wait, countHits } = setup('lac_kiem_quyet', 28);
       const m = mon();
       fresh(p);
-      if (withEcho) {
-        sim.onSkill(p, { id: 'skl_phan_anh_kiem_anh' });
-        wait(1100);
-        fresh(p);
+      // Cố định ngẫu nhiên (chí mạng, biên độ sát thương) để so hai lần chạy không bị nhiễu.
+      const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+      try {
+        if (withEcho) {
+          sim.onSkill(p, { id: 'skl_phan_anh_kiem_anh' });
+          wait(1100);
+          fresh(p);
+        }
+        const hits = countHits();
+        sim.onSkill(p, { id: 'skl_hoanh_kiem_pha_mach', t: m.id });
+        wait(1500);
+        return { n: hits.n, lost: lost(m) };
+      } finally {
+        rnd.mockRestore();
       }
-      const hits = countHits();
-      sim.onSkill(p, { id: 'skl_hoanh_kiem_pha_mach', t: m.id });
-      wait(1500);
-      return { n: hits.n, lost: lost(m) };
     };
     const a = run(false);
     const b = run(true);
