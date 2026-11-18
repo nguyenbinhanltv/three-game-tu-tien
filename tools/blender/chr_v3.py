@@ -622,6 +622,63 @@ if SPRINGS:
         log(f'vạt áo: {n_rb} đỉnh bám hông/đùi theo khoảng cách ngang')
     domreg = np.array([REGION_OF(COLS[i]) for i in W.argmax(axis=1)])
     Wx = W.copy()
+    # Tay áo rộng: chuỗi lò xo dọc cẳng tay (từ `tMin` tới cổ tay), chia cung quanh trục tay; quán tính làm ống tay lắc theo tay.
+    # Cấu hình: {"name":"sleeve","limb":["lowerarm_l","lowerarm_r"],"tMin":0.3,"minRadius":0.035,"count":4,"links":2,"share":0.7}
+    for g in SP.get('limbs', []):
+        f = height if g.get('frac', True) else 1.0
+        for bone in g['limb']:
+            ax_a, ax_b = Fp_HEAD[bone], Fp_TAIL[bone]
+            axv = ax_b - ax_a
+            L = float(np.linalg.norm(axv))
+            if L < 1e-6:
+                continue
+            ax_u = axv / L
+            u = np.cross(ax_u, [0.0, 0.0, 1.0] if abs(ax_u[2]) < 0.9 else [1.0, 0.0, 0.0])
+            u /= np.linalg.norm(u)
+            vv = np.cross(ax_u, u)
+            cols = [COLS.index(bone), COLS.index(bone.replace('lowerarm', 'lowerarm_twist')) if 'lowerarm' in bone else COLS.index(bone)]
+            wsum = Wx[:, cols[0]] + (Wx[:, cols[1]] if cols[1] != cols[0] else 0)
+            rel = VP - ax_a
+            tt = rel @ ax_u / L
+            radial = np.linalg.norm(rel - np.outer(tt * L, ax_u), axis=1)
+            sel = np.where((wsum > 0.3) & (tt >= g['tMin']) & (radial >= g.get('minRadius', 0.03) * f))[0]
+            if len(sel) == 0:
+                log(f"lò xo {g['name']} {bone}: không có đỉnh nào")
+                continue
+            cnt, links = g.get('count', 4), g.get('links', 2)
+            ang = np.arctan2(rel[sel] @ vv, rel[sel] @ u)
+            cen = [-math.pi + 2 * math.pi * (k + 0.5) / cnt for k in range(cnt)]
+            names = []
+            rr_all = float(np.median(radial[sel]))
+            for k in range(cnt):
+                d = math.cos(cen[k]) * u + math.sin(cen[k]) * vv
+                top = ax_a + ax_u * L * g['tMin'] + d * rr_all
+                bot = ax_a + ax_u * L * 1.02 + d * rr_all
+                prev, prev_n = top, bone
+                for l in range(links):
+                    nxt = top + (bot - top) * (l + 1) / links
+                    nm = f"dtl_o_{g['name']}_{bone}_{k}_{l}"
+                    add_bone(nm, prev_n, prev, nxt)
+                    names.append(nm)
+                    prev, prev_n = nxt, nm
+                    n_spring += 1
+            base = len(COLS)
+            COLS += names
+            Wx = np.hstack([Wx, np.zeros((NV, len(names)))])
+            for j, vi in enumerate(sel):
+                depth = float(np.clip((tt[vi] - g['tMin']) / max(1.0 - g['tMin'], 1e-6), 0, 1))
+                fr = g.get('share', 0.7) * min(1.0, depth / 0.35)
+                if fr <= 0:
+                    continue
+                dd = np.abs(ang[j] - np.array(cen))
+                dd = np.minimum(dd, 2 * math.pi - dd)
+                o2 = list(np.argsort(dd)[:2])
+                ws = [dd[o2[1]], dd[o2[0]]]
+                sm = sum(ws) or 1.0
+                li = min(links - 1, int(depth * links))
+                Wx[vi, :base] *= (1 - fr)
+                for kk, wv in zip(o2, ws):
+                    Wx[vi, base + kk * links + li] += fr * wv / sm
     for g in SP['groups']:
         f = height if g.get('frac', True) else 1.0
         zlo, zhi, rmin = g['zMin'] * f, g['zMax'] * f, g.get('minRadius', 0.0) * f
@@ -765,16 +822,18 @@ def set_pose(clip, t):
     bpy.context.view_layer.update()
 
 
-REGION = {}
-for n in DEF:
-    if re.match(r'(clavicle|upperarm|lowerarm|hand|thumb|index|middle|ring|pinky)', n):
-        REGION[n] = 'arm_' + n[-1]
-    elif re.match(r'(thigh|calf|foot|ball)', n):
-        REGION[n] = 'leg_' + n[-1]
-    else:
-        REGION[n] = 'torso'
-for _n in COLS:
-    REGION.setdefault(_n, REGION_OF(_n))
+def region_col(n):
+    """Vùng (kèm phía trái/phải) của một cột trọng số, kể cả xương twist (`<limb>_twist_<l|r>`) và lò xo tay áo (`dtl_o_sleeve_lowerarm_<l|r>_…`)."""
+    m = re.search(r'(upperarm|lowerarm|clavicle|hand|thumb|index|middle|ring|pinky)(?:_\d+)?(?:_twist)?_([lr])(?:_|$)', n)
+    if m:
+        return 'arm_' + m[2]
+    m = re.match(r'(thigh|calf|foot|ball)(?:_twist)?_([lr])$', n)
+    if m:
+        return 'leg_' + m[2]
+    return 'torso'
+
+
+REGION = {n: region_col(n) for n in COLS}
 dom = np.array([REGION[COLS[i]] for i in W.argmax(axis=1)])
 PAIRS = [('arm_l', 'torso'), ('arm_r', 'torso'), ('arm_l', 'arm_r'), ('leg_l', 'leg_r'), ('arm_l', 'leg_l'), ('arm_r', 'leg_r')]
 
@@ -806,6 +865,51 @@ def pen_count():
         ev.to_mesh_clear()
 
 
+# Số đỉnh vải xuyên vào thân (N-6): đo bằng viên nang thân (hông, ngực, đùi, cẳng, cánh/cẳng tay) lấy từ xương ở từng tư thế; chỉ đếm đỉnh
+# nằm NGOÀI viên nang ở tư thế nghỉ nhưng nằm TRONG ở tư thế đang đo (đỉnh da/giày vốn nằm trong viên nang của chính nó không tính).
+# Khác `pen_count` (cặp mặt chồng giữa các vùng trọng số, nhạy với cách chia vùng của chính vạt).
+KC = height / 1.8
+CAPS = [('pelvis', 'spine_01', 0.11), ('spine_01', 'spine_03', 0.13), ('spine_03', 'neck_01', 0.10)]
+for _sd in 'lr':
+    CAPS += [(f'thigh_{_sd}', f'calf_{_sd}', 0.085), (f'calf_{_sd}', f'foot_{_sd}', 0.06), (f'upperarm_{_sd}', f'lowerarm_{_sd}', 0.05),
+             (f'lowerarm_{_sd}', f'hand_{_sd}', 0.04)]
+
+
+def cap_dist(P, a, b):
+    ab = b - a
+    t = np.clip(((P - a) @ ab) / max(ab @ ab, 1e-12), 0, 1)
+    return np.linalg.norm(P - (a + t[:, None] * ab), axis=1)
+
+
+def cap_inside():
+    dg = bpy.context.evaluated_depsgraph_get()
+    ev = BODY.evaluated_get(dg)
+    m = ev.to_mesh()
+    try:
+        P = np.array([v.co[:] for v in m.vertices], float)
+    finally:
+        ev.to_mesh_clear()
+    mw = ARM.matrix_world
+    ins = np.zeros(len(P), bool)
+    for a_, b_, r in CAPS:
+        pa = np.array(mw @ ARM.pose.bones[a_].head)
+        pb = np.array(mw @ ARM.pose.bones[b_].head)
+        ins |= cap_dist(P, pa, pb) < r * KC * 0.9
+    return ins
+
+
+set_pose(None, 0)
+cap_rest = cap_inside()
+cap_pen = []
+for clip, t in POSES:
+    if find_act(clip) is None:
+        cap_pen.append(None)
+        continue
+    set_pose(clip, t)
+    cap_pen.append(int((cap_inside() & ~cap_rest).sum()))
+set_pose(None, 0)
+REP['cap_pen'] = cap_pen
+log('đỉnh vải xuyên viên nang thân: ' + ', '.join(f"{c[0]}@{c[1]}={n}" for c, n in zip(POSES, cap_pen)) + f' | tổng {sum(n or 0 for n in cap_pen)}')
 set_pose(None, 0)
 base = pen_count()
 pen = []
