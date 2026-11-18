@@ -116,7 +116,7 @@ export async function loadGroundTextures(
   const albedo = new Uint8Array(layerBytes * manifest.layers.length);
   const normal = new Uint8Array(nLayerBytes * manifest.layers.length);
   for (let i = 0; i < manifest.layers.length; i++) {
-    const L = manifest.layers[i];
+    const L = manifest.layers[i]!;
     const [a, n] = await Promise.all([decode(`${base}${set}/${L.a}`, size), decode(`${base}${set}/${L.n}`, nsize)]);
     albedo.set(a, i * layerBytes);
     normal.set(n, i * nLayerBytes);

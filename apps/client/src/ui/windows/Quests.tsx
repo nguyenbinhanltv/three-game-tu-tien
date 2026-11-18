@@ -19,7 +19,7 @@ export function Quests() {
       {ids.map((id) => {
         const q = QUEST.get(id);
         if (!q) return null;
-        const prog = quests.active[id];
+        const prog = quests.active[id]!;
         return (
           <div key={id} className="k-card quest-card">
             <div className="quest-title">{t(`quest.${id}.name`)}</div>

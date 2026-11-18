@@ -139,7 +139,7 @@ export function KitViewer() {
                 );
               })}
               <Slot empty />
-              <Slot size="s" icon={<ContentIcon def={ITEM.get(SAMPLE[1])!} />} rarity={1} label={itemName(SAMPLE[1])} />
+              <Slot size="s" icon={<ContentIcon def={ITEM.get(SAMPLE[1]!)!} />} rarity={1} label={itemName(SAMPLE[1]!)} />
             </div>
             <p className="k-dim">{t('ui.kit.hint.slots')}</p>
           </PanelBody>

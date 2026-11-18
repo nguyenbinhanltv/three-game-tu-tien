@@ -71,7 +71,7 @@ export function usedCount(inv: readonly InvSlot[]): number {
 /** Số ô có đồ ở từng trang. */
 export function pageCounts(inv: readonly InvSlot[]): number[] {
   const out = new Array<number>(INV_PAGES).fill(0);
-  for (let i = 0; i < Math.min(inv.length, INV_SIZE); i++) if (inv[i]) out[pageOf(i)]++;
+  for (let i = 0; i < Math.min(inv.length, INV_SIZE); i++) if (inv[i]) out[pageOf(i)]!++;
   return out;
 }
 

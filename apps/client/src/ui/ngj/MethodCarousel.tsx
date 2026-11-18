@@ -40,7 +40,7 @@ export function MethodCarousel({
       if (e.key === 'ArrowLeft') go(-1);
       else if (e.key === 'ArrowRight') go(1);
       else if (e.key === 'Escape') onClose();
-      else if (e.key === 'Enter' && canPick && METHODS[i].id !== current) onPick(METHODS[i].id);
+      else if (e.key === 'Enter' && canPick && METHODS[i]!.id !== current) onPick(METHODS[i]!.id);
       else return;
       e.preventDefault();
       e.stopPropagation();
@@ -48,10 +48,10 @@ export function MethodCarousel({
     window.addEventListener('keydown', on, true);
     return () => window.removeEventListener('keydown', on, true);
   });
-  const m = METHODS[i];
+  const m = METHODS[i]!;
   const skills = [SKILL.get(m.sig), SKILL.get(m.ult)];
   const card = (k: number, pos: 'prev' | 'cur' | 'next') => {
-    const mm = METHODS[(i + k + n) % n];
+    const mm = METHODS[(i + k + n) % n]!;
     return (
       <button
         key={mm.id + pos}

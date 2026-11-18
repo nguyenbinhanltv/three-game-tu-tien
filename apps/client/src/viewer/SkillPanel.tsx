@@ -25,7 +25,7 @@ export function SkillPanel({
   onPick: (id: string) => void;
   clips: string[];
 }) {
-  const skill = ALL.find((s) => s.id === skillId) ?? ALL[0];
+  const skill = ALL.find((s) => s.id === skillId) ?? ALL[0]!;
   // Giọng động tác (K-5) và đòn thứ mấy của chuỗi: `?voice=hp&hit=2` mở thẳng; chỉ chiêu có đủ bộ mới đổi được.
   const q = urlParams();
   const [voice, setVoice] = useState<PoseVoice>(() =>

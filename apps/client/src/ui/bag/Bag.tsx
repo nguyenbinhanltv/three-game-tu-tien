@@ -349,7 +349,7 @@ export function Bag() {
       <div className="bag-foot">
         <div className="bag-pages" role="group" aria-label={t('ui.bag.pages')}>
           {Array.from({ length: INV_PAGES }, (_, p) => (
-            <PageButton key={p} page={p} active={p === page} count={counts[p]} onPick={() => setPage(p)} onSplit={setSplit} />
+            <PageButton key={p} page={p} active={p === page} count={counts[p] ?? 0} onPick={() => setPage(p)} onSplit={setSplit} />
           ))}
         </div>
         <div className="gold">

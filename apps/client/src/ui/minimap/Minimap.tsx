@@ -116,7 +116,7 @@ export function Minimap() {
     fit();
     let raf = 0;
     let last = 0;
-    let span: number = ZOOM_SPANS[zoomRef.current];
+    let span: number = ZOOM_SPANS[zoomRef.current] ?? ZOOM_SPANS[0]!;
     let prevT = performance.now();
     let hoverKey = '';
     let hoverAt = 0;
@@ -131,7 +131,7 @@ export function Minimap() {
       const dt = Math.min(0.1, (nowT - prevT) / 1000);
       prevT = nowT;
       // Mượt khi đổi mức phóng: nội suy theo hàm mũ trên log(mét).
-      const want = ZOOM_SPANS[zoomRef.current];
+      const want = ZOOM_SPANS[zoomRef.current]!;
       span = Math.exp(Math.log(span) + (Math.log(want) - Math.log(span)) * Math.min(1, dt * 12));
       if (Math.abs(span - want) < 0.5) span = want;
       const st = useUI.getState();
@@ -159,7 +159,7 @@ export function Minimap() {
       const m = mouse.current;
       if (m) {
         const i = nearestIndex(hits.current, m.x, m.y);
-        const mark = i >= 0 ? hits.current[i].mark : null;
+        const mark = i >= 0 ? hits.current[i]!.mark : null;
         const key = mark
           ? `${mark.kind}:${mark.id}:${mark.dead ? 1 : 0}:${mark.respawnAt ? Math.ceil((mark.respawnAt - Date.now()) / 1000) : ''}:${mark.quest ?? ''}`
           : '';
