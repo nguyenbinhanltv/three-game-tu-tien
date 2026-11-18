@@ -2,7 +2,7 @@
 // và chiêu 1–3 ở cấp 28: quay webm + dãy ảnh (quái xuất hiện, vạch báo lao, trúng đòn, chết). Tài khoản thử, bất tử để xem trọn clip.
 import fs from 'node:fs';
 import path from 'node:path';
-import { opt } from '../lib/env';
+import { flag, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
@@ -11,7 +11,7 @@ import { snap } from '../lib/shot';
 export default {
   name: 'divuc',
   desc: 'Quái Dị Vực chương 5: gọi bằng /gm spawn, đánh thử, quay webm + ảnh (xuất hiện, vạch báo, trúng đòn, chết)',
-  usage: '[--mons mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc] [--methods lac_kiem_quyet] [--dist 12] [--pitch 0.28] [--rounds 12]',
+  usage: '[--mons mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc] [--methods lac_kiem_quyet] [--dist 12] [--pitch 0.28] [--yaw 3.14] [--rounds 12] [--quiet]',
   async run(r) {
     for (const id of opt('--mons', 'mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc').split(',')) {
       const dir = path.join(r.out, id);
@@ -22,7 +22,7 @@ export default {
       await gm(page, 'skills max', 1000);
       await gm(page, 'god on', 900);
       await gm(page, 'heal', 900);
-      await cam(page, { pitch: Number(opt('--pitch', '0.28')), dist: Number(opt('--dist', '12')), yaw: Math.PI });
+      await cam(page, { pitch: Number(opt('--pitch', '0.28')), dist: Number(opt('--dist', '12')), yaw: Number(opt('--yaw', String(Math.PI))) });
       // Boss nạp lười (GLB vài MB): gọi thử một lần cho tải xong rồi gọi lại, khỏi quay cảnh xuất hiện bằng model khối.
       if (id.startsWith('boss_')) {
         await gm(page, `spawn ${id}`, 1500);
@@ -35,7 +35,7 @@ export default {
       await snap(page, dir, '02-vach-bao.jpg', { wait: 800 });
       await snap(page, dir, '03-lao-toi.jpg', { wait: 900 });
       for (let i = 0; i < Number(opt('--rounds', '12')); i++) {
-        await page.keyboard.press(`Digit${1 + (i % 3)}`);
+        if (!flag('--quiet')) await page.keyboard.press(`Digit${1 + (i % 3)}`); // --quiet: chỉ đứng nhìn (góc chụp không bị hiệu ứng chiêu của người chơi che)
         await sleep(1100);
         if (i === 1 || i === 5) await snap(page, dir, `04-danh-${i}.jpg`);
       }

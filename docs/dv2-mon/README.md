@@ -132,3 +132,8 @@ Tạm đặt ngoài trời ở Kim Dạ Ngoại Uyển (`gen-bac-hoang.mjs`: đ�
 
 ## Giới hạn hình ảnh
 Ravenyth: cánh tay dạng 45° theo xương Mannequin kéo theo phần tay áo choàng (đã buộc phần choàng ngoài tay vào hông, vẫn thấy một mảng "cánh" nhỏ ở tư thế nghỉ); tóc và bím dùng `Head`/ngực. Protector: vạt choàng buộc hông nên không bay theo gió. Thân xuyên giáp ở nhiều khung (số ở log `chr_v3.py`).
+
+## Sửa sau duyệt ảnh #231
+- Kiếm Cơ quá tối: `palette` (dark→light) + `glow` than hồng + `lift` 0,3 ở `MONSTER_SKINS`; kiếm 1,5×.
+- Mảng đen dựng chéo ở clip `Spell_Simple_Idle_Loop`: `chr_v3.py --bind` có thêm `drop` (bỏ ảnh hưởng xương tay lên vạt từ thắt lưng xuống), vai gai/cổ áo choàng/giáp đùi buộc cứng vào ngực/đùi (`dv2_protector_bind.json`). Mảng vẫn còn trong clip niệm chú (vạt choàng lẫn vai), nên Kiếm Cơ (không niệm chú) đổi trạng thái `cast` sang `Idle_Loop`, không phát clip đó.
+- Ma Hậu nhỏ: `scale` 1,35 (Kiếm Cơ 1,2); lift 0,45. Chụp góc ngang (`--yaw 1.57 --quiet`) để chiêu người chơi không che.

@@ -855,8 +855,8 @@
       "id": "boss_tan_hoa_kiem_co",
       "class": "boss_mq",
       "source": "assets/build/raw/boss_tan_hoa_kiem_co.glb",
-      "file": "boss_tan_hoa_kiem_co.74ac8193f4.glb",
-      "bytes": 6169856,
+      "file": "boss_tan_hoa_kiem_co.e679fc8a90.glb",
+      "bytes": 6127900,
       "rawBytes": 13196824,
       "triangles": 23990,
       "rawTriangles": 23990,
@@ -893,27 +893,27 @@
         },
         {
           "level": 1,
-          "triangles": 11995,
+          "triangles": 11993,
           "target": 11995
         },
         {
           "level": 2,
-          "triangles": 4788,
+          "triangles": 4784,
           "target": 4798
         }
       ],
       "dims": {
         "raw": {
-          "width": 2.1275,
-          "height": 2.3988,
-          "depth": 1.2942,
-          "minY": 0.0132
+          "width": 2.1232,
+          "height": 2.3969,
+          "depth": 1.3414,
+          "minY": 0.015
         },
         "build": {
-          "width": 2.1275,
-          "height": 2.3988,
-          "depth": 1.2942,
-          "minY": 0.0132
+          "width": 2.1232,
+          "height": 2.3969,
+          "depth": 1.3414,
+          "minY": 0.015
         }
       }
     },

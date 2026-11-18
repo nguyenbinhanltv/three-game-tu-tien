@@ -192,8 +192,8 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_giac_kiem_trong_binh: { asset: 'mon_giac_kiem_trong_binh', clips: MQ_SHIELD_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, metalness: 0, palette: { dark: '#2e2c3a', light: '#d2c4a6', glow: '#d9a93e' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   elite_hoi_giac_cu_thu: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, palette: { dark: '#34303a', light: '#cdbfb2', glow: '#ff5a3a' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   // DV-2 đợt 3 (boss hình người Dị Vực, docs/dv2-mon/README.md): xương Mannequin + clip UAL. Kiếm Cơ cầm kiếm Tẫn Hỏa rời (`weapon`).
-  boss_tan_hoa_kiem_co: { asset: 'boss_tan_hoa_kiem_co', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.25, lift: 0.18, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true, weapon: { asset: 'prop_kiem_tan_hoa', scale: 1.5 } },
-  boss_kim_da_ma_hau: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.3, lift: 0.22, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  boss_tan_hoa_kiem_co: { asset: 'boss_tan_hoa_kiem_co', clips: { ...MQ_CLIPS, cast: 'Idle_Loop' }, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.35, palette: { dark: '#3c2c26', light: '#f0d2b0', glow: '#ff7a30' }, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true, weapon: { asset: 'prop_kiem_tan_hoa', scale: 1.5 } },
+  boss_kim_da_ma_hau: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.45, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   // Bóng của Ma Hậu (decoy `mirror.decoys`): cùng model, mờ và ngả vàng dát.
   mon_kim_da_bong: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
 };
