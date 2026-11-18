@@ -23,10 +23,12 @@ export type MusicTrack =
   | 'combat'
   | 'boss'
   | 'dungeon_boss'
+  | 'dungeon_rift'
+  | 'dungeon_rift_boss'
   | 'tribulation'
   | 'meditate';
 
-export const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'combat', 'boss', 'dungeon_boss', 'tribulation', 'meditate'];
+export const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'dungeon_rift', 'combat', 'boss', 'dungeon_boss', 'dungeon_rift_boss', 'tribulation', 'meditate'];
 
 export interface MusicInput {
   /** Đang ở room bí cảnh (Kiếm Trủng) thay vì bản đồ thế giới. */
@@ -103,15 +105,17 @@ const PRIORITY: Record<MusicTrack, number> = {
   forest: 0,
   lake: 0,
   dungeon: 0,
+  dungeon_rift: 0,
   meditate: 1,
   combat: 2,
   boss: 3,
   dungeon_boss: 3,
+  dungeon_rift_boss: 3,
   tribulation: 4,
 };
 
 export function regionTrack(dungeon: boolean, biome: Biome, level?: string, rift?: boolean): MusicTrack {
-  if (dungeon) return 'dungeon';
+  if (dungeon) return level === 'xich_tan_khich' ? 'dungeon_rift' : 'dungeon'; // Xích Tẫn Khích (DV-3K): bài riêng của hẻm núi
   if (level === 'doan_mach' && biome === 'wild') return 'wild_ochre';
   if (level === 'van_hai' && biome === 'wild') return 'wild_cloud';
   if (level === 'thien_khuyet' && biome === 'wild') return 'wild_night';
@@ -238,7 +242,7 @@ export class MusicDirector {
       next = 'tribulation';
       reason = 'độ kiếp';
     } else if (this.boss.on) {
-      next = inp.dungeon ? 'dungeon_boss' : 'boss';
+      next = inp.dungeon ? (inp.level === 'xich_tan_khich' ? 'dungeon_rift_boss' : 'dungeon_boss') : 'boss';
       reason = 'giao chiến boss';
     } else if (this.combat.on) {
       next = 'combat';

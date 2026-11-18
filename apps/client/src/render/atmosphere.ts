@@ -139,10 +139,10 @@ export function setHeightFog(on: boolean): void {
 
 // ---------- quầng sáng giả quanh đèn ----------
 
-const HALO_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 0.9, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 0.9, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 0.9, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.8 };
+const HALO_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 0.9, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 0.9, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 0.9, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.8, rift_pit: 0.9 };
 
 /** Cột linh quang (M-5, render/beacons.ts): yếu ban ngày, rõ ban đêm. */
-const BEACON_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 1, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 1, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 1, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.55 };
+const BEACON_INTENSITY: Record<string, number> = { dawn: 0.5, day: 0.3, night: 1, ochre_dawn: 0.5, ochre: 0.3, ochre_night: 1, cloud_dawn: 0.5, cloud: 0.3, cloud_night: 1, tk_dawn: 0.6, tk: 0.35, tk_night: 1.1, ash_dawn: 0.5, rift: 0.55, rift_pit: 0.55 };
 export const beaconParams = { intensity: uniform(0.3) };
 
 export const haloParams = {
