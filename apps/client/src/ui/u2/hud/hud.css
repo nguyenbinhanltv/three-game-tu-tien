@@ -504,7 +504,12 @@
 .u2h-cell[data-main] .u2-frame,
 .u2h-cell[data-main] .u2-frame__in,
 .u2h-cell[data-main] .u2-skill__cd,
-.u2h-cell[data-main] .u2h-skill[data-state='charging'] .u2-frame__in > * {
+.u2h-cell[data-main] .u2h-gcd {
+  clip-path: none;
+  border-radius: 50%;
+}
+/* chiêu tối thượng đang tụ lực: icon mờ (mọi ô, không riêng đòn chính) */
+.u2h-skill[data-state='charging'] .u2-frame__in > * {
   filter: saturate(0.45) brightness(0.8);
 }
 .u2h-charge {
@@ -529,10 +534,6 @@
   color: var(--u-gold-text);
   -webkit-text-stroke: 2px var(--u-ink-0);
   paint-order: stroke fill;
-}
-.u2h-gcd {
-  clip-path: none;
-  border-radius: 50%;
 }
 .u2h-cell[data-main] .u2-frame {
   --qc: var(--u-gold-lo);
