@@ -176,7 +176,7 @@ export class FootstepDriver {
     if (!this.cand.length) return;
     // Gần trước; mình (d = 0) luôn đứng đầu.
     this.cand.sort((a, b) => a.d - b.d);
-    while (this.recent.length && now - this.recent[0] > WINDOW_MS) this.recent.shift();
+    while (this.recent.length && now - this.recent[0]! > WINDOW_MS) this.recent.shift();
     let others = 0;
     for (const p of this.cand) {
       const local = p.local;

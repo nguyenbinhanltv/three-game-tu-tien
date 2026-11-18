@@ -44,8 +44,8 @@ function archFade() {
       .sub(smoothstep(s.z, s.z.add(1), length(positionWorld.xz.sub(s.xy))))
       .mul(s.w),
   );
-  let f: ShaderNodeObject<THREE.Node> = parts[0];
-  for (let i = 1; i < parts.length; i++) f = max(f, parts[i]);
+  let f: ShaderNodeObject<THREE.Node> = parts[0]!;
+  for (let i = 1; i < parts.length; i++) f = max(f, parts[i]!);
   return f.mul(nearer).mul(aboveFeet);
 }
 
@@ -102,26 +102,26 @@ export function updateOcclusion(dt: number, cam: THREE.Vector3, chest: THREE.Vec
   uVeg.value = dist > 2.5 ? MAX_FADE : 0;
   const k = dt * FADE_RATE;
   for (let i = 0; i < OCCLUDERS.length; i++) {
-    const o = OCCLUDERS[i];
+    const o = OCCLUDERS[i]!;
     const rr = o.r + PAD;
     const hit = segDist2(o.x, o.z, cam.x, cam.z, chest.x, chest.z) < rr * rr;
-    fade[i] = hit ? Math.min(1, fade[i] + k) : Math.max(0, fade[i] - k);
+    fade[i] = hit ? Math.min(1, fade[i]! + k) : Math.max(0, fade[i]! - k);
   }
   // Đổ vào các ô uniform: ưu tiên vật mờ nhiều nhất (thường chỉ 1–3 vật cùng lúc).
   for (let s = 0; s < SLOTS; s++) {
     let best = -1;
     for (let i = 0; i < fade.length; i++) {
-      if (fade[i] <= 0 || (best >= 0 && fade[i] <= fade[best])) continue;
+      if (fade[i]! <= 0 || (best >= 0 && fade[i]! <= fade[best]!)) continue;
       let used = false;
       for (let j = 0; j < s; j++) if (slotIdx[j] === i) used = true;
       if (!used) best = i;
     }
     slotIdx[s] = best;
-    const v = uSlots[s].value;
+    const v = uSlots[s]!.value;
     if (best < 0) v.set(0, 0, 0, 0);
     else {
-      const o = OCCLUDERS[best];
-      v.set(o.x, o.z, o.r, fade[best] * MAX_FADE);
+      const o = OCCLUDERS[best]!;
+      v.set(o.x, o.z, o.r, fade[best]! * MAX_FADE);
     }
   }
 }

@@ -39,8 +39,8 @@ export function xichCrackDist(paths: readonly RiftPt[][], x: number, z: number):
   let best = Infinity;
   for (const p of paths)
     for (let i = 0; i + 1 < p.length; i++) {
-      const a = p[i];
-      const b = p[i + 1];
+      const a = p[i]!;
+      const b = p[i + 1]!;
       const vx = b.x - a.x;
       const vz = b.z - a.z;
       const u = Math.max(0, Math.min(1, ((x - a.x) * vx + (z - a.z) * vz) / (vx * vx + vz * vz || 1)));
@@ -203,7 +203,7 @@ export function scatterXich(ctx: XichScatterCtx): BhRock[] {
         });
       else
         out.push({
-          id: ROCKS[Math.floor(pick * 2.99)],
+          id: ROCKS[Math.floor(pick * 2.99)]!,
           x,
           z,
           yaw: k * Math.PI * 2,

@@ -239,7 +239,7 @@ export class Butterflies {
   private readonly glow = uniform(0);
   private readonly flies: Fly[] = [];
   private readonly okCache = new Map<number, boolean>();
-  private cap = BUTTERFLY_QUALITY.medium;
+  private cap = BUTTERFLY_QUALITY.medium!;
   private clock = 0;
   private scanIn = 0;
   private frame = 0;
@@ -302,7 +302,7 @@ export class Butterflies {
   }
 
   setQuality(q: string): void {
-    this.cap = BUTTERFLY_QUALITY[q] ?? BUTTERFLY_QUALITY.medium;
+    this.cap = BUTTERFLY_QUALITY[q] ?? BUTTERFLY_QUALITY.medium!;
   }
 
   /** Số con đang vẽ (bảng F3, test). */
@@ -328,7 +328,7 @@ export class Butterflies {
     const a1 = this.a1.array as Float32Array;
     let n = 0;
     for (let i = this.flies.length - 1; i >= 0; i--) {
-      const f = this.flies[i];
+      const f = this.flies[i]!;
       f.fade = Math.min(1, Math.max(0, f.fade + (f.leaving ? -step : step) / 0.7));
       if (f.leaving && f.fade <= 0) {
         this.flies.splice(i, 1);
@@ -336,7 +336,7 @@ export class Butterflies {
       }
     }
     for (let i = 0; i < this.flies.length && n < BUTTERFLY_MAX; i++) {
-      const f = this.flies[i];
+      const f = this.flies[i]!;
       const s = f.seed;
       const t = this.clock * (0.32 + 0.22 * s) + s * 40;
       const r = 1.4 + 1.8 * s;

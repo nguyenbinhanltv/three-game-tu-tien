@@ -150,7 +150,7 @@ export function scatterThienKhuyet(ctx: TkScatterCtx): TkRubble[] {
         });
       else
         out.push({
-          id: ROCKS[Math.floor(hash01(gx, gz, 6151) * ROCKS.length)],
+          id: ROCKS[Math.floor(hash01(gx, gz, 6151) * ROCKS.length)]!,
           x,
           z,
           yaw: k * Math.PI * 2,

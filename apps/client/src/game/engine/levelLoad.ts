@@ -79,7 +79,7 @@ export function buildBacHoang(eng: Game): void {
   eng.scene.add(eng.deadTrees.group);
   if (levelId() === KIEP_BH) {
     // Nhật thực: đĩa đen vành lửa treo trên khe Giới Khích, phía bắc-đông sân (chỗ camera mặc định ngẩng lên thấy được, không dưới khung HUD).
-    const c = LEVELS[KIEP_BH].dungeon!.center;
+    const c = LEVELS[KIEP_BH]!.dungeon!.center;
     eng.eclipseSun = buildEclipseSun(c.x + 55, heightAt(c.x, c.z) + 12, c.z - 120, 15);
     eng.scene.add(eng.eclipseSun.group);
   }
@@ -344,7 +344,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
 export function applyGround(eng: Game): void {
   if (!eng.ground || !eng.terrain) return;
   const g = levelAssets(levelId()).ground;
-  eng.terrain.setGround(g ? eng.ground : null, (QUALITY[get().quality] ?? QUALITY.medium).ground);
+  eng.terrain.setGround(g ? eng.ground : null, (QUALITY[get().quality] ?? QUALITY.medium!).ground);
 }
 
 /** Gỡ và giải phóng mọi thứ gắn với level hiện tại (địa hình, kiến trúc + GLB, cổng, đèn, cây, cột sáng, cỏ). Không để rò sau nhiều lần đổi. */

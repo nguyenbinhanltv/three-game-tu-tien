@@ -557,7 +557,7 @@ export class Game {
     const mark = (k: string) => {
       this.loadStats[k] = Math.round(performance.now() - t0);
     };
-    const q = QUALITY[get().quality] ?? QUALITY.medium;
+    const q = QUALITY[get().quality] ?? QUALITY.medium!;
     // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
     // `?gputime=1` (chỉ cho công cụ đo, pnpm bench:crowd): bật timestamp query để đọc thời gian GPU bằng
     // `renderer.resolveTimestampsAsync()`; không ai resolve thì three cảnh báo hết chỗ query, nên đừng bật khi chơi.
@@ -770,7 +770,7 @@ export class Game {
         return false;
       }
       // 2. gỡ cũ + dựng mới trong cùng một nhịp (không có khung nào thấy cảnh dở).
-      const q = QUALITY[get().quality] ?? QUALITY.medium;
+      const q = QUALITY[get().quality] ?? QUALITY.medium!;
       unloadLevel(this);
       commitMask(); // địa hình cũ đã gỡ: giải phóng mặt nạ cũ an toàn
       if (swap.t) {
@@ -1203,7 +1203,7 @@ export class Game {
     localStorage.setItem('dtl.quality', q);
     set({ quality: q });
     this.autoQuality.reset(performance.now());
-    const cfg = QUALITY[q] ?? QUALITY.medium;
+    const cfg = QUALITY[q] ?? QUALITY.medium!;
     setHeightFog(cfg.heightFog);
     this.env?.setQuality(q);
     applyGround(this);
