@@ -136,7 +136,7 @@ export function mixPreset(a: GradingPreset, b: GradingPreset, t: number): Gradin
   const A = a as unknown as Record<string, number>;
   const B = b as unknown as Record<string, number>;
   for (const k of Object.keys(A)) {
-    const va = A[k];
+    const va = A[k]!;
     const vb = B[k] ?? va;
     // Giá trị >= 0x100 và là màu (khóa kết thúc bằng Color/Tint/Lift hoặc sunColor/skyColor/fogColor) nội suy theo kênh.
     const isColor = /Color$|Tint$|Lift$/.test(k);

@@ -79,7 +79,7 @@ function getWorldMask(): THREE.DataTexture {
       let m = 1;
       for (const [f, a, b] of zones) m = Math.min(m, ss(f.outerR * a, f.outerR * b, Math.hypot(x - f.x, z - f.z)));
       const k = (j * GRID + i) * 4;
-      data[k] = ((hs[j * GRID + i] - hMin) / (hMax - hMin)) * 255;
+      data[k] = ((hs[j * GRID + i]! - hMin) / (hMax - hMin)) * 255;
       data[k + 1] = m * 255;
       data[k + 3] = 255;
     }

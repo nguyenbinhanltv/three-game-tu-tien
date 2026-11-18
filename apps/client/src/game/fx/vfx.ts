@@ -243,7 +243,7 @@ export class Vfx {
 
   update(dt: number): void {
     for (let i = this.items.length - 1; i >= 0; i--) {
-      const f = this.items[i];
+      const f = this.items[i]!;
       f.t += dt;
       const k = Math.min(1, f.t / f.dur);
       f.update(k, dt);
@@ -581,11 +581,11 @@ export class Vfx {
     const n = this.inks.length;
     this.inkAges.length = this.inkForced.length = n;
     for (let i = 0; i < n; i++) {
-      this.inkAges[i] = this.inks[i].t;
-      this.inkForced[i] = this.inks[i].forced > 0;
+      this.inkAges[i] = this.inks[i]!.t;
+      this.inkForced[i] = this.inks[i]!.forced > 0;
     }
     const ev = inkEvict(this.inkAges, this.inkForced);
-    if (ev >= 0) this.inks[ev].forced = 0.001;
+    if (ev >= 0) this.inks[ev]!.forced = 0.001;
     const m = this.fx(SIGIL_GEO, INK_POOL, alpha, 'inkpool');
     // Vẽ trước mọi hiệu ứng sáng (vật trong suốt sắp theo renderOrder trước khoảng cách).
     m.renderOrder = -2;
@@ -651,7 +651,7 @@ export class Vfx {
 
   updateInk(dt: number): void {
     for (let i = this.inks.length - 1; i >= 0; i--) {
-      const ink = this.inks[i];
+      const ink = this.inks[i]!;
       ink.t += dt;
       const ph = inkPhase(ink.t, ink.T);
       if (ink.forced > 0) ink.forced = Math.min(1, ink.forced + dt / 0.6);
@@ -836,17 +836,17 @@ export class Vfx {
         if (!on && fade <= 0) it.t = it.dur;
         for (let i = 0; i < 5; i++) {
           const target = mask & (1 << i) ? 1 : 0;
-          lit[i] += (target - lit[i]) * Math.min(1, dt * 5);
-          const k = lit[i];
+          lit[i]! += (target - lit[i]!) * Math.min(1, dt * 5);
+          const k = lit[i]!;
           const h = 3.5 + 7 * k;
           const pulse = 1 + Math.sin(t * 2.2 + i) * 0.05 * k;
-          cols[i].position.set(pos[i].x, pos[i].y + h * 0.5, pos[i].z);
-          cols[i].scale.set(0.3 + 0.4 * k, h * pulse, 0.3 + 0.4 * k);
-          cols[i].fxColor.setHex(k > 0.5 ? 0xffd27a : 0x6a4a9a);
-          cols[i].fxOpacity = (0.18 + 0.55 * k) * fade;
-          rings[i].position.set(pos[i].x, pos[i].y + 0.12, pos[i].z);
-          rings[i].scale.setScalar(1.6 + 0.4 * Math.sin(t * 2 + i));
-          rings[i].fxOpacity = 0.55 * k * fade;
+          cols[i]!.position.set(pos[i]!.x, pos[i]!.y + h * 0.5, pos[i]!.z);
+          cols[i]!.scale.set(0.3 + 0.4 * k, h * pulse, 0.3 + 0.4 * k);
+          cols[i]!.fxColor.setHex(k > 0.5 ? 0xffd27a : 0x6a4a9a);
+          cols[i]!.fxOpacity = (0.18 + 0.55 * k) * fade;
+          rings[i]!.position.set(pos[i]!.x, pos[i]!.y + 0.12, pos[i]!.z);
+          rings[i]!.scale.setScalar(1.6 + 0.4 * Math.sin(t * 2 + i));
+          rings[i]!.fxOpacity = 0.55 * k * fade;
         }
       },
       end: () => {
@@ -1031,7 +1031,7 @@ export class DamageNumbers {
 
   update(dt: number, camera: THREE.Camera, w: number, h: number, avoid: readonly Box[] = []): void {
     for (let i = this.items.length - 1; i >= 0; i--) {
-      const it = this.items[i];
+      const it = this.items[i]!;
       it.t += dt;
       const k = it.t / 0.95;
       if (k >= 1) {

@@ -55,7 +55,7 @@ export function gearLootTier(q: number): LootTier {
 
 /** Màu cột sáng/viên đồ: Huyền phẩm lam, còn lại theo bậc. */
 export function lootColor(tier: LootTier, q?: number): number {
-  return q === 2 ? LOOT_HUYEN_COLOR : LOOT_TIERS[tier].color;
+  return q === 2 ? LOOT_HUYEN_COLOR : LOOT_TIERS[tier]!.color;
 }
 
 /** Thiên/Thần phẩm xung nhịp: hệ số độ trong (1 ± 0,18) theo giây `t` kể từ lúc cột dâng; các bậc khác = 1. */
@@ -95,7 +95,7 @@ export function lootHop(t: number, peak = 1.6): number {
 
 /** Tổng thời lượng phần 3D của một món (nảy + nằm + tan cột), giây. */
 export function lootDuration(tier: LootTier): number {
-  return LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[tier].hold + 0.7;
+  return LOOT_ARC + LOOT_BOUNCE + LOOT_TIERS[tier]!.hold + 0.7;
 }
 
 /** Ống hở hai đầu cho cột sáng; uv.y = 0 ở chân, 1 ở đỉnh. Gốc ở chân ống. */

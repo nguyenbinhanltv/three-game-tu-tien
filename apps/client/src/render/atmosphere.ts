@@ -126,8 +126,8 @@ export function tuneAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPrese
   }
   env.hemi.color.setHex(p.skyColor);
   env.hemi.intensity = 1.25 * p.skyIntensity;
-  haloParams.intensity.value = HALO_INTENSITY[name] ?? HALO_INTENSITY.day;
-  beaconParams.intensity.value = BEACON_INTENSITY[name] ?? BEACON_INTENSITY.day;
+  haloParams.intensity.value = HALO_INTENSITY[name] ?? HALO_INTENSITY.day!;
+  beaconParams.intensity.value = BEACON_INTENSITY[name] ?? BEACON_INTENSITY.day!;
   godRayParams.intensity.value = GOD_RAY_INTENSITY[name] ?? 0;
 
   // Vòm trời (render/sky.ts): chân trời trùng màu sương để không lộ mép, quầng nắng theo sắc vùng sáng.
@@ -210,7 +210,7 @@ export function createLanternHalos(
   points.forEach((p, i) => {
     for (let k = 0; k < 4; k++) {
       center.set([p.x, p.y, p.z], (i * 4 + k) * 3);
-      uvs.set([corners[k * 2], corners[k * 2 + 1]], (i * 4 + k) * 2);
+      uvs.set([corners[k * 2]!, corners[k * 2 + 1]!], (i * 4 + k) * 2);
     }
     const b = i * 4;
     index.push(b, b + 1, b + 2, b, b + 2, b + 3);

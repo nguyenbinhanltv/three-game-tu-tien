@@ -33,7 +33,7 @@ export function lootDrop(
   onCollect?: (at: THREE.Vector3) => void,
   color?: number,
 ): THREE.Vector3 {
-  const T = LOOT_TIERS[tier];
+  const T = LOOT_TIERS[tier]!;
   const col = color ?? T.color;
   const delay = Math.min(slot, 5) * 0.12;
   const ang = Math.random() * Math.PI * 2 + slot * 2.4;

@@ -159,12 +159,12 @@ class Ribbon {
       const j = Math.min(i, this.n - 1);
       const a = Math.max(0, j - 1) * 3;
       const b = Math.min(this.n - 1, j + 1) * 3;
-      const tx = h[a] - h[b];
-      const ty = h[a + 1] - h[b + 1];
-      const tz = h[a + 2] - h[b + 2];
-      const px = h[j * 3];
-      const py = h[j * 3 + 1];
-      const pz = h[j * 3 + 2];
+      const tx = h[a]! - h[b]!;
+      const ty = h[a + 1]! - h[b + 1]!;
+      const tz = h[a + 2]! - h[b + 2]!;
+      const px = h[j * 3]!;
+      const py = h[j * 3 + 1]!;
+      const pz = h[j * 3 + 2]!;
       const vx = cam.x - px;
       const vy = cam.y - py;
       const vz = cam.z - pz;
@@ -421,7 +421,7 @@ export class Trails {
       else {
         r.fade -= dt * 4;
         // Không còn chủ: đầu dải đứng yên, đuôi đuổi kịp.
-        r.push(r.hist[0], r.hist[1], r.hist[2], dt);
+        r.push(r.hist[0]!, r.hist[1]!, r.hist[2]!, dt);
       }
       if (r.fade <= 0) {
         this.src.drop(r.mesh);
