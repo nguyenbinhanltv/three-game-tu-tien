@@ -6,7 +6,7 @@ import type { AffixStat } from './items';
 import { EQUIP_SLOTS, type EquipSlot } from './types';
 
 /** Hiệu ứng combat của bậc cao: server đọc cờ này trong `executeSkill`/`hitMonster`/`damagePlayer`. */
-export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow' | 'hoanh_kiem' | 'kim_chung' | 'moc_linh' | 'nghich_kiem' | 'dich_son' | 'ngung_dan' | 'phan_anh' | 'anh_thiet' | 'anh_duoc';
+export type SetFxId = 'phi_kiem_extra' | 'shield_boost' | 'heal_share' | 'crit_slow' | 'hoanh_kiem' | 'kim_chung' | 'moc_linh' | 'nghich_kiem' | 'dich_son' | 'ngung_dan' | 'phan_anh' | 'anh_thiet' | 'anh_duoc' | 'thuan_tram' | 'thuan_ho' | 'cuu_vien';
 
 export interface SetLine {
   id: AffixStat;
@@ -86,9 +86,15 @@ export interface SetFx {
   anhThietShare: number;
   /** Anh Dược Hóa Thân (`skl_anh_duoc_hoa_than`): hồi thêm (phân số). */
   anhDuocBoost: number;
+  /** Bộ bậc 5 (E4-F, tạm chờ DV3-F). Thuấn Di Trảm (`skl_thuan_di_tram`) gây thêm sát thương (phân số). */
+  thuanTramPower: number;
+  /** Thuấn Di Hộ Thế (`skl_thuan_di_ho_the`): khiên dày thêm (phân số). */
+  thuanHoBoost: number;
+  /** Thuấn Di Cứu Viện (`skl_thuan_di_cuu_vien`): người được cứu sống lại với thêm khí huyết (phân số của khí huyết tối đa). */
+  cuuVienBoost: number;
 }
 
-export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0, hoanhKiemPower: 0, hoanhKiemReach: 0, kimChungReflect: 0, mocLinhDur: 0, nghichKiemRefund: 0, dichSonStun: 0, ngungDanBoost: 0, phanAnhPower: 0, anhThietShare: 0, anhDuocBoost: 0 };
+export const NO_SET_FX: SetFx = { phiKiemExtra: 0, shieldBoost: 0, shieldReflect: 0, healShare: 0, critSlowSec: 0, hoanhKiemPower: 0, hoanhKiemReach: 0, kimChungReflect: 0, mocLinhDur: 0, nghichKiemRefund: 0, dichSonStun: 0, ngungDanBoost: 0, phanAnhPower: 0, anhThietShare: 0, anhDuocBoost: 0, thuanTramPower: 0, thuanHoBoost: 0, cuuVienBoost: 0 };
 
 /** Đếm món bộ đang mặc theo `setOf(itemId)`; chỉ tính mỗi món một lần (mỗi ô một món nên tự khác nhau). */
 export function setStatuses(sets: readonly SetDef[], wornIds: readonly string[]): SetStatus[] {
@@ -125,6 +131,9 @@ export function setFxOf(statuses: readonly SetStatus[]): SetFx {
         case 'phan_anh': fx.phanAnhPower = Math.max(fx.phanAnhPower, t.v ?? 0); break;
         case 'anh_thiet': fx.anhThietShare = Math.max(fx.anhThietShare, t.v ?? 0); break;
         case 'anh_duoc': fx.anhDuocBoost = Math.max(fx.anhDuocBoost, t.v ?? 0); break;
+        case 'thuan_tram': fx.thuanTramPower = Math.max(fx.thuanTramPower, t.v ?? 0); break;
+        case 'thuan_ho': fx.thuanHoBoost = Math.max(fx.thuanHoBoost, t.v ?? 0); break;
+        case 'cuu_vien': fx.cuuVienBoost = Math.max(fx.cuuVienBoost, t.v ?? 0); break;
       }
     }
   }

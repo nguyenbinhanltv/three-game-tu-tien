@@ -112,7 +112,22 @@ describe('Thăng Bậc', () => {
     expect(t.slotOf('itm_tk_dao_bao')).toBeGreaterThanOrEqual(0);
     expect(t.count(M4)).toBe(1);
     expect(t.c.gold).toBe(7);
+    // E4-F mở bậc 5: áo bộ bậc 4 đã thăng tiếp được (xem test dưới), chỉ bậc 5 mới khóa.
+  });
+
+  it('bậc 4 → bậc 5 (E4-F): kiếm và áo bộ thăng đúng đích, trừ 20 Tẫn Giác + phí; bậc 5 không thăng tiếp được', () => {
+    const t = setup(28);
+    const M5 = PROMOTE_MAT[5]!;
+    t.give((d) => (d.addRolled('itm_tinh_khuyet_kiem', 29, 3), d.addRolled('itm_tk_dao_bao', 29, 3), d.addRolled('itm_tk_trang_suc', 29, 3), d.add(M5, PROMOTE_MAT_COUNT * 3 + 1), d.addGold(promoteGold(5) * 3 + 7)));
+    t.send('promote', { i: t.slotOf('itm_tinh_khuyet_kiem') });
     t.send('promote', { i: t.slotOf('itm_tk_dao_bao') });
+    t.send('promote', { i: t.slotOf('itm_tk_trang_suc') });
+    expect(t.slotOf('itm_gioi_quang_kiem')).toBeGreaterThanOrEqual(0);
+    expect(t.slotOf('itm_tkh_dao_bao')).toBeGreaterThanOrEqual(0);
+    expect(t.slotOf('itm_tkh_trang_suc')).toBeGreaterThanOrEqual(0);
+    expect(t.count(M5)).toBe(1);
+    expect(t.c.gold).toBe(7);
+    t.send('promote', { i: t.slotOf('itm_tkh_dao_bao') });
     expect(t.warns).toContain('sys.promote_locked');
   });
 

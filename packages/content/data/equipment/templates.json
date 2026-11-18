@@ -32,5 +32,12 @@
   {"id":"itm_da_hanh_van_ngoa","kind":"boots","stack":1,"price":0,"sell":3768,"rarity":2,"icon":"itm_da_hanh_van_ngoa","iconFallback":"🥾","reqLevel":24,"tier":4,"stats":{"def":76,"hp":309}},
   {"id":"itm_tinh_van_dai_lung","kind":"belt","stack":1,"price":0,"sell":4308,"rarity":2,"icon":"itm_tinh_van_dai_lung","iconFallback":"🎗️","reqLevel":24,"tier":4,"stats":{"hp":617,"mp":286}},
   {"id":"itm_than_tang_ngoc_boi","kind":"jade","stack":1,"price":0,"sell":3768,"rarity":2,"icon":"itm_than_tang_ngoc_boi","iconFallback":"📿","reqLevel":24,"tier":4,"stats":{"mp":451,"hp":166}},
-  {"id":"itm_thu_linh_gioi_chi","kind":"ring","stack":1,"price":0,"sell":3231,"rarity":2,"icon":"itm_thu_linh_gioi_chi","iconFallback":"💍","reqLevel":24,"tier":4,"stats":{"atk":58,"hp":499}}
+  {"id":"itm_thu_linh_gioi_chi","kind":"ring","stack":1,"price":0,"sell":3231,"rarity":2,"icon":"itm_thu_linh_gioi_chi","iconFallback":"💍","reqLevel":24,"tier":4,"stats":{"atk":58,"hp":499}},
+  {"id": "itm_gioi_quang_kiem", "kind": "weapon", "stack": 1, "price": 0, "sell": 10133, "rarity": 2, "icon": "itm_gioi_quang_kiem", "iconFallback": "🗡️", "reqLevel": 28, "tier": 5, "model": "prop_kiem_tinh_khuyet", "stats": {"atk": 268}},
+  {"id": "itm_gioi_quang_dao_bao", "kind": "robe", "stack": 1, "price": 0, "sell": 9351, "rarity": 2, "icon": "itm_gioi_quang_dao_bao", "iconFallback": "👘", "reqLevel": 28, "tier": 5, "stats": {"def": 117, "hp": 1100}},
+  {"id": "itm_tran_gioi_ho_uyen", "kind": "bracer", "stack": 1, "price": 0, "sell": 5454, "rarity": 2, "icon": "itm_tran_gioi_ho_uyen", "iconFallback": "🧤", "reqLevel": 28, "tier": 5, "stats": {"atk": 110, "def": 48}},
+  {"id": "itm_bac_hoang_van_ngoa", "kind": "boots", "stack": 1, "price": 0, "sell": 5454, "rarity": 2, "icon": "itm_bac_hoang_van_ngoa", "iconFallback": "🥾", "reqLevel": 28, "tier": 5, "stats": {"def": 110, "hp": 447}},
+  {"id": "itm_gioi_van_dai_lung", "kind": "belt", "stack": 1, "price": 0, "sell": 6235, "rarity": 2, "icon": "itm_gioi_van_dai_lung", "iconFallback": "🎗️", "reqLevel": 28, "tier": 5, "stats": {"hp": 893, "mp": 414}},
+  {"id": "itm_hoa_than_ngoc_boi", "kind": "jade", "stack": 1, "price": 0, "sell": 5454, "rarity": 2, "icon": "itm_hoa_than_ngoc_boi", "iconFallback": "📿", "reqLevel": 28, "tier": 5, "stats": {"mp": 653, "hp": 240}},
+  {"id": "itm_nguyen_quang_gioi_chi", "kind": "ring", "stack": 1, "price": 0, "sell": 4676, "rarity": 2, "icon": "itm_nguyen_quang_gioi_chi", "iconFallback": "💍", "reqLevel": 28, "tier": 5, "stats": {"atk": 84, "hp": 722}}
 ]

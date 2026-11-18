@@ -226,6 +226,14 @@
  "itm_pha_an_phu": [
   "elite_tt_cot_kiem"
  ],
+ "itm_tan_giac": [
+  "boss_thien_khuyet_thu_linh",
+  "boss_vo_dien_than_quan",
+  "elite_cot_kiem_thong_linh",
+  "elite_da_minh_loc_vuong",
+  "elite_thach_tuong_dai_tuong",
+  "elite_tt_cot_kiem"
+ ],
  "itm_tay_luyen_thach": [
   "boss_dia_mach_long",
   "boss_han_giao",
@@ -305,6 +313,14 @@
   "mon_da_minh_loc",
   "mon_thach_tuong_vo_si",
   "mon_tt_cot_ve"
+ ],
+ "itm_tinh_vu": [
+  "boss_thien_khuyet_thu_linh",
+  "boss_vo_dien_than_quan",
+  "elite_cot_kiem_thong_linh",
+  "elite_da_minh_loc_vuong",
+  "elite_thach_tuong_dai_tuong",
+  "elite_tt_cot_kiem"
  ],
  "itm_tu_khi_dan": [
   "boss_dia_mach_long",
