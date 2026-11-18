@@ -24,8 +24,8 @@ function fillPath(g: Ctx, tier: number, acc: number, draw: () => void, outline =
 
 function line(g: Ctx, tier: number, w: number, pts: [number, number][], acc = 0): void {
   g.beginPath();
-  g.moveTo(pts[0][0], pts[0][1]);
-  for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+  g.moveTo(pts[0]![0], pts[0]![1]);
+  for (let i = 1; i < pts.length; i++) g.lineTo(pts[i]![0], pts[i]![1]);
   g.strokeStyle = col(tier, acc);
   g.lineWidth = w;
   g.lineCap = 'round';

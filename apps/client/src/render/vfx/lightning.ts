@@ -92,9 +92,9 @@ export function boltShape(seed: number, h = 62, spread = 7, scale = 1, out?: Bol
       const b = (i + step) * 4;
       // Gần đất lệch ít hơn một chút; hai đầu vẫn cố định nên tia cắm đúng điểm đánh.
       const damp = Math.min(1, 0.45 + (1 - i / MAIN_SEGS) * 2);
-      p[i * 4] = (p[a] + p[b]) / 2 + (rnd() - 0.5) * amp * damp;
-      p[i * 4 + 2] = (p[a + 2] + p[b + 2]) / 2 + (rnd() - 0.5) * amp * damp;
-      p[i * 4 + 1] = (p[a + 1] + p[b + 1]) / 2 + (rnd() - 0.5) * amp * 0.25;
+      p[i * 4] = (p[a]! + p[b]!) / 2 + (rnd() - 0.5) * amp * damp;
+      p[i * 4 + 2] = (p[a + 2]! + p[b + 2]!) / 2 + (rnd() - 0.5) * amp * damp;
+      p[i * 4 + 1] = (p[a + 1]! + p[b + 1]!) / 2 + (rnd() - 0.5) * amp * 0.25;
     }
     amp *= 0.62;
   }
@@ -109,10 +109,10 @@ export function boltShape(seed: number, h = 62, spread = 7, scale = 1, out?: Bol
     const dx = Math.cos(ang);
     const dz = Math.sin(ang);
     const start = n;
-    let x = p[at * 4];
-    let y = p[at * 4 + 1];
-    let z = p[at * 4 + 2];
-    const u0 = p[at * 4 + 3];
+    let x = p[at * 4]!;
+    let y = p[at * 4 + 1]!;
+    let z = p[at * 4 + 2]!;
+    const u0 = p[at * 4 + 3]!;
     const segLen = len / BRANCH_SEGS;
     for (let i = 0; i <= BRANCH_SEGS; i++) {
       p[n * 4] = x;
@@ -173,12 +173,12 @@ export class BoltGeometry {
         // Tiếp tuyến theo điểm trước/sau trong cùng nhánh.
         const a = (st.start + Math.max(0, j - 1)) * 4;
         const b = (st.start + Math.min(st.count - 1, j + 1)) * 4;
-        const tx = p[b] - p[a];
-        const ty = p[b + 1] - p[a + 1];
-        const tz = p[b + 2] - p[a + 2];
-        const px = x + p[i * 4];
-        const py = y + p[i * 4 + 1];
-        const pz = z + p[i * 4 + 2];
+        const tx = p[b]! - p[a]!;
+        const ty = p[b + 1]! - p[a + 1]!;
+        const tz = p[b + 2]! - p[a + 2]!;
+        const px = x + p[i * 4]!;
+        const py = y + p[i * 4 + 1]!;
+        const pz = z + p[i * 4 + 2]!;
         // Mép = tiếp tuyến × hướng nhìn, chuẩn hóa, nhân nửa bề rộng (thon về cuối nhánh).
         const vx = cam.x - px;
         const vy = cam.y - py;
@@ -198,9 +198,9 @@ export class BoltGeometry {
         P[i * 6 + 3] = px + sx;
         P[i * 6 + 4] = py + sy;
         P[i * 6 + 5] = pz + sz;
-        UV[i * 4] = p[i * 4 + 3];
+        UV[i * 4] = p[i * 4 + 3]!;
         UV[i * 4 + 1] = 0;
-        UV[i * 4 + 2] = p[i * 4 + 3];
+        UV[i * 4 + 2] = p[i * 4 + 3]!;
         UV[i * 4 + 3] = 1;
         if (j < st.count - 1) {
           const v0 = i * 2;

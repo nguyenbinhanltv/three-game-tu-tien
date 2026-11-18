@@ -95,8 +95,8 @@ export class BladeRibbon {
   step(dt: number): number {
     let n = 0;
     for (let i = 0; i < this.n; i++) {
-      this.age[i] += dt;
-      if (this.age[i] <= BLADE_LIFE) n = i + 1;
+      this.age[i]! += dt;
+      if (this.age[i]! <= BLADE_LIFE) n = i + 1;
     }
     this.n = n;
     return n;
@@ -122,9 +122,9 @@ export class BladeRibbon {
       const b = at(seg);
       const c = at(seg + 1);
       const d = at(seg + 2);
-      for (let k = 0; k < 6; k++) P[q * 6 + k] = catmull(pt[a + k], pt[b + k], pt[c + k], pt[d + k], f);
+      for (let k = 0; k < 6; k++) P[q * 6 + k] = catmull(pt[a + k]!, pt[b + k]!, pt[c + k]!, pt[d + k]!, f);
       // u theo tuổi nội suy: mẫu mới nhất u≈0 (sáng), sắp hết hạn u→1 (tắt hẳn); v: gốc 0 → mũi 1.
-      const age = this.age[seg] + (this.age[Math.min(n - 1, seg + 1)] - this.age[seg]) * f;
+      const age = this.age[seg]! + (this.age[Math.min(n - 1, seg + 1)]! - this.age[seg]!) * f;
       const u = Math.min(1, Math.max(0, age / BLADE_LIFE));
       UV[q * 4] = u;
       UV[q * 4 + 1] = 0;

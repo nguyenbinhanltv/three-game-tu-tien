@@ -112,11 +112,11 @@ const TOP: Record<string, number> = {
 };
 
 /** Màu đỉnh trời của preset (để trộn mood theo vị trí). */
-export const skyTopOf = (name: string): number => TOP[name] ?? TOP.day;
+export const skyTopOf = (name: string): number => TOP[name] ?? TOP.day!;
 
 export function applySkyPreset(name: string, fogColor: number, glowColor: number, sunColor: number, top?: number): void {
   skyParams.horizon.value.setHex(fogColor);
-  skyParams.top.value.setHex(top ?? TOP[name] ?? TOP.day);
+  skyParams.top.value.setHex(top ?? TOP[name] ?? TOP.day!);
   skyParams.glow.value.setHex(glowColor);
   skyParams.sunColor.value.setHex(sunColor);
   // Đêm: bớt quầng và không mây ti sáng.

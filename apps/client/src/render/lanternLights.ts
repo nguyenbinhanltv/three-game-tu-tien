@@ -56,20 +56,20 @@ export class LanternLights {
       let bd = Infinity;
       for (let i = 0; i < this.points.length; i++) {
         if (used.has(i)) continue;
-        const p = this.points[i];
+        const p = this.points[i]!;
         const d = (p.x - focus.x) ** 2 + (p.z - focus.z) ** 2;
         if (d < bd) {
           bd = d;
           best = i;
         }
       }
-      const l = this.lights[li];
+      const l = this.lights[li]!;
       if (best < 0) {
         l.intensity = 0;
         continue;
       }
       used.add(best);
-      const p = this.points[best];
+      const p = this.points[best]!;
       l.position.set(p.x, p.y, p.z);
       if (p.color !== undefined) l.color.setHex(p.color);
       const fade = 1 - THREE.MathUtils.smoothstep(Math.sqrt(bd), FADE_NEAR, FADE_FAR);

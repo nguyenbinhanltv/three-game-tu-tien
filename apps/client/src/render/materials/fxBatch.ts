@@ -110,7 +110,7 @@ export class FxBatcher {
         let cy = 0;
         let cz = 0;
         for (let i = 0; i < n; i++) {
-          const h = b.list[from + i];
+          const h = b.list[from + i]!;
           cx += h.position.x;
           cy += h.position.y;
           cz += h.position.z;
@@ -121,7 +121,7 @@ export class FxBatcher {
         ch.mesh.position.set(cx, cy, cz);
         ch.mesh.updateMatrix();
         for (let i = 0; i < n; i++) {
-          const h = b.list[from + i];
+          const h = b.list[from + i]!;
           h.updateMatrix();
           const e = h.matrix.elements;
           // Dịch về hệ của mảnh: trừ tâm khỏi phần tịnh tiến.
