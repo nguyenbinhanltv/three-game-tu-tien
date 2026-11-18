@@ -1,0 +1,641 @@
+[
+ {
+  "id": "s_set_huyen_giap",
+  "kind": "set",
+  "cells": [
+   "itm_hg_dao_bao",
+   "itm_hg_ho_uyen",
+   "itm_hg_dai_lung",
+   "itm_hg_van_ngoa"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 4 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Huyen Giap Ho Phap'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette matte black #2A2C32 with bronze-gold #A9873F trim and warm gold light #D6B45E; motif: square mountain blocks and a central seal stamp; materials: black lacquered plate armor with bronze rims; mood: solid, defensive, immovable.\nIcons in cell order (left to right, top to bottom): 1. a black lacquered plate-armor coat with bronze rims and a square seal on the chest; 2. a pair of black plate bracers with bronze mountain-block rims; 3. a black belt with a heavy bronze square-seal buckle; 4. a pair of black plated boots with bronze rims; Cells 5 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_dan_tam",
+  "kind": "set",
+  "cells": [
+   "itm_dt_dao_bao",
+   "itm_dt_ngoc_boi",
+   "itm_dt_dai_lung",
+   "itm_dt_gioi_chi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 4 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Dan Tam Y Bat'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette jade-green #4D7D68 with pale gold #D8C58A trim and bright green glow #9BE8A8; motif: lotus leaves and a small alchemy furnace; materials: green silk, jade, pale gold; mood: gentle, healing, alive.\nIcons in cell order (left to right, top to bottom): 1. a jade-green alchemist robe with pale-gold lotus-leaf trim; 2. a round green jade pendant carved with a lotus leaf, pale gold cord; 3. a green silk belt with a small gold furnace-shaped clasp; 4. a pale-gold ring set with a round green jade; Cells 5 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_han_giao",
+  "kind": "set",
+  "cells": [
+   "itm_hgl_kiem",
+   "itm_hgl_dao_bao",
+   "itm_hgl_gioi_chi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 3 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Han Giao Lan'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette glacier teal #2F8798 with frost silver #C9D8DE trim and ice-cyan glow #7FE9FF; motif: overlapping dragon scales and ice crystals; materials: teal scale plating, frost silver, ice; mood: freezing, predatory, sharp.\nIcons in cell order (left to right, top to bottom): 1. a straight sword with a teal scaled blade-guard and an ice-cyan glowing edge; 2. a teal dragon-scale armor coat with frost-silver edges; 3. a frost-silver ring set with a small ice-cyan crystal; Cells 4 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_liet_mach",
+  "kind": "set",
+  "cells": [
+   "itm_lm_dao_bao",
+   "itm_lm_ho_uyen",
+   "itm_lm_dai_lung",
+   "itm_lm_van_ngoa",
+   "itm_lm_trang_suc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Liet Mach Kiem Y'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette desert sand #C9A26A with dark brown #6B4A2A trim and mineral-jade glow #9FE0C8; motif: mineral vein cracks glowing with jade light; materials: sand-colored leather, stone, glowing ore; mood: arid, rugged, hidden riches.\nIcons in cell order (left to right, top to bottom): 1. a sand-colored leather sword robe with glowing jade-green mineral vein cracks; 2. a pair of sand leather bracers with a glowing ore vein; 3. a brown belt with a raw glowing jade ore buckle; 4. a pair of sand-colored boots with brown stone-plate cuffs; 5. a bronze hair crown with a raw glowing jade ore stone; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_dia_giap",
+  "kind": "set",
+  "cells": [
+   "itm_dg_dao_bao",
+   "itm_dg_ho_uyen",
+   "itm_dg_dai_lung",
+   "itm_dg_van_ngoa",
+   "itm_dg_trang_suc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Dia Long Ho Giap'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette earth brown #6E4A32 with gold #C9A04A trim and amber glow #FFC95A; motif: stone dragon scales and curved dragon horns; materials: brown stone-scale armor, gold; mood: heavy, earthen, ancient.\nIcons in cell order (left to right, top to bottom): 1. a brown stone-scale armor coat with gold dragon-horn shoulder guards; 2. a pair of brown scale bracers with gold rims; 3. a brown belt with a gold dragon-head buckle; 4. a pair of brown stone-scale boots with gold toe caps; 5. a gold horned dragon crown on a brown band; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_phuc_mach",
+  "kind": "set",
+  "cells": [
+   "itm_pm_dao_bao",
+   "itm_pm_ngoc_boi",
+   "itm_pm_dai_lung",
+   "itm_pm_gioi_chi",
+   "itm_pm_trang_suc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Phuc Mach Dan Bao'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette moss green #58724A with beige #CFC08A trim and bright green glow #7DFFA0; motif: roots and a sprouting seedling; materials: moss-green cloth, wood, beige; mood: living, underground, growing.\nIcons in cell order (left to right, top to bottom): 1. a moss-green alchemist robe with beige root-pattern embroidery and a sprout on the chest; 2. a wooden pendant holding a glowing green seedling; 3. a moss-green belt with a wooden root-knot buckle; 4. a wood-and-gold ring with a green sprout carved on it; 5. a green jade hairpin shaped like a sprouting seedling; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_van_kinh",
+  "kind": "set",
+  "cells": [
+   "itm_vk_dao_bao",
+   "itm_vk_ho_uyen",
+   "itm_vk_dai_lung",
+   "itm_vk_van_ngoa"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 4 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Van Kinh Thiet Giap'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette steel blue-grey #5C6C7E with light steel #B8C4D2 trim and sky-blue glow #8FC8FF; motif: rolling clouds and ocean waves with a whale tail; materials: blue-grey steel plate; mood: vast, oceanic, powerful.\nIcons in cell order (left to right, top to bottom): 1. a blue-grey steel armor coat with wave patterns and cloud shoulder plates; 2. a pair of steel bracers with wave engravings; 3. a steel belt with a whale-tail buckle; 4. a pair of steel boots with cloud-pattern cuffs; Cells 5 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_luu_ly",
+  "kind": "set",
+  "cells": [
+   "itm_ll_dao_bao",
+   "itm_ll_ngoc_boi",
+   "itm_ll_dai_lung",
+   "itm_ll_gioi_chi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 4 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Luu Ly Dan Y'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette turquoise glass #3F9C96 with pearl white #E8F1E4 trim and aqua glow #7DF5E0; motif: glass bubbles and liuli glaze; materials: glazed glass, pearl, white silk; mood: translucent, clean, shimmering.\nIcons in cell order (left to right, top to bottom): 1. a white silk alchemist robe with translucent turquoise glass bubble ornaments; 2. a turquoise liuli glass pendant shaped like a bubble with a pearl; 3. a white belt with a glass-bubble clasp; 4. a pearl-white ring with a turquoise glass bubble; Cells 5 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_co_thanh",
+  "kind": "set",
+  "cells": [
+   "itm_ct_dao_bao",
+   "itm_ct_ho_uyen",
+   "itm_ct_dai_lung",
+   "itm_ct_van_ngoa",
+   "itm_ct_trang_suc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Co Thanh Huyen Giap'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette charcoal grey #262B38 with antique gold #BA9A55 trim and warm gold light #E2BE62; motif: arched city gates, brick walls and watchtower crenellations; materials: dark stone-plate armor with gold inlay; mood: ancient fortress, weathered, regal.\nIcons in cell order (left to right, top to bottom): 1. a charcoal stone-plate armor coat with a gold arch-gate emblem and crenellated shoulders; 2. a pair of charcoal plate bracers with gold brick-pattern inlay; 3. a charcoal belt with a gold arch-gate buckle; 4. a pair of charcoal plated boots with gold rims; 5. a gold horned crown shaped like a fortress wall with crenellations; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_tran_khich",
+  "kind": "set",
+  "cells": [
+   "itm_tkh_dao_bao",
+   "itm_tkh_ho_uyen",
+   "itm_tkh_dai_lung",
+   "itm_tkh_van_ngoa",
+   "itm_tkh_trang_suc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Tran Khich Kiem Y'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette black #1B1E26 with sealing jade-teal #5FC8C0 trim and teal glow #7FE0D8; motif: a sealed crack with glowing seal-lines crossing it; materials: black cloth, teal jade inlay, sealing talisman strips; mood: dark, sealed, ominous but controlled.\nIcons in cell order (left to right, top to bottom): 1. a black sword robe with a glowing teal sealed-crack pattern and talisman strips; 2. a pair of black bracers with teal seal-lines; 3. a black belt with a teal jade seal buckle; 4. a pair of black boots with teal seal-line cuffs; 5. a black-and-teal hair crown with a sealed crack jade; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_tan_thiet",
+  "kind": "set",
+  "cells": [
+   "itm_tth_dao_bao",
+   "itm_tth_ho_uyen",
+   "itm_tth_dai_lung",
+   "itm_tth_van_ngoa",
+   "itm_tth_trang_suc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Tan Thiet Ho Giap'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette ash grey iron #23262B with teal #5FC8C0 trim and teal-white glow #8FD8D0; motif: cracked burnt iron plates with ash and ember-teal fissures; materials: scorched grey iron; mood: heavy, burnt, hardened.\nIcons in cell order (left to right, top to bottom): 1. a cracked ash-grey iron armor coat with teal glowing fissures; 2. a pair of scorched iron bracers with teal fissures; 3. an iron belt with an anvil-shaped buckle; 4. a pair of scorched iron boots with teal-lit cracks; 5. a scorched iron crown with teal-lit cracks; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_tinh_dan_bao",
+  "kind": "set",
+  "cells": [
+   "itm_tqd_dao_bao",
+   "itm_tqd_ngoc_boi",
+   "itm_tqd_dai_lung",
+   "itm_tqd_gioi_chi",
+   "itm_tqd_trang_suc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Tinh Quang Dan Bao'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette soft grey #34383A with serene jade-white #6FD3CB trim and pale glow #A8F0E4; motif: a glowing serene lotus and rays of calm light; materials: grey silk, pale jade, light; mood: serene, purifying, calm.\nIcons in cell order (left to right, top to bottom): 1. a soft grey alchemist robe with a glowing pale-jade lotus on the chest; 2. a pale jade lotus pendant glowing softly; 3. a grey silk belt with a small glowing lotus clasp; 4. a pale jade ring carved as a lotus; 5. a pale jade hairpin shaped like a glowing lotus; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_01",
+  "kind": "item",
+  "cells": [
+   "itm_han_quang_kiem",
+   "itm_moc_kiem",
+   "itm_thanh_phong_kiem",
+   "itm_thiet_kiem",
+   "itm_tram_ta_kiem",
+   "itm_bo_y"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. an icy silver blue jian sword with crystal guard; 2. a simple carved wooden practice jian sword; 3. an elegant jade green wind jian sword with a short green tassel; 4. a plain iron jian sword with dark leather hilt; 5. a powerful golden bronze demon-slaying jian sword with cinnabar tassel; 6. a simple tan coarse woven cloth robe with brown belt, no person;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_02",
+  "kind": "item",
+  "cells": [
+   "itm_dao_bao",
+   "itm_huyen_van_bao",
+   "itm_linh_ti_bao",
+   "itm_han_giao_hoan",
+   "itm_huyen_thiet_gioi",
+   "itm_ngoc_boi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. an ivory Taoist robe with sect blue trim and belt, no person; 2. a deep navy robe with large ivory cloud embroidery, no person; 3. a jade green silk robe with delicate bronze trim, no person; 4. an icy jade bracelet with a sculpted dragon head; 5. a dark iron ring with bronze inlay; 6. a carved pale jade pendant hanging from a cinnabar cord;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_03",
+  "kind": "item",
+  "cells": [
+   "itm_dinh_than_phu",
+   "itm_hoi_khi_dan",
+   "itm_hoi_xuan_dan",
+   "itm_pha_an_phu",
+   "itm_pha_canh_dan",
+   "itm_pha_canh_dan_2"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a pale yellow talisman paper with red brush-stroke seal marks (not readable text) and a calm blue glow; 2. a teal blue mana pill in an open ivory ceramic medicine cup; 3. a cinnabar red healing pill in an open ivory ceramic medicine cup; 4. a red talisman paper torn through the middle by a thin white light; 5. one large pearl-gold pill that is cracked open with a bright jade seam, a thin shattered ring of stone fragments around it, resting on a small bronze dish; 6. one large pearl-gold pill with a bright jade seam cracking open, a ring of shattered amber-ochre stone fragments around it, resting on a small bronze dish, second-tier richer look;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_04",
+  "kind": "item",
+  "cells": [
+   "itm_pha_canh_dan_3",
+   "itm_tu_khi_dan",
+   "itm_skin_crimson_knight",
+   "itm_skin_duskrella",
+   "itm_skin_kings_demon",
+   "itm_skin_noxavyra"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a pearl pill wrapped in a thin swirl of cloud with a bright seam of light cracking through it, small bronze dish; 2. three golden jade cultivation pills with a restrained luminous spiral; 3. a dark-fantasy costume token: a crimson armored knight breastplate with a plume on a small stand; 4. a dark-fantasy costume token: an ash-grey and violet dusk gown with drifting ash motifs on a small stand; 5. a dark-fantasy costume token: bone-white horns on a dark queen's gown, crown and cape on a small stand; 6. a dark-fantasy costume token: a black dress edged with thin blood-red blades on a small stand;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_05",
+  "kind": "item",
+  "cells": [
+   "itm_skin_varkessa",
+   "gem_hoa_1",
+   "gem_hoa_2",
+   "gem_hoa_3",
+   "gem_kim_1",
+   "gem_kim_2"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a dark-fantasy costume token: a crimson gown with flame patterns displayed on a small ornate stand, warm ember glow; 2. a small rough pale-orange spirit gem (fire element), one simple facet cut, small; 3. a medium faceted cinnabar red spirit gem (fire element) in a thin bronze claw setting; 4. a large brilliant faceted ruby spirit gem (fire element) with an ornate bronze crown setting and a subtle flame pattern inside; 5. a small rough pale-gold spirit gem (metal element), one simple facet cut, small; 6. a medium faceted bright gold spirit gem (metal element) in a thin bronze claw setting;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_06",
+  "kind": "item",
+  "cells": [
+   "gem_kim_3",
+   "gem_moc_1",
+   "gem_moc_2",
+   "gem_moc_3",
+   "gem_tho_1",
+   "gem_tho_2"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a large brilliant faceted gold spirit gem (metal element) with an ornate bronze crown setting and a subtle inner radiance; 2. a small rough pale-green spirit gem (wood element), one simple facet cut, small; 3. a medium faceted leaf-green spirit gem (wood element) in a thin bronze claw setting; 4. a large brilliant faceted emerald spirit gem (wood element) with an ornate bronze crown setting and tiny vine engravings; 5. a small rough pale-ochre spirit gem (earth element), one simple facet cut, small; 6. a medium faceted amber-brown spirit gem (earth element) in a thin bronze claw setting;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_07",
+  "kind": "item",
+  "cells": [
+   "gem_tho_3",
+   "gem_thuy_1",
+   "gem_thuy_2",
+   "gem_thuy_3",
+   "itm_anh_bien_lo",
+   "itm_bich_ngoc_nhi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a large brilliant faceted topaz-brown spirit gem (earth element) with an ornate bronze crown setting and a subtle mountain ridge pattern inside; 2. a small rough pale-blue spirit gem (water element), one simple facet cut, small; 3. a medium faceted deep-blue spirit gem (water element) in a thin bronze claw setting; 4. a large brilliant faceted sapphire spirit gem (water element) with an ornate bronze crown setting and a subtle wave pattern inside; 5. a small jade dew-bowl holding a single drop of violet-gold light that glows like an eclipse corona; 6. a rare jade-green glossy ear-shaped fungus on a small white stone, faint inner glow;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_08",
+  "kind": "item",
+  "cells": [
+   "itm_co_thanh_phien",
+   "itm_han_giao_dan",
+   "itm_ho_phu",
+   "itm_hoa_than_lo",
+   "itm_hoang_sa_thao",
+   "itm_huyet_linh_chi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a weathered grey stone tile fragment carved with an arch relief and veins of gold; 2. an icy blue dragon core crystal; 3. a vertical yellow-ivory protective talisman paper with cinnabar red abstract strokes (no readable characters) and a bronze tassel; 4. a crystal vial of white-gold dew with a tiny glowing spirit-child silhouette floating inside; 5. a small bundle of dry golden-yellow desert herb with pale sandy roots, tied with a thin brown cord; 6. a red cinnabar lingzhi mushroom with golden edges;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_09",
+  "kind": "item",
+  "cells": [
+   "itm_ket_dan_dich",
+   "itm_kiem_phach",
+   "itm_kim_da_mien",
+   "itm_kim_da_mien_phien",
+   "itm_kinh_hoa_sa",
+   "itm_linh_thao"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a small bronze-capped glass vial full of thick glowing blue-flame liquid elixir, swirls of cool cyan fire inside, a tiny flame wisp; 2. a diamond-shaped ivory jade crystal containing a tiny sword silhouette; 3. a whole dull-gold crown-plate fragment with a dark violet gem and thin cracks; 4. a shard of a broken gilded crown, dull gold with a dark violet gem; 5. a small glass bowl of fine glittering mirror-like sand grains, pale teal and silver, tiny sparkles; 6. a sprig of medicinal jade-green herb with three large leaves;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_10",
+  "kind": "item",
+  "cells": [
+   "itm_linh_tran",
+   "itm_mach_tinh_phien",
+   "itm_nanh_soi",
+   "itm_ngung_anh_phach",
+   "itm_ngung_dan_mach_tinh",
+   "itm_nguyen_anh_dan"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a small pile of fine pale-teal spirit dust in a shallow bronze dish, a few motes rising; 2. a flat jagged shard of translucent amber-ochre crystal with a pale jade vein inside, sharp edges; 3. one curved ivory wolf fang; 4. a small faceted pale-silver crystal shard with a faint curled spirit wisp trapped inside, cold moonlight glow, resting on a small bronze dish; 5. a dense small polished sphere of condensed spirit-vein crystal, deep ochre-amber with a bright cool jade-blue core, resting on a tiny bronze dish; 6. one luminous moon-white pill with a tiny curled infant-like spirit silhouette inside, soft silver halo, resting on a small bronze dish;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_11",
+  "kind": "item",
+  "cells": [
+   "itm_tan_giac",
+   "itm_tay_luyen_thach",
+   "itm_than_tang_ngoc",
+   "itm_thiet_tinh",
+   "itm_tinh_quang_mac",
+   "itm_tinh_vu"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a charred black horn fragment glowing ember red at its core; 2. a dark slate whetstone tablet carved with pale talisman lines, a faint jade glow in the grooves, bronze corner caps; 3. a square green jade seal piece carved with a key-fret pattern, glowing softly; 4. a rough iron ore chunk with silver metallic facets; 5. a starry-black ink stick flecked with gold dust beside a small ink stone; 6. a single pale feather glowing soft jade-white light;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_item_12",
+  "kind": "item",
+  "cells": [
+   "itm_truc_co_dan",
+   "itm_van_hai_lo",
+   "itm_yeu_dan"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 3 separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. one large golden foundation pill on a small bronze pedestal; 2. a few round pale-blue dew drops glowing softly on a small white-green leaf, cloud wisps; 3. a smoky jade beast core orb with a tiny violet fissure under 5 percent; Cells 4 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_skill_01",
+  "kind": "skill",
+  "cells": [
+   "skl_hoi_nguyen_thuat",
+   "skl_kiem_khi_tram",
+   "skl_linh_khi_ho_the",
+   "skl_loi_dinh_nhat_kiem",
+   "skl_phi_kiem",
+   "skl_thien_kiem_vu"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game skill icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nEach icon is a SKILL: a symbolic dramatic composition around ONE bold object or sigil with a light effect, not an abstract mist.\nIcons in cell order (left to right, top to bottom): 1. a jade lotus cradling a warm healing light; 2. one broad crescent-shaped ivory sword energy slash; 3. a translucent jade protective shield with bronze center; 4. a silver jian struck by one golden lightning bolt, tiny violet accent under 5 percent; 5. single silver flying jian sword with a short ivory jade energy trail; 6. three silver swords raining downward;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_skill_02",
+  "kind": "skill",
+  "cells": [
+   "skl_anh_thiet_than",
+   "skl_dich_son_xung",
+   "skl_kim_chung_tran",
+   "skl_kim_cuong_bat_hoai",
+   "skl_son_nhac_hoa_than",
+   "skl_thien_kim_phap_tuong"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game skill icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nEach icon is a SKILL: a symbolic dramatic composition around ONE bold object or sigil with a light effect, not an abstract mist.\nIcons in cell order (left to right, top to bottom): 1. a small dark-iron spirit infant figure curled behind a bronze-edged iron shield shell, steel sheen, protective stance; 2. a shoulder-charge: a stone-armored shoulder driving forward pushing a boulder-sized shock burst, dust streaks; 3. a heavy bronze-gold temple bell inverted over the center like a protective dome, concentric ripple lines, deep resonance; 4. a gold diamond body silhouette inside a radiant golden ring, faceted amber light; 5. a mountain-shaped jade-stone torso silhouette of a giant body, crowned with small peaks, hulking and enlarged, stone seams glowing faintly jade; 6. a colossal golden seated deity-like dharma statue silhouette rising behind a small figure, halo of light, solemn and heavy;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_skill_03",
+  "kind": "skill",
+  "cells": [
+   "skl_thiet_bich_xung",
+   "skl_thiet_quyen_chan_dia",
+   "skl_thuan_di_ho_the",
+   "skl_tran_son_an",
+   "skl_hoanh_kiem_pha_mach",
+   "skl_kiem_anh_bo"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game skill icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nEach icon is a SKILL: a symbolic dramatic composition around ONE bold object or sigil with a light effect, not an abstract mist.\nIcons in cell order (left to right, top to bottom): 1. a charging armored boar shoulder-ram silhouette made of dark iron and bronze plates, tusks forward, dust ring beneath; 2. a clenched armored fist slamming down into cracked ground, shockwave rings and ochre rubble leaping up; 3. a blink-step toward an ally: a pale teal after-trail of motes ending in a glowing translucent jade shield disc; 4. a heavy bronze seal stamp pressing down on a small golden mountain, bronze and gold; 5. a wide horizontal sword-qi crescent slicing across, pale gold-white blade light with a thin jade-blue edge, tiny ochre stone fragments splitting along its path; 6. a swift sword-dash: a silver jian streaking horizontally leaving three fading pale blue afterimage silhouettes behind it;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_skill_04",
+  "kind": "skill",
+  "cells": [
+   "skl_kiem_dan_ban_menh",
+   "skl_kiem_vu_tam_diep",
+   "skl_nghich_kiem_chuyen_phong",
+   "skl_phan_anh_kiem_anh",
+   "skl_phi_kiem_truy_hon",
+   "skl_thien_kiem_hoa_hinh"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game skill icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nEach icon is a SKILL: a symbolic dramatic composition around ONE bold object or sigil with a light effect, not an abstract mist.\nIcons in cell order (left to right, top to bottom): 1. a small glowing pearl-gold sword core (a tiny sword fused into a bright pellet) orbiting the center, with a faint circular orbit trace of jade light; 2. three overlapping swift sword arcs fanned like a trio of petals, two pale silver and the last one brighter gold, in a flowing circular dance; 3. a silver sword streak diving forward inside a spiral wind vortex of pale teal air currents, motion lines; 4. a pale-blue translucent infant-sized spirit figure (nascent soul, tiny and serene, seated) casting a faint ghostly sword afterimage, ethereal; 5. a silver jian leaving two pale blue afterimage blades, a small glowing mark above the tip; 6. a gigantic ancient jian sword made of pale gold light descending vertically from above, tiny figure silhouette far below, cloud ring around the blade;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_skill_05",
+  "kind": "skill",
+  "cells": [
+   "skl_thuan_di_tram",
+   "skl_van_kiem_quy_tong",
+   "skl_anh_duoc_hoa_than",
+   "skl_dan_hoa_phong_tran",
+   "skl_duoc_vu",
+   "skl_hoi_thien_dan_lo"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game skill icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nEach icon is a SKILL: a symbolic dramatic composition around ONE bold object or sigil with a light effect, not an abstract mist.\nIcons in cell order (left to right, top to bottom): 1. a blinking teleport slash: a swordsman silhouette vanishing in pale cyan motes on the left, a bright downward sword stroke landing on the right; 2. a vertical ring of countless small silver swords converging on one great glowing blade, pale blue light; 3. a small pale jade nascent soul spirit flying with a trailing ribbon of green healing mist toward the right, medicinal leaf motes; 4. a thrown bright orange-blue alchemical fire pellet exploding into a wide spreading ring of flame with tiny embers; 5. a sleeve swept outward scattering a drifting rain of pale-green medicinal leaves with soft healing glints; 6. a jade gourd pouring a column of luminous green dew upward into the sky;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_skill_06",
+  "kind": "skill",
+  "cells": [
+   "skl_hoi_xuan_quyet",
+   "skl_luu_huong_bo",
+   "skl_moc_linh_tran",
+   "skl_ngung_dan_ho_the",
+   "skl_thien_dan_phap_gioi",
+   "skl_thuan_di_cuu_vien"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game skill icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nEach icon is a SKILL: a symbolic dramatic composition around ONE bold object or sigil with a light effect, not an abstract mist.\nIcons in cell order (left to right, top to bottom): 1. a swirl of spring wind with jade green leaves and a few rain droplets; 2. a graceful drifting step: two jade green lotus-petal footprints trailing a ribbon of pale fragrant mist; 3. a circular array drawn on the ground made of jade leaves arranged radially, green healing light rising, wood spirit formation; 4. a condensed warm pearl-gold elixir core (a luminous inner pill) at the center, surrounded by a rounded protective halo of soft light; 5. a vast circular sacred realm: a large ring of alchemical glyph-like patterns (no readable characters) with a central glowing elixir core, healing golden mist; 6. a blink to a fallen ally: pale teal teleport trail and a revived lotus of soft golden-green light blooming from a prone silhouette;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_misc_01",
+  "kind": "misc",
+  "cells": [
+   "gem_kim_1",
+   "gem_kim_2",
+   "gem_kim_3",
+   "gem_moc_1",
+   "gem_moc_2",
+   "gem_moc_3"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a small rough pale-gold spirit gem (metal element), one simple facet cut, small; 2. a medium faceted bright gold spirit gem (metal element) in a thin bronze claw setting; 3. a large brilliant faceted gold spirit gem (metal element) with an ornate bronze crown setting and a subtle inner radiance; 4. a small rough pale-green spirit gem (wood element), one simple facet cut, small; 5. a medium faceted leaf-green spirit gem (wood element) in a thin bronze claw setting; 6. a large brilliant faceted emerald spirit gem (wood element) with an ornate bronze crown setting and tiny vine engravings;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_misc_02",
+  "kind": "misc",
+  "cells": [
+   "gem_thuy_1",
+   "gem_thuy_2",
+   "gem_thuy_3",
+   "gem_hoa_1",
+   "gem_hoa_2",
+   "gem_hoa_3"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a small rough pale-blue spirit gem (water element), one simple facet cut, small; 2. a medium faceted deep-blue spirit gem (water element) in a thin bronze claw setting; 3. a large brilliant faceted sapphire spirit gem (water element) with an ornate bronze crown setting and a subtle wave pattern inside; 4. a small rough pale-orange spirit gem (fire element), one simple facet cut, small; 5. a medium faceted cinnabar red spirit gem (fire element) in a thin bronze claw setting; 6. a large brilliant faceted ruby spirit gem (fire element) with an ornate bronze crown setting and a subtle flame pattern inside;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_misc_03",
+  "kind": "misc",
+  "cells": [
+   "gem_tho_1",
+   "gem_tho_2",
+   "gem_tho_3",
+   "root_kim",
+   "root_moc",
+   "root_thuy"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a small rough pale-ochre spirit gem (earth element), one simple facet cut, small; 2. a medium faceted amber-brown spirit gem (earth element) in a thin bronze claw setting; 3. a large brilliant faceted topaz-brown spirit gem (earth element) with an ornate bronze crown setting and a subtle mountain ridge pattern inside; 4. a gleaming gold-silver metal ingot with a sharp blade-like highlight, five-elements metal; 5. a young green sprout with two leaves growing from a small wooden root, five-elements wood; 6. a rounded deep-blue water drop with gentle ripples around it, five-elements water;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_misc_04",
+  "kind": "misc",
+  "cells": [
+   "root_hoa",
+   "root_tho",
+   "role_kiem",
+   "role_tank",
+   "role_ho_tro",
+   "buff_def"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a cinnabar red flame with an orange core, five-elements fire; 2. a stout ochre-brown mountain peak of layered earth, five-elements earth; 3. a single upright silver sword crossing a faint sect-blue circle, role: damage dealer; 4. a heavy round bronze-rimmed shield with a mountain emblem, role: protector; 5. a jade lotus holding a soft warm light above a small bronze bowl, role: healer and support; 6. a faceted amber-gold diamond shield shape, defense boost;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_misc_05",
+  "kind": "misc",
+  "cells": [
+   "buff_crit",
+   "buff_atk",
+   "cur_linh_thach",
+   "met_lac_kiem_quyet",
+   "met_bat_dong_kim_than",
+   "met_thanh_moc_dan_kinh"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a small crimson blood droplet with a bright thin sword-slash highlight, critical boost; 2. a clenched armored fist in dark jade green with a golden swirl, attack boost; 3. a small hexagonal teal-jade spirit stone with a faint inner glow and a bronze rim cut, currency token; 4. a vertical sect-blue sword scroll with a sword unsheathing, silver and ivory (sword path, offense); 5. a golden mountain-like diamond body silhouette beside a heavy bronze shield (tank path, defense); 6. a jade-green scroll entwined with a leafy vine and a small alchemy gourd (support path, healing);\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_set_lac_kiem",
+  "kind": "set",
+  "cells": [
+   "itm_lk_dao_bao",
+   "itm_lk_ho_uyen",
+   "itm_lk_dai_lung",
+   "itm_lk_van_ngoa"
+  ],
+  "prompt": "(tờ thử đã duyệt)"
+ },
+ {
+  "id": "s_set_kinh_quang",
+  "kind": "set",
+  "cells": [
+   "itm_kq_dao_bao",
+   "itm_kq_ho_uyen",
+   "itm_kq_dai_lung",
+   "itm_kq_van_ngoa"
+  ],
+  "prompt": "(tờ thử đã duyệt)"
+ },
+ {
+  "id": "s_set_tinh_khuyet",
+  "kind": "set",
+  "cells": [
+   "itm_tk_dao_bao",
+   "itm_tk_ho_uyen",
+   "itm_tk_dai_lung",
+   "itm_tk_van_ngoa",
+   "itm_tk_trang_suc"
+  ],
+  "prompt": "(tờ thử đã duyệt)"
+ },
+ {
+  "id": "s_set_than_tang",
+  "kind": "set",
+  "cells": [
+   "itm_tt_dao_bao",
+   "itm_tt_ngoc_boi",
+   "itm_tt_dai_lung",
+   "itm_tt_gioi_chi",
+   "itm_tt_trang_suc"
+  ],
+  "prompt": "(tờ thử đã duyệt)"
+ },
+ {
+  "id": "s_extra_01",
+  "kind": "item",
+  "cells": [
+   "itm_bi_tich_tan_quyen",
+   "itm_ngung_dan_lo",
+   "itm_thanh_lien_an",
+   "itm_tran_hon_linh",
+   "itm_tu_kim_ho_lo",
+   "itm_bao_huyet_dan"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a torn ancient cultivation scroll with faded ink columns and a bronze clasp; 2. a small ornate bronze alchemy cauldron (pill furnace) with a pearl-gold elixir core glowing inside, tiny cool-blue flame under it, personal bound artifact look, three legs, no text; 3. a square pale jade seal topped with one blooming lotus carved in relief, a bronze band around the base; 4. a dark bronze hand bell with cloud-and-wave relief around the rim, a carved dark wood handle and a short cinnabar red tassel; 5. a double-bulb gourd lacquered deep purple with gold scroll vines, a braided cinnabar red silk cord tied at the waist, a small dark wood stopper with bronze cap; 6. a deep crimson round pill with a single bright cinnabar red droplet pattern, resting on a small bronze dish;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_02",
+  "kind": "item",
+  "cells": [
+   "itm_bao_huyet_dan_2",
+   "itm_bao_huyet_dan_3",
+   "itm_hoi_mach_dan",
+   "itm_kim_cuong_dan",
+   "itm_kim_cuong_dan_2",
+   "itm_kim_cuong_dan_3"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a single round deep-crimson pill with warm ember glints and a thin bronze ring, a small bronze dish, second-tier look; 2. a deep crimson pill with a faint white cloud swirl, small bronze dish; 3. a single round warm-ochre pill with a thin cool jade vein pattern on it, resting on a small bronze dish, subtle shimmer; 4. a faceted amber-gold round pill resting on a small bronze dish, a faint diamond-shaped highlight on its surface; 5. a single round amber-gold pill with a metallic sheen and tiny bronze flecks, a small bronze dish, second-tier look; 6. a smooth steel-blue pill with a faint cloud swirl, small bronze dish;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_03",
+  "kind": "item",
+  "cells": [
+   "itm_manh_luc_dan",
+   "itm_manh_luc_dan_2",
+   "itm_manh_luc_dan_3",
+   "itm_dai_lung_da",
+   "itm_dai_lung_ngoc",
+   "itm_dai_lung_vai"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a dark jade-green round pill with a golden fist-like swirl pattern, resting on a small bronze dish; 2. a single round pill in burnt-orange with dark iron-grey streaks and a thin bronze band, a small bronze dish, second-tier look; 3. an amber-orange pill with a faint white cloud swirl, small bronze dish; 4. a coiled dark leather belt with a bronze buckle; 5. a coiled navy belt with a carved pale jade plaque and cinnabar cord; 6. a coiled ivory cloth sash belt with a knotted cord;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_04",
+  "kind": "item",
+  "cells": [
+   "itm_gioi_chi_dong",
+   "itm_ho_uyen_da",
+   "itm_ho_uyen_thiet",
+   "itm_ho_uyen_vai",
+   "itm_hoang_sa_gioi_chi",
+   "itm_kho_ha_van_ngoa"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a plain bronze ring with a small carved cloud pattern; 2. a pair of dark brown leather bracers with bronze rivets; 3. a pair of dark iron bracers with bronze inlay lines; 4. a pair of simple undyed ivory cloth wrist guards wrapped with a cord; 5. a bronze ring set with a small crystallized golden-sand gem; 6. a pair of tall thick-soled cloud boots in dry-riverbed tan and grey, subtle pale cloud wisps at the heel;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_05",
+  "kind": "item",
+  "cells": [
+   "itm_kinh_quang_kiem",
+   "itm_kinh_tam_ngoc_boi",
+   "itm_kinh_van_dao_bao",
+   "itm_liet_mach_kiem",
+   "itm_luu_ly_ho_uyen",
+   "itm_luu_quang_gioi_chi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a straight silver jian with a mirror-polished blade reflecting pale sky blue, thin white-gold guard, white silk-wrapped hilt; 2. a round mirror-like jade pendant in pale teal with a silver ring frame and a short silver cord; 3. a flowing pale silver-white Daoist robe folded neatly, faint cloud embroidery in light blue thread, silver sash; 4. a tier-2 jian sword with a sandy gold blade and cool jade-blue veins running down the fuller, brown leather-wrapped hilt, bronze guard; 5. a pair of translucent teal glass-like arm bracers with silver rims and small cloud engravings; 6. a slim silver ring set with a small glowing teal glass bead, faint light streak;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_06",
+  "kind": "item",
+  "cells": [
+   "itm_mach_tinh_ngoc_boi",
+   "itm_mach_van_dao_bao",
+   "itm_ngan_ha_dai_lung",
+   "itm_ngan_mach_dai_lung",
+   "itm_ngoc_boi_linh",
+   "itm_ngoc_boi_moc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a pendant carved from amber-ochre vein crystal with a cool jade core, short cord with a small bronze bead; 2. a sand-colored Taoist robe woven with faint vein-like patterns, long hem, laid out flat, no person; 3. a dark indigo belt scattered with tiny silver star dots like a galaxy, small silver clasp; 4. a dark brown belt with fine silver veins like underground water streaks and a small bronze buckle; 5. a teardrop spring-water jade pendant glowing faintly teal, silver chain; 6. a carved leaf-shaped wood-green jade pendant on a brown cord;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_07",
+  "kind": "item",
+  "cells": [
+   "itm_ngoc_boi_thanh",
+   "itm_phu_van_ngoa",
+   "itm_sa_thach_ho_uyen",
+   "itm_van_ngoa_da",
+   "itm_van_ngoa_vai",
+   "itm_van_ngoa_van"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a round pale-green jade disc pendant with a bronze rim on a teal cord; 2. a pair of pale grey-white cloud boots with thin curled-cloud soles, silver stitching; 3. a pair of sandstone-plate wrist guards edged in bronze, ochre tones; 4. a pair of dark brown leather boots with bronze buckle; 5. a pair of plain ivory cloth boots, soft folded tops; 6. a pair of deep navy boots with ivory cloud embroidery and pale cloud wisps at the heel;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_reroll_01",
+  "kind": "item",
+  "cells": [
+   "itm_skin_noxavyra",
+   "gem_tho_1"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 2 separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a dark-fantasy costume token: a black dress edged with thin blood-red blades on a small stand; make the dress bright and high-contrast: vivid blood-red blades and silver edges so the silhouette reads clearly on a dark background; 2. a LARGE, bold, clearly readable pale-ochre earth-element spirit gem, rough facets, filling most of its cell; Cells 3 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design.",
+  "reroll": true
+ },
+ {
+  "id": "s_set_tan_thiet_v2",
+  "kind": "set",
+  "cells": [
+   "itm_tth_dao_bao",
+   "itm_tth_ho_uyen",
+   "itm_tth_dai_lung",
+   "itm_tth_van_ngoa",
+   "itm_tth_trang_suc"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game equipment icons for ONE matching outfit set for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nSET 'Tan Thiet Ho Giap'. The pieces MUST obviously belong together at a glance: SAME palette, SAME motif, SAME materials, SAME trim, SAME level of stylization.\nSET IDENTITY: palette ash grey iron #23262B with hot ember-orange #E8743B trim and orange glow #FF9B54; motif: cracked burnt iron plates with glowing orange fissures and drifting ash; materials: scorched grey iron, ember-orange glow in the cracks; mood: heavy, burnt, hardened. It must look clearly different from a black-and-teal set: NO teal, NO cyan, NO sealing talismans.\nIcons in cell order (left to right, top to bottom): 1. a cracked ash-grey iron armor coat with ember-orange glowing fissures; 2. a pair of scorched iron bracers with ember-orange fissures; 3. an iron belt with an anvil-shaped buckle; 4. a pair of scorched iron boots with ember-lit cracks; 5. a scorched iron crown with ember-lit cracks; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_skin_tokens",
+  "kind": "item",
+  "cells": [
+   "itm_skin_varkessa",
+   "itm_skin_duskrella",
+   "itm_skin_crimson_knight",
+   "itm_skin_noxavyra",
+   "itm_skin_kings_demon"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 5 separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nThese are five matching COSTUME TOKEN icons (cosmetic outfit seals), the same plaque shape in five colorways, NO figures, NO armor, NO clothing, NO gothic or western imagery. Palette only: ash #2A2426, pale ash #8C8580, ember #C4412B, dark blood #6E1F24, violet #6B3FA0, dull gold #B8923A, bone #CFC6B4.\nIcons in cell order (left to right, top to bottom): 1. an ornate dark-lacquer costume-seal plaque with gold edge and a short cord with a tassel; embossed with an ember-red flame sigil, ember-red and dull-gold glow; 2. an ornate dark-lacquer costume-seal plaque with gold edge and a short cord with a tassel; embossed with a swirling ash-grey and violet ash-vortex sigil; 3. an ornate dark-lacquer costume-seal plaque with gold edge and a short cord with a tassel; embossed with a blood-red feather-plume sigil and bone-white trim; 4. an ornate dark-lacquer costume-seal plaque with gold edge and a short cord with a tassel; embossed with a thin crossed-blades sigil in blood red on black; 5. an ornate dark-lacquer costume-seal plaque with gold edge and a short cord with a tassel; embossed with a pair of curved bone-white horn sigils and a dull-gold ring; Cells 6 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_08",
+  "kind": "item",
+  "cells": [
+   "itm_tinh_khuyet_dao_bao",
+   "itm_co_thanh_ho_uyen",
+   "itm_da_hanh_van_ngoa",
+   "itm_tinh_van_dai_lung",
+   "itm_than_tang_ngoc_boi",
+   "itm_thu_linh_gioi_chi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of SIX separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a plain deep-indigo robe with sparse faint gold star dots (no crescent moon), simple gold edging; 2. a pair of weathered stone-grey plate bracers with a single thin gold arch line; 3. a pair of dark night-travel boots in soft dark indigo leather with silver stitching; 4. a star-cloud belt of indigo cloth with a small silver star clasp; 5. a square-cut green jade pendant in a plain antique-gold frame on a gold chain; 6. a bronze ring set with a small guardian-beast head in dull gold;\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_09",
+  "kind": "item",
+  "cells": [
+   "itm_gioi_quang_kiem",
+   "itm_gioi_quang_dao_bao",
+   "itm_tran_gioi_ho_uyen",
+   "itm_bac_hoang_van_ngoa"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 4 separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. a straight sword with a pale-gold glowing edge and a dark ash-grey guard; 2. a dark ash-grey robe with thin pale-gold light lines along the hem; 3. a pair of ash-grey plated bracers with a pale-gold sealing ring; 4. a pair of scorched ash-grey wasteland boots with dust and faint ember stitching; Cells 5 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ },
+ {
+  "id": "s_extra_10",
+  "kind": "item",
+  "cells": [
+   "itm_gioi_van_dai_lung",
+   "itm_hoa_than_ngoc_boi",
+   "itm_nguyen_quang_gioi_chi"
+  ],
+  "prompt": "Use case: stylized-concept. ONE image containing a 3 columns x 2 rows grid of 3 separate original game item icons for a Chinese fantasy cultivation game. Equal-size cells, each icon centered in its own cell with about 12% margin, all on the SAME dark ink background (soft radial gradient from #2a211a to #0b0908, light from the upper left), NO borders, NO frames, NO text, NO numbers, NO grid lines, NO emblem badges.\nIcons in cell order (left to right, top to bottom): 1. an ash-grey cloth belt with a pale-gold boundary-rune buckle (unreadable marks); 2. a white-gold jade pendant containing a tiny glowing spirit-child silhouette; 3. a plain gold ring set with one luminous pale-gold gem; Cells 4 to 6 stay EMPTY (just the dark background).\nStyle: semi-realistic cinematic painterly rendering, each subject fills about 70% of its cell, bold silhouette that still reads at 32 px, ONE soft rim light and at most ONE glowing focal element, restrained palette (ink black, gold #e2b955, vermilion #b3261e, jade #2f8f7f plus the subject's own colors). Original design."
+ }
+]

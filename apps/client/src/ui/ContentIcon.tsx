@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { isSysIcon, SysIcon } from './ngj/icons';
+import { SysGlyph, isSysGlyph } from './u2/SysGlyph';
+import { SetMark, emblemOf } from './u2/SetMark';
 
-type IconDef = { icon: string; iconFallback?: string };
+/** `set` (id bộ trang bị, có ở `ItemDef`) thêm dấu ấn bộ ở góc dưới trái. */
+type IconDef = { icon: string; iconFallback?: string; set?: string };
 type Sheet = { file: string; columns: number; rows: number };
 type Atlas = {
   sheets: Record<string, Sheet>;
@@ -115,10 +118,21 @@ export function ContentIcon({ def, className }: { def?: IconDef; className?: str
       </span>
     );
   }
-  return <span className={'content-icon' + (className ? ' ' + className : '')} aria-hidden="true" style={styleOf(c)} />;
+  const mark = def?.set && emblemOf(def.set) ? <SetMark set={def.set} /> : null;
+  return (
+    <span
+      className={'content-icon' + (mark ? ' has-set' : '') + (className ? ' ' + className : '')}
+      aria-hidden={mark ? undefined : 'true'}
+      style={styleOf(c)}
+    >
+      {mark}
+    </span>
+  );
 }
 
 /** Icon giao diện (nút HUD, linh căn, vai trò, tiền…): tranh trong atlas, thiếu thì dùng ký hiệu dự phòng. */
 export function UiIcon({ id, fallback, className }: { id: string; fallback: string; className?: string }) {
+  // Icon hệ thống nét vàng (SVG, U2-I) thay tranh/emoji khi có.
+  if (isSysGlyph(id)) return <SysGlyph id={id} className={className} />;
   return <ContentIcon def={{ icon: id, iconFallback: fallback }} className={className} />;
 }
