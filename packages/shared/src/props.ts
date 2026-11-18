@@ -11,18 +11,8 @@ import { THAN_TANG_PROPS } from './props.thantang';
 import { XICH_TAN_PROPS } from './props.xichtan';
 import { KIM_DA_PROPS } from './props.kimda';
 
-export interface HandProp {
-  /** Asset id (assets/source/prop/<id>). */
-  id: string;
-  x: number;
-  z: number;
-  /** Quay quanh Y (rad); mặt trước model nhìn +Z khi 0. */
-  yaw: number;
-  /** Tỉ lệ đều so với kích thước chuẩn của asset. */
-  s: number;
-  /** Bán kính va chạm (m); không có thì không chặn đường. */
-  r?: number;
-}
+export type { HandProp } from './props.types';
+import type { HandProp } from './props.types';
 
 const PI = Math.PI;
 const lantern = (x: number, z: number, s = 1): HandProp => ({ id: 'prop_den_da', x, z, yaw: 0, s });
