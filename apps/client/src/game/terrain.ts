@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { texture, positionWorld, vertexColor, mix as tmix } from 'three/tsl';
 import { getCloudNoise } from '../render/noiseTex';
 import { createWorldMaterial } from '../render/materials/world';
-import { applyGroundShader, clearGroundShader, type GroundLevel } from '../render/materials/ground';
+import { applyGroundShader, clearGroundShader, setGroundTileBreak, type GroundLevel } from '../render/materials/ground';
 import type { GroundTextures } from './groundTextures';
 import { COLLIDERS, fbm, featureWeight, FOREST, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { levelTerrain } from './levelCtx';
@@ -12,6 +12,7 @@ import { LEGACY_TREES, nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
+import { xichCracks, xichGroundColor } from './xichArt';
 
 const TILE = 256;
 const NEAR_R = 3;
@@ -42,6 +43,9 @@ let OCHRE = T.id === 'doan_mach';
 let ASH = T.id === 'bac_hoang';
 /** Level sân đá phiến thành cổ (Thiên Khuyết, E4-I). */
 let SLATE = T.id === 'thien_khuyet';
+/** Level phó bản hẻm núi Xích Tẫn Khích (DV-3K): bảng màu đất riêng theo `TerrainDef.canyon`. */
+let XICH = T.def.canyon !== undefined && T.id === 'xich_tan_khich';
+let XICH_CRACKS: RiftPt[][] = [];
 const _tk: [number, number, number] = [0, 0, 0];
 const _bh: [number, number, number] = [0, 0, 0];
 let BH_PATH: RiftPt[] = [];
@@ -174,6 +178,10 @@ function terrainColor(x: number, z: number, h: number, ny: number, out: THREE.Co
   if (SLATE) {
     tkGroundColor(T.def, x, z, ny, _tk);
     return void out.setRGB(_tk[0], _tk[1], _tk[2], THREE.SRGBColorSpace);
+  }
+  if (XICH) {
+    xichGroundColor(T.def, XICH_CRACKS, x, z, h, ny, _bh);
+    return void out.setRGB(_bh[0], _bh[1], _bh[2], THREE.SRGBColorSpace);
   }
   if (OCHRE) return ochreColor(x, z, h, ny, out);
   if (ASH) {
@@ -492,6 +500,8 @@ export class Terrain {
     ASH = T.id === 'bac_hoang';
     BH_PATH = ASH ? riftPath(T.def) : [];
     SLATE = T.id === 'thien_khuyet';
+    XICH = T.def.canyon !== undefined && T.id === 'xich_tan_khich';
+    XICH_CRACKS = XICH ? xichCracks(T.def, (x, z) => T.heightAt(x, z)) : [];
     const COARSE_N = this.COARSE_N;
     const g = buildTileGeometry(0, 0, this.size, COARSE_N, 0);
     this.coarseIndex = new THREE.BufferAttribute(new Uint16Array(COARSE_N * COARSE_N * 6), 1);
@@ -635,6 +645,7 @@ export class Terrain {
 
   /** Bật shader mặt đất PBR khi bộ texture đã nạp; gọi lại khi đổi preset. */
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
+    setGroundTileBreak(XICH);
     if (tex) applyGroundShader(this.material, tex, level);
     else clearGroundShader(this.material);
   }
