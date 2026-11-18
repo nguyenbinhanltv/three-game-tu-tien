@@ -124,6 +124,42 @@
       "note": "nc"
     },
     {
+      "id": "shadow_wolf_warlord_knight",
+      "kind": "model",
+      "title": "Shadow Wolf Warlord Knight",
+      "author": "Pigcraft",
+      "url": "https://sketchfab.com/3d-models/shadow-wolf-warlord-knight-2838faddd383439cb0c067402cb4c61f",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "cut",
+        "decimate",
+        "bake",
+        "rig",
+        "pose"
+      ],
+      "assets": [
+        "chr_v3_shadow_wolf_nam"
+      ]
+    },
+    {
+      "id": "korvaden",
+      "kind": "model",
+      "title": "KORVADEN // The Runebound Axemaster",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/56b55945548942f28359c76820b4e910",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "cut",
+        "decimate",
+        "bake",
+        "rig",
+        "pose"
+      ],
+      "assets": [
+        "chr_v3_korvaden_nam"
+      ]
+    },
+    {
       "id": "ual",
       "kind": "anim",
       "title": "Universal Animation Library 1 + 2 (Standard)",

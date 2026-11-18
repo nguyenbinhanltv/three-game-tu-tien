@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_v3_korvaden_nam",
+  "type": "chr",
+  "budgetClass": "player_v3",
+  "itemId": "itm_skin_korvaden",
+  "status": "imported",
+  "budget": {
+    "faceLimit": 24000,
+    "texture": 2048
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Sketchfab: \"KORVADEN // The Runebound Axemaster\" của Atahan3D (https://sketchfab.com/3d-models/56b55945548942f28359c76820b4e910). Zip tải về không kèm metadata; giấy phép CC BY 4.0 theo báo cáo đánh giá asset (danh-gia-assets-online-2). Đã sửa: xoay thân về -Y, bỏ hai rìu dính tay, giảm 1.294.723 → 22.000 tam giác, UV mới và nướng lại texture, dựng xương Mixamo và trọng số, đặt lại tư thế khom về nghỉ theo Mannequin; chuẩn bị bằng tools/blender/skin_prep.py (cấu hình tools/blender/skins/korvaden.json), đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py",
+    "owner": "Atahan3D",
+    "date": "2026-11-19",
+    "url": "https://sketchfab.com/3d-models/56b55945548942f28359c76820b4e910",
+    "spdx": "CC-BY-4.0"
+  }
+}

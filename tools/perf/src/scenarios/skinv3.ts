@@ -5,8 +5,8 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { sleep } from '../lib/devserver';
-import { list, size } from '../lib/env';
-import { cam, gm } from '../lib/game';
+import { list, opt, size } from '../lib/env';
+import { cam, gm, hideUi } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 
@@ -18,12 +18,14 @@ const GENDER: Record<string, string> = {
   itm_skin_crimson_knight: 'm',
   itm_skin_noxavyra: 'f',
   itm_skin_kings_demon: 'f',
+  itm_skin_korvaden: 'm',
+  itm_skin_shadow_wolf: 'm',
 };
 
 export default {
   name: 'skinv3',
   desc: 'Video skin toàn thân trên nhân vật v3: đứng, chạy, chém, đả tọa, ngự kiếm + ảnh đứng ba hướng',
-  usage: '[--ids itm_skin_duskrella,itm_skin_crimson_knight] [--size 960x720]',
+  usage: '[--ids itm_skin_duskrella,itm_skin_crimson_knight] [--size 960x720] [--dist 3.6]',
   async run(r) {
     const [vw, vh] = size('960x720');
     for (const id of list('--ids', 'itm_skin_duskrella,itm_skin_crimson_knight')) {
@@ -52,7 +54,8 @@ export default {
       await gm(page, `skin ${id}`, 5000);
       const sn = await page.evaluate(() => (window.__game!.me()?.sn as string | undefined) ?? '');
       console.log(`[shots:skinv3] ${id}: server báo sn='${sn}'`);
-      const frame = () => cam(page, { yaw: 0.5, pitch: 0.08, dist: 3.6 });
+      const dist = Number(opt('--dist', '3.6'));
+      const frame = () => cam(page, { yaw: 0.5, pitch: 0.08, dist });
       await frame();
       const tScene = Date.now();
       for (const [view, yaw] of [
@@ -60,13 +63,15 @@ export default {
         ['nghieng', Math.PI / 2],
         ['sau', Math.PI],
       ] as const) {
-        await cam(page, { yaw, pitch: 0.1, dist: 3.6 });
+        await cam(page, { yaw, pitch: 0.1, dist });
         await sleep(1500);
         await snap(page, r.out, `${tag}-dung-${view}.jpg`);
       }
       await frame();
       await page.keyboard.down('KeyW');
-      await sleep(2600);
+      await sleep(1700);
+      await snap(page, r.out, `${tag}-chay.jpg`);
+      await sleep(900);
       await page.keyboard.up('KeyW');
       await sleep(500);
       await frame();
@@ -74,13 +79,25 @@ export default {
       await frame();
       for (let i = 0; i < 3; i++) {
         await page.evaluate(() => window.__game!.useSkill(1));
-        await sleep(1150);
+        if (i === 1) {
+          await sleep(380);
+          await snap(page, r.out, `${tag}-chieu.jpg`);
+          await sleep(770);
+        } else await sleep(1150);
       }
       await gm(page, 'killall', 700);
       await frame();
       await page.keyboard.press('KeyZ');
       await sleep(2600);
       await snap(page, r.out, `${tag}-datoa.jpg`);
+      // Bảng Nhân vật (C): cần HUD, nên bật lại rồi ẩn tiếp cho các cảnh sau.
+      await hideUi(page, 'none');
+      await page.keyboard.press('KeyC');
+      await sleep(1100);
+      await snap(page, r.out, `${tag}-nhanvat.jpg`);
+      await page.keyboard.press('KeyC');
+      await sleep(400);
+      await hideUi(page, 'hud');
       await page.keyboard.press('KeyW');
       await sleep(700);
       await frame();
