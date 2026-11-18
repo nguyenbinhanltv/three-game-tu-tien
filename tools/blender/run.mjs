@@ -158,6 +158,32 @@ const procedural = [
   },
 ];
 
+/**
+ * Bộ nhân vật v3 nguyên khối thêm bằng MỘT file `tools/blender/skins/v3sets/<bộ>.json` (tên bắt đầu bằng `_` là mẫu, bị bỏ qua): file vừa là cấu hình lò xo/trọng số
+ * của chr_v3.py (`robe`, `groups`, `limbs`, `smooth`) vừa khai `set` (id bộ), `raw` (GLB Tripo, `{g}` = nam|nu, đường dẫn trong DTL_ASSET_SOURCE) và `height` theo giới (m).
+ * Mỗi giới ra một job `chr_v3_<set>_<giới>`; thiếu GLB nguồn thì bỏ qua có cảnh báo (như job khác). meta.json + dòng LICENSES: `node tools/blender/v3-newset.mjs <set>`.
+ */
+function v3SetEntries() {
+  const dir = path.join(root, 'tools/blender/skins/v3sets');
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const f of fs.readdirSync(dir).sort()) {
+    if (!f.endsWith('.json') || f.startsWith('_')) continue;
+    const cfg = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+    for (const [g, h] of Object.entries(cfg.height)) {
+      const id = `chr_v3_${cfg.set}_${g}`;
+      out.push({
+        id,
+        script: 'tools/blender/chr_v3.py',
+        source: String(cfg.raw).replace('{g}', g),
+        template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+        extra: ['--id', id, '--auto', '--height', String(h), '--springs', `repo:tools/blender/skins/v3sets/${f}`],
+      });
+    }
+  }
+  return out;
+}
+
 /** @typedef {{ id: string, script: string, args: string[], deps: string[], legacy?: string }} Job */
 
 const argv = process.argv.slice(2);
@@ -171,7 +197,7 @@ const sourceRoot = () => (assetSource === undefined ? (assetSource = findAssetSo
 /** @returns {Job[]} */
 function proceduralJobs() {
   const jobs = [];
-  for (const j of procedural.filter((p) => !only || p.id === only)) {
+  for (const j of [...procedural, ...v3SetEntries()].filter((p) => !only || p.id === only)) {
     const deps = [path.join(root, j.script)];
     const args = [out(j.id)];
     if (j.source) {
