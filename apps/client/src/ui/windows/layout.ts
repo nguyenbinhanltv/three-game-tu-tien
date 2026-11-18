@@ -20,7 +20,7 @@ export interface Viewport {
 /** Chừa đáy cho cụm kỹ năng + ô tiện ích (khớp `.k-window` trong kit.css). */
 const BOTTOM_RESERVE = 136;
 /** Chừa đầu cho thẻ người chơi, thanh boss, hub (tiêu đề cuộn của bảng nhô lên nằm trong phần chừa này của chính bảng). Vùng an toàn của cửa sổ = [TOP_RESERVE, vh − BOTTOM_RESERVE]. */
-const TOP_RESERVE = 116;
+const TOP_RESERVE = 150;
 const WIN_GAP = 12;
 const WIN_MARGIN = 12;
 

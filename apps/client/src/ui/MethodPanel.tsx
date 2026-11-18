@@ -203,7 +203,7 @@ export function MethodPanel() {
       </div>
       <div className="mp-detail" style={{ '--mc': '#' + shown.color } as CSSProperties}>
         <div className="k-dim">{t(`method.${shown.id}.desc`)}</div>
-        <div className="mp-passive">
+        <div className="mp-passive" title={`${t('ui.method.passive')}: ${t(`method.${shown.id}.passive`)}`}>
           <b>{t('ui.method.passive')}</b>: {t(`method.${shown.id}.passive`)}
         </div>
         <div className="mp-pick">

@@ -1,5 +1,6 @@
 /* ---------- bảng Công pháp (3-5) ---------- */
 .mp-cards {
+  flex: none;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
@@ -13,7 +14,7 @@
   padding: 8px 10px;
   text-align: left;
   color: var(--k-text);
-  background: linear-gradient(180deg, rgba(26, 41, 56, 0.9), rgba(14, 23, 34, 0.94));
+  background: var(--u-card-hi);
   border: 1px solid var(--k-edge-dim);
   border-left: 3px solid var(--mc);
   cursor: pointer;
@@ -32,14 +33,15 @@
 }
 .mp-card-role {
   font-size: 11px;
-  color: var(--k-text-dim, #9aa7b4);
+  color: var(--k-text-dim);
 }
 .mp-detail {
+  flex: none;
   --mc: var(--k-jade);
   padding: 8px 10px;
   border: 1px solid var(--k-edge-dim);
   border-left: 3px solid var(--mc);
-  background: rgba(10, 18, 28, 0.55);
+  background: var(--u-card);
   display: grid;
   gap: 6px;
 }
@@ -53,18 +55,23 @@
 .mp-skills {
   display: grid;
   gap: 8px;
-  max-height: 340px;
+  /* danh sách chiêu chiếm phần còn lại của bảng (cuộn bên trong), không bị ép còn một dòng */
+  flex: 1 0 160px;
+  align-content: start;
   overflow: auto;
   padding-right: 4px;
 }
 .mp-skill {
+  flex: none;
+}
+.mp-skill {
   padding: 6px 8px;
   border: 1px solid var(--k-edge-dim);
-  background: rgba(10, 18, 28, 0.45);
+  background: var(--u-card);
 }
 .mp-skill[data-ult='1'] {
-  border-color: #b8923e;
-  background: linear-gradient(90deg, rgba(120, 90, 30, 0.22), rgba(10, 18, 28, 0.45));
+  border-color: var(--u-gold);
+  background: linear-gradient(90deg, var(--u-wash-gold), var(--u-card));
 }
 .mp-skill.locked {
   opacity: 0.55;
@@ -116,7 +123,7 @@
   color: var(--k-text);
   font: inherit;
   font-size: 12px;
-  background: rgba(26, 41, 56, 0.8);
+  background: var(--u-card-hi);
   border: 1px solid var(--k-edge-dim);
   cursor: pointer;
 }
@@ -138,10 +145,16 @@
   margin-top: 6px;
   text-align: right;
 }
+.mp-foot {
+  flex: none;
+  font-size: var(--u-fs-1);
+  line-height: 1.35;
+  margin: 0;
+}
 
 /* ---------- thanh chiêu 8 ô: ô công pháp, vòng sạc, kiếm ý ---------- */
 .skill[data-state='empty'] {
-  --edge: linear-gradient(180deg, #6d6a60, #46443d);
+  --edge: var(--u-ink-3);
   opacity: 0.7;
 }
 .skill[data-state='empty'] .skill-icon {
@@ -153,14 +166,19 @@
   margin: 4px 0;
 }
 .skill[data-method='1'] {
-  --edge: linear-gradient(180deg, color-mix(in srgb, var(--mc) 60%, #fff), var(--mc) 50%, color-mix(in srgb, var(--mc) 50%, #000));
+  --edge: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--mc) 60%, var(--u-gold-text)),
+    var(--mc) 50%,
+    color-mix(in srgb, var(--mc) 50%, var(--u-ink-0))
+  );
 }
 /* Vòng sạc chiêu tối thượng: quầng sáng theo vòng, đầy thì nhịp sáng. */
 .skill-charge {
   position: absolute;
   inset: 1.5px;
   pointer-events: none;
-  background: conic-gradient(from 0deg, color-mix(in srgb, var(--mc) 55%, transparent) calc(var(--p) * 1turn), rgba(6, 10, 18, 0.7) 0);
+  background: conic-gradient(from 0deg, color-mix(in srgb, var(--mc) 55%, transparent) calc(var(--p) * 1turn), var(--u-ink-scrim) 0);
   clip-path: polygon(
     6px 0,
     calc(100% - 6px) 0,
@@ -196,7 +214,7 @@
   bottom: 1px;
   font: 700 10px var(--k-font-body);
   color: var(--k-text);
-  text-shadow: 0 1px 2px #000;
+  text-shadow: 0 1px 2px var(--u-ink-0);
 }
 .stack-pips {
   --mc: var(--k-gold);
@@ -206,7 +224,7 @@
   margin-bottom: 2px;
   font-size: 11px;
   color: var(--mc);
-  text-shadow: 0 1px 2px #000;
+  text-shadow: 0 1px 2px var(--u-ink-0);
 }
 .stack-pips i {
   width: 9px;
@@ -223,7 +241,7 @@
 
 /* ---------- thẻ chiêu tối thượng 0,6 giây ---------- */
 .ult-card {
-  --mc: #fff;
+  --mc: var(--u-gold-text);
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -236,10 +254,10 @@
   margin-top: -18vh;
   font: 700 clamp(22px, 3.2vw, 38px) var(--k-font-serif);
   letter-spacing: 0.18em;
-  color: color-mix(in srgb, var(--mc) 70%, #fff);
+  color: color-mix(in srgb, var(--mc) 70%, var(--u-gold-text));
   text-shadow:
     0 0 18px var(--mc),
-    0 2px 4px #000;
+    0 2px 4px var(--u-ink-0);
   animation: ult-name 0.6s ease-out forwards;
 }
 @keyframes ult-card {
@@ -281,7 +299,7 @@
 .skill-icon .content-icon.fallback {
   font-size: 30px;
   line-height: 44px;
-  filter: drop-shadow(0 1px 2px #000);
+  filter: drop-shadow(0 1px 2px var(--u-ink-0));
 }
 .k-slot .content-icon.fallback {
   font-size: 22px;
@@ -291,20 +309,20 @@
 /* Chiêu đang được cường hóa (K-2): viền sáng vàng nhạt, nhấp nháy chậm. */
 .skill.empowered {
   box-shadow:
-    0 0 0 2px #ffe6a0,
-    0 0 12px 2px rgba(255, 214, 110, 0.75);
+    0 0 0 2px var(--u-gold-hi),
+    0 0 12px 2px color-mix(in srgb, var(--u-gold) 75%, transparent);
   animation: skill-empower 0.9s ease-in-out infinite alternate;
 }
 @keyframes skill-empower {
   from {
     box-shadow:
-      0 0 0 2px #ffe6a0,
-      0 0 6px 1px rgba(255, 214, 110, 0.5);
+      0 0 0 2px var(--u-gold-hi),
+      0 0 6px 1px color-mix(in srgb, var(--u-gold) 50%, transparent);
   }
   to {
     box-shadow:
-      0 0 0 2px #fff2c8,
-      0 0 14px 3px rgba(255, 214, 110, 0.9);
+      0 0 0 2px var(--u-gold-text),
+      0 0 14px 3px color-mix(in srgb, var(--u-gold) 90%, transparent);
   }
 }
 
@@ -322,15 +340,44 @@
   align-items: center;
   margin-bottom: 2px;
   font-size: 11px;
-  color: var(--k-text-dim, #b8c4bd);
-  text-shadow: 0 1px 2px #000;
+  color: var(--u-chu-dim);
+  text-shadow: 0 1px 2px var(--u-ink-0);
 }
 .clone-chip.on {
-  color: #ffe9a8;
+  color: var(--u-gold-text);
 }
 .clone-chip .clone-key {
   padding: 0 5px;
   border: 1px solid currentColor;
   border-radius: 3px;
   font-weight: 600;
+}
+
+/* Màn thấp (≤ 800 px): gọn phần đầu để danh sách chiêu còn chỗ (cuộn bên trong) */
+@media (max-height: 800px) {
+  .mp-detail > .k-dim:first-child {
+    display: none;
+  }
+  .mp-card {
+    padding: 4px 8px;
+  }
+  .mp-card-role {
+    display: none;
+  }
+  /* nội tại vẫn hiện nhưng gọn một dòng; đọc đủ ở `title` (rê chuột) hoặc màn cao hơn */
+  .mp-passive {
+    font-size: var(--u-fs-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mp-pick {
+    margin-top: 0;
+  }
+  .mp-skills {
+    flex-basis: 140px;
+  }
+  .mp-foot:nth-last-of-type(-n + 2) {
+    display: none;
+  }
 }
