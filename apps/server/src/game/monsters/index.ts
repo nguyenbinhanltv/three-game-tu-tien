@@ -64,7 +64,6 @@ export interface MonsterCtx {
   readonly tribSys: GameSim['tribSys'];
   warn(p: PlayerEnt, k: string, params?: Record<string, string | number>): void;
   readonly zones: GameSim['zones'];
-  rollLoot(p: PlayerEnt, mon: MonEnt, part?: 'all' | 'gold'): void;
 }
 
 export class MonsterSystem {
@@ -378,7 +377,7 @@ export class MonsterSystem {
         pick = nextTurn(party.members.length, party.lastTurn, (i) => pool.some((o) => o.char.id === party.members[i] && !o.noLoot));
         if (pick >= 0) party.lastTurn = pick;
       }
-      for (const o of pool) this.c.rollLoot(o, mon, !turn || party.members[pick] === o.char.id ? 'all' : 'gold');
+      for (const o of pool) this.rollLoot(o, mon, !turn || party.members[pick] === o.char.id ? 'all' : 'gold');
     }
     for (const p of dealers) {
       if (done.has(p)) continue;
@@ -390,7 +389,7 @@ export class MonsterSystem {
         continue;
       }
       if (!this.c.isDead(p)) this.c.giveXp(p, Math.max(1, Math.round(xp * xpLevelFactor(p.char.level, mon.level) * (p.noLoot ? 0.3 : 1))));
-      this.c.rollLoot(p, mon);
+      this.rollLoot(p, mon);
       this.c.questEvent(p, 'kill', mon.def.id, 1);
       this.c.feedArtifact(p, mon);
     }
