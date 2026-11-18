@@ -32,8 +32,9 @@ export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu'
 export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
 const V3_PICK = FLAGS.v3Model;
 export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_MODELS_B2;
-/** Asset dùng lò xo v2 (`chr_v3b2_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
-export const isSpring2 = (assetId: string | undefined): boolean => !!assetId?.startsWith('chr_v3b2_');
+/** Asset dùng lò xo v2 (`chr_v3b2_*` và các bộ dựng hàng loạt `chr_v3_<bộ>_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
+export const isSpring2 = (assetId: string | undefined): boolean =>
+  !!assetId && (assetId.startsWith('chr_v3b2_') || Object.values(V3_OWN_SETS).some((k) => assetId.startsWith(`chr_v3_${k}_`)));
 /** Độ cứng của xương gấu vạt (khớp thứ hai của chuỗi `dtl_o_skirt_<k>_<l>`) so với khớp gốc. */
 export const HEM_STIFF = 1.7;
 /** Hệ số phình viên nang thân khi ngồi/đả tọa: vạt nằm lên trên đùi thay vì lún xuống. */
@@ -62,11 +63,40 @@ export const V3_ONLY_SKINS: ReadonlySet<string> = new Set([
   'set_skin_noxavyra',
   'set_skin_kings_demon',
 ]);
-/** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có). Skin sai giới (server không cho mặc) bị bỏ qua. */
-export function v3AssetOf(g: string, skin?: string): string {
-  const base = g === 'f' ? V3_MODELS.f : V3_MODELS.m;
+/**
+ * Model v3 theo bộ trang bị đang mặc (`PlayerLook.set`, id trong sets.json): bộ có model riêng dùng `chr_v3_<bộ>_<nam|nu>`.
+ * Bộ chưa có model riêng (bậc 1 trở lên) tạm dùng model cùng nhánh: kiếm tu → Lạc Kiếm, hộ pháp → Huyền Giáp, đan sư → Đan Tâm.
+ * Không mặc bộ nào → Đồ Đệ Tử (đồ khởi đầu). Thêm bộ mới: thêm id vào `V3_OWN_SETS` (asset `chr_v3_<tên>_<giới>` phải có trong manifest).
+ */
+export const V3_OWN_SETS: Readonly<Record<string, string>> = {
+  set_de_tu: 'de_tu',
+  set_huyen_giap: 'huyen_giap',
+  set_dan_tam: 'dan_tam',
+};
+const V3_BRANCH_FALLBACK: Readonly<Record<string, string>> = {
+  set_lac_kiem: 'lac_kiem',
+  set_han_giao: 'lac_kiem',
+  set_liet_mach: 'lac_kiem',
+  set_kinh_quang: 'lac_kiem',
+  set_tinh_khuyet: 'lac_kiem',
+  set_tran_khich: 'lac_kiem',
+  set_dia_giap: 'huyen_giap',
+  set_van_kinh: 'huyen_giap',
+  set_co_thanh: 'huyen_giap',
+  set_tan_thiet: 'huyen_giap',
+  set_phuc_mach: 'dan_tam',
+  set_luu_ly: 'dan_tam',
+  set_than_tang: 'dan_tam',
+  set_tinh_dan_bao: 'dan_tam',
+};
+/** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có, bộ trang bị `set`). Skin sai giới (server không cho mặc) bị bỏ qua. */
+export function v3AssetOf(g: string, skin?: string, set?: string): string {
+  const f = g === 'f';
   const id = skin ? V3_SKINS[skin] : undefined;
-  return id && id.endsWith(g === 'f' ? '_nu' : '_nam') ? id : base;
+  if (id && id.endsWith(f ? '_nu' : '_nam')) return id;
+  const key = set ? (V3_OWN_SETS[set] ?? V3_BRANCH_FALLBACK[set]) : 'de_tu';
+  if (key === undefined || key === 'lac_kiem') return f ? V3_MODELS.f : V3_MODELS.m;
+  return `chr_v3_${key}_${f ? 'nu' : 'nam'}`;
 }
 /**
  * Tốc độ phát clip chạy: timeScale = tốc độ thật / JOG_SPEED. 5,4 m/s là giá trị đo trong game cho ÍT TRƯỢT CHÂN nhất (`pnpm shots chrv3 --slide`,
@@ -132,7 +162,17 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
 
 /** Bù góc dang vai/tay (rad) theo model khi áp clip UAL: tay áo rộng của Tripo bị tay clip ép xuyên; đo/chỉnh bằng `chrv3 --pen`. `?armfit=<độ>` ghi đè. */
 /** Lạc Kiếm v3b2: tay áo rộng đâm vào thân nên cần dang nhiều hơn mặc định (góc tổng đã đo bằng `springMetrics`, docs/chr-v3-arm/README.md). */
-export const ARM_FIT: Record<string, number> = { chr_v3b2_lac_kiem_nam: (16 * Math.PI) / 180, chr_v3b2_lac_kiem_nu: (16 * Math.PI) / 180 };
+export const ARM_FIT: Record<string, number> = {
+  chr_v3b2_lac_kiem_nam: (16 * Math.PI) / 180,
+  chr_v3b2_lac_kiem_nu: (16 * Math.PI) / 180,
+  // Bộ dựng hàng loạt (đo `springMetrics` quét 5/12/16/22°, docs/chr-v3/README.md): Đồ Đệ Tử tay áo vừa nên ít phụ thuộc; Huyền Giáp là giáp (vai + hộ uyển nổi) cần dang nhiều hơn; Đan Tâm như Lạc Kiếm.
+  chr_v3_de_tu_nam: (10 * Math.PI) / 180,
+  chr_v3_de_tu_nu: (10 * Math.PI) / 180,
+  chr_v3_huyen_giap_nam: (20 * Math.PI) / 180,
+  chr_v3_huyen_giap_nu: (20 * Math.PI) / 180,
+  chr_v3_dan_tam_nam: (16 * Math.PI) / 180,
+  chr_v3_dan_tam_nu: (16 * Math.PI) / 180,
+};
 export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 
 const IDENT = new THREE.Matrix4();
@@ -1061,26 +1101,26 @@ export class MannequinPlayers {
     return null;
   }
 
-  private get(g: string, skin?: string): MannequinTemplate | null {
-    const id = v3AssetOf(g, skin);
+  private get(g: string, skin?: string, set?: string): MannequinTemplate | null {
+    const id = v3AssetOf(g, skin, set);
     this.load(id);
     const t = this.tpl.get(id);
     if (t && typeof t !== 'string') this.ensurePoses();
     return t && typeof t !== 'string' ? t : null;
   }
 
-  create(g: string, skin?: string, w?: string): CharacterView | null {
-    const t = this.get(g, skin);
+  create(g: string, skin?: string, w?: string, set?: string): CharacterView | null {
+    const t = this.get(g, skin, set);
     return t ? new MannequinCharacter(t, false, this.sword(w ?? SWORD_MODEL_DEFAULT)) : null;
   }
 
-  createShadow(g: string, def: MonsterDef, skin?: string): MonsterView | null {
-    const t = this.get(g, skin);
+  createShadow(g: string, def: MonsterDef, skin?: string, set?: string): MonsterView | null {
+    const t = this.get(g, skin, set);
     return t ? (Object.assign(new MannequinCharacter(t, true), { def }) as unknown as MonsterView) : null;
   }
 
-  pending(g: string, skin?: string, w?: string): boolean {
-    if (this.get(g, skin) === null && this.tpl.get(v3AssetOf(g, skin)) !== 'failed') return true;
+  pending(g: string, skin?: string, w?: string, set?: string): boolean {
+    if (this.get(g, skin, set) === null && this.tpl.get(v3AssetOf(g, skin, set)) !== 'failed') return true;
     this.sword(w ?? SWORD_MODEL_DEFAULT);
     return this.swords.get(w ?? SWORD_MODEL_DEFAULT) === 'loading';
   }

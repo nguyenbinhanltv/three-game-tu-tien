@@ -36,7 +36,7 @@ export default {
   name: 'points',
   desc: 'Ảnh cảnh cố định theo điểm (trước/sau khi đổi render; duyệt bản đồ mới với --level)',
   usage:
-    '[--level <id>] [--points a,b|all] [--renderers webgpu,webgl2 | --renderer webgpu] [--presets low,medium,high] [--size 1280x720] [--query a=b] [--perf] [--dry]',
+    '[--level <id>] [--points a,b|all] [--renderers webgpu,webgl2 | --renderer webgpu] [--presets low,medium,high] [--size 1280x720] [--query a=b] [--perf] [--calm] [--dry]',
   dry() {
     if (!flag('--dry')) return false;
     for (const p of points()) console.log(`${LEVEL}/${p.name}\t${Math.round(p.x)}, ${Math.round(p.z)}`);
@@ -59,6 +59,7 @@ export default {
         if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
         for (const p of points()) {
           await tp(page, p.x, p.z);
+          if (flag('--calm')) await gm(page, 'killall', 1200); // không giao chiến: ảnh sạch, không vạch báo/hạt chiêu của quái
           await cam(page, p);
           const stem = `${LEVEL === 'van_lam' ? '' : LEVEL + '-'}${renderer}-${preset}-${p.name}`;
           await snap(page, r.out, `${stem}.png`, { wait: settleMs() });

@@ -1,0 +1,66 @@
+{
+  "$comment": "MẪU kiểu dáng ÁO DÀI (Kiếm tu, Đan sư; vạt tới bắp chân, xẻ tà hai bên). Sao chép thành tools/blender/skins/v3sets/<bộ>.json rồi sửa `set`, `name`, `raw`. Phần `robe`/`groups`/`limbs` là cấu hình của chr_v3.py (số theo PHẦN CHIỀU CAO); phần khai bộ nằm ở đầu file. Mặc định lấy từ Lạc Kiếm v3b2 (đã duyệt).",
+  "set": "ten_bo",
+  "name": "Tên Bộ",
+  "raw": "chr/set_ten_bo/tripo/raw_v3_ten_bo_{g}.glb",
+  "height": {
+    "nam": 1.84,
+    "nu": 1.7
+  },
+  "groups": [
+    {
+      "name": "skirt",
+      "parent": "pelvis",
+      "axis": "angle",
+      "zMin": 0.24,
+      "zMax": 0.5,
+      "minRadius": 0.09,
+      "count": 12,
+      "links": 2,
+      "share": 0.8,
+      "domRegion": [
+        "torso",
+        "leg"
+      ]
+    },
+    {
+      "name": "hair",
+      "parent": "spine_03",
+      "axis": "x",
+      "zMin": 0.45,
+      "zMax": 0.86,
+      "yMinRel": 0.04,
+      "xAbsMax": 0.1,
+      "count": 3,
+      "links": 3,
+      "tex": "hair",
+      "share": 0.5
+    }
+  ],
+  "robe": {
+    "zMin": 0.22,
+    "zMax": 0.52,
+    "minRadius": 0.09,
+    "xInner": 0.04,
+    "xOuter": 0.1,
+    "outerShare": 0.5,
+    "front": 0.9,
+    "back": 0.45,
+    "pow": 0.7,
+    "calf": 0.4
+  },
+  "limbs": [
+    {
+      "name": "sleeve",
+      "limb": [
+        "lowerarm_l",
+        "lowerarm_r"
+      ],
+      "tMin": 0.3,
+      "minRadius": 0.035,
+      "count": 4,
+      "links": 2,
+      "share": 0.7
+    }
+  ]
+}

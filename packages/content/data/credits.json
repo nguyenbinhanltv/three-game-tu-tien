@@ -344,6 +344,39 @@
       ]
     },
     {
+      "id": "font_grenze",
+      "kind": "font",
+      "title": "Grenze Gotisch",
+      "author": "The Grenze Gotisch Project Authors (Omnibus-Type)",
+      "url": "https://github.com/Omnibus-Type/Grenze-Gotisch",
+      "license": "OFL-1.1",
+      "mods": [
+        "subset"
+      ]
+    },
+    {
+      "id": "font_texturina",
+      "kind": "font",
+      "title": "Texturina",
+      "author": "The Texturina Project Authors (Omnibus-Type)",
+      "url": "https://github.com/Omnibus-Type/Texturina",
+      "license": "OFL-1.1",
+      "mods": [
+        "subset"
+      ]
+    },
+    {
+      "id": "font_newsreader",
+      "kind": "font",
+      "title": "Newsreader",
+      "author": "The Newsreader Project Authors (Production Type)",
+      "url": "https://github.com/productiontype/Newsreader",
+      "license": "OFL-1.1",
+      "mods": [
+        "subset"
+      ]
+    },
+    {
       "id": "generaluser",
       "kind": "music",
       "title": "GeneralUser GS v2.0.3 (soundfont render nhạc nền tự soạn)",

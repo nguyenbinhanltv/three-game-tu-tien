@@ -29,9 +29,21 @@ describe('baseClipOf (v3, clip UAL)', () => {
 });
 
 describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
-  it('không skin: model nữ/nam mặc định', () => {
-    expect(v3AssetOf('f')).toBe(V3_MODELS.f);
-    expect(v3AssetOf('m')).toBe(V3_MODELS.m);
+  it('không skin, không bộ: Đồ Đệ Tử (đồ khởi đầu) theo giới', () => {
+    expect(v3AssetOf('f')).toBe('chr_v3_de_tu_nu');
+    expect(v3AssetOf('m')).toBe('chr_v3_de_tu_nam');
+  });
+  it('theo bộ trang bị: bộ có model riêng, bộ khác về model cùng nhánh', () => {
+    expect(v3AssetOf('m', undefined, 'set_huyen_giap')).toBe('chr_v3_huyen_giap_nam');
+    expect(v3AssetOf('f', undefined, 'set_dan_tam')).toBe('chr_v3_dan_tam_nu');
+    expect(v3AssetOf('f', undefined, 'set_lac_kiem')).toBe(V3_MODELS.f);
+    expect(v3AssetOf('m', undefined, 'set_dia_giap')).toBe('chr_v3_huyen_giap_nam');
+    expect(v3AssetOf('f', undefined, 'set_luu_ly')).toBe('chr_v3_dan_tam_nu');
+    expect(v3AssetOf('m', undefined, 'set_tinh_khuyet')).toBe(V3_MODELS.m);
+    expect(v3AssetOf('m', undefined, 'set_khong_co')).toBe(V3_MODELS.m);
+  });
+  it('skin đè bộ trang bị', () => {
+    expect(v3AssetOf('f', 'set_skin_duskrella', 'set_huyen_giap')).toBe('chr_v3_duskrella_nu');
   });
   it('skin đúng giới đổi asset', () => {
     expect(v3AssetOf('f', 'set_skin_duskrella')).toBe('chr_v3_duskrella_nu');
@@ -39,12 +51,12 @@ describe('v3AssetOf (chọn asset v3 theo giới + skin)', () => {
     expect(v3AssetOf('f', 'set_skin_noxavyra')).toBe('chr_v3_noxavyra_nu');
     expect(v3AssetOf('f', 'set_skin_kings_demon')).toBe('chr_v3_kings_demon_nu');
   });
-  it('skin sai giới hoặc không có bản v3 thì về model mặc định', () => {
-    expect(v3AssetOf('m', 'set_skin_duskrella')).toBe(V3_MODELS.m);
-    expect(v3AssetOf('f', 'set_skin_crimson')).toBe(V3_MODELS.f);
-    expect(v3AssetOf('m', 'set_skin_noxavyra')).toBe(V3_MODELS.m);
-    expect(v3AssetOf('m', 'set_skin_kings_demon')).toBe(V3_MODELS.m);
-    expect(v3AssetOf('f', 'set_skin_khong_co')).toBe(V3_MODELS.f);
+  it('skin sai giới hoặc không có bản v3 thì về model theo bộ (không bộ: Đồ Đệ Tử)', () => {
+    expect(v3AssetOf('m', 'set_skin_duskrella')).toBe('chr_v3_de_tu_nam');
+    expect(v3AssetOf('f', 'set_skin_crimson')).toBe('chr_v3_de_tu_nu');
+    expect(v3AssetOf('m', 'set_skin_noxavyra')).toBe('chr_v3_de_tu_nam');
+    expect(v3AssetOf('m', 'set_skin_kings_demon')).toBe('chr_v3_de_tu_nam');
+    expect(v3AssetOf('f', 'set_skin_khong_co')).toBe('chr_v3_de_tu_nu');
   });
 });
 

@@ -1,3 +1,4 @@
+import { baseOf } from '../base/quality';
 import * as THREE from 'three/webgpu';
 import {
   cameraPosition,
@@ -173,8 +174,14 @@ export class CloudSea {
 
   /** Thấp: 1 lớp; Vừa: 2 lớp; Cao: 3 lớp. */
   setQuality(preset: string): void {
-    const n = preset === 'low' ? 1 : preset === 'high' ? 3 : 2;
+    const p = baseOf(preset); // nhận cả 'ultra' (dùng như Cao)
+    const n = p === 'low' ? 1 : p === 'high' ? 3 : 2;
     this.meshes.forEach((m, i) => (m.visible = i < n));
+  }
+
+  /** Số lớp đang hiện (test). */
+  get layers(): number {
+    return this.meshes.filter((m) => m.visible).length;
   }
 
   /** Mặt phẳng bám camera theo x,z (nhiễu tính theo tọa độ thế giới nên không trượt). */

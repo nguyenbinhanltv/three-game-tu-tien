@@ -16,7 +16,7 @@ describe('preset', () => {
     expect(baseOf('ultra')).toBe('high');
     expect(baseOf('weird')).toBe('medium');
     expect(downgradeOf('ultra')).toBe('high');
-    expect(downgradeOf('high')).toBe('medium');
+    expect(downgradeOf('high')).toBeNull();
     expect(downgradeOf('medium')).toBeNull();
     expect(isQuality('ultra')).toBe(true);
     expect(isQuality('x')).toBe(false);
@@ -77,21 +77,22 @@ describe('AutoQuality', () => {
     const now = run(a, 0, 12, () => 5);
     expect(a.check(now, 'ultra', false)).toBeNull();
   });
-  it('CPU p95 > 12 ms trong 10 s thì hạ Cực cao → Cao → Vừa, rồi dừng; có cooldown', () => {
+  it('CPU p95 > 12 ms trong 10 s thì hạ Cực cao → Cao rồi dừng (Cao không tự hạ); có cooldown', () => {
     const a = new AutoQuality();
     let now = run(a, 0, 11, (i) => (i % 5 === 0 ? 30 : 6)); // 20% khung 30 ms → p95 30
     expect(a.check(now, 'ultra', false)).toBe('high');
     now = run(a, now, 5, () => 30);
     expect(a.check(now, 'high', false)).toBeNull(); // đang cooldown
     now = run(a, now, 27, () => 30);
-    expect(a.check(now, 'high', false)).toBe('medium');
+    expect(a.check(now, 'high', false)).toBeNull(); // Cao là lựa chọn của người chơi: không tự hạ dù nghẽn
     now = run(a, now, 30, () => 30);
-    expect(a.check(now, 'medium', false)).toBeNull(); // Vừa không tự hạ
+    expect(a.check(now, 'medium', false)).toBeNull();
   });
   it('fps < 40 thì hạ dù CPU thấp', () => {
     const a = new AutoQuality();
     const now = run(a, 0, 11, () => 4, 33); // 30 fps
-    expect(a.check(now, 'high', false)).toBe('medium');
+    expect(a.check(now, 'ultra', false)).toBe('high');
+    expect(new AutoQuality().check(now, 'high', false)).toBeNull();
   });
   it('khóa preset thì không hạ', () => {
     const a = new AutoQuality();

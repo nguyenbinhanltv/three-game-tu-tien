@@ -1,3 +1,4 @@
+import { baseOf } from '../base/quality';
 import * as THREE from 'three/webgpu';
 import {
   cameraPosition,
@@ -257,7 +258,8 @@ export class Lake {
   }
 
   setQuality(preset: string): void {
-    this.level = preset === 'low' ? 0 : preset === 'high' ? 2 : 1;
+    const p = baseOf(preset); // nhận cả 'ultra' (dùng như Cao)
+    this.level = p === 'low' ? 0 : p === 'high' ? 2 : 1;
     this.water.material = this.material(this.level);
     const n = this.level === 0 ? 0 : this.level === 1 ? 1 : 2;
     this.mists.forEach((m, i) => (m.visible = i < n));

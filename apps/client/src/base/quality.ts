@@ -11,8 +11,11 @@ export const isQuality = (v: unknown): v is Quality => typeof v === 'string' && 
 /** Mức dành cho code chỉ biết ba mức (mây, nước, mặt đất, sương): Cực cao dùng như Cao. */
 export const baseOf = (q: string): 'low' | 'medium' | 'high' => (q === 'ultra' ? 'high' : q === 'low' || q === 'high' ? q : 'medium');
 
-/** Bậc hạ kế tiếp khi nghẽn (Cực cao → Cao → Vừa). Vừa/Thấp không tự hạ. */
-export const downgradeOf = (q: string): Quality | null => (q === 'ultra' ? 'high' : q === 'high' ? 'medium' : null);
+/**
+ * Bậc tự hạ khi nghẽn: chỉ **Cực cao → Cao** (preset mới, có ngân sách riêng 12 ms). Cao/Vừa/Thấp là lựa chọn của người chơi,
+ * không tự hạ (một đợt nặng ngắn ở rừng đông hay boss không được đổi lựa chọn đã lưu).
+ */
+export const downgradeOf = (q: string): Quality | null => (q === 'ultra' ? 'high' : null);
 
 /** Thông tin GPU đọc từ adapter WebGPU (`describeGpu` ở game/engine/frameLoop.ts). */
 export interface GpuHint {
@@ -69,7 +72,7 @@ export const AUTO_DEFAULTS: AutoOptions = { windowMs: 10_000, cpuP95: 12, minFps
 
 /**
  * Tự hạ preset khi nghẽn: trong cửa sổ 10 s, CPU p95 của khung > 12 ms hoặc fps trung bình < 40 thì hạ một bậc
- * (Cực cao → Cao → Vừa). Khung cách nhau > 1 s (tab ẩn, màn tải) làm cửa sổ bắt đầu lại để không hạ oan.
+ * (chỉ Cực cao → Cao). Khung cách nhau > 1 s (tab ẩn, màn tải) làm cửa sổ bắt đầu lại để không hạ oan.
  */
 export class AutoQuality {
   private t: number[] = [];
