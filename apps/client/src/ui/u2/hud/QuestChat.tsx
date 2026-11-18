@@ -124,7 +124,7 @@ export function ChatBox() {
     setIdle(false);
     const id = window.setTimeout(() => setIdle(true), CHAT_IDLE_MS);
     return () => window.clearTimeout(id);
-  }, [log]);
+  }, [log, collapsed]);
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
@@ -180,7 +180,10 @@ export function ChatBox() {
       </header>
       <div className="u2h-chat-log" ref={listRef}>
         {log.map((l) => (
-          <div key={l.id} className={'chat-line ' + l.type}>
+          <div
+            key={l.id} // Loại 'chat' đổi tên 'say': lớp `.chat` trùng lớp khung chat cũ (position: absolute) làm dòng tin người chơi đè lên nhau và lên ô nhập.
+            className={'chat-line ' + (l.type === 'chat' ? 'say' : l.type)}
+          >
             {l.from ? <b>{l.from}: </b> : null}
             {l.text}
           </div>

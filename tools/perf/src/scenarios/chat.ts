@@ -24,13 +24,32 @@ export default {
       });
       await sleep(2500);
       for (const c of ['heal', 'heal', 'heal', 'heal']) await gm(page, c, 400);
+      // Nhiều tin dài (xuống dòng) để kiểm vùng cuộn không đè ô nhập; tin cuối là tin vừa gửi, phải nằm trên vạch ô nhập.
+      const long =
+        'Đạo hữu nghe nói Đoạn Mạch Trận mở cửa vào giờ Tý, ai đến trước được chọn chỗ đứng, nhớ mang đủ đan dược hồi khí và phù truyền tống.';
+      for (let i = 0; i < 4; i++) {
+        await page.evaluate((m) => window.__game!.send('chat', { m }), `${i + 1}. ${long}`);
+        await sleep(1700);
+      }
       await page.evaluate(() => window.__game!.send('chat', { m: 'xin chào đạo hữu' }));
-      await sleep(800);
+      await sleep(1000);
       const fold = page.locator('.u2h-chat .u2h-fold');
       const st = () =>
         page.evaluate(() => ({
           collapsed: document.querySelector('.u2h-chat')?.getAttribute('data-collapsed') === '1',
           saved: localStorage.getItem('dtl.chatCollapsed'),
+          overlap: (() => {
+            const l = document.querySelector('.u2h-chat-log');
+            const i = document.querySelector('.u2h-chat-input');
+            if (!l || !i) return null;
+            const lines = l.querySelectorAll('.chat-line');
+            const last = lines[lines.length - 1]?.getBoundingClientRect();
+            // dòng cuối phải nằm hoàn toàn phía trên ô nhập và vùng cuộn đang ở cuối
+            return {
+              lastAboveInput: !!last && last.bottom <= i.getBoundingClientRect().top + 0.5,
+              atBottom: l.scrollTop + l.clientHeight >= l.scrollHeight - 2,
+            };
+          })(),
           box: (() => {
             const b = document.querySelector('.u2h-chat')!.getBoundingClientRect();
             return [Math.round(b.width), Math.round(b.height)];
