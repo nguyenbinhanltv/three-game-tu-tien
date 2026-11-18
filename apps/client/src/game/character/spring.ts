@@ -27,6 +27,8 @@ export interface SpringCollider {
   a: THREE.Object3D;
   b: THREE.Object3D;
   r: number;
+  /** Viên nang không co giãn theo `rScale` (tay): chỉ thân/đùi/cẳng phình ra khi ngồi để vạt nằm lên trên. */
+  fixed?: boolean;
 }
 
 const _ca = new THREE.Vector3();
@@ -54,6 +56,8 @@ export interface SpringDef {
   bone: string;
   /** Đuôi xương trong hệ cục bộ của xương lúc nghỉ. */
   tailLocal: THREE.Vector3;
+  /** Hệ số độ cứng của riêng xương này (mặc định 1): gấu vạt cứng hơn thì ít rách khi lăn/chém xoay. */
+  stiff?: number;
 }
 
 /** dt lớn hơn thế này (khung giật, tab ẩn) thì chia nhỏ, quá xa thì đặt lại. */
@@ -67,6 +71,7 @@ interface Bone {
   restQ: THREE.Quaternion;
   restM: THREE.Matrix4;
   tail: THREE.Vector3;
+  k: number;
   p: THREE.Vector3;
   prev: THREE.Vector3;
   head: THREE.Vector3;
@@ -115,6 +120,7 @@ export class SpringBones {
         restQ: bone.quaternion.clone(),
         restM: bone.matrix.clone(),
         tail: d.tailLocal.clone(),
+        k: d.stiff ?? 1,
         p: new THREE.Vector3(),
         prev: new THREE.Vector3(),
         head: new THREE.Vector3(),
@@ -130,7 +136,7 @@ export class SpringBones {
    * Một bước mô phỏng. `world`: ma trận hệ nhân vật → thế giới (root); xương cha đã cập nhật ma trận (sau mixer).
    * Ghi quaternion cục bộ của xương lò xo rồi cập nhật ma trận của chúng (là lá, không có con).
    */
-  update(dt: number, world: THREE.Matrix4): void {
+  update(dt: number, world: THREE.Matrix4, rScale = 1): void {
     if (dt <= 0 || this.bones.length === 0) return;
     const steps = Math.min(4, Math.ceil(dt / MAX_STEP));
     const h = dt / steps;
@@ -164,7 +170,7 @@ export class SpringBones {
       for (let i = 0; i < steps; i++) {
         _vel.subVectors(b.p, b.prev).multiplyScalar(keep);
         b.prev.copy(b.p);
-        b.p.add(_vel).addScaledVector(_dir.subVectors(_target, b.p), stiffness * h * h);
+        b.p.add(_vel).addScaledVector(_dir.subVectors(_target, b.p), stiffness * b.k * h * h);
         // Giữ độ dài xương, giới hạn góc và phần lệch vào trong.
         _dir.subVectors(b.p, _head).normalize();
         const c = _dir.dot(_rest);
@@ -182,7 +188,7 @@ export class SpringBones {
         if (this.colliders.length) {
           let hit = false;
           for (let ci = 0; ci < this.colliders.length; ci++) {
-            if (pushOutCapsule(b.p, this.capA[ci], this.capB[ci], this.colliders[ci].r, _out)) hit = true;
+            if (pushOutCapsule(b.p, this.capA[ci], this.capB[ci], this.colliders[ci].fixed ? this.colliders[ci].r : this.colliders[ci].r * rScale, _out)) hit = true;
           }
           if (hit) {
             _dir.subVectors(b.p, _head).normalize();
