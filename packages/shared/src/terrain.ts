@@ -179,6 +179,7 @@ export function makeTerrain(def: TerrainDef): Terrain {
 
     for (let i = 0; i < feats.length; i++) {
       const f = feats[i];
+      if (!f) continue;
       const lk = f.lake;
       if (lk && water) {
         const wl = featureWeight(f, x, z);

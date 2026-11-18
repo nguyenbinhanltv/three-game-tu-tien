@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import { COLLIDERS, VALLEY } from './level';
 import { PLAYER_RADIUS } from './movement';
@@ -76,7 +77,7 @@ describe('đạn đánh xa (D1)', () => {
   });
 
   it('vỡ khi chạm vật cản tĩnh, xét cả đoạn quét (tick dài không xuyên tường)', () => {
-    const c = COLLIDERS[0];
+    const c = at(COLLIDERS, 0);
     expect(boltBlocked(c.x, c.z, 0.5)).toBe(true);
     expect(boltBlocked(c.x + c.r + 2, c.z, 0.5)).toBe(false);
     // Đoạn đi xuyên qua tâm vật cản từ ngoài này sang ngoài kia: chạm ở mép gần.

@@ -174,7 +174,9 @@ export function clampSkillLevel(level: unknown): number {
 /** Chi phí nâng chiêu lên cấp `toLevel` (2..5): Bí Tịch Tàn Quyển và linh thạch. Ngoài khoảng thì null. */
 export function skillUpgradeCost(toLevel: number): { scrolls: number; gold: number } | null {
   if (!Number.isInteger(toLevel) || toLevel < 2 || toLevel > MAX_SKILL_LEVEL) return null;
-  return { scrolls: [1, 2, 3, 5][toLevel - 2], gold: [60, 150, 350, 800][toLevel - 2] };
+  const scrolls = [1, 2, 3, 5][toLevel - 2];
+  const gold = [60, 150, 350, 800][toLevel - 2];
+  return scrolls === undefined || gold === undefined ? null : { scrolls, gold };
 }
 
 export function variantUnlocked(level: number): boolean {
@@ -341,7 +343,7 @@ export function migrateSkillKeys<T>(table: Record<string, T> | undefined | null)
   let changed = false;
   for (const [from, to] of Object.entries(SKILL_ID_ALIASES)) {
     if (!(from in table)) continue;
-    if (!(to in table)) table[to] = table[from];
+    if (!(to in table)) table[to] = table[from] as T; // `from in table` đã kiểm ở trên
     delete table[from];
     changed = true;
   }

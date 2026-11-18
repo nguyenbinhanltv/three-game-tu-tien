@@ -29,20 +29,21 @@ export const DEFAULT_RECOVERY = 0.4;
 export function skillTiming(s: SkillDef, comboIdx?: number): SkillTiming {
   const ch = comboIdx !== undefined ? s.combo?.hits[comboIdx] : undefined;
   const hitAt = ch ? [ch.hitAt] : s.hitAt && s.hitAt.length ? [...s.hitAt] : [0];
-  const last = hitAt[hitAt.length - 1];
-  const windup = Math.min(s.windup ?? hitAt[0], hitAt[0]);
+  const first = hitAt[0] ?? 0;
+  const last = hitAt[hitAt.length - 1] ?? first;
+  const windup = Math.min(s.windup ?? first, first);
   const end = last + (s.recovery ?? DEFAULT_RECOVERY);
   const cancelMove = Math.max(last, Math.min(end, s.cancel?.move ?? last));
-  const cancelDash = Math.max(hitAt[0], Math.min(end, s.cancel?.dash ?? hitAt[0]));
+  const cancelDash = Math.max(first, Math.min(end, s.cancel?.dash ?? first));
   return { windup, hitAt, end, cancelMove, cancelDash, kb: !!ch?.kb };
 }
 
 /** Pha ở thời điểm `t` (giây từ lúc bấm). `strike` = từ mốc đầu tới mốc cuối (chiêu nhiều mốc). */
 export function skillPhaseAt(tm: SkillTiming, t: number): SkillPhase {
   if (t >= tm.end) return 'done';
-  const last = tm.hitAt[tm.hitAt.length - 1];
+  const last = tm.hitAt[tm.hitAt.length - 1] ?? 0;
   if (t >= last) return 'recovery';
-  if (t >= tm.hitAt[0]) return 'strike';
+  if (t >= (tm.hitAt[0] ?? 0)) return 'strike';
   return 'windup';
 }
 
@@ -52,7 +53,7 @@ export function skillPhaseAt(tm: SkillTiming, t: number): SkillPhase {
  */
 export function hitsPassed(tm: SkillTiming, t: number): number {
   let n = 0;
-  while (n < tm.hitAt.length && t >= tm.hitAt[n]) n++;
+  while (n < tm.hitAt.length && t >= (tm.hitAt[n] ?? Infinity)) n++;
   return n;
 }
 
@@ -101,7 +102,7 @@ export function hitDirOf(yaw: number, dx: number, dz: number): HitDir {
  */
 export function lungeOffset(tm: SkillTiming, t: number, reach: number): number {
   if (reach <= 0 || t <= 0 || t >= tm.end) return 0;
-  const peak = tm.hitAt[tm.hitAt.length - 1];
+  const peak = tm.hitAt[tm.hitAt.length - 1] ?? 0;
   const ease = (x: number) => x * x * (3 - 2 * x);
   if (t < peak) return reach * ease(Math.max(0, t / Math.max(peak, 1e-3)));
   return reach * (1 - ease((t - peak) / Math.max(tm.end - peak, 1e-3)));

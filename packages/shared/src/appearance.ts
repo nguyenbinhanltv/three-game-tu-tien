@@ -57,7 +57,7 @@ export function hashName(s: string): number {
 /** Ngoại hình mặc định cho nhân vật chưa lưu lựa chọn: màu theo tên như trước (map sang bảng mới). */
 export function legacyAppearance(data: AppearanceData, name: string): Appearance {
   const list = data.legacyByNameHash;
-  const dye = list.length ? list[hashName(name) % list.length] : data.defaultDye;
+  const dye = list.length ? (list[hashName(name) % list.length] ?? data.defaultDye) : data.defaultDye;
   return { g: data.defaultGender, dye: data.dyes.some((d) => d.id === dye) ? dye : data.defaultDye };
 }
 

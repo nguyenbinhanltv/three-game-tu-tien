@@ -69,7 +69,7 @@ export function artifactLevelMods(level: number): ArtifactLevelMods {
 /** Linh khí cần để lên cấp `toLevel` (2..5), tính từ lúc vừa lên cấp trước. Ngoài khoảng: null. */
 export function artifactQiNeed(toLevel: number): number | null {
   if (!Number.isInteger(toLevel) || toLevel < 2 || toLevel > ARTIFACT_MAX_LEVEL) return null;
-  return [60, 150, 300, 500][toLevel - 2];
+  return [60, 150, 300, 500][toLevel - 2] ?? null;
 }
 
 /** Linh khí nạp vào pháp bảo khi hạ một quái (quái quá thấp cấp thì không nạp). */

@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import { FLY_SPEED, STEP, TRUC_CO_FREE_FLY_ALT, freeFlight, stepMove, type MoveCtx, type MoveInput, type MoveState } from './movement';
 import { SKY_ALT, SKY_SPEED_MUL, SOUL_ALT, SOUL_RANGE, SOUL_UNLOCK_LEVEL, blinkReplaces, inSkyBand, soulUnlocked } from './soul';
@@ -42,7 +43,7 @@ describe('ngự không', () => {
 });
 
 describe('nguyên anh xuất khiếu (ghost)', () => {
-  const col = VAN_LAM.colliders.find((c) => c.r >= 2 && c.r <= 8) ?? VAN_LAM.colliders[0];
+  const col = VAN_LAM.colliders.find((c) => c.r >= 2 && c.r <= 8) ?? at(VAN_LAM.colliders, 0);
 
   it('xuyên kiến trúc; người thường bị đẩy ra ngoài vòng va chạm', () => {
     const start = (): MoveState => state(col.x - col.r - 3, col.z, groundAt(col.x, col.z) + 2);
