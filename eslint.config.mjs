@@ -28,7 +28,15 @@ export default tseslint.config(
     plugins: { '@typescript-eslint': tseslint.plugin },
     rules: {
       'no-restricted-imports': ['error', { patterns: [CROSS_PACKAGE] }],
+      // Khối catch rỗng nuốt lỗi âm thầm: ghi log hoặc chú thích lý do bên trong (khối có chú thích không bị tính là rỗng).
+      'no-empty': ['error', { allowEmptyCatch: false }],
     },
+  },
+  {
+    // Server: mọi dòng log đi qua apps/server/src/log.ts (có mức). Công cụ dòng lệnh (src/tools) và test được in thẳng.
+    files: ['apps/server/src/**/*.ts'],
+    ignores: ['apps/server/src/log.ts', 'apps/server/src/tools/**', ...TESTS],
+    rules: { 'no-console': 'error' },
   },
   {
     // Client: không đọc dữ liệu chỉ của server (bảng rơi đồ) — `monsters.json` vào bundle client (xem CLAUDE.md, no-server-data.test.ts).

@@ -1012,7 +1012,7 @@ export class Game {
     try {
       localStorage.setItem(RENDERER_KEY, 'webgl2');
     } catch {
-      /* bỏ qua */
+      /* localStorage bị chặn: chỉ lùi WebGL2 cho phiên này */
     }
     pushToast(t('sys.gpu_fallback'), 'bad');
     setTimeout(() => location.reload(), 2500);
@@ -1163,7 +1163,7 @@ export class Game {
     try {
       this.room.leave(true);
     } catch {
-      /* bỏ qua */
+      /* room đã đóng sẵn */
     }
     if (Game.current === this) Game.current = null;
     setActiveLevel('van_lam');

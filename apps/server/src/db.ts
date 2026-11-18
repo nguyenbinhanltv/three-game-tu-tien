@@ -6,6 +6,7 @@ import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite
 import { DUNGEON_MIN_LEVEL, initialBottleneck, INV_SIZE, isEquipSlot, isRootId, isWearSlot, ROOT_IDS, TELE_FREE, TELE_PADS, TRUC_CO_LEVEL, HOA_THAN_LEVEL, xpNeed } from '@dtl/shared';
 import { ITEM, LEVELS } from '@dtl/content';
 import { config } from './config';
+import { log } from './log';
 
 export const accounts = sqliteTable('accounts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -187,7 +188,7 @@ export function migrateEquipSlots(sqlite: Database.Database): void {
         while (i < INV_SIZE && used.has(i)) i++;
         if (i >= INV_SIZE) {
           // Không xảy ra với dữ liệu 3 ô cũ (accessory luôn có ô); chỉ là lưới an toàn cho khóa lạ.
-          console.warn('[migrate] túi đầy, bỏ vật phẩm không có ô:', r.id, it.id);
+          log.warn('[migrate] túi đầy, bỏ vật phẩm không có ô:', r.id, it.id);
           continue;
         }
         used.add(i);
