@@ -1,11 +1,11 @@
 /*
  * Màn đặc trưng kiểu "Ngọc Giản Kim Văn" (UI-4): đăng nhập + tạo nhân vật, màn tải, băng chuyền chọn công pháp,
- * vòng quét + vết nứt sáng khi đột phá/độ kiếp. Mọi quy tắc dưới `:root[data-ngj='1']` (`?ngj=0` về bản cũ);
+ * vòng quét + vết nứt sáng khi đột phá/độ kiếp. Mọi quy tắc dưới `:root:root`;
  * chuyển động tắt bằng Giảm chuyển động (`:root[data-reduce-motion='true']`).
  */
 
 /* ───────── thẻ đăng nhập / tải: giấy ngà tường vân ───────── */
-:root[data-ngj='1'] .ts-card.ngj-card {
+:root:root .ts-card.ngj-card {
   position: relative;
   background: url('./tex/paper.webp') var(--ngj-ivory);
   background-blend-mode: multiply;
@@ -17,26 +17,26 @@
   width: min(92vw, 460px);
   padding: 22px 34px 26px;
 }
-:root[data-ngj='1'] .ts-card.ngj-card .ngj-corner { position: absolute; width: 46px; height: 46px; }
-:root[data-ngj='1'] .ts-card.ngj-card .ngj-corner[data-pos='tl'] { top: -5px; left: -5px; }
-:root[data-ngj='1'] .ts-card.ngj-card .ngj-corner[data-pos='tr'] { top: -5px; right: -5px; }
-:root[data-ngj='1'] .ts-card.ngj-card .ngj-corner[data-pos='bl'] { bottom: -5px; left: -5px; }
-:root[data-ngj='1'] .ts-card.ngj-card .ngj-corner[data-pos='br'] { bottom: -5px; right: -5px; }
-:root[data-ngj='1'] .ts-card.ngj-card.ts-loading { background: url('./tex/paper.webp') rgba(237, 227, 204, 0.9); background-blend-mode: multiply; }
+:root:root .ts-card.ngj-card .ngj-corner { position: absolute; width: 46px; height: 46px; }
+:root:root .ts-card.ngj-card .ngj-corner[data-pos='tl'] { top: -5px; left: -5px; }
+:root:root .ts-card.ngj-card .ngj-corner[data-pos='tr'] { top: -5px; right: -5px; }
+:root:root .ts-card.ngj-card .ngj-corner[data-pos='bl'] { bottom: -5px; left: -5px; }
+:root:root .ts-card.ngj-card .ngj-corner[data-pos='br'] { bottom: -5px; right: -5px; }
+:root:root .ts-card.ngj-card.ts-loading { background: url('./tex/paper.webp') rgba(237, 227, 204, 0.9); background-blend-mode: multiply; }
 @media (max-height: 800px) {
-  :root[data-ngj='1'] .ts-card.ngj-card { width: min(92vw, 640px); }
+  :root:root .ts-card.ngj-card { width: min(92vw, 640px); }
 }
-:root[data-ngj='1'] .ngj-card .login-tag { color: var(--ngj-ink-dim); font-family: var(--k-font-serif, Georgia, serif); }
-:root[data-ngj='1'] .ngj-card .login-form label { font-family: var(--k-font-serif, Georgia, serif); font-weight: 700; color: #6b4d1c; letter-spacing: 0.03em; }
-:root[data-ngj='1'] .ngj-card .login-form input { background: rgba(255, 250, 235, 0.8); border: 1px solid var(--ngj-gold); border-radius: 3px; color: var(--ngj-ink); }
-:root[data-ngj='1'] .ngj-card .login-form input:focus { border-color: var(--ngj-jade); box-shadow: 0 0 0 2px rgba(62, 156, 143, 0.25); }
-:root[data-ngj='1'] .ngj-card .login-hint,
-:root[data-ngj='1'] .ngj-card .look-name,
-:root[data-ngj='1'] .ngj-card .look-key { color: var(--ngj-ink-dim); }
-:root[data-ngj='1'] .ngj-card .login-error { color: #8f2a21; }
+:root:root .ngj-card .login-tag { color: var(--ngj-ink-dim); font-family: var(--k-font-serif, Georgia, serif); }
+:root:root .ngj-card .login-form label { font-family: var(--k-font-serif, Georgia, serif); font-weight: 700; color: #6b4d1c; letter-spacing: 0.03em; }
+:root:root .ngj-card .login-form input { background: rgba(255, 250, 235, 0.8); border: 1px solid var(--ngj-gold); border-radius: 3px; color: var(--ngj-ink); }
+:root:root .ngj-card .login-form input:focus { border-color: var(--ngj-jade); box-shadow: 0 0 0 2px rgba(62, 156, 143, 0.25); }
+:root:root .ngj-card .login-hint,
+:root:root .ngj-card .look-name,
+:root:root .ngj-card .look-key { color: var(--ngj-ink-dim); }
+:root:root .ngj-card .login-error { color: #8f2a21; }
 
 /* nút chính: vàng sơn, góc vát, như NgjButton primary */
-:root[data-ngj='1'] .ngj-card .btn.primary {
+:root:root .ngj-card .btn.primary {
   border: 0;
   color: var(--ngj-ink);
   font-family: var(--k-font-serif, Georgia, serif);
@@ -48,11 +48,11 @@
   border-radius: 0;
   padding: 10px 24px;
 }
-:root[data-ngj='1'] .ngj-card .btn.primary:hover:not(:disabled) { filter: brightness(1.1); }
+:root:root .ngj-card .btn.primary:hover:not(:disabled) { filter: brightness(1.1); }
 
 /* chọn giới tính: hai thẻ có chân dung; màu áo: hạt tròn viền vàng */
-:root[data-ngj='1'] .ngj-card .look-row:first-of-type .look-key { display: none; }
-:root[data-ngj='1'] .ngj-card .look-gender {
+:root:root .ngj-card .look-row:first-of-type .look-key { display: none; }
+:root:root .ngj-card .look-gender {
   position: relative;
   flex: 1;
   display: grid;
@@ -67,18 +67,18 @@
   font-family: var(--k-font-serif, Georgia, serif);
   font-weight: 700;
 }
-:root[data-ngj='1'] .ngj-card .look-gender .look-face { position: static; width: 100%; height: 104px; object-fit: cover; object-position: 50% 22%; opacity: 1; filter: saturate(0.85); }
-:root[data-ngj='1'] .ngj-card .look-gender.sel { border-color: var(--ngj-jade); background: rgba(62, 156, 143, 0.16); box-shadow: 0 0 0 2px rgba(62, 156, 143, 0.35), 0 0 14px rgba(62, 156, 143, 0.35); }
-:root[data-ngj='1'] .ngj-card .look-gender.sel .look-face { filter: none; }
-:root[data-ngj='1'] .ngj-card .look-dye { border: 2px solid var(--ngj-ivory); box-shadow: 0 0 0 1px var(--ngj-gold-lo); }
-:root[data-ngj='1'] .ngj-card .look-dye.sel { box-shadow: 0 0 0 2px var(--ngj-gold), 0 0 8px var(--ngj-gold); }
+:root:root .ngj-card .look-gender .look-face { position: static; width: 100%; height: 104px; object-fit: cover; object-position: 50% 22%; opacity: 1; filter: saturate(0.85); }
+:root:root .ngj-card .look-gender.sel { border-color: var(--ngj-jade); background: rgba(62, 156, 143, 0.16); box-shadow: 0 0 0 2px rgba(62, 156, 143, 0.35), 0 0 14px rgba(62, 156, 143, 0.35); }
+:root:root .ngj-card .look-gender.sel .look-face { filter: none; }
+:root:root .ngj-card .look-dye { border: 2px solid var(--ngj-ivory); box-shadow: 0 0 0 1px var(--ngj-gold-lo); }
+:root:root .ngj-card .look-dye.sel { box-shadow: 0 0 0 2px var(--ngj-gold), 0 0 8px var(--ngj-gold); }
 
 /* thanh tiến độ tải: đầu mút thoi vàng và hạt ngọc */
-:root[data-ngj='1'] .ngj-card .ts-bar { position: relative; height: 12px; margin: 6px 10px 0; background: #120d0a; border: 1.5px solid var(--ngj-gold); border-radius: 3px; box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6); overflow: visible; }
-:root[data-ngj='1'] .ngj-card .ts-bar-fill { background: linear-gradient(180deg, var(--ngj-jade-hi), var(--ngj-jade) 55%, var(--ngj-jade-lo)); border-radius: 2px; }
-:root[data-ngj='1'] .ngj-card .ts-bar::before { content: ''; position: absolute; left: -8px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; background: var(--ngj-gold-hi); transform: rotate(45deg); box-shadow: 0 0 0 1px var(--ngj-gold-lo); }
-:root[data-ngj='1'] .ngj-card .ts-bar::after { content: ''; position: absolute; right: -8px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d6fff4, var(--ngj-jade) 65%, var(--ngj-jade-lo)); box-shadow: 0 0 0 1px var(--ngj-gold); }
-:root[data-ngj='1'] .ngj-card .ts-line { color: var(--ngj-ink); font-family: var(--k-font-serif, Georgia, serif); }
+:root:root .ngj-card .ts-bar { position: relative; height: 12px; margin: 6px 10px 0; background: #120d0a; border: 1.5px solid var(--ngj-gold); border-radius: 3px; box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6); overflow: visible; }
+:root:root .ngj-card .ts-bar-fill { background: linear-gradient(180deg, var(--ngj-jade-hi), var(--ngj-jade) 55%, var(--ngj-jade-lo)); border-radius: 2px; }
+:root:root .ngj-card .ts-bar::before { content: ''; position: absolute; left: -8px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; background: var(--ngj-gold-hi); transform: rotate(45deg); box-shadow: 0 0 0 1px var(--ngj-gold-lo); }
+:root:root .ngj-card .ts-bar::after { content: ''; position: absolute; right: -8px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d6fff4, var(--ngj-jade) 65%, var(--ngj-jade-lo)); box-shadow: 0 0 0 1px var(--ngj-gold); }
+:root:root .ngj-card .ts-line { color: var(--ngj-ink); font-family: var(--k-font-serif, Georgia, serif); }
 
 /* ───────── băng chuyền chọn công pháp ───────── */
 .ngj-car { --mc: #c9a45c; position: fixed; inset: 0; z-index: 90; display: grid; grid-template-columns: 120px 1fr 360px; grid-template-rows: auto 1fr auto; color: var(--ngj-ivory); font-family: var(--ngj-font-body); background: radial-gradient(ellipse at 45% 55%, #2c2119 0%, #1e1712 55%, #120d0a 100%); animation: ngj-car-in 0.3s var(--ngj-ease) both; overflow: hidden; }

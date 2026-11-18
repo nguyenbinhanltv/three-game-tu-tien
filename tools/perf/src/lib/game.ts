@@ -11,7 +11,7 @@ export interface OpenOpts {
   /** Đạo hiệu thử (`?auto=`); thêm hậu tố thời gian để mỗi lần chạy là nhân vật mới. */
   name: string;
   renderer?: string;
-  /** Tham số URL thêm (`at`, `realm`, `god`, `ngj`, `chr`…). `debug=1` có sẵn. */
+  /** Tham số URL thêm (`at`, `realm`, `god`, `chr`…). `debug=1` có sẵn. */
   query?: Record<string, string | number | boolean | undefined>;
   /** Chuỗi query thô của người dùng (`--query a=b`). */
   extra?: string;

@@ -9,7 +9,7 @@ import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextM
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/offscreen';
 import { artifactLines } from './gear';
-import { Corners, ngjHud as NGJ, RingSweep, SealNumeral, SysIcon, type SysIconName } from './ngj';
+import { Corners, RingSweep, SealNumeral, SysIcon, type SysIconName } from './ngj';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
 import { DebugPanel } from './DebugPanel';
 import { NpcDialog } from './NpcDialog';
@@ -35,20 +35,16 @@ function PlayerFrame() {
   if (flags & PF_TRIBULATION) goal.ready = false;
   const full = goal.ready || (flags & PF_TRIBULATION) !== 0 || (char.level === NGUNG_KHI_MAX && char.xp >= char.xpNeed);
   return (
-    <div className={'frame player-frame' + (goal.ready ? ' can-break' : '') + (NGJ ? ' ngj-pf' : '')}>
-      {NGJ && (
-        <>
-          <Corners />
-          <div className="ngj-pf-portrait" aria-hidden="true">
-            <SysIcon name="character" size={34} />
-            {/* Chân dung theo giới tính của mình (`player_m|player_f`, tranh Codex); chưa nạp xong thì thấy icon phía sau. */}
-            <Portrait id={'player_' + (Game.current?.view?.players.get(Game.current.sid)?.g === 'f' ? 'f' : 'm')} className="ngj-pf-face" />
-            <span className="ngj-pf-seal">
-              <SealNumeral n={realmStageOf(char.level)} size={20} />
-            </span>
-          </div>
-        </>
-      )}
+    <div className={'frame player-frame' + (goal.ready ? ' can-break' : '') + ' ngj-pf'}>
+      <Corners />
+      <div className="ngj-pf-portrait" aria-hidden="true">
+        <SysIcon name="character" size={34} />
+        {/* Chân dung theo giới tính của mình (`player_m|player_f`, tranh Codex); chưa nạp xong thì thấy icon phía sau. */}
+        <Portrait id={'player_' + (Game.current?.view?.players.get(Game.current.sid)?.g === 'f' ? 'f' : 'm')} className="ngj-pf-face" />
+        <span className="ngj-pf-seal">
+          <SealNumeral n={realmStageOf(char.level)} size={20} />
+        </span>
+      </div>
       <div className="frame-head">
         <span className="frame-name">{char.name}</span>
         <span className="frame-realm" data-tier={char.level >= TRUC_CO_LEVEL ? 'tc' : 'nk'}>
@@ -87,7 +83,7 @@ function TargetFrame({ below }: { below: boolean }) {
   if (!target || (target.boss && target.id === bossId)) return null;
   return (
     <div className={'frame target-frame' + (below ? ' below-boss' : '')} data-kind={target.kind}>
-      {NGJ && <Corners />}
+      <Corners />
       {target.kind !== 'player' && <Portrait id={target.def} className="frame-portrait" />}
       <div className="frame-head">
         <span className="frame-name">{target.name}</span>
@@ -107,7 +103,7 @@ function BossBar() {
   const pct = boss.hp > 0 && boss.mhp > 0 ? Math.max(1, Math.floor((boss.hp / boss.mhp) * 100)) : 0;
   return (
     <div className="boss-bar" key={boss.id}>
-      {NGJ && <Corners />}
+      <Corners />
       <Portrait id={boss.def} className="boss-portrait" />
       <div className="boss-head">
         <span className="boss-name">{monsterName(boss.def)}</span>
@@ -186,7 +182,7 @@ function ChapterCardShow({ card }: { card: ChapterCard }) {
   return (
     <div className={'chapter-card chapter-' + card.kind} key={card.id} style={{ '--dur': card.dur + 'ms' } as CSSProperties}>
       {art && <div className="chapter-art" style={{ backgroundImage: `url("${art}")` }} />}
-      {NGJ && (card.kind === 'trib' || card.kind.startsWith('ascend')) && <RingSweep />}
+      {(card.kind === 'trib' || card.kind.startsWith('ascend')) && <RingSweep />}
       <div className="lb lb-top" />
       <div className="lb lb-bot" />
       <div className="chapter-text">
@@ -309,15 +305,11 @@ function QuestTracker() {
   const tracked = trackedQuestId(quests, track);
   return (
     <div className="tracker">
-      {NGJ && (
-        <>
-          <Corners />
-          <div className="ngj-tracker-head">
-            <SysIcon name="quest" size={16} />
-            <span>{t('ui.quests')}</span>
-          </div>
-        </>
-      )}
+      <Corners />
+      <div className="ngj-tracker-head">
+        <SysIcon name="quest" size={16} />
+        <span>{t('ui.quests')}</span>
+      </div>
       {ids.slice(0, 4).map((id) => {
         const q = QUEST.get(id);
         if (!q) return null;
@@ -443,7 +435,7 @@ function SkillBar() {
         </div>
       )}
       <div className="skill-row">
-        {NGJ && <Corners />}
+        <Corners />
         {slots.map((sk, i) => {
           // Ô 9 (thần thông, phím 0) và ô 10 (Hóa Thần, phím `): không có công pháp thì không vẽ.
           if (!sk && i >= BAR_SIZE) return null;
@@ -563,39 +555,7 @@ function SkillBar() {
         </div>
       )}
       <BuffRow />
-      {NGJ ? (
-        <SysRow flags={flags} wantFly={wantFly} />
-      ) : (
-        <div className="action-row">
-          <Button size="s" pressed={(flags & PF_MEDITATING) !== 0} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} title={t('ui.help.meditate_v')}>
-            <UiIcon id="hud_thien" fallback="🧘" className="inline" /> <span>{t('ui.meditate')}</span> <kbd>Z</kbd>
-          </Button>
-          <Button size="s" pressed={wantFly || (flags & PF_FLYING) !== 0} onClick={(e) => { Game.current?.toggleFly(); blurAfterPointer(e); }} title={t('ui.help.fly_v')}>
-            <UiIcon id="hud_ngu_kiem" fallback="🗡️" className="inline" /> <span>{t('ui.fly')}</span> <kbd>F</kbd>
-          </Button>
-          <Button size="s" data-bag onClick={(e) => { togglePanel('bag'); blurAfterPointer(e); }}>
-            <UiIcon id="hud_tui" fallback="🎒" className="inline" /> <span>{t('ui.bag.short')}</span> <kbd>B</kbd>
-          </Button>
-          <Button size="s" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
-            <UiIcon id="hud_nhan_vat" fallback="👤" className="inline" /> <span>{t('ui.char')}</span> <kbd>C</kbd>
-          </Button>
-          <Button size="s" onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} title={t('ui.method.title')}>
-            <UiIcon id="hud_cong_phap" fallback="☯️" className="inline" /> <span>{t('ui.method.key')}</span> <kbd>K</kbd>
-          </Button>
-          <Button size="s" onClick={(e) => { togglePanel('party'); blurAfterPointer(e); }} title={t('ui.party.title')}>
-            <UiIcon id="hud_to_doi" fallback="👥" className="inline" /> <span>{t('ui.party.key')}</span> <kbd>P</kbd>
-          </Button>
-          <Button size="s" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }}>
-            <UiIcon id="hud_nhiem_vu" fallback="📜" className="inline" /> <span>{t('ui.quests')}</span> <kbd>L</kbd>
-          </Button>
-          <Button size="s" onClick={(e) => { togglePanel('help'); blurAfterPointer(e); }} title={t('ui.help')}>
-            <UiIcon id="hud_tro_giup" fallback="❔" className="inline" /> <kbd>H</kbd>
-          </Button>
-          <Button size="s" onClick={(e) => { togglePanel('settings'); blurAfterPointer(e); }} title={`${t('ui.settings')} (O)`}>
-            <UiIcon id="hud_cai_dat" fallback="⚙️" className="inline" /> <kbd>O</kbd>
-          </Button>
-        </div>
-      )}
+      <SysRow flags={flags} wantFly={wantFly} />
     </div>
   );
 }
@@ -732,7 +692,7 @@ function Chat() {
   };
   return (
     <div className={'chat' + (open ? ' open' : '') + (idle && !open ? ' idle' : '')}>
-      {NGJ && <Corners />}
+      <Corners />
       <div className="chat-log" ref={listRef}>
         {log.map((l) => (
           <div key={l.id} className={'chat-line ' + l.type}>

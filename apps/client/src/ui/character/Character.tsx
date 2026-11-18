@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { realmName, t } from '@dtl/content';
 import { Tabs } from '../kit';
-import { ngjHud, type RailTab, TabRail } from '../ngj';
+import { type RailTab, TabRail } from '../ngj';
 import { closePanel, useUI } from '../store';
 import { Window } from '../windows/common';
 import { Attributes } from './Attributes';
@@ -39,26 +39,10 @@ export function Character() {
       cls="char"
       width={560}
     >
-      {ngjHud ? (
-        <div className="ngj-char">
-          <TabRail label={t('ui.char.tabs')} material="paper" value={tab} onChange={(id) => setTab(id as TabId)} items={RAIL.map((r) => ({ ...r, label: t('ui.char.tab.' + r.id) }))} />
-          <div className="ngj-char-body">{body}</div>
-        </div>
-      ) : (
-        <>
-          <Tabs
-            label={t('ui.char.tabs')}
-            value={tab}
-            onChange={(id) => setTab(id as TabId)}
-            items={[
-              { id: 'overview', label: t('ui.char.tab.overview') },
-              { id: 'attrs', label: t('ui.char.tab.attrs') },
-              { id: 'settrain', label: t('ui.char.tab.settrain') },
-            ]}
-          />
-          {body}
-        </>
-      )}
+      <div className="ngj-char">
+        <TabRail label={t('ui.char.tabs')} material="paper" value={tab} onChange={(id) => setTab(id as TabId)} items={RAIL.map((r) => ({ ...r, label: t('ui.char.tab.' + r.id) }))} />
+        <div className="ngj-char-body">{body}</div>
+      </div>
     </Window>
   );
 }

@@ -58,12 +58,3 @@ export function useReduceMotion(): boolean {
     () => false,
   );
 }
-
-/**
- * HUD kiểu Ngọc Giản (UI-2): bật mặc định; `?ngj=0` về HUD cũ để so ảnh trước/sau. Đặt `data-ngj="1"` trên <html>
- * (CSS `:root[data-ngj='1']`), và JSX đọc `ngjHud` để chọn cấu trúc mới.
- */
-export const ngjHud: boolean = FLAGS.ngj;
-export function installNgjHud(): void {
-  if (ngjHud) document.documentElement.dataset.ngj = '1';
-}

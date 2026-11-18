@@ -11,7 +11,7 @@ import { Game } from '../game/engine';
 import { prefetchManifest } from '../game/preload';
 import { Hud } from './Hud';
 import { RootPicker } from './Realm';
-import { Corners, ngjHud as NGJ } from './ngj';
+import { Corners } from './ngj';
 import { Portrait } from './Art';
 import { get, type Phase, set, useUI } from './store';
 import { FLAGS, urlParams } from '../game/flags';
@@ -86,7 +86,7 @@ function LookPicker({ look, onChange }: { look: Appearance; onChange: (a: Appear
               title={on ? undefined : t('ui.login.gender_soon')}
               onClick={() => onChange({ ...look, g: g.id as Gender })}
             >
-              {NGJ && <Portrait id={'player_' + g.id} className="look-face" />}
+              <Portrait id={'player_' + g.id} className="look-face" />
               <span>{t(`appearance.gender.${g.id}`)}</span>
             </button>
           );
@@ -179,8 +179,8 @@ function Login() {
   };
 
   return (
-    <div className={'ts-card' + (NGJ ? ' ngj-card' : '')}>
-      {NGJ && <Corners material="paper" />}
+    <div className={'ts-card' + ' ngj-card'}>
+      <Corners material="paper" />
       <p className="login-tag">{t('ui.tagline')}</p>
 
         {needName && token ? (
@@ -300,8 +300,8 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
     return () => window.clearInterval(id);
   }, []);
   return (
-    <div className={'ts-card ts-loading' + (NGJ ? ' ngj-card' : '')} role="status" aria-live="polite">
-      {NGJ && <Corners material="paper" />}
+    <div className={'ts-card ts-loading' + ' ngj-card'} role="status" aria-live="polite">
+      <Corners material="paper" />
       <p className="ts-line" key={line}>
         {line}
       </p>
@@ -314,8 +314,8 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
 
 function ErrorPanel({ text }: { text: string }) {
   return (
-    <div className={'ts-card' + (NGJ ? ' ngj-card' : '')}>
-      {NGJ && <Corners material="paper" />}
+    <div className={'ts-card' + ' ngj-card'}>
+      <Corners material="paper" />
       <p className="login-error">{text}</p>
       <button
         className="btn primary"
