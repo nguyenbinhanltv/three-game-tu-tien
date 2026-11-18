@@ -304,9 +304,9 @@ async function runLogin(browser: Browser): Promise<LoginRun> {
       fcp: t.fcp,
       html: t.html,
       js: t.js,
-      jsRun: at(t.L.marks, 'jsRun'),
-      loginForm: at(t.L.marks, 'loginForm'),
-      backdropLit: at(t.L.marks, 'backdropLit'),
+      jsRun: t.L.marks.jsRun ?? NaN,
+      loginForm: t.L.marks.loginForm ?? NaN,
+      backdropLit: t.L.marks.backdropLit ?? NaN,
       longFrames: t.L.long.length,
     };
   } finally {
@@ -360,17 +360,17 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
     const t = await readTiming(page);
     const m = t.L.marks;
     const glb = t.res.filter((r) => r.name.endsWith('.glb')).sort((a, b) => a.end - b.end);
-    const before = t.L.long.filter(([s]) => s < at(m, 'titleGone'));
-    const after = t.L.long.filter(([s]) => s >= at(m, 'titleGone'));
+    const before = t.L.long.filter(([s]) => s < (m.titleGone ?? NaN));
+    const after = t.L.long.filter(([s]) => s >= (m.titleGone ?? NaN));
     const lastLong = t.L.long[t.L.long.length - 1];
     return {
       fcp: t.fcp,
       js: t.js,
-      jsRun: at(m, 'jsRun'),
-      gameFirstFrame: at(m, 'gameFirstFrame'),
-      firstFrameAfterJs: at(m, 'gameFirstFrame') - t.js,
-      worldReady: at(m, 'worldReady'),
-      titleGone: at(m, 'titleGone'),
+      jsRun: m.jsRun ?? NaN,
+      gameFirstFrame: m.gameFirstFrame ?? NaN,
+      firstFrameAfterJs: (m.gameFirstFrame ?? NaN) - t.js,
+      worldReady: m.worldReady ?? NaN,
+      titleGone: m.titleGone ?? NaN,
       glbDone: glb.length ? at(glb, glb.length - 1).end : -1,
       glb,
       loadingStalls: { count: before.length, maxMs: Math.max(0, ...before.map((l) => l[1])), list: before },
@@ -382,7 +382,7 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
         list: after,
       },
       stallFreeAt: lastLong ? lastLong[0] + lastLong[1] : 0,
-      playFrameFn: t.L.longFrameFn.filter(([s]) => s >= at(m, 'titleGone')),
+      playFrameFn: t.L.longFrameFn.filter(([s]) => s >= (m.titleGone ?? NaN)),
       frameFn: t.L.longFrameFn,
       backend,
       errors,
