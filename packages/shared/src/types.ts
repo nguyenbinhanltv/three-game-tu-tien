@@ -264,6 +264,19 @@ export interface MonsterPull {
  * Vũng độc khi chết (E3-G, Bích Ngọc Kim Thiền): chỗ quái chết hiện vạch báo bán kính `r` trong `delay` giây,
  * rồi vũng độc tồn tại `dur` giây; ai đứng trong vũng chịu `mul` × tấn công quái mỗi `tick` giây, ra khỏi vũng là hết.
  */
+/**
+ * Vệt để lại trên mặt đất dọc vạch của một đường chém/lao (DV-2 đợt 4: vệt lửa Tẫn Hỏa Kiếm Cơ). Vạch nổ lúc nào thì vệt bắt đầu
+ * lúc đó, kéo dài `dur` giây; mỗi `tick` giây ai đứng trong vệt chịu `mul` × sát thương của quái. Vệt là chuỗi vũng tròn bán kính
+ * `r` đặt đều dọc vạch (server phán định, client chỉ vẽ).
+ */
+export interface MonsterTrail {
+  dur: number;
+  tick: number;
+  mul: number;
+  r: number;
+  kind: 'lightning' | 'frost' | 'fire' | 'spirit';
+}
+
 export interface MonsterDeathPool {
   r: number;
   delay: number;
@@ -316,6 +329,13 @@ export interface MonsterAi {
   reflect?: MonsterReflect;
   summon?: MonsterSummon;
   reveal?: MonsterReveal;
+  /** Neo (DV-2 đợt 4: gốc khe của Thủ Khích Dực Chủ): đứng trong `r` mét quanh chỗ sinh ra thì hồi `pct` khí huyết tối đa mỗi giây; kéo ra xa thì hết. */
+  anchor?: MonsterAnchor;
+}
+
+export interface MonsterAnchor {
+  r: number;
+  pct: number;
 }
 
 export type MonsterKind = 'lightning' | 'frost' | 'fire' | 'spirit';
@@ -325,6 +345,8 @@ export type MonsterKind = 'lightning' | 'frost' | 'fire' | 'spirit';
  * quái hiện ngay và nổ sau `delay` giây (mọi người đứng trong vạch lúc nổ đều trúng). Hồi `cd` giây.
  */
 export interface MonsterLine {
+  /** Vệt lửa để lại trên đường chém sau khi vạch nổ (DV-2 đợt 4): ai đứng trong vệt chịu sát thương dần. */
+  trail?: MonsterTrail;
   cd: number;
   range: number;
   r: number;
@@ -340,6 +362,8 @@ export interface MonsterLine {
  * (dừng sớm khi gặp vách/nước). Né bằng cách bước ngang ra khỏi vạch.
  */
 export interface MonsterCharge {
+  /** Vệt để lại dọc đường lao (xem `MonsterTrail`). */
+  trail?: MonsterTrail;
   cd: number;
   min: number;
   range: number;

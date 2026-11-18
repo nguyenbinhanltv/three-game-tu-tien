@@ -13,7 +13,7 @@ import type { AnimState } from './view';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const IDS = ['mon_tan_chung', 'mon_giac_kiem_trong_binh', 'elite_hoi_giac_cu_thu', 'boss_tan_hoa_kiem_co', 'boss_kim_da_ma_hau'];
+const IDS = ['mon_tan_chung', 'mon_giac_kiem_trong_binh', 'elite_hoi_giac_cu_thu', 'boss_tan_hoa_kiem_co', 'boss_kim_da_ma_hau', 'boss_thu_khich_duc_chu'];
 const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
 
 function cache(): AssetCache {

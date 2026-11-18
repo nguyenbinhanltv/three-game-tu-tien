@@ -42,6 +42,7 @@
  "gem_tho_1": [
   "boss_dia_mach_long",
   "boss_thien_khuyet_thu_linh",
+  "boss_thu_khich_duc_chu",
   "elite_cu_nham_vien",
   "elite_ho_mach_khoi_tuong",
   "elite_hoi_giac_cu_thu",
@@ -242,6 +243,7 @@
  ],
  "itm_tan_giac": [
   "boss_thien_khuyet_thu_linh",
+  "boss_thu_khich_duc_chu",
   "boss_tu_nhan_ma_tuong",
   "boss_tu_quang_duc_chu",
   "boss_vo_dien_than_quan",
@@ -297,6 +299,7 @@
   "boss_thach_tam_khoi_vuong",
   "boss_thien_khuyet_thu_linh",
   "boss_thon_mach_ngo_cong_vuong",
+  "boss_thu_khich_duc_chu",
   "boss_van_hai_kinh_vuong",
   "boss_vo_dien_than_quan",
   "elite_cot_kiem_thong_linh",
@@ -362,6 +365,7 @@
   "boss_thach_tam_khoi_vuong",
   "boss_thien_khuyet_thu_linh",
   "boss_thon_mach_ngo_cong_vuong",
+  "boss_thu_khich_duc_chu",
   "boss_thu_mo_tuong",
   "boss_tu_nhan_ma_tuong",
   "boss_tu_quang_duc_chu",

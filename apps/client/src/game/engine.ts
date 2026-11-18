@@ -594,6 +594,7 @@ export class Game {
         // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
         this.monFx?.warn(m, m.src ? this.ents?.monsters.get(m.src) : undefined);
       }
+      else if (m.mv === 'trail') this.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);
       else if (m.mv === 'pool') this.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
       else {
         const hsrc = m.src ? this.ents?.monsters.get(m.src) : undefined;
@@ -603,7 +604,7 @@ export class Game {
       // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
       if (m.src) this.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
       // Vòng kéo (Nuốt) và vũng độc không nổ: không âm nện/rung màn hình.
-      if (m.mv === 'pull' || m.mv === 'pool') return;
+      if (m.mv === 'pull' || m.mv === 'pool' || m.mv === 'trail') return;
       const vol = this.volumeAt(m.x, m.z);
       const bsrc = m.src ? this.ents?.monsters.get(m.src) : undefined;
       // Vùng tròn: `Vfx.hazard` tự gọi `boom` lúc nổ và chỉ bỏ hình cũ khi nó thật sự phát; vùng chữ nhật/nón (telegraph) gọi ở đây.

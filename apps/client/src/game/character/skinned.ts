@@ -4,7 +4,7 @@ import { groundAt } from '../levelCtx';
 import { HitReact, type HitOpts } from '../hitreact';
 import { IkRig } from './ikpose';
 import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';
-import { type SpringDef, SpringBones } from './spring';
+import { type SpringDef, type SpringParams, SpringBones } from './spring';
 import { baseState, type CharState, type ClipMap, clipFor, LOCO_STATES, locomotionScale, MOVE_MIN } from './states';
 import { type AnimState, type BossMoveKind, type CharacterView, type MonsterView, P2E_OFF, type PerformOpts, type SkillEvent } from './view';
 
@@ -39,6 +39,10 @@ export interface SkinnedOpts {
   poses?: PoseLibrary;
   /** Xương lò xo (vạt áo, M3-10): mô phỏng ở LOD0 khi trong khung nhìn. */
   springs?: readonly SpringDef[];
+  /** Tự lấy mọi xương `dtl_o_*` của cây xương làm lò xo (quái có cánh/vạt dựng bằng chr_v3.py; không cần khai `springs`). */
+  autoSprings?: boolean;
+  /** Tham số lò xo (mặc định `SKIRT_SPRING` của spring.ts). */
+  springParams?: SpringParams;
   /**
    * Bám địa hình (P2-E3): `biped` = IK chân hai đốt + hạ hông ở LOD0 (rig tên Mixamo); `quad` = nghiêng thân theo dốc.
    * Bỏ trống = không bám.
@@ -217,7 +221,7 @@ export class SkinnedCharacter implements CharacterView {
   readonly mixer: THREE.AnimationMixer;
   /** Mesh theo mức LOD (chỉ số = mức). */
   private lods: THREE.Mesh[][] = [];
-  private lodLevel = -1;
+  protected lodLevel = -1;
   private lodDist: [number, number];
   private clips = new Map<string, THREE.AnimationClip>();
   private actions = new Map<string, THREE.AnimationAction>();
@@ -327,7 +331,17 @@ export class SkinnedCharacter implements CharacterView {
       n.updateMatrix();
       n.matrixAutoUpdate = false;
     });
-    if (o.springs?.length) this.springs = new SpringBones(this.rig, o.springs);
+    let springDefs: readonly SpringDef[] | undefined = o.springs;
+    if (!springDefs?.length && o.autoSprings) {
+      const found: SpringDef[] = [];
+      this.rig.traverse((b) => {
+        if (!(b as THREE.Bone).isBone || !b.name.startsWith('dtl_o_')) return;
+        const child = b.children.find((c) => (c as THREE.Bone).isBone);
+        found.push({ bone: b.name, tailLocal: (child ?? b).position.clone() });
+      });
+      springDefs = found;
+    }
+    if (springDefs?.length) this.springs = new SpringBones(this.rig, springDefs, o.springParams);
     // Phải dựng rig IK khi xương còn ở tư thế gốc (trước mixer).
     if (o.ground === 'biped' && !P2E_OFF) this.feet = IkRig.from(this.rig);
     this.mixer = new THREE.AnimationMixer(this.rig);
@@ -626,8 +640,12 @@ export class SkinnedCharacter implements CharacterView {
       this.acc = 0;
     }
     if (this.quad) this.tiltToSlope(dt);
+    this.postPose(dt, a);
     this.updateSprings(dt);
   }
+
+  /** Móc cho lớp con: chỉnh xương sau khi mixer chạy, trước lò xo (cánh vỗ). `rig.matrixWorld` đã mới nếu khung này mixer chạy. */
+  protected postPose(_dt: number, _a: AnimState): void {}
 
   /** Đang chỉnh chân theo địa hình (cho test và đo). */
   get footIkActive(): boolean {
@@ -1024,6 +1042,13 @@ function skipUnchangedSkeletons(scene: THREE.Object3D, rig: THREE.Object3D): () 
 }
 
 /** Quái dùng model có xương; cùng interface với `MonsterModel` (model khối). */
+const _wq0 = new THREE.Quaternion();
+const _wq1 = new THREE.Quaternion();
+const _wq2 = new THREE.Quaternion();
+const _wq3 = new THREE.Quaternion();
+const _wf = new THREE.Quaternion();
+const _wz = new THREE.Vector3(0, 0, 1);
+
 export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
   private moves: Partial<Record<BossMoveKind, BossMove>>;
   /** Vật rời (kiếm) bám theo một xương: cây xương đã tách khỏi cảnh (`detachRig`) nên không thể gắn mesh làm con xương, mỗi khung chép ma trận xương sang mesh. */
@@ -1060,6 +1085,37 @@ export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
   override update(realDt: number, a: AnimState): void {
     super.update(realDt, a);
     this.syncProps();
+  }
+
+  /** Cánh vỗ (DV-2 đợt 4): xương gốc `dtl_wing_<chuỗi>_<l|r>` do chr_v3.py dựng, các đốt sau là lò xo `dtl_o_wing_*`. Null khi chưa dò. */
+  private wings: { bone: THREE.Bone; rest: THREE.Quaternion; sign: number; amp: number; phase: number }[] | null = null;
+  private flapT = 0;
+
+  protected override postPose(dt: number, a: AnimState): void {
+    if (!this.wings) {
+      this.wings = [];
+      this.rig.traverse((o) => {
+        const m = /^dtl_wing_(up|mid|low)_(l|r)$/.exec(o.name);
+        if (!m || !(o as THREE.Bone).isBone) return;
+        const amp = m[1] === 'up' ? 1 : m[1] === 'mid' ? 0.8 : 0.55;
+        this.wings!.push({ bone: o as THREE.Bone, rest: o.quaternion.clone(), sign: m[2] === 'l' ? 1 : -1, amp, phase: m[1] === 'low' ? 0.8 : m[1] === 'mid' ? 0.3 : 0 });
+      });
+    }
+    if (!this.wings.length || this.lodLevel > 1 || a.dead) return;
+    const moving = a.speed > 0.5;
+    const fast = a.casting || a.combat ? 1.4 : moving ? 1.1 : 0.45;
+    this.flapT += dt * fast;
+    this.rig.updateMatrixWorld(true);
+    const rigInv = _wq0.copy(this.rig.getWorldQuaternion(_wq1)).invert();
+    for (const w of this.wings) {
+      const ang = (moving ? 0.26 : 0.13) * w.amp * Math.sin(this.flapT * Math.PI * 2 * 0.9 + w.phase * Math.PI);
+      const par = w.bone.parent;
+      if (!par) continue;
+      // Phép xoay quanh trục trước-sau của mô hình (Z của cây xương), cùng chiều với cánh trái (+X) đưa đầu cánh lên.
+      _wf.setFromAxisAngle(_wz, ang * w.sign);
+      const pr = _wq2.copy(par.getWorldQuaternion(_wq3)).premultiply(rigInv);
+      w.bone.quaternion.copy(pr).invert().multiply(_wf).multiply(pr).multiply(w.rest);
+    }
   }
 
   private syncProps(): void {

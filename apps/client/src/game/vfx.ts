@@ -102,6 +102,8 @@ const POOL = new FxPool(96);
 /** Hệ hiệu ứng: mỗi hiệu ứng là vài lưới phát sáng sống trong thời gian ngắn. */
 /** Màu vũng độc khi chết (ngọc lục, Bích Ngọc Kim Thiền). */
 const POOL_COLOR = 0x5fe39a;
+/** Vệt lửa dọc đường chém (DV-2 đợt 4): cam than hồng, nhấp nháy mạnh; HDR dưới `FX_MAX_HDR`. */
+const TRAIL_COLOR = 0xff7a30;
 
 /** Số vũng sét tối đa cùng lúc. */
 const STRIKE_POOL_MAX = 2;
@@ -1279,6 +1281,39 @@ export class Vfx {
             m.fxA.x = 1;
             m.fxA.z = 0;
             m.fxOpacity = Math.min(1, k * 8) * Math.min(1, (1 - k) * 5) * (0.55 + 0.15 * Math.sin(k * dur * 5));
+          },
+          () => this.drop(m),
+        );
+      },
+    );
+  }
+
+  /**
+   * Vệt lửa (một vũng của chuỗi dọc đường chém, DV-2 đợt 4): hiện lúc vạch nổ, tồn tại `dur` giây rồi tắt dần, nhấp nháy ngọn lửa.
+   * Không có vòng báo riêng (vạch chữ nhật của đường chém đã báo). Chỉ vẽ: ai đứng trong vệt chịu sát thương dần là việc của server.
+   */
+  trailPool(x: number, z: number, r: number, delay: number, dur: number): void {
+    const y = groundAt(x, z);
+    let top = y;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      top = Math.max(top, groundAt(x + Math.cos(a) * r * 0.7, z + Math.sin(a) * r * 0.7));
+    }
+    const ph = x * 1.7 + z * 2.3;
+    this.add(
+      delay,
+      () => {},
+      () => {
+        const m = this.sigil(SIGIL_CIRCLE, x, z, 0, r * 1.05, 0, TRAIL_COLOR, Math.min(top, y + 1.2) + 0.14);
+        m.fxColor.multiplyScalar(0.9);
+        this.add(
+          dur,
+          (k) => {
+            m.fxA.x = 1;
+            m.fxA.z = 0;
+            const flick = 0.7 + 0.3 * Math.sin(k * dur * 9 + ph) * Math.sin(k * dur * 5.3 + ph * 0.6);
+            // Tắt dần ở 1,5 giây cuối để người chơi biết sắp hết.
+            m.fxOpacity = Math.min(1, k * 10) * Math.min(1, (1 - k) * dur / 1.5) * flick * 0.85;
           },
           () => this.drop(m),
         );
