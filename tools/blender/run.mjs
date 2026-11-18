@@ -59,6 +59,14 @@ const procedural = [
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', `chr_v3b_lac_kiem_${g}`, '--auto', '--height', g === 'nam' ? '1.84' : '1.70', '--springs', 'repo:tools/blender/skins/v3_lac_kiem_springs.json'],
   })),
+  // Nướng vải vạt v3b (thử nghiệm): đọc GLB thô đã dựng của chr_v3b_lac_kiem_<giới> (`raw:`), chạy Cloth sim trên các clip UAL và nướng vào xương chuỗi vạt.
+  ...['nam', 'nu'].map((g) => ({
+    id: `chr_v3b_cloth_${g}`,
+    script: 'tools/blender/cloth_bake.py',
+    source: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    source2: 'anim/ual/ual2/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb',
+    extra: ['--id', `chr_v3b_cloth_${g}`, '--base', `raw:chr_v3b_lac_kiem_${g}`, '--cfg', 'repo:tools/blender/skins/v3_lac_kiem_cloth.json', '--report', `repo:assets/build/cloth_${g}.json`],
+  })),
   {
     id: 'chr_v3_varkessa_nu',
     script: 'tools/blender/chr_v3.py',
@@ -177,7 +185,11 @@ function proceduralJobs() {
         deps.push(tp);
         args.push('--template', tp);
       }
-      if (j.extra) args.push(...j.extra.map((x) => (x.startsWith('repo:') ? path.join(root, x.slice(5)) : x)));
+      if (j.extra) {
+        args.push(...j.extra.map((x) => (x.startsWith('repo:') ? path.join(root, x.slice(5)) : x.startsWith('raw:') ? out(x.slice(4)) : x)));
+        for (const x of j.extra) if (x.startsWith('raw:')) deps.push(out(x.slice(4)));
+        for (const x of j.extra) if (x.startsWith('repo:') && x.endsWith('.json') && !x.includes('/build/')) deps.push(path.join(root, x.slice(5)));
+      }
       if (j.source2) {
         const src2 = path.join(sourceRoot(), j.source2);
         if (!fs.existsSync(src2)) {

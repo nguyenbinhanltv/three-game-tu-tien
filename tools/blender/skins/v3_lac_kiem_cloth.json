@@ -1,0 +1,51 @@
+{
+  "$comment": "Nướng vải vạt Lạc Kiếm v3b (cloth_bake.py). Số theo PHẦN CHIỀU CAO. Vùng vạt = z trong [zMin, zMax] và cách trục hông >= minRadius (cùng tiêu chí `robe` của v3_lac_kiem_springs.json). Chuỗi xương quanh trục hông, nướng bằng Cloth sim có va chạm với viên nang thân.",
+  "zMin": 0.17,
+  "zMax": 0.52,
+  "minRadius": 0.09,
+  "chains": 12,
+  "joints": 5,
+  "pinBand": 0.1,
+  "preroll": 24,
+  "step": 2,
+  "regularize": 0.08,
+  "cloth": {
+    "quality": 8,
+    "mass": 0.25,
+    "air": 1.5,
+    "tension": 25,
+    "compression": 25,
+    "shear": 20,
+    "bending": 1.2,
+    "bendingDamp": 0.6,
+    "tensionDamp": 5,
+    "distance": 0.012,
+    "collQuality": 4,
+    "self": true,
+    "impulse": 1.0,
+    "selfDistance": 0.002
+  },
+  "collider": {
+    "thickness": 0.004,
+    "friction": 8,
+    "radius": 0.7,
+    "arms": true
+  },
+  "clips": [
+    "Idle_Loop",
+    "Sword_Idle",
+    "Jog_Fwd_Loop",
+    "Sword_Regular_A",
+    "Sword_Regular_B",
+    "Sword_Regular_C",
+    "Sword_Attack",
+    "Roll",
+    "Death01",
+    "Hit_Chest",
+    "Sitting_Idle_Loop",
+    "Jump_Loop",
+    "Spell_Simple_Idle_Loop",
+    "Crouch_Fwd_Loop"
+  ],
+  "capFac": 1.0
+}

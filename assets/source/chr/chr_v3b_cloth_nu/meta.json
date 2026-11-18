@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "chr_v3b_cloth_nu",
+  "type": "chr",
+  "budgetClass": "player_v3_cloth",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 24000,
+    "texture": 2048
+  },
+  "procedural": {
+    "script": "tools/blender/cloth_bake.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Như chr_v3b_lac_kiem_nu (Tripo web, người dùng dựng) + vạt nướng bằng Blender Cloth (tools/blender/cloth_bake.py), thử nghiệm",
+    "owner": "dự án",
+    "date": "2026-11-18"
+  }
+}

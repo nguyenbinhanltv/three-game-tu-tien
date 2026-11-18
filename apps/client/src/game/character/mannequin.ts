@@ -25,7 +25,13 @@ export const V3_LIB = 'anim_ual_native';
 export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
 /** Bản v3b: vạt xẻ hai bên đối xứng (concept v3b), là bản mặc định của `?chr=v3`; `?v3model=a` về bản v3 cũ để so ảnh. */
 export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
-export const V3_MODELS = new URLSearchParams(search).get('v3model') === 'a' ? V3_MODELS_A : V3_MODELS_B;
+/** Bản v3b có vạt nướng bằng Cloth sim (`cloth_bake.py`): `?cloth=1` (cùng `?chr=v3`); xương vạt `dtl_o_cloth_*` phát track nướng theo clip. */
+export const V3_MODELS_CLOTH = { m: 'chr_v3b_cloth_nam', f: 'chr_v3b_cloth_nu' } as const;
+const _q = new URLSearchParams(search);
+export const CLOTH = _q.get('cloth') === '1';
+/** `?k5=0`: không dùng pose chiêu K-5 trên Mannequin (clip UAL ở mọi nơi), để so vạt trên cùng clip. */
+const K5_ON = _q.get('k5') !== '0';
+export const V3_MODELS = _q.get('v3model') === 'a' ? V3_MODELS_A : CLOTH ? V3_MODELS_CLOTH : V3_MODELS_B;
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
 export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_varkessa: 'chr_v3_varkessa_nu',
@@ -77,6 +83,8 @@ export interface MannequinTemplate {
   height: number;
   /** Clip UAL đã chỉnh độ cao hông theo nhân vật này. */
   clips: Map<string, THREE.AnimationClip>;
+  /** Track vạt nướng (`cloth_<clip>` trong chính GLB, chỉ có kênh xoay xương `dtl_o_cloth_*`); rỗng với model không nướng vải. */
+  cloth?: Map<string, THREE.AnimationClip>;
 }
 
 function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
@@ -86,7 +94,7 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
 
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
-  if (/^chr_v3b?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  if (/^chr_v3b?_(lac_kiem|cloth)/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   const box = new THREE.Box3().setFromObject(handle.scene);
   // Độ cao hông của nhân vật so với bộ xương mẫu của thư viện: chỉ kênh vị trí của pelvis bị nhân theo tỉ lệ.
   const a = restPos(handle.scene, 'pelvis');
@@ -101,7 +109,9 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
     clips.set(c.name, cl);
   }
   const height = box.max.y - Math.max(box.min.y, 0);
-  return { handle, lib, height, bank: null, clips };
+  const cloth = new Map<string, THREE.AnimationClip>();
+  for (const c of handle.animations) if (c.name.startsWith('cloth_')) cloth.set(c.name.slice(6), c);
+  return { handle, lib, height, bank: null, clips, cloth };
 }
 
 const IDENT = new THREE.Matrix4();
@@ -201,6 +211,12 @@ export class MannequinCharacter implements CharacterView {
   /** Nghe sự kiện chiêu (VFX, âm, rung camera theo `hitAt`), engine gắn vào. */
   onSkillEvent: ((e: SkillEvent) => void) | null = null;
   private springs: SpringBones | null = null;
+  /** Lò xo của xương vạt nướng: chỉ chạy khi không có track nướng (K-5, clip chưa nướng). */
+  private clothSprings: SpringBones | null = null;
+  /** Track vạt nướng đang phát (trọng số riêng, theo clip nền hoặc đòn một lần đang chiếm). */
+  private cloth = new Map<THREE.AnimationAction, number>();
+  private clothTarget: THREE.AnimationAction | null = null;
+  private shotName = '';
   private twists: Twist[] = [];
   private lodLevel = 0;
   /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
@@ -232,12 +248,14 @@ export class MannequinCharacter implements CharacterView {
     for (let i = 0; i < this.lods.length; i++) this.lods[i] ??= [];
     this.applyLod(0);
     const defs: SpringDef[] = [];
+    const clothDefs: SpringDef[] = [];
     this.rig.traverse((o) => {
       if (!(o as THREE.Bone).isBone || !o.name.startsWith('dtl_o_')) return;
       const child = o.children.find((c) => (c as THREE.Bone).isBone);
-      defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone() });
+      (o.name.startsWith('dtl_o_cloth_') ? clothDefs : defs).push({ bone: o.name, tailLocal: (child ?? o).position.clone() });
     });
     if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING, colliderDefs(this.rig, tpl.height));
+    if (clothDefs.length && !shadow) this.clothSprings = new SpringBones(this.rig, clothDefs, V3_SPRING, colliderDefs(this.rig, tpl.height));
     for (const sd of ['l', 'r']) {
       for (const [limb, next] of Object.entries(TWIST_NEXT)) {
         const L = this.rig.getObjectByName(`${limb}_${sd}`);
@@ -270,6 +288,8 @@ export class MannequinCharacter implements CharacterView {
     this.mixer.addEventListener('finished', (e) => {
       if ((e as unknown as { action: THREE.AnimationAction }).action !== this.shot) return;
       this.shot = null;
+      this.shotName = '';
+      this.retargetCloth();
       const next = this.chain;
       this.chain = null;
       if (next && !this.dead) this.oneShot(next);
@@ -320,6 +340,49 @@ export class MannequinCharacter implements CharacterView {
     this.weights.set(next, this.base ? 0 : 1);
     this.base = next;
     this.baseName = name;
+    this.retargetCloth();
+  }
+
+  /** Chọn track vạt nướng theo clip đang chiếm (đòn một lần nếu có track, không thì clip nền); không có track nào thì lò xo vạt chạy. */
+  private retargetCloth(): void {
+    const map = this.tpl.cloth;
+    if (!map?.size) return;
+    const pick = (name: string, src: THREE.AnimationAction | null): THREE.AnimationAction | null => {
+      const c = src && map.get(name);
+      if (!c || !src) return null;
+      const a = this.mixer.clipAction(c);
+      if (this.clothTarget === a) return a;
+      const loop = /Loop$|Idle$/.test(name);
+      a.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
+      a.clampWhenFinished = !loop;
+      a.reset();
+      a.time = src.time;
+      a.timeScale = src.timeScale;
+      a.play();
+      a.setEffectiveWeight(this.cloth.size ? 0 : 1);
+      this.cloth.set(a, this.cloth.size ? 0 : 1);
+      return a;
+    };
+    this.clothTarget = pick(this.shotName, this.shot) ?? pick(this.baseName, this.base);
+  }
+
+  /** Hòa trọng số track vạt (độc lập với cổng đòn: vạt vẫn theo clip nền khi đang ra chiêu K-5). */
+  private blendCloth(dt: number): void {
+    const step = dt / FADE;
+    for (const [a, w] of [...this.cloth]) {
+      const target = a === this.clothTarget ? 1 : 0;
+      const nw = w < target ? Math.min(target, w + step) : Math.max(target, w - step); // cộng/trừ cùng tốc độ: tổng trọng số giữ 1, xương không rơi về tư thế nghỉ
+      this.cloth.set(a, nw);
+      a.setEffectiveWeight(nw);
+      if (a === this.clothTarget) {
+        const src = this.shotName && this.shot ? this.shot : this.base;
+        if (src) a.timeScale = src.timeScale;
+      }
+      if (nw <= 0 && a !== this.clothTarget) {
+        a.stop();
+        this.cloth.delete(a);
+      }
+    }
   }
 
   /** Hòa clip nền: clip hiện tại về 1 (về 0 khi đang có đòn, trừ ~0,12 s cuối để khỏi rơi về tư thế nghỉ), clip cũ tắt dần. */
@@ -353,6 +416,8 @@ export class MannequinCharacter implements CharacterView {
     a.timeScale = rate;
     a.reset().fadeIn(0.06).play();
     this.shot = a;
+    this.shotName = name;
+    this.retargetCloth();
     return true;
   }
 
@@ -572,6 +637,7 @@ export class MannequinCharacter implements CharacterView {
     this.acc += dt;
     if (this.interval > 0 && this.acc < this.interval) return;
     this.blendBases(this.acc);
+    this.blendCloth(this.acc);
     this.mixer.update(this.acc);
     for (const t of this.twists) {
       _tq.copy(t.restLimb).invert().multiply(t.limb.quaternion);
@@ -585,6 +651,16 @@ export class MannequinCharacter implements CharacterView {
         this.root.updateMatrixWorld(true);
         this.springs.update(this.acc, IDENT);
       } else this.springs.reset();
+    }
+    // Xương vạt nướng: có track thì để mixer lo (tắt lò xo, đặt lại để lần bật sau không giật), không có thì lò xo.
+    if (this.clothSprings) {
+      let w = 0;
+      for (const v of this.cloth.values()) w = Math.max(w, v);
+      if (w > 0.02 || this.lodLevel !== 0 || !this.inner.visible) this.clothSprings.reset();
+      else {
+        this.root.updateMatrixWorld(true);
+        this.clothSprings.update(this.acc, IDENT);
+      }
     }
     this.acc = 0;
   }
@@ -626,6 +702,7 @@ export class MannequinPlayers {
   constructor(private cache: AssetCache) {}
 
   private ensurePoses(): void {
+    if (!K5_ON) return;
     if (this.poseSrc) {
       if (this.poseSrc instanceof PoseSource) for (const t of this.tpl.values()) if (typeof t === 'object' && !t.bank) t.bank = new MannequinPoseBank(this.poseSrc, t.handle.scene);
       return;

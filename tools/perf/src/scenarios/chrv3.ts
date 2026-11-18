@@ -12,7 +12,7 @@ import { centerClip, snap } from '../lib/shot';
 import type { Scenario } from '../lib/scenario';
 
 /** `v3`/`v3b` = Lạc Kiếm v3b (mặc định của ?chr=v3), `v3a` = bản v3 cũ (`?v3model=a`). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
-const QUERY: Record<string, Record<string, string>> = { v1: {}, v2: { chr: 'v2' }, v3: { chr: 'v3' }, v3b: { chr: 'v3' }, v3a: { chr: 'v3', v3model: 'a' }, v3raw: { chr: 'v3', v3pal: '0' } };
+const QUERY: Record<string, Record<string, string>> = { v1: {}, v2: { chr: 'v2' }, v3: { chr: 'v3' }, v3b: { chr: 'v3' }, v3a: { chr: 'v3', v3model: 'a' }, v3cloth: { chr: 'v3', cloth: '1', k5: '0' }, v3nok5: { chr: 'v3', k5: '0' }, v3raw: { chr: 'v3', v3pal: '0' } };
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 
 export default {
@@ -149,6 +149,54 @@ export default {
           await snap(still.page, r.out, `${tag}-toanthan-nen.jpg`, { clip: centerClip(800, 500, 360, 460) });
           await still.ctx.close();
         };
+        if (process.argv.includes('--cloth6')) {
+          // Vạt nướng (cloth bake): 6 clip UAL liên tiếp, camera thấp chếch sau để thấy vạt. So `v3nok5` (lò xo) với `v3cloth` (nướng); k5=0 để mọi clip là UAL.
+          const rec = path.join(r.out, `_rec-${tag}`);
+          const t1 = Date.now();
+          const { page, ctx } = await r.open({ name: `V3w${g}${v}`, viewport: [800, 600], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: rec });
+          await gm(page, 'god on', 1000);
+          await gm(page, 'killall', 700);
+          await gm(page, 'tp 2048 2088', 1500);
+          await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          await sleep(2500);
+          const low = () => cam(page, { yaw: 0.7, pitch: 0.02, dist: 2.3 });
+          await low();
+          const t0 = Date.now();
+          const model = (fn: string, arg = '') => page.evaluate(`(() => { const g = window.__game; g.ents.players.get(g.sid).model.${fn}(${arg}); })()`);
+          await sleep(3000); // 1. đứng
+          await page.keyboard.down('KeyW'); // 2. chạy
+          await sleep(3200);
+          await page.keyboard.up('KeyW');
+          await sleep(900);
+          await low();
+          for (let i = 0; i < 3; i++) { // 3. chém A, B, C (Sword_Regular_*)
+            await model('attack');
+            await sleep(1500);
+          }
+          await sleep(500);
+          for (let i = 0; i < 2; i++) { // 4. lăn
+            await model('oneShot', "'Roll'");
+            await sleep(1700);
+          }
+          await page.keyboard.press('KeyZ'); // 5. ngồi (Sitting_Idle_Loop khi k5=0)
+          await sleep(3500);
+          await page.keyboard.press('KeyW');
+          await sleep(900);
+          await gm(page, 'die', 4200); // 6. ngã (Death01)
+          await page.evaluate(() => window.__game!.send('resp', {}));
+          await sleep(1200);
+          const vid = page.video();
+          await ctx.close();
+          if (vid) {
+            const raw = await vid.path();
+            const dst = path.join(r.out, `${tag}-6clip.webm`);
+            const cut = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', Math.max(0, (t0 - t1) / 1000 - 0.3).toFixed(2), '-i', raw, '-c:v', 'libvpx', '-b:v', '2M', '-an', dst]);
+            if (cut.status !== 0) fs.copyFileSync(raw, dst);
+          }
+          fs.rmSync(rec, { recursive: true, force: true });
+          console.log(`[shots:chrv3] ${tag}-6clip.webm`);
+          continue;
+        }
         if (process.argv.includes('--sit')) {
           // Ảnh đả tọa (Z) cận cảnh, không có quái xung quanh (ngồi thiền chỉ vào được khi ngoài giao chiến).
           const { page, ctx } = await r.open({ name: `V3d${g}${v}`, viewport: [800, 560], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/ });
