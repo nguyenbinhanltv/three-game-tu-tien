@@ -4,7 +4,8 @@
 
 import type { StateView } from '@colyseus/schema';
 import { aoiVisible } from '@dtl/shared';
-import type { GameSim, PlayerEnt } from './game/sim';
+import type { GameSim } from './game/sim';
+import type { PlayerEnt } from './game/entities';
 import { parties } from './game/party';
 import type { MonS, PlayerS } from './state';
 

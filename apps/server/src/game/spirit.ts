@@ -22,7 +22,7 @@ import {
   type SpiritScanMsg,
   type SpiritStateMsg,
 } from '@dtl/shared';
-import type { MonEnt, PlayerEnt } from './sim';
+import type { MonEnt, PlayerEnt } from './entities';
 
 export interface SpiritHost {
   now(): number;

@@ -8,7 +8,7 @@
 
 import { computeDamage, MS_ATTACK, MS_CHASE, MS_DEAD, PF_DEAD, shadowStats, type FxMsg, type HazardGeom, type HazardMsg, type MonsterDef, type SpiritHit } from '@dtl/shared';
 import { SKILL } from '@dtl/content';
-import type { MonEnt, PlayerEnt } from './sim';
+import type { MonEnt, PlayerEnt } from './entities';
 import { tamMaSkills } from './tribmech';
 
 /** Tia đĩa gương: góc (rad) của tia `i` lúc `t` giây sau khi bắt đầu quay. Client dùng chính hàm này (qua `discAngle`). */

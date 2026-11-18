@@ -25,7 +25,7 @@ import {
   type SoulKind,
   type SoulStateMsg,
 } from '@dtl/shared';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 export interface SoulHost {
   now(): number;

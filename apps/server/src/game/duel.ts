@@ -19,7 +19,7 @@ import {
   S,
 } from '@dtl/shared';
 import { parties } from './party';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 export interface DuelHost {
   now(): number;
