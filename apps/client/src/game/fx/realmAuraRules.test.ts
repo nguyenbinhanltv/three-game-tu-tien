@@ -56,7 +56,7 @@ describe('realmAuraRules', () => {
     expect(isCalm({ fl: PF_FLYING, sinceCast: 0, speed: 0 })).toBe(false);
   });
   it('nhịp kim đan trong 0..1', () => {
-    for (let t = 0; t < 3; t += 0.05) expect(danBeat(t)).toBeGreaterThanOrEqual(0), expect(danBeat(t)).toBeLessThanOrEqual(1);
+    for (let t = 0; t < 3; t += 0.05) (expect(danBeat(t)).toBeGreaterThanOrEqual(0), expect(danBeat(t)).toBeLessThanOrEqual(1));
   });
   it('pháp tướng chỉ từ Hóa Thần với chiêu tối thượng / chiêu mở ở 28', () => {
     const ult = SKILL.get('skl_van_kiem_quy_tong');

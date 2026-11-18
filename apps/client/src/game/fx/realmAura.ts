@@ -76,10 +76,40 @@ const _col = new THREE.Color();
 const AX_Z = new THREE.Vector3(0, 0, 1);
 
 /** Màu theo đạo (sRGB hex). `mote` hạt linh khí, `core` kim đan/lõi sáng, `halo` vầng sáng sau lưng. */
-const DAO_LOOK: Record<AuraDao, { body: number; rim: number; mote: number; core: number; halo: number; card: number; cardRim: number; method: string }> = {
-  kiem: { body: 0x2cc7dc, rim: 0xf2fdff, mote: 0x9fe2f0, core: 0xffd36a, halo: 0xfff0c0, card: 0x1486a8, cardRim: 0xa6e8ff, method: 'lac_kiem_quyet' },
-  ho: { body: 0xe39a2c, rim: 0xfff0c2, mote: 0xffc95a, core: 0xffcf55, halo: 0xffe2a0, card: 0xb86a12, cardRim: 0xffdc8a, method: 'bat_dong_kim_than' },
-  dan: { body: 0xe4452f, rim: 0xffd9a0, mote: 0x8ff0b0, core: 0xffc84a, halo: 0xd8f0b0, card: 0xd02c18, cardRim: 0xffb98a, method: 'thanh_moc_dan_kinh' },
+const DAO_LOOK: Record<
+  AuraDao,
+  { body: number; rim: number; mote: number; core: number; halo: number; card: number; cardRim: number; method: string }
+> = {
+  kiem: {
+    body: 0x2cc7dc,
+    rim: 0xf2fdff,
+    mote: 0x9fe2f0,
+    core: 0xffd36a,
+    halo: 0xfff0c0,
+    card: 0x1486a8,
+    cardRim: 0xa6e8ff,
+    method: 'lac_kiem_quyet',
+  },
+  ho: {
+    body: 0xe39a2c,
+    rim: 0xfff0c2,
+    mote: 0xffc95a,
+    core: 0xffcf55,
+    halo: 0xffe2a0,
+    card: 0xb86a12,
+    cardRim: 0xffdc8a,
+    method: 'bat_dong_kim_than',
+  },
+  dan: {
+    body: 0xe4452f,
+    rim: 0xffd9a0,
+    mote: 0x8ff0b0,
+    core: 0xffc84a,
+    halo: 0xd8f0b0,
+    card: 0xd02c18,
+    cardRim: 0xffb98a,
+    method: 'thanh_moc_dan_kinh',
+  },
 };
 
 const hashStr = (s: string): number => {
@@ -295,7 +325,22 @@ export class RealmAuraFx {
       if (beatUp && au.vDan > 0.3) {
         for (let i = 0; i < 2 * caps.particleScale + 0.5; i++) {
           const ang = Math.random() * Math.PI * 2;
-          pp.emit('glow', p.x + fx * 0.16, p.y + 1.02, p.z + fz * 0.16, Math.cos(ang) * 0.35, 0.12 + Math.random() * 0.2, Math.sin(ang) * 0.35, 1.0, 0.05, 0.0, look.core, 0.85, 0, 2.2);
+          pp.emit(
+            'glow',
+            p.x + fx * 0.16,
+            p.y + 1.02,
+            p.z + fz * 0.16,
+            Math.cos(ang) * 0.35,
+            0.12 + Math.random() * 0.2,
+            Math.sin(ang) * 0.35,
+            1.0,
+            0.05,
+            0.0,
+            look.core,
+            0.85,
+            0,
+            2.2,
+          );
         }
       }
       au.acc = Math.min(au.acc + dt * 7 * caps.particleScale * au.vCalm, 4);
@@ -306,14 +351,44 @@ export class RealmAuraFx {
         const y0 = 0.15 + Math.random() * 1.3;
         // Lắng quanh người: bay lên chậm, uốn theo tiếp tuyến.
         const sp = 0.18;
-        pp.emit('glow', p.x + Math.cos(ang) * r, p.y + y0, p.z + Math.sin(ang) * r, -Math.sin(ang) * sp, 0.18 + Math.random() * 0.25, Math.cos(ang) * sp, 2.4, 0.07, 0.0, look.mote, 0.85, 0, 0.6);
+        pp.emit(
+          'glow',
+          p.x + Math.cos(ang) * r,
+          p.y + y0,
+          p.z + Math.sin(ang) * r,
+          -Math.sin(ang) * sp,
+          0.18 + Math.random() * 0.25,
+          Math.cos(ang) * sp,
+          2.4,
+          0.07,
+          0.0,
+          look.mote,
+          0.85,
+          0,
+          0.6,
+        );
       }
       if (stage >= 4) this.mist(p, au, dt, caps);
       if (dao === 'dan' && stage >= 2) {
         // Đốm lửa lò đan bay lên từ sen.
         if (Math.random() < dt * 5 * caps.particleScale * au.vHalo) {
           const ang = Math.random() * Math.PI * 2;
-          pp.emit('glow', p.x + Math.cos(ang) * 0.6, p.y + 0.95, p.z + Math.sin(ang) * 0.6, 0, 0.5 + Math.random() * 0.4, 0, 1.3, 0.05, 0.0, 0xff9a4a, 0.8, 0, 0.8);
+          pp.emit(
+            'glow',
+            p.x + Math.cos(ang) * 0.6,
+            p.y + 0.95,
+            p.z + Math.sin(ang) * 0.6,
+            0,
+            0.5 + Math.random() * 0.4,
+            0,
+            1.3,
+            0.05,
+            0.0,
+            0xff9a4a,
+            0.8,
+            0,
+            0.8,
+          );
         }
       }
     } else au.beatPrev = beat;
@@ -403,7 +478,22 @@ export class RealmAuraFx {
     if (Math.random() < dt * 9 * sc) {
       const ang = Math.random() * Math.PI * 2;
       const r = 0.2 + Math.random() * 0.8;
-      pp.emit('dust', p.x + Math.cos(ang) * r, p.y + 0.12, p.z + Math.sin(ang) * r, Math.cos(ang) * 0.08, 0.1, Math.sin(ang) * 0.08, 3.0, 0.9, 1.9, 0x1b160c, 0.5, 0, 0.5);
+      pp.emit(
+        'dust',
+        p.x + Math.cos(ang) * r,
+        p.y + 0.12,
+        p.z + Math.sin(ang) * r,
+        Math.cos(ang) * 0.08,
+        0.1,
+        Math.sin(ang) * 0.08,
+        3.0,
+        0.9,
+        1.9,
+        0x1b160c,
+        0.5,
+        0,
+        0.5,
+      );
     }
     if (Math.random() < dt * 2.5 * sc) {
       const ang = Math.random() * Math.PI * 2;
@@ -522,7 +612,9 @@ export class RealmAuraFx {
   /** Số lưới/hạt đang dùng (đo đạc, bảng F3 và test). */
   stats(): { auras: number; handles: number; phantoms: number } {
     let handles = 0;
-    for (const au of this.auras.values()) handles += au.dan.length + au.swords.length + au.petals.length + au.orbs.length + au.halos.length + (au.rune ? 1 : 0) + (au.dome ? 1 : 0);
+    for (const au of this.auras.values())
+      handles +=
+        au.dan.length + au.swords.length + au.petals.length + au.orbs.length + au.halos.length + (au.rune ? 1 : 0) + (au.dome ? 1 : 0);
     return { auras: this.auras.size, handles, phantoms: this.phantoms.length };
   }
 

@@ -98,8 +98,7 @@ async function stat(page: Page): Promise<string> {
 export default {
   name: 'realmaura',
   desc: 'Hào quang cảnh giới trên nhân vật: 4 cảnh giới × 3 đạo (1080p + 720p), dãy khung pháp tướng, video, đo hiệu năng trước/sau',
-  usage:
-    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--video] [--perf] [--others N] [--only stills|phantom]',
+  usage: '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--video] [--perf] [--others N] [--only stills|phantom]',
   async run(r) {
     const daos = list('--daos', 'kiem,ho,dan');
     const realms = list('--realms', 'kd,na,hn,ab');
@@ -147,7 +146,9 @@ export default {
           for (const id of [d.ult, d.cap]) {
             const ok = await cast(page, id, id === d.ult);
             if (!ok) {
-              console.warn(`[shots:realmaura] không thấy chiêu ${id}; thanh: ${(await page.evaluate(() => window.__game!.bar().map((s) => s.id))).join(',')}`);
+              console.warn(
+                `[shots:realmaura] không thấy chiêu ${id}; thanh: ${(await page.evaluate(() => window.__game!.bar().map((s) => s.id))).join(',')}`,
+              );
               continue;
             }
             // Dãy khung quanh lúc ra chiêu: mỗi ~140 ms một ảnh, chọn lại sau khi mở.
@@ -155,7 +156,9 @@ export default {
               await snap(page, r.out, `${d.label}-${re.label}-${id.replace('skl_', '')}-f${k}-1080p.jpg`, { wait: 0 });
               await sleep(90);
             }
-            const evs = (await page.evaluate('JSON.stringify(window.__game.skillLog.slice(-5).map((x) => x.e.skill + ":" + x.e.kind))')) as string;
+            const evs = (await page.evaluate(
+              'JSON.stringify(window.__game.skillLog.slice(-5).map((x) => x.e.skill + ":" + x.e.kind))',
+            )) as string;
             console.log(`[shots:realmaura] ${dao} ${re.label} ${id}: ${await stat(page)} sự kiện ${evs}`);
             await sleep(2500);
           }
@@ -213,7 +216,15 @@ async function videos(r: Parameters<Scenario['run']>[0], daos: string[], quality
 
 /** Đo trước/sau: tắt/bật hào quang trong cùng phiên, mình ở Ảnh Biến + N người khác (mỗi người một phiên) đứng quanh. */
 async function perf(r: Parameters<Scenario['run']>[0], daos: string[], others: number, quality: string, fxq: string): Promise<void> {
-  const { ctx, page } = await r.open({ name: 'Aperf', viewport: [1280, 720], dpr: 1, quality, query: { fxq }, hide: 'hud', warnings: /models/ });
+  const { ctx, page } = await r.open({
+    name: 'Aperf',
+    viewport: [1280, 720],
+    dpr: 1,
+    quality,
+    query: { fxq },
+    hide: 'hud',
+    warnings: /models/,
+  });
   await setup(page, daos[0], 32);
   const extra: { close(): Promise<void> }[] = [];
   const keys = Object.keys(DAO);
