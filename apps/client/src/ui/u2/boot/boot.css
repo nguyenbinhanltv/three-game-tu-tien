@@ -1,0 +1,308 @@
+/* Nền sơn thủy nhiều lớp (U2-4): chỉ token --u-*; mọi chuyển động tắt khi Giảm chuyển động. */
+#boot.u2-on .ts-art {
+  opacity: 0;
+}
+#boot.u2-on.art-on .ts-veil {
+  background:
+    radial-gradient(ellipse 52% 24% at 50% 24%, var(--u-thanh-1), transparent 100%),
+    linear-gradient(180deg, transparent 0%, transparent 52%, var(--u-thanh-6) 130%);
+  opacity: 0.55;
+}
+.u2s {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  --sx: 0;
+  --sy: 0;
+  background: var(--u-thanh-1);
+}
+.u2s-wrap {
+  position: absolute;
+  inset: 0;
+}
+.u2s-l {
+  position: absolute;
+  inset: -3%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+  transform: translate3d(calc(var(--sx) * var(--k) * 1px), calc(var(--sy) * var(--k) * 0.5px), 0);
+}
+.u2s-far {
+  -webkit-mask-image: linear-gradient(#000 0, #000 36%, transparent 54%);
+  mask-image: linear-gradient(#000 0, #000 36%, transparent 54%);
+}
+.u2s-mid {
+  -webkit-mask-image: linear-gradient(transparent 26%, #000 42%, #000 60%, transparent 74%);
+  mask-image: linear-gradient(transparent 26%, #000 42%, #000 60%, transparent 74%);
+}
+.u2s-near {
+  -webkit-mask-image: linear-gradient(transparent 56%, #000 74%);
+  mask-image: linear-gradient(transparent 56%, #000 74%);
+}
+.u2s-front {
+  mix-blend-mode: multiply;
+}
+.u2s-mist {
+  position: absolute;
+  left: -25%;
+  width: 150%;
+  background-size: 100% 100%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+.u2s-mist1 {
+  top: 38%;
+  height: 40%;
+  opacity: 0.5;
+  animation: u2s-drift 140s linear infinite alternate;
+}
+.u2s-mist2 {
+  top: 56%;
+  height: 42%;
+  opacity: 0.36;
+  animation: u2s-drift 190s linear infinite alternate-reverse;
+}
+@keyframes u2s-drift {
+  from {
+    transform: translateX(-5%);
+  }
+  to {
+    transform: translateX(5%);
+  }
+}
+/* Dải tối ở đáy để chữ/thẻ đọc rõ (nước và vùng thấp của tranh vốn đã thưa chi tiết). */
+.u2s-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, var(--u-thanh-6) 0%, transparent 46%);
+  opacity: 0.55;
+}
+.u2s-zone .u2s-shade {
+  opacity: 0.8;
+}
+.u2s-crane {
+  position: absolute;
+  top: var(--top, 16%);
+  width: 64px;
+  height: 26px;
+  opacity: 0.78;
+  color: var(--u-ink-0);
+  animation: u2s-fly 72s linear infinite;
+  pointer-events: none;
+}
+.u2s-crane2 {
+  width: 44px;
+  height: 18px;
+  animation-duration: 98s;
+}
+.u2s-crane svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  transform-origin: 50% 60%;
+  animation: u2s-flap 1.6s ease-in-out infinite alternate;
+}
+@keyframes u2s-fly {
+  from {
+    transform: translate(-120px, 0);
+  }
+  to {
+    transform: translate(110vw, -70px);
+  }
+}
+@keyframes u2s-flap {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0.45);
+  }
+}
+.u2s-petals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.u2s-petals i {
+  position: absolute;
+  top: -30px;
+  width: calc(11px * var(--s, 1));
+  height: calc(8px * var(--s, 1));
+  background: var(--u-son-hi);
+  opacity: 0.55;
+  clip-path: polygon(0 50%, 40% 0, 100% 30%, 60% 100%);
+  animation: u2s-fall linear infinite;
+}
+@keyframes u2s-fall {
+  0% {
+    transform: translate(0, -30px) rotate(0);
+  }
+  50% {
+    transform: translate(70px, 55vh) rotate(200deg);
+  }
+  100% {
+    transform: translate(-30px, 112vh) rotate(420deg);
+  }
+}
+/* Cuộn tranh mở ra (màn tiêu đề, một lần mỗi phiên) */
+.u2s-reveal {
+  animation: u2s-open 3.2s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+}
+@keyframes u2s-open {
+  from {
+    clip-path: inset(0 48% 0 48%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.u2s-roller {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 46px;
+  z-index: 2;
+  background: linear-gradient(90deg, var(--u-thanh-5), var(--u-thanh-3) 40%, var(--u-thanh-1) 55%, var(--u-thanh-4) 80%, var(--u-thanh-6));
+  box-shadow: 0 0 26px var(--u-ink-0);
+  animation: 3.2s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+}
+.u2s-roller::before,
+.u2s-roller::after {
+  content: '';
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  height: 20px;
+  background: linear-gradient(90deg, var(--u-gold-lo), var(--u-gold), var(--u-gold-lo));
+}
+.u2s-roller::before {
+  top: -6px;
+}
+.u2s-roller::after {
+  bottom: -6px;
+}
+.u2s-roller-l {
+  animation-name: u2s-roll-l;
+}
+.u2s-roller-r {
+  animation-name: u2s-roll-r;
+}
+@keyframes u2s-roll-l {
+  from {
+    left: calc(48% - 23px);
+  }
+  to {
+    left: 0;
+  }
+}
+@keyframes u2s-roll-r {
+  from {
+    right: calc(48% - 23px);
+  }
+  to {
+    right: 0;
+  }
+}
+/* Tiêu đề màn đăng nhập: chữ kim Grenze trên tranh sáng */
+#boot.u2-on.art-on .ts-title {
+  font-family: var(--u-font-display);
+  font-weight: 700;
+  background: var(--u-gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 4px 0 var(--u-thanh-6)) drop-shadow(0 0 24px var(--u-thanh-6));
+}
+#boot.u2-on.art-on .ts-seal {
+  display: none;
+}
+:root[data-reduce-motion='true'] .u2s *,
+:root[data-reduce-motion='true'] .u2s {
+  animation: none !important;
+}
+:root[data-reduce-motion='true'] .u2s-l {
+  transform: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduce-motion='false']) .u2s *,
+  :root:not([data-reduce-motion='false']) .u2s {
+    animation: none !important;
+  }
+  :root:not([data-reduce-motion='false']) .u2s-l {
+    transform: none !important;
+  }
+}
+
+/* Thẻ đăng nhập / chọn nhân vật / tải: giấy Ngọc Thanh, viền ngọc + vạch kim (ghi đè lớp ngj cũ) */
+#root .ts-card.u2-card {
+  background: var(--u-thanh-0);
+  border: var(--u-line-3) solid var(--u-thanh-5);
+  box-shadow:
+    inset 0 0 0 2px var(--u-gold),
+    inset 0 0 0 5px var(--u-thanh-0),
+    inset 0 0 0 6px var(--u-gold-line),
+    0 20px 50px var(--u-thanh-6);
+  backdrop-filter: blur(6px);
+  color: var(--u-muc);
+}
+#root .ts-card.u2-card .login-tag {
+  color: var(--u-muc-dim);
+  font-family: var(--u-font-body);
+}
+#root .ts-card.u2-card .login-form label {
+  color: var(--u-thanh-5);
+  font-family: var(--u-font-head);
+}
+/* Thanh "đang dẫn khí": một cuộn thư, trục hai đầu, vệt ngọc chạy dọc */
+#root .ts-card.u2-card.ts-loading {
+  width: min(92vw, 620px);
+  background: var(--u-thanh-0);
+}
+#root .ts-card.u2-card .ts-line {
+  font-family: var(--u-font-body);
+  font-style: italic;
+  color: var(--u-muc);
+}
+#root .ts-card.u2-card .ts-bar {
+  position: relative;
+  height: 22px;
+  margin: 0 18px;
+  background: var(--u-thanh-1);
+  border: var(--u-line-2) solid var(--u-thanh-5);
+  box-shadow: 0 0 0 3px var(--u-gold-line);
+  overflow: visible;
+}
+#root .ts-card.u2-card .ts-bar-fill {
+  background: linear-gradient(180deg, var(--u-ngoc-hi), var(--u-ngoc) 55%, var(--u-ngoc-lo));
+  border-radius: 0;
+}
+#root .ts-card.u2-card .ts-bar::before,
+#root .ts-card.u2-card .ts-bar::after {
+  content: '';
+  position: absolute;
+  top: -7px;
+  width: 16px;
+  height: 34px;
+  margin: 0;
+  border-radius: 0;
+  transform: none;
+  box-shadow: none;
+  background: linear-gradient(90deg, var(--u-thanh-6), var(--u-thanh-1) 50%, var(--u-thanh-5));
+  border-top: 5px solid var(--u-gold);
+  border-bottom: 5px solid var(--u-gold);
+}
+#root .ts-card.u2-card .ts-bar::before {
+  left: -16px;
+}
+#root .ts-card.u2-card .ts-bar::after {
+  right: -16px;
+}
+
+/* Chương 5 (tro, nhật thực): không hạc, không cánh hoa */
+.u2s-rift .u2s-crane,
+.u2s-rift .u2s-petals {
+  display: none;
+}

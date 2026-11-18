@@ -100,6 +100,15 @@
   --u-q5-c: #6fe0ff;
   --u-q5-glint: rgba(255, 244, 252, 0.7);
 
+  /* Dải Ngọc Thanh (celadon) cho nền sơn thủy, màn tĩnh và bảng sáng (U2-4) */
+  --u-thanh-0: #f3f6f1;
+  --u-thanh-1: #dfe9e3;
+  --u-thanh-2: #bcd2cc;
+  --u-thanh-3: #8fb3ad;
+  --u-thanh-4: #5f8f8a;
+  --u-thanh-5: #3a6663;
+  --u-thanh-6: #223f40;
+
   /* ── Trạng thái ── */
   --u-ok: var(--u-ngoc-hi);
   --u-warn: var(--u-gold);

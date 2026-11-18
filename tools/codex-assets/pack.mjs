@@ -19,6 +19,8 @@ const out = path.join(root, 'apps/client/public/assets/art');
 const spec = {
   portraits: { w: 480, h: 640, q: 84 },
   loading: { w: 1600, h: 900, q: 78 },
+  // Lớp parallax của màn tiêu đề (U2-4): cành tùng nhân (multiply) và sương (screen), nền trắng/đen thuần.
+  layers: { w: 1600, h: 900, q: 78 },
   ui: {
     paper_tile: { w: 512, h: 512, q: 86 },
     corner_ornament: { w: 320, h: 320, q: 86 },

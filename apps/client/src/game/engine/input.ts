@@ -2,6 +2,7 @@
 import { C, PF_DEAD, BAR_SIZE, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
 import { t } from '@dtl/content';
 import { closeTopPanel, get, pushToast, set, togglePanel, useUI } from '../../ui/store';
+import { closeChapters, toggleChapters, useChapters } from '../../ui/chapters/chaptersStore';
 import { unlockAudio } from '../audio/audio';
 import { budgetPixelRatio } from '../../render/post';
 import { isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../../input/bindings';
@@ -41,6 +42,14 @@ export function bindInput(eng: Game): void {
   // Bấm chuột ở bất cứ đâu (kể cả trên HUD) cũng bỏ qua cảnh mở đầu, đúng như gợi ý "bấm phím bất kỳ".
   eng.on(window, 'pointerdown', () => skipCine(eng), { capture: true });
   eng.on(window, 'keydown', (e: KeyboardEvent) => {
+    // Bản đồ chương (modal toàn màn) đang mở: chỉ Esc/N đóng nó, mọi phím khác không đi vào game (không chạy, ra chiêu, hủy mục tiêu sau tấm bản đồ).
+    if (useChapters.getState().open) {
+      if (e.code === 'Escape' || e.code === 'KeyN') {
+        e.preventDefault();
+        closeChapters();
+      }
+      return;
+    }
     if (!e.repeat) skipCine(eng);
     eng.keys.onDown(e.code, e.altKey, e.repeat);
     onKeyDown(eng, e);
@@ -270,8 +279,10 @@ export function onKeyDown(eng: Game, e: KeyboardEvent): void {
       togglePanel('party');
       break;
     case 'map':
-    case 'journey':
       togglePanel('map');
+      break;
+    case 'journey':
+      toggleChapters(); // Bản đồ chương (U2-4)
       break;
     case 'help':
       togglePanel('help');
