@@ -4,11 +4,11 @@ import { getCloudNoise } from '../render/noiseTex';
 import { createWorldMaterial } from '../render/materials/world';
 import { applyGroundShader, clearGroundShader, setGroundTileBreak, type GroundLevel } from '../render/materials/ground';
 import type { GroundTextures } from './groundTextures';
-import { COLLIDERS, fbm, featureWeight, FOREST, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
+import { fbm, featureWeight, FOREST, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
 import { levelTerrain } from './levelCtx';
 import { col, G, GeoBuilder, mat } from './geo';
 import { withSightFade } from './occlusion';
-import { LEGACY_TREES, nearPropTree } from './propScatter';
+import { nearPropTree } from './propScatter';
 import { vanHaiArt, type VhPalette } from './vanHaiArt';
 import { tkGroundColor } from './thienKhuyetArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
@@ -353,49 +353,10 @@ function buildTileGeometry(x0: number, z0: number, size: number, res: number, sk
 
 // ---------- cây cối ----------
 
-const C_TRUNK = col(0x6b4a33);
-const C_PINE = [col(0x2f6b45), col(0x3a7a4c), col(0x275c3f)];
-const C_LEAF = [col(0x5fa04e), col(0x76b356), col(0x4d8f49)];
-const C_SAKURA = [col(0xf3b6c9), col(0xf7c8d6), col(0xe99bb5)];
-const C_MAPLE = [col(0xd9773a), col(0xe2a03f), col(0xc65a33)];
 const C_STONE_ROCK = [col(0x8a8782), col(0x76746f), col(0x9a968f)];
-
-function addPine(b: GeoBuilder, x: number, y: number, z: number, s: number, r: number, far: boolean): void {
-  const c = C_PINE[(r * 3) | 0];
-  if (far) {
-    b.add(G.cone5, mat(x, y + 4.2 * s, z, 0, r * 6, 0, 2.3 * s, 8 * s, 2.3 * s), c);
-    return;
-  }
-  b.add(G.cyl6, mat(x, y + 1.2 * s, z, 0, 0, 0, 0.28 * s, 2.6 * s, 0.28 * s), C_TRUNK);
-  b.add(G.cone7, mat(x, y + 3.2 * s, z, 0, r * 6, 0, 2.5 * s, 3.4 * s, 2.5 * s), c);
-  b.add(G.cone7, mat(x, y + 5.2 * s, z, 0, r * 9, 0, 1.9 * s, 3.0 * s, 1.9 * s), c);
-  b.add(G.cone7, mat(x, y + 7.0 * s, z, 0, r * 4, 0, 1.2 * s, 2.6 * s, 1.2 * s), c);
-}
-
-function addBroadleaf(b: GeoBuilder, x: number, y: number, z: number, s: number, r: number, palette: THREE.Color[], far: boolean): void {
-  const c = palette[(r * 3) | 0];
-  if (far) {
-    b.add(G.ico0, mat(x, y + 4.4 * s, z, 0, r * 6, 0, 2.6 * s, 2.4 * s, 2.6 * s), c);
-    return;
-  }
-  b.add(G.cyl6, mat(x, y + 1.5 * s, z, 0, 0, r * 0.3 - 0.15, 0.3 * s, 3.2 * s, 0.3 * s), C_TRUNK);
-  b.add(G.ico1, mat(x, y + 4.5 * s, z, r, r * 6, 0, 2.6 * s, 2.2 * s, 2.6 * s), c, 0.1);
-  b.add(G.ico0, mat(x + 1.4 * s, y + 3.6 * s, z + 0.6 * s, 0, r * 3, r, 1.5 * s, 1.3 * s, 1.5 * s), c, 0.1);
-  b.add(G.ico0, mat(x - 1.2 * s, y + 3.9 * s, z - 0.8 * s, r, 0, 0, 1.4 * s, 1.2 * s, 1.4 * s), c, 0.1);
-}
 
 function addRock(b: GeoBuilder, x: number, y: number, z: number, s: number, r: number): void {
   b.add(G.ico0, mat(x, y + 0.3 * s, z, r * 2, r * 6, r, 1.3 * s, 0.9 * s, 1.1 * s), C_STONE_ROCK[(r * 3) | 0]);
-}
-
-function nearCollider(x: number, z: number, pad: number): boolean {
-  for (const c of COLLIDERS) {
-    const dx = x - c.x;
-    const dz = z - c.z;
-    const r = c.r + pad;
-    if (dx * dx + dz * dz < r * r) return true;
-  }
-  return false;
 }
 
 function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeometry | null {
@@ -428,16 +389,8 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
       if (nearPropTree(x, z)) continue;
       // Độ dốc: bỏ cây trên vách đá.
       const slope = Math.abs(heightAt(x + 3, z) - h) + Math.abs(heightAt(x, z + 3) - h);
-      const s = 0.8 + r4 * 0.7;
 
-      if (wSect > 0.8) {
-        // Trong tông môn: hàng anh đào quanh rìa sân, không mọc giữa sân.
-        const d = Math.hypot(x - SECT.x, z - SECT.z);
-        if (LEGACY_TREES && d > 62 && d < 108 && r3 < 0.55 && !nearCollider(x, z, 6) && Math.abs(x - SECT.x) > 9) {
-          addBroadleaf(b, x, h, z, s * 0.95, r4, C_SAKURA, far);
-        }
-        continue;
-      }
+      if (wSect > 0.8) continue; // trong tông môn không rải đá/cây
       if (slope > 5.5) {
         if (r3 < 0.12 && !far) addRock(b, x, h, z, 1 + r4 * 2.2, r1);
         continue;
@@ -451,11 +404,7 @@ function buildVegetation(tx: number, tz: number, far: boolean): THREE.BufferGeom
         if (r3 > 0.94 && !far) addRock(b, x, h, z, 0.6 + r4 * 1.4, r1);
         continue;
       }
-      // Cây Tripo (propScatter.scatterTrees + PropLayer) thay cây thủ tục; chỉ `?trees=legacy` mới dựng lại cây khối.
-      if (!LEGACY_TREES) continue;
-      if (h > 150 || (wForest < 0.3 && r4 > 0.55)) addPine(b, x, h, z, s, r4, far);
-      else if (wForest > 0.3) addBroadleaf(b, x, h, z, s * 1.15, r4, r1 < 0.16 ? C_MAPLE : C_LEAF, far);
-      else addBroadleaf(b, x, h, z, s, r4, r1 < 0.1 ? C_SAKURA : C_LEAF, far);
+      // Cây là của propScatter.scatterTrees + PropLayer (cây Tripo); terrain chỉ rải đá.
     }
   }
   return b.count > 0 ? b.build() : null;

@@ -27,7 +27,8 @@ import { partExtras, stripPartTracks, SwordSocket, type SwordSocketDef, swordSoc
 import { type BladeMount, bladeLocal, cutOldSword, glowDims, type OldSwordSpan, SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, type SwordTemplate, swordTemplateOf } from './swordModel';
 import type { CharState, ClipMap } from './states';
 import { CHR_V3, MannequinPlayers, V3_ONLY_SKINS } from './mannequin';
-import { type AnimState, type CharacterView, legacyModelsRequested, legacySwordsRequested, type MonsterView, type PerformOpts } from './view';
+import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
+import { FLAGS } from '../flags';
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
 export interface PlayerLook {
@@ -204,17 +205,12 @@ const K3_STATES: Partial<Record<CharState, string>> = { walk: 'walk', back: 'bac
 /** Chờ bao lâu sau khi dựng mẫu rồi mới nạp K-3 (ms): không chen vào đường tải trước khung game đầu. */
 const K3_DELAY = 1500;
 
-/** `?outfit=0` tắt áo bộ trang bị mặc thật, về đường recolor + phụ kiện thủ tục (so ảnh, số đo). */
-const OUTFIT_Q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('outfit') : null;
-const OUTFIT_OFF = OUTFIT_Q === '0';
 /** v1 (hai model Tripo cũ) là mặc định; `?chr=v2` bật nhân vật nền v2 (MakeHuman + đầu/tóc Tripo). */
-const CHR_V2 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chr') === 'v2'; // Không có location (test node): v1
+const CHR_V2 = FLAGS.chr === 'v2'; // Không có location (test node): v1
 /** Nhân vật nền v2 đang bật (chỉ khi `?chr=v2`): UI chọn kiểu tóc A/B chỉ hiện khi true. */
 export const CHR_V2_ON = CHR_V2;
 /** `?hair=b` ép kiểu tóc B khi không có lựa chọn của người chơi (thử, chụp ảnh). */
-const CHR_V2_HAIR = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hair') : null;
-/** `?outfit=set_kinh_quang_kiem_y` ép mọi bộ đang mặc dùng áo này (xem áo của bộ chưa có trong dữ liệu, chụp ảnh). */
-const OUTFIT_FORCE = OUTFIT_Q && OUTFIT_Q !== '0' ? OUTFIT_Q : null;
+const CHR_V2_HAIR = FLAGS.hair;
 
 /** Id asset model người chơi của giới tính (và kiểu tóc): v1 mặc định, `?chr=v2` model nền v2. Dùng cho prefetch lúc vào game. */
 export function playerModelId(g: string, hair?: string): string | null {
@@ -271,7 +267,6 @@ export class PlayerSkins {
   constructor(
     private cache: AssetCache = assets,
     readonly legacy = legacyModelsRequested(),
-    private legacySwords = legacySwordsRequested(),
   ) {
     this.v3 = CHR_V3 ? new MannequinPlayers(cache) : null;
   }
@@ -322,21 +317,21 @@ export class PlayerSkins {
     return this.build(id, skin, t, mat, undefined, undefined, false, { parts: [{ id: oid, tpl }], dye: { id: `npc:${look.hex}`, hex: look.hex } });
   }
 
-  /** Các asset mảnh áo của bộ đang mặc (rỗng nếu bộ chưa có áo riêng cho giới này hoặc đang `?models=legacy`/`?outfit=0`). */
+  /** Các asset mảnh áo của bộ đang mặc (rỗng nếu bộ chưa có áo riêng cho giới này hoặc đang `?models=legacy`). */
   private outfitIds(look: PlayerLook): string[] {
-    if (this.legacy || OUTFIT_OFF) return [];
+    if (this.legacy) return [];
     const model = modelOf(look.g, look.hair);
     // Skin đè mọi trang phục. Mới dựng cho thân v1 (`<skin>_nam|nu`); thân v2 chưa có nên bỏ qua, mặc trang phục như thường.
     const skin = this.skinAsset(look);
     if (skin) return [skin];
     if (CHR_V2) {
       // Thân v2 không có áo: bộ chưa có áo dựng cho thân v2 (không khai ở outfit_covers.json) thì mặc bộ đồ đệ tử tân thủ.
-      const own = look.set ? (OUTFIT_FORCE ? [OUTFIT_FORCE] : (OUTFITS[look.set] ?? [])) : [];
+      const own = look.set ? (OUTFITS[look.set] ?? []) : [];
       const parts = own.length && own.every((p) => p in OUTFIT_COVERS) ? own : [STARTER];
       return parts.flatMap((p) => outfitAssetId(p, model) ?? []);
     }
     if (!look.set) return [];
-    const parts = OUTFIT_FORCE ? [OUTFIT_FORCE] : (OUTFITS[look.set] ?? []);
+    const parts = OUTFITS[look.set] ?? [];
     return parts.flatMap((p) => outfitAssetId(p, model) ?? []);
   }
 
@@ -345,7 +340,7 @@ export class PlayerSkins {
    * Asset nạp lỗi thì `loadOutfit` đánh dấu `failed` và nhân vật về hình thường (không có áo skin, thân nền hiện nguyên).
    */
   private skinAsset(look: PlayerLook): string | null {
-    if (!look.skin || CHR_V2 || this.legacy || OUTFIT_OFF) return null;
+    if (!look.skin || CHR_V2 || this.legacy) return null;
     // v3 dựng skin ở MannequinPlayers (asset `chr_v3_*`); skin chỉ có bản v3 thì v1 bỏ qua.
     if (this.v3 || V3_ONLY_SKINS.has(look.skin)) return null;
     return outfitAssetId(look.skin, modelOf(look.g, look.hair));
@@ -782,7 +777,7 @@ export class PlayerSkins {
     this.templates.set(id, 'loading');
     // Nhân vật + thư viện clip chung (anim_human_base): thiếu thư viện thì dùng model khối, không để T-pose đứng giữa sân.
     // Cùng lúc nạp kiếm mặc định: có nó rồi mới cắt kiếm cũ khỏi lưới (lỗi nạp kiếm thì giữ kiếm cũ).
-    Promise.all([acquireWithHumanLib(this.cache, id), this.legacySwords ? Promise.resolve(null) : this.loadSword(SWORD_MODEL_DEFAULT)]).then(
+    Promise.all([acquireWithHumanLib(this.cache, id), this.loadSword(SWORD_MODEL_DEFAULT)]).then(
       ([[handle, lib], sword]) => {
         if (this.disposed) {
           handle.release();
