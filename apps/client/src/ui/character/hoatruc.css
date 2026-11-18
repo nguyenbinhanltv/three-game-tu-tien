@@ -400,20 +400,18 @@
 .hoatruc-dan {
   position: absolute;
   left: 50%;
-  top: 53cqh;
-  width: 13cqh;
-  height: 13cqh;
+  top: 52cqh;
+  width: 22cqh;
+  height: 22cqh;
   translate: -50% -50%;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--u-gold-text) 0 22%,
-    var(--u-gold) 38%,
-    color-mix(in srgb, var(--u-gold) 55%, transparent) 58%,
-    transparent 74%
-  );
-  mix-blend-mode: screen;
-  filter: blur(1.5px);
+  /* kim đan nằm ở đan điền: lõi trắng-vàng rực, vành vàng đậm, quầng sáng rộng; nền tranh Kết Đan sáng nên KHÔNG dùng blend screen (sẽ biến mất) */
+  background:
+    radial-gradient(circle, var(--u-gold-text) 0 14%, var(--u-gold-hi) 26%, var(--u-gold) 42%, transparent 66%),
+    radial-gradient(circle, transparent 54%, color-mix(in srgb, var(--u-gold) 55%, transparent) 70%, transparent 76%);
+  box-shadow:
+    0 0 3cqh 1cqh color-mix(in srgb, var(--u-gold) 75%, transparent),
+    0 0 9cqh 3cqh color-mix(in srgb, var(--u-gold) 35%, transparent);
   pointer-events: none;
   animation: hoatruc-dan 2.6s ease-in-out infinite;
 }
@@ -432,8 +430,10 @@
   width: 58cqh;
   height: 14cqh;
   border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--u-gold) 80%, transparent);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--u-gold) 50%, transparent);
+  border: 2.5px solid color-mix(in srgb, var(--u-gold) 95%, transparent);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--u-gold) 80%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--u-ink-0) 45%, transparent);
   animation: hoatruc-orbit 14s linear infinite;
 }
 .hoatruc-van-ring[data-k='1'] {
@@ -443,17 +443,17 @@
   height: 20cqh;
   animation-direction: reverse;
   animation-duration: 19s;
-  border-color: color-mix(in srgb, var(--u-gold-hi) 40%, transparent);
+  border-color: color-mix(in srgb, var(--u-gold-hi) 75%, transparent);
 }
 .hoatruc-van-glyph {
   position: absolute;
-  width: 3.2cqh;
-  height: 4.2cqh;
+  width: 5cqh;
+  height: 6.6cqh;
   fill: none;
   stroke: var(--u-gold);
-  stroke-width: 1.8;
+  stroke-width: 2.4;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 3px var(--u-gold));
+  filter: drop-shadow(0 0 2px var(--u-ink-0)) drop-shadow(0 0 5px var(--u-gold));
   left: calc(50% + 50% * cos(calc(var(--a) + var(--spin, 0deg))));
   top: calc(50% + 50% * sin(calc(var(--a) + var(--spin, 0deg))));
   translate: -50% -50%;
@@ -664,13 +664,13 @@
 }
 .hoatruc-phanthan img {
   position: absolute;
-  height: 46cqh;
+  height: 58cqh;
   width: auto;
   left: calc(50% + 40cqh * cos(calc(var(--a) + var(--spin, 0deg))));
-  top: calc(48cqh + 25cqh * sin(calc(var(--a) + var(--spin, 0deg))));
+  top: calc(50cqh + 14cqh * sin(calc(var(--a) + var(--spin, 0deg))));
   translate: -50% -50%;
-  opacity: 0.28;
-  filter: blur(1.2px) saturate(1.6) brightness(1.3) drop-shadow(0 0 10px var(--u-q3));
+  opacity: 0.5;
+  filter: saturate(1.5) brightness(1.4) drop-shadow(0 0 12px var(--u-gold)) drop-shadow(0 0 6px var(--u-q3));
 }
 /* tên thư pháp: dải lụa giấy dọc ở khoảng trống bên phải nhân vật (không đè cột ô), chữ mực đen nét bút lông, dấu triện đỏ cảnh giới bên dưới */
 .hoatruc-name {
@@ -704,17 +704,20 @@
     0 0 18px color-mix(in srgb, var(--u-gold) 70%, transparent);
 }
 .hoatruc-name[data-big='1'] .hoatruc-name-t {
-  font-size: 6.4cqh;
+  font-size: 7cqh;
+  -webkit-text-stroke: 0.6px var(--u-gold);
   color: var(--u-gold-text);
   text-shadow: 0 0 10px var(--u-gold);
 }
 .hoatruc-name-t {
   writing-mode: vertical-rl;
   font-family: var(--u-font-thuphap);
-  font-size: 4.4cqh;
-  line-height: 1.15;
+  font-size: 5.2cqh;
+  line-height: 1.1;
   letter-spacing: 0.04em;
   color: var(--u-ink-0);
+  -webkit-text-stroke: 0.6px var(--u-ink-0);
+  filter: url(#hoatruc-muc);
   overflow: hidden;
   text-overflow: ellipsis;
   max-height: 50cqh;
@@ -773,12 +776,12 @@
 @keyframes hoatruc-dan {
   0%,
   100% {
-    opacity: 0.6;
-    scale: 0.88;
+    opacity: 0.8;
+    scale: 0.9;
   }
   50% {
     opacity: 1;
-    scale: 1.15;
+    scale: 1.12;
   }
 }
 @keyframes hoatruc-bob {
@@ -812,4 +815,28 @@
 }
 .hoatruc[data-tier='4'] .hoatruc-set {
   opacity: 1;
+}
+
+/* 720p: bớt chói ở Dị Biến, tên thư pháp to và đậm hơn để đọc được */
+@media (max-height: 800px) {
+  .hoatruc[data-tier='4'] .hoatruc-bg {
+    filter: brightness(0.42) contrast(1.25) saturate(1.1);
+  }
+  .hoatruc[data-tier='4'] .hoatruc-aura {
+    opacity: 0.3;
+  }
+  .hoatruc[data-tier='4'] .hoatruc-set {
+    opacity: 0.55;
+  }
+  .hoatruc-name-t {
+    font-size: 7.6cqh;
+    -webkit-text-stroke: 0.8px var(--u-ink-0);
+  }
+  .hoatruc-name[data-big='1'] .hoatruc-name-t {
+    font-size: 9cqh;
+    -webkit-text-stroke: 0.8px var(--u-gold);
+  }
+  .hoatruc-name {
+    top: 3cqh;
+  }
 }

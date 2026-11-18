@@ -125,7 +125,8 @@
   /* ── Chữ (font): đóng gói woff2, xem fonts.css ── */
   --u-font-display: 'DTL U2 Display', 'Times New Roman', serif; /* Grenze Gotisch 700: ≥ 28 px, ≤ 3 từ */
   --u-font-head: 'DTL U2 Head', 'Times New Roman', serif; /* Texturina 700: tiêu đề bảng, tab, nút, nhãn */
-  --u-font-thuphap: 'DTL Thu Phap', 'Times New Roman', serif; /* Mansalva (nét bút lông): tên thư pháp, chỉ dùng cho đạo hiệu trên tranh */
+  --u-font-thuphap:
+    'DTL Thu Phap', 'Times New Roman', serif; /* Charm Bold (bút lông thư pháp): tên thư pháp, chỉ dùng cho đạo hiệu trên tranh */
   --u-font-body: 'DTL U2 Body', 'Times New Roman', serif; /* Newsreader 400–600 + nghiêng */
   --u-num: 'tnum' 1, 'lnum' 1; /* font-feature-settings cho số liệu */
 

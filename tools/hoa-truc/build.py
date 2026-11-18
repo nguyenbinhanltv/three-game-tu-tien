@@ -56,8 +56,6 @@ if TG.exists():
             continue  # bản cũ, thay bằng thien_giai_lop
         if f.stem.endswith('_apose'):
             continue
-        if f.stem.startswith(('dia_giap', 'phuc_mach')):
-            continue  # chưa dùng (bước hàng loạt sau)
         files.append((f, f.stem[:-5] if f.stem.endswith('_pose') else f.stem))
 for f, n in files:
     im = Image.open(f)

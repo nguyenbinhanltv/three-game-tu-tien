@@ -47,6 +47,24 @@ describe('Thiên Giai: tầng cảnh giới', () => {
   });
 });
 
+describe('Thiên Giai: bộ Kết Đan và bộ chưa có tranh', () => {
+  it('Địa Giáp / Phục Mạch có tranh riêng theo giới tính', () => {
+    for (const [id, art] of [
+      ['set_dia_giap', 'dia_giap'],
+      ['set_phuc_mach', 'phuc_mach'],
+    ] as const) {
+      const set = SETS.find((s) => s.id === id)!;
+      expect(pickPortrait({ ...base, level: 20, worn: set.pieces }).char).toBe(art + '_nam');
+      expect(pickPortrait({ ...base, level: 20, worn: set.pieces, gender: 'f' }).char).toBe(art + '_nu');
+    }
+  });
+  it('bộ chưa có tranh (Kính Quang…) rơi về đồ đệ tử, không trỏ tới tệp chưa có', () => {
+    const set = SETS.find((s) => s.id === 'set_kinh_quang')!;
+    expect(pickPortrait({ ...base, level: 24, worn: set.pieces }).char).toBe('de_tu_nam');
+    expect(pickPortrait({ ...base, level: 24, worn: set.pieces, gender: 'f' }).char).toBe('de_tu_nu');
+  });
+});
+
 describe('Hoa Trúc: bản đồ chuyển động', () => {
   it('đầu (v nhỏ, giữa ngang) gần như đứng yên; vạt dưới và mép đung đưa nhiều hơn', () => {
     const head = Math.abs(motionAt(0.5, 0.05, 1.3)[0]);
