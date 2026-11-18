@@ -562,13 +562,27 @@ if SPRINGS:
             x, y, z = VP[i]
             if not (RB['zMin'] * height <= z <= RB['zMax'] * height) or math.hypot(x - cx, y - cy) < RB['minRadius'] * height:
                 continue
-            wgt = float(np.clip((abs(x - cx) - RB['xInner'] * height) / max((RB['xOuter'] - RB['xInner']) * height, 1e-6), 0, 1)) * RB.get('outerShare', 0.7)
+            zlo_r, zhi_r = RB['zMin'] * height, RB['zMax'] * height
+            tz = (z - zlo_r) / max(zhi_r - zlo_r, 1e-6)  # 0 ở gấu, 1 ở hông
             sd = 'l' if (x - cx) * sgn_l > 0 else 'r'
             W[i] = 0
-            W[i, IDX['pelvis']] = 1 - wgt
-            lowk = float(np.clip((0.32 * height - z) / (0.1 * height), 0, 1))
-            W[i, IDX['thigh_' + sd]] = wgt * (1 - 0.5 * lowk)
-            W[i, IDX['calf_' + sd]] = wgt * 0.5 * lowk
+            if 'front' in RB:
+                # Vạt trước theo đùi (gấu phủ lên gối khi ngồi), vạt sau theo hông + lò xo; trái/phải nội suy liên tục theo x.
+                fb = float(np.clip((cy - y) / (0.08 * height) + 0.5, 0, 1))  # 1 = trước (−Y), 0 = sau
+                hem = (RB['back'] + (RB['front'] - RB['back']) * fb) * (1 - tz) ** RB.get('pow', 0.7)
+                lshare = 0.5 + 0.5 * float(np.clip((x - cx) * sgn_l / (RB['xOuter'] * height), -1, 1))
+                lowk = float(np.clip((0.32 * height - z) / (0.1 * height), 0, 1)) * RB.get('calf', 0.4)
+                W[i, IDX['pelvis']] = 1 - hem
+                W[i, IDX['thigh_l']] = hem * lshare * (1 - lowk)
+                W[i, IDX['thigh_r']] = hem * (1 - lshare) * (1 - lowk)
+                W[i, IDX['calf_l']] = hem * lshare * lowk
+                W[i, IDX['calf_r']] = hem * (1 - lshare) * lowk
+            else:
+                wgt = float(np.clip((abs(x - cx) - RB['xInner'] * height) / max((RB['xOuter'] - RB['xInner']) * height, 1e-6), 0, 1)) * RB.get('outerShare', 0.7)
+                W[i, IDX['pelvis']] = 1 - wgt
+                lowk = float(np.clip((0.32 * height - z) / (0.1 * height), 0, 1))
+                W[i, IDX['thigh_' + sd]] = wgt * (1 - 0.5 * lowk)
+                W[i, IDX['calf_' + sd]] = wgt * 0.5 * lowk
             n_rb += 1
         log(f'vạt áo: {n_rb} đỉnh bám hông/đùi theo khoảng cách ngang')
     domreg = np.array([REGION_OF(COLS[i]) for i in W.argmax(axis=1)])

@@ -38,6 +38,17 @@ export default {
           await cam(still.page, { yaw: 0, pitch: 0.12, dist: 1.25 });
           await sleep(1200);
           await snap(still.page, r.out, `${tag}-canmat.jpg`, { clip: centerClip(800, 500, 520, 400) });
+          // Toàn thân cùng góc ảnh concept (trước mặt, xa hơn), để so màu cạnh nhau.
+          await cam(still.page, { yaw: 0, pitch: 0.06, dist: 2.6 });
+          await sleep(1200);
+          await snap(still.page, r.out, `${tag}-toanthan.jpg`, { clip: centerClip(800, 500, 360, 460) });
+          // Cùng khung nhưng ẩn nhân vật: hiệu hai ảnh cho mặt nạ chính xác của nhân vật (đo màu trong game, không lẫn nền).
+          await still.page.evaluate(() => {
+            const g = window.__game!;
+            g.ents.players.get(g.sid).model.root.visible = false;
+          });
+          await sleep(500);
+          await snap(still.page, r.out, `${tag}-toanthan-nen.jpg`, { clip: centerClip(800, 500, 360, 460) });
           await still.ctx.close();
         };
         if (process.argv.includes('--stills')) {

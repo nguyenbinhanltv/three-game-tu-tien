@@ -22,13 +22,20 @@ export const V3_PAL = {
   ivoryTex: '#C6BBA8',
 } as const;
 
+/**
+ * Hệ số hiệu chỉnh theo kênh (tuyến tính) cho màu trên màn hình: nắng ấm + bóng ngọc lam của game làm ngà ngả vàng (thiếu b) và lam ngả
+ * lục (thừa g, thiếu r). Đo bằng `pnpm shots chrv3 --stills` (mặt nạ nhân vật = hiệu ảnh có/không nhân vật): trước chỉnh ngà ≈ (180,171,133),
+ * lam ≈ (37,69,75); concept ≈ (199,188,175) và (58,66,84).
+ */
+export const V3_GAIN = { ivory: [1.2, 1.16, 2.8], blue: [2.8, 0.93, 1.34] } as const;
+
 /** Gắn `colorNode` bảng màu v3 vào material (giữ map/alpha). Gọi một lần cho mỗi material gốc. */
 export function applyV3Palette(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
   if (!V3_PALETTE_ON) return m;
-  const navy = lin(V3_PAL.navy);
-  const armor = lin(V3_PAL.armor);
-  const hi = lin(V3_PAL.armorHi);
-  const ivMul = lin(V3_PAL.ivory).divide(lin(V3_PAL.ivoryTex));
+  const navy = lin(V3_PAL.navy).multiply(new THREE.Vector3(...V3_GAIN.blue));
+  const armor = lin(V3_PAL.armor).multiply(new THREE.Vector3(...V3_GAIN.blue));
+  const hi = lin(V3_PAL.armorHi).multiply(new THREE.Vector3(...V3_GAIN.blue));
+  const ivMul = lin(V3_PAL.ivory).divide(lin(V3_PAL.ivoryTex)).multiply(new THREE.Vector3(...V3_GAIN.ivory));
   const c = materialColor.rgb;
   const lum = dot(c, vec3(0.2126, 0.7152, 0.0722));
   const mx = max(max(c.x, c.y), c.z);
@@ -40,7 +47,7 @@ export function applyV3Palette(m: THREE.MeshStandardNodeMaterial): THREE.MeshSta
   const ramp = mix(mix(vec3(navy.x, navy.y, navy.z), vec3(armor.x, armor.y, armor.z), mid), vec3(hi.x, hi.y, hi.z), smoothstep(float(0.5), float(1.0), t));
   // Ngà/bạc: bão hòa thấp và sáng (tóc đen, da ấm, kim loại tối nằm ngoài).
   const sat = mx.sub(mn).div(mx.add(1e-3));
-  const ivory = smoothstep(float(0.3), float(0.42), lum).mul(smoothstep(float(0.3), float(0.2), sat)).mul(float(1).sub(blue));
+  const ivory = smoothstep(float(0.3), float(0.42), lum).mul(smoothstep(float(0.44), float(0.34), sat)).mul(float(1).sub(blue));
   const ivOut = min(c.mul(vec3(ivMul.x, ivMul.y, ivMul.z)), vec3(1, 1, 1));
   const out = mix(mix(c, ivOut, ivory), ramp, blue);
   m.colorNode = vec4(out, materialColor.a);
