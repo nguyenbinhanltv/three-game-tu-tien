@@ -171,7 +171,6 @@ function Login() {
   useEffect(() => {
     const auto = FLAGS.auto;
     if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim(), ap: initialLook(), rt: initialRoot() ?? undefined });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const onToken = (tk: string) => {
     setToken(tk);

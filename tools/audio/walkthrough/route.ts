@@ -7,7 +7,7 @@
 //   (walkthrough.mjs tự gọi lệnh này nên thường không cần chạy tay)
 import fs from 'node:fs';
 import path from 'node:path';
-import { LAKE, RUN_SPEED, SECT } from '../../../packages/shared/src/index';
+import { LAKE, RUN_SPEED, SECT } from '@dtl/shared';
 import { StepClock, stepVolume } from '../../../apps/client/src/game/audio/footsteps';
 import { pathPolylines } from '../../../apps/client/src/render/groundMask';
 import { buildSources, KINDS, makeCrackle, Soundscape, type SpatialApi, templeBellPartials } from '../../../apps/client/src/game/audio/soundscape';
