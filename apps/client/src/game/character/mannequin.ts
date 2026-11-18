@@ -95,6 +95,7 @@ export class MannequinCharacter implements CharacterView {
   private combatT = 0;
   private swing = 0;
   private lastPhase = 0;
+  private weights = new Map<THREE.AnimationAction, number>();
   private disposed = false;
 
   constructor(private tpl: MannequinTemplate, shadow = false) {
@@ -119,7 +120,7 @@ export class MannequinCharacter implements CharacterView {
     this.mixer.addEventListener('finished', (e) => {
       if ((e as unknown as { action: THREE.AnimationAction }).action === this.shot) this.shot = null;
     });
-    this.play('Idle_Loop', 0);
+    this.play('Idle_Loop');
     this.mixer.update(0);
   }
 
@@ -132,7 +133,7 @@ export class MannequinCharacter implements CharacterView {
     return c ? this.mixer.clipAction(c) : null;
   }
 
-  private play(name: string, fade = FADE): void {
+  private play(name: string): void {
     if (this.baseName === name) return;
     const next = this.action(name);
     if (!next) return;
@@ -140,10 +141,33 @@ export class MannequinCharacter implements CharacterView {
     next.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
     next.clampWhenFinished = !loop;
     next.reset().play();
-    if (this.base) this.base.crossFadeTo(next, fade, false);
-    next.setEffectiveWeight(1);
+    // Trọng số nền tự quản (không dùng crossFadeTo): three chuẩn hóa theo tổng trọng số, nên khi có đòn một lần
+    // clip nền phải về 0 để đòn đủ biên độ (xem `blendBases`).
+    next.setEffectiveWeight(this.base ? 0 : 1);
+    this.weights.set(next, this.base ? 0 : 1);
     this.base = next;
     this.baseName = name;
+  }
+
+  /** Hòa clip nền: clip hiện tại về 1 (về 0 khi đang có đòn, trừ ~0,12 s cuối để khỏi rơi về tư thế nghỉ), clip cũ tắt dần. */
+  private blendBases(dt: number): void {
+    let gate = 1;
+    const sh = this.shot;
+    if (sh) {
+      const ts = Math.max(0.1, Math.abs(sh.timeScale));
+      gate = (sh.getClip().duration - sh.time) / ts < FADE * 0.75 ? 1 : 0;
+    }
+    const step = dt / FADE;
+    for (const [a, w] of [...this.weights]) {
+      const target = a === this.base ? gate : 0;
+      const nw = w < target ? Math.min(target, w + step) : Math.max(target, w - step * 2);
+      this.weights.set(a, nw);
+      a.setEffectiveWeight(nw);
+      if (nw <= 0 && a !== this.base) {
+        a.stop();
+        this.weights.delete(a);
+      }
+    }
   }
 
   private oneShot(name: string, rate = 1): boolean {
@@ -194,7 +218,7 @@ export class MannequinCharacter implements CharacterView {
     this.combatT = a.combat ? COMBAT_HOLD : Math.max(0, this.combatT - realDt);
     this.grounded = !(a.flying || a.airborne || a.sky);
     const name = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
-    this.play(name, a.dead ? 0.1 : FADE);
+    this.play(name);
     if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = Math.min(1.6, Math.max(0.4, a.speed / JOG_SPEED));
     else if (this.base) this.base.timeScale = 1;
     // Bước chân: đếm theo pha chu kỳ chạy (hai bước mỗi chu kỳ).
@@ -207,6 +231,7 @@ export class MannequinCharacter implements CharacterView {
     // Giảm tần số cập nhật xương cho người ở xa.
     this.acc += dt;
     if (this.interval > 0 && this.acc < this.interval) return;
+    this.blendBases(this.acc);
     this.mixer.update(this.acc);
     this.acc = 0;
   }
