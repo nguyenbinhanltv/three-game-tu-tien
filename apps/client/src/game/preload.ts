@@ -4,7 +4,7 @@ import { type AssetCache, assets } from './assets';
 import { HUMAN_ANIM_LIB } from './character/animLib';
 import { MONSTER_SKINS } from './character/monsterSkins';
 import { playerModelId, starterOutfitId } from './character/playerSkins';
-import { legacyModelsRequested, legacySwordsRequested } from './character/view';
+import { legacyModelsRequested } from './character/view';
 
 /**
  * Thứ tự tải "khung hình đầu trước" (M6-1):
@@ -45,7 +45,7 @@ export function prefetchWorldAssets(cache: AssetCache = assets, legacy = legacyM
   }
   if (!legacy) ids.push([HUMAN_ANIM_LIB, { priority: PREFETCH_PRIORITY.player }]);
   // Kiếm mặc định (~370 KB): mẫu nhân vật chờ nó mới cắt kiếm cũ khỏi lưới, nên tải cùng nhân vật thay vì nối tiếp sau.
-  if (!legacy && !legacySwordsRequested()) ids.push([SWORD_MODEL_DEFAULT, { priority: PREFETCH_PRIORITY.player }]);
+  if (!legacy) ids.push([SWORD_MODEL_DEFAULT, { priority: PREFETCH_PRIORITY.player }]);
   ids.push(['arch_sect', { pos: { x: SECT.x, z: SECT.z } }]);
   if (!legacy) {
     // Boss (skin `lazy`) chỉ có trong bí cảnh: nạp khi gặp, không tải trước ở thế giới mở.

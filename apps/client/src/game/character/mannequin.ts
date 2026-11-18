@@ -17,12 +17,12 @@ import { applyV3Palette } from './v3Palette';
 import { breathOf, flinchOf, leanOf, locoMix, lookAngles, LOCO, swingRate, turnLagOf, xfade } from './mannequinAnim';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
+import { FLAGS } from '../flags';
 
-const search = typeof location === 'undefined' ? '' : location.search;
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
-export const CHR_V3 = new URLSearchParams(search).get('chr') === 'v3';
+export const CHR_V3 = FLAGS.chr === 'v3';
 /** `?v3anim=0` về hệ animation cũ (một clip chạy, crossfade 0,16 s, không lớp phụ) để so video trước/sau. */
-export const V3_ANIM = new URLSearchParams(search).get('v3anim') !== '0';
+export const V3_ANIM = FLAGS.v3Anim;
 export const V3_LIB = 'anim_ual_native';
 /** Asset theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). */
 export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
@@ -30,7 +30,7 @@ export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' }
 export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
 /** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b` về v3b để so. */
 export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
-const V3_PICK = new URLSearchParams(search).get('v3model');
+const V3_PICK = FLAGS.v3Model;
 export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_MODELS_B2;
 /** Asset dùng lò xo v2 (`chr_v3b2_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
 export const isSpring2 = (assetId: string | undefined): boolean => !!assetId?.startsWith('chr_v3b2_');
@@ -70,7 +70,7 @@ const SWING = ['Sword_Regular_A', 'Sword_Regular_B', 'Sword_Regular_C'];
 
 /** Tốc độ phát clip chạy để chân trụ không trượt (kẹp [0,4; 2]). */
 /** `?jog=<m/s>` ghi đè tốc độ chân trụ (chỉ để quét tham số khi đo trượt chân). */
-const JOG_OVERRIDE = Number(new URLSearchParams(search).get('jog')) || 0;
+const JOG_OVERRIDE = FLAGS.jog;
 export function jogRate(speed: number): number {
   return Math.min(2, Math.max(0.4, speed / (JOG_OVERRIDE || JOG_SPEED)));
 }
@@ -122,8 +122,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
 
 /** Bù góc dang vai/tay (rad) theo model khi áp clip UAL: tay áo rộng của Tripo bị tay clip ép xuyên; đo/chỉnh bằng `chrv3 --pen`. `?armfit=<độ>` ghi đè. */
 export const ARM_FIT: Record<string, number> = {};
-const ARMFIT_Q = new URLSearchParams(search).get('armfit');
-export const ARM_FIT_DEFAULT = ((ARMFIT_Q === null || Number.isNaN(Number(ARMFIT_Q)) ? 5 : Number(ARMFIT_Q)) * Math.PI) / 180;
+export const ARM_FIT_DEFAULT = ((FLAGS.armFit ?? 5) * Math.PI) / 180;
 
 const IDENT = new THREE.Matrix4();
 const _w = new THREE.Quaternion();

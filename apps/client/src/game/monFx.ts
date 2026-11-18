@@ -9,6 +9,7 @@ import { monPaletteKey } from '../render/vfx/palette';
 import { groundAt } from './levelCtx';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
 import { OTHERS_FX_LIVE_MAX } from './fxBudget';
+import { FLAGS } from './flags';
 
 /** Xa hơn mức này (m, tới camera) thì không phát FX quái. */
 export const MON_FX_DIST = 60;
@@ -16,7 +17,7 @@ export const MON_FX_DIST = 60;
 export const MON_HIT_GAP = 0.12;
 export const MON_STRIKE_GAP = 0.3;
 
-export const MONFX_ON = typeof location === 'undefined' || new URLSearchParams(location.search).get('monfx') !== '0';
+export const MONFX_ON = FLAGS.monFx;
 
 /** Hệ ngũ hành theo loại vùng khi không biết quái thả vùng. */
 const ELEM_OF_KIND: Record<string, string> = { fire: 'hoa', frost: 'thuy', lightning: 'kim', spirit: 'moc' };

@@ -83,5 +83,3 @@ export function easeZoneCam(cur: ZoneCam, want: ZoneCam, dt: number, rate = 2.2)
   cur.fov += (want.fov - cur.fov) * a;
 }
 
-/** `?e4=0` tắt camera theo khu và kẹp cỡ nhãn để so ảnh trước/sau (P2-E4). */
-export const E4_OFF = typeof location !== 'undefined' && new URLSearchParams(location.search).get('e4') === '0';

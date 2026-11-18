@@ -10,7 +10,7 @@ import { centerClip, snap } from '../lib/shot';
 export default {
   name: 'outfit',
   desc: 'Bộ trang bị mặc thật (áo + phụ kiện) nam/nữ: đứng 3 hướng, chạy, bay, đả tọa, chém; soát xuyên lưới',
-  usage: '[--sets set_liet_mach,… | --kit <bậc 1-4> --sets kiem,hophap,dansu] [--genders m,f] [--only still|motion] [--level 12] [--dye attire_sect] [--dist 3.4] [--size 1100x900] [--query outfit=0] [--panel] [--matrix]',
+  usage: '[--sets set_liet_mach,… | --kit <bậc 1-4> --sets kiem,hophap,dansu] [--genders m,f] [--only still|motion] [--level 12] [--dye attire_sect] [--dist 3.4] [--size 1100x900] [--panel] [--matrix]',
   async run(r) {
     const [vw, vh] = size('1100x900');
     const dist = num('--dist', 3.4);
