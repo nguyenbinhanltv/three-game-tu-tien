@@ -1,7 +1,9 @@
 // Khắc chế ngũ hành (3-10): chiêu có hệ `elem` đánh quái có hệ `elem`. Hàm thuần; server tính, client chỉ hiển thị cờ `ke` trong DmgMsg.
 // Tương khắc: Kim → Mộc → Thổ → Thủy → Hỏa → Kim.
 
-import type { Element } from './items';
+/** Ngũ hành. Định nghĩa ở đây (module lá) để items/tribulation/gems cùng dùng mà không vòng phụ thuộc; items.ts re-export. */
+export const ELEMENTS = ['kim', 'moc', 'thuy', 'hoa', 'tho'] as const;
+export type Element = (typeof ELEMENTS)[number];
 
 /** Hệ bị `key` khắc. */
 export const ELEM_BEATS: Record<Element, Element> = { kim: 'moc', moc: 'tho', tho: 'thuy', thuy: 'hoa', hoa: 'kim' };

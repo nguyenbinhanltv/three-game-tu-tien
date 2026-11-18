@@ -49,6 +49,12 @@ import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
 import { updateEclipse, updateRiftMood } from './levelLoad';
 import type { Game } from '../engine';
+import { logger } from '../../base/log';
+
+const renderLog = logger('render');
+const loadLog = logger('load');
+const gpuLog = logger('gpu');
+const qualityLog = logger('quality');
 
 /** Gửi ý định dùng chiêu lên server (tự chọn mục tiêu nếu cần). Server vẫn kiểm mọi điều kiện. */
 export function fireSkill(eng: Game, i: number): void {
@@ -248,7 +254,7 @@ export function runFrame(eng: Game): void {
     checkBlankFrame(eng, now);
   } catch (e) {
     // Vẽ ném lỗi liên tục (thiết bị WebGPU hỏng, shader không biên dịch được): cảnh chỉ còn nền đen dù HUD vẫn chạy.
-    console.error('[render]', e);
+    renderLog.error(e);
     if (++eng.renderFails >= RENDER_FAIL_LIMIT) eng.fallbackToWebGL2('render-error');
   }
   // renderer.info không tự reset (M1-6): lúc này là tổng của MỌI pass trong khung (bóng, cảnh, hậu kỳ).
@@ -288,7 +294,7 @@ export function runFrame(eng: Game): void {
     eng.started = true;
     eng.loadStats.worldReady = Math.round(performance.now() - eng.startedAt);
     eng.loadStats.frames = eng.frames;
-    console.info('[load]', JSON.stringify(eng.loadStats));
+    loadLog.info(JSON.stringify(eng.loadStats));
     // Chỉ vào game nếu vẫn đang ở màn hình tải (không ghi đè trạng thái lỗi, ví dụ bị đá do đăng nhập trùng).
     if (get().phase === 'loading') set({ phase: 'game' });
     pushLog(t('sys.welcome', { name: me.name }), 'good');
@@ -587,7 +593,7 @@ export function checkBlankFrame(eng: Game, now: number): void {
     const st = frameStats(d);
     eng.lastBlank = { mean: +st.mean.toFixed(1), sd: +st.sd.toFixed(2) };
     if (eng.blankWatch.push(st, eng.lastRender.drawCalls)) {
-      console.error('[gpu] khung trơn liên tục', eng.lastBlank, 'lỗi:', eng.gpuErrors);
+      gpuLog.error('khung trơn liên tục', eng.lastBlank, 'lỗi:', eng.gpuErrors);
       eng.fallbackToWebGL2('blank-frame');
     }
   } catch {
@@ -611,11 +617,11 @@ export function watchGpuDevice(eng: Game): void {
     const msg = String(e.error?.message ?? e.error ?? 'unknown').slice(0, 400);
     eng.gpuErrors.push(msg);
     if (eng.gpuErrors.length > 20) eng.gpuErrors.shift();
-    console.error('[gpu] uncapturederror:', msg);
+    gpuLog.error('uncapturederror:', msg);
   });
   void dev?.lost?.then((info) => {
     if (eng.disposed || info?.reason === 'destroyed') return;
-    console.error('[gpu] device lost:', info?.reason, info?.message);
+    gpuLog.error('device lost:', info?.reason, info?.message);
     eng.fallbackToWebGL2('device-lost');
   });
 }
@@ -627,7 +633,7 @@ function autoQualityTick(eng: Game, now: number): void {
   const cur = get().quality;
   const next = eng.autoQuality.check(now, cur, get().qualityLock);
   if (!next) return;
-  console.warn(`[quality] tự hạ ${cur} → ${next}`);
+  qualityLog.warn(`tự hạ ${cur} → ${next}`);
   eng.setQuality(next);
   pushToast(t('sys.quality_auto_down', { from: t('ui.settings.q.' + cur), to: t('ui.settings.q.' + next) }), 'bad');
 }
@@ -644,7 +650,7 @@ export async function describeGpu(eng: Game): Promise<void> {
     eng.gpuInfo = 'WebGL2';
     setGpuHint(null);
     publishQualityHint();
-    console.info('[gpu]', eng.gpuInfo);
+    gpuLog.info(eng.gpuInfo);
     return;
   }
   try {
@@ -672,7 +678,7 @@ export async function describeGpu(eng: Game): Promise<void> {
   } catch (e) {
     eng.gpuInfo = 'WebGPU (không đọc được adapter: ' + String(e) + ')';
   }
-  console.info('[gpu]', eng.gpuInfo);
+  gpuLog.info(eng.gpuInfo);
 }
 
 /** Chọn backend: xem `rendererChoice` (`?renderer=webgl2` chỉ cho lần nạp này). */

@@ -1,5 +1,5 @@
 // Truyền Tống Trận của Bắc Hoang Tẫn Nguyên (DV-1, tiền tố bh_). SINH BẰNG tools/maps/gen-bac-hoang.mjs.
-import type { TelePad } from './teleport';
+import type { TelePad } from './teleport.types';
 
 /** Trận trạm (bh_tp_tram) không mở sẵn: mở khi nhận nhiệm vụ q5_bac_hanh (DV3-H) hoặc "/gm tele bh_tp_tram" rồi truyền tống từ Ngoại Thành Trạm (Thiên Khuyết); tới nơi thì trận tự mở. Các trận vùng mở khi chạm. */
 export const BAC_HOANG_PADS: readonly TelePad[] = [

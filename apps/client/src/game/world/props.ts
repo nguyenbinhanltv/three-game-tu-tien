@@ -6,6 +6,9 @@ import { adoptGltfMaterials } from '../../render/materials/world';
 import { allProps, type PropInstance } from './propScatter';
 import { ImpostorLayer } from './treeImpostor';
 import { withSightFade } from './occlusion';
+import { logger } from '../../base/log';
+
+const propsLog = logger('props');
 
 /**
  * Lớp prop Tripo (P2-A4): mọi instance rải ở `propScatter.ts` gom thành ô 128 m × asset, mỗi ô-asset là một
@@ -479,7 +482,7 @@ export class PropLayer {
         this.acc = 1;
       })
       .catch((e) => {
-        console.warn(`[props] không nạp được ${id}, bỏ qua`, e);
+        propsLog.warn(`không nạp được ${id}, bỏ qua`, e);
         this.templates.set(id, 'failed');
       });
     return null;

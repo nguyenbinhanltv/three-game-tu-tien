@@ -104,7 +104,7 @@ export function QuestTrack() {
 const CHAT_IDLE_MS = 12_000;
 
 /**
- * Chat góc trái dưới, thu gọn được thành một dòng 32 px (dòng mới nhất); Enter mở lại để gõ. Lệnh /moi /p /tithi /roi giữ nguyên:
+ * Chat góc trái dưới, thu gọn được thành một dòng 32 px (dòng mới nhất); bấm thanh tiêu đề, mũi tên hoặc Enter mở lại (Enter ở `input.ts`). Lệnh /moi /p /tithi /roi giữ nguyên:
  * chỉ là ý định, server kiểm mọi điều kiện.
  */
 export function ChatBox() {
@@ -124,7 +124,7 @@ export function ChatBox() {
     setIdle(false);
     const id = window.setTimeout(() => setIdle(true), CHAT_IDLE_MS);
     return () => window.clearTimeout(id);
-  }, [log]);
+  }, [log, collapsed]);
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
@@ -153,7 +153,15 @@ export function ChatBox() {
       data-collapsed={collapsed ? '1' : undefined}
       aria-label={t('ui.chat.title')}
     >
-      <header className="u2h-card-head">
+      <header
+        className="u2h-card-head u2h-chat-head"
+        // Bấm cả thanh tiêu đề để thu/mở (nút mũi tên chỉ là gợi ý), trạng thái lưu `dtl.chatCollapsed`.
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('.u2h-fold')) return;
+          setHudPref('chatCollapsed', !pref);
+          blurAfterPointer(e);
+        }}
+      >
         <span>{t('ui.chat.title')}</span>
         {collapsed && last && (
           <span className="u2h-chat-last">
@@ -172,7 +180,10 @@ export function ChatBox() {
       </header>
       <div className="u2h-chat-log" ref={listRef}>
         {log.map((l) => (
-          <div key={l.id} className={'chat-line ' + l.type}>
+          <div
+            key={l.id} // Loại 'chat' đổi tên 'say': lớp `.chat` trùng lớp khung chat cũ (position: absolute) làm dòng tin người chơi đè lên nhau và lên ô nhập.
+            className={'chat-line ' + (l.type === 'chat' ? 'say' : l.type)}
+          >
             {l.from ? <b>{l.from}: </b> : null}
             {l.text}
           </div>

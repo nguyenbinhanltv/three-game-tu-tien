@@ -1,5 +1,8 @@
 import * as THREE from 'three/webgpu';
 import { IkRig } from './ikpose';
+import { logger } from '../../base/log';
+
+const modelsLog = logger('models');
 
 /** Kiếm tách sang xương riêng (tools/blender/biped_parts.py `sword_socket`); tọa độ glTF lúc nghỉ, hệ của asset. */
 export interface SwordExtras {
@@ -35,7 +38,7 @@ export function partExtras(scene: THREE.Object3D): PartExtras {
   try {
     return JSON.parse(raw) as PartExtras;
   } catch (err) {
-    console.warn('[models] extras dtl không đọc được', err);
+    modelsLog.warn('extras dtl không đọc được', err);
     return {};
   }
 }

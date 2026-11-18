@@ -102,6 +102,6 @@ export function planSort(inv: readonly InvSlot[], ctx: SortCtx): InvSlot[] {
     );
   });
   const out: InvSlot[] = new Array(INV_SIZE).fill(null);
-  for (let i = 0; i < items.length && i < INV_SIZE; i++) out[i] = items[i];
+  for (let i = 0; i < items.length && i < INV_SIZE; i++) out[i] = items[i] ?? null;
   return out;
 }

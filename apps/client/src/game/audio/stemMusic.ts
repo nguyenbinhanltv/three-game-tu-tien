@@ -6,6 +6,9 @@
 // hoặc nạp lỗi thì music.ts dùng đường cũ (stream bài vùng/`combat` crossfade).
 import { decodeMusic, musicOutput, stemSources } from './audio';
 import type { StemMix, StemZone } from './musicDirector';
+import { logger } from '../../base/log';
+
+const musicLog = logger('music');
 
 interface Bufs {
   zone: StemZone;
@@ -64,13 +67,13 @@ export class StemPlayer {
       this.loading = null;
       if (!base || !pulse || !edge) {
         this.failed.add(zone);
-        console.warn(`[music] stem ${zone}: nạp lỗi, dùng đường crossfade cũ`);
+        musicLog.warn(`stem ${zone}: nạp lỗi, dùng đường crossfade cũ`);
         return;
       }
       // Ba file phải đúng bằng nhau từng mẫu, nếu không thì vòng lệch dần: coi như lỗi.
       if (base.length !== pulse.length || base.length !== edge.length) {
         this.failed.add(zone);
-        console.warn(`[music] stem ${zone}: độ dài lệch (${base.length}/${pulse.length}/${edge.length} mẫu), dùng đường cũ`);
+        musicLog.warn(`stem ${zone}: độ dài lệch (${base.length}/${pulse.length}/${edge.length} mẫu), dùng đường cũ`);
         return;
       }
       this.bufs = { zone, base, pulse, edge };

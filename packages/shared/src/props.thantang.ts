@@ -1,6 +1,6 @@
 // Prop bày của Thần Tàng Điện (E4-C): lòng chảo dựng thành điện tàng cổ, cột đá khắc vân thành vòng, tượng võ sĩ canh ba hốc phong ấn.
 // Dùng prop sẵn có của Thiên Khuyết, chỉ tô cảnh (không va chạm), tất định. Ba hốc cùng góc với `seals.doors` ở levels/than_tang.json (200°, 270°, 340°).
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 const CX = 1520;
 const CZ = 1300;

@@ -47,6 +47,9 @@ import type { CharState, ClipMap } from './states';
 import { CHR_V3, MannequinPlayers, V3_ONLY_SKINS } from './mannequin';
 import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
 import { FLAGS } from '../../base/flags';
+import { logger } from '../../base/log';
+
+const modelsLog = logger('models');
 
 /** Ngoại hình hiển thị của một người chơi (từ schema server: `g`, `dye`). */
 export interface PlayerLook {
@@ -517,7 +520,7 @@ export class PlayerSkins {
       };
       return attachAccessories(scene, fit, built, this.accMats).ribbons;
     } catch (err) {
-      console.warn('[models] không dựng được phụ kiện đồ bộ', err);
+      modelsLog.warn('không dựng được phụ kiện đồ bộ', err);
       return null;
     }
   }
@@ -647,7 +650,7 @@ export class PlayerSkins {
         });
         const len = (partExtras(h.scene) as { scabbard?: { len?: number } }).scabbard?.len;
         if (!mesh || !len) {
-          console.warn(`[models] ${asset} thiếu số đo vỏ (extras dtl.scabbard), bỏ qua`);
+          modelsLog.warn(`${asset} thiếu số đo vỏ (extras dtl.scabbard), bỏ qua`);
           h.release();
           this.scabbards.set(asset, 'failed');
           return;
@@ -659,7 +662,7 @@ export class PlayerSkins {
         this.scabbards.set(asset, { mesh, len, release: () => h.release() });
       },
       (err) => {
-        console.warn(`[models] không nạp được ${asset}`, err);
+        modelsLog.warn(`không nạp được ${asset}`, err);
         if (!this.disposed) this.scabbards.set(asset, 'failed');
       },
     );
@@ -682,7 +685,7 @@ export class PlayerSkins {
         });
         meshes.sort((a, b) => (a.userData.lod ?? 0) - (b.userData.lod ?? 0));
         if (!meshes.length) {
-          console.warn(`[models] ${id} không có lưới skin, giữ áo recolor`);
+          modelsLog.warn(`${id} không có lưới skin, giữ áo recolor`);
           h.release();
           this.outfits.set(id, 'failed');
           return;
@@ -690,7 +693,7 @@ export class PlayerSkins {
         this.outfits.set(id, { handle: h, meshes, springs: springDefs(h.scene, partExtras(h.scene).springs ?? []) });
       },
       (err) => {
-        console.warn(`[models] không nạp được áo ${id}, giữ áo recolor + phụ kiện`, err);
+        modelsLog.warn(`không nạp được áo ${id}, giữ áo recolor + phụ kiện`, err);
         if (!this.disposed) this.outfits.set(id, 'failed');
       },
     );
@@ -751,7 +754,7 @@ export class PlayerSkins {
     if (!t || typeof t === 'string' || t.k3 || this.disposed) return;
     // UAL (thay chết/trúng đòn/ngã/thủ thế, thêm lướt/nhảy) nạp cùng K-3; lỗi UAL thì chỉ mất phần UAL.
     const ualP = (UAL_ENABLED ? this.cache.acquire(HUMAN_UAL_LIB, { priority: 40 }) : Promise.resolve(null)).catch((err) => {
-      console.warn('[models] không nạp được thư viện clip UAL, giữ clip cũ', err);
+      modelsLog.warn('không nạp được thư viện clip UAL, giữ clip cũ', err);
       return null;
     });
     this.cache.acquire(HUMAN_K3_LIB, { priority: 40 }).then(
@@ -809,7 +812,7 @@ export class PlayerSkins {
       },
       (err) => {
         void ualP.then((u) => u?.release());
-        console.warn('[models] không nạp được thư viện clip K-3, giữ bộ clip cũ', err);
+        modelsLog.warn('không nạp được thư viện clip K-3, giữ bộ clip cũ', err);
       },
     );
   }
@@ -863,7 +866,7 @@ export class PlayerSkins {
           this.templates.set(id, templateOf(handle, lib, PLAYER_SKINS[id], !!sword));
           setTimeout(() => this.loadK3(id, PLAYER_SKINS[id]), K3_DELAY);
         } catch (err) {
-          console.warn(`[models] không dựng được ${id}, dùng model khối`, err);
+          modelsLog.warn(`không dựng được ${id}, dùng model khối`, err);
           handle.release();
           lib.release();
           this.templates.set(id, 'failed');
@@ -871,7 +874,7 @@ export class PlayerSkins {
       },
       (err) => {
         if (this.disposed) return;
-        console.warn(`[models] không nạp được ${id} hoặc thư viện clip, dùng model khối`, err);
+        modelsLog.warn(`không nạp được ${id} hoặc thư viện clip, dùng model khối`, err);
         this.templates.set(id, 'failed');
       },
     );
@@ -890,7 +893,7 @@ export class PlayerSkins {
         }
         const tpl = swordTemplateOf(h.scene, partExtras(h.scene), () => h.release());
         if (!tpl) {
-          console.warn(`[models] ${id} thiếu số đo kiếm (extras dtl.blade), bỏ qua`);
+          modelsLog.warn(`${id} thiếu số đo kiếm (extras dtl.blade), bỏ qua`);
           h.release();
           this.swords.set(id, 'failed');
           return null;
@@ -909,7 +912,7 @@ export class PlayerSkins {
         return tpl;
       },
       (err) => {
-        console.warn(`[models] không nạp được ${id}`, err);
+        modelsLog.warn(`không nạp được ${id}`, err);
         this.swords.set(id, 'failed');
         return null;
       },
@@ -978,11 +981,11 @@ function templateOf(handle: AssetHandle, lib: AssetHandle, skin: PlayerSkin, swo
       if (!clipMap[state] && poses.has(pid)) clipMap[state] = poseClipName(pid);
     }
   } else {
-    console.warn('[models] asset người chơi thiếu xương Mixamo, không có động tác chiêu/tư thế tạm');
+    modelsLog.warn('asset người chơi thiếu xương Mixamo, không có động tác chiêu/tư thế tạm');
   }
   const parts = partExtras(handle.scene);
   const sword = parts.sword ? swordSocketDef(handle.scene, parts.sword) : null;
-  if (parts.sword && !sword) console.warn('[models] asset người chơi có extras kiếm nhưng thiếu xương, kiếm giữ trên lưng');
+  if (parts.sword && !sword) modelsLog.warn('asset người chơi có extras kiếm nhưng thiếu xương, kiếm giữ trên lưng');
   const springs = parts.springs ? springDefs(handle.scene, parts.springs) : [];
   // Kiếm riêng theo trang bị: cắt kiếm cũ khỏi lưới khi đã có kiếm mới để thay (nếu không cắt được thì giữ kiếm cũ).
   const oldSword = sword && parts.sword && swordReady ? cutOldSword(handle.scene, parts.sword) : null;

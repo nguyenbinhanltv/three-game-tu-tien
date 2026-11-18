@@ -1,3 +1,4 @@
+import { at } from './arr';
 import { describe, expect, it } from 'vitest';
 import { bodyClassOf, bodyRadiusOf, HIT_FEEL } from './bodyfeel';
 
@@ -11,7 +12,7 @@ describe('bodyfeel', () => {
   });
   it('giật lùi giảm dần theo hạng, đòn nặng luôn mạnh hơn', () => {
     const o = ['small', 'medium', 'large', 'boss'] as const;
-    for (let i = 1; i < o.length; i++) expect(HIT_FEEL[o[i]].knock).toBeLessThan(HIT_FEEL[o[i - 1]].knock);
+    for (let i = 1; i < o.length; i++) expect(HIT_FEEL[at(o, i)].knock).toBeLessThan(HIT_FEEL[at(o, i - 1)].knock);
     for (const c of o) expect(HIT_FEEL[c].heavyKnock).toBeGreaterThan(1);
   });
   it('bán kính tăng theo scale', () => {

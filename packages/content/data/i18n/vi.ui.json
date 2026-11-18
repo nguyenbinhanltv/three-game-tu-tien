@@ -1267,5 +1267,6 @@
   "ui.touch.rotate": "Xoay ngang màn hình để chơi dễ hơn.",
   "ui.touch.rotate_close": "Đóng gợi ý",
   "ui.touch.joystick": "Cần di chuyển",
-  "ui.bag.hint_touch": "Chạm: chọn món (có nút dùng/mặc) · Giữ ngón rồi kéo: đổi chỗ, mặc, chuyển trang"
+  "ui.bag.hint_touch": "Chạm: chọn món (có nút dùng/mặc) · Giữ ngón rồi kéo: đổi chỗ, mặc, chuyển trang",
+  "ui.hoatruc.de_tu": "Đồ Đệ Tử"
 }

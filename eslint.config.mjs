@@ -78,6 +78,12 @@ export default tseslint.config(
     rules: { 'no-console': 'error' },
   },
   {
+    // Client: mọi dòng log đi qua apps/client/src/base/log.ts (có mức, prefix module; debug tắt ở production). Test được in thẳng.
+    files: ['apps/client/src/**/*.{ts,tsx}'],
+    ignores: ['apps/client/src/base/log.ts', ...TESTS],
+    rules: { 'no-console': 'error' },
+  },
+  {
     // Client: không đọc dữ liệu chỉ của server (bảng rơi đồ) — `monsters.json` vào bundle client (xem CLAUDE.md, no-server-data.test.ts).
     files: ['apps/client/src/**/*.{ts,tsx}'],
     rules: {
