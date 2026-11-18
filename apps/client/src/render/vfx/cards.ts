@@ -5,7 +5,7 @@ import * as THREE from 'three/webgpu';
  * (không dùng ảnh ngoài). Mã hóa cho shader `card` (render/vfx/stylized.ts): kênh R = tầng màu (0 bóng sẫm … 0,5 thân … 1 viền sáng),
  * kênh G = 1 ở phần dùng màu điểm nhấn (vàng / đỏ son), alpha = hình. Một texture mỗi thẻ.
  */
-export type CardId = 'arhat' | 'phoenix' | 'ghost' | 'sword' | 'turtle';
+export type CardId = 'arhat' | 'phoenix' | 'ghost' | 'sword' | 'turtle' | 'infant';
 type Ctx = CanvasRenderingContext2D;
 const col = (tier: number, acc = 0) => `rgb(${Math.round(tier * 255)},${Math.round(acc * 255)},0)`;
 
@@ -771,6 +771,71 @@ function drawTurtle(g: Ctx): void {
   );
 }
 
+/** Nguyên Anh (RFX-1): em bé ngồi thiền kiết già trên đài sen, hào quang tròn sau lưng; thân vàng, đài sen và hào quang là điểm nhấn (kênh G). */
+function drawInfant(g: Ctx): void {
+  const C = 192;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.arc(C, 170, 150, 0, Math.PI * 2);
+  g.strokeStyle = col(1, 1);
+  g.lineWidth = 9;
+  g.stroke();
+  g.beginPath();
+  g.arc(C, 170, 126, 0, Math.PI * 2);
+  g.strokeStyle = col(0.7, 1);
+  g.lineWidth = 5;
+  g.stroke();
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2;
+    line(
+      g,
+      0.9,
+      4,
+      [
+        [C + Math.cos(a) * 158, 170 + Math.sin(a) * 158],
+        [C + Math.cos(a) * (176 + (i % 2) * 10), 170 + Math.sin(a) * (176 + (i % 2) * 10)],
+      ],
+      1,
+    );
+  }
+  // Đài sen.
+  for (let i = 0; i < 7; i++) {
+    const x = C + (i - 3) * 38;
+    fillPath(
+      g,
+      0.7,
+      1,
+      () => {
+        g.moveTo(x, 292);
+        g.quadraticCurveTo(x + 26, 318, x, 350);
+        g.quadraticCurveTo(x - 26, 318, x, 292);
+      },
+      1,
+      3,
+    );
+  }
+  // Thân + chân kiết già.
+  fillPath(g, 0.8, 0, () => g.ellipse(C, 276, 104, 34, 0, 0, Math.PI * 2), 1, 5);
+  fillPath(g, 0.85, 0, () => g.ellipse(C, 222, 58, 66, 0, 0, Math.PI * 2), 1, 5);
+  // Tay chắp trước ngực, đầu, búi tóc.
+  fillPath(g, 0.95, 0, () => g.ellipse(C, 214, 22, 14, 0, 0, Math.PI * 2), 1, 3);
+  fillPath(g, 0.9, 0, () => g.ellipse(C, 142, 42, 46, 0, 0, Math.PI * 2), 1, 5);
+  fillPath(g, 1, 1, () => g.ellipse(C, 96, 15, 17, 0, 0, Math.PI * 2), 1, 3);
+  line(g, 0.12, 4, [
+    [C - 22, 146],
+    [C - 10, 150],
+  ]);
+  line(g, 0.12, 4, [
+    [C + 10, 150],
+    [C + 22, 146],
+  ]);
+  line(g, 0.5, 3, [
+    [C - 8, 168],
+    [C, 172],
+    [C + 8, 168],
+  ]);
+}
+
 const tex = new Map<CardId, THREE.Texture>();
 
 /** Texture của một thẻ (dựng một lần, nạp lười). Không có `document` (test) thì trả texture trống. */
@@ -782,8 +847,8 @@ export function cardTexture(id: CardId): THREE.Texture {
     t = new THREE.DataTexture(new Uint8Array(16), 2, 2);
     t.needsUpdate = true;
   } else {
-    const w = id === 'arhat' || id === 'sword' ? 512 : id === 'ghost' ? 256 : 768;
-    const h = id === 'arhat' || id === 'sword' ? 768 : id === 'ghost' ? 512 : 640;
+    const w = id === 'arhat' || id === 'sword' ? 512 : id === 'infant' ? 384 : id === 'ghost' ? 256 : 768;
+    const h = id === 'arhat' || id === 'sword' ? 768 : id === 'infant' ? 384 : id === 'ghost' ? 512 : 640;
     const cv = document.createElement('canvas');
     cv.width = w;
     cv.height = h;
@@ -793,6 +858,7 @@ export function cardTexture(id: CardId): THREE.Texture {
     else if (id === 'ghost') drawGhost(g);
     else if (id === 'sword') drawSword(g);
     else if (id === 'turtle') drawTurtle(g);
+    else if (id === 'infant') drawInfant(g);
     else drawPhoenix(g);
     t = new THREE.CanvasTexture(cv);
     t.colorSpace = THREE.NoColorSpace;

@@ -24,9 +24,9 @@ export function daoOf(mt: string | undefined): AuraDao {
   return 'kiem';
 }
 
-/** Số phi kiếm nhỏ quanh lưng: 3 ở Nguyên Anh (24) tăng dần tới 9 ở Ảnh Biến (32). */
+/** Số phi kiếm xếp vòng quanh lưng: đủ 9 thanh đều từ Nguyên Anh (hạ theo preset bằng `orbitScale`). */
 export function swordCount(lv: number): number {
-  return Math.max(3, Math.min(9, 3 + Math.round((lv - NGUYEN_ANH_LEVEL) * 0.75)));
+  return lv >= NGUYEN_ANH_LEVEL ? 9 : 0;
 }
 
 /** Bậc chất lượng hiệu ứng: 0 Thấp, 1 Vừa, 2 Cao. Lấy mức thấp hơn của preset đồ họa và "Chất lượng hiệu ứng". */
@@ -43,8 +43,10 @@ export interface AuraCaps {
   particleScale: number;
   /** Hệ số số phi kiếm/cánh sen (0–1). */
   orbitScale: number;
-  /** Có vẽ lớp dựng hình chính (kim đan, hào quang đạo, vầng sáng, sương) không. */
+  /** Có vẽ lớp dựng hình chính (kim đan, hào quang đạo, nhấc người) không. */
   main: boolean;
+  /** Lớp chi tiết: vệt kiếm, vòng ngũ hành, mây sen, pháp tướng/phân thân, tia sét. */
+  detail: boolean;
   /** Có cho phép bóng pháp tướng không. */
   phantom: boolean;
 }
@@ -56,19 +58,20 @@ export interface AuraCaps {
 export function auraCaps(tier: 0 | 1 | 2, mine: boolean): AuraCaps {
   if (tier === 0) {
     return mine
-      ? { particles: false, particleScale: 0, orbitScale: 0.5, main: true, phantom: false }
-      : { particles: false, particleScale: 0, orbitScale: 0, main: false, phantom: false };
+      ? { particles: false, particleScale: 0, orbitScale: 0.55, main: true, detail: false, phantom: false }
+      : { particles: false, particleScale: 0, orbitScale: 0, main: false, detail: false, phantom: false };
   }
   if (tier === 1) {
     return {
       particles: mine,
       particleScale: mine ? 0.6 : 0,
-      orbitScale: mine ? 1 : 0.5,
+      orbitScale: mine ? 1 : 0.55,
       main: true,
+      detail: mine,
       phantom: true,
     };
   }
-  return { particles: true, particleScale: mine ? 1 : 0.5, orbitScale: 1, main: true, phantom: true };
+  return { particles: true, particleScale: mine ? 1 : 0.5, orbitScale: 1, main: true, detail: true, phantom: true };
 }
 
 /** Giây sau lần ra chiêu mà coi là "chiến đấu nặng" (hào quang quanh người mờ bớt cho đỡ rối mắt). */

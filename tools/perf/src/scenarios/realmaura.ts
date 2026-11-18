@@ -85,7 +85,14 @@ async function setup(page: Page, dao: string, lv: number): Promise<void> {
       .catch(() => false);
     if (ok) break;
   }
-  await gm(page, `level ${lv}`, 1800);
+  for (let k = 0; k < 4; k++) {
+    await gm(page, `level ${lv}`, 1200);
+    const ok = await page
+      .waitForFunction((n) => (window.__game!.me()?.lv as number) >= n, lv, { timeout: 4000, polling: 250 })
+      .then(() => true)
+      .catch(() => false);
+    if (ok) break;
+  }
   await gm(page, 'god on', 900);
   await gm(page, 'tp 2048 2088', 1600);
 }
@@ -98,7 +105,8 @@ async function stat(page: Page): Promise<string> {
 export default {
   name: 'realmaura',
   desc: 'Hào quang cảnh giới trên nhân vật: 4 cảnh giới × 3 đạo (1080p + 720p), dãy khung pháp tướng, video, đo hiệu năng trước/sau',
-  usage: '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--video] [--perf] [--others N] [--only stills|phantom]',
+  usage:
+    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--video] [--perf] [--others N] [--only stills|phantom]',
   async run(r) {
     const daos = list('--daos', 'kiem,ho,dan');
     const realms = list('--realms', 'kd,na,hn,ab');
@@ -107,7 +115,8 @@ export default {
     const vh = 1080;
     const quality = opt('--quality', 'high');
     const fxq = opt('--fxq', 'high');
-    const query = { fxq, ...(flag('--off') ? { aura: 0 } : {}) };
+    const mood = opt('--mood', '');
+    const query = { fxq, ...(mood ? { mood } : {}), ...(flag('--off') ? { aura: 0 } : {}) };
 
     if (flag('--perf')) {
       await perf(r, daos, num('--others', 4), quality, fxq);
@@ -175,7 +184,7 @@ export default {
   },
 } satisfies Scenario;
 
-/** Video ngắn mỗi đạo ở Ảnh Biến (đủ mọi lớp): đứng yên, chạy, ra chiêu lớn. */
+/** Video ngắn mỗi đạo ở Hóa Thần (`--vlevel`): đứng yên, chạy, ra chiêu lớn (tối thượng rồi chiêu số 6). */
 async function videos(r: Parameters<Scenario['run']>[0], daos: string[], quality: string, fxq: string): Promise<void> {
   const dir = path.join(r.out, '_video');
   fs.mkdirSync(dir, { recursive: true });
@@ -191,9 +200,9 @@ async function videos(r: Parameters<Scenario['run']>[0], daos: string[], quality
       hide: 'hud',
       warnings: /models/,
     });
-    await setup(page, dao, 32);
+    await setup(page, dao, num('--vlevel', 28));
     await gm(page, 'spawn mon_soi_xam 1', 1500);
-    await cam(page, { yaw: Math.PI + 0.5, pitch: 0.14, dist: 6.4 });
+    await cam(page, { yaw: Math.PI + 0.5, pitch: 0.14, dist: 7 });
     await sleep(3500); // đứng yên
     await page.keyboard.down('KeyW');
     await sleep(3200); // chạy
@@ -210,7 +219,7 @@ async function videos(r: Parameters<Scenario['run']>[0], daos: string[], quality
       .filter((f) => f.endsWith('.webm') && !f.startsWith('video-'))
       .map((f) => ({ f, t: fs.statSync(path.join(dir, f)).mtimeMs }))
       .sort((a, b) => b.t - a.t);
-    if (vids[0]) fs.renameSync(path.join(dir, vids[0].f), path.join(r.out, `video-${d.label}-anhbien.webm`));
+    if (vids[0]) fs.renameSync(path.join(dir, vids[0].f), path.join(r.out, `video-${d.label}-hoathan.webm`));
   }
 }
 

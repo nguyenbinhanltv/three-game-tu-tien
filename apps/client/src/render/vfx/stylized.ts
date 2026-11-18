@@ -469,7 +469,8 @@ export function cardNodes(U: FxUniforms): { color: N; opacity: N } {
   const ts = texture(cardTexture('sword'), q);
   const tt = texture(cardTexture('turtle'), q);
   const base012 = select(which.greaterThan(1.5), tg, mix(ta, tp, step(0.5, which)));
-  const t = select(which.greaterThan(3.5), tt, select(which.greaterThan(2.5), ts, base012));
+  const ti = texture(cardTexture('infant'), q);
+  const t = select(which.greaterThan(4.5), ti, select(which.greaterThan(3.5), tt, select(which.greaterThan(2.5), ts, base012)));
   const tier = t.r;
   const acc = t.g;
   const accent012 = select(
@@ -477,7 +478,11 @@ export function cardNodes(U: FxUniforms): { color: N; opacity: N } {
     vec3(0.62, 0.92, 1.0),
     mix(vec3(1.0, 0.78, 0.3), vec3(0.92, 0.2, 0.1), step(0.5, which)),
   );
-  const accent = select(which.greaterThan(3.5), vec3(0.55, 0.82, 1.0), select(which.greaterThan(2.5), vec3(0.62, 1.0, 0.86), accent012));
+  const accent = select(
+    which.greaterThan(4.5),
+    vec3(0.5, 0.95, 0.75),
+    select(which.greaterThan(3.5), vec3(0.55, 0.82, 1.0), select(which.greaterThan(2.5), vec3(0.62, 1.0, 0.86), accent012)),
+  );
   const base = ramp3(tier, body.mul(body).mul(0.42), body, rim, 0.3, 0.72, 0.05);
   const accCol = ramp3(tier, accent.mul(0.35), accent, mix(accent, vec3(1, 1, 1), 0.35), 0.3, 0.72, 0.05);
   const lit = mix(base, accCol, acc);

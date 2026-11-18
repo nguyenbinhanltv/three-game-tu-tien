@@ -27,19 +27,18 @@ describe('realmAuraRules', () => {
     expect(daoOf('')).toBe('kiem');
     expect(daoOf(undefined)).toBe('kiem');
   });
-  it('phi kiếm 3 → 9', () => {
-    expect(swordCount(24)).toBe(3);
-    expect(swordCount(28)).toBe(6);
+  it('đủ 9 phi kiếm từ Nguyên Anh', () => {
+    expect(swordCount(23)).toBe(0);
+    expect(swordCount(24)).toBe(9);
     expect(swordCount(32)).toBe(9);
-    expect(swordCount(40)).toBe(9);
   });
   it('trần theo chất lượng: Thấp tắt cho người khác, giảm cho mình', () => {
     expect(qualityTier('high', 'low')).toBe(0);
     expect(qualityTier('medium', 'high')).toBe(1);
     expect(qualityTier('ultra', 'high')).toBe(2);
     expect(auraCaps(0, false)).toMatchObject({ main: false, particles: false, phantom: false });
-    expect(auraCaps(0, true)).toMatchObject({ main: true, particles: false, orbitScale: 0.5, phantom: false });
-    expect(auraCaps(1, false)).toMatchObject({ particles: false, orbitScale: 0.5 });
+    expect(auraCaps(0, true)).toMatchObject({ main: true, detail: false, particles: false, orbitScale: 0.55, phantom: false });
+    expect(auraCaps(1, false)).toMatchObject({ particles: false, orbitScale: 0.55, detail: false });
     expect(auraCaps(2, false).particleScale).toBe(0.5);
     expect(auraCaps(2, true).particleScale).toBe(1);
   });

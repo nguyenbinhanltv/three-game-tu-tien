@@ -355,12 +355,88 @@ function gustGeometry(radius = 0.5, w = 0.045, segs = 16): THREE.BufferGeometry 
   return build(pos, uvs, idx);
 }
 
+/** Gom các khối (đã đặt đúng chỗ) thành một lưới có chỉ mục tuần tự, UV `u` theo khối, `v` = vị trí dọc trục `axis` chuẩn hóa 0 → 1. */
+function mergedParts(parts: THREE.BufferGeometry[], axis: 'y' | 'z', smooth = false): THREE.BufferGeometry {
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const nor: number[] = [];
+  let lo = Infinity;
+  let hi = -Infinity;
+  const flat = parts.map((p) => (p.index ? p.toNonIndexed() : p));
+  for (const g of flat) {
+    const a = g.getAttribute('position');
+    for (let i = 0; i < a.count; i++) {
+      const c = axis === 'y' ? a.getY(i) : a.getZ(i);
+      lo = Math.min(lo, c);
+      hi = Math.max(hi, c);
+    }
+  }
+  for (const g of flat) {
+    const a = g.getAttribute('position');
+    const t = g.getAttribute('uv');
+    for (let i = 0; i < a.count; i++) {
+      pos.push(a.getX(i), a.getY(i), a.getZ(i));
+      const nn = g.getAttribute('normal');
+      if (nn) nor.push(nn.getX(i), nn.getY(i), nn.getZ(i));
+      const c = axis === 'y' ? a.getY(i) : a.getZ(i);
+      uvs.push(t ? t.getX(i) : 0, (c - lo) / Math.max(1e-6, hi - lo));
+    }
+  }
+  const g = build(
+    pos,
+    uvs,
+    Array.from({ length: pos.length / 3 }, (_, i) => i),
+  );
+  // Giữ pháp tuyến mịn của từng khối gốc (bóng mềm cho hình người); mặc định phẳng từng mặt (kiếm).
+  if (smooth && nor.length === pos.length) g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  return g;
+}
+
+/**
+ * Thanh kiếm thật dài 1 dọc +Z (mũi ở +Z): lưỡi dẹt nhọn mũi, chắn kiếm, chuôi, đầu chuôi. UV `v` từ chuôi (0) tới mũi (1) để shader `crystal`
+ * ra tông sáng dần về mũi, gân vàng ở mép; mỗi mặt phẳng (không dùng chung đỉnh).
+ */
+function swordGeometry(): THREE.BufferGeometry {
+  const blade = new THREE.CylinderGeometry(0.008, 0.065, 0.74, 4, 1, false).rotateX(Math.PI / 2).rotateZ(Math.PI / 4);
+  blade.scale(0.5, 1, 1);
+  blade.translate(0, 0, 0.27 + 0.37);
+  const guard = new THREE.BoxGeometry(0.2, 0.026, 0.034).translate(0, 0, 0.27);
+  const hilt = new THREE.CylinderGeometry(0.014, 0.014, 0.22, 6).rotateX(Math.PI / 2).translate(0, 0, 0.14);
+  const pommel = new THREE.SphereGeometry(0.03, 6, 4).translate(0, 0, 0.02);
+  return mergedParts([blade, guard, hilt, pommel], 'z');
+}
+
+/**
+ * Dáng pháp tướng đứng (cao ~1,8, chân ở y = 0): đầu + búi tóc, cổ, vai, hai tay áo rộng buông, áo dài xòe chạm đất. Dùng cho bóng pháp tướng
+ * khổng lồ (vẽ bằng `dome` fresnel + `crystal`) và các phân thân mờ. UV `v` theo độ cao.
+ */
+function bodyGeometry(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  parts.push(new THREE.SphereGeometry(0.115, 20, 14).scale(1, 1.18, 1).translate(0, 1.64, 0));
+  parts.push(new THREE.SphereGeometry(0.055, 8, 6).translate(0, 1.82, -0.01));
+  parts.push(new THREE.CylinderGeometry(0.05, 0.06, 0.12, 8).translate(0, 1.49, 0));
+  // Thân: vai rộng thon xuống eo rồi áo dài xòe.
+  parts.push(new THREE.CylinderGeometry(0.2, 0.15, 0.52, 18).translate(0, 1.2, 0));
+  parts.push(new THREE.CylinderGeometry(0.15, 0.36, 1.0, 20).translate(0, 0.5, 0));
+  for (const s of [-1, 1]) {
+    parts.push(new THREE.SphereGeometry(0.075, 12, 8).translate(s * 0.23, 1.4, 0));
+    // Tay áo rộng buông chéo ra ngoài.
+    const sleeve = new THREE.CylinderGeometry(0.06, 0.13, 0.62, 14).rotateZ(s * 0.22).translate(s * 0.31, 1.08, 0.02);
+    parts.push(sleeve);
+  }
+  return mergedParts(parts, 'y', true);
+}
+
 const cache = new Map<string, THREE.BufferGeometry>();
 const memo = (k: string, f: () => THREE.BufferGeometry) => {
   let g = cache.get(k);
   if (!g) cache.set(k, (g = f()));
   return g;
 };
+
+/** Hình riêng của hào quang cảnh giới (RFX-1): thanh kiếm thật và dáng pháp tướng người (dựng một lần, dùng chung). */
+export const swordFxGeometry = (): THREE.BufferGeometry => memo('sword', swordGeometry);
+export const bodyFxGeometry = (): THREE.BufferGeometry => memo('body', bodyGeometry);
 
 export type ShapeKey = FxShape | 'shard';
 
