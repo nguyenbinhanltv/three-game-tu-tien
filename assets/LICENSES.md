@@ -300,6 +300,23 @@ Bộ slate cho `thien_khuyet`, cũng từ [Poly Haven](https://polyhaven.com/tex
 
 Thẻ cỏ sao (`apps/client/public/grass-night/`) dựng từ ảnh concept của dự án `docs/asset-concepts/prop_co_*.webp` bằng `pnpm assets:grass-cards --set night` (không dùng Tripo).
 
+### Texture mặt đất Bắc Hoang Tẫn Nguyên (DV-3I)
+
+Bộ ash cho `bac_hoang`, cũng từ [Poly Haven](https://polyhaven.com/textures), **CC0-1.0**; đổi sắc (giảm bão hòa, ngả tro than) bằng `pnpm assets:terrain --set ash`, ra `apps/client/public/terrain-ash/` (nạp lười khi vào level).
+
+| Lớp | Poly Haven | Tác giả | Giấy phép |
+| --- | --- | --- | --- |
+| nền (đất cháy) | [burned_ground_01](https://polyhaven.com/a/burned_ground_01) | Rob Tuytel | CC0-1.0 |
+| đất (bùn nứt khô) | [mud_cracked_dry_03](https://polyhaven.com/a/mud_cracked_dry_03) | Dario Barresi, Dimitrios Savva | CC0-1.0 |
+| nền rừng (bùn) | [aerial_mud_1](https://polyhaven.com/a/aerial_mud_1) | Rob Tuytel | CC0-1.0 |
+| đá (tảng nứt) | [rock_boulder_cracked](https://polyhaven.com/a/rock_boulder_cracked) | Dario Barresi, Dimitrios Savva | CC0-1.0 |
+| vách đá | [rock_wall_08](https://polyhaven.com/a/rock_wall_08) | Amal Kumar | CC0-1.0 |
+| cát (tro bay) | [aerial_sand](https://polyhaven.com/a/aerial_sand) | Rob Tuytel | CC0-1.0 |
+| lát đá (đá núi lửa) | [volcanic_rock_tiles](https://polyhaven.com/a/volcanic_rock_tiles) | Charlotte Baglioni | CC0-1.0 |
+| sỏi (lòng sông cạn) | [dry_riverbed_rock](https://polyhaven.com/a/dry_riverbed_rock) | Amal Kumar | CC0-1.0 |
+
+Cây chết, vệt nứt Giới Khích và đá/cột đổ của Bắc Hoang là thủ tục (code TSL/Three.js), không dùng asset ngoài.
+
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 
 ### Âm thanh (SFX, âm môi trường)
@@ -386,6 +403,8 @@ Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằn
 | `wild` | Vân Lam Sơn Mạch | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild.mjs` |
 | `wild_ochre` | Đoạn Mạch Cổ Cốc | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild_ochre.mjs` |
 | `wild_night` | Thiên Khuyết Cổ Thành | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_night.mjs` |
+| `wild_ash` | Bắc Hoang — Hàn Hôi | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_ash.mjs` |
+| `wild_rift` | Bắc Hoang — Bên Kia Vết Nứt | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_rift.mjs` |
 | `wild_cloud` | Vân Hải Phù Đảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_cloud.mjs` |
 | `forest` | Rừng Linh Thảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/forest.mjs` |
 | `lake` | Hồ Sương Mù | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/lake.mjs` |

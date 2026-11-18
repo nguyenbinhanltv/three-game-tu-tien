@@ -15,6 +15,8 @@ export type MusicTrack =
   | 'wild_ochre'
   | 'wild_cloud'
   | 'wild_night'
+  | 'wild_ash'
+  | 'wild_rift'
   | 'forest'
   | 'lake'
   | 'dungeon'
@@ -24,7 +26,7 @@ export type MusicTrack =
   | 'tribulation'
   | 'meditate';
 
-export const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'forest', 'lake', 'dungeon', 'combat', 'boss', 'dungeon_boss', 'tribulation', 'meditate'];
+export const MUSIC_TRACKS: readonly MusicTrack[] = ['sect', 'wild', 'wild_ochre', 'wild_cloud', 'wild_night', 'wild_ash', 'wild_rift', 'forest', 'lake', 'dungeon', 'combat', 'boss', 'dungeon_boss', 'tribulation', 'meditate'];
 
 export interface MusicInput {
   /** Đang ở room bí cảnh (Kiếm Trủng) thay vì bản đồ thế giới. */
@@ -32,6 +34,8 @@ export interface MusicInput {
   biome: Biome;
   /** Level đang hiển thị: Đoạn Mạch (`doan_mach`) có bài vùng riêng (E2-I). */
   level?: string;
+  /** Đứng ở bên kia vết nứt (Bắc Hoang): chọn `wild_rift` thay `wild_ash`. */
+  rift?: boolean;
   /** Có quái đang đuổi/đánh ở gần mình. */
   combat: boolean;
   /** Như `combat` nhưng là boss. Boss luôn kéo theo combat. */
@@ -94,6 +98,8 @@ const PRIORITY: Record<MusicTrack, number> = {
   wild_ochre: 0,
   wild_cloud: 0,
   wild_night: 0,
+  wild_ash: 0,
+  wild_rift: 0,
   forest: 0,
   lake: 0,
   dungeon: 0,
@@ -104,11 +110,12 @@ const PRIORITY: Record<MusicTrack, number> = {
   tribulation: 4,
 };
 
-export function regionTrack(dungeon: boolean, biome: Biome, level?: string): MusicTrack {
+export function regionTrack(dungeon: boolean, biome: Biome, level?: string, rift?: boolean): MusicTrack {
   if (dungeon) return 'dungeon';
   if (level === 'doan_mach' && biome === 'wild') return 'wild_ochre';
   if (level === 'van_hai' && biome === 'wild') return 'wild_cloud';
   if (level === 'thien_khuyet' && biome === 'wild') return 'wild_night';
+  if (level === 'bac_hoang') return rift ? 'wild_rift' : 'wild_ash'; // Bắc Hoang (DV-3I): hai bài theo nửa bản đồ
   switch (biome) {
     case 'sect':
       return 'sect';
@@ -197,7 +204,7 @@ export class MusicDirector {
   /** Gọi định kỳ (khoảng 10 lần/giây). `now` tính bằng giây. Trả về thay đổi nếu cần đổi bài. */
   update(now: number, inp: MusicInput): MusicChange | null {
     // Vùng: lần đầu hoặc vừa đổi room thì nhận ngay, còn lại phải giữ đủ REGION_DWELL.
-    const want = regionTrack(inp.dungeon, inp.biome, inp.level);
+    const want = regionTrack(inp.dungeon, inp.biome, inp.level, inp.rift);
     if (this.region === null || this.wasDungeon !== inp.dungeon) {
       this.region = want;
       this.regionCand = null;
