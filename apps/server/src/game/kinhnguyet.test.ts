@@ -461,9 +461,9 @@ describe('Kính Nguyệt Chân Quân (MirrorSystem)', () => {
   });
 
   it('chat gần boss: boss lặp lại câu cuối của người chơi', async () => {
-    const { sim, adv } = await fight();
+    const { sim, adv, p } = await fight();
     adv(0);
-    expect(sim.mirror.echoLine('Ngươi là ai?')!.line).toBe('Ngươi là ai.');
+    expect(sim.mirror.echoLine('Ngươi là ai?', p)!.line).toBe('Ngươi là ai.');
   });
 
   it('Định Thần Phù giảm 40% sát thương gương, không giảm của quái thường; đố đúng giảm 8% sát thương boss', async () => {

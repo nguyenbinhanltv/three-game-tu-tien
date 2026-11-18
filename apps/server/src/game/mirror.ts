@@ -34,6 +34,10 @@ export function wardMul(ward: number): number {
 
 /** Nhịp tính sát thương tia (ms) và hồi riêng của lặp lại. */
 export const DISC_TICK_MS = 500;
+/** Tầm (m) người chat còn được boss gương lặp lại câu nói; cùng tầm với `onSkill`. */
+export const ECHO_CHAT_RANGE = 60;
+/** Tầm (m) nhận thông báo tách bóng. */
+export const SPLIT_NOTICE_RANGE = 120;
 /** Thời gian thần thức làm thể thật sáng (ms). */
 export const SENSE_MS = 6000;
 /** Chiêu của Tâm Ma Ảnh trong màn gương: cách nhau (giây), báo trước (giây), hệ số. */
@@ -173,10 +177,10 @@ export class MirrorSystem {
     }
   }
 
-  /** Câu chat gần boss: nó lặp lại câu cuối của người đối diện. */
-  echoLine(text: string): { boss: MonEnt; line: string } | null {
+  /** Câu chat gần boss: nó lặp lại câu cuối của người đối diện. Chỉ boss có `mirror.echo` đã giao chiến và người chat trong `ECHO_CHAT_RANGE` m. */
+  echoLine(text: string, p: PlayerEnt): { boss: MonEnt; line: string } | null {
     if (this.rt.size === 0) return null;
-    const m = this.bosses().find((o) => this.rt.get(o.id)?.started);
+    const m = this.bosses().find((o) => o.def.mirror?.echo && this.rt.get(o.id)?.started && Math.hypot(p.move.x - o.s.x, p.move.z - o.s.z) <= ECHO_CHAT_RANGE);
     if (!m) return null;
     const line = text.trim().replace(/[?!.…]+$/u, '');
     if (!line) return null;
@@ -209,7 +213,8 @@ export class MirrorSystem {
       rt.decoys.push(e.id);
     }
     this.h.fx({ t: 'mirror_split', src: m.id, x: m.s.x, z: m.s.z, r: cfg.r });
-    this.h.sysAll('sys.mirror_split', undefined, 'info');
+    // Room thế giới mở (boss ngoài trời): chỉ người trong tầm boss nhận tin, không báo cả room.
+    for (const p of this.h.players()) if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) <= SPLIT_NOTICE_RANGE) this.h.sys(p, 'sys.mirror_split', undefined, 'info');
   }
 
   private clearDecoys(rt: BossRt): void {
