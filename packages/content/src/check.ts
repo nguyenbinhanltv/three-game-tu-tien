@@ -1142,9 +1142,11 @@ console.log(`${ITEMS.length} vật phẩm, ${MONSTERS.length} quái, ${ALL_SKILL
     if (!hasString(`ui.credits.license.${c.license}`)) err(`${w}: thiếu chuỗi ui.credits.license.${c.license}`);
     if (!hasString(`ui.credits.kind.${c.kind}`)) err(`${w}: thiếu chuỗi ui.credits.kind.${c.kind}`);
     for (const m of c.mods) if (!hasString(`ui.credits.mod.${m}`)) err(`${w}: thiếu chuỗi ui.credits.mod.${m}`);
-    if (c.license === 'CC-BY-4.0' && c.mods.length === 0) err(`${w}: CC BY phải ghi rõ đã chỉnh sửa gì (mods)`);
+    if (c.license.startsWith('CC-BY') && c.mods.length === 0) err(`${w}: CC BY phải ghi rõ đã chỉnh sửa gì (mods)`);
+    if (c.license === 'CC-BY-NC-4.0' && c.note !== 'nc') err(`${w}: CC BY-NC phải có note: "nc" (màn Ghi công nhắc gỡ nếu game có thu tiền)`);
+    if (c.note && !hasString(`ui.credits.note.${c.note}`)) err(`${w}: thiếu chuỗi ui.credits.note.${c.note}`);
     if (c.pending) continue;
-    if (c.license === 'CC-BY-4.0' && !licenses.includes(c.url)) err(`${w}: assets/LICENSES.md thiếu link nguồn ${c.url}`);
+    if (c.license.startsWith('CC-BY') && !licenses.includes(c.url)) err(`${w}: assets/LICENSES.md thiếu link nguồn ${c.url}`);
     for (const a of c.assets ?? []) {
       covered.add(a);
       const m = metas.get(a);

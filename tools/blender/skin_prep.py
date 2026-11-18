@@ -10,7 +10,7 @@
 #
 # Các bước:
 #   1. Nhập, gộp mọi mảnh, hàn đỉnh trùng (model thường bị cắt thành nhiều mảnh theo thứ tự lưới, không theo bộ phận).
-#   2. `cut`: bỏ vũ khí dính liền. `bands` = các hộp mỏng cắt đứt chỗ nối (trên/dưới nắm tay); `boxes` = vùng chắc chắn chỉ có
+#   2. `cut`: bỏ vũ khí dính liền. `capsules` {a,b,r} = vũ khí chéo (đoạn thẳng + bán kính); `bands` = các hộp mỏng cắt đứt chỗ nối (trên/dưới nắm tay); `boxes` = vùng chắc chắn chỉ có
 #      vũ khí (xóa thẳng); sau đó mảnh liên thông nào có tâm nằm trong `islands` cũng bị xóa. Lỗ hở được vá.
 #   3. Bản thấp: Decimate (collapse) về `triangles`, UV mới (Smart UV Project).
 #   4. Nướng từ bản cao sang bản thấp: màu (EMIT của texture gốc, không dính ánh sáng) và normal tiếp tuyến.
@@ -98,6 +98,14 @@ def import_high():
 cut = CFG.get('cut') or {}
 
 
+def in_capsule(p, k):
+    """`cut.capsules`: vũ khí chéo thân (katana: cán sau hông → lưỡi chếch ra ngoài) không bọc được bằng hộp trục; mặt có tâm cách đoạn a→b không quá r thì bỏ."""
+    a, b = Vector(k['a']), Vector(k['b'])
+    ab = b - a
+    t = max(0.0, min(1.0, (p - a).dot(ab) / max(ab.dot(ab), 1e-12)))
+    return (p - (a + ab * t)).length <= k['r']
+
+
 def cut_weapon(high):
     """Bỏ vũ khí dính liền theo `cut` của cấu hình, vá lỗ."""
     if not cut:
@@ -105,9 +113,14 @@ def cut_weapon(high):
     bm = bmesh.new()
     bm.from_mesh(high.data)
     doomed = []
+    # `cut.dropMaterials`: tên vật liệu nguồn bị bỏ cả mảnh (lớp trong suốt/chi tiết ẩn không nướng được).
+    drop = {i for i, m in enumerate(high.data.materials) if m and m.name in cut.get('dropMaterials', [])}
     for f in bm.faces:
+        if f.material_index in drop:
+            doomed.append(f)
+            continue
         c = f.calc_center_median()
-        if any(inbox(c, b) for b in cut.get('bands', [])) or any(inbox(c, b) for b in cut.get('boxes', [])):
+        if any(inbox(c, b) for b in cut.get('bands', [])) or any(inbox(c, b) for b in cut.get('boxes', [])) or any(in_capsule(c, k) for k in cut.get('capsules', [])):
             doomed.append(f)
     bmesh.ops.delete(bm, geom=doomed, context='FACES')
     bm.verts.ensure_lookup_table()
@@ -227,14 +240,19 @@ if STAGE == 'low':
 
 # ---------- 4. nướng texture ----------
 SIZE = int(CFG.get('bake', {}).get('size', 2048))
-src_mat = high.data.materials[0]
-src_tree = src_mat.node_tree
-src_bsdf = next(n for n in src_tree.nodes if n.type == 'BSDF_PRINCIPLED')
-src_out = next(n for n in src_tree.nodes if n.type == 'OUTPUT_MATERIAL')
-color_link = src_bsdf.inputs['Base Color'].links
-if not color_link:
+# Nguồn có thể nhiều vật liệu (mỗi bộ phận một atlas): nướng tất cả vào MỘT atlas của bản thấp (mỗi vật liệu nguồn: màu = texture
+# nối vào Base Color, hoặc hệ số màu nếu không có texture).
+SRC = []
+for src_mat in high.data.materials:
+    if not src_mat or not src_mat.node_tree:
+        continue
+    st = src_mat.node_tree
+    sb = next((n for n in st.nodes if n.type == 'BSDF_PRINCIPLED'), None)
+    so = next((n for n in st.nodes if n.type == 'OUTPUT_MATERIAL'), None)
+    if sb and so:
+        SRC.append((st, sb, so))
+if not any(sb.inputs['Base Color'].links for _, sb, _ in SRC):
     raise SystemExit('[skin_prep] LỖI: vật liệu nguồn không có texture màu')
-color_socket = color_link[0].from_socket
 
 mat = bpy.data.materials.new(CFG['id'] + '_mat')
 mat.use_nodes = True
@@ -264,14 +282,19 @@ low.select_set(True)
 bpy.context.view_layer.objects.active = low
 
 # Màu: nối thẳng texture gốc vào Emission để nướng EMIT (không ánh sáng, không bóng, 1 mẫu là đủ).
-emit = src_tree.nodes.new('ShaderNodeEmission')
-src_tree.links.new(color_socket, emit.inputs['Color'])
-src_tree.links.new(emit.outputs['Emission'], src_out.inputs['Surface'])
+for st, sb, so in SRC:
+    emit = st.nodes.new('ShaderNodeEmission')
+    if sb.inputs['Base Color'].links:
+        st.links.new(sb.inputs['Base Color'].links[0].from_socket, emit.inputs['Color'])
+    else:
+        emit.inputs['Color'].default_value = sb.inputs['Base Color'].default_value
+    st.links.new(emit.outputs['Emission'], so.inputs['Surface'])
 tree.nodes.active = tex_color
 log('nướng màu…')
 bpy.ops.object.bake(type='EMIT')
 # Normal: trả vật liệu gốc (có normal map của nguồn nếu có) rồi nướng normal tiếp tuyến của bản cao lên bản thấp.
-src_tree.links.new(src_bsdf.outputs['BSDF'], src_out.inputs['Surface'])
+for st, sb, so in SRC:
+    st.links.new(sb.outputs['BSDF'], so.inputs['Surface'])
 tree.nodes.active = tex_normal
 log('nướng normal…')
 bpy.ops.object.bake(type='NORMAL')

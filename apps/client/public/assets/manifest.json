@@ -2010,6 +2010,138 @@
         }
       }
     },
+    "chr_v3_kings_demon_nu": {
+      "id": "chr_v3_kings_demon_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_kings_demon_nu.glb",
+      "file": "chr_v3_kings_demon_nu.c6bd19bc01.glb",
+      "bytes": 5700504,
+      "rawBytes": 10310504,
+      "triangles": 23947,
+      "rawTriangles": 23947,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 68,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "skin_kings_demon_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "skin_kings_demon_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 23947
+        },
+        {
+          "level": 1,
+          "triangles": 11974,
+          "target": 11974
+        },
+        {
+          "level": 2,
+          "triangles": 4786,
+          "target": 4789
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.2995,
+          "height": 1.7908,
+          "depth": 1.1382,
+          "minY": 0.0025
+        },
+        "build": {
+          "width": 1.2995,
+          "height": 1.7908,
+          "depth": 1.1382,
+          "minY": 0.0025
+        }
+      }
+    },
+    "chr_v3_noxavyra_nu": {
+      "id": "chr_v3_noxavyra_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3_noxavyra_nu.glb",
+      "file": "chr_v3_noxavyra_nu.e599693ddf.glb",
+      "bytes": 4881860,
+      "rawBytes": 10560292,
+      "triangles": 21975,
+      "rawTriangles": 21975,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 68,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "skin_noxavyra_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "skin_noxavyra_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 21975
+        },
+        {
+          "level": 1,
+          "triangles": 10988,
+          "target": 10988
+        },
+        {
+          "level": 2,
+          "triangles": 4381,
+          "target": 4395
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.3742,
+          "height": 1.7558,
+          "depth": 0.3801,
+          "minY": 0.0388
+        },
+        "build": {
+          "width": 1.3742,
+          "height": 1.7558,
+          "depth": 0.3801,
+          "minY": 0.0388
+        }
+      }
+    },
     "chr_v3_varkessa_nu": {
       "id": "chr_v3_varkessa_nu",
       "class": "player_v3",
