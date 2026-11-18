@@ -3,7 +3,21 @@
 // viền sáng fresnel ở mép nhìn nghiêng và điểm tự phát sáng (mắt sói đỏ, rune lam) lấy từ chính texel bão hòa của texture màu.
 // Dùng cùng kiểu với `MonsterSkin` (`monsterSkins.ts`): emissiveNode = viền + nền + phát sáng.
 import * as THREE from 'three/webgpu';
-import { color, dot, float, materialColor, max, min, normalView, positionViewDirection, pow, saturate, smoothstep, vec3, vec4 } from 'three/tsl';
+import {
+  color,
+  dot,
+  float,
+  materialColor,
+  max,
+  min,
+  normalView,
+  positionViewDirection,
+  pow,
+  saturate,
+  smoothstep,
+  vec3,
+  vec4,
+} from 'three/tsl';
 
 export interface SkinLook {
   /** Nhân albedo (tuyến tính). */
@@ -47,7 +61,9 @@ export function applySkinLook(m: THREE.MeshStandardNodeMaterial, look: SkinLook)
   const sat = mx.sub(mn).div(mx.add(1e-3));
   // Texel phát sáng: bão hòa cao, đủ sáng, và kênh chủ đạo trội hẳn hai kênh còn lại (mắt đỏ / rune lam).
   const dom = look.glow.hue === 'red' ? c.x.sub(max(c.y, c.z)) : c.z.sub(max(c.x, c.y));
-  const hot = smoothstep(float(0.62), float(0.85), sat).mul(smoothstep(float(0.08), float(0.2), dom)).mul(smoothstep(float(0.02), float(0.08), mx));
+  const hot = smoothstep(float(0.62), float(0.85), sat)
+    .mul(smoothstep(float(0.08), float(0.2), dom))
+    .mul(smoothstep(float(0.02), float(0.08), mx));
   const glow = new THREE.Color(look.glow.color);
   const facing = saturate(dot(normalView, positionViewDirection));
   const rim = color(new THREE.Color(look.rim.color)).mul(pow(float(1).sub(facing), 3).mul(look.rim.k));
