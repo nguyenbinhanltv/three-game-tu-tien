@@ -1172,6 +1172,72 @@
         }
       }
     },
+    "boss_thu_khich_duc_chu": {
+      "id": "boss_thu_khich_duc_chu",
+      "class": "boss_mq",
+      "source": "assets/build/raw/boss_thu_khich_duc_chu.glb",
+      "file": "boss_thu_khich_duc_chu.7c016a65e0.glb",
+      "bytes": 6947772,
+      "rawBytes": 14204468,
+      "triangles": 35960,
+      "rawTriangles": 35960,
+      "lod0Cap": 50000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 92,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "dv2_aetherion_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "dv2_aetherion_color",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 35960
+        },
+        {
+          "level": 1,
+          "triangles": 14999,
+          "target": 15000
+        },
+        {
+          "level": 2,
+          "triangles": 5967,
+          "target": 6000
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 3.1472,
+          "height": 3.5624,
+          "depth": 1.6704,
+          "minY": 0.0598
+        },
+        "build": {
+          "width": 3.1472,
+          "height": 3.5624,
+          "depth": 1.6704,
+          "minY": 0.0598
+        }
+      }
+    },
     "boss_thu_mo_tuong": {
       "id": "boss_thu_mo_tuong",
       "class": "boss",

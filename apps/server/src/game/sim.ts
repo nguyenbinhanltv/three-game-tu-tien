@@ -148,6 +148,7 @@ export class GameSim {
     groundAt: (x, z) => this.terrain.groundAt(x, z),
     canStand: (x, z) => this.terrain.heightAt(x, z) > WATER_Y + 0.3 && this.terrain.playDist(x, z) < this.terrain.playWall - 4 && !this.terrain.colliders.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < c.r * c.r),
     hazard: (g, delay, mul, kind, m, mv) => this.addHazard(g, delay, mul, false, kind, m.id, m.atk, false, 0, undefined, undefined, mv),
+    trail: (m, x, z, yaw, len, cfg, delay) => this.zones.addTrail(m as MonEnt, x, z, yaw, len, cfg, delay),
     damagePlayer: (p, n, src) => this.damagePlayer(p as PlayerEnt, n, src, true),
     setFlags: (m, low, ce) => this.setMonFlags(m as MonEnt, low, ce),
     setAttack: (m) => this.setMonState(m as MonEnt, MS_ATTACK),
