@@ -3,7 +3,7 @@
 
 import { MARK_GAP_MS, MARK_TTL_MS, type MarkCmd, type MarkInfo, type MarkMsg, S, validMark } from '@dtl/shared';
 import { parties } from './party';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 interface Mark {
   x: number;

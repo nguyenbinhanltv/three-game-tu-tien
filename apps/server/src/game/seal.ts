@@ -3,7 +3,7 @@
 // Hàm thuần: `nearestClosed`, `barrierPush`.
 
 import { PF_DEAD, type WaveDef } from '@dtl/shared';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 export type SealsDef = NonNullable<WaveDef['seals']>;
 

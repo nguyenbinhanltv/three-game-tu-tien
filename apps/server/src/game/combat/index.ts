@@ -8,7 +8,7 @@ import type { DuelSystem } from '../duel';
 import type { MirrorSystem } from '../mirror';
 import type { CloneSystem } from '../clone';
 import { pruneBuffs } from '../artifact';
-import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../sim';
+import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
 import { LEASH, SET_HEAL_RADIUS, TAUNT_BOSS_MUL, visualSeed } from './consts';
 
 /** Phần GameSim mà hệ chiêu cần. */

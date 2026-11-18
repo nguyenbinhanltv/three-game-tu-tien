@@ -10,8 +10,8 @@
 // Thế thân của kiếp chỉ là móc cho tới khi E4-K làm phân thân thần niệm thật của người chơi (phím G chung): khi đó nối vào `cloneOut`.
 
 import { ELEMENTS, PF_DEAD, TRIB_LINK_SEAL, nguHanhIndex, nguHanhSealFor, tribDef, tribSealPos, type HazardKind, type TribDef, type TribNguHanh } from '@dtl/shared';
-import type { PlayerEnt } from './sim';
-import type { TribHost } from './trib';
+import type { PlayerEnt } from './entities';
+import type { TribHost } from './tribhost';
 import { registerMechanic, type TribMechCtx } from './tribmech';
 
 const ELEM_HAZARD: Record<(typeof ELEMENTS)[number], HazardKind> = { kim: 'lightning', moc: 'spirit', thuy: 'frost', hoa: 'fire', tho: 'spirit' };

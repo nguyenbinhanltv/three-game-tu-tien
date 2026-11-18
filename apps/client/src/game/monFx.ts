@@ -161,7 +161,7 @@ export class MonFx {
 
   /** Vùng nổ (đúng lúc hết `delay`). Tròn → gai + vết nứt; chữ nhật → gai nối tiếp; nón → lưỡi liềm quét. */
   boom(h: HazardMsg, src: MonLike | undefined): boolean {
-    if (!MONFX_ON || !src || h.mv === 'pull' || h.mv === 'pool' || h.mv === 'summon') return false;
+    if (!MONFX_ON || !src || h.mv === 'pull' || h.mv === 'pool' || h.mv === 'trail' || h.mv === 'summon') return false;
     const key = h.sh === 'rect' ? 'mon_boom_line' : h.sh === 'cone' ? 'mon_boom_cone' : 'mon_boom_circle';
     const tl = this.tl(key);
     if (!tl || !this.near(h.x, h.z)) return false;

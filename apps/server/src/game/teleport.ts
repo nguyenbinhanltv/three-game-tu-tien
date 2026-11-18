@@ -18,7 +18,7 @@ import {
   type TeleMsg,
 } from '@dtl/shared';
 import { t } from '@dtl/content';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 export interface TeleHost {
   now(): number;

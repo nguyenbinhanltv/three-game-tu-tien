@@ -31,7 +31,7 @@ import {
   type SkillDef,
 } from '@dtl/shared';
 import { CLONE_MOVES, METHOD, SKILL } from '@dtl/content';
-import type { MonEnt, PlayerEnt } from './sim';
+import type { MonEnt, PlayerEnt } from './entities';
 
 export interface CloneHost {
   now(): number;

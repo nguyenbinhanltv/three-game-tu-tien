@@ -7,6 +7,7 @@ import { type AssetCache, type AssetHandle, assets } from '../assets';
 import { MonsterModel } from '../models';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { type BossMove, SkinnedMonster } from './skinned';
+import type { SpringParams } from './spring';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, swordTemplateOf, type SwordTemplate } from './swordModel';
 import type { ClipMap } from './states';
@@ -15,6 +16,9 @@ import { MQ_CLIPS, MQ_LIB, MQ_MOVES, MQ_SHIELD_CLIPS, MQ_ZOMBIE_CLIPS, MQ_ZOMBIE
 import { type BossMoveKind, legacyModelsRequested, type MonsterView } from './view';
 
 /** Quái dùng model có xương: asset, bảng clip, tông màu (nhân vào texture màu, không thêm texture). */
+/** Lò xo cánh: cứng hơn vạt áo, góc lệch hẹp (cánh lớn không được quật quanh thân). */
+const WING_SPRING: SpringParams = { stiffness: 70, drag: 5, maxAngle: 24, maxInward: 4 };
+
 export interface MonsterSkin {
   asset: string;
   clips: ClipMap;
@@ -58,6 +62,8 @@ export interface MonsterSkin {
    * nghỉ như kiếm người chơi nên clip UAL cầm kiếm đúng. `scale` nhân kích thước model kiếm (0,82 m ở 1×).
    */
   weapon?: { asset: string; scale: number };
+  /** Có cánh dựng bằng chuỗi xương (`dtl_wing_*` vỗ bằng code, `dtl_o_wing_*` lò xo; chr_v3.py `--wings`): bật lò xo tự động cho quái này. */
+  wings?: boolean;
 }
 
 const WOLF_CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
@@ -195,11 +201,17 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_tan_chung: { asset: 'mon_tan_chung', clips: MQ_ZOMBIE_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.2, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_ZOMBIE_MOVES, mannequin: true },
   mon_giac_kiem_trong_binh: { asset: 'mon_giac_kiem_trong_binh', clips: MQ_SHIELD_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, metalness: 0, palette: { dark: '#2e2c3a', light: '#d2c4a6', glow: '#d9a93e' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   elite_hoi_giac_cu_thu: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, palette: { dark: '#34303a', light: '#cdbfb2', glow: '#ff5a3a' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  // Kim Dạ Cung (DV-3E): hai quái mới dùng lại lưới DV-2 đợt 2, đổi màu theo bảng rift_* (Châm Bà: vải liệm nhạt; Huyết Giác: đỏ máu + kim dát).
+  mon_kd_trien_bo_cham_ba: { asset: 'mon_tan_chung', clips: MQ_ZOMBIE_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#e6d6b4', rim: 0.25, lift: 0.3, lazy: true, level: 'kim_da_cung', moves: MQ_ZOMBIE_MOVES, mannequin: true },
+  elite_kd_huyet_giac_ma_tuong: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.35, palette: { dark: '#3a1a20', light: '#d8c0a0', glow: '#e0b44a' }, lazy: true, level: 'kim_da_cung', moves: MQ_MOVES, mannequin: true },
   // DV-2 đợt 3 (boss hình người Dị Vực, docs/dv2-mon/README.md): xương Mannequin + clip UAL. Kiếm Cơ cầm kiếm Tẫn Hỏa rời (`weapon`).
   boss_tan_hoa_kiem_co: { asset: 'boss_tan_hoa_kiem_co', clips: { ...MQ_CLIPS, cast: 'Idle_Loop' }, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.35, palette: { dark: '#3c2c26', light: '#f0d2b0', glow: '#ff7a30' }, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true, weapon: { asset: 'prop_kiem_tan_hoa', scale: 1.5 } },
+  // DV-2 đợt 4: Thủ Khích Dực Chủ (Aetherion Nemesis), bốn cánh bằng chuỗi xương; texture tự có màu tím nên không đổi bảng màu, chỉ nâng sáng để đọc ở 12–24 m.
+  boss_thu_khich_duc_chu: { asset: 'boss_thu_khich_duc_chu', clips: { ...MQ_CLIPS, cast: 'Idle_Loop' }, refSpeed: 3.6, legs: 'none', tint: '#ffffff', rim: 0.7, lift: 0.5, metalness: 0, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true, wings: true },
   boss_kim_da_ma_hau: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.5, lift: 0.45, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
   // Bóng của Ma Hậu (decoy `mirror.decoys`): cùng model, mờ và ngả vàng dát.
   mon_kim_da_bong: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  mon_kd_bong_mac_ca: { asset: 'boss_kim_da_ma_hau', clips: MQ_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffe0a0', rim: 0.5, lift: 0.3, ghost: 0.55, lazy: true, level: 'kim_da_cung', moves: MQ_MOVES, mannequin: true },
 };
 
 interface Template {
@@ -281,7 +293,7 @@ export class MonsterSkins {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
-    const view = new SkinnedMonster(def, { scene, clips: t.clips, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs === 'none' ? undefined : s.legs });
+    const view = new SkinnedMonster(def, { scene, clips: t.clips, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs === 'none' ? undefined : s.legs, autoSprings: s.wings, springParams: s.wings ? WING_SPRING : undefined });
     // Kiếm rời (`weapon`): mesh dùng chung, gắn vào xương `dtl_sword` (cổ tay phải); chưa nạp xong thì quái cầm tay không.
     const blade = s.weapon ? this.sword(s.weapon.asset) : null;
     if (blade && s.weapon) view.mountProp('dtl_sword', blade.mesh.clone(), s.weapon.scale);
