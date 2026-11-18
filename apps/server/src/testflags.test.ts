@@ -347,9 +347,12 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     const c2 = join(true);
     expect(c2.run('learn skl_kiem_khi_tram 3')).toContain('cấp 3');
     expect(c2.run('learn khong_co')).toContain('khong_co');
-    const locked = [...content.SKILL.values()].find((s) => s.locked)!;
+    // E4-G mở hết chiêu: khóa tạm một chiêu để kiểm lệnh `learn` với chiêu còn khóa.
+    const locked = content.SKILL.get('skl_phan_anh_kiem_anh')!;
+    locked.locked = true;
     const c3 = join(true);
     expect(c3.run(`learn ${locked.id}`)).toContain('khóa');
+    locked.locked = false;
     expect(c3.char.level).toBeGreaterThanOrEqual(locked.unlock);
     expect(c3.char.meta.method).toBe(locked.method);
   });
@@ -379,7 +382,7 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
 
   it('kit: tham số sai không đổi gì; bậc 4 dùng bộ bậc 4 (Tinh Khuyết Kiếm chung)', () => {
     const { char, run } = join(true);
-    for (const bad of ['kit', 'kit 0 kiem', 'kit 5 kiem', 'kit 2 xyz', 'kit 2 kiem +abc']) {
+    for (const bad of ['kit', 'kit 0 kiem', 'kit 6 kiem', 'kit 2 xyz', 'kit 2 kiem +abc']) {
       expect(run(bad), bad).toContain('/gm kit');
       expect(char.equip.weapon, bad).toBeUndefined();
     }
@@ -393,11 +396,15 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     run('kit 4 hophap');
     expect(char.equip.weapon?.id).toBe('itm_tinh_khuyet_kiem');
     expect(char.equip.robe?.id).toBe('itm_ct_dao_bao');
+    run('kit 5 dansu');
+    expect(char.equip.weapon?.id).toBe('itm_gioi_quang_kiem');
+    expect(char.equip.robe?.id).toBe('itm_tqd_dao_bao');
+    expect(char.equip.head?.id).toBe('itm_tqd_trang_suc');
     ledgerBalanced(char);
   });
 
   it('mọi bậc × nhánh dựng được kế hoạch hợp lệ (id có thật, đúng ô, không trùng ô)', () => {
-    for (let tier = 1; tier <= 4; tier++) {
+    for (let tier = 1; tier <= 5; tier++) {
       for (const br of tools.GM_BRANCHES) {
         const plan = tools.planKit(tier, br);
         expect(plan.pieces.map((x) => x.slot), `${tier}/${br}`).toContain('weapon');

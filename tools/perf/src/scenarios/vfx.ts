@@ -57,6 +57,7 @@ const MON_DIST: Record<string, number> = { boom_circle: 13, cast: 15, bolt: 15 }
 const MON_DEFAULT: Record<string, string> = { hit: 'mon_hoa_van_ho', strike: 'mon_yeu_lang', cast: 'mon_hoa_van_ho', boom_circle: 'elite_cu_nham_vien', boom_line: 'mon_mach_thuong_ho_ve', boom_cone: 'boss_han_giao', bolt: 'mon_hoa_van_ho', death: 'mon_thach_vien', chant: 'boss_han_giao' };
 const SPOTS: [number, number][] = [[2048, 2088], [2088, 2088], [2008, 2088], [2048, 2128], [2048, 2048], [2088, 2128], [2008, 2128], [2088, 2048]];
 
+const ALLY_ONLY = /thuan_di_ho_the|thuan_di_cuu_vien/;
 const SKILLS = list('--skills', 'skl_kiem_khi_tram,skl_phi_kiem');
 const FXQ = opt('--fxq', 'high');
 const OLD = flag('--old');
@@ -138,7 +139,8 @@ async function press(page: Page, id: string): Promise<void> {
   if (id === 'scene_fly_on') return page.evaluate(() => window.__game!.toggleFly());
   if (SCENES[id]) return page.evaluate((msg) => void window.__game!.onFx({ ...msg, src: window.__game!.sid, x: window.__game!.cur.x + 6, z: window.__game!.cur.z, ox: window.__game!.cur.x - 2, oz: window.__game!.cur.z }), SCENES[id]);
   if (DASH.test(id)) return page.evaluate(() => window.__game!.useDash());
-  const slot = id === 'skl_phi_kiem' ? 0 : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
+  // Thuấn Di Hộ Thế/Cứu Viện cần đồng đội (server từ chối khi đứng một mình): chỉ phát dòng thời gian FX.
+  const slot = id === 'skl_phi_kiem' ? 0 : ALLY_ONLY.test(id) ? -1 : await page.evaluate((i) => window.__game!.bar().findIndex((s) => s.id === i), id);
   if (slot >= 0) return page.evaluate((s) => window.__game!.useSkill(s), slot);
   await page.evaluate((sk) => {
     const g = window.__game!;

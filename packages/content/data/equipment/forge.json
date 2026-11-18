@@ -1490,5 +1490,497 @@
       }
     ],
     "gold": 2620
+  },
+  {
+    "id": "frg_tkh_dao_bao",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tkh_dao_bao",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 14
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 10
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 5
+      },
+      {
+        "id": "itm_tinh_vu",
+        "n": 1
+      }
+    ],
+    "gold": 6430
+  },
+  {
+    "id": "frg_tkh_ho_uyen",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tkh_ho_uyen",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tkh_dai_lung",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tkh_dai_lung",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tkh_van_ngoa",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tkh_van_ngoa",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tkh_trang_suc",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tkh_trang_suc",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 3790
+  },
+  {
+    "id": "frg_tth_dao_bao",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tth_dao_bao",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 14
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 10
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 5
+      },
+      {
+        "id": "itm_tinh_vu",
+        "n": 1
+      }
+    ],
+    "gold": 6430
+  },
+  {
+    "id": "frg_tth_ho_uyen",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tth_ho_uyen",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tth_dai_lung",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tth_dai_lung",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tth_van_ngoa",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tth_van_ngoa",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tth_trang_suc",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tth_trang_suc",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 3790
+  },
+  {
+    "id": "frg_tqd_dao_bao",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tqd_dao_bao",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 14
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 10
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 5
+      },
+      {
+        "id": "itm_tinh_vu",
+        "n": 1
+      }
+    ],
+    "gold": 6430
+  },
+  {
+    "id": "frg_tqd_ngoc_boi",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tqd_ngoc_boi",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tqd_dai_lung",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tqd_dai_lung",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tqd_gioi_chi",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tqd_gioi_chi",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 4020
+  },
+  {
+    "id": "frg_tqd_trang_suc",
+    "npc": "npc_hua_lao",
+    "alsoAt": [
+      "npc_thiet_lao"
+    ],
+    "reqLevel": 28,
+    "output": "itm_tqd_trang_suc",
+    "ilvl": 29,
+    "q": [
+      0,
+      0,
+      80,
+      20,
+      0
+    ],
+    "inputs": [
+      {
+        "id": "itm_tan_giac",
+        "n": 9
+      },
+      {
+        "id": "itm_thiet_tinh",
+        "n": 6
+      },
+      {
+        "id": "itm_linh_tran",
+        "n": 3
+      }
+    ],
+    "gold": 3790
   }
 ]

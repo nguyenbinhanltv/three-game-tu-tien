@@ -4,7 +4,8 @@
   "elite_huyet_nha_lang",
   "elite_loi_van_su_vuong",
   "mon_co_thanh_chien_ma",
-  "mon_hoa_van_ho"
+  "mon_hoa_van_ho",
+  "mon_liet_hoa_ma_nguu"
  ],
  "gem_hoa_2": [
   "boss_huyet_lang_vuong",
@@ -57,6 +58,7 @@
   "elite_da_minh_loc_vuong",
   "elite_van_hac_vuong",
   "mon_da_minh_loc",
+  "mon_u_anh_cot_loc",
   "mon_u_minh_lang",
   "mon_van_hac"
  ],
@@ -226,6 +228,14 @@
  "itm_pha_an_phu": [
   "elite_tt_cot_kiem"
  ],
+ "itm_tan_giac": [
+  "boss_thien_khuyet_thu_linh",
+  "boss_vo_dien_than_quan",
+  "elite_cot_kiem_thong_linh",
+  "elite_da_minh_loc_vuong",
+  "elite_thach_tuong_dai_tuong",
+  "elite_tt_cot_kiem"
+ ],
  "itm_tay_luyen_thach": [
   "boss_dia_mach_long",
   "boss_han_giao",
@@ -286,11 +296,13 @@
   "mon_cot_ve_kiem_thu",
   "mon_da_minh_loc",
   "mon_khai_mach_khoi_loi",
+  "mon_liet_hoa_ma_nguu",
   "mon_mach_thuong_ho_ve",
   "mon_ngo_cong_au",
   "mon_thach_giap_te",
   "mon_thach_tuong_vo_si",
   "mon_thach_vien",
+  "mon_u_anh_cot_loc",
   "mon_u_minh_lang",
   "mon_van_hac"
  ],
@@ -305,6 +317,14 @@
   "mon_da_minh_loc",
   "mon_thach_tuong_vo_si",
   "mon_tt_cot_ve"
+ ],
+ "itm_tinh_vu": [
+  "boss_thien_khuyet_thu_linh",
+  "boss_vo_dien_than_quan",
+  "elite_cot_kiem_thong_linh",
+  "elite_da_minh_loc_vuong",
+  "elite_thach_tuong_dai_tuong",
+  "elite_tt_cot_kiem"
  ],
  "itm_tu_khi_dan": [
   "boss_dia_mach_long",
@@ -354,6 +374,7 @@
   "mon_khai_mach_khoi_loi",
   "mon_kiem_linh",
   "mon_kinh_linh",
+  "mon_liet_hoa_ma_nguu",
   "mon_mach_thuong_ho_ve",
   "mon_ngo_cong_au",
   "mon_phu_dao_thach_quy",
@@ -364,6 +385,7 @@
   "mon_tt_chien_ma",
   "mon_tt_cot_ve",
   "mon_tt_thach_tuong",
+  "mon_u_anh_cot_loc",
   "mon_u_minh_lang",
   "mon_van_hac",
   "mon_yeu_lang"

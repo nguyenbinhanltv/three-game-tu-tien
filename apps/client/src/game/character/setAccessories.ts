@@ -189,6 +189,13 @@ function paletteOf(setId: string): Pal {
       return { cloth: hex, cloth2: '#3b3a44', hard: '#7d7566', trim, gem: '#f0cf78' };
     case 'set_than_tang':
       return { cloth: hex, cloth2: '#3a4a5e', hard: '#9a8d5c', trim, gem: '#9ff0c8' };
+    // Bậc 5 (E4-F): nhuốm tro, viền và ngọc lam (hình dáng vẫn tiên hiệp, art direction chương 5).
+    case 'set_tran_khich':
+      return { cloth: hex, cloth2: '#2a3038', hard: '#6a7480', trim, gem: '#7fe0d8' };
+    case 'set_tan_thiet':
+      return { cloth: hex, cloth2: '#2e3338', hard: '#707880', trim, gem: '#8fd8d0' };
+    case 'set_tinh_dan_bao':
+      return { cloth: hex, cloth2: '#4a5052', hard: '#a8b0ae', trim, gem: '#a8f0e4' };
     default:
       return { cloth: hex, cloth2: '#1d5d6c', hard: '#4aa3b4', trim, gem: '#bfe9f0' };
   }
@@ -610,6 +617,10 @@ const BUILDERS: Record<string, Partial<Record<EquipSlot, Builder>>> = {
 BUILDERS.set_tinh_khuyet = BUILDERS.set_kinh_quang;
 BUILDERS.set_co_thanh = BUILDERS.set_van_kinh;
 BUILDERS.set_than_tang = BUILDERS.set_luu_ly;
+// Bậc 5 (E4-F): tạm dùng lại hình bậc 4 cùng nhánh, nhuộm tro + lam (`paletteOf`); model toàn thân v3 là việc sau.
+BUILDERS.set_tran_khich = BUILDERS.set_tinh_khuyet;
+BUILDERS.set_tan_thiet = BUILDERS.set_co_thanh;
+BUILDERS.set_tinh_dan_bao = BUILDERS.set_than_tang;
 
 /** Ô nào của bộ nào có phụ kiện (cho test và tài liệu). */
 export function accessorySlots(setId: string): EquipSlot[] {

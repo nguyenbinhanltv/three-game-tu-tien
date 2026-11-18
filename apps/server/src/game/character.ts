@@ -253,6 +253,8 @@ export class Character {
   stats!: PlayerStats;
 
   charDirty = true;
+  /** Buff công/thủ ngắn hạn của chiêu (Thiên Đan Pháp Giới): chỉ ở bộ nhớ, không lưu DB, không dính buff đan (`meta.buffs`); cộng dồn với đan trong `recalc`. */
+  skillBuff: { atk?: { m: number; until: number }; def?: { m: number; until: number } } = {};
   invDirty = true;
   questDirty = true;
   /** Lý do lần tx gần nhất thất bại: 'abort' (điều kiện không đạt), 'dup' (trùng khóa), 'db'. */
@@ -389,10 +391,11 @@ export class Character {
     // Nội tại pháp bảo (P3-8): Hồ Lô cộng linh lực tối đa, Thanh Liên Ấn cộng phòng ngự.
     const mpPas = passiveValue(this.equip, this.meta, 'mp');
     this.mmp = mpPas > 0 ? Math.round(st.mp * (1 + mpPas)) : st.mp;
-    const atkBuff = buffMag(this.meta.buffs, 'atk', now);
+    const sb = (k: 'atk' | 'def'): number => ((this.skillBuff[k]?.until ?? 0) > now ? this.skillBuff[k]!.m : 0);
+    const atkBuff = buffMag(this.meta.buffs, 'atk', now) + sb('atk');
     this.atk = atkBuff > 0 ? Math.round(st.atk * (1 + atkBuff)) : st.atk;
     // Nội tại Kim Thân: phòng ngự cộng thêm theo tỉ lệ.
-    this.def = Math.round(st.def * (1 + methodDefMul(this.meta) + passiveValue(this.equip, this.meta, 'def') + buffMag(this.meta.buffs, 'def', now)));
+    this.def = Math.round(st.def * (1 + methodDefMul(this.meta) + passiveValue(this.equip, this.meta, 'def') + buffMag(this.meta.buffs, 'def', now) + sb('def')));
     if (this.hp > this.mhp) this.hp = this.mhp;
     if (this.mp > this.mmp) this.mp = this.mmp;
     this.charDirty = true;
