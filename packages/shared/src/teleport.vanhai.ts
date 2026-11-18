@@ -1,5 +1,5 @@
 // Truyền Tống Trận của Vân Hải Phù Đảo (E3-A, tiền tố vh_). SINH BẰNG tools/maps/gen-van-hai.mjs.
-import type { TelePad } from './teleport';
+import type { TelePad } from './teleport.types';
 
 /** Trận hub (vh_tp_hub) mở khóa sau nhiệm vụ q2_ket_dan (unlockTele) hoặc "/gm tele vh_tp_hub"; tới nơi thì trận tự mở. Các trận đảo mở khi chạm. */
 export const VAN_HAI_PADS: readonly TelePad[] = [

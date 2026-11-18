@@ -7,11 +7,14 @@ import { enhanceMul, type BaseStats, playerBaseStats, CRIT_CHANCE, CRIT_MULT } f
 import type { EquipSlot, InvItem, StatBlock } from './types';
 import type { RootDef } from './realm';
 import { COSMETIC_SLOTS, EQUIP_SLOTS, WEAR_SLOTS, type CosmeticSlot, type WearSlot } from './types';
-import { gemAffixes } from './upgrade';
+import { gemAffixes } from './gems';
+import { ELEMENTS, type Element } from './elements';
+import { STAT_PER_POINT, type AffixRoll, type AffixStat, type ItemInst, type MainStat, type Quality } from './itemtypes';
+
+export { STAT_PER_POINT, type AffixRoll, type AffixStat, type ItemInst, type MainStat, type Quality };
+export { ELEMENTS, type Element };
 import { NO_SET_FX, setFxOf, setStatuses, type SetDef, type SetFx, type SetStatus } from './sets';
 
-/** 0 Phàm, 1 Linh, 2 Huyền, 3 Địa, 4 Thiên, 5 Thần. */
-export type Quality = 0 | 1 | 2 | 3 | 4 | 5;
 export const QUALITY_COUNT = 6;
 /** Phẩm Thần (bậc 6): chỉ rơi cực hiếm từ boss, không chế tạo được (xem `docs/handbook/gameplay-systems.md`). */
 export const QUALITY_THAN: Quality = 5;
@@ -52,27 +55,7 @@ export const MAX_ILVL = 99;
 /** Trần tuyệt đối của một dòng phụ khi nạp từ DB (phân số; không phải trần cân bằng). */
 export const AFFIX_ABS_MAX = 1;
 
-/** Mỗi 1 điểm ngân sách đổi thành bao nhiêu đơn vị chỉ số. */
-export const STAT_PER_POINT = { atk: 1, def: 1, hp: 8, mp: 4 } as const;
-export type MainStat = keyof typeof STAT_PER_POINT;
 export const MAIN_STATS: MainStat[] = ['atk', 'def', 'hp', 'mp'];
-
-/** Mười bốn loại dòng phụ (thiết kế 3.3). Giá trị là phân số (0,03 = 3%). */
-export type AffixStat =
-  | 'atk_pct'
-  | 'def_pct'
-  | 'hp_pct'
-  | 'mp_pct'
-  | 'crit_rate'
-  | 'crit_dmg'
-  | 'cdr'
-  | 'skill_dmg'
-  | 'elem_dmg'
-  | 'elem_res'
-  | 'lifesteal'
-  | 'heal_recv'
-  | 'elite_dmg'
-  | 'move_speed';
 
 export type AffixParam = 'skill' | 'element';
 
@@ -115,9 +98,6 @@ export interface ItemSysData {
   params: { skill: string[]; element: string[] };
 }
 
-export const ELEMENTS = ['kim', 'moc', 'thuy', 'hoa', 'tho'] as const;
-export type Element = (typeof ELEMENTS)[number];
-
 /** Trần chỉ số cộng dồn từ dòng phụ (thiết kế 3.3). */
 export const STAT_CAPS = {
   /** Tổng tỉ lệ bạo kích (gồm gốc 10%). */
@@ -130,26 +110,6 @@ export const STAT_CAPS = {
 } as const;
 
 // ---------- kiểu dữ liệu đã roll ----------
-
-export interface AffixRoll {
-  id: AffixStat;
-  /** Tham số: id chiêu hoặc ngũ hành (khi `AffixDef.param` có). */
-  p?: string;
-  v: number;
-}
-
-/** Phần "đã roll" của một món trang bị. Mẫu (id, ô) nằm ở `InvItem.id`. */
-export interface ItemInst {
-  q: Quality;
-  ilvl: number;
-  /** Dòng chính đã chốt lúc roll (đổi công thức sau này không làm đổi đồ đã rơi). */
-  main: Partial<Record<MainStat, number>>;
-  affixes: AffixRoll[];
-  /** Ngọc khảm; '' = lỗ trống. Độ dài = số lỗ. */
-  gems: string[];
-  /** Đã ràng buộc (mặc rồi, không giao dịch được). */
-  bound: boolean;
-}
 
 /** Trang bị đã roll: `InvItem` có `inst`. */
 export type ItemInstance = InvItem & { inst: ItemInst };

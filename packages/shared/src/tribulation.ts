@@ -2,8 +2,7 @@
 // Dữ liệu ở packages/content/data/tribulations.json; hằng số Trúc Cơ cũ (`TRIB_*` trong formulas.ts) suy ra từ đây.
 
 import raw from '../../content/data/tribulations.json';
-import { ELEM_BEATS } from './elements';
-import { ELEMENTS, type Element } from './items';
+import { ELEM_BEATS, ELEMENTS, type Element } from './elements';
 
 export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than' | 'anh_bien';
 export type TribPhaseKind = 'lei' | 'hoa' | 'tam_ma';

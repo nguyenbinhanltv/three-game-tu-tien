@@ -40,6 +40,9 @@ jobs:
       - name: Lint (luật ranh giới, R-9)
         run: pnpm lint
 
+      - name: Vòng phụ thuộc packages/shared (R-6)
+        run: pnpm deps:check
+
       - name: Prettier (140 cột)
         run: pnpm format:check
 

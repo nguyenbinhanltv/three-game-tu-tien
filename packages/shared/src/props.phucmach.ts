@@ -1,6 +1,6 @@
 // Prop bày của Phục Mạch Quật (E2-C): lòng chảo Kiếm Trủng dựng thành hầm mỏ cũ của Tàng Mạch Hội.
 // Dùng prop sẵn có (PROP_LIB bản đồ 2 + đèn đá Vân Lam), không va chạm (chỉ tô cảnh); tất định, tính từ vòng tròn quanh tâm hầm.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 const CX = 1520;
 const CZ = 1300;
