@@ -6,7 +6,7 @@
 // Cấu hình ở `MonsterDef.than` (monsters.json). Hàm thuần (`handYaws`, `ringPos`, `counterOf`, `gathered`) có test riêng.
 
 import { computeDamage, ELEM_BEATS, inHazard, MS_ATTACK, MS_CHASE, MS_DEAD, PF_DEAD, type Element, type FxMsg, type HazardGeom, type HazardMsg, type MonsterDef } from '@dtl/shared';
-import type { MonEnt, PlayerEnt } from './sim';
+import type { MonEnt, PlayerEnt } from './entities';
 
 export const ELEMS: readonly Element[] = ['kim', 'moc', 'tho', 'thuy', 'hoa'];
 const KIND: Record<Element, HazardMsg['kind']> = { kim: 'lightning', moc: 'spirit', tho: 'spirit', thuy: 'frost', hoa: 'fire' };

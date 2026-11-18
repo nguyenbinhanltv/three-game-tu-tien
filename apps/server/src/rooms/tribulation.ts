@@ -3,7 +3,7 @@ import { type Client, Room, ServerError } from 'colyseus';
 import { PF_DEAD, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, tribDef, type TribId, type DungeonDef } from '@dtl/shared';
 import { LEVELS, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
-import { type PlayerEnt, type SimOptions } from '../game/sim';
+import type { PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
 import { GameRoom, type JoinAuth } from './base';
 

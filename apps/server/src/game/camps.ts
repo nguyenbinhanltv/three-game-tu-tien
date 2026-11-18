@@ -9,21 +9,9 @@ import {
   type CampDef,
   type SpawnDef,
 } from '@dtl/shared';
-import type { MonEnt } from './sim';
+import type { CampRt, MonEnt } from './entities';
+export type { CampRt };
 
-/** Trạng thái chạy của một bãi. */
-export interface CampRt {
-  def: CampDef;
-  /** Các SpawnDef của bãi (con thường, con đánh xa) để quái giữ khoảng cấp. */
-  sp: SpawnDef;
-  spRanged?: SpawnDef;
-  /** Góc đầu vòng đội hình (cố định theo bãi). */
-  phase: number;
-  melee: MonEnt[];
-  ranged?: MonEnt;
-  /** Giờ (ms) cả cụm sẽ tái sinh, 0 = đang có quái sống. */
-  respawnAt: number;
-}
 
 export interface CampHost {
   now(): number;
