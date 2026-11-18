@@ -377,7 +377,13 @@ export function App() {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const b = (e.target as Element | null)?.closest?.('button');
-      if (b && !b.disabled && !b.classList.contains('window-close') && !b.classList.contains('k-close')) {
+      if (
+        b &&
+        !b.disabled &&
+        !b.classList.contains('window-close') &&
+        !b.classList.contains('k-close') &&
+        !b.classList.contains('u2-win-close')
+      ) {
         // Nút chính (xác nhận: nâng cấp, tu luyện, nhập thế…) có tiếng xác nhận trầm; còn lại là tiếng bấm thường.
         const primary = b.matches("[data-variant='primary'], .btn.primary");
         sfx(primary ? 'ui_confirm' : 'ui_click', primary ? 0.6 : 0.7);
