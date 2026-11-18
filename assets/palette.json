@@ -224,6 +224,45 @@
         "fogHaze": 0.0018, "fogHazeStart": 55, "rim": 1.0,
         "shadowTint": "#16293A", "highlightTint": "#F2C47E", "splitBalance": -0.18,
         "blackLift": "#1B2D38", "contrast": 1.1, "saturation": 0.72, "exposure": 1.28
+      },
+      "lk_dawn": {
+        "label": "Lạc Kiếm — bình minh vàng ngọc",
+        "sunColor": "#FFC79B", "sunIntensity": 2.8, "sunElevationDeg": 13,
+        "skyColor": "#C2DAE8", "skyIntensity": 0.85,
+        "fogColor": "#D9E8EC", "fogDensity": 0.0008, "heightFogTop": 80, "heightFogBoost": 2.4,
+        "fogHaze": 0.0024, "fogHazeStart": 90, "fogScatter": 0.8, "rim": 0.6,
+        "shadowTint": "#245C66", "highlightTint": "#FFD0A8", "splitBalance": 0.1,
+        "shadowAmount": 0.7, "highlightAmount": 0.32,
+        "blackLift": "#10303A", "contrast": 1.14, "saturation": 1.12, "exposure": 1.0
+      },
+      "lk_day": {
+        "label": "Lạc Kiếm — trưa trong",
+        "sunColor": "#FFF0D2", "sunIntensity": 3.9, "sunElevationDeg": 44,
+        "skyColor": "#A8D0E8", "skyIntensity": 0.78,
+        "fogColor": "#D2E8EE", "fogDensity": 0.0006, "heightFogTop": 60, "heightFogBoost": 2.0,
+        "fogHaze": 0.0017, "fogHazeStart": 110, "fogScatter": 0.6, "rim": 0.45,
+        "shadowTint": "#2A6A68", "highlightTint": "#FFE4B4", "splitBalance": 0.0,
+        "shadowAmount": 0.65, "highlightAmount": 0.25,
+        "blackLift": "#0F2F33", "contrast": 1.14, "saturation": 1.14, "exposure": 1.0
+      },
+      "lk_dusk": {
+        "label": "Lạc Kiếm — hoàng hôn cam",
+        "sunColor": "#FF9A5E", "sunIntensity": 3.0, "sunElevationDeg": 8,
+        "skyColor": "#CDB4A8", "skyIntensity": 0.8,
+        "fogColor": "#EDCDB4", "fogDensity": 0.0009, "heightFogTop": 75, "heightFogBoost": 2.3,
+        "fogHaze": 0.0022, "fogHazeStart": 90, "fogScatter": 1.0, "rim": 0.7,
+        "shadowTint": "#4A4A76", "highlightTint": "#FF9358", "splitBalance": 0.15,
+        "shadowAmount": 0.75, "highlightAmount": 0.38,
+        "blackLift": "#232846", "contrast": 1.16, "saturation": 1.15, "exposure": 1.0
+      },
+      "lk_night": {
+        "label": "Lạc Kiếm — đêm lam",
+        "sunColor": "#A8C4EC", "sunIntensity": 1.5, "sunElevationDeg": 38,
+        "skyColor": "#34527F", "skyIntensity": 1.0,
+        "fogColor": "#1B2B48", "fogDensity": 0.0011, "heightFogTop": 60, "heightFogBoost": 2.0,
+        "fogHaze": 0.0016, "fogHazeStart": 80, "fogScatter": 0.3, "rim": 0.9,
+        "shadowTint": "#0B1A34", "highlightTint": "#FFB869", "splitBalance": -0.2,
+        "blackLift": "#0C1A2E", "contrast": 1.1, "saturation": 0.9, "exposure": 1.2
       }
     },
     "bloom": { "threshold": 1.0, "strength": 0.35, "radius": 0.5, "maxHdr": 2.5 },
