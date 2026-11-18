@@ -2561,6 +2561,156 @@
         }
       }
     },
+    "chr_v3b_lac_kiem_nam": {
+      "id": "chr_v3b_lac_kiem_nam",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3b_lac_kiem_nam.glb",
+      "file": "chr_v3b_lac_kiem_nam.ab139a3ed4.glb",
+      "bytes": 3582936,
+      "rawBytes": 3715008,
+      "triangles": 23999,
+      "rawTriangles": 23999,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 115,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "ancient_warrior_clothing_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "ancient_warrior_clothing_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "ancient_warrior_clothing_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 23999
+        },
+        {
+          "level": 1,
+          "triangles": 11993,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4799,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 2.0438,
+          "height": 1.8406,
+          "depth": 0.3344,
+          "minY": 0.0007
+        },
+        "build": {
+          "width": 2.0438,
+          "height": 1.8406,
+          "depth": 0.3344,
+          "minY": 0.0007
+        }
+      }
+    },
+    "chr_v3b_lac_kiem_nu": {
+      "id": "chr_v3b_lac_kiem_nu",
+      "class": "player_v3",
+      "source": "assets/build/raw/chr_v3b_lac_kiem_nu.glb",
+      "file": "chr_v3b_lac_kiem_nu.5db3d7e3a9.glb",
+      "bytes": 3426820,
+      "rawBytes": 3400748,
+      "triangles": 23999,
+      "rawTriangles": 23999,
+      "lod0Cap": 24000,
+      "skinned": true,
+      "quantized": false,
+      "bones": 115,
+      "animations": [],
+      "ktx2": true,
+      "textures": [
+        {
+          "name": "female_character_3d_model_normal",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "normalTexture"
+          ]
+        },
+        {
+          "name": "female_character_3d_model_basecolor",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "baseColorTexture"
+          ]
+        },
+        {
+          "name": "female_character_3d_model_rm",
+          "mimeType": "image/ktx2",
+          "width": 2048,
+          "height": 2048,
+          "slots": [
+            "metallicRoughnessTexture"
+          ]
+        }
+      ],
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 23999
+        },
+        {
+          "level": 1,
+          "triangles": 11999,
+          "target": 12000
+        },
+        {
+          "level": 2,
+          "triangles": 4798,
+          "target": 4800
+        }
+      ],
+      "dims": {
+        "raw": {
+          "width": 1.8982,
+          "height": 1.7009,
+          "depth": 0.3216,
+          "minY": 0.0003
+        },
+        "build": {
+          "width": 1.8982,
+          "height": 1.7009,
+          "depth": 0.3216,
+          "minY": 0.0003
+        }
+      }
+    },
     "elite_cot_kiem_thong_linh": {
       "id": "elite_cot_kiem_thong_linh",
       "class": "elite",
