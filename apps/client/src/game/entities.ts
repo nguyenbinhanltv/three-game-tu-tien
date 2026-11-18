@@ -1,6 +1,6 @@
+import { currentSearch } from './flags';
 import { monFlagEdge, monHidden, type MonFlagEdge } from './monFlags';
 import * as THREE from 'three/webgpu';
-import { E4_OFF } from './camZones';
 import { uiScale } from '../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from './screenFit';
 import { locoDirOf, inSkyBand, PF_SOUL, TRUC_CO_LEVEL, MF_CHANT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
@@ -14,7 +14,7 @@ import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, legacyAppearance, type EscortMsg, type QuestView } from '@dtl/shared';
 import { LABELS, type Label } from './labelBatch';
 import { buildNode, disposeLabel, Humanoid, makeLabel } from './models';
-import { type AnimState, type CharacterView, type MonsterView, P2E_OFF, type SkillEvent } from './character/view';
+import { type AnimState, type CharacterView, type MonsterView, type SkillEvent } from './character/view';
 import { MonsterSkins } from './character/monsterSkins';
 import { NPC_SKINS, NpcSkins } from './character/npcSkins';
 import { type PlayerLook, PlayerSkins } from './character/playerSkins';
@@ -88,7 +88,7 @@ export interface WorldView {
   nodes: Map<string, NState>;
 }
 
-const SWORD_FORCED = typeof location === 'undefined' ? null : swordOverride(location.search, SWORD_MODELS);
+const SWORD_FORCED = swordOverride(currentSearch(), SWORD_MODELS);
 
 /** Ngoại hình hiển thị: theo server; server cũ chưa gửi thì màu theo tên như trước. */
 function lookOf(s: PState): PlayerLook {
@@ -581,7 +581,7 @@ export class EntityManager {
     const bars = this.bars;
     bars.begin();
     const cam = this.camera as THREE.PerspectiveCamera | null;
-    if (cam && !E4_OFF) bars.setView(cam.position.x, cam.position.y, cam.position.z, cam.fov ?? 55, typeof window === 'undefined' ? 0 : window.innerHeight);
+    if (cam) bars.setView(cam.position.x, cam.position.y, cam.position.z, cam.fov ?? 55, typeof window === 'undefined' ? 0 : window.innerHeight);
 
     // ----- người chơi -----
     view.players.forEach((s, sid) => {
@@ -905,7 +905,6 @@ export class EntityManager {
    * quái tự né. Giải từ vị trí logic mỗi khung rồi làm mượt độ lệch, áp ở khung sau. Vị trí logic không đổi.
    */
   private separate(dt: number, local: { x: number; z: number }): void {
-    if (P2E_OFF) return;
     const bodies = this.sepBodies;
     const mons = this.sepMons;
     let n = 0;
@@ -997,7 +996,7 @@ export class EntityManager {
         const want = e.local || e.target || (e.inView && labels < LABEL_MAX);
         if (want && !e.local && !e.target) labels++;
         e.label.visible = e.labelKeep ? e.label.visible && want : want;
-        if (e.label.visible && pc && vh > 0 && !E4_OFF) this.fitLabel(e, pc, vw, vh, boxes);
+        if (e.label.visible && pc && vh > 0) this.fitLabel(e, pc, vw, vh, boxes);
       }
       if (!e.model.setView) continue;
       // Người mặc áo bộ mô-đun nhiều draw call hơn ở LOD0 (thân, áo, kiếm, vỏ, bóng): tính hai suất để cả đám đông ≤ 300 draw.

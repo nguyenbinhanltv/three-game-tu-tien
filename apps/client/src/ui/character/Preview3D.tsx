@@ -2,11 +2,6 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Game } from '../../game/engine';
 import { PREVIEW_H, PREVIEW_W } from '../../game/charPreview';
 
-/** `?preview=2d` ép dùng hình bóng 2D (so sánh, máy yếu). */
-function forced2d(): boolean {
-  return typeof location !== 'undefined' && new URLSearchParams(location.search).get('preview') === '2d';
-}
-
 /**
  * Xem trước nhân vật 3D (TD-C): canvas 2D nhận điểm ảnh từ render target của engine; chỉ vẽ khi bảng mở (gắn lúc mount,
  * gỡ lúc unmount nên model và render target được giải phóng). Kéo chuột ngang để xoay. Không dựng được hoặc vượt
@@ -14,7 +9,7 @@ function forced2d(): boolean {
  */
 export function Preview3D({ fallback }: { fallback: ReactNode }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const [failed, setFailed] = useState(forced2d);
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
     const g = Game.current;
     const canvas = ref.current;

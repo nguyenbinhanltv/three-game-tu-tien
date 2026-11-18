@@ -7,6 +7,7 @@ import { assetBaseUrl, type Manifest } from '../game/assets';
 import { isBossViewer, isSkillViewer, SHOW_ALIASES, showAssetId } from '../game/testParams';
 import { SkillPanel } from './SkillPanel';
 import { skillForId } from './skillTiming';
+import { currentSearch, urlParams } from '../game/flags';
 
 const BASE_URL = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL;
 /** Chỉ nhận đường dẫn tương đối cùng origin tới .glb/.gltf, không có "..". */
@@ -32,8 +33,8 @@ export function AssetViewer() {
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [skillId, setSkillId] = useState('');
-  const skillMode = isSkillViewer(location.search);
-  const bossMode = isBossViewer(location.search);
+  const skillMode = isSkillViewer(currentSearch());
+  const bossMode = isBossViewer(currentSearch());
   const [bossIds, setBossIds] = useState<string[]>([]);
   const [bossId, setBossId] = useState('');
   const [opts, setOpts] = useState({ human: true, wire: false, skeleton: false });
@@ -65,7 +66,7 @@ export function AssetViewer() {
         if (!alive) return;
         setViewer(v);
         (window as unknown as { __viewer: ViewerScene }).__viewer = v;
-        const params = new URLSearchParams(location.search);
+        const params = urlParams();
         const file = params.get('file');
         if (bossMode) {
           // ?show=boss[&id=<id>]: danh sách mọi boss trong manifest, chọn để xem model + clip.
@@ -121,7 +122,7 @@ export function AssetViewer() {
           });
           return;
         }
-        const show = file ? null : showAssetId(location.search);
+        const show = file ? null : showAssetId(currentSearch());
         if (show) {
           void load(async () => {
             const res = await fetch(`${assetBaseUrl()}manifest.json`, { cache: 'no-cache' });

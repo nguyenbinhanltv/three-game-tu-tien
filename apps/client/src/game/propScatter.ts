@@ -183,8 +183,6 @@ const TREE_SCALE: Record<string, [number, number]> = {
   prop_anh_dao: [0.85, 1.2],
   prop_phong_do: [0.85, 1.2],
 };
-/** `?trees=legacy` (hoặc 0) về cây thủ tục cũ của terrain để so ảnh trước/sau. */
-export const LEGACY_TREES = typeof location !== 'undefined' && ['0', 'legacy'].includes(new URLSearchParams(location.search).get('trees') ?? '');
 const TREE_CELL = 24;
 
 /**
@@ -193,7 +191,6 @@ const TREE_CELL = 24;
  * sân tông môn anh đào/thông; rừng Linh Thảo sồi/phong/cổ thụ; thung lũng Thanh Khê sồi/anh đào/thông; hồ sồi/phong/thông.
  */
 function scatterTrees(out: PropInstance[]): void {
-  if (LEGACY_TREES) return;
   const big = out.filter((p) => p.id === 'prop_co_thu' || p.id === 'prop_thong_co');
   const n = WORLD_SIZE / TREE_CELL;
   for (let gz = 0; gz < n; gz++) {

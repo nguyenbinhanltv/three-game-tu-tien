@@ -35,6 +35,7 @@
 import { bellPartials } from './lootBell';
 import { gongPartials } from './chapter';
 import MIX from './audioMix.json';
+import { FLAGS } from './flags';
 
 /** Âm có bản tổng hợp dự phòng (dùng khi không có manifest). */
 type SynthSfx = 'sword' | 'slash' | 'rain' | 'thunder' | 'hit' | 'hurt' | 'heal' | 'shield' | 'levelup' | 'loot' | 'quest' | 'death' | 'fly' | 'gather' | 'ascend' | 'ui_hover';
@@ -147,7 +148,7 @@ const DEFAULT_PITCH = 0.05;
 /** Âm có trong manifest nhưng chưa giải mã xong: chờ tối đa chừng này rồi phát, quá thì bỏ. */
 const PENDING_MS = 600;
 
-const urlMute = typeof location !== 'undefined' && new URLSearchParams(location.search).get('mute') === '1';
+const urlMute = FLAGS.mute;
 let muted = urlMute || localStorage.getItem('dtl.mute') === '1';
 const volumes: Record<VolumeKey, number> = { master: 1, music: 1, ambient: 1, sfx: 1, ui: 1 };
 try {
@@ -1277,7 +1278,6 @@ if (!urlMute && typeof window !== 'undefined') {
 if (DEV && typeof window !== 'undefined') {
   (window as unknown as { __audio?: unknown }).__audio = { hitLog: sfxLog, stats: audioStats, sfx, playMusic, playAmbient, duck, duckHold, holdAmount, setVolume };
   // Nghe thử bài khi làm nội dung: ?music=<id>&ambient=<id> (phát sau thao tác đầu tiên).
-  const q = new URLSearchParams(location.search);
-  if (q.get('music')) playMusic(q.get('music'));
-  if (q.get('ambient')) playAmbient(q.get('ambient'));
+  if (FLAGS.music) playMusic(FLAGS.music);
+  if (FLAGS.ambient) playAmbient(FLAGS.ambient);
 }

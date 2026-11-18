@@ -16,16 +16,16 @@ import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type Swo
 import { applyV3Palette } from './v3Palette';
 import { lowerBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
+import { FLAGS } from '../flags';
 
-const search = typeof location === 'undefined' ? '' : location.search;
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
-export const CHR_V3 = new URLSearchParams(search).get('chr') === 'v3';
+export const CHR_V3 = FLAGS.chr === 'v3';
 export const V3_LIB = 'anim_ual_native';
 /** Asset theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). */
 export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
 /** Bản v3b: vạt xẻ hai bên đối xứng (concept v3b), là bản mặc định của `?chr=v3`; `?v3model=a` về bản v3 cũ để so ảnh. */
 export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
-export const V3_MODELS = new URLSearchParams(search).get('v3model') === 'a' ? V3_MODELS_A : V3_MODELS_B;
+export const V3_MODELS = FLAGS.v3ModelA ? V3_MODELS_A : V3_MODELS_B;
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
 export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_varkessa: 'chr_v3_varkessa_nu',
@@ -54,7 +54,7 @@ const SWING = ['Sword_Regular_A', 'Sword_Regular_B', 'Sword_Regular_C'];
 
 /** Tốc độ phát clip chạy để chân trụ không trượt (kẹp [0,4; 2]). */
 /** `?jog=<m/s>` ghi đè tốc độ chân trụ (chỉ để quét tham số khi đo trượt chân). */
-const JOG_OVERRIDE = Number(new URLSearchParams(search).get('jog')) || 0;
+const JOG_OVERRIDE = FLAGS.jog;
 export function jogRate(speed: number): number {
   return Math.min(2, Math.max(0.4, speed / (JOG_OVERRIDE || JOG_SPEED)));
 }
