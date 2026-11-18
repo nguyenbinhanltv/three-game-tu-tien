@@ -53,6 +53,7 @@ TEXMAX = int(opt('--tex', 2048))
 SHEET = opt('--sheet')
 REPORT = opt('--report')
 SPRINGS = opt('--springs')
+WINGS = opt('--wings')  # cánh (DV-2 đợt 4): JSON {parent, region:{min,max} (nửa +X, tọa độ lưới NGUỒN), chains:[{name, pts:[[x,y,z]…]}]}, tự lấy đối xứng nửa -X
 NO_EXPORT = '--no-export' in argv
 BIND = opt('--bind')  # quái dị vực (DV-2 đợt 2): JSON {binds:[{box:{min,max}, bone|blend:[[z,bone],[z,bone]]|drop:[xương…]}]} ép vùng cứng (vũ khí, khiên, áo choàng) theo một xương, tọa độ lưới NGUỒN
 AUTO = '--auto' in argv  # đầu vào không xương: tự ước lượng mốc theo tỉ lệ Mannequin + đo lưới (xem estimate_landmarks)
@@ -593,6 +594,92 @@ for sd in 'lr':
             Wt[vi, col] += mv
 W = Wt
 REP['twist_bones'] = N_TWIST
+
+if WINGS:
+    # Cánh bằng chuỗi xương (không kéo dãn lưới): mỗi chuỗi `pts` (tọa độ nguồn, nửa +X; nửa -X lấy đối xứng qua x = cx) có 3 xương:
+    # `dtl_wing_<tên>_<l|r>` (gốc, con của `parent`, client xoay để vỗ cánh) rồi hai lò xo `dtl_o_wing_<tên>_<l|r>_<0|1>` (lệch theo quán tính).
+    # Đỉnh trong `region` thuộc chuỗi gần nhất (khoảng cách tới đường gấp khúc); trọng số nội suy tuyến tính theo vị trí dọc chuỗi giữa ba xương,
+    # nhạt dần về thân trong dải `blend` (m) quanh `bodyX` để gốc cánh không rách khỏi giáp vai.
+    WG = json.load(open(WINGS, encoding='utf-8'))
+    wpar = WG.get('parent', 'spine_03')
+    reg = WG['region']
+    def src2w(pt):
+        return np.array(pt, float) * SRC_K + np.array([0, 0, SRC_DZ])
+
+    def SRC_OF_WORLD(w):
+        return (np.array(w, float) - np.array([0, 0, SRC_DZ])) / SRC_K
+    chains = []
+    for ch in WG['chains']:
+        for sd in 'lr':
+            mir = 1.0 if sd == 'l' else -1.0
+            pts = [src2w([mir * q[0], q[1], q[2]]) for q in ch['pts']]
+            chains.append((ch['name'], sd, np.array(pts)))
+    cols_new = []
+    seg_len = {}
+    for name, sd, P in chains:
+        n = len(P)
+        # ba mốc dọc chuỗi: P[0] → gốc, 1/3, 2/3, cuối
+        tot = [0.0]
+        for i in range(1, n):
+            tot.append(tot[-1] + float(np.linalg.norm(P[i] - P[i - 1])))
+        def at(f):
+            d = f * tot[-1]
+            for i in range(1, n):
+                if d <= tot[i] + 1e-9:
+                    u = (d - tot[i - 1]) / max(tot[i] - tot[i - 1], 1e-9)
+                    return P[i - 1] + (P[i] - P[i - 1]) * u
+            return P[-1]
+        q0, q1, q2, q3 = at(0), at(1 / 3), at(2 / 3), at(1.0)
+        nm0 = f'dtl_wing_{name}_{sd}'
+        add_bone(nm0, wpar, q0, q1)
+        add_bone(f'dtl_o_wing_{name}_{sd}_0', nm0, q1, q2)
+        add_bone(f'dtl_o_wing_{name}_{sd}_1', f'dtl_o_wing_{name}_{sd}_0', q2, q3)
+        cols_new += [nm0, f'dtl_o_wing_{name}_{sd}_0', f'dtl_o_wing_{name}_{sd}_1']
+        seg_len[(name, sd)] = tot[-1]
+    base_w = len(COLS)
+    COLS += cols_new
+    W = np.hstack([W, np.zeros((NV, len(cols_new)))])
+    # Vùng chọn (nguồn → thế giới qua hai góc, lấy đối xứng).
+    lo, hi = np.array(reg['min'], float), np.array(reg['max'], float)
+    n_w = 0
+    for i in range(NV):
+        sx = SRC_OF_WORLD(V[i])
+        side = 'l' if sx[0] > 0 else 'r'
+        ax = abs(sx[0])
+        if not (lo[0] <= ax <= hi[0] and lo[1] <= sx[1] <= hi[1] and lo[2] <= sx[2] <= hi[2]):
+            continue
+        best = None
+        for ci, (name, sd, P) in enumerate(chains):
+            if sd != side:
+                continue
+            for j in range(len(P) - 1):
+                a, b = P[j], P[j + 1]
+                ab = b - a
+                t = float(np.clip((V[i] - a) @ ab / max(ab @ ab, 1e-12), 0, 1))
+                d = float(np.linalg.norm(V[i] - (a + ab * t)))
+                if best is None or d < best[0]:
+                    best = (d, ci, j, t)
+        if best is None:
+            continue
+        _, ci, j, t = best
+        name, sd, P = chains[ci]
+        # vị trí dọc chuỗi theo độ dài
+        seg = [float(np.linalg.norm(P[k + 1] - P[k])) for k in range(len(P) - 1)]
+        f = (sum(seg[:j]) + seg[j] * t) / max(sum(seg), 1e-9)
+        # trọng số tuyến tính giữa ba xương, tâm ở 1/6, 1/2, 5/6
+        cs = [1 / 6, 0.5, 5 / 6]
+        ws = [max(0.0, 1 - abs(f - c) / (1 / 3)) for c in cs]
+        sm = sum(ws) or 1.0
+        ws = [w / sm for w in ws]
+        share = float(np.clip((ax - WG.get('bodyX', 0.12)) / max(WG.get('blend', 0.12), 1e-6), 0, 1))
+        W[i] *= (1 - share)
+        cbase = base_w + 3 * ci
+        for k in range(3):
+            W[i, cbase + k] += share * ws[k]
+        n_w += 1
+    log(f'cánh: {len(chains)} chuỗi, {n_w} đỉnh')
+    n_spring += 2 * len(chains)
+    REP['wing_verts'] = n_w
 if SPRINGS:
     # Cấu hình: {"groups":[{"name":"skirt","parent":"pelvis","axis":"angle|x","zMin":0.16,"zMax":0.5,"minRadius":0.09,"count":8,"links":2,
     #   "domRegion":["torso","leg"],"yMinRel":0.0,"xAbsMax":0.12}]}; z, bán kính, y, x tính theo PHẦN CHIỀU CAO (mặc định, "frac": false = mét).

@@ -29,6 +29,7 @@ import {
   type MonSkillName,
   type MonsterAi,
   type MonsterDef,
+  type MonsterTrail,
   type ReflectWin,
 } from '@dtl/shared';
 
@@ -71,6 +72,8 @@ export interface MxMon {
   s: { x: number; y: number; z: number; yaw: number; hp: number; mhp: number; mf: number; ce: number };
   level: number;
   atk: number;
+  homeX: number;
+  homeZ: number;
   state: number;
   attackAt: number;
   windUntil: number;
@@ -92,6 +95,8 @@ export interface MonSkillHost {
   /** Chỗ đứng được (không nước, không vách). */
   canStand(x: number, z: number): boolean;
   hazard(g: HazardGeom, delay: number, mul: number, kind: HazardMsg['kind'], m: MxMon, mv: HazardMsg['mv']): void;
+  /** Vệt để lại dọc vạch (x, z, yaw, len) sau `delay` giây (DV-2 đợt 4). */
+  trail(m: MxMon, x: number, z: number, yaw: number, len: number, cfg: MonsterTrail, delay: number): void;
   damagePlayer(p: MxPlayer, n: number, src: string): void;
   setFlags(m: MxMon, low: number, ce: number): void;
   setAttack(m: MxMon): void;
@@ -121,6 +126,8 @@ export class MonSkills {
     const now = this.h.now();
     const rt = m.mx;
     this.expire(m, now);
+    const an = m.rules.ai.anchor;
+    if (an && m.s.hp < m.s.mhp && (m.s.x - m.homeX) ** 2 + (m.s.z - m.homeZ) ** 2 <= an.r * an.r) m.s.hp = Math.min(m.s.mhp, m.s.hp + Math.max(1, Math.round(m.s.mhp * an.pct * dt)));
     if (rt.act) {
       this.runAct(m, target, dt, now);
       return true;
@@ -153,6 +160,7 @@ export class MonSkills {
         if (d > c.range) return false;
         m.s.yaw = yaw;
         this.h.hazard(lineGeom(m.s.x, m.s.z, yaw, c.r, c.w), c.delay, c.mul, c.kind, m, 'line');
+        if (c.trail) this.h.trail(m, m.s.x, m.s.z, yaw, c.r, c.trail, c.delay);
         m.windUntil = now + c.delay * 1000 + 250;
         m.attackAt = Math.max(m.attackAt, m.windUntil + 400);
         rt.next.line = now + c.cd * 1000;
@@ -176,6 +184,7 @@ export class MonSkills {
         }
         m.s.yaw = yaw;
         this.h.hazard(lineGeom(m.s.x, m.s.z, yaw, end.len, c.w), c.delay, c.mul, c.kind, m, 'charge');
+        if (c.trail) this.h.trail(m, m.s.x, m.s.z, yaw, end.len, c.trail, c.delay);
         rt.act = { k: 'charge', at: now + c.delay * 1000, phase: 0, tx: end.x, tz: end.z, speed: c.speed };
         rt.next.charge = now + c.cd * 1000;
         this.h.setAttack(m);

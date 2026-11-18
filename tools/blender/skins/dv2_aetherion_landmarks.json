@@ -1,0 +1,11 @@
+{
+ "$comment": "Mốc khớp Thủ Khích Dực Chủ (Aetherion Nemesis, Atahan3D CC BY). Đo từ ảnh chiếu skin_prep (600 px = 1 đơn vị), hệ Blender của lưới nguồn: Z lên, mặt trước -Y, trái nhân vật +X. Dáng đứng, hai tay buông.",
+ "joints": {
+  "Hips": [0.0, 0.12, -0.12], "Spine": [0.0, 0.12, -0.03], "Spine1": [0.0, 0.12, 0.07], "Spine2": [0.0, 0.12, 0.18],
+  "Neck": [0.0, 0.10, 0.32], "Head": [0.0, 0.08, 0.40], "HeadTop": [0.0, 0.08, 0.60],
+  "LeftArm": [0.22, 0.12, 0.18], "LeftForeArm": [0.30, 0.10, -0.02], "LeftHand": [0.29, 0.04, -0.18], "LeftHandEnd": [0.29, 0.02, -0.27],
+  "RightArm": [-0.22, 0.12, 0.18], "RightForeArm": [-0.30, 0.10, -0.02], "RightHand": [-0.27, 0.03, -0.17], "RightHandEnd": [-0.26, 0.02, -0.26],
+  "LeftUpLeg": [0.12, 0.12, -0.15], "LeftLeg": [0.17, 0.18, -0.45], "LeftFoot": [0.21, 0.16, -0.72], "LeftToeBase": [0.22, 0.07, -0.80], "LeftToeEnd": [0.22, -0.02, -0.82],
+  "RightUpLeg": [-0.12, 0.12, -0.15], "RightLeg": [-0.17, 0.18, -0.45], "RightFoot": [-0.21, 0.16, -0.72], "RightToeBase": [-0.22, 0.07, -0.80], "RightToeEnd": [-0.22, -0.02, -0.82]
+ }
+}

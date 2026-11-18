@@ -1,0 +1,14 @@
+{
+ "$comment": "Thủ Khích Dực Chủ (DV-2 đợt 4): Aetherion Nemesis // The Violet Seraph (Atahan3D, CC BY 4.0). Bỏ lưỡi kiếm dính tay (chiêu Giáng thương là hiệu ứng), giữ cánh + vòng hào quang. Chạy: blender -b --factory-startup --python tools/blender/skin_prep.py -- tools/blender/skins/dv2_aetherion.json <thư mục dtl-asset-source> --stage bake [--preview <ảnh>]. Tọa độ: hệ Blender của lưới nguồn (Z lên, mặt trước -Y, trái nhân vật +X).",
+ "id": "dv2_aetherion",
+ "source": "D:/METAGRIT/dtl-asset-source/assets-online/aetherion_nemesis__the_violet_seraph.glb",
+ "out": "dv2_aetherion/bake.glb",
+ "triangles": 36000,
+ "view": {"scale": 2.0, "center": [0, 0, 0]},
+ "cut": {
+  "capsules": [{"a": [-0.2, -0.03, -0.33], "b": [0.24, -0.52, -0.71], "r": 0.1}],
+  "minIsland": 400
+ },
+ "bake": {"size": 2048, "cage": 0.012, "ray": 0.03},
+ "roughness": 0.7
+}

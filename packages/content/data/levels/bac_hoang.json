@@ -1800,6 +1800,16 @@
       "respawn": 1800
     },
     {
+      "mon": "boss_thu_khich_duc_chu",
+      "x": 1024,
+      "z": 374,
+      "radius": 2,
+      "count": 1,
+      "levelMin": 28,
+      "levelMax": 28,
+      "respawn": 1800
+    },
+    {
       "mon": "boss_tan_hoa_kiem_co",
       "x": 804,
       "z": 624,
