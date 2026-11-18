@@ -42,7 +42,7 @@ export interface MonsterCtx {
   readonly host: GameSim['host'];
   isDead(p: PlayerEnt): boolean;
   liveStacks(p: PlayerEnt): number;
-  readonly lockCut: GameSim['lockCut'];
+  lockCut(h: Hazard, p: PlayerEnt): { mul: number; max: number };
   readonly mirror: GameSim['mirror'];
   readonly monById: GameSim['monById'];
   readonly monSkills: GameSim['monSkills'];
@@ -52,7 +52,7 @@ export interface MonsterCtx {
   pickGuards(h: Hazard): PlayerEnt[];
   readonly players: GameSim['players'];
   questEvent(p: PlayerEnt, type: Parameters<Character['questEvent']>[0], target: string | undefined, n: number): void;
-  readonly randomPoint: GameSim['randomPoint'];
+  randomPoint(cx: number, cz: number, radius: number, allowWater: boolean): { x: number; z: number };
   readonly realm: GameSim['realm'];
   shareToGuards(owner: PlayerEnt, n: number, h: Hazard): number;
   readonly soul: GameSim['soul'];
