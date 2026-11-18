@@ -44,6 +44,7 @@ html[data-touch] .k-tip {
   --t-ax: calc(max(var(--t-inset), env(safe-area-inset-right)) + 42px);
   --t-ay: calc(max(var(--t-inset), env(safe-area-inset-bottom)) + 42px);
   --h-safe: 8px;
+  --t-chat-y: 186px; /* đáy dòng chat cách đáy màn hình */
 }
 
 /* ───────── lớp điều khiển ───────── */
@@ -58,17 +59,17 @@ html[data-touch] .k-tip {
   left: 0;
   bottom: 0;
   width: 46%;
-  height: 68%;
+  height: calc(var(--t-chat-y) - 8px); /* nằm dưới dòng chat, không đè lên */
   pointer-events: auto;
   touch-action: none;
 }
 /* vòng gợi ý nơi đặt ngón (mờ, biến mất khi đang kéo) */
 .u2t-joy-hint {
   position: absolute;
-  left: calc(var(--t-l) + 86px);
-  bottom: calc(var(--t-b) + 58px);
-  width: 112px;
-  height: 112px;
+  left: calc(var(--t-l) + 70px);
+  bottom: calc(var(--t-b) + 30px);
+  width: 96px;
+  height: 96px;
   margin: -0px;
   border-radius: 50%;
   border: var(--u-line-2) solid var(--u-gold-line);
@@ -77,7 +78,7 @@ html[data-touch] .k-tip {
   transition: opacity var(--u-dur) var(--u-ease);
 }
 .u2t-joy-hint[data-on='1'] {
-  opacity: 0.55;
+  opacity: 0.4;
 }
 .u2t-joy-base {
   position: fixed;
@@ -85,7 +86,7 @@ html[data-touch] .k-tip {
   height: calc(var(--r) * 2);
   margin: calc(var(--r) * -1) 0 0 calc(var(--r) * -1);
   border-radius: 50%;
-  border: var(--u-line-2) solid var(--u-gold);
+  border: var(--u-line-2) solid var(--u-gold-line);
   background: var(--u-ink-veil);
   pointer-events: none;
 }
@@ -93,16 +94,17 @@ html[data-touch] .k-tip {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 52px;
-  height: 52px;
-  margin: -26px 0 0 -26px;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
   border-radius: 50%;
-  background: var(--u-gold);
-  border: var(--u-line-2) solid var(--u-gold-hi);
+  background: var(--u-ngoc);
+  border: var(--u-line-2) solid var(--u-gold);
+  opacity: 0.85;
   box-shadow: var(--u-sh-hud);
 }
 .u2t-joy-knob[data-run='1'] {
-  background: var(--u-gold-hi);
+  background: var(--u-ngoc-hi);
 }
 
 .u2t-act {
@@ -145,11 +147,22 @@ html[data-touch] .k-tip {
 }
 .u2t-lbl {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  left: 0;
+  right: 0;
+  bottom: 4px;
   overflow: hidden;
-  clip-path: inset(50%);
+  text-align: center;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 1.25;
+  color: var(--u-chu);
+  pointer-events: none;
+}
+.u2t-quick .u2-frame__in svg {
+  transform: translateY(-6px);
 }
 .u2t-tip {
   position: absolute;
@@ -195,7 +208,7 @@ html[data-touch] .k-tip {
 .hud.u2hud[data-mode='touch'] .u2h-tl {
   left: var(--t-l);
   top: var(--t-t);
-  width: 240px;
+  width: min(300px, calc(100vw - 2 * var(--t-l) - 160px));
   height: 98px;
   padding: var(--u-sp-1) var(--u-sp-3) var(--u-sp-1) var(--u-sp-1);
   gap: var(--u-sp-2);
@@ -205,7 +218,7 @@ html[data-touch] .k-tip {
   height: 52px;
 }
 .hud.u2hud[data-mode='touch'] .u2h-tr {
-  right: var(--t-r);
+  right: calc(var(--t-r) + 8px); /* vòng viền + bóng của bản đồ nhỏ nhô ra ngoài hộp: chừa lề để không bị cắt ở notch */
   top: var(--t-t);
   width: auto;
   gap: var(--u-sp-2);
@@ -237,8 +250,8 @@ html[data-touch] .k-tip {
 }
 .hud.u2hud[data-mode='touch'] .u2h-chat {
   left: var(--t-l);
-  bottom: calc(var(--t-b) + 190px);
-  width: 236px;
+  bottom: var(--t-chat-y);
+  width: min(300px, calc(100vw - 2 * var(--t-l) - 160px));
   height: 32px;
   pointer-events: none;
   grid-template-rows: auto;
@@ -278,7 +291,8 @@ html[data-touch] .k-tip {
 }
 
 /* ───────── nút trong cửa sổ: đủ lớn để chạm (≥ 44 px), không dựa vào hover ───────── */
-html[data-touch] .win-host .k-close, html[data-touch] .win-host .u2-close,
+html[data-touch] .win-host .k-close,
+html[data-touch] .win-host .u2-close,
 html[data-touch] .win-host .k-btn,
 html[data-touch] .win-host .k-tab,
 html[data-touch] .win-host .bag-page,
@@ -287,7 +301,8 @@ html[data-touch] .win-host input:not([type='range']):not([type='checkbox']) {
   min-width: 44px;
   min-height: 44px;
 }
-html[data-touch] .win-host .k-close, html[data-touch] .win-host .u2-close {
+html[data-touch] .win-host .k-close,
+html[data-touch] .win-host .u2-close {
   display: grid;
   place-items: center;
 }
@@ -321,10 +336,10 @@ html[data-touch] .win-host .k-close, html[data-touch] .win-host .u2-close {
     top: calc(var(--t-t) + 170px);
   }
   .u2t-joy-hint {
-    bottom: calc(var(--t-b) + 150px);
+    bottom: calc(var(--t-b) + 120px);
   }
-  .hud.u2hud[data-mode='touch'] .u2h-chat {
-    bottom: calc(var(--t-b) + 270px);
+  .hud.u2hud[data-mode='touch'] {
+    --t-chat-y: 266px;
   }
 }
 
@@ -343,4 +358,15 @@ html[data-touch] .win-host .k-close, html[data-touch] .win-host .u2-close {
     min-width: 58px;
     min-height: 58px;
   }
+}
+
+/* thông báo: trên cùng giữa màn hình, không che hàng tab/bảng của cửa sổ */
+.hud.u2hud[data-mode='touch'] .toasts {
+  top: calc(var(--t-t) + 2px);
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 60vw;
+  z-index: 20;
+  pointer-events: none;
 }

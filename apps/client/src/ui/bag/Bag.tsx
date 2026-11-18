@@ -161,7 +161,15 @@ function BagCell({
       onMouseEnter={() => item && isNew && clearNewMark(item.id)}
     >
       {item && def ? <Tooltip content={<ItemTip item={item} def={def} />}>{body}</Tooltip> : body}
-      {ghost && item && def && createPortal(<div className="bag-ghost" style={{ left: ghost.x, top: ghost.y }}><ContentIcon def={def} /></div>, document.body)}
+      {ghost &&
+        item &&
+        def &&
+        createPortal(
+          <div className="bag-ghost" style={{ left: ghost.x, top: ghost.y }}>
+            <ContentIcon def={def} />
+          </div>,
+          document.body,
+        )}
       {item?.lk && <LockIcon />}
       {isNew && <i className="bag-new" title={t('ui.bag.new')} />}
     </div>

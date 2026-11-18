@@ -1263,7 +1263,7 @@
   "ui.settings.touch_hint": "Cần ảo bên trái, nút đánh và vòng kỹ năng bên phải; vuốt nửa phải để xoay camera, chụm hai ngón để thu phóng, chạm quái hoặc NPC để chọn. Tự động bật trên máy chỉ có màn hình cảm ứng; nên cầm ngang.",
   "ui.touch.jump": "Nhảy",
   "ui.touch.interact": "Tương tác",
-  "ui.touch.target": "Đổi mục tiêu",
+  "ui.touch.target": "Mục tiêu",
   "ui.touch.rotate": "Xoay ngang màn hình để chơi dễ hơn.",
   "ui.touch.rotate_close": "Đóng gợi ý",
   "ui.touch.joystick": "Cần di chuyển",

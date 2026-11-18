@@ -1,4 +1,4 @@
-import { type CSSProperties, type PointerEvent as RPointerEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, type PointerEvent as RPointerEvent, useEffect, useRef, useState } from 'react';
 import { PF_FLYING, PF_MEDITATING, type SkillDef } from '@dtl/shared';
 import { METHOD, SKILL, skillBar, t, thanThong10Skill, thanThongSkill } from '@dtl/content';
 import { Game } from '../../../game/engine';
@@ -67,11 +67,23 @@ function Joystick() {
     if (tap && g) touchTap(g, e.clientX, e.clientY);
   };
   return (
-    <div className="u2t-joy" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} data-testid="touch-joystick" aria-label={t('ui.touch.joystick')}>
+    <div
+      className="u2t-joy"
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={up}
+      onPointerCancel={up}
+      data-testid="touch-joystick"
+      aria-label={t('ui.touch.joystick')}
+    >
       <span className="u2t-joy-hint" aria-hidden="true" data-on={st ? undefined : '1'} />
       {st && (
         <span className="u2t-joy-base" style={{ left: st.ox, top: st.oy, '--r': JOY_RADIUS + 'px' } as CSSProperties} aria-hidden="true">
-          <span className="u2t-joy-knob" style={{ transform: `translate(${st.kx}px, ${st.ky}px)` }} data-run={st.mag >= 1 ? '1' : undefined} />
+          <span
+            className="u2t-joy-knob"
+            style={{ transform: `translate(${st.kx}px, ${st.ky}px)` }}
+            data-run={st.mag >= 1 ? '1' : undefined}
+          />
         </span>
       )}
     </div>
@@ -158,9 +170,7 @@ function TouchSlot({
 interface QuickProps {
   pos: TPos;
   label: string;
-  icon?: ReactNode;
-  sys?: SysIconName;
-  text?: string;
+  sys: SysIconName;
   pressed?: boolean;
   cdFrac?: number;
   testid: string;
@@ -169,7 +179,7 @@ interface QuickProps {
 }
 
 /** Nút phụ (Lướt, Nhảy, Ngự kiếm, Đả tọa, Tương tác, Đổi mục tiêu): bấm ngay khi chạm; Nhảy giữ ngón để bay lên. */
-function Quick({ pos, label, icon, sys, text, pressed, cdFrac, testid, onPress, onRelease }: QuickProps) {
+function Quick({ pos, label, sys, pressed, cdFrac, testid, onPress, onRelease }: QuickProps) {
   return (
     <button
       type="button"
@@ -193,8 +203,12 @@ function Quick({ pos, label, icon, sys, text, pressed, cdFrac, testid, onPress, 
         }
       }}
     >
-      <IconFrame size="s">{icon ?? (sys ? <SysIcon name={sys} size={22} /> : <span className="u2t-glyph">{text}</span>)}</IconFrame>
-      <span className="u2t-lbl">{label}</span>
+      <IconFrame size="s">
+        <SysIcon name={sys} size={20} />
+      </IconFrame>
+      <span className="u2t-lbl" aria-hidden="true">
+        {label}
+      </span>
       {!!cdFrac && <span className="u2-skill__cd" style={{ '--cd': cdFrac } as CSSProperties} />}
     </button>
   );
@@ -249,13 +263,19 @@ function ActionCluster() {
       <Quick
         pos={g.quick[0]!}
         label={t('ui.dash')}
-        icon={dash ? <ContentIcon def={dash} /> : undefined}
-        sys="sword"
+        sys="dash"
         cdFrac={dashLeft > 80 ? Math.min(1, dashLeft / dashTotal) : 0}
         testid="touch-dash"
         onPress={() => Game.current?.useDash()}
       />
-      <Quick pos={g.quick[1]!} label={t('ui.touch.jump')} text="↑" testid="touch-jump" onPress={() => space(true)} onRelease={() => space(false)} />
+      <Quick
+        pos={g.quick[1]!}
+        label={t('ui.touch.jump')}
+        sys="jump"
+        testid="touch-jump"
+        onPress={() => space(true)}
+        onRelease={() => space(false)}
+      />
       <Quick
         pos={g.quick[2]!}
         label={t('ui.fly')}
@@ -272,11 +292,11 @@ function ActionCluster() {
         testid="touch-meditate"
         onPress={() => Game.current?.toggleMeditate()}
       />
-      <Quick pos={g.quick[4]!} label={t('ui.touch.interact')} text="F" testid="touch-interact" onPress={() => Game.current?.interact()} />
+      <Quick pos={g.quick[4]!} label={t('ui.touch.interact')} sys="talk" testid="touch-interact" onPress={() => Game.current?.interact()} />
       <Quick
         pos={g.quick[5]!}
         label={t('ui.touch.target')}
-        text="⇥"
+        sys="target"
         testid="touch-target"
         onPress={() => {
           const eng = Game.current;

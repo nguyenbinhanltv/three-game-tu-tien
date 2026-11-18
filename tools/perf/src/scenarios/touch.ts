@@ -126,6 +126,7 @@ export default {
 
       // Ngọc Đái + túi + cài đặt bằng chạm.
       await gm(page, 'give itm_yeu_dan 5');
+      await sleep(4500); // chờ thông báo GM (id thô, chỉ có ở lệnh GM) mờ đi trước khi chụp
       await page.locator('[data-testid="hub-bag"]').tap();
       await sleep(900);
       await shot('05-tui', 400);
@@ -177,7 +178,10 @@ export default {
           .filter((b) => b.width > 0 && (b.width < 43.5 || b.height < 43.5))
           .map((b) => `${Math.round(b.width)}x${Math.round(b.height)}`),
       );
-      res.docScroll = await page.evaluate(() => [document.documentElement.scrollWidth - innerWidth, document.documentElement.scrollHeight - innerHeight]);
+      res.docScroll = await page.evaluate(() => [
+        document.documentElement.scrollWidth - innerWidth,
+        document.documentElement.scrollHeight - innerHeight,
+      ]);
       log[d.id] = res;
       await sleep(d.id === 'iphone14pro' ? 800 : 100);
       await page.context().close();
