@@ -19,7 +19,7 @@ import {
   CHAT_MAX_LEN,
 } from '@dtl/shared';
 import { methodOf } from './method';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 /** Tổ đội: sống ở cấp tiến trình (qua mọi room và bí cảnh), không lưu DB (khởi động lại server thì giải tán). */
 export class Party {

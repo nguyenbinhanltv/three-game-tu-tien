@@ -4,7 +4,7 @@ import { C, HOME_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, worldRoomName } from
 import { LEVELS, realmName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { parties } from '../game/party';
-import { type PlayerEnt, type SimOptions } from '../game/sim';
+import type { PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
 import { randomUUID } from 'node:crypto';
 import { GameRoom, type JoinAuth } from './base';

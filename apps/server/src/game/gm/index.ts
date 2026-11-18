@@ -7,7 +7,7 @@ import { isEquipSlot, type Character } from '../character';
 import { BRANCH_METHOD, findIds, GM_GROUPS, GM_MAX_TIER, hasOutfitAsset, helpLine, isGmBranch, outfitRows, parsePlus, planKit, skinIds, weaponIds, type GmBranch } from './tools';
 import { setSkillLevel, skillLevelOf } from '../method';
 import type { LevelDef, MonsterDef } from '@dtl/shared';
-import type { MonEnt, PlayerEnt } from '../sim';
+import type { MonEnt, PlayerEnt } from '../entities';
 
 /** Phần GameSim mà lệnh GM cần (giao diện hẹp, tránh import vòng lớp GameSim). */
 export interface GmCtx {

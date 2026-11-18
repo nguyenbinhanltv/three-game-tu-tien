@@ -20,7 +20,7 @@ import {
   TOUCH_R,
 } from '@dtl/shared';
 import { QUEST, t } from '@dtl/content';
-import type { PlayerEnt } from './sim';
+import type { PlayerEnt } from './entities';
 
 export interface QuestObjHost {
   now(): number;
