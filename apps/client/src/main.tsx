@@ -3,6 +3,7 @@ import { App } from './ui/App';
 import './styles.css';
 import './styles2.css';
 import { installUiScale } from './ui/uiScale';
+import { installTouchMode } from './input/touchMode';
 import { urlParams } from './base/flags';
 import { installMotion } from './ui/ngj/motion';
 import { startHires } from './game/hires';
@@ -28,6 +29,7 @@ if (q.get('viewer') === 'asset' || q.has('show')) {
   stage.id = 'stage';
   document.body.prepend(stage);
 
+  installTouchMode();
   installUiScale();
   installMotion();
   createRoot(root).render(<App />);

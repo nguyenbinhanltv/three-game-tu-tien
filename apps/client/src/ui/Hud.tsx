@@ -64,6 +64,8 @@ import { PlayerCard, BossCard, TargetCastBar } from './u2/hud/Frames';
 import { QuestTrack, ChatBox } from './u2/hud/QuestChat';
 import { SkillBanner } from './u2/hud/SkillBanner';
 import { SkillCluster } from './u2/hud/SkillCluster';
+import { TouchControls } from './u2/touch/TouchControls';
+import './u2/touch/touch.css';
 import { blurAfterPointer, useNow } from './u2/hud/common';
 import { hudVars, useHudMode } from './u2/hud/hudVars';
 
@@ -429,11 +431,11 @@ export function Hud() {
       <TrialBanner />
       <BagWarn />
       {mouseLook && <div className="crosshair" />}
-      {controls === 'mouse' && !mouseLook && !npc && !panel && !dead && <LockHint />}
+      {controls === 'mouse' && mode !== 'touch' && !mouseLook && !npc && !panel && !dead && <LockHint />}
       {hint && !npc && <div className="hint">{hint}</div>}
       <CastBar />
       <SkillBanner />
-      <SkillCluster layout={skillLayout} utility={<UtilityRow />} />
+      {mode === 'touch' ? <TouchControls /> : <SkillCluster layout={skillLayout} utility={<UtilityRow />} />}
       <ChatBox />
       <Panels />
       {npc && <NpcDialog npcId={npc} />}
