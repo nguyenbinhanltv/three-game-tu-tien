@@ -29,7 +29,7 @@
         { "ratio": 0.2, "maxTriangles": 4800 }
       ],
       "texture": { "color": 2048, "data": 2048 },
-      "bones": 96
+      "bones": 112
     },
     "player_v2": {
       "triangles": { "min": 4000, "max": 12000 },
@@ -64,6 +64,24 @@
       ],
       "texture": { "color": 1024, "data": 512 },
       "bones": 60
+    },
+    "monster_mq": {
+      "triangles": { "min": 5000, "max": 10000 },
+      "lods": [
+        { "ratio": 0.35, "maxTriangles": 3500 },
+        { "ratio": 0.12, "maxTriangles": 1200 }
+      ],
+      "texture": { "color": 1024, "data": 512 },
+      "bones": 96
+    },
+    "elite_mq": {
+      "triangles": { "min": 10000, "max": 15000 },
+      "lods": [
+        { "ratio": 0.35, "maxTriangles": 5000 },
+        { "ratio": 0.12, "maxTriangles": 1800 }
+      ],
+      "texture": { "color": 1024, "data": 512 },
+      "bones": 96
     },
     "boss": {
       "triangles": { "min": 20000, "max": 50000 },

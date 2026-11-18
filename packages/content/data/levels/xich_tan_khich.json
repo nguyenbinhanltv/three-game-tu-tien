@@ -30,7 +30,7 @@
       {
         "mons": [
           {
-            "id": "mon_xt_trong_binh",
+            "id": "mon_giac_kiem_trong_binh",
             "level": 28,
             "n": 10
           }
@@ -87,7 +87,7 @@
             },
             {
               "at": 40,
-              "mon": "mon_xt_trong_binh",
+              "mon": "mon_giac_kiem_trong_binh",
               "level": 28,
               "n": 4
             }

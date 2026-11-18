@@ -1,0 +1,9 @@
+{
+ "$comment": "Cấu hình skin_prep.py (--stage bake, không khai joints) cho quái Dị Vực hai chân (DV-2 đợt 2). Nguồn chỉ đọc, giải nén vào thư mục tạm; chạy: blender -b --factory-startup --python tools/blender/skin_prep.py -- tools/blender/skins/dv2_maltherion.json <thư mục làm việc> --stage bake. Sau đó chr_v3.py --auto đặt lên xương Mannequin.",
+ "id": "dv2_maltherion",
+ "source": "D:/claude-tmp/dv2b/malther/source/MALTHERION  The Skullbound Aegis.glb",
+ "out": "dv2_maltherion/bake.glb",
+ "triangles": 9000,
+ "bake": { "size": 2048, "cage": 0.012, "ray": 0.03 },
+ "roughness": 0.7
+}

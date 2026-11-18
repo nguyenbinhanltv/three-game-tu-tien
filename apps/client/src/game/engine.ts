@@ -29,12 +29,17 @@ import { AmbientParticles } from './ambient';
 import { Butterflies, BUTTERFLY_LEVELS } from './butterflies';
 import { Grass, GRASS_PUSH_SLOTS, monsterPushRadius, pickPushers, type Pusher } from './grass';
 import { MODEL_MAT } from './models';
-import { applyAtmosphere, createLanternHalos, setHeightFog } from '../render/atmosphere';
+import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } from '../render/atmosphere';
+import { buildRiftVeil, type RiftVeil } from '../render/riftVeil';
+import { skyTopOf } from '../render/sky';
+import { DeadTrees } from './deadTrees';
+import { deadTreeSpots, riftBlend, riftPath } from './bacHoangArt';
+import { bhCtx } from './propScatter';
 import { Beacons } from '../render/beacons';
 import { applyGrading, budgetPixelRatio, markBloom, PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { adoptGltfMaterials, createWorldMaterial } from '../render/materials/world';
-import { GRADING, GRADING_DEFAULT, moodVariant, URL_MOOD, type GradingName } from '../render/grading';
+import { GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../render/grading';
 import { MusicController } from './music';
 import { updateOcclusion, withOccluderFade } from './occlusion';
 import { LanternLights } from '../render/lanternLights';
@@ -948,6 +953,51 @@ export class Game {
   /** Các lớp đặc thù level (halo đèn…) đã dựng, để `unloadLevel` gỡ đúng. */
   private levelObjs: THREE.Object3D[] = [];
   private levelMood: GradingName = GRADING_DEFAULT;
+  /** Bắc Hoang (DV-3I): vệt nứt phát sáng, cây chết, và mood trộn theo vị trí giữa `ash_dawn` và `rift`. */
+  private rift: RiftVeil | null = null;
+  private deadTrees: DeadTrees | null = null;
+  private riftMood = false;
+  private riftMoodT = -1;
+  private riftMoodAcc = 0;
+
+  /** Dựng lớp riêng của Bắc Hoang: vệt nứt Giới Khích (3 draw call), cây chết (≤ 3 draw call). `?bhart=0` tắt để so ảnh. */
+  private buildBacHoang(): void {
+    if (new URLSearchParams(location.search).get('bhart') === '0') return;
+    const T = levelTerrain();
+    this.riftMood = true;
+    this.riftMoodT = -1;
+    this.rift = buildRiftVeil(riftPath(T.def), (x, z) => heightAt(x, z));
+    this.scene.add(this.rift.group);
+    this.deadTrees = new DeadTrees(deadTreeSpots(bhCtx(propsOf('bac_hoang')), 700), (x, z) => heightAt(x, z));
+    this.scene.add(this.deadTrees.group);
+  }
+
+  /** Mood Bắc Hoang theo vị trí: 0 ở nửa nam (`ash_dawn`) → 1 ở ba vùng bắc (`rift`), đổi dần quanh Khích Giai. Chỉnh uniform, không biên dịch lại. */
+  private updateRiftMood(dt: number, z: number): void {
+    this.riftMoodAcc += dt;
+    if (this.riftMoodAcc < 0.2 && this.riftMoodT >= 0) return;
+    this.riftMoodAcc = 0;
+    const t = riftBlend(z - levelTerrain().def.size / 2);
+    if (Math.abs(t - this.riftMoodT) < 0.01) return;
+    this.riftMoodT = t;
+    const p = mixPreset(GRADING.ash_dawn, GRADING.rift, t);
+    tuneAtmosphere(this.scene, this.env, p, t > 0.5 ? 'rift' : 'ash_dawn', mixHex(skyTopOf('ash_dawn'), skyTopOf('rift'), t));
+    applyGrading(p);
+  }
+
+  private disposeBacHoang(): void {
+    if (this.rift) {
+      this.scene.remove(this.rift.group);
+      this.rift.dispose();
+      this.rift = null;
+    }
+    if (this.deadTrees) {
+      this.scene.remove(this.deadTrees.group);
+      this.deadTrees.dispose();
+      this.deadTrees = null;
+    }
+    this.riftMood = false;
+  }
 
   /** Mood của level; `?mood=` trên URL thắng (chụp ảnh so sánh). */
   private moodOf(id: string): GradingName {
@@ -1033,6 +1083,7 @@ export class Game {
         this.levelObjs.push(floor, hall);
       }
     }
+    if (id === 'bac_hoang') this.buildBacHoang();
     if (F.sect) void this.loadSectModel(q.shadows);
   }
 
@@ -1048,7 +1099,8 @@ export class Game {
     }
     const pois = LEVELS[id]?.pois ?? [];
     if (F.beacons && pois.length && params.get('beacons') !== '0') {
-      this.beacons = new Beacons(pois.filter((p) => p.beamH).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
+      // Giới Khích (Bắc Hoang) tự có vệt sáng riêng (render/riftVeil.ts), không thêm cột linh quang nón.
+      this.beacons = new Beacons(pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
       this.beacons.mesh.visible = isWorldRoom(get().room);
       this.scene.add(this.beacons.mesh);
     }
@@ -1075,6 +1127,7 @@ export class Game {
   /** Gỡ và giải phóng mọi thứ gắn với level hiện tại (địa hình, kiến trúc + GLB, cổng, đèn, cây, cột sáng, cỏ). Không để rò sau nhiều lần đổi. */
   private unloadLevel(): void {
     this.cloneVis?.clear();
+    this.disposeBacHoang();
     const drop = (o: THREE.Object3D | null | undefined) => o && this.scene.remove(o);
     if (this.terrain) {
       drop(this.terrain.group);
@@ -3023,6 +3076,7 @@ export class Game {
     this.updateCamera(dt);
     setListener(rp.x, rp.z, this.camYaw);
     this.env.update(dt, this.camera, rp);
+    if (this.riftMood) this.updateRiftMood(dt, rp.z);
     this.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
     if (me) this.ambient.update(dt, this.camera.position, rp);
     if (me) this.butterflies?.update(dt, rp);
@@ -3923,6 +3977,7 @@ export class Game {
     this.terrain?.dispose();
     this.ground?.dispose();
     this.lanterns?.dispose();
+    this.disposeBacHoang();
     for (const o of this.levelObjs) {
       const m = o as THREE.Mesh;
       m.geometry?.dispose();

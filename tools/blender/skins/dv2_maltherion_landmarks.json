@@ -1,0 +1,11 @@
+{
+ "$comment": "Mốc khớp Giác Kiếm Trọng Binh (Maltherion, Atahan3D CC BY). Đo từ ảnh chiếu skin_prep (600 px = 1 đơn vị), hệ Blender của lưới nguồn: Z lên, mặt trước -Y, trái nhân vật +X. Tay phải (-X) cầm kiếm chúc xuống, tay trái (+X) giữ khiên lớn.",
+ "joints": {
+  "Hips": [0.04, 0.05, 0.0], "Spine": [0.04, 0.05, 0.12], "Spine1": [0.04, 0.03, 0.25], "Spine2": [0.04, 0.0, 0.40],
+  "Neck": [0.05, -0.02, 0.55], "Head": [0.05, -0.02, 0.63], "HeadTop": [0.05, -0.02, 0.82],
+  "LeftArm": [0.33, 0.0, 0.42], "LeftForeArm": [0.42, -0.10, 0.10], "LeftHand": [0.30, -0.35, 0.0], "LeftHandEnd": [0.28, -0.38, -0.05],
+  "RightArm": [-0.27, 0.05, 0.42], "RightForeArm": [-0.38, 0.15, 0.13], "RightHand": [-0.36, -0.02, -0.12], "RightHandEnd": [-0.35, -0.07, -0.20],
+  "LeftUpLeg": [0.20, 0.05, -0.05], "LeftLeg": [0.30, 0.05, -0.45], "LeftFoot": [0.30, 0.05, -0.82], "LeftToeBase": [0.30, -0.10, -0.93], "LeftToeEnd": [0.30, -0.25, -0.95],
+  "RightUpLeg": [-0.13, 0.05, -0.05], "RightLeg": [-0.20, 0.10, -0.42], "RightFoot": [-0.17, 0.08, -0.82], "RightToeBase": [-0.17, -0.05, -0.93], "RightToeEnd": [-0.17, -0.20, -0.95]
+ }
+}

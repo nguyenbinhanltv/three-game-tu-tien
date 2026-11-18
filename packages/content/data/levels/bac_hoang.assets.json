@@ -1,8 +1,8 @@
 {
   "mood": "ash_dawn",
   "glb": [],
-  "ground": { "set": "terrain-ochre", "mask": "neutral" },
-  "music": ["wild"],
-  "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": false, "grass": false, "trees": "none", "beacons": true, "vegetation": false },
+  "ground": { "set": "terrain-ash", "mask": "neutral" },
+  "music": ["wild_ash", "wild_rift"],
+  "features": { "sect": false, "portals": false, "lanterns": true, "lake": false, "clouds": false, "grass": false, "trees": "scatter", "beacons": true, "vegetation": false },
   "minimap": "bac_hoang"
 }

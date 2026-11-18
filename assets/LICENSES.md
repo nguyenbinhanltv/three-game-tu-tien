@@ -230,6 +230,9 @@ Mỗi asset đi vào game (mọi GLB trong `apps/client/public/assets/manifest.j
 | `boss_tam_thu_nguc_khuyen` | "GORETHRAX // The Infernal Three- Headed Hound" của **6 (Atahan3D)** trên Sketchfab. **Đã chỉnh sửa**: giảm lưới 980 nghìn → 36 nghìn tam giác, trải UV và nướng lại texture, dựng xương + trọng số (`tools/blender/sculpt_rig.py`), clip thủ tục (`tools/blender/anim_quadruped.py`) | CC-BY-4.0 | 2026-11-18 | Ghi công bắt buộc: tác giả https://sketchfab.com/Atahan3D · nguồn https://sketchfab.com/3d-models/gorethrax-the-infernal-three-headed-hound-90f3e2338d6f41b8a94f376fbc3db3e4 · giấy phép https://creativecommons.org/licenses/by/4.0/ |
 | `mon_liet_hoa_ma_nguu` | "FLAME BULL // The Infernal Beast" của **6 (Atahan3D)** trên Sketchfab. **Đã chỉnh sửa**: giảm lưới 122 nghìn → 9 nghìn tam giác, trải UV và nướng lại texture (kèm map phát sáng khe nứt), dựng xương + trọng số (`tools/blender/sculpt_rig.py`), clip thủ tục (`tools/blender/anim_quadruped.py`) | CC-BY-4.0 | 2026-11-18 | Ghi công bắt buộc: tác giả https://sketchfab.com/Atahan3D · nguồn https://sketchfab.com/3d-models/flame-bull-the-infernal-beast-0f6ac3ada7e648c7b727ba22c67bb684 · giấy phép https://creativecommons.org/licenses/by/4.0/ |
 | `mon_u_anh_cot_loc` | "Shadow Stag - Bone-Antlered Dark Fantasy" của **Pigcraft** trên Sketchfab. **Đã chỉnh sửa**: giảm lưới 1,93 triệu → 9 nghìn tam giác, trải UV và nướng lại texture, dựng xương + trọng số (`tools/blender/sculpt_rig.py`), clip thủ tục (`tools/blender/anim_quadruped.py`) | CC-BY-4.0 | 2026-11-18 | Ghi công bắt buộc: tác giả https://sketchfab.com/s8819296 · nguồn https://sketchfab.com/3d-models/shadow-stag-bone-antlered-dark-fantasy-607bb5705fcd431bb09faec790fa4692 · giấy phép https://creativecommons.org/licenses/by/4.0/ |
+| `mon_tan_chung` | "Bone Golem - Necromantic Construct" của **Pigcraft** trên Sketchfab. **Đã chỉnh sửa**: giảm lưới 1,98 triệu → 9 nghìn tam giác, UV mới và nướng lại texture màu + normal (`tools/blender/skin_prep.py --stage bake`), dựng xương UE5 Mannequin + trọng số (`tools/blender/chr_v3.py`); clip UAL của Quaternius (CC0) phát trực tiếp | CC-BY-4.0 | 2026-11-18 | Ghi công bắt buộc: tác giả https://sketchfab.com/s8819296 · nguồn https://sketchfab.com/3d-models/bone-golem-necromantic-construct-7510de27700c4b199d1d727b9f2f48d6 · giấy phép https://creativecommons.org/licenses/by/4.0/ |
+| `mon_giac_kiem_trong_binh` | "MALTHERION // The Skullbound Aegis" của **Atahan3D** trên Sketchfab (gói tải về không kèm metadata; tác giả và URL lấy từ trang Sketchfab của mô hình). **Đã chỉnh sửa**: giảm lưới 309 nghìn → 9 nghìn tam giác, UV mới và nướng lại texture, dựng xương UE5 Mannequin + trọng số, khiên/kiếm/áo choàng gắn cứng vào xương (`tools/blender/chr_v3.py --bind`); clip UAL của Quaternius (CC0) phát trực tiếp | CC-BY-4.0 | 2026-11-18 | Ghi công bắt buộc: tác giả https://sketchfab.com/Atahan3D · nguồn https://sketchfab.com/3d-models/85ff03237ee94a0cbfe9770dde440d6c · giấy phép https://creativecommons.org/licenses/by/4.0/ |
+| `elite_hoi_giac_cu_thu` | "GORTHAZUL // The Ashhorn Behemoth" của **6 (Atahan3D)** trên Sketchfab. **Đã chỉnh sửa**: giảm lưới 701 nghìn → 14 nghìn tam giác, UV mới và nướng lại texture, dựng xương UE5 Mannequin + trọng số, rìu gắn cứng vào xương tay phải (`tools/blender/chr_v3.py --bind`); clip UAL của Quaternius (CC0) phát trực tiếp | CC-BY-4.0 | 2026-11-18 | Ghi công bắt buộc: tác giả https://sketchfab.com/Atahan3D · nguồn https://sketchfab.com/3d-models/gorthazul-the-ashhorn-behemoth-0e2a0f6baad64f51b2aa613112b7fd7c · giấy phép https://creativecommons.org/licenses/by/4.0/ |
 | `boss_dia_mach_long` | Tripo web app (image-to-3D H3.1 từ concept `docs/asset-concepts`, người dùng dựng); rig quadruped Tripo (33 xương, bảng layout tường minh) + clip thủ tục `tools/blender/anim_quadruped.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `boss_thon_mach_ngo_cong_vuong` | Tripo web app (image-to-3D H3.1 từ concept `docs/asset-concepts`, người dùng dựng); bỏ rig Tripo; bộ xương chuỗi 17 đốt và 9 clip thủ tục `tools/blender/anim_serpent.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
 | `boss_van_hai_kinh_vuong` | Tripo web app (image-to-3D H3.1 từ concept `docs/asset-concepts`, người dùng dựng); bỏ rig Tripo; bộ xương chuỗi 17 đốt và 9 clip thủ tục kiểu bơi `tools/blender/anim_serpent.py` | dự án | 2026-11-16 | web app, không có task id; xem meta.json |
@@ -299,6 +302,23 @@ Bộ slate cho `thien_khuyet`, cũng từ [Poly Haven](https://polyhaven.com/tex
 | sỏi | [rocky_gravel](https://polyhaven.com/a/rocky_gravel) | Dario Barresi, Dimitrios Savva | CC0-1.0 |
 
 Thẻ cỏ sao (`apps/client/public/grass-night/`) dựng từ ảnh concept của dự án `docs/asset-concepts/prop_co_*.webp` bằng `pnpm assets:grass-cards --set night` (không dùng Tripo).
+
+### Texture mặt đất Bắc Hoang Tẫn Nguyên (DV-3I)
+
+Bộ ash cho `bac_hoang`, cũng từ [Poly Haven](https://polyhaven.com/textures), **CC0-1.0**; đổi sắc (giảm bão hòa, ngả tro than) bằng `pnpm assets:terrain --set ash`, ra `apps/client/public/terrain-ash/` (nạp lười khi vào level).
+
+| Lớp | Poly Haven | Tác giả | Giấy phép |
+| --- | --- | --- | --- |
+| nền (đất cháy) | [burned_ground_01](https://polyhaven.com/a/burned_ground_01) | Rob Tuytel | CC0-1.0 |
+| đất (bùn nứt khô) | [mud_cracked_dry_03](https://polyhaven.com/a/mud_cracked_dry_03) | Dario Barresi, Dimitrios Savva | CC0-1.0 |
+| nền rừng (bùn) | [aerial_mud_1](https://polyhaven.com/a/aerial_mud_1) | Rob Tuytel | CC0-1.0 |
+| đá (tảng nứt) | [rock_boulder_cracked](https://polyhaven.com/a/rock_boulder_cracked) | Dario Barresi, Dimitrios Savva | CC0-1.0 |
+| vách đá | [rock_wall_08](https://polyhaven.com/a/rock_wall_08) | Amal Kumar | CC0-1.0 |
+| cát (tro bay) | [aerial_sand](https://polyhaven.com/a/aerial_sand) | Rob Tuytel | CC0-1.0 |
+| lát đá (đá núi lửa) | [volcanic_rock_tiles](https://polyhaven.com/a/volcanic_rock_tiles) | Charlotte Baglioni | CC0-1.0 |
+| sỏi (lòng sông cạn) | [dry_riverbed_rock](https://polyhaven.com/a/dry_riverbed_rock) | Amal Kumar | CC0-1.0 |
+
+Cây chết, vệt nứt Giới Khích và đá/cột đổ của Bắc Hoang là thủ tục (code TSL/Three.js), không dùng asset ngoài.
 
 <!-- audio:begin (sinh bởi tools/audio/build.mjs, đừng sửa tay) -->
 
@@ -386,6 +406,8 @@ Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằn
 | `wild` | Vân Lam Sơn Mạch | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild.mjs` |
 | `wild_ochre` | Đoạn Mạch Cổ Cốc | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/wild_ochre.mjs` |
 | `wild_night` | Thiên Khuyết Cổ Thành | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_night.mjs` |
+| `wild_ash` | Bắc Hoang — Hàn Hôi | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_ash.mjs` |
+| `wild_rift` | Bắc Hoang — Bên Kia Vết Nứt | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-18 | `tools/audio/compose/wild_rift.mjs` |
 | `wild_cloud` | Vân Hải Phù Đảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-17 | `tools/audio/compose/wild_cloud.mjs` |
 | `forest` | Rừng Linh Thảo | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/forest.mjs` |
 | `lake` | Hồ Sương Mù | Đạp Thiên Lộ (original, CC0/tự soạn) | CC0-1.0; tiếng nhạc cụ: soundfont GeneralUser GS v2.0.3 của S. Christian Collins (GeneralUser GS License v2.0) | 2026-11-16 | `tools/audio/compose/lake.mjs` |

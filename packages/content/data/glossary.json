@@ -450,9 +450,11 @@
   "divucMonsters": {
     "mon_liet_hoa_ma_nguu": "Liệt Hỏa Ma Ngưu",
     "mon_u_anh_cot_loc": "U Ảnh Cốt Lộc",
-    "mon_xt_trong_binh": "Giác Kiếm Trọng Binh",
     "boss_xich_tan_cu_khoi": "Xích Tẫn Cự Khôi",
     "boss_tu_nhan_ma_tuong": "Tử Nhận Ma Tướng",
-    "boss_tu_quang_duc_chu": "Tử Quang Dực Chủ"
+    "boss_tu_quang_duc_chu": "Tử Quang Dực Chủ",
+    "mon_tan_chung": "Tẫn Chủng Cốt Khôi",
+    "mon_giac_kiem_trong_binh": "Giác Kiếm Trọng Binh",
+    "elite_hoi_giac_cu_thu": "Hôi Giác Cự Thú"
   }
 }

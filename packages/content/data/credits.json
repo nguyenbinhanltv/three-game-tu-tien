@@ -141,7 +141,7 @@
     {
       "id": "polyhaven",
       "kind": "texture",
-      "title": "Poly Haven (leafy_grass, brown_mud_leaves_01, forrest_ground_01, rocky_terrain_02, rock_face, coast_sand_rocks_02, cobblestone_floor_04, gravelly_sand, dry_ground_rocks, red_laterite_soil_stones, sandstone_cracks, rock_face_03, aerial_sand, monastery_stone_floor, rock_path, mossy_cobblestone, slate_floor_02, patterned_slate_tiles, rocky_gravel)",
+      "title": "Poly Haven (leafy_grass, brown_mud_leaves_01, forrest_ground_01, rocky_terrain_02, rock_face, coast_sand_rocks_02, cobblestone_floor_04, gravelly_sand, dry_ground_rocks, red_laterite_soil_stones, sandstone_cracks, rock_face_03, aerial_sand, monastery_stone_floor, rock_path, mossy_cobblestone, slate_floor_02, patterned_slate_tiles, rocky_gravel, burned_ground_01, mud_cracked_dry_03, aerial_mud_1, rock_boulder_cracked, rock_wall_08, volcanic_rock_tiles, dry_riverbed_rock)",
       "author": "Poly Haven (Charlotte Baglioni, Rob Tuytel, Amal Kumar, Greg Zaal, Dario Barresi, Dimitrios Savva, Sơn Nguyễn…)",
       "url": "https://polyhaven.com/textures",
       "license": "CC0-1.0",
@@ -386,6 +386,54 @@
       ],
       "assets": [
         "mon_u_anh_cot_loc"
+      ]
+    },
+    {
+      "id": "bone_golem",
+      "kind": "model",
+      "title": "Bone Golem - Necromantic Construct",
+      "author": "Pigcraft",
+      "url": "https://sketchfab.com/3d-models/bone-golem-necromantic-construct-7510de27700c4b199d1d727b9f2f48d6",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig"
+      ],
+      "assets": [
+        "mon_tan_chung"
+      ]
+    },
+    {
+      "id": "maltherion",
+      "kind": "model",
+      "title": "MALTHERION // The Skullbound Aegis",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/85ff03237ee94a0cbfe9770dde440d6c",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig"
+      ],
+      "assets": [
+        "mon_giac_kiem_trong_binh"
+      ]
+    },
+    {
+      "id": "gorthazul",
+      "kind": "model",
+      "title": "GORTHAZUL // The Ashhorn Behemoth",
+      "author": "Atahan3D",
+      "url": "https://sketchfab.com/3d-models/gorthazul-the-ashhorn-behemoth-0e2a0f6baad64f51b2aa613112b7fd7c",
+      "license": "CC-BY-4.0",
+      "mods": [
+        "decimate",
+        "bake",
+        "rig"
+      ],
+      "assets": [
+        "elite_hoi_giac_cu_thu"
       ]
     },
     {

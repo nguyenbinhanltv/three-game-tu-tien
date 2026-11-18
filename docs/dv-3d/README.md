@@ -20,7 +20,7 @@ Theo `docs/DIVUC_DESIGN.md` mục 5.1. Khuôn: Phục Mạch Quật (E2-C), Th�
 ## Quái giữ chỗ và lệch thiết kế (ghi lại để không làm lệch thêm)
 
 - **Cấp**: thiết kế ghi cấp 29–30 nhưng `MAX_LEVEL` hiện là 28 (`formulas.ts`), nên `minLevel` và mọi quái ở cấp 28 (như Bắc Hoang `minLevel` 28); đặt 29 thì không ai vào được. Khi nâng trần cấp, đổi `levels/xich_tan_khich.json` về 29–30 (và `fight:check` hết bị chặn cấp 28).
-- **Giác Kiếm Trọng Binh** (#224 chưa merge): dùng `mon_xt_trong_binh` (cùng tên hiển thị, model Thạch Tượng nhuộm đỏ). Khi #224 merge, thay `mon_xt_trong_binh` bằng `mon_giac_kiem_trong_binh` ở `levels/xich_tan_khich.json`, `boss_tu_nhan_ma_tuong.ai.summon.mon`, `loot.json`, `glossary.divucMonsters`, `monsterSkins.ts` rồi xóa id tạm.
+- **Giác Kiếm Trọng Binh** (#224 chưa merge): dùng `mon_giac_kiem_trong_binh` (cùng tên hiển thị, model Thạch Tượng nhuộm đỏ). Khi #224 merge, thay `mon_giac_kiem_trong_binh` bằng `mon_giac_kiem_trong_binh` ở `levels/xich_tan_khich.json`, `boss_tu_nhan_ma_tuong.ai.summon.mon`, `loot.json`, `glossary.divucMonsters`, `monsterSkins.ts` rồi xóa id tạm.
 - Id boss của phó bản là `boss_xich_tan_cu_khoi` (không phải `elite_xich_tan_cu_khoi`): `elite_` dành cho bản tinh anh ngoài trời của E-bảng 6.1 về sau, để hai bản không đụng chỉ số.
 - Model Tử Nhận Ma Tướng, Tử Quang Dực Chủ, Xích Tẫn Cự Khôi: **giữ chỗ**, dùng lại asset sẵn có nhuộm theo bảng `rift_*` (không làm model mới). Đọa Dực có cánh là DV2-C.
 - `hpMul` quy theo nhịp đã dùng cho Tam Thủ Ngục Khuyển (thiết kế 150 → code 90, tức ×0,6): Cự Khôi 40, Tử Nhận 45, Tử Quang 75. Chưa có số đo boss (`fight:check` chỉ đo quái thường, trần cấp 28).
@@ -29,7 +29,7 @@ Theo `docs/DIVUC_DESIGN.md` mục 5.1. Khuôn: Phục Mạch Quật (E2-C), Th�
 ## Soát
 
 - `pnpm typecheck`, `pnpm test` (shared 214, content 50, client 770, server 737), `pnpm content:check`: đạt.
-- `fight:check --levels 28 --mon mon_xt_trong_binh`: TTK 4,3 / 7,5 / 8,4 s (kiếm / hộ pháp / đan sư), không chết (trần cấp 28).
+- `fight:check --levels 28 --mon mon_giac_kiem_trong_binh`: TTK 4,3 / 7,5 / 8,4 s (kiếm / hộ pháp / đan sư), không chết (trần cấp 28).
 - `pnpm --filter @dtl/bot-client security`: tất cả ĐẠT (server cổng riêng, DB mới).
 
 ## Ảnh và video

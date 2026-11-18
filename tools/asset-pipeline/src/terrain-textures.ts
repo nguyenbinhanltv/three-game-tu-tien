@@ -55,9 +55,25 @@ export const SLATE_LAYERS = [
   { layer: 'gravel', ph: 'rocky_gravel', author: 'Dario Barresi, Dimitrios Savva', tint: [0.94, 0.98, 1.02] },
 ] as const;
 
+/**
+ * Bộ ash cho Bắc Hoang Tẫn Nguyên (DV-3I, chương 5): đất cháy, tro, đá nứt, đá núi lửa. Cùng thứ tự lớp, ra `public/terrain-ash/`, nạp lười khi vào level
+ * (`levels/bac_hoang.assets.json` `ground.set`). `tint` kéo về tro than (`rift_ash`/`rift_ash_light`), hạ bão hòa ở `modulate`; ánh than hồng do shader vẽ khe nứt
+ * và màu đỉnh (`game/bacHoangArt.ts`), không in vào texture.
+ */
+export const ASH_LAYERS = [
+  { layer: 'grass', ph: 'burned_ground_01', author: 'Rob Tuytel', tint: [1.0, 0.95, 0.93] },
+  { layer: 'dirt', ph: 'mud_cracked_dry_03', author: 'Dario Barresi, Dimitrios Savva', tint: [0.95, 0.9, 0.88] },
+  { layer: 'forest', ph: 'aerial_mud_1', author: 'Rob Tuytel', tint: [0.92, 0.88, 0.86] },
+  { layer: 'rock', ph: 'rock_boulder_cracked', author: 'Dario Barresi, Dimitrios Savva', tint: [0.98, 0.93, 0.92] },
+  { layer: 'cliff', ph: 'rock_wall_08', author: 'Amal Kumar', tint: [0.92, 0.88, 0.88] },
+  { layer: 'sand', ph: 'aerial_sand', author: 'Rob Tuytel', tint: [0.96, 0.93, 0.92] },
+  { layer: 'paving', ph: 'volcanic_rock_tiles', author: 'Charlotte Baglioni', tint: [0.95, 0.9, 0.9] },
+  { layer: 'gravel', ph: 'dry_riverbed_rock', author: 'Amal Kumar', tint: [0.94, 0.9, 0.88] },
+] as const;
+
 const SRC = process.env.DTL_ASSET_SOURCE ? path.resolve(process.env.DTL_ASSET_SOURCE, 'texture') : path.resolve(ROOT, '..', 'dtl-asset-source', 'texture');
 const SET = process.argv.includes('--set') ? process.argv[process.argv.indexOf('--set') + 1] : 'terrain';
-const OUT = path.join(ROOT, 'apps', 'client', 'public', SET === 'ochre' ? 'terrain-ochre' : SET === 'slate' ? 'terrain-slate' : 'terrain');
+const OUT = path.join(ROOT, 'apps', 'client', 'public', SET === 'ochre' ? 'terrain-ochre' : SET === 'slate' ? 'terrain-slate' : SET === 'ash' ? 'terrain-ash' : 'terrain');
 const SIZE = 1024;
 
 async function fetchBuf(url: string): Promise<Buffer> {
@@ -101,7 +117,7 @@ async function main(): Promise<void> {
   await mkdir(OUT, { recursive: true });
   const written = new Map<string, string>();
   const manifest: { layer: string; ph: string; a: string; n: string }[] = [];
-  const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] = SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : LAYERS;
+  const layers: readonly { layer: string; ph: string; author: string; tint?: readonly number[] }[] = SET === 'ochre' ? OCHRE_LAYERS : SET === 'slate' ? SLATE_LAYERS : SET === 'ash' ? ASH_LAYERS : LAYERS;
   for (const L of layers) {
     const [diff, nor, rough] = await Promise.all([source(L.ph, 'Diffuse'), source(L.ph, 'nor_gl'), source(L.ph, 'Rough')]);
     let img = sharp(diff).resize(SIZE, SIZE).removeAlpha();

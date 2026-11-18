@@ -24,6 +24,8 @@ CLIPS = [
     (2, 'Sword_Regular_A'), (2, 'Sword_Regular_B'), (2, 'Sword_Regular_C'), (2, 'Sword_Regular_Combo'),
     (2, 'Sword_Heavy_Combo'), (2, 'Sword_Dash'), (2, 'Sword_Block'), (2, 'Hit_Knockback'), (2, 'LayToIdle'),
     (2, 'NinjaJump_Start'), (2, 'NinjaJump_Idle_Loop'), (2, 'NinjaJump_Land'), (2, 'Idle_FoldArms_Loop'),
+    # Quái hai chân Dị Vực (DV-2 đợt 2): người xương (zombie), thủ khiên, đấm móc.
+    (2, 'Zombie_Idle_Loop'), (2, 'Zombie_Walk_Fwd_Loop'), (2, 'Zombie_Scratch'), (2, 'Idle_Shield_Loop'), (2, 'Melee_Hook'),
 ]
 
 bpy.ops.wm.read_factory_settings(use_empty=True)

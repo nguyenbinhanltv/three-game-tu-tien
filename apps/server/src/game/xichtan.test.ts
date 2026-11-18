@@ -45,7 +45,7 @@ describe('dữ liệu Xích Tẫn Khích', () => {
     expect(d.private).toBe(true);
     expect(d.maxRevives).toBe(2);
     expect(d.waves).toHaveLength(6);
-    expect(d.waves.map((w) => w.mons[0].id)).toEqual(['mon_xt_trong_binh', 'mon_liet_hoa_ma_nguu', 'boss_xich_tan_cu_khoi', 'mon_u_anh_cot_loc', 'boss_tu_nhan_ma_tuong', 'boss_tu_quang_duc_chu']);
+    expect(d.waves.map((w) => w.mons[0].id)).toEqual(['mon_giac_kiem_trong_binh', 'mon_liet_hoa_ma_nguu', 'boss_xich_tan_cu_khoi', 'mon_u_anh_cot_loc', 'boss_tu_nhan_ma_tuong', 'boss_tu_quang_duc_chu']);
     expect(d.waves[0].mons[0].n).toBe(10);
     expect(d.waves[1].mons[0].n).toBe(6);
     expect(d.waves[3].steles!.secs).toBe(60);

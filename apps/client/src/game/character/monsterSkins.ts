@@ -9,6 +9,7 @@ import { adoptGltfMaterials } from '../../render/materials/world';
 import { type BossMove, SkinnedMonster } from './skinned';
 import type { ClipMap } from './states';
 import { ELITE_SKINS_NEW } from './eliteSkins';
+import { MQ_CLIPS, MQ_LIB, MQ_MOVES, MQ_SHIELD_CLIPS, MQ_ZOMBIE_CLIPS, MQ_ZOMBIE_MOVES, pelvisScaledClips } from './mannequinMonster';
 import { type BossMoveKind, legacyModelsRequested, type MonsterView } from './view';
 
 /** Quái dùng model có xương: asset, bảng clip, tông màu (nhân vào texture màu, không thêm texture). */
@@ -48,6 +49,8 @@ export interface MonsterSkin {
   coreGlow?: number;
   /** Bóng ma/gương trong mờ (E3-M): độ đục 0–1 của vật liệu (không ghi chiều sâu). */
   ghost?: number;
+  /** Lưới dựng trên bộ xương UE5 Mannequin (chr_v3.py): clip lấy từ thư viện UAL dùng chung (`MQ_LIB`), `clips` trỏ tên clip UAL. Không bám địa hình bằng IK. */
+  mannequin?: boolean;
 }
 
 const WOLF_CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
@@ -178,14 +181,19 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   // Phân thân thần niệm: cùng model với boss, nhạt hơn và nhỏ hơn.
   mon_tt_phan_than: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#c8c0e0', rim: 0.25, lift: 0.12, lazy: true, level: 'than_tang', moves: BIPED_MOVES },
   // Xích Tẫn Khích (DV-3D): model giữ chỗ dùng lại asset sẵn có, nhuộm theo bảng rift_* (thay bằng model Đọa Dực có cánh ở DV2-C).
-  mon_xt_trong_binh: { asset: 'mon_thach_tuong_vo_si', clips: GUARD_CLIPS, refSpeed: 1.9, legs: 'biped', tint: '#c88878', lazy: true, level: 'xich_tan_khich' },
   boss_xich_tan_cu_khoi: { asset: 'boss_thach_tam_khoi_vuong', clips: CHANT_BOSS_CLIPS, refSpeed: 2.0, legs: 'biped', tint: '#d89080', coreGlow: 1.5, lazy: true, level: 'xich_tan_khich', moves: BIPED_MOVES },
   boss_tu_nhan_ma_tuong: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh, tint: '#b89098', level: 'xich_tan_khich' },
   boss_tu_quang_duc_chu: { asset: 'boss_vo_dien_than_quan', clips: CHANT_BOSS_CLIPS, refSpeed: 1.75, legs: 'biped', tint: '#b898e8', rim: 0.3, lift: 0.12, lazy: true, level: 'xich_tan_khich', moves: BIPED_MOVES },
+  // DV-2 đợt 2 (quái hai chân Dị Vực, docs/dv2-mon/README.md): lưới trên xương Mannequin + clip UAL (`mannequin: true`). Nạp lười theo màn Bắc Hoang.
+  mon_tan_chung: { asset: 'mon_tan_chung', clips: MQ_ZOMBIE_CLIPS, refSpeed: 3.2, legs: 'none', tint: '#ffffff', rim: 0.2, lift: 0.3, lazy: true, level: 'bac_hoang', moves: MQ_ZOMBIE_MOVES, mannequin: true },
+  mon_giac_kiem_trong_binh: { asset: 'mon_giac_kiem_trong_binh', clips: MQ_SHIELD_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, metalness: 0, palette: { dark: '#2e2c3a', light: '#d2c4a6', glow: '#d9a93e' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
+  elite_hoi_giac_cu_thu: { asset: 'elite_hoi_giac_cu_thu', clips: MQ_CLIPS, refSpeed: 3.4, legs: 'none', tint: '#ffffff', rim: 0.3, palette: { dark: '#34303a', light: '#cdbfb2', glow: '#ff5a3a' }, lazy: true, level: 'bac_hoang', moves: MQ_MOVES, mannequin: true },
 };
 
 interface Template {
   handle: AssetHandle;
+  /** Clip dùng cho bản sao: clip của chính asset, hoặc (quái Mannequin) clip thư viện UAL đã chỉnh độ cao hông. */
+  clips: readonly THREE.AnimationClip[];
   height: number;
   bounds: THREE.Sphere;
 }
@@ -199,6 +207,9 @@ export class MonsterSkins {
   private templates = new Map<string, Template | 'loading' | 'failed'>();
   private mats = new Map<string, THREE.MeshStandardNodeMaterial>();
   private disposed = false;
+  /** Thư viện clip UAL dùng chung cho mọi quái Mannequin (nạp một lần, lúc skin Mannequin đầu tiên cần). */
+  private mqLib: Promise<AssetHandle> | null = null;
+  private mqLibHandle: AssetHandle | null = null;
   /** Template đã nạp nhưng đang biên dịch trước (chưa dùng được, xem `warm`). */
   private warming = new Map<string, Template>();
   /** Bóng tâm ma (P3-7) là bản sao model người chơi: EntityManager nối vào PlayerSkins (cùng giới/đạo bào của mình). */
@@ -252,12 +263,14 @@ export class MonsterSkins {
       const m = o as THREE.Mesh;
       if (m.isMesh) m.material = mat;
     });
-    return new SkinnedMonster(def, { scene, clips: t.handle.animations, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs === 'none' ? undefined : s.legs });
+    return new SkinnedMonster(def, { scene, clips: t.clips, clipMap: s.clips, height: t.height, refSpeed: s.refSpeed, bounds: t.bounds, moves: s.moves, ground: s.legs === 'none' ? undefined : s.legs });
   }
 
   dispose(): void {
     this.disposed = true;
     for (const t of this.templates.values()) if (typeof t !== 'string') t.handle.release();
+    this.mqLibHandle?.release();
+    this.mqLibHandle = null;
     // Template đang biên dịch: `warmUp(...).finally` thấy `disposed` và tự trả handle.
     this.templates.clear();
     for (const m of this.mats.values()) m.dispose();
@@ -268,13 +281,15 @@ export class MonsterSkins {
     if (this.templates.has(id)) return;
     this.templates.set(id, 'loading');
     // Cùng thang ưu tiên với prefetchWorldAssets (preload.ts): sau nhân vật mình và kiến trúc quanh chỗ hồi sinh.
-    this.cache.acquire(id, { priority: 120 }).then(
-      (handle) => {
+    const mq = Object.values(MONSTER_SKINS).some((k) => k.asset === id && k.mannequin);
+    const lib = mq ? this.acquireMqLib() : Promise.resolve(null);
+    Promise.all([this.cache.acquire(id, { priority: 120 }), lib]).then(
+      ([handle, libHandle]) => {
         if (this.disposed) {
           handle.release();
           return;
         }
-        const tpl = templateOf(handle);
+        const tpl = templateOf(handle, libHandle ? pelvisScaledClips(handle.scene, libHandle.scene, libHandle.animations) : undefined);
         if (!this.warm) {
           this.templates.set(id, tpl);
           return;
@@ -293,6 +308,16 @@ export class MonsterSkins {
         this.templates.set(id, 'failed');
       },
     );
+  }
+
+  /** Nạp (một lần) thư viện clip UAL cho quái Mannequin; handle giữ tới `dispose()`. */
+  private acquireMqLib(): Promise<AssetHandle> {
+    this.mqLib ??= this.cache.acquire(MQ_LIB, { priority: 120 }).then((h) => {
+      if (this.disposed) h.release();
+      else this.mqLibHandle = h;
+      return h;
+    });
+    return this.mqLib;
   }
 
   /** Dựng một bản sao tạm cho mỗi loại quái dùng asset `id` (material riêng từng loại), hiện mọi LOD, rồi nhờ renderer biên dịch trước. */
@@ -384,7 +409,7 @@ export function applyPalette(m: THREE.MeshStandardNodeMaterial, p: NonNullable<M
 }
 
 /** Chiều cao và khung cầu từ hình học LOD0 ở tư thế gốc (asset đặt chân ở y = 0, node không biến đổi). */
-function templateOf(handle: AssetHandle): Template {
+function templateOf(handle: AssetHandle, clips?: readonly THREE.AnimationClip[]): Template {
   const box = new THREE.Box3();
   handle.scene.traverse((o) => {
     const m = o as THREE.Mesh;
@@ -397,5 +422,5 @@ function templateOf(handle: AssetHandle): Template {
   const center = box.getCenter(new THREE.Vector3());
   // Rộng hơn khung tư thế gốc: chạy duỗi chân, cắn vươn cổ, chết nằm nghiêng.
   const radius = (Math.max(size.x, size.y, size.z) / 2) * 1.4;
-  return { handle, height: box.max.y, bounds: new THREE.Sphere(center, radius) };
+  return { handle, clips: clips ?? handle.animations, height: box.max.y, bounds: new THREE.Sphere(center, radius) };
 }

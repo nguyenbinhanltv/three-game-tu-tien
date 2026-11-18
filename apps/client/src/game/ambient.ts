@@ -1,5 +1,6 @@
 import { FOREST, featureWeight, KIEM_TRUNG, LAKE, SECT, VALLEY, WATER_Y } from '@dtl/shared';
-import { heightAt, levelId } from './levelCtx';
+import { heightAt, levelId, levelTerrain } from './levelCtx';
+import { bhAmbient, riftPath, type RiftPt } from './bacHoangArt';
 import type { Particles } from '../render/vfx/particles';
 
 /**
@@ -42,6 +43,21 @@ const COLOR = {
 export function ambientRates(x: number, z: number, above: number, out?: AmbientRates, level = 'van_lam'): AmbientRates {
   const r = out ?? ({} as AmbientRates);
   for (const k of KINDS) r[k] = 0;
+  // Bắc Hoang (DV-3I): tro bay khắp nơi, tàn lửa dày dần về phía Giới Khích và bên kia; không phấn hoa, lá, cánh đào, sương xanh của Vân Lam.
+  if (level === 'bac_hoang') {
+    const T = levelTerrain();
+    if (bhPathFor !== T) {
+      bhPathFor = T;
+      bhPath = riftPath(T.def);
+    }
+    const a = bhAmbient(bhPath, x, z, T.def);
+    r.ash = a.ash;
+    r.ember = a.ember;
+    r.mote = a.mote;
+    const lowK = Math.max(0.3, Math.min(1, 1 - (above - 12) / 25));
+    r.ash *= lowK;
+    return r;
+  }
   // Đoạn Mạch (E2-I): cốc khô, chỉ bụi nắng thưa; không phấn hoa, sương, lá xanh (các khu Vân Lam không có ở đây).
   if (level === 'doan_mach') {
     r.mote = 6;
@@ -96,6 +112,8 @@ export function ambientRates(x: number, z: number, above: number, out?: AmbientR
 }
 
 const _rates = {} as AmbientRates;
+let bhPath: RiftPt[] = [];
+let bhPathFor: unknown = null;
 
 export class AmbientParticles {
   private scale = AMBIENT_SCALE.medium;
