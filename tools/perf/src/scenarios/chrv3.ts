@@ -27,6 +27,49 @@ export default {
         const dir = path.join(r.out, `_rec-${tag}`);
         // Đo trượt chân khi chạy (N-6): trong lúc chạy thẳng, lấy chân đang thấp hơn (chân trụ) và tốc độ ngang của nó so với mặt đất (m/s,
         // hệ thế giới). Chân trụ không trượt thì ≈ 0. Ghi trung vị, p90 và tốc độ chạy trung bình vào `slide-<tag>.json`.
+        // Chiêu K-5 theo công pháp (N-7): mỗi công pháp một video, bắn lần lượt các ô 1-8 vào sói trước mặt, rồi đả tọa (Z).
+        const skills = async () => {
+          for (const method of ['lac_kiem_quyet', 'bat_dong_kim_than', 'thanh_moc_dan_kinh']) {
+            const mtag = `${tag}-${method}`;
+            const rec = path.join(r.out, `_rec-${mtag}`);
+            const t1 = Date.now();
+            const { page, ctx } = await r.open({ name: `V3k${g}${v}${method.slice(0, 3)}`, viewport: [960, 600], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/, video: rec });
+            await gm(page, 'level 24', 1500);
+            await gm(page, 'god on', 1000);
+            await gm(page, `method ${method} 8`, 1200);
+            await gm(page, 'killall', 700);
+            await gm(page, 'tp 2048 2088', 1500);
+            if (v.startsWith('v3')) await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+            else await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.dirHits === true, undefined, { timeout: 60_000, polling: 300 });
+            await sleep(3500); // chờ nguồn pose K-5 nướng/retarget
+            const cf = () => cam(page, { yaw: 0.5, pitch: 0.08, dist: 3.6 });
+            await cf();
+            const t0 = Date.now();
+            for (let slot = 1; slot <= 8; slot++) {
+              if ((slot - 1) % 3 === 0) {
+                await gm(page, 'spawn mon_soi_xam 3', 1300);
+                await cf();
+              }
+              await page.evaluate((n) => window.__game!.useSkill(n), slot);
+              await sleep(1700);
+            }
+            await gm(page, 'killall', 600);
+            await page.keyboard.press('KeyZ');
+            await sleep(3200);
+            await page.keyboard.press('KeyW');
+            await sleep(800);
+            const vid = page.video();
+            await ctx.close();
+            if (vid) {
+              const raw = await vid.path();
+              const dst = path.join(r.out, `${mtag}.webm`);
+              const cut = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', Math.max(0, (t0 - t1) / 1000 - 0.5).toFixed(2), '-i', raw, '-c:v', 'libvpx', '-b:v', '1.5M', '-an', dst]);
+              if (cut.status !== 0) fs.copyFileSync(raw, dst);
+            }
+            fs.rmSync(rec, { recursive: true, force: true });
+            console.log(`[shots:chrv3] ${mtag}.webm`);
+          }
+        };
         const slide = async () => {
           const { page, ctx } = await r.open({ name: `V3s${g}${v}`, viewport: [640, 400], quality: 'medium', look: { g }, query: { ...(QUERY[v] ?? {}), ...(process.env.JOG ? { jog: process.env.JOG } : {}) }, hide: 'hud', warnings: /models|chr_v3|clip/ });
           await gm(page, 'god on', 1000);
@@ -99,6 +142,28 @@ export default {
           await snap(still.page, r.out, `${tag}-toanthan-nen.jpg`, { clip: centerClip(800, 500, 360, 460) });
           await still.ctx.close();
         };
+        if (process.argv.includes('--sit')) {
+          // Ảnh đả tọa (Z) cận cảnh, không có quái xung quanh (ngồi thiền chỉ vào được khi ngoài giao chiến).
+          const { page, ctx } = await r.open({ name: `V3d${g}${v}`, viewport: [800, 560], quality: 'high', look: { g }, query: QUERY[v] ?? {}, hide: 'hud', warnings: /models|chr_v3|clip/ });
+          await gm(page, 'god on', 1000);
+          await gm(page, 'set set_lac_kiem', 1200);
+          await gm(page, 'tp 2048 2088', 1500);
+          if (v.startsWith('v3')) await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          await sleep(4500);
+          await page.keyboard.press('KeyZ');
+          await sleep(3000);
+          for (const [k, yaw] of [['truoc', 0.5], ['canh', 1.6]] as const) {
+            await cam(page, { yaw, pitch: 0.12, dist: 2.7 });
+            await sleep(900);
+            await snap(page, r.out, `${tag}-datoa-${k}.jpg`, { clip: centerClip(800, 560, 440, 440) });
+          }
+          await ctx.close();
+          continue;
+        }
+        if (process.argv.includes('--skills')) {
+          await skills();
+          continue;
+        }
         if (process.argv.includes('--slide')) {
           await slide();
           continue;
