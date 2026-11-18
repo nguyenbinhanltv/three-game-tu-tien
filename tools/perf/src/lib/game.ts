@@ -40,19 +40,26 @@ export interface GamePage {
 /** Mở context mới, vào game bằng tài khoản thử (tắt tiếng), chờ có nhân vật và bỏ qua cảnh mở đầu. */
 export async function openGame(browser: Browser, o: OpenOpts): Promise<GamePage> {
   const [width, height] = o.viewport ?? [1280, 720];
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: o.dpr ?? 1, ...(o.video ? { recordVideo: { dir: o.video, size: { width, height } } } : {}) });
+  const ctx = await browser.newContext({
+    viewport: { width, height },
+    deviceScaleFactor: o.dpr ?? 1,
+    ...(o.video ? { recordVideo: { dir: o.video, size: { width, height } } } : {}),
+  });
   const name = `${o.name}${Date.now() % 10000}`.slice(0, 14);
   const store: Record<string, string> = {};
   if (o.quality) {
     store['dtl.quality'] = o.quality;
     store['dtl.qualityLock'] = '1'; // chụp/đo đúng preset đã chọn, không để tự hạ làm lệch
   }
-  if (o.look) Object.assign(store, { 'dtl.controls': 'strafe', 'dtl.look': JSON.stringify({ g: o.look.g, dye: o.look.dye ?? 'attire_sect' }) });
+  if (o.look)
+    Object.assign(store, { 'dtl.controls': 'strafe', 'dtl.look': JSON.stringify({ g: o.look.g, dye: o.look.dye ?? 'attire_sect' }) });
   if (o.seenIntro) store['dtl.seen.sect.' + name] = '1';
   await ctx.addInitScript((kv) => Object.entries(kv).forEach(([k, v]) => localStorage.setItem(k, v)), store);
   const page = await ctx.newPage();
   const errors = watchErrors(page, { tag: name, warnings: o.warnings, into: o.errors });
-  await page.goto(gameUrl(o.clientPort, { debug: 1, auto: name, ...o.query }, { renderer: o.renderer, extra: o.extra }), { waitUntil: 'load' });
+  await page.goto(gameUrl(o.clientPort, { debug: 1, auto: name, ...o.query }, { renderer: o.renderer, extra: o.extra }), {
+    waitUntil: 'load',
+  });
   await waitInGame(page);
   await skipCutscene(page);
   if (o.hide) await hideUi(page, o.hide);
@@ -60,7 +67,10 @@ export async function openGame(browser: Browser, o: OpenOpts): Promise<GamePage>
 }
 
 export async function waitInGame(page: Page, minFrames = 30, timeout = 120_000): Promise<void> {
-  await page.waitForFunction((n) => !!window.__game && window.__game.frames > n && !!window.__game.me?.(), minFrames, { timeout, polling: 250 });
+  await page.waitForFunction((n) => !!window.__game && window.__game.frames > n && !!window.__game.me?.(), minFrames, {
+    timeout,
+    polling: 250,
+  });
 }
 
 /** Cảnh điện ảnh (mở đầu, boss xuất hiện) che HUD: bấm Space tới khi HUD hiện lại. */
@@ -77,7 +87,10 @@ export async function skipCutscene(page: Page, tries = 60): Promise<void> {
 }
 
 export const hideUi = (page: Page, what: 'hud' | 'chat' | 'none') =>
-  page.addStyleTag({ content: what === 'none' ? '.hud{visibility:visible !important}' : `${what === 'hud' ? '.hud,.chat' : '.chat'}{visibility:hidden !important}` });
+  page.addStyleTag({
+    content:
+      what === 'none' ? '.hud{visibility:visible !important}' : `${what === 'hud' ? '.hud,.chat' : '.chat'}{visibility:hidden !important}`,
+  });
 
 /** Gửi `/gm <lệnh>` qua chat (chỉ tài khoản thử) rồi chờ. Server bỏ tin chat cách tin trước dưới 800 ms (`Sim.onChat`, `sys.chat_rate`) nên `wait` phải ≥ 800 khi còn lệnh kế tiếp. */
 export async function gm(page: Page, cmd: string, wait = 1100): Promise<void> {
@@ -140,12 +153,22 @@ export const perfSample = (page: Page) =>
     const f0 = g.frames;
     await new Promise((r) => setTimeout(r, 1500));
     const i = g.info();
-    return { drawCalls: i.drawCalls, triangles: i.triangles, geometries: i.geometries, textures: i.textures, frameMs: Math.round(((performance.now() - t0) / Math.max(1, g.frames - f0)) * 100) / 100 };
+    return {
+      drawCalls: i.drawCalls,
+      triangles: i.triangles,
+      geometries: i.geometries,
+      textures: i.textures,
+      frameMs: Math.round(((performance.now() - t0) / Math.max(1, g.frames - f0)) * 100) / 100,
+    };
   });
 
 /** Quái còn sống trong tầm nhìn. */
 export const monsters = (page: Page): Promise<MonView[]> =>
-  page.evaluate(() => [...window.__game!.view.monsters.values()].filter((m) => m.t && m.st !== 4).map((m) => ({ t: m.t, st: m.st, mf: m.mf, hp: m.hp, mhp: m.mhp, x: m.x, z: m.z })));
+  page.evaluate(() =>
+    [...window.__game!.view.monsters.values()]
+      .filter((m) => m.t && m.st !== 4)
+      .map((m) => ({ t: m.t, st: m.st, mf: m.mf, hp: m.hp, mhp: m.mhp, x: m.x, z: m.z })),
+  );
 
 export async function waitMonster(page: Page, id: string, ms = 40_000): Promise<boolean> {
   const until = Date.now() + ms;
@@ -167,7 +190,8 @@ export async function clearMonsters(page: Page, rounds = 10): Promise<void> {
 }
 
 /** Nhật ký vạch báo của quái (`__game.hazardLog`, bản dev). */
-export const hazards = (page: Page): Promise<HazardLog[]> => page.evaluate(() => (window.__game!.hazardLog ?? []).map((h) => ({ mv: h.mv, sh: h.sh, r: h.r, w: h.w, delay: h.delay })));
+export const hazards = (page: Page): Promise<HazardLog[]> =>
+  page.evaluate(() => (window.__game!.hazardLog ?? []).map((h) => ({ mv: h.mv, sh: h.sh, r: h.r, w: h.w, delay: h.delay })));
 export const resetHazards = (page: Page) => page.evaluate(() => void (window.__game!.hazardLog = []));
 
 /** Chờ tới khi có vạch báo mới (true) hoặc hết giờ (false). */
@@ -184,7 +208,9 @@ export async function waitHazard(page: Page, ms: number): Promise<boolean> {
 export async function faceMonster(page: Page, id: string, c: Cam): Promise<boolean> {
   const yaw = await page.evaluate((t) => {
     const g = window.__game!;
-    const near = [...g.view.monsters.values()].filter((m) => m.t === t && m.st !== 4).sort((a, b) => Math.hypot(a.x - g.cur.x, a.z - g.cur.z) - Math.hypot(b.x - g.cur.x, b.z - g.cur.z))[0];
+    const near = [...g.view.monsters.values()]
+      .filter((m) => m.t === t && m.st !== 4)
+      .sort((a, b) => Math.hypot(a.x - g.cur.x, a.z - g.cur.z) - Math.hypot(b.x - g.cur.x, b.z - g.cur.z))[0];
     return near ? Math.atan2(g.cur.x - near.x, g.cur.z - near.z) : null;
   }, id);
   if (yaw !== null) await cam(page, { ...c, yaw });

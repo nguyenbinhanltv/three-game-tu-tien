@@ -13,7 +13,15 @@ import { nodeGltfLoader } from '../core/gltfTestLoader';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 const MALE = { g: 'm', dye: APPEARANCE.defaultDye };
 
 async function skins(fail = false, legacy = false) {
@@ -172,7 +180,8 @@ describe('model người chơi (Thanh Phong)', () => {
     const shown = () => {
       const out: { lod: number; shadow: boolean }[] = [];
       m.root.traverse((o) => {
-        if ((o as THREE.SkinnedMesh).isSkinnedMesh && o.visible) out.push({ lod: o.userData.lod ?? 0, shadow: (o as THREE.Mesh).castShadow });
+        if ((o as THREE.SkinnedMesh).isSkinnedMesh && o.visible)
+          out.push({ lod: o.userData.lod ?? 0, shadow: (o as THREE.Mesh).castShadow });
       });
       return out;
     };
@@ -221,12 +230,16 @@ describe('model người chơi (Thanh Phong)', () => {
     const ids = [0, 1000, 5000, 9000];
     const before = ids.map(vertexWorld);
     // Đỉnh ở chỗ hợp lý (trong thân người cao 1,75 m quanh gốc).
-    for (const v of before) expect(v.y).toBeGreaterThan(-0.05), expect(v.y).toBeLessThan(1.95), expect(Math.hypot(v.x, v.z)).toBeLessThan(1);
+    for (const v of before)
+      (expect(v.y).toBeGreaterThan(-0.05), expect(v.y).toBeLessThan(1.95), expect(Math.hypot(v.x, v.z)).toBeLessThan(1));
     m.root.position.set(10, 2, -5);
     m.root.rotation.y = Math.PI / 2;
     const after = ids.map(vertexWorld);
     for (const [k, v] of before.entries()) {
-      const want = v.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2).add(new THREE.Vector3(10, 2, -5));
+      const want = v
+        .clone()
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2)
+        .add(new THREE.Vector3(10, 2, -5));
       expect(after[k].distanceTo(want)).toBeLessThan(1e-4);
     }
     m.dispose();

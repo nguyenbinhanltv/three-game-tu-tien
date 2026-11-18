@@ -1,7 +1,8 @@
 import { type ReactNode, useEffect, useId, useRef } from 'react';
 import { Header, Panel, PanelBody, type PanelTone } from './Panel';
 
-const FOCUSABLE = 'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Hộp thoại chặn nền: nền tối, nhốt focus (Tab vòng trong hộp), Esc hoặc bấm nền để đóng, trả focus về chỗ cũ.
@@ -35,7 +36,9 @@ export function Modal({
     const before = document.activeElement as HTMLElement | null;
     const el = root.current;
     // Focus vào phần tử đầu tiên trong thân hộp, không phải nút đóng.
-    (el?.querySelector<HTMLElement>('.k-panel-body')?.querySelector<HTMLElement>(FOCUSABLE) ?? el?.querySelector<HTMLElement>(FOCUSABLE))?.focus();
+    (
+      el?.querySelector<HTMLElement>('.k-panel-body')?.querySelector<HTMLElement>(FOCUSABLE) ?? el?.querySelector<HTMLElement>(FOCUSABLE)
+    )?.focus();
     return () => before?.focus?.();
   }, [open]);
 

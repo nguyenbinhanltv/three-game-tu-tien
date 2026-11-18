@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { burrowSpots, chargeEnd, coneGeom, inHazard, leapPos, LEAP_AIR, lineGeom, monSkillsOf, reflectPhase, reflectSplit, reflectWindow, revealMul, summonRoom, summonSpots, SUMMON_ROOM_MAX } from './index';
+import {
+  burrowSpots,
+  chargeEnd,
+  coneGeom,
+  inHazard,
+  leapPos,
+  LEAP_AIR,
+  lineGeom,
+  monSkillsOf,
+  reflectPhase,
+  reflectSplit,
+  reflectWindow,
+  revealMul,
+  summonRoom,
+  summonSpots,
+  SUMMON_ROOM_MAX,
+} from './index';
 
 describe('monskill (hàm thuần quái mở rộng)', () => {
   it('lineGeom/coneGeom khớp inHazard: trong vạch trúng, ngoài bề ngang/sau lưng/quá dài thì không', () => {
@@ -33,7 +49,10 @@ describe('monskill (hàm thuần quái mở rộng)', () => {
     expect(s).toHaveLength(3);
     for (const p of s) expect(Math.hypot(p.x, p.z)).toBeCloseTo(5);
     const bad = burrowSpots(0, 0, 2, 5, 0, () => false);
-    expect(bad).toEqual([{ x: 0, z: 0 }, { x: 0, z: 0 }]);
+    expect(bad).toEqual([
+      { x: 0, z: 0 },
+      { x: 0, z: 0 },
+    ]);
   });
 
   it('reflect: warn → on → off; phản bị chặn bởi cap, quái nhận take', () => {

@@ -14,7 +14,19 @@ import {
 } from './artifacts';
 import { buffMag, clampPillQuality, mergeBuff, pillPotency, rollPillQuality, type PillQualityCfg } from './alchemy';
 
-const DEF: ArtifactDef = { id: 'itm_x', asset: 'prop_x', kind: 'drain', skill: 'art_x', cd: 24, mp: 0, radius: 12, power: 0.07, duration: 2.5, passive: { kind: 'mp', per: 0.04 }, color: 'ffffff' };
+const DEF: ArtifactDef = {
+  id: 'itm_x',
+  asset: 'prop_x',
+  kind: 'drain',
+  skill: 'art_x',
+  cd: 24,
+  mp: 0,
+  radius: 12,
+  power: 0.07,
+  duration: 2.5,
+  passive: { kind: 'mp', per: 0.04 },
+  color: 'ffffff',
+};
 
 describe('pháp bảo phụ', () => {
   it('cấp bị kẹp trong 1..5, mỗi cấp mạnh hơn và hồi chiêu ngắn hơn', () => {
@@ -79,7 +91,7 @@ describe('phẩm chất đan', () => {
   });
   it('mô phỏng: đan sư ra Thượng phẩm nhiều hơn', () => {
     let s = 12345;
-    const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x80000000);
+    const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x80000000;
     let base = 0;
     let sup = 0;
     for (let i = 0; i < 4000; i++) {

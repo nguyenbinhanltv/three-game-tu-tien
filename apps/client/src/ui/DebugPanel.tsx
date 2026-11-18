@@ -1,6 +1,20 @@
 import { useState } from 'react';
 import { C, MAX_LEVEL, PF_TRIBULATION } from '@dtl/shared';
-import { ITEMS, itemName, itemTier, METHODS, methodName, MONSTERS, monsterName, OUTFITS, realmName, SETS, SKILL, skillName, t } from '@dtl/content';
+import {
+  ITEMS,
+  itemName,
+  itemTier,
+  METHODS,
+  methodName,
+  MONSTERS,
+  monsterName,
+  OUTFITS,
+  realmName,
+  SETS,
+  SKILL,
+  skillName,
+  t,
+} from '@dtl/content';
 import { Game } from '../game/engine';
 import { Button } from './kit';
 import { type DebugPerf, useUI } from './store';
@@ -59,11 +73,25 @@ const SKILL_IDS = [...SKILL.values()].map((s) => s.id);
 const OUTFIT_IDS = [...new Set([...SETS.map((s) => s.id), ...Object.keys(OUTFITS)])];
 
 /** Ô chọn một giá trị trong danh sách (dữ liệu lấy từ @dtl/content, không viết cứng). */
-function Pick<T extends string | number>({ label, value, onChange, options }: { label: string; value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
+function Pick<T extends string | number>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+}) {
   return (
     <label>
       <span>{label}</span>
-      <select value={value} onChange={(e) => onChange((typeof value === 'number' ? Number(e.target.value) : e.target.value) as T)} onKeyDown={(e) => e.stopPropagation()}>
+      <select
+        value={value}
+        onChange={(e) => onChange((typeof value === 'number' ? Number(e.target.value) : e.target.value) as T)}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         {options.map((o) => (
           <option key={String(o.value)} value={o.value}>
             {o.label}
@@ -115,7 +143,12 @@ function Tools() {
       {group === 'char' && (
         <>
           <div className="debug-row">
-            <Pick label={t('ui.debug.realm')} value={want} onChange={setRealm} options={LEVELS.map((lv) => ({ value: lv, label: realmName(lv) }))} />
+            <Pick
+              label={t('ui.debug.realm')}
+              value={want}
+              onChange={setRealm}
+              options={LEVELS.map((lv) => ({ value: lv, label: realmName(lv) }))}
+            />
             <Button size="s" onClick={() => gm('level ' + want)}>
               {t('ui.debug.set')}
             </Button>
@@ -156,13 +189,23 @@ function Tools() {
             </Button>
           </div>
           <div className="debug-row">
-            <Pick label={t('ui.gm.method')} value={method} onChange={setMethod} options={METHODS.map((m) => ({ value: m.id, label: methodName(m.id) }))} />
+            <Pick
+              label={t('ui.gm.method')}
+              value={method}
+              onChange={setMethod}
+              options={METHODS.map((m) => ({ value: m.id, label: methodName(m.id) }))}
+            />
             <Button size="s" onClick={() => gm(`method ${method} 5`)}>
               {t('ui.debug.set')}
             </Button>
           </div>
           <div className="debug-row">
-            <Pick label={t('ui.gm.learn')} value={skill} onChange={setSkill} options={SKILL_IDS.map((id) => ({ value: id, label: skillName(id) }))} />
+            <Pick
+              label={t('ui.gm.learn')}
+              value={skill}
+              onChange={setSkill}
+              options={SKILL_IDS.map((id) => ({ value: id, label: skillName(id) }))}
+            />
             <Button size="s" onClick={() => gm(`learn ${skill} 5`)}>
               {t('ui.gm.learn')}
             </Button>
@@ -173,7 +216,12 @@ function Tools() {
         <>
           <div className="debug-row wrap">
             <Pick label={t('ui.gm.tier')} value={tier} onChange={setTier} options={TIERS.map((v) => ({ value: v, label: String(v) }))} />
-            <Pick label={t('ui.gm.branch')} value={branch} onChange={setBranch} options={BRANCHES.map((v) => ({ value: v, label: t('ui.gm.branch.' + v) }))} />
+            <Pick
+              label={t('ui.gm.branch')}
+              value={branch}
+              onChange={setBranch}
+              options={BRANCHES.map((v) => ({ value: v, label: t('ui.gm.branch.' + v) }))}
+            />
             <Pick label={t('ui.gm.plus')} value={plus} onChange={setPlus} options={PLUSES.map((v) => ({ value: v, label: '+' + v }))} />
             <Pick label={t('ui.gm.gender')} value={gender} onChange={setGender} options={GENDERS} />
           </div>
@@ -192,7 +240,12 @@ function Tools() {
       )}
       {group === 'outfit' && (
         <div className="debug-row wrap">
-          <Pick label={t('ui.gm.outfit')} value={outfit} onChange={setOutfit} options={OUTFIT_IDS.map((id) => ({ value: id, label: t('set.' + id + '.name') }))} />
+          <Pick
+            label={t('ui.gm.outfit')}
+            value={outfit}
+            onChange={setOutfit}
+            options={OUTFIT_IDS.map((id) => ({ value: id, label: t('set.' + id + '.name') }))}
+          />
           <Pick label={t('ui.gm.gender')} value={gender} onChange={setGender} options={GENDERS} />
           <Button size="s" variant="primary" onClick={() => gm(`outfit ${outfit} ${gender}`)}>
             {t('ui.gm.outfit_btn')}
@@ -204,7 +257,12 @@ function Tools() {
       )}
       {group === 'weapon' && (
         <div className="debug-row wrap">
-          <Pick label={t('ui.gm.weapon')} value={weapon} onChange={setWeapon} options={WEAPONS.map((id) => ({ value: id, label: itemName(id) }))} />
+          <Pick
+            label={t('ui.gm.weapon')}
+            value={weapon}
+            onChange={setWeapon}
+            options={WEAPONS.map((id) => ({ value: id, label: itemName(id) }))}
+          />
           <Pick label={t('ui.gm.plus')} value={plus} onChange={setPlus} options={PLUSES.map((v) => ({ value: v, label: '+' + v }))} />
           <Button size="s" variant="primary" disabled={!weapon} onClick={() => gm(`weapon ${weapon}${plusArg}`)}>
             {t('ui.gm.weapon_btn')}
@@ -232,7 +290,10 @@ function Tools() {
             <Button size="s" pressed={colliders} onClick={() => Game.current?.setDebugColliders(!colliders)}>
               {t('ui.debug.colliders')}
             </Button>
-            <Button size="s" onClick={() => void Game.current?.enterLevel(Game.current.shownLevel === 'thu_nghiem' ? 'van_lam' : 'thu_nghiem')}>
+            <Button
+              size="s"
+              onClick={() => void Game.current?.enterLevel(Game.current.shownLevel === 'thu_nghiem' ? 'van_lam' : 'thu_nghiem')}
+            >
               {t('ui.debug.level_test')}
             </Button>
           </div>
@@ -241,8 +302,18 @@ function Tools() {
       {group === 'mon' && (
         <>
           <div className="debug-row wrap">
-            <Pick label={t('ui.debug.spawn')} value={mon} onChange={setMon} options={MONSTERS.map((m) => ({ value: m.id, label: monsterName(m.id) }))} />
-            <Pick label={t('ui.gm.spawn_n')} value={count} onChange={setCount} options={SPAWN_COUNTS.map((v) => ({ value: v, label: String(v) }))} />
+            <Pick
+              label={t('ui.debug.spawn')}
+              value={mon}
+              onChange={setMon}
+              options={MONSTERS.map((m) => ({ value: m.id, label: monsterName(m.id) }))}
+            />
+            <Pick
+              label={t('ui.gm.spawn_n')}
+              value={count}
+              onChange={setCount}
+              options={SPAWN_COUNTS.map((v) => ({ value: v, label: String(v) }))}
+            />
             <Button size="s" variant="primary" disabled={!mon} onClick={() => gm(`spawn ${mon} ${count}`)}>
               {t('ui.debug.spawn_btn')}
             </Button>

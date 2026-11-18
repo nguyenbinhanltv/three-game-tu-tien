@@ -29,7 +29,11 @@ export const HUMAN_CLIPS: Record<string, HumanClipInfo> = {
   // Bộ cũ (M2-3), đang chạy trong game.
   idle: { lib: 'base', loop: true, role: 'đứng nghỉ', state: 'idle' },
   run: { lib: 'base', loop: true, role: 'chạy', refSpeed: 3.09, move: 'forward', state: 'run' },
-  heavy_chop: { lib: 'base', loop: false, role: 'chém bổ cúi người như chặt củi (Tripo slash, trước tên attack): chỉ làm đòn dự phòng, đòn kiếm làm bằng IK ở K-5' },
+  heavy_chop: {
+    lib: 'base',
+    loop: false,
+    role: 'chém bổ cúi người như chặt củi (Tripo slash, trước tên attack): chỉ làm đòn dự phòng, đòn kiếm làm bằng IK ở K-5',
+  },
   hit_light: { lib: 'base', loop: false, role: 'giật nhẹ khi trúng đòn (thủ tục, 0,33 s)' },
   death: { lib: 'base', loop: false, role: 'chết (Tripo fall)', state: 'death' },
   // K-3: di chuyển.

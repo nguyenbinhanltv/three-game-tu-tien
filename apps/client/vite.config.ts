@@ -33,10 +33,7 @@ export default defineConfig(({ command, mode }) => {
   const clientPort = env.CLIENT_PORT ? Number(env.CLIENT_PORT) : undefined;
   return {
     plugins: [react(), titleFromI18n()],
-    define:
-      command === 'serve'
-        ? { 'import.meta.env.VITE_DEV_SERVER_PORT': JSON.stringify(String(Number(env.PORT || 2567))) }
-        : {},
+    define: command === 'serve' ? { 'import.meta.env.VITE_DEV_SERVER_PORT': JSON.stringify(String(Number(env.PORT || 2567))) } : {},
     // strictPort: cổng bận thì báo lỗi thay vì âm thầm nhảy sang cổng khác (có thể là của worktree khác).
     server: { port: clientPort ?? 5173, strictPort: true, host: true },
     preview: { port: clientPort ?? 4173, strictPort: true },

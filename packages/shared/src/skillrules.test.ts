@@ -19,7 +19,22 @@ import {
 } from './index';
 import { COLLIDERS } from './level';
 
-const SK: SkillDef = { id: 'x', kind: 'damage', icon: 'x', unlock: 1, range: 26, cast: 0, cd: 0, mp: 0, power: 1, fx: 'f', pose: 'p', hitAt: [0.26], windup: 0.2, recovery: 0.54 };
+const SK: SkillDef = {
+  id: 'x',
+  kind: 'damage',
+  icon: 'x',
+  unlock: 1,
+  range: 26,
+  cast: 0,
+  cd: 0,
+  mp: 0,
+  power: 1,
+  fx: 'f',
+  pose: 'p',
+  hitAt: [0.26],
+  windup: 0.2,
+  recovery: 0.54,
+};
 const POSE: PoseDef = { id: 'p', duration: 0.8, loop: false, hit: [0.26, 0.42], keys: [] };
 const ids = new Set(['x', 'y']);
 const state = (x: number, z: number): MoveState => ({ x, y: groundAt(x, z), z, vy: 0, grounded: true, flying: false });
@@ -30,7 +45,13 @@ describe('thời gian chiêu', () => {
     expect(castTypeOf({ ...SK, cast: 1.5 })).toBe('cast');
     expect(strikeDelay(SK)).toBeCloseTo(0.26);
     expect(strikeDelay({ ...SK, hitAt: undefined })).toBe(0);
-    const combo: ComboDef = { window: 2, hits: [{ power: 1, hitAt: 0.2 }, { power: 1, hitAt: 0.3 }] };
+    const combo: ComboDef = {
+      window: 2,
+      hits: [
+        { power: 1, hitAt: 0.2 },
+        { power: 1, hitAt: 0.3 },
+      ],
+    };
     expect(strikeDelay({ ...SK, combo }, 1)).toBeCloseTo(0.3);
   });
   it('hitOffsets: một mốc thì cùng lúc, nhiều mốc thì theo mốc, thừa dồn vào mốc cuối', () => {
@@ -44,7 +65,14 @@ describe('thời gian chiêu', () => {
 });
 
 describe('liên hoàn và cường hóa', () => {
-  const def: ComboDef = { window: COMBO_WINDOW, hits: [{ power: 0.9, hitAt: 0.26 }, { power: 0.9, hitAt: 0.26 }, { power: 1.4, hitAt: 0.26, kb: true }] };
+  const def: ComboDef = {
+    window: COMBO_WINDOW,
+    hits: [
+      { power: 0.9, hitAt: 0.26 },
+      { power: 0.9, hitAt: 0.26 },
+      { power: 1.4, hitAt: 0.26, kb: true },
+    ],
+  };
   it('đòn 0 → 1 → 2 → về 0; quá cửa sổ thì về đòn đầu', () => {
     expect(comboNext(def, -1, 0, 1000)).toBe(0);
     expect(comboNext(def, 0, 1000, 2000)).toBe(1);
@@ -80,7 +108,12 @@ describe('lướt', () => {
   it('đất thoáng: đi đủ quãng, ra gần đúng điểm đến', () => {
     const pl = planDash(state(X, Z), { x: 1, z: 0 }, 8);
     // Có thể bị chặn bởi dốc; thử vài hướng và lấy hướng đi được.
-    const dirs = [{ x: 1, z: 0 }, { x: -1, z: 0 }, { x: 0, z: 1 }, { x: 0, z: -1 }];
+    const dirs = [
+      { x: 1, z: 0 },
+      { x: -1, z: 0 },
+      { x: 0, z: 1 },
+      { x: 0, z: -1 },
+    ];
     const best = dirs.map((d) => planDash(state(X, Z), d, 8)).sort((a, b) => b.dist - a.dist)[0];
     expect(best.dist).toBeGreaterThan(7.5);
     expect(pl.dist).toBeLessThanOrEqual(8 + 1e-6);
@@ -126,11 +159,21 @@ describe('validateSkillRules', () => {
     expect(validateSkillRules({ ...SK, empower: { by: 'zz', window: 3, powerMul: 1.5 } }, POSE, ids).join()).toMatch(/không phải chiêu/);
     expect(validateSkillRules({ ...SK, empower: { by: 'y', window: 3, powerMul: 9 } }, POSE, ids).join()).toMatch(/powerMul/);
     expect(validateSkillRules({ ...SK, combo: { window: 2, hits: [] } }, POSE, ids).join()).toMatch(/combo cần/);
-    expect(validateSkillRules({ ...SK, kind: 'dash', cd: 2, dash: { dist: 8, dir: 'back' }, pose: undefined, hitAt: undefined }, undefined, ids).join()).toMatch(/hồi chiêu ≥ 8/);
+    expect(
+      validateSkillRules(
+        { ...SK, kind: 'dash', cd: 2, dash: { dist: 8, dir: 'back' }, pose: undefined, hitAt: undefined },
+        undefined,
+        ids,
+      ).join(),
+    ).toMatch(/hồi chiêu ≥ 8/);
     expect(validateSkillRules({ ...SK, kind: 'dash' }, POSE, ids).join()).toMatch(/cần trường dash/);
     expect(validateSkillRules({ ...SK, hitAt: [0.26, 2] }, POSE, ids).join()).toMatch(/0–GCD/);
-    expect(validateSkillRules({ ...SK, power: 0, combo: { window: 2, hits: [{ power: 1, hitAt: 0.2 }] } }, POSE, ids).join()).toMatch(/power > 0/);
-    expect(validateSkillRules({ ...SK, cast: 1.5, empower: { by: 'y', window: 3, powerMul: 1.5 } }, POSE, ids).join()).toMatch(/chiêu niệm chưa hỗ trợ/);
+    expect(validateSkillRules({ ...SK, power: 0, combo: { window: 2, hits: [{ power: 1, hitAt: 0.2 }] } }, POSE, ids).join()).toMatch(
+      /power > 0/,
+    );
+    expect(validateSkillRules({ ...SK, cast: 1.5, empower: { by: 'y', window: 3, powerMul: 1.5 } }, POSE, ids).join()).toMatch(
+      /chiêu niệm chưa hỗ trợ/,
+    );
     expect(validateSkillRules({ ...SK, dash: { dist: 8, dir: 'back' } }, POSE, ids).join()).toMatch(/chỉ dùng với kind/);
   });
 });

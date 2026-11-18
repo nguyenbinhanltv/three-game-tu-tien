@@ -5,7 +5,10 @@ import type { HandProp } from './props';
 const CX = 1520;
 const CZ = 1300;
 const PI = Math.PI;
-const at = (r: number, a: number) => ({ x: Math.round((CX + Math.cos(a) * r) * 100) / 100, z: Math.round((CZ + Math.sin(a) * r) * 100) / 100 });
+const at = (r: number, a: number) => ({
+  x: Math.round((CX + Math.cos(a) * r) * 100) / 100,
+  z: Math.round((CZ + Math.sin(a) * r) * 100) / 100,
+});
 
 export const PHUC_MACH_PROPS: readonly HandProp[] = (() => {
   const out: HandProp[] = [];
@@ -14,10 +17,23 @@ export const PHUC_MACH_PROPS: readonly HandProp[] = (() => {
     const a = (i / 26) * PI * 2;
     if (Math.abs(Math.atan2(Math.sin(a - PI / 2), Math.cos(a - PI / 2))) < 0.3) continue;
     const p = at(70 + (i % 3) * 2, a);
-    out.push({ id: i % 4 === 3 ? 'prop_mach_tinh_tru' : 'prop_tru_nham_do', ...p, yaw: (i * 2.399) % (PI * 2), s: 0.9 + ((i * 7) % 5) * 0.05 });
+    out.push({
+      id: i % 4 === 3 ? 'prop_mach_tinh_tru' : 'prop_tru_nham_do',
+      ...p,
+      yaw: (i * 2.399) % (PI * 2),
+      s: 0.9 + ((i * 7) % 5) * 0.05,
+    });
   }
   // Mạch tinh trong hầm (ánh lam lục, nguồn sáng chính) và gốc cây khô làm cột chống.
-  for (const [r, a, id] of [[30, 0.5, 'prop_mach_tinh_tru'], [38, 2.2, 'prop_mach_tinh_tru'], [34, 4.0, 'prop_mach_tinh_tru'], [52, 5.2, 'prop_mach_tinh_tru'], [24, 3.3, 'prop_cay_goc_kho'], [46, 1.2, 'prop_cay_goc_kho'], [44, 4.7, 'prop_cay_goc_kho']] as const) {
+  for (const [r, a, id] of [
+    [30, 0.5, 'prop_mach_tinh_tru'],
+    [38, 2.2, 'prop_mach_tinh_tru'],
+    [34, 4.0, 'prop_mach_tinh_tru'],
+    [52, 5.2, 'prop_mach_tinh_tru'],
+    [24, 3.3, 'prop_cay_goc_kho'],
+    [46, 1.2, 'prop_cay_goc_kho'],
+    [44, 4.7, 'prop_cay_goc_kho'],
+  ] as const) {
     out.push({ id, ...at(r, a), yaw: a * 3, s: 1 });
   }
   // Đèn đá dọc lối vào và quanh khu đánh boss: sáng vàng ấm trên nền tối.

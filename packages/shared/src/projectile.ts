@@ -69,7 +69,17 @@ export function segDist2(ax: number, az: number, bx: number, bz: number, cx: num
  * không (py là chân). Quét theo đoạn nên đạn nhanh không xuyên qua người giữa hai tick; trục đứng xét
  * tại điểm trên đoạn gần người nhất.
  */
-export function boltHits(ax: number, az: number, bx: number, bz: number, r: number, lift: number, px: number, py: number, pz: number): boolean {
+export function boltHits(
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+  r: number,
+  lift: number,
+  px: number,
+  py: number,
+  pz: number,
+): boolean {
   const t = segParam(ax, az, bx, bz, px, pz);
   const qx = ax + (bx - ax) * t;
   const qz = az + (bz - az) * t;

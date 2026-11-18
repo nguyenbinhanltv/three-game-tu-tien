@@ -7,7 +7,9 @@ import { FLAGS } from '../../base/flags';
 export const UAL_ENABLED = FLAGS.ual;
 
 /** Tên clip cũ mà clip UAL thay (death, hit_light, knockdown, getup, combat_idle, hit_front_*): `addClips(…, replace)`. */
-export const UAL_REPLACE: readonly string[] = [...new Set(Object.values(HUMAN_CLIPS).flatMap((c) => (c.lib === 'ual' ? c.as ?? [] : [])))];
+export const UAL_REPLACE: readonly string[] = [
+  ...new Set(Object.values(HUMAN_CLIPS).flatMap((c) => (c.lib === 'ual' ? (c.as ?? []) : []))),
+];
 
 /** Clip đã retarget → chính nó (tên `ual_*`) cùng các bản sao mang tên clip cũ mà nó thay thế. */
 export function ualAliases(clip: THREE.AnimationClip): THREE.AnimationClip[] {

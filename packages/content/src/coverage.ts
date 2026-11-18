@@ -14,7 +14,12 @@ export interface CoverStd {
   max: number;
 }
 export const DEFAULT_COVER: CoverStd = { p95: 65, max: 85 };
-export const COVER_BY_LEVEL: Record<string, CoverStd> = { doan_mach: { p95: 65, max: 85 }, van_hai: { p95: 65, max: 85 }, thien_khuyet: { p95: 65, max: 85 }, bac_hoang: { p95: 65, max: 85 } };
+export const COVER_BY_LEVEL: Record<string, CoverStd> = {
+  doan_mach: { p95: 65, max: 85 },
+  van_hai: { p95: 65, max: 85 },
+  thien_khuyet: { p95: 65, max: 85 },
+  bac_hoang: { p95: 65, max: 85 },
+};
 export const COVER_STEP = 12;
 
 export interface CampCoverage {
@@ -59,5 +64,12 @@ export function campCoverage(lv: Pick<LevelDef, 'zones' | 'camps' | 'spawns'>, s
   }
   ds.sort((a, b) => a - b);
   const pick = (p: number) => ds[Math.min(ds.length - 1, Math.floor(p * ds.length))] ?? NaN;
-  return { points: ds.length, max, p50: pick(0.5), p95: pick(0.95), worst, within: ds.filter((d) => d <= limit).length / Math.max(1, ds.length) };
+  return {
+    points: ds.length,
+    max,
+    p50: pick(0.5),
+    p95: pick(0.95),
+    worst,
+    within: ds.filter((d) => d <= limit).length / Math.max(1, ds.length),
+  };
 }

@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { AutoQuality, type GpuHint, baseOf, downgradeOf, isQuality, suggestQuality } from './quality';
 
 const GB = 1024 ** 3;
-const rtx: GpuHint = { webgpu: true, vendor: 'nvidia', architecture: 'ampere', description: 'NVIDIA GeForce RTX 3060 Ti', maxTexture2D: 16384, maxBufferSize: 4 * GB };
+const rtx: GpuHint = {
+  webgpu: true,
+  vendor: 'nvidia',
+  architecture: 'ampere',
+  description: 'NVIDIA GeForce RTX 3060 Ti',
+  maxTexture2D: 16384,
+  maxBufferSize: 4 * GB,
+};
 
 describe('preset', () => {
   it('baseOf/downgradeOf/isQuality', () => {
@@ -23,9 +30,21 @@ describe('suggestQuality', () => {
     expect(suggestQuality(rtx, { deviceMemory: 8, cores: 6 })).toBe('high');
   });
   it('iGPU, Apple, RAM ≤ 4 GB, ≤ 4 luồng, WebGL2, không rõ → Vừa', () => {
-    expect(suggestQuality({ ...rtx, vendor: 'intel', architecture: 'gen-12lp', description: 'Intel(R) Iris(R) Xe Graphics' }, { deviceMemory: 8, cores: 8 })).toBe('medium');
-    expect(suggestQuality({ ...rtx, vendor: 'apple', architecture: 'metal-3', description: 'Apple M2' }, { deviceMemory: 8, cores: 8 })).toBe('medium');
-    expect(suggestQuality({ ...rtx, vendor: 'amd', architecture: 'rdna-2', description: 'AMD Radeon(TM) Graphics' }, { deviceMemory: 8, cores: 8 })).toBe('medium');
+    expect(
+      suggestQuality(
+        { ...rtx, vendor: 'intel', architecture: 'gen-12lp', description: 'Intel(R) Iris(R) Xe Graphics' },
+        { deviceMemory: 8, cores: 8 },
+      ),
+    ).toBe('medium');
+    expect(
+      suggestQuality({ ...rtx, vendor: 'apple', architecture: 'metal-3', description: 'Apple M2' }, { deviceMemory: 8, cores: 8 }),
+    ).toBe('medium');
+    expect(
+      suggestQuality(
+        { ...rtx, vendor: 'amd', architecture: 'rdna-2', description: 'AMD Radeon(TM) Graphics' },
+        { deviceMemory: 8, cores: 8 },
+      ),
+    ).toBe('medium');
     expect(suggestQuality(rtx, { deviceMemory: 4, cores: 16 })).toBe('medium');
     expect(suggestQuality(rtx, { deviceMemory: 8, cores: 4 })).toBe('medium');
     expect(suggestQuality({ ...rtx, webgpu: false }, { deviceMemory: 8, cores: 16 })).toBe('medium');
@@ -33,7 +52,12 @@ describe('suggestQuality', () => {
     expect(suggestQuality({ ...rtx, maxTexture2D: 8192 }, { deviceMemory: 8, cores: 16 })).toBe('medium');
   });
   it('card AMD rời nhận ra là rời', () => {
-    expect(suggestQuality({ ...rtx, vendor: 'amd', architecture: 'rdna-3', description: 'AMD Radeon RX 7800 XT' }, { deviceMemory: 8, cores: 12 })).toBe('ultra');
+    expect(
+      suggestQuality(
+        { ...rtx, vendor: 'amd', architecture: 'rdna-3', description: 'AMD Radeon RX 7800 XT' },
+        { deviceMemory: 8, cores: 12 },
+      ),
+    ).toBe('ultra');
   });
 });
 

@@ -79,7 +79,14 @@ export class MonZones {
   startPull(m: ZoneMon, cfg: MonsterPull, kind: string): void {
     const now = this.h.now();
     this.h.telegraph(m.s.x, m.s.z, cfg.range, cfg.delay, kind, m.id, 'pull');
-    this.pulls.push({ mon: m, cfg, at: now + cfg.delay * 1000, endAt: now + (cfg.delay + cfg.dur) * 1000, last: now + cfg.delay * 1000, victims: null });
+    this.pulls.push({
+      mon: m,
+      cfg,
+      at: now + cfg.delay * 1000,
+      endAt: now + (cfg.delay + cfg.dur) * 1000,
+      last: now + cfg.delay * 1000,
+      victims: null,
+    });
   }
 
   /**
@@ -91,7 +98,17 @@ export class MonZones {
     const at = now + delay * 1000;
     for (const sp of trailSpots(x, z, yaw, len, cfg.r)) {
       if (this.pools.length >= POOL_MAX) this.pools.shift();
-      this.pools.push({ x: sp.x, z: sp.z, r: cfg.r, at, endAt: at + cfg.dur * 1000, nextAt: at + cfg.tick * 1000, cfg: { r: cfg.r, delay, dur: cfg.dur, tick: cfg.tick, mul: cfg.mul, kind: cfg.kind }, atk: m.atk, src: m.id });
+      this.pools.push({
+        x: sp.x,
+        z: sp.z,
+        r: cfg.r,
+        at,
+        endAt: at + cfg.dur * 1000,
+        nextAt: at + cfg.tick * 1000,
+        cfg: { r: cfg.r, delay, dur: cfg.dur, tick: cfg.tick, mul: cfg.mul, kind: cfg.kind },
+        atk: m.atk,
+        src: m.id,
+      });
       this.h.telegraph(sp.x, sp.z, cfg.r, delay, cfg.kind, m.id, 'trail', cfg.dur);
     }
   }
@@ -102,7 +119,17 @@ export class MonZones {
     const now = this.h.now();
     if (this.pools.length >= POOL_MAX) this.pools.shift();
     const at = now + cfg.delay * 1000;
-    this.pools.push({ x: m.s.x, z: m.s.z, r: cfg.r, at, endAt: at + cfg.dur * 1000, nextAt: at + cfg.tick * 1000, cfg, atk: m.atk, src: m.id });
+    this.pools.push({
+      x: m.s.x,
+      z: m.s.z,
+      r: cfg.r,
+      at,
+      endAt: at + cfg.dur * 1000,
+      nextAt: at + cfg.tick * 1000,
+      cfg,
+      atk: m.atk,
+      src: m.id,
+    });
     this.h.telegraph(m.s.x, m.s.z, cfg.r, cfg.delay, cfg.kind, m.id, 'pool', cfg.dur);
   }
 

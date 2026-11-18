@@ -60,7 +60,9 @@ export function inkNodes(u: FxUniforms): { color: unknown; opacity: unknown } {
   const sd = u.a.w;
   // Mép không tròn: nhiễu theo hướng (vector đơn vị, không có đường nối như góc atan).
   const dir = q.div(max(d, 0.001));
-  const rimN = vnoise(dir.mul(2.2).add(sd)).mul(0.6).add(vnoise(dir.mul(5.3).add(sd.mul(1.7))).mul(0.4));
+  const rimN = vnoise(dir.mul(2.2).add(sd))
+    .mul(0.6)
+    .add(vnoise(dir.mul(5.3).add(sd.mul(1.7))).mul(0.4));
   const radius = u.a.x.mul(rimN.mul(0.38).add(0.42));
   const body = smoothstep(radius.add(0.035), radius.sub(0.035), d);
   // Giọt bắn ngoài mép: chấm nhiễu ngưỡng cao, chỉ trong vòng ngoài thân vết, hiện theo độ loang.
@@ -71,7 +73,9 @@ export function inkNodes(u: FxUniforms): { color: unknown; opacity: unknown } {
     .mul(smoothstep(0.35, 0.9, u.a.x));
   const mask = max(body, drops);
   // Tan theo hạt nhiễu: phần hạt thấp tan trước, vết vỡ thành đốm rồi mất.
-  const grain = vnoise(q.mul(8.5).add(sd)).mul(0.65).add(vnoise(q.mul(22).add(sd.mul(0.7))).mul(0.35));
+  const grain = vnoise(q.mul(8.5).add(sd))
+    .mul(0.65)
+    .add(vnoise(q.mul(22).add(sd.mul(0.7))).mul(0.35));
   const th = u.a.y.mul(1.1);
   const alive = smoothstep(th.sub(0.07), th, grain);
   // Mực đọng đậm ở mép (như mực loang trên giấy), giữa nhạt hơn và có vân.

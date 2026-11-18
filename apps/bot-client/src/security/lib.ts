@@ -67,7 +67,6 @@ export async function join(name: string): Promise<{ client: Client; room: Room; 
 /** Hậu tố ngẫu nhiên của lần chạy (đặt tên nhân vật thử). */
 export const tag = Math.random().toString(36).slice(2, 7);
 
-
 /** Phiên dùng chung của các nhóm bài (một nhân vật thử `kiemthu` vào thế giới). */
 export interface Ctx {
   client: Client;
@@ -98,9 +97,19 @@ export async function withServer(env: Record<string, string>, fn: (http: string)
   const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'server');
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dtl-sec-'));
   const port = await freePort();
-  const childEnv: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), DB_FILE: path.join(tmp, 'game.db'), AUTH_DEV_BYPASS: '1', ...env };
+  const childEnv: NodeJS.ProcessEnv = {
+    ...process.env,
+    PORT: String(port),
+    DB_FILE: path.join(tmp, 'game.db'),
+    AUTH_DEV_BYPASS: '1',
+    ...env,
+  };
   delete childEnv.RATE_LIMIT_EXEMPT;
-  const child = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], { cwd: serverDir, env: childEnv, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], {
+    cwd: serverDir,
+    env: childEnv,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
   let log = '';
   child.stdout.on('data', (d) => (log += d));
   child.stderr.on('data', (d) => (log += d));
@@ -109,9 +118,13 @@ export async function withServer(env: Record<string, string>, fn: (http: string)
     let up = false;
     for (let i = 0; i < 60 && !up && child.exitCode === null; i++) {
       await W(500);
-      up = await fetch(http + '/health').then((r) => r.ok, () => false);
+      up = await fetch(http + '/health').then(
+        (r) => r.ok,
+        () => false,
+      );
     }
-    if (!up) throw new Error(`server tạm không lên (${JSON.stringify(env)}):
+    if (!up)
+      throw new Error(`server tạm không lên (${JSON.stringify(env)}):
 ${log.slice(-800)}`);
     await fn(http);
   } finally {
@@ -120,4 +133,3 @@ ${log.slice(-800)}`);
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 }
-

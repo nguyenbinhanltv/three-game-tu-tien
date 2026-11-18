@@ -74,7 +74,9 @@ export class CameraShake {
     const a = this.level * AMP * (1 - dirShare);
     const t = this.t;
     // Tổng vài sóng sin lệch pha: rung gắt nhưng không lặp đều như một sóng.
-    pos.set(Math.sin(t * 47) + Math.sin(t * 29.3) * 0.5, Math.sin(t * 53.1) + Math.sin(t * 31.7) * 0.5, Math.sin(t * 41.9) * 0.6).multiplyScalar(a / 1.5);
+    pos
+      .set(Math.sin(t * 47) + Math.sin(t * 29.3) * 0.5, Math.sin(t * 53.1) + Math.sin(t * 31.7) * 0.5, Math.sin(t * 41.9) * 0.6)
+      .multiplyScalar(a / 1.5);
     look.set(Math.sin(t * 37.3 + 1.7), Math.sin(t * 43.7 + 0.6), 0).multiplyScalar(a * 0.5);
     if (dirShare > 0) {
       const push = this.level * AMP * dirShare;

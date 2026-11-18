@@ -11,7 +11,7 @@ export default function stingDeath() {
   const koto = s.track('koto', { ch: 3, program: 107, vol: 70, pan: -0.35, reverb: 110, humanTime: 0 });
   gong.note(0, n('A1'), 4, 96);
   low.chord(0, [n('A2'), n('E3'), n('C4')], 4, 70);
-  xiao.phrase(0.25, A, "4~:1 3:1/2 2:1/2 1~:2", { oct: 1, vel: 86, vib: 1, legato: 1 });
+  xiao.phrase(0.25, A, '4~:1 3:1/2 2:1/2 1~:2', { oct: 1, vel: 86, vib: 1, legato: 1 });
   koto.note(3, n('A3'), 2, 56);
   koto.note(3.02, n('E4'), 2, 48);
   return s;

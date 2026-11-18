@@ -1,5 +1,21 @@
 import * as THREE from 'three/webgpu';
-import { cameraPosition, clamp, exp, float, instancedBufferAttribute, length, max, min, mix, pow, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
+import {
+  cameraPosition,
+  clamp,
+  exp,
+  float,
+  instancedBufferAttribute,
+  length,
+  max,
+  min,
+  mix,
+  pow,
+  smoothstep,
+  step,
+  uniform,
+  uv,
+  vec3,
+} from 'three/tsl';
 import { markBloom } from '../post';
 import { FX_MAX_HDR } from '../materials/vfx';
 
@@ -82,7 +98,9 @@ class Layer {
     const k = clamp(t.div(life), 0, 1);
     // Lực cản tuyến tính: quãng đi = v·(1 − e^(−d·t))/d; trọng lực cộng riêng.
     const d = max(p2.w, 1e-3);
-    const drift = float(1).sub(exp(d.negate().mul(t))).div(d);
+    const drift = float(1)
+      .sub(exp(d.negate().mul(t)))
+      .div(d);
     const pos = p0.xyz.add(p1.xyz.mul(drift)).sub(vec3(0, p2.z.mul(t).mul(t).mul(0.5), 0));
 
     const mat = new THREE.SpriteNodeMaterial({
@@ -113,7 +131,22 @@ class Layer {
     this.sprite.name = mat.name;
   }
 
-  emit(now: number, x: number, y: number, z: number, vx: number, vy: number, vz: number, life: number, s0: number, s1: number, grav: number, drag: number, c: THREE.Color, alpha: number): void {
+  emit(
+    now: number,
+    x: number,
+    y: number,
+    z: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    life: number,
+    s0: number,
+    s1: number,
+    grav: number,
+    drag: number,
+    c: THREE.Color,
+    alpha: number,
+  ): void {
     const i = this.next;
     this.next = i + 1;
     this.total++;
@@ -247,7 +280,22 @@ export class Particles {
    * Sinh một hạt. `color`: hex sRGB. `grav` m/s² (dương = rơi xuống), `drag` 1/s.
    * `s0`/`s1` cỡ (m) lúc sinh/lúc tắt.
    */
-  emit(layer: ParticleLayer, x: number, y: number, z: number, vx: number, vy: number, vz: number, life: number, s0: number, s1: number, color: number, alpha = 1, grav = 0, drag = 0): void {
+  emit(
+    layer: ParticleLayer,
+    x: number,
+    y: number,
+    z: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    life: number,
+    s0: number,
+    s1: number,
+    color: number,
+    alpha = 1,
+    grav = 0,
+    drag = 0,
+  ): void {
     _c.setHex(color);
     (layer === 'glow' ? this.glow : this.dust).emit(this.now, x, y, z, vx, vy, vz, life, s0, s1, grav, drag, _c, alpha);
   }

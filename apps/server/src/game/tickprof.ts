@@ -49,7 +49,12 @@ export class TickProf {
     for (const [k, a] of this.samples) {
       const s = [...a].sort((x, y) => x - y);
       const q = (f: number) => Number(s[Math.min(s.length - 1, Math.floor(s.length * f))].toFixed(3));
-      o[k] = { p50: q(0.5), p95: q(0.95), max: Number(s[s.length - 1].toFixed(3)), mean: Number((s.reduce((x, y) => x + y, 0) / s.length).toFixed(3)) };
+      o[k] = {
+        p50: q(0.5),
+        p95: q(0.95),
+        max: Number(s[s.length - 1].toFixed(3)),
+        mean: Number((s.reduce((x, y) => x + y, 0) / s.length).toFixed(3)),
+      };
     }
     return o;
   }
@@ -69,13 +74,19 @@ export async function maybeCpuProfile(): Promise<void> {
   session.connect();
   const post = (m: string, p?: object) => new Promise<unknown>((res, rej) => session.post(m, p ?? {}, (e, r) => (e ? rej(e) : res(r))));
   await post('Profiler.enable');
-  setTimeout(async () => {
-    await post('Profiler.start');
-    log.info('[cpuprof] bắt đầu');
-    setTimeout(async () => {
-      const r = (await post('Profiler.stop')) as { profile: unknown };
-      fs.writeFileSync(file, JSON.stringify(r.profile));
-      log.info('[cpuprof] đã ghi', file);
-    }, Number(durS) * 1000);
-  }, Number(startS) * 1000);
+  setTimeout(
+    async () => {
+      await post('Profiler.start');
+      log.info('[cpuprof] bắt đầu');
+      setTimeout(
+        async () => {
+          const r = (await post('Profiler.stop')) as { profile: unknown };
+          fs.writeFileSync(file, JSON.stringify(r.profile));
+          log.info('[cpuprof] đã ghi', file);
+        },
+        Number(durS) * 1000,
+      );
+    },
+    Number(startS) * 1000,
+  );
 }

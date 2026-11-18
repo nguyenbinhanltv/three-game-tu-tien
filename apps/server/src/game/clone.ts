@@ -124,7 +124,11 @@ export class CloneSystem {
     if (!p.connected) return;
     const now = this.h.now();
     const c = this.clones.get(p.sid);
-    const msg: CloneStateMsg = { open: cloneUnlocked(p.char.level), left: c ? Math.max(0, c.until - now) : 0, cd: Math.max(0, (cloneCd.get(p.char.id) ?? 0) - now) };
+    const msg: CloneStateMsg = {
+      open: cloneUnlocked(p.char.level),
+      left: c ? Math.max(0, c.until - now) : 0,
+      cd: Math.max(0, (cloneCd.get(p.char.id) ?? 0) - now),
+    };
     p.client.send(S.CLONE_STATE, msg);
   }
 
@@ -166,11 +170,35 @@ export class CloneSystem {
     const method = p.char.meta.method ?? '';
     const moves = (CLONE_MOVES[method] as CloneMethodDef | undefined)?.moves ?? [];
     const mhp = Math.max(1, Math.round(p.char.mhp * CLONE_HP_FRAC));
-    const c: Clone = { owner: p.sid, method, x: at.x, z: at.z, gx: at.x, gz: at.z, sentGx: at.x, sentGz: at.z, until: now + CLONE_LIFE_MS, hp: mhp, mhp, next: moves.map((mv) => now + (mv.cd ?? 0) * 1000), moves, nextTick: now, echoAt: new Map() };
+    const c: Clone = {
+      owner: p.sid,
+      method,
+      x: at.x,
+      z: at.z,
+      gx: at.x,
+      gz: at.z,
+      sentGx: at.x,
+      sentGz: at.z,
+      until: now + CLONE_LIFE_MS,
+      hp: mhp,
+      mhp,
+      next: moves.map((mv) => now + (mv.cd ?? 0) * 1000),
+      moves,
+      nextTick: now,
+      echoAt: new Map(),
+    };
     this.clones.set(p.sid, c);
     this.h.stopMeditate(p);
     cloneCd.set(p.char.id, now + CLONE_CD_MS);
-    this.h.fx({ t: 'clone_out', src: p.sid, x: c.x, y: this.h.groundAt(c.x, c.z), z: c.z, d: CLONE_LIFE_MS / 1000, s: METHOD.get(method)?.role ?? 'dps' });
+    this.h.fx({
+      t: 'clone_out',
+      src: p.sid,
+      x: c.x,
+      y: this.h.groundAt(c.x, c.z),
+      z: c.z,
+      d: CLONE_LIFE_MS / 1000,
+      s: METHOD.get(method)?.role ?? 'dps',
+    });
     this.h.sys(p, 'sys.clone_out', { n: CLONE_LIFE_MS / 1000 }, 'info');
     this.sendState(p);
     this.h.onCreated(p);
@@ -182,7 +210,12 @@ export class CloneSystem {
     this.clones.delete(p.sid);
     this.h.fx({ t: 'clone_end', src: p.sid, x: c.x, y: this.h.groundAt(c.x, c.z), z: c.z, pg: why === 'broken' ? 1 : 0 });
     if (why === 'drop') return;
-    this.h.sys(p, why === 'broken' ? 'sys.clone_broken' : why === 'recall' ? 'sys.clone_recall' : 'sys.clone_end', undefined, why === 'broken' ? 'bad' : 'info');
+    this.h.sys(
+      p,
+      why === 'broken' ? 'sys.clone_broken' : why === 'recall' ? 'sys.clone_recall' : 'sys.clone_end',
+      undefined,
+      why === 'broken' ? 'bad' : 'info',
+    );
     this.sendState(p);
   }
 

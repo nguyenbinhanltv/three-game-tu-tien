@@ -7,7 +7,15 @@ import type { MonEnt, PlayerEnt } from './sim';
 
 const player = (id: string, x: number, z: number) => ({ sid: id, move: { x, z, y: 0 } }) as unknown as PlayerEnt;
 const boss = (id: string, defId: string) =>
-  ({ id, def: MONSTER.get(defId)!, state: MS_CHASE, phase: 0, level: 31, atk: 100, s: { x: 0, y: 0, z: 0, yaw: 0, mf: 0 } }) as unknown as MonEnt;
+  ({
+    id,
+    def: MONSTER.get(defId)!,
+    state: MS_CHASE,
+    phase: 0,
+    level: 31,
+    atk: 100,
+    s: { x: 0, y: 0, z: 0, yaw: 0, mf: 0 },
+  }) as unknown as MonEnt;
 
 function mk(mons: MonEnt[], players: PlayerEnt[]) {
   const sys: string[] = [];
@@ -17,7 +25,14 @@ function mk(mons: MonEnt[], players: PlayerEnt[]) {
     players: () => players,
     monsters: () => mons,
     monsterDef: (id: string) => MONSTER.get(id),
-    spawnMinion: (_d: unknown, _l: number, x: number, z: number, o: MonEnt) => ({ id: 'd' + mons.length, def: MONSTER.get('mon_kim_da_bong')!, state: MS_CHASE, minionOf: o.id, s: { x, z, y: 0, yaw: 0, mf: 0 } }) as unknown as MonEnt,
+    spawnMinion: (_d: unknown, _l: number, x: number, z: number, o: MonEnt) =>
+      ({
+        id: 'd' + mons.length,
+        def: MONSTER.get('mon_kim_da_bong')!,
+        state: MS_CHASE,
+        minionOf: o.id,
+        s: { x, z, y: 0, yaw: 0, mf: 0 },
+      }) as unknown as MonEnt,
     markReal: () => {},
     fx: (_m: FxMsg) => {},
     sys: (p: PlayerEnt, k: string) => sys.push(`${p.sid}:${k}`),

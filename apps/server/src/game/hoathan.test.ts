@@ -1,5 +1,22 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { inHazard, elemCounterOf, ELEMENTS, groundAt, nguHanhIndex, nguHanhSealFor, peakGated, S, tribDef, tribForLevel, tribSealPos, TRIB_LINK_SEAL, xpNeed, type DmgMsg, type FxMsg, type HazardMsg } from '@dtl/shared';
+import {
+  inHazard,
+  elemCounterOf,
+  ELEMENTS,
+  groundAt,
+  nguHanhIndex,
+  nguHanhSealFor,
+  peakGated,
+  S,
+  tribDef,
+  tribForLevel,
+  tribSealPos,
+  TRIB_LINK_SEAL,
+  xpNeed,
+  type DmgMsg,
+  type FxMsg,
+  type HazardMsg,
+} from '@dtl/shared';
 
 // Thiên Nhân Kiếp (E4-D): ngũ hành lôi + trận môn (cờ `ke`), phân thân thần niệm (G), mạch nối thiên phạt, thế thân chắn tia lớn, vật phẩm.
 process.env.DB_FILE = ':memory:';
@@ -30,7 +47,13 @@ const NG = DEF.phases[0].nguHanh!;
 function setup(withItem = true) {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'hn' + acc);
   char.level = 27;
   char.bk = 27;
@@ -240,7 +263,10 @@ describe('Thiên Nhân Kiếp: pha 3 và kết thúc', () => {
       if (clone) expect(trib(t.sim).clone(t.p)).toBe(true);
       const n0 = t.dmgs().length;
       t.run(60.2);
-      const hits = t.dmgs().slice(n0).filter((d) => d.dst === t.p.sid);
+      const hits = t
+        .dmgs()
+        .slice(n0)
+        .filter((d) => d.dst === t.p.sid);
       vi.restoreAllMocks();
       return { max: Math.max(0, ...hits.map((d) => d.n)), ended: t.fx('phanthan_end').some((m) => m.pg === 1) };
     };
@@ -257,7 +283,9 @@ describe('Thiên Nhân Kiếp: pha 3 và kết thúc', () => {
     t.p.god = true;
     t.begin();
     t.run(57);
-    expect(t.sim.monsters.filter((m) => m.owner === t.p.sid && m.state !== 4 && m.def.id === 'mon_tam_ma').length).toBeGreaterThanOrEqual(2);
+    expect(t.sim.monsters.filter((m) => m.owner === t.p.sid && m.state !== 4 && m.def.id === 'mon_tam_ma').length).toBeGreaterThanOrEqual(
+      2,
+    );
   });
 
   it('trụ tới 80 s thì lên Hóa Thần sơ kỳ (28), phát ascend hoa_than', () => {
@@ -286,7 +314,7 @@ describe('Thiên Nhân Kiếp: pha 3 và kết thúc', () => {
 describe('Thiên Nhân Kiếp: cân bằng bản đầu', () => {
   // Bot "người chơi giỏi": đứng đúng trận môn từng nhịp, pha 2 giữ trận môn thứ hai, pha 3 có thế thân; còn lại né mọi vạch báo bằng chân (tìm điểm gần nhất
   // ngoài các vạch sắp nổ trong 1,3 s). Một mình, không đan, không hộ pháp: phải qua được (spec: solo được) và không quá dễ.
-  const lcg = (seed: number) => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+  const lcg = (seed: number) => () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
   const play = (seed: number) => {
     vi.spyOn(Math, 'random').mockImplementation(lcg(seed));
     const t = setup();
@@ -316,25 +344,28 @@ describe('Thiên Nhân Kiếp: cân bằng bản đầu', () => {
         want = t.seal(TRIB_LINK_SEAL);
         // Mạch nối nổ lúc 52,5 s: giữ trận môn thứ hai từ trước đó.
         must = s >= 51.6 && s < 52.7;
-      }
-      else {
+      } else {
         if (!cloned) {
           cloned = true;
           trib(t.sim).clone(t.p);
         }
         want = { x: X + 6, z: Z };
       }
-      const danger = (x: number, z: number) => pend.some((h) => h.at > s - 0.05 && h.at - s < 1.3 && !(h.g.r > 14 && !h.g.sh && h.g.r < 16) && h.g.mv !== 'pool' && inHazardMsg(h.g, x, z));
+      const danger = (x: number, z: number) =>
+        pend.some(
+          (h) => h.at > s - 0.05 && h.at - s < 1.3 && !(h.g.r > 14 && !h.g.sh && h.g.r < 16) && h.g.mv !== 'pool' && inHazardMsg(h.g, x, z),
+        );
       let best = want;
       if (!must && danger(want.x, want.z)) {
         best = want;
-        outer: for (const r of [3, 5, 7, 9]) for (let k = 0; k < 8; k++) {
-          const c = { x: want.x + Math.cos((k * Math.PI) / 4) * r, z: want.z + Math.sin((k * Math.PI) / 4) * r };
-          if (!danger(c.x, c.z)) {
-            best = c;
-            break outer;
+        outer: for (const r of [3, 5, 7, 9])
+          for (let k = 0; k < 8; k++) {
+            const c = { x: want.x + Math.cos((k * Math.PI) / 4) * r, z: want.z + Math.sin((k * Math.PI) / 4) * r };
+            if (!danger(c.x, c.z)) {
+              best = c;
+              break outer;
+            }
           }
-        }
       }
       t.goto(best);
     });

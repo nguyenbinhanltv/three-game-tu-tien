@@ -73,6 +73,11 @@ export function rimLight(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardN
   const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.6);
   const sunSide = normalWorld.dot(skyParams.sunDir).mul(0.5).add(0.5);
   const up = normalWorld.y.mul(0.5).add(0.5);
-  m.emissiveNode = rimParams.color.mul(fres.mul(mix(float(0.25), float(1), sunSide)).mul(mix(float(0.6), float(1), up)).mul(rimParams.strength));
+  m.emissiveNode = rimParams.color.mul(
+    fres
+      .mul(mix(float(0.25), float(1), sunSide))
+      .mul(mix(float(0.6), float(1), up))
+      .mul(rimParams.strength),
+  );
   return m;
 }

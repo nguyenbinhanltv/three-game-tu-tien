@@ -53,10 +53,20 @@ export function Settings() {
   return (
     <PanelWindow title={t('ui.settings')} onClose={() => closePanel('settings')}>
       <Divider label={t('ui.settings.controls')} />
-      <Segmented label={t('ui.settings.controls')} value={controls} onChange={(m) => Game.current?.setControls(m)} options={['mouse', 'turn', 'strafe'].map((m) => ({ value: m, label: t('ui.settings.controls.' + m) }))} />
+      <Segmented
+        label={t('ui.settings.controls')}
+        value={controls}
+        onChange={(m) => Game.current?.setControls(m)}
+        options={['mouse', 'turn', 'strafe'].map((m) => ({ value: m, label: t('ui.settings.controls.' + m) }))}
+      />
       <div className="k-dim">{t('ui.settings.controls_hint.' + controls)}</div>
       <Divider label={t('ui.settings.quality')} />
-      <Segmented label={t('ui.settings.quality')} value={quality} onChange={(q) => Game.current?.setQuality(q)} options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))} />
+      <Segmented
+        label={t('ui.settings.quality')}
+        value={quality}
+        onChange={(q) => Game.current?.setQuality(q)}
+        options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
+      />
       {qualityHint && !hintSeen && (
         <div className="k-dim" data-testid="quality-hint">
           {t('ui.settings.quality_suggest', { q: t('ui.settings.q.' + qualityHint) })}{' '}
@@ -71,21 +81,36 @@ export function Settings() {
           <Button onClick={() => Game.current?.dismissQualityHint()}>{t('ui.settings.quality_dismiss')}</Button>
         </div>
       )}
-      <Segmented label={t('ui.settings.quality_lock')} value={qualityLock} onChange={(on) => Game.current?.setQualityLock(on)} options={onOff} />
+      <Segmented
+        label={t('ui.settings.quality_lock')}
+        value={qualityLock}
+        onChange={(on) => Game.current?.setQualityLock(on)}
+        options={onOff}
+      />
       <div className="k-dim">{t('ui.settings.quality_lock_hint')}</div>
       <div className="k-dim">{t('ui.settings.quality_hint')}</div>
       <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
       <Divider label={t('ui.settings.cam_shake')} />
       <Segmented label={t('ui.settings.cam_shake')} value={camShake} onChange={(on) => Game.current?.setCamShake(on)} options={onOff} />
       <Divider label={t('ui.settings.fx_quality')} />
-      <Segmented label={t('ui.settings.fx_quality')} value={fxQ} onChange={(q) => Game.current?.setFxQuality(q)} options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))} />
+      <Segmented
+        label={t('ui.settings.fx_quality')}
+        value={fxQ}
+        onChange={(q) => Game.current?.setFxQuality(q)}
+        options={(['low', 'medium', 'high'] as const).map((q) => ({ value: q, label: t('ui.settings.fxq.' + q) }))}
+      />
       <div className="k-dim">{t('ui.settings.fx_quality_hint')}</div>
       <Segmented label={t('ui.settings.hit_stop')} value={hitStop} onChange={(on) => Game.current?.setHitStop(on)} options={onOff} />
       <Divider label={t('ui.settings.offscreen')} />
       <Segmented label={t('ui.settings.offscreen')} value={offscreen} onChange={(on) => Game.current?.setOffscreen(on)} options={onOff} />
       <div className="k-dim">{t('ui.settings.offscreen_hint')}</div>
       <Divider label={t('ui.settings.chapter')} />
-      <Segmented label={t('ui.settings.chapter')} value={chapterCards} onChange={(on) => Game.current?.setChapterCards(on)} options={onOff} />
+      <Segmented
+        label={t('ui.settings.chapter')}
+        value={chapterCards}
+        onChange={(on) => Game.current?.setChapterCards(on)}
+        options={onOff}
+      />
       <div className="k-dim">{t('ui.settings.chapter_hint')}</div>
       <Divider label={t('ui.settings.reduce_motion')} />
       <Segmented label={t('ui.settings.reduce_motion')} value={reduceMotion} onChange={setReduceMotion} options={onOff} />

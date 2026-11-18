@@ -37,7 +37,15 @@ export function idlePose(kind: ArtifactKind, t: number, speed: number, out: ArtP
       break;
     case 'heal':
       // Ngưng Đan Lô nhỏ, lơ lửng sau lưng hơi cao và lệch vai phải (không che mặt), lắc lư nhẹ.
-      Object.assign(out, { x: -0.3 + Math.sin(t * 1.3) * 0.025, y: 1.48 + Math.sin(t * 1.7) * 0.035, z: -0.46, rx: 0.08 + Math.sin(t * 1.1) * 0.04, ry: t * 0.35, rz: sway * 0.6 + Math.sin(t * 0.9) * 0.05, s: 0.68 });
+      Object.assign(out, {
+        x: -0.3 + Math.sin(t * 1.3) * 0.025,
+        y: 1.48 + Math.sin(t * 1.7) * 0.035,
+        z: -0.46,
+        rx: 0.08 + Math.sin(t * 1.1) * 0.04,
+        ry: t * 0.35,
+        rz: sway * 0.6 + Math.sin(t * 0.9) * 0.05,
+        s: 0.68,
+      });
       break;
   }
   return out;
@@ -48,7 +56,15 @@ export function activePose(kind: ArtifactKind, t: number, out: ArtPose = blank()
   switch (kind) {
     case 'drain': {
       const a = t * 5.5;
-      Object.assign(out, { x: Math.cos(a) * 0.95, y: 1.25 + Math.sin(a * 2) * 0.1, z: Math.sin(a) * 0.95, rx: 0.25, ry: -a + Math.PI / 2, rz: 0.2, s: 2.1 });
+      Object.assign(out, {
+        x: Math.cos(a) * 0.95,
+        y: 1.25 + Math.sin(a * 2) * 0.1,
+        z: Math.sin(a) * 0.95,
+        rx: 0.25,
+        ry: -a + Math.PI / 2,
+        rz: 0.2,
+        s: 2.1,
+      });
       break;
     }
     case 'seal':

@@ -1,5 +1,30 @@
 // Độ kiếp phía sim (R-7): onBreakthrough, bắt đầu/kết thúc kiếp, hộ pháp, bóng tâm ma, thế thân
-import { computeDamage, type DmgMsg, type FxMsg, elemDamageMul, elemCounter, STAT_CAPS, counterMul, MAX_LEVEL, type LevelDef, type MonsterDef, MS_CHASE, MS_DEAD, PF_TRIBULATION, S, type SkillDef, type SpawnDef, type SysMsg, tribDef, tribForLevel, type TribDef, bottleneckBlocked, TRUC_CO_FREE_FLY_ALT, vulnerableDamage, xpNeed } from '@dtl/shared';
+import {
+  computeDamage,
+  type DmgMsg,
+  type FxMsg,
+  elemDamageMul,
+  elemCounter,
+  STAT_CAPS,
+  counterMul,
+  MAX_LEVEL,
+  type LevelDef,
+  type MonsterDef,
+  MS_CHASE,
+  MS_DEAD,
+  PF_TRIBULATION,
+  S,
+  type SkillDef,
+  type SpawnDef,
+  type SysMsg,
+  tribDef,
+  tribForLevel,
+  type TribDef,
+  bottleneckBlocked,
+  TRUC_CO_FREE_FLY_ALT,
+  vulnerableDamage,
+  xpNeed,
+} from '@dtl/shared';
 import { TribSystem } from '../trib';
 import { itemName, MONSTER, nextMajorRealmName, realmName } from '@dtl/content';
 import { type Character } from '../character';
@@ -15,7 +40,16 @@ import { log } from '../../log';
 /** Phần GameSim mà hệ độ kiếp cần. */
 export interface TribulationCtx {
   readonly clone: CloneSystem;
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit?: boolean, hv?: boolean, heavy?: boolean, ke?: 0 | 1 | -1, dot?: boolean): void;
+  damageMonster(
+    mon: MonEnt,
+    dmg: number,
+    p: PlayerEnt | null,
+    crit?: boolean,
+    hv?: boolean,
+    heavy?: boolean,
+    ke?: 0 | 1 | -1,
+    dot?: boolean,
+  ): void;
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv?: boolean, ke?: 1 | -1): void;
   readonly domain: DomainSystem;
   readonly duel: DuelSystem;
@@ -97,7 +131,8 @@ export class TribulationSystem {
     if (bottleneckBlocked(c.level, c.bk)) return this.c.warn(p, 'sys.bk_blocked');
     if (!def.enabled && !force) return this.c.warn(p, 'sys.trib_locked');
     const item = def.item;
-    if (item && !force && !c.inv.some((it) => it?.id === item && !it.lk)) return this.c.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
+    if (item && !force && !c.inv.some((it) => it?.id === item && !it.lk))
+      return this.c.warn(p, 'sys.trib_need_pill', { item: itemName(item) });
     if (def.room === 'tribulation') {
       // Room riêng: room thế giới chỉ kiểm điều kiện rồi cấp vé; vật phẩm bị tiêu khi vào tới nơi (beginTribulation).
       if (!this.c.host.enterTribulationRoom?.(p, def, force)) this.c.warn(p, 'sys.trib_not_now');
@@ -117,7 +152,14 @@ export class TribulationSystem {
       return false;
     }
     if (p.meditating) this.c.setMeditating(p, false);
-    p.trib = { id: def.id, endAt: this.c.now + def.duration * 1000, nextAt: this.c.now + def.firstDelay * 1000, n: 0, fin: false, pills: 0 };
+    p.trib = {
+      id: def.id,
+      endAt: this.c.now + def.duration * 1000,
+      nextAt: this.c.now + def.firstDelay * 1000,
+      n: 0,
+      fin: false,
+      pills: 0,
+    };
     this.c.setFlag(p, PF_TRIBULATION, true);
     this.c.sysAll('sys.trib_start', { name: c.name }, 'info');
     this.c.fx({ t: 'tribstart', src: p.sid, d: def.duration, sd: visualSeed(), tb: def.id });
@@ -190,7 +232,15 @@ export class TribulationSystem {
     const pw = mk && mk.sid === p.sid && this.c.now < mk.until ? power * (1 + mk.mul) : power;
     const em = elemDamageMul(p.char.stats.elemDmg, elem);
     const crit0 = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.c.domain.critAdd(p));
-    const { dmg, crit } = computeDamage(p.char.atk, pw * em * counterMul(ke), mon.defn, Math.random(), Math.random(), crit0, p.char.stats.critMul);
+    const { dmg, crit } = computeDamage(
+      p.char.atk,
+      pw * em * counterMul(ke),
+      mon.defn,
+      Math.random(),
+      Math.random(),
+      crit0,
+      p.char.stats.critMul,
+    );
     this.c.damageMonster(mon, vulnerableDamage(dmg, this.c.now < mon.stunUntil), p, crit, false, false, ke);
   }
 
@@ -230,7 +280,13 @@ export class TribulationSystem {
       if (!silent) this.c.sys(p, lost > 0 ? 'sys.trib_fail' : 'sys.trib_fail_free', { n: lost }, 'bad');
       // Trụ qua nửa đầu: hoàn vật phẩm đột phá (chỉ khi chết trong lôi kiếp, không hoàn khi thoát game giữa chừng).
       const item = def.item;
-      if (!silent && item && elapsed >= def.refundAfter && c.tx('tribulation:refund', `trib-refund:${def.id}:${c.id}:${this.c.now}`, (d) => d.add(item, 1))) this.c.sys(p, 'sys.trib_refund', { item: itemName(item) }, 'info');
+      if (
+        !silent &&
+        item &&
+        elapsed >= def.refundAfter &&
+        c.tx('tribulation:refund', `trib-refund:${def.id}:${c.id}:${this.c.now}`, (d) => d.add(item, 1))
+      )
+        this.c.sys(p, 'sys.trib_refund', { item: itemName(item) }, 'info');
     }
     this.c.host.onTribulationEnd?.(p, def, success);
   }

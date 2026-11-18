@@ -16,14 +16,31 @@ function fake(): { m: MannequinCharacter; ev: SkillEvent[] } {
   const def = { id: 'p', duration: 1, hit: [0.4] } as never;
   const pose = { def, full: clip('f', 'spine_01'), upper: clip('u', 'spine_01'), lower: clip('l', 'pelvis') };
   const bank = { get: (id: string) => (id === 'p' || id === 'q' ? pose : undefined), baseClip: () => undefined };
-  const tpl = { bank, height: 1.8, clips: new Map([['Idle_Loop', clip('Idle_Loop', 'spine_02')]]), handle: { scene } } as unknown as MannequinTemplate;
+  const tpl = {
+    bank,
+    height: 1.8,
+    clips: new Map([['Idle_Loop', clip('Idle_Loop', 'spine_02')]]),
+    handle: { scene },
+  } as unknown as MannequinTemplate;
   const m = new MannequinCharacter(tpl);
   const ev: SkillEvent[] = [];
   m.onSkillEvent = (e) => ev.push(e);
   return { m, ev };
 }
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
-const opts = () => ({ skill: 'skl', combo: -1, timing: { windup: 0.3, hitAt: [0.4], end: 1, cancelMove: 0.6, cancelDash: 0.45, kb: false } });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
+const opts = () => ({
+  skill: 'skl',
+  combo: -1,
+  timing: { windup: 0.3, hitAt: [0.4], end: 1, cancelMove: 0.6, cancelDash: 0.45, kb: false },
+});
 const run = (m: MannequinCharacter, a: AnimState, sec: number) => {
   for (let i = 0; i < Math.round(sec * 60); i++) m.update(1 / 60, a);
 };

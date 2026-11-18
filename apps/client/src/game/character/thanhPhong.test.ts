@@ -21,7 +21,15 @@ const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
 const HAS_ASSET = JSON.stringify(MANIFEST).includes(`"${ASSET}"`);
 
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 
 async function load(): Promise<AssetHandle> {
   const cache = new AssetCache({
@@ -43,7 +51,8 @@ async function setup() {
   const t0 = performance.now();
   const extra = withPoses(handle.scene, BASE);
   const bakeMs = performance.now() - t0;
-  const make = () => new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, height: 1.75, refSpeed: 4.6, ...extra });
+  const make = () =>
+    new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, height: 1.75, refSpeed: 4.6, ...extra });
   return { handle, extra, make, bakeMs };
 }
 
@@ -85,7 +94,9 @@ describe('Thanh Phong + động tác chiêu', () => {
     for (const s of SKILLS) {
       const def = POSE.get(s.pose!)!;
       const r = probeClip(rig, extra.poses!.get(def.id)!.full, def.hit![0] + 0.04);
-      lines.push(`${def.id}: tay phải z ${r.handRFromShoulder[2].toFixed(2)}, tay trái z ${r.handLFromShoulder[2].toFixed(2)}, chân ${r.footR[1].toFixed(3)}/${r.footL[1].toFixed(3)}`);
+      lines.push(
+        `${def.id}: tay phải z ${r.handRFromShoulder[2].toFixed(2)}, tay trái z ${r.handLFromShoulder[2].toFixed(2)}, chân ${r.footR[1].toFixed(3)}/${r.footL[1].toFixed(3)}`,
+      );
       expect(Math.max(r.handRFromShoulder[2], r.handLFromShoulder[2]), def.id).toBeGreaterThan(0.08);
       expect(Math.abs(r.footR[1]), def.id).toBeLessThan(0.02);
       expect(Math.abs(r.footL[1]), def.id).toBeLessThan(0.02);
@@ -106,7 +117,7 @@ describe('Thanh Phong + động tác chiêu', () => {
       const frames = 300;
       for (let f = 0; f < frames; f++) {
         for (const [i, p] of ps.entries()) {
-          if (attack && (f + i * 5) % 60 === 0) p.perform(SKILLS[(f / 60 + i) % SKILLS.length | 0].pose!);
+          if (attack && (f + i * 5) % 60 === 0) p.perform(SKILLS[((f / 60 + i) % SKILLS.length) | 0].pose!);
           p.update(1 / 60, a);
         }
         scene.updateMatrixWorld(true);
@@ -115,7 +126,9 @@ describe('Thanh Phong + động tác chiêu', () => {
     };
     const base = measure(false);
     const withPose = measure(true);
-    console.info(`[perf] 12 nhân vật, mỗi khung (mixer + ma trận): chỉ chạy ${base.toFixed(3)}ms, chạy + ra chiêu liên tục ${withPose.toFixed(3)}ms`);
+    console.info(
+      `[perf] 12 nhân vật, mỗi khung (mixer + ma trận): chỉ chạy ${base.toFixed(3)}ms, chạy + ra chiêu liên tục ${withPose.toFixed(3)}ms`,
+    );
     expect(withPose).toBeLessThan(cpuBudget(4));
     for (const p of ps) p.dispose();
     handle.release();

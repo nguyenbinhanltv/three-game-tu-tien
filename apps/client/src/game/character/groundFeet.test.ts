@@ -15,7 +15,15 @@ import { nodeGltfLoader } from '../core/gltfTestLoader';
 // Chân bám đất (P2-E3) trên model thật: Thanh Phong (hai chân), sói (bốn chân, nghiêng thân), Thạch Viên (vượn hai chân).
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 const BASE = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_light', death: 'death' };
 
 async function load(id: string) {
@@ -75,7 +83,8 @@ describe('chân bám đất trên dốc', () => {
   it('Thanh Phong: đứng ngang dốc, hai chân cùng cách đất sau khi bám', async () => {
     const handle = await load('chr_kiem_tu_nam');
     const extra = withPoses(handle.scene, BASE);
-    const make = (ground?: 'biped') => new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, height: 1.75, refSpeed: 3, ground, ...extra });
+    const make = (ground?: 'biped') =>
+      new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, height: 1.75, refSpeed: 3, ground, ...extra });
     const yaw = spot.uphill + Math.PI / 2;
     const flat = make();
     const grounded = make('biped');
@@ -94,7 +103,14 @@ describe('chân bám đất trên dốc', () => {
   it('Thanh Phong: bay thì tắt', async () => {
     const handle = await load('chr_kiem_tu_nam');
     const extra = withPoses(handle.scene, BASE);
-    const c = new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, height: 1.75, refSpeed: 3, ground: 'biped', ...extra });
+    const c = new SkinnedCharacter({
+      scene: cloneSkinned(handle.scene),
+      clips: handle.animations,
+      height: 1.75,
+      refSpeed: 3,
+      ground: 'biped',
+      ...extra,
+    });
     placeAt(c, spot.x, spot.z, spot.uphill);
     for (let t = 0; t < 0.5; t += 1 / 60) c.update(1 / 60, anim());
     expect(c.footIkActive).toBe(true);
@@ -107,7 +123,14 @@ describe('chân bám đất trên dốc', () => {
     const extra = withPoses(handle.scene, BASE);
     const build = (ground?: 'biped') =>
       Array.from({ length: 12 }, (_, i) => {
-        const c = new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, height: 1.75, refSpeed: 3, ground, ...extra });
+        const c = new SkinnedCharacter({
+          scene: cloneSkinned(handle.scene),
+          clips: handle.animations,
+          height: 1.75,
+          refSpeed: 3,
+          ground,
+          ...extra,
+        });
         placeAt(c, spot.x + i, spot.z + (i % 3), i);
         return c;
       });
@@ -129,7 +152,14 @@ describe('chân bám đất trên dốc', () => {
 
   it('sói: nghiêng thân theo dốc dọc', async () => {
     const handle = await load('mon_soi_xam');
-    const c = new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, height: 0.9, refSpeed: 2.5, clipMap: { idle: 'idle', run: 'run' }, ground: 'quad' });
+    const c = new SkinnedCharacter({
+      scene: cloneSkinned(handle.scene),
+      clips: handle.animations,
+      height: 0.9,
+      refSpeed: 2.5,
+      clipMap: { idle: 'idle', run: 'run' },
+      ground: 'quad',
+    });
     placeAt(c, spot.x, spot.z, spot.uphill);
     for (let t = 0; t < 1; t += 1 / 60) c.update(1 / 60, anim());
     const inner = c.root.children[0];
@@ -142,7 +172,15 @@ describe('chân bám đất trên dốc', () => {
 
   it('Thạch Viên (vượn hai chân): dựng được rig IK chân', async () => {
     const handle = await load('mon_thach_vien');
-    const c = new SkinnedCharacter({ scene: cloneSkinned(handle.scene), clips: handle.animations, height: 1.8, refSpeed: 2.15, clipMap: { idle: 'idle', run: 'run' }, ground: 'biped', scale: 1.5 });
+    const c = new SkinnedCharacter({
+      scene: cloneSkinned(handle.scene),
+      clips: handle.animations,
+      height: 1.8,
+      refSpeed: 2.15,
+      clipMap: { idle: 'idle', run: 'run' },
+      ground: 'biped',
+      scale: 1.5,
+    });
     placeAt(c, spot.x, spot.z, spot.uphill + Math.PI / 2);
     for (let t = 0; t < 1; t += 1 / 60) c.update(1 / 60, anim());
     expect(c.footIkActive).toBe(true);

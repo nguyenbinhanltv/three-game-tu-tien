@@ -39,7 +39,11 @@ const nearer = step(length(positionWorld.sub(uCam)), uNear);
 const aboveFeet = step(uFeetY.add(0.25), positionWorld.y);
 
 function archFade() {
-  const parts = uSlots.map((s) => float(1).sub(smoothstep(s.z, s.z.add(1), length(positionWorld.xz.sub(s.xy)))).mul(s.w));
+  const parts = uSlots.map((s) =>
+    float(1)
+      .sub(smoothstep(s.z, s.z.add(1), length(positionWorld.xz.sub(s.xy))))
+      .mul(s.w),
+  );
   let f: ShaderNodeObject<THREE.Node> = parts[0];
   for (let i = 1; i < parts.length; i++) f = max(f, parts[i]);
   return f.mul(nearer).mul(aboveFeet);
@@ -52,7 +56,10 @@ function vegFade() {
   const t = clamp(dot(positionWorld.sub(uCam), dir), 0, len);
   const d = length(positionWorld.sub(uCam.add(dir.mul(t))));
   const inside = float(1).sub(smoothstep(1.1, 2.2, d));
-  return inside.mul(uVeg).mul(nearer).mul(step(uFeetY.add(0.8), positionWorld.y));
+  return inside
+    .mul(uVeg)
+    .mul(nearer)
+    .mul(step(uFeetY.add(0.8), positionWorld.y));
 }
 
 /** Gắn làm mờ vật che theo danh sách `OCCLUDERS` cho material kiến trúc. Gọi một lần lúc tạo. */

@@ -10,12 +10,28 @@ function fake(): MannequinCharacter {
     b.name = n;
     scene.add(b);
   }
-  const clip = (name: string, y: number) => new THREE.AnimationClip(name, 1, [new THREE.QuaternionKeyframeTrack('spine_02.quaternion', [0, 1], [0, 0, y, Math.sqrt(1 - y * y), 0, 0, y, Math.sqrt(1 - y * y)])]);
+  const clip = (name: string, y: number) =>
+    new THREE.AnimationClip(name, 1, [
+      new THREE.QuaternionKeyframeTrack('spine_02.quaternion', [0, 1], [0, 0, y, Math.sqrt(1 - y * y), 0, 0, y, Math.sqrt(1 - y * y)]),
+    ]);
   const names = ['Idle_Loop', 'Jog_Fwd_Loop', 'Walk_Loop', 'Sprint_Loop'];
-  const tpl = { bank: null, height: 1.8, clips: new Map(names.map((n, i) => [n, clip(n, i * 0.1)])), handle: { scene } } as unknown as MannequinTemplate;
+  const tpl = {
+    bank: null,
+    height: 1.8,
+    clips: new Map(names.map((n, i) => [n, clip(n, i * 0.1)])),
+    handle: { scene },
+  } as unknown as MannequinTemplate;
   return new MannequinCharacter(tpl);
 }
-const anim = (o: Partial<AnimState> = {}): AnimState => ({ speed: 0, flying: false, meditating: false, dead: false, casting: false, airborne: false, ...o });
+const anim = (o: Partial<AnimState> = {}): AnimState => ({
+  speed: 0,
+  flying: false,
+  meditating: false,
+  dead: false,
+  casting: false,
+  airborne: false,
+  ...o,
+});
 
 describe('MannequinCharacter: dừng chạy không nhảy tư thế', () => {
   it('Jog → Idle: trọng số thật của walk/sprint không tăng đột ngột ở khung chuyển', () => {

@@ -75,7 +75,16 @@ function setup(id: string, lv: number, dist: number) {
 const hp = (p: { char: { hp: number } }) => p.char.hp;
 
 describe('dữ liệu Vân Hải', () => {
-  const ids = ['boss_van_hai_kinh_vuong', 'elite_kinh_dien_ma_quan', 'elite_loi_van_su_vuong', 'elite_van_hac_vuong', 'mon_bich_ngoc_kim_thien', 'mon_kinh_linh', 'mon_phu_dao_thach_quy', 'mon_van_hac'];
+  const ids = [
+    'boss_van_hai_kinh_vuong',
+    'elite_kinh_dien_ma_quan',
+    'elite_loi_van_su_vuong',
+    'elite_van_hac_vuong',
+    'mon_bich_ngoc_kim_thien',
+    'mon_kinh_linh',
+    'mon_phu_dao_thach_quy',
+    'mon_van_hac',
+  ];
 
   it('level chỉ dùng quái riêng của Vân Hải (không còn quái tạm Đoạn Mạch), cấp 20–23, có bảng rơi, không `drops` trong monsters.json', () => {
     const spawns = SH.levelSpawns(C.LEVELS.van_hai);
@@ -107,8 +116,10 @@ describe('dữ liệu Vân Hải', () => {
 
   it('quái bay có `hover`, quái đi bộ thì không; boss nhỏ lại để hợp tỉ lệ nhân vật', () => {
     const hv = (id: string) => C.MONSTER.get(id)!.hover;
-    for (const id of ['mon_van_hac', 'mon_bich_ngoc_kim_thien', 'elite_van_hac_vuong', 'boss_van_hai_kinh_vuong']) expect(hv(id), id).toBeGreaterThan(0);
-    for (const id of ['mon_kinh_linh', 'mon_phu_dao_thach_quy', 'elite_kinh_dien_ma_quan', 'elite_loi_van_su_vuong']) expect(hv(id), id).toBeUndefined();
+    for (const id of ['mon_van_hac', 'mon_bich_ngoc_kim_thien', 'elite_van_hac_vuong', 'boss_van_hai_kinh_vuong'])
+      expect(hv(id), id).toBeGreaterThan(0);
+    for (const id of ['mon_kinh_linh', 'mon_phu_dao_thach_quy', 'elite_kinh_dien_ma_quan', 'elite_loi_van_su_vuong'])
+      expect(hv(id), id).toBeUndefined();
     const boss = C.MONSTER.get('boss_van_hai_kinh_vuong')!;
     expect(boss.scale).toBeLessThan(0.8);
     expect(boss.hover!).toBeLessThanOrEqual(8);

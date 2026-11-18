@@ -41,7 +41,12 @@ function linear(hex: string): THREE.Color {
  * Gắn `colorNode` nhuộm áo vào material đã chuyển từ glTF (giữ map, color, alpha của nó).
  * `clothRef`: màu vải trong texture (hex sRGB); `dye`: màu áo đã chọn. Cùng màu thì giữ nguyên material.
  */
-export function applyDye(m: THREE.MeshStandardNodeMaterial, clothRef: string, dye: string, accent?: string): THREE.MeshStandardNodeMaterial {
+export function applyDye(
+  m: THREE.MeshStandardNodeMaterial,
+  clothRef: string,
+  dye: string,
+  accent?: string,
+): THREE.MeshStandardNodeMaterial {
   if (!accent && clothRef.toLowerCase() === dye.toLowerCase()) return m;
   const ref = linear(clothRef);
   const target = linear(dye);

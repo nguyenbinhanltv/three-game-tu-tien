@@ -244,10 +244,24 @@ export class PropLayer {
   }
 
   /** Số liệu cho gỡ lỗi/bench: asset đã nạp/lỗi, ô đang hiện. */
-  stats(): { templates: Record<string, string>; cells: number; shown: number; visibleMeshes: number; instances: number; impostors: number } {
+  stats(): {
+    templates: Record<string, string>;
+    cells: number;
+    shown: number;
+    visibleMeshes: number;
+    instances: number;
+    impostors: number;
+  } {
     const templates: Record<string, string> = {};
     for (const [k, v] of this.templates) templates[k] = typeof v === 'string' ? v : 'ready';
-    return { templates, cells: this.cells.length, shown: this.cells.filter((c) => c.level >= 0).length, visibleMeshes: this.visibleMeshes, instances: this.count, impostors: this.impostors?.visible ?? 0 };
+    return {
+      templates,
+      cells: this.cells.length,
+      shown: this.cells.filter((c) => c.level >= 0).length,
+      visibleMeshes: this.visibleMeshes,
+      instances: this.count,
+      impostors: this.impostors?.visible ?? 0,
+    };
   }
 
   get count(): number {
@@ -258,7 +272,8 @@ export class PropLayer {
     this.quality = q;
     this.shadows = shadows;
     this.acc = 1; // cập nhật ngay khung kế
-    for (const c of this.cells) if (c.meshes) for (const lv of c.meshes) for (const m of lv) m.castShadow = shadows && !!PROP_CFG[c.id].shadow;
+    for (const c of this.cells)
+      if (c.meshes) for (const lv of c.meshes) for (const m of lv) m.castShadow = shadows && !!PROP_CFG[c.id].shadow;
     this.applyPoolShadows();
   }
 

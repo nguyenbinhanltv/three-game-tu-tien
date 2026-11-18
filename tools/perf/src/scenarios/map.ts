@@ -16,7 +16,13 @@ export default {
     requireLevel(level);
     const log: Record<string, unknown> = {};
     for (const tag of list('--sizes', '1080p,1440p,4k')) {
-      const { ctx, page, errors } = await r.open({ name: 'Map', viewport: UI_SIZES[tag], dpr: num('--dpr', 1), query: { god: 1, realm: level === 'van_lam' ? 'nk15' : 27, at: level === 'van_lam' ? 'tong_mon' : undefined }, seenIntro: true });
+      const { ctx, page, errors } = await r.open({
+        name: 'Map',
+        viewport: UI_SIZES[tag],
+        dpr: num('--dpr', 1),
+        query: { god: 1, realm: level === 'van_lam' ? 'nk15' : 27, at: level === 'van_lam' ? 'tong_mon' : undefined },
+        seenIntro: true,
+      });
       if (level !== 'van_lam') await enterLevel(page, level);
       await gm(page, 'tele all');
       await sleep(6000);
@@ -24,7 +30,14 @@ export default {
       await page.locator('.minimap-wrap').screenshot({ path: `${r.out}/${level}-minimap-${tag}.png` });
       const mm = await page.evaluate(() => {
         const c = document.querySelector<HTMLCanvasElement>('.minimap canvas');
-        return c ? { buf: c.width, cssPx: Math.round(c.getBoundingClientRect().width), dpr: devicePixelRatio, uiScale: getComputedStyle(document.documentElement).getPropertyValue('--ui-scale') } : null;
+        return c
+          ? {
+              buf: c.width,
+              cssPx: Math.round(c.getBoundingClientRect().width),
+              dpr: devicePixelRatio,
+              uiScale: getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'),
+            }
+          : null;
       });
       await page.keyboard.press('KeyM');
       await snap(page, r.out, `${level}-worldmap-${tag}.jpg`, { wait: 1800 });

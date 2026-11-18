@@ -265,7 +265,10 @@ export function findLoop(chans, opts = {}, sr = SR) {
       }
       if (best) break;
     }
-    if (!best) throw new Error(`bài quá ngắn để tìm vòng lặp (phần có nhạc ${((body.end - body.start) / sr).toFixed(1)} s, cần ≥ ${(minLen / sr).toFixed(1)} s + đoạn so sánh)`);
+    if (!best)
+      throw new Error(
+        `bài quá ngắn để tìm vòng lặp (phần có nhạc ${((body.end - body.start) / sr).toFixed(1)} s, cần ≥ ${(minLen / sr).toFixed(1)} s + đoạn so sánh)`,
+      );
     end = Math.round(best.E);
     score = best.sim;
     bars = best.n * (stepBeats / beatsPerBar);

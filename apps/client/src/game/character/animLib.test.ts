@@ -132,14 +132,22 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
       const out = retargetClips(lib.scene, lib.animations, h.scene);
       const rest = footTrace(h.scene, new THREE.AnimationClip('rest', 1, []), 1).low[0];
       for (const name of ['run', 'idle']) {
-        const { low } = footTrace(h.scene, out.find((c) => c.name === name)!, 40);
+        const { low } = footTrace(
+          h.scene,
+          out.find((c) => c.name === name)!,
+          40,
+        );
         // Chân trụ chạm đất (±6 cm quanh tư thế nghỉ): không lơ lửng, không lún.
         expect(Math.min(...low) - rest, `${id}/${name} lún`).toBeGreaterThan(-0.06);
         expect(Math.min(...low) - rest, `${id}/${name} lơ lửng`).toBeLessThan(0.06);
       }
       // Độ cao hông khi idle so với hông ở tư thế nghỉ của chính nhân vật: lệch quá 10% nghĩa là scale hông sai tỉ lệ.
       const restHips = footTrace(h.scene, new THREE.AnimationClip('rest', 1, []), 1).hipsY[0];
-      const idleHips = footTrace(h.scene, out.find((c) => c.name === 'idle')!, 1).hipsY[0];
+      const idleHips = footTrace(
+        h.scene,
+        out.find((c) => c.name === 'idle')!,
+        1,
+      ).hipsY[0];
       expect(idleHips / restHips, `${id} độ cao hông`).toBeGreaterThan(0.9);
       expect(idleHips / restHips, `${id} độ cao hông`).toBeLessThan(1.1);
       h.release();
@@ -169,7 +177,11 @@ describe('thư viện clip chung anim_human_base (M2-3)', () => {
       for (const name of ['run', 'heavy_chop']) {
         const clip = out.find((c) => c.name === name)!;
         const t = clip.duration * 0.4;
-        const sb = sample(lib.scene, lib.animations.find((c) => c.name === name)!, t);
+        const sb = sample(
+          lib.scene,
+          lib.animations.find((c) => c.name === name)!,
+          t,
+        );
         const db = sample(h.scene, clip, t);
         let worst = 0;
         for (const [n, o] of db) {

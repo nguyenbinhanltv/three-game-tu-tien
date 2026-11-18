@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { BUTTERFLY_LEVELS, BUTTERFLY_MAX, BUTTERFLY_QUALITY, butterflyGeometry, hash2, spotsNear, wingPixels, wingTexel } from './butterflies';
+import {
+  BUTTERFLY_LEVELS,
+  BUTTERFLY_MAX,
+  BUTTERFLY_QUALITY,
+  butterflyGeometry,
+  hash2,
+  spotsNear,
+  wingPixels,
+  wingTexel,
+} from './butterflies';
 
 describe('bướm trang trí (DV-C)', () => {
   it('lưới một con: 8 tam giác, hai cánh đối xứng qua bản lề', () => {

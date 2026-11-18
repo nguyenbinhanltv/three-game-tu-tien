@@ -46,7 +46,9 @@ export class FxBatcher {
   readonly created: string[] = [];
 
   private makeChunk(b: Bucket): Chunk {
-    this.created.push(`${b.kind}|${b.geo.type}:${Object.keys(b.geo.attributes).sort().join('+')}${b.geo.index ? ':idx' : ''}:${b.geo.attributes.position?.count}|${b.order}|${b.chunks.length}`);
+    this.created.push(
+      `${b.kind}|${b.geo.type}:${Object.keys(b.geo.attributes).sort().join('+')}${b.geo.index ? ':idx' : ''}:${b.geo.attributes.position?.count}|${b.order}|${b.chunks.length}`,
+    );
     // Mỗi mảnh có bản sao hình riêng để giữ thuộc tính instance riêng (hình gốc dùng chung nhiều nhóm).
     const geo = b.geo.clone();
     const attr = (n: string) => {
@@ -167,4 +169,3 @@ export class FxBatcher {
     this.root.removeFromParent();
   }
 }
-

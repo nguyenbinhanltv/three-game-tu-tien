@@ -30,7 +30,13 @@ let acc = 61_000;
 function setup(test = false, g: 'm' | 'f' = 'f') {
   const said: string[] = [];
   const host = { broadcast: () => undefined, broadcastExcept: () => undefined };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   // Linh căn cố định để so chỉ số trước/sau không phụ thuộc lượt roll.
   const char = Character.create(acc++, 'Sk' + acc, { g, dye: APPEARANCE.defaultDye }, 'kim' as never);
   char.level = 12;
@@ -44,7 +50,14 @@ function setup(test = false, g: 'm' | 'f' = 'f') {
   return { sim, p, said };
 }
 
-const ledger = (id: number) => sqlite.prepare('SELECT kind, ref, delta, reason, idem FROM ledger WHERE char_id = ? ORDER BY id').all(id) as { kind: string; ref: string; delta: number; reason: string; idem: string | null }[];
+const ledger = (id: number) =>
+  sqlite.prepare('SELECT kind, ref, delta, reason, idem FROM ledger WHERE char_id = ? ORDER BY id').all(id) as {
+    kind: string;
+    ref: string;
+    delta: number;
+    reason: string;
+    idem: string | null;
+  }[];
 const stats = (p: Ent) => ({ atk: p.char.atk, def: p.char.def, mhp: p.char.mhp, mmp: p.char.mmp, sets: JSON.stringify(p.char.stats.sets) });
 
 describe('ô ngoại hình (skin)', () => {
@@ -90,7 +103,10 @@ describe('ô ngoại hình (skin)', () => {
     expect(p.char.inv.filter((s) => s?.id === SKIN)).toHaveLength(1);
     sim.tick(50);
     expect(p.s.sn).toBe('');
-    expect(ledger(p.char.id).find((r) => r.idem === `${p.char.id}:skin-un-0002`)).toMatchObject({ kind: 'noop', reason: `unequip:skin:${SKIN}` });
+    expect(ledger(p.char.id).find((r) => r.idem === `${p.char.id}:skin-un-0002`)).toMatchObject({
+      kind: 'noop',
+      reason: `unequip:skin:${SKIN}`,
+    });
   });
 
   it('không sở hữu thì không mặc được: ô trống, ô chứa món khác, ô ngoài phạm vi', () => {
@@ -187,7 +203,8 @@ describe('ô ngoại hình (skin)', () => {
   });
 
   describe('nạp nhân vật đang mặc skin sai giới', () => {
-    const setEquip = (id: number, equip: unknown) => sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify(equip), id);
+    const setEquip = (id: number, equip: unknown) =>
+      sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify(equip), id);
 
     it('nhân vật nam còn mặc Varkessa trong DB: lúc nạp món về túi, ô skin trống, không mất và không ghi ledger', () => {
       const { p } = setup(false, 'm');
@@ -229,7 +246,9 @@ describe('ô ngoại hình (skin)', () => {
     expect(c.inv.some((x) => x?.id === SKIN)).toBe(false);
     // Một giao dịch thành công sau đó không được ghi đè cột equip thiếu món.
     expect(c.tx('test:other', null, (d) => d.add('itm_linh_thao', 1))).toBe(true);
-    expect(JSON.parse((sqlite.prepare('SELECT equip FROM characters WHERE id = ?').get(p.char.id) as { equip: string }).equip)).toEqual({ skin: { id: SKIN, n: 1 } });
+    expect(JSON.parse((sqlite.prepare('SELECT equip FROM characters WHERE id = ?').get(p.char.id) as { equip: string }).equip)).toEqual({
+      skin: { id: SKIN, n: 1 },
+    });
     // Lần nạp sau (DB bình thường) dọn được: món về túi, đúng một cái.
     const again = Character.load(p.char.id);
     expect(again.equip.skin).toBeUndefined();
@@ -237,7 +256,8 @@ describe('ô ngoại hình (skin)', () => {
   });
 
   describe('DB hỏng: món nằm sai ô không bị lặng lẽ xóa', () => {
-    const setEquip = (id: number, equip: unknown) => sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify(equip), id);
+    const setEquip = (id: number, equip: unknown) =>
+      sqlite.prepare('UPDATE characters SET equip = ? WHERE id = ?').run(JSON.stringify(equip), id);
     const drops = (id: number) => ledger(id).filter((r) => r.reason === 'load:drop');
 
     it('món không phải skin ở ô skin: trả về túi (giữ cấp cường hóa), không ghi ledger, nạp lần hai không nhân đôi', () => {
@@ -276,7 +296,11 @@ describe('ô ngoại hình (skin)', () => {
       const c = Character.load(p.char.id);
       expect(c.equip.skin).toBeUndefined();
       expect(c.equip.ring).toBeUndefined();
-      expect(drops(p.char.id).map((r) => [r.kind, r.ref, r.delta]).sort()).toEqual([
+      expect(
+        drops(p.char.id)
+          .map((r) => [r.kind, r.ref, r.delta])
+          .sort(),
+      ).toEqual([
         ['item', 'itm_khong_con_ton_tai', -1],
         ['item', 'itm_mau_da_xoa', -1],
       ]);
@@ -306,7 +330,9 @@ describe('ô ngoại hình (skin)', () => {
     const t = setup(true);
     t.sim.onChat(t.p, { m: `/gm skin ${SKIN}` });
     expect(t.p.char.equip.skin?.id).toBe(SKIN);
-    expect(ledger(t.p.char.id).filter((r) => r.kind === 'item' && r.ref === SKIN)).toEqual([expect.objectContaining({ delta: 1, reason: 'gm:skin' })]);
+    expect(ledger(t.p.char.id).filter((r) => r.kind === 'item' && r.ref === SKIN)).toEqual([
+      expect.objectContaining({ delta: 1, reason: 'gm:skin' }),
+    ]);
     (t.p as unknown as { chatAt: number }).chatAt = 0;
     t.sim.onChat(t.p, { m: '/gm skin off' });
     expect(t.p.char.equip.skin).toBeUndefined();

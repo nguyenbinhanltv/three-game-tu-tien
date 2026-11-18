@@ -83,7 +83,16 @@ describe('dữ liệu Đoạn Mạch', () => {
     const spawns = SH.levelSpawns(C.LEVELS.doan_mach);
     const ids = new Set(spawns.map((s) => s.mon));
     expect([...ids].sort()).toEqual(
-      ['boss_dia_mach_long', 'elite_ho_mach_khoi_tuong', 'elite_liet_cot_bao', 'elite_xich_sa_ngo_cong', 'mon_khai_mach_khoi_loi', 'mon_mach_thuong_ho_ve', 'mon_ngo_cong_au', 'mon_thach_giap_te'].sort(),
+      [
+        'boss_dia_mach_long',
+        'elite_ho_mach_khoi_tuong',
+        'elite_liet_cot_bao',
+        'elite_xich_sa_ngo_cong',
+        'mon_khai_mach_khoi_loi',
+        'mon_mach_thuong_ho_ve',
+        'mon_ngo_cong_au',
+        'mon_thach_giap_te',
+      ].sort(),
     );
     for (const s of spawns) {
       expect(C.MONSTER.get(s.mon)).toBeTruthy();

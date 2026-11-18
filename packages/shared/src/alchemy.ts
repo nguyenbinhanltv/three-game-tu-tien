@@ -53,7 +53,12 @@ export function buffMag(buffs: BuffMap | undefined, kind: PillBuffKind, now: num
 }
 
 /** Đổi buff theo luật "làm mới": giữ mức cao hơn và thời gian xa hơn, không cộng dồn. Trả bản mới. */
-export function mergeBuff(old: { m: number; until: number } | undefined, m: number, until: number, now: number): { m: number; until: number } {
+export function mergeBuff(
+  old: { m: number; until: number } | undefined,
+  m: number,
+  until: number,
+  now: number,
+): { m: number; until: number } {
   if (!old || old.until <= now) return { m, until: until };
   return { m: Math.max(old.m, m), until: Math.max(old.until, until) };
 }

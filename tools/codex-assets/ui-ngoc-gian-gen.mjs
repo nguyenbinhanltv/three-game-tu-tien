@@ -23,11 +23,15 @@ const jobs = Number(flag('--jobs', '2'));
 const force = args.includes('--force');
 const ids = args.filter((a) => !a.startsWith('--'));
 
-const TOKENS = 'Palette: antique gold #C9A45C (thin double-line filigree), ivory paper #EDE3CC, jade green #3E9C8F (scrolling cloud ornaments), warm lacquer brown-black #1E1712.';
+const TOKENS =
+  'Palette: antique gold #C9A45C (thin double-line filigree), ivory paper #EDE3CC, jade green #3E9C8F (scrolling cloud ornaments), warm lacquer brown-black #1E1712.';
 const STYLE = `Original east-asian cultivation-fantasy game UI design, refined and elegant, crisp vector-like clean edges with subtle material texture, original design not copied from any existing game or artwork. ${TOKENS}`;
-const MATA = 'Material A "dark lacquer": warm brown-black (#1E1712) semi-transparent lacquer with a very faint lacquer grain, double thin gold lines, small star-and-moon filigree corners, a soft inner glow along the gold edge.';
-const MATB = 'Material B "ivory cloud-pattern paper": ivory silk-grain paper (#EDE3CC), border of curling jade-green (#3E9C8F) auspicious clouds with a thin gold line, small jade bead accents at corners.';
-const TEXT_RULE = 'Any text must be spelled EXACTLY as given, with correct Vietnamese diacritics. If you are not sure you can render a word correctly, leave that label blank or use abstract placeholder strokes instead. No watermark, no logo, no signature, no purple, no neon.';
+const MATA =
+  'Material A "dark lacquer": warm brown-black (#1E1712) semi-transparent lacquer with a very faint lacquer grain, double thin gold lines, small star-and-moon filigree corners, a soft inner glow along the gold edge.';
+const MATB =
+  'Material B "ivory cloud-pattern paper": ivory silk-grain paper (#EDE3CC), border of curling jade-green (#3E9C8F) auspicious clouds with a thin gold line, small jade bead accents at corners.';
+const TEXT_RULE =
+  'Any text must be spelled EXACTLY as given, with correct Vietnamese diacritics. If you are not sure you can render a word correctly, leave that label blank or use abstract placeholder strokes instead. No watermark, no logo, no signature, no purple, no neon.';
 const wide = 'Landscape 16:9 image.';
 
 const S = {

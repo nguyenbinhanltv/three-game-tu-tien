@@ -1,5 +1,25 @@
 import * as THREE from 'three/webgpu';
-import { cameraPosition, clamp, dot, float, Fn, length, mix, normalize, pow, positionWorld, reflect, smoothstep, texture, time, uv, vec2, vec3, vec4, max } from 'three/tsl';
+import {
+  cameraPosition,
+  clamp,
+  dot,
+  float,
+  Fn,
+  length,
+  mix,
+  normalize,
+  pow,
+  positionWorld,
+  reflect,
+  smoothstep,
+  texture,
+  time,
+  uv,
+  vec2,
+  vec3,
+  vec4,
+  max,
+} from 'three/tsl';
 import { getWaterNormals } from './noiseTex';
 import { skyParams } from './sky';
 
@@ -15,8 +35,12 @@ export function pondMaterial(): THREE.MeshBasicNodeMaterial {
     const toCam = cameraPosition.sub(positionWorld);
     const V = toCam.div(length(toCam));
     const t = time;
-    const n1 = texture(nTex, p.mul(0.07).add(vec2(t.mul(0.004), t.mul(0.003)))).rg.sub(0.5).mul(2);
-    const n2 = texture(nTex, p.mul(0.19).add(vec2(t.mul(-0.006), t.mul(0.005)).add(0.3))).rg.sub(0.5).mul(2);
+    const n1 = texture(nTex, p.mul(0.07).add(vec2(t.mul(0.004), t.mul(0.003))))
+      .rg.sub(0.5)
+      .mul(2);
+    const n2 = texture(nTex, p.mul(0.19).add(vec2(t.mul(-0.006), t.mul(0.005)).add(0.3)))
+      .rg.sub(0.5)
+      .mul(2);
     const nxz = n1.mul(0.1).add(n2.mul(0.05));
     const N = normalize(vec3(nxz.x, 1, nxz.y));
     const rim = length(uv().sub(0.5)).mul(2);

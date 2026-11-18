@@ -414,8 +414,13 @@ export class SkinnedCharacter implements CharacterView {
     if (!this.perf || this.perf.cancel < 1) {
       // Clip lướt UAL (dài ~1,6 s) co lại cho vừa thời gian lướt; clip chạy cũ phát nhanh cố định.
       const clip = clipFor('dash', this.map, this.hasClip);
-      const len = clip ? this.clips.get(clip)?.duration ?? 0 : 0;
-      this.playShot('dash', undefined, clip?.startsWith('ual_') && len > 0 ? Math.min(3, Math.max(1, len / Math.max(0.1, dur))) : DASH_RATE, dur);
+      const len = clip ? (this.clips.get(clip)?.duration ?? 0) : 0;
+      this.playShot(
+        'dash',
+        undefined,
+        clip?.startsWith('ual_') && len > 0 ? Math.min(3, Math.max(1, len / Math.max(0.1, dur))) : DASH_RATE,
+        dur,
+      );
     }
   }
 
@@ -444,7 +449,13 @@ export class SkinnedCharacter implements CharacterView {
   }
 
   /** Thêm clip nạp lười (thư viện K-3) và nối vào bảng clip: trạng thái nền được chọn lại ở khung kế. */
-  addClips(clips: readonly THREE.AnimationClip[], map: ClipMap, locoRef: Partial<Record<CharState, number>> = {}, replace: readonly string[] = [], reselect = true): void {
+  addClips(
+    clips: readonly THREE.AnimationClip[],
+    map: ClipMap,
+    locoRef: Partial<Record<CharState, number>> = {},
+    replace: readonly string[] = [],
+    reselect = true,
+  ): void {
     for (const c of clips) {
       if (this.clips.has(c.name) && !replace.includes(c.name)) continue;
       // Thay clip cũ cùng tên (UAL thay death, hit_light, knockdown...): bỏ action đã lưu để lần phát sau dùng clip mới.
@@ -612,7 +623,12 @@ export class SkinnedCharacter implements CharacterView {
           this.jumpIntro = true;
           this.base = want;
           this.playShot('jump', 'ual_jump_start', JUMP_START_RATE);
-        } else if (this.base === 'jump' && (want === 'idle' || want === 'combatIdle') && a.speed <= MOVE_MIN && this.clips.has('ual_jump_land')) {
+        } else if (
+          this.base === 'jump' &&
+          (want === 'idle' || want === 'combatIdle') &&
+          a.speed <= MOVE_MIN &&
+          this.clips.has('ual_jump_land')
+        ) {
           // Chỉ tiếp đất khi trở về đứng trên đất; sang bay/niệm chú... thì vào thẳng trạng thái mới.
           this.base = want;
           this.playShot('jump', 'ual_jump_land', JUMP_LAND_RATE);
@@ -620,8 +636,13 @@ export class SkinnedCharacter implements CharacterView {
       }
       this.updateIdleVariants(dt, want);
       if (!this.shot && this.current) {
-        if (LOCO_STATES.has(want)) this.current.timeScale = Math.min(want === 'walk' || want === 'run' ? this.maxLoco : 2.2, locomotionScale(a.speed, this.locoRef[want] ?? this.refSpeed));
-        else if (want === 'combatIdle' && clipFor('combatIdle', this.map, this.hasClip) === this.map.idle) this.current.timeScale = COMBAT_IDLE_RATE * (this.rates.idle ?? 1);
+        if (LOCO_STATES.has(want))
+          this.current.timeScale = Math.min(
+            want === 'walk' || want === 'run' ? this.maxLoco : 2.2,
+            locomotionScale(a.speed, this.locoRef[want] ?? this.refSpeed),
+          );
+        else if (want === 'combatIdle' && clipFor('combatIdle', this.map, this.hasClip) === this.map.idle)
+          this.current.timeScale = COMBAT_IDLE_RATE * (this.rates.idle ?? 1);
         else this.current.timeScale = this.rates[want] ?? 1;
       }
     }
@@ -799,13 +820,43 @@ export class SkinnedCharacter implements CharacterView {
     };
     const moving = (this.last?.speed ?? 0) > MOVE_MIN;
     if (gesture) {
-      this.perf = { id, clips, upper: act(clips.arm!), lower: null, gesture, t: from, from, still: 0, cancel: 1, skill: '', combo: -1, reach: 0, fired: 0, recovered: false, lead: 0 };
+      this.perf = {
+        id,
+        clips,
+        upper: act(clips.arm!),
+        lower: null,
+        gesture,
+        t: from,
+        from,
+        still: 0,
+        cancel: 1,
+        skill: '',
+        combo: -1,
+        reach: 0,
+        fired: 0,
+        recovered: false,
+        lead: 0,
+      };
       return;
     }
     const tm = o.timing;
     this.perf = {
-      id, clips, upper: act(clips.upper), lower: act(clips.lower), gesture, t: from, from, still: moving ? 0 : 1, cancel: 1,
-      timing: tm, skill: o.skill ?? '', combo: o.combo ?? -1, reach: Math.min(LUNGE_MAX, o.reach ?? 0), fired: tm ? hitsPassed(tm, from) : 0, recovered: false, lead,
+      id,
+      clips,
+      upper: act(clips.upper),
+      lower: act(clips.lower),
+      gesture,
+      t: from,
+      from,
+      still: moving ? 0 : 1,
+      cancel: 1,
+      timing: tm,
+      skill: o.skill ?? '',
+      combo: o.combo ?? -1,
+      reach: Math.min(LUNGE_MAX, o.reach ?? 0),
+      fired: tm ? hitsPassed(tm, from) : 0,
+      recovered: false,
+      lead,
     };
     if (tm) this.emit(this.perf, 'windup', 0);
     // Đòn một lần của clip nền (vd. attack 1,2s của Tripo) nhường chỗ cho động tác chiêu.
@@ -872,7 +923,8 @@ export class SkinnedCharacter implements CharacterView {
   private onHit(): void {
     this.pendingHit = -1;
     // Đang cắn thì không cắt ngang (đọc được đòn quan trọng hơn); chết rồi thì thôi.
-    if (this.dead || this.shot?.state === 'attack' || (this.perf && !this.perf.gesture) || (this.base && this.holdStates.has(this.base))) return;
+    if (this.dead || this.shot?.state === 'attack' || (this.perf && !this.perf.gesture) || (this.base && this.holdStates.has(this.base)))
+      return;
     // Đang ngã/đứng dậy thì không giật thêm.
     if (this.shot?.lie !== undefined || this.shot?.next) return;
     const o = this.hitOpts;
@@ -1098,7 +1150,13 @@ export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
         const m = /^dtl_wing_(up|mid|low)_(l|r)$/.exec(o.name);
         if (!m || !(o as THREE.Bone).isBone) return;
         const amp = m[1] === 'up' ? 1 : m[1] === 'mid' ? 0.8 : 0.55;
-        this.wings!.push({ bone: o as THREE.Bone, rest: o.quaternion.clone(), sign: m[2] === 'l' ? 1 : -1, amp, phase: m[1] === 'low' ? 0.8 : m[1] === 'mid' ? 0.3 : 0 });
+        this.wings!.push({
+          bone: o as THREE.Bone,
+          rest: o.quaternion.clone(),
+          sign: m[2] === 'l' ? 1 : -1,
+          amp,
+          phase: m[1] === 'low' ? 0.8 : m[1] === 'mid' ? 0.3 : 0,
+        });
       });
     }
     if (!this.wings.length || this.lodLevel > 1 || a.dead) return;
@@ -1129,5 +1187,4 @@ export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
     const m = this.moves[kind];
     return !!m && this.playMove(m.clip, m.impact, delay);
   }
-
 }

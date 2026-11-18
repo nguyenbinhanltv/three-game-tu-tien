@@ -6,7 +6,20 @@ import { hazardMul, monScale } from './monFx';
 
 describe('FX quái (V5)', () => {
   it('đủ timeline cho mọi loại sự kiện quái và trong ngân sách', () => {
-    for (const k of ['mon_hit', 'mon_strike', 'mon_cast', 'mon_warn', 'mon_boom_circle', 'mon_boom_line', 'mon_boom_cone', 'mon_warn_line', 'mon_warn_cone', 'mon_bolt_muzzle', 'mon_bolt_impact', 'mon_death']) {
+    for (const k of [
+      'mon_hit',
+      'mon_strike',
+      'mon_cast',
+      'mon_warn',
+      'mon_boom_circle',
+      'mon_boom_line',
+      'mon_boom_cone',
+      'mon_warn_line',
+      'mon_warn_cone',
+      'mon_bolt_muzzle',
+      'mon_bolt_impact',
+      'mon_death',
+    ]) {
       const tl = MON_FX.get(k);
       expect(tl, k).toBeTruthy();
       const ev = fxEventsFor(tl!, -1);

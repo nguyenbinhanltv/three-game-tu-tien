@@ -37,7 +37,12 @@ export default function dungeonRift() {
     organ.chord(s.bar(b), c.slice(1), 8, 56);
     bass.note(s.bar(b), c[0], 7.5, 68);
     if (b >= 16 && b < 24) {
-      strings.chord(s.bar(b), c.slice(1).map((p) => p + 12), 8, 52);
+      strings.chord(
+        s.bar(b),
+        c.slice(1).map((p) => p + 12),
+        8,
+        52,
+      );
       strings.swell(s.bar(b), s.bar(b + 2), 54, 108);
     }
     if (b >= 8 && b < 16) brass.chord(s.bar(b) + 4, [c[1], c[2]], 4, 50);

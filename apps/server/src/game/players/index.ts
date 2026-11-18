@@ -1,6 +1,36 @@
 // Vòng đời và tick người chơi (R-7): vào/ra room, lưu, đồng bộ, nhận input, di chuyển
 import type { Client } from 'colyseus';
-import { COMBAT_REGEN_DELAY, caveBoundOf, wearableBy, glowStage, lookSet, accessoryCode, FLY_UNLOCK_LEVEL, HP_REGEN_IDLE, HP_REGEN_MEDITATE, IN_FLY, IN_JUMP, type InitMsg, type LevelDef, meditateXpPerSec, type MoveInput, MP_REGEN_COMBAT, MP_REGEN_IDLE, MP_REGEN_MEDITATE, PF_FLYING, PF_SHIELD, PROTOCOL_VERSION, S, canFlyAt, freeFlight, STEP, stepMove, type SysMsg, skyFlightUnlocked, type Terrain } from '@dtl/shared';
+import {
+  COMBAT_REGEN_DELAY,
+  caveBoundOf,
+  wearableBy,
+  glowStage,
+  lookSet,
+  accessoryCode,
+  FLY_UNLOCK_LEVEL,
+  HP_REGEN_IDLE,
+  HP_REGEN_MEDITATE,
+  IN_FLY,
+  IN_JUMP,
+  type InitMsg,
+  type LevelDef,
+  meditateXpPerSec,
+  type MoveInput,
+  MP_REGEN_COMBAT,
+  MP_REGEN_IDLE,
+  MP_REGEN_MEDITATE,
+  PF_FLYING,
+  PF_SHIELD,
+  PROTOCOL_VERSION,
+  S,
+  canFlyAt,
+  freeFlight,
+  STEP,
+  stepMove,
+  type SysMsg,
+  skyFlightUnlocked,
+  type Terrain,
+} from '@dtl/shared';
 import { TribSystem } from '../trib';
 import { ITEM, realmName, SETS } from '@dtl/content';
 import { PlayerS, type WorldState } from '../../state';
@@ -260,7 +290,15 @@ export class PlayerSystem {
     const px = p.move.x;
     const pz = p.move.z;
     const ghost = this.c.soul.ghostOf(p);
-    stepMove(p.move, inp, { canFly, frozen: dead || this.c.tribSys.soulFrozen(p), speedMul: 1, terrain: this.c.terrain, bound: caveBoundOf(this.c.level), sky: skyFlightUnlocked(p.char.level), ghost });
+    stepMove(p.move, inp, {
+      canFly,
+      frozen: dead || this.c.tribSys.soulFrozen(p),
+      speedMul: 1,
+      terrain: this.c.terrain,
+      bound: caveBoundOf(this.c.level),
+      sky: skyFlightUnlocked(p.char.level),
+      ghost,
+    });
     if (p.move.flying && !wasFlying && !ghost) {
       this.c.questEvent(p, 'fly', undefined, 1);
     }

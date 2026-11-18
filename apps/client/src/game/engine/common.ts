@@ -71,16 +71,95 @@ export function isWebGPU(r: THREE.WebGPURenderer): boolean {
 
 /** Trần điểm ảnh nội bộ trên WebGL2 (mọi preset). */
 export const WEBGL2_MAX_PIXELS = 4e6;
-export const QUALITY: Record<string, { pixelRatio: number; maxPixels: number; shadows: boolean; bloom: boolean; msaa: number; fxaa: boolean; heightFog: boolean; ground: GroundLevel; ao: boolean; lights: boolean; radial: boolean }> = {
-  low: { pixelRatio: 1, maxPixels: 2e6, shadows: false, bloom: false, msaa: 0, fxaa: false, heightFog: false, ground: 'low', ao: false, lights: false, radial: false },
-  medium: { pixelRatio: 1.5, maxPixels: 4e6, shadows: false, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'medium', ao: true, lights: false, radial: true },
-  high: { pixelRatio: 2, maxPixels: 8e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'high', ao: true, lights: true, radial: true },
+export const QUALITY: Record<
+  string,
+  {
+    pixelRatio: number;
+    maxPixels: number;
+    shadows: boolean;
+    bloom: boolean;
+    msaa: number;
+    fxaa: boolean;
+    heightFog: boolean;
+    ground: GroundLevel;
+    ao: boolean;
+    lights: boolean;
+    radial: boolean;
+  }
+> = {
+  low: {
+    pixelRatio: 1,
+    maxPixels: 2e6,
+    shadows: false,
+    bloom: false,
+    msaa: 0,
+    fxaa: false,
+    heightFog: false,
+    ground: 'low',
+    ao: false,
+    lights: false,
+    radial: false,
+  },
+  medium: {
+    pixelRatio: 1.5,
+    maxPixels: 4e6,
+    shadows: false,
+    bloom: true,
+    msaa: 0,
+    fxaa: true,
+    heightFog: true,
+    ground: 'medium',
+    ao: true,
+    lights: false,
+    radial: true,
+  },
+  high: {
+    pixelRatio: 2,
+    maxPixels: 8e6,
+    shadows: true,
+    bloom: true,
+    msaa: 0,
+    fxaa: true,
+    heightFog: true,
+    ground: 'high',
+    ao: true,
+    lights: true,
+    radial: true,
+  },
   // Cực cao: như Cao nhưng trần điểm ảnh 14M, bóng 4096² ±110 m (env.ts), nhiều hạt hơn; WebGL2 vẫn bị `WEBGL2_MAX_PIXELS`.
-  ultra: { pixelRatio: 2, maxPixels: 14e6, shadows: true, bloom: true, msaa: 0, fxaa: true, heightFog: true, ground: 'high', ao: true, lights: true, radial: true },
+  ultra: {
+    pixelRatio: 2,
+    maxPixels: 14e6,
+    shadows: true,
+    bloom: true,
+    msaa: 0,
+    fxaa: true,
+    heightFog: true,
+    ground: 'high',
+    ao: true,
+    lights: true,
+    radial: true,
+  },
 };
 
 /** Hệ số đèn thật theo thời điểm: buổi sớm vừa phải, đêm đậm. */
-export const LANTERN_LIGHT: Record<string, number> = { dawn: 1, day: 0.6, night: 1.8, ochre_dawn: 1, ochre: 0.6, ochre_night: 1.8, cloud_dawn: 1, cloud: 0.6, cloud_night: 1.8, tk_dawn: 1, tk: 0.6, tk_night: 1.8, ash_dawn: 1, rift: 1.2, rift_pit: 1.4 };
+export const LANTERN_LIGHT: Record<string, number> = {
+  dawn: 1,
+  day: 0.6,
+  night: 1.8,
+  ochre_dawn: 1,
+  ochre: 0.6,
+  ochre_night: 1.8,
+  cloud_dawn: 1,
+  cloud: 0.6,
+  cloud_night: 1.8,
+  tk_dawn: 1,
+  tk: 0.6,
+  tk_night: 1.8,
+  ash_dawn: 1,
+  rift: 1.2,
+  rift_pit: 1.4,
+};
 
 /** Hiệu ứng của chính mình → nhạc ngắn trong manifest.music (tools/audio/compose/sting_*.mjs). */
 export const STINGS: Record<string, string> = { levelup: 'sting_levelup', ascend: 'sting_breakthrough', death: 'sting_death' };

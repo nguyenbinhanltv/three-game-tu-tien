@@ -51,7 +51,10 @@ for (const id of Object.keys(items)) {
   const png = path.join(srcImgDir, `${id}.png`);
   if (!fs.existsSync(png)) continue;
   have.push(id);
-  await sharp(png).resize({ width: 1600, withoutEnlargement: true }).webp({ quality: 86 }).toFile(path.join(imgDir, `${id}.webp`));
+  await sharp(png)
+    .resize({ width: 1600, withoutEnlargement: true })
+    .webp({ quality: 86 })
+    .toFile(path.join(imgDir, `${id}.webp`));
   const d = destDir(id);
   fs.mkdirSync(d, { recursive: true });
   const put = async (name, make) => {
@@ -64,7 +67,11 @@ for (const id of Object.keys(items)) {
     const m = await sharp(png).metadata();
     const half = Math.floor(m.width / 2);
     await put(`outfit_${id}_v01_front.png`, (f) => sharp(png).extract({ left: 0, top: 0, width: half, height: m.height }).toFile(f));
-    await put(`outfit_${id}_v01_34.png`, (f) => sharp(png).extract({ left: half, top: 0, width: m.width - half, height: m.height }).toFile(f));
+    await put(`outfit_${id}_v01_34.png`, (f) =>
+      sharp(png)
+        .extract({ left: half, top: 0, width: m.width - half, height: m.height })
+        .toFile(f),
+    );
   }
 }
 console.log(`${have.length}/${Object.keys(items).length} ảnh`);
@@ -198,7 +205,10 @@ ${SWORD.base}
 | Mảnh | Ảnh | Tam giác | Gắn vào | Ghi chú |
 | --- | --- | --- | --- | --- |
 ${Object.entries(SWORD.items)
-  .map(([iid, it]) => `| ${it.name} | [\`kiem_liet_mach_${iid}\`](ket-dan/kiem_liet_mach_${iid}.webp) | ${it.tris} | ${it.bones} | ${it.notes} |`)
+  .map(
+    ([iid, it]) =>
+      `| ${it.name} | [\`kiem_liet_mach_${iid}\`](ket-dan/kiem_liet_mach_${iid}.webp) | ${it.tris} | ${it.bones} | ${it.notes} |`,
+  )
   .join('\n')}
 
 ![Dạng cuối](ket-dan/kiem_liet_mach_cuoi.webp)
@@ -236,7 +246,8 @@ if (htmlDir) {
   fs.mkdirSync(htmlDir, { recursive: true });
   for (const id of have) fs.copyFileSync(path.join(imgDir, `${id}.webp`), path.join(htmlDir, `${id}.webp`));
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const card = (id, title, extra) => `<div class="card"><h3>${esc(title)}</h3><a href="${id}.webp" target="_blank"><img loading="lazy" src="${id}.webp"></a>${extra ?? ''}</div>`;
+  const card = (id, title, extra) =>
+    `<div class="card"><h3>${esc(title)}</h3><a href="${id}.webp" target="_blank"><img loading="lazy" src="${id}.webp"></a>${extra ?? ''}</div>`;
   const piece = (id) => {
     const sp = specOf(id);
     return `<details><summary>Spec và prompt Tripo</summary><p><b>Tam giác:</b> ${sp.tris} · <b>Xương:</b> ${esc(sp.bones)}<br><b>Lò xo:</b> ${esc(sp.spring)}<br><b>Lưu ý:</b> ${esc(sp.notes)}</p><pre>${esc(tripoPrompt(id))}</pre><button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent);this.textContent='Đã sao chép'">Sao chép prompt</button></details>`;
@@ -245,10 +256,18 @@ if (htmlDir) {
   for (const [sid, set] of Object.entries(SETS)) {
     body += `<h2>${esc(set.name)} <small>${esc(set.method)} · ${esc(set.element)}</small></h2>`;
     body += `<div class="pal">${set.palette.map((p) => `<span style="background:${p[1]}" title="${p[0]}"><i>${p[1]}<br>${esc(p[2])}</i></span>`).join('')}</div>`;
-    body += `<div class="grid big">${['views', 'layers', 'detail'].filter((k) => have.includes(`${sid}_${k}`)).map((k) => card(`${sid}_${k}`, items[`${sid}_${k}`].title)).join('')}</div>`;
-    body += `<h3>Mảnh rời</h3><div class="grid">${PIECES.filter((p) => have.includes(`${sid}_${p}`)).map((p) => card(`${sid}_${p}`, set.pieces[p].name, piece(`${sid}_${p}`))).join('')}</div>`;
+    body += `<div class="grid big">${['views', 'layers', 'detail']
+      .filter((k) => have.includes(`${sid}_${k}`))
+      .map((k) => card(`${sid}_${k}`, items[`${sid}_${k}`].title))
+      .join('')}</div>`;
+    body += `<h3>Mảnh rời</h3><div class="grid">${PIECES.filter((p) => have.includes(`${sid}_${p}`))
+      .map((p) => card(`${sid}_${p}`, set.pieces[p].name, piece(`${sid}_${p}`)))
+      .join('')}</div>`;
   }
-  body += `<h2>Kiếm Liệt Mạch <small>dạng cuối +10 và vỏ</small></h2><div class="grid">${Object.keys(SWORD.items).filter((i) => have.includes(`kiem_liet_mach_${i}`)).map((i) => card(`kiem_liet_mach_${i}`, SWORD.items[i].name, piece(`kiem_liet_mach_${i}`))).join('')}</div>`;
+  body += `<h2>Kiếm Liệt Mạch <small>dạng cuối +10 và vỏ</small></h2><div class="grid">${Object.keys(SWORD.items)
+    .filter((i) => have.includes(`kiem_liet_mach_${i}`))
+    .map((i) => card(`kiem_liet_mach_${i}`, SWORD.items[i].name, piece(`kiem_liet_mach_${i}`)))
+    .join('')}</div>`;
   const html = `<!doctype html><html lang="vi"><meta charset="utf-8"><title>Concept trang phục Kết Đan (T-3)</title><style>
 body{margin:0;background:#15201f;color:#e6ddcb;font:15px/1.5 system-ui,sans-serif;padding:24px 32px}h1{margin:0 0 4px}h2{margin:36px 0 8px;border-bottom:1px solid #ae8b49;padding-bottom:4px}h2 small{font-weight:400;color:#a9b8b0;font-size:.6em}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px}.grid.big{grid-template-columns:repeat(auto-fill,minmax(640px,1fr))}.card{background:#1e2c2b;border:1px solid #3a4b49;border-radius:6px;padding:10px}.card h3{margin:0 0 8px;font-size:14px}img{width:100%;display:block;border-radius:4px}

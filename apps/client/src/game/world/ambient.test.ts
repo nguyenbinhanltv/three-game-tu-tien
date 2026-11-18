@@ -51,8 +51,10 @@ describe('hạt môi trường theo vùng', () => {
 });
 
 describe('hạt môi trường theo preset', () => {
-  it('sương `mist` (mảng billboard mờ to) không bao giờ vượt mức Vừa; hạt nhỏ sắc nét tăng theo preset', () => {
-    for (const q of ['low', 'medium', 'high', 'ultra']) expect(ambientScaleFor('mist', q)).toBeLessThanOrEqual(1);
+  it('sương `mist` (mảng billboard mờ to): tắt ở Cao/Cực cao, Vừa/Thấp như cũ; hạt nhỏ sắc nét tăng theo preset', () => {
+    expect(ambientScaleFor('mist', 'high')).toBe(0);
+    expect(ambientScaleFor('mist', 'ultra')).toBe(0);
+    expect(ambientScaleFor('mist', 'medium')).toBe(1);
     expect(ambientScaleFor('mist', 'low')).toBeLessThan(1);
     expect(ambientScaleFor('mote', 'high')).toBeGreaterThan(ambientScaleFor('mote', 'medium'));
     expect(ambientScaleFor('mote', 'ultra')).toBeGreaterThan(ambientScaleFor('mote', 'high'));

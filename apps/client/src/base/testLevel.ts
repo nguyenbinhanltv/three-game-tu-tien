@@ -12,7 +12,18 @@ const TEST_TERRAIN: TerrainDef = {
   seed: 20261116,
   size: 4096,
   margin: 24,
-  natural: { freq: 0.001, baseOct: 3, ridgeOct: 2, level: 60, baseAmp: 10, ridgeAmp: 0, maskFreq: 0.0005, maskOct: 1, maskLo: 0, maskHi: 1 },
+  natural: {
+    freq: 0.001,
+    baseOct: 3,
+    ridgeOct: 2,
+    level: 60,
+    baseAmp: 10,
+    ridgeAmp: 0,
+    maskFreq: 0.0005,
+    maskOct: 1,
+    maskLo: 0,
+    maskHi: 1,
+  },
   features: [],
   islands: [
     { x: SECT.x, z: SECT.z, r: 150, edge: 70, y: SECT.y },
@@ -29,7 +40,17 @@ export const TEST_ASSETS: LevelAssets = {
   glb: [],
   ground: { set: 'terrain', mask: 'neutral' },
   music: ['wild'],
-  features: { sect: false, portals: false, lanterns: false, lake: false, clouds: true, grass: false, trees: 'none', beacons: false, vegetation: false },
+  features: {
+    sect: false,
+    portals: false,
+    lanterns: false,
+    lake: false,
+    clouds: true,
+    grass: false,
+    trees: 'none',
+    beacons: false,
+    vegetation: false,
+  },
   minimap: '',
 };
 

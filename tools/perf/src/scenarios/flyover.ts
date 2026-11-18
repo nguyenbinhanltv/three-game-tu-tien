@@ -17,7 +17,9 @@ export default {
   async run(r) {
     const level = opt('--level', 'bac_hoang');
     requireLevel(level);
-    const pads = padsOfLevel(level).slice().sort((a, b) => b.z - a.z);
+    const pads = padsOfLevel(level)
+      .slice()
+      .sort((a, b) => b.z - a.z);
     const from = pads[0];
     const to = pads[pads.length - 1];
     const secs = Number(opt('--secs', '50'));

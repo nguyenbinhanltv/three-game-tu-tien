@@ -1,9 +1,41 @@
 import { AutoQuality, isQuality } from '../base/quality';
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
-import { C, type DmgMsg, FLY_UNLOCK_LEVEL, type FxMsg, type InitMsg, type MoveInput, type MoveState, PF_DEAD, PF_MEDITATING, SECT, ROOM_WORLD, S, type TransferMsg, type SkillDef, CHARGE_MAX, BONDED_ARTIFACT_ID, bondedLevel, spiritUnlocked, type SpiritScanMsg } from '@dtl/shared';
+import {
+  C,
+  type DmgMsg,
+  FLY_UNLOCK_LEVEL,
+  type FxMsg,
+  type InitMsg,
+  type MoveInput,
+  type MoveState,
+  PF_DEAD,
+  PF_MEDITATING,
+  SECT,
+  ROOM_WORLD,
+  S,
+  type TransferMsg,
+  type SkillDef,
+  CHARGE_MAX,
+  BONDED_ARTIFACT_ID,
+  bondedLevel,
+  spiritUnlocked,
+  type SpiritScanMsg,
+} from '@dtl/shared';
 import { knownLevel, levelAssets, levelId, sameLayout, setActiveLevel } from '../base/levelCtx';
-import { FX_TIMELINE, ARTIFACT, METHOD, realmName, skillBar, thanThong10Skill, thanThongSkill, tierBar, SKILL, VARIANTS, t } from '@dtl/content';
+import {
+  FX_TIMELINE,
+  ARTIFACT,
+  METHOD,
+  realmName,
+  skillBar,
+  thanThong10Skill,
+  thanThongSkill,
+  tierBar,
+  SKILL,
+  VARIANTS,
+  t,
+} from '@dtl/content';
 import { visibleView } from './net/aoiView';
 import { get, pushLog, pushToast, set, type TargetInfo } from '../ui/store';
 import { BlankWatch, canFallback, RENDERER_KEY } from './core/gpuGuard';
@@ -63,7 +95,16 @@ import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from '
 import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
 import { fxTargetOf } from './engine/hudSync';
 import { bindInput, onResize, releaseLock } from './engine/input';
-import { applyGround, buildLevelA, buildLevelB, disposeBacHoang, disposeXich, loadGround, precompile, unloadLevel } from './engine/levelLoad';
+import {
+  applyGround,
+  buildLevelA,
+  buildLevelB,
+  disposeBacHoang,
+  disposeXich,
+  loadGround,
+  precompile,
+  unloadLevel,
+} from './engine/levelLoad';
 import { applyInit, bindRoom, rebind } from './engine/room';
 export { reqId } from './engine/common';
 
@@ -190,7 +231,22 @@ export class Game {
   monFx: MonFx | null = null;
   boltKinds = new Map<number, string>();
   /** Nhật ký vùng báo của quái (chỉ bản dev, cho Playwright: `__game.hazardLog`). */
-  hazardLog?: { k: string; mv?: string; sh: string; src: string; boss: boolean; t: string; x?: number; z?: number; r?: number; yaw?: number; w?: number; big?: boolean; px?: number; pz?: number }[];
+  hazardLog?: {
+    k: string;
+    mv?: string;
+    sh: string;
+    src: string;
+    boss: boolean;
+    t: string;
+    x?: number;
+    z?: number;
+    r?: number;
+    yaw?: number;
+    w?: number;
+    big?: boolean;
+    px?: number;
+    pz?: number;
+  }[];
   dmg!: DamageNumbers;
   lootFly!: LootFly;
   lootLayer: HTMLDivElement | null = null;
@@ -464,7 +520,9 @@ export class Game {
   warmObject = (obj: THREE.Object3D): Promise<void> => {
     const run = async () => {
       if (!this.post || this.disposed) return;
-      await new Promise<void>((r) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(() => r(), { timeout: 2000 }) : setTimeout(r, 50)));
+      await new Promise<void>((r) =>
+        typeof requestIdleCallback === 'function' ? requestIdleCallback(() => r(), { timeout: 2000 }) : setTimeout(r, 50),
+      );
       if (!this.post || this.disposed) return;
       const t0 = performance.now();
       try {
@@ -489,7 +547,11 @@ export class Game {
     // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
     // `?gputime=1` (chỉ cho công cụ đo, pnpm bench:crowd): bật timestamp query để đọc thời gian GPU bằng
     // `renderer.resolveTimestampsAsync()`; không ai resolve thì three cảnh báo hết chỗ query, nên đừng bật khi chơi.
-    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: pickRenderer(this, FLAGS.renderer), trackTimestamp: FLAGS.gpuTime });
+    this.renderer = new THREE.WebGPURenderer({
+      antialias: false,
+      forceWebGL: pickRenderer(this, FLAGS.renderer),
+      trackTimestamp: FLAGS.gpuTime,
+    });
     await this.renderer.init();
     watchGpuDevice(this);
     void describeGpu(this);
@@ -599,7 +661,6 @@ export class Game {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
-
   // ---------- level (E1-D) ----------
 
   /** Level đang hiển thị (có thể khác level của room: level thử `thu_nghiem`). */
@@ -658,14 +719,26 @@ export class Game {
       const self = this;
       await Promise.all([
         newSet
-          ? loadGroundTextures(import.meta.env.BASE_URL, { get aborted() { return self.disposed; } }, newSet.mask, newSet.set).then(
+          ? loadGroundTextures(
+              import.meta.env.BASE_URL,
+              {
+                get aborted() {
+                  return self.disposed;
+                },
+              },
+              newSet.mask,
+              newSet.set,
+            ).then(
               (t) => (swap.t = t),
               (e) => console.warn('[level] bộ texture mặt đất:', e),
             )
           : Promise.resolve(),
         this.music.preloadLevel(A.music),
         this.ground && maskKind && !newSet
-          ? this.ground.prepareMask(maskKind).then((c) => (commitMask = c), (e) => console.warn('[level] mặt nạ mặt đất:', e))
+          ? this.ground.prepareMask(maskKind).then(
+              (c) => (commitMask = c),
+              (e) => console.warn('[level] mặt nạ mặt đất:', e),
+            )
           : Promise.resolve(),
       ]);
       if (this.disposed || seq !== this.levelSeq) {
@@ -694,7 +767,12 @@ export class Game {
     }
   }
 
-  on<K extends keyof WindowEventMap>(target: Window | HTMLElement, type: K | string, fn: (e: never) => void, opts?: AddEventListenerOptions): void {
+  on<K extends keyof WindowEventMap>(
+    target: Window | HTMLElement,
+    type: K | string,
+    fn: (e: never) => void,
+    opts?: AddEventListenerOptions,
+  ): void {
     target.addEventListener(type as string, fn as EventListener, opts);
     this.listeners.push(() => target.removeEventListener(type as string, fn as EventListener, opts));
   }
@@ -975,7 +1053,6 @@ export class Game {
   flushing = false;
   /** Nhật ký hit → âm (chỉ bản dev, `__sound.hits()`). */
   hitSoundLog: HitSoundLog[] = [];
-
 
   /** Nhật ký FX nguyên anh/thuấn di nhận được (dev, để ảnh chụp/kiểm tay). */
   soulLog: { t: string; src: string; x?: number; z?: number; d?: number }[] = [];

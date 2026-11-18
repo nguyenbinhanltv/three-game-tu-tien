@@ -14,7 +14,10 @@ export interface LevelPoint {
   dist: number;
 }
 
-const centroid = (poly: [number, number][]): [number, number] => [poly.reduce((a, p) => a + p[0], 0) / poly.length, poly.reduce((a, p) => a + p[1], 0) / poly.length];
+const centroid = (poly: [number, number][]): [number, number] => [
+  poly.reduce((a, p) => a + p[0], 0) / poly.length,
+  poly.reduce((a, p) => a + p[1], 0) / poly.length,
+];
 
 /** Level tồn tại (kể cả level thử `thu_nho`); ném lỗi liệt kê id hợp lệ nếu không. */
 export function requireLevel(id: string): LevelDef {
@@ -30,7 +33,10 @@ export function requireLevel(id: string): LevelDef {
 export function levelPoints(id: string): LevelPoint[] {
   const lv = requireLevel(id);
   const b = terrainOf(lv).playBounds;
-  const clamp = (x: number, z: number): [number, number] => [Math.min(b.x1 - 12, Math.max(b.x0 + 12, x)), Math.min(b.z1 - 12, Math.max(b.z0 + 12, z))];
+  const clamp = (x: number, z: number): [number, number] => [
+    Math.min(b.x1 - 12, Math.max(b.x0 + 12, x)),
+    Math.min(b.z1 - 12, Math.max(b.z0 + 12, z)),
+  ];
   const pts: LevelPoint[] = [];
   const add = (name: string, x: number, z: number, yaw: number, pitch: number, dist: number) => {
     const [cx, cz] = clamp(x, z);

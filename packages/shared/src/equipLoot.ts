@@ -56,7 +56,13 @@ export function droppableSlots(data: ItemSysData, items: readonly ItemDef[]): Eq
  * Roll mọi `EquipRollDef` của một quái: mỗi lần qua xác suất thì chọn phẩm, ô, mẫu và ilvl (cấp quái ±1 + bonus).
  * Trả danh sách món cần `addRolled` (server tự roll dòng chính/phụ với seed riêng).
  */
-export function rollEquipDrops(rolls: readonly EquipRollDef[] | undefined, data: ItemSysData, items: readonly ItemDef[], monLevel: number, rng: () => number): EquipDrop[] {
+export function rollEquipDrops(
+  rolls: readonly EquipRollDef[] | undefined,
+  data: ItemSysData,
+  items: readonly ItemDef[],
+  monLevel: number,
+  rng: () => number,
+): EquipDrop[] {
   const out: EquipDrop[] = [];
   if (!rolls) return out;
   const slots = droppableSlots(data, items);
@@ -73,7 +79,10 @@ export function rollEquipDrops(rolls: readonly EquipRollDef[] | undefined, data:
       continue;
     }
     const pool = r.slots ? slots.filter((s) => (r.slots![s] ?? 0) > 0) : slots;
-    const si = pickWeighted(pool.map((s) => (r.slots ? r.slots[s]! : 1)), rng);
+    const si = pickWeighted(
+      pool.map((s) => (r.slots ? r.slots[s]! : 1)),
+      rng,
+    );
     if (si < 0) continue;
     const ilvl = clamp(Math.round(monLevel + (r.ilvlBonus ?? 0) + Math.floor(rng() * 3) - 1), 1, MAX_ILVL);
     const tpls = templatesFor(items, pool[si], ilvl);

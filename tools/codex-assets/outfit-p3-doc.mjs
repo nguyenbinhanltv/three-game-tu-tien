@@ -28,7 +28,16 @@ const items = build();
 const docDir = path.join(root, 'docs/outfit-concepts-p3');
 const srcImgDir = path.join(source, '2d/outfit_p3');
 const PIECES = ['ao_ngoai', 'lop_duoi', 'vai_giap', 'dai_tua', 'ung', 'trang_suc_dau'];
-const MODE = { ao_ngoai: 'HD Model', lop_duoi: 'HD Model', vai_giap: 'Smart Mesh', dai_tua: 'Smart Mesh', ung: 'Smart Mesh', trang_suc_dau: 'Smart Mesh', cuoi: 'HD Model', vo: 'Smart Mesh' };
+const MODE = {
+  ao_ngoai: 'HD Model',
+  lop_duoi: 'HD Model',
+  vai_giap: 'Smart Mesh',
+  dai_tua: 'Smart Mesh',
+  ung: 'Smart Mesh',
+  trang_suc_dau: 'Smart Mesh',
+  cuoi: 'HD Model',
+  vo: 'Smart Mesh',
+};
 const modeOf = (setId, p) => (setId === 'co_thanh' && p === 'vai_giap' ? 'HD Model (nhiều chi tiết khối)' : MODE[p]);
 const winPath = (p) => p.replace(/\//g, '\\');
 const rel = (...a) => a.join('/');
@@ -42,7 +51,10 @@ for (const [id, it] of Object.entries(items)) {
   const png = path.join(srcImgDir, `${id}.png`);
   const o = it.kind === 'sword' ? SWORD : SETS[it.set];
   const setKey = it.kind === 'sword' ? 'kiem' : it.set;
-  const name = it.kind === 'sword' ? `outfit_${id}` : `outfit_${id.replace(/^([a-z_]+?)_(sheet|ao_ngoai|lop_duoi|vai_giap|dai_tua|ung|trang_suc_dau)$/, '$1_$2')}`;
+  const name =
+    it.kind === 'sword'
+      ? `outfit_${id}`
+      : `outfit_${id.replace(/^([a-z_]+?)_(sheet|ao_ngoai|lop_duoi|vai_giap|dai_tua|ung|trang_suc_dau)$/, '$1_$2')}`;
   fs.mkdirSync(path.join(docDir, setKey), { recursive: true });
   await sharp(png)
     .resize({ width: it.kind === 'sheet' ? 1600 : 1000, withoutEnlargement: true })
@@ -88,7 +100,11 @@ const total = (s) => Object.values(s.pieces).reduce((a, p) => a + Number(p.tris)
 for (const [sid, s] of Object.entries(SETS)) {
   md += `| **${s.name}** | ${s.method}, ${s.element} | ${total(s)} | ${link(sid, `${sid}_sheet`, 'bảng thiết kế')} | ${PIECES.map((p) => link(sid, `${sid}_${p}`, s.pieces[p].name)).join(', ')} |\n`;
 }
-md += `| **Tinh Khuyết Kiếm** | dạng cuối +10 và vỏ, dùng chung ba công pháp | ${Object.values(SWORD.items).reduce((a, p) => a + Number(p.tris), 0)} | – | ${Object.keys(SWORD.items).map((k) => link('kiem', `kiem_tinh_khuyet_${k}`, SWORD.items[k].name)).join(', ')} |
+md += `| **Tinh Khuyết Kiếm** | dạng cuối +10 và vỏ, dùng chung ba công pháp | ${Object.values(SWORD.items).reduce((a, p) => a + Number(p.tris), 0)} | – | ${Object.keys(
+  SWORD.items,
+)
+  .map((k) => link('kiem', `kiem_tinh_khuyet_${k}`, SWORD.items[k].name))
+  .join(', ')} |
 
 Ô **trang sức đầu** là ô trang bị thứ 9 (ẩn/hiện được), mỗi bộ có một món. Hộ uyển không vẽ riêng (gộp vào áo ngoài nếu cần).
 
@@ -118,7 +134,9 @@ ${PIECES.map((p) => {
   return `| ${sp.name} | ${link(sid, `${sid}_${p}`, `\`${sid}_${p}\``)} | ${sp.tris} | ${sp.bones} | ${sp.spring} | ${sp.notes} |`;
 }).join('\n')}
 
-${PIECES.filter((p) => have(`${sid}_${p}`)).map((p) => `![${s.pieces[p].name}](${sid}/${sid}_${p}.webp)`).join('\n\n')}
+${PIECES.filter((p) => have(`${sid}_${p}`))
+  .map((p) => `![${s.pieces[p].name}](${sid}/${sid}_${p}.webp)`)
+  .join('\n\n')}
 `;
 }
 md += `
@@ -128,9 +146,17 @@ ${SWORD.base}
 
 | Mảnh | Ảnh | Tam giác | Gắn vào | Ghi chú |
 | --- | --- | --- | --- | --- |
-${Object.entries(SWORD.items).map(([k, it]) => `| ${it.name} | ${link('kiem', `kiem_tinh_khuyet_${k}`, `\`kiem_tinh_khuyet_${k}\``)} | ${it.tris} | ${it.bones} | ${it.notes} |`).join('\n')}
+${Object.entries(SWORD.items)
+  .map(
+    ([k, it]) =>
+      `| ${it.name} | ${link('kiem', `kiem_tinh_khuyet_${k}`, `\`kiem_tinh_khuyet_${k}\``)} | ${it.tris} | ${it.bones} | ${it.notes} |`,
+  )
+  .join('\n')}
 
-${Object.keys(SWORD.items).filter((k) => have(`kiem_tinh_khuyet_${k}`)).map((k) => `![${SWORD.items[k].name}](kiem/kiem_tinh_khuyet_${k}.webp)`).join('\n\n')}
+${Object.keys(SWORD.items)
+  .filter((k) => have(`kiem_tinh_khuyet_${k}`))
+  .map((k) => `![${SWORD.items[k].name}](kiem/kiem_tinh_khuyet_${k}.webp)`)
+  .join('\n\n')}
 
 ## Nơi lưu file nguồn (ngoài repo)
 
@@ -214,9 +240,12 @@ const bo = (s, sid, n) => {
 };
 Object.entries(SETS).forEach(([sid, s], i) => {
   g += bo(s, sid, i + 1);
-  if (sid === 'than_tang') g += `**Choàng sao và dải lụa** (xuyên sáng, tối đa 2 mảnh của bộ) cứ dựng như vải mỏng đặc; worker sẽ đổi sang chất liệu xuyên sáng. Đừng bắt Tripo làm trong suốt.\n\n`;
-  if (sid === 'tinh_khuyet') g += `Choàng dài và viền phân thân mờ: vải đặc, viền phân thân chỉ là đường chỉ nhạt trên texture, không cần tách mesh.\n\n`;
-  if (sid === 'co_thanh') g += `Vai giáp hình lỗ châu mai tường thành là khối nổi thật; nếu Tripo ra tấm phẳng thì dựng lại bằng HD Model.\n\n`;
+  if (sid === 'than_tang')
+    g += `**Choàng sao và dải lụa** (xuyên sáng, tối đa 2 mảnh của bộ) cứ dựng như vải mỏng đặc; worker sẽ đổi sang chất liệu xuyên sáng. Đừng bắt Tripo làm trong suốt.\n\n`;
+  if (sid === 'tinh_khuyet')
+    g += `Choàng dài và viền phân thân mờ: vải đặc, viền phân thân chỉ là đường chỉ nhạt trên texture, không cần tách mesh.\n\n`;
+  if (sid === 'co_thanh')
+    g += `Vai giáp hình lỗ châu mai tường thành là khối nổi thật; nếu Tripo ra tấm phẳng thì dựng lại bằng HD Model.\n\n`;
 });
 g += `## Tinh Khuyết Kiếm (dạng cuối +10 và vỏ)\n\nẢnh trong: \`${S(SWORD)}\\concept\\\`\nLưu vào: \`${S(SWORD)}\\tripo\\\` (thư mục đã có file cũ \`raw_v01.glb\` của #119: **không ghi đè**, tên mới có hậu tố mảnh)\n\n| Mảnh | Ảnh tải lên | Chế độ | Số mặt | Lưu thành |\n| --- | --- | --- | --- | --- |\n| Dạng cuối +10 | \`outfit_kiem_tinh_khuyet_cuoi_v01_front.png\` | **HD Model** | ~${fmt(SWORD.items.cuoi.tris)} | \`raw_cuoi_v01.glb\` |\n| Vỏ kiếm | \`outfit_kiem_tinh_khuyet_vo_v01_front.png\` | Smart Mesh | ~${fmt(SWORD.items.vo.tris)} | \`raw_vo_v01.glb\` |\n\nKiểm tra riêng cho kiếm: lưỡi thẳng, có độ dày, mũi nhọn; chắn sừng đối xứng hai bên, tia linh khí là sợi kim loại cong dựng cứng quanh chắn; chuôi tròn đều; vỏ kín và vừa dài với lưỡi. Một kiếm dùng chung cho Kiếm tu, Hộ pháp, Đan sư. Kiếm thuộc lớp ngân sách \`weapon\` (≤ 3.000 mặt, \`assets/budgets.json\`), nên đừng để Tripo ra nhiều hơn số mặt trong bảng.\n\n## Mẹo\n\n- Mặc định chọn HD Model. Nếu ra quá nhiều mặt thì dùng **Retopo** giảm về khoảng số mặt trong bảng. Smart Mesh chỉ cho mảnh cứng nhỏ; ra thô quá thì dựng lại bằng HD.\n- Nam và nữ dùng chung một mảnh: pipeline tự căn theo thân nền từng giới.\n- Credit: mỗi lượt Generate trừ credit tài khoản của bạn; Free Retry dựng lại miễn phí một lần.\n- Xong mỗi bộ (hoặc chỉ áo ngoài) nhắn "xong áo ngoài Tinh Khuyết", v.v.; worker chạy pipeline T-5 và gửi ảnh duyệt.\n`;
 fs.writeFileSync(path.join(docDir, 'huong-dan-tripo.md'), g);

@@ -56,7 +56,13 @@ export const INDICATOR_EXTENT = { up: 22, down: 42, side: 30 };
  * Chỉ báo trùng chỗ với chỉ báo đã đặt (ví dụ hai điểm đánh dấu cùng hướng) thì trượt ngang một bề rộng huy hiệu,
  * sang phải; hết chỗ thì sang trái. Chỉ nhìn các chỉ báo đã đặt trước nó trong cùng khung.
  */
-export function spreadFrom(at: EdgePlace, placed: readonly { x: number; y: number }[], n: number, w: number, inset: EdgeInset = DEFAULT_INSET): void {
+export function spreadFrom(
+  at: EdgePlace,
+  placed: readonly { x: number; y: number }[],
+  n: number,
+  w: number,
+  inset: EdgeInset = DEFAULT_INSET,
+): void {
   const GAP = INDICATOR_EXTENT.side * 1.6;
   const near = (x: number) => {
     for (let i = 0; i < n; i++) if (Math.abs(placed[i].x - x) < GAP && Math.abs(placed[i].y - at.y) < INDICATOR_EXTENT.down) return true;
@@ -88,7 +94,16 @@ interface EdgePlace {
  * Hướng lấy từ (vx·p00, vy·p11): với điểm phía trước nó cùng dấu với NDC, với điểm sau lưng nó vẫn
  * đúng trái/phải/trên/dưới (không bị lật như NDC). Điểm ngay sau lưng camera (vx, vy ≈ 0) chỉ xuống dưới.
  */
-export function edgePlace(vx: number, vy: number, vz: number, p00: number, p11: number, w: number, h: number, inset: EdgeInset = DEFAULT_INSET): EdgePlace | null {
+export function edgePlace(
+  vx: number,
+  vy: number,
+  vz: number,
+  p00: number,
+  p11: number,
+  w: number,
+  h: number,
+  inset: EdgeInset = DEFAULT_INSET,
+): EdgePlace | null {
   let dx = vx * p00;
   let dy = vy * p11;
   if (vz < 0) {
@@ -129,7 +144,14 @@ export function edgePlace(vx: number, vy: number, vz: number, p00: number, p11: 
  * lên/xuống, đang ở mép trên/dưới thì trượt ngang, chọn phía gần hơn mà vẫn trong khung lề.
  * Sửa trực tiếp `at`.
  */
-export function avoidRects(at: EdgePlace, rects: readonly Rect[], w: number, h: number, inset: EdgeInset = DEFAULT_INSET, ext = INDICATOR_EXTENT): void {
+export function avoidRects(
+  at: EdgePlace,
+  rects: readonly Rect[],
+  w: number,
+  h: number,
+  inset: EdgeInset = DEFAULT_INSET,
+  ext = INDICATOR_EXTENT,
+): void {
   const x0 = inset.left;
   const x1 = Math.max(x0 + 1, w - inset.right);
   const y0 = inset.top;
@@ -153,10 +175,7 @@ export function avoidRects(at: EdgePlace, rects: readonly Rect[], w: number, h: 
 }
 
 /** Đích của nhiệm vụ đang theo dõi, chưa gắn vị trí. */
-type QuestGoal =
-  | { kind: 'npc'; npc: string; turnin: boolean }
-  | { kind: 'mon'; mon: string }
-  | { kind: 'node'; item: string };
+type QuestGoal = { kind: 'npc'; npc: string; turnin: boolean } | { kind: 'mon'; mon: string } | { kind: 'node'; item: string };
 
 /**
  * Đích của nhiệm vụ: xong hết thì về NPC trả; không thì mục tiêu đầu tiên chưa xong có chỗ để chỉ
@@ -190,7 +209,12 @@ export function questGoal(def: QuestDef, prog: number[], npcs: readonly NpcDef[]
  * khác null). '' nếu không có nhiệm vụ nào như vậy. Không phụ thuộc bản đồ hiện tại: đích nằm ở bản đồ
  * khác thì chỉ báo không hiện, nhưng chấm vẫn đứng đúng nhiệm vụ đó.
  */
-export function trackedQuestId(quests: QuestView, pinned: string, npcs: readonly NpcDef[] = NPCS, quest: (id: string) => QuestDef | undefined = (id) => QUEST.get(id)): string {
+export function trackedQuestId(
+  quests: QuestView,
+  pinned: string,
+  npcs: readonly NpcDef[] = NPCS,
+  quest: (id: string) => QuestDef | undefined = (id) => QUEST.get(id),
+): string {
   if (pinned && quests.active[pinned]) return pinned;
   for (const id of Object.keys(quests.active)) {
     const def = quest(id);
@@ -248,7 +272,10 @@ export function nearestGoalSpot(
     });
   }
   if (id) return { id };
-  const zones = goal.kind === 'mon' ? (level ? levelSpawns(level) : []).filter((s) => s.mon === goal.mon) : level?.nodes.filter((s) => s.item === goal.item);
+  const zones =
+    goal.kind === 'mon'
+      ? (level ? levelSpawns(level) : []).filter((s) => s.mon === goal.mon)
+      : level?.nodes.filter((s) => s.item === goal.item);
   let spot: { x: number; z: number } | null = null;
   best = Infinity;
   for (const s of zones ?? []) {

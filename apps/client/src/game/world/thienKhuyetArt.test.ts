@@ -5,7 +5,13 @@ import { pavedWeight, scatterThienKhuyet, tkGrassDensity, tkGroundColor } from '
 
 const tr = terrainOf('thien_khuyet');
 const def = tr.def;
-const ctx = { def, bounds: tr.playBounds, heightAt: (x: number, z: number) => tr.heightAt(x, z), clear: [{ x: 1024, z: 1036, r: 60 }], colliders: tr.colliders };
+const ctx = {
+  def,
+  bounds: tr.playBounds,
+  heightAt: (x: number, z: number) => tr.heightAt(x, z),
+  clear: [{ x: 1024, z: 1036, r: 60 }],
+  colliders: tr.colliders,
+};
 
 describe('thienKhuyetArt (E4-I)', () => {
   it('lõi trạm và đại lộ là mặt lát; ngoài thành là đất', () => {

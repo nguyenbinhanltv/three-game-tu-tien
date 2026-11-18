@@ -63,7 +63,8 @@ describe('linh ngọc', () => {
     expect(ids).toHaveLength(15);
     expect(new Set(ids).size).toBe(15);
     for (const e of ELEMENTS) for (let t = 1; t <= 3; t++) expect(parseGem(gemId(e, t))).toEqual({ elem: e, tier: t });
-    for (const bad of ['gem_kim_0', 'gem_kim_4', 'gem_dat_1', 'gem_kim', '', 7, null, undefined, 'itm_thiet_tinh']) expect(parseGem(bad)).toBeNull();
+    for (const bad of ['gem_kim_0', 'gem_kim_4', 'gem_dat_1', 'gem_kim', '', 7, null, undefined, 'itm_thiet_tinh'])
+      expect(parseGem(bad)).toBeNull();
   });
 
   it('giá trị tăng theo cấp; mỗi viên có dòng chính + sát thương theo hệ của nó', () => {
@@ -104,7 +105,8 @@ describe('tẩy luyện, phân giải, ràng buộc', () => {
     // Mộc kiếm giá 30 < Thiết Tinh 60: không ra gì; Thiết kiếm 280 → tối đa 4 viên (240 < 280).
     expect(salvageYield(0, 0, 30, 60)).toEqual({ ore: 0, dust: 0 });
     expect(salvageYield(0, 0, 280, 60).ore).toBeLessThan(280 / 60);
-    for (const price of [1, 30, 60, 61, 120, 380, 900]) for (const plus of [0, 5, 10]) expect(salvageYield(0, plus, price, 60).ore * 60).toBeLessThan(price);
+    for (const price of [1, 30, 60, 61, 120, 380, 900])
+      for (const plus of [0, 5, 10]) expect(salvageYield(0, plus, price, 60).ore * 60).toBeLessThan(price);
     // Không bán ở cửa hàng: giữ nguyên.
     expect(salvageYield(0, 0, 0, 60)).toEqual({ ore: 1, dust: 0 });
   });

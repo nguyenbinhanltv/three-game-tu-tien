@@ -30,11 +30,15 @@ const WHO = {
   nu: 'a young adult WOMAN, East Asian, serene refined face with almond eyes and soft features, long black hair half tied up with a silver guan and a thin hairpin, the rest falling straight down the back to the waist',
 };
 const VIEW = {
-  front: 'strictly FRONT view, orthographic-looking, camera at chest height, figure facing the camera, symmetric, face clearly visible and well lit',
+  front:
+    'strictly FRONT view, orthographic-looking, camera at chest height, figure facing the camera, symmetric, face clearly visible and well lit',
   back: 'strictly BACK view, orthographic-looking, camera at chest height, figure facing away from the camera, symmetric',
   side: 'strictly SIDE view (left profile, figure facing left of the image), orthographic-looking, camera at chest height, head in profile',
 };
-const prompt = (g, v) => `Use case: stylized-concept. ONE full-body 3D character concept image (FULL CHARACTER WITH FACE, head to feet, one single piece) for image-to-3D modeling, for a Chinese fantasy cultivation game. ${ORIGINAL}
+const prompt = (
+  g,
+  v,
+) => `Use case: stylized-concept. ONE full-body 3D character concept image (FULL CHARACTER WITH FACE, head to feet, one single piece) for image-to-3D modeling, for a Chinese fantasy cultivation game. ${ORIGINAL}
 Subject: ${WHO[g]}, wearing ${OUTFIT}. Slender build, about 8 heads tall, narrow shoulders, long legs. The robe follows the torso closely with modest ease and hangs straight and clean, NO bulky padding, NO oversized volume. Bare hands with relaxed open fingers. NO weapon in hand, NO sword on the back, NO props.
 Pose: strict A-pose, standing upright, feet shoulder-width apart, arms straight and held about 35 degrees away from the torso with a CLEAR VISIBLE GAP between each sleeve and the torso (visible armpit gap), sleeves not touching the body, the robe skirt not covering between the legs (clear gap between the legs), head neutral facing forward${v === 'side' ? ' (side view: head in profile)' : ''}.
 View: ${VIEW[v]}. Whole figure from head to feet inside the frame with 6% margin. Portrait 2:3.
@@ -53,7 +57,10 @@ const runOne = (t) =>
   new Promise((resolve) => {
     fs.writeFileSync(path.join(dir, `${t.name}.prompt.txt`), t.prompt + '\n');
     const body = `Use the built-in image generation tool to create exactly ONE image from the brief below, then copy the generated PNG to ./${t.name}.png in the current directory (shell copy). Do nothing else.\n\n${t.prompt}\n`;
-    const p = spawn('codex', ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write', '-C', dir, '-'], { stdio: ['pipe', 'ignore', 'ignore'], shell: process.platform === 'win32' });
+    const p = spawn('codex', ['exec', '--skip-git-repo-check', '--sandbox', 'workspace-write', '-C', dir, '-'], {
+      stdio: ['pipe', 'ignore', 'ignore'],
+      shell: process.platform === 'win32',
+    });
     p.stdin.end(body);
     const timer = setTimeout(() => p.kill(), 8 * 60_000);
     p.on('close', () => {

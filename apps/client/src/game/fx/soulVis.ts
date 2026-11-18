@@ -7,7 +7,16 @@ import { SOUL_RANGE } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import type { CharacterView } from '../character/view';
 
-const additive = (color: number, opacity: number) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+const additive = (color: number, opacity: number) =>
+  new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
 
 const SOUL_COLOR = 0xcfe6dc;
 const FIG_ALPHA = 0.45;
@@ -83,7 +92,12 @@ export class SoulVis {
   private tetherPos = new Float32Array(TETHER_PTS * 3);
   private motes: THREE.Points;
   private motePos = new Float32Array(MOTES * 3);
-  private moteSeed = Array.from({ length: MOTES }, (_, i) => ({ a: (i / MOTES) * Math.PI * 2, h: (i * 0.37) % 1, r: 0.3 + ((i * 0.61) % 1) * 0.35, s: 0.25 + ((i * 0.43) % 1) * 0.3 }));
+  private moteSeed = Array.from({ length: MOTES }, (_, i) => ({
+    a: (i / MOTES) * Math.PI * 2,
+    h: (i * 0.37) % 1,
+    r: 0.3 + ((i * 0.61) % 1) * 0.35,
+    s: 0.25 + ((i * 0.43) % 1) * 0.3,
+  }));
   private time = 0;
 
   constructor(
@@ -106,12 +120,33 @@ export class SoulVis {
     // Linh tuyến mảnh nối thân xác với nguyên anh; vài hạt linh khí rất nhẹ quanh nguyên anh.
     const tg = new THREE.BufferGeometry();
     tg.setAttribute('position', new THREE.BufferAttribute(this.tetherPos, 3));
-    this.tether = new THREE.Line(tg, new THREE.LineBasicMaterial({ color: 0xd9cc94, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    this.tether = new THREE.Line(
+      tg,
+      new THREE.LineBasicMaterial({
+        color: 0xd9cc94,
+        transparent: true,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        fog: false,
+      }),
+    );
     this.tether.frustumCulled = false;
     this.tether.visible = false;
     const mg = new THREE.BufferGeometry();
     mg.setAttribute('position', new THREE.BufferAttribute(this.motePos, 3));
-    this.motes = new THREE.Points(mg, new THREE.PointsMaterial({ color: 0xeedfa8, size: 0.06, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    this.motes = new THREE.Points(
+      mg,
+      new THREE.PointsMaterial({
+        color: 0xeedfa8,
+        size: 0.06,
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        fog: false,
+      }),
+    );
     this.motes.frustumCulled = false;
     this.motes.visible = false;
     this.group.add(this.tether, this.motes);
@@ -132,7 +167,13 @@ export class SoulVis {
   }
 
   /** Vòng sáng nở ra tại một điểm (xuất khiếu, nhập lại, thuấn di). */
-  pulse(x: number, y: number, z: number, now: number, opts: { r0?: number; r1?: number; dur?: number; alpha?: number; upright?: boolean } = {}): void {
+  pulse(
+    x: number,
+    y: number,
+    z: number,
+    now: number,
+    opts: { r0?: number; r1?: number; dur?: number; alpha?: number; upright?: boolean } = {},
+  ): void {
     if (this.pulses.length >= MAX_PULSES) this.drop(this.pulses.shift()!);
     const mesh = new THREE.Mesh(this.geo.ring, additive(SOUL_COLOR, opts.alpha ?? 0.45));
     mesh.position.set(x, y, z);
@@ -195,7 +236,14 @@ export class SoulVis {
    * Mỗi khung. `scouts`: người đang thám thính (vị trí đã nội suy); `body`: thân xác của mình nếu đang thám thính,
    * `bodySid`/`bodyYaw`: ai và hướng ngồi.
    */
-  update(dt: number, scouts: readonly SoulScout[], body: { x: number; y: number; z: number } | null, now: number, bodySid = '', bodyYaw = 0): void {
+  update(
+    dt: number,
+    scouts: readonly SoulScout[],
+    body: { x: number; y: number; z: number } | null,
+    now: number,
+    bodySid = '',
+    bodyYaw = 0,
+  ): void {
     this.time += dt;
     const live = new Set<string>();
     let lead: { x: number; y: number; z: number } | null = null;
@@ -293,9 +341,15 @@ export class SoulVis {
       }
       const e = k * k * (3 - 2 * k);
       // Bay vòng cung: lên cao ở giữa chặng, hạ xuống ở nơi an toàn.
-      f.group.position.set(f.from.x + (f.to.x - f.from.x) * e, f.from.y + (f.to.y - f.from.y) * e + 1.2 + Math.sin(Math.PI * k) * 5, f.from.z + (f.to.z - f.from.z) * e);
+      f.group.position.set(
+        f.from.x + (f.to.x - f.from.x) * e,
+        f.from.y + (f.to.y - f.from.y) * e + 1.2 + Math.sin(Math.PI * k) * 5,
+        f.from.z + (f.to.z - f.from.z) * e,
+      );
       f.group.rotation.y = Math.atan2(f.to.x - f.from.x, f.to.z - f.from.z);
-      this.fleeViews.get(f.group)?.update(dt, { speed: 6, flying: true, sky: true, meditating: false, dead: false, casting: false, airborne: false });
+      this.fleeViews
+        .get(f.group)
+        ?.update(dt, { speed: 6, flying: true, sky: true, meditating: false, dead: false, casting: false, airborne: false });
     }
   }
 

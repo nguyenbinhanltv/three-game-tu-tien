@@ -23,9 +23,29 @@ const WIN_GAP = 12;
 const WIN_MARGIN = 12;
 
 /** Chiều rộng thiết kế từng cửa sổ (khớp `width` truyền cho PanelWindow). */
-const WIN_WIDTH: Record<WinId, number> = { bag: 520, char: 560, quests: 460, help: 520, settings: 430, map: 980, method: 600, party: 460, credits: 520 };
+const WIN_WIDTH: Record<WinId, number> = {
+  bag: 520,
+  char: 560,
+  quests: 460,
+  help: 520,
+  settings: 430,
+  map: 980,
+  method: 600,
+  party: 460,
+  credits: 520,
+};
 /** Chiều cao ước lượng để canh giữa (cửa sổ cuộn nên không biết trước). */
-const WIN_HEIGHT: Record<WinId, number> = { bag: 600, char: 680, quests: 520, help: 460, settings: 600, map: 640, method: 600, party: 520, credits: 620 };
+const WIN_HEIGHT: Record<WinId, number> = {
+  bag: 600,
+  char: 680,
+  quests: 520,
+  help: 460,
+  settings: 600,
+  map: 640,
+  method: 600,
+  party: 520,
+  credits: 620,
+};
 
 /** Cửa sổ ghép đôi: nhân vật bên trái, túi bên phải. */
 const PAIR_LEFT: WinId = 'char';
@@ -158,7 +178,9 @@ const KEY = 'dtl.win.';
 export function loadSavedPos(id: WinId): { x: number; y: number } | null {
   try {
     const v = JSON.parse(localStorage.getItem(KEY + id) ?? 'null') as { x?: unknown; y?: unknown } | null;
-    return v && typeof v.x === 'number' && typeof v.y === 'number' && Number.isFinite(v.x) && Number.isFinite(v.y) ? { x: v.x, y: v.y } : null;
+    return v && typeof v.x === 'number' && typeof v.y === 'number' && Number.isFinite(v.x) && Number.isFinite(v.y)
+      ? { x: v.x, y: v.y }
+      : null;
   } catch {
     return null;
   }

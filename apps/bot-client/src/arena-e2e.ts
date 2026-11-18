@@ -71,7 +71,8 @@ async function main() {
     throw e;
   });
   log('TRANSFER', JSON.stringify(s1.transfer));
-  if ((s1.transfer as TransferMsg).room !== 'tribulation' || !(s1.transfer as TransferMsg).options.tribRoom) throw new Error('transfer không đúng room độ kiếp');
+  if ((s1.transfer as TransferMsg).room !== 'tribulation' || !(s1.transfer as TransferMsg).options.tribRoom)
+    throw new Error('transfer không đúng room độ kiếp');
   const opts = s1.transfer!.options;
   const t1 = s1.transfer!;
   await r1.leave(true);

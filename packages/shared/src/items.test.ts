@@ -149,7 +149,12 @@ describe('parseInst chặn dữ liệu hỏng', () => {
     const x = bad((i) => {
       i.bound = true;
       i.main.atk = 99999;
-      i.affixes = [{ id: 'move_speed', v: 0.03 }, { id: 'atk_pct', v: 5 }, { id: 'hp_pct', v: 0.04 }, { id: 'hp_pct', v: 0.05 }];
+      i.affixes = [
+        { id: 'move_speed', v: 0.03 },
+        { id: 'atk_pct', v: 5 },
+        { id: 'hp_pct', v: 0.04 },
+        { id: 'hp_pct', v: 0.05 },
+      ];
     })!;
     expect(x).toMatchObject({ q: 2, ilvl: 10, bound: true, main: {}, affixes: [{ id: 'hp_pct', v: 0.04 }] });
     expect(parseInst(SYS, 'artifact', { ...good, main: { hp: 8 }, affixes: [] })?.main).toEqual({});
@@ -181,10 +186,7 @@ describe('tổng chỉ số nhân vật', () => {
   it('cộng nhiều ô, nhân phần trăm sau cộng phẳng', () => {
     const w = rollItemInstance(SYS, 'weapon', 10, 0, seededRng(2));
     const r = rollItemInstance(SYS, 'robe', 10, 4, seededRng(6));
-    const s = computePlayerStats(10, [
-      { item: { id: 'w', n: 1, inst: w } },
-      { item: { id: 'r', n: 1, inst: r, plus: 2 } },
-    ]);
+    const s = computePlayerStats(10, [{ item: { id: 'w', n: 1, inst: w } }, { item: { id: 'r', n: 1, inst: r, plus: 2 } }]);
     const b = playerBaseStats(10);
     const pct = (id: string) => r.affixes.filter((a) => a.id === id).reduce((n, a) => n + a.v, 0);
     expect(s.atk).toBe(Math.round((b.atk + w.main.atk!) * (1 + pct('atk_pct'))));
@@ -207,7 +209,11 @@ describe('tổng chỉ số nhân vật', () => {
 });
 
 describe('giá bán trang bị đã roll', () => {
-  const inst = (q: 0 | 1 | 2 | 3 | 4, ilvl: number) => ({ id: 'x', n: 1, inst: { q, ilvl, main: {}, affixes: [], gems: [], bound: false } });
+  const inst = (q: 0 | 1 | 2 | 3 | 4, ilvl: number) => ({
+    id: 'x',
+    n: 1,
+    inst: { q, ilvl, main: {}, affixes: [], gems: [], bound: false },
+  });
   it('đồ cũ không inst: giá mẫu; đồ roll: (3 + ilvl) × hệ số phẩm, không vượt giá mẫu', () => {
     expect(sellPrice({ id: 'x', n: 1 }, { sell: 700 })).toBe(700);
     expect(sellPrice(inst(0, 15), { sell: 1500 })).toBe(18);
@@ -216,7 +222,8 @@ describe('giá bán trang bị đã roll', () => {
     expect(sellPrice(inst(2, 12), { sell: 0 })).toBe(0);
   });
   it('phẩm cao và ilvl cao bán được nhiều hơn', () => {
-    for (let q = 1; q < 5; q++) expect(sellPrice(inst(q as 1, 12), { sell: 9999 })).toBeGreaterThan(sellPrice(inst((q - 1) as 0, 12), { sell: 9999 }));
+    for (let q = 1; q < 5; q++)
+      expect(sellPrice(inst(q as 1, 12), { sell: 9999 })).toBeGreaterThan(sellPrice(inst((q - 1) as 0, 12), { sell: 9999 }));
     expect(sellPrice(inst(2, 15), { sell: 9999 })).toBeGreaterThan(sellPrice(inst(2, 5), { sell: 9999 }));
   });
 });

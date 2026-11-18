@@ -39,7 +39,13 @@ export default function wildOchre() {
     const c = CH[chordAt(b)];
     pad.chord(s.bar(b), c, 8, 52);
     bass.note(s.bar(b), c[0], 6, 68);
-    if (b >= 16 && b < 32) strings.chord(s.bar(b), c.slice(1).map((p) => p + 12), 8, 56);
+    if (b >= 16 && b < 32)
+      strings.chord(
+        s.bar(b),
+        c.slice(1).map((p) => p + 12),
+        8,
+        56,
+      );
   }
 
   // đàn gảy thưa: mỗi hai phách một nốt, nhảy quãng rộng cho cảm giác cốc trống
@@ -62,21 +68,21 @@ export default function wildOchre() {
   for (let b = 16; b < 32; b++) drum.pattern(s.bar(b), s.bar(b + 1), 1 / 4, FRAME, (i) => (i === 0 ? n('G2') : n('C3')), 0.3);
 
   // chủ đề nhị hồ (câu hỏi, rơi xuống)
-  const THEME = [
-    '2:2 1:1 0:1',
-    '1:3 r:1',
-    '2:1 3:1 4:2',
-    '3~:3 r:1',
-    '4:1 3:1 2:1 1:1',
-    '2~:3 r:1',
-    '1:2 0:1 -1:1',
-    '0:4',
-  ].join(' | ');
+  const THEME = ['2:2 1:1 0:1', '1:3 r:1', '2:1 3:1 4:2', '3~:3 r:1', '4:1 3:1 2:1 1:1', '2~:3 r:1', '1:2 0:1 -1:1', '0:4'].join(' | ');
   erhu.phrase(s.bar(8), D, THEME, { vel: 88, vib: 1.8 });
   erhu.phrase(s.bar(24), D, THEME, { oct: 1, vel: 82, vib: 1.8 });
 
   // C: đàn tranh dẫn giai điệu (đáp chủ đề, nhịp dày hơn)
-  const KMEL = ['0:1/2 1:1/2 2:1 1:1 0:1', '-1:2 0:2', '1:1/2 2:1/2 3:1 2:1 1:1', '2:4', '3:1/2 4:1/2 5:1 4:1 3:1', '2:2 1:2', '0:1 1:1 2:1 1:1', '0*:4'].join(' | ');
+  const KMEL = [
+    '0:1/2 1:1/2 2:1 1:1 0:1',
+    '-1:2 0:2',
+    '1:1/2 2:1/2 3:1 2:1 1:1',
+    '2:4',
+    '3:1/2 4:1/2 5:1 4:1 3:1',
+    '2:2 1:2',
+    '0:1 1:1 2:1 1:1',
+    '0*:4',
+  ].join(' | ');
   koto.phrase(s.bar(16), D, KMEL, { vel: 84, trem: 6 });
 
   // D: sáo bè đáp, thưa

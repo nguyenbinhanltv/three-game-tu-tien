@@ -39,7 +39,13 @@ export default function wildCloud() {
     const c = CH[chordAt(b)];
     pad.chord(s.bar(b), c, 8, 50);
     bass.note(s.bar(b), c[0], 6, 60);
-    if (b >= 16 && b < 32) strings.chord(s.bar(b), c.slice(1).map((p) => p + 12), 8, 52);
+    if (b >= 16 && b < 32)
+      strings.chord(
+        s.bar(b),
+        c.slice(1).map((p) => p + 12),
+        8,
+        52,
+      );
   }
 
   // hạc rải: tám nốt đi lên rồi xuống mỗi ô (thưa lại ở phần E, nghỉ ở D)
@@ -67,7 +73,16 @@ export default function wildCloud() {
   dizi.phrase(s.bar(24), G, THEME, { oct: 1, vel: 78, vib: 1.4 });
 
   // C: đàn tranh đáp, nhịp dày hơn
-  const KMEL = ['0:1/2 1:1/2 2:1 3:1 2:1', '1:2 0:2', '2:1/2 3:1/2 4:1 3:1 2:1', '3:4', '4:1/2 5:1/2 6:1 5:1 4:1', '3:2 2:2', '1:1 2:1 3:1 2:1', '0*:4'].join(' | ');
+  const KMEL = [
+    '0:1/2 1:1/2 2:1 3:1 2:1',
+    '1:2 0:2',
+    '2:1/2 3:1/2 4:1 3:1 2:1',
+    '3:4',
+    '4:1/2 5:1/2 6:1 5:1 4:1',
+    '3:2 2:2',
+    '1:1 2:1 3:1 2:1',
+    '0*:4',
+  ].join(' | ');
   koto.phrase(s.bar(16), G, KMEL, { vel: 80, trem: 6 });
 
   // D: nhị hồ bè đáp, thưa

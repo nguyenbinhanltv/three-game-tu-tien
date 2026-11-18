@@ -10,9 +10,26 @@ import { boneKey } from './ikpose';
 
 /** Xương cần cho phụ kiện (tên đã chuẩn hóa bằng `boneKey`). */
 export const FIT_BONES = [
-  'hips', 'spine', 'spine1', 'spine2', 'neck', 'head',
-  'leftshoulder', 'leftarm', 'leftforearm', 'lefthand', 'leftupleg', 'leftleg', 'leftfoot',
-  'rightshoulder', 'rightarm', 'rightforearm', 'righthand', 'rightupleg', 'rightleg', 'rightfoot',
+  'hips',
+  'spine',
+  'spine1',
+  'spine2',
+  'neck',
+  'head',
+  'leftshoulder',
+  'leftarm',
+  'leftforearm',
+  'lefthand',
+  'leftupleg',
+  'leftleg',
+  'leftfoot',
+  'rightshoulder',
+  'rightarm',
+  'rightforearm',
+  'righthand',
+  'rightupleg',
+  'rightleg',
+  'rightfoot',
 ] as const;
 export type FitBone = (typeof FIT_BONES)[number];
 
@@ -151,23 +168,70 @@ export function fitBody(scene: THREE.Object3D, idle: THREE.AnimationClip | undef
   const w = slab(wy, 0.03, (v) => TORSO.has(v.b));
   const wx = w.map((v) => v.p.x);
   const wcx = (pct(wx, 0.98) + pct(wx, 0.02)) / 2;
-  const waist = { y: wy, cx: wcx, cz: 0, rx: (pct(wx, 0.98) - pct(wx, 0.02)) / 2, zFront: pct(w.map((v) => v.p.z), 0.98), zBack: pct(w.map((v) => v.p.z), 0.02) };
+  const waist = {
+    y: wy,
+    cx: wcx,
+    cz: 0,
+    rx: (pct(wx, 0.98) - pct(wx, 0.02)) / 2,
+    zFront: pct(
+      w.map((v) => v.p.z),
+      0.98,
+    ),
+    zBack: pct(
+      w.map((v) => v.p.z),
+      0.02,
+    ),
+  };
   waist.cz = (waist.zFront + waist.zBack) / 2;
 
   // Ngực.
   const cy = B.spine2.pos.y - 0.02;
   const c = slab(cy, 0.03, (v) => TORSO.has(v.b));
   const cx = c.map((v) => v.p.x);
-  const chest = { y: cy, cx: (pct(cx, 0.98) + pct(cx, 0.02)) / 2, rx: (pct(cx, 0.98) - pct(cx, 0.02)) / 2, zFront: pct(c.map((v) => v.p.z), 0.98), zBack: pct(c.map((v) => v.p.z), 0.02) };
+  const chest = {
+    y: cy,
+    cx: (pct(cx, 0.98) + pct(cx, 0.02)) / 2,
+    rx: (pct(cx, 0.98) - pct(cx, 0.02)) / 2,
+    zFront: pct(
+      c.map((v) => v.p.z),
+      0.98,
+    ),
+    zBack: pct(
+      c.map((v) => v.p.z),
+      0.02,
+    ),
+  };
 
   // Phía sau cùng của thân và vạt áo từ đùi tới lưng (không tính tay, đầu; vạt áo bám xương `dtl_hem_*`).
-  const backs = verts.filter((v) => v.p.y > 0.62 && v.p.y < B.spine2.pos.y + 0.05 && Math.abs(v.p.x - waist.cx) < 0.3 && (TORSO.has(v.b) || LEG.has(v.b) || v.b.startsWith('dtl_hem')));
-  const backZ = pct(backs.map((v) => v.p.z), 0.03);
+  const backs = verts.filter(
+    (v) =>
+      v.p.y > 0.62 &&
+      v.p.y < B.spine2.pos.y + 0.05 &&
+      Math.abs(v.p.x - waist.cx) < 0.3 &&
+      (TORSO.has(v.b) || LEG.has(v.b) || v.b.startsWith('dtl_hem')),
+  );
+  const backZ = pct(
+    backs.map((v) => v.p.z),
+    0.03,
+  );
 
   const sy = waist.y - 0.075;
   const sk = slab(sy, 0.03, (v) => TORSO.has(v.b) || LEG.has(v.b) || v.b.startsWith('dtl_hem'));
   const skx = sk.map((v) => v.p.x);
-  const skirt = { y: sy, cx: (pct(skx, 0.98) + pct(skx, 0.02)) / 2, rx: (pct(skx, 0.98) - pct(skx, 0.02)) / 2, zFront: pct(sk.map((v) => v.p.z), 0.98), zBack: pct(sk.map((v) => v.p.z), 0.02), cz: 0 };
+  const skirt = {
+    y: sy,
+    cx: (pct(skx, 0.98) + pct(skx, 0.02)) / 2,
+    rx: (pct(skx, 0.98) - pct(skx, 0.02)) / 2,
+    zFront: pct(
+      sk.map((v) => v.p.z),
+      0.98,
+    ),
+    zBack: pct(
+      sk.map((v) => v.p.z),
+      0.02,
+    ),
+    cz: 0,
+  };
   skirt.cz = (skirt.zFront + skirt.zBack) / 2;
 
   const shoulder = {} as Record<1 | -1, TubeFit>;

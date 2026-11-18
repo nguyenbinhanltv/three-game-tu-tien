@@ -56,9 +56,9 @@
 }
 /* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/ngj/motion.ts). */
 :root[data-reduce-motion='true'] .break-btn {
-    animation: none;
-    filter: drop-shadow(0 0 4px rgba(255, 222, 150, 0.8));
-  }
+  animation: none;
+  filter: drop-shadow(0 0 4px rgba(255, 222, 150, 0.8));
+}
 
 /* ---------- hồi chiêu: vòng linh văn ----------
  * Lòng ô tối đi, một vành kim chạy theo phần còn lại (đầu vành sáng), khắc vạch như vòng phù văn.
@@ -67,7 +67,16 @@
 .skill-sweep {
   inset: 1.5px;
   background: radial-gradient(circle, rgba(6, 10, 18, 0.5) 0 54%, rgba(6, 10, 18, 0.82) 56%);
-  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  clip-path: polygon(
+    6px 0,
+    calc(100% - 6px) 0,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    0 calc(100% - 6px),
+    0 6px
+  );
 }
 .skill-sweep::before,
 .skill-sweep::after {
@@ -79,7 +88,12 @@
 }
 /* Vành: phần đã hồi sáng màu kim, phần còn lại mờ; quét cùng chiều kim đồng hồ từ đỉnh. */
 .skill-sweep::before {
-  background: conic-gradient(from 0deg, rgba(255, 222, 150, 0.95) 0, rgba(200, 169, 110, 0.85) calc((1 - var(--p)) * 1turn), rgba(200, 169, 110, 0.16) 0);
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 222, 150, 0.95) 0,
+    rgba(200, 169, 110, 0.85) calc((1 - var(--p)) * 1turn),
+    rgba(200, 169, 110, 0.16) 0
+  );
   -webkit-mask: radial-gradient(circle, transparent 0 calc(71% - 3.5px), #000 calc(71% - 3px) calc(71% - 0.5px), transparent 71%);
   mask: radial-gradient(circle, transparent 0 calc(71% - 3.5px), #000 calc(71% - 3px) calc(71% - 0.5px), transparent 71%);
 }
@@ -102,7 +116,16 @@
   background: var(--k-ink-bg);
   border: 1px solid rgba(200, 169, 110, 0.6);
   border-radius: 0;
-  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  clip-path: polygon(
+    8px 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0 calc(100% - 8px),
+    0 8px
+  );
   color: var(--k-text);
 }
 .hud .trib-title {

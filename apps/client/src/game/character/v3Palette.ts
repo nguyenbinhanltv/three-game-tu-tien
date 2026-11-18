@@ -38,10 +38,16 @@ export function applyV3Palette(m: THREE.MeshStandardNodeMaterial): THREE.MeshSta
   const blue = smoothstep(float(0.18), float(0.4), c.z.sub(c.x).div(lum.add(1e-3))).mul(smoothstep(float(0.004), float(0.02), lum));
   const t = smoothstep(float(0.02), float(0.2), lum);
   const mid = smoothstep(float(0.0), float(0.5), t);
-  const ramp = mix(mix(vec3(navy.x, navy.y, navy.z), vec3(armor.x, armor.y, armor.z), mid), vec3(hi.x, hi.y, hi.z), smoothstep(float(0.5), float(1.0), t));
+  const ramp = mix(
+    mix(vec3(navy.x, navy.y, navy.z), vec3(armor.x, armor.y, armor.z), mid),
+    vec3(hi.x, hi.y, hi.z),
+    smoothstep(float(0.5), float(1.0), t),
+  );
   // Ngà/bạc: bão hòa thấp và sáng (tóc đen, da ấm, kim loại tối nằm ngoài).
   const sat = mx.sub(mn).div(mx.add(1e-3));
-  const ivory = smoothstep(float(0.3), float(0.42), lum).mul(smoothstep(float(0.44), float(0.34), sat)).mul(float(1).sub(blue));
+  const ivory = smoothstep(float(0.3), float(0.42), lum)
+    .mul(smoothstep(float(0.44), float(0.34), sat))
+    .mul(float(1).sub(blue));
   // Chuẩn hóa theo kênh lớn nhất khi vượt 1 (giữ tỉ lệ kênh và vân, không cắt phẳng một kênh).
   const ivRaw = c.mul(vec3(ivMul.x, ivMul.y, ivMul.z));
   const ivOut = ivRaw.div(max(float(1), max(max(ivRaw.x, ivRaw.y), ivRaw.z)));

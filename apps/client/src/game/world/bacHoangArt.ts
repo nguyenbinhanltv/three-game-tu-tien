@@ -62,11 +62,27 @@ export function riftBlend(zo: number): number {
   return smoothstep(-120, -250, zo);
 }
 
-const hex = (c: number, k = 1): [number, number, number] => [(((c >> 16) & 255) / 255) * k, (((c >> 8) & 255) / 255) * k, ((c & 255) / 255) * k];
-const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+const hex = (c: number, k = 1): [number, number, number] => [
+  (((c >> 16) & 255) / 255) * k,
+  (((c >> 8) & 255) / 255) * k,
+  ((c & 255) / 255) * k,
+];
+const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
+  a[0] + (b[0] - a[0]) * t,
+  a[1] + (b[1] - a[1]) * t,
+  a[2] + (b[2] - a[2]) * t,
+];
 
 /** Màu mặt đất (RGB 0..1, sRGB) theo vị trí, độ dốc, độ cao; viết vào `out`. Nhân với texture bộ ash nên là màu giữa, không phải màu cuối. */
-export function bhGroundColor(def: TerrainDef, path: readonly RiftPt[], x: number, z: number, h: number, ny: number, out: [number, number, number]): void {
+export function bhGroundColor(
+  def: TerrainDef,
+  path: readonly RiftPt[],
+  x: number,
+  z: number,
+  h: number,
+  ny: number,
+  out: [number, number, number],
+): void {
   const n = fbm(x * 0.011, z * 0.011, 3, def.seed + 300);
   const m = fbm(x * 0.04, z * 0.04, 2, def.seed + 331);
   const north = riftBlend(z - def.size / 2);
@@ -181,10 +197,41 @@ export function scatterBacHoang(ctx: BhScatterCtx): BhRock[] {
       const k2 = hash01(gx, gz, 8143);
       const dark = 0.5 + k2 * 0.18;
       const gilt = x < def.size / 2 - 120 && north > 0.5; // Kim Dạ Ngoại Uyển: cột dát vàng cũ
-      const tint: [number, number, number] = gilt && pillar ? [dark * 1.5, dark * 1.3, dark * 0.9] : [dark * 1.05, dark * 0.95, dark * 0.95];
-      if (pillar) out.push({ id: 'prop_tru_da_khac_van', x, z, yaw: k * Math.PI * 2, s: 0.8 + k2 * 0.35, lean: 0.9 + k * 0.5, sink: 0.5 + k2 * 0.9, tint });
-      else if (sword) out.push({ id: 'prop_kiem_gay', x, z, yaw: k * Math.PI * 2, s: 1.0 + k2 * 0.5, lean: 0.25 + k * 0.35, sink: 0.2, tint: [0.85, 0.8, 0.82] });
-      else out.push({ id: ROCKS[Math.floor(hash01(gx, gz, 8151) * ROCKS.length)], x, z, yaw: k * Math.PI * 2, s: 0.7 + k2 * 1.0 + edge * 0.4, lean: (k - 0.5) * 0.3, sink: 0.12, tint });
+      const tint: [number, number, number] =
+        gilt && pillar ? [dark * 1.5, dark * 1.3, dark * 0.9] : [dark * 1.05, dark * 0.95, dark * 0.95];
+      if (pillar)
+        out.push({
+          id: 'prop_tru_da_khac_van',
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 0.8 + k2 * 0.35,
+          lean: 0.9 + k * 0.5,
+          sink: 0.5 + k2 * 0.9,
+          tint,
+        });
+      else if (sword)
+        out.push({
+          id: 'prop_kiem_gay',
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 1.0 + k2 * 0.5,
+          lean: 0.25 + k * 0.35,
+          sink: 0.2,
+          tint: [0.85, 0.8, 0.82],
+        });
+      else
+        out.push({
+          id: ROCKS[Math.floor(hash01(gx, gz, 8151) * ROCKS.length)],
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 0.7 + k2 * 1.0 + edge * 0.4,
+          lean: (k - 0.5) * 0.3,
+          sink: 0.12,
+          tint,
+        });
     }
   }
   return out;
@@ -223,7 +270,13 @@ export function deadTreeSpots(ctx: BhScatterCtx, max: number): DeadTreeSpot[] {
       const h = ctx.heightAt(x, z);
       if (Math.abs(ctx.heightAt(x + 3, z) - h) + Math.abs(ctx.heightAt(x, z + 3) - h) > 4) continue;
       if (blocked(ctx, x, z, 2)) continue;
-      spots.push({ x, z, yaw: hash01(gx, gz, 8209) * Math.PI * 2, s: 0.8 + hash01(gx, gz, 8213) * 0.8, kind: Math.floor(hash01(gx, gz, 8219) * 3) });
+      spots.push({
+        x,
+        z,
+        yaw: hash01(gx, gz, 8209) * Math.PI * 2,
+        s: 0.8 + hash01(gx, gz, 8213) * 0.8,
+        kind: Math.floor(hash01(gx, gz, 8219) * 3),
+      });
     }
   }
   if (spots.length <= max) return spots;

@@ -28,7 +28,13 @@ const ITEM = 'itm_nguyen_anh_dan';
 function setup(withItem = true, method?: string) {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'na' + acc);
   char.level = 23;
   char.bk = 23;
@@ -148,7 +154,10 @@ describe('Tam Trọng Kiếp: pha 2 ô lửa và xuất khiếu', () => {
       if (soul) trib(t.sim).soul(t.p);
       const before = t.hazards().length;
       t.run(23);
-      const fire = t.hazards().slice(before).filter((h) => h.kind === 'fire' && h.sh === 'rect');
+      const fire = t
+        .hazards()
+        .slice(before)
+        .filter((h) => h.kind === 'fire' && h.sh === 'rect');
       vi.restoreAllMocks();
       return fire.some((h) => X >= h.x - (h.w ?? 0) / 2 && X <= h.x + (h.w ?? 0) / 2 && Z >= h.z && Z <= h.z + h.r);
     };
@@ -170,7 +179,12 @@ describe('Tam Trọng Kiếp: pha 3 tâm ma, tâm cảnh', () => {
     const before = t.hazards().length;
     t.run(53);
     expect(t.fx('tamma_cast').length).toBeGreaterThanOrEqual(1);
-    expect(t.hazards().slice(before).some((h) => h.src === sh!.id)).toBe(true);
+    expect(
+      t
+        .hazards()
+        .slice(before)
+        .some((h) => h.src === sh!.id),
+    ).toBe(true);
   });
 
   it('bị đánh trúng thì tâm cảnh giảm, đánh trúng bóng thì hồi; về 0 thì thất bại và hoàn đan (trụ quá nửa)', () => {
@@ -179,7 +193,11 @@ describe('Tam Trọng Kiếp: pha 3 tâm ma, tâm cảnh', () => {
     t.begin();
     t.run(44);
     const xp0 = t.char.xp;
-    const tc = () => (t.fx('tamcanh').filter((m) => m.pg !== undefined && m.pg >= 0).pop()?.pg ?? -1);
+    const tc = () =>
+      t
+        .fx('tamcanh')
+        .filter((m) => m.pg !== undefined && m.pg >= 0)
+        .pop()?.pg ?? -1;
     trib(t.sim).noteHit(t.p, 'hurt');
     t.run(44.6);
     expect(tc()).toBe(95);
