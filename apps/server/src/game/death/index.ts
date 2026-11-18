@@ -31,6 +31,7 @@ import { CloneSystem } from '../clone';
 import { DomainSystem } from '../domain';
 import { parties } from '../party';
 
+import { at } from '@dtl/shared';
 /** Phần GameSim mà hệ chết/hồi sinh cần. */
 export interface DeathCtx {
   abortStrike(p: PlayerEnt, refund: boolean, notify?: boolean): void;
@@ -79,7 +80,7 @@ export class DeathSystem {
    */
   grantDungeonReward(p: PlayerEnt, r: DungeonReward, key: string, label: string): boolean {
     if (p.noLoot || this.c.isDead(p)) return false;
-    const gold = r.gold[0] + Math.floor(Math.random() * (r.gold[1] - r.gold[0] + 1));
+    const gold = at(r.gold, 0) + Math.floor(Math.random() * (at(r.gold, 1) - at(r.gold, 0) + 1));
     const gear = rollEquipDrops(r.equip as unknown as Parameters<typeof rollEquipDrops>[0], ITEM_SYS, ITEMS, r.level, Math.random);
     const got: { id: string; n: number }[] = [];
     for (const d of r.items) {

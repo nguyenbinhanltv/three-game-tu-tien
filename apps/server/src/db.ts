@@ -16,6 +16,7 @@ import {
   TRUC_CO_LEVEL,
   HOA_THAN_LEVEL,
   xpNeed,
+  at,
 } from '@dtl/shared';
 import { ITEM, LEVELS } from '@dtl/content';
 import { config } from './config';
@@ -216,7 +217,7 @@ export function migrateEquipSlots(sqlite: Database.Database): void {
 export function rootForName(name: string): (typeof ROOT_IDS)[number] {
   let h = 0;
   for (const ch of name) h = (h * 31 + ch.codePointAt(0)!) >>> 0;
-  return ROOT_IDS[h % ROOT_IDS.length];
+  return at(ROOT_IDS, h % ROOT_IDS.length, 'ROOT_IDS');
 }
 
 /**
@@ -239,7 +240,7 @@ export function migrateRealm(sqlite: Database.Database): void {
  * đi qua) và trận cổng nếu đủ cấp vào Kiếm Trủng; còn lại phải chạm trận như người mới. Không đụng vật phẩm/tiền, idempotent.
  */
 export function migrateTele(sqlite: Database.Database): void {
-  const zones = LEVELS.van_lam.zones ?? [];
+  const zones = at(LEVELS, 'van_lam').zones ?? [];
   const rows = sqlite.prepare("SELECT id, level FROM characters WHERE tele = ''").all() as { id: number; level: number }[];
   const upd = sqlite.prepare('UPDATE characters SET tele = ? WHERE id = ?');
   for (const r of rows) {

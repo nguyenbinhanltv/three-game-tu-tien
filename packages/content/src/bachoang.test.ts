@@ -5,7 +5,8 @@ import { campCoverage, COVER_BY_LEVEL } from './coverage';
 import { LEVELS } from './index';
 import { checkLevel } from './levelcheck';
 
-const lv = LEVELS.bac_hoang;
+import { at } from '@dtl/shared';
+const lv = at(LEVELS, 'bac_hoang');
 const C = 1024;
 
 describe('bac_hoang', () => {
@@ -45,8 +46,8 @@ describe('bac_hoang', () => {
 
   it('độ phủ cụm đạt chuẩn level', () => {
     const cv = campCoverage(lv);
-    expect(cv.p95).toBeLessThanOrEqual(COVER_BY_LEVEL.bac_hoang.p95);
-    expect(cv.max).toBeLessThanOrEqual(COVER_BY_LEVEL.bac_hoang.max);
+    expect(cv.p95).toBeLessThanOrEqual(at(COVER_BY_LEVEL, 'bac_hoang').p95);
+    expect(cv.max).toBeLessThanOrEqual(at(COVER_BY_LEVEL, 'bac_hoang').max);
   });
 
   it('Giới Khích là lòng máng lõm dọc trục giữa, thấp hơn hoang nguyên hai bên', () => {

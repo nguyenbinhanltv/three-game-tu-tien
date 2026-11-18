@@ -48,11 +48,11 @@ export class TickProf {
     const o: Record<string, { p50: number; p95: number; max: number; mean: number }> = {};
     for (const [k, a] of this.samples) {
       const s = [...a].sort((x, y) => x - y);
-      const q = (f: number) => Number(s[Math.min(s.length - 1, Math.floor(s.length * f))].toFixed(3));
+      const q = (f: number) => Number((s[Math.min(s.length - 1, Math.floor(s.length * f))] ?? 0).toFixed(3));
       o[k] = {
         p50: q(0.5),
         p95: q(0.95),
-        max: Number(s[s.length - 1].toFixed(3)),
+        max: Number((s[s.length - 1] ?? 0).toFixed(3)),
         mean: Number((s.reduce((x, y) => x + y, 0) / s.length).toFixed(3)),
       };
     }
@@ -67,7 +67,7 @@ export class TickProf {
 export async function maybeCpuProfile(): Promise<void> {
   const spec = process.env.CPU_PROF;
   if (!spec) return;
-  const [file, startS = '20', durS = '30'] = spec.split(',');
+  const [file = 'cpu.cpuprofile', startS = '20', durS = '30'] = spec.split(',');
   const inspector = await import('node:inspector');
   const fs = await import('node:fs');
   const session = new inspector.Session();
