@@ -4,7 +4,6 @@
  * Ngôn ngữ: nền mực bán trong suốt (--k-ink-bg, #0D1117 ở 80%), viền kim (--k-bronze, #C8A96E), điểm nhấn ngọc
  * (--k-ngoc, #38BDF8); tiêu đề và cảnh giới dùng font có chân, chỉ số dùng sans. Xem docs/art-bible.md mục 7.
  */
-
 /* ---------- khung nhân vật / mục tiêu ---------- */
 .hud .frame {
   background: var(--k-ink-bg);
@@ -59,7 +58,6 @@
   animation: none;
   filter: drop-shadow(0 0 4px rgba(255, 222, 150, 0.8));
 }
-
 /* ---------- hồi chiêu: vòng linh văn ----------
  * Lòng ô tối đi, một vành kim chạy theo phần còn lại (đầu vành sáng), khắc vạch như vòng phù văn.
  * Chỉ dùng gradient + mask (không ảnh, không thêm phần tử); --p là phần hồi chiêu còn lại 0..1 do Hud đặt.
@@ -107,7 +105,6 @@
   font: 700 18px var(--k-font-serif);
   color: var(--k-gold);
 }
-
 /* ---------- độ kiếp ---------- */
 .hud .trib {
   top: 132px;
@@ -212,7 +209,6 @@
   font: 400 12px var(--k-font-serif);
   color: var(--k-text-dim);
 }
-
 /* ---------- gợi ý khóa chuột: tự mờ ---------- */
 .hud .hint.lock {
   bottom: 150px;
@@ -226,32 +222,11 @@
     visibility: hidden;
   }
 }
-
 /* ---------- chat: thu gọn khi không dùng ---------- */
-.chat-log,
-.chat-input {
-  transition:
-    opacity 0.5s ease-out,
-    background-color 0.3s;
-}
-.chat.idle .chat-log {
-  opacity: 0;
-  pointer-events: none;
-}
-.chat.idle .chat-input {
-  opacity: 0.55;
-}
-.chat.idle:hover .chat-log,
-.chat.idle:hover .chat-input {
-  opacity: 1;
-  pointer-events: auto;
-}
-
 /* ---------- bảng nhân vật: khối độ kiếp ---------- */
 .trib-box {
   border-left: 2px solid var(--k-gold);
 }
-
 /* ---------- phẩm chất: viền ô dày hơn, quầng trong theo phẩm, khấc góc ----------
  * Phàm xám, Linh lục, Huyền lam, Địa tím, Thiên kim. Ở cỡ ô 48 px viền 1,5 px của ba phẩm giữa khó phân biệt,
  * nên thêm khấc tam giác ở góc trên trái (hình khác nhau không cần, màu đậm là đủ) và quầng trong.
@@ -295,7 +270,6 @@
 .k-slot[data-q='5'] {
   --qc: var(--k-q5);
 }
-
 /* ---------- số sát thương (lớp DOM trên cảnh) ----------
  * Ba cấp đọc được trong nháy mắt: đòn thường (ngà, nhỏ), bạo kích (kim, lớn, nảy), mình trúng đòn (son đỏ).
  * Hồi phục ngọc; đòn của người khác nhỏ và mờ. Cỡ chữ theo --ui-scale để màn lớn không bé đi.
@@ -336,7 +310,6 @@
   font-size: calc(14px * var(--s));
   opacity: 0.85;
 }
-
 /* ---------- thông báo nổi nằm trên bảng ----------
  * Toast (ví dụ "Tu vi đã đầy nhưng gặp bình cảnh…") trước đây nằm dưới bảng đang mở nên bị che giữa câu.
  * Đưa lên trên bảng, dưới tooltip; không nhận chuột để không chặn nút đóng bảng.
