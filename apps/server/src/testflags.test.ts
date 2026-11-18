@@ -268,7 +268,7 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
   let sqlite: typeof import('./db').sqlite;
   let SYS: string;
   let content: typeof import('@dtl/content');
-  let tools: typeof import('./game/gmtools');
+  let tools: typeof import('./game/gm/tools');
   beforeAll(async () => {
     ({ GameSim } = await import('./game/sim'));
     ({ WorldState } = await import('./state'));
@@ -276,7 +276,7 @@ describe('lệnh GM thử đồ: help, skills, learn, kit, outfit, weapon, find,
     ({ sqlite } = await import('./db'));
     SYS = (await import('@dtl/shared')).S.SYS;
     content = await import('@dtl/content');
-    tools = await import('./game/gmtools');
+    tools = await import('./game/gm/tools');
   });
 
   let n = 0;
