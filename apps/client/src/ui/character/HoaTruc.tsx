@@ -127,10 +127,10 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       const k = cv.width / size.w;
       ctx.setTransform(k, 0, 0, k, 0, 0);
       ctx.clearRect(0, 0, size.w, size.h);
-      const ih = size.h * 0.93;
+      const ih = size.h * 0.99;
       const iw = (charImg.width / charImg.height) * ih;
       const ox = (size.w - iw) / 2 + (still || reduce ? 0 : m.sx * 12);
-      const oy = size.h - ih - size.h * 0.02 + (still || reduce ? 0 : m.sy * 5);
+      const oy = size.h - ih - size.h * 0.004 + (still || reduce ? 0 : m.sy * 5);
       if (still || reduce) {
         ctx.drawImage(charImg, ox, oy, iw, ih);
       } else {
