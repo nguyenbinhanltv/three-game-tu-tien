@@ -274,6 +274,7 @@ export function runFrame(eng: Game): void {
     // Lúc tải giữ điểm hồi sinh do prefetch đặt (renderPos có thể chưa khớp vị trí thật).
     if (eng.started) assets.setViewer(rp.x, rp.z);
     syncHud(eng, me);
+    eng.props?.setTriangleLoad(eng.lastRender.triangles); // Cực cao: co/nở tầm cây-đá theo tam giác khung vừa vẽ
     eng.music.tick(now, {
       active: eng.started,
       room: get().room,

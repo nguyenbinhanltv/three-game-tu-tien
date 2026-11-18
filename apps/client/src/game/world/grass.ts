@@ -56,10 +56,12 @@ export const GRASS_PRESETS: Record<string, GrassPreset> = {
   low: { radius: 0, spacing: 1 },
   medium: { radius: 32, spacing: 1.1 },
   high: { radius: 46, spacing: 0.9 },
+  // Cực cao: cỏ rộng và dày hơn (tầm 68 m, giãn 0,78 m; ~gấp 2 số bụi của Cao). Ô dựng mỗi khung vẫn theo `budget`, trần instance bên dưới.
+  ultra: { radius: 68, spacing: 0.78 },
 };
 
-/** Trần số instance (ứng với preset Cao), cấp phát một lần. */
-const MAX_INSTANCES = 20000;
+/** Trần số instance (ứng với preset Cực cao), cấp phát một lần. */
+const MAX_INSTANCES = 50000;
 
 const C_SUN = new THREE.Color(0x7ea25a); // leaf_grass
 const C_DRY = new THREE.Color(0xb7ac74); // leaf_dry
