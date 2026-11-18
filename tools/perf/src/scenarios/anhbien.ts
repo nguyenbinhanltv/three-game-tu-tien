@@ -33,7 +33,7 @@ export default {
       }
       await gm(page, 'god on', 900);
       await skipCutscene(page, 10);
-      await cam(page, { pitch: 0.42, dist: 36, yaw: 0.5 });
+      await cam(page, { pitch: 0.16, dist: 34, yaw: 0.35 });
       for (let i = 0; i < 80 && !(await page.evaluate(() => !!document.querySelector('.trib'))); i++) await sleep(250);
       const t0 = Date.now();
       const T = () => (Date.now() - t0) / 1000;
@@ -70,7 +70,7 @@ export default {
           await snap(page, dir, 'p2-sky-nhat-thuc.jpg', { wait: 800 });
           await cam(page, { pitch: 0.12, dist: 30, yaw: Math.PI });
           await snap(page, dir, 'p2-sky-nhat-thuc-b.jpg', { wait: 1200 });
-          await cam(page, { pitch: 0.42, dist: 36, yaw: 0.5 });
+          await cam(page, { pitch: 0.16, dist: 34, yaw: 0.35 });
         });
         await once('smash', 36, () => snap(page, dir, 'p2-01-dap-bia-bao.jpg'));
         await once('hold', 58, () => snap(page, dir, 'p2-02-bia-giu.jpg'));

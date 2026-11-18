@@ -985,7 +985,7 @@ export class Game {
     if (levelId() === KIEP_BH) {
       // Nhật thực: đĩa đen vành lửa treo trên khe Giới Khích, phía bắc-đông sân (chỗ camera mặc định ngẩng lên thấy được, không dưới khung HUD).
       const c = LEVELS[KIEP_BH].dungeon!.center;
-      this.eclipseSun = buildEclipseSun(c.x + 60, heightAt(c.x, c.z) + 28, c.z - 120, 15);
+      this.eclipseSun = buildEclipseSun(c.x + 55, heightAt(c.x, c.z) + 12, c.z - 120, 15);
       this.scene.add(this.eclipseSun.group);
     }
   }
@@ -1046,6 +1046,14 @@ export class Game {
     if (Math.abs(t - this.riftMoodT) < 0.01) return;
     this.riftMoodT = t;
     const p = mixPreset(GRADING.ash_dawn, GRADING.rift, t);
+    if (levelId() === KIEP_BH) {
+      // Sân Nhật Thực Kiếp: sương mỏng hơn, tương phản và tối hơn để thấy rõ bia, boss và đĩa nhật thực (lần quay đầu bị sương hồng làm đục).
+      p.fogDensity *= 0.4;
+      if (p.fogHaze !== undefined) p.fogHaze *= 0.35;
+      p.heightFogBoost *= 0.6;
+      p.contrast *= 1.12;
+      p.exposure *= 0.88;
+    }
     tuneAtmosphere(this.scene, this.env, p, t > 0.5 ? 'rift' : 'ash_dawn', mixHex(skyTopOf('ash_dawn'), skyTopOf('rift'), t));
     applyGrading(p);
   }
