@@ -481,6 +481,23 @@ const terrain = {
   colliders,
 };
 
+// ---- DV3-H: điểm nhiệm vụ chương 5 (thêm SAU mọi bước dùng R() để không đổi bố cục đã duyệt) ----
+// Mạch nhãn còn sống (touch, s5_buom_mach), xác bạn của Cố Bất Dịch (touch, s5_dem_xac). Mỗi vùng chỉ được một poi nên đây là spots.
+const EXTRA_SPOTS = [
+  { id: 'mach_nhan_1', zone: 'kho_loc_lam', off: [-400, 240] },
+  { id: 'mach_nhan_2', zone: 'kho_loc_lam', off: [-290, 130] },
+  { id: 'mach_nhan_3', zone: 'kho_loc_lam', off: [-370, 300] },
+  { id: 'xac_tho_san_1', zone: 'han_hoi_nguyen', off: [390, 300] },
+  { id: 'xac_tho_san_2', zone: 'han_hoi_nguyen', off: [230, 190] },
+  { id: 'xac_tho_san_3', zone: 'han_hoi_nguyen', off: [330, 140] },
+  { id: 'xac_tho_san_4', zone: 'kho_loc_lam', off: [-440, 200] },
+  { id: 'xac_tho_san_5', zone: 'kho_loc_lam', off: [-210, 220] },
+  { id: 'xac_tho_san_6', zone: 'kho_loc_lam', off: [-320, 330] },
+];
+for (const p of EXTRA_SPOTS) if (zoneOfOffset(p.off[0], p.off[1])?.id !== p.zone) throw new Error('điểm nhiệm vụ ngoài vùng: ' + p.id);
+// Tịnh Quang Dực Sứ đi từ cổng Xích Tẫn Khích về Trấn Giới Đài (q5_tinh_quang).
+const ESCORTS = [{ id: 'esc_tinh_quang', npc: 'npc_tinh_quang_do', speed: 4, path: [[350, -395], [300, -420], [220, -450], [130, -480], [50, -500], [-10, -506]].map(([x, z]) => [W(x), W(z)]) }];
+
 const level = {
   id: 'bac_hoang',
   minLevel: 28, // DIVUC: chương 5 từ Hóa Thần; server kiểm ở requestLevel
@@ -490,7 +507,8 @@ const level = {
   // Cổng vào Xích Tẫn Khích (DV-3D), cách poi cong_xich_tan_khich 18 m về phía tâm bản đồ.
   portals: [{ x: W(337), z: W(-387), r: 12, to: 'xich_tan_khich' }],
   // Vị trí năm Trấn Giới Bia (cơ chế giới áp/thắp bia là DV3-C; nhiệm vụ `touch` dùng các điểm này).
-  spots: STELES.map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),
+  spots: [...STELES, ...EXTRA_SPOTS].map((b) => ({ id: b.id, zone: b.zone, x: W(b.off[0]), z: W(b.off[1]) })),
+  escorts: ESCORTS,
   camps,
   spawns,
   nodes,

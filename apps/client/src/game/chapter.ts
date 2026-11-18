@@ -4,7 +4,7 @@
  * Phần thuần (preset, khung camera, cờ đã xem) tách ở đây để test được không cần renderer.
  */
 
-export type ChapterKind = 'sect' | 'dungeon' | 'trib' | 'ascend' | 'ascend_kd' | 'ascend_na' | 'ascend_hn' | 'ch2' | 'ch3' | 'ch4' | 'fly';
+export type ChapterKind = 'sect' | 'dungeon' | 'trib' | 'ascend' | 'ascend_kd' | 'ascend_na' | 'ascend_hn' | 'ch2' | 'ch3' | 'ch4' | 'ch5' | 'fly';
 
 export interface ChapterPreset {
   /** Thẻ hiện bao lâu (ms). */
@@ -39,6 +39,8 @@ export const CHAPTER: Record<ChapterKind, ChapterPreset> = {
   ch3: { card: 3000, dist: 1.3, pitch: 0.1, cam: 2.6 },
   /** Chương 4 · Thiên Khuyết: lần đầu tới Ngoại Thành Trạm, ngẩng lên cổng thành vỡ. */
   ch4: { card: 3000, dist: 1.3, pitch: 0.12, cam: 2.6 },
+  /** Chương 5 · Bắc Hoang (DV3-H): lần đầu tới Vọng Bắc Trạm, ngẩng nhìn vệt nứt dọc trời phía bắc. */
+  ch5: { card: 3000, dist: 1.3, pitch: 0.14, cam: 2.6 },
 };
 
 const EASE_IN = 0.7;

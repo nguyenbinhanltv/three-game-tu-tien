@@ -536,6 +536,36 @@ console.log(
   }
 }
 
+// ---------- tu vi từ nhiệm vụ chương 5 (DV3-H) ----------
+{
+  // Cấp 29–32 chưa có trong realms/xpNeed (MAX_LEVEL 28): dùng bảng xpNeed đề xuất của docs/DIVUC_DESIGN.md mục 2.2 (cấp 28→31).
+  const DESIGN_NEED = [234_000, 242_000, 250_000, 257_500];
+  const stageXp = DESIGN_NEED.reduce((a, b) => a + b, 0);
+  const mainQ = QUESTS.filter((q) => q.id.startsWith('q5_'));
+  const sideQ = QUESTS.filter((q) => q.id.startsWith('s5_'));
+  const sum = (qs: typeof mainQ) => qs.reduce((n, q) => n + q.rewards.xp, 0);
+  console.log(`\nNhiệm vụ chương 5 (DV3-H): tu vi thưởng so với chặng Hóa Thần → Anh Biến (nhịp thiết kế 10 giờ, tổng ${stageXp})`);
+  console.log('nhiệm vụ            cấp  tu vi   linh thạch  tích lũy   % chặng');
+  let cum = 0;
+  for (const q of mainQ) {
+    cum += q.rewards.xp;
+    console.log(`${q.id.padEnd(19)} ${String(q.minLevel ?? 28).padStart(3)} ${String(q.rewards.xp).padStart(6)} ${String(q.rewards.gold).padStart(10)} ${String(cum).padStart(9)} ${pct(cum / stageXp).padStart(9)}`);
+  }
+  const mainShare = sum(mainQ) / stageXp;
+  console.log(`Chính ${sum(mainQ)} (${pct(mainShare)} chặng, thiết kế ≈ 14%), phụ ${sum(sideQ)} (${pct(sum(sideQ) / stageXp)}); phần còn lại ${pct(1 - mainShare)} chặng đến từ quái, phó bản, boss và đả tọa để giữ nhịp ≈ 10 giờ.`);
+  if (mainShare < 0.12 || mainShare > 0.16) {
+    console.error(`LỖI: tu vi nhiệm vụ chính chương 5 chiếm ${pct(mainShare)} chặng Hóa Thần, ngoài 12–16% (thiết kế ≈ 14%)`);
+    process.exitCode = 1;
+  }
+  for (const q of [...mainQ, ...sideQ]) {
+    const need = DESIGN_NEED[Math.min(Math.max((q.minLevel ?? 28) - 28, 0), 3)];
+    if (q.rewards.xp > need * 0.2) {
+      console.error(`LỖI: ${q.id} thưởng ${q.rewards.xp} tu vi, hơn 20% một cấp (${need}): lên cấp quá nhanh bằng nhiệm vụ`);
+      process.exitCode = 1;
+    }
+  }
+}
+
 console.log('\nThử thách tâm ma (bình cảnh, Kiếm tu):');
 for (const r of main.trialRows) console.log(r);
 console.log('máu/s: phần trăm máu tối đa mất mỗi giây khi đứng yên không né; mất/lần: sau khi trừ khiên + hồi nguyên, đã nhân kéo cụm; tọa: giây đả tọa hồi lại; tìm: giây tìm quái mỗi lần giết.');
