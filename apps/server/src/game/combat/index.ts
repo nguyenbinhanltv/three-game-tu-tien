@@ -1,7 +1,7 @@
 // Chiêu và công pháp của người chơi (R-7): onSkill/onDash, resolveSkill, hồi/hộ thể/triệu hồi, tickMethods.
 // Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `CombatCtx`; mọi sát thương vẫn qua damageMonster/damagePlayer của sim.
-import { addCharge, CHARGE_MAX, type DmgMsg, caveBoundOf, healAmount, stackMul, stacksAlive, type FxMsg, AIRBORNE_HEIGHT, elemDamageMul, GCD, type LevelDef, MF_STUN, MS_CHASE, MS_DEAD, MS_IDLE, MS_RETURN, PF_CASTING, PF_SHIELD, S, SKILL_MSG_PER_SEC, type SkillDef, stepMove, type SysMsg, BLINK_CD, BLINK_DIST, blinkReplaces, comboNext, dashDir, DASH_MIN_GAP_MS, DASH_MAX_DIST, needsTarget, dealsDamage, DASH_MAX_SLOPE, distToSegment, inLine, hitOffsets, planDash, strikeDelay, type Terrain } from '@dtl/shared';
-import { SKILL, t } from '@dtl/content';
+import { addCharge, CHARGE_MAX, type DmgMsg, caveBoundOf, healAmount, stackMul, stacksAlive, type FxMsg, AIRBORNE_HEIGHT, elemDamageMul, GCD, type LevelDef, MF_STUN, MS_CHASE, MS_DEAD, MS_IDLE, MS_RETURN, PF_CASTING, PF_SHIELD, S, SKILL_MSG_PER_SEC, type SkillDef, type SysMsg, BLINK_CD, BLINK_DIST, blinkReplaces, comboNext, dashDir, DASH_MIN_GAP_MS, DASH_MAX_DIST, needsTarget, dealsDamage, DASH_MAX_SLOPE, distToSegment, inLine, hitOffsets, planDash, strikeDelay, type Terrain } from '@dtl/shared';
+import { SKILL } from '@dtl/content';
 import { type Hot, methodOf, passiveOf, resolveFor, type Trail } from '../method';
 import { isEmpowered } from '../skillflow';
 import type { DuelSystem } from '../duel';

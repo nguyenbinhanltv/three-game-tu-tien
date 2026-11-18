@@ -1,7 +1,7 @@
 // Lệnh GM của tài khoản thử (`/gm …`, `?realm=`, `?tribulation=`): tách từ GameSim (R-7), giữ nguyên hành vi.
 // Hệ con chỉ biết GameSim qua giao diện hẹp `GmCtx`; mọi đổi vật phẩm/tiền vẫn qua `Character.tx` (tx + idem + sổ cái).
-import { ARTIFACT_MAX_LEVEL, CHARGE_MAX, parseAppearance, EQUIP_SLOTS, wearableBy, MAX_ENHANCE, MAX_SKILL_LEVEL, VARIANT_MIN_LEVEL, type EquipSlot, type Quality, QUALITY_COUNT, GCD, initialBottleneck, MAX_LEVEL, parseRealmCode, INV_SIZE, planSort, MS_DEAD, tribDef, TRIB_DEFS, type TribId, xpNeed } from '@dtl/shared';
-import { ARTIFACT, APPEARANCE, ITEM, itemName, itemTier, methodName, LEVELS, MONSTER, NPC, QUEST, QUESTS, SET, SETS, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
+import { ARTIFACT_MAX_LEVEL, CHARGE_MAX, parseAppearance, EQUIP_SLOTS, wearableBy, MAX_ENHANCE, MAX_SKILL_LEVEL, VARIANT_MIN_LEVEL, type EquipSlot, type Quality, QUALITY_COUNT, initialBottleneck, MAX_LEVEL, parseRealmCode, INV_SIZE, planSort, MS_DEAD, tribDef, TRIB_DEFS, type TribId, xpNeed } from '@dtl/shared';
+import { ARTIFACT, APPEARANCE, ITEM, itemName, itemTier, methodName, LEVELS, MONSTER, QUEST, QUESTS, SET, SETS, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { PLACE } from '@dtl/content/places';
 import { isEquipSlot, type Character } from '../character';
 import { BRANCH_METHOD, findIds, GM_GROUPS, GM_MAX_TIER, hasOutfitAsset, helpLine, isGmBranch, outfitRows, parsePlus, planKit, skinIds, weaponIds, type GmBranch } from './tools';

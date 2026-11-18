@@ -4,7 +4,7 @@ import { C, ROOM_DUNGEON, S } from '@dtl/shared';
 import { WS, W, check, health, join, tag, type Ctx } from './lib';
 
 export async function runTransfer(ctx: Ctx): Promise<void> {
-  const { client, room, init, gm } = ctx;
+  const { client, init } = ctx;
   // 6. Vào bí cảnh không có vé bị từ chối.
   let direct = false;
   try {

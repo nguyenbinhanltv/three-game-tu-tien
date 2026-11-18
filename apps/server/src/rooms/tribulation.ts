@@ -1,7 +1,7 @@
 // Room độ kiếp (R-7, tách từ rooms.ts).
-import { type Client, Room, ServerError } from 'colyseus';
+import { type Client, ServerError } from 'colyseus';
 import { PF_DEAD, ROOM_DUNGEON, ROOM_TRIBULATION, ROOM_WORLD, TRIB_LEVEL, tribDef, tribRoomNameOf, type TribId, type DungeonDef } from '@dtl/shared';
-import { LEVELS, t } from '@dtl/content';
+import { LEVELS } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import type { PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
@@ -20,7 +20,7 @@ export function defineTribulation(levelId: string): typeof TribulationRoom {
   if (!LEVELS[levelId]?.tribulation) throw new Error(`defineTribulation: ${levelId} không phải sân độ kiếp`);
   if (levelId === TribulationRoom.levelId) return TribulationRoom;
   return class extends TribulationRoom {
-    static levelId = levelId;
+    static override levelId = levelId;
   };
 }
 
@@ -46,13 +46,13 @@ export class TribulationRoom extends GameRoom {
     return { levelId: this.levelId, roomName: tribRoomNameOf(this.levelId), spawn: d.spawn, respawn: d.spawn, persistPosition: false };
   }
 
-  onCreate(options: unknown): void {
+  override onCreate(options: unknown): void {
     super.onCreate(options);
     this.maxClients = 5;
     this.clock.setInterval(() => this.director(), 500);
   }
 
-  static async onAuth(token: string, options: unknown): Promise<JoinAuth> {
+  static override async onAuth(token: string, options: unknown): Promise<JoinAuth> {
     const auth = await GameRoom.onAuth(token, options);
     const key = (options as { tribRoom?: unknown } | null)?.tribRoom;
     const t = tickets.take(auth.charId, this.levelId);
@@ -61,12 +61,12 @@ export class TribulationRoom extends GameRoom {
   }
 
   /** Lưu id kiếp theo nhân vật để `afterJoin` (không nhận `auth`) biết có phải người độ kiếp không. */
-  onJoin(client: Client, options: unknown, auth: JoinAuth): void {
+  override onJoin(client: Client, options: unknown, auth: JoinAuth): void {
     tribArrivals.set(auth.charId, auth.trib?.id ? (auth.trib.id as TribId) : undefined);
     super.onJoin(client, options, auth);
   }
 
-  afterJoin(p: PlayerEnt): void {
+  override afterJoin(p: PlayerEnt): void {
     const id = tribArrivals.get(p.char.id);
     tribArrivals.delete(p.char.id);
     if (!id) {

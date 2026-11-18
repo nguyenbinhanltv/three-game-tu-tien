@@ -3,8 +3,7 @@ import { type Room } from 'colyseus.js';
 import { applyInvMsg, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
 import { W, check, health, join, type Ctx, type P, type CharV } from './lib';
 
-export async function runParty(ctx: Ctx): Promise<void> {
-  const { client, gm } = ctx;
+export async function runParty(_ctx: Ctx): Promise<void> {
   // 16. Tổ đội và tỉ thí (P3-9): server giữ lời mời, chặn spam, không cho đánh đồng đội ngoài tỉ thí, tỉ thí không thưởng.
   {
     const A = 'doi_a' + (Date.now() % 1000);
@@ -14,7 +13,6 @@ export async function runParty(ctx: Ctx): Promise<void> {
     const b = await join(B);
     const c = await join(Cn);
     const players = (r: Room) => (r.state as { players: Map<string, P> }).players;
-    const pa = () => players(a.room).get(a.init.sid)!;
     const pb = () => players(a.room).get(b.init.sid)!;
     const pc = () => players(a.room).get(c.init.sid)!;
     const say = async (r: Room, cmd: string) => {

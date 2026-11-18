@@ -6,7 +6,7 @@ import { Game, reqId } from '../game/engine';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { Button, Divider, PanelWindow, Slot, TipCard, Tooltip } from './kit';
 import { MethodCarousel } from './ngj';
-import { closePanel, set, useUI } from './store';
+import { closePanel, useUI } from './store';
 
 const SCROLL = 'itm_bi_tich_tan_quyen';
 

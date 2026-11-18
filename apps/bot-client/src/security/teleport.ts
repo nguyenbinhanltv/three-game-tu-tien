@@ -1,11 +1,9 @@
 // Bài kiểm tra bảo mật: Truyền Tống Trận và điểm đánh dấu (M-4) (R-7, tách từ security-check.ts).
 import { type Room } from 'colyseus.js';
 import { C, MS_DEAD, S } from '@dtl/shared';
-import { spawn } from 'node:child_process';
 import { W, check, health, join, tag, type Ctx, type P, type M } from './lib';
 
-export async function runTeleport(ctx: Ctx): Promise<void> {
-  const { client, gm } = ctx;
+export async function runTeleport(_ctx: Ctx): Promise<void> {
   // 14. Truyền Tống Trận và điểm đánh dấu (M-4): server quyết định mở khóa, giao chiến, spam, kiểu gửi lạ, chia sẻ chỉ trong tổ đội.
   {
     const ta = await join('tele' + tag + 'a');

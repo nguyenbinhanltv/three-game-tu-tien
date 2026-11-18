@@ -1,8 +1,7 @@
 // Bài ?god/?at (M1-10): tài khoản thử, tham số lạ, server production (R-7, tách từ security-check.ts).
 import { Client } from 'colyseus.js';
 import { C, type InitMsg, ROOM_WORLD, S } from '@dtl/shared';
-import { spawn } from 'node:child_process';
-import { WS, W, check, health, withServer, type P, type M } from './lib';
+import { WS, W, check, health, withServer, type P } from './lib';
 
 export async function testParamsChecks(): Promise<void> {
   // a) Tài khoản thử trên server dev: ?at đưa tới điểm đặt tên, ?god không mất máu dù bị quái đánh.
