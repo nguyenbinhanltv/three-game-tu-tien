@@ -11,18 +11,30 @@ import { snap } from '../lib/shot';
 export default {
   name: 'divuc',
   desc: 'Quái Dị Vực chương 5: gọi bằng /gm spawn, đánh thử, quay webm + ảnh (xuất hiện, vạch báo, trúng đòn, chết)',
-  usage: '[--mons mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc] [--methods lac_kiem_quyet] [--dist 12] [--pitch 0.28] [--yaw 3.14] [--rounds 12] [--quiet]',
+  usage:
+    '[--mons mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc] [--methods lac_kiem_quyet] [--dist 12] [--pitch 0.28] [--yaw 3.14] [--rounds 12] [--quiet]',
   async run(r) {
     for (const id of opt('--mons', 'mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc').split(',')) {
       const dir = path.join(r.out, id);
       fs.mkdirSync(dir, { recursive: true });
-      const { page, ctx } = await r.open({ name: 'Dv' + id.slice(4, 10), quality: 'high', look: { g: 'm' }, video: dir, seenIntro: true, query: { at: 'tong_mon' } });
+      const { page, ctx } = await r.open({
+        name: 'Dv' + id.slice(4, 10),
+        quality: 'high',
+        look: { g: 'm' },
+        video: dir,
+        seenIntro: true,
+        query: { at: 'tong_mon' },
+      });
       await gm(page, 'level 28', 1000);
       await gm(page, `method ${opt('--methods', 'lac_kiem_quyet')} 5`, 1000);
       await gm(page, 'skills max', 1000);
       await gm(page, 'god on', 900);
       await gm(page, 'heal', 900);
-      await cam(page, { pitch: Number(opt('--pitch', '0.28')), dist: Number(opt('--dist', '12')), yaw: Number(opt('--yaw', String(Math.PI))) });
+      await cam(page, {
+        pitch: Number(opt('--pitch', '0.28')),
+        dist: Number(opt('--dist', '12')),
+        yaw: Number(opt('--yaw', String(Math.PI))),
+      });
       // Boss nạp lười (GLB vài MB): gọi thử một lần cho tải xong rồi gọi lại, khỏi quay cảnh xuất hiện bằng model khối.
       if (id.startsWith('boss_')) {
         await gm(page, `spawn ${id}`, 1500);

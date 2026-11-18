@@ -69,7 +69,10 @@ describe.skipIf(!blender)('import_tripo.py (Blender headless)', () => {
     expect(d.height).toBeCloseTo(1.7, 3);
     expect(d.minY).toBeCloseTo(0, 3);
     expect(d.width).toBeCloseTo(d.depth, 2);
-    for (const n of doc.getRoot().listNodes().filter((x) => x.getMesh() || x.getName() === `${id}_rig`)) {
+    for (const n of doc
+      .getRoot()
+      .listNodes()
+      .filter((x) => x.getMesh() || x.getName() === `${id}_rig`)) {
       expect(n.getScale()).toEqual([1, 1, 1]);
       expect(n.getRotation()).toEqual([0, 0, 0, 1]);
     }
@@ -77,7 +80,11 @@ describe.skipIf(!blender)('import_tripo.py (Blender headless)', () => {
 
   it('hướng theo xương đùi: đùi trái ở +X (mặt nhìn +Z), cùng độ sâu với đùi phải', async () => {
     const doc = await (await createIO()).read(out(1));
-    const joint = (name: string) => doc.getRoot().listNodes().find((n) => n.getName() === name)!;
+    const joint = (name: string) =>
+      doc
+        .getRoot()
+        .listNodes()
+        .find((n) => n.getName() === name)!;
     const l = worldPos(joint('thigh_l'));
     const r = worldPos(joint('thigh_r'));
     expect(l[0] - r[0]).toBeCloseTo(0.18, 3);
@@ -123,7 +130,10 @@ describe.skipIf(!blender)('import_tripo.py (Blender headless)', () => {
     expect(Math.abs(e.dims.build!.height - e.dims.raw!.height) / e.dims.raw!.height).toBeLessThan(0.01);
     const doc = await (await createIO()).readBinary(new Uint8Array(fs.readFileSync(path.join(outDir, e.file))));
     expect(countTriangles(doc, 0)).toBe(e.triangles);
-    for (const n of doc.getRoot().listNodes().filter((x) => x.getMesh() && lodLevel(x) === 0)) {
+    for (const n of doc
+      .getRoot()
+      .listNodes()
+      .filter((x) => x.getMesh() && lodLevel(x) === 0)) {
       expect(n.getSkin()).not.toBeNull();
       for (const p of n.getMesh()!.listPrimitives()) expect(p.getAttribute('WEIGHTS_0')).not.toBeNull();
     }

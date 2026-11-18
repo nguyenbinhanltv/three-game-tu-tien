@@ -11,7 +11,18 @@ import { ancientMap } from './ancient';
 import { levelAssets } from '../../base/levelCtx';
 import { drawMinimap, type HitPt } from './draw';
 import { buildFrame } from './marks';
-import { backingScale, clampZoom, screenToWorld, DEFAULT_ZOOM, formatCountdown, type Mark, nearestIndex, type View, zoneStatus, ZOOM_SPANS } from './model';
+import {
+  backingScale,
+  clampZoom,
+  screenToWorld,
+  DEFAULT_ZOOM,
+  formatCountdown,
+  type Mark,
+  nearestIndex,
+  type View,
+  zoneStatus,
+  ZOOM_SPANS,
+} from './model';
 import '../minimap.css';
 
 const SIZE = 176;
@@ -32,7 +43,11 @@ function blurAfterPointer(e: RMouseEvent<HTMLElement>): void {
 function tipOf(m: Mark): { title: string; sub?: string; desc?: string; lines: { text: string; tone?: 'good' | 'bad' | 'dim' }[] } {
   const lines: { text: string; tone?: 'good' | 'bad' | 'dim' }[] = [];
   if (m.kind === 'npc' && m.quest) lines.push({ text: t(`ui.mm.q.${m.quest}`), tone: m.quest === 'wait' ? 'dim' : 'good' });
-  if (m.kind === 'boss' && m.dead) lines.push({ text: m.respawnAt ? t('ui.mm.respawn', { t: formatCountdown((m.respawnAt - Date.now()) / 1000) }) : t('ui.mm.respawning'), tone: 'dim' });
+  if (m.kind === 'boss' && m.dead)
+    lines.push({
+      text: m.respawnAt ? t('ui.mm.respawn', { t: formatCountdown((m.respawnAt - Date.now()) / 1000) }) : t('ui.mm.respawning'),
+      tone: 'dim',
+    });
   if (m.kind === 'mon' || m.kind === 'elite' || m.kind === 'boss') {
     if (m.tone === 'red') lines.push({ text: t('ui.mm.tone.red'), tone: 'bad' });
     else if (m.tone === 'gray') lines.push({ text: t('ui.mm.tone.gray'), tone: 'dim' });
@@ -129,7 +144,9 @@ export function Minimap() {
       if (m) {
         const i = nearestIndex(hits.current, m.x, m.y);
         const mark = i >= 0 ? hits.current[i].mark : null;
-        const key = mark ? `${mark.kind}:${mark.id}:${mark.dead ? 1 : 0}:${mark.respawnAt ? Math.ceil((mark.respawnAt - Date.now()) / 1000) : ''}:${mark.quest ?? ''}` : '';
+        const key = mark
+          ? `${mark.kind}:${mark.id}:${mark.dead ? 1 : 0}:${mark.respawnAt ? Math.ceil((mark.respawnAt - Date.now()) / 1000) : ''}:${mark.quest ?? ''}`
+          : '';
         if (key !== hoverKey || (mark && nowT - hoverAt > 500)) {
           hoverKey = key;
           hoverAt = nowT;
@@ -145,7 +162,11 @@ export function Minimap() {
   }, []);
 
   const bump = (d: number) => setZoom((z0) => clampZoom(z0 + d));
-  const zoneLv = zs.zone ? zs.zone.lvMin === zs.zone.lvMax ? t('ui.mm.zone_lv1', { a: zs.zone.lvMin }) : t('ui.mm.zone_lv', { a: zs.zone.lvMin, b: zs.zone.lvMax }) : '';
+  const zoneLv = zs.zone
+    ? zs.zone.lvMin === zs.zone.lvMax
+      ? t('ui.mm.zone_lv1', { a: zs.zone.lvMin })
+      : t('ui.mm.zone_lv', { a: zs.zone.lvMin, b: zs.zone.lvMax })
+    : '';
   const tip = hover ? tipOf(hover.mark) : null;
 
   return (
@@ -184,17 +205,36 @@ export function Minimap() {
         />
         <div className="minimap-ctl" onClick={(e) => e.stopPropagation()}>
           <Tooltip content={t('ui.mm.zoom_in')}>
-            <button type="button" className="mm-btn" aria-label={t('ui.mm.zoom_in')} disabled={zoom === 0} onClick={(e) => (blurAfterPointer(e), bump(-1))}>
+            <button
+              type="button"
+              className="mm-btn"
+              aria-label={t('ui.mm.zoom_in')}
+              disabled={zoom === 0}
+              onClick={(e) => (blurAfterPointer(e), bump(-1))}
+            >
               +
             </button>
           </Tooltip>
           <Tooltip content={t('ui.mm.zoom_out')}>
-            <button type="button" className="mm-btn" aria-label={t('ui.mm.zoom_out')} disabled={zoom === ZOOM_SPANS.length - 1} onClick={(e) => (blurAfterPointer(e), bump(1))}>
+            <button
+              type="button"
+              className="mm-btn"
+              aria-label={t('ui.mm.zoom_out')}
+              disabled={zoom === ZOOM_SPANS.length - 1}
+              onClick={(e) => (blurAfterPointer(e), bump(1))}
+            >
               −
             </button>
           </Tooltip>
           <Tooltip content={rotate ? t('ui.mm.rot_on') : t('ui.mm.rot_off')}>
-            <button type="button" className="mm-btn" data-on={rotate} aria-pressed={rotate} aria-label={t('ui.mm.rot')} onClick={(e) => (blurAfterPointer(e), setRotate((r) => !r))}>
+            <button
+              type="button"
+              className="mm-btn"
+              data-on={rotate}
+              aria-pressed={rotate}
+              aria-label={t('ui.mm.rot')}
+              onClick={(e) => (blurAfterPointer(e), setRotate((r) => !r))}
+            >
               <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
                 <path d="M6 1 L9 7 L6 5.6 L3 7 Z" fill="currentColor" />
                 <path d="M10.2 8.6A5 5 0 0 1 1.8 8.6" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
@@ -206,13 +246,32 @@ export function Minimap() {
           {rx}, {rz}
         </div>
       </div>
-      <div className="minimap-foot ngj-mm-foot" data-status={zs.status} title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}>
-        <Cartouche map={MOTIFS.includes(level as MapMotif) ? (level as MapMotif) : 'van_lam'} material="lacquer" size="s" title={<><span className="ngj-mm-name">{zoneName}</span>{zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}</>} />
+      <div
+        className="minimap-foot ngj-mm-foot"
+        data-status={zs.status}
+        title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}
+      >
+        <Cartouche
+          map={MOTIFS.includes(level as MapMotif) ? (level as MapMotif) : 'van_lam'}
+          material="lacquer"
+          size="s"
+          title={
+            <>
+              <span className="ngj-mm-name">{zoneName}</span>
+              {zoneLv && <span className="minimap-foot-lv">{zoneLv}</span>}
+            </>
+          }
+        />
       </div>
       {hover &&
         tip &&
         createPortal(
-          <div className="k-tip mm-tip" role="tooltip" data-show="true" style={{ left: Math.min(hover.x + 14, window.innerWidth - 220 * uiScale()) / uiScale(), top: (hover.y + 16) / uiScale() }}>
+          <div
+            className="k-tip mm-tip"
+            role="tooltip"
+            data-show="true"
+            style={{ left: Math.min(hover.x + 14, window.innerWidth - 220 * uiScale()) / uiScale(), top: (hover.y + 16) / uiScale() }}
+          >
             <div className="k-tip-edge">
               <div className="k-tip-in">
                 <TipCard title={tip.title} sub={tip.sub} lines={tip.lines} desc={tip.desc} />

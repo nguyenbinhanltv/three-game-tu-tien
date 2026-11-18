@@ -38,6 +38,8 @@ export function poseIdFor(base: string, opts: { combo?: number; method?: string 
 export function poseIdsFor(base: string, comboHits = 1): string[] {
   const out: string[] = [];
   const voices = VOICED_POSES.has(base) ? POSE_VOICES : (['kt'] as const);
-  for (const v of voices) for (let i = 0; i < comboHits; i++) out.push(poseIdFor(base, { combo: i, method: Object.keys(METHOD_VOICE).find((m) => METHOD_VOICE[m] === v) }));
+  for (const v of voices)
+    for (let i = 0; i < comboHits; i++)
+      out.push(poseIdFor(base, { combo: i, method: Object.keys(METHOD_VOICE).find((m) => METHOD_VOICE[m] === v) }));
   return out;
 }

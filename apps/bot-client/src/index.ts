@@ -41,7 +41,10 @@ const DUNGEON = process.argv.includes('--dungeon');
 const TP = process.argv.includes('--tp');
 // --boss <id quái>: bot đầu tiên giữ một con boss/quái này sống bằng /gm spawn (chết hoặc chưa có thì gọi lại), để đo tick server ở cảnh boss.
 const BOSS = arg('boss', '');
-const GM_CMDS = arg('gm', '').split(';').map((c) => c.trim()).filter(Boolean);
+const GM_CMDS = arg('gm', '')
+  .split(';')
+  .map((c) => c.trim())
+  .filter(Boolean);
 
 /** Chiêu khi --fight: [id, cấp mở, hồi chiêu (giây), cần mục tiêu] theo skills.json; ra chiêu đầu tiên đã hết hồi. */
 const FIGHT_SKILLS: [string, number, number, boolean][] = [
@@ -114,7 +117,9 @@ class Bot {
       this.msgs++;
     });
     // Băng thông nhận (byte WebSocket) để so trước/sau AOI: đếm từ khung tin của transport.
-    const ws = (room.connection as unknown as { transport?: { ws?: { addEventListener?: (t: string, f: (e: { data: unknown }) => void) => void } } }).transport?.ws;
+    const ws = (
+      room.connection as unknown as { transport?: { ws?: { addEventListener?: (t: string, f: (e: { data: unknown }) => void) => void } } }
+    ).transport?.ws;
     ws?.addEventListener?.('message', (e) => {
       const d = e.data as { byteLength?: number; length?: number } | string;
       this.bytes += typeof d === 'string' ? d.length : (d.byteLength ?? d.length ?? 0);
@@ -361,7 +366,9 @@ async function main() {
     try {
       const h = (await (await fetch(httpUrl)).json()) as { online: number; rooms: { name: string; players: number; tickP95: number }[] };
       const lv = bots.reduce((s, b) => s + b.level, 0) / Math.max(1, bots.length);
-      console.log(`online=${h.online} ${h.rooms.map((r) => `${r.name}: ${r.players} người, tick p95 ${r.tickP95}ms`).join(' | ')} | cấp TB bot ${lv.toFixed(1)} | nhận ${kbps.toFixed(1)} KB/s mỗi bot`);
+      console.log(
+        `online=${h.online} ${h.rooms.map((r) => `${r.name}: ${r.players} người, tick p95 ${r.tickP95}ms`).join(' | ')} | cấp TB bot ${lv.toFixed(1)} | nhận ${kbps.toFixed(1)} KB/s mỗi bot`,
+      );
     } catch {
       console.log('không đọc được /health');
     }

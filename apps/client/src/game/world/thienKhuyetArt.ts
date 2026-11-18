@@ -37,8 +37,16 @@ export function pavedWeight(def: TerrainDef, x: number, z: number): number {
 export function tkGroundColor(def: TerrainDef, x: number, z: number, ny: number, out: [number, number, number]): void {
   const n = fbm(x * 0.011, z * 0.011, 2, def.seed + 300);
   const m = fbm(x * 0.035, z * 0.035, 2, def.seed + 331);
-  const hex = (c: number, k = 1): [number, number, number] => [((c >> 16) & 255) / 255 * k, ((c >> 8) & 255) / 255 * k, (c & 255) / 255 * k];
-  const lerp = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const hex = (c: number, k = 1): [number, number, number] => [
+    (((c >> 16) & 255) / 255) * k,
+    (((c >> 8) & 255) / 255) * k,
+    ((c & 255) / 255) * k,
+  ];
+  const lerp = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+  ];
   let c = hex(TK_COLORS.slate, 0.9 + n * 0.16);
   // Rêu: đám theo nhiễu, nhiều hơn ở nhiễu thấp (chỗ trũng ẩm).
   c = lerp(c, hex(TK_COLORS.moss, 0.95 + m * 0.2), Math.min(0.75, Math.max(0, -n * 1.5 + 0.1) * 0.8));
@@ -118,9 +126,39 @@ export function scatterThienKhuyet(ctx: TkScatterCtx): TkRubble[] {
       const k = hash01(gx, gz, 6133);
       const k2 = hash01(gx, gz, 6143);
       const cool = 0.84 + k2 * 0.18;
-      if (pillar) out.push({ id: 'prop_tru_da_khac_van', x, z, yaw: k * Math.PI * 2, s: 0.8 + k2 * 0.3, lean: 1.0 + k * 0.45, sink: 0.5 + k2 * 0.8, tint: [cool * 0.9, cool * 0.98, cool * 1.08] });
-      else if (statue) out.push({ id: 'prop_tuong_da_vo_si', x, z, yaw: k * Math.PI * 2, s: 0.9 + k2 * 0.25, lean: 0.25 + k * 0.3, sink: 0.6, tint: [cool * 0.9, cool * 0.98, cool * 1.08] });
-      else out.push({ id: ROCKS[Math.floor(hash01(gx, gz, 6151) * ROCKS.length)], x, z, yaw: k * Math.PI * 2, s: 0.7 + k2 * 0.9, lean: (k - 0.5) * 0.3, sink: 0.1, tint: [cool * 0.88, cool * 0.97, cool * 1.1] });
+      if (pillar)
+        out.push({
+          id: 'prop_tru_da_khac_van',
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 0.8 + k2 * 0.3,
+          lean: 1.0 + k * 0.45,
+          sink: 0.5 + k2 * 0.8,
+          tint: [cool * 0.9, cool * 0.98, cool * 1.08],
+        });
+      else if (statue)
+        out.push({
+          id: 'prop_tuong_da_vo_si',
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 0.9 + k2 * 0.25,
+          lean: 0.25 + k * 0.3,
+          sink: 0.6,
+          tint: [cool * 0.9, cool * 0.98, cool * 1.08],
+        });
+      else
+        out.push({
+          id: ROCKS[Math.floor(hash01(gx, gz, 6151) * ROCKS.length)],
+          x,
+          z,
+          yaw: k * Math.PI * 2,
+          s: 0.7 + k2 * 0.9,
+          lean: (k - 0.5) * 0.3,
+          sink: 0.1,
+          tint: [cool * 0.88, cool * 0.97, cool * 1.1],
+        });
     }
   }
   return out;

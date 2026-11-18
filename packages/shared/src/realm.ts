@@ -2,7 +2,16 @@
 // Hàm thuần dùng chung client (hiển thị) và server (phán định). Bảng linh căn nằm ở packages/content/data/roots.json.
 
 import { tribForLevel } from './tribulation';
-import { ANH_BIEN_LEVEL, HOA_THAN_LEVEL, KET_DAN_LEVEL, MAX_LEVEL, NGUNG_KHI_MAX, NGUYEN_ANH_LEVEL, TRUC_CO_LEVEL, playerBaseStats } from './formulas';
+import {
+  ANH_BIEN_LEVEL,
+  HOA_THAN_LEVEL,
+  KET_DAN_LEVEL,
+  MAX_LEVEL,
+  NGUNG_KHI_MAX,
+  NGUYEN_ANH_LEVEL,
+  TRUC_CO_LEVEL,
+  playerBaseStats,
+} from './formulas';
 
 // ---------- bình cảnh ----------
 

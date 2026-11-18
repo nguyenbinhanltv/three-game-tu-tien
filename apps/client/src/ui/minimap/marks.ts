@@ -25,7 +25,12 @@ function goalAreas(level: string, goal: { kind: 'mon'; mon: string } | { kind: '
   if (a) return a;
   const lv = LEVELS[level];
   if (!lv) return (a = []);
-  a = goal.kind === 'mon' ? levelSpawns(lv).filter((s) => s.mon === goal.mon).map((s) => ({ x: s.x, z: s.z, r: Math.max(18, s.radius) })) : lv.nodes.filter((n) => n.item === goal.item).map((n) => ({ x: n.x, z: n.z, r: Math.max(18, n.radius) }));
+  a =
+    goal.kind === 'mon'
+      ? levelSpawns(lv)
+          .filter((s) => s.mon === goal.mon)
+          .map((s) => ({ x: s.x, z: s.z, r: Math.max(18, s.radius) }))
+      : lv.nodes.filter((n) => n.item === goal.item).map((n) => ({ x: n.x, z: n.z, r: Math.max(18, n.radius) }));
   areaCache.set(key, a);
   return a;
 }
@@ -45,7 +50,13 @@ export interface MinimapFrame {
  * Đích của nhiệm vụ đang theo dõi: vùng tô trên các bãi quái/điểm hái của đích (trong `GOAL_RANGE` quanh (px, pz)) và điểm
  * gần nhất cho mũi tên. Dùng chung cho minimap và bản đồ lớn.
  */
-export function questOverlay(level: string, quests: QuestView, trackPin: string, px: number, pz: number): Pick<MinimapFrame, 'goals' | 'goalPoint'> {
+export function questOverlay(
+  level: string,
+  quests: QuestView,
+  trackPin: string,
+  px: number,
+  pz: number,
+): Pick<MinimapFrame, 'goals' | 'goalPoint'> {
   const goals: MinimapFrame['goals'] = [];
   let goalPoint: MinimapFrame['goalPoint'] = null;
   const qid = trackedQuestId(quests, trackPin);
@@ -72,7 +83,15 @@ export function questOverlay(level: string, quests: QuestView, trackPin: string,
   return { goals, goalPoint };
 }
 
-export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel: number, partyOrder: readonly string[], now: number, flags: readonly MarkInfo[] = []): MinimapFrame {
+export function buildFrame(
+  g: Game,
+  quests: QuestView,
+  trackPin: string,
+  myLevel: number,
+  partyOrder: readonly string[],
+  now: number,
+  flags: readonly MarkInfo[] = [],
+): MinimapFrame {
   const marks: Mark[] = [];
   const px = g.renderPos.x;
   const pz = g.renderPos.z;
@@ -95,7 +114,18 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
     if (def.boss) bossInRoom.add(m.t); // chết trong tầm đã có biểu tượng, không vẽ thêm chỗ sinh
     const kind = def.boss ? 'boss' : def.elite ? 'elite' : 'mon';
     const sub = t('ui.mm.level', { n: m.lv }) + (def.boss ? ` · ${t('ui.mm.boss')}` : def.elite ? ` · ${t('ui.mm.elite')}` : '');
-    marks.push({ kind, id, x: m.x, z: m.z, label: monsterName(m.t), sub, tone: difficultyTone(m.lv, myLevel), dead, respawnAt: dead ? minimapHooks.bossRespawnAt.get(m.t) : undefined, hurtUntil: hurt(id) });
+    marks.push({
+      kind,
+      id,
+      x: m.x,
+      z: m.z,
+      label: monsterName(m.t),
+      sub,
+      tone: difficultyTone(m.lv, myLevel),
+      dead,
+      respawnAt: dead ? minimapHooks.bossRespawnAt.get(m.t) : undefined,
+      hurtUntil: hurt(id),
+    });
   });
 
   // Tinh anh và boss từ giờ hồi sinh server gửi (M-2, BossTimerMsg): không phụ thuộc AOI nên thấy cả con ở xa; con đang trong tầm đã vẽ ở trên.
@@ -109,7 +139,17 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
       const dead = tm.at > 0;
       const kind = def.boss ? 'boss' : 'elite';
       const sub = t('ui.mm.level', { n: tm.lv }) + ` · ${def.boss ? t('ui.mm.boss') : t('ui.mm.elite')}`;
-      marks.push({ kind, id: tm.id, x: tm.x, z: tm.z, label: monsterName(tm.t), sub, tone: difficultyTone(tm.lv, myLevel), dead, respawnAt: dead ? tm.at + bt.off : undefined });
+      marks.push({
+        kind,
+        id: tm.id,
+        x: tm.x,
+        z: tm.z,
+        label: monsterName(tm.t),
+        sub,
+        tone: difficultyTone(tm.lv, myLevel),
+        dead,
+        respawnAt: dead ? tm.at + bt.off : undefined,
+      });
     }
   }
 
@@ -117,23 +157,53 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
   g.view.players.forEach((p, sid) => {
     if (sid === g.sid) return;
     const n = partyOrder.indexOf(sid);
-    if (n >= 0) marks.push({ kind: 'mate', id: sid, x: p.x, z: p.z, label: p.name, sub: t('ui.mm.level', { n: p.lv }) + ` · ${Math.round((p.hp / Math.max(1, p.mhp)) * 100)}%`, num: n + 1, hurtUntil: hurt(sid) });
-    else if ((p.x - px) ** 2 + (p.z - pz) ** 2 <= RANGE * RANGE) marks.push({ kind: 'player', id: sid, x: p.x, z: p.z, label: p.name, sub: t('ui.mm.level', { n: p.lv }) });
+    if (n >= 0)
+      marks.push({
+        kind: 'mate',
+        id: sid,
+        x: p.x,
+        z: p.z,
+        label: p.name,
+        sub: t('ui.mm.level', { n: p.lv }) + ` · ${Math.round((p.hp / Math.max(1, p.mhp)) * 100)}%`,
+        num: n + 1,
+        hurtUntil: hurt(sid),
+      });
+    else if ((p.x - px) ** 2 + (p.z - pz) ** 2 <= RANGE * RANGE)
+      marks.push({ kind: 'player', id: sid, x: p.x, z: p.z, label: p.name, sub: t('ui.mm.level', { n: p.lv }) });
   });
 
-  for (const f of flags) marks.push({ kind: 'flag', id: `flag:${f.id}`, x: f.x, z: f.z, label: f.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: f.name }), sub: t('ui.wm.mark_dist', { d: Math.round(Math.hypot(f.x - px, f.z - pz)) }), own: f.own });
+  for (const f of flags)
+    marks.push({
+      kind: 'flag',
+      id: `flag:${f.id}`,
+      x: f.x,
+      z: f.z,
+      label: f.own ? t('ui.wm.mark_own') : t('ui.wm.mark_of', { name: f.name }),
+      sub: t('ui.wm.mark_dist', { d: Math.round(Math.hypot(f.x - px, f.z - pz)) }),
+      own: f.own,
+    });
 
   if (level === 'van_lam') {
     for (const n of NPCS) {
       const fn = npcFunction(n);
-      marks.push({ kind: 'npc', id: n.id, x: n.x, z: n.z, label: t(`npc.${n.id}.name`), sub: t(`ui.mm.fn.${fn}`), desc: hasString(`npc.${n.id}.title`) ? t(`npc.${n.id}.title`) : undefined, quest: npcQuestMark(n.id, QUESTS, quests, myLevel) });
+      marks.push({
+        kind: 'npc',
+        id: n.id,
+        x: n.x,
+        z: n.z,
+        label: t(`npc.${n.id}.name`),
+        sub: t(`ui.mm.fn.${fn}`),
+        desc: hasString(`npc.${n.id}.title`) ? t(`npc.${n.id}.title`) : undefined,
+        quest: npcQuestMark(n.id, QUESTS, quests, myLevel),
+      });
     }
     g.view.nodes.forEach((n, id) => {
       if (!n.on || (n.x - px) ** 2 + (n.z - pz) ** 2 > RANGE * RANGE) return;
       marks.push({ kind: 'node', id, x: n.x, z: n.z, label: itemName(n.t), sub: ITEM.get(n.t) ? t('ui.mm.node') : undefined });
     });
     marks.push({ kind: 'portal', id: 'portal', x: PORTAL_POS.x, z: PORTAL_POS.z, label: t('ui.mm.portal'), sub: t('ui.mm.portal_sub') });
-    for (const tp of minimapHooks.teleports) marks.push({ kind: 'tele', id: tp.id, x: tp.x, z: tp.z, label: tp.label, sub: t('ui.mm.tele') });
+    for (const tp of minimapHooks.teleports)
+      marks.push({ kind: 'tele', id: tp.id, x: tp.x, z: tp.z, label: tp.label, sub: t('ui.mm.tele') });
 
     // Boss đã chết và không còn trong trạng thái room: vẫn vẽ biểu tượng xám ở chỗ sinh để người chơi biết nơi trở lại.
     const lv = LEVELS[level];
@@ -141,7 +211,16 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
       for (const s of lv.spawns) {
         const def = MONSTER.get(s.mon);
         if (!def?.boss || bossInRoom.has(s.mon)) continue;
-        marks.push({ kind: 'boss', id: `spawn:${s.mon}`, x: s.x, z: s.z, label: monsterName(s.mon), sub: t('ui.mm.level', { n: s.levelMax }) + ` · ${t('ui.mm.boss')}`, dead: true, respawnAt: minimapHooks.bossRespawnAt.get(s.mon) });
+        marks.push({
+          kind: 'boss',
+          id: `spawn:${s.mon}`,
+          x: s.x,
+          z: s.z,
+          label: monsterName(s.mon),
+          sub: t('ui.mm.level', { n: s.levelMax }) + ` · ${t('ui.mm.boss')}`,
+          dead: true,
+          respawnAt: minimapHooks.bossRespawnAt.get(s.mon),
+        });
       }
     }
   }
@@ -150,8 +229,25 @@ export function buildFrame(g: Game, quests: QuestView, trackPin: string, myLevel
   const scan = get().spiritScan;
   if (scan && now < scan.until) {
     scan.hits.forEach((h, i) => {
-      const nm = h.k === 'boss' || h.k === 'elite' || h.k === 'mon' ? monsterName(h.n) : h.k === 'node' ? itemName(h.n) : h.k === 'poi' ? (hasString(`poi.${h.n}.name`) ? t(`poi.${h.n}.name`) : h.n) : h.n;
-      marks.push({ kind: 'scan', scanKind: h.k, id: `scan:${scan.at}:${i}`, x: h.x, z: h.z, label: nm, sub: t(`ui.spirit.kind.${h.k}`) + (h.lv ? ' · ' + t('ui.mm.level', { n: h.lv }) : '') });
+      const nm =
+        h.k === 'boss' || h.k === 'elite' || h.k === 'mon'
+          ? monsterName(h.n)
+          : h.k === 'node'
+            ? itemName(h.n)
+            : h.k === 'poi'
+              ? hasString(`poi.${h.n}.name`)
+                ? t(`poi.${h.n}.name`)
+                : h.n
+              : h.n;
+      marks.push({
+        kind: 'scan',
+        scanKind: h.k,
+        id: `scan:${scan.at}:${i}`,
+        x: h.x,
+        z: h.z,
+        label: nm,
+        sub: t(`ui.spirit.kind.${h.k}`) + (h.lv ? ' · ' + t('ui.mm.level', { n: h.lv }) : ''),
+      });
     });
   }
 

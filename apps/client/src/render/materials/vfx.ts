@@ -49,7 +49,26 @@ export const FX_MAX_HDR = 2.4;
  * - `wind`: chùm đường gió cuộn quanh một trục, vệt mảnh chạy dọc đường rồi tan, cộng sáng, bloom nhẹ, không gộp (render/vfx/lightning.ts).
  * - `decal`: tấm trên mặt đất: vết nứt phát sáng, vòng triện văn, vết cháy, khói toon (stylized.ts).
  */
-export type FxKind = 'glow' | 'flat' | 'solid' | 'shade' | 'slash' | 'ink' | 'sigil' | 'bolt' | 'vortex' | 'trail' | 'beam' | 'dome' | 'inkpool' | 'toon' | 'crystal' | 'burst' | 'decal' | 'card' | 'wind';
+export type FxKind =
+  | 'glow'
+  | 'flat'
+  | 'solid'
+  | 'shade'
+  | 'slash'
+  | 'ink'
+  | 'sigil'
+  | 'bolt'
+  | 'vortex'
+  | 'trail'
+  | 'beam'
+  | 'dome'
+  | 'inkpool'
+  | 'toon'
+  | 'crystal'
+  | 'burst'
+  | 'decal'
+  | 'card'
+  | 'wind';
 
 const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: number; fog: boolean }> = {
   glow: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -163,7 +182,20 @@ export const BATCHING = FLAGS.batching;
  * `sigil` KHÔNG gộp (S2-C): nhiều pháp trận cùng lúc (lôi võng độ kiếp có 21 vòng cùng vòng nhắm, hay nhiều vùng báo của boss) khi gộp chỉ vẽ ra
  * MỘT cái (dữ liệu instance ghi đúng, vẽ thiếu; `?batch=0` vẽ đủ). Nguyên nhân chưa rõ. Giá: thêm chừng 23 draw call trong 1 giây mỗi đợt lôi võng.
  */
-export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>(['glow', 'flat', 'solid', 'slash', 'ink', 'dome', 'inkpool', 'toon', 'crystal', 'burst', 'decal', 'card']);
+export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>([
+  'glow',
+  'flat',
+  'solid',
+  'slash',
+  'ink',
+  'dome',
+  'inkpool',
+  'toon',
+  'crystal',
+  'burst',
+  'decal',
+  'card',
+]);
 
 /** Tên thuộc tính instance: màu + độ trong, `fxA`, `fxB`, (`fxK`, 0, 0, 0). */
 export const BATCH_ATTR = { c: 'aFxC', a: 'aFxA', b: 'aFxB', k: 'aFxK' } as const;

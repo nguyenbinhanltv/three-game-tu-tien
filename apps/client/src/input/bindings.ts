@@ -59,18 +59,7 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
 
 /** Thao tác giữ phím (đọc mỗi khung từ tập phím đang giữ). */
 type HeldAction =
-  | 'forward'
-  | 'back'
-  | 'left'
-  | 'right'
-  | 'up'
-  | 'down'
-  | 'camLeft'
-  | 'camRight'
-  | 'camUp'
-  | 'camDown'
-  | 'zoomIn'
-  | 'zoomOut';
+  'forward' | 'back' | 'left' | 'right' | 'up' | 'down' | 'camLeft' | 'camRight' | 'camUp' | 'camDown' | 'zoomIn' | 'zoomOut';
 
 export const HELD: Readonly<Record<HeldAction, readonly string[]>> = {
   forward: ['KeyW'],

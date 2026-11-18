@@ -1,5 +1,16 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { computeDamage, groundAt, MAX_LEVEL, monsterStats, playerBaseStats, realmMul, S, TRIBULATION_REFUND_AFTER, xpNeed, type DmgMsg } from '@dtl/shared';
+import {
+  computeDamage,
+  groundAt,
+  MAX_LEVEL,
+  monsterStats,
+  playerBaseStats,
+  realmMul,
+  S,
+  TRIBULATION_REFUND_AFTER,
+  xpNeed,
+  type DmgMsg,
+} from '@dtl/shared';
 
 // Cân bằng 3-10: khắc chế ngũ hành (cờ `ke` do server tính), nội tại ba công pháp, hoàn Trúc Cơ Đan khi độ kiếp.
 process.env.DB_FILE = ':memory:';
@@ -27,7 +38,13 @@ let acc = 5000;
 function setup(level = 10, method?: string) {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const raw = sim.onSkill.bind(sim);
   sim.onSkill = (pl: Ent, msg: unknown) => {
     raw(pl, msg);

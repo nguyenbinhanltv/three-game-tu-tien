@@ -147,7 +147,9 @@ describe('tẩy luyện', () => {
       expect(new Set(keys).size).toBe(keys.length);
       expect(t.count(REFINE_ITEM)).toBe(stones - 1);
     }
-    const row = sqlite.prepare("SELECT reason FROM ledger WHERE char_id = ? AND reason LIKE 'refine:%' LIMIT 1").get(t.c.id) as { reason: string };
+    const row = sqlite.prepare("SELECT reason FROM ledger WHERE char_id = ? AND reason LIKE 'refine:%' LIMIT 1").get(t.c.id) as {
+      reason: string;
+    };
     expect(row.reason).toMatch(/roll=\d+:/);
   });
 
@@ -168,7 +170,15 @@ describe('tẩy luyện', () => {
 describe('phân giải', () => {
   it('đổi đồ thành Thiết Tinh + Linh Trần, trả ngọc đã khảm; không đụng vật phẩm khác', () => {
     const t = setup();
-    t.give((d) => (d.addRolled(SWORD, 12, 3), d.addRolled('itm_dao_bao', 6, 1), d.add(gemId('kim', 1), 1), d.addGold(500), d.add('itm_hoi_xuan_dan', 3)));
+    t.give(
+      (d) => (
+        d.addRolled(SWORD, 12, 3),
+        d.addRolled('itm_dao_bao', 6, 1),
+        d.add(gemId('kim', 1), 1),
+        d.addGold(500),
+        d.add('itm_hoi_xuan_dan', 3)
+      ),
+    );
     const a = t.c.inv.findIndex((s) => s?.id === SWORD);
     const b = t.c.inv.findIndex((s) => s?.id === 'itm_dao_bao');
     t.send('socket', { i: a, idx: 0, gem: gemId('kim', 1) });
@@ -332,7 +342,7 @@ describe('ô khóa (TD-A)', () => {
 
   it('cường hóa: nguyên liệu ở ô khóa không bị trừ (coi như không có)', () => {
     const t = setup();
-    t.give((d) => (d.addRolled(SWORD, 12, 2), d.addGold(100000), d.inv[50] = { id: 'itm_thiet_tinh', n: 99, lk: true }));
+    t.give((d) => (d.addRolled(SWORD, 12, 2), d.addGold(100000), (d.inv[50] = { id: 'itm_thiet_tinh', n: 99, lk: true })));
     const slot = t.c.inv.findIndex((s) => s?.id === SWORD);
     t.enhance({ i: slot });
     expect(t.c.inv[slot]!.plus ?? 0).toBe(0);

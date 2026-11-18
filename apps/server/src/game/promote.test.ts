@@ -70,11 +70,16 @@ describe('Thăng Bậc', () => {
     expect(t.count(MAT)).toBe(3);
     expect(t.c.gold).toBe(50);
     expect(t.msgs).toContain('sys.promoted');
-    const rows = sqlite.prepare("SELECT ref, delta FROM ledger WHERE char_id = ? AND reason LIKE 'promote:%' AND kind = 'item'").all(t.c.id) as { ref: string; delta: number }[];
+    const rows = sqlite
+      .prepare("SELECT ref, delta FROM ledger WHERE char_id = ? AND reason LIKE 'promote:%' AND kind = 'item'")
+      .all(t.c.id) as { ref: string; delta: number }[];
     expect(rows.some((r) => r.ref === 'itm_lk_dao_bao' && r.delta === -1)).toBe(true);
     expect(rows.some((r) => r.ref === 'itm_lm_dao_bao' && r.delta === 1)).toBe(true);
     // Đối soát như `ledger:check`: tổng ledger theo vật phẩm khớp số đang có (không sinh/mất đồ khi đổi id).
-    const sums = sqlite.prepare("SELECT ref, SUM(delta) AS n FROM ledger WHERE char_id = ? AND kind = 'item' GROUP BY ref").all(t.c.id) as { ref: string; n: number }[];
+    const sums = sqlite.prepare("SELECT ref, SUM(delta) AS n FROM ledger WHERE char_id = ? AND kind = 'item' GROUP BY ref").all(t.c.id) as {
+      ref: string;
+      n: number;
+    }[];
     for (const r of sums) expect(r.n, r.ref).toBe(t.count(r.ref));
   });
 
@@ -105,7 +110,14 @@ describe('Thăng Bậc', () => {
   it('bậc 3 → bậc 4 (SETS-4): kiếm và áo bộ thăng đúng đích, trừ 20 Tinh Quang Mặc + phí; bậc 4 không thăng tiếp được', () => {
     const t = setup(24);
     const M4 = PROMOTE_MAT[4]!;
-    t.give((d) => (d.addRolled('itm_kinh_quang_kiem', 21, 3), d.addRolled('itm_kq_dao_bao', 21, 3), d.add(M4, PROMOTE_MAT_COUNT * 2 + 1), d.addGold(promoteGold(4) * 2 + 7)));
+    t.give(
+      (d) => (
+        d.addRolled('itm_kinh_quang_kiem', 21, 3),
+        d.addRolled('itm_kq_dao_bao', 21, 3),
+        d.add(M4, PROMOTE_MAT_COUNT * 2 + 1),
+        d.addGold(promoteGold(4) * 2 + 7)
+      ),
+    );
     t.send('promote', { i: t.slotOf('itm_kinh_quang_kiem') });
     t.send('promote', { i: t.slotOf('itm_kq_dao_bao') });
     expect(t.slotOf('itm_tinh_khuyet_kiem')).toBeGreaterThanOrEqual(0);
@@ -118,7 +130,15 @@ describe('Thăng Bậc', () => {
   it('bậc 4 → bậc 5 (E4-F): kiếm và áo bộ thăng đúng đích, trừ 20 Tẫn Giác + phí; bậc 5 không thăng tiếp được', () => {
     const t = setup(28);
     const M5 = PROMOTE_MAT[5]!;
-    t.give((d) => (d.addRolled('itm_tinh_khuyet_kiem', 29, 3), d.addRolled('itm_tk_dao_bao', 29, 3), d.addRolled('itm_tk_trang_suc', 29, 3), d.add(M5, PROMOTE_MAT_COUNT * 3 + 1), d.addGold(promoteGold(5) * 3 + 7)));
+    t.give(
+      (d) => (
+        d.addRolled('itm_tinh_khuyet_kiem', 29, 3),
+        d.addRolled('itm_tk_dao_bao', 29, 3),
+        d.addRolled('itm_tk_trang_suc', 29, 3),
+        d.add(M5, PROMOTE_MAT_COUNT * 3 + 1),
+        d.addGold(promoteGold(5) * 3 + 7)
+      ),
+    );
     t.send('promote', { i: t.slotOf('itm_tinh_khuyet_kiem') });
     t.send('promote', { i: t.slotOf('itm_tk_dao_bao') });
     t.send('promote', { i: t.slotOf('itm_tk_trang_suc') });
@@ -183,7 +203,11 @@ describe('Thăng Bậc 2 → 3 (E3-F)', () => {
 
   it('bộ bậc 2 → bộ bậc 3 đúng ô và đúng công pháp: giữ phẩm, dòng phụ; cường hóa −3; trừ Kính Hoa Sa + 2.960 linh thạch', () => {
     expect(GOLD3).toBe(2960);
-    const pairs: [string, string][] = [['itm_lm_dao_bao', 'itm_kq_dao_bao'], ['itm_dg_ho_uyen', 'itm_vk_ho_uyen'], ['itm_pm_gioi_chi', 'itm_ll_gioi_chi']];
+    const pairs: [string, string][] = [
+      ['itm_lm_dao_bao', 'itm_kq_dao_bao'],
+      ['itm_dg_ho_uyen', 'itm_vk_ho_uyen'],
+      ['itm_pm_gioi_chi', 'itm_ll_gioi_chi'],
+    ];
     for (const [from, to] of pairs) {
       const t = setup(20);
       t.give((d) => (d.addRolled(from, 17, 3), d.add(MAT3, PROMOTE_MAT_COUNT + 2), d.addGold(GOLD3 + 7)));
@@ -200,7 +224,9 @@ describe('Thăng Bậc 2 → 3 (E3-F)', () => {
       expect(after.inst!.gems.length).toBe(Math.min(3, before.gems.length + 1));
       expect(t.count(MAT3)).toBe(2);
       expect(t.c.gold).toBe(7);
-      const sums = sqlite.prepare("SELECT ref, SUM(delta) AS n FROM ledger WHERE char_id = ? AND kind = 'item' GROUP BY ref").all(t.c.id) as { ref: string; n: number }[];
+      const sums = sqlite
+        .prepare("SELECT ref, SUM(delta) AS n FROM ledger WHERE char_id = ? AND kind = 'item' GROUP BY ref")
+        .all(t.c.id) as { ref: string; n: number }[];
       for (const r of sums) expect(r.n, r.ref).toBe(t.count(r.ref));
     }
   });

@@ -31,7 +31,10 @@ const hexToRgb = (hex) => {
   const n = parseInt(m[1], 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 };
-const toLin = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const toLin = (c) => {
+  c /= 255;
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+};
 const toSrgb = (l) => {
   l = Math.min(1, Math.max(0, l));
   const c = l <= 0.0031308 ? l * 12.92 : 1.055 * l ** (1 / 2.4) - 0.055;
@@ -42,7 +45,7 @@ const rgbToLab = ([r, g, b]) => {
   const X = (0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.95047;
   const Y = 0.2126 * R + 0.7152 * G + 0.0722 * B;
   const Z = (0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.08883;
-  const f = (t) => (t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116);
+  const f = (t) => (t > 216 / 24389 ? Math.cbrt(t) : ((24389 / 27) * t + 16) / 116);
   const [fx, fy, fz] = [f(X), f(Y), f(Z)];
   return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
 };
@@ -60,15 +63,19 @@ const crc32 = (buf) => {
   return (c ^ 0xffffffff) >>> 0;
 };
 const chunk = (type, data) => {
-  const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+  const len = Buffer.alloc(4);
+  len.writeUInt32BE(data.length);
   const td = Buffer.concat([Buffer.from(type, 'ascii'), data]);
-  const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(td));
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(td));
   return Buffer.concat([len, td, crc]);
 };
 const encodePng = (w, h, rgb) => {
   const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4);
-  ihdr[8] = 8; ihdr[9] = 2; // 8 bit, RGB
+  ihdr.writeUInt32BE(w, 0);
+  ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2; // 8 bit, RGB
   const raw = Buffer.alloc((w * 3 + 1) * h);
   for (let y = 0; y < h; y++) {
     raw[y * (w * 3 + 1)] = 0;
@@ -84,11 +91,19 @@ const encodePng = (w, h, rgb) => {
 };
 // Đọc lại PNG RGB 8 bit không interlace (chỉ đủ cho file do script này ghi).
 const decodePngRgb = (buf) => {
-  let off = 8, w = 0, h = 0; const idat = [];
+  let off = 8,
+    w = 0,
+    h = 0;
+  const idat = [];
   while (off < buf.length) {
-    const len = buf.readUInt32BE(off); const type = buf.toString('ascii', off + 4, off + 8);
+    const len = buf.readUInt32BE(off);
+    const type = buf.toString('ascii', off + 4, off + 8);
     const data = buf.subarray(off + 8, off + 8 + len);
-    if (type === 'IHDR') { w = data.readUInt32BE(0); h = data.readUInt32BE(4); if (data[9] !== 2 || data[8] !== 8) return null; }
+    if (type === 'IHDR') {
+      w = data.readUInt32BE(0);
+      h = data.readUInt32BE(4);
+      if (data[9] !== 2 || data[8] !== 8) return null;
+    }
     if (type === 'IDAT') idat.push(data);
     off += 12 + len;
   }
@@ -113,7 +128,12 @@ colors.forEach((c, i) => {
   if (!/^[a-z][a-z0-9_]*$/.test(c.id)) errors.push(`${c.id}: id phải là snake_case không dấu`);
   if (byId.has(c.id)) errors.push(`trùng id ${c.id}`);
   if (!groups.has(c.group)) errors.push(`${c.id}: nhóm lạ ${c.group}`);
-  try { c.rgb = hexToRgb(c.hex); c.lab = rgbToLab(c.rgb); } catch (e) { errors.push(`${c.id}: ${e.message}`); }
+  try {
+    c.rgb = hexToRgb(c.hex);
+    c.lab = rgbToLab(c.rgb);
+  } catch (e) {
+    errors.push(`${c.id}: ${e.message}`);
+  }
   byId.set(c.id, c);
 });
 for (const g of groups) if (!colors.some((c) => c.group === g)) errors.push(`nhóm ${g} không có màu nào`);
@@ -125,20 +145,26 @@ const walkHex = (obj, path) => {
     if (k.startsWith('$')) continue;
     if (v && typeof v === 'object') walkHex(v, `${path}.${k}`);
     else if (typeof v === 'string' && /(Color|Tint|blackLift)$/.test(k)) {
-      try { hexToRgb(v); } catch (e) { errors.push(`${path}.${k}: ${e.message}`); }
+      try {
+        hexToRgb(v);
+      } catch (e) {
+        errors.push(`${path}.${k}: ${e.message}`);
+      }
     }
   }
 };
 if (!pal.grading?.presets?.[pal.grading.default]) errors.push('grading.default phải trỏ tới một preset có trong grading.presets');
 else walkHex(pal.grading, 'grading');
 let minPair = null;
-for (let i = 0; i < colors.length; i++) for (let j = i + 1; j < colors.length; j++) {
-  const a = colors[i], b = colors[j];
-  if (!a.lab || !b.lab) continue;
-  const d = deltaE(a.lab, b.lab);
-  if (!minPair || d < minPair.d) minPair = { a: a.id, b: b.id, d };
-  if (d < MIN_DELTA_E) errors.push(`${a.id} và ${b.id} quá gần nhau (ΔE76 = ${d.toFixed(1)} < ${MIN_DELTA_E})`);
-}
+for (let i = 0; i < colors.length; i++)
+  for (let j = i + 1; j < colors.length; j++) {
+    const a = colors[i],
+      b = colors[j];
+    if (!a.lab || !b.lab) continue;
+    const d = deltaE(a.lab, b.lab);
+    if (!minPair || d < minPair.d) minPair = { a: a.id, b: b.id, d };
+    if (d < MIN_DELTA_E) errors.push(`${a.id} và ${b.id} quá gần nhau (ΔE76 = ${d.toFixed(1)} < ${MIN_DELTA_E})`);
+  }
 // Bóng ban ngày phải ngả ngọc lam (G, B lớn hơn R), không ngả về đen hay nâu.
 const grade = pal.grading?.presets?.[pal.grading?.default];
 if (grade) {
@@ -152,7 +178,11 @@ for (const c of pal.riftColors?.colors ?? []) {
   if (!/^rift_[a-z0-9_]+$/.test(c.id)) errors.push(`riftColors: id ${c.id} phải bắt đầu rift_`);
   if (riftIds.has(c.id) || byId.has(c.id)) errors.push(`riftColors: trùng id ${c.id}`);
   riftIds.add(c.id);
-  try { hexToRgb(c.hex); } catch (e) { errors.push(`${c.id}: ${e.message}`); }
+  try {
+    hexToRgb(c.hex);
+  } catch (e) {
+    errors.push(`${c.id}: ${e.message}`);
+  }
 }
 if (pal.riftColors && riftIds.size !== 8) errors.push(`riftColors cần đúng 8 màu, đang có ${riftIds.size}`);
 
@@ -160,16 +190,23 @@ if (errors.length) {
   console.error('palette SAI:\n  - ' + errors.join('\n  - '));
   process.exit(1);
 }
-console.log(`palette ok: ${colors.length} màu, ${groups.size} nhóm; cặp gần nhất ${minPair.a} / ${minPair.b} ΔE76 = ${minPair.d.toFixed(1)}`);
+console.log(
+  `palette ok: ${colors.length} màu, ${groups.size} nhóm; cặp gần nhất ${minPair.a} / ${minPair.b} ΔE76 = ${minPair.d.toFixed(1)}`,
+);
 
 // ---------- LUT 256x1 ----------
 const cell = pal.lut.cellWidth;
 const lut = Buffer.alloc(pal.lut.width * 3);
-colors.forEach((c, i) => { for (let x = 0; x < cell; x++) lut.set(c.rgb, (i * cell + x) * 3); });
+colors.forEach((c, i) => {
+  for (let x = 0; x < cell; x++) lut.set(c.rgb, (i * cell + x) * 3);
+});
 const lutPng = encodePng(pal.lut.width, 1, lut);
 
 if (checkOnly) {
-  if (!existsSync(PNG_PATH)) { console.error('thiếu assets/palette.png, chạy lại không có --check'); process.exit(1); }
+  if (!existsSync(PNG_PATH)) {
+    console.error('thiếu assets/palette.png, chạy lại không có --check');
+    process.exit(1);
+  }
   const cur = decodePngRgb(readFileSync(PNG_PATH));
   if (!cur || cur.w !== pal.lut.width || cur.h !== 1 || !cur.rgb.equals(lut)) {
     console.error('assets/palette.png lệch với palette.json, chạy lại script để sinh lại');
@@ -183,7 +220,11 @@ if (checkOnly) {
 
 // ---------- ảnh xem trước ----------
 if (previewPath) {
-  const S = 72, BAND = 18, GAP = 10, PAD = 24, COLS = 6;
+  const S = 72,
+    BAND = 18,
+    GAP = 10,
+    PAD = 24,
+    COLS = 6;
   const groupRows = pal.groups.map((g) => colors.filter((c) => c.group === g.id));
   const W = PAD * 2 + COLS * S + (COLS - 1) * GAP;
   const rowH = S + 2 * BAND + GAP * 2;
@@ -197,17 +238,34 @@ if (previewPath) {
   fill(0, 0, W, H, paper);
   // Minh họa thô: nhân màu gốc với sắc nắng hoặc sắc bóng của preset mặc định (không phải shader thật).
   const lumOf = (lin) => 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-  const tintNorm = (hex) => { const l = hexToRgb(hex).map(toLin); const y = lumOf(l); return l.map((v) => v / y); };
-  const hi = tintNorm(grade.highlightTint), sh = tintNorm(grade.shadowTint);
+  const tintNorm = (hex) => {
+    const l = hexToRgb(hex).map(toLin);
+    const y = lumOf(l);
+    return l.map((v) => v / y);
+  };
+  const hi = tintNorm(grade.highlightTint),
+    sh = tintNorm(grade.shadowTint);
   const shade = (rgb, lum, t, k) => rgb.map((c, i) => toSrgb(toLin(c) * lum * (1 + (t[i] - 1) * k)));
   // chữ số 3x5 để ghi index lên ô
-  const DIGITS = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001',
-    '111100111001111', '111100111101111', '111001001001001', '111101111101111', '111101111001111'];
+  const DIGITS = [
+    '111101101101111',
+    '010110010010111',
+    '111001111100111',
+    '111001111001111',
+    '101101111001001',
+    '111100111001111',
+    '111100111101111',
+    '111001001001001',
+    '111101111101111',
+    '111101111001111',
+  ];
   const drawNum = (n, x0, y0, rgb, sc = 3) => {
-    String(n).split('').forEach((d, di) => {
-      const p = DIGITS[+d];
-      for (let i = 0; i < 15; i++) if (p[i] === '1') fill(x0 + di * 4 * sc + (i % 3) * sc, y0 + Math.floor(i / 3) * sc, sc, sc, rgb);
-    });
+    String(n)
+      .split('')
+      .forEach((d, di) => {
+        const p = DIGITS[+d];
+        for (let i = 0; i < 15; i++) if (p[i] === '1') fill(x0 + di * 4 * sc + (i % 3) * sc, y0 + Math.floor(i / 3) * sc, sc, sc, rgb);
+      });
   };
   groupRows.forEach((row, r) => {
     const y = PAD + r * rowH;

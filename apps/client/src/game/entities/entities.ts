@@ -2,7 +2,21 @@ import { monFlagEdge, monHidden, type MonFlagEdge } from './monFlags';
 import * as THREE from 'three/webgpu';
 import { uiScale } from '../../ui/uiScale';
 import { boxesOverlap, fitFactor, screenWidthPx, type Box } from '../core/screenFit';
-import { locoDirOf, inSkyBand, PF_SOUL, MF_CHANT, MF_STUN, MF_WEAK, MS_ATTACK, MS_CHASE, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
+import {
+  locoDirOf,
+  inSkyBand,
+  PF_SOUL,
+  MF_CHANT,
+  MF_STUN,
+  MF_WEAK,
+  MS_ATTACK,
+  MS_CHASE,
+  MS_DEAD,
+  PF_CASTING,
+  PF_DEAD,
+  PF_FLYING,
+  PF_MEDITATING,
+} from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { gatesOf, type Gate } from '../world/gates';
 import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t } from '@dtl/content';
@@ -214,7 +228,9 @@ export class EntityManager {
       this.npcSkins.preload();
       for (const n of here) {
         const label = makeLabel(t(`npc.${n.id}.name`), '#ffe9a8', t(`npc.${n.id}.title`), '#e8d6a0');
-        const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
+        const marker = new THREE.Sprite(
+          new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }),
+        );
         marker.scale.set(0.9, 0.9, 1);
         marker.visible = false;
         const npc: NpcVis = {
@@ -236,7 +252,14 @@ export class EntityManager {
     }
     this.ring = new THREE.Mesh(
       new THREE.RingGeometry(0.85, 1.05, 40),
-      new THREE.MeshBasicMaterial({ color: 0xff5a4a, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false, fog: false }),
+      new THREE.MeshBasicMaterial({
+        color: 0xff5a4a,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        fog: false,
+      }),
     );
     this.ring.rotation.x = -Math.PI / 2;
     this.ring.visible = false;
@@ -257,7 +280,20 @@ export class EntityManager {
       const label = makeLabel(t(`npc.${m.npc}.name`), '#ffe9a8', t(`npc.${m.npc}.title`), '#e8d6a0');
       const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
       marker.visible = false;
-      e = { id: m.id, color: '#b89a6a', yaw: m.yaw, model: this.npcModel(m.npc, '#b89a6a'), skinPending: this.npcPending(m.npc), npc: m.npc, label, marker, markerY: 0, x: m.x, y: groundAt(m.x, m.z), z: m.z };
+      e = {
+        id: m.id,
+        color: '#b89a6a',
+        yaw: m.yaw,
+        model: this.npcModel(m.npc, '#b89a6a'),
+        skinPending: this.npcPending(m.npc),
+        npc: m.npc,
+        label,
+        marker,
+        markerY: 0,
+        x: m.x,
+        y: groundAt(m.x, m.z),
+        z: m.z,
+      };
       if (!NPC_SKINS[m.npc]?.look) this.npcSkins.addWalk(e.model, m.npc);
       this.placeNpc(e);
       this.escorts.set(m.id, e);
@@ -315,13 +351,20 @@ export class EntityManager {
     }
   }
 
-  update(dt: number, view: WorldView, local: { x: number; y: number; z: number; yaw: number; speed: number; airborne: boolean }, targetId: string, myLevel: number): void {
+  update(
+    dt: number,
+    view: WorldView,
+    local: { x: number; y: number; z: number; yaw: number; speed: number; airborne: boolean },
+    targetId: string,
+    myLevel: number,
+  ): void {
     this.time += dt;
     const k = Math.min(1, dt * 12);
     const bars = this.bars;
     bars.begin();
     const cam = this.camera as THREE.PerspectiveCamera | null;
-    if (cam) bars.setView(cam.position.x, cam.position.y, cam.position.z, cam.fov ?? 55, typeof window === 'undefined' ? 0 : window.innerHeight);
+    if (cam)
+      bars.setView(cam.position.x, cam.position.y, cam.position.z, cam.fov ?? 55, typeof window === 'undefined' ? 0 : window.innerHeight);
 
     // ----- người chơi -----
     view.players.forEach((s, sid) => {
@@ -340,7 +383,14 @@ export class EntityManager {
       v.s = s;
       const look = lookOf(s);
       if (isLocal) this.localLook = look;
-      const lookChanged = look.g !== v.look.g || look.dye !== v.look.dye || look.hair !== v.look.hair || look.set !== v.look.set || look.acc !== v.look.acc || look.w !== v.look.w || look.skin !== v.look.skin;
+      const lookChanged =
+        look.g !== v.look.g ||
+        look.dye !== v.look.dye ||
+        look.hair !== v.look.hair ||
+        look.set !== v.look.set ||
+        look.acc !== v.look.acc ||
+        look.w !== v.look.w ||
+        look.skin !== v.look.skin;
       if (lookChanged || (v.skinPending && !this.playerSkins.pending(look))) {
         // `create` trước: nó khởi động việc nạp lười (asset nhân vật, kiếm riêng), rồi mới hỏi còn nạp không để biết có phải dựng lại.
         const next = this.playerSkins.create(look);
@@ -422,7 +472,16 @@ export class EntityManager {
         const a = v.bar.tick(s.hp, s.mhp, sid === targetId, dead, dt, this.time);
         if (a > 0) {
           const r = v.model.root;
-          bars.push(r.position.x, r.position.y + v.label.position.y - 0.43, r.position.z, v.bar.width, s.hp / Math.max(1, s.mhp), v.bar.trail.value, v.bar.kind, a);
+          bars.push(
+            r.position.x,
+            r.position.y + v.label.position.y - 0.43,
+            r.position.z,
+            v.bar.width,
+            s.hp / Math.max(1, s.mhp),
+            v.bar.trail.value,
+            v.bar.kind,
+            a,
+          );
         }
       }
     });
@@ -485,7 +544,7 @@ export class EntityManager {
       const hv = v.model.def.hover ?? 0;
       let lift = 0;
       if (hv > 0) {
-        const low = (((s.mf ?? 0) & (MF_WEAK | MF_STUN)) !== 0);
+        const low = ((s.mf ?? 0) & (MF_WEAK | MF_STUN)) !== 0;
         v.hover = stepHover(v.hover, hoverTarget(hv, dead, low), dt, dead);
         lift = v.hover + hoverBob(hv, v.hover, this.time, hashStr(v.id) % 7);
       }
@@ -511,7 +570,16 @@ export class EntityManager {
       const a = v.bar.tick(s.hp, s.mhp, engaged, dead, dt, this.time);
       if (a > 0) {
         const r = v.model.root;
-        bars.push(r.position.x, r.position.y + v.barY, r.position.z, v.bar.width, s.hp / Math.max(1, s.mhp), v.bar.trail.value, v.bar.kind, a);
+        bars.push(
+          r.position.x,
+          r.position.y + v.barY,
+          r.position.z,
+          v.bar.width,
+          s.hp / Math.max(1, s.mhp),
+          v.bar.trail.value,
+          v.bar.kind,
+          a,
+        );
       }
       if (v.label) v.label.visible = !dead && !monHidden(mf) && d2 < 70 * 70 && id !== this.hudBossId;
       v.wasAttack = s.st === MS_ATTACK;
@@ -761,7 +829,13 @@ export class EntityManager {
    * Kẹp cỡ nhãn trên màn hình (không phóng khổng lồ khi camera sát) và ẩn nhãn chồng lên nhãn gần hơn
    * (mình và mục tiêu luôn giữ). Duyệt theo thứ tự ưu tiên của `lodList`: mình, rồi gần → xa.
    */
-  private fitLabel(e: { model: CharacterView; label: Label | null; local: boolean; target: boolean; d: number }, cam: THREE.PerspectiveCamera, vw: number, vh: number, boxes: Box[]): void {
+  private fitLabel(
+    e: { model: CharacterView; label: Label | null; local: boolean; target: boolean; d: number },
+    cam: THREE.PerspectiveCamera,
+    vw: number,
+    vh: number,
+    boxes: Box[],
+  ): void {
     const sp = e.label!;
     const ud = sp.userData as { w0?: number; h0?: number };
     if (ud.w0 === undefined) {
@@ -819,7 +893,16 @@ export class EntityManager {
     const vs = src && src !== dst ? (this.players.get(src) ?? this.monsters.get(src)) : undefined;
     // Chỉ khựng khi đòn liên quan tới mình, để boss bị nhiều người đánh không đứng hình liên tục.
     const noStop = src !== this.mySid && dst !== this.mySid;
-    vd.model.hitReact({ crit, heavy, delay, noStop, stop: stop?.target, noFlash: this.tagsHidden && this.monsters.has(dst), dirX: vs ? vd.x - vs.x : 0, dirZ: vs ? vd.z - vs.z : 0 });
+    vd.model.hitReact({
+      crit,
+      heavy,
+      delay,
+      noStop,
+      stop: stop?.target,
+      noFlash: this.tagsHidden && this.monsters.has(dst),
+      dirX: vs ? vd.x - vs.x : 0,
+      dirZ: vs ? vd.z - vs.z : 0,
+    });
     if (src && src === this.mySid && vs) vs.model.hit.hitStop(stop?.attacker ?? 0, delay);
   }
 

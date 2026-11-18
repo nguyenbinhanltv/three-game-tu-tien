@@ -52,7 +52,7 @@ function getDepthTexture(): THREE.DataTexture {
       const z = LAKE.z - HALF + ((j + 0.5) / GRID) * HALF * 2;
       const d = WATER_Y - heightAt(x, z);
       const k = (j * GRID + i) * 4;
-      data[k] = (Math.max(D_MIN, Math.min(D_MAX, d)) - D_MIN) / (D_MAX - D_MIN) * 255;
+      data[k] = ((Math.max(D_MIN, Math.min(D_MAX, d)) - D_MIN) / (D_MAX - D_MIN)) * 255;
       data[k + 3] = 255;
     }
   }
@@ -77,7 +77,9 @@ type TNode = ReturnType<typeof float>;
 const depthAt = (tex: THREE.Texture, p: TNode, offset?: TNode) => {
   let uvn = p.sub(vec2(LAKE.x - HALF, LAKE.z - HALF)).div(HALF * 2);
   if (offset) uvn = uvn.add(offset);
-  return texture(tex, uvn).r.mul(D_MAX - D_MIN).add(D_MIN);
+  return texture(tex, uvn)
+    .r.mul(D_MAX - D_MIN)
+    .add(D_MIN);
 };
 
 function waterMaterial(level: 0 | 1 | 2): THREE.MeshBasicNodeMaterial {
@@ -94,10 +96,14 @@ function waterMaterial(level: 0 | 1 | 2): THREE.MeshBasicNodeMaterial {
 
     // Sóng nhỏ: pháp tuyến từ hai lớp cuộn ngược chiều, nhỏ dần ở xa.
     const far = float(1).sub(smoothstep(60, 420, dist).mul(0.75));
-    const n1 = texture(nTex, p.mul(0.05).add(vec2(t.mul(0.011), t.mul(0.007)))).rg.sub(0.5).mul(2);
+    const n1 = texture(nTex, p.mul(0.05).add(vec2(t.mul(0.011), t.mul(0.007))))
+      .rg.sub(0.5)
+      .mul(2);
     let nxz = n1.mul(0.55);
     if (level >= 1) {
-      const n2 = texture(nTex, p.mul(0.13).add(vec2(t.mul(-0.016), t.mul(0.012)).add(0.37))).rg.sub(0.5).mul(2);
+      const n2 = texture(nTex, p.mul(0.13).add(vec2(t.mul(-0.016), t.mul(0.012)).add(0.37)))
+        .rg.sub(0.5)
+        .mul(2);
       nxz = nxz.add(n2.mul(0.32));
     }
     const N = normalize(vec3(nxz.x.mul(far), 1, nxz.y.mul(far)));
@@ -118,7 +124,12 @@ function waterMaterial(level: 0 | 1 | 2): THREE.MeshBasicNodeMaterial {
       const c1 = texture(nTex, p.mul(0.34).add(vec2(t.mul(0.03), t.mul(-0.022)))).b;
       const c2 = texture(nTex, p.mul(0.29).add(vec2(t.mul(-0.025), t.mul(0.018)).add(0.5))).b;
       const veins = smoothstep(0.62, 0.92, float(1).sub(c1.sub(c2).abs().mul(4.2)));
-      body.addAssign(waterParams.shallow.mul(veins).mul(float(1).sub(smoothstep(0.3, 4.5, d0))).mul(0.32));
+      body.addAssign(
+        waterParams.shallow
+          .mul(veins)
+          .mul(float(1).sub(smoothstep(0.3, 4.5, d0)))
+          .mul(0.32),
+      );
     }
 
     // Phản chiếu trời + vệt nắng.
@@ -131,7 +142,14 @@ function waterMaterial(level: 0 | 1 | 2): THREE.MeshBasicNodeMaterial {
 
     // Fresnel (Schlick) có nâng nhẹ để hồ lên màu trời ở góc nhìn thấp.
     const cosT = clamp(dot(N, V), 0, 1);
-    const fres = clamp(float(0.03).add(pow(float(1).sub(cosT), 4).mul(0.97)).mul(1.1).add(0.03), 0, 1);
+    const fres = clamp(
+      float(0.03)
+        .add(pow(float(1).sub(cosT), 4).mul(0.97))
+        .mul(1.1)
+        .add(0.03),
+      0,
+      1,
+    );
     const col = mix(body, refl, fres).toVar();
 
     // Bọt mép: đứt đoạn theo nhiễu, nhịp sóng vỗ nhẹ.
@@ -140,7 +158,11 @@ function waterMaterial(level: 0 | 1 | 2): THREE.MeshBasicNodeMaterial {
     const lap = sin(t.mul(0.9).add(breakup.mul(9))).mul(0.14);
     const edge = float(1).sub(smoothstep(0.02, 0.95, d0.add(breakup2.sub(0.5).mul(0.9)).add(lap)));
     const foam = clamp(edge.mul(smoothstep(0.28, 0.6, breakup.mul(0.55).add(breakup2.mul(0.6)))), 0, 1)
-      .add(float(1).sub(smoothstep(0.0, 0.22, d0)).mul(0.55))
+      .add(
+        float(1)
+          .sub(smoothstep(0.0, 0.22, d0))
+          .mul(0.55),
+      )
       .clamp(0, 1);
     col.assign(mix(col, waterParams.foam.mul(mix(1, 1.15, sunTerm)), foam.mul(0.85)));
 
@@ -172,8 +194,22 @@ function mistMaterial(heightOffset: number, seed: number, strength: number): THR
     const wet = smoothstep(-1, 5, depthAt(dTex, p));
     const toCam = positionWorld.sub(cameraPosition);
     const near = smoothstep(70, 300, length(toCam));
-    const level = smoothstep(0.6, 3.5, cameraPosition.y.sub(py).abs()).mul(float(1).sub(smoothstep(25, 110, cameraPosition.y.sub(py)).mul(0.8)));
-    const warm = pow(max(dot(normalize(vec3(toCam.x, 0.001, toCam.z)), skyParams.sunDir.mul(vec3(1, 0, 1)).normalize().negate()), 0), 3);
+    const level = smoothstep(0.6, 3.5, cameraPosition.y.sub(py).abs()).mul(
+      float(1).sub(smoothstep(25, 110, cameraPosition.y.sub(py)).mul(0.8)),
+    );
+    const warm = pow(
+      max(
+        dot(
+          normalize(vec3(toCam.x, 0.001, toCam.z)),
+          skyParams.sunDir
+            .mul(vec3(1, 0, 1))
+            .normalize()
+            .negate(),
+        ),
+        0,
+      ),
+      3,
+    );
     const col = mix(mix(skyParams.horizon, vec3(1), 0.35), skyParams.glow.add(0.2), warm.mul(0.45));
     return vec4(col, dens.mul(edge).mul(wet).mul(near).mul(level).mul(strength));
   })();

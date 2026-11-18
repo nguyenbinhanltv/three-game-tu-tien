@@ -39,7 +39,11 @@ const arg = (name) => {
 };
 const CHECK = argv.includes('--check');
 const PREVIEW = argv.includes('--preview');
-const ONLY = arg('--only')?.split(',').map((s) => s.trim()).filter(Boolean) ?? null;
+const ONLY =
+  arg('--only')
+    ?.split(',')
+    .map((s) => s.trim())
+    .filter(Boolean) ?? null;
 const SPEC_FILE = path.resolve(arg('--spec') ?? path.join(HERE, 'music.json'));
 const OUT_DIR = path.resolve(arg('--out') ?? path.join(ROOT, 'apps/client/public/audio'));
 const MUSIC_DIR = path.join(OUT_DIR, 'music');
@@ -84,7 +88,8 @@ function wav(chans) {
   buf.write('data', 36);
   buf.writeUInt32LE(n * ch * 2, 40);
   for (let i = 0; i < n; i++)
-    for (let c = 0; c < ch; c++) buf.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(chans[c][i] * 32767))), 44 + (i * ch + c) * 2);
+    for (let c = 0; c < ch; c++)
+      buf.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(chans[c][i] * 32767))), 44 + (i * ch + c) * 2);
   return buf;
 }
 
@@ -125,7 +130,19 @@ async function processTrack(FF, id, def, d) {
   if (def.compose) {
     // Đã xử lý vòng/sting ở trên.
   } else if (loop) {
-    const r = findLoop(chans, { bpm: def.bpm, beatsPerBar: def.beatsPerBar, start: def.start, end: def.end, minLen: def.minLen, maxLen: def.maxLen, xfade: def.xfade ?? d.xfade }, SR);
+    const r = findLoop(
+      chans,
+      {
+        bpm: def.bpm,
+        beatsPerBar: def.beatsPerBar,
+        start: def.start,
+        end: def.end,
+        minLen: def.minLen,
+        maxLen: def.maxLen,
+        xfade: def.xfade ?? d.xfade,
+      },
+      SR,
+    );
     chans = makeLoop(chans, r.start, r.end, Math.round((def.xfade ?? d.xfade) * SR), r.corr);
     Object.assign(info, { start: r.start / SR, end: r.end / SR, bpm: r.bpm, conf: r.confidence, sim: r.score, corr: r.corr, bars: r.bars });
   } else {
@@ -148,7 +165,15 @@ async function processTrack(FF, id, def, d) {
   }
   const n = normalizeGain(chans, def.lufs ?? d.lufs, def.peak ?? d.peak, SR);
   applyGain(chans, n.gainDb);
-  Object.assign(info, { dur: chans[0].length / SR, lufsIn: n.before, gainDb: n.gainDb, limited: n.limited, lufs: loudness(chans, SR), tp: truePeak(chans), loop });
+  Object.assign(info, {
+    dur: chans[0].length / SR,
+    lufsIn: n.before,
+    gainDb: n.gainDb,
+    limited: n.limited,
+    lufs: loudness(chans, SR),
+    tp: truePeak(chans),
+    loop,
+  });
   if (loop) Object.assign(info, seamReport(chans, SR));
   return { chans, info };
 }
@@ -163,7 +188,10 @@ function licenseBlock(spec, entries) {
       '',
     );
   if (Object.values(entries).some((e) => /suno/i.test(e.credit?.by ?? '')))
-    lines.push('Nhạc tạo bằng **Suno gói Free**: chỉ dùng **phi thương mại**, Suno giữ quyền sở hữu, **bắt buộc ghi nguồn** (game cũng ghi ở Cài đặt → Nguồn nhạc).', '');
+    lines.push(
+      'Nhạc tạo bằng **Suno gói Free**: chỉ dùng **phi thương mại**, Suno giữ quyền sở hữu, **bắt buộc ghi nguồn** (game cũng ghi ở Cài đặt → Nguồn nhạc).',
+      '',
+    );
   lines.push(
     'Khai báo ở `tools/audio/music.json`, hậu kỳ (vòng lặp, -16 LUFS) bằng `tools/audio/loop.mjs`. Bản build trong `apps/client/public/audio/music/`.',
     '',
@@ -181,7 +209,14 @@ function licenseBlock(spec, entries) {
 
 async function main() {
   const spec = JSON.parse(fs.readFileSync(SPEC_FILE, 'utf8'));
-  const d = { lufs: -16, peak: -1, xfade: 0.12, by: 'Suno (free, non-commercial)', license: 'phi thương mại, ghi nguồn', ...(spec.defaults ?? {}) };
+  const d = {
+    lufs: -16,
+    peak: -1,
+    xfade: 0.12,
+    by: 'Suno (free, non-commercial)',
+    license: 'phi thương mại, ghi nguồn',
+    ...(spec.defaults ?? {}),
+  };
   const tracks = spec.tracks ?? {};
   const errors = [];
   for (const [id, def] of Object.entries(tracks)) {
@@ -255,7 +290,11 @@ async function main() {
   }
 
   // Xóa file nhạc không còn mục nào trỏ tới.
-  const keep = new Set(Object.values(music).flatMap((e) => (Array.isArray(e.src) ? e.src : [e.src])).map((f) => path.basename(f)));
+  const keep = new Set(
+    Object.values(music)
+      .flatMap((e) => (Array.isArray(e.src) ? e.src : [e.src]))
+      .map((f) => path.basename(f)),
+  );
   for (const f of fs.readdirSync(MUSIC_DIR)) if (!keep.has(f)) fs.rmSync(path.join(MUSIC_DIR, f));
 
   const manifest = { sprites: old.sprites ?? {}, sfx: old.sfx ?? {}, music, ambient: old.ambient ?? {} };
@@ -270,15 +309,22 @@ async function main() {
     for (const r of report) {
       const pts = r.loop ? `${f1(r.start)}→${f1(r.end)}`.padEnd(16) : 'một lần'.padEnd(16);
       const bpm = r.loop ? `${r.bpm.toFixed(0).padStart(4)}${r.conf < 0.08 ? '?' : ' '}` : '    -';
-      const loopCols = r.loop ? `${String(r.bars).padStart(6)} ${r.sim.toFixed(2).padStart(5)} ${r.corr.toFixed(2).padStart(5)} ${r.seam.toFixed(1).padStart(4)}` : `${'-'.padStart(6)} ${'-'.padStart(5)} ${'-'.padStart(5)} ${'-'.padStart(4)}`;
+      const loopCols = r.loop
+        ? `${String(r.bars).padStart(6)} ${r.sim.toFixed(2).padStart(5)} ${r.corr.toFixed(2).padStart(5)} ${r.seam.toFixed(1).padStart(4)}`
+        : `${'-'.padStart(6)} ${'-'.padStart(5)} ${'-'.padStart(5)} ${'-'.padStart(4)}`;
       console.log(
         `${r.id.padEnd(16)} ${f1(r.srcDur).padStart(6)} ${f1(r.dur).padStart(7)}  ${pts} ${bpm} ${loopCols}  ${f1(r.lufsIn).padStart(5)}→${f1(r.lufs).padStart(5)} ${f1(r.tp).padStart(6)} ${kb(r.webm).padStart(8)} ${kb(r.m4a).padStart(7)}${r.limited ? '  (giới hạn đỉnh, nhỏ hơn đích)' : ''}`,
       );
       if (r.composed) console.log(`  ${r.composed}; giới hạn đỉnh tối đa ${r.limitDb.toFixed(1)} dB`);
       if (r.preview) console.log(`  nghe thử chỗ nối: ${r.preview}`);
-      if (r.loop && (r.sim < 0.5 || r.seam > 2)) console.log(`  ⚠ ${r.id}: chỗ nối có thể nghe ra (giống=${r.sim.toFixed(2)}, nối=${r.seam.toFixed(1)}). Thử --preview, ép bpm hoặc start/end trong music.json.`);
+      if (r.loop && (r.sim < 0.5 || r.seam > 2))
+        console.log(
+          `  ⚠ ${r.id}: chỗ nối có thể nghe ra (giống=${r.sim.toFixed(2)}, nối=${r.seam.toFixed(1)}). Thử --preview, ép bpm hoặc start/end trong music.json.`,
+        );
     }
-    console.log('Cột: giống = độ giống nhạc ngay sau điểm đầu và điểm cuối vòng (1 = như hệt); khớp = tương quan dạng sóng sau khi khớp pha; nối = bước nhảy âm sắc ở chỗ nối so với một phách mạnh trong bài (≤1 tốt, >2 dễ nghe ra). BPM có "?" là dò nhịp không chắc.');
+    console.log(
+      'Cột: giống = độ giống nhạc ngay sau điểm đầu và điểm cuối vòng (1 = như hệt); khớp = tương quan dạng sóng sau khi khớp pha; nối = bước nhảy âm sắc ở chỗ nối so với một phách mạnh trong bài (≤1 tốt, >2 dễ nghe ra). BPM có "?" là dò nhịp không chắc.',
+    );
   }
   if (noUrl.length) console.log(`Cảnh báo: chưa điền url Suno trong music.json (Suno free bắt buộc ghi nguồn): ${noUrl.join(', ')}`);
   if (missing.length) console.log(`Chưa có nguồn (giữ bài giữ chỗ thủ tục trong game): ${missing.join(', ')}`);

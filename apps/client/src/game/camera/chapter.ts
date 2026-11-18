@@ -4,7 +4,8 @@
  * Phần thuần (preset, khung camera, cờ đã xem) tách ở đây để test được không cần renderer.
  */
 
-export type ChapterKind = 'sect' | 'dungeon' | 'trib' | 'ascend' | 'ascend_kd' | 'ascend_na' | 'ascend_hn' | 'ascend_ab' | 'ch2' | 'ch3' | 'ch4' | 'ch5' | 'fly';
+export type ChapterKind =
+  'sect' | 'dungeon' | 'trib' | 'ascend' | 'ascend_kd' | 'ascend_na' | 'ascend_hn' | 'ascend_ab' | 'ch2' | 'ch3' | 'ch4' | 'ch5' | 'fly';
 
 interface ChapterPreset {
   /** Thẻ hiện bao lâu (ms). */

@@ -100,7 +100,9 @@ export class HeadBars {
     const trail = max(B.y, hp);
     const ft = max(fwidth(t), 1e-5);
     const inHp = float(1).sub(smoothstep(hp.sub(ft), hp.add(ft), t));
-    const inTrail = float(1).sub(smoothstep(trail.sub(ft), trail.add(ft), t)).mul(float(1).sub(inHp));
+    const inTrail = float(1)
+      .sub(smoothstep(trail.sub(ft), trail.add(ft), t))
+      .mul(float(1).sub(inHp));
     // Gradient dọc: trên sáng, dưới tối (uv.y = 1 ở trên).
     const vy = clamp(py.sub(border).div(max(h.sub(border.mul(2)), 1e-4)), 0, 1);
     const topCol = select(isBoss.greaterThan(0.5), C.bossTop, select(isAlly.greaterThan(0.5), C.allyTop, C.enemyTop));
@@ -121,7 +123,10 @@ export class HeadBars {
     const st = t.mul(segs);
     const tickW = ft.mul(segs).mul(1.2);
     const tick = float(1).sub(smoothstep(0, tickW, abs(fract(st.add(0.5)).sub(0.5))));
-    const tickMask = tick.mul(step(0.5, st)).mul(step(st, segs.sub(0.5))).mul(inHp.add(inTrail));
+    const tickMask = tick
+      .mul(step(0.5, st))
+      .mul(step(st, segs.sub(0.5)))
+      .mul(inHp.add(inTrail));
     const ticked = mix(base, C.ink, tickMask.mul(0.55));
 
     // Viền đồng thau giữa mép ngoài và phần trong; viền trên sáng hơn viền dưới.
@@ -195,4 +200,3 @@ export class HeadBars {
     this.mesh.dispose();
   }
 }
-

@@ -1,0 +1,15 @@
+node_modules
+dist
+build
+pnpm-lock.yaml
+bench/results
+apps/client/public
+assets
+docs
+packages/content/data
+**/__snapshots__
+**/*.json
+**/*.md
+**/*.py
+**/*.html
+.claude

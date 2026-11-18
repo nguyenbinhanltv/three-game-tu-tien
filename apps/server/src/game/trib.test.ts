@@ -1,5 +1,19 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { canFlyAt, freeFlight, groundAt, S, TRIB_FINAL, TRIB_NET, TRIB_PHASE_END, TRIB_PILL_MAX, TRIBULATION_DURATION, TRUC_CO_FREE_FLY_ALT, TRUC_CO_LEVEL, type DmgMsg, type HazardMsg } from '@dtl/shared';
+import {
+  canFlyAt,
+  freeFlight,
+  groundAt,
+  S,
+  TRIB_FINAL,
+  TRIB_NET,
+  TRIB_PHASE_END,
+  TRIB_PILL_MAX,
+  TRIBULATION_DURATION,
+  TRUC_CO_FREE_FLY_ALT,
+  TRUC_CO_LEVEL,
+  type DmgMsg,
+  type HazardMsg,
+} from '@dtl/shared';
 
 // Độ kiếp ba pha (S2-C): lôi võng, tia cuối khóa mệnh, giới hạn đan, và quyền bay miễn linh lực của Trúc Cơ.
 process.env.DB_FILE = ':memory:';
@@ -24,7 +38,13 @@ let acc = 9000;
 function setup(level = 15) {
   const sent: { type: string; msg: unknown }[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const char = Character.create(acc++, 'trb' + acc);
   char.level = level;
   char.recalc();
@@ -35,7 +55,11 @@ function setup(level = 15) {
   p.move.x = X;
   p.move.z = Z;
   p.move.y = groundAt(X, Z);
-  const priv = sim as unknown as { tickTribulation(p: Ent): void; tickHazards(): void; hazards: { at: number; lock?: boolean; sh?: string }[] };
+  const priv = sim as unknown as {
+    tickTribulation(p: Ent): void;
+    tickHazards(): void;
+    hazards: { at: number; lock?: boolean; sh?: string }[];
+  };
   const begin = (elapsed: number) => {
     sim.now = 1_000_000;
     p.trib = { endAt: sim.now + (TRIBULATION_DURATION - elapsed) * 1000, nextAt: sim.now, n: 0, fin: false, pills: 0 };
@@ -75,7 +99,18 @@ describe('độ kiếp ba pha', () => {
     const mhp = t.p.char.mhp;
     t.p.move.x += 40;
     t.priv.hazards.length = 0;
-    t.priv.hazards.push({ x: X, z: Z, r: TRIB_FINAL.r, at: t.sim.now, dmg: TRIB_FINAL.pct, pct: true, atk: 0, mon: null, src: t.p.sid, lock: true } as never);
+    t.priv.hazards.push({
+      x: X,
+      z: Z,
+      r: TRIB_FINAL.r,
+      at: t.sim.now,
+      dmg: TRIB_FINAL.pct,
+      pct: true,
+      atk: 0,
+      mon: null,
+      src: t.p.sid,
+      lock: true,
+    } as never);
     t.priv.tickHazards();
     expect(t.p.char.hp).toBeCloseTo(mhp * (1 - TRIB_FINAL.pct), 0);
   });
@@ -85,7 +120,18 @@ describe('độ kiếp ba pha', () => {
     t.begin(TRIB_PHASE_END[1] + 0.1);
     t.p.char.meta.buffs = { def: { m: 0.15, until: Date.now() + 60_000 } };
     const mhp = t.p.char.mhp;
-    t.priv.hazards.push({ x: X, z: Z, r: TRIB_FINAL.r, at: t.sim.now, dmg: TRIB_FINAL.pct, pct: true, atk: 0, mon: null, src: t.p.sid, lock: true } as never);
+    t.priv.hazards.push({
+      x: X,
+      z: Z,
+      r: TRIB_FINAL.r,
+      at: t.sim.now,
+      dmg: TRIB_FINAL.pct,
+      pct: true,
+      atk: 0,
+      mon: null,
+      src: t.p.sid,
+      lock: true,
+    } as never);
     t.priv.tickHazards();
     const cut = 1 - Math.min(TRIB_FINAL.defMaxCut, 0.15 * TRIB_FINAL.defMul);
     expect(mhp - t.p.char.hp).toBeCloseTo(mhp * TRIB_FINAL.pct * cut, 0);
@@ -113,7 +159,18 @@ describe('độ kiếp ba pha', () => {
     t.p.trib = null; // kiếp đã kết thúc
     t.p.move.x += 60; // hồi sinh ở tông môn, xa vòng
     t.priv.hazards.length = 0;
-    t.priv.hazards.push({ x: X, z: Z, r: TRIB_FINAL.r, at: t.sim.now, dmg: TRIB_FINAL.pct, pct: true, atk: 0, mon: null, src: t.p.sid, lock: true } as never);
+    t.priv.hazards.push({
+      x: X,
+      z: Z,
+      r: TRIB_FINAL.r,
+      at: t.sim.now,
+      dmg: TRIB_FINAL.pct,
+      pct: true,
+      atk: 0,
+      mon: null,
+      src: t.p.sid,
+      lock: true,
+    } as never);
     t.priv.tickHazards();
     expect(t.p.char.hp).toBe(mhp);
   });
@@ -122,7 +179,18 @@ describe('độ kiếp ba pha', () => {
     const t = setup();
     t.begin(TRIB_PHASE_END[1] + 0.1);
     t.p.char.hp = 5;
-    t.priv.hazards.push({ x: X, z: Z, r: TRIB_FINAL.r, at: t.sim.now, dmg: TRIB_FINAL.pct, pct: true, atk: 0, mon: null, src: 'nguoi-khac', lock: true } as never);
+    t.priv.hazards.push({
+      x: X,
+      z: Z,
+      r: TRIB_FINAL.r,
+      at: t.sim.now,
+      dmg: TRIB_FINAL.pct,
+      pct: true,
+      atk: 0,
+      mon: null,
+      src: 'nguoi-khac',
+      lock: true,
+    } as never);
     t.priv.tickHazards();
     expect(t.p.char.hp).toBe(1);
   });
@@ -158,7 +226,11 @@ describe('Trúc Cơ bay thấp miễn linh lực', () => {
   });
 
   it('server không trừ linh lực khi Trúc Cơ bay thấp, vẫn trừ khi bay cao hoặc chưa Trúc Cơ', () => {
-    for (const [level, alt, drains] of [[TRUC_CO_LEVEL, 5, false], [TRUC_CO_LEVEL, 60, true], [12, 5, true]] as const) {
+    for (const [level, alt, drains] of [
+      [TRUC_CO_LEVEL, 5, false],
+      [TRUC_CO_LEVEL, 60, true],
+      [12, 5, true],
+    ] as const) {
       const t = setup(level);
       t.p.move.flying = true;
       t.p.move.y = y(alt);

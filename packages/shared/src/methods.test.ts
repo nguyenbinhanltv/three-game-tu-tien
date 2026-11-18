@@ -20,7 +20,20 @@ import {
   type SkillVariant,
 } from './index';
 
-const SK: SkillDef = { id: 'x', kind: 'damage', icon: 'x', unlock: 1, range: 26, cast: 1.5, cd: 20, mp: 40, power: 4, radius: 8, duration: 6, fx: 'f' };
+const SK: SkillDef = {
+  id: 'x',
+  kind: 'damage',
+  icon: 'x',
+  unlock: 1,
+  range: 26,
+  cast: 1.5,
+  cd: 20,
+  mp: 40,
+  power: 4,
+  radius: 8,
+  duration: 6,
+  fx: 'f',
+};
 const VAR = {
   a: { id: 'a', hits: [0.6, 0.6], fx: 'twin' } as SkillVariant,
   b: { id: 'b', castMul: 0, powerMul: 0.75, radiusMul: 1.3, fx: 'quick' } as SkillVariant,

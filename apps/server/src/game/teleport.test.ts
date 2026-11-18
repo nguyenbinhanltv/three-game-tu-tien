@@ -1,5 +1,18 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { groundAt, MARK_GAP_MS, MARK_TTL_MS, PF_DEAD, S, TELE_CAST_MS, TELE_CD_MS, TELE_FREE, TELE_PAD, TELE_PADS, type MarkMsg, type TeleMsg } from '@dtl/shared';
+import {
+  groundAt,
+  MARK_GAP_MS,
+  MARK_TTL_MS,
+  PF_DEAD,
+  S,
+  TELE_CAST_MS,
+  TELE_CD_MS,
+  TELE_FREE,
+  TELE_PAD,
+  TELE_PADS,
+  type MarkMsg,
+  type TeleMsg,
+} from '@dtl/shared';
 
 // Truyền Tống Trận và điểm đánh dấu (M-4): server quyết định mở khóa, niệm, chặn khi bận, hồi chiêu, chia sẻ điểm trong tổ đội.
 process.env.DB_FILE = ':memory:';
@@ -39,7 +52,13 @@ interface Sent {
 function setup(roomName = 'world', levelId = 'van_lam') {
   const sent: Sent[] = [];
   const host = { broadcast: () => {}, roomName };
-  const sim = new GameSim(new WorldState(), host as never, { levelId, roomName, spawn: { x: 2048, z: 2088 }, respawn: { x: 2048, z: 2088 }, persistPosition: false });
+  const sim = new GameSim(new WorldState(), host as never, {
+    levelId,
+    roomName,
+    spawn: { x: 2048, z: 2088 },
+    respawn: { x: 2048, z: 2088 },
+    persistPosition: false,
+  });
   const join = (name: string): Ent => {
     const char = Character.create(nextAcc++, name + nextAcc);
     char.level = 8;
@@ -223,7 +242,11 @@ describe('điểm đánh dấu', () => {
     const a = s.join('a');
     const b = s.join('b');
     const c = s.join('c');
-    const m = new MarkerSystem(room, () => s.sim.players.values(), () => s.sim.now);
+    const m = new MarkerSystem(
+      room,
+      () => s.sim.players.values(),
+      () => s.sim.now,
+    );
     parties.now = () => Date.now() + 10_000;
     parties.command(a, { a: 'inv', n: b.char.name });
     parties.command(b, { a: 'acc', id: a.char.id });
@@ -239,7 +262,11 @@ describe('điểm đánh dấu', () => {
   it('chặn toạ độ sai, ngoài vùng chơi và spam', () => {
     const s = setup();
     const a = s.join('a');
-    const m = new MarkerSystem({}, () => s.sim.players.values(), () => s.sim.now);
+    const m = new MarkerSystem(
+      {},
+      () => s.sim.players.values(),
+      () => s.sim.now,
+    );
     for (const bad of [{ x: NaN, z: 1 }, { x: 'a', z: 1 }, { x: 1e9, z: 0 }, { x: 0, z: 0 }, {}, null, 5]) {
       s.sim.now += MARK_GAP_MS + 1;
       m.command(a, bad);
@@ -255,7 +282,11 @@ describe('điểm đánh dấu', () => {
   it('điểm tự hết hạn', () => {
     const s = setup();
     const a = s.join('a');
-    const m = new MarkerSystem({}, () => s.sim.players.values(), () => s.sim.now);
+    const m = new MarkerSystem(
+      {},
+      () => s.sim.players.values(),
+      () => s.sim.now,
+    );
     s.sim.now += MARK_GAP_MS + 1;
     m.command(a, { x: 2100, z: 2100 });
     s.sim.now += MARK_TTL_MS + 1;

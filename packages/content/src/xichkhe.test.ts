@@ -15,9 +15,20 @@ describe('địa hình hẻm Xích Tẫn Khích', () => {
   });
 
   it('sàn quanh tâm bí cảnh, lối vào, lối ra và vòng quái (bán kính 32) phẳng trong ±3 m', () => {
-    const pts: [number, number][] = [[dg.center.x, dg.center.z], [dg.spawn.x, dg.spawn.z], [dg.exit.x, dg.exit.z]];
-    for (let a = 0; a < 24; a++) for (const r of [14, 24, 32]) pts.push([dg.center.x + Math.cos((a / 24) * Math.PI * 2) * r, dg.center.z + Math.sin((a / 24) * Math.PI * 2) * r]);
-    for (const v of [{ x: 1539, z: 1311 }, { x: 1501, z: 1311 }, { x: 1520, z: 1278 }]) pts.push([v.x, v.z]); // khe mạch của Tử Quang Dực Chủ
+    const pts: [number, number][] = [
+      [dg.center.x, dg.center.z],
+      [dg.spawn.x, dg.spawn.z],
+      [dg.exit.x, dg.exit.z],
+    ];
+    for (let a = 0; a < 24; a++)
+      for (const r of [14, 24, 32])
+        pts.push([dg.center.x + Math.cos((a / 24) * Math.PI * 2) * r, dg.center.z + Math.sin((a / 24) * Math.PI * 2) * r]);
+    for (const v of [
+      { x: 1539, z: 1311 },
+      { x: 1501, z: 1311 },
+      { x: 1520, z: 1278 },
+    ])
+      pts.push([v.x, v.z]); // khe mạch của Tử Quang Dực Chủ
     for (const [x, z] of pts) expect(Math.abs(tr.heightAt(x, z) - floor), `${x},${z}`).toBeLessThan(3);
   });
 
@@ -28,7 +39,13 @@ describe('địa hình hẻm Xích Tẫn Khích', () => {
   });
 
   it('chặn leo vách: chạy thẳng vào vách hai bên và đầu hẻm không lên được quá chân vách', () => {
-    const ctx: MoveCtx = { canFly: false, frozen: false, speedMul: 1, terrain: tr, bound: { x: dg.center.x, z: dg.center.z, r: dg.bound! } };
+    const ctx: MoveCtx = {
+      canFly: false,
+      frozen: false,
+      speedMul: 1,
+      terrain: tr,
+      bound: { x: dg.center.x, z: dg.center.z, r: dg.bound! },
+    };
     // yaw hướng +x (đông), -x, +z, -z: thử cả bốn; vị trí đầu là sàn bằng.
     for (const yaw of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
       const st: MoveState = { x: c.cx, y: floor, z: c.cz, vy: 0, grounded: true, flying: false };

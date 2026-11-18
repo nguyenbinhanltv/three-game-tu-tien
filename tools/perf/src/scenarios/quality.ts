@@ -10,7 +10,13 @@ import { openGame } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
 
-type W = { __game?: { env?: { sun?: { shadow: { mapSize: { x: number }; camera: { right: number } } } }; setQuality(q: string): void; setQualityLock(on: boolean): void } };
+type W = {
+  __game?: {
+    env?: { sun?: { shadow: { mapSize: { x: number }; camera: { right: number } } } };
+    setQuality(q: string): void;
+    setQualityLock(on: boolean): void;
+  };
+};
 
 export default {
   name: 'quality',
@@ -31,7 +37,11 @@ export default {
     {
       const g = await openGame(r.browser, { clientPort: r.clientPort, name: 'QHint', renderer: r.renderer, errors: r.errors });
       const { page } = g;
-      out.machine = await page.evaluate(() => ({ gpu: (window as unknown as { __game?: { gpuInfo: string } }).__game?.gpuInfo, mem: (navigator as unknown as { deviceMemory?: number }).deviceMemory, cores: navigator.hardwareConcurrency }));
+      out.machine = await page.evaluate(() => ({
+        gpu: (window as unknown as { __game?: { gpuInfo: string } }).__game?.gpuInfo,
+        mem: (navigator as unknown as { deviceMemory?: number }).deviceMemory,
+        cores: navigator.hardwareConcurrency,
+      }));
       out.defaultQuality = (await q(page)) ?? 'medium (chưa lưu)';
       await page.keyboard.press('o'); // mở Cài đặt
       await sleep(1200);
@@ -48,7 +58,13 @@ export default {
 
     // 2: đổi Cao ↔ Cực cao lúc chạy (vào game ở Cao để có bóng đổ).
     {
-      const g = await openGame(r.browser, { clientPort: r.clientPort, name: 'QShad', renderer: r.renderer, errors: r.errors, quality: 'high' });
+      const g = await openGame(r.browser, {
+        clientPort: r.clientPort,
+        name: 'QShad',
+        renderer: r.renderer,
+        errors: r.errors,
+        quality: 'high',
+      });
       const { page } = g;
       await page.evaluate(() => (window as unknown as W).__game!.setQuality('high'));
       await sleep(1500);

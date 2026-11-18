@@ -81,7 +81,8 @@ export class HitReact {
 
   /** Bị trúng đòn: khựng + chớp + giật lùi + rung. */
   react(o: HitOpts): void {
-    const base = o.stop ?? hitStopOf({ crit: !!o.crit, heavy: !!o.heavy, combo3: false, power: 0, ult: false, victimIsMe: false, byMe: false }).target;
+    const base =
+      o.stop ?? hitStopOf({ crit: !!o.crit, heavy: !!o.heavy, combo3: false, power: 0, ult: false, victimIsMe: false, byMe: false }).target;
     const stop = base * this.feel.stop;
     if (o.delay && o.delay > 0) {
       if (this.pendHitT < 0) {

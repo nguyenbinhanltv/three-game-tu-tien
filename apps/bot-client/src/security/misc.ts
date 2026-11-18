@@ -9,9 +9,12 @@ export async function runMisc(_ctx: Ctx): Promise<void> {
 
   // 12. Thân request /matchmake quá lớn bị từ chối (Colyseus gom cả thân vào bộ nhớ).
   {
-    const r = await fetch(HTTP + '/matchmake/joinOrCreate/world', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dev: 'x'.repeat(64 * 1024) }) });
+    const r = await fetch(HTTP + '/matchmake/joinOrCreate/world', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ dev: 'x'.repeat(64 * 1024) }),
+    });
     await r.arrayBuffer();
     check('thân /matchmake quá lớn bị từ chối 413', r.status === 413, `HTTP ${r.status}`);
   }
-
 }

@@ -26,19 +26,34 @@ if (code !== 0) throw new Error(`Blender thoát với mã ${code}`);
 
 const N = 1024;
 let seed = 7;
-const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32;
 // sương: nhiễu thô làm mờ → kênh alpha của lớp ngọc lam nhạt
 async function mist() {
-  const w = 24, buf = Buffer.alloc(w * w);
+  const w = 24,
+    buf = Buffer.alloc(w * w);
   for (let i = 0; i < buf.length; i++) buf[i] = 60 + rnd() * 130;
-  const a = await sharp(buf, { raw: { width: w, height: w, channels: 1 } }).resize(N, N, { kernel: 'cubic' }).blur(14).raw().toBuffer();
+  const a = await sharp(buf, { raw: { width: w, height: w, channels: 1 } })
+    .resize(N, N, { kernel: 'cubic' })
+    .blur(14)
+    .raw()
+    .toBuffer();
   const rgba = Buffer.alloc(N * N * 4);
-  for (let i = 0; i < N * N; i++) { rgba[i * 4] = 95; rgba[i * 4 + 1] = 179; rgba[i * 4 + 2] = 165; rgba[i * 4 + 3] = Math.round(a[i] * 0.22); }
-  return sharp(rgba, { raw: { width: N, height: N, channels: 4 } }).png().toBuffer();
+  for (let i = 0; i < N * N; i++) {
+    rgba[i * 4] = 95;
+    rgba[i * 4 + 1] = 179;
+    rgba[i * 4 + 2] = 165;
+    rgba[i * 4 + 3] = Math.round(a[i] * 0.22);
+  }
+  return sharp(rgba, { raw: { width: N, height: N, channels: 4 } })
+    .png()
+    .toBuffer();
 }
-const m = N * 0.05, c = N * 0.045; // lề, góc vát
+const m = N * 0.05,
+  c = N * 0.045; // lề, góc vát
 const poly = (inset) => {
-  const a = m + inset, b = N - m - inset, k = c;
+  const a = m + inset,
+    b = N - m - inset,
+    k = c;
   return `${a + k},${a} ${b - k},${a} ${b},${a + k} ${b},${b - k} ${b - k},${b} ${a + k},${b} ${a},${b - k} ${a},${a + k}`;
 };
 const bgSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}">
@@ -55,22 +70,32 @@ const bgSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}
 <polygon points="${poly(14)}" fill="none" stroke="#F2C47E" stroke-opacity=".35" stroke-width="2"/>
 </svg>`;
 const bgBase = await sharp(Buffer.from(bgSvg)).png().toBuffer();
-const clip = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}"><polygon points="${poly(0)}" fill="#fff"/></svg>`);
-const mistClipped = await sharp(await mist()).composite([{ input: clip, blend: 'dest-in' }]).png().toBuffer();
-const frame = await sharp(Buffer.from(bgSvg.replace(/<rect width="1024" height="1024" fill="#0B2A31"\/>/, '').replace(/<g clip-path[\s\S]*?<\/g>/, ''))).png().toBuffer();
+const clip = Buffer.from(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}"><polygon points="${poly(0)}" fill="#fff"/></svg>`,
+);
+const mistClipped = await sharp(await mist())
+  .composite([{ input: clip, blend: 'dest-in' }])
+  .png()
+  .toBuffer();
+const frame = await sharp(
+  Buffer.from(bgSvg.replace(/<rect width="1024" height="1024" fill="#0B2A31"\/>/, '').replace(/<g clip-path[\s\S]*?<\/g>/, '')),
+)
+  .png()
+  .toBuffer();
 
 for (const f of fs.readdirSync(tmp).filter((x) => x.endsWith('.png'))) {
   const id = f.replace(/\.png$/, '');
-  const obj = await sharp(path.join(tmp, f)).resize(Math.round(N * 0.8), Math.round(N * 0.8)).png().toBuffer();
+  const obj = await sharp(path.join(tmp, f))
+    .resize(Math.round(N * 0.8), Math.round(N * 0.8))
+    .png()
+    .toBuffer();
   const shadow = await sharp(obj).ensureAlpha().tint('#02141A').blur(18).linear([1, 1, 1, 0.55], [0, 0, 0, 0]).png().toBuffer();
-  const left = Math.round(N * 0.1), top = Math.round(N * 0.1);
+  const left = Math.round(N * 0.1),
+    top = Math.round(N * 0.1);
   const img = await sharp(bgBase)
-    .composite([
-      { input: mistClipped },
-      { input: shadow, left: left + 14, top: top + 22 },
-      { input: obj, left, top },
-      { input: frame },
-    ]).png().toBuffer();
+    .composite([{ input: mistClipped }, { input: shadow, left: left + 14, top: top + 22 }, { input: obj, left, top }, { input: frame }])
+    .png()
+    .toBuffer();
   fs.writeFileSync(path.join(outDir, `${id}.png`), img);
   console.log('icon', id);
 }

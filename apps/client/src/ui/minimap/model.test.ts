@@ -1,9 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import type { QuestDef, QuestView } from '@dtl/shared';
 import { LEVELS } from '@dtl/content';
-import { backingScale, clampZoom, difficultyTone, edgeClamp, formatCountdown, nearestIndex, npcFunction, npcQuestMark, project, zoneStatus, ZOOM_SPANS } from './model';
+import {
+  backingScale,
+  clampZoom,
+  difficultyTone,
+  edgeClamp,
+  formatCountdown,
+  nearestIndex,
+  npcFunction,
+  npcQuestMark,
+  project,
+  zoneStatus,
+  ZOOM_SPANS,
+} from './model';
 
-const qd = (o: Partial<QuestDef> & { id: string }): QuestDef => ({ giver: 'a', turnin: 'a', objectives: [{ type: 'kill', target: 'm', count: 2 }], rewards: { xp: 1, gold: 1 }, ...o }) as QuestDef;
+const qd = (o: Partial<QuestDef> & { id: string }): QuestDef =>
+  ({ giver: 'a', turnin: 'a', objectives: [{ type: 'kill', target: 'm', count: 2 }], rewards: { xp: 1, gold: 1 }, ...o }) as QuestDef;
 const none: QuestView = { active: {}, done: [] };
 
 describe('minimap model', () => {

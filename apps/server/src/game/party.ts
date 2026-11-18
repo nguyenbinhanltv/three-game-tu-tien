@@ -329,7 +329,10 @@ export class PartyManager {
     if (typeof raw !== 'string') return;
     const party = this.byChar.get(p.char.id);
     if (!party) return;
-    const text = raw.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, CHAT_MAX_LEN);
+    const text = raw
+      .replace(/[\u0000-\u001f]/g, ' ')
+      .trim()
+      .slice(0, CHAT_MAX_LEN);
     if (!text) return;
     const now = this.now();
     if (now - (this.sayAt.get(p.char.id) ?? 0) < 800) return this.msg(p, 'sys.chat_rate', undefined, 'bad');
@@ -398,7 +401,9 @@ export class PartyManager {
       const alive = list.filter((i) => i.until > now);
       if (alive.length !== list.length) {
         const e = this.reg.get(target);
-        for (const i of list) if (i.until <= now && e) this.send(e.p, S.INVITE, { kind: 'party', id: i.from, name: i.fromName, until: i.until, gone: true } satisfies InviteMsg);
+        for (const i of list)
+          if (i.until <= now && e)
+            this.send(e.p, S.INVITE, { kind: 'party', id: i.from, name: i.fromName, until: i.until, gone: true } satisfies InviteMsg);
         for (const i of list) if (i.until <= now) this.setPairCooldown('party', i.from, target, INVITE_PAIR_COOLDOWN_MS);
       }
       if (alive.length) this.invites.set(target, alive);
@@ -415,7 +420,9 @@ export class PartyManager {
       if (keep.length !== list.length) {
         const e = this.reg.get(target);
         const gone = list.filter((i) => i.from === from);
-        if (e) for (const i of gone) this.send(e.p, S.INVITE, { kind: 'party', id: i.from, name: i.fromName, until: i.until, gone: true } satisfies InviteMsg);
+        if (e)
+          for (const i of gone)
+            this.send(e.p, S.INVITE, { kind: 'party', id: i.from, name: i.fromName, until: i.until, gone: true } satisfies InviteMsg);
         this.invites.set(target, keep);
       }
     }

@@ -1,7 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { GUST_STREAKS, shapeGeometry, shapeKind, type ShapeKey } from './fxShapes';
 
-const SHAPES: ShapeKey[] = ['crescent', 'spike', 'shard', 'kite', 'ripple', 'burst', 'smoke', 'helix', 'ribbon', 'dragon', 'statue', 'card', 'gust'];
+const SHAPES: ShapeKey[] = [
+  'crescent',
+  'spike',
+  'shard',
+  'kite',
+  'ripple',
+  'burst',
+  'smoke',
+  'helix',
+  'ribbon',
+  'dragon',
+  'statue',
+  'card',
+  'gust',
+];
 
 describe('lưới FX vẽ tay', () => {
   for (const s of SHAPES) {

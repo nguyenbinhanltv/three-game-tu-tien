@@ -37,19 +37,21 @@ function loadSheet(data: Atlas, name: string): Promise<void> {
 }
 
 function loadAtlas() {
-  return atlas ??= (async () => {
+  return (atlas ??= (async () => {
     try {
       const response = await fetch(`${base}icons.json`);
       if (!response.ok) return null;
-      const data = await response.json() as Atlas;
+      const data = (await response.json()) as Atlas;
       if (!data.icons || !data.sheets) return null;
       await Promise.all(EAGER.map((name) => loadSheet(data, name)));
       return data;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   })().then((loaded) => {
     resolved = loaded;
     return loaded;
-  });
+  }));
 }
 
 /** Ô icon sẵn sàng vẽ (bảng của nó đã tải); chưa thì bắt đầu tải bảng và trả null để bên gọi dùng ký hiệu dự phòng. */
@@ -69,7 +71,7 @@ function styleOf(c: NonNullable<ReturnType<typeof cellOf>>): Record<string, stri
   return {
     backgroundImage: `url("${base}${sheet.file}")`,
     backgroundSize: `${sheet.columns * 100}% ${sheet.rows * 100}%`,
-    backgroundPosition: `${cell.x / (sheet.columns - 1) * 100}% ${cell.y / (sheet.rows - 1) * 100}%`,
+    backgroundPosition: `${(cell.x / (sheet.columns - 1)) * 100}% ${(cell.y / (sheet.rows - 1)) * 100}%`,
   };
 }
 
@@ -101,8 +103,17 @@ export function ContentIcon({ def, className }: { def?: IconDef; className?: str
     const fallback = def?.iconFallback ?? (def && !/^(itm_|skl_)/.test(def.icon) ? def.icon : '❔');
     // 'sys:<tên>' = icon hệ thống nét vàng (UI-1) thay emoji, ví dụ trang sức đầu 'sys:head'.
     const sys = fallback.startsWith('sys:') ? fallback.slice(4) : '';
-    if (isSysIcon(sys)) return <span className={'content-icon fallback sys' + (className ? ' ' + className : '')} aria-hidden="true"><SysIcon name={sys} size={28} /></span>;
-    return <span className={'content-icon fallback' + (className ? ' ' + className : '')} aria-hidden="true">{fallback}</span>;
+    if (isSysIcon(sys))
+      return (
+        <span className={'content-icon fallback sys' + (className ? ' ' + className : '')} aria-hidden="true">
+          <SysIcon name={sys} size={28} />
+        </span>
+      );
+    return (
+      <span className={'content-icon fallback' + (className ? ' ' + className : '')} aria-hidden="true">
+        {fallback}
+      </span>
+    );
   }
   return <span className={'content-icon' + (className ? ' ' + className : '')} aria-hidden="true" style={styleOf(c)} />;
 }

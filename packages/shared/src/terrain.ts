@@ -19,7 +19,10 @@ import {
 /** Hai đầu cầu giữ phẳng đúng độ cao đảo (m) để mặt cầu gặp mặt đảo liền mạch (không vấp bậc ở vai mép đảo). */
 export const BRIDGE_FLAT_END = 10;
 /** Độ cao mặt cầu tại tham số t (0..1) dọc nhịp: hai đầu phẳng `BRIDGE_FLAT_END` m, giữa nội suy tuyến tính có võng (võng tắt dần về hai đầu). */
-export function bridgeDeckY(b: { ax?: number; az?: number; bx?: number; bz?: number; ay: number; by: number; sag: number }, t: number): number {
+export function bridgeDeckY(
+  b: { ax?: number; az?: number; bx?: number; bz?: number; ay: number; by: number; sag: number },
+  t: number,
+): number {
   const len = b.ax !== undefined && b.bx !== undefined ? Math.hypot(b.bx - b.ax, (b.bz ?? 0) - (b.az ?? 0)) : 0;
   const f = len > 2 * BRIDGE_FLAT_END ? BRIDGE_FLAT_END / len : 0;
   const u = f > 0 ? Math.max(0, Math.min(1, (t - f) / (1 - 2 * f))) : t;
@@ -287,14 +290,39 @@ export function makeTerrain(def: TerrainDef): Terrain {
     return out;
   }
 
-  return { id: def.id, def, size: def.size, margin: def.margin, colliders: def.colliders, playWall, playBounds, blockRise: !!islands || !!canyon, heightAt, surfaceAt, groundAt, inWater, biomeAt, featureWeight, playDist, clampPlay };
+  return {
+    id: def.id,
+    def,
+    size: def.size,
+    margin: def.margin,
+    colliders: def.colliders,
+    playWall,
+    playBounds,
+    blockRise: !!islands || !!canyon,
+    heightAt,
+    surfaceAt,
+    groundAt,
+    inWater,
+    biomeAt,
+    featureWeight,
+    playDist,
+    clampPlay,
+  };
 }
 
 // ---- Đăng ký theo level ----
 
 const REGISTRY = new Map<string, Terrain>();
 /** Level dùng chung địa hình với level khác (bí cảnh Kiếm Trủng nằm trên bản đồ Vân Lam). */
-const TERRAIN_ALIAS: Record<string, string> = { kiem_trung: 'van_lam', do_kiep: 'van_lam', phuc_mach: 'van_lam', kinh_nguyet: 'van_lam', than_tang: 'van_lam', kim_da_cung: 'van_lam', do_kiep_bac_hoang: 'bac_hoang' };
+const TERRAIN_ALIAS: Record<string, string> = {
+  kiem_trung: 'van_lam',
+  do_kiep: 'van_lam',
+  phuc_mach: 'van_lam',
+  kinh_nguyet: 'van_lam',
+  than_tang: 'van_lam',
+  kim_da_cung: 'van_lam',
+  do_kiep_bac_hoang: 'bac_hoang',
+};
 
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
 export function registerTerrain(def: TerrainDef): Terrain {

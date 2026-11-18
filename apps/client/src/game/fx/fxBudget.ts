@@ -13,7 +13,21 @@ export const OTHERS_FX_LIVE_MAX = 30;
 export const OTHERS_FX_DIST = 45;
 
 /** Loại S.FX chỉ trang trí: chiêu người chơi và cú cắn của quái (không phải trạng thái cần đọc như niệm chú, độ kiếp). */
-const COSMETIC_FX: ReadonlySet<string> = new Set(['sword', 'slash', 'thunder', 'rain', 'heal', 'shield', 'bite', 'kanh', 'vankiem', 'transon', 'kimcuong', 'xuanphong', 'hoithien']);
+const COSMETIC_FX: ReadonlySet<string> = new Set([
+  'sword',
+  'slash',
+  'thunder',
+  'rain',
+  'heal',
+  'shield',
+  'bite',
+  'kanh',
+  'vankiem',
+  'transon',
+  'kimcuong',
+  'xuanphong',
+  'hoithien',
+]);
 
 interface OthersFx {
   /** Mình là nguồn hoặc đích. */

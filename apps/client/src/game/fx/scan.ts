@@ -8,7 +8,14 @@ import { groundAt } from '../../base/levelCtx';
 import type { SpiritScan, SpiritState } from '../../ui/store';
 
 /** Màu theo loại điểm (cũng dùng cho biểu tượng minimap). */
-const SPIRIT_COLOR: Record<SpiritKind, number> = { boss: 0xff6a4a, elite: 0xffb84a, mon: 0xd8d2c0, node: 0x7dffa0, player: 0x5cb8ff, poi: 0xe8c46a };
+const SPIRIT_COLOR: Record<SpiritKind, number> = {
+  boss: 0xff6a4a,
+  elite: 0xffb84a,
+  mon: 0xd8d2c0,
+  node: 0x7dffa0,
+  player: 0x5cb8ff,
+  poi: 0xe8c46a,
+};
 
 /** Các loại có cột sáng trong thế giới (quái thường chỉ hiện trên minimap cho khỏi rối). */
 const BEAM_KINDS: ReadonlySet<SpiritKind> = new Set(['boss', 'elite', 'node', 'player', 'poi']);
@@ -17,11 +24,25 @@ const BEAM_H = 46;
 const WAVE_MS = 1100;
 const BEAM_ALPHA = 0.5;
 
-const additive = (color: number, opacity: number) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+const additive = (color: number, opacity: number) =>
+  new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
 
 export class SpiritVis {
   private group = new THREE.Group();
-  private geo = { ring: new THREE.RingGeometry(0.985, 1, 128), focus: new THREE.RingGeometry(0.985, 1, 96), beam: new THREE.CylinderGeometry(0.4, 0.4, BEAM_H, 10, 1, true), foot: new THREE.RingGeometry(0.55, 0.8, 24) };
+  private geo = {
+    ring: new THREE.RingGeometry(0.985, 1, 128),
+    focus: new THREE.RingGeometry(0.985, 1, 96),
+    beam: new THREE.CylinderGeometry(0.4, 0.4, BEAM_H, 10, 1, true),
+    foot: new THREE.RingGeometry(0.55, 0.8, 24),
+  };
   private mats = new Map<number, THREE.MeshBasicMaterial>();
   private wave: THREE.Mesh;
   private focus: THREE.Mesh;
@@ -61,7 +82,9 @@ export class SpiritVis {
     this.beams = [];
     if (!scan) return;
     // Gần mình trước, boss và tinh anh luôn được giữ chỗ.
-    const order = scan.hits.filter((h) => BEAM_KINDS.has(h.k)).sort((a, b) => (a.k === 'boss' ? 0 : a.k === 'elite' ? 1 : 2) - (b.k === 'boss' ? 0 : b.k === 'elite' ? 1 : 2));
+    const order = scan.hits
+      .filter((h) => BEAM_KINDS.has(h.k))
+      .sort((a, b) => (a.k === 'boss' ? 0 : a.k === 'elite' ? 1 : 2) - (b.k === 'boss' ? 0 : b.k === 'elite' ? 1 : 2));
     for (const h of order.slice(0, MAX_BEAMS)) {
       const color = SPIRIT_COLOR[h.k];
       const g = new THREE.Group();

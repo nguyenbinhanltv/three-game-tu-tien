@@ -36,14 +36,23 @@ interface Sent {
 function setup(level = 12) {
   const sent: Sent[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X, z: Z },
+    persistPosition: false,
+  });
   const join = (name: string, lv = level): Ent => {
     const char = Character.create(nextAcc++, name + nextAcc);
     char.level = lv;
     char.recalc();
     char.hp = char.mhp;
     char.mp = char.mmp;
-    const client = { sessionId: name + nextAcc, send: (type: string, msg: unknown) => sent.push({ type, msg: { to: name, ...(msg as object) } }) };
+    const client = {
+      sessionId: name + nextAcc,
+      send: (type: string, msg: unknown) => sent.push({ type, msg: { to: name, ...(msg as object) } }),
+    };
     const p = sim.addPlayer(client as never, char, true, 's' + nextAcc);
     p.move.x = X;
     p.move.z = Z;
@@ -197,7 +206,9 @@ describe('đan: phẩm chất và buff', () => {
     let total = 0;
     for (const s of p.char.inv) if (s?.id === 'itm_hoi_xuan_dan') total += s.n;
     expect(total).toBe(20);
-    const rows = sqlite.prepare("SELECT kind, ref, delta, reason FROM ledger WHERE char_id = ? AND reason LIKE 'craft:rcp_hoi_xuan_dan%'").all(p.char.id) as { kind: string; ref: string; delta: number; reason: string }[];
+    const rows = sqlite
+      .prepare("SELECT kind, ref, delta, reason FROM ledger WHERE char_id = ? AND reason LIKE 'craft:rcp_hoi_xuan_dan%'")
+      .all(p.char.id) as { kind: string; ref: string; delta: number; reason: string }[];
     expect(rows.find((r) => r.kind === 'item' && r.ref === 'itm_hoi_xuan_dan')?.delta).toBe(20);
     expect(rows[0].reason).toMatch(/roll=pill:[012]{20}/);
     // Cùng khóa idem thì không luyện lần nữa.
@@ -215,7 +226,10 @@ describe('đan: phẩm chất và buff', () => {
     expect(tx(2)).toBe(true);
     expect(tx(2)).toBe(true);
     const stacks = p.char.inv.filter((s) => s?.id === 'itm_hoi_xuan_dan').map((s) => [s!.plus ?? 0, s!.n]);
-    expect(stacks).toEqual([[0, 2], [2, 4]]);
+    expect(stacks).toEqual([
+      [0, 2],
+      [2, 4],
+    ]);
   });
 
   it('đan Thượng phẩm hồi nhiều hơn đan Hạ phẩm', () => {
@@ -270,7 +284,9 @@ describe('chế tạo pháp bảo', () => {
     p.char.inv[2] = { id: 'itm_thiet_tinh', n: 10 };
     sim.onCraft(p, { id: 'rcp_tu_kim_ho_lo', n: 1, r: 'cr-art-001' });
     expect(p.char.inv.some((s) => s?.id === HO_LO)).toBe(true);
-    const rows = sqlite.prepare("SELECT kind, ref, delta FROM ledger WHERE char_id = ? AND reason = 'craft:rcp_tu_kim_ho_lo'").all(p.char.id) as { kind: string; ref: string; delta: number }[];
+    const rows = sqlite
+      .prepare("SELECT kind, ref, delta FROM ledger WHERE char_id = ? AND reason = 'craft:rcp_tu_kim_ho_lo'")
+      .all(p.char.id) as { kind: string; ref: string; delta: number }[];
     expect(rows.find((r) => r.ref === HO_LO)?.delta).toBe(1);
     const yeu = p.char.inv.filter((s) => s?.id === 'itm_yeu_dan').reduce((a, s) => a + s!.n, 0);
     sim.onCraft(p, { id: 'rcp_tu_kim_ho_lo', n: 1, r: 'cr-art-002' });

@@ -4,7 +4,19 @@
 // Chỉ là lớp hình: server vẫn quyết định chiêu, mục tiêu, sát thương.
 
 import * as THREE from 'three/webgpu';
-import { fxEventsFor, fxTierFor, skillTiming, type FxAnchor, type FxDecalEvent, type FxEvent, type FxMeshEvent, type FxParticleEvent, type FxQuality, type FxTimeline, type SkillDef } from '@dtl/shared';
+import {
+  fxEventsFor,
+  fxTierFor,
+  skillTiming,
+  type FxAnchor,
+  type FxDecalEvent,
+  type FxEvent,
+  type FxMeshEvent,
+  type FxParticleEvent,
+  type FxQuality,
+  type FxTimeline,
+  type SkillDef,
+} from '@dtl/shared';
 import type { FxMesh } from '../../render/materials/vfx';
 import { paletteOf, toneOf, type FxPalette } from '../../render/vfx/palette';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
@@ -29,7 +41,11 @@ export interface FxCaster {
   y: number;
   z: number;
   yaw: number;
-  model: { bladePoints?(b: THREE.Vector3, t: THREE.Vector3): boolean; performClock?(): { t: number; skill: string } | null; hit?: { hitStop(sec: number, delay?: number): void } };
+  model: {
+    bladePoints?(b: THREE.Vector3, t: THREE.Vector3): boolean;
+    performClock?(): { t: number; skill: string } | null;
+    hit?: { hitStop(sec: number, delay?: number): void };
+  };
 }
 
 export interface FxRunnerEnv {
@@ -128,7 +144,11 @@ const sstep = (a: number, b: number, x: number) => {
 const DECAL_MAX = 6;
 
 /** Mốc (giây từ bấm) của từng sự kiện trong một đòn: mỗi mốc trúng một bản cho sự kiện neo `hit`. */
-export function scheduleEvents(events: readonly FxEvent[], hitAt: readonly number[], tier: 0 | 1 | 2): { at: number; ev: FxEvent; hit: number }[] {
+export function scheduleEvents(
+  events: readonly FxEvent[],
+  hitAt: readonly number[],
+  tier: 0 | 1 | 2,
+): { at: number; ev: FxEvent; hit: number }[] {
   const out: { at: number; ev: FxEvent; hit: number }[] = [];
   for (const ev of events) {
     if ((ev.tier ?? 0) > tier) continue;
@@ -154,7 +174,13 @@ export function cancelDropsCast(t: number, firstHit: number): boolean {
  * Của mình: theo lựa chọn trong trạng thái công pháp cục bộ (khóa theo chiêu; windup dự đoán tới trước S.FX của server nên không được đọc từ S.FX).
  * Của người khác: biến thức của S.FX gần nhất CÙNG loại hiệu ứng (`fxKind` của chiêu), không lẫn từ chiêu khác.
  */
-export function variantFor(opts: { mine: boolean; skillId: string; chosen?: 'a' | 'b'; variants?: { a?: { fx?: string }; b?: { fx?: string } }; lastFx?: string }): string | undefined {
+export function variantFor(opts: {
+  mine: boolean;
+  skillId: string;
+  chosen?: 'a' | 'b';
+  variants?: { a?: { fx?: string }; b?: { fx?: string } };
+  lastFx?: string;
+}): string | undefined {
   if (opts.mine) return opts.chosen ? opts.variants?.[opts.chosen]?.fx : undefined;
   return opts.lastFx;
 }
@@ -173,25 +199,70 @@ export class FxRunner {
   ) {}
 
   /** Bắt đầu một đòn (sự kiện `windup`). */
-  start(sid: string, actor: FxCaster, def: SkillDef, tl: FxTimeline, e: SkillEvent, mine: boolean, dist: number, method: string | undefined): void {
+  start(
+    sid: string,
+    actor: FxCaster,
+    def: SkillDef,
+    tl: FxTimeline,
+    e: SkillEvent,
+    mine: boolean,
+    dist: number,
+    method: string | undefined,
+  ): void {
     this.drop(sid);
     const tm = skillTiming(def, e.combo >= 0 ? e.combo : undefined);
     const tier = fxTierFor(this.env.quality(), mine);
     const pal = paletteOf(tl.palette ?? def.method ?? (mine ? method : undefined));
     const events = fxEventsFor(tl, e.combo, this.env.variantOf(sid, def.id));
     const q = scheduleEvents(events, tm.hitAt, tier).map((s, idx) => ({ ...s, idx, done: false }));
-    this.casts.set(sid, { sid, actor, def, mine, tier, pal, q, clock: e.t, seed: ++this.serial * 7.31, dist, firstHit: Math.min(...tm.hitAt), mul: 1, emitted: 0 });
+    this.casts.set(sid, {
+      sid,
+      actor,
+      def,
+      mine,
+      tier,
+      pal,
+      q,
+      clock: e.t,
+      seed: ++this.serial * 7.31,
+      dist,
+      firstHit: Math.min(...tm.hitAt),
+      mul: 1,
+      emitted: 0,
+    });
     this.pump(this.casts.get(sid)!, e.t);
   }
 
   /** Chiêu kích hoạt theo `S.FX` (lướt...): mọi sự kiện neo vào lúc nhận (hitAt = 0). */
-  startFx(sid: string, actor: FxCaster, def: SkillDef | undefined, tl: FxTimeline, mine: boolean, dist: number, method: string | undefined): void {
+  startFx(
+    sid: string,
+    actor: FxCaster,
+    def: SkillDef | undefined,
+    tl: FxTimeline,
+    mine: boolean,
+    dist: number,
+    method: string | undefined,
+  ): void {
     this.drop(sid);
     const tier = fxTierFor(this.env.quality(), mine);
     const pal = paletteOf(tl.palette ?? def?.method ?? (mine ? method : undefined));
     const events = fxEventsFor(tl, -1, this.env.variantOf(sid, def?.id ?? tl.skill));
     const q = scheduleEvents(events, [0], tier).map((s, idx) => ({ ...s, idx, done: false }));
-    const cast: Cast = { sid, actor, def: def ?? ({ id: tl.skill } as SkillDef), mine, tier, pal, q, clock: 0, seed: ++this.serial * 7.31, dist, firstHit: Infinity, mul: 1, emitted: 0 };
+    const cast: Cast = {
+      sid,
+      actor,
+      def: def ?? ({ id: tl.skill } as SkillDef),
+      mine,
+      tier,
+      pal,
+      q,
+      clock: 0,
+      seed: ++this.serial * 7.31,
+      dist,
+      firstHit: Infinity,
+      mul: 1,
+      emitted: 0,
+    };
     // Không có đồng hồ animation của chiêu: chạy theo dt (đồng hồ dự phòng).
     this.casts.set(sid, cast);
     this.pump(cast, 0);
@@ -207,7 +278,25 @@ export class FxRunner {
     const pal = paletteOf(o.palette);
     const events = fxEventsFor(tl, -1, o.variant);
     const q = scheduleEvents(events, [o.hitAt ?? 0], tier).map((s, idx) => ({ ...s, idx, done: false }));
-    const cast: Cast = { sid, actor: o.actor, def: { id: tl.skill } as SkillDef, mine: false, tier, pal, q, clock: 0, seed: this.serial * 7.31, dist: 0, firstHit: Infinity, tgt: o.tgt, area: o.area, mul: o.mul ?? 1, delay: o.delay, variant: o.variant, emitted: 0 };
+    const cast: Cast = {
+      sid,
+      actor: o.actor,
+      def: { id: tl.skill } as SkillDef,
+      mine: false,
+      tier,
+      pal,
+      q,
+      clock: 0,
+      seed: this.serial * 7.31,
+      dist: 0,
+      firstHit: Infinity,
+      tgt: o.tgt,
+      area: o.area,
+      mul: o.mul ?? 1,
+      delay: o.delay,
+      variant: o.variant,
+      emitted: 0,
+    };
     this.casts.set(sid, cast);
     this.pump(cast, 0);
   }
@@ -263,13 +352,23 @@ export class FxRunner {
   }
 
   /** Điểm neo (thế giới) với dịch cục bộ theo hướng `yaw`. */
-  private anchor(c: Cast, at: FxAnchor, off: readonly number[] | undefined, yaw: number, tgt: FxTarget | null, out: THREE.Vector3, ahead = 1.2): THREE.Vector3 {
+  private anchor(
+    c: Cast,
+    at: FxAnchor,
+    off: readonly number[] | undefined,
+    yaw: number,
+    tgt: FxTarget | null,
+    out: THREE.Vector3,
+    ahead = 1.2,
+  ): THREE.Vector3 {
     const a = c.actor;
-    if (at === 'target') out.set(tgt?.x ?? a.x + Math.sin(yaw) * 5, (tgt?.y ?? a.y) + (tgt?.chest ?? 1.1), tgt?.z ?? a.z + Math.cos(yaw) * 5);
+    if (at === 'target')
+      out.set(tgt?.x ?? a.x + Math.sin(yaw) * 5, (tgt?.y ?? a.y) + (tgt?.chest ?? 1.1), tgt?.z ?? a.z + Math.cos(yaw) * 5);
     else if (at === 'area' && this.areaOf(c)) {
       const ar = this.areaOf(c)!;
       out.set(ar.x, (tgt?.y ?? a.y) + 0.03, ar.z);
-    } else if (at === 'ground' || at === 'area') out.set(tgt?.x ?? a.x + Math.sin(yaw) * 5, (tgt?.y ?? a.y) + 0.03, tgt?.z ?? a.z + Math.cos(yaw) * 5);
+    } else if (at === 'ground' || at === 'area')
+      out.set(tgt?.x ?? a.x + Math.sin(yaw) * 5, (tgt?.y ?? a.y) + 0.03, tgt?.z ?? a.z + Math.cos(yaw) * 5);
     else if (at === 'origin' && this.env.originOf(c.sid)) {
       const o = this.env.originOf(c.sid)!;
       out.set(o.x, a.y + 1.15, o.z);
@@ -289,7 +388,12 @@ export class FxRunner {
   private play(c: Cast, s: Queued): void {
     const ev = s.ev;
     if (import.meta.env.DEV) {
-      this.log.push({ skill: c.def.id, type: ev.type + (ev.type === 'mesh' ? ':' + ev.shape : ev.type === 'decal' ? ':' + ev.tex : ''), at: s.at, real: performance.now() });
+      this.log.push({
+        skill: c.def.id,
+        type: ev.type + (ev.type === 'mesh' ? ':' + ev.shape : ev.type === 'decal' ? ':' + ev.tex : ''),
+        at: s.at,
+        real: performance.now(),
+      });
       if (this.log.length > 300) this.log.shift();
     }
     const tgt = this.tgtOf(c);
@@ -317,7 +421,16 @@ export class FxRunner {
         break;
       case 'bolt': {
         const p = this.anchor(c, ev.at ?? 'ground', ev.offset, this.aim(c, tgt), tgt, _a);
-        this.v.lightning(p.x, p.y, p.z, toneOf(c.pal, ev.tone ?? 'rim'), ev.scale ?? 1, ev.seed ?? Math.floor(c.seed * 100 + s.idx), 0, ev.thick ?? 1);
+        this.v.lightning(
+          p.x,
+          p.y,
+          p.z,
+          toneOf(c.pal, ev.tone ?? 'rim'),
+          ev.scale ?? 1,
+          ev.seed ?? Math.floor(c.seed * 100 + s.idx),
+          0,
+          ev.thick ?? 1,
+        );
         break;
       }
       case 'camera':
@@ -343,7 +456,7 @@ export class FxRunner {
     const s0 = Array.isArray(ev.scale) ? ev.scale : [ev.scale ?? 1, ev.scale ?? 1, ev.scale ?? 1];
     const sT0 = ev.scaleTo === undefined ? s0 : Array.isArray(ev.scaleTo) ? ev.scaleTo : [ev.scaleTo, ev.scaleTo, ev.scaleTo];
     // `fit: 'area'`: kích thước theo mét tính bằng bán kính vùng của chiêu (x, z).
-    const fitR = ev.fit === 'area' ? this.areaOf(c)?.r ?? 8 : 1;
+    const fitR = ev.fit === 'area' ? (this.areaOf(c)?.r ?? 8) : 1;
     const gm = ev.fit === 'area' ? 1 : c.mul;
     const fitS = (v: number[]) => [v[0] * fitR * gm, v[1] * gm, v[2] * fitR * gm];
     const dur = ev.untilDelay && c.delay ? c.delay : ev.dur;
@@ -361,7 +474,9 @@ export class FxRunner {
       _a.subVectors(end, start);
       if (_a.lengthSq() > 1e-4) baseQ.setFromUnitVectors(AXIS_Z, _a.normalize());
     } else baseQ.setFromAxisAngle(UP, yaw);
-    const rotQ = new THREE.Quaternion().setFromEuler(_e.set((ev.rot?.[0] ?? 0) * DEG, (ev.rot?.[1] ?? 0) * DEG, (ev.rot?.[2] ?? 0) * DEG, 'YXZ'));
+    const rotQ = new THREE.Quaternion().setFromEuler(
+      _e.set((ev.rot?.[0] ?? 0) * DEG, (ev.rot?.[1] ?? 0) * DEG, (ev.rot?.[2] ?? 0) * DEG, 'YXZ'),
+    );
     baseQ.multiply(rotQ);
 
     const main = this.v.fx(geo, color, alpha, kind);
@@ -399,7 +514,10 @@ export class FxRunner {
       (k) => {
         const head = sweep > 0 ? Math.min(1, k / sweep) * 1.06 : 1.06;
         const erode = sstep(erodeFrom, 1, k) * 1.1;
-        for (const [m, isShade] of [[main, false], [shade, true]] as const) {
+        for (const [m, isShade] of [
+          [main, false],
+          [shade, true],
+        ] as const) {
           if (!m) continue;
           const lag = isShade ? 0.04 : 0;
           if (kind === 'toon') {
@@ -439,7 +557,18 @@ export class FxRunner {
   private style(m: FxMesh, pal: FxPalette, ev: FxMeshEvent, kind: string): void {
     _col.setHex(pal.rim);
     m.fxB.set(_col.r, _col.g, _col.b, ev.ragged ?? 0.5);
-    m.fxA.w = kind === 'decal' ? DECAL_SMOKE : kind === 'card' ? (ev.card === 'phoenix' ? 1 : ev.card === 'ghost' ? 2 : 0) : kind === 'burst' && ev.cross ? 1 : 0;
+    m.fxA.w =
+      kind === 'decal'
+        ? DECAL_SMOKE
+        : kind === 'card'
+          ? ev.card === 'phoenix'
+            ? 1
+            : ev.card === 'ghost'
+              ? 2
+              : 0
+          : kind === 'burst' && ev.cross
+            ? 1
+            : 0;
     m.fxA.z = ev.seed ?? 0;
   }
 
@@ -481,7 +610,22 @@ export class FxRunner {
         const ox = rx * r;
         const oy = ry * r * 0.8;
         const oz = rz * r;
-        this.v.particles.emit(layer, p.x + ox, p.y + oy, p.z + oz, -ox / life, -oy / life, -oz / life, life, psz, psz * 0.2, col, 0.9, 0, 0.001);
+        this.v.particles.emit(
+          layer,
+          p.x + ox,
+          p.y + oy,
+          p.z + oz,
+          -ox / life,
+          -oy / life,
+          -oz / life,
+          life,
+          psz,
+          psz * 0.2,
+          col,
+          0.9,
+          0,
+          0.001,
+        );
         continue;
       }
       this.v.particles.emit(layer, p.x, p.y, p.z, vx, vy, vz, life, psz, psz * 0.15, col, 0.95, grav, 1.4);
@@ -553,4 +697,3 @@ export class FxRunner {
     this.casts.clear();
   }
 }
-

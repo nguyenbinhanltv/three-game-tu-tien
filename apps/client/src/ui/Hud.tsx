@@ -4,8 +4,58 @@ import './panels.css';
 import './tutien.css';
 import './ngj/hud.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, BAR_SIZE, CLONE_UNLOCK_LEVEL, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, ELEMENTS, elemCounterOf, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThong10Skill, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
+import {
+  realmStageOf,
+  ARTIFACT_MAX_LEVEL,
+  artifactLevelMods,
+  BAR_SIZE,
+  CLONE_UNLOCK_LEVEL,
+  BONDED_ARTIFACT_ID,
+  bondedLevel,
+  SPIRIT_CD_MS,
+  SPIRIT_CHANNEL_MS,
+  SPIRIT_MP,
+  spiritUnlocked,
+  soulUnlocked,
+  SOUL_DEATH_CD_MS,
+  SOUL_RANGE,
+  SOUL_SCOUT,
+  SOUL_SCOUT_CD_MS,
+  SOUL_SCOUT_MS,
+  PF_SOUL,
+  C,
+  CHARGE_MAX,
+  NGUNG_KHI_MAX,
+  tribDef,
+  ELEMENTS,
+  elemCounterOf,
+  tribPhaseIndex,
+  tribPhaseStart,
+  TRUC_CO_LEVEL,
+  PF_DEAD,
+  PF_FLYING,
+  PF_MEDITATING,
+  PF_TRIBULATION,
+  type SkillDef,
+} from '@dtl/shared';
+import {
+  ARTIFACT,
+  hasString,
+  ITEM,
+  itemName,
+  METHOD,
+  monsterName,
+  nextMajorRealmName,
+  QUEST,
+  realmName,
+  resolveBarSkill,
+  skillBar,
+  t,
+  thanThong10Skill,
+  thanThongSkill,
+  tierBar,
+  VARIANTS,
+} from '@dtl/content';
 import { Game } from '../game/engine';
 import { trackedQuestId } from '../game/entities/offscreen';
 import { artifactLines } from './gear';
@@ -55,7 +105,12 @@ function PlayerFrame() {
       <ProgressBar cls="hp" value={hp} max={mhp} text={`${hp} / ${mhp}`} segs={4} trail />
       <ProgressBar cls="mp" value={mp} max={mmp} text={`${mp} / ${mmp}`} segs={4} trail />
       <div className="frame-xp-row">
-        <ProgressBar cls="xp" value={char.xp} max={char.xpNeed} text={full ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`} />
+        <ProgressBar
+          cls="xp"
+          value={char.xp}
+          max={char.xpNeed}
+          text={full ? t('ui.xp_full') : `${t('ui.xp')} ${char.xp} / ${char.xpNeed}`}
+        />
         {goal.ready && (
           // Chỉ mở bảng Nhân vật ở khối đột phá: bắt đầu độ kiếp tốn Trúc Cơ Đan nên không làm bằng một cú bấm trên HUD.
           <Button
@@ -72,7 +127,9 @@ function PlayerFrame() {
           </Button>
         )}
       </div>
-      {!goal.ready && goal.kind && <div className="frame-next">{t(goal.kind === 'trib' ? 'ui.frame.next_trib' : 'ui.frame.next_bk', { n: goal.level })}</div>}
+      {!goal.ready && goal.kind && (
+        <div className="frame-next">{t(goal.kind === 'trib' ? 'ui.frame.next_trib' : 'ui.frame.next_bk', { n: goal.level })}</div>
+      )}
     </div>
   );
 }
@@ -88,9 +145,22 @@ function TargetFrame({ below }: { below: boolean }) {
       {target.kind !== 'player' && <Portrait id={target.def} className="frame-portrait" />}
       <div className="frame-head">
         <span className="frame-name">{target.name}</span>
-        {target.kind !== 'npc' && <span className="frame-realm">{target.kind === 'mon' ? t('ui.level_short', { n: target.level }) : realmName(target.level)}</span>}
+        {target.kind !== 'npc' && (
+          <span className="frame-realm">{target.kind === 'mon' ? t('ui.level_short', { n: target.level }) : realmName(target.level)}</span>
+        )}
       </div>
-      {target.kind !== 'npc' && <ProgressBar key={target.id} cls={'hp ' + (target.kind === 'player' ? 'ally' : 'enemy')} value={target.hp} max={target.mhp} text={`${target.hp} / ${target.mhp}`} segs={4} trail label={t('ui.hp')} />}
+      {target.kind !== 'npc' && (
+        <ProgressBar
+          key={target.id}
+          cls={'hp ' + (target.kind === 'player' ? 'ally' : 'enemy')}
+          value={target.hp}
+          max={target.mhp}
+          text={`${target.hp} / ${target.mhp}`}
+          segs={4}
+          trail
+          label={t('ui.hp')}
+        />
+      )}
       {target.cast && <TargetCastBar cast={target.cast} />}
     </div>
   );
@@ -112,9 +182,18 @@ function BossBar() {
       </div>
       <div className="boss-title">{t(`mon.${boss.def}.title`)}</div>
       <div className="boss-hp">
-        <ProgressBar cls="hp boss" value={boss.hp} max={boss.mhp} text={`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`} segs={10} trail />
+        <ProgressBar
+          cls="hp boss"
+          value={boss.hp}
+          max={boss.mhp}
+          text={`${boss.hp} / ${boss.mhp} · ${t('ui.boss.hp', { pct })}`}
+          segs={10}
+          trail
+        />
         {/* Vạch chuyển pha: báo trước boss sẽ đổi chiêu ở mức máu này. */}
-        {boss.marks?.map((f) => <div key={f} className="boss-mark" style={{ left: f * 100 + '%' }} />)}
+        {boss.marks?.map((f) => (
+          <div key={f} className="boss-mark" style={{ left: f * 100 + '%' }} />
+        ))}
       </div>
       {boss.posture !== undefined && (
         <div className={'gauge posture' + (boss.cast?.kind === 'broken' ? ' broken' : boss.posture >= 0.75 ? ' near' : '')}>
@@ -204,7 +283,11 @@ function CineView() {
   const cine = useUI((s) => s.cine);
   if (!cine) return null;
   return (
-    <div className={'cine' + (cine.kind && cine.kind !== 'sect' ? ' cine-' + cine.kind : '') + (cine.out ? ' out' : '')} key={cine.id} style={{ '--dur': cine.dur + 'ms' } as CSSProperties}>
+    <div
+      className={'cine' + (cine.kind && cine.kind !== 'sect' ? ' cine-' + cine.kind : '') + (cine.out ? ' out' : '')}
+      key={cine.id}
+      style={{ '--dur': cine.dur + 'ms' } as CSSProperties}
+    >
       <div className="cine-bar cine-top" />
       <div className="cine-bar cine-bot" />
       {cine.kind === 'dan' ? null : cine.kind === 'boss' || cine.kind === 'phase' ? (
@@ -231,7 +314,14 @@ function TargetCastBar({ cast }: { cast: TargetCast }) {
   const guarded = cast.kind === 'chant' && done < cast.open;
   // Niệm chú: thanh đầy dần; choáng: thanh cạn dần.
   const pct = (cast.kind === 'chant' ? done : 1 - done) * 100;
-  const label = cast.kind === 'broken' ? 'ui.target.broken' : cast.kind === 'stun' ? 'ui.target.stun' : guarded ? 'ui.target.chant_guard' : 'ui.target.chant';
+  const label =
+    cast.kind === 'broken'
+      ? 'ui.target.broken'
+      : cast.kind === 'stun'
+        ? 'ui.target.stun'
+        : guarded
+          ? 'ui.target.chant_guard'
+          : 'ui.target.chant';
   return (
     <div className={'gauge tcast ' + cast.kind + (guarded ? ' guarded' : '')}>
       <div className="gauge-in">
@@ -276,7 +366,20 @@ function QuestTracker() {
               const ok = cur >= o.count;
               // Nhiệm vụ không theo dõi chỉ hiện mục tiêu chưa xong đầu tiên cho gọn.
               if (id !== tracked && (ok || q.objectives.findIndex((x, j) => (prog[j] ?? 0) < x.count) !== i)) return null;
-              const count = o.type === 'level' || o.type === 'talk' || o.type === 'fly' || o.type === 'breakthrough' || o.type === 'enhance' || o.type === 'dungeon' || o.type === 'duel' || o.type === 'clone' || o.type === 'touch' || o.type === 'scan' || o.type === 'escort' ? '' : ` ${cur}/${o.count}`;
+              const count =
+                o.type === 'level' ||
+                o.type === 'talk' ||
+                o.type === 'fly' ||
+                o.type === 'breakthrough' ||
+                o.type === 'enhance' ||
+                o.type === 'dungeon' ||
+                o.type === 'duel' ||
+                o.type === 'clone' ||
+                o.type === 'touch' ||
+                o.type === 'scan' ||
+                o.type === 'escort'
+                  ? ''
+                  : ` ${cur}/${o.count}`;
               return (
                 <div key={i} className={'tracker-obj' + (ok ? ' ok' : '')}>
                   {ok ? '✔ ' : '· '}
@@ -313,9 +416,32 @@ function blurAfterPointer(e: React.MouseEvent<HTMLElement>): void {
  * `airborne()` của server), khóa khi chưa đủ cảnh giới. Viền hàng đợi (M1-11) và vòng tự đánh giữ nguyên.
  */
 /** Một nút thanh chức năng kiểu Ngọc Giản: vòng vàng chứa icon nét vàng, nhãn, chip phím. Giữ nguyên hành vi như `Button` cũ. */
-function SysButton({ icon, label, kbd, pressed, onClick, title, bag }: { icon: SysIconName; label?: string; kbd: string; pressed?: boolean; onClick: (e: React.MouseEvent<HTMLElement>) => void; title?: string; bag?: boolean }) {
+function SysButton({
+  icon,
+  label,
+  kbd,
+  pressed,
+  onClick,
+  title,
+  bag,
+}: {
+  icon: SysIconName;
+  label?: string;
+  kbd: string;
+  pressed?: boolean;
+  onClick: (e: React.MouseEvent<HTMLElement>) => void;
+  title?: string;
+  bag?: boolean;
+}) {
   return (
-    <button type="button" className="ngj-sysbtn" aria-pressed={pressed || undefined} title={title} data-bag={bag ? '' : undefined} onClick={onClick}>
+    <button
+      type="button"
+      className="ngj-sysbtn"
+      aria-pressed={pressed || undefined}
+      title={title}
+      data-bag={bag ? '' : undefined}
+      onClick={onClick}
+    >
       <span className="ngj-sysbtn-ring">
         <SysIcon name={icon} size={18} />
       </span>
@@ -328,15 +454,94 @@ function SysButton({ icon, label, kbd, pressed, onClick, title, bag }: { icon: S
 function SysRow({ flags, wantFly }: { flags: number; wantFly: boolean }) {
   return (
     <div className="action-row ngj-sys">
-      <SysButton icon="meditate" label={t('ui.meditate')} kbd="Z" pressed={(flags & PF_MEDITATING) !== 0} title={t('ui.help.meditate_v')} onClick={(e) => { Game.current?.toggleMeditate(); blurAfterPointer(e); }} />
-      <SysButton icon="sword" label={t('ui.fly')} kbd="F" pressed={wantFly || (flags & PF_FLYING) !== 0} title={t('ui.help.fly_v')} onClick={(e) => { Game.current?.toggleFly(); blurAfterPointer(e); }} />
-      <SysButton icon="bag" label={t('ui.bag.short')} kbd="B" bag onClick={(e) => { togglePanel('bag'); blurAfterPointer(e); }} />
-      <SysButton icon="character" label={t('ui.char')} kbd="C" onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }} />
-      <SysButton icon="method" label={t('ui.method.key')} kbd="K" title={t('ui.method.title')} onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }} />
-      <SysButton icon="party" label={t('ui.party.key')} kbd="P" title={t('ui.party.title')} onClick={(e) => { togglePanel('party'); blurAfterPointer(e); }} />
-      <SysButton icon="quest" label={t('ui.quests')} kbd="L" onClick={(e) => { togglePanel('quests'); blurAfterPointer(e); }} />
-      <SysButton icon="help" kbd="H" title={t('ui.help')} onClick={(e) => { togglePanel('help'); blurAfterPointer(e); }} />
-      <SysButton icon="settings" kbd="O" title={`${t('ui.settings')} (O)`} onClick={(e) => { togglePanel('settings'); blurAfterPointer(e); }} />
+      <SysButton
+        icon="meditate"
+        label={t('ui.meditate')}
+        kbd="Z"
+        pressed={(flags & PF_MEDITATING) !== 0}
+        title={t('ui.help.meditate_v')}
+        onClick={(e) => {
+          Game.current?.toggleMeditate();
+          blurAfterPointer(e);
+        }}
+      />
+      <SysButton
+        icon="sword"
+        label={t('ui.fly')}
+        kbd="F"
+        pressed={wantFly || (flags & PF_FLYING) !== 0}
+        title={t('ui.help.fly_v')}
+        onClick={(e) => {
+          Game.current?.toggleFly();
+          blurAfterPointer(e);
+        }}
+      />
+      <SysButton
+        icon="bag"
+        label={t('ui.bag.short')}
+        kbd="B"
+        bag
+        onClick={(e) => {
+          togglePanel('bag');
+          blurAfterPointer(e);
+        }}
+      />
+      <SysButton
+        icon="character"
+        label={t('ui.char')}
+        kbd="C"
+        onClick={(e) => {
+          togglePanel('char');
+          blurAfterPointer(e);
+        }}
+      />
+      <SysButton
+        icon="method"
+        label={t('ui.method.key')}
+        kbd="K"
+        title={t('ui.method.title')}
+        onClick={(e) => {
+          togglePanel('method');
+          blurAfterPointer(e);
+        }}
+      />
+      <SysButton
+        icon="party"
+        label={t('ui.party.key')}
+        kbd="P"
+        title={t('ui.party.title')}
+        onClick={(e) => {
+          togglePanel('party');
+          blurAfterPointer(e);
+        }}
+      />
+      <SysButton
+        icon="quest"
+        label={t('ui.quests')}
+        kbd="L"
+        onClick={(e) => {
+          togglePanel('quests');
+          blurAfterPointer(e);
+        }}
+      />
+      <SysButton
+        icon="help"
+        kbd="H"
+        title={t('ui.help')}
+        onClick={(e) => {
+          togglePanel('help');
+          blurAfterPointer(e);
+        }}
+      />
+      <SysButton
+        icon="settings"
+        kbd="O"
+        title={`${t('ui.settings')} (O)`}
+        onClick={(e) => {
+          togglePanel('settings');
+          blurAfterPointer(e);
+        }}
+      />
     </div>
   );
 }
@@ -379,7 +584,11 @@ function SkillBar() {
       {char.level >= CLONE_UNLOCK_LEVEL && (
         <div className={'clone-chip' + (now < clone.until ? ' on' : '')} data-testid="clone-chip" aria-label={t('ui.clone.title')}>
           <span className="clone-key">G</span>
-          {now < clone.until ? t('ui.clone.left', { n: Math.ceil((clone.until - now) / 1000) }) : now < clone.cdUntil ? t('ui.clone.cd', { n: Math.ceil((clone.cdUntil - now) / 1000) }) : t('ui.clone.title')}
+          {now < clone.until
+            ? t('ui.clone.left', { n: Math.ceil((clone.until - now) / 1000) })
+            : now < clone.cdUntil
+              ? t('ui.clone.cd', { n: Math.ceil((clone.cdUntil - now) / 1000) })
+              : t('ui.clone.title')}
         </div>
       )}
       <div className="skill-row">
@@ -391,8 +600,20 @@ function SkillBar() {
           if (!sk) {
             // Ô 7–8 khi chưa chọn công pháp: ô trống, bấm để mở bảng Công pháp.
             return (
-              <Tooltip key={'empty' + i} content={<TipCard title={t(i === 6 ? 'ui.method.slot7' : 'ui.method.slot8')} desc={t('ui.method.empty_slot')} />}>
-                <button type="button" className="skill" data-state="empty" aria-label={`${t(i === 6 ? 'ui.method.slot7' : 'ui.method.slot8')} (${i + 1})`} onClick={(e) => { togglePanel('method'); blurAfterPointer(e); }}>
+              <Tooltip
+                key={'empty' + i}
+                content={<TipCard title={t(i === 6 ? 'ui.method.slot7' : 'ui.method.slot8')} desc={t('ui.method.empty_slot')} />}
+              >
+                <button
+                  type="button"
+                  className="skill"
+                  data-state="empty"
+                  aria-label={`${t(i === 6 ? 'ui.method.slot7' : 'ui.method.slot8')} (${i + 1})`}
+                  onClick={(e) => {
+                    togglePanel('method');
+                    blurAfterPointer(e);
+                  }}
+                >
                   <span className="skill-icon">
                     <span className="content-icon">＋</span>
                   </span>
@@ -409,13 +630,27 @@ function SkillBar() {
           const noMp = !locked && mp < sk.mp;
           const blocked = !locked && airborne;
           const charging = !locked && !!sk.ult && charge < CHARGE_MAX;
-          const state = locked ? 'locked' : blocked ? 'air' : charging ? 'charging' : noMp ? 'nomp' : sk.ult ? 'ultready' : left > 80 ? 'cd' : 'ready';
+          const state = locked
+            ? 'locked'
+            : blocked
+              ? 'air'
+              : charging
+                ? 'charging'
+                : noMp
+                  ? 'nomp'
+                  : sk.ult
+                    ? 'ultready'
+                    : left > 80
+                      ? 'cd'
+                      : 'ready';
           const lv = method?.lv[sk.id] ?? 1;
           const vr = method?.vr[sk.id];
           const lines = [
             ...(lv > 1 ? [{ text: t('ui.skill.level_tag', { n: lv }) }] : []),
             ...(vr && VARIANTS[sk.id] ? [{ text: t('ui.skill.variant_tag', { name: t(`skill.${sk.id}.var.${vr}.name`) }) }] : []),
-            ...(sk.ult ? [{ text: t('ui.skill.ult_charge', { n: Math.floor(charge) }), tone: charging ? ('bad' as const) : undefined }] : []),
+            ...(sk.ult
+              ? [{ text: t('ui.skill.ult_charge', { n: Math.floor(charge) }), tone: charging ? ('bad' as const) : undefined }]
+              : []),
             ...(sk.mp ? [{ text: `${t('ui.mp')}: ${sk.mp}`, tone: noMp ? ('bad' as const) : undefined }] : []),
             ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
             ...(blocked ? [{ text: t('ui.skill.airborne'), tone: 'bad' as const }] : []),
@@ -424,11 +659,23 @@ function SkillBar() {
           return (
             <Tooltip
               key={sk.id}
-              content={<TipCard title={t(`skill.${sk.id}.name`)} sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined} lines={lines} desc={t(`skill.${sk.id}.desc`)} />}
+              content={
+                <TipCard
+                  title={t(`skill.${sk.id}.name`)}
+                  sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined}
+                  lines={lines}
+                  desc={t(`skill.${sk.id}.desc`)}
+                />
+              }
             >
               <button
                 type="button"
-                className={'skill' + (i === 0 && auto ? ' auto' : '') + (i === queued ? ' queued' : '') + ((empowered[sk.id] ?? 0) > Date.now() ? ' empowered' : '')}
+                className={
+                  'skill' +
+                  (i === 0 && auto ? ' auto' : '') +
+                  (i === queued ? ' queued' : '') +
+                  ((empowered[sk.id] ?? 0) > Date.now() ? ' empowered' : '')
+                }
                 data-state={state}
                 data-method={sk.method ? '1' : undefined}
                 aria-label={`${t(`skill.${sk.id}.name`)} (${keyLabel})`}
@@ -483,8 +730,28 @@ function SkillBar() {
               ...(rs.cd ? [{ text: t('ui.skill.cd', { n: rs.cd }) }] : []),
             ];
             return (
-              <Tooltip key={sk.id} content={<TipCard title={t(`skill.${sk.id}.name`)} sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined} lines={lines} desc={t(`skill.${sk.id}.desc`)} />}>
-                <button type="button" className="skill" data-state={state} data-method="1" aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`} onClick={(e) => { Game.current?.useSkill(BAR_SIZE + 2 + j); blurAfterPointer(e); }}>
+              <Tooltip
+                key={sk.id}
+                content={
+                  <TipCard
+                    title={t(`skill.${sk.id}.name`)}
+                    sub={locked ? t('ui.char.locked', { realm: realmName(sk.unlock) }) : undefined}
+                    lines={lines}
+                    desc={t(`skill.${sk.id}.desc`)}
+                  />
+                }
+              >
+                <button
+                  type="button"
+                  className="skill"
+                  data-state={state}
+                  data-method="1"
+                  aria-label={`${t(`skill.${sk.id}.name`)} (Shift+${j + 1})`}
+                  onClick={(e) => {
+                    Game.current?.useSkill(BAR_SIZE + 2 + j);
+                    blurAfterPointer(e);
+                  }}
+                >
                   <span className="skill-icon">
                     <ContentIcon def={sk} />
                   </span>
@@ -551,7 +818,12 @@ function Tribulation() {
           const len = p.end - start;
           return (
             <div key={p.id} className={'trib-phase' + (i === pi ? ' on' : '')} style={{ flex: len }}>
-              <ProgressBar cls="kiep" value={Math.max(0, Math.min(len, elapsed - start))} max={len} text={i === pi ? t('ui.trib.secs', { n: Math.ceil(left) }) : undefined} />
+              <ProgressBar
+                cls="kiep"
+                value={Math.max(0, Math.min(len, elapsed - start))}
+                max={len}
+                text={i === pi ? t('ui.trib.secs', { n: Math.ceil(left) }) : undefined}
+              />
               <div className="trib-phase-name">{t(key + p.id)}</div>
             </div>
           );
@@ -705,9 +977,15 @@ function DeathOverlay() {
   return (
     <div className="death">
       <Panel tone="paper" size="s" className="death-panel" role="alertdialog" aria-labelledby="death-title">
-        <Header id="death-title" title={soulFlee ? t('ui.dead.soul_title') : t('ui.dead.title')} sub={soulFlee ? t('ui.dead.soul_sub') : t('ui.dead.sub')} />
+        <Header
+          id="death-title"
+          title={soulFlee ? t('ui.dead.soul_title') : t('ui.dead.title')}
+          sub={soulFlee ? t('ui.dead.soul_sub') : t('ui.dead.sub')}
+        />
         <PanelBody>
-          <p className="death-line">{soulFlee ? t('ui.dead.soul_line', { n: Math.max(0, Math.ceil((until - now) / 1000)) }) : t('ui.dead.line')}</p>
+          <p className="death-line">
+            {soulFlee ? t('ui.dead.soul_line', { n: Math.max(0, Math.ceil((until - now) / 1000)) }) : t('ui.dead.line')}
+          </p>
           <Divider />
           <p className="death-hint">{t('ui.dead.hint')}</p>
           <div className="death-actions">
@@ -795,7 +1073,6 @@ export function Hud() {
   );
 }
 
-
 /** Ô pháp bảo phụ (P3-8): ô riêng cuối thanh chiêu, phím 9. Server quyết định mọi thứ; ô chỉ gửi ý định. */
 function ArtifactSlot() {
   const art = useUI((s) => s.method?.art);
@@ -810,7 +1087,16 @@ function ArtifactSlot() {
       <>
         <span className="sep" />
         <Tooltip content={<TipCard title={t('ui.art.slot')} desc={t('ui.art.none')} />}>
-          <button type="button" className="skill" data-state="empty" aria-label={`${t('ui.art.slot')} (9)`} onClick={(e) => { togglePanel('char'); blurAfterPointer(e); }}>
+          <button
+            type="button"
+            className="skill"
+            data-state="empty"
+            aria-label={`${t('ui.art.slot')} (9)`}
+            onClick={(e) => {
+              togglePanel('char');
+              blurAfterPointer(e);
+            }}
+          >
             <span className="skill-icon">
               <span className="content-icon">＋</span>
             </span>
@@ -828,7 +1114,11 @@ function ArtifactSlot() {
   return (
     <>
       <span className="sep" />
-      <Tooltip content={<TipCard title={itemName(item.id)} sub={t('ui.art.title')} lines={artifactLines(item, art)} desc={t(`item.${item.id}.desc`)} />}>
+      <Tooltip
+        content={
+          <TipCard title={itemName(item.id)} sub={t('ui.art.title')} lines={artifactLines(item, art)} desc={t(`item.${item.id}.desc`)} />
+        }
+      >
         <button
           type="button"
           className="skill art-slot"
@@ -885,7 +1175,18 @@ function BondedSlot() {
   ];
   return (
     <Tooltip content={<TipCard title={itemName(item.id)} sub={t('ui.bonded.title')} lines={lines} desc={t(`item.${item.id}.desc`)} />}>
-      <button type="button" className="skill art-slot" data-state={state} data-method="1" style={{ '--mc': '#' + def.color } as CSSProperties} aria-label={`${itemName(item.id)} (T)`} onClick={(e) => { Game.current?.useBonded(); blurAfterPointer(e); }}>
+      <button
+        type="button"
+        className="skill art-slot"
+        data-state={state}
+        data-method="1"
+        style={{ '--mc': '#' + def.color } as CSSProperties}
+        aria-label={`${itemName(item.id)} (T)`}
+        onClick={(e) => {
+          Game.current?.useBonded();
+          blurAfterPointer(e);
+        }}
+      >
         <span className="skill-icon">
           <ContentIcon def={item} />
         </span>
@@ -927,7 +1228,10 @@ function SpiritSlot() {
         data-state={state}
         data-method="1"
         aria-label={`${t('ui.spirit.title')} (V)`}
-        onPointerDown={(e) => { Game.current?.spiritHold(true); blurAfterPointer(e); }}
+        onPointerDown={(e) => {
+          Game.current?.spiritHold(true);
+          blurAfterPointer(e);
+        }}
         onPointerUp={() => Game.current?.spiritHold(false)}
         onPointerLeave={() => Game.current?.spiritHold(false)}
       >
@@ -935,7 +1239,9 @@ function SpiritSlot() {
           <UiIcon id="hud_than_thuc" fallback="👁" />
         </span>
         <span className="skill-key">V</span>
-        {channel && <span className="skill-charge" style={{ '--p': 1 - Math.min(1, (sp.chUntil - now) / SPIRIT_CHANNEL_MS) } as CSSProperties} />}
+        {channel && (
+          <span className="skill-charge" style={{ '--p': 1 - Math.min(1, (sp.chUntil - now) / SPIRIT_CHANNEL_MS) } as CSSProperties} />
+        )}
         {!channel && left > 80 && (
           <>
             <span className="skill-sweep" style={{ '--p': Math.min(1, left / SPIRIT_CD_MS) } as CSSProperties} />
@@ -961,7 +1267,10 @@ function SoulSlot() {
   const lines = [
     { text: t('ui.soul.range', { n: SOUL_RANGE, s: SOUL_SCOUT_MS / 1000 }) },
     { text: t('ui.skill.cd', { n: SOUL_SCOUT_CD_MS / 1000 }) },
-    { text: rescue > 0 ? t('ui.soul.rescue_cd', { n: Math.ceil(rescue / 1000) }) : t('ui.soul.rescue', { n: SOUL_DEATH_CD_MS / 60000 }), tone: rescue > 0 ? ('bad' as const) : undefined },
+    {
+      text: rescue > 0 ? t('ui.soul.rescue_cd', { n: Math.ceil(rescue / 1000) }) : t('ui.soul.rescue', { n: SOUL_DEATH_CD_MS / 60000 }),
+      tone: rescue > 0 ? ('bad' as const) : undefined,
+    },
   ];
   return (
     <Tooltip content={<TipCard title={t('ui.soul.title')} lines={lines} desc={t('ui.soul.desc')} />}>
@@ -971,7 +1280,10 @@ function SoulSlot() {
         data-state={state}
         data-method="1"
         aria-label={`${t('ui.soul.title')} (X)`}
-        onPointerDown={(e) => { Game.current?.soulToggle(); blurAfterPointer(e); }}
+        onPointerDown={(e) => {
+          Game.current?.soulToggle();
+          blurAfterPointer(e);
+        }}
       >
         <span className="skill-icon">
           <UiIcon id="hud_nguyen_anh" fallback="👻" />
@@ -1003,7 +1315,18 @@ function BuffRow() {
       {list.map(([kind, [mag, until]]) => {
         const left = Math.max(0, Math.ceil((until + off - now) / 1000));
         return (
-          <Tooltip key={kind} content={<TipCard title={t('ui.buff.title')} lines={[{ text: `${t('ui.pill.buff.' + kind)} +${Math.round(mag * 100)}%`, tone: 'good' }, { text: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, tone: 'dim' }]} />}>
+          <Tooltip
+            key={kind}
+            content={
+              <TipCard
+                title={t('ui.buff.title')}
+                lines={[
+                  { text: `${t('ui.pill.buff.' + kind)} +${Math.round(mag * 100)}%`, tone: 'good' },
+                  { text: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, tone: 'dim' },
+                ]}
+              />
+            }
+          >
             <span className="buff-chip">
               <UiIcon id={BUFF_ICON[kind] ?? 'buff_atk'} fallback={ITEM.get(BUFF_ICON[kind])?.iconFallback ?? '✦'} />
               <em>{left >= 60 ? t('ui.buff.min', { n: Math.ceil(left / 60) }) : t('ui.buff.sec', { n: left })}</em>

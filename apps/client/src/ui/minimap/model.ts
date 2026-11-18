@@ -100,7 +100,12 @@ export function npcQuestMark(npcId: string, quests: readonly QuestDef[], q: Ques
 type ZoneStatus = 'ok' | 'low' | 'high' | 'none';
 
 /** Vùng đang đứng và mình có hợp cấp không (`low` = cấp thấp hơn khoảng hợp, `high` = cao hơn). */
-export function zoneStatus(zones: readonly ZoneDef[] | undefined, x: number, z: number, level: number): { zone: ZoneDef | undefined; status: ZoneStatus } {
+export function zoneStatus(
+  zones: readonly ZoneDef[] | undefined,
+  x: number,
+  z: number,
+  level: number,
+): { zone: ZoneDef | undefined; status: ZoneStatus } {
   const zone = zoneAt(zones, x, z);
   if (!zone) return { zone, status: 'none' };
   return { zone, status: level < zone.lvMin ? 'low' : level > zone.lvMax ? 'high' : 'ok' };

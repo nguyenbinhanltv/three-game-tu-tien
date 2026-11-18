@@ -19,7 +19,19 @@ const groups = {
 };
 const m = read('apps/client/public/assets/ui/icons.json');
 const out = [];
-for (const [g, defs] of Object.entries(groups)) for (const d of defs) if (!m.icons[d.icon]) out.push({ group: g, id: d.id, icon: d.icon, name: d.name ?? d.nameKey ?? '', tier: d.tier, quality: d.quality, set: d.set, fallback: d.iconFallback });
+for (const [g, defs] of Object.entries(groups))
+  for (const d of defs)
+    if (!m.icons[d.icon])
+      out.push({
+        group: g,
+        id: d.id,
+        icon: d.icon,
+        name: d.name ?? d.nameKey ?? '',
+        tier: d.tier,
+        quality: d.quality,
+        set: d.set,
+        fallback: d.iconFallback,
+      });
 if (process.argv.includes('--json')) console.log(JSON.stringify(out, null, 1));
 else for (const o of out) console.log(`${o.group}\t${o.id}\t${o.icon}\t${o.tier ?? ''}\t${o.set ?? ''}`);
 console.error(`${out.length} thiếu`);

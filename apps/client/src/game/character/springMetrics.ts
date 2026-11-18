@@ -16,10 +16,27 @@ export function regionOf(bone: string): Region {
   return 'torso';
 }
 
-const PAIRS: [Region, Region][] = [['arm_l', 'torso'], ['arm_r', 'torso'], ['arm_l', 'arm_r'], ['leg_l', 'leg_r'], ['arm_l', 'leg_l'], ['arm_r', 'leg_r']];
+const PAIRS: [Region, Region][] = [
+  ['arm_l', 'torso'],
+  ['arm_r', 'torso'],
+  ['arm_l', 'arm_r'],
+  ['leg_l', 'leg_r'],
+  ['arm_l', 'leg_l'],
+  ['arm_r', 'leg_r'],
+];
 /** Viên nang thân: [xương đầu, xương cuối, bán kính ở chiều cao 1,8 m]. */
-const CAPS: [string, string, number][] = [['pelvis', 'spine_01', 0.11], ['spine_01', 'spine_03', 0.13], ['spine_03', 'neck_01', 0.1]];
-for (const sd of ['l', 'r']) CAPS.push([`thigh_${sd}`, `calf_${sd}`, 0.085], [`calf_${sd}`, `foot_${sd}`, 0.06], [`upperarm_${sd}`, `lowerarm_${sd}`, 0.05], [`lowerarm_${sd}`, `hand_${sd}`, 0.04]);
+const CAPS: [string, string, number][] = [
+  ['pelvis', 'spine_01', 0.11],
+  ['spine_01', 'spine_03', 0.13],
+  ['spine_03', 'neck_01', 0.1],
+];
+for (const sd of ['l', 'r'])
+  CAPS.push(
+    [`thigh_${sd}`, `calf_${sd}`, 0.085],
+    [`calf_${sd}`, `foot_${sd}`, 0.06],
+    [`upperarm_${sd}`, `lowerarm_${sd}`, 0.05],
+    [`lowerarm_${sd}`, `hand_${sd}`, 0.04],
+  );
 
 function segDist(p: THREE.Vector3, a: THREE.Vector3, b: THREE.Vector3): number {
   const ab = b.clone().sub(a);
@@ -39,7 +56,8 @@ export function triTri(a: THREE.Vector3[], b: THREE.Vector3[]): boolean {
   if ((db[0] > 0 && db[1] > 0 && db[2] > 0) || (db[0] < 0 && db[1] < 0 && db[2] < 0)) return false;
   const dir = new THREE.Vector3().crossVectors(n1, n2);
   if (dir.lengthSq() < 1e-18) return false;
-  const ax = Math.abs(dir.x) > Math.abs(dir.y) ? (Math.abs(dir.x) > Math.abs(dir.z) ? 'x' : 'z') : Math.abs(dir.y) > Math.abs(dir.z) ? 'y' : 'z';
+  const ax =
+    Math.abs(dir.x) > Math.abs(dir.y) ? (Math.abs(dir.x) > Math.abs(dir.z) ? 'x' : 'z') : Math.abs(dir.y) > Math.abs(dir.z) ? 'y' : 'z';
   const interval = (v: THREE.Vector3[], d: number[]): [number, number] | null => {
     const p = v.map((q) => q[ax]);
     const out: number[] = [];
@@ -185,7 +203,12 @@ export function overlapCount(p: Posed, info: MeshInfo, regions: Region[], byPair
               seen.add(ib);
               const fb = tris[rb][ib];
               if (fb.some((v) => fa.includes(v))) continue;
-              if (triTri(A, fb.map((v) => p.verts[v]))) {
+              if (
+                triTri(
+                  A,
+                  fb.map((v) => p.verts[v]),
+                )
+              ) {
                 total++;
                 if (byPair) byPair[`${ra}×${rb}`] = (byPair[`${ra}×${rb}`] ?? 0) + 1;
               }
@@ -211,7 +234,15 @@ export interface PoseScore {
 }
 
 /** Điểm của một tư thế so với tư thế nghỉ. */
-export function score(label: string, restPen: number, restCap: boolean[], posed: Posed, info: MeshInfo, regions: Region[], height: number): PoseScore {
+export function score(
+  label: string,
+  restPen: number,
+  restCap: boolean[],
+  posed: Posed,
+  info: MeshInfo,
+  regions: Region[],
+  height: number,
+): PoseScore {
   const ins = capInside(posed, height);
   let cap = 0;
   for (let i = 0; i < ins.length; i++) if (ins[i] && !restCap[i]) cap++;
@@ -223,7 +254,12 @@ export { regionsFor };
 /** Chẩn đoán (SPRING_DIAG=1): chồng tay×thân theo xương trội của hai bên + độ cao; đỉnh vào viên nang theo viên nang và vùng vạt/tay/khác. */
 export function diagnose(p: Posed, rest: Posed, info: MeshInfo, regions: Region[], mask: boolean[], height: number): string[] {
   const out: string[] = [];
-  const top = (m: Map<string, number>, n = 6) => [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([k, v]) => `${k}:${v}`).join(' ');
+  const top = (m: Map<string, number>, n = 6) =>
+    [...m.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, n)
+      .map(([k, v]) => `${k}:${v}`)
+      .join(' ');
   // tay×thân: các đỉnh của tam giác chồng
   const tris: Record<Region, number[][]> = { arm_l: [], arm_r: [], leg_l: [], leg_r: [], torso: [] };
   for (let t = 0; t < info.index.length; t += 3) {
@@ -232,7 +268,10 @@ export function diagnose(p: Posed, rest: Posed, info: MeshInfo, regions: Region[
     for (const v of f) cnt[regions[v]] = (cnt[regions[v]] ?? 0) + 1;
     for (const r of Object.keys(cnt) as Region[]) if ((cnt[r] ?? 0) >= 2) tris[r].push(f);
   }
-  for (const [ra, rb] of [['arm_l', 'torso'], ['arm_r', 'torso']] as [Region, Region][]) {
+  for (const [ra, rb] of [
+    ['arm_l', 'torso'],
+    ['arm_r', 'torso'],
+  ] as [Region, Region][]) {
     const ba = new Map<string, number>();
     const bb = new Map<string, number>();
     const ha: number[] = [];
@@ -250,7 +289,9 @@ export function diagnose(p: Posed, rest: Posed, info: MeshInfo, regions: Region[
       }
     }
     ha.sort((a, b) => a - b);
-    out.push(`${ra}×${rb}: ${ha.length} cặp; xương trội bên tay [${top(ba)}], bên thân [${top(bb)}]; cao (tỉ lệ) ${ha.length ? `${ha[0].toFixed(2)}..${ha[ha.length - 1].toFixed(2)} trung vị ${ha[ha.length >> 1].toFixed(2)}` : '-'}`);
+    out.push(
+      `${ra}×${rb}: ${ha.length} cặp; xương trội bên tay [${top(ba)}], bên thân [${top(bb)}]; cao (tỉ lệ) ${ha.length ? `${ha[0].toFixed(2)}..${ha[ha.length - 1].toFixed(2)} trung vị ${ha[ha.length >> 1].toFixed(2)}` : '-'}`,
+    );
   }
   // đỉnh vào viên nang
   const kc = height / 1.8;
@@ -281,11 +322,17 @@ function capsList(): [string, string, number][] {
 export function geometryRegions(rest: Posed, height: number): Region[] {
   const kc = height / 1.8;
   const segs: [string, string, number, Region][] = [
-    ['pelvis', 'spine_01', 0.11, 'torso'], ['spine_01', 'spine_03', 0.13, 'torso'], ['spine_03', 'neck_01', 0.1, 'torso'],
+    ['pelvis', 'spine_01', 0.11, 'torso'],
+    ['spine_01', 'spine_03', 0.13, 'torso'],
+    ['spine_03', 'neck_01', 0.1, 'torso'],
   ];
   for (const sd of ['l', 'r']) {
-    segs.push([`upperarm_${sd}`, `lowerarm_${sd}`, 0.05, `arm_${sd}` as Region], [`lowerarm_${sd}`, `hand_${sd}`, 0.04, `arm_${sd}` as Region],
-      [`thigh_${sd}`, `calf_${sd}`, 0.085, `leg_${sd}` as Region], [`calf_${sd}`, `foot_${sd}`, 0.06, `leg_${sd}` as Region]);
+    segs.push(
+      [`upperarm_${sd}`, `lowerarm_${sd}`, 0.05, `arm_${sd}` as Region],
+      [`lowerarm_${sd}`, `hand_${sd}`, 0.04, `arm_${sd}` as Region],
+      [`thigh_${sd}`, `calf_${sd}`, 0.085, `leg_${sd}` as Region],
+      [`calf_${sd}`, `foot_${sd}`, 0.06, `leg_${sd}` as Region],
+    );
   }
   return rest.verts.map((v) => {
     let best: Region = 'torso';

@@ -48,7 +48,10 @@ describe('dữ liệu Kim Dạ Cung', () => {
     expect(d.private).toBe(true);
     expect(d.maxRevives).toBe(2);
     expect(d.waves).toHaveLength(6);
-    expect(d.waves[0].mons.map((g) => [g.id, g.n])).toEqual([['mon_giac_kiem_trong_binh', 8], ['mon_kd_trien_bo_cham_ba', 2]]);
+    expect(d.waves[0].mons.map((g) => [g.id, g.n])).toEqual([
+      ['mon_giac_kiem_trong_binh', 8],
+      ['mon_kd_trien_bo_cham_ba', 2],
+    ]);
     expect(d.waves[1].mons[0]).toMatchObject({ id: 'mon_u_anh_cot_loc', n: 6 });
     expect(d.waves[2].mons[0]).toMatchObject({ id: 'elite_kd_huyet_giac_ma_tuong', n: 2 });
     expect(d.waves[3].puzzle!.points).toHaveLength(4);
@@ -80,7 +83,10 @@ describe('dữ liệu Kim Dạ Cung', () => {
 
 describe('hàm thuần', () => {
   it('inAny', () => {
-    const cs = [{ x: 0, z: 0, r: 5 }, { x: 20, z: 0, r: 5 }];
+    const cs = [
+      { x: 0, z: 0, r: 5 },
+      { x: 20, z: 0, r: 5 },
+    ];
     expect(kd.inAny(cs, 3, 3)).toBe(true);
     expect(kd.inAny(cs, 20, 4)).toBe(true);
     expect(kd.inAny(cs, 10, 0)).toBe(false);
@@ -112,12 +118,32 @@ interface FakeMon {
   s: { x: number; z: number; hp: number; mhp: number; st: number };
   removeAt: number;
 }
-const mon = (id: string, def: FakeMon['def'], x = 0, z = 0, hp = 100): FakeMon => ({ id, def: { ...def, id: def.id ?? id }, state: MS_CHASE, level: 28, atk: 100, phase: 0, stunUntil: 0, evadeUntil: 0, chant: null, s: { x, z, hp, mhp: 100, st: MS_CHASE }, removeAt: 0 });
+const mon = (id: string, def: FakeMon['def'], x = 0, z = 0, hp = 100): FakeMon => ({
+  id,
+  def: { ...def, id: def.id ?? id },
+  state: MS_CHASE,
+  level: 28,
+  atk: 100,
+  phase: 0,
+  stunUntil: 0,
+  evadeUntil: 0,
+  chant: null,
+  s: { x, z, hp, mhp: 100, st: MS_CHASE },
+  removeAt: 0,
+});
 
 function mk(mons: FakeMon[], center = { x: 0, z: 0 }) {
   const t = { now: 100000 };
   const pl = [{ move: { x: 0, z: 0 }, s: { mhp: 1000 }, dead: false }];
-  const log = { dmg: [] as { src: string; n: number }[], say: [] as string[], marks: [] as number[], fx: [] as FxMsg[], smash: [] as number[], spawned: [] as string[], heal: 0 };
+  const log = {
+    dmg: [] as { src: string; n: number }[],
+    say: [] as string[],
+    marks: [] as number[],
+    fx: [] as FxMsg[],
+    smash: [] as number[],
+    spawned: [] as string[],
+    heal: 0,
+  };
   const sys = new kd.KimDaSystem({
     now: () => t.now,
     monsters: () => mons as never,
@@ -203,7 +229,19 @@ describe('KimDaSystem với host giả', () => {
       boss: true,
       kd: {
         bargain: { phase: 1, mon: 'bong', sep: 18, pen: 0.2 },
-        night: { phase: 2, steles: [{ x: -16, z: 0, r: 8 }, { x: 16, z: 0, r: 8 }], press: 0.04, cd: 16, warn: 2, mul: 2.4, dur: 7, grace: 6 },
+        night: {
+          phase: 2,
+          steles: [
+            { x: -16, z: 0, r: 8 },
+            { x: 16, z: 0, r: 8 },
+          ],
+          press: 0.04,
+          cd: 16,
+          warn: 2,
+          mul: 2.4,
+          dur: 7,
+          grace: 6,
+        },
       },
     });
 
@@ -390,7 +428,14 @@ describe('KimDaSystem với host giả', () => {
 });
 
 describe('room thật', () => {
-  type TestRoom = InstanceType<Rooms['GameRoom']> & { director(): void; wave: number; nextWaveAt: number; clearedAt: number; kimda: unknown; puzzle: { active: boolean; done: boolean; tick(): void } | null };
+  type TestRoom = InstanceType<Rooms['GameRoom']> & {
+    director(): void;
+    wave: number;
+    nextWaveAt: number;
+    clearedAt: number;
+    kimda: unknown;
+    puzzle: { active: boolean; done: boolean; tick(): void } | null;
+  };
 
   async function mkRoom() {
     const { Aoi } = await import('../aoi');
@@ -404,14 +449,28 @@ describe('room thật', () => {
     room.clock = { setTimeout: () => undefined, setInterval: () => undefined };
     Object.defineProperty(room, 'roomName', { value: LV });
     room.lock = () => undefined;
-    Object.assign(room, { wave: 0, nextWaveAt: 0, clearedAt: 0, revives: new Map(), stele: null, veins: null, kimda: null, seals: null, puzzle: null });
+    Object.assign(room, {
+      wave: 0,
+      nextWaveAt: 0,
+      clearedAt: 0,
+      revives: new Map(),
+      stele: null,
+      veins: null,
+      kimda: null,
+      seals: null,
+      puzzle: null,
+    });
     const char = Character.create(acc++, 'kd' + acc);
     char.level = 30;
     char.bk = 30;
     char.recalc();
     char.hp = char.mhp;
     const c = { sessionId: 'sid' + acc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: char.name }) };
-    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true });
+    (room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(
+      c,
+      {},
+      { accountId: 1, dev: true, charId: char.id, session: 's', ticket: true },
+    );
     const p = [...room.sim.players.values()][0] as Ent;
     return { room: room as unknown as TestRoom, sim: room.sim, p };
   }

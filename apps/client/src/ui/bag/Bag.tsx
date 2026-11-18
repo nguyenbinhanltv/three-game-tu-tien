@@ -9,13 +9,32 @@ import { Button, Modal, Slot, Tabs, Tooltip } from '../kit';
 import { closePanel, pushToast, useUI } from '../store';
 import { ItemTip, Window } from '../windows/common';
 import { clearNewMark, endBagDrag, startBagDrag, useBagDrag, useNewMarks } from './dnd';
-import { BAG_TABS, type BagFilter, type BagTab, clampSplit, isFiltering, matchesFilter, NO_FILTER, pageCounts, pageRange, planDrop, type QualityFilter, usedCount } from './model';
+import {
+  BAG_TABS,
+  type BagFilter,
+  type BagTab,
+  clampSplit,
+  isFiltering,
+  matchesFilter,
+  NO_FILTER,
+  pageCounts,
+  pageRange,
+  planDrop,
+  type QualityFilter,
+  usedCount,
+} from './model';
 import './bag.css';
 
 const Q_OPTIONS: QualityFilter[] = ['all', 0, 1, 2, 3, 4];
 
 /** Gửi một lệnh thả đã được `planDrop` quyết định. `onSplit` mở hộp hỏi số lượng. */
-function runDrop(inv: readonly InvSlot[], from: number, target: Parameters<typeof planDrop>[2], split: boolean, onSplit: (s: { slot: number; to: number; max: number }) => void): void {
+function runDrop(
+  inv: readonly InvSlot[],
+  from: number,
+  target: Parameters<typeof planDrop>[2],
+  split: boolean,
+  onSplit: (s: { slot: number; to: number; max: number }) => void,
+): void {
   const g = Game.current;
   const cmd = planDrop(inv, from, target, split, (id) => ITEM.get(id));
   if (cmd.cmd === 'move') g?.send(C.MOVE_ITEM, { a: cmd.a, b: cmd.b });
@@ -25,7 +44,11 @@ function runDrop(inv: readonly InvSlot[], from: number, target: Parameters<typeo
 }
 
 /** Ghi nhận thao tác thả từ DataTransfer/state kéo (dùng chung cho ô và số trang). */
-export function dropFromDrag(target: Parameters<typeof planDrop>[2], onSplit: (s: { slot: number; to: number; max: number }) => void, shift = false): void {
+export function dropFromDrag(
+  target: Parameters<typeof planDrop>[2],
+  onSplit: (s: { slot: number; to: number; max: number }) => void,
+  shift = false,
+): void {
   const d = useBagDrag.getState().drag;
   endBagDrag();
   if (!d) return;
@@ -41,7 +64,23 @@ function LockIcon() {
   );
 }
 
-function BagCell({ slot, item, dim, selected, isNew, onSelect, onSplit }: { slot: number; item: InvSlot; dim: boolean; selected: boolean; isNew: boolean; onSelect: () => void; onSplit: (s: { slot: number; to: number; max: number }) => void }) {
+function BagCell({
+  slot,
+  item,
+  dim,
+  selected,
+  isNew,
+  onSelect,
+  onSplit,
+}: {
+  slot: number;
+  item: InvSlot;
+  dim: boolean;
+  selected: boolean;
+  isNew: boolean;
+  onSelect: () => void;
+  onSplit: (s: { slot: number; to: number; max: number }) => void;
+}) {
   const [over, setOver] = useState(false);
   const def = item ? ITEM.get(item.id) : undefined;
   const g = Game.current;
@@ -67,7 +106,20 @@ function BagCell({ slot, item, dim, selected, isNew, onSelect, onSplit }: { slot
     if (def.kind === 'consumable') g?.send(C.USE, { slot, r: reqId() });
     else if (isWearSlot(def.kind)) g?.send(C.EQUIP, { slot, r: reqId() });
   };
-  const body = item && def ? <Slot icon={<ContentIcon def={def} />} rarity={gearQuality(item, def)} count={item.n} plus={def.kind === 'consumable' ? undefined : item.plus} selected={selected} size="m" label={itemName(def.id, item.plus)} /> : <Slot empty size="m" />;
+  const body =
+    item && def ? (
+      <Slot
+        icon={<ContentIcon def={def} />}
+        rarity={gearQuality(item, def)}
+        count={item.n}
+        plus={def.kind === 'consumable' ? undefined : item.plus}
+        selected={selected}
+        size="m"
+        label={itemName(def.id, item.plus)}
+      />
+    ) : (
+      <Slot empty size="m" />
+    );
   return (
     <div
       className="bag-cell"
@@ -106,7 +158,19 @@ function BagCell({ slot, item, dim, selected, isNew, onSelect, onSplit }: { slot
   );
 }
 
-function PageButton({ page, active, count, onPick, onSplit }: { page: number; active: boolean; count: number; onPick: () => void; onSplit: (s: { slot: number; to: number; max: number }) => void }) {
+function PageButton({
+  page,
+  active,
+  count,
+  onPick,
+  onSplit,
+}: {
+  page: number;
+  active: boolean;
+  count: number;
+  onPick: () => void;
+  onSplit: (s: { slot: number; to: number; max: number }) => void;
+}) {
   const [over, setOver] = useState(false);
   return (
     <button
@@ -203,7 +267,9 @@ export function Bag() {
   const selItem: InvItem | null = sel !== null ? (inv[sel] ?? null) : null;
   const selDef = selItem ? ITEM.get(selItem.id) : undefined;
   const cells = Array.from({ length: INV_PAGE }, (_, i) => from + i);
-  const hits = filtering ? inv.reduce((n, it) => (it && matchesFilter(it, ITEM.get(it.id), itemName(it.id, it.plus), gearQuality(it), filter) ? n + 1 : n), 0) : 0;
+  const hits = filtering
+    ? inv.reduce((n, it) => (it && matchesFilter(it, ITEM.get(it.id), itemName(it.id, it.plus), gearQuality(it), filter) ? n + 1 : n), 0)
+    : 0;
   return (
     <Window title={t('ui.bag')} sub={t('ui.bag.count', { used, max: INV_SIZE })} onClose={() => closePanel('bag')} cls="bag" width={520}>
       <Tabs
@@ -213,8 +279,23 @@ export function Bag() {
         items={BAG_TABS.map((id) => ({ id, label: t('ui.bag.tab.' + id) }))}
       />
       <div className="bag-tools">
-        <input className="bag-search" type="search" value={filter.query} placeholder={t('ui.bag.search')} aria-label={t('ui.bag.search')} onChange={(e) => setFilter((f) => ({ ...f, query: e.target.value }))} onKeyDown={(e) => e.stopPropagation()} />
-        <select className="bag-quality" aria-label={t('ui.bag.quality')} value={String(filter.quality)} onChange={(e) => setFilter((f) => ({ ...f, quality: e.target.value === 'all' ? 'all' : (Number(e.target.value) as QualityFilter) }))}>
+        <input
+          className="bag-search"
+          type="search"
+          value={filter.query}
+          placeholder={t('ui.bag.search')}
+          aria-label={t('ui.bag.search')}
+          onChange={(e) => setFilter((f) => ({ ...f, query: e.target.value }))}
+          onKeyDown={(e) => e.stopPropagation()}
+        />
+        <select
+          className="bag-quality"
+          aria-label={t('ui.bag.quality')}
+          value={String(filter.quality)}
+          onChange={(e) =>
+            setFilter((f) => ({ ...f, quality: e.target.value === 'all' ? 'all' : (Number(e.target.value) as QualityFilter) }))
+          }
+        >
           {Q_OPTIONS.map((q) => (
             <option key={String(q)} value={String(q)}>
               {q === 'all' ? t('ui.bag.quality.all') : t(`ui.quality.${q}`)}
@@ -230,7 +311,18 @@ export function Bag() {
           const it = inv[i] ?? null;
           const def = it ? ITEM.get(it.id) : undefined;
           const match = matchesFilter(it, def, it ? itemName(it.id, it.plus) : '', it ? gearQuality(it, def) : 0, filter);
-          return <BagCell key={i} slot={i} item={it} dim={!match} selected={sel === i} isNew={!!it && !!marks[it.id]} onSelect={() => setSel(sel === i ? null : i)} onSplit={setSplit} />;
+          return (
+            <BagCell
+              key={i}
+              slot={i}
+              item={it}
+              dim={!match}
+              selected={sel === i}
+              isNew={!!it && !!marks[it.id]}
+              onSelect={() => setSel(sel === i ? null : i)}
+              onSplit={setSplit}
+            />
+          );
         })}
       </div>
       {filtering && hits === 0 && <div className="k-dim bag-empty">{t('ui.bag.no_match')}</div>}
@@ -256,11 +348,19 @@ export function Bag() {
             </Button>
           )}
           {isWearSlot(selDef.kind) && (
-            <Button size="s" variant="primary" disabled={!wearableBy(selDef, g?.myGender() ?? '')} title={selDef.gender && !wearableBy(selDef, g?.myGender() ?? '') ? t('ui.item.gender.' + selDef.gender) : undefined} onClick={() => g?.send(C.EQUIP, { slot: sel, r: reqId() })}>
+            <Button
+              size="s"
+              variant="primary"
+              disabled={!wearableBy(selDef, g?.myGender() ?? '')}
+              title={selDef.gender && !wearableBy(selDef, g?.myGender() ?? '') ? t('ui.item.gender.' + selDef.gender) : undefined}
+              onClick={() => g?.send(C.EQUIP, { slot: sel, r: reqId() })}
+            >
               {t('ui.item.equip')}
             </Button>
           )}
-          {selDef.gender && !wearableBy(selDef, g?.myGender() ?? '') && <span className="bad bag-sel-why">{t('ui.item.gender.' + selDef.gender)}</span>}
+          {selDef.gender && !wearableBy(selDef, g?.myGender() ?? '') && (
+            <span className="bad bag-sel-why">{t('ui.item.gender.' + selDef.gender)}</span>
+          )}
           <Button size="s" onClick={() => g?.send(C.INV_LOCK, { slot: sel, on: !selItem.lk })}>
             {selItem.lk ? t('ui.bag.unlock') : t('ui.bag.lock')}
           </Button>

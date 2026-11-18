@@ -117,7 +117,8 @@ const zoneOfOffset = (x, z) => {
 // ---- trận truyền tống ----
 const polar = (r, a) => [r * Math.cos(deg(a)), r * Math.sin(deg(a))];
 const PADS = [{ id: 'dm_tp_tram', zone: '', off: [0, -38] }];
-for (const z of ZONES) PADS.push({ id: 'dm_tp_' + z.id.replace(/_pha$|_dao$|_huyet$|_khu$/, ''), zone: z.id, off: polar(z.padR, z.midAt(z.padR)) });
+for (const z of ZONES)
+  PADS.push({ id: 'dm_tp_' + z.id.replace(/_pha$|_dao$|_huyet$|_khu$/, ''), zone: z.id, off: polar(z.padR, z.midAt(z.padR)) });
 // id gọn: dm_tp_sa_thach, dm_tp_kho_ha, dm_tp_hoang_sa, dm_tp_cuu_mo, dm_tp_tuyet_bich
 PADS.find((p) => p.zone === 'tuyet_bich').id = 'dm_tp_tuyet_bich';
 
@@ -132,14 +133,57 @@ const POIS = [
 // Prop: PROP_LIB (#118, packages/shared/src/propLib.ts) cho bản đồ doan_mach + vài prop Vân Lam sẵn có làm đệm.
 // Tâm điểm [id, yaw, s] đặt đúng tại điểm; "quanh" rải vòng 6–12 m.
 const POI_KIT = {
-  mach_tinh_tru: { center: ['prop_mach_tinh_tru', 0, 1], around: ['prop_tru_nham_do', 'prop_tru_nham_do', 'prop_tru_nham_do', 'prop_da_dung', 'prop_da_nam', 'prop_den_da'] },
-  cau_da_gay: { center: ['prop_cau_da_gay', 0, 1], around: ['prop_tru_nham_do', 'prop_tru_nham_do', 'prop_da_nam', 'prop_kiem_gay', 'prop_cay_goc_kho', 'prop_den_da'] },
-  ho_sa_lun: { center: null, around: ['prop_cay_goc_kho', 'prop_cay_goc_kho', 'prop_cay_goc_kho', 'prop_da_nam', 'prop_da_nam', 'prop_kiem_gay', 'prop_da_phien', 'prop_bia_da'] },
-  cong_mo: { center: ['prop_cong_khai_mach', 0, 1], around: ['prop_lau', 'prop_lau', 'prop_lo_dan', 'prop_den_da', 'prop_den_da', 'prop_da_nam'] },
-  vach_dut_mach: { center: null, around: ['prop_tru_nham_do', 'prop_tru_nham_do', 'prop_tru_nham_do', 'prop_tru_nham_do', 'prop_bia_da', 'prop_kiem_gay', 'prop_da_dung', 'prop_cay_goc_kho'] },
+  mach_tinh_tru: {
+    center: ['prop_mach_tinh_tru', 0, 1],
+    around: ['prop_tru_nham_do', 'prop_tru_nham_do', 'prop_tru_nham_do', 'prop_da_dung', 'prop_da_nam', 'prop_den_da'],
+  },
+  cau_da_gay: {
+    center: ['prop_cau_da_gay', 0, 1],
+    around: ['prop_tru_nham_do', 'prop_tru_nham_do', 'prop_da_nam', 'prop_kiem_gay', 'prop_cay_goc_kho', 'prop_den_da'],
+  },
+  ho_sa_lun: {
+    center: null,
+    around: [
+      'prop_cay_goc_kho',
+      'prop_cay_goc_kho',
+      'prop_cay_goc_kho',
+      'prop_da_nam',
+      'prop_da_nam',
+      'prop_kiem_gay',
+      'prop_da_phien',
+      'prop_bia_da',
+    ],
+  },
+  cong_mo: {
+    center: ['prop_cong_khai_mach', 0, 1],
+    around: ['prop_lau', 'prop_lau', 'prop_lo_dan', 'prop_den_da', 'prop_den_da', 'prop_da_nam'],
+  },
+  vach_dut_mach: {
+    center: null,
+    around: [
+      'prop_tru_nham_do',
+      'prop_tru_nham_do',
+      'prop_tru_nham_do',
+      'prop_tru_nham_do',
+      'prop_bia_da',
+      'prop_kiem_gay',
+      'prop_da_dung',
+      'prop_cay_goc_kho',
+    ],
+  },
 };
 // Bán kính va chạm: PROP_LIB (cột đá 2,8; cổng mỏ 4,4; mạch tinh 1,6; cây khô 0,9) và Vân Lam sẵn có.
-const COLL_R = { prop_da_dung: 1.2, prop_da_nam: 1.0, prop_bia_da: 0.9, prop_lau: 1.4, prop_lo_dan: 1.0, prop_tru_nham_do: 2.8, prop_cong_khai_mach: 4.4, prop_mach_tinh_tru: 1.6, prop_cay_goc_kho: 0.9 };
+const COLL_R = {
+  prop_da_dung: 1.2,
+  prop_da_nam: 1.0,
+  prop_bia_da: 0.9,
+  prop_lau: 1.4,
+  prop_lo_dan: 1.0,
+  prop_tru_nham_do: 2.8,
+  prop_cong_khai_mach: 4.4,
+  prop_mach_tinh_tru: 1.6,
+  prop_cay_goc_kho: 0.9,
+};
 const props = [];
 const addProp = (id, ox, oz, yaw, s = 1) => {
   const p = { id, x: W(ox), z: W(oz), yaw: Math.round(yaw * 100) / 100, s: Math.round(s * 100) / 100 };
@@ -160,7 +204,14 @@ for (const p of POIS) {
 addProp('prop_ngung_dan_lo', 14, 8, 0.6, 1);
 addProp('prop_lau', -16, 10, -0.4, 1);
 addProp('prop_bia_da', 0, 22, 0, 1);
-for (const [x, z] of [[-12, -22], [12, -22], [-22, 14], [22, 14], [0, -8]]) addProp('prop_den_da', x, z, 0, 1);
+for (const [x, z] of [
+  [-12, -22],
+  [12, -22],
+  [-22, 14],
+  [22, 14],
+  [0, -8],
+])
+  addProp('prop_den_da', x, z, 0, 1);
 
 // E2-H: hai mảnh kiếm gãy thêm (s2_kiem_gay có 5 điểm; ba mảnh kia nằm sẵn ở các điểm đáng chú ý).
 addProp('prop_kiem_gay', 212, 202, 0.7, 1);
@@ -210,7 +261,16 @@ for (const e of ELITES) {
     keep.push({ x: best[0], z: best[1], r: 10 });
   }
 }
-spawns.push({ mon: 'boss_dia_mach_long', x: W(BOSS.off[0]), z: W(BOSS.off[1]), radius: 6, count: 1, levelMin: 19, levelMax: 19, respawn: 1800 });
+spawns.push({
+  mon: 'boss_dia_mach_long',
+  x: W(BOSS.off[0]),
+  z: W(BOSS.off[1]),
+  radius: 6,
+  count: 1,
+  levelMin: 19,
+  levelMax: 19,
+  respawn: 1800,
+});
 
 // ---- camp ----
 // Chuẩn độ phủ bản đồ mở rộng (coverage.ts): mọi điểm trong vùng săn cách MÉP cụm gần nhất ≤ 70 m. Rải điểm-xa-nhất toàn cục trên lưới 10 m
@@ -218,16 +278,46 @@ spawns.push({ mon: 'boss_dia_mach_long', x: W(BOSS.off[0]), z: W(BOSS.off[1]), r
 const COVER_GOAL = 62;
 const TARGET_CAMPS = 72;
 const TARGET_DENSITY = 128;
-const polyAreaOf = (poly) => Math.abs(poly.reduce((a, p, i) => { const q = poly[(i + 1) % poly.length]; return a + (p[0] * q[1] - q[0] * p[1]); }, 0)) / 2;
+const polyAreaOf = (poly) =>
+  Math.abs(
+    poly.reduce((a, p, i) => {
+      const q = poly[(i + 1) % poly.length];
+      return a + (p[0] * q[1] - q[0] * p[1]);
+    }, 0),
+  ) / 2;
 const MARGIN_RAY = 6;
 const MARGIN_OUT = 8;
 const CAMP_R = 30;
 const MIX = {
   sa_thach_pha: { mons: [['mon_thach_giap_te', 1]], ranged: null },
-  kho_ha_dao: { mons: [['mon_thach_giap_te', 0.5], ['mon_khai_mach_khoi_loi', 0.5]], ranged: null },
-  hoang_sa_huyet: { mons: [['mon_ngo_cong_au', 0.7], ['mon_thach_giap_te', 0.3]], ranged: null },
-  cuu_mo_khu: { mons: [['mon_khai_mach_khoi_loi', 0.5], ['mon_mach_thuong_ho_ve', 0.5]], ranged: null },
-  tuyet_bich: { mons: [['mon_thach_giap_te', 0.5], ['mon_ngo_cong_au', 0.5]], ranged: null },
+  kho_ha_dao: {
+    mons: [
+      ['mon_thach_giap_te', 0.5],
+      ['mon_khai_mach_khoi_loi', 0.5],
+    ],
+    ranged: null,
+  },
+  hoang_sa_huyet: {
+    mons: [
+      ['mon_ngo_cong_au', 0.7],
+      ['mon_thach_giap_te', 0.3],
+    ],
+    ranged: null,
+  },
+  cuu_mo_khu: {
+    mons: [
+      ['mon_khai_mach_khoi_loi', 0.5],
+      ['mon_mach_thuong_ho_ve', 0.5],
+    ],
+    ranged: null,
+  },
+  tuyet_bich: {
+    mons: [
+      ['mon_thach_giap_te', 0.5],
+      ['mon_ngo_cong_au', 0.5],
+    ],
+    ranged: null,
+  },
 };
 const pick = (list) => {
   let t = R();
@@ -307,7 +397,10 @@ function lattice(sp, th, ox, oz) {
       let bd = 70;
       for (const q of candC) {
         const d = Math.hypot(q[0] - x, q[1] - z);
-        if (d < bd) { bd = d; best = q; }
+        if (d < bd) {
+          bd = d;
+          best = q;
+        }
       }
       if (!best || out.some((o) => Math.hypot(o.ox - best[0], o.oz - best[1]) < CAMP_R * 1.3)) continue;
       out.push(mkCamp(best[0], best[1], best[2]));
@@ -323,7 +416,10 @@ for (let sp = 160; sp <= 215; sp += 5)
         const set = lattice(sp, (th * Math.PI) / 180, ox, oz);
         if (set.length > TARGET_CAMPS) continue;
         const w = worstOf(set);
-        if (w < bestScore) { bestScore = w; bestSet = set; }
+        if (w < bestScore) {
+          bestScore = w;
+          bestSet = set;
+        }
       }
 camps.push(...bestSet);
 console.log('lưới:', camps.length, 'cụm, điểm xa nhất (lưới thô)', bestScore.toFixed(1), 'm');
@@ -345,11 +441,24 @@ const relocate = () => {
       if (Math.hypot(x - camps[i].ox, z - camps[i].oz) > 90) continue;
       if (others.some((c) => Math.hypot(c.ox - x, c.oz - z) < CAMP_R * 1.3)) continue;
       const f = cost(x, z);
-      if (f < bf) { bf = f; best = [x, z, zn]; }
+      if (f < bf) {
+        bf = f;
+        best = [x, z, zn];
+      }
     }
     if (best) {
       const nc = mkCamp(best[0], best[1], best[2]);
-      Object.assign(camps[i], { zone: nc.zone, mon: nc.mon, x: nc.x, z: nc.z, ox: nc.ox, oz: nc.oz, levelMin: nc.levelMin, levelMax: nc.levelMax, ranged: nc.ranged });
+      Object.assign(camps[i], {
+        zone: nc.zone,
+        mon: nc.mon,
+        x: nc.x,
+        z: nc.z,
+        ox: nc.ox,
+        oz: nc.oz,
+        levelMin: nc.levelMin,
+        levelMax: nc.levelMax,
+        ranged: nc.ranged,
+      });
       if (!nc.ranged) delete camps[i].ranged;
     }
   }
@@ -362,7 +471,10 @@ const worstFine = () => {
   for (const q of need) {
     let b = Infinity;
     for (const c of camps) b = Math.min(b, dEdge(q[0], q[1], c));
-    if (b > m) { m = b; w = q; }
+    if (b > m) {
+      m = b;
+      w = q;
+    }
   }
   return { w, m };
 };
@@ -374,7 +486,10 @@ for (let k = 0; camps.length < 75; k++) {
   for (const q of cand) {
     if (camps.some((c) => Math.hypot(c.ox - q[0], c.oz - q[1]) < CAMP_R * 1.3)) continue;
     const d = Math.hypot(q[0] - w[0], q[1] - w[1]);
-    if (d < bd) { bd = d; best = q; }
+    if (d < bd) {
+      bd = d;
+      best = q;
+    }
   }
   if (!best) break;
   camps.push(mkCamp(best[0], best[1], best[2]));
@@ -418,7 +533,19 @@ const spots = [
   { id: 'kiem_gay_4', zone: 'sa_thach_pha', x: 1236, z: 1226 },
   { id: 'kiem_gay_5', zone: 'cuu_mo_khu', x: 606, z: 962 },
 ];
-const escorts = [{ id: 'esc_thuong_nhan', npc: 'npc_thuong_nhan', speed: 4, path: [[1046, 1050], [1180, 990], [1338, 922], [1488, 976]] }];
+const escorts = [
+  {
+    id: 'esc_thuong_nhan',
+    npc: 'npc_thuong_nhan',
+    speed: 4,
+    path: [
+      [1046, 1050],
+      [1180, 990],
+      [1338, 922],
+      [1488, 976],
+    ],
+  },
+];
 
 // ---- địa hình ----
 const flat = (id, off, y, flatR, outerR, extra = {}) => ({ id, x: W(off[0]), z: W(off[1]), y, flatR, outerR, round: true, ...extra });
@@ -437,7 +564,19 @@ const terrain = {
   seed: 20261116,
   size: 2048,
   margin: 24,
-  natural: { freq: 0.0021, baseOct: 4, ridgeOct: 3, level: 128, baseAmp: 16, ridgeAmp: 70, maskFreq: 0.0013, maskOct: 2, maskLo: -0.5, maskHi: 0.2, edge: { amp: 120, r0: 300, r1: 20 } },
+  natural: {
+    freq: 0.0021,
+    baseOct: 4,
+    ridgeOct: 3,
+    level: 128,
+    baseAmp: 16,
+    ridgeAmp: 70,
+    maskFreq: 0.0013,
+    maskOct: 2,
+    maskLo: -0.5,
+    maskHi: 0.2,
+    edge: { amp: 120, r0: 300, r1: 20 },
+  },
   features: [
     ...chain,
     flat('tram', [0, 0], 80, 62, 175, { detail: 0.3 }),
@@ -467,7 +606,10 @@ const out = (rel, text) => fs.writeFileSync(path.join(ROOT, rel), text);
 out('packages/content/data/levels/doan_mach.terrain.json', JSON.stringify(terrain, null, 2) + '\n');
 out('packages/content/data/levels/doan_mach.json', JSON.stringify(level, null, 2) + '\n');
 
-const propLines = props.map((p) => `  { id: '${p.id}', x: ${p.x}, z: ${p.z}, yaw: ${p.yaw}, s: ${Math.round(p.s * 100) / 100}${p.r ? `, r: ${Math.round(p.r * 100) / 100}` : ''} },`);
+const propLines = props.map(
+  (p) =>
+    `  { id: '${p.id}', x: ${p.x}, z: ${p.z}, yaw: ${p.yaw}, s: ${Math.round(p.s * 100) / 100}${p.r ? `, r: ${Math.round(p.r * 100) / 100}` : ''} },`,
+);
 out(
   'packages/shared/src/props.doanmach.ts',
   `// Prop bày của Đoạn Mạch Cổ Cốc (E2-A). SINH BẰNG tools/maps/gen-doan-mach.mjs: sửa ở đó rồi chạy lại.
@@ -479,7 +621,9 @@ ${propLines.join('\n')}
 ];
 `,
 );
-const padLines = PADS.map((p) => `  { id: '${p.id}', level: 'doan_mach', face: { x: ${C}, z: ${C} }, zone: '${p.zone}', x: ${W(p.off[0])}, z: ${W(p.off[1])} },`);
+const padLines = PADS.map(
+  (p) => `  { id: '${p.id}', level: 'doan_mach', face: { x: ${C}, z: ${C} }, zone: '${p.zone}', x: ${W(p.off[0])}, z: ${W(p.off[1])} },`,
+);
 out(
   'packages/shared/src/teleport.doanmach.ts',
   `// Truyền Tống Trận của Đoạn Mạch Cổ Cốc (E2-A, tiền tố dm_). SINH BẰNG tools/maps/gen-doan-mach.mjs.

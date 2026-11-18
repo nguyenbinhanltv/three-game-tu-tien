@@ -220,7 +220,8 @@ export class DungeonRoom extends GameRoom {
   private startKimDa(): void {
     const sim = this.sim;
     const c = this.def.center;
-    const pool = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') => sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
+    const pool = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') =>
+      sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
     this.kimda = new KimDaSystem({
       now: () => Date.now(),
       monsters: () => sim.monsters,
@@ -256,7 +257,8 @@ export class DungeonRoom extends GameRoom {
 
   private startSteles(w: WaveDef): void {
     const sim = this.sim;
-    const marker = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') => sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
+    const marker = (x: number, z: number, r: number, dur: number, kind: 'fire' | 'frost') =>
+      sim.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur);
     this.stele = new SteleHold(
       {
         now: () => Date.now(),
@@ -283,7 +285,8 @@ export class DungeonRoom extends GameRoom {
       monsters: () => sim.monsters,
       stagger: (m, sec) => sim.stagger(m, sec),
       purify: (m) => sim.purifyMonster(m),
-      marker: (x, z, r, dur) => sim.addHazard({ x, z, r }, 0.2, 0, false, 'frost', '', 0, false, 0, undefined, undefined, 'pool', false, dur),
+      marker: (x, z, r, dur) =>
+        sim.addHazard({ x, z, r }, 0.2, 0, false, 'frost', '', 0, false, 0, undefined, undefined, 'pool', false, dur),
       sysAll: (k, params, type) => sim.sysAll(k, params, type),
     });
   }
@@ -344,7 +347,11 @@ export class DungeonRoom extends GameRoom {
         this.sim.spawnMonster(def, g.level, c.x + Math.cos(a) * r, c.z + Math.sin(a) * r, null);
       }
     }
-    this.sim.sysAll('sys.dungeon_wave', { n: this.wave, boss: w.title ? t('dungeon.' + this.levelId + '.wave.' + this.wave) : lead }, 'info');
+    this.sim.sysAll(
+      'sys.dungeon_wave',
+      { n: this.wave, boss: w.title ? t('dungeon.' + this.levelId + '.wave.' + this.wave) : lead },
+      'info',
+    );
   }
 }
 

@@ -1,7 +1,16 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { heightAt, KIEM_TRUNG, SECT, VALLEY } from '@dtl/shared';
-import { monsterPushRadius, buildGrassChunk, buildTuftGeometry, GRASS_PRESETS, Grass, GRASS_PUSH_SLOTS, pickPushers, type Pusher } from './grass';
+import {
+  monsterPushRadius,
+  buildGrassChunk,
+  buildTuftGeometry,
+  GRASS_PRESETS,
+  Grass,
+  GRASS_PUSH_SLOTS,
+  pickPushers,
+  type Pusher,
+} from './grass';
 
 const slots = (): Pusher[] => Array.from({ length: GRASS_PUSH_SLOTS }, () => ({ x: 0, y: 0, z: 0, r: 0 }));
 const count = (cx: number, cz: number) => buildGrassChunk(Math.floor(cx / 16), Math.floor(cz / 16), 1).length / 8;
@@ -29,7 +38,14 @@ describe('pickPushers', () => {
   });
   it('ô thừa có r = 0; bỏ thực thể quá xa', () => {
     const out = slots();
-    pickPushers({ x: 0, y: 0, z: 0, r: 1 }, [{ x: 3, y: 0, z: 0, r: 2 }, { x: 500, y: 0, z: 0, r: 2 }], out);
+    pickPushers(
+      { x: 0, y: 0, z: 0, r: 1 },
+      [
+        { x: 3, y: 0, z: 0, r: 2 },
+        { x: 500, y: 0, z: 0, r: 2 },
+      ],
+      out,
+    );
     expect(out[1].r).toBe(2);
     expect(out.slice(2).every((p) => p.r === 0)).toBe(true);
   });

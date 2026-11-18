@@ -28,7 +28,11 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
     a.room.send(C.BOTTLENECK, { m: 'trial' });
     a.room.send(C.BOTTLENECK, { m: 'pill', r: rq() });
     await W(700);
-    check('tu vi chưa đầy: không mở được tâm ma, không dùng được Phá Cảnh Đan', shadows().length === 0 && ca?.level === 5 && ca?.bk === 0 && ca?.trial === 0, `lv ${ca?.level} bk ${ca?.bk}`);
+    check(
+      'tu vi chưa đầy: không mở được tâm ma, không dùng được Phá Cảnh Đan',
+      shadows().length === 0 && ca?.level === 5 && ca?.bk === 0 && ca?.trial === 0,
+      `lv ${ca?.level} bk ${ca?.bk}`,
+    );
     // b. Kiểu gửi lạ không làm gì, không sập.
     for (const m of [null, 'x', { m: 'hack' }, { m: 'pill' }, { m: 'pill', r: 5 }, { m: ['trial'] }]) a.room.send(C.BOTTLENECK, m);
     await W(500);
@@ -40,14 +44,22 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
     a.room.send(C.BREAKTHROUGH);
     await W(700);
     const pa = (a.room.state as { players: Map<string, P> }).players.get(a.init.sid)!;
-    check('tầng 15 chưa vượt bình cảnh: không độ kiếp được', (pa.fl & 16) === 0 && ca?.level === 15 && ca?.bk === 10, `fl ${pa.fl} bk ${ca?.bk}`);
+    check(
+      'tầng 15 chưa vượt bình cảnh: không độ kiếp được',
+      (pa.fl & 16) === 0 && ca?.level === 15 && ca?.bk === 10,
+      `fl ${pa.fl} bk ${ca?.bk}`,
+    );
     // d. Đan: dùng một viên, vượt đúng một lần; trên tầng 15 chỉ mở đường độ kiếp.
     await say(a.room, 'give itm_pha_canh_dan 1');
     const r1 = rq();
     a.room.send(C.BOTTLENECK, { m: 'pill', r: r1 });
     a.room.send(C.BOTTLENECK, { m: 'pill', r: r1 });
     await W(900);
-    check('Phá Cảnh Đan tầng 15: bình cảnh vỡ (bk 15), vẫn Ngưng Khí 15', ca?.bk === 15 && ca?.level === 15, `lv ${ca?.level} bk ${ca?.bk}`);
+    check(
+      'Phá Cảnh Đan tầng 15: bình cảnh vỡ (bk 15), vẫn Ngưng Khí 15',
+      ca?.bk === 15 && ca?.level === 15,
+      `lv ${ca?.level} bk ${ca?.bk}`,
+    );
     // e. Tâm ma: người khác không đánh được bóng của mình.
     await say(a.room, 'level 5');
     await say(a.room, 'xp 9999999');
@@ -56,7 +68,11 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
     a.room.send(C.BOTTLENECK, { m: 'trial' });
     await W(900);
     const sh = shadows()[0];
-    check('tâm ma: server dựng bóng riêng và báo thời gian', !!sh && (ca?.trial ?? 0) > 100, `bóng ${sh ? 'có' : 'không'}, còn ${ca?.trial}s`);
+    check(
+      'tâm ma: server dựng bóng riêng và báo thời gian',
+      !!sh && (ca?.trial ?? 0) > 100,
+      `bóng ${sh ? 'có' : 'không'}, còn ${ca?.trial}s`,
+    );
     if (sh) {
       const hp0 = sh[1].hp;
       for (let i = 0; i < 4; i++) {
@@ -77,11 +93,19 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
     const trialB = cb?.trial ?? 0;
     await say(b.room, 'die');
     await W(600);
-    check('chết trong tâm ma: không mất tu vi, đợi thử lại', trialB > 100 && cb?.trial === 0 && (cb?.retry ?? 0) > 30 && cb?.xp === cb?.xpNeed, `trial ${trialB} → ${cb?.trial}, retry ${cb?.retry}, xp ${cb?.xp}/${cb?.xpNeed}`);
+    check(
+      'chết trong tâm ma: không mất tu vi, đợi thử lại',
+      trialB > 100 && cb?.trial === 0 && (cb?.retry ?? 0) > 30 && cb?.xp === cb?.xpNeed,
+      `trial ${trialB} → ${cb?.trial}, retry ${cb?.retry}, xp ${cb?.xp}/${cb?.xpNeed}`,
+    );
     // f. Chủ hạ bóng thì thắng (GM killall chạy qua damageMonster như đòn thật).
     await say(a.room, 'killall');
     await W(600);
-    check('hạ bóng tâm ma: vượt bình cảnh tầng 5 → tầng 6', ca?.level === 6 && ca?.bk === 5 && ca?.trial === 0, `lv ${ca?.level} bk ${ca?.bk}`);
+    check(
+      'hạ bóng tâm ma: vượt bình cảnh tầng 5 → tầng 6',
+      ca?.level === 6 && ca?.bk === 5 && ca?.trial === 0,
+      `lv ${ca?.level} bk ${ca?.bk}`,
+    );
     // g. Đổi linh căn: sai NPC / xa NPC / root lạ / thiếu tiền đều bị từ chối.
     const before = ca?.root;
     await say(a.room, 'gold 100000');
@@ -106,10 +130,13 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
     const flipped = ca?.root === want;
     a.room.send(C.ROOT, { npc: 'npc_chuong_mon', root: before, r: rr }); // cùng khóa, root khác: phải bị chặn
     await W(700);
-    check('đổi linh căn cạnh NPC: đổi đúng, trừ phí một lần, khóa trùng bị chặn', flipped && g0 - g1 === rootChangeCost(6) && ca?.root === want && ((ca as CharV | null)?.gold ?? 0) === g1, `${before} → ${ca?.root}, linh thạch ${g0} → ${g1}`);
+    check(
+      'đổi linh căn cạnh NPC: đổi đúng, trừ phí một lần, khóa trùng bị chặn',
+      flipped && g0 - g1 === rootChangeCost(6) && ca?.root === want && ((ca as CharV | null)?.gold ?? 0) === g1,
+      `${before} → ${ca?.root}, linh thạch ${g0} → ${g1}`,
+    );
     await say(a.room, 'killall');
     await a.room.leave(true);
     await b.room.leave(true);
   }
-
 }

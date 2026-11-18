@@ -240,8 +240,8 @@
 }
 /* Giảm chuyển động: theo cài đặt (data-reduce-motion trên <html>, mặc định theo hệ điều hành; xem ui/ngj/motion.ts). */
 :root[data-reduce-motion='true'] .chapter-title {
-    animation: none;
-  }
+  animation: none;
+}
 
 /* Cảnh mở đầu (P2-B1): ẩn HUD (trừ lớp .cine), letterbox dày, câu thoại hiện ở ~1/3 cảnh rồi mờ trước khi cảnh hết. */
 .hud > :not(.cine) {
@@ -300,7 +300,9 @@
   letter-spacing: 0.12em;
   line-height: 1.7;
   color: #efe6d0;
-  text-shadow: 0 0 14px rgba(5, 7, 11, 0.9), 0 1px 3px rgba(5, 7, 11, 0.9);
+  text-shadow:
+    0 0 14px rgba(5, 7, 11, 0.9),
+    0 1px 3px rgba(5, 7, 11, 0.9);
   opacity: 0;
   animation: cine-line var(--dur) ease-in-out forwards;
 }
@@ -370,7 +372,9 @@
   text-align: center;
   font-family: var(--font-display);
   color: #efe6d0;
-  text-shadow: 0 0 14px rgba(5, 7, 11, 0.95), 0 1px 3px rgba(5, 7, 11, 0.95);
+  text-shadow:
+    0 0 14px rgba(5, 7, 11, 0.95),
+    0 1px 3px rgba(5, 7, 11, 0.95);
   opacity: 0;
   animation: cine-name var(--dur) ease-in-out forwards;
 }
@@ -457,5 +461,11 @@
   text-shadow: 0 2px 24px rgba(10, 24, 28, 0.85);
 }
 #boot.art-on .ts-veil {
-  background: linear-gradient(180deg, rgba(10, 24, 28, 0.35) 0%, rgba(10, 24, 28, 0) 40%, rgba(10, 24, 28, 0) 55%, rgba(10, 24, 28, 0.55) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(10, 24, 28, 0.35) 0%,
+    rgba(10, 24, 28, 0) 40%,
+    rgba(10, 24, 28, 0) 55%,
+    rgba(10, 24, 28, 0.55) 100%
+  );
 }

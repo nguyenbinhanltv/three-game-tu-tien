@@ -282,7 +282,11 @@ export class UpgradeSystem {
     const cost = gemMergeCost(g.tier);
     const c = p.char;
     if (c.gold < cost.gold) return this.h.warn(p, 'sys.not_enough_gold');
-    const ok = c.tx(`merge:${gem}`, idem, (d) => d.remove(gem, GEM_MERGE_COUNT) && d.remove(DUST_ITEM, cost.dust) && d.spendGold(cost.gold) && d.add(out, 1));
+    const ok = c.tx(
+      `merge:${gem}`,
+      idem,
+      (d) => d.remove(gem, GEM_MERGE_COUNT) && d.remove(DUST_ITEM, cost.dust) && d.spendGold(cost.gold) && d.add(out, 1),
+    );
     if (!ok) return this.h.warn(p, c.txFail === 'abort' ? 'sys.not_enough_mat' : 'sys.upg_bad_target');
     this.h.sys(p, 'sys.gem_merged', { gem: t(`item.${out}.name`) }, 'good');
     this.h.fx({ t: 'craft', src: p.sid });

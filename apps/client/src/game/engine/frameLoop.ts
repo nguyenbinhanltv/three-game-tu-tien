@@ -1,7 +1,35 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { downgradeOf, getGpuHint, setGpuHint, suggestQuality } from '../../base/quality';
 import * as THREE from 'three/webgpu';
-import { C, caveBoundOf, TELE_CAST_MS, cloneMoveState, canFlyAt, IN_DOWN, IN_FLY, IN_JUMP, IN_UP, type MoveCtx, type MoveInput, type MoveState, MS_DEAD, PF_CASTING, PF_DEAD, PF_FLYING, PF_TRIBULATION, STEP, stepMove, type SkillDef, CHARGE_MAX, needsTarget, PF_SOUL, SOUL_RANGE, SOUL_SCOUT, skyFlightUnlocked, domainRadius } from '@dtl/shared';
+import {
+  C,
+  caveBoundOf,
+  TELE_CAST_MS,
+  cloneMoveState,
+  canFlyAt,
+  IN_DOWN,
+  IN_FLY,
+  IN_JUMP,
+  IN_UP,
+  type MoveCtx,
+  type MoveInput,
+  type MoveState,
+  MS_DEAD,
+  PF_CASTING,
+  PF_DEAD,
+  PF_FLYING,
+  PF_TRIBULATION,
+  STEP,
+  stepMove,
+  type SkillDef,
+  CHARGE_MAX,
+  needsTarget,
+  PF_SOUL,
+  SOUL_RANGE,
+  SOUL_SCOUT,
+  skyFlightUnlocked,
+  domainRadius,
+} from '@dtl/shared';
 import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS, MONSTER, resolveBarSkill, SKILLS, t } from '@dtl/content';
 import { get, pushLog, pushToast, set } from '../../ui/store';
@@ -62,12 +90,23 @@ export function predictSkill(eng: Game, i: number, skill: SkillDef, needTarget: 
   const me = eng.me();
   if (!me) return;
   const mon = needTarget ? eng.view.monsters.get(eng.targetId) : undefined;
-  const inRange = !needTarget || (!!mon && Math.hypot(mon.x - eng.cur.x, mon.z - eng.cur.z) <= skill.range + 1.5 + (MONSTER.get(mon.t)?.scale ?? 1));
-  const ready = Date.now() >= eng.skillReadyAt(i) - 60 && me.mp >= skill.mp && (me.fl & PF_CASTING) === 0 && (!skill.ult || (get().method?.charge ?? 0) >= CHARGE_MAX);
+  const inRange =
+    !needTarget || (!!mon && Math.hypot(mon.x - eng.cur.x, mon.z - eng.cur.z) <= skill.range + 1.5 + (MONSTER.get(mon.t)?.scale ?? 1));
+  const ready =
+    Date.now() >= eng.skillReadyAt(i) - 60 &&
+    me.mp >= skill.mp &&
+    (me.fl & PF_CASTING) === 0 &&
+    (!skill.ult || (get().method?.charge ?? 0) >= CHARGE_MAX);
   // Biến thức có thể bỏ niệm chú (Lôi Tốc): dự đoán theo thời gian niệm đã gộp biến thức.
   if (inRange && ready && eng.cur.grounded && !eng.cur.flying) {
     const gap = mon ? Math.hypot(mon.x - eng.cur.x, mon.z - eng.cur.z) - (MONSTER.get(mon.t)?.scale ?? 1) : undefined;
-    eng.skillPoses.predict(eng.ents.players.get(eng.sid)?.model, { ...skill, cast: resolveBarSkill(get().method, skill).cast }, performance.now(), gap, get().method?.method);
+    eng.skillPoses.predict(
+      eng.ents.players.get(eng.sid)?.model,
+      { ...skill, cast: resolveBarSkill(get().method, skill).cast },
+      performance.now(),
+      gap,
+      get().method?.method,
+    );
   }
 }
 
@@ -146,7 +185,13 @@ export function runFrame(eng: Game): void {
   eng.terrain.update(rp.x, rp.z, eng.started ? 1 : 8);
   const myLevel = get().char?.level ?? 1;
   if (me) {
-    eng.ents.update(dt, eng.view, { x: rp.x, y: rp.y, z: rp.z, yaw: eng.facing, speed: eng.speed, airborne: !eng.cur.grounded && !eng.cur.flying }, eng.targetId, myLevel);
+    eng.ents.update(
+      dt,
+      eng.view,
+      { x: rp.x, y: rp.y, z: rp.z, yaw: eng.facing, speed: eng.speed, airborne: !eng.cur.grounded && !eng.cur.flying },
+      eng.targetId,
+      myLevel,
+    );
   }
   if (me) eng.steps?.update(eng.ents, eng.sid, rp, !eng.cur.grounded && !eng.cur.flying);
   eng.scape?.update(rp.x, rp.z, now / 1000);
@@ -178,7 +223,8 @@ export function runFrame(eng: Game): void {
   updateSoulVis(eng, dt, me);
   // Lĩnh vực (E4-K): vòng nhạt dưới chân mình từ Nguyên Anh trung kỳ.
   const dr = me ? domainRadius(get().char?.level ?? 0) : 0;
-  if (dr > 0 || eng.cloneVis) ensureCloneVis(eng).setDomain(dr > 0 && me && (me.fl & PF_DEAD) === 0 ? { x: eng.renderPos.x, z: eng.renderPos.z, r: dr } : null);
+  if (dr > 0 || eng.cloneVis)
+    ensureCloneVis(eng).setDomain(dr > 0 && me && (me.fl & PF_DEAD) === 0 ? { x: eng.renderPos.x, z: eng.renderPos.z, r: dr } : null);
   eng.cloneVis?.update(dt, eng.renderPos.x, eng.renderPos.z);
   for (const disc of eng.gateDiscs) {
     // Cổng gương nguyệt (vành + trụ đá) đứng yên, không lắc và không nhấp nháy như đĩa cổng.
@@ -187,7 +233,8 @@ export function runFrame(eng: Game): void {
     if (!disc.userData.still) disc.rotation.y = Math.sin(now * 0.0006) * 0.15;
     const dmat = disc.material as THREE.MeshBasicMaterial;
     // Mặt gương nguyệt: độ đục giữ ≥ 0,7, gợn nhẹ và mây phản chiếu trôi chậm (xoay texture).
-    dmat.opacity = (disc.userData.op ?? 0.55) + Math.sin(now * 0.003) * (disc.userData.still ? 0.08 : disc.userData.op ? disc.userData.op * 0.35 : 0.2);
+    dmat.opacity =
+      (disc.userData.op ?? 0.55) + Math.sin(now * 0.003) * (disc.userData.still ? 0.08 : disc.userData.op ? disc.userData.op * 0.35 : 0.2);
     if (disc.userData.mirrorTex) (disc.userData.mirrorTex as THREE.Texture).rotation = now * 0.00006;
   }
   tickSkillQueue(eng, now);
@@ -227,7 +274,14 @@ export function runFrame(eng: Game): void {
     // Lúc tải giữ điểm hồi sinh do prefetch đặt (renderPos có thể chưa khớp vị trí thật).
     if (eng.started) assets.setViewer(rp.x, rp.z);
     syncHud(eng, me);
-    eng.music.tick(now, { active: eng.started, room: get().room, x: rp.x, z: rp.z, flags: me?.fl ?? 0, monsters: eng.ents.monsters.values() });
+    eng.music.tick(now, {
+      active: eng.started,
+      room: get().room,
+      x: rp.x,
+      z: rp.z,
+      flags: me?.fl ?? 0,
+      monsters: eng.ents.monsters.values(),
+    });
   }
   if (!eng.started && me && eng.terrain.ready && eng.frames > 4) {
     eng.started = true;
@@ -270,7 +324,10 @@ export function updateCamera(eng: Game, dt: number): void {
     eng.camera.updateProjectionMatrix();
   }
   // Khung thẻ chương cộng thêm vào góc của người chơi, không ghi đè camDist/camPitch.
-  const want = Math.min(70, eng.camDist * zc.distMul * (flying ? 1.35 : 1) * eng.camFrame.distMul * (1 - 0.05 * (ultPunch / ULT_FOV.kick)) * (1 + pull));
+  const want = Math.min(
+    70,
+    eng.camDist * zc.distMul * (flying ? 1.35 : 1) * eng.camFrame.distMul * (1 - 0.05 * (ultPunch / ULT_FOV.kick)) * (1 + pull),
+  );
   eng.camDistCur += (want - eng.camDistCur) * Math.min(1, dt * 6);
   const pitch = Math.max(-0.45, Math.min(1.45, eng.camPitch + zc.pitchAdd + eng.camFrame.pitchAdd));
   const cp = Math.cos(pitch);
@@ -535,9 +592,14 @@ export function checkBlankFrame(eng: Game, now: number): void {
 /** WebGPU mất thiết bị (driver reset, tràn VRAM, GPU bị rút): cảnh đen mà vòng lặp vẫn chạy. */
 export function watchGpuDevice(eng: Game): void {
   if (!isWebGPU(eng.renderer)) return;
-  const dev = (eng.renderer.backend as {
-    device?: { lost?: Promise<{ reason?: string; message?: string }>; addEventListener?: (t: string, f: (e: { error?: { message?: string } }) => void) => void };
-  }).device;
+  const dev = (
+    eng.renderer.backend as {
+      device?: {
+        lost?: Promise<{ reason?: string; message?: string }>;
+        addEventListener?: (t: string, f: (e: { error?: { message?: string } }) => void) => void;
+      };
+    }
+  ).device;
   // Lỗi WebGPU không bắt được (validation, shader/pipeline hỏng): ghi lại để bảng F3 và console cho thấy nguyên nhân.
   dev?.addEventListener?.('uncapturederror', (e) => {
     const msg = String(e.error?.message ?? e.error ?? 'unknown').slice(0, 400);
@@ -586,11 +648,20 @@ export async function describeGpu(eng: Game): Promise<void> {
     const lim = be.device?.limits ?? ad?.limits;
     const parts = [
       `WebGPU ${i?.vendor ?? '?'} ${i?.architecture ?? ''} ${i?.description || i?.device || ''}`.trim(),
-      lim ? `tex2D ${lim.maxTextureDimension2D} · layers ${lim.maxTextureArrayLayers} · attach ${lim.maxColorAttachmentBytesPerSample}B · uniform ${lim.maxUniformBufferBindingSize}` : '',
+      lim
+        ? `tex2D ${lim.maxTextureDimension2D} · layers ${lim.maxTextureArrayLayers} · attach ${lim.maxColorAttachmentBytesPerSample}B · uniform ${lim.maxUniformBufferBindingSize}`
+        : '',
       `features ${be.device?.features?.size ?? ad?.features?.size ?? '?'}`,
     ];
     eng.gpuInfo = parts.filter(Boolean).join(' · ');
-    setGpuHint({ webgpu: true, vendor: i?.vendor ?? '', architecture: i?.architecture ?? '', description: `${i?.description ?? ''} ${i?.device ?? ''}`.trim(), maxTexture2D: ad?.limits?.maxTextureDimension2D ?? lim?.maxTextureDimension2D ?? 0, maxBufferSize: ad?.limits?.maxBufferSize ?? lim?.maxBufferSize ?? 0 }); // khả năng của adapter (device chỉ có giới hạn mặc định đã xin)
+    setGpuHint({
+      webgpu: true,
+      vendor: i?.vendor ?? '',
+      architecture: i?.architecture ?? '',
+      description: `${i?.description ?? ''} ${i?.device ?? ''}`.trim(),
+      maxTexture2D: ad?.limits?.maxTextureDimension2D ?? lim?.maxTextureDimension2D ?? 0,
+      maxBufferSize: ad?.limits?.maxBufferSize ?? lim?.maxBufferSize ?? 0,
+    }); // khả năng của adapter (device chỉ có giới hạn mặc định đã xin)
     publishQualityHint();
   } catch (e) {
     eng.gpuInfo = 'WebGPU (không đọc được adapter: ' + String(e) + ')';

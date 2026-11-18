@@ -66,7 +66,10 @@ describe('sect.glb (kiến trúc, không xương)', () => {
     expect(e.bytes).toBeLessThan(e.rawBytes / 2);
     expect(e.lods).toHaveLength(1); // kiến trúc không sinh LOD
     const doc = await readOut(t.out, 'arch_sect');
-    const used = doc.getRoot().listExtensionsUsed().map((x) => x.extensionName);
+    const used = doc
+      .getRoot()
+      .listExtensionsUsed()
+      .map((x) => x.extensionName);
     expect(used).toContain('EXT_meshopt_compression');
     expect(used).toContain('KHR_mesh_quantization');
     expect(Math.abs(e.dims.build!.height - e.dims.raw!.height) / e.dims.raw!.height).toBeLessThan(0.005);
@@ -114,7 +117,9 @@ describe.skipIf(!blender)('nhân vật có xương sinh bằng Blender headless'
   const t = tmp('rig');
   const id = 'chr_fixture_rig';
   beforeAll(() => {
-    const status = runBlender(blender!, path.join(ROOT, 'tools/blender/build_fixture_rig.py'), [path.join(t.raw, `${id}.glb`)], { quiet: true });
+    const status = runBlender(blender!, path.join(ROOT, 'tools/blender/build_fixture_rig.py'), [path.join(t.raw, `${id}.glb`)], {
+      quiet: true,
+    });
     expect(status).toBe(0);
   }, 120_000);
   afterAll(() => fs.rmSync(t.dir, { recursive: true, force: true }));
@@ -130,14 +135,20 @@ describe.skipIf(!blender)('nhân vật có xương sinh bằng Blender headless'
     expect(e.animations).toContain('breathe');
 
     const doc = await readOut(t.out, id);
-    const used = doc.getRoot().listExtensionsUsed().map((x) => x.extensionName);
+    const used = doc
+      .getRoot()
+      .listExtensionsUsed()
+      .map((x) => x.extensionName);
     expect(used).toContain('EXT_meshopt_compression');
     expect(used).not.toContain('KHR_mesh_quantization');
     expect(lodCount(doc)).toBe(3);
     const [t1, t2] = lodTargets(e.triangles, loadBudgets().classes.player);
     expect(countTriangles(doc, 1)).toBeLessThanOrEqual(t1 * 1.1);
     expect(countTriangles(doc, 2)).toBeLessThanOrEqual(t2 * 1.1);
-    for (const node of doc.getRoot().listNodes().filter((n) => n.getMesh())) {
+    for (const node of doc
+      .getRoot()
+      .listNodes()
+      .filter((n) => n.getMesh())) {
       expect(node.getSkin(), `${node.getName()} LOD${lodLevel(node)}`).not.toBeNull();
       for (const p of node.getMesh()!.listPrimitives()) {
         expect(p.getAttribute('JOINTS_0')).not.toBeNull();
@@ -213,13 +224,30 @@ describe('KTX2 (toktx giả)', () => {
     process.env.FAKE_TOKTX_LOG = log;
     const doc = new Document();
     const buffer = doc.createBuffer();
-    const pos = doc.createAccessor().setType('VEC3').setArray(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])).setBuffer(buffer);
-    const uv = doc.createAccessor().setType('VEC2').setArray(new Float32Array([0, 0, 1, 0, 0, 1])).setBuffer(buffer);
-    const nrm = doc.createAccessor().setType('VEC3').setArray(new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1])).setBuffer(buffer);
+    const pos = doc
+      .createAccessor()
+      .setType('VEC3')
+      .setArray(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]))
+      .setBuffer(buffer);
+    const uv = doc
+      .createAccessor()
+      .setType('VEC2')
+      .setArray(new Float32Array([0, 0, 1, 0, 0, 1]))
+      .setBuffer(buffer);
+    const nrm = doc
+      .createAccessor()
+      .setType('VEC3')
+      .setArray(new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]))
+      .setBuffer(buffer);
     const color = doc.createTexture('albedo').setMimeType('image/png').setImage(png(2048, 1024));
     const normal = doc.createTexture('normal').setMimeType('image/png').setImage(png(256, 256));
     const mat = doc.createMaterial('fx_mat').setBaseColorTexture(color).setNormalTexture(normal);
-    const prim = doc.createPrimitive().setAttribute('POSITION', pos).setAttribute('TEXCOORD_0', uv).setAttribute('NORMAL', nrm).setMaterial(mat);
+    const prim = doc
+      .createPrimitive()
+      .setAttribute('POSITION', pos)
+      .setAttribute('TEXCOORD_0', uv)
+      .setAttribute('NORMAL', nrm)
+      .setMaterial(mat);
     const node = doc.createNode('fx_test_ktx').setMesh(doc.createMesh('fx_test_ktx').addPrimitive(prim));
     doc.createScene('scene').addChild(node);
     await (await createIO()).write(path.join(t.raw, 'fx_test_ktx.glb'), doc);
@@ -236,7 +264,11 @@ describe('KTX2 (toktx giả)', () => {
     expect(r.failed).toEqual([]);
     const e = r.manifest.assets.fx_test_ktx;
     expect(e.ktx2).toBe(true);
-    const calls = fs.readFileSync(log, 'utf8').trim().split('\n').map((l) => JSON.parse(l) as string[]);
+    const calls = fs
+      .readFileSync(log, 'utf8')
+      .trim()
+      .split('\n')
+      .map((l) => JSON.parse(l) as string[]);
     const albedo = calls.find((a) => a.includes('etc1s'))!;
     const normal = calls.find((a) => a.includes('uastc'))!;
     expect(albedo).toEqual(expect.arrayContaining(['--assign_oetf', 'srgb', '--resize', '512x256', '--genmipmap']));
@@ -246,7 +278,12 @@ describe('KTX2 (toktx giả)', () => {
     expect(sizes.albedo).toEqual(['image/ktx2', 512, 256]);
     expect(sizes.normal).toEqual(['image/ktx2', 256, 256]);
     const doc = await readOut(t.out, 'fx_test_ktx');
-    expect(doc.getRoot().listExtensionsRequired().map((x) => x.extensionName)).toContain('KHR_texture_basisu');
+    expect(
+      doc
+        .getRoot()
+        .listExtensionsRequired()
+        .map((x) => x.extensionName),
+    ).toContain('KHR_texture_basisu');
 
     const v = await validate({ rawDir: t.raw, outDir: t.out, sourceDir: t.source, licensesFile: t.licenses(['fx_test_ktx']) });
     expect(v.errors).toEqual([]);

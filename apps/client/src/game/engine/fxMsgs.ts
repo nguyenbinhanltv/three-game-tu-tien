@@ -1,6 +1,27 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
-import { type DmgMsg, type FxMsg, type HazardMsg, MF_SENSED, MF_REAL, MF_BURROW, MF_CHANT, MF_REFLECT, MF_WEAK, MS_ATTACK, PF_CASTING, PF_DEAD, PF_FLYING, PF_SHIELD, PF_TRIBULATION, type SysMsg, BONDED_ARTIFACT_ID, PF_SOUL, inSkyBand, SOUL_SCOUT } from '@dtl/shared';
+import {
+  type DmgMsg,
+  type FxMsg,
+  type HazardMsg,
+  MF_SENSED,
+  MF_REAL,
+  MF_BURROW,
+  MF_CHANT,
+  MF_REFLECT,
+  MF_WEAK,
+  MS_ATTACK,
+  PF_CASTING,
+  PF_DEAD,
+  PF_FLYING,
+  PF_SHIELD,
+  PF_TRIBULATION,
+  type SysMsg,
+  BONDED_ARTIFACT_ID,
+  PF_SOUL,
+  inSkyBand,
+  SOUL_SCOUT,
+} from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import { MON_AURA_REAL, MON_AURA_REFLECT, MON_AURA_SENSED, MON_AURA_WEAK, MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
@@ -148,8 +169,16 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if (from) pSrc.model.dashFrom?.(from.x, from.z, m.d ?? 0.3);
     }
     const dstV = dst ? (e.monsters.get(dst) ?? e.players.get(dst)) : undefined;
-    const gap = pSrc && dstV ? Math.hypot(dstV.x - pSrc.x, dstV.z - pSrc.z) - ('model' in dstV && 'def' in dstV.model ? ((dstV.model as { def?: { scale?: number } }).def?.scale ?? 1) : 0.5) : undefined;
-    const hold = eng.skillPoses.onFx(m.t, pSrc?.model, src === eng.sid, performance.now(), { n: m.n, gap, method: eng.methodOfPlayer(src) });
+    const gap =
+      pSrc && dstV
+        ? Math.hypot(dstV.x - pSrc.x, dstV.z - pSrc.z) -
+          ('model' in dstV && 'def' in dstV.model ? ((dstV.model as { def?: { scale?: number } }).def?.scale ?? 1) : 0.5)
+        : undefined;
+    const hold = eng.skillPoses.onFx(m.t, pSrc?.model, src === eng.sid, performance.now(), {
+      n: m.n,
+      gap,
+      method: eng.methodOfPlayer(src),
+    });
     if (hold > 0) {
       setTimeout(() => eng.onFx(m, true), hold * 1000);
       return;
@@ -187,7 +216,24 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     if (m.t === 'ascend' && src === eng.sid) {
       set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
       eng.post?.flash(0.3);
-      window.setTimeout(() => !eng.disposed && chapter(eng, m.tb === 'anh_bien' ? 'ascend_ab' : m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+      window.setTimeout(
+        () =>
+          !eng.disposed &&
+          chapter(
+            eng,
+            m.tb === 'anh_bien'
+              ? 'ascend_ab'
+              : m.tb === 'hoa_than'
+                ? 'ascend_hn'
+                : m.tb === 'nguyen_anh'
+                  ? 'ascend_na'
+                  : m.tb === 'ket_dan'
+                    ? 'ascend_kd'
+                    : 'ascend',
+            false,
+          ),
+        1100,
+      );
     }
     return;
   }
@@ -200,8 +246,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if (m.t === 'sword') {
         // Phi kiếm: tới nơi để lại một dấu chém chéo nhỏ (không lớp mực, đòn thường đánh liên tục).
         v.swordShot(_v, posDst, tint(0xbfeaff), 1, 0.2, (at) => v.slashMark(posDst, 0xcff3ff, 0.55, -0.55, 0.2, false, at.clone()));
-      }
-      else if (m.t === 'slash') v.slash(_v, posDst, tint(0x8fdcff));
+      } else if (m.t === 'slash') v.slash(_v, posDst, tint(0x8fdcff));
       else if (e.chestOf(dst, _v2)) {
         v.swordShot(_v, posDst, tint(0xfff3b0), 1.8, 0.16);
         // Lôi Đình Nhất Kiếm: nhát chém dọc lớn (biến thể đứng của kiếm khí) cùng lúc sét đánh.
@@ -237,7 +282,14 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
           for (const [sid, pv] of e.players) {
             if (from && (pv.x - from.x) ** 2 + (pv.z - from.z) ** 2 > rr) continue;
             if (sid !== src && !((pv.s.fl ?? 0) & PF_SHIELD)) continue;
-            v.shield((out) => e.chestOf(sid, out), m.d ?? 4, () => (((eng.view.players.get(sid)?.fl ?? 0) & PF_SHIELD) !== 0), col, 1, 0.09);
+            v.shield(
+              (out) => e.chestOf(sid, out),
+              m.d ?? 4,
+              () => ((eng.view.players.get(sid)?.fl ?? 0) & PF_SHIELD) !== 0,
+              col,
+              1,
+              0.09,
+            );
           }
         }, 120);
       }
@@ -263,12 +315,36 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     case 'ascend':
       // Người khác thấy trụ sáng như cũ; của mình thì quầng + tia nắng mảnh để không phủ trắng khung hình.
       if (src === eng.sid) v.ascendGlow(posSrc, 2.6, m.tb === 'ket_dan', m.tb === 'nguyen_anh', m.tb === 'hoa_than');
-      else v.pillar(posSrc, m.tb === 'hoa_than' ? 0xffeeb8 : m.tb === 'nguyen_anh' ? 0xd2c4ff : m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8, 3.2, 2.4, 40);
+      else
+        v.pillar(
+          posSrc,
+          m.tb === 'hoa_than' ? 0xffeeb8 : m.tb === 'nguyen_anh' ? 0xd2c4ff : m.tb === 'ket_dan' ? 0xffd79a : 0xfff2b8,
+          3.2,
+          2.4,
+          40,
+        );
       if (src === eng.sid) {
         set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
         eng.post?.flash(0.3);
         // Thẻ chương đột phá sau khi mây kiếp tan và trụ sáng bốc lên; sting đột phá đã phát nên không thêm chiêng.
-        window.setTimeout(() => !eng.disposed && chapter(eng, m.tb === 'anh_bien' ? 'ascend_ab' : m.tb === 'hoa_than' ? 'ascend_hn' : m.tb === 'nguyen_anh' ? 'ascend_na' : m.tb === 'ket_dan' ? 'ascend_kd' : 'ascend', false), 1100);
+        window.setTimeout(
+          () =>
+            !eng.disposed &&
+            chapter(
+              eng,
+              m.tb === 'anh_bien'
+                ? 'ascend_ab'
+                : m.tb === 'hoa_than'
+                  ? 'ascend_hn'
+                  : m.tb === 'nguyen_anh'
+                    ? 'ascend_na'
+                    : m.tb === 'ket_dan'
+                      ? 'ascend_kd'
+                      : 'ascend',
+              false,
+            ),
+          1100,
+        );
       }
       if (e.chestOf(src, _v)) v.burst(_v, 0xfff2b8, 6, 1.2);
       break;
@@ -348,7 +424,10 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
         break;
       }
       if (!h && m.r) {
-        eng.danVfx.set(src, v.danTran(m.x ?? 0, m.z ?? 0, m.r, (m.d ?? 28) + 1, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0));
+        eng.danVfx.set(
+          src,
+          v.danTran(m.x ?? 0, m.z ?? 0, m.r, (m.d ?? 28) + 1, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0),
+        );
         if (src === eng.sid) danCine(eng, m.x ?? 0, m.z ?? 0);
       }
       eng.danVfx.get(src)?.set(m.pg ?? 0);
@@ -384,7 +463,10 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       // Nguyên anh rời thân: bóng xanh nhạt lơ lửng trên thân trong `d` giây.
       eng.soulVfx.get(src)?.stop();
       const until = Date.now() + (m.d ?? 6) * 1000;
-      eng.soulVfx.set(src, v.soulOut(posSrc, m.d ?? 6, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0));
+      eng.soulVfx.set(
+        src,
+        v.soulOut(posSrc, m.d ?? 6, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0),
+      );
       if (src === eng.sid) set({ soulUntil: until });
       break;
     }
@@ -415,7 +497,8 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     case 'steles': {
       // Năm Trấn Giới Bia của Nhật Thực Kiếp: mỗi tin mang mặt nạ bia sáng; HUD đếm, hình do vfx.steleRing.
       if (src !== eng.sid) break;
-      if (!eng.stelesVfx) eng.stelesVfx = v.steleRing(m.x ?? 0, m.z ?? 0, m.r ?? 16, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0);
+      if (!eng.stelesVfx)
+        eng.stelesVfx = v.steleRing(m.x ?? 0, m.z ?? 0, m.r ?? 16, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0);
       eng.stelesVfx.set(m.n ?? 0);
       // Bia vừa sáng: sét trắng vàng đánh xuống bia, một chớp nở ra (đúng vị trí ngũ giác của server).
       for (let i = 0; i < 5; i++) {
@@ -461,7 +544,10 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       eng.cloneVfx.get(src)?.stop();
       const cx = m.x ?? 0;
       const cz = m.z ?? 0;
-      eng.cloneVfx.set(src, v.thanNiem(cx, cz, groundAt(cx, cz), m.d ?? 20, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0));
+      eng.cloneVfx.set(
+        src,
+        v.thanNiem(cx, cz, groundAt(cx, cz), m.d ?? 20, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0),
+      );
       if (src === eng.sid) set({ cloneUntil: Date.now() + (m.d ?? 20) * 1000 });
       break;
     }
@@ -481,7 +567,18 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       // Đĩa gương (E3-M): tia xoay theo đúng công thức server (góc đầu = sd/1000, báo pg/100 giây); d = 0 là tắt.
       const ver = ++eng.mirrorDiscVer;
       if ((m.d ?? 0) <= 0) break;
-      v.mirrorDisc(m.x ?? 0, m.z ?? 0, m.r ?? 24, 3, m.n ?? 3, (m.sd ?? 0) / 1000, 25, (m.pg ?? 150) / 100, m.d ?? 8, () => eng.mirrorDiscVer === ver);
+      v.mirrorDisc(
+        m.x ?? 0,
+        m.z ?? 0,
+        m.r ?? 24,
+        3,
+        m.n ?? 3,
+        (m.sd ?? 0) / 1000,
+        25,
+        (m.pg ?? 150) / 100,
+        m.d ?? 8,
+        () => eng.mirrorDiscVer === ver,
+      );
       break;
     }
     case 'mirror_pillar': {
@@ -489,7 +586,14 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       const n = m.n ?? 0;
       const ver = (eng.mirrorPillarVer[n] = (eng.mirrorPillarVer[n] ?? 0) + 1);
       if ((m.d ?? 0) <= 0) break;
-      v.mirrorPillar(m.x ?? 0, m.z ?? 0, [0x5aa8ff, 0xe0584a, 0xe8c15a, 0xb078e8][n] ?? 0xffffff, m.d ?? 20, m.pg === 1, () => eng.mirrorPillarVer[n] === ver);
+      v.mirrorPillar(
+        m.x ?? 0,
+        m.z ?? 0,
+        [0x5aa8ff, 0xe0584a, 0xe8c15a, 0xb078e8][n] ?? 0xffffff,
+        m.d ?? 20,
+        m.pg === 1,
+        () => eng.mirrorPillarVer[n] === ver,
+      );
       break;
     }
     case 'kd_stele': {
@@ -506,7 +610,13 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if ((m.d ?? 0) <= 0) break;
       const cx = m.x ?? 0;
       const cz = m.z ?? 0;
-      v.castSigil((out) => (out.set(cx, groundAt(cx, cz), cz), true), m.d ?? 18, 0xc8d8ff, m.r ?? 14, () => eng.mirrorVeilVer === ver);
+      v.castSigil(
+        (out) => (out.set(cx, groundAt(cx, cz), cz), true),
+        m.d ?? 18,
+        0xc8d8ff,
+        m.r ?? 14,
+        () => eng.mirrorVeilVer === ver,
+      );
       _v.set(cx, groundAt(cx, cz) + 1.5, cz);
       v.burst(_v, 0xdde8ff, 4, 0.6);
       if (eng.sid && src) eng.shake.kick(0.35);
@@ -561,7 +671,12 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       eng.cloneVfx.get(src)?.stop();
       eng.cloneVfx.delete(src);
       if (src === eng.sid) set({ danPg: -1, tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
-      v.tribulationCloud((out) => e.chestOf(src, out), m.d ?? 40, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0, m.sd);
+      v.tribulationCloud(
+        (out) => e.chestOf(src, out),
+        m.d ?? 40,
+        () => ((eng.view.players.get(src)?.fl ?? 0) & PF_TRIBULATION) !== 0,
+        m.sd,
+      );
       if (src === eng.sid) {
         eng.tribUntil = Date.now() + (m.d ?? 40) * 1000;
         eng.tribId = m.tb ?? 'truc_co';
@@ -678,7 +793,11 @@ export function dirOf(eng: Game, src: string | undefined, dst: string): { x: num
   return a && b ? { x: b.x - a.x, z: b.z - a.z } : null;
 }
 
-export function applyDmg(eng: Game, m: DmgMsg, ev: { skill: string; index: number; combo: number; kb: boolean; at: number } | undefined): void {
+export function applyDmg(
+  eng: Game,
+  m: DmgMsg,
+  ev: { skill: string; index: number; combo: number; kb: boolean; at: number } | undefined,
+): void {
   if (eng.disposed) return;
   if (!eng.ents || !eng.ents.topOf(m.dst, _v)) return;
   const mine = m.dst === eng.sid;
@@ -703,7 +822,15 @@ export function applyDmg(eng: Game, m: DmgMsg, ev: { skill: string; index: numbe
   }
   // Ngữ cảnh đòn (K-7): đòn thứ ba của chuỗi, sức mạnh/tối thượng của chiêu lấy từ khung `hit` của hoạt ảnh.
   const skill = ev ? SKILL_INFO.get(ev.skill) : undefined;
-  const hc: HitCtx = { crit: !!m.crit, heavy: !!m.hv, combo3: !!ev && (ev.kb || ev.combo === 2), power: skill?.power ?? 0, ult: !!skill?.ult, victimIsMe: mine, byMe };
+  const hc: HitCtx = {
+    crit: !!m.crit,
+    heavy: !!m.hv,
+    combo3: !!ev && (ev.kb || ev.combo === 2),
+    power: skill?.power ?? 0,
+    ult: !!skill?.ult,
+    victimIsMe: mine,
+    byMe,
+  };
   // Hit feel chỉ là lớp hình. Rung camera theo bảng (lấy max, có hướng nguồn → đích); công tắc "Rung màn hình" do `CameraShake` tôn trọng.
   const stops = hitStopOf(hc);
   if (!m.heal && m.n > 0) {
@@ -714,7 +841,8 @@ export function applyDmg(eng: Game, m: DmgMsg, ev: { skill: string; index: numbe
   if (mine && !m.heal && m.n > 0) skipCine(eng, eng.cineKind === 'sect' || !!m.hv);
   if (mine && !m.heal && m.n > 0) eng.post?.hit(m.n / Math.max(1, eng.me()?.mhp ?? 1), !!m.crit || !!m.hv);
   if (m.hv && !m.heal && m.n > 0) heavyInk(eng, m.dst, m.src);
-  if (!m.heal && m.n > 0 && !(QUIET && m.dst === eng.sid)) eng.ents.hitReact(m.dst, m.src, !!m.crit, m.src && eng.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops);
+  if (!m.heal && m.n > 0 && !(QUIET && m.dst === eng.sid))
+    eng.ents.hitReact(m.dst, m.src, !!m.crit, m.src && eng.view.players.has(m.src) ? 0.2 : 0, !!m.hv, stops);
   // Boss đánh nặng (≥ KNOCKDOWN_FRAC máu tối đa) thì người bị đánh ngã rồi đứng dậy; chỉ hình, người chơi vẫn đi lại được và kéo dậy sớm khi di chuyển.
   if (!m.heal && m.hv && m.n > 0 && m.src) {
     const victim = eng.ents.players.get(m.dst);
@@ -735,7 +863,12 @@ export function applyDmg(eng: Game, m: DmgMsg, ev: { skill: string; index: numbe
     if (m.n > 0 && !mine) {
       // Lớp chồng theo công pháp người ra đòn và chất liệu mục tiêu (tổng ≤ +3 dB).
       const mon = eng.ents.monsters.get(m.dst);
-      for (const l of layersOf({ method: m.src ? eng.methodOfPlayer(m.src) : undefined, material: materialOf(mon?.model.def), crit: hc.crit || hc.heavy, strong: hc.combo3 || hc.power >= 2 || hc.ult })) {
+      for (const l of layersOf({
+        method: m.src ? eng.methodOfPlayer(m.src) : undefined,
+        material: materialOf(mon?.model.def),
+        crit: hc.crit || hc.heavy,
+        strong: hc.combo3 || hc.power >= 2 || hc.ult,
+      })) {
         sfx(l.sfx, vol * l.gain, _v, false, { rate: rate * l.rate });
         layers.push(l.sfx);
       }
@@ -744,7 +877,17 @@ export function applyDmg(eng: Game, m: DmgMsg, ev: { skill: string; index: numbe
     }
     if (import.meta.env.DEV && ev) {
       const soundAt = performance.now();
-      eng.hitSoundLog.push({ skill: ev.skill, index: ev.index, eventAt: ev.at, soundAt, lagMs: soundAt - ev.at, synced: eng.flushing, sfx: name, rate, layers });
+      eng.hitSoundLog.push({
+        skill: ev.skill,
+        index: ev.index,
+        eventAt: ev.at,
+        soundAt,
+        lagMs: soundAt - ev.at,
+        synced: eng.flushing,
+        sfx: name,
+        rate,
+        layers,
+      });
       if (eng.hitSoundLog.length > 200) eng.hitSoundLog.shift();
     }
   }
@@ -784,11 +927,27 @@ export function monFlagFx(eng: Game, m: MonVis, e: MonFlagEdge): void {
     return true;
   };
   const left = Math.max(0.3, ((eng.view.monsters.get(id)?.ce ?? 0) - (Date.now() + eng.timeOffset)) / 1000);
-  if (e.on & MF_REFLECT) v.castSigil(pos, left, MON_AURA_REFLECT.color, MON_AURA_REFLECT.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_REFLECT) !== 0);
-  if (e.on & MF_WEAK) v.castSigil(pos, left, MON_AURA_WEAK.color, MON_AURA_WEAK.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_WEAK) !== 0);
+  if (e.on & MF_REFLECT)
+    v.castSigil(
+      pos,
+      left,
+      MON_AURA_REFLECT.color,
+      MON_AURA_REFLECT.radius,
+      () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_REFLECT) !== 0,
+    );
+  if (e.on & MF_WEAK)
+    v.castSigil(pos, left, MON_AURA_WEAK.color, MON_AURA_WEAK.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_WEAK) !== 0);
   // Thể thật của Kính Nguyệt Chân Quân (E3-M): vết ngọc lam suốt trận; thần thức soi ra thì vòng vàng tới `ce`.
-  if (e.on & MF_REAL) v.castSigil(pos, 3600, MON_AURA_REAL.color, MON_AURA_REAL.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_REAL) !== 0 && (eng.view.monsters.get(id)?.hp ?? 0) > 0);
-  if (e.on & MF_SENSED) v.castSigil(pos, left, MON_AURA_SENSED.color, MON_AURA_SENSED.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_SENSED) !== 0);
+  if (e.on & MF_REAL)
+    v.castSigil(
+      pos,
+      3600,
+      MON_AURA_REAL.color,
+      MON_AURA_REAL.radius,
+      () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_REAL) !== 0 && (eng.view.monsters.get(id)?.hp ?? 0) > 0,
+    );
+  if (e.on & MF_SENSED)
+    v.castSigil(pos, left, MON_AURA_SENSED.color, MON_AURA_SENSED.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_SENSED) !== 0);
   if (e.on & MF_CHANT) eng.monFx?.cast(m);
   if ((e.on | e.off) & MF_BURROW) {
     _v2.set(m.x, m.y + 0.4, m.z);
@@ -876,7 +1035,12 @@ export function resetSound(eng: Game, world: boolean): void {
   };
   eng.steps = new FootstepDriver(world ? 'van_lam' : 'kiem_trung', (name, vol, at) => sfx(name, vol, at, false), log);
   eng.scape = world ? new Soundscape(buildSources(SECT_LANTERNS), audioSpatialApi(), log) : null;
-  if (import.meta.env.DEV) (window as unknown as { __sound?: unknown }).__sound = { hits: () => eng.hitSoundLog, steps: () => eng.steps?.stats, scape: () => ({ active: eng.scape?.state(), ...eng.scape?.stats }) };
+  if (import.meta.env.DEV)
+    (window as unknown as { __sound?: unknown }).__sound = {
+      hits: () => eng.hitSoundLog,
+      steps: () => eng.steps?.stats,
+      scape: () => ({ active: eng.scape?.state(), ...eng.scape?.stats }),
+    };
 }
 
 export function onSys(eng: Game, m: SysMsg): void {

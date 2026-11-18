@@ -23,20 +23,31 @@ const STILLS: [string, number, number, number][] = [
 export default {
   name: 'chrv2',
   desc: 'Nhân vật nền v1/v2 (và tóc B) cùng góc: cận mặt, bán thân, toàn thân, chuyển động; so trước/sau khi dựng lại thân, đầu, áo v2',
-  usage: '[--variant old|v2|v2b|both] [--genders m,f] [--sets none,set_liet_mach,set_kinh_quang] [--only still] [--at "2048 2088"] [--size 1100x900]',
+  usage:
+    '[--variant old|v2|v2b|both] [--genders m,f] [--sets none,set_liet_mach,set_kinh_quang] [--only still] [--at "2048 2088"] [--size 1100x900]',
   async run(r) {
     const [vw, vh] = size('1100x900');
     const home = opt('--at', '2048 2088');
     const stats: Record<string, unknown> = {};
     for (const variant of opt('--variant', 'both') === 'both' ? ['old', 'v2'] : list('--variant', 'old')) {
       for (const g of list('--genders', 'm,f')) {
-        const { ctx, page } = await r.open({ name: `Cv${variant.slice(1)}${g}`, viewport: [vw, vh], dpr: 2, quality: 'high', look: { g }, query: QUERY[variant], hide: 'hud', warnings: /models/ });
+        const { ctx, page } = await r.open({
+          name: `Cv${variant.slice(1)}${g}`,
+          viewport: [vw, vh],
+          dpr: 2,
+          quality: 'high',
+          look: { g },
+          query: QUERY[variant],
+          hide: 'hud',
+          warnings: /models/,
+        });
         await gm(page, 'level 12', 1600);
         await gm(page, 'god on', 1600);
         await gm(page, `tp ${home}`, 1600);
         for (const set of list('--sets', 'none,set_liet_mach,set_kinh_quang')) {
           // Cắt cùng một ô cho mọi biến thể (nhân vật luôn ở giữa màn hình).
-          const shot = (view: string) => snap(page, path.join(r.out, variant), `${set}-${g}-${view}.jpg`, { clip: centerClip(vw, vh, 600, 660) });
+          const shot = (view: string) =>
+            snap(page, path.join(r.out, variant), `${set}-${g}-${view}.jpg`, { clip: centerClip(vw, vh, 600, 660) });
           await gm(page, 'set off', 1700);
           if (set !== 'none') await gm(page, `set ${set}`, 2400);
           await cam(page, { yaw: 0, pitch: 0.12, dist: 3.4 });

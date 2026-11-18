@@ -1,5 +1,16 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { CLONE_CD_MS, CLONE_LIFE_MS, CLONE_MP, DOMAIN_EFFECT, S, domainRadius, domainScale, groundAt, type CloneStateMsg, type FxMsg } from '@dtl/shared';
+import {
+  CLONE_CD_MS,
+  CLONE_LIFE_MS,
+  CLONE_MP,
+  DOMAIN_EFFECT,
+  S,
+  domainRadius,
+  domainScale,
+  groundAt,
+  type CloneStateMsg,
+  type FxMsg,
+} from '@dtl/shared';
 
 // E4-K: phân thân thần niệm (thực thể phụ có chủ do server giữ), lĩnh vực, ô chiêu 10. Server quyết định hết.
 process.env.DB_FILE = ':memory:';
@@ -39,7 +50,13 @@ function world() {
   vi.setSystemTime(3_000_000);
   const sent: Sent[] = [];
   const host = { broadcast: (type: string, msg: unknown) => sent.push({ type, msg }) };
-  const sim: Sim = new GameSim(new WorldState(), host as never, { levelId: 'van_lam', roomName: 'test', spawn: { x: X, z: Z }, respawn: { x: X + 300, z: Z }, persistPosition: false });
+  const sim: Sim = new GameSim(new WorldState(), host as never, {
+    levelId: 'van_lam',
+    roomName: 'test',
+    spawn: { x: X, z: Z },
+    respawn: { x: X + 300, z: Z },
+    persistPosition: false,
+  });
   sim.monsters.splice(0);
   const advance = (ms: number) => {
     for (let t = 0; t < ms; t += 50) {
@@ -436,7 +453,9 @@ describe('tải: 50 người cùng gọi phân thân', () => {
     w.advance(10_000);
     const s = [...w.sim.tickSamples].sort((a, b) => a - b);
     const avg = s.reduce((a, b) => a + b, 0) / Math.max(1, s.length);
-    console.log(`[e4k] 50 phân thân: ${s.length} tick, trung bình ${avg.toFixed(2)} ms, p95 ${s[Math.floor(s.length * 0.95)]?.toFixed(2)} ms, lớn nhất ${s.at(-1)?.toFixed(2)} ms`);
+    console.log(
+      `[e4k] 50 phân thân: ${s.length} tick, trung bình ${avg.toFixed(2)} ms, p95 ${s[Math.floor(s.length * 0.95)]?.toFixed(2)} ms, lớn nhất ${s.at(-1)?.toFixed(2)} ms`,
+    );
     // Dùng trung vị (không phải trung bình) để không rớt oan khi máy đang chạy song song nhiều bộ test.
     expect(s[Math.floor(s.length / 2)]).toBeLessThan(10);
   });

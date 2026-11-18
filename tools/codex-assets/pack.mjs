@@ -41,7 +41,10 @@ for (const group of Object.keys(spec)) {
   delete manifest.files[group];
   fs.mkdirSync(path.join(out, group), { recursive: true });
   const keep = new Set();
-  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.png')).sort()) {
+  for (const f of fs
+    .readdirSync(dir)
+    .filter((x) => x.endsWith('.png'))
+    .sort()) {
     const id = f.slice(0, -4);
     const s = spec[group].w ? spec[group] : spec[group][id];
     if (!s) continue;
@@ -51,12 +54,23 @@ for (const group of Object.keys(spec)) {
     const name = `${id}.${hash}.webp`;
     fs.writeFileSync(path.join(out, group, name), webp);
     keep.add(name);
-    (manifest.files[group] ??= {})[id] = { file: `${group}/${name}`, w: s.w, h: s.h, bytes: webp.length, sourceSha256: createHash('sha256').update(input).digest('hex') };
+    (manifest.files[group] ??= {})[id] = {
+      file: `${group}/${name}`,
+      w: s.w,
+      h: s.h,
+      bytes: webp.length,
+      sourceSha256: createHash('sha256').update(input).digest('hex'),
+    };
   }
   for (const old of fs.readdirSync(path.join(out, group))) if (!keep.has(old)) fs.unlinkSync(path.join(out, group, old));
 }
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-let total = 0, n = 0;
-for (const g of Object.values(manifest.files)) for (const e of Object.values(g)) { total += e.bytes; n++; }
+let total = 0,
+  n = 0;
+for (const g of Object.values(manifest.files))
+  for (const e of Object.values(g)) {
+    total += e.bytes;
+    n++;
+  }
 console.log(`${n} ảnh → ${path.relative(root, out)}: ${(total / 1024 / 1024).toFixed(2)} MB`);

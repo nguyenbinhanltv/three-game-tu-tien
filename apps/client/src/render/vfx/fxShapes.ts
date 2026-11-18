@@ -76,7 +76,11 @@ function crystalGeometry(sides: number, radius: number, front: number, back: num
   // Có chỉ mục tuần tự: lưới không chỉ mục trong InstancedMesh (WebGPU) giữ số instance của lần vẽ đầu, nên gộp draw call
   // mà số gai tăng dần theo thời gian thì chỉ thấy lần đầu (lưới có chỉ mục thì `count` đổi mỗi khung đúng).
   // Đỉnh không dùng chung giữa các mặt nên pháp tuyến phẳng giữ nguyên.
-  return build(pos, uvs, Array.from({ length: pos.length / 3 }, (_, i) => i));
+  return build(
+    pos,
+    uvs,
+    Array.from({ length: pos.length / 3 }, (_, i) => i),
+  );
 }
 
 /** Vòng/đĩa nằm ngang (XZ): `u` quanh vòng, `v` từ trong (0) ra ngoài (1); lỗ giữa `inner`. */
@@ -120,7 +124,7 @@ function helixGeometry(turns = 2.2, radius = 0.22, w = 0.09, segs = 72): THREE.B
   for (let i = 0; i <= segs; i++) {
     const u = i / segs;
     const a = u * turns * Math.PI * 2;
-    const r = radius * Math.sin(Math.PI * Math.min(1, u * 1.15)) ;
+    const r = radius * Math.sin(Math.PI * Math.min(1, u * 1.15));
     const cx = Math.cos(a) * r;
     const cy = Math.sin(a) * r;
     const nx = Math.cos(a);
@@ -166,11 +170,12 @@ function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides
   };
   let rings = 0;
   const joinRings = (from: number, count: number) => {
-    for (let i = 0; i < count - 1; i++) for (let j = 0; j < sides; j++) {
-      const a = (from + i) * (sides + 1) + j;
-      const b = a + sides + 1;
-      idx.push(a, b, a + 1, a + 1, b, b + 1);
-    }
+    for (let i = 0; i < count - 1; i++)
+      for (let j = 0; j < sides; j++) {
+        const a = (from + i) * (sides + 1) + j;
+        const b = a + sides + 1;
+        idx.push(a, b, a + 1, a + 1, b, b + 1);
+      }
   };
   for (let i = 0; i <= segs; i++) {
     const v = i / segs;
@@ -183,7 +188,13 @@ function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides
   const nEnd = frames.normals[segs];
   const bEnd = frames.binormals[segs];
   const cEnd = curve.getPointAt(1);
-  const headRings: [number, number, number][] = [[0.5, 1.35, 0.9], [1.1, 1.25, 0.75], [1.8, 0.8, 0.5], [2.5, 0.55, 0.42], [2.9, 0.3, 0.35]];
+  const headRings: [number, number, number][] = [
+    [0.5, 1.35, 0.9],
+    [1.1, 1.25, 0.75],
+    [1.8, 0.8, 0.5],
+    [2.5, 0.55, 0.42],
+    [2.9, 0.3, 0.35],
+  ];
   const rEnd = radius(1);
   for (const [d, k, flat] of headRings) {
     ring(cEnd.clone().addScaledVector(tEnd, d), nEnd, bEnd, rEnd * k, flat, 1);
@@ -204,23 +215,54 @@ function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides
     const out = dir(frames.normals[i], frames.binormals[i], 0);
     const rr = radius(v);
     const along = curve.getTangentAt(v).normalize();
-    tri(c.clone().addScaledVector(out, rr * 0.9).addScaledVector(along, -rr * 0.5), c.clone().addScaledVector(out, rr * 0.9).addScaledVector(along, rr * 0.5), c.clone().addScaledVector(out, rr * 2.1).addScaledVector(along, -rr * 0.9), [0.5, v], [0.5, v], [0.95, v]);
+    tri(
+      c
+        .clone()
+        .addScaledVector(out, rr * 0.9)
+        .addScaledVector(along, -rr * 0.5),
+      c
+        .clone()
+        .addScaledVector(out, rr * 0.9)
+        .addScaledVector(along, rr * 0.5),
+      c
+        .clone()
+        .addScaledVector(out, rr * 2.1)
+        .addScaledVector(along, -rr * 0.9),
+      [0.5, v],
+      [0.5, v],
+      [0.95, v],
+    );
   }
   // Sừng: hai nón cong ra sau và lên, gân vàng.
   for (const side of [1, -1]) {
-    const root = cEnd.clone().addScaledVector(tEnd, 0.7).addScaledVector(nEnd, rEnd * 1.0).addScaledVector(bEnd, side * rEnd * 0.75);
-    const tip = root.clone().addScaledVector(tEnd, -3.2).addScaledVector(nEnd, 2.4).addScaledVector(bEnd, side * 1.0);
+    const root = cEnd
+      .clone()
+      .addScaledVector(tEnd, 0.7)
+      .addScaledVector(nEnd, rEnd * 1.0)
+      .addScaledVector(bEnd, side * rEnd * 0.75);
+    const tip = root
+      .clone()
+      .addScaledVector(tEnd, -3.2)
+      .addScaledVector(nEnd, 2.4)
+      .addScaledVector(bEnd, side * 1.0);
     const w = rEnd * 0.42;
     tri(root.clone().addScaledVector(bEnd, -w), root.clone().addScaledVector(bEnd, w), tip, [0.95, 1], [0.95, 1], [0.95, 1]);
     tri(root.clone().addScaledVector(nEnd, -w), root.clone().addScaledVector(nEnd, w), tip, [0.95, 1], [0.95, 1], [0.95, 1]);
   }
   // Râu: hai dải mảnh cong dài từ mõm ra hai bên rồi rủ về sau.
   for (const side of [1, -1]) {
-    const start = cEnd.clone().addScaledVector(tEnd, 2.4).addScaledVector(nEnd, -rEnd * 0.1);
+    const start = cEnd
+      .clone()
+      .addScaledVector(tEnd, 2.4)
+      .addScaledVector(nEnd, -rEnd * 0.1);
     let prev: [THREE.Vector3, THREE.Vector3] | null = null;
     for (let k = 0; k <= 10; k++) {
       const f = k / 10;
-      const c = start.clone().addScaledVector(bEnd, side * (1.2 + 2.8 * Math.sin(f * 2.2))).addScaledVector(tEnd, 1.5 - 5 * f).addScaledVector(nEnd, -1.8 * f * f - 0.3 * Math.sin(f * 6));
+      const c = start
+        .clone()
+        .addScaledVector(bEnd, side * (1.2 + 2.8 * Math.sin(f * 2.2)))
+        .addScaledVector(tEnd, 1.5 - 5 * f)
+        .addScaledVector(nEnd, -1.8 * f * f - 0.3 * Math.sin(f * 6));
       const wd = 0.16 * (1 - f * 0.7);
       const pair: [THREE.Vector3, THREE.Vector3] = [c.clone().addScaledVector(nEnd, wd), c.clone().addScaledVector(nEnd, -wd)];
       if (prev) {
@@ -236,7 +278,21 @@ function dragonGeometry(turns = 1.35, height = 8.5, rad = 3.4, segs = 200, sides
 
 /** Pháp tướng tượng ngồi: tròn xoay theo hồ sơ (bán kính, độ cao) từ đài sen tới đỉnh đầu; UV `v` theo độ cao để mọc từ dưới lên. */
 function statueGeometry(): THREE.BufferGeometry {
-  const prof: [number, number][] = [[0, 0], [1.6, 0], [1.8, 0.35], [1.2, 0.8], [0.95, 1.5], [1.2, 2.1], [1.6, 2.7], [1.25, 3.05], [0.55, 3.2], [0.6, 3.4], [0.8, 3.75], [0.55, 4.1], [0, 4.25]];
+  const prof: [number, number][] = [
+    [0, 0],
+    [1.6, 0],
+    [1.8, 0.35],
+    [1.2, 0.8],
+    [0.95, 1.5],
+    [1.2, 2.1],
+    [1.6, 2.7],
+    [1.25, 3.05],
+    [0.55, 3.2],
+    [0.6, 3.4],
+    [0.8, 3.75],
+    [0.55, 4.1],
+    [0, 4.25],
+  ];
   const seg = 28;
   const pos: number[] = [];
   const uvs: number[] = [];
@@ -250,11 +306,12 @@ function statueGeometry(): THREE.BufferGeometry {
     }
     void i;
   });
-  for (let i = 0; i < prof.length - 1; i++) for (let j = 0; j < seg; j++) {
-    const a = i * (seg + 1) + j;
-    const b = a + seg + 1;
-    idx.push(a, a + 1, b, a + 1, b + 1, b);
-  }
+  for (let i = 0; i < prof.length - 1; i++)
+    for (let j = 0; j < seg; j++) {
+      const a = i * (seg + 1) + j;
+      const b = a + seg + 1;
+      idx.push(a, a + 1, b, a + 1, b + 1, b);
+    }
   return build(pos, uvs, idx);
 }
 

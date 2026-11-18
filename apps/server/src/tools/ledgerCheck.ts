@@ -30,7 +30,11 @@ for (const c of chars) {
     console.error(`[lệch tiền] ${c.name}: số dư ${c.gold}, sổ cái ${lg}`);
   }
   const have = new Map<string, number>();
-  for (const it of db.select().from(items).where(sql`${items.charId} = ${c.id}`).all()) {
+  for (const it of db
+    .select()
+    .from(items)
+    .where(sql`${items.charId} = ${c.id}`)
+    .all()) {
     have.set(it.itemId, (have.get(it.itemId) ?? 0) + it.qty);
     if (it.qty <= 0) {
       bad++;

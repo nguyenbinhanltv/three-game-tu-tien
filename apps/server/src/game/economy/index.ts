@@ -1,7 +1,34 @@
 // Kinh tế và nhiệm vụ (R-7): dùng/mặc/mua/bán/chế vật phẩm, công pháp và chiêu, trò chuyện NPC, nhận/giao nhiệm vụ, thu thập.
 // Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `EconomyCtx`; mọi đổi vật phẩm/tiền vẫn qua Character.tx (transaction + idem + sổ cái).
 import { randomInt } from 'node:crypto';
-import { pillPotency, PILL_TIERS, rollPillQuality, COMBAT_REGEN_DELAY, type DmgMsg, isWearSlot, wearableBy, type WearSlot, healAmount, methodSwitchCost, METHOD_SWITCH_COOLDOWN_SEC, METHOD_UNLOCK_LEVEL, MAX_SKILL_LEVEL, skillUpgradeCost, variantSwitchBlock, BIND_QUALITY, sellPrice, type InvItem, type FxMsg, INV_SIZE, type InvMsg, type InvSlot, S, type SkillDef, type SysMsg, tribDef } from '@dtl/shared';
+import {
+  pillPotency,
+  PILL_TIERS,
+  rollPillQuality,
+  COMBAT_REGEN_DELAY,
+  type DmgMsg,
+  isWearSlot,
+  wearableBy,
+  type WearSlot,
+  healAmount,
+  methodSwitchCost,
+  METHOD_SWITCH_COOLDOWN_SEC,
+  METHOD_UNLOCK_LEVEL,
+  MAX_SKILL_LEVEL,
+  skillUpgradeCost,
+  variantSwitchBlock,
+  BIND_QUALITY,
+  sellPrice,
+  type InvItem,
+  type FxMsg,
+  INV_SIZE,
+  type InvMsg,
+  type InvSlot,
+  S,
+  type SkillDef,
+  type SysMsg,
+  tribDef,
+} from '@dtl/shared';
 import { PILL_QUALITY, ITEM, itemName, NPC, QUEST, realmName, RECIPE, SKILL, t, METHOD, VARIANTS, skillName } from '@dtl/content';
 import { type Character, isEquipSlot, sameSlot } from '../character';
 import { passiveOf, setSkillLevel, skillLevelOf } from '../method';
@@ -21,7 +48,11 @@ const GATHER_RANGE = 5;
 
 /** Phần GameSim mà hệ kinh tế/nhiệm vụ cần. */
 export interface EconomyCtx {
-  applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void;
+  applyPillBuff(
+    p: PlayerEnt,
+    def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } },
+    potency: number,
+  ): void;
   canAssist(p: PlayerEnt, o: PlayerEnt): boolean;
   readonly duel: DuelSystem;
   emit(type: string, payload: object): void;
@@ -103,7 +134,8 @@ export class EconomySystem {
     if (def.use.seal && sealIdx < 0) return this.c.warn(p, 'sys.seal_need');
     // Độ kiếp: tối đa `pillMax` của kiếp đan hồi phục (đan độc tích tụ), để không thành cuộc thi uống thuốc.
     const healing = !!def.use.hpPct;
-    if (p.trib && healing && p.trib.pills >= tribDef(p.trib.id).pillMax) return this.c.warn(p, 'sys.trib_pill_limit', { n: tribDef(p.trib.id).pillMax });
+    if (p.trib && healing && p.trib.pills >= tribDef(p.trib.id).pillMax)
+      return this.c.warn(p, 'sys.trib_pill_limit', { n: tribDef(p.trib.id).pillMax });
     let taken = null as InvItem | null;
     if (!c.tx('use:' + def.id, idem, (d) => !!(taken = d.removeAt(slot, 1)))) return;
     p.itemCdAt = this.c.now + def.use.cd * 1000;
@@ -286,7 +318,8 @@ export class EconomySystem {
     if (rcp.reqLevel && c.level < rcp.reqLevel) return this.c.warn(p, 'sys.craft_level');
     // Pháp bảo: mỗi người chỉ cần một món mỗi loại.
     const outDef = ITEM.get(rcp.output.id);
-    if (outDef && isEquipSlot(outDef.kind) && (n !== 1 || c.inv.some((s) => s?.id === rcp.output.id) || c.equipCount(rcp.output.id) > 0)) return this.c.warn(p, 'sys.art_owned');
+    if (outDef && isEquipSlot(outDef.kind) && (n !== 1 || c.inv.some((s) => s?.id === rcp.output.id) || c.equipCount(rcp.output.id) > 0))
+      return this.c.warn(p, 'sys.art_owned');
     if (c.gold < rcp.gold * n) return this.c.warn(p, 'sys.not_enough_gold');
     // Phẩm chất đan (P3-8): mỗi viên roll riêng ở server; công pháp đan sư (Thanh Mộc) ra phẩm cao dễ hơn.
     const support = passiveOf(c.meta)?.kind === 'dan_kinh';
@@ -327,7 +360,9 @@ export class EconomySystem {
       return;
     }
     if (rcp.quality) {
-      for (let q = PILL_TIERS - 1; q >= 0; q--) if (tiers[q] > 0) this.c.sys(p, 'sys.crafted_q', { item: itemName(rcp.output.id), q: t('ui.pill.q' + q), n: tiers[q] }, q > 0 ? 'good' : 'loot');
+      for (let q = PILL_TIERS - 1; q >= 0; q--)
+        if (tiers[q] > 0)
+          this.c.sys(p, 'sys.crafted_q', { item: itemName(rcp.output.id), q: t('ui.pill.q' + q), n: tiers[q] }, q > 0 ? 'good' : 'loot');
     } else this.c.sys(p, 'sys.crafted', { item: itemName(rcp.output.id), n: rcp.output.n * n }, 'loot');
     this.c.questEvent(p, 'craft', rcp.output.id, rcp.output.n * n);
     this.c.fx({ t: 'craft', src: p.sid });
@@ -400,7 +435,8 @@ export class EconomySystem {
     if (!cost) return this.c.warn(p, 'sys.skill_max');
     if (c.gold < cost.gold) return this.c.warn(p, 'sys.skill_need');
     // Cấp chỉ tăng nếu giao dịch ghi DB thành công (trùng khóa hoặc thiếu nguyên liệu thì không đổi gì).
-    if (!c.tx(`skillup:${sk.id}:${lv + 1}`, idem, (d) => d.remove(SKILL_SCROLL, cost.scrolls) && d.spendGold(cost.gold))) return this.c.warn(p, 'sys.skill_need');
+    if (!c.tx(`skillup:${sk.id}:${lv + 1}`, idem, (d) => d.remove(SKILL_SCROLL, cost.scrolls) && d.spendGold(cost.gold)))
+      return this.c.warn(p, 'sys.skill_need');
     setSkillLevel(c.meta, sk.id, lv + 1);
     c.save();
     p.mth.dirty = true;
@@ -431,7 +467,6 @@ export class EconomySystem {
     p.mth.dirty = true;
     this.c.sys(p, 'sys.variant_set', { skill: skillName(sk.id), name: t(`skill.${sk.id}.var.${m.v}.name`) }, 'info');
   }
-
 
   // ---------- NPC, nhiệm vụ ----------
 
@@ -469,7 +504,8 @@ export class EconomySystem {
       }
       this.c.sys(p, 'sys.quest_accept', { name: t(`quest.${q.id}.name`) }, 'info');
       // Mục tiêu "nói chuyện" với chính NPC đang đứng cạnh thì tính luôn.
-      for (const o of q.objectives) if (o.type === 'talk' && o.target && this.c.nearNpc(p, o.target)) this.c.questEvent(p, 'talk', o.target, 1);
+      for (const o of q.objectives)
+        if (o.type === 'talk' && o.target && this.c.nearNpc(p, o.target)) this.c.questEvent(p, 'talk', o.target, 1);
       return;
     }
     if (m.a === 'turnin') {

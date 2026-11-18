@@ -5,7 +5,14 @@ import { LEVELS } from './index';
 import { checkLevel, type LevelCheckOpts } from './levelcheck';
 
 const base = (): LevelDef => structuredClone(ensureLevel(FIXTURE_ID)!);
-const OPTS: LevelCheckOpts = { strings: false, assets: false, pads: FIXTURE_PADS, free: FIXTURE_FREE, props: FIXTURE_PROPS, coverage: false };
+const OPTS: LevelCheckOpts = {
+  strings: false,
+  assets: false,
+  pads: FIXTURE_PADS,
+  free: FIXTURE_FREE,
+  props: FIXTURE_PROPS,
+  coverage: false,
+};
 const run = (lv: LevelDef, o: LevelCheckOpts = {}) => checkLevel(lv, { ...OPTS, ...o });
 
 describe('checkLevel: mọi level', () => {
@@ -39,7 +46,9 @@ describe('checkLevel: bắt lỗi trên level thử', () => {
 
   it('mật độ ngoài 100–140/km²', () => {
     expect(bad((l) => l.camps!.splice(0, 3))).toMatch(/mật độ \d+ quái\/km²/);
-    expect(bad((l) => l.camps!.push({ ...l.camps![0], id: 'tn_a9' }, { ...l.camps![1], id: 'tn_a8' }, { ...l.camps![2], id: 'tn_a7' }))).toMatch(/mật độ \d+ quái\/km²/);
+    expect(
+      bad((l) => l.camps!.push({ ...l.camps![0], id: 'tn_a9' }, { ...l.camps![1], id: 'tn_a8' }, { ...l.camps![2], id: 'tn_a7' })),
+    ).toMatch(/mật độ \d+ quái\/km²/);
   });
 
   it('id quái không tồn tại, cấp vượt thang, spawn ngoài vùng chơi', () => {
@@ -54,8 +63,12 @@ describe('checkLevel: bắt lỗi trên level thử', () => {
   });
 
   it('trận truyền tống: sai vùng, đè collider, thiếu trận mở sẵn, vùng thiếu trận', () => {
-    expect(run(base(), { pads: [{ ...FIXTURE_PADS[0], x: 600 }, FIXTURE_PADS[1]] }).join('\n')).toMatch(/trận tn_tp_a: không nằm trong vùng tn_a/);
-    expect(run(base(), { pads: [{ ...FIXTURE_PADS[0], x: 382, z: 640 }, FIXTURE_PADS[1]] }).join('\n')).toMatch(/trận tn_tp_a: đè collider/);
+    expect(run(base(), { pads: [{ ...FIXTURE_PADS[0], x: 600 }, FIXTURE_PADS[1]] }).join('\n')).toMatch(
+      /trận tn_tp_a: không nằm trong vùng tn_a/,
+    );
+    expect(run(base(), { pads: [{ ...FIXTURE_PADS[0], x: 382, z: 640 }, FIXTURE_PADS[1]] }).join('\n')).toMatch(
+      /trận tn_tp_a: đè collider/,
+    );
     expect(run(base(), { free: [] }).join('\n')).toMatch(/cần ít nhất một trận mở sẵn/);
     expect(run(base(), { pads: [FIXTURE_PADS[0]] }).join('\n')).toMatch(/vùng tn_b cần đúng một Truyền Tống Trận/);
   });
@@ -65,7 +78,9 @@ describe('checkLevel: bắt lỗi trên level thử', () => {
     expect(run(lv, { assets: true })).toEqual([]);
     lv.camps![0].mon = 'mon_yeu_lang'; // dùng chung model sói, chưa có asset riêng
     expect(run(lv, { assets: true }).join('\n')).toMatch(/camp tn_a1 quái mon_yeu_lang chưa có asset nguồn/);
-    expect(run(lv, { assets: true, props: [{ id: 'prop_khong_co', x: 450, z: 400, yaw: 0, s: 1 }] }).join('\n')).toMatch(/prop prop_khong_co chưa có asset nguồn/);
+    expect(run(lv, { assets: true, props: [{ id: 'prop_khong_co', x: 450, z: 400, yaw: 0, s: 1 }] }).join('\n')).toMatch(
+      /prop prop_khong_co chưa có asset nguồn/,
+    );
   });
 });
 

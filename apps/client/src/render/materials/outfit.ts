@@ -43,7 +43,11 @@ export function hasOutfitMask(src: THREE.MeshStandardMaterial): boolean {
   return src.userData?.dtl_outfitMask === 1 && !!src.roughnessMap && src.roughnessMap === src.metalnessMap;
 }
 
-export function createOutfitMaterial(src: THREE.MeshStandardMaterial, dye?: OutfitDye, mode: OutfitMode = 'solid'): THREE.MeshStandardNodeMaterial {
+export function createOutfitMaterial(
+  src: THREE.MeshStandardMaterial,
+  dye?: OutfitDye,
+  mode: OutfitMode = 'solid',
+): THREE.MeshStandardNodeMaterial {
   const m = createWorldMaterial({
     name: src.name,
     map: src.map,
@@ -63,7 +67,10 @@ export function createOutfitMaterial(src: THREE.MeshStandardMaterial, dye?: Outf
       const b = lin(dye.palette[k]);
       return vec3(a.r / Math.max(b.r, 1e-3), a.g / Math.max(b.g, 1e-3), a.b / Math.max(b.b, 1e-3));
     };
-    const tint = vec3(1, 1, 1).add(mask.x.mul(ratio('main').sub(1))).add(mask.y.mul(ratio('sec').sub(1))).add(mask.z.mul(ratio('trim').sub(1)));
+    const tint = vec3(1, 1, 1)
+      .add(mask.x.mul(ratio('main').sub(1)))
+      .add(mask.y.mul(ratio('sec').sub(1)))
+      .add(mask.z.mul(ratio('trim').sub(1)));
     color = color.mul(tint);
   }
   m.colorNode = vec4(color, 1);

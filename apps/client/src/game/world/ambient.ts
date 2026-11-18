@@ -176,7 +176,20 @@ export class AmbientParticles {
       const x = cx + Math.cos(a) * d;
       const z = cz + Math.sin(a) * d;
       const g = Math.max(heightAt(x, z), WATER_Y + 0.2);
-      ps.emit('dust', x, g + 0.6 + R() * 1.4, z, 0.5 + R() * 0.3, 0.05, 0.35, 7 + R() * 2, 3.5 + R() * 2, 6 + R() * 3, COLOR.mist, 0.1 + R() * 0.06);
+      ps.emit(
+        'dust',
+        x,
+        g + 0.6 + R() * 1.4,
+        z,
+        0.5 + R() * 0.3,
+        0.05,
+        0.35,
+        7 + R() * 2,
+        3.5 + R() * 2,
+        6 + R() * 3,
+        COLOR.mist,
+        0.1 + R() * 0.06,
+      );
       return;
     }
     const d = Math.sqrt(R()) * 16;
@@ -187,7 +200,20 @@ export class AmbientParticles {
     switch (kind) {
       case 'mote': {
         const y = Math.max(floorY, cy + (R() - 0.4) * 7);
-        ps.emit('glow', x, y, z, (R() - 0.5) * 0.25, 0.04 + R() * 0.08, (R() - 0.5) * 0.25, 4 + R() * 3, 0.1, 0.06, COLOR.sun, 0.4 + R() * 0.25);
+        ps.emit(
+          'glow',
+          x,
+          y,
+          z,
+          (R() - 0.5) * 0.25,
+          0.04 + R() * 0.08,
+          (R() - 0.5) * 0.25,
+          4 + R() * 3,
+          0.1,
+          0.06,
+          COLOR.sun,
+          0.4 + R() * 0.25,
+        );
         break;
       }
       case 'pollen': {
@@ -214,20 +240,61 @@ export class AmbientParticles {
       }
       case 'ember': {
         // Đốm lửa nhỏ, ấm, bay lên chậm rồi tắt.
-        ps.emit('glow', x, floorY + R() * 2.5, z, (R() - 0.5) * 0.3, 0.35 + R() * 0.3, (R() - 0.5) * 0.3, 2.5 + R() * 2, 0.07, 0.02, COLOR.ember, 0.75);
+        ps.emit(
+          'glow',
+          x,
+          floorY + R() * 2.5,
+          z,
+          (R() - 0.5) * 0.3,
+          0.35 + R() * 0.3,
+          (R() - 0.5) * 0.3,
+          2.5 + R() * 2,
+          0.07,
+          0.02,
+          COLOR.ember,
+          0.75,
+        );
         break;
       }
       case 'ash': {
         const y = floorY + R() * 6;
         if (levelId() === 'phuc_mach') {
           // Bụi đá nâu mịn, rơi rất chậm (không trắng như tuyết).
-          ps.emit('dust', x, floorY + 1 + R() * 5, z, (R() - 0.5) * 0.15, -0.06, (R() - 0.5) * 0.15, 5 + R() * 3, 0.05, 0.04, COLOR.rock, 0.5);
+          ps.emit(
+            'dust',
+            x,
+            floorY + 1 + R() * 5,
+            z,
+            (R() - 0.5) * 0.15,
+            -0.06,
+            (R() - 0.5) * 0.15,
+            5 + R() * 3,
+            0.05,
+            0.04,
+            COLOR.rock,
+            0.5,
+          );
           break;
         }
         if (R() < 0.06) {
           ps.emit('glow', x, y, z, 0, 0.1, 0, 1.5 + R(), 0.14, 0.03, COLOR.sword, 0.6);
         } else {
-          ps.emit('dust', x, y, z, 0.5 + R() * 0.5, 0.12 + R() * 0.2, 0.2 + R() * 0.3, 5 + R() * 3, 0.12, 0.08, COLOR.stone, 0.75, -0.05, 0.4);
+          ps.emit(
+            'dust',
+            x,
+            y,
+            z,
+            0.5 + R() * 0.5,
+            0.12 + R() * 0.2,
+            0.2 + R() * 0.3,
+            5 + R() * 3,
+            0.12,
+            0.08,
+            COLOR.stone,
+            0.75,
+            -0.05,
+            0.4,
+          );
         }
         break;
       }

@@ -66,7 +66,20 @@ export class TribSystem {
       // Nhật Thực Kiếp (DV-3K): đủ Trấn Giới Bia sáng thì tia cuối đánh vào khe, không vào người.
       if (!(f.gateSteles && riftFinal(this.h, p, tr, f.gateSteles, f.delay, f.r))) {
         const guard = f.guardShare ? { share: f.guardShare, max: f.guardMax ?? 2, r: f.guardR ?? 12 } : undefined;
-        this.h.addHazard({ x: p.move.x, z: p.move.z, r: f.r }, f.delay, f.pct, true, 'lightning', p.sid, 0, true, 0, guard, { mul: f.defMul, max: f.defMaxCut }, ph.hot);
+        this.h.addHazard(
+          { x: p.move.x, z: p.move.z, r: f.r },
+          f.delay,
+          f.pct,
+          true,
+          'lightning',
+          p.sid,
+          0,
+          true,
+          0,
+          guard,
+          { mul: f.defMul, max: f.defMaxCut },
+          ph.hot,
+        );
         this.h.sys(p, 'sys.trib_final', undefined, 'bad');
       }
     }
@@ -79,7 +92,21 @@ export class TribSystem {
     tr.nextAt = now + tribGapAt(def, pi, elapsed) * 1000;
     if (ph.grid) this.fireGrid(p, tr, ph, now);
     // Một tia nhắm thẳng vào người độ kiếp, vài tia rơi quanh.
-    if (ph.aimPct) this.h.addHazard({ x: p.move.x, z: p.move.z, r: def.aim.r }, def.aim.delay, ph.aimPct, true, 'lightning', p.sid, 0, false, 0, undefined, undefined, ph.hot);
+    if (ph.aimPct)
+      this.h.addHazard(
+        { x: p.move.x, z: p.move.z, r: def.aim.r },
+        def.aim.delay,
+        ph.aimPct,
+        true,
+        'lightning',
+        p.sid,
+        0,
+        false,
+        0,
+        undefined,
+        undefined,
+        ph.hot,
+      );
     const extra = ph.extra ?? 0;
     for (let i = 0; i < extra; i++) {
       const a = Math.random() * Math.PI * 2;
@@ -124,7 +151,17 @@ export class TribSystem {
       const grp = this.h.nextGrp();
       for (let j = 0; j < net.count; j++) {
         const along = (j - halfCount) * net.step;
-        this.h.addHazard({ x: p.move.x + fz * off + fx * along, z: p.move.z - fx * off + fz * along, r: net.r }, net.delay, net.pct, true, 'lightning', p.sid, 0, false, grp);
+        this.h.addHazard(
+          { x: p.move.x + fz * off + fx * along, z: p.move.z - fx * off + fz * along, r: net.r },
+          net.delay,
+          net.pct,
+          true,
+          'lightning',
+          p.sid,
+          0,
+          false,
+          grp,
+        );
       }
     }
   }

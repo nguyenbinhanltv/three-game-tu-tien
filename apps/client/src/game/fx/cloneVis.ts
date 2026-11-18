@@ -122,7 +122,27 @@ export class CloneVis {
     shade.rotation.x = -Math.PI / 2;
     const ring = this.vfx.fx(RING, pal.body, 0.5 * k, 'flat');
     ring.rotation.x = -Math.PI / 2;
-    this.figs.set(sid, { sid, mine, view: null, fb: null, ring, shade, x, z, gx: x, gz: z, yaw, born: this.time, dur, fade: 0, ending: false, speed: 0, body: pal.body, rim: pal.rim, shadow: pal.shadow });
+    this.figs.set(sid, {
+      sid,
+      mine,
+      view: null,
+      fb: null,
+      ring,
+      shade,
+      x,
+      z,
+      gx: x,
+      gz: z,
+      yaw,
+      born: this.time,
+      dur,
+      fade: 0,
+      ending: false,
+      speed: 0,
+      body: pal.body,
+      rim: pal.rim,
+      shadow: pal.shadow,
+    });
     this.pulse(x, z, 1.8, 0.7, pal.rim, mine);
   }
 
@@ -249,7 +269,16 @@ export class CloneVis {
         f.view.root.position.set(f.x, gy + bob, f.z);
         f.view.root.rotation.y = f.yaw;
         f.view.root.scale.set(1, Math.max(0.02, ease), 1);
-        if (f.view.root.visible) f.view.update(dt, { speed: f.speed, flying: false, meditating: false, dead: false, casting: false, airborne: false, combat: true });
+        if (f.view.root.visible)
+          f.view.update(dt, {
+            speed: f.speed,
+            flying: false,
+            meditating: false,
+            dead: false,
+            casting: false,
+            airborne: false,
+            combat: true,
+          });
       } else if (f.fb) {
         const [head, body] = f.fb;
         const s = Math.max(0.02, ease);

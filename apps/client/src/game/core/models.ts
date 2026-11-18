@@ -7,11 +7,17 @@ import { createLabel, releaseLabel, type Label } from '../entities/labelBatch';
 import { HitReact, type HitOpts } from '../combat/hitreact';
 import type { AnimState, CharacterView, MonsterView } from '../character/view';
 
-
 /** Material dùng chung cho mọi mô hình tô màu theo đỉnh. */
 export const MODEL_MAT = createWorldMaterial({ vertexColors: true });
 const GLOW_MAT = (color: number, opacity = 0.5) => {
-  const m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  const m = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    fog: false,
+  });
   markBloom(m, 1.2);
   return m;
 };
@@ -143,7 +149,11 @@ export class Humanoid implements CharacterView {
     this.root.scale.setScalar(s);
     this.height = 1.95 * s;
     for (const m of [body, this.armL, this.armR, this.legL, this.legR]) m.castShadow = true;
-    this.hit = new HitReact(this.backSword ? [body, this.armL, this.armR, this.legL, this.legR, this.backSword] : [body, this.armL, this.armR, this.legL, this.legR]);
+    this.hit = new HitReact(
+      this.backSword
+        ? [body, this.armL, this.armR, this.legL, this.legR, this.backSword]
+        : [body, this.armL, this.armR, this.legL, this.legR],
+    );
   }
 
   /** Số bước chân khi chạy (tăng mỗi lần một chân chạm đất); cho bụi chân (render/vfx/trail.ts). */
@@ -283,7 +293,11 @@ function monGeo(def: MonsterDef): MonGeo {
     b.add(G.ico1, mat(0, hy, hz, 0, 0, 0, boar ? 0.3 : 0.21, boar ? 0.28 : 0.21, 0.27), main, 0.08);
     b.add(G.cone6, mat(0, hy - 0.05, hz + 0.3, Math.PI / 2, 0, 0, boar ? 0.17 : 0.1, 0.34, boar ? 0.15 : 0.1), boar ? dark : accent);
     for (const sx of [-1, 1]) {
-      b.add(G.cone5, mat(sx * 0.13, hy + (fox ? 0.3 : 0.24), hz - 0.08, -0.2, 0, sx * -0.25, fox ? 0.09 : 0.07, fox ? 0.3 : 0.2, 0.06), dark);
+      b.add(
+        G.cone5,
+        mat(sx * 0.13, hy + (fox ? 0.3 : 0.24), hz - 0.08, -0.2, 0, sx * -0.25, fox ? 0.09 : 0.07, fox ? 0.3 : 0.2, 0.06),
+        dark,
+      );
       b.add(G.ico0, mat(sx * 0.11, hy + 0.05, hz + 0.19, 0, 0, 0, 0.035), accent);
       if (boar) b.add(G.cone5, mat(sx * 0.16, hy - 0.1, hz + 0.3, 0.9, 0, sx * -0.4, 0.045, 0.26, 0.045), accent);
     }
@@ -497,7 +511,11 @@ function nodeGeometry(item: string): THREE.BufferGeometry {
   } else {
     for (let i = 0; i < 5; i++) {
       const a = (i / 5) * Math.PI * 2;
-      b.add(G.cone5, mat(Math.cos(a) * 0.12, 0.38, Math.sin(a) * 0.12, Math.sin(a) * 0.45, 0, -Math.cos(a) * 0.45, 0.07, 0.8, 0.03), col(i % 2 ? 0x58c98a : 0x7fe0a8));
+      b.add(
+        G.cone5,
+        mat(Math.cos(a) * 0.12, 0.38, Math.sin(a) * 0.12, Math.sin(a) * 0.45, 0, -Math.cos(a) * 0.45, 0.07, 0.8, 0.03),
+        col(i % 2 ? 0x58c98a : 0x7fe0a8),
+      );
     }
     b.add(G.ico0, mat(0, 0.86, 0, 0, 0, 0, 0.09), col(0xd8fff0));
   }

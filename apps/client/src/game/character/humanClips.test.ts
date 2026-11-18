@@ -70,7 +70,13 @@ function stance(trace: { x: number; y: number; z: number }[][], fps = 30): { v: 
     const zs = s.idx.map((i) => trace[s.foot][i].z);
     const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
     const mz = zs.reduce((a, b) => a + b, 0) / zs.length;
-    return { tm, mx, mz, vx: ts.reduce((a, t, k) => a + (t - tm) * (xs[k] - mx), 0) / den, vz: ts.reduce((a, t, k) => a + (t - tm) * (zs[k] - mz), 0) / den };
+    return {
+      tm,
+      mx,
+      mz,
+      vx: ts.reduce((a, t, k) => a + (t - tm) * (xs[k] - mx), 0) / den,
+      vz: ts.reduce((a, t, k) => a + (t - tm) * (zs[k] - mz), 0) / den,
+    };
   });
   const med = (a: number[]) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
   const v: [number, number] = [med(fit.map((f) => f.vx)), med(fit.map((f) => f.vz))];
@@ -134,7 +140,12 @@ describe('clip chung K-3 (anim_human_base)', () => {
       const k = hipsY / libHips;
       const out = [...retargetClips(lib.scene, lib.animations, h.scene), ...retargetClips(k3.scene, k3.animations, h.scene)];
       for (const [name, info] of LOCO) {
-        const st = stance(ankles(h.scene, out.find((c) => c.name === name)!));
+        const st = stance(
+          ankles(
+            h.scene,
+            out.find((c) => c.name === name)!,
+          ),
+        );
         const speed = Math.hypot(st.v[0], st.v[1]);
         expect(st.segments, `${id}/${name} số pha trụ`).toBeGreaterThanOrEqual(3);
         // run (M2-3) có tốc độ riêng từng nhân vật ở PLAYER_SKINS: dung sai rộng hơn.
@@ -177,7 +188,11 @@ describe('clip chung K-3 (anim_human_base)', () => {
       let moved = 0;
       for (const f of [0.2, 0.4, 0.6, 0.8]) {
         const t = l.duration * f;
-        for (const [a, b] of [['mixamorig_lefthand', 'mixamorig_righthand'], ['mixamorig_leftfoot', 'mixamorig_rightfoot'], ['mixamorig_head', 'mixamorig_head']]) {
+        for (const [a, b] of [
+          ['mixamorig_lefthand', 'mixamorig_righthand'],
+          ['mixamorig_leftfoot', 'mixamorig_rightfoot'],
+          ['mixamorig_head', 'mixamorig_head'],
+        ]) {
           const pl = pos(h.scene, l, t, a);
           const pr = pos(h.scene, r, t, b);
           expect(Math.abs(pl.x + pr.x), `${id} x ${a}@${f}`).toBeLessThan(0.05);

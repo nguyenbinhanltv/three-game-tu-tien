@@ -1,6 +1,63 @@
 // Quái (R-7): AI từng tick, hồi sinh, vùng nổ (Hazard), đạn, sát thương/chết/rơi đồ của quái, pha và thế của boss.
 // Tách nguyên văn từ GameSim, chỉ nhận giao diện hẹp `MonsterCtx`; sát thương lên người vẫn qua damagePlayer của sim.
-import { BOLT_MAX_LIFE, BOLT_MAX_LIVE, boltBlockedAt, boltLift, type BoltEndMsg, boltHits, type BoltMsg, boltXZ, boltYaws, chargeFromDealt, bossPhaseAt, chantInterrupt, nextTurn, PARTY_SHARE_RANGE, RESONANCE_DMG, RESONANCE_XP, splitXp, xpShareWeight, computeDamage, type DmgMsg, rollEquipDrops, type Quality, type FxMsg, elemCounter, STAT_CAPS, counterMul, hazardHit, type HazardGeom, type HazardMsg, inHazard, isHeavyHit, MF_BROKEN, MF_CHANT, MF_STUN, type MonsterCaster, type MonsterChant, type MonsterDef, type MonsterSweep, monsterStats, monsterXp, phaseRules, postureDecay, postureGain, MS_ATTACK, MS_CHASE, MS_DEAD, MS_IDLE, MS_RETURN, S, type SpawnDef, type SysMsg, buffMag, vulnerableDamage, WATER_Y, xpLevelFactor, type BossTimerMsg } from '@dtl/shared';
+import {
+  BOLT_MAX_LIFE,
+  BOLT_MAX_LIVE,
+  boltBlockedAt,
+  boltLift,
+  type BoltEndMsg,
+  boltHits,
+  type BoltMsg,
+  boltXZ,
+  boltYaws,
+  chargeFromDealt,
+  bossPhaseAt,
+  chantInterrupt,
+  nextTurn,
+  PARTY_SHARE_RANGE,
+  RESONANCE_DMG,
+  RESONANCE_XP,
+  splitXp,
+  xpShareWeight,
+  computeDamage,
+  type DmgMsg,
+  rollEquipDrops,
+  type Quality,
+  type FxMsg,
+  elemCounter,
+  STAT_CAPS,
+  counterMul,
+  hazardHit,
+  type HazardGeom,
+  type HazardMsg,
+  inHazard,
+  isHeavyHit,
+  MF_BROKEN,
+  MF_CHANT,
+  MF_STUN,
+  type MonsterCaster,
+  type MonsterChant,
+  type MonsterDef,
+  type MonsterSweep,
+  monsterStats,
+  monsterXp,
+  phaseRules,
+  postureDecay,
+  postureGain,
+  MS_ATTACK,
+  MS_CHASE,
+  MS_DEAD,
+  MS_IDLE,
+  MS_RETURN,
+  S,
+  type SpawnDef,
+  type SysMsg,
+  buffMag,
+  vulnerableDamage,
+  WATER_Y,
+  xpLevelFactor,
+  type BossTimerMsg,
+} from '@dtl/shared';
 import { type GuardCfg } from '../trib';
 import { ITEM_SYS, ITEMS, itemName, MONSTER, monsterName, t } from '@dtl/content';
 import { lootOf } from '@dtl/content/loot';
@@ -99,10 +156,19 @@ export class MonsterSystem {
     // Nội tại công pháp (3-10): kiếm tu đủ kiếm ý thì bạo kích cao hơn; hộ pháp đánh cận chiến mạnh hơn.
     const pas0 = passiveOf(p.char.meta);
     let critRate = Math.min(STAT_CAPS.critRate, p.char.stats.critRate + this.c.domain.critAdd(p));
-    if (pas0?.kind === 'kiem_y' && pas0.critAtMax && this.c.liveStacks(p) >= (pas0.max ?? 5)) critRate = Math.min(STAT_CAPS.critRate, critRate + pas0.critAtMax);
+    if (pas0?.kind === 'kiem_y' && pas0.critAtMax && this.c.liveStacks(p) >= (pas0.max ?? 5))
+      critRate = Math.min(STAT_CAPS.critRate, critRate + pas0.critAtMax);
     let meleeMul = 1;
     if (pas0?.melee && Math.hypot(mon.s.x - p.move.x, mon.s.z - p.move.z) <= pas0.melee.r + mon.def.scale) meleeMul += pas0.melee.mul;
-    const { dmg, crit } = computeDamage(p.char.atk, power * mul * counterMul(ke) * meleeMul, mon.defn, Math.random(), Math.random(), critRate, p.char.stats.critMul);
+    const { dmg, crit } = computeDamage(
+      p.char.atk,
+      power * mul * counterMul(ke) * meleeMul,
+      mon.defn,
+      Math.random(),
+      Math.random(),
+      critRate,
+      p.char.stats.critMul,
+    );
     const stunned = this.c.now < mon.stunUntil;
     const heavy = isHeavyHit(power);
     // `hv` (lớp hình) tính cả lúc choáng; phá thế chỉ cộng phần đòn nặng cho chiêu hệ số cao thật.
@@ -112,7 +178,8 @@ export class MonsterSystem {
     if (!lands) return;
     // Bộ Hàn Giao Lân (3 món): đòn bạo kích làm chậm mục tiêu (boss chỉ chậm nhẹ).
     const slowSec = p.char.stats.setFx.critSlowSec;
-    if (crit && slowSec > 0 && mon.state !== MS_DEAD) mon.slow = { until: this.c.now + slowSec * 1000, mul: mon.def.boss ? SET_SLOW_BOSS : SET_SLOW_MUL };
+    if (crit && slowSec > 0 && mon.state !== MS_DEAD)
+      mon.slow = { until: this.c.now + slowSec * 1000, mul: mon.def.boss ? SET_SLOW_BOSS : SET_SLOW_MUL };
     const pas = passiveOf(p.char.meta);
     if (pas?.kind === 'kiem_y') this.c.addStack(p, pas.max ?? 5, pas.decay ?? 10);
     // Chiêu tối thượng đang ra không tự nạp lại vòng sạc của chính nó.
@@ -280,7 +347,16 @@ export class MonsterSystem {
     this.addHazard({ x: m.s.x, z: m.s.z, r: c.r }, c.delay + (pull ? pull.delay + pull.dur : 0), c.mul, false, c.kind, m.id, m.atk);
   }
 
-  damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null, crit = false, hv = false, heavy = hv, ke: 0 | 1 | -1 = 0, dot = false): void {
+  damageMonster(
+    mon: MonEnt,
+    dmg: number,
+    p: PlayerEnt | null,
+    crit = false,
+    hv = false,
+    heavy = hv,
+    ke: 0 | 1 | -1 = 0,
+    dot = false,
+  ): void {
     if (mon.state === MS_DEAD) return;
     // Bóng tâm ma chỉ bị chủ đánh: người khác (kể cả vùng nổ lan sang) không làm gì được.
     if (mon.owner && p?.sid !== mon.owner) return;
@@ -391,7 +467,10 @@ export class MonsterSystem {
       );
     }
     for (const [party, pool] of groups) {
-      const raw = splitXp(xp, pool.map((o) => xpShareWeight(dist(o))));
+      const raw = splitXp(
+        xp,
+        pool.map((o) => xpShareWeight(dist(o))),
+      );
       pool.forEach((o, i) => {
         const res = parties.resonance(o) ? 1 + RESONANCE_XP : 1;
         this.c.giveXp(o, Math.max(1, Math.round(raw[i] * xpLevelFactor(o.char.level, mon.level) * (o.noLoot ? 0.3 : 1) * res)));
@@ -577,7 +656,14 @@ export class MonsterSystem {
     const list: BossTimerMsg['list'] = [];
     for (const m of this.c.monsters) {
       if (!this.isTimed(m)) continue;
-      list.push({ id: m.id, t: m.def.id, x: Math.round(m.homeX), z: Math.round(m.homeZ), lv: m.level, at: m.state === MS_DEAD ? Math.round(m.respawnAt) : 0 });
+      list.push({
+        id: m.id,
+        t: m.def.id,
+        x: Math.round(m.homeX),
+        z: Math.round(m.homeZ),
+        lv: m.level,
+        at: m.state === MS_DEAD ? Math.round(m.respawnAt) : 0,
+      });
     }
     return { now: this.c.now, list };
   }
@@ -770,7 +856,8 @@ export class MonsterSystem {
     // Mục tiêu đã chạy xa hoặc lên chỗ không với tới: chiêu xịt.
     if (!reachable || d > c.range * 1.4) return;
     const yaw = Math.atan2(target.move.x - m.s.x, target.move.z - m.s.z);
-    if (c.shape === 'bolt') return this.fireBolts(m, c, yaw, boltLift(target.move.y, this.c.terrain.groundAt(target.move.x, target.move.z)));
+    if (c.shape === 'bolt')
+      return this.fireBolts(m, c, yaw, boltLift(target.move.y, this.c.terrain.groundAt(target.move.x, target.move.z)));
     let g: HazardGeom;
     if (c.shape === 'circle') g = { x: target.move.x, z: target.move.z, r: c.r };
     else if (c.shape === 'rect') g = { x: m.s.x, z: m.s.z, r: c.r, sh: 'rect', yaw, w: c.w ?? 2 };
@@ -985,9 +1072,45 @@ export class MonsterSystem {
   // ---------- vùng nguy hiểm (thiên lôi, chiêu boss) ----------
 
   /** `atk` > 0: `dmg` là hệ số, sát thương tính bằng computeDamage theo phòng thủ từng người lúc nổ. */
-  addHazard(g: HazardGeom, delay: number, dmg: number, pct: boolean, kind: HazardMsg['kind'], src: string, atk = 0, lock = false, grp = 0, guard?: GuardCfg, cut?: { mul: number; max: number }, mv?: HazardMsg['mv'], hot = false, dur = 0, seal?: Hazard['seal'], reach = false): void {
+  addHazard(
+    g: HazardGeom,
+    delay: number,
+    dmg: number,
+    pct: boolean,
+    kind: HazardMsg['kind'],
+    src: string,
+    atk = 0,
+    lock = false,
+    grp = 0,
+    guard?: GuardCfg,
+    cut?: { mul: number; max: number },
+    mv?: HazardMsg['mv'],
+    hot = false,
+    dur = 0,
+    seal?: Hazard['seal'],
+    reach = false,
+  ): void {
     const mon = this.c.monById.get(src) ?? null;
-    this.c.hazards.push({ x: g.x, z: g.z, r: g.r, sh: g.sh, yaw: g.yaw, w: g.w, at: this.c.now + delay * 1000, dmg, pct, atk, src, mon, lock, grp: grp || undefined, guard, cut, seal, reach: reach || undefined });
+    this.c.hazards.push({
+      x: g.x,
+      z: g.z,
+      r: g.r,
+      sh: g.sh,
+      yaw: g.yaw,
+      w: g.w,
+      at: this.c.now + delay * 1000,
+      dmg,
+      pct,
+      atk,
+      src,
+      mon,
+      lock,
+      grp: grp || undefined,
+      guard,
+      cut,
+      seal,
+      reach: reach || undefined,
+    });
     const msg: HazardMsg = { x: g.x, z: g.z, r: g.r, delay, kind, src };
     // Tia sét có hình theo seed để mọi client thấy cùng một tia (chỉ là lớp hình).
     if (kind === 'lightning') msg.sd = visualSeed();
@@ -1038,7 +1161,11 @@ export class MonsterSystem {
           h.atk > 0
             ? computeDamage(h.atk, h.dmg, p.char.def, Math.random(), 1).dmg
             : h.pct
-              ? p.char.mhp * h.dmg * (h.lock ? 1 - Math.min(this.c.lockCut(h, p).max, buffMag(p.char.meta.buffs, 'def', Date.now()) * this.c.lockCut(h, p).mul) : 1)
+              ? p.char.mhp *
+                h.dmg *
+                (h.lock
+                  ? 1 - Math.min(this.c.lockCut(h, p).max, buffMag(p.char.meta.buffs, 'def', Date.now()) * this.c.lockCut(h, p).mul)
+                  : 1)
               : Math.max(1, h.dmg - p.char.def * 0.6);
         if (h.mon) {
           // Vùng của quái: trong cửa sổ HAZARD_IFRAME chỉ chịu vùng mạnh nhất (chống dồn đòn).

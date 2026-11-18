@@ -1,5 +1,19 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { groundAt, HOME_LEVEL, PF_DEAD, S, TELE_CAST_LEVEL_MS, TELE_CAST_MS, TELE_FREE, TELE_PAD, TELE_PADS, registerTerrain, type TelePad, type TerrainDef, type TransferMsg } from '@dtl/shared';
+import {
+  groundAt,
+  HOME_LEVEL,
+  PF_DEAD,
+  S,
+  TELE_CAST_LEVEL_MS,
+  TELE_CAST_MS,
+  TELE_FREE,
+  TELE_PAD,
+  TELE_PADS,
+  registerTerrain,
+  type TelePad,
+  type TerrainDef,
+  type TransferMsg,
+} from '@dtl/shared';
 
 // E1-B: room theo level, vé chuyển bản đồ một lần (hết hạn 15 s), chặn khi bận/giao chiến, Truyền Tống liên level hai chiều.
 // Dùng một level thử nhỏ (`test_isle`) đăng ký ngay trong test: chưa có bản đồ thật (E2-A).
@@ -72,7 +86,13 @@ function mkRoom(levelId: string, cls: { prototype: object }) {
   const room = Object.create(cls.prototype) as InstanceType<Rooms['GameRoom']> & { sim: InstanceType<typeof GameSim> };
   const lv = LEVELS[levelId];
   const spawn = lv.dungeon?.spawn ?? lv.spawn ?? { x: 2048, z: 2088 };
-  room.sim = new GameSim(new WorldState(), room as never, { levelId, roomName: levelId, spawn, respawn: spawn, persistPosition: !lv.dungeon });
+  room.sim = new GameSim(new WorldState(), room as never, {
+    levelId,
+    roomName: levelId,
+    spawn,
+    respawn: spawn,
+    persistPosition: !lv.dungeon,
+  });
   const join = (name: string, level = 8, spawnAt: { x: number; z: number } | null = null): Ent => {
     const char = Character.create(nextAcc++, name + nextAcc);
     char.level = level;
@@ -129,7 +149,10 @@ describe('TicketBook', () => {
 });
 
 describe('onAuth theo level', () => {
-  const Isle = () => (rooms.defineWorld(ISLE_ID) as unknown as { onAuth(t: string, o: unknown): Promise<{ charId: number; spawn: { x: number; z: number } | null }> });
+  const Isle = () =>
+    rooms.defineWorld(ISLE_ID) as unknown as {
+      onAuth(t: string, o: unknown): Promise<{ charId: number; spawn: { x: number; z: number } | null }>;
+    };
   const Home = () => rooms.WorldRoom as unknown as { onAuth(t: string, o: unknown): Promise<{ charId: number; spawn: unknown }> };
   const Dun = () => rooms.DungeonRoom as unknown as { onAuth(t: string, o: unknown): Promise<unknown> };
   const acct = (n: string) => ({ dev: n });
@@ -334,7 +357,10 @@ describe('đến nơi qua onJoin thật', () => {
     Object.defineProperty(room, 'roomName', { value: levelId });
     return r;
   }
-  const client = (name: string) => ({ sessionId: 'sid' + nextAcc++, send: (type: string, msg: unknown) => sent.push({ type, msg, to: name }) });
+  const client = (name: string) => ({
+    sessionId: 'sid' + nextAcc++,
+    send: (type: string, msg: unknown) => sent.push({ type, msg, to: name }),
+  });
 
   it('world → world: lưu ở level nguồn rồi vào bằng vé thì đặt ở điểm của vé, không bị dẫn ngược', async () => {
     const home = mkRoom(HOME_LEVEL, rooms.WorldRoom);
@@ -366,8 +392,15 @@ describe('đến nơi qua onJoin thật', () => {
     char.save();
     const c = client(char.name);
     const before = sent.length;
-    (home.room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(c, {}, { accountId: 1, dev: true, charId: char.id, session: 's', spawn: null });
-    const x = sent.slice(before).filter((m) => m.to === char.name && m.type === S.TRANSFER).map((m) => m.msg);
+    (home.room as unknown as { onJoin(c: unknown, o: unknown, a: unknown): void }).onJoin(
+      c,
+      {},
+      { accountId: 1, dev: true, charId: char.id, session: 's', spawn: null },
+    );
+    const x = sent
+      .slice(before)
+      .filter((m) => m.to === char.name && m.type === S.TRANSFER)
+      .map((m) => m.msg);
     expect(x).toEqual([{ room: 'world-test_isle', level: ISLE_ID, options: {} }]);
     expect(transfer.tickets.has(char.id, ISLE_ID)).toBe(true);
     expect(home.sim.players.size).toBe(0);

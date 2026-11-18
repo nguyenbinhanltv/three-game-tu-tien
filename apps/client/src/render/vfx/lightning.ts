@@ -1,5 +1,27 @@
 import * as THREE from 'three/webgpu';
-import { abs, atan, clamp, cos, exp, float, floor, fract, length, log, max, min, mix, pow, sin, smoothstep, step, time, uv, vec2, vec3 } from 'three/tsl';
+import {
+  abs,
+  atan,
+  clamp,
+  cos,
+  exp,
+  float,
+  floor,
+  fract,
+  length,
+  log,
+  max,
+  min,
+  mix,
+  pow,
+  sin,
+  smoothstep,
+  step,
+  time,
+  uv,
+  vec2,
+  vec3,
+} from 'three/tsl';
 import { seededRandom, vnoise, type FxUniforms } from './common';
 
 /**
@@ -125,7 +147,13 @@ export class BoltGeometry {
     this.geo.setAttribute('position', this.pos);
     this.geo.setAttribute('uv', this.uvs);
     // Pháp tuyến không dùng (dải tự phát sáng) nhưng node material mặc định vẫn đọc: điền hằng.
-    this.geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nv * 3).fill(0).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
+    this.geo.setAttribute(
+      'normal',
+      new THREE.BufferAttribute(
+        new Float32Array(nv * 3).fill(0).map((_, i) => (i % 3 === 1 ? 1 : 0)),
+        3,
+      ),
+    );
     this.geo.setIndex(new THREE.BufferAttribute(idx, 1));
     this.geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e4);
   }
@@ -229,16 +257,29 @@ export function boltNodes(U: FxUniforms) {
   const core = exp(x.mul(x).mul(-28));
   const halo = pow(one.sub(x), 2);
   // Gợn sáng chạy dọc thân.
-  const ripple = vnoise(vec2(u.mul(40).sub(time.mul(25)).add(seed.mul(7)), seed)).mul(0.35).add(0.75);
+  const ripple = vnoise(vec2(u.mul(40).sub(time.mul(25)).add(seed.mul(7)), seed))
+    .mul(0.35)
+    .add(0.75);
   const c = mix(U.color, vec3(1, 0.98, 1), core.mul(0.85));
   // Nhấp nháy theo thời gian, lệch pha theo seed và theo vị trí dọc tia (Storm & Wind: 0,8 + 0,2·sin(70·t + jitter·40)).
-  const flick = sin(time.mul(70).add(seed.mul(40)).add(u.mul(18))).mul(0.2).add(0.8);
+  const flick = sin(time.mul(70).add(seed.mul(40)).add(u.mul(18)))
+    .mul(0.2)
+    .add(0.8);
   // Đốm sáng ở mũi tia dẫn khi đang lộ xuống (head < 1): tắt hẳn khi tia đã chạm đất.
-  const tip = exp(abs(head.sub(u)).mul(-25)).mul(0.8).mul(one.sub(step(0.999, head)));
-  const glow = core.mul(1.6).add(halo.mul(0.7)).mul(ripple).mul(max(lum.mul(flick), tip));
+  const tip = exp(abs(head.sub(u)).mul(-25))
+    .mul(0.8)
+    .mul(one.sub(step(0.999, head)));
+  const glow = core
+    .mul(1.6)
+    .add(halo.mul(0.7))
+    .mul(ripple)
+    .mul(max(lum.mul(flick), tip));
   return {
     color: min(c.mul(glow).mul(1.2), U.maxHdr),
-    opacity: U.opacity.mul(reveal).mul(min(halo.add(core), 1)).mul(max(lum.mul(0.6).add(0.4), tip)),
+    opacity: U.opacity
+      .mul(reveal)
+      .mul(min(halo.add(core), 1))
+      .mul(max(lum.mul(0.6).add(0.4), tip)),
   };
 }
 
@@ -272,7 +313,10 @@ export function vortexNodes(U: FxUniforms) {
   const base = smoothstep(0.2, 0.6, n1.mul(0.65).add(n2.mul(0.35)));
   // Cánh xoắn ốc rõ nét quanh tâm: 3 cánh theo góc đã cuộn, mờ dần ra mép để không lộ họa tiết.
   const arms = smoothstep(-0.1, 0.9, sin(th.mul(3)));
-  const armW = one.sub(smoothstep(0.35, 0.95, r)).mul(0.6).add(0.15);
+  const armW = one
+    .sub(smoothstep(0.35, 0.95, r))
+    .mul(0.6)
+    .add(0.15);
   const dens = base.mul(one.sub(armW)).add(arms.mul(armW).mul(base.mul(0.6).add(0.4)));
   // Mép ngoài tan; mắt bão ở giữa mỏng hơn.
   const edge = one.sub(smoothstep(0.65, 1, r));
@@ -281,7 +325,10 @@ export function vortexNodes(U: FxUniforms) {
   // Mắt bão phát sáng tím; sét trong mây bừng theo vân nhiễu khi có tia đánh.
   const thunder = vec3(0.456, 0.262, 1.0);
   const eyeGlow = one.sub(smoothstep(0.02, 0.22, r)).mul(0.9);
-  const inner = flash.mul(smoothstep(0.45, 0.9, n2)).mul(edge).mul(1.3);
+  const inner = flash
+    .mul(smoothstep(0.45, 0.9, n2))
+    .mul(edge)
+    .mul(1.3);
   const shade = U.color.mul(dens.mul(0.55).add(0.45));
   const col = shade.add(thunder.mul(eyeGlow.add(inner)));
   return {
@@ -289,7 +336,6 @@ export function vortexNodes(U: FxUniforms) {
     opacity: U.opacity.mul(min(body.add(eyeGlow.mul(0.4)), 1)),
   };
 }
-
 
 /**
  * Node chùm đường gió (kiểu `wind`, cộng sáng, bloom nhẹ), viết lại theo `line.gdshader` của Storm & Wind 3D Free (CC BY 4.0).

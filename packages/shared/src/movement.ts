@@ -212,7 +212,13 @@ export function stepMove(s: MoveState, i: MoveInput, ctx: MoveCtx, dt: number = 
   // Level đảo nổi (E3-N): chặn leo vách đảo và thành cầu. Không cho bước vào chỗ mặt đất dốc hơn `MAX_SLOPE_UP` (độ dốc đi lên lớn nhất quanh chỗ mới, không phụ
   // thuộc hướng đi hay tốc độ nên đi chéo/chạy chậm không lách được) trừ khi đang đi xuống (mặt đất mới thấp hơn chỗ cũ: rơi khỏi mép, bước xuống).
   // So mặt đất cũ với mới chứ không so với độ cao người nên nhảy cũng không leo được. Không áp khi ngự kiếm.
-  if (terrain.blockRise && !s.flying && (s.x !== px || s.z !== pz) && ground >= groundAt(px, pz) - 1e-3 && groundSlope(groundAt, s.x, s.z) > MAX_SLOPE_UP) {
+  if (
+    terrain.blockRise &&
+    !s.flying &&
+    (s.x !== px || s.z !== pz) &&
+    ground >= groundAt(px, pz) - 1e-3 &&
+    groundSlope(groundAt, s.x, s.z) > MAX_SLOPE_UP
+  ) {
     s.x = px;
     s.z = pz;
     ground = groundAt(s.x, s.z);

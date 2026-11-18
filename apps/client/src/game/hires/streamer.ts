@@ -1,4 +1,13 @@
-import { type AppliedInfo, ByteBucket, type HiresCandidate, type HiresPolicy, type NavInfo, hiresPolicy, pickNext, planEviction } from './policy';
+import {
+  type AppliedInfo,
+  ByteBucket,
+  type HiresCandidate,
+  type HiresPolicy,
+  type NavInfo,
+  hiresPolicy,
+  pickNext,
+  planEviction,
+} from './policy';
 
 /** Phần của AssetCache mà bộ lập lịch cần (thay được khi test). */
 export interface HiresHost {

@@ -1,7 +1,18 @@
 // R-8: tách từ game/vfx.ts (hàm nhận `v: Vfx`, trước là phương thức của lớp Vfx).
 import * as THREE from 'three/webgpu';
 import { groundAt } from '../../../base/levelCtx';
-import { BEAM_GEO, LOOT_ARC, LOOT_BOUNCE, LOOT_GOLD, LOOT_TIERS, lootCrowd, lootDuration, lootHop, lootPulse, type LootTier } from '../../../render/vfx/loot';
+import {
+  BEAM_GEO,
+  LOOT_ARC,
+  LOOT_BOUNCE,
+  LOOT_GOLD,
+  LOOT_TIERS,
+  lootCrowd,
+  lootDuration,
+  lootHop,
+  lootPulse,
+  type LootTier,
+} from '../../../render/vfx/loot';
 import { PARTICLES } from '../../../render/vfx/particles';
 import { G } from '../../core/geo';
 import { LOOT_FX_MAX, RING_GEO, _a } from './common';
@@ -13,7 +24,15 @@ import type { Vfx } from '../vfx';
  * với vị trí cuối: engine cho icon bay vào túi). `slot`: thứ tự món trong cùng một lần rơi, để các món
  * tỏa ra các hướng khác nhau và nảy lệch nhịp. Trả về điểm chạm đất (cho chỉ báo ngoài màn hình).
  */
-export function lootDrop(v: Vfx, from: THREE.Vector3, tier: LootTier, slot = 0, onLand?: () => void, onCollect?: (at: THREE.Vector3) => void, color?: number): THREE.Vector3 {
+export function lootDrop(
+  v: Vfx,
+  from: THREE.Vector3,
+  tier: LootTier,
+  slot = 0,
+  onLand?: () => void,
+  onCollect?: (at: THREE.Vector3) => void,
+  color?: number,
+): THREE.Vector3 {
   const T = LOOT_TIERS[tier];
   const col = color ?? T.color;
   const delay = Math.min(slot, 5) * 0.12;
@@ -75,7 +94,22 @@ export function lootDrop(v: Vfx, from: THREE.Vector3, tier: LootTier, slot = 0, 
         for (let i = 0; i < T.sparks; i++) {
           const a = Math.random() * Math.PI * 2;
           const r = Math.random() * T.radius * 0.8;
-          PARTICLES.emit('glow', tx + Math.cos(a) * r, ground + 0.2, tz + Math.sin(a) * r, 0, 1.4 + Math.random() * 2.2, 0, 1 + Math.random() * 0.9, 0.09, 0.02, i & 1 ? 0xfff6dc : col, 0.9, -0.6, 0.6);
+          PARTICLES.emit(
+            'glow',
+            tx + Math.cos(a) * r,
+            ground + 0.2,
+            tz + Math.sin(a) * r,
+            0,
+            1.4 + Math.random() * 2.2,
+            0,
+            1 + Math.random() * 0.9,
+            0.09,
+            0.02,
+            i & 1 ? 0xfff6dc : col,
+            0.9,
+            -0.6,
+            0.6,
+          );
         }
       }
       // Cột sáng: dâng từ chân lên trong 0,25 giây sau khi chạm đất, tan dần sau khi đồ bay đi.

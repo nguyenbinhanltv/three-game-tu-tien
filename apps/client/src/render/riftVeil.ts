@@ -28,7 +28,13 @@ const EMBER = [0.552, 0.054, 0.024] as const; // rift_ember #C4412B → tuyến 
 const VIOLET = [0.147, 0.05, 0.352] as const; // rift_violet #6B3FA0 → tuyến tính
 
 /** Tấm lưới dựng theo đường gấp khúc: cột theo điểm, hàng theo chiều cao `rows` (0..1, thưa ở chân). uv.x = dài dọc tấm (đơn vị 50 m), uv.y = độ cao 0..1. */
-function sheet(pts: readonly { x: number; y: number; z: number }[], baseY: (i: number) => number, height: number, rows: readonly number[], edge: (i: number, n: number) => number): THREE.BufferGeometry {
+function sheet(
+  pts: readonly { x: number; y: number; z: number }[],
+  baseY: (i: number) => number,
+  height: number,
+  rows: readonly number[],
+  edge: (i: number, n: number) => number,
+): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const edges: number[] = [];
@@ -60,17 +66,29 @@ function sheet(pts: readonly { x: number; y: number; z: number }[], baseY: (i: n
 
 /** Màn/ sườn chéo: sáng than hồng ở chân, tím thực lên cao, vệt dọc trôi lên, mép tan. */
 function veilMaterial(strength: number): THREE.MeshBasicNodeMaterial {
-  const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+  const mat = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
   const s = uv().x;
   const v = uv().y;
   const sway = vnoise(vec2(s.mul(2.2), time.mul(0.12)));
   const streak = vnoise(vec2(s.mul(9).add(sway.mul(3)), v.mul(1.6).sub(time.mul(0.32))));
   const fine = vnoise(vec2(s.mul(24), v.mul(4.5).sub(time.mul(0.75))));
   const body = pow(float(1).sub(v), 1.55);
-  const flick = sin(time.mul(1.7).add(s.mul(5))).mul(0.08).add(0.92);
+  const flick = sin(time.mul(1.7).add(s.mul(5)))
+    .mul(0.08)
+    .add(0.92);
   const inten = clamp(body.mul(streak.mul(0.95).add(0.25)).add(fine.sub(0.55).mul(0.5).mul(float(1).sub(v))), 0, 1.2).mul(flick);
   const hot = smoothstep(0.3, 0.0, v);
-  const col = mix(vec3(EMBER[0] * 3, EMBER[1] * 3, EMBER[2] * 3), vec3(VIOLET[0] * 4.4, VIOLET[1] * 4.4, VIOLET[2] * 4.4), smoothstep(0.04, 0.6, v)).add(vec3(0.25, 0.1, 0.04).mul(hot));
+  const col = mix(
+    vec3(EMBER[0] * 3, EMBER[1] * 3, EMBER[2] * 3),
+    vec3(VIOLET[0] * 4.4, VIOLET[1] * 4.4, VIOLET[2] * 4.4),
+    smoothstep(0.04, 0.6, v),
+  ).add(vec3(0.25, 0.1, 0.04).mul(hot));
   const dist = length(positionView);
   const near = mix(float(0.2), float(1), smoothstep(10, 90, dist));
   const rootFade = smoothstep(0, 0.025, v);
@@ -81,23 +99,42 @@ function veilMaterial(strength: number): THREE.MeshBasicNodeMaterial {
 
 /** Lòng khe: dải phủ đáy, gân sáng như vỉa than (nhiễu hai tầng), mép tan, ngả tím về phía bắc. */
 function floorMaterial(k = 1, endFade = false): THREE.MeshBasicNodeMaterial {
-  const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+  const mat = new THREE.MeshBasicNodeMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: false,
+  });
   const across = uv().x.mul(2).sub(1); // −1..1 ngang khe
   const p = positionWorld.xz;
   const n1 = vnoise(p.mul(0.11).add(vec2(time.mul(0.02), 0)));
   const n2 = vnoise(p.mul(0.34).add(vec2(0, time.mul(-0.03))));
   const vein1 = smoothstep(0.09, 0.0, n1.sub(0.5).abs());
   const vein2 = smoothstep(0.07, 0.0, n2.sub(0.5).abs());
-  const pulse = sin(time.mul(1.3).add(n1.mul(6.3))).mul(0.18).add(0.82);
+  const pulse = sin(time.mul(1.3).add(n1.mul(6.3)))
+    .mul(0.18)
+    .add(0.82);
   const glow = pow(float(1).sub(across.abs()), 1.6);
   const inten = glow.mul(vein1.mul(1.0).add(vein2.mul(0.6)).add(0.22)).mul(pulse);
   const north = smoothstep(2048 / 2 - 40, 2048 / 2 - 600, positionWorld.z);
-  const col = mix(vec3(EMBER[0] * 3.2, EMBER[1] * 3.2, EMBER[2] * 3.2), vec3(VIOLET[0] * 4.2, VIOLET[1] * 4.2, VIOLET[2] * 4.2), north.mul(0.55));
+  const col = mix(
+    vec3(EMBER[0] * 3.2, EMBER[1] * 3.2, EMBER[2] * 3.2),
+    vec3(VIOLET[0] * 4.2, VIOLET[1] * 4.2, VIOLET[2] * 4.2),
+    north.mul(0.55),
+  );
   const dist = length(positionView);
   const near = mix(float(0.55), float(1), smoothstep(8, 70, dist));
   mat.colorNode = col;
   const ends = endFade ? smoothstep(0, 0.12, uv().y).mul(smoothstep(1, 0.88, uv().y)) : float(1); // uv.y = vị trí dọc vết nứt (chỉ khi `endFade`)
-  mat.opacityNode = clamp(inten.mul(near).mul(ends).mul(1.1 * k), 0, 1);
+  mat.opacityNode = clamp(
+    inten
+      .mul(near)
+      .mul(ends)
+      .mul(1.1 * k),
+    0,
+    1,
+  );
   return mat;
 }
 
@@ -138,7 +175,12 @@ export function buildRiftVeil(path: readonly RiftVeilPt[], heightAt: (x: number,
 
   // Màn dọc: mép tan ở hai đầu khe.
   const fade = (i: number, n: number): number => sstep(0, 1.6, Math.min(i, n - 1 - i));
-  add(sheet(path, (i) => path[i].y - 4, H, [0, 0.015, 0.06, 0.16, 0.32, 0.55, 0.8, 1], fade), veilMaterial(0.8 * k), 0.45, 5);
+  add(
+    sheet(path, (i) => path[i].y - 4, H, [0, 0.015, 0.06, 0.16, 0.32, 0.55, 0.8, 1], fade),
+    veilMaterial(0.8 * k),
+    0.45,
+    5,
+  );
 
   // Sườn chéo: mỗi 30 m một tấm ngang khe (±30 m), nối thành một lưới (tổng ≤ 14 tấm × 5 cột): ghép bằng một BufferGeometry gộp.
   const ribPos: number[] = [];
