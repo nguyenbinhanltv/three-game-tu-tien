@@ -2,7 +2,7 @@ import { LEVELS, LEVEL_ASSETS } from '@dtl/content';
 import { heightAt as sharedHeight, SECT, terrainOf } from '@dtl/shared';
 import { afterAll, describe, expect, it } from 'vitest';
 import { biomeAt, groundAt, heightAt, knownLevel, levelAssets, levelId, levelTerrain, sameLayout, setActiveLevel } from './levelCtx';
-import { TEST_LEVEL } from '../game/debug/testLevel';
+import { TEST_LEVEL } from './testLevel';
 
 describe('levelCtx (E1-D)', () => {
   afterAll(() => setActiveLevel('van_lam'));

@@ -1,6 +1,6 @@
 import { LEVEL_ASSETS, LEVELS } from '@dtl/content';
 import { type Biome, type LevelAssets, type Terrain, terrainOf } from '@dtl/shared';
-import { ensureTestLevel, TEST_ASSETS, TEST_LEVEL } from '../game/debug/testLevel';
+import { ensureTestLevel, TEST_ASSETS, TEST_LEVEL } from './testLevel';
 
 /**
  * Level đang hiển thị ở client (E1-D). Mọi code client hỏi độ cao/biome qua các hàm dưới (thay cho `heightAt` Vân Lam của shared),

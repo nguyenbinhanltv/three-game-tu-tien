@@ -13,6 +13,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@dtl/content": "workspace:*",
+    "@dtl/shared": "workspace:*",
     "@gltf-transform/core": "^4.5.1",
     "@gltf-transform/extensions": "^4.5.1",
     "@gltf-transform/functions": "^4.5.1",
