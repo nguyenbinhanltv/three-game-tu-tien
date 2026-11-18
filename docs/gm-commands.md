@@ -43,7 +43,7 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 | Lệnh | Cú pháp, ý nghĩa | Ví dụ |
 | --- | --- | --- |
 | `kit` | `/gm kit <bậc 1-4> <kiem\|hophap\|dansu> [+N] [m\|f]` — mặc trọn bộ (8 ô + trang sức đầu + kiếm + pháp bảo) phẩm cao nhất. | `/gm kit 2 kiem +10 m` |
-| `roll` | `/gm roll <mẫu> [phẩm 0-4] [ilvl]` — roll một món vào túi. | `/gm roll itm_liet_mach_kiem 4` |
+| `roll` | `/gm roll <mẫu> [phẩm 0-5] [ilvl]` — roll một món vào túi. | `/gm roll itm_liet_mach_kiem 4` |
 | `set` | `/gm set <id bộ\|off> [số món]` — mặc bộ (Địa phẩm), off cởi hết. | `/gm set set_dia_giap 4` |
 | `plus` | `/gm plus <0-10> [ô]` — đặt cấp cường hóa món đang mặc (mặc định kiếm). | `/gm plus 10 weapon` |
 | `art` | `/gm art <id pháp bảo\|off> [cấp 1-5]` — đeo pháp bảo. | `/gm art itm_thanh_lien_an 5` |

@@ -1,3 +1,4 @@
+import { pickQuality } from './equipLoot';
 import { describe, expect, it } from 'vitest';
 import {
   affixIlvlScale,
@@ -9,6 +10,7 @@ import {
   mainLine,
   parseInst,
   playerBaseStats,
+  QUALITY_COUNT,
   QUALITY_MUL,
   rollAffixes,
   rollItemInstance,
@@ -30,7 +32,7 @@ const SYS: ItemSysData = {
     { id: 'ring', weight: 0.6, main: { atk: 1 } },
     { id: 'artifact', weight: 0, main: {} },
   ],
-  qualities: [0, 1, 2, 3, 4].map((i) => ({ id: i as 0, color: '#ffffff', affixes: i, affixFrac: [0, 0.2, 0.3, 0.4, 0.5][i] })),
+  qualities: [0, 1, 2, 3, 4, 5].map((i) => ({ id: i as 0, color: '#ffffff', affixes: i, affixFrac: [0, 0.2, 0.3, 0.4, 0.5, 0.55][i] })),
   affixes: [
     { id: 'atk_pct', min: 0.02, max: 0.04, weight: 10 },
     { id: 'crit_rate', min: 0.015, max: 0.03, weight: 8 },
@@ -46,7 +48,7 @@ describe('ngân sách chỉ số', () => {
   it('khớp công thức (6 + 2,2·ilvl) × phẩm × ô', () => {
     expect(budget(10, 0, 1)).toBeCloseTo(28);
     expect(budget(10, 4, 1.3)).toBeCloseTo(28 * 1.75 * 1.3);
-    expect(QUALITY_MUL).toEqual([1, 1.15, 1.3, 1.5, 1.75]);
+    expect(QUALITY_MUL).toEqual([1, 1.15, 1.3, 1.5, 1.75, 2.1]);
   });
   it('phẩm cao mạnh hơn rõ nhưng không gấp đôi', () => {
     for (const il of [1, 8, 15]) expect(budget(il, 4, 1) / budget(il, 0, 1)).toBeLessThan(2);
@@ -82,7 +84,7 @@ describe('roll', () => {
   it('số dòng phụ đúng phẩm, không trùng, qua parseInst', () => {
     const rng = seededRng(1);
     for (const slot of ['weapon', 'robe', 'boots', 'ring'] as const) {
-      for (let q = 0; q < 5; q++) {
+      for (let q = 0; q < QUALITY_COUNT; q++) {
         for (let n = 0; n < 50; n++) {
           const inst = rollItemInstance(SYS, slot, 1 + (n % 20), q as 0, rng);
           expect(inst.affixes).toHaveLength(q);
@@ -116,7 +118,7 @@ describe('roll', () => {
   it('dòng chính không vượt ngân sách quá 5%', () => {
     const rng = seededRng(11);
     for (let n = 0; n < 200; n++) {
-      const q = (n % 5) as 0;
+      const q = (n % QUALITY_COUNT) as 0;
       const inst = rollItemInstance(SYS, 'weapon', 10, q, rng);
       expect(inst.main.atk!).toBeLessThanOrEqual(Math.ceil(budget(10, q, 1.3) * (1 - SYS.qualities[q].affixFrac) * 1.05));
     }
@@ -222,8 +224,23 @@ describe('giá bán trang bị đã roll', () => {
     expect(sellPrice(inst(2, 12), { sell: 0 })).toBe(0);
   });
   it('phẩm cao và ilvl cao bán được nhiều hơn', () => {
-    for (let q = 1; q < 5; q++)
+    for (let q = 1; q < QUALITY_COUNT; q++)
       expect(sellPrice(inst(q as 1, 12), { sell: 9999 })).toBeGreaterThan(sellPrice(inst((q - 1) as 0, 12), { sell: 9999 }));
     expect(sellPrice(inst(2, 15), { sell: 9999 })).toBeGreaterThan(sellPrice(inst(2, 5), { sell: 9999 }));
+  });
+});
+
+describe('phẩm Thần (bậc 6)', () => {
+  it('pickQuality nhận mảng 5 hoặc 6 trọng số; thiếu phần tử = 0', () => {
+    expect(pickQuality([0, 0, 0, 0, 0, 1], () => 0.5)).toBe(5);
+    for (let i = 0; i < 100; i++) expect(pickQuality([70, 30, 0, 0, 0], () => i / 100)).toBeLessThan(2);
+    expect(pickQuality([0, 0, 0, 75, 25, 0.6], () => 0.999999)).toBe(5);
+    expect(pickQuality([0, 0, 0, 75, 25, 0.6], () => 0.5)).toBe(3);
+  });
+  it('Thần phẩm roll đủ 5 dòng phụ và vượt Thiên phẩm cùng ilvl', () => {
+    const t = rollItemInstance(SYS, 'weapon', 20, 5, seededRng(3));
+    const h = rollItemInstance(SYS, 'weapon', 20, 4, seededRng(3));
+    expect(t.affixes).toHaveLength(5);
+    expect(t.main.atk!).toBeGreaterThan(h.main.atk!);
   });
 });

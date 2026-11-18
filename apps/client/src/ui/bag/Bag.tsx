@@ -25,7 +25,7 @@ import {
 } from './model';
 import './bag.css';
 
-const Q_OPTIONS: QualityFilter[] = ['all', 0, 1, 2, 3, 4];
+const Q_OPTIONS: QualityFilter[] = ['all', 0, 1, 2, 3, 4, 5];
 
 /** Gửi một lệnh thả đã được `planDrop` quyết định. `onSplit` mở hộp hỏi số lượng. */
 function runDrop(

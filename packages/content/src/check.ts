@@ -655,8 +655,8 @@ function checkEquipLoot(id: string, l: LootDef) {
   rolls.forEach((r, i) => {
     const w = `loot ${id}/equip[${i}]`;
     if (!(r.chance > 0 && r.chance <= 1)) err(`${w}: chance phải trong (0, 1]`);
-    if (!Array.isArray(r.q) || r.q.length !== QUALITY_COUNT || r.q.some((x) => !(x >= 0)) || !r.q.some((x) => x > 0))
-      err(`${w}: q phải là ${QUALITY_COUNT} trọng số >= 0, có ít nhất một số dương`);
+    if (!Array.isArray(r.q) || r.q.length < 5 || r.q.length > QUALITY_COUNT || r.q.some((x) => !(x >= 0)) || !r.q.some((x) => x > 0))
+      err(`${w}: q phải là 5–${QUALITY_COUNT} trọng số >= 0 (thiếu = 0), có ít nhất một số dương`);
     if (r.set && !SETS.some((x) => x.id === r.set)) err(`${w}: bộ không tồn tại ${r.set}`);
     for (const k of Object.keys(r.slots ?? {})) if (!slots.includes(k as EquipSlot)) err(`${w}: ô ${k} không rơi được`);
     if (r.ilvlBonus !== undefined && !(Number.isInteger(r.ilvlBonus) && r.ilvlBonus >= 0 && r.ilvlBonus <= 3))
@@ -665,6 +665,9 @@ function checkEquipLoot(id: string, l: LootDef) {
     const lo = r.q.findIndex((x) => x > 0);
     // Phẩm theo nguồn (thiết kế 3.2): quái thường chỉ Phàm/Linh; tinh anh từ Linh, tối đa Địa; Thiên chỉ boss.
     const hi = r.q.reduce((a, x, k) => (x > 0 ? k : a), 0);
+    // Thần phẩm (thiết kế bậc 6): chỉ boss, chỉ ở bảng rơi chính (i = 0), xác suất mỗi lần rơi ≤ 1%.
+    const pThan = (r.q[5] ?? 0) / tot;
+    if (pThan > 0 && (l.src !== 'boss' || i !== 0 || pThan > 0.01)) err(`${w}: Thần phẩm chỉ ở boss, bảng đầu, ≤ 1% mỗi lần rơi`);
     if (l.src === 'common' && hi > 1) err(`${w}: quái thường chỉ rơi Phàm/Linh phẩm`);
     if (l.src === 'dungeon' && hi > 3) err(`${w}: bí cảnh thường chỉ rơi tới Địa phẩm`);
     if (l.src === 'elite' && i === 0 && (hi > 3 || r.q[2] / tot < 0.3)) err(`${w}: tinh anh chủ yếu Huyền phẩm, tối đa Địa phẩm`);
@@ -909,8 +912,9 @@ for (const r of RECIPES) {
     if (f.reqLevel !== undefined && f.reqLevel !== (out ? (out.reqLevel ?? 1) : -1))
       err(`${w}: reqLevel phải bằng reqLevel của thành phẩm`);
     for (const i of f.inputs) needItem(i.id, w);
-    if (f.q.length !== QUALITY_COUNT || f.q.some((x) => !(x >= 0)) || !f.q.some((x) => x > 0)) err(`${w}: q sai`);
-    if (f.q[4] > 0 || f.q[3] / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3) err(`${w}: chế tạo không ra Thiên phẩm, Địa phẩm ≤ 30%`);
+    if (f.q.length < 5 || f.q.length > QUALITY_COUNT || f.q.some((x) => !(x >= 0)) || !f.q.some((x) => x > 0)) err(`${w}: q sai`);
+    if (f.q[4] > 0 || (f.q[5] ?? 0) > 0 || f.q[3] / (f.q.reduce((a, b) => a + b, 0) || 1) > 0.3)
+      err(`${w}: chế tạo không ra Thiên/Thần phẩm, Địa phẩm ≤ 30%`);
     if (!(f.ilvl >= 1 && f.ilvl <= 99) || !(f.gold >= 0)) err(`${w}: ilvl/gold sai`);
   }
 }

@@ -23,6 +23,7 @@
   --k-q2: #215a8a;
   --k-q3: #5f35b3;
   --k-q4: #b27b0a;
+  --k-q5: #b3261b;
   /* lòng giếng/ô tối trên giấy: nâu giấy đậm hơn một bậc */
   --k-night-0: #e0d4b6;
   --k-night: #e6dbc0;
@@ -388,6 +389,9 @@
 :root:root .ngj-win .k-tip-host:has(> .k-slot[data-q='4']) {
   filter: drop-shadow(0 0 6px rgba(240, 184, 64, 0.95));
 }
+:root:root .ngj-win .k-tip-host:has(> .k-slot[data-q='5']) {
+  filter: drop-shadow(0 0 7px rgba(232, 87, 74, 0.95));
+}
 
 /* ───────── thanh đo trong bảng: nền giếng sáng hơn, chữ trắng giữ nguyên ───────── */
 :root:root .ngj-win .gauge {
@@ -511,6 +515,10 @@
   color: #744b00;
   text-shadow: none;
 }
+:root:root .ngj-win .item-name[data-q='5'] {
+  color: #9c2118;
+  text-shadow: none;
+}
 :root:root .ngj-win .craft-chance {
   color: #574a34;
 }
@@ -560,6 +568,9 @@
 }
 :root:root .ngj-win .item-name[data-q='4'] {
   color: #744b00;
+}
+:root:root .ngj-win .item-name[data-q='5'] {
+  color: #9c2118;
 }
 :root:root .ngj-win .item-stat {
   color: #145877;
