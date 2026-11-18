@@ -1,3 +1,6 @@
+import { logger } from '../../base/log';
+
+const minimapLog = logger('minimap');
 // Nền bản đồ cổ dựng sẵn lúc build (`pnpm minimap:build` → public/map/van_lam.webp). Nạp lười, có mip để thu nhỏ không rỗ nét.
 /** Khớp `MinimapMeta` trong tools/asset-pipeline/src/minimap.ts: ảnh phủ vuông từ (x0, z0), cạnh `size` m, `px` pixel. */
 export interface MinimapMeta {
@@ -39,7 +42,7 @@ export function ancientMap(name = 'van_lam'): AncientMap | null {
   pending = load(name, () => want === curName)
     .catch((e) => {
       failedAt = performance.now();
-      if (attempts === 1) console.warn('[minimap] không nạp được nền bản đồ cổ, dùng ảnh địa hình dự phòng', e);
+      if (attempts === 1) minimapLog.warn('không nạp được nền bản đồ cổ, dùng ảnh địa hình dự phòng', e);
     })
     .finally(() => {
       pending = null;

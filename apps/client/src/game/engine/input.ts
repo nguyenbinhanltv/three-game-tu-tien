@@ -1,7 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { C, PF_DEAD, BAR_SIZE, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
 import { t } from '@dtl/content';
-import { closeTopPanel, get, pushToast, set, togglePanel, useUI } from '../../ui/store';
+import { closeTopPanel, get, pushToast, set, setHudPref, togglePanel, useUI } from '../../ui/store';
 import { closeChapters, toggleChapters, useChapters } from '../../ui/chapters/chaptersStore';
 import { unlockAudio } from '../audio/audio';
 import { budgetPixelRatio } from '../../render/post';
@@ -291,6 +291,8 @@ export function onKeyDown(eng: Game, e: KeyboardEvent): void {
       togglePanel('settings');
       break;
     case 'chat':
+      // Đang thu gọn thì Enter mở lại hẳn (lưu), không chỉ mở tạm để gõ rồi lại thu.
+      if (get().chatCollapsed) setHudPref('chatCollapsed', false);
       set({ chatOpen: true });
       break;
     case 'cancel':

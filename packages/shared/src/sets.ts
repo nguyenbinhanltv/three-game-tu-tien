@@ -2,7 +2,7 @@
 // Hàm thuần. Bảng bộ nằm ở packages/content/data/equipment/sets.json và được truyền vào qua `SetDef[]`.
 // Server quyết định kích hoạt (tính từ trang bị thật); client chỉ dùng cùng hàm này để hiển thị x/4 và dòng sáng.
 
-import type { AffixStat } from './items';
+import type { AffixStat } from './itemtypes';
 import { EQUIP_SLOTS, type EquipSlot } from './types';
 
 /** Hiệu ứng combat của bậc cao: server đọc cờ này trong `executeSkill`/`hitMonster`/`damagePlayer`. */

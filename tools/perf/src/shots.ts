@@ -34,6 +34,7 @@ import skinv3 from './scenarios/skinv3';
 import hoatruc from './scenarios/hoatruc';
 import hudplay from './scenarios/hudplay';
 import ui from './scenarios/ui';
+import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
 import xichkhe from './scenarios/xichkhe';
 
@@ -48,6 +49,7 @@ const SCENARIOS: Scenario[] = [
   skin,
   chrv2,
   ui,
+  chat,
   hudplay,
   hoatruc,
   thiennhan,

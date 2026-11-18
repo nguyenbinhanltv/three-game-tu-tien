@@ -37,6 +37,9 @@ import {
 } from './musicDirector';
 import { StemPlayer } from './stemMusic';
 import { FLAGS } from '../../base/flags';
+import { logger } from '../../base/log';
+
+const musicLog = logger('music');
 
 export { type MusicTrack } from './musicDirector';
 
@@ -526,7 +529,7 @@ export class MusicController {
     const amb = this.amb.update(now / 1000, ambientFor(inp.dungeon, inp.biome, isNight()));
     if (amb) {
       playAmbient(amb, 3);
-      if (DEBUG) console.info(`[music] âm môi trường → ${amb}`);
+      if (DEBUG) musicLog.debug(`âm môi trường → ${amb}`);
     }
     const ch = this.dir.update(now / 1000, inp);
     if (ch) this.apply(ch);
@@ -562,8 +565,8 @@ export class MusicController {
     this.layerLog.push({ t: Math.round(performance.now()), zone, level: this.level, mix, audible });
     if (this.layerLog.length > 50) this.layerLog.shift();
     if (DEBUG)
-      console.info(
-        `[music] lớp ${zone}: mức ${this.level} → nền ${mix.base} nhịp ${mix.pulse} căng ${mix.edge}${audible ? '' : ' (chưa ra tiếng)'}`,
+      musicLog.debug(
+        `lớp ${zone}: mức ${this.level} → nền ${mix.base} nhịp ${mix.pulse} căng ${mix.edge}${audible ? '' : ' (chưa ra tiếng)'}`,
       );
   }
 
@@ -616,13 +619,13 @@ export class MusicController {
     this.src = src;
     if (from === this.track) {
       // Cùng bài, chỉ đổi nguồn phát (manifest tải xong, bật lại tiếng): không phải chuyển trạng thái.
-      if (DEBUG && prevSrc !== src) console.info(`[music] ${this.track}: nguồn ${prevSrc} → ${src} (${reason})`);
+      if (DEBUG && prevSrc !== src) musicLog.debug(`${this.track}: nguồn ${prevSrc} → ${src} (${reason})`);
       return;
     }
     const e: LogEntry = { t: Math.round(performance.now()), from, to: this.track, src, fade, reason };
     this.log.push(e);
     if (this.log.length > 50) this.log.shift();
-    if (DEBUG) console.info(`[music] ${from ?? '∅'} → ${this.track} (${reason}; ${src}, fade ${fade}s)`);
+    if (DEBUG) musicLog.debug(`${from ?? '∅'} → ${this.track} (${reason}; ${src}, fade ${fade}s)`);
   }
 
   dispose(): void {

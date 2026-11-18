@@ -1,6 +1,6 @@
 // Prop bày của Bắc Hoang Tẫn Nguyên (DV-1). SINH BẰNG tools/maps/gen-bac-hoang.mjs: sửa ở đó rồi chạy lại.
 // Va chạm của trụ/đá/gốc cây nằm ở `terrain.colliders` (bac_hoang.terrain.json), tính từ PROP_LIB theo vị trí và xoay.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 export const BAC_HOANG_PROPS: readonly HandProp[] = [
   { id: 'prop_den_long_troi', x: 1010, z: 1524, yaw: 0, s: 1 },

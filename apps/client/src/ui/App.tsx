@@ -15,6 +15,9 @@ import { Corners } from './ngj';
 import { Portrait } from './Art';
 import { get, type Phase, set, useUI } from './store';
 import { FLAGS, urlParams } from '../base/flags';
+import { logger } from '../base/log';
+
+const titleLog = logger('title');
 
 const GOOGLE_CLIENT_ID = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_GOOGLE_CLIENT_ID ?? '';
 const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname) || window.location.hostname.endsWith('.localhost');
@@ -363,7 +366,7 @@ function syncBackdrop(phase: Phase): void {
     const b = new TitleBackdrop(host, () => boot.classList.add('lit'));
     backdrop = b;
     b.start().catch((e) => {
-      console.warn('[title] không dựng được cảnh nền, giữ nền tĩnh:', e);
+      titleLog.warn('không dựng được cảnh nền, giữ nền tĩnh:', e);
       if (backdrop === b) dropBackdrop();
     });
   }

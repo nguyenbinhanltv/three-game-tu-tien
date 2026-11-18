@@ -6,17 +6,8 @@ import { VAN_HAI_PADS } from './teleport.vanhai';
 import { THIEN_KHUYET_PADS } from './teleport.thienkhuyet';
 import { BAC_HOANG_PADS } from './teleport.bachoang';
 
-export interface TelePad {
-  id: string;
-  /** Level đặt trận (E1-B). Id trận ở level khác Vân Lam có tiền tố level (`dm_`, `vh_`, `tk_`, `bh_`) để `characters.tele` không đổi cấu trúc. */
-  level: string;
-  /** Hướng nhìn khi tới (điểm trận quay về phía này); thiếu thì về phía tông môn Vân Lam. */
-  face?: { x: number; z: number };
-  /** Id vùng (`zones` trong levels/van_lam.json) mà trận đứng trong; '' nếu là tông môn hoặc cổng. */
-  zone: string;
-  x: number;
-  z: number;
-}
+export type { TelePad } from './teleport.types';
+import type { TelePad } from './teleport.types';
 
 /**
  * Mỗi vùng một trận, cộng trận ở sân tông môn (mở sẵn) và ở bệ cổng Kiếm Trủng. Vị trí là chỗ bằng phẳng, không đè
