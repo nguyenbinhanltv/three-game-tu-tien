@@ -23,6 +23,25 @@ export default {
       for (const v of list('--variants', 'v1,v3')) {
         const tag = `${g === 'm' ? 'nam' : 'nu'}-${v}`;
         const dir = path.join(r.out, `_rec-${tag}`);
+        const stills = async () => {
+          // Ảnh cận mặt: phiên riêng, camera đặt ngay sau khi vào game (trong phiên quay, nhân vật đã bị `level`/di chuyển nên hướng nhìn lệch).
+          const still = await r.open({ name: `V3c${g}${v}`, viewport: [800, 500], quality: 'high', look: { g }, query: v === 'v1' ? {} : { chr: v }, hide: 'hud', warnings: /models|chr_v3|clip/ });
+          await gm(still.page, 'god on', 1000);
+          await gm(still.page, 'set set_lac_kiem', 1200);
+          await gm(still.page, 'killall', 800);
+          await gm(still.page, 'tp 2048 2088', 1500);
+          if (v === 'v3') await still.page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
+          await sleep(2500);
+          // Không `level`/di chuyển trước khi chụp: ngay sau khi vào, nhân vật quay mặt về camera yaw 0 (hướng thấy mặt).
+          await cam(still.page, { yaw: 0, pitch: 0.12, dist: 1.25 });
+          await sleep(1200);
+          await snap(still.page, r.out, `${tag}-canmat.jpg`, { clip: centerClip(800, 500, 520, 400) });
+          await still.ctx.close();
+        };
+        if (process.argv.includes('--stills')) {
+          await stills();
+          continue;
+        }
         const t0 = Date.now();
         const { ctx, page } = await r.open({ name: `V3${g}${v}`, viewport, quality: 'high', look: { g }, query: v === 'v1' ? {} : { chr: v }, hide: 'hud', warnings: /models|chr_v3|clip/, video: dir });
         await gm(page, 'level 12', 1500);
@@ -37,9 +56,6 @@ export default {
         await frame();
         const tScene = Date.now();
         await sleep(1500);
-        await cam(page, { yaw: 0, pitch: 0.02, dist: 0.9 }); // cận mặt
-        await sleep(1200);
-        await snap(page, r.out, `${tag}-canmat.jpg`, { clip: centerClip(viewport[0], viewport[1], 480, 360) });
         await frame();
         await sleep(1500); // đứng nghỉ
         await page.keyboard.down('KeyW'); // chạy
@@ -92,6 +108,7 @@ export default {
         }
         fs.rmSync(dir, { recursive: true, force: true });
         console.log(`[shots:chrv3] ${tag}.webm`);
+        await stills();
       }
     }
   },
