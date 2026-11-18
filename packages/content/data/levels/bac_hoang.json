@@ -431,6 +431,12 @@
       "z": 637,
       "r": 12,
       "to": "xich_tan_khich"
+    },
+    {
+      "x": 687,
+      "z": 631,
+      "r": 12,
+      "to": "kim_da_cung"
     }
   ],
   "spots": [

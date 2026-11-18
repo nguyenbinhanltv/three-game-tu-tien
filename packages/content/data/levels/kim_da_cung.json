@@ -1,0 +1,198 @@
+{
+  "id": "kim_da_cung",
+  "terrain": "van_lam",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1520,
+      "z": 1352
+    },
+    "exit": {
+      "x": 1520,
+      "z": 1370
+    },
+    "center": {
+      "x": 1520,
+      "z": 1300
+    },
+    "minLevel": 28,
+    "returnLevel": "bac_hoang",
+    "returnSpawn": {
+      "x": 687,
+      "z": 650
+    },
+    "bound": 90,
+    "private": true,
+    "lockAt": 2,
+    "maxRevives": 2,
+    "waves": [
+      {
+        "mons": [
+          {
+            "id": "mon_giac_kiem_trong_binh",
+            "level": 28,
+            "n": 8
+          },
+          {
+            "id": "mon_kd_trien_bo_cham_ba",
+            "level": 28,
+            "n": 2
+          }
+        ],
+        "delay": 8
+      },
+      {
+        "mons": [
+          {
+            "id": "mon_u_anh_cot_loc",
+            "level": 28,
+            "n": 6
+          }
+        ]
+      },
+      {
+        "mons": [
+          {
+            "id": "elite_kd_huyet_giac_ma_tuong",
+            "level": 28,
+            "n": 2
+          }
+        ],
+        "title": true
+      },
+      {
+        "puzzle": {
+          "points": [
+            {
+              "x": 1486,
+              "z": 1322
+            },
+            {
+              "x": 1554,
+              "z": 1322
+            },
+            {
+              "x": 1486,
+              "z": 1278
+            },
+            {
+              "x": 1554,
+              "z": 1278
+            }
+          ],
+          "msg": "kd_lamp",
+          "secs": 35,
+          "wrong": {
+            "mon": "mon_giac_kiem_trong_binh",
+            "level": 28,
+            "n": 4
+          },
+          "bossCut": 0.15
+        },
+        "mons": [],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_tan_hoa_kiem_co",
+            "level": 28,
+            "n": 1
+          }
+        ],
+        "title": true
+      },
+      {
+        "mons": [
+          {
+            "id": "boss_kim_da_ma_hau",
+            "level": 28,
+            "n": 1
+          }
+        ],
+        "title": true
+      }
+    ],
+    "reward": {
+      "xpPct": 0.15,
+      "gold": [
+        4200,
+        5600
+      ],
+      "level": 28,
+      "items": [
+        {
+          "item": "itm_tan_giac",
+          "chance": 1,
+          "min": 4,
+          "max": 6
+        },
+        {
+          "item": "itm_kim_da_mien",
+          "chance": 1,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "itm_tu_khi_dan",
+          "chance": 1,
+          "min": 2,
+          "max": 3
+        },
+        {
+          "item": "itm_yeu_dan",
+          "chance": 1,
+          "min": 3,
+          "max": 5
+        }
+      ],
+      "equip": [
+        {
+          "chance": 0.5,
+          "q": [
+            0,
+            0,
+            0,
+            70,
+            30
+          ],
+          "set": "set_tran_khich"
+        },
+        {
+          "chance": 0.4,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_tran_khich"
+        },
+        {
+          "chance": 0.35,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_tan_thiet"
+        },
+        {
+          "chance": 0.35,
+          "q": [
+            0,
+            0,
+            30,
+            55,
+            15
+          ],
+          "set": "set_tinh_dan_bao"
+        }
+      ]
+    }
+  }
+}
