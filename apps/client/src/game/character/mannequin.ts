@@ -22,7 +22,10 @@ const search = typeof location === 'undefined' ? '' : location.search;
 export const CHR_V3 = new URLSearchParams(search).get('chr') === 'v3';
 export const V3_LIB = 'anim_ual_native';
 /** Asset theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). */
-export const V3_MODELS = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
+export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
+/** Bản v3b: vạt xẻ hai bên đối xứng (concept v3b), là bản mặc định của `?chr=v3`; `?v3model=a` về bản v3 cũ để so ảnh. */
+export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
+export const V3_MODELS = new URLSearchParams(search).get('v3model') === 'a' ? V3_MODELS_A : V3_MODELS_B;
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
 export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_varkessa: 'chr_v3_varkessa_nu',
@@ -83,7 +86,7 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
 
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
-  if (handle.id.startsWith('chr_v3_lac_kiem')) for (const m of mats) applyV3Palette(m);
+  if (/^chr_v3b?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   const box = new THREE.Box3().setFromObject(handle.scene);
   // Độ cao hông của nhân vật so với bộ xương mẫu của thư viện: chỉ kênh vị trí của pelvis bị nhân theo tỉ lệ.
   const a = restPos(handle.scene, 'pelvis');

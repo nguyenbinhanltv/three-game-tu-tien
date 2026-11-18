@@ -11,8 +11,8 @@ import { cam, gm } from '../lib/game';
 import { centerClip, snap } from '../lib/shot';
 import type { Scenario } from '../lib/scenario';
 
-/** `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
-const QUERY: Record<string, Record<string, string>> = { v1: {}, v2: { chr: 'v2' }, v3: { chr: 'v3' }, v3raw: { chr: 'v3', v3pal: '0' } };
+/** `v3`/`v3b` = Lạc Kiếm v3b (mặc định của ?chr=v3), `v3a` = bản v3 cũ (`?v3model=a`). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
+const QUERY: Record<string, Record<string, string>> = { v1: {}, v2: { chr: 'v2' }, v3: { chr: 'v3' }, v3b: { chr: 'v3' }, v3a: { chr: 'v3', v3model: 'a' }, v3raw: { chr: 'v3', v3pal: '0' } };
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 
 export default {
@@ -126,11 +126,18 @@ export default {
           if (v.startsWith('v3')) await still.page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, { timeout: 60_000, polling: 300 });
           await sleep(2500);
           // Không `level`/di chuyển trước khi chụp: ngay sau khi vào, nhân vật quay mặt về camera yaw 0 (hướng thấy mặt).
-          await cam(still.page, { yaw: 0, pitch: 0.12, dist: 1.25 });
+          await cam(still.page, { yaw: Number(process.env.STILL_YAW ?? 0), pitch: 0.12, dist: 1.25 });
+          if (process.env.STILL_FLIP) {
+            // Quay mặt nhân vật về phía camera (hướng nhìn mặc định sau khi vào game là quay lưng); heading khóa lại để engine không xoay trở về.
+            await still.page.evaluate(() => {
+              const g = window.__game! as unknown as { camYaw: number; facing: number };
+              g.facing = g.camYaw + Math.PI;
+            });
+          }
           await sleep(1200);
           await snap(still.page, r.out, `${tag}-canmat.jpg`, { clip: centerClip(800, 500, 520, 400) });
           // Toàn thân cùng góc ảnh concept (trước mặt, xa hơn), để so màu cạnh nhau.
-          await cam(still.page, { yaw: 0, pitch: 0.06, dist: 2.6 });
+          await cam(still.page, { yaw: Number(process.env.STILL_YAW ?? 0), pitch: 0.06, dist: 2.6 });
           await sleep(1200);
           await snap(still.page, r.out, `${tag}-toanthan.jpg`, { clip: centerClip(800, 500, 360, 460) });
           // Cùng khung nhưng ẩn nhân vật: hiệu hai ảnh cho mặt nạ chính xác của nhân vật (đo màu trong game, không lẫn nền).
@@ -200,6 +207,8 @@ export default {
           await sleep(1300);
         }
         await gm(page, 'killall', 700);
+        await page.keyboard.press('KeyQ'); // lướt
+        await sleep(1200);
         for (const heavy of [false, true]) {
           await page.evaluate((hv) => {
             const g2 = window.__game!;

@@ -93,3 +93,29 @@ Hai model Tripo toàn thân của người dùng (`<dtl-asset-source>/chr/set_la
 - **Đả tọa, ngự kiếm, ngự không, niệm chú** dùng tư thế K-5 thật (`tam_thien`, `ngu_kiem`, `ngu_khong`, `niem_chu`) thay clip UAL (ngồi ghế `Sitting_Idle_Loop`, nhảy): đả tọa xếp bằng, vạt phủ lên đùi nhờ va chạm viên nang (N-6).
 - **Chưa làm / giới hạn**: lực nắm kiếm theo tay của pose (kiếm vẫn gắn xương `dtl_sword` kiểu N-3, không theo `bladeLocal` của IK nên lưỡi có thể lệch hướng so với pose); cử chỉ rút/tra kiếm (`arm`); ngón tay không theo pose (giữ nền); chưa có số đo khớp tư thế K-5 gốc ↔ Mannequin (chỉ so bằng video); chưa kiểm xuyên thân từng pose. Vạt rách ở chiêu xoay mạnh vẫn như N-6 (cần model v3b).
 - Quay: `pnpm shots chrv3 --variants v1,v3 --genders m --skills` (mỗi công pháp một video: 8 ô chiêu + đả tọa), `--sit` ảnh đả tọa.
+
+## N-8: Lạc Kiếm Môn Phục v3b (vạt xẻ hai bên đối xứng)
+
+Người dùng dựng lại hai model Tripo theo concept v3b (`raw_v3b_nam.glb` 57,5k mặt, `raw_v3b_nu.glb` 57,2k mặt). Nhập bằng đúng `chr_v3.py` và cùng cấu hình `v3_lac_kiem_springs.json` (vạt trước/sau, lò xo vạt/tóc/tay áo, xương twist, viên nang N-6): job `chr_v3b_lac_kiem_nam|nu` trong `run.mjs`, asset `chr_v3b_lac_kiem_nam|nu` (24.000 / 12.000 / 4.800 tam giác, 115 xương = 65 Mannequin + 3 `dtl_*` + 6 twist + lò xo; GLB 3,5 MB và 3,3 MB). **`?chr=v3` nay dùng v3b**; `?v3model=a` về bản v3 cũ (asset `chr_v3_lac_kiem_*` giữ nguyên, không đổi byte). Bảng màu 3 lớp, kiếm/vỏ `dtl_scabbard`/`dtl_sword` và K-5 dùng chung với v3.
+
+Base nhánh: origin/main + #233 (pose K-5 Mannequin, chưa merge lúc làm).
+
+**Xuyên thân, 12 tư thế, cùng phép đo (cặp mặt chồng, tăng so với tư thế nghỉ; `chr_v3.py` log "xuyên thân")**
+
+| | v3 | v3b | đổi |
+| --- | --- | --- | --- |
+| Nam, tổng cặp mặt | 3.254 | 2.058 | −37% |
+| Nữ, tổng cặp mặt | 2.490 | 1.585 | −36% |
+| Nam, đỉnh vải trong viên nang thân | 10.456 | 9.340 | −11% |
+| Nữ, đỉnh vải trong viên nang thân | 12.980 | 12.869 | −1% |
+
+Theo từng tư thế (nam v3 → v3b): Sitting 1690 → 550, Sword_Attack@0.35 403 → 193, Roll 326 → 334, Hit_Chest 147 → 207, Idle 94 → 170, Jog 92/59 → 118/162 (Idle/Jog/Hit_Chest **tăng**). Nữ: Sitting 723 → 367, Hit_Chest 380 → 252, Jog 145/243 → 98/124. Phép đo viên nang (đỉnh vải trong viên nang thân) gần như không đổi, nên mức cải thiện nằm ở cặp mặt tay/thân/chân chồng nhau (nhờ ngồi), không phải ở độ dày vạt so với thân.
+
+**Soát lưới thô v3b (lỗi cần biết)**
+- Vạt xẻ hai bên: **nam đối xứng tốt** (hai khe sâu, lớp lót lam hai bên, phía sau có khe giữa lưng). **Nữ kém đối xứng**: khe trái hở lộ lớp lót, khe phải bị mảng vạt loe che; nhìn từ sau, vạt bên phải loe như cánh, bên trái ép sát (tờ góc nhìn `views-nu`).
+- Đối xứng đo bằng khoảng cách gương (12.000 điểm mẫu, % chiều cao): nam v3 0,47% → v3b **2,30%** (p95 15,5%), nữ v3 1,87% → v3b 1,71% (p95 12,5%). Phần lệch tập trung ở dải hông-bụng (0,5–0,7 chiều cao): đai, dải rủ và đồ trang trí đai không đối xứng theo thiết kế, nên không phải lỗi mảng; nhưng số này cho thấy v3b nam không "đối xứng hơn" v3 theo phép đo này, chỉ vạt xẻ rõ hơn.
+- Mặt nam: mắt trái khép hơn mắt phải (nhìn rõ ở ảnh cận 3/4 trong `views-nam`). Mặt nữ ổn. Tóc nam/nữ không có tay dính thân; tay dang chếch, khe giữa chân rõ.
+- Trong game, mặt sau áo v3b có vài mảng lam đậm lớn ở gấu vạt khi chạy/ngã; chưa xác định là lớp lót lộ qua khe hay trọng số vạt/palette (cần thêm thử `?v3pal=0`).
+- Chưa sửa: vạt rách khi lăn/xoay/ngã vẫn còn (Roll không giảm), cần mô phỏng vải hoặc tách vạt thành mảnh. Ngự kiếm và đả tọa dùng chung K-5/Mannequin với v3.
+
+**Kiểm tra**: `pnpm typecheck` client sạch, `vitest src/game/character` 274 test qua, `assets:validate` 0 lỗi. Tờ khung 8 tư thế và tờ góc nhìn (toàn thân trước/3-4/bên/sau, cận mặt, hông trước/sau): `node tools/blender/run.mjs`-ngoài, `chr_v3.py ... --sheet <thư mục> --views --no-export`. Video so v3 | v3b: `pnpm shots chrv3 --variants v3a,v3b` (đặt `FFMPEG=` đường dẫn ffmpeg nếu không có trong PATH, nếu không video giữ nguyên phần màn tải). Ảnh phía trước trong game không chụp được (nhân vật luôn quay lưng camera): dùng tờ góc nhìn Blender.

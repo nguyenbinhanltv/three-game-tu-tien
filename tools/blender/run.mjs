@@ -51,6 +51,14 @@ const procedural = [
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', `chr_v3_lac_kiem_${g}`, '--auto', '--height', g === 'nam' ? '1.84' : '1.70', '--springs', 'repo:tools/blender/skins/v3_lac_kiem_springs.json'],
   })),
+  // Lạc Kiếm Môn Phục v3b: vạt xẻ hai bên đối xứng (concept v3b), cùng cấu hình lò xo/vạt với v3; asset v3 cũ giữ để so.
+  ...['nam', 'nu'].map((g) => ({
+    id: `chr_v3b_lac_kiem_${g}`,
+    script: 'tools/blender/chr_v3.py',
+    source: `chr/set_lac_kiem/tripo/raw_v3b_${g}.glb`,
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', `chr_v3b_lac_kiem_${g}`, '--auto', '--height', g === 'nam' ? '1.84' : '1.70', '--springs', 'repo:tools/blender/skins/v3_lac_kiem_springs.json'],
+  })),
   {
     id: 'chr_v3_varkessa_nu',
     script: 'tools/blender/chr_v3.py',
