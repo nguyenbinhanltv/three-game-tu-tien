@@ -1,5 +1,5 @@
 // Giao diện Ngọc Giản (UI-2/UI-3): HUD ở vài cảnh tiêu biểu và từng bảng lớn, ở nhiều cỡ màn hình, kèm chi phí CPU của trang.
-// `--variants truoc,sau`: truoc = `?ngj=0` (giao diện cũ) để so ảnh. Dùng sau khi sửa CSS/thành phần HUD, bảng hay `--ui-scale`.
+// `--variants truoc,sau`: chỉ là nhãn tên ảnh (chạy một lần trên bản trước, một lần trên bản sau để so; HUD cũ `?ngj=0` đã gỡ ở R-4c). Dùng sau khi sửa CSS/thành phần HUD, bảng hay `--ui-scale`.
 import type { Page } from 'playwright';
 import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
@@ -66,7 +66,7 @@ async function cpuPerFrame(page: Page): Promise<Record<string, number>> {
 }
 
 const open = (r: Run, name: string, variant: string, query: Record<string, string | number>) =>
-  r.open({ name, viewport: [1920, 1080], seenIntro: true, query: { god: 1, ...query, ngj: variant === 'truoc' ? 0 : 1, debug: undefined } });
+  r.open({ name, viewport: [1920, 1080], seenIntro: true, query: { god: 1, ...query, debug: undefined } });
 
 async function hud(r: Run, variants: string[], sizes: string[], only: string[]): Promise<Record<string, unknown>> {
   const out: Record<string, unknown> = {};
@@ -120,7 +120,7 @@ async function panels(r: Run, variants: string[], sizes: string[], only: string[
 
 export default {
   name: 'ui',
-  desc: 'HUD ở 5 cảnh + 13 bảng lớn Ngọc Giản ở 1080p/1440p, so với giao diện cũ (?ngj=0) và đo CPU của trang',
+  desc: 'HUD ở 5 cảnh + 13 bảng lớn Ngọc Giản ở 1080p/1440p, (nhãn trước/sau) và đo CPU của trang',
   usage: '[--part hud|panels|all] [--only <id cảnh hoặc id bảng>,…] [--variants truoc,sau] [--sizes 720p,1080p,1440p,4k]',
   async run(r) {
     const part = opt('--part', 'all');

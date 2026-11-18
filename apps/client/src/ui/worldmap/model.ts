@@ -5,7 +5,7 @@ import { MONSTER } from '@dtl/content';
 
 export type Layer = 'npc' | 'quest' | 'mon' | 'gather' | 'tele';
 export const LAYERS: readonly Layer[] = ['npc', 'quest', 'mon', 'gather', 'tele'];
-export const DEFAULT_LAYERS: Record<Layer, boolean> = { npc: true, quest: true, mon: true, gather: true, tele: true };
+const DEFAULT_LAYERS: Record<Layer, boolean> = { npc: true, quest: true, mon: true, gather: true, tele: true };
 
 /** Đọc bộ lọc đã lưu; thiếu/hỏng thì mặc định bật hết. */
 export function parseLayers(raw: string | null): Record<Layer, boolean> {
@@ -19,7 +19,7 @@ export function parseLayers(raw: string | null): Record<Layer, boolean> {
   return out;
 }
 
-export interface MonsterRow {
+interface MonsterRow {
   id: string;
   lvMin: number;
   lvMax: number;
@@ -27,7 +27,7 @@ export interface MonsterRow {
   spots: number;
 }
 
-export interface ZoneInfo {
+interface ZoneInfo {
   zone: ZoneDef;
   /** Tâm đa giác (để đặt nhãn và căn bản đồ). */
   cx: number;

@@ -39,7 +39,7 @@ export interface GradingPreset {
 
 export type GradingName = 'dawn' | 'day' | 'night' | 'ochre_dawn' | 'ochre' | 'ochre_night' | 'cloud_dawn' | 'cloud' | 'cloud_night' | 'tk_dawn' | 'tk' | 'tk_night' | 'ash_dawn' | 'rift' | 'rift_pit';
 /** Thời điểm trong ngày (`?mood=`); level có bộ mood riêng (Đoạn Mạch: `ochre*`) đổi theo. */
-export type TimeOfDay = 'dawn' | 'day' | 'night';
+type TimeOfDay = 'dawn' | 'day' | 'night';
 
 type RawPreset = Record<keyof GradingPreset, string | number>;
 const raw = palette.grading as unknown as {

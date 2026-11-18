@@ -21,7 +21,7 @@ import type { N } from '../render/vfx/common';
 export const GRASS_PUSH_SLOTS = 6;
 const CHUNK = 16;
 
-export interface GrassPreset {
+interface GrassPreset {
   /** Bán kính quanh người chơi có cỏ (m); 0 = tắt. */
   radius: number;
   /** Khoảng cách lưới đặt bụi cỏ (m). */
@@ -131,7 +131,7 @@ function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, 
 }
 
 /** Kiểu cỏ: bụi lá thủ tục xanh của Vân Lam, hoặc thẻ alpha cỏ khô/bụi gai (Đoạn Mạch, E2-I). */
-export type GrassStyle = 'blades' | 'cards';
+type GrassStyle = 'blades' | 'cards';
 /** Trọng số chọn thẻ trong atlas (`tools/asset-pipeline/src/grass-cards.ts`, thứ tự `CARDS`): hoang_coc, linh_rung, van_hai, gai_sa_thach. */
 const CARD_WEIGHTS = [0.34, 0.26, 0.2, 0.2];
 const C_STRAW = new THREE.Color(0xd8c9a8);
@@ -316,7 +316,7 @@ export function buildTuftGeometry(): THREE.BufferGeometry {
 }
 
 /** Thẻ cỏ: 3 mặt phẳng đứng cắt chéo (0°, 60°, 120°), rộng 0,9 m cao 0,675 m (đúng tỉ lệ ô atlas 4:3), gốc ở giữa đáy, uv.y = 0 gốc → 1 ngọn. */
-export function buildCardGeometry(): THREE.BufferGeometry {
+function buildCardGeometry(): THREE.BufferGeometry {
   const pos: number[] = [];
   const uvs: number[] = [];
   const nor: number[] = [];

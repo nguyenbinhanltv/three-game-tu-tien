@@ -21,26 +21,29 @@ Harness `springMetrics.ts` cũ chia vùng theo xương trội của từng đỉ
 
 Nữ làm mượt vạt–đùi: 4 vòng 3.894 (+2,1%) / 17.311 (+2,3%), 8 vòng 3.700 (−3,0%) / 17.595 (+3,9%) so với cơ sở 3.814 / 16.927. Làm mượt đánh đổi cặp chồng lấy đỉnh trong viên nang, không có lợi cả hai; lò xo tay áo cánh tay trên còn làm xấu vì chồng là giữa hai lớp vải (tay áo và áo thân), viên nang chỉ giữ đỉnh khỏi vào thân chứ không tách hai bề mặt. Hết hướng trọng số/tay áo bằng lò xo; muốn giảm bằng hình học thì phải thu hẹp tay áo (dựng lại model) hoặc đổi tư thế tay.
 
-## Cải tiến: chừa khoảng cách tay (client)
-`mannequin.ts` (`ARM_CLEAR_DEG`, `SPRING2.armDeg`): sau khi mixer chạy, quay hai cánh tay trên ra khỏi thân quanh trục trước–sau (tính trong hệ xương cha lúc nghỉ nên theo thân khi xoay) một góc, **nhân hệ số theo độ buông của tay** (0 khi hướng vai→khuỷu cách phương thẳng đứng hơn 60°, 1 khi buông thẳng; dùng ma trận khung trước, không cập nhật thêm) để tay giơ ra trước (niệm chú, chém) không bị dạng thêm. Chỉ áp cho asset `chr_v3b2_*`; `?armclear=<độ>` đổi (0 tắt). Quét góc (hệ số theo độ buông, v3b2):
+## Cải tiến: dạng tay theo model, gộp vào ARM_FIT của #249
+Sau khi #249 merge có `ARM_FIT` (bù dang tay theo model, mặc định 5°, `?armfit=<độ>`), cùng ý với cơ chế chừa tay ban đầu của #251. Đã **gộp thành một cơ chế** (không cộng dồn góc): giữ `ARM_FIT`/`?armfit=` của #249, bỏ `armClear`/`?armclear=` của tôi, và làm hai việc:
+- `ARM_FIT` khai góc cho Lạc Kiếm v3b2 (`chr_v3b2_lac_kiem_nam|nu`) = **16°** (tổng cuối); các model khác vẫn mặc định 5°.
+- Nhân thêm **hệ số theo độ buông của tay** (0 khi hướng vai→khuỷu cách phương thẳng đứng hơn 60°, 1 khi buông thẳng) vào khối ARM_FIT (`armDroop`, dùng ma trận thế giới đã cập nhật ở khối đó), để tay giơ ra trước (chém, niệm) không bị dạng thêm. Áp cho mọi model.
+Điều kiện của #249 giữ nguyên (`free && !casting`, giảm còn 40% khi chiêu K-5 điều khiển tay), nên **ngồi/đả tọa/bay không được bù** (tay đang theo pose riêng); harness lái clip qua trạng thái không-ngồi nên số đo tư thế ngồi bên dưới cao hơn thực tế trong game.
+
+Quét góc ARM_FIT cho v3b2 (cơ chế gộp, 12 tư thế, chia vùng hình học):
 
 | góc | nam cặp / viên nang | nữ cặp / viên nang |
 | --- | --- | --- |
-| 0° (cơ sở) | 6.193 / 12.855 | 3.814 / 16.927 |
-| 12° | 4.384 (−29%) / 12.347 (−4,0%) | 2.848 (−25%) / 16.804 (−0,7%) |
-| **16° (chọn)** | **4.136 (−33%) / 12.291 (−4,4%)** | **2.748 (−28%) / 16.801 (−0,7%)** |
-| 20° | 3.939 (−36%) / 12.286 | 2.592 (−32%) / 16.798 |
-| 24° | 3.748 (−39%) / 12.308 | 2.456 (−36%) / 16.788 |
+| 0° (không bù) | 6.270 / 12.977 | 3.894 / 16.936 |
+| 5° (mặc định #249) | 5.214 (−17%) / 12.623 | 3.305 (−15%) / 16.866 |
+| 10° | 4.684 (−25%) / 12.484 | 3.020 (−22%) / 16.860 |
+| 12° | 4.455 (−29%) / 12.451 | 2.955 (−24%) / 16.819 |
+| **16° (chọn)** | **4.179 (−33%) / 12.396 (−4,5%)** | **2.686 (−31%) / 16.830 (−0,6%)** |
+| 20° | 3.697 (−41%) / 12.366 | 2.403 (−38%) / 16.828 |
 
-Chọn 16° (tay dang thêm 16° khi buông: vẫn tự nhiên, 20°+ bắt đầu thấy "chống nạnh"). Theo tư thế (nam, cặp / viên nang, 0° → 16°): Idle 1.281/710 → 720/646; ngồi 1.789/1.664 → 913/1.289 (viên nang −23%); Hit_Chest 426 → 255; niệm 432 → 104; nữ Idle 825 → 409, ngồi 932/1.990 → 694/1.907. Jog/chém/lăn ít đổi vì tay đã khác tư thế buông.
+Chọn 16°: tay dang thêm 16° khi buông, vẫn tự nhiên, 20°+ bắt đầu thấy "chống nạnh". 5° của #249 đã lấy được khoảng nửa lợi ích; 16° lấy thêm ~16 điểm phần trăm.
 
-Khi bật hệ số theo độ buông, tay niệm chú không còn bật cao (không có hệ số: 8°/20° làm tay phải giơ cắt vào thân, nam 962/1.336 cặp ở tư thế niệm).
-
-## CPU
-Vi đo 50 nhân vật (`SPRING_CPU=1`, `SPRING_CPU_ARM=off|on`, xen kẽ 2 lần mỗi chế độ, trung vị ms/khung): nam tắt 8,68 / 9,99, bật 9,38 / 7,64; nữ tắt 9,24 / 9,80, bật 8,96 / 7,71. Nhiễu lớn hơn chi phí; thêm một phép nhân quaternion mỗi tay mỗi khung, không đo được.
+**CPU** (vi đo 50 nhân vật, `SPRING_CPU=1`, `SPRING_CPU_ARM=off|on` xen kẽ 2 lần, trung vị ms/khung): nam tắt 6,22 / 5,77, bật 6,81 / 6,19; nữ tắt 6,83 / 5,53, bật 6,52 / 6,18. Thêm bốn lần `getWorldPosition` mỗi nhân vật mỗi khung: chi phí nhỏ (≲ 0,5 ms cho 50 nhân vật), trong mức nhiễu.
 
 ## Chạm chung file với worker animation
-`mannequin.ts` chỉ thêm: hằng số và trường `armClear`/`armQ`, dựng danh sách tay trong constructor (sau khi dựng rig), và **một khối nhỏ trong `update()` ngay sau `mixer.update` và trước tính xương twist** (nhân quaternion hai cánh tay). Không đổi crossfade, retarget, clip nền hay đòn. Nếu worker animation đổi thứ tự trong `update()` thì khối này phải đứng sau mixer và trước twist/lò xo.
+Sau khi #249 merge không còn khối riêng của tôi trong `update()`: toàn bộ nằm trong khối ARM_FIT của #249 (thêm `armDroop`, bảng `ARM_FIT` cho v3b2, hai xương `lowerarm_l/r` vào danh sách `bones`). Phần còn lại của `mannequin.ts` là lò xo (#246).
 
 ## Video
-`pnpm shots chrv3 --variants v3old,v3new --genders m,f --six --out <thư mục tuyệt đối>` (đặt `FFMPEG=`): trái `?armclear=0` (không chừa tay), phải mặc định (chừa tay 16°); Idle, chạy, chém, xoay chém, lăn, ngồi (đả tọa K-5), ngã; hai góc (3/4, ngang), camera sát hông–gối, nhãn clip thật trên khung, ghép theo mốc. Khác biệt rõ nhất ở Idle/đứng và ngồi: tay dang hơn.
+`pnpm shots chrv3 --variants v3a0,v3a5,v3new --genders m,f --six --out <thư mục tuyệt đối>` (đặt `FFMPEG=`): ba cột — không bù tay (`?armfit=0`) | main (5°, `?armfit=5`) | cơ chế gộp (16° + hệ số buông, mặc định); Idle, chạy, chém, xoay chém, lăn, ngồi (đả tọa K-5), ngã; hai góc (3/4, ngang), camera sát hông–gối, nhãn clip thật trên khung, ghép theo mốc. Khác biệt rõ nhất ở Idle và đứng: tay dang dần từ cột trái sang phải.

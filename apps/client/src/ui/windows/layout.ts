@@ -18,31 +18,31 @@ export interface Viewport {
 }
 
 /** Chừa đáy cho thanh chiêu (khớp `.k-window` trong kit.css). */
-export const BOTTOM_RESERVE = 136;
-export const WIN_GAP = 12;
-export const WIN_MARGIN = 12;
+const BOTTOM_RESERVE = 136;
+const WIN_GAP = 12;
+const WIN_MARGIN = 12;
 
 /** Chiều rộng thiết kế từng cửa sổ (khớp `width` truyền cho PanelWindow). */
-export const WIN_WIDTH: Record<WinId, number> = { bag: 520, char: 560, quests: 460, help: 520, settings: 430, map: 980, method: 600, party: 460, credits: 520 };
+const WIN_WIDTH: Record<WinId, number> = { bag: 520, char: 560, quests: 460, help: 520, settings: 430, map: 980, method: 600, party: 460, credits: 520 };
 /** Chiều cao ước lượng để canh giữa (cửa sổ cuộn nên không biết trước). */
-export const WIN_HEIGHT: Record<WinId, number> = { bag: 600, char: 680, quests: 520, help: 460, settings: 600, map: 640, method: 600, party: 520, credits: 620 };
+const WIN_HEIGHT: Record<WinId, number> = { bag: 600, char: 680, quests: 520, help: 460, settings: 600, map: 640, method: 600, party: 520, credits: 620 };
 
 /** Cửa sổ ghép đôi: nhân vật bên trái, túi bên phải. */
-export const PAIR_LEFT: WinId = 'char';
-export const PAIR_RIGHT: WinId = 'bag';
+const PAIR_LEFT: WinId = 'char';
+const PAIR_RIGHT: WinId = 'bag';
 
-export interface Rect {
+interface Rect {
   x: number;
   y: number;
   w: number;
   h: number;
 }
 
-export function winWidth(id: WinId, vp: Viewport): number {
+function winWidth(id: WinId, vp: Viewport): number {
   return Math.min(WIN_WIDTH[id], vp.vw - 2 * WIN_MARGIN);
 }
 
-export function maxHeight(vp: Viewport): number {
+function maxHeight(vp: Viewport): number {
   return vp.vh - BOTTOM_RESERVE - 16;
 }
 
@@ -65,14 +65,14 @@ export function clampPos(id: WinId, x: number, y: number, vp: Viewport): { x: nu
 }
 
 /** Vị trí mặc định: giữa phần màn hình trên thanh chiêu. */
-export function defaultPos(id: WinId, vp: Viewport): { x: number; y: number } {
+function defaultPos(id: WinId, vp: Viewport): { x: number; y: number } {
   const w = winWidth(id, vp);
   const h = Math.min(WIN_HEIGHT[id], maxHeight(vp));
   return clampPos(id, (vp.vw - w) / 2, Math.max(WIN_MARGIN, (vp.vh - BOTTOM_RESERVE - h) / 2), vp);
 }
 
 /** Hai cửa sổ cạnh nhau, cả cặp nằm giữa màn hình. Màn quá hẹp thì chồng một phần (vẫn thấy cả hai thanh tiêu đề). */
-export function pairLayout(vp: Viewport): { left: { x: number; y: number }; right: { x: number; y: number } } {
+function pairLayout(vp: Viewport): { left: { x: number; y: number }; right: { x: number; y: number } } {
   const wl = winWidth(PAIR_LEFT, vp);
   const wr = winWidth(PAIR_RIGHT, vp);
   const total = wl + wr + WIN_GAP;
@@ -84,19 +84,19 @@ export function pairLayout(vp: Viewport): { left: { x: number; y: number }; righ
   return { left: { x: Math.round(x0), y }, right: { x: Math.round(x0 + wl + WIN_GAP), y } };
 }
 
-export interface OpenResult {
+interface OpenResult {
   list: WinState[];
   /** Cửa sổ vừa mở hoặc vừa đưa lên trên. */
   opened: WinState;
 }
 
 /** Xếp lại z về 1..N theo thứ tự hiện tại: z không bao giờ vượt số cửa sổ (tối đa 8), nên không vượt các lớp toast/modal/tooltip. */
-export function normalizeZ(list: readonly WinState[]): WinState[] {
+function normalizeZ(list: readonly WinState[]): WinState[] {
   const order = [...list].sort((a, b) => a.z - b.z);
   return list.map((w) => ({ ...w, z: order.findIndex((o) => o.id === w.id) + 1 }));
 }
 
-export function topZ(list: readonly WinState[]): number {
+function topZ(list: readonly WinState[]): number {
   return list.reduce((m, w) => Math.max(m, w.z), 0);
 }
 

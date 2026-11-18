@@ -23,9 +23,9 @@ import { vnoise, type FxUniforms } from './common';
  */
 
 /** Góc mở của cung (rad). */
-export const SLASH_ARC = (150 * Math.PI) / 180;
+const SLASH_ARC = (150 * Math.PI) / 180;
 /** Độ dày lớn nhất của dải so với bán kính. */
-export const SLASH_WIDTH = 0.42;
+const SLASH_WIDTH = 0.42;
 /** Màu mực nền: lam ngọc rất tối (bóng ngả ngọc lam, không đen tuyền). */
 export const SLASH_INK = 0x14272b;
 
@@ -65,7 +65,7 @@ export function slashGeometry(arc = SLASH_ARC, segs = 32, width = SLASH_WIDTH): 
 
 export const SLASH_GEO = slashGeometry();
 
-export interface SlashPhase {
+interface SlashPhase {
   /** Đầu quét 0..1. */
   head: number;
   /** Ngưỡng ăn mòn (0 còn nguyên, 1,1 tan hết). */

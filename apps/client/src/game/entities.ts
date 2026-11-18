@@ -332,7 +332,7 @@ function makeMarker(ch: string, color: string): THREE.Texture {
   return tex;
 }
 
-export type PickResult = { kind: 'mon' | 'npc' | 'node' | 'player'; id: string } | null;
+type PickResult = { kind: 'mon' | 'npc' | 'node' | 'player'; id: string } | null;
 
 const _v = new THREE.Vector3();
 const _frustum = new THREE.Frustum();
@@ -343,7 +343,7 @@ const _sphere = new THREE.Sphere();
  * Số thể có xương tối đa được LOD0 (gần camera nhất, trong khung nhìn). Còn lại tối thiểu LOD1 (7,6k tam giác với
  * Thanh Phong thay vì 19k) và không đổ bóng. 12 × 19k × 2 (cả pass bóng) ≈ 0,46M tam giác.
  */
-export const LOD0_MAX = 12;
+const LOD0_MAX = 12;
 /**
  * Quái chỉ dựng model trong 100 m quanh mình (xóa khi quá 125 m, chừa vùng đệm để không dựng/xóa liên tục ở rìa).
  * Bãi quái dày (M-1: ~1 800 quái/km² vùng săn) nên bán kính 240 m cũ dựng cả trăm model xương không ai thấy qua sương.
@@ -354,7 +354,7 @@ const MON_FAR = 125;
  * Số nhãn tên tối đa (gần camera nhất, trong khung nhìn); mình và mục tiêu luôn có. Mỗi nhãn là một sprite = một draw
  * call trong suốt; giữa đám đông 50 người, nhãn của người xa hơn bị che lấp, hiện không giúp gì.
  */
-export const LABEL_MAX = 16;
+const LABEL_MAX = 16;
 /**
  * Rộng tấm nhãn trên màn hình (px, ở hệ số UI 1) được kẹp trong khoảng này (P2-E4); chữ chiếm chừng 62%.
  * Trần 240 để tên không to hơn chữ HUD khi camera sát; sàn 160 để dòng cảnh giới còn đọc được khi camera xa.
@@ -362,21 +362,21 @@ export const LABEL_MAX = 16;
  */
 const LABEL_PX = { min: 160, max: 240 };
 /** Nhãn mờ dần theo khoảng cách tới camera: rõ tới `full` mét, tắt hẳn ở `none` mét (mình và mục tiêu luôn rõ). */
-export const LABEL_FADE = { full: 45, none: 70 };
+const LABEL_FADE = { full: 45, none: 70 };
 
 /** Độ mờ nhãn ở khoảng cách `dist` (m). */
-export function labelOpacity(dist: number, keep: boolean): number {
+function labelOpacity(dist: number, keep: boolean): number {
   if (keep) return 1;
   return Math.max(0, Math.min(1, (LABEL_FADE.none - dist) / (LABEL_FADE.none - LABEL_FADE.full)));
 }
 
 /** Dòng cảnh giới trên bảng tên người chơi: `[Ngưng Khí tầng 9]`. */
-export function realmTag(level: number): string {
+function realmTag(level: number): string {
   return t('ui.nameplate.realm', { realm: realmName(level) });
 }
 
 /** Màu dòng cảnh giới theo đại cảnh giới: Ngưng Khí vải ngà, Trúc Cơ kim quang (art bible mục 4: attire_ivory, spirit_gold). */
-export function realmTagColor(level: number): string {
+function realmTagColor(level: number): string {
   return level >= TRUC_CO_LEVEL ? '#ffde96' : '#e6ddcb';
 }
 
@@ -661,7 +661,9 @@ export class EntityManager {
       }
       h.push({ t: this.time, x: v.x, z: v.z });
       while (h.length > 1 && this.time - h[0].t > HIST_SEC) h.shift();
+      const lookMon = isLocal && targetId ? this.monsters.get(targetId) : undefined;
       v.model.update(dt, {
+        lookAt: lookMon ? { x: lookMon.x, y: lookMon.y + 1.2, z: lookMon.z } : undefined,
         moveDir: v.speed > 0.3 ? locoDirOf(v.yaw, v.mvx, v.mvz) : undefined,
         speed: v.speed,
         flying: (s.fl & PF_FLYING) !== 0,

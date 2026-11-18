@@ -28,12 +28,12 @@ export type SigilShape = typeof SIGIL_CIRCLE | typeof SIGIL_RECT | typeof SIGIL_
 /** Lề quanh hình để viền không bị cắt (m). */
 export const SIGIL_PAD = 0.3;
 /** Màu nền mực (lam ngọc rất tối). */
-export const SIGIL_INK = 0x0d1c20;
+const SIGIL_INK = 0x0d1c20;
 
 /** Tấm 1×1 nằm ngang, tâm ở gốc. */
 export const SIGIL_GEO = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
 
-export interface SigilLayout {
+interface SigilLayout {
   /** Cỡ tấm theo trục x/z cục bộ (m). */
   sx: number;
   sz: number;

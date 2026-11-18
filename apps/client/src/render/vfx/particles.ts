@@ -22,9 +22,9 @@ const MAX_TOTAL = 20000;
  * Tuổi thọ tối đa của một hạt (giây); `emit` chặn ở mức này để biết ô nào chắc chắn đã chết.
  * 9 s để mảng sương/lá rơi của hạt môi trường (game/ambient.ts) trôi chậm, hiện/tắt từ từ.
  */
-export const PARTICLE_MAX_LIFE = 9;
+const PARTICLE_MAX_LIFE = 9;
 
-export type ParticleLayer = 'glow' | 'dust';
+type ParticleLayer = 'glow' | 'dust';
 
 const uTime = uniform(0);
 

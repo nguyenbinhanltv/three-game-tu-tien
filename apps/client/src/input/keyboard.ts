@@ -1,9 +1,9 @@
 import { isAlt, OPPOSITE_KEY, STICKY_MODS } from './bindings';
 
-export type KeyEventKind = 'down' | 'up' | 'clear';
+type KeyEventKind = 'down' | 'up' | 'clear';
 
 /** Một dòng trong nhật ký phím của bảng gỡ lỗi. `code` là mã phím, hoặc lý do khi `kind` là 'clear'. */
-export interface KeyLogEntry {
+interface KeyLogEntry {
   id: number;
   at: number;
   kind: KeyEventKind;

@@ -5,7 +5,7 @@
  */
 
 /** Thao tác bấm một lần (xử lý ở keydown). */
-export type Action =
+type Action =
   | 'target'
   | 'fly'
   | 'meditate'
@@ -58,7 +58,7 @@ export const KEY_ACTIONS: Readonly<Record<string, Action>> = {
 };
 
 /** Thao tác giữ phím (đọc mỗi khung từ tập phím đang giữ). */
-export type HeldAction =
+type HeldAction =
   | 'forward'
   | 'back'
   | 'left'

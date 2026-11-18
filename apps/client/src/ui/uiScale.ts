@@ -3,8 +3,8 @@
  * (2560×1440, 4K) thì phóng đều để chữ không bé tí. Hệ số ghi vào biến CSS `--ui-scale` trên `<html>`; các khối HUD dùng
  * `zoom: var(--ui-scale)` (xem `ui/panels.css`). Bản đồ nhỏ và các lớp cảnh điện ảnh tự co giãn riêng, không dùng biến này.
  */
-export const UI_BASE = { w: 1920, h: 1080 };
-export const UI_SCALE_MAX = 2;
+const UI_BASE = { w: 1920, h: 1080 };
+const UI_SCALE_MAX = 2;
 
 /** Hệ số cho khung nhìn `w`×`h` (px CSS): 1 tới 1920×1080, tăng theo cạnh hẹp hơn, làm tròn 0,05, trần `UI_SCALE_MAX`. */
 export function uiScaleFor(w: number, h: number): number {

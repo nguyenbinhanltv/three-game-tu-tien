@@ -5,7 +5,7 @@ import { SysIcon, type SysIconName } from './icons';
 
 /** Bộ thành phần "Ngọc Giản Kim Văn" (UI-1). Khung SVG/CSS, màu theo token `--ngj-*` (tokens.css), chưa gắn vào HUD/bảng thật. */
 
-export type Material = 'lacquer' | 'paper';
+type Material = 'lacquer' | 'paper';
 export type CornerKind = 'star' | 'moon' | 'sun' | 'plain' | 'cloud';
 export type MapMotif = 'van_lam' | 'doan_mach' | 'van_hai' | 'thien_khuyet' | 'bac_hoang';
 
@@ -141,7 +141,7 @@ export function Cartouche({ map, title, material = 'paper', size = 'm' }: { map:
 
 /* ───────── Button ───────── */
 
-export type NgjButtonVariant = 'primary' | 'secondary' | 'ghost';
+type NgjButtonVariant = 'primary' | 'secondary' | 'ghost';
 
 export function NgjButton({ variant = 'primary', onClick, disabled, children, type = 'button', ...aria }: { variant?: NgjButtonVariant; onClick?: () => void; disabled?: boolean; children: ReactNode; type?: 'button' | 'submit'; 'aria-label'?: string }) {
   return (

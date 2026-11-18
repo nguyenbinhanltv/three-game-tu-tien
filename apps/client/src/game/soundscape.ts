@@ -1,4 +1,4 @@
-import { heightAt, LAKE, SECT, WATER_Y } from '@dtl/shared';
+import { heightAt, LAKE, mulberry32, SECT, WATER_Y } from '@dtl/shared';
 import type { SpatialLoop, SpatialOpts } from './audio';
 
 /**
@@ -7,16 +7,16 @@ import type { SpatialLoop, SpatialOpts } from './audio';
  * suy giảm theo mô hình nghịch đảo của PannerNode (xa nhỏ dần, lệch trái/phải theo hướng camera nhờ `setListener`).
  * Phần chọn nguồn và dựng âm là hàm thuần để test; phần phát nhận các hàm của audio.ts qua `SpatialApi`, nên test không cần Web Audio.
  */
-export type SourceKind = 'lantern' | 'water' | 'bell';
+type SourceKind = 'lantern' | 'water' | 'bell';
 
-export interface SoundSource {
+interface SoundSource {
   id: string;
   kind: SourceKind;
   x: number;
   z: number;
 }
 
-export interface KindSpec extends SpatialOpts {
+interface KindSpec extends SpatialOpts {
   /** Ngoài tầm này nguồn không được dựng. */
   range: number;
   /** Số nguồn cùng loại tối đa phát cùng lúc. */
@@ -32,7 +32,7 @@ export const KINDS: Record<SourceKind, KindSpec> = {
 };
 
 /** Chuông ở chính điện Lạc Kiếm Tông (sect.ts: chính điện ở z = 2004). */
-export const BELL_POS = { x: SECT.x, z: 2004 };
+const BELL_POS = { x: SECT.x, z: 2004 };
 
 /**
  * Điểm bờ quanh hồ (16 điểm): đi từ ngoài vào theo từng tia từ tâm hồ, lấy chỗ đầu tiên mặt đất thấp hơn mặt nước + 0,3 m.
@@ -78,17 +78,6 @@ export function pickActive(sources: readonly SoundSource[], lx: number, lz: numb
     out.push(...near.slice(0, k.cap));
   }
   return out;
-}
-
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 /**
@@ -169,7 +158,7 @@ interface Voice {
 
 /** Quãng chờ chuông kế tiếp (giây): lần đầu sớm để nghe được, sau đó thưa. */
 export const BELL_FIRST = [10, 22] as const;
-export const BELL_EVERY = [40, 70] as const;
+const BELL_EVERY = [40, 70] as const;
 
 export class Soundscape {
   private voices = new Map<string, Voice>();

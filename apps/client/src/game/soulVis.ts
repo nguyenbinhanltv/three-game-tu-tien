@@ -14,12 +14,12 @@ const FIG_ALPHA = 0.45;
 const MAX_FIGS = 6;
 const MAX_PULSES = 12;
 /** Nguyên anh nhỏ bằng chừng này so với người thật. */
-export const SOUL_SCALE = 0.56;
+const SOUL_SCALE = 0.56;
 const TETHER_PTS = 22;
 const MOTES = 20;
 
 /** Dựng bản thu nhỏ của nhân vật `sid` (null nếu asset chưa nạp hoặc model dự phòng: dùng hình giọt nước). */
-export type SoulMaker = (sid: string, kind: 'soul' | 'husk') => CharacterView | null;
+type SoulMaker = (sid: string, kind: 'soul' | 'husk') => CharacterView | null;
 
 /** Hình dự phòng (khi chưa có model xương): đầu tròn, thân giọt nước; cao khoảng 1,1 m. */
 function makeFigure(mat: THREE.Material, geo: { head: THREE.BufferGeometry; body: THREE.BufferGeometry }): THREE.Group {

@@ -59,12 +59,12 @@ export interface AcquireOptions {
 }
 
 /** Tiến độ nạp theo byte (kích thước lấy từ manifest), cộng dồn mọi asset đã yêu cầu. */
-export interface AssetProgress {
+interface AssetProgress {
   loaded: number;
   total: number;
 }
 
-export interface AssetCacheStats {
+interface AssetCacheStats {
   /** Số asset có bản gốc trong bộ nhớ. */
   loaded: number;
   /** Số asset đang chờ hoặc đang nạp. */
@@ -255,7 +255,7 @@ export function createGltfLoader(ktx2: KTX2Loader): GLTFLoader {
 }
 
 /** Dispose geometry, material và texture trong material của một cây object. */
-export function disposeObject(root: THREE.Object3D): void {
+function disposeObject(root: THREE.Object3D): void {
   const geos = new Set<THREE.BufferGeometry>();
   const mats = new Set<THREE.Material>();
   root.traverse((o) => {

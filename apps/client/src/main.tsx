@@ -3,7 +3,7 @@ import { App } from './ui/App';
 import './styles.css';
 import { installUiScale } from './ui/uiScale';
 import { urlParams } from './game/flags';
-import { installMotion, installNgjHud } from './ui/ngj/motion';
+import { installMotion } from './ui/ngj/motion';
 
 const root = document.getElementById('root')!;
 
@@ -28,6 +28,5 @@ if (q.get('viewer') === 'asset' || q.has('show')) {
 
   installUiScale();
   installMotion();
-  installNgjHud();
   createRoot(root).render(<App />);
 }

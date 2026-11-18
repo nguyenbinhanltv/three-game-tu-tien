@@ -38,7 +38,7 @@ import {
 import { StemPlayer } from './stemMusic';
 import { FLAGS } from './flags';
 
-export { MUSIC_TRACKS, type MusicTrack } from './musicDirector';
+export { type MusicTrack } from './musicDirector';
 
 const DEV = (import.meta as unknown as { env: { DEV: boolean } }).env.DEV;
 const DEBUG = DEV || FLAGS.debug;
@@ -403,7 +403,7 @@ class Procedural {
 
 // ---------- bộ điều khiển ----------
 
-export interface MusicTick {
+interface MusicTick {
   /** Đã vào game (đang ở màn tải thì chưa phát nhạc vùng). */
   active: boolean;
   /** Tên room hiện tại (`world`/`dungeon`). */

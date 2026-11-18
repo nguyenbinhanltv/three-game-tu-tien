@@ -47,7 +47,7 @@ FX_PALETTE.dotpha_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 
 FX_PALETTE.dotpha_hn = { core: 0x4a3a12, body: 0xe6cf86, rim: 0xfff8de, accent: 0xaee0ff, shadow: 0x221a08 };
 FX_PALETTE.than_hanh = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0xf3c860, shadow: 0x08202e };
 
-export const FX_PALETTE_DEFAULT = FX_PALETTE.lac_kiem_quyet;
+const FX_PALETTE_DEFAULT = FX_PALETTE.lac_kiem_quyet;
 
 /** Bảng màu theo id công pháp (không biết thì kiếm tu). Khớp chuỗi con để chịu được id công pháp khác tên nhánh. */
 export function paletteOf(method: string | undefined): FxPalette {

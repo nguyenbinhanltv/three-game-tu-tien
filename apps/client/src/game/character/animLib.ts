@@ -80,7 +80,7 @@ const isRigBone = (o: THREE.Object3D) => (o as THREE.Bone).isBone;
  * vẫn bám đất và bước đúng tỉ lệ. Xương đích không có trong thư viện (kiếm, vạt áo) giữ tư thế nghỉ; kênh scale bỏ.
  * Lấy mẫu 30 khung/giây; xương đứng yên cả clip chỉ giữ 2 khóa.
  */
-export interface RetargetOpts {
+interface RetargetOpts {
   /** Đổi tên xương đích sang tên khóa của nguồn (`mixamorig_*`), vd. xương Mannequin → Mixamo; trả undefined nếu không có tương ứng. */
   dstName?: (name: string) => string | undefined;
   /** Chỉ xuất kênh cho xương đích mà clip nguồn CÓ kênh quay (clip che nửa thân `upper`/`lower`: xương còn lại để trống để chồng được lên clip khác). */
@@ -203,7 +203,7 @@ export function mergeClips(own: readonly THREE.AnimationClip[], shared: readonly
  * Nạp thư viện (một lần cho cả cache nhờ AssetCache dùng chung bản gốc) cùng handle của nhân vật. Trả handle thư viện để
  * người gọi `release()` khi bỏ. Thư viện lỗi thì ném lỗi: người gọi quyết định dự phòng (model khối).
  */
-export async function acquireHumanLib(cache: AssetCache, priority = 1): Promise<AssetHandle> {
+async function acquireHumanLib(cache: AssetCache, priority = 1): Promise<AssetHandle> {
   return cache.acquire(HUMAN_ANIM_LIB, { priority });
 }
 

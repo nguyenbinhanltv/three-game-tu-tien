@@ -26,7 +26,7 @@ export const MAX_SENDS = 3;
 /** Quá lâu mà vẫn chưa xong (server kéo dài GCD, lệch đồng hồ) thì bỏ, tránh ra chiêu ngoài ý muốn. */
 export const QUEUE_MAX_WAIT_MS = 1200;
 
-export type PressResult = 'send' | 'queued';
+type PressResult = 'send' | 'queued';
 
 export class SkillQueue {
   /** Ô chiêu đang chờ (kể cả đã gửi nhưng chưa thấy xác nhận), -1 nếu không có. */

@@ -29,13 +29,6 @@ import { G } from './geo';
 import type { SkillEvent } from './character/view';
 import { FxRunner, type FxRunnerEnv } from './fxTimeline';
 import type { Vfx } from './vfx';
-import { FLAGS } from './flags';
-
-/** `?k6=0` tắt VFX ba pha, vệt kiếm và linh quang hộ thể để so ảnh trước/sau. */
-export const K6_ON = FLAGS.k6;
-
-/** `?fxtl=0` tắt dòng thời gian hiệu ứng (VFX-V0): chiêu mẫu về hình cũ để so ảnh trước/sau. */
-export const TL_ON = K6_ON && FLAGS.fxTimeline;
 
 /** Cấp từ đó có linh quang hộ thể (Trúc Cơ). */
 export const TRUC_CO_LEVEL = 16;
@@ -71,21 +64,19 @@ export interface SkillFxEnv {
   fx: Omit<FxRunnerEnv, 'camera'>;
 }
 
-/** Chiêu này chạy bằng dòng thời gian hiệu ứng (`data/fx/<id>.json`) thay cho hình cũ không. `?k6=0` tắt hết. */
+/** Chiêu này chạy bằng dòng thời gian hiệu ứng (`data/fx/<id>.json`) thay cho hình cũ không. */
 export function hasTimeline(skillId: string | undefined): boolean {
-  return TL_ON && !!skillId && FX_TIMELINE.has(skillId);
+  return !!skillId && FX_TIMELINE.has(skillId);
 }
 
 /** Loại `S.FX` kiểu cũ bị timeline thay thế cho chiêu có timeline (engine bỏ hình cũ). */
 export function replacedFx(kind: string): boolean {
-  if (!TL_ON) return false;
   for (const tl of FX_TIMELINE.values()) if (tl.replaces?.includes(kind)) return true;
   return false;
 }
 
 /** Timeline kích hoạt theo `S.FX` loại `kind` (đúng công pháp nếu timeline ghi `method`). */
 export function fxTriggered(kind: string, method: string | undefined, variant?: string) {
-  if (!TL_ON) return undefined;
   let fallback;
   for (const tl of FX_TIMELINE.values()) {
     if (tl.trigger !== 'fx' || tl.fxKind !== kind || (tl.method && tl.method !== method)) continue;
@@ -156,7 +147,6 @@ export class SkillFx {
 
   /** Nghe sự kiện chiêu của `sid`. */
   handle(sid: string, e: SkillEvent): void {
-    if (!K6_ON) return;
     const actor = this.env.player(sid);
     if (!actor) return;
     const mine = sid === this.env.mySid();
@@ -168,7 +158,7 @@ export class SkillFx {
     if (!mine && !othersAllowed(dist, this.v.pool.live)) return;
     const color = tintFor(def, mine, this.env.myMethod());
     const ult = !!def.ult;
-    const tl = TL_ON ? FX_TIMELINE.get(def.id) : undefined;
+    const tl = FX_TIMELINE.get(def.id);
     if (tl) {
       if (e.kind === 'windup') this.runner.start(sid, actor, def, tl, e, mine, dist, this.env.myMethod());
       else if (e.kind === 'end') this.runner.drop(sid);
@@ -193,7 +183,6 @@ export class SkillFx {
 
   /** Phát timeline kích hoạt theo S.FX (lướt...) cho `sid`. */
   startFromFx(sid: string, tl: import('@dtl/shared').FxTimeline): void {
-    if (!K6_ON) return;
     const actor = this.env.player(sid);
     if (!actor) return;
     const mine = sid === this.env.mySid();
@@ -323,7 +312,6 @@ export class SkillFx {
 
   /** Mỗi khung: lấy mẫu vệt kiếm, linh quang hộ thể. */
   update(dt: number): void {
-    if (!K6_ON) return;
     this.clock += dt;
     for (let i = this.pending.length - 1; i >= 0; i--) {
       const p = this.pending[i];

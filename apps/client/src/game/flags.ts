@@ -34,8 +34,10 @@ export interface Flags {
   v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
-  /** `?armclear=<độ>` góc chừa khoảng cách tay của Lạc Kiếm v3b2 (null: mặc định; 0 tắt, để so ảnh). */
-  armClear: number | null;
+  /** `?v3anim=0` về hệ animation cũ của v3 (so video trước/sau). */
+  v3Anim: boolean;
+  /** `?armfit=<độ>` ghi đè góc bù dang tay của v3 (null = mặc định theo model). */
+  armFit: number | null;
   /** `?v3pal=0` tắt bảng màu nhuộm v3. */
   v3Palette: boolean;
   /** `?ual=0` tắt clip UAL. */
@@ -62,11 +64,6 @@ export interface Flags {
   bhArt: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
-  /** Các cờ sắp gỡ ở R-4b/R-4c (giữ hành vi cũ tới đó). */
-  k6: boolean;
-  fxTimeline: boolean;
-  monFx: boolean;
-  ngj: boolean;
 }
 
 /** Mô tả từng tham số, để người sau biết cờ nào còn sống. */
@@ -84,7 +81,8 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   hair: { scope: 'test', doc: 'ép kiểu tóc' },
   v3model: { scope: 'test', doc: '=a bản Lạc Kiếm v3 cũ' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
-  armClear: { scope: 'diag', doc: 'góc chừa khoảng cách tay v3b2 (0 tắt)' },
+  v3anim: { scope: 'test', doc: '=0 hệ animation v3 cũ' },
+  armfit: { scope: 'test', doc: 'góc bù dang tay v3 (độ)' },
   v3pal: { scope: 'test', doc: '=0 tắt nhuộm v3' },
   ual: { scope: 'test', doc: '=0 tắt clip UAL' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
@@ -98,10 +96,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   xichart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Xích Tẫn Khích' },
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
-  k6: { scope: 'diag', doc: '=0 tắt ba pha K-6 (sẽ gỡ R-4b)' },
-  fxtl: { scope: 'diag', doc: '=0 tắt VFX timeline (sẽ gỡ R-4b)' },
-  monfx: { scope: 'diag', doc: '=0 tắt VFX quái V5 (sẽ gỡ R-4b)' },
-  ngj: { scope: 'diag', doc: '=0 HUD cũ (sẽ gỡ R-4c)' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
   at: { scope: 'test', doc: 'vào ở điểm đặt tên hoặc x,z (testParams.ts)' },
   realm: { scope: 'test', doc: 'đặt cảnh giới lúc vào (testParams.ts)' },
@@ -144,7 +138,8 @@ export function readFlags(search: string): Flags {
     hair: q.get('hair'),
     v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
-    armClear: q.has('armclear') ? Number(q.get('armclear')) || 0 : null,
+    v3Anim: !off(q.get('v3anim')),
+    armFit: q.get('armfit') === null || Number.isNaN(Number(q.get('armfit'))) ? null : Number(q.get('armfit')),
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
     renderer: q.get('renderer'),
@@ -158,10 +153,6 @@ export function readFlags(search: string): Flags {
     xichArt: !off(q.get('xichart')),
     cinematics: !off(q.get('cine')),
     butterflies: !off(q.get('bf')),
-    k6: !off(q.get('k6')),
-    fxTimeline: !off(q.get('fxtl')),
-    monFx: !off(q.get('monfx')),
-    ngj: !off(q.get('ngj')),
   };
 }
 

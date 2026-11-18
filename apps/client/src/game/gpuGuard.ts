@@ -5,13 +5,13 @@ export const RENDERER_KEY = 'dtl.renderer';
 /** Số khung vẽ ném lỗi liên tiếp thì coi là hỏng. */
 export const RENDER_FAIL_LIMIT = 30;
 /** Độ lệch chuẩn độ sáng (0–255) dưới mức này coi là khung trơn một màu. */
-export const BLANK_SD = 1.5;
+const BLANK_SD = 1.5;
 /** Khung chỉ tính là hỏng khi cũng TỐI (độ sáng trung bình dưới mức này): mây/sương trắng đều không phải lỗi. Nền lỗi của người dùng ≈ 16. */
-export const BLANK_MEAN = 45;
+const BLANK_MEAN = 45;
 /** Số lần đo trơn liên tiếp mới kết luận (chống nhấp nháy: chuyển cảnh, cắt cảnh tối). */
 export const BLANK_STREAK = 3;
 
-export interface FrameStats {
+interface FrameStats {
   mean: number;
   sd: number;
 }
@@ -50,7 +50,7 @@ export class BlankWatch {
   }
 }
 
-export interface RendererChoice {
+interface RendererChoice {
   forceWebGL: boolean;
   /** 'clear': xóa nhớ lựa chọn. null: không đụng. */
   storage: 'clear' | null;

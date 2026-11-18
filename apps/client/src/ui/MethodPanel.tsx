@@ -5,7 +5,7 @@ import { METHODS, METHOD, realmName, resolveBarSkill, skillBar, SKILL, t, VARIAN
 import { Game, reqId } from '../game/engine';
 import { ContentIcon, UiIcon } from './ContentIcon';
 import { Button, Divider, PanelWindow, Slot, TipCard, Tooltip } from './kit';
-import { MethodCarousel, ngjHud as NGJ } from './ngj';
+import { MethodCarousel } from './ngj';
 import { closePanel, set, useUI } from './store';
 
 const SCROLL = 'itm_bi_tich_tan_quyen';
@@ -107,12 +107,12 @@ export function MethodPanel() {
     <PanelWindow title={t('ui.method.title')} sub={cur ? t(`method.${cur.id}.name`) : t('ui.method.none')} onClose={() => closePanel('method')} width={600} className="method">
       {!open && <div className="k-card bad">{t('ui.method.locked', { realm: realmName(METHOD_UNLOCK_LEVEL) })}</div>}
       {open && !cur && <div className="k-dim">{t('ui.method.pick_hint')}</div>}
-      {NGJ && open && (
+      {open && (
         <Button size="s" onClick={() => setCarousel(true)}>
           {t('ui.ngj.car.open')}
         </Button>
       )}
-      {NGJ && carousel && (
+      {carousel && (
         <MethodCarousel
           current={cur?.id}
           canPick={open}

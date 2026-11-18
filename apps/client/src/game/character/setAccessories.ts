@@ -647,7 +647,7 @@ export interface AccessoryMaterials {
 }
 
 /** Phụ kiện đang gắn vào một bản sao nhân vật. */
-export interface AttachedAccessories {
+interface AttachedAccessories {
   /** Cập nhật lắc dải lụa; gọi sau khi mixer đã cập nhật xương. `speed`: m/s. */
   update(dt: number, speed: number, boneWorld: (b: FitBone) => THREE.Matrix4 | null): void;
   /** LOD xa: ẩn dải lụa (mesh cứng ẩn theo LOD0 của thân). */

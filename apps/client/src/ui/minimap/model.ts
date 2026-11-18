@@ -97,7 +97,7 @@ export function npcQuestMark(npcId: string, quests: readonly QuestDef[], q: Ques
   return state;
 }
 
-export type ZoneStatus = 'ok' | 'low' | 'high' | 'none';
+type ZoneStatus = 'ok' | 'low' | 'high' | 'none';
 
 /** Vùng đang đứng và mình có hợp cấp không (`low` = cấp thấp hơn khoảng hợp, `high` = cao hơn). */
 export function zoneStatus(zones: readonly ZoneDef[] | undefined, x: number, z: number, level: number): { zone: ZoneDef | undefined; status: ZoneStatus } {
@@ -163,7 +163,7 @@ export function formatCountdown(sec: number): string {
 }
 
 /** Hướng la bàn tới điểm đích (rad theo canvas, 0 = sang phải), dùng cho mũi tên mục tiêu ngoài tầm. */
-export function arrowAngle(v: View, x: number, z: number): number {
+function arrowAngle(v: View, x: number, z: number): number {
   const p = project(v, x, z);
   return Math.atan2(p.y - v.size / 2, p.x - v.size / 2);
 }
