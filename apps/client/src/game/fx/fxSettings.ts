@@ -38,3 +38,16 @@ export function particleScale(q: FxQuality, mine: boolean): number {
   const base = q === 'low' ? 0.35 : q === 'medium' ? 0.7 : 1;
   return mine ? base : base * 0.5;
 }
+
+/** Trần số hạt mỗi chiêu (cùng ngân sách `content:check`): mật độ theo preset không được vượt qua mức này tính trên cả chiêu. */
+export const CAST_PARTICLE_CAP = 1500;
+
+/**
+ * Số hạt một sự kiện: `n` gốc × hệ số chất lượng hiệu ứng × mật độ preset đồ họa (chỉ chiêu của mình, chỉ khi hiệu ứng = Cao),
+ * bị chặn để tổng cả chiêu (`emitted` đã phát) không quá `CAST_PARTICLE_CAP`. Tối thiểu 1.
+ */
+export function emitCount(n: number, q: FxQuality, mine: boolean, density: number, emitted: number): number {
+  const dens = q === 'high' && mine ? density : 1;
+  const want = Math.max(1, Math.round(n * particleScale(q, mine) * dens));
+  return Math.max(1, Math.min(want, CAST_PARTICLE_CAP - emitted));
+}
