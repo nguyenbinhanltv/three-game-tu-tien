@@ -43,7 +43,7 @@ export default {
       await sleep(350);
     };
     for (const id of assetIds()) {
-      await page.goto(gameUrl(r.clientPort, id.startsWith('boss_') ? { show: 'boss', id } : { show: id, ...(lib ? { lib } : {}) }, { renderer: r.renderer }), { waitUntil: 'load' });
+      await page.goto(gameUrl(r.clientPort, id.startsWith('boss_') && !lib ? { show: 'boss', id } : { show: id, ...(lib ? { lib } : {}) }, { renderer: r.renderer }), { waitUntil: 'load' });
       await page.waitForFunction(() => !!window.__viewer?.model || !!window.__viewer?.clips?.length, undefined, { timeout: 60_000, polling: 250 });
       await page.addStyleTag({ content: '.viewer-panel,.viewer-hud,.panel,aside,header{display:none!important}.viewer-host{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important}' });
       const clips = await page.evaluate(() => {

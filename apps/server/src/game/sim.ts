@@ -2075,7 +2075,7 @@ export class GameSim {
     if (p.dev && (text as string).startsWith('/gm ')) return this.gmSys.run(p, (text as string).slice(4).trim().split(/\s+/));
     this.host.broadcast(S.CHAT, { from: p.char.name, c: 'say', m: text });
     // Kính Nguyệt Chân Quân lặp lại câu cuối của người đối diện (E3-M).
-    const echo = this.mirror.echoLine(text as string);
+    const echo = this.mirror.echoLine(text as string, p);
     if (echo && this.now - this.mirrorChatAt > 6000) {
       this.mirrorChatAt = this.now;
       this.host.broadcast(S.CHAT, { from: monsterName(echo.boss.def.id), c: 'say', m: echo.line });
