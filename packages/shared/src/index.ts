@@ -1,6 +1,7 @@
 export * from './noise';
 export * from './level';
 export * from './props';
+export * from './trails';
 export * from './terrain';
 export * from './movement';
 export * from './formulas';

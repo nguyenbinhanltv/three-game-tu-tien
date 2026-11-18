@@ -60,8 +60,8 @@ export function designArea(w: number, h: number, scale: number): { W: number; H:
 
 /** Kích thước từng khối theo chế độ (đơn vị thiết kế). */
 export const SIZES = {
-  standard: { tl: { w: 420, h: 120 }, hubH: 48, hubW: 372, mapW: 190, mapH: 224, questW: 372, questH: 128, chatW: 420, chatH: 240 },
-  compact: { tl: { w: 380, h: 118 }, hubH: 44, hubW: 340, mapW: 160, mapH: 194, questW: 340, questH: 118, chatW: 380, chatH: 190 },
+  standard: { tl: { w: 420, h: 120 }, hubH: 48, hubW: 372, mapW: 236, mapH: 250, questW: 372, questH: 128, chatW: 420, chatH: 240 },
+  compact: { tl: { w: 380, h: 118 }, hubH: 44, hubW: 340, mapW: 204, mapH: 220, questW: 340, questH: 109, chatW: 380, chatH: 190 },
 } as const;
 export const QUEST_COLLAPSED_H = 34;
 export const CHAT_COLLAPSED_H = 34;

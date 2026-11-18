@@ -146,6 +146,23 @@ export function edgeClamp(x: number, y: number, size: number, margin: number): {
   return { x: h + dx * k, y: h + dy * k, angle: Math.atan2(dy, dx), inside: false };
 }
 
+/** Như `edgeClamp` nhưng khung tròn: điểm ngoài đường tròn bán kính `size/2 - margin` bị kéo về mép tròn. */
+export function edgeClampDisc(
+  x: number,
+  y: number,
+  size: number,
+  margin: number,
+): { x: number; y: number; angle: number; inside: boolean } {
+  const h = size / 2;
+  const dx = x - h;
+  const dy = y - h;
+  const lim = h - margin;
+  const d = Math.hypot(dx, dy);
+  if (d <= lim) return { x, y, angle: Math.atan2(dy, dx), inside: true };
+  const k = lim / d;
+  return { x: h + dx * k, y: h + dy * k, angle: Math.atan2(dy, dx), inside: false };
+}
+
 /** Biểu tượng gần con trỏ nhất trong bán kính `maxD` (px); `pts` là toạ độ màn hình đã chiếu. */
 export function nearestIndex(pts: readonly { x: number; y: number; r: number }[], mx: number, my: number, maxD = 9): number {
   let best = -1;

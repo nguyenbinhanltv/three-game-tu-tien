@@ -235,13 +235,12 @@ html[data-touch] .k-tip {
 .hud.u2hud[data-mode='touch'] .u2h-hubbtn .u2-frame {
   --sz: 44px;
 }
-.hud.u2hud[data-mode='touch'] .u2h-tr .minimap-wrap {
-  --h-map-w: 176px;
-  width: 176px;
-  zoom: 0.6; /* canvas bản đồ cố định 176 px: thu còn ~106 px */
+.hud.u2hud[data-mode='touch'] .u2h-tr .mm2 {
+  zoom: 0.5; /* la bàn 212 → ~106 px; hạt ngọc và dải lụa ẩn (không có chuột); chiều cao cố định vì style inline theo cỡ la bàn */
+  height: 212px !important;
 }
-.hud.u2hud[data-mode='touch'] .u2h-tr .minimap-wrap .minimap-ctl,
-.hud.u2hud[data-mode='touch'] .u2h-tr .minimap-wrap .minimap-foot {
+.hud.u2hud[data-mode='touch'] .u2h-tr .mm2 .mm2-bead,
+.hud.u2hud[data-mode='touch'] .u2h-tr .mm2 .mm2-ribbon {
   display: none;
 }
 /* nhiệm vụ mở bằng nút L trên Ngọc Đái; chat chỉ còn dòng cuối, không bấm được (không có bàn phím) */
@@ -323,7 +322,7 @@ html[data-touch] .win-host .u2-close {
     left: 0;
     top: 112px;
   }
-  .hud.u2hud[data-mode='touch'] .u2h-tr .minimap-wrap {
+  .hud.u2hud[data-mode='touch'] .u2h-tr .mm2 {
     position: absolute;
     right: 0;
     top: 0;
