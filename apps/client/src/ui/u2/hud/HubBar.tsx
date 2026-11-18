@@ -4,6 +4,7 @@ import { SysIcon, type SysIconName } from '../../ngj';
 import { Tooltip } from '../../kit';
 import { QUEST } from '@dtl/content';
 import { type Panel, togglePanel, useUI } from '../../store';
+import { toggleChapters, useChapters } from '../../chapters/chaptersStore';
 import { IconFrame } from '../Slot';
 import { blurAfterPointer } from './common';
 
@@ -18,7 +19,7 @@ interface HubItem {
 
 /**
  * Bảy mục của Ngọc Đái: Túi B, Nhân vật C, Công pháp K, Tổ đội P, Nhiệm vụ L, Hành trình N, Cài đặt O.
- * Hành trình (N) mở bản đồ chương khi màn đó có (U2-4); tạm mở bản đồ lớn (cùng bảng với M).
+ * Hành trình (N) mở Bản đồ chương (`ui/chapters`); M vẫn là bản đồ vùng.
  */
 export const HUB_ITEMS: readonly HubItem[] = [
   { id: 'bag', icon: 'bag', name: 'ui.bag.short', key: 'B', panel: 'bag' },
@@ -46,6 +47,7 @@ function useBadges(): Record<string, string | undefined> {
 export function HubBar() {
   const badges = useBadges();
   const windows = useUI((s) => s.windows);
+  const chaptersOpen = useChapters((s) => s.open);
   return (
     <nav className="u2h-hub" aria-label={t('ui.hub.label')}>
       {HUB_ITEMS.map((it) => (
@@ -53,11 +55,13 @@ export function HubBar() {
           <button
             type="button"
             className="u2h-hubbtn"
-            aria-pressed={windows.some((w) => w.id === it.panel) || undefined}
+            aria-pressed={(it.id === 'journey' ? chaptersOpen : windows.some((w) => w.id === it.panel)) || undefined}
             aria-label={`${t(it.name)} (${it.key})`}
             data-testid={'hub-' + it.id}
             onClick={(e) => {
-              togglePanel(it.panel);
+              // Hành trình (N) mở Bản đồ chương (U2-4); các mục khác mở cửa sổ như cũ.
+              if (it.id === 'journey') toggleChapters();
+              else togglePanel(it.panel);
               blurAfterPointer(e);
             }}
           >

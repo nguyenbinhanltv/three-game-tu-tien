@@ -179,7 +179,7 @@ function Login() {
   };
 
   return (
-    <div className={'ts-card' + ' ngj-card'}>
+    <div className={'ts-card' + ' ngj-card u2-card'}>
       <Corners material="paper" />
       <p className="login-tag">{t('ui.tagline')}</p>
 
@@ -306,7 +306,7 @@ function LoadingPanel({ onDone }: { onDone: () => void }) {
     return () => window.clearInterval(id);
   }, []);
   return (
-    <div className={'ts-card ts-loading' + ' ngj-card'} role="status" aria-live="polite">
+    <div className={'ts-card ts-loading' + ' ngj-card u2-card'} role="status" aria-live="polite">
       <Corners material="paper" />
       <p className="ts-line" key={line}>
         {line}
@@ -351,7 +351,8 @@ function syncBackdrop(phase: Phase): void {
     backdrop?.pause(); // nhường CPU/GPU cho Game đang dựng thế giới; giữ khung cuối
     return;
   }
-  if (!backdrop && !Game.current) {
+  // Có nền sơn thủy U2-4 thì không dựng cảnh 3D tiêu đề (nhẹ hơn, đỡ tranh chấp GPU lúc nạp); `?ts=3d` bật lại cảnh cũ.
+  if (!backdrop && !Game.current && new URLSearchParams(location.search).get('ts') === '3d') {
     const host = boot.querySelector<HTMLElement>('.ts-scene');
     if (!host) return;
     const b = new TitleBackdrop(host, () => boot.classList.add('lit'));
@@ -417,7 +418,7 @@ export function App() {
   useEffect(() => void applyUiArt(), []);
   // Tranh nền: màn tiêu đề ở đăng nhập, tranh vùng cuối cùng lúc nối/nạp (Codex, nạp lười).
   useEffect(() => {
-    if (phase === 'login') void setBootArt('title', 'title');
+    if (phase === 'login') void setBootArt('title_cuon', 'title');
     else if (phase === 'connecting' || phase === 'loading') void setBootArt(lastZoneArt(), 'zone');
   }, [phase]);
   const error = useUI((s) => s.error);

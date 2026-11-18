@@ -19,6 +19,7 @@ import type {
   ForgeRecipe,
   ItemSysData,
   SetDef,
+  ChapterDef,
   QualityDef,
   SlotDef,
   LevelAssets,
@@ -43,6 +44,7 @@ import clonesJson from '../data/clones.json';
 import alchemyJson from '../data/alchemy.json';
 import npcsJson from '../data/npcs.json';
 import questsJson from '../data/quests.json';
+import chaptersJson from '../data/chapters.json';
 import realmsJson from '../data/realms.json';
 import rootsJson from '../data/roots.json';
 import vanLamJson from '../data/levels/van_lam.json';
@@ -468,6 +470,9 @@ export const ITEM_SYS: ItemSysData = {
 /** Bộ trang bị (P3-4) và công thức chế ở Thiết lão. */
 export const SETS = equipSetsJson as unknown as SetDef[];
 export const SET = index(SETS);
+
+/** Hành trình theo chương (U2-4): màn "Bản đồ chương". */
+export const CHAPTERS = chaptersJson.chapters as unknown as ChapterDef[];
 /** Áo mặc thật theo bộ trang bị: id bộ → mảnh asset (`<mảnh>_nam|nu`), xem docs/sets-retarget. */
 export const OUTFITS = Object.fromEntries(Object.entries(outfitsJson).filter(([k]) => k !== '$comment')) as Record<string, string[]>;
 /** CHR-PROTO (`?chr=v2`): vùng thân nền bị che theo mảnh áo (docs/chr-v2). */

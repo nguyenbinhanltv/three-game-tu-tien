@@ -1,0 +1,7 @@
+# U2-4: màn đặc trưng (tiêu đề, tải, Bản đồ chương, đột phá)
+
+- **Nền sơn thủy nhiều lớp** (`ui/u2/boot/bootScene.ts`, `boot.css`): một tranh tách lớp bằng mặt nạ mềm (nền, núi xa 0,25, núi giữa 0,6, nước/gần 1,1) trượt theo chuột hoặc trôi chậm; hai lớp sinh riêng (`art/layers/canh_tung` trộn nhân, `suong` trộn sáng, nạp lười), hạc, cánh hoa; màn tiêu đề thêm cuộn tranh mở ra một lần mỗi phiên (`sessionStorage`). Giảm chuyển động (`data-reduce-motion`) hoặc `prefers-reduced-motion` tắt mọi hoạt hình; `?scene=0` về ảnh tĩnh; `?ts=3d` bật lại cảnh 3D tiêu đề cũ. Chương 5 (`bac_hoang`) không hạc/hoa.
+- **Tranh**: tiêu đề `title_cuon`, màn tải mặc định `load_song`, chương 5 `bac_hoang` (`game/world/bootArt.ts` `LEVEL_ART` nối thêm Thiên Khuyết, Thần Tàng, Kính Nguyệt, Phục Mạch, các level Bắc Hoang). Tất cả nạp lười qua `art.json`.
+- **Bản đồ chương** (`ui/chapters/`, phím N hoặc nút Hành trình): dữ liệu `packages/content/data/chapters.json`, hàm thuần `packages/shared/src/chapters.ts` (`chapterState`, `nodeState`, `canTeleTo`…), kiểm ở `content:check`. Chỉ client đọc dữ liệu sẵn có; truyền tống dùng `Game.teleport`. Vật phẩm nổi bật là danh sách chọn tay (bảng rơi ở `loot.json` chỉ server).
+- **Đột phá/độ kiếp** (`ui/u2/boot/trib.css`): chân dung vòng ngọc trên khung `.trib`, thanh theo token, thẻ chương `ascend*` thành dải chữ cạnh trái.
+- Ảnh/video duyệt ở artifact của phiên, không commit.

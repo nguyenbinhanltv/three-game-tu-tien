@@ -57,6 +57,9 @@ import { TrialBanner } from './Realm';
 import { BagWarn } from './BagWarn';
 import { type BossLine, type ChapterCard, togglePanel, useUI } from './store';
 import { HubBar } from './u2/hud/HubBar';
+import { ChapterMap } from './chapters/ChapterMap';
+import { JadeRing } from './u2/patterns';
+import './u2/boot/trib.css';
 import { PlayerCard, BossCard, TargetCastBar } from './u2/hud/Frames';
 import { QuestTrack, ChatBox } from './u2/hud/QuestChat';
 import { SkillBanner } from './u2/hud/SkillBanner';
@@ -230,6 +233,10 @@ function Tribulation() {
   const title = hasString(key + 'title') ? t(key + 'title') : t('ui.trib.title');
   return (
     <div className="trib" role="status">
+      <div className="trib-ring" aria-hidden="true">
+        <Portrait id={Game.current?.view?.players.get(Game.current.sid)?.g === 'f' ? 'player_f' : 'player_m'} />
+        <JadeRing />
+      </div>
       <div className="trib-title">{title}</div>
       <div className="trib-phases">
         {def.phases.map((p, i) => {
@@ -413,6 +420,7 @@ export function Hud() {
         <Minimap />
         <QuestTrack />
       </div>
+      <ChapterMap />
       <Toasts />
       <Tribulation />
       <TrialBanner />

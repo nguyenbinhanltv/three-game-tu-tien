@@ -1,0 +1,111 @@
+/* Màn đột phá / độ kiếp theo mockup 05 (U2-4): chân dung vòng ngọc, tiêu đề kim, thanh theo token; thẻ chương "ascend" là dải chữ cạnh trái. */
+.hud .trib {
+  top: 150px;
+  min-width: 360px;
+  padding: var(--u-sp-3) var(--u-sp-5) var(--u-sp-3);
+  background: linear-gradient(180deg, var(--u-ink-2), var(--u-ink-1));
+  border: var(--u-line-1) solid var(--u-gold-lo);
+  box-shadow: var(--u-sh-hud);
+  color: var(--u-chu);
+  text-align: center;
+  clip-path: none;
+  top: 170px;
+}
+.hud .trib-ring {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: -62px auto var(--u-sp-2);
+  color: var(--u-ngoc);
+  filter: drop-shadow(0 0 22px var(--u-ngoc-hi));
+}
+.hud .trib-ring .portrait {
+  position: absolute;
+  inset: 8px;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  object-fit: cover;
+  object-position: 50% 18%;
+  border-radius: 50%;
+}
+.hud .trib-ring .u2-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hud .trib-title {
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  background: var(--u-gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: var(--u-sp-2);
+}
+.hud .trib-hint,
+.hud .trib-phase-name {
+  font-family: var(--u-font-body);
+  color: var(--u-chu-dim);
+}
+.gauge.kiep {
+  --fill: linear-gradient(180deg, var(--u-son-hi), var(--u-son) 55%, var(--u-son-lo));
+}
+.gauge.dan {
+  --fill: linear-gradient(180deg, var(--u-ngoc-hi), var(--u-ngoc) 55%, var(--u-ngoc-lo));
+}
+.gauge.tam {
+  --fill: linear-gradient(180deg, var(--u-q3), var(--u-ngoc-lo));
+}
+/* Thẻ chương đột phá: dải chữ mờ cạnh trái, vạch kim dọc, chữ Grenze kim */
+.chapter-card[class*='chapter-ascend'] .chapter-text,
+.chapter-card.chapter-trib .chapter-text {
+  left: 0;
+  top: auto;
+  bottom: 12vh;
+  transform: none;
+  width: 100%;
+  align-items: flex-start;
+  text-align: left;
+  padding: var(--u-sp-5) 0 var(--u-sp-5) 86px;
+  background: linear-gradient(90deg, var(--u-ink-0) 0%, var(--u-ink-1) 55%, transparent 100%);
+  border-left: 0;
+}
+.chapter-card[class*='chapter-ascend'] .chapter-text::before,
+.chapter-card.chapter-trib .chapter-text::before {
+  content: '';
+  position: absolute;
+  left: 56px;
+  top: var(--u-sp-5);
+  bottom: var(--u-sp-5);
+  width: 4px;
+  background: linear-gradient(180deg, var(--u-gold-hi), var(--u-gold-lo));
+}
+.chapter-card[class*='chapter-ascend'] .chapter-title,
+.chapter-card.chapter-trib .chapter-title {
+  font-family: var(--u-font-display);
+  letter-spacing: 0.04em;
+  background: var(--u-gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 0 var(--u-ink-0));
+}
+.chapter-card[class*='chapter-ascend'] .chapter-kicker,
+.chapter-card.chapter-trib .chapter-kicker {
+  font-family: var(--u-font-head);
+  color: var(--u-ngoc-hi);
+}
+.chapter-card[class*='chapter-ascend'] .chapter-sub,
+.chapter-card.chapter-trib .chapter-sub {
+  font-family: var(--u-font-body);
+  font-size: 22px;
+  color: var(--u-chu);
+}
+.chapter-card[class*='chapter-ascend'] .chapter-rule,
+.chapter-card.chapter-trib .chapter-rule {
+  display: none;
+}

@@ -2,6 +2,7 @@
 import { C, PF_DEAD, BAR_SIZE, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
 import { t } from '@dtl/content';
 import { closeTopPanel, get, pushToast, set, togglePanel, useUI } from '../../ui/store';
+import { toggleChapters } from '../../ui/chapters/chaptersStore';
 import { unlockAudio } from '../audio/audio';
 import { budgetPixelRatio } from '../../render/post';
 import { isKeyFor, KEY_ACTIONS, preventsDefault, skillSlot } from '../../input/bindings';
@@ -270,8 +271,10 @@ export function onKeyDown(eng: Game, e: KeyboardEvent): void {
       togglePanel('party');
       break;
     case 'map':
-    case 'journey':
       togglePanel('map');
+      break;
+    case 'journey':
+      toggleChapters(); // Bản đồ chương (U2-4)
       break;
     case 'help':
       togglePanel('help');

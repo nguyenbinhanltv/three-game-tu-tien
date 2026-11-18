@@ -979,3 +979,15 @@ Mỗi icon trong atlas (tên khóa = id icon):
 | `var_thien_kiem_vu_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
 | `var_tran_son_an_a` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
 | `var_tran_son_an_b` | Dự án | dự án | 2026-11-18 | dẫn xuất từ icon chiêu gốc + chip A/B (tools/icons/v2) |
+
+## Nền sơn thủy và lớp parallax Codex (U2-4, 2026-11-18)
+
+Sinh bằng công cụ ảnh tích hợp Codex cho dự án Đạp Thiên Lộ (`codex exec`), thiết kế gốc, không dùng Tripo hay dịch vụ ngoài. PNG gốc + prompt ở `<DTL_ASSET_SOURCE>/2d/loading|layers/`; đóng gói bằng `node tools/codex-assets/pack.mjs loading layers` thành WebP có hash ở `apps/client/public/assets/art/`.
+
+| Ảnh | Nguồn tạo | Tác giả | Ngày | Nguồn |
+| --- | --- | --- | --- | --- |
+| `title_cuon` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/loading/title_cuon.png` |
+| `load_song` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/loading/load_song.png` |
+| `bac_hoang` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/loading/bac_hoang.png` |
+| `canh_tung` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/layers/canh_tung.png` |
+| `suong` | Sinh bởi Codex cho dự án | dự án | 2026-11-18 | `2d/layers/suong.png` |
