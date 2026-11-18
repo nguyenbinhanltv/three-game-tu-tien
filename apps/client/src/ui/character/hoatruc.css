@@ -395,7 +395,8 @@
   }
 }
 
-/* ───────── Thiên Giai: tầng cảnh giới chồng lên tranh bộ trang phục ───────── */
+/* ───────── Thiên Giai (hướng A): nhân vật = tranh theo bộ trang phục; cảnh giới CHỒNG lớp nền + hiệu ứng, mỗi tầng một màu chủ đạo ───────── */
+/* Nguyên Anh vàng-ngọc · Hóa Thần xanh đêm-bạc · Dị Biến đen-vàng-tím */
 .hoatruc-dan {
   position: absolute;
   left: 50%;
@@ -412,6 +413,7 @@
     transparent 74%
   );
   mix-blend-mode: screen;
+  filter: blur(1.5px);
   pointer-events: none;
   animation: hoatruc-dan 2.6s ease-in-out infinite;
 }
@@ -452,25 +454,73 @@
   stroke-width: 1.8;
   stroke-linecap: round;
   filter: drop-shadow(0 0 3px var(--u-gold));
-  /* quỹ đạo elip: góc = vị trí gốc + góc xoay chung của vòng (--spin, @property) */
   left: calc(50% + 50% * cos(calc(var(--a) + var(--spin, 0deg))));
   top: calc(50% + 50% * sin(calc(var(--a) + var(--spin, 0deg))));
   translate: -50% -50%;
   opacity: calc(0.45 + 0.55 * (0.5 + 0.5 * sin(calc(var(--a) + var(--spin, 0deg)))));
 }
+/* tầng 2 Nguyên Anh: Nguyên Anh vàng kim ngồi thiền trên đỉnh đầu, vòng ngũ hành 5 màu, đài sen mây nâng chân, hào quang theo đạo */
+.hoatruc[data-tier='2'] .hoatruc-aura {
+  opacity: 0.7;
+  background: radial-gradient(
+    ellipse at 50% 52%,
+    color-mix(in srgb, var(--u-gold) 55%, transparent),
+    color-mix(in srgb, var(--u-ngoc-hi) 25%, transparent) 50%,
+    transparent 72%
+  );
+}
+.hoatruc-na {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 21cqh;
+  translate: -50% 0;
+  filter: saturate(2) brightness(1.05) drop-shadow(0 0 14px var(--u-gold)) drop-shadow(0 0 4px var(--u-gold-hi));
+  pointer-events: none;
+  animation: hoatruc-bob 5s ease-in-out infinite alternate;
+}
+.hoatruc-na img,
+.hoatruc-nguhanh img,
+.hoatruc-daisen img,
+.hoatruc-senlua img,
+.hoatruc-linhvuc img,
+.hoatruc-thienmon img,
+.hoatruc-set img,
+.hoatruc-phaptuong img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.hoatruc-nguhanh {
+  position: absolute;
+  left: 50%;
+  top: 46cqh;
+  width: 86cqh;
+  translate: -50% -50%;
+  filter: saturate(1.3) drop-shadow(0 0 10px var(--u-gold));
+  pointer-events: none;
+  animation: hoatruc-spin 36s linear infinite;
+}
+.hoatruc-daisen {
+  position: absolute;
+  left: 50%;
+  bottom: -3cqh;
+  width: 92cqh;
+  translate: -50% 0;
+  filter: saturate(1.4) brightness(1.1) drop-shadow(0 0 16px var(--u-gold));
+  pointer-events: none;
+}
+/* hào quang theo đạo: kiếm tu = 9 phi kiếm */
 .hoatruc-ring {
   position: absolute;
   left: 50%;
   top: 42cqh;
   width: 0;
   height: 0;
+  filter: drop-shadow(0 0 4px var(--u-ngoc-hi)) drop-shadow(0 0 12px var(--u-ngoc-hi));
   animation: hoatruc-spin 30s linear infinite;
   pointer-events: none;
 }
-.hoatruc-ring {
-  filter: drop-shadow(0 0 4px var(--u-ngoc-hi)) drop-shadow(0 0 12px var(--u-ngoc-hi));
-}
-/* phi kiếm: lưỡi vẽ bằng CSS (gradient + clip-path) cho sáng rõ; mũi hướng ra ngoài, 9 chiếc xếp đều thành hào quang */
 .hoatruc-pk {
   position: absolute;
   left: 0;
@@ -490,43 +540,139 @@
   height: 14%;
   background: var(--u-gold);
 }
-.hoatruc-na {
+/* hộ pháp = trận đồ đá núi (6 phiến xoay) + giáp quang */
+.hoatruc-tran {
   position: absolute;
-  left: 21%;
-  top: 9cqh;
-  width: 25cqh;
-  translate: -50% 0;
-  filter: saturate(1.8) brightness(0.95) drop-shadow(0 0 12px var(--u-gold)) drop-shadow(0 0 3px var(--u-ngoc-lo));
+  left: 50%;
+  top: 48cqh;
+  width: 0;
+  height: 0;
+  filter: drop-shadow(0 0 8px var(--u-gold));
+  animation: hoatruc-spin 40s linear infinite;
   pointer-events: none;
-  animation: hoatruc-bob 5s ease-in-out infinite alternate;
 }
-.hoatruc-na[data-small='1'] {
-  width: 19cqh;
-  top: 9cqh;
+.hoatruc-da {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 11cqh;
+  height: 15cqh;
+  background: linear-gradient(160deg, var(--u-gold-lo), var(--u-ink-3) 55%, var(--u-gold-lo));
+  clip-path: polygon(50% 0, 100% 22%, 88% 100%, 12% 100%, 0 22%);
+  box-shadow: inset 0 0 0 2px var(--u-gold);
+  transform: rotate(var(--a)) translateY(-31cqh) translate(-50%, -50%);
 }
-.hoatruc-na img {
-  display: block;
-  width: 100%;
-  height: auto;
+.hoatruc-giap {
+  position: absolute;
+  left: -30cqh;
+  top: -30cqh;
+  width: 60cqh;
+  height: 60cqh;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--u-gold) 70%, transparent);
+  background: radial-gradient(circle, transparent 58%, color-mix(in srgb, var(--u-gold) 35%, transparent) 78%, transparent 80%);
+}
+/* đan sư = sen lửa + lò đan */
+.hoatruc-senlua {
+  position: absolute;
+  left: 50%;
+  bottom: -6cqh;
+  width: 74cqh;
+  translate: -50% 0;
+  filter: saturate(1.5) drop-shadow(0 0 14px var(--u-son-hi));
+  pointer-events: none;
+  animation: hoatruc-bob 3.6s ease-in-out infinite alternate;
+}
+/* tầng 3 Hóa Thần: nền tinh không, pháp tượng khổng lồ sau lưng cao hơn nhân vật, linh vực, rim light bạc lên nhân vật */
+.hoatruc[data-tier='3'] .hoatruc-aura {
+  opacity: 0.55;
+  background: radial-gradient(ellipse at 50% 52%, color-mix(in srgb, var(--u-ngoc-hi) 35%, transparent), transparent 60%);
+  mix-blend-mode: normal;
+}
+.hoatruc[data-tier='3'] .hoatruc-char canvas {
+  opacity: 0.93;
+  filter: drop-shadow(0 0 2px var(--u-thanh-0)) drop-shadow(0 0 8px var(--u-ngoc-hi))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--u-thanh-3) 70%, transparent));
 }
 .hoatruc-phaptuong {
   position: absolute;
-  left: 50%;
-  top: -10cqh;
-  height: 122cqh;
+  left: 45%;
+  top: -14cqh;
+  width: 118cqh;
   translate: -50% 0;
-  scale: 2.2 1.1;
-  opacity: 1;
-  filter: saturate(1.7) brightness(1.08) drop-shadow(0 0 14px var(--u-ngoc-hi)) drop-shadow(0 0 3px var(--u-ngoc-lo));
+  opacity: 0.95;
+  filter: saturate(1.5) brightness(1.1) drop-shadow(0 0 16px var(--u-ngoc-hi)) drop-shadow(0 0 4px var(--u-thanh-0));
   pointer-events: none;
-  animation: hoatruc-bob 8s ease-in-out infinite alternate;
+  animation: hoatruc-bob 9s ease-in-out infinite alternate;
 }
-.hoatruc-phaptuong img {
-  display: block;
+.hoatruc-phaptuong[data-dao='dan_su'] {
+  filter: saturate(1.5) brightness(1.1) drop-shadow(0 0 16px var(--u-son-hi)) drop-shadow(0 0 4px var(--u-gold-hi));
+}
+.hoatruc-linhvuc {
+  position: absolute;
+  left: 76%;
+  top: 27cqh;
+  width: 15cqh;
+  translate: -50% 0;
+  filter: drop-shadow(0 0 12px var(--u-ngoc-hi)) drop-shadow(0 0 3px var(--u-gold-hi));
+  pointer-events: none;
+  animation: hoatruc-bob 4s ease-in-out infinite alternate;
+}
+/* tầng 4 Dị Biến: thiên môn mở phía trên, sét tím-vàng xé trời, vòng phân thân (bóng mờ của chính nhân vật) sau lưng, nhân vật rực vàng-tím */
+.hoatruc[data-tier='4'] .hoatruc-aura {
+  opacity: 0.6;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    color-mix(in srgb, var(--u-gold) 40%, transparent),
+    color-mix(in srgb, var(--u-q3) 30%, transparent) 50%,
+    transparent 68%
+  );
+  mix-blend-mode: normal;
+}
+.hoatruc[data-tier='4'] .hoatruc-char canvas {
+  filter: drop-shadow(0 0 3px var(--u-gold-hi)) drop-shadow(0 0 14px var(--u-q3))
+    drop-shadow(0 0 26px color-mix(in srgb, var(--u-gold) 70%, transparent));
+}
+.hoatruc-thienmon {
+  position: absolute;
+  left: 50%;
+  top: -6cqh;
+  width: 104cqh;
+  translate: -50% 0;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 14px var(--u-gold));
+  pointer-events: none;
+}
+.hoatruc-set {
+  position: absolute;
+  inset: 0;
+  opacity: 0.8;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: hoatruc-flash 3.4s steps(1, end) infinite;
+}
+.hoatruc-set img {
   height: 100%;
-  width: auto;
+  width: 100%;
+  object-fit: cover;
 }
-/* tên thư pháp: dải lụa giấy dọc ở khoảng trống bên phải nhân vật (không đè cột ô), chữ mực đen, dấu triện đỏ cảnh giới bên dưới */
+.hoatruc-phanthan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: hoatruc-orbit 40s linear infinite;
+}
+.hoatruc-phanthan img {
+  position: absolute;
+  height: 46cqh;
+  width: auto;
+  left: calc(50% + 40cqh * cos(calc(var(--a) + var(--spin, 0deg))));
+  top: calc(48cqh + 25cqh * sin(calc(var(--a) + var(--spin, 0deg))));
+  translate: -50% -50%;
+  opacity: 0.28;
+  filter: blur(1.2px) saturate(1.6) brightness(1.3) drop-shadow(0 0 10px var(--u-q3));
+}
+/* tên thư pháp: dải lụa giấy dọc ở khoảng trống bên phải nhân vật (không đè cột ô), chữ mực đen nét bút lông, dấu triện đỏ cảnh giới bên dưới */
 .hoatruc-name {
   position: absolute;
   right: 66px;
@@ -539,8 +685,8 @@
   max-height: 64cqh;
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--u-giay) 88%, transparent),
-    color-mix(in srgb, var(--u-giay-lo) 82%, transparent)
+    color-mix(in srgb, var(--u-giay) 90%, transparent),
+    color-mix(in srgb, var(--u-giay-lo) 85%, transparent)
   );
   box-shadow:
     inset 0 0 0 1px var(--u-gold),
@@ -548,12 +694,26 @@
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 96%, 0 100%);
   pointer-events: none;
 }
+.hoatruc-name[data-big='1'] {
+  right: 58px;
+  top: 4cqh;
+  padding: 2cqh 1.3cqh 1.6cqh;
+  background: linear-gradient(90deg, var(--u-ink-0), var(--u-ink-2));
+  box-shadow:
+    inset 0 0 0 1.5px var(--u-gold),
+    0 0 18px color-mix(in srgb, var(--u-gold) 70%, transparent);
+}
+.hoatruc-name[data-big='1'] .hoatruc-name-t {
+  font-size: 6.4cqh;
+  color: var(--u-gold-text);
+  text-shadow: 0 0 10px var(--u-gold);
+}
 .hoatruc-name-t {
   writing-mode: vertical-rl;
   font-family: var(--u-font-thuphap);
-  font-size: 4.8cqh;
-  line-height: 1.1;
-  letter-spacing: 0.06em;
+  font-size: 4.4cqh;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
   color: var(--u-ink-0);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -571,26 +731,28 @@
   writing-mode: vertical-rl;
   white-space: nowrap;
 }
-.hoatruc[data-tier='2'] .hoatruc-aura,
-.hoatruc[data-tier='3'] .hoatruc-aura {
-  opacity: 1;
-}
-.hoatruc[data-reduce='1'] .hoatruc-ring,
-.hoatruc[data-reduce='1'] .hoatruc-van-ring,
-.hoatruc[data-reduce='1'] .hoatruc-dan,
-.hoatruc[data-reduce='1'] .hoatruc-na,
-.hoatruc[data-reduce='1'] .hoatruc-phaptuong {
+.hoatruc[data-reduce='1']
+  :is(
+    .hoatruc-ring,
+    .hoatruc-van-ring,
+    .hoatruc-dan,
+    .hoatruc-na,
+    .hoatruc-phaptuong,
+    .hoatruc-nguhanh,
+    .hoatruc-tran,
+    .hoatruc-senlua,
+    .hoatruc-linhvuc,
+    .hoatruc-phanthan,
+    .hoatruc-set
+  ) {
   animation: none;
 }
-@keyframes hoatruc-dan {
-  0%,
-  100% {
-    opacity: 0.6;
-    scale: 0.88;
+@media (max-height: 800px) {
+  .hoatruc-name {
+    right: 60px;
   }
-  50% {
-    opacity: 1;
-    scale: 1.15;
+  .hoatruc-van-ring[data-k='1'] {
+    display: none;
   }
 }
 @property --spin {
@@ -608,6 +770,17 @@
     rotate: 360deg;
   }
 }
+@keyframes hoatruc-dan {
+  0%,
+  100% {
+    opacity: 0.6;
+    scale: 0.88;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.15;
+  }
+}
 @keyframes hoatruc-bob {
   from {
     translate: -50% 0;
@@ -616,12 +789,27 @@
     translate: -50% -1.4cqh;
   }
 }
+@keyframes hoatruc-flash {
+  0%,
+  86% {
+    opacity: 0.55;
+  }
+  88%,
+  92% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
 
-@media (max-height: 800px) {
-  .hoatruc-name {
-    right: 60px;
-  }
-  .hoatruc-van-ring[data-k='1'] {
-    display: none;
-  }
+/* Dị Biến: nền thủy mặc đen-vàng (tối hơn tranh gốc để sét tím-vàng và thiên môn nổi) */
+.hoatruc[data-tier='4'] .hoatruc-bg {
+  filter: brightness(0.55) contrast(1.25) saturate(1.2);
+}
+.hoatruc[data-tier='4'] .hoatruc-set {
+  opacity: 1;
 }

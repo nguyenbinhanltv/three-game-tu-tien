@@ -8,7 +8,8 @@ import { snap } from '../lib/shot';
 export default {
   name: 'thiengiai',
   desc: 'Thiên Giai Hoa Trúc: bộ Liệt Mạch qua tầng Kết Đan/Nguyên Anh/Hóa Thần (kiếm tu); --gender m|f, --video 1',
-  usage: '[--size 1920x1080] [--gender m|f] [--video 1] [--only 20|24|28: chỉ một tầng, quay ~9 s để ghép video chia ba màn]',
+  usage:
+    '[--size 1920x1080] [--gender m|f] [--video 1] [--method lac_kiem_quyet|bat_dong_kim_than|thanh_moc_dan_kinh] [--only 20|24|28|32: chỉ một tầng, quay ~9 s để ghép video chia ba màn]',
   async run(r) {
     const [w, h] = opt('--size', '1920x1080').split('x').map(Number) as [number, number];
     const g = opt('--gender', 'm');
@@ -22,7 +23,7 @@ export default {
       video: opt('--video', '') ? r.out : undefined,
     });
     const tag = g === 'f' ? 'nu' : 'nam';
-    await gm(page, 'method lac_kiem_quyet').catch(() => undefined);
+    await gm(page, `method ${opt('--method', 'lac_kiem_quyet')}`).catch(() => undefined);
     await gm(page, 'set set_liet_mach');
     await gm(page, 'weapon itm_han_quang_kiem').catch(() => undefined);
     await sleep(800);
@@ -41,6 +42,7 @@ export default {
       [20, '2-ket-dan'],
       [24, '3-nguyen-anh'],
       [28, '4-hoa-than'],
+      [32, '5-di-bien'],
     ];
     const only = opt('--only', '');
     if (only) {

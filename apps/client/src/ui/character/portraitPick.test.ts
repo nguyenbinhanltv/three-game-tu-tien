@@ -31,14 +31,19 @@ describe('Hoa Trúc: chọn tranh', () => {
 
 describe('Thiên Giai: tầng cảnh giới', () => {
   it('nền và tầng theo cấp: Kết Đan 20, Nguyên Anh 24, Hóa Thần 28', () => {
-    expect([15, 16, 20, 24, 28].map(realmArt)).toEqual(['nk', 'tc', 'kd', 'na', 'ht']);
-    expect([19, 20, 23, 24, 27, 28].map(realmTier)).toEqual([0, 1, 1, 2, 2, 3]);
+    expect([15, 16, 20, 24, 28, 32].map(realmArt)).toEqual(['nk', 'tc', 'kd', 'na', 'ht', 'ab']);
+    expect([19, 20, 23, 24, 27, 28, 31, 32].map(realmTier)).toEqual([0, 1, 1, 2, 2, 3, 3, 4]);
   });
-  it('bộ Liệt Mạch có tranh riêng; kiếm tu bật chùm phi kiếm/pháp tướng, công pháp khác thì không', () => {
+  it('bộ Liệt Mạch có tranh riêng; đạo theo công pháp (kiếm tu / hộ pháp / đan sư)', () => {
     const LM = SETS.find((s) => s.id === 'set_liet_mach')!;
     const kiem = pickPortrait({ ...base, level: 28, worn: LM.pieces, gender: 'f', method: 'lac_kiem_quyet' });
-    expect(kiem).toMatchObject({ char: 'liet_mach_nu', tier: 3, kiem: true, realm: 'canh_ht' });
-    expect(pickPortrait({ ...base, level: 28, worn: LM.pieces, method: 'bat_dong_kim_than' }).kiem).toBe(false);
+    expect(kiem).toMatchObject({ char: 'liet_mach_nu', tier: 3, dao: 'kiem', realm: 'nen_ht' });
+    expect(pickPortrait({ ...base, level: 28, worn: LM.pieces, method: 'bat_dong_kim_than' }).dao).toBe('ho_phap');
+    expect(pickPortrait({ ...base, level: 32, worn: LM.pieces, method: 'thanh_moc_dan_kinh' })).toMatchObject({
+      dao: 'dan_su',
+      tier: 4,
+      realm: 'nen_ab',
+    });
   });
 });
 

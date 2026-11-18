@@ -7,7 +7,9 @@ import { lookSet, setStatuses, type SetDef } from '@dtl/shared';
 
 /** Bộ có tranh riêng (bước 1). Bộ khác chưa có tranh thì rơi về đồ đệ tử. */
 export type OutfitArt = 'lac_kiem' | 'de_tu' | 'liet_mach';
-export type RealmArt = 'nk' | 'tc' | 'kd' | 'na' | 'ht';
+export type RealmArt = 'nk' | 'tc' | 'kd' | 'na' | 'ht' | 'ab';
+/** Đạo (theo vai trò công pháp): kiếm tu / hộ pháp / đan sư. */
+export type DaoArt = 'kiem' | 'ho_phap' | 'dan_su';
 export type SwordArt = 'thanh_phong' | 'han_quang';
 
 const SET_ART: Record<string, OutfitArt> = { set_lac_kiem: 'lac_kiem', set_liet_mach: 'liet_mach' };
@@ -24,20 +26,22 @@ export interface PortraitPick {
   /** Id bộ đang quyết định tranh (cho nhãn tên bộ), null = đồ đệ tử mặc định. */
   setId: string | null;
   /** Tầng cảnh giới cao (Thiên Giai): 0 dưới Kết Đan, 1 Kết Đan, 2 Nguyên Anh, 3 Hóa Thần. */
-  tier: 0 | 1 | 2 | 3;
-  /** Công pháp kiếm tu: có chùm 9 phi kiếm (Nguyên Anh) và pháp tướng kiếm long (Hóa Thần). */
-  kiem: boolean;
+  tier: 0 | 1 | 2 | 3 | 4;
+  /** Đạo của công pháp đang tu: quyết định hào quang Nguyên Anh và pháp tướng Hóa Thần. */
+  dao: DaoArt | null;
 }
 
 /** Nhóm cảnh giới → nền: Ngưng Khí ≤ 15 `nk`, Trúc Cơ 16–19 `tc`, Kết Đan 20–23 `kd`, Nguyên Anh 24–27 `na`, Hóa Thần ≥ 28 `ht`. */
 export function realmArt(level: number): RealmArt {
-  return level <= 15 ? 'nk' : level < 20 ? 'tc' : level < 24 ? 'kd' : level < 28 ? 'na' : 'ht';
+  return level <= 15 ? 'nk' : level < 20 ? 'tc' : level < 24 ? 'kd' : level < 28 ? 'na' : level < 32 ? 'ht' : 'ab';
 }
 
-/** Tầng chồng hiệu ứng theo cảnh giới (0 = không có). */
-export function realmTier(level: number): 0 | 1 | 2 | 3 {
-  return level >= 28 ? 3 : level >= 24 ? 2 : level >= 20 ? 1 : 0;
+/** Tầng chồng hiệu ứng theo cảnh giới: 1 Kết Đan, 2 Nguyên Anh, 3 Hóa Thần, 4 Dị Biến (đỉnh, cấp tối đa). */
+export function realmTier(level: number): 0 | 1 | 2 | 3 | 4 {
+  return level >= 32 ? 4 : level >= 28 ? 3 : level >= 24 ? 2 : level >= 20 ? 1 : 0;
 }
+
+const DAO_OF_METHOD: Record<string, DaoArt> = { lac_kiem_quyet: 'kiem', bat_dong_kim_than: 'ho_phap', thanh_moc_dan_kinh: 'dan_su' };
 
 /** Mẫu kiếm 3D → lớp kiếm vẽ: nhóm kiếm lạnh (hàn) dùng kiếm băng, còn lại kiếm thanh phong. */
 export function swordArt(model: string | undefined): SwordArt {
@@ -61,11 +65,11 @@ export function pickPortrait(o: {
   return {
     char: `${outfit}_${g}`,
     outfit,
-    realm: `canh_${realmArt(o.level)}`,
+    realm: `${['na', 'ht', 'ab'].includes(realmArt(o.level)) ? 'nen' : 'canh'}_${realmArt(o.level)}`,
     sword: o.hasWeapon ? `kiem_${swordArt(o.swordModel)}` : null,
     full,
     setId: set && SET_ART[set.id] ? set.id : null,
     tier: realmTier(o.level),
-    kiem: o.method === 'lac_kiem_quyet',
+    dao: (o.method && DAO_OF_METHOD[o.method]) || null,
   };
 }

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { realmName, t } from '@dtl/content';
-import { useUI } from '../store';
+import { t } from '@dtl/content';
 import { InkStroke } from '../u2';
 import { useReduceMotion } from '../ngj';
 import { motionAt } from './hoaMotion';
+import { TierBack, TierFront, tierUrl } from './TierLayers';
 import type { PortraitPick } from './portraitPick';
 
 /** Đường dẫn tranh (nạp lười khi mở bảng, không nằm trong tải đầu). */
-const url = (name: string): string => `${import.meta.env.BASE_URL}hoa-truc/${name}.webp`;
+const url = tierUrl;
 
 const cache = new Map<string, Promise<HTMLImageElement | null>>();
 function load(name: string): Promise<HTMLImageElement | null> {
@@ -25,7 +25,7 @@ function load(name: string): Promise<HTMLImageElement | null> {
 }
 
 /** Gió linh khí mạnh dần theo tầng cảnh giới (tay áo, voan, tóc bay mạnh hơn). */
-const AMP = [1, 1.35, 1.55, 1.8] as const;
+const AMP = [1, 1.35, 1.6, 1.9, 2.2] as const;
 const COLS = 10;
 const ROWS = 26;
 const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
@@ -35,82 +35,6 @@ const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
   size: 2 + (i % 3),
   gold: i % 3 === 0,
 }));
-
-/** Vân phù: các nét "chữ" tự tạo (xác định theo seed, KHÔNG phải chữ Hán thật) xếp quanh một vành elip. */
-function glyphPath(seed: number): string {
-  let s = seed * 9301 + 49297;
-  const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  const segs: string[] = [];
-  const n = 3 + Math.floor(r() * 3);
-  for (let i = 0; i < n; i++) {
-    const x1 = 2 + r() * 8;
-    const y1 = 2 + r() * 12;
-    const x2 = 2 + r() * 8;
-    const y2 = 2 + r() * 12;
-    segs.push(
-      r() < 0.5
-        ? `M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}`
-        : `M${x1.toFixed(1)} ${y1.toFixed(1)}Q${((x1 + x2) / 2 + 3).toFixed(1)} ${((y1 + y2) / 2 - 3).toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`,
-    );
-  }
-  return segs.join('');
-}
-const GLYPHS = Array.from({ length: 18 }, (_, i) => glyphPath(i + 3));
-
-/** Dải vân phù vàng lượn quanh người (Kết Đan trở lên): hai vòng elip xoay ngược nhau, mỗi vòng 9 nét vân sáng. */
-function VanPhu() {
-  return (
-    <div className="hoatruc-van" aria-hidden="true">
-      {[0, 1].map((k) => (
-        <div key={k} className="hoatruc-van-ring" data-k={k}>
-          {GLYPHS.slice(k * 9, k * 9 + 9).map((d, i) => (
-            <svg key={i} viewBox="0 0 12 16" className="hoatruc-van-glyph" style={{ '--a': i * 40 + 'deg' } as CSSProperties}>
-              <path d={d} />
-            </svg>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/** Lớp tầng cảnh giới đặt SAU nhân vật: Nguyên Anh + 9 phi kiếm (tầng 2) / pháp tướng kiếm long (tầng 3, kiếm tu). */
-function TierBack({ pick }: { pick: PortraitPick }) {
-  if (pick.tier < 2) return null;
-  // Nguyên Anh (24): Nguyên Anh + VÒNG 9 PHI KIẾM xếp đều thành hào quang. Hóa Thần (28): PHÁP TƯỢNG kiếm long ngọc cỡ nửa tranh, bỏ vòng kiếm cho gọn.
-  const phap = pick.tier >= 3 && pick.kiem;
-  return (
-    <>
-      {phap && (
-        <div className="hoatruc-phaptuong">
-          <img src={url('phap_tuong_kiem_long')} alt="" draggable={false} />
-        </div>
-      )}
-      {pick.kiem && !phap && (
-        <div className="hoatruc-ring">
-          {Array.from({ length: 9 }, (_, i) => (
-            <i key={i} className="hoatruc-pk" style={{ '--a': i * 40 + 'deg' } as CSSProperties} />
-          ))}
-        </div>
-      )}
-      <div className="hoatruc-na" data-small={phap ? '1' : undefined}>
-        <img src={url('nguyen_anh')} alt="" draggable={false} />
-      </div>
-    </>
-  );
-}
-
-/** Tên thư pháp dọc theo đạo hiệu của chính người chơi + dấu triện cảnh giới (Hóa Thần). */
-function NameScroll() {
-  const char = useUI((s) => s.char);
-  if (!char) return null;
-  return (
-    <div className="hoatruc-name">
-      <span className="hoatruc-name-t">{char.name}</span>
-      <span className="hoatruc-name-seal">{realmName(char.level)}</span>
-    </div>
-  );
-}
 
 /**
  * Sân khấu tranh vẽ của bảng Nhân vật (Hoa Trúc, bước 1): thay khung xem 3D. Ba lớp parallax theo chuột (nền cảnh giới / nhân vật + kiếm /
@@ -186,7 +110,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       const k = cv.width / size.w;
       ctx.setTransform(k, 0, 0, k, 0, 0);
       ctx.clearRect(0, 0, size.w, size.h);
-      const ih = size.h * 0.99;
+      const ih = size.h * (pick.tier >= 2 ? 0.88 : 0.99);
       const iw = (charImg.width / charImg.height) * ih;
       const ox = (size.w - iw) / 2 + (still || reduce ? 0 : m.sx * 12);
       const oy = size.h - ih - size.h * 0.004 + (still || reduce ? 0 : m.sy * 5);
@@ -275,9 +199,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
         <div className="hoatruc-char" key={'c' + swap} data-swap={swap > 0 ? '1' : undefined}>
           {failed ? <div className="hoatruc-miss" /> : <canvas ref={canvas} />}
         </div>
-        {pick.tier >= 1 && <div className="hoatruc-dan" />}
-        {pick.tier >= 1 && <VanPhu />}
-        {pick.tier >= 3 && <NameScroll />}
+        <TierFront pick={pick} />
         <div className="hoatruc-mist" ref={(el) => void (layers.current.mist = el)}>
           <i className="hoatruc-fog f1" />
           <i className="hoatruc-fog f2" />

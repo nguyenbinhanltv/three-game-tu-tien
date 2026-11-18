@@ -392,7 +392,7 @@ Font web tự host trong `apps/client/public/fonts/`, subset bằng `tools/fonts
 | File | Font gốc | Giấy phép | Ngày | Dùng cho |
 | --- | --- | --- | --- | --- |
 | `dtl-title.woff2` | Charm Bold, © 2018 The Charm Project Authors (Cadson Demak) | `OFL-1.1` | 2026-11-15 | Tiêu đề thư pháp trên khung hình đầu (chỉ glyph của `ui.title`), biến CSS `--font-title` |
-| `dtl-thu-phap.woff2` | Charm Bold, © 2018 The Charm Project Authors (Cadson Demak) | `OFL-1.1` | 2026-11-19 | Tên thư pháp dọc (đạo hiệu người chơi) ở tầng Hóa Thần của Hoa Trúc, đủ Latin + tiếng Việt, biến CSS `--u-font-thuphap` |
+| `dtl-thu-phap.woff2` | Mansalva Regular, © 2019 The Mansalva Project Authors | `OFL-1.1` | 2026-11-19 | Tên thư pháp dọc (đạo hiệu người chơi) ở tầng Hóa Thần của Hoa Trúc, nét bút lông, đủ Latin + tiếng Việt, biến CSS `--u-font-thuphap` |
 | `dtl-display.woff2` | Alegreya SC Bold, © 2011 The Alegreya Project Authors (Huerta Tipográfica) | `OFL-1.1` | 2026-11-15 | Tên boss, biển hiệu, phụ đề màn tiêu đề (Latin + tiếng Việt), biến CSS `--font-display` |
 | `dtl-u2-display.woff2` | Grenze Gotisch Bold, © 2020 The Grenze Gotisch Project Authors (Omnibus-Type) | `OFL-1.1` | 2026-11-18 | UI Kit 2.0: chữ trang trí lớn (thẻ chương, tên chiêu, "Đột phá"), biến `--u-font-display` |
 | `dtl-u2-head.woff2` | Texturina (opsz 24, 600–800), © 2020 The Texturina Project Authors (Omnibus-Type) | `OFL-1.1` | 2026-11-18 | UI Kit 2.0: tiêu đề bảng, tab, nút, nhãn, biến `--u-font-head` |

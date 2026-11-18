@@ -47,14 +47,21 @@ man = {}
 # Thiên Giai: thư mục thien_giai cạnh hoa_truc; tên ra khác tên nguồn (liet_mach_nam_pose → liet_mach_nam); bản A-pose chỉ để dựng 3D, bỏ qua.
 TG = SRC.parent / 'thien_giai'
 files = [(f, f.stem) for f in sorted(SRC.glob('*.png'))]
+LOP = SRC.parent / 'thien_giai_lop'  # lớp nền + hiệu ứng theo cảnh giới (nen_* không alpha; còn lại tách nền magenta)
+if LOP.exists():
+    files += [(f, f.stem) for f in sorted(LOP.glob('*.png'))]
 if TG.exists():
     for f in sorted(TG.glob('*.png')):
+        if f.stem in ('canh_kd', 'canh_na', 'canh_ht', 'phap_tuong_kiem_long', 'phi_kiem'):
+            continue  # bản cũ, thay bằng thien_giai_lop
         if f.stem.endswith('_apose'):
             continue
+        if f.stem.startswith(('dia_giap', 'phuc_mach')):
+            continue  # chưa dùng (bước hàng loạt sau)
         files.append((f, f.stem[:-5] if f.stem.endswith('_pose') else f.stem))
 for f, n in files:
     im = Image.open(f)
-    if n.startswith('canh_'):
+    if n.startswith(('canh_', 'nen_')):
         im = im.convert('RGB')
         im = im.resize((800, int(800 * im.size[1] / im.size[0])), Image.LANCZOS)
         man[n] = save(im, n, 70, False)
@@ -62,7 +69,13 @@ for f, n in files:
         k = key(im)
         bb = k.getchannel('A').point(lambda v: 255 if v > 24 else 0).getbbox()
         k = k.crop(bb)
-        tall = {'phap_tuong_kiem_long': 900, 'nguyen_anh': 320, 'phi_kiem': 360}.get(n, 1000 if n.startswith(('lac_', 'de_', 'liet_')) else 900)
-        k = k.resize((int(k.size[0] * tall / k.size[1]), tall), Image.LANCZOS)
+        cap = {'nguyen_anh': 360, 'cau_linh_vuc': 360, 'sen_lua': 480, 'ngu_hanh': 640, 'dai_sen_may': 760, 'thien_mon': 760, 'set_tim_vang': 640}.get(n)
+        if n.startswith('phap_tuong_'):
+            cap = 760
+        if cap:
+            k.thumbnail((cap, cap), Image.LANCZOS)  # lớp hiệu ứng: cạnh dài nhất ≤ cap
+        else:
+            tall = 1000 if n.startswith(('lac_', 'de_', 'liet_')) else 900
+            k = k.resize((int(k.size[0] * tall / k.size[1]), tall), Image.LANCZOS)
         man[n] = save(k, n, 70 if n.startswith('liet_') else 82, True)
 (OUT / 'manifest.json').write_text(json.dumps(man, indent=1), encoding='utf8')
