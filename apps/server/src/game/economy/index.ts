@@ -16,7 +16,7 @@ const METHOD_NPC = 'npc_chuong_mon';
 const POTION_ALLY_RANGE = 12;
 const GATHER_RANGE = 5;
 
-/** Phần GameSim mà hệ quái cần. */
+/** Phần GameSim mà hệ kinh tế/nhiệm vụ cần. */
 export interface EconomyCtx {
   applyPillBuff(p: PlayerEnt, def: { id: string; use?: { buff?: { kind: 'atk' | 'def' | 'crit' | 'ward'; pct: number; sec: number } } }, potency: number): void;
   canAssist(p: PlayerEnt, o: PlayerEnt): boolean;
@@ -41,8 +41,6 @@ export interface EconomyCtx {
 
 export class EconomySystem {
   constructor(private readonly c: EconomyCtx) {}
-
-
 
   onGather(p: PlayerEnt, msg: unknown): void {
     const id = (msg as { id?: unknown } | null)?.id;

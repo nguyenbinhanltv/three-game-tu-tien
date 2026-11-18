@@ -529,7 +529,7 @@ export class GameSim {
     stopMeditate: (p) => this.setMeditating(p, false),
   });
 
-  /** Quái (R-7): xem `game/economy/`. */
+  /** Kinh tế và nhiệm vụ (R-7): xem `game/economy/`. */
   private readonly ecoSys = new EconomySystem(((s: GameSim): EconomyCtx => ({
     applyPillBuff: (p, def, potency) => s.applyPillBuff(p, def, potency),
     canAssist: (p, o) => s.canAssist(p, o),
