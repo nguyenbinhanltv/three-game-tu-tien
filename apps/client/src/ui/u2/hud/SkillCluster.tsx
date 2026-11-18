@@ -120,6 +120,8 @@ function ClusterSlot({ sk, i, pos, view, main }: SlotProps) {
     );
   }
   const v = view(sk, i);
+  // Ô chiêu chưa mở khóa thì ẩn hẳn (cung chỉ hiện những ô dùng được).
+  if (v.locked) return null;
   const cdOn = !v.charging && v.left > 80 && !v.locked;
   return (
     <div className="u2h-cell" style={style} data-main={main ? '1' : undefined}>
@@ -155,8 +157,9 @@ function ClusterSlot({ sk, i, pos, view, main }: SlotProps) {
           {main && v.gcd > 0.02 && <span className="u2h-gcd" style={{ '--cd': Math.min(1, v.gcd) } as CSSProperties} />}
           {v.charging && (
             <>
-              <span className="u2-skill__cd" style={{ '--cd': Math.max(0.001, 1 - Math.min(1, v.charge / CHARGE_MAX)) } as CSSProperties} />
-              <span className="u2-skill__cdn">{Math.floor(v.charge)}</span>
+              {/* chiêu tối thượng đang tụ lực: vòng tiến độ quanh ô + số % nhỏ ở đáy, icon vẫn thấy */}
+              <span className="u2h-charge" style={{ '--cd': Math.min(1, v.charge / CHARGE_MAX) } as CSSProperties} />
+              <span className="u2h-charge-n">{Math.floor((v.charge / CHARGE_MAX) * 100)}%</span>
             </>
           )}
           {cdOn && (

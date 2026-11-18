@@ -17,8 +17,10 @@ export interface Viewport {
   vh: number;
 }
 
-/** Chừa đáy cho thanh chiêu (khớp `.k-window` trong kit.css). */
+/** Chừa đáy cho cụm kỹ năng + ô tiện ích (khớp `.k-window` trong kit.css). */
 const BOTTOM_RESERVE = 136;
+/** Chừa đầu cho thẻ người chơi, thanh boss, hub (tiêu đề cuộn của bảng nhô lên nằm trong phần chừa này của chính bảng). Vùng an toàn của cửa sổ = [TOP_RESERVE, vh − BOTTOM_RESERVE]. */
+const TOP_RESERVE = 116;
 const WIN_GAP = 12;
 const WIN_MARGIN = 12;
 
@@ -36,8 +38,8 @@ const WIN_WIDTH: Record<WinId, number> = {
 };
 /** Chiều cao ước lượng để canh giữa (cửa sổ cuộn nên không biết trước). */
 const WIN_HEIGHT: Record<WinId, number> = {
-  bag: 600,
-  char: 680,
+  bag: 740,
+  char: 780,
   quests: 520,
   help: 460,
   settings: 600,
@@ -63,7 +65,7 @@ function winWidth(id: WinId, vp: Viewport): number {
 }
 
 function maxHeight(vp: Viewport): number {
-  return vp.vh - BOTTOM_RESERVE - 16;
+  return vp.vh - TOP_RESERVE - BOTTOM_RESERVE;
 }
 
 export function winRect(w: WinState, vp: Viewport): Rect {
@@ -88,7 +90,7 @@ export function clampPos(id: WinId, x: number, y: number, vp: Viewport): { x: nu
 function defaultPos(id: WinId, vp: Viewport): { x: number; y: number } {
   const w = winWidth(id, vp);
   const h = Math.min(WIN_HEIGHT[id], maxHeight(vp));
-  return clampPos(id, (vp.vw - w) / 2, Math.max(WIN_MARGIN, (vp.vh - BOTTOM_RESERVE - h) / 2), vp);
+  return clampPos(id, (vp.vw - w) / 2, TOP_RESERVE + Math.max(0, (vp.vh - TOP_RESERVE - BOTTOM_RESERVE - h) / 2), vp);
 }
 
 /** Hai cửa sổ cạnh nhau, cả cặp nằm giữa màn hình. Màn quá hẹp thì chồng một phần (vẫn thấy cả hai thanh tiêu đề). */
@@ -100,7 +102,7 @@ function pairLayout(vp: Viewport): { left: { x: number; y: number }; right: { x:
   const hl = Math.min(WIN_HEIGHT[PAIR_LEFT], maxHeight(vp));
   const hr = Math.min(WIN_HEIGHT[PAIR_RIGHT], maxHeight(vp));
   // Cùng một mép trên cho cả hai bảng (canh theo bảng cao hơn).
-  const y = Math.round(Math.max(WIN_MARGIN, (vp.vh - BOTTOM_RESERVE - Math.max(hl, hr)) / 2));
+  const y = Math.round(TOP_RESERVE + Math.max(0, (vp.vh - TOP_RESERVE - BOTTOM_RESERVE - Math.max(hl, hr)) / 2));
   return { left: { x: Math.round(x0), y }, right: { x: Math.round(x0 + wl + WIN_GAP), y } };
 }
 
