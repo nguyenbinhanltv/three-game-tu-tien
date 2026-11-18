@@ -133,6 +133,14 @@ const procedural = [
     template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
     extra: ['--id', 'boss_kim_da_ma_hau', '--height', '2.6', '--tris', '30000', '--landmarks', 'repo:tools/blender/skins/dv2_ravenyth_landmarks.json', '--bind', 'repo:tools/blender/skins/dv2_ravenyth_bind.json'],
   },
+  // DV-2 đợt 4 (boss có cánh): Aetherion Nemesis (tools/blender/skins/dv2_aetherion.json); cánh là ba chuỗi xương mỗi bên (`--wings`, chr_v3.py).
+  {
+    id: 'boss_thu_khich_duc_chu',
+    script: 'tools/blender/chr_v3.py',
+    source: 'boss/boss_thu_khich_duc_chu/prep/bake.glb',
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: ['--id', 'boss_thu_khich_duc_chu', '--height', '3.6', '--tris', '36000', '--landmarks', 'repo:tools/blender/skins/dv2_aetherion_landmarks.json', '--wings', 'repo:tools/blender/skins/dv2_aetherion_wings.json'],
+  },
   // Clip UAL giữ tên xương Mannequin, phát thẳng lên chr_v3_* (không chuyển clip).
   {
     id: 'anim_ual_native',

@@ -417,6 +417,17 @@ function checkMonSkills(m: MonsterDef, ai: MonsterAi, id: string) {
     if (!KINDS.includes(c.kind)) err(`${id}: ${k}.kind không hợp lệ`);
   };
   const { line, charge, leap, burrow, reflect, summon, reveal } = ai;
+  // Vệt để lại (DV-2 đợt 4): đủ lâu để đọc, không phủ kín sân (≤ 8 vũng mỗi vệt, ≤ 12 s), sát thương mỗi nhịp nhỏ.
+  for (const [k, c] of [['line', line], ['charge', charge]] as const) {
+    const tr = c?.trail;
+    if (!tr) continue;
+    kindOk(tr, `${k}.trail`);
+    if (!inR(tr.dur, 3, 12)) err(`${id}: ${k}.trail.dur phải trong [3; 12] giây`);
+    if (!inR(tr.tick, 0.5, 2)) err(`${id}: ${k}.trail.tick phải trong [0,5; 2] giây`);
+    if (!inR(tr.mul, 0.05, 0.6)) err(`${id}: ${k}.trail.mul phải trong [0,05; 0,6]`);
+    if (!inR(tr.r, 1, 4)) err(`${id}: ${k}.trail.r phải trong [1; 4] mét`);
+  }
+  if (ai.anchor && !(inR(ai.anchor.r, 4, 20) && inR(ai.anchor.pct, 0.002, 0.03))) err(`${id}: anchor cần r trong [4; 20] m và pct trong [0,002; 0,03] mỗi giây`);
   if (line) {
     kindOk(line, 'line');
     if (!inR(line.delay, 0.9, 3)) err(`${id}: line.delay phải trong [0,9; 3] giây`);

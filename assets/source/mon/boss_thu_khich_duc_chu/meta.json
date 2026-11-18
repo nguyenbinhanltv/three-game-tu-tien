@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../meta.schema.json",
+  "id": "boss_thu_khich_duc_chu",
+  "type": "mon",
+  "budgetClass": "boss_mq",
+  "itemId": null,
+  "status": "imported",
+  "budget": {
+    "faceLimit": 40000,
+    "texture": 2048
+  },
+  "procedural": {
+    "script": "tools/blender/chr_v3.py",
+    "seed": null
+  },
+  "license": {
+    "source": "Sketchfab: \"AETHERION NEMESIS // The Violet Seraph\" của Atahan3D, CC BY 4.0. Đã chỉnh sửa: bỏ lưỡi kiếm dính tay (chiêu Giáng thương là hiệu ứng), giảm lưới 1.002.007 → 36.000 tam giác, UV mới và nướng lại texture, dựng chuỗi xương cho bốn cánh (ba chuỗi mỗi bên), đặt lên bộ xương UE5 Mannequin bằng tools/blender/chr_v3.py (tools/blender/skin_prep.py --stage bake, cấu hình tools/blender/skins/dv2_aetherion*.json; clip UAL của Quaternius CC0 phát trực tiếp)",
+    "owner": "6 (https://sketchfab.com/Atahan3D)",
+    "date": "2026-11-18",
+    "url": "https://sketchfab.com/3d-models/aetherion-nemesis-the-violet-seraph-9e86faa1fe764b0e8ea1f509ddbf8d13",
+    "spdx": "CC-BY-4.0"
+  }
+}

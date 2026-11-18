@@ -137,3 +137,49 @@ Ravenyth: cánh tay dạng 45° theo xương Mannequin kéo theo phần tay áo 
 - Kiếm Cơ quá tối: `palette` (dark→light) + `glow` than hồng + `lift` 0,3 ở `MONSTER_SKINS`; kiếm 1,5×.
 - Mảng đen dựng chéo ở clip `Spell_Simple_Idle_Loop`: `chr_v3.py --bind` có thêm `drop` (bỏ ảnh hưởng xương tay lên vạt từ thắt lưng xuống), vai gai/cổ áo choàng/giáp đùi buộc cứng vào ngực/đùi (`dv2_protector_bind.json`). Mảng vẫn còn trong clip niệm chú (vạt choàng lẫn vai), nên Kiếm Cơ (không niệm chú) đổi trạng thái `cast` sang `Idle_Loop`, không phát clip đó.
 - Ma Hậu nhỏ: `scale` 1,35 (Kiếm Cơ 1,2); lift 0,45. Chụp góc ngang (`--yaw 1.57 --quiet`) để chiêu người chơi không che.
+
+---
+
+# DV-2 đợt 4: boss có cánh (Thủ Khích Dực Chủ) + vệt lửa Tẫn Hỏa Kiếm Cơ
+
+Ảnh, tờ clip và video duyệt ở thư mục artifact của phiên (không commit).
+
+## Thủ Khích Dực Chủ (boss ngoài trời, Trấn Giới Đài (0, −650), cấp 31)
+Chọn Dực Chủ ngoài trời (Thủ Khích) vì đã có đấu trường `BOSS2` để trống ở `gen-bac-hoang.mjs`; Tử Quang (phó bản Xích Tẫn Khích) và Nhật Thực (kiếp cuối) để đợt sau, cùng nguồn Aetherion/Nyxarion.
+
+| | |
+| --- | --- |
+| Nguồn | `aetherion_nemesis__the_violet_seraph` (assets-online), Atahan3D, CC BY 4.0 (`asset.extras.license` kiểm; tên mesh `Object_N` mặc định Sketchfab, không xương, không tên game khác) |
+| Lệch thiết kế mục 6.4 | thiết kế gán `protector_nemesis` cho Thủ Khích nhưng nó đã là Kiếm Cơ (đợt 3); Aetherion là model của Tử Quang nên **dùng chung nguồn**, chỉ khác cách chỉnh (Thủ Khích giữ màu tím gốc, viền lam lạnh `accent` `#8fb6ff` để hiểu là "kẻ giữ cửa", không thuộc dòng nào) |
+| Tam giác nguồn → game | 1,0 triệu → 35.960 / 14.999 / 5.967 (`boss_mq`) |
+| Xương | 92 (Mannequin 68 + twist + `dtl_sword` + 18 xương cánh), GLB 6,8 MB (lớn ngang Kiếm Cơ/Ma Hậu) |
+| Cắt | lưỡi đại kiếm dính tay (chiêu Giáng thương là hiệu ứng, không cầm vũ khí), giữ vòng hào quang |
+
+### Cánh (không kéo dãn)
+`tools/blender/chr_v3.py --wings tools/blender/skins/dv2_aetherion_wings.json`: mỗi bên ba chuỗi (cánh trên gai, cánh giữa xòe ngang, cánh dưới rủ), mỗi chuỗi 3 xương: **gốc** `dtl_wing_<up|mid|low>_<l|r>` (con của `spine_03`, không phải lò xo: client vỗ bằng code) rồi hai **lò xo** `dtl_o_wing_*`. Đỉnh trong `region` thuộc chuỗi gần nhất, trọng số tuyến tính dọc chuỗi giữa ba xương, nhạt về thân trong dải `blend` quanh `bodyX` (gốc cánh không rách khỏi giáp vai). 8.976 đỉnh thuộc cánh.
+
+Client (`skinned.ts`): `SkinnedOpts.autoSprings/springParams` (lấy mọi xương `dtl_o_*` làm lò xo, thông số `WING_SPRING` ở `monsterSkins.ts`: cứng hơn vạt áo, góc lệch ≤ 24°), `SkinnedMonster.postPose` vỗ xương gốc quanh trục trước-sau của mô hình (±7° đứng yên, ±15° khi đi, nhanh hơn khi giao chiến; cánh dưới lệch pha, hai bên đối xứng), rồi lò xo thêm độ trễ. Chỉ ở LOD0–1; chết thì cánh buông. `MonsterSkin.wings: true` bật.
+
+Sáng ở 12–24 m: texture nướng đã có tím sáng nên không đổi bảng màu; `lift` 0,5, `rim` 0,7 (lam lạnh). Nhìn rõ trên nền sân đá/cỏ ở góc ngang 9–14 m.
+
+### Chiêu và dữ liệu (`monsters.json`, hp/atk/xp 170 / 1,45 / 38)
+| Chiêu | Dữ liệu |
+| --- | --- |
+| Giáng thương | `line` 22 × 4 m, báo 1,3 s, hồi 10 s |
+| Dực tường | `reflect`: báo 0,8 s, giữ cánh 4 s, nhận 30% sát thương, phản 20% (trần 3% máu người đánh), hồi 18 s |
+| Khai khích | `summon` 3 Tẫn Chủng Cốt Khôi (`mon_tan_chung`) mỗi 25 s, tối đa 6, delay 1,5 s |
+| Neo gốc khe | **mới** `ai.anchor {r: 10, pct: 0.01}` (xử lý ở `MonSkills.tick`): trong 10 m quanh chỗ sinh ra hồi 1%/s; kéo ra xa thì hết (dạy tank định vị) |
+| Pha 60% | `slam` r 4,5 báo 1,3 s lên tối đa 4 người |
+| Pha 30% | `sweep` nón 14 m, 45°, báo 1,3 s, tốc độ ×1,1 |
+Thưởng `loot.json`: linh thạch 800–1.300, Tử Khí Đan, Tẫn Giác ×2–4, thiết tinh, linh ngọc Thổ, trang bị Địa/Thiên. i18n `mon.boss_thu_khich_duc_chu.*` (tên, danh hiệu, lời `say`), `glossary.divucMonsters`, `credits.json` (`aetherion_nemesis`), `assets/LICENSES.md`. Quest `q5_thu_khich` (kill Thủ Khích Dực Chủ) khỏi cần khai chờ dữ liệu nữa (vẫn khóa bằng `minLevel` 31 > cấp tối đa). Hồi sinh 30 phút. **Chưa làm**: lời hắn nói khi gục chỉ hiện ở i18n, chưa nối vào cảnh.
+
+Xem: `/gm spawn boss_thu_khich_duc_chu`; `pnpm shots asset --ids boss_thu_khich_duc_chu --lib ual --clips Idle_Loop,Jog_Fwd_Loop,Sword_Attack,Hit_Chest,Death01 --out <thư mục tuyệt đối>`; `pnpm shots divuc --mons boss_thu_khich_duc_chu --dist 9 --pitch 0.12 --yaw 1.57 --quiet --rounds 26 --out <thư mục tuyệt đối>`.
+
+## Vệt lửa Tẫn Hỏa Kiếm Cơ (hoàn thiện #231)
+DIVUC 5.2: "vệt lửa trên sàn 8 s sau mỗi đường chém". **Server quyết định**: `MonsterLine.trail`/`MonsterCharge.trail` (`MonsterTrail {dur, tick, mul, r, kind}` ở `types.ts`): khi vạch `line`/`charge` được đặt, `MonSkills.start` gọi `host.trail`, `MonZones.addTrail` đặt chuỗi vũng tròn dọc vạch (`trailSpots` ở `shared/monskill.ts`: cách nhau 1,5 r, tối đa 8 vũng) bắt đầu **đúng lúc vạch nổ** (cùng `delay`), tồn tại 8 s, mỗi 1 s ai đứng trong vũng chịu 0,3 × atk của boss (cùng đường `poisonHit` với vũng độc Kim Thiền; người ngự kiếm cao > 8 m không bị). `POOL_MAX` 24 → 32. Kiếm Cơ: cả `charge` (16 × 3 m) và `line` (pha 65%) để vệt, `r` 1,8 m, `kind: fire`. `content:check` kiểm `trail` (3–12 s, nhịp 0,5–2 s, `mul` ≤ 0,6, `r` 1–4 m, ≤ 8 vũng mỗi vệt) và `anchor`.
+
+**Báo trước**: vạch chữ nhật của đường chém đã báo như cũ; mỗi vũng gửi `HazardMsg` `mv: 'trail'` (mới ở `protocol.ts`, không sát thương) để client vẽ. `Vfx.trailPool` (`game/vfx.ts`): vòng triện cam than hồng nhấp nháy ngọn lửa, hiện lúc vạch nổ, tắt dần ở 1,5 s cuối (không vòng báo riêng thứ hai, đỡ rối); một sigil mỗi vũng, ≤ 8 vũng mỗi vệt. Không đổi màu vũng độc/ô đố của phó bản (vẫn `mv: 'pool'`).
+
+**Chưa làm**: "sân hẹp dần" (cần sân phó bản Kim Dạ Cung, worker khác); Kiếm Cơ vẫn đang đứng ngoài trời ở Kim Dạ Ngoại Uyển. Pha 3 `leap` chưa để vệt.
+
+Kiểm: `apps/server/src/game/dvtrail.test.ts` (chuỗi vũng, thời điểm cháy, ngoài vệt không cháy, hết hạn; dữ liệu; neo hồi/kéo xa không hồi), `pnpm test`, `pnpm content:check`, `pnpm assets:validate`. `fight:check` chỉ nhận quái thường (bỏ boss) nên chỉ chạy bản mặc định để chắc không hồi quy (Cốt Lộc cấp 28 TTK 3,7–7,3 s như trước).
