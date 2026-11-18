@@ -33,7 +33,7 @@ Xuyên thân (cặp mặt chồng nhau giữa tay/thân/chân, **tăng so với 
 - Varkessa (giáp gai, tóc, đuôi nên nhiều hơn): Idle 302, Jog 151/82, Sword_Attack 281/67, Sitting 733, Death 1745, Roll 881, Jump 24, Spell 16, Hit_Chest 580, Crouch_Fwd 711.
 Thân mình vẫn còn xuyên ở ngồi, niệm chú một tay và chém: cần xương xoắn/giới hạn góc ở N-5 (UAL **không có** xương twist, khác ghi chú trong kế hoạch; muốn có phải tự thêm xương và chia trọng số bằng tay).
 
-## Giới hạn pipeline đã biết
+## Giới hạn pipeline đã biết (N-0)
 - Mặt nạ nhuộm 3 kênh và atlas gộp chưa làm: texture đầu vào giữ nguyên (chỉ hạ ≤ 2048).
 - Chưa kiểm trượt chân (thuộc animation, N-5).
 - Chưa chia trọng số xoắn (không có xương xoắn trong UAL).
@@ -45,3 +45,17 @@ Thân mình vẫn còn xuyên ở ngồi, niệm chú một tay và chém: cần
 
 ## Quay video so sánh
 `pnpm shots chrv3 --out <thư mục tuyệt đối>` (nam/nữ × `v2`/`v3`, cùng chuỗi: đứng, chạy, chém 3 đòn, trúng đòn nhẹ/nặng, ngã, đả tọa, chết/hồi sinh). Video ghép trái v2, phải v3 nằm ở artifact phiên (không commit).
+
+## N-3: Lạc Kiếm Môn Phục v3 (model Tripo thật, `?chr=v3`)
+
+Hai model Tripo toàn thân của người dùng (`<dtl-asset-source>/chr/set_lac_kiem/tripo/raw_v3_nam.glb` 57,6k tam giác, `raw_v3_nu.glb` 57,9k): tay chếch rõ, khe giữa chân, mặt rõ: **không lỗi cần dựng lại**. Nhập bằng `chr_v3.py` (job `chr_v3_lac_kiem_nam|nu` trong `run.mjs`, `--auto --height 1.84|1.70 --springs tools/blender/skins/v3_lac_kiem_springs.json`); asset thử thân v2 đã bỏ (Varkessa v3 giữ làm skin, xem #214).
+
+- **Mốc tự động** (`--auto`, `estimate_landmarks`): tỉ lệ khớp lấy từ Mannequin co theo chiều cao, tay (đầu ngón) và chân (cổ chân, mũi chân) đo từ lưới. Đủ cho nhân vật ~8 đầu chữ A; GLB không xương không có nhóm đỉnh để chép nên trọng số theo khoảng cách tới đoạn xương.
+- **Vạt đạo bào** (`robe` trong cấu hình): ở giữa trước/sau bám hông, ra ngoài mới bám đùi cùng phía (tránh vạt bị xé khi hai chân tách); thêm 8 chuỗi × 2 xương lò xo `dtl_o_skirt_*` (trọng số chuyển 60% theo độ sâu). Client chạy `SpringBones` chung (`spring.ts`) cho mọi xương `dtl_o_*` ở LOD0.
+- **Kiếm/vỏ**: client gắn mesh kiếm (`prop_kiem_*`, `look.w`) vào `dtl_scabbard` (lưng, chéo xuống) khi nghỉ và `dtl_sword` (nắm tay) khi giao chiến; `bladePoints` cho vệt kiếm.
+- **Số đo** (24.000 / 12.000 / 4.800 tam giác, 84 xương = 65 Mannequin + 3 `dtl_*` + 16 lò xo; GLB 3,5 MB mỗi bản, texture 2048² KTX2). Xuyên thân (cặp mặt chồng, tăng so với tư thế nghỉ):
+  - Nam: Idle 1, Jog 7/8, Sword_Attack 312/12, Sitting 1170, Death 1, Roll 584, Jump 1, Spell 4, Hit_Chest 64, Crouch_Fwd 367.
+  - Nữ: Idle 26, Jog 21/47, Sword_Attack 82/14, Sitting 385, Death 18, Roll 34, Jump 30, Spell 15, Hit_Chest 98, Crouch_Fwd 88.
+- **Còn xấu**: vạt áo rách/xé khi ngồi, lăn (Roll) và vài đòn chém (nhìn tờ khung); tóc dài chưa có lò xo (đỉnh tóc không tách được bằng bộ lọc hình học); tay áo rộng chưa có lò xo; mặt nạ nhuộm 3 kênh chưa làm (texture Tripo đã đúng màu ngà `#E4DEC8`/lam `#27476E` của `set_lac_kiem`, nhuộm lại chưa cần cho bản thử); xương xoắn không có (UAL).
+- **Ảnh cận mặt trong game**: người chơi quay mặt về camera yaw 0 ngay sau khi vào game, nhưng đổi hướng nếu chạy/`level` trước; `pnpm shots chrv3 --stills` chụp đúng thời điểm đó.
+- Quay: `pnpm shots chrv3 --out <thư mục tuyệt đối> [--variants v1,v3] [--genders m,f] [--stills]` (v1 mặc định mặc bộ `set_lac_kiem` | v3: đứng, chạy, chém ô 1-3, trúng đòn, ngã/dậy, đả tọa, ngự kiếm, chết).

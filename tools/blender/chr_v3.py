@@ -54,6 +54,7 @@ SHEET = opt('--sheet')
 REPORT = opt('--report')
 SPRINGS = opt('--springs')
 NO_EXPORT = '--no-export' in argv
+AUTO = '--auto' in argv  # đầu vào không xương: tự ước lượng mốc theo tỉ lệ Mannequin + đo lưới (xem estimate_landmarks)
 REP = {'id': ID, 'input': os.path.basename(IN)}
 
 
@@ -154,10 +155,10 @@ elif LANDMARKS:
         for name, head_from, tip in chain:
             head = J[head_from] if head_from else J[name]
             LM[name.lower()] = (np3(head), np3(J[tip]))
-else:
-    fail('đầu vào không có xương: cần --landmarks')
+elif not AUTO:
+    fail('đầu vào không có xương: cần --landmarks hoặc --auto')
 need = ['hips', 'spine', 'spine1', 'spine2', 'neck', 'head'] + [f'{s}{b}' for s in ('left', 'right') for b in ('shoulder', 'arm', 'forearm', 'hand', 'upleg', 'leg', 'foot', 'toebase')]
-miss = [n for n in need if n not in LM]
+miss = [] if AUTO else [n for n in need if n not in LM]
 if miss:
     fail(f'thiếu mốc {miss}')
 
@@ -184,6 +185,58 @@ if HEIGHT:
 BODY.data.transform(Matrix.Translation((0, 0, -zmin)))
 for key in LM:
     LM[key] = (LM[key][0] - np.array([0, 0, zmin]), LM[key][1] - np.array([0, 0, zmin]))
+
+def estimate_landmarks():
+    """Mốc cho GLB Tripo chữ A không xương: tỉ lệ khớp lấy từ Mannequin (8 đầu) co theo chiều cao; tay (đầu ngón) và chân (cổ chân, mũi
+    chân) đo từ lưới. Đúng cho nhân vật cao ~8 đầu, tay chếch ~35°, hai chân tách nhau; sai lệch nhỏ do bước đặt lại tư thế hấp thụ."""
+    Vs = np.array([v.co[:] for v in BODY.data.vertices], float)
+    H = float(Vs[:, 2].max())
+    k = H / float(T['Head']['tail'][2])
+    P = {n: d['head'] * k for n, d in T.items()}
+    torso = Vs[(Vs[:, 2] > 0.55 * H) & (Vs[:, 2] < 0.75 * H)]
+    dy = float(torso[:, 1].mean()) - P['spine_02'][1]
+    for n in P:
+        P[n] = P[n] + np.array([0.0, dy, 0.0])
+    out = {}
+
+    def lm(name, head, tail):
+        out[name] = (np.array(head, float), np.array(tail, float))
+
+    lm('hips', P['pelvis'], P['spine_01'])
+    lm('spine', P['spine_01'], P['spine_02'])
+    lm('spine1', P['spine_02'], P['spine_03'])
+    lm('spine2', P['spine_03'], P['neck_01'])
+    lm('neck', P['neck_01'], P['Head'])
+    lm('head', P['Head'], np.array([P['Head'][0], P['Head'][1], H]))
+    for sd, side in (('l', 'left'), ('r', 'right')):
+        sg = 1.0 if P['upperarm_' + sd][0] > 0 else -1.0
+        S = P['upperarm_' + sd].copy()
+        arm = Vs[(Vs[:, 2] > 0.40 * H) & (Vs[:, 2] < 0.72 * H)]
+        F = arm[np.argmax(sg * arm[:, 0])]  # đầu ngón tay: điểm ngoài cùng của tay
+        d = F - S
+        elbow, wrist = S + 0.47 * d, S + 0.86 * d
+        lm(side + 'shoulder', P['clavicle_' + sd], S)
+        lm(side + 'arm', S, elbow)
+        lm(side + 'forearm', elbow, wrist)
+        lm(side + 'hand', wrist, F)
+        low = Vs[(Vs[:, 2] < 0.12 * H) & (sg * Vs[:, 0] > 0)]
+        ank = low.mean(axis=0)
+        toe_y = float(Vs[(Vs[:, 2] < 0.05 * H) & (sg * Vs[:, 0] > 0)][:, 1].min())
+        hip = P['thigh_' + sd]
+        foot = np.array([ank[0], ank[1], P['foot_' + sd][2]])
+        knee = np.array([(hip[0] + ank[0]) / 2, (hip[1] + ank[1]) / 2, P['calf_' + sd][2]])
+        ball = np.array([ank[0], 0.5 * (ank[1] + toe_y), P['ball_' + sd][2]])
+        tip = np.array([ank[0], toe_y, P['ball_leaf_' + sd][2]])
+        lm(side + 'upleg', hip, knee)
+        lm(side + 'leg', knee, foot)
+        lm(side + 'foot', foot, ball)
+        lm(side + 'toebase', ball, tip)
+    return out
+
+
+if AUTO:
+    LM = estimate_landmarks()
+    log('mốc tự ước lượng: ' + ', '.join(f"{k}=({v[0][0]:.2f},{v[0][1]:.2f},{v[0][2]:.2f})" for k, v in list(LM.items())[:3]))
 REP['height'] = round(float(zmax * (k if HEIGHT else 1) - zmin), 3)
 src_groups = [g.name for g in BODY.vertex_groups]
 log(f'nhân vật: {len(BODY.data.polygons)} mặt, {len(src_groups)} nhóm đỉnh, dao {tuple(round(x, 2) for x in BODY.dimensions)}')
@@ -307,6 +360,14 @@ DEF = [n for n in order if n != 'root' and not n.endswith('_leaf_l') and not n.e
 DEF = [n for n in DEF if n in F_HEAD and n in F_TAIL]
 IDX = {n: i for i, n in enumerate(DEF)}
 
+
+def REGION_OF(n):
+    if re.match(r'(clavicle|upperarm|lowerarm|hand|thumb|index|middle|ring|pinky)', n):
+        return 'arm'
+    if re.match(r'(thigh|calf|foot|ball)', n):
+        return 'leg'
+    return 'torso'
+
 # ---------- trọng số ----------
 V = np.array([BODY.matrix_world @ v.co for v in BODY.data.vertices], float).reshape(-1, 3)
 NV = len(V)
@@ -428,42 +489,111 @@ add_bone('dtl_sword', 'hand_r', H['hand_r'], H['hand_r'] + np.array([0, 0, 0.18 
 add_bone('dtl_scabbard', 'spine_03', H['spine_03'] + np.array([0, 0.10 * height / 1.8, 0]), H['spine_03'] + np.array([-0.12, 0.10, -0.55]) * height / 1.8)
 add_bone('dtl_head_acc', 'Head', top - np.array([0, 0, 0.06]), top + np.array([0, 0, 0.06]))
 n_spring = 0
+COLS = list(DEF)
 if SPRINGS:
+    # Cấu hình: {"groups":[{"name":"skirt","parent":"pelvis","axis":"angle|x","zMin":0.16,"zMax":0.5,"minRadius":0.09,"count":8,"links":2,
+    #   "domRegion":["torso","leg"],"yMinRel":0.0,"xAbsMax":0.12}]}; z, bán kính, y, x tính theo PHẦN CHIỀU CAO (mặc định, "frac": false = mét).
     SP = json.load(open(SPRINGS, encoding='utf-8'))
-    # Cấu hình: {"groups":[{"name":"hem","parent":"pelvis","zMin":0.3,"zMax":0.95,"count":6,"links":2,"belowOnly":true,"minRadius":0.14}]}
-    # Mỗi nhóm: gom đỉnh có z trong khoảng và cách trục thân > minRadius theo GÓC quanh trục đứng, đặt `count` chuỗi `links` xương thả xuống.
     cx, cy = H['pelvis'][0], H['pelvis'][1]
-    for g in SP['groups']:
-        sel = [(i, VP[i]) for i in range(NV) if g['zMin'] <= VP[i][2] <= g['zMax'] and math.hypot(VP[i][0] - cx, VP[i][1] - cy) > g.get('minRadius', 0.12)]
-        if not sel:
-            continue
-        ang = np.array([math.atan2(p[1] - cy, p[0] - cx) for _, p in sel])
-        cnt = g.get('count', 6)
-        for k in range(cnt):
-            lo, hi = -math.pi + 2 * math.pi * k / cnt, -math.pi + 2 * math.pi * (k + 1) / cnt
-            pts = np.array([p for (i, p), a in zip(sel, ang) if lo <= a < hi])
-            if len(pts) == 0:
+    # Vạt đạo bào: ở giữa (trước/sau) bám hông, ra ngoài mới bám đùi cùng phía; tránh vạt bị xé khi hai chân tách nhau.
+    RB = SP.get('robe')
+    if RB:
+        sgn_l = 1.0 if T['thigh_l']['head'][0] > 0 else -1.0
+        n_rb = 0
+        for i in range(NV):
+            x, y, z = VP[i]
+            if not (RB['zMin'] * height <= z <= RB['zMax'] * height) or math.hypot(x - cx, y - cy) < RB['minRadius'] * height:
                 continue
+            wgt = float(np.clip((abs(x - cx) - RB['xInner'] * height) / max((RB['xOuter'] - RB['xInner']) * height, 1e-6), 0, 1)) * RB.get('outerShare', 0.7)
+            sd = 'l' if (x - cx) * sgn_l > 0 else 'r'
+            W[i] = 0
+            W[i, IDX['pelvis']] = 1 - wgt
+            lowk = float(np.clip((0.32 * height - z) / (0.1 * height), 0, 1))
+            W[i, IDX['thigh_' + sd]] = wgt * (1 - 0.5 * lowk)
+            W[i, IDX['calf_' + sd]] = wgt * 0.5 * lowk
+            n_rb += 1
+        log(f'vạt áo: {n_rb} đỉnh bám hông/đùi theo khoảng cách ngang')
+    domreg = np.array([REGION_OF(DEF[i]) for i in W.argmax(axis=1)])
+    Wx = W.copy()
+    for g in SP['groups']:
+        f = height if g.get('frac', True) else 1.0
+        zlo, zhi, rmin = g['zMin'] * f, g['zMax'] * f, g.get('minRadius', 0.0) * f
+        regs = g.get('domRegion')
+        sel = np.array([i for i in range(NV) if zlo <= VP[i][2] <= zhi and math.hypot(VP[i][0] - cx, VP[i][1] - cy) >= rmin
+                        and (regs is None or domreg[i] in regs)
+                        and VP[i][1] - cy >= g.get('yMinRel', -9.0) * f and abs(VP[i][0] - cx) <= g.get('xAbsMax', 9.0) * f], int)
+        if len(sel) == 0:
+            log(f"lò xo {g['name']}: không có đỉnh nào (y rel max {float((VP[:, 1] - cy).max()):.3f}, ngưỡng {g.get('yMinRel', -9.0) * f:.3f})")
+            continue
+        cnt, links = g.get('count', 6), g.get('links', 2)
+        if g.get('axis', 'angle') == 'angle':
+            coord = np.array([math.atan2(VP[i][1] - cy, VP[i][0] - cx) for i in sel])
+            cen = [-math.pi + 2 * math.pi * (k + 0.5) / cnt for k in range(cnt)]
+            wrap = 2 * math.pi
+        else:
+            coord = VP[sel, 0]
+            lo_, hi_ = float(coord.min()), float(coord.max())
+            cen = [lo_ + (hi_ - lo_) * (k + 0.5) / cnt for k in range(cnt)] if cnt > 1 else [(lo_ + hi_) / 2]
+            wrap = None
+        span = (cen[1] - cen[0]) if cnt > 1 else 1.0
+        names = []
+        for k in range(cnt):
+            dd = np.abs(coord - cen[k])
+            if wrap:
+                dd = np.minimum(dd, wrap - dd)
+            m = dd < span * 0.55
+            pts = VP[sel[m]] if m.any() else VP[sel]
             c = pts.mean(axis=0)
-            top_p = np.array([c[0], c[1], g['zMax']])
-            bot_p = np.array([c[0], c[1], g['zMin']])
-            prev, prev_n = top_p, g.get('parent', 'pelvis')
-            for l in range(g.get('links', 2)):
-                nxt = top_p + (bot_p - top_p) * (l + 1) / g.get('links', 2)
+            if g.get('axis', 'angle') == 'angle':
+                ang = cen[k]
+                rr = max(float(np.median(np.hypot(pts[:, 0] - cx, pts[:, 1] - cy))), 1e-3)
+                top = np.array([cx + rr * math.cos(ang), cy + rr * math.sin(ang), zhi])
+                bot = np.array([top[0], top[1], zlo])
+            else:
+                top, bot = np.array([c[0], c[1], zhi]), np.array([c[0], c[1], zlo])
+            prev, prev_n = top, g.get('parent', 'pelvis')
+            for l in range(links):
+                nxt = top + (bot - top) * (l + 1) / links
                 nm = f"dtl_o_{g['name']}_{k}_{l}"
                 add_bone(nm, prev_n, prev, nxt)
+                names.append(nm)
                 prev, prev_n = nxt, nm
                 n_spring += 1
+        # Trọng số: đỉnh chuyển phần `fr` từ xương cũ sang chuỗi lò xo gần nhất (nội suy hai chuỗi kề), tăng dần theo độ sâu.
+        base = len(COLS)
+        COLS += names
+        Wx = np.hstack([Wx, np.zeros((NV, len(names)))])
+        for j, vi in enumerate(sel):
+            t = float(np.clip((zhi - VP[vi][2]) / max(zhi - zlo, 1e-6), 0, 1))
+            fr = g.get('share', 0.95) * min(1.0, t / 0.35)
+            if fr <= 0:
+                continue
+            dd = np.abs(coord[j] - np.array(cen))
+            if wrap:
+                dd = np.minimum(dd, wrap - dd)
+            order_k = [0] if cnt == 1 else list(np.argsort(dd)[:2])
+            ws = [1.0] if cnt == 1 else [dd[order_k[1]], dd[order_k[0]]]
+            sm = sum(ws) or 1.0
+            li = min(links - 1, int(t * links))
+            Wx[vi, :base] *= (1 - fr)
+            for kk, wv in zip(order_k, ws):
+                Wx[vi, base + kk * links + li] += fr * wv / sm
+    W = Wx
+    for vi in range(NV):
+        row = W[vi]
+        if np.count_nonzero(row) > 4:
+            row[row < np.sort(row)[-4]] = 0
+        row /= row.sum()
 bpy.ops.object.mode_set(mode='OBJECT')
 REP['bones'] = len(ARM.data.bones)
 REP['spring_bones'] = n_spring
 
 # nhóm đỉnh Mannequin + modifier
 BODY.vertex_groups.clear()
-vgs = {n: BODY.vertex_groups.new(name=n) for n in DEF}
+vgs = {n: BODY.vertex_groups.new(name=n) for n in COLS}
 for vi in range(NV):
     for bi in np.nonzero(W[vi])[0]:
-        vgs[DEF[bi]].add([vi], float(W[vi, bi]), 'REPLACE')
+        vgs[COLS[bi]].add([vi], float(W[vi, bi]), 'REPLACE')
 BODY.parent = ARM
 BODY.parent_type = 'OBJECT'
 BODY.matrix_parent_inverse = Matrix.Identity(4)
@@ -535,7 +665,9 @@ for n in DEF:
         REGION[n] = 'leg_' + n[-1]
     else:
         REGION[n] = 'torso'
-dom = np.array([REGION[DEF[i]] for i in W.argmax(axis=1)])
+for _n in COLS:
+    REGION.setdefault(_n, 'torso')
+dom = np.array([REGION[COLS[i]] for i in W.argmax(axis=1)])
 PAIRS = [('arm_l', 'torso'), ('arm_r', 'torso'), ('arm_l', 'arm_r'), ('leg_l', 'leg_r'), ('arm_l', 'leg_l'), ('arm_r', 'leg_r')]
 
 
@@ -601,8 +733,8 @@ def render_sheet(outdir):
     sc.camera = cam
     for o in LODS[1:]:
         o.hide_render = True
-    sheet = [('Idle_Loop', 0.0), ('Jog_Fwd_Loop', 0.25), ('Sword_Attack', 0.4), ('Sitting_Idle_Loop', 0.0), ('Death01', 1.0), ('Roll', 0.4),
-             ('Jump_Loop', 0.5), ('Spell_Simple_Idle_Loop', 0.5)]
+    sheet = [(None, 0.0), ('Idle_Loop', 0.0), ('Jog_Fwd_Loop', 0.25), ('Sword_Attack', 0.4), ('Sitting_Idle_Loop', 0.0), ('Death01', 1.0),
+             ('Roll', 0.4), ('Spell_Simple_Idle_Loop', 0.5)]
     tiles = []
     for i, (clip, t) in enumerate(sheet):
         set_pose(clip, t)
