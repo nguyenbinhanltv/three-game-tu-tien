@@ -50,8 +50,10 @@ import thienKhuyetTerrainJson from '../data/levels/thien_khuyet.terrain.json';
 import thienKhuyetAssetsJson from '../data/levels/thien_khuyet.assets.json';
 import bacHoangJson from '../data/levels/bac_hoang.json';
 import bacHoangTerrainJson from '../data/levels/bac_hoang.terrain.json';
+import xichTanTerrainJson from '../data/levels/xich_tan_khich.terrain.json';
 import bacHoangAssetsJson from '../data/levels/bac_hoang.assets.json';
 import doKiepJson from '../data/levels/do_kiep.json';
+import doKiepBhJson from '../data/levels/do_kiep_bac_hoang.json';
 import phucMachJson from '../data/levels/phuc_mach.json';
 import phucMachAssetsJson from '../data/levels/phuc_mach.assets.json';
 import kinhNguyetJson from '../data/levels/kinh_nguyet.json';
@@ -63,6 +65,7 @@ import xichTanKhichAssetsJson from '../data/levels/xich_tan_khich.assets.json';
 import kimDaCungJson from '../data/levels/kim_da_cung.json';
 import kimDaCungAssetsJson from '../data/levels/kim_da_cung.assets.json';
 import doKiepAssetsJson from '../data/levels/do_kiep.assets.json';
+import doKiepBhAssetsJson from '../data/levels/do_kiep_bac_hoang.assets.json';
 import glossaryJson from '../data/glossary.json';
 import itemSourcesJson from '../data/itemsources.json';
 import viJson from '../data/i18n/vi.json';
@@ -213,6 +216,7 @@ export const LEVELS: Record<string, LevelDef> = {
   thien_khuyet: thienKhuyetJson as LevelDef,
   bac_hoang: bacHoangJson as LevelDef,
   do_kiep: doKiepJson as LevelDef,
+  do_kiep_bac_hoang: doKiepBhJson as LevelDef,
   phuc_mach: phucMachJson as LevelDef,
   kinh_nguyet: kinhNguyetJson as LevelDef,
   than_tang: thanTangJson as LevelDef,
@@ -223,6 +227,7 @@ export const LEVELS: Record<string, LevelDef> = {
 registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
 registerTerrain(thienKhuyetTerrainJson as unknown as TerrainDef); // E4-A: cao nguyên thành cổ
 registerTerrain(bacHoangTerrainJson as unknown as TerrainDef); // DV-1: hoang nguyên tro, khe Giới Khích
+registerTerrain(xichTanTerrainJson as unknown as TerrainDef); // DV-3K: hẻm núi phó bản Xích Tẫn Khích
 registerTerrain(vanHaiTerrainJson as unknown as TerrainDef); // E3-A/E3-N: đảo nổi, cầu xích, sàn mây
 /** Asset client theo level (`levels/<id>.assets.json`, E1-D). */
 export const LEVEL_ASSETS: Record<string, LevelAssets> = {
@@ -233,6 +238,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   thien_khuyet: thienKhuyetAssetsJson as LevelAssets,
   bac_hoang: bacHoangAssetsJson as LevelAssets,
   do_kiep: doKiepAssetsJson as LevelAssets,
+  do_kiep_bac_hoang: doKiepBhAssetsJson as LevelAssets,
   phuc_mach: phucMachAssetsJson as LevelAssets,
   kinh_nguyet: kinhNguyetAssetsJson as LevelAssets,
   than_tang: thanTangAssetsJson as LevelAssets,

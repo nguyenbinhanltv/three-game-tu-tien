@@ -182,6 +182,10 @@
   "boss_thu_mo_tuong",
   "mon_kiem_linh"
  ],
+ "itm_kim_da_mien_phien": [
+  "boss_kim_da_ma_hau",
+  "boss_tan_hoa_kiem_co"
+ ],
  "itm_kinh_hoa_sa": [
   "boss_kinh_nguyet_chan_quan",
   "boss_van_hai_kinh_vuong",
@@ -242,6 +246,8 @@
   "elite_tt_cot_kiem"
  ],
  "itm_tan_giac": [
+  "boss_kim_da_ma_hau",
+  "boss_tan_hoa_kiem_co",
   "boss_thien_khuyet_thu_linh",
   "boss_thu_khich_duc_chu",
   "boss_tu_nhan_ma_tuong",

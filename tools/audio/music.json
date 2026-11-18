@@ -21,6 +21,8 @@
     "dungeon": { "title": "Kiếm Trủng", "compose": true, "loop": true, "maxLen": 150 },
     "boss": { "title": "Hàn Giao", "compose": true, "loop": true, "maxLen": 150 },
     "dungeon_boss": { "title": "Kiếm Trủng — Thủ Mộ", "compose": true, "loop": true, "maxLen": 120 },
+    "dungeon_rift": { "title": "Xích Tẫn Khích — Đáy Hẻm", "compose": true, "loop": true, "maxLen": 160 },
+    "dungeon_rift_boss": { "title": "Xích Tẫn Khích — Chiến Giới", "compose": true, "loop": true, "maxLen": 120 },
     "tribulation": { "title": "Độ Kiếp", "compose": true, "loop": true, "maxLen": 60 },
     "meditate": { "title": "Đả Tọa", "compose": true, "loop": true, "maxLen": 120 },
     "title": { "title": "Đạp Thiên Lộ", "compose": true, "loop": true, "maxLen": 90, "bitrate": { "webm": "64k", "m4a": "80k" } },

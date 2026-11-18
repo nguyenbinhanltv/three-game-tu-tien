@@ -30,8 +30,8 @@ export interface Flags {
   chr: 'v2' | 'v3' | null;
   /** `?hair=b` ép kiểu tóc v2. */
   hair: string | null;
-  /** `?v3model=a` về Lạc Kiếm v3 cũ (so ảnh). */
-  v3ModelA: boolean;
+  /** `?v3model=a|b` chọn bản Lạc Kiếm v3/v3b (mặc định v3b2; so ảnh). */
+  v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
   /** `?v3pal=0` tắt bảng màu nhuộm v3. */
@@ -52,6 +52,8 @@ export interface Flags {
   music: string | null;
   /** `?ambient=<id>` nghe thử âm môi trường (chỉ dev). */
   ambient: string | null;
+  /** `?cine=0` tắt cảnh mở đầu và cảnh boss/chuyển pha (công cụ đo bench/crowd/load/compat dùng để camera đo không bị cảnh điện ảnh chiếm). */
+  cinematics: boolean;
   /** `?bhart=0` tắt lớp mỹ thuật riêng Bắc Hoang (so ảnh, chương 5). */
   bhArt: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
@@ -87,6 +89,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   night: { scope: 'diag', doc: '0|1 ép đêm/ngày cho nhạc' },
   music: { scope: 'diag', doc: 'id bài nhạc thử (dev)' },
   ambient: { scope: 'diag', doc: 'id âm môi trường thử (dev)' },
+  cine: { scope: 'diag', doc: '=0 tắt cảnh mở đầu/boss (công cụ đo dùng)' },
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   k6: { scope: 'diag', doc: '=0 tắt ba pha K-6 (sẽ gỡ R-4b)' },
@@ -133,7 +136,7 @@ export function readFlags(search: string): Flags {
     fxq: q.get('fxq'),
     chr: chr === 'v2' || chr === 'v3' ? chr : null,
     hair: q.get('hair'),
-    v3ModelA: q.get('v3model') === 'a',
+    v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
@@ -145,6 +148,7 @@ export function readFlags(search: string): Flags {
     music: q.get('music'),
     ambient: q.get('ambient'),
     bhArt: !off(q.get('bhart')),
+    cinematics: !off(q.get('cine')),
     butterflies: !off(q.get('bf')),
     k6: !off(q.get('k6')),
     fxTimeline: !off(q.get('fxtl')),

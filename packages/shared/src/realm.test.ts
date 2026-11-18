@@ -26,8 +26,8 @@ const kim: RootDef = { id: 'kim', elem: 'kim', elemDmg: 0.08, stat: { critRate: 
 
 describe('bình cảnh', () => {
   it('ở Ngưng Khí 5/10/15 và hai nút mỗi đại cảnh giới sau đó (17, 19, 21, 23, 25, 27)', () => {
-    expect(BOTTLENECK_LEVELS).toEqual([5, 10, 15, 17, 19, 21, 23, 25, 27]);
-    expect(PEAK_LEVELS).toEqual([15, 19, 23, 27]);
+    expect(BOTTLENECK_LEVELS).toEqual([5, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31]);
+    expect(PEAK_LEVELS).toEqual([15, 19, 23, 27, 31]);
     for (let l = 1; l <= MAX_LEVEL; l++) expect(bottleneckBlocked(l, 0)).toBe(BOTTLENECK_LEVELS.includes(l));
   });
   it('vượt rồi (bk >= tầng) thì không kẹt nữa', () => {
@@ -110,19 +110,21 @@ describe('mã cảnh giới kiểm thử', () => {
     expect(parseRealmCode('7')).toBe(7);
     expect(parseRealmCode('28')).toBe(28);
     expect(parseRealmCode(28)).toBe(28);
-    for (const bad of ['', 'nk0', 'nk16', 'tc0', 'tc5', 'kd5', 'na5', 'ht2', 'tc10', '29', '0', 'nk1x', '1e1', 0, 29, 2.5, NaN, null, undefined, {}, []]) expect(parseRealmCode(bad), String(bad)).toBeNull();
+    for (const bad of ['', 'nk0', 'nk16', 'tc0', 'tc5', 'kd5', 'na5', 'ht5', 'ab2', 'tc10', '33', '0', 'nk1x', '1e1', 0, 33, 2.5, NaN, null, undefined, {}, []]) expect(parseRealmCode(bad), String(bad)).toBeNull();
   });
 });
 
 describe('thang 28 cấp (E1-C)', () => {
   const sum = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => xpNeed(a + i)).reduce((x, y) => x + y, 0);
   it('xpNeed khớp bảng thiết kế, tích lũy 242k / 439k / 686k', () => {
-    expect(MAX_LEVEL).toBe(28);
+    expect(MAX_LEVEL).toBe(32);
     expect([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27].map(xpNeed)).toEqual([56000, 59000, 62000, 65000, 102500, 107500, 112000, 117000, 162000, 168500, 174500, 181000]);
     expect(sum(16, 19)).toBe(242_000);
     expect(sum(20, 23)).toBe(439_000);
     expect(sum(24, 27)).toBe(686_000);
-    expect(xpNeed(28)).toBe(99_999_999);
+    expect(xpNeed(32)).toBe(99_999_999);
+    expect([28, 29, 30, 31].map(xpNeed)).toEqual([234000, 242000, 250000, 257500]);
+    expect(sum(28, 31)).toBe(983_500);
     expect(xpNeed(15)).toBe(90 * 15 * 15);
   });
   it('hệ số cảnh giới 1 / 1,6 / 2,5 / 3,8 / 5,5 và đại cảnh giới', () => {

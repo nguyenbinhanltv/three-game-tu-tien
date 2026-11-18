@@ -25,7 +25,20 @@ export const V3_LIB = 'anim_ual_native';
 export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
 /** Bản v3b: vạt xẻ hai bên đối xứng (concept v3b), là bản mặc định của `?chr=v3`; `?v3model=a` về bản v3 cũ để so ảnh. */
 export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
-export const V3_MODELS = FLAGS.v3ModelA ? V3_MODELS_A : V3_MODELS_B;
+/** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b` về v3b để so. */
+export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
+const V3_PICK = FLAGS.v3Model;
+export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_MODELS_B2;
+/** Asset dùng lò xo v2 (`chr_v3b2_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
+export const isSpring2 = (assetId: string | undefined): boolean => !!assetId?.startsWith('chr_v3b2_');
+/** Độ cứng của xương gấu vạt (khớp thứ hai của chuỗi `dtl_o_skirt_<k>_<l>`) so với khớp gốc. */
+export const HEM_STIFF = 1.7;
+/** Hệ số phình viên nang thân khi ngồi/đả tọa: vạt nằm lên trên đùi thay vì lún xuống. */
+export const SIT_COLLIDER_SCALE = 1.3;
+/** Thông số lò xo v2 (sửa được lúc chạy chỉ để quét tham số trong `springMetrics.test.ts`). */
+export const SPRING2 = { hemStiff: HEM_STIFF, sitScale: SIT_COLLIDER_SCALE, arms: true, rMul: 1.3 };
+/** Thông số riêng của vạt ở lò xo v2: góc lệch tối đa hẹp (12°) vì vạt nay do lò xo + va chạm điều khiển phần lớn (share 0,8): lệch rộng làm hai nửa vạt chéo nhau khi chạy. Tóc và tay áo giữ `V3_SPRING`. */
+export const V3_SKIRT_SPRING2: SpringParams = { stiffness: 130, drag: 8, maxAngle: 12, maxInward: 8 };
 /** Skin toàn thân đã có bản v3 (`ItemDef.skin` = `set_skin_<tên>`): asset `chr_v3_<tên>_<nu|nam>`. */
 export const V3_SKINS: Readonly<Record<string, string>> = {
   set_skin_varkessa: 'chr_v3_varkessa_nu',
@@ -86,7 +99,7 @@ function restPos(root: THREE.Object3D, name: string): THREE.Vector3 | null {
 
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
-  if (/^chr_v3b?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  if (/^chr_v3b2?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   const box = new THREE.Box3().setFromObject(handle.scene);
   // Độ cao hông của nhân vật so với bộ xương mẫu của thư viện: chỉ kênh vị trí của pelvis bị nhân theo tỉ lệ.
   const a = restPos(handle.scene, 'pelvis');
@@ -114,7 +127,7 @@ export const V3_SPRING: SpringParams = { stiffness: 130, drag: 8, maxAngle: 30, 
  * Viên nang va chạm cho vạt/tay áo (N-6): hông (pelvis → spine_01), đùi (thigh → calf), cẳng (calf → foot), bán kính theo chiều cao.
  * Khi ngồi/đả tọa đùi nằm ngang nên vạt trước bị đẩy lên phủ trên đùi thay vì xuyên xuống.
  */
-export function colliderDefs(rig: THREE.Object3D, height: number): SpringCollider[] {
+export function colliderDefs(rig: THREE.Object3D, height: number, arms = false, rMul = 1): SpringCollider[] {
   const k = height / 1.8;
   const spec: [string, string, number][] = [['pelvis', 'spine_01', 0.11]];
   for (const sd of ['l', 'r']) spec.push([`thigh_${sd}`, `calf_${sd}`, 0.085], [`calf_${sd}`, `foot_${sd}`, 0.06]);
@@ -122,7 +135,17 @@ export function colliderDefs(rig: THREE.Object3D, height: number): SpringCollide
   for (const [a, b, r] of spec) {
     const na = rig.getObjectByName(a);
     const nb = rig.getObjectByName(b);
-    if (na && nb) out.push({ a: na, b: nb, r: r * k });
+    if (na && nb) out.push({ a: na, b: nb, r: r * k * rMul });
+  }
+  if (arms) {
+    // Tay (cánh tay, cẳng tay): vạt không xuyên tay khi chém/xoay; không phình khi ngồi.
+    for (const sd of ['l', 'r']) {
+      for (const [a, b, r] of [[`upperarm_${sd}`, `lowerarm_${sd}`, 0.05], [`lowerarm_${sd}`, `hand_${sd}`, 0.04]] as [string, string, number][]) {
+        const na = rig.getObjectByName(a);
+        const nb = rig.getObjectByName(b);
+        if (na && nb) out.push({ a: na, b: nb, r: r * k, fixed: true });
+      }
+    }
   }
   return out;
 }
@@ -201,6 +224,10 @@ export class MannequinCharacter implements CharacterView {
   /** Nghe sự kiện chiêu (VFX, âm, rung camera theo `hitAt`), engine gắn vào. */
   onSkillEvent: ((e: SkillEvent) => void) | null = null;
   private springs: SpringBones | null = null;
+  private spring2 = false;
+  /** Lò xo vạt riêng của asset v2 (null với v3/v3b: vạt nằm chung trong `springs`). */
+  private skirtSprings: SpringBones | null = null;
+  private colScale = 1;
   private twists: Twist[] = [];
   private lodLevel = 0;
   /** Kiếm: vỏ trên lưng (`dtl_scabbard`) khi nghỉ, nắm tay (`dtl_sword`) khi giao chiến. */
@@ -218,6 +245,7 @@ export class MannequinCharacter implements CharacterView {
 
   constructor(private tpl: MannequinTemplate, shadow = false, sword: SwordTemplate | null = null) {
     this.height = tpl.height;
+    this.spring2 = isSpring2(tpl.handle.id);
     this.rig = cloneSkinned(tpl.handle.scene);
     const meshes: THREE.Mesh[] = [];
     this.rig.traverse((o) => {
@@ -235,9 +263,15 @@ export class MannequinCharacter implements CharacterView {
     this.rig.traverse((o) => {
       if (!(o as THREE.Bone).isBone || !o.name.startsWith('dtl_o_')) return;
       const child = o.children.find((c) => (c as THREE.Bone).isBone);
-      defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone() });
+      defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone(), ...(this.spring2 && /^dtl_o_skirt_\d+_[1-9]$/.test(o.name) && { stiff: SPRING2.hemStiff }) });
     });
-    if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING, colliderDefs(this.rig, tpl.height));
+    if (this.spring2) {
+      // Lò xo v2: vạt tách riêng (góc hẹp, gấu cứng hơn, viên nang tay + đùi phình khi ngồi); tóc và tay áo như cũ.
+      const skirt = defs.filter((d) => d.bone.startsWith('dtl_o_skirt_'));
+      const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_'));
+      if (rest.length && !shadow) this.springs = new SpringBones(this.rig, rest, V3_SPRING, colliderDefs(this.rig, tpl.height));
+      if (skirt.length && !shadow) this.skirtSprings = new SpringBones(this.rig, skirt, V3_SKIRT_SPRING2, colliderDefs(this.rig, tpl.height, SPRING2.arms, SPRING2.rMul));
+    } else if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING, colliderDefs(this.rig, tpl.height));
     for (const sd of ['l', 'r']) {
       for (const [limb, next] of Object.entries(TWIST_NEXT)) {
         const L = this.rig.getObjectByName(`${limb}_${sd}`);
@@ -580,11 +614,17 @@ export class MannequinCharacter implements CharacterView {
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
-    if (this.springs) {
+    if (this.springs || this.skirtSprings) {
       if (this.lodLevel === 0 && this.inner.visible) {
         this.root.updateMatrixWorld(true);
-        this.springs.update(this.acc, IDENT);
-      } else this.springs.reset();
+        const sit = this.spring2 && (this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien');
+        this.colScale += ((sit ? SPRING2.sitScale : 1) - this.colScale) * Math.min(1, this.acc * 6);
+        this.springs?.update(this.acc, IDENT);
+        this.skirtSprings?.update(this.acc, IDENT, this.colScale);
+      } else {
+        this.springs?.reset();
+        this.skirtSprings?.reset();
+      }
     }
     this.acc = 0;
   }
