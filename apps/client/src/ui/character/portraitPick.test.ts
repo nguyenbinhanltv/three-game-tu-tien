@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SETS } from '@dtl/content';
-import { motionAt } from './HoaTruc';
-import { pickPortrait, realmArt, swordArt } from './portraitPick';
+import { motionAt } from './hoaMotion';
+import { pickPortrait, realmArt, realmTier, swordArt } from './portraitPick';
 
 const LK = SETS.find((s) => s.id === 'set_lac_kiem')!;
 const base = { sets: SETS, gender: 'm', level: 5, hasWeapon: false };
@@ -26,6 +26,19 @@ describe('Hoa Trúc: chọn tranh', () => {
     expect(swordArt('prop_kiem_thanh_phong')).toBe('thanh_phong');
     expect(pickPortrait({ ...base, worn: [] }).sword).toBeNull();
     expect(pickPortrait({ ...base, worn: [], hasWeapon: true, swordModel: 'prop_kiem_han_giao' }).sword).toBe('kiem_han_quang');
+  });
+});
+
+describe('Thiên Giai: tầng cảnh giới', () => {
+  it('nền và tầng theo cấp: Kết Đan 20, Nguyên Anh 24, Hóa Thần 28', () => {
+    expect([15, 16, 20, 24, 28].map(realmArt)).toEqual(['nk', 'tc', 'kd', 'na', 'ht']);
+    expect([19, 20, 23, 24, 27, 28].map(realmTier)).toEqual([0, 1, 1, 2, 2, 3]);
+  });
+  it('bộ Liệt Mạch có tranh riêng; kiếm tu bật chùm phi kiếm/pháp tướng, công pháp khác thì không', () => {
+    const LM = SETS.find((s) => s.id === 'set_liet_mach')!;
+    const kiem = pickPortrait({ ...base, level: 28, worn: LM.pieces, gender: 'f', method: 'lac_kiem_quyet' });
+    expect(kiem).toMatchObject({ char: 'liet_mach_nu', tier: 3, kiem: true, realm: 'canh_ht' });
+    expect(pickPortrait({ ...base, level: 28, worn: LM.pieces, method: 'bat_dong_kim_than' }).kiem).toBe(false);
   });
 });
 

@@ -394,3 +394,203 @@
     display: none;
   }
 }
+
+/* ───────── Thiên Giai: tầng cảnh giới chồng lên tranh bộ trang phục ───────── */
+.hoatruc-dan {
+  position: absolute;
+  left: 50%;
+  top: 53cqh;
+  width: 9cqh;
+  height: 9cqh;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--u-gold-text) 0 18%,
+    var(--u-gold) 32%,
+    color-mix(in srgb, var(--u-gold) 45%, transparent) 55%,
+    transparent 72%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  filter: blur(1.5px);
+  animation: hoatruc-dan 3.2s ease-in-out infinite;
+}
+.hoatruc-van {
+  position: absolute;
+  left: 50%;
+  top: 56cqh;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.hoatruc-van-ring {
+  position: absolute;
+  left: -29cqh;
+  top: -7cqh;
+  width: 58cqh;
+  height: 14cqh;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--u-gold) 80%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--u-gold) 50%, transparent);
+  animation: hoatruc-orbit 14s linear infinite;
+}
+.hoatruc-van-ring[data-k='1'] {
+  left: -23cqh;
+  top: -10cqh;
+  width: 46cqh;
+  height: 20cqh;
+  animation-direction: reverse;
+  animation-duration: 19s;
+  border-color: color-mix(in srgb, var(--u-gold-hi) 40%, transparent);
+}
+.hoatruc-van-glyph {
+  position: absolute;
+  width: 3.2cqh;
+  height: 4.2cqh;
+  fill: none;
+  stroke: var(--u-gold);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px var(--u-gold));
+  /* quỹ đạo elip: góc = vị trí gốc + góc xoay chung của vòng (--spin, @property) */
+  left: calc(50% + 50% * cos(calc(var(--a) + var(--spin, 0deg))));
+  top: calc(50% + 50% * sin(calc(var(--a) + var(--spin, 0deg))));
+  translate: -50% -50%;
+  opacity: calc(0.45 + 0.55 * (0.5 + 0.5 * sin(calc(var(--a) + var(--spin, 0deg)))));
+}
+.hoatruc-ring {
+  position: absolute;
+  left: 50%;
+  top: 36cqh;
+  width: 0;
+  height: 0;
+  animation: hoatruc-spin 24s linear infinite;
+  pointer-events: none;
+}
+.hoatruc-ring img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 19cqh;
+  width: auto;
+  transform: rotate(var(--a)) translateY(-30cqh) translate(-50%, -50%);
+  opacity: 1;
+  filter: saturate(1.7) contrast(1.35) drop-shadow(0 0 5px var(--u-ngoc)) drop-shadow(0 0 2px var(--u-ink-0));
+}
+.hoatruc-na {
+  position: absolute;
+  left: 22%;
+  top: 12cqh;
+  width: 27cqh;
+  translate: -50% 0;
+  opacity: 0.95;
+  filter: saturate(1.8) brightness(0.92) drop-shadow(0 0 10px var(--u-gold)) drop-shadow(0 0 3px var(--u-ngoc-lo))
+    drop-shadow(0 0 2px var(--u-ink-0));
+  pointer-events: none;
+  animation: hoatruc-bob 5s ease-in-out infinite alternate;
+}
+.hoatruc-na img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.hoatruc-phaptuong {
+  position: absolute;
+  left: 50%;
+  top: -2cqh;
+  height: 104cqh;
+  translate: -50% 0;
+  opacity: 0.62;
+  filter: saturate(1.6) contrast(1.35) drop-shadow(0 0 10px var(--u-ngoc-hi));
+  pointer-events: none;
+  animation: hoatruc-bob 8s ease-in-out infinite alternate;
+}
+.hoatruc-phaptuong img {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+.hoatruc-name {
+  position: absolute;
+  left: 11.5cqh;
+  top: 9cqh;
+  bottom: 30cqh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6cqh;
+  pointer-events: none;
+}
+.hoatruc-name-t {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--u-font-display);
+  font-weight: 700;
+  font-size: 5.4cqh;
+  letter-spacing: 0.1em;
+  color: var(--u-son);
+  text-shadow:
+    0 0 1px var(--u-giay),
+    0 1px 0 color-mix(in srgb, var(--u-gold-hi) 70%, transparent);
+  overflow: hidden;
+  max-height: 100%;
+}
+.hoatruc-name-seal {
+  padding: 0.6cqh 1cqh;
+  font-family: var(--u-font-head);
+  font-weight: 700;
+  font-size: 2.4cqh;
+  color: var(--u-son-text);
+  background: var(--u-son);
+  box-shadow: inset 0 0 0 1px var(--u-gold);
+  writing-mode: vertical-rl;
+}
+.hoatruc-name-t {
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--u-giay) 90%, transparent));
+}
+.hoatruc[data-tier='2'] .hoatruc-aura,
+.hoatruc[data-tier='3'] .hoatruc-aura {
+  opacity: 1;
+}
+.hoatruc[data-reduce='1'] .hoatruc-ring,
+.hoatruc[data-reduce='1'] .hoatruc-van-ring,
+.hoatruc[data-reduce='1'] .hoatruc-dan,
+.hoatruc[data-reduce='1'] .hoatruc-na,
+.hoatruc[data-reduce='1'] .hoatruc-phaptuong {
+  animation: none;
+}
+@keyframes hoatruc-dan {
+  0%,
+  100% {
+    opacity: 0.55;
+    scale: 0.92;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.08;
+  }
+}
+@property --spin {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+@keyframes hoatruc-orbit {
+  to {
+    --spin: 360deg;
+  }
+}
+@keyframes hoatruc-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes hoatruc-bob {
+  from {
+    translate: -50% 0;
+  }
+  to {
+    translate: -50% -1.4cqh;
+  }
+}

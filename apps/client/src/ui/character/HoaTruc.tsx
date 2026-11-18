@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { t } from '@dtl/content';
+import { realmName, t } from '@dtl/content';
+import { useUI } from '../store';
 import { InkStroke } from '../u2';
 import { useReduceMotion } from '../ngj';
+import { motionAt } from './hoaMotion';
 import type { PortraitPick } from './portraitPick';
 
 /** Đường dẫn tranh (nạp lười khi mở bảng, không nằm trong tải đầu). */
@@ -22,29 +24,10 @@ function load(name: string): Promise<HTMLImageElement | null> {
   return p;
 }
 
+/** Gió linh khí mạnh dần theo tầng cảnh giới (tay áo, voan, tóc bay mạnh hơn). */
+const AMP = [1, 1.35, 1.55, 1.8] as const;
 const COLS = 10;
 const ROWS = 26;
-const sm = (a: number, b: number, x: number): number => {
-  const k = Math.max(0, Math.min(1, (x - a) / (b - a)));
-  return k * k * (3 - 2 * k);
-};
-
-/**
- * Bản đồ vùng chuyển động của tranh (không rig): u = 0..1 ngang, v = 0..1 từ đỉnh tóc xuống gót.
- * Trả độ lệch (dx, dy) theo px tại thời điểm `t` giây: ngực phập phồng, tay áo và vạt đung đưa, tóc/dải lụa bay nhẹ ở mép.
- */
-export function motionAt(u: number, v: number, t: number): [number, number] {
-  const edge = sm(0.45, 1, Math.abs(u - 0.5) * 2);
-  const breath = Math.sin(t * 1.5) * (sm(0.12, 0.3, v) * (1 - sm(0.42, 0.55, v)));
-  const hair = (1 - sm(0.1, 0.62, v)) * edge * (0.4 + 0.6 * sm(0, 0.15, v));
-  const sleeve = sm(0.22, 0.34, v) * (1 - sm(0.52, 0.66, v)) * edge;
-  const skirt = sm(0.5, 0.62, v) * (0.35 + 0.65 * edge) * (0.3 + 0.7 * v);
-  const dx =
-    Math.sin(t * 1.7 + v * 5 + u * 2) * 1.9 * hair + Math.sin(t * 1.25 + u * 4) * 2.1 * sleeve + Math.sin(t * 1.05 + v * 3.2) * 2.8 * skirt;
-  const dy = breath * -1.3 + Math.sin(t * 1.25 + u * 3) * 0.9 * sleeve;
-  return [dx, dy];
-}
-
 const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
   left: ((i * 53) % 97) + 1,
   delay: -((i * 1.7) % 11),
@@ -52,6 +35,80 @@ const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
   size: 2 + (i % 3),
   gold: i % 3 === 0,
 }));
+
+/** Vân phù: các nét "chữ" tự tạo (xác định theo seed, KHÔNG phải chữ Hán thật) xếp quanh một vành elip. */
+function glyphPath(seed: number): string {
+  let s = seed * 9301 + 49297;
+  const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  const segs: string[] = [];
+  const n = 3 + Math.floor(r() * 3);
+  for (let i = 0; i < n; i++) {
+    const x1 = 2 + r() * 8;
+    const y1 = 2 + r() * 12;
+    const x2 = 2 + r() * 8;
+    const y2 = 2 + r() * 12;
+    segs.push(
+      r() < 0.5
+        ? `M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}`
+        : `M${x1.toFixed(1)} ${y1.toFixed(1)}Q${((x1 + x2) / 2 + 3).toFixed(1)} ${((y1 + y2) / 2 - 3).toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`,
+    );
+  }
+  return segs.join('');
+}
+const GLYPHS = Array.from({ length: 18 }, (_, i) => glyphPath(i + 3));
+
+/** Dải vân phù vàng lượn quanh người (Kết Đan trở lên): hai vòng elip xoay ngược nhau, mỗi vòng 9 nét vân sáng. */
+function VanPhu() {
+  return (
+    <div className="hoatruc-van" aria-hidden="true">
+      {[0, 1].map((k) => (
+        <div key={k} className="hoatruc-van-ring" data-k={k}>
+          {GLYPHS.slice(k * 9, k * 9 + 9).map((d, i) => (
+            <svg key={i} viewBox="0 0 12 16" className="hoatruc-van-glyph" style={{ '--a': i * 40 + 'deg' } as CSSProperties}>
+              <path d={d} />
+            </svg>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Lớp tầng cảnh giới đặt SAU nhân vật: Nguyên Anh + 9 phi kiếm (tầng 2) / pháp tướng kiếm long (tầng 3, kiếm tu). */
+function TierBack({ pick }: { pick: PortraitPick }) {
+  if (pick.tier < 2) return null;
+  return (
+    <>
+      {pick.tier >= 3 && pick.kiem && (
+        <div className="hoatruc-phaptuong">
+          <img src={url('phap_tuong_kiem_long')} alt="" draggable={false} />
+        </div>
+      )}
+      {pick.kiem && (
+        <div className="hoatruc-ring">
+          {Array.from({ length: 9 }, (_, i) => (
+            <img key={i} src={url('phi_kiem')} alt="" draggable={false} style={{ '--a': i * 40 + 'deg' } as CSSProperties} />
+          ))}
+        </div>
+      )}
+      <div className="hoatruc-na">
+        <img src={url('nguyen_anh')} alt="" draggable={false} />
+      </div>
+    </>
+  );
+}
+
+/** Tên thư pháp dọc theo đạo hiệu của chính người chơi + dấu triện cảnh giới (Hóa Thần). */
+function NameScroll() {
+  const char = useUI((s) => s.char);
+  if (!char) return null;
+  return (
+    <div className="hoatruc-name">
+      <span className="hoatruc-name-t">{char.name}</span>
+      <span className="hoatruc-name-seal">{realmName(char.level)}</span>
+    </div>
+  );
+}
 
 /**
  * Sân khấu tranh vẽ của bảng Nhân vật (Hoa Trúc, bước 1): thay khung xem 3D. Ba lớp parallax theo chuột (nền cảnh giới / nhân vật + kiếm /
@@ -140,7 +197,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
         const sh = charImg.height / ROWS;
         for (let r = 0; r < ROWS; r++) {
           for (let c = 0; c < COLS; c++) {
-            const [dx, dy] = motionAt((c + 0.5) / COLS, (r + 0.5) / ROWS, tsec);
+            const [dx, dy] = motionAt((c + 0.5) / COLS, (r + 0.5) / ROWS, tsec, AMP[pick.tier]);
             // mỗi ô nới 1 px để không hở khe giữa các ô
             ctx.drawImage(charImg, c * sw, r * sh, sw, sh, ox + c * tw + dx - 0.5, oy + r * th + dy - 0.5, tw + 1, th + 1);
           }
@@ -166,7 +223,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [charImg, reduce, swap]);
+  }, [charImg, reduce, swap, pick.tier]);
 
   const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -184,6 +241,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
       className="hoatruc"
       data-q={q}
       data-full={pick.full ? '1' : undefined}
+      data-tier={pick.tier || undefined}
       data-reduce={reduce ? '1' : undefined}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
@@ -197,6 +255,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
           style={{ backgroundImage: `url(${url(pick.realm)})` }}
         />
         <div className="hoatruc-aura" />
+        <TierBack pick={pick} />
         {pick.sword && (
           // Kiếm đeo sau lưng: chỉ chuôi + tay nắm + đốc kiếm (tranh vẽ) nhô qua vai, thân kiếm nằm trong bao (khối vẽ bằng CSS, màu/ánh sáng theo kiếm)
           <div
@@ -214,6 +273,9 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
         <div className="hoatruc-char" key={'c' + swap} data-swap={swap > 0 ? '1' : undefined}>
           {failed ? <div className="hoatruc-miss" /> : <canvas ref={canvas} />}
         </div>
+        {pick.tier >= 1 && <div className="hoatruc-dan" />}
+        {pick.tier >= 1 && <VanPhu />}
+        {pick.tier >= 3 && <NameScroll />}
         <div className="hoatruc-mist" ref={(el) => void (layers.current.mist = el)}>
           <i className="hoatruc-fog f1" />
           <i className="hoatruc-fog f2" />
