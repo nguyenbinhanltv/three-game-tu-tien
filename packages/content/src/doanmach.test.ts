@@ -5,7 +5,8 @@ import { campCoverage, COVER_BY_LEVEL } from './coverage';
 import { LEVELS } from './index';
 import { checkLevel } from './levelcheck';
 
-const lv = LEVELS.doan_mach;
+import { at } from '@dtl/shared';
+const lv = at(LEVELS, 'doan_mach');
 
 describe('doan_mach', () => {
   it('đạt checkLevel', () => expect(checkLevel(lv)).toEqual([]));
@@ -30,8 +31,8 @@ describe('doan_mach', () => {
 
   it('độ phủ cụm đạt chuẩn level (p95 và điểm xa nhất tới mép cụm)', () => {
     const cv = campCoverage(lv);
-    expect(cv.p95).toBeLessThanOrEqual(COVER_BY_LEVEL.doan_mach.p95);
-    expect(cv.max).toBeLessThanOrEqual(COVER_BY_LEVEL.doan_mach.max);
+    expect(cv.p95).toBeLessThanOrEqual(at(COVER_BY_LEVEL, 'doan_mach').p95);
+    expect(cv.max).toBeLessThanOrEqual(at(COVER_BY_LEVEL, 'doan_mach').max);
     expect(cv.within).toBeGreaterThan(0.98); // ≥ 98 % điểm ≤ 70 m
   });
 
