@@ -39,6 +39,7 @@ interface P {
   hp: number;
   fl: number;
   lv: number;
+  yaw: number;
 }
 interface CharV {
   xp: number;
@@ -1110,15 +1111,20 @@ async function main() {
     // c. Giao chiến thật (tự đánh một con sói): bắt đầu niệm rồi ra chiêu thì lượt niệm bị hủy; đang giao chiến thì không bắt đầu niệm được.
     await sayT(ta.room, 'tp 2048 2088');
     await sayT(ta.room, 'tele all');
-    await sayT(ta.room, 'spawn mon_soi_xam 1');
-    await W(300);
-    const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - 2048, x[1].z - 2088) - Math.hypot(y[1].x - 2048, y[1].z - 2088))[0];
+    // Bỏ hẳn cuộc đua với sói: `/gm spawn` đặt sói ở p + 8·(sin yaw, cos yaw) và nó đuổi ngay khi thấy người trong tầm 12 m. Chốt yaw, rồi gửi liền
+    // `spawn` và `tp` tới p − 12·(sin yaw, cos yaw) (cách sói 20 m: ngoài tầm 12 m, trong tầm 26 m của skl_phi_kiem). Server xử lý hai lệnh theo thứ tự
+    // nên sói không bao giờ thấy người trong tầm phát hiện và đứng yên tới khi bị đánh; kết quả không phụ thuộc thời gian.
+    ta.room.send(C.INPUT, { s: 5000, mx: 0, mz: 0, yaw: 0, f: 0 });
+    await W(400);
+    const me0 = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z, yaw: mp(ta.room, ta.init.sid).yaw };
+    const fwd = { x: Math.sin(me0.yaw), z: Math.cos(me0.yaw) };
+    ta.room.send(C.CHAT, { m: '/gm spawn mon_soi_xam 1' });
+    ta.room.send(C.CHAT, { m: `/gm tp ${(me0.x - fwd.x * 12).toFixed(1)} ${(me0.z - fwd.z * 12).toFixed(1)}` });
+    await W(900);
+    const here = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
+    const wolf = [...(ta.room.state as { monsters: Map<string, M> }).monsters.entries()].filter(([, m]) => m.t === 'mon_soi_xam' && m.st !== MS_DEAD).sort((x, y) => Math.hypot(x[1].x - me0.x - fwd.x * 8, x[1].z - me0.z - fwd.z * 8) - Math.hypot(y[1].x - me0.x - fwd.x * 8, y[1].z - me0.z - fwd.z * 8))[0];
     if (!wolf) check('dựng được sói để thử giao chiến', false);
     else {
-      // `/gm spawn` đặt sói cách 8 m (trong tầm phát hiện 12 m) nên nó đã đuổi ngay. Dịch người ra cách 20 m (vẫn trong tầm 26 m của skl_phi_kiem)
-      // rồi niệm liền, không chờ: sói cần ~3 s mới tới nơi, đủ để bắt đầu niệm trước khi bị cắn (bị đánh là vào giao chiến, server từ chối niệm).
-      await sayT(ta.room, `tp ${wolf[1].x.toFixed(1)} ${(wolf[1].z + 20).toFixed(1)}`);
-      const here = { x: mp(ta.room, ta.init.sid).x, z: mp(ta.room, ta.init.sid).z };
       sysA.length = 0;
       ta.room.send(C.TELE, { id: 'tp_ho' });
       await W(700);
