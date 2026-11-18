@@ -1,5 +1,5 @@
 // Truyền Tống Trận của Đoạn Mạch Cổ Cốc (E2-A, tiền tố dm_). SINH BẰNG tools/maps/gen-doan-mach.mjs.
-import type { TelePad } from './teleport';
+import type { TelePad } from './teleport.types';
 
 /** Trận trạm (dm_tp_tram) tự mở khi tới nơi; mở khóa lần đầu bằng nhiệm vụ (E2-H) hoặc "/gm tele dm_tp_tram". */
 export const DOAN_MACH_PADS: readonly TelePad[] = [

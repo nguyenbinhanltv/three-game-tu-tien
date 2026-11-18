@@ -1,7 +1,7 @@
 // Prop bày của Kim Dạ Cung (DV-3E): sảnh cung dát vàng của một triều đã chết, dựng trên lòng chảo như Thần Tàng Điện. Dùng prop sẵn có
 // (không model mới), chỉ tô cảnh, tất định. Lối vào ở nam (+z); ngai ở bắc. Hai Trấn Giới Bia cùng chỗ với `kd.night.steles` của
 // `boss_kim_da_ma_hau` (monsters.json), bốn đèn đố cùng chỗ với `puzzle.points` ở levels/kim_da_cung.json.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 const CX = 1520;
 const CZ = 1300;

@@ -1,6 +1,6 @@
 // Prop bày của Kính Nguyệt Cung (E3-M): lòng chảo Kiếm Trủng dựng thành sảnh gương treo giữa mây.
 // Dùng prop sẵn có của Vân Hải (cổng đình, Kính Hồ Đài, đá trôi, ảnh ngọc kính) + đèn đá Vân Lam; chỉ tô cảnh (cột đá trôi không va chạm), tất định.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 const CX = 1520;
 const CZ = 1300;
