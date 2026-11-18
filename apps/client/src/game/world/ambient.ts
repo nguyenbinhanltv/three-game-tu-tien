@@ -10,13 +10,22 @@ import type { Particles } from '../../render/vfx/particles';
  * đi từ sân tông môn xuống thung lũng hay vào rừng thì hạt đổi dần, không giật.
  */
 
-type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash' | 'ember';
+export type AmbientKind = 'mote' | 'pollen' | 'petal' | 'leaf' | 'mist' | 'jade' | 'ash' | 'ember';
 
 /** Số hạt mỗi giây ở preset Vừa, theo loại. */
 type AmbientRates = Record<AmbientKind, number>;
 
 /** Hệ số lượng hạt theo preset (Thấp vẫn có ít hạt cho có không khí). */
-const AMBIENT_SCALE: Record<string, number> = { low: 0.35, medium: 1, high: 1.6, ultra: 2.4 };
+const AMBIENT_SCALE: Record<string, number> = { low: 0.35, medium: 1, high: 1.6, ultra: 2 };
+
+/**
+ * Hệ số lượng theo loại hạt. `mist` là mảng billboard 3,5–5,5 m rất mờ: nhân lên ở Cao/Cực cao thành những đốm trắng mờ to, trông như lỗi,
+ * nên không bao giờ vượt mức Vừa. Phần tăng thêm dành cho hạt nhỏ, sắc nét (bụi sáng, phấn hoa, linh khí, cánh đào, lá, tro).
+ */
+export function ambientScaleFor(kind: AmbientKind, preset: string): number {
+  const s = AMBIENT_SCALE[preset] ?? AMBIENT_SCALE.medium;
+  return kind === 'mist' ? Math.min(s, 1) : s;
+}
 
 const KINDS: AmbientKind[] = ['mote', 'pollen', 'petal', 'leaf', 'mist', 'jade', 'ash', 'ember'];
 
@@ -116,7 +125,7 @@ let bhPath: RiftPt[] = [];
 let bhPathFor: unknown = null;
 
 export class AmbientParticles {
-  private scale = AMBIENT_SCALE.medium;
+  private preset = 'medium';
   private acc: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0, ember: 0 };
   private rates: AmbientRates = { mote: 0, pollen: 0, petal: 0, leaf: 0, mist: 0, jade: 0, ash: 0, ember: 0 };
   private sample = 0;
@@ -125,7 +134,7 @@ export class AmbientParticles {
   constructor(private readonly ps: Particles) {}
 
   setQuality(q: string): void {
-    this.scale = AMBIENT_SCALE[q] ?? AMBIENT_SCALE.medium;
+    this.preset = q;
   }
 
   /**
@@ -142,7 +151,7 @@ export class AmbientParticles {
       this.sample = 0.25;
       const g = heightAt(cx, cz);
       ambientRates(cx, cz, cy - g, _rates, levelId());
-      for (const k of KINDS) this.rates[k] = _rates[k] * this.scale;
+      for (const k of KINDS) this.rates[k] = _rates[k] * ambientScaleFor(k, this.preset);
     }
     // Chặn dt lớn (tab bị treo) để không xả cả loạt hạt một lúc.
     const t = Math.min(dt, 0.1);
