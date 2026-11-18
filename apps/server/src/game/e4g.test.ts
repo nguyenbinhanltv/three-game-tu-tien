@@ -128,8 +128,11 @@ describe('E4-G: chiêu Nguyên Anh', () => {
         rnd.mockRestore();
       }
     };
+    // Cố định ngẫu nhiên (bạo kích, dao động sát thương): không thì đòn của lần có kiếm ảnh có thể yếu hơn lần không có.
+    const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const a = run(false);
     const b = run(true);
+    rnd.mockRestore();
     expect(b.n).toBe(a.n + 1);
     expect(b.lost).toBeGreaterThan(a.lost);
   });
