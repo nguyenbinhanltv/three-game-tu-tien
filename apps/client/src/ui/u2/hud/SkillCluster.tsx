@@ -157,8 +157,9 @@ function ClusterSlot({ sk, i, pos, view, main }: SlotProps) {
           {main && v.gcd > 0.02 && <span className="u2h-gcd" style={{ '--cd': Math.min(1, v.gcd) } as CSSProperties} />}
           {v.charging && (
             <>
-              <span className="u2-skill__cd" style={{ '--cd': Math.max(0.001, 1 - Math.min(1, v.charge / CHARGE_MAX)) } as CSSProperties} />
-              <span className="u2-skill__cdn u2h-cdn-s">{Math.floor((v.charge / CHARGE_MAX) * 100)}%</span>
+              {/* chiêu tối thượng đang tụ lực: vòng tiến độ quanh ô + số % nhỏ ở đáy, icon vẫn thấy */}
+              <span className="u2h-charge" style={{ '--cd': Math.min(1, v.charge / CHARGE_MAX) } as CSSProperties} />
+              <span className="u2h-charge-n">{Math.floor((v.charge / CHARGE_MAX) * 100)}%</span>
             </>
           )}
           {cdOn && (
