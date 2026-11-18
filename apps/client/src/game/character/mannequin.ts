@@ -18,6 +18,9 @@ import { breathOf, flinchOf, leanOf, locoMix, lookAngles, LOCO, swingRate, turnL
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import type { AnimState, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
+import { logger } from '../../base/log';
+
+const modelsLog = logger('models');
 
 /** `?chr=v3` bật nhân vật Mannequin. Mặc định tắt. */
 export const CHR_V3 = FLAGS.chr === 'v3';
@@ -1052,13 +1055,13 @@ export class MannequinPlayers {
           this.poseSrc = new PoseSource(h.scene);
           this.ensurePoses();
         } catch (err) {
-          console.warn('[models] không dựng được nguồn pose K-5 cho v3', err);
+          modelsLog.warn('không dựng được nguồn pose K-5 cho v3', err);
           h.release();
           this.poseSrc = 'failed';
         }
       },
       (err) => {
-        console.warn('[models] không nạp được nguồn pose K-5 cho v3', err);
+        modelsLog.warn('không nạp được nguồn pose K-5 cho v3', err);
         this.poseSrc = 'failed';
       },
     );
@@ -1078,12 +1081,12 @@ export class MannequinPlayers {
           this.tpl.set(id, mannequinTemplate(h, lib));
           this.ensurePoses();
         } catch (err) {
-          console.warn(`[models] không dựng được ${id}`, err);
+          modelsLog.warn(`không dựng được ${id}`, err);
           this.tpl.set(id, 'failed');
         }
       },
       (err) => {
-        console.warn(`[models] không nạp được ${id} (v3)`, err);
+        modelsLog.warn(`không nạp được ${id} (v3)`, err);
         this.tpl.set(id, 'failed');
       },
     );

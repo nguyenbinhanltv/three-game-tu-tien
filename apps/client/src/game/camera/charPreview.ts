@@ -4,6 +4,9 @@
 // để bảng lùi về hình bóng 2D (`onFail`).
 import * as THREE from 'three/webgpu';
 import type { CharacterView } from '../character/view';
+import { logger } from '../../base/log';
+
+const previewLog = logger('preview');
 
 /** Rộng phải là bội số của 64: WebGPU đọc texture theo hàng căn 256 byte (three không bù phần đệm). */
 export const PREVIEW_W = 256;
@@ -168,7 +171,7 @@ export class CharPreview {
     if (++this.n >= BUDGET_WINDOW) {
       this.stats.avgMs = this.ms / this.n;
       if (this.stats.avgMs > PREVIEW_BUDGET_MS) {
-        console.warn('[preview] vượt ngân sách CPU', this.stats.avgMs.toFixed(2), 'ms: lùi về hình 2D');
+        previewLog.warn('vượt ngân sách CPU', this.stats.avgMs.toFixed(2), 'ms: lùi về hình 2D');
         this.failed = true;
         this.detach();
         this.onFail?.();
@@ -234,7 +237,7 @@ export class CharPreview {
         this.ctx.putImageData(this.img, 0, 0);
       })
       .catch((err) => {
-        console.warn('[preview] đọc điểm ảnh lỗi: lùi về hình 2D', String((err as Error)?.message ?? err));
+        previewLog.warn('đọc điểm ảnh lỗi: lùi về hình 2D', String((err as Error)?.message ?? err));
         this.failed = true;
         this.detach();
         this.onFail?.();

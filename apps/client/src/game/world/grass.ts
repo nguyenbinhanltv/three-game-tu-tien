@@ -28,6 +28,9 @@ import { heightAt, levelTerrain } from '../../base/levelCtx';
 import { vanHaiArt } from './vanHaiArt';
 import { tkGrassDensity } from './thienKhuyetArt';
 import type { N } from '../../render/vfx/common';
+import { logger } from '../../base/log';
+
+const grassLog = logger('grass');
 
 /**
  * Cỏ tương tác (V4 trong bài học game demo, P2 số 13).
@@ -591,7 +594,7 @@ export class Grass {
       this.material.needsUpdate = true;
       this.mesh.visible = this.enabled && this.geo.instanceCount > 0;
     } catch (e) {
-      console.warn('[grass] không nạp được thẻ cỏ:', e);
+      grassLog.warn('không nạp được thẻ cỏ:', e);
     }
   }
 

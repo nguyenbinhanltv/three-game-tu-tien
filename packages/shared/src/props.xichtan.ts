@@ -1,6 +1,6 @@
 // Prop bày của Xích Tẫn Khích (DV-3D): khe nứt phụ, lòng chảo than hồng. Dùng prop sẵn có của Bắc Hoang (không model mới), chỉ tô cảnh, tất định.
 // Hai hàng cột dọc chân vách hẻm (DV-3K), Trấn Giới Bia ở tâm (đợt 4, khớp `steles` ở levels/xich_tan_khich.json), kiếm gãy và đèn rải quanh.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 const CX = 1520;
 const CZ = 1300;

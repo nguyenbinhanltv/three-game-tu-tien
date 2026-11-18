@@ -2,16 +2,20 @@
 // Hàm thuần. Bảng dữ liệu (ô, phẩm, dòng phụ) nằm ở packages/content/data/equipment/*.json và được truyền vào
 // qua `ItemSysData`; việc roll chỉ chạy ở server (client không bao giờ roll, chỉ hiển thị kết quả server gửi).
 
+import { at } from './arr';
 import { clamp, lerp, mulberry32 } from './noise';
 import { enhanceMul, type BaseStats, playerBaseStats, CRIT_CHANCE, CRIT_MULT } from './formulas';
 import type { EquipSlot, InvItem, StatBlock } from './types';
 import type { RootDef } from './realm';
 import { COSMETIC_SLOTS, EQUIP_SLOTS, WEAR_SLOTS, type CosmeticSlot, type WearSlot } from './types';
-import { gemAffixes } from './upgrade';
+import { gemAffixes } from './gems';
+import { ELEMENTS, type Element } from './elements';
+import { STAT_PER_POINT, type AffixRoll, type AffixStat, type ItemInst, type MainStat, type Quality } from './itemtypes';
+
+export { STAT_PER_POINT, type AffixRoll, type AffixStat, type ItemInst, type MainStat, type Quality };
+export { ELEMENTS, type Element };
 import { NO_SET_FX, setFxOf, setStatuses, type SetDef, type SetFx, type SetStatus } from './sets';
 
-/** 0 Phàm, 1 Linh, 2 Huyền, 3 Địa, 4 Thiên, 5 Thần. */
-export type Quality = 0 | 1 | 2 | 3 | 4 | 5;
 export const QUALITY_COUNT = 6;
 /** Phẩm Thần (bậc 6): chỉ rơi cực hiếm từ boss, không chế tạo được (xem `docs/handbook/gameplay-systems.md`). */
 export const QUALITY_THAN: Quality = 5;
@@ -52,27 +56,7 @@ export const MAX_ILVL = 99;
 /** Trần tuyệt đối của một dòng phụ khi nạp từ DB (phân số; không phải trần cân bằng). */
 export const AFFIX_ABS_MAX = 1;
 
-/** Mỗi 1 điểm ngân sách đổi thành bao nhiêu đơn vị chỉ số. */
-export const STAT_PER_POINT = { atk: 1, def: 1, hp: 8, mp: 4 } as const;
-export type MainStat = keyof typeof STAT_PER_POINT;
 export const MAIN_STATS: MainStat[] = ['atk', 'def', 'hp', 'mp'];
-
-/** Mười bốn loại dòng phụ (thiết kế 3.3). Giá trị là phân số (0,03 = 3%). */
-export type AffixStat =
-  | 'atk_pct'
-  | 'def_pct'
-  | 'hp_pct'
-  | 'mp_pct'
-  | 'crit_rate'
-  | 'crit_dmg'
-  | 'cdr'
-  | 'skill_dmg'
-  | 'elem_dmg'
-  | 'elem_res'
-  | 'lifesteal'
-  | 'heal_recv'
-  | 'elite_dmg'
-  | 'move_speed';
 
 export type AffixParam = 'skill' | 'element';
 
@@ -115,9 +99,6 @@ export interface ItemSysData {
   params: { skill: string[]; element: string[] };
 }
 
-export const ELEMENTS = ['kim', 'moc', 'thuy', 'hoa', 'tho'] as const;
-export type Element = (typeof ELEMENTS)[number];
-
 /** Trần chỉ số cộng dồn từ dòng phụ (thiết kế 3.3). */
 export const STAT_CAPS = {
   /** Tổng tỉ lệ bạo kích (gồm gốc 10%). */
@@ -130,26 +111,6 @@ export const STAT_CAPS = {
 } as const;
 
 // ---------- kiểu dữ liệu đã roll ----------
-
-export interface AffixRoll {
-  id: AffixStat;
-  /** Tham số: id chiêu hoặc ngũ hành (khi `AffixDef.param` có). */
-  p?: string;
-  v: number;
-}
-
-/** Phần "đã roll" của một món trang bị. Mẫu (id, ô) nằm ở `InvItem.id`. */
-export interface ItemInst {
-  q: Quality;
-  ilvl: number;
-  /** Dòng chính đã chốt lúc roll (đổi công thức sau này không làm đổi đồ đã rơi). */
-  main: Partial<Record<MainStat, number>>;
-  affixes: AffixRoll[];
-  /** Ngọc khảm; '' = lỗ trống. Độ dài = số lỗ. */
-  gems: string[];
-  /** Đã ràng buộc (mặc rồi, không giao dịch được). */
-  bound: boolean;
-}
 
 /** Trang bị đã roll: `InvItem` có `inst`. */
 export type ItemInstance = InvItem & { inst: ItemInst };
@@ -233,7 +194,7 @@ export function rollAffixes(
     const weightOf = (o: { def: AffixDef }) => (o.def.param ? o.def.weight / Math.max(1, data.params[o.def.param].length) : o.def.weight);
     const total = opts.reduce((s, o) => s + weightOf(o), 0);
     let pick = rng() * total;
-    let chosen = opts[opts.length - 1];
+    let chosen = at(opts, opts.length - 1, 'affix opts');
     for (const o of opts) {
       pick -= weightOf(o);
       if (pick < 0) {
@@ -263,7 +224,7 @@ export function mainLine(
   tier = 1,
 ): Partial<Record<MainStat, number>> {
   const sd = slotDef(data, slot);
-  const qd = data.qualities[q];
+  const qd = at(data.qualities, q, 'qualities');
   const out: Partial<Record<MainStat, number>> = {};
   if (sd.weight <= 0) return out;
   const pts = budget(ilvl, q, sd.weight) * (TIER_MUL[clampTier(tier)] ?? 1) * (1 - qd.affixFrac) * (1 + (rollR * 2 - 1) * MAIN_ROLL_SPREAD);
@@ -280,7 +241,7 @@ export function mainLine(
  */
 export function rollItemInstance(data: ItemSysData, slot: EquipSlot, ilvl: number, q: Quality, rng: () => number, tier = 1): ItemInst {
   const sd = slotDef(data, slot);
-  const qd = data.qualities[q];
+  const qd = at(data.qualities, q, 'qualities');
   const li = clamp(Math.round(ilvl), 1, MAX_ILVL);
   const main = mainLine(data, slot, li, q, rng(), tier);
   const affixes = sd.weight > 0 ? rollAffixes(data, slot, qd.affixes, li, q, rng) : [];
@@ -304,7 +265,7 @@ export function parseInst(data: ItemSysData, slot: EquipSlot, raw: unknown): Ite
   // Chỉ chặn giá trị vô lý tuyệt đối (không so với công thức hiện hành) để đổi cân bằng sau này không làm bác đồ đã rơi.
   const cap =
     budget(MAX_ILVL, (QUALITY_COUNT - 1) as Quality, Math.max(...data.slots.map((x) => x.weight))) *
-    TIER_MUL[MAX_TIER] *
+    at(TIER_MUL, MAX_TIER, 'TIER_MUL') *
     (1 + MAIN_ROLL_SPREAD);
   // Hỏng từng phần thì bỏ đúng phần đó, giữ phẩm, ilvl, ràng buộc và phần còn lại (không đặt lại cả món).
   const main: Partial<Record<MainStat, number>> = {};

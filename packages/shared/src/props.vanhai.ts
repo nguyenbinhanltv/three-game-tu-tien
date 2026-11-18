@@ -1,5 +1,5 @@
 // Prop bày của Vân Hải Phù Đảo (E3-A). SINH BẰNG tools/maps/gen-van-hai.mjs: sửa ở đó rồi chạy lại.
-import type { HandProp } from './props';
+import type { HandProp } from './props.types';
 
 export const VAN_HAI_PROPS: readonly HandProp[] = [
   { id: 'prop_phu_dao_dinh', x: 655, z: 1292, yaw: 0.4, s: 1.2 },

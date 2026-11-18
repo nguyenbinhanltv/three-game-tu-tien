@@ -52,6 +52,9 @@ import {
   thanNiem,
   tribulationCloud,
 } from './vfxParts/scenes';
+import { logger } from '../../base/log';
+
+const vfxLog = logger('vfx');
 export { HAZARD_COLORS } from './vfxParts/common';
 
 let rainModel: Promise<void> | null = null;
@@ -104,7 +107,7 @@ export class Vfx {
         RAIN.useModel(h.scene);
       })
       .catch((e) => {
-        console.warn('[vfx] không nạp được prop_phi_kiem, mưa kiếm dùng lưới dự phòng', e);
+        vfxLog.warn('không nạp được prop_phi_kiem, mưa kiếm dùng lưới dự phòng', e);
       });
   }
 

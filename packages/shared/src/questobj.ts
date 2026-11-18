@@ -1,5 +1,6 @@
 // Mục tiêu nhiệm vụ do server chấm (E2-H): chạm điểm (`touch`), thần thức (`scan`), hộ tống (`escort`). Hằng số và hàm thuần dùng chung.
 
+import { at } from './arr';
 import type { EscortDef, LevelDef } from './types';
 
 /** Đứng trong bán kính này (m) của điểm đáng chú ý thì `touch` được tính. */
@@ -42,7 +43,9 @@ export function escortAdvance(def: EscortDef, w: EscortWalk, dist: number): Esco
   let { seg, x, z, yaw } = w;
   let left = dist;
   while (left > 0 && seg + 1 < def.path.length) {
-    const [tx, tz] = def.path[seg + 1];
+    const next = def.path[seg + 1];
+    if (!next) break;
+    const [tx, tz] = next;
     const d = Math.hypot(tx - x, tz - z);
     yaw = d > 1e-6 ? Math.atan2(tx - x, tz - z) : yaw;
     if (d <= left) {
@@ -56,7 +59,7 @@ export function escortAdvance(def: EscortDef, w: EscortWalk, dist: number): Esco
       left = 0;
     }
   }
-  const [ex, ez] = def.path[def.path.length - 1];
+  const [ex, ez] = at(def.path, def.path.length - 1, 'path');
   return { seg, x, z, yaw, done: seg + 1 >= def.path.length || Math.hypot(ex - x, ez - z) <= ESCORT_ARRIVE_R };
 }
 

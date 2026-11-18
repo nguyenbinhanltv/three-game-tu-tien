@@ -2,8 +2,8 @@
 // Dữ liệu ở packages/content/data/tribulations.json; hằng số Trúc Cơ cũ (`TRIB_*` trong formulas.ts) suy ra từ đây.
 
 import raw from '../../content/data/tribulations.json';
-import { ELEM_BEATS } from './elements';
-import { ELEMENTS, type Element } from './items';
+import { at } from './arr';
+import { ELEM_BEATS, ELEMENTS, type Element } from './elements';
 
 export type TribId = 'truc_co' | 'ket_dan' | 'nguyen_anh' | 'hoa_than' | 'anh_bien';
 export type TribPhaseKind = 'lei' | 'hoa' | 'tam_ma';
@@ -169,7 +169,7 @@ export function nguHanhIndex(n: number): number {
 
 /** Trận môn khắc chế hành `i`: chỉ số trận môn đứng vào để giảm sát thương. */
 export function nguHanhSealFor(i: number): number {
-  return ELEMENTS.indexOf(elemCounterOf(ELEMENTS[nguHanhIndex(i)]));
+  return ELEMENTS.indexOf(elemCounterOf(at(ELEMENTS, nguHanhIndex(i), 'ELEMENTS')));
 }
 
 /**
@@ -311,12 +311,12 @@ export function tribPhaseIndex(def: TribDef, elapsed: number): number {
 
 /** Đầu pha `i` (giây). */
 export function tribPhaseStart(def: TribDef, i: number): number {
-  return i <= 0 ? 0 : def.phases[i - 1].end;
+  return i <= 0 ? 0 : at(def.phases, i - 1, 'phases').end;
 }
 
 /** Nhịp thực của pha tại `elapsed` (có `gapEnd` thì nội suy). */
 export function tribGapAt(def: TribDef, i: number, elapsed: number): number {
-  const p = def.phases[i];
+  const p = at(def.phases, i, 'phases');
   if (p.gapEnd === undefined) return p.gap;
   const a = tribPhaseStart(def, i);
   const t = Math.min(1, Math.max(0, (elapsed - a) / Math.max(1e-6, p.end - a)));

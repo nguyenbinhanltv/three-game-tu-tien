@@ -4,8 +4,11 @@ import type { CampDef, LevelDef, SpawnDef, ZoneDef } from './types';
 export function inPoly(poly: readonly (readonly [number, number])[], x: number, z: number): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const [xi, zi] = poly[i];
-    const [xj, zj] = poly[j];
+    const pi = poly[i];
+    const pj = poly[j];
+    if (!pi || !pj) continue;
+    const [xi, zi] = pi;
+    const [xj, zj] = pj;
     if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inside = !inside;
   }
   return inside;
@@ -14,7 +17,11 @@ export function inPoly(poly: readonly (readonly [number, number])[], x: number, 
 /** Diện tích đa giác (m²). */
 export function polyArea(poly: readonly (readonly [number, number])[]): number {
   let a = 0;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) a += poly[j][0] * poly[i][1] - poly[i][0] * poly[j][1];
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const pi = poly[i];
+    const pj = poly[j];
+    if (pi && pj) a += pj[0] * pi[1] - pi[0] * pj[1];
+  }
   return Math.abs(a) / 2;
 }
 
