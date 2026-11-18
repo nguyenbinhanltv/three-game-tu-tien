@@ -148,7 +148,7 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
         // lớp phụ chuyển theo chuột (nền, kiếm, sương) ngược chiều nhau: chiều sâu
         const L = layers.current;
         if (L.bg) L.bg.style.transform = `translate3d(${-m.sx * 9}px, ${-m.sy * 6}px, 0) scale(1.06)`;
-        if (L.sword) L.sword.style.setProperty('--px', `${m.sx * 16}px`);
+        if (L.sword) L.sword.style.setProperty('--px', `${m.sx * 10}px`);
         if (L.mist) L.mist.style.transform = `translate3d(${-m.sx * 20}px, ${-m.sy * 8}px, 0)`;
       }
     };
@@ -198,8 +198,17 @@ export function HoaTruc({ q, pick }: { q: number; pick: PortraitPick }) {
         />
         <div className="hoatruc-aura" />
         {pick.sword && (
-          <div className="hoatruc-sword" key={pick.sword} ref={(el) => void (layers.current.sword = el)}>
-            <img src={url(pick.sword)} alt="" draggable={false} />
+          // Kiếm đeo sau lưng: chỉ chuôi + tay nắm + đốc kiếm (tranh vẽ) nhô qua vai, thân kiếm nằm trong bao (khối vẽ bằng CSS, màu/ánh sáng theo kiếm)
+          <div
+            className="hoatruc-sword"
+            key={pick.sword}
+            data-k={pick.sword.replace('kiem_', '')}
+            ref={(el) => void (layers.current.sword = el)}
+          >
+            <i className="hoatruc-scab" />
+            <span className="hoatruc-hilt">
+              <img src={url(pick.sword)} alt="" draggable={false} />
+            </span>
           </div>
         )}
         <div className="hoatruc-char" key={'c' + swap} data-swap={swap > 0 ? '1' : undefined}>

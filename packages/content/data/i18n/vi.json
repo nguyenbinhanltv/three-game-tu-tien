@@ -1422,6 +1422,8 @@
   "gm.msg.outfit_asset": "mới có asset, chưa có vật phẩm",
   "gm.msg.outfit_asset_only": "Bộ {id} mới có asset, chưa có vật phẩm để mặc.",
   "gm.msg.outfit_none": "Không có bộ {id}. Gõ /gm outfit list.",
+  "gm.msg.set_worn": "Đã mặc {n}/{total} món bộ {name}.",
+  "gm.msg.set_off": "Đã cởi hết trang bị (cất vào túi).",
   "gm.msg.outfit": "Đã mặc bộ {name} ({id}), {n} món.",
   "gm.msg.skin_head": "Skin (id — tên):",
   "gm.msg.skin": "Đã mặc skin {name}.",

@@ -47,6 +47,7 @@
   --qglow: 0.85;
 }
 .hoatruc-clip {
+  container-type: size;
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -96,23 +97,67 @@
   inset: 20% 30%;
   background: var(--u-wash-gold);
 }
-/* kiếm vẽ riêng ghép sau lưng nhân vật, chuôi nhô qua vai phải; đổi kiếm thì lớp này đổi theo */
+/* kiếm đeo sau lưng: chuôi vẽ (tay nắm, đốc, chuôi ngọc) nhô qua vai phải + bao kiếm chéo xuống hông; đổi kiếm thì cả bao lẫn chuôi đổi */
 .hoatruc-sword {
   --px: 0px;
+  --sc-a: var(--u-ink-2);
+  --sc-b: var(--u-cel-0);
+  --sc-trim: var(--u-gold);
+  --sc-glow: transparent;
   position: absolute;
-  left: 50%;
-  top: 4%;
-  height: 76%;
-  transform: translateX(calc(-50% + var(--px, 0px))) rotate(215deg);
-  transform-origin: 50% 60%;
+  /* đáy phần tử = đầu chuôi (chuôi ngọc) nằm trên vai phải; bao kiếm chéo xuống hông trái, nằm SAU nhân vật */
+  left: calc(50% + 15cqh + var(--px, 0px));
+  top: 14cqh;
+  height: 76cqh;
+  aspect-ratio: 84 / 900;
+  translate: -50% -100%;
+  rotate: 207deg;
+  transform-origin: 50% 100%;
   animation: hoatruc-sword-in 520ms var(--u-ease) both;
   pointer-events: none;
 }
-.hoatruc-sword img {
-  display: block;
-  height: 100%;
-  width: auto;
+.hoatruc-sword[data-k='han_quang'] {
+  --sc-a: color-mix(in srgb, var(--u-q2) 28%, var(--u-ink-0));
+  --sc-b: color-mix(in srgb, var(--u-q2) 55%, var(--u-ink-0));
+  --sc-trim: var(--u-gold-text);
+  --sc-glow: var(--u-ngoc-hi);
+}
+.hoatruc-hilt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 27%;
+  overflow: hidden;
+}
+.hoatruc-hilt img {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 370.4%;
   filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--u-ink-0) 40%, transparent));
+}
+.hoatruc-scab {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 25%;
+  height: 72%;
+  background:
+    linear-gradient(180deg, var(--sc-trim) 0 2.5%, transparent 2.5% 94%, var(--sc-trim) 94%),
+    linear-gradient(90deg, var(--sc-a), var(--sc-b) 55%, var(--sc-a));
+  border-radius: 30% 30% 0 0 / 3% 3% 0 0;
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 50% 100%, 0 90%);
+  box-shadow:
+    inset 0 0 0 1px var(--sc-trim),
+    0 0 12px 1px var(--sc-glow);
+}
+.hoatruc-sword[data-k='han_quang'] .hoatruc-scab {
+  animation: hoatruc-frost 3.2s ease-in-out infinite alternate;
+}
+.hoatruc-sword[data-k='han_quang'] .hoatruc-hilt {
+  filter: drop-shadow(0 0 6px var(--u-ngoc-hi));
 }
 /* sương + hạt linh khí (lớp trước cùng, chuyển ngược chiều với nền) */
 .hoatruc-mist {
@@ -235,6 +280,7 @@
 
 .hoatruc[data-reduce='1'] .hoatruc-fog,
 .hoatruc[data-reduce='1'] .hoatruc-sword,
+.hoatruc[data-reduce='1'] .hoatruc-scab,
 .hoatruc[data-reduce='1'] .hoatruc-bg,
 .hoatruc[data-reduce='1'] .hoatruc-char {
   animation: none;
@@ -257,10 +303,21 @@
     clip-path: inset(0 0 0 0);
   }
 }
+@keyframes hoatruc-frost {
+  from {
+    box-shadow:
+      inset 0 0 0 1px var(--sc-trim),
+      0 0 6px 0 var(--sc-glow);
+  }
+  to {
+    box-shadow:
+      inset 0 0 0 1px var(--sc-trim),
+      0 0 16px 3px var(--sc-glow);
+  }
+}
 @keyframes hoatruc-sword-in {
   from {
     opacity: 0;
-    translate: 0 -24px;
   }
 }
 @keyframes hoatruc-fog {
@@ -313,12 +370,29 @@
   }
 }
 
-/* màn thấp (720p): bỏ nhãn dưới ô để cột ô thấp lại (tên ô vẫn có ở tooltip), tranh vừa trọn trong phần nhìn thấy của bảng */
+/* màn thấp (720p): bỏ nhãn dưới ô, thanh khí huyết/linh lực (đã có ở thẻ người chơi trên HUD), lưới chỉ số (xem ở tab Thuộc tính) và dòng gợi ý để tranh cao hơn, không cắt chữ */
 @media (max-height: 800px) {
   .equip-board-grid {
-    min-height: 0;
+    min-height: 330px;
+  }
+  .equip-board-grid > .equip-col {
+    gap: 2px;
+  }
+  .equip-board-grid .equip-cell {
+    width: 44px;
+  }
+  .equip-board-grid {
+    grid-template-columns: 44px 1fr 44px;
+  }
+  .equip-board-grid > .equip-col {
+    justify-content: space-between;
   }
   .equip-board-grid .equip-label {
+    display: none;
+  }
+  .char-overview .char-bars,
+  .char-overview .char-main-stats,
+  .char-overview .equip-hint {
     display: none;
   }
 }
