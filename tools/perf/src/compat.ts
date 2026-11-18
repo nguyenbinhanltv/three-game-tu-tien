@@ -35,7 +35,7 @@ import { gm } from './lib/game';
 const BROWSERS = opt('--browsers', 'chrome,msedge,firefox,webkit').split(',').filter(Boolean);
 const PRESETS = opt('--presets', 'low,medium,high').split(',').filter(Boolean);
 const SECONDS = Number(opt('--seconds', '4'));
-const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
+const [VW = 1280, VH = 720] = opt('--size', '1280x720').split('x').map(Number);
 const HEADED = args.includes('--headed');
 const WEBGL2_PASS = !args.includes('--no-webgl2');
 const AUDIO_LIVE = !args.includes('--no-audio-live');
@@ -513,7 +513,11 @@ async function compareShots(outDir: string, results: BrowserResult[]): Promise<S
           let sum = 0;
           let over = 0;
           for (let i = 0; i < da.length; i += 4) {
-            const d = (Math.abs(da[i] - db[i]) + Math.abs(da[i + 1] - db[i + 1]) + Math.abs(da[i + 2] - db[i + 2])) / 3;
+            const d =
+              (Math.abs((da[i] ?? 0) - (db[i] ?? 0)) +
+                Math.abs((da[i + 1] ?? 0) - (db[i + 1] ?? 0)) +
+                Math.abs((da[i + 2] ?? 0) - (db[i + 2] ?? 0))) /
+              3;
             sum += d;
             if (d > th) over++;
           }

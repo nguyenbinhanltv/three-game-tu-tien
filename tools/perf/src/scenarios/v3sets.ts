@@ -9,6 +9,7 @@ import { list, size } from '../lib/env';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 
+import { at } from '@dtl/shared';
 const DUR = 3000;
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const SETS: Record<string, { gm: string; label: string }> = {
@@ -43,7 +44,7 @@ export default {
         });
         await gm(page, 'level 12', 1500);
         await gm(page, 'god on', 1200);
-        await gm(page, SETS[s].gm, 1500);
+        await gm(page, at(SETS, s).gm, 1500);
         await gm(page, 'killall', 800);
         await gm(page, 'tp 2048 2088', 1500);
         await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
@@ -72,7 +73,7 @@ export default {
               }
               d.textContent = `${vt} · ${t}`;
             },
-            [text, SETS[s].label] as const,
+            [text, at(SETS, s).label] as const,
           );
         const hold = async (keys: string[], ms: number) => {
           for (const k of keys) await page.keyboard.down(k);
@@ -205,14 +206,14 @@ export default {
       const ms = sets.map((s) => JSON.parse(fs.readFileSync(path.join(r.out, `_marks-${gname}-${s}.json`), 'utf8')) as { at: number }[]);
       const parts: string[] = [];
       const outs: string[] = [];
-      ms[0].forEach((_, n) => {
+      at(ms, 0).forEach((_, n) => {
         sets.forEach((_s, k) =>
-          parts.push(`[${k}:v]trim=start=${ms[k][n].at.toFixed(2)}:duration=${DUR / 1000},setpts=PTS-STARTPTS[v${n}_${k}]`),
+          parts.push(`[${k}:v]trim=start=${at(at(ms, k), n).at.toFixed(2)}:duration=${DUR / 1000},setpts=PTS-STARTPTS[v${n}_${k}]`),
         );
         parts.push(`${sets.map((_s, k) => `[v${n}_${k}]`).join('')}${sets.length > 1 ? `hstack=inputs=${sets.length}` : 'null'}[h${n}]`);
         outs.push(`[h${n}]`);
       });
-      parts.push(`${outs.join('')}concat=n=${ms[0].length}:v=1:a=0[v]`);
+      parts.push(`${outs.join('')}concat=n=${at(ms, 0).length}:v=1:a=0[v]`);
       const res = spawnSync(FFMPEG, [
         '-y',
         '-loglevel',

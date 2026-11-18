@@ -3,6 +3,7 @@ import { Client } from 'colyseus.js';
 import { C, ROOM_DUNGEON, S } from '@dtl/shared';
 import { WS, W, check, health, join, tag, type Ctx } from './lib';
 
+import { at } from '@dtl/shared';
 export async function runTransfer(ctx: Ctx): Promise<void> {
   const { client, init } = ctx;
   // 6. Vào bí cảnh không có vé bị từ chối.
@@ -63,7 +64,7 @@ export async function runTransfer(ctx: Ctx): Promise<void> {
     await W(700);
     check(
       'bấm cổng đúng chỗ: có lệnh chuyển sang bí cảnh',
-      xfers.length === 1 && xfers[0].room === ROOM_DUNGEON && xfers[0].level === 'kiem_trung',
+      xfers.length === 1 && at(xfers, 0).room === ROOM_DUNGEON && at(xfers, 0).level === 'kiem_trung',
       JSON.stringify(xfers),
     );
     let first = false;

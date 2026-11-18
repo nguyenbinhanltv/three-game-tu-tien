@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { loadBudgets } from '../src/config.js';
 import { gpuBytesOf, hiresSide, hiresWanted } from '../src/hires.js';
 
+import { at } from '@dtl/shared';
 describe('hires', () => {
-  const boss = loadBudgets().classes.boss;
+  const boss = at(loadBudgets().classes, 'boss');
   it('màu gấp đôi ngân sách tới trần 4096, không quá nguồn', () => {
     const limit = boss.texture.color;
     expect(hiresSide(boss, ['baseColorTexture'], 8192, limit)).toBe(Math.min(limit * 2, 4096));

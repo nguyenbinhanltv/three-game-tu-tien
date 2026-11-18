@@ -28,6 +28,7 @@ import type { Browser } from 'playwright';
 import { createDevServer, ROOT, sleep } from './lib/devserver';
 import { args, env, opt, ports } from './lib/env';
 import { launchChrome } from './lib/browser';
+import { at } from '@dtl/shared';
 import { gm } from './lib/game';
 import { levelPoints, levelQuery, requireLevel } from './lib/levelpoints';
 
@@ -37,7 +38,7 @@ const OUT_DIR = path.join(ROOT, 'bench/results');
 const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',').filter(Boolean) as ('webgpu' | 'webgl2')[];
 const PRESETS = opt('--presets', 'low,medium,high').split(',').filter(Boolean);
 const SECONDS = Number(opt('--seconds', '8'));
-const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
+const [VW = 1280, VH = 720] = opt('--size', '1280x720').split('x').map(Number);
 const CHANNEL = opt('--channel', env('BENCH_CHANNEL', 'chrome'));
 const HEADED = args.includes('--headed');
 /** `--query a=b&c=d`: thêm vào URL game (A/B cờ kiểm thử). `--points rung,ho`: chỉ đo các điểm này. */
@@ -195,7 +196,8 @@ function initScript(preset: string): void {
   });
 }
 
-const quant = (sorted: number[], q: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : 0);
+const quant = (sorted: number[], q: number) =>
+  sorted.length ? (sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] ?? 0) : 0;
 const round = (n: number, d = 2) => Math.round(n * 10 ** d) / 10 ** d;
 
 type Point = {
@@ -450,7 +452,7 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
     const order = ['low', 'medium', 'low', 'high', 'medium', 'high'];
     const samples: SwitchSample[] = [];
     for (let step = 0; step < n; step++) {
-      const preset = order[step % order.length];
+      const preset = at(order, step % order.length);
       const s = await page.evaluate(async (q) => {
         const w = window;
         const g = w.__game!;
@@ -471,10 +473,10 @@ async function runSwitch(browser: Browser, renderer: 'webgpu' | 'webgl2', n: num
     // So vòng đầu với vòng cuối, cùng preset.
     const leaks: string[] = [];
     for (const preset of new Set(order)) {
-      const at = samples.filter((s) => s.preset === preset);
-      if (at.length < 3) continue;
-      const first = at[1];
-      const last = at[at.length - 1];
+      const pts = samples.filter((s) => s.preset === preset);
+      if (pts.length < 3) continue;
+      const first = at(pts, 1);
+      const last = at(pts, pts.length - 1);
       for (const k of ['geometries', 'textures', 'gpuTextures'] as const) {
         if (last[k] - first[k] > 2) leaks.push(`${preset}: ${k} ${first[k]} → ${last[k]}`);
       }

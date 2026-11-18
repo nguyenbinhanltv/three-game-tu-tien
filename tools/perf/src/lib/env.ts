@@ -1,13 +1,14 @@
 // Chỗ DUY NHẤT trong tools/perf đọc tham số dòng lệnh và biến môi trường (PORT/CLIENT_PORT, BENCH_*, SHOT_*).
 import path from 'node:path';
 
+import { at } from '@dtl/shared';
 /** Tham số dòng lệnh; bỏ dấu `--` mà `pnpm run … --` chuyển nguyên xuống. */
 export const args = process.argv.slice(2).filter((a) => a !== '--');
 
 /** `--tên giá_trị`; thiếu thì lấy mặc định. */
 export const opt = (name: string, def: string): string => {
   const i = args.indexOf(name);
-  return i >= 0 && args[i + 1] ? args[i + 1] : def;
+  return i >= 0 && args[i + 1] ? at(args, i + 1) : def;
 };
 export const flag = (name: string): boolean => args.includes(name);
 export const list = (name: string, def: string): string[] => opt(name, def).split(',').filter(Boolean);

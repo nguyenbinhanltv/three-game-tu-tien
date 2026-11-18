@@ -8,6 +8,7 @@ import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 
+import { at } from '@dtl/shared';
 const METHODS: Record<string, { id: string; name: string }> = {
   kiem: { id: 'lac_kiem_quyet', name: 'kiem-tu' },
   hophap: { id: 'bat_dong_kim_than', name: 'ho-phap' },
@@ -21,7 +22,7 @@ export default {
   async run(r) {
     for (const g of opt('--genders', 'm').split(',')) {
       for (const key of opt('--methods', 'kiem,hophap,dansu').split(',')) {
-        const m = METHODS[key];
+        const m = at(METHODS, key);
         const dir = path.join(r.out, `${m.name}-${g === 'f' ? 'nu' : 'nam'}`);
         fs.mkdirSync(dir, { recursive: true });
         const { page, ctx } = await r.open({

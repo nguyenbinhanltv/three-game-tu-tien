@@ -10,6 +10,7 @@ import { list, size } from '../lib/env';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 
+import { at } from '@dtl/shared';
 const DUR = 3500;
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const QUERY: Record<string, Record<string, string>> = {
@@ -246,7 +247,7 @@ export default {
         const outs: string[] = [];
         mo.forEach((m, n) => {
           parts.push(`[0:v]trim=start=${m.at.toFixed(2)}:duration=${DUR / 1000},setpts=PTS-STARTPTS[o${n}]`);
-          parts.push(`[1:v]trim=start=${mn[n].at.toFixed(2)}:duration=${DUR / 1000},setpts=PTS-STARTPTS[n${n}]`);
+          parts.push(`[1:v]trim=start=${at(mn, n).at.toFixed(2)}:duration=${DUR / 1000},setpts=PTS-STARTPTS[n${n}]`);
           parts.push(`[o${n}][n${n}]hstack[h${n}]`);
           outs.push(`[h${n}]`);
         });

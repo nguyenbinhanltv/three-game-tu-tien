@@ -12,6 +12,7 @@ import { hashName, optimize, readManifest } from '../src/optimize.js';
 import { countTriangles, isSkinned, lodCount, lodLevel, measurePoses } from '../src/stats.js';
 import { validate } from '../src/validate.js';
 
+import { at, missing } from '@dtl/shared';
 const SECT = path.join(ROOT, 'apps/client/public/assets/sect.glb');
 const quiet = () => {};
 
@@ -33,7 +34,7 @@ function tmp(name: string) {
 }
 
 async function readOut(out: string, id: string): Promise<Document> {
-  const entry = readManifest(out).assets[id];
+  const entry = at(readManifest(out).assets, id);
   return (await createIO()).readBinary(new Uint8Array(fs.readFileSync(path.join(out, entry.file))));
 }
 
@@ -45,9 +46,9 @@ describe('tiện ích', () => {
   });
   it('lodTargets lấy min(tỉ lệ × LOD0, trần)', () => {
     const b = loadBudgets();
-    expect(lodTargets(15000, b.classes.player)).toEqual([6000, 2250]);
-    expect(lodTargets(25000, b.classes.player)).toEqual([8000, 3000]);
-    expect(lodTargets(1000, b.classes.prop)).toEqual([400, 150]);
+    expect(lodTargets(15000, at(b.classes, 'player'))).toEqual([6000, 2250]);
+    expect(lodTargets(25000, at(b.classes, 'player'))).toEqual([8000, 3000]);
+    expect(lodTargets(1000, at(b.classes, 'prop'))).toEqual([400, 150]);
   });
 });
 
@@ -59,7 +60,7 @@ describe('sect.glb (kiến trúc, không xương)', () => {
   it('tối ưu: quantize + meshopt, nhỏ hơn, giữ kích thước, rồi dùng cache', async () => {
     const r = await optimize({ rawDir: t.raw, outDir: t.out, cacheFile: t.cache, ktx: false, log: quiet });
     expect(r.failed).toEqual([]);
-    const e = r.manifest.assets.arch_sect;
+    const e = at(r.manifest.assets, 'arch_sect');
     expect(e.file).toMatch(/^arch_sect\.[0-9a-f]{10}\.glb$/);
     expect(e.skinned).toBe(false);
     expect(e.quantized).toBe(true);
@@ -76,7 +77,7 @@ describe('sect.glb (kiến trúc, không xương)', () => {
 
     const again = await optimize({ rawDir: t.raw, outDir: t.out, cacheFile: t.cache, ktx: false, log: quiet });
     expect(again.cached).toEqual(['arch_sect']);
-    expect(again.manifest.assets.arch_sect.file).toBe(e.file);
+    expect(at(again.manifest.assets, 'arch_sect').file).toBe(e.file);
   });
 
   it('validate đạt với LICENSES thật của repo', async () => {
@@ -87,14 +88,14 @@ describe('sect.glb (kiến trúc, không xương)', () => {
 
   it('validate thất bại khi thiếu dòng LICENSES, vượt ngân sách, hoặc hash sai', async () => {
     const budgets = loadBudgets();
-    budgets.classes.arch.triangles.max = 5000;
+    at(budgets.classes, 'arch').triangles.max = 5000;
     const r = await validate({ rawDir: t.raw, outDir: t.out, sourceDir: t.source, budgets, licensesFile: t.licenses([]) });
     const msgs = r.errors.map((e) => e.message).join('\n');
     expect(msgs).toMatch(/thiếu dòng/);
     expect(msgs).toMatch(/vượt ngân sách arch/);
 
     const m = readManifest(t.out);
-    const file = path.join(t.out, m.assets.arch_sect.file);
+    const file = path.join(t.out, at(m.assets, 'arch_sect').file);
     const bytes = fs.readFileSync(file);
     fs.appendFileSync(file, Buffer.from([0]));
     const r2 = await validate({ rawDir: t.raw, outDir: t.out, sourceDir: t.source });
@@ -127,7 +128,7 @@ describe.skipIf(!blender)('nhân vật có xương sinh bằng Blender headless'
   it('không quantize, đủ 3 LOD đúng đích, LOD giữ skin và trọng số, kích thước không đổi ở mọi tư thế', async () => {
     const r = await optimize({ rawDir: t.raw, outDir: t.out, cacheFile: t.cache, ktx: false, log: quiet });
     expect(r.failed).toEqual([]);
-    const e = r.manifest.assets[id];
+    const e = at(r.manifest.assets, id);
     expect(e.class).toBe('player');
     expect(e.skinned).toBe(true);
     expect(e.quantized).toBe(false);
@@ -142,7 +143,7 @@ describe.skipIf(!blender)('nhân vật có xương sinh bằng Blender headless'
     expect(used).toContain('EXT_meshopt_compression');
     expect(used).not.toContain('KHR_mesh_quantization');
     expect(lodCount(doc)).toBe(3);
-    const [t1, t2] = lodTargets(e.triangles, loadBudgets().classes.player);
+    const [t1 = missing('t1'), t2 = missing('t2')] = lodTargets(e.triangles, at(loadBudgets().classes, 'player'));
     expect(countTriangles(doc, 1)).toBeLessThanOrEqual(t1 * 1.1);
     expect(countTriangles(doc, 2)).toBeLessThanOrEqual(t2 * 1.1);
     for (const node of doc
@@ -158,9 +159,9 @@ describe.skipIf(!blender)('nhân vật có xương sinh bằng Blender headless'
 
     const raw = measurePoses(await (await createIO()).read(path.join(t.raw, `${id}.glb`)));
     const build = measurePoses(doc);
-    expect(raw.rest.height).toBeCloseTo(1.7, 2);
-    expect(raw['breathe@mid'].height).toBeGreaterThan(1.85); // root scale 1,15, spine nghiêng
-    for (const pose of Object.keys(raw)) expect(build[pose].height).toBeCloseTo(raw[pose].height, 3);
+    expect(at(raw, 'rest').height).toBeCloseTo(1.7, 2);
+    expect(at(raw, 'breathe@mid').height).toBeGreaterThan(1.85); // root scale 1,15, spine nghiêng
+    for (const pose of Object.keys(raw)) expect(at(build, pose).height).toBeCloseTo(at(raw, pose).height, 3);
 
     const v = await validate({ rawDir: t.raw, outDir: t.out, sourceDir: t.source, licensesFile: t.licenses([id]) });
     expect(v.errors).toEqual([]);
@@ -174,7 +175,7 @@ describe.skipIf(!blender)('nhân vật có xương sinh bằng Blender headless'
     const bytes = await io.writeBinary(doc);
     const file = hashName(id, bytes);
     fs.writeFileSync(path.join(t.out, file), bytes);
-    m.assets[id].file = file;
+    at(m.assets, id).file = file;
     fs.writeFileSync(path.join(t.out, 'manifest.json'), JSON.stringify(m));
     const v = await validate({ rawDir: t.raw, outDir: t.out, sourceDir: t.source, licensesFile: t.licenses([id]) });
     expect(v.errors.map((e) => e.message).join('\n')).toMatch(/KHR_mesh_quantization/);
@@ -183,8 +184,8 @@ describe.skipIf(!blender)('nhân vật có xương sinh bằng Blender headless'
 
   it('validate báo vượt số xương và texture', async () => {
     const budgets = loadBudgets();
-    budgets.classes.player.bones = 3;
-    budgets.classes.player.texture = { color: 512, data: 512 };
+    at(budgets.classes, 'player').bones = 3;
+    at(budgets.classes, 'player').texture = { color: 512, data: 512 };
     const v = await validate({ rawDir: t.raw, outDir: t.out, sourceDir: t.source, budgets, licensesFile: t.licenses([id]) });
     const msgs = v.errors.map((e) => e.message).join('\n');
     expect(msgs).toMatch(/5 xương, vượt 3/);
@@ -262,7 +263,7 @@ describe('KTX2 (toktx giả)', () => {
   it('màu → ETC1S sRGB hạ về ngân sách, normal → UASTC tuyến tính, gắn KHR_texture_basisu', async () => {
     const r = await optimize({ rawDir: t.raw, outDir: t.out, cacheFile: t.cache, log: quiet });
     expect(r.failed).toEqual([]);
-    const e = r.manifest.assets.fx_test_ktx;
+    const e = at(r.manifest.assets, 'fx_test_ktx');
     expect(e.ktx2).toBe(true);
     const calls = fs
       .readFileSync(log, 'utf8')
