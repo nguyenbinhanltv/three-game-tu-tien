@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { type AssetCache, type AssetHandle, assets } from '../assets';
-import { Humanoid } from '../models';
+import { type AssetCache, type AssetHandle, assets } from '../core/assets';
+import { Humanoid } from '../core/models';
 import { adoptGltfMaterials, rimLight } from '../../render/materials/world';
 import { acquireWithHumanLib, HUMAN_K3_LIB, HUMAN_UAL_LIB, mergeClips, retargetClips } from './animLib';
 import { UAL_NPC_IDLES } from './humanClips';

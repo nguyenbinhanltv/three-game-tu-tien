@@ -4,10 +4,10 @@ import './panels.css';
 import './tutien.css';
 import './ngj/hud.css';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, questSpot, BAR_SIZE, CLONE_UNLOCK_LEVEL, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, ELEMENTS, elemCounterOf, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, type ObjectiveDef, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef, WORLD_SIZE } from '@dtl/shared';
-import { ARTIFACT, hasString, ITEM, itemName, LEVELS, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThong10Skill, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
+import { realmStageOf, ARTIFACT_MAX_LEVEL, artifactLevelMods, BAR_SIZE, CLONE_UNLOCK_LEVEL, BONDED_ARTIFACT_ID, bondedLevel, SPIRIT_CD_MS, SPIRIT_CHANNEL_MS, SPIRIT_MP, spiritUnlocked, soulUnlocked, SOUL_DEATH_CD_MS, SOUL_RANGE, SOUL_SCOUT, SOUL_SCOUT_CD_MS, SOUL_SCOUT_MS, PF_SOUL, C, CHARGE_MAX, NGUNG_KHI_MAX, tribDef, ELEMENTS, elemCounterOf, tribPhaseIndex, tribPhaseStart, TRUC_CO_LEVEL, PF_DEAD, PF_FLYING, PF_MEDITATING, PF_TRIBULATION, type SkillDef } from '@dtl/shared';
+import { ARTIFACT, hasString, ITEM, itemName, METHOD, monsterName, nextMajorRealmName, QUEST, realmName, resolveBarSkill, skillBar, t, thanThong10Skill, thanThongSkill, tierBar, VARIANTS } from '@dtl/content';
 import { Game } from '../game/engine';
-import { trackedQuestId } from '../game/offscreen';
+import { trackedQuestId } from '../game/entities/offscreen';
 import { artifactLines } from './gear';
 import { Corners, RingSweep, SealNumeral, SysIcon, type SysIconName } from './ngj';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './kit';
@@ -20,6 +20,7 @@ import { TrialBanner } from './Realm';
 import { BagWarn } from './BagWarn';
 import { breakGoal } from './breakGoal';
 import { type BossLine, type ChapterCard, openPanel, set, setTrackQuest, type TargetCast, togglePanel, useUI } from './store';
+import { objectiveText } from './objective';
 
 function PlayerFrame() {
   const char = useUI((s) => s.char);
@@ -240,59 +241,6 @@ function TargetCastBar({ cast }: { cast: TargetCast }) {
       <div className="gauge-text">{t(label)}</div>
     </div>
   );
-}
-
-/** Tên điểm của mục tiêu `touch`/`scan`: tìm ở mọi level (id điểm là duy nhất toàn game). */
-function spotName(id: string | undefined): string {
-  for (const lv of Object.values(LEVELS)) {
-    const sp = questSpot(lv, id);
-    if (sp) return t(sp.nameKey);
-  }
-  return id ?? '';
-}
-
-function escortName(id: string | undefined): string {
-  for (const lv of Object.values(LEVELS)) {
-    const e = lv.escorts?.find((x) => x.id === id);
-    if (e) return t(`npc.${e.npc}.name`);
-  }
-  return id ?? '';
-}
-
-export function objectiveText(o: ObjectiveDef): string {
-  switch (o.type) {
-    case 'kill':
-      return t('ui.obj.kill', { name: monsterName(o.target ?? '') });
-    case 'gather':
-      return t('ui.obj.gather', { name: itemName(o.target ?? '') });
-    case 'craft':
-      return t('ui.obj.craft', { name: itemName(o.target ?? '') });
-    case 'level':
-      return t('ui.obj.level', { realm: realmName(o.count) });
-    case 'talk':
-      return t('ui.obj.talk', { name: t(`npc.${o.target}.name`) });
-    case 'fly':
-      return t('ui.obj.fly');
-    case 'enhance':
-      return t('ui.obj.enhance', { n: o.count });
-    case 'dungeon':
-      // Có `target` (Phục Mạch Quật…) thì nêu tên bí cảnh đó; không có thì là Kiếm Trủng như cũ.
-      return o.target ? t('ui.obj.dungeon_named', { name: t(`dungeon.${o.target}.name`) }) : t('ui.obj.dungeon');
-    case 'duel':
-      return t('ui.obj.duel');
-    case 'clone':
-      return t('ui.obj.clone');
-    case 'meditate':
-      return t('ui.obj.meditate');
-    case 'touch':
-      return t('ui.obj.touch', { name: spotName(o.target) });
-    case 'scan':
-      return t('ui.obj.scan', { name: spotName(o.target) });
-    case 'escort':
-      return t('ui.obj.escort', { name: escortName(o.target) });
-    default:
-      return t('ui.obj.breakthrough');
-  }
 }
 
 function QuestTracker() {

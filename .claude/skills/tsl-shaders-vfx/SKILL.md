@@ -33,7 +33,7 @@ Hai lớp, đừng trộn.
 **Pool và material** (`render/materials/vfx.ts`)
 - `FxPool` cấp lưới theo `FxKind`: `glow` (cộng sáng, bloom), `flat` (cộng sáng, không bloom, vùng báo), `solid`, `shade`, `slash`, `ink`, `sigil`, `bolt`, `vortex`, `trail`, `beam`, `dome`, `inkpool`, `toon`, `crystal`, `burst`, `decal`, `card`.
 - Mỗi kiểu một `MeshBasicNodeMaterial` cho cả game. Màu, opacity, tiến độ là uniform theo lưới; tham số riêng vào `fxA`/`fxB` (vec4, pool reset về 0).
-- Phát qua `vfx.fx(geo, màu, opacity, kind)`, trả tay cầm bằng `vfx.drop(m)` (`game/vfx.ts`). Không `new MeshBasicMaterial`.
+- Phát qua `vfx.fx(geo, màu, opacity, kind)`, trả tay cầm bằng `vfx.drop(m)` (`game/fx/vfx.ts`). Không `new MeshBasicMaterial`.
 - Đỉnh HDR chặn ở `FX_MAX_HDR` = 2,4. Material `forceSinglePass`.
 - Gộp draw call (`render/materials/fxBatch.ts`, `FxBatcher`): lưới cùng hình + lớp thành một `InstancedMesh`. `FxMesh` chỉ là tay cầm; shader không đọc `positionLocal` (three gán lại theo instance), dùng `uv()`. `sigil` không gộp.
 
@@ -44,16 +44,16 @@ Hai lớp, đừng trộn.
 - Sự kiện: `mesh`, `particles`, `decal`, `trail`, `hitstop`, `shake`, `flash`, `sound`, `bolt`, `camera`. Neo `self|target|ahead|ground|area|origin`.
 - `t` là giây so với `hitAt` (âm = trước); `from: "start"` tính từ lúc bấm. Đổi nhịp chiêu trong `skills.json` thì hiệu ứng đi theo.
 - Mở rộng: `combo` (theo đòn), `variants` (theo biến thức A/B), `hit` (theo mốc trúng), `trigger: "fx"` + `fxKind`/`method`/`when` (chiêu không có động tác: lướt, đột phá, độ kiếp), `replaces` (bỏ hình `S.FX` cũ).
-- Chạy: `FxRunner` ở `game/fxTimeline.ts` (`start`, `startFx`, `startAt` cho quái/cảnh không có chiêu). Gọi từ `game/skillFx.ts`, nghe `Game.onSkillEvent`. Quái: `game/monFx.ts` + `fx/mon_*.json`. Chiêu bậc cao/công pháp: `game/methodFx.ts`.
-- Chất lượng: `game/fxSettings.ts` (`fxQuality`, `particleScale`, khựng hình). Mỗi sự kiện có `tier` 0/1/2 (từ Thấp/Vừa/Cao); chiêu người khác hạ một bậc (`fxTierFor`).
+- Chạy: `FxRunner` ở `game/fx/fxTimeline.ts` (`start`, `startFx`, `startAt` cho quái/cảnh không có chiêu). Gọi từ `game/fx/skillFx.ts`, nghe `Game.onSkillEvent`. Quái: `game/fx/monFx.ts` + `fx/mon_*.json`. Chiêu bậc cao/công pháp: `game/fx/methodFx.ts`.
+- Chất lượng: `game/fx/fxSettings.ts` (`fxQuality`, `particleScale`, khựng hình). Mỗi sự kiện có `tier` 0/1/2 (từ Thấp/Vừa/Cao); chiêu người khác hạ một bậc (`fxTierFor`).
 - Ba pha K-6 (tụ lực → bùng nổ tại `hitAt` → tan): `render/vfx/phases.ts` (`phaseAt`, hằng `HDR_*`, `CAPS_*`, `hazardStyle`). Vệt kiếm bám xương: `render/vfx/bladeTrail.ts`. Đạn quái: `render/vfx/projectile.ts` (`BoltFx`). Tranh thẻ pháp tướng: `render/vfx/cards.ts`.
 - Phần lớn file JSON được **sinh** bằng `python tools/vfx/gen-fx-kiem.py` (công thức `tools/vfx/recipes_b|c|d|e.py`), quái bằng `python tools/vfx/gen-fx-mon.py`. Sửa công thức rồi sinh lại; sửa tay chỉ cho chỉnh nhỏ (lần sinh sau ghi đè).
 
 **Các hệ riêng**
 - Hạt GPU `render/vfx/particles.ts` (`PARTICLES`): hai lớp `glow`/`dust` = 2 draw call. Quỹ đạo tính ở vertex shader; ngân sách `PARTICLE_BUDGET` 5.000/12.000/20.000 (Thấp/Vừa/Cao).
-- Mưa kiếm `swordRain.ts`, thiên lôi `lightning.ts` (hình theo seed server `sd`, mọi client thấy cùng tia; chớp toàn cảnh qua `vfx.onFlash` → `PostPipeline.flash`), vệt theo nhân vật `trail.ts`, đồ rơi `loot.ts`, vết mực `ink.ts`, pháp trận/vạch báo `sigil.ts` + `game/telegraph.ts`, lưỡi kiếm khí `slash.ts`.
-- Vẽ ấm nhóm gộp: `warmKinds`/`warmBatches` trong `game/vfx.ts` biên dịch trước để không khựng giữa trận. `?vfxwarm=0` tắt (chỉ để so số đo).
-- Giảm tải đám đông: `game/fxBudget.ts` (`skipOthersFx`: lưới sống ≥ `OTHERS_FX_LIVE_MAX` hoặc xa hơn `OTHERS_FX_DIST` thì bỏ phần trang trí của người khác; luôn giữ của mình, đòn nhắm mình, chiêu quái/boss, vạch báo).
+- Mưa kiếm `swordRain.ts`, thiên lôi `lightning.ts` (hình theo seed server `sd`, mọi client thấy cùng tia; chớp toàn cảnh qua `vfx.onFlash` → `PostPipeline.flash`), vệt theo nhân vật `trail.ts`, đồ rơi `loot.ts`, vết mực `ink.ts`, pháp trận/vạch báo `sigil.ts` + `game/fx/telegraph.ts`, lưỡi kiếm khí `slash.ts`.
+- Vẽ ấm nhóm gộp: `warmKinds`/`warmBatches` trong `game/fx/vfx.ts` biên dịch trước để không khựng giữa trận. `?vfxwarm=0` tắt (chỉ để so số đo).
+- Giảm tải đám đông: `game/fx/fxBudget.ts` (`skipOthersFx`: lưới sống ≥ `OTHERS_FX_LIVE_MAX` hoặc xa hơn `OTHERS_FX_DIST` thì bỏ phần trang trí của người khác; luôn giữ của mình, đòn nhắm mình, chiêu quái/boss, vạch báo).
 - Cờ URL để so trước/sau: `?batch=0` (bỏ gộp), `?fxq=low|medium|high`, `?vfxwarm=0`.
 
 ## Thêm hiệu ứng cho chiêu mới
@@ -82,7 +82,7 @@ Viết ngắn, đủ các dòng sau. Thiếu dòng nào thì chưa nên viết s
 - **Thứ bậc màu**: lõi / thân / viền / bóng, màu nhánh, màu nguy hiểm riêng cho quái.
 - **Giới hạn sinh**: số lưới, số hạt, trần theo chất lượng, bản của người khác giảm một bậc.
 - **Quy tắc dọn**: hết pha thì `drop` mọi lưới, hạt tự hết, decal có thời hạn; chết, đổi level, hủy chiêu, mất kết nối đều dọn.
-- **Bản giảm chuyển động**: bỏ rung, khựng, chớp, giữ hình tĩnh và vạch báo. Hiện game chỉ có công tắc "Khựng hình" và "Rung màn hình" (`game/fxSettings.ts`, Cài đặt). Công tắc "Giảm chuyển động" (`ui/ngj/motion.ts`) mới áp cho giao diện, **chưa** áp cho VFX trong cảnh. Nối chúng là hướng mở, chưa làm.
+- **Bản giảm chuyển động**: bỏ rung, khựng, chớp, giữ hình tĩnh và vạch báo. Hiện game chỉ có công tắc "Khựng hình" và "Rung màn hình" (`game/fx/fxSettings.ts`, Cài đặt). Công tắc "Giảm chuyển động" (`ui/ngj/motion.ts`) mới áp cho giao diện, **chưa** áp cho VFX trong cảnh. Nối chúng là hướng mở, chưa làm.
 
 ## Ngân sách (desktop)
 
@@ -92,7 +92,7 @@ Viết ngắn, đủ các dòng sau. Thiếu dòng nào thì chưa nên viết s
 - Trần theo chiêu: `CAPS_MINE` 60 hạt/4 lưới, `CAPS_OTHER` 30/2; chiêu tối thượng 400/150 và 150/150.
 - **HDR**: `FX_MAX_HDR` 2,4; đỉnh bùng nổ `HDR_BURST` 2,3. Bloom chỉ bắt vật đã `markBloom`, ngưỡng ~1,0. Hiệu ứng chồng nhau không được cháy sáng cả khung. `maxRadiusFor` giữ hình không chiếm quá 25% màn hình.
 - Mực loang tối đa `MAX_INK` 14. Decal tối đa `DECAL_MAX` 6 cùng lúc.
-- Chớp toàn cảnh < 120 ms; khựng hình ≤ 90 ms (`hitStopOf`, `game/hitjuice.ts`).
+- Chớp toàn cảnh < 120 ms; khựng hình ≤ 90 ms (`hitStopOf`, `game/combat/hitjuice.ts`).
 
 ## Bẫy three r178 / TSL
 
