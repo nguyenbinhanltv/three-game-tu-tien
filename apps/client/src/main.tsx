@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
 import './styles.css';
+import './styles2.css';
 import { installUiScale } from './ui/uiScale';
 import { urlParams } from './game/flags';
 import { installMotion } from './ui/ngj/motion';
