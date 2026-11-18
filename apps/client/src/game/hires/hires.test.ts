@@ -1,7 +1,8 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { AssetCache, type Manifest } from '../core/assets';
-import { ByteBucket, FrameIdle, type HiresCandidate, hiresPolicy, networkAllows, pickNext } from './policy';
+import { adoptGltfMaterials } from '../../render/materials/world';
+import { ByteBucket, FrameIdle, type HiresCandidate, hiresPolicy, networkAllows, pickNext, planEviction } from './policy';
 import { HiresStreamer } from './streamer';
 
 const MB = 1048576;
@@ -72,8 +73,10 @@ describe('HiresStreamer', () => {
       applyHires: async (c: HiresCandidate) => {
         applied.push(c.key);
         mem += c.gpuBytes;
-        return true;
+        return 'ok' as const;
       },
+      hiresApplied: () => [],
+      revertHiresFile: () => undefined,
       revertHires: () => {
         reverts++;
         applied.length = 0;
@@ -114,8 +117,10 @@ describe('HiresStreamer', () => {
       applyHires: async (c: HiresCandidate) => {
         t += 20000; // 2 MB trong 20 s = 100 KB/s
         applied.push(c.key);
-        return true;
+        return 'ok' as const;
       },
+      hiresApplied: () => [],
+      revertHiresFile: () => undefined,
       revertHires: () => undefined,
     };
     const s = new HiresStreamer(host, { quality: () => q.v, nav: () => ({}), ready: () => true, now: () => t });
@@ -158,7 +163,7 @@ describe('AssetCache.applyHires', () => {
     const h = await cache.acquire('boss_x');
     const [c] = cache.hiresCandidates();
     expect(c.file).toBe('hi/boss_x.map.ktx2');
-    expect(await cache.applyHires(c)).toBe(true);
+    expect(await cache.applyHires(c)).toBe('ok');
     expect(mat.map).toBe(hi);
     expect(hi.colorSpace).toBe(THREE.SRGBColorSpace);
     expect(mat.normalMap).toBeNull();
@@ -167,6 +172,143 @@ describe('AssetCache.applyHires', () => {
     cache.revertHires();
     expect(mat.map).toBe(old);
     expect(disposed).toContain('hi');
+    expect(cache.hiresMemory()).toBe(0);
+    h.release();
+  });
+});
+
+describe('planEviction / trần bộ nhớ đầy', () => {
+  it('đuổi tệp ở xa nhất để nhường chỗ cho ứng viên gần, không đuổi tệp gần hơn', () => {
+    const want = cand('near', 5, 2048, 40 * MB);
+    const applied = [
+      { key: 'a', dist: 10, gpuBytes: 40 * MB },
+      { key: 'b', dist: 80, gpuBytes: 40 * MB },
+      { key: 'c', dist: 200, gpuBytes: 40 * MB },
+    ];
+    // trần 128 MB, đang dùng 120 MB: cần giải phóng ≥ 32 MB → đuổi c (xa nhất), không đụng a, b
+    expect(planEviction(want, applied, 120 * MB, 128 * MB)).toEqual(['c']);
+    // ứng viên xa hơn mọi tệp đã áp dụng → không đuổi
+    expect(planEviction(cand('far', 300, 2048, 40 * MB), applied, 120 * MB, 128 * MB)).toBeNull();
+    // đuổi hết vẫn không đủ → null
+    expect(planEviction(cand('huge', 5, 2048, 200 * MB), applied, 120 * MB, 128 * MB)).toBeNull();
+  });
+  it('streamer tải ứng viên gần khi đầy trần bằng cách trả tệp xa', async () => {
+    let t = 0;
+    const applied = new Map<string, { dist: number; gpu: number }>([
+      ['far1', { dist: 150, gpu: 60 * MB }],
+      ['far2', { dist: 120, gpu: 60 * MB }],
+    ]);
+    const reverted: string[] = [];
+    const host = {
+      hiresCandidates: () => [cand('boss', 6, 2048, 60 * MB)].filter((c) => !applied.has(c.key)),
+      hiresMemory: () => [...applied.values()].reduce((a, x) => a + x.gpu, 0),
+      applyHires: async (c: HiresCandidate) => {
+        applied.set(c.key, { dist: c.dist, gpu: c.gpuBytes });
+        return 'ok' as const;
+      },
+      hiresApplied: () => [...applied].map(([key, v]) => ({ key, dist: v.dist, gpuBytes: v.gpu })),
+      revertHiresFile: (k: string) => {
+        reverted.push(k);
+        applied.delete(k);
+      },
+      revertHires: () => undefined,
+    };
+    const s = new HiresStreamer(host, { quality: () => 'high', nav: () => ({}), ready: () => true, now: () => t });
+    for (let i = 0; i < 6; i++) {
+      t += 500;
+      await s.tick();
+    }
+    expect(reverted).toEqual(['far1']);
+    expect(applied.has('boss')).toBe(true);
+  });
+});
+
+describe('streamer: hủy do revert không làm nhiễm skip', () => {
+  it('Cao → Vừa giữa lúc tải → Cao: tệp vẫn được tải lại', async () => {
+    const q = { v: 'high' };
+    let t = 0;
+    let release: (r: 'ok' | 'stale') => void = () => undefined;
+    let calls = 0;
+    const host = {
+      hiresCandidates: () => [cand('x', 1, 2048, MB, 100)],
+      hiresMemory: () => 0,
+      applyHires: () => {
+        calls++;
+        return new Promise<'ok' | 'stale'>((res) => (release = res));
+      },
+      hiresApplied: () => [],
+      revertHiresFile: () => undefined,
+      revertHires: () => undefined,
+    };
+    const s = new HiresStreamer(host, { quality: () => q.v, nav: () => ({}), ready: () => true, now: () => t });
+    t += 500;
+    void s.tick();
+    t += 500;
+    void s.tick();
+    expect(calls).toBe(1);
+    q.v = 'medium';
+    t += 500;
+    await s.tick(); // revert + skip.clear
+    release('stale'); // lần tải dở kết thúc sau revert
+    await new Promise((r) => setTimeout(r, 0));
+    q.v = 'high';
+    for (let i = 0; i < 4; i++) {
+      t += 500;
+      void s.tick(); // lần tải thứ hai treo (promise chưa giải): không await
+    }
+    expect(calls).toBe(2);
+  });
+});
+
+function fakeCache(srcMat: THREE.MeshStandardMaterial, hi: THREE.Texture): AssetCache {
+  const scene = new THREE.Group();
+  scene.add(new THREE.Mesh(new THREE.BoxGeometry(), srcMat));
+  const manifest: Manifest = {
+    version: 1,
+    assets: { mon_x: { id: 'mon_x', file: 'mon_x.glb', bytes: 1, triangles: 1, skinned: false, ktx2: false, lods: [], hires: [{ mat: 'm1', slots: ['map'], file: 'hi/mon_x.ktx2', width: 2048, height: 2048, bytes: 1, gpuBytes: MB }] } },
+  };
+  return new AssetCache({
+    base: '/a/',
+    fetchManifest: async () => manifest,
+    load: async () => ({ scene, scenes: [scene], animations: [], cameras: [], asset: {}, parser: null as never, userData: {} }),
+    loadTexture: async () => hi,
+  });
+}
+
+describe('AssetCache.applyHires với material dẫn xuất (adoptGltfMaterials)', () => {
+  it('material đang vẽ nhận texture mới và được trả lại khi revert, kể cả tạo sau khi áp dụng', async () => {
+    const old = new THREE.Texture();
+    const src = new THREE.MeshStandardMaterial({ map: old });
+    src.name = 'm1';
+    const hi = new THREE.Texture();
+    const cache = fakeCache(src, hi);
+    const h = await cache.acquire('mon_x');
+    const [before] = adoptGltfMaterials(h.scene);
+    expect(before.map).toBe(old);
+    const [c] = cache.hiresCandidates();
+    expect(await cache.applyHires(c)).toBe('ok');
+    expect(before.map).toBe(hi);
+    // material dẫn xuất tạo SAU khi áp dụng chép texture bậc cao từ material gốc; revert cũng phải trả nó
+    const h2 = await cache.acquire('mon_x');
+    const [after] = adoptGltfMaterials(h2.scene);
+    expect(after.map).toBe(hi);
+    cache.revertHires();
+    expect(before.map).toBe(old);
+    expect(after.map).toBe(old);
+    expect(src.map).toBe(old);
+    h.release();
+    h2.release();
+  });
+  it('revertHiresFile trả đúng một tệp', async () => {
+    const old = new THREE.Texture();
+    const src = new THREE.MeshStandardMaterial({ map: old });
+    src.name = 'm1';
+    const cache = fakeCache(src, new THREE.Texture());
+    const h = await cache.acquire('mon_x');
+    await cache.applyHires(cache.hiresCandidates()[0]);
+    expect(cache.hiresApplied().map((a) => a.key)).toEqual(['mon_x#hi/mon_x.ktx2']);
+    cache.revertHiresFile('mon_x#hi/mon_x.ktx2');
+    expect(src.map).toBe(old);
     expect(cache.hiresMemory()).toBe(0);
     h.release();
   });

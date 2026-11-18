@@ -1,10 +1,13 @@
-import { ByteBucket, type HiresCandidate, type HiresPolicy, type NavInfo, hiresPolicy, pickNext } from './policy';
+import { type AppliedInfo, ByteBucket, type HiresCandidate, type HiresPolicy, type NavInfo, hiresPolicy, pickNext, planEviction } from './policy';
 
 /** Phần của AssetCache mà bộ lập lịch cần (thay được khi test). */
 export interface HiresHost {
   hiresCandidates(): HiresCandidate[];
   hiresMemory(): number;
-  applyHires(c: HiresCandidate, maxSide: number): Promise<boolean>;
+  /** `ok` đã thay; `stale` bị hủy giữa chừng (thử lại sau); `none` không thay được (bỏ hẳn). */
+  applyHires(c: HiresCandidate, maxSide: number): Promise<'ok' | 'stale' | 'none'>;
+  hiresApplied(): AppliedInfo[];
+  revertHiresFile(key: string): void;
   revertHires(): void;
 }
 
@@ -69,19 +72,30 @@ export class HiresStreamer {
     this.bucket.setRate(this.policy.bytesPerSec);
     this.bucket.refill(dt);
     if (this.inflight || t < this.pausedUntil || !this.deps.ready() || !this.bucket.canStart()) return Promise.resolve();
-    const next = pickNext(this.host.hiresCandidates(), this.policy, this.host.hiresMemory(), this.skip);
+    const cands = this.host.hiresCandidates();
+    const mem = this.host.hiresMemory();
+    let next = pickNext(cands, this.policy, mem, this.skip);
+    if (!next) {
+      // Chạm trần bộ nhớ: nếu có ứng viên gần hơn các tệp đã áp dụng thì trả bớt tệp ở xa để nhường chỗ.
+      const near = pickNext(cands, { ...this.policy, memCap: Infinity }, 0, this.skip);
+      const plan = near ? planEviction(near, this.host.hiresApplied(), mem, this.policy.memCap) : null;
+      if (near && plan) {
+        for (const k of plan) this.host.revertHiresFile(k);
+        next = near;
+      }
+    }
     if (!next) return Promise.resolve();
     this.inflight = true;
     this.bucket.spend(next.bytes);
     const t0 = this.now();
     return this.host
       .applyHires(next, this.policy.tier === 2 ? 4096 : 2048)
-      .then((ok) => {
-        if (ok) {
+      .then((res) => {
+        if (res === 'ok') {
           this.loaded++;
           this.appliedTier = this.policy.tier;
-        } else {
-          this.skip.add(next.key); // không áp dụng được (vật liệu không khớp): đừng thử lại mãi
+        } else if (res === 'none') {
+          this.skip.add(next.key); // không áp dụng được (vật liệu không khớp): đừng thử lại mãi. 'stale' (bị hủy do revert) thì để thử lại.
         }
         const sec = Math.max(0.001, (this.now() - t0) / 1000);
         if (next.bytes > 100 * 1024 && next.bytes / sec < SLOW_BPS) this.pausedUntil = this.now() + SLOW_PAUSE_MS;

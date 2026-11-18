@@ -66,6 +66,29 @@ export function pickNext(cands: HiresCandidate[], policy: HiresPolicy, usedMem: 
   return best;
 }
 
+export interface AppliedInfo {
+  key: string;
+  dist: number;
+  gpuBytes: number;
+}
+
+/**
+ * Chạm trần bộ nhớ mà có ứng viên gần hơn: chọn các tệp đã áp dụng ở xa hơn ứng viên ít nhất `margin` m (xa nhất trước) để trả về texture GLB
+ * đến khi đủ chỗ. null nếu không đuổi nổi (không có tệp nào đủ xa, hoặc đuổi hết vẫn không đủ).
+ */
+export function planEviction(want: HiresCandidate, applied: AppliedInfo[], usedMem: number, memCap: number, margin = 15): string[] | null {
+  if (want.gpuBytes > memCap) return null;
+  const far = applied.filter((a) => a.dist > want.dist + margin).sort((a, b) => b.dist - a.dist);
+  const out: string[] = [];
+  let mem = usedMem;
+  for (const a of far) {
+    if (mem + want.gpuBytes <= memCap) break;
+    out.push(a.key);
+    mem -= a.gpuBytes;
+  }
+  return mem + want.gpuBytes <= memCap ? out : null;
+}
+
 /** Xô byte: nạp `bytesPerSec` mỗi giây, trần 2 giây; tải xong trừ byte (được âm một lần để file lớn không bị kẹt). */
 export class ByteBucket {
   private tokens = 0;

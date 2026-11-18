@@ -1,9 +1,10 @@
 // Texture tải dần (hạng mục 4): ảnh trước/sau CÙNG khung hình trong trang xem asset (`?show=<id>`): clip idle dừng ở khung 0,
 // cùng camera, chỉ đổi bậc texture bằng `__viewer.setHires(id, bật/tắt)`. Mặc định 3 đối tượng: boss, tinh anh, quái; `--ids all` quét mọi asset có bậc cao (soát lệch màu).
 // Ghi `<id>-truoc.png`, `<id>-sau.png` và `hires.json` (MB tải thêm từ manifest, GPU MB ước tính, thời gian áp xong, số texture).
-// `--ids a,b,c`, `--zoom 0.8` (nhân khoảng cách camera: nhỏ hơn = gần hơn).
+// `--game <id quái>`: kiểm trong game thật (material đang vẽ nhận texture bậc cao). `--ids a,b,c`, `--zoom 0.8` (nhân khoảng cách camera: nhỏ hơn = gần hơn).
 import { gameUrl, watchErrors } from '../lib/browser';
-import { list, num } from '../lib/env';
+import { list, num, opt } from '../lib/env';
+import { gm, skipCutscene } from '../lib/game';
 import { sleep } from '../lib/devserver';
 import type { Scenario } from '../lib/scenario';
 import { writeJson } from '../lib/shot';
@@ -15,6 +16,37 @@ export default {
   desc: 'Texture tải dần: ảnh trước/sau cùng khung (viewer, clip dừng) cho boss/tinh anh/quái (nhân vật không có bậc cao, xem hires.ts) + MB tải, GPU, thời gian áp',
   usage: '[--ids boss_han_giao,elite_huyet_nha_lang,mon_soi_xam|all] [--zoom 0.8]',
   async run(r) {
+    // `--game`: kiểm trong game thật (đường material dẫn xuất): gọi quái, đợi bậc cao nạp, đọc cạnh texture của material đang vẽ.
+    if (opt('--game', '') !== '') {
+      const mon = opt('--game', 'elite_huyet_nha_lang');
+      const { page } = await r.open({ name: 'HiresGame', quality: 'high', query: { quiet: 1 }, hide: 'hud' });
+      await gm(page, 'level 15');
+      await gm(page, 'god on');
+      await skipCutscene(page, 20);
+      await gm(page, `spawn ${mon} 1`, 1500);
+      const read = () =>
+        page.evaluate((id) => {
+          const w = window as unknown as { __game: { scene: { traverse(f: (o: { material?: unknown }) => void): void } }; __hires?: () => { loaded: number; memMB: number } };
+          const sizes: number[] = [];
+          w.__game.scene.traverse((o) => {
+            const ms = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+            for (const m of ms as { name?: string; map?: { image?: { width?: number }; mipmaps?: { width: number }[] } }[])
+              if (m.name?.startsWith(id) && m.map) sizes.push(m.map.mipmaps?.[0]?.width ?? m.map.image?.width ?? 0);
+          });
+          return { sizes: [...new Set(sizes)], hires: w.__hires?.() };
+        }, mon);
+      const before = await read();
+      const until = Date.now() + num('--wait', 60) * 1000;
+      let after = before;
+      while (Date.now() < until) {
+        await sleep(2000);
+        after = await read();
+        if (after.sizes.some((x) => x >= 2048)) break;
+      }
+      console.log('  trước:', JSON.stringify(before), ' sau:', JSON.stringify(after));
+      writeJson(r.out, 'hires-game.json', { mon, before, after });
+      return;
+    }
     const all = (await (await fetch(`http://localhost:${r.clientPort}/assets/manifest.json`)).json()) as { assets: Record<string, { hires?: unknown[] }> };
     const given = list('--ids', 'boss_han_giao,elite_huyet_nha_lang,mon_soi_xam');
     const ids = given[0] === 'all' ? Object.keys(all.assets).filter((k) => all.assets[k].hires?.length) : given;
