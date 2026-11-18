@@ -7,12 +7,12 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { describe, expect, it } from 'vitest';
 import { POSE, SKILLS } from '@dtl/content';
 import { POSE_CAST, POSE_FLY } from '@dtl/shared';
-import { type AssetHandle, AssetCache, type Manifest } from '../assets';
+import { type AssetHandle, AssetCache, type Manifest } from '../core/assets';
 import { IkRig, poseClipName, probeClip } from './ikpose';
 import { POSE_BASE_CLIPS, withPoses } from './poseLib';
 import { SkinnedCharacter } from './skinned';
 import type { AnimState } from './view';
-import { nodeGltfLoader } from '../gltfTestLoader';
+import { nodeGltfLoader } from '../core/gltfTestLoader';
 
 // Động tác chiêu trên model thật Thanh Phong (chr_kiem_tu_nam, rig Mixamo, #36). Chỉ dựng SkinnedCharacter bằng
 // điểm nối `withPoses`; phần nạp model người chơi trong game là của M3-5.

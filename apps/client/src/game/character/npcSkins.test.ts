@@ -7,12 +7,12 @@ import { NPCS as ALL_NPCS } from '@dtl/content';
 
 /** NPC dựng ở Vân Lam. NPC của level khác (Hứa lão ở Đoạn Mạch) có model riêng do E2-H nhập. */
 const NPCS = ALL_NPCS.filter((n) => (n.level ?? 'van_lam') === 'van_lam');
-import { AssetCache, type Manifest } from '../assets';
-import { Humanoid } from '../models';
+import { AssetCache, type Manifest } from '../core/assets';
+import { Humanoid } from '../core/models';
 import { NPC_SKINS, NpcSkins } from './npcSkins';
 import { SkinnedCharacter } from './skinned';
 import type { AnimState } from './view';
-import { nodeGltfLoader } from '../gltfTestLoader';
+import { nodeGltfLoader } from '../core/gltfTestLoader';
 
 const PUBLIC_ASSETS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public/assets');
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(PUBLIC_ASSETS, 'manifest.json'), 'utf8')) as Manifest;

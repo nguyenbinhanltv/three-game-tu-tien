@@ -25,7 +25,7 @@ import {
   vec3,
 } from 'three/tsl';
 import { WORLD_SIZE } from '@dtl/shared';
-import { GROUND_LAYER as L, type GroundTextures } from '../../game/groundTextures';
+import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
 
 /**
  * Shader mặt đất PBR (P2-A2): trộn 8 lớp texture CC0 Poly Haven theo vùng, độ dốc, độ cao.

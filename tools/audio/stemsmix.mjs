@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { decode, findFfmpeg, ROOT, SR } from './common.mjs';
 
-const CLIENT = path.join(ROOT, 'apps/client/src/game');
+const CLIENT = path.join(ROOT, 'apps/client/src/game/audio');
 const AUDIO = path.join(ROOT, 'apps/client/public/audio');
 
 /** Đọc STEM_MIX từ musicDirector.ts. */

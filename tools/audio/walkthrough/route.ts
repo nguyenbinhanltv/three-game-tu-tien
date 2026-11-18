@@ -8,10 +8,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { LAKE, RUN_SPEED, SECT } from '../../../packages/shared/src/index';
-import { StepClock, stepVolume } from '../../../apps/client/src/game/footsteps';
+import { StepClock, stepVolume } from '../../../apps/client/src/game/audio/footsteps';
 import { pathPolylines } from '../../../apps/client/src/render/groundMask';
-import { buildSources, KINDS, makeCrackle, Soundscape, type SpatialApi, templeBellPartials } from '../../../apps/client/src/game/soundscape';
-import { surfaceAt, type Surface } from '../../../apps/client/src/game/surface';
+import { buildSources, KINDS, makeCrackle, Soundscape, type SpatialApi, templeBellPartials } from '../../../apps/client/src/game/audio/soundscape';
+import { surfaceAt, type Surface } from '../../../apps/client/src/game/world/surface';
 
 const outDir = process.argv[2];
 if (!outDir) throw new Error('thiếu thư mục ra');
