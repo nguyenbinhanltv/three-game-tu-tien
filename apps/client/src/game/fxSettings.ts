@@ -1,4 +1,5 @@
 import { FX_QUALITY_TIER, type FxQuality } from '@dtl/shared';
+import { FLAGS } from './flags';
 
 /**
  * Cài đặt hiệu ứng chiêu (VFX-V0): "Chất lượng hiệu ứng" Thấp/Vừa/Cao và công tắc khựng hình.
@@ -10,10 +11,7 @@ const KEY_STOP = 'dtl.hitStop';
 const isQ = (v: unknown): v is FxQuality => typeof v === 'string' && v in FX_QUALITY_TIER;
 
 function readQuality(): FxQuality {
-  if (typeof location !== 'undefined') {
-    const q = new URLSearchParams(location.search).get('fxq');
-    if (isQ(q)) return q;
-  }
+  if (isQ(FLAGS.fxq)) return FLAGS.fxq;
   if (typeof localStorage !== 'undefined') {
     const q = localStorage.getItem(KEY);
     if (isQ(q)) return q;

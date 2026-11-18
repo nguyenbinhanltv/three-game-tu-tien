@@ -14,10 +14,11 @@ import { RootPicker } from './Realm';
 import { Corners, ngjHud as NGJ } from './ngj';
 import { Portrait } from './Art';
 import { get, type Phase, set, useUI } from './store';
+import { FLAGS, urlParams } from '../game/flags';
 
 const GOOGLE_CLIENT_ID = (import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_GOOGLE_CLIENT_ID ?? '';
 const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname) || window.location.hostname.endsWith('.localhost');
-const DEV_LOGIN = IS_LOCAL || new URLSearchParams(window.location.search).has('dev');
+const DEV_LOGIN = IS_LOCAL || FLAGS.dev;
 
 interface GoogleId {
   initialize(o: { client_id: string; callback: (r: { credential: string }) => void }): void;
@@ -54,7 +55,7 @@ const LOOK_KEY = 'dtl.look';
 /** Lựa chọn ngoại hình nhớ lần trước (hoặc `?dye=<id>` khi thử); không hợp lệ thì mặc định. */
 function initialLook(): Appearance {
   const def: Appearance = { g: APPEARANCE.defaultGender, dye: APPEARANCE.defaultDye };
-  const qs = new URLSearchParams(window.location.search);
+  const qs = urlParams();
   const q = qs.get('dye');
   if (q) return parseAppearance(APPEARANCE, { g: def.g, dye: q, ...(qs.get('hair') ? { hair: qs.get('hair') } : {}) }) ?? def;
   try {
@@ -129,7 +130,7 @@ const ROOT_KEY = 'dtl.root';
 
 /** Linh căn chọn lần trước (null = để thiên ý định đoạt). */
 function initialRoot(): RootId | null {
-  const q = new URLSearchParams(window.location.search).get('root');
+  const q = urlParams().get('root');
   if (isRootId(q)) return q;
   try {
     const v = localStorage.getItem(ROOT_KEY);
@@ -168,7 +169,7 @@ function Login() {
   };
   // Tiện cho kiểm thử: ?auto=<đạo hiệu> tự đăng nhập bằng tài khoản thử.
   useEffect(() => {
-    const auto = new URLSearchParams(window.location.search).get('auto');
+    const auto = FLAGS.auto;
     if (auto && DEV_LOGIN && validName(auto) && !needName) Game.connect({ dev: auto.trim(), ap: initialLook(), rt: initialRoot() ?? undefined });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -59,7 +59,7 @@ import { CloneVis } from './cloneVis';
 import { loadGroundTextures, type GroundTextures } from './groundTextures';
 import type { GroundLevel } from '../render/materials/ground';
 import { telegraph } from './telegraph';
-import { BASE_ZONE, E4_OFF, easeZoneCam, zoneCamera, type ZoneCam } from './camZones';
+import { BASE_ZONE, easeZoneCam, zoneCamera, type ZoneCam } from './camZones';
 import { DamageNumbers, HAZARD_COLORS, Vfx } from './vfx';
 import { skipOthersFx } from './fxBudget';
 import { nearestGoalSpot, type OffCandidate, OffscreenIndicators, questGoal, trackedQuestId } from './offscreen';
@@ -78,6 +78,7 @@ import type { SkillEvent } from './character/view';
 import { HitQueue, SwingGuard, hitPitch, hitStopOf, layersOf, materialOf, shakeOf, ULT_FOV, ultFovAt, WHOOSH_GAIN, whooshDelay, type HitCtx, type HitSoundLog } from './hitjuice';
 import { debugAllowed, readTestParams } from './testParams';
 import { CharPreview } from './charPreview';
+import { currentSearch, FLAGS } from './flags';
 
 export interface LoginOptions {
   token?: string;
@@ -177,10 +178,10 @@ export function reqId(): string {
 }
 
 /** Chỉ bản dev, để chụp ảnh đúng khung: `?slowmo=0.25` chậm thời gian hiển thị (đứng yên, không di chuyển). */
-const SLOWMO = import.meta.env.DEV ? Math.min(1, Math.max(0.05, Number(new URLSearchParams(location.search).get('slowmo')) || 1)) : 1;
+const SLOWMO = import.meta.env.DEV ? FLAGS.slowmo : 1;
 
 /** Chỉ bản dev, để chụp ảnh VFX chiêu: `?quiet=1` bỏ nháy trúng đòn và cầu nổ cú cắn trên chính mình (quái vẫn đánh, không đổi luật). */
-const QUIET = import.meta.env.DEV && new URLSearchParams(location.search).get('quiet') === '1';
+const QUIET = import.meta.env.DEV && FLAGS.quiet;
 
 export class Game {
   static current: Game | null = null;
@@ -195,13 +196,13 @@ export class Game {
     if (Game.session) {
       try {
         // ?god đi theo mỗi lần vào room (bí cảnh, quay về); ?at chỉ áp lần vào đầu tiên.
-        return await Game.client.joinOrCreate(roomName, { ...extra, session: Game.session, god: readTestParams(location.search).god });
+        return await Game.client.joinOrCreate(roomName, { ...extra, session: Game.session, god: readTestParams(currentSearch()).god });
       } catch (e) {
         if ((e as { code?: number }).code !== 4014) throw e;
         Game.session = '';
       }
     }
-    return Game.client.joinOrCreate(roomName, { ...extra, ...Game.lastLogin, god: readTestParams(location.search).god });
+    return Game.client.joinOrCreate(roomName, { ...extra, ...Game.lastLogin, god: readTestParams(currentSearch()).god });
   }
 
   /** Đăng nhập và vào thế giới. Lỗi được đưa lên UI qua store. */
@@ -214,7 +215,7 @@ export class Game {
     try {
       Game.client = new Client(serverUrl());
       // M1-10: ?god / ?at=<địa điểm>; server chỉ nhận với tài khoản thử, tài khoản thật bị từ chối.
-      const room = await Game.client.joinOrCreate(ROOM_WORLD, { ...opts, ...readTestParams(location.search) });
+      const room = await Game.client.joinOrCreate(ROOM_WORLD, { ...opts, ...readTestParams(currentSearch()) });
       await Game.enter(room);
     } catch (e) {
       const err = e as { code?: number; message?: string };
@@ -273,7 +274,7 @@ export class Game {
   /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
   grass!: Grass;
   props: PropLayer | null = null;
-  /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. `?beacons=0` tắt để so ảnh. */
+  /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. */
   beacons: Beacons | null = null;
   /** Bướm trang trí (DV-C): một InstancedMesh, chỉ ở level ngoài trời có khai báo. `?bf=0` tắt để so ảnh/số đo. */
   butterflies: Butterflies | null = null;
@@ -475,8 +476,8 @@ export class Game {
   private disposed = false;
   private leaving = false;
   /** `?debug`: dòng số đo gọn ở góc (công cụ đo vẫn dùng); bảng F3 cần `debugOk` (bản dev hoặc `?debug`). */
-  private debugPerf = new URLSearchParams(location.search).has('debug');
-  private debugOk = debugAllowed(location.search, (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true);
+  private debugPerf = FLAGS.debug;
+  private debugOk = debugAllowed(currentSearch(), (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true);
   /** CPU của `frame()` cộng dồn giữa hai lần đồng bộ HUD (cho bảng F3). */
   private cpuAcc = 0;
   private cpuMax = 0;
@@ -805,7 +806,6 @@ export class Game {
 
   /** Nạp texture mặt đất ngoài đường găng: terrain dùng màu đỉnh tới khi xong rồi mới đổi sang shader PBR. */
   private async loadGround(): Promise<void> {
-    if (new URLSearchParams(location.search).get('ground') === '0') return;
     const t0 = performance.now();
     try {
       const self = this;
@@ -833,11 +833,10 @@ export class Game {
       this.loadStats[k] = Math.round(performance.now() - t0);
     };
     const q = QUALITY[get().quality] ?? QUALITY.medium;
-    const params = new URLSearchParams(location.search);
     // Khử răng cưa do PostPipeline lo theo preset; MSAA ở canvas chỉ tốn bộ nhớ.
     // `?gputime=1` (chỉ cho công cụ đo, pnpm bench:crowd): bật timestamp query để đọc thời gian GPU bằng
     // `renderer.resolveTimestampsAsync()`; không ai resolve thì three cảnh báo hết chỗ query, nên đừng bật khi chơi.
-    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: this.pickRenderer(params), trackTimestamp: params.get('gputime') === '1' });
+    this.renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: this.pickRenderer(FLAGS.renderer), trackTimestamp: FLAGS.gpuTime });
     await this.renderer.init();
     this.watchGpuDevice();
     void this.describeGpu();
@@ -974,7 +973,7 @@ export class Game {
 
   /** Dựng lớp riêng của Bắc Hoang: vệt nứt Giới Khích (3 draw call), cây chết (≤ 3 draw call). `?bhart=0` tắt để so ảnh. */
   private buildBacHoang(): void {
-    if (new URLSearchParams(location.search).get('bhart') === '0') return;
+    if (!FLAGS.bhArt) return;
     const T = levelTerrain();
     this.riftMood = true;
     this.riftMoodT = -1;
@@ -994,7 +993,7 @@ export class Game {
   private xichRifts: RiftVeil[] = [];
 
   private buildXich(id: string, q: (typeof QUALITY)[string]): void {
-    if (new URLSearchParams(location.search).get('xichart') === '0') return;
+    if (!FLAGS.xichArt) return;
     const T = levelTerrain();
     const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
     for (const p of paths) {
@@ -1185,15 +1184,14 @@ export class Game {
   /** Phần dựng sau VFX: cây/prop, cột linh quang, cỏ. */
   private buildLevelB(id: string, q: (typeof QUALITY)[string]): void {
     const F = levelAssets(id).features;
-    const params = new URLSearchParams(location.search);
-    // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách. `?props=0` tắt để chụp ảnh trước/sau.
-    if (F.trees === 'scatter' && params.get('props') !== '0') {
+    // P2-A4: prop Tripo (đèn đá, cổ thụ, đá, trúc…), nạp lười theo khoảng cách.
+    if (F.trees === 'scatter') {
       this.props = new PropLayer(undefined, allProps(levelId()));
       this.props.setQuality(get().quality, q.shadows);
       this.scene.add(this.props.group);
     }
     const pois = LEVELS[id]?.pois ?? [];
-    if (F.beacons && pois.length && params.get('beacons') !== '0') {
+    if (F.beacons && pois.length) {
       // Giới Khích (Bắc Hoang) tự có vệt sáng riêng (render/riftVeil.ts), không thêm cột linh quang nón.
       this.beacons = new Beacons(pois.filter((p) => p.beamH && !(id === 'bac_hoang' && p.id === 'gioi_khich')).map((p) => ({ x: p.x, z: p.z, h: p.beamH ?? 0 })));
       this.beacons.mesh.visible = isWorldRoom(get().room);
@@ -1205,7 +1203,7 @@ export class Game {
     this.grass.mesh.visible = F.grass;
     this.scene.add(this.grass.mesh);
     const bf = BUTTERFLY_LEVELS[id];
-    if (bf && params.get('bf') !== '0') {
+    if (bf && FLAGS.butterflies) {
       this.butterflies = new Butterflies(bf);
       this.butterflies.setQuality(get().quality);
       this.scene.add(this.butterflies.mesh);
@@ -2998,14 +2996,14 @@ export class Game {
   }
 
   /** Chọn backend: xem `rendererChoice` (`?renderer=webgl2` chỉ cho lần nạp này). */
-  private pickRenderer(params: URLSearchParams): boolean {
+  private pickRenderer(param: string | null): boolean {
     let stored: string | null = null;
     try {
       stored = localStorage.getItem(RENDERER_KEY);
     } catch {
       /* bỏ qua */
     }
-    const c = rendererChoice(params.get('renderer'), stored);
+    const c = rendererChoice(param, stored);
     if (c.storage === 'clear') {
       try {
         localStorage.removeItem(RENDERER_KEY);
@@ -3306,7 +3304,7 @@ export class Game {
     const flying = this.cur.flying;
     this.camFrame.update(dt);
     // Camera theo khu: trong cảnh điện ảnh/độ kiếp thì về mặc định (cảnh tự đặt camera), ra khỏi cảnh trôi mượt lại.
-    const zw = E4_OFF || this.cine.active || this.tribScene ? BASE_ZONE : zoneCamera(rp.x, rp.z, this.zoneWant);
+    const zw = this.cine.active || this.tribScene ? BASE_ZONE : zoneCamera(rp.x, rp.z, this.zoneWant);
     easeZoneCam(this.zoneCur, zw, dt);
     const zc = this.zoneCur;
     // Cận cảnh chiêu tối thượng (K-7): FOV +1,5° trong 80 ms rồi về trong 200 ms, kéo camera gần thêm chút; không chặn điều khiển.
@@ -3740,7 +3738,7 @@ export class Game {
 
   /** Cảnh mở đầu chỉ chạy khi đứng gần điểm hồi sinh (đường camera dựng cho sân tông môn) , người chơi chưa tắt thẻ chương trong Cài đặt và không tắt bằng `?cine=0`. */
   private canCine(x: number, z: number): boolean {
-    return get().chapterCards && new URLSearchParams(location.search).get('cine') !== '0' && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
+    return get().chapterCards && FLAGS.cinematics && Math.hypot(x - SPAWN_POINT.x, z - SPAWN_POINT.z) < 40;
   }
 
   private startCine(): void {
@@ -3756,7 +3754,7 @@ export class Game {
   private canBossCine(me: PState | undefined): boolean {
     if (!me || !this.started || this.cine.active || this.snapToServer) return false;
     if ((me.fl & PF_DEAD) !== 0 || get().phase !== 'game') return false;
-    return get().chapterCards && new URLSearchParams(location.search).get('cine') !== '0';
+    return get().chapterCards && FLAGS.cinematics;
   }
 
   private beginBossCine(kind: 'boss' | 'phase' | 'dan', path: readonly Waypoint[], prof: { dur: number; out: number }, info: { name: string; title?: string; text: string }): void {

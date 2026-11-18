@@ -1,9 +1,10 @@
 import * as THREE from 'three/webgpu';
 import { HUMAN_CLIPS, UAL_STATES } from './humanClips';
 import type { CharState, ClipMap } from './states';
+import { FLAGS } from '../flags';
 
 /** `?ual=0` tắt clip UAL, về clip K-3 cũ (so ảnh/video trước-sau). */
-export const UAL_ENABLED = typeof location === 'undefined' || new URLSearchParams(location.search).get('ual') !== '0';
+export const UAL_ENABLED = FLAGS.ual;
 
 /** Tên clip cũ mà clip UAL thay (death, hit_light, knockdown, getup, combat_idle, hit_front_*): `addClips(…, replace)`. */
 export const UAL_REPLACE: readonly string[] = [...new Set(Object.values(HUMAN_CLIPS).flatMap((c) => (c.lib === 'ual' ? c.as ?? [] : [])))];

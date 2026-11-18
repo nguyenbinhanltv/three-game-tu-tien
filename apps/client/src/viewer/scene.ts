@@ -15,6 +15,7 @@ import { buildFixtureSword, buildMixamoFixture } from '../game/character/mixamoF
 import { partExtras, stripPartTracks, SwordSocket, swordSocketDef } from '../game/character/sword';
 import { BoneLines, makeGrid } from './helpers';
 import { collectStats, type ModelStats } from './stats';
+import { currentSearch, urlParams } from '../game/flags';
 
 /** Chiều cao người chuẩn để so tỉ lệ (m). */
 export const HUMAN_HEIGHT = 1.7;
@@ -78,7 +79,7 @@ export class ViewerScene {
   private marks = new THREE.Group();
 
   constructor(private host: HTMLElement) {
-    const params = new URLSearchParams(location.search);
+    const params = urlParams();
     this.renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL: params.get('renderer') === 'webgl2' });
   }
 
@@ -162,7 +163,7 @@ export class ViewerScene {
 
   /** Đang ở chế độ xem pose (?pose=…). */
   get poseMode(): boolean {
-    return new URLSearchParams(location.search).has('pose') || isSkillViewer(location.search);
+    return urlParams().has('pose') || isSkillViewer(currentSearch());
   }
 
   /** Thời điểm (giây) và độ dài của clip đang phát; 0 nếu không có. */

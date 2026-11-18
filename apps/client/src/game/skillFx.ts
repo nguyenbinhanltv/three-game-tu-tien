@@ -29,12 +29,13 @@ import { G } from './geo';
 import type { SkillEvent } from './character/view';
 import { FxRunner, type FxRunnerEnv } from './fxTimeline';
 import type { Vfx } from './vfx';
+import { FLAGS } from './flags';
 
 /** `?k6=0` tắt VFX ba pha, vệt kiếm và linh quang hộ thể để so ảnh trước/sau. */
-export const K6_ON = typeof location === 'undefined' || new URLSearchParams(location.search).get('k6') !== '0';
+export const K6_ON = FLAGS.k6;
 
 /** `?fxtl=0` tắt dòng thời gian hiệu ứng (VFX-V0): chiêu mẫu về hình cũ để so ảnh trước/sau. */
-export const TL_ON = K6_ON && (typeof location === 'undefined' || new URLSearchParams(location.search).get('fxtl') !== '0');
+export const TL_ON = K6_ON && FLAGS.fxTimeline;
 
 /** Cấp từ đó có linh quang hộ thể (Trúc Cơ). */
 export const TRUC_CO_LEVEL = 16;
