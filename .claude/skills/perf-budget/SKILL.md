@@ -30,6 +30,18 @@ description: Đo và giữ ngân sách hiệu năng của Đạp Thiên Lộ —
 
 Máy mục tiêu: laptop GPU tích hợp đời 2022 (Intel Iris Xe / Radeon 680M) đạt 60fps ở preset Vừa.
 
+### Ngân sách riêng cho preset Cực cao (`ultra`)
+
+Cực cao chỉ dành cho GPU rời + CPU mạnh (WebGPU, `deviceMemory` ≥ 8 GB, ≥ 8 luồng); **không** đưa vào ngưỡng chung ở trên (mặc định vẫn Vừa). Ngân sách riêng:
+
+| Chỉ số | Cực cao |
+| --- | --- |
+| Tam giác | ≤ 2,5 triệu (cảnh đông, rừng) |
+| Texture | ≤ 400 MB (đã gồm bậc texture tải nền `game/hires/`, trần 180 MB) |
+| CPU p95 mỗi khung | ≤ 12 ms (cũng là ngưỡng tự hạ) |
+
+Tự hạ (`base/quality.ts` `AutoQuality`, nối ở `game/engine/frameLoop.ts`): trong cửa sổ 10 s, CPU p95 > 12 ms **hoặc** fps < 40 thì **chỉ Cực cao → Cao** (báo bằng toast, lưu `dtl.quality`; Cao/Vừa/Thấp là lựa chọn của người chơi nên không tự hạ); khung cách nhau > 1 s (tab ẩn, màn tải) làm cửa sổ bắt đầu lại; `dtl.qualityLock=1` (nút "Khóa mức đồ họa" ở Cài đặt) tắt tự hạ. Bench/shots luôn đặt khóa (`initScript`, `tools/perf/src/lib/game.ts`) để đo đúng preset. Gợi ý theo GPU (`suggestQuality`, chỉ hiện ở Cài đặt một lần, không tự đổi): GPU rời + RAM/luồng đủ → Cực cao, thiếu → Cao; iGPU/Apple/≤ 4 GB/≤ 4 luồng/WebGL2 → Vừa. Đo: `pnpm bench:client --presets medium,high,ultra`, `pnpm bench:crowd --presets medium,high,ultra`, kiểm đầu-cuối `pnpm shots quality`.
+
 ## Cách đo
 
 - **Bảng F3 trong game** (`ui/DebugPanel.tsx`): thêm `?debug=1` vào URL (bản dev không cần) rồi nhấn F3. Hiện FPS và backend, thời gian khung CPU của `Game.frame()` (trung bình và cao nhất trong ~100 ms, tô vàng từ 80% và đỏ khi vượt 8 ms), draw call và tam giác của khung vừa vẽ qua mọi pass (so với 300 / 2 triệu), geometry/texture của `renderer.info.memory`, số người/quái/NPC, LOD, lưới VFX đang sống và hạt, số ô địa hình, ping. Engine chỉ điền số khi bảng đang mở. `?debug=1` còn hiện một dòng gọn ở góc dưới phải (`ms · draw · tri`).

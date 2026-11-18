@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import { downgradeOf, getGpuHint, setGpuHint, suggestQuality } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import {
   C,
@@ -263,6 +264,8 @@ export function runFrame(eng: Game): void {
   eng.fpsAcc += dt;
   eng.fpsFrames++;
   const cpu = performance.now() - now;
+  if (eng.started && downgradeOf(get().quality)) eng.autoQuality.frame(now, cpu); // Vừa/Thấp không tự hạ: khỏi ghi mẫu
+  autoQualityTick(eng, now);
   eng.cpuAcc += cpu;
   if (cpu > eng.cpuMax) eng.cpuMax = cpu;
   eng.colliderViz?.update(rp.x, rp.z);
@@ -271,6 +274,7 @@ export function runFrame(eng: Game): void {
     // Lúc tải giữ điểm hồi sinh do prefetch đặt (renderPos có thể chưa khớp vị trí thật).
     if (eng.started) assets.setViewer(rp.x, rp.z);
     syncHud(eng, me);
+    eng.props?.setTriangleLoad(eng.lastRender.triangles); // Cực cao: co/nở tầm cây-đá theo tam giác khung vừa vẽ
     eng.music.tick(now, {
       active: eng.started,
       room: get().room,
@@ -611,9 +615,30 @@ export function watchGpuDevice(eng: Game): void {
   });
 }
 
+/** Một lần/giây: nghẽn ở Cực cao thì hạ xuống Cao và báo; Cao/Vừa/Thấp là lựa chọn của người chơi nên không tự hạ; bị khóa cũng thôi. */
+function autoQualityTick(eng: Game, now: number): void {
+  if (!eng.started || now - eng.autoAt < 1000) return;
+  eng.autoAt = now;
+  const cur = get().quality;
+  const next = eng.autoQuality.check(now, cur, get().qualityLock);
+  if (!next) return;
+  console.warn(`[quality] tự hạ ${cur} → ${next}`);
+  eng.setQuality(next);
+  pushToast(t('sys.quality_auto_down', { from: t('ui.settings.q.' + cur), to: t('ui.settings.q.' + next) }), 'bad');
+}
+
+/** Gợi ý preset theo GPU + máy; chỉ đặt vào store khi khác mức đang dùng. Không tự đổi preset. */
+function publishQualityHint(): void {
+  const n = navigator as Navigator & { deviceMemory?: number };
+  const s = suggestQuality(getGpuHint(), { deviceMemory: n.deviceMemory, cores: n.hardwareConcurrency });
+  set({ qualityHint: s !== get().quality ? s : null });
+}
+
 export async function describeGpu(eng: Game): Promise<void> {
   if (!isWebGPU(eng.renderer)) {
     eng.gpuInfo = 'WebGL2';
+    setGpuHint(null);
+    publishQualityHint();
     console.info('[gpu]', eng.gpuInfo);
     return;
   }
@@ -630,6 +655,15 @@ export async function describeGpu(eng: Game): Promise<void> {
       `features ${be.device?.features?.size ?? ad?.features?.size ?? '?'}`,
     ];
     eng.gpuInfo = parts.filter(Boolean).join(' · ');
+    setGpuHint({
+      webgpu: true,
+      vendor: i?.vendor ?? '',
+      architecture: i?.architecture ?? '',
+      description: `${i?.description ?? ''} ${i?.device ?? ''}`.trim(),
+      maxTexture2D: ad?.limits?.maxTextureDimension2D ?? lim?.maxTextureDimension2D ?? 0,
+      maxBufferSize: ad?.limits?.maxBufferSize ?? lim?.maxBufferSize ?? 0,
+    }); // khả năng của adapter (device chỉ có giới hạn mặc định đã xin)
+    publishQualityHint();
   } catch (e) {
     eng.gpuInfo = 'WebGPU (không đọc được adapter: ' + String(e) + ')';
   }

@@ -14,6 +14,7 @@ import divuc from './scenarios/divuc';
 import dungeon from './scenarios/dungeon';
 import flyover from './scenarios/flyover';
 import hires from './scenarios/hires';
+import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
 import outfit from './scenarios/outfit';
@@ -61,6 +62,7 @@ const SCENARIOS: Scenario[] = [
   flyover,
   xichkhe,
   hires,
+  quality,
 ];
 
 const name = args[0] && !args[0].startsWith('--') ? args[0] : 'points';

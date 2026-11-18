@@ -47,7 +47,10 @@ export async function openGame(browser: Browser, o: OpenOpts): Promise<GamePage>
   });
   const name = `${o.name}${Date.now() % 10000}`.slice(0, 14);
   const store: Record<string, string> = {};
-  if (o.quality) store['dtl.quality'] = o.quality;
+  if (o.quality) {
+    store['dtl.quality'] = o.quality;
+    store['dtl.qualityLock'] = '1'; // chụp/đo đúng preset đã chọn, không để tự hạ làm lệch
+  }
   if (o.look)
     Object.assign(store, { 'dtl.controls': 'strafe', 'dtl.look': JSON.stringify({ g: o.look.g, dye: o.look.dye ?? 'attire_sect' }) });
   if (o.seenIntro) store['dtl.seen.sect.' + name] = '1';

@@ -1,3 +1,4 @@
+import { QUALITIES } from '../../base/quality';
 import { useState } from 'react';
 import { t } from '@dtl/content';
 import { getVolume, isMuted, setMuted, setVolume, sfx, unlockAudio, VOLUME_KEYS, type VolumeKey } from '../../game/audio/audio';
@@ -33,6 +34,9 @@ function VolumeSlider({ k }: { k: VolumeKey }) {
 
 export function Settings() {
   const quality = useUI((s) => s.quality);
+  const qualityLock = useUI((s) => s.qualityLock);
+  const qualityHint = useUI((s) => s.qualityHint);
+  const hintSeen = useUI((s) => s.qualityHintSeen);
   const fps = useUI((s) => s.fps);
   const controls = useUI((s) => s.controls);
   const camShake = useUI((s) => s.camShake);
@@ -61,8 +65,29 @@ export function Settings() {
         label={t('ui.settings.quality')}
         value={quality}
         onChange={(q) => Game.current?.setQuality(q)}
-        options={['low', 'medium', 'high'].map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
+        options={QUALITIES.map((q) => ({ value: q, label: t('ui.settings.q.' + q) }))}
       />
+      {qualityHint && !hintSeen && (
+        <div className="k-dim" data-testid="quality-hint">
+          {t('ui.settings.quality_suggest', { q: t('ui.settings.q.' + qualityHint) })}{' '}
+          <Button
+            onClick={() => {
+              Game.current?.setQuality(qualityHint);
+              Game.current?.dismissQualityHint();
+            }}
+          >
+            {t('ui.settings.quality_apply')}
+          </Button>{' '}
+          <Button onClick={() => Game.current?.dismissQualityHint()}>{t('ui.settings.quality_dismiss')}</Button>
+        </div>
+      )}
+      <Segmented
+        label={t('ui.settings.quality_lock')}
+        value={qualityLock}
+        onChange={(on) => Game.current?.setQualityLock(on)}
+        options={onOff}
+      />
+      <div className="k-dim">{t('ui.settings.quality_lock_hint')}</div>
       <div className="k-dim">{t('ui.settings.quality_hint')}</div>
       <div className="k-dim">{t('ui.settings.fps', { n: fps })}</div>
       <Divider label={t('ui.settings.cam_shake')} />

@@ -419,6 +419,7 @@
   "sys.variant_low": "Chiêu phải đạt cấp 3 mới có biến thức.",
   "sys.variant_combat": "Không đổi biến thức khi đang giao chiến.",
   "sys.variant_wait": "Vừa đổi biến thức, hãy đợi giây lát rồi đổi tiếp.",
+  "sys.quality_auto_down": "Máy hơi nặng ở mức {from}: đã tự hạ xuống {to}. Bật Khóa mức đồ họa ở Cài đặt nếu không muốn.",
   "sys.gpu_fallback": "Card đồ họa (WebGPU) gặp lỗi, đang chuyển sang chế độ WebGL2 và tải lại…",
   "sys.gpu_failed": "Đồ họa gặp lỗi liên tục. Thử đóng bớt tab, cập nhật driver card đồ họa rồi tải lại trang.",
   "sys.ult_not_ready": "Vòng sạc chưa đầy.",
