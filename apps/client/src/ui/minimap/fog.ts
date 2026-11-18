@@ -15,6 +15,8 @@ export class Fog {
   private lx = -1e9;
   private lz = -1e9;
   private dirty = false;
+  /** Đã nạp xong ảnh cũ (hoặc không có): chỉ khi đó mới được lưu, tránh ghi đè sương cũ bằng mặt nạ mới tinh lúc ảnh chưa kịp nạp. */
+  private loaded = false;
   private lastSave = 0;
 
   constructor(
@@ -26,17 +28,24 @@ export class Fog {
     this.g = this.mask.getContext('2d')!;
     try {
       const url = localStorage.getItem(key);
-      if (url) {
+      if (!url) this.loaded = true;
+      else {
         const im = new Image();
         im.onload = () => {
           // Giữ phần đã tan trong lúc ảnh nạp: vẽ ảnh cũ bằng 'lighter' để cộng dồn, không đè.
           this.g.globalCompositeOperation = 'lighter';
           this.g.drawImage(im, 0, 0);
           this.g.globalCompositeOperation = 'source-over';
+          this.loaded = true;
+          this.dirty = true;
+        };
+        im.onerror = () => {
+          this.loaded = true;
         };
         im.src = url;
       }
     } catch (e) {
+      this.loaded = true;
       log.warn('không đọc được sương đã lưu', e);
     }
   }
@@ -61,7 +70,7 @@ export class Fog {
 
   /** Lưu nếu có thay đổi và đã quá SAVE_MS (hoặc `force` khi rời level). */
   save(now: number, force = false): void {
-    if (!this.dirty || (!force && now - this.lastSave < SAVE_MS)) return;
+    if (!this.loaded || !this.dirty || (!force && now - this.lastSave < SAVE_MS)) return;
     this.dirty = false;
     this.lastSave = now;
     try {

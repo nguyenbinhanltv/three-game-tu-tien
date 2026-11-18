@@ -4,7 +4,22 @@ import { getCloudNoise } from '../../render/noiseTex';
 import { createWorldMaterial } from '../../render/materials/world';
 import { applyGroundShader, clearGroundShader, setGroundTileBreak, type GroundLevel } from '../../render/materials/ground';
 import type { GroundTextures } from '../../base/groundTextures';
-import { fbm, featureWeight, FOREST, hash01, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, TERRAIN_SEED, VALLEY, WATER_Y } from '@dtl/shared';
+import {
+  COLLIDERS,
+  fbm,
+  featureWeight,
+  FOREST,
+  hash01,
+  KIEM_TRUNG,
+  LAKE,
+  PORTAL_PAD,
+  SECT,
+  TERRAIN_SEED,
+  trailsOf,
+  VALLEY,
+  WATER_Y,
+} from '@dtl/shared';
+import { LEVELS } from '@dtl/content';
 import { levelTerrain } from '../../base/levelCtx';
 import { col, G, GeoBuilder, mat } from '../core/geo';
 import { withSightFade } from './occlusion';
@@ -706,16 +721,17 @@ function boxBlur(a: Float32Array, stride: number, r: number): void {
 }
 
 /**
- * Núi nét cọ (đổ bóng + gạch xiên ở sườn dốc), đường đồng mức mảnh, sông hồ màu ngọc thanh có viền mực, nền giấy ngà có vân loang.
- * Mọi thứ sinh từ độ cao địa hình (`surfaceAt`) của level đang dựng nên đúng với thế giới; ảnh `n`×`n` điểm ảnh, dựng chia lát.
+ * Đọc được địa hình trong thủy mặc: núi nét cọ (độ dốc đã làm mượt) có viền chân núi, đồng mức mảnh, sông hồ ngọc thanh viền mực mềm
+ * (mặt nạ nước làm nhòe rồi ngưỡng mềm nên mép không răng cưa), đường mòn nét mực, kiến trúc là khối mực, rừng là chấm mực.
+ * Mọi thứ sinh từ độ cao địa hình (`surfaceAt`) và dữ liệu level; ảnh `n`×`n` điểm ảnh, dựng chia lát.
  */
-export function createInkMap(n = 1024): InkBuilder {
+export function createInkMap(n = 1536): InkBuilder {
   const t0 = levelTerrain();
   const size = t0.size;
   const cell = size / n;
   const stride = n + 2;
   const H = new Float32Array(stride * stride);
-  const water = new Uint8Array(n * n);
+  const water = new Float32Array(n * n);
   const wy = t0.def.water?.y;
   const vl = isVanLam();
   const cv = document.createElement('canvas');
@@ -735,7 +751,7 @@ export function createInkMap(n = 1024): InkBuilder {
       const end = performance.now() + budgetMs;
       while (!b.done && performance.now() < end) {
         if (phase === 0) {
-          // Lấy mẫu độ cao (có viền 1 ô để tính độ dốc) và cờ nước.
+          // Lấy mẫu độ cao (có viền 1 ô để tính độ dốc) và mặt nạ nước.
           const j = row;
           const z = (j - 1 + 0.5) * cell;
           for (let i = 0; i < stride; i++) {
@@ -752,14 +768,15 @@ export function createInkMap(n = 1024): InkBuilder {
           if (++row >= stride) {
             row = 0;
             phase = 1;
-            // Làm mượt độ cao trước khi tính độ dốc: bỏ gợn nhỏ để còn khối núi, không ra bản đồ nhiễu.
+            // Làm mượt độ cao trước khi tính độ dốc (bỏ gợn nhỏ, còn khối núi) và làm nhòe mặt nạ nước (mép mềm, không răng cưa).
             for (let k = 0; k < 3; k++) boxBlur(H, stride, 4);
+            for (let k = 0; k < 2; k++) boxBlur(water, n, 2);
           }
         } else {
-          const j = row;
-          shadeRow(j);
+          shadeRow(row);
           if (++row >= n) {
             g.putImageData(img, 0, 0);
+            overlay();
             b.done = true;
           }
         }
@@ -783,34 +800,84 @@ export function createInkMap(n = 1024): InkBuilder {
       let gg = INK_PAPER[1] * (1 + wash);
       let bb = INK_PAPER[2] * (1 + wash);
       const wi = j * n + i;
-      let ink = 0;
-      if (water[wi]) {
+      // Đất: thân núi theo độ dốc + đổ bóng Tây Bắc + viền chân núi (dải hẹp ở độ dốc trung bình) + đồng mức mảnh + cao hơn thì đậm hơn.
+      let ink = smooth(0.04, 0.8, slope) * 0.6 + Math.max(0, -(dx + dz) * 0.8) * 0.28;
+      ink += smooth(0.16, 0.26, slope) * (1 - smooth(0.34, 0.46, slope)) * 0.36;
+      const w8 = Math.max(0.03, (slope * cell) / 8);
+      const f8 = (h / 8) % 1;
+      if (slope < 0.3 && f8 < Math.min(0.14, w8)) ink += (h / 40) % 1 < Math.min(0.14, w8 / 5) ? 0.24 : 0.12;
+      ink += ((h - hMin) / range) * 0.18;
+      // Nước: alpha theo mặt nạ đã nhòe (ngưỡng mềm), đậm dần theo độ sâu; viền mực mềm ở chỗ chuyển tiếp.
+      const wf = water[wi]!;
+      const wa = smooth(0.3, 0.7, wf);
+      if (wa > 0) {
         const d = smooth(0, 7, waterY - h);
-        r = INK_JADE_HI[0] + (INK_JADE_LO[0] - INK_JADE_HI[0]) * d;
-        gg = INK_JADE_HI[1] + (INK_JADE_LO[1] - INK_JADE_HI[1]) * d;
-        bb = INK_JADE_HI[2] + (INK_JADE_LO[2] - INK_JADE_HI[2]) * d;
-        // Bờ nước: viền mực mảnh nếu có ô lân cận là đất.
-        const shore =
-          (i > 0 && !water[wi - 1]) || (i < n - 1 && !water[wi + 1]) || (j > 0 && !water[wi - n]) || (j < n - 1 && !water[wi + n]);
-        if (shore) ink = 0.55;
-      } else {
-        // Thân núi: độ dốc (đã làm mượt) nhuộm vừa phải, đổ bóng hướng Tây Bắc, đồng mức thưa (mỗi 10 m mảnh, mỗi 50 m đậm hơn), cao hơn thì đậm hơn.
-        // Thung lũng thoải vẫn có vân đồng mức để bản đồ không trống.
-        ink = smooth(0.05, 1.0, slope) * 0.34 + Math.max(0, -(dx + dz) * 0.6) * 0.2;
-        // Nét cọ viền chân núi: một dải hẹp ở mức dốc trung bình thành đường mực quanh khối núi.
-        ink += smooth(0.22, 0.34, slope) * (1 - smooth(0.4, 0.52, slope)) * 0.34;
-        const w = Math.max(0.03, (slope * cell) / 10);
-        const f10 = (h / 10) % 1;
-        // Đồng mức chỉ ở nơi thoải: sườn dốc vạch dày đặc hơn một điểm ảnh sẽ thành đốm.
-        if (slope < 0.3 && f10 < Math.min(0.12, w)) ink += (h / 50) % 1 < Math.min(0.12, w / 5) ? 0.2 : 0.09;
-        ink += ((h - hMin) / range) * 0.16;
+        const jr = INK_JADE_HI[0] + (INK_JADE_LO[0] - INK_JADE_HI[0]) * d;
+        const jg = INK_JADE_HI[1] + (INK_JADE_LO[1] - INK_JADE_HI[1]) * d;
+        const jb = INK_JADE_HI[2] + (INK_JADE_LO[2] - INK_JADE_HI[2]) * d;
+        r += (jr - r) * wa;
+        gg += (jg - gg) * wa;
+        bb += (jb - bb) * wa;
+        ink *= 1 - wa;
       }
-      ink = Math.min(0.85, ink);
+      ink += (1 - smooth(0, 0.2, Math.abs(wf - 0.5))) * 0.5;
+      ink = Math.min(0.9, ink);
       const o = wi * 4;
       img.data[o] = r + (INK_BLACK[0] - r) * ink;
       img.data[o + 1] = gg + (INK_BLACK[1] - gg) * ink;
       img.data[o + 2] = bb + (INK_BLACK[2] - bb) * ink;
       img.data[o + 3] = 255;
+    }
+  }
+
+  /** Đường mòn, kiến trúc (va chạm tĩnh, Vân Lam), rừng chấm mực: vẽ chồng lên nền đã tô. */
+  function overlay(): void {
+    const k = n / size;
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    const zones = LEVELS[t0.id]?.zones ?? [];
+    const play = t0.def.play;
+    g.strokeStyle = 'rgba(56, 40, 28, 0.78)';
+    g.lineWidth = Math.max(1.6, 5 * k);
+    for (const tr of trailsOf(t0.id, zones, play ? { cx: play.cx, cz: play.cz } : undefined)) {
+      g.beginPath();
+      for (let s = 0; s + 1 < tr.length; s++) {
+        const [a, c] = [tr[s]!, tr[s + 1]!];
+        const mx = (a[0] + c[0]) / 2 + (hash01(a[0], c[1], 4182) - 0.5) * 30;
+        const mz = (a[1] + c[1]) / 2 + (hash01(a[1], c[0], 4183) - 0.5) * 30;
+        if (s === 0) g.moveTo(a[0] * k, a[1] * k);
+        g.quadraticCurveTo(mx * k, mz * k, c[0] * k, c[1] * k);
+      }
+      g.stroke();
+    }
+    if (vl) {
+      // Kiến trúc: khối mực đặc có viền, to nhỏ theo bán kính va chạm (chính điện, đan phòng, tàng kiếm các, cổng…).
+      g.fillStyle = 'rgba(46, 38, 30, 0.82)';
+      g.strokeStyle = 'rgba(46, 38, 30, 0.95)';
+      g.lineWidth = Math.max(1, 2 * k);
+      for (const c of COLLIDERS) {
+        const r = Math.max(2.2, c.r * k * 1.25);
+        g.beginPath();
+        g.arc(c.x * k, c.z * k, r, 0, Math.PI * 2);
+        g.fill();
+        g.stroke();
+      }
+      // Rừng: chấm mực rải theo mật độ rừng, tránh nước.
+      g.fillStyle = 'rgba(52, 62, 44, 0.62)';
+      const step = 22;
+      for (let z = step / 2; z < size; z += step) {
+        for (let x = step / 2; x < size; x += step) {
+          const w = featureWeight(FOREST, x, z);
+          if (w < 0.45) continue;
+          if (hash01(x, z, 4191) > 0.28 + w * 0.3) continue;
+          const px = (x + (hash01(z, x, 4192) - 0.5) * step) * k;
+          const pz = (z + (hash01(x, z, 4193) - 0.5) * step) * k;
+          if (water[Math.min(n - 1, Math.floor(pz)) * n + Math.min(n - 1, Math.floor(px))]! > 0.4) continue;
+          g.beginPath();
+          g.arc(px, pz, Math.max(0.9, 3.2 * k), 0, Math.PI * 2);
+          g.fill();
+        }
+      }
     }
   }
   return b;

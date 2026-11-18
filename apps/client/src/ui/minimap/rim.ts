@@ -3,7 +3,7 @@
 import { pal } from './palette';
 
 /** Bề dày vành (px thiết kế) tính từ mép ngoài vào: lòng bản đồ nằm trong bán kính `D/2 - RIM`. */
-export const RIM = 17;
+export const RIM = 22;
 
 export type Sky = 'dawn' | 'day' | 'night';
 
@@ -43,7 +43,7 @@ export function rimStatic(D: number, dpr: number): HTMLCanvasElement {
   g.strokeStyle = gr;
   g.stroke();
   g.beginPath();
-  g.arc(0, 0, R - 15, 0, Math.PI * 2);
+  g.arc(0, 0, R - 13.5, 0, Math.PI * 2);
   g.lineWidth = 1.5;
   g.strokeStyle = P.goldLo;
   g.stroke();
@@ -59,6 +59,18 @@ export function rimStatic(D: number, dpr: number): HTMLCanvasElement {
 /** Hướng (độ, theo chiều kim đồng hồ từ Bắc) của mặt trời / mặt trăng theo bầu trời. */
 const SUN_AT: Record<Sky, number> = { dawn: 100, day: 150, night: 150 };
 const MOON_AT: Record<Sky, number> = { dawn: 280, day: 330, night: 300 };
+
+/** Bát quái (Hậu Thiên) theo thứ tự quanh la bàn từ Bắc: Khảm, Cấn, Chấn, Tốn, Ly, Khôn, Đoài, Càn. Mỗi quẻ ba vạch từ dưới (gần tâm) lên: 1 = dương (liền), 0 = âm (đứt). */
+const TRIGRAMS: readonly (readonly (0 | 1)[])[] = [
+  [0, 1, 0],
+  [0, 0, 1],
+  [1, 0, 0],
+  [0, 1, 1],
+  [1, 0, 1],
+  [0, 0, 0],
+  [1, 1, 0],
+  [1, 1, 1],
+];
 
 export interface RimLabels {
   n: string;
@@ -78,17 +90,43 @@ export function drawRim(g: CanvasRenderingContext2D, D: number, dpr: number, rot
   g.translate(R, R);
   g.drawImage(rimStatic(D, dpr), -R, -R, D, D);
   g.lineCap = 'round';
+  // Bát quái khắc ở vành ngoài (Khảm Bắc, Cấn Đông Bắc, Chấn Đông, Tốn Đông Nam, Ly Nam, Khôn Tây Nam, Đoài Tây, Càn Tây Bắc), xoay theo camera.
+  g.strokeStyle = P.gold;
+  g.lineWidth = 1.3;
+  for (let q = 0; q < 8; q++) {
+    g.save();
+    g.rotate(rot + (q * Math.PI) / 4);
+    g.translate(0, -(R - 7.5));
+    const lines = TRIGRAMS[q]!;
+    // Vạch dưới cùng gần tâm: vẽ từ trong ra ngoài, mỗi vạch cách 2,4 px.
+    for (let k = 0; k < 3; k++) {
+      const y = (1 - k) * 2.4;
+      g.beginPath();
+      if (lines[k]) {
+        g.moveTo(-4, y);
+        g.lineTo(4, y);
+      } else {
+        g.moveTo(-4, y);
+        g.lineTo(-1, y);
+        g.moveTo(1, y);
+        g.lineTo(4, y);
+      }
+      g.stroke();
+    }
+    g.restore();
+  }
+  // 24 sơn hướng: vạch mỗi 15° ở vành trong, đậm hơn ở 8 hướng chính; bốn hướng gốc nhường chỗ cho chữ.
   for (let i = 0; i < 24; i++) {
+    if (i % 6 === 0) continue;
     const a = rot + (i * Math.PI) / 12;
-    const major = i % 6 === 0;
-    const mid = i % 3 === 0;
-    const r1 = R - 3.5;
-    const r2 = R - (major ? 13 : mid ? 10 : 7);
+    const eight = i % 3 === 0;
+    const r1 = R - 14.5;
+    const r2 = R - (eight ? 20 : 17.5);
     g.beginPath();
     g.moveTo(Math.sin(a) * r1, -Math.cos(a) * r1);
     g.lineTo(Math.sin(a) * r2, -Math.cos(a) * r2);
-    g.lineWidth = major ? 2.2 : 1.2;
-    g.strokeStyle = major ? P.goldHi : P.gold;
+    g.lineWidth = eight ? 1.8 : 1;
+    g.strokeStyle = eight ? P.goldHi : P.gold;
     g.stroke();
   }
   // Bốn hướng chính: chữ ở vành trong, Bắc màu son.
@@ -103,7 +141,7 @@ export function drawRim(g: CanvasRenderingContext2D, D: number, dpr: number, rot
   ];
   for (const [txt, k] of cards) {
     const a = rot + (k * Math.PI) / 2;
-    const rr = R - 8.5;
+    const rr = R - 17.5;
     g.fillStyle = k === 0 ? P.sonHi : P.goldHi;
     g.fillText(txt, Math.sin(a) * rr, -Math.cos(a) * rr + 0.5);
   }

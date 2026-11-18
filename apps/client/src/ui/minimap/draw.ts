@@ -87,32 +87,58 @@ function spriteOf(m: Mark, dpr: number): { s: Sprite; dy: number; r: number } {
 let fogCv: HTMLCanvasElement | null = null;
 let mist: CanvasPattern | null = null;
 
+/** Một dải mây tường vân: ba vòng cuốn nối nhau và đuôi lượn, nét mảnh. */
+function xiangyun(x: CanvasRenderingContext2D, cx: number, cy: number, sc: number): void {
+  x.beginPath();
+  x.moveTo(cx - 14 * sc, cy + 5 * sc);
+  x.bezierCurveTo(cx - 20 * sc, cy - 6 * sc, cx - 6 * sc, cy - 10 * sc, cx - 3 * sc, cy - 3 * sc);
+  x.bezierCurveTo(cx - 2 * sc, cy - 12 * sc, cx + 12 * sc, cy - 12 * sc, cx + 11 * sc, cy - 2 * sc);
+  x.bezierCurveTo(cx + 18 * sc, cy - 7 * sc, cx + 26 * sc, cy + 1 * sc, cx + 19 * sc, cy + 6 * sc);
+  x.moveTo(cx - 14 * sc, cy + 5 * sc);
+  x.bezierCurveTo(cx - 6 * sc, cy + 10 * sc, cx + 8 * sc, cy + 9 * sc, cx + 19 * sc, cy + 6 * sc);
+  x.stroke();
+}
+
+/**
+ * Sương chưa khám phá: lớp sương mực mờ (xám ấm, nhìn xuyên được địa hình lờ mờ) có mảng mây sáng và hoa văn mây tường vân nét mảnh;
+ * ô lặp 160 px, vẽ cả bốn mép để nối liền.
+ */
 function mistPattern(g: CanvasRenderingContext2D): CanvasPattern {
   if (mist) return mist;
+  const T = 160;
   const c = document.createElement('canvas');
-  c.width = c.height = 96;
+  c.width = c.height = T;
   const x = c.getContext('2d')!;
   const P = pal();
-  x.fillStyle = P.giay;
-  x.fillRect(0, 0, 96, 96);
-  // Mảng sương loãng: vài đốm tròn mờ rải đều (lặp được vì vẽ cả bốn mép).
-  for (let i = 0; i < 14; i++) {
-    const px = (i * 37) % 96;
-    const py = (i * 59) % 96;
-    for (const [ox, oy] of [
-      [0, 0],
-      [96, 0],
-      [-96, 0],
-      [0, 96],
-      [0, -96],
-    ]) {
-      const gr = x.createRadialGradient(px + ox, py + oy, 0, px + ox, py + oy, 26);
-      gr.addColorStop(0, 'rgba(255,255,255,0.35)');
-      gr.addColorStop(1, 'rgba(255,255,255,0)');
-      x.fillStyle = gr;
-      x.fillRect(0, 0, 96, 96);
-    }
+  x.fillStyle = P.chu;
+  x.globalAlpha = 0.5;
+  x.fillRect(0, 0, T, T);
+  x.globalAlpha = 1;
+  const wraps = [-T, 0, T];
+  // Mảng sương sáng và tối loang nhẹ.
+  for (let i = 0; i < 12; i++) {
+    const px = (i * 53) % T;
+    const py = (i * 71) % T;
+    for (const ox of wraps)
+      for (const oy of wraps) {
+        const gr = x.createRadialGradient(px + ox, py + oy, 0, px + ox, py + oy, 34);
+        gr.addColorStop(0, i % 3 === 0 ? 'rgba(40,36,30,0.16)' : 'rgba(255,255,255,0.3)');
+        gr.addColorStop(1, 'transparent');
+        x.fillStyle = gr;
+        x.fillRect(0, 0, T, T);
+      }
   }
+  // Mây tường vân nét mực mảnh.
+  x.strokeStyle = 'rgba(52,44,34,0.34)';
+  x.lineWidth = 1.1;
+  x.lineCap = 'round';
+  for (const [cx, cy, sc] of [
+    [38, 40, 1.15],
+    [112, 96, 0.95],
+    [40, 128, 0.8],
+    [128, 24, 0.75],
+  ] as const)
+    for (const ox of wraps) for (const oy of wraps) xiangyun(x, cx + ox, cy + oy, sc);
   mist = g.createPattern(c, 'repeat')!;
   return mist;
 }
@@ -164,10 +190,8 @@ export function drawMinimap(
     f.globalCompositeOperation = 'source-over';
     f.clearRect(0, 0, w, w);
     f.setTransform(dpr, 0, 0, dpr, 0, 0);
-    f.globalAlpha = 0.93;
     f.fillStyle = mistPattern(f);
     f.fillRect(0, 0, size, size);
-    f.globalAlpha = 1;
     f.globalCompositeOperation = 'destination-out';
     f.translate(half, half);
     f.rotate(v.rot);
@@ -198,10 +222,21 @@ export function drawMinimap(
   // 3) biểu tượng
   hits.length = 0;
   const blink = Math.floor(now / 120) % 2 === 0;
+  // Quái thường: chỉ hiện ở gần (30% bề ngang đang xem), tối đa 14 con gần nhất hoặc đang đánh nhau; ưu tiên icon nhiệm vụ, NPC, truyền tống, đồng đội, boss.
+  const monR = v.span * 0.3;
+  const allowMon = new Set<Mark>();
+  frame.marks
+    .filter((m) => m.kind === 'mon')
+    .map((m) => ({ m, d: Math.hypot(m.x - v.cx, m.z - v.cz) }))
+    .filter((e) => e.d <= monR || (e.m.hurtUntil !== undefined && e.m.hurtUntil > now))
+    .sort((a, b) => a.d - b.d)
+    .slice(0, 14)
+    .forEach((e) => allowMon.add(e.m));
   // Vẽ theo lớp (chấm nhỏ dưới, boss trên cùng) bằng vài lượt lọc thay vì sort mỗi khung.
   for (let pass = 0; pass < 8; pass++)
     for (const m of frame.marks) {
       if (ORDER[m.kind] !== pass) continue;
+      if (m.kind === 'mon' && !allowMon.has(m)) continue;
       let c = project(v, m.x, m.z, _p);
       const outside = Math.hypot(c.x - half, c.y - half) > inner + 6;
       // Điểm đánh dấu nằm ngoài khung: bám mép để luôn biết hướng.

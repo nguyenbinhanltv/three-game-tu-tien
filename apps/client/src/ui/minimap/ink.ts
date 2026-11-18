@@ -6,7 +6,7 @@ import { logger } from '../../base/log';
 
 const log = logger('minimap');
 /** Điểm ảnh mỗi cạnh: 1024 → ~4 m/điểm ở level 4096 m; đủ cho nét loang, phóng nhiều sẽ mềm như tranh thủy mặc. */
-const INK_PX = 1024;
+const INK_PX = 1536;
 /** Mỗi khung (60 Hz) chỉ dựng 3 ms: ~1,3 giây CPU thuần chia ra khoảng 7–10 giây, không gây giật. */
 const SLICE_MS = 3;
 
