@@ -119,3 +119,22 @@ Theo từng tư thế (nam v3 → v3b): Sitting 1690 → 550, Sword_Attack@0.35 
 - Chưa sửa: vạt rách khi lăn/xoay/ngã vẫn còn (Roll không giảm), cần mô phỏng vải hoặc tách vạt thành mảnh. Ngự kiếm và đả tọa dùng chung K-5/Mannequin với v3.
 
 **Kiểm tra**: `pnpm typecheck` client sạch, `vitest src/game/character` 274 test qua, `assets:validate` 0 lỗi. Tờ khung 8 tư thế và tờ góc nhìn (toàn thân trước/3-4/bên/sau, cận mặt, hông trước/sau): `node tools/blender/run.mjs`-ngoài, `chr_v3.py ... --sheet <thư mục> --views --no-export`. Video so v3 | v3b: `pnpm shots chrv3 --variants v3a,v3b` (đặt `FFMPEG=` đường dẫn ffmpeg nếu không có trong PATH, nếu không video giữ nguyên phần màn tải). Ảnh phía trước trong game không chụp được (nhân vật luôn quay lưng camera): dùng tờ góc nhìn Blender.
+
+## Thêm bộ mới bằng MỘT file JSON (dựng hàng loạt)
+Mỗi bộ trang bị là một model Tripo toàn thân (nam + nữ) nhập qua `chr_v3.py`. Cấu hình nằm trong một file `tools/blender/skins/v3sets/<bo>.json` (tên bắt đầu bằng `_` là mẫu, bị bỏ qua): vừa là cấu hình lò xo/trọng số của `chr_v3.py` (`robe`, `groups`, `limbs`; số theo phần chiều cao), vừa khai `set` (id bộ), `name`, `raw` (GLB Tripo, `{g}` = `nam|nu`, đường dẫn trong `DTL_ASSET_SOURCE`) và `height` theo giới (m). `run.mjs` (`v3SetEntries`) sinh job `chr_v3_<set>_<nam|nu>` từ file này; `node tools/blender/v3-newset.mjs <set>` tạo `meta.json` + dòng `LICENSES.md`. Mẫu: `_template_ao_dai.json` (Kiếm tu/Đan sư: vạt dài xẻ hai bên, mặc định của Lạc Kiếm v3b2), `_template_giap.json` (Hộ pháp: hai tấm giáp trước/sau tới gối, không lò xo tay áo), `_template_de_tu.json`. Thử bằng model Lạc Kiếm v3b làm "bộ giả": nhập, `assets:build`, `assets:validate` đều đạt. Tay dang theo model: `ARM_FIT` ở `mannequin.ts` (mặc định 5°, bộ tay áo rộng khai riêng như Lạc Kiếm 16°). Danh sách bộ, thứ tự dựng và hướng dẫn Tripo từng bộ: `tools/codex-assets/v3-sets-plan.mjs` (`node tools/codex-assets/v3-sets-doc.mjs --out <thư mục>` sinh tài liệu); concept: `node tools/codex-assets/chr-v3-sets-gen.mjs --sets <id,…>`.
+
+## N-9: ba bộ đầu dựng hàng loạt (Đồ Đệ Tử, Huyền Giáp Hộ Pháp, Đan Tâm Y Bát)
+
+Người dùng dựng 6 model Tripo theo concept v3 (`dtl-asset-source/chr/set_<bộ>/tripo/raw_v3_<bộ>_<nam|nu>.glb`). Nhập bằng `tools/blender/skins/v3sets/{de_tu,huyen_giap,dan_tam}.json` (mẫu `_template_de_tu|giap|ao_dai.json`) + `node tools/blender/v3-newset.mjs <bộ>`, dựng `assets:build --only chr_v3_<bộ>_<giới>` (cần `DTL_ASSET_SOURCE`), `assets:validate` 0 lỗi; mỗi model 24.000 tam giác LOD0, ~3,0-3,7 MB.
+
+**Chọn bộ trong game**: `v3AssetOf(g, skin, set)` (`game/character/mannequin.ts`): skin đè tất cả; có bộ riêng (`V3_OWN_SETS`) dùng `chr_v3_<bộ>_<giới>`; bộ chưa có model riêng tạm dùng model cùng nhánh (kiếm tu → Lạc Kiếm, hộ pháp → Huyền Giáp, đan sư → Đan Tâm); không mặc bộ nào → Đồ Đệ Tử (trước đây là Lạc Kiếm). Lò xo v2 (`isSpring2`) áp cho cả ba bộ.
+
+**ARM_FIT theo bộ** (quét 5/12/16/22°, `SPRING_TUNE='{"armFit":N}'`, cặp mặt chồng tổng 12 tư thế nam/nữ; mốc Lạc Kiếm v3b2 ở 16° = 4.117/2.708):
+
+| Bộ | 5° | 12° | 16° | 22° | chọn |
+| --- | --- | --- | --- | --- | --- |
+| Đồ Đệ Tử | 3.023/987 | 2.809/931 | 2.653/801 | | 10° (tay áo vừa, ít phụ thuộc) |
+| Huyền Giáp | 5.687/5.446 | 4.918/4.619 | 4.707/3.931 | 4.419/3.422 | 20° (giáp, vai + hộ uyển nổi) |
+| Đan Tâm | 4.243/4.554 | 3.435/3.361 | 3.164/2.900 | 2.654/2.535 | 16° |
+
+Video và tờ khung: `pnpm shots v3sets --out <thư mục tuyệt đối>` (nam/nữ × 3 bộ cạnh nhau: đứng, chạy, chém, lăn, ngồi).
