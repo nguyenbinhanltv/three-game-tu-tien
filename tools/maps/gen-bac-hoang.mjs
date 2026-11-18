@@ -473,6 +473,7 @@ const terrain = {
 
 const level = {
   id: 'bac_hoang',
+  minLevel: 28, // DIVUC: chương 5 từ Hóa Thần; server kiểm ở requestLevel
   spawn: { x: W(TRAM[0]), z: W(TRAM[1] + 12) },
   zones: ZONES.map((z) => ({ id: z.id, lvMin: z.lv[0], lvMax: z.lv[1], color: z.color, music: 'wild', poly: z.poly })),
   pois: POIS.map((p) => ({ id: p.id, zone: p.zone, x: W(p.off[0]), z: W(p.off[1]), beamH: 80 })),

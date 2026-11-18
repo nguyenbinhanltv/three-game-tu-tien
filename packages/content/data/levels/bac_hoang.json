@@ -1,5 +1,6 @@
 {
   "id": "bac_hoang",
+  "minLevel": 28,
   "spawn": {
     "x": 1024,
     "z": 1556

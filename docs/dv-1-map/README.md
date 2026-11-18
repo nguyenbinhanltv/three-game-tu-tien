@@ -76,3 +76,11 @@ Mục tiêu "mọi điểm ≤ 60–70 m" đạt ở p95 và 99 %; điểm xa nh
 | WebGL2 Cao | 104–127 | 367–448 k | 3,9–4,4 ms | 6,6–9,2 ms | 136 |
 
 Draw call (< 300), tam giác (< 2 triệu) và texture (< 512 MB) đạt; 0 lỗi console. CPU p95 vượt 8 ms ở vài điểm (đỉnh nhất thời, p50 ≤ 4,8 ms; cao nhất ở điểm đầu tiên của mỗi lượt khi còn nạp chunk). Bộ security bot không chạy lại vì không sửa `rooms.ts`/`index.ts`/`auth.ts`.
+
+## Cấp tối thiểu (soát netcode #213)
+
+`LevelDef.minLevel` (bac_hoang: 28): `GameRoom.requestLevel` từ chối cấp vé liên level khi cấp người chơi thấp hơn (báo `sys.dungeon_level`), kể cả khi đã mở khóa `bh_tp_tram`; đồng đội kéo theo (người dẫn tổ đội) thấp hơn thì bị bỏ qua. Test: `apps/server/src/game/bachoang.test.ts`. Lưu ý: `/gm tp` sang Bắc Hoang cũng cần cấp 28 (`/gm level 28` trước).
+
+## Quái tạm
+
+Quái thường/tinh anh ở các vùng cấp 28 là **quái chương 4 dùng tạm** (Thiên Khuyết, Cốt Vệ, Dạ Minh Lộc…); sẽ thay bằng quái DV-2 (#212) khi gói đó merge (đổi id ở `MIX`/`ELITES` của bộ sinh).

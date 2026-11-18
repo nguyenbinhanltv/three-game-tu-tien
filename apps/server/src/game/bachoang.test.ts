@@ -85,6 +85,18 @@ describe('Bắc Hoang Tẫn Nguyên qua Truyền Tống', () => {
     expect(q.char.teleOpen()).toContain('bh_tp_tram');
   });
 
+  it('người chơi cấp thấp bị từ chối dù trận trạm đã mở khóa; không cấp vé', () => {
+    const tk = mkRoom('thien_khuyet', rooms.defineWorld('thien_khuyet'));
+    const p = tk.join('thap', 20);
+    p.char.unlockTele('bh_tp_tram');
+    tk.advance(500);
+    tk.sim.tele.command(p, { id: 'bh_tp_tram' });
+    tk.advance(TELE_CAST_LEVEL_MS + 100);
+    expect(xfers(p)).toEqual([]);
+    expect(keys(p)).toContain('sys.dungeon_level');
+    expect(transfer.tickets.take(p.char.id, 'bac_hoang')).toBeNull();
+  });
+
   it('trận vùng chưa chạm thì không dùng được; về Vân Lam bằng trận tông môn (mở sẵn)', () => {
     const bh = mkRoom('bac_hoang', rooms.defineWorld('bac_hoang'));
     const p = bh.join('ve', 28);
