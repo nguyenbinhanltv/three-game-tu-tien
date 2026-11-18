@@ -1,0 +1,53 @@
+{
+  "$comment": "Huyền Giáp Hộ Pháp v3: dựng từ mẫu _template_giap.",
+  "set": "huyen_giap",
+  "name": "Huyền Giáp Hộ Pháp",
+  "raw": "chr/set_huyen_giap/tripo/raw_v3_huyen_giap_{g}.glb",
+  "height": {
+    "nam": 1.86,
+    "nu": 1.72
+  },
+  "groups": [
+    {
+      "name": "skirt",
+      "parent": "pelvis",
+      "axis": "angle",
+      "zMin": 0.32,
+      "zMax": 0.5,
+      "minRadius": 0.09,
+      "count": 8,
+      "links": 2,
+      "share": 0.6,
+      "domRegion": [
+        "torso",
+        "leg"
+      ]
+    },
+    {
+      "name": "hair",
+      "parent": "spine_03",
+      "axis": "x",
+      "zMin": 0.45,
+      "zMax": 0.86,
+      "yMinRel": 0.04,
+      "xAbsMax": 0.1,
+      "count": 3,
+      "links": 3,
+      "tex": "hair",
+      "share": 0.5
+    }
+  ],
+  "robe": {
+    "zMin": 0.3,
+    "zMax": 0.52,
+    "minRadius": 0.09,
+    "xInner": 0.04,
+    "xOuter": 0.1,
+    "outerShare": 0.5,
+    "front": 0.9,
+    "back": 0.45,
+    "pow": 0.7,
+    "calf": 0.4
+  },
+  "limbs": []
+}
