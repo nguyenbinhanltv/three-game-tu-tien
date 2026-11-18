@@ -10,7 +10,7 @@ import type { AssetCache, AssetHandle } from '../assets';
 import { HitReact, type HitOpts } from '../hitreact';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { lodLevel, mixerInterval } from './skinned';
-import { SpringBones, type SpringDef, type SpringParams } from './spring';
+import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { partExtras } from './sword';
 import { SWORD_METALNESS, SWORD_ROUGHNESS, SWORD_TINT, swordTemplateOf, type SwordTemplate } from './swordModel';
 import { applyV3Palette } from './v3Palette';
@@ -38,11 +38,22 @@ export function v3AssetOf(g: string, skin?: string): string {
   const id = skin ? V3_SKINS[skin] : undefined;
   return id && id.endsWith(g === 'f' ? '_nu' : '_nam') ? id : base;
 }
-/** Tốc độ chân của Jog_Fwd_Loop (m/s): phát với timeScale = tốc độ thật / số này để chân không trượt. */
-export const JOG_SPEED = 5.36;
+/**
+ * Tốc độ phát clip chạy: timeScale = tốc độ thật / JOG_SPEED. 5,4 m/s là giá trị đo trong game cho ÍT TRƯỢT CHÂN nhất (`pnpm shots chrv3 --slide`,
+ * quét `?jog=`: 4,8 → trượt trung vị 1,4 m/s; 5,36 → 0,8; 6,0 → 1,1; 6,8 → 1,9, cả nam lẫn nữ). Số ước tính theo độ dài chân (4,3–4,7 m/s) KHÔNG khớp
+ * thực tế nên không dùng.
+ */
+export const JOG_SPEED = 5.4;
 const FADE = 0.16;
 const COMBAT_HOLD = 4;
 const SWING = ['Sword_Regular_A', 'Sword_Regular_B', 'Sword_Regular_C'];
+
+/** Tốc độ phát clip chạy để chân trụ không trượt (kẹp [0,4; 2]). */
+/** `?jog=<m/s>` ghi đè tốc độ chân trụ (chỉ để quét tham số khi đo trượt chân). */
+const JOG_OVERRIDE = Number(new URLSearchParams(search).get('jog')) || 0;
+export function jogRate(speed: number): number {
+  return Math.min(2, Math.max(0.4, speed / (JOG_OVERRIDE || JOG_SPEED)));
+}
 
 /** Clip nền theo trạng thái (hàm thuần, có test). */
 export function baseClipOf(a: AnimState): string {
@@ -83,7 +94,8 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
     }
     clips.set(c.name, cl);
   }
-  return { handle, lib, height: box.max.y - Math.max(box.min.y, 0), clips };
+  const height = box.max.y - Math.max(box.min.y, 0);
+  return { handle, lib, height, clips };
 }
 
 const IDENT = new THREE.Matrix4();
@@ -91,6 +103,23 @@ const _tq = new THREE.Quaternion();
 const _tq2 = new THREE.Quaternion();
 /** Lò xo v3 (vạt dài + tóc): cứng vừa, cản nhiều, góc lệch hẹp để vạt không xé/xuyên khi ngồi, lăn, chém (N-4). */
 export const V3_SPRING: SpringParams = { stiffness: 130, drag: 8, maxAngle: 30, maxInward: 8 };
+
+/**
+ * Viên nang va chạm cho vạt/tay áo (N-6): hông (pelvis → spine_01), đùi (thigh → calf), cẳng (calf → foot), bán kính theo chiều cao.
+ * Khi ngồi/đả tọa đùi nằm ngang nên vạt trước bị đẩy lên phủ trên đùi thay vì xuyên xuống.
+ */
+export function colliderDefs(rig: THREE.Object3D, height: number): SpringCollider[] {
+  const k = height / 1.8;
+  const spec: [string, string, number][] = [['pelvis', 'spine_01', 0.11]];
+  for (const sd of ['l', 'r']) spec.push([`thigh_${sd}`, `calf_${sd}`, 0.085], [`calf_${sd}`, `foot_${sd}`, 0.06]);
+  const out: SpringCollider[] = [];
+  for (const [a, b, r] of spec) {
+    const na = rig.getObjectByName(a);
+    const nb = rig.getObjectByName(b);
+    if (na && nb) out.push({ a: na, b: nb, r: r * k });
+  }
+  return out;
+}
 
 /** Xương twist (chr_v3.py): `<limb>_twist_<l|r>` là con của `<limb>_<l|r>`; trục xoắn = hướng tới xương con chính của limb. */
 const TWIST_NEXT: Record<string, string> = { upperarm: 'lowerarm', lowerarm: 'hand', thigh: 'calf' };
@@ -181,7 +210,7 @@ export class MannequinCharacter implements CharacterView {
       const child = o.children.find((c) => (c as THREE.Bone).isBone);
       defs.push({ bone: o.name, tailLocal: (child ?? o).position.clone() });
     });
-    if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING);
+    if (defs.length && !shadow) this.springs = new SpringBones(this.rig, defs, V3_SPRING, colliderDefs(this.rig, tpl.height));
     for (const sd of ['l', 'r']) {
       for (const [limb, next] of Object.entries(TWIST_NEXT)) {
         const L = this.rig.getObjectByName(`${limb}_${sd}`);
@@ -338,7 +367,7 @@ export class MannequinCharacter implements CharacterView {
     this.grounded = !(a.flying || a.airborne || a.sky);
     const name = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
     this.play(name);
-    if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = Math.min(1.6, Math.max(0.4, a.speed / JOG_SPEED));
+    if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = jogRate(a.speed);
     else if (this.base) this.base.timeScale = 1;
     // Bước chân: đếm theo pha chu kỳ chạy (hai bước mỗi chu kỳ).
     if (name === 'Jog_Fwd_Loop' && this.base) {
