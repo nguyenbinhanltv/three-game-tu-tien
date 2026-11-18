@@ -18,7 +18,7 @@ import { SLOWMO, _camFocus, _shakeLook, _shakePos, _v, isWebGPU } from './common
 import { runCine } from './cine';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
-import { updateRiftMood } from './levelLoad';
+import { updateEclipse, updateRiftMood } from './levelLoad';
 import type { Game } from '../engine';
 
 /** Gửi ý định dùng chiêu lên server (tự chọn mục tiêu nếu cần). Server vẫn kiểm mọi điều kiện. */
@@ -162,6 +162,7 @@ export function runFrame(eng: Game): void {
   setListener(rp.x, rp.z, eng.camYaw);
   eng.env.update(dt, eng.camera, rp);
   if (eng.riftMood) updateRiftMood(eng, dt, rp.z);
+  updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
   if (me) eng.ambient.update(dt, eng.camera.position, rp);
   if (me) eng.butterflies?.update(dt, rp);

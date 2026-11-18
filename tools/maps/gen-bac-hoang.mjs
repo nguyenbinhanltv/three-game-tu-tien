@@ -19,8 +19,8 @@ const PLAY = { cx: C, cz: C - 90, half: 760 };
 const BOX = { x0: -720, x1: 720, z0: -810, z1: 630 }; // vùng chia cho các vùng săn (offset), cách chân vách >= 40 m
 const TRAM = [0, 520]; // Vọng Bắc Trạm (an toàn)
 const R_IN = 75;
-// Cấp thiết kế 28–31 (zone.lv ở bảng ZONES), nhưng MAX_LEVEL hiện là 28 (thang 29–32 là DV1-D): kẹp ở đây, bỏ kẹp khi DV1-D nâng trần.
-const LV_CAP = 28;
+// Cấp thiết kế 28–31 (zone.lv ở bảng ZONES); trần MAX_LEVEL là 32 (DV-3K) nên không còn phải kẹp.
+const LV_CAP = 32;
 
 function rng(seed) {
   let s = seed >>> 0;

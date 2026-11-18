@@ -3,7 +3,7 @@ import { scatterVanHai } from './vanHaiScatter';
 import { scatterThienKhuyet } from './thienKhuyetArt';
 import { type BhScatterCtx, riftPath, scatterBacHoang } from './bacHoangArt';
 import { scatterXich, XICH_LEVEL, xichCracks } from './xichArt';
-import { padsOfLevel, propsOf, terrainOf, COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
+import { tribDef, tribSealPos, padsOfLevel, propsOf, terrainOf, COLLIDERS, DUNGEON_EXIT, featureWeight, FOREST, HAND_PROPS, hash01, heightAt, ISLAND_R, KIEM_TRUNG, LAKE, PORTAL_PAD, SECT, SUOI, VACH, VALLEY, WATER_Y, WORLD_SIZE } from '@dtl/shared';
 
 /**
  * Bố cục prop Tripo theo brief level-dressing (P2-A1, thực hiện P2-A4). Hoàn toàn xác định (hash theo chỉ số), không
@@ -288,6 +288,22 @@ let cache: PropInstance[] | null = null;
 export function allProps(level = 'van_lam'): PropInstance[] {
   if (level === 'van_lam' || level === 'kiem_trung') return (cache ??= build());
   // Bản đồ mở rộng (E2-A): prop đặt tay của level (`propsOf`), cao độ theo địa hình riêng; Đoạn Mạch (E2-I) thêm đá và cây khô rải tự động.
+  // Sân Nhật Thực Kiếp: dùng cả bố cục prop của Bắc Hoang (cùng địa hình) và thêm năm Trấn Giới Bia bằng đá thật ở đúng chỗ bia của kiếp.
+  if (level === 'do_kiep_bac_hoang') {
+    let l = levelCache.get(level);
+    if (!l) {
+      const tr = terrainOf(level);
+      const def = tribDef('anh_bien');
+      const c = LEVELS[level].dungeon!.center;
+      l = [...allProps('bac_hoang')];
+      for (let i = 0; i < 5; i++) {
+        const s = tribSealPos(c, def.phases[0].danLoi!.ring, i);
+        l.push({ id: 'prop_bia_da', x: s.x, y: tr.heightAt(s.x, s.z), z: s.z, yaw: Math.atan2(c.x - s.x, c.z - s.z) + Math.PI, s: 1.9 });
+      }
+      levelCache.set(level, l);
+    }
+    return l;
+  }
   let list = levelCache.get(level);
   if (!list) {
     const tr = terrainOf(level);

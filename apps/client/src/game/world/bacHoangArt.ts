@@ -23,6 +23,9 @@ export interface RiftPt {
   y: number;
 }
 
+/** Sân độ kiếp Anh Biến (server `do_kiep_bac_hoang`): dùng lại lớp nghệ thuật Bắc Hoang (nứt, cây chết, hạt tro, mood `rift`). */
+export const KIEP_BH = 'do_kiep_bac_hoang';
+
 /** Đường tâm khe: các `khe_*` của địa hình (bộ sinh đặt mỗi 30 m), sắp từ nam (z lớn) lên bắc. */
 export function riftPath(def: TerrainDef): RiftPt[] {
   return def.features

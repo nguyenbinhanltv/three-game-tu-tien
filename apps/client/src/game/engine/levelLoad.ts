@@ -1,6 +1,6 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import * as THREE from 'three/webgpu';
-import { terrainOf, propsOf, SECT } from '@dtl/shared';
+import { terrainOf, propsOf, SECT, tribDef } from '@dtl/shared';
 import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS } from '@dtl/content';
 import { get } from '../../ui/store';
@@ -10,7 +10,8 @@ import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } fro
 import { buildRiftVeil } from '../../render/riftVeil';
 import { skyTopOf } from '../../render/sky';
 import { DeadTrees } from '../world/deadTrees';
-import { deadTreeSpots, riftBlend, riftPath } from '../world/bacHoangArt';
+import { deadTreeSpots, KIEP_BH, riftBlend, riftPath } from '../world/bacHoangArt';
+import { buildEclipseSun } from '../../render/eclipse';
 import { XICH_LEVEL, xichCracks, type XichAccent } from '../world/xichArt';
 import { bhCtx } from '../world/propScatter';
 import { Beacons } from '../../render/beacons';
@@ -61,10 +62,16 @@ export function buildBacHoang(eng: Game): void {
   eng.scene.add(eng.rift.group);
   eng.deadTrees = new DeadTrees(deadTreeSpots(bhCtx(propsOf('bac_hoang')), 700), (x, z) => heightAt(x, z));
   eng.scene.add(eng.deadTrees.group);
+  if (levelId() === KIEP_BH) {
+    // Nhật thực: đĩa đen vành lửa treo trên khe Giới Khích, phía bắc-đông sân (chỗ camera mặc định ngẩng lên thấy được, không dưới khung HUD).
+    const c = LEVELS[KIEP_BH].dungeon!.center;
+    eng.eclipseSun = buildEclipseSun(c.x + 55, heightAt(c.x, c.z) + 12, c.z - 120, 15);
+    eng.scene.add(eng.eclipseSun.group);
+  }
 }
 
 export function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): void {
-  if (new URLSearchParams(location.search).get('xichart') === '0') return;
+  if (!FLAGS.xichArt) return;
   const T = levelTerrain();
   const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
   for (const p of paths) {
@@ -116,8 +123,28 @@ export function updateRiftMood(eng: Game, dt: number, z: number): void {
   if (Math.abs(t - eng.riftMoodT) < 0.01) return;
   eng.riftMoodT = t;
   const p = mixPreset(GRADING.ash_dawn, GRADING.rift, t);
+  if (levelId() === KIEP_BH) {
+    // Sân Nhật Thực Kiếp: sương mỏng hơn, tương phản và tối hơn để thấy rõ bia, boss và đĩa nhật thực (lần quay đầu bị sương hồng làm đục).
+    p.fogDensity *= 0.4;
+    if (p.fogHaze !== undefined) p.fogHaze *= 0.35;
+    p.heightFogBoost *= 0.6;
+    p.contrast *= 1.12;
+    p.exposure *= 0.88;
+  }
   tuneAtmosphere(eng.scene, eng.env, p, t > 0.5 ? 'rift' : 'ash_dawn', mixHex(skyTopOf('ash_dawn'), skyTopOf('rift'), t));
   applyGrading(p);
+}
+
+/** Nhật thực của Nhật Thực Kiếp: từ pha Nhật thực (25 s) trời tối đen có vành lửa; trước đó chỉ là quầng mờ. Ngoài sân kiếp thì tắt. */
+export function updateEclipse(eng: Game, dt: number): void {
+  const inArena = levelId() === KIEP_BH;
+  const elapsed = eng.tribId === 'anh_bien' && eng.tribUntil > 0 ? tribDef('anh_bien').duration - (eng.tribUntil - Date.now()) / 1000 : -1;
+  const target = !inArena ? 0 : elapsed >= 25 && elapsed < 91 ? 1 : 0.45;
+  if (Math.abs(target - eng.eclipse) >= 0.001) {
+    eng.eclipse += (target - eng.eclipse) * Math.min(1, dt * 1.2);
+    eng.eclipseSun?.set(eng.eclipse);
+  }
+  if (eng.camera) eng.eclipseSun?.update(eng.camera);
 }
 
 export function disposeBacHoang(eng: Game): void {
@@ -131,6 +158,12 @@ export function disposeBacHoang(eng: Game): void {
     eng.deadTrees.dispose();
     eng.deadTrees = null;
   }
+  if (eng.eclipseSun) {
+    eng.scene.remove(eng.eclipseSun.group);
+    eng.eclipseSun.dispose();
+    eng.eclipseSun = null;
+  }
+  eng.eclipse = 0;
   eng.riftMood = false;
 }
 
@@ -219,7 +252,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       eng.levelObjs.push(floor, hall);
     }
   }
-  if (id === 'bac_hoang') buildBacHoang(eng);
+  if (id === 'bac_hoang' || id === KIEP_BH) buildBacHoang(eng);
   if (id === XICH_LEVEL) buildXich(eng, id, q);
   if (F.sect) void loadSectModel(eng, q.shadows);
 }

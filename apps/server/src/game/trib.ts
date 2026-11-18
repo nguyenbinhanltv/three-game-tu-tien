@@ -7,12 +7,18 @@ import { PF_DEAD, type FxMsg, shadowStats, tribDef, tribGapAt, tribPhaseIndex, t
 import type { MonEnt, PlayerEnt } from './entities';
 import { runMechanic, soulActive, soulOut, tamCanhHit, type TribMechCtx } from './tribmech';
 import { cloneAbsorb, cloneOut } from './tribnhan';
+import { riftFinal, tribCleanup } from './tribanh';
 import type { GuardCfg, TribState } from './tribtypes';
 import type { HazardExtra, TribHost } from './tribhost';
 export type { GuardCfg, TribState, HazardExtra, TribHost };
 
 export class TribSystem {
   constructor(private h: TribHost) {}
+
+  /** Dọn trạng thái cơ chế khi kiếp kết thúc (gỡ quái kiếp). */
+  cleanup(p: PlayerEnt): void {
+    tribCleanup(this.h, p);
+  }
 
   /** Xuất khiếu (E3-L): true nếu nguyên anh vừa rời thân. */
   soul(p: PlayerEnt): boolean {
@@ -57,9 +63,12 @@ export class TribSystem {
       const f = ph.final;
       tr.fin = true;
       tr.nextAt = Math.max(tr.nextAt, now + f.delay * 1000);
-      const guard = f.guardShare ? { share: f.guardShare, max: f.guardMax ?? 2, r: f.guardR ?? 12 } : undefined;
-      this.h.addHazard({ x: p.move.x, z: p.move.z, r: f.r }, f.delay, f.pct, true, 'lightning', p.sid, 0, true, 0, guard, { mul: f.defMul, max: f.defMaxCut }, ph.hot);
-      this.h.sys(p, 'sys.trib_final', undefined, 'bad');
+      // Nhật Thực Kiếp (DV-3K): đủ Trấn Giới Bia sáng thì tia cuối đánh vào khe, không vào người.
+      if (!(f.gateSteles && riftFinal(this.h, p, tr, f.gateSteles, f.delay, f.r))) {
+        const guard = f.guardShare ? { share: f.guardShare, max: f.guardMax ?? 2, r: f.guardR ?? 12 } : undefined;
+        this.h.addHazard({ x: p.move.x, z: p.move.z, r: f.r }, f.delay, f.pct, true, 'lightning', p.sid, 0, true, 0, guard, { mul: f.defMul, max: f.defMaxCut }, ph.hot);
+        this.h.sys(p, 'sys.trib_final', undefined, 'bad');
+      }
     }
     runMechanic(ph.mechanic, 'tick', ctx);
     // Cơ chế tick có thể kết thúc kiếp (tâm cảnh về 0, hạ bóng): không phát thêm tia/bóng cho người đã xong kiếp.

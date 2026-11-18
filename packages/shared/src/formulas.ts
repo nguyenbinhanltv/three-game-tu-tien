@@ -7,7 +7,9 @@ export const TRUC_CO_LEVEL = 16;
 export const KET_DAN_LEVEL = 20;
 export const NGUYEN_ANH_LEVEL = 24;
 export const HOA_THAN_LEVEL = 28;
-export const MAX_LEVEL = 28;
+export const ANH_BIEN_LEVEL = 32;
+/** Anh Biến sơ kỳ (cấp 32) là trần mới của chương 5 (`docs/DIVUC_DESIGN.md` 2.1). */
+export const MAX_LEVEL = 32;
 export const FLY_UNLOCK_LEVEL = 3;
 
 export const GCD = 1.0;
@@ -24,6 +26,7 @@ const XP_NEED_ADV: readonly number[] = [
   56_000, 59_000, 62_000, 65_000, // Trúc Cơ 16–19
   102_500, 107_500, 112_000, 117_000, // Kết Đan 20–23
   162_000, 168_500, 174_500, 181_000, // Nguyên Anh 24–27
+  234_000, 242_000, 250_000, 257_500, // Hóa Thần 28–31 (DIVUC_DESIGN 2.2: 2,5 giờ/cấp)
 ];
 
 /** Tu vi cần để đầy cảnh giới hiện tại. */
@@ -48,6 +51,7 @@ export const REALM_MUL: readonly { from: number; mul: number }[] = [
   { from: KET_DAN_LEVEL, mul: 2.5 },
   { from: NGUYEN_ANH_LEVEL, mul: 3.8 },
   { from: HOA_THAN_LEVEL, mul: 5.5 },
+  { from: ANH_BIEN_LEVEL, mul: 7.8 },
 ];
 export const MONSTER_REALM_MUL = REALM_MUL;
 
@@ -59,7 +63,7 @@ export function realmMul(level: number): number {
 
 /** Đại cảnh giới của cấp: 0 Ngưng Khí, 1 Trúc Cơ, 2 Kết Đan, 3 Nguyên Anh, 4 Hóa Thần (chỉ số của `glossary.realms`). */
 export function majorRealmOf(level: number): number {
-  return level >= HOA_THAN_LEVEL ? 4 : level >= NGUYEN_ANH_LEVEL ? 3 : level >= KET_DAN_LEVEL ? 2 : level >= TRUC_CO_LEVEL ? 1 : 0;
+  return level >= ANH_BIEN_LEVEL ? 5 : level >= HOA_THAN_LEVEL ? 4 : level >= NGUYEN_ANH_LEVEL ? 3 : level >= KET_DAN_LEVEL ? 2 : level >= TRUC_CO_LEVEL ? 1 : 0;
 }
 
 /** Tầng/kỳ trong đại cảnh giới của cấp, tính từ 1 (Ngưng Khí tầng 12 → 12, Kết Đan sơ kỳ → 1). Dùng cho chữ triện ở khung nhân vật. */

@@ -23,6 +23,7 @@ import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
 import { setHeightFog } from '../render/atmosphere';
 import { type RiftVeil } from '../render/riftVeil';
 import { DeadTrees } from './world/deadTrees';
+import { type EclipseSun } from '../render/eclipse';
 import { Beacons } from '../render/beacons';
 import { PostPipeline, postParams } from '../render/post';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
@@ -287,6 +288,12 @@ export class Game {
   ch4Checked = false;
   ch5Checked = false;
   danVfx = new Map<string, { set(pg: number): void; stop(): void }>();
+  /** Năm Trấn Giới Bia của Nhật Thực Kiếp (của mình). */
+  stelesVfx: { set(mask: number): void; stop(): void } | null = null;
+  stelesMask = 0;
+  /** Nhật thực của Nhật Thực Kiếp (xem `updateEclipse`). */
+  eclipse = 0;
+  eclipseSun: EclipseSun | null = null;
   /** Phiên bản hiệu ứng cung gương (E3-M): tin mới/tin tắt tăng số, hiệu ứng cũ thấy số lệch thì tự tắt. */
   mirrorDiscVer = 0;
   mirrorVeilVer = 0;

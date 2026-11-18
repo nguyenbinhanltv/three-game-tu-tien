@@ -4,7 +4,7 @@
  * Phần thuần (preset, khung camera, cờ đã xem) tách ở đây để test được không cần renderer.
  */
 
-export type ChapterKind = 'sect' | 'dungeon' | 'trib' | 'ascend' | 'ascend_kd' | 'ascend_na' | 'ascend_hn' | 'ch2' | 'ch3' | 'ch4' | 'ch5' | 'fly';
+export type ChapterKind = 'sect' | 'dungeon' | 'trib' | 'ascend' | 'ascend_kd' | 'ascend_na' | 'ascend_hn' | 'ascend_ab' | 'ch2' | 'ch3' | 'ch4' | 'ch5' | 'fly';
 
 interface ChapterPreset {
   /** Thẻ hiện bao lâu (ms). */
@@ -33,6 +33,8 @@ export const CHAPTER: Record<ChapterKind, ChapterPreset> = {
   ascend_na: { card: 3000, dist: 1.35, pitch: -0.05, cam: 3 },
   /** Hóa Thần: ngẩng lên trời sao, kéo lùi nhiều hơn một chút để thấy bóng thần niệm sau gáy. */
   ascend_hn: { card: 3000, dist: 1.35, pitch: -0.06, cam: 3 },
+  /** Anh Biến: ngẩng lên trời nhật thực, kéo lùi để thấy khe khép ở phía bắc. */
+  ascend_ab: { card: 3000, dist: 1.35, pitch: -0.07, cam: 3 },
   /** Chương 2 · Đoạn Mạch: lần đầu tới Đoạn Mạch Cổ Cốc. */
   ch2: { card: 3000, dist: 1.25, pitch: 0.08, cam: 2.6 },
   /** Chương 3 · Vân Hải: lần đầu tới Phù Đảo Các, kéo lùi và ngẩng nhẹ để thấy biển mây. */

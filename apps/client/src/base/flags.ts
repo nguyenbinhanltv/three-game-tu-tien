@@ -52,6 +52,8 @@ interface Flags {
   music: string | null;
   /** `?ambient=<id>` nghe thử âm môi trường (chỉ dev). */
   ambient: string | null;
+  /** `?xichart=0` tắt vết nứt/đèn nhấn riêng của Xích Tẫn Khích (so ảnh). */
+  xichArt: boolean;
   /** `?bhart=0` tắt lớp mỹ thuật riêng Bắc Hoang (so ảnh, chương 5). */
   bhArt: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
@@ -82,6 +84,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   night: { scope: 'diag', doc: '0|1 ép đêm/ngày cho nhạc' },
   music: { scope: 'diag', doc: 'id bài nhạc thử (dev)' },
   ambient: { scope: 'diag', doc: 'id âm môi trường thử (dev)' },
+  xichart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Xích Tẫn Khích' },
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   god: { scope: 'test', doc: 'bất tử (server kiểm lại, xem testParams.ts)' },
@@ -136,6 +139,7 @@ export function readFlags(search: string): Flags {
     music: q.get('music'),
     ambient: q.get('ambient'),
     bhArt: !off(q.get('bhart')),
+    xichArt: !off(q.get('xichart')),
     butterflies: !off(q.get('bf')),
   };
 }

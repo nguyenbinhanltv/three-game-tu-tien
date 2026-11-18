@@ -64,7 +64,7 @@ describe('dữ liệu chương 5', () => {
     expect(QUEST.get('q5_bac_hanh')!.minLevel).toBeGreaterThanOrEqual(BH.minLevel!);
   });
   it('nhiệm vụ trỏ tới quái/phó bản/kiếp chưa có đều bị khóa bằng cấp > MAX_LEVEL', () => {
-    for (const id of ['q5_tinh_quang', 'q5_thu_khich', 'q5_kim_da', 'q5_ngu_bia', 'q5_anh_bien', 's5_cham_ba', 's5_tieng_ben_kia']) {
+    for (const id of ['s5_cham_ba']) {
       expect(QUEST.get(id)!.minLevel!, id).toBeGreaterThan(MAX_LEVEL);
     }
   });
