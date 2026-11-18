@@ -40,7 +40,7 @@ describe('trang bị theo phẩm (3-2)', () => {
     expect(gearLootTier(9)).toBe(5);
     expect(gearLootTier(-1)).toBe(0);
   });
-  it('Huyền phẩm lam, Địa tử kim, Thiên vàng kim, Thần chu sa; mỗi phẩm một màu', () => {
+  it('Huyền phẩm lam, Địa tử kim, Thiên vàng kim, Thần hồng ngọc; mỗi phẩm một màu', () => {
     const cols = [0, 1, 2, 3, 4, 5].map((q) => lootColor(gearLootTier(q), q));
     expect(new Set(cols).size).toBe(6);
     expect(cols[2]).toBe(0x6fb4f0);

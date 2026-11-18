@@ -50,8 +50,8 @@
   text-shadow: 0 0 8px rgba(255, 190, 70, 0.4);
 }
 .item-name[data-q='5'] {
-  color: #ff8a7a;
-  text-shadow: 0 0 9px rgba(232, 87, 74, 0.5);
+  color: #ff8fbb;
+  text-shadow: 0 0 9px rgba(255, 95, 158, 0.5);
 }
 .item-stat {
   color: var(--k-sword);
@@ -854,7 +854,7 @@ body[data-cut='chapter'] :is(.offs-layer, .loot-layer) {
   color: #f0b840;
 }
 .equip-figure[data-q='5'] {
-  color: #e8574a;
+  color: #ff5f9e;
 }
 .equip-figure svg {
   max-height: 240px;

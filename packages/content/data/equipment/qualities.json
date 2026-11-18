@@ -4,5 +4,5 @@
   { "id": 2, "color": "#4a8fd0", "affixes": 2, "affixFrac": 0.15 },
   { "id": 3, "color": "#9a7cc8", "affixes": 3, "affixFrac": 0.2 },
   { "id": 4, "color": "#e0b84a", "affixes": 4, "affixFrac": 0.25 },
-  { "id": 5, "color": "#e8574a", "affixes": 5, "affixFrac": 0.3 }
+  { "id": 5, "color": "#ff5f9e", "affixes": 5, "affixFrac": 0.3 }
 ]

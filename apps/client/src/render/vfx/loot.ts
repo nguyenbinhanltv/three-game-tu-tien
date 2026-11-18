@@ -41,8 +41,8 @@ export const LOOT_TIERS: readonly LootTierSpec[] = [
   { color: 0xffde96, height: 10, radius: 0.45, alpha: 0.85, hold: 1.3, sparks: 16, core: true },
   { color: 0xc9a8f0, height: 13, radius: 0.32, alpha: 0.75, hold: 1.6, sparks: 18, core: true },
   { color: 0xffd45a, height: 30, radius: 0.5, alpha: 0.95, hold: 2.6, sparks: 30, core: true },
-  // Thần phẩm (bậc 6): chu sa, cột cao nhất, nằm lâu hơn một nhịp để cả phòng kịp thấy.
-  { color: 0xff6a5a, height: 38, radius: 0.55, alpha: 1, hold: 3.2, sparks: 40, core: true },
+  // Thần phẩm (bậc 6): hồng ngọc, cột cao nhất, nằm lâu hơn một nhịp để cả phòng kịp thấy.
+  { color: 0xff5f9e, height: 38, radius: 0.55, alpha: 1, hold: 3.2, sparks: 40, core: true },
 ];
 
 /** Huyền phẩm dùng bậc 2 nhưng đổi sang lam (màu phẩm trong qualities.json). */
