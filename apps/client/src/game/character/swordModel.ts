@@ -156,8 +156,8 @@ export function cutOldSword(scene: THREE.Object3D, ex: SwordExtras): OldSwordSpa
     const idx = g.index!.array;
     const keep: number[] = [];
     for (let t = 0; t < idx.length; t += 3) {
-      if (on[idx[t]] && on[idx[t + 1]] && on[idx[t + 2]]) continue;
-      keep.push(idx[t], idx[t + 1], idx[t + 2]);
+      if (on[idx[t]!] && on[idx[t + 1]!] && on[idx[t + 2]!]) continue;
+      keep.push(idx[t]!, idx[t + 1]!, idx[t + 2]!);
     }
     if (keep.length === idx.length) return;
     cuts.push({ geo: g, index: idx instanceof Uint32Array ? Uint32Array.from(keep) : Uint16Array.from(keep) });

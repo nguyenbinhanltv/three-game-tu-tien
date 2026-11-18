@@ -37,9 +37,9 @@ const FINGER = new Set(['thumb', 'index', 'middle', 'ring', 'pinky']);
 export function mannequinToMixamo(name: string): string | undefined {
   if (SPINE[name]) return `mixamorig_${SPINE[name]}`;
   let m = /^(clavicle|upperarm|lowerarm|hand|thigh|calf|foot|ball)_([lr])$/.exec(name);
-  if (m) return `mixamorig_${m[2] === 'l' ? 'left' : 'right'}${MIXAMO_FROM_LIMB[m[1]]}`;
+  if (m) return `mixamorig_${m[2] === 'l' ? 'left' : 'right'}${MIXAMO_FROM_LIMB[m[1]!]}`;
   m = /^(thumb|index|middle|ring|pinky)_0([123])_([lr])$/.exec(name);
-  if (m && FINGER.has(m[1])) return `mixamorig_${m[3] === 'l' ? 'left' : 'right'}hand${m[1]}${m[2]}`;
+  if (m && FINGER.has(m[1]!)) return `mixamorig_${m[3] === 'l' ? 'left' : 'right'}hand${m[1]}${m[2]}`;
   return undefined;
 }
 
@@ -84,6 +84,10 @@ export class MannequinPoseBank {
     }
     const [full] = retargetClips(this.src.ref, [c.full], this.target, { dstName: mannequinToMixamo });
     const [upper, lower] = retargetClips(this.src.ref, [c.upper, c.lower], this.target, { dstName: mannequinToMixamo, trackedOnly: true });
+    if (!full || !upper || !lower) {
+      this.cache.set(id, null);
+      return undefined;
+    }
     const out: MqPose = { def: c.def, full, upper, lower };
     this.cache.set(id, out);
     return out;

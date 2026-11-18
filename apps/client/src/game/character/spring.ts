@@ -143,8 +143,8 @@ export class SpringBones {
     const { stiffness, drag, maxAngle, maxInward } = this.params;
     const keep = Math.exp(-drag * h);
     for (let i = 0; i < this.colliders.length; i++) {
-      this.capA[i].setFromMatrixPosition(_m.multiplyMatrices(world, this.colliders[i].a.matrixWorld));
-      this.capB[i].setFromMatrixPosition(_m.multiplyMatrices(world, this.colliders[i].b.matrixWorld));
+      this.capA[i]!.setFromMatrixPosition(_m.multiplyMatrices(world, this.colliders[i]!.a.matrixWorld));
+      this.capB[i]!.setFromMatrixPosition(_m.multiplyMatrices(world, this.colliders[i]!.b.matrixWorld));
     }
     const cosMax = Math.cos((maxAngle * Math.PI) / 180);
     const sinIn = Math.sin((maxInward * Math.PI) / 180);
@@ -195,9 +195,9 @@ export class SpringBones {
             if (
               pushOutCapsule(
                 b.p,
-                this.capA[ci],
-                this.capB[ci],
-                this.colliders[ci].fixed ? this.colliders[ci].r : this.colliders[ci].r * rScale,
+                this.capA[ci]!,
+                this.capB[ci]!,
+                this.colliders[ci]!.fixed ? this.colliders[ci]!.r : this.colliders[ci]!.r * rScale,
                 _out,
               )
             )

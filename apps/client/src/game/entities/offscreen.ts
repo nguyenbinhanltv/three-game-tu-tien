@@ -65,7 +65,7 @@ export function spreadFrom(
 ): void {
   const GAP = INDICATOR_EXTENT.side * 1.6;
   const near = (x: number) => {
-    for (let i = 0; i < n; i++) if (Math.abs(placed[i].x - x) < GAP && Math.abs(placed[i].y - at.y) < INDICATOR_EXTENT.down) return true;
+    for (let i = 0; i < n; i++) if (Math.abs(placed[i]!.x - x) < GAP && Math.abs(placed[i]!.y - at.y) < INDICATOR_EXTENT.down) return true;
     return false;
   };
   for (let k = 0; k < n + 1 && near(at.x); k++) {
@@ -186,7 +186,7 @@ export function questGoal(def: QuestDef, prog: number[], npcs: readonly NpcDef[]
   const done = def.objectives.every((o, i) => (prog[i] ?? 0) >= o.count);
   if (done) return { kind: 'npc', npc: def.turnin, turnin: true };
   for (let i = 0; i < def.objectives.length; i++) {
-    const o = def.objectives[i];
+    const o = def.objectives[i]!;
     if ((prog[i] ?? 0) >= o.count) continue;
     if (o.type === 'talk' && o.target) return { kind: 'npc', npc: o.target, turnin: false };
     if (o.type === 'kill' && o.target) return { kind: 'mon', mon: o.target };
@@ -218,7 +218,7 @@ export function trackedQuestId(
   if (pinned && quests.active[pinned]) return pinned;
   for (const id of Object.keys(quests.active)) {
     const def = quest(id);
-    if (def && questGoal(def, quests.active[id], npcs)) return id;
+    if (def && questGoal(def, quests.active[id]!, npcs)) return id;
   }
   return '';
 }
@@ -341,7 +341,7 @@ export class OffscreenIndicators {
     }
     this.cands = list.length > MAX_INDICATORS ? list.slice(0, MAX_INDICATORS) : list;
     for (let i = 0; i < this.slots.length; i++) {
-      const s = this.slots[i];
+      const s = this.slots[i]!;
       const c = this.cands[i];
       const key = c ? c.kind + ':' + c.key : '';
       if (key === s.key) continue;
@@ -378,7 +378,7 @@ export class OffscreenIndicators {
     const pe = camera.projectionMatrix.elements;
     let placed = 0;
     for (let i = 0; i < this.slots.length; i++) {
-      const s = this.slots[i];
+      const s = this.slots[i]!;
       const c = this.cands[i];
       if (!c || !this.enabled || !c.pos(_p)) {
         this.hide(s);

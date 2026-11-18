@@ -172,7 +172,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle): Manneq
   for (const c of lib.animations) {
     const cl = c.clone();
     for (const t of cl.tracks) {
-      if (t.name === 'pelvis.position') for (let i = 0; i < t.values.length; i++) t.values[i] *= k;
+      if (t.name === 'pelvis.position') for (let i = 0; i < t.values.length; i++) t.values[i]! *= k;
     }
     clips.set(c.name, cl);
   }
@@ -492,7 +492,7 @@ export class MannequinCharacter implements CharacterView {
   }
 
   private applyLod(level: number): void {
-    for (let i = 0; i < this.lods.length; i++) for (const m of this.lods[i]) m.visible = i === Math.min(level, this.lods.length - 1);
+    for (let i = 0; i < this.lods.length; i++) for (const m of this.lods[i]!) m.visible = i === Math.min(level, this.lods.length - 1);
   }
 
   private action(name: string): THREE.AnimationAction | null {
@@ -531,8 +531,8 @@ export class MannequinCharacter implements CharacterView {
     this.frozenMix.clear();
     if (this.loco && this.base) {
       this.frozenMix.set(this.base, this.mix.jog);
-      this.frozenMix.set(this.companions[0], this.mix.walk);
-      this.frozenMix.set(this.companions[1], this.mix.sprint);
+      this.frozenMix.set(this.companions[0]!, this.mix.walk);
+      this.frozenMix.set(this.companions[1]!, this.mix.sprint);
     }
     this.companions = [];
     this.loco = V3_ANIM && name === LOCO.jog.clip;
@@ -624,7 +624,7 @@ export class MannequinCharacter implements CharacterView {
     this.combatT = COMBAT_HOLD;
     const moving = !!this.lastAnim && this.lastAnim.speed > 0.3 && !this.perfBlocked();
     this.swingBase = 1.6;
-    this.oneShot(SWING[this.swing++ % SWING.length], 1.6, moving);
+    this.oneShot(SWING[this.swing++ % SWING.length]!, 1.6, moving);
   }
 
   /**
@@ -678,7 +678,7 @@ export class MannequinCharacter implements CharacterView {
     };
     const p = this.perf;
     if (tm) {
-      while (p.fired < tm.hitAt.length && tm.hitAt[p.fired] < p.t) p.fired++;
+      while (p.fired < tm.hitAt.length && tm.hitAt[p.fired]! < p.t) p.fired++;
       this.emit('windup', 0);
     }
     if (this.shot) this.shot.fadeOut(0.05);
@@ -705,7 +705,7 @@ export class MannequinCharacter implements CharacterView {
   private emit(kind: SkillEvent['kind'], index: number): void {
     const p = this.perf;
     if (!p) return;
-    const hitIn = kind === 'windup' && p.timing ? Math.max(0, p.timing.hitAt[0] - p.t) : undefined;
+    const hitIn = kind === 'windup' && p.timing ? Math.max(0, p.timing.hitAt[0]! - p.t) : undefined;
     this.onSkillEvent?.({ kind, skill: p.skill, index, combo: p.combo, t: p.t, kb: !!p.timing?.kb, ...(hitIn !== undefined && { hitIn }) });
   }
 
@@ -728,8 +728,8 @@ export class MannequinCharacter implements CharacterView {
     p.t += dt;
     const tm = p.timing;
     if (tm && !p.cancelled) {
-      while (p.fired < tm.hitAt.length && p.t >= tm.hitAt[p.fired]) this.emit('hit', p.fired++);
-      if (p.fired >= tm.hitAt.length && p.t >= tm.hitAt[tm.hitAt.length - 1] + 1e-3 && p.env > 0 && !p.recovered) {
+      while (p.fired < tm.hitAt.length && p.t >= tm.hitAt[p.fired]!) this.emit('hit', p.fired++);
+      if (p.fired >= tm.hitAt.length && p.t >= tm.hitAt[tm.hitAt.length - 1]! + 1e-3 && p.env > 0 && !p.recovered) {
         p.recovered = true;
         this.emit('recovery', tm.hitAt.length);
       }
